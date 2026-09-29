@@ -8,7 +8,7 @@
  * 3. Quant- & Trader Skill-Check (Interaktives Quiz)
  */
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   BookOpen,
   Search,
@@ -39,8 +39,10 @@ import {
   VocabularyTerm,
 } from '../data/vocabularyData';
 import { SubpageSidebarNav, SubpageNavItem } from './SubpageSidebarNav';
+import { useHubTab } from '../hooks/useHubTab';
 
 export type LearningPortalTab = 'glossar' | 'guides' | 'quiz';
+const LEARNING_TABS: readonly LearningPortalTab[] = ['glossar', 'guides', 'quiz'];
 
 interface LearningPortalPageProps {
   onBackToHome?: () => void;
@@ -55,18 +57,8 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
   onNavigateTab,
   initialTab = 'glossar',
 }) => {
-  const [activeTab, setActiveTab] = useState<LearningPortalTab>(initialTab);
+  const [activeTab, setActiveTab] = useHubTab(LEARNING_TABS, initialTab);
 
-  // Sync tab with URL search parameter
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const tabParam = params.get('tab');
-      if (tabParam === 'glossar' || tabParam === 'guides' || tabParam === 'quiz') {
-        setActiveTab(tabParam as LearningPortalTab);
-      }
-    }
-  }, []);
 
   const subpageItems: SubpageNavItem[] = [
     {

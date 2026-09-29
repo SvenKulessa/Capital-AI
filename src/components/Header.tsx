@@ -363,7 +363,7 @@ export const Header: React.FC<HeaderProps> = ({
                         name: 'Market Screener Hub',
                         color: '#F5B014',
                         icon: <LineChart className="w-3.5 h-3.5" />,
-                        badge: '5 Module',
+                        badge: '6 Module',
                         tabs: [
                           {
                             id: 'screener',
