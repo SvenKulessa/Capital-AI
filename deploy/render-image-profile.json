@@ -5,11 +5,14 @@
   "repository": "SvenKulessa/Capital-AI",
   "registryRepository": "ghcr.io/svenkulessa/capital-ai",
   "region": "frankfurt",
-  "plan": "starter",
+  "plan": "free",
   "platform": "linux/amd64",
   "instances": 1,
   "healthCheckPath": "/healthz",
   "port": 10000,
   "marketSymbols": "BTCUSDT,BTCUSD,AAPL",
-  "requiredRuntimeSecrets": ["TWELVE_DATA_API_KEY", "POLYGON_API_KEY"]
+  "requiredRuntimeSecrets": [
+    "TWELVE_DATA_API_KEY",
+    "POLYGON_API_KEY"
+  ]
 }

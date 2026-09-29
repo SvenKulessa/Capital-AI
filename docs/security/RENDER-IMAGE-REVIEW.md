@@ -27,7 +27,7 @@ Wiederherstellung nach Fehlern nutzt denselben Prozess: konkreten Fehler korrigi
 
 ## Konkrete neue Service-Einstellungen
 
-Die maschinenlesbaren Werte stehen in deploy/render-image-profile.json. Starter entspricht dem bereits gemergten neuen render.yaml; eine neue Instanz verursacht zusätzliche Hostingkosten. Eine Instanz, Frankfurt, Port 10000, Healthcheck /healthz, Vorschauen aus, zunächst nur onrender.com. Keine bestehende Produktionsdomain umhängen und keine Secrets/Environment-Groups von Finance kopieren. Private GHCR-Images benötigen ein separates Registry-Pull-Credential mit read:packages. Keine Veröffentlichung oder Änderung der Package-Sichtbarkeit impliziert.
+Die maschinenlesbaren Werte stehen in deploy/render-image-profile.json. Für den parallelen Test ist ausdrücklich Free gewählt. Private Services unterstützen keine Free-Instanz. Der Test-Webservice ist öffentlich erreichbar. Nach 15 Minuten ohne eingehenden Traffic schläft er ein; durchgehende Ingestion ist deshalb nicht zugesichert. Free-Compute ersetzt keine Kontrolle der Workspace-Bandwidth-/Pipeline-Limits. Eine Instanz, Frankfurt, Port 10000, Healthcheck /healthz, Vorschauen aus, zunächst nur onrender.com. Keine bestehende Produktionsdomain umhängen und keine Secrets/Environment-Groups von Finance kopieren. Private GHCR-Images benötigen ein separates Registry-Pull-Credential mit read:packages. Keine Veröffentlichung oder Änderung der Package-Sichtbarkeit impliziert.
 
 Nach erfolgreicher Release-Freigabe:
 
@@ -52,3 +52,11 @@ Vor Serviceanlage fehlen ein tatsächlich gebautes/geprüftes/attestiertes GHCR-
 - https://render.com/docs/mcp-server
 - https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations
 - https://cli.github.com/manual/gh_attestation_verify
+
+## Actions-Secrets für den späteren Test-Deploy
+
+Render-Schlüssel als Repository Actions Secret RENDER_API_KEY_TEST, Ziel-Service als Variable RENDER_SERVICE_ID_TEST und Workspace als RENDER_WORKSPACE_ID_TEST hinterlegen. Workflow soll den Schlüssel nur in einem manuellen, vertrauenswürdigen Deploy-Job verwenden; keine Ausgabe, kein Frontend/VITE_-Wert, kein pull_request_target-Zugriff. Den Ziel-Service serverseitig gegen Name Capital-AI, ownerId tea-d90o4rj7uimc739i86ug, Image-Repository und Free-Plan lesen, bevor eine Mutation erfolgt. Finance-Service-ID ist kein zulässiges Ziel.
+
+Ein Repository-Secret kann nicht von ChatGPT/Connector ausgelesen werden. Ein autorisierter Actions-Workflow kann es zur Laufzeit verwenden; dieser PR implementiert noch keinen API-Deploy-Workflow. Ein Render-API-Key ist laut API-Dokumentation nicht auf einen einzelnen Service begrenzt und kann alle Workspaces des Accounts erreichen. Eine Code-Allowlist ersetzt keinen providerseitigen Least-Privilege-Scope. Falls nur Releases ausgelöst werden sollen, ist ein dedizierter Service-Deploy-Hook die engere Alternative; er kann keine Service-Einstellungen administrieren. Für die Verwaltung strengere Isolation über eine separate Render-Identität/Workspace mit passenden Mitgliedsrechten prüfen.
+
+Bei privatem GHCR-Image benötigt Render zusätzlich ein Registry-Pull-Credential mit read:packages. Das ist ein anderer Schlüssel als der Render-API-Key. Credentials nicht in den Chat oder in Git-Dateien kopieren.
