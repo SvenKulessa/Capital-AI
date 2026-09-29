@@ -2,7 +2,7 @@ services:
   - type: web
     name: Capital-AI
     runtime: docker
-    plan: starter
+    plan: free
     region: frankfurt
     branch: main
     dockerfilePath: ./Dockerfile
