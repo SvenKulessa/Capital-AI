@@ -13,12 +13,12 @@ concurrency:
   cancel-in-progress: true
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 25
     outputs:
       image_id: ${{ steps.image_identity.outputs.image_id }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Gepinnte Sicherheitswerkzeuge bauen
@@ -71,7 +71,7 @@ jobs:
           docker exec capital-ai-smoke sh -c 'test ! -w /app/server/index.mjs && ! command -v npm'
       - name: Prüfnachweise sichern
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: docker-security-${{ github.sha }}
           path: |
@@ -82,7 +82,7 @@ jobs:
           retention-days: 7
       - name: Dasselbe geprüfte Image zur Veröffentlichung übergeben
         if: success() && inputs.publish_candidate && github.ref == 'refs/heads/main' && github.repository == 'SvenKulessa/Capital-AI'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: candidate-image-${{ github.run_id }}-${{ github.run_attempt }}
           path: security-reports/image.tar
@@ -93,7 +93,7 @@ jobs:
   publish_candidate:
     needs: validate
     if: inputs.publish_candidate && github.ref == 'refs/heads/main' && github.repository == 'SvenKulessa/Capital-AI'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     permissions:
       contents: read
@@ -106,17 +106,18 @@ jobs:
       SOURCE_SHA: ${{ github.sha }}
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Aktuellen Main vor Veröffentlichung korrelieren
         run: |
           set -euo pipefail
           test "$(gh api repos/SvenKulessa/Capital-AI/branches/main --jq .commit.sha)" = "$SOURCE_SHA"
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: candidate-image-${{ github.run_id }}-${{ github.run_attempt }}
           path: candidate
+          digest-mismatch: error
       - name: Geprüftes Artefakt laden (kein erneuter Anwendungsbuild)
         run: |
           set -euo pipefail
@@ -125,7 +126,7 @@ jobs:
           test "$(docker image inspect --format '{{.Os}}/{{.Architecture}}' "capital-ai:$SOURCE_SHA")" = linux/amd64
           docker build --file Dockerfile.security --tag capital-ai-security .
           rm candidate/image.tar
-      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -181,7 +182,7 @@ jobs:
           jq -n --arg sha "$SOURCE_SHA" --arg image "$IMAGE_REF" --arg imageId "$EXPECTED_IMAGE_ID" --arg run "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT" '{schemaVersion:1,status:"ATTESTED_CANDIDATE",deployEligible:false,sourceSha:$sha,imageRef:$image,localImageId:$imageId,workflowRun:$run,remainingGates:["LICENSE_REDISTRIBUTION_REVIEW","RENDER_IMAGE_SOURCE","RUNTIME_IDENTITY"]}' > security-reports/candidate.json
       - name: Kandidaten-Nachweise sichern
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ghcr-candidate-${{ github.run_id }}-${{ github.run_attempt }}
           path: security-reports/*.json
