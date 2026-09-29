@@ -126,9 +126,9 @@ beziehen sich auf den vorherigen Quellstand.
   Footer-Verweis und Text-/JSON-Auslieferung geprüft.
 - Workflow-YAML und sämtliche Bash-Blöcke statisch geprüft; bestehende
   HIGH/CRITICAL-/Secret-Gates, CycloneDX und deployEligible:false erhalten.
-- Docker steht lokal nicht zur Verfügung. Die drei echten Trivy-
-  Lizenzinventare und der Container-Build müssen im nächsten Actions-Lauf
-  geprüft werden. Sie sind nicht als bereits bestanden gekennzeichnet.
+- Der Agent-Lauf 36644672551 hat Container-Build, Build-/Runtime-Lizenzinventare
+  und sämtliche Validierungsschritte bestanden. GHCR-Publish war übersprungen;
+  das dritte Inventar am Registry-Digest bleibt deshalb noch aus.
 
 ## Primärquellen
 
@@ -143,3 +143,104 @@ beziehen sich auf den vorherigen Quellstand.
 Zusätzlich wurden die tatsächlichen per npm ci installierten LICENSE-,
 NOTICE-, README- und oben genannten Source-Header-Dateien gelesen. Die
 Upstream-Hinweise werden bei jedem Build aus den exakten Paketen neu erfasst.
+
+## Auswertung des Agent-Laufs 36644672551
+
+Geprüfter Head: `69cd56c45854d57a1a24479c4a9b8bf398b65463`.
+[Workflow-Lauf](https://github.com/SvenKulessa/Capital-AI/actions/runs/36644672551):
+validate=success, publish_candidate=skipped. Es wurde kein GHCR-Kandidat
+veröffentlicht und kein Render-Deploy ausgelöst. Die erfolgreiche Agent-
+Validierung ist kein Nachweis eines bereits ausgeführten Main-Publish.
+
+Das heruntergeladene Actions-Artefakt 11067544178 stimmt mit dem von GitHub
+angegebenen SHA-256 überein:
+`3cfa13cacd53cc0d2ba1afb7932007d4f6fc34166aef184a7a5c64f8ce3032e6`.
+Es läuft am 06.10.2026 um 23:22:40 UTC ab. Der dauerhafte Auswertungssnapshot
+[evidence/license-review-run-36644672551.json](evidence/license-review-run-36644672551.json)
+enthält Datei-Hashes, Paketversionen, Lizenzlabels und offene Nachweise.
+Er ist eine Zusammenfassung, kein Ersatz für die ursprünglichen JSON-Berichte.
+
+### Verifizierte Inventare
+
+- 319 Lockfile-Einträge: 294 NOTICE_REQUIRED, 24 BUILD_TOOL_REVIEW,
+  1 DATA_ATTRIBUTION_REVIEW; kein UNREVIEWED-Metadateneintrag.
+- 52 Frontend-Pakete: 37 MIT, 11 ISC, 2 Apache-2.0, 1 MIT AND Zlib,
+  1 MIT AND ISC. Der Notice-Hash stimmt mit dem Frontend-Inventar überein;
+  beide Inventare referenzieren denselben Lockfile-Hash.
+- Frontend-Notices: 117.825 Byte, SHA-256
+  `96312616f2dca1c6cb497ca173a1353c67f3840d0dd85623f575c36ef8328e3f`.
+- Runtime: 18 OS-Pakete, 53 Lizenzklassifikations-Datensätze:
+  HIGH=17, MEDIUM=2, LOW=28, UNKNOWN=6, CRITICAL=0.
+- Build-Stufe: 445 Lizenzklassifikations-Datensätze:
+  HIGH=17, MEDIUM=8, LOW=402, UNKNOWN=18, CRITICAL=0.
+- Die separaten Build-/Runtime-Sicherheitsberichte enthalten keine
+  HIGH/CRITICAL-Schwachstellen oder Secret-Befunde. Die Lizenzzahlen oben
+  sind keine CVE-Zahlen und keine Anzahl unabhängiger Rechtsprobleme.
+
+### Einordnung der Lizenztreffer
+
+Die 17 HIGH-Runtime-Treffer setzen sich aus 13 OS-Lizenzdatensätzen und
+vier Texttreffern zu Autoconf-Ausnahmen in zwei Kopien der vollständigen
+Node-LICENSE zusammen. Trivy zählt beispielsweise libgcc/libstdc++
+jeweils zweimal, weil die Paketmetadaten GPL und LGPL aufführen.
+Aus diesen Labels wird keine GPL-Lizenz für die eigene Anwendung abgeleitet.
+
+Die OS-Nachweise betreffen insbesondere:
+alpine-baselayout/data 3.7.2-r1; apk-tools/libapk 3.0.6-r0;
+busybox/binsh/ssl_client 1.37.0-r31; libgcc/libstdc++ 15.2.0-r5;
+musl-utils 1.2.6-r2; scanelf 1.3.9-r1.
+Die nächsten prüfbaren Arbeiten sind exakte Quellpakete einschließlich
+Alpine-Patches und Build-Anweisungen, Lizenztexte und die konkrete Zuordnung
+etwaiger GCC-Runtime-Ausnahmen. Diese Nachweise sind noch nicht beigefügt.
+
+Die beiden MEDIUM-Treffer sind MPL bei ca-certificates-bundle und ein
+MPL-Text im Frontend-Notice-Dokument. DOMPurify wird laut Bundle-Inventar
+über seine Apache-2.0-Alternative verwendet; der mitkopierte MPL-Text beweist
+keine Auswahl der MPL für das Bundle. Die OS-Zertifikatskomponente bleibt
+separat zu prüfen.
+
+UNKNOWN=6 bedeutet im Runtime-Bericht drei unterschiedliche Labels an
+jeweils zwei Pfaden: ICU, LicenseRef-C-Ares, NAIST-2003 in
+`/usr/local/LICENSE` und `/app/licenses/Node-LICENSE.txt`.
+Die Texte sind vorhanden. Der c-ares-Abschnitt enthält ausdrücklich eine
+MIT-Erlaubnis mit Copyright-/Notice-Bedingung; der NAIST-Abschnitt enthält
+Erlaubnis-, Copyright- und Disclaimer-Bedingungen. Die Klassifikation wird
+nicht durch eine Ignore-Regel versteckt. Die vollständigen Node-Texte samt
+Unterabschnitten bleiben erhalten; eine abschließende komponentenspezifische
+Lizenz-/Rechteprüfung wird hierdurch nicht ersetzt.
+
+Die 18 UNKNOWN-Build-Treffer umfassen dieselben sechs Node-Texttreffer,
+elf BlueOak-1.0.0-Metadatentreffer im globalen npm und rgbcolors kombinierten
+Ausdruck. Diese npm-Werkzeuge wurden nicht als Runtime-Pakete erfasst.
+rgbcolor ist im Frontend-Inventar bereits mit seiner MIT-Alternative und
+dem tatsächlich enthaltenen Lizenztext dokumentiert.
+
+### Image-Identitäten korrekt unterscheiden
+
+Der Docker-Wert aus image-id.txt entspricht laut Build-Log dem OCI-Index:
+`sha256:2a631e3dba76ace90cd65391d027f5b0e7815f184b1fe15571551a68bf63a753`.
+Der Build exportiert außerdem den Plattform-Manifest-Digest
+`sha256:e2aa2eeba057496bc847d7a26459a35dc5a733d9b9225a314ff67f2cdd120e9b`
+und den Config-Digest
+`sha256:5899168a78f923053b12a13cd953ccfcd87c757a9032e04b15e293bbbf78dc63`.
+
+Metadata.ImageID in beiden Trivy-Berichten und der SBOM stimmt mit diesem
+Config-Digest überein. Die beiden Trivy-Berichte haben außerdem denselben
+ArtifactID-Wert. Die unterschiedlichen Index-/Config-Werte sind daher
+nicht als Gleichheitsvergleich zu verwenden. Diese Korrelation verwendet
+Build-Logs und Report-Metadaten; eine separat gespeicherte und kryptografisch
+nachgerechnete Index → Manifest → Config-Kette bleibt als zusätzlicher
+Release-Nachweis sinnvoll. Ein Registry-Digest wurde in diesem Lauf nicht
+gelesen.
+
+### Entscheidung
+
+Technische Inventarisierung und Notice-Erzeugung: VERIFIED für diesen Head.
+LICENSE_REDISTRIBUTION_REVIEW: weiterhin REVIEW_OPEN.
+Kein Statuswechsel zu deployEligible:true. Kein Scanner-Ignore, keine
+pauschale GPL-/LGPL-Freigabe, keine neue Container-Version und kein weiterer
+kostenintensiver Workflow-Lauf für diese reine Dokumentationsauswertung.
+
+Weiterhin erforderlich: OS-Source-/Notice-Nachweise, konkrete Ausnahmen,
+Bild-/Logo-/Font-Rechte und Provider-Verträge. Das Registry-Lizenzinventar
+entsteht erst bei einem später ausdrücklich gestarteten Main-Publish.
