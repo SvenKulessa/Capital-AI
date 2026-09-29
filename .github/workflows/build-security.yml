@@ -21,6 +21,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: npm-Lizenzmetadaten und Regressionstests prüfen
+        run: |
+          node --test scripts/license-evidence.test.mjs
+          node scripts/license-evidence.mjs
       - name: Gepinnte Sicherheitswerkzeuge bauen
         run: docker build --file Dockerfile.security --tag capital-ai-security .
       - name: Dockerfile linten
@@ -35,6 +39,7 @@ jobs:
           chmod a+r security-reports/build.tar
           chmod a+rwx security-reports
           docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/build.tar --ignorefile /dev/null --scanners vuln,secret --severity HIGH,CRITICAL --format json --output /reports/build-image.json --exit-code 1
+          docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/build.tar --ignorefile /dev/null --scanners license --license-full --format json --output /reports/build-image-licenses.json --exit-code 0
           rm security-reports/build.tar
       - name: Image mit Tests und isoliertem Frontend-Build bauen
         run: docker build --pull --tag capital-ai:${{ github.sha }} .
@@ -46,6 +51,8 @@ jobs:
           mkdir -p security-reports
           docker image inspect --format '{{.Id}}' capital-ai:${{ github.sha }} > security-reports/image-id.txt
           echo "image_id=$(cat security-reports/image-id.txt)" >> "$GITHUB_OUTPUT"
+          docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint cat capital-ai:${{ github.sha }} /app/dist/THIRD_PARTY_NOTICES.txt > security-reports/THIRD_PARTY_NOTICES.txt
+          docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint cat capital-ai:${{ github.sha }} /app/dist/frontend-license-inventory.json > security-reports/frontend-license-inventory.json
           docker save capital-ai:${{ github.sha }} -o security-reports/image.tar
           chmod a+r security-reports/image.tar
           chmod a+rwx security-reports
@@ -55,6 +62,9 @@ jobs:
         run: |
           test -f security-reports/image.tar
           docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/image.tar --ignorefile /dev/null --scanners vuln --format cyclonedx --output /reports/capital-ai.sbom.cdx.json
+      - name: Runtime-Lizenzinventar am exportierten Image
+        if: always() && hashFiles('security-reports/image.tar') != ''
+        run: docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/image.tar --ignorefile /dev/null --scanners license --license-full --format json --output /reports/image-licenses.json --exit-code 0
       - name: Runtime ohne Schreibrechte und Linux-Capabilities prüfen
         run: |
           docker run -d --name capital-ai-smoke --read-only --cap-drop ALL --security-opt no-new-privileges -p 127.0.0.1:10000:10000 capital-ai:${{ github.sha }}
@@ -77,6 +87,7 @@ jobs:
           path: |
             security-reports/*.json
             security-reports/image-id.txt
+            security-reports/THIRD_PARTY_NOTICES.txt
             security-reports/smoke.log
           if-no-files-found: warn
           retention-days: 7
@@ -158,6 +169,9 @@ jobs:
           chmod a+rwx security-reports
           docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/registry-image.tar --ignorefile /dev/null --scanners vuln,secret --severity HIGH,CRITICAL --exit-code 1 --format json --output /reports/registry-image.json
           docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/registry-image.tar --ignorefile /dev/null --scanners vuln --format cyclonedx --output /reports/capital-ai.sbom.cdx.json
+          docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/registry-image.tar --ignorefile /dev/null --scanners license --license-full --format json --output /reports/registry-image-licenses.json --exit-code 0
+          docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint cat "$IMAGE_REF" /app/dist/THIRD_PARTY_NOTICES.txt > security-reports/THIRD_PARTY_NOTICES.txt
+          docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint cat "$IMAGE_REF" /app/dist/frontend-license-inventory.json > security-reports/frontend-license-inventory.json
           rm security-reports/registry-image.tar
       - name: Build-Provenance an exakten Registry-Digest binden
         uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
@@ -187,6 +201,8 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ghcr-candidate-${{ github.run_id }}-${{ github.run_attempt }}
-          path: security-reports/*.json
+          path: |
+            security-reports/*.json
+            security-reports/THIRD_PARTY_NOTICES.txt
           if-no-files-found: warn
           retention-days: 7

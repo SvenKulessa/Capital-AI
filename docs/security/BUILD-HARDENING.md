@@ -222,3 +222,12 @@ Die Änderung aktiviert keine zusätzlichen kostenpflichtigen Dienste.
 Quellen:
 - https://trivy.dev/docs/v0.74/guide/supply-chain/sbom/
 - https://trivy.dev/docs/v0.74/guide/configuration/db/
+
+## Lizenzprüfung
+
+Die technische Lizenzprüfung und ihre offenen Redistribution-Nachweise stehen
+in [LICENSE-REVIEW.md](LICENSE-REVIEW.md). Der Workflow sammelt Lockfile-,
+Frontend- und drei vollständige Image-Lizenzinventare. Lizenztexte werden im
+Frontend bereitgestellt; die vollständige Node-Lizenz bleibt im Runtime-Image
+enthalten. Ein grüner Workflow schließt LICENSE_REDISTRIBUTION_REVIEW nicht
+automatisch. deployEligible bleibt false.
