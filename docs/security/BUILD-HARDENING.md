@@ -138,3 +138,33 @@ publish_candidate=true löst keinen Render-Deploy aus.
 Quellen:
 - https://github.com/SvenKulessa/Capital-AI/actions/runs/36632385828
 - https://curl.se/docs/manpage.html#--retry-all-errors
+
+## Node-24-Actions und Ubuntu-26.04-Runner
+
+Beide Jobs verwenden ausdrücklich ubuntu-26.04 (x64-Standard-Runner).
+Die Auswahl fixiert die Ubuntu-Release-Linie, nicht einzelne Versionen der
+laufend aktualisierten GitHub-Runner-Images. Standard-Runner sind in diesem
+öffentlichen Repository kostenlos. Die Migration von ubuntu-latest beginnt
+am 19.10.2026 und soll am 19.11.2026 abgeschlossen sein.
+
+Gepinnte Node-24-Actions: checkout v7.0.1, upload-artifact v7.0.1,
+download-artifact v8.0.1, docker/login-action v4.6.0. Die jeweiligen action.yml
+wurden am aufgelösten Release-Commit geprüft. Die Attestation-Actions nutzen
+bereits den gepinnten actions/attest v3 mit Node 24. Kein unsicherer
+Node-20-Opt-out und keine Unterdrückung der Deprecation-Warnung.
+
+Upload nutzt weiterhin das standardmäßige ZIP-Archivformat und bisherige
+Artefaktnamen. Download extrahiert nach candidate; digest-mismatch:error
+ist explizit gesetzt. Image-ID-, Plattform-, CVE- und Attestation-Gates
+bleiben erhalten. Docker/Node/Alpine der Anwendung werden nicht geändert.
+Reales Ausführen von Build, Artifact-Übergabe und GHCR-Publish auf Ubuntu
+26.04 ist erneut erforderlich; statische Prüfungen allein belegen keine
+Runner-Kompatibilität.
+
+Quellen:
+- https://github.com/actions/checkout/releases/tag/v7.0.1
+- https://github.com/actions/upload-artifact/releases/tag/v7.0.1
+- https://github.com/actions/download-artifact/releases/tag/v8.0.1
+- https://github.com/docker/login-action/releases/tag/v4.6.0
+- https://github.com/actions/runner-images/issues/14748
+- https://docs.github.com/en/actions/reference/runners/github-hosted-runners
