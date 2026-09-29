@@ -197,3 +197,28 @@ Der vorhandene fehlgeschlagene Kandidat wird nicht als Release verwendet.
 Quellen:
 - https://github.com/SvenKulessa/Capital-AI/actions/runs/36635928754
 - https://docs.docker.com/reference/cli/docker/buildx/imagetools/inspect/
+
+## CycloneDX mit Schwachstellen und aktueller Datenbank
+
+Beide CycloneDX-Erzeugungen (Validierung und GHCR-Digest-Readback) verwenden
+explizit --scanners vuln und --ignorefile /dev/null. Das Inventar enthält
+damit zusätzlich erkannte Schwachstellen aller Schweregrade. Die separaten
+HIGH/CRITICAL- und Secret-Gates bleiben blockierend. Ein fehlendes oder
+leeres vulnerabilities-Feld ist bei einem Scan ohne Befunde zulässig.
+
+Dockerfile.security setzt TRIVY_SKIP_DB_UPDATE=false ausdrücklich.
+Jeder Scanner-Aufruf nutzt einen frischen, kurzlebigen Container ohne
+persistierten Datenbank-Cache. Trivy lädt daher beim nächsten Lauf die
+aktuell bereitgestellte Schwachstellendatenbank vor dem Scan herunter.
+Ein Download-/Datenbankfehler blockiert den jeweiligen Scan; es gibt keinen
+Offline-Fallback. Die Datenbank-Aktualisierung ersetzt kein Update der
+gepinnten Trivy-Version und korrigiert nicht deren separate Alpine-EOL-Tabelle.
+
+Die angereicherte SBOM wird beim erfolgreichen Publish weiterhin an denselben
+Registry-Digest attestiert und verifiziert. Sie dokumentiert die Befunde zum
+Scanzeitpunkt; sie garantiert keine dauerhafte Abwesenheit von Schwachstellen.
+Die Änderung aktiviert keine zusätzlichen kostenpflichtigen Dienste.
+
+Quellen:
+- https://trivy.dev/docs/v0.74/guide/supply-chain/sbom/
+- https://trivy.dev/docs/v0.74/guide/configuration/db/

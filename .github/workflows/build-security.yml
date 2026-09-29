@@ -54,7 +54,7 @@ jobs:
         if: always() && hashFiles('security-reports/image.tar') != ''
         run: |
           test -f security-reports/image.tar
-          docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/image.tar --format cyclonedx --output /reports/capital-ai.sbom.cdx.json
+          docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/image.tar --ignorefile /dev/null --scanners vuln --format cyclonedx --output /reports/capital-ai.sbom.cdx.json
       - name: Runtime ohne Schreibrechte und Linux-Capabilities prüfen
         run: |
           docker run -d --name capital-ai-smoke --read-only --cap-drop ALL --security-opt no-new-privileges -p 127.0.0.1:10000:10000 capital-ai:${{ github.sha }}
@@ -157,7 +157,7 @@ jobs:
           chmod a+r security-reports/registry-image.tar
           chmod a+rwx security-reports
           docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/registry-image.tar --ignorefile /dev/null --scanners vuln,secret --severity HIGH,CRITICAL --exit-code 1 --format json --output /reports/registry-image.json
-          docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/registry-image.tar --format cyclonedx --output /reports/capital-ai.sbom.cdx.json
+          docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/registry-image.tar --ignorefile /dev/null --scanners vuln --format cyclonedx --output /reports/capital-ai.sbom.cdx.json
           rm security-reports/registry-image.tar
       - name: Build-Provenance an exakten Registry-Digest binden
         uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
