@@ -10,7 +10,7 @@
  * 5. Webanwendungs- & System-Optionen (Feature Flags, Auto-Healing)
  */
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   ShieldCheck,
   Compass,
@@ -58,8 +58,10 @@ import {
   WorkPackage,
 } from '../data/roadmapData';
 import { SubpageSidebarNav, SubpageNavItem } from './SubpageSidebarNav';
+import { useHubTab } from '../hooks/useHubTab';
 
 export type ControlCenterTab = 'roadmap' | 'console' | 'cockpit' | 'team' | 'cost_center' | 'system';
+const CONTROL_TABS: readonly ControlCenterTab[] = ['roadmap', 'console', 'cockpit', 'team', 'cost_center', 'system'];
 
 interface ControlCenterPageProps {
   onBackToHome?: () => void;
@@ -75,25 +77,8 @@ export const ControlCenterPage: React.FC<ControlCenterPageProps> = ({
   initialTab = 'roadmap',
 }) => {
   // Navigation Tabs inside Control Center
-  const [activeTab, setActiveTab] = useState<ControlCenterTab>(initialTab);
+  const [activeTab, setActiveTab] = useHubTab(CONTROL_TABS, initialTab);
 
-  // Sync tab with URL search parameter
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const tabParam = params.get('tab');
-      if (
-        tabParam === 'roadmap' ||
-        tabParam === 'console' ||
-        tabParam === 'cockpit' ||
-        tabParam === 'team' ||
-        tabParam === 'cost_center' ||
-        tabParam === 'system'
-      ) {
-        setActiveTab(tabParam as ControlCenterTab);
-      }
-    }
-  }, []);
 
   const subpageItems: SubpageNavItem[] = [
     {

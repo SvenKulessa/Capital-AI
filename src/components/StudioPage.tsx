@@ -54,6 +54,7 @@ import { PipelineConfigState } from '../utils/pipelineToolCatalog';
 import { ScoringEngineService } from '../services/scoringEngine';
 import { PipelineConfiguratorService } from '../services/pipelineConfigurator';
 import { SubpageSidebarNav, SubpageNavItem } from './SubpageSidebarNav';
+import { useHubTab } from '../hooks/useHubTab';
 
 export type StudioTabKey =
   | 'architecture'
@@ -73,6 +74,8 @@ export interface StudioPageProps {
   initialTab?: StudioTabKey;
 }
 
+const STUDIO_TABS: readonly StudioTabKey[] = ['architecture', 'blueprints', 'builder', 'advisor', 'providers', 'analytics', 'benchmark', 'console'];
+
 export const StudioPage: React.FC<StudioPageProps> = ({
   onBackToHome,
   onNavigateLogin,
@@ -80,7 +83,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
   onNavigate,
   initialTab = 'architecture',
 }) => {
-  const [activeTab, setActiveTab] = useState<StudioTabKey>(initialTab);
+  const [activeTab, setActiveTab] = useHubTab(STUDIO_TABS, initialTab);
 
   // Architecture tab state
   const [searchQuery, setSearchQuery] = useState('');
