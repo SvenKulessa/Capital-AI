@@ -1,6 +1,11 @@
 name: Docker Build Sicherheit
 on:
   workflow_dispatch:
+    inputs:
+      publish_candidate:
+        description: Geprüftes Image als nicht deploybaren GHCR-Kandidaten veröffentlichen (nur Main)
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -10,6 +15,8 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    outputs:
+      image_id: ${{ steps.image_identity.outputs.image_id }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -33,9 +40,11 @@ jobs:
       - name: Server-Regressionstests
         run: docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m --cap-drop ALL --security-opt no-new-privileges -v "$PWD/server:/tests:ro" --entrypoint node capital-ai:${{ github.sha }} --test /tests/market.test.mjs /tests/security.test.mjs
       - name: Exaktes Image exportieren und scannen
+        id: image_identity
         run: |
           mkdir -p security-reports
           docker image inspect --format '{{.Id}}' capital-ai:${{ github.sha }} > security-reports/image-id.txt
+          echo "image_id=$(cat security-reports/image-id.txt)" >> "$GITHUB_OUTPUT"
           docker save capital-ai:${{ github.sha }} -o security-reports/image.tar
           chmod a+r security-reports/image.tar
           chmod a+rwx security-reports
@@ -60,5 +69,112 @@ jobs:
           path: |
             security-reports/*.json
             security-reports/image-id.txt
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Dasselbe geprüfte Image zur Veröffentlichung übergeben
+        if: success() && inputs.publish_candidate && github.ref == 'refs/heads/main' && github.repository == 'SvenKulessa/Capital-AI'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: candidate-image-${{ github.run_id }}-${{ github.run_attempt }}
+          path: security-reports/image.tar
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
+  publish_candidate:
+    needs: validate
+    if: inputs.publish_candidate && github.ref == 'refs/heads/main' && github.repository == 'SvenKulessa/Capital-AI'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    env:
+      IMAGE_REPOSITORY: ghcr.io/svenkulessa/capital-ai
+      EXPECTED_IMAGE_ID: ${{ needs.validate.outputs.image_id }}
+      SOURCE_SHA: ${{ github.sha }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Aktuellen Main vor Veröffentlichung korrelieren
+        run: |
+          set -euo pipefail
+          test "$(gh api repos/SvenKulessa/Capital-AI/branches/main --jq .commit.sha)" = "$SOURCE_SHA"
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: candidate-image-${{ github.run_id }}-${{ github.run_attempt }}
+          path: candidate
+      - name: Geprüftes Artefakt laden (kein erneuter Anwendungsbuild)
+        run: |
+          set -euo pipefail
+          docker load --input candidate/image.tar
+          test "$(docker image inspect --format '{{.Id}}' "capital-ai:$SOURCE_SHA")" = "$EXPECTED_IMAGE_ID"
+          test "$(docker image inspect --format '{{.Os}}/{{.Architecture}}' "capital-ai:$SOURCE_SHA")" = linux/amd64
+          docker build --file Dockerfile.security --tag capital-ai-security .
+          rm candidate/image.tar
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - name: Kandidat pushen und Manifest-Digest aus Registry lesen
+        id: registry
+        run: |
+          set -euo pipefail
+          candidate_tag="$IMAGE_REPOSITORY:candidate-$SOURCE_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          docker tag "capital-ai:$SOURCE_SHA" "$candidate_tag"
+          docker push "$candidate_tag"
+          docker pull "$candidate_tag"
+          image_ref=$(docker image inspect --format '{{index .RepoDigests 0}}' "$candidate_tag")
+          [[ "$image_ref" =~ ^ghcr\.io/svenkulessa/capital-ai@sha256:[a-f0-9]{64}$ ]]
+          docker pull "$image_ref"
+          test "$(docker image inspect --format '{{.Id}}' "$image_ref")" = "$EXPECTED_IMAGE_ID"
+          echo "image_ref=$image_ref" >> "$GITHUB_OUTPUT"
+          echo "digest=${image_ref##*@}" >> "$GITHUB_OUTPUT"
+      - name: Registry-Image per Digest erneut scannen und SBOM erzeugen
+        env:
+          IMAGE_REF: ${{ steps.registry.outputs.image_ref }}
+        run: |
+          set -euo pipefail
+          mkdir -p security-reports
+          docker save "$IMAGE_REF" --output security-reports/registry-image.tar
+          chmod a+r security-reports/registry-image.tar
+          chmod a+rwx security-reports
+          docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/registry-image.tar --ignorefile /dev/null --scanners vuln,secret --severity HIGH,CRITICAL --exit-code 1 --format json --output /reports/registry-image.json
+          docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/registry-image.tar --format cyclonedx --output /reports/capital-ai.sbom.cdx.json
+          rm security-reports/registry-image.tar
+      - name: Build-Provenance an exakten Registry-Digest binden
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
+        with:
+          subject-name: ghcr.io/svenkulessa/capital-ai
+          subject-digest: ${{ steps.registry.outputs.digest }}
+          push-to-registry: true
+      - name: SBOM an denselben Registry-Digest binden
+        uses: actions/attest-sbom@4651f806c01d8637787e274ac3bdf724ef169f34 # v3
+        with:
+          subject-name: ghcr.io/svenkulessa/capital-ai
+          subject-digest: ${{ steps.registry.outputs.digest }}
+          sbom-path: security-reports/capital-ai.sbom.cdx.json
+          push-to-registry: true
+      - name: Beide Attestations gegen Workflow und Quellcommit verifizieren
+        env:
+          IMAGE_REF: ${{ steps.registry.outputs.image_ref }}
+        run: |
+          set -euo pipefail
+          identity_args=(--repo SvenKulessa/Capital-AI --signer-workflow SvenKulessa/Capital-AI/.github/workflows/build-security.yml --source-digest "$SOURCE_SHA" --source-ref refs/heads/main --deny-self-hosted-runners --format json)
+          gh attestation verify "oci://$IMAGE_REF" "${identity_args[@]}" > security-reports/provenance-verification.json
+          gh attestation verify "oci://$IMAGE_REF" "${identity_args[@]}" --predicate-type https://cyclonedx.org/bom > security-reports/sbom-verification.json
+          test "$(gh api repos/SvenKulessa/Capital-AI/branches/main --jq .commit.sha)" = "$SOURCE_SHA"
+          jq -n --arg sha "$SOURCE_SHA" --arg image "$IMAGE_REF" --arg imageId "$EXPECTED_IMAGE_ID" --arg run "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT" '{schemaVersion:1,status:"ATTESTED_CANDIDATE",deployEligible:false,sourceSha:$sha,imageRef:$image,localImageId:$imageId,workflowRun:$run,remainingGates:["LICENSE_REDISTRIBUTION_REVIEW","RENDER_IMAGE_SOURCE","RUNTIME_IDENTITY"]}' > security-reports/candidate.json
+      - name: Kandidaten-Nachweise sichern
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ghcr-candidate-${{ github.run_id }}-${{ github.run_attempt }}
+          path: security-reports/*.json
           if-no-files-found: warn
           retention-days: 7
