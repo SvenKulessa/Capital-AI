@@ -1,0 +1,375 @@
+{
+  "schemaVersion": 1,
+  "status": "REVIEW_OPEN",
+  "deployEligible": false,
+  "workflowRun": "https://github.com/SvenKulessa/Capital-AI/actions/runs/36644672551",
+  "sourceSha": "69cd56c45854d57a1a24479c4a9b8bf398b65463",
+  "branch": "agent/license-evidence-and-notices-20260930",
+  "publishJob": "skipped",
+  "artifactId": 11067544178,
+  "artifactSha256": "3cfa13cacd53cc0d2ba1afb7932007d4f6fc34166aef184a7a5c64f8ce3032e6",
+  "artifactExpiresAt": "2026-10-06T23:22:40Z",
+  "registryDigest": null,
+  "imageIdentity": {
+    "dockerLocalId": "sha256:2a631e3dba76ace90cd65391d027f5b0e7815f184b1fe15571551a68bf63a753",
+    "buildLogIndexDigest": "sha256:2a631e3dba76ace90cd65391d027f5b0e7815f184b1fe15571551a68bf63a753",
+    "buildLogManifestDigest": "sha256:e2aa2eeba057496bc847d7a26459a35dc5a733d9b9225a314ff67f2cdd120e9b",
+    "buildLogConfigDigest": "sha256:5899168a78f923053b12a13cd953ccfcd87c757a9032e04b15e293bbbf78dc63",
+    "trivyConfigImageId": "sha256:5899168a78f923053b12a13cd953ccfcd87c757a9032e04b15e293bbbf78dc63",
+    "trivyArtifactId": "sha256:e0ada24324275c8f66dbf9273eda50760b6801b35edce567d46c13d66da04901",
+    "correlation": "BUILD_LOG_AND_REPORT_METADATA_NOT_INDEPENDENT_MANIFEST_CHAIN_VERIFICATION"
+  },
+  "fileSha256": {
+    "THIRD_PARTY_NOTICES.txt": "96312616f2dca1c6cb497ca173a1353c67f3840d0dd85623f575c36ef8328e3f",
+    "build-image-licenses.json": "a6d3aa302856a40a4c06988351267cf72a07a1eef0adb5ed43fb14611940c0c2",
+    "build-image.json": "4057cebe55d3cc3f114398592c2ce61596dbec9515b25ca0de0bb4fe00496a6a",
+    "capital-ai.sbom.cdx.json": "e8c8b13f12652a72b98b66320133f756ee995ead22669e0fe5d572202b152670",
+    "frontend-license-inventory.json": "9098294e5bfdc5e18cfd4b4d40aaac9315233f08227d78903bbd7e153bb2fb8b",
+    "image-id.txt": "d3fe3f62a824469f0652eaac9a36f6cd64007263db48c36bf6da1991c29ef80c",
+    "image-licenses.json": "02e9af264b91f44107cb4c3e47d458ea24f6daaefb2ba5da46fd1f7acdba6e65",
+    "image.json": "4a56c90aba02d65e678aa23140103ec7eb80cca4184dac94ed74097270517236",
+    "npm-license-inventory.json": "c56988cb9c134607903e6354266c8ae7334add1ba566389f1774ea15f6729df4",
+    "smoke-health.json": "72df1d61d5a52f76c146d8b164bd76c7150763c18309b3be380302b915b31330",
+    "smoke-state.json": "b4f7e635486ba6487c4fc0b663c9cb2f8bf14ba837f7cbed942818ac169558b0",
+    "smoke.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "frontend": {
+    "packageCount": 52,
+    "lockfileSha256": "29fe0716e079dfe93a24b35dc30a9d0fcacc4d210cd710b8dc66b8764e568a7d",
+    "noticesSha256": "96312616f2dca1c6cb497ca173a1353c67f3840d0dd85623f575c36ef8328e3f",
+    "noticesBytes": 117825,
+    "selectedLicenses": {
+      "MIT": 37,
+      "Apache-2.0": 2,
+      "ISC": 11,
+      "(MIT AND Zlib)": 1,
+      "MIT AND ISC": 1
+    }
+  },
+  "npmLockfile": {
+    "packageCount": 319,
+    "metadataStatus": {
+      "NOTICE_REQUIRED": 294,
+      "DATA_ATTRIBUTION_REVIEW": 1,
+      "BUILD_TOOL_REVIEW": 24
+    }
+  },
+  "runtimeOSPackages": [
+    {
+      "name": "alpine-baselayout",
+      "version": "3.7.2-r1",
+      "sourceName": "alpine-baselayout",
+      "sourceVersion": "3.7.2-r1",
+      "declaredLicenses": [
+        "GPL-2.0-only"
+      ]
+    },
+    {
+      "name": "alpine-baselayout-data",
+      "version": "3.7.2-r1",
+      "sourceName": "alpine-baselayout",
+      "sourceVersion": "3.7.2-r1",
+      "declaredLicenses": [
+        "GPL-2.0-only"
+      ]
+    },
+    {
+      "name": "alpine-keys",
+      "version": "2.6-r0",
+      "sourceName": "alpine-keys",
+      "sourceVersion": "2.6-r0",
+      "declaredLicenses": [
+        "MIT"
+      ]
+    },
+    {
+      "name": "alpine-release",
+      "version": "3.24.1-r0",
+      "sourceName": "alpine-base",
+      "sourceVersion": "3.24.1-r0",
+      "declaredLicenses": [
+        "MIT"
+      ]
+    },
+    {
+      "name": "apk-tools",
+      "version": "3.0.6-r0",
+      "sourceName": "apk-tools",
+      "sourceVersion": "3.0.6-r0",
+      "declaredLicenses": [
+        "GPL-2.0-only"
+      ]
+    },
+    {
+      "name": "busybox",
+      "version": "1.37.0-r31",
+      "sourceName": "busybox",
+      "sourceVersion": "1.37.0-r31",
+      "declaredLicenses": [
+        "GPL-2.0-only"
+      ]
+    },
+    {
+      "name": "busybox-binsh",
+      "version": "1.37.0-r31",
+      "sourceName": "busybox",
+      "sourceVersion": "1.37.0-r31",
+      "declaredLicenses": [
+        "GPL-2.0-only"
+      ]
+    },
+    {
+      "name": "ca-certificates-bundle",
+      "version": "20260611-r0",
+      "sourceName": "ca-certificates",
+      "sourceVersion": "20260611-r0",
+      "declaredLicenses": [
+        "MPL-2.0",
+        "MIT"
+      ]
+    },
+    {
+      "name": "libapk",
+      "version": "3.0.6-r0",
+      "sourceName": "apk-tools",
+      "sourceVersion": "3.0.6-r0",
+      "declaredLicenses": [
+        "GPL-2.0-only"
+      ]
+    },
+    {
+      "name": "libcrypto3",
+      "version": "3.5.8-r0",
+      "sourceName": "openssl",
+      "sourceVersion": "3.5.8-r0",
+      "declaredLicenses": [
+        "Apache-2.0"
+      ]
+    },
+    {
+      "name": "libgcc",
+      "version": "15.2.0-r5",
+      "sourceName": "gcc",
+      "sourceVersion": "15.2.0-r5",
+      "declaredLicenses": [
+        "GPL-2.0-or-later",
+        "LGPL-2.1-or-later"
+      ]
+    },
+    {
+      "name": "libssl3",
+      "version": "3.5.8-r0",
+      "sourceName": "openssl",
+      "sourceVersion": "3.5.8-r0",
+      "declaredLicenses": [
+        "Apache-2.0"
+      ]
+    },
+    {
+      "name": "libstdc++",
+      "version": "15.2.0-r5",
+      "sourceName": "gcc",
+      "sourceVersion": "15.2.0-r5",
+      "declaredLicenses": [
+        "GPL-2.0-or-later",
+        "LGPL-2.1-or-later"
+      ]
+    },
+    {
+      "name": "musl",
+      "version": "1.2.6-r2",
+      "sourceName": "musl",
+      "sourceVersion": "1.2.6-r2",
+      "declaredLicenses": [
+        "MIT"
+      ]
+    },
+    {
+      "name": "musl-utils",
+      "version": "1.2.6-r2",
+      "sourceName": "musl",
+      "sourceVersion": "1.2.6-r2",
+      "declaredLicenses": [
+        "MIT",
+        "BSD-2-Clause",
+        "GPL-2.0-or-later"
+      ]
+    },
+    {
+      "name": "scanelf",
+      "version": "1.3.9-r1",
+      "sourceName": "pax-utils",
+      "sourceVersion": "1.3.9-r1",
+      "declaredLicenses": [
+        "GPL-2.0-only"
+      ]
+    },
+    {
+      "name": "ssl_client",
+      "version": "1.37.0-r31",
+      "sourceName": "busybox",
+      "sourceVersion": "1.37.0-r31",
+      "declaredLicenses": [
+        "GPL-2.0-only"
+      ]
+    },
+    {
+      "name": "zlib",
+      "version": "1.3.2-r0",
+      "sourceName": "zlib",
+      "sourceVersion": "1.3.2-r0",
+      "declaredLicenses": [
+        "Zlib"
+      ]
+    }
+  ],
+  "scannerLicenseRecords": {
+    "runtimeBySeverity": {
+      "HIGH": 17,
+      "LOW": 28,
+      "MEDIUM": 2,
+      "UNKNOWN": 6
+    },
+    "buildBySeverity": {
+      "HIGH": 17,
+      "LOW": 402,
+      "MEDIUM": 8,
+      "UNKNOWN": 18
+    },
+    "runtimeUnknown": [
+      {
+        "Name": "ICU",
+        "FilePath": "app/licenses/Node-LICENSE.txt",
+        "Confidence": 1
+      },
+      {
+        "Name": "LicenseRef-C-Ares",
+        "FilePath": "app/licenses/Node-LICENSE.txt",
+        "Confidence": 0.9239130434782609
+      },
+      {
+        "Name": "NAIST-2003",
+        "FilePath": "app/licenses/Node-LICENSE.txt",
+        "Confidence": 1
+      },
+      {
+        "Name": "ICU",
+        "FilePath": "usr/local/LICENSE",
+        "Confidence": 1
+      },
+      {
+        "Name": "LicenseRef-C-Ares",
+        "FilePath": "usr/local/LICENSE",
+        "Confidence": 0.9239130434782609
+      },
+      {
+        "Name": "NAIST-2003",
+        "FilePath": "usr/local/LICENSE",
+        "Confidence": 1
+      }
+    ],
+    "buildUnknown": [
+      {
+        "Name": "BlueOak-1.0.0",
+        "FilePath": "usr/local/lib/node_modules/npm/node_modules/chownr/package.json",
+        "PkgName": "chownr"
+      },
+      {
+        "Name": "BlueOak-1.0.0",
+        "FilePath": "usr/local/lib/node_modules/npm/node_modules/common-ancestor-path/package.json",
+        "PkgName": "common-ancestor-path"
+      },
+      {
+        "Name": "BlueOak-1.0.0",
+        "FilePath": "usr/local/lib/node_modules/npm/node_modules/glob/package.json",
+        "PkgName": "glob"
+      },
+      {
+        "Name": "BlueOak-1.0.0",
+        "FilePath": "usr/local/lib/node_modules/npm/node_modules/isexe/package.json",
+        "PkgName": "isexe"
+      },
+      {
+        "Name": "BlueOak-1.0.0",
+        "FilePath": "usr/local/lib/node_modules/npm/node_modules/lru-cache/package.json",
+        "PkgName": "lru-cache"
+      },
+      {
+        "Name": "BlueOak-1.0.0",
+        "FilePath": "usr/local/lib/node_modules/npm/node_modules/minimatch/package.json",
+        "PkgName": "minimatch"
+      },
+      {
+        "Name": "BlueOak-1.0.0",
+        "FilePath": "usr/local/lib/node_modules/npm/node_modules/minipass/package.json",
+        "PkgName": "minipass"
+      },
+      {
+        "Name": "BlueOak-1.0.0",
+        "FilePath": "usr/local/lib/node_modules/npm/node_modules/minipass-flush/package.json",
+        "PkgName": "minipass-flush"
+      },
+      {
+        "Name": "BlueOak-1.0.0",
+        "FilePath": "usr/local/lib/node_modules/npm/node_modules/path-scurry/package.json",
+        "PkgName": "path-scurry"
+      },
+      {
+        "Name": "MIT OR SEE LICENSE IN FEEL-FREE.md",
+        "FilePath": "app/node_modules/rgbcolor/package.json",
+        "PkgName": "rgbcolor"
+      },
+      {
+        "Name": "BlueOak-1.0.0",
+        "FilePath": "usr/local/lib/node_modules/npm/node_modules/tar/package.json",
+        "PkgName": "tar"
+      },
+      {
+        "Name": "BlueOak-1.0.0",
+        "FilePath": "usr/local/lib/node_modules/npm/node_modules/yallist/package.json",
+        "PkgName": "yallist"
+      },
+      {
+        "Name": "ICU",
+        "FilePath": "app/docs/licenses/node-v24.19.0-LICENSE.txt",
+        "PkgName": ""
+      },
+      {
+        "Name": "LicenseRef-C-Ares",
+        "FilePath": "app/docs/licenses/node-v24.19.0-LICENSE.txt",
+        "PkgName": ""
+      },
+      {
+        "Name": "NAIST-2003",
+        "FilePath": "app/docs/licenses/node-v24.19.0-LICENSE.txt",
+        "PkgName": ""
+      },
+      {
+        "Name": "ICU",
+        "FilePath": "usr/local/LICENSE",
+        "PkgName": ""
+      },
+      {
+        "Name": "LicenseRef-C-Ares",
+        "FilePath": "usr/local/LICENSE",
+        "PkgName": ""
+      },
+      {
+        "Name": "NAIST-2003",
+        "FilePath": "usr/local/LICENSE",
+        "PkgName": ""
+      }
+    ]
+  },
+  "remainingEvidence": [
+    "OS_CORRESPONDING_SOURCE_AND_NOTICES",
+    "GCC_RUNTIME_EXCEPTION_MAPPING",
+    "IMAGE_LICENSING_REVIEW",
+    "ASSET_AND_LOGO_RIGHTS",
+    "FONT_REVIEW",
+    "PROVIDER_ENTITLEMENTS",
+    "REGISTRY_DIGEST_LICENSE_SCAN",
+    "RENDER_IMAGE_SOURCE",
+    "RUNTIME_IDENTITY"
+  ]
+}
