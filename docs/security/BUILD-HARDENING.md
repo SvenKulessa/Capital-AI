@@ -168,3 +168,32 @@ Quellen:
 - https://github.com/docker/login-action/releases/tag/v4.6.0
 - https://github.com/actions/runner-images/issues/14748
 - https://docs.github.com/en/actions/reference/runners/github-hosted-runners
+
+## Registry-Digest-Readback: Behebung vom 29.09.2026
+
+Lauf 36635928754 auf Main 8b804361b136d7bd87c46542c130bb50f3d84c8c
+besteht die Validierung und Artifact-Übergabe. Login, Push und Tag-Pull
+sind erfolgreich; der Job endet vor Digest-Pull und Attestierung mit Exit 1.
+Der Kandidat liegt damit bereits in GHCR, ist aber nicht freigegeben.
+
+Die bisherige Ermittlung über den ersten lokalen RepoDigests-Eintrag ist
+nicht auf das Ziel-Repository eingeschränkt. Welche Referenz dort tatsächlich
+stand, wurde im fehlgeschlagenen Lauf nicht ausgegeben. Die lokale Reihenfolge
+ist daher keine belastbare Registry-Digest-Quelle.
+
+Der Workflow liest nun den Manifest-Digest direkt mit docker buildx imagetools
+inspect vom gerade gepushten GHCR-Kandidaten. Das Manifest wird als JSON
+aufbewahrt; jq verweigert fehlende, nichttextuelle oder syntaktisch ungültige
+SHA-256-Digests. Die unveränderliche Referenz wird ausschließlich mit dem
+festen ghcr.io/svenkulessa/capital-ai-Repository konstruiert. Anschließend
+bleiben Digest-Pull, Image-ID-Vergleich, erneuter CVE-Scan, SBOM und beide
+Attestations obligatorisch. Weder Tag noch lokaler Image-ID-Wert werden
+ersatzweise als Registry-Digest eingesetzt. Kein Anwendungs-Rebuild.
+
+Statische JSON-/Workflow-/Shell-Prüfung ersetzt keinen echten GHCR-Readback.
+Der nächste Main-Lauf mit publish_candidate:true muss die ganze Kette bestehen.
+Der vorhandene fehlgeschlagene Kandidat wird nicht als Release verwendet.
+
+Quellen:
+- https://github.com/SvenKulessa/Capital-AI/actions/runs/36635928754
+- https://docs.docker.com/reference/cli/docker/buildx/imagetools/inspect/
