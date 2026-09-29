@@ -110,3 +110,31 @@ Quellen:
 - https://github.com/npm/cli/blob/v11.20.0/package-lock.json
 - https://github.com/npm/cli/blob/v11.20.0/package.json
 - https://github.com/SvenKulessa/Capital-AI/actions/runs/36631357062
+
+## Smoke-Test: Startup-Diagnose vom 29.09.2026
+
+Lauf 36632385828 auf Main 08d624ac3065a99f59f6ff09265a38ed0ae85760
+besteht Build-Scan, Offline-Build, Server-Tests, Runtime-Scan und SBOM.
+Der erste /healthz-Aufruf rund 0,24 Sekunden nach Containerstart scheitert
+mit curl Exit 56 (Connection reset). --retry-connrefused erfasst diesen
+Fehlertyp nicht. Der Container wird unmittelbar entfernt; ohne Logs ist
+Startup-Race gegenüber echtem Runtime-Absturz bislang nicht bewiesen.
+
+Der GET-Smoke-Test verwendet deshalb begrenzte --retry-all-errors mit
+12 Retries, 1 Sekunde Abstand, 30 Sekunden Retry-Zeitbudget und höchstens
+3 Sekunden je Request. Die Antwort wird mit --output in eine Datei
+geschrieben, statt per Shell-Umleitung duplizierte Teilantworten zu sammeln.
+HTTP-Fehler und dauerhafte Startfehler bleiben nach dem Budget blockierend.
+UID-/Schreibschutz-/npm-Prüfungen bleiben unverändert. Der Exit-Trap sichert
+Containerstatus und Logs vor Entfernung und erhält den ursprünglichen
+Exitcode. Keine Environment-/Credential-Ausgabe per docker inspect.
+
+Diese Änderung belegt noch keinen erfolgreichen Containerstart. Der nächste
+Workflow muss den Smoke-Test tatsächlich bestehen; andernfalls werden die
+nun verfügbaren Runtime-Logs zur Ursachenanalyse verwendet. GHCR-Publish
+bleibt vom Erfolg sämtlicher Validierungsschritte abhängig. Die Option
+publish_candidate=true löst keinen Render-Deploy aus.
+
+Quellen:
+- https://github.com/SvenKulessa/Capital-AI/actions/runs/36632385828
+- https://curl.se/docs/manpage.html#--retry-all-errors
