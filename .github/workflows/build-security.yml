@@ -58,8 +58,15 @@ jobs:
       - name: Runtime ohne Schreibrechte und Linux-Capabilities prüfen
         run: |
           docker run -d --name capital-ai-smoke --read-only --cap-drop ALL --security-opt no-new-privileges -p 127.0.0.1:10000:10000 capital-ai:${{ github.sha }}
-          trap 'docker rm -f capital-ai-smoke' EXIT
-          curl --retry 12 --retry-connrefused --retry-delay 1 --fail http://127.0.0.1:10000/healthz
+          cleanup() {
+            result=$?
+            docker inspect --format '{{json .State}}' capital-ai-smoke > security-reports/smoke-state.json || true
+            docker logs capital-ai-smoke > security-reports/smoke.log 2>&1 || true
+            docker rm -f capital-ai-smoke || true
+            exit "$result"
+          }
+          trap cleanup EXIT
+          curl --silent --show-error --retry 12 --retry-all-errors --retry-delay 1 --retry-max-time 30 --connect-timeout 2 --max-time 3 --fail --output security-reports/smoke-health.json http://127.0.0.1:10000/healthz
           test "$(docker exec capital-ai-smoke id -u)" = 1000
           docker exec capital-ai-smoke sh -c 'test ! -w /app/server/index.mjs && ! command -v npm'
       - name: Prüfnachweise sichern
@@ -70,6 +77,7 @@ jobs:
           path: |
             security-reports/*.json
             security-reports/image-id.txt
+            security-reports/smoke.log
           if-no-files-found: warn
           retention-days: 7
       - name: Dasselbe geprüfte Image zur Veröffentlichung übergeben
