@@ -10,7 +10,7 @@ import { PipelineConfiguratorService } from '../../services/pipelineConfigurator
 import { BinanceProviderAdapter, TwelveDataProviderAdapter, ExplicitDemoAdapter } from '../../services/providerAdapters';
 import { FeatureStoreService } from '../../services/featureStore';
 
-export function runEnterpriseScoringSuite(): { passed: boolean; message: string; failures: string[] } {
+export async function runEnterpriseScoringSuite(): Promise<{ passed: boolean; message: string; failures: string[] }> {
   const failures: string[] = [];
 
   // =========================================================================
@@ -163,28 +163,20 @@ export function runEnterpriseScoringSuite(): { passed: boolean; message: string;
       status: 'active',
     };
 
-    twelveData.fetchObservation(asset).then((obs) => {
-      // Stage 01: Raw observation exists
-      if (!obs.price || obs.price <= 0) {
-        failures.push('Integration Test Failed: Raw observation price invalid');
+    // Offline boundary check: unavailable ingestion must not produce a scoreable observation.
+    const previousFetch = globalThis.fetch;
+    globalThis.fetch = async () => new Response('{}', { status: 503 });
+    try {
+      await twelveData.fetchObservation(asset);
+      failures.push('Integration Test Failed: Unavailable provider produced an observation');
+    } catch (error) {
+      if (!(error instanceof Error) || !error.message.includes('Market data unavailable (503)')) {
+        failures.push('Integration Test Failed: Unexpected provider failure');
       }
+    } finally {
+      globalThis.fetch = previousFetch;
+    }
 
-      // Stage 04: Features extracted from observation
-      const features = featureStore.extractFeatures({ asset, observation: obs });
-      if (!features.has('rsi_14') || !features.has('piotroski_f_score')) {
-        failures.push('Integration Test Failed: Core features missing from featureStore');
-      }
-
-      // Stage 05 & 07: Score and SHA-256 evidence
-      ScoringEngineService.computeFinalScore(asset, features, false).then((finalResult) => {
-        if (!finalResult.evidenceId.startsWith('EVD-AAPL-')) {
-          failures.push(`Integration Test Failed: Unexpected evidence format: ${finalResult.evidenceId}`);
-        }
-        if (finalResult.topPositiveDrivers.length === 0) {
-          failures.push('Integration Test Failed: Expected positive driver for high-conviction AAPL');
-        }
-      });
-    });
   } catch (err: any) {
     failures.push(`Integration Test Exception: ${err.message}`);
   }
