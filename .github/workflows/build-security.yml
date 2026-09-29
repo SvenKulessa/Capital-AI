@@ -33,7 +33,8 @@ jobs:
           mkdir -p security-reports
           docker save capital-ai-build:${{ github.sha }} -o security-reports/build.tar
           chmod a+r security-reports/build.tar
-          docker run --rm -v "$PWD/security-reports:/reports:ro" capital-ai-security image --input /reports/build.tar --scanners vuln,secret --severity HIGH,CRITICAL --exit-code 1
+          chmod a+rwx security-reports
+          docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/build.tar --ignorefile /dev/null --scanners vuln,secret --severity HIGH,CRITICAL --format json --output /reports/build-image.json --exit-code 1
           rm security-reports/build.tar
       - name: Image mit Tests und isoliertem Frontend-Build bauen
         run: docker build --pull --tag capital-ai:${{ github.sha }} .
@@ -50,7 +51,7 @@ jobs:
           chmod a+rwx security-reports
           docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/image.tar --scanners vuln,secret --severity HIGH,CRITICAL --format json --output /reports/image.json --exit-code 1
       - name: SBOM des exportierten Images
-        if: always()
+        if: always() && hashFiles('security-reports/image.tar') != ''
         run: |
           test -f security-reports/image.tar
           docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/image.tar --format cyclonedx --output /reports/capital-ai.sbom.cdx.json

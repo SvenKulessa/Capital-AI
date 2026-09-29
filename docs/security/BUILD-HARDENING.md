@@ -62,7 +62,7 @@ Umgebungswerte ersetzen keine Digest-/Provider-Korrelation.
 
 ## Werkzeuge und Eingaben
 
-- Offizielles Node 24.19.0 Alpine: Digest im Dockerfile, beide Stufen identisch. OpenSSL libcrypto3/libssl3 in beiden Stufen auf 3.5.8-r0 korrigiert; npm in der Build-Stufe auf 11.12.0 gepinnt.
+- Offizielles Node 24.19.0 Alpine: Digest im Dockerfile, beide Stufen identisch. OpenSSL libcrypto3/libssl3 in beiden Stufen auf 3.5.8-r0 korrigiert; npm in der Build-Stufe auf 11.20.0 gepinnt.
 - Trivy 0.74.0 und Hadolint 2.15.1: separate Dockerfile.security, jeweils Registry-Digest festgeschrieben.
 - Actions: vollständige Commit-SHAs, contents:read, keine persistierten Git-Credentials.
 - npm ci mit Lockfile und ohne Installationsskripte; TypeScript, Offline-Tests und Vite-Build ohne Netzwerkzugriff in der Build-Stufe.
@@ -80,3 +80,33 @@ Fehler beheben, neuen Commit bauen und alle vier Gates erneut prüfen. Eine erfo
 Render kann die hier im Smoke-Test gesetzten Docker-Run-Isolationsflags nicht über diesen Blueprint übernehmen; schreibgeschützte Anwendungsdateien und Non-root gelten im Image selbst. Vollständige read-only-/Capability-Isolation auf Render ist damit nicht bewiesen.
 
 Digest-Updates sind separate geprüfte Änderungen; Pinnung erfordert regelmäßige Sicherheitsupdates. Die SBOM ist ein Inventar, keine Signatur oder Exploitability-Aussage. Keine bezahlten Code-Security-Funktionen werden aktiviert.
+
+## npm-Build-Scan: Behebung vom 29.09.2026
+
+Workflow-Lauf 36631357062 auf Main bcd253269661a56239e47c7cfc0b53e866e52d2a
+blockierte die Build-Stufe mit 9 HIGH und 1 CRITICAL. Die zehn Befunde
+liegen im globalen npm 11.12.0, nicht in den geprüften App-Abhängigkeiten:
+brace-expansion (3), ip-address (1), pacote (1), picomatch (1), sigstore (1),
+tar (3). Der kritische Befund ist CVE-2026-59873 in tar 7.5.11.
+
+Gezieltes Update innerhalb npm 11: 11.20.0. Das offizielle Upstream-Lockfile
+von npm/cli@v11.20.0 enthält brace-expansion 5.0.9, ip-address 10.5.0,
+pacote 21.5.1, picomatch 2.3.2/4.0.4, sigstore 4.1.1 und tar 7.5.22.
+Diese liegen für die genannten Befunde an oder über den gemeldeten
+Fix-Versionen. Die Node-Engine-Anforderung ^20.17.0 || >=22.9.0 umfasst das
+gepinnt verwendete Node 24.19.0. Kein Wechsel auf npm 12, keine manuelle
+Manipulation des npm-Abhängigkeitsbaums und keine CVE-Ausnahme.
+
+Das ist statische Upstream-Korrelation, noch kein Nachweis eines sauberen
+Container-Images. Der nächste Workflow muss Installation, Offline-Lint,
+Tests, Build und aktuellen Trivy-Scan erneut bestehen. Der Build-Scan
+schreibt nun build-image.json als Nachweis auch bei Sicherheitsbefunden.
+Die SBOM-Stufe läuft nur bei vorhandenem Runtime-Archiv; nach einem frühen
+Build-Gate-Fehler ist sie nicht anwendbar, statt einen zweiten Fehler wegen
+fehlender Datei zu erzeugen. Der ursprüngliche Fehler bleibt blockierend.
+
+Quellen:
+- https://github.com/npm/cli/releases/tag/v11.20.0
+- https://github.com/npm/cli/blob/v11.20.0/package-lock.json
+- https://github.com/npm/cli/blob/v11.20.0/package.json
+- https://github.com/SvenKulessa/Capital-AI/actions/runs/36631357062

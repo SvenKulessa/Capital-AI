@@ -1,7 +1,7 @@
 FROM node:24.19.0-alpine@sha256:d32cdf619f63fe0471182d08996dd516c6275bb5fd31ae06e55a570bd9e1ad43 AS build
 WORKDIR /app
 RUN apk add --no-cache libcrypto3=3.5.8-r0 libssl3=3.5.8-r0 \
-    && npm install --global npm@11.12.0 --ignore-scripts --no-audit --no-fund \
+    && npm install --global npm@11.20.0 --ignore-scripts --no-audit --no-fund \
     && rm -rf /usr/local/lib/node_modules/corepack /usr/local/bin/corepack /opt/yarn* /usr/local/bin/yarn* /usr/local/bin/pnpm*
 COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts --no-audit --no-fund
