@@ -9,6 +9,8 @@ test('HTTP security boundaries and static-file isolation', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'capital-security-'));
   await writeFile(path.join(root, 'index.html'), '<html>test</html>');
   await writeFile(path.join(root, '.env'), 'SECRET=hidden');
+  await writeFile(path.join(root, 'THIRD_PARTY_NOTICES.txt'), 'Third-party copyright notice');
+  await writeFile(path.join(root, 'frontend-license-inventory.json'), '{"schemaVersion":1}');
   await symlink('/etc/passwd', path.join(root, 'escape.txt'));
   const server = createApp(root);
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
@@ -19,6 +21,13 @@ test('HTTP security boundaries and static-file isolation', async () => {
     assert.equal(health.headers.get('x-content-type-options'), 'nosniff');
     assert.equal(health.headers.get('x-frame-options'), 'DENY');
     assert.equal(health.headers.get('cache-control'), 'no-store');
+    const notices = await fetch(base + '/THIRD_PARTY_NOTICES.txt');
+    assert.equal(notices.status, 200);
+    assert.equal(notices.headers.get('content-type'), 'text/plain; charset=utf-8');
+    assert.equal(await notices.text(), 'Third-party copyright notice');
+    const inventory = await fetch(base + '/frontend-license-inventory.json');
+    assert.equal(inventory.headers.get('content-type'), 'application/json; charset=utf-8');
+    assert.deepEqual(await inventory.json(), {schemaVersion: 1});
     assert.equal((await fetch(base + '/.env')).status, 404);
     assert.equal((await fetch(base + '/escape.txt')).status, 404);
     assert.equal((await fetch(base + '/api/unknown')).status, 404);

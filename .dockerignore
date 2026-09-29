@@ -12,3 +12,9 @@
 !server/
 !server/index.mjs
 !server/market.mjs
+!scripts/
+!scripts/license-evidence.mjs
+!scripts/license-evidence.test.mjs
+!docs/
+!docs/licenses/
+!docs/licenses/**

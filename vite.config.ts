@@ -2,6 +2,7 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import {defineConfig, Plugin} from 'vite';
+import { thirdPartyNoticesPlugin } from './scripts/license-evidence.mjs';
 import { handleAdvisorRequest } from './src/services/geminiAdvisorBackend.ts';
 
 function advisorApiPlugin(): Plugin {
@@ -42,7 +43,7 @@ function advisorApiPlugin(): Plugin {
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss(), advisorApiPlugin()],
+    plugins: [react(), tailwindcss(), advisorApiPlugin(), thirdPartyNoticesPlugin()],
     resolve: {
       alias: {
         '@': path.resolve(import.meta.dirname, '.'),

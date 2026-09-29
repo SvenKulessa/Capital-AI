@@ -87,6 +87,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         >
           Preise &amp; Tarife
         </a>
+        <span className="text-slate-600">•</span>
+        <a href="/THIRD_PARTY_NOTICES.txt" className="hover:text-amber-400 transition-colors hover:underline underline-offset-4">
+          Open-Source-Lizenzen
+        </a>
       </div>
 
 
@@ -95,4 +99,3 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
     </footer>
   );
 };
-
