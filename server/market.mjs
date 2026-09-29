@@ -17,7 +17,7 @@ function stream(url, parse, subscribe) {
     if (stopped) return;
     socket = new WebSocket(url);
     socket.addEventListener('open', () => { retry = 0; subscribe?.(socket); });
-    socket.addEventListener('message', e => { try { accept(parse(JSON.parse(e.data))); } catch { /* malformed provider frame */ } });
+    socket.addEventListener('message', e => { try { if (typeof e.data === 'string' && e.data.length <= 65536) accept(parse(JSON.parse(e.data))); } catch { /* malformed provider frame */ } });
     socket.addEventListener('error', () => socket.close());
     socket.addEventListener('close', () => { if (!stopped) setTimeout(open, Math.min(30_000, 1000 * 2 ** Math.min(++retry, 5)) + Math.random() * 1000); });
   };
@@ -38,9 +38,22 @@ export function startStreams() {
 async function get(url, provider) {
   if ((throttledUntil.get(provider) || 0) > Date.now()) return null;
   try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(4000) });
+    const res = await fetch(url, { signal: AbortSignal.timeout(4000), redirect: 'error' });
     if (res.status === 429) throttledUntil.set(provider, Date.now() + 60_000);
-    return res.ok ? await res.json() : null;
+    if (!res.ok || Number(res.headers.get('content-length')) > 262144 || !res.body) { await res.body?.cancel(); return null; }
+    const reader = res.body.getReader();
+    const chunks = [];
+    let bytes = 0;
+    try {
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        bytes += value.byteLength;
+        if (bytes > 262144) return null;
+        chunks.push(value);
+      }
+      return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+    } finally { await reader.cancel(); }
   } catch { return null; }
 }
 
@@ -71,7 +84,8 @@ export async function quote(symbol) {
   const cached = observations.get(symbol);
   if (fresh(cached)) return [200, cached];
   // USDT and USD are distinct instruments: never substitute one quote currency for the other.
-  const fallback = await twelve(symbol) || await polygon(symbol);
+  const primaryFallback = await twelve(symbol);
+  const fallback = fresh(primaryFallback) ? primaryFallback : await polygon(symbol);
   if (fresh(fallback)) { accept(fallback); return [200, fallback]; }
   return [503, { error: 'market_data_unavailable', symbol }];
 }

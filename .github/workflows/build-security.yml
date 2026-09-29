@@ -1,0 +1,64 @@
+name: Docker Build Sicherheit
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: docker-security-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Gepinnte Sicherheitswerkzeuge bauen
+        run: docker build --file Dockerfile.security --tag capital-ai-security .
+      - name: Dockerfile linten
+        run: docker run --rm --entrypoint hadolint -v "$PWD:/work:ro" capital-ai-security /work/Dockerfile
+      - name: Quellcode, Secrets und Konfiguration scannen
+        run: docker run --rm -v "$PWD:/work:ro" capital-ai-security fs --include-dev-deps --ignorefile /dev/null --scanners vuln,secret,misconfig --severity HIGH,CRITICAL --exit-code 1 /work
+      - name: Build-Stufe einschließlich Paketmanager scannen
+        run: |
+          docker build --pull --target build --tag capital-ai-build:${{ github.sha }} .
+          mkdir -p security-reports
+          docker save capital-ai-build:${{ github.sha }} -o security-reports/build.tar
+          chmod a+r security-reports/build.tar
+          docker run --rm -v "$PWD/security-reports:/reports:ro" capital-ai-security image --input /reports/build.tar --scanners vuln,secret --severity HIGH,CRITICAL --exit-code 1
+          rm security-reports/build.tar
+      - name: Image mit Tests und isoliertem Frontend-Build bauen
+        run: docker build --pull --tag capital-ai:${{ github.sha }} .
+      - name: Server-Regressionstests
+        run: docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m --cap-drop ALL --security-opt no-new-privileges -v "$PWD/server:/tests:ro" --entrypoint node capital-ai:${{ github.sha }} --test /tests/market.test.mjs /tests/security.test.mjs
+      - name: Exaktes Image exportieren und scannen
+        run: |
+          mkdir -p security-reports
+          docker image inspect --format '{{.Id}}' capital-ai:${{ github.sha }} > security-reports/image-id.txt
+          docker save capital-ai:${{ github.sha }} -o security-reports/image.tar
+          chmod a+r security-reports/image.tar
+          chmod a+rwx security-reports
+          docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/image.tar --scanners vuln,secret --severity HIGH,CRITICAL --format json --output /reports/image.json --exit-code 1
+      - name: SBOM des exportierten Images
+        if: always()
+        run: |
+          test -f security-reports/image.tar
+          docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/image.tar --format cyclonedx --output /reports/capital-ai.sbom.cdx.json
+      - name: Runtime ohne Schreibrechte und Linux-Capabilities prüfen
+        run: |
+          docker run -d --name capital-ai-smoke --read-only --cap-drop ALL --security-opt no-new-privileges -p 127.0.0.1:10000:10000 capital-ai:${{ github.sha }}
+          trap 'docker rm -f capital-ai-smoke' EXIT
+          curl --retry 12 --retry-connrefused --retry-delay 1 --fail http://127.0.0.1:10000/healthz
+          test "$(docker exec capital-ai-smoke id -u)" = 1000
+          docker exec capital-ai-smoke sh -c 'test ! -w /app/server/index.mjs && ! command -v npm'
+      - name: Prüfnachweise sichern
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: docker-security-${{ github.sha }}
+          path: |
+            security-reports/*.json
+            security-reports/image-id.txt
+          if-no-files-found: warn
+          retention-days: 7
