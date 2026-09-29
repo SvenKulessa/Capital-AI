@@ -138,8 +138,10 @@ jobs:
           candidate_tag="$IMAGE_REPOSITORY:candidate-$SOURCE_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
           docker tag "capital-ai:$SOURCE_SHA" "$candidate_tag"
           docker push "$candidate_tag"
-          docker pull "$candidate_tag"
-          image_ref=$(docker image inspect --format '{{index .RepoDigests 0}}' "$candidate_tag")
+          mkdir -p security-reports
+          docker buildx imagetools inspect "$candidate_tag" --format '{{json .Manifest}}' > security-reports/registry-manifest.json
+          registry_digest=$(jq -er '.digest | select(type == "string" and test("^sha256:[a-f0-9]{64}$"))' security-reports/registry-manifest.json)
+          image_ref="$IMAGE_REPOSITORY@$registry_digest"
           [[ "$image_ref" =~ ^ghcr\.io/svenkulessa/capital-ai@sha256:[a-f0-9]{64}$ ]]
           docker pull "$image_ref"
           test "$(docker image inspect --format '{{.Id}}' "$image_ref")" = "$EXPECTED_IMAGE_ID"
