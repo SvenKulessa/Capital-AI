@@ -7,8 +7,13 @@ FROM crypto-base AS build
 WORKDIR /app
 RUN npm install --global npm@11.20.0 --ignore-scripts --no-audit --no-fund \
     && rm -rf /usr/local/lib/node_modules/corepack /usr/local/bin/corepack /opt/yarn* /usr/local/bin/yarn* /usr/local/bin/pnpm*
+COPY deploy/npm-security-patches/package.json deploy/npm-security-patches/package-lock.json /opt/npm-security-patches/
+COPY scripts/harden-npm-toolchain.mjs /opt/harden-npm-toolchain.mjs
+RUN npm ci --prefix /opt/npm-security-patches --ignore-scripts --no-audit --no-fund \
+    && node /opt/harden-npm-toolchain.mjs /usr/local/lib/node_modules/npm /opt/npm-security-patches/node_modules \
+    && rm -rf /opt/npm-security-patches /opt/harden-npm-toolchain.mjs /root/.npm
 COPY package.json package-lock.json ./
-RUN npm ci --ignore-scripts --no-audit --no-fund
+RUN npm ci --ignore-scripts --no-audit --no-fund && rm -rf /root/.npm
 COPY index.html vite.config.ts tsconfig.json ./
 COPY src ./src
 COPY server/advisor.ts server/http-security.mjs server/mta-sts.mjs server/mta-sts.test.mjs ./server/
@@ -23,7 +28,7 @@ RUN --network=none node --test server/mta-sts.test.mjs \
     && node scripts/verify-browser-boundary.mjs
 
 FROM build AS production-deps
-RUN npm prune --omit=dev --ignore-scripts --no-audit --no-fund
+RUN npm prune --omit=dev --ignore-scripts --no-audit --no-fund && rm -rf /root/.npm
 
 FROM crypto-base AS runtime
 ENV NODE_ENV=production PORT=10000

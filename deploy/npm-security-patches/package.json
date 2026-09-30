@@ -1,0 +1,9 @@
+{
+  "name": "capital-ai-npm-build-security-patches",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "brace-expansion": "5.0.11",
+    "undici": "6.28.1"
+  }
+}

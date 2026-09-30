@@ -23,7 +23,7 @@ jobs:
           persist-credentials: false
       - name: npm-Lizenzmetadaten und Regressionstests prüfen
         run: |
-          node --test scripts/docker-context.test.mjs scripts/license-evidence.test.mjs
+          node --test scripts/docker-context.test.mjs scripts/license-evidence.test.mjs scripts/summarize-trivy.test.mjs
           node scripts/license-evidence.mjs
       - name: Gepinnte Sicherheitswerkzeuge bauen
         run: docker build --file Dockerfile.security --tag capital-ai-security .
@@ -46,7 +46,10 @@ jobs:
           docker save capital-ai-build:${{ github.sha }} -o security-reports/build.tar
           chmod a+r security-reports/build.tar
           chmod a+rwx security-reports
-          docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/build.tar --ignorefile /dev/null --scanners vuln,secret --severity HIGH,CRITICAL --format json --output /reports/build-image.json --exit-code 1
+          scan_status=0
+          docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/build.tar --ignorefile /dev/null --scanners vuln,secret --severity HIGH,CRITICAL --format json --output /reports/build-image.json --exit-code 1 || scan_status=$?
+          node scripts/summarize-trivy.mjs security-reports/build-image.json
+          if [ "$scan_status" -ne 0 ]; then exit "$scan_status"; fi
           docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/build.tar --ignorefile /dev/null --scanners license --license-full --format json --output /reports/build-image-licenses.json --exit-code 0
           rm security-reports/build.tar
       - name: Image mit Tests und isoliertem Frontend-Build bauen
