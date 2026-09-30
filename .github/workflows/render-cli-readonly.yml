@@ -15,7 +15,6 @@ jobs:
     timeout-minutes: 3
     env:
       RENDER_CLI_DISABLE_ANALYTICS: '1'
-      RENDER_CLI_CONFIG_DIR: ${{ runner.temp }}/render-cli-config
     steps:
       - name: Install verified Render CLI 2.28.0
         shell: bash
@@ -37,6 +36,7 @@ jobs:
         shell: bash
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY_TEST }}
+          RENDER_CLI_CONFIG_DIR: ${{ runner.temp }}/render-cli-config
         run: |
           set -euo pipefail
           umask 077
@@ -61,6 +61,8 @@ jobs:
       - name: Remove temporary credentials and responses
         if: always()
         shell: bash
+        env:
+          RENDER_CLI_CONFIG_DIR: ${{ runner.temp }}/render-cli-config
         run: |
           rm -rf -- "$RENDER_CLI_CONFIG_DIR"
           rm -f -- "$RUNNER_TEMP/render-workspace.json" "$RUNNER_TEMP/render-deploys.json" "$RUNNER_TEMP/render-cli-stderr"
