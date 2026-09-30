@@ -13,7 +13,8 @@ function validRuleset() {
     rules: [
       { type: 'deletion' },
       { type: 'non_fast_forward' },
-      { type: 'pull_request', parameters: { required_approving_review_count: 0 } },
+      { type: 'required_linear_history' },
+      { type: 'pull_request', parameters: { required_approving_review_count: 0, allowed_merge_methods: ['squash', 'rebase'] } },
       {
         type: 'required_status_checks',
         parameters: {
@@ -54,4 +55,13 @@ test('rejects direct-push escape hatches', () => {
   const findings = verifyMainRuleset(ruleset).findings;
   assert.ok(findings.includes('pull_request_not_required'));
   assert.ok(findings.includes('non_fast_forward_not_blocked'));
+});
+
+test('rejects missing linear history and merge-only configuration', () => {
+  const ruleset = validRuleset();
+  ruleset.rules = ruleset.rules.filter(rule => rule.type !== 'required_linear_history');
+  ruleset.rules.find(rule => rule.type === 'pull_request').parameters.allowed_merge_methods = ['merge'];
+  const findings = verifyMainRuleset(ruleset).findings;
+  assert.ok(findings.includes('linear_history_not_required'));
+  assert.ok(findings.includes('linear_merge_method_missing'));
 });

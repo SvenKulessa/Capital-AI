@@ -27,6 +27,9 @@ export function verifyMainRuleset(ruleset) {
   if ((ruleset?.bypass_actors || []).length !== 0) findings.push('bypass_present');
   if (!types.has('deletion')) findings.push('deletion_not_blocked');
   if (!types.has('non_fast_forward')) findings.push('non_fast_forward_not_blocked');
+  if (!types.has('required_linear_history')) findings.push('linear_history_not_required');
+  const methods = rules.find(rule => rule.type === 'pull_request')?.parameters?.allowed_merge_methods || [];
+  if (!methods.some(method => ['squash', 'rebase'].includes(method))) findings.push('linear_merge_method_missing');
   if (!types.has('pull_request')) findings.push('pull_request_not_required');
   if (!status) findings.push('required_status_checks_missing');
   if (status && status.parameters?.strict_required_status_checks_policy !== true) findings.push('strict_checks_disabled');
