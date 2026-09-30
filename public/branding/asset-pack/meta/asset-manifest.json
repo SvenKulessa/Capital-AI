@@ -1,0 +1,882 @@
+{
+  "schemaVersion": "1.0.0",
+  "brand": "CAPITAL-AI.ONLINE",
+  "publishReady": false,
+  "source": {
+    "repositoryPath": "public/branding/capital-ai-logo.jpg",
+    "width": 1536,
+    "height": 864,
+    "sha256": "6244629091073823b4cff86908adb0403a217779219bfb44883bd956548243e3",
+    "rightsReference": "docs/licenses/Capital-AI-BRANDING.md"
+  },
+  "derivation": {
+    "thirdPartyVisualAssetsAdded": false,
+    "nativeVectorTraceClaimed": false,
+    "svgMode": "raster-preserving embedded PNG",
+    "financeSocialMediaEngineAlignedProfiles": [
+      "1920x1080",
+      "1280x720",
+      "1080x1080",
+      "1080x1350",
+      "1080x1920"
+    ]
+  },
+  "assets": [
+    {
+      "path": "master/capital-ai-online-master-1536x864.jpg",
+      "category": "master",
+      "purpose": "Byte-identical owner-provided JPEG master",
+      "dimensions": [
+        1536,
+        864
+      ],
+      "mime": "image/jpeg",
+      "bytes": 224129,
+      "sha256": "6244629091073823b4cff86908adb0403a217779219bfb44883bd956548243e3",
+      "notes": null
+    },
+    {
+      "path": "master/capital-ai-online-master-1536x864.png",
+      "category": "master",
+      "purpose": "Lossless PNG projection of the master",
+      "dimensions": [
+        1536,
+        864
+      ],
+      "mime": "image/png",
+      "bytes": 1165955,
+      "sha256": "a4d060b56ea7b0ea54a13ffc210c52046f4e24ce10817ec582059c58e283b819",
+      "notes": null
+    },
+    {
+      "path": "master/capital-ai-online-master-1536x864.webp",
+      "category": "master",
+      "purpose": "WebP projection of the master",
+      "dimensions": [
+        1536,
+        864
+      ],
+      "mime": "image/webp",
+      "bytes": 166798,
+      "sha256": "b5c7b8b6cf82c92b949a034646f6a2551db4c17c9c5343fa947b8d496e0bc5c9",
+      "notes": null
+    },
+    {
+      "path": "social/engine-landscape-1920x1080.png",
+      "category": "social",
+      "purpose": "Finance SocialMediaEngine 16:9 landscape profile",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "mime": "image/png",
+      "bytes": 1683472,
+      "sha256": "bcbe666630a574487d8d211105d2f7ba3ead15ac03f7f51c9b75683b0dc8f22c",
+      "notes": null
+    },
+    {
+      "path": "social/engine-landscape-1920x1080.jpg",
+      "category": "social",
+      "purpose": "Finance SocialMediaEngine 16:9 landscape profile (JPEG)",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "mime": "image/jpeg",
+      "bytes": 317381,
+      "sha256": "44434a0dc511f6716a2cd32540a7ec6437e70cb64a4f427dc0a60e4986435e4b",
+      "notes": null
+    },
+    {
+      "path": "social/youtube-thumbnail-1280x720.png",
+      "category": "social",
+      "purpose": "YouTube / SocialMediaEngine thumbnail profile",
+      "dimensions": [
+        1280,
+        720
+      ],
+      "mime": "image/png",
+      "bytes": 892945,
+      "sha256": "7500deaed3b36a8cea7d7240080688f18a8a0562465407247fc65220463c64a8",
+      "notes": null
+    },
+    {
+      "path": "social/youtube-thumbnail-1280x720.jpg",
+      "category": "social",
+      "purpose": "YouTube / SocialMediaEngine thumbnail profile (JPEG)",
+      "dimensions": [
+        1280,
+        720
+      ],
+      "mime": "image/jpeg",
+      "bytes": 180149,
+      "sha256": "db88348cb72703b4e6047f22666cd3d31603dd66acfbc99d0e26199c1f7a71d9",
+      "notes": null
+    },
+    {
+      "path": "social/open-graph-1200x630.png",
+      "category": "social",
+      "purpose": "Open Graph / link preview",
+      "dimensions": [
+        1200,
+        630
+      ],
+      "mime": "image/png",
+      "bytes": 320050,
+      "sha256": "5685bdd1fdcd6fa4b2df566dfc5c78c9c9c3de3ffd6c00122f0cc7b4e2a2570f",
+      "notes": null
+    },
+    {
+      "path": "social/open-graph-1200x630.jpg",
+      "category": "social",
+      "purpose": "Open Graph / link preview (JPEG)",
+      "dimensions": [
+        1200,
+        630
+      ],
+      "mime": "image/jpeg",
+      "bytes": 69540,
+      "sha256": "00609f30f3278edc553a79085b8bcf839747c8e1155407b4af9d3d2cf89fd4b4",
+      "notes": null
+    },
+    {
+      "path": "social/x-link-card-1200x675.png",
+      "category": "social",
+      "purpose": "X / general 16:9 social card",
+      "dimensions": [
+        1200,
+        675
+      ],
+      "mime": "image/png",
+      "bytes": 802152,
+      "sha256": "a61586b4bbf8ebed98523b24d656283426372d9c247de1deaaf4f2ee8188e8cd",
+      "notes": null
+    },
+    {
+      "path": "social/x-link-card-1200x675.jpg",
+      "category": "social",
+      "purpose": "X / general 16:9 social card (JPEG)",
+      "dimensions": [
+        1200,
+        675
+      ],
+      "mime": "image/jpeg",
+      "bytes": 164635,
+      "sha256": "0238503dd58d879f822edb9ac7c8146336cdaf68de12ddb579e5dd96eb90c56a",
+      "notes": null
+    },
+    {
+      "path": "social/instagram-square-1080x1080.png",
+      "category": "social",
+      "purpose": "Instagram / SocialMediaEngine square profile",
+      "dimensions": [
+        1080,
+        1080
+      ],
+      "mime": "image/png",
+      "bytes": 699075,
+      "sha256": "373d7bc02882af845c78500ff605cdd0ed30728546f75a8f458647771dc35a66",
+      "notes": null
+    },
+    {
+      "path": "social/instagram-square-1080x1080.jpg",
+      "category": "social",
+      "purpose": "Instagram / SocialMediaEngine square profile (JPEG)",
+      "dimensions": [
+        1080,
+        1080
+      ],
+      "mime": "image/jpeg",
+      "bytes": 151597,
+      "sha256": "f8bb546916e6abbfab58d33c8b498f120f40944a6dd994d61237319a4d202a31",
+      "notes": null
+    },
+    {
+      "path": "social/instagram-portrait-1080x1350.png",
+      "category": "social",
+      "purpose": "Instagram portrait / SocialMediaEngine 4:5 profile",
+      "dimensions": [
+        1080,
+        1350
+      ],
+      "mime": "image/png",
+      "bytes": 784229,
+      "sha256": "a3af5cdc662a4a9ff90caf651ec98797e20d0cd3340f2200a50c7f6ba2ba063a",
+      "notes": null
+    },
+    {
+      "path": "social/instagram-portrait-1080x1350.jpg",
+      "category": "social",
+      "purpose": "Instagram portrait / SocialMediaEngine 4:5 profile (JPEG)",
+      "dimensions": [
+        1080,
+        1350
+      ],
+      "mime": "image/jpeg",
+      "bytes": 165219,
+      "sha256": "297761f524292ce90a8704e18e1441c48a1972c8fc8018436d5e0b2f701a4d47",
+      "notes": null
+    },
+    {
+      "path": "social/story-reel-1080x1920.png",
+      "category": "social",
+      "purpose": "Instagram Story / Reel / vertical SocialMediaEngine profile",
+      "dimensions": [
+        1080,
+        1920
+      ],
+      "mime": "image/png",
+      "bytes": 929087,
+      "sha256": "da636aa65d8c97c047fdfb163cecefab59d8194488cdc77f0a1eeecba7ba5205",
+      "notes": null
+    },
+    {
+      "path": "social/story-reel-1080x1920.jpg",
+      "category": "social",
+      "purpose": "Instagram Story / Reel / vertical SocialMediaEngine profile (JPEG)",
+      "dimensions": [
+        1080,
+        1920
+      ],
+      "mime": "image/jpeg",
+      "bytes": 192868,
+      "sha256": "78349c6e576945c39c7d9c974a67e5ec68c7ed7f5fa866c807e08d79273a67c0",
+      "notes": null
+    },
+    {
+      "path": "avatars/capital-ai-avatar-1024x1024.png",
+      "category": "avatar",
+      "purpose": "Square avatar 1024px",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "mime": "image/png",
+      "bytes": 680829,
+      "sha256": "ca86d9dd1551ff1e5febf900516bcc74a016229a8d44f31ce7b7e53fc1068f8d",
+      "notes": null
+    },
+    {
+      "path": "avatars/capital-ai-avatar-512x512.png",
+      "category": "avatar",
+      "purpose": "Square avatar 512px",
+      "dimensions": [
+        512,
+        512
+      ],
+      "mime": "image/png",
+      "bytes": 203768,
+      "sha256": "3e5ca03b8770093c3750343bd78793d23739ec6ad4fd36e8a8c7674b69483a0e",
+      "notes": null
+    },
+    {
+      "path": "avatars/capital-ai-avatar-512x512.webp",
+      "category": "avatar",
+      "purpose": "Square avatar 512px WebP",
+      "dimensions": [
+        512,
+        512
+      ],
+      "mime": "image/webp",
+      "bytes": 37100,
+      "sha256": "2853d0d4c3ef501dfd8903ac1560378c5ef8f4d29382a03cb8a0b38e3728549a",
+      "notes": null
+    },
+    {
+      "path": "avatars/capital-ai-avatar-400x400.png",
+      "category": "avatar",
+      "purpose": "Square avatar 400px",
+      "dimensions": [
+        400,
+        400
+      ],
+      "mime": "image/png",
+      "bytes": 131422,
+      "sha256": "a181e52ce9dba27c4763b44d752062e0805b8feb7afd48cd41c5d186792dd846",
+      "notes": null
+    },
+    {
+      "path": "avatars/capital-ai-avatar-320x320.png",
+      "category": "avatar",
+      "purpose": "Square avatar 320px",
+      "dimensions": [
+        320,
+        320
+      ],
+      "mime": "image/png",
+      "bytes": 88960,
+      "sha256": "12c3c65539a145109a7da9eaf5da7e1fd049a04c83c23d7d8c5375201656e2a8",
+      "notes": null
+    },
+    {
+      "path": "avatars/capital-ai-avatar-256x256.png",
+      "category": "avatar",
+      "purpose": "Square avatar 256px",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mime": "image/png",
+      "bytes": 60199,
+      "sha256": "a77c32a764c16d93facbd7209a38c76bd00c880960689134d4decf355d78ebec",
+      "notes": null
+    },
+    {
+      "path": "avatars/capital-ai-avatar-256x256.webp",
+      "category": "avatar",
+      "purpose": "Square avatar 256px WebP",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mime": "image/webp",
+      "bytes": 12878,
+      "sha256": "79a9e1aebc8f4ef881baa5a8ca50df4329b9e96b69f6ebf6c8c5dcd65eac4893",
+      "notes": null
+    },
+    {
+      "path": "avatars/capital-ai-avatar-128x128.png",
+      "category": "avatar",
+      "purpose": "Square avatar 128px",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mime": "image/png",
+      "bytes": 17646,
+      "sha256": "4aea2dc956fe95227e4452515b04fe9f47ac43b202b5908e9f122b92ca931f42",
+      "notes": null
+    },
+    {
+      "path": "avatars/capital-ai-avatar-120x120.png",
+      "category": "avatar",
+      "purpose": "Square avatar 120px",
+      "dimensions": [
+        120,
+        120
+      ],
+      "mime": "image/png",
+      "bytes": 15435,
+      "sha256": "6d6df8330a43aa036ed00d7b9a77e9ed92d8be887933138e133bf8d6abac8df9",
+      "notes": null
+    },
+    {
+      "path": "avatars/capital-ai-avatar-120x120.webp",
+      "category": "avatar",
+      "purpose": "Square avatar 120px WebP",
+      "dimensions": [
+        120,
+        120
+      ],
+      "mime": "image/webp",
+      "bytes": 3942,
+      "sha256": "42f31f814004e2d75aec807206210c0d2197e69eb2878008605341ca753fd018",
+      "notes": null
+    },
+    {
+      "path": "avatars/capital-ai-avatar-64x64.png",
+      "category": "avatar",
+      "purpose": "Square avatar 64px",
+      "dimensions": [
+        64,
+        64
+      ],
+      "mime": "image/png",
+      "bytes": 5055,
+      "sha256": "a4972e8c3a1beeb5ab735888fbe8f9ef225f70df43677a34c14e929710d44c50",
+      "notes": null
+    },
+    {
+      "path": "avatars/capital-ai-maskable-192x192.png",
+      "category": "avatar",
+      "purpose": "Maskable / PWA-safe icon 192px",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mime": "image/png",
+      "bytes": 26485,
+      "sha256": "56705afafb1c6fa805f5f6cd33170d7e921c114e31ffa0e7747ce68c03ae2735",
+      "notes": null
+    },
+    {
+      "path": "avatars/capital-ai-maskable-512x512.png",
+      "category": "avatar",
+      "purpose": "Maskable / PWA-safe icon 512px",
+      "dimensions": [
+        512,
+        512
+      ],
+      "mime": "image/png",
+      "bytes": 150967,
+      "sha256": "420dcaa8026c0361bd7174528d61319f88ed39db1a0b310b028e2ede5acebc75",
+      "notes": null
+    },
+    {
+      "path": "vendor/google-oauth-app-logo-120x120.png",
+      "category": "vendor",
+      "purpose": "Google OAuth consent-screen app logo",
+      "dimensions": [
+        120,
+        120
+      ],
+      "mime": "image/png",
+      "bytes": 15435,
+      "sha256": "6d6df8330a43aa036ed00d7b9a77e9ed92d8be887933138e133bf8d6abac8df9",
+      "notes": "First-party CAPITAL-AI artwork only; no Google trademark inserted."
+    },
+    {
+      "path": "vendor/google-oauth-app-logo-120x120.jpg",
+      "category": "vendor",
+      "purpose": "Google OAuth app logo JPEG",
+      "dimensions": [
+        120,
+        120
+      ],
+      "mime": "image/jpeg",
+      "bytes": 6030,
+      "sha256": "21ea0c396a894a93c9a82d5714494c13717d2816c7a986d96b72cb09dd9bac5f",
+      "notes": null
+    },
+    {
+      "path": "vendor/vendor-app-icon-128x128.png",
+      "category": "vendor",
+      "purpose": "Generic vendor/application icon 128px",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mime": "image/png",
+      "bytes": 17646,
+      "sha256": "4aea2dc956fe95227e4452515b04fe9f47ac43b202b5908e9f122b92ca931f42",
+      "notes": null
+    },
+    {
+      "path": "vendor/vendor-app-icon-256x256.png",
+      "category": "vendor",
+      "purpose": "Generic vendor/application icon 256px",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mime": "image/png",
+      "bytes": 60199,
+      "sha256": "a77c32a764c16d93facbd7209a38c76bd00c880960689134d4decf355d78ebec",
+      "notes": null
+    },
+    {
+      "path": "vendor/vendor-app-icon-256x256.webp",
+      "category": "vendor",
+      "purpose": "Generic vendor/application icon 256px WebP",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mime": "image/webp",
+      "bytes": 12878,
+      "sha256": "79a9e1aebc8f4ef881baa5a8ca50df4329b9e96b69f6ebf6c8c5dcd65eac4893",
+      "notes": null
+    },
+    {
+      "path": "vendor/vendor-app-icon-512x512.png",
+      "category": "vendor",
+      "purpose": "Generic vendor/application icon 512px",
+      "dimensions": [
+        512,
+        512
+      ],
+      "mime": "image/png",
+      "bytes": 203768,
+      "sha256": "3e5ca03b8770093c3750343bd78793d23739ec6ad4fd36e8a8c7674b69483a0e",
+      "notes": null
+    },
+    {
+      "path": "vendor/vendor-app-icon-512x512.webp",
+      "category": "vendor",
+      "purpose": "Generic vendor/application icon 512px WebP",
+      "dimensions": [
+        512,
+        512
+      ],
+      "mime": "image/webp",
+      "bytes": 37100,
+      "sha256": "2853d0d4c3ef501dfd8903ac1560378c5ef8f4d29382a03cb8a0b38e3728549a",
+      "notes": null
+    },
+    {
+      "path": "vendor/vendor-app-icon-1024x1024.png",
+      "category": "vendor",
+      "purpose": "Generic vendor/application icon 1024px",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "mime": "image/png",
+      "bytes": 680829,
+      "sha256": "ca86d9dd1551ff1e5febf900516bcc74a016229a8d44f31ce7b7e53fc1068f8d",
+      "notes": null
+    },
+    {
+      "path": "vendor/vendor-brand-banner-1200x300.png",
+      "category": "vendor",
+      "purpose": "Generic vendor integration banner (PNG)",
+      "dimensions": [
+        1200,
+        300
+      ],
+      "mime": "image/png",
+      "bytes": 262622,
+      "sha256": "15ca02be9e3604532b8065268b6650ca6fdaaba66521c3a97333d253008c3afd",
+      "notes": null
+    },
+    {
+      "path": "vendor/vendor-brand-banner-1200x300.jpg",
+      "category": "vendor",
+      "purpose": "Generic vendor integration banner (JPG)",
+      "dimensions": [
+        1200,
+        300
+      ],
+      "mime": "image/jpeg",
+      "bytes": 58989,
+      "sha256": "c13c8ffb3d276f2ec0795ad2387154c96afe5cb557824192f02a01018ce33749",
+      "notes": null
+    },
+    {
+      "path": "banners/x-profile-header-1500x500.png",
+      "category": "banner",
+      "purpose": "X profile header (PNG)",
+      "dimensions": [
+        1500,
+        500
+      ],
+      "mime": "image/png",
+      "bytes": 435780,
+      "sha256": "dc43a4622c003875e47617b09cb57949cde7c155407cacef3e7063496be184f1",
+      "notes": null
+    },
+    {
+      "path": "banners/x-profile-header-1500x500.jpg",
+      "category": "banner",
+      "purpose": "X profile header (JPG)",
+      "dimensions": [
+        1500,
+        500
+      ],
+      "mime": "image/jpeg",
+      "bytes": 90964,
+      "sha256": "1cd4c4a1aa6e144b873c2022f764a614b41e092e580f7ef433f5fb046ab816d6",
+      "notes": null
+    },
+    {
+      "path": "banners/linkedin-profile-banner-1584x396.png",
+      "category": "banner",
+      "purpose": "LinkedIn profile background (PNG)",
+      "dimensions": [
+        1584,
+        396
+      ],
+      "mime": "image/png",
+      "bytes": 419673,
+      "sha256": "34330f252931f97efd63b22edec2d62c919ceca604ec96da3750841dbc8ee025",
+      "notes": null
+    },
+    {
+      "path": "banners/linkedin-profile-banner-1584x396.jpg",
+      "category": "banner",
+      "purpose": "LinkedIn profile background (JPG)",
+      "dimensions": [
+        1584,
+        396
+      ],
+      "mime": "image/jpeg",
+      "bytes": 89589,
+      "sha256": "4e0f13b42f03a4d410e9be150d5b587a61e45bc6144d2abccbfa4d20bd8c2481",
+      "notes": null
+    },
+    {
+      "path": "banners/facebook-cover-1640x624.png",
+      "category": "banner",
+      "purpose": "Facebook cover (PNG)",
+      "dimensions": [
+        1640,
+        624
+      ],
+      "mime": "image/png",
+      "bytes": 526345,
+      "sha256": "b386f6726c0b4162f860dfaae50a189a32c67f68c0dd0f42eb6c8fa1af39f851",
+      "notes": null
+    },
+    {
+      "path": "banners/facebook-cover-1640x624.jpg",
+      "category": "banner",
+      "purpose": "Facebook cover (JPG)",
+      "dimensions": [
+        1640,
+        624
+      ],
+      "mime": "image/jpeg",
+      "bytes": 104943,
+      "sha256": "5cca17956089b01eb32270cb2eec9951176a72e5808710215cdd5ff1fb6612f1",
+      "notes": null
+    },
+    {
+      "path": "banners/profile-banner-1920x480.png",
+      "category": "banner",
+      "purpose": "Generic website/profile banner (PNG)",
+      "dimensions": [
+        1920,
+        480
+      ],
+      "mime": "image/png",
+      "bytes": 571744,
+      "sha256": "383008582e1bf3408870493a89c3ea4a708cc0708a650289334cc6f1a473664a",
+      "notes": null
+    },
+    {
+      "path": "banners/profile-banner-1920x480.jpg",
+      "category": "banner",
+      "purpose": "Generic website/profile banner (JPG)",
+      "dimensions": [
+        1920,
+        480
+      ],
+      "mime": "image/jpeg",
+      "bytes": 117862,
+      "sha256": "6d7d6ead044c6623f349fbf6840cb081e95a6c809cd8720e6f9a9ac7ec4e687a",
+      "notes": null
+    },
+    {
+      "path": "banners/youtube-channel-banner-2560x1440.png",
+      "category": "banner",
+      "purpose": "YouTube channel banner (PNG)",
+      "dimensions": [
+        2560,
+        1440
+      ],
+      "mime": "image/png",
+      "bytes": 796379,
+      "sha256": "7b023a81b906c6f0aab66bf4f8d5b66742da4038c8708484c4ae2065bb9e9d92",
+      "notes": "Core lockup kept inside the centered cross-device safe region."
+    },
+    {
+      "path": "banners/youtube-channel-banner-2560x1440.jpg",
+      "category": "banner",
+      "purpose": "YouTube channel banner (JPG)",
+      "dimensions": [
+        2560,
+        1440
+      ],
+      "mime": "image/jpeg",
+      "bytes": 159001,
+      "sha256": "24adf447b28ef0e79ff9a2fab6a1e370e23ff89c0816a8e806a137e2f5c58483",
+      "notes": "Core lockup kept inside the centered cross-device safe region."
+    },
+    {
+      "path": "favicon/favicon-16x16.png",
+      "category": "favicon",
+      "purpose": "Favicon 16px",
+      "dimensions": [
+        16,
+        16
+      ],
+      "mime": "image/png",
+      "bytes": 537,
+      "sha256": "941f15725918d4b52db7919747db5502de99727dad91b600005a2522ccbfc766",
+      "notes": null
+    },
+    {
+      "path": "favicon/favicon-32x32.png",
+      "category": "favicon",
+      "purpose": "Favicon 32px",
+      "dimensions": [
+        32,
+        32
+      ],
+      "mime": "image/png",
+      "bytes": 1493,
+      "sha256": "8eaf665471ca229587580f60e7da6cd97336af41e18ae79d5367c45024c8f301",
+      "notes": null
+    },
+    {
+      "path": "favicon/favicon-48x48.png",
+      "category": "favicon",
+      "purpose": "Favicon 48px",
+      "dimensions": [
+        48,
+        48
+      ],
+      "mime": "image/png",
+      "bytes": 3080,
+      "sha256": "53bbe4464908a00760fa20683e3eccd1c781c9908bd398f89e108e09780c8d96",
+      "notes": null
+    },
+    {
+      "path": "favicon/favicon-64x64.png",
+      "category": "favicon",
+      "purpose": "Favicon 64px",
+      "dimensions": [
+        64,
+        64
+      ],
+      "mime": "image/png",
+      "bytes": 5055,
+      "sha256": "a4972e8c3a1beeb5ab735888fbe8f9ef225f70df43677a34c14e929710d44c50",
+      "notes": null
+    },
+    {
+      "path": "favicon/favicon-96x96.png",
+      "category": "favicon",
+      "purpose": "Favicon 96px",
+      "dimensions": [
+        96,
+        96
+      ],
+      "mime": "image/png",
+      "bytes": 10611,
+      "sha256": "410a1572e45713145e03de9ff36a6a760d5ff69fda33bb2eaa759ff72ebcb0b2",
+      "notes": null
+    },
+    {
+      "path": "favicon/apple-touch-icon-180x180.png",
+      "category": "favicon",
+      "purpose": "Apple touch icon",
+      "dimensions": [
+        180,
+        180
+      ],
+      "mime": "image/png",
+      "bytes": 31949,
+      "sha256": "4c2beef2752ec5695765a167b6e85203acb0c80c9a85dae8710ee2d1bdb08cda",
+      "notes": null
+    },
+    {
+      "path": "favicon/favicon-192x192.png",
+      "category": "favicon",
+      "purpose": "Favicon 192px",
+      "dimensions": [
+        192,
+        192
+      ],
+      "mime": "image/png",
+      "bytes": 26485,
+      "sha256": "56705afafb1c6fa805f5f6cd33170d7e921c114e31ffa0e7747ce68c03ae2735",
+      "notes": null
+    },
+    {
+      "path": "favicon/favicon-256x256.png",
+      "category": "favicon",
+      "purpose": "Favicon 256px",
+      "dimensions": [
+        256,
+        256
+      ],
+      "mime": "image/png",
+      "bytes": 43914,
+      "sha256": "efb2b316feeb4ac013dbe951cc8fae9261ab5a266501c95c102236461751ce6f",
+      "notes": null
+    },
+    {
+      "path": "favicon/favicon-512x512.png",
+      "category": "favicon",
+      "purpose": "Favicon 512px",
+      "dimensions": [
+        512,
+        512
+      ],
+      "mime": "image/png",
+      "bytes": 150967,
+      "sha256": "420dcaa8026c0361bd7174528d61319f88ed39db1a0b310b028e2ede5acebc75",
+      "notes": null
+    },
+    {
+      "path": "favicon/favicon.ico",
+      "category": "favicon",
+      "purpose": "Multi-resolution ICO",
+      "dimensions": null,
+      "mime": "image/x-icon",
+      "bytes": 89712,
+      "sha256": "2eb6531635a010f10e4c22e424fff2dbe8734790e92c096b9e072b4f72030e09",
+      "notes": null
+    },
+    {
+      "path": "svg/capital-ai-online-logo-raster-preserving.svg",
+      "category": "svg",
+      "purpose": "Raster-preserving SVG wrapper",
+      "dimensions": [
+        1536,
+        864
+      ],
+      "mime": "image/svg+xml",
+      "bytes": 1554909,
+      "sha256": "971a0f3feccf15531dfeccf3600fe4da227419c4340e83c7d2cba89656b0d39b",
+      "notes": "Exact visual source embedded as PNG; intentionally not presented as native vector tracing."
+    },
+    {
+      "path": "svg/capital-ai-avatar-raster-preserving.svg",
+      "category": "svg",
+      "purpose": "Raster-preserving square SVG avatar",
+      "dimensions": [
+        512,
+        512
+      ],
+      "mime": "image/svg+xml",
+      "bytes": 271966,
+      "sha256": "fe36e37c5ba4dbc2b9c694913cb2df091719e1afed62bc5e364f0e924298b242",
+      "notes": null
+    },
+    {
+      "path": "favicon/favicon.svg",
+      "category": "favicon",
+      "purpose": "Raster-preserving SVG favicon",
+      "dimensions": [
+        512,
+        512
+      ],
+      "mime": "image/svg+xml",
+      "bytes": 201568,
+      "sha256": "fc2aee485a9380b360fb0602a310ad2f89adca1890331a5e0b95826230b325dc",
+      "notes": null
+    },
+    {
+      "path": "favicon/site.webmanifest",
+      "category": "favicon",
+      "purpose": "PWA icon manifest",
+      "dimensions": null,
+      "mime": "application/octet-stream",
+      "bytes": 725,
+      "sha256": "5ed8991d858af507821ff031bddbd94288da65a5bb18cc64ef07a804266ca64a",
+      "notes": null
+    },
+    {
+      "path": "meta/ASSET-LICENSE-AND-PROVENANCE.txt",
+      "category": "metadata",
+      "purpose": "Asset provenance and rights handling",
+      "dimensions": null,
+      "mime": "text/plain",
+      "bytes": 1337,
+      "sha256": "87f30edf6094e24eb8bfbfc50edad812334f384350e22792ddd9f9e841451a80",
+      "notes": null
+    },
+    {
+      "path": "meta/generation-environment.json",
+      "category": "metadata",
+      "purpose": "Generation environment",
+      "dimensions": null,
+      "mime": "application/json",
+      "bytes": 288,
+      "sha256": "3aa44e0588805b04be9d3a6fd67959e3b7a912cd704c5afe6c04dd23ecbd3edc",
+      "notes": null
+    },
+    {
+      "path": "README.md",
+      "category": "metadata",
+      "purpose": "Pack documentation",
+      "dimensions": null,
+      "mime": "text/markdown",
+      "bytes": 554,
+      "sha256": "529eb5c061c350036f1dd3c9077f894f0e8f321df5f32e635cb3dcc98e3de3f9",
+      "notes": null
+    }
+  ]
+}

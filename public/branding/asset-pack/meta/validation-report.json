@@ -1,0 +1,56 @@
+{
+  "validation": [
+    {
+      "step": 1,
+      "name": "source_integrity",
+      "status": "PASS",
+      "evidence": {
+        "dimensions": [
+          1536,
+          864
+        ],
+        "sha256": "6244629091073823b4cff86908adb0403a217779219bfb44883bd956548243e3"
+      }
+    },
+    {
+      "step": 2,
+      "name": "required_dimensions",
+      "status": "PASS",
+      "evidence": {
+        "checked": 6,
+        "failures": []
+      }
+    },
+    {
+      "step": 3,
+      "name": "google_oauth_asset",
+      "status": "PASS",
+      "evidence": {
+        "dimensions": [
+          120,
+          120
+        ],
+        "bytes": 15435,
+        "maxBytes": 1000000
+      }
+    },
+    {
+      "step": 4,
+      "name": "favicon_svg_structure",
+      "status": "PASS",
+      "evidence": {
+        "icoReadable": true,
+        "svgEmbeddedRaster": true
+      }
+    },
+    {
+      "step": 5,
+      "name": "manifest_hash_readback",
+      "status": "PASS",
+      "evidence": {
+        "assetsChecked": 67,
+        "failures": []
+      }
+    }
+  ]
+}
