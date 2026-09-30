@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "sourceRepository": "SvenKulessa/FRONTEND",
+  "sourceCommit": "7791c077c2d17577c819293f94d9e6994f7f9780",
+  "importedAt": "2026-09-30",
+  "evidenceRole": "OWNER_AND_PROJECT_PROVENANCE_WITH_EMBEDDED_LICENSE_DECLARATIONS",
+  "legalInterpretation": {
+    "ownerGrant": "EVIDENCED_BY_SOURCE_DOCUMENTS",
+    "googleAiStudioRole": "PROVENANCE_TOOL_REFERENCE_ONLY_UNLESS_BACKED_BY_PROVIDER_TERMS",
+    "thirdPartyTrademarkRights": "NOT_WAIVED_BY_OWNER_DECLARATION",
+    "releaseEffect": "MAY_CLOSE_OWNER_DESIGN_ASSET_PROVENANCE_GAPS; DOES_NOT BY ITSELF CLOSE THIRD_PARTY_PROVIDER_OR_TRADEMARK GATES"
+  },
+  "sources": [
+    {
+      "path": "DESIGN_AND_ASSET_LICENSE.md",
+      "blobSha": "bcfeaf6255158a1a216e9a7af770a31ff8410b1a",
+      "sourceUrl": "https://github.com/SvenKulessa/FRONTEND/blob/7791c077c2d17577c819293f94d9e6994f7f9780/DESIGN_AND_ASSET_LICENSE.md",
+      "importedPath": "docs/security/evidence/frontend-origin/DESIGN_AND_ASSET_LICENSE.md"
+    },
+    {
+      "path": "DESIGN_AND_IMAGE_LICENSE.md",
+      "blobSha": "7d9b67edcdb94bc89d54a4c09e44673f0c304f44",
+      "sourceUrl": "https://github.com/SvenKulessa/FRONTEND/blob/7791c077c2d17577c819293f94d9e6994f7f9780/DESIGN_AND_IMAGE_LICENSE.md",
+      "importedPath": "docs/security/evidence/frontend-origin/DESIGN_AND_IMAGE_LICENSE.md"
+    },
+    {
+      "path": "LICENSE",
+      "blobSha": "3fed99ff17657ae6b52cfe4788462c129b052cf6",
+      "sourceUrl": "https://github.com/SvenKulessa/FRONTEND/blob/7791c077c2d17577c819293f94d9e6994f7f9780/LICENSE",
+      "importedPath": "docs/security/evidence/frontend-origin/LICENSE"
+    }
+  ]
+}
