@@ -6,7 +6,7 @@ RUN apk add --no-cache 'libcrypto3>=3.5.8-r0' 'libssl3>=3.5.8-r0'
 FROM crypto-base AS build
 WORKDIR /app
 RUN npm install --global npm@11.20.0 --ignore-scripts --no-audit --no-fund \
-    && rm -rf /usr/local/lib/node_modules/corepack /usr/local/bin/corepack /opt/yarn* /usr/local/bin/yarn* /usr/local/bin/pnpm*
+    && rm -rf /usr/local/lib/node_modules/corepack /usr/local/bin/corepack /opt/yarn* /usr/local/bin/yarn* /usr/local/bin/pnpm* /root/.npm
 COPY deploy/npm-security-patches/package.json deploy/npm-security-patches/package-lock.json /opt/npm-security-patches/
 COPY scripts/harden-npm-toolchain.mjs /opt/harden-npm-toolchain.mjs
 RUN npm ci --prefix /opt/npm-security-patches --ignore-scripts --no-audit --no-fund \
