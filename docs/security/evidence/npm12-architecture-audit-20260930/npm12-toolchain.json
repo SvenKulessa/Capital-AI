@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "scope": "PATCHED_NPM_ROOTFS_NOT_BUILD_IMAGE",
+  "allSeverities": true,
+  "scanner": "Trivy 0.74.0",
+  "databaseUpdatedAt": "2026-09-30T13:11:13.714761705Z",
+  "vulnerabilities": [],
+  "misconfigurations": [],
+  "secrets": 0,
+  "blocking": 0
+}
