@@ -1,0 +1,5 @@
+# Separate private infrastructure image; does not build or deploy Capital-AI.
+FROM nats:2.15.0@sha256:cd3fcd4ecdda44e3a66728a5334af0a959bc3979b32810e033d1c547241cd0f4
+COPY deploy/nats-server.conf /etc/nats/nats-server.conf
+ENTRYPOINT ["/nats-server"]
+CMD ["--config", "/etc/nats/nats-server.conf"]
