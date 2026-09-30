@@ -1,0 +1,1 @@
+/* More subroutines needed by GCC output code on some machines.  */

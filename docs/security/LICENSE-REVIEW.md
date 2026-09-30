@@ -244,3 +244,10 @@ kostenintensiver Workflow-Lauf für diese reine Dokumentationsauswertung.
 Weiterhin erforderlich: OS-Source-/Notice-Nachweise, konkrete Ausnahmen,
 Bild-/Logo-/Font-Rechte und Provider-Verträge. Das Registry-Lizenzinventar
 entsteht erst bei einem später ausdrücklich gestarteten Main-Publish.
+
+## Quellen, Assets und Provider
+
+Der ergänzende [Quellen- und Nutzungsrechtsnachweis](LICENSE-RIGHTS.md) und das
+[maschinenlesbare Inventar](evidence/license-rights-review.json) ordnen die
+Basisimage-Pakete den Versionsquellen zu und halten offene Rechte fest.
+Lizenzfreigabe bleibt offen; `deployEligible:false` bleibt bestehen.
