@@ -1,0 +1,124 @@
+name: Bootstrap Main Protection
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_main_sha:
+        description: Exakter CURRENT_MAIN SHA, gegen den der Ruleset-Bootstrap autorisiert wird
+        required: true
+        type: string
+      confirmation:
+        description: Muss exakt APPLY_MAIN_PROTECTION sein
+        required: true
+        type: string
+      mode:
+        description: verify liest nur; apply erstellt/aktualisiert das Ruleset
+        required: true
+        default: verify
+        type: choice
+        options:
+          - verify
+          - apply
+
+permissions:
+  contents: read
+  checks: read
+
+concurrency:
+  group: bootstrap-main-protection
+  cancel-in-progress: false
+
+jobs:
+  main_protection:
+    name: Main Protection Bootstrap
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    env:
+      ADMIN_TOKEN: ${{ secrets.CAPITAL_AI_GITHUB_ADMIN_TOKEN }}
+      EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
+      CONFIRMATION: ${{ inputs.confirmation }}
+      MODE: ${{ inputs.mode }}
+      REPOSITORY: SvenKulessa/Capital-AI
+      RULESET_NAME: main-production-protection
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Bootstrap-Skripte testen
+        run: node --test scripts/verify-main-ruleset.test.mjs
+
+      - name: Authority, Confirmation und CURRENT_MAIN prüfen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$CONFIRMATION" = "APPLY_MAIN_PROTECTION"
+          [[ "$EXPECTED_MAIN_SHA" =~ ^[0-9a-f]{40}$ ]]
+          current_main=$(gh api "repos/$REPOSITORY/branches/main" --jq .commit.sha)
+          test "$current_main" = "$EXPECTED_MAIN_SHA"
+
+          # Der Required-Check muss auf exakt diesem Main bereits erfolgreich
+          # beobachtet worden sein, bevor er providerseitig verpflichtend wird.
+          gh api -H "Accept: application/vnd.github+json" "repos/$REPOSITORY/commits/$EXPECTED_MAIN_SHA/check-runs?per_page=100" > check-runs.json
+          jq -e '[.check_runs[] | select(.name == "Docker Security Gate" and .conclusion == "success")] | length >= 1' check-runs.json >/dev/null
+
+          if [ "$MODE" = "apply" ]; then
+            test -n "$ADMIN_TOKEN" || { echo "CAPITAL_AI_GITHUB_ADMIN_TOKEN is missing"; exit 1; }
+            echo "::add-mask::$ADMIN_TOKEN"
+          fi
+
+      - name: Aktuellen Ruleset-Zustand lesen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p security-reports
+          gh api "repos/$REPOSITORY/rulesets" > security-reports/rulesets-before.json
+
+      - name: Ruleset idempotent erstellen oder aktualisieren
+        if: inputs.mode == 'apply'
+        run: |
+          set -euo pipefail
+          api="https://api.github.com"
+          auth=(-H "Authorization: Bearer $ADMIN_TOKEN" -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28")
+          existing=$(curl --fail --silent --show-error "${auth[@]}" "$api/repos/$REPOSITORY/rulesets")
+          id=$(jq -r --arg name "$RULESET_NAME" '.[] | select(.name == $name and .target == "branch") | .id' <<<"$existing" | head -n1)
+
+          if [ -n "$id" ]; then
+            curl --fail --silent --show-error --request PUT "${auth[@]}" \
+              --header 'Content-Type: application/json' \
+              --data-binary @deploy/main-production-ruleset.json \
+              "$api/repos/$REPOSITORY/rulesets/$id" > security-reports/ruleset-mutation.json
+          else
+            curl --fail --silent --show-error --request POST "${auth[@]}" \
+              --header 'Content-Type: application/json' \
+              --data-binary @deploy/main-production-ruleset.json \
+              "$api/repos/$REPOSITORY/rulesets" > security-reports/ruleset-mutation.json
+          fi
+
+      - name: Provider-Readback und Vertrag validieren
+        run: |
+          set -euo pipefail
+          token="${ADMIN_TOKEN:-${GITHUB_TOKEN:-}}"
+          if [ -n "${ADMIN_TOKEN:-}" ]; then
+            auth=(-H "Authorization: Bearer $ADMIN_TOKEN")
+          else
+            auth=(-H "Authorization: Bearer ${{ github.token }}")
+          fi
+
+          api="https://api.github.com"
+          rulesets=$(curl --fail --silent --show-error "${auth[@]}" -H "Accept: application/vnd.github+json" "$api/repos/$REPOSITORY/rulesets")
+          id=$(jq -er --arg name "$RULESET_NAME" '.[] | select(.name == $name and .target == "branch") | .id' <<<"$rulesets")
+          curl --fail --silent --show-error "${auth[@]}" -H "Accept: application/vnd.github+json" "$api/repos/$REPOSITORY/rulesets/$id" > security-reports/main-ruleset.json
+          node scripts/verify-main-ruleset.mjs security-reports/main-ruleset.json > security-reports/main-ruleset-verification.json
+
+      - name: Ruleset-Nachweise sichern
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: main-protection-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            security-reports/*.json
+          if-no-files-found: warn
+          retention-days: 14
