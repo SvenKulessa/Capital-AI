@@ -16,6 +16,7 @@ COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts --no-audit --no-fund && rm -rf /root/.npm
 COPY index.html vite.config.ts tsconfig.json ./
 COPY src ./src
+COPY public/branding/capital-ai-logo.jpg ./public/branding/capital-ai-logo.jpg
 COPY server/advisor.ts server/http-security.mjs server/mta-sts.mjs server/mta-sts.test.mjs ./server/
 COPY scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/frontend-security.test.mjs scripts/verify-browser-boundary.mjs scripts/validate-contract-suites.mjs ./scripts/
 COPY shared ./shared
