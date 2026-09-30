@@ -35,7 +35,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
       <section className="w-full max-w-lg">
         <button onClick={onBackToHome} className="flex gap-2 items-center min-h-11 text-amber-300"><ArrowLeft size={18} /> Zur Übersicht</button>
         <div className="mt-6 rounded-3xl border border-amber-500/20 bg-slate-900/80 p-5 sm:p-8">
-          <BrandLogo />
+          <BrandLogo variant="stacked" size="lg" showSubtitle={false} />
           <h1 className="text-2xl font-bold mt-6">Anmeldung</h1>
           <p className="text-sm text-slate-300 mt-3">Melden Sie sich über den eingerichteten Identitätsanbieter an. Dort verwalten Sie auch Ihr Konto, Passwort und Ihre zusätzlichen Sicherheitsverfahren.</p>
           {error && <p role="alert" className="mt-4 text-sm text-red-300">{error}</p>}

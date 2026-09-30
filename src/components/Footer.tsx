@@ -26,7 +26,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
       {/* Pure Vector Brand Logo */}
       <div className="flex justify-center mb-4">
-        <BrandLogo variant="inline" size="sm" />
+        <BrandLogo variant="banner" size="lg" showSubtitle={false} />
       </div>
 
       {/* Professional FinTech Slogan */}

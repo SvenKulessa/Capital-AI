@@ -157,9 +157,12 @@ Erdbild verknüpft, wurde in den geprüften Quellen und Historien nicht gefunden
 Die Inhaberbestätigung bleibt erhalten; installierte Tools gelten nicht als
 Beweis eines ausgeführten Bildlaufs.
 
-Im geprüften Capital-AI-Code zeichnet `BrandLogo.tsx` das Branding
-mit `CapitalAIVectorEmblem` als SVG. Die drei Branding-JPEGs werden dort nicht
-eingebunden. `Hero.tsx` importiert dagegen das Erdbild und setzt es als
+Der ursprüngliche PR-#16-Befund war: `BrandLogo.tsx` zeichnete das Branding
+mit `CapitalAIVectorEmblem` als SVG und band die drei Branding-JPEGs nicht ein.
+Der nach PR #18 vorbereitete Branding-Slice importiert nun das Emblem für
+Navigation/Emblem-Varianten, das vollständige Logo für die Anmeldung und das
+Banner für den Footer. Die Bilder bleiben unverändert; die SVG-Exportfunktion
+bleibt verfügbar, wird aber nicht mehr von `BrandLogo` verwendet. `Hero.tsx` importiert dagegen das Erdbild und setzt es als
 `img`-Quelle. Dies ist ein Quellcodebefund, keine Live-Browser-Verifikation.
 Die Branding-JPEGs bleiben im öffentlichen Repository; ihre Dokumentation
 wird deshalb auch ohne Website-Einbindung beibehalten.
