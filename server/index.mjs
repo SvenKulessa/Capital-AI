@@ -10,7 +10,15 @@ import { createLimiter } from './http-security.mjs';
 import { infrastructure } from './infrastructure.mjs';
 import { serveMtaSts } from './mta-sts.mjs';
 
-const defaultRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../dist');
+const moduleRoot = path.dirname(fileURLToPath(import.meta.url));
+const defaultRoot = path.resolve(moduleRoot, '../dist');
+const embeddedSourceSha = '__CAPITAL_AI_SOURCE_SHA_UNBOUND__';
+const embeddedBuilder = '__CAPITAL_AI_BUILDER_UNBOUND__';
+const buildIdentity =
+  /^[0-9a-f]{40}$/.test(embeddedSourceSha) &&
+  embeddedBuilder === 'SvenKulessa/Capital-AI/.github/workflows/build-security.yml'
+    ? { bound: true, sourceSha: embeddedSourceSha, builder: embeddedBuilder }
+    : { bound: false, sourceSha: null };
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.txt': 'text/plain; charset=utf-8', '.json': 'application/json; charset=utf-8' };
 const headers = { 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'strict-origin-when-cross-origin', 'X-Frame-Options': 'DENY', 'Permissions-Policy': 'camera=(), microphone=(), geolocation=()', 'Strict-Transport-Security': 'max-age=31536000', 'Content-Security-Policy': "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" };
 function json(res, status, body) { res.writeHead(status, { ...headers, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(body)); }
@@ -32,7 +40,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await privacy(req, res, url, json)) return;
   if (await telegram(req, res, url, json)) return;
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return json(res, 405, { error: 'method_not_allowed' }); }
-  if (url.pathname === '/healthz') return json(res, 200, health());
+  if (url.pathname === '/healthz') return json(res, 200, { ...health(), buildIdentity });
   if (url.pathname === '/api/market/quote') {
     if (!marketLimit()) { res.setHeader('Retry-After', '60'); return json(res, 429, { error: 'rate_limited' }); }
     if (inflight >= 8) { res.setHeader('Retry-After', '5'); return json(res, 429, { error: 'busy' }); }

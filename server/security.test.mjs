@@ -21,6 +21,14 @@ test('HTTP security boundaries and static-file isolation', async () => {
     assert.equal(health.headers.get('x-content-type-options'), 'nosniff');
     assert.equal(health.headers.get('x-frame-options'), 'DENY');
     assert.equal(health.headers.get('cache-control'), 'no-store');
+    const healthBody = await health.json();
+    assert.equal(typeof healthBody.buildIdentity?.bound, 'boolean');
+    if (healthBody.buildIdentity.bound) {
+      assert.match(healthBody.buildIdentity.sourceSha, /^[0-9a-f]{40}$/);
+      assert.equal(healthBody.buildIdentity.builder, 'SvenKulessa/Capital-AI/.github/workflows/build-security.yml');
+    } else {
+      assert.deepEqual(healthBody.buildIdentity, { bound: false, sourceSha: null });
+    }
     const notices = await fetch(base + '/THIRD_PARTY_NOTICES.txt');
     assert.equal(notices.status, 200);
     assert.equal(notices.headers.get('content-type'), 'text/plain; charset=utf-8');
