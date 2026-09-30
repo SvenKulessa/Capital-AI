@@ -4,10 +4,10 @@ Stand: 30.09.2026. Dieser Slice trennt Build-Sicherheit, Kandidaten-Publishing u
 
 ## Aktueller Zustand
 
-- Der bestehende Render-Webservice `Capital-AI` (`srv-dau1rp893c1s73cdhm1g`) ist Git-backed mit `runtime: docker`. Render behandelt den Runtime-Typ eines bestehenden Services als unveränderlich; dieser Service kann deshalb nicht in-place zu `runtime: image` konvertiert werden.
+- Der bestehende Render-Webservice `Capital-AI` (`srv-dau1rp893c1s73cdhm1g`) ist Git-backed mit `runtime: docker`. Die aktuellen offiziellen Render-Dokumente erlauben den Wechsel einer bestehenden Service-Runtime per Dashboard, API oder Blueprint (https://render.com/docs/native-runtimes#changing-a-services-runtime). Die frühere Annahme einer zwingenden Neuanlage ist überholt. Der Wechsel auf eine Image-Quelle muss für diesen Service providerseitig zurückgelesen und vor Domain-Umschaltung validiert werden.
 - Es wird durch diesen Slice **kein zusätzlicher kostenpflichtiger Render-Service erzeugt**.
 - `docs/security/evidence/license-rights-review.json` steht weiterhin auf `REVIEW_OPEN`; deshalb bleibt jeder GHCR-Kandidat `deployEligible:false`.
-- Das Repository besitzt beim beobachteten Stand kein aktives Ruleset für `main`. Der Connector hat keine Administration-Mutation für Rulesets; der Provider-Schutz muss einmalig mit Repository-Adminrechten gesetzt werden.
+- Am 30.09.2026 wurde Ruleset `24259174` als aktiv mit strengem Required Check `Docker Security Gate`, PR-Pflicht, Delete-/Force-Push-Schutz und ohne Bypass zurückgelesen. Der einmalige Admin-Bootstrap ist abgeschlossen; sein Workflow wird entfernt. Die laufende Readback-Validierung bleibt erhalten.
 
 ## Automatischer Sicherheitsvertrag
 
@@ -43,9 +43,9 @@ Der Production-Handoff-Workflow prüft diesen Zustand live über die GitHub Rule
 
 ## Render-Migration
 
-Der existierende Git-backed Docker-Service bleibt bis zur Migration bestehen. Für digest-basiertes Deployment ist ein **image-backed** Service erforderlich. Da ein neuer Starter-Service zusätzliche Kosten verursachen kann, wird er nicht automatisch erstellt.
+Der existierende Git-backed Docker-Service bleibt bis zur Migration bestehen. Für digest-basiertes Deployment ist ein **image-backed** Service erforderlich. Bevorzugt wird der bestehende Service nach aktueller Provider-Dokumentation umgestellt; ein zusätzlicher Starter-Service wird nicht angelegt. Die verfügbare Connector-Schnittstelle enthält keine Operation zum Ändern der Image-Quelle. Eine vorbereitete YAML ist noch kein Beleg der Provider-Umstellung.
 
-Nach expliziter Serviceanlage:
+Vor und nach der Umstellung des bestehenden Services:
 
 - Registry-Credential nur mit `read:packages`.
 - Image-Quelle auf den vollständigen GHCR-Digest setzen, nicht auf `latest` oder einen beweglichen Tag.
@@ -54,3 +54,7 @@ Nach expliziter Serviceanlage:
 - Den Kandidaten manuell mit `publish_candidate=true` und anschließend `verify_production_handoff=true` prüfen.
 
 Solange einer dieser Nachweise fehlt, ist der Zustand **BLOCKED** und nicht Production-freigegeben.
+
+## Reihenfolge ohne zirkuläre Freigabe
+
+Die fünf bestehenden Gates prüfen eine bereits laufende Candidate-Runtime; sie sind eine Abnahme, keine Berechtigung, ungeprüfte Images zu deployen. Vor einem Candidate-Testdeploy müssen exakter Main-SHA, Docker-Gate, attestierter Digest und Lizenzfreigabe positiv sein. Anschließend erfolgt der Testdeploy vor Übernahme der Produktionsdomains. Erst nach Runtime-Digest und imagegebundener Identität sowie echtem ZITADEL-Login wird die Domainübergabe freigegeben. `candidate.json` bleibt dabei unverändert; `release.json` ist das getrennte Abnahmeergebnis. Aktuell fehlen Lizenzfreigabe und veröffentlichter GHCR-Kandidat, daher wird kein Testdeploy gestartet.
