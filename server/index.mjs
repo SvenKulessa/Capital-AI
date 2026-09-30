@@ -7,6 +7,7 @@ import { createAuth } from './auth.mjs';
 import { createTelegram } from './telegram.mjs';
 import { createLimiter } from './http-security.mjs';
 import { infrastructure } from './infrastructure.mjs';
+import { serveMtaSts } from './mta-sts.mjs';
 
 const defaultRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../dist');
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.txt': 'text/plain; charset=utf-8', '.json': 'application/json; charset=utf-8' };
@@ -24,6 +25,7 @@ export function createApp(root = defaultRoot, options = {}) {
   try { url = new URL(req.url, 'http://localhost'); } catch { return json(res, 400, { error: 'bad_request' }); }
   // Apply headers to API responses and OIDC redirects alike.
   for (const [key, value] of Object.entries(headers)) res.setHeader(key, value);
+  if (serveMtaSts(req, res, url)) return;
   if (await auth.handle(req, res, url, json)) return;
   if (await telegram(req, res, url, json)) return;
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return json(res, 405, { error: 'method_not_allowed' }); }

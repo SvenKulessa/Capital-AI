@@ -16,6 +16,8 @@
 !server/auth.mjs
 !server/telegram.mjs
 !server/http-security.mjs
+!server/mta-sts.mjs
+!server/mta-sts.test.mjs
 !server/infrastructure.mjs
 !shared/
 !shared/market-contracts.mjs

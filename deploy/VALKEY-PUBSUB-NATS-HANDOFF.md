@@ -25,6 +25,8 @@ Run `VALKEY_SERVER_BIN=/path/to/valkey-server NATS_SERVER_BIN=/path/to/nats-serv
 
 All four passed locally using Valkey 8.1.10 and NATS 2.15.0. Contract tests (5), Docker context tests (2) and TypeScript validation passed. These are synthetic test fixtures, not live provider/Render evidence.
 
+Reconciliation against main ec6300e8a3ed2ba28cffa81c8c1de6f3ad0717d2 found that its new MTA-STS Docker COPY inputs were excluded by .dockerignore. Both exact inputs are now allowed; no MTA-STS behavior was changed. Market tests (6) also passed. The open compliance PR #28 modifies separate frontend/legal files and has no file overlap with this change.
+
 ## Production handoff gates
 
 1. Merge this PR via owner review. Run the manual `Private NATS image security` workflow on the exact merge commit; HIGH/CRITICAL scan, pinned image identity, SBOM and non-root mounted-disk smoke must pass. No Docker executable was available locally; these gates remain unverified.
