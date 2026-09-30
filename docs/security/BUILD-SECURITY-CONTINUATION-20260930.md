@@ -51,3 +51,26 @@ erst danach Finance suspendieren. Keine Löschung des Quellrepositories.
 Render-Connector bietet keine Operation für Imagequellen-/Domain-Binding-Wechsel oder Suspendierung;
 IONOS-Connector nicht verfügbar. Browser-Fallback erfordert Freigabe gemäß Browser-Werkzeugrichtlinie.
 Actions-Secrets können nicht ausgelesen werden. Kein Workflow/Deploy, DNS-Schreibzugriff oder Servicewechsel wurde ausgeführt.
+
+## PR-34-Abgleich mit PR 33 und COMP am 30.09.2026
+
+PR 33 ist auf Main 1afa70d673c6f865b471dce6420342b3c44f3bd5 gemergt (COMP-Head 14cb9af5590949736c096684a8e0d90fd267812c).
+Es existiert aktuell kein separater COMP-Branch mehr. Der Inhalt wird aus dem gemergten PR und Main geprüft.
+Der ursprüngliche PR-34-Head 566f6c817619f65b6e99cdf5bc8f0a9b45d4c1aa kollidierte in server/auth.test.mjs.
+Beide Testsätze bleiben jetzt erhalten: Subject-Isolation/Datenschutz-Entwurf aus COMP und geheimnisfreie OIDC-Diagnose aus SEC.
+
+Dateifehler aus PR 33: server/privacy.mjs und shared/legal-identity.mjs waren durch die Docker-Kontext-Allowlist ausgeschlossen.
+Der Kontexttest wurde gegen die unveränderte Main-Allowlist ausgeführt und reproduzierte den Fehler für shared/legal-identity.mjs.
+Beide Dateien sind jetzt ausdrücklich erlaubt; weiterhin kein pauschales Öffnen des server-/shared-Verzeichnisses.
+Die veraltete Aussage im COMP-Cutoverplan über ein fehlendes Zoneninventar wurde auf den gelesenen Snapshot und die Pflicht zum frischen Readback korrigiert.
+
+Vier Prüfschritte:
+1. PR-/Branch-Abgleich: Mergekonflikt und Ausschlussfehler reproduziert; Main-Inhalt aus PR 33 übernommen.
+2. Zugriff und Datenschutz: 21 Backend-/OIDC-/Datenschutz-/MTA-STS-/Imageprofil-Tests sowie 9 Rechtstext-/Navigation-/Analytics-Tests PASS.
+3. Dateigrenzen/Anwendung: 2 Docker-Kontexttests, TypeScript, Vite-Produktionsbuild und Browser-Boundary (26 Dateien) PASS.
+4. Workflow/Abschluss: Actionlint 1.7.12 aus offiziellem SHA-256-verifiziertem Release für beide geänderten Workflows (nur veraltete ubuntu-26.04-Labelmeldung ausgeblendet; dieser Runner startete im gelesenen Actions-Lauf erfolgreich), Bash-Syntax, Konfliktmarkerprüfung und diff --check PASS.
+
+Der COMP-Inhalt bleibt erhalten: nur eigene verifizierte OIDC-Sitzung im Export, kein vollständiger ZITADEL-/Finance-Datenauszug,
+E-Mail-Entwurf mit persisted=false/sent=false, anonymer Kontakt und deaktivierte optionale Analytics.
+Diese Quellcodeprüfung ersetzt keinen produktiven Login oder neue Image-/CVE-/SBOM-Nachweise.
+Kein Workflow/Deploy oder Domainwechsel wurde gestartet.

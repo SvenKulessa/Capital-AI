@@ -11,7 +11,7 @@ async function harness(envOverrides = {}) {
   const { privateKey, publicKey } = await generateKeyPair('RS256');
   const jwk = { ...await exportJWK(publicKey), kid: 'test-key', alg: 'RS256', use: 'sig' };
   const env = { OIDC_ISSUER: 'https://identity.example', PUBLIC_APP_ORIGIN: 'https://capital.example', OIDC_CLIENT_ID: 'test-client', OIDC_CLIENT_SECRET: 'test-only-secret', TELEGRAM_BOT_TOKEN: '12345:offline_test_placeholder_only', TELEGRAM_CHAT_ID: '-100123', TELEGRAM_ALLOWED_SUBJECTS: 'owner-subject', ...envOverrides };
-  const state = { nonce: '', challenge: '', invalidNonce: false, invalidAudience: false, invalidIssuer: false, invalidSignature: false, expired: false, tokenCalls: 0, deliveries: [] };
+  const state = { subject: 'owner-subject', nonce: '', challenge: '', invalidNonce: false, invalidAudience: false, invalidIssuer: false, invalidSignature: false, expired: false, tokenCalls: 0, deliveries: [] };
   const upstream = async (url, options) => {
     assert.equal(options.redirect, 'error');
     const href = String(url);
@@ -22,7 +22,7 @@ async function harness(envOverrides = {}) {
       state.tokenCalls++;
       assert.equal(createHash('sha256').update(options.body.get('code_verifier')).digest('base64url'), state.challenge);
       assert.equal(options.body.get('redirect_uri'), 'https://capital.example/api/auth/callback');
-      const token = await new SignJWT({ nonce: state.invalidNonce ? 'wrong' : state.nonce, name: 'Test Owner' }).setProtectedHeader({ alg: 'RS256', kid: 'test-key' }).setIssuer(state.invalidIssuer ? 'https://other.example' : env.OIDC_ISSUER).setAudience(state.invalidAudience ? 'wrong' : env.OIDC_CLIENT_ID).setSubject('owner-subject').setIssuedAt().setExpirationTime(state.expired ? Math.floor(Date.now() / 1000) - 10 : '10m').sign(privateKey);
+      const token = await new SignJWT({ nonce: state.invalidNonce ? 'wrong' : state.nonce, name: 'Test Owner' }).setProtectedHeader({ alg: 'RS256', kid: 'test-key' }).setIssuer(state.invalidIssuer ? 'https://other.example' : env.OIDC_ISSUER).setAudience(state.invalidAudience ? 'wrong' : env.OIDC_CLIENT_ID).setSubject(state.subject).setIssuedAt().setExpirationTime(state.expired ? Math.floor(Date.now() / 1000) - 10 : '10m').sign(privateKey);
       const tampered = token.split('.');
       if (state.invalidSignature) tampered[2] = (tampered[2][0] === 'A' ? 'B' : 'A') + tampered[2].slice(1);
       return Response.json({ id_token: tampered.join('.'), access_token: 'never-return-to-browser' });
@@ -135,6 +135,62 @@ test('Market API has time-based rate limits independent of concurrency and spoof
   try {
     for (let i = 0; i < 120; i++) assert.equal((await h.request('/api/market/quote?symbol=INVALID', { headers: { 'X-Forwarded-For': `192.0.2.${i}` } })).status, 400);
     assert.equal((await h.request('/api/market/quote?symbol=INVALID')).status, 429);
+  } finally { await h.stop(); }
+});
+
+test('privacy export requires verified OIDC, isolates users and never exports credentials', async () => {
+  const h = await harness();
+  try {
+    assert.equal((await h.request('/api/privacy/export')).status, 401);
+    assert.equal((await h.request('/api/privacy/export', { headers: { cookie: '__Host-capital_session=forged' } })).status, 401);
+    const first = await h.complete();
+    h.state.subject = 'second-subject';
+    const second = await h.complete();
+    for (const [cookie, subject] of [[first, 'owner-subject'], [second, 'second-subject']]) {
+      const response = await h.request('/api/privacy/export', { headers: { cookie } });
+      assert.equal(response.status, 200);
+      assert.equal(response.headers.get('cache-control'), 'no-store');
+      assert.match(response.headers.get('content-disposition'), /attachment/);
+      const body = await response.json();
+      assert.equal(body.subject.subject, subject);
+      assert.equal(body.subject.issuer, 'https://identity.example');
+      assert.equal(body.unavailableSources.length, 3);
+      assert.doesNotMatch(JSON.stringify(body), /test-only-secret|never-return-to-browser|__Host-capital|id_token|access_token|nonce/);
+    }
+    assert.equal((await h.request('/api/privacy/export?subject=second-subject', { headers: { cookie: first } })).status, 400);
+    await h.request('/api/auth/logout', { method: 'POST', headers: { cookie: first, origin: 'https://capital.example' } });
+    assert.equal((await h.request('/api/privacy/export', { headers: { cookie: first } })).status, 401);
+  } finally { await h.stop(); }
+});
+
+test('privacy request is a bounded email draft, never a stored or executed request', async () => {
+  const h = await harness();
+  try {
+    const cookie = await h.complete();
+    const send = (body, origin = 'https://capital.example') => h.request('/api/privacy/requests', {
+      method: 'POST', headers: { cookie, origin, 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    });
+    assert.equal((await send({ requestType: 'erasure' }, 'https://attacker.example')).status, 403);
+    assert.equal((await send({ requestType: 'erasure', subject: 'other' })).status, 400);
+    assert.equal((await send({ requestType: ['access'] })).status, 400);
+    assert.equal((await send({ requestType: 'invalid' })).status, 400);
+    assert.equal((await send({ requestType: 'access', details: 'a'.repeat(2001) })).status, 400);
+    const response = await send({ requestType: 'erasure', details: 'Text & ?\nkeine Geheimnisse' });
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.equal(body.status, 'email_draft');
+    assert.equal(body.persisted, false); assert.equal(body.sent, false);
+    const draft = new URL(body.mailto);
+    assert.equal(draft.protocol, 'mailto:');
+    assert.equal(draft.pathname, 'sven.kulessa@capital-ai.online');
+    assert.match(draft.searchParams.get('body'), /owner-subject/);
+    assert.ok(draft.searchParams.get('body').includes('Text & ?\nkeine Geheimnisse'));
+    assert.equal(h.state.deliveries.length, 0);
+    assert.equal((await h.request('/api/privacy/requests', { headers: { cookie } })).status, 405);
+    // Four invalid bodies and one valid draft have consumed five attempts.
+    // Ten attempts are allowed; the eleventh must be rejected.
+    for (let i = 0; i < 5; i++) assert.equal((await send({ requestType: 'access' })).status, 200);
+    assert.equal((await send({ requestType: 'access' })).status, 429);
   } finally { await h.stop(); }
 });
 
