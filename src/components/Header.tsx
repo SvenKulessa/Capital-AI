@@ -152,7 +152,7 @@ export const Header: React.FC<HeaderProps> = ({
           <Menu className="w-5 h-5 stroke-[2]" />
         </button>
 
-        {/* Vector SVG Brand Logo */}
+        {/* Capital-AI globe branding */}
         <BrandLogo
           variant="inline"
           size="md"

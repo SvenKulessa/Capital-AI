@@ -39,3 +39,6 @@
 !docs/
 !docs/licenses/
 !docs/licenses/**
+!public/
+!public/branding/
+!public/branding/capital-ai-logo.jpg
