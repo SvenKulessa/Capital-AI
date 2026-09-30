@@ -1,4 +1,4 @@
-# Allow only build/runtime inputs; no secrets, git history, reports or tests.
+# Allow only build/runtime and bounded validation inputs; no secrets, history or reports.
 **
 !Dockerfile
 !.dockerignore
@@ -12,9 +12,18 @@
 !server/
 !server/index.mjs
 !server/market.mjs
+!server/advisor.ts
+!server/auth.mjs
+!server/telegram.mjs
+!server/http-security.mjs
+!server/infrastructure.mjs
+!shared/
+!shared/market-contracts.mjs
 !scripts/
 !scripts/license-evidence.mjs
 !scripts/license-evidence.test.mjs
+!scripts/frontend-security.test.mjs
+!scripts/verify-browser-boundary.mjs
 !docs/
 !docs/licenses/
 !docs/licenses/**

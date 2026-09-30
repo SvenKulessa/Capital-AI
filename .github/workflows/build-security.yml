@@ -23,7 +23,7 @@ jobs:
           persist-credentials: false
       - name: npm-Lizenzmetadaten und Regressionstests prüfen
         run: |
-          node --test scripts/license-evidence.test.mjs
+          node --test scripts/docker-context.test.mjs scripts/license-evidence.test.mjs
           node scripts/license-evidence.mjs
       - name: Gepinnte Sicherheitswerkzeuge bauen
         run: docker build --file Dockerfile.security --tag capital-ai-security .
