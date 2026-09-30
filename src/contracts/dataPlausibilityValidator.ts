@@ -54,7 +54,7 @@ export class DataPlausibilityValidator {
     }
 
     // 3. PERCENTAGE AND SCORE BOUNDS CHECKING (0-100)
-    if (result.finalScore < 0 || result.finalScore > 100) {
+    if (result.finalScore !== null && (!Number.isFinite(result.finalScore) || result.finalScore < 0 || result.finalScore > 100)) {
       violations.push({
         ruleId: 'PLAU-004-SCORE-OUT-OF-BOUNDS',
         ruleDescription: 'Finaler Score liegt außerhalb des Wertebereichs [0, 100]',
@@ -66,7 +66,7 @@ export class DataPlausibilityValidator {
 
     // 4. SUB-SCORES BOUNDS CHECKING
     for (const [key, value] of Object.entries(result.subScores)) {
-      if (value < 0 || value > 100) {
+      if (value !== null && (!Number.isFinite(value) || value < 0 || value > 100)) {
         violations.push({
           ruleId: 'PLAU-005-SUB-SCORE-BOUNDS',
           ruleDescription: `Teil-Score ${key} liegt außerhalb von [0, 100]`,
@@ -115,6 +115,10 @@ export class DataPlausibilityValidator {
       });
     }
 
+    if (result.isDemo && (result.eligibility || result.rank !== null || result.scoreEligible || result.rankEligible || result.alertEligible)) {
+      violations.push({ ruleId: 'PLAU-DEMO-ELIGIBILITY', ruleDescription: 'Demo darf nicht actionable sein',
+        severity: 'CRITICAL_BLOCKER', entityId: result.assetId, details: 'Demo mit Eligibility/Ranking/Alert-Freigabe' });
+    }
     return violations;
   }
 

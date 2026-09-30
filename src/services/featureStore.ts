@@ -15,12 +15,19 @@ export interface FeatureExtractionContext {
 }
 
 export class FeatureStoreService {
-  private static readonly CALCULATION_VERSION = '2.1.0';
+  private static readonly CALCULATION_VERSION = '0.1.0'; // demo fixture formula version
 
   /**
    * Computes all normalized features for a given asset observation deterministically.
    */
   public extractFeatures(context: FeatureExtractionContext): Map<string, FeatureValue> {
+    // A real price is not evidence for RSI, balance-sheet, sentiment or flows.
+    // Until dataset-backed formulas exist, the live path produces no features.
+    if (!context.observation.provenance.isDemo) return new Map();
+    if (context.observation.provenance.providerId !== 'capital_ai_demo_engine' ||
+        context.observation.provenance.licenseScope !== 'sandbox_demo') {
+      throw new Error('DEMO_PROVENANCE_REQUIRED');
+    }
     const featureMap = new Map<string, FeatureValue>();
     const { asset, observation } = context;
     const now = Date.now();
@@ -151,10 +158,18 @@ export class FeatureStoreService {
       });
     }
 
+    featureMap.set('event_impact_score', {
+      featureId: 'event_impact_score', assetId: asset.assetId, value: 65, unit: 'demo_score',
+      normalizedValue: 65, observedAt: observation.observedAt,
+      calculationVersion: FeatureStoreService.CALCULATION_VERSION, qualityScore: 0,
+      provenance: observation.provenance,
+    });
+    // Zero measured quality: reproducible demo fixtures do not establish sufficiency.
+    for (const feature of featureMap.values()) feature.qualityScore = 0;
     return featureMap;
   }
 
-  // Deterministic helper calculations
+  // Explicit synthetic demo fixtures; these are not financial calculations.
   private computeDeterministicRsi(symbol: string, price: number): number {
     const hash = (symbol.charCodeAt(0) * 17 + Math.floor(price)) % 100;
     return Math.max(22, Math.min(78, hash));

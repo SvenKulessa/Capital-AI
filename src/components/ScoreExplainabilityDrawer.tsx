@@ -95,7 +95,7 @@ export const ScoreExplainabilityDrawer: React.FC<ScoreExplainabilityDrawerProps>
                       : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                   }`}
                 >
-                  {result.isDemo ? 'DEMO' : 'LIVE'}
+                  {result.dataAvailability.toUpperCase()}
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-1">
@@ -120,8 +120,8 @@ export const ScoreExplainabilityDrawer: React.FC<ScoreExplainabilityDrawerProps>
                 <div className="flex items-center gap-4">
                   <div className="text-center p-3 rounded-xl bg-[#0d1633] border border-amber-500/40 min-w-[90px]">
                     <div className="text-[10px] font-mono uppercase text-slate-400">Finaler Score</div>
-                    <div className="text-3xl font-extrabold font-mono text-amber-400">
-                      {result.finalScore}
+                    <div className={`${result.finalScore === null ? 'text-base' : 'text-3xl'} font-extrabold font-mono text-amber-400`}>
+                      {result.finalScore ?? 'Nicht verfügbar'}
                     </div>
                     <div className="text-[9px] font-mono text-slate-500">von 100 Pkt.</div>
                   </div>
@@ -135,7 +135,7 @@ export const ScoreExplainabilityDrawer: React.FC<ScoreExplainabilityDrawerProps>
                     </div>
                     <p className="text-xs text-slate-300 mt-1 leading-relaxed">
                       {result.eligibility
-                        ? 'Das Asset erfüllt alle regulatorischen Handels- und Liquiditätsvoraussetzungen (Hard-Gates aktiv).'
+                        ? 'Die implementierten Eligibility-Gates sind erfüllt.'
                         : `Hard-Gate Veto aktiv: ${result.eligibilityReason || 'Handelsaussetzung oder erhöhtes Risiko'}.`}
                     </p>
                   </div>
@@ -144,7 +144,7 @@ export const ScoreExplainabilityDrawer: React.FC<ScoreExplainabilityDrawerProps>
                 <div className="text-right sm:border-l sm:border-slate-800 sm:pl-4">
                   <div className="text-[10px] font-mono text-slate-400">Risiko-Abzug</div>
                   <div className="text-sm font-mono font-bold text-rose-400">
-                    -{result.riskPenalty} Pkt.
+                    {result.finalScore === null ? 'Nicht verfügbar' : `-${result.riskPenalty} Pkt.`}
                   </div>
                   <div className="text-[9px] text-slate-500 font-mono mt-0.5">Spread &amp; Volatilität</div>
                 </div>
@@ -156,7 +156,7 @@ export const ScoreExplainabilityDrawer: React.FC<ScoreExplainabilityDrawerProps>
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 font-mono flex items-center gap-2">
                   <Layers className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Kanonische Berechnungsformel (Audit-Konform)</span>
+                  <span>Versionierte Modellformel</span>
                 </h3>
                 <span className="text-[10px] font-mono text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded">
                   AP-002 Formula
@@ -198,10 +198,10 @@ export const ScoreExplainabilityDrawer: React.FC<ScoreExplainabilityDrawerProps>
                   <div key={s.label} className="p-3 rounded-xl bg-[#090e21] border border-slate-800">
                     <div className="flex justify-between items-center text-[11px] mb-1">
                       <span className="text-slate-400">{s.label}</span>
-                      <span className={`font-mono font-bold ${s.color}`}>{s.score}/100</span>
+                      <span className={`font-mono font-bold ${s.color}`}>{s.score === null ? 'Nicht verfügbar' : `${s.score}/100`}</span>
                     </div>
                     <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mb-1.5">
-                      <div className={`h-full ${s.bar}`} style={{ width: `${s.score}%` }} />
+                      <div className={`h-full ${s.bar}`} style={{ width: `${s.score ?? 0}%` }} />
                     </div>
                     <div className="text-[10px] text-slate-500 font-mono">
                       Gewicht: {(s.weight * 100).toFixed(0)}%
@@ -211,75 +211,12 @@ export const ScoreExplainabilityDrawer: React.FC<ScoreExplainabilityDrawerProps>
               </div>
             </div>
 
-            {/* 4. Strict Separation: Facts vs Derived Features vs Model Inferences */}
-            <div className="space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 font-mono flex items-center gap-2">
-                <Database className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Epistemische Trennung: Fakten vs. Features vs. Inferenzen</span>
-              </h3>
-
-              <div className="space-y-3">
-                {/* FACTS */}
-                <div className="p-4 rounded-xl bg-black/40 border border-slate-800 space-y-2">
-                  <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 font-mono">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                    <span>1. VERIFIZIERTE BÖRSEN-FAKTEN (RAW FACTS)</span>
-                  </div>
-                  <p className="text-[11px] text-slate-400">
-                    Reine Beobachtungen aus WebSocket- und REST-Ingestion ohne mathematische Transformation:
-                  </p>
-                  <div className="grid grid-cols-2 gap-2 text-xs font-mono text-slate-300">
-                    <div className="p-2 rounded bg-[#090e21] border border-slate-800/80">
-                      <span className="text-slate-500">Venue / Heimatbörse:</span> {result.assetClass === 'crypto' ? 'Binance Spot' : 'NASDAQ Global'}
-                    </div>
-                    <div className="p-2 rounded bg-[#090e21] border border-slate-800/80">
-                      <span className="text-slate-500">Latenz Ingress:</span> 28 ms (Sub-45ms SLA)
-                    </div>
-                  </div>
-                </div>
-
-                {/* DERIVED FEATURES */}
-                <div className="p-4 rounded-xl bg-black/40 border border-slate-800 space-y-2">
-                  <div className="flex items-center gap-2 text-xs font-bold text-cyan-400 font-mono">
-                    <span className="w-2 h-2 rounded-full bg-cyan-400" />
-                    <span>2. ABGELEITETE FEATURES (DERIVED FEATURES)</span>
-                  </div>
-                  <p className="text-[11px] text-slate-400">
-                    Deterministische mathematische Berechnungen über definierte Zeitfenster (Version {result.modelVersion}):
-                  </p>
-                  <div className="grid grid-cols-2 gap-2 text-xs font-mono text-slate-300">
-                    <div className="p-2 rounded bg-[#090e21] border border-slate-800/80">
-                      <span className="text-slate-500">RSI-14 (Standard):</span> {result.subScores.momentumScore}
-                    </div>
-                    <div className="p-2 rounded bg-[#090e21] border border-slate-800/80">
-                      <span className="text-slate-500">Piotroski Bilanz F-Score:</span> 8 von 9 Pkt.
-                    </div>
-                  </div>
-                </div>
-
-                {/* MODEL INFERENCES */}
-                <div className="p-4 rounded-xl bg-black/40 border border-slate-800 space-y-2">
-                  <div className="flex items-center gap-2 text-xs font-bold text-purple-400 font-mono">
-                    <span className="w-2 h-2 rounded-full bg-purple-400" />
-                    <span>3. MODELL-INFERENZEN &amp; SYNTHESE (MODEL INFERENCES)</span>
-                  </div>
-                  <p className="text-[11px] text-slate-400">
-                    Auswertung von NLP-Sentiment, Regime-Klassifikation und Cross-Sectional Ranking:
-                  </p>
-                  <div className="grid grid-cols-2 gap-2 text-xs font-mono text-slate-300">
-                    <div className="p-2 rounded bg-[#090e21] border border-slate-800/80">
-                      <span className="text-slate-500">Markt-Regime:</span> Bullish Expansion
-                    </div>
-                    <div className="p-2 rounded bg-[#090e21] border border-slate-800/80">
-                      <span className="text-slate-500">NLP-Stimmungs-Bias:</span> +0.48 (Positiv)
-                    </div>
-                  </div>
-                  <div className="text-[10px] text-amber-400/90 font-mono mt-1 flex items-center gap-1.5">
-                    <Info className="w-3.5 h-3.5 shrink-0" />
-                    <span>Wichtige Klarstellung: Eine Modell-Inferenz stellt niemals einen garantierten künftigen Kursverlauf dar.</span>
-                  </div>
-                </div>
-              </div>
+            <div className="p-4 rounded-xl bg-black/40 border border-slate-800 text-xs text-slate-300">
+              {result.isDemo ? 'Synthetische Demo-Features; keine Provider-Fakten oder gemessene Datenkonfidenz.'
+                : 'Pflichtdaten oder Validierungsnachweise fehlen. Keine verifizierte Marktintelligenz.'}
+              <ul className="mt-2 space-y-1 font-mono text-[10px]">
+                {result.reasonCodes.map(code => <li key={code}>{code}</li>)}
+              </ul>
             </div>
 
             {/* 5. Drivers & Reason Codes */}
@@ -330,7 +267,7 @@ export const ScoreExplainabilityDrawer: React.FC<ScoreExplainabilityDrawerProps>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-mono text-slate-400 flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>SHA-256 BaFin Evidence Hash</span>
+                  <span>Evidence-Referenz (nicht verifiziert)</span>
                 </span>
                 <button
                   type="button"
@@ -345,7 +282,7 @@ export const ScoreExplainabilityDrawer: React.FC<ScoreExplainabilityDrawerProps>
                 {result.evidenceId}
               </div>
               <div className="text-[10px] text-slate-500 font-mono">
-                Replay Token: RPL_{result.symbol}_{result.computedAt}_{result.modelVersion}
+                Replay: noch nicht verfügbar
               </div>
             </div>
 

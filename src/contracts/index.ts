@@ -19,3 +19,6 @@ export * from './nodes/reasoning';
 export * from './nodes/risk';
 export * from './nodes/backtest';
 export * from './nodes/egress';
+
+
+export * from './analysisComponentRegistryValidator';
