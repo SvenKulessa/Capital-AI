@@ -1,0 +1,66 @@
+name: Render CLI read-only verification
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: render-cli-readonly
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    if: github.repository == 'SvenKulessa/Capital-AI' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      RENDER_CLI_DISABLE_ANALYTICS: '1'
+      RENDER_CLI_CONFIG_DIR: ${{ runner.temp }}/render-cli-config
+    steps:
+      - name: Install verified Render CLI 2.28.0
+        shell: bash
+        run: |
+          set -euo pipefail
+          cli_dir="$RUNNER_TEMP/render-cli"
+          mkdir -p "$cli_dir"
+          curl --fail --silent --show-error --location --max-time 45 \
+            --proto '=https' --proto-redir '=https' \
+            https://github.com/render-oss/cli/releases/download/v2.28.0/cli_2.28.0_linux_amd64.zip \
+            -o "$cli_dir/cli.zip"
+          printf '%s  %s\n' \
+            '00d1ca6f3c31b1f4bc7316837b8ee24acbeb11cf372b7593c7d2c3106a1987b4' \
+            "$cli_dir/cli.zip" | sha256sum --check --status
+          unzip -q "$cli_dir/cli.zip" -d "$cli_dir"
+          chmod 0755 "$cli_dir/cli_v2.28.0"
+          "$cli_dir/cli_v2.28.0" --version
+      - name: Verify AICapital access and Capital-AI live deployment
+        shell: bash
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY_TEST }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$RENDER_API_KEY" || { echo 'RENDER_API_KEY_TEST is missing.'; exit 1; }
+          cli="$RUNNER_TEMP/render-cli/cli_v2.28.0"
+          # Keep raw API responses and diagnostic output off public logs.
+          if ! "$cli" workspace set tea-d90o4rj7uimc739i86ug --confirm -o json \
+            > "$RUNNER_TEMP/render-workspace.json" 2> "$RUNNER_TEMP/render-cli-stderr"; then
+            echo 'Render workspace access failed; verify the secret and AICapital membership.'
+            exit 1
+          fi
+          if ! "$cli" deploys list srv-dau1rp893c1s73cdhm1g --confirm -o json \
+            > "$RUNNER_TEMP/render-deploys.json" 2> "$RUNNER_TEMP/render-cli-stderr"; then
+            echo 'Capital-AI deployment read failed.'
+            exit 1
+          fi
+          jq -e '[.. | objects | select(.status? == "live")] | length > 0' \
+            "$RUNNER_TEMP/render-deploys.json" > /dev/null
+          printf '%s\n' \
+            'PASS: CLI authenticated for AICapital; Capital-AI has a live deployment.' \
+            'Only workspace selection and deployment reads were performed.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Remove temporary credentials and responses
+        if: always()
+        shell: bash
+        run: |
+          rm -rf -- "$RENDER_CLI_CONFIG_DIR"
+          rm -f -- "$RUNNER_TEMP/render-workspace.json" "$RUNNER_TEMP/render-deploys.json" "$RUNNER_TEMP/render-cli-stderr"
