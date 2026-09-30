@@ -1,7 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { sanitizeAlertPreferences } from '../src/utils/alertPreferences.ts';
 import { PipelineStorageService, getPresetPipelines } from '../src/services/pipelineStorage.ts';
+import { AppErrorBoundary, BootstrapFailure } from '../src/components/AppErrorBoundary.tsx';
 
 test('legacy Telegram credentials and unknown fields are discarded on reload and serialization', () => {
   const legacy = { inAppNotifications: true, autoCheckIntervalSec: 1, botToken: 'old-secret', telegram: { enabled: true, botToken: 'old-secret', chatId: '12345', unknown: 'old-secret' } };
@@ -37,4 +41,25 @@ test('pipeline storage discards invalid rows while retaining schema-valid drafts
     globalThis.localStorage.setItem = originalWrite;
     assert.equal(PipelineStorageService.listPipelines().length, 2);
   } finally { delete globalThis.window; delete globalThis.localStorage; }
+});
+
+test('bootstrap fallback is visible without leaking exception details', () => {
+  const markup = renderToStaticMarkup(React.createElement(BootstrapFailure));
+  assert.match(markup, /Oberfläche konnte nicht sicher gestartet werden/);
+  assert.match(markup, /Startseite neu laden/);
+  assert.equal(markup.includes('super-secret-token'), false);
+  assert.equal(markup.includes('stack'), false);
+});
+
+test('app error boundary fails closed to the bootstrap fallback', () => {
+  assert.deepEqual(AppErrorBoundary.getDerivedStateFromError(), { failed: true });
+});
+
+
+test('index shell remains useful before JavaScript boots', async () => {
+  const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(html, /<div id="root">[\s\S]*<main/);
+  assert.match(html, /Marktdaten verstehen\. Chancen besser erkennen\./);
+  assert.match(html, /Falls JavaScript nicht gestartet werden kann/);
+  assert.match(html, /<noscript>/);
 });

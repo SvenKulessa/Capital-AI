@@ -1,10 +1,29 @@
-import {StrictMode} from 'react';
-import {createRoot} from 'react-dom/client';
-import App from './App.tsx';
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { AppErrorBoundary, BootstrapFailure } from './components/AppErrorBoundary';
 import './index.css';
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+const host = document.getElementById('root');
+if (!host) {
+  throw new Error('APP_ROOT_MISSING');
+}
+
+const root = createRoot(host);
+
+void import('./App.tsx')
+  .then(({ default: App }) => {
+    root.render(
+      <StrictMode>
+        <AppErrorBoundary>
+          <App />
+        </AppErrorBoundary>
+      </StrictMode>,
+    );
+  })
+  .catch(() => {
+    root.render(
+      <StrictMode>
+        <BootstrapFailure />
+      </StrictMode>,
+    );
+  });
