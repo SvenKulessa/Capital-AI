@@ -961,8 +961,8 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "owner": "TRUST",
   "priority": "Hoch",
   "targetSprint": "01.–03.10.2026; vor Domain-Cutover",
-  "description": "Secret Scanning, Push Protection, Dependabot, Dependency Review, vertrauliche Meldungen und Sicherheitskontakt prüfen; Einstellungen sind nicht als live aktiviert bestätigt. CodeQL bleibt deaktiviert.",
-  "nextStep": "Kostenfreie Optionen einzeln lesen und aktivieren; kostenpflichtige Zusatzprodukte ausschließen.",
+  "description": "Secret Scanning, Push Protection, Dependabot, Dependency Review, CodeQL für JavaScript/TypeScript, vertrauliche Meldungen und Sicherheitskontakt prüfen und aktivieren; Live-Aktivierung nicht bestätigt. Die Public-Funktionen bleiben auch unter capital-ai-online in Enterprise Cloud ohne zusätzliche Security-Lizenz nutzbar.",
+  "nextStep": "Kostenfreie Optionen einschließlich CodeQL einzeln lesen und aktivieren; Standard-Runner und Storage-Budget prüfen; kostenpflichtige Zusatzprodukte ausschließen.",
   "deliverables": [
     "Kostenfreie Optionen einzeln lesen und aktivieren; kostenpflichtige Zusatzprodukte ausschließen."
   ],
@@ -1074,8 +1074,8 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "owner": "PLATFORM",
   "priority": "Hoch",
   "targetSprint": "Nach Digest-Abnahme, DNS-Migration und Finance-Ablösung; Termin offen",
-  "description": "Transfer erst nach den vorgelagerten Abnahmen. Zielorganisation und Enterprise-Typ ungeklärt; Enterprise Managed Users unterstützen keine öffentlichen Repositories. Keine neuen kostenpflichtigen Seats buchen.",
-  "nextStep": "Zielorganisation/Typ/Kosten prüfen, öffentlich transferieren und Rulesets, GHCR, Render, OIDC, Apps sowie Secrets-Zugriffe erneut abnehmen.",
+  "description": "Transfer erst nach den vorgelagerten Abnahmen. Ziel: capital-ai-online/Capital-AI in der Capital-AI-Enterprise-Umgebung, weiterhin public. Enterprise-Zuordnung und Kontotyp live prüfen; Enterprise Managed Users unterstützen keine öffentlichen Repositories. Public-CodeQL und die genannten Public-Sicherheitsfunktionen bleiben ohne zusätzliche Security-Lizenz nutzbar; Enterprise-Seats separat prüfen.",
+  "nextStep": "capital-ai-online und Capital-AI-Enterprise-Zuordnung/Typ/Kosten prüfen, mit Sichtbarkeit public transferieren und CodeQL, Rulesets, GHCR, Render, OIDC, Apps sowie Secrets-Zugriffe erneut abnehmen.",
   "deliverables": [
     "Zielorganisation/Typ/Kosten prüfen, öffentlich transferieren und Rulesets, GHCR, Render, OIDC, Apps sowie Secrets-Zugriffe erneut abnehmen."
   ],
