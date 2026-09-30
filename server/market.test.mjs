@@ -1,13 +1,52 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { quote } from './market.mjs';
+let instance = 0;
+const isolatedQuote = async () => (await import(`./market.mjs?test=${++instance}`)).quote;
 
 test('unsupported symbols are rejected before any provider request', async () => {
+  const quote = await isolatedQuote();
   const [status, body] = await quote('https://attacker.example');
   assert.equal(status, 400);
   assert.equal(body.error, 'unsupported_symbol');
 });
+
+test('parallel stale-cache requests share one provider request', async () => {
+  const quote = await isolatedQuote();
+  const originalFetch = globalThis.fetch;
+  const originalKey = process.env.TWELVE_DATA_API_KEY;
+  process.env.TWELVE_DATA_API_KEY = 'offline-test-key';
+  let calls = 0;
+  globalThis.fetch = async () => { calls++; return Response.json({ symbol: 'AAPL', close: 101, datetime: new Date().toISOString() }); };
+  try {
+    const results = await Promise.all(Array.from({ length: 8 }, () => quote('AAPL')));
+    assert.equal(calls, 1);
+    assert.equal(results.every(([status]) => status === 200), true);
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (originalKey === undefined) delete process.env.TWELVE_DATA_API_KEY; else process.env.TWELVE_DATA_API_KEY = originalKey;
+  }
+});
+
+test('failed provider requests get a short negative cache', async () => {
+  const quote = await isolatedQuote();
+  const originalFetch = globalThis.fetch;
+  const previous = [process.env.TWELVE_DATA_API_KEY, process.env.POLYGON_API_KEY];
+  process.env.TWELVE_DATA_API_KEY = 'offline-test-key'; delete process.env.POLYGON_API_KEY;
+  let calls = 0;
+  globalThis.fetch = async () => { calls++; return Response.json({ status: 'error' }); };
+  try {
+    assert.equal((await quote('AAPL'))[0], 503);
+    assert.equal((await quote('AAPL'))[0], 503);
+    assert.equal(calls, 1);
+  } finally {
+    globalThis.fetch = originalFetch;
+    ['TWELVE_DATA_API_KEY', 'POLYGON_API_KEY'].forEach((key, i) => {
+      if (previous[i] === undefined) delete process.env[key]; else process.env[key] = previous[i];
+    });
+  }
+});
 test('missing feed and keys produce no fabricated price', async () => {
+  const quote = await isolatedQuote();
   delete process.env.TWELVE_DATA_API_KEY;
   delete process.env.POLYGON_API_KEY;
   const [status, body] = await quote('AAPL');
@@ -17,6 +56,7 @@ test('missing feed and keys produce no fabricated price', async () => {
 });
 
 test('oversized provider responses are rejected', async () => {
+  const quote = await isolatedQuote();
   const originalFetch = globalThis.fetch;
   const originalKey = process.env.TWELVE_DATA_API_KEY;
   process.env.TWELVE_DATA_API_KEY = 'offline-test-key';
@@ -33,6 +73,7 @@ test('oversized provider responses are rejected', async () => {
 });
 
 test('stale Twelve Data response continues to a fresh Polygon fallback', async () => {
+  const quote = await isolatedQuote();
   const originalFetch = globalThis.fetch;
   const previous = [process.env.TWELVE_DATA_API_KEY, process.env.POLYGON_API_KEY];
   process.env.TWELVE_DATA_API_KEY = 'offline-test-key';

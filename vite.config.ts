@@ -3,14 +3,18 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import {defineConfig, Plugin} from 'vite';
 import { thirdPartyNoticesPlugin } from './scripts/license-evidence.mjs';
-import { handleAdvisorRequest } from './src/services/geminiAdvisorBackend.ts';
+import { handleAdvisorRequest } from './server/advisor.ts';
+import { createLimiter } from './server/http-security.mjs';
 
 function advisorApiPlugin(): Plugin {
+  const allow = createLimiter(10);
   return {
     name: 'advisor-api-plugin',
     configureServer(server) {
       server.middlewares.use('/api/advisor', async (req, res) => {
         if (req.method === 'POST') {
+          if (!allow()) { res.statusCode = 429; res.end('Rate limited'); return; }
+          if (req.headers.origin !== 'http://127.0.0.1:3000' || req.headers['content-type']?.split(';')[0] !== 'application/json') { res.statusCode = 403; res.end('Forbidden'); return; }
           let bodyStr = '';
           let bodyBytes = 0;
           req.on('data', (chunk) => {

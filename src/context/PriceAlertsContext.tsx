@@ -1,3 +1,4 @@
+import { sanitizeTelegramConfig, sanitizeAlertPreferences } from '../utils/alertPreferences';
 /**
  * ============================================================================
  * [ARCHITEKTUR-MAPPING: GLOBAL ALERTS, TELEGRAM & WHALE RADAR CONTEXT]
@@ -187,7 +188,7 @@ export const PriceAlertsProvider: React.FC<{ children: ReactNode }> = ({ childre
     try {
       const saved = localStorage.getItem(STORAGE_PREFS_KEY);
       if (saved) {
-        return { ...DEFAULT_ALERT_PREFERENCES, ...JSON.parse(saved) };
+        return sanitizeAlertPreferences({ ...DEFAULT_ALERT_PREFERENCES, ...JSON.parse(saved) }, true);
       }
     } catch {
       // Fallback
@@ -249,7 +250,7 @@ export const PriceAlertsProvider: React.FC<{ children: ReactNode }> = ({ childre
   // Sync preferences
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_PREFS_KEY, JSON.stringify(preferences));
+      localStorage.setItem(STORAGE_PREFS_KEY, JSON.stringify(sanitizeAlertPreferences(preferences)));
     } catch {
       // Ignore
     }
@@ -262,17 +263,17 @@ export const PriceAlertsProvider: React.FC<{ children: ReactNode }> = ({ childre
 
   // Update preferences
   const updatePreferences = useCallback((updates: Partial<UserAlertPreferences>) => {
-    setPreferences((prev) => ({ ...prev, ...updates }));
+    setPreferences((prev) => sanitizeAlertPreferences({ ...prev, ...updates }));
   }, []);
 
   // Telegram config update
   const updateTelegramConfig = useCallback((updates: Partial<TelegramConfig>) => {
     setPreferences((prev) => ({
       ...prev,
-      telegram: {
+      telegram: sanitizeTelegramConfig({
         ...(prev.telegram || DEFAULT_TELEGRAM_CONFIG),
         ...updates,
-      },
+      }),
     }));
   }, []);
 

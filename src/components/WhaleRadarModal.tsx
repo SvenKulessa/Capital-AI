@@ -85,8 +85,6 @@ export const WhaleRadarModal: React.FC<WhaleRadarModalProps> = ({
   const [testResult, setTestResult] = useState<{ status: string; message: string } | null>(null);
 
   // Bot Token / Chat ID form state
-  const [customBotToken, setCustomBotToken] = useState(preferences.telegram?.botToken || '');
-  const [customChatId, setCustomChatId] = useState(preferences.telegram?.chatId || '');
   const [savedConfigBanner, setSavedConfigBanner] = useState(false);
 
   if (!isOpen) return null;
@@ -112,7 +110,8 @@ export const WhaleRadarModal: React.FC<WhaleRadarModalProps> = ({
   const handlePushClick = async (tx: WhaleTransaction) => {
     setPushStatusMap((prev) => ({ ...prev, [tx.id]: 'sending' }));
     const res = await pushWhaleToTelegram(tx.id);
-    setPushStatusMap((prev) => ({ ...prev, [tx.id]: 'sent' }));
+    if (res.success) setPushStatusMap((prev) => ({ ...prev, [tx.id]: 'sent' }));
+    else setTestResult({ status: 'error', message: res.error || 'Versand fehlgeschlagen.' });
     setTimeout(() => {
       setPushStatusMap((prev) => {
         const next = { ...prev };
@@ -120,18 +119,6 @@ export const WhaleRadarModal: React.FC<WhaleRadarModalProps> = ({
         return next;
       });
     }, 3000);
-  };
-
-  const handleSaveTelegram = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateTelegramConfig({
-      botToken: customBotToken.trim(),
-      chatId: customChatId.trim(),
-      connected: true,
-      enabled: true,
-    });
-    setSavedConfigBanner(true);
-    setTimeout(() => setSavedConfigBanner(false), 3000);
   };
 
   const handleSendTestPush = async () => {
@@ -594,79 +581,10 @@ export const WhaleRadarModal: React.FC<WhaleRadarModalProps> = ({
                   </div>
                 )}
 
-                {/* 1-Click Telegram Kopplung Quick-Step */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3.5">
-                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800">
-                    <span className="text-[11px] font-bold text-cyan-300 uppercase block mb-1">
-                      Option A: 1-Klick Instant Kopplung
-                    </span>
-                    <p className="text-slate-400 text-[11px] mb-2 leading-relaxed">
-                      Öffnen Sie Telegram und senden Sie den Befehl <code>/start</code> an den Capital-AI Bot mit Ihrem persönlichen Synchronisations-Code:
-                    </p>
-                    <div className="flex items-center gap-2 p-2 rounded-lg bg-black/60 border border-slate-800 font-mono text-xs text-amber-300">
-                      <span>/start CAP-8849-LIVE</span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          navigator.clipboard.writeText('/start CAP-8849-LIVE');
-                          setCopiedCode(true);
-                          setTimeout(() => setCopiedCode(false), 2000);
-                        }}
-                        className="ml-auto text-slate-400 hover:text-white p-1 cursor-pointer"
-                        title="In die Zwischenablage kopieren"
-                      >
-                        {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                      </button>
-                    </div>
-                    <a
-                      href="https://t.me"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-2.5 inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300 font-bold text-[11px]"
-                    >
-                      <span>In Telegram öffnen</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  </div>
-
-                  {/* Option B: Custom Bot Token & Chat ID */}
-                  <form onSubmit={handleSaveTelegram} className="p-3 rounded-xl bg-slate-900/90 border border-slate-800">
-                    <span className="text-[11px] font-bold text-cyan-300 uppercase block mb-1">
-                      Option B: Eigener Telegram Bot (Enterprise / Private)
-                    </span>
-                    <div className="space-y-2">
-                      <div>
-                        <label className="text-[10px] text-slate-400 block mb-0.5 font-mono">
-                          Telegram Bot Token:
-                        </label>
-                        <input
-                          type="password"
-                          value={customBotToken}
-                          onChange={(e) => setCustomBotToken(e.target.value)}
-                          placeholder="z.B. 123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
-                          className="w-full px-2.5 py-1.5 rounded-lg bg-black/60 border border-slate-700 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400 font-mono"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[10px] text-slate-400 block mb-0.5 font-mono">
-                          Chat ID / Kanal ID:
-                        </label>
-                        <input
-                          type="text"
-                          value={customChatId}
-                          onChange={(e) => setCustomChatId(e.target.value)}
-                          placeholder="z.B. 987654321 oder @mein_trading_kanal"
-                          className="w-full px-2.5 py-1.5 rounded-lg bg-black/60 border border-slate-700 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400 font-mono"
-                        />
-                      </div>
-                      <button
-                        type="submit"
-                        className="w-full py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition-colors cursor-pointer border border-slate-700"
-                      >
-                        Speichern &amp; Testen
-                      </button>
-                    </div>
-                  </form>
+                <div className="mt-3.5 p-3 rounded-xl bg-slate-900/90 text-xs text-slate-300">
+                  Telegram-Versand ist nur nach Anmeldung und Freigabe verfügbar.
+                  Zugangsdaten werden ausschließlich auf dem Server eingerichtet.
+                  Dieser Browser speichert keine Bot-Schlüssel.
                 </div>
               </div>
 

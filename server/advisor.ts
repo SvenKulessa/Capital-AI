@@ -1,3 +1,4 @@
+import { z } from 'zod';
 /**
  * CAPITAL AI — REASONING FINTECH & SCIENTIST ADVISOR BACKEND
  * Serves POST /api/advisor using @google/genai (gemini-3.8-flash)
@@ -6,52 +7,27 @@
 
 import { GoogleGenAI } from '@google/genai';
 
-export interface CatalogedToolItem {
-  id: string;
-  tier: string;
-  name: string;
-  specs: string;
-  costEur: number;
-  latencyEffect: string;
-  bafinRelevance: string;
-}
+import type { AdvisorRequestPayload, AdvisorResponsePayload } from '../src/contracts/advisor.ts';
 
-export interface AdvisorRequestPayload {
-  prompt: string;
-  currentConfig?: {
-    analysisFocusId?: string;
-    latencyIntervalId?: string;
-    providerIds?: string[];
-    cachingId?: string;
-    evidenceId?: string;
-    catalogedInventory?: CatalogedToolItem[];
-    totalMonthlyCostEur?: number;
-  };
-}
-
-export interface AdvisorResponsePayload {
-  thoughtProcess: string;
-  advice: string;
-  inventory: Array<{
-    tier: string;
-    item: string;
-    specs: string;
-    costEur: number;
-    latencyEffect: string;
-    bafinRelevance: string;
-  }>;
-  totalMonthlyCostEur: number;
-  isBudgetCompliant: boolean;
-  recommendedConfig?: {
-    analysisFocusId: string;
-    latencyIntervalId: string;
-    providerIds: string[];
-    cachingId: string;
-    evidenceId: string;
-  };
-}
+const RequestSchema = z.object({
+  prompt: z.string().min(1).max(4000),
+  currentConfig: z.object({
+    analysisFocusId: z.string().max(100).optional(),
+    latencyIntervalId: z.string().max(100).optional(),
+    providerIds: z.array(z.string().max(100)).max(20).optional(),
+    cachingId: z.string().max(100).optional(),
+    evidenceId: z.string().max(100).optional(),
+    catalogedInventory: z.array(z.object({
+      id: z.string().max(100), tier: z.string().max(100), name: z.string().max(200),
+      specs: z.string().max(1000), costEur: z.number().finite().min(0).max(1000000),
+      latencyEffect: z.string().max(500), bafinRelevance: z.string().max(500),
+    }).strict()).max(50).optional(),
+    totalMonthlyCostEur: z.number().finite().min(0).max(1000000).optional(),
+  }).strict().optional(),
+}).strict();
 
 export async function handleAdvisorRequest(payload: AdvisorRequestPayload): Promise<AdvisorResponsePayload> {
+  payload = RequestSchema.parse(payload);
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (apiKey) {
@@ -112,7 +88,7 @@ Antworte präzise, auf Deutsch und gib IMMER valides JSON zurück mit folgender 
         return parsed;
       }
     } catch (err) {
-      console.warn('[Capital-AI Advisor] Gemini call error, falling back to scientist rule engine:', err);
+      console.warn('[Capital-AI Advisor] Provider unavailable.');
     }
   }
 
