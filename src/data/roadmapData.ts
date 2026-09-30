@@ -348,7 +348,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
     priority: 'Kritisch',
     leadName: 'Verantwortung zuzuordnen',
     targetSprint: 'Nicht terminiert',
-    description: 'Geplantes Ziel, Abnahme offen: Entwicklung der Management-Konsole mit filterbarer Roadmap nach 11 Projektownern, 3 Status und 5 Phasen bis v1.0.',
+    description: 'Geplantes Ziel, Abnahme offen: Entwicklung der Management-Konsole mit filterbarer Roadmap nach 5 Domains, 3 Status und 5 Phasen bis v1.0.',
     deliverables: [
       'Filter-Matrix nach Owner, Status und Phase',
       'Executive Cockpit für Geschäftsführer und Team',
