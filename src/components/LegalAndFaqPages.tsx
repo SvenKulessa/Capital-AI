@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   AlertTriangle,
   ArrowLeft,
@@ -7,6 +7,7 @@ import {
   ChevronDown,
   ChevronUp,
   Copy,
+  Download,
   Database,
   FileText,
   HelpCircle,
@@ -65,6 +66,21 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
 
   const [requestType, setRequestType] = useState<PrivacyRequestType>('access');
   const [details, setDetails] = useState('');
+  const [authenticated, setAuthenticated] = useState(false);
+  const [privacyBusy, setPrivacyBusy] = useState(false);
+  const [privacyMessage, setPrivacyMessage] = useState('');
+
+  useEffect(() => {
+    setAuthenticated(false);
+    setPrivacyMessage('');
+    if (route !== '/datenschutz') return;
+    const abort = new AbortController();
+    fetch('/api/auth/session', { credentials: 'same-origin', cache: 'no-store', signal: abort.signal })
+      .then(response => response.ok ? response.json() : Promise.reject())
+      .then(body => setAuthenticated(body.authenticated === true))
+      .catch(() => setAuthenticated(false));
+    return () => abort.abort();
+  }, [route]);
   const categories = useMemo(() => ['Alle', ...PUBLIC_FAQ_CATEGORIES], []);
 
   const filteredFaqs = useMemo(() => {
@@ -79,9 +95,47 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
     });
   }, [searchQuery, selectedCategory]);
 
-  function submitPrivacyRequest() {
-    const subject = `Datenschutzanfrage: ${REQUEST_LABELS[requestType]}`;
-    window.location.href = `mailto:${CONTROLLER.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(details.trim())}`;
+  async function submitPrivacyRequest() {
+    if (!authenticated) {
+      const subject = `Datenschutzanfrage: ${REQUEST_LABELS[requestType]}`;
+      window.location.href = `mailto:${CONTROLLER.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(details.trim())}`;
+      return;
+    }
+    setPrivacyBusy(true);
+    setPrivacyMessage('');
+    try {
+      const response = await fetch('/api/privacy/requests', {
+        method: 'POST', credentials: 'same-origin', cache: 'no-store',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestType, details: details.trim() }), signal: AbortSignal.timeout(7000),
+      });
+      const body = await response.json();
+      if (response.status === 401) setAuthenticated(false);
+      if (!response.ok || body.status !== 'email_draft' || body.persisted !== false || body.sent !== false ||
+          typeof body.mailto !== 'string' || !body.mailto.startsWith(`mailto:${CONTROLLER.email}?`)) throw new Error();
+      setPrivacyMessage('E-Mail-Entwurf vorbereitet. Erst durch Ihren Versand wird die Anfrage übermittelt.');
+      window.location.href = body.mailto;
+    } catch {
+      setPrivacyMessage(`Der Entwurf konnte nicht vorbereitet werden. Sie können direkt an ${CONTROLLER.email} schreiben.`);
+    } finally { setPrivacyBusy(false); }
+  }
+
+  async function downloadAccountData() {
+    setPrivacyBusy(true);
+    setPrivacyMessage('');
+    try {
+      const response = await fetch('/api/privacy/export', { credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(7000) });
+      if (response.status === 401) setAuthenticated(false);
+      if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) throw new Error();
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url; anchor.download = 'capital-ai-datenauszug.json';
+      document.body.appendChild(anchor); anchor.click(); anchor.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setPrivacyMessage('Datenauszug erstellt: Identitäts- und Sitzungsdaten dieses Dienstes. ZITADEL-Kontodaten, Finance-Altdaten und E-Mail-Anfragen sind nicht enthalten.');
+    } catch { setPrivacyMessage('Der Datenauszug ist nicht verfügbar. Bitte melden Sie sich erneut an oder kontaktieren Sie den Datenschutzkontakt.'); }
+    finally { setPrivacyBusy(false); }
   }
 
   const handlePrint = () => {
@@ -347,7 +401,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
               </div>
               <div className="flex items-center gap-2 text-xs text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl self-start sm:self-auto">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Finance-Dokumentstand</span>
+                <span>{PRIVACY_COMPLIANCE_STATUS.label}</span>
               </div>
             </div>
 
@@ -381,7 +435,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
                   <Database className="w-4 h-4" /> Verarbeitungstätigkeiten
                 </h2>
                 <p className=" text-xs text-slate-400">
-                  Diese Einträge wurden aus der Datenschutzerklärung von Finance übernommen. Die genannten technischen Kontrollen, Anbieter und Aufbewahrungsfristen beschreiben den dokumentierten Finance-Stand; ihre Umsetzung im neuen Capital-AI-Service ist noch gesondert zu prüfen.
+                  Diese Hinweise beschreiben den Dienst mit ZITADEL-Anmeldung. Eine automatische Übernahme alter Finance-Konten oder ihrer Daten erfolgt nicht. Optionales Analytics und Werbung sind in diesem Dienst deaktiviert.
                 </p>
               </div>
               {PROCESSING_ACTIVITIES.map((activity) => (
@@ -400,7 +454,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
                       <div><strong className="block text-emerald-300">Empfänger</strong>{activity.recipients.join(' · ')}</div>
                       <div><strong className="block text-emerald-300">Drittland / Transfer</strong>{activity.transfer}</div>
                       <div><strong className="block text-emerald-300">Speicherung / Löschung</strong>{activity.retention}</div>
-                      <div><strong className="block text-emerald-300">In Finance dokumentierte technische Kontrollen</strong>{activity.technicalControls.join(' · ')}</div>
+                      <div><strong className="block text-emerald-300">Technische Kontrollen</strong>{activity.technicalControls.join(' · ')}</div>
                     </div>
                   </div>
                 </details>
@@ -432,6 +486,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
                 ))}
               </div>
               <textarea
+                aria-label="Optionale Angaben zur Datenschutzanfrage"
                 value={details}
                 onChange={(event) => setDetails(event.target.value.slice(0, 2000))}
                 placeholder="Optionale Angaben zur Anfrage (keine Passwörter, MFA-Secrets oder Zahlungsdaten eingeben)."
@@ -440,6 +495,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
               <button
                 type="button"
                 onClick={submitPrivacyRequest}
+                disabled={privacyBusy}
                 className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-bold hover:bg-white/10"
               >
                 <Send className="w-4 h-4" />
@@ -449,12 +505,21 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
                 Öffnet Ihr E-Mail-Programm. Die Anfrage wird erst durch Ihren Versand übermittelt.
                 Auch einen Datenauszug können Sie über diesen Kontakt anfordern.
               </p>
+              {privacyMessage && <p role="status" className="text-xs text-amber-200">{privacyMessage}</p>}
+              <button type="button" onClick={downloadAccountData} disabled={!authenticated || privacyBusy}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-emerald-500/30 text-emerald-300 text-xs font-bold disabled:opacity-50">
+                <Download className="w-4 h-4" /> Eigenen Datenauszug herunterladen
+              </button>
+              <p className="text-xs text-slate-400">
+                Der Datenauszug enthält ausschließlich Identitäts- und Sitzungsdaten dieses Dienstes. Er ist kein vollständiger Auskunftsbescheid.
+                {!authenticated && <> Für den Download bitte <button type="button" onClick={() => navigate('/login')} className="underline text-emerald-300">mit ZITADEL anmelden</button>.</>}
+              </p>
             </section>
 
             <section className="space-y-2">
               <h2 className="text-base font-bold text-white text-emerald-300">Drittanbieter, Drittländer & Beschwerderecht</h2>
               <p>
-                Bei Google-, Stripe-, Supabase- und verbundenen Social-Media-Diensten können internationale Datenflüsse
+                Bei Render, ZITADEL, Google Fonts und bei angefordertem Telegram-Versand können internationale Datenflüsse
                 oder Subprozessoren relevant sein. Ein bestimmter AVV-, SCC-, Angemessenheits- oder Hostingstatus wird
                 ohne aktuellen Vertragsnachweis nicht behauptet.
               </p>
@@ -534,8 +599,9 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
                 <p>
                   Für bereits bestehende entgeltliche Vertragsverhältnisse bleiben die bei Vertragsschluss
                   vereinbarten Preise, Leistungsbedingungen und gesetzlichen Rechte maßgeblich. Die Verwaltung
-                  bestehender Abonnements über das Stripe-Kundenportal sowie Kündigungs-, Widerrufs- und sonstige
-                  Verbraucherrechte bleiben unberührt.
+                  bestehender Abonnements sowie Kündigungs-, Widerrufs- und sonstige Verbraucherrechte bleiben
+                  unberührt. Für die Verwaltung bestehender Verträge steht der im Impressum genannte Kontakt zur Verfügung;
+                  ein Stripe-Kundenportal wird im neuen Dienst nicht als angebunden zugesagt.
                 </p>
                 <p className="text-[11px] text-slate-500">
                   Der frühere Preiskatalog bleibt ausschließlich als historische Vertrags- und Nachweisevidence erhalten.
@@ -549,8 +615,8 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
                   Bei Abonnements richtet sich die Abrechnungsperiode nach der im Bestellprozess gewählten
                   Monats- oder Jahresoption. Soweit im Bestellprozess nichts Abweichendes ausgewiesen wird,
                   verlängert sich das Abonnement um die jeweils gewählte Abrechnungsperiode, sofern es nicht
-                  rechtzeitig beendet wird. Für authentifizierte Kunden steht zur Verwaltung des Abonnements
-                  das Stripe-Kundenportal zur Verfügung. Gesetzliche Kündigungsrechte bleiben unberührt.
+                  rechtzeitig beendet wird. Für die Verwaltung bestehender Abonnements kann der im Impressum
+                  genannte Kontakt genutzt werden. Gesetzliche Kündigungsrechte bleiben unberührt.
                 </p>
               </section>
 
