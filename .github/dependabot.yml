@@ -1,0 +1,46 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: daily
+      time: "05:15"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 10
+    labels: ["Dependencies", "Patch"]
+
+  - package-ecosystem: npm
+    directory: /deploy/npm-security-patches
+    schedule:
+      interval: daily
+      time: "05:25"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 5
+    labels: ["Dependencies", "Security"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+      time: "05:35"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 10
+    labels: ["Dependencies", "Security"]
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: daily
+      time: "05:45"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 5
+    labels: ["Dependencies", "Patch"]
+
+  - package-ecosystem: docker
+    directory: /deploy
+    schedule:
+      interval: daily
+      time: "05:55"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 5
+    labels: ["Dependencies", "Security"]
