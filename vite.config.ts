@@ -48,6 +48,18 @@ function advisorApiPlugin(): Plugin {
 export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss(), advisorApiPlugin(), thirdPartyNoticesPlugin()],
+    build: {
+      rolldownOptions: {
+        output: {
+          codeSplitting: {
+            groups: [
+              { name: 'vendor', test: /node_modules/, priority: 10, minSize: 50_000, maxSize: 250_000 },
+              { name: 'application', test: /[\\/]src[\\/]/, priority: 0, minSize: 50_000, maxSize: 250_000 },
+            ],
+          },
+        },
+      },
+    },
     resolve: {
       alias: {
         '@': path.resolve(import.meta.dirname, '.'),

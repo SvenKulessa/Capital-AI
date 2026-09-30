@@ -29,6 +29,7 @@
 !scripts/license-evidence.test.mjs
 !scripts/frontend-security.test.mjs
 !scripts/verify-browser-boundary.mjs
+!scripts/validate-contract-suites.mjs
 !docs/
 !docs/licenses/
 !docs/licenses/**
