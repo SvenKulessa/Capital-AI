@@ -2,7 +2,8 @@ name: Render CLI read-only verification
 on:
   workflow_dispatch:
 
-permissions: {}
+permissions:
+  contents: read
 
 concurrency:
   group: render-cli-readonly
@@ -11,11 +12,16 @@ concurrency:
 jobs:
   verify:
     if: github.repository == 'SvenKulessa/Capital-AI' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 3
     env:
       RENDER_CLI_DISABLE_ANALYTICS: '1'
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Test credential-free OIDC diagnostics
+        run: node --test scripts/diagnose-oidc.test.mjs
       - name: Install verified Render CLI 2.28.0
         shell: bash
         run: |
@@ -58,6 +64,18 @@ jobs:
           printf '%s\n' \
             'PASS: CLI authenticated for AICapital; Capital-AI has a live deployment.' \
             'Only workspace selection and deployment reads were performed.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Diagnose runtime OIDC configuration without publishing values
+        shell: bash
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY_TEST }}
+        run: |
+          set -euo pipefail
+          umask 077
+          curl --fail --silent --show-error --max-time 20 \
+            --header "Authorization: Bearer $RENDER_API_KEY" \
+            'https://api.render.com/v1/services/srv-dau1rp893c1s73cdhm1g/env-vars?limit=100' \
+            --output "$RUNNER_TEMP/render-oidc-env.json"
+          node scripts/diagnose-oidc.mjs "$RUNNER_TEMP/render-oidc-env.json" >> "$GITHUB_STEP_SUMMARY"
       - name: Remove temporary credentials and responses
         if: always()
         shell: bash
@@ -65,4 +83,4 @@ jobs:
           RENDER_CLI_CONFIG_DIR: ${{ runner.temp }}/render-cli-config
         run: |
           rm -rf -- "$RENDER_CLI_CONFIG_DIR"
-          rm -f -- "$RUNNER_TEMP/render-workspace.json" "$RUNNER_TEMP/render-deploys.json" "$RUNNER_TEMP/render-cli-stderr"
+          rm -f -- "$RUNNER_TEMP/render-oidc-env.json" "$RUNNER_TEMP/render-workspace.json" "$RUNNER_TEMP/render-deploys.json" "$RUNNER_TEMP/render-cli-stderr"
