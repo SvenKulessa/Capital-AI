@@ -13,3 +13,7 @@ Bei Docs/SEO/Social/Branding: **GROWTH ist Primary Domain**.
 
 Branch-Präfix: `capital-ai-market/`
 PR-Präfix: `[CAPITAL-AI-MARKET]`
+
+## Branding
+Badge: `market.webp` — Türkis / Dunkelgrün; Marktbalken mit Kursimpuls.
+Lizenznachweis: `market.LICENSE.md`.
