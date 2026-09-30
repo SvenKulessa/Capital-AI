@@ -78,3 +78,21 @@ Trivy scannt weiterhin alle Schichten; keine Scanner-Ausnahme oder Logunterdrüc
 Drei Validierungen: Warnung dem früheren Installationslayer zugeordnet; Hadolint/Docker-Kontext/diff --check PASS;
 neuer Image-Lauf nach Merge bleibt offen. Bestehende Kandidatenevidenz gilt ausschließlich für ihren Quellcommit.
 Ein lokaler Docker-Neubuild ist weiterhin nicht möglich. Kein Workflow oder Deployment gestartet.
+
+
+## Supersession: CVE-2026-102277
+
+Am 29.09.2026 wurde für `brace-expansion` ein weiterer GitHub-reviewed Befund veröffentlicht:
+`CVE-2026-102277` (Moderate, CVSS 5.3, CPU-/Event-Loop-DoS). Betroffen sind in der 5.x-Linie
+Versionen kleiner als `5.0.12`. Der bisherige Build-only Vendor-Patch `5.0.11` schließt die
+beiden High-Befunde CVE-2026-102276 und CVE-2026-102278, liegt aber noch im betroffenen Bereich
+dieses nachträglich veröffentlichten Moderate-Befunds.
+
+Der Security-Floor wird deshalb auf `brace-expansion 5.0.12` angehoben. Die Version ist weiterhin
+nur Donor für das globale npm-Buildwerkzeug; die Runtime entfernt npm vollständig. Die Lockfile-
+Integrität für `brace-expansion-5.0.12.tgz` ist
+`sha512-YovQ3rzhaLMIrDjNDMkNS01tea93qhEhG5xy8f6+R0l+dw3Ki+5sCoIoI942iuLZTHWogWktgwVDhU09iNEimQ==`.
+
+Ein neuer Policy-Test prüft Version, Registry-URL, SHA-512-Integrität und die erwartete
+`harden-npm-toolchain.mjs`-Transition. Dadurch kann ein späterer Rückfall auf 5.0.11 nicht
+unbemerkt durch den Docker-Sicherheitsgate gelangen.
