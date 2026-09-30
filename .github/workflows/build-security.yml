@@ -18,8 +18,8 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: docker-security-${{ github.ref }}
-  cancel-in-progress: true
+  group: docker-security-${{ github.ref }}-${{ github.event_name == 'workflow_dispatch' && 'release' || 'validation' }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 jobs:
   validate:
     name: Docker Security Gate
@@ -35,22 +35,34 @@ jobs:
         run: node scripts/write-runtime-identity.mjs "$GITHUB_SHA"
       - name: npm-Lizenzmetadaten und Regressionstests prüfen
         run: |
-          node --test scripts/docker-context.test.mjs scripts/license-evidence.test.mjs scripts/summarize-trivy.test.mjs scripts/production-handoff.test.mjs scripts/verify-main-ruleset.test.mjs scripts/npm-security-patch-policy.test.mjs
-          node scripts/license-evidence.mjs
+          node scripts/preflight.mjs
       - name: Gepinnte Sicherheitswerkzeuge bauen
-        run: docker build --file Dockerfile.security --tag capital-ai-security .
+        run: |
+          docker build --file Dockerfile.security --tag capital-ai-security .
+          mkdir -p "$RUNNER_TEMP/trivy-cache"
+          chmod a+rwx "$RUNNER_TEMP/trivy-cache"
       - name: Dockerfile linten
-        run: docker run --rm --entrypoint hadolint -v "$PWD:/work:ro" capital-ai-security /work/Dockerfile
+        run: |
+          docker run --rm --entrypoint hadolint -v "$PWD:/work:ro" capital-ai-security /work/Dockerfile
+          # Disk bootstrap drops to UID 1000; its bounded exception remains source-scanned.
+          docker run --rm --entrypoint hadolint -v "$PWD:/work:ro" capital-ai-security --ignore DL3002 /work/deploy/Dockerfile.nats
       - name: NATS-Disk-Bootstrap und nicht-root Server verifizieren
         run: |
           mkdir -p security-reports
           docker build --file deploy/Dockerfile.nats --tag capital-nats:${{ github.sha }} .
           bash scripts/verify-nats-runtime.sh
+          docker image inspect capital-nats:${{ github.sha }} > security-reports/nats-image-identity.json
+          docker save capital-nats:${{ github.sha }} --output security-reports/nats-image.tar
+          chmod a+r security-reports/nats-image.tar
+          chmod a+rwx security-reports
+          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/nats-image.tar --ignorefile /dev/null --scanners vuln,secret --severity HIGH,CRITICAL --exit-code 1 --format json --output /reports/nats-image.json
+          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/nats-image.tar --ignorefile /dev/null --scanners vuln --format cyclonedx --output /reports/nats.sbom.cdx.json
+          rm security-reports/nats-image.tar
       - name: Quellcode, Secrets und Konfiguration scannen
         run: |
           mkdir -p security-reports
           chmod a+rwx security-reports
-          docker run --rm -w /work -v "$PWD:/work:ro" -v "$PWD/security-reports:/reports" capital-ai-security fs --include-dev-deps --ignorefile /work/deploy/trivy-bootstrap-exception.yaml --scanners vuln,secret,misconfig --severity HIGH,CRITICAL --format json --output /reports/source.json --exit-code 1 /work
+          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -w /work -v "$PWD:/work:ro" -v "$PWD/security-reports:/reports" capital-ai-security fs --skip-dirs /work/security-reports --include-dev-deps --ignorefile /work/deploy/trivy-bootstrap-exception.yaml --scanners vuln,secret,misconfig --severity HIGH,CRITICAL --format json --output /reports/source.json --exit-code 1 /work
       - name: Build-Stufe einschließlich Paketmanager scannen
         run: |
           docker build --pull --target build --tag capital-ai-build:${{ github.sha }} .
@@ -59,10 +71,10 @@ jobs:
           chmod a+r security-reports/build.tar
           chmod a+rwx security-reports
           scan_status=0
-          docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/build.tar --ignorefile /dev/null --scanners vuln,secret --severity HIGH,CRITICAL --format json --output /reports/build-image.json --exit-code 1 || scan_status=$?
+          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/build.tar --ignorefile /dev/null --scanners vuln,secret --severity HIGH,CRITICAL --format json --output /reports/build-image.json --exit-code 1 || scan_status=$?
           node scripts/summarize-trivy.mjs security-reports/build-image.json
           if [ "$scan_status" -ne 0 ]; then exit "$scan_status"; fi
-          docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/build.tar --ignorefile /dev/null --scanners license --license-full --format json --output /reports/build-image-licenses.json --exit-code 0
+          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/build.tar --ignorefile /dev/null --scanners license --license-full --format json --output /reports/build-image-licenses.json --exit-code 0
           rm security-reports/build.tar
       - name: Image mit Tests und isoliertem Frontend-Build bauen
         run: docker build --pull --tag capital-ai:${{ github.sha }} .
@@ -79,15 +91,15 @@ jobs:
           docker save capital-ai:${{ github.sha }} -o security-reports/image.tar
           chmod a+r security-reports/image.tar
           chmod a+rwx security-reports
-          docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/image.tar --scanners vuln,secret --severity HIGH,CRITICAL --format json --output /reports/image.json --exit-code 1
+          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/image.tar --ignorefile /dev/null --scanners vuln,secret --severity HIGH,CRITICAL --format json --output /reports/image.json --exit-code 1
       - name: SBOM des exportierten Images
         if: always() && hashFiles('security-reports/image.tar') != ''
         run: |
           test -f security-reports/image.tar
-          docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/image.tar --ignorefile /dev/null --scanners vuln --format cyclonedx --output /reports/capital-ai.sbom.cdx.json
+          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/image.tar --ignorefile /dev/null --scanners vuln --format cyclonedx --output /reports/capital-ai.sbom.cdx.json
       - name: Runtime-Lizenzinventar am exportierten Image
         if: always() && hashFiles('security-reports/image.tar') != ''
-        run: docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/image.tar --ignorefile /dev/null --scanners license --license-full --format json --output /reports/image-licenses.json --exit-code 0
+        run: docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/image.tar --ignorefile /dev/null --scanners license --license-full --format json --output /reports/image-licenses.json --exit-code 0
       - name: Runtime ohne Schreibrechte und Linux-Capabilities prüfen
         run: |
           docker run -d --name capital-ai-smoke --read-only --cap-drop ALL --security-opt no-new-privileges -p 127.0.0.1:10000:10000 capital-ai:${{ github.sha }}
@@ -163,6 +175,8 @@ jobs:
           test "$(docker image inspect --format '{{.Id}}' "capital-ai:$SOURCE_SHA")" = "$EXPECTED_IMAGE_ID"
           test "$(docker image inspect --format '{{.Os}}/{{.Architecture}}' "capital-ai:$SOURCE_SHA")" = linux/amd64
           docker build --file Dockerfile.security --tag capital-ai-security .
+          mkdir -p "$RUNNER_TEMP/trivy-cache"
+          chmod a+rwx "$RUNNER_TEMP/trivy-cache"
           rm candidate/image.tar
       - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
@@ -194,9 +208,9 @@ jobs:
           docker save "$IMAGE_REF" --output security-reports/registry-image.tar
           chmod a+r security-reports/registry-image.tar
           chmod a+rwx security-reports
-          docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/registry-image.tar --ignorefile /dev/null --scanners vuln,secret --severity HIGH,CRITICAL --exit-code 1 --format json --output /reports/registry-image.json
-          docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/registry-image.tar --ignorefile /dev/null --scanners vuln --format cyclonedx --output /reports/capital-ai.sbom.cdx.json
-          docker run --rm -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/registry-image.tar --ignorefile /dev/null --scanners license --license-full --format json --output /reports/registry-image-licenses.json --exit-code 0
+          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/registry-image.tar --ignorefile /dev/null --scanners vuln,secret --severity HIGH,CRITICAL --exit-code 1 --format json --output /reports/registry-image.json
+          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/registry-image.tar --ignorefile /dev/null --scanners vuln --format cyclonedx --output /reports/capital-ai.sbom.cdx.json
+          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/registry-image.tar --ignorefile /dev/null --scanners license --license-full --format json --output /reports/registry-image-licenses.json --exit-code 0
           docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint cat "$IMAGE_REF" /app/dist/THIRD_PARTY_NOTICES.txt > security-reports/THIRD_PARTY_NOTICES.txt
           docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint cat "$IMAGE_REF" /app/dist/frontend-license-inventory.json > security-reports/frontend-license-inventory.json
           rm security-reports/registry-image.tar
