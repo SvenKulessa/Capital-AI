@@ -211,7 +211,7 @@ export const CoreModules: React.FC<CoreModulesProps> = ({
                   }}
                 >
                   {module.id === 'market-screener'
-                    ? 'Sub-45ms Tick'
+                    ? 'Datenprüfung'
                     : module.id === 'learning-portal'
                     ? '480+ Begriffe'
                     : '40 € / Mo Cap'}

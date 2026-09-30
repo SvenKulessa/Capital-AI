@@ -17,11 +17,12 @@ export function lockInventory(root) {
   const packages = Object.entries(lock.packages).filter(([path]) => path).sort(([a], [b]) => a.localeCompare(b)).map(([path, p]) => {
     const selectedLicense = alternatives.get(p.license) || p.license || null;
     const buildReview = selectedLicense === 'MPL-2.0' && /(^|\/)node_modules\/lightningcss(?:-[^/]+)?$/.test(path);
+    const dependencyDistributionReview = path === 'node_modules/tweetnacl' && p.version === '1.0.3' && selectedLicense === 'Unlicense';
     const attributionReview = path === 'node_modules/caniuse-lite' && selectedLicense === 'CC-BY-4.0';
     return {
       path, version: p.version, declaredLicense: p.license || null, selectedLicense,
       dev: p.dev === true, optional: p.optional === true, integrity: p.integrity || null,
-      metadataStatus: permissive.has(selectedLicense) ? 'NOTICE_REQUIRED' : buildReview ? 'BUILD_TOOL_REVIEW' : attributionReview ? 'DATA_ATTRIBUTION_REVIEW' : 'UNREVIEWED',
+      metadataStatus: permissive.has(selectedLicense) ? 'NOTICE_REQUIRED' : buildReview ? 'BUILD_TOOL_REVIEW' : attributionReview ? 'DATA_ATTRIBUTION_REVIEW' : dependencyDistributionReview ? 'DEPENDENCY_DISTRIBUTION_REVIEW' : 'UNREVIEWED',
     };
   });
   return { schemaVersion: 1, scope: 'ALL_LOCKFILE_ENTRIES_NOT_RUNTIME_SBOM', lockfileSha256: sha256(raw), packages, deployEligible: false };

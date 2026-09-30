@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { CANONICAL_50_COMPONENTS } from '../analysisComponentRegistry';
 import { validateAnalysisComponentRegistry } from '../analysisComponentRegistryValidator';
 import { FinalRankResultSchema, type AssetIdentity } from '../canonicalContracts';
-import { ExplicitDemoAdapter } from '../../services/providerAdapters';
-import { FeatureStoreService } from '../../services/featureStore';
+import { ExplicitDemoAdapter } from './fixtures/demoAdapter';
+import { FeatureStoreService } from './fixtures/demoFeatureStore';
 import { ScoringEngineService } from '../../services/scoringEngine';
 
 const asset: AssetIdentity = { assetId: 'aapl_test', symbol: 'AAPL', name: 'Apple Test',
@@ -21,7 +21,7 @@ function nonActionable(result: Awaited<ReturnType<typeof ScoringEngineService.co
 test('all 50 entries are quarantined with truthful availability and no invented validation date', () => {
   assert.equal(CANONICAL_50_COMPONENTS.length, 50);
   assert.equal(new Set(CANONICAL_50_COMPONENTS.map(c => c.componentId)).size, 50);
-  assert.deepEqual(['planned', 'mock', 'blocked'].map(status => CANONICAL_50_COMPONENTS.filter(c => c.status === status).length), [36, 9, 5]);
+  assert.deepEqual(['planned', 'mock', 'blocked'].map(status => CANONICAL_50_COMPONENTS.filter(c => c.status === status).length), [45, 0, 5]);
   for (const c of CANONICAL_50_COMPONENTS) {
     assert.equal(c.lastValidatedAt, null);
     assert.equal(c.provenanceMode, c.status === 'mock' ? 'simulated' : 'unavailable');

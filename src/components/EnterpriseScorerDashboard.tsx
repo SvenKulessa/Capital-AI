@@ -27,7 +27,7 @@ import { motion } from 'motion/react';
 import { FinalRankResult, AssetIdentity } from '../contracts/canonicalContracts';
 import { ScoringEngineService } from '../services/scoringEngine';
 import { FeatureStoreService } from '../services/featureStore';
-import { BinanceProviderAdapter, TwelveDataProviderAdapter, ExplicitDemoAdapter } from '../services/providerAdapters';
+import { BinanceProviderAdapter, TwelveDataProviderAdapter } from '../services/providerAdapters';
 import { ScoreExplainabilityDrawer } from './ScoreExplainabilityDrawer';
 
 export interface EnterpriseScorerDashboardProps {
@@ -36,8 +36,8 @@ export interface EnterpriseScorerDashboardProps {
 
 const PRESET_ASSETS: AssetIdentity[] = [
   { assetId: 'ast_aapl', symbol: 'AAPL', name: 'Apple Inc.', assetClass: 'equity_us', venue: 'NASDAQ', currency: 'USD', status: 'active' },
-  { assetId: 'ast_btc', symbol: 'BTC', name: 'Bitcoin', assetClass: 'crypto', venue: 'Binance', currency: 'USD', status: 'active' },
-  { assetId: 'ast_eth', symbol: 'ETH', name: 'Ethereum', assetClass: 'crypto', venue: 'Binance', currency: 'USD', status: 'active' },
+  { assetId: 'ast_btc', symbol: 'BTCUSDT', name: 'Bitcoin / Tether', assetClass: 'crypto', venue: 'BINANCE', currency: 'USDT', status: 'active' },
+  { assetId: 'ast_eth', symbol: 'ETH', name: 'Ethereum', assetClass: 'crypto', venue: 'BINANCE', currency: 'USDT', status: 'active' },
   { assetId: 'ast_sap', symbol: 'SAP', name: 'SAP SE', assetClass: 'equity_eu', venue: 'XETRA', currency: 'EUR', status: 'active' },
   { assetId: 'ast_nvda', symbol: 'NVDA', name: 'NVIDIA Corp.', assetClass: 'equity_us', venue: 'NASDAQ', currency: 'USD', status: 'active' },
   { assetId: 'ast_gold', symbol: 'GOLD', name: 'Gold Spot', assetClass: 'commodities', venue: 'LBMA', currency: 'USD', status: 'active' },
@@ -50,12 +50,11 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
   const [isLoading, setIsLoading] = useState(false);
   const requestId = React.useRef(0);
   const [scoreError, setScoreError] = useState<string | null>(null);
-  const [dataMode, setDataMode] = useState<'LIVE' | 'DEMO'>('LIVE');
+  const dataMode: 'LIVE' | 'DEMO' = 'LIVE';
 
   const featureStore = new FeatureStoreService();
   const binanceAdapter = new BinanceProviderAdapter();
   const twelveDataAdapter = new TwelveDataProviderAdapter();
-  const demoAdapter = new ExplicitDemoAdapter();
 
   const computeAssetScore = async (asset: AssetIdentity, isDemo: boolean) => {
     const currentRequest = ++requestId.current;
@@ -64,9 +63,7 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
     setScoreError(null);
     setIsLoading(true);
     try {
-      const adapter = isDemo
-        ? demoAdapter
-        : asset.assetClass === 'crypto'
+      const adapter = asset.assetClass === 'crypto'
         ? binanceAdapter
         : twelveDataAdapter;
 
@@ -82,7 +79,7 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
   };
 
   useEffect(() => {
-    computeAssetScore(selectedAsset, dataMode === 'DEMO');
+    computeAssetScore(selectedAsset, false);
     return () => { requestId.current++; };
   }, [selectedAsset, dataMode]);
 
@@ -108,28 +105,7 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
           <div className="flex items-center gap-2 shrink-0">
             {/* Live / Demo Mode Switcher */}
             <div className="p-1 rounded-xl bg-black/60 border border-slate-800 flex items-center">
-              <button
-                type="button"
-                onClick={() => setDataMode('LIVE')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer ${
-                  dataMode === 'LIVE'
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                LIVE FEED
-              </button>
-              <button
-                type="button"
-                onClick={() => setDataMode('DEMO')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer ${
-                  dataMode === 'DEMO'
-                    ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-sm'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                DEMO SANDBOX
-              </button>
+<span className="px-3 py-1.5 text-xs text-slate-400">Provider-Daten · keine Simulation</span>
             </div>
           </div>
         </div>
@@ -164,7 +140,7 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
 
       {scoreError && <p role="alert" className="text-sm text-amber-300">{scoreError}</p>}
       {/* Main Score & Driver Card */}
-      {activeResult && activeResult.assetId === selectedAsset.assetId && activeResult.isDemo === (dataMode === 'DEMO') && (
+      {activeResult && activeResult.assetId === selectedAsset.assetId && activeResult.isDemo === (false) && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Card (Left 2 Columns) */}
           <div className="lg:col-span-2 p-6 rounded-2xl bg-[#090e21] border border-slate-800 space-y-6">
@@ -335,7 +311,7 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
       <ScoreExplainabilityDrawer
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        result={activeResult?.assetId === selectedAsset.assetId && activeResult.isDemo === (dataMode === 'DEMO') ? activeResult : null}
+        result={activeResult?.assetId === selectedAsset.assetId && activeResult.isDemo === (false) ? activeResult : null}
       />
     </div>
   );

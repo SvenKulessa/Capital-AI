@@ -1,3 +1,4 @@
+import { useMarketAssets } from '../services/marketDataStore';
 /**
  * ============================================================================
  * [ARCHITEKTUR-MAPPING: MULTI-ASSET & SENTIMENT PRICE ALERTS MANAGER]
@@ -81,6 +82,7 @@ export const PriceAlertsModal: React.FC<PriceAlertsModalProps> = ({
   onClose,
   onSelectAsset,
 }) => {
+  useMarketAssets();
   const {
     alerts,
     sentimentAlerts,

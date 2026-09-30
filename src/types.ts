@@ -48,9 +48,16 @@ export interface MarketAsset {
   high24h: string;
   low24h: string;
   volume24h: string;
-  aiScore: number;
+  aiScore: number | null;
   aiRating: string;
   description: string;
+  evidenceId?: string;
+  observedAt?: number;
+  provider?: string;
+  dataAvailability?: 'live' | 'cached';
+  quoteCurrency?: string;
+  price?: number;
+  actionable?: boolean;
 }
 
 export interface CoreModule {

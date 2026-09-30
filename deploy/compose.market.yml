@@ -1,0 +1,20 @@
+# Local verification only. No public service ports and no cloud provisioning.
+services:
+  redis:
+    image: redis:8.10.2@sha256:6f81e8915c60b065a524e6967e0ad1c639ba6efa84d669f823683ea04d9150ee
+    command: [redis-server, --requirepass, '${REDIS_PASSWORD:?set REDIS_PASSWORD}', --maxmemory, 128mb, --maxmemory-policy, allkeys-lru, --save, '']
+    ports: ['127.0.0.1:6379:6379']
+    healthcheck:
+      test: ['CMD-SHELL', 'REDISCLI_AUTH="$$REDIS_PASSWORD" redis-cli ping | grep PONG']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    environment:
+      REDIS_PASSWORD: '${REDIS_PASSWORD:?set REDIS_PASSWORD}'
+  nats:
+    image: nats:2.15.0@sha256:cd3fcd4ecdda44e3a66728a5334af0a959bc3979b32810e033d1c547241cd0f4
+    command: ['--jetstream', '--store_dir', /data, '--auth', '${NATS_TOKEN:?set NATS_TOKEN}']
+    ports: ['127.0.0.1:4222:4222']
+    volumes: ['nats-data:/data']
+volumes:
+  nats-data:

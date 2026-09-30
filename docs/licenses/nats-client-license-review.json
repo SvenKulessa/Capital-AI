@@ -1,0 +1,11 @@
+{
+  "scope": "new NATS Node client dependency; metadata inventory only; not deployment approval",
+  "package": "tweetnacl",
+  "version": "1.0.3",
+  "declaredLicense": "Unlicense",
+  "licenseTextSha256": "88d9b4eb60579c191ec391ca04c16130572d7eedc4a86daa58bf28c6e14c9bcd",
+  "origin": "installed npm package, integrity-pinned in package-lock.json",
+  "status": "DEPENDENCY_DISTRIBUTION_REVIEW",
+  "deployEligible": false,
+  "notes": "Retain complete license text in runtime node_modules. Container release license scanner and distribution review still required. No new blanket permissive license allowance."
+}

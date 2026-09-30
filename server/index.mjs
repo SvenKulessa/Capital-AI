@@ -6,6 +6,7 @@ import { quote, health, startStreams } from './market.mjs';
 import { createAuth } from './auth.mjs';
 import { createTelegram } from './telegram.mjs';
 import { createLimiter } from './http-security.mjs';
+import { infrastructure } from './infrastructure.mjs';
 
 const defaultRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../dist');
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.txt': 'text/plain; charset=utf-8', '.json': 'application/json; charset=utf-8' };
@@ -35,6 +36,16 @@ export function createApp(root = defaultRoot, options = {}) {
     catch { return json(res, 503, { error: 'market_data_unavailable' }); }
     finally { inflight--; }
   }
+  if (url.pathname === '/api/market/status') return json(res, 200, health());
+  if (url.pathname === '/api/market/evidence') {
+    if (!marketLimit()) return json(res, 429, { error: 'rate_limited' });
+    if (inflight >= 8) return json(res, 429, { error: 'busy' });
+    inflight++;
+    try { const record = await infrastructure.replay(url.searchParams.get('id') || '');
+      return json(res, 200, { evidenceId: url.searchParams.get('id'), fact: record.fact, hashVerified: true }); }
+    catch { return json(res, 503, { error: 'evidence_unavailable' }); }
+    finally { inflight--; }
+  }
   if (url.pathname.startsWith('/api/')) return json(res, 404, { error: 'not_found' });
   let asset;
   try { asset = path.resolve(root, '.' + decodeURIComponent(url.pathname)); } catch { return json(res, 400, { error: 'bad_request' }); }
@@ -54,10 +65,13 @@ export function createApp(root = defaultRoot, options = {}) {
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const server = createApp();
+  await infrastructure.start();
   const stop = startStreams();
+  const reconnect = setInterval(() => { if (infrastructure.status().status !== 'connected') void infrastructure.start(); }, 15000);
+  reconnect.unref();
   server.listen(Number(process.env.PORT || 10000), '0.0.0.0');
   const shutdown = () => {
-    stop(); server.close(() => process.exit(0));
+    clearInterval(reconnect); stop(); server.close(() => { void infrastructure.close().finally(() => process.exit(0)); });
     setTimeout(() => { server.closeAllConnections(); process.exit(1); }, 10000).unref();
   };
   process.once('SIGTERM', shutdown);

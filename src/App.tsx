@@ -1,3 +1,4 @@
+import { useMarketAssets } from './services/marketDataStore';
 /**
  * ============================================================================
  * [ARCHITEKTUR-MAPPING: HAUPTANWENDUNG & ORCHESTRIERUNGS-CONTAINER]
@@ -70,6 +71,7 @@ function AppContent() {
     setIsWhaleRadarOpen,
     openWhaleRadar,
   } = usePriceAlerts();
+  useMarketAssets();
   const [currentRoute, setCurrentRoute] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       return resolveAppRoute(window.location.pathname);

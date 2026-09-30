@@ -7,8 +7,9 @@ import { ScoringEngineService } from '../../services/scoringEngine';
 import { DataPlausibilityValidator } from '../dataPlausibilityValidator';
 import { AssetIdentity, FeatureValue } from '../canonicalContracts';
 import { PipelineConfiguratorService } from '../../services/pipelineConfigurator';
-import { BinanceProviderAdapter, TwelveDataProviderAdapter, ExplicitDemoAdapter } from '../../services/providerAdapters';
-import { FeatureStoreService } from '../../services/featureStore';
+import { BinanceProviderAdapter, TwelveDataProviderAdapter } from '../../services/providerAdapters';
+import { ExplicitDemoAdapter } from './fixtures/demoAdapter';
+import { FeatureStoreService } from './fixtures/demoFeatureStore';
 
 export async function runEnterpriseScoringSuite(): Promise<{ passed: boolean; message: string; failures: string[] }> {
   const failures: string[] = [];

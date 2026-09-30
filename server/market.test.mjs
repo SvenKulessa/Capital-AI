@@ -1,7 +1,12 @@
-import { test } from 'node:test';
+import { test, before, after } from 'node:test';
 import { strict as assert } from 'node:assert';
 let instance = 0;
 const isolatedQuote = async () => (await import(`./market.mjs?test=${++instance}`)).quote;
+import { infrastructure } from './infrastructure.mjs';
+// Offline provider tests inject persistence; real service behavior is tested separately.
+const original = { status: infrastructure.status, read: infrastructure.read, persist: infrastructure.persist };
+before(() => { infrastructure.status = () => ({ status: 'connected' }); infrastructure.read = async () => null; infrastructure.persist = async fact => fact; });
+after(() => Object.assign(infrastructure, original));
 
 test('unsupported symbols are rejected before any provider request', async () => {
   const quote = await isolatedQuote();

@@ -1,3 +1,4 @@
+import { DataUnavailable } from './DataUnavailable';
 /**
  * CAPITAL AI — STUDIO HUB (/studio)
  * Central engineering and architecture hub comprising:
@@ -187,21 +188,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
     );
   }, [selectedBlueprintId]);
 
-  // Run benchmark test
-  const runStressTest = () => {
-    setIsStressTesting(true);
-    let step = 0;
-    const interval = setInterval(() => {
-      step++;
-      setSimulatedLatency((prev) => Math.max(14, Math.floor(prev + (Math.random() * 8 - 4))));
-      setBenchmarkTicksCount((prev) => prev + 15400);
-      setConflationSavedPct((prev) => Math.min(96.2, Number((prev + 0.3).toFixed(1))));
-      if (step >= 8) {
-        clearInterval(interval);
-        setIsStressTesting(false);
-      }
-    }, 250);
-  };
+  const runStressTest = () => {}; // Requires real benchmark worker before activation.
 
   // Studio Hub Subpage items for nach rechts aufklappbare Side-Liste
   const subpageItems: SubpageNavItem[] = [
@@ -1121,7 +1108,8 @@ export const StudioPage: React.FC<StudioPageProps> = ({
       {/* ========================================================================= */}
       {/* TAB CONTENT 6: ANALYTICS & SCORING (Math, Evidence & Audit Engine)        */}
       {/* ========================================================================= */}
-      {activeTab === 'analytics' && (
+      {activeTab === 'analytics' && <DataUnavailable title="analytics" required="produktive Messungen und validierte Pipeline-Ausführungen" />}
+      {false && activeTab === 'analytics' && (
         <div className="space-y-6">
           <div className="p-6 rounded-2xl bg-gradient-to-r from-amber-500/10 via-[#0d1530] to-emerald-500/10 border border-amber-500/30">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1491,7 +1479,8 @@ export const StudioPage: React.FC<StudioPageProps> = ({
       {/* ========================================================================= */}
       {/* TAB CONTENT 7: BENCHMARK LAB (Live Performance & Budget Verification)     */}
       {/* ========================================================================= */}
-      {activeTab === 'benchmark' && (
+      {activeTab === 'benchmark' && <DataUnavailable title="benchmark" required="produktive Messungen und validierte Pipeline-Ausführungen" />}
+      {false && activeTab === 'benchmark' && (
         <div className="space-y-6">
           <div className="p-6 rounded-2xl bg-gradient-to-r from-cyan-500/10 via-[#0d1530] to-amber-500/10 border border-cyan-500/30">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1670,7 +1659,8 @@ export const StudioPage: React.FC<StudioPageProps> = ({
       {/* ========================================================================= */}
       {/* TAB CONTENT: PIPELINE CONFIGURATOR CONSOLE (MOVED TO CONTROL CENTER)       */}
       {/* ========================================================================= */}
-      {activeTab === 'console' && (
+      {activeTab === 'console' && <DataUnavailable title="console" required="produktive Messungen und validierte Pipeline-Ausführungen" />}
+      {false && activeTab === 'console' && (
         <div className="p-8 sm:p-12 rounded-2xl bg-[#090e21] border border-rose-500/40 text-center max-w-2xl mx-auto space-y-4 my-8 shadow-2xl">
           <div className="w-14 h-14 rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/40 flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(244,63,94,0.3)]">
             <Sliders className="w-7 h-7" />

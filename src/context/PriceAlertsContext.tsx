@@ -52,7 +52,7 @@ import {
   formatPriceAlertTelegramMessage,
   DEFAULT_TELEGRAM_CONFIG,
 } from '../utils/telegramService';
-import { INITIAL_WHALE_TRANSACTIONS, generateRandomWhaleTx } from '../data/whaleRadarData';
+import { useMarketAssets } from '../services/marketDataStore';
 import { MARKET_ASSETS } from '../data/mockData';
 
 export interface AddAlertPayload {
@@ -151,6 +151,7 @@ const STORAGE_SENTIMENT_ALERTS_KEY = 'capital_ai_sentiment_alerts_v2';
 const STORAGE_PREFS_KEY = 'capital_ai_alert_prefs_v2';
 
 export const PriceAlertsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  useMarketAssets();
   // Load asset price alerts
   const [alerts, setAlerts] = useState<PriceAlert[]>(() => {
     try {
@@ -205,20 +206,7 @@ export const PriceAlertsProvider: React.FC<{ children: ReactNode }> = ({ childre
 
   // Whale transactions state
   const STORAGE_WHALE_KEY = 'capital_ai_whale_txs_v1';
-  const [whaleTransactions, setWhaleTransactions] = useState<WhaleTransaction[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_WHALE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
-        }
-      }
-    } catch {
-      // Fallback
-    }
-    return INITIAL_WHALE_TRANSACTIONS;
-  });
+  const [whaleTransactions, setWhaleTransactions] = useState<WhaleTransaction[]>([]);
 
   // Sync whale transactions
   useEffect(() => {
@@ -323,28 +311,8 @@ Ihr Telegram-Empfangskanal ist aktiv. Sie erhalten ab sofort:
   );
 
   // Add Whale Transaction
-  const addWhaleTransaction = useCallback(
-    (tx: WhaleTransaction) => {
-      setWhaleTransactions((prev) => [tx, ...prev.slice(0, 49)]);
+  const addWhaleTransaction = useCallback((_tx: WhaleTransaction) => {}, []);
 
-      if (tx.impactScore >= 90 && preferences.soundEnabled) {
-        playAlertChime();
-      }
-
-      const tgConfig = preferences.telegram;
-      if (
-        tgConfig?.enabled &&
-        tgConfig.notifyWhaleRadar &&
-        tx.amountUsd >= (tgConfig.minWhaleVolumeMln || 5) * 1_000_000
-      ) {
-        const { title, body, html } = formatWhaleTelegramMessage(tx);
-        dispatchTelegramPush(tgConfig, title, body, html);
-      }
-    },
-    [preferences.soundEnabled, preferences.telegram]
-  );
-
-  // Open Whale Radar with optional asset filter
   const openWhaleRadar = useCallback((filterAsset?: string) => {
     setPreselectedWhaleAsset(filterAsset || null);
     setIsWhaleRadarOpen(true);
@@ -471,28 +439,8 @@ Ihr Telegram-Empfangskanal ist aktiv. Sie erhalten ab sofort:
   }, []);
 
   // Test trigger asset alert
-  const testTriggerAlert = useCallback(
-    (id: string) => {
-      setAlerts((prev) =>
-        prev.map((alert) => {
-          if (alert.id === id) {
-            const triggered: PriceAlert = {
-              ...alert,
-              isTriggered: true,
-              isEnabled: false,
-              triggeredAt: 'Gerade eben',
-            };
-            triggerNotification(triggered);
-            return triggered;
-          }
-          return alert;
-        })
-      );
-    },
-    [triggerNotification]
-  );
+  const testTriggerAlert = useCallback((..._args: any[]) => { /* Production simulations disabled. */ }, []);
 
-  // Clear all triggered asset alerts
   const clearTriggeredAlerts = useCallback(() => {
     setAlerts((prev) => prev.filter((a) => !a.isTriggered));
   }, []);
@@ -594,119 +542,10 @@ Ihr Telegram-Empfangskanal ist aktiv. Sie erhalten ab sofort:
   }, []);
 
   // Test trigger sentiment alert
-  const testTriggerSentimentAlert = useCallback(
-    (id: string) => {
-      setSentimentAlerts((prev) =>
-        prev.map((sa) => {
-          if (sa.id === id) {
-            const triggered: SentimentAlert = {
-              ...sa,
-              isTriggered: true,
-              isEnabled: false,
-              triggeredAt: 'Gerade eben',
-              triggerDetail: 'Simulierter Übergang von FEAR (38) auf EXTREME GREED (78) ausgeführt',
-            };
-            triggerSentimentNotification(triggered);
-            return triggered;
-          }
-          return sa;
-        })
-      );
-    },
-    [triggerSentimentNotification]
-  );
+  const testTriggerSentimentAlert = useCallback((..._args: any[]) => { /* Production simulations disabled. */ }, []);
 
-  // Simulate Sentiment Shift (e.g., Fear -> Extreme Greed)
-  const simulateSentimentShift = useCallback(
-    (from: SentimentLevel, to: SentimentLevel, category: 'ALLE' | MainCategory = 'ALLE') => {
-      const fromLabel = getSentimentLevelInfo(from).labelDe;
-      const toLabel = getSentimentLevelInfo(to).labelDe;
-      const catLabel =
-        category === 'ALLE'
-          ? 'Gesamtmarkt'
-          : category === 'KRYPTO'
-          ? 'Kryptomarkt'
-          : category === 'AKTIEN'
-          ? 'Aktienmarkt'
-          : category === 'INDIZIES'
-          ? 'Leitindizes'
-          : category === 'ROHSTOFFE'
-          ? 'Rohstoffmärkte'
-          : 'Devisenmarkt';
+  const simulateSentimentShift = useCallback((..._args: any[]) => { /* Production simulations disabled. */ }, []);
 
-      // Find matching alert or create triggered alert instance
-      const matchedAlert = sentimentAlerts.find(
-        (sa) =>
-          sa.isEnabled &&
-          (sa.category === category || sa.category === 'ALLE') &&
-          ((sa.conditionType === 'TRANSITION_FROM_TO' && sa.targetLevel === to) ||
-            (sa.conditionType === 'TRANSITION_TO' && sa.targetLevel === to) ||
-            sa.conditionType === 'REGIME_CHANGE')
-      );
-
-      const triggeredAlert: SentimentAlert = matchedAlert
-        ? {
-            ...matchedAlert,
-            isTriggered: true,
-            isEnabled: false,
-            triggeredAt: 'Gerade eben',
-            triggerDetail: `Stimmungswechsel erkannt: ${catLabel} wechselte von "${fromLabel}" auf "${toLabel}".`,
-          }
-        : {
-            id: `sim-sentiment-${Date.now()}`,
-            type: 'SENTIMENT',
-            category,
-            categoryLabel: catLabel,
-            conditionType: 'TRANSITION_FROM_TO',
-            fromLevel: from,
-            targetLevel: to,
-            isEnabled: false,
-            isTriggered: true,
-            triggeredAt: 'Gerade eben',
-            createdAt: new Date().toISOString(),
-            title: `${catLabel}: Wechsel von ${fromLabel} auf ${toLabel}`,
-            description: `Signifikanter Stimmungs- und Regimesprung registriert (Score-Sprung in die ${toLabel}-Zone).`,
-            triggerDetail: `Stimmungswechsel erkannt: ${catLabel} wechselte von "${fromLabel}" (Score ~38) auf "${toLabel}" (Score ~78).`,
-            note: 'Antizyklisches Rebalancing & Gewinnmitnahmen prüfen',
-          };
-
-      // Also trigger any coupled asset price alerts if relevant
-      setAlerts((prev) =>
-        prev.map((pa) => {
-          if (
-            pa.isEnabled &&
-            !pa.isTriggered &&
-            pa.sentimentCoupling?.enabled &&
-            pa.sentimentCoupling.triggerOnSentimentShift &&
-            (pa.sentimentCoupling.requiredSentiment === to ||
-              (to === 'EXTREME_GREED' && pa.sentimentCoupling.requiredSentiment === 'ANY_GREED') ||
-              (to === 'EXTREME_FEAR' && pa.sentimentCoupling.requiredSentiment === 'ANY_FEAR'))
-          ) {
-            return {
-              ...pa,
-              isTriggered: true,
-              isEnabled: false,
-              triggeredAt: 'Gerade eben (via Sentiment)',
-            };
-          }
-          return pa;
-        })
-      );
-
-      if (matchedAlert) {
-        setSentimentAlerts((prev) =>
-          prev.map((sa) => (sa.id === matchedAlert.id ? triggeredAlert : sa))
-        );
-      } else {
-        setSentimentAlerts((prev) => [triggeredAlert, ...prev]);
-      }
-
-      triggerSentimentNotification(triggeredAlert);
-    },
-    [sentimentAlerts, triggerSentimentNotification]
-  );
-
-  // Clear triggered sentiment alerts
   const clearTriggeredSentimentAlerts = useCallback(() => {
     setSentimentAlerts((prev) => prev.filter((sa) => !sa.isTriggered));
   }, []);
@@ -762,7 +601,7 @@ Ihr Telegram-Empfangskanal ist aktiv. Sie erhalten ab sofort:
               a.symbol.toUpperCase() === alert.assetSymbol.toUpperCase()
           );
 
-          if (!asset) return alert;
+          if (!asset || asset.actionable !== true || !asset.evidenceId || Date.now() - asset.observedAt > 30000) return alert;
 
           const currentNum = parsePriceToNumber(asset.value);
           const thresholdNum = alert.targetPrice;
@@ -798,18 +637,6 @@ Ihr Telegram-Empfangskanal ist aktiv. Sie erhalten ab sofort:
     return () => clearInterval(timer);
   }, [preferences.autoCheckIntervalSec, triggerNotification]);
 
-  // Background simulation for on-chain whale radar movements (sub-minute realistic transactions)
-  useEffect(() => {
-    const whaleTimer = setInterval(() => {
-      // 40% chance of generating a new whale movement
-      if (Math.random() < 0.4) {
-        const newTx = generateRandomWhaleTx();
-        addWhaleTransaction(newTx);
-      }
-    }, 38000);
-
-    return () => clearInterval(whaleTimer);
-  }, [addWhaleTransaction]);
 
   return (
     <PriceAlertsContext.Provider
