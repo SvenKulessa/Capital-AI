@@ -970,12 +970,12 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "phaseName": "Phase 4: DevSecOps & RC",
   "progressPercent": 70,
   "evidenceState": "VERIFIED",
-  "evidenceRefs": [".github/dependabot.yml", ".github/workflows/daily-dependency-security-watch.yml"],
+  "evidenceRefs": [".github/dependabot.yml", ".github/workflows/daily-dependency-security-watch.yml", ".github/workflows/build-security.yml"],
   "nextStep": "Ersten planmäßigen Lauf und erzeugte Update-PRs evidenzbasiert prüfen; Container-CVE-Scan an bestehenden Docker-Security-Gate koppeln.",
   "priority": "Kritisch",
   "leadName": "Owner + AI Apps",
   "targetSprint": "täglich",
-  "description": "npm, GitHub Actions und Docker-Pins werden täglich auf Updates geprüft; HIGH/CRITICAL npm Advisories blockieren den Watch-Lauf.",
+  "description": "npm, GitHub Actions und Docker-Pins werden täglich auf Updates geprüft; HIGH/CRITICAL npm Advisories blockieren den Watch-Lauf. Der bestehende Docker Security Gate läuft zusätzlich täglich mit frischen Trivy-Daten über Source, Build-Image, Runtime-Image und NATS-Image.",
   "deliverables": ["Daily Dependabot", "npm audit high/critical", "Runtime-Pin-Evidence", "keine blinden Major-Deployments"]
 },
 {
