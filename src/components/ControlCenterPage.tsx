@@ -1,3 +1,5 @@
+import { validateAnalysisComponentRegistry } from '../contracts/analysisComponentRegistryValidator';
+import { CANONICAL_50_COMPONENTS } from '../contracts/analysisComponentRegistry';
 /**
  * CAPITAL AI — CONTROL CENTER & MANAGEMENT KONSOLE
  * 
@@ -1040,7 +1042,7 @@ export const ControlCenterPage: React.FC<ControlCenterPageProps> = ({
 
               <div className="flex items-center gap-2 shrink-0">
                 <span className="text-xs font-mono px-3 py-1.5 rounded-xl bg-black/60 text-emerald-400 border border-emerald-500/30 font-bold">
-                  Zero Secrets Exposed (Audit OK)
+                  Foundation: keine Produktionsfreigabe
                 </span>
               </div>
             </div>
@@ -1050,26 +1052,26 @@ export const ControlCenterPage: React.FC<ControlCenterPageProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="p-4 rounded-xl bg-[#090e21] border border-slate-800">
               <div className="text-[10px] font-mono text-slate-400 uppercase">Provider Flotte (Health)</div>
-              <div className="text-2xl font-extrabold font-mono text-emerald-400 mt-1">4 / 4 Online</div>
+              <div className="text-2xl font-extrabold font-mono text-emerald-400 mt-1">Nicht verifiziert</div>
               <div className="text-[11px] text-slate-400 mt-0.5">Binance, Kraken, 12Data, SEC</div>
             </div>
 
             <div className="p-4 rounded-xl bg-[#090e21] border border-slate-800">
               <div className="text-[10px] font-mono text-slate-400 uppercase">Komponenten-Status</div>
-              <div className="text-2xl font-extrabold font-mono text-cyan-400 mt-1">44 Active • 6 Shadow</div>
+              <div className="text-2xl font-extrabold font-mono text-cyan-400 mt-1">{CANONICAL_50_COMPONENTS.filter(c => c.status === 'planned').length} Planned • {CANONICAL_50_COMPONENTS.filter(c => c.status === 'mock').length} Mock • {CANONICAL_50_COMPONENTS.filter(c => c.status === 'blocked').length} Blocked</div>
               <div className="text-[11px] text-slate-400 mt-0.5">50 / 50 Registriert</div>
             </div>
 
             <div className="p-4 rounded-xl bg-[#090e21] border border-slate-800">
               <div className="text-[10px] font-mono text-slate-400 uppercase">Plausibilitäts-Verletzungen</div>
-              <div className="text-2xl font-extrabold font-mono text-emerald-400 mt-1">0 Fehler</div>
-              <div className="text-[11px] text-slate-400 mt-0.5">11 / 11 Regeln bestanden</div>
+              <div className="text-2xl font-extrabold font-mono text-emerald-400 mt-1">{validateAnalysisComponentRegistry().issues.length} offene Referenz-/Validierungslücken</div>
+              <div className="text-[11px] text-slate-400 mt-0.5">Aktivierung bleibt gesperrt</div>
             </div>
 
             <div className="p-4 rounded-xl bg-[#090e21] border border-slate-800">
               <div className="text-[10px] font-mono text-slate-400 uppercase">Aktive Config-Version</div>
-              <div className="text-2xl font-extrabold font-mono text-white mt-1">v2.5.0-prod</div>
-              <div className="text-[11px] text-purple-300 mt-0.5">Shadow: v2.6.0 (10% Sample)</div>
+              <div className="text-2xl font-extrabold font-mono text-white mt-1">Nicht freigegeben</div>
+              <div className="text-[11px] text-purple-300 mt-0.5">Kein validierter Live-Ausführungspfad</div>
             </div>
           </div>
 
@@ -1080,23 +1082,15 @@ export const ControlCenterPage: React.FC<ControlCenterPageProps> = ({
               <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 font-mono flex items-center gap-2">
                   <Cpu className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Komponenten-Ausführungsstatus (Top 50)</span>
+                  <span>Komponenten-Registry (Top 50)</span>
                 </h3>
-                <span className="text-[10px] font-mono text-slate-400">100% Type-Safe</span>
+                <span className="text-[10px] font-mono text-slate-400">Registry-Zustand</span>
               </div>
               <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-                {[
-                  { id: 'market_integrity_gate', name: 'Market Integrity Gate', domain: 'data-quality', status: 'ACTIVE', gate: true },
-                  { id: 'data_quality_scorer', name: 'Data Quality Scorer', domain: 'data-quality', status: 'ACTIVE', gate: true },
-                  { id: 'liquidity_eligibility_scorer', name: 'Liquidity Eligibility Scorer', domain: 'risk-controls', status: 'ACTIVE', gate: true },
-                  { id: 'spread_slippage_risk_scorer', name: 'Spread & Slippage Risk Scorer', domain: 'risk-controls', status: 'ACTIVE', gate: false },
-                  { id: 'multi_timeframe_trend_regime_scorer', name: 'Multi-Timeframe Trend Scorer', domain: 'scoring', status: 'ACTIVE', gate: false },
-                  { id: 'fundamental_quality_scorer', name: 'Piotroski & Moat Quality Scorer', domain: 'scoring', status: 'ACTIVE', gate: false },
-                  { id: 'bot_manipulation_risk_scorer', name: 'Bot Manipulation Risk Scorer', domain: 'risk-controls', status: 'ACTIVE', gate: true },
-                  { id: 'final_rank_confidence_evidence_scorer', name: 'Final Composite & Evidence Scorer', domain: 'ranking', status: 'ACTIVE', gate: true },
-                  { id: 'options_positioning_gamma_scorer', name: 'Options Gamma Exposure (GEX)', domain: 'market-intelligence', status: 'SHADOW', gate: false },
-                  { id: 'onchain_flow_holder_behavior_scorer', name: 'On-Chain Flow & Whale Scorer', domain: 'market-intelligence', status: 'ACTIVE', gate: false },
-                ].map((c) => (
+                {CANONICAL_50_COMPONENTS.map((entry) => ({
+                  id: entry.componentId, name: entry.displayName, domain: entry.domain,
+                  status: entry.status.toUpperCase(), gate: entry.weightPolicy.isEligibleGate,
+                })).map((c) => (
                   <div key={c.id} className="p-2.5 rounded-xl bg-black/40 border border-slate-800/80 flex items-center justify-between text-xs">
                     <div>
                       <div className="font-bold text-white flex items-center gap-2">
@@ -1135,7 +1129,7 @@ export const ControlCenterPage: React.FC<ControlCenterPageProps> = ({
               <div className="space-y-3 text-xs">
                 <div className="p-3 rounded-xl bg-black/40 border border-slate-800 space-y-2">
                   <div className="flex items-center justify-between text-[11px] font-mono">
-                    <span className="text-slate-400">Baseline (v2.5.0-prod):</span>
+                    <span className="text-slate-400">Baseline (Nicht freigegeben):</span>
                     <span className="text-emerald-400 font-bold">P95: 38ms • CPU: 12%</span>
                   </div>
                   <div className="flex items-center justify-between text-[11px] font-mono">

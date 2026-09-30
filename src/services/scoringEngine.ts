@@ -1,236 +1,110 @@
-/**
- * CAPITAL AI — ENTERPRISE SCORING ENGINE (STAGE 05 SCORING & STAGE 06 RANKING)
- * Implements the canonical final rank model:
- *
- * finalRank =
- *   eligibilityMultiplier
- *   * confidence
- *   * (
- *     weightMomentum * momentumScore
- *     + weightTechnical * technicalScore
- *     + weightFundamental * fundamentalScore
- *     + weightSentiment * sentimentScore
- *     + weightEvent * eventScore
- *     + weightPositioning * positioningScore
- *   )
- *   - riskPenalty
- */
-
-import { AssetIdentity, FeatureValue, FinalRankResult, DriverContribution } from '../contracts/canonicalContracts';
-import { EvidenceEngineService } from './evidenceEngine';
+import { AssetIdentity, AssetIdentitySchema, FeatureValue, FeatureValueSchema,
+  FinalRankResult, FinalRankResultSchema } from '../contracts/canonicalContracts';
+import { componentActivationReasons } from '../contracts/analysisComponentRegistryValidator';
 
 export interface AssetClassWeightProfile {
-  weightMomentum: number;
-  weightTechnical: number;
-  weightFundamental: number;
-  weightSentiment: number;
-  weightEvent: number;
-  weightPositioning: number;
+  weightMomentum: number; weightTechnical: number; weightFundamental: number;
+  weightSentiment: number; weightEvent: number; weightPositioning: number;
 }
+const SCORE_FEATURES = {
+  momentumScore: 'rsi_14', technicalScore: 'vwap_deviation_bps', fundamentalScore: 'piotroski_f_score',
+  sentimentScore: 'sentiment_polarity_gemini', eventScore: 'event_impact_score',
+  positioningScore: 'orderbook_imbalance_ratio_l2',
+} as const;
+const GATE_FEATURES = ['market_integrity_pass', 'liquidity_eligible', 'tradability_pass',
+  'spread_slippage_risk_index', 'bot_manipulation_risk_index'] as const;
+const REQUIRED_COMPONENTS = ['market_integrity_gate', 'data_quality_scorer', 'liquidity_eligibility_scorer',
+  'spread_slippage_risk_scorer', 'tradability_gate', 'bot_manipulation_risk_scorer',
+  'final_rank_confidence_evidence_scorer'];
 
+/** Foundation admission: no inference from quotes or ranking without a validated universe. */
 export class ScoringEngineService {
-  public static readonly MODEL_VERSION = '3.2.0';
-
-  /**
-   * Dynamic weight configurations varying strictly by asset class and market regime.
-   */
+  public static readonly MODEL_VERSION = '4.0.0';
   public static getWeightProfile(assetClass: string): AssetClassWeightProfile {
-    switch (assetClass) {
-      case 'crypto':
-        return {
-          weightMomentum: 0.25,
-          weightTechnical: 0.20,
-          weightFundamental: 0.10, // DeFi tokenomics / revenue
-          weightSentiment: 0.20,
-          weightEvent: 0.10,
-          weightPositioning: 0.15, // Orderflow, CVD, OI
-        };
-      case 'equity_us':
-      case 'equity_eu':
-        return {
-          weightMomentum: 0.15,
-          weightTechnical: 0.20,
-          weightFundamental: 0.35, // High weight on Buffett / Piotroski
-          weightSentiment: 0.10,
-          weightEvent: 0.10,
-          weightPositioning: 0.10,
-        };
-      case 'forex':
-      case 'commodities':
-        return {
-          weightMomentum: 0.20,
-          weightTechnical: 0.30,
-          weightFundamental: 0.05,
-          weightSentiment: 0.15,
-          weightEvent: 0.20, // Macro surprises, rate decisions
-          weightPositioning: 0.10,
-        };
-      default:
-        return {
-          weightMomentum: 0.20,
-          weightTechnical: 0.25,
-          weightFundamental: 0.20,
-          weightSentiment: 0.15,
-          weightEvent: 0.10,
-          weightPositioning: 0.10,
-        };
-    }
+    if (assetClass === 'crypto') return { weightMomentum: .25, weightTechnical: .20, weightFundamental: .10,
+      weightSentiment: .20, weightEvent: .10, weightPositioning: .15 };
+    if (['equity_us', 'equity_eu'].includes(assetClass)) return { weightMomentum: .15, weightTechnical: .20,
+      weightFundamental: .35, weightSentiment: .10, weightEvent: .10, weightPositioning: .10 };
+    if (['forex', 'commodities'].includes(assetClass)) return { weightMomentum: .20, weightTechnical: .30,
+      weightFundamental: .05, weightSentiment: .15, weightEvent: .20, weightPositioning: .10 };
+    return { weightMomentum: .20, weightTechnical: .25, weightFundamental: .20,
+      weightSentiment: .15, weightEvent: .10, weightPositioning: .10 };
   }
 
-  /**
-   * Computes the canonical final score and ranking package for an asset.
-   */
-  public static async computeFinalScore(
-    asset: AssetIdentity,
-    features: Map<string, FeatureValue>,
-    isDemo: boolean = false
-  ): Promise<FinalRankResult> {
+  public static async computeFinalScore(asset: AssetIdentity, features: Map<string, FeatureValue>,
+    requestDemo = false): Promise<FinalRankResult> {
+    AssetIdentitySchema.parse(asset);
+    const now = Date.now(), reasons = new Set<string>();
+    const validated = new Map<string, FeatureValue>();
+    // Demo provenance is checked before parsing, so malformed simulated inputs cannot hide their mode.
+    const containsDemo = [...features.values()].some(f => f?.provenance?.isDemo === true);
+    const containsLive = [...features.values()].some(f => f?.provenance?.isDemo === false);
+    for (const [key, value] of features) {
+      const parsed = FeatureValueSchema.safeParse(value);
+      if (!parsed.success || parsed.data.featureId !== key || parsed.data.assetId !== asset.assetId) {
+        reasons.add('FEATURE_CONTRACT_INVALID'); continue;
+      }
+      const f = parsed.data, p = f.provenance;
+      if (p.observedAt > now + 3000 || f.observedAt > now + 3000 || p.receivedAt > now + 3000 ||
+          p.publishedAt > now + 3000 || p.receivedAt < p.observedAt || p.publishedAt < p.receivedAt ||
+          p.latencyMs !== p.receivedAt - p.observedAt || now - f.observedAt > 30_000 ||
+          now - p.observedAt > 30_000) {
+        reasons.add('FEATURE_STALE_OR_TIMESTAMP_INVALID'); continue;
+      }
+      if ((p.isDemo && (p.providerId !== 'capital_ai_demo_engine' || p.licenseScope !== 'sandbox_demo')) ||
+          (!p.isDemo && (p.providerId === 'capital_ai_demo_engine' || p.licenseScope === 'sandbox_demo'))) {
+        reasons.add('DEMO_PROVENANCE_MISMATCH'); continue;
+      }
+      if (!p.isDemo && (p.licenseScope === 'unverified' || p.licenseScope === 'academic_research')) {
+        reasons.add('PROVIDER_RIGHTS_UNVERIFIED'); continue;
+      }
+      validated.set(key, f);
+    }
+    const isDemo = requestDemo || containsDemo;
+    if ((containsDemo && containsLive) || (containsDemo && !requestDemo) || (requestDemo && containsLive)) {
+      reasons.add('DEMO_MODE_MISMATCH');
+    }
+    const subScores = Object.fromEntries(Object.entries(SCORE_FEATURES).map(([score, feature]) =>
+      [score, validated.get(feature)?.normalizedValue ?? null])) as FinalRankResult['subScores'];
+    const required = [...Object.values(SCORE_FEATURES), ...(isDemo ? [] : GATE_FEATURES)];
+    for (const id of required) if (!validated.has(id)) reasons.add(`REQUIRED_INPUT_MISSING:${id}`);
+    if (asset.status !== 'active') reasons.add('ASSET_NOT_TRADABLE');
+    if (!isDemo) {
+      for (const id of required) if ((validated.get(id)?.qualityScore ?? 0) < 90) reasons.add(`DATA_QUALITY_INSUFFICIENT:${id}`);
+      for (const id of ['market_integrity_pass', 'liquidity_eligible', 'tradability_pass']) {
+        if (validated.get(id)?.value !== 1) reasons.add(`HARD_GATE_FAILED:${id}`);
+      }
+      for (const id of REQUIRED_COMPONENTS) {
+        for (const code of componentActivationReasons(id)) reasons.add(`${code}:${id}`);
+      }
+    }
+    const botRisk = validated.get('bot_manipulation_risk_index')?.value;
+    const spreadRisk = validated.get('spread_slippage_risk_index')?.value;
+    if (botRisk !== undefined && (botRisk < 0 || botRisk > 100)) reasons.add('RISK_INPUT_INVALID');
+    if (spreadRisk !== undefined && (spreadRisk < 0 || spreadRisk > 100)) reasons.add('RISK_INPUT_INVALID');
+    if ((botRisk ?? 0) > 75 || (spreadRisk ?? 0) > 75) reasons.add('BLOCKED_BY_RISK');
+    if (!isDemo) reasons.add('EVIDENCE_REPLAY_UNAVAILABLE');
+    const validScores = Object.values(subScores).every(value => value !== null);
+    const canCompute = reasons.size === 0 && validScores;
+    const confidence = isDemo || !canCompute ? 0 : required.reduce((sum, id) => sum + (validated.get(id)?.qualityScore ?? 0), 0) / (required.length * 100);
     const weights = this.getWeightProfile(asset.assetClass);
-
-    // 1. HARD ELIGIBILITY GATES
-    let eligibility = true;
-    let eligibilityReason: string | undefined = undefined;
-
-    // Gate 1: Asset must not be halted
-    if (asset.status === 'halted') {
-      eligibility = false;
-      eligibilityReason = 'Handel an der Heimatbörse ausgesetzt (Market Halt)';
-    }
-
-    // Gate 2: Liquidity threshold check
-    const rsiFeature = features.get('rsi_14');
-    if (!rsiFeature || rsiFeature.qualityScore < 50) {
-      eligibility = false;
-      eligibilityReason = 'Ungenügende Datenqualität oder fehlende Liquiditätsprüfung';
-    }
-
-    // Gate 3: Bot manipulation veto
-    const botRisk = features.get('bot_manipulation_risk_index')?.value || 0;
-    if (botRisk > 75) {
-      eligibility = false;
-      eligibilityReason = 'Akutes Manipulationsrisiko durch koordiniertes Bot-Netzwerk (>75%)';
-    }
-
-    const eligibilityMultiplier = eligibility ? 1.0 : 0.0;
-
-    // 2. CONFIDENCE COMPUTATION
-    // Measures data completeness, freshness, and feature coverage
-    const featureCount = features.size;
-    const requiredFeatureCount = 6;
-    const completenessRatio = Math.min(1.0, featureCount / requiredFeatureCount);
-    const averageQuality =
-      Array.from(features.values()).reduce((sum, f) => sum + f.qualityScore, 0) / (featureCount || 1);
-    const confidence = Number((completenessRatio * (averageQuality / 100)).toFixed(2));
-
-    // 3. SUB-SCORE EXTRACTION (Normalized 0-100)
-    const momentumScore = features.get('rsi_14')?.normalizedValue ?? 50;
-    const technicalScore = features.get('vwap_deviation_bps')?.normalizedValue ?? 50;
-    const fundamentalScore = features.get('piotroski_f_score')?.normalizedValue ?? 50;
-    const sentimentScore = features.get('sentiment_polarity_gemini')?.normalizedValue ?? 50;
-    const eventScore = 65; // Deterministic catalyst baseline
-    const positioningScore = features.get('orderbook_imbalance_ratio_l2')?.normalizedValue ?? 50;
-
-    const subScores = {
-      momentumScore: Math.round(momentumScore),
-      technicalScore: Math.round(technicalScore),
-      fundamentalScore: Math.round(fundamentalScore),
-      sentimentScore: Math.round(sentimentScore),
-      eventScore: Math.round(eventScore),
-      positioningScore: Math.round(positioningScore),
-    };
-
-    // 4. RISK PENALTY
-    // Integrates spread, volatility, manipulation and distress
-    let riskPenalty = 0;
-    if (botRisk > 20) riskPenalty += (botRisk - 20) * 0.4;
-    riskPenalty = Math.min(40, Math.round(riskPenalty));
-
-    // 5. CANONICAL FORMULA APPLICATION
-    const rawWeightedSum =
-      weights.weightMomentum * momentumScore +
-      weights.weightTechnical * technicalScore +
-      weights.weightFundamental * fundamentalScore +
-      weights.weightSentiment * sentimentScore +
-      weights.weightEvent * eventScore +
-      weights.weightPositioning * positioningScore;
-
-    const unpenalizedScore = eligibilityMultiplier * confidence * rawWeightedSum;
-    const finalScore = Math.max(0, Math.min(100, Math.round(unpenalizedScore - riskPenalty)));
-
-    // 6. DRIVER ANALYSIS (Top Positive & Negative Contributions)
-    const topPositiveDrivers: DriverContribution[] = [];
-    const topNegativeDrivers: DriverContribution[] = [];
-
-    if (fundamentalScore >= 70) {
-      topPositiveDrivers.push({
-        componentId: 'fundamental_quality_scorer',
-        nameDe: 'Hohe Bilanz- & Moat-Qualität',
-        contributionScore: +(weights.weightFundamental * (fundamentalScore - 50)).toFixed(1),
-        evidenceSummary: 'Piotroski F-Score >= 8 und solide Free Cash Flow Generierung.',
-      });
-    }
-
-    if (momentumScore >= 65) {
-      topPositiveDrivers.push({
-        componentId: 'momentum_persistence_scorer',
-        nameDe: 'Starkes relatives Momentum',
-        contributionScore: +(weights.weightMomentum * (momentumScore - 50)).toFixed(1),
-        evidenceSummary: 'RSI & Trendstruktur signalisieren gesunden Aufwärtstrend.',
-      });
-    }
-
-    if (riskPenalty > 0) {
-      topNegativeDrivers.push({
-        componentId: 'bot_manipulation_risk_scorer',
-        nameDe: 'Erhöhtes Volatilitäts- & Manipulationsrisiko',
-        contributionScore: -riskPenalty,
-        evidenceSummary: 'Abzüge durch Bot-Aktivitäts-Score oder erhöhten Spread.',
-      });
-    }
-
-    // Reason Codes
-    const reasonCodes: string[] = [];
-    if (eligibility) {
-      reasonCodes.push('ELIGIBILITY_GATE_PASSED');
-      if (finalScore >= 75) reasonCodes.push('HIGH_CONVICTION_RATING');
-    } else {
-      reasonCodes.push('BLOCKED_BY_ELIGIBILITY_GATE');
-      if (eligibilityReason) reasonCodes.push(eligibilityReason);
-    }
-
-    // 7. CRYPTOGRAPHIC EVIDENCE CREATION
-    const evidence = await EvidenceEngineService.createEvidenceRecord({
-      assetId: asset.assetId,
-      symbol: asset.symbol,
-      modelVersion: this.MODEL_VERSION,
-      features: Object.fromEntries(
-        Array.from(features.entries()).map(([k, v]) => [k, v.normalizedValue])
-      ),
-      weights: { ...weights },
-      subScores,
+    const riskPenalty = Math.min(40, Math.round(Math.max(0, (botRisk ?? 0) - 20) * .4 + Math.max(0, (spreadRisk ?? 0) - 20) * .4));
+    const scoreWeights = [weights.weightMomentum, weights.weightTechnical, weights.weightFundamental,
+      weights.weightSentiment, weights.weightEvent, weights.weightPositioning];
+    const weighted = Object.values(subScores).reduce<number>((sum, score, i) => sum + (score ?? 0) * scoreWeights[i], 0);
+    const finalScore = canCompute ? Math.max(0, Math.min(100, Math.round(weighted * (isDemo ? 1 : confidence) - riskPenalty))) : null;
+    if (isDemo) reasons.add('DEMO_NOT_ACTIONABLE');
+    // No replayable evidence repository or cross-sectional ranking is implemented in this slice.
+    return FinalRankResultSchema.parse({
+      assetId: asset.assetId, symbol: asset.symbol, assetClass: asset.assetClass, rank: null, finalScore,
+      resultStatus: isDemo && canCompute ? 'demo_fallback' :
+        reasons.has('ASSET_NOT_TRADABLE') || reasons.has('BLOCKED_BY_RISK') ? 'blocked_by_risk' : 'insufficient_data',
+      dataAvailability: isDemo ? 'simulated' : 'unavailable',
+      scoreEligible: false, rankEligible: false, alertEligible: false, eligibility: false,
+      eligibilityReason: [...reasons].join(', '), confidence, riskPenalty, subScores, weightsApplied: weights,
+      topPositiveDrivers: [], topNegativeDrivers: [], reasonCodes: [...reasons], modelVersion: this.MODEL_VERSION,
+      evidenceId: `UNVERIFIED-${asset.assetId}`, computedAt: now, isDemo,
+      regulatoryDisclaimer: 'Demo- oder unvollständige Analyse. Keine verifizierte Marktintelligenz oder Anlageberatung.',
     });
-
-    return {
-      assetId: asset.assetId,
-      symbol: asset.symbol,
-      assetClass: asset.assetClass,
-      rank: eligibility && confidence >= 0.65 ? 1 : null, // null if ineligible
-      finalScore,
-      eligibility,
-      eligibilityReason,
-      confidence,
-      riskPenalty,
-      subScores,
-      weightsApplied: weights,
-      topPositiveDrivers,
-      topNegativeDrivers,
-      reasonCodes,
-      modelVersion: this.MODEL_VERSION,
-      evidenceId: evidence.evidenceId,
-      computedAt: evidence.computedAt,
-      isDemo,
-      regulatoryDisclaimer:
-        'Keine Anlageberatung oder Finanzanalyse i.S.d. WpHG/MiFID II. Alle berechneten Scores und Rangfolgen basieren auf historischen bzw. zeitnahen Daten und begründen keine Garantie für zukünftige Kursentwicklungen.',
-    };
   }
 }

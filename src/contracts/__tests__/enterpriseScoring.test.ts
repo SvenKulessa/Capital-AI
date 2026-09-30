@@ -82,9 +82,9 @@ export async function runEnterpriseScoringSuite(): Promise<{ passed: boolean; me
       ],
     ]);
 
-    ScoringEngineService.computeFinalScore(mockAsset, mockFeatures, false).then((res) => {
-      if (res.finalScore < 0 || res.finalScore > 100) {
-        failures.push(`Unit Test 1.1 Failed: Final score ${res.finalScore} not in bounds [0, 100]`);
+    await ScoringEngineService.computeFinalScore(mockAsset, mockFeatures, false).then((res) => {
+      if (res.finalScore !== null || res.resultStatus !== 'insufficient_data') {
+        failures.push(`Unit Test 1.1 Failed: Partial inputs must produce no score; got ${res.finalScore}`);
       }
       if (!res.modelVersion || !res.evidenceId) {
         failures.push('Unit Test 1.1 Failed: Missing modelVersion or evidenceId');
@@ -106,15 +106,15 @@ export async function runEnterpriseScoringSuite(): Promise<{ passed: boolean; me
       status: 'halted', // Halted!
     };
 
-    ScoringEngineService.computeFinalScore(haltedAsset, new Map(), false).then((res) => {
+    await ScoringEngineService.computeFinalScore(haltedAsset, new Map(), false).then((res) => {
       if (res.eligibility !== false) {
         failures.push('Unit Test 1.2 Failed: Halted asset must have eligibility = false');
       }
       if (res.rank !== null) {
         failures.push(`Unit Test 1.2 Failed: Ineligible asset must have rank = null, but got ${res.rank}`);
       }
-      if (res.finalScore !== 0) {
-        failures.push(`Unit Test 1.2 Failed: Ineligible asset must have finalScore = 0, but got ${res.finalScore}`);
+      if (res.finalScore !== null) {
+        failures.push(`Unit Test 1.2 Failed: Ineligible asset must have finalScore = null, but got ${res.finalScore}`);
       }
     });
   } catch (err: any) {
@@ -134,7 +134,7 @@ export async function runEnterpriseScoringSuite(): Promise<{ passed: boolean; me
       status: 'active',
     };
 
-    demoAdapter.fetchObservation(testAsset).then((obs) => {
+    await demoAdapter.fetchObservation(testAsset).then((obs) => {
       if (!obs.provenance.isDemo) {
         failures.push('Unit Test 1.3 Failed: Demo adapter must set isDemo=true in provenance');
       }

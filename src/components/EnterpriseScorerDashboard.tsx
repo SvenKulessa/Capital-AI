@@ -48,6 +48,8 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
   const [activeResult, setActiveResult] = useState<FinalRankResult | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const requestId = React.useRef(0);
+  const [scoreError, setScoreError] = useState<string | null>(null);
   const [dataMode, setDataMode] = useState<'LIVE' | 'DEMO'>('LIVE');
 
   const featureStore = new FeatureStoreService();
@@ -56,6 +58,10 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
   const demoAdapter = new ExplicitDemoAdapter();
 
   const computeAssetScore = async (asset: AssetIdentity, isDemo: boolean) => {
+    const currentRequest = ++requestId.current;
+    setActiveResult(null);
+    setIsDrawerOpen(false);
+    setScoreError(null);
     setIsLoading(true);
     try {
       const adapter = isDemo
@@ -67,16 +73,17 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
       const rawObs = await adapter.fetchObservation(asset);
       const features = featureStore.extractFeatures({ asset, observation: rawObs });
       const res = await ScoringEngineService.computeFinalScore(asset, features, isDemo);
-      setActiveResult(res);
+      if (currentRequest === requestId.current) setActiveResult(res);
     } catch (e) {
-      console.error('Scoring computation error:', e);
+      if (currentRequest === requestId.current) setScoreError('Daten nicht verfügbar. Kein verifizierter Score.');
     } finally {
-      setIsLoading(false);
+      if (currentRequest === requestId.current) setIsLoading(false);
     }
   };
 
   useEffect(() => {
     computeAssetScore(selectedAsset, dataMode === 'DEMO');
+    return () => { requestId.current++; };
   }, [selectedAsset, dataMode]);
 
   return (
@@ -93,7 +100,7 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
               Enterprise Scorer &amp; Explainability Hub
             </h2>
             <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-              Verifizierte Multi-Asset-Bewertung mit expliziter Trennung zwischen Börsen-Fakten,
+              Multi-Asset-Analyse mit expliziter Trennung zwischen Börsen-Fakten,
               abgeleiteten Merkmalen und mathematischen Modell-Inferenzen.
             </p>
           </div>
@@ -155,8 +162,9 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
         </div>
       </div>
 
+      {scoreError && <p role="alert" className="text-sm text-amber-300">{scoreError}</p>}
       {/* Main Score & Driver Card */}
-      {activeResult && (
+      {activeResult && activeResult.assetId === selectedAsset.assetId && activeResult.isDemo === (dataMode === 'DEMO') && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Card (Left 2 Columns) */}
           <div className="lg:col-span-2 p-6 rounded-2xl bg-[#090e21] border border-slate-800 space-y-6">
@@ -164,8 +172,8 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
               <div className="flex items-center gap-4">
                 <div className="text-center p-4 rounded-2xl bg-gradient-to-br from-[#0d1633] to-black border border-amber-500/40 min-w-[110px] shadow-lg">
                   <div className="text-[10px] font-mono uppercase text-slate-400">Final Rank Score</div>
-                  <div className="text-4xl font-extrabold font-mono text-amber-400 mt-1">
-                    {activeResult.finalScore}
+                  <div className={`${activeResult.finalScore === null ? 'text-base' : 'text-4xl'} font-extrabold font-mono text-amber-400 mt-1`}>
+                    {activeResult.finalScore ?? 'Nicht verfügbar'}
                   </div>
                   <div className="text-[10px] text-slate-500 font-mono mt-0.5">Skala 0-100</div>
                 </div>
@@ -182,7 +190,7 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
                           : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                       }`}
                     >
-                      {activeResult.isDemo ? 'DEMO' : 'LIVE'}
+                      {activeResult.dataAvailability.toUpperCase()}
                     </span>
                   </div>
 
@@ -200,7 +208,7 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
                       Konfidenz: <span className="text-cyan-400 font-bold">{Math.round(activeResult.confidence * 100)}%</span>
                     </span>
                     <span className="text-xs text-slate-400 font-mono">
-                      Risiko-Abzug: <span className="text-rose-400 font-bold">-{activeResult.riskPenalty} Pkt.</span>
+                      Risiko-Abzug: <span className="text-rose-400 font-bold">{activeResult.finalScore === null ? 'Nicht verfügbar' : `-${activeResult.riskPenalty} Pkt.`}</span>
                     </span>
                   </div>
                 </div>
@@ -256,7 +264,7 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
                     </div>
                   ))}
                   {activeResult.topNegativeDrivers.length === 0 && (
-                    <div className="text-xs text-slate-500 italic p-2">Keine erhöhten Risiko-Vetos aktiv.</div>
+                    <div className="text-xs text-slate-500 italic p-2">Keine verifizierte Risikobewertung verfügbar.</div>
                   )}
                 </div>
               </div>
@@ -288,7 +296,7 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
                   Audit-Trail Metadaten
                 </span>
                 <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
-                  BaFin AT 7.2
+                  Nicht verifiziert
                 </span>
               </div>
 
@@ -299,14 +307,14 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
                 </div>
                 <div className="flex justify-between p-2 rounded bg-black/40">
                   <span className="text-slate-400">Regime:</span>
-                  <span className="text-cyan-300 font-bold">Bullish Expansion</span>
+                  <span className="text-cyan-300 font-bold">Nicht verfügbar</span>
                 </div>
                 <div className="flex justify-between p-2 rounded bg-black/40">
                   <span className="text-slate-400">Plausibilität:</span>
-                  <span className="text-emerald-400 font-bold">✓ 11/11 Bestanden</span>
+                  <span className="text-emerald-400 font-bold">{activeResult.resultStatus}</span>
                 </div>
                 <div className="p-2 rounded bg-black/40">
-                  <div className="text-slate-400 mb-1">SHA-256 Fingerprint:</div>
+                  <div className="text-slate-400 mb-1">Evidence-Referenz (unverifiziert):</div>
                   <div className="text-[10px] text-cyan-300 break-all select-all">
                     {activeResult.evidenceId}
                   </div>
@@ -327,7 +335,7 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
       <ScoreExplainabilityDrawer
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        result={activeResult}
+        result={activeResult?.assetId === selectedAsset.assetId && activeResult.isDemo === (dataMode === 'DEMO') ? activeResult : null}
       />
     </div>
   );
