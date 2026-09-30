@@ -13,3 +13,7 @@ Bei Docs/SEO/Social/Branding: **GROWTH ist Primary Domain**.
 
 Branch-Präfix: `capital-ai-platform/`
 PR-Präfix: `[CAPITAL-AI-PLATFORM]`
+
+## Branding
+Badge: `plattform.webp` — Violett / Dunkelviolett; verbundener Plattformknoten. Kanonische System-Domain bleibt `PLATFORM`.
+Lizenznachweis: `plattform.LICENSE.md`.
