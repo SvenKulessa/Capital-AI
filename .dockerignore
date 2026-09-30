@@ -19,6 +19,9 @@
 !server/infrastructure.mjs
 !shared/
 !shared/market-contracts.mjs
+!deploy/
+!deploy/nats-server.conf
+!deploy/nats-entrypoint.sh
 !scripts/
 !scripts/license-evidence.mjs
 !scripts/license-evidence.test.mjs

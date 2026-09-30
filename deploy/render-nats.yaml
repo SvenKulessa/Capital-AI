@@ -1,5 +1,5 @@
-# NOT APPROVED: owner rejected NATS cost and configuration on 2026-09-30.
-# Do not apply this Blueprint. Kept only as an unprovisioned proposal.
+# Owner authorized paid NATS provisioning on 2026-09-30.
+# Apply after merging and validating the private NATS image.
 # Select workspace AICapital explicitly when creating this Blueprint.
 previews:
   generation: 'off'

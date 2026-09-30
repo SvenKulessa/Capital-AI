@@ -38,5 +38,6 @@ export const MarketStatusSchema = z.object({
   symbols: z.array(z.string()), quotesEnabled: z.boolean(),
   infrastructure: z.object({ status: z.enum(['connected', 'degraded', 'unavailable']),
     redis: z.enum(['connected', 'unavailable']), nats: z.enum(['connected', 'unavailable']),
+    pubsub: z.enum(['connected', 'unavailable', 'disabled']).optional(),
     stream: z.literal('CAPITAL_FACTS'), storage: z.literal('file'), replicasConfigured: z.number().int().positive() }),
 });

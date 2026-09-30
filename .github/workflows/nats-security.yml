@@ -1,0 +1,64 @@
+name: Private NATS image security
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: nats-security-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build pinned scanner and NATS image
+        run: |
+          docker build --file Dockerfile.security --tag capital-nats-security .
+          # DL3002 exception: entrypoint prepares the mounted disk then execs UID 1000.
+          docker run --rm --entrypoint hadolint -v "$PWD:/work:ro" capital-nats-security --ignore DL3002 /work/deploy/Dockerfile.nats
+          docker build --file deploy/Dockerfile.nats --tag capital-nats:${{ github.sha }} .
+      - name: Scan exact NATS image and generate SBOM
+        run: |
+          mkdir -p security-reports
+          docker image inspect capital-nats:${{ github.sha }} > security-reports/nats-image-identity.json
+          docker save capital-nats:${{ github.sha }} --output security-reports/nats-image.tar
+          chmod a+r security-reports/nats-image.tar
+          chmod a+rwx security-reports
+          docker run --rm -v "$PWD/security-reports:/reports" capital-nats-security image --input /reports/nats-image.tar --ignorefile /dev/null --scanners vuln,secret --severity HIGH,CRITICAL --exit-code 1 --format json --output /reports/nats-image.json
+          docker run --rm -v "$PWD/security-reports:/reports" capital-nats-security image --input /reports/nats-image.tar --ignorefile /dev/null --scanners vuln --format cyclonedx --output /reports/nats.sbom.cdx.json
+          rm security-reports/nats-image.tar
+      - name: Verify disk initialization and non-root server
+        run: |
+          set -euo pipefail
+          cleanup() {
+            docker logs capital-nats-smoke > security-reports/nats-smoke.log 2>&1 || true
+            docker rm -f capital-nats-smoke || true
+            docker volume rm capital-nats-smoke-data || true
+          }
+          trap cleanup EXIT
+          docker volume create capital-nats-smoke-data
+          docker run -d --name capital-nats-smoke --read-only --cap-drop ALL --cap-add CHOWN --cap-add FOWNER --cap-add SETUID --cap-add SETGID --security-opt no-new-privileges -e NATS_TOKEN=local-ci-token -v capital-nats-smoke-data:/var/data capital-nats:${{ github.sha }}
+          for attempt in $(seq 1 30); do
+            if docker logs capital-nats-smoke 2>&1 | grep -q 'Server is ready'; then break; fi
+            sleep 1
+          done
+          docker logs capital-nats-smoke 2>&1 | grep -q 'Server is ready'
+          docker exec capital-nats-smoke sh -c 'test "$(id -u)" = 0; grep -Eq "^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$" /proc/1/status; test "$(stat -c %u /var/data/jetstream)" = 1000'
+          docker restart capital-nats-smoke
+          for attempt in $(seq 1 30); do
+            if docker exec capital-nats-smoke grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000' /proc/1/status; then break; fi
+            sleep 1
+          done
+          docker exec capital-nats-smoke grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000' /proc/1/status
+      - name: Save evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: nats-security-${{ github.sha }}
+          path: |
+            security-reports/*.json
+            security-reports/nats-smoke.log
+          retention-days: 7
