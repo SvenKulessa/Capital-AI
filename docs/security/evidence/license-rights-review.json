@@ -839,10 +839,23 @@
       "bytes": 718717,
       "runtimeUse": "NO_STATIC_IMPORT_FOUND",
       "creator": null,
-      "origin": null,
+      "origin": "Durch Gemini erzeugt",
       "license": null,
-      "evidenceReference": null,
-      "status": "ORIGIN_AND_USAGE_RIGHTS_OPEN"
+      "evidenceReference": "LICENSE-RIGHTS.md#herkunftsbestätigung",
+      "status": "OWNER_CONFIRMED_AI_ORIGIN_USAGE_TERMS_OPEN",
+      "originEvidence": {
+        "type": "OWNER_STATEMENT",
+        "recordedAt": "2026-09-30",
+        "verification": "USER_CONFIRMED_NOT_INDEPENDENTLY_RECONSTRUCTED",
+        "generationTool": "Gemini",
+        "generationSystem": null,
+        "embeddingTool": null,
+        "generationDate": null,
+        "model": null,
+        "subscriptionTier": null,
+        "creationArtifactReference": null,
+        "applicableTermsReference": null
+      }
     },
     {
       "path": "src/assets/images/capital_ai_full_logo_1789997869885.jpg",
@@ -850,10 +863,23 @@
       "bytes": 664552,
       "runtimeUse": "NO_STATIC_IMPORT_FOUND",
       "creator": null,
-      "origin": null,
+      "origin": "Durch Gemini erzeugt",
       "license": null,
-      "evidenceReference": null,
-      "status": "ORIGIN_AND_USAGE_RIGHTS_OPEN"
+      "evidenceReference": "LICENSE-RIGHTS.md#herkunftsbestätigung",
+      "status": "OWNER_CONFIRMED_AI_ORIGIN_USAGE_TERMS_OPEN",
+      "originEvidence": {
+        "type": "OWNER_STATEMENT",
+        "recordedAt": "2026-09-30",
+        "verification": "USER_CONFIRMED_NOT_INDEPENDENTLY_RECONSTRUCTED",
+        "generationTool": "Gemini",
+        "generationSystem": null,
+        "embeddingTool": null,
+        "generationDate": null,
+        "model": null,
+        "subscriptionTier": null,
+        "creationArtifactReference": null,
+        "applicableTermsReference": null
+      }
     },
     {
       "path": "src/assets/images/capital_ai_wide_banner_1789999064950.jpg",
@@ -861,10 +887,23 @@
       "bytes": 680308,
       "runtimeUse": "NO_STATIC_IMPORT_FOUND",
       "creator": null,
-      "origin": null,
+      "origin": "Durch Gemini erzeugt",
       "license": null,
-      "evidenceReference": null,
-      "status": "ORIGIN_AND_USAGE_RIGHTS_OPEN"
+      "evidenceReference": "LICENSE-RIGHTS.md#herkunftsbestätigung",
+      "status": "OWNER_CONFIRMED_AI_ORIGIN_USAGE_TERMS_OPEN",
+      "originEvidence": {
+        "type": "OWNER_STATEMENT",
+        "recordedAt": "2026-09-30",
+        "verification": "USER_CONFIRMED_NOT_INDEPENDENTLY_RECONSTRUCTED",
+        "generationTool": "Gemini",
+        "generationSystem": null,
+        "embeddingTool": null,
+        "generationDate": null,
+        "model": null,
+        "subscriptionTier": null,
+        "creationArtifactReference": null,
+        "applicableTermsReference": null
+      }
     },
     {
       "path": "src/assets/images/glowing_earth_nodes_1789997454893.jpg",
@@ -872,10 +911,23 @@
       "bytes": 870199,
       "runtimeUse": "HERO_IMPORT",
       "creator": null,
-      "origin": null,
+      "origin": "Social-Media-Engine aus capital-ai-online/Finance; im Website-Mockup verwendet und durch Gemini eingebettet",
       "license": null,
-      "evidenceReference": null,
-      "status": "ORIGIN_AND_USAGE_RIGHTS_OPEN"
+      "evidenceReference": "LICENSE-RIGHTS.md#herkunftsbestätigung",
+      "status": "OWNER_CONFIRMED_AI_ORIGIN_USAGE_TERMS_OPEN",
+      "originEvidence": {
+        "type": "OWNER_STATEMENT",
+        "recordedAt": "2026-09-30",
+        "verification": "USER_CONFIRMED_NOT_INDEPENDENTLY_RECONSTRUCTED",
+        "generationTool": null,
+        "generationSystem": "Social-Media-Engine in capital-ai-online/Finance",
+        "embeddingTool": "Gemini",
+        "generationDate": null,
+        "model": null,
+        "subscriptionTier": null,
+        "creationArtifactReference": null,
+        "applicableTermsReference": null
+      }
     }
   ],
   "inlineAssetSymbols": {
@@ -1075,7 +1127,7 @@
   "remainingGates": [
     "Complete corresponding sources and delivery obligations for OS binaries",
     "Exact base binary/source provenance and notice packaging",
-    "JPEG origin and commercial usage rights",
+    "JPEG usage terms and creation trace; AI origin confirmed by owner",
     "Inline logo origin and trademark use review",
     "Remote font binary identity or reproducible licensed font distribution",
     "Provider contract scopes and attribution for actual public display/API/derived-data/export use"
