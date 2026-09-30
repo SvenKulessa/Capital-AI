@@ -1,38 +1,47 @@
 # Architektur- und Produktionsabgleich — 2026-09-30
 
-Prüfzeit: 2026-09-30, circa 13:35 UTC. Repository: SvenKulessa/Capital-AI.
-Referenz-Main: `090b00bb432e329daf62129d10d2c5ca041662b6`.
-Dieser Snapshot ergänzt historische Berichte, deren Bestandsaussagen nicht mehr aktuell sind.
+Prüfzeit: circa 17:14 UTC (19:14 Europe/Berlin).
+Repository: SvenKulessa/Capital-AI.
+Referenz-Main: `67cdf660095c68238b2e20604b1cd87cc32d3464`.
+Dieser Bericht ersetzt den Snapshot von 13:35 UTC. Historische Bestandsberichte bleiben historische Evidenz und sind keine Live-Statusquelle.
 
 ## Vier Validierungsschritte
 
-1. **Repository:** Main zweimal identisch gelesen; einzig offene PR #38 betrifft Social-/Branding-Dateien und bleibt unabhängig. Registry-Quelltext enthält 50 eindeutige Komponentenpositionen: 45 planned, 5 blocked, alle provenanceMode=unavailable und lastValidatedAt=null. Keine Aktivierung aus Konfigurationsmetadaten ableiten.
-2. **CI/Supply Chain:** Docker-Sicherheitslauf [36715472658](https://github.com/SvenKulessa/Capital-AI/actions/runs/36715472658) auf `46ee077dea184a5defa84ef028fb93e3ac73fad5` erfolgreich. Validate und publish_candidate bestanden; Registry-Scan, SBOM und Attestation-Prüfungen grün laut Jobschritten. Das ist kein Sicherheitsnachweis für den späteren aktuellen Main. NATS-Sicherheitslauf 36713260016 und Render-CLI-Lauf 36713234942 ebenfalls erfolgreich.
-3. **Render:** Workspace AICapital `tea-d90o4rj7uimc739i86ug`, Capital-AI `srv-dau1rp893c1s73cdhm1g`: eine Starter-Instanz, Frankfurt, Auto-Deploy aus. Live-Deploy `dep-daugip893c1s73e5rgug` enthält exakt Referenz-Main. Metadaten zeigen Source-Docker mit Dockerfile, nicht einen nachgewiesenen GHCR-Digest-Deploy. Ein Registry-Credential beweist diese Identität nicht.
-4. **Laufzeit:** GET https://capital-ai-uvsl.onrender.com/api/market/status und /healthz: ingress=fail_closed, infrastructure=degraded, redis=connected, nats=unavailable, pubsub=connected. Pub/Sub bezeichnet Publisher-Verfügbarkeit und beweist keine Zustellung. GET https://capital-ai.online/healthz liefert einen anderen Health-Vertrag mit configured.supabase=true; damit ist die Produktionsdomain noch nicht als neuer Capital-AI-Service verifiziert. Auth-Login und Datenmigration wurden hier nicht getestet.
+1. **Main und parallele Arbeiten:** Die Branch-Liste enthält ausschließlich main; offene PR-Liste leer. Damit besteht beim Abgleich kein konkurrierender Arbeitsbranch. Referenz-Main enthält den gemergten Blank-Screen-Bootstrap-Fix aus PR #45.
+2. **CI und Schutz:** [Docker-Sicherheitslauf 36747802046](https://github.com/SvenKulessa/Capital-AI/actions/runs/36747802046) auf genau Referenz-Main ist completed/success. Ruleset [main-production-protection](https://github.com/SvenKulessa/Capital-AI/rules/24259174), ID 24259174, ist active: Delete-/Non-fast-forward-Schutz, PR-Pflicht, strict required check Docker Security Gate und keine Bypass-Akteure. Pflichtanzahl genehmigender Reviews ist 0; dies belegt keine unabhängige menschliche Abnahme.
+3. **Render und Produktionsumgebung:** Capital-AI, NATS und Valkey gehören im Workspace AICapital zur Umgebung Production (`evm-d90oshpkh4rs739l1fm0`). Capital-AI ist live auf Referenz-Main, Deploy `dep-daujvd3tqb8s73bltfk0`. NATS ist privat in Frankfurt, eine Starter-Instanz, Port 4222, 5-GB-Disk `dsk-dauhcp0jo6nc738eee20` unter /var/data. Valkey 8.1.10 ist available/Free, allkeys_lru, persistenceMode=off.
+4. **Echte Daten und Evidence:** GET /api/market/status meldet infrastructure, redis, nats und pubsub connected; File-Speicher, eine konfigurierte Replik. Binance BTCUSDT und Kraken BTCUSD liefern echte WebSocket-Beobachtungen, isDemo=false, validated=true und Evidence-IDs. GET /api/market/evidence gibt jeweils dieselbe Beobachtung mit hashVerified=true zurück. Keine synthetischen Facts in den Produktionsstream geschrieben.
 
-## Fortschritt und offene Gates
+## Beobachtete Replay-Belege
 
-| Arbeitspaket | Nachweis / Zustand |
+| Provider / Instrument | Evidence-ID | Ergebnis |
+| --- | --- | --- |
+| Binance / BTCUSDT | CAPITAL_FACTS:25751:bf73a84ee83cae5a23f5ccbe948fe6dffdf5c8ee8aa02a02de8c94f64ba1f904 | Replay derselben Quote, hashVerified=true |
+| Kraken / BTCUSD | CAPITAL_FACTS:25782:226e39ae38b749312a9dcd8a434c308542285f7e407cf3596797d0489c216fc5 | Replay derselben Quote, hashVerified=true |
+
+Beobachtungen sind zeitgebundene Live-Nachweise, keine dauerhaft aktuellen Preise. Die API lieferte beide aus dem Cache, nachdem die Anwendung sie gegen das JetStream-Original geprüft hatte. Diese Prüfung belegt Replay im laufenden Dienst, **nicht** Datenbestand nach NATS-Neustart oder Backup-/Restore.
+
+## Fortschritt
+
+| Arbeitspaket | Aktueller Status |
 | --- | --- |
-| Registry-Bereinigung | VERIFIZIERT auf Quelltextebene: 45 planned, 5 blocked, keine Live-Provenienz oder erfundene Validierungszeit |
-| Redis/Valkey | VERIFIZIERT: Free, 8.1.10, Frankfurt, available; Runtime-Client connected; flüchtiger Cache, keine Evidence-Aufbewahrung |
-| Pub/Sub-Implementierung | Quelltext vorhanden: Publish erst nach JetStream-Ack, Replay vor Callback, Schema-/Freshness-Gates und begrenzte Listener; produktive Delivery mangels NATS OFFEN |
-| NATS/JetStream | Blueprint und Client vorhanden, Image-Sicherheitslauf grün; kein NATS-Service im Render-Inventar, dauerhafte Evidence und produktives Replay OFFEN |
-| Scorer | 50 unfreigegeben; Datenverträge, reale Berechnungen, Pflichtinputs und Nutzungsrechte bleiben Aktivierungsvoraussetzungen |
-| Starter-YAML | Bereits vorhanden: plan=0.5c-512mb und numInstances=1; keine erneute Implementierung erforderlich |
-| GHCR-Produktionsidentität | OFFEN: geprüfter Kandidat stammt von älterem Commit; Live-Manifest-Digest nicht nachgewiesen |
-| Domain/ZITADEL | Owner meldet erfolgreichen Login; eigener Login-Test und Domain-Umschaltung OFFEN. Finance weiterhin not_suspended im Inventar |
+| Valkey-Anschluss | VERIFIZIERT: produktiver Client connected; flüchtiger Cache |
+| Privater NATS-Service | VERIFIZIERT: Service und persistenter Datenträger vorhanden; produktiver Client connected |
+| Echtquote → dauerhafte Evidence → Replay | VERIFIZIERT für die beiden dokumentierten Beobachtungen im laufenden Dienst |
+| Valkey Pub/Sub | Publisher-Verfügbarkeit VERIFIZIERT; produktive Subscriber-Zustellung und Wiederanlauf OFFEN |
+| Neustart-Replay / Backup-Restore | OFFEN; keine Produktionsdienste für diesen Snapshot neu gestartet |
+| Main-Sicherheitsgate | VERIFIZIERT: aktives Ruleset und erfolgreicher Sicherheitslauf auf Referenz-Main |
+| Analyse-/Score-Freigabe | OFFEN: licenseScope=unverified, actionable=false, PROVIDER_RIGHTS_UNVERIFIED und ANALYSIS_INPUTS_INCOMPLETE |
+| GHCR-Runtime-Identität | OFFEN: Render weiterhin Git-backed Docker; /healthz meldet buildIdentity.bound=false und sourceSha=null |
+| Domain-/ZITADEL-Umschaltung | Durch diesen Snapshot nicht erneut geprüft; Finance im Inventar weiterhin not_suspended |
 
-## Loghinweise ohne Verlust der Sicherheitskontrollen
+Production-Zuordnung ist eine Render-Umgebungszuordnung. Sie ersetzt weder Provider-Nutzungsrechte noch den Production-Handoff-Vertrag. Der Source-Commit im Render-Deploy ist belegt; ein identischer attestierter GHCR-Manifest-Digest ist nicht belegt.
 
-Der erfolgreiche Lauf enthält eine Secret-Scan-Größenwarnung für einen 24-MB-npm-Cache sowie Trivys Alpine-3.24-EOL-Listenwarnung und node-domexception-Deprecation. Die Cachekorrektur wurde anschließend mit PR #36 gemergt; ihr Effekt im Security-Lauf ist auf dem aktuellen Main noch zu verifizieren. Keine Scanner deaktivieren, keine pauschalen Skip-/Allowlist-Regeln aus diesen Warnungen ableiten. Die EOL-Listenwarnung allein beweist weder Support noch EOL.
+## Nächster dependency-ready Arbeitsschritt
 
-## Nächste Ausführung
+1. Echte Subscriber-Zustellung auf dem bestehenden Datenpfad prüfen, ohne öffentliches Debug-/Admin-Endpoint oder künstliche Produktions-Facts.
+2. Kontrolliertes NATS-Neustart-Replay: vorhandene echte Evidence vor/nach Neustart vergleichen, erwartete Ausfallzeit und laufende Produktion berücksichtigen. Backup-/Restore gesondert prüfen.
+3. GHCR-Handoff-Gates weiterhin fail closed halten. Ein image-backed Zielservice und die vollständige Lizenzfreigabe sind Voraussetzungen gemäß docs/security/PRODUCTION-HANDOFF.md; kein neuer kostenpflichtiger Service durch diesen Snapshot.
+4. Fehlende reale Feature-Datasets, Verträge und Berechnungen einzeln verifizieren; Quotes allein aktivieren keine Scorer.
 
-- Privaten NATS-Service anhand deploy/render-nats.yaml mit 5-GB-Disk einrichten; Runtime-Token sicher erzeugen und auf beiden Services setzen. Tatsächlichen internen Host aus Render übernehmen.
-- Image-Digest/Commit/SBOM/Attestations auf demselben Release abgleichen, danach tatsächliches Provider-Fact und Evidence-Replay prüfen. Kontrolliertes Neustart-Replay erst in einem abgestimmten Betriebsfenster.
-- Domain-Bindings und DNS-Rollback-Werte vor Umschaltung inventarisieren; ZITADEL-Callback und Session auf capital-ai.online prüfen, anschließend Finance stilllegen.
-- Der vorhandene Render-Connector bietet keine Erstellung privater Services/Disks oder Custom-Domain-Verwaltung. Ein Actions-Secret lässt sich nicht zurücklesen. Dafür ist ein autorisierter Dashboard-Zugriff oder ein entsprechend begrenzter Workflow nötig.
-
-Keine Infrastruktur oder Secrets verändert, kein zusätzlicher Workflow oder Deploy ausgelöst. Dieser Snapshot schaltet keine Komponenten frei.
+Keine Secrets gelesen oder verändert, keine Services/Disks erstellt, kein Deploy oder manueller Workflow ausgelöst. Es wurde ausschließlich gelesen und dieser Dokumentationsstand auf einem Arbeitsbranch aktualisiert.
