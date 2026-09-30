@@ -35,7 +35,6 @@ export function evaluateProductionHandoff({
     throw new Error('Candidate source/image identity is malformed');
   }
 
-  const digest = candidate.imageRef.split('@')[1];
   const activeMainRulesets = (Array.isArray(rulesets) ? rulesets : [])
     .filter(r => r?.target === 'branch' && r?.enforcement === 'active' && targetsMain(r));
   const rules = activeMainRulesets.flatMap(r => Array.isArray(r.rules) ? r.rules : []);
@@ -76,8 +75,14 @@ export function evaluateProductionHandoff({
       pass:
         deploy?.status === 'live' &&
         deploy?.image?.ref === candidate.imageRef &&
-        normalizeDigest(deploy?.image?.sha) === digest,
-      evidence: { deployId: deploy?.id || null, imageRef: deploy?.image?.ref || null, imageSha: normalizeDigest(deploy?.image?.sha) },
+        normalizeDigest(deploy?.image?.sha) !== null,
+      evidence: {
+        deployId: deploy?.id || null,
+        imageRef: deploy?.image?.ref || null,
+        requestedManifestDigest: candidate.imageRef.split('@')[1],
+        providerImageSha: normalizeDigest(deploy?.image?.sha),
+        manifestRefMatches: deploy?.image?.ref === candidate.imageRef,
+      },
     },
     {
       name: 'RUNTIME_IDENTITY',

@@ -79,12 +79,14 @@ export function createApp(root = defaultRoot, options = {}) {
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const server = createApp();
   await infrastructure.start();
+  let unsubscribePubsubProbe = null;
+  try { unsubscribePubsubProbe = await infrastructure.subscribeQuotes(() => {}); } catch { /* health remains fail-closed */ }
   const stop = startStreams();
   const reconnect = setInterval(() => { if (infrastructure.status().status !== 'connected') void infrastructure.start(); }, 15000);
   reconnect.unref();
   server.listen(Number(process.env.PORT || 10000), '0.0.0.0');
   const shutdown = () => {
-    clearInterval(reconnect); stop(); server.close(() => { void infrastructure.close().finally(() => process.exit(0)); });
+    clearInterval(reconnect); stop(); server.close(() => { void Promise.resolve(unsubscribePubsubProbe?.()).finally(() => infrastructure.close()).finally(() => process.exit(0)); });
     setTimeout(() => { server.closeAllConnections(); process.exit(1); }, 10000).unref();
   };
   process.once('SIGTERM', shutdown);

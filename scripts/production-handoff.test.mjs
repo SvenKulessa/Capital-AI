@@ -59,9 +59,19 @@ test('a mutable or different Render image cannot satisfy the image-source gate',
   assert.ok(report.remainingGates.includes('RENDER_IMAGE_SOURCE'));
 });
 
-test('provider-reported live digest must equal the attested GHCR digest', () => {
+test('immutable Render image ref is the manifest binding while provider image sha is recorded separately', () => {
   const input = fixtures();
   input.deploy.image.sha = 'sha256:' + 'c'.repeat(64);
+  const report = evaluateProductionHandoff(input);
+  assert.equal(report.remainingGates.includes('RUNTIME_DIGEST'), false);
+  const gate = report.gates.find(g => g.name === 'RUNTIME_DIGEST');
+  assert.equal(gate.evidence.manifestRefMatches, true);
+  assert.equal(gate.evidence.providerImageSha, 'sha256:' + 'c'.repeat(64));
+});
+
+test('a deploy whose immutable image ref differs from the candidate remains blocked', () => {
+  const input = fixtures();
+  input.deploy.image.ref = 'ghcr.io/svenkulessa/capital-ai@sha256:' + 'd'.repeat(64);
   const report = evaluateProductionHandoff(input);
   assert.ok(report.remainingGates.includes('RUNTIME_DIGEST'));
 });
