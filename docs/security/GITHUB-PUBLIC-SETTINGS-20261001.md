@@ -3,7 +3,7 @@ Stand: 01.10.2026 (Europe/Berlin). Source: Capital-AI main@c7eb9f235c661b229439f
 Teilprüfung von GitHub-Einstellungen; keine aktuelle Runtime-, DNS- oder Lizenzfreigabe.
 
 ## Beobachteter Zustand
-- Repository öffentlich, Owner SvenKulessa; kein Enterprise-Transfer erfolgt.
+- Repository öffentlich, Owner SvenKulessa; kein Enterprise-Transfer erfolgt. Geplantes Ziel: capital-ai-online/Capital-AI in der Capital-AI-Enterprise-Umgebung, weiterhin public; Enterprise-Zuordnung und Kontotyp noch live zu bestätigen.
 - main-production-protection (24259174) aktiv, keine Bypass-Akteure; PR, Thread-Auflösung, Lösch-/Force-Push-Schutz und strikt aktueller Docker Security Gate erforderlich.
 - required_linear_history fehlt live. Repository erlaubt nur Merge-Commits; Squash/Rebase sind aus. Zuerst Squash erlauben, danach lineare Historie aktivieren; Repo-Konfiguration allein verändert GitHub nicht.
 - Dependabot-Konfiguration auf Main vorhanden; Einstellungen für Alerts/Security Updates und Secret Scanning/Push Protection sind mit dieser API nicht einzeln bestätigt.
@@ -20,7 +20,7 @@ Teilprüfung von GitHub-Einstellungen; keine aktuelle Runtime-, DNS- oder Lizenz
 | Secret Scanning / Push Protection | auf Repo-Ebene prüfen und aktivieren | öffentliche Repos kostenlos; keine neue kostenpflichtige Lizenz |
 | Private vulnerability reporting, SECURITY.md | vertraulichen Meldeweg einrichten | kostenlose Funktion; Kontakt noch zu bestätigen |
 | Dependency review | vor Merge verwundbare Versionen erkennen | öffentliche Repos kostenlos; Workflow-Storage separat |
-| CodeQL / Code Scanning | nur Option dokumentieren | Public ohne Zusatzlizenz; gemäß bisheriger Owner-Vorgabe NICHT aktivieren |
+| CodeQL / Code Scanning | Aktivierung für JavaScript/TypeScript einplanen | öffentlich auf GitHub.com ohne zusätzliche Code-Security-Lizenz, auch in Organisationen unter Enterprise Cloud; Live-Aktivierung noch offen |
 | Branch-/Tag-Rulesets | Main und akzeptierte v*-Tags absichern | kostenlos für öffentliche Repos; signierte Commits erst nach Client-/Bot-Prüfung |
 | PR-Review / CODEOWNERS | echte unabhängige Reviewer voraussetzen | keine künstliche Solo-Owner-Mergeblockade |
 | Actions | read-only GITHUB_TOKEN als Default, SHA-Pinning, Allow-List, Fork-Freigaben, Secrets isolieren | zusätzliche Lizenz nicht erforderlich; Live-Policies ungeklärt |
@@ -30,11 +30,16 @@ Teilprüfung von GitHub-Einstellungen; keine aktuelle Runtime-, DNS- oder Lizenz
 | Enterprise | bestehende Zielorganisation, Typ, Seats und Policys prüfen | Enterprise-Abonnement/Seats nicht kostenlos; keine Bestellung oder Trial |
 | Sponsors | Finance aus, Capital-AI erst nach Transfer mit geprüftem Empfänger | persönliche Sponsoren ohne GitHub-Gebühr; Organisationssponsoren bis 6 % |
 
+## Public-Repository unter Enterprise Cloud
+Die Public-Verfügbarkeit hängt bei den hier genannten Repository-Funktionen nicht davon ab, ob ein persönlicher Account oder eine Organisation Eigentümer ist. CodeQL/Code Scanning, Dependency Review, Secret Scanning/Push Protection, Dependabot, Dependency Graph/SBOM und Repository-Branch-/Tag-Rulesets bleiben für capital-ai-online/Capital-AI auf GitHub.com ohne zusätzliche Security-Lizenz nutzbar, solange das Repository öffentlich bleibt.
+Das bedeutet keine pauschale Kostenfreiheit aller Enterprise-Sicherheitsfunktionen: organisationsweite Premium-Funktionen, private/internal Repositories, Enterprise-Seats und Drittanbieter separat prüfen. Standard-GitHub-Runner für Public sind kostenlos; größere Runner sowie zusätzlicher Artifact-/Cache-Speicher können Kosten erzeugen. Org-/Enterprise-Policies können die Aktivierung einschränken.
+Die frühere pauschale Nichtaktivierung von CodeQL aus Kostengründen wird korrigiert. CodeQL für JavaScript/TypeScript ist jetzt als offener Aktivierungsschritt eingeplant, nicht als bereits aktiviert belegt. Diese Korrektur erstellt keinen Scan-Workflow und startet keinen Scan.
+
 ## Aktivierungsfolge und Abnahme
 1. Jetzt: kostenlose Baseline prüfen, Finance-Sponsorships-Schalter ausschalten; Squash auf Repo-Ebene erlauben und required_linear_history live aktivieren. Alle existierenden Sicherheitsgates beibehalten.
 2. Vor Cutover: aktuelle Source SHA, attestierten GHCR-Digest, tatsächlich gestarteten Render-Digest und Deployment-ID korrelieren; Lizenz-/Production-Gates separat schließen. Backup/Restore-Drill bleibt eigenständige Abnahme.
 3. Migration: IONOS-Webrecords und Render-Domainbindungen sichern/gezielt umstellen; MX/SPF/DKIM/DMARC und MTA-STS erhalten; DNS/TLS/ZITADEL/Export sowie IONOS-SMTP prüfen.
-4. Nach dokumentierter Domain-/Auth-/Altdaten-Abnahme: Finance-Webservice suspendieren und Rückweg erhalten. Danach öffentliches Repo in die verifizierte GitHub-Enterprise-Cloud-Organisation übertragen; EMU ist für dieses Public-Ziel ungeeignet. Keine Zeitfreigabe allein durch Ablauf.
+4. Nach dokumentierter Domain-/Auth-/Altdaten-Abnahme: Finance-Webservice suspendieren und Rückweg erhalten. Danach öffentliches Repo in die Organisation capital-ai-online der Capital-AI-Enterprise-Umgebung übertragen, weiterhin public; EMU ist für dieses Public-Ziel ungeeignet. Keine Zeitfreigabe allein durch Ablauf.
 5. Nach Transfer: Owner-/Repo-URLs, OIDC-Subjekte, Secrets-/App-Zugriffe, GHCR-Namespace und Render-Imagequelle prüfen; alte attestierte Digests nicht umetikettieren. Danach Capital-AI-Sponsorbutton/Empfänger prüfen und aktivieren.
 
 ## Validierung und begrenzte Selbstheilung
