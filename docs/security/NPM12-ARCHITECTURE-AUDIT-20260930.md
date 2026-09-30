@@ -3,9 +3,9 @@
 ## Basis und Überlappung
 
 Geprüfter Produktions-/Scan-Commit: `3dcecd0637347923a0254c85526361779e119bbf` (PR #47).
-Vor Veröffentlichung auf Main `1cceddad71cbb63f1a7b4cbf7f27c8dbc4cda392` (PR #51) aktualisiert;
-zwischenzeitliche Änderung betrifft Chromium-/CI-Dokumentation. Offener PR #52 betrifft das Header-Logo;
-keine Überschneidung mit diesem Security-Slice. Kein direkter Main-Push oder Protection-Bypass.
+Nach Erstellung auf Main `c268a49e15976a99358972006c68fc7688fa5f50` (PR #52) aktualisiert;
+PR #51 ergänzt Chromium-/CI-Dokumentation, PR #52 das Header-Logo.
+Keine Überschneidung mit diesem Security-Slice. Kein direkter Main-Push oder Protection-Bypass.
 
 ## Upgradeentscheidung
 
@@ -116,3 +116,44 @@ Ein lokaler Start bestätigt BROKER_CREDENTIALS_REQUIRED vor Netzwerkzugriff.
 Die vorhandene produktive Quote-/Evidence-Prüfung ist davon unabhängig bestanden.
 Die bisherigen Integrationstests mit synthetischen BTCUSD-Quotes dürfen nicht unverändert
 gegen den produktiven CAPITAL_FACTS-Stream ausgeführt werden.
+
+## Ergänzende CI- und lokale Broker-Evidenz
+
+PR #53, Head de4f076542312485680d0cfe20e4ad747c349274, CI-Lauf 36757317050:
+Docker Security Gate **success**, einschließlich NATS-Image/Disk-Bootstrap,
+Quellscan, npm-12-Build-Image, Runtime-Image, SBOM, Server-Regressionen und Runtime-Hardening.
+PR-CI prüft den virtuellen Merge-Commit be5e1b5936668a2011f438c078dec582e6c38e0b.
+Verifiziertes Artefakt 11116957280, SHA-256
+8ac9b18a73fed1b9448a8f1e43c0bcea33e6c566681b5d56520ab3a59b3f2af5.
+Bereinigte Ergebnisse sind als pr-*.public.json archiviert.
+
+| Neuer Scan (alle Schweregrade) | CVEs / Advisories | Konfigurationsbefunde | Secrets |
+|---|---|---|---|
+| Quelle | 0 | 2 LOW DS-0026 | 0 |
+| Build-Image mit npm 12.2.0 | 0 | nicht Teil dieses Image-Scans | 0 |
+| Runtime-Image | 0 | nicht Teil dieses Image-Scans | 0 |
+| NATS-Image | GO-2026-5932, UNKNOWN | nicht Teil dieses Image-Scans | 0 |
+
+Der Go-Befund betrifft ausdrücklich die ungewarteten golang.org/x/crypto/openpgp-Pakete,
+keine allgemeine Aussage über alle x/crypto-Funktionen. Der Advisory enthält keine Fixversion.
+Er bleibt sichtbar; keine Ignore-/VEX-Ausnahme. Ein vollständiger transitiver
+Reachability-/Symbolnachweis am tatsächlichen Render-NATS-Binary ist noch offen.
+Quelle: https://vuln.go.dev/ID/GO-2026-5932.json
+
+Der neue isolierte Broker-Probe wurde zusätzlich gegen echte lokale NATS-2.15.0- und
+Valkey-8.1.10-Prozesse ausgeführt: alle vier Checks bestanden, keine übriggebliebenen Probe-Streams.
+NATS-Binary stammt aus offizieller GitHub-Release-Distribution; SHA-256 gegen SHA256SUMS bestätigt:
+5d2c51caca950333aba84911df7d377f826f3a59ec36061c6539105084f65c92.
+Valkey wurde lokal aus der offiziellen getaggten 8.1.10-Quelle gebaut;
+Archiv-SHA-256 c74e50cd83f6d398a3dc570e04ac2fe538249585d021f76ee2449bbf9ebd04ed
+ist eine Dokumentation des Downloads, keine unabhängige Herausgebersignatur.
+Diese temporären Werkzeuge/Binärdateien werden nicht ins Repository aufgenommen.
+
+Auch scripts/test-market-infrastructure-local.mjs bestand mit denselben echten lokalen Prozessen:
+1. Fan-out, Deduplizierung, Reihenfolge, Schemas und Evidence-Integrität.
+2. NATS-Prozessneustart, dauerhaftes Replay und Subscriber-Wiederherstellung.
+3. Leerer Valkey-Neustart, Replay, begrenzte Wiederherstellung und Unsubscribe.
+4. Cache-only kann JetStream-Evidence niemals ersetzen.
+
+Das ersetzt weiterhin keinen Test auf den privaten Render-Diensten. Deren produktive
+Quote-/Evidence-Prüfung ist bestätigt; Shell-/SSH-Probe, Runtime-Digest und Login bleiben offen.

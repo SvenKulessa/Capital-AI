@@ -154,7 +154,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Capital-AI globe branding */}
         <BrandLogo
-          variant="inline"
+          variant="vendor"
           size="md"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         />
@@ -313,7 +313,7 @@ export const Header: React.FC<HeaderProps> = ({
               {/* Drawer Top / Header */}
               <div className="p-5">
                 <div className="flex items-center justify-between pb-4 border-b border-amber-500/15">
-                  <BrandLogo variant="inline" size="sm" />
+                  <BrandLogo variant="vendor" size="sm" />
                   <button
                     id="close-menu-btn"
                     type="button"

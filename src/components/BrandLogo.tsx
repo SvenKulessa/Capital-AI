@@ -1,8 +1,9 @@
 import React from 'react';
 const brandLogo = '/branding/capital-ai-logo.jpg';
+const vendorLogo = '/branding/asset-pack/vendor/vendor-app-icon-512x512.png';
 
 interface BrandLogoProps {
-  variant?: 'emblem' | 'inline' | 'stacked' | 'banner';
+  variant?: 'emblem' | 'inline' | 'stacked' | 'banner' | 'vendor';
   size?: 'sm' | 'md' | 'lg' | 'xl';
   showSubtitle?: boolean;
   slogan?: string;
@@ -18,6 +19,24 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   className = '',
   onClick,
 }) => {
+  // Existing owner-supplied vendor artwork: no wordmark, no added background.
+  // Screen blending integrates its dark raster backdrop into the header surface.
+  if (variant === 'vendor') {
+    const dimensions = {
+      sm: 'w-16 h-10', md: 'w-20 h-12', lg: 'w-24 h-14', xl: 'w-32 h-20',
+    }[size];
+    const image = <img src={vendorLogo} alt="Capital-AI — Globus in Blau und Gold"
+      width={512} height={512} decoding="async"
+      className={`${dimensions} object-cover object-center mix-blend-screen`} />;
+    const classes = `inline-flex shrink-0 items-center justify-center select-none ${className}`;
+    return onClick ? (
+      <button type="button" onClick={onClick} aria-label="Capital-AI – zum Seitenanfang"
+        className={`${classes} min-h-11 min-w-11 cursor-pointer rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400`}>
+        {image}
+      </button>
+    ) : <div className={classes}>{image}</div>;
+  }
+
   // Sizing configurations
   const emblemSizeClasses = {
     sm: 'w-8 h-8',

@@ -1,0 +1,20 @@
+{
+  "workflowRun": "https://github.com/SvenKulessa/Capital-AI/actions/runs/36757317050",
+  "allSeverities": true,
+  "schemaVersion": 1,
+  "sourceSha": "be5e1b5936668a2011f438c078dec582e6c38e0b",
+  "scope": "nats-image",
+  "status": "PASS",
+  "vulnerabilities": [
+    {
+      "id": "GO-2026-5932",
+      "severity": "UNKNOWN",
+      "package": "golang.org/x/crypto",
+      "installed": "v0.57.0",
+      "fixed": null
+    }
+  ],
+  "misconfigurations": [],
+  "secrets": 0,
+  "blocking": 0
+}
