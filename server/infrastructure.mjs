@@ -5,10 +5,12 @@ import { jetstream, jetstreamManager, StorageType, DiscardPolicy } from '@nats-i
 import { QuoteFactSchema, QuoteDeliverySchema, isFresh } from '../shared/market-contracts.mjs';
 
 const STREAM = 'CAPITAL_FACTS';
+export const QUOTE_CHANNEL = 'capital:quote:events:v1';
 export const payloadHash = payload => createHash('sha256').update(JSON.stringify(payload)).digest('hex');
 export class MarketInfrastructure {
-  constructor(env = process.env) { this.env = env; this.redis = null; this.nc = null; this.js = null; this.manager = null; this.natsConnected = false; this.state = 'unavailable'; this.natsConnected = false; this.opening = null; }
+  constructor(env = process.env) { this.env = env; this.redis = null; this.nc = null; this.js = null; this.manager = null; this.natsConnected = false; this.state = 'unavailable'; this.opening = null; this.subscriber = null; this.listeners = new Set(); this.pendingSymbols = new Set(); this.subscribing = null; this.pubsubEnabled = env.MARKET_PUBSUB_ENABLED !== 'false'; }
   async start() {
+    if (this.status().status === 'connected') return true;
     if (this.opening) return this.opening;
     this.opening = this.open().finally(() => { this.opening = null; });
     return this.opening;
@@ -23,6 +25,7 @@ export class MarketInfrastructure {
         socket: { connectTimeout: 3000, reconnectStrategy: false } });
       this.redis.on('error', () => { this.state = 'degraded'; });
       await this.redis.connect();
+      if (this.listeners.size) await this.ensureSubscriber();
       if (!this.env.NATS_URL) { this.state = 'degraded'; return false; }
       this.nc = await connect({ servers: this.env.NATS_URL, token: this.env.NATS_TOKEN,
         timeout: 3000, maxReconnectAttempts: 3, reconnectTimeWait: 1000 });
@@ -57,9 +60,51 @@ export class MarketInfrastructure {
       return false;
     }
   }
-  status() { return { status: this.state === 'connected' && (!this.redis?.isReady || !this.natsConnected || this.nc?.isClosed()) ? 'degraded' : this.state, redis: this.redis?.isReady ? 'connected' : 'unavailable',
+  status() { return { status: this.state === 'connected' && (!this.redis?.isReady || !this.natsConnected || this.nc?.isClosed() || (this.listeners.size && !this.subscriber?.isReady)) ? 'degraded' : this.state, redis: this.redis?.isReady ? 'connected' : 'unavailable',
     nats: this.natsConnected && this.nc && !this.nc.isClosed() && !this.nc.isDraining() ? 'connected' : 'unavailable',
+    pubsub: !this.pubsubEnabled ? 'disabled' : this.redis?.isReady ? 'connected' : 'unavailable',
     stream: STREAM, storage: 'file', replicasConfigured: Number(this.env.NATS_REPLICAS || 1) }; }
+  async subscribeQuotes(listener) {
+    if (typeof listener !== 'function') throw new TypeError('INVALID_QUOTE_LISTENER');
+    if (this.listeners.size >= 32) throw new Error('PUBSUB_LISTENER_LIMIT');
+    if (!this.pubsubEnabled || !this.redis?.isReady) throw new Error('PUBSUB_UNAVAILABLE');
+    this.listeners.add(listener);
+    try { await this.ensureSubscriber(); }
+    catch (error) { this.listeners.delete(listener); throw error; }
+    return async () => {
+      this.listeners.delete(listener);
+      if (!this.listeners.size && this.subscriber?.isOpen) { this.subscriber.destroy(); this.subscriber = null; }
+    };
+  }
+  async ensureSubscriber() {
+    if (!this.pubsubEnabled || this.subscriber?.isReady) return;
+    if (this.subscribing) return this.subscribing;
+    this.subscribing = (async () => {
+      if (this.subscriber?.isOpen) this.subscriber.destroy();
+      this.subscriber = this.redis.duplicate();
+      this.subscriber.on('error', () => {}); // Recovered by the bounded infrastructure retry.
+      await this.subscriber.connect();
+      await this.subscriber.subscribe(QUOTE_CHANNEL, message => { void this.notifyQuote(message); });
+    })().finally(() => { this.subscribing = null; });
+    return this.subscribing;
+  }
+  async notifyQuote(message) {
+    // Pub/Sub is ephemeral and untrusted. At most one in-flight notification per instrument.
+    if (message.length > 262144) return;
+    let delivery;
+    try { delivery = QuoteDeliverySchema.parse(JSON.parse(message)); } catch { return; }
+    if (!isFresh(delivery) || this.pendingSymbols.has(delivery.symbol)) return;
+    this.pendingSymbols.add(delivery.symbol);
+    try {
+      const record = await this.replay(delivery.evidenceId);
+      if (!isFresh(delivery) || JSON.stringify(record.fact) !== JSON.stringify(QuoteFactSchema.parse(delivery))) return;
+      const verified = QuoteDeliverySchema.parse({ ...record.fact, evidenceId: delivery.evidenceId,
+        availability: 'live', validated: true, actionable: false,
+        reasonCodes: ['PROVIDER_RIGHTS_UNVERIFIED', 'ANALYSIS_INPUTS_INCOMPLETE'] });
+      await Promise.allSettled([...this.listeners].map(listener => Promise.resolve().then(() => listener(verified))));
+    } catch { /* Missing or invalid durable evidence never becomes an event. */ }
+    finally { this.pendingSymbols.delete(delivery.symbol); }
+  }
   async persist(fact, rawPayload) {
     QuoteFactSchema.parse(fact);
     if (!isFresh(fact) || payloadHash(rawPayload) !== fact.payloadHash) throw new Error('INVALID_FACT');
@@ -71,10 +116,10 @@ export class MarketInfrastructure {
     const delivery = QuoteDeliverySchema.parse({ ...fact, evidenceId: `${STREAM}:${ack.seq}:${hash}`,
       availability: 'live', validated: true, actionable: false, reasonCodes: ['PROVIDER_RIGHTS_UNVERIFIED', 'ANALYSIS_INPUTS_INCOMPLETE'] });
     // Store only acknowledged facts. Compare timestamp atomically across ingress instances.
-    const script = `local old=redis.call('GET',KEYS[1]); if old then local v=cjson.decode(old); if v.observedAt>tonumber(ARGV[2]) then return 0 end end; redis.call('SET',KEYS[1],ARGV[1],'PX',ARGV[3]); return 1`;
+    const script = `local old=redis.call('GET',KEYS[1]); if old then local v=cjson.decode(old); if v.observedAt>tonumber(ARGV[2]) then return 0 end; if v.evidenceId==ARGV[4] then return 0 end end; redis.call('SET',KEYS[1],ARGV[1],'PX',ARGV[3]); if ARGV[5]=='true' then redis.call('PUBLISH',ARGV[6],ARGV[1]) end; return 1`;
     const ttl = 30000 - (Date.now() - fact.observedAt);
     if (ttl <= 0) throw new Error('FACT_EXPIRED_DURING_WRITE');
-    await this.redis.eval(script, { keys: [`capital:quote:v1:${fact.symbol}`], arguments: [JSON.stringify(delivery), String(fact.observedAt), String(ttl)] });
+    await this.redis.eval(script, { keys: [`capital:quote:v1:${fact.symbol}`], arguments: [JSON.stringify(delivery), String(fact.observedAt), String(ttl), delivery.evidenceId, String(this.pubsubEnabled), QUOTE_CHANNEL] });
     return delivery;
   }
   async read(symbol) {
@@ -101,6 +146,8 @@ export class MarketInfrastructure {
     return record;
   }
   async close() {
+    if (this.subscriber?.isOpen) this.subscriber.destroy();
+    this.subscriber = null;
     if (this.redis?.isOpen) this.redis.destroy();
     await this.nc?.close();
     this.redis = null; this.nc = null; this.js = null; this.manager = null; this.natsConnected = false; this.state = 'unavailable';

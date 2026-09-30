@@ -16,9 +16,14 @@
 !server/auth.mjs
 !server/telegram.mjs
 !server/http-security.mjs
+!server/mta-sts.mjs
+!server/mta-sts.test.mjs
 !server/infrastructure.mjs
 !shared/
 !shared/market-contracts.mjs
+!deploy/
+!deploy/nats-server.conf
+!deploy/nats-entrypoint.sh
 !scripts/
 !scripts/license-evidence.mjs
 !scripts/license-evidence.test.mjs

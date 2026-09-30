@@ -14,7 +14,8 @@
     "test:security": "node --test server/market.test.mjs server/security.test.mjs server/auth.test.mjs && node --import tsx --test scripts/frontend-security.test.mjs",
     "verify:browser": "node scripts/verify-browser-boundary.mjs",
     "test:market": "node --test server/market.test.mjs server/market-contracts.test.mjs",
-    "test:market:integration": "node --test server/infrastructure.integration.test.mjs"
+    "test:market:integration": "node --test server/infrastructure.integration.test.mjs",
+    "test:market:local": "node scripts/test-market-infrastructure-local.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

@@ -1,7 +1,10 @@
 # Separate private infrastructure image; does not build or deploy Capital-AI.
-FROM nats:2.15.0@sha256:cd3fcd4ecdda44e3a66728a5334af0a959bc3979b32810e033d1c547241cd0f4
+FROM nats:2.15.0-alpine@sha256:ac8f88a6494bffc2c2a5289a0ca61cb28a9145c11ba5677cf24265d07f46d8d4
+RUN apk add --no-cache su-exec=0.2-r3 \
+    && addgroup -g 1000 nats && adduser -D -u 1000 -G nats nats
 COPY deploy/nats-server.conf /etc/nats/nats-server.conf
-# Persistent storage must be provisioned for this UID/GID before any deployment.
-USER 1000:1000
-ENTRYPOINT ["/nats-server"]
-CMD ["--config", "/etc/nats/nats-server.conf"]
+COPY --chmod=0555 deploy/nats-entrypoint.sh /usr/local/bin/capital-nats-entrypoint
+# Root is used only to prepare the mounted disk; the server runs as UID/GID 1000.
+USER 0:0
+EXPOSE 4222
+ENTRYPOINT ["/usr/local/bin/capital-nats-entrypoint"]
