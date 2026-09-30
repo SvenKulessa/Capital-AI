@@ -109,16 +109,28 @@ Die vier JPEGs sind mit SHA256 und Dateigröße im Inventar erfasst:
 
 | Datei | Festgestellte Verwendung | Rechtebeleg |
 |---|---|---|
-| capital_ai_brand_emblem_1789997857835.jpg | Repository; kein statischer Import gefunden | Offen |
-| capital_ai_full_logo_1789997869885.jpg | Repository; kein statischer Import gefunden | Offen |
-| capital_ai_wide_banner_1789999064950.jpg | Repository; kein statischer Import gefunden | Offen |
-| glowing_earth_nodes_1789997454893.jpg | Hero-Import | Offen |
+| capital_ai_brand_emblem_1789997857835.jpg | Repository; kein statischer Import gefunden | KI-Herkunft bestätigt; Nutzungsbedingungen offen |
+| capital_ai_full_logo_1789997869885.jpg | Repository; kein statischer Import gefunden | KI-Herkunft bestätigt; Nutzungsbedingungen offen |
+| capital_ai_wide_banner_1789999064950.jpg | Repository; kein statischer Import gefunden | KI-Herkunft bestätigt; Nutzungsbedingungen offen |
+| glowing_earth_nodes_1789997454893.jpg | Hero-Import | KI-Herkunft bestätigt; Nutzungsbedingungen offen |
 
-Dateiname, Upload und Repository-Kopie beweisen keine Urheberschaft oder
-kommerzielle Nutzungsrechte. Je Datei fehlen Urheber/Quelle, Lizenz oder
-Erstellungsnachweis, erlaubter Nutzungskreis und gegebenenfalls Attribution.
-Bei KI-Erstellung sind Werkzeug, Erstellungszeitpunkt und die dafür geltenden
-Nutzungsbedingungen zu dokumentieren; KI-Herkunft wird hier nicht angenommen.
+### Herkunftsbestätigung
+
+Der Projektinhaber hat am 30.09.2026 die Herkunft der vier JPEGs bestätigt:
+Die drei Dateien mit dem Präfix `capital_ai_` wurden mit Gemini erzeugt.
+`glowing_earth_nodes_1789997454893.jpg` wurde über die Social-Media-Engine aus
+`capital-ai-online/Finance` in einem Website-Mockup erzeugt beziehungsweise
+verwendet und durch Gemini eingebettet. Für das Erdbild ist Gemini damit als
+Einbettungswerkzeug bestätigt; das zugrunde liegende Generierungsmodell wurde
+nicht benannt. Aus der Angabe werden keine weiteren Finance-Dateien abgerufen.
+
+Dieser Nachweis ist eine Aussage des Projektinhabers; die ursprünglichen
+Erstellungsläufe wurden nicht unabhängig rekonstruiert. Die Bild-Hashes bleiben
+unverändert. Die vorher offene KI-Herkunft ist damit als vom Inhaber bestätigt
+erfasst. Noch offen sind Erstellungszeitpunkt/-referenz, verwendeter Dienst und
+Tarif sowie die dafür geltenden Nutzungsbedingungen und der erlaubte
+kommerzielle Nutzungskreis. Eine unabhängige Urheber- oder Lizenzfreigabe wird
+aus der KI-Erstellung nicht abgeleitet.
 
 `src/components/AssetLogo.tsx` enthält Inline-Darstellungen für Asset-Symbole;
 das Inventar erfasst 70 Symbolbezeichner einschließlich Aliassen, Rohstoffen
@@ -181,7 +193,8 @@ eine nicht vertrauliche Referenz auf den geprüften Nachweis genügt dort.
 
 1. Vollständige OS-Quellen samt Patches/Buildinputs sichern, Hashes prüfen und
    Hinweis-/Quellbereitstellung für genau das freizugebende Image belegen.
-2. JPEG-Herkunft und konkrete Logo-/Markenbedingungen dokumentieren.
+2. Die bestätigte JPEG-KI-Herkunft um Erstellungs-/Nutzungsbedingungen ergänzen;
+   konkrete Logo-/Markenbedingungen getrennt dokumentieren.
 3. Tatsächlich verwendete Font-Dateien identifizieren und die OFL-Bedingungen
    für die gewählte Auslieferung nachvollziehbar erfüllen.
 4. Provider-Vertragsrechte je Feed und Nutzungsart belegen und erforderliche
