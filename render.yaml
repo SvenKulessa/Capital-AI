@@ -22,3 +22,18 @@ services:
         sync: false
       - key: POLYGON_API_KEY
         sync: false
+      # All optional capabilities fail closed until configured by the owner.
+      - key: PUBLIC_APP_ORIGIN
+        sync: false
+      - key: OIDC_ISSUER
+        sync: false
+      - key: OIDC_CLIENT_ID
+        sync: false
+      - key: OIDC_CLIENT_SECRET
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+      - key: TELEGRAM_ALLOWED_SUBJECTS
+        sync: false

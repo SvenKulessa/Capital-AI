@@ -152,64 +152,21 @@ export async function dispatchTelegramPush(
   body: string,
   html?: string
 ): Promise<{ success: boolean; status: 'DELIVERED' | 'SIMULATED' | 'FAILED'; error?: string }> {
-  // If user provided a real bot token and chat ID, dispatch real HTTPS request
-  if (config.botToken && config.chatId && config.connected) {
-    try {
-      const cleanToken = config.botToken.trim();
-      const cleanChatId = config.chatId.trim();
-
-      const response = await fetch(`https://api.telegram.org/bot${cleanToken}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: cleanChatId,
-          text: html || body,
-          parse_mode: html ? 'HTML' : undefined,
-          disable_web_page_preview: true,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.ok) {
-        saveTelegramLog({
-          sentAt: new Date().toISOString(),
-          title,
-          body,
-          status: 'DELIVERED',
-          chatId: cleanChatId,
-        });
-        return { success: true, status: 'DELIVERED' };
-      } else {
-        saveTelegramLog({
-          sentAt: new Date().toISOString(),
-          title,
-          body: `Fehler: ${data.description || 'Unbekannt'}`,
-          status: 'FAILED',
-          chatId: cleanChatId,
-        });
-        return { success: false, status: 'FAILED', error: data.description };
-      }
-    } catch (err: any) {
-      saveTelegramLog({
-        sentAt: new Date().toISOString(),
-        title,
-        body: `Netzwerkfehler: ${err.message || 'Verbindung fehlgeschlagen'}`,
-        status: 'FAILED',
-        chatId: config.chatId,
-      });
-      return { success: false, status: 'FAILED', error: err.message };
-    }
+  if (!config.enabled) return { success: false, status: 'FAILED', error: 'Telegram-Versand ist deaktiviert.' };
+  try {
+    const response = await fetch('/api/telegram/send', {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: `${title}\n\n${body}` }),
+      signal: AbortSignal.timeout(7000),
+    });
+    const result = await response.json();
+    if (!response.ok || result.success !== true || result.status !== 'DELIVERED') throw new Error('Telegram benötigt eine freigegebene Anmeldung und serverseitige Konfiguration.');
+    saveTelegramLog({ sentAt: new Date().toISOString(), title, body, status: 'DELIVERED' });
+    return { success: true, status: 'DELIVERED' };
+  } catch {
+    const error = 'Telegram-Versand nicht bestätigt. Anmeldung und Server-Konfiguration prüfen.';
+    saveTelegramLog({ sentAt: new Date().toISOString(), title, body: error, status: 'FAILED' });
+    return { success: false, status: 'FAILED', error };
   }
-
-  // Fallback: In-app simulated Telegram bot delivery
-  saveTelegramLog({
-    sentAt: new Date().toISOString(),
-    title,
-    body,
-    status: 'SIMULATED',
-    chatId: config.channelName || '@CapitalAI_WhaleBot',
-  });
-
-  return { success: true, status: 'SIMULATED' };
 }

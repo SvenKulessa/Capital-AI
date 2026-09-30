@@ -37,10 +37,7 @@ import {
   Maximize2,
   Minimize2,
 } from 'lucide-react';
-import {
-  AdvisorResponsePayload,
-  handleAdvisorRequest,
-} from '../services/geminiAdvisorBackend';
+import type { AdvisorResponsePayload } from '../contracts/advisor';
 import {
   PipelineConfigState,
   catalogUserSelectedTools,
@@ -174,15 +171,16 @@ export const AdvisorChatbot: React.FC<AdvisorChatbotProps> = ({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(requestPayload),
+          signal: AbortSignal.timeout(10000),
         });
 
         if (res.ok) {
           responseData = await res.json();
         } else {
-          responseData = await handleAdvisorRequest(requestPayload);
+          throw new Error('Advisor-Service nicht verfügbar.');
         }
       } catch {
-        responseData = await handleAdvisorRequest(requestPayload);
+        throw new Error('Advisor-Service nicht verfügbar.');
       }
 
       const advisorMsg: ChatMessage = {
@@ -207,7 +205,7 @@ export const AdvisorChatbot: React.FC<AdvisorChatbotProps> = ({
         id: `adv-err-${Date.now()}`,
         sender: 'advisor',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        text: 'Entschuldigung, bei der Analyse des Tool-Stacks ist eine kurze Unterbrechung aufgetreten. Bitte erneut anfragen oder eine der Schnell-Optionen nutzen.',
+        text: 'Der Advisor-Service ist derzeit nicht verfügbar. Es wurde keine Analyse bestätigt.',
       };
       setMessages((prev) => [...prev, errorMsg]);
     } finally {

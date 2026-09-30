@@ -14,6 +14,16 @@ import {
 const STORAGE_KEY_PREFIX = 'capital_ai_pipelines_v1';
 const ACTIVE_PIPELINE_ID_KEY = 'capital_ai_active_pipeline_id';
 
+const MAX_PIPELINE_BYTES = 262144;
+const MAX_STORAGE_BYTES = 2 * 1024 * 1024;
+const MAX_PIPELINES = 50;
+function parseBoundedPipeline(value: unknown): PipelineDefinition {
+  const input = value as Record<string, unknown>;
+  if (!input || !Array.isArray(input.nodes) || input.nodes.length > 200 || !Array.isArray(input.edges) || input.edges.length > 400) throw new Error('Pipeline-Grenzen überschritten.');
+  if (JSON.stringify(value).length > MAX_PIPELINE_BYTES) throw new Error('Pipeline zu groß.');
+  return PipelineDefinitionSchema.parse(value);
+}
+
 // =============================================================================
 // PRESET & SEED TEMPLATES
 // =============================================================================
@@ -243,6 +253,7 @@ export class PipelineStorageService {
         return presets;
       }
 
+      if (raw.length > MAX_STORAGE_BYTES) return [];
       const parsed = JSON.parse(raw);
       if (!Array.isArray(parsed) || parsed.length === 0) {
         const presets = getPresetPipelines();
@@ -250,12 +261,10 @@ export class PipelineStorageService {
         return presets;
       }
 
-      return parsed.map((item) => {
-        try {
-          return PipelineDefinitionSchema.parse(item);
-        } catch {
-          return item;
-        }
+      if (parsed.length > MAX_PIPELINES) return [];
+      return parsed.flatMap((item) => {
+        try { return [parseBoundedPipeline(item)]; }
+        catch { return []; }
       });
     } catch {
       return getPresetPipelines();
@@ -268,9 +277,13 @@ export class PipelineStorageService {
   static saveAllPipelines(pipelines: PipelineDefinition[]): void {
     if (typeof window === 'undefined') return;
     try {
-      localStorage.setItem(STORAGE_KEY_PREFIX, JSON.stringify(pipelines));
+      if (pipelines.length > MAX_PIPELINES) throw new Error('Zu viele Pipelines.');
+      const validated = pipelines.map(parseBoundedPipeline);
+      const json = JSON.stringify(validated);
+      if (json.length > MAX_STORAGE_BYTES) throw new Error('Pipeline-Speicher zu groß.');
+      localStorage.setItem(STORAGE_KEY_PREFIX, json);
     } catch {
-      // Storage quota or disabled fallback
+      throw new Error('Pipeline konnte nicht sicher gespeichert werden.');
     }
   }
 
@@ -286,6 +299,7 @@ export class PipelineStorageService {
    * Save or Update a single pipeline
    */
   static savePipeline(pipeline: PipelineDefinition): PipelineValidationResult {
+    pipeline = parseBoundedPipeline(pipeline);
     // Validate with graph compliance engine
     const validation = validatePipelineGraph(pipeline);
 
@@ -303,6 +317,7 @@ export class PipelineStorageService {
       list.unshift(updated);
     }
 
+    if (list.length > MAX_PIPELINES || JSON.stringify(list).length > MAX_STORAGE_BYTES) throw new Error('Pipeline-Speicher voll.');
     this.saveAllPipelines(list);
     this.setActivePipelineId(updated.id);
 
@@ -360,11 +375,11 @@ export class PipelineStorageService {
    */
   static decodePipelineFromUrl(urlHashOrQuery: string): PipelineDefinition | null {
     try {
-      if (!urlHashOrQuery) return null;
+      if (!urlHashOrQuery || urlHashOrQuery.length > MAX_PIPELINE_BYTES * 4) return null;
       const clean = urlHashOrQuery.replace(/^[#?]/, '').trim();
       const decodedJson = decodeURIComponent(atob(clean));
       const parsed = JSON.parse(decodedJson);
-      return PipelineDefinitionSchema.parse(parsed);
+      return parseBoundedPipeline(parsed);
     } catch {
       return null;
     }
@@ -382,12 +397,13 @@ export class PipelineStorageService {
    */
   static importFromJson(jsonString: string): { success: boolean; pipeline?: PipelineDefinition; error?: string } {
     try {
+      if (jsonString.length > MAX_PIPELINE_BYTES) throw new Error('Pipeline zu groß.');
       const parsed = JSON.parse(jsonString);
-      const validated = PipelineDefinitionSchema.parse(parsed);
+      const validated = parseBoundedPipeline(parsed);
       // Give it a fresh unique ID to prevent overwriting existing ID unintentionally
       const freshPipeline: PipelineDefinition = {
         ...validated,
-        id: `${validated.id.slice(0, -6)}${Math.random().toString(36).substring(2, 8)}`,
+        id: crypto.randomUUID(),
         updatedAt: new Date().toISOString(),
       };
       this.savePipeline(freshPipeline);

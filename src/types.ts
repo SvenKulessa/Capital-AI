@@ -163,7 +163,6 @@ export interface TelegramMessageLog {
 export interface TelegramConfig {
   enabled: boolean;
   connected: boolean;
-  botToken?: string;
   chatId?: string;
   channelName?: string;
   notifyWhaleRadar: boolean;

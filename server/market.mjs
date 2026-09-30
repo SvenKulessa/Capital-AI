@@ -2,6 +2,8 @@
 const allowed = new Set((process.env.MARKET_SYMBOLS || 'BTCUSDT,BTCUSD,AAPL').split(',').map(x => x.trim()).filter(Boolean));
 const observations = new Map();
 const throttledUntil = new Map();
+const pending = new Map();
+const failedUntil = new Map();
 const fresh = x => x && Date.now() - x.observedAt >= 0 && Date.now() - x.observedAt < 30_000;
 
 function observation(symbol, provider, price, time, quote, mode) {
@@ -83,10 +85,19 @@ export async function quote(symbol) {
   if (!allowed.has(symbol)) return [400, { error: 'unsupported_symbol' }];
   const cached = observations.get(symbol);
   if (fresh(cached)) return [200, cached];
+  if (pending.has(symbol)) return pending.get(symbol);
+  if ((failedUntil.get(symbol) || 0) > Date.now()) return [503, { error: 'market_data_unavailable', symbol }];
+  const request = fallbackQuote(symbol);
+  pending.set(symbol, request);
+  try { return await request; } finally { pending.delete(symbol); }
+}
+
+async function fallbackQuote(symbol) {
   // USDT and USD are distinct instruments: never substitute one quote currency for the other.
   const primaryFallback = await twelve(symbol);
   const fallback = fresh(primaryFallback) ? primaryFallback : await polygon(symbol);
   if (fresh(fallback)) { accept(fallback); return [200, fallback]; }
+  failedUntil.set(symbol, Date.now() + 5000);
   return [503, { error: 'market_data_unavailable', symbol }];
 }
 export function health() { return { status: 'ok', ingress: 'fail_closed', symbols: [...allowed] }; }
