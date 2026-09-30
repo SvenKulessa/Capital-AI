@@ -16,6 +16,8 @@
 !server/auth.mjs
 !server/telegram.mjs
 !server/http-security.mjs
+!server/mta-sts.mjs
+!server/mta-sts.test.mjs
 !server/infrastructure.mjs
 !shared/
 !shared/market-contracts.mjs
@@ -24,6 +26,7 @@
 !scripts/license-evidence.test.mjs
 !scripts/frontend-security.test.mjs
 !scripts/verify-browser-boundary.mjs
+!scripts/validate-contract-suites.mjs
 !docs/
 !docs/licenses/
 !docs/licenses/**

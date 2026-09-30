@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview --host=127.0.0.1",
     "test:navigation": "node --import tsx --test scripts/navigation.test.mjs",
-    "test": "node --import tsx -e \"import { runProviderRegistryValidationSuite } from './src/contracts/__tests__/providerRegistry.test.ts'; import { runContractValidationSuite } from './src/contracts/__tests__/contracts.test.ts'; import { runEnterpriseScoringSuite } from './src/contracts/__tests__/enterpriseScoring.test.ts'; (async () => { const r1 = runProviderRegistryValidationSuite(); const r2 = runContractValidationSuite(); const r3 = await runEnterpriseScoringSuite(); if (!r1.passed || !r2.passed || !r3.passed) { console.error(r3.failures); process.exit(1); } console.log('\u2713 All Provider Registry, Contracts & Enterprise Scoring Suites validated successfully.'); })().catch(error => { console.error(error); process.exitCode = 1; });\" && node --import tsx --test src/contracts/__tests__/analysisFoundation.test.ts",
+    "test": "node --import tsx scripts/validate-contract-suites.mjs && node --import tsx --test src/contracts/__tests__/analysisFoundation.test.ts",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
     "test:security": "node --test server/market.test.mjs server/security.test.mjs server/auth.test.mjs && node --import tsx --test scripts/frontend-security.test.mjs",
