@@ -5,7 +5,7 @@
   "repository": "SvenKulessa/Capital-AI",
   "registryRepository": "ghcr.io/svenkulessa/capital-ai",
   "region": "frankfurt",
-  "plan": "free",
+  "plan": "0.5c-512mb",
   "platform": "linux/amd64",
   "instances": 1,
   "healthCheckPath": "/healthz",
