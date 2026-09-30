@@ -2,7 +2,9 @@ services:
   - type: web
     name: Capital-AI
     runtime: docker
-    plan: free
+    # Starter: 0.5 CPU, 512 MB; matches the existing Render service.
+    plan: 0.5c-512mb
+    numInstances: 1
     region: frankfurt
     branch: main
     dockerfilePath: ./Dockerfile
