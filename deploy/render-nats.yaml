@@ -1,4 +1,5 @@
-# Review-only until paid infrastructure and release execution are authorized.
+# NOT APPROVED: owner rejected NATS cost and configuration on 2026-09-30.
+# Do not apply this Blueprint. Kept only as an unprovisioned proposal.
 # Select workspace AICapital explicitly when creating this Blueprint.
 previews:
   generation: 'off'

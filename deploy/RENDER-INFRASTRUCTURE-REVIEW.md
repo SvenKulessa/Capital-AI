@@ -1,5 +1,7 @@
 # Capital-AI: Infrastrukturstand und Bereitstellungsplan
 
+**Nachfolgende Owner-Entscheidung vom 2026-09-30:** NATS-Kosten und -Konfiguration sind nicht freigegeben. Den NATS-Blueprint nicht anwenden. Der folgende Stand ist der historische PR-20-Prüfsnapshot. Aktueller Anschluss- und Alternativenbericht: [FREE-INFRASTRUCTURE-AND-BLUEPRINTS.md](FREE-INFRASTRUCTURE-AND-BLUEPRINTS.md).
+
 Stand: 2026-09-30. Nur Workspace **AICapital** (`tea-d90o4rj7uimc739i86ug`) und Webservice **Capital-AI** (`srv-dau1rp893c1s73cdhm1g`). Keine Änderungen an Finance oder anderen Services.
 
 ## Verifizierter Stand
