@@ -63,3 +63,18 @@ Quellen:
 - https://alpinelinux.org/releases/
 - https://github.com/aquasecurity/trivy/releases/tag/v0.74.0
 - https://github.com/SvenKulessa/Capital-AI/actions/runs/36713305880
+
+## Nachprüfung des ersten Kandidatenlaufs
+
+Lauf 36715472658 auf Main 46ee077dea184a5defa84ef028fb93e3ac73fad5:
+Validierung einschließlich Build-/Runtime-CVEs, Secrets, SBOM, NATS und read-only Runtime erfolgreich.
+Die gelesenen source.json, build-image.json und image.json enthalten jeweils 0 HIGH/CRITICAL und 0 Secret-Funde.
+
+Die Cachewarnung bestand trotzdem fort: Der erste RUN mit der globalen npm-Installation exportierte den Cache
+in einer früheren Image-Schicht; ein rm in einem späteren RUN beseitigt diesen Schichtinhalt nicht.
+Die Bereinigung erfolgt jetzt auch im selben RUN wie npm install --global.
+Trivy scannt weiterhin alle Schichten; keine Scanner-Ausnahme oder Logunterdrückung.
+
+Drei Validierungen: Warnung dem früheren Installationslayer zugeordnet; Hadolint/Docker-Kontext/diff --check PASS;
+neuer Image-Lauf nach Merge bleibt offen. Bestehende Kandidatenevidenz gilt ausschließlich für ihren Quellcommit.
+Ein lokaler Docker-Neubuild ist weiterhin nicht möglich. Kein Workflow oder Deployment gestartet.
