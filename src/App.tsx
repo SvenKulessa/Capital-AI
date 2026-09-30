@@ -180,7 +180,7 @@ function AppContent() {
     } else if (currentRoute === '/datenschutz') {
       const title = 'Capital-AI | Datenschutzerklärung';
       const description =
-        'Datenschutzrichtlinie der Capital-AI Intelligence Plattform: DSGVO-Konformität, 256-Bit TLS-Verschlüsselung und Rechenzentren in der EU.';
+        'Datenschutzhinweise von CAPITAL-AI: Verantwortlicher, Verarbeitungstätigkeiten und Betroffenenrechte.';
       updatePageSEO({
         title,
         description,
@@ -190,7 +190,7 @@ function AppContent() {
     } else if (currentRoute === '/agb') {
       const title = 'Capital-AI | Allgemeine Geschäftsbedingungen (AGB)';
       const description =
-        'Nutzungsbedingungen und WpHG-Risikohinweise für die Nutzung der Capital-AI Marktanalyse-Plattform.';
+        'Allgemeine Geschäftsbedingungen von CAPITAL-AI: Anbieter, Nutzungsrechte und Vertragsbedingungen.';
       updatePageSEO({
         title,
         description,
@@ -200,7 +200,7 @@ function AppContent() {
     } else if (currentRoute === '/impressum') {
       const title = 'Capital-AI | Impressum';
       const description =
-        'Impressum und Anbieterkennzeichnung gemäß § 5 TMG / DDG der Capital-AI Technologies GmbH.';
+        'Impressum und Anbieterkennzeichnung gemäß § 5 DDG: CAPITAL-AI · Sven Michael Kulessa.';
       updatePageSEO({
         title,
         description,
