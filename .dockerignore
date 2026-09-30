@@ -24,9 +24,13 @@
 !shared/market-contracts.mjs
 !shared/legal-identity.mjs
 !deploy/
+!deploy/npm-security-patches/
+!deploy/npm-security-patches/package.json
+!deploy/npm-security-patches/package-lock.json
 !deploy/nats-server.conf
 !deploy/nats-entrypoint.sh
 !scripts/
+!scripts/harden-npm-toolchain.mjs
 !scripts/license-evidence.mjs
 !scripts/license-evidence.test.mjs
 !scripts/frontend-security.test.mjs

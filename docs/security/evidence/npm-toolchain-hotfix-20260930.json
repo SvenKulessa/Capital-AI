@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "sourceSha": "c1a27a9d2d8547af8933a94a0b0e9a8061010bfc",
+  "workflowRun": 36713305880,
+  "originalFindings": [
+    {
+      "VulnerabilityID": "CVE-2026-102276",
+      "PkgName": "brace-expansion",
+      "InstalledVersion": "5.0.9",
+      "FixedVersion": "5.0.10, 3.0.7, 2.1.5, 1.1.19",
+      "Severity": "HIGH",
+      "PkgPath": "usr/local/lib/node_modules/npm/node_modules/brace-expansion/package.json"
+    },
+    {
+      "VulnerabilityID": "CVE-2026-102278",
+      "PkgName": "brace-expansion",
+      "InstalledVersion": "5.0.9",
+      "FixedVersion": "5.0.11, 3.0.8, 2.1.6, 1.1.20",
+      "Severity": "HIGH",
+      "PkgPath": "usr/local/lib/node_modules/npm/node_modules/brace-expansion/package.json"
+    },
+    {
+      "VulnerabilityID": "CVE-2026-19534",
+      "PkgName": "undici",
+      "InstalledVersion": "6.28.0",
+      "FixedVersion": "6.28.1, 7.29.1, 8.10.2",
+      "Severity": "HIGH",
+      "PkgPath": "usr/local/lib/node_modules/npm/node_modules/undici/package.json"
+    }
+  ],
+  "patches": {
+    "brace-expansion": "5.0.11",
+    "undici": "6.28.1"
+  },
+  "npmVersion": "11.20.0",
+  "vendorPatched": true,
+  "localValidation": {
+    "scope": "INSTALLED_NPM_ROOTFS_NOT_DOCKER_IMAGE",
+    "scannerVersion": "0.74.0",
+    "scannedAt": "2026-09-30T14:22:38.02671336+02:00",
+    "highCritical": 0,
+    "actualNpmInstallTestsBuildPrune": "PASS"
+  },
+  "fullContainerGate": "NOT_RUN"
+}
