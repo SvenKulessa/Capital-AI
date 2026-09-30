@@ -15,7 +15,7 @@ export function validateStreamConfig(config, replicas) {
 export const QUOTE_CHANNEL = 'capital:quote:events:v1';
 export const payloadHash = payload => createHash('sha256').update(JSON.stringify(payload)).digest('hex');
 export class MarketInfrastructure {
-  constructor(env = process.env) { this.env = env; this.redis = null; this.nc = null; this.js = null; this.manager = null; this.natsConnected = false; this.state = 'unavailable'; this.opening = null; this.subscriber = null; this.listeners = new Set(); this.pendingSymbols = new Set(); this.subscribing = null; this.pubsubEnabled = env.MARKET_PUBSUB_ENABLED !== 'false'; }
+  constructor(env = process.env) { this.env = env; this.redis = null; this.nc = null; this.js = null; this.manager = null; this.natsConnected = false; this.state = 'unavailable'; this.opening = null; this.subscriber = null; this.listeners = new Set(); this.pendingSymbols = new Set(); this.subscribing = null; this.pubsubEnabled = env.MARKET_PUBSUB_ENABLED !== 'false'; this.deliveryMetrics = { verified: 0, lastVerifiedDeliveryAt: null, lastVerifiedSymbol: null }; }
   async start() {
     if (this.status().status === 'connected') return true;
     if (this.opening) return this.opening;
@@ -70,6 +70,11 @@ export class MarketInfrastructure {
   status() { return { status: this.state === 'connected' && (!this.redis?.isReady || !this.natsConnected || this.nc?.isClosed() || (this.listeners.size && !this.subscriber?.isReady)) ? 'degraded' : this.state, redis: this.redis?.isReady ? 'connected' : 'unavailable',
     nats: this.natsConnected && this.nc && !this.nc.isClosed() && !this.nc.isDraining() ? 'connected' : 'unavailable',
     pubsub: !this.pubsubEnabled ? 'disabled' : this.redis?.isReady ? 'connected' : 'unavailable',
+    subscriber: !this.pubsubEnabled ? 'disabled' : !this.listeners.size ? 'idle' : this.subscriber?.isReady ? 'connected' : 'unavailable',
+    subscriberListeners: this.listeners.size,
+    verifiedDeliveries: this.deliveryMetrics.verified,
+    lastVerifiedDeliveryAt: this.deliveryMetrics.lastVerifiedDeliveryAt,
+    lastVerifiedSymbol: this.deliveryMetrics.lastVerifiedSymbol,
     stream: STREAM, storage: 'file', replicasConfigured: Number(this.env.NATS_REPLICAS || 1) }; }
   async subscribeQuotes(listener) {
     if (typeof listener !== 'function') throw new TypeError('INVALID_QUOTE_LISTENER');
@@ -108,6 +113,9 @@ export class MarketInfrastructure {
       const verified = QuoteDeliverySchema.parse({ ...record.fact, evidenceId: delivery.evidenceId,
         availability: 'live', validated: true, actionable: false,
         reasonCodes: ['PROVIDER_RIGHTS_UNVERIFIED', 'ANALYSIS_INPUTS_INCOMPLETE'] });
+      this.deliveryMetrics.verified += 1;
+      this.deliveryMetrics.lastVerifiedDeliveryAt = Date.now();
+      this.deliveryMetrics.lastVerifiedSymbol = verified.symbol;
       await Promise.allSettled([...this.listeners].map(listener => Promise.resolve().then(() => listener(verified))));
     } catch { /* Missing or invalid durable evidence never becomes an event. */ }
     finally { this.pendingSymbols.delete(delivery.symbol); }
