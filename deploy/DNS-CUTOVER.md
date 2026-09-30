@@ -12,7 +12,7 @@ Dies ist ein vorbereiteter Ausführungsplan, kein Nachweis einer bereits erfolgt
 
 ## 1. Vorbedingungen und Rückweg
 
-- Aktuelle Domainzuordnungen, authoritative Nameserver, DNS-Records, TLS-Status und beide Dienstzustände read-only sichern. Die tatsächliche Zone ist noch nicht inventarisiert; aus MX-Records wird kein DNS-Provider abgeleitet.
+- Aktuelle Domainzuordnungen, authoritative Nameserver, DNS-Records, TLS-Status und beide Dienstzustände read-only sichern. Das IONOS-Inventar aus Actions-Lauf 36693847135 vom 30.09.2026, 09:05Z, wurde gelesen: Root-A 216.24.57.1 sowie www-/mta-sts-CNAMEs auf finance-7clq.onrender.com, jeweils TTL 3600. Vor Schreibzugriff frisch erneut lesen und mit dem Rollback-Artefakt abgleichen; aus MX-Records wird kein DNS-Provider abgeleitet.
 - Aktuellen Main, angenommenes Source-/Image-Digest und Container-Sicherheitsnachweis korrelieren. PR-Merge allein ist kein Deployment.
 - Finance-Altdaten und bestehende Vertragsverwaltung müssen nach Abschaltung weiter zugänglich/bearbeitbar sein. ZITADEL-Subjects dürfen nicht allein anhand gleicher E-Mail-Adressen an alte Supabase-Datensätze gebunden werden. Keine Daten oder Secrets löschen.
 - Neuer Dienst muss vor dem Domainwechsel unter seiner Render-URL funktionieren. Bei fehlgeschlagenem Login, Export oder TLS-Nachweis nicht fortfahren.

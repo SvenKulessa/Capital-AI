@@ -1,0 +1,7 @@
+# Only valid with the mandatory NATS runtime gate in build-security.yml.
+misconfigurations:
+  - id: AVD-DS-0002
+    paths:
+      - deploy/Dockerfile.nats
+    expired_at: 2026-10-30
+    statement: Root initializes the mounted disk only; PID 1 must run as UID/GID 1000. Runtime gate verifies fresh volume and restart before source scan. No CVE or secret exception.
