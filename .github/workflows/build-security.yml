@@ -35,7 +35,7 @@ jobs:
         run: node scripts/write-runtime-identity.mjs "$GITHUB_SHA"
       - name: npm-Lizenzmetadaten und Regressionstests prüfen
         run: |
-          node --test scripts/docker-context.test.mjs scripts/license-evidence.test.mjs scripts/summarize-trivy.test.mjs scripts/production-handoff.test.mjs
+          node --test scripts/docker-context.test.mjs scripts/license-evidence.test.mjs scripts/summarize-trivy.test.mjs scripts/production-handoff.test.mjs scripts/verify-main-ruleset.test.mjs
           node scripts/license-evidence.mjs
       - name: Gepinnte Sicherheitswerkzeuge bauen
         run: docker build --file Dockerfile.security --tag capital-ai-security .
