@@ -29,8 +29,16 @@ jobs:
         run: docker build --file Dockerfile.security --tag capital-ai-security .
       - name: Dockerfile linten
         run: docker run --rm --entrypoint hadolint -v "$PWD:/work:ro" capital-ai-security /work/Dockerfile
+      - name: NATS-Disk-Bootstrap und nicht-root Server verifizieren
+        run: |
+          mkdir -p security-reports
+          docker build --file deploy/Dockerfile.nats --tag capital-nats:${{ github.sha }} .
+          bash scripts/verify-nats-runtime.sh
       - name: Quellcode, Secrets und Konfiguration scannen
-        run: docker run --rm -v "$PWD:/work:ro" capital-ai-security fs --include-dev-deps --ignorefile /dev/null --scanners vuln,secret,misconfig --severity HIGH,CRITICAL --exit-code 1 /work
+        run: |
+          mkdir -p security-reports
+          chmod a+rwx security-reports
+          docker run --rm -w /work -v "$PWD:/work:ro" -v "$PWD/security-reports:/reports" capital-ai-security fs --include-dev-deps --ignorefile /work/deploy/trivy-bootstrap-exception.yaml --scanners vuln,secret,misconfig --severity HIGH,CRITICAL --format json --output /reports/source.json --exit-code 1 /work
       - name: Build-Stufe einschließlich Paketmanager scannen
         run: |
           docker build --pull --target build --tag capital-ai-build:${{ github.sha }} .
@@ -89,6 +97,7 @@ jobs:
             security-reports/image-id.txt
             security-reports/THIRD_PARTY_NOTICES.txt
             security-reports/smoke.log
+            security-reports/nats-smoke.log
           if-no-files-found: warn
           retention-days: 7
       - name: Dasselbe geprüfte Image zur Veröffentlichung übergeben

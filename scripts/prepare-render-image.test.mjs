@@ -19,3 +19,10 @@ test('prebuilt config preserves exact digest and isolates new service', () => {
   assert.ok(!result.includes('dockerfilePath:'));
   assert.ok(!result.includes('buildCommand:'));
 });
+test('image promotion retains server-only OIDC configuration', () => {
+  const result = blueprint(profile, `ghcr.io/svenkulessa/capital-ai@sha256:${digest}`);
+  for (const key of ['PUBLIC_APP_ORIGIN', 'OIDC_ISSUER', 'OIDC_CLIENT_ID', 'OIDC_CLIENT_SECRET']) {
+    assert.ok(result.includes(`      - key: ${key}\n        sync: false`));
+  }
+  assert.ok(!result.includes('VITE_OIDC'));
+});

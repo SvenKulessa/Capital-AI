@@ -15,6 +15,7 @@ async function harness(envOverrides = {}) {
   const upstream = async (url, options) => {
     assert.equal(options.redirect, 'error');
     const href = String(url);
+    if (href.endsWith('/.well-known/openid-configuration') && state.discoveryFailure) throw new Error('upstream reflected test-only-secret');
     if (href.endsWith('/.well-known/openid-configuration')) return Response.json({ issuer: env.OIDC_ISSUER, authorization_endpoint: 'https://identity.example/authorize', token_endpoint: 'https://identity.example/token', jwks_uri: 'https://identity.example/keys', code_challenge_methods_supported: ['S256'], token_endpoint_auth_methods_supported: ['client_secret_basic'] });
     if (href.endsWith('/keys')) return Response.json({ keys: [jwk] });
     if (href.endsWith('/token')) {
@@ -135,4 +136,18 @@ test('Market API has time-based rate limits independent of concurrency and spoof
     for (let i = 0; i < 120; i++) assert.equal((await h.request('/api/market/quote?symbol=INVALID', { headers: { 'X-Forwarded-For': `192.0.2.${i}` } })).status, 400);
     assert.equal((await h.request('/api/market/quote?symbol=INVALID')).status, 429);
   } finally { await h.stop(); }
+});
+
+test('OIDC operational diagnosis reports only a fixed phase without upstream secrets', async () => {
+  const h = await harness();
+  const original = console.warn, messages = [];
+  console.warn = (...args) => messages.push(args.join(' '));
+  try {
+    h.state.discoveryFailure = true;
+    const response = await h.request('/api/auth/login');
+    assert.equal(response.status, 400);
+    assert.deepEqual(await response.json(), { error: 'authentication_failed' });
+    assert.deepEqual(messages, ['OIDC authentication failed at discovery']);
+    assert.ok(!messages.join('').includes('test-only-secret'));
+  } finally { console.warn = original; await h.stop(); }
 });
