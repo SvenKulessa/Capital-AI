@@ -5,6 +5,8 @@ on:
     branches:
       - main
   merge_group:
+  schedule:
+    - cron: "45 3 * * *"
   workflow_dispatch:
     inputs:
       publish_candidate:

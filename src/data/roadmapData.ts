@@ -1,25 +1,17 @@
 /**
- * CAPITAL AI — ROADMAP & WORK PACKAGES DATA REPOSITORY
- * 
- * Filterbar nach:
- * 1. Projektowner: Governance, Operation, Frontend, Dokumente, SEO, SOCIAL, Security,
- *    Compliance, Fintech, Agent-Client, Qualitätmanagement
- * 2. Nachweiszustand: VERIFIED, OFFEN, GEHALTEN, UNGEKLÄRT
- * 3. Phase / Stage: 5 geplante Phasen bis zum Version 1.0 Production Go-Live
+ * CAPITAL AI — RELEASE-ORIENTIERTE ROADMAP
+ *
+ * Primäre Domains: PRODUCT, MARKET, PLATFORM, TRUST, GROWTH.
+ * Domain = fachliche Orientierung, keine künstliche Teamgrenze.
+ * Release-Ziele verwenden SemVer; Betriebsfreigaben bleiben evidenzgebunden.
  */
 
 export type ProjectOwner =
-  | 'Governance'
-  | 'Operation'
-  | 'Frontend'
-  | 'Dokumente'
-  | 'SEO'
-  | 'SOCIAL'
-  | 'Security'
-  | 'Compliance'
-  | 'Fintech'
-  | 'Agent-Client'
-  | 'Qualitätmanagement';
+  | 'PRODUCT'
+  | 'MARKET'
+  | 'PLATFORM'
+  | 'TRUST'
+  | 'GROWTH';
 
 export type WorkPackageStatus = 'aktiv' | 'pending' | 'planning';
 export type RoadmapEvidenceState = 'VERIFIED' | 'OFFEN' | 'GEHALTEN' | 'UNGEKLÄRT';
@@ -60,50 +52,50 @@ export const ROADMAP_STAGES: StagePhaseInfo[] = [
   {
     phase: 1,
     id: 'phase-1',
-    name: 'Phase 1: Foundation, Core Engine & Ingestion Pipeline',
-    shortTitle: '1. Foundation',
-    description: 'Architektur-Fundament mit Ringpuffer, Provider Gateways (TwelveData, FRED) und Sub-45ms Tick-Normalisierung.',
-    targetRelease: 'v0.8-alpha',
+    name: 'Phase 1: Versioned Platform Foundation',
+    shortTitle: '1. Platform Foundation',
+    description: 'Repo-weite SemVer-Baseline, fünf Domains, image-backed Render Runtime, ZITADEL-Basis sowie NATS/Valkey-Transport mit nachweisbaren Identitäten.',
+    targetRelease: 'v0.8.0-alpha.1',
     completionPercent: null,
     status: 'in_progress',
   },
   {
     phase: 2,
     id: 'phase-2',
-    name: 'Phase 2: Multi-Asset Screener & BaFin Compliance Hardening',
-    shortTitle: '2. Screener & Compliance',
-    description: '16 kanonische Datenkonzepte, 50-Faktoren Multi-Asset Scorer, WORM Audit Logs nach WpHG § 83 & MaRisk.',
-    targetRelease: 'v0.9-beta',
+    name: 'Phase 2: Verified Market Intelligence Beta',
+    shortTitle: '2. Market Intelligence',
+    description: 'Echte Providerdaten, kanonische Market-Data-Verträge, Scoring-Eligibility, Screener und Evidence ohne Demo-Fallbacks in produktiven Pfaden.',
+    targetRelease: 'v0.9.0-beta.1',
     completionPercent: null,
     status: 'in_progress',
   },
   {
     phase: 3,
     id: 'phase-3',
-    name: 'Phase 3: AI Agent-Client & Studio Hub Synthesizer',
-    shortTitle: '3. AI Agent & Studio Hub',
-    description: 'Gemini-gestützter Kaufberater mit Scientist Reasoning, 7 Blueprints, modularer Pipeline Builder und AP-006 Budget Cap.',
-    targetRelease: 'v0.9.5-rc1',
+    name: 'Phase 3: Product, Account & Agent Integration',
+    shortTitle: '3. Product Integration',
+    description: 'Profil, Abonnement-Badge, Passkey/MFA, Agent-Client, mobile UX und konsistente Navigation auf verifizierter Auth- und Datenbasis.',
+    targetRelease: 'v0.9.5-rc.1',
     completionPercent: null,
     status: 'in_progress',
   },
   {
     phase: 4,
     id: 'phase-4',
-    name: 'Phase 4: Security, Evidence Merkle Trees, SEO & Social',
-    shortTitle: '4. Security & Ecosystem',
-    description: 'SHA-256 Merkle Proofs, On-Chain Whale Radar, Schema.org SEO Structured Data, Telegram Whale Alert Bot Integration.',
-    targetRelease: 'v0.9.9-rc2',
+    name: 'Phase 4: DevSecOps, Supply Chain & Release Candidate',
+    shortTitle: '4. DevSecOps & RC',
+    description: 'Tägliche Versions-/CVE-Prüfung, SBOM/Attestations, Release Controller, Component-Diff, bounded Self-Healing, Lizenz- und Runtime-Handoff.',
+    targetRelease: 'v0.9.9-rc.1',
     completionPercent: null,
     status: 'in_progress',
   },
   {
     phase: 5,
     id: 'phase-5',
-    name: 'Phase 5: Release Candidate & Production Go-Live v1.0',
-    shortTitle: '5. v1.0 Production Launch',
-    description: 'Ziel: Release-Abnahme für Render mit Sicherheits-, Lizenz-, Identitäts-, Domain- und Wiederherstellungsnachweisen.',
-    targetRelease: 'v1.0.0-final',
+    name: 'Phase 5: Production Go-Live',
+    shortTitle: '5. Production',
+    description: 'Domain-/DNS-Cutover, verifizierter Login, Backup/Restore, Runtime-Digest-Korrelation und Production-Handoff für die stabile Version.',
+    targetRelease: 'v1.0.0',
     completionPercent: null,
     status: 'upcoming',
   },
@@ -117,81 +109,39 @@ export const PROJECT_OWNERS: {
   description: string;
 }[] = [
   {
-    id: 'Governance',
-    label: 'Governance',
-    lead: 'Projektinhaber',
-    badgeColor: 'border-amber-400/40 bg-amber-400/10 text-amber-300',
-    description: 'Projektentscheidungen, Freigaben und nachvollziehbare Verantwortungszuordnung.',
+    id: 'PRODUCT',
+    label: 'CAPITAL-AI-PRODUCT',
+    lead: 'Owner + AI Apps',
+    badgeColor: 'border-pink-400/40 bg-rose-950/40 text-pink-300',
+    description: 'Frontend, Agent Client, UX, Konto/Profil und produktnahe Nutzerflüsse.',
   },
   {
-    id: 'Operation',
-    label: 'Operation',
-    lead: 'DevOps & Site Reliability Team',
-    badgeColor: 'border-blue-400/40 bg-blue-400/10 text-blue-300',
-    description: 'Render-Dienste, Deployment, Infrastrukturprüfung und Wiederherstellung.',
+    id: 'MARKET',
+    label: 'CAPITAL-AI-MARKET',
+    lead: 'Owner + AI Apps',
+    badgeColor: 'border-teal-400/40 bg-teal-950/40 text-teal-300',
+    description: 'Fintech, Provider, Scoring, Screener, Market Data und Daten-Evidence.',
   },
   {
-    id: 'Frontend',
-    label: 'Frontend',
-    lead: 'Lead UI/UX Engineer',
-    badgeColor: 'border-cyan-400/40 bg-cyan-400/10 text-cyan-300',
-    description: 'Dark-Terminal UI, Tailwind CSS, Responsive Viewports, Micro-Interactions & Screener Visuals.',
+    id: 'PLATFORM',
+    label: 'CAPITAL-AI-PLATFORM',
+    lead: 'Owner + AI Apps',
+    badgeColor: 'border-violet-400/40 bg-violet-950/40 text-violet-300',
+    description: 'Render, Docker/OCI, GHCR, NATS, Valkey, CI/CD, Observability und Release Automation.',
   },
   {
-    id: 'Dokumente',
-    label: 'Dokumente',
-    lead: 'Technical Documentation & Legal Docs',
-    badgeColor: 'border-indigo-400/40 bg-indigo-400/10 text-indigo-300',
-    description: 'Architektur-Blueprints, BaFin Prüfhandbuch, API-Referenzen, PDF Evidence & WORM Dokumentation.',
+    id: 'TRUST',
+    label: 'CAPITAL-AI-TRUST',
+    lead: 'Owner + AI Apps',
+    badgeColor: 'border-slate-300/40 bg-slate-800/40 text-slate-200',
+    description: 'Security, Compliance, Governance, QA, Supply Chain und Evidenz-Gates.',
   },
   {
-    id: 'SEO',
-    label: 'SEO',
-    lead: 'Search Growth & Crawlability Lead',
-    badgeColor: 'border-emerald-400/40 bg-emerald-400/10 text-emerald-300',
-    description: 'Schema.org JSON-LD Structured Data, OpenGraph Share Cards, Canonical URLs & Keyword-Indexierung.',
-  },
-  {
-    id: 'SOCIAL',
-    label: 'SOCIAL',
-    lead: 'Community & Ecosystem Relations',
-    badgeColor: 'border-pink-400/40 bg-pink-400/10 text-pink-300',
-    description: 'Telegram Whale Radar Alerts Bot, Twitter/X Card Sharing, Community Feed & On-Chain Broadcasts.',
-  },
-  {
-    id: 'Security',
-    label: 'Security',
-    lead: 'Chief Information Security Officer (CISO)',
-    badgeColor: 'border-rose-400/40 bg-rose-400/10 text-rose-300',
-    description: 'SHA-256 Merkle-Chain Proofs, Zero-Trust RBAC, TLS 1.3 Strict, API Masking & OWASP Hardening.',
-  },
-  {
-    id: 'Compliance',
-    label: 'Compliance',
-    lead: 'Chief Compliance Officer (CCO)',
-    badgeColor: 'border-purple-400/40 bg-purple-400/10 text-purple-300',
-    description: 'BaFin MaRisk Mindestanforderungen, WpHG § 83 Aufzeichnungspflichten & MiCA Krypto-Regulierung.',
-  },
-  {
-    id: 'Fintech',
-    label: 'Fintech',
-    lead: 'Quantitative Financial Engineer',
-    badgeColor: 'border-yellow-400/40 bg-yellow-400/10 text-yellow-300',
-    description: 'Echtzeit-Scoring, Buffett DCF Algorithmen, Volatilitäts-Filter, Outlier-Erkennung & Provider-Fleet.',
-  },
-  {
-    id: 'Agent-Client',
-    label: 'Agent-Client',
-    lead: 'AI Systems Architect',
-    badgeColor: 'border-violet-400/40 bg-violet-400/10 text-violet-300',
-    description: 'Gemini-3.8-Flash Kaufberater, Scientist Reasoning Engine, BOM Tool Catalog & Revenue Assurance.',
-  },
-  {
-    id: 'Qualitätmanagement',
-    label: 'Qualitätmanagement',
-    lead: 'Quality Assurance & Audit Team',
-    badgeColor: 'border-teal-400/40 bg-teal-400/10 text-teal-300',
-    description: 'End-to-End Testautomatisierung, Schema Validation Suites, Contract Verifikation & Stresstests.',
+    id: 'GROWTH',
+    label: 'CAPITAL-AI-GROWTH',
+    lead: 'Owner + AI Apps',
+    badgeColor: 'border-amber-400/40 bg-amber-950/40 text-amber-300',
+    description: 'Dokumentation, SEO, Social, Branding und releasebezogene Kommunikation.',
   },
 ];
 
@@ -202,7 +152,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-GOV-01',
     title: 'BaFin MaRisk Governance & GF Freigabe-Matrix',
-    owner: 'Governance',
+    owner: 'TRUST',
     status: 'pending',
     phase: 3,
     phaseName: 'Phase 3: AI Agent-Client & Studio Hub Synthesizer',
@@ -225,7 +175,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-GOV-02',
     title: 'Revenue Assurance & Budget-Obergrenze (AP-006 Durchsetzung)',
-    owner: 'Governance',
+    owner: 'TRUST',
     status: 'pending',
     phase: 3,
     phaseName: 'Phase 3: AI Agent-Client & Studio Hub Synthesizer',
@@ -247,7 +197,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-GOV-03',
     title: 'v1.0 Production Launch Readiness & Notar-Audit Vorbereitung',
-    owner: 'Governance',
+    owner: 'TRUST',
     status: 'planning',
     phase: 5,
     phaseName: 'Phase 5: Release Candidate & Production Go-Live v1.0',
@@ -273,8 +223,8 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   // =========================================================================
   {
     id: 'AP-OPS-01',
-    title: 'Cloud Run Auto-Healing & Container Zero-Scale Optimization',
-    owner: 'Operation',
+    title: 'Render Image Runtime, Release Controller & bounded Self-Healing',
+    owner: 'PLATFORM',
     status: 'pending',
     phase: 2,
     phaseName: 'Phase 2: Multi-Asset Screener & BaFin Compliance Hardening',
@@ -285,10 +235,10 @@ const BACKLOG_TARGETS: WorkPackage[] = [
     priority: 'Kritisch',
     leadName: 'Verantwortung zuzuordnen',
     targetSprint: 'Nicht terminiert',
-    description: 'Geplantes Ziel, Abnahme offen: Betrieb der Next-Gen Containerlandschaft auf Cloud Run (Region europe-west2) mit automatischem Health-Check und Sub-Second Kaltstart.',
+    description: 'Geplantes Ziel, Abnahme offen: Betrieb des image-backed Render-Webservice mit attestierten GHCR-Digests, Release Controller, Health-Readback und begrenzter automatischer Wiederherstellung.',
     deliverables: [
       'Docker Multi-Stage Build (<120MB Image)',
-      'Automatisches Rollback bei ungesunden Pods',
+      'Bounded Rollback/Redeploy ausschließlich auf attestierte Digests',
       'Sub-45ms Latenz-Proxy Routen zu Gemini & Ingestion-Feeds',
     ],
     bafinStandard: 'BaFin BAIT Auslagerungsmanagement',
@@ -296,7 +246,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-OPS-02',
     title: 'Echtzeit-Fleet Monitoring & Latenz-Telemetrie Dashboard',
-    owner: 'Operation',
+    owner: 'PLATFORM',
     status: 'pending',
     phase: 3,
     phaseName: 'Phase 3: AI Agent-Client & Studio Hub Synthesizer',
@@ -317,8 +267,8 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   },
   {
     id: 'AP-OPS-03',
-    title: 'Multi-Region Failover & Disaster Recovery Plan für v1.0',
-    owner: 'Operation',
+    title: 'Backup/Restore & Disaster-Recovery-Abnahme für v1.0',
+    owner: 'PLATFORM',
     status: 'planning',
     phase: 5,
     phaseName: 'Phase 5: Release Candidate & Production Go-Live v1.0',
@@ -329,9 +279,9 @@ const BACKLOG_TARGETS: WorkPackage[] = [
     priority: 'Hoch',
     leadName: 'Verantwortung zuzuordnen',
     targetSprint: 'Nicht terminiert',
-    description: 'Geplantes Ziel, Abnahme offen: Automatisierte Umschaltung auf Standby-Knoten in Frankfurt (europe-west3) bei Rechenzentrumsausfall in London.',
+    description: 'Geplantes Ziel, Abnahme offen: Nachweisbarer Wiederherstellungsplan für App, NATS JetStream und kritische Konfigurationen mit getesteten RTO/RPO-Zielen, ohne unbelegte Multi-Region-Behauptung.',
     deliverables: [
-      'RTO < 30 Sekunden / RPO = 0 Sekunden Spezifikation',
+      'Realistische RTO/RPO-Ziele aus gemessenen Restore-Tests ableiten',
       'Simulierter Ausfalltest im Benchmark Lab',
       'Disaster Recovery Protokoll für den BaFin Prüfer',
     ],
@@ -345,7 +295,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-FE-01',
     title: '4-Reiter Architektur & Globaler Hub Header Navigation',
-    owner: 'Frontend',
+    owner: 'PRODUCT',
     status: 'pending',
     phase: 3,
     phaseName: 'Phase 3: AI Agent-Client & Studio Hub Synthesizer',
@@ -366,7 +316,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-FE-02',
     title: 'Learning Portal UI mit interaktivem Glossar & Such-Terminal',
-    owner: 'Frontend',
+    owner: 'PRODUCT',
     status: 'pending',
     phase: 3,
     phaseName: 'Phase 3: AI Agent-Client & Studio Hub Synthesizer',
@@ -387,7 +337,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-FE-03',
     title: 'Control Center Cockpit & Interactive Roadmap Component',
-    owner: 'Frontend',
+    owner: 'PRODUCT',
     status: 'pending',
     phase: 3,
     phaseName: 'Phase 3: AI Agent-Client & Studio Hub Synthesizer',
@@ -398,7 +348,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
     priority: 'Kritisch',
     leadName: 'Verantwortung zuzuordnen',
     targetSprint: 'Nicht terminiert',
-    description: 'Geplantes Ziel, Abnahme offen: Entwicklung der Management-Konsole mit filterbarer Roadmap nach 11 Projektownern, 3 Status und 5 Phasen bis v1.0.',
+    description: 'Geplantes Ziel, Abnahme offen: Entwicklung der Management-Konsole mit filterbarer Roadmap nach 5 Domains, 3 Status und 5 Phasen bis v1.0.',
     deliverables: [
       'Filter-Matrix nach Owner, Status und Phase',
       'Executive Cockpit für Geschäftsführer und Team',
@@ -408,7 +358,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-FE-04',
     title: 'PWA Offline Caching & Mobile Touch Gestures für v1.0',
-    owner: 'Frontend',
+    owner: 'PRODUCT',
     status: 'planning',
     phase: 4,
     phaseName: 'Phase 4: Security, Evidence Merkle Trees, SEO & Social',
@@ -433,7 +383,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-DOC-01',
     title: 'Fintech Pipeline & Screener Architektur-Whitepaper (16 Konzepte)',
-    owner: 'Dokumente',
+    owner: 'GROWTH',
     status: 'pending',
     phase: 2,
     phaseName: 'Phase 2: Multi-Asset Screener & BaFin Compliance Hardening',
@@ -455,7 +405,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-DOC-02',
     title: 'BaFin MaRisk & WpHG § 83 Konformitäts-Handbuch',
-    owner: 'Dokumente',
+    owner: 'GROWTH',
     status: 'pending',
     phase: 3,
     phaseName: 'Phase 3: AI Agent-Client & Studio Hub Synthesizer',
@@ -477,7 +427,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-DOC-03',
     title: 'REST / WebSocket API Dokumentation & OpenAPI 3.1 Spec',
-    owner: 'Dokumente',
+    owner: 'GROWTH',
     status: 'pending',
     phase: 4,
     phaseName: 'Phase 4: Security, Evidence Merkle Trees, SEO & Social',
@@ -502,7 +452,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-SEO-01',
     title: 'Schema.org JSON-LD Structured Data für FinancialService & SoftwareApplication',
-    owner: 'SEO',
+    owner: 'GROWTH',
     status: 'pending',
     phase: 2,
     phaseName: 'Phase 2: Multi-Asset Screener & BaFin Compliance Hardening',
@@ -523,7 +473,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-SEO-02',
     title: 'Dynamische OpenGraph & Twitter Card Social Share Generator',
-    owner: 'SEO',
+    owner: 'GROWTH',
     status: 'pending',
     phase: 3,
     phaseName: 'Phase 3: AI Agent-Client & Studio Hub Synthesizer',
@@ -544,7 +494,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-SEO-03',
     title: 'XML Sitemap & Google Search Console Indexierungs-Strategie',
-    owner: 'SEO',
+    owner: 'GROWTH',
     status: 'planning',
     phase: 4,
     phaseName: 'Phase 4: Security, Evidence Merkle Trees, SEO & Social',
@@ -569,7 +519,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-SOC-01',
     title: 'Telegram Whale Radar Alerts & Smart Money Broadcast Engine',
-    owner: 'SOCIAL',
+    owner: 'GROWTH',
     status: 'pending',
     phase: 3,
     phaseName: 'Phase 3: AI Agent-Client & Studio Hub Synthesizer',
@@ -590,7 +540,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-SOC-02',
     title: 'One-Click Social Share & Pipeline Blueprint Link-Sharing',
-    owner: 'SOCIAL',
+    owner: 'GROWTH',
     status: 'pending',
     phase: 3,
     phaseName: 'Phase 3: AI Agent-Client & Studio Hub Synthesizer',
@@ -611,7 +561,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-SOC-03',
     title: 'Discord Community Bot & Alpha Caller Integration für v1.0',
-    owner: 'SOCIAL',
+    owner: 'GROWTH',
     status: 'planning',
     phase: 5,
     phaseName: 'Phase 5: Release Candidate & Production Go-Live v1.0',
@@ -636,7 +586,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-SEC-01',
     title: 'SHA-256 Merkle-Tree Hashketten für Signal-Integrität',
-    owner: 'Security',
+    owner: 'TRUST',
     status: 'pending',
     phase: 2,
     phaseName: 'Phase 2: Multi-Asset Screener & BaFin Compliance Hardening',
@@ -658,7 +608,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-SEC-02',
     title: 'Zero-Trust RBAC & Session Security im Control Center',
-    owner: 'Security',
+    owner: 'TRUST',
     status: 'pending',
     phase: 3,
     phaseName: 'Phase 3: AI Agent-Client & Studio Hub Synthesizer',
@@ -680,7 +630,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-SEC-03',
     title: 'OWASP Top 10 Audit & Penetration Testing vor v1.0 Go-Live',
-    owner: 'Security',
+    owner: 'TRUST',
     status: 'planning',
     phase: 5,
     phaseName: 'Phase 5: Release Candidate & Production Go-Live v1.0',
@@ -707,7 +657,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-CMP-01',
     title: 'BaFin MaRisk Mindestanforderungen an das Risikomanagement',
-    owner: 'Compliance',
+    owner: 'TRUST',
     status: 'pending',
     phase: 2,
     phaseName: 'Phase 2: Multi-Asset Screener & BaFin Compliance Hardening',
@@ -729,7 +679,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-CMP-02',
     title: 'MiCA Kryptowerte-Verordnung & Whitepaper Revisionssicherheit',
-    owner: 'Compliance',
+    owner: 'TRUST',
     status: 'pending',
     phase: 3,
     phaseName: 'Phase 3: AI Agent-Client & Studio Hub Synthesizer',
@@ -751,7 +701,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-CMP-03',
     title: 'WpHG § 83 Aufzeichnungs- und Aufbewahrungspflichten Audit',
-    owner: 'Compliance',
+    owner: 'TRUST',
     status: 'pending',
     phase: 4,
     phaseName: 'Phase 4: Security, Evidence Merkle Trees, SEO & Social',
@@ -778,7 +728,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-FIN-01',
     title: 'Multi-Asset Screener & 50-Faktoren Quantitative Ranking Engine',
-    owner: 'Fintech',
+    owner: 'MARKET',
     status: 'pending',
     phase: 2,
     phaseName: 'Phase 2: Multi-Asset Screener & BaFin Compliance Hardening',
@@ -800,7 +750,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-FIN-02',
     title: 'Buffett Value Check & Margin of Safety DCF Algorithmus',
-    owner: 'Fintech',
+    owner: 'MARKET',
     status: 'pending',
     phase: 2,
     phaseName: 'Phase 2: Multi-Asset Screener & BaFin Compliance Hardening',
@@ -821,7 +771,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-FIN-03',
     title: 'High-Frequency Slippage Model & Order Execution Simulator',
-    owner: 'Fintech',
+    owner: 'MARKET',
     status: 'pending',
     phase: 4,
     phaseName: 'Phase 4: Security, Evidence Merkle Trees, SEO & Social',
@@ -846,7 +796,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-AGT-01',
     title: 'Gemini-3.8-Flash Kaufberater & Dual Scientist Reasoning Mode',
-    owner: 'Agent-Client',
+    owner: 'PRODUCT',
     status: 'pending',
     phase: 3,
     phaseName: 'Phase 3: AI Agent-Client & Studio Hub Synthesizer',
@@ -867,7 +817,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-AGT-02',
     title: 'Pipeline Tool Inventory & Revenue Assurance Catalog (AP-006)',
-    owner: 'Agent-Client',
+    owner: 'PRODUCT',
     status: 'pending',
     phase: 3,
     phaseName: 'Phase 3: AI Agent-Client & Studio Hub Synthesizer',
@@ -888,7 +838,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-AGT-03',
     title: 'Autonome Multi-Agent Feedback-Loop für Portfolio-Rebalancing',
-    owner: 'Agent-Client',
+    owner: 'PRODUCT',
     status: 'planning',
     phase: 5,
     phaseName: 'Phase 5: Release Candidate & Production Go-Live v1.0',
@@ -914,7 +864,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-QA-01',
     title: 'Automatisierte Contract & Provider Validation Test Suite',
-    owner: 'Qualitätmanagement',
+    owner: 'TRUST',
     status: 'pending',
     phase: 2,
     phaseName: 'Phase 2: Multi-Asset Screener & BaFin Compliance Hardening',
@@ -935,7 +885,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-QA-02',
     title: 'Cross-Browser & Responsive Breakpoint Validation (Mobile, Tablet, 4K)',
-    owner: 'Qualitätmanagement',
+    owner: 'TRUST',
     status: 'pending',
     phase: 3,
     phaseName: 'Phase 3: AI Agent-Client & Studio Hub Synthesizer',
@@ -956,7 +906,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
   {
     id: 'AP-QA-03',
     title: 'v1.0 Production Stresstest & Notfall-Szenario Simulation',
-    owner: 'Qualitätmanagement',
+    owner: 'TRUST',
     status: 'planning',
     phase: 5,
     phaseName: 'Phase 5: Release Candidate & Production Go-Live v1.0',
@@ -981,9 +931,11 @@ const BACKLOG_TARGETS: WorkPackage[] = [
 /** Statischer Repo-Snapshot; wird nach einem belegten Abgleich aktualisiert. */
 export const ROADMAP_SNAPSHOT = {
   "repository": "SvenKulessa/Capital-AI",
-  "sourceSha": "090b00bb432e329daf62129d10d2c5ca041662b6",
+  "sourceSha": "bfaa25754fe8a80afc280b72ce0fef5145c6f912",
   "reviewDate": "2026-09-30",
-  "scope": "Repository-Implementierung; Betriebsabnahmen separat",
+  "scope": "Repo- und Release-Implementierung; Betriebsabnahmen separat",
+  "domainModelVersion": "2",
+  "productVersionBaseline": "0.8.0-alpha.1",
   "securitySourceSha": "46ee077dea184a5defa84ef028fb93e3ac73fad5",
   "openPullRequests": [
     38,
@@ -993,9 +945,94 @@ export const ROADMAP_SNAPSHOT = {
 
 export const WORK_PACKAGES: WorkPackage[] = [
 {
+  "id": "CA-PLATFORM-VERSIONING",
+  "title": "Repo-weite SemVer- und Release-Identität",
+  "owner": "PLATFORM",
+  "status": "aktiv",
+  "phase": 1,
+  "phaseName": "Phase 1: Platform Foundation",
+  "progressPercent": 80,
+  "evidenceState": "VERIFIED",
+  "evidenceRefs": ["VERSION", "CHANGELOG.md", "docs/governance/DOMAIN-RELEASE-GOVERNANCE.md"],
+  "nextStep": "Release-Manifest und automatischen Release-PR-Controller ergänzen und gegen Branch Rules validieren.",
+  "priority": "Hoch",
+  "leadName": "Owner + AI Apps",
+  "targetSprint": "laufend",
+  "description": "SemVer-Baseline, Domain-Konvention und unveränderliche Source-/Digest-/Deploy-Identitäten werden zusammengeführt. Production bleibt evidenzgebunden.",
+  "deliverables": ["VERSION und Package-Version synchron", "SemVer-Ziele in Roadmap", "Release-Identität mit Source SHA, OCI Digest und Render Deploy ID"]
+},
+{
+  "id": "CA-TRUST-DAILY-SUPPLY-CHAIN",
+  "title": "Täglicher Versions- und CVE-Watch",
+  "owner": "TRUST",
+  "status": "aktiv",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": 70,
+  "evidenceState": "VERIFIED",
+  "evidenceRefs": [".github/dependabot.yml", ".github/workflows/daily-dependency-security-watch.yml", ".github/workflows/build-security.yml"],
+  "nextStep": "Ersten planmäßigen Lauf und erzeugte Update-PRs evidenzbasiert prüfen; Container-CVE-Scan an bestehenden Docker-Security-Gate koppeln.",
+  "priority": "Kritisch",
+  "leadName": "Owner + AI Apps",
+  "targetSprint": "täglich",
+  "description": "npm, GitHub Actions und Docker-Pins werden täglich auf Updates geprüft; HIGH/CRITICAL npm Advisories blockieren den Watch-Lauf. Der bestehende Docker Security Gate läuft zusätzlich täglich mit frischen Trivy-Daten über Source, Build-Image, Runtime-Image und NATS-Image.",
+  "deliverables": ["Daily Dependabot", "npm audit high/critical", "Runtime-Pin-Evidence", "keine blinden Major-Deployments"]
+},
+{
+  "id": "CA-PLATFORM-COMPONENT-DEPLOY",
+  "title": "Component-Diff gesteuerte Render-Deployments",
+  "owner": "PLATFORM",
+  "status": "pending",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": ["deploy/Dockerfile.nats", "docs/security/PRODUCTION-HANDOFF.md"],
+  "nextStep": "Deterministische Pfad-/Komponentenmatrix implementieren: App, NATS, Docs-only und Security-triggered; Render REST nur für betroffene Komponenten auslösen.",
+  "priority": "Kritisch",
+  "leadName": "Owner + AI Apps",
+  "targetSprint": "vor v0.9.9-rc.1",
+  "description": "NATS folgt nicht pauschal jedem Repo-HEAD. App und Broker werden anhand relevanter Dateiänderungen und Security-Trigger unabhängig released.",
+  "deliverables": ["Component fingerprint", "NATS change gate", "Render REST deployment", "Post-deploy identity verification"]
+},
+{
+  "id": "CA-PLATFORM-SELF-HEAL",
+  "title": "Bounded Self-Healing Controller",
+  "owner": "PLATFORM",
+  "status": "pending",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": ["docs/governance/DOMAIN-RELEASE-GOVERNANCE.md"],
+  "nextStep": "DETECT → CORRELATE → CLASSIFY → REMEDIATE → VERIFY als fail-closed Controller mit Retry-Budget und Escalation implementieren.",
+  "priority": "Hoch",
+  "leadName": "Owner + AI Apps",
+  "targetSprint": "vor v1.0.0",
+  "description": "Automatische Reparaturen bleiben reversibel und komponentenspezifisch. Secrets, destruktive Datenoperationen und Gate-Deaktivierungen sind ausgeschlossen.",
+  "deliverables": ["Drift detection", "bounded remediation", "retry budget", "verification", "escalation evidence"]
+},
+{
+  "id": "CA-GROWTH-DOMAIN-BRANDING",
+  "title": "Domain-Farben und Symbole in DevSecOps-Branding integrieren",
+  "owner": "GROWTH",
+  "status": "aktiv",
+  "phase": 1,
+  "phaseName": "Phase 1: Platform Foundation",
+  "progressPercent": 70,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": ["CAPITAL-AI-PRODUCT/PROJECT.md", "CAPITAL-AI-PRODUCT/produkt.LICENSE.md", "CAPITAL-AI-MARKET/PROJECT.md", "CAPITAL-AI-MARKET/market.LICENSE.md", "CAPITAL-AI-PLATFORM/PROJECT.md", "CAPITAL-AI-PLATFORM/plattform.LICENSE.md", "CAPITAL-AI-TRUST/PROJECT.md", "CAPITAL-AI-TRUST/trust.LICENSE.md", "CAPITAL-AI-GROWTH/PROJECT.md", "CAPITAL-AI-GROWTH/growth.LICENSE.md"],
+  "nextStep": "Die gelieferten Domain-Badges nach Asset-Import in Roadmap und DevSecOps-Oberflächen verwenden; Farben und Symbolik sind bereits kanonisch festgelegt.",
+  "priority": "Mittel",
+  "leadName": "Owner + AI Apps",
+  "targetSprint": "laufend",
+  "description": "Die fünf Domain-Namen, Farbrichtungen, Symbole und Lizenznachweise sind anhand der gelieferten Branding-Assets kanonisch festgelegt. Der binäre Asset-Import in die auslieferbare Repository-Struktur ist der verbleibende Schritt.",
+  "deliverables": ["Domain-Farbmatrix", "Symbol-Mapping", "GitHub DevSecOps Branding", "Roadmap-Darstellung"]
+},
+{
   "id": "AP-CMP-LEGAL",
   "title": "Rechtstexte aus Finance übernommen und an ZITADEL angepasst",
-  "owner": "Compliance",
+  "owner": "TRUST",
   "status": "aktiv",
   "phase": 2,
   "phaseName": "Phase 2: Screener & Compliance",
@@ -1018,7 +1055,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
 {
   "id": "AP-CMP-PRIVACY",
   "title": "Verifizierte Sitzung für Datenauszug und E-Mail-Entwurf",
-  "owner": "Compliance",
+  "owner": "TRUST",
   "status": "aktiv",
   "phase": 2,
   "phaseName": "Phase 2: Screener & Compliance",
@@ -1040,7 +1077,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
 {
   "id": "AP-CMP-ANALYTICS",
   "title": "Optionales Analytics und Werbung deaktiviert",
-  "owner": "Compliance",
+  "owner": "TRUST",
   "status": "aktiv",
   "phase": 2,
   "phaseName": "Phase 2: Screener & Compliance",
@@ -1062,7 +1099,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
 {
   "id": "AP-FE-NAV",
   "title": "Hub-Navigation mit Pfad und Tab synchronisiert",
-  "owner": "Frontend",
+  "owner": "PRODUCT",
   "status": "aktiv",
   "phase": 1,
   "phaseName": "Phase 1: Foundation",
@@ -1084,7 +1121,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
 {
   "id": "AP-FE-BRAND",
   "title": "Neues führendes Logo und Herkunftshinweis integriert",
-  "owner": "Frontend",
+  "owner": "PRODUCT",
   "status": "aktiv",
   "phase": 1,
   "phaseName": "Phase 1: Foundation",
@@ -1107,7 +1144,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
 {
   "id": "AP-SEC-OIDC",
   "title": "ZITADEL-Anmeldung und Sessiongrenzen implementiert",
-  "owner": "Security",
+  "owner": "TRUST",
   "status": "aktiv",
   "phase": 1,
   "phaseName": "Phase 1: Foundation",
@@ -1129,7 +1166,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
 {
   "id": "AP-FIN-BOUNDARY",
   "title": "Demo-Daten von produktivem Scoring getrennt",
-  "owner": "Fintech",
+  "owner": "MARKET",
   "status": "aktiv",
   "phase": 2,
   "phaseName": "Phase 2: Screener & Compliance",
@@ -1151,7 +1188,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
 {
   "id": "AP-FIN-TRANSPORT",
   "title": "Redis, NATS und Pub/Sub im Repository integriert",
-  "owner": "Fintech",
+  "owner": "MARKET",
   "status": "aktiv",
   "phase": 1,
   "phaseName": "Phase 1: Foundation",
@@ -1174,7 +1211,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
 {
   "id": "AP-OPS-CURRENT",
   "title": "Main und Capital-AI-Deployment korrelieren",
-  "owner": "Operation",
+  "owner": "PLATFORM",
   "status": "aktiv",
   "phase": 1,
   "phaseName": "Phase 1: Foundation",
@@ -1195,7 +1232,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
 {
   "id": "AP-SEC-IMAGE",
   "title": "Sicherheitsnachweise an aktuellen Main und Live-Image binden",
-  "owner": "Security",
+  "owner": "TRUST",
   "status": "pending",
   "phase": 4,
   "phaseName": "Phase 4: Security & Ecosystem",
@@ -1217,7 +1254,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
 {
   "id": "AP-CMP-RIGHTS",
   "title": "Container-, Asset- und Marktdatenrechte abschließen",
-  "owner": "Compliance",
+  "owner": "TRUST",
   "status": "pending",
   "phase": 4,
   "phaseName": "Phase 4: Security & Ecosystem",
@@ -1239,7 +1276,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
 {
   "id": "AP-CMP-PROVIDERS",
   "title": "Datenschutzverträge, Datenflüsse und Aufbewahrung prüfen",
-  "owner": "Compliance",
+  "owner": "TRUST",
   "status": "pending",
   "phase": 2,
   "phaseName": "Phase 2: Screener & Compliance",
@@ -1261,7 +1298,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
 {
   "id": "AP-OPS-NATS-LIVE",
   "title": "Produktive NATS-Verbindung und Replay abnehmen",
-  "owner": "Operation",
+  "owner": "PLATFORM",
   "status": "pending",
   "phase": 1,
   "phaseName": "Phase 1: Foundation",
@@ -1283,7 +1320,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
 {
   "id": "AP-OPS-DOMAIN",
   "title": "capital-ai.online auf den neuen Dienst umstellen",
-  "owner": "Operation",
+  "owner": "PLATFORM",
   "status": "pending",
   "phase": 5,
   "phaseName": "Phase 5: Production Go-Live",
@@ -1305,7 +1342,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
 {
   "id": "AP-CMP-OLD-DATA",
   "title": "Finance-Altdaten und bestehende Verträge weiter bearbeitbar halten",
-  "owner": "Compliance",
+  "owner": "TRUST",
   "status": "pending",
   "phase": 5,
   "phaseName": "Phase 5: Production Go-Live",
@@ -1327,7 +1364,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
 {
   "id": "AP-OPS-FINANCE-OFF",
   "title": "Finance nach erfolgreicher Umschaltung suspendieren",
-  "owner": "Operation",
+  "owner": "PLATFORM",
   "status": "pending",
   "phase": 5,
   "phaseName": "Phase 5: Production Go-Live",
@@ -1348,7 +1385,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
 {
   "id": "AP-SEC-AUTH-LIVE",
   "title": "ZITADEL-Login und eigener Export auf der Hauptdomain abnehmen",
-  "owner": "Security",
+  "owner": "TRUST",
   "status": "pending",
   "phase": 5,
   "phaseName": "Phase 5: Production Go-Live",

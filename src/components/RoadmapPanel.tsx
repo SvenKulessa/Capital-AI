@@ -37,9 +37,9 @@ export const RoadmapPanel: React.FC = () => {
       <ul className="mt-2 space-y-2">{ROADMAP_STAGES.map(phase => <li key={phase.id}>{phase.shortTitle}: Gesamt-Abnahme offen. {phase.description}</li>)}</ul>
     </details>
     <div className="grid gap-3 sm:grid-cols-3 my-4">
-      <label className="text-sm">Projektowner
+      <label className="text-sm">Domain
         <select className="block w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl p-3" value={owner} onChange={event => setOwner(event.target.value)}>
-          <option value="">Alle Projekte</option>
+          <option value="">Alle Domains</option>
           {PROJECT_OWNERS.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}
         </select>
       </label>
