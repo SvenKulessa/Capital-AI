@@ -6,6 +6,7 @@ import { FinalRankResultSchema, type AssetIdentity } from '../canonicalContracts
 import { ExplicitDemoAdapter } from './fixtures/demoAdapter';
 import { FeatureStoreService } from './fixtures/demoFeatureStore';
 import { ScoringEngineService } from '../../services/scoringEngine';
+import { analysisComponentRuntimeGate, parseAnalysisComponentFlags } from '../../config/analysisComponentFlags';
 
 const asset: AssetIdentity = { assetId: 'aapl_test', symbol: 'AAPL', name: 'Apple Test',
   assetClass: 'equity_us', venue: 'NASDAQ', currency: 'USD', status: 'active' };
@@ -129,4 +130,21 @@ test('unavailable data and low confidence cannot be admitted as actionable compu
     scoreEligible: true, rankEligible: true, alertEligible: true, rank: 1 };
   assert.equal(FinalRankResultSchema.safeParse({ ...alleged, dataAvailability: 'unavailable', confidence: 1 }).success, false);
   assert.equal(FinalRankResultSchema.safeParse({ ...alleged, dataAvailability: 'live', confidence: .1 }).success, false);
+});
+
+
+test('analysis component feature flags are fail-closed and reject wildcard or unknown IDs', () => {
+  assert.deepEqual(parseAnalysisComponentFlags(undefined), { requested: [], enabled: [], unknown: [] });
+  const configured = parseAnalysisComponentFlags('market_integrity_gate,*,unknown_component');
+  assert.deepEqual(configured.enabled, ['market_integrity_gate']);
+  assert.deepEqual(configured.unknown, ['*', 'unknown_component']);
+  assert.equal(analysisComponentRuntimeGate('market_integrity_gate', undefined).runtimeEligible, false);
+});
+
+test('feature flag opt-in cannot override canonical activation blockers', () => {
+  const gate = analysisComponentRuntimeGate('market_integrity_gate', 'market_integrity_gate');
+  assert.equal(gate.flagEnabled, true);
+  assert.equal(gate.runtimeEligible, false);
+  assert.ok(gate.reasons.includes('COMPONENT_NOT_ACTIVE'));
+  assert.ok(gate.reasons.some(reason => reason === 'CONTRACT_REFERENCE_UNRESOLVED' || reason === 'FEATURE_REFERENCE_UNRESOLVED'));
 });

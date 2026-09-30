@@ -5,8 +5,8 @@ Implementation base: `67860625ad0c19ab74aac6264a2f11f6355c1b3d` (includes merged
 
 ## Resulting behavior
 
-The existing registry still contains exactly 50 components: 36 planned/unavailable,
-9 mock/simulated, 5 blocked/unavailable. All `lastValidatedAt` values are null:
+The existing registry contains exactly 50 components on the current baseline: 45 planned/unavailable,
+0 mock/simulated, 5 blocked/unavailable. All `lastValidatedAt` values are null:
 the prior date was not supported by component calculation evidence. No component
 is promoted to active or live by this change.
 
@@ -87,3 +87,13 @@ validated registry state, persistent replayable evidence and a cross-sectional
 ranking authority. Changing a UI flag or requesting `isDemo=false` cannot promote
 a fixture to live intelligence. This is admission in existing services, not a
 new autonomous deployment or self-healing authority.
+
+
+## 2026-09-30 closeout note
+
+The older implementation-base hashes above remain historical evidence. Current-main correlation is tracked in
+`ENTERPRISE-MARKET-INTELLIGENCE-PART1-CLOSEOUT-20260930.md`.
+
+Per-component rollout is now guarded by `CAPITAL_ANALYSIS_COMPONENTS_ENABLED` through
+`src/config/analysisComponentFlags.ts`. The default is no enabled components; wildcard/unknown IDs do not
+activate anything, and flag opt-in cannot override canonical registry, contract, feature, evidence or lifecycle gates.
