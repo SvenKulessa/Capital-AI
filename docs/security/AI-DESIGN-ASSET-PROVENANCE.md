@@ -125,3 +125,28 @@ Die visuelle Website bleibt vollständig erhalten. Das Release-Gate unterscheide
 Erst die Kombination der für das konkrete Asset einschlägigen Nachweise schließt
 dessen Lizenz-/Rechteprüfung. Eine reine Kennzeichnung als `AI_GENERATED` reicht
 nicht aus; sie bleibt Teil des Provenienzdatensatzes.
+
+## 9. Eingebettete FRONTEND-Lizenz-/Provenienz-Evidence
+
+Am 30.09.2026 wurden die neuen Lizenz- und Designnachweise aus
+`SvenKulessa/FRONTEND@7791c077c2d17577c819293f94d9e6994f7f9780` revisionsgebunden
+in dieses Repository übernommen.
+
+Importierte Evidence:
+
+- `docs/security/evidence/frontend-origin/DESIGN_AND_ASSET_LICENSE.md`
+- `docs/security/evidence/frontend-origin/DESIGN_AND_IMAGE_LICENSE.md`
+- `docs/security/evidence/frontend-origin/LICENSE`
+- `docs/security/evidence/frontend-design-license-manifest.json`
+
+Diese Dokumente stärken die Owner-/Projekt-Provenienz für das bestehende Design,
+den Globus, BrandLogo/AssetLogo und die im FRONTEND-Repository beschriebenen
+Bildassets. Sie werden als belastbare interne Projekt-/Rechteerklärung verwendet.
+
+Wichtig: Aussagen in den importierten Dokumenten, die Google AI Studio als
+`Licensor` oder Drittmarken pauschal als vollständig freigegeben bezeichnen, werden
+nicht ungeprüft als Drittanbieter-Lizenzbestätigung interpretiert. Externe Provider-
+Terms und Marken-/Brand-Guidelines bleiben eigenständige Evidence-Klassen.
+
+Die parallele Menü-/Navigationsentwicklung im FRONTEND-Repository ist nicht Teil
+dieses Lizenz-Slices und wird dadurch weder übernommen noch verändert.
