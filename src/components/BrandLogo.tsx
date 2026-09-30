@@ -1,7 +1,10 @@
 import React from 'react';
+import brandEmblem from '../assets/images/capital_ai_brand_emblem_1789997857835.jpg';
+import fullLogo from '../assets/images/capital_ai_full_logo_1789997869885.jpg';
+import wideBanner from '../assets/images/capital_ai_wide_banner_1789999064950.jpg';
 
 interface BrandLogoProps {
-  variant?: 'emblem' | 'inline' | 'stacked';
+  variant?: 'emblem' | 'inline' | 'stacked' | 'banner';
   size?: 'sm' | 'md' | 'lg' | 'xl';
   showSubtitle?: boolean;
   slogan?: string;
@@ -361,53 +364,34 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     xl: 'text-xs tracking-[0.28em]',
   }[size];
 
-  if (variant === 'emblem') {
-    return (
-      <CapitalAIVectorEmblem
-        sizeClass={emblemSizeClasses}
-        className={className}
-      />
-    );
-  }
+  const emblem = (
+    <img src={brandEmblem} alt="Capital-AI" width={1024} height={1024}
+      decoding="async" className={`${emblemSizeClasses} object-contain shrink-0 rounded-md`} />
+  );
+  const imageClasses = variant === 'banner'
+    ? { sm: 'w-48', md: 'w-64', lg: 'w-80', xl: 'w-96' }[size]
+    : { sm: 'w-24', md: 'w-32', lg: 'w-48', xl: 'w-64' }[size];
 
-  if (variant === 'stacked') {
-    return (
-      <div
-        className={`flex flex-col items-center justify-center text-center select-none cursor-pointer group ${className}`}
-        onClick={onClick}
-      >
-        <CapitalAIVectorEmblem
-          sizeClass={emblemSizeClasses}
-          className="group-hover:scale-105 transition-transform duration-300"
-        />
-
-        {/* High-end FinTech Wordmark: Crisp Platinum White + AIF Gold Accent */}
-        <div className="flex items-center justify-center gap-0.5 mt-2">
-          <span
-            className={`${titleSizeClasses} font-black tracking-tight leading-none text-white group-hover:text-slate-100 transition-colors drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]`}
-          >
-            Capital
-          </span>
-          <span
-            className={`${titleSizeClasses} font-black tracking-tight leading-none text-transparent bg-clip-text bg-[linear-gradient(90deg,#FFD54F_0%,#F9BF21_50%,#FFA000_100%)] group-hover:brightness-115 transition-all drop-shadow-[0_0_10px_rgba(249,191,33,0.3)]`}
-          >
-            -AI
-          </span>
-        </div>
-
-        {/* Professional FinTech Subtitle with live telemetry pip */}
-        {showSubtitle && (
-          <div className="flex items-center justify-center gap-1.5 mt-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(68,222,136,0.85)] animate-pulse shrink-0" />
-            <span
-              className={`${subtitleSizeClasses} font-semibold uppercase truncate text-slate-400 group-hover:text-slate-300 transition-colors`}
-            >
-              {slogan}
-            </span>
-          </div>
+  if (variant !== 'inline') {
+    const content = variant === 'emblem' ? emblem : (
+      <>
+        <img src={variant === 'banner' ? wideBanner : fullLogo}
+          alt="Capital-AI — Intelligence for Modern Markets"
+          width={variant === 'banner' ? 1376 : 1024}
+          height={variant === 'banner' ? 768 : 1024}
+          decoding="async" className={`${imageClasses} max-w-full h-auto object-contain rounded-lg`} />
+        {showSubtitle && slogan !== 'MARKET INTELLIGENCE' && (
+          <span className={`${subtitleSizeClasses} mt-2 text-slate-400 uppercase`}>{slogan}</span>
         )}
-      </div>
+      </>
     );
+    const classes = `inline-flex max-w-full flex-col items-center justify-center select-none ${className}`;
+    return onClick ? (
+      <button type="button" onClick={onClick} aria-label="Capital-AI"
+        className={`${classes} cursor-pointer focus-visible:outline-2 focus-visible:outline-amber-400`}>
+        {content}
+      </button>
+    ) : <div className={classes}>{content}</div>;
   }
 
   // Inline header / row variant
@@ -415,12 +399,14 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     <div
       className={`flex items-center space-x-3 cursor-pointer select-none group ${className}`}
       onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      aria-label={onClick ? 'Capital-AI' : undefined}
+      onKeyDown={onClick ? (event) => {
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onClick(); }
+      } : undefined}
     >
-      {/* Pure Vector SVG Emblem with Cyber-Earth Globe, Orbital Ring & FinTech Nodes */}
-      <CapitalAIVectorEmblem
-        sizeClass={emblemSizeClasses}
-        className="group-hover:scale-105 transition-transform duration-300"
-      />
+      {emblem}
 
       {/* Brand Wordmark & Subtitle */}
       <div className="flex flex-col">
