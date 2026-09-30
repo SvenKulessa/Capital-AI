@@ -55,14 +55,16 @@ jobs:
           docker save capital-nats:${{ github.sha }} --output security-reports/nats-image.tar
           chmod a+r security-reports/nats-image.tar
           chmod a+rwx security-reports
-          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/nats-image.tar --ignorefile /dev/null --scanners vuln,secret --severity HIGH,CRITICAL --exit-code 1 --format json --output /reports/nats-image.json
+          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/nats-image.tar --ignorefile /dev/null --scanners vuln,secret --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --exit-code 0 --format json --output /reports/nats-image.json
+          node scripts/summarize-trivy.mjs security-reports/nats-image.json --gate
           docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/nats-image.tar --ignorefile /dev/null --scanners vuln --format cyclonedx --output /reports/nats.sbom.cdx.json
           rm security-reports/nats-image.tar
       - name: Quellcode, Secrets und Konfiguration scannen
         run: |
           mkdir -p security-reports
           chmod a+rwx security-reports
-          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -w /work -v "$PWD:/work:ro" -v "$PWD/security-reports:/reports" capital-ai-security fs --skip-dirs /work/security-reports --include-dev-deps --ignorefile /work/deploy/trivy-bootstrap-exception.yaml --scanners vuln,secret,misconfig --severity HIGH,CRITICAL --format json --output /reports/source.json --exit-code 1 /work
+          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -w /work -v "$PWD:/work:ro" -v "$PWD/security-reports:/reports" capital-ai-security fs --skip-dirs /work/security-reports --include-dev-deps --ignorefile /work/deploy/trivy-bootstrap-exception.yaml --scanners vuln,secret,misconfig --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format json --output /reports/source.json --exit-code 0 /work
+          node scripts/summarize-trivy.mjs security-reports/source.json --gate
       - name: Build-Stufe einschließlich Paketmanager scannen
         run: |
           docker build --pull --target build --tag capital-ai-build:${{ github.sha }} .
@@ -71,15 +73,15 @@ jobs:
           chmod a+r security-reports/build.tar
           chmod a+rwx security-reports
           scan_status=0
-          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/build.tar --ignorefile /dev/null --scanners vuln,secret --severity HIGH,CRITICAL --format json --output /reports/build-image.json --exit-code 1 || scan_status=$?
-          node scripts/summarize-trivy.mjs security-reports/build-image.json
+          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/build.tar --ignorefile /dev/null --scanners vuln,secret --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format json --output /reports/build-image.json --exit-code 0 || scan_status=$?
+          node scripts/summarize-trivy.mjs security-reports/build-image.json --gate
           if [ "$scan_status" -ne 0 ]; then exit "$scan_status"; fi
           docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/build.tar --ignorefile /dev/null --scanners license --license-full --format json --output /reports/build-image-licenses.json --exit-code 0
           rm security-reports/build.tar
       - name: Image mit Tests und isoliertem Frontend-Build bauen
         run: docker build --pull --tag capital-ai:${{ github.sha }} .
       - name: Server-Regressionstests
-        run: docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m --cap-drop ALL --security-opt no-new-privileges -v "$PWD/server:/app/server:ro" --entrypoint node capital-ai:${{ github.sha }} --test /app/server/market.test.mjs /app/server/market-contracts.test.mjs /app/server/security.test.mjs /app/server/auth.test.mjs
+        run: docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m --cap-drop ALL --security-opt no-new-privileges -v "$PWD/server:/app/server:ro" --entrypoint node capital-ai:${{ github.sha }} --test /app/server/market.test.mjs /app/server/market-contracts.test.mjs /app/server/security.test.mjs /app/server/auth.test.mjs /app/server/infrastructure-security.test.mjs
       - name: Exaktes Image exportieren und scannen
         id: image_identity
         run: |
@@ -91,7 +93,8 @@ jobs:
           docker save capital-ai:${{ github.sha }} -o security-reports/image.tar
           chmod a+r security-reports/image.tar
           chmod a+rwx security-reports
-          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/image.tar --ignorefile /dev/null --scanners vuln,secret --severity HIGH,CRITICAL --format json --output /reports/image.json --exit-code 1
+          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/image.tar --ignorefile /dev/null --scanners vuln,secret --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format json --output /reports/image.json --exit-code 0
+          node scripts/summarize-trivy.mjs security-reports/image.json --gate
       - name: SBOM des exportierten Images
         if: always() && hashFiles('security-reports/image.tar') != ''
         run: |
@@ -114,13 +117,24 @@ jobs:
           curl --silent --show-error --retry 12 --retry-all-errors --retry-delay 1 --retry-max-time 30 --connect-timeout 2 --max-time 3 --fail --output security-reports/smoke-health.json http://127.0.0.1:10000/healthz
           test "$(docker exec capital-ai-smoke id -u)" = 1000
           docker exec capital-ai-smoke sh -c 'test ! -w /app/server/index.mjs && ! command -v npm'
+      - name: Bereinigte Scan-Ergebnisse öffentlich zusammenfassen
+        if: always()
+        run: |
+          mkdir -p security-reports
+          node scripts/publish-security-summary.mjs security-reports
       - name: Prüfnachweise sichern
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: docker-security-${{ github.sha }}
           path: |
-            security-reports/*.json
+            security-reports/*.public.json
+            security-reports/*.sbom.cdx.json
+            security-reports/*-licenses.json
+            security-reports/*-identity.json
+            security-reports/frontend-license-inventory.json
+            security-reports/smoke-health.json
+            security-reports/smoke-state.json
             security-reports/image-id.txt
             security-reports/THIRD_PARTY_NOTICES.txt
             security-reports/smoke.log

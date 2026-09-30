@@ -25,3 +25,20 @@ test('npm hardener cannot silently regress brace-expansion to 5.0.11', () => {
   assert.match(hardener, /\['brace-expansion', '5\.0\.9', '5\.0\.12'\]/);
   assert.doesNotMatch(hardener, /\['brace-expansion', '5\.0\.9', '5\.0\.11'\]/);
 });
+
+test('major upgrade preserves the vendor patch and removes npm from runtime', () => {
+  const dockerfile = readFileSync('Dockerfile', 'utf8');
+  assert.match(dockerfile, /npm install --global npm@12\.2\.0 --ignore-scripts/);
+  assert.match(hardener, /version !== '12\.2\.0'/);
+  assert.match(dockerfile, /node \/opt\/harden-npm-toolchain\.mjs/);
+  assert.match(dockerfile.split('FROM crypto-base AS runtime')[1], /\/usr\/local\/lib\/node_modules\/npm/);
+});
+
+test('IP parser remediation is an integrity-locked compatible bundle replacement', () => {
+  const entry = lock.packages['node_modules/ip-address'];
+  assert.equal(packageJson.dependencies['ip-address'], '10.7.1');
+  assert.equal(entry.version, '10.7.1');
+  assert.equal(entry.resolved, 'https://registry.npmjs.org/ip-address/-/ip-address-10.7.1.tgz');
+  assert.match(entry.integrity, /^sha512-/);
+  assert.match(hardener, /\['ip-address', '10\.5\.0', '10\.7\.1'\]/);
+});

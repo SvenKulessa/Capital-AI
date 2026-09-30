@@ -8,11 +8,11 @@ const [targetArg, donorArg] = process.argv.slice(2);
 if (!targetArg || !donorArg) throw new Error('Expected npm root and locked donor node_modules');
 const target = realpathSync(targetArg), donors = realpathSync(donorArg);
 const read = p => JSON.parse(readFileSync(p, 'utf8'));
-if (read(path.join(target, 'package.json')).version !== '11.20.0') throw new Error('Unexpected npm version');
+if (read(path.join(target, 'package.json')).version !== '12.2.0') throw new Error('Unexpected npm version');
 const require = createRequire(path.join(target, 'package.json'));
 const semver = require('./node_modules/semver');
 const lock = read(path.join(donors, '..', 'package-lock.json'));
-const changes = [['brace-expansion', '5.0.9', '5.0.12'], ['undici', '6.28.0', '6.28.1']];
+const changes = [['brace-expansion', '5.0.9', '5.0.12'], ['undici', '6.28.0', '6.28.1'], ['ip-address', '10.5.0', '10.7.1']];
 // Validate the entire plan before changing any installed code.
 for (const [name, before, after] of changes) {
   const old = read(path.join(target, 'node_modules', name, 'package.json'));
@@ -39,4 +39,7 @@ const { minimatch } = require('./node_modules/minimatch');
 if (!minimatch('source.ts', '*.{ts,js}')) throw new Error('Patched brace consumer failed');
 const { Request } = require('./node_modules/undici');
 if (new Request('https://example.invalid/').method !== 'GET') throw new Error('Patched undici failed');
-console.log(JSON.stringify({ npm: '11.20.0', vendorPatched: true, dependencies: Object.fromEntries(changes.map(([name, , version]) => [name, version])) }));
+const { Address4, Address6 } = require('./node_modules/ip-address');
+if (new Address4('192.0.2.1/24').correctForm() !== '192.0.2.1' ||
+    new Address6('2001:db8::1').correctForm() !== '2001:db8::1') throw new Error('Patched IP address parser failed');
+console.log(JSON.stringify({ npm: '12.2.0', vendorPatched: true, dependencies: Object.fromEntries(changes.map(([name, , version]) => [name, version])) }));

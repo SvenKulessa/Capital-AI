@@ -5,6 +5,13 @@ import { jetstream, jetstreamManager, StorageType, DiscardPolicy } from '@nats-i
 import { QuoteFactSchema, QuoteDeliverySchema, isFresh } from '../shared/market-contracts.mjs';
 
 const STREAM = 'CAPITAL_FACTS';
+export function validateStreamConfig(config, replicas) {
+  if (!config || config.storage !== StorageType.File || config.discard !== DiscardPolicy.New ||
+      !config.deny_delete || !config.deny_purge || config.max_age !== 0 ||
+      config.num_replicas !== replicas || config.max_bytes !== 1024 * 1024 * 1024 ||
+      config.max_msg_size !== 262144 || config.subjects?.length !== 1 ||
+      config.subjects[0] !== 'capital.facts.quote.*') throw new Error('UNSAFE_STREAM_CONFIG');
+}
 export const QUOTE_CHANNEL = 'capital:quote:events:v1';
 export const payloadHash = payload => createHash('sha256').update(JSON.stringify(payload)).digest('hex');
 export class MarketInfrastructure {
@@ -17,6 +24,8 @@ export class MarketInfrastructure {
   }
   async open() {
     if (!this.env.REDIS_URL) return false;
+    // Never fall back to an anonymous connection when the configured broker is reachable.
+    if (this.env.NATS_URL && !this.env.NATS_TOKEN?.trim()) { await this.close(); return false; }
     // A cache connection is useful independently; it is never durable evidence.
     if (this.redis?.isReady && !this.env.NATS_URL) { this.state = 'degraded'; return false; }
     try {
@@ -47,9 +56,7 @@ export class MarketInfrastructure {
           storage: StorageType.File, num_replicas: replicas, discard: DiscardPolicy.New,
           max_bytes: 1024 * 1024 * 1024, max_msg_size: 262144,
           max_age: 0, deny_delete: true, deny_purge: true, duplicate_window: 120e9 }); }
-      if (info.config.storage !== StorageType.File || info.config.discard !== DiscardPolicy.New ||
-          !info.config.deny_delete || !info.config.deny_purge || info.config.max_age !== 0 ||
-          info.config.num_replicas !== replicas || !info.config.subjects.includes('capital.facts.quote.*')) throw new Error('UNSAFE_STREAM_CONFIG');
+      validateStreamConfig(info.config, replicas);
       this.state = 'connected';
       return true;
     } catch {

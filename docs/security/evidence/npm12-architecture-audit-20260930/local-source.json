@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "scope": "WORKTREE_SOURCE_NOT_CONTAINER",
+  "allSeverities": true,
+  "scanner": "Trivy 0.74.0",
+  "databaseUpdatedAt": "2026-09-30T13:11:13.714761705Z",
+  "vulnerabilities": [],
+  "misconfigurations": [
+    {
+      "id": "DS-0026",
+      "severity": "LOW",
+      "status": "FAIL"
+    },
+    {
+      "id": "DS-0026",
+      "severity": "LOW",
+      "status": "FAIL"
+    }
+  ],
+  "secrets": 0,
+  "blocking": 0
+}

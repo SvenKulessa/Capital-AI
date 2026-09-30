@@ -10,3 +10,20 @@ test('failure diagnostics identify vulnerable packages without exposing matched 
   assert.ok(!JSON.stringify(result).includes('private-credential'));
   assert.throws(() => summary({}), /Missing scanner results/);
 });
+
+test('all severities remain visible while serious findings and every secret block', () => {
+  const result = summary({ Results: [{
+    Vulnerabilities: [{ Severity: 'MEDIUM', PkgName: 'pkg' }, { Severity: 'HIGH', PkgName: 'pkg' }],
+    Misconfigurations: [{ ID: 'AVD-test', Severity: 'CRITICAL', Status: 'FAIL', CauseMetadata: { Code: 'private-credential' } }],
+    Secrets: [{ Severity: 'LOW', Match: 'private-credential' }],
+  }] });
+  assert.equal(result.vulnerabilities.length, 2);
+  assert.equal(result.blocking, 3);
+  assert.ok(!JSON.stringify(result).includes('private-credential'));
+});
+
+test('scanner-derived values cannot inject Markdown or control characters into logs', () => {
+  const result = summary({ Results: [{ Vulnerabilities: [{ PkgName: 'pkg\n```secret```\u001b' }] }] });
+  assert.ok(!result.vulnerabilities[0].package.includes('\n'));
+  assert.ok(!result.vulnerabilities[0].package.includes('`'));
+});

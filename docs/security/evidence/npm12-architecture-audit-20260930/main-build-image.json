@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "sourceSha": "3dcecd0637347923a0254c85526361779e119bbf",
+  "scope": "build-image",
+  "status": "PASS",
+  "vulnerabilities": [],
+  "misconfigurations": [],
+  "secrets": 0,
+  "blocking": 0,
+  "severityScope": [
+    "HIGH",
+    "CRITICAL"
+  ],
+  "workflowRun": "https://github.com/SvenKulessa/Capital-AI/actions/runs/36753436044"
+}

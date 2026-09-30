@@ -5,7 +5,7 @@ RUN apk add --no-cache 'libcrypto3>=3.5.8-r0' 'libssl3>=3.5.8-r0'
 
 FROM crypto-base AS build
 WORKDIR /app
-RUN npm install --global npm@11.20.0 --ignore-scripts --no-audit --no-fund \
+RUN npm install --global npm@12.2.0 --ignore-scripts --no-audit --no-fund \
     && rm -rf /usr/local/lib/node_modules/corepack /usr/local/bin/corepack /opt/yarn* /usr/local/bin/yarn* /usr/local/bin/pnpm* /root/.npm
 COPY deploy/npm-security-patches/package.json deploy/npm-security-patches/package-lock.json /opt/npm-security-patches/
 COPY scripts/harden-npm-toolchain.mjs /opt/harden-npm-toolchain.mjs
@@ -40,6 +40,7 @@ COPY --from=build /app/dist ./dist
 COPY server/index.mjs server/market.mjs server/auth.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/mta-sts.mjs ./server/
 COPY --from=production-deps /app/node_modules ./node_modules
 COPY server/infrastructure.mjs ./server/
+COPY scripts/verify-private-brokers.mjs ./scripts/
 COPY shared ./shared
 COPY docs/licenses/node-v24.19.0-LICENSE.txt ./licenses/Node-LICENSE.txt
 RUN rm -rf /usr/local/lib/node_modules/corepack /usr/local/bin/corepack /usr/local/bin/pnpm* /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx /opt/yarn* /usr/local/bin/yarn* \
