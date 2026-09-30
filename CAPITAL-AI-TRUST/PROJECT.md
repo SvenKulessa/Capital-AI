@@ -13,3 +13,7 @@ Bei Docs/SEO/Social/Branding: **GROWTH ist Primary Domain**.
 
 Branch-Präfix: `capital-ai-trust/`
 PR-Präfix: `[CAPITAL-AI-TRUST]`
+
+## Branding
+Badge: `trust.webp` — Silber / Anthrazit; facettierter Schild mit Prüfsymbol.
+Lizenznachweis: `trust.LICENSE.md`.
