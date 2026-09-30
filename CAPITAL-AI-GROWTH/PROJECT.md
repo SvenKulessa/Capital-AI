@@ -13,3 +13,7 @@ Bei Security/Compliance/Governance/QA: **TRUST ist Primary Domain**.
 
 Branch-Präfix: `capital-ai-growth/`
 PR-Präfix: `[CAPITAL-AI-GROWTH]`
+
+## Branding
+Badge: `growth.webp` — Gold / Dunkelbraun; Blatt mit aufsteigendem Pfeil.
+Lizenznachweis: `growth.LICENSE.md`.
