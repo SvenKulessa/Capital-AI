@@ -105,14 +105,18 @@ die neuen OS-/Font-Texte werden durch diesen PR noch nicht ins Image eingebaut.
 
 ## 3. Assets und Marken
 
-Die vier JPEGs sind mit SHA256 und Dateigröße im Inventar erfasst:
+Aktueller Assetbestand nach dem Branding-Wechsel in PR #37:
 
 | Datei | Festgestellte Verwendung | Rechtebeleg |
 |---|---|---|
-| capital_ai_brand_emblem_1789997857835.jpg | Repository; kein statischer Import gefunden | KI-Herkunft bestätigt; Nutzungsbedingungen offen |
-| capital_ai_full_logo_1789997869885.jpg | Repository; kein statischer Import gefunden | KI-Herkunft bestätigt; Nutzungsbedingungen offen |
-| capital_ai_wide_banner_1789999064950.jpg | Repository; kein statischer Import gefunden | KI-Herkunft bestätigt; Nutzungsbedingungen offen |
+| public/branding/capital-ai-logo.jpg | BrandLogo, Favicon; ZITADEL-Upload vorbereitet | Vom Nutzer am 30.09.2026 als ChatGPT-Ergebnis bereitgestellt und zur Website-/ZITADEL-Nutzung freigegeben; siehe Branding-Hinweis |
 | glowing_earth_nodes_1789997454893.jpg | Hero-Import | KI-Herkunft bestätigt; Nutzungsbedingungen offen |
+
+Die drei bisherigen `capital_ai_`-Logo-JPEGs wurden aus dem aktuellen Baum gelöscht.
+Ihre historischen Herkunfts- und Hashbelege bleiben im Git-Verlauf und im
+Inventarfeld `removedAssets` erhalten; sie sind keine aktuellen Auslieferungsassets.
+Neues Logo: [Herkunft und Nutzung](../licenses/Capital-AI-BRANDING.md).
+Die Freigabe zum Einbinden ist keine pauschale Open-Source-Lizenz oder Markenprüfung.
 
 ### Herkunftsbestätigung
 
@@ -157,15 +161,11 @@ Erdbild verknüpft, wurde in den geprüften Quellen und Historien nicht gefunden
 Die Inhaberbestätigung bleibt erhalten; installierte Tools gelten nicht als
 Beweis eines ausgeführten Bildlaufs.
 
-Der ursprüngliche PR-#16-Befund war: `BrandLogo.tsx` zeichnete das Branding
-mit `CapitalAIVectorEmblem` als SVG und band die drei Branding-JPEGs nicht ein.
-Der nach PR #18 vorbereitete Branding-Slice importiert nun das Emblem für
-Navigation/Emblem-Varianten, das vollständige Logo für die Anmeldung und das
-Banner für den Footer. Die Bilder bleiben unverändert; die SVG-Exportfunktion
-bleibt verfügbar, wird aber nicht mehr von `BrandLogo` verwendet. `Hero.tsx` importiert dagegen das Erdbild und setzt es als
-`img`-Quelle. Dies ist ein Quellcodebefund, keine Live-Browser-Verifikation.
-Die Branding-JPEGs bleiben im öffentlichen Repository; ihre Dokumentation
-wird deshalb auch ohne Website-Einbindung beibehalten.
+Aktueller Quellcodebefund: `BrandLogo.tsx` verwendet ausschließlich
+`/branding/capital-ai-logo.jpg`. Die ungenutzte SVG-Exportfunktion ist entfernt.
+`Hero.tsx` verwendet weiterhin das separate Erdbild. Die drei alten Branding-Dateien
+sind gelöscht. Frühere Integrationszustände sind historische Belege und werden
+nicht als aktuelle Lizenz- oder Live-Evidence verwendet.
 
 `src/components/AssetLogo.tsx` enthält Inline-Darstellungen für Asset-Symbole;
 das Inventar erfasst 70 Symbolbezeichner einschließlich Aliassen, Rohstoffen
