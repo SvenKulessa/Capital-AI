@@ -1,0 +1,52 @@
+name: Generate first-party branding asset pack
+
+on:
+  push:
+    branches:
+      - agent/social-media/logo-asset-pack-20260930
+    paths:
+      - scripts/branding/generate_logo_asset_pack.py
+      - .github/workflows/generate-brand-assets.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: brand-assets-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    if: github.repository == 'SvenKulessa/Capital-AI'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Isolierte Pillow-Umgebung bereitstellen
+        run: |
+          set -euo pipefail
+          python3 -m venv "$RUNNER_TEMP/brand-assets-venv"
+          "$RUNNER_TEMP/brand-assets-venv/bin/pip" install --disable-pip-version-check --no-cache-dir --only-binary=:all: Pillow==12.3.0
+          "$RUNNER_TEMP/brand-assets-venv/bin/python" -c 'import PIL; assert PIL.__version__ == "12.3.0"'
+      - name: Asset-Pack aus gepinntem First-Party-Master erzeugen
+        run: |
+          set -euo pipefail
+          "$RUNNER_TEMP/brand-assets-venv/bin/python" scripts/branding/generate_logo_asset_pack.py
+          git diff --exit-code -- public/branding/capital-ai-logo.jpg
+          test "$(sha256sum public/branding/capital-ai-logo.jpg | cut -d' ' -f1)" = "6244629091073823b4cff86908adb0403a217779219bfb44883bd956548243e3"
+          jq -e '.validation | length == 5 and all(.status == "PASS")' public/branding/asset-pack/meta/validation-report.json >/dev/null
+      - name: Generierte Assets auf denselben Branch schreiben
+        env:
+          TARGET_BRANCH: agent/social-media/logo-asset-pack-20260930
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/$TARGET_BRANCH"
+          git config user.name "capital-ai-brand-assets"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/branding/asset-pack
+          if git diff --cached --quiet; then
+            echo "Keine neuen Asset-Dateien."
+            exit 0
+          fi
+          git commit -m "[CAPITAL-AI-SOCIAL] Branding-Asset-Pack lizenzgetreu materialisieren [skip ci]"
+          git push origin "HEAD:$TARGET_BRANCH"
