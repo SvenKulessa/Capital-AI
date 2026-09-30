@@ -1,0 +1,42 @@
+name: Domain Governance
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  validate-domain:
+    name: Domain Governance
+    runs-on: ubuntu-26.04
+    timeout-minutes: 3
+    steps:
+      - name: Validate branch and PR title
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_USER: ${{ github.event.pull_request.user.login }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          title_re='^\[CAPITAL-AI-(PRODUCT|MARKET|PLATFORM|TRUST|GROWTH)\] .+'
+          branch_re='^capital-ai-(product|market|platform|trust|growth)/[a-z0-9][a-z0-9._-]*-[0-9]{8}$'
+
+          if [[ "$PR_USER" == "dependabot[bot]" ]]; then
+            [[ "$PR_TITLE" =~ $title_re ]] || {
+              echo "Dependabot PR must carry a CAPITAL-AI domain prefix in its title."
+              exit 1
+            }
+            exit 0
+          fi
+
+          [[ "$HEAD_REF" =~ $branch_re ]] || {
+            echo "Branch must match capital-ai-<domain>/<purpose>-YYYYMMDD"
+            exit 1
+          }
+          [[ "$PR_TITLE" =~ $title_re ]] || {
+            echo "PR title must start with [CAPITAL-AI-PRODUCT|MARKET|PLATFORM|TRUST|GROWTH]"
+            exit 1
+          }
