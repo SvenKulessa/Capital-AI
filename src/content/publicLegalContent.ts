@@ -65,28 +65,28 @@ export const PUBLIC_FAQ_ITEMS: PublicFaqItem[] = [
     category: 'Sicherheit & Datenschutz',
     question: 'Welche Kontodaten können verarbeitet werden?',
     answer:
-      'Für Konto, Authentifizierung und Profil können insbesondere E-Mail-Adresse, Name oder Profilname, Land/Wohnsitz, eine optionale Telefonnummer, Authentifizierungs- und MFA-Metadaten sowie interne Nutzer- und Rollenkennungen verarbeitet werden. Die konkreten Verarbeitungstätigkeiten stehen in der Datenschutzerklärung.',
+      'Die Anmeldung erfolgt über ZITADEL. Im neuen Dienst werden die verifizierte Benutzerkennung, der Aussteller, der Profilname und zeitlich begrenzte Sitzungsdaten verwendet. Passwörter und Anmeldefaktoren werden beim Identitätsanbieter verwaltet. Die konkreten Verarbeitungstätigkeiten stehen in der Datenschutzerklärung.',
   },
   {
     id: 'privacy-controls',
     category: 'Sicherheit & Datenschutz',
     question: 'Welche Sicherheitskontrollen sind dokumentiert?',
     answer:
-      'Im Finance-Repository sind unter anderem Row Level Security, serverseitige Privilege-Separation, MFA/Passkey-Unterstützung, verschlüsselte Secrets, Service-Role-Trennung und Rate-Limiting dokumentiert. Die Umsetzung dieser Kontrollen im neuen Capital-AI-Service ist gesondert zu prüfen. Daraus wird keine externe Zertifizierung oder behördliche Freigabe abgeleitet.',
+      'Die Anwendung prüft die OIDC-Signatur, Aussteller, Zielanwendung, Ablauf und Nonce, verwendet PKCE und geschützte Sitzungscookies und begrenzt API-Anfragen. Passkeys und MFA richten sich nach der tatsächlichen ZITADEL-Konfiguration. Daraus wird keine externe Zertifizierung oder behördliche Freigabe abgeleitet.',
   },
   {
     id: 'privacy-rights',
     category: 'Sicherheit & Datenschutz',
     question: 'Wie kann ich Auskunft, Berichtigung oder Löschung meiner Daten anfragen?',
     answer:
-      `Über /datenschutz können Sie eine E-Mail für Auskunft, Berichtigung, Löschung, Einschränkung, Widerspruch oder Datenübertragbarkeit vorbereiten und selbst an ${CONTROLLER.email} senden. Die Finance-Self-Service-APIs sind im neuen Service noch nicht angebunden.`,
+      `Über /datenschutz können Sie eine E-Mail für Auskunft, Berichtigung, Löschung, Einschränkung, Widerspruch oder Datenübertragbarkeit vorbereiten und selbst an ${CONTROLLER.email} senden. Nach einer ZITADEL-Anmeldung kann außerdem ein begrenzter Datenauszug der Identitäts- und Sitzungsdaten dieses Dienstes heruntergeladen werden. Vorbereitete Anfragen werden hier nicht dauerhaft gespeichert oder automatisch versendet.`,
   },
   {
     id: 'privacy-cookies',
     category: 'Sicherheit & Datenschutz',
     question: 'Kann ich Analytics- und Cookie-Einstellungen ändern?',
     answer:
-      'Die übernommenen Datenschutzhinweise beschreiben die Einwilligungssteuerung des Finance-Service. Im neuen Capital-AI-Service ist dieser Cookie-Einstellungsdialog noch nicht angebunden; eine wirksame Einwilligungssteuerung wird hier nicht als verifiziert behauptet.',
+      'Optionales Analytics und Werbung sind in diesem Dienst deaktiviert. Die Anmeldung verwendet technisch notwendige Cookies für die OIDC-Transaktion und Anwendungssitzung; ein Opt-in für Analytics wird nicht vorgetäuscht.',
   },
   {
     id: 'account-login',
@@ -100,14 +100,14 @@ export const PUBLIC_FAQ_ITEMS: PublicFaqItem[] = [
     category: 'Konto & Abonnement',
     question: 'Wie werden kostenpflichtige Tarife bezahlt?',
     answer:
-      'Der bisherige kostenpflichtige Tarifkatalog ist derzeit archiviert und nicht neu bestellbar. Für bereits bestehende entgeltliche Vertragsverhältnisse bleibt das Stripe-Kundenportal zur Verwaltung des Abonnements vorgesehen; bestehende Vertrags-, Kündigungs-, Widerrufs- und Verbraucherrechte bleiben unberührt. Ein zukünftiges Pricing-Modell ist noch nicht festgelegt.',
+      'Der bisherige kostenpflichtige Tarifkatalog ist derzeit archiviert und nicht neu bestellbar. Für bereits bestehende entgeltliche Vertragsverhältnisse steht der im Impressum genannte Kontakt zur Verfügung; bestehende Vertrags-, Kündigungs-, Widerrufs- und Verbraucherrechte bleiben unberührt. Ein zukünftiges Pricing-Modell ist noch nicht festgelegt.',
   },
   {
     id: 'billing-cancellation',
     category: 'Konto & Abonnement',
     question: 'Wie verwalte oder beende ich ein Abonnement?',
     answer:
-      'Für authentifizierte Kunden ist nach dem dokumentierten Vertragsstand das Stripe-Kundenportal zur Verwaltung des Abonnements vorgesehen. Gesetzliche Kündigungs- und Verbraucherrechte bleiben davon unberührt. Maßgeblich sind die jeweils veröffentlichten AGB und die Angaben im Bestellprozess.',
+      'Für bestehende Vertragsverhältnisse können Sie sich an den im Impressum genannten Kontakt wenden. Ein Stripe-Kundenportal ist im neuen Dienst nicht angebunden. Gesetzliche Kündigungs- und Verbraucherrechte bleiben davon unberührt. Maßgeblich sind die jeweils veröffentlichten AGB und die Angaben im Bestellprozess.',
   },
   {
     id: 'referral',
@@ -128,6 +128,6 @@ export const PUBLIC_FAQ_ITEMS: PublicFaqItem[] = [
     category: 'Recht & Transparenz',
     question: 'Ist CAPITAL-AI behördlich oder extern als DSGVO-konform zertifiziert?',
     answer:
-      'Eine behördliche, gerichtliche oder externe DSGVO-Zertifizierung wird nicht behauptet. Die veröffentlichten Datenschutzinformationen beschreiben intern dokumentierte technische und organisatorische Kontrollen sowie den jeweils belegten Verarbeitungsstand.',
+      'Eine behördliche, gerichtliche oder externe DSGVO-Zertifizierung wird nicht behauptet. Die veröffentlichten Datenschutzinformationen beschreiben den Dienst mit ZITADEL-Anmeldung und die getrennt zu prüfenden Providerkonfigurationen.',
   },
 ];

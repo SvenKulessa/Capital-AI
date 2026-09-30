@@ -31,11 +31,15 @@ test('legal routes render real provider details without corporate sample data', 
 test('privacy page renders every processing activity and a truthful email handoff', () => {
   const html = render('/datenschutz');
   assert.ok(html.includes(PRIVACY_NOTICE_VERSION));
-  assert.equal(PROCESSING_ACTIVITIES.length, 9);
+  assert.deepEqual(PROCESSING_ACTIVITIES.map(item => item.id), ['hosting', 'zitadel-account', 'privacy-requests', 'telegram']);
   for (const activity of PROCESSING_ACTIVITIES) assert.ok(html.includes(activity.title));
   assert.ok(html.includes('per E-Mail vorbereiten'));
   assert.ok(html.includes('erst durch Ihren Versand'));
-  assert.ok(html.includes('ist noch gesondert zu prüfen'));
+  assert.ok(html.includes('ZITADEL-Anmeldung'));
+  assert.ok(html.includes('Eigenen Datenauszug herunterladen'));
+  assert.ok(html.includes('kein vollständiger Auskunftsbescheid'));
+  assert.ok(html.includes('Optionales Analytics und Werbung sind in diesem Dienst deaktiviert'));
+  assert.doesNotMatch(html, /Supabase als|Finance-Dokumentstand|Stripe, Supabase/);
   assert.doesNotMatch(html, /Self-Service-Datenauszug|Cookie- &amp; Analytics-Einstellungen/);
 });
 
