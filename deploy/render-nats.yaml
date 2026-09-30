@@ -1,0 +1,23 @@
+# Review-only until paid infrastructure and release execution are authorized.
+# Select workspace AICapital explicitly when creating this Blueprint.
+previews:
+  generation: 'off'
+services:
+  - type: pserv
+    name: capital-ai-market-events
+    runtime: docker
+    repo: https://github.com/SvenKulessa/Capital-AI
+    branch: main
+    region: frankfurt
+    plan: 0.5c-512mb
+    numInstances: 1
+    autoDeployTrigger: 'off'
+    dockerfilePath: ./deploy/Dockerfile.nats
+    dockerContext: .
+    disk:
+      name: capital-ai-market-events-data
+      mountPath: /var/data
+      sizeGB: 5
+    envVars:
+      - key: NATS_TOKEN
+        sync: false
