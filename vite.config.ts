@@ -6,6 +6,29 @@ import { thirdPartyNoticesPlugin } from './scripts/license-evidence.mjs';
 import { handleAdvisorRequest } from './server/advisor.ts';
 import { createLimiter } from './server/http-security.mjs';
 
+// Check emitted static imports, not source imports: a cycle here can expose
+// uninitialized cross-chunk bindings before the React bootstrap can catch them.
+function chunkCycleGuard(): Plugin {
+  return {
+    name: 'chunk-cycle-guard',
+    generateBundle(_options, bundle) {
+      const visiting = new Set<string>();
+      const visited = new Set<string>();
+      const visit = (name: string, chain: string[]) => {
+        if (visiting.has(name)) this.error(`Circular emitted chunk imports: ${[...chain, name].join(' -> ')}`);
+        if (visited.has(name)) return;
+        const chunk = bundle[name];
+        if (!chunk || chunk.type !== 'chunk') return;
+        visiting.add(name);
+        for (const dependency of chunk.imports) visit(dependency, [...chain, name]);
+        visiting.delete(name);
+        visited.add(name);
+      };
+      for (const name of Object.keys(bundle)) visit(name, []);
+    },
+  };
+}
+
 function advisorApiPlugin(): Plugin {
   const allow = createLimiter(10);
   return {
@@ -47,19 +70,9 @@ function advisorApiPlugin(): Plugin {
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss(), advisorApiPlugin(), thirdPartyNoticesPlugin()],
-    build: {
-      rolldownOptions: {
-        output: {
-          codeSplitting: {
-            groups: [
-              { name: 'vendor', test: /node_modules/, priority: 10, minSize: 50_000, maxSize: 250_000 },
-              { name: 'application', test: /[\\/]src[\\/]/, priority: 0, minSize: 50_000, maxSize: 250_000 },
-            ],
-          },
-        },
-      },
-    },
+    plugins: [react(), tailwindcss(), advisorApiPlugin(), thirdPartyNoticesPlugin(), chunkCycleGuard()],
+    // Let Rolldown preserve module evaluation order. Size-based forced groups
+    // split Motion's mutually dependent modules into circular vendor chunks.
     resolve: {
       alias: {
         '@': path.resolve(import.meta.dirname, '.'),
