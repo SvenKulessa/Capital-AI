@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { sanitizeAlertPreferences } from '../src/utils/alertPreferences.ts';
@@ -52,4 +53,13 @@ test('bootstrap fallback is visible without leaking exception details', () => {
 
 test('app error boundary fails closed to the bootstrap fallback', () => {
   assert.deepEqual(AppErrorBoundary.getDerivedStateFromError(), { failed: true });
+});
+
+
+test('index shell remains useful before JavaScript boots', async () => {
+  const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(html, /<div id="root">[\s\S]*<main/);
+  assert.match(html, /Marktdaten verstehen\. Chancen besser erkennen\./);
+  assert.match(html, /Falls JavaScript nicht gestartet werden kann/);
+  assert.match(html, /<noscript>/);
 });
