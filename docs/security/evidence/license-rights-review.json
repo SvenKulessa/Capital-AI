@@ -839,7 +839,7 @@
       "bytes": 718717,
       "runtimeUse": "NO_STATIC_IMPORT_FOUND",
       "creator": null,
-      "origin": "Durch Gemini erzeugt",
+      "origin": "Fortlaufend mit Microsoft Copilot, Leonardo AI, ChatGPT und Gemini bearbeitet; final durch Gemini in Assets hinterlegt",
       "license": null,
       "evidenceReference": "LICENSE-RIGHTS.md#herkunftsbestätigung",
       "status": "OWNER_CONFIRMED_AI_ORIGIN_USAGE_TERMS_OPEN",
@@ -847,15 +847,25 @@
         "type": "OWNER_STATEMENT",
         "recordedAt": "2026-09-30",
         "verification": "USER_CONFIRMED_NOT_INDEPENDENTLY_RECONSTRUCTED",
-        "generationTool": "Gemini",
+        "generationTool": null,
         "generationSystem": null,
         "embeddingTool": null,
         "generationDate": null,
         "model": null,
         "subscriptionTier": null,
         "creationArtifactReference": null,
-        "applicableTermsReference": null
-      }
+        "applicableTermsReference": null,
+        "reportedTools": [
+          "Microsoft Copilot",
+          "Leonardo AI",
+          "ChatGPT",
+          "Gemini"
+        ],
+        "toolOrder": "NOT_SPECIFIED",
+        "finalAssetPlacementTool": "Gemini",
+        "statementRevision": "Owner clarification 2026-09-30 supersedes Gemini-only attribution"
+      },
+      "runtimeApplicability": "REFERENCE_ASSET_NOT_USED_BY_BRANDLOGO_SVG"
     },
     {
       "path": "src/assets/images/capital_ai_full_logo_1789997869885.jpg",
@@ -863,7 +873,7 @@
       "bytes": 664552,
       "runtimeUse": "NO_STATIC_IMPORT_FOUND",
       "creator": null,
-      "origin": "Durch Gemini erzeugt",
+      "origin": "Fortlaufend mit Microsoft Copilot, Leonardo AI, ChatGPT und Gemini bearbeitet; final durch Gemini in Assets hinterlegt",
       "license": null,
       "evidenceReference": "LICENSE-RIGHTS.md#herkunftsbestätigung",
       "status": "OWNER_CONFIRMED_AI_ORIGIN_USAGE_TERMS_OPEN",
@@ -871,15 +881,25 @@
         "type": "OWNER_STATEMENT",
         "recordedAt": "2026-09-30",
         "verification": "USER_CONFIRMED_NOT_INDEPENDENTLY_RECONSTRUCTED",
-        "generationTool": "Gemini",
+        "generationTool": null,
         "generationSystem": null,
         "embeddingTool": null,
         "generationDate": null,
         "model": null,
         "subscriptionTier": null,
         "creationArtifactReference": null,
-        "applicableTermsReference": null
-      }
+        "applicableTermsReference": null,
+        "reportedTools": [
+          "Microsoft Copilot",
+          "Leonardo AI",
+          "ChatGPT",
+          "Gemini"
+        ],
+        "toolOrder": "NOT_SPECIFIED",
+        "finalAssetPlacementTool": "Gemini",
+        "statementRevision": "Owner clarification 2026-09-30 supersedes Gemini-only attribution"
+      },
+      "runtimeApplicability": "REFERENCE_ASSET_NOT_USED_BY_BRANDLOGO_SVG"
     },
     {
       "path": "src/assets/images/capital_ai_wide_banner_1789999064950.jpg",
@@ -887,7 +907,7 @@
       "bytes": 680308,
       "runtimeUse": "NO_STATIC_IMPORT_FOUND",
       "creator": null,
-      "origin": "Durch Gemini erzeugt",
+      "origin": "Fortlaufend mit Microsoft Copilot, Leonardo AI, ChatGPT und Gemini bearbeitet; final durch Gemini in Assets hinterlegt",
       "license": null,
       "evidenceReference": "LICENSE-RIGHTS.md#herkunftsbestätigung",
       "status": "OWNER_CONFIRMED_AI_ORIGIN_USAGE_TERMS_OPEN",
@@ -895,15 +915,25 @@
         "type": "OWNER_STATEMENT",
         "recordedAt": "2026-09-30",
         "verification": "USER_CONFIRMED_NOT_INDEPENDENTLY_RECONSTRUCTED",
-        "generationTool": "Gemini",
+        "generationTool": null,
         "generationSystem": null,
         "embeddingTool": null,
         "generationDate": null,
         "model": null,
         "subscriptionTier": null,
         "creationArtifactReference": null,
-        "applicableTermsReference": null
-      }
+        "applicableTermsReference": null,
+        "reportedTools": [
+          "Microsoft Copilot",
+          "Leonardo AI",
+          "ChatGPT",
+          "Gemini"
+        ],
+        "toolOrder": "NOT_SPECIFIED",
+        "finalAssetPlacementTool": "Gemini",
+        "statementRevision": "Owner clarification 2026-09-30 supersedes Gemini-only attribution"
+      },
+      "runtimeApplicability": "REFERENCE_ASSET_NOT_USED_BY_BRANDLOGO_SVG"
     },
     {
       "path": "src/assets/images/glowing_earth_nodes_1789997454893.jpg",
@@ -1132,5 +1162,6 @@
     "Remote font binary identity or reproducible licensed font distribution",
     "Provider contract scopes and attribution for actual public display/API/derived-data/export use"
   ],
-  "legalApproval": null
+  "legalApproval": null,
+  "mockupHistoryEvidence": "asset-mockup-history-review.json"
 }

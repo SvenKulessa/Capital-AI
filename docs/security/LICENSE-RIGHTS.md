@@ -117,12 +117,17 @@ Die vier JPEGs sind mit SHA256 und Dateigröße im Inventar erfasst:
 ### Herkunftsbestätigung
 
 Der Projektinhaber hat am 30.09.2026 die Herkunft der vier JPEGs bestätigt:
-Die drei Dateien mit dem Präfix `capital_ai_` wurden mit Gemini erzeugt.
+Die drei Dateien mit dem Präfix `capital_ai_` wurden laut präzisierter Angabe
+fortlaufend mit Microsoft Copilot, Leonardo AI, ChatGPT und Gemini bearbeitet
+und final durch Gemini im Assets-Verzeichnis hinterlegt. Die genaue Reihenfolge
+ist nicht angegeben; die frühere ausschließliche Zuordnung zu Gemini ist korrigiert.
 `glowing_earth_nodes_1789997454893.jpg` wurde über die Social-Media-Engine aus
 `capital-ai-online/Finance` in einem Website-Mockup erzeugt beziehungsweise
 verwendet und durch Gemini eingebettet. Für das Erdbild ist Gemini damit als
 Einbettungswerkzeug bestätigt; das zugrunde liegende Generierungsmodell wurde
-nicht benannt. Aus der Angabe werden keine weiteren Finance-Dateien abgerufen.
+nicht benannt. Finance-History und Social-Renderer wurden anschließend
+lesend geprüft; Ergebnisse stehen im
+[Mockup-History-Nachweis](evidence/asset-mockup-history-review.json).
 
 Dieser Nachweis ist eine Aussage des Projektinhabers; die ursprünglichen
 Erstellungsläufe wurden nicht unabhängig rekonstruiert. Die Bild-Hashes bleiben
@@ -131,6 +136,33 @@ erfasst. Noch offen sind Erstellungszeitpunkt/-referenz, verwendeter Dienst und
 Tarif sowie die dafür geltenden Nutzungsbedingungen und der erlaubte
 kommerzielle Nutzungskreis. Eine unabhängige Urheber- oder Lizenzfreigabe wird
 aus der KI-Erstellung nicht abgeleitet.
+
+### Ergebnis der History- und Toolprüfung
+
+Am Finance-Stand `dcef421fe6e350a3a2ade61d0299aad9ecca213c` sind alle vier JPEGs als
+identische Git-Blobs im FRONTEND-Port und dessen Source-Lock nachgewiesen.
+Die Erdbild-History zeigt einen Import am 21.09.2026 (`071cf5964f847cb00cdedc9861c009715b76b547`)
+und eine spätere archivierte Quellkopie (`b3c6d0989c3f18957441790d40b7f938741ee15c`).
+Dies belegt die Übernahme, nicht den ursprünglichen Erstellungslauf.
+Ein anderes Mobile-Mockup, `public/brand/hero/capital-ai-mobile-landing.jpg`,
+wurde mit `e23939293386cc58e743529838c575d46a0aa1ca` hinzugefügt.
+Der gemergte PR #1195 beschreibt es als vom Owner bereitgestellt. Es ist ein
+anderer Git-Blob und wird nicht als Quelle des Erdbilds gleichgesetzt.
+
+Die geprüfte Social-Media-Engine besitzt Pillow-/FFmpeg-Renderer, Offline-
+MediaProject-Vorlagen und D3-Planungsvisualisierungen. Die Textgenerierung ist
+in der geprüften Implementierung templatebasiert. Ein konkretes Render-/KI-
+Erstellungsmanifest, das diese Tools über Eingabe-/Ausgabehashes mit dem
+Erdbild verknüpft, wurde in den geprüften Quellen und Historien nicht gefunden.
+Die Inhaberbestätigung bleibt erhalten; installierte Tools gelten nicht als
+Beweis eines ausgeführten Bildlaufs.
+
+Im geprüften Capital-AI-Code zeichnet `BrandLogo.tsx` das Branding
+mit `CapitalAIVectorEmblem` als SVG. Die drei Branding-JPEGs werden dort nicht
+eingebunden. `Hero.tsx` importiert dagegen das Erdbild und setzt es als
+`img`-Quelle. Dies ist ein Quellcodebefund, keine Live-Browser-Verifikation.
+Die Branding-JPEGs bleiben im öffentlichen Repository; ihre Dokumentation
+wird deshalb auch ohne Website-Einbindung beibehalten.
 
 `src/components/AssetLogo.tsx` enthält Inline-Darstellungen für Asset-Symbole;
 das Inventar erfasst 70 Symbolbezeichner einschließlich Aliassen, Rohstoffen

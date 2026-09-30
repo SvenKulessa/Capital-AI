@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "status": "PARTIAL_PROVENANCE_NOT_LICENSE_APPROVAL",
+  "deployEligible": false,
+  "reviewDate": "2026-09-30",
+  "financeMain": "dcef421fe6e350a3a2ade61d0299aad9ecca213c",
+  "capitalMain": "03d964dc8fec02181d1a0ac38da0fbbea2fc7b8c",
+  "ownerStatement": {
+    "brandingTools": [
+      "Microsoft Copilot",
+      "Leonardo AI",
+      "ChatGPT",
+      "Gemini"
+    ],
+    "order": "UNSPECIFIED_CONTINUOUS_EDITING",
+    "finalAssetPlacement": "Gemini",
+    "earthImage": "Created/used through Finance Social Media Engine in website mockup; embedded by Gemini",
+    "verification": "OWNER_STATEMENT"
+  },
+  "reviewedSources": [
+    {
+      "path": "scripts/media/capital_ai_media.py",
+      "blobSha": "31b52e08e77424a1904eceed5b362a49d937715e",
+      "url": "https://github.com/capital-ai-online/Finance/blob/dcef421fe6e350a3a2ade61d0299aad9ecca213c/scripts/media/capital_ai_media.py"
+    },
+    {
+      "path": "scripts/media/render_content_assets.py",
+      "blobSha": "14cc8758bc7169e2cfab81b55b08e81fea3f26bf",
+      "url": "https://github.com/capital-ai-online/Finance/blob/dcef421fe6e350a3a2ade61d0299aad9ecca213c/scripts/media/render_content_assets.py"
+    },
+    {
+      "path": "scripts/media/requirements-content-media.txt",
+      "blobSha": "66be2bf67ddf1d6df3b58408226bf83f6e7b3d73",
+      "url": "https://github.com/capital-ai-online/Finance/blob/dcef421fe6e350a3a2ade61d0299aad9ecca213c/scripts/media/requirements-content-media.txt"
+    },
+    {
+      "path": "server/socialMedia/textContentGeneration.ts",
+      "blobSha": "708308155a2a28a38b5588c04d23ef298f2b4845",
+      "url": "https://github.com/capital-ai-online/Finance/blob/dcef421fe6e350a3a2ade61d0299aad9ecca213c/server/socialMedia/textContentGeneration.ts"
+    },
+    {
+      "path": "src/platform/SocialMediaEngine/Editing/MediaStudioTemplates.ts",
+      "blobSha": "d7e089110d1e40d32c80720adc43fc77966024ff",
+      "url": "https://github.com/capital-ai-online/Finance/blob/dcef421fe6e350a3a2ade61d0299aad9ecca213c/src/platform/SocialMediaEngine/Editing/MediaStudioTemplates.ts"
+    },
+    {
+      "path": "src/platform/SocialMediaEngine/Visualization/PlanningVisualToolCatalog.ts",
+      "blobSha": "341e2144f6cb2b07dc97f1c2163c42c2e1a968bc",
+      "url": "https://github.com/capital-ai-online/Finance/blob/dcef421fe6e350a3a2ade61d0299aad9ecca213c/src/platform/SocialMediaEngine/Visualization/PlanningVisualToolCatalog.ts"
+    },
+    {
+      "path": "src/features/public/ui/frontend-port/source-lock.json",
+      "blobSha": "f9700f4718ab463d6a44a1dfaa049f4bfab112a2",
+      "url": "https://github.com/capital-ai-online/Finance/blob/dcef421fe6e350a3a2ade61d0299aad9ecca213c/src/features/public/ui/frontend-port/source-lock.json"
+    }
+  ],
+  "assetCopyCorrelation": [
+    {
+      "capitalPath": "src/assets/images/capital_ai_brand_emblem_1789997857835.jpg",
+      "financePath": "src/features/public/ui/frontend-port/assets/images/capital_ai_brand_emblem_1789997857835.jpg",
+      "blobSha": "d8f075aacfe55d1fc6abf4b8e00b920f02cc4ceb",
+      "sourceLockMatch": true,
+      "status": "IDENTICAL_GIT_BLOB_COPY_GENERATION_NOT_PROVEN"
+    },
+    {
+      "capitalPath": "src/assets/images/capital_ai_full_logo_1789997869885.jpg",
+      "financePath": "src/features/public/ui/frontend-port/assets/images/capital_ai_full_logo_1789997869885.jpg",
+      "blobSha": "7045c96fbc706ed0becc3be0737d6c46e3a89d13",
+      "sourceLockMatch": true,
+      "status": "IDENTICAL_GIT_BLOB_COPY_GENERATION_NOT_PROVEN"
+    },
+    {
+      "capitalPath": "src/assets/images/capital_ai_wide_banner_1789999064950.jpg",
+      "financePath": "src/features/public/ui/frontend-port/assets/images/capital_ai_wide_banner_1789999064950.jpg",
+      "blobSha": "8db4a4da0f87a703c4bd3c1c2d165f9e362d8350",
+      "sourceLockMatch": true,
+      "status": "IDENTICAL_GIT_BLOB_COPY_GENERATION_NOT_PROVEN"
+    },
+    {
+      "capitalPath": "src/assets/images/glowing_earth_nodes_1789997454893.jpg",
+      "financePath": "src/features/public/ui/frontend-port/assets/images/glowing_earth_nodes_1789997454893.jpg",
+      "blobSha": "9bd051fcbbf1bf30d38a98795638c7cf80c84ac4",
+      "sourceLockMatch": true,
+      "status": "IDENTICAL_GIT_BLOB_COPY_GENERATION_NOT_PROVEN"
+    }
+  ],
+  "history": [
+    {
+      "date": "2026-09-21T11:13:25Z",
+      "commit": "e23939293386cc58e743529838c575d46a0aa1ca",
+      "path": "public/brand/hero/capital-ai-mobile-landing.jpg",
+      "finding": "Separate mobile mockup background; owner-provided per merged PR 1195; different blob from earth JPEG; generation tool unidentified"
+    },
+    {
+      "date": "2026-09-21T15:09:39Z",
+      "commit": "071cf5964f847cb00cdedc9861c009715b76b547",
+      "path": "src/features/public/ui/frontend-port/assets/images/glowing_earth_nodes_1789997454893.jpg",
+      "finding": "Repository import/copy; not generation event"
+    },
+    {
+      "date": "2026-09-21T21:47:01Z",
+      "commit": "b3c6d0989c3f18957441790d40b7f938741ee15c",
+      "path": "docs/frontend/upstream-source/SvenKulessa-FRONTEND/src/assets/images/glowing_earth_nodes_1789997454893.jpg",
+      "finding": "Repository import/copy; not generation event"
+    }
+  ],
+  "tools": {
+    "imageRenderer": "Pillow 12.3.0 deterministic local cards/frames",
+    "videoRenderer": "FFmpeg optional shorts with build profile guard",
+    "mediaStudio": "Offline drafts, publishReady:false",
+    "planning": "D3 available; Mermaid/React Flow/Frappe Gantt/vis-timeline candidates only",
+    "textGeneration": "Deterministic templates; LLM enrichment optional future comment",
+    "assetSpecificGenerationRun": "NOT_FOUND_IN_REVIEWED_SURFACES"
+  },
+  "websiteBindings": {
+    "scope": "SOURCE_CODE_NOT_LIVE_BROWSER_VERIFICATION",
+    "branding": {
+      "path": "src/components/BrandLogo.tsx",
+      "blobSha": "db72c7d18185e09cd64c56e0d40cdbd2d50f658c",
+      "implementation": "CapitalAIVectorEmblem SVG; three branding JPEGs not referenced"
+    },
+    "earth": {
+      "path": "src/components/Hero.tsx",
+      "blobSha": "4975a96d33a5fd3b2eb4988d4d9021723401bafa",
+      "implementation": "Earth JPEG imported and used as img src"
+    }
+  },
+  "limitations": [
+    "Import/copy does not prove original AI generation or edit sessions.",
+    "No execution manifest, prompt/model, input/output hash chain or usage terms linking renderer to exact earth JPEG found in reviewed surfaces.",
+    "Tool availability does not prove execution.",
+    "No live browser verification.",
+    "Finance read only; no provider, workflow, render or publication executed."
+  ]
+}
