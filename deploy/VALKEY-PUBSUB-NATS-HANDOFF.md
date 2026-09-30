@@ -25,7 +25,7 @@ Run `VALKEY_SERVER_BIN=/path/to/valkey-server NATS_SERVER_BIN=/path/to/nats-serv
 
 All four passed locally using Valkey 8.1.10 and NATS 2.15.0. Contract tests (5), Docker context tests (2) and TypeScript validation passed. These are synthetic test fixtures, not live provider/Render evidence.
 
-Reconciliation against main ec6300e8a3ed2ba28cffa81c8c1de6f3ad0717d2 found that its new MTA-STS Docker COPY inputs were excluded by .dockerignore. Both exact inputs are now allowed; no MTA-STS behavior was changed. Market tests (6) also passed. The open compliance PR #28 modifies separate frontend/legal files and has no file overlap with this change.
+Reconciliation against main ec6300e8a3ed2ba28cffa81c8c1de6f3ad0717d2 found that its new MTA-STS Docker COPY inputs were excluded by .dockerignore. Both exact inputs are now allowed; no MTA-STS behavior was changed. Market tests (6) also passed. Compliance PR #28 was subsequently merged as 0117c73b93d94fcafd284005c5294ca5765ef0f8; its separate frontend/legal changes are preserved with no file overlap.
 
 ## Production handoff gates
 
