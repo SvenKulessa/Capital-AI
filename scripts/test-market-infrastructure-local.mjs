@@ -33,6 +33,10 @@ try {
  await until(() => events.length === 1, 'Acknowledged quote was not delivered');
  assert.equal(events[0].evidenceId, confirmed.evidenceId);
  assert.equal(events[0].actionable, false);
+ assert.equal(service.status().subscriber, 'connected');
+ assert.equal(service.status().verifiedDeliveries, 1);
+ assert.equal(service.status().lastVerifiedSymbol, 'BTCUSD');
+ assert.ok(Number.isInteger(service.status().lastVerifiedDeliveryAt));
  assert.equal((await service.read('BTCUSD')).price, 100);
  await service.persist(fact, raw);
  await service.persist({ ...fact, observedAt: fact.observedAt - 1000, price: 90 }, raw);
@@ -53,6 +57,8 @@ try {
  assert.equal((await service.replay(confirmed.evidenceId)).fact.price, 100);
  const recovered = await service.persist({ ...fact, observedAt: Date.now(), receivedAt: Date.now(), price: 102 }, raw);
  await until(() => events.some(event => event.evidenceId === recovered.evidenceId), 'Subscriber did not recover');
+ assert.equal(service.status().subscriber, 'connected');
+ assert.ok(service.status().verifiedDeliveries >= 3);
  console.log('PASS 2: NATS process restart retains evidence and restores subscriber');
 
  await stop(valkey);
