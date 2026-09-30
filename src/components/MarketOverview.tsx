@@ -1,3 +1,4 @@
+import { useMarketAssets } from '../services/marketDataStore';
 /**
  * ============================================================================
  * [ARCHITEKTUR-MAPPING: GLOBAL MARKETS OVERVIEW & ASSET TICKER]
@@ -42,6 +43,7 @@ const CATEGORIES: { id: CategoryFilter; label: string; color: string }[] = [
 ];
 
 export const MarketOverview: React.FC<MarketOverviewProps> = ({ onSelectAsset, onViewAllMarkets }) => {
+  useMarketAssets();
   const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>('ALLE');
   const { getAlertsForAsset } = usePriceAlerts();
 
@@ -138,6 +140,7 @@ export const MarketOverview: React.FC<MarketOverviewProps> = ({ onSelectAsset, o
 
   return (
     <section className="px-5 py-4">
+      {!MARKET_ASSETS.length && <p role="status" className="text-slate-400 px-3 py-4">Keine bestätigten Provider-Daten verfügbar. Kurse erscheinen nach erfolgreicher Datenaufnahme.</p>}
       {/* Section Header */}
       <div className="flex items-center justify-between mb-2.5">
         <div>
@@ -243,7 +246,7 @@ export const MarketOverview: React.FC<MarketOverviewProps> = ({ onSelectAsset, o
                       </span>
                     )}
                     <span className="text-[9.5px] font-mono text-slate-400 bg-slate-800/60 px-1 py-0.5 rounded">
-                      KI <span className="text-white font-bold">{asset.aiScore}</span>
+                      KI <span className="text-white font-bold">{asset.aiScore ?? '—'}</span>
                     </span>
                   </div>
                 </div>
@@ -257,7 +260,7 @@ export const MarketOverview: React.FC<MarketOverviewProps> = ({ onSelectAsset, o
                         {asset.name}
                       </div>
                       <div className="text-[10px] text-slate-400 font-mono truncate">
-                        {asset.symbol}
+                        {asset.symbol} · {asset.provider} · {asset.dataAvailability}
                       </div>
                     </div>
                   </div>
@@ -271,7 +274,7 @@ export const MarketOverview: React.FC<MarketOverviewProps> = ({ onSelectAsset, o
                       asset.isPositive ? 'text-[#44DE88]' : 'text-[#F87171]'
                     }`}
                   >
-                    {asset.isPositive ? (
+                    {asset.change !== 'Nicht verfügbar' && asset.isPositive ? (
                       <TrendingUp className="w-3 h-3" />
                     ) : (
                       <TrendingDown className="w-3 h-3" />

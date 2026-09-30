@@ -1,3 +1,4 @@
+import { useMarketAssets } from '../services/marketDataStore';
 import React, { useState, useEffect, useMemo } from 'react';
 import { X, Search, TrendingUp, TrendingDown, Layers, Filter } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -33,6 +34,7 @@ export const AllMarketsModal: React.FC<AllMarketsModalProps> = ({
   initialCategory,
   initialSubclassId,
 }) => {
+  useMarketAssets();
   const [selectedCat, setSelectedCat] = useState<CategoryFilter>(initialCategory || 'ALLE');
   const [selectedSubclassId, setSelectedSubclassId] = useState<string>('ALLE');
   const [search, setSearch] = useState('');
@@ -135,7 +137,7 @@ export const AllMarketsModal: React.FC<AllMarketsModalProps> = ({
               </h3>
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              {MARKET_ASSETS.length} Real-Time Assets über 5 Assetklassen mit institutionellen Symbolen
+              {MARKET_ASSETS.length} belegte Quotes; weitere Märkte erst nach Datenanbindung
             </p>
           </div>
           <button
@@ -308,7 +310,7 @@ export const AllMarketsModal: React.FC<AllMarketsModalProps> = ({
                         </span>
                         {asset.aiScore && (
                           <span className="text-[10px] text-slate-500 font-mono">
-                            • KI Score: <span className="text-white font-semibold">{asset.aiScore}</span>
+                            • KI Score: <span className="text-white font-semibold">{asset.aiScore ?? '—'}</span>
                           </span>
                         )}
                       </div>

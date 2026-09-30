@@ -12,6 +12,9 @@
   "port": 10000,
   "marketSymbols": "BTCUSDT,BTCUSD,AAPL",
   "requiredRuntimeSecrets": [
+    "REDIS_URL",
+    "NATS_URL",
+    "NATS_TOKEN",
     "TWELVE_DATA_API_KEY",
     "POLYGON_API_KEY"
   ]

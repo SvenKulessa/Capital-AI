@@ -15,11 +15,6 @@
  */
 
 import { MarketAsset, CoreModule, KeyPillar, AssetClassInfo } from '../types';
-import { INDEX_ASSETS } from './assets/indexAssets';
-import { ALL_CRYPTO_ASSETS } from './assets/cryptoAssets';
-import { TOP_150_STOCKS } from './assets/stockAssets';
-import { FOREX_ASSETS } from './assets/forexAssets';
-import { COMMODITY_ASSETS } from './assets/commodityAssets';
 
 /* === [PLATZHALTER: ARCHITEKTUR - 4 KEY PILLARS METADATEN] === */
 export const KEY_PILLARS: KeyPillar[] = [
@@ -49,15 +44,9 @@ export const KEY_PILLARS: KeyPillar[] = [
   },
 ];
 
-export const MARKET_ASSETS: MarketAsset[] = [
-  ...INDEX_ASSETS,
-  ...ALL_CRYPTO_ASSETS,
-  ...TOP_150_STOCKS,
-  ...FOREX_ASSETS,
-  ...COMMODITY_ASSETS,
-];
+export { MARKET_ASSETS } from '../services/marketDataStore';
 
-export const CORE_MODULES: CoreModule[] = [
+const MODULE_CATALOG: CoreModule[] = [
   {
     id: 'market-screener',
     title: 'Multi Asset Market Screener',
@@ -455,3 +444,8 @@ export const ASSET_CLASSES: AssetClassInfo[] = [
   },
 ];
 
+
+export const CORE_MODULES: CoreModule[] = MODULE_CATALOG.map(module => ({ ...module,
+  tagline: ['learning-portal', 'vocabulary'].includes(module.id) ? module.tagline : 'Datenversorgung und Methodik prüfen',
+  details: { ...module.details, sampleMetrics: [], newsItems: [], features: module.details.features.map(feature => 'Geplant: ' + feature),
+    useCase: 'Geplantes Modul. Datenversorgung und Validierung ausstehend. ' + module.details.useCase.replace(/Sub-45ms[^.]*|sub-45ms[^.]*|BaFin MaRisk[^.]*|40 €[^.]*|100.000 Echtzeit[^.]*/g, 'Validierung ausstehend') } }));

@@ -9,6 +9,7 @@ COPY index.html vite.config.ts tsconfig.json ./
 COPY src ./src
 COPY server/advisor.ts server/http-security.mjs ./server/
 COPY scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/frontend-security.test.mjs scripts/verify-browser-boundary.mjs ./scripts/
+COPY shared ./shared
 COPY docs/licenses ./docs/licenses
 RUN --network=none node --test scripts/license-evidence.test.mjs \
     && node scripts/license-evidence.mjs \
@@ -16,12 +17,17 @@ RUN --network=none node --test scripts/license-evidence.test.mjs \
     && npm run lint && npm test && npm run build \
     && node scripts/verify-browser-boundary.mjs
 
+FROM build AS production-deps
+RUN npm prune --omit=dev --ignore-scripts --no-audit --no-fund
+
 FROM node:24.19.0-alpine@sha256:d32cdf619f63fe0471182d08996dd516c6275bb5fd31ae06e55a570bd9e1ad43 AS runtime
 ENV NODE_ENV=production PORT=10000
 WORKDIR /app
 COPY --from=build /app/dist ./dist
 COPY server/index.mjs server/market.mjs server/auth.mjs server/telegram.mjs server/http-security.mjs ./server/
-COPY --from=build /app/node_modules/jose ./node_modules/jose
+COPY --from=production-deps /app/node_modules ./node_modules
+COPY server/infrastructure.mjs ./server/
+COPY shared ./shared
 COPY docs/licenses/node-v24.19.0-LICENSE.txt ./licenses/Node-LICENSE.txt
 RUN apk add --no-cache libcrypto3=3.5.8-r0 libssl3=3.5.8-r0 \
     && rm -rf /usr/local/lib/node_modules/corepack /usr/local/bin/corepack /usr/local/bin/pnpm* /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx /opt/yarn* /usr/local/bin/yarn* \

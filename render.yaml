@@ -37,3 +37,13 @@ services:
         sync: false
       - key: TELEGRAM_ALLOWED_SUBJECTS
         sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: NATS_URL
+        sync: false
+      - key: NATS_TOKEN
+        sync: false
+      - key: NATS_REPLICAS
+        value: "1"
+      - key: MARKET_QUOTES_ENABLED
+        value: "true"

@@ -1,3 +1,4 @@
+import { useMarketAssets } from '../services/marketDataStore';
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -26,6 +27,7 @@ export const PriceAlertToast: React.FC<PriceAlertToastProps> = ({
   onSelectAsset,
   onOpenSentiment,
 }) => {
+  useMarketAssets();
   const { activeToast, dismissToast, preferences, setIsAlertModalOpen } = usePriceAlerts();
 
   useEffect(() => {

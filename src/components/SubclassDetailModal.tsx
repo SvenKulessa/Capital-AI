@@ -1,3 +1,4 @@
+import { useMarketAssets } from '../services/marketDataStore';
 import React, { useState, useMemo } from 'react';
 import {
   X,
@@ -34,6 +35,7 @@ export const SubclassDetailModal: React.FC<SubclassDetailModalProps> = ({
   onOpenAnalysis,
   onExploreMarkets,
 }) => {
+  useMarketAssets();
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOption, setSortOption] = useState<'score' | 'change' | 'name'>('score');
 
@@ -87,11 +89,7 @@ export const SubclassDetailModal: React.FC<SubclassDetailModalProps> = ({
     return result;
   }, [subclassAssets, searchTerm, sortOption]);
 
-  const avgAiScore = useMemo(() => {
-    if (subclassAssets.length === 0) return 85;
-    const total = subclassAssets.reduce((sum, a) => sum + a.aiScore, 0);
-    return Math.round(total / subclassAssets.length);
-  }, [subclassAssets]);
+  const avgAiScore = 'Nicht verfügbar';
 
   const positiveCount = useMemo(() => {
     return subclassAssets.filter((a) => a.isPositive).length;
@@ -183,7 +181,7 @@ export const SubclassDetailModal: React.FC<SubclassDetailModalProps> = ({
                 </span>
                 <span className="font-bold text-white text-sm flex items-center gap-1 mt-0.5">
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  {avgAiScore}/100
+                  {avgAiScore}
                 </span>
               </div>
 
@@ -352,7 +350,7 @@ export const SubclassDetailModal: React.FC<SubclassDetailModalProps> = ({
                     <div className="hidden xs:flex flex-col items-end pl-1 border-l border-slate-800">
                       <span className="text-[9px] uppercase font-mono text-slate-400">Score</span>
                       <span className="text-xs font-mono font-bold text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20">
-                        {asset.aiScore}
+                        {asset.aiScore ?? '—'}
                       </span>
                     </div>
                   </div>

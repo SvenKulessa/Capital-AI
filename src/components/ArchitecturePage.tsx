@@ -1,3 +1,4 @@
+import { DataUnavailable } from './DataUnavailable';
 /**
  * ============================================================================
  * [ARCHITEKTUR-MAPPING: SYSTEM- & KURS-DATEN-PIPELINE ARCHITEKTUR (/architecture)]
@@ -300,46 +301,6 @@ export const ArchitecturePage: React.FC<ArchitecturePageProps> = ({
       label: 'pipeline_concept',
     });
   }, []);
-
-  // Live Simulator Pulse
-  useEffect(() => {
-    if (!isSimRunning) return;
-
-    const interval = setInterval(() => {
-      // Simulate random price change (-0.15% to +0.15%)
-      const deltaPercent = (Math.random() - 0.49) * 0.003;
-      setSimPrice((prev) => {
-        const next = prev * (1 + deltaPercent);
-        return Math.round(next * 100) / 100;
-      });
-
-      // Calculate latency based on provider & jitter
-      let baseLatency = 22;
-      if (simProvider === 'finnhub') baseLatency = 68;
-      if (simProvider === 'twelve') baseLatency = 135;
-      if (simProvider === 'coinbase') baseLatency = 42;
-
-      if (simFailoverActive) {
-        baseLatency += 12; // slight failover proxy penalty
-      }
-
-      const currentJitter = (Math.random() - 0.5) * simJitterMs;
-      const computedLatency = Math.max(12, Math.round(baseLatency + currentJitter));
-      setSimLatency(computedLatency);
-
-      setSimTickCount((prev) => prev + 1);
-
-      // Log periodically
-      if (Math.random() < 0.25) {
-        const timestamp = new Date().toISOString().split('T')[1].slice(0, 8);
-        const providerTag = simFailoverActive ? 'FAILOVER(Coinbase)' : simProvider.toUpperCase();
-        const logEntry = `[${timestamp}] [${providerTag}] TICK BTC/USDT @ $${simPrice.toFixed(2)} | Latency: ${computedLatency}ms | Q-Score: 99.4`;
-        setSimLogs((prev) => [logEntry, ...prev.slice(0, 18)]);
-      }
-    }, 600);
-
-    return () => clearInterval(interval);
-  }, [isSimRunning, simProvider, simFailoverActive, simJitterMs, simPrice]);
 
   // Handle provider manual failover toggle in simulator
   const toggleFailoverSimulation = () => {
@@ -1067,7 +1028,8 @@ export const ArchitecturePage: React.FC<ArchitecturePageProps> = ({
       {/* =================================================================== */}
       {/* TAB 4: LIVE PROVIDER STATUS DASHBOARD (WP-004)                      */}
       {/* =================================================================== */}
-      {activeTab === 'dashboard' && (
+      {activeTab === 'dashboard' && <DataUnavailable title="dashboard" required="produktive, gespeicherte Messungen" />}
+      {false && activeTab === 'dashboard' && (
         <div className="space-y-6 animate-fadeIn">
           <ProviderStatusDashboard
             onBackToHome={onBackToHome}
@@ -1081,7 +1043,8 @@ export const ArchitecturePage: React.FC<ArchitecturePageProps> = ({
       {/* =================================================================== */}
       {/* TAB 5: LIVE LATENCY & FAILOVER SIMULATOR                            */}
       {/* =================================================================== */}
-      {activeTab === 'simulator' && (
+      {activeTab === 'simulator' && <DataUnavailable title="simulator" required="produktive, gespeicherte Messungen" />}
+      {false && activeTab === 'simulator' && (
         <div className="space-y-6 animate-fadeIn">
           {/* Simulator Control Dashboard */}
           <div className="p-5 sm:p-6 rounded-2xl bg-[#090e21] border border-amber-500/30">
@@ -1243,7 +1206,8 @@ export const ArchitecturePage: React.FC<ArchitecturePageProps> = ({
       {/* =================================================================== */}
       {/* TAB 4: LOW-BUDGET TCO RECHNER */}
       {/* =================================================================== */}
-      {activeTab === 'cost' && (
+      {activeTab === 'cost' && <DataUnavailable title="cost" required="produktive, gespeicherte Messungen" />}
+      {false && activeTab === 'cost' && (
         <div className="space-y-6 animate-fadeIn">
           {/* TCO Calculator Interactive Card */}
           <div className="p-5 sm:p-6 rounded-2xl bg-[#090e21] border border-amber-500/30">
@@ -1427,7 +1391,8 @@ export const ArchitecturePage: React.FC<ArchitecturePageProps> = ({
       {/* =================================================================== */}
       {/* TAB 5: SECURITY & QUALITY STANDARDS */}
       {/* =================================================================== */}
-      {activeTab === 'security' && (
+      {activeTab === 'security' && <DataUnavailable title="security" required="produktive, gespeicherte Messungen" />}
+      {false && activeTab === 'security' && (
         <div className="space-y-6 animate-fadeIn">
           {/* Security Standards 4-Pillars Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

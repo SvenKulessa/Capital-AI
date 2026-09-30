@@ -1,17 +1,30 @@
+import { instrumentCatalog, QuoteFactSchema, isFresh } from '../shared/market-contracts.mjs';
+import { infrastructure, payloadHash } from './infrastructure.mjs';
 // No network I/O during the build. Market observations remain unavailable until verified.
 const allowed = new Set((process.env.MARKET_SYMBOLS || 'BTCUSDT,BTCUSD,AAPL').split(',').map(x => x.trim()).filter(Boolean));
-const observations = new Map();
+const persisting = new Set();
+const quotesEnabled = process.env.MARKET_QUOTES_ENABLED !== 'false';
 const throttledUntil = new Map();
 const pending = new Map();
 const failedUntil = new Map();
-const fresh = x => x && Date.now() - x.observedAt >= 0 && Date.now() - x.observedAt < 30_000;
 
-function observation(symbol, provider, price, time, quote, mode) {
-  const p = Number(price), t = Number(time);
-  if (!allowed.has(symbol) || !Number.isFinite(p) || p <= 0 || !Number.isFinite(t) || t <= 0 || t > Date.now() + 10_000) return null;
-  return { symbol, provider, price: p, quote, observedAt: t, receivedAt: Date.now(), mode, isDemo: false };
+export function observation(symbol, provider, price, time, quote, mode, rawPayload, details = {}) {
+  const receivedAt = Date.now();
+  const candidate = { schemaVersion: '1.0.0', symbol, venue: instrumentCatalog[symbol]?.venue,
+    provider, price: Number(price), quote, observedAt: Number(time), receivedAt, mode,
+    isDemo: false, licenseScope: 'unverified', payloadHash: payloadHash(rawPayload),
+    bid: details.bid == null ? null : Number(details.bid), ask: details.ask == null ? null : Number(details.ask),
+    volume24h: details.volume24h == null ? null : Number(details.volume24h) };
+  const parsed = QuoteFactSchema.safeParse(candidate);
+  return allowed.has(symbol) && parsed.success && isFresh(parsed.data) ? { fact: parsed.data, rawPayload } : null;
 }
-function accept(value) { if (value && (!observations.has(value.symbol) || observations.get(value.symbol).observedAt <= value.observedAt)) observations.set(value.symbol, value); }
+async function accept(value) {
+  if (!value || persisting.has(value.fact.symbol)) return null;
+  persisting.add(value.fact.symbol);
+  try { return await infrastructure.persist(value.fact, value.rawPayload); }
+  catch { return null; }
+  finally { persisting.delete(value.fact.symbol); }
+}
 
 function stream(url, parse, subscribe) {
   let socket, retry = 0, stopped = false;
@@ -29,11 +42,12 @@ function stream(url, parse, subscribe) {
 
 export function startStreams() {
   const stops = [];
-  if (allowed.has('BTCUSDT')) stops.push(stream('wss://stream.binance.com:9443/ws/btcusdt@ticker', d => d.s === 'BTCUSDT' ? observation('BTCUSDT', 'binance', d.c, d.E, 'USDT', 'websocket') : null));
+  if (!quotesEnabled) return () => {};
+  if (allowed.has('BTCUSDT')) stops.push(stream('wss://stream.binance.com:9443/ws/btcusdt@ticker', d => d.s === 'BTCUSDT' ? observation('BTCUSDT', 'binance', d.c, d.E, 'USDT', 'websocket', d, { bid: d.b, ask: d.a, volume24h: d.v }) : null));
   if (allowed.has('BTCUSD')) stops.push(stream('wss://ws.kraken.com/v2', d => {
-    const tick = d.channel === 'ticker' && d.type === 'update' && d.data?.[0];
-    return tick?.symbol === 'BTC/USD' ? observation('BTCUSD', 'kraken', tick.last, Date.parse(tick.timestamp), 'USD', 'websocket') : null;
-  }, ws => ws.send(JSON.stringify({ method: 'subscribe', params: { channel: 'ticker', symbol: ['BTC/USD'] } }))));
+    const tick = d.channel === 'trade' && d.type === 'update' && Array.isArray(d.data) && d.data.filter(t => t.symbol === 'BTC/USD').reduce((latest, t) => !latest || Date.parse(t.timestamp) > Date.parse(latest.timestamp) ? t : latest, null);
+    return tick?.symbol === 'BTC/USD' ? observation('BTCUSD', 'kraken', tick.price, Date.parse(tick.timestamp), 'USD', 'websocket', d) : null;
+  }, ws => ws.send(JSON.stringify({ method: 'subscribe', params: { channel: 'trade', symbol: ['BTC/USD'], snapshot: false } }))));
   return () => stops.forEach(stop => stop());
 }
 
@@ -59,6 +73,14 @@ async function get(url, provider) {
   } catch { return null; }
 }
 
+async function krakenTrades(symbol) {
+  if (symbol !== 'BTCUSD') return null;
+  const d = await get(new URL('https://api.kraken.com/0/public/Trades?pair=XBTUSD&count=1'), 'kraken');
+  const trades = d?.error?.length === 0 && d.result?.XXBTZUSD;
+  const trade = Array.isArray(trades) && trades.at(-1);
+  return trade ? observation(symbol, 'kraken', trade[0], Math.floor(Number(trade[2]) * 1000), 'USD', 'rest', d) : null;
+}
+
 async function twelve(symbol) {
   const key = process.env.TWELVE_DATA_API_KEY;
   if (!key || symbol === 'BTCUSDT') return null;
@@ -66,7 +88,7 @@ async function twelve(symbol) {
   const url = new URL('https://api.twelvedata.com/quote');
   url.searchParams.set('symbol', name); url.searchParams.set('apikey', key);
   const d = await get(url, 'twelvedata');
-  return d?.symbol === name && d.status !== 'error' ? observation(symbol, 'twelvedata', d.close, Date.parse(d.last_update_at || d.datetime || ''), 'USD', 'rest') : null;
+  return d?.symbol === name && d.status !== 'error' ? observation(symbol, 'twelvedata', d.close, Date.parse(/(?:Z|[+-]\d{2}:\d{2})$/.test(d.last_update_at || d.datetime || '') ? (d.last_update_at || d.datetime) : ''), 'USD', 'rest', d) : null;
 }
 
 async function polygon(symbol) {
@@ -78,13 +100,14 @@ async function polygon(symbol) {
   const d = await get(url, 'polygon');
   const stamp = Number(d?.ticker?.lastTrade?.t);
   const millis = stamp > 1e17 ? Math.floor(stamp / 1e6) : stamp > 1e14 ? Math.floor(stamp / 1e3) : stamp;
-  return d?.ticker?.ticker === ticker ? observation(symbol, 'polygon', d.ticker.lastTrade?.p, millis, 'USD', 'rest') : null;
+  return d?.ticker?.ticker === ticker ? observation(symbol, 'polygon', d.ticker.lastTrade?.p, millis, 'USD', 'rest', d) : null;
 }
 
 export async function quote(symbol) {
+  if (!quotesEnabled) return [503, { error: 'pipeline_disabled', symbol }];
   if (!allowed.has(symbol)) return [400, { error: 'unsupported_symbol' }];
-  const cached = observations.get(symbol);
-  if (fresh(cached)) return [200, cached];
+  const cached = await infrastructure.read(symbol);
+  if (cached) return [200, cached];
   if (pending.has(symbol)) return pending.get(symbol);
   if ((failedUntil.get(symbol) || 0) > Date.now()) return [503, { error: 'market_data_unavailable', symbol }];
   const request = fallbackQuote(symbol);
@@ -94,10 +117,13 @@ export async function quote(symbol) {
 
 async function fallbackQuote(symbol) {
   // USDT and USD are distinct instruments: never substitute one quote currency for the other.
+  if (infrastructure.status().status !== 'connected') return [503, { error: 'infrastructure_unavailable', symbol }];
+  const publicQuote = await krakenTrades(symbol);
+  if (publicQuote) { const confirmed = await accept(publicQuote); if (confirmed) return [200, confirmed]; }
   const primaryFallback = await twelve(symbol);
-  const fallback = fresh(primaryFallback) ? primaryFallback : await polygon(symbol);
-  if (fresh(fallback)) { accept(fallback); return [200, fallback]; }
+  const fallback = primaryFallback && isFresh(primaryFallback.fact) ? primaryFallback : await polygon(symbol);
+  if (fallback && isFresh(fallback.fact)) { const confirmed = await accept(fallback); if (confirmed) return [200, confirmed]; }
   failedUntil.set(symbol, Date.now() + 5000);
   return [503, { error: 'market_data_unavailable', symbol }];
 }
-export function health() { return { status: 'ok', ingress: 'fail_closed', symbols: [...allowed] }; }
+export function health() { return { status: 'ok', ingress: 'fail_closed', symbols: [...allowed], quotesEnabled, infrastructure: infrastructure.status() }; }

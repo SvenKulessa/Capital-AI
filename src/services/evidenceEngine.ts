@@ -1,7 +1,7 @@
 /**
  * CAPITAL AI — EVIDENCE ENGINE (STAGE 07 EVIDENCE & AUDIT)
- * Cryptographic SHA-256 fingerprinting for BaFin MaRisk / MiCA compliant audit-trails.
- * Ensures every score is 100% deterministic, explainable, and replayable.
+ * Local cryptographic fingerprinting; not persisted evidence or a compliance certification.
+ * Production provider evidence is persisted and replayed by the backend.
  */
 
 export interface EvidenceRecord {
@@ -43,7 +43,7 @@ export class EvidenceEngineService {
     const weightsHash = await this.sha256(weightsPayload);
     const featuresHash = await this.sha256(scoresPayload);
 
-    const compositePayload = `${params.modelVersion}:${inputSnapshotHash}:${weightsHash}:${featuresHash}:${computedAt}`;
+    const compositePayload = `${params.modelVersion}:${inputSnapshotHash}:${weightsHash}:${featuresHash}`;
     const compositeFingerprint = await this.sha256(compositePayload);
     const evidenceId = `EVD-${params.symbol}-${compositeFingerprint.slice(0, 12).toUpperCase()}`;
     const replayToken = `RPL_${params.symbol}_${computedAt}_${params.modelVersion}`;
@@ -58,7 +58,7 @@ export class EvidenceEngineService {
       featuresHash,
       weightsHash,
       compositeFingerprint,
-      isAuditCompliant: true,
+      isAuditCompliant: false,
       replayToken,
     };
   }
@@ -67,21 +67,8 @@ export class EvidenceEngineService {
    * Browser-safe SHA-256 implementation using Web Crypto API.
    */
   public static async sha256(message: string): Promise<string> {
-    if (typeof window !== 'undefined' && window.crypto && window.crypto.subtle) {
-      const msgBuffer = new TextEncoder().encode(message);
-      const hashBuffer = await window.crypto.subtle.digest('SHA-256', msgBuffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    // Deterministic fallback for test environments without subtle crypto
-    let hash = 0;
-    for (let i = 0; i < message.length; i++) {
-      const char = message.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash |= 0;
-    }
-    const hex = Math.abs(hash).toString(16).padStart(8, '0');
-    return `${hex}00000000000000000000000000000000000000000000000000000000${hex}`.slice(0, 64);
+    if (!globalThis.crypto?.subtle) throw new Error('SHA256_UNAVAILABLE');
+    const hashBuffer = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(message));
+    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
   }
 }
