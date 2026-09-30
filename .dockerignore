@@ -31,6 +31,7 @@
 !deploy/nats-entrypoint.sh
 !scripts/
 !scripts/harden-npm-toolchain.mjs
+!scripts/branding-assets.test.mjs
 !scripts/license-evidence.mjs
 !scripts/license-evidence.test.mjs
 !scripts/frontend-security.test.mjs
@@ -42,3 +43,5 @@
 !public/
 !public/branding/
 !public/branding/capital-ai-logo.jpg
+!public/branding/asset-pack/
+!public/branding/asset-pack/**
