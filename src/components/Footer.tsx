@@ -1,8 +1,16 @@
 import React from 'react';
 import { BrandLogo } from './BrandLogo';
-import { Github, ExternalLink } from 'lucide-react';
+import { Github, Youtube, AtSign, Music2, ExternalLink } from 'lucide-react';
 import { socialLinks } from '../data/socialLinks';
 import { trackEvent } from '../utils/analytics';
+
+const socialIcons = {
+  github: <Github size={16} aria-hidden="true" />,
+  tiktok: <Music2 size={16} aria-hidden="true" />,
+  threads: <AtSign size={16} aria-hidden="true" />,
+  youtube: <Youtube size={16} aria-hidden="true" />,
+  x: <span className="text-base leading-none" aria-hidden="true">𝕏</span>,
+} satisfies Record<(typeof socialLinks)[number]['id'], React.ReactNode>;
 
 interface FooterProps {
   onNavigate?: (path: string) => void;
@@ -41,7 +49,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           <a key={link.id} href={link.href} target="_blank" rel="noopener noreferrer"
             className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-amber-500/20 bg-slate-950/60 px-4 py-2 text-xs font-medium text-slate-300 transition-colors hover:border-amber-400/60 hover:text-amber-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400"
             aria-label={`${link.label} – öffnet in einem neuen Tab`}>
-            <Github size={16} aria-hidden="true" />
+            {socialIcons[link.id]}
             <span>{link.label}</span>
             <ExternalLink size={12} className="text-amber-400/70" aria-hidden="true" />
           </a>
