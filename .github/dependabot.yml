@@ -8,6 +8,8 @@ updates:
       timezone: Europe/Berlin
     open-pull-requests-limit: 10
     labels: ["Dependencies", "Patch"]
+    commit-message:
+      prefix: "[CAPITAL-AI-TRUST]"
 
   - package-ecosystem: npm
     directory: /deploy/npm-security-patches
@@ -17,6 +19,8 @@ updates:
       timezone: Europe/Berlin
     open-pull-requests-limit: 5
     labels: ["Dependencies", "Security"]
+    commit-message:
+      prefix: "[CAPITAL-AI-TRUST]"
 
   - package-ecosystem: github-actions
     directory: /
@@ -26,6 +30,8 @@ updates:
       timezone: Europe/Berlin
     open-pull-requests-limit: 10
     labels: ["Dependencies", "Security"]
+    commit-message:
+      prefix: "[CAPITAL-AI-TRUST]"
 
   - package-ecosystem: docker
     directory: /
@@ -35,6 +41,8 @@ updates:
       timezone: Europe/Berlin
     open-pull-requests-limit: 5
     labels: ["Dependencies", "Patch"]
+    commit-message:
+      prefix: "[CAPITAL-AI-TRUST]"
 
   - package-ecosystem: docker
     directory: /deploy
@@ -44,3 +52,5 @@ updates:
       timezone: Europe/Berlin
     open-pull-requests-limit: 5
     labels: ["Dependencies", "Security"]
+    commit-message:
+      prefix: "[CAPITAL-AI-TRUST]"
