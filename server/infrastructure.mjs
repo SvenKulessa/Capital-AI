@@ -14,13 +14,16 @@ export class MarketInfrastructure {
     return this.opening;
   }
   async open() {
-    if (!this.env.REDIS_URL || !this.env.NATS_URL) return false;
+    if (!this.env.REDIS_URL) return false;
+    // A cache connection is useful independently; it is never durable evidence.
+    if (this.redis?.isReady && !this.env.NATS_URL) { this.state = 'degraded'; return false; }
     try {
       await this.close();
       this.redis = createClient({ url: this.env.REDIS_URL, disableOfflineQueue: true,
         socket: { connectTimeout: 3000, reconnectStrategy: false } });
       this.redis.on('error', () => { this.state = 'degraded'; });
       await this.redis.connect();
+      if (!this.env.NATS_URL) { this.state = 'degraded'; return false; }
       this.nc = await connect({ servers: this.env.NATS_URL, token: this.env.NATS_TOKEN,
         timeout: 3000, maxReconnectAttempts: 3, reconnectTimeWait: 1000 });
       this.natsConnected = true;
@@ -46,7 +49,13 @@ export class MarketInfrastructure {
           info.config.num_replicas !== replicas || !info.config.subjects.includes('capital.facts.quote.*')) throw new Error('UNSAFE_STREAM_CONFIG');
       this.state = 'connected';
       return true;
-    } catch { await this.close(); return false; }
+    } catch {
+      await this.nc?.close();
+      this.nc = null; this.js = null; this.manager = null; this.natsConnected = false;
+      if (this.redis?.isReady) this.state = 'degraded';
+      else await this.close();
+      return false;
+    }
   }
   status() { return { status: this.state === 'connected' && (!this.redis?.isReady || !this.natsConnected || this.nc?.isClosed()) ? 'degraded' : this.state, redis: this.redis?.isReady ? 'connected' : 'unavailable',
     nats: this.natsConnected && this.nc && !this.nc.isClosed() && !this.nc.isDraining() ? 'connected' : 'unavailable',
