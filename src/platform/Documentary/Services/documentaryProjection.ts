@@ -43,65 +43,65 @@ export function validateDocumentaryEvidence(record: DocumentaryEvidenceRecord): 
 
   if (record.schema !== DOCUMENTARY_SCHEMA) failures.push('schema must be DOCUMENTARY_EVIDENCE@1');
   if (record.version !== DOCUMENTARY_VERSION) failures.push('version must be 1.0.0');
-  if (record.metadata?.project !== 'CAPITAL-AI') failures.push('metadata.project must be CAPITAL-AI');
-  if (record.metadata?.domain !== 'PLATFORM') failures.push('metadata.domain must be PLATFORM');
-  if (record.metadata?.consumerDomain !== 'GROWTH') failures.push('metadata.consumerDomain must be GROWTH');
-  if (!DOCUMENTARY_LIFECYCLES.includes(record.state?.lifecycle)) failures.push('state.lifecycle is invalid');
-  if (record.metadata?.status !== record.state?.lifecycle) failures.push('metadata.status must equal state.lifecycle');
+  if (record.metadata.project !== 'CAPITAL-AI') failures.push('metadata.project must be CAPITAL-AI');
+  if (record.metadata.domain !== 'PLATFORM') failures.push('metadata.domain must be PLATFORM');
+  if (record.metadata.consumerDomain !== 'GROWTH') failures.push('metadata.consumerDomain must be GROWTH');
+  if (!DOCUMENTARY_LIFECYCLES.includes(record.state.lifecycle)) failures.push('state.lifecycle is invalid');
+  if (record.metadata.status !== record.state.lifecycle) failures.push('metadata.status must equal state.lifecycle');
 
-  if (!nonEmpty(record.correlation?.changeId)) failures.push('correlation.changeId is required for evidence instances');
-  if (!nonEmpty(record.identity?.documentaryId)) failures.push('identity.documentaryId is required');
-  if (!GIT_SHA_RE.test(record.identity?.sourceSha ?? '')) failures.push('identity.sourceSha must be a 40-character Git SHA');
-  if (record.identity?.parentSha !== null && !GIT_SHA_RE.test(record.identity?.parentSha ?? '')) failures.push('identity.parentSha must be null or a 40-character Git SHA');
-  if (!record.identity?.createdAt || Number.isNaN(Date.parse(record.identity.createdAt))) failures.push('identity.createdAt must be an ISO timestamp');
-  if (record.identity?.pullRequest !== null && (!Number.isInteger(record.identity.pullRequest) || record.identity.pullRequest <= 0)) failures.push('identity.pullRequest must be null or a positive integer');
+  if (!nonEmpty(record.correlation.changeId)) failures.push('correlation.changeId is required for evidence instances');
+  if (!nonEmpty(record.identity.documentaryId)) failures.push('identity.documentaryId is required');
+  if (!GIT_SHA_RE.test(record.identity.sourceSha ?? '')) failures.push('identity.sourceSha must be a 40-character Git SHA');
+  if (record.identity.parentSha !== null && !GIT_SHA_RE.test(record.identity.parentSha ?? '')) failures.push('identity.parentSha must be null or a 40-character Git SHA');
+  if (!record.identity.createdAt || Number.isNaN(Date.parse(record.identity.createdAt))) failures.push('identity.createdAt must be an ISO timestamp');
+  if (record.identity.pullRequest !== null && (!Number.isInteger(record.identity.pullRequest) || record.identity.pullRequest <= 0)) failures.push('identity.pullRequest must be null or a positive integer');
 
-  const changeType = typeof record.change?.type === 'string' ? record.change.type : null;
+  const changeType = typeof record.change.type === 'string' ? record.change.type : null;
   if (!changeType || !CHANGE_TYPES.has(changeType)) failures.push('change.type must be one of the canonical change types');
-  if (!nonEmpty(record.change?.title)) failures.push('change.title is required');
-  if (!nonEmpty(record.change?.summary)) failures.push('change.summary is required');
-  if (!nonEmpty(record.change?.domains?.primary)) failures.push('change.domains.primary is required');
+  if (!nonEmpty(record.change.title)) failures.push('change.title is required');
+  if (!nonEmpty(record.change.summary)) failures.push('change.summary is required');
+  if (!nonEmpty(record.change.domains.primary)) failures.push('change.domains.primary is required');
 
-  const files = record.implementation?.changedFiles ?? [];
+  const files = record.implementation.changedFiles ?? [];
   if (new Set(files).size !== files.length) failures.push('implementation.changedFiles must not contain duplicates');
 
-  if (record.supplyChain?.source?.commitSha !== record.identity?.sourceSha) {
+  if (record.supplyChain.source.commitSha !== record.identity.sourceSha) {
     failures.push('supplyChain.source.commitSha must equal identity.sourceSha');
   }
 
-  if (!sameArray(record.selfHealing?.validationSteps, VALIDATION_STEPS)) {
+  if (!sameArray(record.selfHealing.validationSteps, VALIDATION_STEPS)) {
     failures.push('selfHealing.validationSteps must be DETECT, CORRELATE, CLASSIFY, REMEDIATE, VERIFY');
   }
-  if ((record.selfHealing?.validationCycle?.required ?? 0) < 3) failures.push('selfHealing requires at least three validation cycles');
-  if (record.selfHealing?.eligibleForAutomation) {
+  if (record.selfHealing.validationCycle.required < 3) failures.push('selfHealing requires at least three validation cycles');
+  if (record.selfHealing.eligibleForAutomation) {
     const cycle = record.selfHealing.validationCycle;
     const promotion = record.selfHealing.promotionConditions;
     if (cycle.current < cycle.required) failures.push('automation eligibility requires all validation cycles');
-    if (!promotion?.validationCyclesPassed || !promotion?.deterministicOutput || !promotion?.noTrustBoundaryChange || !promotion?.noHumanAuthorityRequired) {
+    if (!promotion.validationCyclesPassed || !promotion.deterministicOutput || !promotion.noTrustBoundaryChange || !promotion.noHumanAuthorityRequired) {
       failures.push('automation eligibility requires all promotion conditions');
     }
     if (!nonEmpty(record.selfHealing.repairClass)) failures.push('automation eligibility requires repairClass');
   }
 
-  if (record.runtime?.deployed && !record.runtime?.readback?.performed) {
+  if (record.runtime.deployed && !record.runtime.readback.performed) {
     failures.push('runtime.deployed=true requires runtime readback');
   }
-  if (record.runtime?.deploymentRequired && record.state?.lifecycle === 'EFFECTIVE') {
-    if (!record.runtime?.readback?.performed) failures.push('EFFECTIVE deployment requires runtime readback');
-    if (record.runtime?.readback?.sourceSha !== record.identity?.sourceSha) failures.push('EFFECTIVE runtime sourceSha must match documentary sourceSha');
+  if (record.runtime.deploymentRequired && record.state.lifecycle === 'EFFECTIVE') {
+    if (!record.runtime.readback.performed) failures.push('EFFECTIVE deployment requires runtime readback');
+    if (record.runtime.readback.sourceSha !== record.identity.sourceSha) failures.push('EFFECTIVE runtime sourceSha must match documentary sourceSha');
   }
 
-  if (record.state?.lifecycle === 'SUPERSEDED' && !nonEmpty(record.state?.supersededBy)) {
+  if (record.state.lifecycle === 'SUPERSEDED' && !nonEmpty(record.state.supersededBy)) {
     failures.push('SUPERSEDED evidence requires state.supersededBy');
   }
 
-  if (record.integrity?.canonicalSerialization !== 'RFC8785') failures.push('integrity.canonicalSerialization must be RFC8785');
-  if (record.integrity?.hashAlgorithm !== 'SHA-256') failures.push('integrity.hashAlgorithm must be SHA-256');
-  if (!SHA256_RE.test(record.integrity?.documentaryDigest ?? '')) failures.push('integrity.documentaryDigest must be a SHA-256 hex digest');
+  if (record.integrity.canonicalSerialization !== 'RFC8785') failures.push('integrity.canonicalSerialization must be RFC8785');
+  if (record.integrity.hashAlgorithm !== 'SHA-256') failures.push('integrity.hashAlgorithm must be SHA-256');
+  if (!SHA256_RE.test(record.integrity.documentaryDigest ?? '')) failures.push('integrity.documentaryDigest must be a SHA-256 hex digest');
 
-  if (record.safety?.historicalRecordsImmutable !== true) failures.push('historicalRecordsImmutable must be true');
-  if (record.safety?.inferredSuccessForbidden !== true) failures.push('inferredSuccessForbidden must be true');
-  if (record.safety?.missingEvidenceMeansSuccess !== false) failures.push('missingEvidenceMeansSuccess must be false');
+  if (record.safety.historicalRecordsImmutable !== true) failures.push('historicalRecordsImmutable must be true');
+  if (record.safety.inferredSuccessForbidden !== true) failures.push('inferredSuccessForbidden must be true');
+  if (record.safety.missingEvidenceMeansSuccess !== false) failures.push('missingEvidenceMeansSuccess must be false');
 
   return failures;
 }
