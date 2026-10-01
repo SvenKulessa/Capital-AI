@@ -1,0 +1,38 @@
+{
+  "schema": "SOURCE_PROVENANCE@1",
+  "version": "1.0.0",
+  "metadata": {
+    "project": "CAPITAL-AI",
+    "domain": "TRUST",
+    "status": "PROPOSED"
+  },
+  "identity": {
+    "provenanceId": null,
+    "sourceType": null,
+    "sourceName": null,
+    "sourceVersion": null,
+    "retrievedAt": null
+  },
+  "origin": {
+    "canonicalUri": null,
+    "publisher": null,
+    "artifactDigest": null,
+    "digestAlgorithm": "SHA-256"
+  },
+  "usage": {
+    "purpose": null,
+    "researchUseBasis": null,
+    "commercialUseBasis": null
+  },
+  "license": {
+    "licenseEvidenceRef": null,
+    "status": "UNKNOWN"
+  },
+  "state": {
+    "status": "BLOCKED"
+  },
+  "safety": {
+    "unverifiedOriginMayPass": false,
+    "missingLicenseMayPass": false
+  }
+}
