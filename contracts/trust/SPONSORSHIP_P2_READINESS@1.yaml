@@ -1,0 +1,44 @@
+{
+  "schema": "SPONSORSHIP_P2_READINESS@1",
+  "version": "1.0.0",
+  "metadata": {
+    "project": "CAPITAL-AI",
+    "domain": "TRUST",
+    "consumerDomain": "GROWTH",
+    "status": "PROPOSED"
+  },
+  "phase": {
+    "current": "P1_EVIDENCE_HARDENING",
+    "target": "P2_SPONSORSHIP_RESEARCH_FUNDING_READINESS"
+  },
+  "requiredEvidenceClasses": [
+    "RESEARCH_EVIDENCE@1",
+    "SOURCE_PROVENANCE@1",
+    "LICENSE_EVIDENCE@1",
+    "DATASET_EVIDENCE@1",
+    "EXPERIMENT_EVIDENCE@1",
+    "COST_EVIDENCE@1",
+    "CLAIM_EVIDENCE@1",
+    "EVIDENCE_BUNDLE@1"
+  ],
+  "gates": {
+    "contractsRegistered": false,
+    "schemasValidated": false,
+    "completeTestBundleVerified": false,
+    "reproducibilityVerified": false,
+    "claimTraceabilityVerified": false,
+    "licenseRightsVerified": false,
+    "costAttributionVerified": false
+  },
+  "decision": {
+    "status": "BLOCKED",
+    "passRequiresAllGates": true,
+    "unknownMayPass": false,
+    "conflictingMayPass": false
+  },
+  "safety": {
+    "documentaryMergeAloneMayPass": false,
+    "researchPurposeOverridesRights": false,
+    "manualFundingSubmissionAutomatic": false
+  }
+}
