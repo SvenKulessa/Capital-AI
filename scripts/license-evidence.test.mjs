@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { bundleLicenseEvidence, lockInventory } from './license-evidence.mjs';
@@ -77,4 +77,36 @@ test('README fallback is version bounded and includes the actual license text', 
   assert.match(bundleLicenseEvidence(f.root, [f.id]).text, /Readme.md/);
   writeFileSync(join(f.dir, 'Readme.md'), 'No license text');
   assert.throws(() => bundleLicenseEvidence(f.root, [f.id]), /Missing license text/);
+});
+
+test('Nodemailer review requires the exact registry artifact and unchanged license text', t => {
+  const f = fixture(t, 'MIT-0', '10.0.13', 'nodemailer');
+  const currentLock = JSON.parse(readFileSync(new URL('../package-lock.json', import.meta.url)));
+  const reviewed = currentLock.packages['node_modules/nodemailer'];
+  const license = readFileSync(new URL('../docs/licenses/nodemailer-10.0.13-MIT-0.txt', import.meta.url));
+  mkdirSync(join(f.root, 'docs/licenses'), { recursive: true });
+  writeFileSync(join(f.root, 'docs/licenses/nodemailer-10.0.13-MIT-0.txt'), license);
+  const writeLock = entry => writeFileSync(join(f.root, 'package-lock.json'), JSON.stringify({
+    lockfileVersion: 3, packages: { '': {}, 'node_modules/nodemailer': entry },
+  }));
+  writeLock(reviewed);
+  assert.equal(lockInventory(f.root).packages[0].metadataStatus, 'DEPENDENCY_DISTRIBUTION_REVIEW');
+  assert.equal(lockInventory(f.root).deployEligible, false);
+  for (const change of [
+    { version: '10.0.14' }, { integrity: 'changed' },
+    { resolved: 'https://untrusted.example/nodemailer.tgz' }, { license: 'AGPL-3.0-only' },
+  ]) {
+    writeLock({ ...reviewed, ...change });
+    assert.equal(lockInventory(f.root).packages[0].metadataStatus, 'UNREVIEWED');
+  }
+  writeLock(reviewed);
+  writeFileSync(join(f.root, 'docs/licenses/nodemailer-10.0.13-MIT-0.txt'), 'altered license');
+  assert.equal(lockInventory(f.root).packages[0].metadataStatus, 'UNREVIEWED');
+});
+
+test('MIT-0 review does not cover arbitrary packages or frontend distribution', t => {
+  const f = fixture(t, 'MIT-0');
+  writeFileSync(join(f.dir, 'LICENSE'), 'MIT-0');
+  assert.equal(lockInventory(f.root).packages[0].metadataStatus, 'UNREVIEWED');
+  assert.throws(() => bundleLicenseEvidence(f.root, [f.id]), /explicit distribution review/);
 });

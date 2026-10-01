@@ -1574,6 +1574,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "evidenceState": "GEHALTEN",
   "evidenceRefs": [
     "https://github.com/SvenKulessa/Capital-AI/actions/runs/36765644507",
+    "docs/security/DIGEST-LIVE-READBACK-20261001.md",
     "docs/security/AP-SEC-IMAGE-ABNAHME-20261001.md",
     "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/compliance/ROADMAP-RECONCILIATION-20261001.md"
   ],
@@ -1581,7 +1582,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "priority": "Kritisch",
   "leadName": "Projektowner",
   "targetSprint": "Jetzt zuerst: GHCR-/Render-Digest-Abnahme; vor weiteren Security-App-Paketen",
-  "description": "PR #71 ist in main@2150643 integriert. Aktuelle Health-Evidence: bound=true und Source 4fbd137; damit ist die Runtime-Source nun lesbar, entspricht aber weiterhin nicht Main. Konfigurierter Render-Digest 53c47463 stimmt mit dem archivierten Kandidaten überein. REVIEW_OPEN und Current-Main-/Analyse-/vollständige Handoff-Gates bleiben gehalten.",
+  "description": "Am 01.10.2026 ist die technische Index-/Plattform-/Config-/Render-/Runtime-Identität des Kandidaten 4fbd137 mit Index 53c47463 in Deploy dep-dauri23ncjis738243fg belegt. Aktive Instanz lfp5s meldet bound=true und den erwarteten Builder. Production bleibt wegen älterem Source, offener Lizenzabnahme und CodeQL-/Code-Quality-Gates gehalten.",
   "deliverables": [
     "Evidence-Tabelle und Validator-Korrekturen prüfen; neuer Publish/Deploy/Handoff erst nach gesonderter Freigabe."
   ]

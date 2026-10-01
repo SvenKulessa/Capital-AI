@@ -36,9 +36,22 @@ test('major upgrade preserves the vendor patch and removes npm from runtime', ()
 
 test('IP parser remediation is an integrity-locked compatible bundle replacement', () => {
   const entry = lock.packages['node_modules/ip-address'];
-  assert.equal(packageJson.dependencies['ip-address'], '10.7.1');
-  assert.equal(entry.version, '10.7.1');
-  assert.equal(entry.resolved, 'https://registry.npmjs.org/ip-address/-/ip-address-10.7.1.tgz');
-  assert.match(entry.integrity, /^sha512-/);
-  assert.match(hardener, /\['ip-address', '10\.5\.0', '10\.7\.1'\]/);
+  assert.equal(packageJson.dependencies['ip-address'], '10.7.2');
+  assert.equal(entry.version, '10.7.2');
+  assert.equal(entry.resolved, 'https://registry.npmjs.org/ip-address/-/ip-address-10.7.2.tgz');
+  assert.equal(entry.integrity, 'sha512-7H/2gFSIitxc0hG3nOI1glS8QLo/EHBFFLk8vEUjXY/xu0AdL8jZ9U1IzO2PUm0d2D/ofQcAifb0g6OBkt8U7w==');
+  assert.equal(entry.license, 'MIT');
+  assert.match(hardener, /\['ip-address', '10\.5\.0', '10\.7\.2'\]/);
+  assert.match(hardener, /Address4\.fromArpa\('42\.2\.0\.192\.IN-ADDR\.ARPA'\)/);
+  assert.match(hardener, /Address6\.fromArpa\('8\.B\.D\.0\.1\.0\.0\.2\.IP6\.ARPA'\)/);
+});
+
+test('undici remediation stays on the npm-compatible 6.x donor line with locked integrity', () => {
+  const entry = lock.packages['node_modules/undici'];
+  assert.equal(packageJson.dependencies.undici, '6.29.0');
+  assert.equal(entry.version, '6.29.0');
+  assert.equal(entry.resolved, 'https://registry.npmjs.org/undici/-/undici-6.29.0.tgz');
+  assert.equal(entry.integrity, 'sha512-R+RODBqp6i2pPflGdq+xIOUkl+RNfGgHwoinecKu/JCuf2uO06cOKoDbI2P7Dn6KcswdKwrczbU6IYJ6K8X+wg==');
+  assert.equal(entry.license, 'MIT');
+  assert.match(hardener, /\['undici', '6\.28\.0', '6\.29\.0'\]/);
 });
