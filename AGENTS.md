@@ -23,6 +23,56 @@ Bei Widersprüchen zwischen lokalen Arbeitsanweisungen und dieser Policy gilt di
 8. **Neueste stabile Version** — bevorzugen, wenn unterstützt und kompatibel. "Latest" ersetzt keine Migrationsprüfung.
 9. **Self-Healing** — wiederkehrende sichere Reparaturmuster erst nach mindestens drei positiven Validierungszyklen als automatische Invariante fest verankern.
 
+## Update-Trust-Contract
+
+Für **jedes** Update, Upgrade, Patch und jeden dependency-bezogenen Bugfix gilt zusätzlich eine verpflichtende Herkunfts- und Community-Gegenprüfung.
+
+### Zielzustand: latest stable, aber verifiziert
+
+- Verwendet wird grundsätzlich die **neueste stabile, unterstützte Version**, sobald sie für CAPITAL-AI kompatibel ist und die nachfolgenden Trust-Gates erfüllt.
+- Pre-Releases, Nightlies, RCs und experimentelle Builds werden nicht als Routine-Update übernommen.
+- Ein neuer Versionsstand wird nicht allein deshalb akzeptiert, weil Registry, Dependabot oder ein Versionsscanner ihn als "latest" meldet.
+
+### Verbindliche Quellenhierarchie
+
+Mindestens folgende Evidenzklassen sind zu prüfen und im PR nachvollziehbar zu dokumentieren:
+
+1. **Offizielle Herkunft** — Maintainer-/Vendor-Repository, offizieller Release/Tag/Changelog und gegebenenfalls offizielle Security Advisories.
+2. **Registry-/Artefakt-Evidenz** — erwarteter Paketname/Namespace, Publisher/Maintainer, Version, Lockfile, Registry-URL, Integritäts-Hash sowie verfügbare Provenance/Signaturen/Attestations.
+3. **Security-Intelligence** — GitHub Advisory Database/Dependabot, OSV/CVE und die im Projekt vorgesehenen Vulnerability-/Secret-/Misconfiguration-Scanner.
+4. **Lizenz/Redistribution** — SPDX-/Lizenzmetadaten, Lizenztext, NOTICE-/Attributionspflichten und Änderungen gegenüber der bisher verwendeten Version.
+5. **Maintainer-/Community-Gegenprüfung** — offizielle Issues, Discussions, Security-Kanäle oder die etablierte Community des jeweiligen Projekts auf Hinweise zu kompromittierten Releases, Account-/Maintainer-Takeover, Typosquatting, zurückgezogenen Releases, schädlichen Install-Skripten, unerwarteten Ownership-Wechseln oder regressiven Breaking Changes prüfen.
+
+Community-Signale sind zusätzliche Evidenz und ersetzen niemals die offizielle Herkunftsprüfung. Umgekehrt reicht ein formal korrekt veröffentlichtes Paket nicht aus, wenn seriöse Maintainer-/Community- oder Security-Hinweise auf eine mögliche Kompromittierung bestehen.
+
+### Fail-closed Regeln
+
+Ein Update bleibt **BLOCKED**, wenn mindestens einer der folgenden Punkte ungeklärt ist:
+
+- Herkunft, Publisher oder Namespace ist nicht eindeutig verifizierbar.
+- Version/Tag, Registry-Artefakt oder Integritäts-/Provenance-Evidence widersprechen sich.
+- Es bestehen glaubhafte ungeklärte Hinweise auf Supply-Chain-Kompromittierung, Maintainer-Takeover oder Typosquatting.
+- Lizenz oder Redistribution-Rechte sind unklar oder haben sich inkompatibel geändert.
+- Install-/Postinstall-Skripte, neue Binärartefakte oder neue Netzwerkzugriffe erscheinen ohne nachvollziehbaren Grund.
+- Ein Major-Upgrade wurde nicht gegen dokumentierte Breaking Changes und betroffenen Anwendungscode geprüft.
+
+### Mindest-Evidenz je Update
+
+Jeder Update-PR soll mindestens festhalten:
+
+- bisherige und neue Version,
+- Update-Klasse: Security/Patch/Minor/Major/Bugfix,
+- offizielle Release-/Changelog-Quelle,
+- Security-/Advisory-Ergebnis,
+- Lizenz-/Provenance-Ergebnis,
+- Maintainer-/Community-Gegenprüfung mit Datum,
+- relevante Breaking Changes beziehungsweise "keine gefunden",
+- Lockfile-/Transitive-Dependency-Diff,
+- ausgeführte Tests/Scans,
+- verbleibende Risiken und Rollback-Pfad.
+
+Für Security-sensitive Komponenten, Major-Upgrades, Auth, Runtime, CI/CD, Container, Broker und Deployment-Infrastruktur sind mindestens **zwei voneinander unabhängige Evidenzklassen zusätzlich zur Registry** erforderlich.
+
 ## Docker Build- und Runtime-Modell
 
 - Build-once / Promote-many: exakt das geprüfte Image wird veröffentlicht und weitergereicht; kein Rebuild zwischen Prüfung und Promotion.
