@@ -148,8 +148,27 @@ Der bereits vorhandene History-Review bleibt gültig:
   Prompt, Provider-Run-ID sowie Input-/Output-Hash zum Erdbild gefunden.
 - Die Owner-Aussage „created/used through Finance Social Media Engine in website
   mockup; embedded by Gemini“ bleibt erhalten.
-- Installierte oder vorhandene Tools sind kein Nachweis, dass genau dieses
-  Bild damit generiert wurde.
+- Installierte oder vorhandene Tools sind für sich allein kein Nachweis, dass
+  genau dieses Bild damit generiert wurde.
+
+### 3.4 Bildinterne C2PA-/SynthID-Evidence
+
+Der byte-identische Hero-Git-Blob wurde zusätzlich auf eingebettete JPEG-
+Metadaten geprüft. Im APP11/JUMBF-Bereich liegt ein C2PA-Manifest mit
+Google-bezogenen Zertifikatsketten-Bezeichnern. Lesbar sind unter anderem:
+
+- Claim Generator: `Google C2PA Core Generator Library`;
+- Aktion `c2pa.created`: `Created by Google Generative AI.`;
+- Digital Source Type: `trainedAlgorithmicMedia`;
+- Aktion `c2pa.edited`: `Applied imperceptible SynthID watermark.`;
+- Zertifikatsketten-Bezeichner `Google C2PA Media Services 1P ICA G3` und
+  `Google C2PA Root CA G3`.
+
+Damit ist die **Provider-Provenienz Google Generative AI direkt im Asset
+eingebettet** und deutlich stärker als eine reine Tool-Inventur. In diesem
+Review wurde die C2PA-Signatur/Trust-Chain jedoch nicht kryptografisch
+validiert. Das Manifest nennt kein konkretes Bildmodell und keinen
+Account-/Billing-Tarif.
 
 ## 4. Validierung 4 — Dienst, Tarif und damals geltende Bedingungen
 
@@ -164,11 +183,16 @@ Der FRONTEND-Bestand korreliert stark mit einer Google-AI-Studio-Build-Umgebung:
   den User-Agent `aistudio-build`.
 
 Zusammen mit der Owner-Aussage belegt dies **Gemini/AI Studio als
-Projekt-/Einbettungsumgebung**, aber weiterhin **nicht** das konkret
-ausgeführte Bildgenerierungsmodell. Ein Provider-Run mit Bildmodell/Endpoint,
-Prompt und Output-Hash wurde nicht gefunden. Der tatsächliche Account- bzw.
-Billing-Tarif zum Erstellungszeitpunkt ist ebenfalls nicht aus dem Repository
-ableitbar.
+Projekt-/Einbettungsumgebung**. Zusätzlich nennt das im JPEG eingebettete
+C2PA-Manifest **Google Generative AI** als Erzeugungsquelle und dokumentiert
+eine nachgelagerte SynthID-Markierung. Damit ist der Provider wesentlich
+stärker gebunden als zuvor.
+
+Weiterhin offen bleiben jedoch die konkrete Google-Produktoberfläche des
+Bildlaufs, das ausgeführte Bildgenerierungsmodell/der Endpoint, ein separat
+archivierter Prompt-/Run-Datensatz und der tatsächliche Account-/Billing-Tarif
+zum Erstellungszeitpunkt. Die eingebettete C2PA-Signatur wurde in diesem
+Review nicht kryptografisch validiert.
 
 Für den 21.09.2026 ist als gefundene offizielle Fassung zugeordnet:
 
@@ -236,7 +260,7 @@ behauptet.
 | `asset-pack/favicon/apple-touch-icon-180x180.png` | `4c2beef2…08cda` | deterministisch aus Logo | lokales Pillow | Rechtebasis des Quelllogos | Touch-Icon im Projekt | wie Quelllogo | **SOURCE_BOUND** |
 | `asset-pack/social/open-graph-1200x630.jpg` | `00609f30…d4b4` | deterministisch aus Logo | lokales Pillow | Rechtebasis des Quelllogos | OG-/X-Preview im Projekt | wie Quelllogo; Publish-Gate bleibt separat | **SOURCE_BOUND** |
 | `asset-pack/avatars/capital-ai-avatar-512x512.png` | `3e5ca03b…3a0e` | deterministisch aus Logo | lokales Pillow | Rechtebasis des Quelllogos | Schema.org-/Avatar-Nutzung im Projekt | wie Quelllogo | **SOURCE_BOUND** |
-| `glowing_earth_nodes_1789997454893.jpg` | `aae54844…bb671` | Dateiname → 21.09.2026 15:30:54.893 CEST; erster FRONTEND-Commit `7416cd3…`; Finance Import `071cf59…` | Finance Social Media Engine laut Owner; Gemini eingebettet; **Bildgenerator/Modell/Tarif offen** | Google Gemini Additional Terms, wirksam 23.03.2026 / Update 28.04.2026, nur soweit Google-Service-Bindung zutrifft | geschäftliche Nutzung des Dienstes vorgesehen; Google beansprucht kein Eigentum; Weitergabe in Nutzerverantwortung | Provider-Run, Bildmodell, Prompt, Tarif, eindeutige Generierungsbindung | **PARTIAL / REVIEW_OPEN** |
+| `glowing_earth_nodes_1789997454893.jpg` | `aae54844…bb671` | Dateiname → 21.09.2026 15:30:54.893 CEST; erster FRONTEND-Commit `7416cd3…`; Finance Import `071cf59…`; eingebettetes C2PA | **Google Generative AI laut C2PA**; AI-Studio-Umgebung korreliert; Gemini-Einbettung laut Owner; Modell/konkrete Oberfläche/Tarif offen | Google Gemini Additional Terms, wirksam 23.03.2026 / Update 28.04.2026, soweit die AI-Studio/Gemini-Dienstbindung zutrifft | geschäftliche Nutzung des Dienstes vorgesehen; Google beansprucht kein Eigentum; Weitergabe in Nutzerverantwortung | C2PA-Signaturvalidierung, konkretes Bildmodell/Endpoint, separater Prompt/Run, Tarif | **PARTIAL / STRONG_PROVIDER_PROVENANCE** |
 | `src/components/AssetLogo.tsx` | `b2c1401e…7213f` | aktueller Capital-AI-Bestand | Code/Inline-SVG; N/A | keine pauschale Markenlizenz | generische Ticker-/Fallbackdarstellung ist technisch implementiert | Herkunft/Markenrichtlinie je erkennbarem Fremdlogo | **TRUST_REVIEW_OPEN** |
 | historisch `capital_ai_brand_emblem_1789997857835.jpg` | `7aa20801…97bf` | Dateiname → 21.09.2026 15:37:37.835 CEST; erster FRONTEND-Commit `7416cd3…` | Owner: Copilot/Leonardo/ChatGPT/Gemini; Reihenfolge/Modelle/Tarife offen | nicht eindeutig einem Providerlauf zuordenbar | keine neue Freigabe aus diesem Review | vollständige Edit-Chain und Terms je Schritt | **HISTORICAL / NOT CAPITAL-AI RUNTIME** |
 | historisch `capital_ai_full_logo_1789997869885.jpg` | `06b9d534…35bf7` | Dateiname → 21.09.2026 15:37:49.885 CEST; erster FRONTEND-Commit `7416cd3…` | wie vor | nicht eindeutig zuordenbar | keine neue Freigabe | vollständige Edit-Chain und Terms je Schritt | **HISTORICAL / NOT CAPITAL-AI RUNTIME** |
@@ -250,15 +274,17 @@ TRUST kann auf folgenden bestätigten Punkten aufbauen:
    eindeutige first-party Source-/Hash-Kette.
 2. Das Erdbild besitzt eine eindeutige aktuelle Runtime-Bindung und eine
    nachvollziehbare Copy-History bis zum ersten FRONTEND-Commit.
-3. Die Google-AI-Studio-Umgebung ist repositoryseitig korreliert; das konkrete
-   Bildgenerierungsmodell und der Tarif sind **nicht** belegt.
+3. Das Hero-JPEG enthält eingebettete C2PA-Evidence für **Google Generative
+   AI** und SynthID; die Google-AI-Studio-Umgebung ist repositoryseitig
+   korreliert. C2PA-Signaturvalidierung, konkretes Bildmodell und Tarif sind
+   **nicht** abgeschlossen.
 4. Die systemgenerierten `DESIGN_AND_*.md`-Urkunden sind keine
    Drittanbieter-Erlaubnisse.
 5. Die Inline-Fremdmarken in `AssetLogo.tsx` benötigen eine eigenständige
    Marken-/Logo-Prüfung; sie werden nicht durch die CAPITAL-AI-Brandingrechte
    abgedeckt.
 
-**TRUST-Restlücken:** Provider-Run/Modell/Tarif für das Hero-Bild; konkrete
+**TRUST-Restlücken:** kryptografische C2PA-Validierung sowie Modell/Endpoint/Tarif und separater Provider-Run für das Hero-Bild; konkrete
 Markenrichtlinien/Zeichnungsherkunft je erkennbarem Fremdkennzeichen;
 gegebenenfalls rechtliche Bewertung der Schutzfähigkeit und Kollisionen. Diese
 Prüfung setzt **kein** Gate automatisch auf APPROVED.
@@ -305,6 +331,6 @@ Gates auf APPROVED setzen.
 1. **Current Main / ausgelieferte Bindung:** bestanden, Rechtefragen separat offen.
 2. **Bestehende Evidence:** bestanden; vorhandene Herkunft erhalten.
 3. **History / Mockup-Korrelation:** Import-/Archivpfad bewiesen; Generierungslauf nur teilweise rekonstruierbar.
-4. **Dienst / Tarif / Bedingungen:** offizielle Terms zugeordnet; exaktes Hero-Bildmodell und Tarif bleiben offen.
+4. **Dienst / Tarif / Bedingungen:** eingebettetes C2PA bindet Google Generative AI; offizielle Terms zugeordnet; C2PA-Signaturvalidierung, exaktes Modell/Endpoint und Tarif bleiben offen.
 5. **Evidence / Handoff:** erstellt; TRUST und PLATFORM getrennt adressiert, ohne Release-/Deploy-Mutation.
 
