@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://capital-ai.online/contracts/DOCUMENTARY_EVIDENCE@1.schema.json",
+  "title": "DOCUMENTARY_EVIDENCE@1",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "metadata",
+    "correlation",
+    "identity",
+    "validation",
+    "runtime",
+    "selfHealing",
+    "state",
+    "integrity",
+    "safety"
+  ],
+  "properties": {
+    "schema": {
+      "const": "DOCUMENTARY_EVIDENCE@1"
+    },
+    "version": {
+      "const": "1.0.0"
+    },
+    "correlation": {
+      "type": "object",
+      "required": [
+        "changeId"
+      ],
+      "properties": {
+        "changeId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "state": {
+      "type": "object",
+      "required": [
+        "lifecycle",
+        "transitions"
+      ],
+      "properties": {
+        "lifecycle": {
+          "enum": [
+            "PROPOSED",
+            "VERIFIED",
+            "EFFECTIVE",
+            "SUPERSEDED",
+            "BLOCKED"
+          ]
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "required": [
+        "historicalRecordsImmutable",
+        "inferredSuccessForbidden",
+        "missingEvidenceMeansSuccess"
+      ]
+    }
+  },
+  "additionalProperties": true
+}
