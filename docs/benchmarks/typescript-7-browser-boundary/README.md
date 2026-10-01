@@ -45,3 +45,28 @@ Current upstream documentation says Oxlint supports AST traversal and JS plugins
 - Decision: OPEN.
 
 No result in this directory is a Production approval.
+
+
+## Candidate trust snapshot — 2026-10-01
+
+Oxlint candidate: `1.86.0`.
+
+Verified upstream/registry facts:
+- official repository: `oxc-project/oxc`;
+- immutable upstream release tag: `oxlint_v1.86.0`, published 2026-09-28;
+- release publishes per-platform binaries with SHA-256 values and release attestation;
+- npm package `oxlint@1.86.0`: MIT;
+- npm package reports zero ordinary dependencies; platform bindings are distributed separately for supported targets;
+- custom JavaScript plugin API exists but is explicitly alpha and not covered by semver.
+
+### Architecture implication
+
+The JS-plugin path is useful for detection-parity experiments because it exposes AST traversal and RuleTester-compatible fixtures, but its alpha/no-semver status means it must **not** silently become the permanent production security boundary without a documented stability decision.
+
+Benchmark tracks therefore remain separated:
+
+1. **Oxlint native CLI/built-in rule track** — stable linter surface where existing native rules can enforce a boundary property.
+2. **Oxlint JS-plugin track** — candidate for exact custom AST parity; experimental until stability risk is accepted or a stable native/public alternative exists.
+3. **Current TypeScript-API gate** — baseline only; incompatible with TypeScript 7 and therefore not a viable target architecture.
+
+No `npx ...@latest` execution is permitted in the benchmark. The exact candidate must be pinned before executable evaluation.
