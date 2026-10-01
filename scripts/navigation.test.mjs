@@ -3,11 +3,18 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { APP_NAVIGATION_EVENT, navigateAppLocation, readHubTab, resolveNavigationTarget } from '../src/utils/appNavigation.ts';
 
-test('all 16 header tab links retain their hub and tab', () => {
-  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
-  const links = [...header.matchAll(/onNavigate\?\.\('([^']+\?tab=[^']+)'\)/g)].map(match => match[1]);
-  assert.equal(links.length, 16);
+test('all 17 sideboard tab links retain their hub and tab', () => {
+  const sidebar = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
+  const links = [...sidebar.matchAll(/path: '([^']+\?tab=[^']+)'/g)].map(match => match[1]);
+  assert.equal(links.length, 17);
+  assert.ok(links.includes('/control-center?tab=licenses'));
   for (const link of links) assert.equal(resolveNavigationTarget(link), link);
+});
+
+test('footer routes license navigation through the Control Center', () => {
+  const footer = readFileSync(new URL('../src/components/Footer.tsx', import.meta.url), 'utf8');
+  assert.match(footer, /href="\/control-center\?tab=licenses"/);
+  assert.match(footer, /Lizenzen &amp; Nachweise/);
 });
 
 test('aliases and trailing slash normalize without losing query or hash', () => {
