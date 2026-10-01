@@ -608,7 +608,6 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
                   </div>
                 </div>
-              </div>
 
               {/* Drawer Bottom */}
               <div className="p-5 border-t border-slate-800/80 bg-[#060914]">
