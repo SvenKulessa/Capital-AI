@@ -26,7 +26,7 @@ export function lockInventory(root) {
     const attributionReview = path === 'node_modules/caniuse-lite' && selectedLicense === 'CC-BY-4.0';
     return {
       path, version: p.version, declaredLicense: p.license || null, selectedLicense,
-      dev: p.dev === true, optional: p.optional === true, integrity: p.integrity || null,
+      dev: p.dev === true, optional: p.optional === true, integrity: p.integrity || null, resolved: p.resolved || null,
       metadataStatus: permissive.has(selectedLicense) ? 'NOTICE_REQUIRED' : reviewedSpdxData({ path, version: p.version, selectedLicense }) ? 'VERSION_BOUNDED_DATA_NOTICE_REQUIRED' : buildReview ? 'BUILD_TOOL_REVIEW' : attributionReview ? 'DATA_ATTRIBUTION_REVIEW' : dependencyDistributionReview ? 'DEPENDENCY_DISTRIBUTION_REVIEW' : 'UNREVIEWED',
     };
   });
