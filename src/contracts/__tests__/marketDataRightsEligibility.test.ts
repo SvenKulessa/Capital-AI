@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { evaluateMarketDataRights, type MarketDataRightsEvidence } from '../marketDataRightsEligibility';
 
 const base: MarketDataRightsEvidence = {
@@ -23,22 +24,22 @@ const base: MarketDataRightsEvidence = {
 
 describe('market data rights eligibility', () => {
   it('fails closed when a required contractual use case is unverified', () => {
-    expect(evaluateMarketDataRights(base, ['api_redistribution']).decision).toBe('REVIEW_REQUIRED');
+    assert.equal(evaluateMarketDataRights(base, ['api_redistribution']).decision, 'REVIEW_REQUIRED');
   });
 
   it('blocks an explicitly prohibited contractual use case', () => {
-    expect(evaluateMarketDataRights(base, ['export_resale']).decision).toBe('BLOCK');
+    assert.equal(evaluateMarketDataRights(base, ['export_resale']).decision, 'BLOCK');
   });
 
   it('preserves obligations for an allowed contractual use case', () => {
     const result = evaluateMarketDataRights(base, ['public_display']);
-    expect(result.decision).toBe('ALLOW_WITH_OBLIGATIONS');
-    expect(result.eligible).toBe(true);
-    expect(result.obligations).toContain('ATTRIBUTION_REQUIRED');
+    assert.equal(result.decision, 'ALLOW_WITH_OBLIGATIONS');
+    assert.equal(result.eligible, true);
+    assert.ok(result.obligations.includes('ATTRIBUTION_REQUIRED'));
   });
 
   it('does not let derived-use permission imply redistribution permission', () => {
-    expect(evaluateMarketDataRights(base, ['derived_scoring_research', 'api_redistribution']).eligible).toBe(false);
+    assert.equal(evaluateMarketDataRights(base, ['derived_scoring_research', 'api_redistribution']).eligible, false);
   });
 
   it('allows a separately evidenced statutory research-TDM basis without inventing provider redistribution rights', () => {
@@ -60,11 +61,10 @@ describe('market data rights eligibility', () => {
         legalReviewReference: 'evidence://legal-review/1',
       },
     };
-    expect(evaluateMarketDataRights(research, ['scientific_research_tdm'])).toMatchObject({
-      decision: 'ALLOW',
-      eligible: true,
-    });
-    expect(evaluateMarketDataRights(research, ['scientific_research_tdm', 'api_redistribution']).eligible).toBe(false);
+    const result = evaluateMarketDataRights(research, ['scientific_research_tdm']);
+    assert.equal(result.decision, 'ALLOW');
+    assert.equal(result.eligible, true);
+    assert.equal(evaluateMarketDataRights(research, ['scientific_research_tdm', 'api_redistribution']).eligible, false);
   });
 
   it('does not treat a research label as lawful API access', () => {
@@ -84,7 +84,7 @@ describe('market data rights eligibility', () => {
       },
     };
     const result = evaluateMarketDataRights(research, ['scientific_research_tdm']);
-    expect(result.eligible).toBe(false);
-    expect(result.reasons).toContain('LAWFUL_ACCESS_UNVERIFIED');
+    assert.equal(result.eligible, false);
+    assert.ok(result.reasons.includes('LAWFUL_ACCESS_UNVERIFIED'));
   });
 });
