@@ -6,12 +6,47 @@ import { bindRuntimeIdentity, runtimeIdentityDocument } from './write-runtime-id
 const sourceSha = 'a'.repeat(40);
 const digest = 'sha256:' + 'b'.repeat(64);
 const imageRef = 'ghcr.io/svenkulessa/capital-ai@' + digest;
+const configDigest = 'sha256:' + 'e'.repeat(64);
+const artifactDigest = 'sha256:' + 'd'.repeat(64);
 const expectedServiceId = 'srv-test';
 const expectedOwnerId = 'tea-test';
 
 function fixtures() {
   return {
-    candidate: { status: 'ATTESTED_CANDIDATE', deployEligible: false, sourceSha, imageRef },
+    candidate: {
+      status: 'ATTESTED_CANDIDATE',
+      deployEligible: false,
+      sourceSha,
+      imageRef,
+      containerIdentity: {
+        schema: 'CONTAINER_IDENTITY@1',
+        schemaVersion: 1,
+        source: {
+          eventName: 'workflow_dispatch',
+          sourceSha,
+          testedSha: sourceSha,
+          testedMergeSha: null,
+          pullRequestHeadSha: null,
+          baseMainSha: null,
+        },
+        digestTypes: {
+          artifactArchiveDigest: 'GITHUB_ACTIONS_ARTIFACT_ARCHIVE_SHA256',
+          localImageId: 'DOCKER_IMAGE_CONFIG_SHA256',
+          ociIndexDigest: 'OCI_INDEX_SHA256',
+          platformManifestDigest: 'OCI_PLATFORM_MANIFEST_SHA256',
+          configDigest: 'OCI_IMAGE_CONFIG_SHA256',
+          runtimeProviderDigest: 'RUNTIME_PROVIDER_PLATFORM_MANIFEST_SHA256',
+        },
+        digests: {
+          artifactArchiveDigest: artifactDigest,
+          localImageId: configDigest,
+          ociIndexDigest: digest,
+          platformManifestDigest: digest,
+          configDigest,
+          runtimeProviderDigest: null,
+        },
+      },
+    },
     license: { status: 'APPROVED', deployEligible: true, applicationSourceSha: sourceSha },
     rulesets: [{
       name: 'main-production-protection',
@@ -38,8 +73,8 @@ function fixtures() {
     expectedOwnerId,
     expectedMainSha: sourceSha,
     registryManifest: { digest, manifests: [{ digest, platform: { os: 'linux', architecture: 'amd64' } }] },
-    registryPlatformManifest: { digest, manifest: { config: { digest: 'sha256:' + 'e'.repeat(64) } } },
-    registryScan: { Metadata: { ImageID: 'sha256:' + 'e'.repeat(64), ImageConfig: { os: 'linux', architecture: 'amd64' } } },
+    registryPlatformManifest: { digest, manifest: { config: { digest: configDigest } } },
+    registryScan: { Metadata: { ImageID: configDigest, ImageConfig: { os: 'linux', architecture: 'amd64' } } },
   };
 }
 
@@ -151,4 +186,17 @@ test('activated CodeQL and code-quality rules need separate source-bound result 
   // A successful analyzer job alone is not a findings/policy readback.
   input.analysisResults = [{ type: 'code_scanning', status: 'PASS', sourceSha: 'f'.repeat(40), evidenceUrl: 'https://api.github.com/repos/SvenKulessa/Capital-AI/code-scanning/alerts' }];
   assert.ok(evaluateProductionHandoff(input).remainingGates.includes('REQUIRED_CODE_SCANNING_RESULTS'));
+});
+
+test('typed container identity blocks digest-class conflation', () => {
+  const input = fixtures();
+  input.candidate.containerIdentity.digests.ociIndexDigest = input.candidate.containerIdentity.digests.configDigest;
+  const report = evaluateProductionHandoff(input);
+  assert.ok(report.remainingGates.includes('CONTAINER_IDENTITY_CHAIN'));
+});
+
+test('final handoff report records provider digest in the typed runtime slot', () => {
+  const report = evaluateProductionHandoff(fixtures());
+  assert.equal(report.containerIdentity.digests.runtimeProviderDigest, digest);
+  assert.equal(report.containerIdentity.digestTypes.runtimeProviderDigest, 'RUNTIME_PROVIDER_PLATFORM_MANIFEST_SHA256');
 });

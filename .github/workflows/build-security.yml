@@ -29,12 +29,19 @@ jobs:
     timeout-minutes: 25
     outputs:
       image_id: ${{ steps.image_identity.outputs.image_id }}
+      candidate_artifact_digest: ${{ steps.candidate_archive.outputs.artifact-digest }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Laufzeitidentität an den geprüften Source-SHA binden
-        run: node scripts/write-runtime-identity.mjs "$GITHUB_SHA"
+      - name: CI-, Merge- und Laufzeitidentität explizit binden
+        env:
+          CAPITAL_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
+          CAPITAL_BASE_MAIN_SHA: ${{ github.event.pull_request.base.sha || '' }}
+        run: |
+          mkdir -p security-reports
+          node scripts/container-evidence-identity.mjs init security-reports/container-identity.json
+          node scripts/write-runtime-identity.mjs "$GITHUB_SHA"
       - name: npm-Lizenzmetadaten und Regressionstests prüfen
         run: |
           node scripts/preflight.mjs
@@ -93,6 +100,7 @@ jobs:
           mkdir -p security-reports
           docker image inspect --format '{{.Id}}' capital-ai:${{ github.sha }} > security-reports/image-id.txt
           echo "image_id=$(cat security-reports/image-id.txt)" >> "$GITHUB_OUTPUT"
+          node scripts/container-evidence-identity.mjs set security-reports/container-identity.json localImageId "$(cat security-reports/image-id.txt)"
           docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint cat capital-ai:${{ github.sha }} /app/dist/THIRD_PARTY_NOTICES.txt > security-reports/THIRD_PARTY_NOTICES.txt
           docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint cat capital-ai:${{ github.sha }} /app/dist/frontend-license-inventory.json > security-reports/frontend-license-inventory.json
           docker save capital-ai:${{ github.sha }} -o security-reports/image.tar
@@ -148,11 +156,14 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
       - name: Dasselbe geprüfte Image zur Veröffentlichung übergeben
+        id: candidate_archive
         if: success() && github.event_name == 'workflow_dispatch' && inputs.publish_candidate && github.ref == 'refs/heads/main' && github.repository == 'SvenKulessa/Capital-AI'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: candidate-image-${{ github.run_id }}-${{ github.run_attempt }}
-          path: security-reports/image.tar
+          path: |
+            security-reports/image.tar
+            security-reports/container-identity.json
           if-no-files-found: error
           retention-days: 1
           compression-level: 0
@@ -173,6 +184,7 @@ jobs:
     env:
       IMAGE_REPOSITORY: ghcr.io/svenkulessa/capital-ai
       EXPECTED_IMAGE_ID: ${{ needs.validate.outputs.image_id }}
+      CANDIDATE_ARTIFACT_DIGEST: ${{ needs.validate.outputs.candidate_artifact_digest }}
       SOURCE_SHA: ${{ github.sha }}
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -195,6 +207,10 @@ jobs:
           test "$(docker image inspect --format '{{.Id}}' "capital-ai:$SOURCE_SHA")" = "$EXPECTED_IMAGE_ID"
           test "$(docker image inspect --format '{{.Os}}/{{.Architecture}}' "capital-ai:$SOURCE_SHA")" = linux/amd64
           docker build --file Dockerfile.security --tag capital-ai-security .
+          mkdir -p security-reports
+          test -f candidate/container-identity.json
+          cp candidate/container-identity.json security-reports/container-identity.json
+          node scripts/container-evidence-identity.mjs set security-reports/container-identity.json artifactArchiveDigest "$CANDIDATE_ARTIFACT_DIGEST"
           mkdir -p "$RUNNER_TEMP/trivy-cache"
           chmod a+rwx "$RUNNER_TEMP/trivy-cache"
           rm candidate/image.tar
@@ -219,7 +235,12 @@ jobs:
           docker buildx imagetools inspect "$IMAGE_REPOSITORY@$platform_digest" --raw > security-reports/registry-platform-manifest.json
           test "sha256:$(sha256sum security-reports/registry-platform-manifest.json | cut -d ' ' -f 1)" = "$platform_digest"
           docker pull "$image_ref"
-          test "$(docker image inspect --format '{{.Id}}' "$image_ref")" = "$EXPECTED_IMAGE_ID"
+          config_digest=$(docker image inspect --format '{{.Id}}' "$image_ref")
+          test "$config_digest" = "$EXPECTED_IMAGE_ID"
+          node scripts/container-evidence-identity.mjs set security-reports/container-identity.json \
+            ociIndexDigest "$registry_digest" \
+            platformManifestDigest "$platform_digest" \
+            configDigest "$config_digest"
           echo "image_ref=$image_ref" >> "$GITHUB_OUTPUT"
           echo "digest=${image_ref##*@}" >> "$GITHUB_OUTPUT"
       - name: Registry-Image per Digest erneut scannen und SBOM erzeugen
@@ -259,7 +280,7 @@ jobs:
           gh attestation verify "oci://$IMAGE_REF" "${identity_args[@]}" > security-reports/provenance-verification.json
           gh attestation verify "oci://$IMAGE_REF" "${identity_args[@]}" --predicate-type https://cyclonedx.org/bom > security-reports/sbom-verification.json
           test "$(gh api repos/SvenKulessa/Capital-AI/branches/main --jq .commit.sha)" = "$SOURCE_SHA"
-          jq -n --arg sha "$SOURCE_SHA" --arg image "$IMAGE_REF" --arg imageId "$EXPECTED_IMAGE_ID" --arg run "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT" '{schemaVersion:1,status:"ATTESTED_CANDIDATE",deployEligible:false,sourceSha:$sha,imageRef:$image,localImageId:$imageId,workflowRun:$run,remainingGates:["LICENSE_REDISTRIBUTION_REVIEW","MAIN_PROTECTION","RENDER_IMAGE_SOURCE","RUNTIME_DIGEST","RUNTIME_IDENTITY"]}' > security-reports/candidate.json
+          jq -n --slurpfile identity security-reports/container-identity.json --arg sha "$SOURCE_SHA" --arg image "$IMAGE_REF" --arg imageId "$EXPECTED_IMAGE_ID" --arg run "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT" '{schemaVersion:2,status:"ATTESTED_CANDIDATE",deployEligible:false,sourceSha:$sha,imageRef:$image,localImageId:$imageId,containerIdentity:$identity[0],workflowRun:$run,remainingGates:["LICENSE_REDISTRIBUTION_REVIEW","MAIN_PROTECTION","CONTAINER_IDENTITY_CHAIN","RENDER_IMAGE_SOURCE","RUNTIME_DIGEST","RUNTIME_IDENTITY"]}' > security-reports/candidate.json
       - name: Kandidaten-Nachweise sichern
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -324,6 +345,11 @@ jobs:
           jq -e --arg id "$RENDER_SERVICE_ID" --arg owner "$RENDER_OWNER_ID" '.id == $id and .ownerId == $owner and .type == "web_service"' security-reports/render-service.json >/dev/null
           curl --fail --silent --show-error --header "$auth_header" --header 'Accept: application/json' "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys?limit=20" > security-reports/render-deploys.json
           jq -e '[.[] | (.deploy // .) | select(.status == "live")] | if length == 1 then .[0] else error("Expected exactly one live deploy") end' security-reports/render-deploys.json > security-reports/render-live-deploy.json
+          candidate_identity=$(find candidate -name container-identity.json -type f -print -quit)
+          test -n "$candidate_identity"
+          cp "$candidate_identity" security-reports/container-identity.json
+          runtime_provider_digest=$(jq -er '.image.sha | select(type == "string")' security-reports/render-live-deploy.json)
+          node scripts/container-evidence-identity.mjs set security-reports/container-identity.json runtimeProviderDigest "$runtime_provider_digest"
           service_url=$(jq -er '.serviceDetails.url | select(type == "string" and startswith("https://"))' security-reports/render-service.json)
           curl --fail --silent --show-error --retry 8 --retry-all-errors --retry-delay 2 --connect-timeout 3 --max-time 8 "$service_url/healthz" > security-reports/render-health.json
       - name: Fehlende zusätzliche Analyse-Evidence fail-closed kennzeichnen
