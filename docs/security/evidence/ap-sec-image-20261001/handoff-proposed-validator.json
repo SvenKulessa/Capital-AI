@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "status": "PRODUCTION_HANDOFF_BLOCKED",
+  "deployEligible": false,
+  "sourceSha": "4fbd1373b07092ed8ef550f60e9cf60f1f3f526d",
+  "imageRef": "ghcr.io/svenkulessa/capital-ai@sha256:53c47463dfdb9e66721be1c997769d9fae3e6ca0e8a3fdd8cf77074785a08d23",
+  "serviceId": "srv-dau1rp893c1s73cdhm1g",
+  "deployId": "dep-dauo3nc1nsns73f1u4t0",
+  "gates": [
+    {
+      "name": "SOURCE_CURRENT_MAIN",
+      "pass": false,
+      "evidence": {
+        "expectedMainSha": "07b3ff1785d2306bc743f41c990c975a69365d0b",
+        "candidateSourceSha": "4fbd1373b07092ed8ef550f60e9cf60f1f3f526d"
+      }
+    },
+    {
+      "name": "LICENSE_REDISTRIBUTION_REVIEW",
+      "pass": false,
+      "evidence": {
+        "status": "REVIEW_OPEN",
+        "sourceSha": "ed594ef93f66ee8f13f67d75dde56f46a95b1cd6"
+      }
+    },
+    {
+      "name": "MAIN_PROTECTION",
+      "pass": true,
+      "evidence": {
+        "activeMainRulesets": [
+          "main-production-protection"
+        ],
+        "requiredContext": "Docker Security Gate",
+        "requiredContexts": [
+          "Docker Security Gate",
+          "Domain Governance"
+        ],
+        "protectionReports": [
+          {
+            "schemaVersion": 1,
+            "pass": true,
+            "requiredContext": "Docker Security Gate",
+            "findings": [],
+            "observed": {
+              "id": 24259174,
+              "name": "main-production-protection",
+              "enforcement": "active",
+              "bypassActors": [],
+              "requiredContexts": [
+                "Docker Security Gate",
+                "Domain Governance"
+              ],
+              "ruleTypes": [
+                "code_quality",
+                "code_scanning",
+                "deletion",
+                "non_fast_forward",
+                "pull_request",
+                "required_linear_history",
+                "required_status_checks"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RENDER_IMAGE_SOURCE",
+      "pass": true,
+      "evidence": {
+        "serviceId": "srv-dau1rp893c1s73cdhm1g",
+        "ownerId": "tea-d90o4rj7uimc739i86ug",
+        "imagePath": "ghcr.io/svenkulessa/capital-ai@sha256:53c47463dfdb9e66721be1c997769d9fae3e6ca0e8a3fdd8cf77074785a08d23"
+      }
+    },
+    {
+      "name": "RUNTIME_DIGEST",
+      "pass": false,
+      "evidence": {
+        "deployId": "dep-dauo3nc1nsns73f1u4t0",
+        "imageRef": "ghcr.io/svenkulessa/capital-ai@sha256:53c47463dfdb9e66721be1c997769d9fae3e6ca0e8a3fdd8cf77074785a08d23",
+        "requestedIndexDigest": "sha256:53c47463dfdb9e66721be1c997769d9fae3e6ca0e8a3fdd8cf77074785a08d23",
+        "platformManifestDigest": "sha256:3abee0293d0273fa0858e4bbdce00aca8d0f5060f9b9f64ee2c67f9dc6530a3e",
+        "configDigest": "sha256:c161621d58ea32230750e95adf6551bb6f3c3ac697bfa048b0cf5393cd6356d3",
+        "registryEvidenceMatches": false,
+        "providerImageSha": "sha256:3abee0293d0273fa0858e4bbdce00aca8d0f5060f9b9f64ee2c67f9dc6530a3e",
+        "manifestRefMatches": true
+      }
+    },
+    {
+      "name": "RUNTIME_IDENTITY",
+      "pass": false,
+      "evidence": {
+        "buildIdentity": null
+      }
+    },
+    {
+      "name": "REQUIRED_CODE_SCANNING_RESULTS",
+      "pass": false,
+      "evidence": {
+        "result": null,
+        "policy": [
+          {
+            "type": "code_scanning",
+            "parameters": {
+              "code_scanning_tools": [
+                {
+                  "tool": "CodeQL",
+                  "security_alerts_threshold": "medium_or_higher",
+                  "alerts_threshold": "errors_and_warnings"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "REQUIRED_CODE_QUALITY_RESULTS",
+      "pass": false,
+      "evidence": {
+        "result": null,
+        "policy": [
+          {
+            "type": "code_quality",
+            "parameters": {
+              "severity": "warnings"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "remainingGates": [
+    "SOURCE_CURRENT_MAIN",
+    "LICENSE_REDISTRIBUTION_REVIEW",
+    "RUNTIME_DIGEST",
+    "RUNTIME_IDENTITY",
+    "REQUIRED_CODE_SCANNING_RESULTS",
+    "REQUIRED_CODE_QUALITY_RESULTS"
+  ]
+}

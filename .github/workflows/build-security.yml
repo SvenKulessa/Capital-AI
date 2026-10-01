@@ -211,6 +211,9 @@ jobs:
           registry_digest=$(jq -er '.digest | select(type == "string" and test("^sha256:[a-f0-9]{64}$"))' security-reports/registry-manifest.json)
           image_ref="$IMAGE_REPOSITORY@$registry_digest"
           [[ "$image_ref" =~ ^ghcr\.io/svenkulessa/capital-ai@sha256:[a-f0-9]{64}$ ]]
+          platform_digest=$(jq -er '[.manifests[] | select(.platform.os == "linux" and .platform.architecture == "amd64")] | if length == 1 then .[0].digest else error("Expected one linux/amd64 manifest") end' security-reports/registry-manifest.json)
+          docker buildx imagetools inspect "$IMAGE_REPOSITORY@$platform_digest" --raw > security-reports/registry-platform-manifest.json
+          test "sha256:$(sha256sum security-reports/registry-platform-manifest.json | cut -d ' ' -f 1)" = "$platform_digest"
           docker pull "$image_ref"
           test "$(docker image inspect --format '{{.Id}}' "$image_ref")" = "$EXPECTED_IMAGE_ID"
           echo "image_ref=$image_ref" >> "$GITHUB_OUTPUT"
@@ -316,22 +319,28 @@ jobs:
           curl --fail --silent --show-error --header "$auth_header" --header 'Accept: application/json' "https://api.render.com/v1/services/$RENDER_SERVICE_ID" > security-reports/render-service.json
           jq -e --arg id "$RENDER_SERVICE_ID" --arg owner "$RENDER_OWNER_ID" '.id == $id and .ownerId == $owner and .type == "web_service"' security-reports/render-service.json >/dev/null
           curl --fail --silent --show-error --header "$auth_header" --header 'Accept: application/json' "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys?limit=20" > security-reports/render-deploys.json
-          jq -e '[.[] | select(.status == "live")][0]' security-reports/render-deploys.json > security-reports/render-live-deploy.json
+          jq -e '[.[] | (.deploy // .) | select(.status == "live")] | if length == 1 then .[0] else error("Expected exactly one live deploy") end' security-reports/render-deploys.json > security-reports/render-live-deploy.json
           service_url=$(jq -er '.serviceDetails.url | select(type == "string" and startswith("https://"))' security-reports/render-service.json)
           curl --fail --silent --show-error --retry 8 --retry-all-errors --retry-delay 2 --connect-timeout 3 --max-time 8 "$service_url/healthz" > security-reports/render-health.json
-      - name: Fünf Production-Handoff-Gates korrelieren
+      - name: Fehlende zusätzliche Analyse-Evidence fail-closed kennzeichnen
+        run: printf '[]\n' > security-reports/analysis-results.json
+      - name: Production-Handoff-Gates korrelieren
         run: |
           set -euo pipefail
           candidate_file=$(find candidate -name candidate.json -type f -print -quit)
           test -n "$candidate_file"
-          EXPECTED_RENDER_SERVICE_ID="$RENDER_SERVICE_ID" EXPECTED_RENDER_OWNER_ID="$RENDER_OWNER_ID" node scripts/verify-production-handoff.mjs \
+          EXPECTED_RENDER_SERVICE_ID="$RENDER_SERVICE_ID" EXPECTED_RENDER_OWNER_ID="$RENDER_OWNER_ID" EXPECTED_MAIN_SHA="$SOURCE_SHA" node scripts/verify-production-handoff.mjs \
             "$candidate_file" \
             docs/security/evidence/license-rights-review.json \
             security-reports/main-rulesets.json \
             security-reports/render-service.json \
             security-reports/render-live-deploy.json \
             security-reports/render-health.json \
-            security-reports/release.json
+            security-reports/release.json \
+            candidate/registry-manifest.json \
+            candidate/registry-image.json \
+            security-reports/analysis-results.json \
+            candidate/registry-platform-manifest.json
       - name: Production-Handoff-Nachweise sichern
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

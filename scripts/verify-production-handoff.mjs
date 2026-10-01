@@ -1,6 +1,8 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { verifyMainRuleset } from './verify-main-ruleset.mjs';
 
 const SOURCE_SHA = /^[0-9a-f]{40}$/;
 const IMAGE_REF = /^ghcr\.io\/svenkulessa\/capital-ai@sha256:[0-9a-f]{64}$/;
@@ -27,6 +29,11 @@ export function evaluateProductionHandoff({
   health,
   expectedServiceId,
   expectedOwnerId,
+  expectedMainSha,
+  registryManifest,
+  registryScan,
+  registryPlatformManifest,
+  analysisResults = [],
 }) {
   if (!candidate || candidate.status !== 'ATTESTED_CANDIDATE' || candidate.deployEligible !== false) {
     throw new Error('Expected an attested, non-deployable candidate');
@@ -38,19 +45,30 @@ export function evaluateProductionHandoff({
   const activeMainRulesets = (Array.isArray(rulesets) ? rulesets : [])
     .filter(r => r?.target === 'branch' && r?.enforcement === 'active' && targetsMain(r));
   const rules = activeMainRulesets.flatMap(r => Array.isArray(r.rules) ? r.rules : []);
-  const ruleTypes = new Set(rules.map(r => r.type));
   const statusRule = rules.find(r => r.type === 'required_status_checks');
   const requiredContexts = statusRule?.parameters?.required_status_checks?.map(c => c.context) || [];
-  const protectionPass =
-    ruleTypes.has('deletion') &&
-    ruleTypes.has('non_fast_forward') &&
-    ruleTypes.has('pull_request') &&
-    statusRule?.parameters?.strict_required_status_checks_policy === true &&
-    requiredContexts.includes(REQUIRED_CONTEXT) &&
+  const protectionReports = activeMainRulesets.map(verifyMainRuleset);
+  const protectionPass = protectionReports.some(r => r.pass) &&
     activeMainRulesets.every(r => (r.bypass_actors || []).length === 0);
+  const requestedDigest = candidate.imageRef.split('@')[1];
+  const manifests = registryManifest?.manifests?.filter(m =>
+    m.platform?.os === 'linux' && m.platform?.architecture === 'amd64') || [];
+  const platformDigest = manifests.length === 1 ? normalizeDigest(manifests[0].digest) : null;
+  const configDigest = normalizeDigest(registryScan?.Metadata?.ImageID);
+  const registryPass = registryManifest?.digest === requestedDigest &&
+    platformDigest !== null && configDigest !== null &&
+    registryPlatformManifest?.digest === platformDigest &&
+    registryPlatformManifest?.manifest?.config?.digest === configDigest &&
+    registryScan?.Metadata?.ImageConfig?.os === 'linux' &&
+    registryScan?.Metadata?.ImageConfig?.architecture === 'amd64';
 
   const licenseSource = license?.applicationSourceSha || license?.sourceSha || null;
   const gates = [
+    {
+      name: 'SOURCE_CURRENT_MAIN',
+      pass: SOURCE_SHA.test(expectedMainSha || '') && expectedMainSha === candidate.sourceSha,
+      evidence: { expectedMainSha: expectedMainSha || null, candidateSourceSha: candidate.sourceSha },
+    },
     {
       name: 'LICENSE_REDISTRIBUTION_REVIEW',
       pass: license?.status === 'APPROVED' && license?.deployEligible === true && licenseSource === candidate.sourceSha,
@@ -59,7 +77,7 @@ export function evaluateProductionHandoff({
     {
       name: 'MAIN_PROTECTION',
       pass: protectionPass,
-      evidence: { activeMainRulesets: activeMainRulesets.map(r => r.name), requiredContext: REQUIRED_CONTEXT, requiredContexts },
+      evidence: { activeMainRulesets: activeMainRulesets.map(r => r.name), requiredContext: REQUIRED_CONTEXT, requiredContexts, protectionReports },
     },
     {
       name: 'RENDER_IMAGE_SOURCE',
@@ -75,11 +93,15 @@ export function evaluateProductionHandoff({
       pass:
         deploy?.status === 'live' &&
         deploy?.image?.ref === candidate.imageRef &&
-        normalizeDigest(deploy?.image?.sha) !== null,
+        registryPass &&
+        normalizeDigest(deploy?.image?.sha) === platformDigest,
       evidence: {
         deployId: deploy?.id || null,
         imageRef: deploy?.image?.ref || null,
-        requestedManifestDigest: candidate.imageRef.split('@')[1],
+        requestedIndexDigest: requestedDigest,
+        platformManifestDigest: platformDigest,
+        configDigest,
+        registryEvidenceMatches: registryPass,
         providerImageSha: normalizeDigest(deploy?.image?.sha),
         manifestRefMatches: deploy?.image?.ref === candidate.imageRef,
       },
@@ -93,6 +115,18 @@ export function evaluateProductionHandoff({
       evidence: { buildIdentity: health?.buildIdentity || null },
     },
   ];
+
+  for (const type of ['code_scanning', 'code_quality']) {
+    if (rules.some(r => r.type === type)) {
+      const result = analysisResults.find(r => r.type === type && r.sourceSha === candidate.sourceSha);
+      gates.push({
+        name: type === 'code_scanning' ? 'REQUIRED_CODE_SCANNING_RESULTS' : 'REQUIRED_CODE_QUALITY_RESULTS',
+        pass: result?.status === 'PASS' && typeof result?.evidenceUrl === 'string' &&
+          result.evidenceUrl.startsWith('https://api.github.com/repos/SvenKulessa/Capital-AI/'),
+        evidence: { result: result || null, policy: rules.filter(r => r.type === type) },
+      });
+    }
+  }
 
   const remainingGates = gates.filter(g => !g.pass).map(g => g.name);
   const deployEligible = remainingGates.length === 0;
@@ -114,7 +148,7 @@ function readJson(path) {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const [candidatePath, licensePath, rulesetsPath, servicePath, deployPath, healthPath, outputPath] = process.argv.slice(2);
+  const [candidatePath, licensePath, rulesetsPath, servicePath, deployPath, healthPath, outputPath, registryManifestPath, registryScanPath, analysisResultsPath, platformManifestPath] = process.argv.slice(2);
   if (!outputPath) throw new Error('Expected candidate, license, rulesets, service, deploy, health and output paths');
   const report = evaluateProductionHandoff({
     candidate: readJson(candidatePath),
@@ -125,6 +159,14 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     health: readJson(healthPath),
     expectedServiceId: process.env.EXPECTED_RENDER_SERVICE_ID,
     expectedOwnerId: process.env.EXPECTED_RENDER_OWNER_ID,
+    expectedMainSha: process.env.EXPECTED_MAIN_SHA,
+    registryPlatformManifest: platformManifestPath ? {
+      digest: 'sha256:' + createHash('sha256').update(readFileSync(platformManifestPath)).digest('hex'),
+      manifest: readJson(platformManifestPath),
+    } : null,
+    registryManifest: registryManifestPath ? readJson(registryManifestPath) : null,
+    registryScan: registryScanPath ? readJson(registryScanPath) : null,
+    analysisResults: analysisResultsPath ? readJson(analysisResultsPath) : [],
   });
   mkdirSync(dirname(outputPath), { recursive: true });
   writeFileSync(outputPath, JSON.stringify(report, null, 2) + '\n');

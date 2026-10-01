@@ -1510,18 +1510,18 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "phase": 4,
   "phaseName": "Phase 4: Security & Ecosystem",
   "progressPercent": null,
-  "evidenceState": "OFFEN",
+  "evidenceState": "GEHALTEN",
   "evidenceRefs": [
-    "https://github.com/SvenKulessa/Capital-AI/actions/runs/36715472658",
-    "docs/security/RENDER-IMAGE-REVIEW.md"
+    "https://github.com/SvenKulessa/Capital-AI/actions/runs/36765644507",
+    "docs/security/AP-SEC-IMAGE-ABNAHME-20261001.md"
   ],
-  "nextStep": "Finale Source SHA, attestierten GHCR-Digest, gestarteten Render-Digest und Deployment-ID korrelieren; alle Production-Gates separat abnehmen.",
+  "nextStep": "Owner-Lizenzabnahme und aktuelle Runtime-/Analyse-Evidence schließen; anschließend freigegebenen Kandidaten am finalen Main einmal publishen und denselben Digest abnehmen.",
   "priority": "Kritisch",
   "leadName": "Projektowner",
   "targetSprint": "Jetzt zuerst: GHCR-/Render-Digest-Abnahme; vor weiteren Security-App-Paketen",
-  "description": "Der letzte erfolgreiche Dockerlauf 36715472658 gehört zu 46ee077dea184a5defa84ef028fb93e3ac73fad5. Für den gelesenen aktuellen Main fehlt ein gleichwertiger exakter Image-/SBOM-/CVE-Nachweis.",
+  "description": "Main-Snapshot 07b3ff1 und aktiver Kandidat 4fbd137 sind verschieden. Deploy dep-dauo3nc1nsns73f1u4t0 nutzt Index 53c47463 mit Plattform-Manifest 3abee029. Digest-Korrelation belegt; Production-Handoff wegen REVIEW_OPEN, älterem Source-SHA und fehlender aktueller Runtime-/CodeQL-/Code-Quality-Evidence gehalten.",
   "deliverables": [
-    "Freigegebenen Sicherheitsworkflow auf dem finalen Main ausführen und Imageidentität korrelieren."
+    "Evidence-Tabelle und Validator-Korrekturen prüfen; neuer Publish/Deploy/Handoff erst nach gesonderter Freigabe."
   ]
 },
 {
@@ -1603,7 +1603,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
     "deploy/DNS-CUTOVER.md",
     "docs/security/DOMAIN-MIGRATION.md"
   ],
-  "nextStep": "IONOS-Records/Render-Domainbindungen sichern, Webrecords gezielt umstellen; DNS/TLS/ZITADEL/Export und erhaltene Mailrecords prüfen.",
+  "nextStep": "Read-only Bestandsaufnahme und Cutover-/Rollback-Plan vorbereiten. Umschaltung erst nach AP-SEC-IMAGE, Lizenz-, Domain-/Auth-/Mail-Abnahme; Finance erhalten.",
   "priority": "Hoch",
   "leadName": "Projektowner",
   "targetSprint": "Nach Digest-/Lizenzabnahme; abgestimmtes Migrationsfenster",

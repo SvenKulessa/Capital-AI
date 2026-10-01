@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "sourceSha": "4fbd1373b07092ed8ef550f60e9cf60f1f3f526d",
+  "scope": "build-image",
+  "status": "PASS",
+  "vulnerabilities": [],
+  "misconfigurations": [],
+  "secrets": 0,
+  "blocking": 0
+}

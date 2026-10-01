@@ -20,7 +20,7 @@ function validRuleset() {
         parameters: {
           strict_required_status_checks_policy: true,
           do_not_enforce_on_create: false,
-          required_status_checks: [{ context: 'Docker Security Gate' }],
+          required_status_checks: [{ context: 'Docker Security Gate', integration_id: 15368 }],
         },
       },
     ],
@@ -64,4 +64,18 @@ test('rejects missing linear history and merge-only configuration', () => {
   const findings = verifyMainRuleset(ruleset).findings;
   assert.ok(findings.includes('linear_history_not_required'));
   assert.ok(findings.includes('linear_merge_method_missing'));
+});
+
+
+test('rejects a required check from an unbound or different app identity', () => {
+  for (const integrationId of [undefined, 999]) {
+    const ruleset = validRuleset();
+    ruleset.rules.find(r => r.type === 'required_status_checks').parameters.required_status_checks[0].integration_id = integrationId;
+    assert.ok(verifyMainRuleset(ruleset).findings.includes('required_check_identity_unbound'));
+  }
+});
+
+test('rejects exclusions that can remove main from the protection scope', () => {
+  const ruleset = validRuleset(); ruleset.conditions.ref_name.exclude = ['refs/heads/main'];
+  assert.ok(verifyMainRuleset(ruleset).findings.includes('main_exclusions_present'));
 });

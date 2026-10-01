@@ -1,0 +1,4 @@
+{
+  "observation": "UNAVAILABLE",
+  "reason": "Shell proxy timeout; live endpoint unavailable through web retrieval; cloud browser ERR_BLOCKED_BY_CLIENT. CI smoke-health is historical and must not be substituted."
+}
