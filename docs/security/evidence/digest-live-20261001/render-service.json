@@ -1,0 +1,62 @@
+{
+  "autoDeploy": "no",
+  "autoDeployTrigger": "off",
+  "createdAt": "2026-09-29T20:21:57.955989Z",
+  "dashboardUrl": "https://dashboard.render.com/web/srv-dau1rp893c1s73cdhm1g",
+  "environmentId": "evm-d90oshpkh4rs739l1fm0",
+  "id": "srv-dau1rp893c1s73cdhm1g",
+  "imagePath": "ghcr.io/svenkulessa/capital-ai@sha256:53c47463dfdb9e66721be1c997769d9fae3e6ca0e8a3fdd8cf77074785a08d23",
+  "name": "Capital-AI",
+  "notifyOnFail": "default",
+  "ownerId": "tea-d90o4rj7uimc739i86ug",
+  "registryCredential": {
+    "id": "rgc-dau26g3ncjis73afd20g",
+    "name": "ghcr-capital-ai"
+  },
+  "rootDir": "",
+  "serviceDetails": {
+    "buildPlan": "starter",
+    "cache": {
+      "profile": "no-cache"
+    },
+    "env": "image",
+    "envSpecificDetails": {
+      "dockerCommand": "",
+      "dockerContext": "",
+      "dockerfilePath": ""
+    },
+    "healthCheckPath": "/healthz",
+    "ipAllowList": [
+      {
+        "cidrBlock": "0.0.0.0/0",
+        "description": "everywhere"
+      }
+    ],
+    "maintenanceMode": {
+      "enabled": false,
+      "uri": ""
+    },
+    "numInstances": 1,
+    "openPorts": [
+      {
+        "port": 10000,
+        "protocol": "TCP"
+      }
+    ],
+    "plan": "0.5c-512mb",
+    "previews": {
+      "generation": "off"
+    },
+    "pullRequestPreviewsEnabled": "no",
+    "region": "frankfurt",
+    "renderSubdomainPolicy": "enabled",
+    "runtime": "image",
+    "sshAddress": "srv-dau1rp893c1s73cdhm1g@ssh.frankfurt.render.com",
+    "url": "https://capital-ai-uvsl.onrender.com"
+  },
+  "slug": "capital-ai-uvsl",
+  "suspended": "not_suspended",
+  "suspenders": [],
+  "type": "web_service",
+  "updatedAt": "2026-10-01T01:36:36.151834Z"
+}
