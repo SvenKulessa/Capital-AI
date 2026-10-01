@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import {defineConfig, Plugin} from 'vite';
 import { thirdPartyNoticesPlugin } from './scripts/license-evidence.mjs';
+import { licenseEnginePlugin } from './scripts/license-engine.mjs';
 import { handleAdvisorRequest } from './server/advisor.ts';
 import { createLimiter } from './server/http-security.mjs';
 
@@ -70,7 +71,7 @@ function advisorApiPlugin(): Plugin {
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss(), advisorApiPlugin(), thirdPartyNoticesPlugin(), chunkCycleGuard()],
+    plugins: [react(), tailwindcss(), advisorApiPlugin(), thirdPartyNoticesPlugin(), licenseEnginePlugin(), chunkCycleGuard()],
     // Let Rolldown preserve module evaluation order. Size-based forced groups
     // split Motion's mutually dependent modules into circular vendor chunks.
     resolve: {
