@@ -76,3 +76,17 @@ Das entspricht der fail-closed Semantik von `OIDC_VERIFICATION_STATE@1`.
 - Kein `id-token: write` wurde ergänzt.
 - Keine ZITADEL-, Render-, DNS-, Billing-, NATS- oder Production-Konfiguration wurde verändert.
 - Diese Evidence ist **keine Auth- oder Production-Freigabe**.
+
+## Vorbereitete nächste TRUST-Stufe
+
+Der Branch enthält nun zusätzlich eine identifier-freie Success-Telemetrie für die drei nachweisrelevanten Phasen:
+
+- `OIDC authentication verified at token_exchange`
+- `OIDC authentication verified at token_validation`
+- `OIDC authentication verified at session_creation`
+
+Die Meldungen enthalten keine Codes, Tokens, Client-Credentials, Subjects, Nonces oder Session-IDs. Der bestehende synthetische OIDC-End-to-End-Test prüft die exakte Eventfolge und testet explizit auf Secret-/Token-/Subject-Leakage.
+
+Für die spätere Self-Healing-Promotion steht `scripts/validate-oidc-positive-cycles.mjs` bereit. Der Validator bleibt fail-closed und setzt `selfHealingPromotionEligible:true` erst bei mindestens drei vollständigen, voneinander unabhängigen positiven Zyklen mit getrennten Validation- und Run-IDs. Ein einzelner grüner Lauf oder duplizierte Evidence kann die Grenze nicht erfüllen.
+
+Diese Änderungen erzeugen noch **keine Live-OIDC-Freigabe**: Das attestierte Image mit diesen Änderungen muss erst über die bestehende Digest-Handoff-Kette deployt und anschließend gegen echte, redigierte Runtime-Evidence validiert werden.
