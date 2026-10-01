@@ -22,6 +22,8 @@ COPY server/advisor.ts server/http-security.mjs server/mta-sts.mjs server/mta-st
 COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/frontend-security.test.mjs scripts/verify-browser-boundary.mjs scripts/validate-contract-suites.mjs ./scripts/
 COPY shared ./shared
 COPY docs/licenses ./docs/licenses
+COPY docs/security/evidence/license-rights-review.json ./docs/security/evidence/license-rights-review.json
+COPY scripts/license-engine.mjs ./scripts/license-engine.mjs
 RUN --network=none node --test server/mta-sts.test.mjs \
     && node --test scripts/branding-assets.test.mjs \
     && node --test scripts/license-evidence.test.mjs \
