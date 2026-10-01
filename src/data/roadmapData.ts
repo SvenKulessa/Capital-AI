@@ -1079,7 +1079,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "phase": 4,
   "phaseName": "Phase 4: DevSecOps & RC",
   "progressPercent": null,
-  "evidenceState": "OFFEN",
+  "evidenceState": "GEHALTEN",
   "evidenceRefs": [
     "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
   ],
@@ -1089,8 +1089,8 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "owner": "TRUST",
   "priority": "Hoch",
   "targetSprint": "01.10.2026; nächster Settings-Schritt",
-  "description": "Live fehlt required_linear_history; Squash/Rebase sind im Repo deaktiviert. Konfiguration und lokale Drift-Erkennung sind vorbereitet, Live-Aktivierung offen.",
-  "nextStep": "Zuerst Squash erlauben; dann Require linear history aktivieren und vorhandene Gates sowie PR-Mergefähigkeit prüfen.",
+  "description": "Live-Readback am 01.10.2026: required_linear_history ist aktiv, das Ruleset erlaubt jedoch nur Merge. Diese widersprüchliche Kombination blockiert den regulären Merge; Owner-Einrichtung muss auf Squash abgeglichen werden.",
+  "nextStep": "Im Ruleset Allowed merge methods auf Squash umstellen und effektive Repo-Mergeoption prüfen; danach CodeQL-/Code-Quality-Ergebnisse des aktuellen PR-Heads abwarten.",
   "deliverables": [
     "Zuerst Squash erlauben; dann Require linear history aktivieren und vorhandene Gates sowie PR-Mergefähigkeit prüfen."
   ],
