@@ -27,3 +27,12 @@
 .animate-pulse-slow {
   animation: pulseSlow 6s ease-in-out infinite;
 }
+
+@media print {
+  body:has(.research-report) * { visibility: hidden; }
+  body:has(.research-report) .research-report,
+  body:has(.research-report) .research-report * { visibility: visible; color: #111 !important; background: white !important; box-shadow: none !important; }
+  .research-report { position: absolute; top: 0; left: 0; width: 100%; }
+  .research-report button, .research-report nav { display: none; }
+  .research-report article { break-inside: avoid; border-color: #ccc; }
+}

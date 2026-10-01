@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "repository": "SvenKulessa/FRONTEND",
+  "sourceSha": "b0e2ab3a5d02882e0fa099af6899ccfe41d2801a",
+  "destinationBaseSha": "16b9ced4950317bee3efe6bf8d5154d1551e7cc9",
+  "importMethod": "GitHub connector fetch_file",
+  "status": "IMPORTED_SOURCE_NOT_LICENSE_APPROVAL",
+  "files": [
+    {
+      "path": "PROVIDER_LICENSES_AND_ACADEMIC_TERMS.md",
+      "gitBlob": "822061db8a964771ef446865cfda8151b64eb492",
+      "archivedPath": "docs/security/evidence/frontend-research-origin/PROVIDER_LICENSES_AND_ACADEMIC_TERMS.md.source",
+      "sha256": "e6f38beaef974ea36e6eed896f634b2c4f79f3ad9438834976e768833cd41f54",
+      "bytes": 10408
+    },
+    {
+      "path": "OPEN_SOURCE_LICENSES.md",
+      "gitBlob": "81cc48f5dbfc6482cc9c70a41c42faf898962b97",
+      "archivedPath": "docs/security/evidence/frontend-research-origin/OPEN_SOURCE_LICENSES.md.source",
+      "sha256": "813564761a1bef1c7ff391918acc483f15e06faa1a19470a029496f1511b1543",
+      "bytes": 6646
+    },
+    {
+      "path": "src/components/Footer.tsx",
+      "gitBlob": "4de83041503a910a0cf393a401ee598d9ef8b903",
+      "archivedPath": "docs/security/evidence/frontend-research-origin/src/components/Footer.tsx.source",
+      "sha256": "7ff1b955fdfa51ee25f6c766c3ffd7c18d7692b737655c6c9ecf66a1dea9635b",
+      "bytes": 5061
+    },
+    {
+      "path": "src/App.tsx",
+      "gitBlob": "2f2ca74c545bc3f922ad5868ed36fab0bbda73c2",
+      "archivedPath": "docs/security/evidence/frontend-research-origin/src/App.tsx.source",
+      "sha256": "825a0985f8bc84d48910d46c35505f48797d382c135b962ddb57dc4a96ee28a0",
+      "bytes": 41108
+    },
+    {
+      "path": "src/components/LegalAndFaqPages.tsx",
+      "gitBlob": "53313bf891c61589c965f10f431f4b999ce863f7",
+      "archivedPath": "docs/security/evidence/frontend-research-origin/src/components/LegalAndFaqPages.tsx.source",
+      "sha256": "5ada12828b81c63f956b835709feed0fd85d3efc60eff8dc7a1aef733ad20474",
+      "bytes": 107562
+    },
+    {
+      "path": "src/components/ProviderStatusDashboard.tsx",
+      "gitBlob": "0a3920427649ce7418030b8d06f93aa46feff66e",
+      "archivedPath": "docs/security/evidence/frontend-research-origin/src/components/ProviderStatusDashboard.tsx.source",
+      "sha256": "5c6de99eda3dd10ce467bed8676f3567dea985071d679c79fc5283e2a8ac86e6",
+      "bytes": 80988
+    }
+  ]
+}

@@ -1,16 +1,6 @@
 import React from 'react';
 import { BrandLogo } from './BrandLogo';
-import { Github, Youtube, AtSign, Music2, ExternalLink } from 'lucide-react';
-import { socialLinks } from '../data/socialLinks';
 import { trackEvent } from '../utils/analytics';
-
-const socialIcons = {
-  github: <Github size={16} aria-hidden="true" />,
-  tiktok: <Music2 size={16} aria-hidden="true" />,
-  threads: <AtSign size={16} aria-hidden="true" />,
-  youtube: <Youtube size={16} aria-hidden="true" />,
-  x: <span className="text-base leading-none" aria-hidden="true">𝕏</span>,
-} satisfies Record<(typeof socialLinks)[number]['id'], React.ReactNode>;
 
 interface FooterProps {
   onNavigate?: (path: string) => void;
@@ -18,7 +8,7 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   const handleNavClick = (e: React.MouseEvent, path: string, label: string) => {
-    if (onNavigate) e.preventDefault();
+    e.preventDefault();
     trackEvent('footer_nav_click', {
       category: 'navigation',
       label,
@@ -34,9 +24,9 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
       {/* Thin elegant separator with golden center glow */}
       <div className="w-full h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent mb-6" />
 
-      {/* Central brand artwork */}
+      {/* Pure Vector Brand Logo */}
       <div className="flex justify-center mb-4">
-        <BrandLogo variant="banner" size="lg" showSubtitle={false} />
+        <BrandLogo variant="inline" size="sm" />
       </div>
 
       {/* Professional FinTech Slogan */}
@@ -44,25 +34,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         MARKET INTELLIGENCE • NEXT-GEN QUANT TERMINAL
       </p>
 
-      <nav aria-label="Capital-AI Community" className="mt-5 flex flex-wrap justify-center gap-3">
-        {socialLinks.map((link) => (
-          <a key={link.id} href={link.href} target="_blank" rel="noopener noreferrer"
-            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-amber-500/20 bg-slate-950/60 px-4 py-2 text-xs font-medium text-slate-300 transition-colors hover:border-amber-400/60 hover:text-amber-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400"
-            aria-label={`${link.label} – öffnet in einem neuen Tab`}>
-            {socialIcons[link.id]}
-            <span>{link.label}</span>
-            <ExternalLink size={12} className="text-amber-400/70" aria-hidden="true" />
-          </a>
-        ))}
-      </nav>
-
       {/* Small copyright & legal navigation with dedicated routing paths */}
-      <nav aria-label="Forschung und Lizenzen" className="my-4 flex flex-wrap justify-center gap-4 text-xs">
-        <a id="footer-nav-lizenz" href="/lizenz" onClick={e => handleNavClick(e, '/lizenz', 'lizenz')} className="text-amber-300 hover:underline">Design & Bildherkunft</a>
-        <a id="footer-nav-datenprovider-lizenzen" href="/datenprovider-lizenzen" onClick={e => handleNavClick(e, '/datenprovider-lizenzen', 'datenprovider-lizenzen')} className="text-cyan-300 hover:underline">Datenprovider-Lizenzen</a>
-        <a id="footer-nav-opensource-lizenzen" href="/opensource-lizenzen" onClick={e => handleNavClick(e, '/opensource-lizenzen', 'opensource-lizenzen')} className="text-blue-300 hover:underline">Open-Source (OSS)</a>
-        <a id="footer-nav-forschung" href="/forschung" onClick={e => handleNavClick(e, '/forschung', 'forschung')} className="text-cyan-300 hover:underline">Forschungsprojekt</a>
-      </nav>
       <div className="mt-3 text-[11px] text-slate-400 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
         <span>© {new Date().getFullYear()} Capital-AI</span>
         <span className="text-slate-600">•</span>
@@ -116,12 +88,34 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           Preise &amp; Tarife
         </a>
         <span className="text-slate-600">•</span>
-        <a href="/THIRD_PARTY_NOTICES.txt" className="hover:text-amber-400 transition-colors hover:underline underline-offset-4">
-          Open-Source-Lizenzen
+        <a
+          id="footer-nav-lizenz"
+          href="/lizenz"
+          onClick={(e) => handleNavClick(e, '/lizenz', 'lizenz')}
+          className="hover:text-amber-400 transition-colors cursor-pointer text-slate-400 font-medium hover:underline underline-offset-4"
+          data-analytics="footer-lizenz"
+        >
+          Design-Lizenz
         </a>
         <span className="text-slate-600">•</span>
-        <a href="/fonts/OFL.txt" className="hover:text-amber-400 transition-colors hover:underline underline-offset-4">
-          Schriftlizenz
+        <a
+          id="footer-nav-datenprovider-lizenzen"
+          href="/datenprovider-lizenzen"
+          onClick={(e) => handleNavClick(e, '/datenprovider-lizenzen', 'datenprovider-lizenzen')}
+          className="hover:text-cyan-400 transition-colors cursor-pointer text-cyan-300/90 font-medium hover:underline underline-offset-4"
+          data-analytics="footer-datenprovider-lizenzen"
+        >
+          Datenprovider-Lizenzen
+        </a>
+        <span className="text-slate-600">•</span>
+        <a
+          id="footer-nav-opensource-lizenzen"
+          href="/opensource-lizenzen"
+          onClick={(e) => handleNavClick(e, '/opensource-lizenzen', 'opensource-lizenzen')}
+          className="hover:text-blue-400 transition-colors cursor-pointer text-blue-300/90 font-medium hover:underline underline-offset-4"
+          data-analytics="footer-opensource-lizenzen"
+        >
+          Open-Source (OSS)
         </a>
       </div>
 
@@ -131,3 +125,4 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
     </footer>
   );
 };
+

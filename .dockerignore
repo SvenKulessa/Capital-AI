@@ -23,6 +23,7 @@
 !shared/
 !shared/market-contracts.mjs
 !shared/legal-identity.mjs
+!shared/research-metadata.mjs
 !deploy/
 !deploy/npm-security-patches/
 !deploy/npm-security-patches/package.json
