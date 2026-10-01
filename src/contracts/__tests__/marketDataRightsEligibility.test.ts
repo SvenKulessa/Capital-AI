@@ -1,6 +1,14 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { describe, it } from 'node:test';
+import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
 import { evaluateMarketDataRights, type MarketDataRightsEvidence } from '../marketDataRightsEligibility';
+import {
+  FIRST_ACTIVATION_COHORT,
+  bindFirstActivationCohort,
+  projectProviderRights,
+} from '../marketDataRightsInventoryProjection';
 
 const base: MarketDataRightsEvidence = {
   providerId: 'provider',
@@ -86,5 +94,72 @@ describe('market data rights eligibility', () => {
     const result = evaluateMarketDataRights(research, ['scientific_research_tdm']);
     assert.equal(result.eligible, false);
     assert.ok(result.reasons.includes('LAWFUL_ACCESS_UNVERIFIED'));
+  });
+});
+
+const inventoryPath = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../../../docs/security/evidence/license-rights-review.json',
+);
+
+describe('provider rights inventory projection', () => {
+  const inventory = JSON.parse(readFileSync(inventoryPath, 'utf8')) as { providers: unknown[] };
+  const projections = inventory.providers.map(projectProviderRights);
+  const cohort = bindFirstActivationCohort(projections);
+
+  it('projects the four inventoried providers without filling null rights', () => {
+    assert.deepEqual(projections.map(item => item.providerId), ['binance', 'kraken', 'twelvedata', 'polygon']);
+    for (const projection of projections) {
+      assert.equal(projection.inventoryStatus, 'CONTRACT_SCOPE_UNVERIFIED');
+      assert.equal(projection.deployEligible, false);
+      assert.equal(projection.datasetScopeVerified, false);
+      assert.equal(projection.evidence.feedsSymbolsAndVenues, null);
+      assert.notEqual(projection.evidence.feedsSymbolsAndVenues, projection.technicalEndpoint);
+      assert.equal(projection.evidence.scientificResearchTdm, null);
+      assert.equal(projection.evidence.reviewedAt, null);
+      assert.equal(projection.evidence.validUntil, null);
+      assert.equal(projection.unparsedValidityAndReviewDate, null);
+      for (const permission of Object.values(projection.evidence.permissions)) {
+        assert.equal(permission.allowed, null);
+        assert.equal(permission.evidenceReference, null);
+      }
+      assert.equal(projection.researchOnly.decision, 'REVIEW_REQUIRED');
+      assert.equal(projection.researchOnly.eligible, false);
+      assert.equal(projection.commercialProduct.decision, 'REVIEW_REQUIRED');
+      assert.equal(projection.commercialProduct.eligible, false);
+      assert.ok(projection.researchOnly.reasons.includes('RESEARCH_TDM_EVIDENCE_MISSING'));
+      assert.equal(projection.commercialProduct.decision === 'ALLOW', false);
+      assert.equal(projection.researchOnly.decision === 'BLOCK', false);
+    }
+  });
+
+  it('keeps the research path from authorizing the commercial path', () => {
+    for (const projection of projections) {
+      assert.equal(projection.researchOnly.eligible, false);
+      assert.equal(evaluateMarketDataRights(projection.evidence, ['scientific_research_tdm', 'api_redistribution']).eligible, false);
+      assert.ok(projection.researchScope?.includes('NOT_ARCHIVED_EXECUTED_CONTRACT'));
+    }
+  });
+
+  it('binds integrity, data quality and liquidity without commercial activation', () => {
+    assert.deepEqual(cohort.map(item => item.componentId), FIRST_ACTIVATION_COHORT.map(item => item.componentId));
+    for (const binding of cohort) {
+      assert.equal(binding.commerciallyActive, false);
+      assert.equal(binding.researchOnlyEligible, false);
+      for (const provider of binding.providers) {
+        assert.equal(provider.commercialDecision, 'REVIEW_REQUIRED');
+        assert.equal(provider.researchDecision, 'REVIEW_REQUIRED');
+        assert.equal(provider.datasetScopeVerified, false);
+      }
+    }
+    const integrity = cohort[0];
+    assert.ok(integrity.providers.find(provider => provider.providerId === 'coinbase')?.reasons.includes('PROVIDER_NOT_IN_RIGHTS_INVENTORY'));
+    const quality = cohort[1];
+    assert.ok(quality.providers.find(provider => provider.providerId === 'alphavantage')?.reasons.includes('PROVIDER_NOT_IN_RIGHTS_INVENTORY'));
+    const binance = integrity.providers.find(provider => provider.providerId === 'binance');
+    assert.ok(binance?.reasons.includes('USE_CASE_UNVERIFIED:internal_analysis'));
+    assert.ok(binance?.reasons.includes('USE_CASE_UNVERIFIED:derived_scoring_research'));
+    assert.ok(binance?.reasons.includes('DATASET_SCOPE_UNVERIFIED'));
+    assert.ok(binance?.reasons.includes('RESEARCH_SCOPE_IS_NOT_STATUTORY_EVIDENCE'));
   });
 });
