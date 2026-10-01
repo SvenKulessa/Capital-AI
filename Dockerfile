@@ -31,21 +31,21 @@ RUN --network=none node --test server/mta-sts.test.mjs \
     && npm run lint && npm test && npm run build \
     && node scripts/verify-browser-boundary.mjs
 
-FROM build AS production-deps
-RUN npm prune --omit=dev --ignore-scripts --no-audit --no-fund && rm -rf /root/.npm
+FROM crypto-base AS production-deps
+WORKDIR /runtime
+COPY deploy/runtime/package.json deploy/runtime/package-lock.json ./
+RUN npm ci --omit=dev --ignore-scripts --no-audit --no-fund && rm -rf /root/.npm
 
 FROM crypto-base AS runtime
 ENV NODE_ENV=production PORT=10000
 WORKDIR /app
 COPY --from=build /app/dist ./dist
 COPY server/index.mjs server/market.mjs server/auth.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/mta-sts.mjs ./server/
-COPY --from=production-deps /app/node_modules ./node_modules
+COPY --from=production-deps /runtime/node_modules ./node_modules
 COPY server/infrastructure.mjs ./server/
 COPY scripts/verify-private-brokers.mjs ./scripts/
 COPY shared ./shared
 COPY docs/licenses/node-v24.19.0-LICENSE.txt ./licenses/Node-LICENSE.txt
-COPY docs/licenses/nodemailer-10.0.13-MIT-0.txt ./licenses/Nodemailer-LICENSE.txt
-COPY docs/licenses/nodemailer-license-review.json ./licenses/nodemailer-license-review.json
 RUN rm -rf /usr/local/lib/node_modules/corepack /usr/local/bin/corepack /usr/local/bin/pnpm* /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx /opt/yarn* /usr/local/bin/yarn* \
     && chmod -R a-w /app
 USER 1000:1000
