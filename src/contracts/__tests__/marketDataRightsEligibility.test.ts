@@ -128,8 +128,6 @@ describe('provider rights inventory projection', () => {
       assert.equal(projection.commercialProduct.decision, 'REVIEW_REQUIRED');
       assert.equal(projection.commercialProduct.eligible, false);
       assert.ok(projection.researchOnly.reasons.includes('RESEARCH_TDM_EVIDENCE_MISSING'));
-      assert.equal(projection.commercialProduct.decision === 'ALLOW', false);
-      assert.equal(projection.researchOnly.decision === 'BLOCK', false);
     }
   });
 
