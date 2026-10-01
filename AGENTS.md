@@ -73,6 +73,22 @@ Jeder Update-PR soll mindestens festhalten:
 
 Für Security-sensitive Komponenten, Major-Upgrades, Auth, Runtime, CI/CD, Container, Broker und Deployment-Infrastruktur sind mindestens **zwei voneinander unabhängige Evidenzklassen zusätzlich zur Registry** erforderlich.
 
+## Remote AI Cloud Browser Changes
+
+Jede **zustandsverändernde** Aktion an externen Systemen, die durch eine AI-gestützte Cloud-Browser-Sitzung im Namen des Owners ausgeführt wird, muss verpflichtend als **"Remote AI basierte Cloud Browser Sitzung — durch den Owner freigegeben"** dokumentiert werden.
+
+Dabei gelten mindestens folgende Regeln:
+
+- Ausführungsmodus und Owner-Freigabe müssen explizit benannt werden.
+- Die Evidence muss Zielsystem, Scope, Zweck, konkrete Änderungen, Ergebnis, providerseitigen Readback und Rollback-Möglichkeit enthalten.
+- Es darf nicht der Eindruck entstehen, der Owner habe eine konkrete UI-Aktion persönlich ausgeführt, wenn diese tatsächlich durch die AI-gestützte Remote-Sitzung erfolgte.
+- Secrets, Tokens, Session-Cookies, Recovery Codes und andere Zugangsdaten dürfen nicht in Evidence oder Screenshots gespeichert werden.
+- Kritische Änderungen an Auth, Billing, DNS/Domain, Production, Branch Protection oder Security Controls benötigen zusätzlich einen verifizierten Endzustand.
+- Die Session-Dokumentation ersetzt keine Required Checks, Security-/Lizenz-Gates oder Production-Handoff-Freigaben.
+
+Verbindliche Detailregel:
+- `docs/security/REMOTE-AI-CLOUD-BROWSER-SESSIONS.md`
+
 ## Docker Build- und Runtime-Modell
 
 - Build-once / Promote-many: exakt das geprüfte Image wird veröffentlicht und weitergereicht; kein Rebuild zwischen Prüfung und Promotion.
