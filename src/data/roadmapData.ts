@@ -484,7 +484,867 @@ const BACKLOG_TARGETS: WorkPackage[] = [
     priority: 'Mittel',
     leadName: 'Verantwortung zuzuordnen',
     targetSprint: 'Nicht terminiert',
-    description: 'Geplantes Ziel, Abnahme offen: Generierung hochauflösender Vorschaubilder (1200x630) bei Teilung von Scre…10534 tokens truncated…m Login und Logout auf dem Zielhost abnehmen."
+    description: 'Geplantes Ziel, Abnahme offen: Generierung hochauflösender Vorschaubilder (1200x630) bei Teilung von Screener-Analysen, Pipeline-Blueprints oder Glossar-Einträgen.',
+    deliverables: [
+      'OG:Title und OG:Description Sync in metadata.json & HTML',
+      'Klickbare Social Previews für WhatsApp, LinkedIn, X',
+      'Twitter Large Image Card Metatags',
+    ],
+  },
+  {
+    id: 'AP-SEO-03',
+    title: 'XML Sitemap & Google Search Console Indexierungs-Strategie',
+    owner: 'GROWTH',
+    status: 'planning',
+    phase: 4,
+    phaseName: 'Phase 4: Security, Evidence Merkle Trees, SEO & Social',
+    progressPercent: null,
+    evidenceState: 'UNGEKLÄRT',
+    evidenceRefs: [],
+    nextStep: 'Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen.',
+    priority: 'Mittel',
+    leadName: 'Verantwortung zuzuordnen',
+    targetSprint: 'Nicht terminiert',
+    description: 'Geplantes Ziel, Abnahme offen: Bereitstellung einer automatisierten Sitemap für alle Glossarbegriffe, Markt-Asset-Profile und öffentliche Studio-Blueprints.',
+    deliverables: [
+      'Dynamische sitemap.xml Route mit wöchentlicher Priorität',
+      'Robots.txt mit gezielter Freigabe für Googlebot und Perplexity AI',
+      'Lighthouse SEO Score 100/100 Audit',
+    ],
+  },
+
+  // =========================================================================
+  // 6. SOCIAL (Community, Telegram Bot & Social Signals)
+  // =========================================================================
+  {
+    id: 'AP-SOC-01',
+    title: 'Telegram Whale Radar Alerts & Smart Money Broadcast Engine',
+    owner: 'GROWTH',
+    status: 'pending',
+    phase: 3,
+    phaseName: 'Phase 3: AI Agent-Client & Studio Hub Synthesizer',
+    progressPercent: null,
+    evidenceState: 'UNGEKLÄRT',
+    evidenceRefs: [],
+    nextStep: 'Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen.',
+    priority: 'Hoch',
+    leadName: 'Verantwortung zuzuordnen',
+    targetSprint: 'Nicht terminiert',
+    description: 'Geplantes Ziel, Abnahme offen: Automatisierte Telegram-Benachrichtigungen bei großen Transaktionen (>1.000.000 $) auf Ethereum, Bitcoin und Solana.',
+    deliverables: [
+      'Telegram Bot Webhook Schnittstelle (/whale-radar)',
+      'Sofortiger Alert bei On-Chain Whale Transaktionen',
+      'Ein-Klick Beitritts-Link für die VIP Signal-Gruppe',
+    ],
+  },
+  {
+    id: 'AP-SOC-02',
+    title: 'One-Click Social Share & Pipeline Blueprint Link-Sharing',
+    owner: 'GROWTH',
+    status: 'pending',
+    phase: 3,
+    phaseName: 'Phase 3: AI Agent-Client & Studio Hub Synthesizer',
+    progressPercent: null,
+    evidenceState: 'UNGEKLÄRT',
+    evidenceRefs: [],
+    nextStep: 'Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen.',
+    priority: 'Mittel',
+    leadName: 'Verantwortung zuzuordnen',
+    targetSprint: 'Nicht terminiert',
+    description: 'Geplantes Ziel, Abnahme offen: Direktes Teilen von konfigurierten Pipelines und Screener-Ergebnissen über native Web Share API & Twitter/X Intent Links.',
+    deliverables: [
+      'Kompakter Share-Link mit Hash-Parametern (#share=...)',
+      'Vorgefertigte Tweets mit $CPT Tokenomics und Performance-Metriken',
+      'LinkedIn Post Vorlage für B2B CTOs & FinTech Entscheider',
+    ],
+  },
+  {
+    id: 'AP-SOC-03',
+    title: 'Discord Community Bot & Alpha Caller Integration für v1.0',
+    owner: 'GROWTH',
+    status: 'planning',
+    phase: 5,
+    phaseName: 'Phase 5: Release Candidate & Production Go-Live v1.0',
+    progressPercent: null,
+    evidenceState: 'UNGEKLÄRT',
+    evidenceRefs: [],
+    nextStep: 'Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen.',
+    priority: 'Mittel',
+    leadName: 'Verantwortung zuzuordnen',
+    targetSprint: 'Nicht terminiert',
+    description: 'Geplantes Ziel, Abnahme offen: Verbindung der Trading Community über einen interaktiven Discord Bot mit /score und /buffett Slash-Commands.',
+    deliverables: [
+      'Discord Bot Token Setup mit Role-Gating ($CPT Staker)',
+      'Live-Feed der Top 5 Tagesgewinner und Whale Akkumulationen',
+      'Automatischer Willkommens-Guide mit Verweis aufs Learning Portal',
+    ],
+  },
+
+  // =========================================================================
+  // 7. SECURITY (CISO, Cryptography & Hardening)
+  // =========================================================================
+  {
+    id: 'AP-SEC-01',
+    title: 'SHA-256 Merkle-Tree Hashketten für Signal-Integrität',
+    owner: 'TRUST',
+    status: 'pending',
+    phase: 2,
+    phaseName: 'Phase 2: Multi-Asset Screener & BaFin Compliance Hardening',
+    progressPercent: null,
+    evidenceState: 'UNGEKLÄRT',
+    evidenceRefs: [],
+    nextStep: 'Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen.',
+    priority: 'Kritisch',
+    leadName: 'Verantwortung zuzuordnen',
+    targetSprint: 'Nicht terminiert',
+    description: 'Geplantes Ziel, Abnahme offen: Kryptografische Signierung jedes generierten Scores in einer unveränderbaren Merkle-Baum-Struktur zur Beweissicherung.',
+    deliverables: [
+      'Client- und Server-seitige SHA-256 Hashing-Routine',
+      'Merkle Root Export im PDF Evidence Report',
+      'Unveränderbare WORM-Verifikation im Benchmark Lab',
+    ],
+    bafinStandard: 'WpHG § 83 / NIST FIPS 180-4',
+  },
+  {
+    id: 'AP-SEC-02',
+    title: 'Zero-Trust RBAC & Session Security im Control Center',
+    owner: 'TRUST',
+    status: 'pending',
+    phase: 3,
+    phaseName: 'Phase 3: AI Agent-Client & Studio Hub Synthesizer',
+    progressPercent: null,
+    evidenceState: 'UNGEKLÄRT',
+    evidenceRefs: [],
+    nextStep: 'Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen.',
+    priority: 'Kritisch',
+    leadName: 'Verantwortung zuzuordnen',
+    targetSprint: 'Nicht terminiert',
+    description: 'Geplantes Ziel, Abnahme offen: Rollenbasierte Zugriffskontrolle (GF, Founder, Tech Lead, Compliance Officer) mit Audit Logging aller Admin-Aktionen.',
+    deliverables: [
+      'Granulare Rollenmatrix im Control Center',
+      'Maskierung aller sensiblen Provider-API Keys',
+      'Automatische Session-Invalidierung bei Inaktivität',
+    ],
+    bafinStandard: 'BaFin BAIT 4 Berechtigungsmanagement',
+  },
+  {
+    id: 'AP-SEC-03',
+    title: 'OWASP Top 10 Audit & Penetration Testing vor v1.0 Go-Live',
+    owner: 'TRUST',
+    status: 'planning',
+    phase: 5,
+    phaseName: 'Phase 5: Release Candidate & Production Go-Live v1.0',
+    progressPercent: null,
+    evidenceState: 'UNGEKLÄRT',
+    evidenceRefs: [],
+    nextStep: 'Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen.',
+    priority: 'Kritisch',
+    leadName: 'Verantwortung zuzuordnen',
+    targetSprint: 'Nicht terminiert',
+    description: 'Geplantes Ziel, Abnahme offen: Umfassende Sicherheitsüberprüfung gegen XSS, CSRF, Injection, Prototype Pollution und API-Key Exfiltration vor dem v1.0 Start.',
+    deliverables: [
+      'Offizieller Penetration Test Report ohne kritische Befunde',
+      'Content Security Policy (CSP) Level 3 Konfiguration',
+      'Automatische GitHub Dependabot & CodeQL Scans',
+    ],
+    bafinStandard: 'BSI IT-Grundschutz / ISO 27001',
+    dependencies: ['AP-SEC-01', 'AP-SEC-02'],
+  },
+
+  // =========================================================================
+  // 8. COMPLIANCE (Regulatory, BaFin & MiCA)
+  // =========================================================================
+  {
+    id: 'AP-CMP-01',
+    title: 'BaFin MaRisk Mindestanforderungen an das Risikomanagement',
+    owner: 'TRUST',
+    status: 'pending',
+    phase: 2,
+    phaseName: 'Phase 2: Multi-Asset Screener & BaFin Compliance Hardening',
+    progressPercent: null,
+    evidenceState: 'UNGEKLÄRT',
+    evidenceRefs: [],
+    nextStep: 'Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen.',
+    priority: 'Kritisch',
+    leadName: 'Verantwortung zuzuordnen',
+    targetSprint: 'Nicht terminiert',
+    description: 'Geplantes Ziel, Abnahme offen: Verankerung der qualitativen und quantitativen MaRisk-Anforderungen an Finanzsoftware mit Auslagerungsprüfung.',
+    deliverables: [
+      'MaRisk AT 4.3.1 Datenmanagement-Validierung',
+      'Dokumentierte Schnittstellen-SLA aller Fremddatenanbieter',
+      'Audit-Trail Viewer im Control Center',
+    ],
+    bafinStandard: 'BaFin Rundschreiben 10/2021 (BA) - MaRisk',
+  },
+  {
+    id: 'AP-CMP-02',
+    title: 'MiCA Kryptowerte-Verordnung & Whitepaper Revisionssicherheit',
+    owner: 'TRUST',
+    status: 'pending',
+    phase: 3,
+    phaseName: 'Phase 3: AI Agent-Client & Studio Hub Synthesizer',
+    progressPercent: null,
+    evidenceState: 'UNGEKLÄRT',
+    evidenceRefs: [],
+    nextStep: 'Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen.',
+    priority: 'Hoch',
+    leadName: 'Verantwortung zuzuordnen',
+    targetSprint: 'Nicht terminiert',
+    description: 'Geplantes Ziel, Abnahme offen: Prüfung der $CPT Tokenomics und Staking-Mechaniken nach der EU-Verordnung über Märkte für Kryptowerte (MiCA).',
+    deliverables: [
+      'MiCA Art. 6 Krypto-Asset Whitepaper Konformität',
+      'Risikohinweise für Utility Token Staking und Buyback-Burn',
+      'Ausschluss unzulässiger Einlagengeschäfte nach KWG',
+    ],
+    bafinStandard: 'EU MiCA Verordnung 2023/1114',
+  },
+  {
+    id: 'AP-CMP-03',
+    title: 'WpHG § 83 Aufzeichnungs- und Aufbewahrungspflichten Audit',
+    owner: 'TRUST',
+    status: 'pending',
+    phase: 4,
+    phaseName: 'Phase 4: Security, Evidence Merkle Trees, SEO & Social',
+    progressPercent: null,
+    evidenceState: 'UNGEKLÄRT',
+    evidenceRefs: [],
+    nextStep: 'Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen.',
+    priority: 'Kritisch',
+    leadName: 'Verantwortung zuzuordnen',
+    targetSprint: 'Nicht terminiert',
+    description: 'Geplantes Ziel, Abnahme offen: Sicherstellung der 5-jährigen lückenlosen und manipulationssicheren Aufbewahrung aller berechneten Scores und Signale.',
+    deliverables: [
+      'WORM (Write Once Read Many) Cloud Storage Bucket Regelwerk',
+      'Exportfunktion für BaFin Sonderprüfer in CSV/JSON/PDF',
+      'Revisionsprotokoll aller manuellen Override-Versuche',
+    ],
+    bafinStandard: 'WpHG § 83 Abs. 1 & 2 / Delegierte VO (EU) 2017/565',
+    dependencies: ['AP-CMP-01', 'AP-SEC-01'],
+  },
+
+  // =========================================================================
+  // 9. FINTECH (Quantitative Finance & Scoring Engine)
+  // =========================================================================
+  {
+    id: 'AP-FIN-01',
+    title: 'Multi-Asset Screener & 50-Faktoren Quantitative Ranking Engine',
+    owner: 'MARKET',
+    status: 'pending',
+    phase: 2,
+    phaseName: 'Phase 2: Multi-Asset Screener & BaFin Compliance Hardening',
+    progressPercent: null,
+    evidenceState: 'UNGEKLÄRT',
+    evidenceRefs: [],
+    nextStep: 'Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen.',
+    priority: 'Kritisch',
+    leadName: 'Verantwortung zuzuordnen',
+    targetSprint: 'Nicht terminiert',
+    description: 'Geplantes Ziel, Abnahme offen: Vollständige Berechnung von fundamentalen, technischen und Sentiment-Scores über Aktien, Krypto, Forex und Rohstoffe.',
+    deliverables: [
+      'Berechnung von PE, PB, ROE, FCF-Yield, Debt/Equity',
+      'Z-Score Normalisierung & Outlier-Winsorizing',
+      'Sektor-Aggregations-Matrix mit 11 Kernsektoren',
+    ],
+    bafinStandard: 'Quantitative Methodik & Backtesting Standards',
+  },
+  {
+    id: 'AP-FIN-02',
+    title: 'Buffett Value Check & Margin of Safety DCF Algorithmus',
+    owner: 'MARKET',
+    status: 'pending',
+    phase: 2,
+    phaseName: 'Phase 2: Multi-Asset Screener & BaFin Compliance Hardening',
+    progressPercent: null,
+    evidenceState: 'UNGEKLÄRT',
+    evidenceRefs: [],
+    nextStep: 'Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen.',
+    priority: 'Hoch',
+    leadName: 'Verantwortung zuzuordnen',
+    targetSprint: 'Nicht terminiert',
+    description: 'Geplantes Ziel, Abnahme offen: Rechnerische Ermittlung des intrinsischen Werts mit 10-Jahres FCF-Projektion, WACC-Diskontierung und Sicherheitsmarge.',
+    deliverables: [
+      'Discounted Cash Flow (DCF) Modell mit 3 Szenarien (Bear, Base, Bull)',
+      'Eigenkapitalrendite (ROE) > 15% Konsistenzfilter',
+      'Interaktiver Buffett Score in Asset-Detailkarten',
+    ],
+  },
+  {
+    id: 'AP-FIN-03',
+    title: 'High-Frequency Slippage Model & Order Execution Simulator',
+    owner: 'MARKET',
+    status: 'pending',
+    phase: 4,
+    phaseName: 'Phase 4: Security, Evidence Merkle Trees, SEO & Social',
+    progressPercent: null,
+    evidenceState: 'UNGEKLÄRT',
+    evidenceRefs: [],
+    nextStep: 'Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen.',
+    priority: 'Mittel',
+    leadName: 'Verantwortung zuzuordnen',
+    targetSprint: 'Nicht terminiert',
+    description: 'Geplantes Ziel, Abnahme offen: Simulation von Ausführungskosten und Slippage bei institutionellen Ordervolumina über aggregierte Orderbücher.',
+    deliverables: [
+      'Almgren-Chriss Slippage Impact Funktion',
+      'Orderbuch-Tiefe Indikator im Benchmark Lab',
+      'TCO-Kostenrechner für Arbitrage & Market Making',
+    ],
+  },
+
+  // =========================================================================
+  // 10. AGENT-CLIENT (Gemini-3.8-Flash & Reasoning Architecture)
+  // =========================================================================
+  {
+    id: 'AP-AGT-01',
+    title: 'Gemini-3.8-Flash Kaufberater & Dual Scientist Reasoning Mode',
+    owner: 'PRODUCT',
+    status: 'pending',
+    phase: 3,
+    phaseName: 'Phase 3: AI Agent-Client & Studio Hub Synthesizer',
+    progressPercent: null,
+    evidenceState: 'UNGEKLÄRT',
+    evidenceRefs: [],
+    nextStep: 'Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen.',
+    priority: 'Kritisch',
+    leadName: 'Verantwortung zuzuordnen',
+    targetSprint: 'Nicht terminiert',
+    description: 'Geplantes Ziel, Abnahme offen: Kopplung des Gemini Reasoning Modells mit Scientist Thought Process für Latenz, Monotone Sequenzierung und BaFin MaRisk.',
+    deliverables: [
+      'Streaming & Fallback Engine mit User-Agent Header',
+      'Dual-Pane UI: Scientist Thought Process vs. Kaufberater Output',
+      'Live-Bestandsabgleich mit der ausgewählten Pipeline',
+    ],
+  },
+  {
+    id: 'AP-AGT-02',
+    title: 'Pipeline Tool Inventory & Revenue Assurance Catalog (AP-006)',
+    owner: 'PRODUCT',
+    status: 'pending',
+    phase: 3,
+    phaseName: 'Phase 3: AI Agent-Client & Studio Hub Synthesizer',
+    progressPercent: null,
+    evidenceState: 'UNGEKLÄRT',
+    evidenceRefs: [],
+    nextStep: 'Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen.',
+    priority: 'Kritisch',
+    leadName: 'Verantwortung zuzuordnen',
+    targetSprint: 'Nicht terminiert',
+    description: 'Geplantes Ziel, Abnahme offen: Vollständiger Katalog aller Werkzeuge, Indikatoren, Chartmuster und News-APIs mit SKU-Vergabe und Budget-Zählung.',
+    deliverables: [
+      'Katalog mit über 50 quantitativen Indikatoren & Pattern SKUs',
+      'Automatische Preisberechnung mit Restbudget-Anzeige',
+      'Echtzeit-Validierung vor Blueprint-Export',
+    ],
+  },
+  {
+    id: 'AP-AGT-03',
+    title: 'Autonome Multi-Agent Feedback-Loop für Portfolio-Rebalancing',
+    owner: 'PRODUCT',
+    status: 'planning',
+    phase: 5,
+    phaseName: 'Phase 5: Release Candidate & Production Go-Live v1.0',
+    progressPercent: null,
+    evidenceState: 'UNGEKLÄRT',
+    evidenceRefs: [],
+    nextStep: 'Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen.',
+    priority: 'Hoch',
+    leadName: 'Verantwortung zuzuordnen',
+    targetSprint: 'Nicht terminiert',
+    description: 'Geplantes Ziel, Abnahme offen: Erweiterung des Agenten zur kontinuierlichen Überwachung von Marktregimen und automatischen Rebalancing-Empfehlungen.',
+    deliverables: [
+      'Marktregime-Erkennung (Bull, Bear, Choppy, Liquidity Crisis)',
+      'Generierung von vorschlagsbasierten Portfolio-Umschichtungen',
+      'Human-in-the-Loop Bestätigungsdialog für den Nutzer',
+    ],
+    dependencies: ['AP-AGT-01', 'AP-FIN-01'],
+  },
+
+  // =========================================================================
+  // 11. QUALITÄTMANAGEMENT (QA, Testing & Verification)
+  // =========================================================================
+  {
+    id: 'AP-QA-01',
+    title: 'Automatisierte Contract & Provider Validation Test Suite',
+    owner: 'TRUST',
+    status: 'pending',
+    phase: 2,
+    phaseName: 'Phase 2: Multi-Asset Screener & BaFin Compliance Hardening',
+    progressPercent: null,
+    evidenceState: 'UNGEKLÄRT',
+    evidenceRefs: [],
+    nextStep: 'Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen.',
+    priority: 'Kritisch',
+    leadName: 'Verantwortung zuzuordnen',
+    targetSprint: 'Nicht terminiert',
+    description: 'Geplantes Ziel, Abnahme offen: Validierung aller Datenverträge, Enterprise Scorer Berechnungen und Provider Registry Schemata via npm test.',
+    deliverables: [
+      'Provider Registry Validierungssuite (100% Pass)',
+      'Enterprise Scoring Konsistenztests',
+      'Typensicherheit mit tsc --noEmit ohne Warnungen',
+    ],
+  },
+  {
+    id: 'AP-QA-02',
+    title: 'Cross-Browser & Responsive Breakpoint Validation (Mobile, Tablet, 4K)',
+    owner: 'TRUST',
+    status: 'pending',
+    phase: 3,
+    phaseName: 'Phase 3: AI Agent-Client & Studio Hub Synthesizer',
+    progressPercent: null,
+    evidenceState: 'UNGEKLÄRT',
+    evidenceRefs: [],
+    nextStep: 'Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen.',
+    priority: 'Hoch',
+    leadName: 'Verantwortung zuzuordnen',
+    targetSprint: 'Nicht terminiert',
+    description: 'Geplantes Ziel, Abnahme offen: Verifikation des fehlerfreien Renderings auf Chrome, Safari iOS, Firefox und Edge auf Mobilgeräten bis zu Ultrawide Monitoren.',
+    deliverables: [
+      'Testmatrix für iOS Safari, Android Chrome und Desktop',
+      'Keine Layout-Shifts (CLS < 0.05)',
+      'Barrierefreie Bedienbarkeit mit Tastatur (Tab-Navigation & WAI-ARIA)',
+    ],
+  },
+  {
+    id: 'AP-QA-03',
+    title: 'v1.0 Production Stresstest & Notfall-Szenario Simulation',
+    owner: 'TRUST',
+    status: 'planning',
+    phase: 5,
+    phaseName: 'Phase 5: Release Candidate & Production Go-Live v1.0',
+    progressPercent: null,
+    evidenceState: 'UNGEKLÄRT',
+    evidenceRefs: [],
+    nextStep: 'Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen.',
+    priority: 'Kritisch',
+    leadName: 'Verantwortung zuzuordnen',
+    targetSprint: 'Nicht terminiert',
+    description: 'Geplantes Ziel, Abnahme offen: Lasttests mit 10.000 simulierten gleichzeitigen Websocket-Verbindungen und Flash-Crash Marktdatenszenarien.',
+    deliverables: [
+      'Lasttest-Zertifikat mit 99.95% erfolgreichen Requests',
+      'Erholungszeit nach Netzwerktrennung < 2 Sekunden',
+      'Freigabezertifikat für den v1.0 Live-Launch',
+    ],
+    dependencies: ['AP-QA-01', 'AP-QA-02', 'AP-OPS-03'],
+  },
+];
+
+
+/** Statischer Repo-Snapshot; wird nach einem belegten Abgleich aktualisiert. */
+export const ROADMAP_SNAPSHOT = {
+  "repository": "SvenKulessa/Capital-AI",
+  "sourceSha": "bfaa25754fe8a80afc280b72ce0fef5145c6f912",
+  "reviewDate": "2026-09-30",
+  "scope": "Repo- und Release-Implementierung; Betriebsabnahmen separat",
+  "githubSettingsReviewDate": "2026-10-01",
+  "githubSettingsSourceSha": "c7eb9f235c661b229439f56f543acfaab5a50c41",
+  "domainModelVersion": "2",
+  "productVersionBaseline": "0.8.0-alpha.1",
+  "securitySourceSha": "46ee077dea184a5defa84ef028fb93e3ac73fad5",
+  "openPullRequests": [
+    38,
+    39
+  ]
+} as const;
+
+export const WORK_PACKAGES: WorkPackage[] = [
+{
+  "status": "pending",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "priority": "Hoch",
+  "leadName": "Projektowner",
+  "id": "CA-TRUST-APP-READ-DESIGN",
+  "title": "Eigene Security-App: Leserechte und Einstellungsabdeckung entwerfen",
+  "owner": "TRUST",
+  "targetSprint": "Nach GHCR-Digest-Abnahme; Vorbereitung vor Enterprise-Transfer",
+  "description": "Organisationseigene GitHub App für capital-ai-online/Capital-AI planen. Alle sicherheitsrelevanten Repository-/Org-/Enterprise-Einstellungen je API-Endpunkt inventarisieren; fehlende Lesbarkeit explizit ausweisen. Keine Secretwerte oder pauschalen Schreibrechte.",
+  "nextStep": "Endpunkt-/Leserechte-Matrix, geerbte Rulesets, IAM, Actions, CodeQL, Secret Protection, Dependabot und GitGuardian erfassen; Schlüsselrotation und begrenzte Installation planen.",
+  "deliverables": [
+    "API-/Berechtigungs-/Abdeckungsmatrix mit NICHT_LESBAR/UNGEKLÄRT für Lücken",
+    "Kurzlebige Token und Schlüsselverwaltung; kein Bypass",
+    "Getrennte spätere PR-Schreibidentität für menschliche Owner-Approval"
+  ],
+  "dependencies": [
+    "AP-SEC-IMAGE"
+  ]
+},
+{
+  "status": "pending",
+  "phase": 5,
+  "phaseName": "Phase 5: Production Go-Live",
+  "progressPercent": null,
+  "evidenceState": "GEHALTEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "priority": "Hoch",
+  "leadName": "Projektowner",
+  "id": "CA-PLATFORM-APP-READ-CONSUME",
+  "title": "Security-App nach Enterprise-Umzug installieren und Readbacks nutzen",
+  "owner": "PLATFORM",
+  "targetSprint": "Nach Digest-, Domain-, Finance-Abnahme und Enterprise-Transfer",
+  "description": "App in der Capital-AI-Enterprise-Umgebung auf ausgewählte Repositories begrenzen. Aktive und geerbte Sicherheitseinstellungen als Evidence in vorhandener Roadmap nutzen; fehlende Enterprise-API-Abdeckung nicht als PASS behandeln.",
+  "nextStep": "Berechtigungen konkret freigeben, App installieren und Source-/Owner-/Zeit-/Hash-gebundene Lesebelege samt Soll-/Ist-Abweichungen konsumieren.",
+  "deliverables": [
+    "Installation auf verifiziertem capital-ai-online/Capital-AI",
+    "Nachvollziehbarer Settings-Readback ohne Secrets",
+    "Keine zweite Statusautorität und keine automatische Policy-Mutation"
+  ],
+  "dependencies": [
+    "CA-TRUST-APP-READ-DESIGN",
+    "CA-PLATFORM-ENTERPRISE-PUBLIC"
+  ]
+},
+{
+  "status": "pending",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "priority": "Hoch",
+  "leadName": "Projektowner",
+  "id": "CA-TRUST-SIGNED-COMMITS",
+  "title": "Signierte Commits für alle Schreibwege vorbereiten und verlangen",
+  "owner": "TRUST",
+  "targetSprint": "Nach GHCR-Digest-Abnahme; vor Durchsetzung Signaturtest",
+  "description": "Require signed commits nach Validierung lokaler, Web-, Connector/API-, Workflow- und Dependabot-Commits aktivieren. Unsigned PR-Commits können auch Squash blockieren; offene PRs zuerst prüfen.",
+  "nextStep": "Verified-Signaturen inventarisieren, fehlende Arbeitsbranch-Signierung beheben und einen regulären signierten PR vor Ruleset-Aktivierung abnehmen.",
+  "deliverables": [
+    "Signaturmatrix aller aktiven Schreibwege",
+    "Regulärer signierter Test-PR",
+    "Ruleset-Readback ohne Bypass oder Main-Historienumschreibung"
+  ],
+  "dependencies": [
+    "AP-SEC-IMAGE",
+    "CA-TRUST-LINEAR-HISTORY"
+  ]
+},
+{
+  "status": "pending",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "priority": "Hoch",
+  "leadName": "Projektowner",
+  "id": "CA-TRUST-GITGUARDIAN",
+  "title": "GitGuardian-Abdeckung und Merge-Gate verifizieren",
+  "owner": "TRUST",
+  "targetSprint": "Nach GHCR-Digest-Abnahme; erneut nach Enterprise-Transfer",
+  "description": "GitGuardian-Installation, Repo-Abdeckung, Tarif/Kontingente und tatsächliche PR-Checkidentität prüfen. GitHub Secret Scanning/Push Protection bleiben ergänzend; keine automatische kostenlose Enterprise-Abdeckung behaupten.",
+  "nextStep": "Installation und Findings lesen, Kosten prüfen; exakten Checknamen/App-Herkunft nach erfolgreicher Scanabdeckung als Required Check anbinden und nach Transfer wiederprüfen.",
+  "deliverables": [
+    "Aktueller Installations-/Kosten-/Repo-Abdeckungsnachweis",
+    "Secret-Findings mit Sperr-/Rotationsweg",
+    "Nachgewiesener PR-Check und Post-Transfer-Readback"
+  ],
+  "dependencies": [
+    "AP-SEC-IMAGE"
+  ]
+},
+{
+  "status": "pending",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "leadName": "Projektowner",
+  "id": "CA-TRUST-GITHUB-FREE",
+  "title": "Kostenfreie GitHub-Sicherheitsbaseline prüfen",
+  "owner": "TRUST",
+  "priority": "Hoch",
+  "targetSprint": "01.–03.10.2026; vor Domain-Cutover",
+  "description": "Secret Scanning, Push Protection, Dependabot, Dependency Review, CodeQL für JavaScript/TypeScript, vertrauliche Meldungen und Sicherheitskontakt prüfen und aktivieren; Live-Aktivierung nicht bestätigt. Die Public-Funktionen bleiben auch unter capital-ai-online in Enterprise Cloud ohne zusätzliche Security-Lizenz nutzbar.",
+  "nextStep": "Kostenfreie Optionen einschließlich CodeQL einzeln lesen und aktivieren; Standard-Runner und Storage-Budget prüfen; kostenpflichtige Zusatzprodukte ausschließen.",
+  "deliverables": [
+    "Kostenfreie Optionen einzeln lesen und aktivieren; kostenpflichtige Zusatzprodukte ausschließen."
+  ],
+  "dependencies": []
+},
+{
+  "status": "pending",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "GEHALTEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "leadName": "Projektowner",
+  "id": "CA-TRUST-LINEAR-HISTORY",
+  "title": "Lineare Main-Historie ohne Mergeblockade",
+  "owner": "TRUST",
+  "priority": "Hoch",
+  "targetSprint": "01.10.2026; nächster Settings-Schritt",
+  "description": "Live-Readback am 01.10.2026: required_linear_history ist aktiv, das Ruleset erlaubt jedoch nur Merge. Diese widersprüchliche Kombination blockiert den regulären Merge; Owner-Einrichtung muss auf Squash abgeglichen werden.",
+  "nextStep": "Im Ruleset Allowed merge methods auf Squash umstellen und effektive Repo-Mergeoption prüfen; danach CodeQL-/Code-Quality-Ergebnisse des aktuellen PR-Heads abwarten.",
+  "deliverables": [
+    "Zuerst Squash erlauben; dann Require linear history aktivieren und vorhandene Gates sowie PR-Mergefähigkeit prüfen."
+  ],
+  "dependencies": []
+},
+{
+  "status": "pending",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "leadName": "Projektowner",
+  "id": "CA-PLATFORM-GITHUB-COSTS",
+  "title": "Actions-Policies und GitHub-Kosten begrenzen",
+  "owner": "PLATFORM",
+  "priority": "Hoch",
+  "targetSprint": "01.–03.10.2026; parallel zur Security-Baseline",
+  "description": "Standard-Runner für Public sind kostenlos; größere Runner und Storage-Mehrverbrauch können Kosten erzeugen. Budget- und Policies-Readback fehlen.",
+  "nextStep": "Read-only Default, SHA-Pinning, Actions-Allow-List, Fork-Freigaben, Artifact-Retention, Cache-Limits und Budget-Stop prüfen.",
+  "deliverables": [
+    "Read-only Default, SHA-Pinning, Actions-Allow-List, Fork-Freigaben, Artifact-Retention, Cache-Limits und Budget-Stop prüfen."
+  ],
+  "dependencies": []
+},
+{
+  "status": "pending",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "leadName": "Projektowner",
+  "id": "CA-GROWTH-FINANCE-SPONSORS-OFF",
+  "title": "Finance-Sponsorships deaktivieren",
+  "owner": "GROWTH",
+  "priority": "Hoch",
+  "targetSprint": "01.10.2026; unabhängig vom DNS-Cutover",
+  "description": "Finance-FUNDING.yml verweist auf SvenKulessa; der Repository-Sponsorships-Schalter ist noch nicht deaktiviert. Das persönliche Sponsors-Profil bleibt eigenständig.",
+  "nextStep": "Finance Settings / General / Features: Sponsorships deaktivieren und fehlenden Sponsorbutton öffentlich prüfen.",
+  "deliverables": [
+    "Finance Settings / General / Features: Sponsorships deaktivieren und fehlenden Sponsorbutton öffentlich prüfen."
+  ],
+  "dependencies": []
+},
+{
+  "status": "pending",
+  "phase": 5,
+  "phaseName": "Phase 5: Production Go-Live",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "leadName": "Projektowner",
+  "id": "CA-PLATFORM-IONOS-SMTP",
+  "title": "IONOS-Mailfluss vor Finance-Ablösung abnehmen",
+  "owner": "PLATFORM",
+  "priority": "Hoch",
+  "targetSprint": "Migrationstermin; vor Finance-Suspendierung",
+  "description": "Web-DNS-Cutover darf MX/SPF/DKIM/DMARC und MTA-STS nicht verändern. SMTP/TLS, Absender und Zustellung für ZITADEL-Mails brauchen eigene Evidence.",
+  "nextStep": "Registrierungs-/Bestätigungs- und Passwort-Reset-Mail mit IONOS-Absender, TLS und tatsächlicher Zustellung prüfen.",
+  "deliverables": [
+    "Registrierungs-/Bestätigungs- und Passwort-Reset-Mail mit IONOS-Absender, TLS und tatsächlicher Zustellung prüfen."
+  ],
+  "dependencies": [
+    "AP-SEC-IMAGE",
+    "AP-CMP-RIGHTS"
+  ]
+},
+{
+  "status": "pending",
+  "phase": 5,
+  "phaseName": "Phase 5: Production Go-Live",
+  "progressPercent": null,
+  "evidenceState": "GEHALTEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "leadName": "Projektowner",
+  "id": "CA-PLATFORM-ENTERPRISE-PUBLIC",
+  "title": "Öffentliches Capital-AI-Repo in Enterprise übertragen",
+  "owner": "PLATFORM",
+  "priority": "Hoch",
+  "targetSprint": "Nach Digest-Abnahme, DNS-Migration und Finance-Ablösung; Termin offen",
+  "description": "Transfer erst nach den vorgelagerten Abnahmen. Ziel: capital-ai-online/Capital-AI in der Capital-AI-Enterprise-Umgebung, weiterhin public. Enterprise-Zuordnung und Kontotyp live prüfen; Enterprise Managed Users unterstützen keine öffentlichen Repositories. Public-CodeQL und die genannten Public-Sicherheitsfunktionen bleiben ohne zusätzliche Security-Lizenz nutzbar; Enterprise-Seats separat prüfen.",
+  "nextStep": "capital-ai-online und Capital-AI-Enterprise-Zuordnung/Typ/Kosten prüfen, mit Sichtbarkeit public transferieren und CodeQL, Rulesets, GHCR, Render, OIDC, Apps sowie Secrets-Zugriffe erneut abnehmen.",
+  "deliverables": [
+    "Zielorganisation/Typ/Kosten prüfen, öffentlich transferieren und Rulesets, GHCR, Render, OIDC, Apps sowie Secrets-Zugriffe erneut abnehmen."
+  ],
+  "dependencies": [
+    "AP-SEC-IMAGE",
+    "AP-CMP-RIGHTS",
+    "AP-OPS-DOMAIN",
+    "AP-OPS-FINANCE-OFF"
+  ]
+},
+{
+  "status": "pending",
+  "phase": 5,
+  "phaseName": "Phase 5: Production Go-Live",
+  "progressPercent": null,
+  "evidenceState": "GEHALTEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "leadName": "Projektowner",
+  "id": "CA-GROWTH-CAPITAL-SPONSORS",
+  "title": "Capital-AI-Sponsorship nach Enterprise-Umzug aktivieren",
+  "owner": "GROWTH",
+  "priority": "Mittel",
+  "targetSprint": "Nach erfolgreichem Enterprise-Transfer; Termin offen",
+  "description": "Empfängerprofil und Sponsorbutton separat verifizieren. FUNDING.yml allein richtet kein Sponsors-Konto ein. Gebühren persönlicher und Organisationssponsoren unterscheiden.",
+  "nextStep": "Nach Transfer verifizierten Sponsors-Empfänger in FUNDING.yml eintragen, Sponsorships aktivieren und Button/Ziel prüfen.",
+  "deliverables": [
+    "Nach Transfer verifizierten Sponsors-Empfänger in FUNDING.yml eintragen, Sponsorships aktivieren und Button/Ziel prüfen."
+  ],
+  "dependencies": [
+    "CA-PLATFORM-ENTERPRISE-PUBLIC",
+    "CA-GROWTH-FINANCE-SPONSORS-OFF"
+  ]
+},
+{
+  "id": "CA-PLATFORM-VERSIONING",
+  "title": "Repo-weite SemVer- und Release-Identität",
+  "owner": "PLATFORM",
+  "status": "aktiv",
+  "phase": 1,
+  "phaseName": "Phase 1: Platform Foundation",
+  "progressPercent": 80,
+  "evidenceState": "VERIFIED",
+  "evidenceRefs": ["VERSION", "CHANGELOG.md", "docs/governance/DOMAIN-RELEASE-GOVERNANCE.md"],
+  "nextStep": "Release-Manifest und automatischen Release-PR-Controller ergänzen und gegen Branch Rules validieren.",
+  "priority": "Hoch",
+  "leadName": "Owner + AI Apps",
+  "targetSprint": "laufend",
+  "description": "SemVer-Baseline, Domain-Konvention und unveränderliche Source-/Digest-/Deploy-Identitäten werden zusammengeführt. Production bleibt evidenzgebunden.",
+  "deliverables": ["VERSION und Package-Version synchron", "SemVer-Ziele in Roadmap", "Release-Identität mit Source SHA, OCI Digest und Render Deploy ID"]
+},
+{
+  "id": "CA-TRUST-DAILY-SUPPLY-CHAIN",
+  "title": "Täglicher Versions- und CVE-Watch",
+  "owner": "TRUST",
+  "status": "aktiv",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": 70,
+  "evidenceState": "VERIFIED",
+  "evidenceRefs": [".github/dependabot.yml", ".github/workflows/daily-dependency-security-watch.yml", ".github/workflows/build-security.yml"],
+  "nextStep": "Ersten planmäßigen Lauf und erzeugte Update-PRs evidenzbasiert prüfen; Container-CVE-Scan an bestehenden Docker-Security-Gate koppeln.",
+  "priority": "Kritisch",
+  "leadName": "Owner + AI Apps",
+  "targetSprint": "täglich",
+  "description": "npm, GitHub Actions und Docker-Pins werden täglich auf Updates geprüft; HIGH/CRITICAL npm Advisories blockieren den Watch-Lauf. Der bestehende Docker Security Gate läuft zusätzlich täglich mit frischen Trivy-Daten über Source, Build-Image, Runtime-Image und NATS-Image.",
+  "deliverables": ["Daily Dependabot", "npm audit high/critical", "Runtime-Pin-Evidence", "keine blinden Major-Deployments"]
+},
+{
+  "id": "CA-PLATFORM-COMPONENT-DEPLOY",
+  "title": "Component-Diff gesteuerte Render-Deployments",
+  "owner": "PLATFORM",
+  "status": "pending",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": ["deploy/Dockerfile.nats", "docs/security/PRODUCTION-HANDOFF.md"],
+  "nextStep": "Deterministische Pfad-/Komponentenmatrix implementieren: App, NATS, Docs-only und Security-triggered; Render REST nur für betroffene Komponenten auslösen.",
+  "priority": "Kritisch",
+  "leadName": "Owner + AI Apps",
+  "targetSprint": "vor v0.9.9-rc.1",
+  "description": "NATS folgt nicht pauschal jedem Repo-HEAD. App und Broker werden anhand relevanter Dateiänderungen und Security-Trigger unabhängig released.",
+  "deliverables": ["Component fingerprint", "NATS change gate", "Render REST deployment", "Post-deploy identity verification"]
+},
+{
+  "id": "CA-PLATFORM-SELF-HEAL",
+  "title": "Bounded Self-Healing Controller",
+  "owner": "PLATFORM",
+  "status": "pending",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": ["docs/governance/DOMAIN-RELEASE-GOVERNANCE.md"],
+  "nextStep": "DETECT → CORRELATE → CLASSIFY → REMEDIATE → VERIFY als fail-closed Controller mit Retry-Budget und Escalation implementieren.",
+  "priority": "Hoch",
+  "leadName": "Owner + AI Apps",
+  "targetSprint": "vor v1.0.0",
+  "description": "Automatische Reparaturen bleiben reversibel und komponentenspezifisch. Secrets, destruktive Datenoperationen und Gate-Deaktivierungen sind ausgeschlossen.",
+  "deliverables": ["Drift detection", "bounded remediation", "retry budget", "verification", "escalation evidence"]
+},
+{
+  "id": "CA-GROWTH-DOMAIN-BRANDING",
+  "title": "Domain-Farben und Symbole in DevSecOps-Branding integrieren",
+  "owner": "GROWTH",
+  "status": "aktiv",
+  "phase": 1,
+  "phaseName": "Phase 1: Platform Foundation",
+  "progressPercent": 70,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": ["CAPITAL-AI-PRODUCT/PROJECT.md", "CAPITAL-AI-PRODUCT/produkt.LICENSE.md", "CAPITAL-AI-MARKET/PROJECT.md", "CAPITAL-AI-MARKET/market.LICENSE.md", "CAPITAL-AI-PLATFORM/PROJECT.md", "CAPITAL-AI-PLATFORM/plattform.LICENSE.md", "CAPITAL-AI-TRUST/PROJECT.md", "CAPITAL-AI-TRUST/trust.LICENSE.md", "CAPITAL-AI-GROWTH/PROJECT.md", "CAPITAL-AI-GROWTH/growth.LICENSE.md"],
+  "nextStep": "Die gelieferten Domain-Badges nach Asset-Import in Roadmap und DevSecOps-Oberflächen verwenden; Farben und Symbolik sind bereits kanonisch festgelegt.",
+  "priority": "Mittel",
+  "leadName": "Owner + AI Apps",
+  "targetSprint": "laufend",
+  "description": "Die fünf Domain-Namen, Farbrichtungen, Symbole und Lizenznachweise sind anhand der gelieferten Branding-Assets kanonisch festgelegt. Der binäre Asset-Import in die auslieferbare Repository-Struktur ist der verbleibende Schritt.",
+  "deliverables": ["Domain-Farbmatrix", "Symbol-Mapping", "GitHub DevSecOps Branding", "Roadmap-Darstellung"]
+},
+{
+  "id": "AP-CMP-LEGAL",
+  "title": "Rechtstexte aus Finance übernommen und an ZITADEL angepasst",
+  "owner": "TRUST",
+  "status": "aktiv",
+  "phase": 2,
+  "phaseName": "Phase 2: Screener & Compliance",
+  "progressPercent": 100,
+  "evidenceState": "VERIFIED",
+  "evidenceRefs": [
+    "src/components/LegalAndFaqPages.tsx",
+    "src/privacy/privacyPolicy.ts",
+    "src/content/legalDocumentVersions.ts"
+  ],
+  "nextStep": "Rechtstexte nach der Domainumschaltung auf allen Zielhosts prüfen.",
+  "priority": "Hoch",
+  "leadName": "Projektowner",
+  "targetSprint": "Nicht terminiert",
+  "description": "Impressum, AGB und Datenschutz sind auf dem gelesenen Main integriert. Die Dokumentversion ist 2026-09-30; die Übernahme ist keine rechtliche Gesamtfreigabe.",
+  "deliverables": [
+    "Rechtstexte nach der Domainumschaltung auf allen Zielhosts prüfen."
+  ]
+},
+{
+  "id": "AP-CMP-PRIVACY",
+  "title": "Verifizierte Sitzung für Datenauszug und E-Mail-Entwurf",
+  "owner": "TRUST",
+  "status": "aktiv",
+  "phase": 2,
+  "phaseName": "Phase 2: Screener & Compliance",
+  "progressPercent": 100,
+  "evidenceState": "VERIFIED",
+  "evidenceRefs": [
+    "server/privacy.mjs",
+    "server/auth.test.mjs"
+  ],
+  "nextStep": "Eigenen Export nach echtem Login und Logout auf dem Zielhost abnehmen.",
+  "priority": "Hoch",
+  "leadName": "Projektowner",
+  "targetSprint": "Nicht terminiert",
+  "description": "Export und Anfrageweg akzeptieren die serverseitig verifizierte OIDC-Sitzung. Der Export ist begrenzt; der Anfrageweg speichert und versendet nichts.",
+  "deliverables": [
+    "Eigenen Export nach echtem Login und Logout auf dem Zielhost abnehmen."
   ]
 },
 {
