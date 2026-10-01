@@ -8,7 +8,9 @@
     "build": "vite build",
     "preview": "vite preview --host=127.0.0.1",
     "test:navigation": "node --import tsx --test scripts/navigation.test.mjs",
-    "test": "node --import tsx scripts/validate-contract-suites.mjs && node --import tsx --test src/contracts/__tests__/analysisFoundation.test.ts",
+    "test": "node --import tsx scripts/validate-contract-suites.mjs && node --import tsx --test src/contracts/__tests__/analysisFoundation.test.ts src/platform/Documentary/__tests__/documentaryProjection.test.ts && node --import tsx scripts/generate-documentary.mjs --check",
+    "documentary:generate": "node --import tsx scripts/generate-documentary.mjs --write",
+    "documentary:check": "node --import tsx scripts/generate-documentary.mjs --check",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
     "test:security": "node --test server/market.test.mjs server/security.test.mjs server/auth.test.mjs && node --import tsx --test scripts/frontend-security.test.mjs",
@@ -41,7 +43,6 @@
     "spdx-license-ids": "3.0.23",
     "vite": "^8.3.0",
     "zod": "^4.6.5",
-    "jose": "6.2.12",
     "nodemailer": "10.0.13"
   },
   "devDependencies": {
