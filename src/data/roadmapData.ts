@@ -6,6 +6,8 @@
  * Release-Ziele verwenden SemVer; Betriebsfreigaben bleiben evidenzgebunden.
  */
 
+import { SOCIAL_CONTENT_WORK_PACKAGES } from './socialContentRoadmap';
+
 export type ProjectOwner =
   | 'PRODUCT'
   | 'MARKET'
@@ -1728,7 +1730,8 @@ export const WORK_PACKAGES: WorkPackage[] = [
     "AP-OPS-DOMAIN",
     "AP-SEC-AUTH-LIVE",
     "AP-CMP-OLD-DATA",
-    "CA-PLATFORM-IONOS-SMTP"
+    "CA-PLATFORM-IONOS-SMTP",
+    "CA-GROWTH-SOC-PILOT"
   ]
 },
 {
@@ -1741,19 +1744,21 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "progressPercent": null,
   "evidenceState": "OFFEN",
   "evidenceRefs": [
+    "contracts/trust/OIDC_VERIFICATION_STATE@1.yaml",
+    "docs/security/OIDC-VERIFICATION-STATE-20261001.md",
     "docs/compliance/ZITADEL-PRIVACY-CUTOVER-20260930.md",
     "deploy/DNS-CUTOVER.md",
     "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/compliance/ROADMAP-RECONCILIATION-20261001.md"
   ],
-  "nextStep": "Echten Login, eigenen Export, Logout und anschließendes 401 auf capital-ai.online prüfen.",
+  "nextStep": "Credential-Authentifizierung und echten Login/Callback/ID-Token/Session-Ablauf nachweisen; erst danach OIDC-Gesamtgate auf grün setzen. Eigenen Export, Logout und anschließendes 401 auf capital-ai.online zusätzlich prüfen.",
   "priority": "Hoch",
   "leadName": "Projektowner",
   "targetSprint": "Nicht terminiert",
-  "description": "Öffentliche ZITADEL-Discovery und konfigurierte App-Sitzung frisch bestätigt. Vollständiger Login-/Logout-/Export-Ablauf auf der migrierten Hauptdomain sowie Service-Account-Konfiguration bleiben ungeprüft.",
+  "description": "OIDC-Verifikation ist fail-closed: vorhandene Konfiguration und Discovery gelten nur als Preflight. Der aktuelle Workflow muss rot bleiben, solange Credential-Authentifizierung und ein echter Login-/Callback-/ID-Token-/Session-Ablauf nicht belegt sind. Frühere grüne Diagnose-Läufe sind keine vollständige OIDC-Abnahme.",
   "deliverables": [
     "Echten Login, eigenen Export, Logout und anschließendes 401 auf capital-ai.online prüfen."
   ]
-},
+},,
 {
   "status": "pending",
   "phase": 4,
@@ -1809,5 +1814,6 @@ export const WORK_PACKAGES: WorkPackage[] = [
     "AP-SEC-OIDC"
   ]
 },
+...SOCIAL_CONTENT_WORK_PACKAGES,
 ...BACKLOG_TARGETS,
 ];

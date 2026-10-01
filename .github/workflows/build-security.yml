@@ -41,6 +41,9 @@ jobs:
       - name: Gepinnte Sicherheitswerkzeuge bauen
         run: |
           docker build --file Dockerfile.security --tag capital-ai-security .
+          mkdir -p security-reports
+          docker run --rm capital-ai-security --version | tee security-reports/trivy-version.txt
+          test "$(sed -n 's/^Version: //p' security-reports/trivy-version.txt | head -n1)" = "0.75.0"
           mkdir -p "$RUNNER_TEMP/trivy-cache"
           chmod a+rwx "$RUNNER_TEMP/trivy-cache"
       - name: Dockerfile linten
@@ -139,6 +142,7 @@ jobs:
             security-reports/smoke-state.json
             security-reports/image-id.txt
             security-reports/THIRD_PARTY_NOTICES.txt
+            security-reports/trivy-version.txt
             security-reports/smoke.log
             security-reports/nats-smoke.log
           if-no-files-found: warn

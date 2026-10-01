@@ -1,0 +1,244 @@
+{
+  "generated": true,
+  "editableByHand": false,
+  "audience": "engineering",
+  "source": {
+    "schema": "DOCUMENTARY_EVIDENCE@1",
+    "schemaVersion": "1.0.0",
+    "documentaryId": "DOC-20261001-PR91-GROWTH-HANDOFF",
+    "changeId": "CA-20261001-PR91-GROWTH-HANDOFF",
+    "sourceSha": "18d702ef45a3ddcf74a5c33ee8442cb14f6a0c8f",
+    "documentaryDigest": "3f2e83760f4166f5df606af7abef3569dc8958575a97c81c68fa80880b378698"
+  },
+  "documentary": {
+    "schema": "DOCUMENTARY_EVIDENCE@1",
+    "version": "1.0.0",
+    "metadata": {
+      "project": "CAPITAL-AI",
+      "domain": "PLATFORM",
+      "consumerDomain": "GROWTH",
+      "status": "PROPOSED"
+    },
+    "correlation": {
+      "changeId": "CA-20261001-PR91-GROWTH-HANDOFF"
+    },
+    "identity": {
+      "documentaryId": "DOC-20261001-PR91-GROWTH-HANDOFF",
+      "sourceSha": "18d702ef45a3ddcf74a5c33ee8442cb14f6a0c8f",
+      "parentSha": "07d0d65a3b7f372d31f7f6e420a19ee366506013",
+      "branch": "capital-ai-growth/growth-handoff-contracts-20261001",
+      "pullRequest": 91,
+      "createdAt": "2026-10-01T19:52:27Z"
+    },
+    "change": {
+      "title": "Kanonischen GROWTH-Handoff und Change-Propagation-Verträge einführen",
+      "summary": "Vier versionierte Contracts, Registry, Schema-Bindung und fail-closed Validierung für den maschinenlesbaren Handoff an GROWTH wurden nach main gemergt.",
+      "type": "ARCHITECTURE",
+      "domains": {
+        "primary": "GROWTH",
+        "affected": [
+          "PLATFORM",
+          "TRUST",
+          "GROWTH"
+        ]
+      }
+    },
+    "intent": {
+      "problem": "Generierte Dokumentation, Roadmap und öffentliche Kommunikation hatten noch keinen gemeinsamen maschinenlesbaren Handoff- und Change-Propagation-Vertrag.",
+      "desiredOutcome": "Kanonische, evidenzgebundene Projektionen mit fail-closed Verhalten und unveränderlicher historischer Evidence.",
+      "ownerRequestRef": null
+    },
+    "architecture": {
+      "changed": true,
+      "architectureChangeRef": null,
+      "affectedComponents": [
+        "GROWTH handoff",
+        "Documentary evidence",
+        "Change propagation",
+        "Contract validation"
+      ],
+      "before": {
+        "summary": "GROWTH-Ausgaben wurden nicht durch einen gemeinsamen versionierten Handoff-Vertrag und eine zentrale Change-Propagation-Regel verbunden."
+      },
+      "after": {
+        "summary": "PLATFORM, TRUST, PRODUCT und MARKET können über versionierte Contracts evidenzgebundene GROWTH-Projektionen speisen."
+      },
+      "interfacesChanged": [
+        "PLATFORM/TRUST/PRODUCT/MARKET -> GROWTH machine-readable handoff"
+      ],
+      "securityBoundaryChanged": false
+    },
+    "implementation": {
+      "changedFiles": [
+        ".dockerignore",
+        "Dockerfile",
+        "contracts/growth/GROWTH_HANDOFF@1.yaml",
+        "contracts/growth/GROWTH_PROJECTION@1.yaml",
+        "contracts/platform/CHANGE_PROPAGATION@1.yaml",
+        "contracts/platform/DOCUMENTARY_EVIDENCE@1.yaml",
+        "contracts/registry.json",
+        "contracts/schemas/change-propagation.schema.json",
+        "contracts/schemas/documentary-evidence.schema.json",
+        "contracts/schemas/growth-handoff.schema.json",
+        "contracts/schemas/growth-projection.schema.json",
+        "scripts/validate-contract-suites.mjs",
+        "scripts/validate-growth-contracts.mjs"
+      ],
+      "dependencies": {
+        "added": [],
+        "removed": [],
+        "updated": []
+      },
+      "executionUnits": {
+        "affected": [
+          "contract validation"
+        ]
+      }
+    },
+    "validation": {
+      "tests": {
+        "status": "UNKNOWN",
+        "evidenceRefs": []
+      },
+      "security": {
+        "status": "UNKNOWN",
+        "evidenceRefs": []
+      },
+      "licenses": {
+        "status": "UNKNOWN",
+        "evidenceRefs": []
+      },
+      "provenance": {
+        "status": "UNKNOWN",
+        "evidenceRefs": []
+      },
+      "build": {
+        "status": "UNKNOWN",
+        "evidenceRefs": []
+      },
+      "benchmark": {
+        "status": "NOT_REQUIRED",
+        "evidenceRefs": []
+      }
+    },
+    "supplyChain": {
+      "source": {
+        "commitSha": "18d702ef45a3ddcf74a5c33ee8442cb14f6a0c8f"
+      },
+      "sbom": {
+        "generated": false,
+        "refs": []
+      },
+      "artifacts": {
+        "images": []
+      },
+      "immutableDigests": [],
+      "attestations": []
+    },
+    "runtime": {
+      "deploymentRequired": false,
+      "deployed": false,
+      "environment": null,
+      "readback": {
+        "performed": false,
+        "sourceSha": null,
+        "imageDigest": null,
+        "evidenceRefs": []
+      }
+    },
+    "observability": {
+      "telemetryChanged": false,
+      "metricsAdded": [],
+      "metricsRemoved": [],
+      "regressionsDetected": [],
+      "anomalies": []
+    },
+    "selfHealing": {
+      "candidateDetected": false,
+      "patternId": null,
+      "validationCycle": {
+        "current": 0,
+        "required": 3
+      },
+      "validationSteps": [
+        "DETECT",
+        "CORRELATE",
+        "CLASSIFY",
+        "REMEDIATE",
+        "VERIFY"
+      ],
+      "eligibleForAutomation": false,
+      "repairClass": null,
+      "promotionConditions": {
+        "validationCyclesPassed": false,
+        "deterministicOutput": false,
+        "noTrustBoundaryChange": false,
+        "noHumanAuthorityRequired": false
+      }
+    },
+    "commercialization": {
+      "affected": false,
+      "inventoryRefs": [],
+      "revenueGateChanged": false
+    },
+    "roadmap": {
+      "affected": false,
+      "entries": []
+    },
+    "documentationProjection": {
+      "architectureDocs": {
+        "regenerate": false
+      },
+      "roadmap": {
+        "regenerate": false
+      },
+      "controlCenter": {
+        "regenerate": false
+      },
+      "releaseNotes": {
+        "regenerate": false
+      },
+      "commercialization": {
+        "regenerate": false
+      },
+      "socialMedia": {
+        "regenerate": false
+      }
+    },
+    "documentaryProjection": {
+      "publicSafe": false,
+      "sections": {
+        "intent": true,
+        "architecture": true,
+        "implementation": true,
+        "validation": true,
+        "security": true,
+        "licenses": true,
+        "supplyChain": true,
+        "runtime": true,
+        "observability": true,
+        "commercialization": true
+      },
+      "redact": {
+        "secrets": true,
+        "tokens": true,
+        "personalData": true,
+        "internalCredentials": true
+      }
+    },
+    "state": {
+      "lifecycle": "PROPOSED",
+      "supersededBy": null
+    },
+    "integrity": {
+      "canonicalSerialization": "RFC8785",
+      "hashAlgorithm": "SHA-256",
+      "documentaryDigest": "3f2e83760f4166f5df606af7abef3569dc8958575a97c81c68fa80880b378698"
+    },
+    "safety": {
+      "historicalRecordsImmutable": true,
+      "inferredSuccessForbidden": true,
+      "missingEvidenceMeansSuccess": false
+    }
+  }
+}

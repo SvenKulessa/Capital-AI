@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://capital-ai.online/contracts/GROWTH_PROJECTION@1.schema.json",
+  "title": "GROWTH_PROJECTION@1",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "metadata",
+    "correlation",
+    "inputs",
+    "outputs",
+    "publicSafety",
+    "truthfulness",
+    "automation",
+    "integrity",
+    "safety"
+  ],
+  "properties": {
+    "schema": {
+      "const": "GROWTH_PROJECTION@1"
+    },
+    "version": {
+      "const": "1.0.0"
+    },
+    "correlation": {
+      "type": "object",
+      "required": [
+        "changeId"
+      ],
+      "properties": {
+        "changeId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "truthfulness": {
+      "type": "object"
+    },
+    "automation": {
+      "type": "object"
+    },
+    "integrity": {
+      "type": "object"
+    },
+    "safety": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true
+}

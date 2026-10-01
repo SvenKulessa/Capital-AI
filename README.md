@@ -1,25 +1,164 @@
-# Capital-AI Bootstrap
+<p align="center">
+  <img src="public/branding/capital-ai-logo.jpg" alt="CAPITAL-AI Logo" width="128">
+</p>
 
-Quellstand der Oberfläche: `SvenKulessa/FRONTEND@a7611b00f110dee9dc3c4d4214b07ae826971023`.
+<h1 align="center">CAPITAL-AI</h1>
 
-Diese erste Iteration enthält eine React-Vorschau mit ausdrücklich gekennzeichneten Beispieldaten und eine separate Marktdaten-API. Sie ist **keine** verifizierte Produktionsversion der Finanzanalyse. Andere aus FRONTEND übernommene Ansichten, Provider-Statusanzeigen und Simulationen benötigen vor einer Freigabe eine eigene Daten- und Lizenzprüfung.
+<p align="center">
+  Multi-Asset Market Intelligence · Evidence-first Architecture · Secure Software Supply Chain
+</p>
 
-## Entwicklung und Prüfung
+<p align="center">
+  <a href="https://github.com/SvenKulessa/Capital-AI/actions/workflows/build-security.yml"><img alt="Docker Security Gate" src="https://github.com/SvenKulessa/Capital-AI/actions/workflows/build-security.yml/badge.svg"></a>
+  <a href="https://github.com/SvenKulessa/Capital-AI/pulls"><img alt="Pull Requests" src="https://img.shields.io/github/issues-pr/SvenKulessa/Capital-AI"></a>
+  <a href="https://github.com/SvenKulessa/Capital-AI"><img alt="Repository" src="https://img.shields.io/badge/CAPITAL--AI-public-gold"></a>
+</p>
 
-```sh
-npm ci
-npm run lint
-npm run build
-node --test server/market.test.mjs
-npm audit --audit-level=high
-docker build -t capital-ai:local .
-IMAGE=capital-ai:local sh scripts/verify-image.sh
+> **Release-Hinweis:** Dieses Repository befindet sich im evidenzgebundenen Aufbau. Ein erfolgreicher Test, Build oder Security-Scan ist allein **keine** Lizenz-, Security- oder Production-Freigabe.
+
+## Inhaltsverzeichnis
+
+- [Über CAPITAL-AI](#über-capital-ai)
+- [Architektur](#architektur)
+- [Domänen](#domänen)
+- [Entwicklung](#entwicklung)
+- [Supply Chain](#supply-chain)
+- [Dependency Boundaries](#dependency-boundaries)
+- [Security und Evidence](#security-und-evidence)
+- [Dokumentation](#dokumentation)
+- [Sponsoring und Forschung](#sponsoring-und-forschung)
+- [Status und Grenzen](#status-und-grenzen)
+
+## Über CAPITAL-AI
+
+CAPITAL-AI ist eine in Entwicklung befindliche Multi-Asset-Market-Intelligence-, Scoring- und Screening-Plattform. Ziel ist die nachvollziehbare Verbindung von Marktdaten, Scoring, Pipeline-Konfiguration, Evidence und sicherem Deployment für private, research-orientierte und professionelle Nutzung.
+
+Produktive Marktdaten, Providerrechte, Scoring-Eligibility und Release-Freigaben bleiben fail-closed. Demo-, geschätzte oder unbelegte Daten gelten nicht als produktive Evidence.
+
+## Architektur
+
+```mermaid
+flowchart TB
+  USER[Web / Agent Client] --> PRODUCT[PRODUCT]
+  PRODUCT --> MARKET[MARKET\nScoring · Screener · Provider]
+  MARKET --> DATA[NATS + Valkey\nEvidence Transport]
+  PRODUCT --> PLATFORM[PLATFORM\nRuntime · Docker · CI/CD]
+  MARKET --> TRUST[TRUST\nSecurity · License · Governance]
+  PLATFORM --> TRUST
+  TRUST --> POLICY[Release Policy Engine]
+  POLICY -->|decisionEligible| GHCR[GHCR Digest]
+  GHCR --> RUNTIME[Render Runtime]
+  GROWTH[GROWTH\nDocs · SEO · Social · Branding] --> PRODUCT
 ```
 
-Die letzte Prüfung benötigt Docker und Trivy auf der prüfenden Maschine. Trivy bleibt außerhalb des minimalen Laufzeitcontainers und erzeugt ein CycloneDX-SBOM sowie einen HIGH/CRITICAL-Vulnerability-Gate. Das Image ist erst nach erfolgreichem Scan und Digest-Korrelation freigabefähig. In der aktuellen Arbeitsumgebung steht Docker nicht zur Verfügung; ein Image-Scan ist daher offen.
+### Build-once / Promote-many
 
-## Render
+```mermaid
+flowchart LR
+  SHA[Git SHA] --> CI[Required Checks]
+  CI --> BUILD[Deterministischer Build]
+  BUILD --> SCAN[Security + License + SBOM]
+  SCAN --> DIGEST[GHCR sha256 Digest]
+  DIGEST --> ATTEST[Provenance + SBOM Attestation]
+  ATTEST --> HANDOFF[Production Handoff]
+  HANDOFF --> RENDER[Render by Digest]
+```
 
-`render.yaml` definiert einen Docker Webservice `Capital-AI` in Frankfurt mit `/healthz`, deaktiviertem Auto Deploy und deaktivierten Preview-Instanzen. `TWELVE_DATA_API_KEY` und `POLYGON_API_KEY` werden nur als Render-Laufzeitgeheimnisse gesetzt; sie gehören weder ins Repository noch als Docker-Build-Argument. Erst nach einem erfolgreichen Sicherheits-Gate und der erforderlichen Provider-Lizenzprüfung darf ein manueller Production Deploy erfolgen.
+## Domänen
 
-Die API `/api/market/quote?symbol=BTCUSDT` verarbeitet Binance Spot WebSocket, `BTCUSD` Kraken WebSocket v2. Twelve Data und Polygon sind REST-Fallbacks für exakt zugeordnete USD-Instrumente (`BTCUSD`, `AAPL`). USDT wird nie stillschweigend in USD umgerechnet. Ohne frische, plausible Quelle liefert die API `503` und keinen Beispielkurs. Weitere Instrumente, Währungen, Tier 2–4, dauerhafte Speicherung und Lizenz-Eligibility sind Folgearbeiten.
+| Domain | Verantwortung |
+|---|---|
+| **CAPITAL-AI-PRODUCT** | Frontend, Agent Client, UX, Konto und Profil |
+| **CAPITAL-AI-MARKET** | FinTech, Provider, Scoring, Screener und Market Data |
+| **CAPITAL-AI-PLATFORM** | Render, Docker, NATS, Valkey, CI/CD und Observability |
+| **CAPITAL-AI-TRUST** | Security, Compliance, Governance, QA, Lizenz und Provenance |
+| **CAPITAL-AI-GROWTH** | Dokumentation, SEO, Social, Branding und Veröffentlichung |
+
+Der verbindliche Einstiegspunkt für Engineering- und Agent-Arbeit ist [AGENTS.md](AGENTS.md).
+
+## Entwicklung
+
+```sh
+npm ci --ignore-scripts
+npm run preflight:full
+```
+
+Für einen lokalen Build:
+
+```sh
+npm run lint
+npm test
+npm run build
+npm run verify:browser
+```
+
+Build-/Test-Erfolg ersetzt keine Production-Freigabe.
+
+## Supply Chain
+
+CAPITAL-AI verfolgt einen Evidence-first-Releasepfad:
+
+- Actions auf Commit-SHAs pinnen.
+- Base Images auf Version **und Digest** pinnen.
+- Lockfiles deterministisch installieren.
+- Install-Skripte standardmäßig deaktivieren.
+- Source-, Build- und Runtime-Scans getrennt behandeln.
+- SBOM und Provenance an den exakten Registry-Digest binden.
+- Runtime non-root, read-only-fähig und ohne Paketmanager halten.
+- Lizenz-/Provider-/Runtime-Gates vor Production separat schließen.
+
+Details: [Production Handoff](docs/security/PRODUCTION-HANDOFF.md) und [Dependency Update Trust Model](docs/security/DEPENDENCY-UPDATE-TRUST-MODEL.md).
+
+## Dependency Boundaries
+
+Root-Build und produktive Node-Runtime werden getrennt verwaltet.
+
+```mermaid
+flowchart LR
+  ROOT[Root package-lock] --> BUILD[Build + Tests]
+  RLOCK[deploy/runtime/package-lock] --> RDEPS[Minimal Runtime Dependencies]
+  BUILD --> DIST[dist/]
+  DIST --> IMAGE[Runtime Image]
+  RDEPS --> IMAGE
+  POST[Triggered/Postflight Units] --> EVIDENCE[Separate Evidence]
+```
+
+Das finale Webservice-Image übernimmt nicht länger pauschal alle Root-`dependencies`. Die konkrete Policy steht in [Runtime Dependency Boundary](docs/architecture/RUNTIME-DEPENDENCY-BOUNDARY.md).
+
+## Security und Evidence
+
+Security-relevante Änderungen werden gegen Herkunft, Registry-/Artefaktidentität, Advisories, Lizenz/Redistribution und Maintainer-/Community-Signale geprüft. Major-Upgrades sind eigenständige Migrationen.
+
+Bekannte Release-Gates bleiben nicht kompensierbar: ein hoher Benchmark- oder Qualitätswert kann einen BLOCKED Security-, License-, Provenance- oder Production-Gate nicht überschreiben.
+
+## Dokumentation
+
+Dokumentation verwendet bevorzugt GitHub-native Markdown- und Mermaid-Funktionen. Diagramme müssen zusätzlich textuell verständlich bleiben. Drittanbieter-Dokumentations-Actions werden nicht allein für Darstellung eingebunden; sie unterliegen vor Aufnahme derselben Supply-Chain- und CADS-Prüfung wie andere Tools.
+
+Wichtige Einstiegspunkte:
+
+- [Architektur](docs/architecture/)
+- [Security](docs/security/)
+- [Governance](docs/governance/)
+- [Compliance](docs/compliance/)
+- [Roadmap-Quelle](src/data/roadmapData.ts)
+
+## Sponsoring und Forschung
+
+CAPITAL-AI untersucht sichere, nachvollziehbare Architektur für Market Intelligence, Software Supply Chain, Evidence und Compliance. Sponsoring und Forschungsförderung sollen die Weiterentwicklung unterstützen, ohne Security-, Lizenz- oder Provider-Gates abzusenken.
+
+GitHub unterstützt Repository-Sponsorbuttons über `.github/FUNDING.yml`; die Aktivierung und Empfängeridentität werden separat verifiziert, bevor ein Funding-Ziel als aktiv dargestellt wird.
+
+## Status und Grenzen
+
+Die Oberfläche und Architektur befinden sich in aktiver Entwicklung. Insbesondere gelten bis zur jeweiligen Evidence-Abnahme:
+
+- Provider-/Redistribution-Rechte können offen sein.
+- Scoring ist nicht automatisch für produktive Anlageentscheidungen freigegeben.
+- Candidate Images sind erst nach vollständigem Handoff deployEligible.
+- ZITADEL-, Runtime-, Domain-/DNS- und Mail-Flows werden getrennt abgenommen.
+- Öffentliche Dokumentation darf keinen weitergehenden Freigabestatus behaupten als die zugrunde liegende Evidence.
+
+---
+
+**CAPITAL-AI** · Security-, Evidence- und Release-Entscheidungen bleiben nachvollziehbar, versioniert und fail-closed.
