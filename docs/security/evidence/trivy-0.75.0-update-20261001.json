@@ -5,7 +5,7 @@
   "crossDomain": [
     "PLATFORM"
   ],
-  "status": "READY_FOR_VALIDATION",
+  "status": "VERIFIED",
   "baselineMain": "b6cb91e06616670163035177344de42cb3237dec",
   "previous": {
     "version": "0.74.0",
@@ -50,7 +50,27 @@
     "expectedDifference": [
       "Alpine 3.24 EOL-list warning removed"
     ],
-    "suppressNewFindings": false
+    "suppressNewFindings": false,
+    "fullGatePassed": true,
+    "alpine324WarningRemoved": true,
+    "componentSetEqual": true,
+    "componentCount": {
+      "previous": 35,
+      "candidate": 35
+    },
+    "runtimeLicenseRowsEqual": true,
+    "runtimeLicenseRows": {
+      "previous": 77,
+      "candidate": 77
+    },
+    "natsFindingPreserved": {
+      "id": "GO-2026-5932",
+      "package": "golang.org/x/crypto",
+      "installed": "v0.57.0",
+      "severity": "UNKNOWN",
+      "fixed": null,
+      "blocking": 0
+    }
   },
   "safety": {
     "deployment": false,
@@ -58,5 +78,29 @@
     "billing": false,
     "secrets": false,
     "historicalEvidenceMutable": false
+  },
+  "verification": {
+    "workflowRunId": 36925001335,
+    "jobId": 110580043566,
+    "prMergeSha": "75bccadf9f95a8e9cbbfd599ca525c0cab1cf6d2",
+    "result": "PASS",
+    "trivyVersion": "0.75.0",
+    "artifactId": 11193656230,
+    "artifactDigest": "sha256:3af7f4011af4378bdf100c5dcef4ba651efef786599ca0a4ee6194b8e0263b9e",
+    "appImage": {
+      "os": "alpine",
+      "version": "3.24.2",
+      "apkPackages": 18,
+      "vulnerabilities": 0,
+      "secrets": 0,
+      "blocking": 0
+    },
+    "sbom": {
+      "format": "CycloneDX",
+      "specVersion": "1.7",
+      "components": 35,
+      "vulnerabilities": 0
+    },
+    "runtimeSmoke": "PASS"
   }
 }
