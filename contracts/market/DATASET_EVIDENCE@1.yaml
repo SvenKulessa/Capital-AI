@@ -1,0 +1,42 @@
+{
+  "schema": "DATASET_EVIDENCE@1",
+  "version": "1.0.0",
+  "metadata": {
+    "project": "CAPITAL-AI",
+    "domain": "MARKET",
+    "trustOwner": "TRUST",
+    "status": "PROPOSED"
+  },
+  "identity": {
+    "datasetEvidenceId": null,
+    "datasetId": null,
+    "createdAt": null
+  },
+  "lineage": {
+    "sourceProvenanceRefs": [],
+    "parentDatasetEvidenceRefs": [],
+    "transformRefs": [],
+    "featureRefs": [],
+    "scoreRefs": []
+  },
+  "integrity": {
+    "inputDigests": [],
+    "outputDigest": null,
+    "algorithm": "SHA-256"
+  },
+  "quality": {
+    "checks": [],
+    "status": "UNKNOWN"
+  },
+  "license": {
+    "licenseEvidenceRefs": []
+  },
+  "state": {
+    "status": "BLOCKED"
+  },
+  "safety": {
+    "missingLineageMayPass": false,
+    "missingDigestMayPass": false,
+    "missingLicenseMayPass": false
+  }
+}
