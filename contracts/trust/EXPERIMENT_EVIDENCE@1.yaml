@@ -41,5 +41,8 @@
   "safety": {
     "repositoryHeadAloneIsExecutionEvidence": false,
     "inferredSuccessForbidden": true
+  },
+  "correlation": {
+    "changeId": null
   }
 }

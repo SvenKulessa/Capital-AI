@@ -8,6 +8,15 @@ import { useHubTab } from '../hooks/useHubTab';
 import { LicenseEnginePanel } from './LicenseEnginePanel';
 export type ControlCenterTab = 'roadmap' | 'console' | 'cockpit' | 'team' | 'cost_center' | 'system' | 'licenses';
 const CONTROL_TABS: readonly ControlCenterTab[] = ['roadmap', 'console', 'cockpit', 'team', 'cost_center', 'system', 'licenses'];
+const CONTROL_TAB_LABELS: Record<ControlCenterTab, string> = {
+  roadmap: 'Roadmap',
+  console: 'Console',
+  cockpit: 'Cockpit',
+  team: 'Team & Rollen',
+  cost_center: 'Cost Center',
+  system: 'System',
+  licenses: 'Lizenzen & Nachweise',
+};
 interface ControlCenterPageProps { onBackToHome?: () => void; onNavigateLogin?: () => void; onNavigateTab?: (path: string) => void; initialTab?: ControlCenterTab; }
 export const ControlCenterPage: React.FC<ControlCenterPageProps> = ({ onBackToHome, initialTab = 'roadmap' }) => {
  const [activeTab, setActiveTab] = useHubTab(CONTROL_TABS, initialTab);
@@ -16,7 +25,7 @@ export const ControlCenterPage: React.FC<ControlCenterPageProps> = ({ onBackToHo
  const components = CANONICAL_50_COMPONENTS.filter(c => `${c.componentId} ${c.displayName}`.toLowerCase().includes(search.toLowerCase()));
  return <div className="w-full text-slate-100 min-h-screen py-4 px-3 sm:px-6">
   <h1 className="text-2xl font-bold">Control Center</h1>
-  <nav className="flex flex-wrap gap-2 my-4" aria-label="Control Center Tabs">{CONTROL_TABS.map(tab => <button key={tab} onClick={() => setActiveTab(tab)} aria-pressed={activeTab === tab} className={`px-3 py-2 rounded-xl ${activeTab === tab ? 'bg-amber-400 text-black' : 'bg-slate-800'}`}>{tab === 'licenses' ? 'Lizenzen' : tab}</button>)}</nav>
+  <nav className="my-4 flex flex-wrap gap-2" aria-label="Control Center Tabs" role="tablist">{CONTROL_TABS.map(tab => <button key={tab} type="button" role="tab" aria-selected={activeTab === tab} onClick={() => setActiveTab(tab)} className={`min-h-11 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors ${activeTab === tab ? 'border-amber-300 bg-amber-400 text-black shadow-[0_0_16px_rgba(245,176,20,0.2)]' : 'border-slate-700 bg-slate-900 text-slate-300 hover:border-slate-600 hover:text-white'}`}>{CONTROL_TAB_LABELS[tab]}</button>)}</nav>
   {activeTab === 'licenses' && <LicenseEnginePanel />}
   {activeTab === 'roadmap' && <RoadmapPanel />}
   {activeTab !== 'licenses' && <>

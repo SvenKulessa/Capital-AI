@@ -40,5 +40,8 @@
     "documentaryMergeAloneMayPass": false,
     "researchPurposeOverridesRights": false,
     "manualFundingSubmissionAutomatic": false
+  },
+  "correlation": {
+    "changeId": null
   }
 }

@@ -35,3 +35,10 @@ Der bisherige grüne Diagnosezustand wird rückwirkend nicht umetikettiert. Hist
 ## Nächster Nachweis
 
 Ein späterer TRUST-Slice muss die tatsächlich verwendete Credential-Art feststellen und anschließend einen sicheren, redigierten Authentifizierungsnachweis sowie einen echten Login-/Callback-/Session-Test erzeugen. Erst dann darf `LOGIN_VERIFIED` den Gesamtstatus grün setzen.
+
+## Observability-Evidence zu PR #95
+
+Die aktuelle Telemetrie-/Runtime-Korrelation ist unter
+`docs/security/evidence/oidc-pr95-observability-20261001/` dokumentiert.
+
+Ergebnis: **BLOCKED**. Der live laufende Render-Deploy wurde vor dem Merge von PR #95 erstellt, nach dem Merge wurde kein `Render CLI read-only verification`-Run beobachtet, und die aktuelle Auth-Observability besitzt keinen nicht-sensitiven Success-Audit-Event für Token-Validierung und Session-Erstellung. Deshalb darf aus bestehender Konfiguration oder einem früher erfolgreichen manuellen Login keine vollständige OIDC-Abnahme abgeleitet werden.

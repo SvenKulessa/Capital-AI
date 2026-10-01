@@ -31,5 +31,8 @@
   "safety": {
     "unsupportedClaimMayPublish": false,
     "conflictingEvidenceMayPublish": false
+  },
+  "correlation": {
+    "changeId": null
   }
 }
