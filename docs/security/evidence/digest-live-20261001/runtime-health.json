@@ -1,0 +1,8 @@
+{
+  "status": "ok",
+  "buildIdentity": {
+    "bound": true,
+    "sourceSha": "4fbd1373b07092ed8ef550f60e9cf60f1f3f526d",
+    "builder": "SvenKulessa/Capital-AI/.github/workflows/build-security.yml"
+  }
+}

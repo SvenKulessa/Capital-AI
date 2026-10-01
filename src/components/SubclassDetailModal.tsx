@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { AssetSubclass, MainCategory, MarketAsset } from '../types';
 import { MARKET_ASSETS } from '../data/mockData';
 import { AssetLogo } from './AssetLogo';
+import { parsePercentage } from '../utils/parsePercentage';
 
 interface SubclassDetailModalProps {
   isOpen: boolean;
@@ -76,11 +77,7 @@ export const SubclassDetailModal: React.FC<SubclassDetailModalProps> = ({
         return scoreB - scoreA;
       }
       if (sortOption === 'change') {
-        const parseChg = (s: string) => {
-          const num = parseFloat(s.replace('%', '').replace('+', '').replace(',', '.'));
-          return isNaN(num) ? 0 : num;
-        };
-        return parseChg(b.change) - parseChg(a.change);
+        return parsePercentage(b.change) - parsePercentage(a.change);
       }
       if (sortOption === 'name') {
         return a.name.localeCompare(b.name);
