@@ -1,0 +1,58 @@
+{
+  "schema": "CAPITAL_AI_CONTRACT_REGISTRY@1",
+  "version": "1.0.0",
+  "metadata": {
+    "project": "CAPITAL-AI",
+    "status": "PROPOSED"
+  },
+  "serialization": {
+    "storage": "JSON_SYNTAX_IN_YAML_1_2",
+    "canonicalDigestSerialization": "RFC8785",
+    "rationale": "Keeps contracts YAML-compatible while allowing dependency-free Node parsing in the existing validation chain."
+  },
+  "contracts": [
+    {
+      "id": "GROWTH_HANDOFF@1",
+      "version": "1.0.0",
+      "domain": "GROWTH",
+      "path": "contracts/growth/GROWTH_HANDOFF@1.yaml",
+      "schemaPath": "contracts/schemas/growth-handoff.schema.json"
+    },
+    {
+      "id": "GROWTH_PROJECTION@1",
+      "version": "1.0.0",
+      "domain": "GROWTH",
+      "path": "contracts/growth/GROWTH_PROJECTION@1.yaml",
+      "schemaPath": "contracts/schemas/growth-projection.schema.json"
+    },
+    {
+      "id": "DOCUMENTARY_EVIDENCE@1",
+      "version": "1.0.0",
+      "domain": "PLATFORM",
+      "consumerDomain": "GROWTH",
+      "path": "contracts/platform/DOCUMENTARY_EVIDENCE@1.yaml",
+      "schemaPath": "contracts/schemas/documentary-evidence.schema.json"
+    },
+    {
+      "id": "CHANGE_PROPAGATION@1",
+      "version": "1.0.0",
+      "domain": "PLATFORM",
+      "path": "contracts/platform/CHANGE_PROPAGATION@1.yaml",
+      "schemaPath": "contracts/schemas/change-propagation.schema.json"
+    }
+  ],
+  "invariants": {
+    "historicalEvidenceImmutable": true,
+    "missingEvidenceFailClosed": true,
+    "generatedOutputsAreNotCanonicalInputs": true,
+    "repositoryHeadAloneIsNotDeploymentSignal": true,
+    "selfHealingMinimumPositiveCycles": 3,
+    "selfHealingValidationSteps": [
+      "DETECT",
+      "CORRELATE",
+      "CLASSIFY",
+      "REMEDIATE",
+      "VERIFY"
+    ]
+  }
+}
