@@ -25,6 +25,9 @@
 !shared/legal-identity.mjs
 !shared/license-engine.mjs
 !deploy/
+!deploy/runtime/
+!deploy/runtime/package.json
+!deploy/runtime/package-lock.json
 !deploy/npm-security-patches/
 !deploy/npm-security-patches/package.json
 !deploy/npm-security-patches/package-lock.json
