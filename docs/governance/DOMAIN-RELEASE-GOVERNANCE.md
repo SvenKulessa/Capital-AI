@@ -1,6 +1,14 @@
 # CAPITAL-AI Domain-, Versions- und Release-Governance
 
-Stand: 2026-09-30
+Stand: 2026-10-01
+
+## Oberste Engineering-Priorität
+
+Die repository-weite Root-Policy `AGENTS.md` ist für Entwicklungs-, Update-, Docker- und Deployment-Arbeiten verbindlich. Security, Compliance, Lizenz-/Provenance-Sicherheit, Reproduzierbarkeit, Evidenz und Production-Stabilität haben Vorrang vor Bequemlichkeit, Geschwindigkeit und einem bloßen Versionssprung.
+
+Patch-/Minor-Updates dürfen als Routineklasse behandelt werden, wenn Risiko und Kompatibilität niedrig sind. Major-Updates sind immer eigenständige Migrationen mit Breaking-Change-, Runtime-, Typ-, Lizenz- und Rollback-Prüfung. Security-Updates bleiben unabhängig davon freigaberelevant und dürfen nicht durch Komfortregeln unterdrückt werden.
+
+Ein erfolgreicher Test, Build oder Scan ist niemals allein eine Lizenz-, Security- oder Production-Freigabe.
 
 ## Entwicklungsmodell
 
