@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "sourceSha": "4fbd1373b07092ed8ef550f60e9cf60f1f3f526d",
+  "scope": "source",
+  "status": "PASS",
+  "vulnerabilities": [],
+  "misconfigurations": [
+    {
+      "id": "DS-0026",
+      "severity": "LOW",
+      "status": "FAIL"
+    },
+    {
+      "id": "DS-0026",
+      "severity": "LOW",
+      "status": "FAIL"
+    }
+  ],
+  "secrets": 0,
+  "blocking": 0
+}

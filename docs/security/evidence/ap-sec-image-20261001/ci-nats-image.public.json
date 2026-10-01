@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "sourceSha": "4fbd1373b07092ed8ef550f60e9cf60f1f3f526d",
+  "scope": "nats-image",
+  "status": "PASS",
+  "vulnerabilities": [
+    {
+      "id": "GO-2026-5932",
+      "severity": "UNKNOWN",
+      "package": "golang.org/x/crypto",
+      "installed": "v0.57.0",
+      "fixed": null
+    }
+  ],
+  "misconfigurations": [],
+  "secrets": 0,
+  "blocking": 0
+}

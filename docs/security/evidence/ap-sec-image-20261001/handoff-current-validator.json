@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "status": "PRODUCTION_HANDOFF_BLOCKED",
+  "deployEligible": false,
+  "sourceSha": "4fbd1373b07092ed8ef550f60e9cf60f1f3f526d",
+  "imageRef": "ghcr.io/svenkulessa/capital-ai@sha256:53c47463dfdb9e66721be1c997769d9fae3e6ca0e8a3fdd8cf77074785a08d23",
+  "serviceId": "srv-dau1rp893c1s73cdhm1g",
+  "deployId": "dep-dauo3nc1nsns73f1u4t0",
+  "gates": [
+    {
+      "name": "LICENSE_REDISTRIBUTION_REVIEW",
+      "pass": false,
+      "evidence": {
+        "status": "REVIEW_OPEN",
+        "sourceSha": "ed594ef93f66ee8f13f67d75dde56f46a95b1cd6"
+      }
+    },
+    {
+      "name": "MAIN_PROTECTION",
+      "pass": true,
+      "evidence": {
+        "activeMainRulesets": [
+          "main-production-protection"
+        ],
+        "requiredContext": "Docker Security Gate",
+        "requiredContexts": [
+          "Docker Security Gate",
+          "Domain Governance"
+        ]
+      }
+    },
+    {
+      "name": "RENDER_IMAGE_SOURCE",
+      "pass": true,
+      "evidence": {
+        "serviceId": "srv-dau1rp893c1s73cdhm1g",
+        "ownerId": "tea-d90o4rj7uimc739i86ug",
+        "imagePath": "ghcr.io/svenkulessa/capital-ai@sha256:53c47463dfdb9e66721be1c997769d9fae3e6ca0e8a3fdd8cf77074785a08d23"
+      }
+    },
+    {
+      "name": "RUNTIME_DIGEST",
+      "pass": true,
+      "evidence": {
+        "deployId": "dep-dauo3nc1nsns73f1u4t0",
+        "imageRef": "ghcr.io/svenkulessa/capital-ai@sha256:53c47463dfdb9e66721be1c997769d9fae3e6ca0e8a3fdd8cf77074785a08d23",
+        "requestedManifestDigest": "sha256:53c47463dfdb9e66721be1c997769d9fae3e6ca0e8a3fdd8cf77074785a08d23",
+        "providerImageSha": "sha256:3abee0293d0273fa0858e4bbdce00aca8d0f5060f9b9f64ee2c67f9dc6530a3e",
+        "manifestRefMatches": true
+      }
+    },
+    {
+      "name": "RUNTIME_IDENTITY",
+      "pass": false,
+      "evidence": {
+        "buildIdentity": null
+      }
+    }
+  ],
+  "remainingGates": [
+    "LICENSE_REDISTRIBUTION_REVIEW",
+    "RUNTIME_IDENTITY"
+  ]
+}

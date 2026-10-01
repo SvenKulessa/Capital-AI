@@ -20,12 +20,14 @@ function fixtures() {
       conditions: { ref_name: { include: ['refs/heads/main'], exclude: [] } },
       bypass_actors: [],
       rules: [
+        { type: 'required_linear_history' },
         { type: 'deletion' },
         { type: 'non_fast_forward' },
-        { type: 'pull_request', parameters: {} },
+        { type: 'pull_request', parameters: { allowed_merge_methods: ['squash'] } },
         { type: 'required_status_checks', parameters: {
           strict_required_status_checks_policy: true,
-          required_status_checks: [{ context: 'Docker Security Gate' }],
+          do_not_enforce_on_create: false,
+          required_status_checks: [{ context: 'Docker Security Gate', integration_id: 15368 }],
         } },
       ],
     }],
@@ -34,10 +36,14 @@ function fixtures() {
     health: { buildIdentity: runtimeIdentityDocument(sourceSha) },
     expectedServiceId,
     expectedOwnerId,
+    expectedMainSha: sourceSha,
+    registryManifest: { digest, manifests: [{ digest, platform: { os: 'linux', architecture: 'amd64' } }] },
+    registryPlatformManifest: { digest, manifest: { config: { digest: 'sha256:' + 'e'.repeat(64) } } },
+    registryScan: { Metadata: { ImageID: 'sha256:' + 'e'.repeat(64), ImageConfig: { os: 'linux', architecture: 'amd64' } } },
   };
 }
 
-test('all five production handoff gates must pass before deployEligible becomes true', () => {
+test('all production handoff gates must pass before deployEligible becomes true', () => {
   const report = evaluateProductionHandoff(fixtures());
   assert.equal(report.deployEligible, true);
   assert.deepEqual(report.remainingGates, []);
@@ -62,6 +68,8 @@ test('a mutable or different Render image cannot satisfy the image-source gate',
 test('immutable Render image ref is the manifest binding while provider image sha is recorded separately', () => {
   const input = fixtures();
   input.deploy.image.sha = 'sha256:' + 'c'.repeat(64);
+  input.registryManifest.manifests[0].digest = input.deploy.image.sha;
+  input.registryPlatformManifest.digest = input.deploy.image.sha;
   const report = evaluateProductionHandoff(input);
   assert.equal(report.remainingGates.includes('RUNTIME_DIGEST'), false);
   const gate = report.gates.find(g => g.name === 'RUNTIME_DIGEST');
@@ -99,4 +107,48 @@ test('runtime identity binding is deterministic, image-contained and rejects non
   assert.match(bound, /SvenKulessa\/Capital-AI\/\.github\/workflows\/build-security\.yml/);
   assert.doesNotMatch(bound, /__CAPITAL_AI_.*_UNBOUND__/);
   assert.throws(() => runtimeIdentityDocument('main'));
+});
+
+
+test('a syntactically valid unrelated provider SHA must not pass', () => {
+  const input = fixtures();
+  input.deploy.image.sha = 'sha256:' + 'f'.repeat(64);
+  assert.ok(evaluateProductionHandoff(input).remainingGates.includes('RUNTIME_DIGEST'));
+});
+
+test('missing, ambiguous or foreign index evidence cannot bind the runtime', () => {
+  for (const change of [
+    i => { i.registryManifest = null; },
+    i => { i.registryPlatformManifest = null; },
+    i => { i.registryPlatformManifest.manifest.config.digest = 'sha256:' + 'f'.repeat(64); },
+    i => { i.registryManifest.digest = 'sha256:' + 'f'.repeat(64); },
+    i => { i.registryManifest.manifests.push(i.registryManifest.manifests[0]); },
+    i => { i.registryScan.Metadata.ImageConfig.architecture = 'arm64'; },
+  ]) {
+    const input = fixtures(); change(input);
+    assert.ok(evaluateProductionHandoff(input).remainingGates.includes('RUNTIME_DIGEST'));
+  }
+});
+
+test('a historical candidate cannot silently satisfy the current-main contract', () => {
+  const input = fixtures(); input.expectedMainSha = 'f'.repeat(40);
+  assert.ok(evaluateProductionHandoff(input).remainingGates.includes('SOURCE_CURRENT_MAIN'));
+});
+
+test('handoff must consume the linear-history ruleset validator', () => {
+  const input = fixtures();
+  input.rulesets[0].rules = input.rulesets[0].rules.filter(r => r.type !== 'required_linear_history');
+  assert.ok(evaluateProductionHandoff(input).remainingGates.includes('MAIN_PROTECTION'));
+});
+
+
+test('activated CodeQL and code-quality rules need separate source-bound result evidence', () => {
+  const input = fixtures();
+  input.rulesets[0].rules.push({ type: 'code_scanning' }, { type: 'code_quality' });
+  const report = evaluateProductionHandoff(input);
+  assert.ok(report.remainingGates.includes('REQUIRED_CODE_SCANNING_RESULTS'));
+  assert.ok(report.remainingGates.includes('REQUIRED_CODE_QUALITY_RESULTS'));
+  // A successful analyzer job alone is not a findings/policy readback.
+  input.analysisResults = [{ type: 'code_scanning', status: 'PASS', sourceSha: 'f'.repeat(40), evidenceUrl: 'https://api.github.com/repos/SvenKulessa/Capital-AI/code-scanning/alerts' }];
+  assert.ok(evaluateProductionHandoff(input).remainingGates.includes('REQUIRED_CODE_SCANNING_RESULTS'));
 });

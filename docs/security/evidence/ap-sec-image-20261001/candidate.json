@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "status": "ATTESTED_CANDIDATE",
+  "deployEligible": false,
+  "sourceSha": "4fbd1373b07092ed8ef550f60e9cf60f1f3f526d",
+  "imageRef": "ghcr.io/svenkulessa/capital-ai@sha256:53c47463dfdb9e66721be1c997769d9fae3e6ca0e8a3fdd8cf77074785a08d23",
+  "localImageId": "sha256:53c47463dfdb9e66721be1c997769d9fae3e6ca0e8a3fdd8cf77074785a08d23",
+  "workflowRun": "https://github.com/SvenKulessa/Capital-AI/actions/runs/36765644507/attempts/1",
+  "remainingGates": [
+    "LICENSE_REDISTRIBUTION_REVIEW",
+    "MAIN_PROTECTION",
+    "RENDER_IMAGE_SOURCE",
+    "RUNTIME_DIGEST",
+    "RUNTIME_IDENTITY"
+  ]
+}

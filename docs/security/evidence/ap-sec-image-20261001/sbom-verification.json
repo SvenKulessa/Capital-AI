@@ -1,0 +1,58 @@
+[
+  {
+    "artifactFileSha256": "f683ac3eb6160031ed64069816c85a0d6c0ca3477d1c9a71cdf2820f386397d3",
+    "extraction": "Certificate, subject and verifier results from full archived output; full SBOM/bundle remains in artifact 11121345077",
+    "subject": [
+      {
+        "name": "ghcr.io/svenkulessa/capital-ai",
+        "digest": {
+          "sha256": "53c47463dfdb9e66721be1c997769d9fae3e6ca0e8a3fdd8cf77074785a08d23"
+        }
+      }
+    ],
+    "predicateType": "https://cyclonedx.org/bom",
+    "certificate": {
+      "certificateIssuer": "CN=sigstore-intermediate,O=sigstore.dev",
+      "subjectAlternativeName": "https://github.com/SvenKulessa/Capital-AI/.github/workflows/build-security.yml@refs/heads/main",
+      "issuer": "https://token.actions.githubusercontent.com",
+      "githubWorkflowTrigger": "workflow_dispatch",
+      "githubWorkflowSHA": "4fbd1373b07092ed8ef550f60e9cf60f1f3f526d",
+      "githubWorkflowName": "Docker Build Sicherheit",
+      "githubWorkflowRepository": "SvenKulessa/Capital-AI",
+      "githubWorkflowRef": "refs/heads/main",
+      "buildSignerURI": "https://github.com/SvenKulessa/Capital-AI/.github/workflows/build-security.yml@refs/heads/main",
+      "buildSignerDigest": "4fbd1373b07092ed8ef550f60e9cf60f1f3f526d",
+      "runnerEnvironment": "github-hosted",
+      "sourceRepositoryURI": "https://github.com/SvenKulessa/Capital-AI",
+      "sourceRepositoryDigest": "4fbd1373b07092ed8ef550f60e9cf60f1f3f526d",
+      "sourceRepositoryRef": "refs/heads/main",
+      "sourceRepositoryIdentifier": "1293009324",
+      "sourceRepositoryOwnerURI": "https://github.com/SvenKulessa",
+      "sourceRepositoryOwnerIdentifier": "84307769",
+      "buildConfigURI": "https://github.com/SvenKulessa/Capital-AI/.github/workflows/build-security.yml@refs/heads/main",
+      "buildConfigDigest": "4fbd1373b07092ed8ef550f60e9cf60f1f3f526d",
+      "buildTrigger": "workflow_dispatch",
+      "runInvocationURI": "https://github.com/SvenKulessa/Capital-AI/actions/runs/36765644507/attempts/1",
+      "sourceRepositoryVisibilityAtSigning": "public"
+    },
+    "verifiedIdentity": {
+      "subjectAlternativeName": {
+        "subjectAlternativeName": "",
+        "regexp": "^https://github\\.com/SvenKulessa/Capital-AI/\\.github/workflows/build-security\\.yml"
+      },
+      "issuer": {
+        "issuer": "",
+        "regexp": ".*"
+      },
+      "runnerEnvironment": "github-hosted"
+    },
+    "verifiedTimestamps": [
+      {
+        "type": "Tlog",
+        "uri": "https://rekor.sigstore.dev",
+        "timestamp": "2026-09-30T19:30:08Z"
+      }
+    ],
+    "provenancePredicate": null
+  }
+]

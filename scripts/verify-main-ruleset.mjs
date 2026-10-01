@@ -24,6 +24,7 @@ export function verifyMainRuleset(ruleset) {
   if (ruleset?.target !== 'branch') findings.push('target_not_branch');
   if (ruleset?.enforcement !== 'active') findings.push('not_active');
   if (!targetsMain(ruleset)) findings.push('main_not_targeted');
+  if ((ruleset?.conditions?.ref_name?.exclude || []).length) findings.push('main_exclusions_present');
   if ((ruleset?.bypass_actors || []).length !== 0) findings.push('bypass_present');
   if (!types.has('deletion')) findings.push('deletion_not_blocked');
   if (!types.has('non_fast_forward')) findings.push('non_fast_forward_not_blocked');
@@ -35,6 +36,7 @@ export function verifyMainRuleset(ruleset) {
   if (status && status.parameters?.strict_required_status_checks_policy !== true) findings.push('strict_checks_disabled');
   if (status && status.parameters?.do_not_enforce_on_create !== false) findings.push('checks_not_enforced_on_create');
   if (!contexts.includes(REQUIRED_CONTEXT)) findings.push('docker_security_gate_not_required');
+  if ((status?.parameters?.required_status_checks || []).some(c => c.integration_id !== 15368)) findings.push('required_check_identity_unbound');
 
   return {
     schemaVersion: 1,

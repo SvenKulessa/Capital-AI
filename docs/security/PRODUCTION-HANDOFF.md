@@ -1,5 +1,7 @@
 # Production-Handoff Gate
 
+Aktuelle korrelierte Abnahme: [AP-SEC-IMAGE vom 01.10.2026](AP-SEC-IMAGE-ABNAHME-20261001.md), weiterhin BLOCKED. Die folgenden Abschnitte dokumentieren den ursprünglichen Stand vom 30.09.2026.
+
 Stand: 30.09.2026. Dieser Slice trennt Build-Sicherheit, Kandidaten-Publishing und Production-Handoff strikt.
 
 ## Aktueller Zustand

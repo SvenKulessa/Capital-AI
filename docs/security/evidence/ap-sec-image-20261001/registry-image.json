@@ -1,0 +1,36 @@
+{
+  "SchemaVersion": 2,
+  "Trivy": {
+    "Version": "0.74.0"
+  },
+  "ReportID": "01a0f3cb-5fe3-7dae-8b8e-f0ca058b8806",
+  "CreatedAt": "2026-09-30T19:29:46.979897948Z",
+  "ArtifactID": "sha256:c161621d58ea32230750e95adf6551bb6f3c3ac697bfa048b0cf5393cd6356d3",
+  "ArtifactName": "/reports/registry-image.tar",
+  "ArtifactType": "container_image",
+  "Metadata": {
+    "OS": {
+      "Family": "alpine",
+      "Name": "3.24.1"
+    },
+    "ImageID": "sha256:c161621d58ea32230750e95adf6551bb6f3c3ac697bfa048b0cf5393cd6356d3",
+    "ImageConfig": {
+      "os": "linux",
+      "architecture": "amd64"
+    }
+  },
+  "Results": [
+    {
+      "Target": "/reports/registry-image.tar (alpine 3.24.1)",
+      "Class": "os-pkgs",
+      "Type": "alpine"
+    },
+    {
+      "Target": "Node.js",
+      "Class": "lang-pkgs",
+      "Type": "node-pkg"
+    }
+  ],
+  "originalArtifactFileSha256": "561dbb28cb1fc5440ab1d61bf53a88777b48972331fbafbc522febd218f6f80c",
+  "extraction": "Full vulnerabilities/secrets retained; package inventory and image history remain in artifact 11121345077"
+}
