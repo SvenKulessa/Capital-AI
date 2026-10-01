@@ -10,7 +10,7 @@ export function sanitizeTelegramConfig(input: Partial<TelegramConfig> = {}): Tel
     notifySmartMoney: input.notifySmartMoney === true,
     notifyPriceAlerts: input.notifyPriceAlerts === true,
     notifySentimentFlips: input.notifySentimentFlips === true,
-    minWhaleVolumeMln: Number.isFinite(input.minWhaleVolumeMln) ? Math.max(0, Math.min(100000, input.minWhaleVolumeMln)) : 5,
+    minWhaleVolumeMln: typeof input.minWhaleVolumeMln === 'number' && Number.isFinite(input.minWhaleVolumeMln) ? Math.max(0, Math.min(100000, input.minWhaleVolumeMln)) : 5,
     lastTestedAt: typeof input.lastTestedAt === 'string' ? input.lastTestedAt.slice(0, 50) : undefined,
   };
 }
