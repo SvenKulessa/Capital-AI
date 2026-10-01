@@ -955,6 +955,112 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "evidenceRefs": [
     "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
   ],
+  "priority": "Hoch",
+  "leadName": "Projektowner",
+  "id": "CA-TRUST-APP-READ-DESIGN",
+  "title": "Eigene Security-App: Leserechte und Einstellungsabdeckung entwerfen",
+  "owner": "TRUST",
+  "targetSprint": "Nach GHCR-Digest-Abnahme; Vorbereitung vor Enterprise-Transfer",
+  "description": "Organisationseigene GitHub App für capital-ai-online/Capital-AI planen. Alle sicherheitsrelevanten Repository-/Org-/Enterprise-Einstellungen je API-Endpunkt inventarisieren; fehlende Lesbarkeit explizit ausweisen. Keine Secretwerte oder pauschalen Schreibrechte.",
+  "nextStep": "Endpunkt-/Leserechte-Matrix, geerbte Rulesets, IAM, Actions, CodeQL, Secret Protection, Dependabot und GitGuardian erfassen; Schlüsselrotation und begrenzte Installation planen.",
+  "deliverables": [
+    "API-/Berechtigungs-/Abdeckungsmatrix mit NICHT_LESBAR/UNGEKLÄRT für Lücken",
+    "Kurzlebige Token und Schlüsselverwaltung; kein Bypass",
+    "Getrennte spätere PR-Schreibidentität für menschliche Owner-Approval"
+  ],
+  "dependencies": [
+    "AP-SEC-IMAGE"
+  ]
+},
+{
+  "status": "pending",
+  "phase": 5,
+  "phaseName": "Phase 5: Production Go-Live",
+  "progressPercent": null,
+  "evidenceState": "GEHALTEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "priority": "Hoch",
+  "leadName": "Projektowner",
+  "id": "CA-PLATFORM-APP-READ-CONSUME",
+  "title": "Security-App nach Enterprise-Umzug installieren und Readbacks nutzen",
+  "owner": "PLATFORM",
+  "targetSprint": "Nach Digest-, Domain-, Finance-Abnahme und Enterprise-Transfer",
+  "description": "App in der Capital-AI-Enterprise-Umgebung auf ausgewählte Repositories begrenzen. Aktive und geerbte Sicherheitseinstellungen als Evidence in vorhandener Roadmap nutzen; fehlende Enterprise-API-Abdeckung nicht als PASS behandeln.",
+  "nextStep": "Berechtigungen konkret freigeben, App installieren und Source-/Owner-/Zeit-/Hash-gebundene Lesebelege samt Soll-/Ist-Abweichungen konsumieren.",
+  "deliverables": [
+    "Installation auf verifiziertem capital-ai-online/Capital-AI",
+    "Nachvollziehbarer Settings-Readback ohne Secrets",
+    "Keine zweite Statusautorität und keine automatische Policy-Mutation"
+  ],
+  "dependencies": [
+    "CA-TRUST-APP-READ-DESIGN",
+    "CA-PLATFORM-ENTERPRISE-PUBLIC"
+  ]
+},
+{
+  "status": "pending",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "priority": "Hoch",
+  "leadName": "Projektowner",
+  "id": "CA-TRUST-SIGNED-COMMITS",
+  "title": "Signierte Commits für alle Schreibwege vorbereiten und verlangen",
+  "owner": "TRUST",
+  "targetSprint": "Nach GHCR-Digest-Abnahme; vor Durchsetzung Signaturtest",
+  "description": "Require signed commits nach Validierung lokaler, Web-, Connector/API-, Workflow- und Dependabot-Commits aktivieren. Unsigned PR-Commits können auch Squash blockieren; offene PRs zuerst prüfen.",
+  "nextStep": "Verified-Signaturen inventarisieren, fehlende Arbeitsbranch-Signierung beheben und einen regulären signierten PR vor Ruleset-Aktivierung abnehmen.",
+  "deliverables": [
+    "Signaturmatrix aller aktiven Schreibwege",
+    "Regulärer signierter Test-PR",
+    "Ruleset-Readback ohne Bypass oder Main-Historienumschreibung"
+  ],
+  "dependencies": [
+    "AP-SEC-IMAGE",
+    "CA-TRUST-LINEAR-HISTORY"
+  ]
+},
+{
+  "status": "pending",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "priority": "Hoch",
+  "leadName": "Projektowner",
+  "id": "CA-TRUST-GITGUARDIAN",
+  "title": "GitGuardian-Abdeckung und Merge-Gate verifizieren",
+  "owner": "TRUST",
+  "targetSprint": "Nach GHCR-Digest-Abnahme; erneut nach Enterprise-Transfer",
+  "description": "GitGuardian-Installation, Repo-Abdeckung, Tarif/Kontingente und tatsächliche PR-Checkidentität prüfen. GitHub Secret Scanning/Push Protection bleiben ergänzend; keine automatische kostenlose Enterprise-Abdeckung behaupten.",
+  "nextStep": "Installation und Findings lesen, Kosten prüfen; exakten Checknamen/App-Herkunft nach erfolgreicher Scanabdeckung als Required Check anbinden und nach Transfer wiederprüfen.",
+  "deliverables": [
+    "Aktueller Installations-/Kosten-/Repo-Abdeckungsnachweis",
+    "Secret-Findings mit Sperr-/Rotationsweg",
+    "Nachgewiesener PR-Check und Post-Transfer-Readback"
+  ],
+  "dependencies": [
+    "AP-SEC-IMAGE"
+  ]
+},
+{
+  "status": "pending",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
   "leadName": "Projektowner",
   "id": "CA-TRUST-GITHUB-FREE",
   "title": "Kostenfreie GitHub-Sicherheitsbaseline prüfen",
@@ -1410,9 +1516,9 @@ export const WORK_PACKAGES: WorkPackage[] = [
     "docs/security/RENDER-IMAGE-REVIEW.md"
   ],
   "nextStep": "Finale Source SHA, attestierten GHCR-Digest, gestarteten Render-Digest und Deployment-ID korrelieren; alle Production-Gates separat abnehmen.",
-  "priority": "Hoch",
+  "priority": "Kritisch",
   "leadName": "Projektowner",
-  "targetSprint": "Vor IONOS-DNS-Cutover; frühestmöglicher Abnahmetermin",
+  "targetSprint": "Jetzt zuerst: GHCR-/Render-Digest-Abnahme; vor weiteren Security-App-Paketen",
   "description": "Der letzte erfolgreiche Dockerlauf 36715472658 gehört zu 46ee077dea184a5defa84ef028fb93e3ac73fad5. Für den gelesenen aktuellen Main fehlt ein gleichwertiger exakter Image-/SBOM-/CVE-Nachweis.",
   "deliverables": [
     "Freigegebenen Sicherheitsworkflow auf dem finalen Main ausführen und Imageidentität korrelieren."
