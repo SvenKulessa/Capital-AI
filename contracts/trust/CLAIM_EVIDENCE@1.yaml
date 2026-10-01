@@ -1,0 +1,35 @@
+{
+  "schema": "CLAIM_EVIDENCE@1",
+  "version": "1.0.0",
+  "metadata": {
+    "project": "CAPITAL-AI",
+    "domain": "TRUST",
+    "consumerDomain": "GROWTH",
+    "status": "PROPOSED"
+  },
+  "identity": {
+    "claimEvidenceId": null,
+    "claimId": null,
+    "createdAt": null
+  },
+  "claim": {
+    "text": null,
+    "scope": null,
+    "publicationTarget": null
+  },
+  "support": {
+    "researchEvidenceRefs": [],
+    "datasetEvidenceRefs": [],
+    "experimentEvidenceRefs": [],
+    "licenseEvidenceRefs": [],
+    "costEvidenceRefs": []
+  },
+  "decision": {
+    "status": "BLOCKED",
+    "confidence": null
+  },
+  "safety": {
+    "unsupportedClaimMayPublish": false,
+    "conflictingEvidenceMayPublish": false
+  }
+}
