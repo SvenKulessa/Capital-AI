@@ -99,6 +99,46 @@ Dabei gelten mindestens folgende Regeln:
 Verbindliche Detailregel:
 - `docs/security/REMOTE-AI-CLOUD-BROWSER-SESSIONS.md`
 
+## Tool- und Plugin-First-Nutzung
+
+Für alle Domain-Chats und Agents gilt: bereits verfügbare und für die Aufgabe geeignete Tools, Plugins, Connectoren und spezialisierte Skills sollen aktiv genutzt werden, wenn sie die Evidenz, Korrektheit, Aktualität, Reproduzierbarkeit, Sicherheit, Geschwindigkeit oder Ergebnisqualität sinnvoll verbessern.
+
+### Generelle Owner-Freigabe für Low-Risk-Nutzung
+
+Der Owner erteilt eine generelle Freigabe für **niedrigriskante** Tool-/Plugin-Nutzung ohne erneute Einzelbestätigung. Dazu zählen insbesondere:
+
+- Read-only Recherche, Suche und Dokumentationsabruf,
+- Repository-/Datei-/Konfigurationsanalyse ohne Zustandsänderung,
+- Security-, Lizenz-, Provenance- und Dependency-Analyse,
+- Benchmarking und Vergleichsmessungen ohne produktive Seiteneffekte,
+- lokale oder isolierte Analyse-/Validierungswerkzeuge,
+- Abruf von Status-, Metadaten-, Log- oder Evidence-Informationen,
+- Nutzung spezialisierter Domain-Tools zur Verbesserung oder Verifikation eines Ergebnisses.
+
+Vor einer Aufgabe soll geprüft werden, ob ein vorhandenes spezialisiertes Tool/Plugin gegenüber einer generischen oder manuellen Lösung einen belastbaren Vorteil bietet. Tool-Nutzung darf nicht Selbstzweck sein.
+
+### Grenzen der generellen Freigabe
+
+Die Low-Risk-Freigabe ist **keine pauschale Schreib- oder Produktionsvollmacht**. Bestehende strengere Regeln bleiben vorrangig. Eine gesonderte Freigabe bzw. das dafür definierte Gate bleibt erforderlich, wenn eine Aktion insbesondere:
+
+- externe Daten, Konfigurationen oder Ressourcen zustandsverändernd schreibt/löscht,
+- Build-, Test-, Deploy- oder andere kostenrelevante Workflows startet, soweit hierfür eine Owner-Freigabe vorgeschrieben ist,
+- Production, DNS/Domain, Auth, Billing, Branch Protection, Rulesets oder Security Controls verändert,
+- Secrets, Credentials, Tokens oder privilegierte Identitäten erzeugt, rotiert oder exponieren könnte,
+- kostenpflichtige Ressourcen oder Abonnements erzeugt/verändert,
+- irreversible oder schwer rückrollbare Auswirkungen hat,
+- einen bestehenden Security-, Lizenz-, Governance- oder Production-Handoff-Gate berührt.
+
+### Domain-Anwendung
+
+- PRODUCT nutzt geeignete Tools für Frontend, UX, Accessibility, Browser-/Bundle- und Produktqualität.
+- MARKET nutzt geeignete Tools für Datenqualität, Provider-/Schema-Vergleich, Scoring-/Research-Evidence und Markt-Datenvalidierung.
+- PLATFORM nutzt geeignete Tools für Runtime, Container, CI/CD, Observability, Performance und Infrastruktur-Evidence.
+- TRUST nutzt geeignete Tools für Security, Compliance, Governance, QA, Lizenz, Provenance und Supply-Chain-Evidence.
+- GROWTH nutzt geeignete Tools für Docs, SEO, Social, Branding und veröffentlichungsbezogene Qualitätsprüfung.
+
+Neue oder wesentlich anders eingesetzte Tools/Plugins unterliegen zusätzlich dem Tool-/Architektur-Benchmarking, wenn ihre Auswahl eine strategische Architektur-, Pipeline-, Security-, Kosten- oder Runtime-Entscheidung darstellt.
+
 ## Tool-, API- und Architektur-Benchmarking
 
 Neue Tools, Anwendungen, Libraries, Runtimes, Provider, Schnittstellen und wesentliche Kombinationen daraus dürfen nicht allein aufgrund von Bekanntheit, Neuheit oder Einzelbenchmarks zum Standard werden. Für strategische Tool-Entscheidungen ist eine **reproduzierbare Decision Evidence** verpflichtend.
