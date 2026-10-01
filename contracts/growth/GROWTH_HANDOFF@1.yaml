@@ -1,0 +1,148 @@
+{
+  "schema": "GROWTH_HANDOFF@1",
+  "version": "1.0.0",
+  "metadata": {
+    "project": "CAPITAL-AI",
+    "domain": "GROWTH",
+    "status": "PROPOSED",
+    "language": "de-DE"
+  },
+  "purpose": {
+    "summary": "Kanonischer Handoff-Vertrag für alle maschinenlesbaren Informationen, die von PLATFORM, TRUST, PRODUCT und MARKET an GROWTH übergeben werden.",
+    "goals": [
+      "Dokumentation automatisch aktualisieren",
+      "Roadmap-Projektionen erzeugen",
+      "Architekturänderungen nachvollziehbar darstellen",
+      "Commercialization-Informationen synchronisieren",
+      "Social- und Documentary-Ausgaben vorbereiten",
+      "Historische Evidence unverändert erhalten"
+    ]
+  },
+  "sourceDomains": {
+    "PLATFORM": {
+      "provides": [
+        "CHANGESET@1",
+        "CHANGE_PROPAGATION@1",
+        "DOCUMENTARY_EVIDENCE@1",
+        "runtime evidence",
+        "deployment evidence",
+        "observability evidence"
+      ]
+    },
+    "TRUST": {
+      "provides": [
+        "security evidence",
+        "license evidence",
+        "provenance evidence",
+        "policy decisions",
+        "release eligibility"
+      ]
+    },
+    "PRODUCT": {
+      "provides": [
+        "pricing model",
+        "subscription tiers",
+        "feature availability",
+        "UX release state"
+      ]
+    },
+    "MARKET": {
+      "provides": [
+        "provider status",
+        "market-data capability status",
+        "data-license status",
+        "scoring capability status"
+      ]
+    }
+  },
+  "growthConsumers": {
+    "documentation": {
+      "enabled": true
+    },
+    "roadmap": {
+      "enabled": true
+    },
+    "architecturePresentation": {
+      "enabled": true
+    },
+    "controlCenter": {
+      "enabled": true
+    },
+    "commercialization": {
+      "enabled": true
+    },
+    "socialMedia": {
+      "enabled": true
+    },
+    "documentary": {
+      "enabled": true
+    }
+  },
+  "canonicalRules": {
+    "sourceOfTruth": {
+      "machineReadableContracts": true,
+      "generatedMarkdown": false,
+      "generatedRoadmap": false,
+      "generatedSocialContent": false,
+      "generatedOutputsMayBecomeInput": false
+    },
+    "historicalEvidence": {
+      "mutable": false
+    },
+    "architectureHistory": {
+      "overwritePreviousState": false
+    },
+    "roadmap": {
+      "generatedFromCanonicalContracts": true
+    },
+    "manualEdits": {
+      "allowedForGeneratedOutputs": false
+    },
+    "missingEvidence": {
+      "behavior": "FAIL_CLOSED"
+    }
+  },
+  "correlation": {
+    "requiredKey": "changeId",
+    "generatedOutputsMayBecomeCanonicalInput": false
+  },
+  "statusModel": {
+    "allowed": [
+      "PROPOSED",
+      "VERIFIED",
+      "EFFECTIVE",
+      "SUPERSEDED",
+      "BLOCKED"
+    ]
+  },
+  "automation": {
+    "onPullRequest": {
+      "generatePreview": true,
+      "publishPublicly": false
+    },
+    "onMerge": {
+      "regenerateDocumentation": true,
+      "regenerateRoadmap": true,
+      "regenerateArchitectureProjection": true,
+      "regenerateCommercializationProjection": true
+    },
+    "onRuntimeReadback": {
+      "updateEffectiveState": true
+    },
+    "onEvidenceChange": {
+      "correlateAffectedOutputs": true
+    }
+  },
+  "ownership": {
+    "canonicalContractOwner": "PLATFORM",
+    "evidenceOwner": "TRUST",
+    "presentationOwner": "GROWTH"
+  },
+  "safety": {
+    "mayDeploy": false,
+    "mayModifyDNS": false,
+    "mayModifyBilling": false,
+    "mayModifySecrets": false,
+    "mayRewriteHistoricalEvidence": false
+  }
+}

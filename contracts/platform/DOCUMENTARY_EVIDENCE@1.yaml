@@ -1,0 +1,255 @@
+{
+  "schema": "DOCUMENTARY_EVIDENCE@1",
+  "version": "1.0.0",
+  "metadata": {
+    "project": "CAPITAL-AI",
+    "domain": "PLATFORM",
+    "consumerDomain": "GROWTH",
+    "status": "PROPOSED"
+  },
+  "correlation": {
+    "changeId": null
+  },
+  "identity": {
+    "documentaryId": null,
+    "sourceSha": null,
+    "parentSha": null,
+    "branch": null,
+    "pullRequest": null,
+    "createdAt": null
+  },
+  "change": {
+    "title": null,
+    "summary": null,
+    "type": {
+      "allowed": [
+        "FEATURE",
+        "FIX",
+        "SECURITY",
+        "DEPENDENCY",
+        "ARCHITECTURE",
+        "RUNTIME",
+        "DOCUMENTATION",
+        "COMMERCIALIZATION",
+        "LICENSE",
+        "GOVERNANCE"
+      ]
+    },
+    "domains": {
+      "primary": null,
+      "affected": []
+    }
+  },
+  "intent": {
+    "problem": null,
+    "desiredOutcome": null,
+    "ownerRequestRef": null
+  },
+  "architecture": {
+    "changed": false,
+    "architectureChangeRef": null,
+    "affectedComponents": [],
+    "before": {
+      "summary": null
+    },
+    "after": {
+      "summary": null
+    },
+    "interfacesChanged": [],
+    "securityBoundaryChanged": false
+  },
+  "implementation": {
+    "changedFiles": [],
+    "dependencies": {
+      "added": [],
+      "removed": [],
+      "updated": []
+    },
+    "executionUnits": {
+      "affected": []
+    }
+  },
+  "validation": {
+    "tests": {
+      "status": "UNKNOWN",
+      "evidenceRefs": []
+    },
+    "security": {
+      "status": "UNKNOWN",
+      "evidenceRefs": []
+    },
+    "licenses": {
+      "status": "UNKNOWN",
+      "evidenceRefs": []
+    },
+    "provenance": {
+      "status": "UNKNOWN",
+      "evidenceRefs": []
+    },
+    "build": {
+      "status": "UNKNOWN",
+      "evidenceRefs": []
+    },
+    "benchmark": {
+      "status": "NOT_REQUIRED",
+      "evidenceRefs": []
+    }
+  },
+  "supplyChain": {
+    "source": {
+      "commitSha": null
+    },
+    "sbom": {
+      "generated": false,
+      "refs": []
+    },
+    "artifacts": {
+      "images": []
+    },
+    "immutableDigests": [],
+    "attestations": []
+  },
+  "runtime": {
+    "deploymentRequired": false,
+    "deployed": false,
+    "environment": null,
+    "readback": {
+      "performed": false,
+      "sourceSha": null,
+      "imageDigest": null,
+      "evidenceRefs": []
+    }
+  },
+  "observability": {
+    "telemetryChanged": false,
+    "metricsAdded": [],
+    "metricsRemoved": [],
+    "regressionsDetected": [],
+    "anomalies": []
+  },
+  "selfHealing": {
+    "candidateDetected": false,
+    "patternId": null,
+    "validationCycle": {
+      "current": 0,
+      "required": 3
+    },
+    "validationSteps": [
+      "DETECT",
+      "CORRELATE",
+      "CLASSIFY",
+      "REMEDIATE",
+      "VERIFY"
+    ],
+    "eligibleForAutomation": false,
+    "repairClass": null,
+    "promotionConditions": {
+      "validationCyclesPassed": false,
+      "deterministicOutput": false,
+      "noTrustBoundaryChange": false,
+      "noHumanAuthorityRequired": false
+    }
+  },
+  "commercialization": {
+    "affected": false,
+    "inventoryRefs": [],
+    "revenueGateChanged": false
+  },
+  "roadmap": {
+    "affected": false,
+    "entries": []
+  },
+  "documentationProjection": {
+    "architectureDocs": {
+      "regenerate": false
+    },
+    "roadmap": {
+      "regenerate": false
+    },
+    "controlCenter": {
+      "regenerate": false
+    },
+    "releaseNotes": {
+      "regenerate": false
+    },
+    "commercialization": {
+      "regenerate": false
+    },
+    "socialMedia": {
+      "regenerate": false
+    }
+  },
+  "documentaryProjection": {
+    "publicSafe": false,
+    "sections": {
+      "intent": true,
+      "architecture": true,
+      "implementation": true,
+      "validation": true,
+      "security": true,
+      "licenses": true,
+      "supplyChain": true,
+      "runtime": true,
+      "observability": true,
+      "commercialization": true
+    },
+    "redact": {
+      "secrets": true,
+      "tokens": true,
+      "personalData": true,
+      "internalCredentials": true
+    }
+  },
+  "state": {
+    "lifecycle": "PROPOSED",
+    "supersededBy": null,
+    "transitions": [
+      {
+        "from": "PROPOSED",
+        "to": "VERIFIED",
+        "requires": [
+          "required validation gates passed"
+        ]
+      },
+      {
+        "from": "PROPOSED",
+        "to": "BLOCKED",
+        "requires": [
+          "blocking validation failure"
+        ]
+      },
+      {
+        "from": "VERIFIED",
+        "to": "EFFECTIVE",
+        "requires": [
+          "merge completed",
+          "runtime readback when deploymentRequired=true"
+        ]
+      },
+      {
+        "from": "VERIFIED",
+        "to": "BLOCKED",
+        "requires": [
+          "release gate failed"
+        ]
+      },
+      {
+        "from": "EFFECTIVE",
+        "to": "SUPERSEDED",
+        "requires": [
+          "successor documentaryId"
+        ]
+      }
+    ]
+  },
+  "integrity": {
+    "canonicalSerialization": "RFC8785",
+    "hashAlgorithm": "SHA-256",
+    "documentaryDigest": null
+  },
+  "safety": {
+    "historicalRecordsImmutable": true,
+    "inferredSuccessForbidden": true,
+    "missingEvidenceMeansSuccess": false
+  }
+}

@@ -43,6 +43,9 @@
 !scripts/frontend-security.test.mjs
 !scripts/verify-browser-boundary.mjs
 !scripts/validate-contract-suites.mjs
+!scripts/validate-growth-contracts.mjs
+!contracts/
+!contracts/**
 !docs/
 !docs/licenses/
 !docs/licenses/**
