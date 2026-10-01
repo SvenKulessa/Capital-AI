@@ -54,3 +54,29 @@ Keine automatische DNS-, Billing-, Enterprise- oder Sponsorship-Ausführung. Ein
 - https://docs.github.com/en/sponsors/getting-started-with-github-sponsors/about-github-sponsors
 - https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/displaying-a-sponsor-button-in-your-repository
 - https://docs.github.com/en/enterprise-cloud%40latest/admin/concepts/enterprise-fundamentals/choose-an-enterprise-type
+
+## Geplante eigene App, signierte Commits und GitGuardian
+Owner-Priorisierung vom 01.10.2026: zuerst die GHCR-/Render-Digest-Abnahme (AP-SEC-IMAGE). Die folgenden Pakete sind Planung, keine App-Installation, Schlüsselanlage oder neue Scan-Ausführung.
+
+### Eigene GitHub App in der Enterprise-Umgebung
+- Ziel: eine organisationskontrollierte App für capital-ai-online/Capital-AI, öffentlich in der Capital-AI-Enterprise-Umgebung.
+- Zunächst alle sicherheitsrelevanten Repository-, Organisations- und Enterprise-Einstellungen inventarisieren: effektive Branch-/Tag-Rulesets einschließlich geerbter Regeln und Bypass-Akteure; Merge-/Review-Optionen; CodeQL/Code-Scanning-Schutz; Secret Scanning/Push Protection; Dependabot; Actions-Policies, Token-/Fork-Berechtigungen, Runner- und Budgetgrenzen; IAM-/SSO-/2FA-/App-Policies und GitGuardian-Anbindung.
+- Für jeden konkreten API-Endpunkt Lesefähigkeit, erforderliche Berechtigung und Kontoebene prüfen. Keine Behauptung, dass ein einzelner Installationstoken automatisch alle Enterprise-Einstellungen lesen kann. Fehlende API-Abdeckung als UNGEKLÄRT oder NICHT_LESBAR mit genauem Grund melden; gegebenenfalls verifizierten Owner-Export ergänzen. Keine Secrets-/Tokenwerte lesen.
+- Nur ausgewählte Repositories und erforderliche Leserechte; kurzlebige Installationstoken; App-Schlüssel ausschließlich im Secret Store mit Rotation. Kein Ruleset-Bypass und keine pauschalen Admin-Schreibrechte.
+- Spätere Nutzung: vorhandene Roadmap/Evidence-Projektion um beobachteten Soll-/Ist-Vergleich mit Quelle, Zeitstempel, Repository-ID, Owner und Hash ergänzen. Keine parallele Statusautorität, automatische Freigabe oder Selbstheilungs-Mutation.
+- Eine getrennte spätere PR-Schreibidentität ist ein eigenes, begrenzt zu genehmigendes Rechtemodul; der Security-Leser erhält nicht automatisch Code-/PR-Schreibrechte. Owner-Approve bleibt bei menschlicher Identität.
+- Installation erst nach Digest-/Domain-/Finance-Abnahme und Enterprise-Transfer. App-Berechtigungen vor Installation konkret prüfen.
+
+### Require signed commits
+Erst alle Schreibwege auf Verified-Signaturen prüfen: lokale SSH/GPG/ggf. S/MIME-Signierung, GitHub-Webcommits, Connector-/API-Commits, Workflows und Dependabot. Unsigned PR-Commits können auch Squash blockieren. Bestehende PRs nicht ungeprüft durch Aktivierung sperren; notwendige Signierung/Rebase auf dem Arbeitsbranch, keine Main-Historie umschreiben und keine Bypass-Akteure hinzufügen. Eine Signatur belegt Herkunft, keine Code- oder Production-Freigabe.
+
+### GitGuardian
+Vorhandene Installation und Repo-Abdeckung zuerst inventarisieren, besonders nach Transfer. Für das öffentliche Zielrepo tatsächlichen Tarif, Kontingente und mögliche Kosten prüfen; keine pauschale kostenlose Enterprise-Lizenz behaupten. GitGuardian ergänzt GitHub Secret Scanning und Push Protection. Den exakten PR-Checknamen und seine App-Herkunft aus einem realen Lauf ableiten und erst nach stabiler erfolgreicher Abdeckung als Required Check einplanen. Exponierte Zugangsdaten sperren/rotieren; Findings nicht allein für einen grünen Check ignorieren.
+
+### Vier Validierungsschritte
+1. Source/Main, Settings-/App-Istzustand und aktuelle Check-/Signatur-Evidence erfassen.
+2. Endpunkt-/Leserechte-Matrix, Kosten und geerbte Policies prüfen; Abdeckungslücken ausdrücklich ausweisen.
+3. Begrenzten App-Readback, signierten Test-PR und GitGuardian-Zustellung prüfen; fehlende Scanresultate nicht als PASS ausgeben.
+4. Nach Enterprise-Transfer effektive Einstellungen und Check-/Digest-Identitäten erneut lesen; erst nach drei unabhängigen positiven Validierungen einen begrenzten Self-Healing-Vorschlag erwägen.
+
+Aktivierte Schutzfunktionen und noch offene Settings müssen frisch gelesen werden. CodeQL wurde während der separaten Browser-Einrichtung aktiviert, sein erfolgreicher Analyseabschluss und die spätere Require-code-scanning-Regel sind hier nicht nachgewiesen. Die lineare Historie wird vom Owner separat eingerichtet; kein neuer Live-PASS wird aus der Planung abgeleitet.
