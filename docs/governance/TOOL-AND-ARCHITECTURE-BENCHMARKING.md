@@ -82,6 +82,107 @@ Für browser-/frontend-relevante Entscheidungen zusätzlich:
 - Recovery / Rollback
 - Provider-Limits und Kosten, sofern relevant
 
+
+## CAPITAL-AI Decision Score (CADS)
+
+Der CADS normalisiert Benchmark-Ergebnisse auf 0–100 und macht Entscheidungen zwischen geeigneten Kandidaten vergleichbar. Er ist **Decision Evidence, keine Freigabe**.
+
+### Dimensionen
+
+| Dimension | GENERAL | SECURITY_GATE | WEB_RUNTIME | DATA_PIPELINE |
+|---|---:|---:|---:|---:|
+| Security & Trust | 25 | 35 | 20 | 25 |
+| Funktion / Korrektheit | 20 | 25 | 15 | 20 |
+| Performance & Ressourcen | 15 | 10 | 25 | 20 |
+| Reliability / Operations | 10 | 10 | 10 | 10 |
+| Maintainability / Integration | 10 | 5 | 10 | 10 |
+| License / Provenance / Compliance | 10 | 10 | 5 | 5 |
+| Evidence / Observability / Auditability | 5 | 5 | 5 | 5 |
+| Portability / Cost / Exit | 5 | 0 | 10 | 5 |
+| **Summe** | **100** | **100** | **100** | **100** |
+
+Profile:
+- `GENERAL@1`: allgemeine Tool-/Library-/API-Auswahl.
+- `SECURITY_GATE@1`: Scanner, Browser-/Server-Boundaries, Auth-/Secret-/Supply-Chain-Gates.
+- `WEB_RUNTIME@1`: Browser-, Frontend-, Runtime- und Delivery-Komponenten mit direkter Nutzer-Performance-Auswirkung.
+- `DATA_PIPELINE@1`: Pipeline Builder, Datenprovider, Transformations-/Broker-/Scoring-Komponenten.
+
+Neue Profile benötigen Versionierung und eine dokumentierte Begründung.
+
+### Berechnung
+
+Jede Dimension erhält einen normalisierten Score von 0 bis 100:
+
+```text
+CADS = Σ (dimensionScore × dimensionWeight) / 100
+```
+
+Rohmetriken bleiben erhalten. Eine Normalisierung muss ihre Formel/Schwellenwerte offenlegen; ein Score ohne Rohdaten und Methodik ist keine ausreichende Evidence.
+
+### Non-compensable Gates
+
+Vor einem CADS-Vergleich müssen alle Muss-Gates positiv sein. Mindestens:
+
+- `SECURITY_TRUST_GATE`
+- `FUNCTIONAL_CORRECTNESS_GATE`
+- `LICENSE_PROVENANCE_GATE`
+- `SUPPLY_CHAIN_GATE`
+
+Je nach Einheit kommen weitere Gates hinzu, z. B. `AUTH_BOUNDARY_GATE`, `BROWSER_BOUNDARY_GATE`, `DATA_INTEGRITY_GATE` oder `PRODUCTION_COMPATIBILITY_GATE`.
+
+Ein Kandidat mit einem BLOCKED Muss-Gate ist **nicht auswählbar**, unabhängig vom numerischen CADS. Der Score darf zur Diagnose gespeichert werden, muss dann aber als `decisionEligible:false` markiert sein.
+
+### Security & Trust Subscore
+
+Security wird nicht aus einem einzelnen Vulnerability-Scan abgeleitet. Der Subscore berücksichtigt je nach Tool:
+
+- Herkunft, Publisher und Namespace,
+- Signatur/Attestation/Integrity/Digest,
+- CVEs, Advisories und Reaktionszeit,
+- Dependency-/Binary-Surface,
+- Install-/Postinstall- und Netzwerkverhalten,
+- Maintainer-/Ownership-/Community-Risiken,
+- Release-/Update-/Support-Modell,
+- benötigte Berechtigungen und Privilegien,
+- Zugriff auf Daten, Secrets, Dateisystem und Netzwerk,
+- Sandbox-/Isolationseigenschaften,
+- sichere Defaults und Fail-closed-Verhalten,
+- Incident Response, Patchbarkeit und Rollback.
+
+Kritische ungeklärte Befunde führen zum Gate-Fail und dürfen nicht lediglich als Punktabzug modelliert werden.
+
+### Maschinenlesbare Score-Evidence
+
+```json
+{
+  "schemaVersion": 1,
+  "scoreModel": "CADS",
+  "scoreProfile": "SECURITY_GATE@1",
+  "candidate": {"name": "", "version": "", "artifactIdentity": ""},
+  "decisionEligible": false,
+  "gates": {
+    "SECURITY_TRUST_GATE": "PENDING",
+    "FUNCTIONAL_CORRECTNESS_GATE": "PENDING",
+    "LICENSE_PROVENANCE_GATE": "PENDING",
+    "SUPPLY_CHAIN_GATE": "PENDING"
+  },
+  "dimensions": {
+    "securityTrust": {"weight": 35, "score": null, "evidence": []},
+    "functionalCorrectness": {"weight": 25, "score": null, "evidence": []},
+    "performanceResources": {"weight": 10, "score": null, "evidence": []},
+    "reliabilityOperations": {"weight": 10, "score": null, "evidence": []},
+    "maintainabilityIntegration": {"weight": 5, "score": null, "evidence": []},
+    "licenseProvenanceCompliance": {"weight": 10, "score": null, "evidence": []},
+    "evidenceObservabilityAuditability": {"weight": 5, "score": null, "evidence": []},
+    "portabilityCostExit": {"weight": 0, "score": null, "evidence": []}
+  },
+  "weightedScore": null
+}
+```
+
+Der Pipeline Builder soll dieses Modell später referenzieren können, ohne historische Scores als aktuelle Wahrheit zu behandeln. Score, Profil, Version, Datum, Source-SHA und Re-Evaluation-Trigger gehören zusammen.
+
+
 ## Reproduzierbarkeit
 
 Benchmark-Evidence enthält mindestens:
