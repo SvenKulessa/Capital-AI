@@ -107,7 +107,33 @@
       "subscriptionTier": null,
       "providerCreationLog": null,
       "applicableTerms": "Google Gemini API Additional Terms effective 2026-03-23, subject to proof that Google AI Studio/Gemini was the generation service for this asset",
-      "status": "PARTIAL_PROVENANCE_MODEL_AND_TIER_OPEN"
+      "status": "GOOGLE_GENERATIVE_AI_C2PA_EMBEDDED_MODEL_TIER_AND_SIGNATURE_VALIDATION_OPEN",
+      "embeddedC2pa": {
+        "jpegSegment": "APP11/JUMBF",
+        "manifestIdentifier": "urn:c2pa:cbddb1e7-4185-83c2-0804-4b618fee9b98",
+        "certificateChainStrings": [
+          "Google LLC",
+          "Google C2PA Media Services 1P ICA G3",
+          "Google C2PA Root CA G3"
+        ],
+        "claimGenerator": "Google C2PA Core Generator Library",
+        "actions": [
+          {
+            "action": "c2pa.created",
+            "description": "Created by Google Generative AI.",
+            "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia"
+          },
+          {
+            "action": "c2pa.edited",
+            "description": "Applied imperceptible SynthID watermark.",
+            "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia"
+          }
+        ],
+        "inspection": "EMBEDDED_MANIFEST_STRINGS_READ_FROM_EXACT_GIT_BLOB",
+        "signatureValidation": "NOT_PERFORMED",
+        "assessment": "STRONG_PROVIDER_PROVENANCE_GOOGLE_GENERATIVE_AI_SPECIFIC_MODEL_AND_TIER_NOT_DISCLOSED"
+      },
+      "generationProvider": "Google Generative AI (embedded C2PA claim; cryptographic signature validation pending)"
     },
     "mobileMockup": {
       "path": "public/brand/hero/capital-ai-mobile-landing.jpg",
@@ -265,9 +291,10 @@
     "sourceCommit": "cbc558019ae6785f44079fe6fca3403460774df3"
   },
   "remainingGaps": [
-    "Hero-Erdbild: konkretes Bildgenerierungsmodell bzw. Generator-Endpoint nicht belegt.",
+    "Hero-Erdbild: C2PA nennt Google Generative AI, aber das konkrete Bildgenerierungsmodell bzw. der Generator-Endpoint ist nicht offengelegt.",
+    "Hero-Erdbild: C2PA-Signatur/Trust-Chain wurde in diesem Review nicht kryptografisch validiert.",
     "Hero-Erdbild: tatsächlicher Account-/Billing-Tarif zum Erstellungszeitpunkt nicht belegt.",
-    "Hero-Erdbild: kein Provider-Run/Prompt/Output-Manifest mit Input-/Output-Hash gefunden.",
+    "Hero-Erdbild: kein separat archivierter Provider-Run/Prompt mit Output-Hash gefunden.",
     "Historische drei capital_ai_-JPGs: exakte Werkzeugreihenfolge, Modelle, Tarife und einzelne Bearbeitungsschritte nicht rekonstruierbar.",
     "AssetLogo.tsx: Zeichnungsherkunft und zulässige Marken-/Logo-Nutzung je erkennbarem Drittkennzeichen nicht belegt.",
     "Systemgenerierte DESIGN_AND_*_Lizenzurkunden sind Projektartefakte und keine Erlaubnis eines Drittanbieters."
@@ -290,8 +317,8 @@
     },
     {
       "step": 4,
-      "result": "PARTIAL",
-      "note": "official applicable provider terms mapped where provider linkage exists; exact earth model/tier open"
+      "result": "PARTIAL_STRONG_PROVIDER_PROVENANCE",
+      "note": "embedded C2PA identifies Google Generative AI and SynthID; cryptographic signature validation, exact image model and creation-time tier remain open"
     },
     {
       "step": 5,
