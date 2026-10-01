@@ -99,6 +99,69 @@ Dabei gelten mindestens folgende Regeln:
 Verbindliche Detailregel:
 - `docs/security/REMOTE-AI-CLOUD-BROWSER-SESSIONS.md`
 
+## Tool-, API- und Architektur-Benchmarking
+
+Neue Tools, Anwendungen, Libraries, Runtimes, Provider, Schnittstellen und wesentliche Kombinationen daraus dürfen nicht allein aufgrund von Bekanntheit, Neuheit oder Einzelbenchmarks zum Standard werden. Für strategische Tool-Entscheidungen ist eine **reproduzierbare Decision Evidence** verpflichtend.
+
+### Benchmark-Pflicht
+
+Vor Einführung, Ablösung oder wesentlicher Erweiterung sind geeignete Kandidaten gegen denselben realistischen CAPITAL-AI-Workload zu vergleichen. Je nach Komponente umfasst das mindestens:
+
+- funktionale Abdeckung und Korrektheit,
+- Security- und Trust-Boundary-Eigenschaften,
+- Performance: Laufzeit, Durchsatz, Latenz und gegebenenfalls Startup-Zeit,
+- CPU-, RAM-, Disk-, Netzwerk- und Artefakt-/Bundle-Verbrauch,
+- Skalierbarkeit und Verhalten unter Last,
+- Build-/CI-Auswirkung und Cache-Verhalten,
+- Runtime-/Browser-Auswirkung, wenn produktionsrelevant,
+- Stabilität, Fehlerverhalten und Recovery,
+- Integrations-/Migrationsaufwand,
+- Wartbarkeit und API-/Schema-Stabilität,
+- Herkunft, Maintainer-/Community-Gesundheit und Release-Modell,
+- Security-/CVE-/Supply-Chain-Oberfläche,
+- Lizenz, Redistribution, Attribution und Provenance,
+- Observability, Auditierbarkeit und Evidence-Fähigkeit,
+- Kosten/Provider-Limits, sofern relevant,
+- Lock-in, Portabilität und Rollback-/Exit-Pfad.
+
+Benchmarks müssen nach Möglichkeit warm/cold, typische und relevante Grenzfälle unterscheiden. Messungen werden mehrfach ausgeführt; Hardware/Runner, Runtime-Versionen, Datenmenge, Konfiguration, Commit/Version und Messmethode sind festzuhalten. Marketing-Benchmarks dürfen als Hinweis dienen, ersetzen aber keine reproduzierbare CAPITAL-AI-Messung.
+
+### Decision Evidence / ADR
+
+Die Auswahl muss nachvollziehbar begründen:
+
+- welches Problem gelöst wird,
+- welche Kandidaten geprüft wurden und warum,
+- welche Muss-/Kann-Kriterien gelten,
+- welche Benchmark- und Security-Ergebnisse vorliegen,
+- welche Lizenz-/Provenance- und Community-Evidence vorliegt,
+- welche Trade-offs bewusst akzeptiert werden,
+- warum die gewählte Einzelkomponente oder Kombination gegenüber den geprüften Alternativen geeignet ist,
+- welche Annahmen, Grenzen und Restrisiken bestehen,
+- wie Rollback, Austausch oder Re-Evaluation möglich sind.
+
+Eine Entscheidung ist keine dauerhafte Behauptung, dass ein Tool generell „das beste“ sei. Sie gilt für den dokumentierten Workload, Zeitpunkt und Versionsstand.
+
+### Re-Evaluation
+
+Eine erneute Bewertung ist erforderlich, wenn mindestens eines zutrifft:
+
+- Major-Version oder grundlegender Architekturwechsel,
+- relevante Security-/Lizenz-/Maintainer-Änderung,
+- Performance-Regressionsbudget überschritten,
+- neue belastbare Alternative mit potenziell wesentlichem Vorteil,
+- geänderter Workload, Skalierungsbedarf oder Provider-/Kostenmodell,
+- bisherige Schnittstelle wird deprecated oder verliert Support.
+
+### Pipeline Builder
+
+Der spätere Pipeline Builder muss Tool- und Schnittstellenentscheidungen als maschinenlesbare Evidence mitführen können. Eine Pipeline soll deshalb je Komponente mindestens Version/Identität, Zweck, Trust-/Lizenzstatus, Benchmark-Referenz, Entscheidung/ADR, kompatible Schnittstellen, Ressourcenprofil und Rollback-/Alternative referenzieren können.
+
+Performance-Optimierung darf Security-, Lizenz- oder Evidence-Gates nicht umgehen. Umgekehrt sollen Schutzmechanismen so gewählt und gemessen werden, dass sie reale Risiken absichern, ohne unnötige Build-, CI- oder Runtime-Kosten zu erzeugen.
+
+Verbindliche Detailregel:
+- `docs/governance/TOOL-AND-ARCHITECTURE-BENCHMARKING.md`
+
 ## Docker Build- und Runtime-Modell
 
 - Build-once / Promote-many: exakt das geprüfte Image wird veröffentlicht und weitergereicht; kein Rebuild zwischen Prüfung und Promotion.
@@ -163,5 +226,7 @@ Die kanonischen Detailregeln bleiben in:
 - `docs/governance/DOMAIN-RELEASE-GOVERNANCE.md`
 - `docs/security/PRODUCTION-HANDOFF.md`
 - `docs/security/DEPENDENCY-UPDATE-TRUST-MODEL.md`
+- `docs/security/REMOTE-AI-CLOUD-BROWSER-SESSIONS.md`
+- `docs/governance/TOOL-AND-ARCHITECTURE-BENCHMARKING.md`
 
 Diese Root-Policy definiert die übergeordnete Arbeitsweise; die Detaildokumente dürfen sie verschärfen, aber nicht abschwächen.
