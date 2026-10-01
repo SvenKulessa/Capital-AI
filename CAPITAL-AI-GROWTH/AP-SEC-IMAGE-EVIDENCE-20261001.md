@@ -6,7 +6,7 @@
 **Status:** `PARTIAL_EVIDENCE_REVIEW_OPEN`  
 **Production-/Deploy-Freigabe:** unverändert; aus diesem Dokument folgt **keine** Freigabe.
 
-Maschinenlesbare Evidence: [`docs/security/evidence/ap-sec-image-evidence-20261001.json`](evidence/ap-sec-image-evidence-20261001.json).
+Maschinenlesbare Evidence: [`docs/security/evidence/ap-sec-image-evidence-20261001.json`](../docs/security/evidence/ap-sec-image-evidence-20261001.json).
 
 ## 1. Validierung 1 — Current Main und tatsächlich gebundene Assets
 
