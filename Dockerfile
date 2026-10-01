@@ -43,6 +43,8 @@ COPY server/infrastructure.mjs ./server/
 COPY scripts/verify-private-brokers.mjs ./scripts/
 COPY shared ./shared
 COPY docs/licenses/node-v24.19.0-LICENSE.txt ./licenses/Node-LICENSE.txt
+COPY docs/licenses/nodemailer-10.0.13-MIT-0.txt ./licenses/Nodemailer-LICENSE.txt
+COPY docs/licenses/nodemailer-license-review.json ./licenses/nodemailer-license-review.json
 RUN rm -rf /usr/local/lib/node_modules/corepack /usr/local/bin/corepack /usr/local/bin/pnpm* /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx /opt/yarn* /usr/local/bin/yarn* \
     && chmod -R a-w /app
 USER 1000:1000
