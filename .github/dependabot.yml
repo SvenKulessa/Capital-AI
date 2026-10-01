@@ -7,6 +7,23 @@ updates:
       time: "05:15"
       timezone: Europe/Berlin
     open-pull-requests-limit: 10
+    # Routine minor/patch updates are grouped. Majors remain individual migrations
+    # so compatibility, license/provenance, runtime scope and rollback stay reviewable.
+    groups:
+      routine-minor-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+      security-minor-patch:
+        applies-to: security-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
     commit-message:
       prefix: "[CAPITAL-AI-TRUST] "
 
@@ -17,8 +34,10 @@ updates:
       time: "05:25"
       timezone: Europe/Berlin
     open-pull-requests-limit: 5
-    # npm bundles these donor packages internally. Major donor jumps are not
-    # assumed compatible with npm's bundled consumer; security updates remain eligible.
+    # npm bundles these donor packages internally. Keep donor updates individual:
+    # every donor change must stay aligned with the hardener, lockfile integrity and
+    # regression evidence. Major donor jumps are not assumed compatible with npm's
+    # bundled consumer; security updates remain eligible.
     ignore:
       - dependency-name: "undici"
         update-types: ["version-update:semver-major"]
