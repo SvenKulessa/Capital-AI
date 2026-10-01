@@ -1,0 +1,62 @@
+{
+  "schema": "TRIVY_UPDATE_EVIDENCE@1",
+  "project": "CAPITAL-AI",
+  "primaryDomain": "TRUST",
+  "crossDomain": [
+    "PLATFORM"
+  ],
+  "status": "READY_FOR_VALIDATION",
+  "baselineMain": "b6cb91e06616670163035177344de42cb3237dec",
+  "previous": {
+    "version": "0.74.0",
+    "image": "aquasec/trivy",
+    "indexDigest": "sha256:62b1e65e8869bc4b4c6aa4fa2b21595256c7c2f6018a9d9ad61caf87187c1969"
+  },
+  "candidate": {
+    "version": "0.75.0",
+    "image": "aquasec/trivy",
+    "indexDigest": "sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa",
+    "linuxAmd64Digest": "sha256:9db099105405c648166e6b94155eb32f8da12673cf1f455207f7385cc9a77283",
+    "releaseCommit": "591e9799316a602e703f0b484f6c6d7b234ec8f3",
+    "releaseCommitVerified": true,
+    "publishedAt": "2026-10-01T13:34:13Z",
+    "immutableRelease": true,
+    "license": "Apache-2.0"
+  },
+  "alpine": {
+    "observedVersion": "3.24.2",
+    "scanner074Has324EolMetadata": false,
+    "scanner075Eol": "2028-06-01T23:59:59Z",
+    "baseImageChangeRequired": false
+  },
+  "compatibility": {
+    "breakingChange": "report template helper getHostByName removed",
+    "repositoryUsageDetected": false,
+    "scanFormats": [
+      "json",
+      "cyclonedx",
+      "license-json"
+    ]
+  },
+  "workflow": {
+    "requireVersionReadback": "0.75.0",
+    "versionEvidence": "security-reports/trivy-version.txt",
+    "skipVersionCheckAllowed": false,
+    "publishCandidate": false
+  },
+  "validation": {
+    "fullGateRequired": true,
+    "compareAgainst074": true,
+    "expectedDifference": [
+      "Alpine 3.24 EOL-list warning removed"
+    ],
+    "suppressNewFindings": false
+  },
+  "safety": {
+    "deployment": false,
+    "dns": false,
+    "billing": false,
+    "secrets": false,
+    "historicalEvidenceMutable": false
+  }
+}
