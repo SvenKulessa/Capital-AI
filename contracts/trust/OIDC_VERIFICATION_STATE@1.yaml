@@ -1,0 +1,80 @@
+{
+  "schema": "OIDC_VERIFICATION_STATE@1",
+  "version": "1.0.0",
+  "metadata": {
+    "project": "CAPITAL-AI",
+    "domain": "TRUST",
+    "status": "PROPOSED"
+  },
+  "correlation": {
+    "changeId": null
+  },
+  "purpose": {
+    "summary": "Trennt OIDC-Konfigurations-, Discovery-, Credential- und echte Login-Verifikation fail-closed voneinander."
+  },
+  "states": [
+    "CONFIGURATION_MISSING",
+    "CONFIGURATION_PRESENT",
+    "DISCOVERY_VERIFIED",
+    "CREDENTIAL_AUTHENTICATION_VERIFIED",
+    "LOGIN_VERIFIED",
+    "BLOCKED"
+  ],
+  "gates": {
+    "configurationPresent": {
+      "required": true,
+      "evidence": [
+        "OIDC_ISSUER",
+        "PUBLIC_APP_ORIGIN",
+        "OIDC_CLIENT_ID",
+        "OIDC_CLIENT_SECRET"
+      ],
+      "secretValuesPublic": false
+    },
+    "discoveryVerified": {
+      "required": true,
+      "requires": [
+        "canonical issuer",
+        "approved public origin",
+        "S256 PKCE",
+        "compatible token endpoint authentication",
+        "tenant-bound authorization/token/JWKS endpoints"
+      ]
+    },
+    "credentialAuthenticationVerified": {
+      "required": true,
+      "mayBeInferredFromPresence": false
+    },
+    "loginVerified": {
+      "required": true,
+      "mayBeInferredFromConfiguration": false,
+      "requires": [
+        "real authorization flow",
+        "successful callback",
+        "validated ID token",
+        "session establishment"
+      ]
+    }
+  },
+  "decision": {
+    "successRequires": [
+      "configurationPresent",
+      "discoveryVerified",
+      "credentialAuthenticationVerified",
+      "loginVerified"
+    ],
+    "missingEvidence": "BLOCKED",
+    "configurationOnlyMayPassOverallGate": false,
+    "greenWithoutLoginEvidenceForbidden": true
+  },
+  "safety": {
+    "publishSecrets": false,
+    "logTokens": false,
+    "relaxAuthenticationPolicy": false,
+    "modifyIdentityProvider": false
+  },
+  "selfHealing": {
+    "autoRepair": false,
+    "minimumPositiveValidationCycles": 3
+  }
+}
