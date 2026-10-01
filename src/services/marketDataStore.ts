@@ -34,7 +34,7 @@ async function refresh() {
     return toMarketAsset(value);
   }));
   if (signal.aborted || !users) return;
-  MARKET_ASSETS = results.flatMap(result => result.status === 'fulfilled' ? [result.value] : []).filter(asset => Date.now() - asset.observedAt < 30000);
+  MARKET_ASSETS = results.flatMap(result => result.status === 'fulfilled' ? [result.value] : []).filter(asset => typeof asset.observedAt === 'number' && Date.now() - asset.observedAt < 30000);
   emit();
   timer = setTimeout(() => void refresh(), 5000);
 }
