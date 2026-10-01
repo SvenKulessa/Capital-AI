@@ -372,11 +372,31 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
   const handleSubpageClick = (subpage: HubSubpageConfig) => {
     onClose();
     if (activeHubId === 'marketscreener') {
-      if (subpage.id === 'buffett') return onOpenModule?.('buffett-value') ?? onNavigate?.('/marketscreener');
-      if (subpage.id === 'scorer') return onOpenModule?.('enterprise-scorer') ?? onNavigate?.('/marketscreener');
-      if (subpage.id === 'sector') return onOpenSectorAnalysis?.() ?? onNavigate?.('/marketscreener');
-      if (subpage.id === 'newsfeed') return onOpenModule?.('ai-newsfeed') ?? onNavigate?.('/marketscreener');
-      if (subpage.id === 'alerts') return onOpenPriceAlerts?.() ?? onNavigate?.('/marketscreener');
+      if (subpage.id === 'buffett') {
+        if (onOpenModule) onOpenModule('buffett-value');
+        else onNavigate?.('/marketscreener');
+        return;
+      }
+      if (subpage.id === 'scorer') {
+        if (onOpenModule) onOpenModule('enterprise-scorer');
+        else onNavigate?.('/marketscreener');
+        return;
+      }
+      if (subpage.id === 'sector') {
+        if (onOpenSectorAnalysis) onOpenSectorAnalysis();
+        else onNavigate?.('/marketscreener');
+        return;
+      }
+      if (subpage.id === 'newsfeed') {
+        if (onOpenModule) onOpenModule('ai-newsfeed');
+        else onNavigate?.('/marketscreener');
+        return;
+      }
+      if (subpage.id === 'alerts') {
+        if (onOpenPriceAlerts) onOpenPriceAlerts();
+        else onNavigate?.('/marketscreener');
+        return;
+      }
     }
     onNavigate?.(subpage.path);
   };
