@@ -1,0 +1,52 @@
+{
+  "schema": "EVIDENCE_BUNDLE@1",
+  "version": "1.0.0",
+  "metadata": {
+    "project": "CAPITAL-AI",
+    "domain": "TRUST",
+    "consumerDomains": [
+      "GROWTH"
+    ],
+    "status": "PROPOSED"
+  },
+  "identity": {
+    "bundleId": null,
+    "workPackageId": null,
+    "createdAt": null,
+    "sourceSha": null
+  },
+  "manifest": {
+    "researchEvidenceRefs": [],
+    "sourceProvenanceRefs": [],
+    "licenseEvidenceRefs": [],
+    "datasetEvidenceRefs": [],
+    "experimentEvidenceRefs": [],
+    "costEvidenceRefs": [],
+    "claimEvidenceRefs": [],
+    "documentaryEvidenceRefs": []
+  },
+  "integrity": {
+    "canonicalSerialization": "RFC8785",
+    "hashAlgorithm": "SHA-256",
+    "bundleDigest": null,
+    "signatureRefs": []
+  },
+  "verification": {
+    "allRefsResolved": false,
+    "allDigestsVerified": false,
+    "reproducible": false,
+    "status": "BLOCKED"
+  },
+  "export": {
+    "publicSafe": false,
+    "redactionApplied": false,
+    "formats": [
+      "JSON",
+      "MARKDOWN"
+    ]
+  },
+  "safety": {
+    "missingRequiredClassMayPass": false,
+    "generatedProjectionIsCanonicalInput": false
+  }
+}
