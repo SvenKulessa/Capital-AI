@@ -234,7 +234,7 @@ jobs:
           docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint cat "$IMAGE_REF" /app/dist/frontend-license-inventory.json > security-reports/frontend-license-inventory.json
           rm security-reports/registry-image.tar
       - name: Build-Provenance an exakten Registry-Digest binden
-        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-name: ghcr.io/svenkulessa/capital-ai
           subject-digest: ${{ steps.registry.outputs.digest }}
