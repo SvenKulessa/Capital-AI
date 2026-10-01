@@ -76,12 +76,33 @@ eingeführt.
    Warnung entfällt. Neue Findings bleiben sichtbar und werden nicht
    stillschweigend ignoriert.
 
-## Status vor neuem Workflow-Lauf
+## Verifikation mit Trivy 0.75.0
 
-`READY_FOR_VALIDATION` — nicht `VERIFIED`.
+GitHub Actions Run `36925001335` / Job `110580043566` auf dem PR-Merge-SHA
+`75bccadf9f95a8e9cbbfd599ca525c0cab1cf6d2` hat den vollständigen
+`Docker Security Gate` erfolgreich abgeschlossen.
 
-Der erfolgreiche ältere Scan mit Trivy 0.74.0 wird nicht als Beweis für
-0.75.0 umgedeutet. Production-Deployment, GHCR-Publish, DNS, Billing und
+- Scanner-Readback: `Version: 0.75.0`
+- NATS-Scan: PASS; vorhandener `GO-2026-5932` / `golang.org/x/crypto v0.57.0`
+  bleibt mit Severity `UNKNOWN`, ohne Fixed Version und `blocking:0` sichtbar.
+- Source-Scan: PASS; keine Vulnerabilities, 0 Secrets, dieselben zwei
+  `DS-0026` LOW-Misconfiguration-Hinweise wie mit 0.74.0, `blocking:0`.
+- Build-Image: PASS; 0 Vulnerabilities, 0 Secrets, 0 Blocking.
+- App-Image: PASS; Alpine `3.24.2`, 18 APK-Pakete, 0 Vulnerabilities,
+  0 Secrets, 0 Blocking.
+- Die frühere 0.74.0-Warnung `This OS version is not on the EOL list`
+  erscheint mit 0.75.0 für Alpine 3.24.2 nicht mehr.
+- CycloneDX-SBOM: 35 Komponenten, 0 Vulnerabilities.
+- 0.74.0 → 0.75.0: Komponentenmenge exakt identisch (35/35);
+  Runtime-License-Inventar exakt identisch (77/77); keine Komponenten oder
+  Lizenzzeilen hinzugefügt oder verloren.
+- Runtime-Smoke, read-only, UID 1000, cap-drop ALL und no-new-privileges: PASS.
+- Security Artifact: `11193656230`,
+  SHA-256 `3af7f4011af4378bdf100c5dcef4ba651efef786599ca0a4ee6194b8e0263b9e`.
+
+Damit ist die Scanner-Update-Evidenz `VERIFIED`. Diese Aussage gilt für
+das Trivy-Update und die aufgeführten Build-/Scan-Gates; sie ist keine
+Production-Freigabe. Production-Deployment, GHCR-Publish, DNS, Billing und
 Secrets sind nicht Bestandteil dieses Updates.
 
 ## Rollback
