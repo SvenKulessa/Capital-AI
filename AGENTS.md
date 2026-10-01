@@ -166,6 +166,29 @@ Vor Einführung, Ablösung oder wesentlicher Erweiterung sind geeignete Kandidat
 
 Benchmarks müssen nach Möglichkeit warm/cold, typische und relevante Grenzfälle unterscheiden. Messungen werden mehrfach ausgeführt; Hardware/Runner, Runtime-Versionen, Datenmenge, Konfiguration, Commit/Version und Messmethode sind festzuhalten. Marketing-Benchmarks dürfen als Hinweis dienen, ersetzen aber keine reproduzierbare CAPITAL-AI-Messung.
 
+### CAPITAL-AI Benchmark-Scoring
+
+Strategische Tool-/API-/Architekturentscheidungen verwenden ein **gewichtetes CAPITAL-AI Decision Score (CADS)** von 0 bis 100. Die Gewichtung wird **vor** dem Benchmark anhand der Einheit/Toolklasse festgelegt und mit der Evidence gespeichert. Dadurch dürfen Kriterien nicht nachträglich zugunsten eines Kandidaten verschoben werden.
+
+Default-Gewichtung für allgemeine technische Komponenten:
+
+- Security & Trust: **25 %**
+- Funktionale Korrektheit / Coverage: **20 %**
+- Performance & Ressourcen: **15 %**
+- Reliability / Operations: **10 %**
+- Maintainability & Integration: **10 %**
+- License / Provenance / Compliance: **10 %**
+- Evidence / Observability / Auditability: **5 %**
+- Portability / Cost / Exit: **5 %**
+
+Jede Dimension erhält 0–100 Punkte; der CADS ist die gewichtete Summe. Für spezialisierte Einheiten dürfen Gewichte angepasst werden, müssen aber zusammen 100 % ergeben und vor der Messung dokumentiert sein.
+
+**Security ist nicht kompensierbar:** Ein hoher Gesamtscore kann einen nicht erfüllten Security-/Trust-, Lizenz-/Provenance- oder funktionalen Muss-Gate nicht ausgleichen. Ein Kandidat bleibt unabhängig vom CADS **BLOCKED**, wenn ein fail-closed Gate verletzt ist, eine glaubhafte ungeklärte Supply-Chain-Gefahr besteht, die notwendige Detection/Korrektheit unterschritten wird oder Lizenz/Redistribution ungeklärt ist.
+
+Tool-Security muss mindestens Herkunft/Publisher, Artefaktintegrität/Provenance, CVE-/Advisory-Lage, Dependency-/Binary-Surface, Install-/Postinstall-/Netzwerkverhalten, Maintainer-/Community-Risiko, Update-/Release-Modell, Berechtigungen/Privilegien, Daten-/Secret-Zugriff, Sandbox-/Isolationseigenschaften und Incident-/Rollback-Fähigkeit betrachten.
+
+Für browser- oder runtimekritische Komponenten werden Performance- und Web-Performance-Gewichte erhöht; für Security Scanner, Auth, CI/CD, Container, Secrets, Governance und Supply Chain wird Security & Trust erhöht. Die konkrete Profilwahl wird im Benchmark als `scoreProfile` versioniert.
+
 ### Decision Evidence / ADR
 
 Die Auswahl muss nachvollziehbar begründen:
