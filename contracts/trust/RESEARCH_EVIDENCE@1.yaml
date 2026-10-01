@@ -1,0 +1,57 @@
+{
+  "schema": "RESEARCH_EVIDENCE@1",
+  "version": "1.0.0",
+  "metadata": {
+    "project": "CAPITAL-AI",
+    "domain": "TRUST",
+    "status": "PROPOSED"
+  },
+  "identity": {
+    "researchId": null,
+    "workPackageId": null,
+    "createdAt": null,
+    "sourceSha": null
+  },
+  "research": {
+    "question": null,
+    "hypothesis": null,
+    "method": null,
+    "limitations": [],
+    "negativeResultsRequired": true
+  },
+  "inputs": {
+    "datasetEvidenceRefs": [],
+    "sourceProvenanceRefs": [],
+    "licenseEvidenceRefs": []
+  },
+  "experiments": {
+    "experimentEvidenceRefs": []
+  },
+  "claims": {
+    "claimEvidenceRefs": []
+  },
+  "costs": {
+    "costEvidenceRefs": []
+  },
+  "reproducibility": {
+    "required": true,
+    "codeShaRequired": true,
+    "inputDigestsRequired": true,
+    "outputDigestsRequired": true
+  },
+  "state": {
+    "status": "BLOCKED",
+    "allowed": [
+      "VERIFIED",
+      "PARTIALLY_VERIFIED",
+      "UNKNOWN",
+      "CONFLICTING",
+      "BLOCKED"
+    ]
+  },
+  "safety": {
+    "inferredSuccessForbidden": true,
+    "missingEvidenceMeansSuccess": false,
+    "historicalRecordsImmutable": true
+  }
+}
