@@ -110,8 +110,14 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           Preise &amp; Tarife
         </a>
         <span className="text-slate-600">•</span>
-        <a href="/THIRD_PARTY_NOTICES.txt" className="hover:text-amber-400 transition-colors hover:underline underline-offset-4">
-          Open-Source-Lizenzen
+        <a
+          id="footer-nav-lizenzen"
+          href="/control-center?tab=licenses"
+          onClick={(e) => handleNavClick(e, '/control-center?tab=licenses', 'licenses')}
+          className="hover:text-amber-400 transition-colors cursor-pointer text-amber-300 font-semibold hover:underline underline-offset-4"
+          data-analytics="footer-lizenzen"
+        >
+          Lizenzen &amp; Nachweise
         </a>
       </div>
 
