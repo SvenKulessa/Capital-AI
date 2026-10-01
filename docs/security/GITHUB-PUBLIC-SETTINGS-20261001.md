@@ -80,3 +80,9 @@ Vorhandene Installation und Repo-Abdeckung zuerst inventarisieren, besonders nac
 4. Nach Enterprise-Transfer effektive Einstellungen und Check-/Digest-Identitäten erneut lesen; erst nach drei unabhängigen positiven Validierungen einen begrenzten Self-Healing-Vorschlag erwägen.
 
 Aktivierte Schutzfunktionen und noch offene Settings müssen frisch gelesen werden. CodeQL wurde während der separaten Browser-Einrichtung aktiviert, sein erfolgreicher Analyseabschluss und die spätere Require-code-scanning-Regel sind hier nicht nachgewiesen. Die lineare Historie wird vom Owner separat eingerichtet; kein neuer Live-PASS wird aus der Planung abgeleitet.
+
+## Live-Ruleset-Readback nach Owner-Einrichtung (01.10.2026)
+Ruleset 24259174: active, required_linear_history vorhanden; pull_request.allowed_merge_methods jedoch nur ["merge"]. Diese widersprüchliche Kombination blockiert den regulären linearen Merge. Im Ruleset Squash erlauben; danach den PR über Squash mergen, sobald alle Gates erfüllt sind. Keine Schutzregel abschalten.
+Required Checks: Docker Security Gate und Domain Governance, beide an GitHub Actions (integration_id 15368) gebunden.
+CodeQL-Pflicht: medium_or_higher sowie errors_and_warnings; Code Quality: notes. Dies sind die gelesenen Owner-Einstellungen, keine Empfehlung zur stillen Lockerung. Der Screenshot zeigt fehlende CodeQL-Ergebnisse für den vorherigen Head; aktueller Head ist a1a890994d49de3e04ea085b1e7c3c5ad7f65b29 und benötigt eigene Check-Evidence.
+Signaturpflicht wurde in diesem Ruleset-Readback nicht gefunden. Keine Rule-/Scan-/Runtime-Mutation durch diese Roadmap-Ergänzung.
