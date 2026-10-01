@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "family": "Plus Jakarta Sans",
+  "license": "OFL-1.1",
+  "upstreamRepository": "google/fonts",
+  "upstreamCommit": "23e54b51ddffbc7713c583748e3bd86f62b1fa4a",
+  "fontWeightRange": [
+    200,
+    800
+  ],
+  "modification": "NONE_UNMODIFIED_UPSTREAM_BYTES",
+  "files": [
+    {
+      "path": "public/fonts/PlusJakartaSans-Regular.ttf",
+      "bytes": 176288,
+      "sha256": "89b3fb38aa0d275d7a731d0d817a4f1622b316b4d7fbdedcf02ee9099ff68bc8",
+      "upstreamGitBlob": "0cb13a998ed525ba226d911b10d6c4c4f923a961"
+    },
+    {
+      "path": "public/fonts/PlusJakartaSans-Italic.ttf",
+      "bytes": 183188,
+      "sha256": "9529eb888668b6a3c6dd75b6341a2fc5263fb6c9e788822e6117c29dd9e8b115",
+      "upstreamGitBlob": "82b042caaaf271beb9e3cbd95ba4741a3d5b8926"
+    },
+    {
+      "path": "public/fonts/OFL.txt",
+      "bytes": 4402,
+      "sha256": "995c7199cab65954f545996326755daee7b63cc6b42b06c13da1f9502ab08a99",
+      "upstreamGitBlob": "ea69b0ca12a02556c436680ea0a159efb7a748fa"
+    }
+  ]
+}

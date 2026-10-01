@@ -1,0 +1,218 @@
+{
+  "schemaVersion": 1,
+  "policyId": "LEGAL_POLICY@1",
+  "status": "REVIEW_DRAFT",
+  "jurisdiction": [
+    "DE",
+    "EU"
+  ],
+  "sourceSha": "2008cac17c8cabc98576d6b20a1ad56048c0028f",
+  "decisionStatuses": [
+    "ALLOW",
+    "ALLOW_WITH_OBLIGATIONS",
+    "LEGAL_REVIEW_REQUIRED",
+    "BLOCKED"
+  ],
+  "usageClasses": [
+    "BUILD_ONLY",
+    "INTERNAL_RUNTIME",
+    "HOSTED_NETWORK_SERVICE",
+    "BUNDLED_FRONTEND",
+    "DISTRIBUTED_BINARY",
+    "MODIFIED_COMPONENT"
+  ],
+  "requiredCandidateGates": [
+    "PROVENANCE_VERIFIED",
+    "SBOM_VERIFIED",
+    "SECURITY_GATES_PASS",
+    "LEGAL_USAGE_RIGHTS",
+    "LEGAL_DISTRIBUTION_CLASSIFIED",
+    "LICENSE_OBLIGATIONS_SATISFIED",
+    "SOURCE_OFFER_SATISFIED_IF_REQUIRED",
+    "NOTICE_ATTRIBUTION_SATISFIED_IF_REQUIRED",
+    "LEGAL_SCOPE_UNAMBIGUOUS"
+  ],
+  "legalAuthorities": [
+    {
+      "jurisdiction": "DE",
+      "ref": "UrhG §69c",
+      "purpose": "exclusive software rights"
+    },
+    {
+      "jurisdiction": "DE",
+      "ref": "UrhG §69d",
+      "purpose": "lawful use, backup, observe/study/test"
+    },
+    {
+      "jurisdiction": "DE",
+      "ref": "UrhG §69e",
+      "purpose": "interoperability decompilation exception"
+    },
+    {
+      "jurisdiction": "DE",
+      "ref": "UrhG §69g(2)",
+      "purpose": "nullity of conflicting contractual terms for specified exceptions"
+    },
+    {
+      "jurisdiction": "EU",
+      "ref": "Directive 2009/24/EC Arts. 4-6, 8",
+      "purpose": "harmonized software copyright framework"
+    },
+    {
+      "jurisdiction": "DE",
+      "ref": "BGH I ZR 25/15, 2016-10-06",
+      "purpose": "scope of observing/studying/testing software functionality"
+    }
+  ],
+  "licenseProfiles": {
+    "PERMISSIVE_NOTICE": {
+      "licenses": [
+        "MIT",
+        "ISC",
+        "BSD-2-Clause",
+        "BSD-3-Clause",
+        "0BSD",
+        "MIT-0",
+        "Zlib"
+      ],
+      "defaultStatus": "ALLOW_WITH_OBLIGATIONS"
+    },
+    "APACHE_2_0": {
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "defaultStatus": "ALLOW_WITH_OBLIGATIONS"
+    },
+    "MPL_2_0": {
+      "licenses": [
+        "MPL-2.0"
+      ],
+      "defaultStatus": "ALLOW_WITH_OBLIGATIONS"
+    },
+    "GPL": {
+      "licenses": [
+        "GPL-2.0-only",
+        "GPL-2.0-or-later",
+        "GPL-3.0-only",
+        "GPL-3.0-or-later"
+      ],
+      "defaultStatus": "LEGAL_REVIEW_REQUIRED"
+    },
+    "LGPL": {
+      "licenses": [
+        "LGPL-2.1-only",
+        "LGPL-2.1-or-later",
+        "LGPL-3.0-only",
+        "LGPL-3.0-or-later"
+      ],
+      "defaultStatus": "LEGAL_REVIEW_REQUIRED"
+    },
+    "GCC_RUNTIME_EXCEPTION": {
+      "licenses": [
+        "GPL-3.0-with-GCC-exception"
+      ],
+      "defaultStatus": "LEGAL_REVIEW_REQUIRED"
+    },
+    "OFL_1_1": {
+      "licenses": [
+        "OFL-1.1"
+      ],
+      "defaultStatus": "ALLOW_WITH_OBLIGATIONS"
+    },
+    "CC_BY_4_0_DATA": {
+      "licenses": [
+        "CC-BY-4.0"
+      ],
+      "defaultStatus": "ALLOW_WITH_OBLIGATIONS"
+    }
+  },
+  "rules": [
+    {
+      "id": "BUILD_ONLY_NO_RUNTIME_REDISTRIBUTION",
+      "when": {
+        "usageClass": "BUILD_ONLY",
+        "runtimeIncluded": false,
+        "frontendIncluded": false,
+        "distributedArtifact": false
+      },
+      "effect": "Do not require runtime redistribution obligations solely from build use."
+    },
+    {
+      "id": "PUBLIC_GHCR_IS_DISTRIBUTION",
+      "when": {
+        "registry": "GHCR",
+        "visibility": "public"
+      },
+      "effect": "Treat contained components as distributed copies."
+    },
+    {
+      "id": "NETWORK_SERVICE_NOT_COPY_TRANSFER",
+      "when": {
+        "usageClass": "HOSTED_NETWORK_SERVICE",
+        "copyTransferredToUser": false
+      },
+      "effect": "Do not infer GPLv2/v3 conveyance solely from network interaction; evaluate AGPL/network-copyleft separately."
+    },
+    {
+      "id": "BROWSER_CODE_IS_DISTRIBUTED",
+      "when": {
+        "usageClass": "BUNDLED_FRONTEND"
+      },
+      "effect": "Apply distribution obligations to shipped browser code/assets/fonts/data."
+    },
+    {
+      "id": "GPL_AGGREGATE_NOT_AUTOMATIC_APP_COPYLEFT",
+      "when": {
+        "licenseFamily": "GPL",
+        "separateIndependentWork": true
+      },
+      "effect": "Do not extend GPL to independent aggregate components solely because they share a container/distribution medium."
+    },
+    {
+      "id": "MPL_FILE_LEVEL",
+      "when": {
+        "licenseFamily": "MPL_2_0"
+      },
+      "effect": "Apply source obligations to Covered Software/Modifications, not automatically to unrelated files in a Larger Work."
+    },
+    {
+      "id": "STATUTORY_ANALYSIS_RIGHTS",
+      "when": {
+        "legalBasis": [
+          "UrhG_69d_3",
+          "Directive_2009_24_Art5_3"
+        ]
+      },
+      "effect": "Permit qualifying observe/study/test activity without treating it as redistribution authorization."
+    },
+    {
+      "id": "INTEROPERABILITY_EXCEPTION_NARROW",
+      "when": {
+        "legalBasis": [
+          "UrhG_69e",
+          "Directive_2009_24_Art6"
+        ]
+      },
+      "effect": "Require necessity, unavailable information, minimum scope, interoperability-only use and no substantially similar expression."
+    }
+  ],
+  "evidenceFields": [
+    "component",
+    "exactVersion",
+    "artifactIdentity",
+    "licenseExpression",
+    "selectedLicense",
+    "usageClass",
+    "distributedTo",
+    "modified",
+    "linkingMode",
+    "legalBasis",
+    "obligations",
+    "evidenceRefs",
+    "legalStatus",
+    "reviewer",
+    "reviewedAt",
+    "reEvaluateOn"
+  ],
+  "productionEffect": "NONE_UNTIL_REVIEWED_AND_WIRED"
+}

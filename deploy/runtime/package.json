@@ -1,0 +1,14 @@
+{
+  "name": "capital-ai-runtime",
+  "version": "0.8.0-alpha.1",
+  "private": true,
+  "type": "module",
+  "description": "Minimal production runtime dependency boundary for the Capital-AI web service.",
+  "dependencies": {
+    "@nats-io/jetstream": "3.4.0",
+    "@nats-io/transport-node": "3.4.0",
+    "jose": "6.2.12",
+    "redis": "6.2.1",
+    "zod": "4.6.5"
+  }
+}

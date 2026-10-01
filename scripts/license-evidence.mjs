@@ -15,6 +15,16 @@ function reviewedSpdxData(p) {
     (p.path === 'node_modules/spdx-exceptions' && p.version === '2.5.0' && p.selectedLicense === 'CC-BY-3.0');
 }
 
+// Package-bounded review: do not treat arbitrary MIT-0 metadata as reviewed.
+function reviewedNodemailer(root, path, p) {
+  const licensePath = join(root, 'docs/licenses/nodemailer-10.0.13-MIT-0.txt');
+  return path === 'node_modules/nodemailer' && p.version === '10.0.13' && p.license === 'MIT-0'
+    && p.resolved === 'https://registry.npmjs.org/nodemailer/-/nodemailer-10.0.13.tgz'
+    && p.integrity === 'sha512-SzG86OlvcW/NNhUFC6uROMwRTL4n7MswfQqC/T8mhkmnY1YVa23zUEMYi4ijSeXSl9GLz9ZeTJDUatEDuY5FeQ=='
+    && existsSync(licensePath)
+    && sha256(readFileSync(licensePath)) === '4f814dcacd2da618d62829ea1f6238701cf421f18a6b36c91c5d8212245e2c78';
+}
+
 export function lockInventory(root) {
   const raw = readFileSync(join(root, 'package-lock.json'));
   const lock = JSON.parse(raw);
@@ -22,7 +32,8 @@ export function lockInventory(root) {
   const packages = Object.entries(lock.packages).filter(([path]) => path).sort(([a], [b]) => a.localeCompare(b)).map(([path, p]) => {
     const selectedLicense = alternatives.get(p.license) || p.license || null;
     const buildReview = selectedLicense === 'MPL-2.0' && /(^|\/)node_modules\/lightningcss(?:-[^/]+)?$/.test(path);
-    const dependencyDistributionReview = path === 'node_modules/tweetnacl' && p.version === '1.0.3' && selectedLicense === 'Unlicense';
+    const dependencyDistributionReview = (path === 'node_modules/tweetnacl' && p.version === '1.0.3' && selectedLicense === 'Unlicense')
+      || reviewedNodemailer(root, path, p);
     const attributionReview = path === 'node_modules/caniuse-lite' && selectedLicense === 'CC-BY-4.0';
     return {
       path, version: p.version, declaredLicense: p.license || null, selectedLicense,

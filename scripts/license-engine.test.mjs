@@ -80,3 +80,9 @@ test('changed text or stale tool origin stops report generation', t => {
   writeFileSync(manifest, JSON.stringify({ tools: [{ id: 'spdx-license-ids', mode: 'INSTALLED_LOCAL_ENGINE', version: '3.0.23' }], files: [] }));
   assert.throws(() => buildLicenseReport(root), /Werkzeugherkunft/);
 });
+
+test('untrusted nested SPDX expressions stay bounded before recursive parsing', () => {
+  assert.equal(assessExpression('('.repeat(64) + 'MIT' + ')'.repeat(64)).status, 'REVIEW_REQUIRED');
+  assert.equal(assessExpression('('.repeat(65) + 'MIT' + ')'.repeat(65)).status, 'MISSING_OR_INVALID');
+  assert.equal(assessExpression('('.repeat(5000) + 'MIT').status, 'MISSING_OR_INVALID');
+});

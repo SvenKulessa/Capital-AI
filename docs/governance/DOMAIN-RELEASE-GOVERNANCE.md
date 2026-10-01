@@ -1,6 +1,14 @@
 # CAPITAL-AI Domain-, Versions- und Release-Governance
 
-Stand: 2026-09-30
+Stand: 2026-10-01
+
+## Oberste Engineering-Priorität
+
+Die repository-weite Root-Policy `AGENTS.md` ist für Entwicklungs-, Update-, Docker- und Deployment-Arbeiten verbindlich. Security, Compliance, Lizenz-/Provenance-Sicherheit, Reproduzierbarkeit, Evidenz und Production-Stabilität haben Vorrang vor Bequemlichkeit, Geschwindigkeit und einem bloßen Versionssprung.
+
+Patch-/Minor-Updates dürfen als Routineklasse behandelt werden, wenn Risiko und Kompatibilität niedrig sind. Major-Updates sind immer eigenständige Migrationen mit Breaking-Change-, Runtime-, Typ-, Lizenz- und Rollback-Prüfung. Security-Updates bleiben unabhängig davon freigaberelevant und dürfen nicht durch Komfortregeln unterdrückt werden.
+
+Ein erfolgreicher Test, Build oder Scan ist niemals allein eine Lizenz-, Security- oder Production-Freigabe.
 
 ## Entwicklungsmodell
 
@@ -38,6 +46,12 @@ Zusätzliche unveränderliche Identitäten:
 
 Dokumente behalten stabile Dateinamen. Inhaltliche Revisionen werden über Git-Historie und optional `documentVersion` im Dokumentkopf nachvollzogen; Dateinamen wie `final-v2-neu` sind zu vermeiden.
 
+## Remote-AI-Änderungsevidenz
+
+Schreibende oder zustandsverändernde Änderungen an externen Control Planes, die per Cloud Browser durch eine AI-gestützte Remote-Sitzung im Namen des Owners durchgeführt werden, müssen nach `docs/security/REMOTE-AI-CLOUD-BROWSER-SESSIONS.md` dokumentiert werden. Pflichtkennzeichnung: **Remote AI basierte Cloud Browser Sitzung — durch den Owner freigegeben**.
+
+Die Evidence muss den autorisierten Scope, die ausgeführten Änderungen und einen verifizierten Endzustand enthalten. Sie ist Audit-/Change-Evidenz und ersetzt keine Security-, Lizenz- oder Production-Freigabe.
+
 ## Release-Vertrag
 
 Ein Release ist erst Production-fähig, wenn Produktversion, Git SHA, OCI Digest, SBOM/Attestation und Runtime-Identität korreliert sind. `candidate.json` bleibt fail-closed; nur der bestehende Production-Handoff darf `deployEligible:true` erzeugen.
@@ -46,7 +60,11 @@ NATS wird nicht bei jedem App-Release neu deployed. Ein NATS-Deploy wird nur dur
 
 ## Daily Dependency & CVE Watch
 
-Abhängigkeiten werden täglich auf neue Versionen und bekannte Schwachstellen geprüft. Automatische Update-PRs dürfen erstellt werden; Deployment bleibt an CI, Security Gates, Component-Diff und Production-Handoff gebunden. Major Upgrades, Auth-/Security-Runtimes und persistente Broker werden niemals ungeprüft direkt aus einem Versionsscan deployed.
+Abhängigkeiten, Tools, Runtimes, GitHub Actions und Container-Bases werden regelmäßig auf neue stabile Versionen und bekannte Schwachstellen geprüft. Ziel ist grundsätzlich der neueste stabile, unterstützte Stand, sofern Herkunft, Integrität, Security, Lizenz/Redistribution und Kompatibilität positiv verifiziert sind.
+
+**Jedes** Update, Upgrade, Patch und jeder dependency-bezogene Bugfix unterliegt zusätzlich dem `docs/security/DEPENDENCY-UPDATE-TRUST-MODEL.md`: offizielle Herkunft, Registry-/Artefakt-Evidenz, Security Intelligence, Lizenz-/Redistribution-Prüfung sowie Maintainer-/Community-Gegenprüfung auf Supply-Chain-Kompromittierung, Takeover, Typosquatting, zurückgezogene Releases und relevante Regressionen. Community-Signale ergänzen die offizielle Evidenz, ersetzen sie aber nicht.
+
+Automatische Update-PRs dürfen erstellt werden; Deployment bleibt an CI, Security Gates, Component-Diff und Production-Handoff gebunden. Major Upgrades, Auth-/Security-Runtimes und persistente Broker werden niemals ungeprüft direkt aus einem Versionsscan deployed. Ungeklärte Herkunfts-, Kompromittierungs- oder Lizenzsignale führen fail-closed zu `BLOCKED` oder `ESCALATED`.
 
 ## Self-Healing
 

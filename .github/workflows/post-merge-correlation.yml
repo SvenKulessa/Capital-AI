@@ -1,0 +1,43 @@
+name: Post-Merge Correlation
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  correlate:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-26.04
+    timeout-minutes: 3
+    steps:
+      - name: Checkout merged main
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          persist-credentials: false
+      - name: Read actual merged file list
+        id: diff
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          MAIN_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --paginate "repos/$REPOSITORY/pulls/$PR_NUMBER/files?per_page=100" --jq '.[].filename' > merged-files.txt
+          node -e 'const fs=require("fs"); const files=fs.readFileSync("merged-files.txt","utf8").split(/\r?\n/).filter(Boolean); fs.writeFileSync("post-merge-event.json", JSON.stringify({mainSha:process.env.MAIN_SHA,mergedPr:Number(process.env.PR_NUMBER),files},null,2));'
+      - name: Classify bounded correlation
+        run: node scripts/post-merge-correlation.mjs post-merge-event.json | tee post-merge-correlation.json
+      - name: Enforce self-healing guardrails
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'bounded-only-after-3-positive-validations' post-merge-correlation.json
+          grep -q '"natsHeadOnlyRedeploy": false' post-merge-correlation.json
+          grep -q '"deploy": false' post-merge-correlation.json

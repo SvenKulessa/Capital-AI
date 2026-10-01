@@ -57,6 +57,11 @@ export function assessExpression(expression) {
     };
   }
   try {
+    let depth = 0;
+    for (const char of value) {
+      if (char === '(' && ++depth > 64) throw new Error('Lizenzausdruck zu tief verschachtelt.');
+      if (char === ')') depth--;
+    }
     const ast = parse(value);
     const obligations = new Set();
     const walk = node => {
