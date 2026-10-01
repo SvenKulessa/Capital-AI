@@ -136,5 +136,6 @@ Für eine Production-Freigabe müssen mindestens korrelierbar sein:
 Die kanonischen Detailregeln bleiben in:
 - `docs/governance/DOMAIN-RELEASE-GOVERNANCE.md`
 - `docs/security/PRODUCTION-HANDOFF.md`
+- `docs/security/DEPENDENCY-UPDATE-TRUST-MODEL.md`
 
 Diese Root-Policy definiert die übergeordnete Arbeitsweise; die Detaildokumente dürfen sie verschärfen, aber nicht abschwächen.
