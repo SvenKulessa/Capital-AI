@@ -63,7 +63,7 @@ Umgebungswerte ersetzen keine Digest-/Provider-Korrelation.
 ## Werkzeuge und Eingaben
 
 - Offizielles Node 24.19.0 Alpine: Digest im Dockerfile, beide Stufen identisch. OpenSSL libcrypto3/libssl3 in beiden Stufen auf 3.5.8-r0 korrigiert; npm in der Build-Stufe auf 11.20.0 gepinnt.
-- Trivy 0.74.0 und Hadolint 2.15.1: separate Dockerfile.security, jeweils Registry-Digest festgeschrieben.
+- Trivy 0.75.0 und Hadolint 2.15.1: separate Dockerfile.security, jeweils Registry-Digest festgeschrieben. Trivy 0.75.0 ist auf den OCI-Index `sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa` gepinnt; der Workflow verifiziert zusätzlich `trivy --version`.
 - Actions: vollständige Commit-SHAs, contents:read, keine persistierten Git-Credentials.
 - npm ci mit Lockfile und ohne Installationsskripte; TypeScript, Offline-Tests und Vite-Build ohne Netzwerkzugriff in der Build-Stufe.
 - Runtime: UID/GID 1000, root-eigene schreibgeschützte Anwendungsdateien, keine npm/Yarn-Installation und keine Tests, Secrets oder Repository-Historie.
@@ -222,6 +222,36 @@ Die Änderung aktiviert keine zusätzlichen kostenpflichtigen Dienste.
 Quellen:
 - https://trivy.dev/docs/v0.74/guide/supply-chain/sbom/
 - https://trivy.dev/docs/v0.74/guide/configuration/db/
+
+
+## Trivy 0.75.0 Scanner-Pin — 01.10.2026
+
+Trivy 0.75.0 wurde am 01.10.2026 als offizielles, nicht als Prerelease
+markiertes und unveränderliches Release veröffentlicht. Der Release-Commit
+`591e9799316a602e703f0b484f6c6d7b234ec8f3` ist auf GitHub signaturverifiziert.
+Der Docker-Hub-Readback für `aquasec/trivy:0.75.0` ergibt den OCI-Index
+`sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa`;
+linux/amd64 liegt darunter als
+`sha256:9db099105405c648166e6b94155eb32f8da12673cf1f455207f7385cc9a77283`.
+
+Der einzige deklarierte Breaking Change von 0.75.0 entfernt
+`getHostByName` aus Report-Templates. CAPITAL-AI nutzt in
+`.github/workflows/build-security.yml` JSON-, CycloneDX- und License-JSON-
+Ausgaben und keinen solchen Template-Helper. Die Apache-2.0-Lizenz ist
+gegenüber 0.74.0 unverändert.
+
+Der Alpine-Scanner in Trivy 0.75.0 enthält für Alpine 3.24 explizit das
+Support-Ende 01.06.2028. Damit entfällt die 0.74.0-Warnung, 3.24 sei nicht
+in der internen EOL-Liste. Das Anwendungsimage selbst bleibt auf dem
+vorhandenen Alpine-3.24.2-Zustand; aus der Scannerkorrektur folgt weder
+Downgrade noch Base-Image-Wechsel.
+
+Die Update-Freigabe bleibt bis zum realen Docker-Security-Lauf fail-closed:
+Der Gate-Lauf muss den Scanner als exakt 0.75.0 zurücklesen und Source-,
+Build-Image-, Runtime-Image-, Secret-, Misconfiguration-, License- und
+CycloneDX-SBOM-Prüfungen erneut bestehen. Update-Hinweise werden nicht über
+`--skip-version-check` unterdrückt. Historische 0.74.0-Evidence bleibt
+unverändert.
 
 ## Lizenzprüfung
 
