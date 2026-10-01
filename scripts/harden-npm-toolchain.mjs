@@ -12,7 +12,7 @@ if (read(path.join(target, 'package.json')).version !== '12.2.0') throw new Erro
 const require = createRequire(path.join(target, 'package.json'));
 const semver = require('./node_modules/semver');
 const lock = read(path.join(donors, '..', 'package-lock.json'));
-const changes = [['brace-expansion', '5.0.9', '5.0.12'], ['undici', '6.28.0', '6.29.0'], ['ip-address', '10.5.0', '10.7.1']];
+const changes = [['brace-expansion', '5.0.9', '5.0.12'], ['undici', '6.28.0', '6.29.0'], ['ip-address', '10.5.0', '10.7.2']];
 // Validate the entire plan before changing any installed code.
 for (const [name, before, after] of changes) {
   const old = read(path.join(target, 'node_modules', name, 'package.json'));
@@ -41,5 +41,9 @@ const { Request } = require('./node_modules/undici');
 if (new Request('https://example.invalid/').method !== 'GET') throw new Error('Patched undici failed');
 const { Address4, Address6 } = require('./node_modules/ip-address');
 if (new Address4('192.0.2.1/24').correctForm() !== '192.0.2.1' ||
-    new Address6('2001:db8::1').correctForm() !== '2001:db8::1') throw new Error('Patched IP address parser failed');
+    new Address6('2001:db8::1').correctForm() !== '2001:db8::1' ||
+    Address4.fromArpa('42.2.0.192.IN-ADDR.ARPA').correctForm() !== '192.0.2.42' ||
+    Address6.fromArpa('8.B.D.0.1.0.0.2.IP6.ARPA').networkForm() !== '2001:db8::/32') {
+  throw new Error('Patched IP address parser failed');
+}
 console.log(JSON.stringify({ npm: '12.2.0', vendorPatched: true, dependencies: Object.fromEntries(changes.map(([name, , version]) => [name, version])) }));
