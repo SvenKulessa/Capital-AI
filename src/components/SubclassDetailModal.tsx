@@ -71,7 +71,9 @@ export const SubclassDetailModal: React.FC<SubclassDetailModalProps> = ({
 
     result = [...result].sort((a, b) => {
       if (sortOption === 'score') {
-        return b.aiScore - a.aiScore;
+        const scoreA = a.aiScore ?? Number.NEGATIVE_INFINITY;
+        const scoreB = b.aiScore ?? Number.NEGATIVE_INFINITY;
+        return scoreB - scoreA;
       }
       if (sortOption === 'change') {
         const parseChg = (s: string) => {
