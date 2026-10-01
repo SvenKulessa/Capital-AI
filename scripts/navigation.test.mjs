@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { APP_NAVIGATION_EVENT, navigateAppLocation, readHubTab, resolveNavigationTarget } from '../src/utils/appNavigation.ts';
+import { APP_NAVIGATION_EVENT, navigateAppLocation, readHubTab, resolveNavigationTarget, resolveAppRoute } from '../src/utils/appNavigation.ts';
 
 test('all 16 header tab links retain their hub and tab', () => {
   const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
@@ -44,4 +44,15 @@ test('same-hub transitions notify subscribers and avoid duplicate history', () =
     if (originalWindow === undefined) delete globalThis.window;
     else globalThis.window = originalWindow;
   }
+});
+
+test('legal and research deep links retain their destination and query state', () => {
+  for (const route of ['/lizenz', '/datenprovider-lizenzen', '/opensource-lizenzen', '/forschung', '/impressum', '/datenschutz', '/agb']) {
+    assert.equal(resolveAppRoute(route), route);
+    assert.equal(resolveNavigationTarget(route.toUpperCase() + '/?ref=footer#details'), route + '?ref=footer#details');
+  }
+  assert.equal(resolveNavigationTarget('/academic-terms?provider=binance'), '/datenprovider-lizenzen?provider=binance');
+  assert.equal(resolveAppRoute('/oss'), '/opensource-lizenzen');
+  assert.equal(resolveAppRoute('/research'), '/forschung');
+  assert.equal(resolveAppRoute('/__proto__'), '/');
 });
