@@ -934,6 +934,8 @@ export const ROADMAP_SNAPSHOT = {
   "sourceSha": "bfaa25754fe8a80afc280b72ce0fef5145c6f912",
   "reviewDate": "2026-09-30",
   "scope": "Repo- und Release-Implementierung; Betriebsabnahmen separat",
+  "githubSettingsReviewDate": "2026-10-01",
+  "githubSettingsSourceSha": "c7eb9f235c661b229439f56f543acfaab5a50c41",
   "domainModelVersion": "2",
   "productVersionBaseline": "0.8.0-alpha.1",
   "securitySourceSha": "46ee077dea184a5defa84ef028fb93e3ac73fad5",
@@ -944,6 +946,277 @@ export const ROADMAP_SNAPSHOT = {
 } as const;
 
 export const WORK_PACKAGES: WorkPackage[] = [
+{
+  "status": "pending",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "priority": "Hoch",
+  "leadName": "Projektowner",
+  "id": "CA-TRUST-APP-READ-DESIGN",
+  "title": "Eigene Security-App: Leserechte und Einstellungsabdeckung entwerfen",
+  "owner": "TRUST",
+  "targetSprint": "Nach GHCR-Digest-Abnahme; Vorbereitung vor Enterprise-Transfer",
+  "description": "Organisationseigene GitHub App für capital-ai-online/Capital-AI planen. Alle sicherheitsrelevanten Repository-/Org-/Enterprise-Einstellungen je API-Endpunkt inventarisieren; fehlende Lesbarkeit explizit ausweisen. Keine Secretwerte oder pauschalen Schreibrechte.",
+  "nextStep": "Endpunkt-/Leserechte-Matrix, geerbte Rulesets, IAM, Actions, CodeQL, Secret Protection, Dependabot und GitGuardian erfassen; Schlüsselrotation und begrenzte Installation planen.",
+  "deliverables": [
+    "API-/Berechtigungs-/Abdeckungsmatrix mit NICHT_LESBAR/UNGEKLÄRT für Lücken",
+    "Kurzlebige Token und Schlüsselverwaltung; kein Bypass",
+    "Getrennte spätere PR-Schreibidentität für menschliche Owner-Approval"
+  ],
+  "dependencies": [
+    "AP-SEC-IMAGE"
+  ]
+},
+{
+  "status": "pending",
+  "phase": 5,
+  "phaseName": "Phase 5: Production Go-Live",
+  "progressPercent": null,
+  "evidenceState": "GEHALTEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "priority": "Hoch",
+  "leadName": "Projektowner",
+  "id": "CA-PLATFORM-APP-READ-CONSUME",
+  "title": "Security-App nach Enterprise-Umzug installieren und Readbacks nutzen",
+  "owner": "PLATFORM",
+  "targetSprint": "Nach Digest-, Domain-, Finance-Abnahme und Enterprise-Transfer",
+  "description": "App in der Capital-AI-Enterprise-Umgebung auf ausgewählte Repositories begrenzen. Aktive und geerbte Sicherheitseinstellungen als Evidence in vorhandener Roadmap nutzen; fehlende Enterprise-API-Abdeckung nicht als PASS behandeln.",
+  "nextStep": "Berechtigungen konkret freigeben, App installieren und Source-/Owner-/Zeit-/Hash-gebundene Lesebelege samt Soll-/Ist-Abweichungen konsumieren.",
+  "deliverables": [
+    "Installation auf verifiziertem capital-ai-online/Capital-AI",
+    "Nachvollziehbarer Settings-Readback ohne Secrets",
+    "Keine zweite Statusautorität und keine automatische Policy-Mutation"
+  ],
+  "dependencies": [
+    "CA-TRUST-APP-READ-DESIGN",
+    "CA-PLATFORM-ENTERPRISE-PUBLIC"
+  ]
+},
+{
+  "status": "pending",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "priority": "Hoch",
+  "leadName": "Projektowner",
+  "id": "CA-TRUST-SIGNED-COMMITS",
+  "title": "Signierte Commits für alle Schreibwege vorbereiten und verlangen",
+  "owner": "TRUST",
+  "targetSprint": "Nach GHCR-Digest-Abnahme; vor Durchsetzung Signaturtest",
+  "description": "Require signed commits nach Validierung lokaler, Web-, Connector/API-, Workflow- und Dependabot-Commits aktivieren. Unsigned PR-Commits können auch Squash blockieren; offene PRs zuerst prüfen.",
+  "nextStep": "Verified-Signaturen inventarisieren, fehlende Arbeitsbranch-Signierung beheben und einen regulären signierten PR vor Ruleset-Aktivierung abnehmen.",
+  "deliverables": [
+    "Signaturmatrix aller aktiven Schreibwege",
+    "Regulärer signierter Test-PR",
+    "Ruleset-Readback ohne Bypass oder Main-Historienumschreibung"
+  ],
+  "dependencies": [
+    "AP-SEC-IMAGE",
+    "CA-TRUST-LINEAR-HISTORY"
+  ]
+},
+{
+  "status": "pending",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "priority": "Hoch",
+  "leadName": "Projektowner",
+  "id": "CA-TRUST-GITGUARDIAN",
+  "title": "GitGuardian-Abdeckung und Merge-Gate verifizieren",
+  "owner": "TRUST",
+  "targetSprint": "Nach GHCR-Digest-Abnahme; erneut nach Enterprise-Transfer",
+  "description": "GitGuardian-Installation, Repo-Abdeckung, Tarif/Kontingente und tatsächliche PR-Checkidentität prüfen. GitHub Secret Scanning/Push Protection bleiben ergänzend; keine automatische kostenlose Enterprise-Abdeckung behaupten.",
+  "nextStep": "Installation und Findings lesen, Kosten prüfen; exakten Checknamen/App-Herkunft nach erfolgreicher Scanabdeckung als Required Check anbinden und nach Transfer wiederprüfen.",
+  "deliverables": [
+    "Aktueller Installations-/Kosten-/Repo-Abdeckungsnachweis",
+    "Secret-Findings mit Sperr-/Rotationsweg",
+    "Nachgewiesener PR-Check und Post-Transfer-Readback"
+  ],
+  "dependencies": [
+    "AP-SEC-IMAGE"
+  ]
+},
+{
+  "status": "pending",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "leadName": "Projektowner",
+  "id": "CA-TRUST-GITHUB-FREE",
+  "title": "Kostenfreie GitHub-Sicherheitsbaseline prüfen",
+  "owner": "TRUST",
+  "priority": "Hoch",
+  "targetSprint": "01.–03.10.2026; vor Domain-Cutover",
+  "description": "Secret Scanning, Push Protection, Dependabot, Dependency Review, CodeQL für JavaScript/TypeScript, vertrauliche Meldungen und Sicherheitskontakt prüfen und aktivieren; Live-Aktivierung nicht bestätigt. Die Public-Funktionen bleiben auch unter capital-ai-online in Enterprise Cloud ohne zusätzliche Security-Lizenz nutzbar.",
+  "nextStep": "Kostenfreie Optionen einschließlich CodeQL einzeln lesen und aktivieren; Standard-Runner und Storage-Budget prüfen; kostenpflichtige Zusatzprodukte ausschließen.",
+  "deliverables": [
+    "Kostenfreie Optionen einzeln lesen und aktivieren; kostenpflichtige Zusatzprodukte ausschließen."
+  ],
+  "dependencies": []
+},
+{
+  "status": "pending",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "GEHALTEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "leadName": "Projektowner",
+  "id": "CA-TRUST-LINEAR-HISTORY",
+  "title": "Lineare Main-Historie ohne Mergeblockade",
+  "owner": "TRUST",
+  "priority": "Hoch",
+  "targetSprint": "01.10.2026; nächster Settings-Schritt",
+  "description": "Live-Readback am 01.10.2026: required_linear_history ist aktiv, das Ruleset erlaubt jedoch nur Merge. Diese widersprüchliche Kombination blockiert den regulären Merge; Owner-Einrichtung muss auf Squash abgeglichen werden.",
+  "nextStep": "Im Ruleset Allowed merge methods auf Squash umstellen und effektive Repo-Mergeoption prüfen; danach CodeQL-/Code-Quality-Ergebnisse des aktuellen PR-Heads abwarten.",
+  "deliverables": [
+    "Zuerst Squash erlauben; dann Require linear history aktivieren und vorhandene Gates sowie PR-Mergefähigkeit prüfen."
+  ],
+  "dependencies": []
+},
+{
+  "status": "pending",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "leadName": "Projektowner",
+  "id": "CA-PLATFORM-GITHUB-COSTS",
+  "title": "Actions-Policies und GitHub-Kosten begrenzen",
+  "owner": "PLATFORM",
+  "priority": "Hoch",
+  "targetSprint": "01.–03.10.2026; parallel zur Security-Baseline",
+  "description": "Standard-Runner für Public sind kostenlos; größere Runner und Storage-Mehrverbrauch können Kosten erzeugen. Budget- und Policies-Readback fehlen.",
+  "nextStep": "Read-only Default, SHA-Pinning, Actions-Allow-List, Fork-Freigaben, Artifact-Retention, Cache-Limits und Budget-Stop prüfen.",
+  "deliverables": [
+    "Read-only Default, SHA-Pinning, Actions-Allow-List, Fork-Freigaben, Artifact-Retention, Cache-Limits und Budget-Stop prüfen."
+  ],
+  "dependencies": []
+},
+{
+  "status": "pending",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "leadName": "Projektowner",
+  "id": "CA-GROWTH-FINANCE-SPONSORS-OFF",
+  "title": "Finance-Sponsorships deaktivieren",
+  "owner": "GROWTH",
+  "priority": "Hoch",
+  "targetSprint": "01.10.2026; unabhängig vom DNS-Cutover",
+  "description": "Finance-FUNDING.yml verweist auf SvenKulessa; der Repository-Sponsorships-Schalter ist noch nicht deaktiviert. Das persönliche Sponsors-Profil bleibt eigenständig.",
+  "nextStep": "Finance Settings / General / Features: Sponsorships deaktivieren und fehlenden Sponsorbutton öffentlich prüfen.",
+  "deliverables": [
+    "Finance Settings / General / Features: Sponsorships deaktivieren und fehlenden Sponsorbutton öffentlich prüfen."
+  ],
+  "dependencies": []
+},
+{
+  "status": "pending",
+  "phase": 5,
+  "phaseName": "Phase 5: Production Go-Live",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "leadName": "Projektowner",
+  "id": "CA-PLATFORM-IONOS-SMTP",
+  "title": "IONOS-Mailfluss vor Finance-Ablösung abnehmen",
+  "owner": "PLATFORM",
+  "priority": "Hoch",
+  "targetSprint": "Migrationstermin; vor Finance-Suspendierung",
+  "description": "Web-DNS-Cutover darf MX/SPF/DKIM/DMARC und MTA-STS nicht verändern. SMTP/TLS, Absender und Zustellung für ZITADEL-Mails brauchen eigene Evidence.",
+  "nextStep": "Registrierungs-/Bestätigungs- und Passwort-Reset-Mail mit IONOS-Absender, TLS und tatsächlicher Zustellung prüfen.",
+  "deliverables": [
+    "Registrierungs-/Bestätigungs- und Passwort-Reset-Mail mit IONOS-Absender, TLS und tatsächlicher Zustellung prüfen."
+  ],
+  "dependencies": [
+    "AP-SEC-IMAGE",
+    "AP-CMP-RIGHTS"
+  ]
+},
+{
+  "status": "pending",
+  "phase": 5,
+  "phaseName": "Phase 5: Production Go-Live",
+  "progressPercent": null,
+  "evidenceState": "GEHALTEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "leadName": "Projektowner",
+  "id": "CA-PLATFORM-ENTERPRISE-PUBLIC",
+  "title": "Öffentliches Capital-AI-Repo in Enterprise übertragen",
+  "owner": "PLATFORM",
+  "priority": "Hoch",
+  "targetSprint": "Nach Digest-Abnahme, DNS-Migration und Finance-Ablösung; Termin offen",
+  "description": "Transfer erst nach den vorgelagerten Abnahmen. Ziel: capital-ai-online/Capital-AI in der Capital-AI-Enterprise-Umgebung, weiterhin public. Enterprise-Zuordnung und Kontotyp live prüfen; Enterprise Managed Users unterstützen keine öffentlichen Repositories. Public-CodeQL und die genannten Public-Sicherheitsfunktionen bleiben ohne zusätzliche Security-Lizenz nutzbar; Enterprise-Seats separat prüfen.",
+  "nextStep": "capital-ai-online und Capital-AI-Enterprise-Zuordnung/Typ/Kosten prüfen, mit Sichtbarkeit public transferieren und CodeQL, Rulesets, GHCR, Render, OIDC, Apps sowie Secrets-Zugriffe erneut abnehmen.",
+  "deliverables": [
+    "Zielorganisation/Typ/Kosten prüfen, öffentlich transferieren und Rulesets, GHCR, Render, OIDC, Apps sowie Secrets-Zugriffe erneut abnehmen."
+  ],
+  "dependencies": [
+    "AP-SEC-IMAGE",
+    "AP-CMP-RIGHTS",
+    "AP-OPS-DOMAIN",
+    "AP-OPS-FINANCE-OFF"
+  ]
+},
+{
+  "status": "pending",
+  "phase": 5,
+  "phaseName": "Phase 5: Production Go-Live",
+  "progressPercent": null,
+  "evidenceState": "GEHALTEN",
+  "evidenceRefs": [
+    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ],
+  "leadName": "Projektowner",
+  "id": "CA-GROWTH-CAPITAL-SPONSORS",
+  "title": "Capital-AI-Sponsorship nach Enterprise-Umzug aktivieren",
+  "owner": "GROWTH",
+  "priority": "Mittel",
+  "targetSprint": "Nach erfolgreichem Enterprise-Transfer; Termin offen",
+  "description": "Empfängerprofil und Sponsorbutton separat verifizieren. FUNDING.yml allein richtet kein Sponsors-Konto ein. Gebühren persönlicher und Organisationssponsoren unterscheiden.",
+  "nextStep": "Nach Transfer verifizierten Sponsors-Empfänger in FUNDING.yml eintragen, Sponsorships aktivieren und Button/Ziel prüfen.",
+  "deliverables": [
+    "Nach Transfer verifizierten Sponsors-Empfänger in FUNDING.yml eintragen, Sponsorships aktivieren und Button/Ziel prüfen."
+  ],
+  "dependencies": [
+    "CA-PLATFORM-ENTERPRISE-PUBLIC",
+    "CA-GROWTH-FINANCE-SPONSORS-OFF"
+  ]
+},
 {
   "id": "CA-PLATFORM-VERSIONING",
   "title": "Repo-weite SemVer- und Release-Identität",
@@ -1242,10 +1515,10 @@ export const WORK_PACKAGES: WorkPackage[] = [
     "https://github.com/SvenKulessa/Capital-AI/actions/runs/36715472658",
     "docs/security/RENDER-IMAGE-REVIEW.md"
   ],
-  "nextStep": "Freigegebenen Sicherheitsworkflow auf dem finalen Main ausführen und Imageidentität korrelieren.",
-  "priority": "Hoch",
+  "nextStep": "Finale Source SHA, attestierten GHCR-Digest, gestarteten Render-Digest und Deployment-ID korrelieren; alle Production-Gates separat abnehmen.",
+  "priority": "Kritisch",
   "leadName": "Projektowner",
-  "targetSprint": "Nicht terminiert",
+  "targetSprint": "Jetzt zuerst: GHCR-/Render-Digest-Abnahme; vor weiteren Security-App-Paketen",
   "description": "Der letzte erfolgreiche Dockerlauf 36715472658 gehört zu 46ee077dea184a5defa84ef028fb93e3ac73fad5. Für den gelesenen aktuellen Main fehlt ein gleichwertiger exakter Image-/SBOM-/CVE-Nachweis.",
   "deliverables": [
     "Freigegebenen Sicherheitsworkflow auf dem finalen Main ausführen und Imageidentität korrelieren."
@@ -1330,13 +1603,17 @@ export const WORK_PACKAGES: WorkPackage[] = [
     "deploy/DNS-CUTOVER.md",
     "docs/security/DOMAIN-MIGRATION.md"
   ],
-  "nextStep": "Domainbindungen und DNS frisch sichern, ZITADEL-Callback prüfen, gezielt umstellen und HTTPS/Login/Export abnehmen.",
+  "nextStep": "IONOS-Records/Render-Domainbindungen sichern, Webrecords gezielt umstellen; DNS/TLS/ZITADEL/Export und erhaltene Mailrecords prüfen.",
   "priority": "Hoch",
   "leadName": "Projektowner",
-  "targetSprint": "Nicht terminiert",
+  "targetSprint": "Nach Digest-/Lizenzabnahme; abgestimmtes Migrationsfenster",
   "description": "Der letzte HTTPS-Readback um 15:33 Uhr Berlin zeigte auf capital-ai.online noch Finance mit Supabase. Ein vorhandener Login im neuen Dienst belegt keinen Domaintransfer.",
   "deliverables": [
     "Domainbindungen und DNS frisch sichern, ZITADEL-Callback prüfen, gezielt umstellen und HTTPS/Login/Export abnehmen."
+  ],
+  "dependencies": [
+    "AP-SEC-IMAGE",
+    "AP-CMP-RIGHTS"
   ]
 },
 {
@@ -1376,10 +1653,16 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "nextStep": "Nach dokumentierter Abnahme nur den vorgesehenen Finance-Service suspendieren; Rückweg prüfen.",
   "priority": "Hoch",
   "leadName": "Projektowner",
-  "targetSprint": "Nicht terminiert",
+  "targetSprint": "Nach dokumentierter Domain-, Auth-, Mail- und Altdatenabnahme",
   "description": "Finance bleibt bis zur Abnahme von Domain, TLS, Login, Datenauszug, erforderlichem Datenzugriff und Altdatenbearbeitung aktiv.",
   "deliverables": [
     "Nach dokumentierter Abnahme nur den vorgesehenen Finance-Service suspendieren; Rückweg prüfen."
+  ],
+  "dependencies": [
+    "AP-OPS-DOMAIN",
+    "AP-SEC-AUTH-LIVE",
+    "AP-CMP-OLD-DATA",
+    "CA-PLATFORM-IONOS-SMTP"
   ]
 },
 {

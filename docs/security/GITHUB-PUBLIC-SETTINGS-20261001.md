@@ -1,0 +1,88 @@
+# GitHub Public Security, Enterprise und Sponsorship
+Stand: 01.10.2026 (Europe/Berlin). Source: Capital-AI main@c7eb9f235c661b229439f56f543acfaab5a50c41.
+Teilprüfung von GitHub-Einstellungen; keine aktuelle Runtime-, DNS- oder Lizenzfreigabe.
+
+## Beobachteter Zustand
+- Repository öffentlich, Owner SvenKulessa; kein Enterprise-Transfer erfolgt. Geplantes Ziel: capital-ai-online/Capital-AI in der Capital-AI-Enterprise-Umgebung, weiterhin public; Enterprise-Zuordnung und Kontotyp noch live zu bestätigen.
+- main-production-protection (24259174) aktiv, keine Bypass-Akteure; PR, Thread-Auflösung, Lösch-/Force-Push-Schutz und strikt aktueller Docker Security Gate erforderlich.
+- required_linear_history fehlt live. Repository erlaubt nur Merge-Commits; Squash/Rebase sind aus. Zuerst Squash erlauben, danach lineare Historie aktivieren; Repo-Konfiguration allein verändert GitHub nicht.
+- Dependabot-Konfiguration auf Main vorhanden; Einstellungen für Alerts/Security Updates und Secret Scanning/Push Protection sind mit dieser API nicht einzeln bestätigt.
+- SECURITY.md und CODEOWNERS fehlen im gelesenen Capital-AI-Baum. Sicherheitskontakt vor Erstellung verifizieren. Reviewpflicht erst mit tatsächlich verfügbarem unabhängigen Reviewer aktivieren.
+- Finance .github/FUNDING.yml verweist auf SvenKulessa. Sponsorships-Schalter wurde nicht gelesen oder geändert. Deaktivierung betrifft nur Finance, nicht das persönliche Sponsors-Profil oder bestehende Zahlungen.
+- GitHub erkennt keine Root-Lizenz (license:null). Öffentlicher Zugriff ist keine Open-Source-Lizenzfreigabe; keine Lizenz ohne Rechteabnahme hinzufügen.
+
+## Kostenfreie Optionen und Umsetzung
+| Einstellung | Empfehlung | Status / Zusatzkosten |
+|---|---|---|
+| Dependency graph, SBOM-Export | aktivieren / prüfen | GitHub-Funktion kostenlos; Live-Einstellung ungeklärt |
+| Dependabot alerts / security updates | aktivieren / prüfen | kostenlos; Update-PRs bleiben Review-/Testpflicht |
+| Dependabot version updates | gruppiert und begrenzt betreiben | Datei vorhanden; keine pauschale Freigabe von Major-Upgrades |
+| Secret Scanning / Push Protection | auf Repo-Ebene prüfen und aktivieren | öffentliche Repos kostenlos; keine neue kostenpflichtige Lizenz |
+| Private vulnerability reporting, SECURITY.md | vertraulichen Meldeweg einrichten | kostenlose Funktion; Kontakt noch zu bestätigen |
+| Dependency review | vor Merge verwundbare Versionen erkennen | öffentliche Repos kostenlos; Workflow-Storage separat |
+| CodeQL / Code Scanning | Aktivierung für JavaScript/TypeScript einplanen | öffentlich auf GitHub.com ohne zusätzliche Code-Security-Lizenz, auch in Organisationen unter Enterprise Cloud; Live-Aktivierung noch offen |
+| Branch-/Tag-Rulesets | Main und akzeptierte v*-Tags absichern | kostenlos für öffentliche Repos; signierte Commits erst nach Client-/Bot-Prüfung |
+| PR-Review / CODEOWNERS | echte unabhängige Reviewer voraussetzen | keine künstliche Solo-Owner-Mergeblockade |
+| Actions | read-only GITHUB_TOKEN als Default, SHA-Pinning, Allow-List, Fork-Freigaben, Secrets isolieren | zusätzliche Lizenz nicht erforderlich; Live-Policies ungeklärt |
+| Attestations | bestehende digestgebundene Provenance/SBOM prüfen | Public verfügbar; kein Ersatz für Runtime-Abnahme |
+| Allgemeine Einstellungen | Branchlöschung nach Merge beibehalten (an); unnötige Wiki/Pages aus (bereits aus); Issues/Projects beibehalten | keine zusätzliche Lizenz; Discussions erst bei Bedarf |
+| Kostenkontrolle | Standard-Runner, kurze Artifact-Retention, Cache-Limit, verbindliche Budget-/Stop-Policy | größere Runner kostenpflichtig; Storage/Cache kann Kosten erzeugen |
+| Enterprise | bestehende Zielorganisation, Typ, Seats und Policys prüfen | Enterprise-Abonnement/Seats nicht kostenlos; keine Bestellung oder Trial |
+| Sponsors | Finance aus, Capital-AI erst nach Transfer mit geprüftem Empfänger | persönliche Sponsoren ohne GitHub-Gebühr; Organisationssponsoren bis 6 % |
+
+## Public-Repository unter Enterprise Cloud
+Die Public-Verfügbarkeit hängt bei den hier genannten Repository-Funktionen nicht davon ab, ob ein persönlicher Account oder eine Organisation Eigentümer ist. CodeQL/Code Scanning, Dependency Review, Secret Scanning/Push Protection, Dependabot, Dependency Graph/SBOM und Repository-Branch-/Tag-Rulesets bleiben für capital-ai-online/Capital-AI auf GitHub.com ohne zusätzliche Security-Lizenz nutzbar, solange das Repository öffentlich bleibt.
+Das bedeutet keine pauschale Kostenfreiheit aller Enterprise-Sicherheitsfunktionen: organisationsweite Premium-Funktionen, private/internal Repositories, Enterprise-Seats und Drittanbieter separat prüfen. Standard-GitHub-Runner für Public sind kostenlos; größere Runner sowie zusätzlicher Artifact-/Cache-Speicher können Kosten erzeugen. Org-/Enterprise-Policies können die Aktivierung einschränken.
+Die frühere pauschale Nichtaktivierung von CodeQL aus Kostengründen wird korrigiert. CodeQL für JavaScript/TypeScript ist jetzt als offener Aktivierungsschritt eingeplant, nicht als bereits aktiviert belegt. Diese Korrektur erstellt keinen Scan-Workflow und startet keinen Scan.
+
+## Aktivierungsfolge und Abnahme
+1. Jetzt: kostenlose Baseline prüfen, Finance-Sponsorships-Schalter ausschalten; Squash auf Repo-Ebene erlauben und required_linear_history live aktivieren. Alle existierenden Sicherheitsgates beibehalten.
+2. Vor Cutover: aktuelle Source SHA, attestierten GHCR-Digest, tatsächlich gestarteten Render-Digest und Deployment-ID korrelieren; Lizenz-/Production-Gates separat schließen. Backup/Restore-Drill bleibt eigenständige Abnahme.
+3. Migration: IONOS-Webrecords und Render-Domainbindungen sichern/gezielt umstellen; MX/SPF/DKIM/DMARC und MTA-STS erhalten; DNS/TLS/ZITADEL/Export sowie IONOS-SMTP prüfen.
+4. Nach dokumentierter Domain-/Auth-/Altdaten-Abnahme: Finance-Webservice suspendieren und Rückweg erhalten. Danach öffentliches Repo in die Organisation capital-ai-online der Capital-AI-Enterprise-Umgebung übertragen, weiterhin public; EMU ist für dieses Public-Ziel ungeeignet. Keine Zeitfreigabe allein durch Ablauf.
+5. Nach Transfer: Owner-/Repo-URLs, OIDC-Subjekte, Secrets-/App-Zugriffe, GHCR-Namespace und Render-Imagequelle prüfen; alte attestierte Digests nicht umetikettieren. Danach Capital-AI-Sponsorbutton/Empfänger prüfen und aktivieren.
+
+## Validierung und begrenzte Selbstheilung
+Vier getrennte Nachweise: Source-/API-Readback, negativer Ruleset-Regressionstest, Live-Settings-Readback und Migration/Post-Transfer-Abnahme.
+Erkanntes Muster: lineare Historie plus ausschließlich Merge-Commits blockiert Delivery. Die lokale Ruleset-Prüfung erkennt fehlende Historie und fehlende lineare Merge-Methode; Live-Repo-Mergeoptionen müssen zusätzlich gelesen werden.
+Keine automatische DNS-, Billing-, Enterprise- oder Sponsorship-Ausführung. Ein lokaler Test ist keine Live-Freigabe. Erst nach drei voneinander unabhängigen positiven Live-Validierungen eine begrenzte Autofix-Regel für dieses Muster erwägen.
+
+## Primärquellen
+- https://docs.github.com/en/code-security/getting-started/github-security-features
+- https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets
+- https://docs.github.com/en/billing/concepts/product-billing/github-actions
+- https://docs.github.com/en/sponsors/getting-started-with-github-sponsors/about-github-sponsors
+- https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/displaying-a-sponsor-button-in-your-repository
+- https://docs.github.com/en/enterprise-cloud%40latest/admin/concepts/enterprise-fundamentals/choose-an-enterprise-type
+
+## Geplante eigene App, signierte Commits und GitGuardian
+Owner-Priorisierung vom 01.10.2026: zuerst die GHCR-/Render-Digest-Abnahme (AP-SEC-IMAGE). Die folgenden Pakete sind Planung, keine App-Installation, Schlüsselanlage oder neue Scan-Ausführung.
+
+### Eigene GitHub App in der Enterprise-Umgebung
+- Ziel: eine organisationskontrollierte App für capital-ai-online/Capital-AI, öffentlich in der Capital-AI-Enterprise-Umgebung.
+- Zunächst alle sicherheitsrelevanten Repository-, Organisations- und Enterprise-Einstellungen inventarisieren: effektive Branch-/Tag-Rulesets einschließlich geerbter Regeln und Bypass-Akteure; Merge-/Review-Optionen; CodeQL/Code-Scanning-Schutz; Secret Scanning/Push Protection; Dependabot; Actions-Policies, Token-/Fork-Berechtigungen, Runner- und Budgetgrenzen; IAM-/SSO-/2FA-/App-Policies und GitGuardian-Anbindung.
+- Für jeden konkreten API-Endpunkt Lesefähigkeit, erforderliche Berechtigung und Kontoebene prüfen. Keine Behauptung, dass ein einzelner Installationstoken automatisch alle Enterprise-Einstellungen lesen kann. Fehlende API-Abdeckung als UNGEKLÄRT oder NICHT_LESBAR mit genauem Grund melden; gegebenenfalls verifizierten Owner-Export ergänzen. Keine Secrets-/Tokenwerte lesen.
+- Nur ausgewählte Repositories und erforderliche Leserechte; kurzlebige Installationstoken; App-Schlüssel ausschließlich im Secret Store mit Rotation. Kein Ruleset-Bypass und keine pauschalen Admin-Schreibrechte.
+- Spätere Nutzung: vorhandene Roadmap/Evidence-Projektion um beobachteten Soll-/Ist-Vergleich mit Quelle, Zeitstempel, Repository-ID, Owner und Hash ergänzen. Keine parallele Statusautorität, automatische Freigabe oder Selbstheilungs-Mutation.
+- Eine getrennte spätere PR-Schreibidentität ist ein eigenes, begrenzt zu genehmigendes Rechtemodul; der Security-Leser erhält nicht automatisch Code-/PR-Schreibrechte. Owner-Approve bleibt bei menschlicher Identität.
+- Installation erst nach Digest-/Domain-/Finance-Abnahme und Enterprise-Transfer. App-Berechtigungen vor Installation konkret prüfen.
+
+### Require signed commits
+Erst alle Schreibwege auf Verified-Signaturen prüfen: lokale SSH/GPG/ggf. S/MIME-Signierung, GitHub-Webcommits, Connector-/API-Commits, Workflows und Dependabot. Unsigned PR-Commits können auch Squash blockieren. Bestehende PRs nicht ungeprüft durch Aktivierung sperren; notwendige Signierung/Rebase auf dem Arbeitsbranch, keine Main-Historie umschreiben und keine Bypass-Akteure hinzufügen. Eine Signatur belegt Herkunft, keine Code- oder Production-Freigabe.
+
+### GitGuardian
+Vorhandene Installation und Repo-Abdeckung zuerst inventarisieren, besonders nach Transfer. Für das öffentliche Zielrepo tatsächlichen Tarif, Kontingente und mögliche Kosten prüfen; keine pauschale kostenlose Enterprise-Lizenz behaupten. GitGuardian ergänzt GitHub Secret Scanning und Push Protection. Den exakten PR-Checknamen und seine App-Herkunft aus einem realen Lauf ableiten und erst nach stabiler erfolgreicher Abdeckung als Required Check einplanen. Exponierte Zugangsdaten sperren/rotieren; Findings nicht allein für einen grünen Check ignorieren.
+
+### Vier Validierungsschritte
+1. Source/Main, Settings-/App-Istzustand und aktuelle Check-/Signatur-Evidence erfassen.
+2. Endpunkt-/Leserechte-Matrix, Kosten und geerbte Policies prüfen; Abdeckungslücken ausdrücklich ausweisen.
+3. Begrenzten App-Readback, signierten Test-PR und GitGuardian-Zustellung prüfen; fehlende Scanresultate nicht als PASS ausgeben.
+4. Nach Enterprise-Transfer effektive Einstellungen und Check-/Digest-Identitäten erneut lesen; erst nach drei unabhängigen positiven Validierungen einen begrenzten Self-Healing-Vorschlag erwägen.
+
+Aktivierte Schutzfunktionen und noch offene Settings müssen frisch gelesen werden. CodeQL wurde während der separaten Browser-Einrichtung aktiviert, sein erfolgreicher Analyseabschluss und die spätere Require-code-scanning-Regel sind hier nicht nachgewiesen. Die lineare Historie wird vom Owner separat eingerichtet; kein neuer Live-PASS wird aus der Planung abgeleitet.
+
+## Live-Ruleset-Readback nach Owner-Einrichtung (01.10.2026)
+Ruleset 24259174: active, required_linear_history vorhanden; pull_request.allowed_merge_methods jedoch nur ["merge"]. Diese widersprüchliche Kombination blockiert den regulären linearen Merge. Im Ruleset Squash erlauben; danach den PR über Squash mergen, sobald alle Gates erfüllt sind. Keine Schutzregel abschalten.
+Required Checks: Docker Security Gate und Domain Governance, beide an GitHub Actions (integration_id 15368) gebunden.
+CodeQL-Pflicht: medium_or_higher sowie errors_and_warnings; Code Quality: notes. Dies sind die gelesenen Owner-Einstellungen, keine Empfehlung zur stillen Lockerung. Der Screenshot zeigt fehlende CodeQL-Ergebnisse für den vorherigen Head; aktueller Head ist a1a890994d49de3e04ea085b1e7c3c5ad7f65b29 und benötigt eigene Check-Evidence.
+Signaturpflicht wurde in diesem Ruleset-Readback nicht gefunden. Keine Rule-/Scan-/Runtime-Mutation durch diese Roadmap-Ergänzung.
