@@ -12,7 +12,7 @@ if (read(path.join(target, 'package.json')).version !== '12.2.0') throw new Erro
 const require = createRequire(path.join(target, 'package.json'));
 const semver = require('./node_modules/semver');
 const lock = read(path.join(donors, '..', 'package-lock.json'));
-const changes = [['brace-expansion', '5.0.9', '5.0.12'], ['undici', '6.28.0', '6.28.1'], ['ip-address', '10.5.0', '10.7.1']];
+const changes = [['brace-expansion', '5.0.9', '5.0.12'], ['undici', '6.28.0', '6.28.1'], ['ip-address', '10.5.0', '10.7.2']];
 // Validate the entire plan before changing any installed code.
 for (const [name, before, after] of changes) {
   const old = read(path.join(target, 'node_modules', name, 'package.json'));
