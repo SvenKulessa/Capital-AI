@@ -1,12 +1,12 @@
 # Roadmap-Abgleich — 01.10.2026
 
-Basis: `SvenKulessa/Capital-AI@e9e7dd5d81ff78b8856e955db5b3a4e25a5f542b` nach PR #71 und #72. Dieser Bericht aktualisiert den statischen Repo-Snapshot; er ersetzt keine Production-Freigabe und keine permanente Status-API. Der Bericht vom 30.09. bleibt historisch.
+Basis: `SvenKulessa/Capital-AI@2150643dae8190fb2f8cd496072a7cc2baa89cfe` nach PR #71, #72 und #73. Dieser Bericht aktualisiert den statischen Repo-Snapshot; er ersetzt keine Production-Freigabe und keine permanente Status-API. Der Bericht vom 30.09. bleibt historisch.
 
 ## Beobachtungen und Grenzen
 
 | Bereich | Aktueller Befund | Quelle / Grenze |
 |---|---|---|
-| Main | `e9e7dd5d81ff78b8856e955db5b3a4e25a5f542b` | Frischer Git-Fetch; keine uncommitteten Änderungen des älteren Arbeitsverzeichnisses übernommen |
+| Main | `2150643dae8190fb2f8cd496072a7cc2baa89cfe` | Frischer Git-Fetch; keine uncommitteten Änderungen des älteren Arbeitsverzeichnisses übernommen |
 | Render-App | Image-Quelle `ghcr.io/svenkulessa/capital-ai@sha256:53c47463dfdb9e66721be1c997769d9fae3e6ca0e8a3fdd8cf77074785a08d23`; nicht suspendiert | Render-Connector, Workspace `tea-d90o4rj7uimc739i86ug`, Service `srv-dau1rp893c1s73cdhm1g`; Konfiguration ist nicht allein aktive Deploy-Evidence |
 | Runtime | `/healthz` antwortet `status:ok`, `bound:true`, Source `4fbd1373b07092ed8ef550f60e9cf60f1f3f526d`, Builder `SvenKulessa/Capital-AI/.github/workflows/build-security.yml` | Frischer HTTPS-Readback auf `https://capital-ai-uvsl.onrender.com/healthz`; Runtime ist älter als Main |
 | Transport | Redis/NATS/PubSub `connected`; Stream CAPITAL_FACTS, file storage, eine konfigurierte Replica | `/healthz` und `/api/market/status` frisch gelesen; keine Subscriber-Zähler im aktiven Statuspayload; keine neue Restart-/Restore-Probe durchgeführt |
@@ -16,7 +16,7 @@ Basis: `SvenKulessa/Capital-AI@e9e7dd5d81ff78b8856e955db5b3a4e25a5f542b` nach PR
 | Ruleset | 24259174 aktiv: linear history, merge+squash, zwei strict Required Checks mit App 15368, CodeQL medium-or-higher/errors-and-warnings, Code Quality warnings | Frischer GitHub API-Readback; keine Policy-Änderung, keine aktuelle Analyzer-Policy-Abnahme daraus abgeleitet |
 | Lizenz-/Rechtefreigabe | `REVIEW_OPEN`, `deployEligible:false`, gebundener Source `ed594ef93f66ee8f13f67d75dde56f46a95b1cd6` | Bestehendes license-rights-review.json; weder Main noch aktueller Runtime-Source, keine automatische Umschreibung |
 | Finance | `not_suspended` | Render-Service `srv-d91o1o9o3t8c73edi55g`; aktuelle HTTPS-Hauptdomain-Probe nicht auswertbar, heutige Domainzuordnung daher offen |
-| Offene PRs | #60, #61, #63–#69, #73 | GitHub-PR-Snapshot; Branch-/PR-Arbeit ist keine Main-Implementierung |
+| Offene PRs | #60, #61, #63–#69 | GitHub-PR-Snapshot; Branch-/PR-Arbeit ist keine Main-Implementierung |
 
 ## ZITADEL-Service-Account-Prüfung: Zugriffslücke
 
@@ -48,3 +48,5 @@ Offizielle Grundlage: https://zitadel.com/docs/guides/integrate/service-accounts
 Quell-/Identitätsabgleich, Repo-/Live-Readbacks, Roadmap-Struktur-/Referenzprüfung und lokale TypeScript-/Navigation-/OIDC-Checks bilden vier Validierungsschritte. Lokale Checks werden im PR mit tatsächlichem Ergebnis angegeben. Positive unabhängige produktive Self-Healing-Zyklen: **0**.
 
 Nachkorrelation: Während der Bearbeitung wurde PR #72 gemerged; Main erneut gelesen und auf e9e7dd5 aktualisiert. Die einzige Änderung seit 0e1db9f betrifft `.github/dependabot.yml` (Governance-/Patch-Grenzen), keine Runtime-Funktionsänderung.
+
+Nachkorrelation 06:00 Berlin: Main nach PR #73 auf 2150643 gelesen; Attestation-Workflow angepasst, Runtime weiterhin gesondert. Auf Owner-Wunsch Organisations-/Adapter-Migrationsplan unter `docs/security/ORG-MIGRATION-PLAN-20261001.md` ergänzt; keine Transferausführung. Render-Connectorzugriff frisch erfolgreich, aber kein Env-/REST-Adapter exponiert.

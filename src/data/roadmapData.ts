@@ -931,11 +931,11 @@ const BACKLOG_TARGETS: WorkPackage[] = [
 /** Statischer Repo-Snapshot; wird nach einem belegten Abgleich aktualisiert. */
 export const ROADMAP_SNAPSHOT = {
   "repository": "SvenKulessa/Capital-AI",
-  "sourceSha": "e9e7dd5d81ff78b8856e955db5b3a4e25a5f542b",
+  "sourceSha": "2150643dae8190fb2f8cd496072a7cc2baa89cfe",
   "reviewDate": "2026-10-01",
   "scope": "Repo-Snapshot und punktuelle Live-Readbacks; Freigaben separat",
   "githubSettingsReviewDate": "2026-10-01",
-  "githubSettingsSourceSha": "e9e7dd5d81ff78b8856e955db5b3a4e25a5f542b",
+  "githubSettingsSourceSha": "2150643dae8190fb2f8cd496072a7cc2baa89cfe",
   "domainModelVersion": "2",
   "productVersionBaseline": "0.8.0-alpha.1",
   "securitySourceSha": "07b3ff1785d2306bc743f41c990c975a69365d0b",
@@ -948,8 +948,7 @@ export const ROADMAP_SNAPSHOT = {
     66,
     67,
     68,
-    69,
-    73
+    69
   ]
 } as const;
 
@@ -1182,6 +1181,8 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "evidenceState": "GEHALTEN",
   "evidenceRefs": [
     "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ,
+    "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/security/ORG-MIGRATION-PLAN-20261001.md"
   ],
   "leadName": "Projektowner",
   "id": "CA-PLATFORM-ENTERPRISE-PUBLIC",
@@ -1190,7 +1191,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "priority": "Hoch",
   "targetSprint": "Nach Digest-Abnahme, DNS-Migration und Finance-Ablösung; Termin offen",
   "description": "Transfer erst nach den vorgelagerten Abnahmen. Ziel: capital-ai-online/Capital-AI in der Capital-AI-Enterprise-Umgebung, weiterhin public. Enterprise-Zuordnung und Kontotyp live prüfen; Enterprise Managed Users unterstützen keine öffentlichen Repositories. Public-CodeQL und die genannten Public-Sicherheitsfunktionen bleiben ohne zusätzliche Security-Lizenz nutzbar; Enterprise-Seats separat prüfen.",
-  "nextStep": "capital-ai-online und Capital-AI-Enterprise-Zuordnung/Typ/Kosten prüfen, mit Sichtbarkeit public transferieren und CodeQL, Rulesets, GHCR, Render, OIDC, Apps sowie Secrets-Zugriffe erneut abnehmen.",
+  "nextStep": "Migrationsmatrix in docs/security/ORG-MIGRATION-PLAN-20261001.md prüfen; danach capital-ai-online und Capital-AI-Enterprise-Zuordnung/Typ/Kosten prüfen, mit Sichtbarkeit public transferieren und CodeQL, Rulesets, GHCR, Render, OIDC, Apps sowie Secrets-Zugriffe erneut abnehmen.",
   "deliverables": [
     "Zielorganisation/Typ/Kosten prüfen, öffentlich transferieren und Rulesets, GHCR, Render, OIDC, Apps sowie Secrets-Zugriffe erneut abnehmen."
   ],
@@ -1265,7 +1266,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
     ".github/workflows/daily-dependency-security-watch.yml",
     ".github/workflows/build-security.yml"
   ],
-  "nextStep": "Die offenen Dependency-PRs samt Konsolidierung #73 (Dependabot-Governance #72 bereits auf Main) gegen den jeweiligen Head prüfen; Major-Upgrades nicht allein durch Dependabot-Erfolg freigeben.",
+  "nextStep": "Die offenen Dependency-PRs gegen Main (Dependabot-Governance #72 und Attestation-Konsolidierung #73 bereits gemerged) gegen den jeweiligen Head prüfen; Major-Upgrades nicht allein durch Dependabot-Erfolg freigeben.",
   "priority": "Kritisch",
   "leadName": "Owner + AI Apps",
   "targetSprint": "täglich",
@@ -1557,7 +1558,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "priority": "Hoch",
   "leadName": "Projektowner",
   "targetSprint": "Nicht terminiert",
-  "description": "Main-Snapshot e9e7dd5d81ff78b8856e955db5b3a4e25a5f542b. Frischer /healthz-Readback des neuen Dienstes: bound=true, Runtime-Source 4fbd1373b07092ed8ef550f60e9cf60f1f3f526d. Render ist auf Index-Digest 53c47463 eingestellt. Main und Runtime sind verschieden.",
+  "description": "Main-Snapshot 2150643dae8190fb2f8cd496072a7cc2baa89cfe. Frischer /healthz-Readback des neuen Dienstes: bound=true, Runtime-Source 4fbd1373b07092ed8ef550f60e9cf60f1f3f526d. Render ist auf Index-Digest 53c47463 eingestellt. Main und Runtime sind verschieden.",
   "deliverables": [
     "Nach Merge dieser Roadmap den neuen Main mit dem Deployment abgleichen."
   ]
@@ -1580,7 +1581,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "priority": "Kritisch",
   "leadName": "Projektowner",
   "targetSprint": "Jetzt zuerst: GHCR-/Render-Digest-Abnahme; vor weiteren Security-App-Paketen",
-  "description": "PR #71 ist in main@e9e7dd5 integriert. Aktuelle Health-Evidence: bound=true und Source 4fbd137; damit ist die Runtime-Source nun lesbar, entspricht aber weiterhin nicht Main. Konfigurierter Render-Digest 53c47463 stimmt mit dem archivierten Kandidaten überein. REVIEW_OPEN und Current-Main-/Analyse-/vollständige Handoff-Gates bleiben gehalten.",
+  "description": "PR #71 ist in main@2150643 integriert. Aktuelle Health-Evidence: bound=true und Source 4fbd137; damit ist die Runtime-Source nun lesbar, entspricht aber weiterhin nicht Main. Konfigurierter Render-Digest 53c47463 stimmt mit dem archivierten Kandidaten überein. REVIEW_OPEN und Current-Main-/Analyse-/vollständige Handoff-Gates bleiben gehalten.",
   "deliverables": [
     "Evidence-Tabelle und Validator-Korrekturen prüfen; neuer Publish/Deploy/Handoff erst nach gesonderter Freigabe."
   ]
