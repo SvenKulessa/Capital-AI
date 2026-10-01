@@ -39,6 +39,13 @@
       "domain": "PLATFORM",
       "path": "contracts/platform/CHANGE_PROPAGATION@1.yaml",
       "schemaPath": "contracts/schemas/change-propagation.schema.json"
+    },
+    {
+      "id": "OIDC_VERIFICATION_STATE@1",
+      "version": "1.0.0",
+      "domain": "TRUST",
+      "path": "contracts/trust/OIDC_VERIFICATION_STATE@1.yaml",
+      "schemaPath": "contracts/schemas/oidc-verification-state.schema.json"
     }
   ],
   "invariants": {
