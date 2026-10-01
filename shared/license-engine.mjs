@@ -13,6 +13,11 @@ export function assessExpression(expression) {
   const value = text(expression);
   if (!value || value.length > 400) return { expression: value, status: 'MISSING_OR_INVALID', obligations: ['Lizenzausdruck und Originaltext nachreichen.'] };
   try {
+    let depth = 0;
+    for (const char of value) {
+      if (char === '(' && ++depth > 64) throw new Error('Lizenzausdruck zu tief verschachtelt.');
+      if (char === ')') depth--;
+    }
     const ast = parse(value);
     const obligations = new Set();
     const walk = node => {
