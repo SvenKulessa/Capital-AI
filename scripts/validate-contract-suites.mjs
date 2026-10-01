@@ -1,6 +1,7 @@
 import { runProviderRegistryValidationSuite } from '../src/contracts/__tests__/providerRegistry.test.ts';
 import { runContractValidationSuite } from '../src/contracts/__tests__/contracts.test.ts';
 import { runEnterpriseScoringSuite } from '../src/contracts/__tests__/enterpriseScoring.test.ts';
+import { runGrowthContractValidationSuite } from './validate-growth-contracts.mjs';
 
 // Keep executable code out of npm's command echo so log parsers do not
 // classify a successful run as an error merely because it contains console.error.
@@ -9,6 +10,7 @@ try {
     ['Provider Registry', runProviderRegistryValidationSuite()],
     ['Contracts', runContractValidationSuite()],
     ['Enterprise Scoring', await runEnterpriseScoringSuite()],
+    ['GROWTH Handoff Contracts', await runGrowthContractValidationSuite()],
   ];
   for (const [name, result] of suites) {
     if (!result.passed) {
@@ -17,7 +19,7 @@ try {
     }
   }
   if (!process.exitCode) {
-    console.log('✓ All Provider Registry, Contracts & Enterprise Scoring Suites validated successfully.');
+    console.log('✓ All Provider Registry, Contracts, Enterprise Scoring & GROWTH Handoff Suites validated successfully.');
   }
 } catch (error) {
   console.error(error);
