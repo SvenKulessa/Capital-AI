@@ -1,14 +1,14 @@
 import React from 'react';
 import { BrandLogo } from './BrandLogo';
-import { Github, Youtube, AtSign, Music2, ExternalLink } from 'lucide-react';
+import { GitHub, YouTube, AtSign, Music2, ExternalLink } from 'lucide-react';
 import { socialLinks } from '../data/socialLinks';
 import { trackEvent } from '../utils/analytics';
 
 const socialIcons = {
-  github: <Github size={16} aria-hidden="true" />,
+  github: <GitHub size={16} aria-hidden="true" />,
   tiktok: <Music2 size={16} aria-hidden="true" />,
   threads: <AtSign size={16} aria-hidden="true" />,
-  youtube: <Youtube size={16} aria-hidden="true" />,
+  youtube: <YouTube size={16} aria-hidden="true" />,
   x: <span className="text-base leading-none" aria-hidden="true">𝕏</span>,
 } satisfies Record<(typeof socialLinks)[number]['id'], React.ReactNode>;
 
