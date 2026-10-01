@@ -9,6 +9,7 @@ const EXPECTED_IDS = new Set([
   'GROWTH_PROJECTION@1',
   'DOCUMENTARY_EVIDENCE@1',
   'CHANGE_PROPAGATION@1',
+  'OIDC_VERIFICATION_STATE@1',
 ]);
 
 async function readJson(relativePath) {
@@ -32,7 +33,7 @@ export async function runGrowthContractValidationSuite() {
 
   assert(registry.schema === 'CAPITAL_AI_CONTRACT_REGISTRY@1', 'registry schema must be CAPITAL_AI_CONTRACT_REGISTRY@1', failures);
   assert(registry.version === '1.0.0', 'registry version must be 1.0.0', failures);
-  assert(Array.isArray(registry.contracts) && registry.contracts.length === 4, 'registry must contain exactly four initial contracts', failures);
+  assert(Array.isArray(registry.contracts) && registry.contracts.length === 5, 'registry must contain exactly five registered contracts', failures);
 
   const ids = new Set(registry.contracts?.map((entry) => entry.id));
   assert(ids.size === EXPECTED_IDS.size && [...EXPECTED_IDS].every((id) => ids.has(id)), 'registry contract IDs are incomplete or duplicated', failures);
@@ -104,6 +105,16 @@ export async function runGrowthContractValidationSuite() {
   assert(projection?.safety?.mayModifyProduction === false, 'GROWTH_PROJECTION may not modify production', failures);
   assert(projection?.safety?.mayModifyBilling === false, 'GROWTH_PROJECTION may not modify billing', failures);
   assert(projection?.safety?.mayModifyDNS === false, 'GROWTH_PROJECTION may not modify DNS', failures);
+
+
+  const oidc = contracts.get('OIDC_VERIFICATION_STATE@1');
+  assert(oidc?.decision?.configurationOnlyMayPassOverallGate === false, 'OIDC configuration alone must not pass the overall gate', failures);
+  assert(oidc?.decision?.greenWithoutLoginEvidenceForbidden === true, 'OIDC green status requires login evidence', failures);
+  assert(oidc?.gates?.credentialAuthenticationVerified?.mayBeInferredFromPresence === false, 'OIDC credential authentication must not be inferred from secret presence', failures);
+  assert(oidc?.gates?.loginVerified?.mayBeInferredFromConfiguration === false, 'OIDC login verification must not be inferred from configuration', failures);
+  assert(oidc?.decision?.missingEvidence === 'BLOCKED', 'missing OIDC evidence must block', failures);
+  assert(oidc?.selfHealing?.autoRepair === false, 'OIDC auto-repair must remain disabled', failures);
+  assert((oidc?.selfHealing?.minimumPositiveValidationCycles ?? 0) >= 3, 'OIDC self-healing requires >=3 positive validation cycles', failures);
 
   for (const [id, contract] of contracts) {
     if (id !== 'GROWTH_HANDOFF@1') {
