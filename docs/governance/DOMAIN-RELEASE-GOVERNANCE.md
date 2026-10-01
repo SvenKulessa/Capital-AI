@@ -46,6 +46,12 @@ Zusätzliche unveränderliche Identitäten:
 
 Dokumente behalten stabile Dateinamen. Inhaltliche Revisionen werden über Git-Historie und optional `documentVersion` im Dokumentkopf nachvollzogen; Dateinamen wie `final-v2-neu` sind zu vermeiden.
 
+## Remote-AI-Änderungsevidenz
+
+Schreibende oder zustandsverändernde Änderungen an externen Control Planes, die per Cloud Browser durch eine AI-gestützte Remote-Sitzung im Namen des Owners durchgeführt werden, müssen nach `docs/security/REMOTE-AI-CLOUD-BROWSER-SESSIONS.md` dokumentiert werden. Pflichtkennzeichnung: **Remote AI basierte Cloud Browser Sitzung — durch den Owner freigegeben**.
+
+Die Evidence muss den autorisierten Scope, die ausgeführten Änderungen und einen verifizierten Endzustand enthalten. Sie ist Audit-/Change-Evidenz und ersetzt keine Security-, Lizenz- oder Production-Freigabe.
+
 ## Release-Vertrag
 
 Ein Release ist erst Production-fähig, wenn Produktversion, Git SHA, OCI Digest, SBOM/Attestation und Runtime-Identität korreliert sind. `candidate.json` bleibt fail-closed; nur der bestehende Production-Handoff darf `deployEligible:true` erzeugen.
