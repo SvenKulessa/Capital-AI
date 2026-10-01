@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://capital-ai.online/contracts/OIDC_VERIFICATION_STATE@1.schema.json",
+  "title": "OIDC_VERIFICATION_STATE@1",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "metadata",
+    "correlation",
+    "gates",
+    "decision",
+    "safety",
+    "selfHealing"
+  ],
+  "properties": {
+    "schema": { "const": "OIDC_VERIFICATION_STATE@1" },
+    "version": { "const": "1.0.0" },
+    "correlation": {
+      "type": "object",
+      "required": ["changeId"],
+      "properties": {
+        "changeId": { "type": ["string", "null"] }
+      }
+    },
+    "gates": { "type": "object" },
+    "decision": { "type": "object" },
+    "safety": { "type": "object" },
+    "selfHealing": { "type": "object" }
+  },
+  "additionalProperties": true
+}

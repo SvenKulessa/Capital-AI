@@ -6,7 +6,7 @@ import { boundedJson } from '../server/http-security.mjs';
 export const EXPECTED_ISSUER = 'https://capital-ai-hhxh4i.us1.zitadel.cloud';
 const origins = new Set(['https://capital-ai.online', 'https://capital-ai-uvsl.onrender.com']);
 
-export function evaluateOidc(env, metadata) {
+export function evaluateOidc(env, metadata, verification = {}) {
   // Output contains booleans only: never credentials, subjects or authorization URLs.
   const gates = {
     issuerCanonical: env.OIDC_ISSUER === EXPECTED_ISSUER,
@@ -23,7 +23,25 @@ export function evaluateOidc(env, metadata) {
         } catch { return false; }
       }),
   };
-  return { gates, pass: Object.values(gates).every(Boolean), loginVerified: false };
+  const configurationPass = Object.values(gates).every(Boolean);
+  const credentialAuthenticationVerified = verification.credentialAuthenticationVerified === true;
+  const loginVerified = verification.loginVerified === true;
+  const pass = configurationPass && credentialAuthenticationVerified && loginVerified;
+  const state = !configurationPass
+    ? 'BLOCKED'
+    : !credentialAuthenticationVerified
+      ? 'DISCOVERY_VERIFIED'
+      : !loginVerified
+        ? 'CREDENTIAL_AUTHENTICATION_VERIFIED'
+        : 'LOGIN_VERIFIED';
+  return {
+    gates,
+    configurationPass,
+    credentialAuthenticationVerified,
+    loginVerified,
+    state,
+    pass,
+  };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
