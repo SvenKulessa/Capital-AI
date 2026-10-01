@@ -55,6 +55,27 @@ This is intentionally independent from global container `LICENSE_REDISTRIBUTION_
 
 The Hanseatic Higher Regional Court (OLG Hamburg, 5 U 104/24, 10 December 2025) accepted applied research and dataset preparation as capable of falling within scientific research/TDM in the facts before it. The court allowed revision; this repository therefore treats the decision as persuasive current evidence, not as a final universal rule for all API/data uses.
 
+## Inventory projection slice
+
+Implemented against `main@fcd08dcd2e54f2a7742a4ead9927fcc2b2018f7f` in `src/contracts/marketDataRightsInventoryProjection.ts`. The projection reads `docs/security/evidence/license-rights-review.json` and does not fill null contract fields.
+
+Observed inventory: Binance, Kraken, Twelve Data and Polygon/Massive remain `CONTRACT_SCOPE_UNVERIFIED`. Every structured permission, feed scope, entity/region, tier and review timestamp is null. `researchScope` remains `PRIMARY_SOURCE_SEARCH_EXCERPTS_NOT_ARCHIVED_EXECUTED_CONTRACT` and is not treated as statutory TDM evidence. Technical endpoints are not copied into licensed feed scope.
+
+Path split, both fail-closed:
+
+- Research-only (`scientific_research_tdm`): `REVIEW_REQUIRED`, not eligible.
+- Commercial/product path (`internal_analysis`, `public_display`, `api_redistribution`, `derived_scoring_research`, `cache_retention`, `export_resale`): `REVIEW_REQUIRED`, not eligible. A research decision does not authorize this path.
+
+First activation cohort, bound to `internal_analysis` and `derived_scoring_research` plus the declared provider dependencies:
+
+| Component | Missing inventory providers | Commercial activation |
+| --- | --- | --- |
+| `market_integrity_gate` | `coinbase` | no |
+| `data_quality_scorer` | `alphavantage` | no |
+| `liquidity_eligibility_scorer` | none beyond unverified inventoried providers | no |
+
+No component status changes to `shadow` or `active`. Container `deployEligible: false` stays a separate gate and is not converted into a use-case `ALLOW` or `BLOCK`.
+
 ## Next slice
 
-Project the existing provider-rights inventory into this contract without inventing missing values. For each provider/dataset, distinguish a research-only path from commercial/product paths. Then bind the first activation cohort (Integrity/Data Quality/Liquidity) to the exact dataset/use-case evidence. No component becomes commercially active from this change alone.
+Collect provider-, dataset- and use-case-specific executed permission evidence, or a scoped statutory research-TDM evidence record that satisfies lawful access, actor qualification and legal review. Until those references exist, the cohort remains `REVIEW_REQUIRED`. Do not promote Integrity, Data Quality or Liquidity to commercial activity from inventory prose alone.
