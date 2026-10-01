@@ -15,6 +15,10 @@ export const ProviderStatusDashboard: React.FC<ProviderStatusDashboardProps> = (
  <button onClick={onBackToHome} className="text-amber-300 text-sm">Zurück</button><h2 className="font-bold text-xl mt-2">Data &amp; Providers</h2>
  <dl className="grid grid-cols-2 gap-3 my-4"><dt>Redis</dt><dd>{status?.infrastructure?.redis ?? 'unavailable'}</dd><dt>NATS JetStream</dt><dd>{status?.infrastructure?.nats ?? 'unavailable'}</dd><dt>Gesamtzustand</dt><dd>{status?.infrastructure?.status ?? 'unavailable'}</dd><dt>Belegte Quotes</dt><dd>{assets.length}</dd></dl>
  <p className="text-sm text-slate-400">Status wird vom Backend abgefragt. Ohne bestätigte Provider-Facts werden keine Preise oder gemessenen Latenzen angezeigt.</p>
- <ul className="mt-4 space-y-3">{assets.map(asset => <li key={asset.id} className="border-t border-slate-700 pt-3"><strong>{asset.symbol}: {asset.value}</strong><p className="text-xs text-slate-400">{asset.provider} · {asset.dataAvailability} · {new Date(asset.observedAt).toLocaleString('de-DE')}</p><a className="text-xs text-cyan-300 break-all" href={`/api/market/evidence?id=${encodeURIComponent(asset.evidenceId)}`} target="_blank" rel="noreferrer">Evidence prüfen</a></li>)}</ul>
+ <ul className="mt-4 space-y-3">{assets.map(asset => {
+   const observedAt = asset.observedAt;
+   const evidenceId = asset.evidenceId;
+   return <li key={asset.id} className="border-t border-slate-700 pt-3"><strong>{asset.symbol}: {asset.value}</strong><p className="text-xs text-slate-400">{asset.provider ?? 'Provider nicht verfügbar'} · {asset.dataAvailability ?? 'unavailable'} · {typeof observedAt === 'number' ? new Date(observedAt).toLocaleString('de-DE') : 'Zeitstempel nicht verfügbar'}</p>{typeof evidenceId === 'string' && evidenceId.length > 0 && <a className="text-xs text-cyan-300 break-all" href={`/api/market/evidence?id=${encodeURIComponent(evidenceId)}`} target="_blank" rel="noreferrer">Evidence prüfen</a>}</li>;
+ })}</ul>
  </section>;
 };
