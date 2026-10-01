@@ -9,7 +9,7 @@ const cookieValue = (req, name) => {
   return matches.length === 1 ? matches[0].slice(name.length + 1) : '';
 };
 
-export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.now } = {}) {
+export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.now, audit = console.info } = {}) {
   const transactions = new Map(), sessions = new Map();
   const allow = createLimiter(20, 60_000, 1, now);
   let metadata, keys;
@@ -91,9 +91,12 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       phase = 'token_exchange';
       const token = await boundedJson(await fetchImpl(meta.token_endpoint, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', Authorization: `Basic ${basic}` }, body, signal: AbortSignal.timeout(5000), redirect: 'error' }));
       if (typeof token.id_token !== 'string') throw new Error('missing_id_token');
+      // Fixed success event only: never include codes, tokens, credentials or user identifiers.
+      audit('OIDC authentication verified at token_exchange');
       phase = 'token_validation';
       const { payload } = await jwtVerify(token.id_token, keys, { issuer: config.issuer, audience: config.clientId, algorithms: ['RS256', 'PS256', 'ES256'], requiredClaims: ['exp', 'iat', 'sub', 'nonce'], currentDate: new Date(now()) });
       if (payload.nonce !== transaction.nonce || typeof payload.sub !== 'string' || !payload.sub || payload.sub.length > 255 || payload.iat > now() / 1000 + 60 || (payload.azp !== undefined && payload.azp !== config.clientId) || (Array.isArray(payload.aud) && payload.aud.length > 1 && payload.azp !== config.clientId)) throw new Error('invalid_claims');
+      audit('OIDC authentication verified at token_validation');
       phase = 'session_creation';
       prune(sessions);
       if (sessions.size >= 1000) throw new Error('busy');
@@ -101,6 +104,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       if (age <= 0) throw new Error('expired');
       sessions.delete(cookieValue(req, '__Host-capital_session'));
       sessions.set(id, { subject: payload.sub, issuer: payload.iss, name: typeof payload.name === 'string' ? payload.name.slice(0, 100) : 'Benutzer', expires: now() + age * 1000 });
+      audit('OIDC authentication verified at session_creation');
       res.setHeader('Set-Cookie', [cookie('__Host-capital_oidc', '', 0, 'Lax'), cookie('__Host-capital_session', id, age)]);
       res.writeHead(303, { Location: '/login', 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' }); res.end(); return true;
     } catch {
