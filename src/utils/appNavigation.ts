@@ -3,6 +3,18 @@ export function resolveAppRoute(rawPath: string): string {
   if (!rawPath) return '/';
   const clean = rawPath.trim().toLowerCase().replace(/\/+$/, '') || '/';
 
+  const researchAliases: Record<string, string> = {
+    '/lizenz': '/lizenz', '/license': '/lizenz', '/licenses': '/lizenz', '/design-lizenz': '/lizenz',
+    '/datenprovider-lizenzen': '/datenprovider-lizenzen', '/provider-licenses': '/datenprovider-lizenzen',
+    '/provider-license': '/datenprovider-lizenzen', '/daten-lizenzen': '/datenprovider-lizenzen',
+    '/academic-licenses': '/datenprovider-lizenzen', '/academic-terms': '/datenprovider-lizenzen',
+    '/research-licenses': '/datenprovider-lizenzen', '/forschungslizenzen': '/datenprovider-lizenzen',
+    '/opensource-lizenzen': '/opensource-lizenzen', '/os-licenses': '/opensource-lizenzen',
+    '/oss-licenses': '/opensource-lizenzen', '/open-source': '/opensource-lizenzen', '/oss': '/opensource-lizenzen',
+    '/forschung': '/forschung', '/research': '/forschung',
+  };
+  if (Object.hasOwn(researchAliases, clean)) return researchAliases[clean];
+
   if (clean === '/login' || clean === '/anmelden' || clean === '/signin') {
     return '/login';
   }

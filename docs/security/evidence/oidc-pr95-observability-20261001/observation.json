@@ -1,0 +1,116 @@
+{
+  "evidenceType": "OIDC_OBSERVABILITY_EVIDENCE",
+  "version": "1.0.0",
+  "observedAt": "2026-10-01T21:43:00Z",
+  "project": "CAPITAL-AI",
+  "domain": "TRUST",
+  "crossDomain": "PLATFORM",
+  "correlation": {
+    "repository": "SvenKulessa/Capital-AI",
+    "pullRequest": 95,
+    "prHeadSha": "d3299724814b412cc49cb42380f75df24124bb44",
+    "mergeCommitSha": "b6cb91e06616670163035177344de42cb3237dec",
+    "prMergedAt": "2026-10-01T20:13:50Z",
+    "currentMainSha": "1bf5a0f57e7ec1d5e6b76231cad44207bddc1251",
+    "serviceId": "srv-dau1rp893c1s73cdhm1g",
+    "deployId": "dep-dauri23ncjis738243fg"
+  },
+  "policy": {
+    "contract": "OIDC_VERIFICATION_STATE@1",
+    "decisionMode": "fail-closed",
+    "minimumPositiveValidationCyclesForSelfHealingPromotion": 3
+  },
+  "ciEvidence": {
+    "prChecks": [
+      {
+        "name": "Domain Governance",
+        "conclusion": "success",
+        "runId": 36918060218
+      },
+      {
+        "name": "Docker Build Sicherheit",
+        "conclusion": "success",
+        "runId": 36918060341
+      }
+    ],
+    "postMergeChecks": [
+      {
+        "name": "Post-Merge Correlation",
+        "conclusion": "success",
+        "runId": 36920049411
+      },
+      {
+        "name": "Docker Build Sicherheit",
+        "conclusion": "success",
+        "runId": 36920048513
+      }
+    ],
+    "actionHistoryWindow": {
+      "returnedRuns": 100,
+      "oldestObservedRunAt": "2026-10-01T17:35:04Z",
+      "newestObservedRunAt": "2026-10-01T21:42:57Z",
+      "runsAfterPrMerge": 50,
+      "renderCliReadonlyRunsAfterPrMerge": 0
+    }
+  },
+  "runtimeEvidence": {
+    "liveDeployCreatedAt": "2026-10-01T01:36:09.007123Z",
+    "liveDeployFinishedAt": "2026-10-01T01:36:36.150337Z",
+    "liveDeployStatus": "live",
+    "runtimeDeployPredatesPr95Merge": true,
+    "imageIndexDigest": "sha256:53c47463dfdb9e66721be1c997769d9fae3e6ca0e8a3fdd8cf77074785a08d23",
+    "imagePlatformDigest": "sha256:3abee0293d0273fa0858e4bbdce00aca8d0f5060f9b9f64ee2c67f9dc6530a3e",
+    "runtimeSourceShaFromExistingDigestEvidence": "4fbd1373b07092ed8ef550f60e9cf60f1f3f526d",
+    "runtimeSourceEvidenceRef": "docs/security/evidence/digest-live-20261001/observation.json",
+    "pr95RuntimeCorrelation": "NOT_DEPLOYED"
+  },
+  "observabilityWindow": {
+    "start": "2026-10-01T18:30:00Z",
+    "end": "2026-10-01T21:43:00Z",
+    "renderApplicationLogsMatchingAuthTerms": 0,
+    "renderRequestLogsMatchingAuthPaths": 0,
+    "requestMetricSeries": {
+      "/api/auth/login": "EMPTY",
+      "/api/auth/callback": "EMPTY",
+      "/api/auth/session": "EMPTY"
+    },
+    "serviceProcessTelemetry": {
+      "cpuSeriesPresent": true,
+      "memorySeriesPresent": true,
+      "interpretation": "Service process activity is visible, but this is not authentication evidence."
+    }
+  },
+  "codeObservabilityAssessment": {
+    "currentAuthFailureLog": "OIDC authentication failed at <phase>",
+    "failurePhases": [
+      "callback_validation",
+      "discovery",
+      "token_exchange",
+      "token_validation",
+      "session_creation"
+    ],
+    "successAuditEventPresent": false,
+    "positiveLoginEvidenceDerivableFromRuntimeLogs": false,
+    "secretsOrTokensRequiredForEvidence": false
+  },
+  "gateAssessment": {
+    "configurationPresent": "NOT_FRESHLY_REOBSERVED",
+    "discoveryVerified": "NOT_FRESHLY_REOBSERVED",
+    "credentialAuthenticationVerified": false,
+    "loginVerified": false,
+    "overall": "BLOCKED"
+  },
+  "conclusion": {
+    "classification": "EVIDENCE_GAP_NOT_CONFIRMED_OIDC_RUNTIME_FAILURE",
+    "primaryCause": "PR #95 has not been deployed to the live Render service and no post-merge Render CLI read-only OIDC verification run was observed.",
+    "secondaryCause": "Runtime observability exposes failure phases but no non-sensitive success event that can prove token validation and session establishment.",
+    "productionOrAuthApproval": false
+  },
+  "nextValidationSteps": [
+    "Deploy an attested image that contains PR #95 and correlate source SHA, OCI digest, Render deploy ID and current main.",
+    "Run the read-only OIDC verification after deployment and retain only booleans/state plus run/deploy correlation; never persist secrets or tokens.",
+    "Add a dedicated synthetic OIDC test identity and prove authorization callback, credential/token exchange, ID-token validation and session establishment with redacted success telemetry.",
+    "Correlate synthetic login evidence with Render request metrics/logs and a changeId/runId so a successful login cannot be inferred from configuration alone.",
+    "Keep automatic repair disabled until at least three independent positive validation cycles reproduce the same evidence chain."
+  ]
+}

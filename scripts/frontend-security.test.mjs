@@ -6,6 +6,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { sanitizeAlertPreferences } from '../src/utils/alertPreferences.ts';
 import { PipelineStorageService, getPresetPipelines } from '../src/services/pipelineStorage.ts';
 import { AppErrorBoundary, BootstrapFailure } from '../src/components/AppErrorBoundary.tsx';
+import { ResearchLicensePages, ResearchProjectSummary } from '../src/components/ResearchLicensePages.tsx';
+import { RESEARCH_ROUTES, researchProviders } from '../src/data/researchLicenses.ts';
 
 test('legacy Telegram credentials and unknown fields are discarded on reload and serialization', () => {
   const legacy = { inAppNotifications: true, autoCheckIntervalSec: 1, botToken: 'old-secret', telegram: { enabled: true, botToken: 'old-secret', chatId: '12345', unknown: 'old-secret' } };
@@ -62,4 +64,28 @@ test('index shell remains useful before JavaScript boots', async () => {
   assert.match(html, /Marktdaten verstehen\. Chancen besser erkennen\./);
   assert.match(html, /Falls JavaScript nicht gestartet werden kann/);
   assert.match(html, /<noscript>/);
+});
+
+test('research pages render source links and never grant project entitlements', () => {
+  const markup = renderToStaticMarkup(React.createElement(ResearchLicensePages, { route: '/datenprovider-lizenzen', onNavigate() {} }));
+  for (const provider of researchProviders) {
+    assert.match(markup, new RegExp(provider.status));
+    for (const source of provider.sources) assert.ok(markup.includes(source.url));
+  }
+  assert.match(markup, /ersetzen keine erforderliche Erlaubnis/);
+  assert.match(markup, /bestätigt keine Provider-Lizenz/);
+  assert.doesNotMatch(markup, /Academic Approved|100% Konform|Dr\. Maximilian|HRB 128490|CAI-MASTER/);
+});
+
+test('all four research routes render their own accessible page and preserve operator truth', () => {
+  for (const route of RESEARCH_ROUTES) {
+    const markup = renderToStaticMarkup(React.createElement(ResearchLicensePages, { route, onNavigate() {} }));
+    assert.match(markup, /aria-labelledby="research-page-title"/);
+    assert.ok(markup.includes('aria-current="page"'));
+    assert.doesNotMatch(markup, /Capital-AI Technologies GmbH|rechtssichere Urkunde|vollständig zertifiziert/);
+  }
+  const summary = renderToStaticMarkup(React.createElement(ResearchProjectSummary, { onNavigate() {} }));
+  assert.match(summary, /günstige gehostete Infrastruktur/);
+  assert.match(summary, /sind geplant/);
+  assert.match(summary, /Förderzusage/);
 });
