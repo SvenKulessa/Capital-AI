@@ -931,17 +931,24 @@ const BACKLOG_TARGETS: WorkPackage[] = [
 /** Statischer Repo-Snapshot; wird nach einem belegten Abgleich aktualisiert. */
 export const ROADMAP_SNAPSHOT = {
   "repository": "SvenKulessa/Capital-AI",
-  "sourceSha": "bfaa25754fe8a80afc280b72ce0fef5145c6f912",
-  "reviewDate": "2026-09-30",
-  "scope": "Repo- und Release-Implementierung; Betriebsabnahmen separat",
+  "sourceSha": "2150643dae8190fb2f8cd496072a7cc2baa89cfe",
+  "reviewDate": "2026-10-01",
+  "scope": "Repo-Snapshot und punktuelle Live-Readbacks; Freigaben separat",
   "githubSettingsReviewDate": "2026-10-01",
-  "githubSettingsSourceSha": "c7eb9f235c661b229439f56f543acfaab5a50c41",
+  "githubSettingsSourceSha": "2150643dae8190fb2f8cd496072a7cc2baa89cfe",
   "domainModelVersion": "2",
   "productVersionBaseline": "0.8.0-alpha.1",
-  "securitySourceSha": "46ee077dea184a5defa84ef028fb93e3ac73fad5",
+  "securitySourceSha": "07b3ff1785d2306bc743f41c990c975a69365d0b",
   "openPullRequests": [
-    38,
-    39
+    60,
+    61,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69
   ]
 } as const;
 
@@ -1067,7 +1074,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "owner": "TRUST",
   "priority": "Hoch",
   "targetSprint": "01.–03.10.2026; vor Domain-Cutover",
-  "description": "Secret Scanning, Push Protection, Dependabot, Dependency Review, CodeQL für JavaScript/TypeScript, vertrauliche Meldungen und Sicherheitskontakt prüfen und aktivieren; Live-Aktivierung nicht bestätigt. Die Public-Funktionen bleiben auch unter capital-ai-online in Enterprise Cloud ohne zusätzliche Security-Lizenz nutzbar.",
+  "description": "Live-Ruleset enthält CodeQL und Code Quality. Vollständige Secret-Scanning-/Push-Protection-/Dependabot-/Kostenabdeckung ist damit nicht belegt und bleibt offen.",
   "nextStep": "Kostenfreie Optionen einschließlich CodeQL einzeln lesen und aktivieren; Standard-Runner und Storage-Budget prüfen; kostenpflichtige Zusatzprodukte ausschließen.",
   "deliverables": [
     "Kostenfreie Optionen einzeln lesen und aktivieren; kostenpflichtige Zusatzprodukte ausschließen."
@@ -1075,13 +1082,14 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "dependencies": []
 },
 {
-  "status": "pending",
+  "status": "aktiv",
   "phase": 4,
   "phaseName": "Phase 4: DevSecOps & RC",
-  "progressPercent": null,
-  "evidenceState": "GEHALTEN",
+  "progressPercent": 100,
+  "evidenceState": "VERIFIED",
   "evidenceRefs": [
-    "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+    "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/compliance/ROADMAP-RECONCILIATION-20261001.md",
+    "https://github.com/SvenKulessa/Capital-AI/rules/24259174"
   ],
   "leadName": "Projektowner",
   "id": "CA-TRUST-LINEAR-HISTORY",
@@ -1089,8 +1097,8 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "owner": "TRUST",
   "priority": "Hoch",
   "targetSprint": "01.10.2026; nächster Settings-Schritt",
-  "description": "Live-Readback am 01.10.2026: required_linear_history ist aktiv, das Ruleset erlaubt jedoch nur Merge. Diese widersprüchliche Kombination blockiert den regulären Merge; Owner-Einrichtung muss auf Squash abgeglichen werden.",
-  "nextStep": "Im Ruleset Allowed merge methods auf Squash umstellen und effektive Repo-Mergeoption prüfen; danach CodeQL-/Code-Quality-Ergebnisse des aktuellen PR-Heads abwarten.",
+  "description": "Ruleset 24259174 am 01.10.2026 aktiv gelesen: required_linear_history; erlaubte Methoden merge und squash. Squash ist damit verfügbar. Required Checks Docker Security Gate und Domain Governance sind an App 15368 gebunden; CodeQL und Code Quality sind weitere aktive Regeln.",
+  "nextStep": "Bei zukünftigen Policy-Änderungen effektive Regeln und regulären Squash-Merge erneut prüfen; heutiger Readback ist keine Freigabe eines PR-Heads.",
   "deliverables": [
     "Zuerst Squash erlauben; dann Require linear history aktivieren und vorhandene Gates sowie PR-Mergefähigkeit prüfen."
   ],
@@ -1173,6 +1181,8 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "evidenceState": "GEHALTEN",
   "evidenceRefs": [
     "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+  ,
+    "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/security/ORG-MIGRATION-PLAN-20261001.md"
   ],
   "leadName": "Projektowner",
   "id": "CA-PLATFORM-ENTERPRISE-PUBLIC",
@@ -1181,7 +1191,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "priority": "Hoch",
   "targetSprint": "Nach Digest-Abnahme, DNS-Migration und Finance-Ablösung; Termin offen",
   "description": "Transfer erst nach den vorgelagerten Abnahmen. Ziel: capital-ai-online/Capital-AI in der Capital-AI-Enterprise-Umgebung, weiterhin public. Enterprise-Zuordnung und Kontotyp live prüfen; Enterprise Managed Users unterstützen keine öffentlichen Repositories. Public-CodeQL und die genannten Public-Sicherheitsfunktionen bleiben ohne zusätzliche Security-Lizenz nutzbar; Enterprise-Seats separat prüfen.",
-  "nextStep": "capital-ai-online und Capital-AI-Enterprise-Zuordnung/Typ/Kosten prüfen, mit Sichtbarkeit public transferieren und CodeQL, Rulesets, GHCR, Render, OIDC, Apps sowie Secrets-Zugriffe erneut abnehmen.",
+  "nextStep": "Migrationsmatrix in docs/security/ORG-MIGRATION-PLAN-20261001.md prüfen; danach capital-ai-online und Capital-AI-Enterprise-Zuordnung/Typ/Kosten prüfen, mit Sichtbarkeit public transferieren und CodeQL, Rulesets, GHCR, Render, OIDC, Apps sowie Secrets-Zugriffe erneut abnehmen.",
   "deliverables": [
     "Zielorganisation/Typ/Kosten prüfen, öffentlich transferieren und Rulesets, GHCR, Render, OIDC, Apps sowie Secrets-Zugriffe erneut abnehmen."
   ],
@@ -1224,15 +1234,23 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "status": "aktiv",
   "phase": 1,
   "phaseName": "Phase 1: Platform Foundation",
-  "progressPercent": 80,
-  "evidenceState": "VERIFIED",
-  "evidenceRefs": ["VERSION", "CHANGELOG.md", "docs/governance/DOMAIN-RELEASE-GOVERNANCE.md"],
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "VERSION",
+    "CHANGELOG.md",
+    "docs/governance/DOMAIN-RELEASE-GOVERNANCE.md"
+  ],
   "nextStep": "Release-Manifest und automatischen Release-PR-Controller ergänzen und gegen Branch Rules validieren.",
   "priority": "Hoch",
   "leadName": "Owner + AI Apps",
   "targetSprint": "laufend",
   "description": "SemVer-Baseline, Domain-Konvention und unveränderliche Source-/Digest-/Deploy-Identitäten werden zusammengeführt. Production bleibt evidenzgebunden.",
-  "deliverables": ["VERSION und Package-Version synchron", "SemVer-Ziele in Roadmap", "Release-Identität mit Source SHA, OCI Digest und Render Deploy ID"]
+  "deliverables": [
+    "VERSION und Package-Version synchron",
+    "SemVer-Ziele in Roadmap",
+    "Release-Identität mit Source SHA, OCI Digest und Render Deploy ID"
+  ]
 },
 {
   "id": "CA-TRUST-DAILY-SUPPLY-CHAIN",
@@ -1241,15 +1259,24 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "status": "aktiv",
   "phase": 4,
   "phaseName": "Phase 4: DevSecOps & RC",
-  "progressPercent": 70,
-  "evidenceState": "VERIFIED",
-  "evidenceRefs": [".github/dependabot.yml", ".github/workflows/daily-dependency-security-watch.yml", ".github/workflows/build-security.yml"],
-  "nextStep": "Ersten planmäßigen Lauf und erzeugte Update-PRs evidenzbasiert prüfen; Container-CVE-Scan an bestehenden Docker-Security-Gate koppeln.",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    ".github/dependabot.yml",
+    ".github/workflows/daily-dependency-security-watch.yml",
+    ".github/workflows/build-security.yml"
+  ],
+  "nextStep": "Die offenen Dependency-PRs gegen Main (Dependabot-Governance #72 und Attestation-Konsolidierung #73 bereits gemerged) gegen den jeweiligen Head prüfen; Major-Upgrades nicht allein durch Dependabot-Erfolg freigeben.",
   "priority": "Kritisch",
   "leadName": "Owner + AI Apps",
   "targetSprint": "täglich",
   "description": "npm, GitHub Actions und Docker-Pins werden täglich auf Updates geprüft; HIGH/CRITICAL npm Advisories blockieren den Watch-Lauf. Der bestehende Docker Security Gate läuft zusätzlich täglich mit frischen Trivy-Daten über Source, Build-Image, Runtime-Image und NATS-Image.",
-  "deliverables": ["Daily Dependabot", "npm audit high/critical", "Runtime-Pin-Evidence", "keine blinden Major-Deployments"]
+  "deliverables": [
+    "Daily Dependabot",
+    "npm audit high/critical",
+    "Runtime-Pin-Evidence",
+    "keine blinden Major-Deployments"
+  ]
 },
 {
   "id": "CA-PLATFORM-COMPONENT-DEPLOY",
@@ -1260,13 +1287,21 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "phaseName": "Phase 4: DevSecOps & RC",
   "progressPercent": null,
   "evidenceState": "OFFEN",
-  "evidenceRefs": ["deploy/Dockerfile.nats", "docs/security/PRODUCTION-HANDOFF.md"],
+  "evidenceRefs": [
+    "deploy/Dockerfile.nats",
+    "docs/security/PRODUCTION-HANDOFF.md"
+  ],
   "nextStep": "Deterministische Pfad-/Komponentenmatrix implementieren: App, NATS, Docs-only und Security-triggered; Render REST nur für betroffene Komponenten auslösen.",
   "priority": "Kritisch",
   "leadName": "Owner + AI Apps",
   "targetSprint": "vor v0.9.9-rc.1",
   "description": "NATS folgt nicht pauschal jedem Repo-HEAD. App und Broker werden anhand relevanter Dateiänderungen und Security-Trigger unabhängig released.",
-  "deliverables": ["Component fingerprint", "NATS change gate", "Render REST deployment", "Post-deploy identity verification"]
+  "deliverables": [
+    "Component fingerprint",
+    "NATS change gate",
+    "Render REST deployment",
+    "Post-deploy identity verification"
+  ]
 },
 {
   "id": "CA-PLATFORM-SELF-HEAL",
@@ -1277,13 +1312,21 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "phaseName": "Phase 4: DevSecOps & RC",
   "progressPercent": null,
   "evidenceState": "OFFEN",
-  "evidenceRefs": ["docs/governance/DOMAIN-RELEASE-GOVERNANCE.md"],
+  "evidenceRefs": [
+    "docs/governance/DOMAIN-RELEASE-GOVERNANCE.md"
+  ],
   "nextStep": "DETECT → CORRELATE → CLASSIFY → REMEDIATE → VERIFY als fail-closed Controller mit Retry-Budget und Escalation implementieren.",
   "priority": "Hoch",
   "leadName": "Owner + AI Apps",
   "targetSprint": "vor v1.0.0",
   "description": "Automatische Reparaturen bleiben reversibel und komponentenspezifisch. Secrets, destruktive Datenoperationen und Gate-Deaktivierungen sind ausgeschlossen.",
-  "deliverables": ["Drift detection", "bounded remediation", "retry budget", "verification", "escalation evidence"]
+  "deliverables": [
+    "Drift detection",
+    "bounded remediation",
+    "retry budget",
+    "verification",
+    "escalation evidence"
+  ]
 },
 {
   "id": "CA-GROWTH-DOMAIN-BRANDING",
@@ -1292,15 +1335,31 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "status": "aktiv",
   "phase": 1,
   "phaseName": "Phase 1: Platform Foundation",
-  "progressPercent": 70,
+  "progressPercent": null,
   "evidenceState": "OFFEN",
-  "evidenceRefs": ["CAPITAL-AI-PRODUCT/PROJECT.md", "CAPITAL-AI-PRODUCT/produkt.LICENSE.md", "CAPITAL-AI-MARKET/PROJECT.md", "CAPITAL-AI-MARKET/market.LICENSE.md", "CAPITAL-AI-PLATFORM/PROJECT.md", "CAPITAL-AI-PLATFORM/plattform.LICENSE.md", "CAPITAL-AI-TRUST/PROJECT.md", "CAPITAL-AI-TRUST/trust.LICENSE.md", "CAPITAL-AI-GROWTH/PROJECT.md", "CAPITAL-AI-GROWTH/growth.LICENSE.md"],
+  "evidenceRefs": [
+    "CAPITAL-AI-PRODUCT/PROJECT.md",
+    "CAPITAL-AI-PRODUCT/produkt.LICENSE.md",
+    "CAPITAL-AI-MARKET/PROJECT.md",
+    "CAPITAL-AI-MARKET/market.LICENSE.md",
+    "CAPITAL-AI-PLATFORM/PROJECT.md",
+    "CAPITAL-AI-PLATFORM/plattform.LICENSE.md",
+    "CAPITAL-AI-TRUST/PROJECT.md",
+    "CAPITAL-AI-TRUST/trust.LICENSE.md",
+    "CAPITAL-AI-GROWTH/PROJECT.md",
+    "CAPITAL-AI-GROWTH/growth.LICENSE.md"
+  ],
   "nextStep": "Die gelieferten Domain-Badges nach Asset-Import in Roadmap und DevSecOps-Oberflächen verwenden; Farben und Symbolik sind bereits kanonisch festgelegt.",
   "priority": "Mittel",
   "leadName": "Owner + AI Apps",
   "targetSprint": "laufend",
   "description": "Die fünf Domain-Namen, Farbrichtungen, Symbole und Lizenznachweise sind anhand der gelieferten Branding-Assets kanonisch festgelegt. Der binäre Asset-Import in die auslieferbare Repository-Struktur ist der verbleibende Schritt.",
-  "deliverables": ["Domain-Farbmatrix", "Symbol-Mapping", "GitHub DevSecOps Branding", "Roadmap-Darstellung"]
+  "deliverables": [
+    "Domain-Farbmatrix",
+    "Symbol-Mapping",
+    "GitHub DevSecOps Branding",
+    "Roadmap-Darstellung"
+  ]
 },
 {
   "id": "AP-CMP-LEGAL",
@@ -1425,13 +1484,14 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "evidenceState": "VERIFIED",
   "evidenceRefs": [
     "server/auth.mjs",
-    "server/auth.test.mjs"
+    "server/auth.test.mjs",
+    "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/compliance/ROADMAP-RECONCILIATION-20261001.md"
   ],
   "nextStep": "Login, Logout, Wiederanmeldung und Sessionbindung auf capital-ai.online dokumentieren.",
   "priority": "Hoch",
   "leadName": "Projektowner",
   "targetSprint": "Nicht terminiert",
-  "description": "Authorization Code mit PKCE, Tokenprüfung und geschützte serverseitige Sitzungen sind implementiert. Repo-Nachweis und erfolgreiche produktive Anmeldung sind getrennte Prüfungen.",
+  "description": "Authorization Code mit PKCE, Tokenprüfung und serverseitige Sitzungen sind implementiert. Live /api/auth/session meldet configured=true, anonymous authenticated=false; öffentliche Discovery antwortet 200 mit S256 und client_secret_basic. Service-Account-Rechte, Policies, Branding und SMTP sind dadurch nicht gelesen.",
   "deliverables": [
     "Login, Logout, Wiederanmeldung und Sessionbindung auf capital-ai.online dokumentieren."
   ]
@@ -1476,7 +1536,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "priority": "Hoch",
   "leadName": "Projektowner",
   "targetSprint": "Nicht terminiert",
-  "description": "Clients, Verträge, Evidence-Replay und Pub/Sub sind integriert. Dieser Eintrag bestätigt die Implementierung, keine produktiv funktionierende NATS-Verbindung.",
+  "description": "Clients, Verträge und Pub/Sub sind integriert. Frischer Readback belegt Redis/NATS/PubSub connected. Er ersetzt weder Subscriber-Zustellung noch externen Backup-/Restore-Nachweis.",
   "deliverables": [
     "Produktive Verbindung, dauerhaftes Replay und Fehlerfälle prüfen."
   ]
@@ -1485,19 +1545,20 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "id": "AP-OPS-CURRENT",
   "title": "Main und Capital-AI-Deployment korrelieren",
   "owner": "PLATFORM",
-  "status": "aktiv",
+  "status": "pending",
   "phase": 1,
   "phaseName": "Phase 1: Foundation",
-  "progressPercent": 100,
-  "evidenceState": "VERIFIED",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
   "evidenceRefs": [
-    "https://dashboard.render.com/web/srv-dau1rp893c1s73cdhm1g"
+    "https://dashboard.render.com/web/srv-dau1rp893c1s73cdhm1g",
+    "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/compliance/ROADMAP-RECONCILIATION-20261001.md"
   ],
-  "nextStep": "Nach Merge dieser Roadmap den neuen Main mit dem Deployment abgleichen.",
+  "nextStep": "Nach Lizenz-/Security-Abnahme neuen Kandidaten an finalen Main binden und Runtime-Source, Builder, Index und Plattform-Manifest gemeinsam abnehmen.",
   "priority": "Hoch",
   "leadName": "Projektowner",
   "targetSprint": "Nicht terminiert",
-  "description": "Beim Render-Readback am 30.09.2026 entsprach das Live-Deployment dep-daugip893c1s73e5rgug dem Main 090b00bb432e329daf62129d10d2c5ca041662b6. Dies ist ein Snapshot, keine laufende Synchronisation.",
+  "description": "Main-Snapshot 2150643dae8190fb2f8cd496072a7cc2baa89cfe. Frischer /healthz-Readback des neuen Dienstes: bound=true, Runtime-Source 4fbd1373b07092ed8ef550f60e9cf60f1f3f526d. Render ist auf Index-Digest 53c47463 eingestellt. Main und Runtime sind verschieden.",
   "deliverables": [
     "Nach Merge dieser Roadmap den neuen Main mit dem Deployment abgleichen."
   ]
@@ -1513,9 +1574,11 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "evidenceState": "GEHALTEN",
   "evidenceRefs": [
     "https://github.com/SvenKulessa/Capital-AI/actions/runs/36765644507",
-    "docs/security/DIGEST-LIVE-READBACK-20261001.md"
+    "docs/security/DIGEST-LIVE-READBACK-20261001.md",
+    "docs/security/AP-SEC-IMAGE-ABNAHME-20261001.md",
+    "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/compliance/ROADMAP-RECONCILIATION-20261001.md"
   ],
-  "nextStep": "Owner-Lizenzabnahme und aktuelle Runtime-/Analyse-Evidence schließen; anschließend freigegebenen Kandidaten am finalen Main einmal publishen und denselben Digest abnehmen.",
+  "nextStep": "Lizenzscope, aktuelle CodeQL-/Code-Quality-Policy-Ergebnisse und finalen Main schließen; neuen Kandidaten einmal veröffentlichen und denselben Digest mit frischem Runtime-/Deploy-Readback abnehmen.",
   "priority": "Kritisch",
   "leadName": "Projektowner",
   "targetSprint": "Jetzt zuerst: GHCR-/Render-Digest-Abnahme; vor weiteren Security-App-Paketen",
@@ -1570,7 +1633,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
 },
 {
   "id": "AP-OPS-NATS-LIVE",
-  "title": "Produktive NATS-Verbindung und Replay abnehmen",
+  "title": "NATS-Verbindung, Subscriber-Zustellung und Replay abnehmen",
   "owner": "PLATFORM",
   "status": "pending",
   "phase": 1,
@@ -1579,13 +1642,15 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "evidenceState": "OFFEN",
   "evidenceRefs": [
     "deploy/VALKEY-PUBSUB-NATS-HANDOFF.md",
-    "deploy/render-nats.yaml"
+    "deploy/render-nats.yaml",
+    "docs/architecture/PART1-RUNTIME-CLOSEOUT-20260930.md",
+    "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/compliance/ROADMAP-RECONCILIATION-20261001.md"
   ],
-  "nextStep": "Dienste und Verbindung frisch lesen; Token nur im Secret Store setzen; PubAck, Restart und Replay prüfen.",
+  "nextStep": "Neuen App-Kandidaten nach Handoff deployen; subscriber=connected und verifiedDeliveries > 0 sowie Zustellung nach Reconnect und Evidence-Replay dokumentieren. Externen Backup-Restore separat abnehmen.",
   "priority": "Hoch",
   "leadName": "Projektowner",
   "targetSprint": "Nicht terminiert",
-  "description": "NATS ist im Repository vorbereitet. Der letzte HTTP-Readback um 15:33 Uhr Berlin meldete NATS unavailable und Infrastruktur degraded; dies ist kein aktueller Verbindungstest.",
+  "description": "Frischer /healthz- und /api/market/status-Readback am 01.10.2026: Redis, NATS und Pub/Sub connected; CAPITAL_FACTS mit file storage und einer Replica. Archivierter Restart-Bericht nennt 56.118 wiederhergestellte Nachrichten. Aktiver App-Source 4fbd137 enthält die spätere Probe-Subscriber-Änderung noch nicht; Zustellungs-/Replay-Abnahme bleibt offen.",
   "deliverables": [
     "Dienste und Verbindung frisch lesen; Token nur im Secret Store setzen; PubAck, Restart und Replay prüfen."
   ]
@@ -1601,13 +1666,14 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "evidenceState": "OFFEN",
   "evidenceRefs": [
     "deploy/DNS-CUTOVER.md",
-    "docs/security/DOMAIN-MIGRATION.md"
+    "docs/security/DOMAIN-MIGRATION.md",
+    "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/compliance/ROADMAP-RECONCILIATION-20261001.md"
   ],
   "nextStep": "Read-only Bestandsaufnahme und Cutover-/Rollback-Plan vorbereiten. Umschaltung erst nach AP-SEC-IMAGE, Lizenz-, Domain-/Auth-/Mail-Abnahme; Finance erhalten.",
   "priority": "Hoch",
   "leadName": "Projektowner",
   "targetSprint": "Nach Digest-/Lizenzabnahme; abgestimmtes Migrationsfenster",
-  "description": "Der letzte HTTPS-Readback um 15:33 Uhr Berlin zeigte auf capital-ai.online noch Finance mit Supabase. Ein vorhandener Login im neuen Dienst belegt keinen Domaintransfer.",
+  "description": "Finance ist laut frischem Render-Readback nicht suspendiert. Aktueller HTTPS-Aufruf der Hauptdomain konnte aus dieser Umgebung nicht ausgewertet werden; die ältere Finance-Zuordnung ist historisch, kein heutiger DNS-Nachweis.",
   "deliverables": [
     "Domainbindungen und DNS frisch sichern, ZITADEL-Callback prüfen, gezielt umstellen und HTTPS/Login/Export abnehmen."
   ],
@@ -1676,15 +1742,71 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "evidenceState": "OFFEN",
   "evidenceRefs": [
     "docs/compliance/ZITADEL-PRIVACY-CUTOVER-20260930.md",
-    "deploy/DNS-CUTOVER.md"
+    "deploy/DNS-CUTOVER.md",
+    "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/compliance/ROADMAP-RECONCILIATION-20261001.md"
   ],
   "nextStep": "Echten Login, eigenen Export, Logout und anschließendes 401 auf capital-ai.online prüfen.",
   "priority": "Hoch",
   "leadName": "Projektowner",
   "targetSprint": "Nicht terminiert",
-  "description": "Eine vom Nutzer gemeldete erfolgreiche Anmeldung wird nicht als vollständig geprüfter Login-/Logout-/Export-Ablauf auf der migrierten Hauptdomain ausgegeben.",
+  "description": "Öffentliche ZITADEL-Discovery und konfigurierte App-Sitzung frisch bestätigt. Vollständiger Login-/Logout-/Export-Ablauf auf der migrierten Hauptdomain sowie Service-Account-Konfiguration bleiben ungeprüft.",
   "deliverables": [
     "Echten Login, eigenen Export, Logout und anschließendes 401 auf capital-ai.online prüfen."
+  ]
+},
+{
+  "status": "pending",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "priority": "Hoch",
+  "leadName": "Projektowner",
+  "targetSprint": "Vor Production-Handoff",
+  "id": "CA-TRUST-LICENSE-TOOLS",
+  "title": "Open-Source-Werkzeuge für Lizenz- und Vertragsnachweise evaluieren",
+  "owner": "TRUST",
+  "evidenceRefs": [
+    "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/compliance/OSS-EVIDENCE-TOOLS-20261001.md"
+  ],
+  "description": "ORT und ScanCode für Dependency-/Dateilizenznachweise, FOSSology für manuelle Klärung und Documenso Community für Vertragsunterzeichnung recherchiert. Auswahl dokumentiert; noch keine Installation oder Vertrags-/Lizenzfreigabe.",
+  "nextStep": "Kleinen ORT-/ScanCode-Pilot mit festgelegter Toolversion und Hash an vorhandenem Lizenzinventar ausführen; Ergebnisse und Source-/Notice-Lieferung reviewen. Documenso nur bei tatsächlichem Signaturbedarf evaluieren.",
+  "deliverables": [
+    "Version-/Hash-gebundene Scanergebnisse und Notice-/Source-Paket",
+    "Provider-Rechtematrix mit Vertrag, Gültigkeit und Reviewentscheidung",
+    "Drei unabhängige positive Validierungen vor dauerhafter Automatisierung"
+  ],
+  "dependencies": [
+    "AP-CMP-RIGHTS",
+    "AP-CMP-PROVIDERS"
+  ]
+},
+{
+  "status": "pending",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "priority": "Hoch",
+  "leadName": "Projektowner",
+  "targetSprint": "Vor Production-Handoff",
+  "id": "CA-TRUST-ZITADEL-READBACK",
+  "title": "ZITADEL-Service-Account und aktive Konfiguration lesen",
+  "owner": "TRUST",
+  "evidenceRefs": [
+    "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/compliance/ROADMAP-RECONCILIATION-20261001.md",
+    "scripts/diagnose-oidc.mjs",
+    ".github/workflows/render-cli-readonly.yml"
+  ],
+  "description": "OIDC-Client-Credentials sind im Code getrennt von Service-Account-Zugang. Aktuell kein zugängliches Service-Account-Credential und kein Render-Env-Reader im Connector; Existenz, Gültigkeit und Berechtigungen bleiben UNGEPRÜFT.",
+  "nextStep": "Vorhandenen Secret-Zugriff im berechtigten Laufzeit-/CI-Kontext nutzen; Credential-Typ und begrenzte Leserechte feststellen, danach App-Callbacks, Login-/MFA-/Passkey-Policies, Branding und SMTP ohne Secret-/Benutzerdatenexport lesen.",
+  "deliverables": [
+    "Secretfreier Bericht: Credential-Typ, Authentifizierung und einzelne Lesegates",
+    "Callbacks, Policies, Branding und Mailkonfiguration mit Zeitpunkt",
+    "Fehlender Zugriff bleibt OFFEN; kein automatischer Rechteausbau"
+  ],
+  "dependencies": [
+    "AP-SEC-OIDC"
   ]
 },
 ...BACKLOG_TARGETS,
