@@ -113,6 +113,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         <a href="/THIRD_PARTY_NOTICES.txt" className="hover:text-amber-400 transition-colors hover:underline underline-offset-4">
           Open-Source-Lizenzen
         </a>
+        <span className="text-slate-600">•</span>
+        <a href="/fonts/OFL.txt" className="hover:text-amber-400 transition-colors hover:underline underline-offset-4">
+          Schriftlizenz
+        </a>
       </div>
 
 

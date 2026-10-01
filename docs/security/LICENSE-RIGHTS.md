@@ -239,3 +239,13 @@ eine nicht vertrauliche Referenz auf den geprüften Nachweis genügt dort.
 
 Die Bestandsaufnahme ist keine Lizenzfreigabe. Dieser PR verändert keine
 Deploy-Eligibility, Provider-Konfiguration, Render-Einstellung oder Workflow.
+
+## Font-Fortschreibung vom 01.10.2026
+
+Der bislang offene externe Font-Binärstand wird durch unveränderte, gepinnte
+TTFs aus demselben google/fonts-Commit ersetzt. Original-OFL und Binär-/Blob-
+Hashes liegen zusammen mit den Fontdateien in `public/fonts/`. Der Footer
+verlinkt die Font-Lizenz. Der vollständige aktuelle Abschlussumfang und die
+weiterhin offenen Owner-/Provider-/OS-Nachweise stehen in
+[LICENSE-CLOSEOUT-20261001.md](LICENSE-CLOSEOUT-20261001.md).
+Dies ist eine technische Teilkorrektur, keine Gesamt-Lizenzfreigabe.
