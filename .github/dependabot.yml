@@ -7,9 +7,8 @@ updates:
       time: "05:15"
       timezone: Europe/Berlin
     open-pull-requests-limit: 10
-    labels: ["Dependencies", "Patch"]
     commit-message:
-      prefix: "[CAPITAL-AI-TRUST]"
+      prefix: "[CAPITAL-AI-TRUST] "
 
   - package-ecosystem: npm
     directory: /deploy/npm-security-patches
@@ -18,9 +17,13 @@ updates:
       time: "05:25"
       timezone: Europe/Berlin
     open-pull-requests-limit: 5
-    labels: ["Dependencies", "Security"]
+    # npm bundles these donor packages internally. Major donor jumps are not
+    # assumed compatible with npm's bundled consumer; security updates remain eligible.
+    ignore:
+      - dependency-name: "undici"
+        update-types: ["version-update:semver-major"]
     commit-message:
-      prefix: "[CAPITAL-AI-TRUST]"
+      prefix: "[CAPITAL-AI-TRUST] "
 
   - package-ecosystem: github-actions
     directory: /
@@ -29,9 +32,8 @@ updates:
       time: "05:35"
       timezone: Europe/Berlin
     open-pull-requests-limit: 10
-    labels: ["Dependencies", "Security"]
     commit-message:
-      prefix: "[CAPITAL-AI-TRUST]"
+      prefix: "[CAPITAL-AI-TRUST] "
 
   - package-ecosystem: docker
     directory: /
@@ -40,9 +42,8 @@ updates:
       time: "05:45"
       timezone: Europe/Berlin
     open-pull-requests-limit: 5
-    labels: ["Dependencies", "Patch"]
     commit-message:
-      prefix: "[CAPITAL-AI-TRUST]"
+      prefix: "[CAPITAL-AI-TRUST] "
 
   - package-ecosystem: docker
     directory: /deploy
@@ -51,6 +52,5 @@ updates:
       time: "05:55"
       timezone: Europe/Berlin
     open-pull-requests-limit: 5
-    labels: ["Dependencies", "Security"]
     commit-message:
-      prefix: "[CAPITAL-AI-TRUST]"
+      prefix: "[CAPITAL-AI-TRUST] "

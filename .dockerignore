@@ -42,6 +42,8 @@
 !docs/licenses/
 !docs/licenses/**
 !public/
+!public/fonts/
+!public/fonts/**
 !public/branding/
 !public/branding/capital-ai-logo.jpg
 !public/branding/asset-pack/

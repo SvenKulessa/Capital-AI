@@ -1,0 +1,13 @@
+{
+  "createdAt": "2026-10-01T01:36:09.007123Z",
+  "finishedAt": "2026-10-01T01:36:36.150337Z",
+  "id": "dep-dauri23ncjis738243fg",
+  "image": {
+    "ref": "ghcr.io/svenkulessa/capital-ai@sha256:53c47463dfdb9e66721be1c997769d9fae3e6ca0e8a3fdd8cf77074785a08d23",
+    "sha": "sha256:3abee0293d0273fa0858e4bbdce00aca8d0f5060f9b9f64ee2c67f9dc6530a3e"
+  },
+  "startedAt": "2026-10-01T01:36:14.693166Z",
+  "status": "live",
+  "trigger": "manual",
+  "updatedAt": "2026-10-01T01:37:10.182005Z"
+}
