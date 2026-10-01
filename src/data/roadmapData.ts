@@ -6,6 +6,8 @@
  * Release-Ziele verwenden SemVer; Betriebsfreigaben bleiben evidenzgebunden.
  */
 
+import { SOCIAL_CONTENT_WORK_PACKAGES } from './socialContentRoadmap';
+
 export type ProjectOwner =
   | 'PRODUCT'
   | 'MARKET'
@@ -1728,7 +1730,8 @@ export const WORK_PACKAGES: WorkPackage[] = [
     "AP-OPS-DOMAIN",
     "AP-SEC-AUTH-LIVE",
     "AP-CMP-OLD-DATA",
-    "CA-PLATFORM-IONOS-SMTP"
+    "CA-PLATFORM-IONOS-SMTP",
+    "CA-GROWTH-SOC-PILOT"
   ]
 },
 {
@@ -1809,5 +1812,6 @@ export const WORK_PACKAGES: WorkPackage[] = [
     "AP-SEC-OIDC"
   ]
 },
+...SOCIAL_CONTENT_WORK_PACKAGES,
 ...BACKLOG_TARGETS,
 ];
