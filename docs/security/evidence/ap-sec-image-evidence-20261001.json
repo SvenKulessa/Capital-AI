@@ -1,0 +1,329 @@
+{
+  "schemaVersion": 1,
+  "id": "AP-SEC-IMAGE-20261001",
+  "primaryDomain": "CAPITAL-AI-GROWTH",
+  "handoff": {
+    "TRUST": "Rechtebewertung, Marken-/Drittrechte, Providerbedingungen",
+    "PLATFORM": "Source-/Asset-Bindung und exakte Runtime-/Git-Identität"
+  },
+  "reviewDate": "2026-10-01",
+  "baseline": {
+    "capitalAiMain": "16b9ced4950317bee3efe6bf8d5154d1551e7cc9",
+    "frontendMain": "9c2e2255a0fca5fe113b7ddf56906889f8ef1186",
+    "financeMain": "dcef421fe6e350a3a2ade61d0299aad9ecca213c"
+  },
+  "decision": {
+    "status": "PARTIAL_EVIDENCE_REVIEW_OPEN",
+    "deployEligibleChanged": false,
+    "productionApprovalChanged": false,
+    "assetsReplaced": false,
+    "externalPublishingPerformed": false,
+    "selfHealingRuleAnchored": false,
+    "reason": "Generator-Modell und Tarif des Hero-Erdbilds sowie Markenrechte der Inline-Drittmarken sind nicht durch drei unabhängige positive Validierungen belegt."
+  },
+  "evidenceSourcesPreserved": [
+    "FRONTEND/DESIGN_AND_IMAGE_LICENSE.md",
+    "FRONTEND/DESIGN_AND_ASSET_LICENSE.md",
+    "Capital-AI/public/branding/asset-pack/meta/ASSET-LICENSE-AND-PROVENANCE.txt",
+    "Capital-AI/public/branding/asset-pack/meta/asset-manifest.json",
+    "Capital-AI/docs/security/LICENSE-RIGHTS.md",
+    "Capital-AI/docs/security/evidence/asset-mockup-history-review.json",
+    "Capital-AI/docs/security/evidence/license-rights-review.json",
+    "Capital-AI/docs/licenses/Capital-AI-BRANDING.md"
+  ],
+  "providerTerms": [
+    {
+      "provider": "Google",
+      "service": "Google AI Studio / Gemini API",
+      "terms": "Gemini API Additional Terms of Service",
+      "effective": "2026-03-23",
+      "lastUpdatedUtc": "2026-04-28",
+      "url": "https://ai.google.dev/gemini-api/terms",
+      "mapping": [
+        "professional_or_business_purpose",
+        "google_does_not_claim_ownership_of_generated_content",
+        "user_responsible_for_generated_content_and_sharing",
+        "attribution_may_be_required_by_applicable_law_for_api_output",
+        "EEA_API_clients_may_only_use_paid_services"
+      ],
+      "limitation": "Die Bedingungen belegen weder das tatsächlich ausgeführte Bildmodell noch den für den Erstellungszeitpunkt verwendeten Account-/Billing-Tarif."
+    },
+    {
+      "provider": "OpenAI",
+      "service": "ChatGPT",
+      "terms": "Europe Terms of Use",
+      "effectiveOrUpdated": "2026-01-16",
+      "url": "https://openai.com/policies/eu-terms-of-use/",
+      "mapping": [
+        "user_owns_output_as_between_user_and_openai_to_extent_permitted_by_law",
+        "output_may_not_be_unique",
+        "user_responsible_for_content_and_third_party_rights",
+        "human_review_before_use_or_sharing"
+      ],
+      "limitation": "Der konkrete ChatGPT-Tarif und das konkrete Modell des am 30.09.2026 bereitgestellten Logos sind im Repository nicht belegt."
+    }
+  ],
+  "creationHistory": {
+    "glowingEarth": {
+      "path": "src/assets/images/glowing_earth_nodes_1789997454893.jpg",
+      "sha256": "aae548443cb6ec1be4c7d9f9389c52cc1e01b28df28fbc4e985750dd424bb671",
+      "filenameTimestamp": {
+        "epochMilliseconds": 1789997454893,
+        "utc": "2026-09-21T13:30:54.893Z",
+        "europeBerlin": "2026-09-21T15:30:54.893+02:00",
+        "evidenceClass": "FILENAME_DERIVED_NOT_PROVIDER_LOG"
+      },
+      "firstFrontendCommit": {
+        "sha": "7416cd383001cbc68aa580ae971773bb35ff6f03",
+        "committedAtUtc": "2026-09-21T13:56:09Z",
+        "action": "introduced image together with initial Capital-AI FRONTEND project structure"
+      },
+      "financeImport": {
+        "sha": "071cf5964f847cb00cdedc9861c009715b76b547",
+        "committedAtUtc": "2026-09-21T15:09:39Z",
+        "action": "byte-identical FRONTEND asset imported into frontend-port; generation not proven"
+      },
+      "financeArchiveCopy": {
+        "sha": "b3c6d0989c3f18957441790d40b7f938741ee15c",
+        "committedAtUtc": "2026-09-21T21:47:01Z",
+        "action": "archived upstream-source copy; generation not proven"
+      },
+      "ownerStatement": {
+        "generationSystem": "Finance Social Media Engine",
+        "wordingBoundary": "created/used through Finance Social Media Engine in website mockup",
+        "embeddingTool": "Gemini",
+        "verification": "OWNER_STATEMENT_NOT_INDEPENDENT_PROVIDER_LOG"
+      },
+      "studioEnvironmentCorrelation": {
+        "status": "ENVIRONMENT_CORRELATED_IMAGE_MODEL_NOT_PROVEN",
+        "evidence": [
+          "FRONTEND/.env.example references Google AI Studio runtime injection",
+          "FRONTEND/vite.config.ts contains AI Studio runtime/HMR handling",
+          "FRONTEND/metadata.json declares MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API",
+          "FRONTEND/src/services/geminiAdvisorBackend.ts uses @google/genai and aistudio-build user-agent"
+        ]
+      },
+      "generatorModel": null,
+      "subscriptionTier": null,
+      "providerCreationLog": null,
+      "applicableTerms": "Google Gemini API Additional Terms effective 2026-03-23, subject to proof that Google AI Studio/Gemini was the generation service for this asset",
+      "status": "GOOGLE_GENERATIVE_AI_C2PA_EMBEDDED_MODEL_TIER_AND_SIGNATURE_VALIDATION_OPEN",
+      "embeddedC2pa": {
+        "jpegSegment": "APP11/JUMBF",
+        "manifestIdentifier": "urn:c2pa:cbddb1e7-4185-83c2-0804-4b618fee9b98",
+        "certificateChainStrings": [
+          "Google LLC",
+          "Google C2PA Media Services 1P ICA G3",
+          "Google C2PA Root CA G3"
+        ],
+        "claimGenerator": "Google C2PA Core Generator Library",
+        "actions": [
+          {
+            "action": "c2pa.created",
+            "description": "Created by Google Generative AI.",
+            "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia"
+          },
+          {
+            "action": "c2pa.edited",
+            "description": "Applied imperceptible SynthID watermark.",
+            "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia"
+          }
+        ],
+        "inspection": "EMBEDDED_MANIFEST_STRINGS_READ_FROM_EXACT_GIT_BLOB",
+        "signatureValidation": "NOT_PERFORMED",
+        "assessment": "STRONG_PROVIDER_PROVENANCE_GOOGLE_GENERATIVE_AI_SPECIFIC_MODEL_AND_TIER_NOT_DISCLOSED"
+      },
+      "generationProvider": "Google Generative AI (embedded C2PA claim; cryptographic signature validation pending)"
+    },
+    "mobileMockup": {
+      "path": "public/brand/hero/capital-ai-mobile-landing.jpg",
+      "introductionCommit": "e23939293386cc58e743529838c575d46a0aa1ca",
+      "relationToGlowingEarth": "SEPARATE_ASSET_NOT_TREATED_AS_SOURCE",
+      "basis": "different Git blob; PR #1195 described it as owner-provided"
+    }
+  },
+  "currentAssetBindings": [
+    {
+      "class": "FIRST_PARTY_BRANDING",
+      "repository": "SvenKulessa/Capital-AI",
+      "path": "public/branding/capital-ai-logo.jpg",
+      "sha256": "6244629091073823b4cff86908adb0403a217779219bfb44883bd956548243e3",
+      "use": "BrandLogo source artwork",
+      "provenance": "owner-provided ChatGPT-generated logo on 2026-09-30",
+      "status": "OWNER_AUTHORIZED_PROJECT_USE_TRADEMARK_CLEARANCE_NOT_ESTABLISHED"
+    },
+    {
+      "class": "FIRST_PARTY_BRANDING_DERIVATIVE",
+      "repository": "SvenKulessa/Capital-AI",
+      "path": "public/branding/asset-pack/vendor/vendor-app-icon-512x512.png",
+      "sha256": "3e5ca03b8770093c3750343bd78793d23739ec6ad4fd36e8a8c7674b69483a0e",
+      "use": "BrandLogo vendor variant",
+      "derivation": "deterministic derivative from first-party source",
+      "status": "SOURCE_BOUND"
+    },
+    {
+      "class": "FIRST_PARTY_BRANDING_DERIVATIVE",
+      "repository": "SvenKulessa/Capital-AI",
+      "path": "public/branding/asset-pack/favicon/favicon.svg",
+      "sha256": "fc2aee485a9380b360fb0602a310ad2f89adca1890331a5e0b95826230b325dc",
+      "use": "primary SVG favicon",
+      "derivation": "raster-preserving wrapper of first-party source",
+      "status": "SOURCE_BOUND"
+    },
+    {
+      "class": "FIRST_PARTY_BRANDING_DERIVATIVE",
+      "repository": "SvenKulessa/Capital-AI",
+      "path": "public/branding/asset-pack/favicon/favicon-32x32.png",
+      "sha256": "8eaf665471ca229587580f60e7da6cd97336af41e18ae79d5367c45024c8f301",
+      "use": "32x32 favicon",
+      "derivation": "deterministic derivative from first-party source",
+      "status": "SOURCE_BOUND"
+    },
+    {
+      "class": "FIRST_PARTY_BRANDING_DERIVATIVE",
+      "repository": "SvenKulessa/Capital-AI",
+      "path": "public/branding/asset-pack/favicon/favicon.ico",
+      "sha256": "2eb6531635a010f10e4c22e424fff2dbe8734790e92c096b9e072b4f72030e09",
+      "use": "ICO favicon",
+      "derivation": "deterministic derivative from first-party source",
+      "status": "SOURCE_BOUND"
+    },
+    {
+      "class": "FIRST_PARTY_BRANDING_DERIVATIVE",
+      "repository": "SvenKulessa/Capital-AI",
+      "path": "public/branding/asset-pack/favicon/apple-touch-icon-180x180.png",
+      "sha256": "4c2beef2752ec5695765a167b6e85203acb0c80c9a85dae8710ee2d1bdb08cda",
+      "use": "Apple touch icon",
+      "derivation": "deterministic derivative from first-party source",
+      "status": "SOURCE_BOUND"
+    },
+    {
+      "class": "FIRST_PARTY_BRANDING_DERIVATIVE",
+      "repository": "SvenKulessa/Capital-AI",
+      "path": "public/branding/asset-pack/social/open-graph-1200x630.jpg",
+      "sha256": "00609f30f3278edc553a79085b8bcf839747c8e1155407b4af9d3d2cf89fd4b4",
+      "use": "OpenGraph and X/Twitter social card",
+      "derivation": "deterministic derivative from first-party source",
+      "status": "SOURCE_BOUND"
+    },
+    {
+      "class": "FIRST_PARTY_BRANDING_DERIVATIVE",
+      "repository": "SvenKulessa/Capital-AI",
+      "path": "public/branding/asset-pack/avatars/capital-ai-avatar-512x512.png",
+      "sha256": "3e5ca03b8770093c3750343bd78793d23739ec6ad4fd36e8a8c7674b69483a0e",
+      "use": "Schema.org organization logo/avatar",
+      "derivation": "deterministic derivative from first-party source",
+      "status": "SOURCE_BOUND"
+    },
+    {
+      "class": "HERO_AI_IMAGE",
+      "repository": "SvenKulessa/Capital-AI",
+      "path": "src/assets/images/glowing_earth_nodes_1789997454893.jpg",
+      "sha256": "aae548443cb6ec1be4c7d9f9389c52cc1e01b28df28fbc4e985750dd424bb671",
+      "use": "Hero.tsx image import",
+      "status": "OWNER_CONFIRMED_AI_ORIGIN_USAGE_TERMS_PARTIAL_GENERATOR_MODEL_AND_TIER_OPEN"
+    },
+    {
+      "class": "THIRD_PARTY_MARK_RENDITIONS",
+      "repository": "SvenKulessa/Capital-AI",
+      "path": "src/components/AssetLogo.tsx",
+      "sha256": "b2c1401e6c39116aa81c0d426d5403134fcb2b36b8729ab5e5fd976c01d7213f",
+      "use": "inline recognizable crypto/company/index symbol renderings in market and alert UI",
+      "status": "DRAWING_ORIGIN_AND_TRADEMARK_USAGE_REVIEW_OPEN"
+    }
+  ],
+  "historicalAssets": [
+    {
+      "path": "src/assets/images/capital_ai_brand_emblem_1789997857835.jpg",
+      "sha256": "7aa208018f5e7eb26f502ae9f5b7e3fceed65b974388943487afcfafe4a097bf",
+      "filenameTimestampEuropeBerlin": "2026-09-21T15:37:37.835+02:00",
+      "capitalAiRuntime": "REMOVED_FROM_CURRENT_TREE",
+      "frontendCurrent": "FILE_RETAINED_BUT_NO_CURRENT_COMPONENT_IMAGE_IMPORT_FOUND_IN_REVIEW",
+      "financeCurrent": "EXACT_BLOB_SNAPSHOT_SOURCE_LOCKED_NOT_ESTABLISHED_AS_RUNTIME_RENDER",
+      "toolsReportedByOwner": [
+        "Microsoft Copilot",
+        "Leonardo AI",
+        "ChatGPT",
+        "Gemini"
+      ],
+      "exactToolOrderModelTier": null,
+      "status": "HISTORICAL_PROVENANCE_PARTIAL"
+    },
+    {
+      "path": "src/assets/images/capital_ai_full_logo_1789997869885.jpg",
+      "sha256": "06b9d53403b26043dc73c3ee47d67da3027b0dd02bef96de017bbf0913135bf7",
+      "filenameTimestampEuropeBerlin": "2026-09-21T15:37:49.885+02:00",
+      "capitalAiRuntime": "REMOVED_FROM_CURRENT_TREE",
+      "frontendCurrent": "FILE_RETAINED_BUT_NO_CURRENT_COMPONENT_IMAGE_IMPORT_FOUND_IN_REVIEW",
+      "financeCurrent": "EXACT_BLOB_SNAPSHOT_SOURCE_LOCKED_NOT_ESTABLISHED_AS_RUNTIME_RENDER",
+      "toolsReportedByOwner": [
+        "Microsoft Copilot",
+        "Leonardo AI",
+        "ChatGPT",
+        "Gemini"
+      ],
+      "exactToolOrderModelTier": null,
+      "status": "HISTORICAL_PROVENANCE_PARTIAL"
+    },
+    {
+      "path": "src/assets/images/capital_ai_wide_banner_1789999064950.jpg",
+      "sha256": "a243e50ecedc600013093b507c102d01e8448afdb376c0206578e0e915f3a6c7",
+      "filenameTimestampEuropeBerlin": "2026-09-21T15:57:44.950+02:00",
+      "capitalAiRuntime": "REMOVED_FROM_CURRENT_TREE",
+      "frontendCurrent": "FILE_RETAINED_BUT_NO_CURRENT_COMPONENT_IMAGE_IMPORT_FOUND_IN_REVIEW",
+      "financeCurrent": "EXACT_BLOB_SNAPSHOT_SOURCE_LOCKED_NOT_ESTABLISHED_AS_RUNTIME_RENDER",
+      "toolsReportedByOwner": [
+        "Microsoft Copilot",
+        "Leonardo AI",
+        "ChatGPT",
+        "Gemini"
+      ],
+      "exactToolOrderModelTier": null,
+      "status": "HISTORICAL_PROVENANCE_PARTIAL"
+    }
+  ],
+  "financeBinding": {
+    "earthGitBlob": "9bd051fcbbf1bf30d38a98795638c7cf80c84ac4",
+    "currentSourceLock": "src/features/public/ui/frontend-port/source-lock.json",
+    "currentHero": "src/features/public/ui/frontend-port/components/Hero.tsx",
+    "exactBlobMode": "EXACT_GIT_BLOB",
+    "sourceRepository": "SvenKulessa/FRONTEND",
+    "sourceCommit": "cbc558019ae6785f44079fe6fca3403460774df3"
+  },
+  "remainingGaps": [
+    "Hero-Erdbild: C2PA nennt Google Generative AI, aber das konkrete Bildgenerierungsmodell bzw. der Generator-Endpoint ist nicht offengelegt.",
+    "Hero-Erdbild: C2PA-Signatur/Trust-Chain wurde in diesem Review nicht kryptografisch validiert.",
+    "Hero-Erdbild: tatsächlicher Account-/Billing-Tarif zum Erstellungszeitpunkt nicht belegt.",
+    "Hero-Erdbild: kein separat archivierter Provider-Run/Prompt mit Output-Hash gefunden.",
+    "Historische drei capital_ai_-JPGs: exakte Werkzeugreihenfolge, Modelle, Tarife und einzelne Bearbeitungsschritte nicht rekonstruierbar.",
+    "AssetLogo.tsx: Zeichnungsherkunft und zulässige Marken-/Logo-Nutzung je erkennbarem Drittkennzeichen nicht belegt.",
+    "Systemgenerierte DESIGN_AND_*_Lizenzurkunden sind Projektartefakte und keine Erlaubnis eines Drittanbieters."
+  ],
+  "validation": [
+    {
+      "step": 1,
+      "result": "PASS_WITH_OPEN_RIGHTS",
+      "note": "current main and runtime-referenced asset bindings correlated"
+    },
+    {
+      "step": 2,
+      "result": "PASS",
+      "note": "existing provenance retained; no blanket reset to missing"
+    },
+    {
+      "step": 3,
+      "result": "PASS_PARTIAL",
+      "note": "copy/import chronology proven; original generation run not reconstructed"
+    },
+    {
+      "step": 4,
+      "result": "PARTIAL_STRONG_PROVIDER_PROVENANCE",
+      "note": "embedded C2PA identifies Google Generative AI and SynthID; cryptographic signature validation, exact image model and creation-time tier remain open"
+    },
+    {
+      "step": 5,
+      "result": "PASS_DOCUMENTATION_HANDOFF",
+      "note": "evidence table and TRUST/PLATFORM handoff documented without approval mutation"
+    }
+  ]
+}
