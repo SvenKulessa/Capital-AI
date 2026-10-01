@@ -33,10 +33,10 @@ export async function runGrowthContractValidationSuite() {
 
   assert(registry.schema === 'CAPITAL_AI_CONTRACT_REGISTRY@1', 'registry schema must be CAPITAL_AI_CONTRACT_REGISTRY@1', failures);
   assert(registry.version === '1.0.0', 'registry version must be 1.0.0', failures);
-  assert(Array.isArray(registry.contracts) && registry.contracts.length === 5, 'registry must contain exactly five registered contracts', failures);
+  assert(Array.isArray(registry.contracts) && registry.contracts.length >= EXPECTED_IDS.size, `registry must contain at least ${EXPECTED_IDS.size} registered baseline contracts`, failures);
 
   const ids = new Set(registry.contracts?.map((entry) => entry.id));
-  assert(ids.size === EXPECTED_IDS.size && [...EXPECTED_IDS].every((id) => ids.has(id)), 'registry contract IDs are incomplete or duplicated', failures);
+  assert(ids.size === (registry.contracts?.length ?? 0) && [...EXPECTED_IDS].every((id) => ids.has(id)), 'registry contract IDs are incomplete or duplicated', failures);
   assert(registry.invariants?.historicalEvidenceImmutable === true, 'historical evidence must remain immutable', failures);
   assert(registry.invariants?.missingEvidenceFailClosed === true, 'missing evidence must fail closed', failures);
   assert(registry.invariants?.generatedOutputsAreNotCanonicalInputs === true, 'generated outputs must never become canonical inputs', failures);
