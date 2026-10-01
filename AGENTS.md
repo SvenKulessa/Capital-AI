@@ -11,6 +11,16 @@ Ein erfolgreicher Test, Build oder Scan ist **niemals allein** eine Lizenz-, Sec
 
 Bei Widersprüchen zwischen lokalen Arbeitsanweisungen und dieser Policy gilt die strengere fail-closed Regel. Echte technische Grenzen wie Auth, Public API, Daten-/Event-Schema, Security Boundary, Evidence, Container-Identität und Production-Handoff dürfen nicht durch organisatorische Abkürzungen umgangen werden.
 
+## Domain-Einstiegspunkt
+
+Für **jede** Domain und jede neue Arbeitssitzung ist der erste verbindliche Kontext `AGENTS.md@currentmain`.
+
+- Vor Planung, Änderung, Review oder Merge ist `AGENTS.md` vom **aktuellen `main`** zu lesen; eine ältere Branch-Kopie ist nicht als kanonische Policy ausreichend.
+- PRODUCT, MARKET, PLATFORM, TRUST und GROWTH übernehmen diese Root-Policy vollständig als übergeordneten Contract.
+- Domain-spezifische Dokumente und `AGENTS.md`-Dateien dürfen die Root-Policy konkretisieren oder verschärfen, aber nicht abschwächen.
+- Weicht ein Feature-Branch vom aktuellen `main` ab, ist vor einer zustandsverändernden Aktion erneut gegen `AGENTS.md@currentmain` und den aktuellen Main-SHA zu korrelieren.
+- PRs sollen im Evidence-/Review-Text bestätigen, dass der aktuelle Root-Contract berücksichtigt wurde.
+
 ## Standardmodell für Änderungen und Updates
 
 1. **CURRENT MAIN zuerst** — vor jeder Änderung gegen den aktuellen `main`-SHA korrelieren.
