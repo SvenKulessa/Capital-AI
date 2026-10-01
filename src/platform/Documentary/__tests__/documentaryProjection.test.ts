@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import type { DocumentaryEvidenceRecord } from '../Models/documentaryEvidence';
 import {
   redactDocumentaryValue,
   renderDocumentaryMarkdown,
   validateDocumentaryEvidence,
 } from '../Services/documentaryProjection';
 
-function fixture() {
+function fixture(): DocumentaryEvidenceRecord {
   return {
     schema: 'DOCUMENTARY_EVIDENCE@1',
     version: '1.0.0',
@@ -111,7 +112,7 @@ test('valid Documentary evidence preserves UNKNOWN gates without inferring succe
   const markdown = renderDocumentaryMarkdown(record);
   assert.match(markdown, /\| tests \| UNKNOWN \|/);
   assert.match(markdown, /Missing or `UNKNOWN` evidence is not interpreted as success/);
-  assert.match(markdown, new RegExp(record.identity.sourceSha));
+  assert.match(markdown, new RegExp(record.identity.sourceSha ?? ''));
 });
 
 test('EFFECTIVE deployment fails closed without runtime readback', () => {
