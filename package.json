@@ -17,7 +17,9 @@
     "test:market:integration": "node --test server/infrastructure.integration.test.mjs",
     "test:market:local": "node scripts/test-market-infrastructure-local.mjs",
     "preflight": "node scripts/preflight.mjs",
-    "preflight:full": "node scripts/preflight.mjs --full"
+    "preflight:full": "node scripts/preflight.mjs --full",
+    "license:report": "node scripts/license-engine.mjs",
+    "test:licenses": "node --test scripts/license-engine.test.mjs scripts/license-evidence.test.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -27,13 +29,16 @@
     "@vitejs/plugin-react": "^6.1.1",
     "dotenv": "^18.0.4",
     "express": "^4.21.2",
+    "jose": "6.2.12",
     "jspdf": "^4.2.1",
-    "lucide-react": "^0.546.0",
+    "lucide-react": "^1.48.0",
     "motion": "^13.4.4",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "recharts": "^3.10.1",
     "redis": "6.2.1",
+    "spdx-expression-parse": "4.0.0",
+    "spdx-license-ids": "3.0.23",
     "vite": "^8.3.0",
     "zod": "^4.6.5",
     "jose": "6.2.12",
@@ -41,7 +46,7 @@
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
-    "@types/node": "^22.14.0",
+    "@types/node": "^26.6.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "autoprefixer": "^10.4.21",
