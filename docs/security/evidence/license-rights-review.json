@@ -955,15 +955,21 @@
     "family": "Plus Jakarta Sans",
     "license": "OFL-1.1",
     "evidencePath": "docs/security/evidence/license-sources/Plus-Jakarta-Sans-OFL.txt",
-    "status": "UPSTREAM_LICENSE_VERIFIED_EXTERNAL_BINARY_VERSION_UNPINNED",
-    "delivery": "REMOTE_GOOGLE_FONTS_CSS",
+    "status": "PINNED_UPSTREAM_BYTES_AND_OFL_PACKAGED_IMAGE_VALIDATION_PENDING",
+    "delivery": "SELF_HOSTED_UNMODIFIED_TTF",
     "upstreamCommit": "23e54b51ddffbc7713c583748e3bd86f62b1fa4a",
     "permissionConditions": [
       "Preserve copyright and OFL when distributing font files.",
       "Do not sell font software by itself.",
       "Review reserved font names if modifying fonts."
     ],
-    "deliveredBinarySha256": null
+    "deliveredBinarySha256": {
+      "public/fonts/PlusJakartaSans-Regular.ttf": "89b3fb38aa0d275d7a731d0d817a4f1622b316b4d7fbdedcf02ee9099ff68bc8",
+      "public/fonts/PlusJakartaSans-Italic.ttf": "9529eb888668b6a3c6dd75b6341a2fc5263fb6c9e788822e6117c29dd9e8b115"
+    },
+    "binaryEvidencePath": "public/fonts/provenance.json",
+    "distributedLicensePath": "public/fonts/OFL.txt",
+    "implementationBaseSourceSha": "44fdad6d8a70d849ab1545b55d881d4cabd8d0b7"
   },
   "providers": [
     {
@@ -1073,8 +1079,8 @@
     "Exact base binary/source provenance and notice packaging",
     "JPEG usage terms and creation trace; AI origin confirmed by owner",
     "Inline logo origin and trademark use review",
-    "Remote font binary identity or reproducible licensed font distribution",
-    "Provider contract scopes and attribution for actual public display/API/derived-data/export use"
+    "Provider contract scopes and attribution for actual public display/API/derived-data/export use",
+    "Verify pinned font binaries and OFL in the final published image"
   ],
   "legalApproval": null,
   "mockupHistoryEvidence": "asset-mockup-history-review.json",

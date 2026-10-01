@@ -1,0 +1,19 @@
+{
+  "observationDate": "2026-10-01",
+  "method": "Render web shell; live instance lfp5s; anonymous GHCR pull; byte-level SHA-256 checks",
+  "mainSha": "2150643dae8190fb2f8cd496072a7cc2baa89cfe",
+  "sourceSha": "4fbd1373b07092ed8ef550f60e9cf60f1f3f526d",
+  "serviceId": "srv-dau1rp893c1s73cdhm1g",
+  "deployId": "dep-dauri23ncjis738243fg",
+  "indexDigest": "sha256:53c47463dfdb9e66721be1c997769d9fae3e6ca0e8a3fdd8cf77074785a08d23",
+  "platformDigest": "sha256:3abee0293d0273fa0858e4bbdce00aca8d0f5060f9b9f64ee2c67f9dc6530a3e",
+  "configDigest": "sha256:c161621d58ea32230750e95adf6551bb6f3c3ac697bfa048b0cf5393cd6356d3",
+  "platform": { "os": "linux", "architecture": "amd64" },
+  "registryIndexByteHashVerified": true,
+  "registryPlatformByteHashVerified": true,
+  "registryConfigByteHashVerified": true,
+  "runtimeIdentityVerified": true,
+  "productionHandoffVerified": false,
+  "deployEligible": false,
+  "codeQlAlert": { "id": 1, "state": "open", "severity": "high", "ruleId": "js/incomplete-sanitization", "sourceSha": "2150643dae8190fb2f8cd496072a7cc2baa89cfe" }
+}
