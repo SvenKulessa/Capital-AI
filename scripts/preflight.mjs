@@ -20,6 +20,7 @@ run(process.execPath, ['--test',
   'scripts/summarize-trivy.test.mjs', 'scripts/publish-security-summary.test.mjs', 'scripts/production-handoff.test.mjs',
   'scripts/diagnose-oidc.test.mjs', 'scripts/verify-main-ruleset.test.mjs', 'scripts/npm-security-patch-policy.test.mjs',
   'scripts/percentage-parser.test.mjs',
+  'scripts/font-distribution.test.mjs',
 ]);
 run(process.execPath, ['scripts/license-evidence.mjs']);
 if (args.includes('--full')) {
