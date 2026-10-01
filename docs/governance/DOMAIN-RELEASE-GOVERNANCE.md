@@ -54,7 +54,11 @@ NATS wird nicht bei jedem App-Release neu deployed. Ein NATS-Deploy wird nur dur
 
 ## Daily Dependency & CVE Watch
 
-Abhängigkeiten werden täglich auf neue Versionen und bekannte Schwachstellen geprüft. Automatische Update-PRs dürfen erstellt werden; Deployment bleibt an CI, Security Gates, Component-Diff und Production-Handoff gebunden. Major Upgrades, Auth-/Security-Runtimes und persistente Broker werden niemals ungeprüft direkt aus einem Versionsscan deployed.
+Abhängigkeiten, Tools, Runtimes, GitHub Actions und Container-Bases werden regelmäßig auf neue stabile Versionen und bekannte Schwachstellen geprüft. Ziel ist grundsätzlich der neueste stabile, unterstützte Stand, sofern Herkunft, Integrität, Security, Lizenz/Redistribution und Kompatibilität positiv verifiziert sind.
+
+**Jedes** Update, Upgrade, Patch und jeder dependency-bezogene Bugfix unterliegt zusätzlich dem `docs/security/DEPENDENCY-UPDATE-TRUST-MODEL.md`: offizielle Herkunft, Registry-/Artefakt-Evidenz, Security Intelligence, Lizenz-/Redistribution-Prüfung sowie Maintainer-/Community-Gegenprüfung auf Supply-Chain-Kompromittierung, Takeover, Typosquatting, zurückgezogene Releases und relevante Regressionen. Community-Signale ergänzen die offizielle Evidenz, ersetzen sie aber nicht.
+
+Automatische Update-PRs dürfen erstellt werden; Deployment bleibt an CI, Security Gates, Component-Diff und Production-Handoff gebunden. Major Upgrades, Auth-/Security-Runtimes und persistente Broker werden niemals ungeprüft direkt aus einem Versionsscan deployed. Ungeklärte Herkunfts-, Kompromittierungs- oder Lizenzsignale führen fail-closed zu `BLOCKED` oder `ESCALATED`.
 
 ## Self-Healing
 
