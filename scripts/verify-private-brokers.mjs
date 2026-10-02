@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID, createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
+import { performance } from 'node:perf_hooks';
 import { createClient } from 'redis';
 import { connect } from '@nats-io/transport-node';
 import { jetstream, jetstreamManager, StorageType, DiscardPolicy } from '@nats-io/jetstream';
@@ -19,11 +20,17 @@ export async function verifyPrivateBrokers(env = process.env) {
   redis.on('error', () => {});
   let subscriber, nc, manager, created = false, stage = 'connect', cleanupFailed = false;
   const results = [];
+  const timings = {};
+  const timed = async (name, fn) => {
+    const started = performance.now();
+    try { return await fn(); }
+    finally { timings[name] = +(performance.now() - started).toFixed(3); }
+  };
   try {
-    await redis.connect();
+    await timed('valkey_connect_ms', () => redis.connect());
     const options = { servers: env.NATS_URL, token: env.NATS_TOKEN, timeout: 3000, reconnect: false };
-    nc = await connect(options);
-    manager = await jetstreamManager(nc, { timeout: 3000 });
+    nc = await timed('nats_connect_ms', () => connect(options));
+    manager = await timed('jetstream_manager_ms', () => jetstreamManager(nc, { timeout: 3000 }));
     validateStreamConfig((await manager.streams.info('CAPITAL_FACTS')).config, Number(env.NATS_REPLICAS || 1));
     stage = 'authentication';
     let denied = false;
@@ -39,12 +46,12 @@ export async function verifyPrivateBrokers(env = process.env) {
     await subscriber.subscribe(channel, message => resolveDelivery(message));
     try {
       // Exercise the application's atomic SET/PUBLISH pattern, on probe-only names with short TTL.
-      await redis.eval("redis.call('SET',KEYS[1],ARGV[1],'PX',5000);return redis.call('PUBLISH',ARGV[2],ARGV[1])",
-        { keys: [key], arguments: [payload, channel] });
+      await timed('valkey_set_publish_ms', () => redis.eval("redis.call('SET',KEYS[1],ARGV[1],'PX',5000);return redis.call('PUBLISH',ARGV[2],ARGV[1])",
+        { keys: [key], arguments: [payload, channel] }));
       const received = await Promise.race([delivery, new Promise((_, reject) => {
         timer = setTimeout(() => reject(new Error('PUBSUB_TIMEOUT')), 3000);
       })]);
-      assert.equal(received, payload); assert.equal(await redis.get(key), payload);
+      assert.equal(received, payload); assert.equal(await timed('valkey_get_ms', () => redis.get(key)), payload);
       const ttl = await redis.pTTL(key); assert.ok(ttl > 0 && ttl <= 5000);
     } finally { clearTimeout(timer); }
     results.push({ step: 2, check: 'isolated_atomic_cache_pubsub_and_ttl', status: 'PASS' });
@@ -55,15 +62,15 @@ export async function verifyPrivateBrokers(env = process.env) {
       max_msg_size: 1024, max_age: 120e9, duplicate_window: 30e9 });
     created = true;
     const js = jetstream(nc, { timeout: 3000 });
-    const ack = await js.publish(subject, payload, { msgID: hash(payload) });
+    const ack = await timed('jetstream_publish_ack_ms', () => js.publish(subject, payload, { msgID: hash(payload) }));
     const duplicate = await js.publish(subject, payload, { msgID: hash(payload) });
     assert.equal(ack.stream, stream); assert.equal(ack.seq, duplicate.seq); assert.equal(duplicate.duplicate, true);
-    assert.equal(hash((await manager.streams.getMessage(stream, { seq: ack.seq })).string()), hash(payload));
+    assert.equal(hash((await timed('jetstream_replay_ms', () => manager.streams.getMessage(stream, { seq: ack.seq }))).string()), hash(payload));
     results.push({ step: 3, check: 'isolated_file_ack_deduplication_and_hash_replay', status: 'PASS' });
 
     stage = 'reconnect';
-    await nc.close(); nc = await connect(options); manager = await jetstreamManager(nc, { timeout: 3000 });
-    assert.equal(hash((await manager.streams.getMessage(stream, { seq: ack.seq })).string()), hash(payload));
+    await nc.close(); nc = await timed('nats_reconnect_ms', () => connect(options)); manager = await jetstreamManager(nc, { timeout: 3000 });
+    assert.equal(hash((await timed('jetstream_reconnect_replay_ms', () => manager.streams.getMessage(stream, { seq: ack.seq }))).string()), hash(payload));
     results.push({ step: 4, check: 'new_connection_replay', status: 'PASS' });
   } catch {
     throw new Error(`BROKER_PROBE_FAILED_${stage.toUpperCase()}`);
@@ -76,7 +83,20 @@ export async function verifyPrivateBrokers(env = process.env) {
     try { await nc?.close(); } catch { cleanupFailed = true; }
     if (cleanupFailed) throw new Error('BROKER_PROBE_CLEANUP_FAILED');
   }
-  return { status: 'PASS', productionQuotesWritten: false, productionProcessesRestarted: false, results };
+  const measured = Object.values(timings);
+  return {
+    status: 'PASS',
+    schema: 'CAPITAL_AI_PRIVATE_BROKER_PROBE@2',
+    productionQuotesWritten: false,
+    productionProcessesRestarted: false,
+    timings,
+    latencySummary: {
+      samples: measured.length,
+      maxMs: measured.length ? +Math.max(...measured).toFixed(3) : null,
+      totalMeasuredMs: +measured.reduce((sum, value) => sum + value, 0).toFixed(3),
+    },
+    results,
+  };
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try { console.log(JSON.stringify(await verifyPrivateBrokers(), null, 2)); }

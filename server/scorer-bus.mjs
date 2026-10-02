@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { createClient } from 'redis';
 import { connect } from '@nats-io/transport-node';
 import { jetstream, jetstreamManager, StorageType, DiscardPolicy } from '@nats-io/jetstream';
+import { observeCadsOperation } from './cads-observability.mjs';
 
 const STREAM = 'CAPITAL_SCORES';
 const SUBJECT_PREFIX = 'capital.scores.crypto';
@@ -38,15 +39,15 @@ export class EnterpriseScorerBus {
         socket: { connectTimeout: 3000, reconnectStrategy: false },
       });
       this.redis.on('error', () => {});
-      await this.redis.connect();
+      await observeCadsOperation({ layer:'network', service:'valkey', operation:'scorer.connect' }, () => this.redis.connect());
 
-      this.nc = await connect({
+      this.nc = await observeCadsOperation({ layer:'network', service:'nats', operation:'scorer.connect' }, () => connect({
         servers: this.env.NATS_URL,
         token: this.env.NATS_TOKEN,
         timeout: 3000,
         maxReconnectAttempts: 3,
         reconnectTimeWait: 1000,
-      });
+      }));
       this.js = jetstream(this.nc, { timeout: 3000 });
       this.manager = await jetstreamManager(this.nc, { timeout: 3000 });
 
@@ -122,7 +123,7 @@ export class EnterpriseScorerBus {
     if (Buffer.byteLength(serialized) > MAX_SCORE_BYTES) throw new Error('SCORE_PAYLOAD_TOO_LARGE');
 
     const digest = hash(record);
-    const ack = await this.js.publish(`${SUBJECT_PREFIX}.${symbol}`, serialized, { msgID: digest });
+    const ack = await observeCadsOperation({ layer:'stream', service:'nats-jetstream', operation:'score.publish_ack', correlationId }, () => this.js.publish(`${SUBJECT_PREFIX}.${symbol}`, serialized, { msgID: digest }));
     if (ack.stream !== STREAM || !Number.isInteger(ack.seq) || ack.seq < 1) throw new Error('SCORE_EVIDENCE_UNCONFIRMED');
 
     const delivery = {
@@ -135,10 +136,10 @@ export class EnterpriseScorerBus {
     const ttlMs = Number(this.env.MOBILE_SCORE_CACHE_TTL_MS || 300000);
     const key = `capital:score:v1:${symbol}`;
     const body = JSON.stringify(delivery);
-    await this.redis.multi()
+    await observeCadsOperation({ layer:'cache', service:'valkey', operation:'score.set_publish', correlationId }, () => this.redis.multi()
       .set(key, body, { PX: Math.max(10000, Math.min(ttlMs, 3600000)) })
       .publish(SCORE_CHANNEL, body)
-      .exec();
+      .exec());
     return delivery;
   }
 
@@ -146,7 +147,7 @@ export class EnterpriseScorerBus {
     symbol = String(symbol || '').toUpperCase().trim();
     if (!validSymbol(symbol) || !(await this.start())) return null;
     try {
-      const raw = await this.redis.get(`capital:score:v1:${symbol}`);
+      const raw = await observeCadsOperation({ layer:'cache', service:'valkey', operation:'score.read', correlationId: symbol }, () => this.redis.get(`capital:score:v1:${symbol}`));
       if (!raw) return null;
       const delivery = JSON.parse(raw);
       if (delivery.symbol !== symbol || !delivery.evidenceId) return null;
@@ -169,7 +170,7 @@ export class EnterpriseScorerBus {
     if (!(await this.start())) throw new Error('SCORER_BUS_UNAVAILABLE');
     const match = /^CAPITAL_SCORES:([1-9][0-9]*):([a-f0-9]{64})$/.exec(String(evidenceId || ''));
     if (!match) throw new Error('INVALID_SCORE_EVIDENCE_ID');
-    const message = await this.manager.streams.getMessage(STREAM, { seq: Number(match[1]) });
+    const message = await observeCadsOperation({ layer:'storage', service:'nats-jetstream', operation:'score.replay' }, () => this.manager.streams.getMessage(STREAM, { seq: Number(match[1]) }));
     if (!message) throw new Error('SCORE_EVIDENCE_NOT_FOUND');
     const record = JSON.parse(new TextDecoder().decode(message.data));
     if (hash(record) !== match[2]) throw new Error('SCORE_EVIDENCE_HASH_MISMATCH');

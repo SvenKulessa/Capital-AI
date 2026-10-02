@@ -3,6 +3,7 @@ import { createClient } from 'redis';
 import { connect } from '@nats-io/transport-node';
 import { jetstream, jetstreamManager, StorageType, DiscardPolicy } from '@nats-io/jetstream';
 import { QuoteFactSchema, QuoteDeliverySchema, isFresh } from '../shared/market-contracts.mjs';
+import { observeCadsOperation } from './cads-observability.mjs';
 
 const STREAM = 'CAPITAL_FACTS';
 export function validateStreamConfig(config, replicas) {
@@ -33,11 +34,11 @@ export class MarketInfrastructure {
       this.redis = createClient({ url: this.env.REDIS_URL, disableOfflineQueue: true,
         socket: { connectTimeout: 3000, reconnectStrategy: false } });
       this.redis.on('error', () => { this.state = 'degraded'; });
-      await this.redis.connect();
+      await observeCadsOperation({ layer:'network', service:'valkey', operation:'connect' }, () => this.redis.connect());
       if (this.listeners.size) await this.ensureSubscriber();
       if (!this.env.NATS_URL) { this.state = 'degraded'; return false; }
-      this.nc = await connect({ servers: this.env.NATS_URL, token: this.env.NATS_TOKEN,
-        timeout: 3000, maxReconnectAttempts: 3, reconnectTimeWait: 1000 });
+      this.nc = await observeCadsOperation({ layer:'network', service:'nats', operation:'connect' }, () => connect({ servers: this.env.NATS_URL, token: this.env.NATS_TOKEN,
+        timeout: 3000, maxReconnectAttempts: 3, reconnectTimeWait: 1000 }));
       this.natsConnected = true;
       const connection = this.nc;
       void (async () => { for await (const event of connection.status()) {
@@ -126,7 +127,7 @@ export class MarketInfrastructure {
     if (!this.redis?.isReady || !this.js || this.nc.isClosed() || !this.natsConnected) throw new Error('INFRASTRUCTURE_UNAVAILABLE');
     const envelope = { schemaVersion: '1.0.0', fact, rawPayload };
     const hash = payloadHash(envelope);
-    const ack = await this.js.publish(`capital.facts.quote.${fact.symbol}`, JSON.stringify(envelope), { msgID: hash });
+    const ack = await observeCadsOperation({ layer:'stream', service:'nats-jetstream', operation:'quote.publish_ack', correlationId: fact.symbol }, () => this.js.publish(`capital.facts.quote.${fact.symbol}`, JSON.stringify(envelope), { msgID: hash }));
     if (ack.stream !== STREAM || !Number.isInteger(ack.seq) || ack.seq < 1) throw new Error('EVIDENCE_UNCONFIRMED');
     const delivery = QuoteDeliverySchema.parse({ ...fact, evidenceId: `${STREAM}:${ack.seq}:${hash}`,
       availability: 'live', validated: true, actionable: false, reasonCodes: ['PROVIDER_RIGHTS_UNVERIFIED', 'ANALYSIS_INPUTS_INCOMPLETE'] });
@@ -134,13 +135,13 @@ export class MarketInfrastructure {
     const script = `local old=redis.call('GET',KEYS[1]); if old then local v=cjson.decode(old); if v.observedAt>tonumber(ARGV[2]) then return 0 end; if v.evidenceId==ARGV[4] then return 0 end end; redis.call('SET',KEYS[1],ARGV[1],'PX',ARGV[3]); if ARGV[5]=='true' then redis.call('PUBLISH',ARGV[6],ARGV[1]) end; return 1`;
     const ttl = 30000 - (Date.now() - fact.observedAt);
     if (ttl <= 0) throw new Error('FACT_EXPIRED_DURING_WRITE');
-    await this.redis.eval(script, { keys: [`capital:quote:v1:${fact.symbol}`], arguments: [JSON.stringify(delivery), String(fact.observedAt), String(ttl), delivery.evidenceId, String(this.pubsubEnabled), QUOTE_CHANNEL] });
+    await observeCadsOperation({ layer:'cache', service:'valkey', operation:'quote.atomic_set_publish', correlationId: fact.symbol }, () => this.redis.eval(script, { keys: [`capital:quote:v1:${fact.symbol}`], arguments: [JSON.stringify(delivery), String(fact.observedAt), String(ttl), delivery.evidenceId, String(this.pubsubEnabled), QUOTE_CHANNEL] }));
     return delivery;
   }
   async read(symbol) {
     if (!this.redis?.isReady) return null;
     try {
-      const value = await this.redis.get(`capital:quote:v1:${symbol}`);
+      const value = await observeCadsOperation({ layer:'cache', service:'valkey', operation:'quote.read', correlationId: symbol }, () => this.redis.get(`capital:quote:v1:${symbol}`));
       if (!value) return null;
       const fact = QuoteDeliverySchema.parse(JSON.parse(value));
       if (fact.symbol !== symbol || !isFresh(fact)) return null;
@@ -153,7 +154,7 @@ export class MarketInfrastructure {
   async replay(id) {
     const match = /^CAPITAL_FACTS:([1-9][0-9]*):([a-f0-9]{64})$/.exec(id);
     if (!match || !this.manager || !Number.isSafeInteger(Number(match[1]))) throw new Error('INVALID_EVIDENCE_ID');
-    const msg = await this.manager.streams.getMessage(STREAM, { seq: Number(match[1]) });
+    const msg = await observeCadsOperation({ layer:'storage', service:'nats-jetstream', operation:'quote.replay' }, () => this.manager.streams.getMessage(STREAM, { seq: Number(match[1]) }));
     if (!msg) throw new Error('EVIDENCE_NOT_FOUND');
     const record = JSON.parse(new TextDecoder().decode(msg.data));
     if (payloadHash(record) !== match[2] || payloadHash(record.rawPayload) !== record.fact.payloadHash) throw new Error('EVIDENCE_HASH_MISMATCH');
