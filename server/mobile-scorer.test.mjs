@@ -5,6 +5,7 @@ import { buildBinanceResearchUniverse, buildCoinPaprikaResearchUniverse, canonic
 test('canonical scorer origin is explicit and cannot point back to the public app origin', () => {
   assert.equal(canonicalScorerOrigin({ PUBLIC_APP_ORIGIN: 'https://capital-ai.online' }), null);
   assert.equal(canonicalScorerOrigin({ PUBLIC_APP_ORIGIN: 'https://capital-ai.online', CAPITAL_AI_SCORER_ORIGIN: 'https://capital-ai.online' }), null);
+  assert.equal(canonicalScorerOrigin({ PUBLIC_APP_ORIGIN: 'https://capital-ai.online', CAPITAL_AI_SCORER_ORIGIN: 'https://capital-ai.online', CAPITAL_AI_SCORER_ALLOW_SAME_ORIGIN: 'true' }), 'https://capital-ai.online');
   assert.equal(canonicalScorerOrigin({ PUBLIC_APP_ORIGIN: 'https://capital-ai.online', CAPITAL_AI_SCORER_ORIGIN: 'https://finance-7clq.onrender.com' }), 'https://finance-7clq.onrender.com');
   assert.equal(canonicalScorerOrigin({ PUBLIC_APP_ORIGIN: 'https://capital-ai.online', CAPITAL_AI_SCORER_ORIGIN: 'http://finance.invalid' }), null);
 });
