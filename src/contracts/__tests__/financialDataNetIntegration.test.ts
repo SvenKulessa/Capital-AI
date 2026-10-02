@@ -23,7 +23,10 @@ describe('FinancialData.Net integration catalog', () => {
     assert.ok(ids.includes('fdnpy'));
     assert.ok(ids.includes('financialdatanet-universal-query'));
     assert.ok(ids.includes('financialdatanet-mcp'));
-    assert.ok(FINANCIAL_DATA_NET_CONNECTIONS.every(item => item.status !== 'INTEGRATED'));
+    assert.deepEqual(
+      [...new Set(FINANCIAL_DATA_NET_CONNECTIONS.map(item => item.status))].sort(),
+      ['ADAPTER_READY', 'CATALOGUED'],
+    );
   });
 
   it('keeps every dataset family rights-unverified', () => {

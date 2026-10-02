@@ -68,7 +68,7 @@ export function enumerateLogicalOssPipelines(): SimulatedPipeline[] {
 }
 
 export function runDeterministicOssPipelineBenchmark(): PipelineBenchmark[] {
-  return enumerateLogicalOssPipelines().map(pipeline=>{
+  return enumerateLogicalOssPipelines().map((pipeline): PipelineBenchmark => {
     const profile=ingressProfiles[pipeline.ingress];
     const analyticsPenalty=pipeline.analytics==='clickhouse'?8:0;
     const analyticsBoost=pipeline.analytics==='clickhouse'?1.22:1;
