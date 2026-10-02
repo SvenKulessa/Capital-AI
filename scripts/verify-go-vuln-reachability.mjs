@@ -77,7 +77,7 @@ export function classifyGoVulnReachability({
     reason = symbolFrames.length > 0 || nmSymbols.length > 0
       ? 'VULNERABLE_OPENPGP_SYMBOL_PRESENT_IN_BINARY'
       : 'GOVULNCHECK_VEX_MARKS_AFFECTED';
-  } else if (Object.values(prerequisites).every(Boolean) && findings.length === 0 && openPgpFrames.length === 0 && nmSymbols.length === 0) {
+  } else if (Object.values(prerequisites).every(Boolean) && symbolFrames.length === 0 && openPgpFrames.length === 0 && nmSymbols.length === 0) {
     decision = 'NOT_AFFECTED';
     reason = statement?.justification === 'vulnerable_code_not_present' ? 'vulnerable_code_not_present' : 'vulnerable_code_not_in_execute_path';
   } else if (statement && statement.status !== 'not_affected') {
