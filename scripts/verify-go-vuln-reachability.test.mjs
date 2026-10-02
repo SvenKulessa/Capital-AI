@@ -104,3 +104,14 @@ test('generated VEX keeps UNKNOWN as under investigation and NOT_AFFECTED explic
   assert.equal(buildOpenVex(proven).statements[0].status, 'not_affected');
   assert.equal(buildCycloneDxVex(proven).vulnerabilities[0].analysis.state, 'not_affected');
 });
+
+test('CycloneDX VEX mirrors the reachability decision and immutable product reference', () => {
+  const report = classifyGoVulnReachability(base);
+  const vex = buildCycloneDxVex(report);
+  assert.equal(vex.bomFormat, 'CycloneDX');
+  assert.equal(vex.specVersion, '1.6');
+  assert.equal(vex.vulnerabilities[0].id, advisory);
+  assert.equal(vex.vulnerabilities[0].analysis.state, 'not_affected');
+  assert.equal(vex.vulnerabilities[0].analysis.justification, 'code_not_present');
+  assert.equal(vex.vulnerabilities[0].affects[0].ref, base.imageRef);
+});
