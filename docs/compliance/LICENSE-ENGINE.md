@@ -13,7 +13,7 @@ für einen GHCR-/Render-Digest. `deployEligible:false` bleibt immer erhalten.
 
 ## Kosten und Werkzeugauswahl
 
-Installiert sind spdx-expression-parse 4.0.0 (MIT), spdx-license-ids 3.0.23
+Installiert sind spdx-expression-parse 5.0.0 (MIT), spdx-license-ids 3.0.24
 (CC0-1.0) und spdx-exceptions 2.5.0 (CC-BY-3.0). Exakte npm-Versionen und
 SHA-512-Integritäten stehen im Lockfile und im Herkunftsmanifest. Download
 erfolgte über registry.npmjs.org, ohne Installationsskripte. Paket-Repository

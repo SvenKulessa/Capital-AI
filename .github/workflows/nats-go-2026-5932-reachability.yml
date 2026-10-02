@@ -1,0 +1,85 @@
+name: NATS GO-2026-5932 Reachability
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/nats-go-2026-5932-reachability.yml"
+      - "scripts/verify-go-vuln-reachability.mjs"
+      - "scripts/verify-go-vuln-reachability.test.mjs"
+      - "contracts/go-vuln-reachability.schema.json"
+      - "deploy/Dockerfile.nats"
+      - "deploy/nats-entrypoint.sh"
+      - "deploy/nats-server.conf"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: nats-go-2026-5932-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  reachability:
+    name: GO-2026-5932 Binary Reachability Gate
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Gate-Parser regressionsprüfen
+        run: node --test scripts/verify-go-vuln-reachability.test.mjs
+      - name: Exaktes gepinntes NATS-Binary extrahieren
+        id: binary
+        run: |
+          set -euo pipefail
+          mkdir -p security-reports
+          docker build --file deploy/Dockerfile.nats --tag "capital-nats-reachability:$GITHUB_SHA" .
+          container_id=$(docker create "capital-nats-reachability:$GITHUB_SHA")
+          trap 'docker rm -f "$container_id" >/dev/null 2>&1 || true' EXIT
+          docker cp "$container_id:/usr/local/bin/nats-server" security-reports/nats-server
+          chmod a+r security-reports/nats-server
+          binary_sha=$(sha256sum security-reports/nats-server | cut -d ' ' -f 1)
+          printf '%s  nats-server\n' "$binary_sha" > security-reports/nats-server.sha256
+          echo "binary_sha=sha256:$binary_sha" >> "$GITHUB_OUTPUT"
+      - name: Gepinntes govulncheck bauen und Binary symbolgenau prüfen
+        env:
+          TOOL_IMAGE: golang:1.26.8-alpine@sha256:6e5de3f5b9fb7e30b8bb2ffe8dcbcbdaa2990f0f31267456eabe83f870a623be
+          GOVULNCHECK_VERSION: v1.8.0
+        run: |
+          set -euo pipefail
+          docker pull "$TOOL_IMAGE"
+          docker run --rm             -e GOTOOLCHAIN=local             -e GOPROXY=https://proxy.golang.org,direct             -e GOSUMDB=sum.golang.org             -e GOVULNCHECK_VERSION="$GOVULNCHECK_VERSION"             -v "$PWD/security-reports:/evidence"             "$TOOL_IMAGE" sh -euc '
+              GOBIN=/tmp/gobin go install "golang.org/x/vuln/cmd/govulncheck@$GOVULNCHECK_VERSION"
+              /tmp/gobin/govulncheck -version > /evidence/govulncheck-version.txt
+              go version -m /tmp/gobin/govulncheck > /evidence/govulncheck-buildinfo.txt
+              sha256sum /tmp/gobin/govulncheck > /evidence/govulncheck.sha256
+              go version -m /evidence/nats-server > /evidence/nats-go-version-m.txt
+              /tmp/gobin/govulncheck -mode binary -json /evidence/nats-server > /evidence/govulncheck.raw.json
+              /tmp/gobin/govulncheck -mode binary -format openvex /evidence/nats-server > /evidence/govulncheck.openvex.json
+            '
+          jq -s '.' security-reports/govulncheck.raw.json > security-reports/govulncheck.messages.json
+      - name: GO-2026-5932 fail-closed klassifizieren
+        env:
+          NATS_BINARY_SHA256: ${{ steps.binary.outputs.binary_sha }}
+          NATS_IMAGE_REF: nats:2.15.0-alpine@sha256:ac8f88a6494bffc2c2a5289a0ca61cb28a9145c11ba5677cf24265d07f46d8d4
+        run: |
+          set -euo pipefail
+          node scripts/verify-go-vuln-reachability.mjs             security-reports/govulncheck.messages.json             security-reports/govulncheck.openvex.json             security-reports/nats-go-version-m.txt             security-reports/go-2026-5932-reachability.json
+          jq -c . security-reports/go-2026-5932-reachability.json
+          jq -c '.statements[] | select(.vulnerability.name == "GO-2026-5932")'             security-reports/govulncheck.openvex.json             > security-reports/go-2026-5932.openvex.json
+          test -s security-reports/go-2026-5932.openvex.json
+      - name: Reachability-Evidence sichern
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: nats-go-2026-5932-${{ github.sha }}
+          path: |
+            security-reports/go-2026-5932-reachability.json
+            security-reports/go-2026-5932.openvex.json
+            security-reports/govulncheck.messages.json
+            security-reports/govulncheck.openvex.json
+            security-reports/govulncheck-version.txt
+            security-reports/govulncheck-buildinfo.txt
+            security-reports/govulncheck.sha256
+            security-reports/nats-go-version-m.txt
+            security-reports/nats-server.sha256
+          if-no-files-found: warn
+          retention-days: 14

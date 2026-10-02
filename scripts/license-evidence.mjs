@@ -11,7 +11,7 @@ const alternatives = new Map([
 ]);
 // Version-bounded identifier-data review, not a general CC license allow-list.
 function reviewedSpdxData(p) {
-  return (p.path === 'node_modules/spdx-license-ids' && p.version === '3.0.23' && p.selectedLicense === 'CC0-1.0') ||
+  return (p.path === 'node_modules/spdx-license-ids' && p.version === '3.0.24' && p.selectedLicense === 'CC0-1.0') ||
     (p.path === 'node_modules/spdx-exceptions' && p.version === '2.5.0' && p.selectedLicense === 'CC-BY-3.0');
 }
 
@@ -81,7 +81,7 @@ export function bundleLicenseEvidence(root, moduleIds) {
       const file = p.selectedLicense === 'CC0-1.0' ? 'CC0-1.0.txt' : 'CC-BY-3.0.txt';
       texts.push({ path: 'supplemental/' + file, text: readFileSync(join(root, 'docs/licenses/license-engine', file), 'utf8') });
     }
-    if (manifest.name === 'spdx-expression-parse' && p.version === '4.0.0') {
+    if (manifest.name === 'spdx-expression-parse' && p.version === '5.0.0') {
       texts.push({ path: 'AUTHORS', text: readFileSync(join(p.directory, 'AUTHORS'), 'utf8') });
     }
     // These two published versions put the complete MIT text in README.
