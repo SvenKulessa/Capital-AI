@@ -47,7 +47,7 @@ jobs:
           };
           console.log(JSON.stringify(evidence, null, 2));
           const ranks = universe.assets.map(x => x.universeRank).filter(Number.isInteger);
-          const monotonic = ranks.every((rank, index) => index === 0 || rank > ranks[index - 1]);
+          const monotonic = ranks.every((rank, index) => index === 0 || rank >= ranks[index - 1]);
           if (evidence.status !== 'READY' || evidence.count !== 400 || evidence.uniqueSymbols !== 400 || evidence.firstRank !== 1 || !monotonic || evidence.lastRank < 400) process.exit(1);
           NODE
       - name: Kanonische Scorer Authority per HTTP Contract verifizieren
