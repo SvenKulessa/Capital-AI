@@ -56,7 +56,7 @@ async function fetchJson(url, options = {}, maxBytes = 2 * 1024 * 1024) {
   return JSON.parse(Buffer.concat(chunks).toString('utf8'));
 }
 
-function canonicalScorerOrigin(env) {
+export function canonicalScorerOrigin(env) {
   const origin = safeOrigin(env.CAPITAL_AI_SCORER_ORIGIN, '');
   const publicOrigin = safeOrigin(env.PUBLIC_APP_ORIGIN, '');
   if (!origin || (publicOrigin && origin === publicOrigin)) return null;
@@ -72,7 +72,10 @@ async function fromCanonicalRegistry(env) {
     const seen = new Set();
     return body
       .filter(item => item?.type === 'crypto')
-      .map(item => ({ ...normalizeAsset(item, item.marketCapRank ?? item.rank ?? null), universeRank: Number.isInteger(item.rank) ? item.rank : null, rankMetric: item.marketCapRank ? 'marketCap' : 'registry' }))
+      .map(item => {
+        const asset = normalizeAsset(item, item.marketCapRank ?? item.rank ?? null);
+        return asset ? { ...asset, universeRank: Number.isInteger(item.rank) ? item.rank : null, rankMetric: item.marketCapRank ? 'marketCap' : 'registry' } : null;
+      })
       .filter(item => item && !seen.has(item.symbol) && seen.add(item.symbol));
   } catch {
     return [];
@@ -96,12 +99,7 @@ async function fromOpenSourceUniverseAdapter(env) {
     .filter(Boolean);
 }
 
-async function fromBinanceResearchUniverse(env) {
-  if (env.MOBILE_CRYPTO_BINANCE_RESEARCH !== 'true') return [];
-  const [exchangeInfo, tickers] = await Promise.all([
-    fetchJson(new URL('https://api.binance.com/api/v3/exchangeInfo'), {}, 6 * 1024 * 1024),
-    fetchJson(new URL('https://api.binance.com/api/v3/ticker/24hr'), {}, 6 * 1024 * 1024),
-  ]);
+export function buildBinanceResearchUniverse(exchangeInfo, tickers) {
   if (!Array.isArray(exchangeInfo?.symbols) || !Array.isArray(tickers)) throw new Error('BINANCE_UNIVERSE_SCHEMA_INVALID');
   const volume = new Map(tickers.map(row => [String(row?.symbol || ''), Number(row?.quoteVolume || 0)]));
   const byBase = new Map();
@@ -127,7 +125,16 @@ async function fromBinanceResearchUniverse(env) {
     }));
 }
 
-async function loadUniverse(env = process.env) {
+async function fromBinanceResearchUniverse(env) {
+  if (env.MOBILE_CRYPTO_BINANCE_RESEARCH !== 'true') return [];
+  const [exchangeInfo, tickers] = await Promise.all([
+    fetchJson(new URL('https://api.binance.com/api/v3/exchangeInfo'), {}, 6 * 1024 * 1024),
+    fetchJson(new URL('https://api.binance.com/api/v3/ticker/24hr'), {}, 6 * 1024 * 1024),
+  ]);
+  return buildBinanceResearchUniverse(exchangeInfo, tickers);
+}
+
+export async function loadUniverseForEvidence(env = process.env) {
   if (universeCache && Date.now() - universeCache.loadedAt < CACHE_MS) return universeCache;
   const canonical = await fromCanonicalRegistry(env);
   const bySymbol = new Map(canonical.map(asset => [asset.symbol, asset]));
@@ -212,7 +219,7 @@ export function createMobileScorer(env = process.env) {
 
   async function score(symbol, name, authorization) {
     if (!origin) return [503, { error: 'scorer_origin_unavailable' }];
-    const universe = await loadUniverse(env);
+    const universe = await loadUniverseForEvidence(env);
     const asset = universe.assets.find(item => item.symbol === symbol);
     if (!asset) return [400, { error: 'symbol_not_in_top400_universe', symbol }];
     const upstream = new URL('/api/crypto/score', origin);
@@ -243,7 +250,7 @@ export function createMobileScorer(env = process.env) {
       if (req.method === 'GET' && url.pathname === '/mobile-scorer/app.js') { javascript(res, headers); return true; }
 
       if (req.method === 'GET' && url.pathname === '/api/mobile/crypto-universe') {
-        const universe = await loadUniverse(env);
+        const universe = await loadUniverseForEvidence(env);
         json(res, universe.status === 'READY' ? 200 : 206, universe);
         return true;
       }
