@@ -1072,6 +1072,34 @@
         "validityAndReviewDate": null
       },
       "researchScope": "PRIMARY_SOURCE_SEARCH_EXCERPTS_NOT_ARCHIVED_EXECUTED_CONTRACT"
+    },
+    {
+      "id": "financialdatanet",
+      "endpoint": "https://financialdata.net/api/v1/",
+      "sources": [
+        "https://financialdata.net/terms-of-service",
+        "https://www.financialdata.net/pricing",
+        "https://www.financialdata.net/documentation",
+        "https://github.com/financialdatanet/fdnpy",
+        "https://pypi.org/project/fdnpy/"
+      ],
+      "assessment": "FinancialData.Net exposes a broad REST API plus fdnpy, Universal Query and an MCP server. Public terms state that redistribution is permitted only when the applicable subscription plan explicitly permits it; current pricing distinguishes Professional internal commercial use from Enterprise external commercial use plus data display/redistribution. The actual CAPITAL-AI subscription, entity/region, dataset/feed/exchange scope, derived-score rights, cache/retention, resale and attribution obligations are not evidenced. fdnpy software metadata is MIT, but that software licence does not grant rights to FinancialData.Net content.",
+      "status": "CONTRACT_SCOPE_UNVERIFIED",
+      "deployEligible": false,
+      "contractEvidence": {
+        "contractOrPermissionReference": null,
+        "applicableEntityAndRegion": null,
+        "subscriptionTierAndAddOns": null,
+        "feedsSymbolsAndVenues": null,
+        "publicDisplayPermission": null,
+        "apiRedistributionPermission": null,
+        "derivedScoresAndResearchPermission": null,
+        "cacheAndRetentionLimits": null,
+        "exportAndResalePermission": null,
+        "requiredAttribution": null,
+        "validityAndReviewDate": null
+      },
+      "researchScope": "PRIMARY_SOURCE_TERMS_PRICING_AND_SDK_REVIEWED_NOT_ARCHIVED_EXECUTED_CONTRACT"
     }
   ],
   "remainingGates": [

@@ -17,6 +17,10 @@
     "Cryptofeed is modeled as the lowest-latency WebSocket-specialist path but with lower portability than CCXT.",
     "OpenBB is modeled for breadth/multi-asset normalization rather than low-latency tick ingestion.",
     "DefiLlama is modeled as REST fundamentals/DeFi enrichment, not a venue tick feed.",
-    "yfinance remains RESEARCH_ONLY because software license and Yahoo data-use rights are separate."
+    "yfinance remains RESEARCH_ONLY because software license and Yahoo data-use rights are separate.",
+    "fdnpy/FinancialData.Net is catalogued but intentionally unbenchmarked until reproducible measured profile values exist."
+  ],
+  "unbenchmarkedIngress": [
+    "fdnpy"
   ]
 }

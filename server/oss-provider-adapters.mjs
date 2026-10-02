@@ -7,6 +7,7 @@ export const OSS_PROVIDER_ADAPTERS = Object.freeze({
   openbb: { kind:'sidecar', env:'OPENBB_API_URL', protocols:['rest'] },
   defillama: { kind:'public-rest', baseUrl:'https://api.llama.fi', protocols:['rest'] },
   yfinance: { kind:'sidecar', env:'YFINANCE_ADAPTER_URL', protocols:['rest','websocket'], researchOnly:true },
+  fdnpy: { kind:'sidecar', env:'FINANCIAL_DATA_NET_ADAPTER_URL', protocols:['rest'], provider:'financialdatanet', activationReviewRequired:true },
 });
 
 function abortAfter(ms=DEFAULT_TIMEOUT_MS){
@@ -19,6 +20,7 @@ export async function fetchOssAdapterHealth(id,{timeoutMs=DEFAULT_TIMEOUT_MS}={}
   const adapter=OSS_PROVIDER_ADAPTERS[id];
   if(!adapter) return {ok:false,id,reason:'UNKNOWN_ADAPTER'};
   if(adapter.researchOnly && process.env.NODE_ENV==='production') return {ok:false,id,reason:'RESEARCH_ONLY'};
+  if(adapter.activationReviewRequired) return {ok:false,id,reason:'ACTIVATION_REVIEW_REQUIRED'};
   const base=adapter.baseUrl || process.env[adapter.env];
   if(!base) return {ok:false,id,reason:'NOT_CONFIGURED'};
   const {signal,done}=abortAfter(timeoutMs);
@@ -37,5 +39,7 @@ export function getOssAdapterInventory(){
     configured:Boolean(adapter.baseUrl || (adapter.env && process.env[adapter.env])),
     protocols:adapter.protocols,
     researchOnly:Boolean(adapter.researchOnly),
+    activationReviewRequired:Boolean(adapter.activationReviewRequired),
+    provider:adapter.provider || null,
   }));
 }

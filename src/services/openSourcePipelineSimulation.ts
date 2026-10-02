@@ -41,6 +41,10 @@ function score(latency:number, throughput:number, recovery:number, portability:n
   return Math.round((securityTrust*25+functional*20+performance*20+recovery*10+maintainability*10+license*5+evidence*5+portability*5)/100);
 }
 
+export function getUnbenchmarkedOssIngress(): string[] {
+  return OPEN_SOURCE_MARKET_INGRESS.filter(ingress => !ingressProfiles[ingress.id]).map(ingress => ingress.id).sort();
+}
+
 export function enumerateLogicalOssPipelines(): SimulatedPipeline[] {
   const pipelines: SimulatedPipeline[]=[];
   for (const ingress of OPEN_SOURCE_MARKET_INGRESS) {

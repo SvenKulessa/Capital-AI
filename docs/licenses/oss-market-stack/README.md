@@ -11,6 +11,7 @@ Status: additive Evidence; keine automatische Daten- oder Production-Freigabe.
 | OpenBB V5 | Apache-2.0 | Adapter-ready | Rechte jedes OpenBB-Providers separat |
 | DefiLlama API SDK | MIT | Adapter-ready | API-/Datennutzungsbedingungen separat |
 | yfinance | Apache-2.0 | Research-only | Yahoo-Nutzungsbedingungen separat; keine kommerzielle Freigabe behauptet |
+| fdnpy 0.6.0 | MIT laut PyPI/setup.py; GitHub-Root ohne separate LICENSE-Datei im Review-Snapshot | Adapter-ready, nicht vendored | FinancialData.Net Subscription-/Dataset-Rechte separat; Professional/Enterprise nicht aus SDK-Lizenz ableiten |
 | NATS Server / JetStream | Apache-2.0 | bestehend | Software-Infrastruktur |
 | Valkey | BSD-3-Clause | bestehend | Software-Infrastruktur |
 | DuckDB | MIT | Adapter-ready | Software-Infrastruktur |
@@ -32,3 +33,8 @@ Die bestehenden Lizenz-/Provider-Grenzen aus dem Finance-Transfer bleiben Mindes
 ## Installationsregel
 
 Python-/Service-basierte Komponenten werden bewusst über Sidecar-/REST-Adapter eingebunden, statt ungeprüft in das Node-Runtime-Image aufgenommen zu werden. Eine physische Runtime-Installation benötigt exakte Version/Digest, Original-LICENSE/NOTICE, SBOM/Lockfile und den bestehenden Supply-Chain-Gate. Dadurch bleibt der aktuelle Runtime-Closure unverändert und reproduzierbar.
+
+
+## FinancialData.Net-spezifische Grenze
+
+`fdnpy` ist nur der Open-Source-SDK-Connector. CAPITAL-AI behandelt `financialdatanet` separat als Datenprovider. Die aktuelle öffentliche Pricing-/Terms-Evidence wird in `docs/security/evidence/license-rights-review.json` referenziert; sie ersetzt keinen Nachweis des tatsächlich gebuchten Plans oder einzelner Feed-/Exchange-Rechte. Universal Query, MCP Server und Excel Add-in sind zusätzliche Provider-Schnittstellen, keine eigenständigen Rechtequellen.

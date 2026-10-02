@@ -5,7 +5,7 @@ Primary Domain: CAPITAL-AI-MARKET · Cross-Domain: PRODUCT / TRUST / PLATFORM
 
 ## Scope
 
-This slice registers open-source alternatives for market ingress and adjacent layers without creating a second provider authority. Existing NATS/JetStream and Valkey remain canonical transport/cache. The candidates are CCXT, Hummingbot, Cryptofeed, OpenBB, DefiLlama API SDK and yfinance. Adjacent OSS candidates cover analytics (DuckDB/ClickHouse), observability (OpenTelemetry/Prometheus), vector retrieval (Qdrant) and license compliance (ORT/ScanCode).
+This slice registers open-source alternatives for market ingress and adjacent layers without creating a second provider authority. Existing NATS/JetStream and Valkey remain canonical transport/cache. The candidates are CCXT, Hummingbot, Cryptofeed, OpenBB, DefiLlama API SDK, yfinance and fdnpy/FinancialData.Net. Adjacent OSS candidates cover analytics (DuckDB/ClickHouse), observability (OpenTelemetry/Prometheus), vector retrieval (Qdrant) and license compliance (ORT/ScanCode).
 
 ## Rights boundary
 
@@ -15,14 +15,14 @@ Software licenses never grant market-data rights. Exchange/provider terms, displ
 
 `src/services/openSourcePipelineSimulation.ts` enumerates every currently valid combination of:
 
-- registered OSS ingress candidate;
+- registered OSS ingress candidate with an explicit simulation profile;
 - supported REST/WebSocket/hybrid mode;
 - canonical NATS transport;
 - canonical Valkey cache;
 - DuckDB or ClickHouse analytics;
 - OpenTelemetry/Prometheus observability.
 
-The engine emits deterministic synthetic metrics and a DATA_PIPELINE@1-compatible CADS score. It intentionally marks every result `decisionEligible:false` because synthetic measurements are architecture evidence, not live provider SLAs.
+The engine emits deterministic synthetic metrics and a DATA_PIPELINE@1-compatible CADS score. It intentionally marks every result `decisionEligible:false` because synthetic measurements are architecture evidence, not live provider SLAs. fdnpy/FinancialData.Net is deliberately listed as `unbenchmarkedIngress` until measured profile values exist; no latency, throughput, recovery or SLA values are invented for it.
 
 ## Validation
 

@@ -1,0 +1,55 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  FINANCIAL_DATA_NET_CONNECTIONS,
+  FINANCIAL_DATA_NET_DATASET_GROUPS,
+  FINANCIAL_DATA_NET_PROVENANCE,
+  getFinancialDataNetIntegrationSummary,
+} from '../../data/financialDataNetIntegration';
+import { ProviderAdapterRegistry } from '../../services/providerAdapters';
+
+describe('FinancialData.Net integration catalog', () => {
+  it('separates SDK software provenance from provider data rights', () => {
+    assert.equal(FINANCIAL_DATA_NET_PROVENANCE.sdkVersion, '0.6.0');
+    assert.equal(FINANCIAL_DATA_NET_PROVENANCE.sdkLicense, 'MIT');
+    assert.equal(FINANCIAL_DATA_NET_PROVENANCE.codeVendored, false);
+    assert.equal(FINANCIAL_DATA_NET_PROVENANCE.providerRightsStatus, 'CONTRACT_SCOPE_UNVERIFIED');
+    assert.equal(FINANCIAL_DATA_NET_PROVENANCE.productionEligible, false);
+  });
+
+  it('catalogues REST, fdnpy, Universal Query and MCP without implying activation', () => {
+    const ids = FINANCIAL_DATA_NET_CONNECTIONS.map(item => item.id);
+    assert.ok(ids.includes('financialdatanet-rest'));
+    assert.ok(ids.includes('fdnpy'));
+    assert.ok(ids.includes('financialdatanet-universal-query'));
+    assert.ok(ids.includes('financialdatanet-mcp'));
+    assert.ok(FINANCIAL_DATA_NET_CONNECTIONS.every(item => item.status !== 'INTEGRATED'));
+  });
+
+  it('keeps every dataset family rights-unverified', () => {
+    assert.ok(FINANCIAL_DATA_NET_DATASET_GROUPS.length >= 8);
+    assert.ok(FINANCIAL_DATA_NET_DATASET_GROUPS.every(group => group.rightsStatus === 'CONTRACT_SCOPE_UNVERIFIED'));
+    const summary = getFinancialDataNetIntegrationSummary();
+    assert.equal(summary.decisionEligible, false);
+    assert.ok(summary.methodCount > 50);
+  });
+
+  it('registers the provider adapter but keeps ingestion fail-closed', async () => {
+    const adapter = new ProviderAdapterRegistry().getAdapter('financialdatanet');
+    assert.equal(adapter.isDemo, false);
+    assert.ok(adapter.supportedAssetClasses.includes('equity_us'));
+    await assert.rejects(
+      () => adapter.fetchObservation({
+        assetId: 'asset:MSFT',
+        symbol: 'MSFT',
+        name: 'Microsoft',
+        assetClass: 'equity_us',
+        subclass: 'us_megacap_tech',
+        venue: 'NASDAQ',
+        currency: 'USD',
+        status: 'active',
+      }),
+      /FINANCIALDATANET_RIGHTS_AND_DATASET_MAPPING_REQUIRED/,
+    );
+  });
+});
