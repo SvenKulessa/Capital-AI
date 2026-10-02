@@ -11,7 +11,7 @@ const alternatives = new Map([
 ]);
 // Version-bounded identifier-data review, not a general CC license allow-list.
 function reviewedSpdxData(p) {
-  return (p.path === 'node_modules/spdx-license-ids' && p.version === '3.0.23' && p.selectedLicense === 'CC0-1.0') ||
+  return (p.path === 'node_modules/spdx-license-ids' && p.version === '3.0.24' && p.selectedLicense === 'CC0-1.0') ||
     (p.path === 'node_modules/spdx-exceptions' && p.version === '2.5.0' && p.selectedLicense === 'CC-BY-3.0');
 }
 
@@ -37,7 +37,7 @@ export function lockInventory(root) {
     const attributionReview = path === 'node_modules/caniuse-lite' && selectedLicense === 'CC-BY-4.0';
     return {
       path, version: p.version, declaredLicense: p.license || null, selectedLicense,
-      dev: p.dev === true, optional: p.optional === true, integrity: p.integrity || null,
+      dev: p.dev === true, optional: p.optional === true, integrity: p.integrity || null, resolved: p.resolved || null,
       metadataStatus: permissive.has(selectedLicense) ? 'NOTICE_REQUIRED' : reviewedSpdxData({ path, version: p.version, selectedLicense }) ? 'VERSION_BOUNDED_DATA_NOTICE_REQUIRED' : buildReview ? 'BUILD_TOOL_REVIEW' : attributionReview ? 'DATA_ATTRIBUTION_REVIEW' : dependencyDistributionReview ? 'DEPENDENCY_DISTRIBUTION_REVIEW' : 'UNREVIEWED',
     };
   });
@@ -81,7 +81,7 @@ export function bundleLicenseEvidence(root, moduleIds) {
       const file = p.selectedLicense === 'CC0-1.0' ? 'CC0-1.0.txt' : 'CC-BY-3.0.txt';
       texts.push({ path: 'supplemental/' + file, text: readFileSync(join(root, 'docs/licenses/license-engine', file), 'utf8') });
     }
-    if (manifest.name === 'spdx-expression-parse' && p.version === '4.0.0') {
+    if (manifest.name === 'spdx-expression-parse' && p.version === '5.0.0') {
       texts.push({ path: 'AUTHORS', text: readFileSync(join(p.directory, 'AUTHORS'), 'utf8') });
     }
     // These two published versions put the complete MIT text in README.

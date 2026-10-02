@@ -1,0 +1,21 @@
+{
+  "generated": true,
+  "editableByHand": false,
+  "sourceSchema": "DOCUMENTARY_EVIDENCE@1",
+  "schemaVersion": "1.0.0",
+  "chronology": "identity.createdAt ASC, documentaryId ASC",
+  "entries": [
+    {
+      "documentaryId": "DOC-20261001-PR91-GROWTH-HANDOFF",
+      "changeId": "CA-20261001-PR91-GROWTH-HANDOFF",
+      "createdAt": "2026-10-01T19:52:27Z",
+      "lifecycle": "PROPOSED",
+      "sourceSha": "18d702ef45a3ddcf74a5c33ee8442cb14f6a0c8f",
+      "schema": "DOCUMENTARY_EVIDENCE@1",
+      "schemaVersion": "1.0.0",
+      "documentaryDigest": "3f2e83760f4166f5df606af7abef3569dc8958575a97c81c68fa80880b378698",
+      "json": "generated/documentary/DOC-20261001-PR91-GROWTH-HANDOFF.json",
+      "markdown": "generated/documentary/DOC-20261001-PR91-GROWTH-HANDOFF.md"
+    }
+  ]
+}

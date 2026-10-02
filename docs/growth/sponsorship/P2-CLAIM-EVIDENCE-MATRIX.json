@@ -1,0 +1,57 @@
+{
+  "schema": "SPONSORSHIP_CLAIM_EVIDENCE_MATRIX@1",
+  "version": "1.0.0",
+  "sourceSha": "801188ce187684b51cb528301cd1fc024e7a0985",
+  "publicationPolicy": {
+    "default": "BLOCKED",
+    "verifiedEvidenceRequired": true,
+    "unknownMayPublish": false,
+    "reviewRequiredMayPublish": false
+  },
+  "claims": [
+    {
+      "claimId": "SP2-CLAIM-001",
+      "text": "CAPITAL-AI verwendet eine fail-closed Evidence-Infrastruktur.",
+      "status": "SUPPORTED",
+      "evidenceRefs": [
+        "contracts/registry.json",
+        "contracts/trust/SPONSORSHIP_P2_READINESS@1.yaml"
+      ],
+      "publication": "INTERNAL_READY"
+    },
+    {
+      "claimId": "SP2-CLAIM-002",
+      "text": "Provider-, Dataset- und Use-Case-Rechte werden vor Aktivierung evidenzgebunden bewertet.",
+      "status": "SUPPORTED",
+      "evidenceRefs": [
+        "main:a6fe16db17da2db4d0eba1a43dd386af9fb94707"
+      ],
+      "publication": "INTERNAL_READY"
+    },
+    {
+      "claimId": "SP2-CLAIM-003",
+      "text": "Alle für Sponsorship P2 erforderlichen Lizenzrechte sind verifiziert.",
+      "status": "BLOCKED",
+      "evidenceRefs": [
+        "contracts/trust/SPONSORSHIP_P2_READINESS@1.yaml"
+      ],
+      "publication": "BLOCKED"
+    },
+    {
+      "claimId": "SP2-CLAIM-004",
+      "text": "Sponsorship P2 ist vollständig freigegeben.",
+      "status": "BLOCKED",
+      "evidenceRefs": [
+        "contracts/trust/SPONSORSHIP_P2_READINESS@1.yaml"
+      ],
+      "publication": "BLOCKED"
+    },
+    {
+      "claimId": "SP2-CLAIM-005",
+      "text": "Sponsoringmittel wurden bereits für Forschungsarbeit ausgegeben.",
+      "status": "BLOCKED",
+      "evidenceRefs": [],
+      "publication": "BLOCKED"
+    }
+  ]
+}

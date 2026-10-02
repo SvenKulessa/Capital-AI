@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://capital-ai.online/contracts/GROWTH_HANDOFF@1.schema.json",
+  "title": "GROWTH_HANDOFF@1",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "metadata",
+    "canonicalRules",
+    "correlation",
+    "ownership",
+    "safety"
+  ],
+  "properties": {
+    "schema": {
+      "const": "GROWTH_HANDOFF@1"
+    },
+    "version": {
+      "const": "1.0.0"
+    },
+    "metadata": {
+      "type": "object",
+      "required": [
+        "project",
+        "domain",
+        "status"
+      ],
+      "properties": {
+        "project": {
+          "const": "CAPITAL-AI"
+        },
+        "domain": {
+          "const": "GROWTH"
+        },
+        "status": {
+          "enum": [
+            "PROPOSED",
+            "VERIFIED",
+            "EFFECTIVE",
+            "SUPERSEDED",
+            "BLOCKED"
+          ]
+        }
+      }
+    },
+    "canonicalRules": {
+      "type": "object"
+    },
+    "correlation": {
+      "type": "object"
+    },
+    "ownership": {
+      "type": "object"
+    },
+    "safety": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true
+}

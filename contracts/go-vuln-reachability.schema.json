@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://capital-ai.online/schemas/go-vuln-reachability-v1.json",
+  "title": "CAPITAL-AI Go vulnerability reachability evidence",
+  "type": "object",
+  "required": [
+    "schema",
+    "advisory",
+    "component",
+    "natsImageRef",
+    "binarySha256",
+    "dependency",
+    "scanner",
+    "evidence",
+    "prerequisites",
+    "decision",
+    "reason",
+    "blocking",
+    "trivyFindingRetained",
+    "trivySuppressionApplied"
+  ],
+  "properties": {
+    "schema": {
+      "const": "GO_VULN_REACHABILITY@1"
+    },
+    "advisory": {
+      "const": "GO-2026-5932"
+    },
+    "component": {
+      "const": "nats-server"
+    },
+    "natsImageRef": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "binarySha256": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "dependency": {
+      "type": "object",
+      "required": [
+        "module",
+        "version",
+        "presentInBinaryBuildInfo"
+      ],
+      "properties": {
+        "module": {
+          "const": "golang.org/x/crypto"
+        },
+        "version": {
+          "const": "v0.57.0"
+        },
+        "presentInBinaryBuildInfo": {
+          "type": "boolean"
+        }
+      }
+    },
+    "scanner": {
+      "type": "object"
+    },
+    "evidence": {
+      "type": "object"
+    },
+    "prerequisites": {
+      "type": "object"
+    },
+    "decision": {
+      "enum": [
+        "NOT_AFFECTED",
+        "AFFECTED",
+        "INCONCLUSIVE"
+      ]
+    },
+    "reason": {
+      "type": "string"
+    },
+    "blocking": {
+      "type": "boolean"
+    },
+    "trivyFindingRetained": {
+      "const": true
+    },
+    "trivySuppressionApplied": {
+      "const": false
+    }
+  }
+}\n

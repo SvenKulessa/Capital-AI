@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-01",
+  "asset": "src/assets/images/glowing_earth_nodes_1789997454893.jpg",
+  "statementSource": "Owner message in this conversation on 2026-10-01",
+  "owner": "Sven Kulessa",
+  "creationContext": "ChatGPT project CAPITAL-AI-SOCIAL; request for new website mockup using the owner-assembled Social Media Engine with open-source rendering tools",
+  "sequence": [
+    "Mockup/design requested and created in ChatGPT; vector graphic integration was unsuccessful",
+    "Mockup subsequently developed in Google AI Studio Playground with FRONTEND and Gemini",
+    "ChatGPT transferred the result into Capital-AI"
+  ],
+  "modelAsStatedByOwner": "Gemini 3.8 Flash",
+  "modelIndependentlyVerified": false,
+  "verification": "OWNER_STATEMENT_WITH_EXISTING_GIT_IMPORT_CORRELATION",
+  "existingHistoryEvidence": "docs/security/evidence/asset-mockup-history-review.json",
+  "assetSpecificOriginalExecutionManifest": null,
+  "historicalServiceTermsBoundToGeneration": null,
+  "thirdPartyRightsApproval": null,
+  "designPreserved": true,
+  "remainingEvidence": [
+    "Exact original generation reference/date and asset hash chain",
+    "Actual rendering inputs and generator/service used for the earth image",
+    "Applicable service terms at each relevant generation/edit stage"
+  ],
+  "assetSha256": "aae548443cb6ec1be4c7d9f9389c52cc1e01b28df28fbc4e985750dd424bb671",
+  "serviceTermsReviewed": [
+    {
+      "url": "https://openai.com/de-DE/policies/eu-terms-of-use/",
+      "scope": "Output ownership as between user and OpenAI; no third-party-rights guarantee; exact historical generation date still unbound"
+    },
+    {
+      "url": "https://ai.google.dev/gemini-api/terms",
+      "scope": "Google does not claim ownership of original generated content; user responsible for use; exact historical editing date still unbound"
+    }
+  ]
+}

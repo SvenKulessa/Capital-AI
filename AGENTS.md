@@ -32,6 +32,7 @@ Für **jede** Domain und jede neue Arbeitssitzung ist der erste verbindliche Kon
 7. **Konflikte** — keine pauschale `ours/theirs`-Auflösung für Lockfiles, Vendor-Patches oder Security-Evidence. Von aktuellem `main` rekonstruieren und bereits neuere sichere Änderungen bewahren.
 8. **Neueste stabile Version** — bevorzugen, wenn unterstützt und kompatibel. "Latest" ersetzt keine Migrationsprüfung.
 9. **Self-Healing** — wiederkehrende sichere Reparaturmuster erst nach mindestens drei positiven Validierungszyklen als automatische Invariante fest verankern.
+10. **Post-Merge-Korrelation** — nach einem Merge nach `main` muss bei tatsächlicher Datei-, Contract-, Lockfile-, Runtime- oder Evidence-Überschneidung eine Rekorrelation betroffener offener Arbeiten gegen den neuen Main erfolgen. Der kanonische Contract ist `POST_MERGE_CORRELATION@1` in `docs/security/POST-MERGE-CORRELATION-SELF-HEALING.md`. Automatische Fixes bleiben auf validierte Low-Risk-Klassen begrenzt und werden erst nach drei unabhängigen positiven Zyklen promotet. Ein neuer Repository-HEAD allein ist weder ein Deployment- noch ein NATS-Redeploy-Signal.
 
 ## Update-Trust-Contract
 
@@ -293,3 +294,16 @@ Die kanonischen Detailregeln bleiben in:
 - `docs/governance/TOOL-AND-ARCHITECTURE-BENCHMARKING.md`
 
 Diese Root-Policy definiert die übergeordnete Arbeitsweise; die Detaildokumente dürfen sie verschärfen, aber nicht abschwächen.
+
+## Build-, Runtime- und Trigger-Abhängigkeitsgrenzen
+
+Abhängigkeiten werden nach ihrem tatsächlichen Ausführungszeitpunkt getrennt; ein gemeinsames Root-`package.json` ist **keine** automatische Runtime-Freigabe.
+
+- **Build-Scope:** Compiler, Bundler, Vite-Plugins, Frontend-Bibliotheken und Build-Evidence dürfen im Build-Stage vorhanden sein, werden aber nicht allein deshalb in das Runtime-`node_modules` übernommen.
+- **Runtime-Scope:** Das produktive Webservice-Image installiert ausschließlich die direkt für den Serverstart und seine dauerhaft aktiven Pfade benötigte, gepinnte Dependency-Closure aus `deploy/runtime/package.json` und `deploy/runtime/package-lock.json`.
+- **Triggered/Postflight-Scope:** Werkzeuge für Migration, Evidence, Reports, Mail-Jobs, Benchmarks, Scans oder andere nicht dauerhaft benötigte Aufgaben sollen als eigene, versionierte Execution Unit mit eigenem Manifest/Lockfile ausgeführt werden, wenn sie nicht für den Serverstart benötigt werden. Sie werden nicht vorsorglich in das Runtime-Image aufgenommen.
+- Ein Trigger darf keine fehlende Auth-, Secret-, Netzwerk-, Lizenz- oder Production-Grenze umgehen. Triggered Units erhalten Least-Privilege-Berechtigungen, bounded Inputs/Timeouts und eigene Evidence.
+- Root-Lockfile, Runtime-Lockfile und weitere Execution-Unit-Lockfiles bleiben unabhängig scan- und updatepflichtig. Auslagerung bedeutet **nicht**, dass eine Dependency aus SBOM-, Lizenz-, CVE- oder Provenance-Evidence verschwindet.
+- Jede Verschiebung zwischen Build, Runtime und Triggered/Postflight muss durch Import-/Reachability-Evidence, Tests, Lockfile-Diff und Rollback begründet werden.
+- Nicht verwendete Dependencies werden entfernt statt im Runtime-Image bevorratet. Geplante zukünftige Komponenten werden erst aufgenommen, wenn ihr ausführbarer Pfad existiert und geprüft ist.
+- Docker bleibt Build-once/Promote-many; Triggered/Postflight Units verändern niemals rückwirkend das attestierte Candidate-Image.

@@ -1,0 +1,226 @@
+{
+  "schema": "CHANGE_PROPAGATION@1",
+  "version": "1.0.0",
+  "metadata": {
+    "project": "CAPITAL-AI",
+    "domain": "PLATFORM",
+    "status": "PROPOSED"
+  },
+  "correlation": {
+    "changeId": null
+  },
+  "trigger": {
+    "type": "REPOSITORY_CHANGE",
+    "events": [
+      "pull_request",
+      "merge_group",
+      "push_main",
+      "post_merge_correlation"
+    ]
+  },
+  "input": {
+    "repository": null,
+    "sourceSha": null,
+    "parentSha": null,
+    "changedFiles": []
+  },
+  "classification": {
+    "domains": [
+      "PRODUCT",
+      "MARKET",
+      "PLATFORM",
+      "TRUST",
+      "GROWTH"
+    ],
+    "changeTypes": [
+      "CODE",
+      "CONFIG",
+      "DEPENDENCY",
+      "WORKFLOW",
+      "CONTAINER",
+      "RUNTIME",
+      "SECURITY",
+      "LICENSE",
+      "ARCHITECTURE",
+      "DOCUMENTATION",
+      "ROADMAP",
+      "COMMERCIALIZATION"
+    ]
+  },
+  "impactDetection": {
+    "code": {
+      "enabled": true
+    },
+    "architecture": {
+      "enabled": true
+    },
+    "runtime": {
+      "enabled": true
+    },
+    "documentation": {
+      "enabled": true
+    },
+    "roadmap": {
+      "enabled": true
+    },
+    "commercialization": {
+      "enabled": true
+    },
+    "security": {
+      "enabled": true
+    },
+    "license": {
+      "enabled": true
+    },
+    "observability": {
+      "enabled": true
+    }
+  },
+  "projectionRules": {
+    "architectureChange": {
+      "when": [
+        "public interface changed",
+        "runtime boundary changed",
+        "component relationship changed",
+        "security boundary changed",
+        "data flow changed",
+        "deployment topology changed"
+      ],
+      "emit": [
+        "ARCHITECTURE_CHANGE@1",
+        "DOCUMENTARY_EVIDENCE@1"
+      ]
+    },
+    "roadmapChange": {
+      "when": [
+        "deliverable state changed",
+        "dependency changed",
+        "release gate changed",
+        "commercialization gate changed",
+        "new work package introduced"
+      ],
+      "emit": [
+        "ROADMAP_UPDATE@1",
+        "DOCUMENTARY_EVIDENCE@1"
+      ]
+    },
+    "commercialChange": {
+      "when": [
+        "pricing changed",
+        "subscription capability changed",
+        "distribution model changed",
+        "license status changed",
+        "first revenue gate changed"
+      ],
+      "emit": [
+        "COMMERCIALIZATION_INVENTORY@1"
+      ]
+    },
+    "documentationChange": {
+      "when": [
+        "canonical technical state changed",
+        "architecture changed",
+        "security contract changed",
+        "runtime contract changed"
+      ],
+      "emit": [
+        "DOCUMENTARY_EVIDENCE@1"
+      ]
+    }
+  },
+  "projections": {
+    "roadmap": {
+      "target": "src/data/roadmapData.ts",
+      "generationMode": "DETERMINISTIC"
+    },
+    "documentary": {
+      "target": "generated/documentary/",
+      "generationMode": "DETERMINISTIC"
+    },
+    "architecture": {
+      "target": "generated/architecture/",
+      "generationMode": "DETERMINISTIC"
+    },
+    "commercialization": {
+      "target": "generated/commercialization/",
+      "generationMode": "DETERMINISTIC"
+    },
+    "controlCenter": {
+      "target": "generated/control-center/",
+      "generationMode": "DETERMINISTIC"
+    }
+  },
+  "consistencyGate": {
+    "enabled": true,
+    "checks": {
+      "changedFilesVersioned": {
+        "required": true
+      },
+      "architectureProjectionCurrent": {
+        "required": true
+      },
+      "roadmapProjectionCurrent": {
+        "required": true
+      },
+      "documentaryProjectionCurrent": {
+        "required": true
+      },
+      "commercializationProjectionCurrent": {
+        "requiredWhenAffected": true
+      }
+    },
+    "failureBehavior": {
+      "pullRequest": "BLOCK",
+      "main": "REPORT_AND_FAIL"
+    }
+  },
+  "versioning": {
+    "everyCanonicalChangeRequires": [
+      "sourceSha",
+      "schemaVersion",
+      "changeType"
+    ],
+    "semanticVersioning": {
+      "enabled": true
+    },
+    "incompatibleContractChange": {
+      "action": "NEW_MAJOR_SCHEMA"
+    }
+  },
+  "selfHealing": {
+    "detection": {
+      "enabled": true
+    },
+    "autoRepair": {
+      "enabled": false
+    },
+    "promotionRule": {
+      "minimumPositiveValidationCycles": 3
+    },
+    "validationSteps": [
+      "DETECT",
+      "CORRELATE",
+      "CLASSIFY",
+      "REMEDIATE",
+      "VERIFY"
+    ],
+    "permittedRepairClasses": [
+      "DETERMINISTIC_PROJECTION",
+      "MISSING_GENERATED_INDEX",
+      "STALE_ROADMAP_PROJECTION",
+      "STALE_DOCUMENTARY_PROJECTION"
+    ],
+    "forbiddenRepairClasses": [
+      "SECURITY_POLICY_RELAXATION",
+      "LICENSE_APPROVAL",
+      "DNS_CHANGE",
+      "BILLING_CHANGE",
+      "SECRET_ROTATION",
+      "PRODUCTION_DEPLOYMENT"
+    ]
+  },
+  "deploymentRules": {
+    "repositoryHeadAloneTriggersDeploy": false,
+    "repositoryHeadAloneTriggersNatsRedeploy": false
+  }
+}

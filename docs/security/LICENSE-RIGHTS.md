@@ -1,5 +1,13 @@
 # Basisimage-Quellen und Nutzungsrechte
 
+**Herkunftsergänzung vom 01.10.2026:** Der Owner hat die Erstellung des Mockups
+im ChatGPT-Projekt CAPITAL-AI-SOCIAL und die anschließende Weiterentwicklung
+in Google AI Studio / FRONTEND mit Gemini präzisiert. Siehe
+[neue Herkunftsangabe](evidence/hero-owner-statement-20261001.json) und
+[Forschungs-/Importprüfung](FRONTEND-RESEARCH-HANDOFF-20261001.md).
+Die historische Prüfung unten bleibt nachvollziehbar; fehlende Original-Laufdaten
+oder zeitlich passende Dienstbedingungen werden nicht als vorhanden behauptet.
+
 Prüfstand: 30.09.2026, Europe/Berlin. Repository: `SvenKulessa/Capital-AI`.
 Anwendungsstand: `ed594ef93f66ee8f13f67d75dde56f46a95b1cd6`.
 Containerbefunde stammen aus [Workflow 36644672551](https://github.com/SvenKulessa/Capital-AI/actions/runs/36644672551)

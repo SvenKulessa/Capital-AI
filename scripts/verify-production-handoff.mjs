@@ -3,6 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { verifyMainRuleset } from './verify-main-ruleset.mjs';
+import { validateContainerIdentity } from './container-evidence-identity.mjs';
 
 const SOURCE_SHA = /^[0-9a-f]{40}$/;
 const IMAGE_REF = /^ghcr\.io\/svenkulessa\/capital-ai@sha256:[0-9a-f]{64}$/;
@@ -55,6 +56,25 @@ export function evaluateProductionHandoff({
     m.platform?.os === 'linux' && m.platform?.architecture === 'amd64') || [];
   const platformDigest = manifests.length === 1 ? normalizeDigest(manifests[0].digest) : null;
   const configDigest = normalizeDigest(registryScan?.Metadata?.ImageID);
+  let typedIdentity = null;
+  let typedIdentityError = null;
+  try {
+    typedIdentity = validateContainerIdentity(candidate.containerIdentity);
+  } catch (error) {
+    typedIdentityError = error instanceof Error ? error.message : String(error);
+  }
+  const typedDigests = typedIdentity?.digests || {};
+  const typedSource = typedIdentity?.source || {};
+  const containerIdentityPass =
+    typedIdentityError === null &&
+    typedSource.sourceSha === candidate.sourceSha &&
+    typedSource.testedSha === candidate.sourceSha &&
+    typedSource.testedMergeSha === null &&
+    typedDigests.artifactArchiveDigest !== null &&
+    typedDigests.localImageId === configDigest &&
+    typedDigests.ociIndexDigest === requestedDigest &&
+    typedDigests.platformManifestDigest === platformDigest &&
+    typedDigests.configDigest === configDigest;
   const registryPass = registryManifest?.digest === requestedDigest &&
     platformDigest !== null && configDigest !== null &&
     registryPlatformManifest?.digest === platformDigest &&
@@ -78,6 +98,17 @@ export function evaluateProductionHandoff({
       name: 'MAIN_PROTECTION',
       pass: protectionPass,
       evidence: { activeMainRulesets: activeMainRulesets.map(r => r.name), requiredContext: REQUIRED_CONTEXT, requiredContexts, protectionReports },
+    },
+    {
+      name: 'CONTAINER_IDENTITY_CHAIN',
+      pass: containerIdentityPass,
+      evidence: {
+        schema: typedIdentity?.schema || null,
+        source: typedSource,
+        digestTypes: typedIdentity?.digestTypes || null,
+        digests: typedDigests,
+        validationError: typedIdentityError,
+      },
     },
     {
       name: 'RENDER_IMAGE_SOURCE',
@@ -138,6 +169,13 @@ export function evaluateProductionHandoff({
     imageRef: candidate.imageRef,
     serviceId: service?.id || null,
     deployId: deploy?.id || null,
+    containerIdentity: typedIdentity ? {
+      ...typedIdentity,
+      digests: {
+        ...typedIdentity.digests,
+        runtimeProviderDigest: normalizeDigest(deploy?.image?.sha),
+      },
+    } : null,
     gates,
     remainingGates,
   };
