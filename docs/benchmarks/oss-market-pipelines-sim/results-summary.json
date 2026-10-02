@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "OSS-MARKET-PIPELINES-SIM@1",
+  "scoreProfile": "DATA_PIPELINE@1",
+  "benchmarkKind": "DETERMINISTIC_SIMULATION",
+  "generatedAt": "2026-10-02T04:09:00+02:00",
+  "decisionEligible": false,
+  "assumptions": {
+    "transport": "NATS + JetStream",
+    "cache": "Valkey",
+    "observability": "OpenTelemetry + Prometheus",
+    "note": "Synthetic workload model; no live provider/network measurement and no contractual data-rights approval."
+  },
+  "count": 26,
+  "topFindings": [
+    "CCXT-based combinations form the highest simulated CADS band under the declared assumptions.",
+    "Cryptofeed is modeled as the lowest-latency WebSocket-specialist path but with lower portability than CCXT.",
+    "OpenBB is modeled for breadth/multi-asset normalization rather than low-latency tick ingestion.",
+    "DefiLlama is modeled as REST fundamentals/DeFi enrichment, not a venue tick feed.",
+    "yfinance remains RESEARCH_ONLY because software license and Yahoo data-use rights are separate."
+  ]
+}
