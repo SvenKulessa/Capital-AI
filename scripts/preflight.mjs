@@ -21,6 +21,7 @@ run(process.execPath, ['--test',
   'scripts/diagnose-oidc.test.mjs', 'scripts/verify-main-ruleset.test.mjs', 'scripts/npm-security-patch-policy.test.mjs',
   'scripts/percentage-parser.test.mjs',
   'server/observability.test.mjs',
+  'server/cads-observability.test.mjs',
   'scripts/font-distribution.test.mjs',
   'scripts/post-merge-correlation.test.mjs',
 ]);
