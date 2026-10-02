@@ -11,6 +11,7 @@ import { infrastructure } from './infrastructure.mjs';
 import { createMobileScorer } from './mobile-scorer.mjs';
 import { serveMtaSts } from './mta-sts.mjs';
 import { researchMetadata } from '../shared/research-metadata.mjs';
+import { BILLING_CATALOG } from './billing-catalog.mjs';
 
 const moduleRoot = path.dirname(fileURLToPath(import.meta.url));
 const defaultRoot = path.resolve(moduleRoot, '../dist');
@@ -55,6 +56,7 @@ export function createApp(root = defaultRoot, options = {}) {
     finally { inflight--; }
   }
   if (url.pathname === '/api/market/status') return json(res, 200, health());
+  if (url.pathname === '/api/billing/catalog') return json(res, 200, BILLING_CATALOG);
   if (url.pathname === '/api/market/evidence') {
     if (!marketLimit()) return json(res, 429, { error: 'rate_limited' });
     if (inflight >= 8) return json(res, 429, { error: 'busy' });
