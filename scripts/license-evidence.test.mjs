@@ -104,6 +104,17 @@ test('Nodemailer review requires the exact registry artifact and unchanged licen
   assert.equal(lockInventory(f.root).packages[0].metadataStatus, 'UNREVIEWED');
 });
 
+
+test('SPDX identifier data review is bounded to 3.0.24', t => {
+  const f = fixture(t, 'CC0-1.0', '3.0.24', 'spdx-license-ids');
+  assert.equal(lockInventory(f.root).packages[0].metadataStatus, 'VERSION_BOUNDED_DATA_NOTICE_REQUIRED');
+  const lockPath = join(f.root, 'package-lock.json');
+  const lock = JSON.parse(readFileSync(lockPath));
+  lock.packages['node_modules/spdx-license-ids'].version = '3.0.25';
+  writeFileSync(lockPath, JSON.stringify(lock));
+  assert.equal(lockInventory(f.root).packages[0].metadataStatus, 'UNREVIEWED');
+});
+
 test('MIT-0 review does not cover arbitrary packages or frontend distribution', t => {
   const f = fixture(t, 'MIT-0');
   writeFileSync(join(f.dir, 'LICENSE'), 'MIT-0');
