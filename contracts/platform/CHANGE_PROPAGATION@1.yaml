@@ -195,7 +195,10 @@
       "enabled": false
     },
     "promotionRule": {
-      "minimumPositiveValidationCycles": 3
+      "minimumPositiveValidationCycles": 3,
+      "approvalStages": 5,
+      "promotionRequiresSameFixFingerprint": true,
+      "repositoryHeadAloneAuthorizesMutation": false
     },
     "validationSteps": [
       "DETECT",
@@ -208,7 +211,8 @@
       "DETERMINISTIC_PROJECTION",
       "MISSING_GENERATED_INDEX",
       "STALE_ROADMAP_PROJECTION",
-      "STALE_DOCUMENTARY_PROJECTION"
+      "STALE_DOCUMENTARY_PROJECTION",
+      "POST_MERGE_LOW_RISK_SYNC"
     ],
     "forbiddenRepairClasses": [
       "SECURITY_POLICY_RELAXATION",
