@@ -44,6 +44,7 @@ export function classifyGoVulnReachability({
   advisory = TARGET_ADVISORY,
   binarySha256,
   imageRef,
+  localImageId,
 }) {
   const config = messages.find(message => message?.config)?.config || null;
   const osv = messages.find(message => message?.osv?.id === advisory)?.osv || null;
@@ -92,6 +93,7 @@ export function classifyGoVulnReachability({
     advisory,
     component: 'nats-server',
     natsImageRef: imageRef || null,
+    localImageId: localImageId || null,
     binarySha256: binarySha256 || null,
     dependency: {
       module: XCRYPTO_MODULE,
@@ -136,22 +138,69 @@ export function classifyGoVulnReachability({
   };
 }
 
+export function buildOpenVex(report) {
+  const status = report.decision === 'NOT_AFFECTED' ? 'not_affected' : report.decision === 'AFFECTED' ? 'affected' : 'under_investigation';
+  const statement = {
+    vulnerability: { name: report.advisory, '@id': 'https://pkg.go.dev/vuln/' + report.advisory },
+    products: [{ '@id': report.natsImageRef || 'urn:capital-ai:nats:unbound' }],
+    status,
+    status_notes: report.reason,
+  };
+  if (status === 'not_affected') statement.justification = report.reason === 'vulnerable_code_not_present' ? 'vulnerable_code_not_present' : 'vulnerable_code_not_in_execute_path';
+  return {
+    '@context': 'https://openvex.dev/ns/v0.2.0',
+    '@id': 'https://capital-ai.online/vex/' + report.advisory + '/' + String(report.binarySha256 || 'unknown').replace(':', '-'),
+    author: 'CAPITAL-AI TRUST automation',
+    role: 'Document Creator',
+    timestamp: '1970-01-01T00:00:00.000Z',
+    version: 1,
+    statements: [statement],
+  };
+}
+
+export function buildCycloneDxVex(report) {
+  const ref = report.natsImageRef || 'urn:capital-ai:nats:unbound';
+  const analysis = report.decision === 'NOT_AFFECTED'
+    ? { state: 'not_affected', justification: report.reason === 'vulnerable_code_not_present' ? 'code_not_present' : 'code_not_reachable', detail: report.reason }
+    : report.decision === 'AFFECTED'
+      ? { state: 'exploitable', detail: report.reason }
+      : { state: 'in_triage', detail: report.reason };
+  return {
+    bomFormat: 'CycloneDX', specVersion: '1.6', version: 1,
+    metadata: { component: { type: 'container', 'bom-ref': ref, name: 'nats-server' } },
+    vulnerabilities: [{
+      id: report.advisory,
+      source: { name: 'Go Vulnerability Database' },
+      affects: [{ ref }],
+      analysis,
+      properties: [
+        { name: 'capital-ai:binary-sha256', value: report.binarySha256 || 'unknown' },
+        { name: 'capital-ai:local-image-id', value: report.localImageId || 'unknown' },
+        { name: 'capital-ai:trivy-finding-retained', value: String(report.trivyFindingRetained) },
+      ],
+    }],
+  };
+}
+
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const [messagesPath, openvexPath, buildInfoPath, nmPath, nmStatusPath, reproducibilityPath, outputPath] = process.argv.slice(2);
-  if (!outputPath) {
-    throw new Error('Usage: verify-go-vuln-reachability.mjs <messages.json> <openvex.json> <go-version-m.txt> <nm.txt> <nm-status.txt> <reproducibility.txt> <output.json>');
+  const [messagesPath, upstreamOpenvexPath, buildInfoPath, nmPath, nmStatusPath, reproducibilityPath, outputPath, openvexOutputPath, cycloneDxOutputPath] = process.argv.slice(2);
+  if (!cycloneDxOutputPath) {
+    throw new Error('Usage: verify-go-vuln-reachability.mjs <messages.json> <upstream-openvex.json> <go-version-m.txt> <nm.txt> <nm-status.txt> <reproducibility.txt> <output.json> <openvex-output.json> <cyclonedx-vex-output.json>');
   }
   const report = classifyGoVulnReachability({
     messages: JSON.parse(readFileSync(messagesPath, 'utf8')),
-    openvex: JSON.parse(readFileSync(openvexPath, 'utf8')),
+    openvex: JSON.parse(readFileSync(upstreamOpenvexPath, 'utf8')),
     buildInfo: readFileSync(buildInfoPath, 'utf8'),
     nmText: readFileSync(nmPath, 'utf8'),
     nmExitStatus: Number.parseInt(readFileSync(nmStatusPath, 'utf8').trim(), 10),
     reproducible: readFileSync(reproducibilityPath, 'utf8').trim() === 'true',
     binarySha256: process.env.NATS_BINARY_SHA256,
     imageRef: process.env.NATS_IMAGE_REF,
+    localImageId: process.env.NATS_LOCAL_IMAGE_ID,
   });
   writeFileSync(outputPath, JSON.stringify(report, null, 2) + '\n');
+  writeFileSync(openvexOutputPath, JSON.stringify(buildOpenVex(report), null, 2) + '\n');
+  writeFileSync(cycloneDxOutputPath, JSON.stringify(buildCycloneDxVex(report), null, 2) + '\n');
   console.log(JSON.stringify({ advisory: report.advisory, decision: report.decision, reason: report.reason, reviewRequired: report.reviewRequired }));
   if (report.blocking) process.exitCode = 1;
 }
