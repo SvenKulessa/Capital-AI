@@ -86,7 +86,23 @@ jobs:
           chmod a+rwx security-reports
           scan_status=0
           docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/build.tar --ignorefile /dev/null --scanners vuln,secret --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format json --output /reports/build-image.json --exit-code 0 || scan_status=$?
-          node scripts/summarize-trivy.mjs security-reports/build-image.json --gate
+          node scripts/summarize-trivy.mjs security-reports/build-image.json > security-reports/build-image.summary.json
+          node scripts/summarize-trivy.mjs security-reports/build-image.json --gate || build_gate_status=$?
+          if [ "${build_gate_status:-0}" -ne 0 ]; then
+            container_id=$(docker create capital-ai-build:${{ github.sha }})
+            trap 'docker rm -f "$container_id" >/dev/null 2>&1 || true' EXIT
+            docker cp "$container_id:/app/node_modules/@typescript/typescript-linux-x64/lib/tsc" security-reports/ts7-compiler
+            binary_sha=$(sha256sum security-reports/ts7-compiler | cut -d ' ' -f 1)
+            export TS7_BINARY_SHA256="sha256:$binary_sha"
+            docker run --rm -e GOTOOLCHAIN=local -e GOVULNCHECK_VERSION=v1.8.0 -v "$PWD/security-reports:/evidence" golang:1.26.8-alpine@sha256:6e5de3f5b9fb7e30b8bb2ffe8dcbcbdaa2990f0f31267456eabe83f870a623be sh -euc '
+              GOBIN=/tmp/gobin go install "golang.org/x/vuln/cmd/govulncheck@$GOVULNCHECK_VERSION"
+              go version -m /evidence/ts7-compiler > /evidence/ts7-go-version-m.txt
+              /tmp/gobin/govulncheck -mode binary -json /evidence/ts7-compiler > /evidence/ts7-govulncheck.raw.json
+              /tmp/gobin/govulncheck -mode binary -format openvex /evidence/ts7-compiler > /evidence/ts7-govulncheck.openvex.json
+            '
+            jq -s '.' security-reports/ts7-govulncheck.raw.json > security-reports/ts7-govulncheck.messages.json
+            node scripts/verify-ts7-compiler-reachability.mjs security-reports/ts7-govulncheck.messages.json security-reports/ts7-govulncheck.openvex.json security-reports/ts7-go-version-m.txt security-reports/build-image.summary.json security-reports/ts7-compiler-reachability.json
+          fi
           if [ "$scan_status" -ne 0 ]; then exit "$scan_status"; fi
           docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/build.tar --ignorefile /dev/null --scanners license --license-full --format json --output /reports/build-image-licenses.json --exit-code 0
           rm security-reports/build.tar
@@ -153,6 +169,9 @@ jobs:
             security-reports/trivy-version.txt
             security-reports/smoke.log
             security-reports/nats-smoke.log
+            security-reports/ts7-compiler-reachability.json
+            security-reports/ts7-govulncheck.openvex.json
+            security-reports/ts7-go-version-m.txt
           if-no-files-found: warn
           retention-days: 7
       - name: Dasselbe geprüfte Image zur Veröffentlichung übergeben
