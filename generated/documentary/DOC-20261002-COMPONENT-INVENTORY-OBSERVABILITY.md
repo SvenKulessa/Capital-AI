@@ -1,5 +1,5 @@
 <!-- GENERATED FILE. DO NOT EDIT. -->
-<!-- Source: DOC-20261002-COMPONENT-INVENTORY-OBSERVABILITY @ 96d5a101be7b4194eeecec290c24fcfb7856f4e1 -->
+<!-- Source: DOC-20261002-COMPONENT-INVENTORY-OBSERVABILITY @ d3cfb3536fb8c4f1bb766cb5b2932573ac88b444 -->
 # Externes Komponenten-Inventar, CADS, Observability und Work Verification integrieren
 
 > Deterministische Documentary-Projektion aus `DOCUMENTARY_EVIDENCE@1` v1.0.0. Generated output ist keine kanonische Evidence und darf nicht von Hand editiert werden.
@@ -10,14 +10,14 @@
 | --- | --- |
 | Documentary ID | DOC-20261002-COMPONENT-INVENTORY-OBSERVABILITY |
 | Change ID | CA-20261002-COMPONENT-INVENTORY-OBSERVABILITY |
-| Source SHA | 96d5a101be7b4194eeecec290c24fcfb7856f4e1 |
-| Parent SHA | a051e2e425c38c3994113dfea1e63056a5e2fbc5 |
+| Source SHA | d3cfb3536fb8c4f1bb766cb5b2932573ac88b444 |
+| Parent SHA | d1fe8323a9dce8efab706690eb579a67faa3a721 |
 | Pull Request | — |
 | Branch | capital-ai-platform/component-inventory-observability-20261002 |
 | Created | 2026-10-02T05:31:27Z |
 | Lifecycle | PROPOSED |
 | Audience | engineering |
-| Documentary Digest | f3f1b4ec54009a70663c8d24f091be8380f0219dcef3bd13cb5ff96e8cb4589c |
+| Documentary Digest | f72666a1e6e84340ac99b6d4d467ddf6d26a94678370edb8c62e1621605a362d |
 
 ## Change
 
@@ -87,6 +87,7 @@ Architekturrelevante Fremdkomponenten besitzen einen fünfphasigen Lifecycle, CA
 - src/data/roadmapData.ts
 - supabase/migrations/20261002051549_external_component_inventory_private_registry.sql
 - supabase/migrations/20261002052909_capital_ai_private_append_only_audit_target.sql
+- supabase/migrations/20261002054928_external_component_inventory_domain_assignments.sql
 
 ### Execution Units
 
@@ -110,7 +111,7 @@ Missing or `UNKNOWN` evidence is not interpreted as success.
 
 ## Supply Chain
 
-**Commit:** 96d5a101be7b4194eeecec290c24fcfb7856f4e1  
+**Commit:** d3cfb3536fb8c4f1bb766cb5b2932573ac88b444  
 **SBOM Generated:** false
 
 ### Immutable Digests
