@@ -68,9 +68,62 @@ jobs:
           chmod a+r security-reports/nats-image.tar
           chmod a+rwx security-reports
           docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/nats-image.tar --ignorefile /dev/null --scanners vuln,secret --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --exit-code 0 --format json --output /reports/nats-image.json
+          node scripts/summarize-trivy.mjs security-reports/nats-image.json > security-reports/nats-image.summary.json
           node scripts/summarize-trivy.mjs security-reports/nats-image.json --gate
           docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/nats-image.tar --ignorefile /dev/null --scanners vuln --format cyclonedx --output /reports/nats.sbom.cdx.json
-          rm security-reports/nats-image.tar
+
+          # GO-2026-5932: exact binary evidence; no scanner suppression and no NATS redeploy.
+          nats_base_ref=$(awk '/^FROM nats:/{print $2; exit}' deploy/Dockerfile.nats)
+          [[ "$nats_base_ref" =~ ^nats:[^@]+@sha256:[0-9a-f]{64}$ ]]
+          nats_local_id=$(docker image inspect --format '{{.Id}}' capital-nats:${{ github.sha }})
+          [[ "$nats_local_id" =~ ^sha256:[0-9a-f]{64}$ ]]
+          nats_binary_path=$(docker run --rm --entrypoint sh capital-nats:${{ github.sha }} -c 'command -v nats-server')
+          test -n "$nats_binary_path"
+          nats_container=$(docker create --entrypoint sh capital-nats:${{ github.sha }} -c true)
+          trap 'docker rm -f "$nats_container" >/dev/null 2>&1 || true' EXIT
+          docker cp "$nats_container:$nats_binary_path" security-reports/nats-server
+          docker rm -f "$nats_container" >/dev/null
+          trap - EXIT
+          nats_binary_sha="sha256:$(sha256sum security-reports/nats-server | cut -d ' ' -f 1)"
+          jq -n --arg baseImageRef "$nats_base_ref" --arg localImageId "$nats_local_id" --arg binaryPath "$nats_binary_path" --arg binarySha256 "$nats_binary_sha" \
+            '{schemaVersion:1,baseImageRef:$baseImageRef,localImageId:$localImageId,binaryPath:$binaryPath,binarySha256:$binarySha256}' \
+            > security-reports/nats-reachability-image-identity.json
+
+          for reachability_run in 1 2; do
+            docker run --rm -e GOTOOLCHAIN=local -e GOVULNCHECK_VERSION=v1.8.0 -e REACHABILITY_RUN="$reachability_run" -v "$PWD/security-reports:/evidence" golang:1.26.8-alpine@sha256:6e5de3f5b9fb7e30b8bb2ffe8dcbcbdaa2990f0f31267456eabe83f870a623be sh -euc '
+              GOBIN=/tmp/gobin go install "golang.org/x/vuln/cmd/govulncheck@$GOVULNCHECK_VERSION"
+              go version -m /evidence/nats-server > "/evidence/nats-go-version-m-$REACHABILITY_RUN.txt"
+              set +e
+              go tool nm /evidence/nats-server > "/evidence/nats-nm-$REACHABILITY_RUN.txt" 2>"/evidence/nats-nm-$REACHABILITY_RUN.stderr.txt"
+              printf "%s\n" "$?" > "/evidence/nats-nm-$REACHABILITY_RUN.status.txt"
+              set -e
+              /tmp/gobin/govulncheck -mode binary -json /evidence/nats-server > "/evidence/nats-govulncheck-$REACHABILITY_RUN.raw.json"
+              /tmp/gobin/govulncheck -mode binary -format openvex /evidence/nats-server > "/evidence/nats-govulncheck-$REACHABILITY_RUN.openvex.json"
+            '
+            jq -s '.' "security-reports/nats-govulncheck-$reachability_run.raw.json" > "security-reports/nats-govulncheck-$reachability_run.messages.json"
+          done
+
+          reproducible=false
+          if cmp -s security-reports/nats-go-version-m-1.txt security-reports/nats-go-version-m-2.txt \
+            && cmp -s security-reports/nats-nm-1.txt security-reports/nats-nm-2.txt \
+            && diff -u <(jq -S '[.[] | select(.progress | not)]' security-reports/nats-govulncheck-1.messages.json) <(jq -S '[.[] | select(.progress | not)]' security-reports/nats-govulncheck-2.messages.json) >/dev/null \
+            && diff -u <(jq -S '.statements' security-reports/nats-govulncheck-1.openvex.json) <(jq -S '.statements' security-reports/nats-govulncheck-2.openvex.json) >/dev/null; then
+            reproducible=true
+          fi
+          printf "%s\n" "$reproducible" > security-reports/nats-reachability-reproducible.txt
+
+          export NATS_BINARY_SHA256="$nats_binary_sha"
+          export NATS_IMAGE_REF="$nats_base_ref"
+          node scripts/verify-go-vuln-reachability.mjs \
+            security-reports/nats-govulncheck-1.messages.json \
+            security-reports/nats-govulncheck-1.openvex.json \
+            security-reports/nats-go-version-m-1.txt \
+            security-reports/nats-nm-1.txt \
+            security-reports/nats-nm-1.status.txt \
+            security-reports/nats-reachability-reproducible.txt \
+            security-reports/nats-go-2026-5932-reachability.json
+
+          rm security-reports/nats-image.tar security-reports/nats-server
       - name: Quellcode, Secrets und Konfiguration scannen
         run: |
           mkdir -p security-reports
@@ -169,6 +222,13 @@ jobs:
             security-reports/trivy-version.txt
             security-reports/smoke.log
             security-reports/nats-smoke.log
+            security-reports/nats-image.summary.json
+            security-reports/nats-reachability-image-identity.json
+            security-reports/nats-go-2026-5932-reachability.json
+            security-reports/nats-govulncheck-1.openvex.json
+            security-reports/nats-go-version-m-1.txt
+            security-reports/nats-nm-1.status.txt
+            security-reports/nats-reachability-reproducible.txt
             security-reports/ts7-compiler-reachability.json
             security-reports/ts7-govulncheck.openvex.json
             security-reports/ts7-go-version-m.txt
