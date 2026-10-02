@@ -12,6 +12,7 @@ import { createMobileScorer } from './mobile-scorer.mjs';
 import { serveMtaSts } from './mta-sts.mjs';
 import { researchMetadata } from '../shared/research-metadata.mjs';
 import { beginRequest, finishRequest, metricsAuthorized, renderPrometheusMetrics, writeAuditEvent } from './observability.mjs';
+import { cadsSnapshot } from './cads-observability.mjs';
 
 const moduleRoot = path.dirname(fileURLToPath(import.meta.url));
 const defaultRoot = path.resolve(moduleRoot, '../dist');
@@ -57,6 +58,18 @@ export function createApp(root = defaultRoot, options = {}) {
     }
     res.writeHead(200, { ...headers, 'Content-Type': 'text/plain; version=0.0.4; charset=utf-8', 'Cache-Control': 'no-store' });
     return res.end(renderPrometheusMetrics());
+  }
+  if (url.pathname === '/api/internal/cads') {
+    if (!metricsAuthorized(req)) {
+      writeAuditEvent({ eventType: 'observability.cads.denied', requestId: requestContext.requestId, result: 'DENIED' });
+      return json(res, 404, { error: 'not_found' });
+    }
+    return json(res, 200, {
+      schema: 'CAPITAL_AI_CADS_SNAPSHOT@1',
+      sourceSha: process.env.RENDER_GIT_COMMIT || null,
+      infrastructure: infrastructure.status(),
+      operations: cadsSnapshot(),
+    });
   }
   if (url.pathname === '/api/market/quote') {
     if (!marketLimit()) { res.setHeader('Retry-After', '60'); return json(res, 429, { error: 'rate_limited' }); }
