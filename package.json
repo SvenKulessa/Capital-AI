@@ -4,6 +4,7 @@
   "version": "0.8.0-alpha.1",
   "type": "module",
   "scripts": {
+    "benchmark:oss-market": "node --experimental-strip-types scripts/benchmark-oss-market-pipelines.mjs",
     "dev": "vite --port=3000 --host=127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --host=127.0.0.1",
