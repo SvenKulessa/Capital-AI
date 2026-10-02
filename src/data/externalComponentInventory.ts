@@ -193,7 +193,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'google-genai', name: 'Google Gemini / GenAI SDK', domain: 'PRODUCT', kind: 'AI Provider',
-    installedAt: null, activeVersion: '@google/genai lockfile-managed', pipelineVersion: 'current stable review required', lifecycle: 'ACTIVE',
+    installedAt: null, activeVersion: 'lockfile-managed server SDK', pipelineVersion: 'current stable review required', lifecycle: 'ACTIVE',
     functionSummary: 'Server-side AI advisor capability; forbidden from browser artifacts by the app-boundary gate.',
     webAppBinding: 'server/advisor.ts', license: 'Google service terms + Apache-2.0 SDK metadata', cadsScore: 77.0, scoreState: 'PROVISIONAL',
     domainAssignments: ["server-side provider endpoint; no browser domain binding"],
@@ -210,7 +210,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     installedAt: null, activeVersion: 'managed API', pipelineVersion: 'managed API', lifecycle: 'ACTIVE',
     functionSummary: 'Server-side bounded outbound notifications to a fixed destination.',
     webAppBinding: 'server/telegram.mjs', license: 'Proprietary service/API', cadsScore: 71.0, scoreState: 'PROVISIONAL',
-    domainAssignments: ["api.telegram.org server-side only"],
+    domainAssignments: ["managed messaging API; server-side only"],
     dependencies: ['render'],
     alternatives: [
       { name: 'Gotify', role: 'fallback', license: 'MIT' },
