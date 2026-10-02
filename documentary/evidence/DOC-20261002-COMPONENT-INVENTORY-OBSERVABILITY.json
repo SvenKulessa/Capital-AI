@@ -12,8 +12,8 @@
   },
   "identity": {
     "documentaryId": "DOC-20261002-COMPONENT-INVENTORY-OBSERVABILITY",
-    "sourceSha": "117a3e2dc2d371a068d0b55963ce555f851fb2c3",
-    "parentSha": "33ff247064ed100ae3611453cfc6b501f8956a14",
+    "sourceSha": "96d5a101be7b4194eeecec290c24fcfb7856f4e1",
+    "parentSha": "a051e2e425c38c3994113dfea1e63056a5e2fbc5",
     "branch": "capital-ai-platform/component-inventory-observability-20261002",
     "pullRequest": null,
     "createdAt": "2026-10-02T05:31:27Z"
@@ -83,7 +83,9 @@
       "src/components/MonetizationModal.tsx",
       "src/data/externalComponentInventory.ts",
       "src/data/monetizationRegistry.ts",
-      "src/data/roadmapData.ts"
+      "src/data/roadmapData.ts",
+      "supabase/migrations/20261002051549_external_component_inventory_private_registry.sql",
+      "supabase/migrations/20261002052909_capital_ai_private_append_only_audit_target.sql"
     ],
     "dependencies": {
       "added": [],
@@ -135,7 +137,7 @@
   },
   "supplyChain": {
     "source": {
-      "commitSha": "117a3e2dc2d371a068d0b55963ce555f851fb2c3"
+      "commitSha": "96d5a101be7b4194eeecec290c24fcfb7856f4e1"
     },
     "sbom": {
       "generated": false,
@@ -265,7 +267,7 @@
   "integrity": {
     "canonicalSerialization": "RFC8785",
     "hashAlgorithm": "SHA-256",
-    "documentaryDigest": "85b0551e54dfbb89e9ae73da9929d41d1fb500aa41f9eaa12547fb4d8f557b0d"
+    "documentaryDigest": "f3f1b4ec54009a70663c8d24f091be8380f0219dcef3bd13cb5ff96e8cb4589c"
   },
   "safety": {
     "historicalRecordsImmutable": true,
