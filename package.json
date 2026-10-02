@@ -40,7 +40,7 @@
     "recharts": "^3.10.1",
     "redis": "6.2.1",
     "spdx-expression-parse": "4.0.0",
-    "spdx-license-ids": "3.0.23",
+    "spdx-license-ids": "3.0.24",
     "vite": "^8.3.0",
     "zod": "^4.6.5",
     "nodemailer": "10.0.13"
