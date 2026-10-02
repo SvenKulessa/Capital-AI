@@ -25,6 +25,10 @@ jobs:
         with:
           node-version: "24.19.0"
           cache: npm
+      - name: Validate dependency retry and suppression policy
+        run: |
+          node --test scripts/capture-dependency-candidate.test.mjs scripts/evaluate-dependency-retry.test.mjs scripts/verify-dependency-suppressions.test.mjs
+          node scripts/verify-dependency-suppressions.mjs
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Capture available npm updates

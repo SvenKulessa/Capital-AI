@@ -24,6 +24,13 @@ updates:
         update-types:
           - minor
           - patch
+    # Exact-version evidence suppression. Do not widen to semver-major.
+    # Evidence: docs/security/evidence/dependency-decisions/typescript-7.0.2.json
+    # Review on/after: 2026-10-09
+    ignore:
+      - dependency-name: "typescript"
+        versions:
+          - "7.0.2"
     commit-message:
       prefix: "[CAPITAL-AI-TRUST] "
 
