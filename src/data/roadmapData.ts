@@ -653,6 +653,30 @@ const BACKLOG_TARGETS: WorkPackage[] = [
     dependencies: ['AP-SEC-01', 'AP-SEC-02'],
   },
 
+  {
+    id: 'AP-SEC-04',
+    title: 'Zusätzliche Login-Provider: Kraken und Apple ID',
+    owner: 'TRUST',
+    status: 'planning',
+    phase: 3,
+    phaseName: 'Phase 3: Product, Account & Agent Integration',
+    progressPercent: null,
+    evidenceState: 'UNGEKLÄRT',
+    evidenceRefs: [],
+    nextStep: 'Providerfähigkeit, OAuth/OIDC-Vertrag, Redirect-URIs, Account-Linking, AAL/MFA-Verhalten, Datenschutz und Branding getrennt für Kraken und Apple prüfen; erst danach produktiv aktivieren.',
+    priority: 'Mittel',
+    leadName: 'Owner + TRUST/PRODUCT',
+    targetSprint: 'Nach Supabase-Auth-Cutover und MFA-Abnahme',
+    description: 'Backlog-Ziel: Kraken und Apple ID als zusätzliche Anmeldemöglichkeiten evaluieren und nur mit verifiziertem Account-Linking, Redirect-Schutz, MFA-/AAL2-Kompatibilität und reproduzierbarer Logout-/Recovery-Semantik aktivieren.',
+    deliverables: [
+      'Kraken Login: offiziell unterstützten OAuth/OIDC- oder alternativen Auth-Vertrag und Scopes nachweisen',
+      'Apple ID Login über Supabase Social Auth mit exakten Redirect-URIs, Private-Key-Rotation und Sign in with Apple Anforderungen validieren',
+      'Provider-Linking ohne E-Mail-basierte Identitätsfusion; bestehende Supabase User-ID bleibt Autorität',
+      'E2E-Tests für Login, Logout, Recovery, Provider-Link/Unlink und MFA/AAL2',
+    ],
+    dependencies: ['AP-SEC-02'],
+  },
+
   // =========================================================================
   // 8. COMPLIANCE (Regulatory, BaFin & MiCA)
   // =========================================================================
