@@ -7,37 +7,139 @@ on:
 
 permissions:
   contents: read
-  pull-requests: read
+  pull-requests: write
+
+concurrency:
+  group: post-merge-correlation-\${{ github.event.pull_request.merge_commit_sha }}
+  cancel-in-progress: false
 
 jobs:
   correlate:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-26.04
-    timeout-minutes: 3
+    timeout-minutes: 8
     steps:
       - name: Checkout merged main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          ref: \${{ github.event.pull_request.merge_commit_sha }}
           persist-credentials: false
-      - name: Read actual merged file list
-        id: diff
+
+      - name: Regression der Korrelationslogik
+        run: node --test scripts/post-merge-correlation.test.mjs
+
+      - name: Merge-Diff und offene PR-Matrix lesen
         env:
-          GH_TOKEN: ${{ github.token }}
-          REPOSITORY: ${{ github.repository }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          MAIN_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+          GH_TOKEN: \${{ github.token }}
+          REPOSITORY: \${{ github.repository }}
+          MERGED_PR: \${{ github.event.pull_request.number }}
+          MAIN_SHA: \${{ github.event.pull_request.merge_commit_sha }}
         shell: bash
         run: |
           set -euo pipefail
-          gh api --paginate "repos/$REPOSITORY/pulls/$PR_NUMBER/files?per_page=100" --jq '.[].filename' > merged-files.txt
-          node -e 'const fs=require("fs"); const files=fs.readFileSync("merged-files.txt","utf8").split(/\r?\n/).filter(Boolean); fs.writeFileSync("post-merge-event.json", JSON.stringify({mainSha:process.env.MAIN_SHA,mergedPr:Number(process.env.PR_NUMBER),files},null,2));'
-      - name: Classify bounded correlation
-        run: node scripts/post-merge-correlation.mjs post-merge-event.json | tee post-merge-correlation.json
-      - name: Enforce self-healing guardrails
+          mkdir -p security-reports
+          gh api --paginate "repos/$REPOSITORY/pulls/$MERGED_PR/files?per_page=100" --jq '.[].filename' > security-reports/merged-files.txt
+          gh api --paginate "repos/$REPOSITORY/pulls?state=open&base=main&per_page=100" > security-reports/open-prs.raw.json
+          jq -s 'add // []' security-reports/open-prs.raw.json > security-reports/open-prs.json
+          : > security-reports/open-pr-matrix.ndjson
+
+          jq -c '.[]' security-reports/open-prs.json | while IFS= read -r pr; do
+            number=$(jq -r '.number' <<<"$pr")
+            head_sha=$(jq -r '.head.sha' <<<"$pr")
+            base_sha=$(jq -r '.base.sha' <<<"$pr")
+            title=$(jq -r '.title' <<<"$pr")
+            gh api --paginate "repos/$REPOSITORY/pulls/$number/files?per_page=100" --jq '.[].filename' > "security-reports/pr-$number-files.txt"
+            compare=$(gh api "repos/$REPOSITORY/compare/main...$head_sha")
+            ahead=$(jq -r '.ahead_by // 0' <<<"$compare")
+            behind=$(jq -r '.behind_by // 0' <<<"$compare")
+            files=$(jq -R -s 'split("\n") | map(select(length > 0))' "security-reports/pr-$number-files.txt")
+            jq -cn --argjson number "$number" --arg title "$title" --arg headSha "$head_sha" --arg baseSha "$base_sha" \
+              --argjson aheadBy "$ahead" --argjson behindBy "$behind" --argjson files "$files" \
+              '{number:$number,title:$title,headSha:$headSha,baseSha:$baseSha,aheadBy:$aheadBy,behindBy:$behindBy,files:$files,requiredChecksRevalidated:false}' \
+              >> security-reports/open-pr-matrix.ndjson
+          done
+
+          jq -s '.' security-reports/open-pr-matrix.ndjson > security-reports/open-pr-matrix.json
+          merged_files=$(jq -R -s 'split("\n") | map(select(length > 0))' security-reports/merged-files.txt)
+          pattern_state='{}'
+          test ! -f docs/security/evidence/post-merge-pattern-state.json || pattern_state=$(cat docs/security/evidence/post-merge-pattern-state.json)
+
+          jq -n --arg mainSha "$MAIN_SHA" --argjson mergedPr "$MERGED_PR" --argjson files "$merged_files" \
+            --slurpfile openPrs security-reports/open-pr-matrix.json --argjson patternState "$pattern_state" \
+            '{mainSha:$mainSha,mergedPr:$mergedPr,files:$files,openPrs:$openPrs[0],patternState:$patternState}' \
+            > security-reports/post-merge-event.json
+
+      - name: 3x VALIDATE / 5x APPROVE klassifizieren
+        run: |
+          set -euo pipefail
+          node scripts/post-merge-correlation.mjs security-reports/post-merge-event.json | tee security-reports/post-merge-correlation.json
+          jq -e '.schema == "POST_MERGE_CORRELATION@2"' security-reports/post-merge-correlation.json >/dev/null
+          jq -e '.rule3.minimumIndependentPositiveValidationCycles == 3' security-reports/post-merge-correlation.json >/dev/null
+          jq -e '.rule5.stages | length == 5' security-reports/post-merge-correlation.json >/dev/null
+          jq -e '.globalPolicy.deploy == false and .globalPolicy.productionHandoff == false and .globalPolicy.natsHeadOnlyRedeploy == false' security-reports/post-merge-correlation.json >/dev/null
+
+      - name: Betroffene offene PRs mit Handlung korrelieren
+        env:
+          GH_TOKEN: \${{ github.token }}
+          REPOSITORY: \${{ github.repository }}
+          MAIN_SHA: \${{ github.event.pull_request.merge_commit_sha }}
+          MERGED_PR: \${{ github.event.pull_request.number }}
         shell: bash
         run: |
           set -euo pipefail
-          grep -q 'bounded-only-after-3-positive-validations' post-merge-correlation.json
-          grep -q '"natsHeadOnlyRedeploy": false' post-merge-correlation.json
-          grep -q '"deploy": false' post-merge-correlation.json
+          jq -c '.openPrs[] | select(.action != "NO_ACTION")' security-reports/post-merge-correlation.json | while IFS= read -r item; do
+            number=$(jq -r '.prNumber' <<<"$item")
+            action=$(jq -r '.action' <<<"$item")
+            behind=$(jq -r '.behindBy' <<<"$item")
+            exact=$(jq -r 'if (.exactOverlap|length)==0 then "keine" else (.exactOverlap|join(", ")) end' <<<"$item")
+            semantic=$(jq -r 'if (.semanticOverlap|length)==0 then "keine" else (.semanticOverlap|join(", ")) end' <<<"$item")
+            promotion=$(jq -r '.repair.promotionState' <<<"$item")
+            count=$(jq -r '.repair.positiveValidationCount' <<<"$item")
+            stages=$(jq -r '[.approve5|to_entries[]|select(.value==true)|.key] | join(", ")' <<<"$item")
+            body="<!-- CAPITAL_AI_POST_MERGE_CORRELATION -->
+          ## Post-Merge-Korrelation · supply_sh_chain
+
+          Merge #$MERGED_PR hat main@$MAIN_SHA verändert.
+
+          - Entscheidung: **$action**
+          - Branch hinter Main: **$behind Commit(s)**
+          - Exakte Dateikollision: $exact
+          - Semantische Boundary-Korrelation: $semantic
+          - Self-Healing Promotion: **$promotion ($count/3 positive unabhängige Zyklen)**
+          - 5er-Gates aktuell positiv: $stages
+
+          REPAIR_CANDIDATE erlaubt keine automatische Mutation, solange nicht 3/3 Promotion und alle 5 Stufen DETECT → CORRELATE → CLASSIFY → REMEDIATE → VERIFY erfüllt sind.
+
+          Kein Deploy, kein Production-Handoff und kein NATS-Redeploy wird aus einem neuen Repository-HEAD abgeleitet."
+            gh pr comment "$number" --repo "$REPOSITORY" --body "$body"
+          done
+
+      - name: Supply-Chain-Zusammenfassung
+        shell: bash
+        run: |
+          {
+            echo "## POST_MERGE_CORRELATION@2"
+            echo
+            echo "- Main: \${{ github.event.pull_request.merge_commit_sha }}"
+            echo "- Merge-PR: #\${{ github.event.pull_request.number }}"
+            echo "- Offene PRs: $(jq -r '.summary.totalOpenPrs' security-reports/post-merge-correlation.json)"
+            echo "- Nur korrelieren: $(jq -r '.summary.correlateOnly' security-reports/post-merge-correlation.json)"
+            echo "- Sync erforderlich: $(jq -r '.summary.syncRequired' security-reports/post-merge-correlation.json)"
+            echo "- Repair-Kandidat: $(jq -r '.summary.repairCandidate' security-reports/post-merge-correlation.json)"
+            echo "- Manuelles Review: $(jq -r '.summary.manualReviewRequired' security-reports/post-merge-correlation.json)"
+            echo
+            echo "Repository-HEAD allein autorisiert keinen Deploy/NATS-Redeploy."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Korrelations-Evidence sichern
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: post-merge-supply-chain-\${{ github.event.pull_request.merge_commit_sha }}
+          path: |
+            security-reports/post-merge-event.json
+            security-reports/post-merge-correlation.json
+            security-reports/open-pr-matrix.json
+            security-reports/merged-files.txt
+          if-no-files-found: error
+          retention-days: 14
