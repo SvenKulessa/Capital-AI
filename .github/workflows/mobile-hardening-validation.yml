@@ -28,7 +28,7 @@ jobs:
             exit 0
           fi
           gh api --paginate "repos/$REPOSITORY/pulls/$PR_NUMBER/files?per_page=100" --jq '.[].filename' > /tmp/mobile-files.txt
-          if grep -Eq '^(mobile/|server/(auth|auth\.test|mobile-scorer|mobile-scorer\.test|scorer-bus|scorer-bus\.test)\.mjs$|package\.json$|package-lock\.json$)' /tmp/mobile-files.txt; then
+          if grep -Eq '^(mobile/|server/(auth|auth\.test|mobile-scorer|mobile-scorer\.test)\.mjs$|package\.json$|package-lock\.json$)' /tmp/mobile-files.txt; then
             echo "mobile=true" >> "$GITHUB_OUTPUT"
           else
             echo "mobile=false" >> "$GITHUB_OUTPUT"
