@@ -20,6 +20,8 @@
 !server/mta-sts.mjs
 !server/mta-sts.test.mjs
 !server/infrastructure.mjs
+!server/scorer-bus.mjs
+!server/mobile-scorer.mjs
 !shared/
 !shared/market-contracts.mjs
 !shared/legal-identity.mjs

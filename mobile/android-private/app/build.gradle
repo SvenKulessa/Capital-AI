@@ -1,0 +1,26 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'de.svenkulessa.capitalai.privateapp'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId "de.svenkulessa.capitalai.privateapp"
+        minSdk 26
+        targetSdk 36
+        versionCode 1
+        versionName "0.1.0-private"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {}
