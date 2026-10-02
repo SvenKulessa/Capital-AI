@@ -115,3 +115,19 @@ test('CycloneDX VEX mirrors the reachability decision and immutable product refe
   assert.equal(vex.vulnerabilities[0].analysis.justification, 'code_not_present');
   assert.equal(vex.vulnerabilities[0].affects[0].ref, base.imageRef);
 });
+
+
+test('module advisory without reachable symbol can be NOT_AFFECTED when all binary gates pass', () => {
+  const messages = [...baseMessages, {
+    finding: {
+      osv: advisory,
+      trace: [{ module: 'golang.org/x/crypto', version: 'v0.57.0' }],
+    },
+  }];
+  const report = classifyGoVulnReachability({ ...base, messages });
+  assert.equal(report.evidence.findingCount, 1);
+  assert.equal(report.evidence.symbolFindingCount, 0);
+  assert.equal(report.evidence.openPgpFrameCount, 0);
+  assert.equal(report.decision, 'NOT_AFFECTED');
+  assert.equal(report.reason, 'vulnerable_code_not_present');
+});
