@@ -59,7 +59,8 @@ async function fetchJson(url, options = {}, maxBytes = 2 * 1024 * 1024) {
 export function canonicalScorerOrigin(env) {
   const origin = safeOrigin(env.CAPITAL_AI_SCORER_ORIGIN, '');
   const publicOrigin = safeOrigin(env.PUBLIC_APP_ORIGIN, '');
-  if (!origin || (publicOrigin && origin === publicOrigin)) return null;
+  if (!origin) return null;
+  if (publicOrigin && origin === publicOrigin && env.CAPITAL_AI_SCORER_ALLOW_SAME_ORIGIN !== 'true') return null;
   return origin;
 }
 
