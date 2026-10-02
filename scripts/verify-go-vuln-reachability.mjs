@@ -63,6 +63,7 @@ export function classifyGoVulnReachability({
     binaryMode: config?.scan_mode === 'binary',
     symbolLevel: config?.scan_level === 'symbol',
     advisoryObservedInDatabase: Boolean(osv),
+    vexStatementPresent: Boolean(statement),
     upstreamVexConsistent: !statement || statement.status === 'not_affected',
     nmAvailable: Number(nmExitStatus) === 0,
     repeatedRunEquivalent: Boolean(reproducible),
