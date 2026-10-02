@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { scorerBus } from './scorer-bus.mjs';
+import { observeCadsOperation } from './cads-observability.mjs';
 
 const MAX_BODY_BYTES = 4096;
 const UNIVERSE_LIMIT = 400;
@@ -254,13 +255,18 @@ export function createMobileScorer(env = process.env) {
     if (serviceToken) headers.Authorization = `Bearer ${serviceToken}`;
     else if (authorization?.startsWith('Bearer ')) headers.Authorization = authorization;
     try {
-      const response = await fetch(upstream, {
+      const response = await observeCadsOperation({
+        layer: 'scoring',
+        service: 'canonical-enterprise-scorer',
+        operation: 'score.http',
+        correlationId: headers['x-correlation-id'],
+      }, () => fetch(upstream, {
         method: 'POST',
         headers,
         body: JSON.stringify({ symbol, asset_name: name || asset.name }),
         signal: AbortSignal.timeout(15000),
         redirect: 'error',
-      });
+      }));
       const payload = await response.json().catch(() => ({ error: 'invalid_upstream_response' }));
       if (!response.ok) return [response.status, payload];
       const delivery = await scorerBus.persist(symbol, payload, response.headers.get('x-correlation-id'));
