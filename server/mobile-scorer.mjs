@@ -56,8 +56,15 @@ async function fetchJson(url, options = {}, maxBytes = 2 * 1024 * 1024) {
   return JSON.parse(Buffer.concat(chunks).toString('utf8'));
 }
 
+function canonicalScorerOrigin(env) {
+  const origin = safeOrigin(env.CAPITAL_AI_SCORER_ORIGIN, '');
+  const publicOrigin = safeOrigin(env.PUBLIC_APP_ORIGIN, '');
+  if (!origin || (publicOrigin && origin === publicOrigin)) return null;
+  return origin;
+}
+
 async function fromCanonicalRegistry(env) {
-  const origin = safeOrigin(env.CAPITAL_AI_SCORER_ORIGIN, 'https://capital-ai.online');
+  const origin = canonicalScorerOrigin(env);
   if (!origin) return [];
   try {
     const body = await fetchJson(new URL('/api/registry/assets', origin));
@@ -65,7 +72,7 @@ async function fromCanonicalRegistry(env) {
     const seen = new Set();
     return body
       .filter(item => item?.type === 'crypto')
-      .map(item => normalizeAsset(item, item.marketCapRank ?? item.rank ?? null))
+      .map(item => ({ ...normalizeAsset(item, item.marketCapRank ?? item.rank ?? null), universeRank: Number.isInteger(item.rank) ? item.rank : null, rankMetric: item.marketCapRank ? 'marketCap' : 'registry' }))
       .filter(item => item && !seen.has(item.symbol) && seen.add(item.symbol));
   } catch {
     return [];
@@ -82,12 +89,42 @@ async function fromOpenSourceUniverseAdapter(env) {
   const rows = Array.isArray(body) ? body : body?.assets;
   if (!Array.isArray(rows)) throw new Error('OSS_UNIVERSE_SCHEMA_INVALID');
   return rows
-    .map((item, index) => normalizeAsset(
-      item,
-      Number.isInteger(item?.rank) ? item.rank : index + 1,
-      String(item?.source || 'ccxt-defillama-oss'),
-    ))
+    .map((item, index) => {
+      const asset = normalizeAsset(item, item.marketCapRank ?? null, String(item?.source || 'oss-universe'));
+      return asset ? { ...asset, universeRank: Number.isInteger(item?.rank) ? item.rank : index + 1, rankMetric: String(item?.rankMetric || 'adapter-rank') } : null;
+    })
     .filter(Boolean);
+}
+
+async function fromBinanceResearchUniverse(env) {
+  if (env.MOBILE_CRYPTO_BINANCE_RESEARCH !== 'true') return [];
+  const [exchangeInfo, tickers] = await Promise.all([
+    fetchJson(new URL('https://api.binance.com/api/v3/exchangeInfo'), {}, 6 * 1024 * 1024),
+    fetchJson(new URL('https://api.binance.com/api/v3/ticker/24hr'), {}, 6 * 1024 * 1024),
+  ]);
+  if (!Array.isArray(exchangeInfo?.symbols) || !Array.isArray(tickers)) throw new Error('BINANCE_UNIVERSE_SCHEMA_INVALID');
+  const volume = new Map(tickers.map(row => [String(row?.symbol || ''), Number(row?.quoteVolume || 0)]));
+  const byBase = new Map();
+  for (const market of exchangeInfo.symbols) {
+    if (market?.status !== 'TRADING' || market?.quoteAsset !== 'USDT' || market?.isSpotTradingAllowed === false) continue;
+    const base = String(market?.baseAsset || '').toUpperCase().trim();
+    if (!/^[A-Z0-9][A-Z0-9._-]{0,31}$/.test(base) || base === 'USDT') continue;
+    const quoteVolume = volume.get(String(market.symbol || '')) || 0;
+    const current = byBase.get(base);
+    if (!current || quoteVolume > current.quoteVolume) byBase.set(base, { symbol: base, name: base, quoteVolume });
+  }
+  return [...byBase.values()]
+    .sort((a, b) => b.quoteVolume - a.quoteVolume || a.symbol.localeCompare(b.symbol))
+    .slice(0, UNIVERSE_LIMIT)
+    .map((row, index) => ({
+      symbol: row.symbol,
+      name: row.name,
+      type: 'crypto',
+      marketCapRank: null,
+      universeRank: index + 1,
+      rankMetric: 'binanceSpotUsdtQuoteVolume24h',
+      source: 'binance-public-spot-private-research',
+    }));
 }
 
 async function loadUniverse(env = process.env) {
@@ -96,13 +133,17 @@ async function loadUniverse(env = process.env) {
   const bySymbol = new Map(canonical.map(asset => [asset.symbol, asset]));
 
   try {
-    for (const ranked of await fromOpenSourceUniverseAdapter(env)) {
+    const external = await fromOpenSourceUniverseAdapter(env);
+    const rankedAssets = external.length ? external : await fromBinanceResearchUniverse(env);
+    for (const ranked of rankedAssets) {
       const current = bySymbol.get(ranked.symbol);
       if (current) {
         bySymbol.set(ranked.symbol, {
           ...current,
-          marketCapRank: ranked.marketCapRank,
-          source: current.source + '+oss-universe',
+          marketCapRank: ranked.marketCapRank ?? current.marketCapRank,
+          universeRank: ranked.universeRank ?? ranked.marketCapRank ?? current.universeRank ?? current.marketCapRank,
+          rankMetric: ranked.rankMetric || current.rankMetric || 'adapter-rank',
+          source: current.source + '+' + ranked.source,
         });
       } else {
         bySymbol.set(ranked.symbol, ranked);
@@ -112,9 +153,11 @@ async function loadUniverse(env = process.env) {
 
   const assets = [...bySymbol.values()]
     .sort((a, b) => {
-      if (a.marketCapRank && b.marketCapRank) return a.marketCapRank - b.marketCapRank;
-      if (a.marketCapRank) return -1;
-      if (b.marketCapRank) return 1;
+      const ar = a.universeRank ?? a.marketCapRank;
+      const br = b.universeRank ?? b.marketCapRank;
+      if (ar && br) return ar - br;
+      if (ar) return -1;
+      if (br) return 1;
       return a.symbol.localeCompare(b.symbol);
     })
     .slice(0, UNIVERSE_LIMIT);
@@ -125,9 +168,13 @@ async function loadUniverse(env = process.env) {
     count: assets.length,
     status: assets.length === UNIVERSE_LIMIT ? 'READY' : 'DEGRADED',
     sources: [...new Set(assets.map(asset => asset.source))],
-    attribution: assets.some(asset => asset.source.includes('oss'))
-      ? 'Open-source universe adapter (CCXT/DefiLlama class) used as fallback; upstream exchange/data terms remain separately applicable.'
-      : null,
+    rankMetrics: [...new Set(assets.map(asset => asset.rankMetric).filter(Boolean))],
+    rightsScope: 'PRIVATE_RESEARCH_ONLY',
+    attribution: assets.some(asset => asset.source.includes('binance'))
+      ? 'Private research universe ranked by Binance public spot USDT 24h quote volume; exchange data terms remain separately applicable.'
+      : assets.some(asset => asset.source.includes('oss'))
+        ? 'Open-source universe adapter used as fallback; upstream exchange/data terms remain separately applicable.'
+        : null,
     loadedAt: Date.now(),
     assets,
   };
@@ -157,11 +204,11 @@ function html(res, headers) {
 
 function javascript(res, headers) {
   res.writeHead(200, { ...headers, 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store' });
-  res.end(`(()=>{let universe=[],selected=null,eventSource=null;const q=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const render=()=>{const term=q('#search').value.trim().toLowerCase();const rows=universe.filter(a=>!term||a.symbol.toLowerCase().includes(term)||a.name.toLowerCase().includes(term)).slice(0,80);q('#assets').innerHTML=rows.map(a=>'<button class="asset" data-symbol="'+esc(a.symbol)+'"><span><b>'+esc(a.symbol)+'</b><br><small>'+esc(a.name)+'</small></span><small>#'+esc(a.marketCapRank??'—')+'</small></button>').join('');document.querySelectorAll('.asset').forEach(b=>b.onclick=()=>select(b.dataset.symbol));};const select=s=>{selected=universe.find(a=>a.symbol===s)||null;q('#assetTitle').textContent=selected?selected.name+' ('+selected.symbol+')':'—';q('#scoreButton').disabled=!selected;startEvents();};const scoreHtml=d=>{const p=d?.payload||d||{};const value=p.final_score??p.score??p.rank_score??null;return '<div class="score">'+esc(value??'—')+'</div><div class="grid"><div class="metric">Status<b>'+esc(p.status??'—')+'</b></div><div class="metric">Eligible<b>'+esc(p.eligible_for_top10===true?'JA':p.eligible_for_top10===false?'NEIN':'—')+'</b></div><div class="metric">Modell<b>'+esc(p.modelRegistry?.modelId??p.model??'—')+'</b></div><div class="metric">Evidence<b>'+esc(d?.evidenceId??p.lineage?.evidenceId??'—')+'</b></div></div><pre class="muted" style="white-space:pre-wrap;max-height:280px;overflow:auto">'+esc(JSON.stringify(p,null,2))+'</pre>';};const startEvents=()=>{eventSource?.close();if(!selected)return;eventSource=new EventSource('/api/mobile/scorer/events?symbol='+encodeURIComponent(selected.symbol));eventSource.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.symbol===selected.symbol)q('#scoreBox').innerHTML=scoreHtml(d)}catch{}};};const load=async()=>{const [u,s]=await Promise.all([fetch('/api/mobile/crypto-universe').then(r=>r.json()),fetch('/api/mobile/scorer/status').then(r=>r.json())]);universe=Array.isArray(u.assets)?u.assets:[];q('#universeState').textContent='Universe '+u.count+'/'+u.requested+' · '+u.status;q('#universeState').className='pill '+(u.status==='READY'?'ok':'warn');q('#busState').textContent='NATS '+s.nats+' · Valkey '+s.valkey+' · Pub/Sub '+s.pubsub;q('#busState').className='pill '+(s.status==='connected'?'ok':'warn');render();};q('#search').oninput=render;q('#reload').onclick=load;q('#scoreButton').onclick=async()=>{if(!selected)return;q('#scoreBox').innerHTML='<p class="muted">Kanonischer Score wird berechnet und als JetStream-Evidence bestätigt…</p>';const r=await fetch('/api/mobile/enterprise-score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({symbol:selected.symbol,name:selected.name})});const d=await r.json();if(r.status===401){q('#scoreBox').innerHTML='<p class="warn">Anmeldung erforderlich.</p><p><a href="/api/auth/login" style="color:#f5b014;font-weight:900">Mit bestehendem CAPITAL-AI Konto anmelden</a></p>';return;}q('#scoreBox').innerHTML=scoreHtml(d);};load().catch(e=>{q('#universeState').textContent='Universe nicht verfügbar';q('#busState').textContent=String(e)});})();`);
+  res.end(`(()=>{let universe=[],selected=null,eventSource=null;const q=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const render=()=>{const term=q('#search').value.trim().toLowerCase();const rows=universe.filter(a=>!term||a.symbol.toLowerCase().includes(term)||a.name.toLowerCase().includes(term)).slice(0,80);q('#assets').innerHTML=rows.map(a=>'<button class="asset" data-symbol="'+esc(a.symbol)+'"><span><b>'+esc(a.symbol)+'</b><br><small>'+esc(a.name)+'</small></span><small>#'+esc(a.universeRank??a.marketCapRank??'—')+'</small></button>').join('');document.querySelectorAll('.asset').forEach(b=>b.onclick=()=>select(b.dataset.symbol));};const select=s=>{selected=universe.find(a=>a.symbol===s)||null;q('#assetTitle').textContent=selected?selected.name+' ('+selected.symbol+')':'—';q('#scoreButton').disabled=!selected;startEvents();};const scoreHtml=d=>{const p=d?.payload||d||{};const value=p.final_score??p.score??p.rank_score??null;return '<div class="score">'+esc(value??'—')+'</div><div class="grid"><div class="metric">Status<b>'+esc(p.status??'—')+'</b></div><div class="metric">Eligible<b>'+esc(p.eligible_for_top10===true?'JA':p.eligible_for_top10===false?'NEIN':'—')+'</b></div><div class="metric">Modell<b>'+esc(p.modelRegistry?.modelId??p.model??'—')+'</b></div><div class="metric">Evidence<b>'+esc(d?.evidenceId??p.lineage?.evidenceId??'—')+'</b></div></div><pre class="muted" style="white-space:pre-wrap;max-height:280px;overflow:auto">'+esc(JSON.stringify(p,null,2))+'</pre>';};const startEvents=()=>{eventSource?.close();if(!selected)return;eventSource=new EventSource('/api/mobile/scorer/events?symbol='+encodeURIComponent(selected.symbol));eventSource.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.symbol===selected.symbol)q('#scoreBox').innerHTML=scoreHtml(d)}catch{}};};const load=async()=>{const [u,s]=await Promise.all([fetch('/api/mobile/crypto-universe').then(r=>r.json()),fetch('/api/mobile/scorer/status').then(r=>r.json())]);universe=Array.isArray(u.assets)?u.assets:[];q('#universeState').textContent='Universe '+u.count+'/'+u.requested+' · '+u.status;q('#universeState').className='pill '+(u.status==='READY'?'ok':'warn');q('#busState').textContent='NATS '+s.nats+' · Valkey '+s.valkey+' · Pub/Sub '+s.pubsub;q('#busState').className='pill '+(s.status==='connected'?'ok':'warn');render();};q('#search').oninput=render;q('#reload').onclick=load;q('#scoreButton').onclick=async()=>{if(!selected)return;q('#scoreBox').innerHTML='<p class="muted">Kanonischer Score wird berechnet und als JetStream-Evidence bestätigt…</p>';const r=await fetch('/api/mobile/enterprise-score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({symbol:selected.symbol,name:selected.name})});const d=await r.json();if(r.status===401){q('#scoreBox').innerHTML='<p class="warn">Anmeldung erforderlich.</p><p><a href="capitalai-private://login" style="color:#f5b014;font-weight:900">Sicher im Browser anmelden</a></p>';return;}q('#scoreBox').innerHTML=scoreHtml(d);};load().catch(e=>{q('#universeState').textContent='Universe nicht verfügbar';q('#busState').textContent=String(e)});})();`);
 }
 
 export function createMobileScorer(env = process.env) {
-  const origin = safeOrigin(env.CAPITAL_AI_SCORER_ORIGIN, 'https://capital-ai.online');
+  const origin = canonicalScorerOrigin(env);
 
   async function score(symbol, name, authorization) {
     if (!origin) return [503, { error: 'scorer_origin_unavailable' }];
@@ -170,7 +217,9 @@ export function createMobileScorer(env = process.env) {
     if (!asset) return [400, { error: 'symbol_not_in_top400_universe', symbol }];
     const upstream = new URL('/api/crypto/score', origin);
     const headers = { 'Content-Type': 'application/json', Accept: 'application/json', 'x-correlation-id': randomUUID() };
-    if (authorization?.startsWith('Bearer ')) headers.Authorization = authorization;
+    const serviceToken = String(env.CAPITAL_AI_SCORER_SERVICE_TOKEN || '').trim();
+    if (serviceToken) headers.Authorization = `Bearer ${serviceToken}`;
+    else if (authorization?.startsWith('Bearer ')) headers.Authorization = authorization;
     try {
       const response = await fetch(upstream, {
         method: 'POST',
@@ -201,7 +250,8 @@ export function createMobileScorer(env = process.env) {
 
       if (req.method === 'GET' && url.pathname === '/api/mobile/scorer/status') {
         await scorerBus.start();
-        json(res, 200, scorerBus.status());
+        const bus = scorerBus.status();
+        json(res, 200, { ...bus, scorerAuthority: { configured: Boolean(origin), origin: origin || null, serviceAuthConfigured: Boolean(String(env.CAPITAL_AI_SCORER_SERVICE_TOKEN || '').trim()) } });
         return true;
       }
 
