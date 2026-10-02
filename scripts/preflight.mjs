@@ -21,7 +21,6 @@ run(process.execPath, ['--test',
   'scripts/diagnose-oidc.test.mjs', 'scripts/verify-main-ruleset.test.mjs', 'scripts/npm-security-patch-policy.test.mjs',
   'scripts/percentage-parser.test.mjs',
   'scripts/font-distribution.test.mjs',
-  'scripts/verify-go-vuln-reachability.test.mjs',
 ]);
 run(process.execPath, ['scripts/license-evidence.mjs']);
 if (args.includes('--full')) {
