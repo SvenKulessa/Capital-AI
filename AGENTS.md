@@ -307,3 +307,81 @@ Abhängigkeiten werden nach ihrem tatsächlichen Ausführungszeitpunkt getrennt;
 - Jede Verschiebung zwischen Build, Runtime und Triggered/Postflight muss durch Import-/Reachability-Evidence, Tests, Lockfile-Diff und Rollback begründet werden.
 - Nicht verwendete Dependencies werden entfernt statt im Runtime-Image bevorratet. Geplante zukünftige Komponenten werden erst aufgenommen, wenn ihr ausführbarer Pfad existiert und geprüft ist.
 - Docker bleibt Build-once/Promote-many; Triggered/Postflight Units verändern niemals rückwirkend das attestierte Candidate-Image.
+
+
+## Architekturentscheidungen, Repository-Konvergenz und Supply-Chain-Namenskonvention
+
+### Owner-Dialog vor Architekturentscheidungen
+
+Bei einer **wesentlichen Architekturänderung oder Architekturentscheidung** darf kein Agent unmittelbar eine Variante als neuen Standard implementieren. Vor der zustandsverändernden Architekturentscheidung ist dem Owner zuerst eine kurze Entscheidungsfrage mit **2–4 klar unterscheidbaren Optionen** zu stellen.
+
+Für jede Option sind knapp anzugeben:
+- Zweck und technische Grundidee,
+- wichtigste Vorteile,
+- wichtigste Risiken/Trade-offs,
+- erwartete Auswirkung auf Security, Performance, Betrieb, Migration und Rollback,
+- vorhandene bzw. noch fehlende CADS-/Benchmark-Evidence.
+
+Anschließend ist eine **begründete Empfehlung** abzugeben. Die Empfehlung ist keine Freigabe: die Architekturmutation erfolgt erst auf Basis der Owner-Antwort und der bestehenden Security-/Lizenz-/Production-Gates. Reine Bugfixes innerhalb einer bereits freigegebenen Architektur, dokumentarische Korrekturen und eindeutig reversible Low-Risk-Wartung gelten nicht als neue Architekturentscheidung.
+
+### Repository-Konvergenz statt Strukturwucherung
+
+Repository-Wucherung, parallele Authorities, doppelte Contracts, ad-hoc Ordner, redundante Evidence-Pfade und funktional überlappende Tools sind aktiv zu vermeiden. Bevor neue Top-Level-Ordner, Plattformkomponenten, Contracts, Engines oder dauerhafte Adapter angelegt werden, ist zu prüfen, ob eine bestehende kanonische Struktur erweitert werden kann.
+
+Priorität ist die schnellstmögliche Erstellung und anschließende Pflege einer **umfassenden, stabilen Basisarchitektur und Ordnerstruktur**. Strukturänderungen müssen:
+- Current-Main und offene Arbeiten korrelieren,
+- Ownership/Domain eindeutig benennen,
+- kanonische vs. historische/superseded Pfade trennen,
+- Migration und Rückweg dokumentieren,
+- verwaiste Doppelstrukturen entfernen oder als superseded/non-authorizing markieren,
+- nach Möglichkeit in kleinen reversiblen Schritten erfolgen.
+
+### Feste Namenskonvention für die selbstheilende Software-Supply-Development-Chain
+
+Die selbstheilende Software-Supply-Development-Chain verwendet als kanonischen Präfix:
+
+`CAPITAL-AI-SH-SUPPLY-CHAIN`
+
+Maschinenlesbare Contracts/Evidence verwenden die Form:
+
+`CAPITAL_AI_SH_SUPPLY_CHAIN_<CAPABILITY>@<MAJOR>`
+
+Beispiele:
+- `CAPITAL_AI_SH_SUPPLY_CHAIN_DEPENDENCY_RECOVERY@1`
+- `CAPITAL_AI_SH_SUPPLY_CHAIN_ARTIFACT_IDENTITY@1`
+- `CAPITAL_AI_SH_SUPPLY_CHAIN_POST_MERGE_CORRELATION@1`
+- `CAPITAL_AI_SH_SUPPLY_CHAIN_SUPERSESSION@1`
+
+Work Packages und Dokumente verwenden die Form:
+
+`[CAPITAL-AI-PLATFORM] SH-SUPPLY-CHAIN — <kurzer Zweck>`
+
+Security-/Compliance-Gates bleiben TRUST-Verantwortung und dürfen durch die PLATFORM-Namenskonvention nicht herabgestuft werden.
+
+### DOCUMENTARY Supersession-/Command-Evidence
+
+`DOCUMENTARY_EVIDENCE@1` und Nachfolger müssen bei zustands- oder autoritätsrelevanten Änderungen Supersession und Superseded-Zustände nachvollziehbar transportieren. Eine künftige Contract-Erweiterung muss mindestens korrelieren können:
+- stabile Event-/Change-/Command-ID,
+- Actor/Agent/App und autorisierende Owner-Entscheidung,
+- Zeitpunkt,
+- vorherige Authority/Version/Referenz,
+- neue Authority/Version/Referenz,
+- Status `SUPERSEDED` / `SUPERSESSION_EFFECTIVE` / `BLOCKED`,
+- Grund und Scope,
+- betroffene Domains/Contracts/Artefakte,
+- sanitized Command-/Action-Identität bzw. Hash statt Secrets oder sensitiver Rohdaten,
+- Rollback-/Reactivation-Referenz,
+- Evidence-Refs und Main-/PR-/Commit-Korrelation.
+
+Supersession darf historische Evidence nicht löschen oder nachträglich umdeuten. Historische Quellen bleiben erhalten, werden aber eindeutig als **SUPERSEDED / NON-AUTHORIZING** markiert. Operational Telemetry kann auf diese Evidence per ID korrelieren, darf sie aber nicht ersetzen.
+
+### CADS-Kalibrierung
+
+CADS darf aus historischen Ergebnissen lernen, aber Gewichte nicht intransparent oder nachträglich zugunsten eines Kandidaten verschieben. Selbstlernende Kalibrierung muss versioniert, reproduzierbar und reversibel sein und mindestens fünf Stufen unterscheiden:
+1. `BASELINE` — vorab deklarierte Gewichte und Muss-Gates,
+2. `OBSERVE` — reale Messwerte/Outcomes sammeln, noch keine Gewichtsänderung,
+3. `CALIBRATE` — vorgeschlagene Gewichts-/Threshold-Anpassung aus historischen Fehlern und Erfolgen ableiten,
+4. `CHALLENGE` — Gegenprüfung gegen Holdout-/Regression-/Security-Szenarien und Alternativmodelle,
+5. `PROMOTE` — neue Profilversion nur nach reproduzierbarer Evidence und Owner-/Governance-Gate aktivieren.
+
+Jede Kalibrierung speichert Ausgangsprofil, Trainings-/Beobachtungsfenster, verwendete Evidence, Änderung, erwarteten Effekt, tatsächlichen Effekt, Regressionen und Rollback-Profil. Security-, Lizenz-, Provenance- und funktionale Muss-Gates bleiben **nicht kompensierbar**.
