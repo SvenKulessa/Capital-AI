@@ -21,6 +21,7 @@
 !server/mta-sts.test.mjs
 !server/infrastructure.mjs
 !server/scorer-bus.mjs
+!server/observability.mjs
 !server/cads-observability.mjs
 !server/mobile-scorer.mjs
 !shared/
