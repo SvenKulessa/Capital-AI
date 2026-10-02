@@ -17,11 +17,13 @@ RUN npm ci --ignore-scripts --no-audit --no-fund && rm -rf /root/.npm
 COPY index.html vite.config.ts tsconfig.json ./
 COPY src ./src
 COPY contracts ./contracts
+COPY documentary/evidence ./documentary/evidence
+COPY generated/documentary ./generated/documentary
 COPY public/branding/capital-ai-logo.jpg ./public/branding/capital-ai-logo.jpg
 COPY public/branding/asset-pack ./public/branding/asset-pack
 COPY public/fonts ./public/fonts
 COPY server/advisor.ts server/http-security.mjs server/mta-sts.mjs server/mta-sts.test.mjs ./server/
-COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/frontend-security.test.mjs scripts/verify-browser-boundary.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs ./scripts/
+COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/frontend-security.test.mjs scripts/verify-browser-boundary.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs ./scripts/
 COPY shared ./shared
 COPY docs/licenses ./docs/licenses
 COPY docs/security/evidence/license-rights-review.json ./docs/security/evidence/license-rights-review.json

@@ -16,7 +16,7 @@ const run = (command, argv) => {
   }
 };
 run(process.execPath, ['--test',
-  'scripts/docker-context.test.mjs', 'scripts/license-evidence.test.mjs',
+  'scripts/docker-context.test.mjs', 'scripts/container-evidence-identity.test.mjs', 'scripts/license-evidence.test.mjs',
   'scripts/summarize-trivy.test.mjs', 'scripts/publish-security-summary.test.mjs', 'scripts/production-handoff.test.mjs',
   'scripts/diagnose-oidc.test.mjs', 'scripts/verify-main-ruleset.test.mjs', 'scripts/npm-security-patch-policy.test.mjs',
   'scripts/percentage-parser.test.mjs',

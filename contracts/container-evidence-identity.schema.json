@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://capital-ai.online/schemas/container-evidence-identity-v1.json",
+  "title": "CAPITAL-AI Container Evidence Identity",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schemaVersion",
+    "source",
+    "digestTypes",
+    "digests"
+  ],
+  "properties": {
+    "schema": {
+      "const": "CONTAINER_IDENTITY@1"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventName",
+        "sourceSha",
+        "testedSha",
+        "testedMergeSha",
+        "pullRequestHeadSha",
+        "baseMainSha"
+      ],
+      "properties": {
+        "eventName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceSha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "testedSha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "testedMergeSha": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "pullRequestHeadSha": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "baseMainSha": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9a-f]{40}$"
+        }
+      }
+    },
+    "digestTypes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifactArchiveDigest",
+        "localImageId",
+        "ociIndexDigest",
+        "platformManifestDigest",
+        "configDigest",
+        "runtimeProviderDigest"
+      ],
+      "properties": {
+        "artifactArchiveDigest": {
+          "const": "GITHUB_ACTIONS_ARTIFACT_ARCHIVE_SHA256"
+        },
+        "localImageId": {
+          "const": "DOCKER_IMAGE_CONFIG_SHA256"
+        },
+        "ociIndexDigest": {
+          "const": "OCI_INDEX_SHA256"
+        },
+        "platformManifestDigest": {
+          "const": "OCI_PLATFORM_MANIFEST_SHA256"
+        },
+        "configDigest": {
+          "const": "OCI_IMAGE_CONFIG_SHA256"
+        },
+        "runtimeProviderDigest": {
+          "const": "RUNTIME_PROVIDER_PLATFORM_MANIFEST_SHA256"
+        }
+      }
+    },
+    "digests": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifactArchiveDigest",
+        "localImageId",
+        "ociIndexDigest",
+        "platformManifestDigest",
+        "configDigest",
+        "runtimeProviderDigest"
+      ],
+      "properties": {
+        "artifactArchiveDigest": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "localImageId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "ociIndexDigest": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "platformManifestDigest": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "configDigest": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "runtimeProviderDigest": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      }
+    }
+  }
+}

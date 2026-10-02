@@ -1,0 +1,51 @@
+{
+  "schema": "LICENSE_EVIDENCE@1",
+  "version": "1.0.0",
+  "metadata": {
+    "project": "CAPITAL-AI",
+    "domain": "TRUST",
+    "status": "PROPOSED"
+  },
+  "identity": {
+    "licenseEvidenceId": null,
+    "subjectRef": null,
+    "reviewedAt": null
+  },
+  "license": {
+    "spdxExpression": null,
+    "licenseTextDigest": null,
+    "noticeRefs": [],
+    "sourceRef": null
+  },
+  "usageContext": {
+    "research": false,
+    "commercial": false,
+    "redistribution": false,
+    "modification": false
+  },
+  "obligations": {
+    "attribution": [],
+    "notice": [],
+    "shareAlike": [],
+    "sourceDisclosure": [],
+    "other": []
+  },
+  "decision": {
+    "status": "BLOCKED",
+    "allowed": [
+      "VERIFIED",
+      "PARTIALLY_VERIFIED",
+      "UNKNOWN",
+      "CONFLICTING",
+      "BLOCKED"
+    ],
+    "legalReviewRequired": false
+  },
+  "safety": {
+    "researchPurposeOverridesLicense": false,
+    "unknownRightsMayPass": false
+  },
+  "correlation": {
+    "changeId": null
+  }
+}

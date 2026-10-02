@@ -1,0 +1,39 @@
+{
+  "schema": "COST_EVIDENCE@1",
+  "version": "1.0.0",
+  "metadata": {
+    "project": "CAPITAL-AI",
+    "domain": "TRUST",
+    "status": "PROPOSED"
+  },
+  "identity": {
+    "costEvidenceId": null,
+    "workPackageId": null,
+    "periodStart": null,
+    "periodEnd": null
+  },
+  "attribution": {
+    "provider": null,
+    "service": null,
+    "resource": null,
+    "usageQuantity": null,
+    "usageUnit": null,
+    "currency": "EUR",
+    "amount": null
+  },
+  "evidence": {
+    "invoiceRef": null,
+    "usageReadbackRef": null,
+    "allocationMethod": null
+  },
+  "decision": {
+    "status": "BLOCKED"
+  },
+  "safety": {
+    "estimatedCostMustBeMarked": true,
+    "unattributedCostMayPass": false
+  },
+  "correlation": {
+    "changeId": null
+  }
+}

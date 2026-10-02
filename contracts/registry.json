@@ -39,6 +39,76 @@
       "domain": "PLATFORM",
       "path": "contracts/platform/CHANGE_PROPAGATION@1.yaml",
       "schemaPath": "contracts/schemas/change-propagation.schema.json"
+    },
+    {
+      "id": "OIDC_VERIFICATION_STATE@1",
+      "version": "1.0.0",
+      "domain": "TRUST",
+      "path": "contracts/trust/OIDC_VERIFICATION_STATE@1.yaml",
+      "schemaPath": "contracts/schemas/oidc-verification-state.schema.json"
+    },
+    {
+      "id": "RESEARCH_EVIDENCE@1",
+      "version": "1.0.0",
+      "domain": "TRUST",
+      "path": "contracts/trust/RESEARCH_EVIDENCE@1.yaml",
+      "schemaPath": "contracts/schemas/research-evidence.schema.json"
+    },
+    {
+      "id": "SOURCE_PROVENANCE@1",
+      "version": "1.0.0",
+      "domain": "TRUST",
+      "path": "contracts/trust/SOURCE_PROVENANCE@1.yaml",
+      "schemaPath": "contracts/schemas/source-provenance.schema.json"
+    },
+    {
+      "id": "LICENSE_EVIDENCE@1",
+      "version": "1.0.0",
+      "domain": "TRUST",
+      "path": "contracts/trust/LICENSE_EVIDENCE@1.yaml",
+      "schemaPath": "contracts/schemas/license-evidence.schema.json"
+    },
+    {
+      "id": "DATASET_EVIDENCE@1",
+      "version": "1.0.0",
+      "domain": "MARKET",
+      "path": "contracts/market/DATASET_EVIDENCE@1.yaml",
+      "schemaPath": "contracts/schemas/dataset-evidence.schema.json"
+    },
+    {
+      "id": "EXPERIMENT_EVIDENCE@1",
+      "version": "1.0.0",
+      "domain": "TRUST",
+      "path": "contracts/trust/EXPERIMENT_EVIDENCE@1.yaml",
+      "schemaPath": "contracts/schemas/experiment-evidence.schema.json"
+    },
+    {
+      "id": "COST_EVIDENCE@1",
+      "version": "1.0.0",
+      "domain": "TRUST",
+      "path": "contracts/trust/COST_EVIDENCE@1.yaml",
+      "schemaPath": "contracts/schemas/cost-evidence.schema.json"
+    },
+    {
+      "id": "CLAIM_EVIDENCE@1",
+      "version": "1.0.0",
+      "domain": "TRUST",
+      "path": "contracts/trust/CLAIM_EVIDENCE@1.yaml",
+      "schemaPath": "contracts/schemas/claim-evidence.schema.json"
+    },
+    {
+      "id": "EVIDENCE_BUNDLE@1",
+      "version": "1.0.0",
+      "domain": "TRUST",
+      "path": "contracts/trust/EVIDENCE_BUNDLE@1.yaml",
+      "schemaPath": "contracts/schemas/evidence-bundle.schema.json"
+    },
+    {
+      "id": "SPONSORSHIP_P2_READINESS@1",
+      "version": "1.0.0",
+      "domain": "TRUST",
+      "path": "contracts/trust/SPONSORSHIP_P2_READINESS@1.yaml",
+      "schemaPath": "contracts/schemas/sponsorship-p2-readiness.schema.json"
     }
   ],
   "invariants": {

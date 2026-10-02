@@ -1,4 +1,4 @@
-# Allow only build/runtime and bounded validation inputs; no secrets, history or reports.
+# Allow only build/runtime and bounded validation inputs; no secrets or history.
 **
 !Dockerfile
 !.dockerignore
@@ -24,6 +24,7 @@
 !shared/market-contracts.mjs
 !shared/legal-identity.mjs
 !shared/license-engine.mjs
+!shared/research-metadata.mjs
 !deploy/
 !deploy/runtime/
 !deploy/runtime/package.json
@@ -44,8 +45,16 @@
 !scripts/verify-browser-boundary.mjs
 !scripts/validate-contract-suites.mjs
 !scripts/validate-growth-contracts.mjs
+!scripts/validate-evidence-hardening.mjs
+!scripts/generate-documentary.mjs
 !contracts/
 !contracts/**
+!documentary/
+!documentary/evidence/
+!documentary/evidence/**
+!generated/
+!generated/documentary/
+!generated/documentary/**
 !docs/
 !docs/licenses/
 !docs/licenses/**

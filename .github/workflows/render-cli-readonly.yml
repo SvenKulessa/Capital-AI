@@ -64,7 +64,7 @@ jobs:
           printf '%s\n' \
             'PASS: CLI authenticated for AICapital; Capital-AI has a live deployment.' \
             'Only workspace selection and deployment reads were performed.' >> "$GITHUB_STEP_SUMMARY"
-      - name: Diagnose runtime OIDC configuration without publishing values
+      - name: Enforce fail-closed OIDC verification without publishing values
         shell: bash
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY_TEST }}
@@ -75,6 +75,8 @@ jobs:
             --header "Authorization: Bearer $RENDER_API_KEY" \
             'https://api.render.com/v1/services/srv-dau1rp893c1s73cdhm1g/env-vars?limit=100' \
             --output "$RUNNER_TEMP/render-oidc-env.json"
+          # OIDC_VERIFICATION_STATE@1: configuration/discovery alone must stay red.
+          # This exits non-zero until credential authentication and a real login are evidenced.
           node scripts/diagnose-oidc.mjs "$RUNNER_TEMP/render-oidc-env.json" >> "$GITHUB_STEP_SUMMARY"
       - name: Remove temporary credentials and responses
         if: always()

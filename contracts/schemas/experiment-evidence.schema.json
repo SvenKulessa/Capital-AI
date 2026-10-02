@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://capital-ai.online/contracts/EXPERIMENT_EVIDENCE@1.schema.json",
+  "title": "EXPERIMENT_EVIDENCE@1",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "metadata",
+    "correlation",
+    "safety"
+  ],
+  "properties": {
+    "schema": {
+      "const": "EXPERIMENT_EVIDENCE@1"
+    },
+    "version": {
+      "const": "1.0.0"
+    },
+    "metadata": {
+      "type": "object"
+    },
+    "correlation": {
+      "type": "object",
+      "required": [
+        "changeId"
+      ],
+      "properties": {
+        "changeId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "safety": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true
+}

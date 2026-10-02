@@ -1,0 +1,48 @@
+{
+  "schema": "EXPERIMENT_EVIDENCE@1",
+  "version": "1.0.0",
+  "metadata": {
+    "project": "CAPITAL-AI",
+    "domain": "TRUST",
+    "affectedDomain": "MARKET",
+    "status": "PROPOSED"
+  },
+  "identity": {
+    "experimentEvidenceId": null,
+    "researchId": null,
+    "runId": null,
+    "executedAt": null
+  },
+  "execution": {
+    "codeSha": null,
+    "containerDigest": null,
+    "runtime": null,
+    "parameters": {},
+    "randomSeed": null
+  },
+  "inputs": {
+    "datasetEvidenceRefs": [],
+    "digests": []
+  },
+  "outputs": {
+    "artifactRefs": [],
+    "digests": [],
+    "metrics": {}
+  },
+  "reproducibility": {
+    "commandRef": null,
+    "environmentRef": null,
+    "repeatedRuns": 0,
+    "status": "UNKNOWN"
+  },
+  "state": {
+    "status": "BLOCKED"
+  },
+  "safety": {
+    "repositoryHeadAloneIsExecutionEvidence": false,
+    "inferredSuccessForbidden": true
+  },
+  "correlation": {
+    "changeId": null
+  }
+}

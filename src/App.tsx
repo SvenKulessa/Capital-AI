@@ -36,6 +36,8 @@ import { ModuleDetailModal } from './components/ModuleDetailModal';
 import { AllMarketsModal } from './components/AllMarketsModal';
 import { SubclassDetailModal } from './components/SubclassDetailModal';
 import { LegalAndFaqPages, LegalRoute } from './components/LegalAndFaqPages';
+import { ResearchLicensePages, ResearchProjectSummary } from './components/ResearchLicensePages';
+import { RESEARCH_ROUTES, researchMetadata, type ResearchRoute } from './data/researchLicenses';
 import { MarketAsset, CoreModule, MainCategory, AssetSubclass } from './types';
 import { CORE_MODULES, MARKET_ASSETS } from './data/mockData';
 import { MarketVocabularyModal } from './components/MarketVocabularyModal';
@@ -157,7 +159,11 @@ function AppContent() {
 
   // Update SEO metadata & GA pageview whenever route changes
   useEffect(() => {
-    if (currentRoute === '/login') {
+    if (RESEARCH_ROUTES.includes(currentRoute as ResearchRoute)) {
+      const meta = researchMetadata[currentRoute as ResearchRoute];
+      updatePageSEO({ ...meta, canonicalPath: currentRoute });
+      trackPageView(currentRoute, meta.title);
+    } else if (currentRoute === '/login') {
       const title = 'Capital-AI | Terminal Anmeldung & Login';
       const description =
         'Sicherer Zugang zum Capital-AI Terminal: KI-gestützte Echtzeit-Marktdaten, automatisierte Portfolio-Analysen und institutionelles Scoring.';
@@ -300,9 +306,9 @@ function AppContent() {
       });
       trackPageView('/provider-status', title);
     } else {
-      const title = 'Capital-AI | AI-Driven Market Intelligence';
+      const title = 'Capital-AI | FinTech-Forschung & Market Intelligence';
       const description =
-        'Marktdaten verstehen. Chancen besser erkennen. Capital-AI vereint Echtzeit-Marktdaten, KI-gestütztes Scoring und fundierte Analysen.';
+        'Capital-AI erforscht günstige gehostete Infrastruktur, Datenintegrität und nachvollziehbares Multi-Asset-Scoring. Forschungsbedingungen und Datenrechte transparent prüfen.';
       updatePageSEO({
         title,
         description,
@@ -520,6 +526,8 @@ function AppContent() {
             onNavigateLogin={() => navigateTo('/login')}
             onNavigateTab={navigateTo}
           />
+        ) : RESEARCH_ROUTES.includes(currentRoute as ResearchRoute) ? (
+          <ResearchLicensePages route={currentRoute as ResearchRoute} onNavigate={navigateTo} />
         ) : LEGAL_ROUTES.includes(currentRoute as LegalRoute) ? (
           /* Dedicated Legal & FAQ View (/faq, /datenschutz, /agb, /impressum) */
           <LegalAndFaqPages
@@ -558,6 +566,7 @@ function AppContent() {
             />
 
             {/* 4 Feature Key Pillars */}
+            <ResearchProjectSummary onNavigate={navigateTo} />
             <KeyPillars />
 
             {/* Sector Analysis (Sector Rotation Radar & Institutional Capital Flows) - SWAPPED AS REQUESTED */}

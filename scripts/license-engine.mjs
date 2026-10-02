@@ -22,19 +22,91 @@ export function buildLicenseReport(root) {
   for (const file of tools.files) {
     if (hash(readFileSync(join(root, file.path))) !== file.sha256) throw new Error('Lizenztext verändert: ' + file.path);
   }
-  const providers = (rights.providerRights || rights.providers || []).map(p => ({
-    id: p.id, status: p.status, missingFields: Object.entries(p.contractEvidence || {}).filter(([, v]) => v === null || v === undefined || v === '').map(([k]) => k),
-    nextAction: 'Schriftliche Erlaubnis für Anzeige, Cache, API-Weitergabe, abgeleitete Daten und Export belegen.',
+  const providerNextAction = 'Schriftliche Erlaubnis für Anzeige, Cache, API-Weitergabe, abgeleitete Daten und Export belegen.';
+  const providers = (rights.providerRights || rights.providers || []).map(p => {
+    const missingFields = Object.entries(p.contractEvidence || {})
+      .filter(([, value]) => value === null || value === undefined || value === '')
+      .map(([key]) => key);
+    return {
+      subjectType: 'provider',
+      id: p.id,
+      name: p.id,
+      version: '',
+      hash: '',
+      spdxId: '',
+      source: evidencePath,
+      usageScope: 'external-market-data-rights',
+      obligations: [providerNextAction, ...missingFields.map(field => 'Fehlender Vertragsnachweis: ' + field)],
+      scanTime: rights.reviewDate || null,
+      status: p.status,
+      evidenceStatus: missingFields.length ? 'GEHALTEN' : 'OFFEN',
+      ownerApproved: false,
+      missingFields,
+      nextAction: providerNextAction,
+    };
+  });
+  const packages = inventory.packages.map(p => {
+    const assessment = assessExpression(p.selectedLicense || p.declaredLicense);
+    return {
+      subjectType: 'package',
+      name: p.path.replace(/^.*node_modules\//, ''),
+      version: p.version,
+      hash: p.integrity || '',
+      spdxId: p.selectedLicense || p.declaredLicense || '',
+      expression: assessment.expression,
+      source: p.resolved || ('package-lock.json#' + p.path),
+      usageScope: p.dev ? 'development-lockfile' : 'application-lockfile',
+      obligations: assessment.obligations,
+      scanTime: null,
+      status: assessment.status,
+      evidenceStatus: 'OFFEN',
+      ownerApproved: false,
+    };
+  });
+  const osPackages = (rights.osPackages || []).map(p => ({
+    subjectType: 'package',
+    name: p.name,
+    version: p.version,
+    hash: '',
+    spdxId: '',
+    source: evidencePath,
+    usageScope: 'container-distribution',
+    obligations: ['Passende vollständige Quellen, Patches, Buildinputs und Verteilungsweg am Image-Digest nachweisen.'],
+    scanTime: rights.reviewDate || null,
+    status: p.status,
+    evidenceStatus: 'GEHALTEN',
+    ownerApproved: false,
+    nextAction: 'Passende vollständige Quellen, Patches, Buildinputs und Verteilungsweg am Image-Digest nachweisen.',
   }));
   return {
-    schemaVersion: 1, scope: 'REPOSITORY_EVIDENCE_SNAPSHOT_NOT_RUNTIME_APPROVAL', deployEligible: false,
-    evidenceSourceSha: rights.applicationSourceSha, evidenceReviewDate: rights.reviewDate,
-    evidenceSha256: hash(raw), lockfileSha256: inventory.lockfileSha256,
-    tools: tools.tools, providers,
-    packages: inventory.packages.map(p => ({ name: p.path.replace(/^.*node_modules\//, ''), version: p.version, scope: p.dev ? 'development' : 'lockfile', ...assessExpression(p.declaredLicense) })),
-    osPackages: (rights.osPackages || []).map(p => ({ name: p.name, version: p.version, status: p.status, nextAction: 'Passende vollständige Quellen, Patches, Buildinputs und Verteilungsweg am Image-Digest nachweisen.' })),
+    schemaVersion: 2,
+    scope: 'REPOSITORY_EVIDENCE_SNAPSHOT_NOT_RUNTIME_APPROVAL',
+    deployEligible: false,
+    ownerApproved: false,
+    evidenceSourceSha: rights.applicationSourceSha,
+    evidenceReviewDate: rights.reviewDate,
+    evidenceSha256: hash(raw),
+    lockfileSha256: inventory.lockfileSha256,
+    tools: tools.tools,
+    providers,
+    packages,
+    osPackages,
     remainingGates: rights.remainingGates || [],
-    documents: tools.files.map(f => ({ name: f.path.split('/').at(-1), sha256: f.sha256 })),
+    documents: tools.files.map(file => ({
+      subjectType: 'asset',
+      name: file.path.split('/').at(-1),
+      version: '',
+      hash: file.sha256,
+      sha256: file.sha256,
+      spdxId: '',
+      source: file.path,
+      usageScope: 'archived-license-evidence',
+      obligations: ['Technische Hash-Bindung erhalten; Rechtefreigabe separat prüfen.'],
+      scanTime: rights.reviewDate || null,
+      status: 'HASH_VERIFIED',
+      evidenceStatus: 'VERIFIED',
+      ownerApproved: false,
+    })),
   };
 }
 
