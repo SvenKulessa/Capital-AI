@@ -104,7 +104,7 @@ export function classifyGoVulnReachability({
     repeatedRunEquivalent: Boolean(reproducible),
   };
 
-  let decision = 'INCONCLUSIVE';
+  let decision = 'UNKNOWN';
   let reason = 'REACHABILITY_PREREQUISITES_NOT_PROVEN';
 
   if (statement?.status === 'affected' || symbolFrames.length > 0 || nmSymbols.length > 0) {
