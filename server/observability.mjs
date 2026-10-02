@@ -1,3 +1,4 @@
+import { renderCadsPrometheusMetrics } from './cads-observability.mjs';
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 
 const SECRET_KEY_PATTERN = /(secret|token|password|authorization|cookie|api[_-]?key|private[_-]?key|credential)/i;
@@ -121,7 +122,7 @@ export function renderPrometheusMetrics() {
     lines.push(`capital_ai_http_duration_ms_count{method="${metricNamePart(method)}",route="${route}"} ${value.count}`);
     lines.push(`capital_ai_http_duration_ms_max{method="${metricNamePart(method)}",route="${route}"} ${value.maxMs.toFixed(3)}`);
   }
-  return lines.join('\n') + '\n';
+  return lines.join('\n') + '\n' + renderCadsPrometheusMetrics();
 }
 
 export function metricsAuthorized(req) {
