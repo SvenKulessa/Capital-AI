@@ -100,7 +100,7 @@ export function finishRequest(req, res, ctx, pathname) {
   const current = metrics.duration.get(durationKey) || { count: 0, sumMs: 0, maxMs: 0 };
   current.count += 1; current.sumMs += durationMs; current.maxMs = Math.max(current.maxMs, durationMs);
   metrics.duration.set(durationKey, current);
-  const level = res.statusCode >= 500 ? 'error' : res.statusCode >= 400 ? 'warn' : 'info';
+  const level = res.statusCode >= 500 ? 'error' : 'info';
   writeOperationalLog(level, 'http', ctx.requestId, 'request.completed', {
     method: req.method, route, statusCode: res.statusCode, durationMs: Number(durationMs.toFixed(3)),
     traceId: ctx.trace?.traceId, parentSpanId: ctx.trace?.parentSpanId,
