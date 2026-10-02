@@ -22,7 +22,8 @@
     "preflight": "node scripts/preflight.mjs",
     "preflight:full": "node scripts/preflight.mjs --full",
     "license:report": "node scripts/license-engine.mjs",
-    "test:licenses": "node --test scripts/license-engine.test.mjs scripts/license-evidence.test.mjs"
+    "test:licenses": "node --test scripts/license-engine.test.mjs scripts/license-evidence.test.mjs",
+    "sponsorship:p2:check": "node scripts/validate-sponsorship-p2-projection.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
