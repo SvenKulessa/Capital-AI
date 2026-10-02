@@ -21,7 +21,7 @@
     "cryptoTop300": {
       "selectionRule": "TOP_300_BY_MARKET_CAP",
       "snapshotDate": "2026-09-30",
-      "rankingSource": "CoinGecko",
+      "rankingSource": "OSS_MULTI_EXCHANGE_SEED_REQUIRES_REFRESH",
       "rankingVerification": "SEED_UNIVERSE_REQUIRES_AUTOMATED_REFRESH_BEFORE_RANK_CLAIM",
       "quotePolicy": "Prefer USDT where a venue lists the pair; stablecoins/quote-asset self-pairs fall back to USD. Venue tradability must be verified separately.",
       "symbols": [
