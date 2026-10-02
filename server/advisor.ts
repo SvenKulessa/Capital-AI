@@ -6,6 +6,7 @@ import { z } from 'zod';
  */
 
 import { GoogleGenAI } from '@google/genai';
+import { assertPromptSafe } from './prompt-injection-guard.mjs';
 
 import type { AdvisorRequestPayload, AdvisorResponsePayload } from '../src/contracts/advisor.ts';
 
@@ -28,6 +29,7 @@ const RequestSchema = z.object({
 
 export async function handleAdvisorRequest(payload: AdvisorRequestPayload): Promise<AdvisorResponsePayload> {
   payload = RequestSchema.parse(payload);
+  payload.prompt = assertPromptSafe(payload.prompt);
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (apiKey) {
