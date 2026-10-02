@@ -2,6 +2,13 @@ import { renderCadsPrometheusMetrics } from './cads-observability.mjs';
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 
 const SECRET_KEY_PATTERN = /(secret|token|password|authorization|cookie|api[_-]?key|private[_-]?key|credential)/i;
+const SECRET_VALUE_PATTERNS = [
+  /^Bearer\s+\S+/i,
+  /^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/,
+  /-----BEGIN [A-Z ]*PRIVATE KEY-----/,
+  /^[a-z][a-z0-9+.-]*:\/\/[^\s/:@]+:[^\s@]+@/i,
+];
+let telemetryRedactions = 0;
 const metrics = {
   requests: new Map(),
   errors: new Map(),
@@ -10,12 +17,19 @@ const metrics = {
 
 export function sanitizeTelemetry(value, depth = 0) {
   if (depth > 5) return '[depth-limited]';
+  if (typeof value === 'string' && SECRET_VALUE_PATTERNS.some(pattern => pattern.test(value))) {
+    telemetryRedactions += 1;
+    return '[redacted]';
+  }
   if (Array.isArray(value)) return value.slice(0, 32).map(item => sanitizeTelemetry(item, depth + 1));
   if (!value || typeof value !== 'object') return value;
-  return Object.fromEntries(Object.entries(value).slice(0, 64).map(([key, raw]) => [
-    key,
-    SECRET_KEY_PATTERN.test(key) ? '[redacted]' : sanitizeTelemetry(raw, depth + 1),
-  ]));
+  return Object.fromEntries(Object.entries(value).slice(0, 64).map(([key, raw]) => {
+    if (SECRET_KEY_PATTERN.test(key)) {
+      telemetryRedactions += 1;
+      return [key, '[redacted]'];
+    }
+    return [key, sanitizeTelemetry(raw, depth + 1)];
+  }));
 }
 
 export function parseTraceParent(value) {
@@ -103,6 +117,9 @@ export function renderPrometheusMetrics() {
     '# HELP capital_ai_process_resident_memory_bytes Resident memory.',
     '# TYPE capital_ai_process_resident_memory_bytes gauge',
     'capital_ai_process_resident_memory_bytes ' + process.memoryUsage().rss,
+    '# HELP capital_ai_telemetry_redactions_total Values removed before telemetry emission.',
+    '# TYPE capital_ai_telemetry_redactions_total counter',
+    'capital_ai_telemetry_redactions_total ' + telemetryRedactions,
     '# HELP capital_ai_http_requests_total Completed HTTP requests.',
     '# TYPE capital_ai_http_requests_total counter',
   ];
@@ -136,3 +153,6 @@ export function metricsAuthorized(req) {
 export function hashAction(input) {
   return createHash('sha256').update(String(input)).digest('hex');
 }
+
+export function telemetryRedactionCount() { return telemetryRedactions; }
+export function resetTelemetryRedactionsForTests() { telemetryRedactions = 0; }
