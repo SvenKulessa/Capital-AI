@@ -10,7 +10,7 @@ export function sanitizeTelegramConfig(input: Partial<TelegramConfig> = {}): Tel
     notifySmartMoney: input.notifySmartMoney === true,
     notifyPriceAlerts: input.notifyPriceAlerts === true,
     notifySentimentFlips: input.notifySentimentFlips === true,
-    minWhaleVolumeMln: Number.isFinite(input.minWhaleVolumeMln) ? Math.max(0, Math.min(100000, input.minWhaleVolumeMln)) : 5,
+    minWhaleVolumeMln: typeof input.minWhaleVolumeMln === 'number' && Number.isFinite(input.minWhaleVolumeMln) ? Math.max(0, Math.min(100000, input.minWhaleVolumeMln)) : 5,
     lastTestedAt: typeof input.lastTestedAt === 'string' ? input.lastTestedAt.slice(0, 50) : undefined,
   };
 }
@@ -21,7 +21,7 @@ export function sanitizeAlertPreferences(input: UserAlertPreferences, resetConne
     soundEnabled: input.soundEnabled === true,
     emailDigest: input.emailDigest === true,
     pushSimulation: input.pushSimulation === true,
-    autoCheckIntervalSec: Number.isFinite(input.autoCheckIntervalSec) ? Math.max(10, Math.min(3600, input.autoCheckIntervalSec)) : 30,
+    autoCheckIntervalSec: typeof input.autoCheckIntervalSec === 'number' && Number.isFinite(input.autoCheckIntervalSec) ? Math.max(10, Math.min(3600, input.autoCheckIntervalSec)) : 30,
     sentimentAlertsEnabled: input.sentimentAlertsEnabled === true,
     telegram: sanitizeTelegramConfig({ ...(input.telegram || {}), ...(resetConnection ? { connected: false } : {}) }),
   };
