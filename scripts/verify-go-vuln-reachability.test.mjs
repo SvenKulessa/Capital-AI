@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { classifyGoVulnReachability } from './verify-go-vuln-reachability.mjs';
+import { classifyGoVulnReachability, buildOpenVex, buildCycloneDxVex } from './verify-go-vuln-reachability.mjs';
 
 const advisory = 'GO-2026-5932';
 const sha = 'sha256:' + 'a'.repeat(64);
@@ -29,6 +29,7 @@ const base = {
   reproducible: true,
   binarySha256: sha,
   imageRef: 'nats:2.15.0-alpine@sha256:' + 'b'.repeat(64),
+  localImageId: 'sha256:' + 'c'.repeat(64),
 };
 
 test('not_affected requires exact dependency, symbol-level scan, nm and reproducibility', () => {
@@ -92,4 +93,14 @@ test('non-reproducible repeated scan cannot produce NOT_AFFECTED', () => {
   const report = classifyGoVulnReachability({ ...base, reproducible: false });
   assert.equal(report.decision, 'INCONCLUSIVE');
   assert.equal(report.prerequisites.repeatedRunEquivalent, false);
+});
+
+
+test('generated VEX keeps UNKNOWN as under investigation and NOT_AFFECTED explicit', () => {
+  const unknown = classifyGoVulnReachability({ ...base, openvex: { statements: [] } });
+  assert.equal(buildOpenVex(unknown).statements[0].status, 'under_investigation');
+  assert.equal(buildCycloneDxVex(unknown).vulnerabilities[0].analysis.state, 'in_triage');
+  const proven = classifyGoVulnReachability(base);
+  assert.equal(buildOpenVex(proven).statements[0].status, 'not_affected');
+  assert.equal(buildCycloneDxVex(proven).vulnerabilities[0].analysis.state, 'not_affected');
 });
