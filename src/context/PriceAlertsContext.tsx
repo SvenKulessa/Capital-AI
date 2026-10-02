@@ -601,7 +601,7 @@ Ihr Telegram-Empfangskanal ist aktiv. Sie erhalten ab sofort:
               a.symbol.toUpperCase() === alert.assetSymbol.toUpperCase()
           );
 
-          if (!asset || asset.actionable !== true || !asset.evidenceId || Date.now() - asset.observedAt > 30000) return alert;
+          if (!asset || asset.actionable !== true || !asset.evidenceId || asset.observedAt === undefined || Date.now() - asset.observedAt > 30000) return alert;
 
           const currentNum = parsePriceToNumber(asset.value);
           const thresholdNum = alert.targetPrice;
