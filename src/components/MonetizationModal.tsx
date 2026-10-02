@@ -3,8 +3,8 @@
  * [ARCHITEKTUR-MAPPING: MONETARISIERUNGSKONZEPT & BUSINESS MODEL]
  * ----------------------------------------------------------------------------
  * 1. GRAFISCHE KOMPONENTE : 
- *    - B2C SaaS Tarife (Free Starter, Pro Investor 19€/Monat, Alpha Elite 49€/Monat)
- *    - Monats- / Jahresabrechnungs-Umschalter mit Rabattkalkulation (-20%)
+ *    - B2C SaaS Tarife (Starter 7€/Monat, Pro 29€/Monat, Enterprise 109€/Monat)
+ *    - Monats- / Jahresabrechnungs-Umschalter mit Stripe-v2-Preisen und tarifgenauem Jahresrabatt
  *    - B2B API Licensing & Broker Affiliate Matrix (CPA 35€-80€)
  *    - Interaktiver Ertrags-Simulator (MAU, Conversion Rate, MRR, ARR Runrate)
  * 2. SCORING-LOGIK        : 
@@ -44,6 +44,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BrandLogo } from './BrandLogo';
+import { PRICING_CATALOG, annualDiscountPercent, displayPriceEur } from '../data/pricingCatalog';
 
 interface MonetizationModalProps {
   isOpen: boolean;
@@ -74,10 +75,16 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Pricing values with optional 30% $CPT discount
-  const discountMultiplier = payWithCpt ? 0.7 : 1.0;
-  const proPrice = (billingCycle === 'annual' ? 15.83 : 19) * discountMultiplier;
-  const alphaPrice = (billingCycle === 'annual' ? 40.83 : 49) * discountMultiplier;
+  // Stripe v2 is the price authority. Token discounts stay display-disabled until dedicated Stripe Prices exist.
+  const starterPrice = (billingCycle === 'annual'
+    ? PRICING_CATALOG.starter.annual.amountCents / 12
+    : PRICING_CATALOG.starter.monthly.amountCents) / 100;
+  const proPrice = (billingCycle === 'annual'
+    ? PRICING_CATALOG.pro.annual.amountCents / 12
+    : PRICING_CATALOG.pro.monthly.amountCents) / 100;
+  const enterprisePrice = (billingCycle === 'annual'
+    ? PRICING_CATALOG.enterprise.annual.amountCents / 12
+    : PRICING_CATALOG.enterprise.monthly.amountCents) / 100;
 
   // Simulator calculations
   const payingUsers = Math.round(mau * (convRate / 100));
@@ -198,7 +205,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
           </button>
         </div>
 
-        {/* TAB 1: B2C SaaS Tarife (Freemium, Pro, Alpha Elite) */}
+        {/* TAB 1: B2C SaaS Tarife (Freemium, Pro, Enterprise) */}
         {activeTab === 'plans' && (
           <div className="mt-5 space-y-5">
             {/* Billing toggle & $CPT discount toggle */}
@@ -233,7 +240,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                     Jährlich
                   </span>
                   <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-                    -20% Rabatt
+                    Jahresrabatt je Tarif
                   </span>
                 </div>
               </div>
@@ -246,21 +253,21 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                 </div>
                 <button
                   type="button"
-                  onClick={() => setPayWithCpt(!payWithCpt)}
+                  disabled
                   className={`px-2.5 py-1 rounded-lg text-xs font-bold font-mono transition-all flex items-center gap-1.5 cursor-pointer border ${
                     payWithCpt
                       ? 'bg-amber-400 text-black border-amber-300 shadow-[0_0_10px_rgba(249,191,33,0.3)]'
                       : 'bg-slate-800/90 text-slate-400 border-slate-700 hover:text-white'
                   }`}
                 >
-                  <span>{payWithCpt ? 'Aktiv (-30%)' : 'Inaktiv (0%)'}</span>
+                  <span>{payWithCpt ? 'Aktiv' : 'Separater Stripe-Price erforderlich'}</span>
                 </button>
               </div>
             </div>
 
             {/* Pricing Tiers Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-              {/* TIER 1: Free Starter */}
+              {/* TIER 1: Starter */}
               <div className="p-4 rounded-2xl bg-[#030715] border border-slate-800 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between">
@@ -268,12 +275,19 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                       Starter
                     </span>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">
-                      Freemium
+                      Paid
                     </span>
                   </div>
                   <div className="mt-2">
-                    <div className="text-2xl font-black text-white">0 €</div>
-                    <span className="text-[11px] text-slate-400">Dauerhaft kostenlos</span>
+                    <div className="text-2xl font-black text-white flex items-baseline gap-1">
+                      {starterPrice.toFixed(2).replace('.', ',')} €
+                      <span className="text-xs text-slate-400 font-normal">/ Monat</span>
+                    </div>
+                    <span className="text-[11px] text-slate-400">
+                      {billingCycle === 'annual'
+                        ? `${displayPriceEur(PRICING_CATALOG.starter.annual.amountCents)} € jährlich · -${annualDiscountPercent('starter')}%`
+                        : 'Monatlich kündbar'}
+                    </span>
                   </div>
                   <p className="text-xs text-slate-400 mt-2 pb-3 border-b border-slate-800">
                     Ideal zum Kennenlernen der Plattform und Beobachten globaler Indizes.
@@ -304,7 +318,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                   onClick={onClose}
                   className="mt-5 w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-colors cursor-pointer"
                 >
-                  Aktiver Tarif
+                  Starter auswählen
                 </button>
               </div>
 
@@ -317,7 +331,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                 <div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-mono font-bold text-amber-300 uppercase">
-                      Pro Investor
+                      Pro
                     </span>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 font-bold">
                       Bestseller
@@ -330,7 +344,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                     </div>
                     <span className="text-[10px] text-slate-400 font-mono">
                       {billingCycle === 'annual'
-                        ? '190 € jährliche Abrechnung'
+                        ? `${displayPriceEur(PRICING_CATALOG.pro.annual.amountCents)} € jährliche Abrechnung · -${annualDiscountPercent('pro')}%`
                         : 'Monatlich kündbar'}
                     </span>
                   </div>
@@ -371,7 +385,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                     }}
                     className="w-full py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black text-xs font-black transition-all shadow-[0_0_15px_rgba(249,191,33,0.35)] cursor-pointer"
                   >
-                    Pro 14 Tage kostenlos testen
+                    Pro auswählen
                   </button>
                   {onNavigateTokenomics && (
                     <button
@@ -394,7 +408,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                 <div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-mono font-bold text-cyan-400 uppercase">
-                      Alpha Elite
+                      Enterprise
                     </span>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold">
                       Trader &amp; Pro
@@ -402,12 +416,12 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                   </div>
                   <div className="mt-2">
                     <div className="text-2xl font-black text-cyan-400 flex items-baseline gap-1">
-                      {alphaPrice.toFixed(2).replace('.', ',')} €
+                      {enterprisePrice.toFixed(2).replace('.', ',')} €
                       <span className="text-xs text-slate-400 font-normal">/ Monat</span>
                     </div>
                     <span className="text-[10px] text-slate-400 font-mono">
                       {billingCycle === 'annual'
-                        ? '490 € jährliche Abrechnung'
+                        ? `${displayPriceEur(PRICING_CATALOG.enterprise.annual.amountCents)} € jährliche Abrechnung · -${annualDiscountPercent('enterprise')}%`
                         : 'Monatlich kündbar'}
                     </span>
                   </div>
