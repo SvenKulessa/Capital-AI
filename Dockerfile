@@ -45,7 +45,7 @@ FROM crypto-base AS runtime
 ENV NODE_ENV=production PORT=10000
 WORKDIR /app
 COPY --from=build /app/dist ./dist
-COPY server/index.mjs server/market.mjs server/auth.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/mta-sts.mjs ./server/
+COPY server/index.mjs server/market.mjs server/auth.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/mta-sts.mjs server/mobile-scorer.mjs server/scorer-bus.mjs ./server/
 COPY --from=production-deps /runtime/node_modules ./node_modules
 COPY server/infrastructure.mjs ./server/
 COPY scripts/verify-private-brokers.mjs ./scripts/
