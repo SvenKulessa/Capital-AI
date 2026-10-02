@@ -8,7 +8,7 @@ const base={
   brokers:{nats:{authenticated:true,jetstream:true},valkey:{connected:true}},
   pipeline:{scope:'FULL_PIPELINE',samples:600,p50Ms:20,p95Ms:80,maxMs:150},
   cads:{dataLeakFindings:0,coveredLayers:['ingress','normalization','scoring','stream','cache','storage','api','presentation']},
-  assetClasses:REQUIRED_ASSET_CLASSES.map(assetClass=>({assetClass,concurrent:100,attempted:100,succeeded:100,failed:0,scoreEngine:'PASS'})),
+  assetClasses:REQUIRED_ASSET_CLASSES.map(assetClass=>({assetClass,concurrent:100,attempted:100,succeeded:100,failed:0,scoreEngine:'PASS',productionEligibility:'PASS',dataRights:'PASS'})),
   imageRef:digest, productionHandoff:'PASS'
 };
 
@@ -38,4 +38,12 @@ test('control-plane availability without authenticated NATS JetStream evidence i
 
 test('repository head never implies NATS redeploy',()=>{
   assert.equal(verifyReleaseReadiness(base).policy.natsHeadOnlyRedeploy,false);
+});
+
+
+test('synthetic engine capacity never substitutes production eligibility or rights',()=>{
+  const assetClasses=base.assetClasses.map((row,index)=>index===0?{...row,productionEligibility:'CAPACITY_ONLY',dataRights:'RESEARCH_ONLY'}:row);
+  const r=verifyReleaseReadiness({...base,assetClasses});
+  assert.equal(r.deployAllowed,false);
+  assert.equal(r.assetClasses.find(x=>x.assetClass==='crypto').pass,false);
 });
