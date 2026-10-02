@@ -14,15 +14,15 @@ Die zusätzliche Evidence beantwortet ausschließlich die engere Frage:
 
 ## Gate
 
-Der Workflow `NATS GO-2026-5932 Reachability`:
+Der kanonische Workflow `Docker Build Sicherheit` / Job `Docker Security Gate`:
 
 1. baut `deploy/Dockerfile.nats` mit dem bereits gepinnten NATS-Basisimage;
 2. extrahiert exakt `/usr/local/bin/nats-server` und bildet dessen SHA-256;
 3. weist per `go version -m` `golang.org/x/crypto v0.57.0` im Binary nach;
 4. baut `govulncheck v1.8.0` aus dem offiziellen Go-Modul in einem immutable gepinnten Go-1.26.8-linux/amd64-Container;
 5. führt `govulncheck -mode binary` auf genau diesem Binary aus;
-6. archiviert Streaming-JSON und das direkt von govulncheck erzeugte OpenVEX;
-7. klassifiziert `GO-2026-5932` fail-closed.
+6. wiederholt die relevante Binary-/Symbolanalyse und prüft semantische Reproduzierbarkeit;
+7. klassifiziert `GO-2026-5932` fail-closed und erzeugt daraus OpenVEX sowie CycloneDX-VEX.
 
 ## NOT_AFFECTED-Kriterien
 
@@ -32,17 +32,19 @@ Der Workflow `NATS GO-2026-5932 Reachability`:
 - das Binary exakt `x/crypto v0.57.0` enthält;
 - govulncheck `scan_mode=binary` und `scan_level=symbol` meldet;
 - GO-2026-5932 in der verwendeten Vulnerability-DB tatsächlich beobachtet wurde;
-- ein OpenVEX-Statement für GO-2026-5932 vorhanden ist;
-- dieses Statement `status=not_affected` mit einer standardisierten Reachability-Begründung enthält;
-- kein betroffenes Symbol im Binary gemeldet wird.
+- die Advisory-Evidence in der verwendeten Vulnerability-DB vorhanden ist;
+- `go tool nm` als unabhängiger Symbolpfad erfolgreich ist;
+- kein betroffenes `openpgp/*`-Symbol im Binary gemeldet wird;
+- der zweite Lauf semantisch äquivalent ist;
+- keine widersprüchliche Upstream-VEX-Aussage vorliegt.
 
-Jede fehlende oder widersprüchliche Evidence ergibt `INCONCLUSIVE` und blockiert die Reachability-Abnahme. Ein gefundenes vulnerables Symbol ergibt `AFFECTED`.
+Jede fehlende oder widersprüchliche Evidence ergibt `UNKNOWN`; eine `NOT_AFFECTED`-Aussage bleibt damit gesperrt. Ein gefundenes vulnerables Symbol ergibt `AFFECTED`.
 
 ## Interpretation
 
 Govulncheck dokumentiert für den Binary-Modus, dass die Symboltabelle verwendet wird, um Findings auf tatsächlich im Binary vorhandene vulnerable Funktionen einzugrenzen. Binary-Analyse besitzt jedoch keine vollständigen Call-Graphs und kann konservative False Positives liefern. `NOT_AFFECTED` ist daher eine binär- und versionsgebundene VEX-Aussage, keine generelle Aussage über zukünftige NATS-Versionen.
 
-Die OpenVEX-Evidence ergänzt Trivy. Sie ersetzt oder löscht das Trivy-Finding nicht.
+Die erzeugte OpenVEX-/CycloneDX-VEX-Evidence ergänzt Trivy. Sie ersetzt oder löscht das Trivy-Finding nicht. Der frühere eigenständige Reachability-Workflow wurde zur Vermeidung doppelter CI-Kosten in den bestehenden Docker Security Gate konsolidiert.
 
 ## Tooling / Provenance
 
