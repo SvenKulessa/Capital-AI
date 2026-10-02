@@ -22,6 +22,6 @@ export const ProviderStatusDashboard: React.FC<ProviderStatusDashboardProps> = (
    <ul className="my-3 text-sm space-y-2">{researchProviders.map(provider => <li key={provider.id}>{provider.name} · <span className="text-amber-200">{provider.status}</span></li>)}</ul>
    <a href="/datenprovider-lizenzen" className="text-cyan-300 underline">Quellen, Bedingungen und druckbaren Prüfbericht ansehen</a>
  </section>
- <ul className="mt-4 space-y-3">{assets.map(asset => <li key={asset.id} className="border-t border-slate-700 pt-3"><strong>{asset.symbol}: {asset.value}</strong><p className="text-xs text-slate-400">{asset.provider} · {asset.dataAvailability} · {new Date(asset.observedAt).toLocaleString('de-DE')}</p><a className="text-xs text-cyan-300 break-all" href={`/api/market/evidence?id=${encodeURIComponent(asset.evidenceId)}`} target="_blank" rel="noreferrer">Evidence prüfen</a></li>)}</ul>
+ <ul className="mt-4 space-y-3">{assets.map(asset => <li key={asset.id} className="border-t border-slate-700 pt-3"><strong>{asset.symbol}: {asset.value}</strong><p className="text-xs text-slate-400">{asset.provider} · {asset.dataAvailability} · {asset.observedAt === undefined ? 'Zeitpunkt nicht verfügbar' : new Date(asset.observedAt).toLocaleString('de-DE')}</p>{asset.evidenceId && <a className="text-xs text-cyan-300 break-all" href={`/api/market/evidence?id=${encodeURIComponent(asset.evidenceId)}`} target="_blank" rel="noreferrer">Evidence prüfen</a>}</li>)}</ul>
  </section>;
 };

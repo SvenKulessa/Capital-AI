@@ -1758,7 +1758,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "deliverables": [
     "Echten Login, eigenen Export, Logout und anschließendes 401 auf capital-ai.online prüfen."
   ]
-},,
+},
 {
   "status": "pending",
   "phase": 4,
