@@ -1,7 +1,7 @@
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import ts from 'typescript';
+import * as ts from 'typescript';
 
 // Deterministic browser-boundary regression gate; complements the current Trivy secret scan.
 export async function verifyBrowserBoundary(root = path.resolve('dist')) {
