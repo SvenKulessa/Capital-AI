@@ -954,7 +954,7 @@ export const ROADMAP_SNAPSHOT = {
   ]
 } as const;
 
-export const WORK_PACKAGES = [
+export const WORK_PACKAGES: WorkPackage[] = [
 {
   "status": "pending",
   "phase": 4,
