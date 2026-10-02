@@ -66,7 +66,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('plans');
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('annual');
-  const [payWithCpt, setPayWithCpt] = useState<boolean>(false);
+  const payWithCpt = false;
 
   // Interactive Revenue Calculator state
   const [mau, setMau] = useState<number>(50000); // Monthly Active Users
@@ -90,7 +90,10 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
   const payingUsers = Math.round(mau * (convRate / 100));
   const proUsers = Math.round(payingUsers * (proRatio / 100));
   const alphaUsers = payingUsers - proUsers;
-  const mrrSub = Math.round(proUsers * 19 + alphaUsers * 49);
+  const mrrSub = Math.round(
+    proUsers * (PRICING_CATALOG.pro.monthly.amountCents / 100) +
+    alphaUsers * (PRICING_CATALOG.enterprise.monthly.amountCents / 100),
+  );
   const arrSub = mrrSub * 12;
   const estimatedBrokerCpaPerYear = Math.round(mau * 0.02 * 45); // 2% click to broker at 45€ CPA
   const totalArr = arrSub + estimatedBrokerCpaPerYear;
@@ -727,9 +730,9 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
 
                 <div className="space-y-1.5 bg-[#081028] p-3 rounded-xl border border-slate-800">
                   <div className="flex justify-between font-semibold">
-                    <span className="text-slate-300">Anteil Pro vs. Alpha</span>
+                    <span className="text-slate-300">Anteil Pro vs. Enterprise</span>
                     <span className="text-amber-400 font-mono">
-                      {proRatio}% Pro / {100 - proRatio}% Alpha
+                      {proRatio}% Pro / {100 - proRatio}% Enterprise
                     </span>
                   </div>
                   <input
@@ -759,7 +762,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                     {payingUsers.toLocaleString('de-DE')}
                   </div>
                   <span className="text-[10px] text-slate-500">
-                    {proUsers} Pro • {alphaUsers} Alpha
+                    {proUsers} Pro • {alphaUsers} Enterprise
                   </span>
                 </div>
 
