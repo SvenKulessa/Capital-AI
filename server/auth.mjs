@@ -10,7 +10,7 @@ const cookieValue = (req, name) => {
 };
 
 export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.now, audit = console.info } = {}) {
-  const transactions = new Map(), sessions = new Map();
+  const transactions = new Map(), sessions = new Map(), mobileTransfers = new Map();
   const allow = createLimiter(20, 60_000, 1, now);
   let metadata, keys;
   const configured = () => {
@@ -23,6 +23,18 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     } catch { return false; }
   };
   const prune = map => { for (const [key, value] of map) if (value.expires <= now()) map.delete(key); };
+  const mobileChallenge = value => /^[A-Za-z0-9_-]{43}$/.test(String(value || '')) ? String(value) : '';
+  const mobileVerifier = value => /^[A-Za-z0-9._~-]{43,128}$/.test(String(value || '')) ? String(value) : '';
+  async function readForm(req) {
+    const chunks = [];
+    let bytes = 0;
+    for await (const chunk of req) {
+      bytes += chunk.length;
+      if (bytes > 4096) throw new Error('oversized_mobile_exchange');
+      chunks.push(chunk);
+    }
+    return new URLSearchParams(Buffer.concat(chunks).toString('utf8'));
+  }
   async function discovery(config) {
     if (metadata) return metadata;
     const candidate = await boundedJson(await fetchImpl(config.issuer.replace(/\/$/, '') + '/.well-known/openid-configuration', { signal: AbortSignal.timeout(5000), redirect: 'error' }));
@@ -46,8 +58,9 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
   async function handle(req, res, url, json) {
     if (!url.pathname.startsWith('/api/auth/')) return false;
     const action = url.pathname.slice('/api/auth/'.length);
-    if (!['login', 'callback', 'session', 'logout'].includes(action)) { json(res, 404, { error: 'not_found' }); return true; }
-    if (req.method !== (action === 'logout' ? 'POST' : 'GET')) { json(res, 405, { error: 'method_not_allowed' }); return true; }
+    if (!['login', 'callback', 'session', 'logout', 'mobile-login', 'mobile-exchange'].includes(action)) { json(res, 404, { error: 'not_found' }); return true; }
+    const expectedMethod = action === 'logout' || action === 'mobile-exchange' ? 'POST' : 'GET';
+    if (req.method !== expectedMethod) { json(res, 405, { error: 'method_not_allowed' }); return true; }
     if (action === 'session') {
       const value = session(req);
       json(res, 200, { configured: !!configured(), authenticated: !!value, user: value ? { subject: value.subject, name: value.name } : null }); return true;
@@ -58,12 +71,30 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       res.setHeader('Set-Cookie', cookie('__Host-capital_session', '', 0));
       json(res, 200, { authenticated: false }); return true;
     }
+    if (action === 'mobile-exchange') {
+      prune(mobileTransfers); prune(sessions);
+      let form;
+      try { form = await readForm(req); } catch { json(res, 400, { error: 'invalid_mobile_exchange' }); return true; }
+      const code = String(form.get('code') || '');
+      const verifier = mobileVerifier(form.get('verifier'));
+      const transfer = mobileTransfers.get(code);
+      if (!transfer || !verifier || createHash('sha256').update(verifier).digest('base64url') !== transfer.challenge) {
+        if (transfer) mobileTransfers.delete(code);
+        json(res, 400, { error: 'invalid_mobile_exchange' }); return true;
+      }
+      mobileTransfers.delete(code);
+      const value = sessions.get(transfer.sessionId);
+      if (!value || value.expires <= now()) { sessions.delete(transfer.sessionId); json(res, 400, { error: 'expired_mobile_exchange' }); return true; }
+      const age = Math.max(1, Math.min(1800, Math.floor((value.expires - now()) / 1000)));
+      res.setHeader('Set-Cookie', cookie('__Host-capital_session', transfer.sessionId, age));
+      res.writeHead(303, { Location: '/mobile-scorer', 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' }); res.end(); return true;
+    }
     if (!allow()) { res.setHeader('Retry-After', '60'); json(res, 429, { error: 'rate_limited' }); return true; }
     const config = configured();
     if (!config) { json(res, 503, { error: 'authentication_not_configured' }); return true; }
     let phase = 'callback_validation';
     try {
-      if (action === 'login') {
+      if (action === 'login' || action === 'mobile-login') {
         // Do not permit cross-site subresource initiation. Top-level provider redirects remain possible.
         if (req.headers['sec-fetch-site'] === 'cross-site' && req.headers['sec-fetch-mode'] !== 'navigate') { json(res, 403, { error: 'forbidden_origin' }); return true; }
         prune(transactions);
@@ -71,7 +102,9 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
         phase = 'discovery';
         const meta = await discovery(config);
         const state = random(), nonce = random(), verifier = random(), browser = random();
-        transactions.set(state, { nonce, verifier, browser, expires: now() + 300000 });
+        const challenge = action === 'mobile-login' ? mobileChallenge(url.searchParams.get('challenge')) : '';
+        if (action === 'mobile-login' && !challenge) { json(res, 400, { error: 'invalid_mobile_challenge' }); return true; }
+        transactions.set(state, { nonce, verifier, browser, mobileChallenge: challenge || null, expires: now() + 300000 });
         const target = secureUrl(meta.authorization_endpoint);
         for (const [key, value] of Object.entries({ response_type: 'code', client_id: config.clientId, redirect_uri: config.origin + '/api/auth/callback', scope: 'openid profile', state, nonce, code_challenge: createHash('sha256').update(verifier).digest('base64url'), code_challenge_method: 'S256' })) target.searchParams.set(key, value);
         res.setHeader('Set-Cookie', cookie('__Host-capital_oidc', browser, 300, 'Lax'));
@@ -105,6 +138,14 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       sessions.delete(cookieValue(req, '__Host-capital_session'));
       sessions.set(id, { subject: payload.sub, issuer: payload.iss, name: typeof payload.name === 'string' ? payload.name.slice(0, 100) : 'Benutzer', expires: now() + age * 1000 });
       audit('OIDC authentication verified at session_creation');
+      if (transaction.mobileChallenge) {
+        prune(mobileTransfers);
+        if (mobileTransfers.size >= 100) throw new Error('busy');
+        const transferCode = random();
+        mobileTransfers.set(transferCode, { sessionId: id, challenge: transaction.mobileChallenge, expires: now() + 60_000 });
+        res.setHeader('Set-Cookie', cookie('__Host-capital_oidc', '', 0, 'Lax'));
+        res.writeHead(303, { Location: `capitalai-private://auth/callback?code=${encodeURIComponent(transferCode)}`, 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' }); res.end(); return true;
+      }
       res.setHeader('Set-Cookie', [cookie('__Host-capital_oidc', '', 0, 'Lax'), cookie('__Host-capital_session', id, age)]);
       res.writeHead(303, { Location: '/login', 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' }); res.end(); return true;
     } catch {
