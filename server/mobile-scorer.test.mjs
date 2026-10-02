@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildBinanceResearchUniverse, canonicalScorerOrigin } from './mobile-scorer.mjs';
+import { buildBinanceResearchUniverse, buildCoinPaprikaResearchUniverse, canonicalScorerOrigin } from './mobile-scorer.mjs';
 
 test('canonical scorer origin is explicit and cannot point back to the public app origin', () => {
   assert.equal(canonicalScorerOrigin({ PUBLIC_APP_ORIGIN: 'https://capital-ai.online' }), null);
@@ -29,4 +29,17 @@ test('research universe deterministically returns the top 400 unique active USDT
   assert.equal(new Set(universe.map(x => x.symbol)).size, 400);
   assert.ok(universe.every(x => x.rankMetric === 'binanceSpotUsdtQuoteVolume24h'));
   assert.ok(universe.every(x => x.source === 'binance-public-spot-private-research'));
+});
+
+
+test('CoinPaprika private-research universe preserves market-cap rank and de-duplicates symbols', () => {
+  const rows = [];
+  for (let i = 1; i <= 405; i++) rows.push({ rank: i, symbol: 'P' + String(i).padStart(3, '0'), name: 'Paprika ' + i });
+  rows.push({ rank: 2, symbol: 'P002', name: 'Duplicate' });
+  const universe = buildCoinPaprikaResearchUniverse(rows);
+  assert.equal(universe.length, 400);
+  assert.equal(universe[0].universeRank, 1);
+  assert.equal(universe[399].universeRank, 400);
+  assert.ok(universe.every(x => x.rankMetric === 'marketCap'));
+  assert.ok(universe.every(x => x.source === 'coinpaprika-public-private-research'));
 });
