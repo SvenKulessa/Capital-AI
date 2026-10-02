@@ -2014,6 +2014,32 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "dependencies": ["CA-TRUST-WORK-VERIFICATION"]
 },
 
+{
+  "id": "CA-PLATFORM-TS-APP-BOUNDARY",
+  "title": "TypeScript App-Boundary bis sichere native TS7-Migration halten",
+  "owner": "PLATFORM",
+  "status": "aktiv",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "GEHALTEN",
+  "evidenceRefs": [
+    "docs/architecture/TYPESCRIPT-APP-BOUNDARY-DECISION.md",
+    "scripts/verify-browser-boundary.mjs",
+    "scripts/benchmark-browser-boundary.mjs"
+  ],
+  "nextStep": "Neue TS7-Version/native Artefakte erneut auf Provenance, Binary Reachability und Security prüfen; danach Typecheck-Performance und Oxc-Boundary gegen dieselben Fixtures benchmarken.",
+  "priority": "Hoch",
+  "leadName": "Projektowner",
+  "targetSprint": "Bei sicherem TypeScript-Update",
+  "description": "Die bestehende TypeScript-6-App-Boundary bleibt aktiv. Der native Go-Compiler von TS7 wird trotz Upstream-Performancevorteil nicht promoted, solange das exakte Binary-TRUST-Gate blockiert.",
+  "deliverables": [
+    "Boundary-Parität auf positiven/negativen Fixtures",
+    "TS6 vs native TS7 Typecheck Benchmark",
+    "Oxc/Oxlint Boundary CADS Challenge",
+    "Rollback auf stabile Boundary"
+  ]
+},
 ...SOCIAL_CONTENT_WORK_PACKAGES,
 ...BACKLOG_TARGETS,
 ];
