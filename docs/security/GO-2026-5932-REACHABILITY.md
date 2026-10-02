@@ -27,7 +27,7 @@ Ein neuer Repository-HEAD ist ausdrücklich kein NATS-Redeploy-Signal.
 ## Entscheidung
 
 - `AFFECTED`: OpenPGP-Code/Symbole oder ein passender govulncheck-Finding-Pfad ist nachgewiesen.
-- `NOT_AFFECTED`: nur bei vollständiger Identitätskette, Binary/Symbol-Modus, retained Trivy-Finding und expliziter `not_affected`-VEX-Evidence.
+- `NOT_AFFECTED`: nur bei vollständiger Identitätskette, Binary/Symbol-Modus, retained Trivy-Finding, negativem OpenPGP-Symbolnachweis und reproduzierbarem Zweitlauf. Die `not_affected`-VEX wird erst aus dieser Evidence erzeugt.
 - `UNKNOWN`: alle unvollständigen oder widersprüchlichen Zustände.
 
 Ein `UNKNOWN`-Ergebnis ist zulässige Evidence und blockiert nur eine Behauptung `NOT_AFFECTED`; es darf das Finding nicht verstecken.
@@ -38,7 +38,9 @@ Die erzeugten Dateien werden als Security-Artefakte gesichert:
 - `nats-go-2026-5932-reachability.json`
 - `nats-go-2026-5932.openvex.json`
 - `nats-go-2026-5932.cdx.vex.json`
-- `nats-go-version-m.txt`
-- `nats-go-nm.txt`
+- `nats-go-version-m-1.txt`
+- `nats-nm-1.txt`
+- `nats-reachability-image-identity.json`
+- `nats-reachability-reproducible.txt`
 
 Korrelation: Issue #120; PR #116 bleibt Verbraucher der Evidence und darf seinen bisherigen UNKNOWN-Status erst nach belastbarer Evidence ändern.
