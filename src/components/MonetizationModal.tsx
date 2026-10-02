@@ -555,6 +555,16 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
         )}
 
         {/* TAB: $CPT Tokenomics & Utilities */}
+        {activeTab === 'b2b' && (
+          <div className="mt-4 rounded-2xl border border-cyan-400/20 bg-cyan-500/5 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div><p className="text-xs font-mono uppercase tracking-wider text-cyan-300">Neue Produktkomponente</p><h3 className="font-bold text-white">OSS Pipeline Simulation Engine</h3></div>
+              <span className="rounded-full border border-cyan-400/30 px-2 py-1 text-[10px] text-cyan-200">MONETARISIERBAR</span>
+            </div>
+            <p className="mt-2 text-xs text-slate-300">Vergleicht reproduzierbar Provider-, REST-/WebSocket-, NATS-, Valkey-, Analytics- und Observability-Pipelines mit CADS-Evidence. Simulierte Scores sind keine Produktionsfreigabe.</p>
+          </div>
+        )}
+
         {activeTab === 'tokenomics' && (
           <div className="mt-5 space-y-4">
             <div className="p-5 rounded-2xl bg-gradient-to-br from-[#0c1638] via-[#070e24] to-[#030612] border border-amber-500/30">

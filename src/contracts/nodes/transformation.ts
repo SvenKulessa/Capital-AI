@@ -16,7 +16,7 @@ export type CanonicalNormalizerConfig = z.infer<typeof CanonicalNormalizerConfig
 
 // 2. asset_resolver (AP-003)
 export const AssetResolverConfigSchema = z.object({
-  primaryIdentifier: z.enum(['ticker', 'isin', 'figi', 'coingecko_id', 'ccxt_symbol']),
+  primaryIdentifier: z.enum(['ticker', 'isin', 'figi', 'ccxt_symbol', 'defillama_coin_key']),
   caseInsensitive: z.boolean().default(true),
   stripExchangePrefix: z.boolean().default(false),
   fallbackAliasMap: z.record(z.string(), z.string()).optional(),

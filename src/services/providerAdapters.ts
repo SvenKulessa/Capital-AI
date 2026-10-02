@@ -61,10 +61,18 @@ export class SecEdgarProviderAdapter extends LiveAdapter {
   providerId = 'sec_edgar_filings'; displayName = 'SEC EDGAR (not configured)'; supportedAssetClasses = ['equity_us'];
   async fetchObservation(_asset: AssetIdentity): Promise<RawObservation> { throw new Error('SEC EDGAR ingestion not configured'); }
 }
+export class FinancialDataNetProviderAdapter extends LiveAdapter {
+  providerId = 'financialdatanet';
+  displayName = 'FinancialData.Net REST (rights review required)';
+  supportedAssetClasses = ['equity_us', 'equity_eu', 'crypto', 'forex', 'commodities'];
+  async fetchObservation(_asset: AssetIdentity): Promise<RawObservation> {
+    throw new Error('FINANCIALDATANET_RIGHTS_AND_DATASET_MAPPING_REQUIRED');
+  }
+}
 export class ProviderAdapterRegistry {
   private adapters = new Map<string, ProviderAdapter>();
   constructor() { [new BinanceProviderAdapter(), new KrakenProviderAdapter(), new TwelveDataProviderAdapter(),
-    new PolygonProviderAdapter(), new SecEdgarProviderAdapter()]
+    new PolygonProviderAdapter(), new SecEdgarProviderAdapter(), new FinancialDataNetProviderAdapter()]
       .forEach(adapter => this.adapters.set(adapter.providerId, adapter)); }
   register(adapter: ProviderAdapter) { this.adapters.set(adapter.providerId, adapter); }
   getAdapter(id: string): ProviderAdapter { const adapter = this.adapters.get(id);
