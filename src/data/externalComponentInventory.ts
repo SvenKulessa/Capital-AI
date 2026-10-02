@@ -18,6 +18,7 @@ export interface ExternalComponentInventoryItem {
   lifecycle: ComponentLifecycle;
   functionSummary: string;
   webAppBinding: string;
+  domainAssignments: readonly string[];
   license: string;
   cadsScore: number;
   scoreState: 'PROVISIONAL' | 'BENCHMARKED' | 'VERIFIED' | 'BLOCKED';
@@ -41,6 +42,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     installedAt: null, activeVersion: 'managed-cloud', pipelineVersion: 'managed-cloud', lifecycle: 'ACTIVE',
     functionSummary: 'OIDC/OAuth2 identity, Passkeys, MFA und append-only Audit-Trail.',
     webAppBinding: 'server/auth.mjs und Login-/Profil-Flows', license: 'Apache-2.0 core', cadsScore: 86.5, scoreState: 'PROVISIONAL',
+    domainAssignments: ["OIDC issuer / managed identity domain"],
     dependencies: ['render', 'ionos-smtp'],
     alternatives: [
       { name: 'Keycloak', role: 'fallback', license: 'Apache-2.0' },
@@ -54,6 +56,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     installedAt: '2026-06-23T08:51:54Z', activeVersion: 'Postgres 17.6.1.127 / managed platform', pipelineVersion: 'managed', lifecycle: 'ACTIVE',
     functionSummary: 'Postgres, Storage und geschützte Evidence-/Inventar-Persistenz; Auth bleibt separat bewertbar.',
     webAppBinding: 'AIFINANCIAL project + server-side integrations', license: 'Apache-2.0 core', cadsScore: 86.1, scoreState: 'PROVISIONAL',
+    domainAssignments: ["AIFINANCIAL backend data plane","no public CAPITAL-AI app domain"],
     dependencies: ['zitadel'],
     alternatives: [
       { name: 'Appwrite', role: 'fallback', license: 'BSD-3-Clause' },
@@ -67,6 +70,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     installedAt: '2026-09-30T14:02:11Z', activeVersion: '2.15.0', pipelineVersion: '2.15.0 stable', lifecycle: 'ACTIVE',
     functionSummary: 'Durable Market-Event-Transport, Replay und Fan-out-Authority.',
     webAppBinding: 'server/infrastructure.mjs / capital-ai-market-events', license: 'Apache-2.0', cadsScore: 90.4, scoreState: 'PROVISIONAL',
+    domainAssignments: ["capital-ai-market-events private Render network"],
     dependencies: ['render', 'valkey'],
     alternatives: [
       { name: 'Apache Kafka', role: 'fallback', license: 'Apache-2.0' },
@@ -80,6 +84,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     installedAt: '2026-09-30T01:07:31Z', activeVersion: '8.1.10', pipelineVersion: '8.1.10 stable', lifecycle: 'ACTIVE',
     functionSummary: 'Low-latency Quote Cache und ephemeres Pub/Sub; niemals dauerhafte Evidence-Authority.',
     webAppBinding: 'server/infrastructure.mjs / capital-ai-market-cache', license: 'BSD-3-Clause', cadsScore: 88.1, scoreState: 'PROVISIONAL',
+    domainAssignments: ["capital-ai-market-cache private Render network"],
     dependencies: ['render', 'nats-jetstream'],
     alternatives: [
       { name: 'KeyDB', role: 'fallback', license: 'BSD-3-Clause' },
@@ -93,6 +98,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     installedAt: '2026-09-29T20:21:57Z', activeVersion: 'managed', pipelineVersion: 'managed', lifecycle: 'ACTIVE',
     functionSummary: 'Webservice, privater NATS-Service, Runtime, Deploy-, Log- und Metrics-Control-Plane.',
     webAppBinding: 'AICapital workspace / Capital-AI', license: 'Proprietary service', cadsScore: 83.3, scoreState: 'PROVISIONAL',
+    domainAssignments: ["capital-ai.online (planned primary cutover)","capital-ai-uvsl.onrender.com (current service URL)"],
     dependencies: ['github-ghcr'],
     alternatives: [
       { name: 'Coolify', role: 'fallback', license: 'Apache-2.0' },
@@ -106,6 +112,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     installedAt: null, activeVersion: 'managed', pipelineVersion: 'managed', lifecycle: 'ACTIVE',
     functionSummary: 'Source, PR-Governance, DevSecOps-Evidence, OCI Registry und Attestations.',
     webAppBinding: '.github/workflows + immutable GHCR deployment identity', license: 'Proprietary service', cadsScore: 87.5, scoreState: 'PROVISIONAL',
+    domainAssignments: ["github.com/SvenKulessa/Capital-AI","ghcr.io immutable OCI identity"],
     dependencies: [],
     alternatives: [
       { name: 'Forgejo + OCI Distribution', role: 'fallback', license: 'GPL-3.0-or-later / Apache-2.0' },
@@ -119,6 +126,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     installedAt: null, activeVersion: 'managed', pipelineVersion: 'managed', lifecycle: 'ACTIVE',
     functionSummary: 'Registrierungs-, Bestätigungs- und Passwort-Reset-E-Mails.',
     webAppBinding: 'server-side Nodemailer, Port 465', license: 'Proprietary service', cadsScore: 73.8, scoreState: 'PROVISIONAL',
+    domainAssignments: ["capital-ai.online mail domain"],
     dependencies: ['render'],
     alternatives: [
       { name: 'Stalwart Mail Server', role: 'fallback', license: 'AGPL-3.0' },
@@ -132,6 +140,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     installedAt: null, activeVersion: null, pipelineVersion: '0.162.0 candidate', lifecycle: 'DISCOVERED',
     functionSummary: 'Späterer vendor-neutraler Export für Logs, Metrics und Traces; nicht Runtime-aktiv.',
     webAppBinding: 'Roadmap backlog only', license: 'Apache-2.0', cadsScore: 88.3, scoreState: 'PROVISIONAL',
+    domainAssignments: ["not assigned; backlog only"],
     dependencies: ['prometheus'],
     alternatives: [
       { name: 'Grafana Alloy', role: 'fallback', license: 'Apache-2.0' },
@@ -145,6 +154,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     installedAt: null, activeVersion: null, pipelineVersion: 'candidate', lifecycle: 'DISCOVERED',
     functionSummary: 'Prometheus-kompatible Metrics-Exposition und spätere Scrape-/Alert-Schicht.',
     webAppBinding: 'Roadmap backlog only', license: 'Apache-2.0', cadsScore: 88.3, scoreState: 'PROVISIONAL',
+    domainAssignments: ["not assigned; backlog only"],
     dependencies: ['otel-collector'],
     alternatives: [
       { name: 'Thanos', role: 'fallback', license: 'Apache-2.0' },
@@ -158,6 +168,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     installedAt: null, activeVersion: 'existing integration', pipelineVersion: 'existing integration', lifecycle: 'ACTIVE',
     functionSummary: 'Lizenz-, Obligation- und Compliance-Report-Adapter.',
     webAppBinding: 'License Engine', license: 'Apache-2.0', cadsScore: 79.8, scoreState: 'PROVISIONAL',
+    domainAssignments: ["repository/CI tooling; no runtime domain"],
     dependencies: ['scancode'],
     alternatives: [
       { name: 'ScanCode Toolkit', role: 'fallback', license: 'Apache-2.0' },
@@ -171,6 +182,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     installedAt: null, activeVersion: 'existing integration', pipelineVersion: 'existing integration', lifecycle: 'ACTIVE',
     functionSummary: 'Package-/Lizenz-Metadaten und Provenance-Scanning.',
     webAppBinding: 'License Engine', license: 'Apache-2.0', cadsScore: 79.2, scoreState: 'PROVISIONAL',
+    domainAssignments: ["repository/CI tooling; no runtime domain"],
     dependencies: ['ort'],
     alternatives: [
       { name: 'OSS Review Toolkit', role: 'fallback', license: 'Apache-2.0' },
@@ -184,6 +196,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     installedAt: null, activeVersion: '@google/genai lockfile-managed', pipelineVersion: 'current stable review required', lifecycle: 'ACTIVE',
     functionSummary: 'Server-side AI advisor capability; forbidden from browser artifacts by the app-boundary gate.',
     webAppBinding: 'server/advisor.ts', license: 'Google service terms + Apache-2.0 SDK metadata', cadsScore: 77.0, scoreState: 'PROVISIONAL',
+    domainAssignments: ["server-side provider endpoint; no browser domain binding"],
     dependencies: ['render'],
     alternatives: [
       { name: 'llama.cpp', role: 'fallback', license: 'MIT' },
@@ -197,6 +210,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     installedAt: null, activeVersion: 'managed API', pipelineVersion: 'managed API', lifecycle: 'ACTIVE',
     functionSummary: 'Server-side bounded outbound notifications to a fixed destination.',
     webAppBinding: 'server/telegram.mjs', license: 'Proprietary service/API', cadsScore: 71.0, scoreState: 'PROVISIONAL',
+    domainAssignments: ["api.telegram.org server-side only"],
     dependencies: ['render'],
     alternatives: [
       { name: 'Gotify', role: 'fallback', license: 'MIT' },
@@ -210,6 +224,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     installedAt: null, activeVersion: null, pipelineVersion: 'disabled pending consent decision', lifecycle: 'DISCOVERED',
     functionSummary: 'Optional analytics adapter; current implementation is intentionally disabled.',
     webAppBinding: 'src/utils/analytics.ts', license: 'Proprietary service', cadsScore: 60.0, scoreState: 'BLOCKED',
+    domainAssignments: ["disabled; no active measurement domain"],
     dependencies: [],
     alternatives: [
       { name: 'Umami', role: 'replacement', license: 'MIT' },
@@ -223,6 +238,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     installedAt: null, activeVersion: 'public WebSocket API', pipelineVersion: 'rights gate open', lifecycle: 'ACTIVE',
     functionSummary: 'BTCUSDT WebSocket ingress; commercial/display/redistribution rights remain a separate fail-closed gate.',
     webAppBinding: 'server/market.mjs', license: 'Provider terms / dataset-specific rights', cadsScore: 67.0, scoreState: 'BLOCKED',
+    domainAssignments: ["stream.binance.com server-side market ingress"],
     dependencies: ['nats-jetstream', 'valkey'],
     alternatives: [
       { name: 'CCXT', role: 'fallback', license: 'MIT' },
@@ -236,6 +252,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     installedAt: null, activeVersion: 'WebSocket v2 + REST', pipelineVersion: 'rights gate open', lifecycle: 'ACTIVE',
     functionSummary: 'BTCUSD WebSocket/REST ingress and USD venue reference; data-rights approval remains open.',
     webAppBinding: 'server/market.mjs', license: 'Provider terms / market-data rights', cadsScore: 72.0, scoreState: 'BLOCKED',
+    domainAssignments: ["ws.kraken.com + api.kraken.com server-side market ingress"],
     dependencies: ['nats-jetstream', 'valkey'],
     alternatives: [
       { name: 'CCXT', role: 'fallback', license: 'MIT' },
@@ -249,6 +266,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     installedAt: null, activeVersion: 'REST API', pipelineVersion: 'optional licensed fallback', lifecycle: 'APPROVED',
     functionSummary: 'Optional USD/stock/crypto fallback only when a server-side API key exists; no synthetic fallback.',
     webAppBinding: 'server/market.mjs', license: 'Provider terms / plan-specific rights', cadsScore: 64.0, scoreState: 'BLOCKED',
+    domainAssignments: ["api.twelvedata.com server-side optional ingress"],
     dependencies: ['nats-jetstream', 'valkey'],
     alternatives: [
       { name: 'OpenBB', role: 'fallback', license: 'Apache-2.0' },
@@ -262,6 +280,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     installedAt: null, activeVersion: 'legacy Polygon REST endpoint', pipelineVersion: 'contract scope unverified', lifecycle: 'APPROVED',
     functionSummary: 'Optional stock/crypto REST fallback. Commercial/derived/non-display rights are not inferred from API availability.',
     webAppBinding: 'server/market.mjs', license: 'Provider market-data terms', cadsScore: 61.0, scoreState: 'BLOCKED',
+    domainAssignments: ["api.polygon.io legacy server-side optional ingress"],
     dependencies: ['nats-jetstream', 'valkey'],
     alternatives: [
       { name: 'OpenBB', role: 'fallback', license: 'Apache-2.0' },
