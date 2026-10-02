@@ -17,7 +17,7 @@ The app therefore connects only to the HTTPS application origin. The server brid
 ```text
 Android WebView
   -> HTTPS /mobile-scorer
-  -> OIDC session gate for score/event endpoints
+  -> external-browser OIDC + one-time app PKCE session transfer, then session gate for score/event endpoints
   -> canonical Enterprise Scorer origin
   -> canonical score response
   -> NATS JetStream CAPITAL_SCORES acknowledgement
@@ -29,13 +29,15 @@ JetStream is durable evidence. Valkey/Redis Pub/Sub is ephemeral delivery and ne
 
 ## Top-400 crypto universe
 
-The mobile universe contract requests exactly 400 crypto assets.
+The mobile universe contract requests exactly 400 crypto assets for private research.
 
 1. The canonical CAPITAL-AI registry is loaded first.
-2. Optional universe enrichment is read only from the configured internal open-source adapter (`CAPITAL_AI_OSS_CRYPTO_UNIVERSE_URL`), designed for CCXT + DefiLlama-class sources.
-3. The final set is ordered by verified rank when supplied, then deterministic symbol ordering.
-4. The adapter has no score, eligibility or trade authority; upstream exchange/data rights remain separate.
-5. If fewer than 400 assets can be validated, the endpoint reports `DEGRADED`; it does not fabricate filler assets.
+2. Optional universe enrichment is read from the configured internal open-source adapter (`CAPITAL_AI_OSS_CRYPTO_UNIVERSE_URL`).
+3. If that adapter is absent and `MOBILE_CRYPTO_COINPAPRIKA_RESEARCH=true`, CoinPaprika supplies market-cap rank for private research with visible attribution; commercial use/redistribution remains a separate rights gate.
+4. `MOBILE_CRYPTO_BINANCE_RESEARCH=true` is only a secondary liquidity-ranked fallback and is explicitly not market-cap ranking. Provider/data rights remain a separate fail-closed gate.
+5. The final set is deterministically truncated to exactly 400 entries.
+6. No universe source has score, eligibility or trade authority.
+7. If fewer than 400 assets can be validated, the endpoint reports `DEGRADED`; it does not fabricate filler assets.
 
 No CoinGecko endpoint, API key or fallback remains in this mobile path. Commercial display/redistribution still requires provider-specific rights evidence.
 
@@ -84,11 +86,12 @@ The shell, status and universe endpoints contain no broker credentials or privat
 
 ## Build / release gate
 
-The workflow `.github/workflows/android-private-bundle.yml` is `workflow_dispatch` only. This change does not start it.
+The workflow `.github/workflows/android-private-bundle.yml` is `workflow_dispatch` only. Third-party Actions are pinned to immutable SHAs and Gradle v6 uses the open-source `basic` cache provider.
 
 Expected artifacts after an owner-approved build:
 
 - `mobile/android-private/app/build/outputs/apk/debug/app-debug.apk`
+- `mobile/android-private/app/build/outputs/apk/release/app-release-unsigned.apk`
 - `mobile/android-private/app/build/outputs/bundle/release/app-release.aab`
 
 The release AAB is intentionally unsigned by an owner production key in repository automation. A private release signing key must remain outside Git.
