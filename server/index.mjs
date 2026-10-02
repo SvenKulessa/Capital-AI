@@ -11,6 +11,7 @@ import { infrastructure } from './infrastructure.mjs';
 import { createMobileScorer } from './mobile-scorer.mjs';
 import { serveMtaSts } from './mta-sts.mjs';
 import { researchMetadata } from '../shared/research-metadata.mjs';
+import { beginRequest, finishRequest, metricsAuthorized, renderPrometheusMetrics, writeAuditEvent } from './observability.mjs';
 
 const moduleRoot = path.dirname(fileURLToPath(import.meta.url));
 const defaultRoot = path.resolve(moduleRoot, '../dist');
@@ -34,8 +35,11 @@ export function createApp(root = defaultRoot, options = {}) {
   const mobileScorer = createMobileScorer(options.env || process.env);
   const server = http.createServer({ maxHeaderSize: 8192, requestTimeout: 10000, headersTimeout: 10000, keepAliveTimeout: 5000 }, async (req, res) => {
   let url;
+  const requestContext = beginRequest(req);
+  res.setHeader('x-request-id', requestContext.requestId);
   if ((req.url?.length || 0) > 2048) return json(res, 414, { error: 'uri_too_long' });
   try { url = new URL(req.url, 'http://localhost'); } catch { return json(res, 400, { error: 'bad_request' }); }
+  res.once('finish', () => finishRequest(req, res, requestContext, url.pathname));
   // Apply headers to API responses and OIDC redirects alike.
   for (const [key, value] of Object.entries(headers)) res.setHeader(key, value);
   if (serveMtaSts(req, res, url)) return;
@@ -46,6 +50,14 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await mobileScorer.handle(req, res, url, json, headers)) return;
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return json(res, 405, { error: 'method_not_allowed' }); }
   if (url.pathname === '/healthz') return json(res, 200, { ...health(), buildIdentity });
+  if (url.pathname === '/metrics') {
+    if (!metricsAuthorized(req)) {
+      writeAuditEvent({ eventType: 'observability.metrics.denied', requestId: requestContext.requestId, result: 'DENIED' });
+      return json(res, 404, { error: 'not_found' });
+    }
+    res.writeHead(200, { ...headers, 'Content-Type': 'text/plain; version=0.0.4; charset=utf-8', 'Cache-Control': 'no-store' });
+    return res.end(renderPrometheusMetrics());
+  }
   if (url.pathname === '/api/market/quote') {
     if (!marketLimit()) { res.setHeader('Retry-After', '60'); return json(res, 429, { error: 'rate_limited' }); }
     if (inflight >= 8) { res.setHeader('Retry-After', '5'); return json(res, 429, { error: 'busy' }); }
