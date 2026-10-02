@@ -1,8 +1,44 @@
-# POST_MERGE_CORRELATION@1
+# POST_MERGE_CORRELATION@2
 
 Primary Domain: PLATFORM. Cross-Domain: TRUST.
 
 Nach jedem Merge nach `main` wird anhand des tatsächlichen Dateidiffs entschieden, ob offene Arbeiten neu korreliert werden müssen. Ein neuer Repository-HEAD allein ist kein Deployment-Signal.
+
+## supply_sh_chain Entscheidungslogik
+
+Nach jedem erfolgreichen Merge nach `main` wird nicht pauschal jeder offene Branch aktualisiert. Der Workflow liest den tatsächlichen Merge-Diff, alle offenen PR-Dateien und den Abstand jedes PR-Heads zum neuen `main`.
+
+Jeder offene PR erhält genau eine Aktionsklasse:
+
+- `NO_ACTION` — kein relevanter Datei-/Boundary-Overlap und kein weiterer Handlungsbedarf.
+- `CORRELATE_ONLY` — neuer Main muss als Evidence berücksichtigt werden, aber ein Branch-Update ist technisch nicht erforderlich.
+- `SYNC_REQUIRED` — relevanter Overlap plus veralteter Branch; vor weiterer Bearbeitung gegen Current Main synchronisieren.
+- `REPAIR_CANDIDATE` — ausschließlich ein bereits nach der 3er-Regel promotetes, deterministisches Low-Risk-Muster darf als automatischer Reparaturkandidat gelten.
+- `MANUAL_REVIEW_REQUIRED` — Security-/Governance-/Workflow-/Container-/Auth-/Dependency-/Migration- oder andere mehrdeutige Grenzen.
+
+### 3er-Regel — Promotion
+
+Ein Fix-Fingerprint darf erst automatisierbar werden, wenn **drei unabhängige positive Validierungszyklen** desselben Reparaturmusters dokumentiert sind. Wiederholungen desselben Runs zählen nur einmal. Ändert sich der Fix-Fingerprint, beginnt der Zähler wieder bei null.
+
+Vor 3/3 gilt immer `OBSERVE_ONLY`; insbesondere darf `SYNC_REQUIRED` nicht eigenmächtig zu einer Branch-Mutation eskalieren.
+
+### 5er-Regel — Ausführung
+
+Auch ein promotetes Muster darf nur verändert werden, wenn alle fünf Stufen positiv sind:
+
+1. `DETECT` — exakten Merge-SHA, Main-SHA und betroffenen Scope binden.
+2. `CORRELATE` — Datei-, Contract-, Runtime-, Evidence- und Dependency-Overlap gegen jeden offenen PR bestimmen.
+3. `CLASSIFY` — genau eine Aktionsklasse und einen reproduzierbaren Fingerprint erzeugen.
+4. `REMEDIATE` — nur promotete Low-Risk-Klassen; keine pauschale Konfliktauflösung.
+5. `VERIFY` — Required Checks und betroffene Regressionen auf dem reparierten Head erneut verifizieren.
+
+Fehlt eine Stufe, bleibt die Mutation gesperrt.
+
+### Supply-Chain-Grenzen
+
+Der Workflow darf offene PRs kommentieren und maschinenlesbare Evidence erzeugen. Branch-Updates oder Reparaturen sind nur bei promotierten Low-Risk-Mustern und vollständiger 5er-Gate-Kette zulässig. Secrets, Auth, DNS, Billing, Branch Protection, Lizenzfreigaben, Production-Handoff und Security-Policy-Relaxation bleiben immer manuell.
+
+Ein neuer Repository-HEAD allein löst weder Deployment noch NATS-Redeploy aus.
 
 ## Fünfstufiger Self-Healing-Zyklus
 

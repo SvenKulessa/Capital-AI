@@ -222,3 +222,46 @@ test('OIDC operational diagnosis reports only a fixed phase without upstream sec
     assert.ok(!messages.join('').includes('test-only-secret'));
   } finally { console.warn = original; await h.stop(); }
 });
+
+
+test('mobile OIDC uses external-browser transaction and one-time PKCE session transfer', async () => {
+  const h = await harness();
+  try {
+    const verifier = 'm'.repeat(43);
+    const transferChallenge = createHash('sha256').update(verifier).digest('base64url');
+    const start = await h.request('/api/auth/mobile-login?challenge=' + encodeURIComponent(transferChallenge));
+    assert.equal(start.status, 303);
+    const provider = new URL(start.headers.get('location'));
+    h.state.nonce = provider.searchParams.get('nonce');
+    h.state.challenge = provider.searchParams.get('code_challenge');
+    const browserCookie = start.headers.getSetCookie()[0].split(';')[0];
+    const callback = await h.request('/api/auth/callback?state=' + encodeURIComponent(provider.searchParams.get('state')) + '&code=test-code', { headers: { cookie: browserCookie } });
+    assert.equal(callback.status, 303);
+    const appRedirect = new URL(callback.headers.get('location'));
+    assert.equal(appRedirect.protocol, 'capitalai-private:');
+    assert.equal(appRedirect.hostname, 'auth');
+    assert.equal(appRedirect.pathname, '/callback');
+    const code = appRedirect.searchParams.get('code');
+    assert.match(code, /^[A-Za-z0-9_-]{43}$/);
+    assert.equal(callback.headers.getSetCookie().some(x => x.startsWith('__Host-capital_session=')), false);
+
+    const exchange = await h.request('/api/auth/mobile-exchange', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ code, verifier }).toString(),
+    });
+    assert.equal(exchange.status, 303);
+    assert.equal(exchange.headers.get('location'), '/mobile-scorer');
+    const sessionCookie = exchange.headers.getSetCookie().find(x => x.startsWith('__Host-capital_session='));
+    assert.match(sessionCookie, /HttpOnly; Secure; SameSite=Strict/);
+    const session = await (await h.request('/api/auth/session', { headers: { cookie: sessionCookie.split(';')[0] } })).json();
+    assert.equal(session.authenticated, true);
+
+    const replay = await h.request('/api/auth/mobile-exchange', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ code, verifier }).toString(),
+    });
+    assert.equal(replay.status, 400);
+  } finally { await h.stop(); }
+});

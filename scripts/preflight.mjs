@@ -22,6 +22,7 @@ run(process.execPath, ['--test',
   'scripts/percentage-parser.test.mjs',
   'server/observability.test.mjs',
   'scripts/font-distribution.test.mjs',
+  'scripts/post-merge-correlation.test.mjs',
 ]);
 run(process.execPath, ['scripts/license-evidence.mjs']);
 if (args.includes('--full')) {
