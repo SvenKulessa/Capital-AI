@@ -1,5 +1,5 @@
 <!-- GENERATED FILE. DO NOT EDIT. -->
-<!-- Source: DOC-20261002-COMPONENT-INVENTORY-OBSERVABILITY @ b2e3416de448b44ef7a1aca04ec3d1b06db8e9c1 -->
+<!-- Source: DOC-20261002-COMPONENT-INVENTORY-OBSERVABILITY @ 117a3e2dc2d371a068d0b55963ce555f851fb2c3 -->
 # Externes Komponenten-Inventar, CADS, Observability und Work Verification integrieren
 
 > Deterministische Documentary-Projektion aus `DOCUMENTARY_EVIDENCE@1` v1.0.0. Generated output ist keine kanonische Evidence und darf nicht von Hand editiert werden.
@@ -10,14 +10,14 @@
 | --- | --- |
 | Documentary ID | DOC-20261002-COMPONENT-INVENTORY-OBSERVABILITY |
 | Change ID | CA-20261002-COMPONENT-INVENTORY-OBSERVABILITY |
-| Source SHA | b2e3416de448b44ef7a1aca04ec3d1b06db8e9c1 |
-| Parent SHA | 6fc70b4bade3ef55aa1e87a66831364fac599f4b |
+| Source SHA | 117a3e2dc2d371a068d0b55963ce555f851fb2c3 |
+| Parent SHA | 33ff247064ed100ae3611453cfc6b501f8956a14 |
 | Pull Request | — |
 | Branch | capital-ai-platform/component-inventory-observability-20261002 |
 | Created | 2026-10-02T05:31:27Z |
 | Lifecycle | PROPOSED |
 | Audience | engineering |
-| Documentary Digest | 65c28588a1a0ec2d57786a300e98f3cc191172d5ce6cfbacb386088f24ad6b71 |
+| Documentary Digest | 85b0551e54dfbb89e9ae73da9929d41d1fb500aa41f9eaa12547fb4d8f557b0d |
 
 ## Change
 
@@ -108,7 +108,7 @@ Missing or `UNKNOWN` evidence is not interpreted as success.
 
 ## Supply Chain
 
-**Commit:** b2e3416de448b44ef7a1aca04ec3d1b06db8e9c1  
+**Commit:** 117a3e2dc2d371a068d0b55963ce555f851fb2c3  
 **SBOM Generated:** false
 
 ### Immutable Digests
