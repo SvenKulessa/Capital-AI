@@ -46,7 +46,16 @@
     "hashAlgorithm": "SHA-256",
     "bundleDigest": null,
     "signatureRefs": [],
-    "refDigests": {}
+    "refDigests": {
+      "docs/security/evidence/license-rights-review.json": "gitblob:da21c8f0791dae296167bc957116b0fa0fb6c638",
+      "docs/architecture/ENTERPRISE-MARKET-INTELLIGENCE-PART2-RIGHTS-ELIGIBILITY-20261001.md": "gitblob:45bb0a3b1520ffd2998bcfa4052cd73cf5641d97",
+      "src/contracts/marketDataRightsInventoryProjection.ts": "gitblob:7a2acaf7791866b99b32a5647af0b73da79a500c",
+      "docs/growth/sponsorship/P2-CLAIM-EVIDENCE-MATRIX.json": "gitblob:df18adb5b762c1bde16b869fbf67bf12c0837c58",
+      "generated/documentary/index.json": "gitblob:aa5b957ea5df515efb506052a3ea38478455b117",
+      "docs/security/evidence/oidc-pr95-observability-20261001/observation.json": "gitblob:1954c9c02a33ce076fb377c121934a781d46a920",
+      "docs/security/OIDC-VERIFICATION-STATE-20261001.md": "gitblob:0242c4fd07356de46b3e9426d8b468c4318218c3",
+      "contracts/container-evidence-identity.schema.json": "gitblob:6c9165afea8e28729ea3c5f70f002859607ac8b1"
+    }
   },
   "verification": {
     "allRefsResolved": true,
@@ -60,7 +69,7 @@
       "COST_EVIDENCE_MISSING",
       "LICENSE_RIGHTS_REVIEW_OPEN",
       "DOCUMENTARY_COVERAGE_INCOMPLETE",
-      "REFERENCE_DIGESTS_NOT_YET_MATERIALIZED"
+      "SHA256_VERIFICATION_REQUIRES_CI"
     ]
   },
   "export": {
