@@ -1,9 +1,6 @@
 name: Mobile Hardening Validation
 
 on:
-  push:
-    branches:
-      - capital-ai-trust/mobile-oidc-top400-signing-20261002
   pull_request:
   workflow_dispatch:
 
