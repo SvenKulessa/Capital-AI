@@ -63,7 +63,7 @@ export function classifyGoVulnReachability({
     binaryMode: config?.scan_mode === 'binary',
     symbolLevel: config?.scan_level === 'symbol',
     advisoryObservedInDatabase: Boolean(osv),
-    vexStatementPresent: Boolean(statement),
+    upstreamVexConsistent: !statement || statement.status === 'not_affected',
     nmAvailable: Number(nmExitStatus) === 0,
     repeatedRunEquivalent: Boolean(reproducible),
   };
@@ -76,16 +76,11 @@ export function classifyGoVulnReachability({
     reason = symbolFrames.length > 0 || nmSymbols.length > 0
       ? 'VULNERABLE_OPENPGP_SYMBOL_PRESENT_IN_BINARY'
       : 'GOVULNCHECK_VEX_MARKS_AFFECTED';
-  } else if (Object.values(prerequisites).every(Boolean)) {
-    if (
-      statement.status === 'not_affected' &&
-      ['vulnerable_code_not_in_execute_path', 'vulnerable_code_not_present'].includes(statement.justification)
-    ) {
-      decision = 'NOT_AFFECTED';
-      reason = statement.justification;
-    } else {
-      reason = 'VEX_AND_SYMBOL_EVIDENCE_INCONSISTENT';
-    }
+  } else if (Object.values(prerequisites).every(Boolean) && findings.length === 0 && openPgpFrames.length === 0 && nmSymbols.length === 0) {
+    decision = 'NOT_AFFECTED';
+    reason = statement?.justification === 'vulnerable_code_not_present' ? 'vulnerable_code_not_present' : 'vulnerable_code_not_in_execute_path';
+  } else if (statement && statement.status !== 'not_affected') {
+    reason = 'UPSTREAM_VEX_CONTRADICTS_NOT_AFFECTED';
   }
 
   return {
