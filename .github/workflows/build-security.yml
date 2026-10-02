@@ -114,6 +114,7 @@ jobs:
 
           export NATS_BINARY_SHA256="$nats_binary_sha"
           export NATS_IMAGE_REF="$nats_base_ref"
+          export NATS_LOCAL_IMAGE_ID="$nats_local_id"
           node scripts/verify-go-vuln-reachability.mjs \
             security-reports/nats-govulncheck-1.messages.json \
             security-reports/nats-govulncheck-1.openvex.json \
@@ -121,7 +122,9 @@ jobs:
             security-reports/nats-nm-1.txt \
             security-reports/nats-nm-1.status.txt \
             security-reports/nats-reachability-reproducible.txt \
-            security-reports/nats-go-2026-5932-reachability.json
+            security-reports/nats-go-2026-5932-reachability.json \
+            security-reports/nats-go-2026-5932.openvex.json \
+            security-reports/nats-go-2026-5932.cdx.vex.json
 
           rm security-reports/nats-image.tar security-reports/nats-server
       - name: Quellcode, Secrets und Konfiguration scannen
