@@ -31,7 +31,6 @@ Als Referenz dienen moderne Enterprise-Plattformen wie:
 - S&P Capital IQ
 - TradingView
 - CoinMarketCap
-- CoinGecko
 - Kaiko
 - Messari
 - Glassnode
