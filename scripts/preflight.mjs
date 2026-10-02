@@ -24,6 +24,7 @@ run(process.execPath, ['--test',
   'server/cads-observability.test.mjs',
   'scripts/font-distribution.test.mjs',
   'scripts/post-merge-correlation.test.mjs',
+  'scripts/verify-release-readiness.test.mjs',
 ]);
 run(process.execPath, ['scripts/license-evidence.mjs']);
 if (args.includes('--full')) {
