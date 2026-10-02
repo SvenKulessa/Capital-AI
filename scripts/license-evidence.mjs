@@ -11,7 +11,7 @@ const alternatives = new Map([
 ]);
 // Version-bounded identifier-data review, not a general CC license allow-list.
 function reviewedSpdxData(p) {
-  return (p.path === 'node_modules/spdx-license-ids' && p.version === '3.0.23' && p.selectedLicense === 'CC0-1.0') ||
+  return (p.path === 'node_modules/spdx-license-ids' && p.version === '3.0.24' && p.selectedLicense === 'CC0-1.0') ||
     (p.path === 'node_modules/spdx-exceptions' && p.version === '2.5.0' && p.selectedLicense === 'CC-BY-3.0');
 }
 
