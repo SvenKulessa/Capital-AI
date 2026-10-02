@@ -1,0 +1,238 @@
+{
+  "schema": "GROWTH_PROJECTION@1",
+  "version": "1.0.0",
+  "metadata": {
+    "project": "CAPITAL-AI",
+    "domain": "GROWTH",
+    "status": "PROPOSED"
+  },
+  "correlation": {
+    "changeId": null
+  },
+  "inputs": {
+    "required": [
+      "DOCUMENTARY_EVIDENCE@1",
+      "CHANGE_PROPAGATION@1"
+    ],
+    "optional": [
+      "ARCHITECTURE_CHANGE@1",
+      "ROADMAP_UPDATE@1",
+      "COMMERCIALIZATION_INVENTORY@1",
+      "PROVIDER_RIGHTS_EVIDENCE@1",
+      "RELEASE_EVIDENCE@1"
+    ]
+  },
+  "outputs": {
+    "technicalDocumentation": {
+      "enabled": true,
+      "format": [
+        "markdown"
+      ],
+      "target": [
+        "docs/generated/"
+      ]
+    },
+    "roadmapProjection": {
+      "enabled": true,
+      "target": [
+        "src/data/roadmapData.ts"
+      ]
+    },
+    "architectureProjection": {
+      "enabled": true,
+      "target": [
+        "docs/architecture/generated/"
+      ]
+    },
+    "controlCenter": {
+      "enabled": true,
+      "sections": [
+        "Roadmap",
+        "Architecture",
+        "Commercialization",
+        "Licenses",
+        "Evidence",
+        "Documentary"
+      ]
+    },
+    "releaseNotes": {
+      "enabled": true
+    },
+    "documentary": {
+      "enabled": true,
+      "audiences": {
+        "engineering": {
+          "enabled": true,
+          "detailLevel": "FULL"
+        },
+        "management": {
+          "enabled": true,
+          "detailLevel": "SUMMARY"
+        },
+        "public": {
+          "enabled": true,
+          "detailLevel": "REDACTED"
+        },
+        "funding": {
+          "enabled": true,
+          "detailLevel": "EVIDENCE_SUMMARY"
+        }
+      }
+    },
+    "socialContent": {
+      "enabled": true,
+      "autoPublish": false,
+      "supportedFormats": [
+        "technical-update",
+        "release-summary",
+        "architecture-explainer",
+        "development-documentary",
+        "marketplace-tutorial",
+        "security-evidence-summary"
+      ]
+    }
+  },
+  "publicSafety": {
+    "remove": [
+      "secrets",
+      "tokens",
+      "private email addresses",
+      "provider credentials",
+      "private infrastructure endpoints",
+      "internal incident details when security-sensitive"
+    ],
+    "retain": [
+      "public source SHAs",
+      "public artifact digests",
+      "public SBOM references",
+      "public license evidence",
+      "public architecture decisions"
+    ]
+  },
+  "truthfulness": {
+    "productionClaims": {
+      "requireRuntimeEvidence": true
+    },
+    "securityClaims": {
+      "requireTrustEvidence": true
+    },
+    "licenseClaims": {
+      "requireLicenseEvidence": true
+    },
+    "commercializationClaims": {
+      "requireCommercializationEvidence": true
+    },
+    "unsupportedClaims": {
+      "behavior": "OMIT"
+    },
+    "publicFeatureClaims": {
+      "minimumLifecycle": "EFFECTIVE"
+    },
+    "technicalPreviewClaims": {
+      "minimumLifecycle": "VERIFIED",
+      "mustBeMarkedPreview": true
+    },
+    "proposedFeatureClaims": {
+      "minimumLifecycle": "PROPOSED",
+      "mustBeMarkedPlanned": true
+    }
+  },
+  "roadmap": {
+    "states": {
+      "PROPOSED": {
+        "presentation": "geplant"
+      },
+      "VERIFIED": {
+        "presentation": "technisch verifiziert"
+      },
+      "EFFECTIVE": {
+        "presentation": "wirksam"
+      },
+      "BLOCKED": {
+        "presentation": "blockiert"
+      },
+      "SUPERSEDED": {
+        "presentation": "ersetzt"
+      }
+    }
+  },
+  "architecture": {
+    "showVersionHistory": true,
+    "showSupersededContracts": true,
+    "generatedDiagrams": {
+      "enabled": true
+    },
+    "diagramSources": [
+      "ARCHITECTURE_CHANGE@1"
+    ]
+  },
+  "commercialization": {
+    "enabled": true,
+    "expose": [
+      "distributionModel",
+      "targetCustomer",
+      "commercialReadinessPercent",
+      "remainingEffort",
+      "licenseStatus",
+      "firstRevenueGate"
+    ],
+    "hide": [
+      "private financial data",
+      "tax identifiers",
+      "payment credentials"
+    ]
+  },
+  "documentary": {
+    "chronology": {
+      "enabled": true
+    },
+    "include": [
+      "intent",
+      "architecture",
+      "implementation",
+      "tests",
+      "security",
+      "license",
+      "build",
+      "deployment",
+      "runtime",
+      "observability",
+      "self-healing",
+      "commercialization"
+    ],
+    "renderTargets": [
+      "markdown",
+      "website",
+      "json",
+      "social-script",
+      "video-script"
+    ]
+  },
+  "automation": {
+    "pullRequestPreview": {
+      "enabled": true
+    },
+    "mergeRegeneration": {
+      "enabled": true
+    },
+    "postMergeCorrelation": {
+      "enabled": true
+    },
+    "manualApprovalBeforePublishing": {
+      "required": true
+    }
+  },
+  "integrity": {
+    "generatedContentMustReferenceSourceSha": true,
+    "generatedContentMustReferenceSchemaVersion": true,
+    "generatedFiles": {
+      "editableByHand": false
+    }
+  },
+  "safety": {
+    "mayPublishAutomatically": false,
+    "mayModifyProduction": false,
+    "mayModifyBilling": false,
+    "mayModifyDNS": false
+  }
+}

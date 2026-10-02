@@ -32,6 +32,7 @@ Für **jede** Domain und jede neue Arbeitssitzung ist der erste verbindliche Kon
 7. **Konflikte** — keine pauschale `ours/theirs`-Auflösung für Lockfiles, Vendor-Patches oder Security-Evidence. Von aktuellem `main` rekonstruieren und bereits neuere sichere Änderungen bewahren.
 8. **Neueste stabile Version** — bevorzugen, wenn unterstützt und kompatibel. "Latest" ersetzt keine Migrationsprüfung.
 9. **Self-Healing** — wiederkehrende sichere Reparaturmuster erst nach mindestens drei positiven Validierungszyklen als automatische Invariante fest verankern.
+10. **Post-Merge-Korrelation** — nach einem Merge nach `main` muss bei tatsächlicher Datei-, Contract-, Lockfile-, Runtime- oder Evidence-Überschneidung eine Rekorrelation betroffener offener Arbeiten gegen den neuen Main erfolgen. Der kanonische Contract ist `POST_MERGE_CORRELATION@1` in `docs/security/POST-MERGE-CORRELATION-SELF-HEALING.md`. Automatische Fixes bleiben auf validierte Low-Risk-Klassen begrenzt und werden erst nach drei unabhängigen positiven Zyklen promotet. Ein neuer Repository-HEAD allein ist weder ein Deployment- noch ein NATS-Redeploy-Signal.
 
 ## Update-Trust-Contract
 
@@ -99,6 +100,132 @@ Dabei gelten mindestens folgende Regeln:
 Verbindliche Detailregel:
 - `docs/security/REMOTE-AI-CLOUD-BROWSER-SESSIONS.md`
 
+## Tool- und Plugin-First-Nutzung
+
+Für alle Domain-Chats und Agents gilt: bereits verfügbare und für die Aufgabe geeignete Tools, Plugins, Connectoren und spezialisierte Skills sollen aktiv genutzt werden, wenn sie die Evidenz, Korrektheit, Aktualität, Reproduzierbarkeit, Sicherheit, Geschwindigkeit oder Ergebnisqualität sinnvoll verbessern.
+
+### Generelle Owner-Freigabe für Low-Risk-Nutzung
+
+Der Owner erteilt eine generelle Freigabe für **niedrigriskante** Tool-/Plugin-Nutzung ohne erneute Einzelbestätigung. Dazu zählen insbesondere:
+
+- Read-only Recherche, Suche und Dokumentationsabruf,
+- Repository-/Datei-/Konfigurationsanalyse ohne Zustandsänderung,
+- Security-, Lizenz-, Provenance- und Dependency-Analyse,
+- Benchmarking und Vergleichsmessungen ohne produktive Seiteneffekte,
+- lokale oder isolierte Analyse-/Validierungswerkzeuge,
+- Abruf von Status-, Metadaten-, Log- oder Evidence-Informationen,
+- Nutzung spezialisierter Domain-Tools zur Verbesserung oder Verifikation eines Ergebnisses.
+
+Vor einer Aufgabe soll geprüft werden, ob ein vorhandenes spezialisiertes Tool/Plugin gegenüber einer generischen oder manuellen Lösung einen belastbaren Vorteil bietet. Tool-Nutzung darf nicht Selbstzweck sein.
+
+### Grenzen der generellen Freigabe
+
+Die Low-Risk-Freigabe ist **keine pauschale Schreib- oder Produktionsvollmacht**. Bestehende strengere Regeln bleiben vorrangig. Eine gesonderte Freigabe bzw. das dafür definierte Gate bleibt erforderlich, wenn eine Aktion insbesondere:
+
+- externe Daten, Konfigurationen oder Ressourcen zustandsverändernd schreibt/löscht,
+- Build-, Test-, Deploy- oder andere kostenrelevante Workflows startet, soweit hierfür eine Owner-Freigabe vorgeschrieben ist,
+- Production, DNS/Domain, Auth, Billing, Branch Protection, Rulesets oder Security Controls verändert,
+- Secrets, Credentials, Tokens oder privilegierte Identitäten erzeugt, rotiert oder exponieren könnte,
+- kostenpflichtige Ressourcen oder Abonnements erzeugt/verändert,
+- irreversible oder schwer rückrollbare Auswirkungen hat,
+- einen bestehenden Security-, Lizenz-, Governance- oder Production-Handoff-Gate berührt.
+
+### Domain-Anwendung
+
+- PRODUCT nutzt geeignete Tools für Frontend, UX, Accessibility, Browser-/Bundle- und Produktqualität.
+- MARKET nutzt geeignete Tools für Datenqualität, Provider-/Schema-Vergleich, Scoring-/Research-Evidence und Markt-Datenvalidierung.
+- PLATFORM nutzt geeignete Tools für Runtime, Container, CI/CD, Observability, Performance und Infrastruktur-Evidence.
+- TRUST nutzt geeignete Tools für Security, Compliance, Governance, QA, Lizenz, Provenance und Supply-Chain-Evidence.
+- GROWTH nutzt geeignete Tools für Docs, SEO, Social, Branding und veröffentlichungsbezogene Qualitätsprüfung.
+
+Neue oder wesentlich anders eingesetzte Tools/Plugins unterliegen zusätzlich dem Tool-/Architektur-Benchmarking, wenn ihre Auswahl eine strategische Architektur-, Pipeline-, Security-, Kosten- oder Runtime-Entscheidung darstellt.
+
+## Tool-, API- und Architektur-Benchmarking
+
+Neue Tools, Anwendungen, Libraries, Runtimes, Provider, Schnittstellen und wesentliche Kombinationen daraus dürfen nicht allein aufgrund von Bekanntheit, Neuheit oder Einzelbenchmarks zum Standard werden. Für strategische Tool-Entscheidungen ist eine **reproduzierbare Decision Evidence** verpflichtend.
+
+### Benchmark-Pflicht
+
+Vor Einführung, Ablösung oder wesentlicher Erweiterung sind geeignete Kandidaten gegen denselben realistischen CAPITAL-AI-Workload zu vergleichen. Je nach Komponente umfasst das mindestens:
+
+- funktionale Abdeckung und Korrektheit,
+- Security- und Trust-Boundary-Eigenschaften,
+- Performance: Laufzeit, Durchsatz, Latenz und gegebenenfalls Startup-Zeit,
+- CPU-, RAM-, Disk-, Netzwerk- und Artefakt-/Bundle-Verbrauch,
+- Skalierbarkeit und Verhalten unter Last,
+- Build-/CI-Auswirkung und Cache-Verhalten,
+- Runtime-/Browser-Auswirkung, wenn produktionsrelevant,
+- Stabilität, Fehlerverhalten und Recovery,
+- Integrations-/Migrationsaufwand,
+- Wartbarkeit und API-/Schema-Stabilität,
+- Herkunft, Maintainer-/Community-Gesundheit und Release-Modell,
+- Security-/CVE-/Supply-Chain-Oberfläche,
+- Lizenz, Redistribution, Attribution und Provenance,
+- Observability, Auditierbarkeit und Evidence-Fähigkeit,
+- Kosten/Provider-Limits, sofern relevant,
+- Lock-in, Portabilität und Rollback-/Exit-Pfad.
+
+Benchmarks müssen nach Möglichkeit warm/cold, typische und relevante Grenzfälle unterscheiden. Messungen werden mehrfach ausgeführt; Hardware/Runner, Runtime-Versionen, Datenmenge, Konfiguration, Commit/Version und Messmethode sind festzuhalten. Marketing-Benchmarks dürfen als Hinweis dienen, ersetzen aber keine reproduzierbare CAPITAL-AI-Messung.
+
+### CAPITAL-AI Benchmark-Scoring
+
+Strategische Tool-/API-/Architekturentscheidungen verwenden ein **gewichtetes CAPITAL-AI Decision Score (CADS)** von 0 bis 100. Die Gewichtung wird **vor** dem Benchmark anhand der Einheit/Toolklasse festgelegt und mit der Evidence gespeichert. Dadurch dürfen Kriterien nicht nachträglich zugunsten eines Kandidaten verschoben werden.
+
+Default-Gewichtung für allgemeine technische Komponenten:
+
+- Security & Trust: **25 %**
+- Funktionale Korrektheit / Coverage: **20 %**
+- Performance & Ressourcen: **15 %**
+- Reliability / Operations: **10 %**
+- Maintainability & Integration: **10 %**
+- License / Provenance / Compliance: **10 %**
+- Evidence / Observability / Auditability: **5 %**
+- Portability / Cost / Exit: **5 %**
+
+Jede Dimension erhält 0–100 Punkte; der CADS ist die gewichtete Summe. Für spezialisierte Einheiten dürfen Gewichte angepasst werden, müssen aber zusammen 100 % ergeben und vor der Messung dokumentiert sein.
+
+**Security ist nicht kompensierbar:** Ein hoher Gesamtscore kann einen nicht erfüllten Security-/Trust-, Lizenz-/Provenance- oder funktionalen Muss-Gate nicht ausgleichen. Ein Kandidat bleibt unabhängig vom CADS **BLOCKED**, wenn ein fail-closed Gate verletzt ist, eine glaubhafte ungeklärte Supply-Chain-Gefahr besteht, die notwendige Detection/Korrektheit unterschritten wird oder Lizenz/Redistribution ungeklärt ist.
+
+Tool-Security muss mindestens Herkunft/Publisher, Artefaktintegrität/Provenance, CVE-/Advisory-Lage, Dependency-/Binary-Surface, Install-/Postinstall-/Netzwerkverhalten, Maintainer-/Community-Risiko, Update-/Release-Modell, Berechtigungen/Privilegien, Daten-/Secret-Zugriff, Sandbox-/Isolationseigenschaften und Incident-/Rollback-Fähigkeit betrachten.
+
+Für browser- oder runtimekritische Komponenten werden Performance- und Web-Performance-Gewichte erhöht; für Security Scanner, Auth, CI/CD, Container, Secrets, Governance und Supply Chain wird Security & Trust erhöht. Die konkrete Profilwahl wird im Benchmark als `scoreProfile` versioniert.
+
+### Decision Evidence / ADR
+
+Die Auswahl muss nachvollziehbar begründen:
+
+- welches Problem gelöst wird,
+- welche Kandidaten geprüft wurden und warum,
+- welche Muss-/Kann-Kriterien gelten,
+- welche Benchmark- und Security-Ergebnisse vorliegen,
+- welche Lizenz-/Provenance- und Community-Evidence vorliegt,
+- welche Trade-offs bewusst akzeptiert werden,
+- warum die gewählte Einzelkomponente oder Kombination gegenüber den geprüften Alternativen geeignet ist,
+- welche Annahmen, Grenzen und Restrisiken bestehen,
+- wie Rollback, Austausch oder Re-Evaluation möglich sind.
+
+Eine Entscheidung ist keine dauerhafte Behauptung, dass ein Tool generell „das beste“ sei. Sie gilt für den dokumentierten Workload, Zeitpunkt und Versionsstand.
+
+### Re-Evaluation
+
+Eine erneute Bewertung ist erforderlich, wenn mindestens eines zutrifft:
+
+- Major-Version oder grundlegender Architekturwechsel,
+- relevante Security-/Lizenz-/Maintainer-Änderung,
+- Performance-Regressionsbudget überschritten,
+- neue belastbare Alternative mit potenziell wesentlichem Vorteil,
+- geänderter Workload, Skalierungsbedarf oder Provider-/Kostenmodell,
+- bisherige Schnittstelle wird deprecated oder verliert Support.
+
+### Pipeline Builder
+
+Der spätere Pipeline Builder muss Tool- und Schnittstellenentscheidungen als maschinenlesbare Evidence mitführen können. Eine Pipeline soll deshalb je Komponente mindestens Version/Identität, Zweck, Trust-/Lizenzstatus, Benchmark-Referenz, Entscheidung/ADR, kompatible Schnittstellen, Ressourcenprofil und Rollback-/Alternative referenzieren können.
+
+Performance-Optimierung darf Security-, Lizenz- oder Evidence-Gates nicht umgehen. Umgekehrt sollen Schutzmechanismen so gewählt und gemessen werden, dass sie reale Risiken absichern, ohne unnötige Build-, CI- oder Runtime-Kosten zu erzeugen.
+
+Verbindliche Detailregel:
+- `docs/governance/TOOL-AND-ARCHITECTURE-BENCHMARKING.md`
+
 ## Docker Build- und Runtime-Modell
 
 - Build-once / Promote-many: exakt das geprüfte Image wird veröffentlicht und weitergereicht; kein Rebuild zwischen Prüfung und Promotion.
@@ -163,5 +290,20 @@ Die kanonischen Detailregeln bleiben in:
 - `docs/governance/DOMAIN-RELEASE-GOVERNANCE.md`
 - `docs/security/PRODUCTION-HANDOFF.md`
 - `docs/security/DEPENDENCY-UPDATE-TRUST-MODEL.md`
+- `docs/security/REMOTE-AI-CLOUD-BROWSER-SESSIONS.md`
+- `docs/governance/TOOL-AND-ARCHITECTURE-BENCHMARKING.md`
 
 Diese Root-Policy definiert die übergeordnete Arbeitsweise; die Detaildokumente dürfen sie verschärfen, aber nicht abschwächen.
+
+## Build-, Runtime- und Trigger-Abhängigkeitsgrenzen
+
+Abhängigkeiten werden nach ihrem tatsächlichen Ausführungszeitpunkt getrennt; ein gemeinsames Root-`package.json` ist **keine** automatische Runtime-Freigabe.
+
+- **Build-Scope:** Compiler, Bundler, Vite-Plugins, Frontend-Bibliotheken und Build-Evidence dürfen im Build-Stage vorhanden sein, werden aber nicht allein deshalb in das Runtime-`node_modules` übernommen.
+- **Runtime-Scope:** Das produktive Webservice-Image installiert ausschließlich die direkt für den Serverstart und seine dauerhaft aktiven Pfade benötigte, gepinnte Dependency-Closure aus `deploy/runtime/package.json` und `deploy/runtime/package-lock.json`.
+- **Triggered/Postflight-Scope:** Werkzeuge für Migration, Evidence, Reports, Mail-Jobs, Benchmarks, Scans oder andere nicht dauerhaft benötigte Aufgaben sollen als eigene, versionierte Execution Unit mit eigenem Manifest/Lockfile ausgeführt werden, wenn sie nicht für den Serverstart benötigt werden. Sie werden nicht vorsorglich in das Runtime-Image aufgenommen.
+- Ein Trigger darf keine fehlende Auth-, Secret-, Netzwerk-, Lizenz- oder Production-Grenze umgehen. Triggered Units erhalten Least-Privilege-Berechtigungen, bounded Inputs/Timeouts und eigene Evidence.
+- Root-Lockfile, Runtime-Lockfile und weitere Execution-Unit-Lockfiles bleiben unabhängig scan- und updatepflichtig. Auslagerung bedeutet **nicht**, dass eine Dependency aus SBOM-, Lizenz-, CVE- oder Provenance-Evidence verschwindet.
+- Jede Verschiebung zwischen Build, Runtime und Triggered/Postflight muss durch Import-/Reachability-Evidence, Tests, Lockfile-Diff und Rollback begründet werden.
+- Nicht verwendete Dependencies werden entfernt statt im Runtime-Image bevorratet. Geplante zukünftige Komponenten werden erst aufgenommen, wenn ihr ausführbarer Pfad existiert und geprüft ist.
+- Docker bleibt Build-once/Promote-many; Triggered/Postflight Units verändern niemals rückwirkend das attestierte Candidate-Image.

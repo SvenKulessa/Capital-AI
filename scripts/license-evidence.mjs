@@ -9,6 +9,11 @@ const alternatives = new Map([
   ['(MPL-2.0 OR Apache-2.0)', 'Apache-2.0'],
   ['MIT OR SEE LICENSE IN FEEL-FREE.md', 'MIT'],
 ]);
+// Version-bounded identifier-data review, not a general CC license allow-list.
+function reviewedSpdxData(p) {
+  return (p.path === 'node_modules/spdx-license-ids' && p.version === '3.0.24' && p.selectedLicense === 'CC0-1.0') ||
+    (p.path === 'node_modules/spdx-exceptions' && p.version === '2.5.0' && p.selectedLicense === 'CC-BY-3.0');
+}
 
 // Package-bounded review: do not treat arbitrary MIT-0 metadata as reviewed.
 function reviewedNodemailer(root, path, p) {
@@ -32,8 +37,8 @@ export function lockInventory(root) {
     const attributionReview = path === 'node_modules/caniuse-lite' && selectedLicense === 'CC-BY-4.0';
     return {
       path, version: p.version, declaredLicense: p.license || null, selectedLicense,
-      dev: p.dev === true, optional: p.optional === true, integrity: p.integrity || null,
-      metadataStatus: permissive.has(selectedLicense) ? 'NOTICE_REQUIRED' : buildReview ? 'BUILD_TOOL_REVIEW' : attributionReview ? 'DATA_ATTRIBUTION_REVIEW' : dependencyDistributionReview ? 'DEPENDENCY_DISTRIBUTION_REVIEW' : 'UNREVIEWED',
+      dev: p.dev === true, optional: p.optional === true, integrity: p.integrity || null, resolved: p.resolved || null,
+      metadataStatus: permissive.has(selectedLicense) ? 'NOTICE_REQUIRED' : reviewedSpdxData({ path, version: p.version, selectedLicense }) ? 'VERSION_BOUNDED_DATA_NOTICE_REQUIRED' : buildReview ? 'BUILD_TOOL_REVIEW' : attributionReview ? 'DATA_ATTRIBUTION_REVIEW' : dependencyDistributionReview ? 'DEPENDENCY_DISTRIBUTION_REVIEW' : 'UNREVIEWED',
     };
   });
   return { schemaVersion: 1, scope: 'ALL_LOCKFILE_ENTRIES_NOT_RUNTIME_SBOM', lockfileSha256: sha256(raw), packages, deployEligible: false };
@@ -67,10 +72,18 @@ export function bundleLicenseEvidence(root, moduleIds) {
   const notices = ['CAPITAL-AI — Third-party notices', 'Scope: npm packages referenced by emitted frontend chunks.', 'Generated from installed packages and package-lock.json; container OS/Node, assets, fonts and data rights require separate review.', ''];
   const packages = [];
   for (const p of [...selected.values()].sort((a, b) => a.path.localeCompare(b.path))) {
-    if (!permissive.has(p.selectedLicense)) throw new Error('Bundled license requires an explicit distribution review: ' + p.path + ' ' + p.selectedLicense);
+    if (!permissive.has(p.selectedLicense) && !reviewedSpdxData(p)) throw new Error('Bundled license requires an explicit distribution review: ' + p.path + ' ' + p.selectedLicense);
     const manifest = JSON.parse(readFileSync(join(p.directory, 'package.json'), 'utf8'));
     if (manifest.version !== p.version || manifest.license !== p.declaredLicense) throw new Error('Installed license/version differs from lockfile: ' + p.path);
     const texts = noticeFiles(p.directory).map(path => ({ path, text: readFileSync(join(p.directory, path), 'utf8') }));
+    if (reviewedSpdxData(p)) {
+      texts.push({ path: 'upstream/README.md (copyright and attribution)', text: readFileSync(join(p.directory, 'README.md'), 'utf8') });
+      const file = p.selectedLicense === 'CC0-1.0' ? 'CC0-1.0.txt' : 'CC-BY-3.0.txt';
+      texts.push({ path: 'supplemental/' + file, text: readFileSync(join(root, 'docs/licenses/license-engine', file), 'utf8') });
+    }
+    if (manifest.name === 'spdx-expression-parse' && p.version === '5.0.0') {
+      texts.push({ path: 'AUTHORS', text: readFileSync(join(p.directory, 'AUTHORS'), 'utf8') });
+    }
     // These two published versions put the complete MIT text in README.
     if (!texts.length && ((manifest.name === 'cookie-signature' && p.version === '1.0.7') || (manifest.name === 'data-uri-to-buffer' && p.version === '4.0.1'))) {
       const readme = readdirSync(p.directory).find(name => /^readme\.md$/i.test(name));

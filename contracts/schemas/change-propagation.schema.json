@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://capital-ai.online/contracts/CHANGE_PROPAGATION@1.schema.json",
+  "title": "CHANGE_PROPAGATION@1",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "metadata",
+    "correlation",
+    "trigger",
+    "input",
+    "classification",
+    "projectionRules",
+    "consistencyGate",
+    "selfHealing",
+    "deploymentRules"
+  ],
+  "properties": {
+    "schema": {
+      "const": "CHANGE_PROPAGATION@1"
+    },
+    "version": {
+      "const": "1.0.0"
+    },
+    "correlation": {
+      "type": "object",
+      "required": [
+        "changeId"
+      ],
+      "properties": {
+        "changeId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "consistencyGate": {
+      "type": "object"
+    },
+    "selfHealing": {
+      "type": "object"
+    },
+    "deploymentRules": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true
+}

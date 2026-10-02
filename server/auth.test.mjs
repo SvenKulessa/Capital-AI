@@ -11,7 +11,7 @@ async function harness(envOverrides = {}) {
   const { privateKey, publicKey } = await generateKeyPair('RS256');
   const jwk = { ...await exportJWK(publicKey), kid: 'test-key', alg: 'RS256', use: 'sig' };
   const env = { OIDC_ISSUER: 'https://identity.example', PUBLIC_APP_ORIGIN: 'https://capital.example', OIDC_CLIENT_ID: 'test-client', OIDC_CLIENT_SECRET: 'test-only-secret', TELEGRAM_BOT_TOKEN: '12345:offline_test_placeholder_only', TELEGRAM_CHAT_ID: '-100123', TELEGRAM_ALLOWED_SUBJECTS: 'owner-subject', ...envOverrides };
-  const state = { subject: 'owner-subject', nonce: '', challenge: '', invalidNonce: false, invalidAudience: false, invalidIssuer: false, invalidSignature: false, expired: false, tokenCalls: 0, deliveries: [] };
+  const state = { subject: 'owner-subject', nonce: '', challenge: '', invalidNonce: false, invalidAudience: false, invalidIssuer: false, invalidSignature: false, expired: false, tokenCalls: 0, deliveries: [], authAudit: [] };
   const upstream = async (url, options) => {
     assert.equal(options.redirect, 'error');
     const href = String(url);
@@ -32,7 +32,7 @@ async function harness(envOverrides = {}) {
   };
   const root = await mkdtemp(path.join(tmpdir(), 'capital-auth-'));
   await writeFile(path.join(root, 'index.html'), '<html>offline</html>');
-  const server = createApp(root, { env, fetchImpl: upstream });
+  const server = createApp(root, { env, fetchImpl: upstream, audit: message => state.authAudit.push(String(message)) });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const base = `http://127.0.0.1:${server.address().port}`;
   const request = (url, options = {}) => fetch(base + url, { redirect: 'manual', ...options });
@@ -62,6 +62,21 @@ test('unconfigured OIDC fails closed without fake authentication', async () => {
   try {
     assert.equal((await h.request('/api/auth/login')).status, 503);
     assert.deepEqual(await (await h.request('/api/auth/session')).json(), { configured: false, authenticated: false, user: null });
+  } finally { await h.stop(); }
+});
+
+test('OIDC success telemetry is fixed, redacted and proves the synthetic success phases', async () => {
+  const h = await harness();
+  try {
+    const cookie = await h.complete();
+    assert.ok(cookie.startsWith('__Host-capital_session='));
+    assert.deepEqual(h.state.authAudit, [
+      'OIDC authentication verified at token_exchange',
+      'OIDC authentication verified at token_validation',
+      'OIDC authentication verified at session_creation',
+    ]);
+    const evidence = JSON.stringify(h.state.authAudit);
+    assert.doesNotMatch(evidence, /test-only-secret|never-return-to-browser|owner-subject|id_token|access_token|nonce|test-code/);
   } finally { await h.stop(); }
 });
 
