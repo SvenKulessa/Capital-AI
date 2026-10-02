@@ -99,6 +99,28 @@ async function fromOpenSourceUniverseAdapter(env) {
     .filter(Boolean);
 }
 
+export function buildCoinPaprikaResearchUniverse(rows) {
+  if (!Array.isArray(rows)) throw new Error('COINPAPRIKA_UNIVERSE_SCHEMA_INVALID');
+  const seen = new Set();
+  return rows
+    .filter(row => Number.isInteger(row?.rank) && row.rank > 0)
+    .sort((a, b) => a.rank - b.rank)
+    .map(row => {
+      const asset = normalizeAsset(row, row.rank, 'coinpaprika-public-private-research');
+      return asset ? { ...asset, universeRank: row.rank, rankMetric: 'marketCap' } : null;
+    })
+    .filter(asset => asset && !seen.has(asset.symbol) && seen.add(asset.symbol))
+    .slice(0, UNIVERSE_LIMIT);
+}
+
+async function fromCoinPaprikaResearchUniverse(env) {
+  if (env.MOBILE_CRYPTO_COINPAPRIKA_RESEARCH !== 'true') return [];
+  const rows = await fetchJson(new URL('https://api.coinpaprika.com/v1/tickers?quotes=USD'), {
+    headers: { Accept: 'application/json', 'User-Agent': 'Capital-AI-Private-Research/1.0' },
+  }, 8 * 1024 * 1024);
+  return buildCoinPaprikaResearchUniverse(rows);
+}
+
 export function buildBinanceResearchUniverse(exchangeInfo, tickers) {
   if (!Array.isArray(exchangeInfo?.symbols) || !Array.isArray(tickers)) throw new Error('BINANCE_UNIVERSE_SCHEMA_INVALID');
   const volume = new Map(tickers.map(row => [String(row?.symbol || ''), Number(row?.quoteVolume || 0)]));
@@ -141,7 +163,8 @@ export async function loadUniverseForEvidence(env = process.env) {
 
   try {
     const external = await fromOpenSourceUniverseAdapter(env);
-    const rankedAssets = external.length ? external : await fromBinanceResearchUniverse(env);
+    const paprika = external.length ? [] : await fromCoinPaprikaResearchUniverse(env);
+    const rankedAssets = external.length ? external : paprika.length ? paprika : await fromBinanceResearchUniverse(env);
     for (const ranked of rankedAssets) {
       const current = bySymbol.get(ranked.symbol);
       if (current) {
@@ -177,11 +200,13 @@ export async function loadUniverseForEvidence(env = process.env) {
     sources: [...new Set(assets.map(asset => asset.source))],
     rankMetrics: [...new Set(assets.map(asset => asset.rankMetric).filter(Boolean))],
     rightsScope: 'PRIVATE_RESEARCH_ONLY',
-    attribution: assets.some(asset => asset.source.includes('binance'))
-      ? 'Private research universe ranked by Binance public spot USDT 24h quote volume; exchange data terms remain separately applicable.'
-      : assets.some(asset => asset.source.includes('oss'))
-        ? 'Open-source universe adapter used as fallback; upstream exchange/data terms remain separately applicable.'
-        : null,
+    attribution: assets.some(asset => asset.source.includes('coinpaprika'))
+      ? 'Powered by CoinPaprika · private research use only; commercial use/redistribution requires the applicable CoinPaprika plan and rights.'
+      : assets.some(asset => asset.source.includes('binance'))
+        ? 'Private research universe ranked by Binance public spot USDT 24h quote volume; exchange data terms remain separately applicable.'
+        : assets.some(asset => asset.source.includes('oss'))
+          ? 'Open-source universe adapter used as fallback; upstream exchange/data terms remain separately applicable.'
+          : null,
     loadedAt: Date.now(),
     assets,
   };
@@ -204,14 +229,14 @@ function html(res, headers) {
   res.writeHead(200, { ...headers, 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
   res.end(`<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Capital-AI Private Scorer</title><style>
   :root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#02050e;color:#eef2ff}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#172033,#02050e 42%);min-height:100vh}.app{max-width:860px;margin:auto;padding:20px 14px 40px}.brand{color:#f5b014;font-size:12px;font-weight:900;letter-spacing:.18em}.card{background:#090e21;border:1px solid #243047;border-radius:18px;padding:16px;margin-top:14px;box-shadow:0 18px 60px #0008}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}input,button,select{min-height:46px;border-radius:12px;border:1px solid #2b3955;background:#070b19;color:#fff;padding:0 12px;font:inherit}input{flex:1;min-width:180px}button{background:#f5b014;color:#07101d;font-weight:900;cursor:pointer}.pill{font-size:11px;border:1px solid #31405f;border-radius:999px;padding:5px 9px;color:#b8c3d8}.ok{color:#55df95}.warn{color:#ffd166}.score{font:900 52px ui-monospace,monospace;color:#f5b014}.muted{color:#8e9ab2;font-size:12px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.metric{background:#050914;border:1px solid #1c2941;border-radius:12px;padding:10px;overflow-wrap:anywhere}.metric b{display:block;color:#fff;margin-top:4px}#assets{max-height:300px;overflow:auto;margin-top:10px}.asset{width:100%;display:flex;justify-content:space-between;background:#060b17;color:#fff;margin:5px 0;border-color:#1c2941}.asset small{color:#8e9ab2}@media(min-width:700px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}</style></head><body><main class="app"><div class="brand">CAPITAL-AI · PRIVATE ANDROID</div><h1>Enterprise Scorer</h1><p class="muted">Top-400 Krypto-Universum · NATS JetStream Evidence · Valkey/Redis Pub/Sub · keine Trade-Authority</p>
-  <section class="card"><div class="row"><span class="pill" id="universeState">Universe lädt…</span><span class="pill" id="busState">Bus prüft…</span></div><div class="row" style="margin-top:12px"><input id="search" placeholder="Kryptowährung suchen…"><button id="reload">Aktualisieren</button></div><div id="assets"></div></section>
+  <section class="card"><div class="row"><span class="pill" id="universeState">Universe lädt…</span><span class="pill" id="busState">Bus prüft…</span></div><div class="row" style="margin-top:12px"><input id="search" placeholder="Kryptowährung suchen…"><button id="reload">Aktualisieren</button></div><div id="assets"></div><p class="muted" id="attribution"></p></section>
   <section class="card"><div class="row"><div><div class="muted">Ausgewählt</div><h2 id="assetTitle">—</h2></div><div style="margin-left:auto"><button id="scoreButton" disabled>Score laden</button></div></div><div id="scoreBox"><p class="muted">Asset auswählen.</p></div></section>
   <footer class="muted" style="margin-top:18px">Private Research App · Scores sind Analyseergebnisse und keine Anlageberatung.</footer></main><script src="/mobile-scorer/app.js" defer></script></body></html>`);
 }
 
 function javascript(res, headers) {
   res.writeHead(200, { ...headers, 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store' });
-  res.end(`(()=>{let universe=[],selected=null,eventSource=null;const q=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const render=()=>{const term=q('#search').value.trim().toLowerCase();const rows=universe.filter(a=>!term||a.symbol.toLowerCase().includes(term)||a.name.toLowerCase().includes(term)).slice(0,80);q('#assets').innerHTML=rows.map(a=>'<button class="asset" data-symbol="'+esc(a.symbol)+'"><span><b>'+esc(a.symbol)+'</b><br><small>'+esc(a.name)+'</small></span><small>#'+esc(a.universeRank??a.marketCapRank??'—')+'</small></button>').join('');document.querySelectorAll('.asset').forEach(b=>b.onclick=()=>select(b.dataset.symbol));};const select=s=>{selected=universe.find(a=>a.symbol===s)||null;q('#assetTitle').textContent=selected?selected.name+' ('+selected.symbol+')':'—';q('#scoreButton').disabled=!selected;startEvents();};const scoreHtml=d=>{const p=d?.payload||d||{};const value=p.final_score??p.score??p.rank_score??null;return '<div class="score">'+esc(value??'—')+'</div><div class="grid"><div class="metric">Status<b>'+esc(p.status??'—')+'</b></div><div class="metric">Eligible<b>'+esc(p.eligible_for_top10===true?'JA':p.eligible_for_top10===false?'NEIN':'—')+'</b></div><div class="metric">Modell<b>'+esc(p.modelRegistry?.modelId??p.model??'—')+'</b></div><div class="metric">Evidence<b>'+esc(d?.evidenceId??p.lineage?.evidenceId??'—')+'</b></div></div><pre class="muted" style="white-space:pre-wrap;max-height:280px;overflow:auto">'+esc(JSON.stringify(p,null,2))+'</pre>';};const startEvents=()=>{eventSource?.close();if(!selected)return;eventSource=new EventSource('/api/mobile/scorer/events?symbol='+encodeURIComponent(selected.symbol));eventSource.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.symbol===selected.symbol)q('#scoreBox').innerHTML=scoreHtml(d)}catch{}};};const load=async()=>{const [u,s]=await Promise.all([fetch('/api/mobile/crypto-universe').then(r=>r.json()),fetch('/api/mobile/scorer/status').then(r=>r.json())]);universe=Array.isArray(u.assets)?u.assets:[];q('#universeState').textContent='Universe '+u.count+'/'+u.requested+' · '+u.status;q('#universeState').className='pill '+(u.status==='READY'?'ok':'warn');q('#busState').textContent='NATS '+s.nats+' · Valkey '+s.valkey+' · Pub/Sub '+s.pubsub;q('#busState').className='pill '+(s.status==='connected'?'ok':'warn');render();};q('#search').oninput=render;q('#reload').onclick=load;q('#scoreButton').onclick=async()=>{if(!selected)return;q('#scoreBox').innerHTML='<p class="muted">Kanonischer Score wird berechnet und als JetStream-Evidence bestätigt…</p>';const r=await fetch('/api/mobile/enterprise-score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({symbol:selected.symbol,name:selected.name})});const d=await r.json();if(r.status===401){q('#scoreBox').innerHTML='<p class="warn">Anmeldung erforderlich.</p><p><a href="capitalai-private://login" style="color:#f5b014;font-weight:900">Sicher im Browser anmelden</a></p>';return;}q('#scoreBox').innerHTML=scoreHtml(d);};load().catch(e=>{q('#universeState').textContent='Universe nicht verfügbar';q('#busState').textContent=String(e)});})();`);
+  res.end(`(()=>{let universe=[],selected=null,eventSource=null;const q=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const render=()=>{const term=q('#search').value.trim().toLowerCase();const rows=universe.filter(a=>!term||a.symbol.toLowerCase().includes(term)||a.name.toLowerCase().includes(term)).slice(0,80);q('#assets').innerHTML=rows.map(a=>'<button class="asset" data-symbol="'+esc(a.symbol)+'"><span><b>'+esc(a.symbol)+'</b><br><small>'+esc(a.name)+'</small></span><small>#'+esc(a.universeRank??a.marketCapRank??'—')+'</small></button>').join('');document.querySelectorAll('.asset').forEach(b=>b.onclick=()=>select(b.dataset.symbol));};const select=s=>{selected=universe.find(a=>a.symbol===s)||null;q('#assetTitle').textContent=selected?selected.name+' ('+selected.symbol+')':'—';q('#scoreButton').disabled=!selected;startEvents();};const scoreHtml=d=>{const p=d?.payload||d||{};const value=p.final_score??p.score??p.rank_score??null;return '<div class="score">'+esc(value??'—')+'</div><div class="grid"><div class="metric">Status<b>'+esc(p.status??'—')+'</b></div><div class="metric">Eligible<b>'+esc(p.eligible_for_top10===true?'JA':p.eligible_for_top10===false?'NEIN':'—')+'</b></div><div class="metric">Modell<b>'+esc(p.modelRegistry?.modelId??p.model??'—')+'</b></div><div class="metric">Evidence<b>'+esc(d?.evidenceId??p.lineage?.evidenceId??'—')+'</b></div></div><pre class="muted" style="white-space:pre-wrap;max-height:280px;overflow:auto">'+esc(JSON.stringify(p,null,2))+'</pre>';};const startEvents=()=>{eventSource?.close();if(!selected)return;eventSource=new EventSource('/api/mobile/scorer/events?symbol='+encodeURIComponent(selected.symbol));eventSource.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.symbol===selected.symbol)q('#scoreBox').innerHTML=scoreHtml(d)}catch{}};};const load=async()=>{const [u,s]=await Promise.all([fetch('/api/mobile/crypto-universe').then(r=>r.json()),fetch('/api/mobile/scorer/status').then(r=>r.json())]);universe=Array.isArray(u.assets)?u.assets:[];q('#universeState').textContent='Universe '+u.count+'/'+u.requested+' · '+u.status;q('#universeState').className='pill '+(u.status==='READY'?'ok':'warn');q('#attribution').textContent=u.attribution||'';q('#busState').textContent='NATS '+s.nats+' · Valkey '+s.valkey+' · Pub/Sub '+s.pubsub;q('#busState').className='pill '+(s.status==='connected'?'ok':'warn');render();};q('#search').oninput=render;q('#reload').onclick=load;q('#scoreButton').onclick=async()=>{if(!selected)return;q('#scoreBox').innerHTML='<p class="muted">Kanonischer Score wird berechnet und als JetStream-Evidence bestätigt…</p>';const r=await fetch('/api/mobile/enterprise-score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({symbol:selected.symbol,name:selected.name})});const d=await r.json();if(r.status===401){q('#scoreBox').innerHTML='<p class="warn">Anmeldung erforderlich.</p><p><a href="capitalai-private://login" style="color:#f5b014;font-weight:900">Sicher im Browser anmelden</a></p>';return;}q('#scoreBox').innerHTML=scoreHtml(d);};load().catch(e=>{q('#universeState').textContent='Universe nicht verfügbar';q('#busState').textContent=String(e)});})();`);
 }
 
 export function createMobileScorer(env = process.env) {
