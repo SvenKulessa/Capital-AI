@@ -86,3 +86,11 @@ test('untrusted nested SPDX expressions stay bounded before recursive parsing', 
   assert.equal(assessExpression('('.repeat(65) + 'MIT' + ')'.repeat(65)).status, 'MISSING_OR_INVALID');
   assert.equal(assessExpression('('.repeat(5000) + 'MIT').status, 'MISSING_OR_INVALID');
 });
+
+
+test('SPDX parser v5 LicenseRef exceptions stay manual-review-only', () => {
+  const result = assessExpression('LicenseRef-Custom WITH LLVM-exception');
+  assert.equal(result.status, 'REVIEW_REQUIRED');
+  assert.ok(result.obligations.some(x => x.includes('manuell')));
+  assert.ok(result.obligations.some(x => x.includes('LLVM-exception')));
+});

@@ -81,7 +81,7 @@ export function bundleLicenseEvidence(root, moduleIds) {
       const file = p.selectedLicense === 'CC0-1.0' ? 'CC0-1.0.txt' : 'CC-BY-3.0.txt';
       texts.push({ path: 'supplemental/' + file, text: readFileSync(join(root, 'docs/licenses/license-engine', file), 'utf8') });
     }
-    if (manifest.name === 'spdx-expression-parse' && p.version === '4.0.0') {
+    if (manifest.name === 'spdx-expression-parse' && p.version === '5.0.0') {
       texts.push({ path: 'AUTHORS', text: readFileSync(join(p.directory, 'AUTHORS'), 'utf8') });
     }
     // These two published versions put the complete MIT text in README.
