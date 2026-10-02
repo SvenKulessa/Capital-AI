@@ -1,0 +1,81 @@
+{
+  "schema": "EVIDENCE_BUNDLE@1",
+  "version": "1.0.0",
+  "metadata": {
+    "project": "CAPITAL-AI",
+    "domain": "TRUST",
+    "consumerDomains": [
+      "GROWTH"
+    ],
+    "status": "PROPOSED"
+  },
+  "identity": {
+    "bundleId": "EB-SPONSORSHIP-P2-20261002-001",
+    "workPackageId": "SPONSORSHIP-P2",
+    "createdAt": "2026-10-02T07:01:00Z",
+    "sourceSha": "20ad5212b9400489270013895471283bd689afb3"
+  },
+  "manifest": {
+    "researchEvidenceRefs": [],
+    "sourceProvenanceRefs": [],
+    "licenseEvidenceRefs": [
+      "docs/security/evidence/license-rights-review.json"
+    ],
+    "datasetEvidenceRefs": [
+      "docs/architecture/ENTERPRISE-MARKET-INTELLIGENCE-PART2-RIGHTS-ELIGIBILITY-20261001.md",
+      "src/contracts/marketDataRightsInventoryProjection.ts"
+    ],
+    "experimentEvidenceRefs": [],
+    "costEvidenceRefs": [],
+    "claimEvidenceRefs": [
+      "docs/growth/sponsorship/P2-CLAIM-EVIDENCE-MATRIX.json"
+    ],
+    "documentaryEvidenceRefs": [
+      "generated/documentary/index.json"
+    ],
+    "trustEvidenceRefs": [
+      "docs/security/evidence/oidc-pr95-observability-20261001/observation.json",
+      "docs/security/OIDC-VERIFICATION-STATE-20261001.md"
+    ],
+    "platformEvidenceRefs": [
+      "contracts/container-evidence-identity.schema.json"
+    ]
+  },
+  "integrity": {
+    "canonicalSerialization": "RFC8785",
+    "hashAlgorithm": "SHA-256",
+    "bundleDigest": null,
+    "signatureRefs": [],
+    "refDigests": {}
+  },
+  "verification": {
+    "allRefsResolved": true,
+    "allDigestsVerified": false,
+    "reproducible": false,
+    "status": "BLOCKED",
+    "blockers": [
+      "RESEARCH_EVIDENCE_MISSING",
+      "SOURCE_PROVENANCE_EVIDENCE_MISSING",
+      "EXPERIMENT_EVIDENCE_MISSING",
+      "COST_EVIDENCE_MISSING",
+      "LICENSE_RIGHTS_REVIEW_OPEN",
+      "DOCUMENTARY_COVERAGE_INCOMPLETE",
+      "REFERENCE_DIGESTS_NOT_YET_MATERIALIZED"
+    ]
+  },
+  "export": {
+    "publicSafe": false,
+    "redactionApplied": false,
+    "formats": [
+      "JSON",
+      "MARKDOWN"
+    ]
+  },
+  "safety": {
+    "missingRequiredClassMayPass": false,
+    "generatedProjectionIsCanonicalInput": false
+  },
+  "correlation": {
+    "changeId": "CA-SPONSORSHIP-P2-EVIDENCE-BUNDLE-20261002-001"
+  }
+}
