@@ -8,6 +8,7 @@
     "advisory",
     "component",
     "natsImageRef",
+    "localImageId",
     "binarySha256",
     "dependency",
     "scanner",
@@ -21,7 +22,7 @@
   ],
   "properties": {
     "schema": {
-      "const": "GO_VULN_REACHABILITY@1"
+      "const": "GO_VULN_REACHABILITY@2"
     },
     "advisory": {
       "const": "GO-2026-5932"
@@ -34,6 +35,13 @@
         "string",
         "null"
       ]
+    },
+    "localImageId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^sha256:[0-9a-f]{64}$"
     },
     "binarySha256": {
       "type": [
@@ -74,7 +82,7 @@
       "enum": [
         "NOT_AFFECTED",
         "AFFECTED",
-        "INCONCLUSIVE"
+        "UNKNOWN"
       ]
     },
     "reason": {
