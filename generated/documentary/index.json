@@ -16,6 +16,18 @@
       "documentaryDigest": "3f2e83760f4166f5df606af7abef3569dc8958575a97c81c68fa80880b378698",
       "json": "generated/documentary/DOC-20261001-PR91-GROWTH-HANDOFF.json",
       "markdown": "generated/documentary/DOC-20261001-PR91-GROWTH-HANDOFF.md"
+    },
+    {
+      "documentaryId": "DOC-20261002-COMPONENT-INVENTORY-OBSERVABILITY",
+      "changeId": "CA-20261002-COMPONENT-INVENTORY-OBSERVABILITY",
+      "createdAt": "2026-10-02T05:31:27Z",
+      "lifecycle": "PROPOSED",
+      "sourceSha": "b2e3416de448b44ef7a1aca04ec3d1b06db8e9c1",
+      "schema": "DOCUMENTARY_EVIDENCE@1",
+      "schemaVersion": "1.0.0",
+      "documentaryDigest": "65c28588a1a0ec2d57786a300e98f3cc191172d5ce6cfbacb386088f24ad6b71",
+      "json": "generated/documentary/DOC-20261002-COMPONENT-INVENTORY-OBSERVABILITY.json",
+      "markdown": "generated/documentary/DOC-20261002-COMPONENT-INVENTORY-OBSERVABILITY.md"
     }
   ]
 }
