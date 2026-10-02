@@ -34,6 +34,42 @@ function affectedNmSymbols(nmText) {
     AFFECTED_OPENPGP_PACKAGES.some(pkg => line.includes(pkg)));
 }
 
+export function buildCycloneDxVex(report) {
+  const state = report.decision === 'NOT_AFFECTED' ? 'not_affected'
+    : report.decision === 'AFFECTED' ? 'exploitable'
+    : 'in_triage';
+  const analysis = { state, detail: `${report.reason}; trivy finding retained; no suppression applied` };
+  if (report.decision === 'NOT_AFFECTED') {
+    analysis.justification = report.reason === 'vulnerable_code_not_in_execute_path'
+      ? 'code_not_reachable'
+      : 'code_not_present';
+  }
+  const ref = report.natsImageRef || `urn:capital-ai:nats-binary:${report.binarySha256 || 'unknown'}`;
+  return {
+    bomFormat: 'CycloneDX',
+    specVersion: '1.6',
+    version: 1,
+    metadata: {
+      component: {
+        type: 'container',
+        name: 'capital-nats',
+        'bom-ref': ref,
+      },
+    },
+    vulnerabilities: [{
+      id: report.advisory,
+      source: { name: 'Go Vulnerability Database', url: `https://pkg.go.dev/vuln/${report.advisory}` },
+      analysis,
+      affects: [{ ref }],
+      properties: [
+        { name: 'capital-ai:binary-sha256', value: report.binarySha256 || 'unknown' },
+        { name: 'capital-ai:reachability-schema', value: report.schema },
+        { name: 'capital-ai:review-required', value: String(report.reviewRequired) },
+      ],
+    }],
+  };
+}
+
 export function classifyGoVulnReachability({
   messages,
   openvex,
