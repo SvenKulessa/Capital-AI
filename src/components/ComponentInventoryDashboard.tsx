@@ -68,6 +68,7 @@ export const ComponentInventoryDashboard: React.FC = () => {
           <dt className="text-slate-500">Aktiv</dt><dd>{item.activeVersion ?? 'nicht aktiv'}</dd>
           <dt className="text-slate-500">Pipeline</dt><dd>{item.pipelineVersion ?? 'keine'}</dd>
           <dt className="text-slate-500">Web-App</dt><dd>{item.webAppBinding}</dd>
+          <dt className="text-slate-500">Domains</dt><dd>{item.domainAssignments.join(' · ')}</dd>
           <dt className="text-slate-500">Lizenz</dt><dd>{item.license}</dd>
           <dt className="text-slate-500">Abhängigkeiten</dt><dd>{item.dependencies.length ? item.dependencies.join(' → ') : 'keine'}</dd>
         </dl>
