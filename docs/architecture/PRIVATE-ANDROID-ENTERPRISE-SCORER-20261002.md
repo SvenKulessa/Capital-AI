@@ -32,12 +32,12 @@ JetStream is durable evidence. Valkey/Redis Pub/Sub is ephemeral delivery and ne
 The mobile universe contract requests exactly 400 crypto assets.
 
 1. The canonical CAPITAL-AI registry is loaded first.
-2. Market-cap rank metadata is added from the configured CoinGecko fallback when available.
-3. The final set is ordered by market-cap rank, then deterministic symbol ordering.
-4. CoinGecko is universe metadata only and has no score, eligibility, ranking or trade authority.
+2. Optional universe enrichment is read only from the configured internal open-source adapter (`CAPITAL_AI_OSS_CRYPTO_UNIVERSE_URL`), designed for CCXT + DefiLlama-class sources.
+3. The final set is ordered by verified rank when supplied, then deterministic symbol ordering.
+4. The adapter has no score, eligibility or trade authority; upstream exchange/data rights remain separate.
 5. If fewer than 400 assets can be validated, the endpoint reports `DEGRADED`; it does not fabricate filler assets.
 
-The CoinGecko Demo/public fallback is intended only for this private research surface and requires attribution. Commercial redistribution remains outside this change and must be covered by separate provider-rights evidence.
+No CoinGecko endpoint, API key or fallback remains in this mobile path. Commercial display/redistribution still requires provider-specific rights evidence.
 
 ## Broker contracts
 
