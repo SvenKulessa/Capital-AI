@@ -22,10 +22,10 @@
       "changeId": "CA-20261002-COMPONENT-INVENTORY-OBSERVABILITY",
       "createdAt": "2026-10-02T05:31:27Z",
       "lifecycle": "PROPOSED",
-      "sourceSha": "117a3e2dc2d371a068d0b55963ce555f851fb2c3",
+      "sourceSha": "96d5a101be7b4194eeecec290c24fcfb7856f4e1",
       "schema": "DOCUMENTARY_EVIDENCE@1",
       "schemaVersion": "1.0.0",
-      "documentaryDigest": "85b0551e54dfbb89e9ae73da9929d41d1fb500aa41f9eaa12547fb4d8f557b0d",
+      "documentaryDigest": "f3f1b4ec54009a70663c8d24f091be8380f0219dcef3bd13cb5ff96e8cb4589c",
       "json": "generated/documentary/DOC-20261002-COMPONENT-INVENTORY-OBSERVABILITY.json",
       "markdown": "generated/documentary/DOC-20261002-COMPONENT-INVENTORY-OBSERVABILITY.md"
     }
