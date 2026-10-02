@@ -31,7 +31,7 @@ JetStream remains the evidence authority; Pub/Sub is ephemeral.
 
 ## Top-400 research universe
 
-The canonical registry is preferred. An explicitly configured internal OSS universe adapter can enrich it. For the private research build only, `MOBILE_CRYPTO_BINANCE_RESEARCH=true` enables a deterministic fallback that ranks unique active Binance Spot/USDT base assets by 24h USDT quote volume.
+The canonical registry is preferred. An explicitly configured internal OSS universe adapter can enrich it. For the private research build only, `MOBILE_CRYPTO_COINPAPRIKA_RESEARCH=true` enables a market-cap-ranked fallback from CoinPaprika. The UI shows the required `Powered by CoinPaprika` attribution. Commercial use or redistribution is not granted by this switch. `MOBILE_CRYPTO_BINANCE_RESEARCH=true` remains a secondary liquidity-ranked research fallback if the market-cap source is not enabled/available.
 
 This is **not market-cap ranking** and does not grant redistribution, trading or scoring rights. The endpoint remains fail-closed unless exactly 400 validated entries are available.
 
@@ -45,6 +45,7 @@ This is **not market-cap ranking** and does not grant redistribution, trading or
 - optional `CAPITAL_AI_SCORER_SERVICE_TOKEN`
 - optional `CAPITAL_AI_OSS_CRYPTO_UNIVERSE_URL`
 - optional `MOBILE_CRYPTO_UNIVERSE_FALLBACK`
+- optional `MOBILE_CRYPTO_COINPAPRIKA_RESEARCH`
 - optional `MOBILE_CRYPTO_BINANCE_RESEARCH`
 - optional `MOBILE_SCORE_CACHE_TTL_MS`
 
