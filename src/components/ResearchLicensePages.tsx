@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft, BookOpen, Download, FileText, Printer, Scale } from 'lucide-react';
 import { researchMetadata, researchProviders, RESEARCH_REVIEW_DATE, type ResearchRoute } from '../data/researchLicenses';
+import { OPEN_SOURCE_STACK } from '../data/openSourceStack';
 
 const linkStyle = 'text-cyan-300 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-amber-400';
 const cardStyle = 'rounded-2xl border border-slate-800 bg-[#090e21] p-5 space-y-3';
@@ -42,6 +43,15 @@ export function ResearchLicensePages({ route, onNavigate }: { route: ResearchRou
       <p className="text-sm">Das FRONTEND-Verzeichnis beschreibt ausgewählte Kernbibliotheken. Der ausgelieferte Umfang umfasst zusätzlich transitive Pakete, Fonts und Betriebssystem-Komponenten. Die Containerprüfung enthält auch Copyleft-Befunde; eine pauschale GPL-Freiheit ist deshalb nicht belegt.</p>
       <p className="text-sm text-slate-400">Maßgeblich sind versionsgebundene Original-Lizenztexte, Copyright-Hinweise, vollständige Scans und die Zuordnung zum tatsächlichen Image. Allgemeine Mustertexte und erfolgreiche Builds sind keine Gesamtfreigabe.</p>
       <ul className="space-y-2 text-sm"><li><a className={linkStyle} href="/THIRD_PARTY_NOTICES.txt">Originalhinweise der ausgelieferten Frontend-Pakete</a></li><li><a className={linkStyle} href="/frontend-license-inventory.json">Buildbezogenes Frontend-Lizenzinventar (JSON)</a></li><li><a className={linkStyle} href="/fonts/OFL.txt">Original-OFL der lokal ausgelieferten Schrift</a></li><li><a className={linkStyle} href="https://github.com/SvenKulessa/Capital-AI/blob/main/docs/security/LICENSE-RIGHTS.md" target="_blank" rel="noopener noreferrer">Container- und Quellenprüfung</a></li><li><a className={linkStyle} href="https://github.com/SvenKulessa/Capital-AI/blob/main/OPEN_SOURCE_LICENSES.md" target="_blank" rel="noopener noreferrer">OSS-Prüfverzeichnis</a></li></ul>
+      <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-3">
+        {OPEN_SOURCE_STACK.map(component => <div key={component.id} className="rounded-xl border border-blue-400/15 bg-black/20 p-3">
+          <div className="flex items-center justify-between gap-3"><strong className="text-white">{component.name}</strong><span className="text-[10px] rounded-full border border-blue-400/20 px-2 py-1 text-blue-200">{component.status}</span></div>
+          <p className="mt-1 text-xs text-slate-400">{component.layer} · {component.license}</p>
+          <p className="mt-2 text-xs text-slate-300">{component.notes}</p>
+          <a className={linkStyle} href={component.repository} target="_blank" rel="noopener noreferrer">Upstream-Quelle</a>
+        </div>)}
+      </div>
+      <p className="text-xs text-amber-200">Open-Source-Softwarelizenz bedeutet nicht automatisch, dass die darüber bezogenen Markt- oder Providerdaten kommerziell angezeigt, gespeichert oder weitergegeben werden dürfen.</p>
     </article>}
     {route === '/forschung' && <ResearchProjectSummary onNavigate={onNavigate} />}
     <p className="text-xs text-slate-400">Keine Anlageberatung. Daten, Modelle und Scores können unvollständig, verzögert oder fehlerhaft sein. Quellen, Beobachtungszeitpunkte und Prüfstatus müssen beim jeweiligen Ergebnis ausgewiesen werden.</p>

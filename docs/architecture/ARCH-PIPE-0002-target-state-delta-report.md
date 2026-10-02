@@ -71,7 +71,7 @@ The platform architecture defines 8 modular node categories:
 
 ### 2.3 Transformation Nodes (`node_categories.transformation`)
 - `canonical_normalizer`: Unified tick, candle, and orderbook schema mapper.
-- `asset_resolver`: Mapping tickers across naming standards (ISIN, CIK, CoinGecko ID, CCXT).
+- `asset_resolver`: Mapping tickers across naming standards (ISIN, CIK, CCXT-Symbol, DefiLlama-Key).
 - `taxonomy_router`: Directing events based on asset subclass and risk profile.
 - `timeframe_resampler`: Real-time OHLCV aggregation (1s, 1m, 5m, 1h, 1d).
 - `currency_converter`: Real-time FX conversion to target quote currency (EUR/USD).

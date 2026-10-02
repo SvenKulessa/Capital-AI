@@ -107,8 +107,8 @@ describe('provider rights inventory projection', () => {
   const projections = inventory.providers.map(projectProviderRights);
   const cohort = bindFirstActivationCohort(projections);
 
-  it('projects the four inventoried providers without filling null rights', () => {
-    assert.deepEqual(projections.map(item => item.providerId), ['binance', 'kraken', 'twelvedata', 'polygon']);
+  it('projects the five inventoried providers without filling null rights', () => {
+    assert.deepEqual(projections.map(item => item.providerId), ['binance', 'kraken', 'twelvedata', 'polygon', 'financialdatanet']);
     for (const projection of projections) {
       assert.equal(projection.inventoryStatus, 'CONTRACT_SCOPE_UNVERIFIED');
       assert.equal(projection.deployEligible, false);
@@ -129,6 +129,16 @@ describe('provider rights inventory projection', () => {
       assert.equal(projection.commercialProduct.eligible, false);
       assert.ok(projection.researchOnly.reasons.includes('RESEARCH_TDM_EVIDENCE_MISSING'));
     }
+  });
+
+  it('keeps FinancialData.Net catalogued without inferring plan or redistribution rights', () => {
+    const fdn = projections.find(item => item.providerId === 'financialdatanet');
+    assert.ok(fdn);
+    assert.equal(fdn.datasetScopeVerified, false);
+    assert.equal(fdn.evidence.subscriptionTierAndAddOns, null);
+    assert.equal(fdn.evidence.permissions.public_display.allowed, null);
+    assert.equal(fdn.evidence.permissions.api_redistribution.allowed, null);
+    assert.equal(fdn.commercialProduct.decision, 'REVIEW_REQUIRED');
   });
 
   it('keeps the research path from authorizing the commercial path', () => {
