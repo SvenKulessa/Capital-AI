@@ -45,6 +45,7 @@ jobs:
       - name: npm-Lizenzmetadaten und Regressionstests prüfen
         run: |
           node scripts/preflight.mjs
+          node --test scripts/verify-go-vuln-reachability.test.mjs
       - name: Gepinnte Sicherheitswerkzeuge bauen
         run: |
           docker build --file Dockerfile.security --tag capital-ai-security .
