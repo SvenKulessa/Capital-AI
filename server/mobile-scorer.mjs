@@ -72,26 +72,22 @@ async function fromCanonicalRegistry(env) {
   }
 }
 
-async function fromCoinGecko(env) {
+async function fromOpenSourceUniverseAdapter(env) {
   if (env.MOBILE_CRYPTO_UNIVERSE_FALLBACK === 'false') return [];
-  const headers = { Accept: 'application/json' };
-  if (env.COINGECKO_DEMO_API_KEY?.trim()) headers['x-cg-demo-api-key'] = env.COINGECKO_DEMO_API_KEY.trim();
-  const all = [];
-  for (const page of [1, 2]) {
-    const url = new URL('https://api.coingecko.com/api/v3/coins/markets');
-    url.searchParams.set('vs_currency', 'usd');
-    url.searchParams.set('order', 'market_cap_desc');
-    url.searchParams.set('per_page', '250');
-    url.searchParams.set('page', String(page));
-    url.searchParams.set('sparkline', 'false');
-    const body = await fetchJson(url, { headers });
-    if (!Array.isArray(body)) throw new Error('COINGECKO_SCHEMA_INVALID');
-    for (const item of body) {
-      const normalized = normalizeAsset(item, Number(item.market_cap_rank), 'coingecko-market-cap');
-      if (normalized) all.push(normalized);
-    }
-  }
-  return all.sort((a, b) => (a.marketCapRank ?? 999999) - (b.marketCapRank ?? 999999));
+  const origin = safeOrigin(env.CAPITAL_AI_OSS_CRYPTO_UNIVERSE_URL, '');
+  if (!origin) return [];
+  const body = await fetchJson(new URL('/v1/universe/crypto', origin), {
+    headers: { Accept: 'application/json' },
+  });
+  const rows = Array.isArray(body) ? body : body?.assets;
+  if (!Array.isArray(rows)) throw new Error('OSS_UNIVERSE_SCHEMA_INVALID');
+  return rows
+    .map((item, index) => normalizeAsset(
+      item,
+      Number.isInteger(item?.rank) ? item.rank : index + 1,
+      String(item?.source || 'ccxt-defillama-oss'),
+    ))
+    .filter(Boolean);
 }
 
 async function loadUniverse(env = process.env) {
@@ -100,13 +96,13 @@ async function loadUniverse(env = process.env) {
   const bySymbol = new Map(canonical.map(asset => [asset.symbol, asset]));
 
   try {
-    for (const ranked of await fromCoinGecko(env)) {
+    for (const ranked of await fromOpenSourceUniverseAdapter(env)) {
       const current = bySymbol.get(ranked.symbol);
       if (current) {
         bySymbol.set(ranked.symbol, {
           ...current,
           marketCapRank: ranked.marketCapRank,
-          source: current.source + '+coingecko-market-cap',
+          source: current.source + '+oss-universe',
         });
       } else {
         bySymbol.set(ranked.symbol, ranked);
@@ -129,8 +125,8 @@ async function loadUniverse(env = process.env) {
     count: assets.length,
     status: assets.length === UNIVERSE_LIMIT ? 'READY' : 'DEGRADED',
     sources: [...new Set(assets.map(asset => asset.source))],
-    attribution: assets.some(asset => asset.source.includes('coingecko-market-cap'))
-      ? 'CoinGecko data used for private top-400 universe fallback; attribution required.'
+    attribution: assets.some(asset => asset.source.includes('oss'))
+      ? 'Open-source universe adapter (CCXT/DefiLlama class) used as fallback; upstream exchange/data terms remain separately applicable.'
       : null,
     loadedAt: Date.now(),
     assets,
