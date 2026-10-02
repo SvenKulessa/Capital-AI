@@ -42,6 +42,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await auth.handle(req, res, url, json)) return;
   if (await privacy(req, res, url, json)) return;
   if (await telegram(req, res, url, json)) return;
+  if ((url.pathname === '/api/mobile/enterprise-score' || url.pathname === '/api/mobile/scorer/events') && !auth.session(req)) return json(res, 401, { error: 'authentication_required' });
   if (await mobileScorer.handle(req, res, url, json, headers)) return;
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return json(res, 405, { error: 'method_not_allowed' }); }
   if (url.pathname === '/healthz') return json(res, 200, { ...health(), buildIdentity });
