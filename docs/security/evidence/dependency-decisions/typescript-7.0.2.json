@@ -70,9 +70,9 @@
     "PR #109"
   ],
   "safety": {
-    "doesNotSuppressSecurityAdvisories": true,
     "doesNotMarkNotAffected": true,
     "doesNotChangeProductionRuntime": true,
-    "exactVersionSuppressionOnly": true
+    "exactVersionSuppressionOnly": true,
+    "doesNotBlanketSuppressSecurityAdvisories": true
   }
 }
