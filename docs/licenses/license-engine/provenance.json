@@ -3,13 +3,13 @@
   "tools": [
     {
       "id": "spdx-expression-parse",
-      "version": "4.0.0",
+      "version": "5.0.0",
       "license": "MIT",
       "mode": "INSTALLED_LOCAL_ENGINE",
       "source": "https://github.com/jslicense/spdx-expression-parse.js",
       "licenseFee": 0,
-      "tarball": "https://registry.npmjs.org/spdx-expression-parse/-/spdx-expression-parse-4.0.0.tgz",
-      "integrity": "sha512-Clya5JIij/7C6bRR22+tnGXbc4VKlibKSVj2iHvVeX5iMW7s1SIQlqu699JkODJJIhh/pUu8L0/VLh8xflD+LQ==",
+      "tarball": "https://registry.npmjs.org/spdx-expression-parse/-/spdx-expression-parse-5.0.0.tgz",
+      "integrity": "sha512-vngmw3Rgn+o2arXNbnZaj5UtOEBuWBfvaI+Wc8GFfykIhA5/vdK9/Sp/XkLv63dykz2rxKDvKEHupF5P0FORcQ==",
       "verification": "Canonical npm registry; lockfile SHA-512 enforced by npm; no install scripts executed"
     },
     {
