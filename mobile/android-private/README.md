@@ -41,7 +41,8 @@ This is **not market-cap ranking** and does not grant redistribution, trading or
 - `NATS_TOKEN`
 - `NATS_REPLICAS`
 - `REDIS_URL`
-- `CAPITAL_AI_SCORER_ORIGIN` — mandatory, HTTPS, and must not equal `PUBLIC_APP_ORIGIN`
+- `CAPITAL_AI_SCORER_ORIGIN` — mandatory HTTPS scorer authority
+- `CAPITAL_AI_SCORER_ALLOW_SAME_ORIGIN=true` — required only for the live-verified `https://capital-ai.online/api/crypto/score` reverse-routing case
 - optional `CAPITAL_AI_SCORER_SERVICE_TOKEN`
 - optional `CAPITAL_AI_OSS_CRYPTO_UNIVERSE_URL`
 - optional `MOBILE_CRYPTO_UNIVERSE_FALLBACK`
