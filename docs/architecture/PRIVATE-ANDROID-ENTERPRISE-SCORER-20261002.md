@@ -33,8 +33,8 @@ The mobile universe contract requests exactly 400 crypto assets for private rese
 
 1. The canonical CAPITAL-AI registry is loaded first.
 2. Optional universe enrichment is read from the configured internal open-source adapter (`CAPITAL_AI_OSS_CRYPTO_UNIVERSE_URL`).
-3. If that adapter is absent and `MOBILE_CRYPTO_BINANCE_RESEARCH=true`, unique active Binance Spot/USDT base assets are ranked by 24h USDT quote volume for private research only.
-4. This fallback is liquidity ranking, not market-cap ranking. Provider/data rights remain a separate fail-closed gate.
+3. If that adapter is absent and `MOBILE_CRYPTO_COINPAPRIKA_RESEARCH=true`, CoinPaprika supplies market-cap rank for private research with visible attribution; commercial use/redistribution remains a separate rights gate.
+4. `MOBILE_CRYPTO_BINANCE_RESEARCH=true` is only a secondary liquidity-ranked fallback and is explicitly not market-cap ranking. Provider/data rights remain a separate fail-closed gate.
 5. The final set is deterministically truncated to exactly 400 entries.
 6. No universe source has score, eligibility or trade authority.
 7. If fewer than 400 assets can be validated, the endpoint reports `DEGRADED`; it does not fabricate filler assets.
