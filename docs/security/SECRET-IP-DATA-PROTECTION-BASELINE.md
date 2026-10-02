@@ -38,3 +38,7 @@ Canonical sensitive metadata lives in Supabase schema `private`, not `public`, w
 ## Current finding
 
 The 2026-10-02 Supabase security advisor reports leaked-password protection disabled. This remains a visible TRUST finding. Enabling it is a provider/security configuration mutation and is not silently changed by this repository slice.
+
+## Append-only audit target
+
+A private Supabase table `private.capital_ai_audit_events` is provisioned as the protected persistence target. `PUBLIC`, `anon` and `authenticated` have no table access; `service_role` receives only SELECT + INSERT, not UPDATE/DELETE. The current runtime logger does not silently claim persistence there: wiring the writer requires a verified server-side credential/configuration path and an explicit retention decision.
