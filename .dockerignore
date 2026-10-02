@@ -40,6 +40,7 @@
 !deploy/nats-entrypoint.sh
 !scripts/
 !scripts/harden-npm-toolchain.mjs
+!scripts/benchmark-scoring-capacity.mjs
 !scripts/verify-private-brokers.mjs
 !scripts/branding-assets.test.mjs
 !scripts/license-evidence.mjs
