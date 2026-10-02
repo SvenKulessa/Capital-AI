@@ -7,8 +7,8 @@
     "schemaVersion": "1.0.0",
     "documentaryId": "DOC-20261002-COMPONENT-INVENTORY-OBSERVABILITY",
     "changeId": "CA-20261002-COMPONENT-INVENTORY-OBSERVABILITY",
-    "sourceSha": "96d5a101be7b4194eeecec290c24fcfb7856f4e1",
-    "documentaryDigest": "f3f1b4ec54009a70663c8d24f091be8380f0219dcef3bd13cb5ff96e8cb4589c"
+    "sourceSha": "d3cfb3536fb8c4f1bb766cb5b2932573ac88b444",
+    "documentaryDigest": "f72666a1e6e84340ac99b6d4d467ddf6d26a94678370edb8c62e1621605a362d"
   },
   "documentary": {
     "schema": "DOCUMENTARY_EVIDENCE@1",
@@ -24,8 +24,8 @@
     },
     "identity": {
       "documentaryId": "DOC-20261002-COMPONENT-INVENTORY-OBSERVABILITY",
-      "sourceSha": "96d5a101be7b4194eeecec290c24fcfb7856f4e1",
-      "parentSha": "a051e2e425c38c3994113dfea1e63056a5e2fbc5",
+      "sourceSha": "d3cfb3536fb8c4f1bb766cb5b2932573ac88b444",
+      "parentSha": "d1fe8323a9dce8efab706690eb579a67faa3a721",
       "branch": "capital-ai-platform/component-inventory-observability-20261002",
       "pullRequest": null,
       "createdAt": "2026-10-02T05:31:27Z"
@@ -97,7 +97,8 @@
         "src/data/monetizationRegistry.ts",
         "src/data/roadmapData.ts",
         "supabase/migrations/20261002051549_external_component_inventory_private_registry.sql",
-        "supabase/migrations/20261002052909_capital_ai_private_append_only_audit_target.sql"
+        "supabase/migrations/20261002052909_capital_ai_private_append_only_audit_target.sql",
+        "supabase/migrations/20261002054928_external_component_inventory_domain_assignments.sql"
       ],
       "dependencies": {
         "added": [],
@@ -149,7 +150,7 @@
     },
     "supplyChain": {
       "source": {
-        "commitSha": "96d5a101be7b4194eeecec290c24fcfb7856f4e1"
+        "commitSha": "d3cfb3536fb8c4f1bb766cb5b2932573ac88b444"
       },
       "sbom": {
         "generated": false,
@@ -279,7 +280,7 @@
     "integrity": {
       "canonicalSerialization": "RFC8785",
       "hashAlgorithm": "SHA-256",
-      "documentaryDigest": "f3f1b4ec54009a70663c8d24f091be8380f0219dcef3bd13cb5ff96e8cb4589c"
+      "documentaryDigest": "f72666a1e6e84340ac99b6d4d467ddf6d26a94678370edb8c62e1621605a362d"
     },
     "safety": {
       "historicalRecordsImmutable": true,
