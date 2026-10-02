@@ -51,11 +51,20 @@ export function evaluateDependencyRetry({ evidence, candidate }) {
   if (!present(cf.securityEvidenceRevision)) reasons.push('SECURITY_EVIDENCE_REVISION_MISSING');
   else if (cf.securityEvidenceRevision !== ef.securityEvidence.evidenceRevision) reasons.push('SECURITY_EVIDENCE_CHANGED');
 
+  const changeReasons = reasons.filter(reason =>
+    reason === 'VERSION_CHANGED' ||
+    reason === 'PACKAGE_INTEGRITY_CHANGED' ||
+    reason === 'NATIVE_ARTIFACT_INTEGRITY_CHANGED' ||
+    reason === 'BINARY_SHA256_CHANGED' ||
+    reason === 'BINARY_SHA256_NEW_EVIDENCE' ||
+    reason === 'EMBEDDED_RUNTIME_CHANGED' ||
+    reason === 'SECURITY_EVIDENCE_CHANGED'
+  );
+  if (changeReasons.length) {
+    return { decision: 'RETRY_REQUIRED', reasons };
+  }
   if (reasons.some(reason => reason.endsWith('_MISSING'))) {
     return { decision: 'MANUAL_REVIEW_REQUIRED', reasons };
-  }
-  if (reasons.length) {
-    return { decision: 'RETRY_REQUIRED', reasons };
   }
 
   return {
