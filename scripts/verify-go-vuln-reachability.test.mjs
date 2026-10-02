@@ -68,7 +68,7 @@ test('missing advisory database evidence is inconclusive and remains visible but
     messages: [baseMessages[0]],
     openvex: { statements: [] },
   });
-  assert.equal(report.decision, 'INCONCLUSIVE');
+  assert.equal(report.decision, 'UNKNOWN');
   assert.equal(report.blocking, false);
   assert.equal(report.reviewRequired, true);
   assert.equal(report.prerequisites.advisoryObservedInDatabase, false);
@@ -79,19 +79,19 @@ test('wrong x/crypto version is inconclusive for this exact evidence claim', () 
     ...base,
     buildInfo: buildInfo.replace('v0.57.0', 'v0.58.0'),
   });
-  assert.equal(report.decision, 'INCONCLUSIVE');
+  assert.equal(report.decision, 'UNKNOWN');
   assert.equal(report.prerequisites.exactDependencyPresent, false);
 });
 
 test('failed nm analysis cannot produce NOT_AFFECTED', () => {
   const report = classifyGoVulnReachability({ ...base, nmExitStatus: 1, nmText: '' });
-  assert.equal(report.decision, 'INCONCLUSIVE');
+  assert.equal(report.decision, 'UNKNOWN');
   assert.equal(report.prerequisites.nmAvailable, false);
 });
 
 test('non-reproducible repeated scan cannot produce NOT_AFFECTED', () => {
   const report = classifyGoVulnReachability({ ...base, reproducible: false });
-  assert.equal(report.decision, 'INCONCLUSIVE');
+  assert.equal(report.decision, 'UNKNOWN');
   assert.equal(report.prerequisites.repeatedRunEquivalent, false);
 });
 
