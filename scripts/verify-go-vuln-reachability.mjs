@@ -7,6 +7,15 @@ const XCRYPTO_MODULE = 'golang.org/x/crypto';
 const XCRYPTO_VERSION = 'v0.57.0';
 const SHA256 = /^sha256:[0-9a-f]{64}$/;
 const XCRYPTO_BUILD_INFO = /(?:^|\s)dep\s+golang\.org\/x\/crypto\s+v0\.57\.0(?:\s|$)/m;
+export const AFFECTED_OPENPGP_PACKAGES = [
+  'golang.org/x/crypto/openpgp',
+  'golang.org/x/crypto/openpgp/packet',
+  'golang.org/x/crypto/openpgp/armor',
+  'golang.org/x/crypto/openpgp/clearsign',
+  'golang.org/x/crypto/openpgp/errors',
+  'golang.org/x/crypto/openpgp/elgamal',
+  'golang.org/x/crypto/openpgp/s2k',
+];
 
 function targetStatement(openvex, advisory = TARGET_ADVISORY) {
   return (openvex?.statements || []).find(statement =>
@@ -20,10 +29,18 @@ function targetFindings(messages, advisory = TARGET_ADVISORY) {
     .map(message => message.finding);
 }
 
+function affectedNmSymbols(nmText) {
+  return String(nmText || '').split('\n').filter(line =>
+    AFFECTED_OPENPGP_PACKAGES.some(pkg => line.includes(pkg)));
+}
+
 export function classifyGoVulnReachability({
   messages,
   openvex,
   buildInfo,
+  nmText = '',
+  nmExitStatus = 0,
+  reproducible = false,
   advisory = TARGET_ADVISORY,
   binarySha256,
   imageRef,
@@ -35,6 +52,7 @@ export function classifyGoVulnReachability({
   const symbolFrames = frames.filter(frame => typeof frame?.function === 'string' && frame.function.length > 0);
   const openPgpFrames = frames.filter(frame =>
     typeof frame?.package === 'string' && frame.package.startsWith('golang.org/x/crypto/openpgp'));
+  const nmSymbols = affectedNmSymbols(nmText);
   const statement = targetStatement(openvex, advisory) || null;
   const dependencyPresent = XCRYPTO_BUILD_INFO.test(buildInfo);
 
@@ -45,19 +63,22 @@ export function classifyGoVulnReachability({
     symbolLevel: config?.scan_level === 'symbol',
     advisoryObservedInDatabase: Boolean(osv),
     vexStatementPresent: Boolean(statement),
+    nmAvailable: Number(nmExitStatus) === 0,
+    repeatedRunEquivalent: Boolean(reproducible),
   };
 
   let decision = 'INCONCLUSIVE';
   let reason = 'REACHABILITY_PREREQUISITES_NOT_PROVEN';
 
-  if (Object.values(prerequisites).every(Boolean)) {
-    if (statement.status === 'affected' || symbolFrames.length > 0) {
-      decision = 'AFFECTED';
-      reason = 'VULNERABLE_SYMBOL_PRESENT_IN_BINARY';
-    } else if (
+  if (statement?.status === 'affected' || symbolFrames.length > 0 || nmSymbols.length > 0) {
+    decision = 'AFFECTED';
+    reason = symbolFrames.length > 0 || nmSymbols.length > 0
+      ? 'VULNERABLE_OPENPGP_SYMBOL_PRESENT_IN_BINARY'
+      : 'GOVULNCHECK_VEX_MARKS_AFFECTED';
+  } else if (Object.values(prerequisites).every(Boolean)) {
+    if (
       statement.status === 'not_affected' &&
-      ['vulnerable_code_not_in_execute_path', 'vulnerable_code_not_present'].includes(statement.justification) &&
-      symbolFrames.length === 0
+      ['vulnerable_code_not_in_execute_path', 'vulnerable_code_not_present'].includes(statement.justification)
     ) {
       decision = 'NOT_AFFECTED';
       reason = statement.justification;
@@ -67,7 +88,7 @@ export function classifyGoVulnReachability({
   }
 
   return {
-    schema: 'GO_VULN_REACHABILITY@1',
+    schema: 'GO_VULN_REACHABILITY@2',
     advisory,
     component: 'nats-server',
     natsImageRef: imageRef || null,
@@ -97,6 +118,10 @@ export function classifyGoVulnReachability({
         function: frame.function || null,
         receiver: frame.receiver || null,
       })),
+      nmExitStatus: Number(nmExitStatus),
+      nmAffectedSymbolCount: nmSymbols.length,
+      nmAffectedSymbols: nmSymbols.slice(0, 100),
+      repeatedRunEquivalent: Boolean(reproducible),
       openVexStatus: statement?.status || null,
       openVexJustification: statement?.justification || null,
       openVexImpactStatement: statement?.impact_statement || null,
@@ -104,25 +129,29 @@ export function classifyGoVulnReachability({
     prerequisites,
     decision,
     reason,
-    blocking: decision !== 'NOT_AFFECTED',
+    blocking: decision === 'AFFECTED',
+    reviewRequired: decision !== 'NOT_AFFECTED',
     trivyFindingRetained: true,
     trivySuppressionApplied: false,
   };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const [messagesPath, openvexPath, buildInfoPath, outputPath] = process.argv.slice(2);
+  const [messagesPath, openvexPath, buildInfoPath, nmPath, nmStatusPath, reproducibilityPath, outputPath] = process.argv.slice(2);
   if (!outputPath) {
-    throw new Error('Usage: verify-go-vuln-reachability.mjs <messages.json> <openvex.json> <go-version-m.txt> <output.json>');
+    throw new Error('Usage: verify-go-vuln-reachability.mjs <messages.json> <openvex.json> <go-version-m.txt> <nm.txt> <nm-status.txt> <reproducibility.txt> <output.json>');
   }
   const report = classifyGoVulnReachability({
     messages: JSON.parse(readFileSync(messagesPath, 'utf8')),
     openvex: JSON.parse(readFileSync(openvexPath, 'utf8')),
     buildInfo: readFileSync(buildInfoPath, 'utf8'),
+    nmText: readFileSync(nmPath, 'utf8'),
+    nmExitStatus: Number.parseInt(readFileSync(nmStatusPath, 'utf8').trim(), 10),
+    reproducible: readFileSync(reproducibilityPath, 'utf8').trim() === 'true',
     binarySha256: process.env.NATS_BINARY_SHA256,
     imageRef: process.env.NATS_IMAGE_REF,
   });
   writeFileSync(outputPath, JSON.stringify(report, null, 2) + '\n');
-  console.log(JSON.stringify({ advisory: report.advisory, decision: report.decision, reason: report.reason }));
+  console.log(JSON.stringify({ advisory: report.advisory, decision: report.decision, reason: report.reason, reviewRequired: report.reviewRequired }));
   if (report.blocking) process.exitCode = 1;
 }
