@@ -32,7 +32,9 @@ export function verifyReleaseReadiness(evidence) {
       Number(row.attempted || 0) >= 100 &&
       Number(row.succeeded || 0) >= 100 &&
       Number(row.failed || 0) === 0 &&
-      row.scoreEngine === 'PASS');
+      row.scoreEngine === 'PASS' &&
+      row.productionEligibility === 'PASS' &&
+      row.dataRights === 'PASS');
     if (!pass) reasons.push('ASSET_CLASS_NOT_PROVEN:' + assetClass);
     return { assetClass, pass, ...(row || {}) };
   });
