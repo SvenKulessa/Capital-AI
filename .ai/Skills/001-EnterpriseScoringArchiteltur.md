@@ -806,7 +806,7 @@ Jedes Tool ist ein eigenstÃ¤ndiges Bewertungsmodul mit definierten Inputs, For
 "inflationary")
 - **Formel**: `score = 0.30Â·circulationRatio + 0.30Â·(100-holderConcentration) +
 0.25Â·releaseScheduleScore + 0.15Â·burnMechanismScore`
-- **Datenquellen**: CoinMarketCap, CoinGecko, Etherscan (On-Chain, falls verfÃ¼gbar)
+- **Datenquellen**: CCXT, DefiLlama, Etherscan (On-Chain, falls verfÃ¼gbar)
 - **Fallback**: LLM-basierte qualitative Klassifikation (kein numerischer Ersatz; bei
 fehlenden Daten: Reweighting + Confidence-Penalty + Audit-Flag `heuristic`)
 - **Risk Flags**: `high_concentration` (Top-10 > 50%), `inflationary` (annualInflation >
