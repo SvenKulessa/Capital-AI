@@ -8,6 +8,7 @@ import { createTelegram } from './telegram.mjs';
 import { createPrivacy } from './privacy.mjs';
 import { createLimiter } from './http-security.mjs';
 import { infrastructure } from './infrastructure.mjs';
+import { createMobileScorer } from './mobile-scorer.mjs';
 import { serveMtaSts } from './mta-sts.mjs';
 import { researchMetadata } from '../shared/research-metadata.mjs';
 
@@ -30,6 +31,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const telegram = createTelegram({ ...options, auth });
   const privacy = createPrivacy({ ...options, auth });
   const marketLimit = createLimiter(120);
+  const mobileScorer = createMobileScorer(options.env || process.env);
   const server = http.createServer({ maxHeaderSize: 8192, requestTimeout: 10000, headersTimeout: 10000, keepAliveTimeout: 5000 }, async (req, res) => {
   let url;
   if ((req.url?.length || 0) > 2048) return json(res, 414, { error: 'uri_too_long' });
@@ -40,6 +42,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await auth.handle(req, res, url, json)) return;
   if (await privacy(req, res, url, json)) return;
   if (await telegram(req, res, url, json)) return;
+  if (await mobileScorer.handle(req, res, url, json, headers)) return;
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return json(res, 405, { error: 'method_not_allowed' }); }
   if (url.pathname === '/healthz') return json(res, 200, { ...health(), buildIdentity });
   if (url.pathname === '/api/market/quote') {
