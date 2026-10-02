@@ -30,9 +30,9 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p security-reports
-          MOBILE_CRYPTO_BINANCE_RESEARCH=true node --input-type=module <<'NODE' | tee security-reports/mobile-top400-live.json
+          MOBILE_CRYPTO_COINPAPRIKA_RESEARCH=true node --input-type=module <<'NODE' | tee security-reports/mobile-top400-live.json
           import { loadUniverseForEvidence } from './server/mobile-scorer.mjs';
-          const universe = await loadUniverseForEvidence({ MOBILE_CRYPTO_BINANCE_RESEARCH: 'true' });
+          const universe = await loadUniverseForEvidence({ MOBILE_CRYPTO_COINPAPRIKA_RESEARCH: 'true' });
           const evidence = {
             schema: 'MOBILE_TOP400_RUNTIME@1',
             status: universe.status,
@@ -49,6 +49,7 @@ jobs:
           if (evidence.status !== 'READY' || evidence.count !== 400 || evidence.uniqueSymbols !== 400 || evidence.firstRank !== 1 || evidence.lastRank !== 400) process.exit(1);
           NODE
       - name: Kanonische Scorer Authority per HTTP Contract verifizieren
+        if: always()
         run: |
           set -euo pipefail
           mkdir -p security-reports
