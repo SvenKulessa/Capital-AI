@@ -18,7 +18,7 @@ deploy/Dockerfile.nats
   -> go version -m
   -> govulncheck binary/symbol mode
   -> independent go tool nm evidence
-  -> CAPITAL_AI_GO_BINARY_REACHABILITY@1
+  -> GO_VULN_REACHABILITY@2
   -> OpenVEX + CycloneDX VEX
 ```
 
