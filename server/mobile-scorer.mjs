@@ -99,14 +99,20 @@ async function loadUniverse(env = process.env) {
   const canonical = await fromCanonicalRegistry(env);
   const bySymbol = new Map(canonical.map(asset => [asset.symbol, asset]));
 
-  if (bySymbol.size < UNIVERSE_LIMIT) {
-    try {
-      for (const asset of await fromCoinGecko(env)) {
-        if (!bySymbol.has(asset.symbol)) bySymbol.set(asset.symbol, asset);
-        if (bySymbol.size >= UNIVERSE_LIMIT) break;
+  try {
+    for (const ranked of await fromCoinGecko(env)) {
+      const current = bySymbol.get(ranked.symbol);
+      if (current) {
+        bySymbol.set(ranked.symbol, {
+          ...current,
+          marketCapRank: ranked.marketCapRank,
+          source: current.source + '+coingecko-market-cap',
+        });
+      } else {
+        bySymbol.set(ranked.symbol, ranked);
       }
-    } catch {}
-  }
+    }
+  } catch {}
 
   const assets = [...bySymbol.values()]
     .sort((a, b) => {
@@ -123,7 +129,7 @@ async function loadUniverse(env = process.env) {
     count: assets.length,
     status: assets.length === UNIVERSE_LIMIT ? 'READY' : 'DEGRADED',
     sources: [...new Set(assets.map(asset => asset.source))],
-    attribution: assets.some(asset => asset.source === 'coingecko-market-cap')
+    attribution: assets.some(asset => asset.source.includes('coingecko-market-cap'))
       ? 'CoinGecko data used for private top-400 universe fallback; attribution required.'
       : null,
     loadedAt: Date.now(),
@@ -155,7 +161,7 @@ function html(res, headers) {
 
 function javascript(res, headers) {
   res.writeHead(200, { ...headers, 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store' });
-  res.end(`(()=>{let universe=[],selected=null,eventSource=null;const q=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const render=()=>{const term=q('#search').value.trim().toLowerCase();const rows=universe.filter(a=>!term||a.symbol.toLowerCase().includes(term)||a.name.toLowerCase().includes(term)).slice(0,80);q('#assets').innerHTML=rows.map(a=>'<button class="asset" data-symbol="'+esc(a.symbol)+'"><span><b>'+esc(a.symbol)+'</b><br><small>'+esc(a.name)+'</small></span><small>#'+esc(a.marketCapRank??'—')+'</small></button>').join('');document.querySelectorAll('.asset').forEach(b=>b.onclick=()=>select(b.dataset.symbol));};const select=s=>{selected=universe.find(a=>a.symbol===s)||null;q('#assetTitle').textContent=selected?selected.name+' ('+selected.symbol+')':'—';q('#scoreButton').disabled=!selected;startEvents();};const scoreHtml=d=>{const p=d?.payload||d||{};const value=p.final_score??p.score??p.rank_score??null;return '<div class="score">'+esc(value??'—')+'</div><div class="grid"><div class="metric">Status<b>'+esc(p.status??'—')+'</b></div><div class="metric">Eligible<b>'+esc(p.eligible_for_top10===true?'JA':p.eligible_for_top10===false?'NEIN':'—')+'</b></div><div class="metric">Modell<b>'+esc(p.modelRegistry?.modelId??p.model??'—')+'</b></div><div class="metric">Evidence<b>'+esc(d?.evidenceId??p.lineage?.evidenceId??'—')+'</b></div></div><pre class="muted" style="white-space:pre-wrap;max-height:280px;overflow:auto">'+esc(JSON.stringify(p,null,2))+'</pre>';};const startEvents=()=>{eventSource?.close();if(!selected)return;eventSource=new EventSource('/api/mobile/scorer/events?symbol='+encodeURIComponent(selected.symbol));eventSource.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.symbol===selected.symbol)q('#scoreBox').innerHTML=scoreHtml(d)}catch{}};};const load=async()=>{const [u,s]=await Promise.all([fetch('/api/mobile/crypto-universe').then(r=>r.json()),fetch('/api/mobile/scorer/status').then(r=>r.json())]);universe=Array.isArray(u.assets)?u.assets:[];q('#universeState').textContent='Universe '+u.count+'/'+u.requested+' · '+u.status;q('#universeState').className='pill '+(u.status==='READY'?'ok':'warn');q('#busState').textContent='NATS '+s.nats+' · Valkey '+s.valkey+' · Pub/Sub '+s.pubsub;q('#busState').className='pill '+(s.status==='connected'?'ok':'warn');render();};q('#search').oninput=render;q('#reload').onclick=load;q('#scoreButton').onclick=async()=>{if(!selected)return;q('#scoreBox').innerHTML='<p class="muted">Kanonischer Score wird berechnet und als JetStream-Evidence bestätigt…</p>';const r=await fetch('/api/mobile/enterprise-score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({symbol:selected.symbol,name:selected.name})});const d=await r.json();q('#scoreBox').innerHTML=scoreHtml(d);};load().catch(e=>{q('#universeState').textContent='Universe nicht verfügbar';q('#busState').textContent=String(e)});})();`);
+  res.end(`(()=>{let universe=[],selected=null,eventSource=null;const q=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const render=()=>{const term=q('#search').value.trim().toLowerCase();const rows=universe.filter(a=>!term||a.symbol.toLowerCase().includes(term)||a.name.toLowerCase().includes(term)).slice(0,80);q('#assets').innerHTML=rows.map(a=>'<button class="asset" data-symbol="'+esc(a.symbol)+'"><span><b>'+esc(a.symbol)+'</b><br><small>'+esc(a.name)+'</small></span><small>#'+esc(a.marketCapRank??'—')+'</small></button>').join('');document.querySelectorAll('.asset').forEach(b=>b.onclick=()=>select(b.dataset.symbol));};const select=s=>{selected=universe.find(a=>a.symbol===s)||null;q('#assetTitle').textContent=selected?selected.name+' ('+selected.symbol+')':'—';q('#scoreButton').disabled=!selected;startEvents();};const scoreHtml=d=>{const p=d?.payload||d||{};const value=p.final_score??p.score??p.rank_score??null;return '<div class="score">'+esc(value??'—')+'</div><div class="grid"><div class="metric">Status<b>'+esc(p.status??'—')+'</b></div><div class="metric">Eligible<b>'+esc(p.eligible_for_top10===true?'JA':p.eligible_for_top10===false?'NEIN':'—')+'</b></div><div class="metric">Modell<b>'+esc(p.modelRegistry?.modelId??p.model??'—')+'</b></div><div class="metric">Evidence<b>'+esc(d?.evidenceId??p.lineage?.evidenceId??'—')+'</b></div></div><pre class="muted" style="white-space:pre-wrap;max-height:280px;overflow:auto">'+esc(JSON.stringify(p,null,2))+'</pre>';};const startEvents=()=>{eventSource?.close();if(!selected)return;eventSource=new EventSource('/api/mobile/scorer/events?symbol='+encodeURIComponent(selected.symbol));eventSource.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.symbol===selected.symbol)q('#scoreBox').innerHTML=scoreHtml(d)}catch{}};};const load=async()=>{const [u,s]=await Promise.all([fetch('/api/mobile/crypto-universe').then(r=>r.json()),fetch('/api/mobile/scorer/status').then(r=>r.json())]);universe=Array.isArray(u.assets)?u.assets:[];q('#universeState').textContent='Universe '+u.count+'/'+u.requested+' · '+u.status;q('#universeState').className='pill '+(u.status==='READY'?'ok':'warn');q('#busState').textContent='NATS '+s.nats+' · Valkey '+s.valkey+' · Pub/Sub '+s.pubsub;q('#busState').className='pill '+(s.status==='connected'?'ok':'warn');render();};q('#search').oninput=render;q('#reload').onclick=load;q('#scoreButton').onclick=async()=>{if(!selected)return;q('#scoreBox').innerHTML='<p class="muted">Kanonischer Score wird berechnet und als JetStream-Evidence bestätigt…</p>';const r=await fetch('/api/mobile/enterprise-score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({symbol:selected.symbol,name:selected.name})});const d=await r.json();if(r.status===401){q('#scoreBox').innerHTML='<p class="warn">Anmeldung erforderlich.</p><p><a href="/api/auth/login" style="color:#f5b014;font-weight:900">Mit bestehendem CAPITAL-AI Konto anmelden</a></p>';return;}q('#scoreBox').innerHTML=scoreHtml(d);};load().catch(e=>{q('#universeState').textContent='Universe nicht verfügbar';q('#busState').textContent=String(e)});})();`);
 }
 
 export function createMobileScorer(env = process.env) {
