@@ -37,7 +37,7 @@
     "jose": "6.2.12",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.48.0",
-    "motion": "^13.4.4",
+    "motion": "^13.4.5",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "recharts": "^3.10.1",
