@@ -45,6 +45,7 @@
 !scripts/verify-browser-boundary.mjs
 !scripts/validate-contract-suites.mjs
 !scripts/validate-growth-contracts.mjs
+!scripts/validate-evidence-hardening.mjs
 !scripts/generate-documentary.mjs
 !contracts/
 !contracts/**
