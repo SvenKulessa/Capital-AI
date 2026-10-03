@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 1,
+  "scope": "LOCAL_EMITTED_BUILD_NON_AUTHORIZING",
+  "beforeAppChunkBytesApprox": 1570880,
+  "budgetBytes": 500000,
+  "maxFinalChunkBytes": 407515,
+  "chunks": [
+    {
+      "fileName": "assets/App-DDiPg0g1.js",
+      "bytes": 407515,
+      "sha256": "f38199cc16471d2e656ad8360e3d0a9b6315a62df37b20fe79076d0f9556a9e0"
+    },
+    {
+      "fileName": "assets/ArchitecturePage-BhpRep6w.js",
+      "bytes": 47739,
+      "sha256": "2d826a33ea610559403aeb28b29dc8d69250288a11109d6b2d1ea6a1a3b8cc8f"
+    },
+    {
+      "fileName": "assets/ControlCenterPage-BaaoYM1_.js",
+      "bytes": 145410,
+      "sha256": "3341f5ee765f688a67f6afdae2ffee03fe840b439f2d4d0fe8fd960e73d87cf5"
+    },
+    {
+      "fileName": "assets/EnterpriseScorerDashboard-CIxSMgxY.js",
+      "bytes": 13353,
+      "sha256": "22f1ae8f2e961c9cad558649a32b705c0afa4ffb60e7a1a824993498e51f2595"
+    },
+    {
+      "fileName": "assets/LearningPortalPage-CudNSPrg.js",
+      "bytes": 24383,
+      "sha256": "c20cf2f7ead1bb20dfaf0cf31c56535b658801c1c3e24546b02b6a11cd2650c4"
+    },
+    {
+      "fileName": "assets/PipelineBuilder-DpjBPFOn.js",
+      "bytes": 119099,
+      "sha256": "48b1413fdb7409297feb9104fff72389e05b342faa378a21cb542e81f05cfbf4"
+    },
+    {
+      "fileName": "assets/ProviderStatusDashboard-BBrLJl7a.js",
+      "bytes": 3026,
+      "sha256": "7b42416fd3310a640663c103e3d7b5e3c14b41162d59c9e9bcd43288a4459fe0"
+    },
+    {
+      "fileName": "assets/ScoreExplainabilityDrawer-CtSiqq5F.js",
+      "bytes": 12009,
+      "sha256": "0345c57f1bff4dd0d23b4622f945610b83d2ceaac2ab35e7ad505bc7348bbf67"
+    },
+    {
+      "fileName": "assets/ScreenerTable-BeGWxlDX.js",
+      "bytes": 6947,
+      "sha256": "c3eb9d51306bb918b1d7ea386e7f65e8035fb7002242aa8963966a3d69f9b58c"
+    },
+    {
+      "fileName": "assets/StudioPage-CKqIxYCw.js",
+      "bytes": 59076,
+      "sha256": "358cbce25d82fd4e8c9160f573fa3b1340878ec1cbc6b6bfef320482ec343d4a"
+    },
+    {
+      "fileName": "assets/SubpageSidebarNav-CdU-FdTo.js",
+      "bytes": 7607,
+      "sha256": "48a005f1f6f99f8f796d41e7f8b67fdf1f3ffca5b3fbed858e83f3b259272e58"
+    },
+    {
+      "fileName": "assets/TokenomicsPage-BWc2n31V.js",
+      "bytes": 30360,
+      "sha256": "2f9e2a4acebcba0366e9b3f0f93f06a4c199047c5ae0425240f912cce2910374"
+    },
+    {
+      "fileName": "assets/analysisComponentRegistryValidator-DC0isshk.js",
+      "bytes": 68013,
+      "sha256": "01e397c076cbbdc3067756bbd00b6765bbeab82a933f774a3d46008f6787d67a"
+    },
+    {
+      "fileName": "assets/cpu-CWzg0AiD.js",
+      "bytes": 682,
+      "sha256": "071d750ad815335ecb8d8aa4a2df4ee1dc69ff8436f5359c246628a4c984c733"
+    },
+    {
+      "fileName": "assets/createLucideIcon-JcsnAbTU.js",
+      "bytes": 3138,
+      "sha256": "87de9dfd105c377ed0dab4ed8b56c6da3c6921bd7bbd5d42cbb08ef26af64562"
+    },
+    {
+      "fileName": "assets/html2canvas-Kp2qyQdA.js",
+      "bytes": 199494,
+      "sha256": "85ffd8f5956ce3c6c91298347af7021c25eae18693567c240b3b8f1ecbcdba4c"
+    },
+    {
+      "fileName": "assets/index-GDc-xeX2.js",
+      "bytes": 222597,
+      "sha256": "c9b583d3903a92382738295628b06a5f20194d1e138cc4b4204ba1e423f91025"
+    },
+    {
+      "fileName": "assets/index.es-DiU4rH3O.js",
+      "bytes": 151419,
+      "sha256": "2a0f80baa149430fe8b59ad17f1b6f5129a88fcdedf7ab09489787748d003224"
+    },
+    {
+      "fileName": "assets/jspdf.es.min-DmPE73p6.js",
+      "bytes": 399448,
+      "sha256": "ee97e9094b00cd3a77f191eb0a8313059509ca7f35e2a2d8e200c984719271c2"
+    },
+    {
+      "fileName": "assets/market-contracts-5qbT9yDB.js",
+      "bytes": 91545,
+      "sha256": "53a1606301133fedb9113c91301631b0399764382d33de7ac08c58d6bb638b7f"
+    },
+    {
+      "fileName": "assets/purify.es-Bvo9QlJ8.js",
+      "bytes": 28086,
+      "sha256": "aa9ba8b5e16bc0f8a0fdfc2f31e221edb21a1f469d02474a76557cf16bbc7f30"
+    },
+    {
+      "fileName": "assets/react-CQ-a1JZ4.js",
+      "bytes": 123390,
+      "sha256": "c7dec3670a0a7a20d436c838e24b25ced6b318cb5b65397cb0bed19ab6382aef"
+    },
+    {
+      "fileName": "assets/rolldown-runtime-B0Z9INg1.js",
+      "bytes": 901,
+      "sha256": "5e9b0d884d2ebb14e241ab38b43e41efb61bce2e74d71507b0b95b264fba4047"
+    },
+    {
+      "fileName": "assets/scoringEngine-D8XnnYXS.js",
+      "bytes": 14345,
+      "sha256": "38027a4cf110dc4df8ef8cfef6af4fb069d0a56344a9209711ce3a8a8b7d27ef"
+    },
+    {
+      "fileName": "assets/useHubTab-hxx7ulJL.js",
+      "bytes": 683,
+      "sha256": "de2cdea8ce603f5c7f7897774c0a72be813911576d9dfef0532197452c8e777f"
+    }
+  ],
+  "newDependencies": 0,
+  "browserRenderingTested": false
+}

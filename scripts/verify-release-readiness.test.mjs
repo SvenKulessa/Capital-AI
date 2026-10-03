@@ -47,3 +47,26 @@ test('synthetic engine capacity never substitutes production eligibility or righ
   assert.equal(r.deployAllowed,false);
   assert.equal(r.assetClasses.find(x=>x.assetClass==='crypto').pass,false);
 });
+
+test('caller pass flag cannot override calculated capacity admission',()=>{
+  const rows=base.assetClasses.map(row=>({...row,pass:true,productionEligibility:'CAPACITY_ONLY'}));
+  const r=verifyReleaseReadiness({...base,assetClasses:rows});
+  assert.equal(r.checks.assetClasses100Concurrent,false);
+  assert.ok(r.assetClasses.every(row=>row.pass===false));
+  assert.equal(r.deployAllowed,false);
+});
+
+test('duplicate class evidence is ambiguous regardless of input order',()=>{
+  for(const rows of [[...base.assetClasses,base.assetClasses[0]],[base.assetClasses[0],...base.assetClasses]]) {
+    const r=verifyReleaseReadiness({...base,assetClasses:rows});
+    assert.equal(r.checks.uniqueAssetClassEvidence,false);
+    assert.equal(r.deployAllowed,false);
+  }
+});
+
+test('counts must be finite nonnegative integers with consistent totals',()=>{
+  for(const change of [{concurrent:Infinity},{attempted:'100'},{failed:null},{succeeded:100.5},{attempted:101},{concurrent:101}]) {
+    const rows=base.assetClasses.map((row,i)=>i===0?{...row,...change}:row);
+    assert.equal(verifyReleaseReadiness({...base,assetClasses:rows}).assetClasses[0].pass,false);
+  }
+});
