@@ -318,7 +318,7 @@
     }
   ],
   "selection": {
-    "method": "TASK_RELEVANT_POPULARITY_SHORTLIST",
+    "method": "COMMERCIAL_SCREENED_TASK_SHORTLIST",
     "notGlobalTopTen": true,
     "popularityMetric": "GitHub stars, point-in-time metadata; not performance or security",
     "unsupportedClasses": "NOT_SUPPORTED; never substitute ETF, CFD or futures for cash index or spot without explicit instrument identity"
@@ -341,7 +341,12 @@
       "buildDigest": null,
       "stableRelease": null,
       "measurementState": "NOT_EXECUTED",
-      "fullClassCoverage": "UNVERIFIED"
+      "fullClassCoverage": "UNVERIFIED",
+      "commercialAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "softwareUsageClasses": [
+        "HOSTED_NETWORK_SERVICE",
+        "DISTRIBUTED_BINARY"
+      ]
     },
     {
       "repo": "openbq-org/OpenBB",
@@ -361,26 +366,36 @@
       "buildDigest": null,
       "stableRelease": null,
       "measurementState": "NOT_EXECUTED",
-      "fullClassCoverage": "UNVERIFIED"
+      "fullClassCoverage": "UNVERIFIED",
+      "commercialAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "softwareUsageClasses": [
+        "HOSTED_NETWORK_SERVICE",
+        "DISTRIBUTED_BINARY"
+      ]
     },
     {
-      "repo": "ranaroussi/yfinance",
-      "url": "https://github.com/ranaroussi/yfinance",
-      "stars": 25423,
-      "license": "Apache-2.0",
+      "repo": "financialdatanet/fdnpy",
+      "url": "https://github.com/financialdatanet/fdnpy",
+      "stars": 55,
+      "metadataLicense": "UNVERIFIED",
       "archived": false,
-      "pushedAt": "2026-09-30T20:35:57Z",
+      "pushedAt": "2026-09-08T07:20:16Z",
       "defaultBranch": "main",
-      "sourceSha": "5cae563642b59f49adf6a04a5ad6744f8b0e084d",
-      "id": "yfinance",
-      "role": "research-data-client",
-      "metadataLicense": "Apache-2.0",
+      "sourceSha": "e46103c95ba04927057609268765a5711b3ad656",
+      "id": "fdnpy",
+      "role": "multi-asset-provider-sdk",
       "licenseReview": "PENDING_EXACT_SOURCE",
       "dataRights": "UNVERIFIED",
       "buildDigest": null,
       "stableRelease": null,
       "measurementState": "NOT_EXECUTED",
-      "fullClassCoverage": "UNVERIFIED"
+      "fullClassCoverage": "UNVERIFIED",
+      "selectionReason": "existing owner-requested provider candidate; not popularity top-ten",
+      "commercialAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "softwareUsageClasses": [
+        "HOSTED_NETWORK_SERVICE",
+        "DISTRIBUTED_BINARY"
+      ]
     },
     {
       "repo": "QuantConnect/Lean",
@@ -399,7 +414,12 @@
       "buildDigest": null,
       "stableRelease": null,
       "measurementState": "NOT_EXECUTED",
-      "fullClassCoverage": "UNVERIFIED"
+      "fullClassCoverage": "UNVERIFIED",
+      "commercialAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "softwareUsageClasses": [
+        "HOSTED_NETWORK_SERVICE",
+        "DISTRIBUTED_BINARY"
+      ]
     },
     {
       "repo": "vnpy/vnpy",
@@ -418,7 +438,12 @@
       "buildDigest": null,
       "stableRelease": null,
       "measurementState": "NOT_EXECUTED",
-      "fullClassCoverage": "UNVERIFIED"
+      "fullClassCoverage": "UNVERIFIED",
+      "commercialAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "softwareUsageClasses": [
+        "HOSTED_NETWORK_SERVICE",
+        "DISTRIBUTED_BINARY"
+      ]
     },
     {
       "repo": "mementum/backtrader",
@@ -432,12 +457,17 @@
       "id": "backtrader",
       "role": "historical-engine",
       "metadataLicense": "GPL-3.0",
-      "licenseReview": "PENDING_EXACT_SOURCE",
+      "licenseReview": "LEGAL_REVIEW_REQUIRED_USAGE_AND_DISTRIBUTION",
       "dataRights": "UNVERIFIED",
       "buildDigest": null,
       "stableRelease": null,
       "measurementState": "NOT_EXECUTED",
-      "fullClassCoverage": "UNVERIFIED"
+      "fullClassCoverage": "UNVERIFIED",
+      "commercialAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "softwareUsageClasses": [
+        "HOSTED_NETWORK_SERVICE",
+        "DISTRIBUTED_BINARY"
+      ]
     },
     {
       "repo": "hummingbot/hummingbot",
@@ -456,7 +486,12 @@
       "buildDigest": null,
       "stableRelease": null,
       "measurementState": "NOT_EXECUTED",
-      "fullClassCoverage": "UNVERIFIED"
+      "fullClassCoverage": "UNVERIFIED",
+      "commercialAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "softwareUsageClasses": [
+        "HOSTED_NETWORK_SERVICE",
+        "DISTRIBUTED_BINARY"
+      ]
     },
     {
       "repo": "bmoscon/cryptofeed",
@@ -475,7 +510,12 @@
       "buildDigest": null,
       "stableRelease": null,
       "measurementState": "NOT_EXECUTED",
-      "fullClassCoverage": "UNVERIFIED"
+      "fullClassCoverage": "UNVERIFIED",
+      "commercialAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "softwareUsageClasses": [
+        "HOSTED_NETWORK_SERVICE",
+        "DISTRIBUTED_BINARY"
+      ]
     },
     {
       "repo": "nautechsystems/nautilus_trader",
@@ -489,12 +529,17 @@
       "id": "nautilus_trader",
       "role": "multi-asset-engine",
       "metadataLicense": "LGPL-3.0",
-      "licenseReview": "PENDING_EXACT_SOURCE",
+      "licenseReview": "LEGAL_REVIEW_REQUIRED_USAGE_AND_DISTRIBUTION",
       "dataRights": "UNVERIFIED",
       "buildDigest": null,
       "stableRelease": null,
       "measurementState": "NOT_EXECUTED",
-      "fullClassCoverage": "UNVERIFIED"
+      "fullClassCoverage": "UNVERIFIED",
+      "commercialAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "softwareUsageClasses": [
+        "HOSTED_NETWORK_SERVICE",
+        "DISTRIBUTED_BINARY"
+      ]
     },
     {
       "repo": "pydata/pandas-datareader",
@@ -513,7 +558,12 @@
       "buildDigest": null,
       "stableRelease": null,
       "measurementState": "NOT_EXECUTED",
-      "fullClassCoverage": "UNVERIFIED"
+      "fullClassCoverage": "UNVERIFIED",
+      "commercialAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "softwareUsageClasses": [
+        "HOSTED_NETWORK_SERVICE",
+        "DISTRIBUTED_BINARY"
+      ]
     }
   ],
   "workload": {
@@ -587,7 +637,9 @@
     "No provider/dataset rights admission for five asset classes",
     "No measured comparisons or winner",
     "Scoring rubric and operational budgets require pre-run calibration",
-    "No verified per-venue perpetual catalogue, contract mapping or derivative data-rights admission"
+    "No verified per-venue perpetual catalogue, contract mapping or derivative data-rights admission",
+    "Commercial provider/product scopes and recurring subscription cost model unverified",
+    "CADS release-class mapping and commercial-derived-use contract gaps unresolved"
   ],
   "additionalPerpetuals": {
     "enabledForBenchmark": true,
@@ -660,5 +712,179 @@
       "sameContractSetForPairwiseComparison",
       "JetStreamAckReplayAndRecoveryAtCombinedLoad"
     ]
+  },
+  "excludedCandidates": [
+    {
+      "repo": "ranaroussi/yfinance",
+      "url": "https://github.com/ranaroussi/yfinance",
+      "stars": 25423,
+      "license": "Apache-2.0",
+      "archived": false,
+      "pushedAt": "2026-09-30T20:35:57Z",
+      "defaultBranch": "main",
+      "sourceSha": "5cae563642b59f49adf6a04a5ad6744f8b0e084d",
+      "id": "yfinance",
+      "role": "research-data-client",
+      "metadataLicense": "Apache-2.0",
+      "licenseReview": "PENDING_EXACT_SOURCE",
+      "dataRights": "UNVERIFIED",
+      "buildDigest": null,
+      "stableRelease": null,
+      "measurementState": "NOT_EXECUTED",
+      "fullClassCoverage": "UNVERIFIED",
+      "commercialStatus": "EXCLUDED_PERSONAL_USE_DATA_PATH",
+      "reason": "Yahoo Finance data path described as personal-use by yfinance upstream",
+      "evidenceUrl": "https://github.com/ranaroussi/yfinance/blob/main/README.md"
+    }
+  ],
+  "commercialPolicy": {
+    "required": true,
+    "researchOnlyMayAuthorize": false,
+    "personalUseMayAuthorize": false,
+    "unknownRightsMayPass": false,
+    "paidSubscriptionMayImplyRedistributionRights": false,
+    "preferredSoftwareProfile": "PERMISSIVE_WITH_SATISFIED_OBLIGATIONS",
+    "copyleftPolicy": "REVIEW_CONCRETE_USE_NOT_BLANKET_BAN",
+    "authorities": {
+      "software": "docs/security/legal-policy-v1.json",
+      "dataRights": "src/contracts/marketDataRightsEligibility.ts",
+      "products": "src/data/monetizationRegistry.ts",
+      "cads": "docs/architecture/CADS-PIPELINE-SELF-HEALING.md"
+    },
+    "scope": [
+      "paidSaasDisplay",
+      "webAndMobile",
+      "b2bApiRedistribution",
+      "derivedCommercialScores",
+      "cacheJetStreamReplayRetention",
+      "customerExports",
+      "whiteLabel",
+      "paidBenchmarkReports",
+      "ghcrBinaryDistribution"
+    ],
+    "requiredEvidence": [
+      "commercialSaasProviderPermission",
+      "entityRegionTierVenueInstrumentScope",
+      "displayRedistributionDerivedUseRetentionExportPermissions",
+      "indexOwnerAndExchangePermissionsWhereApplicable",
+      "perpetualContractDataRights",
+      "licenseNoticeSourceObligationsForActualPackaging",
+      "recurringQuotaFeedAndLicenceCosts",
+      "contractExpiryAndTermsChangeReview"
+    ],
+    "futureRiskGuarantee": false,
+    "expiryOrTermsChange": "BLOCK_NEW_PROMOTION_AND_REVIEW_EXISTING_PRODUCT_SCOPE"
+  },
+  "monetization": {
+    "registryRef": {
+      "path": "src/data/monetizationRegistry.ts",
+      "sourceSha": "54fb8c55c4f5562d977f1095db2c73877acdc270",
+      "blobSha": "c864628636824d7c270904e7117f1c49a9cb2716"
+    },
+    "cadsRef": {
+      "path": "docs/architecture/CADS-PIPELINE-SELF-HEALING.md",
+      "sourceSha": "54fb8c55c4f5562d977f1095db2c73877acdc270",
+      "blobSha": "465b91b208c0f628bd8ab680b44f1f05b34a8e74"
+    },
+    "products": [
+      {
+        "id": "saas",
+        "requires": [
+          "paidDisplay",
+          "commercialDerivedScoring",
+          "retention"
+        ],
+        "state": "RIGHTS_UNVERIFIED"
+      },
+      {
+        "id": "data-api",
+        "requires": [
+          "apiRedistribution",
+          "retention",
+          "perCustomerEntitlements"
+        ],
+        "state": "RIGHTS_UNVERIFIED"
+      },
+      {
+        "id": "sentiment-api",
+        "requires": [
+          "commercialDerivedData",
+          "sourceSpecificRedistribution"
+        ],
+        "state": "RIGHTS_UNVERIFIED"
+      },
+      {
+        "id": "white-label",
+        "requires": [
+          "embeddedThirdPartyDisplay",
+          "redistribution",
+          "attribution"
+        ],
+        "state": "RIGHTS_UNVERIFIED"
+      },
+      {
+        "id": "cads-app",
+        "requires": [
+          "benchmarkPublication",
+          "paidReportRedistribution",
+          "referenceDatasetRights"
+        ],
+        "state": "RIGHTS_UNVERIFIED"
+      },
+      {
+        "id": "ghcr-app",
+        "requires": [
+          "softwareBinaryDistribution",
+          "sourceNoticeObligations",
+          "noBundledSecretsOrRestrictedDatasets"
+        ],
+        "state": "RIGHTS_UNVERIFIED"
+      },
+      {
+        "id": "social",
+        "requires": [
+          "publicDataDisplay",
+          "chartAndLogoPublication"
+        ],
+        "state": "RIGHTS_UNVERIFIED"
+      }
+    ],
+    "pricingMutation": false,
+    "entitlementsMayOverrideRights": false,
+    "costModel": {
+      "state": "NOT_MEASURED",
+      "fields": [
+        "monthlyDataFeedCost",
+        "exchangeIndexLicenceCost",
+        "computeStorageBandwidthCost",
+        "perSubscriberMarginalCost",
+        "perApiRequestMarginalCost",
+        "tierQuota",
+        "grossMarginAtExpectedLoad"
+      ]
+    },
+    "cadsMapping": {
+      "layers": [
+        "ingress",
+        "normalization",
+        "scoring",
+        "stream",
+        "cache",
+        "storage",
+        "api",
+        "presentation"
+      ],
+      "weightsMayCompensateRightsFailure": false,
+      "currentReleaseRequirementsPreserved": true,
+      "fullPipelineMinSamples": 600,
+      "p95LessThanMs": 200,
+      "maxLessThanMs": 200,
+      "assetClassMismatch": "BLOCKED_MAPPING_REVIEW_REQUIRED: benchmark stocks/indices not interchangeable with release equity_us/equity_eu/fixed_income"
+    },
+    "canonicalUseCaseGaps": [
+      "commercial derived scoring is not authorized by derived_scoring_research",
+      "paid benchmark publication and white-label require explicit contract scope"
+    ],
+    "winnerAdmission": "ALL_REQUIRED_PRODUCT_SCOPES_VERIFIED_BEFORE_PRODUCT_PROMOTION"
   }
 }
