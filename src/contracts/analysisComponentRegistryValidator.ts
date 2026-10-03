@@ -1,12 +1,13 @@
 import { z } from 'zod';
 import { AnalysisComponentRegistryEntrySchema, CANONICAL_50_COMPONENTS } from './analysisComponentRegistry';
 import { AssetClassSchema } from './common';
-import { AssetIdentitySchema, FeatureValueSchema, FinalRankResultSchema } from './canonicalContracts';
+import { AssetIdentitySchema, DataProvenanceSchema, FeatureValueSchema, ScoreResultSchema, FinalRankResultSchema } from './canonicalContracts';
 import { ProviderRegistryService } from '../config/providers/providerRegistry';
 
 // Only existing schemas resolve. Descriptive names in planned entries are not fabricated DTOs.
 const contracts: Record<string, z.ZodType> = {
-  AssetIdentity: AssetIdentitySchema, FeatureValue: FeatureValueSchema, FinalRankResult: FinalRankResultSchema,
+  AssetIdentity: AssetIdentitySchema, DataProvenance: DataProvenanceSchema, FeatureValue: FeatureValueSchema,
+  ScoreResult: ScoreResultSchema, FinalRankResult: FinalRankResultSchema,
 };
 const providerAliases: Record<string, string> = {
   binance: 'binance_market_data', kraken: 'kraken_websocket', twelvedata: 'twelve_data_market',

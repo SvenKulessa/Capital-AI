@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-03T01:52:43.518Z",
+  "scope": "ISOLATED_LOCAL_CODE_VALIDATION_NON_AUTHORIZING",
+  "baselineSourceSha": "fbb67ca0b3e08cdeeaf9835b09ca7af06b6230d7",
+  "nodeVersion": "v24.19.0",
+  "checks": [
+    {
+      "command": "npm test",
+      "status": "PASS",
+      "nodeTestCount": 71,
+      "newShadowTestCount": 31,
+      "additionalContractSuites": "PASS",
+      "documentaryCheck": "PASS"
+    },
+    {
+      "command": "npm run lint",
+      "status": "PASS"
+    },
+    {
+      "command": "npm run test:security",
+      "status": "PASS",
+      "serverTests": 27,
+      "frontendTests": 7
+    },
+    {
+      "command": "npm run build",
+      "status": "PASS",
+      "warnings": [
+        "EXISTING_APP_CHUNK_OVER_500_KB"
+      ]
+    },
+    {
+      "command": "npm run verify:browser",
+      "status": "PASS",
+      "checkedArtifacts": 7,
+      "scope": "SERVER_BROWSER_BOUNDARY_NOT_FULL_SECRET_SCAN"
+    },
+    {
+      "command": "node scripts/preflight.mjs",
+      "status": "PASS",
+      "tests": 78,
+      "distributionLicenseReview": "OPEN"
+    },
+    {
+      "command": "git diff --check",
+      "status": "PASS"
+    }
+  ],
+  "notExecuted": [
+    "Docker image build",
+    "Trivy or full vulnerability/secret scan",
+    "GitHub Required Checks",
+    "GHCR publishing",
+    "Render deploy",
+    "production provider queries",
+    "real End-to-End pipeline benchmark"
+  ],
+  "productionActivationAuthorized": false,
+  "part1RuntimeCloseout": "BLOCKED",
+  "selfHealingPromotion": "NOT_ACTIVATED"
+}

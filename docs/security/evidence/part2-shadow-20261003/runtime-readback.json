@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-03T01:51:23.351Z",
+  "scope": "READ_ONLY_RUNTIME_CHECK_NON_AUTHORIZING",
+  "repository": "SvenKulessa/Capital-AI",
+  "baselineSourceSha": "fbb67ca0b3e08cdeeaf9835b09ca7af06b6230d7",
+  "health": {
+    "source": "https://capital-ai.online/healthz",
+    "observed": {
+      "status": "ok",
+      "ingress": "fail_closed",
+      "symbols": [
+        "BTCUSDT",
+        "BTCUSD",
+        "AAPL"
+      ],
+      "quotesEnabled": true,
+      "infrastructure": {
+        "status": "connected",
+        "redis": "connected",
+        "nats": "connected",
+        "pubsub": "connected",
+        "subscriber": "connected",
+        "subscriberListeners": 1,
+        "verifiedDeliveries": 11912,
+        "lastVerifiedDeliveryAt": 1790991422134,
+        "lastVerifiedSymbol": "BTCUSDT",
+        "stream": "CAPITAL_FACTS",
+        "storage": "file",
+        "replicasConfigured": 1
+      },
+      "buildIdentity": {
+        "bound": false,
+        "sourceSha": null
+      }
+    }
+  },
+  "render": {
+    "serviceId": "srv-dau1rp893c1s73cdhm1g",
+    "deployId": "dep-db03n4ad0e5s73a01b8g",
+    "status": "live",
+    "sourceShaReportedByRender": "fbb67ca0b3e08cdeeaf9835b09ca7af06b6230d7",
+    "sourceShaVerifiedInsideRuntime": null
+  },
+  "natsRecovery": {
+    "serviceId": "srv-dauhcoojo6nc738eedjg",
+    "deployId": "dep-dauo42vlk1mc73dkr3lg",
+    "restoredMessages": 56118,
+    "restoreDurationMs": 11,
+    "restoredAt": "2026-09-30T21:42:00.971278258Z",
+    "serverReadyAt": "2026-09-30T21:42:00.972420338Z",
+    "source": "Render application logs; historical restart recovery, not a current disaster-recovery drill"
+  },
+  "part1RuntimeCloseout": "BLOCKED",
+  "remainingGates": [
+    "RUNTIME_IDENTITY_UNBOUND",
+    "CURRENT_IMMUTABLE_GHCR_DIGEST_HANDOFF_UNVERIFIED",
+    "POST_RESTART_NEW_DELIVERY_CORRELATION_UNVERIFIED"
+  ],
+  "productionActivationAuthorized": false
+}

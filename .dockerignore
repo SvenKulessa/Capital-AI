@@ -19,6 +19,7 @@
 !server/http-security.mjs
 !server/mta-sts.mjs
 !server/mta-sts.test.mjs
+!server/shadow-evidence-store.mjs
 !server/infrastructure.mjs
 !server/scorer-bus.mjs
 !server/observability.mjs

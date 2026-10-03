@@ -4,6 +4,9 @@
  * feature family assignments, and version-controlled configuration changes.
  */
 
+import { ShadowPipelineConfigSchema, type ShadowPipelineConfig } from '../contracts/pipelineExecution';
+import { EvidenceEngineService } from './evidenceEngine';
+
 export type ExecutionEnvironment = 'active_production' | 'shadow_canary' | 'sandbox_demo';
 
 export interface StageConfig {
@@ -13,6 +16,25 @@ export interface StageConfig {
   timeoutMs: number;
   retryCount: number;
   circuitBreakerThresholdPct: number;
+}
+
+export interface ConfigurationRevision { fingerprint: string; config: ShadowPipelineConfig; }
+/** Immutable, content-addressed shadow revisions. No production activation method. */
+export class ShadowConfigurationHistory {
+  private revisions: ConfigurationRevision[] = [];
+  async append(input: unknown): Promise<ConfigurationRevision> {
+    const config = ShadowPipelineConfigSchema.parse(input);
+    const fingerprint = await EvidenceEngineService.fingerprint(config);
+    const existing = this.revisions.find(r => r.config.configId === config.configId && r.config.version === config.version);
+    if (existing && existing.fingerprint !== fingerprint) throw new Error('CONFIG_VERSION_REUSE');
+    if (!existing) this.revisions.push(structuredClone({ fingerprint, config }));
+    return structuredClone({ fingerprint, config });
+  }
+  history(): ConfigurationRevision[] { return structuredClone(this.revisions); }
+  diff(left: ConfigurationRevision, right: ConfigurationRevision): string[] {
+    return (Object.keys(right.config) as (keyof ShadowPipelineConfig)[]).sort().filter(k => EvidenceEngineService.canonicalJson(left.config[k]) !==
+      EvidenceEngineService.canonicalJson(right.config[k]));
+  }
 }
 
 export interface PipelineConfigModel {
@@ -57,43 +79,40 @@ export class PipelineConfiguratorService {
   constructor() {
     this.currentConfig = this.buildDefaultProductionConfig();
     this.shadowConfig = this.buildDefaultShadowConfig();
-    this.revisionHistory.push({ ...this.currentConfig });
+    this.revisionHistory.push(structuredClone(this.currentConfig));
   }
 
   public getActiveConfig(): PipelineConfigModel {
-    return this.currentConfig;
+    return structuredClone(this.currentConfig);
   }
 
   public getShadowConfig(): PipelineConfigModel {
-    return this.shadowConfig;
+    return structuredClone(this.shadowConfig);
   }
 
   public getRevisionHistory(): PipelineConfigModel[] {
-    return this.revisionHistory;
+    return structuredClone(this.revisionHistory);
   }
 
   public updateActiveConfig(updated: Partial<PipelineConfigModel>, user: string): PipelineConfigModel {
     const nextConfig: PipelineConfigModel = {
       ...this.currentConfig,
-      ...updated,
+      ...structuredClone(updated),
       version: this.incrementPatchVersion(this.currentConfig.version),
       lastModifiedAt: Date.now(),
       modifiedBy: user,
-      isApprovedForProduction: true,
+      isApprovedForProduction: false,
     };
-    this.revisionHistory.push({ ...nextConfig });
+    this.revisionHistory.push(structuredClone(nextConfig));
     this.currentConfig = nextConfig;
-    return this.currentConfig;
+    return structuredClone(this.currentConfig);
   }
 
   public toggleProvider(providerId: string, enabled: boolean): boolean {
-    if (enabled) {
-      if (!this.currentConfig.activeProviders.includes(providerId)) {
-        this.currentConfig.activeProviders.push(providerId);
-      }
-    } else {
-      this.currentConfig.activeProviders = this.currentConfig.activeProviders.filter((p) => p !== providerId);
-    }
+    const activeProviders = enabled
+      ? [...new Set([...this.currentConfig.activeProviders, providerId])]
+      : this.currentConfig.activeProviders.filter((p) => p !== providerId);
+    this.updateActiveConfig({ activeProviders }, 'provider-toggle');
     return true;
   }
 
@@ -104,7 +123,7 @@ export class PipelineConfiguratorService {
       environment: 'active_production',
       lastModifiedAt: Date.now() - 86400000,
       modifiedBy: 'Enterprise Architecture Lead',
-      isApprovedForProduction: true,
+      isApprovedForProduction: false,
       stages: {
         stage_01_ingestion: {
           stageId: 'stage_01_ingestion',

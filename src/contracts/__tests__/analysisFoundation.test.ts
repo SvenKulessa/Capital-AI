@@ -1,4 +1,5 @@
 import { test } from 'node:test';
+import './shadowPipeline.test';
 import assert from 'node:assert/strict';
 import { CANONICAL_50_COMPONENTS } from '../analysisComponentRegistry';
 import { validateAnalysisComponentRegistry } from '../analysisComponentRegistryValidator';

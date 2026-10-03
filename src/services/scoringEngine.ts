@@ -1,6 +1,9 @@
 import { AssetIdentity, AssetIdentitySchema, FeatureValue, FeatureValueSchema,
   FinalRankResult, FinalRankResultSchema } from '../contracts/canonicalContracts';
 import { componentActivationReasons } from '../contracts/analysisComponentRegistryValidator';
+import { PipelineSnapshotSchema, ShadowPipelineConfigSchema, SCORE_FAMILIES, RISK_FAMILIES,
+  type ShadowPipelineConfig, type PipelineSnapshot, type ShadowScoreResult } from '../contracts/pipelineExecution';
+import { MarketDataRightsEvidenceSchema, evaluateMarketDataRights } from '../contracts/marketDataRightsEligibility';
 
 export interface AssetClassWeightProfile {
   weightMomentum: number; weightTechnical: number; weightFundamental: number;
@@ -19,6 +22,101 @@ const REQUIRED_COMPONENTS = ['market_integrity_gate', 'data_quality_scorer', 'li
 
 /** Foundation admission: no inference from quotes or ranking without a validated universe. */
 export class ScoringEngineService {
+  public static readonly SHADOW_MODEL_VERSION = '1.0.0';
+  /** Offline shadow calculation uses the recorded evaluation time, never the wall clock. */
+  public static computeShadowScore(input: PipelineSnapshot, policy: ShadowPipelineConfig): ShadowScoreResult {
+    const snapshot = PipelineSnapshotSchema.parse(input), config = ShadowPipelineConfigSchema.parse(policy);
+    if (config.modelVersion !== this.SHADOW_MODEL_VERSION) throw new Error('MODEL_VERSION_UNSUPPORTED');
+    const reasons = new Set<string>();
+    const profile = config.profiles.find(p => p.assetClass === snapshot.asset.assetClass &&
+      p.subclass === (snapshot.asset.subclass ?? null) && p.horizon === snapshot.horizon && p.regime === snapshot.regime);
+    if (!profile) reasons.add('WEIGHT_PROFILE_UNAVAILABLE');
+    if (snapshot.asset.status !== 'active') reasons.add('ASSET_NOT_TRADABLE');
+    if (!snapshot.rawInputReferences.length) reasons.add('RAW_INPUT_REFERENCES_MISSING');
+    const features = new Map<string, FeatureValue[]>();
+    const identities = new Set<string>();
+    for (const f of snapshot.features) {
+      const p = f.provenance, identity = JSON.stringify([f.featureId, p.providerId]);
+      if (identities.has(identity)) reasons.add(`DUPLICATE_FEATURE_SOURCE:${f.featureId}`);
+      identities.add(identity);
+      if (f.assetId !== snapshot.asset.assetId) { reasons.add('ASSET_MAPPING_MISMATCH'); continue; }
+      if (p.isDemo !== snapshot.isDemo || (p.isDemo && (p.providerId !== 'capital_ai_demo_engine' || p.licenseScope !== 'sandbox_demo')) ||
+          (!p.isDemo && (p.providerId === 'capital_ai_demo_engine' || p.licenseScope === 'sandbox_demo'))) {
+        reasons.add('DEMO_MODE_MISMATCH'); continue;
+      }
+      if ([f.observedAt, p.observedAt, p.receivedAt, p.publishedAt].some(t => t > snapshot.evaluatedAt) ||
+          p.receivedAt < p.observedAt || p.publishedAt < p.receivedAt || p.latencyMs !== p.receivedAt - p.observedAt) {
+        reasons.add('FEATURE_TIMESTAMP_INVALID'); continue;
+      }
+      const provider = config.providers.find(c => c.providerId === p.providerId && c.enabled);
+      if (!snapshot.isDemo && !provider) { reasons.add(`PROVIDER_DISABLED:${p.providerId}`); continue; }
+      const maxAge = provider?.maxStalenessMs ?? 30_000;
+      if (snapshot.evaluatedAt - Math.min(f.observedAt, p.observedAt) > maxAge) { reasons.add(`FEATURE_STALE:${f.featureId}`); continue; }
+      if (!snapshot.isDemo) {
+        const rights = snapshot.rights.find(r => r.providerId === p.providerId);
+        const decision = rights && evaluateMarketDataRights(MarketDataRightsEvidenceSchema.parse(rights),
+          ['internal_analysis', 'derived_scoring_research', 'cache_retention'], new Date(snapshot.evaluatedAt));
+        // This feed token is exact, not a fuzzy symbol or prose licence match.
+        const feedToken = `${p.providerDataset}:${snapshot.asset.symbol}:${snapshot.asset.venue}`;
+        if (!decision?.eligible || !rights?.feedsSymbolsAndVenues?.includes(feedToken) ||
+            !rights.reviewedAt || Date.parse(rights.reviewedAt) > snapshot.evaluatedAt) {
+          reasons.add(`PROVIDER_RIGHTS_UNVERIFIED:${p.providerId}`); continue;
+        }
+        if (decision.obligations.length) reasons.add('RIGHTS_OBLIGATIONS_NOT_IMPLEMENTED');
+      }
+      const existing = features.get(f.featureId) ?? [];
+      existing.push(f); features.set(f.featureId, existing);
+    }
+    const required = [...new Set([...Object.values(config.featureIds), ...Object.values(config.riskFeatureIds), ...config.hardGateFeatureIds])];
+    let present = 0, quality = 1, freshness = 1, agreement = 1;
+    const selected = new Map<string, FeatureValue>();
+    for (const id of required) {
+      const values = features.get(id) ?? [];
+      if (!values.length) { reasons.add(`REQUIRED_INPUT_MISSING:${id}`); continue; }
+      present++;
+      const family = SCORE_FAMILIES.find(f => config.featureIds[f] === id);
+      if (!snapshot.isDemo && family && values.some(f => !config.providers.find(p => p.providerId === f.provenance.providerId)?.featureFamilies.includes(family)))
+        reasons.add(`FEATURE_FAMILY_ROUTE_MISMATCH:${id}`);
+      const units = new Set(values.map(f => f.unit));
+      if (units.size !== 1) reasons.add(`FEATURE_UNIT_DISAGREEMENT:${id}`);
+      const uniqueProviders = new Set(values.map(f => f.provenance.providerId)).size;
+      if (!snapshot.isDemo && uniqueProviders < config.minimumProvidersPerFeature) reasons.add(`PROVIDER_AGREEMENT_UNAVAILABLE:${id}`);
+      const spread = Math.max(...values.map(f => f.normalizedValue)) - Math.min(...values.map(f => f.normalizedValue));
+      if (spread > config.maxNormalizedDisagreement) reasons.add(`PROVIDER_DISAGREEMENT:${id}`);
+      agreement = Math.min(agreement, 1 - spread / 100);
+      quality = Math.min(quality, ...values.map(f => f.qualityScore / 100));
+      for (const f of values) {
+        const maxAge = config.providers.find(p => p.providerId === f.provenance.providerId)?.maxStalenessMs ?? 30_000;
+        freshness = Math.min(freshness, Math.max(0, 1 - (snapshot.evaluatedAt - Math.min(f.observedAt, f.provenance.observedAt)) / maxAge));
+        if (!snapshot.isDemo && f.qualityScore < config.minQualityScore) reasons.add(`QUALITY_INSUFFICIENT:${id}`);
+      }
+      values.sort((a, b) => (config.providers.find(p => p.providerId === a.provenance.providerId)?.priority ?? 0) -
+        (config.providers.find(p => p.providerId === b.provenance.providerId)?.priority ?? 0) || a.provenance.providerId.localeCompare(b.provenance.providerId));
+      selected.set(id, values[0]);
+    }
+    for (const id of config.hardGateFeatureIds) if ((features.get(id) ?? []).some(f => f.value !== 1) || !selected.has(id)) reasons.add(`HARD_GATE_FAILED:${id}`);
+    const subScores = Object.fromEntries(SCORE_FAMILIES.map(f => [f, selected.get(config.featureIds[f])?.normalizedValue ?? null])) as ShadowScoreResult['subScores'];
+    let riskPenalty = 0;
+    for (const family of RISK_FAMILIES) {
+      const values = features.get(config.riskFeatureIds[family]) ?? [];
+      if (values.some(f => f.value < 0 || f.value > 100)) reasons.add('RISK_INPUT_INVALID');
+      const risk = values.length ? Math.max(...values.map(f => f.value)) : 0;
+      if (risk > config.maxRiskScore) reasons.add(`RISK_VETO:${family}`);
+      riskPenalty += risk * config.riskWeights[family];
+    }
+    riskPenalty = Math.min(config.riskPenaltyCeiling, riskPenalty);
+    const confidence = snapshot.isDemo ? 0 : Math.min(present / required.length, quality, freshness, agreement);
+    if (!snapshot.isDemo && confidence < config.minimumConfidence) reasons.add('CONFIDENCE_BELOW_POLICY');
+    const drivers = profile ? SCORE_FAMILIES.map(family => ({ family,
+      contribution: (subScores[family] ?? 0) * profile.weights[family] * confidence })) : [];
+    const candidateScore = reasons.size || snapshot.isDemo ? null : Math.max(0, Math.min(100,
+      drivers.reduce((sum, d) => sum + d.contribution, 0) - riskPenalty));
+    if (snapshot.isDemo) reasons.add('DEMO_NOT_ACTIONABLE');
+    return { assetId: snapshot.asset.assetId, computedAt: snapshot.evaluatedAt, modelVersion: config.modelVersion,
+      weightVersion: config.weightVersion, mode: 'shadow', isDemo: snapshot.isDemo, eligibility: false, rank: null,
+      publishable: false, candidateScore, confidence, riskPenalty, subScores, drivers,
+      reasonCodes: [...reasons].sort(), components: [] };
+  }
   public static readonly MODEL_VERSION = '4.0.0';
   public static getWeightProfile(assetClass: string): AssetClassWeightProfile {
     if (assetClass === 'crypto') return { weightMomentum: .25, weightTechnical: .20, weightFundamental: .10,
