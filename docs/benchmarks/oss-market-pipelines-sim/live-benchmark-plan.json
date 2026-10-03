@@ -1,0 +1,951 @@
+{
+  "schema": "CAPITAL_AI_OSS_MULTI_ASSET_BENCHMARK_PLAN@1",
+  "sourceMainSha": "54fb8c55c4f5562d977f1095db2c73877acdc270",
+  "observedAt": "2026-10-03",
+  "state": "PREPARED_NOT_EXECUTED",
+  "environment": "isolated-nonproduction",
+  "productionActivation": false,
+  "automaticPromotion": false,
+  "targets": {
+    "crypto": 500,
+    "stocks": 300,
+    "commodities": 100,
+    "forex": 100,
+    "indices": 300
+  },
+  "firstTestPerClass": 20,
+  "incrementTotal": 50,
+  "stages": [
+    {
+      "stage": 0,
+      "total": 100,
+      "counts": {
+        "crypto": 20,
+        "stocks": 20,
+        "commodities": 20,
+        "forex": 20,
+        "indices": 20
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 1,
+      "total": 150,
+      "counts": {
+        "crypto": 39,
+        "stocks": 32,
+        "commodities": 24,
+        "forex": 24,
+        "indices": 31
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 2,
+      "total": 200,
+      "counts": {
+        "crypto": 60,
+        "stocks": 43,
+        "commodities": 27,
+        "forex": 27,
+        "indices": 43
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 3,
+      "total": 250,
+      "counts": {
+        "crypto": 80,
+        "stocks": 55,
+        "commodities": 30,
+        "forex": 30,
+        "indices": 55
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 4,
+      "total": 300,
+      "counts": {
+        "crypto": 99,
+        "stocks": 67,
+        "commodities": 34,
+        "forex": 34,
+        "indices": 66
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 5,
+      "total": 350,
+      "counts": {
+        "crypto": 120,
+        "stocks": 78,
+        "commodities": 37,
+        "forex": 37,
+        "indices": 78
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 6,
+      "total": 400,
+      "counts": {
+        "crypto": 140,
+        "stocks": 90,
+        "commodities": 40,
+        "forex": 40,
+        "indices": 90
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 7,
+      "total": 450,
+      "counts": {
+        "crypto": 159,
+        "stocks": 102,
+        "commodities": 44,
+        "forex": 44,
+        "indices": 101
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 8,
+      "total": 500,
+      "counts": {
+        "crypto": 180,
+        "stocks": 113,
+        "commodities": 47,
+        "forex": 47,
+        "indices": 113
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 9,
+      "total": 550,
+      "counts": {
+        "crypto": 200,
+        "stocks": 125,
+        "commodities": 50,
+        "forex": 50,
+        "indices": 125
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 10,
+      "total": 600,
+      "counts": {
+        "crypto": 219,
+        "stocks": 137,
+        "commodities": 54,
+        "forex": 54,
+        "indices": 136
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 11,
+      "total": 650,
+      "counts": {
+        "crypto": 240,
+        "stocks": 148,
+        "commodities": 57,
+        "forex": 57,
+        "indices": 148
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 12,
+      "total": 700,
+      "counts": {
+        "crypto": 260,
+        "stocks": 160,
+        "commodities": 60,
+        "forex": 60,
+        "indices": 160
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 13,
+      "total": 750,
+      "counts": {
+        "crypto": 279,
+        "stocks": 172,
+        "commodities": 64,
+        "forex": 64,
+        "indices": 171
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 14,
+      "total": 800,
+      "counts": {
+        "crypto": 300,
+        "stocks": 183,
+        "commodities": 67,
+        "forex": 67,
+        "indices": 183
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 15,
+      "total": 850,
+      "counts": {
+        "crypto": 320,
+        "stocks": 195,
+        "commodities": 70,
+        "forex": 70,
+        "indices": 195
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 16,
+      "total": 900,
+      "counts": {
+        "crypto": 339,
+        "stocks": 207,
+        "commodities": 74,
+        "forex": 74,
+        "indices": 206
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 17,
+      "total": 950,
+      "counts": {
+        "crypto": 360,
+        "stocks": 218,
+        "commodities": 77,
+        "forex": 77,
+        "indices": 218
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 18,
+      "total": 1000,
+      "counts": {
+        "crypto": 380,
+        "stocks": 230,
+        "commodities": 80,
+        "forex": 80,
+        "indices": 230
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 19,
+      "total": 1050,
+      "counts": {
+        "crypto": 399,
+        "stocks": 242,
+        "commodities": 84,
+        "forex": 84,
+        "indices": 241
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 20,
+      "total": 1100,
+      "counts": {
+        "crypto": 420,
+        "stocks": 253,
+        "commodities": 87,
+        "forex": 87,
+        "indices": 253
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 21,
+      "total": 1150,
+      "counts": {
+        "crypto": 440,
+        "stocks": 265,
+        "commodities": 90,
+        "forex": 90,
+        "indices": 265
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 22,
+      "total": 1200,
+      "counts": {
+        "crypto": 459,
+        "stocks": 277,
+        "commodities": 94,
+        "forex": 94,
+        "indices": 276
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 23,
+      "total": 1250,
+      "counts": {
+        "crypto": 480,
+        "stocks": 288,
+        "commodities": 97,
+        "forex": 97,
+        "indices": 288
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 24,
+      "total": 1300,
+      "counts": {
+        "crypto": 500,
+        "stocks": 300,
+        "commodities": 100,
+        "forex": 100,
+        "indices": 300
+      },
+      "state": "PLANNED"
+    }
+  ],
+  "selection": {
+    "method": "COMMERCIAL_SCREENED_TASK_SHORTLIST",
+    "notGlobalTopTen": true,
+    "popularityMetric": "GitHub stars, point-in-time metadata; not performance or security",
+    "unsupportedClasses": "NOT_SUPPORTED; never substitute ETF, CFD or futures for cash index or spot without explicit instrument identity"
+  },
+  "candidates": [
+    {
+      "repo": "ccxt/ccxt",
+      "url": "https://github.com/ccxt/ccxt",
+      "stars": 44239,
+      "license": "MIT",
+      "archived": false,
+      "pushedAt": "2026-10-03T12:10:43Z",
+      "defaultBranch": "master",
+      "sourceSha": "099d9d5de5bee0b0434c4f478e866604b5229ddb",
+      "id": "ccxt",
+      "role": "crypto-adapter",
+      "metadataLicense": "MIT",
+      "licenseReview": "PERMISSIVE_OBLIGATIONS_REVIEW",
+      "dataRights": "UNVERIFIED",
+      "buildDigest": null,
+      "stableRelease": null,
+      "measurementState": "NOT_EXECUTED",
+      "fullClassCoverage": "UNVERIFIED",
+      "commercialAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "softwareUsageClasses": [
+        "HOSTED_NETWORK_SERVICE",
+        "DISTRIBUTED_BINARY"
+      ],
+      "softwareLicenceAudit": {
+        "licence": "MIT",
+        "path": "LICENSE.txt",
+        "blobSha": "4cc1253c79b58fa72a3d4626d95aa7fff70f6f84",
+        "state": "PERMISSIVE_OBLIGATIONS_REVIEW"
+      }
+    },
+    {
+      "repo": "openbq-org/OpenBB",
+      "url": "https://github.com/openbq-org/OpenBB",
+      "stars": 73807,
+      "license": "NOASSERTION",
+      "archived": false,
+      "pushedAt": "2026-10-02T04:55:27Z",
+      "defaultBranch": "develop",
+      "previousRepo": "OpenBB-finance/OpenBB",
+      "sourceSha": "ae0268771f761b036996d81bd21522ce79d95415",
+      "id": "openbb",
+      "role": "multi-asset-data-platform",
+      "metadataLicense": "NOASSERTION",
+      "licenseReview": "PERMISSIVE_OBLIGATIONS_REVIEW",
+      "dataRights": "UNVERIFIED",
+      "buildDigest": null,
+      "stableRelease": null,
+      "measurementState": "NOT_EXECUTED",
+      "fullClassCoverage": "UNVERIFIED",
+      "commercialAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "softwareUsageClasses": [
+        "HOSTED_NETWORK_SERVICE",
+        "DISTRIBUTED_BINARY"
+      ],
+      "softwareLicenceAudit": {
+        "licence": "Apache-2.0",
+        "path": "LICENSE",
+        "blobSha": "8e8cca33304520693be306cad3b55cba0c358676",
+        "state": "PERMISSIVE_OBLIGATIONS_REVIEW"
+      }
+    },
+    {
+      "repo": "financialdatanet/fdnpy",
+      "url": "https://github.com/financialdatanet/fdnpy",
+      "stars": 55,
+      "metadataLicense": "UNVERIFIED",
+      "archived": false,
+      "pushedAt": "2026-09-08T07:20:16Z",
+      "defaultBranch": "main",
+      "sourceSha": "e46103c95ba04927057609268765a5711b3ad656",
+      "id": "fdnpy",
+      "role": "multi-asset-provider-sdk",
+      "licenseReview": "BLOCKED_ORIGINAL_LICENSE_MISSING",
+      "dataRights": "UNVERIFIED",
+      "buildDigest": null,
+      "stableRelease": null,
+      "measurementState": "NOT_EXECUTED",
+      "fullClassCoverage": "UNVERIFIED",
+      "selectionReason": "existing owner-requested provider candidate; not popularity top-ten",
+      "commercialAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "softwareUsageClasses": [
+        "HOSTED_NETWORK_SERVICE",
+        "DISTRIBUTED_BINARY"
+      ],
+      "softwareLicenceAudit": {
+        "licence": "UNVERIFIED_METADATA_MIT_ONLY",
+        "path": "setup.py",
+        "blobSha": "b3d4f22d579119e94c67aa91b39ada342ca6c7f4",
+        "state": "BLOCKED_ORIGINAL_LICENSE_MISSING"
+      }
+    },
+    {
+      "repo": "QuantConnect/Lean",
+      "url": "https://github.com/QuantConnect/Lean",
+      "stars": 21852,
+      "license": "Apache-2.0",
+      "archived": false,
+      "pushedAt": "2026-10-02T20:57:46Z",
+      "defaultBranch": "master",
+      "sourceSha": "705b9551be1aaa821c7f77896a7eb8fcd07b92ee",
+      "id": "lean",
+      "role": "multi-asset-engine",
+      "metadataLicense": "Apache-2.0",
+      "licenseReview": "PERMISSIVE_OBLIGATIONS_REVIEW",
+      "dataRights": "UNVERIFIED",
+      "buildDigest": null,
+      "stableRelease": null,
+      "measurementState": "NOT_EXECUTED",
+      "fullClassCoverage": "UNVERIFIED",
+      "commercialAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "softwareUsageClasses": [
+        "HOSTED_NETWORK_SERVICE",
+        "DISTRIBUTED_BINARY"
+      ],
+      "softwareLicenceAudit": {
+        "licence": "Apache-2.0",
+        "path": "LICENSE",
+        "blobSha": "6faed93d21a1a9551b11434e87c9000a393d73f2",
+        "state": "PERMISSIVE_OBLIGATIONS_REVIEW"
+      }
+    },
+    {
+      "repo": "vnpy/vnpy",
+      "url": "https://github.com/vnpy/vnpy",
+      "stars": 45676,
+      "license": "MIT",
+      "archived": false,
+      "pushedAt": "2026-10-03T15:43:16Z",
+      "defaultBranch": "master",
+      "sourceSha": "2b0fa6ceb8db72f23b429f9d64c18a1444d09917",
+      "id": "vnpy",
+      "role": "multi-asset-engine",
+      "metadataLicense": "MIT",
+      "licenseReview": "PERMISSIVE_OBLIGATIONS_REVIEW",
+      "dataRights": "UNVERIFIED",
+      "buildDigest": null,
+      "stableRelease": null,
+      "measurementState": "NOT_EXECUTED",
+      "fullClassCoverage": "UNVERIFIED",
+      "commercialAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "softwareUsageClasses": [
+        "HOSTED_NETWORK_SERVICE",
+        "DISTRIBUTED_BINARY"
+      ],
+      "softwareLicenceAudit": {
+        "licence": "MIT",
+        "path": "LICENSE",
+        "blobSha": "2325eb27b15b3dcf1ed510c3ac314285f6bdcaa0",
+        "state": "PERMISSIVE_OBLIGATIONS_REVIEW"
+      }
+    },
+    {
+      "repo": "mementum/backtrader",
+      "url": "https://github.com/mementum/backtrader",
+      "stars": 23388,
+      "license": "GPL-3.0",
+      "archived": false,
+      "pushedAt": "2024-08-19T17:47:36Z",
+      "defaultBranch": "master",
+      "sourceSha": "b853d7c90b6721476eb5a5ea3135224e33db1f14",
+      "id": "backtrader",
+      "role": "historical-engine",
+      "metadataLicense": "GPL-3.0",
+      "licenseReview": "LEGAL_REVIEW_REQUIRED_USAGE_AND_DISTRIBUTION",
+      "dataRights": "UNVERIFIED",
+      "buildDigest": null,
+      "stableRelease": null,
+      "measurementState": "NOT_EXECUTED",
+      "fullClassCoverage": "UNVERIFIED",
+      "commercialAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "softwareUsageClasses": [
+        "HOSTED_NETWORK_SERVICE",
+        "DISTRIBUTED_BINARY"
+      ],
+      "softwareLicenceAudit": {
+        "licence": "GPL-3.0",
+        "path": "LICENSE",
+        "blobSha": "ef7e7efc09c9d471c391f05b9567966928085840",
+        "state": "LEGAL_REVIEW_REQUIRED_USAGE_AND_DISTRIBUTION"
+      }
+    },
+    {
+      "repo": "hummingbot/hummingbot",
+      "url": "https://github.com/hummingbot/hummingbot",
+      "stars": 20294,
+      "license": "Apache-2.0",
+      "archived": false,
+      "pushedAt": "2026-09-28T10:50:41Z",
+      "defaultBranch": "master",
+      "sourceSha": "9af100d6822da7d2d0291a906c730ef172284ee2",
+      "id": "hummingbot",
+      "role": "crypto-engine",
+      "metadataLicense": "Apache-2.0",
+      "licenseReview": "PERMISSIVE_OBLIGATIONS_REVIEW",
+      "dataRights": "UNVERIFIED",
+      "buildDigest": null,
+      "stableRelease": null,
+      "measurementState": "NOT_EXECUTED",
+      "fullClassCoverage": "UNVERIFIED",
+      "commercialAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "softwareUsageClasses": [
+        "HOSTED_NETWORK_SERVICE",
+        "DISTRIBUTED_BINARY"
+      ],
+      "softwareLicenceAudit": {
+        "licence": "Apache-2.0",
+        "path": "LICENSE",
+        "blobSha": "e998fcfee5d9d1ba105679b6a755d10fa68cdc97",
+        "state": "PERMISSIVE_OBLIGATIONS_REVIEW"
+      }
+    },
+    {
+      "repo": "bmoscon/cryptofeed",
+      "url": "https://github.com/bmoscon/cryptofeed",
+      "stars": 2916,
+      "license": "NOASSERTION",
+      "archived": false,
+      "pushedAt": "2026-10-02T14:34:03Z",
+      "defaultBranch": "master",
+      "sourceSha": "6cbd9b959f104fe970791d32444a2ef13ddacc2f",
+      "id": "cryptofeed",
+      "role": "crypto-feed-handler",
+      "metadataLicense": "NOASSERTION",
+      "licenseReview": "LEGAL_REVIEW_REQUIRED_NETWORK_COPYLEFT_AND_ATTRIBUTION",
+      "dataRights": "UNVERIFIED",
+      "buildDigest": null,
+      "stableRelease": null,
+      "measurementState": "NOT_EXECUTED",
+      "fullClassCoverage": "UNVERIFIED",
+      "commercialAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "softwareUsageClasses": [
+        "HOSTED_NETWORK_SERVICE",
+        "DISTRIBUTED_BINARY"
+      ],
+      "softwareLicenceAudit": {
+        "licence": "AGPL-3.0-or-later WITH ADDITIONAL_ATTRIBUTION_TERM",
+        "path": "LICENSE",
+        "blobSha": "bd9dea50e89336fd87e76cfa1dd9cb1fa29d2a24",
+        "state": "LEGAL_REVIEW_REQUIRED_NETWORK_COPYLEFT_AND_ATTRIBUTION"
+      }
+    },
+    {
+      "repo": "nautechsystems/nautilus_trader",
+      "url": "https://github.com/nautechsystems/nautilus_trader",
+      "stars": 29592,
+      "license": "LGPL-3.0",
+      "archived": false,
+      "pushedAt": "2026-10-03T17:37:52Z",
+      "defaultBranch": "develop",
+      "sourceSha": "ad9d283abc2d6d86f3dd197229a8b357600a9303",
+      "id": "nautilus_trader",
+      "role": "multi-asset-engine",
+      "metadataLicense": "LGPL-3.0",
+      "licenseReview": "LEGAL_REVIEW_REQUIRED_USAGE_AND_DISTRIBUTION",
+      "dataRights": "UNVERIFIED",
+      "buildDigest": null,
+      "stableRelease": null,
+      "measurementState": "NOT_EXECUTED",
+      "fullClassCoverage": "UNVERIFIED",
+      "commercialAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "softwareUsageClasses": [
+        "HOSTED_NETWORK_SERVICE",
+        "DISTRIBUTED_BINARY"
+      ],
+      "softwareLicenceAudit": {
+        "licence": "LGPL-3.0",
+        "path": "LICENSE",
+        "blobSha": "5550e2db15f239ea8d3cf54bfa3b035eab8d3174",
+        "state": "LEGAL_REVIEW_REQUIRED_USAGE_AND_DISTRIBUTION"
+      }
+    },
+    {
+      "repo": "pydata/pandas-datareader",
+      "url": "https://github.com/pydata/pandas-datareader",
+      "stars": 3271,
+      "license": "NOASSERTION",
+      "archived": false,
+      "pushedAt": "2026-07-21T08:28:05Z",
+      "defaultBranch": "main",
+      "sourceSha": "9a3e2fe8c4e202bf9be6b4543fd1a06c3cdce7de",
+      "id": "pandas-datareader",
+      "role": "historical-data-client",
+      "metadataLicense": "NOASSERTION",
+      "licenseReview": "PERMISSIVE_OBLIGATIONS_REVIEW",
+      "dataRights": "UNVERIFIED",
+      "buildDigest": null,
+      "stableRelease": null,
+      "measurementState": "NOT_EXECUTED",
+      "fullClassCoverage": "UNVERIFIED",
+      "commercialAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "softwareUsageClasses": [
+        "HOSTED_NETWORK_SERVICE",
+        "DISTRIBUTED_BINARY"
+      ],
+      "softwareLicenceAudit": {
+        "licence": "BSD-3-Clause (root licence incl bundled notices)",
+        "path": "LICENSE.md",
+        "blobSha": "474cd65bfb481befa8c69fbde22d01c0b29e40b4",
+        "state": "PERMISSIVE_OBLIGATIONS_REVIEW"
+      }
+    }
+  ],
+  "workload": {
+    "instrumentManifest": null,
+    "instrumentManifestSha256": null,
+    "twentyUniqueInstrumentIdentitiesPerClass": true,
+    "rankingReferenceRequired": true,
+    "warmupSeconds": 60,
+    "measurementSeconds": 600,
+    "repetitions": 3,
+    "modes": [
+      "captured-replay",
+      "authorized-live"
+    ],
+    "sharedInfrastructure": "isolated NATS JetStream + Valkey",
+    "readOnlyMarketAccess": true,
+    "orderExecution": false,
+    "runCandidatesSequentially": true,
+    "sameHardwareRequired": true,
+    "sameSourceAndWindowForPairwiseComparison": true,
+    "unmatchedComparisons": "NON_COMPARABLE",
+    "sessionAware": true
+  },
+  "metrics": [
+    "classCoverage",
+    "p50Ms",
+    "p95Ms",
+    "p99Ms",
+    "eventsPerSecond",
+    "invalidFacts",
+    "missingEvents",
+    "duplicateEvents",
+    "replayHashMismatches",
+    "reconnectSeconds",
+    "cpuSeconds",
+    "peakRssBytes",
+    "networkBytes",
+    "cacheFreshnessMs",
+    "quota429Count"
+  ],
+  "scoreProfile": {
+    "id": "DATA_PIPELINE_REVIEW@1",
+    "weights": {
+      "securityTrust": 25,
+      "functionalCoverage": 20,
+      "performanceResources": 15,
+      "reliability": 10,
+      "maintainabilityIntegration": 10,
+      "licenseProvenance": 10,
+      "evidenceAuditability": 5,
+      "portabilityCost": 5
+    },
+    "scoringRubric": "PENDING_BEFORE_EXECUTION",
+    "rankingEnabled": false
+  },
+  "requiredEvidence": [
+    "rightsPerProviderDatasetUseCase",
+    "originalLicenseNotice",
+    "stableReleaseAndImmutableImageDigest",
+    "sbomAndVulnerabilityReview",
+    "100InstrumentManifestWithVenueCurrencyContractExpiry",
+    "sameWorkloadHardwareClockAndProviderWindow",
+    "threeIndependentRunsIncludingRecovery",
+    "JetStreamAckAndHashReplay",
+    "quotaAndSessionAwareFreshness",
+    "ownerProductionDecision"
+  ],
+  "blockers": [
+    "No admitted 100-instrument dataset manifest",
+    "No ten isolated measured candidate runtimes",
+    "No provider/dataset rights admission for five asset classes",
+    "No measured comparisons or winner",
+    "Scoring rubric and operational budgets require pre-run calibration",
+    "No verified per-venue perpetual catalogue, contract mapping or derivative data-rights admission",
+    "Commercial provider/product scopes and recurring subscription cost model unverified",
+    "CADS release-class mapping and commercial-derived-use contract gaps unresolved"
+  ],
+  "additionalPerpetuals": {
+    "enabledForBenchmark": true,
+    "assetClasses": [
+      "crypto",
+      "stocks",
+      "commodities"
+    ],
+    "counting": "ADDITIONAL_DERIVATIVE_INSTRUMENTS_NOT_BASE_ASSETS",
+    "targetCount": null,
+    "firstTestCount": null,
+    "availability": "UNVERIFIED_PER_VENUE",
+    "activation": false,
+    "discovery": {
+      "source": "verified provider instrument catalogue",
+      "captureAsOfRequired": true,
+      "includeOnlyAvailableAndAdmitted": true,
+      "unsupportedClass": "NOT_SUPPORTED",
+      "delistedInstrument": "EXCLUDED"
+    },
+    "identityFields": [
+      "instrumentId",
+      "underlyingAssetId",
+      "assetClass",
+      "venue",
+      "providerInstrumentId",
+      "instrumentType",
+      "baseCurrency",
+      "quoteCurrency",
+      "settlementCurrency",
+      "collateralAsset",
+      "contractMultiplier",
+      "contractValueUnit",
+      "linearOrInverse",
+      "expiry"
+    ],
+    "requiredInstrumentType": "PERPETUAL",
+    "expiry": null,
+    "marketFields": [
+      "lastPrice",
+      "markPrice",
+      "indexPrice",
+      "fundingRate",
+      "fundingIntervalSeconds",
+      "nextFundingAt",
+      "openInterest",
+      "openInterestUnit",
+      "observedAt",
+      "receivedAt"
+    ],
+    "comparison": {
+      "separateFromSpotAndDatedFutures": true,
+      "noPriceSubstitution": true,
+      "sharedInstrumentSetRequired": true,
+      "fundingAndMarkFreshnessSeparately": true,
+      "exchangeSpecificCadence": true
+    },
+    "stagePolicy": {
+      "baseStagesUnchanged": true,
+      "additionalInstrumentsPerStepMax": 50,
+      "totalLoadIncludesBaseAndPerpetuals": true,
+      "previousAdmittedUniverseRollback": true
+    },
+    "requiredEvidence": [
+      "venueCatalogueAndContractSpecification",
+      "underlyingMappingAndQuoteSettlementIdentity",
+      "perProviderDatasetDerivativeRights",
+      "markIndexFundingAndOpenInterestFieldSemantics",
+      "readOnlyFeedAndNoOrderExecution",
+      "sameContractSetForPairwiseComparison",
+      "JetStreamAckReplayAndRecoveryAtCombinedLoad"
+    ]
+  },
+  "excludedCandidates": [
+    {
+      "repo": "ranaroussi/yfinance",
+      "url": "https://github.com/ranaroussi/yfinance",
+      "stars": 25423,
+      "license": "Apache-2.0",
+      "archived": false,
+      "pushedAt": "2026-09-30T20:35:57Z",
+      "defaultBranch": "main",
+      "sourceSha": "5cae563642b59f49adf6a04a5ad6744f8b0e084d",
+      "id": "yfinance",
+      "role": "research-data-client",
+      "metadataLicense": "Apache-2.0",
+      "licenseReview": "PENDING_EXACT_SOURCE",
+      "dataRights": "UNVERIFIED",
+      "buildDigest": null,
+      "stableRelease": null,
+      "measurementState": "NOT_EXECUTED",
+      "fullClassCoverage": "UNVERIFIED",
+      "commercialStatus": "EXCLUDED_PERSONAL_USE_DATA_PATH",
+      "reason": "Yahoo Finance data path described as personal-use by yfinance upstream",
+      "evidenceUrl": "https://github.com/ranaroussi/yfinance/blob/main/README.md"
+    }
+  ],
+  "commercialPolicy": {
+    "required": true,
+    "researchOnlyMayAuthorize": false,
+    "personalUseMayAuthorize": false,
+    "unknownRightsMayPass": false,
+    "paidSubscriptionMayImplyRedistributionRights": false,
+    "preferredSoftwareProfile": "PERMISSIVE_WITH_SATISFIED_OBLIGATIONS",
+    "copyleftPolicy": "REVIEW_CONCRETE_USE_NOT_BLANKET_BAN",
+    "authorities": {
+      "software": "docs/security/legal-policy-v1.json",
+      "dataRights": "src/contracts/marketDataRightsEligibility.ts",
+      "products": "src/data/monetizationRegistry.ts",
+      "cads": "docs/architecture/CADS-PIPELINE-SELF-HEALING.md"
+    },
+    "scope": [
+      "paidSaasDisplay",
+      "webAndMobile",
+      "b2bApiRedistribution",
+      "derivedCommercialScores",
+      "cacheJetStreamReplayRetention",
+      "customerExports",
+      "whiteLabel",
+      "paidBenchmarkReports",
+      "ghcrBinaryDistribution"
+    ],
+    "requiredEvidence": [
+      "commercialSaasProviderPermission",
+      "entityRegionTierVenueInstrumentScope",
+      "displayRedistributionDerivedUseRetentionExportPermissions",
+      "indexOwnerAndExchangePermissionsWhereApplicable",
+      "perpetualContractDataRights",
+      "licenseNoticeSourceObligationsForActualPackaging",
+      "recurringQuotaFeedAndLicenceCosts",
+      "contractExpiryAndTermsChangeReview"
+    ],
+    "futureRiskGuarantee": false,
+    "expiryOrTermsChange": "BLOCK_NEW_PROMOTION_AND_REVIEW_EXISTING_PRODUCT_SCOPE"
+  },
+  "monetization": {
+    "registryRef": {
+      "path": "src/data/monetizationRegistry.ts",
+      "sourceSha": "54fb8c55c4f5562d977f1095db2c73877acdc270",
+      "blobSha": "c864628636824d7c270904e7117f1c49a9cb2716"
+    },
+    "cadsRef": {
+      "path": "docs/architecture/CADS-PIPELINE-SELF-HEALING.md",
+      "sourceSha": "54fb8c55c4f5562d977f1095db2c73877acdc270",
+      "blobSha": "465b91b208c0f628bd8ab680b44f1f05b34a8e74"
+    },
+    "products": [
+      {
+        "id": "saas",
+        "requires": [
+          "paidDisplay",
+          "commercialDerivedScoring",
+          "retention"
+        ],
+        "state": "RIGHTS_UNVERIFIED"
+      },
+      {
+        "id": "data-api",
+        "requires": [
+          "apiRedistribution",
+          "retention",
+          "perCustomerEntitlements"
+        ],
+        "state": "RIGHTS_UNVERIFIED"
+      },
+      {
+        "id": "sentiment-api",
+        "requires": [
+          "commercialDerivedData",
+          "sourceSpecificRedistribution"
+        ],
+        "state": "RIGHTS_UNVERIFIED"
+      },
+      {
+        "id": "white-label",
+        "requires": [
+          "embeddedThirdPartyDisplay",
+          "redistribution",
+          "attribution"
+        ],
+        "state": "RIGHTS_UNVERIFIED"
+      },
+      {
+        "id": "cads-app",
+        "requires": [
+          "benchmarkPublication",
+          "paidReportRedistribution",
+          "referenceDatasetRights"
+        ],
+        "state": "RIGHTS_UNVERIFIED"
+      },
+      {
+        "id": "ghcr-app",
+        "requires": [
+          "softwareBinaryDistribution",
+          "sourceNoticeObligations",
+          "noBundledSecretsOrRestrictedDatasets"
+        ],
+        "state": "RIGHTS_UNVERIFIED"
+      },
+      {
+        "id": "social",
+        "requires": [
+          "publicDataDisplay",
+          "chartAndLogoPublication"
+        ],
+        "state": "RIGHTS_UNVERIFIED"
+      }
+    ],
+    "pricingMutation": false,
+    "entitlementsMayOverrideRights": false,
+    "costModel": {
+      "state": "NOT_MEASURED",
+      "fields": [
+        "monthlyDataFeedCost",
+        "exchangeIndexLicenceCost",
+        "computeStorageBandwidthCost",
+        "perSubscriberMarginalCost",
+        "perApiRequestMarginalCost",
+        "tierQuota",
+        "grossMarginAtExpectedLoad"
+      ]
+    },
+    "cadsMapping": {
+      "layers": [
+        "ingress",
+        "normalization",
+        "scoring",
+        "stream",
+        "cache",
+        "storage",
+        "api",
+        "presentation"
+      ],
+      "weightsMayCompensateRightsFailure": false,
+      "currentReleaseRequirementsPreserved": true,
+      "fullPipelineMinSamples": 600,
+      "p95LessThanMs": 200,
+      "maxLessThanMs": 200,
+      "assetClassMismatch": "BLOCKED_MAPPING_REVIEW_REQUIRED: benchmark stocks/indices not interchangeable with release equity_us/equity_eu/fixed_income"
+    },
+    "canonicalUseCaseGaps": [
+      "commercial derived scoring is not authorized by derived_scoring_research",
+      "paid benchmark publication and white-label require explicit contract scope"
+    ],
+    "winnerAdmission": "ALL_REQUIRED_PRODUCT_SCOPES_VERIFIED_BEFORE_PRODUCT_PROMOTION"
+  },
+  "commercialEvidence": "docs/licenses/oss-market-stack/commercial-review-20261003.json"
+}
