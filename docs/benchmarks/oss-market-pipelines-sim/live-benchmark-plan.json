@@ -1,0 +1,591 @@
+{
+  "schema": "CAPITAL_AI_OSS_MULTI_ASSET_BENCHMARK_PLAN@1",
+  "sourceMainSha": "54fb8c55c4f5562d977f1095db2c73877acdc270",
+  "observedAt": "2026-10-03",
+  "state": "PREPARED_NOT_EXECUTED",
+  "environment": "isolated-nonproduction",
+  "productionActivation": false,
+  "automaticPromotion": false,
+  "targets": {
+    "crypto": 500,
+    "stocks": 300,
+    "commodities": 100,
+    "forex": 100,
+    "indices": 300
+  },
+  "firstTestPerClass": 20,
+  "incrementTotal": 50,
+  "stages": [
+    {
+      "stage": 0,
+      "total": 100,
+      "counts": {
+        "crypto": 20,
+        "stocks": 20,
+        "commodities": 20,
+        "forex": 20,
+        "indices": 20
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 1,
+      "total": 150,
+      "counts": {
+        "crypto": 39,
+        "stocks": 32,
+        "commodities": 24,
+        "forex": 24,
+        "indices": 31
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 2,
+      "total": 200,
+      "counts": {
+        "crypto": 60,
+        "stocks": 43,
+        "commodities": 27,
+        "forex": 27,
+        "indices": 43
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 3,
+      "total": 250,
+      "counts": {
+        "crypto": 80,
+        "stocks": 55,
+        "commodities": 30,
+        "forex": 30,
+        "indices": 55
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 4,
+      "total": 300,
+      "counts": {
+        "crypto": 99,
+        "stocks": 67,
+        "commodities": 34,
+        "forex": 34,
+        "indices": 66
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 5,
+      "total": 350,
+      "counts": {
+        "crypto": 120,
+        "stocks": 78,
+        "commodities": 37,
+        "forex": 37,
+        "indices": 78
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 6,
+      "total": 400,
+      "counts": {
+        "crypto": 140,
+        "stocks": 90,
+        "commodities": 40,
+        "forex": 40,
+        "indices": 90
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 7,
+      "total": 450,
+      "counts": {
+        "crypto": 159,
+        "stocks": 102,
+        "commodities": 44,
+        "forex": 44,
+        "indices": 101
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 8,
+      "total": 500,
+      "counts": {
+        "crypto": 180,
+        "stocks": 113,
+        "commodities": 47,
+        "forex": 47,
+        "indices": 113
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 9,
+      "total": 550,
+      "counts": {
+        "crypto": 200,
+        "stocks": 125,
+        "commodities": 50,
+        "forex": 50,
+        "indices": 125
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 10,
+      "total": 600,
+      "counts": {
+        "crypto": 219,
+        "stocks": 137,
+        "commodities": 54,
+        "forex": 54,
+        "indices": 136
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 11,
+      "total": 650,
+      "counts": {
+        "crypto": 240,
+        "stocks": 148,
+        "commodities": 57,
+        "forex": 57,
+        "indices": 148
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 12,
+      "total": 700,
+      "counts": {
+        "crypto": 260,
+        "stocks": 160,
+        "commodities": 60,
+        "forex": 60,
+        "indices": 160
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 13,
+      "total": 750,
+      "counts": {
+        "crypto": 279,
+        "stocks": 172,
+        "commodities": 64,
+        "forex": 64,
+        "indices": 171
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 14,
+      "total": 800,
+      "counts": {
+        "crypto": 300,
+        "stocks": 183,
+        "commodities": 67,
+        "forex": 67,
+        "indices": 183
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 15,
+      "total": 850,
+      "counts": {
+        "crypto": 320,
+        "stocks": 195,
+        "commodities": 70,
+        "forex": 70,
+        "indices": 195
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 16,
+      "total": 900,
+      "counts": {
+        "crypto": 339,
+        "stocks": 207,
+        "commodities": 74,
+        "forex": 74,
+        "indices": 206
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 17,
+      "total": 950,
+      "counts": {
+        "crypto": 360,
+        "stocks": 218,
+        "commodities": 77,
+        "forex": 77,
+        "indices": 218
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 18,
+      "total": 1000,
+      "counts": {
+        "crypto": 380,
+        "stocks": 230,
+        "commodities": 80,
+        "forex": 80,
+        "indices": 230
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 19,
+      "total": 1050,
+      "counts": {
+        "crypto": 399,
+        "stocks": 242,
+        "commodities": 84,
+        "forex": 84,
+        "indices": 241
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 20,
+      "total": 1100,
+      "counts": {
+        "crypto": 420,
+        "stocks": 253,
+        "commodities": 87,
+        "forex": 87,
+        "indices": 253
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 21,
+      "total": 1150,
+      "counts": {
+        "crypto": 440,
+        "stocks": 265,
+        "commodities": 90,
+        "forex": 90,
+        "indices": 265
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 22,
+      "total": 1200,
+      "counts": {
+        "crypto": 459,
+        "stocks": 277,
+        "commodities": 94,
+        "forex": 94,
+        "indices": 276
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 23,
+      "total": 1250,
+      "counts": {
+        "crypto": 480,
+        "stocks": 288,
+        "commodities": 97,
+        "forex": 97,
+        "indices": 288
+      },
+      "state": "PLANNED"
+    },
+    {
+      "stage": 24,
+      "total": 1300,
+      "counts": {
+        "crypto": 500,
+        "stocks": 300,
+        "commodities": 100,
+        "forex": 100,
+        "indices": 300
+      },
+      "state": "PLANNED"
+    }
+  ],
+  "selection": {
+    "method": "TASK_RELEVANT_POPULARITY_SHORTLIST",
+    "notGlobalTopTen": true,
+    "popularityMetric": "GitHub stars, point-in-time metadata; not performance or security",
+    "unsupportedClasses": "NOT_SUPPORTED; never substitute ETF, CFD or futures for cash index or spot without explicit instrument identity"
+  },
+  "candidates": [
+    {
+      "repo": "ccxt/ccxt",
+      "url": "https://github.com/ccxt/ccxt",
+      "stars": 44239,
+      "license": "MIT",
+      "archived": false,
+      "pushedAt": "2026-10-03T12:10:43Z",
+      "defaultBranch": "master",
+      "sourceSha": "099d9d5de5bee0b0434c4f478e866604b5229ddb",
+      "id": "ccxt",
+      "role": "crypto-adapter",
+      "metadataLicense": "MIT",
+      "licenseReview": "PENDING_EXACT_SOURCE",
+      "dataRights": "UNVERIFIED",
+      "buildDigest": null,
+      "stableRelease": null,
+      "measurementState": "NOT_EXECUTED",
+      "fullClassCoverage": "UNVERIFIED"
+    },
+    {
+      "repo": "openbq-org/OpenBB",
+      "url": "https://github.com/openbq-org/OpenBB",
+      "stars": 73807,
+      "license": "NOASSERTION",
+      "archived": false,
+      "pushedAt": "2026-10-02T04:55:27Z",
+      "defaultBranch": "develop",
+      "previousRepo": "OpenBB-finance/OpenBB",
+      "sourceSha": "ae0268771f761b036996d81bd21522ce79d95415",
+      "id": "openbb",
+      "role": "multi-asset-data-platform",
+      "metadataLicense": "NOASSERTION",
+      "licenseReview": "PENDING_EXACT_SOURCE",
+      "dataRights": "UNVERIFIED",
+      "buildDigest": null,
+      "stableRelease": null,
+      "measurementState": "NOT_EXECUTED",
+      "fullClassCoverage": "UNVERIFIED"
+    },
+    {
+      "repo": "ranaroussi/yfinance",
+      "url": "https://github.com/ranaroussi/yfinance",
+      "stars": 25423,
+      "license": "Apache-2.0",
+      "archived": false,
+      "pushedAt": "2026-09-30T20:35:57Z",
+      "defaultBranch": "main",
+      "sourceSha": "5cae563642b59f49adf6a04a5ad6744f8b0e084d",
+      "id": "yfinance",
+      "role": "research-data-client",
+      "metadataLicense": "Apache-2.0",
+      "licenseReview": "PENDING_EXACT_SOURCE",
+      "dataRights": "UNVERIFIED",
+      "buildDigest": null,
+      "stableRelease": null,
+      "measurementState": "NOT_EXECUTED",
+      "fullClassCoverage": "UNVERIFIED"
+    },
+    {
+      "repo": "QuantConnect/Lean",
+      "url": "https://github.com/QuantConnect/Lean",
+      "stars": 21852,
+      "license": "Apache-2.0",
+      "archived": false,
+      "pushedAt": "2026-10-02T20:57:46Z",
+      "defaultBranch": "master",
+      "sourceSha": "705b9551be1aaa821c7f77896a7eb8fcd07b92ee",
+      "id": "lean",
+      "role": "multi-asset-engine",
+      "metadataLicense": "Apache-2.0",
+      "licenseReview": "PENDING_EXACT_SOURCE",
+      "dataRights": "UNVERIFIED",
+      "buildDigest": null,
+      "stableRelease": null,
+      "measurementState": "NOT_EXECUTED",
+      "fullClassCoverage": "UNVERIFIED"
+    },
+    {
+      "repo": "vnpy/vnpy",
+      "url": "https://github.com/vnpy/vnpy",
+      "stars": 45676,
+      "license": "MIT",
+      "archived": false,
+      "pushedAt": "2026-10-03T15:43:16Z",
+      "defaultBranch": "master",
+      "sourceSha": "2b0fa6ceb8db72f23b429f9d64c18a1444d09917",
+      "id": "vnpy",
+      "role": "multi-asset-engine",
+      "metadataLicense": "MIT",
+      "licenseReview": "PENDING_EXACT_SOURCE",
+      "dataRights": "UNVERIFIED",
+      "buildDigest": null,
+      "stableRelease": null,
+      "measurementState": "NOT_EXECUTED",
+      "fullClassCoverage": "UNVERIFIED"
+    },
+    {
+      "repo": "mementum/backtrader",
+      "url": "https://github.com/mementum/backtrader",
+      "stars": 23388,
+      "license": "GPL-3.0",
+      "archived": false,
+      "pushedAt": "2024-08-19T17:47:36Z",
+      "defaultBranch": "master",
+      "sourceSha": "b853d7c90b6721476eb5a5ea3135224e33db1f14",
+      "id": "backtrader",
+      "role": "historical-engine",
+      "metadataLicense": "GPL-3.0",
+      "licenseReview": "PENDING_EXACT_SOURCE",
+      "dataRights": "UNVERIFIED",
+      "buildDigest": null,
+      "stableRelease": null,
+      "measurementState": "NOT_EXECUTED",
+      "fullClassCoverage": "UNVERIFIED"
+    },
+    {
+      "repo": "hummingbot/hummingbot",
+      "url": "https://github.com/hummingbot/hummingbot",
+      "stars": 20294,
+      "license": "Apache-2.0",
+      "archived": false,
+      "pushedAt": "2026-09-28T10:50:41Z",
+      "defaultBranch": "master",
+      "sourceSha": "9af100d6822da7d2d0291a906c730ef172284ee2",
+      "id": "hummingbot",
+      "role": "crypto-engine",
+      "metadataLicense": "Apache-2.0",
+      "licenseReview": "PENDING_EXACT_SOURCE",
+      "dataRights": "UNVERIFIED",
+      "buildDigest": null,
+      "stableRelease": null,
+      "measurementState": "NOT_EXECUTED",
+      "fullClassCoverage": "UNVERIFIED"
+    },
+    {
+      "repo": "bmoscon/cryptofeed",
+      "url": "https://github.com/bmoscon/cryptofeed",
+      "stars": 2916,
+      "license": "NOASSERTION",
+      "archived": false,
+      "pushedAt": "2026-10-02T14:34:03Z",
+      "defaultBranch": "master",
+      "sourceSha": "6cbd9b959f104fe970791d32444a2ef13ddacc2f",
+      "id": "cryptofeed",
+      "role": "crypto-feed-handler",
+      "metadataLicense": "NOASSERTION",
+      "licenseReview": "PENDING_EXACT_SOURCE",
+      "dataRights": "UNVERIFIED",
+      "buildDigest": null,
+      "stableRelease": null,
+      "measurementState": "NOT_EXECUTED",
+      "fullClassCoverage": "UNVERIFIED"
+    },
+    {
+      "repo": "nautechsystems/nautilus_trader",
+      "url": "https://github.com/nautechsystems/nautilus_trader",
+      "stars": 29592,
+      "license": "LGPL-3.0",
+      "archived": false,
+      "pushedAt": "2026-10-03T17:37:52Z",
+      "defaultBranch": "develop",
+      "sourceSha": "ad9d283abc2d6d86f3dd197229a8b357600a9303",
+      "id": "nautilus_trader",
+      "role": "multi-asset-engine",
+      "metadataLicense": "LGPL-3.0",
+      "licenseReview": "PENDING_EXACT_SOURCE",
+      "dataRights": "UNVERIFIED",
+      "buildDigest": null,
+      "stableRelease": null,
+      "measurementState": "NOT_EXECUTED",
+      "fullClassCoverage": "UNVERIFIED"
+    },
+    {
+      "repo": "pydata/pandas-datareader",
+      "url": "https://github.com/pydata/pandas-datareader",
+      "stars": 3271,
+      "license": "NOASSERTION",
+      "archived": false,
+      "pushedAt": "2026-07-21T08:28:05Z",
+      "defaultBranch": "main",
+      "sourceSha": "9a3e2fe8c4e202bf9be6b4543fd1a06c3cdce7de",
+      "id": "pandas-datareader",
+      "role": "historical-data-client",
+      "metadataLicense": "NOASSERTION",
+      "licenseReview": "PENDING_EXACT_SOURCE",
+      "dataRights": "UNVERIFIED",
+      "buildDigest": null,
+      "stableRelease": null,
+      "measurementState": "NOT_EXECUTED",
+      "fullClassCoverage": "UNVERIFIED"
+    }
+  ],
+  "workload": {
+    "instrumentManifest": null,
+    "instrumentManifestSha256": null,
+    "twentyUniqueInstrumentIdentitiesPerClass": true,
+    "rankingReferenceRequired": true,
+    "warmupSeconds": 60,
+    "measurementSeconds": 600,
+    "repetitions": 3,
+    "modes": [
+      "captured-replay",
+      "authorized-live"
+    ],
+    "sharedInfrastructure": "isolated NATS JetStream + Valkey",
+    "readOnlyMarketAccess": true,
+    "orderExecution": false,
+    "runCandidatesSequentially": true,
+    "sameHardwareRequired": true,
+    "sameSourceAndWindowForPairwiseComparison": true,
+    "unmatchedComparisons": "NON_COMPARABLE",
+    "sessionAware": true
+  },
+  "metrics": [
+    "classCoverage",
+    "p50Ms",
+    "p95Ms",
+    "p99Ms",
+    "eventsPerSecond",
+    "invalidFacts",
+    "missingEvents",
+    "duplicateEvents",
+    "replayHashMismatches",
+    "reconnectSeconds",
+    "cpuSeconds",
+    "peakRssBytes",
+    "networkBytes",
+    "cacheFreshnessMs",
+    "quota429Count"
+  ],
+  "scoreProfile": {
+    "id": "DATA_PIPELINE_REVIEW@1",
+    "weights": {
+      "securityTrust": 25,
+      "functionalCoverage": 20,
+      "performanceResources": 15,
+      "reliability": 10,
+      "maintainabilityIntegration": 10,
+      "licenseProvenance": 10,
+      "evidenceAuditability": 5,
+      "portabilityCost": 5
+    },
+    "scoringRubric": "PENDING_BEFORE_EXECUTION",
+    "rankingEnabled": false
+  },
+  "requiredEvidence": [
+    "rightsPerProviderDatasetUseCase",
+    "originalLicenseNotice",
+    "stableReleaseAndImmutableImageDigest",
+    "sbomAndVulnerabilityReview",
+    "100InstrumentManifestWithVenueCurrencyContractExpiry",
+    "sameWorkloadHardwareClockAndProviderWindow",
+    "threeIndependentRunsIncludingRecovery",
+    "JetStreamAckAndHashReplay",
+    "quotaAndSessionAwareFreshness",
+    "ownerProductionDecision"
+  ],
+  "blockers": [
+    "No admitted 100-instrument dataset manifest",
+    "No ten isolated measured candidate runtimes",
+    "No provider/dataset rights admission for five asset classes",
+    "No measured comparisons or winner",
+    "Scoring rubric and operational budgets require pre-run calibration"
+  ]
+}
