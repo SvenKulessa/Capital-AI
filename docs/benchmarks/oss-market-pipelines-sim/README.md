@@ -194,3 +194,11 @@ monetizationRegistry und CADS-PIPELINE-SELF-HEALING; dieser Plan ist keine zweit
 Rechte- oder Pricing-Authority. Rechts-/Lizenzprüfung gilt für konkrete Version,
 Artefakt, Integration, Region, Vertrag und Produkt. Eine Garantie gegen beliebige
 zukünftige Vertrags-/Lizenzänderungen wird nicht behauptet.
+
+### Original-Lizenzen und Provider-Angebote: Review 2026-10-03
+
+Die versionierte Evidence steht in `docs/licenses/oss-market-stack/commercial-review-20261003.json`. Neun Original-Lizenzdateien wurden am jeweiligen Source-SHA geprüft; fdnpy bleibt wegen fehlender Original-LICENSE gesperrt. Cryptofeed ist im aktuellen Snapshot AGPL-3.0-or-later mit zusätzlicher Attribution und benötigt eine Prüfung der Netzwerk-/Integrationspflichten. Permissive Kandidaten benötigen weiterhin NOTICE/SBOM und separate Datenrechte.
+
+FinancialData.Net bewirbt Enterprise mit externer kommerzieller Nutzung und Redistribution; die Terms begrenzen unter anderem Konkurrenzprodukte und den Weiterverkauf/White-Label der Plattform selbst. Ein eigenes Data-API-/White-Label-Produkt braucht eine bestätigte Vertragsabgrenzung. Twelve Data und Massive benötigen passende Business-/Feed-/Produktrechte. Öffentliche Exchange-Endpunkte erteilen keine automatisch geprüften Weiterverteilungsrechte.
+
+Preisangebote sind lediglich Recherchewerte. Keine reale Laufzeit-, Quota-, Durchsatz-, Kosten- oder Margenmessung wurde durchgeführt. Die kommerzielle Zulassung und der produktive Sieger bleiben offen. Bereits vorhandene CADS-/Monetarisierungs-Authorities werden unverändert referenziert.
