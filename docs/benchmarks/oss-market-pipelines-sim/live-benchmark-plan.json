@@ -586,6 +586,79 @@
     "No ten isolated measured candidate runtimes",
     "No provider/dataset rights admission for five asset classes",
     "No measured comparisons or winner",
-    "Scoring rubric and operational budgets require pre-run calibration"
-  ]
+    "Scoring rubric and operational budgets require pre-run calibration",
+    "No verified per-venue perpetual catalogue, contract mapping or derivative data-rights admission"
+  ],
+  "additionalPerpetuals": {
+    "enabledForBenchmark": true,
+    "assetClasses": [
+      "crypto",
+      "stocks",
+      "commodities"
+    ],
+    "counting": "ADDITIONAL_DERIVATIVE_INSTRUMENTS_NOT_BASE_ASSETS",
+    "targetCount": null,
+    "firstTestCount": null,
+    "availability": "UNVERIFIED_PER_VENUE",
+    "activation": false,
+    "discovery": {
+      "source": "verified provider instrument catalogue",
+      "captureAsOfRequired": true,
+      "includeOnlyAvailableAndAdmitted": true,
+      "unsupportedClass": "NOT_SUPPORTED",
+      "delistedInstrument": "EXCLUDED"
+    },
+    "identityFields": [
+      "instrumentId",
+      "underlyingAssetId",
+      "assetClass",
+      "venue",
+      "providerInstrumentId",
+      "instrumentType",
+      "baseCurrency",
+      "quoteCurrency",
+      "settlementCurrency",
+      "collateralAsset",
+      "contractMultiplier",
+      "contractValueUnit",
+      "linearOrInverse",
+      "expiry"
+    ],
+    "requiredInstrumentType": "PERPETUAL",
+    "expiry": null,
+    "marketFields": [
+      "lastPrice",
+      "markPrice",
+      "indexPrice",
+      "fundingRate",
+      "fundingIntervalSeconds",
+      "nextFundingAt",
+      "openInterest",
+      "openInterestUnit",
+      "observedAt",
+      "receivedAt"
+    ],
+    "comparison": {
+      "separateFromSpotAndDatedFutures": true,
+      "noPriceSubstitution": true,
+      "sharedInstrumentSetRequired": true,
+      "fundingAndMarkFreshnessSeparately": true,
+      "exchangeSpecificCadence": true
+    },
+    "stagePolicy": {
+      "baseStagesUnchanged": true,
+      "additionalInstrumentsPerStepMax": 50,
+      "totalLoadIncludesBaseAndPerpetuals": true,
+      "previousAdmittedUniverseRollback": true
+    },
+    "requiredEvidence": [
+      "venueCatalogueAndContractSpecification",
+      "underlyingMappingAndQuoteSettlementIdentity",
+      "perProviderDatasetDerivativeRights",
+      "markIndexFundingAndOpenInterestFieldSemantics",
+      "readOnlyFeedAndNoOrderExecution",
+      "sameContractSetForPairwiseComparison",
+      "JetStreamAckReplayAndRecoveryAtCombinedLoad"
+    ]
+  }
 }
