@@ -114,3 +114,32 @@ aus; Supply-Chain-Self-Healing erst nach drei unabhängigen positiven Zyklen.
 
 Bezug: Issue #105. Dieses Owner-Ziel erweitert den Plan; die historische
 Issue-Evidence bleibt unverändert und nicht als 1.300-Asset-Nachweis nutzbar.
+
+### Owner-Erweiterung: zusätzliche Perpetuals
+
+Vorhandene Perpetuals für Krypto, Aktien und Rohstoffe werden zusätzlich in der
+Benchmark-Coverage geführt. Basisziel bleibt 1.300 Assets; verfügbare zugelassene
+Perps erhöhen die Zahl der Derivate-Instrumente separat. `targetCount:null`
+und `firstTestCount:null` bedeuten ungeklärt, nicht null verfügbare Kontrakte.
+Für Forex und Indizes wurde keine zusätzliche Perp-Erweiterung autorisiert.
+
+Der erste Basisversuch bleibt bei 20 Assets je Klasse. Nur tatsächlich katalogisierte
+und zugelassene Perps können ergänzend getestet werden; keine Pflicht, für jede
+Klasse künstlich 20 Kontrakte zu erzeugen. Spot, Perpetual und datierter Future
+werden niemals gegenseitig als Abdeckung oder Preisquelle substituiert.
+Vorhandensein, Datenrechte und Provider-Unterstützung werden je Venue geprüft.
+Fehlende Klassen werden NOT_SUPPORTED, ungeprüfte Verfügbarkeit UNVERIFIED.
+
+Identität: Underlying, Klasse, Venue, Provider-Kontrakt-ID, Basis-/Quote-/Settlement-
+Währung, Collateral, Kontraktmultiplikator/-einheit, linear/inverse und
+`instrumentType:PERPETUAL` mit `expiry:null`.
+Messdaten: Last/Mark/Index getrennt, Fundingrate samt Intervall und nächstem Termin,
+Open Interest samt Einheit sowie Beobachtungs-/Empfangszeit. Providersemantik
+und unterschiedliche Funding-Kadenzen werden nicht vereinheitlicht geraten.
+
+Paarweise Vergleiche verwenden denselben Kontraktsatz; Spot- und Perp-Ergebnisse
+erhalten getrennte Tabellen. Combined-Load-Tests zählen Basis plus Derivate.
+Zusätzliche Perp-Schritte umfassen höchstens 50 Instrumente und benötigen dieselben
+ACK-/Replay-/Quota-/Rights-/Recovery-Gates. Die konkrete Stufengröße folgt dem
+verifizierten verfügbaren Katalog. Reiner Marktdatenzugriff, keine Orders,
+Positionen, Leverage-Konfiguration oder produktive Aktivierung.
