@@ -45,8 +45,29 @@ export function validatePlan(p) {
   assert.equal(p.workload.instrumentManifestSha256, null);
   assert.equal(p.workload.repetitions, 3);
   assert.ok(p.blockers.length > 0);
+  const perps = p.additionalPerpetuals;
+  assert.equal(perps.enabledForBenchmark, true);
+  assert.deepEqual(perps.assetClasses, ['crypto', 'stocks', 'commodities']);
+  assert.equal(perps.counting, 'ADDITIONAL_DERIVATIVE_INSTRUMENTS_NOT_BASE_ASSETS');
+  assert.equal(perps.targetCount, null);
+  assert.equal(perps.firstTestCount, null);
+  assert.equal(perps.activation, false);
+  assert.equal(perps.requiredInstrumentType, 'PERPETUAL');
+  assert.equal(perps.expiry, null);
+  assert.equal(perps.comparison.noPriceSubstitution, true);
+  assert.equal(perps.comparison.separateFromSpotAndDatedFutures, true);
+  assert.equal(perps.stagePolicy.totalLoadIncludesBaseAndPerpetuals, true);
+  assert.equal(perps.stagePolicy.additionalInstrumentsPerStepMax, 50);
+  for (const field of ['underlyingAssetId', 'venue', 'settlementCurrency',
+    'collateralAsset', 'contractMultiplier', 'contractValueUnit', 'linearOrInverse']) {
+    assert.ok(perps.identityFields.includes(field));
+  }
+  for (const field of ['markPrice', 'indexPrice', 'fundingRate',
+    'fundingIntervalSeconds', 'nextFundingAt', 'openInterestUnit']) {
+    assert.ok(perps.marketFields.includes(field));
+  }
   return { valid: true, totalTarget: 1300, firstTestAssets: 100,
-    candidates: 10, stages: 25, benchmarkExecuted: false, decisionEligible: false };
+    candidates: 10, stages: 25, additionalPerpetualTarget: null, benchmarkExecuted: false, decisionEligible: false };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
