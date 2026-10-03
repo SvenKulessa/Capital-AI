@@ -13,7 +13,10 @@ RUN npm ci --prefix /opt/npm-security-patches --ignore-scripts --no-audit --no-f
     && node /opt/harden-npm-toolchain.mjs /usr/local/lib/node_modules/npm /opt/npm-security-patches/node_modules \
     && rm -rf /opt/npm-security-patches /opt/harden-npm-toolchain.mjs /root/.npm
 COPY package.json package-lock.json ./
-RUN npm ci --ignore-scripts --no-audit --no-fund && rm -rf /root/.npm
+RUN npm ci --ignore-scripts --no-audit --no-fund \
+    && rm -rf /root/.npm /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
+# All subsequent validation is offline. Node's script runner needs no npm/cache transport.
+# Remove the installer itself, including vulnerable bundled http-cache-semantics, before validation.
 COPY index.html vite.config.ts tsconfig.json ./
 COPY src ./src
 COPY contracts ./contracts
@@ -38,7 +41,7 @@ RUN --network=none node --test server/mta-sts.test.mjs \
     && node --test scripts/license-evidence.test.mjs \
     && node scripts/license-evidence.mjs \
     && node --import tsx --test scripts/frontend-security.test.mjs \
-    && npm run lint && npm test && npm run build \
+    && node --run lint && node --run test && node --run build \
     && node scripts/verify-browser-boundary.mjs \
     && CAPITAL_AI_BENCHMARK_ENV=isolated-nonproduction node --import tsx scripts/benchmark-scoring-capacity.mjs > /app/scoring-capacity.json
 
@@ -58,7 +61,7 @@ COPY server/infrastructure.mjs ./server/
 COPY server/billing-catalog.mjs ./server/
 COPY scripts/verify-private-brokers.mjs ./scripts/
 COPY shared ./shared
-COPY docs/licenses/node-v24.19.0-LICENSE.txt ./licenses/Node-LICENSE.txt
+COPY docs/licenses/node-v26.10.0-LICENSE.txt ./licenses/Node-LICENSE.txt
 RUN rm -rf /usr/local/lib/node_modules/corepack /usr/local/bin/corepack /usr/local/bin/pnpm* /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx /opt/yarn* /usr/local/bin/yarn* \
     && chmod -R a-w /app
 USER 1000:1000
