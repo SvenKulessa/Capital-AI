@@ -45,6 +45,24 @@ export function validatePlan(p) {
   assert.equal(p.workload.instrumentManifestSha256, null);
   assert.equal(p.workload.repetitions, 3);
   assert.ok(p.blockers.length > 0);
+  assert.equal(p.commercialPolicy.required, true);
+  assert.equal(p.commercialPolicy.researchOnlyMayAuthorize, false);
+  assert.equal(p.commercialPolicy.personalUseMayAuthorize, false);
+  assert.equal(p.commercialPolicy.unknownRightsMayPass, false);
+  assert.equal(p.commercialPolicy.paidSubscriptionMayImplyRedistributionRights, false);
+  assert.equal(p.monetization.entitlementsMayOverrideRights, false);
+  assert.equal(p.monetization.pricingMutation, false);
+  assert.equal(p.monetization.cadsMapping.weightsMayCompensateRightsFailure, false);
+  assert.equal(p.monetization.cadsMapping.currentReleaseRequirementsPreserved, true);
+  assert.equal(p.monetization.cadsMapping.fullPipelineMinSamples, 600);
+  assert.equal(p.monetization.cadsMapping.p95LessThanMs, 200);
+  assert.equal(p.monetization.cadsMapping.maxLessThanMs, 200);
+  assert.ok(!p.candidates.some(c => c.id === 'yfinance'));
+  assert.ok(p.excludedCandidates.some(c => c.id === 'yfinance'));
+  for (const c of p.candidates) assert.equal(c.commercialAdmission, 'BLOCKED_PENDING_EVIDENCE');
+  for (const id of ['saas', 'data-api', 'white-label', 'cads-app', 'ghcr-app']) {
+    assert.ok(p.monetization.products.some(p => p.id === id && p.state === 'RIGHTS_UNVERIFIED'));
+  }
   const perps = p.additionalPerpetuals;
   assert.equal(perps.enabledForBenchmark, true);
   assert.deepEqual(perps.assetClasses, ['crypto', 'stocks', 'commodities']);
