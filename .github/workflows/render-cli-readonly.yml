@@ -1,6 +1,16 @@
 name: Render CLI read-only verification
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Lesende Diagnose: NATS, OIDC oder beide (keine Production-Freigabe)'
+        type: choice
+        required: true
+        default: nats
+        options:
+          - nats
+          - oidc
+          - both
 
 permissions:
   contents: read
@@ -21,6 +31,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Test credential-free OIDC diagnostics
+        if: inputs.mode != 'nats'
         run: node --test scripts/diagnose-oidc.test.mjs
       - name: Install verified Render CLI 2.28.0
         shell: bash
@@ -64,7 +75,163 @@ jobs:
           printf '%s\n' \
             'PASS: CLI authenticated for AICapital; Capital-AI has a live deployment.' \
             'Only workspace selection and deployment reads were performed.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Read NATS status and sanitized log evidence
+        if: inputs.mode == 'nats' || inputs.mode == 'both'
+        shell: bash
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY_TEST }}
+        run: |
+          set -euo pipefail
+          umask 077
+          python3 - <<'PY'
+          import datetime as dt
+          import json
+          import os
+          import time
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+          
+          OWNER = "tea-d90o4rj7uimc739i86ug"
+          NATS = "srv-dauhcoojo6nc738eedjg"
+          APP = "srv-dau1rp893c1s73cdhm1g"
+          key = os.environ.get("RENDER_API_KEY", "")
+          if not key:
+              raise SystemExit("BLOCKED: Render-Secret fehlt.")
+          deadline = time.monotonic() + 75
+          end = dt.datetime.now(dt.timezone.utc)
+          start = end - dt.timedelta(minutes=15)
+          stamp = lambda value: value.isoformat().replace("+00:00", "Z")
+          
+          def get(path, query=None):
+              remaining = deadline - time.monotonic()
+              if remaining <= 0:
+                  raise ValueError("TIME_BUDGET")
+              url = "https://api.render.com/v1/" + path
+              if query:
+                  url += "?" + urllib.parse.urlencode(query)
+              request = urllib.request.Request(url, headers={
+                  "Authorization": "Bearer " + key, "Accept": "application/json"
+              }, method="GET")
+              with urllib.request.urlopen(request, timeout=min(10, remaining)) as response:
+                  raw = response.read(2 * 1024 * 1024 + 1)
+              if len(raw) > 2 * 1024 * 1024:
+                  raise ValueError("RESPONSE_LIMIT")
+              return json.loads(raw)
+          
+          def log_sample(resource, text, operation=None):
+              query = {"ownerId": OWNER, "resource": resource, "type": "app",
+                       "text": text, "startTime": stamp(start), "endTime": stamp(end),
+                       "direction": "backward", "limit": 100}
+              count = loopback = 0
+              first = last = None
+              seen = set()
+              complete = False
+              for page in range(3):
+                  data = get("logs", query)
+                  if not isinstance(data, dict) or not isinstance(data.get("logs"), list):
+                      raise ValueError("LOG_SCHEMA")
+                  for entry in data["logs"]:
+                      labels = {item["name"]: item["value"] for item in entry.get("labels", [])}
+                      if labels.get("resource") != resource:
+                          raise ValueError("LOG_RESOURCE")
+                      message = entry.get("message", "")
+                      if not isinstance(message, str):
+                          raise ValueError("LOG_MESSAGE")
+                      if operation:
+                          try:
+                              event = json.loads(message)
+                          except (ValueError, TypeError):
+                              continue
+                          if not isinstance(event, dict):
+                              continue
+                          if (event.get("schema") != "CAPITAL_AI_CADS_EVENT@1" or
+                                  event.get("service") != "nats-jetstream" or
+                                  event.get("operation") != operation or event.get("outcome") != "ok"):
+                              continue
+                      elif "authentication error" not in message.lower():
+                          continue
+                      identifier = entry.get("id")
+                      if not isinstance(identifier, str):
+                          raise ValueError("LOG_ID")
+                      if identifier in seen:
+                          continue
+                      seen.add(identifier)
+                      timestamp = dt.datetime.fromisoformat(entry["timestamp"].replace("Z", "+00:00"))
+                      if timestamp.tzinfo is None or not start <= timestamp <= end:
+                          raise ValueError("LOG_TIME")
+                      count += 1
+                      if not operation and "[::1]:" in message:
+                          loopback += 1
+                      first = timestamp if first is None else min(first, timestamp)
+                      last = timestamp if last is None else max(last, timestamp)
+                  if data.get("hasMore") is False:
+                      complete = True
+                      break
+                  if data.get("hasMore") is not True:
+                      raise ValueError("LOG_PAGINATION")
+                  next_start, next_end = data.get("nextStartTime"), data.get("nextEndTime")
+                  if not isinstance(next_start, str) or not isinstance(next_end, str):
+                      raise ValueError("LOG_CURSOR")
+                  cursor_start = dt.datetime.fromisoformat(next_start.replace("Z", "+00:00"))
+                  cursor_end = dt.datetime.fromisoformat(next_end.replace("Z", "+00:00"))
+                  current_end = dt.datetime.fromisoformat(query["endTime"].replace("Z", "+00:00"))
+                  if not start <= cursor_start <= cursor_end < current_end <= end:
+                      raise ValueError("LOG_CURSOR_RANGE")
+                  query.update(startTime=next_start, endTime=next_end)
+              return {"sampleCount": count, "loopbackCount": loopback if not operation else None,
+                      "completeWindow": complete, "pageLimit": 3,
+                      "firstObservedAt": stamp(first) if first else None,
+                      "lastObservedAt": stamp(last) if last else None}
+          
+          try:
+              service = get("services/" + NATS)
+              app = get("services/" + APP)
+              for value, identifier, name, kind in (
+                  (service, NATS, "capital-ai-market-events", "private_service"),
+                  (app, APP, "Capital-AI", "web_service")
+              ):
+                  if (value.get("id") != identifier or value.get("ownerId") != OWNER or
+                          value.get("name") != name or value.get("type") != kind or
+                          value.get("serviceDetails", {}).get("region") != "frankfurt"):
+                      raise ValueError("SERVICE_ALLOWLIST")
+              deploys = get("services/" + NATS + "/deploys", {"limit": 20})
+              if not isinstance(deploys, list):
+                  raise ValueError("DEPLOY_SCHEMA")
+              live = any(item.get("deploy", item).get("status") == "live" for item in deploys)
+              details = service.get("serviceDetails", {})
+              disk = details.get("disk", {})
+              result = {
+                  "schema": "CAPITAL_AI_NATS_READONLY_DIAGNOSTIC@1",
+                  "sourceSha": os.environ["GITHUB_SHA"],
+                  "windowStart": stamp(start), "windowEnd": stamp(end),
+                  "serviceAllowlistVerified": True, "natsLiveDeployFound": live,
+                  "natsNotSuspended": service.get("suspended") == "not_suspended",
+                  "clientPort4222Listed": any(port.get("port") == 4222 for port in details.get("openPorts", [])),
+                  "persistentMountVerified": disk.get("mountPath") == "/var/data",
+                  "authErrors": log_sample(NATS, "authentication error"),
+                  "publishAckOk": log_sample(APP, "quote.publish_ack", "quote.publish_ack"),
+                  "replayOk": log_sample(APP, "quote.replay", "quote.replay"),
+                  "processIdentity": "UNVERIFIED",
+                  "productionHandoff": "NOT_ASSESSED"
+              }
+              # Output only fixed fields, counters, validated timestamps and runner identity.
+              # No raw messages, labels, environment values or API responses are published.
+              with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+                  summary.write("\n### NATS: lesende 15-Minuten-Diagnose\n\n")
+                  summary.write("```json\n" + json.dumps(result, indent=2) + "\n```\n")
+                  summary.write("Zähler sind bei completeWindow=false nur Stichproben. "
+                                "Fehlende Log-Einträge beweisen keine erfolgreiche Authentifizierung. "
+                                "Lokale Prozessidentität und vollständige Pipeline-Latenz bleiben ungeprüft.\n")
+              if not live or not result["natsNotSuspended"]:
+                  raise SystemExit("BLOCKED: NATS-Service-/Deploymentstatus.")
+          except urllib.error.HTTPError as error:
+              raise SystemExit("BLOCKED: Render-API HTTP " + str(error.code)) from None
+          except Exception:
+              raise SystemExit("BLOCKED: Render-Diagnose unvollständig; keine Rohdaten veröffentlicht.") from None
+          PY
       - name: Enforce fail-closed OIDC verification without publishing values
+        if: inputs.mode != 'nats'
         shell: bash
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY_TEST }}
