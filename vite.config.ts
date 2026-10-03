@@ -5,6 +5,7 @@ import {defineConfig, Plugin} from 'vite';
 import { thirdPartyNoticesPlugin } from './scripts/license-evidence.mjs';
 import { licenseEnginePlugin } from './scripts/license-engine.mjs';
 import { handleAdvisorRequest } from './server/advisor.ts';
+import { PromptInjectionError } from './server/prompt-injection-guard.mjs';
 import { createLimiter } from './server/http-security.mjs';
 
 // Check emitted static imports, not source imports: a cycle here can expose
@@ -26,6 +27,16 @@ function chunkCycleGuard(): Plugin {
         visited.add(name);
       };
       for (const name of Object.keys(bundle)) visit(name, []);
+      const chunks = Object.values(bundle).filter(chunk => chunk.type === 'chunk').map(chunk => ({
+        fileName: chunk.fileName, bytes: Buffer.byteLength(chunk.code, 'utf8'),
+        imports: chunk.imports, dynamicImports: chunk.dynamicImports,
+      }));
+      // Same uncompressed 500 kB threshold as Vite's default warning; do not hide regressions.
+      for (const chunk of chunks) if (chunk.bytes > 500_000) this.error(`JavaScript chunk exceeds 500 kB: ${chunk.fileName} (${chunk.bytes} bytes)`);
+      this.emitFile({ type: 'asset', fileName: 'bundle-evidence.json', source: JSON.stringify({
+        schemaVersion: 1, scope: 'BUILD_CHUNK_GRAPH_NOT_RUNTIME_LATENCY', budgetBytes: 500_000,
+        staticCycles: false, chunks,
+      }, null, 2) + '\n' });
     },
   };
 }
@@ -56,6 +67,11 @@ function advisorApiPlugin(): Plugin {
               res.end(JSON.stringify(result));
             } catch (err: any) {
               res.setHeader('Content-Type', 'application/json');
+              if (err instanceof PromptInjectionError) {
+                res.statusCode = 422;
+                res.end(JSON.stringify({ error: 'prompt_injection_blocked' }));
+                return;
+              }
               res.statusCode = 500;
               res.end(JSON.stringify({ error: 'Internal Server Error' }));
             }

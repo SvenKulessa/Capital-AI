@@ -20,6 +20,8 @@ jobs:
           REPOSITORY: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number || '' }}
           EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -28,8 +30,25 @@ jobs:
             exit 0
           fi
           gh api --paginate "repos/$REPOSITORY/pulls/$PR_NUMBER/files?per_page=100" --jq '.[].filename' > /tmp/mobile-files.txt
-          if grep -Eq '^(mobile/|server/(auth|auth\.test|mobile-scorer|mobile-scorer\.test)\.mjs$|package\.json$|package-lock\.json$)' /tmp/mobile-files.txt; then
+          if grep -Eq '^(mobile/|server/(auth|auth\.test|mobile-scorer|mobile-scorer\.test)\.mjs$|package-lock\.json$)' /tmp/mobile-files.txt; then
             echo "mobile=true" >> "$GITHUB_OUTPUT"
+          elif grep -qx 'package.json' /tmp/mobile-files.txt; then
+            # Script-only registration does not change mobile dependency closure.
+            # Other manifest changes remain conservatively in scope.
+            gh api "repos/$REPOSITORY/contents/package.json?ref=$BASE_SHA" --jq '.content' | base64 --decode > /tmp/mobile-package-base.json
+            gh api "repos/$REPOSITORY/contents/package.json?ref=$HEAD_SHA" --jq '.content' | base64 --decode > /tmp/mobile-package-head.json
+            node --input-type=module <<'NODE' >> "$GITHUB_OUTPUT"
+          import { readFileSync } from 'node:fs';
+          const read = file => {
+            const manifest = JSON.parse(readFileSync(file, 'utf8'));
+            delete manifest.scripts;
+            return manifest;
+          };
+          const base = read('/tmp/mobile-package-base.json');
+          const head = read('/tmp/mobile-package-head.json');
+          const { isDeepStrictEqual } = await import('node:util');
+          console.log(`mobile=${!isDeepStrictEqual(base, head)}`);
+          NODE
           else
             echo "mobile=false" >> "$GITHUB_OUTPUT"
           fi

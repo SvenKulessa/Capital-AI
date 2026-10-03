@@ -55,3 +55,22 @@ test('undici remediation stays on the npm-compatible 6.x donor line with locked 
   assert.equal(entry.license, 'MIT');
   assert.match(hardener, /\['undici', '6\.28\.0', '6\.29\.0'\]/);
 });
+
+test('offline build validation cannot retain or invoke the vulnerable npm cache transport', () => {
+  const dockerfile = readFileSync('Dockerfile', 'utf8');
+  const build = dockerfile.split('FROM crypto-base AS build')[1].split('FROM crypto-base AS production-deps')[0];
+  const installation = build.indexOf('RUN npm ci --ignore-scripts --no-audit --no-fund');
+  const removal = build.indexOf('/usr/local/lib/node_modules/npm', installation);
+  const validation = build.indexOf('RUN --network=none');
+  assert.ok(installation >= 0 && removal > installation && validation > removal);
+  const installLayer = build.slice(installation, build.indexOf('\nCOPY', installation));
+  for (const entry of ['/usr/local/lib/node_modules/npm', '/usr/local/bin/npm', '/usr/local/bin/npx', '/root/.npm']) {
+    assert.ok(installLayer.includes(entry), 'Installer or cache retained: ' + entry);
+  }
+  assert.doesNotMatch(build.slice(validation), /\bnpm\b|\bnpx\b/);
+  for (const script of ['lint', 'test', 'build']) assert.ok(build.slice(validation).includes('node --run ' + script));
+  for (const filename of ['package-lock.json', 'deploy/runtime/package-lock.json']) {
+    const manifest = JSON.parse(readFileSync(filename, 'utf8'));
+    assert.ok(!Object.keys(manifest.packages).some(name => /(?:^|\/)node_modules\/http-cache-semantics$/.test(name)), filename);
+  }
+});

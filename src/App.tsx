@@ -19,7 +19,7 @@ import { useMarketAssets } from './services/marketDataStore';
  * ============================================================================
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { Smartphone, Monitor } from 'lucide-react';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
@@ -49,17 +49,16 @@ import { MarketSentiment } from './components/MarketSentiment';
 import { SectorAnalysis } from './components/SectorAnalysis';
 import { WhaleRadarModal } from './components/WhaleRadarModal';
 import { MonetizationModal } from './components/MonetizationModal';
-import { ArchitecturePage } from './components/ArchitecturePage';
-import { TokenomicsPage } from './components/TokenomicsPage';
-import { PipelineBuilder } from './components/PipelineBuilder';
-import { ProviderStatusDashboard } from './components/ProviderStatusDashboard';
-import { FounderPage } from './components/FounderPage';
-import { StudioPage } from './components/StudioPage';
-import { LearningPortalPage } from './components/LearningPortalPage';
-import { ControlCenterPage } from './components/ControlCenterPage';
+const ArchitecturePage = lazy(() => import('./components/ArchitecturePage').then(module => ({ default: module.ArchitecturePage })));
+const TokenomicsPage = lazy(() => import('./components/TokenomicsPage').then(module => ({ default: module.TokenomicsPage })));
+const PipelineBuilder = lazy(() => import('./components/PipelineBuilder').then(module => ({ default: module.PipelineBuilder })));
+const ProviderStatusDashboard = lazy(() => import('./components/ProviderStatusDashboard').then(module => ({ default: module.ProviderStatusDashboard })));
+const StudioPage = lazy(() => import('./components/StudioPage').then(module => ({ default: module.StudioPage })));
+const LearningPortalPage = lazy(() => import('./components/LearningPortalPage').then(module => ({ default: module.LearningPortalPage })));
+const ControlCenterPage = lazy(() => import('./components/ControlCenterPage').then(module => ({ default: module.ControlCenterPage })));
 import { MarketscreenerModal } from './components/MarketscreenerModal';
-import { EnterpriseScorerDashboard } from './components/EnterpriseScorerDashboard';
-import { ScreenerTable } from './components/ScreenerTable';
+const EnterpriseScorerDashboard = lazy(() => import('./components/EnterpriseScorerDashboard').then(module => ({ default: module.EnterpriseScorerDashboard })));
+const ScreenerTable = lazy(() => import('./components/ScreenerTable').then(module => ({ default: module.ScreenerTable })));
 import { APP_NAVIGATION_EVENT, navigateAppLocation, resolveAppRoute } from './utils/appNavigation';
 export { resolveAppRoute } from './utils/appNavigation';
 
@@ -437,6 +436,7 @@ function AppContent() {
           </div>
         )}
 
+        <Suspense fallback={<div role="status" className="p-8 text-center text-slate-300">Ansicht wird geladen…</div>}>
         {currentRoute === '/login' ? (
           /* Dedicated Login Terminal View */
           <LoginPage
@@ -618,6 +618,7 @@ function AppContent() {
             <Footer onNavigate={navigateTo} />
           </>
         )}
+        </Suspense>
       </main>
 
       {/* Interactive Modals */}
