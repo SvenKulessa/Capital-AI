@@ -1,0 +1,243 @@
+{
+  "schema": "CAPITAL_AI_COMMERCIAL_OSS_REVIEW@1",
+  "observedAt": "2026-10-03",
+  "sourceMainSha": "54fb8c55c4f5562d977f1095db2c73877acdc270",
+  "status": "PARTIAL_REVIEW_NOT_PRODUCTION_AUTHORIZATION",
+  "candidates": [
+    {
+      "id": "ccxt",
+      "repository": "ccxt/ccxt",
+      "sourceSha": "099d9d5de5bee0b0434c4f478e866604b5229ddb",
+      "softwareLicence": "MIT",
+      "softwareReview": "PERMISSIVE_OBLIGATIONS_REVIEW",
+      "licencePath": "LICENSE.txt",
+      "licenceBlobSha": "4cc1253c79b58fa72a3d4626d95aa7fff70f6f84",
+      "commercialDataRights": "UNVERIFIED",
+      "productAdmission": "BLOCKED",
+      "notes": null
+    },
+    {
+      "id": "openbb",
+      "repository": "openbq-org/OpenBB",
+      "sourceSha": "ae0268771f761b036996d81bd21522ce79d95415",
+      "softwareLicence": "Apache-2.0",
+      "softwareReview": "PERMISSIVE_OBLIGATIONS_REVIEW",
+      "licencePath": "LICENSE",
+      "licenceBlobSha": "8e8cca33304520693be306cad3b55cba0c358676",
+      "commercialDataRights": "UNVERIFIED",
+      "productAdmission": "BLOCKED",
+      "notes": null
+    },
+    {
+      "id": "fdnpy",
+      "repository": "financialdatanet/fdnpy",
+      "sourceSha": "e46103c95ba04927057609268765a5711b3ad656",
+      "softwareLicence": "UNVERIFIED_METADATA_MIT_ONLY",
+      "softwareReview": "BLOCKED_ORIGINAL_LICENSE_MISSING",
+      "licencePath": "setup.py",
+      "licenceBlobSha": "b3d4f22d579119e94c67aa91b39ada342ca6c7f4",
+      "commercialDataRights": "UNVERIFIED",
+      "productAdmission": "BLOCKED",
+      "notes": "No LICENSE/NOTICE path found in recursive pinned tree; setup.py MIT classifier does not establish original licence evidence"
+    },
+    {
+      "id": "lean",
+      "repository": "QuantConnect/Lean",
+      "sourceSha": "705b9551be1aaa821c7f77896a7eb8fcd07b92ee",
+      "softwareLicence": "Apache-2.0",
+      "softwareReview": "PERMISSIVE_OBLIGATIONS_REVIEW",
+      "licencePath": "LICENSE",
+      "licenceBlobSha": "6faed93d21a1a9551b11434e87c9000a393d73f2",
+      "commercialDataRights": "UNVERIFIED",
+      "productAdmission": "BLOCKED",
+      "notes": null
+    },
+    {
+      "id": "vnpy",
+      "repository": "vnpy/vnpy",
+      "sourceSha": "2b0fa6ceb8db72f23b429f9d64c18a1444d09917",
+      "softwareLicence": "MIT",
+      "softwareReview": "PERMISSIVE_OBLIGATIONS_REVIEW",
+      "licencePath": "LICENSE",
+      "licenceBlobSha": "2325eb27b15b3dcf1ed510c3ac314285f6bdcaa0",
+      "commercialDataRights": "UNVERIFIED",
+      "productAdmission": "BLOCKED",
+      "notes": null
+    },
+    {
+      "id": "backtrader",
+      "repository": "mementum/backtrader",
+      "sourceSha": "b853d7c90b6721476eb5a5ea3135224e33db1f14",
+      "softwareLicence": "GPL-3.0",
+      "softwareReview": "LEGAL_REVIEW_REQUIRED_USAGE_AND_DISTRIBUTION",
+      "licencePath": "LICENSE",
+      "licenceBlobSha": "ef7e7efc09c9d471c391f05b9567966928085840",
+      "commercialDataRights": "UNVERIFIED",
+      "productAdmission": "BLOCKED",
+      "notes": null
+    },
+    {
+      "id": "hummingbot",
+      "repository": "hummingbot/hummingbot",
+      "sourceSha": "9af100d6822da7d2d0291a906c730ef172284ee2",
+      "softwareLicence": "Apache-2.0",
+      "softwareReview": "PERMISSIVE_OBLIGATIONS_REVIEW",
+      "licencePath": "LICENSE",
+      "licenceBlobSha": "e998fcfee5d9d1ba105679b6a755d10fa68cdc97",
+      "commercialDataRights": "UNVERIFIED",
+      "productAdmission": "BLOCKED",
+      "notes": null
+    },
+    {
+      "id": "cryptofeed",
+      "repository": "bmoscon/cryptofeed",
+      "sourceSha": "6cbd9b959f104fe970791d32444a2ef13ddacc2f",
+      "softwareLicence": "AGPL-3.0-or-later WITH ADDITIONAL_ATTRIBUTION_TERM",
+      "softwareReview": "LEGAL_REVIEW_REQUIRED_NETWORK_COPYLEFT_AND_ATTRIBUTION",
+      "licencePath": "LICENSE",
+      "licenceBlobSha": "bd9dea50e89336fd87e76cfa1dd9cb1fa29d2a24",
+      "commercialDataRights": "UNVERIFIED",
+      "productAdmission": "BLOCKED",
+      "notes": "Current pinned source differs from older permissive description; SaaS network copyleft and extra attribution require actual integration review"
+    },
+    {
+      "id": "nautilus_trader",
+      "repository": "nautechsystems/nautilus_trader",
+      "sourceSha": "ad9d283abc2d6d86f3dd197229a8b357600a9303",
+      "softwareLicence": "LGPL-3.0",
+      "softwareReview": "LEGAL_REVIEW_REQUIRED_USAGE_AND_DISTRIBUTION",
+      "licencePath": "LICENSE",
+      "licenceBlobSha": "5550e2db15f239ea8d3cf54bfa3b035eab8d3174",
+      "commercialDataRights": "UNVERIFIED",
+      "productAdmission": "BLOCKED",
+      "notes": null
+    },
+    {
+      "id": "pandas-datareader",
+      "repository": "pydata/pandas-datareader",
+      "sourceSha": "9a3e2fe8c4e202bf9be6b4543fd1a06c3cdce7de",
+      "softwareLicence": "BSD-3-Clause (root licence incl bundled notices)",
+      "softwareReview": "PERMISSIVE_OBLIGATIONS_REVIEW",
+      "licencePath": "LICENSE.md",
+      "licenceBlobSha": "474cd65bfb481befa8c69fbde22d01c0b29e40b4",
+      "commercialDataRights": "UNVERIFIED",
+      "productAdmission": "BLOCKED",
+      "notes": null
+    }
+  ],
+  "providers": [
+    {
+      "id": "financialdatanet",
+      "termsUrl": "https://financialdata.net/terms-of-service",
+      "pricingUrl": "https://financialdata.net/pricing",
+      "publishedOffers": [
+        {
+          "plan": "Professional",
+          "monthlyUsd": 149,
+          "annualUsd": 1299,
+          "scope": "internal commercial"
+        },
+        {
+          "plan": "Enterprise",
+          "monthlyUsd": 299,
+          "annualUsd": 2599,
+          "scope": "external commercial, display and redistribution advertised; contract scope required"
+        }
+      ],
+      "constraints": [
+        "no functional replica/direct competition",
+        "no sublicense/white-label/resale of platform itself",
+        "dataset/venue/use-case conditions must be confirmed"
+      ],
+      "productStatus": {
+        "saas": "REVIEW_REQUIRED",
+        "dataApi": "BLOCKED_CONTRACT_SCOPE_UNVERIFIED",
+        "whiteLabel": "BLOCKED_CONTRACT_SCOPE_UNVERIFIED",
+        "cadsApp": "REVIEW_REQUIRED"
+      },
+      "coverageLimits": [
+        "published realtime table omits commodities",
+        "perpetual support not established by generic derivatives coverage"
+      ],
+      "actualSubscription": "UNVERIFIED",
+      "realCostMeasured": false
+    },
+    {
+      "id": "twelvedata",
+      "termsUrl": "https://twelvedata.com/terms",
+      "pricingUrl": "https://twelvedata.com/pricing-business",
+      "publishedOffers": [
+        {
+          "plan": "Venture",
+          "priceStatus": "CONFIGURATION_DEPENDENT",
+          "scope": "external display advertised"
+        },
+        {
+          "plan": "Enterprise",
+          "monthlyUsd": 1099,
+          "scope": "external distribution advertised; feed/add-on scope required"
+        },
+        {
+          "plan": "Enterprise+",
+          "priceStatus": "CUSTOM_QUOTE",
+          "scope": "white-label and custom exchange licence advertised"
+        }
+      ],
+      "constraints": [
+        "free tier not commercial authorization",
+        "actual tier and addon/written agreement control scope",
+        "attribution and exchange conditions"
+      ],
+      "actualSubscription": "UNVERIFIED",
+      "realCostMeasured": false
+    },
+    {
+      "id": "massive",
+      "termsUrl": "https://massive.com/legal/market-data-terms-of-service",
+      "scopeUrl": "https://massive.com/knowledge-base/article/which-plan-do-i-need-to-show-massive-data-in-my-app",
+      "constraints": [
+        "consumer market data terms personal/non-business/non-commercial",
+        "customer-facing display needs Business scope",
+        "redistribution/feed licence separate"
+      ],
+      "publishedOffers": [
+        {
+          "plan": "Business",
+          "priceStatus": "NOT_VERIFIED"
+        }
+      ],
+      "actualSubscription": "UNVERIFIED",
+      "realCostMeasured": false
+    },
+    {
+      "id": "kraken",
+      "scopeUrl": "https://docs.kraken.com/exchange/guides/overview",
+      "legacyScopeUrl": "https://docs-legacy.kraken.com/api/docs/guides/global-intro/",
+      "constraints": [
+        "current docs and legacy API terms differ in explicit wording",
+        "public endpoint access is not reviewed commercial redistribution permission"
+      ],
+      "actualSubscriptionOrPermission": "UNVERIFIED",
+      "realCostMeasured": false
+    }
+  ],
+  "monetizationAuthority": "src/data/monetizationRegistry.ts",
+  "cadsAuthority": "docs/architecture/CADS-PIPELINE-SELF-HEALING.md",
+  "costKind": "PUBLISHED_OFFERS_NOT_MEASURED_OPERATING_COST",
+  "unknownCosts": [
+    "VAT/currency/venue licences",
+    "index licences",
+    "perpetual feeds",
+    "isolated runtime compute",
+    "message throughput and retention",
+    "cost per subscriber/API request",
+    "actual gross margin"
+  ],
+  "benchmark": {
+    "executed": false,
+    "winner": null,
+    "reason": "No admitted reference dataset/provider permission or isolated installed candidate runtimes"
+  },
+  "commercialProductionAllowed": false
+}
+
