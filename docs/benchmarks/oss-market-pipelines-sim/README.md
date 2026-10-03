@@ -143,3 +143,54 @@ Zusätzliche Perp-Schritte umfassen höchstens 50 Instrumente und benötigen die
 ACK-/Replay-/Quota-/Rights-/Recovery-Gates. Die konkrete Stufengröße folgt dem
 verifizierten verfügbaren Katalog. Reiner Marktdatenzugriff, keine Orders,
 Positionen, Leverage-Konfiguration oder produktive Aktivierung.
+
+### Verbindlicher kommerzieller Scope und CADS-Monetarisierung
+
+Owner-Update: Alle später aktivierten Lösungen müssen für kostenpflichtige
+Abonnements und die tatsächlich angebotenen Produktfunktionen zugelassen sein.
+Research-/Personal-use-Rechte und ein gekauftes API-Abo erteilen keine implizite
+Display-, API-Redistribution-, Export-, White-Label- oder Derived-Data-Freigabe.
+Kein Kandidat ist aktuell für diese kommerziellen Scopes zugelassen.
+
+yfinance/Yahoo wird aus der kommerziellen Shortlist ausgeschlossen; Upstream:
+https://github.com/ranaroussi/yfinance/blob/main/README.md (personal-use Hinweis).
+Als zehnter Kandidat wird das bereits vorgesehene financialdatanet/fdnpy geführt;
+dies ist eine fachliche Owner-/Registry-Auswahl, keine globale Popularitäts-Top-10.
+Auch fdnpy bleibt bis Software-Lizenz- und Provider-Datenrechteprüfung BLOCKED.
+
+Bevorzugt werden permissive Lizenzen mit erfüllten NOTICE-/Attributionspflichten.
+GPL/LGPL sind nicht pauschal kommerziell verboten; Hosted Service, Linking,
+Modifikation, öffentliche GHCR-Distribution und APK/Browser-Verteilung sind
+konkret nach LEGAL_POLICY@1 zu prüfen. Lizenzmetadaten/NOASSERTION sind kein PASS.
+Referenz: https://www.gnu.org/licenses/gpl-faq.en.html .
+OpenBB erklärt ausdrücklich, dass Providerdaten eigenen kommerziellen/Retention-/
+Redistribution-Bedingungen unterliegen:
+https://docs.openbb.co/odp/python/faqs/license .
+
+Die kanonischen Produkt-IDs aus src/data/monetizationRegistry.ts werden referenziert:
+saas, data-api, sentiment-api, white-label, cads-app, ghcr-app und social.
+Für jedes angebotene Produkt ist ein eigener Rights-Scope erforderlich.
+CADS-Berichte verkaufen geprüfte Mess-/Policy-/Evidence-Leistungen; Rohdaten oder
+restriktive Referenzdatensätze werden dadurch nicht automatisch verkäuflich.
+SBOM/Attestation/GHCR-Identität bleiben an das unveränderte geprüfte Image gebunden.
+
+Vor Rangbildung: kommerzielle Muss-Gates. Danach CADS und wiederkehrende
+Feed-/Exchange-/Index-/Compute-/Storage-/Bandwidth-Kosten sowie Grenzkosten
+je Subscriber/API-Aufruf und mögliche Marge vergleichen. Keine erfundenen Preise,
+Stripe-Produkte oder Umsätze. Entitlements können Datenrechte nicht übersteuern.
+Ungeklärte, abgelaufene oder geänderte Rechte blockieren neue Promotions und
+lösen Review des betroffenen bereits angebotenen Produkt-Scope aus.
+
+CADS-Messung umfasst ingress, normalization, scoring, stream, cache, storage,
+api und presentation. Bestehender Release-Contract: mindestens 600 FULL_PIPELINE-
+Samples, p95 <200ms und max <200ms, keine Datenlecks sowie alle übrigen Gates.
+Der 100-Instrument-Erstbenchmark erfüllt die produktiven Universe-Gates nicht.
+Benchmarkklassen stocks/indices dürfen nicht stillschweigend release equity_us/
+equity_eu/fixed_income ersetzen. Mapping und kommerzielle Derived-Use-Semantik
+sind vor Runtime-Erweiterung zu klären; kein Gate wird in diesem PR abgeschwächt.
+
+Verbindliche Authorities: bestehendes LEGAL_POLICY@1, marketDataRightsEligibility,
+monetizationRegistry und CADS-PIPELINE-SELF-HEALING; dieser Plan ist keine zweite
+Rechte- oder Pricing-Authority. Rechts-/Lizenzprüfung gilt für konkrete Version,
+Artefakt, Integration, Region, Vertrag und Produkt. Eine Garantie gegen beliebige
+zukünftige Vertrags-/Lizenzänderungen wird nicht behauptet.
