@@ -1,0 +1,291 @@
+{
+  "generated": true,
+  "editableByHand": false,
+  "audience": "engineering",
+  "source": {
+    "schema": "DOCUMENTARY_EVIDENCE@1",
+    "schemaVersion": "1.0.0",
+    "documentaryId": "DOC-20261002-COMPONENT-INVENTORY-OBSERVABILITY",
+    "changeId": "CA-20261002-COMPONENT-INVENTORY-OBSERVABILITY",
+    "sourceSha": "d3cfb3536fb8c4f1bb766cb5b2932573ac88b444",
+    "documentaryDigest": "f72666a1e6e84340ac99b6d4d467ddf6d26a94678370edb8c62e1621605a362d"
+  },
+  "documentary": {
+    "schema": "DOCUMENTARY_EVIDENCE@1",
+    "version": "1.0.0",
+    "metadata": {
+      "project": "CAPITAL-AI",
+      "domain": "PLATFORM",
+      "consumerDomain": "GROWTH",
+      "status": "PROPOSED"
+    },
+    "correlation": {
+      "changeId": "CA-20261002-COMPONENT-INVENTORY-OBSERVABILITY"
+    },
+    "identity": {
+      "documentaryId": "DOC-20261002-COMPONENT-INVENTORY-OBSERVABILITY",
+      "sourceSha": "d3cfb3536fb8c4f1bb766cb5b2932573ac88b444",
+      "parentSha": "d1fe8323a9dce8efab706690eb579a67faa3a721",
+      "branch": "capital-ai-platform/component-inventory-observability-20261002",
+      "pullRequest": null,
+      "createdAt": "2026-10-02T05:31:27Z"
+    },
+    "change": {
+      "title": "Externes Komponenten-Inventar, CADS, Observability und Work Verification integrieren",
+      "summary": "Architekturrelevante Drittanbieter-Komponenten erhalten eine geschützte Metadaten-Registry, eine public-safe Control-Center-Projektion mit CADS und drei OSS-Kandidaten, eine getrennte Observability-/Audit-Baseline, dokumentierte NATS-/Valkey-Fan-out-Grenzen, Recovery- und Versionierungsregeln sowie MARKET-Monetarisierungs- und Work-Verification-Backlog.",
+      "type": "ARCHITECTURE",
+      "domains": {
+        "primary": "PLATFORM",
+        "affected": [
+          "PLATFORM",
+          "TRUST",
+          "PRODUCT",
+          "MARKET",
+          "GROWTH"
+        ]
+      }
+    },
+    "intent": {
+      "problem": "Fremdkomponenten, Versionen, Alternativen, Schutzdaten, Observability, Fan-out-Kapazität und monetarisierbare Infrastrukturprodukte waren nicht in einem gemeinsamen evidenzgebundenen Lifecycle korreliert.",
+      "desiredOutcome": "Ein skalierbares, secretfreies Komponenteninventar mit reproduzierbarer CADS-Bewertung, sichtbaren Abhängigkeiten, reversibler Versionierung, gesicherter Telemetrie und klaren Release-/Recovery-Gates.",
+      "ownerRequestRef": null
+    },
+    "architecture": {
+      "changed": true,
+      "architectureChangeRef": "docs/governance/COMPONENT-LIFECYCLE-VERSIONING.md",
+      "affectedComponents": [
+        "Control Center",
+        "External component inventory",
+        "Observability",
+        "Security audit",
+        "NATS JetStream",
+        "Valkey",
+        "Roadmap",
+        "Monetization registry",
+        "Work Verification"
+      ],
+      "before": {
+        "summary": "Komponenten- und Tool-Evidence war über Roadmap, Lockfiles, Lizenzengine und einzelne Architekturtexte verteilt; kein gemeinsames public-safe Dashboard oder geschütztes Metadateninventar war vorhanden."
+      },
+      "after": {
+        "summary": "Architekturrelevante Fremdkomponenten besitzen einen fünfphasigen Lifecycle, CADS_PROFILE@2, drei OSS-Kandidaten, geschützte Metadatenhaltung, Control-Center-Projektion und korrelierte Observability-/Recovery-/Work-Verification-Dokumentation."
+      },
+      "interfacesChanged": [
+        "Control Center -> component inventory dashboard",
+        "HTTP runtime -> structured telemetry + protected /metrics",
+        "Roadmap -> component/observability/benchmark/recovery/work-verification packages"
+      ],
+      "securityBoundaryChanged": true
+    },
+    "implementation": {
+      "changedFiles": [
+        "docs/architecture/INFRASTRUCTURE-BACKUP-RECOVERY.md",
+        "docs/architecture/MARKET-EVENT-FANOUT-AND-CACHE.md",
+        "docs/architecture/TYPESCRIPT-APP-BOUNDARY-DECISION.md",
+        "docs/governance/COMPONENT-LIFECYCLE-VERSIONING.md",
+        "docs/governance/WORK-VERIFICATION.md",
+        "docs/product/MONETIZABLE-PRODUCT-REGISTRY.md",
+        "docs/security/SECRET-IP-DATA-PROTECTION-BASELINE.md",
+        "scripts/benchmark-market-infrastructure.mjs",
+        "server/index.mjs",
+        "server/observability.mjs",
+        "server/observability.test.mjs",
+        "src/components/ComponentInventoryDashboard.tsx",
+        "src/components/ControlCenterPage.tsx",
+        "src/components/MonetizationModal.tsx",
+        "src/data/externalComponentInventory.ts",
+        "src/data/monetizationRegistry.ts",
+        "src/data/roadmapData.ts",
+        "supabase/migrations/20261002051549_external_component_inventory_private_registry.sql",
+        "supabase/migrations/20261002052909_capital_ai_private_append_only_audit_target.sql",
+        "supabase/migrations/20261002054928_external_component_inventory_domain_assignments.sql"
+      ],
+      "dependencies": {
+        "added": [],
+        "removed": [],
+        "updated": []
+      },
+      "executionUnits": {
+        "affected": [
+          "web runtime",
+          "Control Center",
+          "synthetic infrastructure benchmark",
+          "Documentary projection"
+        ]
+      }
+    },
+    "validation": {
+      "tests": {
+        "status": "UNKNOWN",
+        "evidenceRefs": [
+          "server/observability.test.mjs"
+        ]
+      },
+      "security": {
+        "status": "UNKNOWN",
+        "evidenceRefs": [
+          "docs/security/SECRET-IP-DATA-PROTECTION-BASELINE.md"
+        ]
+      },
+      "licenses": {
+        "status": "UNKNOWN",
+        "evidenceRefs": [
+          "src/data/externalComponentInventory.ts"
+        ]
+      },
+      "provenance": {
+        "status": "UNKNOWN",
+        "evidenceRefs": []
+      },
+      "build": {
+        "status": "UNKNOWN",
+        "evidenceRefs": []
+      },
+      "benchmark": {
+        "status": "UNKNOWN",
+        "evidenceRefs": [
+          "scripts/benchmark-market-infrastructure.mjs"
+        ]
+      }
+    },
+    "supplyChain": {
+      "source": {
+        "commitSha": "d3cfb3536fb8c4f1bb766cb5b2932573ac88b444"
+      },
+      "sbom": {
+        "generated": false,
+        "refs": []
+      },
+      "artifacts": {
+        "images": []
+      },
+      "immutableDigests": [],
+      "attestations": []
+    },
+    "runtime": {
+      "deploymentRequired": true,
+      "deployed": false,
+      "environment": null,
+      "readback": {
+        "performed": false,
+        "sourceSha": null,
+        "imageDigest": null,
+        "evidenceRefs": []
+      }
+    },
+    "observability": {
+      "telemetryChanged": true,
+      "metricsAdded": [
+        "capital_ai_process_uptime_seconds",
+        "capital_ai_process_resident_memory_bytes",
+        "capital_ai_http_requests_total",
+        "capital_ai_http_errors_total",
+        "capital_ai_http_duration_ms_sum/count/max"
+      ],
+      "metricsRemoved": [],
+      "regressionsDetected": [],
+      "anomalies": [
+        "Supabase advisor: leaked-password protection disabled remains open TRUST finding"
+      ]
+    },
+    "selfHealing": {
+      "candidateDetected": true,
+      "patternId": "CAPITAL-AI-SH-SUPPLY-CHAIN",
+      "validationCycle": {
+        "current": 0,
+        "required": 3
+      },
+      "validationSteps": [
+        "DETECT",
+        "CORRELATE",
+        "CLASSIFY",
+        "REMEDIATE",
+        "VERIFY"
+      ],
+      "eligibleForAutomation": false,
+      "repairClass": "FRONTEND_OR_BACKEND_SUPERSESSION",
+      "promotionConditions": {
+        "validationCyclesPassed": false,
+        "deterministicOutput": true,
+        "noTrustBoundaryChange": false,
+        "noHumanAuthorityRequired": false
+      }
+    },
+    "commercialization": {
+      "affected": true,
+      "inventoryRefs": [
+        "docs/product/MONETIZABLE-PRODUCT-REGISTRY.md",
+        "src/data/monetizationRegistry.ts"
+      ],
+      "revenueGateChanged": false
+    },
+    "roadmap": {
+      "affected": true,
+      "entries": [
+        "CA-PLATFORM-COMPONENT-INVENTORY",
+        "CA-PLATFORM-OBSERVABILITY-BASELINE",
+        "CA-PLATFORM-OTEL-COLLECTOR",
+        "CA-PLATFORM-MARKET-INFRA-BENCH",
+        "CA-TRUST-WORK-VERIFICATION",
+        "CA-PLATFORM-DR-RECOVERY",
+        "CA-PLATFORM-EDGE-CACHE",
+        "CA-MARKET-GHCR-BLUEPRINT-APP"
+      ]
+    },
+    "documentationProjection": {
+      "architectureDocs": {
+        "regenerate": true
+      },
+      "roadmap": {
+        "regenerate": true
+      },
+      "controlCenter": {
+        "regenerate": true
+      },
+      "releaseNotes": {
+        "regenerate": false
+      },
+      "commercialization": {
+        "regenerate": true
+      },
+      "socialMedia": {
+        "regenerate": false
+      }
+    },
+    "documentaryProjection": {
+      "publicSafe": true,
+      "sections": {
+        "intent": true,
+        "architecture": true,
+        "implementation": true,
+        "validation": true,
+        "security": true,
+        "licenses": true,
+        "supplyChain": true,
+        "runtime": true,
+        "observability": true,
+        "commercialization": true
+      },
+      "redact": {
+        "secrets": true,
+        "tokens": true,
+        "personalData": true,
+        "internalCredentials": true
+      }
+    },
+    "state": {
+      "lifecycle": "PROPOSED",
+      "supersededBy": null
+    },
+    "integrity": {
+      "canonicalSerialization": "RFC8785",
+      "hashAlgorithm": "SHA-256",
+      "documentaryDigest": "f72666a1e6e84340ac99b6d4d467ddf6d26a94678370edb8c62e1621605a362d"
+    },
+    "safety": {
+      "historicalRecordsImmutable": true,
+      "inferredSuccessForbidden": true,
+      "missingEvidenceMeansSuccess": false
+    }
+  }
+}

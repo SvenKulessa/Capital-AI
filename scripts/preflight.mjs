@@ -20,8 +20,13 @@ run(process.execPath, ['--test',
   'scripts/summarize-trivy.test.mjs', 'scripts/publish-security-summary.test.mjs', 'scripts/production-handoff.test.mjs',
   'scripts/diagnose-oidc.test.mjs', 'scripts/verify-main-ruleset.test.mjs', 'scripts/npm-security-patch-policy.test.mjs',
   'scripts/percentage-parser.test.mjs',
+  'server/observability.test.mjs',
+  'server/prompt-injection-guard.test.mjs',
+  'scripts/billing-catalog.test.mjs',
+  'server/cads-observability.test.mjs',
   'scripts/font-distribution.test.mjs',
   'scripts/post-merge-correlation.test.mjs',
+  'scripts/verify-release-readiness.test.mjs',
 ]);
 run(process.execPath, ['scripts/license-evidence.mjs']);
 if (args.includes('--full')) {

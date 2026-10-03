@@ -30,6 +30,8 @@ const RequestSchema = z.object({
 export async function handleAdvisorRequest(payload: AdvisorRequestPayload): Promise<AdvisorResponsePayload> {
   payload = RequestSchema.parse(payload);
   payload.prompt = assertPromptSafe(payload.prompt);
+  // Configuration strings cross the same model-input trust boundary as the prompt.
+  const configInput = assertPromptSafe(JSON.stringify(payload.currentConfig || {}));
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (apiKey) {
@@ -76,7 +78,7 @@ Antworte präzise, auf Deutsch und gib IMMER valides JSON zurück mit folgender 
 
       const response = await ai.models.generateContent({
         model: 'gemini-3.8-flash',
-        contents: `Benutzer-Anfrage: "${payload.prompt}". Aktuelle Konfiguration: ${JSON.stringify(payload.currentConfig || {})}`,
+        contents: `Benutzer-Anfrage: "${payload.prompt}". Aktuelle Konfiguration: ${configInput}`,
         config: {
           systemInstruction,
           responseMimeType: 'application/json',

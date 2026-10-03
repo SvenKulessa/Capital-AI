@@ -5,7 +5,9 @@ const HIGH_RISK_PATTERNS = [
   /(reveal|show|print|return|exfiltrate).{0,48}(system|developer|hidden|secret|api[_ -]?key|token|credential)/i,
   /(system|developer|assistant)\s*[:>]\s*(override|instruction|message)/i,
   /<\/?(?:system|developer|assistant|tool|function)[^>]*>/i,
-  /(?:jailbreak|developer mode|dan mode|prompt injection|system prompt override)/i,
+  /(?:jailbreak|developer mode|dan mode|system prompt override)/i,
+  /(?:vergiss|ignoriere|missachte).{0,48}(?:bisherigen?|vorherigen?|alle|obigen?).{0,32}(?:regeln|anweisungen|instruktionen)/i,
+  /(?:zeige|verrate|drucke|gib).{0,48}(?:systemprompt|systemanweisungen|interne anweisungen|geheime|api[_ -]?schl[uü]ssel|zugangsdaten)/i,
   /(call|invoke|use)\s+(?:the\s+)?(?:tool|function).{0,64}(secret|credential|environment|filesystem|network)/i,
 ];
 
@@ -16,7 +18,9 @@ const MEDIUM_RISK_PATTERNS = [
 ];
 
 export function assessPromptInjection(input) {
-  const normalized = String(input ?? '').normalize('NFKC').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, ' ');
+  const normalized = String(input ?? '').normalize('NFKC')
+    .replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g, '')
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, ' ');
   let score = 0;
   const reasons = [];
   for (const pattern of HIGH_RISK_PATTERNS) {

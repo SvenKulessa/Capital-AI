@@ -13,6 +13,10 @@
 !server/index.mjs
 !server/market.mjs
 !server/advisor.ts
+!server/prompt-injection-guard.mjs
+!server/prompt-injection-guard.test.mjs
+!server/advisor-security.test.mjs
+!server/billing-catalog.mjs
 !server/auth.mjs
 !server/telegram.mjs
 !server/privacy.mjs
@@ -21,6 +25,8 @@
 !server/mta-sts.test.mjs
 !server/infrastructure.mjs
 !server/scorer-bus.mjs
+!server/observability.mjs
+!server/cads-observability.mjs
 !server/mobile-scorer.mjs
 !shared/
 !shared/market-contracts.mjs
@@ -38,10 +44,12 @@
 !deploy/nats-entrypoint.sh
 !scripts/
 !scripts/harden-npm-toolchain.mjs
+!scripts/benchmark-scoring-capacity.mjs
 !scripts/verify-private-brokers.mjs
 !scripts/branding-assets.test.mjs
 !scripts/license-evidence.mjs
 !scripts/license-evidence.test.mjs
+!scripts/billing-catalog.test.mjs
 !scripts/license-engine.mjs
 !scripts/frontend-security.test.mjs
 !scripts/verify-browser-boundary.mjs

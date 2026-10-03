@@ -43,6 +43,7 @@ import {
   Flame,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { MONETIZABLE_PRODUCTS } from '../data/monetizationRegistry';
 import { BrandLogo } from './BrandLogo';
 import { PRICING_CATALOG, annualDiscountPercent, displayPriceEur } from '../data/pricingCatalog';
 
@@ -579,6 +580,21 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
               <span className="rounded-full border border-cyan-400/30 px-2 py-1 text-[10px] text-cyan-200">MONETARISIERBAR</span>
             </div>
             <p className="mt-2 text-xs text-slate-300">Vergleicht reproduzierbar Provider-, REST-/WebSocket-, NATS-, Valkey-, Analytics- und Observability-Pipelines mit CADS-Evidence. Simulierte Scores sind keine Produktionsfreigabe.</p>
+          </div>
+        )}
+
+        {activeTab === 'b2b' && (
+          <div className="mt-4 rounded-2xl border border-slate-700 bg-slate-950/70 p-4">
+            <h3 className="text-sm font-bold text-white">Kanonisches Monetarisierungsregister</h3>
+            <p className="mt-1 text-xs text-slate-400">Orderbuch, Market Depth, Sentiment und weitere Analyseprodukte bleiben im Prompt-2-/50-Komponenten-MARKET-Programm und werden hier nicht doppelt gepflegt.</p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {MONETIZABLE_PRODUCTS.map(product => (
+                <div key={product.id} className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
+                  <div className="font-mono text-[11px] text-cyan-200">{product.name}</div>
+                  <div className="mt-1 text-[10px] uppercase tracking-wider text-slate-500">{product.domain} · {product.state}</div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

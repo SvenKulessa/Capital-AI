@@ -1838,6 +1838,232 @@ export const WORK_PACKAGES: WorkPackage[] = [
     "AP-SEC-OIDC"
   ]
 },
+
+{
+  "id": "CA-PLATFORM-COMPONENT-INVENTORY",
+  "title": "Geschütztes Komponenten-Inventar und CADS-Dashboard konvergieren",
+  "owner": "PLATFORM",
+  "status": "aktiv",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "src/data/externalComponentInventory.ts",
+    "src/components/ComponentInventoryDashboard.tsx",
+    "docs/governance/COMPONENT-LIFECYCLE-VERSIONING.md"
+  ],
+  "nextStep": "Private Supabase-Registry und public-safe Documentary-Projektion regelmäßig gegen Runtime-/Provider-Readbacks korrelieren; CADS erst nach reproduzierbaren Benchmarks auf VERIFIED promoten.",
+  "priority": "Hoch",
+  "leadName": "Projektowner",
+  "targetSprint": "Phase 4",
+  "description": "Architekturrelevante Fremdkomponenten werden ohne Secretwerte inventarisiert, mit drei OSS-Kandidaten verglichen und im Control Center mit CADS, Versionen, Domain und Abhängigkeiten dargestellt.",
+  "deliverables": [
+    "Private Metadaten-Registry ohne Secretwerte",
+    "Public-safe Komponenten-/CADS-Dashboard",
+    "DISCOVERED → BENCHMARKED → APPROVED → ACTIVE → SUPERSEDED Lifecycle"
+  ]
+},
+{
+  "id": "CA-PLATFORM-OBSERVABILITY-BASELINE",
+  "title": "Finance-Logging selektiv als datenschutzgesicherte Observability-Baseline übernehmen",
+  "owner": "PLATFORM",
+  "status": "aktiv",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "server/observability.mjs",
+    "docs/security/SECRET-IP-DATA-PROTECTION-BASELINE.md"
+  ],
+  "nextStep": "Strukturierte Logs, W3C-Trace-Korrelation und geschützte Prometheus-Metriken im Preflight testen; Retention und externen Export separat entscheiden.",
+  "priority": "Hoch",
+  "leadName": "Projektowner",
+  "targetSprint": "Phase 4",
+  "description": "Operational Telemetry und Security Audit bleiben getrennt; Secret-/Credential-Felder werden vor Ausgabe redigiert, Metriken sind nicht öffentlich.",
+  "deliverables": [
+    "Structured JSON Logging",
+    "Secret-Redaction und W3C Trace Context",
+    "Token-geschützter Prometheus-Endpunkt",
+    "Separater nicht gesampelter Audit-Kanal"
+  ]
+},
+{
+  "id": "CA-PLATFORM-OTEL-COLLECTOR",
+  "title": "OpenTelemetry Collector Stack als optionalen Export-Layer benchmarken",
+  "owner": "PLATFORM",
+  "status": "planning",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "UNGEKLÄRT",
+  "evidenceRefs": [
+    "src/data/openSourceStack.ts",
+    "docs/governance/COMPONENT-LIFECYCLE-VERSIONING.md"
+  ],
+  "nextStep": "OTel Collector gegen Grafana Alloy, Vector und Fluent Bit mit CADS_PROFILE@2 benchmarken; keine Collector-Runtime vor positivem Kosten-/Security-Gate.",
+  "priority": "Mittel",
+  "leadName": "Projektowner",
+  "targetSprint": "Nach Observability-Baseline",
+  "description": "Vendor-neutraler OTLP-Export bleibt Backlog; der kleine Render-Webservice erhält zunächst keinen zusätzlichen Collector-Prozess.",
+  "deliverables": [
+    "Gepinnte Kandidatenversionen und Lizenzen",
+    "CPU/RAM/Throughput/Failure Benchmark",
+    "Redaction-, TLS-, Auth- und Least-Privilege Review"
+  ],
+  "dependencies": ["CA-PLATFORM-OBSERVABILITY-BASELINE"]
+},
+{
+  "id": "CA-PLATFORM-MARKET-INFRA-BENCH",
+  "title": "Valkey, Redis-Kompatibilität und NATS JetStream Fan-out reproduzierbar benchmarken",
+  "owner": "PLATFORM",
+  "status": "planning",
+  "phase": 2,
+  "phaseName": "Phase 2: Market Intelligence",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "docs/architecture/MARKET-EVENT-FANOUT-AND-CACHE.md",
+    "server/infrastructure.mjs"
+  ],
+  "nextStep": "Synthetische 3/100/200/400-Symbol-Last mit identischen Payloads, Clients und Pipeline-Parametern messen; keine Provider-Abfragen auslösen.",
+  "priority": "Hoch",
+  "leadName": "Projektowner",
+  "targetSprint": "Vor 100+ Asset Aktivierung",
+  "description": "Aktuell sind im Default nur BTCUSDT, BTCUSD und AAPL erlaubt. Die Kapazität für 100+ Assets wird erst über p50/p95/p99, Durchsatz, CPU/RAM, Recovery und Fan-out Evidence freigegeben.",
+  "deliverables": [
+    "Valkey/Redis-kompatibler SET/GET/PUBLISH Benchmark",
+    "NATS Core/JetStream PubAck/Replay Benchmark",
+    "Fan-out Messung 1/10/32 Consumer",
+    "Asset-Skalen 3/100/200/400"
+  ]
+},
+{
+  "id": "CA-TRUST-WORK-VERIFICATION",
+  "title": "WORK_VERIFICATION@1 an GitHub DevSecOps und Release Evidence binden",
+  "owner": "TRUST",
+  "status": "planning",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "docs/governance/WORK-VERIFICATION.md",
+    "docs/security/PRODUCTION-HANDOFF.md"
+  ],
+  "nextStep": "Domain-Labels/Project-Views providerseitig anlegen, dann PR→Checks→SBOM→Attestation→GHCR→Render→Runtime-Readback als ein Evidence-Objekt korrelieren.",
+  "priority": "Hoch",
+  "leadName": "Projektowner",
+  "targetSprint": "Phase 4",
+  "description": "Work Verification beweist den vollständigen Weg vom Repository bis zur Release Evidence; es ersetzt keine bestehenden Required Checks.",
+  "deliverables": [
+    "Domain-Labels PRODUCT/MARKET/PLATFORM/TRUST/GROWTH",
+    "Projektansichten je Domain",
+    "Tested SHA, SBOM, OCI Digest, Attestation, Runtime Source SHA und Deploy-ID"
+  ]
+},
+{
+  "id": "CA-PLATFORM-DR-RECOVERY",
+  "title": "Infrastruktur-Backup und Disaster-Recovery isoliert verifizieren",
+  "owner": "PLATFORM",
+  "status": "planning",
+  "phase": 5,
+  "phaseName": "Phase 5: Production Go-Live",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "docs/architecture/INFRASTRUCTURE-BACKUP-RECOVERY.md"
+  ],
+  "nextStep": "Datenbankexport, kritische Storage-Objekte, JetStream File Store und einen attestierten GHCR-Digest in isolierter Recovery-Umgebung wiederherstellen und RTO/RPO messen.",
+  "priority": "Kritisch",
+  "leadName": "Projektowner",
+  "targetSprint": "Vor Production-Handoff",
+  "description": "Supabase, ZITADEL-Konfiguration, JetStream und Runtime-Artefakte erhalten getrennte Recovery-Pfade; Valkey bleibt rekonstruierbarer Cache.",
+  "deliverables": [
+    "Extern verifizierter Datenbank-/Storage-Backup",
+    "JetStream Backup/Restore + Replay Hashprüfung",
+    "Identity-Konfigurations-Recovery ohne Passwort-Export",
+    "Known-good GHCR Digest Recovery"
+  ]
+},
+{
+  "id": "CA-PLATFORM-EDGE-CACHE",
+  "title": "Render Edge Caching für statische Assets kontrolliert evaluieren",
+  "owner": "PLATFORM",
+  "status": "planning",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "server/index.mjs"
+  ],
+  "nextStep": "Render-Profil 'Common static files' gegen no-cache messen; HTML/Auth/API/Session weiterhin no-store halten. Provideränderung erst nach Owner-Freigabe und Readback.",
+  "priority": "Mittel",
+  "leadName": "Projektowner",
+  "targetSprint": "Nach Runtime-Handoff",
+  "description": "Aktueller Render-Readback steht auf no-cache. All-files Caching bleibt wegen dynamischer Auth-/API-Pfade ausgeschlossen.",
+  "deliverables": [
+    "Cache-Control Matrix",
+    "Cache hit/miss + Latenzvergleich",
+    "Auth-/API-No-Cache Regression",
+    "Rollback auf no-cache"
+  ]
+},
+{
+  "id": "CA-MARKET-GHCR-BLUEPRINT-APP",
+  "title": "[CAPITAL-AI-MARKET]GHCR-DIGEST-BLUEPRINT-MARKETPLACE-APP",
+  "owner": "MARKET",
+  "status": "planning",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "OFFEN",
+  "evidenceRefs": [
+    "docs/product/MONETIZABLE-PRODUCT-REGISTRY.md",
+    "docs/governance/WORK-VERIFICATION.md"
+  ],
+  "nextStep": "Repository→Build→SBOM→Scan→Attestation→Digest→Blueprint→Runtime→Source SHA→Release Evidence als App-Contract und Marketplace-fähige API spezifizieren.",
+  "priority": "Hoch",
+  "leadName": "Projektowner",
+  "targetSprint": "Nach interner Work-Verification Abnahme",
+  "description": "Monetarisierbare GitHub App für immutable Release Evidence; Build-once/Promote-many und fail-closed Identity bleiben unverändert.",
+  "deliverables": [
+    "GitHub App Permission Matrix",
+    "Immutable Digest Evidence API",
+    "Render Blueprint Adapter",
+    "Marketplace Packaging"
+  ],
+  "dependencies": ["CA-TRUST-WORK-VERIFICATION"]
+},
+
+{
+  "id": "CA-PLATFORM-TS-APP-BOUNDARY",
+  "title": "TypeScript App-Boundary bis sichere native TS7-Migration halten",
+  "owner": "PLATFORM",
+  "status": "aktiv",
+  "phase": 4,
+  "phaseName": "Phase 4: DevSecOps & RC",
+  "progressPercent": null,
+  "evidenceState": "GEHALTEN",
+  "evidenceRefs": [
+    "docs/architecture/TYPESCRIPT-APP-BOUNDARY-DECISION.md",
+    "scripts/verify-browser-boundary.mjs",
+    "scripts/benchmark-browser-boundary.mjs"
+  ],
+  "nextStep": "Neue TS7-Version/native Artefakte erneut auf Provenance, Binary Reachability und Security prüfen; danach Typecheck-Performance und Oxc-Boundary gegen dieselben Fixtures benchmarken.",
+  "priority": "Hoch",
+  "leadName": "Projektowner",
+  "targetSprint": "Bei sicherem TypeScript-Update",
+  "description": "Die bestehende TypeScript-6-App-Boundary bleibt aktiv. Der native Go-Compiler von TS7 wird trotz Upstream-Performancevorteil nicht promoted, solange das exakte Binary-TRUST-Gate blockiert.",
+  "deliverables": [
+    "Boundary-Parität auf positiven/negativen Fixtures",
+    "TS6 vs native TS7 Typecheck Benchmark",
+    "Oxc/Oxlint Boundary CADS Challenge",
+    "Rollback auf stabile Boundary"
+  ]
+},
 ...SOCIAL_CONTENT_WORK_PACKAGES,
 ...BACKLOG_TARGETS,
 ];

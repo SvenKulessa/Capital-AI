@@ -5,6 +5,7 @@ import {defineConfig, Plugin} from 'vite';
 import { thirdPartyNoticesPlugin } from './scripts/license-evidence.mjs';
 import { licenseEnginePlugin } from './scripts/license-engine.mjs';
 import { handleAdvisorRequest } from './server/advisor.ts';
+import { PromptInjectionError } from './server/prompt-injection-guard.mjs';
 import { createLimiter } from './server/http-security.mjs';
 
 // Check emitted static imports, not source imports: a cycle here can expose
@@ -56,6 +57,11 @@ function advisorApiPlugin(): Plugin {
               res.end(JSON.stringify(result));
             } catch (err: any) {
               res.setHeader('Content-Type', 'application/json');
+              if (err instanceof PromptInjectionError) {
+                res.statusCode = 422;
+                res.end(JSON.stringify({ error: 'prompt_injection_blocked' }));
+                return;
+              }
               res.statusCode = 500;
               res.end(JSON.stringify({ error: 'Internal Server Error' }));
             }

@@ -6,10 +6,12 @@ import { ProviderStatusDashboard } from './ProviderStatusDashboard';
 import { DataUnavailable } from './DataUnavailable';
 import { useHubTab } from '../hooks/useHubTab';
 import { LicenseEnginePanel } from './LicenseEnginePanel';
-export type ControlCenterTab = 'roadmap' | 'console' | 'cockpit' | 'team' | 'cost_center' | 'system' | 'licenses';
-const CONTROL_TABS: readonly ControlCenterTab[] = ['roadmap', 'console', 'cockpit', 'team', 'cost_center', 'system', 'licenses'];
+import { ComponentInventoryDashboard } from './ComponentInventoryDashboard';
+export type ControlCenterTab = 'roadmap' | 'components' | 'console' | 'cockpit' | 'team' | 'cost_center' | 'system' | 'licenses';
+const CONTROL_TABS: readonly ControlCenterTab[] = ['roadmap', 'components', 'console', 'cockpit', 'team', 'cost_center', 'system', 'licenses'];
 const CONTROL_TAB_LABELS: Record<ControlCenterTab, string> = {
   roadmap: 'Roadmap',
+  components: 'Komponenten & CADS',
   console: 'Console',
   cockpit: 'Cockpit',
   team: 'Team & Rollen',
@@ -28,7 +30,8 @@ export const ControlCenterPage: React.FC<ControlCenterPageProps> = ({ onBackToHo
   <nav className="my-4 flex flex-wrap gap-2" aria-label="Control Center Tabs" role="tablist">{CONTROL_TABS.map(tab => <button key={tab} type="button" role="tab" aria-selected={activeTab === tab} onClick={() => setActiveTab(tab)} className={`min-h-11 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors ${activeTab === tab ? 'border-amber-300 bg-amber-400 text-black shadow-[0_0_16px_rgba(245,176,20,0.2)]' : 'border-slate-700 bg-slate-900 text-slate-300 hover:border-slate-600 hover:text-white'}`}>{CONTROL_TAB_LABELS[tab]}</button>)}</nav>
   {activeTab === 'licenses' && <LicenseEnginePanel />}
   {activeTab === 'roadmap' && <RoadmapPanel />}
-  {activeTab !== 'licenses' && <>
+  {activeTab === 'components' && <ComponentInventoryDashboard />}
+  {!['licenses', 'components'].includes(activeTab) && <>
   <ProviderStatusDashboard onBackToHome={onBackToHome} />
   <h2 className="text-xl font-bold mt-6">50 Analyse-Komponenten</h2>
   <p className="text-sm text-slate-400 my-3">{CANONICAL_50_COMPONENTS.filter(c => c.status === 'planned').length} geplant · {CANONICAL_50_COMPONENTS.filter(c => c.status === 'blocked').length} gesperrt. {report.issues.length} offene Referenz- und Aktivierungsprüfungen. Es gibt derzeit keinen produktiv freigegebenen Score.</p>
