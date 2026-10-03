@@ -1,0 +1,483 @@
+{
+  "schema": "CAPITAL_AI_SOURCE_RIGHTS_MATRIX@1",
+  "observedAt": "2026-10-03T23:46:33Z",
+  "sourceMainSha": "de4c268311c42877f8a7e1361e7de986ffb096cb",
+  "mobileMainSha": "2a86e7532cf1a78f96dc4994ba19c3d622e985cb",
+  "mobilePr2HeadSha": "86f7efd5132e3eb24862f942ba09303ae0811714",
+  "status": "PARTIAL_EVIDENCE_NO_PRODUCTION_AUTHORIZATION",
+  "canonicalContract": "src/contracts/marketDataRightsEligibility.ts",
+  "monetizationAuthority": "src/data/monetizationRegistry.ts",
+  "softwareCandidates": [
+    {
+      "id": "ccxt",
+      "repository": "ccxt/ccxt",
+      "planPinnedSha": "099d9d5de5bee0b0434c4f478e866604b5229ddb",
+      "currentHeadShaObserved": "099d9d5de5bee0b0434c4f478e866604b5229ddb",
+      "pinState": "CURRENT",
+      "softwareLicense": "MIT",
+      "softwareReview": "PERMISSIVE_OBLIGATIONS_REVIEW",
+      "licenseEvidence": {
+        "path": "LICENSE.txt",
+        "blobSha": "4cc1253c79b58fa72a3d4626d95aa7fff70f6f84"
+      },
+      "actualDataProvider": "EXTERNAL_BY_CONFIGURATION_OR_NONE",
+      "commercialDataRights": "UNVERIFIED",
+      "productAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "serverSidePackaging": "REVIEW_BEFORE_ACTIVATION",
+      "apkBinaryDistribution": "NOT_BUNDLED_IN_CURRENT_MOBILE_PR2",
+      "notes": "Adapter; Datenrechte des konfigurierten Anbieters bleiben separat."
+    },
+    {
+      "id": "openbb",
+      "repository": "openbq-org/OpenBB",
+      "planPinnedSha": "ae0268771f761b036996d81bd21522ce79d95415",
+      "currentHeadShaObserved": "ae0268771f761b036996d81bd21522ce79d95415",
+      "pinState": "CURRENT",
+      "softwareLicense": "Apache-2.0",
+      "softwareReview": "PERMISSIVE_OBLIGATIONS_REVIEW",
+      "licenseEvidence": {
+        "path": "LICENSE",
+        "blobSha": "8e8cca33304520693be306cad3b55cba0c358676"
+      },
+      "actualDataProvider": "EXTERNAL_BY_CONFIGURATION_OR_NONE",
+      "commercialDataRights": "UNVERIFIED",
+      "productAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "serverSidePackaging": "REVIEW_BEFORE_ACTIVATION",
+      "apkBinaryDistribution": "NOT_BUNDLED_IN_CURRENT_MOBILE_PR2",
+      "notes": "Provider-Abstraktion; Mobile-PR #2 enthält noch veraltete AGPL-3.0-Angabe."
+    },
+    {
+      "id": "fdnpy",
+      "repository": "financialdatanet/fdnpy",
+      "planPinnedSha": "e46103c95ba04927057609268765a5711b3ad656",
+      "currentHeadShaObserved": "e46103c95ba04927057609268765a5711b3ad656",
+      "pinState": "CURRENT",
+      "softwareLicense": "UNVERIFIED_METADATA_MIT_ONLY",
+      "softwareReview": "BLOCKED_ORIGINAL_LICENSE_MISSING",
+      "licenseEvidence": {
+        "path": "setup.py",
+        "blobSha": "b3d4f22d579119e94c67aa91b39ada342ca6c7f4"
+      },
+      "actualDataProvider": "financialdatanet",
+      "commercialDataRights": "UNVERIFIED",
+      "productAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "serverSidePackaging": "REVIEW_BEFORE_ACTIVATION",
+      "apkBinaryDistribution": "NOT_BUNDLED_IN_CURRENT_MOBILE_PR2",
+      "notes": "Originale Root-Lizenz/NOTICE fehlt in der gepinnten Evidence."
+    },
+    {
+      "id": "lean",
+      "repository": "QuantConnect/Lean",
+      "planPinnedSha": "705b9551be1aaa821c7f77896a7eb8fcd07b92ee",
+      "currentHeadShaObserved": "705b9551be1aaa821c7f77896a7eb8fcd07b92ee",
+      "pinState": "CURRENT",
+      "softwareLicense": "Apache-2.0",
+      "softwareReview": "PERMISSIVE_OBLIGATIONS_REVIEW",
+      "licenseEvidence": {
+        "path": "LICENSE",
+        "blobSha": "6faed93d21a1a9551b11434e87c9000a393d73f2"
+      },
+      "actualDataProvider": "EXTERNAL_BY_CONFIGURATION_OR_NONE",
+      "commercialDataRights": "UNVERIFIED",
+      "productAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "serverSidePackaging": "REVIEW_BEFORE_ACTIVATION",
+      "apkBinaryDistribution": "NOT_BUNDLED_IN_CURRENT_MOBILE_PR2",
+      "notes": "Engine ist keine Datenlizenz."
+    },
+    {
+      "id": "vnpy",
+      "repository": "vnpy/vnpy",
+      "planPinnedSha": "2b0fa6ceb8db72f23b429f9d64c18a1444d09917",
+      "currentHeadShaObserved": "2b0fa6ceb8db72f23b429f9d64c18a1444d09917",
+      "pinState": "CURRENT",
+      "softwareLicense": "MIT",
+      "softwareReview": "PERMISSIVE_OBLIGATIONS_REVIEW",
+      "licenseEvidence": {
+        "path": "LICENSE",
+        "blobSha": "2325eb27b15b3dcf1ed510c3ac314285f6bdcaa0"
+      },
+      "actualDataProvider": "EXTERNAL_BY_CONFIGURATION_OR_NONE",
+      "commercialDataRights": "UNVERIFIED",
+      "productAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "serverSidePackaging": "REVIEW_BEFORE_ACTIVATION",
+      "apkBinaryDistribution": "NOT_BUNDLED_IN_CURRENT_MOBILE_PR2",
+      "notes": "Providerrechte bleiben extern."
+    },
+    {
+      "id": "backtrader",
+      "repository": "mementum/backtrader",
+      "planPinnedSha": "b853d7c90b6721476eb5a5ea3135224e33db1f14",
+      "currentHeadShaObserved": "b853d7c90b6721476eb5a5ea3135224e33db1f14",
+      "pinState": "CURRENT",
+      "softwareLicense": "GPL-3.0",
+      "softwareReview": "LEGAL_REVIEW_REQUIRED_USAGE_AND_DISTRIBUTION",
+      "licenseEvidence": {
+        "path": "LICENSE",
+        "blobSha": "ef7e7efc09c9d471c391f05b9567966928085840"
+      },
+      "actualDataProvider": "EXTERNAL_BY_CONFIGURATION_OR_NONE",
+      "commercialDataRights": "UNVERIFIED",
+      "productAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "serverSidePackaging": "REVIEW_BEFORE_ACTIVATION",
+      "apkBinaryDistribution": "NOT_BUNDLED_IN_CURRENT_MOBILE_PR2",
+      "notes": "Konkrete Nutzung/Distribution rechtlich prüfen."
+    },
+    {
+      "id": "hummingbot",
+      "repository": "hummingbot/hummingbot",
+      "planPinnedSha": "9af100d6822da7d2d0291a906c730ef172284ee2",
+      "currentHeadShaObserved": "9af100d6822da7d2d0291a906c730ef172284ee2",
+      "pinState": "CURRENT",
+      "softwareLicense": "Apache-2.0",
+      "softwareReview": "PERMISSIVE_OBLIGATIONS_REVIEW",
+      "licenseEvidence": {
+        "path": "LICENSE",
+        "blobSha": "e998fcfee5d9d1ba105679b6a755d10fa68cdc97"
+      },
+      "actualDataProvider": "EXTERNAL_BY_CONFIGURATION_OR_NONE",
+      "commercialDataRights": "UNVERIFIED",
+      "productAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "serverSidePackaging": "REVIEW_BEFORE_ACTIVATION",
+      "apkBinaryDistribution": "NOT_BUNDLED_IN_CURRENT_MOBILE_PR2",
+      "notes": "Exchange-Datenrechte bleiben separat."
+    },
+    {
+      "id": "cryptofeed",
+      "repository": "bmoscon/cryptofeed",
+      "planPinnedSha": "6cbd9b959f104fe970791d32444a2ef13ddacc2f",
+      "currentHeadShaObserved": "6cbd9b959f104fe970791d32444a2ef13ddacc2f",
+      "pinState": "CURRENT",
+      "softwareLicense": "AGPL-3.0-or-later WITH ADDITIONAL_ATTRIBUTION_TERM",
+      "softwareReview": "LEGAL_REVIEW_REQUIRED_NETWORK_COPYLEFT_AND_ATTRIBUTION",
+      "licenseEvidence": {
+        "path": "LICENSE",
+        "blobSha": "bd9dea50e89336fd87e76cfa1dd9cb1fa29d2a24"
+      },
+      "actualDataProvider": "EXTERNAL_BY_CONFIGURATION_OR_NONE",
+      "commercialDataRights": "UNVERIFIED",
+      "productAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "serverSidePackaging": "REVIEW_BEFORE_ACTIVATION",
+      "apkBinaryDistribution": "NOT_BUNDLED_IN_CURRENT_MOBILE_PR2",
+      "notes": "Network-Copyleft und Zusatzattribution konkret prüfen."
+    },
+    {
+      "id": "nautilus_trader",
+      "repository": "nautechsystems/nautilus_trader",
+      "planPinnedSha": "ad9d283abc2d6d86f3dd197229a8b357600a9303",
+      "currentHeadShaObserved": "b0a986861b2b06d88ba3c439c8d271e15ab0566a",
+      "pinState": "STALE_REVIEW_REQUIRED",
+      "softwareLicense": "LGPL-3.0",
+      "softwareReview": "LEGAL_REVIEW_REQUIRED_USAGE_AND_DISTRIBUTION",
+      "licenseEvidence": {
+        "path": "LICENSE",
+        "blobSha": "5550e2db15f239ea8d3cf54bfa3b035eab8d3174"
+      },
+      "actualDataProvider": "EXTERNAL_BY_CONFIGURATION_OR_NONE",
+      "commercialDataRights": "UNVERIFIED",
+      "productAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "serverSidePackaging": "REVIEW_BEFORE_ACTIVATION",
+      "apkBinaryDistribution": "NOT_BUNDLED_IN_CURRENT_MOBILE_PR2",
+      "notes": "Source-Pin ist gedriftet; LICENSE-Blob blieb gleich, Source-Review muss erneuert werden."
+    },
+    {
+      "id": "pandas-datareader",
+      "repository": "pydata/pandas-datareader",
+      "planPinnedSha": "9a3e2fe8c4e202bf9be6b4543fd1a06c3cdce7de",
+      "currentHeadShaObserved": "9a3e2fe8c4e202bf9be6b4543fd1a06c3cdce7de",
+      "pinState": "CURRENT",
+      "softwareLicense": "BSD-3-Clause (root licence incl bundled notices)",
+      "softwareReview": "PERMISSIVE_OBLIGATIONS_REVIEW",
+      "licenseEvidence": {
+        "path": "LICENSE.md",
+        "blobSha": "474cd65bfb481befa8c69fbde22d01c0b29e40b4"
+      },
+      "actualDataProvider": "EXTERNAL_BY_CONFIGURATION_OR_NONE",
+      "commercialDataRights": "UNVERIFIED",
+      "productAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "serverSidePackaging": "REVIEW_BEFORE_ACTIVATION",
+      "apkBinaryDistribution": "NOT_BUNDLED_IN_CURRENT_MOBILE_PR2",
+      "notes": "Client-Lizenz ersetzt keine Provider-Datenrechte."
+    }
+  ],
+  "dataProviders": [
+    {
+      "id": "twelvedata",
+      "dataset": "reference instrument catalogs + feeds by subscribed market/venue",
+      "decision": "REVIEW_REQUIRED",
+      "eligible": false,
+      "permissions": {
+        "webMobileCommercialDisplay": {
+          "allowed": null,
+          "state": "UNKNOWN"
+        },
+        "commercialDerivedScores": {
+          "allowed": null,
+          "state": "UNKNOWN"
+        },
+        "apiRedistributionCustomerExports": {
+          "allowed": null,
+          "state": "SEPARATE_REDISTRIBUTION_RIGHTS_OR_WRITTEN_AGREEMENT_REQUIRED"
+        },
+        "whiteLabel": {
+          "allowed": null,
+          "state": "EXPRESS_TIER_OR_AGREEMENT_REQUIRED"
+        },
+        "cacheJetStreamReplayRetention": {
+          "allowed": null,
+          "state": "SUBSCRIPTION_AND_THIRD_PARTY_RETENTION_LIMITS_REQUIRED"
+        },
+        "benchmarkPublicationCadsMonetization": {
+          "allowed": null,
+          "state": "UNKNOWN"
+        },
+        "exchangeIndexRights": {
+          "allowed": null,
+          "state": "EXCHANGE_OR_THIRD_PARTY_APPROVAL_MAY_BE_REQUIRED"
+        }
+      },
+      "applicableEntityAndRegion": null,
+      "subscriptionTierAndAddOns": null,
+      "contractOrPermissionReference": null,
+      "officialEvidence": [
+        "https://twelvedata.com/terms",
+        "https://twelvedata.com/pricing-business",
+        "https://support.twelvedata.com/en/articles/5620512-individual-and-business-plans",
+        "https://support.twelvedata.com/en/articles/5620526-data-attribution"
+      ],
+      "accountEvidence": "NO_REPOSITORY_PORTABLE_ORDER_FORM_OR_TIER_EVIDENCE_FOUND; Owner-Anfrage vom 2026-10-03 offen",
+      "publishedOffers": [
+        {
+          "plan": "Venture",
+          "monthlyUsd": 499,
+          "annualBillingMonthlyEquivalentUsd": 414
+        },
+        {
+          "plan": "Enterprise",
+          "monthlyUsd": 1099,
+          "annualBillingMonthlyEquivalentUsd": 916
+        },
+        {
+          "plan": "Enterprise+",
+          "price": "CUSTOM"
+        }
+      ],
+      "quotaCostExpiryTerms": "UNKNOWN_ACCOUNT_SCOPE",
+      "instrumentScopeObserved": {
+        "crypto": 951,
+        "stocksNASDAQQueryTotal": 4499,
+        "commodities": 32,
+        "forexUsdQuoteQueryTotal": 57,
+        "indices": 1309
+      },
+      "termsObserved": {
+        "lastUpdated": "2026-01-01",
+        "observedAt": "2026-10-04"
+      }
+    },
+    {
+      "id": "massive",
+      "dataset": "Massive/Polygon market data",
+      "decision": "BLOCK",
+      "eligible": false,
+      "permissions": {
+        "webMobileCommercialDisplay": {
+          "allowed": false,
+          "state": "PROHIBITED_BY_STANDARD_TERMS_ABSENT_EXPRESS_BUSINESS_PERMISSION"
+        },
+        "commercialDerivedScores": {
+          "allowed": false,
+          "state": "DERIVED_OR_NON_DISPLAY_USE_REQUIRES_LICENSE"
+        },
+        "apiRedistributionCustomerExports": {
+          "allowed": false,
+          "state": "REDISTRIBUTION_REQUIRES_SEPARATE_PERMISSION"
+        },
+        "whiteLabel": {
+          "allowed": false,
+          "state": "NO_CURRENT_PERMISSION_EVIDENCE"
+        },
+        "cacheJetStreamReplayRetention": {
+          "allowed": null,
+          "state": "BUSINESS_ORDER_FORM_AND_DATA_SOURCE_TERMS_REQUIRED"
+        },
+        "benchmarkPublicationCadsMonetization": {
+          "allowed": false,
+          "state": "COMMERCIAL_USE_NOT_ESTABLISHED"
+        },
+        "exchangeIndexRights": {
+          "allowed": null,
+          "state": "SOURCE_EXCHANGE_INDEX_RIGHTS_UNVERIFIED"
+        }
+      },
+      "applicableEntityAndRegion": null,
+      "subscriptionTierAndAddOns": null,
+      "contractOrPermissionReference": null,
+      "officialEvidence": [
+        "https://massive.com/legal/market-data-terms-of-service",
+        "https://massive.com/legal/terms",
+        "https://massive.com/knowledge-base/article/which-plan-do-i-need-to-show-massive-data-in-my-app"
+      ],
+      "accountEvidence": "NO_REPOSITORY_PORTABLE_BUSINESS_ORDER_FORM_OR_BILLING_EVIDENCE_FOUND; Owner-Anfrage vom 2026-10-03 offen",
+      "publishedOffers": [
+        {
+          "plan": "Business",
+          "price": "NOT_VERIFIED_IN_THIS_REVIEW"
+        }
+      ],
+      "quotaCostExpiryTerms": "UNKNOWN_BUSINESS_ORDER_FORM",
+      "termsObserved": {
+        "marketDataTermsLastUpdated": "2025-08-28",
+        "observedAt": "2026-10-04"
+      }
+    },
+    {
+      "id": "financialdatanet",
+      "dataset": "FinancialData.Net API/fdnpy datasets",
+      "decision": "REVIEW_REQUIRED",
+      "eligible": false,
+      "permissions": {
+        "webMobileCommercialDisplay": {
+          "allowed": null,
+          "state": "UNKNOWN"
+        },
+        "commercialDerivedScores": {
+          "allowed": null,
+          "state": "UNKNOWN"
+        },
+        "apiRedistributionCustomerExports": {
+          "allowed": null,
+          "state": "ONLY_IF_APPLICABLE_SUBSCRIPTION_EXPLICITLY_PERMITS_DISTRIBUTION"
+        },
+        "whiteLabel": {
+          "allowed": null,
+          "state": "PLATFORM_SUBLICENSE_WHITE_LABEL_RESALE_RESTRICTED_DATA_EMBEDDING_SCOPE_UNVERIFIED"
+        },
+        "cacheJetStreamReplayRetention": {
+          "allowed": null,
+          "state": "DATASET_AND_PLAN_SCOPE_UNVERIFIED"
+        },
+        "benchmarkPublicationCadsMonetization": {
+          "allowed": null,
+          "state": "UNKNOWN"
+        },
+        "exchangeIndexRights": {
+          "allowed": null,
+          "state": "DATASET_VENUE_RIGHTS_UNVERIFIED"
+        }
+      },
+      "applicableEntityAndRegion": null,
+      "subscriptionTierAndAddOns": null,
+      "contractOrPermissionReference": null,
+      "officialEvidence": [
+        "https://financialdata.net/terms-of-service",
+        "https://financialdata.net/pricing"
+      ],
+      "accountEvidence": "NO_REPOSITORY_PORTABLE_SUBSCRIPTION_OR_ORDER_FORM_EVIDENCE_FOUND; Owner-Anfrage vom 2026-10-03 offen",
+      "publishedOffers": [
+        {
+          "plan": "Professional",
+          "monthlyUsd": 149,
+          "annualUsd": 1299
+        },
+        {
+          "plan": "Enterprise",
+          "monthlyUsd": 299,
+          "annualUsd": 2599
+        }
+      ],
+      "quotaCostExpiryTerms": "PUBLISHED_PRICES_ONLY_ACTUAL_PLAN_UNKNOWN",
+      "termsObserved": {
+        "observedAt": "2026-10-04"
+      }
+    },
+    {
+      "id": "kraken",
+      "dataset": "Kraken public market data/API",
+      "decision": "BLOCK",
+      "eligible": false,
+      "permissions": {
+        "webMobileCommercialDisplay": {
+          "allowed": false,
+          "state": "PRIOR_PERMISSION_REQUIRED_FOR_NON_PERSONAL_COMMERCIAL_PUBLIC_API_USE"
+        },
+        "commercialDerivedScores": {
+          "allowed": null,
+          "state": "WRITTEN_COMMERCIAL_SCOPE_REQUIRED"
+        },
+        "apiRedistributionCustomerExports": {
+          "allowed": null,
+          "state": "WRITTEN_COMMERCIAL_SCOPE_REQUIRED"
+        },
+        "whiteLabel": {
+          "allowed": null,
+          "state": "WRITTEN_COMMERCIAL_SCOPE_REQUIRED"
+        },
+        "cacheJetStreamReplayRetention": {
+          "allowed": null,
+          "state": "WRITTEN_COMMERCIAL_SCOPE_REQUIRED"
+        },
+        "benchmarkPublicationCadsMonetization": {
+          "allowed": null,
+          "state": "WRITTEN_COMMERCIAL_SCOPE_REQUIRED"
+        },
+        "exchangeIndexRights": {
+          "allowed": null,
+          "state": "VENUE_DATA_RIGHTS_SCOPE_REQUIRED"
+        }
+      },
+      "subscriptionTierAndAddOns": null,
+      "contractOrPermissionReference": null,
+      "applicableEntityAndRegion": "EEA relevant; exact contracting entity/permission unverified",
+      "officialEvidence": [
+        "https://www.kraken.com/legal",
+        "https://docs-legacy.kraken.com/api/docs/guides/global-intro/"
+      ],
+      "accountEvidence": "OWNER_SENT_MARKET_DATA_REQUEST_2026-10-03; automated reply requests company, partnership rationale and operating country; no written permission yet",
+      "publishedOffers": [],
+      "quotaCostExpiryTerms": "UNKNOWN_PENDING_BUSINESS_DEVELOPMENT",
+      "termsObserved": {
+        "globalTermsLastUpdated": "2026-09-14",
+        "observedAt": "2026-10-04"
+      }
+    }
+  ],
+  "mobileExclusions": [
+    {
+      "id": "binance",
+      "state": "EXCLUDED_BY_OWNER_POLICY",
+      "admitted": false
+    },
+    {
+      "id": "coingecko",
+      "state": "EXCLUDED_BY_OWNER_POLICY",
+      "admitted": false
+    }
+  ],
+  "admittedSources": [],
+  "packaging": {
+    "server": "Keine Quelle wird durch diesen PR aktiviert; Credentials bleiben serverseitig.",
+    "mobileApk": "Keiner der zehn Fremdkandidaten wird in PR #2 in die APK gebündelt.",
+    "currentMobileAdapter": "projek eigener Apache-2.0 Adapter; verified=false bleibt erhalten"
+  },
+  "architectureFinding": {
+    "state": "OWNER_DECISION_REQUIRED_NO_MUTATION",
+    "currentMobileGate": "OSI-Softwarelizenz plus CC0/CC-BY/CC-BY-SA/ODbL Datenlizenz",
+    "impact": "Ein proprietär-kommerziell lizenzierter Feed kann selbst mit verifiziertem Vertrag den aktuellen Gate-Code nicht bestehen.",
+    "recommendedOption": "B_TWO_INDEPENDENT_GATES_WITH_EXISTING_AGGREGATE",
+    "options": {
+      "A": "Open-Data-only bleibt die einzige Mobile-Zulassung.",
+      "B": "OSS_SOFTWARE_ADMISSION und DATA_RIGHTS_ADMISSION getrennt, OSS_SOURCE_ADMISSION bleibt fail-closed Aggregat.",
+      "C": "Bestehendes Einzelgate für proprietäre Datenlizenzen erweitern; nicht empfohlen."
+    }
+  },
+  "gateAssessment": {
+    "OSS_SOURCE_ADMISSION": {
+      "state": "FAIL",
+      "reason": "Keine Quelle besitzt zugleich Mobile-kompatible Open-Data-Evidence und verifizierten kommerziellen Dataset-/Use-Case-Scope."
+    },
+    "MULTI_ASSET_LIVE_UNIVERSE": {
+      "state": "FAIL",
+      "reason": "Katalogmanifest vorhanden, aber Rechte nicht admitted, Live-OHLCV/Trading-Status nicht geprüft und Rohstoffpilot enthält nur 8 kanonische Underlyings."
+    }
+  }
+}
