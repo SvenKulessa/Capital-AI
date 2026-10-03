@@ -1,5 +1,6 @@
 import { FeatureValueSchema, type AssetIdentity, type FeatureValue } from '../contracts/canonicalContracts';
 import type { RawObservation } from './providerAdapters';
+export { calculatePriceHistory, calculateQuotedSpread } from './rawFeatureCalculator';
 export interface FeatureExtractionContext { asset: AssetIdentity; observation: RawObservation; historicalPrices?: number[]; macroContext?: Record<string, number>; }
 export interface FeatureSnapshotStore {
   putImmutable(snapshotId: string, features: readonly FeatureValue[]): Promise<void>;

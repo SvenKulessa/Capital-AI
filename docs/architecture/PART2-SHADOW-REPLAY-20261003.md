@@ -88,3 +88,27 @@ Bestehende App-Chunk-Warnung >500 kB und offene Distribution-Lizenzprüfung blei
 - >=100 tatsächlich eligible Assets je Klasse und gemessene End-to-End-Latenz <200 ms; Test-Kapazität ersetzt diese Gates nicht.
 
 PR #124 betrifft Auth/Billing/Prompt-Guard. Seine Package-, Serverstart-, Pricing- und Roadmap-Pfade werden in diesem MARKET-Slice nicht verändert. Docker-Kontext-Erweiterung ist PLATFORM-Mitwirkung, Admission und Rechte sind TRUST-Mitwirkung.
+
+## Ergänzung: Rohformeln, Admission und CI-Readback
+
+`src/contracts/rawFeatureCalculation.ts` und `src/services/rawFeatureCalculator.ts` ergänzen die vorhandene Feature-Store-Schnittstelle ohne Live-Aufrufer. Die Rohformel-DTOs akzeptieren ausdrücklich USD/EUR/GBP/CHF/JPY/CAD/AUD/NZD; andere Währungen bleiben bis zur Erweiterung gesperrt. Strikte DTOs verlangen finalisierte, positive Schlusskurse, lückenlose geordnete Intervalle, eine konsistente Asset-/Venue-/Currency-/Provider-Identität, Zeitstempel und gemessene Latency sowie freigegebene exakte Dataset/Symbol/Venue-Rechte für Analyse, abgeleitete Forschung und Retention. Nicht erfüllte Lizenzobligationen blockieren. DEMO ist ausdrücklich opt-in und verlangt einen nichtproduktiven Provider-Identifier.
+
+| Rohformel | Konvention | Grenze |
+| --- | --- | --- |
+| `rsi_14` | Wilder-Smoothing aus allen gelieferten Bars; 14 initiale Differenzen, Flat-Konvention 50 | Kein `rsi_14_oversold`-Score |
+| `sma_20_close` | Letzte 20 Schlusskurse | Perioden, keine unbelegte Tagesannahme |
+| `z_score_vs_20_period_sma` | Population-Standardabweichung derselben 20 Kurse | Null bei Nullvarianz; kein automatisch registriertes `20d`-Feature |
+| `bollinger_percent_b` | 20 Perioden, zwei Standardabweichungen | Verhältnis kann außerhalb 0..1 liegen; kein begrenzter Score |
+| `quoted_spread_bps` | `(ask-bid)/midpoint*10000` | Kein effective spread, keine Slippage-/Market-Impact-Schätzung |
+
+Inputs, Rights und Auswertungszeit bleiben im Calculation-Evidence-Body erhalten. Die Rohwerte haben `normalizedValue=null`, `qualityScore=null`, `scoreEligible=false` und können nicht als kanonische `FeatureValue` ausgegeben werden. Zehn neue Tests prüfen Handrechnung, Wilder-Smoothing, Replay-Fingerprint, Nullvarianz sowie negative Source-/Time-/Rights-/Admission-Fälle. Registry-Lifecycle bleibt 45 planned / 5 blocked. `admissionReport()` zeigt Implementierungsregistrierung und Blocker separat; Registrierung ist keine Zulassung.
+
+Methodische Primärquelle für RSI: [TA-Lib RSI](https://github.com/TA-Lib/ta-lib/blob/main/ta_codegen/input/rsi/rsi.md), gelesener Git-Blob `e968997f0dc2a1b8f05b29263a73d175ee05f5dd`. Keine TA-Lib-Bibliothek installiert, kein Quellcode kopiert. Die eigene Flat-Konvention ist ausdrücklich versionsgebunden. Spread-Abgrenzung: [CME Liquidity Tool Methodology](https://www.cmegroup.com/education/articles-and-reports/understanding-the-cme-liquidity-tool-methodology).
+
+Der Release-Readiness-Report verhindert jetzt, dass ein vom Aufrufer mitgeliefertes `pass:true` den berechneten Gate-Wert überschreibt. Doppelte Asset-Klassen, nicht-ganzzahlige/fehlende Counts und inkonsistente Gesamtzahlen blockieren ebenfalls. Drei zusätzliche Regressionen sichern diese Evidence-Integrität.
+
+Docker Security Gate, CodeQL und Domain Governance waren für den vorherigen PR-Head `57777dd5c53dcdcec0855aed5dd7c40e4bc34794` erfolgreich. PR-Docker-Run `37087838806` testete Merge-SHA `97760ed49ef599124c92ed94ed4a2903068c722d`; Main-Run `37070353125` testete die Baseline. Beide Artifact-ZIP-Hashes wurden gegen GitHub geprüft. Publishing/Handoff waren übersprungen: lokale Docker-Image-ID und Artifact-ZIP-Hash sind kein attestierter GHCR-Digest. Die CI-Smoke-Identity ist gebunden, die vorher gelesene aktive App-Identity bleibt ungebunden. Ein späterer Proxy-Timeout liefert keine neue Runtime-Evidence.
+
+Der NATS-Scannerfund `GO-2026-5932` bleibt erhalten; symbolgenaue Reachability/VEX ergibt NOT_AFFECTED ausschließlich für die exakt getestete CI-Binary. Keine pauschale Übertragung auf produktives NATS und keine Scanner-Suppression. Die CI-Kapazitätsmessung von 600 synthetischen Assets / 100 je sechs Klassen mit ca. 88 ms p95 ist ENGINE_CAPACITY_ONLY und productionEligible=false; sie schließt die realen Eligibility-/End-to-End-Gates nicht.
+
+Readback: `docs/security/evidence/part2-shadow-20261003/ci-artifact-readback.json`. Neue Commits benötigen neue CI-Checks; alte PASS-Werte autorisieren sie nicht. Die vom Owner ergänzte Open-Source-Vorgabe und der lokale Bundle-Fix stehen in `docs/architecture/OSS-EVIDENCE-QUALITY-20261003.md`. Die frühere Chunk-Warnung ist lokal behoben; Distribution-Review bleibt offen.

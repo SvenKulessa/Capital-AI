@@ -26,6 +26,16 @@ function chunkCycleGuard(): Plugin {
         visited.add(name);
       };
       for (const name of Object.keys(bundle)) visit(name, []);
+      const chunks = Object.values(bundle).filter(chunk => chunk.type === 'chunk').map(chunk => ({
+        fileName: chunk.fileName, bytes: Buffer.byteLength(chunk.code, 'utf8'),
+        imports: chunk.imports, dynamicImports: chunk.dynamicImports,
+      }));
+      // Same uncompressed 500 kB threshold as Vite's default warning; do not hide regressions.
+      for (const chunk of chunks) if (chunk.bytes > 500_000) this.error(`JavaScript chunk exceeds 500 kB: ${chunk.fileName} (${chunk.bytes} bytes)`);
+      this.emitFile({ type: 'asset', fileName: 'bundle-evidence.json', source: JSON.stringify({
+        schemaVersion: 1, scope: 'BUILD_CHUNK_GRAPH_NOT_RUNTIME_LATENCY', budgetBytes: 500_000,
+        staticCycles: false, chunks,
+      }, null, 2) + '\n' });
     },
   };
 }

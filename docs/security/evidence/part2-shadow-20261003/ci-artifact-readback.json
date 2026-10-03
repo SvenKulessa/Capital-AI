@@ -1,0 +1,455 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-03T02:12:51.707899+00:00",
+  "scope": "PREVIOUS_HEAD_CI_ARTIFACT_READBACK_NON_AUTHORIZING",
+  "mainSha": "fbb67ca0b3e08cdeeaf9835b09ca7af06b6230d7",
+  "previousPrHeadSha": "57777dd5c53dcdcec0855aed5dd7c40e4bc34794",
+  "runs": {
+    "prDocker": 37087838806,
+    "mainDocker": 37070353125
+  },
+  "previousHeadChecks": {
+    "Docker Security Gate": "PASS",
+    "CodeQL": "PASS",
+    "Domain Governance": "PASS",
+    "publish_candidate": "SKIPPED",
+    "Production Handoff Gate": "SKIPPED"
+  },
+  "artifacts": [
+    {
+      "artifactName": "main-docker-evidence.zip",
+      "archiveSha256": "8bd2491df9f1d8a2d62ffdd7be795eb7f2dd939e4666af4d8218504dd6be7d89",
+      "archiveHashMatchesGitHub": true,
+      "containerIdentity": {
+        "schema": "CONTAINER_IDENTITY@1",
+        "schemaVersion": 1,
+        "source": {
+          "eventName": "push",
+          "sourceSha": "fbb67ca0b3e08cdeeaf9835b09ca7af06b6230d7",
+          "testedSha": "fbb67ca0b3e08cdeeaf9835b09ca7af06b6230d7",
+          "testedMergeSha": null,
+          "pullRequestHeadSha": null,
+          "baseMainSha": null
+        },
+        "digestTypes": {
+          "artifactArchiveDigest": "GITHUB_ACTIONS_ARTIFACT_ARCHIVE_SHA256",
+          "localImageId": "DOCKER_IMAGE_CONFIG_SHA256",
+          "ociIndexDigest": "OCI_INDEX_SHA256",
+          "platformManifestDigest": "OCI_PLATFORM_MANIFEST_SHA256",
+          "configDigest": "OCI_IMAGE_CONFIG_SHA256",
+          "runtimeProviderDigest": "RUNTIME_PROVIDER_PLATFORM_MANIFEST_SHA256"
+        },
+        "digests": {
+          "artifactArchiveDigest": null,
+          "localImageId": "sha256:f655543069e907c3a6d699726fc0f25200a4eb9b3baa035639b8aa4f856a1475",
+          "ociIndexDigest": null,
+          "platformManifestDigest": null,
+          "configDigest": null,
+          "runtimeProviderDigest": null
+        }
+      },
+      "smokeHealth": {
+        "status": "ok",
+        "ingress": "fail_closed",
+        "symbols": [
+          "BTCUSDT",
+          "BTCUSD",
+          "AAPL"
+        ],
+        "quotesEnabled": true,
+        "infrastructure": {
+          "status": "unavailable",
+          "redis": "unavailable",
+          "nats": "unavailable",
+          "pubsub": "unavailable",
+          "subscriber": "idle",
+          "subscriberListeners": 0,
+          "verifiedDeliveries": 0,
+          "lastVerifiedDeliveryAt": null,
+          "lastVerifiedSymbol": null,
+          "stream": "CAPITAL_FACTS",
+          "storage": "file",
+          "replicasConfigured": 1
+        },
+        "buildIdentity": {
+          "bound": true,
+          "sourceSha": "fbb67ca0b3e08cdeeaf9835b09ca7af06b6230d7",
+          "builder": "SvenKulessa/Capital-AI/.github/workflows/build-security.yml"
+        }
+      },
+      "scoringCapacity": {
+        "schema": "CAPITAL_AI_SCORING_CAPACITY@1",
+        "scope": "ENGINE_CAPACITY_ONLY",
+        "synthetic": true,
+        "productionEligible": false,
+        "externalProviderRequests": false,
+        "totalConcurrent": 600,
+        "attempted": 600,
+        "succeeded": 600,
+        "failed": 0,
+        "wallMs": 47.526,
+        "assetClasses": [
+          {
+            "assetClass": "crypto",
+            "concurrent": 100,
+            "attempted": 100,
+            "succeeded": 100,
+            "failed": 0,
+            "scoreEngine": "PASS",
+            "productionEligibility": "CAPACITY_ONLY",
+            "dataRights": "SANDBOX_DEMO_ONLY",
+            "p50Ms": 46.767,
+            "p95Ms": 46.773,
+            "maxMs": 46.775
+          },
+          {
+            "assetClass": "equity_us",
+            "concurrent": 100,
+            "attempted": 100,
+            "succeeded": 100,
+            "failed": 0,
+            "scoreEngine": "PASS",
+            "productionEligibility": "CAPACITY_ONLY",
+            "dataRights": "SANDBOX_DEMO_ONLY",
+            "p50Ms": 46.779,
+            "p95Ms": 46.785,
+            "maxMs": 46.787
+          },
+          {
+            "assetClass": "equity_eu",
+            "concurrent": 100,
+            "attempted": 100,
+            "succeeded": 100,
+            "failed": 0,
+            "scoreEngine": "PASS",
+            "productionEligibility": "CAPACITY_ONLY",
+            "dataRights": "SANDBOX_DEMO_ONLY",
+            "p50Ms": 46.779,
+            "p95Ms": 46.786,
+            "maxMs": 46.789
+          },
+          {
+            "assetClass": "commodities",
+            "concurrent": 100,
+            "attempted": 100,
+            "succeeded": 100,
+            "failed": 0,
+            "scoreEngine": "PASS",
+            "productionEligibility": "CAPACITY_ONLY",
+            "dataRights": "SANDBOX_DEMO_ONLY",
+            "p50Ms": 46.792,
+            "p95Ms": 46.795,
+            "maxMs": 46.797
+          },
+          {
+            "assetClass": "forex",
+            "concurrent": 100,
+            "attempted": 100,
+            "succeeded": 100,
+            "failed": 0,
+            "scoreEngine": "PASS",
+            "productionEligibility": "CAPACITY_ONLY",
+            "dataRights": "SANDBOX_DEMO_ONLY",
+            "p50Ms": 46.722,
+            "p95Ms": 46.797,
+            "maxMs": 46.797
+          },
+          {
+            "assetClass": "fixed_income",
+            "concurrent": 100,
+            "attempted": 100,
+            "succeeded": 100,
+            "failed": 0,
+            "scoreEngine": "PASS",
+            "productionEligibility": "CAPACITY_ONLY",
+            "dataRights": "SANDBOX_DEMO_ONLY",
+            "p50Ms": 46.736,
+            "p95Ms": 46.771,
+            "maxMs": 46.771
+          }
+        ]
+      },
+      "natsReachability": {
+        "schema": "GO_VULN_REACHABILITY@2",
+        "advisory": "GO-2026-5932",
+        "component": "nats-server",
+        "natsImageRef": "nats:2.15.0-alpine@sha256:ac8f88a6494bffc2c2a5289a0ca61cb28a9145c11ba5677cf24265d07f46d8d4",
+        "localImageId": "sha256:bd731431f7dfe4bcae846227e3279dbbdc12a787b59a0dae2cf4ea5b2636cd8c",
+        "binarySha256": "sha256:387ce54e7a0a249d877a579ed641d715bab047d7e061bfa42b4d07f6a0401341",
+        "dependency": {
+          "module": "golang.org/x/crypto",
+          "version": "v0.57.0",
+          "presentInBinaryBuildInfo": true
+        },
+        "scanner": {
+          "name": "govulncheck",
+          "version": "v1.8.0",
+          "database": "https://vuln.go.dev",
+          "databaseLastModified": "2026-10-01T20:24:15Z",
+          "scanMode": "binary",
+          "scanLevel": "symbol"
+        },
+        "evidence": {
+          "advisoryObservedInDatabase": true,
+          "findingCount": 1,
+          "symbolFindingCount": 0,
+          "openPgpFrameCount": 0,
+          "openPgpFrames": [],
+          "nmExitStatus": 0,
+          "nmAffectedSymbolCount": 0,
+          "nmAffectedSymbols": [],
+          "repeatedRunEquivalent": true,
+          "openVexStatus": "not_affected",
+          "openVexJustification": "vulnerable_code_not_present",
+          "openVexImpactStatement": "Govulncheck determined that the vulnerable code isn't called"
+        },
+        "prerequisites": {
+          "binaryDigestValid": true,
+          "exactDependencyPresent": true,
+          "binaryMode": true,
+          "symbolLevel": true,
+          "advisoryObservedInDatabase": true,
+          "vexStatementPresent": true,
+          "upstreamVexConsistent": true,
+          "nmAvailable": true,
+          "repeatedRunEquivalent": true
+        },
+        "decision": "NOT_AFFECTED",
+        "reason": "vulnerable_code_not_present",
+        "blocking": false,
+        "reviewRequired": false,
+        "trivyFindingRetained": true,
+        "trivySuppressionApplied": false
+      }
+    },
+    {
+      "artifactName": "pr125-docker-evidence.zip",
+      "archiveSha256": "324495c16e5533093ada166b8638f4fabd0ba08bb26ec9bab8fff1230bce58bb",
+      "archiveHashMatchesGitHub": true,
+      "containerIdentity": {
+        "schema": "CONTAINER_IDENTITY@1",
+        "schemaVersion": 1,
+        "source": {
+          "eventName": "pull_request",
+          "sourceSha": "57777dd5c53dcdcec0855aed5dd7c40e4bc34794",
+          "testedSha": "97760ed49ef599124c92ed94ed4a2903068c722d",
+          "testedMergeSha": "97760ed49ef599124c92ed94ed4a2903068c722d",
+          "pullRequestHeadSha": "57777dd5c53dcdcec0855aed5dd7c40e4bc34794",
+          "baseMainSha": "fbb67ca0b3e08cdeeaf9835b09ca7af06b6230d7"
+        },
+        "digestTypes": {
+          "artifactArchiveDigest": "GITHUB_ACTIONS_ARTIFACT_ARCHIVE_SHA256",
+          "localImageId": "DOCKER_IMAGE_CONFIG_SHA256",
+          "ociIndexDigest": "OCI_INDEX_SHA256",
+          "platformManifestDigest": "OCI_PLATFORM_MANIFEST_SHA256",
+          "configDigest": "OCI_IMAGE_CONFIG_SHA256",
+          "runtimeProviderDigest": "RUNTIME_PROVIDER_PLATFORM_MANIFEST_SHA256"
+        },
+        "digests": {
+          "artifactArchiveDigest": null,
+          "localImageId": "sha256:4d9274214f07c2a26665af60b9d2739e4121f0a363368c176ce75b671a5e32bd",
+          "ociIndexDigest": null,
+          "platformManifestDigest": null,
+          "configDigest": null,
+          "runtimeProviderDigest": null
+        }
+      },
+      "smokeHealth": {
+        "status": "ok",
+        "ingress": "fail_closed",
+        "symbols": [
+          "BTCUSDT",
+          "BTCUSD",
+          "AAPL"
+        ],
+        "quotesEnabled": true,
+        "infrastructure": {
+          "status": "unavailable",
+          "redis": "unavailable",
+          "nats": "unavailable",
+          "pubsub": "unavailable",
+          "subscriber": "idle",
+          "subscriberListeners": 0,
+          "verifiedDeliveries": 0,
+          "lastVerifiedDeliveryAt": null,
+          "lastVerifiedSymbol": null,
+          "stream": "CAPITAL_FACTS",
+          "storage": "file",
+          "replicasConfigured": 1
+        },
+        "buildIdentity": {
+          "bound": true,
+          "sourceSha": "97760ed49ef599124c92ed94ed4a2903068c722d",
+          "builder": "SvenKulessa/Capital-AI/.github/workflows/build-security.yml"
+        }
+      },
+      "scoringCapacity": {
+        "schema": "CAPITAL_AI_SCORING_CAPACITY@1",
+        "scope": "ENGINE_CAPACITY_ONLY",
+        "synthetic": true,
+        "productionEligible": false,
+        "externalProviderRequests": false,
+        "totalConcurrent": 600,
+        "attempted": 600,
+        "succeeded": 600,
+        "failed": 0,
+        "wallMs": 89.812,
+        "assetClasses": [
+          {
+            "assetClass": "crypto",
+            "concurrent": 100,
+            "attempted": 100,
+            "succeeded": 100,
+            "failed": 0,
+            "scoreEngine": "PASS",
+            "productionEligibility": "CAPACITY_ONLY",
+            "dataRights": "SANDBOX_DEMO_ONLY",
+            "p50Ms": 88.696,
+            "p95Ms": 88.78,
+            "maxMs": 88.898
+          },
+          {
+            "assetClass": "equity_us",
+            "concurrent": 100,
+            "attempted": 100,
+            "succeeded": 100,
+            "failed": 0,
+            "scoreEngine": "PASS",
+            "productionEligibility": "CAPACITY_ONLY",
+            "dataRights": "SANDBOX_DEMO_ONLY",
+            "p50Ms": 88.704,
+            "p95Ms": 88.714,
+            "maxMs": 88.714
+          },
+          {
+            "assetClass": "equity_eu",
+            "concurrent": 100,
+            "attempted": 100,
+            "succeeded": 100,
+            "failed": 0,
+            "scoreEngine": "PASS",
+            "productionEligibility": "CAPACITY_ONLY",
+            "dataRights": "SANDBOX_DEMO_ONLY",
+            "p50Ms": 88.725,
+            "p95Ms": 88.738,
+            "maxMs": 88.738
+          },
+          {
+            "assetClass": "commodities",
+            "concurrent": 100,
+            "attempted": 100,
+            "succeeded": 100,
+            "failed": 0,
+            "scoreEngine": "PASS",
+            "productionEligibility": "CAPACITY_ONLY",
+            "dataRights": "SANDBOX_DEMO_ONLY",
+            "p50Ms": 88.749,
+            "p95Ms": 88.795,
+            "maxMs": 88.795
+          },
+          {
+            "assetClass": "forex",
+            "concurrent": 100,
+            "attempted": 100,
+            "succeeded": 100,
+            "failed": 0,
+            "scoreEngine": "PASS",
+            "productionEligibility": "CAPACITY_ONLY",
+            "dataRights": "SANDBOX_DEMO_ONLY",
+            "p50Ms": 88.71,
+            "p95Ms": 88.794,
+            "maxMs": 88.797
+          },
+          {
+            "assetClass": "fixed_income",
+            "concurrent": 100,
+            "attempted": 100,
+            "succeeded": 100,
+            "failed": 0,
+            "scoreEngine": "PASS",
+            "productionEligibility": "CAPACITY_ONLY",
+            "dataRights": "SANDBOX_DEMO_ONLY",
+            "p50Ms": 88.573,
+            "p95Ms": 88.681,
+            "maxMs": 88.684
+          }
+        ]
+      },
+      "natsReachability": {
+        "schema": "GO_VULN_REACHABILITY@2",
+        "advisory": "GO-2026-5932",
+        "component": "nats-server",
+        "natsImageRef": "nats:2.15.0-alpine@sha256:ac8f88a6494bffc2c2a5289a0ca61cb28a9145c11ba5677cf24265d07f46d8d4",
+        "localImageId": "sha256:082796e58949f7619355fe7d767b26e5eefc8623698c0892b43340f50c925fd4",
+        "binarySha256": "sha256:387ce54e7a0a249d877a579ed641d715bab047d7e061bfa42b4d07f6a0401341",
+        "dependency": {
+          "module": "golang.org/x/crypto",
+          "version": "v0.57.0",
+          "presentInBinaryBuildInfo": true
+        },
+        "scanner": {
+          "name": "govulncheck",
+          "version": "v1.8.0",
+          "database": "https://vuln.go.dev",
+          "databaseLastModified": "2026-10-01T20:24:15Z",
+          "scanMode": "binary",
+          "scanLevel": "symbol"
+        },
+        "evidence": {
+          "advisoryObservedInDatabase": true,
+          "findingCount": 1,
+          "symbolFindingCount": 0,
+          "openPgpFrameCount": 0,
+          "openPgpFrames": [],
+          "nmExitStatus": 0,
+          "nmAffectedSymbolCount": 0,
+          "nmAffectedSymbols": [],
+          "repeatedRunEquivalent": true,
+          "openVexStatus": "not_affected",
+          "openVexJustification": "vulnerable_code_not_present",
+          "openVexImpactStatement": "Govulncheck determined that the vulnerable code isn't called"
+        },
+        "prerequisites": {
+          "binaryDigestValid": true,
+          "exactDependencyPresent": true,
+          "binaryMode": true,
+          "symbolLevel": true,
+          "advisoryObservedInDatabase": true,
+          "vexStatementPresent": true,
+          "upstreamVexConsistent": true,
+          "nmAvailable": true,
+          "repeatedRunEquivalent": true
+        },
+        "decision": "NOT_AFFECTED",
+        "reason": "vulnerable_code_not_present",
+        "blocking": false,
+        "reviewRequired": false,
+        "trivyFindingRetained": true,
+        "trivySuppressionApplied": false
+      }
+    }
+  ],
+  "runtimeObservation": {
+    "readbackSource": "EARLIER_READ_ONLY_HEALTH_IN_THIS_SESSION",
+    "buildIdentity": {
+      "bound": false,
+      "sourceSha": null
+    },
+    "symbols": [
+      "BTCUSDT",
+      "BTCUSD",
+      "AAPL"
+    ],
+    "verifiedDeliveries": 13658,
+    "laterRetry": "PROXY_CONNECT_TIMEOUT_NO_NEW_RUNTIME_EVIDENCE"
+  },
+  "conclusion": {
+    "productionActivation": false,
+    "attestedGhcrDigest": "NOT_PROVEN",
+    "runtimeIdentity": "BLOCKED",
+    "real100EligiblePerClass": "NOT_PROVEN",
+    "fullPipelineLatencyBelow200ms": "NOT_PROVEN",
+    "newHeadChecks": "REQUIRED_AFTER_PUSH",
+    "natsDecisionScope": "EXACT_CI_BINARY_NOT_DEPLOYED_NATS"
+  }
+}

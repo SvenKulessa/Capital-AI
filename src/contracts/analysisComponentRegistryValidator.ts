@@ -34,7 +34,7 @@ export function validateAnalysisComponentRegistry(entries: unknown = CANONICAL_5
       const providerId = Object.hasOwn(providerAliases, ref) ? providerAliases[ref] : ref;
       if (!providers.has(providerId)) add('PROVIDER_REFERENCE_UNRESOLVED', ref);
     }
-    // The current feature store has demo fixtures only. No live formula is registered.
+    // Raw mathematical formulas alone do not establish normalized live FeatureValues or admission.
     for (const ref of entry.featureDependencies) {
       if (!implementedLiveFeatureIds.has(ref)) add('FEATURE_REFERENCE_UNRESOLVED', ref);
     }

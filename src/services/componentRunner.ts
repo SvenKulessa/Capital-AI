@@ -18,6 +18,20 @@ export const ComponentExecutionResultSchema = z.strictObject({
 /** Exact registry identity only. Planned entries do not become executable from a flag. */
 export class ShadowComponentRunnerRegistry {
   private runners = new Map<string, ComponentRunner>();
+  /** Read-only admission evidence; registration alone never promotes registry lifecycle. */
+  admissionReport() {
+    const validation = validateAnalysisComponentRegistry();
+    return CANONICAL_50_COMPONENTS.map(entry => {
+      const implementationRegistered = this.runners.has(entry.componentId);
+      const reasons = validation.issues.filter(issue => issue.componentId === entry.componentId || issue.componentId === 'registry')
+        .map(issue => issue.code);
+      if (!implementationRegistered) reasons.push('COMPONENT_IMPLEMENTATION_MISSING');
+      if (!['shadow', 'active'].includes(entry.status)) reasons.push('COMPONENT_NOT_SHADOW_ADMITTED');
+      return { componentId: entry.componentId, calculationVersion: entry.calculationVersion,
+        lifecycle: entry.status, implementationRegistered, admissionAllowed: reasons.length === 0,
+        reasonCodes: [...new Set(reasons)] };
+    });
+  }
   register(runner: ComponentRunner) {
     const entry = CANONICAL_50_COMPONENTS.find(c => c.componentId === runner.componentId);
     if (!entry || entry.calculationVersion !== runner.calculationVersion) throw new Error('RUNNER_IDENTITY_MISMATCH');
