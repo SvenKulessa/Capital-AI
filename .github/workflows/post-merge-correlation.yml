@@ -10,7 +10,7 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: post-merge-correlation-\${{ github.event.pull_request.merge_commit_sha }}
+  group: post-merge-correlation-${{ github.event.pull_request.merge_commit_sha }}
   cancel-in-progress: false
 
 jobs:
@@ -22,7 +22,7 @@ jobs:
       - name: Checkout merged main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: \${{ github.event.pull_request.merge_commit_sha }}
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
           persist-credentials: false
 
       - name: Regression der Korrelationslogik
@@ -30,10 +30,10 @@ jobs:
 
       - name: Merge-Diff und offene PR-Matrix lesen
         env:
-          GH_TOKEN: \${{ github.token }}
-          REPOSITORY: \${{ github.repository }}
-          MERGED_PR: \${{ github.event.pull_request.number }}
-          MAIN_SHA: \${{ github.event.pull_request.merge_commit_sha }}
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          MERGED_PR: ${{ github.event.pull_request.number }}
+          MAIN_SHA: ${{ github.event.pull_request.merge_commit_sha }}
         shell: bash
         run: |
           set -euo pipefail
@@ -80,10 +80,10 @@ jobs:
 
       - name: Betroffene offene PRs mit Handlung korrelieren
         env:
-          GH_TOKEN: \${{ github.token }}
-          REPOSITORY: \${{ github.repository }}
-          MAIN_SHA: \${{ github.event.pull_request.merge_commit_sha }}
-          MERGED_PR: \${{ github.event.pull_request.number }}
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          MAIN_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+          MERGED_PR: ${{ github.event.pull_request.number }}
         shell: bash
         run: |
           set -euo pipefail
@@ -120,8 +120,8 @@ jobs:
           {
             echo "## POST_MERGE_CORRELATION@2"
             echo
-            echo "- Main: \${{ github.event.pull_request.merge_commit_sha }}"
-            echo "- Merge-PR: #\${{ github.event.pull_request.number }}"
+            echo "- Main: ${{ github.event.pull_request.merge_commit_sha }}"
+            echo "- Merge-PR: #${{ github.event.pull_request.number }}"
             echo "- Offene PRs: $(jq -r '.summary.totalOpenPrs' security-reports/post-merge-correlation.json)"
             echo "- Nur korrelieren: $(jq -r '.summary.correlateOnly' security-reports/post-merge-correlation.json)"
             echo "- Sync erforderlich: $(jq -r '.summary.syncRequired' security-reports/post-merge-correlation.json)"
@@ -135,7 +135,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: post-merge-supply-chain-\${{ github.event.pull_request.merge_commit_sha }}
+          name: post-merge-supply-chain-${{ github.event.pull_request.merge_commit_sha }}
           path: |
             security-reports/post-merge-event.json
             security-reports/post-merge-correlation.json

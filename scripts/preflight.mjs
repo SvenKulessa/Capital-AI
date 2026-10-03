@@ -26,6 +26,7 @@ run(process.execPath, ['--test',
   'server/cads-observability.test.mjs',
   'scripts/font-distribution.test.mjs',
   'scripts/post-merge-correlation.test.mjs',
+  'scripts/validate-oss-multi-asset-plan.test.mjs',
   'scripts/verify-release-readiness.test.mjs',
 ]);
 run(process.execPath, ['scripts/license-evidence.mjs']);

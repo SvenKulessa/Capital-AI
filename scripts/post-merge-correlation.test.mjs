@@ -1,6 +1,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { buildCorrelation, classifyOpenPr, ACTIONS } from "./post-merge-correlation.mjs";
+
+test("workflow passes the unescaped merged SHA and token to checkout and correlation", () => {
+  const workflow = readFileSync(new URL('../.github/workflows/post-merge-correlation.yml', import.meta.url), 'utf8');
+  assert.ok(!workflow.includes('\\' + '${{'), 'Backslash corrupts evaluated GitHub expressions');
+  assert.match(workflow, /ref: \$\{\{ github\.event\.pull_request\.merge_commit_sha \}\}/);
+  assert.match(workflow, /GH_TOKEN: \$\{\{ github\.token \}\}/);
+  assert.match(workflow, /persist-credentials: false/);
+});
 
 const mainSha = "a".repeat(40);
 const basePr = {
