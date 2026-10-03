@@ -9,6 +9,8 @@ const digestRef = /^ghcr\.io\/svenkulessa\/capital-ai@sha256:[a-f0-9]{64}$/;
 export function verifyReleaseReadiness(evidence) {
   const reasons = [];
   const assetEvidence = new Map((evidence.assetClasses || []).map(row => [row.assetClass, row]));
+  const uniqueClasses = assetEvidence.size === (evidence.assetClasses || []).length;
+  const count = value => Number.isSafeInteger(value) && value >= 0;
 
   const checks = {
     sourceIsCurrentMain: Boolean(evidence.sourceSha && evidence.sourceSha === evidence.currentMainSha),
@@ -23,11 +25,14 @@ export function verifyReleaseReadiness(evidence) {
       .every(layer => (evidence.cads?.coveredLayers || []).includes(layer)),
     immutableGhcrDigest: digestRef.test(String(evidence.imageRef || '')),
     productionHandoffVerified: evidence.productionHandoff === 'PASS',
+    uniqueAssetClassEvidence: uniqueClasses,
   };
 
   const assetClasses = REQUIRED_ASSET_CLASSES.map(assetClass => {
     const row = assetEvidence.get(assetClass);
-    const pass = Boolean(row &&
+    const pass = Boolean(uniqueClasses && row &&
+      [row.concurrent, row.attempted, row.succeeded, row.failed].every(count) &&
+      row.attempted === row.succeeded + row.failed && row.concurrent <= row.attempted &&
       Number(row.concurrent || 0) >= 100 &&
       Number(row.attempted || 0) >= 100 &&
       Number(row.succeeded || 0) >= 100 &&
@@ -36,7 +41,7 @@ export function verifyReleaseReadiness(evidence) {
       row.productionEligibility === 'PASS' &&
       row.dataRights === 'PASS');
     if (!pass) reasons.push('ASSET_CLASS_NOT_PROVEN:' + assetClass);
-    return { assetClass, pass, ...(row || {}) };
+    return { ...(row || {}), assetClass, pass };
   });
   checks.assetClasses100Concurrent = assetClasses.every(row => row.pass);
 

@@ -19,6 +19,21 @@ export interface EvidenceRecord {
 }
 
 export class EvidenceEngineService {
+  /** Canonical JSON is shared by configuration, snapshots and replay comparison. */
+  public static canonicalJson(value: unknown): string {
+    if (value === null || typeof value === 'string' || typeof value === 'boolean') return JSON.stringify(value);
+    if (typeof value === 'number' && Number.isFinite(value)) return JSON.stringify(value);
+    if (Array.isArray(value)) return `[${value.map(v => this.canonicalJson(v)).join(',')}]`;
+    if (typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype) {
+      const record = value as Record<string, unknown>;
+      return `{${Object.keys(record).sort().map(k => `${JSON.stringify(k)}:${this.canonicalJson(record[k])}`).join(',')}}`;
+    }
+    throw new Error('NON_CANONICAL_EVIDENCE_VALUE');
+  }
+
+  public static async fingerprint(value: unknown): Promise<string> {
+    return this.sha256(this.canonicalJson(value));
+  }
   /**
    * Generates a deterministic SHA-256 cryptographic evidence record.
    */

@@ -43,10 +43,10 @@ export class DataPlausibilityValidator {
       });
     }
 
-    if (result.confidence < 0.5 && result.rank !== null) {
+    if (result.confidence < 0.9 && result.rank !== null) {
       violations.push({
         ruleId: 'PLAU-003-LOW-CONFIDENCE-RANK-PUBLISHED',
-        ruleDescription: 'Asset mit unzureichender Konfidenz (<0.50) darf nicht gerankt werden',
+        ruleDescription: 'Asset mit unzureichender Konfidenz (<0.90) darf nicht gerankt werden',
         severity: 'CRITICAL_BLOCKER',
         entityId: result.assetId,
         details: `confidence = ${result.confidence}, but rank = ${result.rank}`,

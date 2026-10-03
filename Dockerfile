@@ -25,7 +25,7 @@ COPY generated/documentary ./generated/documentary
 COPY public/branding/capital-ai-logo.jpg ./public/branding/capital-ai-logo.jpg
 COPY public/branding/asset-pack ./public/branding/asset-pack
 COPY public/fonts ./public/fonts
-COPY server/advisor.ts server/http-security.mjs server/mta-sts.mjs server/mta-sts.test.mjs ./server/
+COPY server/advisor.ts server/http-security.mjs server/mta-sts.mjs server/mta-sts.test.mjs server/shadow-evidence-store.mjs ./server/
 COPY server/prompt-injection-guard.mjs server/prompt-injection-guard.test.mjs server/billing-catalog.mjs ./server/
 COPY server/advisor-security.test.mjs ./server/
 COPY scripts/billing-catalog.test.mjs ./scripts/

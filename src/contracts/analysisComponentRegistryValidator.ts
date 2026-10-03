@@ -1,12 +1,13 @@
 import { z } from 'zod';
 import { AnalysisComponentRegistryEntrySchema, CANONICAL_50_COMPONENTS } from './analysisComponentRegistry';
 import { AssetClassSchema } from './common';
-import { AssetIdentitySchema, FeatureValueSchema, FinalRankResultSchema } from './canonicalContracts';
+import { AssetIdentitySchema, DataProvenanceSchema, FeatureValueSchema, ScoreResultSchema, FinalRankResultSchema } from './canonicalContracts';
 import { ProviderRegistryService } from '../config/providers/providerRegistry';
 
 // Only existing schemas resolve. Descriptive names in planned entries are not fabricated DTOs.
 const contracts: Record<string, z.ZodType> = {
-  AssetIdentity: AssetIdentitySchema, FeatureValue: FeatureValueSchema, FinalRankResult: FinalRankResultSchema,
+  AssetIdentity: AssetIdentitySchema, DataProvenance: DataProvenanceSchema, FeatureValue: FeatureValueSchema,
+  ScoreResult: ScoreResultSchema, FinalRankResult: FinalRankResultSchema,
 };
 const providerAliases: Record<string, string> = {
   binance: 'binance_market_data', kraken: 'kraken_websocket', twelvedata: 'twelve_data_market',
@@ -33,7 +34,7 @@ export function validateAnalysisComponentRegistry(entries: unknown = CANONICAL_5
       const providerId = Object.hasOwn(providerAliases, ref) ? providerAliases[ref] : ref;
       if (!providers.has(providerId)) add('PROVIDER_REFERENCE_UNRESOLVED', ref);
     }
-    // The current feature store has demo fixtures only. No live formula is registered.
+    // Raw mathematical formulas alone do not establish normalized live FeatureValues or admission.
     for (const ref of entry.featureDependencies) {
       if (!implementedLiveFeatureIds.has(ref)) add('FEATURE_REFERENCE_UNRESOLVED', ref);
     }

@@ -43,6 +43,7 @@ const scannerRow = ({
     scanTime: scanTime(scannedAt),
     status: assessment.status,
     evidenceStatus: 'UNGEKLÄRT',
+    ownerApproved: false,
   };
 };
 

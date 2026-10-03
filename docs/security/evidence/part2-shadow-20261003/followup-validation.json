@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-03T02:15:03.965987+00:00",
+  "scope": "LOCAL_CODE_VALIDATION_NON_AUTHORIZING",
+  "baselineSourceSha": "fbb67ca0b3e08cdeeaf9835b09ca7af06b6230d7",
+  "checks": [
+    {
+      "command": "npm test",
+      "status": "PASS",
+      "nodeTestCount": 80,
+      "note": "Vor abschlie\u00dfender numerischer Overflow-Regression; relevante finale Formel-Suite separat bestanden"
+    },
+    {
+      "command": "node --import tsx --test src/contracts/__tests__/rawFeatureCalculation.test.ts",
+      "status": "PASS",
+      "tests": 10
+    },
+    {
+      "command": "npm run lint",
+      "status": "PASS"
+    },
+    {
+      "command": "npm run test:security",
+      "status": "PASS",
+      "serverTests": 27,
+      "frontendTests": 7
+    },
+    {
+      "command": "node --test scripts/license-engine.test.mjs scripts/license-evidence.test.mjs scripts/verify-release-readiness.test.mjs",
+      "status": "PASS",
+      "tests": 27
+    },
+    {
+      "command": "npm run test:navigation",
+      "status": "PASS",
+      "tests": 6
+    },
+    {
+      "command": "npm run build",
+      "status": "PASS",
+      "chunkWarning": false
+    },
+    {
+      "command": "npm run verify:browser",
+      "status": "PASS",
+      "checkedArtifacts": 26,
+      "scope": "SERVER_BROWSER_BOUNDARY_NOT_FULL_SECRET_SCAN"
+    },
+    {
+      "command": "node scripts/preflight.mjs",
+      "status": "PASS",
+      "tests": 81,
+      "distributionLicenseReview": "OPEN"
+    },
+    {
+      "command": "git diff --check",
+      "status": "PASS"
+    }
+  ],
+  "sourceFileHashes": {
+    "src/contracts/rawFeatureCalculation.ts": "0c10da2a09e9321e674fdf318b1323f8acdd355cf8db14bec96f0a1484557268",
+    "src/services/rawFeatureCalculator.ts": "173e4e878a79e2851bff5cf31c5bf796a4471514b0c9140c89e760197fadfb62",
+    "src/services/componentRunner.ts": "e6ffbfde061adf82effa383e7ab68d39b545315f056208a50113a6242cfdc9f9",
+    "src/App.tsx": "a4f1affc0112c1f75740f5a5ad75d0ba8fb4cb3856715edcbb2da8b857723e58",
+    "vite.config.ts": "e25d4fb8cdf0f6387465d4d70549d58d421d81f4e573067b932e5bbebfc0386e",
+    "shared/license-engine.mjs": "467c943131af4688d91c0d9b760eb185da619f02462508dfae5299da1cae589b",
+    "scripts/verify-release-readiness.mjs": "c8aad3382bcd451ef8825cecda70f38d716953340e9e3b13512e0482a8403721"
+  },
+  "productionActivationAuthorized": false,
+  "distributionLicenseReview": "OPEN",
+  "visualBrowserSmoke": "NOT_EXECUTED",
+  "real100EligibleAssetsPerClass": "NOT_PROVEN",
+  "fullPipelineLatencyBelow200ms": "NOT_PROVEN",
+  "newGitHubChecks": "REQUIRED_AFTER_PUSH"
+}

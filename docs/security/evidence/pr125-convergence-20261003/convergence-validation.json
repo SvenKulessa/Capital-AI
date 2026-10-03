@@ -1,0 +1,50 @@
+{
+  "baselineMain": "d0334ac1426680ed82fe67c987a6ea49c8b6f83d",
+  "previousPrHead": "d0f7e9d8501c804c1d7c29bddb18a57b603cac11",
+  "mode": "PR_CORRECTION_NO_MERGE_NO_DEPLOY",
+  "node": "v24.19.0",
+  "npm": "11.9.0",
+  "fullPreflight": "PASS",
+  "dockerAvailable": false,
+  "sharedFiles": [
+    {
+      "path": "src/App.tsx",
+      "mainBlob": "7af85d095929e54d765d41fb5556b8f586811085",
+      "testedBlob": "7af85d095929e54d765d41fb5556b8f586811085",
+      "equal": true
+    },
+    {
+      "path": "vite.config.ts",
+      "mainBlob": "f5171e60c968c9650a796735f5f426eb73e9da2f",
+      "testedBlob": "f5171e60c968c9650a796735f5f426eb73e9da2f",
+      "equal": true
+    }
+  ],
+  "manifestLockScopes": [
+    {
+      "path": ".",
+      "installedPackages": 261,
+      "drift": [],
+      "manifestSha256": "b705895fba9b3e8cd1ebb7a396891d6a2b4bf99f2410456b3507d7f20075d57c",
+      "lockSha256": "ad966376f02b7aa73cb01091e6c6789c9b03f65c81109fd4cda6ebd78b54c24a",
+      "installedNotMatchingRegistryLatest": 68
+    },
+    {
+      "path": "deploy/runtime",
+      "installedPackages": 15,
+      "drift": [],
+      "manifestSha256": "195e9a8ca6672d2d147832fc54ee9c5823597a085346364d0945128996a2fa64",
+      "lockSha256": "e1235416e09b27164d89edf56b25f0aabd2d63c48cbc5c962be4f5bca729b1a0",
+      "installedNotMatchingRegistryLatest": 6
+    },
+    {
+      "path": "deploy/npm-security-patches",
+      "installedPackages": 4,
+      "drift": [],
+      "manifestSha256": "417b73ac95ce22501e2df3cf0324743337e8d13797b6d4e3256eb8eec43c7f2e",
+      "lockSha256": "e6f89be83ce542c45fc1be34b24b4dc3e717004ffd4dadce4ab84ecab2ce6c7d",
+      "installedNotMatchingRegistryLatest": 2
+    }
+  ],
+  "securityConclusion": "NPM_SCOPES_ZERO_KNOWN_VULNERABILITIES_CONTAINER_HEAD_SCAN_REQUIRED"
+}
