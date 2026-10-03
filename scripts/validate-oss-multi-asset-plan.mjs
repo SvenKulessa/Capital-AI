@@ -15,7 +15,7 @@ export function validatePlan(p) {
   assert.equal(p.firstTestPerClass, 20);
   assert.equal(p.incrementTotal, 50);
   assert.deepEqual(Object.keys(p.targets).sort(), [...classes].sort());
-  assert.equal(Object.values(p.targets).reduce((a, b) => a + b, 0), 1300);
+  assert.deepEqual(p.targets, { crypto: 500, stocks: 300, commodities: 100, forex: 100, indices: 300 });
   for (const c of classes) assert.ok(Number.isSafeInteger(p.targets[c]) && p.targets[c] >= 20);
   assert.equal(p.candidates.length, 10);
   assert.equal(new Set(p.candidates.map(c => c.id)).size, 10);
@@ -24,8 +24,19 @@ export function validatePlan(p) {
     assert.equal(c.measurementState, 'NOT_EXECUTED');
     assert.equal(c.dataRights, 'UNVERIFIED');
     assert.equal(c.buildDigest, null);
+    assert.equal(c.stableRelease, null);
+    assert.ok(c.softwareLicenceAudit);
+    assert.match(c.softwareLicenceAudit.blobSha, /^[a-f0-9]{40}$/);
+    assert.equal(c.softwareLicenceAudit.state, c.licenseReview);
   }
   assert.equal(Object.values(p.scoreProfile.weights).reduce((a, b) => a + b, 0), 100);
+  assert.deepEqual(Object.keys(p.scoreProfile.weights).sort(), [
+    'securityTrust', 'functionalCoverage', 'performanceResources', 'reliability',
+    'maintainabilityIntegration', 'licenseProvenance', 'evidenceAuditability', 'portabilityCost',
+  ].sort());
+  for (const weight of Object.values(p.scoreProfile.weights)) {
+    assert.ok(Number.isFinite(weight) && weight >= 0 && weight <= 100);
+  }
   assert.equal(p.stages.length, 25);
   for (const [i, stage] of p.stages.entries()) {
     assert.equal(stage.stage, i);
@@ -60,9 +71,12 @@ export function validatePlan(p) {
   assert.ok(!p.candidates.some(c => c.id === 'yfinance'));
   assert.ok(p.excludedCandidates.some(c => c.id === 'yfinance'));
   for (const c of p.candidates) assert.equal(c.commercialAdmission, 'BLOCKED_PENDING_EVIDENCE');
-  for (const id of ['saas', 'data-api', 'white-label', 'cads-app', 'ghcr-app']) {
-    assert.ok(p.monetization.products.some(p => p.id === id && p.state === 'RIGHTS_UNVERIFIED'));
+  const products = ['saas', 'data-api', 'sentiment-api', 'white-label', 'cads-app', 'ghcr-app', 'social'];
+  assert.deepEqual(p.monetization.products.map(product => product.id).sort(), products.sort());
+  for (const product of p.monetization.products) {
+    assert.equal(product.state, 'RIGHTS_UNVERIFIED');
   }
+  assert.equal(p.commercialEvidence, 'docs/licenses/oss-market-stack/commercial-review-20261003.json');
   const perps = p.additionalPerpetuals;
   assert.equal(perps.enabledForBenchmark, true);
   assert.deepEqual(perps.assetClasses, ['crypto', 'stocks', 'commodities']);
@@ -88,10 +102,42 @@ export function validatePlan(p) {
     candidates: 10, stages: 25, additionalPerpetualTarget: null, benchmarkExecuted: false, decisionEligible: false };
 }
 
+// This validates consistency of a blocked research snapshot, never admission.
+export function validateCommercialEvidence(plan, evidence) {
+  validatePlan(plan);
+  assert.equal(evidence.schema, 'CAPITAL_AI_COMMERCIAL_OSS_REVIEW@1');
+  assert.equal(evidence.status, 'PARTIAL_REVIEW_NOT_PRODUCTION_AUTHORIZATION');
+  assert.equal(evidence.sourceMainSha, plan.sourceMainSha);
+  assert.equal(evidence.commercialProductionAllowed, false);
+  assert.equal(evidence.benchmark.executed, false);
+  assert.equal(evidence.benchmark.winner, null);
+  assert.equal(evidence.candidates.length, plan.candidates.length);
+  assert.equal(new Set(evidence.candidates.map(candidate => candidate.id)).size, plan.candidates.length);
+  for (const candidate of plan.candidates) {
+    const review = evidence.candidates.find(row => row.id === candidate.id);
+    assert.ok(review, `Missing commercial review: ${candidate.id}`);
+    assert.equal(review.repository, candidate.repo);
+    assert.equal(review.sourceSha, candidate.sourceSha);
+    assert.equal(review.softwareLicence, candidate.softwareLicenceAudit.licence);
+    assert.equal(review.licencePath, candidate.softwareLicenceAudit.path);
+    assert.equal(review.licenceBlobSha, candidate.softwareLicenceAudit.blobSha);
+    assert.equal(review.softwareReview, candidate.licenseReview);
+    assert.equal(review.commercialDataRights, 'UNVERIFIED');
+    assert.equal(review.productAdmission, 'BLOCKED');
+  }
+  assert.equal(evidence.monetizationAuthority, plan.monetization.registryRef.path);
+  assert.equal(evidence.cadsAuthority, plan.monetization.cadsRef.path);
+  return { valid: true, candidates: evidence.candidates.length, commercialProductionAllowed: false };
+}
+
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const input = process.argv[2] || new URL('../docs/benchmarks/oss-market-pipelines-sim/live-benchmark-plan.json', import.meta.url);
   try {
-    console.log(JSON.stringify(validatePlan(JSON.parse(await readFile(input, 'utf8')))));
+    const plan = JSON.parse(await readFile(input, 'utf8'));
+    const result = validatePlan(plan);
+    const evidence = JSON.parse(await readFile(new URL(`../${plan.commercialEvidence}`, import.meta.url), 'utf8'));
+    validateCommercialEvidence(plan, evidence);
+    console.log(JSON.stringify({ ...result, commercialEvidenceConsistent: true }));
   } catch {
     console.error('INVALID_MULTI_ASSET_BENCHMARK_PLAN');
     process.exitCode = 1;

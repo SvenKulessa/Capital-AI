@@ -48,6 +48,13 @@ proportional zum Klassenziel, ohne Zielüberschreitung. Alle Stufen bleiben PLAN
 Maschinenlesbarer Prüfplan: `live-benchmark-plan.json`.
 Prüfung ohne Providerzugriffe: `node scripts/validate-oss-multi-asset-plan.mjs`.
 
+Post-Merge-Korrektur 2026-10-04: Der CLI-Check korreliert zusätzlich die zehn
+Kandidaten mit `commercial-review-20261003.json` (Source-/Lizenz-Blob, Review und
+gesperrte Zulassung). Er prüft die exakten Owner-Klassenziele, nichtnegative
+CADS-Gewichte und alle sieben Produkt-Rechtescopes. Negative Regressionen laufen
+über `scripts/validate-oss-multi-asset-plan.test.mjs` im bestehenden Preflight.
+Ein PASS bestätigt ausschließlich die Konsistenz des gesperrten Plans.
+
 ### Zehn Kandidaten, keine behauptete globale Top-10
 
 GitHub-Sterne sind eine zeitgebundene Popularitätsmetrik innerhalb einer fachlichen
