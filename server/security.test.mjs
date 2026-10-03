@@ -4,6 +4,7 @@ import { mkdtemp, writeFile, symlink, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createApp } from './index.mjs';
+import { BILLING_CATALOG } from './billing-catalog.mjs';
 
 test('HTTP security boundaries and static-file isolation', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'capital-security-'));
@@ -17,6 +18,14 @@ test('HTTP security boundaries and static-file isolation', async () => {
   const base = `http://127.0.0.1:${server.address().port}`;
   try {
     const health = await fetch(base + '/healthz');
+    const catalog = await fetch(base + '/api/billing/catalog');
+    assert.equal(catalog.status, 200);
+    assert.equal(catalog.headers.get('cache-control'), 'no-store');
+    assert.equal(catalog.headers.get('x-content-type-options'), 'nosniff');
+    assert.deepEqual(await catalog.json(), BILLING_CATALOG);
+    const catalogPost = await fetch(base + '/api/billing/catalog', { method: 'POST' });
+    assert.equal(catalogPost.status, 405);
+    assert.equal(catalogPost.headers.get('allow'), 'GET');
     assert.equal(health.status, 200);
     assert.equal(health.headers.get('x-content-type-options'), 'nosniff');
     assert.equal(health.headers.get('x-frame-options'), 'DENY');

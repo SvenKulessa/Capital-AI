@@ -13,6 +13,10 @@
 !server/index.mjs
 !server/market.mjs
 !server/advisor.ts
+!server/prompt-injection-guard.mjs
+!server/prompt-injection-guard.test.mjs
+!server/advisor-security.test.mjs
+!server/billing-catalog.mjs
 !server/auth.mjs
 !server/telegram.mjs
 !server/privacy.mjs
@@ -46,6 +50,7 @@
 !scripts/branding-assets.test.mjs
 !scripts/license-evidence.mjs
 !scripts/license-evidence.test.mjs
+!scripts/billing-catalog.test.mjs
 !scripts/license-engine.mjs
 !scripts/frontend-security.test.mjs
 !scripts/verify-browser-boundary.mjs

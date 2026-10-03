@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-10-03T02:54:42.369834+00:00",
+  "scope": "deploy/runtime",
+  "exitCode": 0,
+  "report": {
+    "auditReportVersion": 2,
+    "vulnerabilities": {},
+    "metadata": {
+      "vulnerabilities": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      },
+      "dependencies": {
+        "prod": 16,
+        "dev": 0,
+        "optional": 0,
+        "peer": 0,
+        "peerOptional": 0,
+        "total": 15
+      }
+    }
+  }
+}

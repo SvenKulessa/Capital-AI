@@ -138,7 +138,7 @@ jobs:
           chmod a+rwx security-reports
           docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -w /work -v "$PWD:/work:ro" -v "$PWD/security-reports:/reports" capital-ai-security fs --skip-dirs /work/security-reports --include-dev-deps --ignorefile /work/deploy/trivy-bootstrap-exception.yaml --scanners vuln,secret,misconfig --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format json --output /reports/source.json --exit-code 0 /work
           node scripts/summarize-trivy.mjs security-reports/source.json --gate
-      - name: Build-Stufe einschließlich Paketmanager scannen
+      - name: Build-Stufe nach Entfernung des Installationswerkzeugs scannen
         run: |
           docker build --pull --target build --tag capital-ai-build:${{ github.sha }} .
           mkdir -p security-reports
@@ -149,7 +149,8 @@ jobs:
           docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/build.tar --ignorefile /dev/null --scanners vuln,secret --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format json --output /reports/build-image.json --exit-code 0 || scan_status=$?
           node scripts/summarize-trivy.mjs security-reports/build-image.json > security-reports/build-image.summary.json
           node scripts/summarize-trivy.mjs security-reports/build-image.json --gate || build_gate_status=$?
-          if [ "${build_gate_status:-0}" -ne 0 ]; then
+          # Only diagnose actual Go HIGH findings. Unrelated CVEs must fail at their own gate.
+          if [ "${build_gate_status:-0}" -ne 0 ] && jq -e '.vulnerabilities | any(.severity == "HIGH" and (.package == "stdlib" or .package == "golang.org/x/text"))' security-reports/build-image.summary.json >/dev/null; then
             container_id=$(docker create capital-ai-build:${{ github.sha }})
             trap 'docker rm -f "$container_id" >/dev/null 2>&1 || true' EXIT
             docker cp "$container_id:/app/node_modules/@typescript/typescript-linux-x64/lib/tsc" security-reports/ts7-compiler
@@ -165,6 +166,7 @@ jobs:
             node scripts/verify-ts7-compiler-reachability.mjs security-reports/ts7-govulncheck.messages.json security-reports/ts7-govulncheck.openvex.json security-reports/ts7-go-version-m.txt security-reports/build-image.summary.json security-reports/ts7-compiler-reachability.json
           fi
           if [ "$scan_status" -ne 0 ]; then exit "$scan_status"; fi
+          if [ "${build_gate_status:-0}" -ne 0 ]; then exit "$build_gate_status"; fi
           docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/build.tar --ignorefile /dev/null --scanners license --license-full --format json --output /reports/build-image-licenses.json --exit-code 0
           rm security-reports/build.tar
       - name: Image mit Tests und isoliertem Frontend-Build bauen

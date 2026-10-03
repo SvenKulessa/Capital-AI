@@ -112,3 +112,8 @@ Docker Security Gate, CodeQL und Domain Governance waren für den vorherigen PR-
 Der NATS-Scannerfund `GO-2026-5932` bleibt erhalten; symbolgenaue Reachability/VEX ergibt NOT_AFFECTED ausschließlich für die exakt getestete CI-Binary. Keine pauschale Übertragung auf produktives NATS und keine Scanner-Suppression. Die CI-Kapazitätsmessung von 600 synthetischen Assets / 100 je sechs Klassen mit ca. 88 ms p95 ist ENGINE_CAPACITY_ONLY und productionEligible=false; sie schließt die realen Eligibility-/End-to-End-Gates nicht.
 
 Readback: `docs/security/evidence/part2-shadow-20261003/ci-artifact-readback.json`. Neue Commits benötigen neue CI-Checks; alte PASS-Werte autorisieren sie nicht. Die vom Owner ergänzte Open-Source-Vorgabe und der lokale Bundle-Fix stehen in `docs/architecture/OSS-EVIDENCE-QUALITY-20261003.md`. Die frühere Chunk-Warnung ist lokal behoben; Distribution-Review bleibt offen.
+
+
+## Rekorrelation vom 03.10.2026 nach currentmain
+
+Dieser PR wurde gegen `main@d0334ac1426680ed82fe67c987a6ea49c8b6f83d` neu korreliert. `src/App.tsx` und `vite.config.ts` sind bereits identisch in main enthalten; sie erzeugen jetzt keinen PR-Diff. Der Dockerfile-Konflikt bewahrt Shadow-Store und alle Guard/Billing-Module. Der neue vollständige lokale Preflight besteht; drei npm-Scopes zeigen keinen Manifest-/Lock-/Installationsdrift und jeweils 0 bekannte npm-audit-Schwachstellen. Versionsabweichungen und ausstehende Container-/Review-/Production-Gates stehen in [PR125-CONVERGENCE-20261003](../security/PR125-CONVERGENCE-20261003.md). Historische Fehler-/Runtime-Evidence oben bleibt als historischer Snapshot erhalten und ist keine Freigabe für diesen neuen Stand.

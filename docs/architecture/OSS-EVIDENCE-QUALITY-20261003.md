@@ -46,3 +46,8 @@ Diese Lücken kann eine Open-Source-Datenbank nicht als Vertragsnachweis ersetze
 Primärquellen: [Vite Build](https://vite.dev/guide/build), [Vite Features](https://vite.dev/guide/features), [SPDX-Lizenzdaten](https://github.com/spdx/license-list-data). Tool-Lizenzen und Versionen wurden zusätzlich an den tatsächlich installierten Paketen und dem bestehenden Lizenzregister gelesen.
 
 Rollback: Lazy-View-Imports und Bundle-Budget im Review-Branch zurücknehmen. Kein DB-/Runtime-Migrationsschritt erforderlich. Evidence-Artefakte werden nicht rückwirkend umgeschrieben.
+
+
+## Rekorrelation vom 03.10.2026 nach currentmain
+
+Dieser PR wurde gegen `main@d0334ac1426680ed82fe67c987a6ea49c8b6f83d` neu korreliert. `src/App.tsx` und `vite.config.ts` sind bereits identisch in main enthalten; sie erzeugen jetzt keinen PR-Diff. Der Dockerfile-Konflikt bewahrt Shadow-Store und alle Guard/Billing-Module. Der neue vollständige lokale Preflight besteht; drei npm-Scopes zeigen keinen Manifest-/Lock-/Installationsdrift und jeweils 0 bekannte npm-audit-Schwachstellen. Versionsabweichungen und ausstehende Container-/Review-/Production-Gates stehen in [PR125-CONVERGENCE-20261003](../security/PR125-CONVERGENCE-20261003.md). Historische Fehler-/Runtime-Evidence oben bleibt als historischer Snapshot erhalten und ist keine Freigabe für diesen neuen Stand.
