@@ -473,7 +473,10 @@ export class ProviderRegistryService {
     remainingBudgetEur: number;
     isWithinBudget: boolean;
   } {
-    const totalMonthlySpendEur = this.getAllProviders().reduce(
+    const admittedProviders = this.getAllProviders().filter(
+      p => p.productionAdmission === 'OPEN_SOURCE_OPEN_DATA_ADMITTED'
+    );
+    const totalMonthlySpendEur = admittedProviders.reduce(
       (sum, p) => sum + p.budget.currentMonthlySpendEur,
       0
     );
@@ -494,14 +497,17 @@ export class ProviderRegistryService {
   static auditProviderHealthAndBudget(): {
     timestamp: string;
     totalProvidersCount: number;
+    admittedProvidersCount: number;
+    blockedProvidersCount: number;
     healthyCount: number;
     degradedCount: number;
     unhealthyCount: number;
-    averageLatencyMs: number;
+    averageLatencyMs: number | null;
     budgetSummary: ReturnType<typeof ProviderRegistryService.calculateTotalProviderSpendEur>;
     alerts: string[];
   } {
-    const providers = this.getAllProviders();
+    const allProviders = this.getAllProviders();
+    const providers = allProviders.filter(p => p.productionAdmission === 'OPEN_SOURCE_OPEN_DATA_ADMITTED');
     const budgetSummary = this.calculateTotalProviderSpendEur();
     const alerts: string[] = [];
 
@@ -541,11 +547,13 @@ export class ProviderRegistryService {
 
     return {
       timestamp: new Date().toISOString(),
-      totalProvidersCount: providers.length,
+      totalProvidersCount: allProviders.length,
+      admittedProvidersCount: providers.length,
+      blockedProvidersCount: allProviders.length - providers.length,
       healthyCount,
       degradedCount,
       unhealthyCount,
-      averageLatencyMs: Math.round(latencySum / (providers.length || 1)),
+      averageLatencyMs: providers.length ? Math.round(latencySum / providers.length) : null,
       budgetSummary,
       alerts,
     };
