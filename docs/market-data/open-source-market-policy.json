@@ -54,7 +54,23 @@
     "internal_processing"
   ],
   "redistributionAndWhiteLabel": "SEPARATE_EXPLICIT_OPEN_DATA_RIGHTS_REQUIRED",
-  "admittedSources": [],
+  "admittedSources": [
+    {
+      "providerId": "wikidata-reference",
+      "decision": "OPEN_SOURCE_OPEN_DATA_ADMITTED",
+      "eligible": true,
+      "scope": "REFERENCE_METADATA_ONLY",
+      "dataLicense": "CC0-1.0",
+      "evidenceReference": "docs/market-data/evidence/source-admission-wikidata-20261004.json",
+      "instrumentManifestReference": "docs/market-data/evidence/wikidata-reference-instrument-manifest-20261004.json",
+      "capabilities": {
+        "referenceMetadata": true,
+        "marketQuotes": false,
+        "mobileCryptoUniverse": false,
+        "scoringPriceInput": false
+      }
+    }
+  ],
   "blockedLegacyProviderPaths": [
     "binance",
     "kraken",
@@ -65,7 +81,7 @@
     "yfinance",
     "coingecko"
   ],
-  "runtimePolicy": "NO_LIVE_PROVIDER_NETWORK_IO_UNTIL_ADMITTED_SOURCE_EXISTS",
+  "runtimePolicy": "NO_CAPABILITY_NETWORK_IO_UNTIL_MATCHING_ADMITTED_SOURCE_EXISTS",
   "credentials": "SERVER_SIDE_ONLY_IF_FUTURE_ADMITTED_SOURCE_REQUIRES_AUTH",
   "fixtures": "NON_PRODUCTION_ONLY",
   "optionalUseCasesRequiringSeparateEvidence": [
@@ -101,7 +117,8 @@
     ],
     "independentEvidencePerUseCaseRequired": true,
     "manualOverrideAllowed": false,
-    "monetizationEntitlementMayOverride": false
+    "monetizationEntitlementMayOverride": false,
+    "capabilityIsolationRequired": true
   },
   "scorerAuthority": {
     "decidedAt": "2026-10-04",

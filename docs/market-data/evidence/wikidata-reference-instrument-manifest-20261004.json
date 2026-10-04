@@ -1,0 +1,89 @@
+{
+  "schema": "CAPITAL_AI_WIKIDATA_REFERENCE_INSTRUMENT_MANIFEST@1",
+  "observedAt": "2026-10-04",
+  "sourceId": "wikidata-reference",
+  "decision": "OPEN_SOURCE_OPEN_DATA_ADMITTED",
+  "scope": "REFERENCE_METADATA_ONLY",
+  "dataLicense": "CC0-1.0",
+  "provenanceRule": "Persist entityId, sourceReference, retrievedAt and source revision when runtime ingestion is implemented.",
+  "entities": [
+    {
+      "instrumentId": "asset:crypto:BTC",
+      "assetId": "crypto:BTC",
+      "assetClass": "crypto",
+      "instrumentType": "REFERENCE_ASSET_ENTITY",
+      "symbol": "BTC",
+      "canonicalName": "Bitcoin",
+      "sourceEntityId": "Q131723",
+      "sourceReference": "https://www.wikidata.org/wiki/Q131723",
+      "tradingStatus": "NOT_A_QUOTE_SOURCE",
+      "availableDataFields": [
+        "label",
+        "description",
+        "aliases",
+        "identifiers",
+        "entity_relationships"
+      ],
+      "eligibility": {
+        "referenceMetadata": true,
+        "marketQuote": false,
+        "scoringPriceInput": false
+      }
+    },
+    {
+      "instrumentId": "asset:fx:EUR",
+      "assetId": "fx:EUR",
+      "assetClass": "forex",
+      "instrumentType": "REFERENCE_CURRENCY_ENTITY",
+      "symbol": "EUR",
+      "canonicalName": "euro",
+      "sourceEntityId": "Q4916",
+      "sourceReference": "https://www.wikidata.org/wiki/Q4916",
+      "tradingStatus": "NOT_A_QUOTE_SOURCE",
+      "availableDataFields": [
+        "label",
+        "description",
+        "aliases",
+        "identifiers",
+        "entity_relationships"
+      ],
+      "eligibility": {
+        "referenceMetadata": true,
+        "marketQuote": false,
+        "scoringPriceInput": false
+      }
+    },
+    {
+      "instrumentId": "asset:fx:USD",
+      "assetId": "fx:USD",
+      "assetClass": "forex",
+      "instrumentType": "REFERENCE_CURRENCY_ENTITY",
+      "symbol": "USD",
+      "canonicalName": "United States dollar",
+      "sourceEntityId": "Q4917",
+      "sourceReference": "https://www.wikidata.org/wiki/Q4917",
+      "tradingStatus": "NOT_A_QUOTE_SOURCE",
+      "availableDataFields": [
+        "label",
+        "description",
+        "aliases",
+        "identifiers",
+        "entity_relationships"
+      ],
+      "eligibility": {
+        "referenceMetadata": true,
+        "marketQuote": false,
+        "scoringPriceInput": false
+      }
+    }
+  ],
+  "coverage": {
+    "referenceEntities": 3,
+    "quoteEligibleInstruments": 0,
+    "cryptoQuoteEligible": 0,
+    "stockQuoteEligible": 0,
+    "commoditiesQuoteEligible": 0,
+    "forexQuoteEligible": 0,
+    "indicesQuoteEligible": 0
+  }
+}

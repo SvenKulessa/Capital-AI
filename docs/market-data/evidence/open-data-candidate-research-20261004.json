@@ -1,10 +1,10 @@
 {
   "schema": "CAPITAL_AI_OPEN_DATA_CANDIDATE_RESEARCH@1",
   "observedAt": "2026-10-04",
-  "currentMainSha": "dd1c3ed7cb93c1864c7722395e24f08fb73ac14c",
+  "currentMainSha": "3cc7dbf381f9021f6046817b7c3b0c5c8a2db885",
   "prHeadBasis": "0e3ee1556fc804e955ba3948367d78cc52e40a20",
   "policy": "OPEN_SOURCE_AND_OPEN_DATA_ONLY",
-  "status": "RESEARCH_ONLY_NOT_ADMISSION",
+  "status": "PARTIAL_ADMISSION_REFERENCE_METADATA_ONLY",
   "admissionRule": "No candidate becomes productive without independent evidence for every required use case and instrument eligibility.",
   "candidates": [
     {
@@ -22,7 +22,9 @@
         "files"
       ],
       "coverage": "Country-level exchange-rate and equity-market indicators; not individual-stock quote coverage.",
-      "admission": "BLOCKED_PENDING_GRANULAR_USE_CASE_AND_INSTRUMENT_EVIDENCE"
+      "admission": "BLOCKED_PENDING_THIRD_PARTY_RIGHTS_CLARIFICATION",
+      "rightsRisk": "Series metadata identifies World Bank calculations based on Datastream and/or IMF data; dataset-level CC-BY-4.0 is not treated as sufficient to infer every third-party downstream right under fail-closed policy.",
+      "seriesMetadataEvidenceUrl": "https://api.worldbank.org/v2/en/sources/15/series/all/metadata?format=json&page=1&per_page=20000"
     },
     {
       "id": "world-bank-commodity-prices",
@@ -54,7 +56,9 @@
         "dumps"
       ],
       "coverage": "Reference/entity metadata only; not a market-price source.",
-      "admission": "BLOCKED_AS_QUOTE_SOURCE_REFERENCE_DATA_ONLY"
+      "admission": "OPEN_SOURCE_OPEN_DATA_ADMITTED_REFERENCE_METADATA_ONLY",
+      "admissionEvidence": "docs/market-data/evidence/source-admission-wikidata-20261004.json",
+      "instrumentManifest": "docs/market-data/evidence/wikidata-reference-instrument-manifest-20261004.json"
     },
     {
       "id": "sec-edgar-reference-data",
@@ -163,12 +167,17 @@
       "admission": "BLOCKED_PENDING_EVIDENCE"
     }
   ],
-  "admittedSources": [],
+  "admittedSources": [
+    "wikidata-reference"
+  ],
   "productiveCoverage": {
     "crypto": 0,
     "stocks": 0,
     "commodities": 0,
     "forex": 0,
     "indices": 0
+  },
+  "referenceCoverage": {
+    "wikidataEntitiesVerified": 3
   }
 }
