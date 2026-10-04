@@ -11,7 +11,7 @@ import { ProviderAdapterRegistry } from '../../services/providerAdapters';
 describe('FinancialData.Net integration catalog', () => {
   it('separates SDK software provenance from provider data rights', () => {
     assert.equal(FINANCIAL_DATA_NET_PROVENANCE.sdkVersion, '0.6.0');
-    assert.equal(FINANCIAL_DATA_NET_PROVENANCE.sdkLicense, 'MIT');
+    assert.equal(FINANCIAL_DATA_NET_PROVENANCE.sdkLicense, 'UNVERIFIED_METADATA_MIT_ONLY');
     assert.equal(FINANCIAL_DATA_NET_PROVENANCE.codeVendored, false);
     assert.equal(FINANCIAL_DATA_NET_PROVENANCE.providerRightsStatus, 'CONTRACT_SCOPE_UNVERIFIED');
     assert.equal(FINANCIAL_DATA_NET_PROVENANCE.productionEligible, false);
@@ -25,7 +25,7 @@ describe('FinancialData.Net integration catalog', () => {
     assert.ok(ids.includes('financialdatanet-mcp'));
     assert.deepEqual(
       [...new Set(FINANCIAL_DATA_NET_CONNECTIONS.map(item => item.status))].sort(),
-      ['ADAPTER_READY', 'CATALOGUED'],
+      ['CATALOGUED', 'EXCLUDED'],
     );
   });
 
@@ -37,22 +37,10 @@ describe('FinancialData.Net integration catalog', () => {
     assert.ok(summary.methodCount > 50);
   });
 
-  it('registers the provider adapter but keeps ingestion fail-closed', async () => {
-    const adapter = new ProviderAdapterRegistry().getAdapter('financialdatanet');
-    assert.equal(adapter.isDemo, false);
-    assert.ok(adapter.supportedAssetClasses.includes('equity_us'));
-    await assert.rejects(
-      () => adapter.fetchObservation({
-        assetId: 'asset:MSFT',
-        symbol: 'MSFT',
-        name: 'Microsoft',
-        assetClass: 'equity_us',
-        subclass: 'us_megacap_tech',
-        venue: 'NASDAQ',
-        currency: 'USD',
-        status: 'active',
-      }),
-      /FINANCIALDATANET_RIGHTS_AND_DATASET_MAPPING_REQUIRED/,
-    );
+  it('does not register the proprietary provider in the production adapter registry', () => {
+    const registry = new ProviderAdapterRegistry();
+    assert.equal(registry.getAllAdapters().length, 0);
+    assert.throws(() => registry.getAdapter('financialdatanet'), /OPEN_DATA_SOURCE_NOT_CONFIGURED/);
+
   });
 });
