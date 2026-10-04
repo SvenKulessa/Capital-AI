@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createScorerProxy } from './scorer-proxy.mjs';
+import { createApp } from './index.mjs';
 
 function request({ method='POST', headers={}, body='{}' }={}) {
   return {
@@ -96,4 +97,30 @@ test('blocks proxy loops before upstream access', async () => {
   assert.equal(res.status,502);
   assert.equal(res.body.error,'scorer_proxy_loop_detected');
   assert.equal(calls,0);
+});
+
+
+test('public POST /api/crypto/score reaches reverse proxy instead of global GET-only fallback', async () => {
+  const server=createApp('/tmp/capital-ai-nonexistent', {
+    env:{ CAPITAL_AI_FINANCE_SCORER_PRIVATE_ORIGIN:'http://finance-ab12:10000' },
+    sourcePolicy:admittedPolicy,
+    fetchImpl:async()=>new Response(JSON.stringify({correlationId:'test',error:'"symbol" and "asset_name" are required in payload.'}),{
+      status:400,
+      headers:{'content-type':'application/json'},
+    }),
+  });
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  try{
+    const address=server.address();
+    const response=await fetch(`http://127.0.0.1:${address.port}/api/crypto/score`,{
+      method:'POST',
+      headers:{'content-type':'application/json'},
+      body:'{}',
+    });
+    assert.equal(response.status,400);
+    const body=await response.json();
+    assert.match(body.error,/symbol/);
+  }finally{
+    await new Promise(resolve=>server.close(resolve));
+  }
 });
