@@ -1,0 +1,35 @@
+// CAPITAL-AI -> Grafana metrics pipeline.
+// Secrets are injected at runtime. Never commit token values.
+
+prometheus.scrape "capital_ai_production" {
+  targets = [
+    {
+      __address__      = "capital-ai.online",
+      __scheme__       = "https",
+      __metrics_path__ = "/metrics",
+      service          = "capital-ai",
+      environment      = "production",
+    },
+  ]
+
+  scrape_interval = "60s"
+  scrape_timeout  = "10s"
+
+  authorization {
+    type        = "Bearer"
+    credentials = sys.env("OBSERVABILITY_TOKEN")
+  }
+
+  forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+}
+
+prometheus.remote_write "grafana_cloud" {
+  endpoint {
+    url = sys.env("GRAFANA_PROMETHEUS_REMOTE_WRITE_URL")
+
+    basic_auth {
+      username = sys.env("GRAFANA_PROMETHEUS_USERNAME")
+      password = sys.env("GRAFANA_PROMETHEUS_ACCESS_TOKEN")
+    }
+  }
+}
