@@ -5,7 +5,7 @@ import ts from 'typescript';
 
 // Deterministic browser-boundary regression gate; complements the current Trivy secret scan.
 export async function verifyBrowserBoundary(root = path.resolve('dist')) {
-  const forbidden = [/GEMINI_API_KEY/, /OIDC_CLIENT_SECRET/, /TELEGRAM_BOT_TOKEN/, /api\.telegram\.org/, /@google\/genai/, /handleAdvisorRequest/];
+  const forbidden = [/GEMINI_API_KEY/, /OIDC_CLIENT_SECRET/, /SUPABASE_SECRET_KEY/, /SUPABASE_SERVICE_ROLE_KEY/, /sb_secret_/, /TELEGRAM_BOT_TOKEN/, /api\.telegram\.org/, /@google\/genai/, /handleAdvisorRequest/];
   let checked = 0;
   async function visit(directory) {
     for (const entry of await readdir(directory, { withFileTypes: true })) {
