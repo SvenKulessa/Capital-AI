@@ -56,7 +56,6 @@ export const QUANT_PRO_IDS = Object.freeze(new Set([
   "finance-voc-aidev-0029",
   "finance-voc-aidev-0030",
   "finance-voc-aidev-0031",
-  "finance-voc-aidev-0032",
   "finance-voc-aidev-0033",
   "finance-voc-aidev-0034",
   "finance-voc-aidev-0035",
@@ -164,4 +163,4 @@ export const QUANT_PRO_IDS = Object.freeze(new Set([
   "on-chain-metriken",
   "vwap"
 ]));
-export const QUANT_PRO_COUNT = 163;
+export const QUANT_PRO_COUNT = 162;
