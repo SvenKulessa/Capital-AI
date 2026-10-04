@@ -7,7 +7,7 @@ cleanup() {
 }
 trap cleanup EXIT
 docker volume create capital-nats-smoke-data
-docker run -d --name capital-nats-smoke --read-only --cap-drop ALL --cap-add CHOWN --cap-add FOWNER --cap-add SETUID --cap-add SETGID --security-opt no-new-privileges -e NATS_TOKEN=local-ci-token -v capital-nats-smoke-data:/var/data capital-nats:${GITHUB_SHA:?GITHUB_SHA required}
+docker run -d --name capital-nats-smoke --read-only --cap-drop ALL --cap-add CHOWN --cap-add FOWNER --cap-add SETUID --cap-add SETGID --security-opt no-new-privileges -e NATS_APP_USER=capital-ai-market-runtime -e NATS_APP_PASSWORD=local-ci-password -v capital-nats-smoke-data:/var/data capital-nats:${GITHUB_SHA:?GITHUB_SHA required}
 for attempt in $(seq 1 30); do
   if docker logs capital-nats-smoke 2>&1 | grep -q 'Server is ready'; then break; fi
   sleep 1
