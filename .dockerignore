@@ -19,6 +19,7 @@
 !server/advisor-security.test.mjs
 !server/billing-catalog.mjs
 !server/auth.mjs
+!server/user-provider-vault.mjs
 !server/telegram.mjs
 !server/privacy.mjs
 !server/http-security.mjs
