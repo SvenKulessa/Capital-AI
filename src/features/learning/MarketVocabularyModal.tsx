@@ -66,24 +66,50 @@ export const MarketVocabularyModal: React.FC<MarketVocabularyModalProps> = ({
   const [expandedTermId, setExpandedTermId] = useState<string | null>('enterprise-scorer');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [entitled, setEntitled] = useState(false);
+  const [protectedTerms, setProtectedTerms] = useState<VocabularyTerm[]>([]);
   const [withdrawalWaived, setWithdrawalWaived] = useState(false);
   const [checkoutError, setCheckoutError] = useState('');
 
   React.useEffect(() => {
     if (!isOpen) return;
-    const stored = window.localStorage.getItem(VOCABULARY_GRANT_KEY);
-    const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get('vocabulary_session') || stored || '';
-    if (!sessionId) return;
-    void fetch(`/api/billing/vocabulary/entitlement?session_id=${encodeURIComponent(sessionId)}`)
-      .then((response) => response.json())
-      .then((body) => {
-        if (body?.entitled) {
-          window.localStorage.setItem(VOCABULARY_GRANT_KEY, sessionId);
+    let cancelled = false;
+
+    async function syncAccess() {
+      const stored = window.localStorage.getItem(VOCABULARY_GRANT_KEY);
+      const params = new URLSearchParams(window.location.search);
+      const sessionId = params.get('vocabulary_session') || stored || '';
+      try {
+        if (sessionId) {
+          const entitlementResponse = await fetch(
+            `/api/billing/vocabulary/entitlement?session_id=${encodeURIComponent(sessionId)}`,
+          );
+          if (entitlementResponse.ok) {
+            const entitlement = await entitlementResponse.json();
+            if (entitlement?.entitled) window.localStorage.setItem(VOCABULARY_GRANT_KEY, sessionId);
+          }
+        }
+
+        const accessResponse = await fetch('/api/billing/vocabulary/access');
+        if (!accessResponse.ok) return;
+        const access = await accessResponse.json();
+        if (cancelled || !access?.quantProEntitled) return;
+
+        const protectedResponse = await fetch('/api/learning/vocabulary/quant-pro');
+        if (!protectedResponse.ok) throw new Error('QUANT_PRO_UNAVAILABLE');
+        const payload = await protectedResponse.json();
+        if (!cancelled && Array.isArray(payload?.terms)) {
+          setProtectedTerms(payload.terms as VocabularyTerm[]);
           setEntitled(true);
         }
-      })
-      .catch(() => setCheckoutError('Freischaltung gerade nicht pruefbar.'));
+      } catch {
+        if (!cancelled) setCheckoutError('Freischaltung gerade nicht pruefbar.');
+      }
+    }
+
+    void syncAccess();
+    return () => {
+      cancelled = true;
+    };
   }, [isOpen]);
 
 
@@ -133,7 +159,7 @@ export const MarketVocabularyModal: React.FC<MarketVocabularyModalProps> = ({
   // Filtered terms
   const filteredTerms = useMemo(() => {
     const query = searchTerm.toLowerCase().trim();
-    return VOCABULARY_TERMS.filter((item) => {
+    return [...VOCABULARY_TERMS, ...protectedTerms].filter((item) => {
       // Category match
       if (selectedCategory !== 'ALL' && item.category !== selectedCategory) {
         return false;
@@ -148,10 +174,9 @@ export const MarketVocabularyModal: React.FC<MarketVocabularyModalProps> = ({
       const matchesThesaurus = item.thesaurus.some((entry) => entry.toLowerCase().includes(query));
       return matchesTerm || matchesAbbr || matchesDef || matchesDetailed || matchesTags || matchesThesaurus;
     });
-  }, [searchTerm, selectedCategory]);
+  }, [searchTerm, selectedCategory, protectedTerms]);
 
-  const visibleTerms = entitled ? filteredTerms : filteredTerms.filter((item) => item.level !== 'Quant / Pro');
-  const lockedCount = Math.max(0, filteredTerms.length - visibleTerms.length);
+  const visibleTerms = filteredTerms;
 
   const startCheckout = async () => {
     setCheckoutError('');
@@ -472,7 +497,7 @@ export const MarketVocabularyModal: React.FC<MarketVocabularyModalProps> = ({
         {/* MODAL FOOTER */}
         {!entitled && (
           <div className="px-4 sm:px-6 py-3 border-t border-amber-400/30 bg-amber-400/10 shrink-0">
-            <p className="text-xs text-amber-100">Das Vocabulary bleibt frei sichtbar. {lockedCount} Quant-/Pro-Begriffe sind nach Kauf des Market Vocabulary fuer {formatVocabularyPrice()} freigeschaltet. In Pro und Enterprise enthalten. Keine Anlageberatung.</p>
+            <p className="text-xs text-amber-100">Das Vocabulary bleibt frei sichtbar. Quant-/Pro-Inhalte werden erst nach serverseitig bestätigtem Kauf des Market Vocabulary für {formatVocabularyPrice()} ausgeliefert. In Pro und Enterprise enthalten. Keine Anlageberatung.</p>
             <label className="mt-2 flex items-start gap-2 text-[11px] text-slate-300">
               <input type="checkbox" checked={withdrawalWaived} onChange={(event) => setWithdrawalWaived(event.target.checked)} className="mt-0.5" />
               <span>Ich verlange die sofortige Bereitstellung und akzeptiere, dass mein Widerrufsrecht nach § 356 Abs. 5 BGB mit Beginn der Bereitstellung erlischt.</span>
