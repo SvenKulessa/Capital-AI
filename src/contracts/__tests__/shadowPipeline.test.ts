@@ -4,7 +4,7 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { SHADOW_SCORE_CONFIG_V1 } from '../../config/shadowScoreConfig';
-import { PipelineConfiguratorService, ShadowConfigurationHistory } from '../../services/pipelineConfigurator';
+import { PipelineConfiguratorService, ShadowConfigurationHistory, PIPELINE_CONFIGURATOR_VIEWS, PIPELINE_PRODUCTION_APPROVAL_GATES } from '../../services/pipelineConfigurator';
 import { ShadowPipelineConfigSchema, type PipelineSnapshot, type ShadowPipelineConfig } from '../pipelineExecution';
 import { ScoringEngineService } from '../../services/scoringEngine';
 import { EvidenceEngineService } from '../../services/evidenceEngine';
@@ -283,3 +283,25 @@ test('plausibility accepts complete provenance-sensitive claim evidence', () => 
   }, now), []);
 });
 
+
+
+test('pipeline configurator exposes all required views and stays fail-closed for production activation', () => {
+  const service = new PipelineConfiguratorService();
+  assert.deepEqual(service.getRequiredViews(), PIPELINE_CONFIGURATOR_VIEWS);
+  assert.equal(PIPELINE_CONFIGURATOR_VIEWS.length, 10);
+
+  const missing = service.assessProductionActivation([]);
+  assert.equal(missing.eligible, false);
+  for (const gate of PIPELINE_PRODUCTION_APPROVAL_GATES) {
+    assert.ok(missing.reasons.includes(`APPROVAL_MISSING:${gate}`));
+  }
+
+  const approvals = PIPELINE_PRODUCTION_APPROVAL_GATES.map(gate => ({
+    gate,
+    state: 'PASS' as const,
+    evidenceReference: `TEST-EVIDENCE:${gate}`,
+  }));
+  const allPass = service.assessProductionActivation(approvals);
+  assert.equal(allPass.eligible, false);
+  assert.ok(allPass.reasons.includes('CONFIG_NOT_APPROVED_FOR_PRODUCTION'));
+});
