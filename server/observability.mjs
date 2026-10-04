@@ -95,14 +95,16 @@ export function finishRequest(req, res, ctx, pathname) {
   const status = Math.floor(res.statusCode / 100) + 'xx';
   const key = req.method + '|' + route + '|' + status;
   bump(metrics.requests, key);
-  if (res.statusCode >= 500) bump(metrics.errors, req.method + '|' + route);
+  const policyBlocked = res.capitalAiFailureClass === 'policy_blocked';
+  if (res.statusCode >= 500 && !policyBlocked) bump(metrics.errors, req.method + '|' + route);
   const durationKey = req.method + '|' + route;
   const current = metrics.duration.get(durationKey) || { count: 0, sumMs: 0, maxMs: 0 };
   current.count += 1; current.sumMs += durationMs; current.maxMs = Math.max(current.maxMs, durationMs);
   metrics.duration.set(durationKey, current);
-  const level = res.statusCode >= 500 ? 'error' : 'info';
+  const level = res.statusCode >= 500 ? (policyBlocked ? 'warn' : 'error') : 'info';
   writeOperationalLog(level, 'http', ctx.requestId, 'request.completed', {
     method: req.method, route, statusCode: res.statusCode, durationMs: Number(durationMs.toFixed(3)),
+    failureClass: policyBlocked ? 'policy_blocked' : undefined,
     traceId: ctx.trace?.traceId, parentSpanId: ctx.trace?.parentSpanId,
   });
 }
@@ -127,7 +129,7 @@ export function renderPrometheusMetrics() {
     const [method, route, status] = key.split('|');
     lines.push(`capital_ai_http_requests_total{method="${metricNamePart(method)}",route="${route}",status="${status}"} ${value}`);
   }
-  lines.push('# HELP capital_ai_http_errors_total HTTP 5xx responses.', '# TYPE capital_ai_http_errors_total counter');
+  lines.push('# HELP capital_ai_http_errors_total Unexpected HTTP 5xx responses.', '# TYPE capital_ai_http_errors_total counter');
   for (const [key, value] of metrics.errors) {
     const [method, route] = key.split('|');
     lines.push(`capital_ai_http_errors_total{method="${metricNamePart(method)}",route="${route}"} ${value}`);
