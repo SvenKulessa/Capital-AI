@@ -23,6 +23,8 @@ test('aliases and trailing slash normalize without losing query or hash', () => 
   assert.equal(resolveNavigationTarget('/glossar'), '/vocabulary');
   assert.equal(resolveNavigationTarget('/vocabulary/mobile-pkce?ref=seo#definition'), '/vocabulary/mobile-pkce?ref=seo#definition');
   assert.equal(resolveNavigationTarget('/roadmap?tab=console'), '/control-center?tab=console');
+  assert.equal(resolveNavigationTarget('/documentation/'), '/dokumentation');
+  assert.equal(resolveNavigationTarget('/praesentationen?ref=menu'), '/dokumentation?ref=menu');
 });
 
 test('missing or invalid tab selects a safe default', () => {
