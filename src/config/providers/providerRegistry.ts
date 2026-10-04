@@ -111,6 +111,7 @@ export const ProviderContractSchema = z.object({
   health: ProviderHealthMetricsSchema,
   isPrimaryFor: z.array(AssetClassSchema).default([]),
   fallbackProviderIds: z.array(z.string()).default([]),
+  productionAdmission: z.enum(['OPEN_SOURCE_OPEN_DATA_ADMITTED', 'BLOCKED']).optional(),
   complianceVerification: z.object({
     regulatoryApproved: z.boolean().default(true),
     certificateAuthority: z.string().optional(),
@@ -451,6 +452,7 @@ export class ProviderRegistryService {
   static getHealthyProvidersForAsset(assetClass: AssetClass): ProviderContract[] {
     return this.getAllProviders().filter(
       (p) =>
+        p.productionAdmission === 'OPEN_SOURCE_OPEN_DATA_ADMITTED' &&
         p.capabilities.supportedAssetClasses.includes(assetClass) &&
         (p.health.status === 'healthy' || p.health.status === 'degraded') &&
         !p.health.circuitBreakerTripped
