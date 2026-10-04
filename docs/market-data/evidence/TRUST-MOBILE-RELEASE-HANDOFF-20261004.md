@@ -4,13 +4,13 @@
 
 **BLOCKED / PARTIAL EVIDENCE / keine Release-Freigabe**
 
-Diese Übergabe korreliert MARKET-Evidence mit `SvenKulessa/Capital-AI@de4c268311c42877f8a7e1361e7de986ffb096cb`,
+Diese Übergabe wurde zuletzt gegen `SvenKulessa/Capital-AI@c1a720a32a054c16944e6c582086a509be137fc4` korreliert. Das Instrumentmanifest selbst bleibt unveränderlich an seinem Erfassungs-Source-Commit `de4c268311c42877f8a7e1361e7de986ffb096cb` gebunden,
 `SvenKulessa/Capital-AI-Mobile@2a86e7532cf1a78f96dc4994ba19c3d622e985cb` und Mobile-PR #2 Head
 `86f7efd5132e3eb24862f942ba09303ae0811714`. Sie autorisiert weder Merge noch Production-Deploy noch APK-Signierung.
 
 ## Korrelation
 
-- Web `current main`: `de4c268311c42877f8a7e1361e7de986ffb096cb`. Der übergebene MARKET-SHA `3c8cd0d4fa1745d60282132de48f722f48857fcb` ist nicht mehr current main.
+- Web `current main` bei letzter Korrelation: `c1a720a32a054c16944e6c582086a509be137fc4`. Der Manifest-Erfassungsstand `de4c268311c42877f8a7e1361e7de986ffb096cb` bleibt als Source-Commit erhalten.
 - Mobile `current main`: `2a86e7532cf1a78f96dc4994ba19c3d622e985cb`.
 - Mobile PR #2: offen und bei der Prüfung mergebar, Head `86f7efd5132e3eb24862f942ba09303ae0811714`.
 - Web hatte bei der Korrelation keine offenen PRs; Mobile hatte PR #2 als offene Arbeit.
@@ -64,13 +64,13 @@ Für PASS erforderlich:
 4. Retention/Cache/JetStream-Replay sowie Attribution und Exchange-/Indexpflichten.
 5. Serverseitiger Credential-Pfad und unveränderliche Evidence-Referenz.
 6. Kein Binance-/CoinGecko-Pfad für Mobile.
-7. Owner-Entscheidung zum Gate-Modell, falls proprietär lizenzierte Daten genutzt werden.
+7. Qualifizierende Open-Data-Lizenz für das konkrete Dataset; ein proprietärer kommerzieller Vertrag ersetzt dieses Kriterium für Mobile nicht.
 
-Architektur-Fund:
-Der aktuelle Mobile-Code verlangt zusätzlich eine Open-Data-Lizenz
-(CC0/CC-BY/CC-BY-SA/ODbL). Empfehlung: `OSS_SOFTWARE_ADMISSION` und
-`DATA_RIGHTS_ADMISSION` getrennt führen und `OSS_SOURCE_ADMISSION` als fail-closed
-Aggregat erhalten. Bis zur Owner-Entscheidung keine Architekturmutation.
+Owner-Entscheidung vom 2026-10-04: **Option A / OPEN_DATA_ONLY**.
+Der bestehende Mobile-Code mit OSI-Softwarelizenz plus qualifizierender Open-Data-Lizenz
+(CC0/CC-BY/CC-BY-SA/ODbL) bleibt unverändert und fail-closed. Kommerziell lizenzierte,
+aber nicht offen lizenzierte Feeds können das Mobile-Gate `OSS_SOURCE_ADMISSION` nicht schließen.
+Die zuvor empfohlene Gate-Aufteilung ist für Mobile durch diese Owner-Entscheidung superseded.
 
 ## Mobile-Gate MULTI_ASSET_LIVE_UNIVERSE
 
@@ -96,12 +96,9 @@ Kein Krypto-Score darf ungeprüft auf andere Klassen übertragen werden.
 
 ## Kleinste nächste Nachweise
 
-- Twelve Data: tatsächlichen Business-Tier/Order-Form plus schriftlichen Dataset-/Venue-/Display-/
-  Derived-/Retention-/Redistribution-Scope in TRUST-Evidence übernehmen.
-- Massive: Business Order Form oder ausdrückliche schriftliche kommerzielle Rechte; sonst BLOCK.
-- FinancialData.Net: tatsächlichen Subscription-Scope plus originale SDK-Lizenz/NOTICE-Evidence.
-- Kraken: Owner bestätigt Firmenname/Rechtsform, Partnerschaftsgrund und primäres Betriebsland;
-  erst schriftliche Market-Data-Erlaubnis als Gate-Evidence akzeptieren.
+- Mobile: eine Quelle mit qualifizierender Open-Data-Lizenz, OSS-Adapter-Provenance und vollständiger Dataset-/Venue-/Use-Case-Evidence nachweisen.
+- Twelve Data, Massive, FinancialData.Net und Kraken: kommerzielle Vertragsklärungen bleiben für Web/B2B relevant, schließen unter Option A aber nicht das Mobile-Open-Data-Gate.
+- `fdnpy`: unabhängig davon originale SDK-Lizenz/NOTICE-Evidence vervollständigen.
 - Rohstoffe: zusätzliche zugelassene Spot-Rohstoff-Underlyings beschaffen; Quote- oder
   Gewichtseinheiten zählen nicht als zusätzliche Basis-Assets.
 - Danach erst Live-Feldprobes und Replay-/Freshness-Messungen.
