@@ -3,7 +3,7 @@ import { strict as assert } from 'node:assert';
 let instance = 0;
 const isolated = async () => import(`./market.mjs?test=${++instance}`);
 import { infrastructure } from './infrastructure.mjs';
-import { MARKET_SOURCE_POLICY, evaluateOpenSourceMarketAdmission } from './open-source-market-policy.mjs';
+import { MARKET_SOURCE_POLICY, admittedMarketSourcesFor, evaluateOpenSourceMarketAdmission, isAdmittedMarketSource } from './open-source-market-policy.mjs';
 import { fetchOssAdapterHealth, getOssAdapterInventory } from './oss-provider-adapters.mjs';
 
 const original = { status: infrastructure.status, read: infrastructure.read, persist: infrastructure.persist };
@@ -65,7 +65,8 @@ test('health exposes fail-closed Open-Source and Open-Data policy', async () => 
   const state = health();
   assert.equal(state.ingress, 'fail_closed');
   assert.equal(state.sourcePolicy, 'OPEN_SOURCE_AND_OPEN_DATA_ONLY');
-  assert.equal(state.admittedSources, 0);
+  assert.equal(state.admittedSources, 1);
+  assert.equal(state.quoteAdmittedSources, 0);
   assert.equal(state.quotesEnabled, false);
 });
 
@@ -116,7 +117,11 @@ test('runtime OSS adapter inventory excludes non-admitted proprietary data paths
   const ids=inventory.map(x=>x.id);
   assert.deepEqual([...ids].sort(), ['ccxt','cryptofeed','hummingbot','openbb'].sort());
   assert.ok(inventory.every(x=>x.openDataAdmissionRequired===true));
-  assert.equal(MARKET_SOURCE_POLICY.admittedSources.length,0);
+  assert.equal(MARKET_SOURCE_POLICY.admittedSources.length,1);
+  assert.equal(isAdmittedMarketSource('wikidata-reference'),true);
+  assert.equal(isAdmittedMarketSource('wikidata-reference','referenceMetadata'),true);
+  assert.equal(isAdmittedMarketSource('wikidata-reference','marketQuotes'),false);
+  assert.equal(admittedMarketSourcesFor('marketQuotes').length,0);
   const originalFetch=globalThis.fetch;
   let calls=0;
   globalThis.fetch=async()=>{calls++;throw new Error('must not reach network');};
@@ -125,4 +130,11 @@ test('runtime OSS adapter inventory excludes non-admitted proprietary data paths
     assert.equal(result.reason,'OPEN_DATA_ADMISSION_REQUIRED');
     assert.equal(calls,0);
   }finally{globalThis.fetch=originalFetch;}
+});
+
+
+test('reference-only admission cannot create a quote fact', async () => {
+  const {observation} = await isolated();
+  const fact = observation('AAPL', 'wikidata-reference', 123, Date.now(), 'USD', 'live', {value:123});
+  assert.equal(fact, null);
 });

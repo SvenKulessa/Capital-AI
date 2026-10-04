@@ -86,7 +86,7 @@ async function fromCanonicalRegistry(env) {
 
 async function fromOpenSourceUniverseAdapter(env) {
   const sourceId = String(env.CAPITAL_AI_OSS_CRYPTO_UNIVERSE_SOURCE_ID || '').trim();
-  if (!sourceId || !isAdmittedMarketSource(sourceId)) return [];
+  if (!sourceId || !isAdmittedMarketSource(sourceId, 'mobileCryptoUniverse')) return [];
   const origin = safeOrigin(env.CAPITAL_AI_OSS_CRYPTO_UNIVERSE_URL, '');
   if (!origin) return [];
   const body = await fetchJson(new URL('/v1/universe/crypto', origin), {
@@ -106,7 +106,7 @@ export async function loadUniverseForEvidence(env = process.env) {
   if (universeCache && Date.now() - universeCache.loadedAt < CACHE_MS) return universeCache;
 
   const admittedSourceIds = MARKET_SOURCE_POLICY.admittedSources
-    .filter(source => source.eligible === true && source.decision === 'OPEN_SOURCE_OPEN_DATA_ADMITTED')
+    .filter(source => source.eligible === true && source.decision === 'OPEN_SOURCE_OPEN_DATA_ADMITTED' && source.capabilities?.mobileCryptoUniverse === true)
     .map(source => source.providerId);
 
   if (!admittedSourceIds.length) {

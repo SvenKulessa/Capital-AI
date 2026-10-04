@@ -30,7 +30,7 @@ jobs:
             exit 0
           fi
           gh api --paginate "repos/$REPOSITORY/pulls/$PR_NUMBER/files?per_page=100" --jq '.[].filename' > /tmp/mobile-files.txt
-          if grep -Eq '^(mobile/|server/(auth|auth\.test|mobile-scorer|mobile-scorer\.test|scorer-proxy|scorer-proxy\.test|index)\.mjs$|package-lock\.json$)' /tmp/mobile-files.txt; then
+          if grep -Eq '^(mobile/|server/(auth|auth\.test|mobile-scorer|mobile-scorer\.test|scorer-proxy|scorer-proxy\.test|open-source-market-policy|index)\.mjs$|docs/market-data/open-source-market-policy\.json$|package-lock\.json$)' /tmp/mobile-files.txt; then
             echo "mobile=true" >> "$GITHUB_OUTPUT"
           elif grep -qx 'package.json' /tmp/mobile-files.txt; then
             # Script-only registration does not change mobile dependency closure.
@@ -76,11 +76,9 @@ jobs:
           mkdir -p security-reports
           node --input-type=module <<'NODE' | tee security-reports/mobile-top400-live.json
           import { loadUniverseForEvidence } from './server/mobile-scorer.mjs';
-          import { MARKET_SOURCE_POLICY } from './server/open-source-market-policy.mjs';
+          import { MARKET_SOURCE_POLICY, admittedMarketSourcesFor } from './server/open-source-market-policy.mjs';
           const universe = await loadUniverseForEvidence({});
-          const admittedSources = MARKET_SOURCE_POLICY.admittedSources.filter(
-            source => source.eligible === true && source.decision === 'OPEN_SOURCE_OPEN_DATA_ADMITTED'
-          ).length;
+          const admittedSources = admittedMarketSourcesFor('mobileCryptoUniverse').length;
           const evidence = {
             schema: 'MOBILE_TOP400_RUNTIME@2',
             sourcePolicy: MARKET_SOURCE_POLICY.mode,
@@ -123,9 +121,9 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p security-reports
-          admitted_sources="$(node --input-type=module -e "import { MARKET_SOURCE_POLICY } from './server/open-source-market-policy.mjs'; console.log(MARKET_SOURCE_POLICY.admittedSources.filter(source => source.eligible === true && source.decision === 'OPEN_SOURCE_OPEN_DATA_ADMITTED').length)")"
+          admitted_sources="$(node --input-type=module -e "import { admittedMarketSourcesFor } from './server/open-source-market-policy.mjs'; console.log(admittedMarketSourcesFor('mobileCryptoUniverse').length)")"
           if [ "$admitted_sources" = "0" ]; then
-            jq -n --arg admitted "$admitted_sources"               '{schema:"MOBILE_SCORER_ORIGIN_READBACK@3",mode:"FAIL_CLOSED",admittedSources:($admitted|tonumber),networkProbeExecuted:false,verified:true,reason:"NO_ADMITTED_MARKET_SOURCE"}'               | tee security-reports/mobile-scorer-origin.json
+            jq -n --arg admitted "$admitted_sources"               '{schema:"MOBILE_SCORER_ORIGIN_READBACK@3",mode:"FAIL_CLOSED",admittedSources:($admitted|tonumber),networkProbeExecuted:false,verified:true,reason:"NO_ADMITTED_MOBILE_CRYPTO_UNIVERSE_SOURCE"}'               | tee security-reports/mobile-scorer-origin.json
             exit 0
           fi
           probe() {

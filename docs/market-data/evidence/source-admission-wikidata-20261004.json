@@ -1,0 +1,131 @@
+{
+  "schema": "CAPITAL_AI_SOURCE_ADMISSION_EVIDENCE@1",
+  "observedAt": "2026-10-04",
+  "policy": "OPEN_SOURCE_AND_OPEN_DATA_ONLY",
+  "providerId": "wikidata-reference",
+  "sourceName": "Wikidata structured data",
+  "decision": "OPEN_SOURCE_OPEN_DATA_ADMITTED",
+  "eligible": true,
+  "scope": "REFERENCE_METADATA_ONLY",
+  "runtimeActivation": "NOT_ACTIVATED_IN_THIS_CHANGE",
+  "capabilities": {
+    "referenceMetadata": true,
+    "marketQuotes": false,
+    "mobileCryptoUniverse": false,
+    "scoringPriceInput": false
+  },
+  "softwareComponent": {
+    "name": "wikibase-sdk",
+    "version": "11.4.0",
+    "repository": "https://github.com/maxlath/wikibase-sdk",
+    "note": "Admission software evidence only; package is not added to CAPITAL-AI runtime by this change."
+  },
+  "softwareLicense": "MIT",
+  "softwareSourceSha": "107a57bc01b04886301cd5dd3a5f45f238acf6c1",
+  "softwareLicenseBlobSha": "ec889750aeefe9893c543fe9802750719c062cef",
+  "softwareEvidenceReference": "https://github.com/maxlath/wikibase-sdk/tree/107a57bc01b04886301cd5dd3a5f45f238acf6c1",
+  "softwareLicenseReference": "https://github.com/maxlath/wikibase-sdk/blob/107a57bc01b04886301cd5dd3a5f45f238acf6c1/LICENSE.md",
+  "softwarePackageReference": "https://github.com/maxlath/wikibase-sdk/blob/107a57bc01b04886301cd5dd3a5f45f238acf6c1/package.json",
+  "softwarePackagingCompatible": true,
+  "softwarePackagingReview": {
+    "esm": true,
+    "minimumNode": ">=12",
+    "declaredRuntimeDependencies": 0,
+    "capitalAiRuntime": "Node 26.x",
+    "runtimeInstallRequiredBeforeUse": true,
+    "sbomAndVulnerabilityScanRequiredBeforeRuntimeInstall": true
+  },
+  "dataLicense": "CC0-1.0",
+  "dataLicenseEvidenceReference": "https://www.wikidata.org/wiki/Wikidata:Licensing",
+  "provenanceReference": "https://www.wikidata.org/wiki/Wikidata:For_developers/en",
+  "datasetId": "wikidata-structured-data-main-property",
+  "datasetVersionOrSnapshot": "LIVE_REVISIONED_DATASET_PER_ENTITY_REVISION_REQUIRED",
+  "attributionObligationsReviewed": true,
+  "attributionEvidenceReference": "https://www.wikidata.org/wiki/Wikidata:Copyright",
+  "attributionPolicy": "CC0 does not require attribution; CAPITAL-AI still retains source URL, entity ID, retrievedAt and revision when ingested.",
+  "useCases": {
+    "commercialWebDisplay": {
+      "allowed": true,
+      "evidenceReference": "https://www.wikidata.org/wiki/Wikidata:Licensing",
+      "scope": "STRUCTURED_REFERENCE_METADATA_ONLY"
+    },
+    "commercialMobileDisplay": {
+      "allowed": true,
+      "evidenceReference": "https://www.wikidata.org/wiki/Wikidata:Licensing",
+      "scope": "STRUCTURED_REFERENCE_METADATA_ONLY"
+    },
+    "derivedScoringRankingsAnalytics": {
+      "allowed": true,
+      "evidenceReference": "https://www.wikidata.org/wiki/Wikidata:Licensing",
+      "scope": "STRUCTURED_REFERENCE_METADATA_ONLY"
+    },
+    "normalization": {
+      "allowed": true,
+      "evidenceReference": "https://www.wikidata.org/wiki/Wikidata:Licensing",
+      "scope": "STRUCTURED_REFERENCE_METADATA_ONLY"
+    },
+    "cacheHotState": {
+      "allowed": true,
+      "evidenceReference": "https://www.wikidata.org/wiki/Wikidata:Licensing",
+      "scope": "STRUCTURED_REFERENCE_METADATA_ONLY"
+    },
+    "jetStreamPublication": {
+      "allowed": true,
+      "evidenceReference": "https://www.wikidata.org/wiki/Wikidata:Licensing",
+      "scope": "STRUCTURED_REFERENCE_METADATA_ONLY"
+    },
+    "replay": {
+      "allowed": true,
+      "evidenceReference": "https://www.wikidata.org/wiki/Wikidata:Licensing",
+      "scope": "STRUCTURED_REFERENCE_METADATA_ONLY"
+    },
+    "retention": {
+      "allowed": true,
+      "evidenceReference": "https://www.wikidata.org/wiki/Wikidata:Licensing",
+      "scope": "STRUCTURED_REFERENCE_METADATA_ONLY"
+    },
+    "backupRestore": {
+      "allowed": true,
+      "evidenceReference": "https://www.wikidata.org/wiki/Wikidata:Licensing",
+      "scope": "STRUCTURED_REFERENCE_METADATA_ONLY"
+    },
+    "auditEvidence": {
+      "allowed": true,
+      "evidenceReference": "https://www.wikidata.org/wiki/Wikidata:Licensing",
+      "scope": "STRUCTURED_REFERENCE_METADATA_ONLY"
+    },
+    "internalProcessing": {
+      "allowed": true,
+      "evidenceReference": "https://www.wikidata.org/wiki/Wikidata:Licensing",
+      "scope": "STRUCTURED_REFERENCE_METADATA_ONLY"
+    }
+  },
+  "optionalUseCases": {
+    "b2bApi": "NOT_ACTIVATED",
+    "redistribution": "NOT_ACTIVATED",
+    "customerExports": "NOT_ACTIVATED",
+    "whiteLabel": "NOT_ACTIVATED",
+    "publicCharts": "NOT_ACTIVATED",
+    "socialMedia": "NOT_ACTIVATED",
+    "benchmarkPublication": "NOT_ACTIVATED"
+  },
+  "instrumentEligibilityVerified": true,
+  "instrumentManifestReference": "docs/market-data/evidence/wikidata-reference-instrument-manifest-20261004.json",
+  "capabilityBoundary": {
+    "quoteAdmission": false,
+    "mobileUniverseAdmission": false,
+    "rule": "A source admission authorizes only explicitly true capabilities; it never promotes reference data to quotes or ranking coverage."
+  },
+  "trustPolicyReview": {
+    "status": "PASS_REFERENCE_METADATA_ONLY",
+    "reviewKind": "INTERNAL_LICENSE_AND_PROVENANCE_POLICY_REVIEW",
+    "legalOpinion": false,
+    "residualGate": "Runtime package install still requires normal SBOM/vulnerability/lockfile evidence."
+  },
+  "coverageImpact": {
+    "productiveQuotes": 0,
+    "productiveCryptoQuotes": 0,
+    "productiveStockQuotes": 0,
+    "minimum100Crypto100StocksGateMet": false
+  }
+}
