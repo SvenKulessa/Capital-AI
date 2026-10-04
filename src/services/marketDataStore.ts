@@ -7,7 +7,31 @@ const listeners = new Set<() => void>();
 let timer: ReturnType<typeof setTimeout> | undefined;
 let controller: AbortController | undefined;
 let users = 0;
+let marketReady = false;
+let marketStatusValidUntil = 0;
+const MARKET_STATUS_BLOCKED_RECHECK_MS = 30_000;
+const MARKET_STATUS_READY_RECHECK_MS = 5_000;
+
 function emit() { listeners.forEach(fn => fn()); }
+
+async function marketQuotesReady(signal: AbortSignal) {
+  if (Date.now() < marketStatusValidUntil) return marketReady;
+  try {
+    const response = await fetch('/api/market/status', {
+      cache: 'no-store',
+      signal: AbortSignal.any([signal, AbortSignal.timeout(4000)]),
+    });
+    if (!response.ok) throw new Error('MARKET_STATUS_UNAVAILABLE');
+    const state = await response.json() as { quotesEnabled?: boolean; quoteAdmittedSources?: number };
+    marketReady = state.quotesEnabled === true && Number(state.quoteAdmittedSources || 0) > 0;
+    marketStatusValidUntil = Date.now() + (marketReady ? MARKET_STATUS_READY_RECHECK_MS : MARKET_STATUS_BLOCKED_RECHECK_MS);
+    return marketReady;
+  } catch {
+    marketReady = false;
+    marketStatusValidUntil = Date.now() + MARKET_STATUS_BLOCKED_RECHECK_MS;
+    return false;
+  }
+}
 export function toMarketAsset(value: unknown): MarketAsset {
   const f = QuoteDeliverySchema.parse(value);
   if (!isFresh(f)) throw new Error('QUOTE_EXPIRED');
@@ -26,6 +50,14 @@ export function toMarketAsset(value: unknown): MarketAsset {
 async function refresh() {
   controller = new AbortController();
   const signal = controller.signal;
+  if (!(await marketQuotesReady(signal))) {
+    if (signal.aborted || !users) return;
+    MARKET_ASSETS = [];
+    emit();
+    timer = setTimeout(() => void refresh(), Math.max(1000, marketStatusValidUntil - Date.now()));
+    return;
+  }
+
   const results = await Promise.allSettled(Object.keys(instrumentCatalog).map(async symbol => {
     const response = await fetch(`/api/market/quote?symbol=${encodeURIComponent(symbol)}`, { cache: 'no-store', signal: AbortSignal.any([signal, AbortSignal.timeout(6000)]) });
     if (!response.ok) throw new Error('QUOTE_UNAVAILABLE');
