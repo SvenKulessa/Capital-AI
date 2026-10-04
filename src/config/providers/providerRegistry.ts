@@ -452,16 +452,62 @@ export class ProviderRegistryService {
   }
 
   /**
-   * Get healthy providers capable of serving a target asset class (AP-003)
+   * PRODUCT selection boundary:
+   * every registered provider remains visible/selectable for configuration,
+   * comparison and blueprint creation independent of productionAdmission.
    */
-  static getHealthyProvidersForAsset(assetClass: AssetClass): ProviderContract[] {
+  static getSelectableProviders(): ProviderContract[] {
+    return this.getAllProviders();
+  }
+
+  /**
+   * PRODUCT blueprint boundary:
+   * blueprint eligibility is intentionally independent of productionAdmission.
+   * A blueprint is design-time metadata and MUST NOT imply runtime admission.
+   */
+  static getBlueprintEligibleProviders(): ProviderContract[] {
+    return this.getAllProviders();
+  }
+
+  static isProviderSelectable(id: string): boolean {
+    return this.getProviderById(id) !== undefined;
+  }
+
+  static isProviderBlueprintEligible(id: string): boolean {
+    return this.getProviderById(id) !== undefined;
+  }
+
+  /**
+   * MARKET/TRUST runtime boundary:
+   * only explicitly admitted providers may participate in productive routing.
+   */
+  static getProductionAdmittedProviders(): ProviderContract[] {
     return this.getAllProviders().filter(
+      p => p.productionAdmission === 'OPEN_SOURCE_OPEN_DATA_ADMITTED'
+    );
+  }
+
+  static isProviderProductionAdmitted(id: string): boolean {
+    return this.getProviderById(id)?.productionAdmission === 'OPEN_SOURCE_OPEN_DATA_ADMITTED';
+  }
+
+  /**
+   * Get production-admitted healthy providers capable of serving a target asset class (AP-003).
+   */
+  static getProductionAdmittedHealthyProvidersForAsset(assetClass: AssetClass): ProviderContract[] {
+    return this.getProductionAdmittedProviders().filter(
       (p) =>
-        p.productionAdmission === 'OPEN_SOURCE_OPEN_DATA_ADMITTED' &&
         p.capabilities.supportedAssetClasses.includes(assetClass) &&
         (p.health.status === 'healthy' || p.health.status === 'degraded') &&
         !p.health.circuitBreakerTripped
     );
+  }
+
+  /**
+   * Backward-compatible runtime alias. This method is production-routable by definition.
+   */
+  static getHealthyProvidersForAsset(assetClass: AssetClass): ProviderContract[] {
+    return this.getProductionAdmittedHealthyProvidersForAsset(assetClass);
   }
 
   /**
@@ -473,9 +519,7 @@ export class ProviderRegistryService {
     remainingBudgetEur: number;
     isWithinBudget: boolean;
   } {
-    const admittedProviders = this.getAllProviders().filter(
-      p => p.productionAdmission === 'OPEN_SOURCE_OPEN_DATA_ADMITTED'
-    );
+    const admittedProviders = this.getProductionAdmittedProviders();
     const totalMonthlySpendEur = admittedProviders.reduce(
       (sum, p) => sum + p.budget.currentMonthlySpendEur,
       0
@@ -507,7 +551,7 @@ export class ProviderRegistryService {
     alerts: string[];
   } {
     const allProviders = this.getAllProviders();
-    const providers = allProviders.filter(p => p.productionAdmission === 'OPEN_SOURCE_OPEN_DATA_ADMITTED');
+    const providers = this.getProductionAdmittedProviders();
     const budgetSummary = this.calculateTotalProviderSpendEur();
     const alerts: string[] = [];
 
