@@ -8,7 +8,7 @@
  * 3. Quant- & Trader Skill-Check (Interaktives Quiz)
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   BookOpen,
   Search,
@@ -40,6 +40,7 @@ import {
 } from '../data/vocabularyData';
 import { SubpageSidebarNav, SubpageNavItem } from './SubpageSidebarNav';
 import { useHubTab } from '../hooks/useHubTab';
+import { updatePageSEO } from '../utils/analytics';
 
 export type LearningPortalTab = 'glossar' | 'guides' | 'quiz';
 const LEARNING_TABS: readonly LearningPortalTab[] = ['glossar', 'guides', 'quiz'];
@@ -49,6 +50,7 @@ interface LearningPortalPageProps {
   onNavigateLogin?: () => void;
   onNavigateTab?: (path: string) => void;
   initialTab?: LearningPortalTab;
+  initialVocabularyTermId?: string;
 }
 
 export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
@@ -56,6 +58,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
   onNavigateLogin,
   onNavigateTab,
   initialTab = 'glossar',
+  initialVocabularyTermId,
 }) => {
   const [activeTab, setActiveTab] = useHubTab(LEARNING_TABS, initialTab);
 
@@ -88,8 +91,32 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<VocabularyCategory>('ALL');
   const [selectedLevel, setSelectedLevel] = useState<string>('ALL');
-  const [expandedTermId, setExpandedTermId] = useState<string | null>(null);
+  const [expandedTermId, setExpandedTermId] = useState<string | null>(initialVocabularyTermId ?? null);
+  const [focusedTermId, setFocusedTermId] = useState<string | null>(initialVocabularyTermId ?? null);
   const [copiedTermId, setCopiedTermId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!initialVocabularyTermId) {
+      setFocusedTermId(null);
+      return;
+    }
+
+    const term = VOCABULARY_TERMS.find((candidate) => candidate.id === initialVocabularyTermId);
+    if (!term) return;
+
+    setActiveTab('glossar');
+    setFocusedTermId(term.id);
+    setExpandedTermId(term.id);
+    setSearchQuery('');
+    setSelectedCategory('ALL');
+    setSelectedLevel('ALL');
+
+    updatePageSEO({
+      title: `${term.term} – Definition & Thesaurus | Capital-AI`,
+      description: `${term.shortDefinition} Kategorie: ${term.categoryLabel}. Drei Thesaurus-Begriffe im Capital-AI Vocabulary.`,
+      canonicalPath: `/vocabulary/${term.id}`,
+    });
+  }, [initialVocabularyTermId, setActiveTab]);
 
   // Quiz States
   const [currentQuizIndex, setCurrentQuizIndex] = useState<number>(0);
@@ -100,6 +127,9 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
   // Filtered Vocabulary Terms
   const filteredTerms = useMemo(() => {
     return VOCABULARY_TERMS.filter((term) => {
+      if (focusedTermId && term.id !== focusedTermId) {
+        return false;
+      }
       // Category filter
       if (selectedCategory !== 'ALL' && term.category !== selectedCategory) {
         return false;
@@ -117,17 +147,18 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
         const matchesDetail = term.detailedExplanation.toLowerCase().includes(query);
         const matchesFormula = term.formulaOrRule?.toLowerCase().includes(query);
         const matchesCat = term.categoryLabel.toLowerCase().includes(query);
-        if (!matchesTerm && !matchesAbbr && !matchesShort && !matchesDetail && !matchesFormula && !matchesCat) {
+        const matchesThesaurus = term.thesaurus.some((entry) => entry.toLowerCase().includes(query));
+        if (!matchesTerm && !matchesAbbr && !matchesShort && !matchesDetail && !matchesFormula && !matchesCat && !matchesThesaurus) {
           return false;
         }
       }
       return true;
     });
-  }, [selectedCategory, selectedLevel, searchQuery]);
+  }, [focusedTermId, selectedCategory, selectedLevel, searchQuery]);
 
   const handleCopyDefinition = (term: VocabularyTerm, e: React.MouseEvent) => {
     e.stopPropagation();
-    const textToCopy = `${term.term} (${term.abbreviation || term.categoryLabel})\n\nDefinition:\n${term.shortDefinition}\n\nErklärung:\n${term.detailedExplanation}\n\nFaustformel / Regel:\n${term.formulaOrRule || 'N/A'}\n\nPraxisbeispiel:\n${term.practicalExample}\n\nQuelle: Capital-AI Learning Portal`;
+    const textToCopy = `${term.term} (${term.abbreviation || term.categoryLabel})\n\nThesaurus:\n${term.thesaurus.join(' · ')}\n\nDefinition:\n${term.shortDefinition}\n\nErklärung:\n${term.detailedExplanation}\n\nFaustformel / Regel:\n${term.formulaOrRule || 'N/A'}\n\nPraxisbeispiel:\n${term.practicalExample}`;
 
     if (navigator.clipboard) {
       navigator.clipboard.writeText(textToCopy);
@@ -348,14 +379,14 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
               <div>
                 <div className="flex items-center gap-2 text-xs font-mono text-amber-400 mb-1">
                   <Sparkles className="w-4 h-4" />
-                  <span>INTERAKTIVES FINANZ- &amp; QUANT-LEXIKON</span>
+                  <span>INTERAKTIVES FINANZ-, TECH- &amp; QUANT-LEXIKON</span>
                 </div>
                 <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  Markt-Vocabulary &amp; Formel-Glossar
+                  Capital-AI Vocabulary &amp; Thesaurus
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-                  Lernen Sie die mathematischen, fundamentalen und regulatorischen Begriffe unserer Berechnungs-Engines
-                  verstehen. Von ROE und DCF über Sharpe Ratio bis hin zu BaFin WORM und MaRisk.
+                  Durchsuchen Sie {VOCABULARY_TERMS.length} konsolidierte Fachbegriffe aus Marktanalyse, Scoring,
+                  Daten &amp; Evidence, Plattformarchitektur, Security, Produkt, Governance und Mobile Runtime.
                 </p>
               </div>
 
@@ -367,6 +398,20 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
             </div>
           </div>
 
+          {focusedTermId && (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-cyan-400/20 bg-cyan-400/5 px-4 py-3">
+              <div className="text-xs text-cyan-100">
+                Einzelansicht für einen indexierbaren Vocabulary-Begriff.
+              </div>
+              <a
+                href="/vocabulary"
+                className="text-xs font-bold text-amber-300 hover:text-amber-200 underline underline-offset-4"
+              >
+                Alle {VOCABULARY_TERMS.length} Begriffe anzeigen
+              </a>
+            </div>
+          )}
+
           {/* Filter Bar: Search + Category Buttons + Level Buttons */}
           <div className="p-4 rounded-xl bg-[#090e21] border border-slate-800/90 space-y-3">
             {/* Search Input */}
@@ -375,14 +420,20 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Begriff, Abkürzung oder Formel suchen (z.B. DCF, ROE, WORM, Sortino, MiCA)..."
+                onChange={(e) => {
+                  setFocusedTermId(null);
+                  setSearchQuery(e.target.value);
+                }}
+                placeholder="Begriff, Abkürzung oder Thesaurus suchen (z.B. VWAP, OIDC, Gate, Scorer)..."
                 className="w-full pl-9 pr-4 py-2 rounded-lg bg-black/40 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400/80"
               />
               {searchQuery && (
                 <button
                   type="button"
-                  onClick={() => setSearchQuery('')}
+                  onClick={() => {
+                    setFocusedTermId(null);
+                    setSearchQuery('');
+                  }}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white text-xs"
                 >
                   ✕
@@ -405,7 +456,10 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
                     <button
                       key={cat.id}
                       type="button"
-                      onClick={() => setSelectedCategory(cat.id)}
+                      onClick={() => {
+                        setFocusedTermId(null);
+                        setSelectedCategory(cat.id);
+                      }}
                       className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                         isSelected
                           ? 'bg-amber-400 text-black font-bold shadow-sm'
@@ -427,7 +481,10 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
                 <button
                   key={lvl}
                   type="button"
-                  onClick={() => setSelectedLevel(lvl)}
+                  onClick={() => {
+                    setFocusedTermId(null);
+                    setSelectedLevel(lvl);
+                  }}
                   className={`px-2.5 py-0.5 rounded text-xs font-medium cursor-pointer transition-colors ${
                     selectedLevel === lvl
                       ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40 font-bold'
@@ -449,6 +506,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
                 <button
                   type="button"
                   onClick={() => {
+                    setFocusedTermId(null);
                     setSearchQuery('');
                     setSelectedCategory('ALL');
                     setSelectedLevel('ALL');
@@ -488,8 +546,25 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
                           )}
                         </div>
                         <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
-                          <span>{term.term}</span>
+                          <a
+                            href={`/vocabulary/${term.id}`}
+                            onClick={(event) => event.stopPropagation()}
+                            className="hover:text-amber-300 underline-offset-4 hover:underline"
+                            title={`${term.term} als eigene Vocabulary-Seite öffnen`}
+                          >
+                            {term.term}
+                          </a>
                         </h3>
+                        <div className="flex flex-wrap gap-1.5 mt-1.5" aria-label={`Thesaurus zu ${term.term}`}>
+                          {term.thesaurus.map((synonym) => (
+                            <span
+                              key={synonym}
+                              className="px-2 py-0.5 rounded-full bg-cyan-400/5 border border-cyan-400/15 text-[10px] font-medium text-cyan-200/80"
+                            >
+                              {synonym}
+                            </span>
+                          ))}
+                        </div>
                       </div>
 
                       {/* Copy Action */}

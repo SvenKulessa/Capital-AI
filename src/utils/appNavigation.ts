@@ -50,14 +50,21 @@ export function resolveAppRoute(rawPath: string): string {
     clean === '/learning' ||
     clean === '/learning-portal' ||
     clean === '/lernportal' ||
-    clean === '/wissen' ||
+    clean === '/wissen'
+  ) {
+    return '/learning';
+  }
+  if (
     clean === '/vocabulary' ||
     clean === '/glossar' ||
     clean === '/lexikon' ||
     clean === '/market-vocabulary' ||
     clean === '/dictionary'
   ) {
-    return '/learning';
+    return '/vocabulary';
+  }
+  if (/^\/vocabulary\/[a-z0-9][a-z0-9_-]*$/.test(clean)) {
+    return clean;
   }
   if (
     clean === '/control-center' ||
