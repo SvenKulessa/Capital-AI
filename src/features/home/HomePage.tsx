@@ -1,0 +1,115 @@
+import { Header } from '../../components/Header';
+import { Hero } from '../../components/Hero';
+import { KeyPillars } from '../../components/KeyPillars';
+import { MarketOverview } from '../../components/MarketOverview';
+import { CoreModules } from '../../components/CoreModules';
+import { Footer } from '../../components/Footer';
+import { MarketSentiment } from '../../components/MarketSentiment';
+import { SectorAnalysis } from '../../components/SectorAnalysis';
+import { ResearchProjectSummary } from '../../components/ResearchLicensePages';
+import type {
+  AssetSubclass,
+  CoreModule,
+  MainCategory,
+  MarketAsset,
+} from '../../types';
+
+type HomePageProps = {
+  currentRoute: string;
+  onNavigate: (path: string) => void;
+  onOpenMarketscreener: () => void;
+  onOpenAnalysis: () => void;
+  onOpenSectorAnalysis: () => void;
+  onOpenModule: (moduleId: string) => void;
+  onOpenVocabulary: () => void;
+  onOpenPriceAlerts: () => void;
+  onOpenMonetization: () => void;
+  onOpenWhaleRadar: () => void;
+  onNavigateLogin: () => void;
+  onSelectSubclass: (subclass: AssetSubclass, category: MainCategory) => void;
+  onExploreMarkets: (category?: MainCategory) => void;
+  onSelectAsset: (asset: MarketAsset) => void;
+  onSelectModule: (module: CoreModule) => void;
+  onStartProductTour: () => void;
+};
+
+export function HomePage({
+  currentRoute,
+  onNavigate,
+  onOpenMarketscreener,
+  onOpenAnalysis,
+  onOpenSectorAnalysis,
+  onOpenModule,
+  onOpenVocabulary,
+  onOpenPriceAlerts,
+  onOpenMonetization,
+  onOpenWhaleRadar,
+  onNavigateLogin,
+  onSelectSubclass,
+  onExploreMarkets,
+  onSelectAsset,
+  onSelectModule,
+  onStartProductTour,
+}: HomePageProps) {
+  return (
+    <>
+      <Header
+        currentRoute={currentRoute}
+        onOpenMarketscreener={onOpenMarketscreener}
+        onOpenAnalysis={onOpenAnalysis}
+        onOpenSectorAnalysis={onOpenSectorAnalysis}
+        onOpenModule={onOpenModule}
+        onOpenVocabulary={onOpenVocabulary}
+        onOpenPriceAlerts={onOpenPriceAlerts}
+        onOpenMonetization={onOpenMonetization}
+        onOpenWhaleRadar={onOpenWhaleRadar}
+        onNavigateLogin={onNavigateLogin}
+        onNavigate={onNavigate}
+        onSelectSubclass={onSelectSubclass}
+        onViewAllMarkets={() => onExploreMarkets()}
+      />
+
+      <Hero
+        onStartAnalysis={onOpenAnalysis}
+        onExploreProduct={onStartProductTour}
+      />
+
+      <ResearchProjectSummary onNavigate={onNavigate} />
+      <KeyPillars />
+
+      <SectorAnalysis
+        onSelectAsset={onSelectAsset}
+        onOpenPriceAlerts={onOpenPriceAlerts}
+        onExploreMarkets={onExploreMarkets}
+      />
+
+      <MarketSentiment
+        onStartAnalysis={onOpenAnalysis}
+        onExploreMarkets={() => onExploreMarkets()}
+      />
+
+      <MarketOverview
+        onSelectAsset={onSelectAsset}
+        onViewAllMarkets={() => onExploreMarkets()}
+      />
+
+      <CoreModules
+        onSelectModule={(module) => {
+          if (module.id === 'market-screener' || module.id === 'screener') {
+            onNavigate('/screener');
+          } else if (module.id === 'learning-portal' || module.id === 'vocabulary') {
+            onNavigate('/learning');
+          } else if (module.id === 'pipeline-builder') {
+            onNavigate('/pipeline-builder');
+          } else {
+            onSelectModule(module);
+          }
+        }}
+        onViewAllModules={() => onOpenModule('enterprise-scorer')}
+        onNavigate={onNavigate}
+      />
+
+      <Footer onNavigate={onNavigate} />
+    </>
+  );
+}
