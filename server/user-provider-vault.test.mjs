@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Readable } from 'node:stream';
-import { createUserProviderVault, krakenPrivateMarketContext, krakenSignature } from './user-provider-vault.mjs';
+import { buildByokEnhancementReport, createUserProviderVault, krakenPrivateMarketContext, krakenSignature } from './user-provider-vault.mjs';
 
 test('Kraken signing matches the published API-Sign test vector', () => {
   const signature = krakenSignature(
@@ -260,4 +260,32 @@ test('BYOK market-context route requires explicit privateMarketContext permissio
   assert.equal(status, 403);
   assert.equal(payload.error, 'private_market_context_not_enabled');
   assert.equal(providerCalls, 0);
+});
+
+
+test('BYOK enhancement report exposes only measurable pipeline improvements and leaves score delta unevaluated', () => {
+  const now = 200000;
+  const report = buildByokEnhancementReport({
+    provider: 'kraken',
+    symbol: 'BTCUSD',
+    price: 70000,
+    bid: 69990,
+    ask: 70010,
+    volume24h: 1234,
+    observedAt: now - 5000,
+    credentialBound: true,
+    accountVerified: true,
+  }, now);
+
+  assert.equal(report.schema, 'CAPITAL_AI_BYOK_ENHANCEMENT_REPORT@1');
+  assert.equal(report.augmented.quoteAvailable, true);
+  assert.equal(report.augmented.fresh, true);
+  assert.equal(report.augmented.bidAskAvailable, true);
+  assert.equal(report.augmented.volume24hAvailable, true);
+  assert.ok(report.improvementCount >= 3);
+  assert.equal(report.scoreImpact.status, 'NOT_EVALUATED');
+  assert.equal(report.scoreImpact.delta, null);
+  assert.equal(report.rights.publicMarketDataAdmission, false);
+  assert.equal(report.rights.sharedCacheAllowed, false);
+  assert.equal(report.rights.jetStreamPublicationAllowed, false);
 });
