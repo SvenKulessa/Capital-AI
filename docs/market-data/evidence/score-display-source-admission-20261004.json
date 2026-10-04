@@ -1,0 +1,51 @@
+{
+  "schema": "CAPITAL_AI_SCORE_DISPLAY_SOURCE_ADMISSION@1",
+  "observedAt": "2026-10-04",
+  "policy": "OPEN_SOURCE_AND_OPEN_DATA_ONLY",
+  "requiredCapability": "scoringPriceInput",
+  "decision": "BLOCK_PUBLIC_CRYPTO_SCORE_DISPLAY",
+  "admittedScoringSources": [],
+  "currentAdmittedReferenceSources": [
+    "wikidata-reference"
+  ],
+  "findings": [
+    {
+      "source": "wikidata-reference",
+      "decision": "REFERENCE_ONLY",
+      "reason": "CC0 reference metadata is admitted, but marketQuotes=false and scoringPriceInput=false."
+    },
+    {
+      "source": "kraken-public-api",
+      "decision": "BLOCK",
+      "reason": "Official Kraken API guidance requires prior permission for non-personal commercial use of publicly accessible market data.",
+      "evidence": [
+        "https://docs.kraken.com/api/docs/guides/global-intro/",
+        "https://www.kraken.com/de/legal/global-terms"
+      ],
+      "requiredNextStep": "Written market-data permission covering commercial derived scoring/display, retention/replay and the intended web/mobile use."
+    },
+    {
+      "source": "kraken-byok",
+      "decision": "USER_PRIVATE_ACCOUNT_DATA_ONLY",
+      "reason": "Existing BYOK path is limited to authenticated user-private account data and explicitly forbids public display, redistribution, shared cache and JetStream publication.",
+      "scoringPriceInput": false
+    },
+    {
+      "source": "world-bank-commodity-prices",
+      "decision": "CANDIDATE_COMMODITY_ONLY",
+      "dataLicense": "CC-BY-4.0",
+      "reason": "Official World Bank catalog identifies the commodity dataset as public CC-BY-4.0 and commercially reusable with attribution; it does not provide crypto spot-price coverage and therefore cannot unlock /api/crypto/score.",
+      "evidence": [
+        "https://datacatalog.worldbank.org/search/dataset/0038238/commodity-prices-history-and-projections",
+        "https://datacatalog.worldbank.org/public-licenses"
+      ],
+      "requiredNextStep": "Separate commodity adapter, immutable source/version evidence and instrument manifest before capability admission."
+    }
+  ],
+  "enforcement": {
+    "scorerRoute": "/api/crypto/score",
+    "failClosedWhenNoScoringPriceInput": true,
+    "referenceMetadataDoesNotUnlockScores": true,
+    "publicScoreDisplayEnabled": false
+  }
+}
