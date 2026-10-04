@@ -47,3 +47,9 @@ services:
         value: "true"
       - key: MARKET_QUOTES_ENABLED
         value: "false"
+      - key: CAPITAL_AI_FINANCE_SCORER_PRIVATE_ORIGIN
+        sync: false
+      - key: CAPITAL_AI_SCORER_ORIGIN
+        value: https://capital-ai.online
+      - key: CAPITAL_AI_SCORER_ALLOW_SAME_ORIGIN
+        value: "true"
