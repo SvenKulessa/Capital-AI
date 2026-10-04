@@ -42,3 +42,11 @@ Die Erkennung läuft lokal: Zögern im kleinen Bereich, Mehrfachklick oder Mehrf
 ## Grenzen
 
 Diese Datei ersetzt keine Markenprüfung und keine Production-Freigabe. Der Agent gibt keine Anlageberatung.
+
+## Gesicht v2 — 2026-10-04
+
+- Marke: eigenes SVG in `BuddyMark`, ViewBox 64 × 64.
+- Ausdruck: größere Augen mit Lichtpunkt, Lid-Blink, weiches Lächeln, Sprechlinie.
+- Entstehung: owner-directed, im Portal gezeichnet. Kein Stockcharakter, keine fremde Icon-Datei, keine eingebettete Schrift.
+- Werbevideo und generierte Rasterbilder sind nicht Teil dieses Assets und nicht von dieser Lizenz umfasst.
+- Kommerzielle Nutzung bleibt beim Rechteinhaber Sven Kulessa / capital-ai.online. Dritte erhalten keine Lizenz.
