@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "plans": [
+    {
+      "name": "Free",
+      "priceModel": "FREE",
+      "capabilities": ["repositoryScan", "sbomClassification", "neutralPrCheck"]
+    },
+    {
+      "name": "Pro",
+      "priceModel": "FLAT_RATE",
+      "billing": ["monthly", "yearly"],
+      "capabilities": ["repositoryScan", "sbomClassification", "obligationReport", "neutralPrCheck"]
+    },
+    {
+      "name": "Team",
+      "priceModel": "PER_UNIT",
+      "unit": "user",
+      "billing": ["monthly", "yearly"],
+      "capabilities": ["repositoryScan", "obligationReport", "prGate", "evidenceHistory", "auditExport"]
+    },
+    {
+      "name": "Enterprise",
+      "priceModel": "FLAT_RATE",
+      "billing": ["monthly", "yearly"],
+      "capabilities": ["repositoryScan", "obligationReport", "prGate", "evidenceHistory", "policyProfiles", "auditExport", "api"]
+    }
+  ]
+}
