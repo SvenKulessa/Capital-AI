@@ -309,48 +309,118 @@ export interface IngestionProviderItem {
   typicalLatency: string;
   coverage: string;
   bafinStatus: string;
+  sourceType: 'oss_adapter' | 'external_data_provider';
+  rightsStatus: 'SOFTWARE_OSS' | 'PROVIDER_RIGHTS_REQUIRED';
 }
 
 export const INGESTION_PROVIDERS: IngestionProviderItem[] = [
   {
     id: 'ccxt',
     name: 'CCXT Open-Source Adapter',
-    category: 'Multi-Venue Market Ingress',
+    category: 'OSS Adapter · Multi-Venue Market Ingress',
     monthlyCostEur: 0.0,
     protocols: 'REST + WebSocket (venueabhängig)',
     typicalLatency: 'Venue- und Deployment-abhängig',
-    coverage: 'Provider-neutrale Normalisierung; konkrete Datenquellen werden separat zugelassen',
-    bafinStatus: 'MIT · Datenrechte separat fail-closed prüfen',
+    coverage: 'Provider-neutrale Normalisierung für unterstützte Börsen',
+    bafinStatus: 'MIT · als Softwarekomponente OSS-konform',
+    sourceType: 'oss_adapter',
+    rightsStatus: 'SOFTWARE_OSS',
   },
   {
     id: 'hummingbot',
     name: 'Hummingbot / Gateway',
-    category: 'Connector & DEX Gateway',
+    category: 'OSS Adapter · Connector & DEX Gateway',
     monthlyCostEur: 0.0,
     protocols: 'REST + WebSocket + Gateway',
     typicalLatency: 'Deployment- und Venue-abhängig',
-    coverage: 'Self-hosted Connector-Architektur für CEX/DEX-Routen und isolierte Gateway-Dienste',
-    bafinStatus: 'Apache-2.0 / MIT · Datenrechte separat prüfen',
+    coverage: 'Self-hosted CEX/DEX Connector-Architektur',
+    bafinStatus: 'Apache-2.0 / MIT · als Softwarekomponente OSS-konform',
+    sourceType: 'oss_adapter',
+    rightsStatus: 'SOFTWARE_OSS',
   },
   {
     id: 'openbb',
     name: 'OpenBB Provider Router',
-    category: 'Multi-Asset Research Ingress',
+    category: 'OSS Adapter · Multi-Asset Research',
     monthlyCostEur: 0.0,
     protocols: 'Python + REST/API + Provider Router',
     typicalLatency: 'Upstream-abhängig',
-    coverage: 'Provider-neutrale Multi-Asset-Aggregation; nur freigegebene Upstreams dürfen aktiviert werden',
-    bafinStatus: 'Apache-2.0 · Upstream-Rechte bleiben eigenes Gate',
+    coverage: 'Provider-neutrale Multi-Asset-Aggregation',
+    bafinStatus: 'Apache-2.0 · als Softwarekomponente OSS-konform',
+    sourceType: 'oss_adapter',
+    rightsStatus: 'SOFTWARE_OSS',
   },
   {
     id: 'defillama-sdk',
     name: 'DefiLlama API SDK',
-    category: 'DeFi Fundamentals & Metadata',
+    category: 'OSS Adapter · DeFi Metadata',
     monthlyCostEur: 0.0,
     protocols: 'REST + TypeScript SDK',
     typicalLatency: 'Endpoint-abhängig',
     coverage: 'TVL-, Yield- und DeFi-Metadaten; kein Tick-by-Tick Venue-Feed',
-    bafinStatus: 'MIT · Nutzungs-/Datenrechte separat verifizieren',
+    bafinStatus: 'MIT · Daten-/Nutzungsrechte des Upstreams separat prüfen',
+    sourceType: 'oss_adapter',
+    rightsStatus: 'SOFTWARE_OSS',
+  },
+  {
+    id: 'twelvedata',
+    name: 'TwelveData Financial Feeds',
+    category: 'Externer Datenprovider · Aktien / Forex / Rohstoffe',
+    monthlyCostEur: 8.5,
+    protocols: 'REST + WSS',
+    typicalLatency: 'Provider-/Tarif-abhängig',
+    coverage: 'Multi-Asset Marktdaten und historische Zeitreihen',
+    bafinStatus: 'Konfigurierbar · Production bleibt bis Rechte-Evidence fail-closed',
+    sourceType: 'external_data_provider',
+    rightsStatus: 'PROVIDER_RIGHTS_REQUIRED',
+  },
+  {
+    id: 'fred',
+    name: 'Federal Reserve Bank of St. Louis (FRED)',
+    category: 'Externer Datenprovider · Makro',
+    monthlyCostEur: 0.0,
+    protocols: 'REST JSON',
+    typicalLatency: 'Endpoint-abhängig',
+    coverage: 'Makro-, Zins-, Inflations- und Arbeitsmarktdaten',
+    bafinStatus: 'Konfigurierbar · Nutzungs-/Weitergaberechte separat prüfen',
+    sourceType: 'external_data_provider',
+    rightsStatus: 'PROVIDER_RIGHTS_REQUIRED',
+  },
+  {
+    id: 'binance',
+    name: 'Binance Market Data Engine',
+    category: 'Externer Datenprovider · Krypto',
+    monthlyCostEur: 0.0,
+    protocols: 'REST + WebSocket',
+    typicalLatency: 'Venue- und Netzwerk-abhängig',
+    coverage: 'Krypto Trades, Ticker und Orderbuchdaten',
+    bafinStatus: 'Konfigurierbar · Production bleibt bis Rechte-Evidence fail-closed',
+    sourceType: 'external_data_provider',
+    rightsStatus: 'PROVIDER_RIGHTS_REQUIRED',
+  },
+  {
+    id: 'kraken',
+    name: 'Kraken Financial Ingestion',
+    category: 'Externer Datenprovider · Krypto / EUR',
+    monthlyCostEur: 0.0,
+    protocols: 'REST + WebSocket',
+    typicalLatency: 'Venue- und Netzwerk-abhängig',
+    coverage: 'Krypto-/EUR-Marktdaten und Orderbuchdaten',
+    bafinStatus: 'Konfigurierbar · Production bleibt bis Rechte-Evidence fail-closed',
+    sourceType: 'external_data_provider',
+    rightsStatus: 'PROVIDER_RIGHTS_REQUIRED',
+  },
+  {
+    id: 'alchemy',
+    name: 'Alchemy Supernode RPC',
+    category: 'Externer Datenprovider · On-Chain RPC',
+    monthlyCostEur: 0.0,
+    protocols: 'RPC + WebSocket',
+    typicalLatency: 'Netzwerk- und Tarif-abhängig',
+    coverage: 'EVM On-Chain Events, Logs und RPC-Zugriff',
+    bafinStatus: 'Konfigurierbar · Production bleibt bis Rechte-Evidence fail-closed',
+    sourceType: 'external_data_provider',
+    rightsStatus: 'PROVIDER_RIGHTS_REQUIRED',
   },
 ];
 
@@ -454,7 +524,7 @@ export const PipelineBuilder: React.FC<PipelineBuilderProps> = ({
   const [config, setConfig] = useState<PipelineConfigState>({
     analysisFocusId: 'buffett-value',
     latencyIntervalId: 'eod-daily',
-    providerIds: ['ccxt', 'openbb'],
+    providerIds: ['ccxt', 'fred'],
     cachingId: 'valkey-hotstate',
     evidenceId: 'worm-storage',
     selectedIndicators: ['rsi-14', 'macd-12-26-9'],
@@ -526,7 +596,9 @@ export const PipelineBuilder: React.FC<PipelineBuilderProps> = ({
     let bafinScore = 90;
     if (config.evidenceId === 'worm-storage') bafinScore += 6;
     if (config.evidenceId === 'merkle-tree') bafinScore += 5;
-    if (selectedProviders.length > 0 && selectedProviders.every((p) => ['ccxt', 'hummingbot', 'openbb', 'defillama-sdk'].includes(p.id))) bafinScore += 2;
+    const hasOssAdapter = selectedProviders.some((p) => p.sourceType === 'oss_adapter');
+    const hasExternalDataProvider = selectedProviders.some((p) => p.sourceType === 'external_data_provider');
+    if (hasOssAdapter && hasExternalDataProvider) bafinScore += 2;
     if ((config.selectedNewsApis || []).includes('news-bafin-press')) bafinScore += 2;
     bafinScore = Math.min(100, bafinScore);
 
@@ -669,7 +741,7 @@ export const PipelineBuilder: React.FC<PipelineBuilderProps> = ({
     doc.text(`${selectedLatency.name} — ${selectedLatency.latencySpec}`, 14, 74);
 
     doc.setFont('helvetica', 'bold');
-    doc.text('3. Open-Source Ingestion Adapter:', 14, 84);
+    doc.text('3. Ingestion Adapter & Data Provider:', 14, 84);
     doc.setFont('helvetica', 'normal');
     selectedProviders.forEach((p, idx) => {
       doc.text(`• ${p.name} (${p.category}) — ${p.monthlyCostEur.toFixed(2)} €/Mo`, 18, 90 + idx * 6);
@@ -765,11 +837,12 @@ export const PipelineBuilder: React.FC<PipelineBuilderProps> = ({
       <div className="mb-5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 px-4 py-3 text-xs text-slate-300">
         <div className="flex items-center gap-2 font-bold text-emerald-300">
           <ShieldCheck className="w-4 h-4" />
-          <span>Open-Source-Only Policy aktiv</span>
+          <span>Open-Source-Only Software · Provider-Auswahl bleibt offen</span>
         </div>
         <p className="mt-1 leading-relaxed">
-          Der Konfigurator bietet nur Open-Source-Softwarekomponenten an. Ein OSS-Adapter erteilt keine Marktdatenrechte:
-          Upstream-Datenquellen werden erst nach separater Lizenz-, Nutzungs-, Retention- und Redistribution-Evidence produktiv zugelassen.
+          CAPITAL-AI verwendet für eigene Software-, Adapter- und Infrastrukturkomponenten ausschließlich Open Source.
+          Externe Datenprovider bleiben auswählbar und können in Blueprints verwendet werden. Ihre Auswahl ist keine Production-Freigabe:
+          Nutzungs-, Display-, Retention- und Redistribution-Rechte bleiben ein separates fail-closed Gate.
         </p>
       </div>
 
@@ -817,7 +890,7 @@ export const PipelineBuilder: React.FC<PipelineBuilderProps> = ({
         {[
           { step: 1, label: '1. Screener-Fokus', desc: 'Buffett / Scoring' },
           { step: 2, label: '2. Taktung & Latenz', desc: 'EOD / Intraday' },
-          { step: 3, label: '3. OSS Ingestion', desc: 'CCXT / OpenBB' },
+          { step: 3, label: '3. Ingestion & Provider', desc: 'OSS Adapter + Datenquellen' },
           { step: 4, label: '4. Caching & RAM', desc: 'Valkey 8 / Arrow' },
           { step: 5, label: '5. BaFin Evidence', desc: 'WORM / Merkle' },
           { step: 6, label: '6. Fertiges System', desc: 'Blueprint Export' },
@@ -1322,10 +1395,10 @@ export const PipelineBuilder: React.FC<PipelineBuilderProps> = ({
               <span className="w-6 h-6 rounded-lg bg-amber-400 text-black text-xs font-black flex items-center justify-center font-mono">
                 3
               </span>
-              <span>Open-Source Ingestion-Adapter (Mehrfachauswahl möglich)</span>
+              <span>Ingestion-Adapter &amp; Datenprovider (Mehrfachauswahl möglich)</span>
             </h2>
             <p className="text-xs text-slate-400 mt-1">
-              Wählen Sie ausschließlich Open-Source-Adapter. Die Softwarelizenz ist offen; <strong>Daten-, Display-, Retention- und Redistribution-Rechte der Upstream-Quelle bleiben ein separates fail-closed Gate</strong>.
+              Wählen Sie Open-Source-Adapter und die gewünschten externen Datenprovider. <strong>OSS-only gilt für die eingesetzten Softwarekomponenten</strong>; externe Provider bleiben für Konfiguration und Blueprint-Erstellung verfügbar. Production benötigt weiterhin separate Datenrechte-Evidence.
             </p>
           </div>
 
@@ -1347,11 +1420,24 @@ export const PipelineBuilder: React.FC<PipelineBuilderProps> = ({
                     <div className="flex items-center justify-between gap-2 mb-1">
                       <h3 className="text-sm font-bold text-white">{provider.name}</h3>
                       <span className="text-xs font-bold font-mono text-cyan-300">
-                        {provider.monthlyCostEur === 0 ? '0,00 € OSS-Lizenz' : `${provider.monthlyCostEur.toFixed(2)} €/Mo`}
+                        {provider.sourceType === 'oss_adapter'
+                          ? 'OSS'
+                          : provider.monthlyCostEur === 0
+                          ? 'Provider'
+                          : `${provider.monthlyCostEur.toFixed(2)} €/Mo`}
                       </span>
                     </div>
 
-                    <div className="text-[11px] text-amber-400 font-mono mb-2">{provider.category}</div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-[11px] text-amber-400 font-mono">{provider.category}</span>
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded border font-mono ${
+                        provider.sourceType === 'oss_adapter'
+                          ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
+                          : 'border-cyan-500/30 bg-cyan-500/10 text-cyan-300'
+                      }`}>
+                        {provider.sourceType === 'oss_adapter' ? 'OSS SOFTWARE' : 'EXTERNAL PROVIDER'}
+                      </span>
+                    </div>
                     <p className="text-xs text-slate-300 mb-2">{provider.coverage}</p>
 
                     <div className="text-[10px] font-mono text-slate-400 mb-2">
