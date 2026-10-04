@@ -1,15 +1,9 @@
-import type { Dispatch, SetStateAction } from 'react';
-import { AnalysisModal } from '../components/AnalysisModal';
-import { ProductTourModal } from '../components/ProductTourModal';
-import { AssetDetailModal } from '../components/AssetDetailModal';
-import { ModuleDetailModal } from '../components/ModuleDetailModal';
-import { AllMarketsModal } from '../components/AllMarketsModal';
-import { SubclassDetailModal } from '../components/SubclassDetailModal';
-import { MarketVocabularyModal } from '../components/MarketVocabularyModal';
-import { PriceAlertsModal } from '../components/PriceAlertsModal';
-import { WhaleRadarModal } from '../components/WhaleRadarModal';
-import { MonetizationModal } from '../components/MonetizationModal';
-import { MarketscreenerModal } from '../components/MarketscreenerModal';
+import {
+  lazy,
+  Suspense,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 import { MARKET_ASSETS } from '../data/mockData';
 import type {
   AssetSubclass,
@@ -17,6 +11,62 @@ import type {
   MainCategory,
   MarketAsset,
 } from '../types';
+
+const AnalysisModal = lazy(() =>
+  import('../components/AnalysisModal').then((module) => ({
+    default: module.AnalysisModal,
+  })),
+);
+const ProductTourModal = lazy(() =>
+  import('../components/ProductTourModal').then((module) => ({
+    default: module.ProductTourModal,
+  })),
+);
+const AssetDetailModal = lazy(() =>
+  import('../components/AssetDetailModal').then((module) => ({
+    default: module.AssetDetailModal,
+  })),
+);
+const ModuleDetailModal = lazy(() =>
+  import('../components/ModuleDetailModal').then((module) => ({
+    default: module.ModuleDetailModal,
+  })),
+);
+const AllMarketsModal = lazy(() =>
+  import('../components/AllMarketsModal').then((module) => ({
+    default: module.AllMarketsModal,
+  })),
+);
+const SubclassDetailModal = lazy(() =>
+  import('../components/SubclassDetailModal').then((module) => ({
+    default: module.SubclassDetailModal,
+  })),
+);
+const MarketVocabularyModal = lazy(() =>
+  import('../components/MarketVocabularyModal').then((module) => ({
+    default: module.MarketVocabularyModal,
+  })),
+);
+const PriceAlertsModal = lazy(() =>
+  import('../components/PriceAlertsModal').then((module) => ({
+    default: module.PriceAlertsModal,
+  })),
+);
+const WhaleRadarModal = lazy(() =>
+  import('../components/WhaleRadarModal').then((module) => ({
+    default: module.WhaleRadarModal,
+  })),
+);
+const MonetizationModal = lazy(() =>
+  import('../components/MonetizationModal').then((module) => ({
+    default: module.MonetizationModal,
+  })),
+);
+const MarketscreenerModal = lazy(() =>
+  import('../components/MarketscreenerModal').then((module) => ({
+    default: module.MarketscreenerModal,
+  })),
+);
 
 type SelectedSubclass = {
   subclass: AssetSubclass;
@@ -103,7 +153,7 @@ export function AppOverlays({
   onOpenModuleById,
 }: AppOverlaysProps) {
   return (
-    <>
+    <Suspense fallback={null}>
       <AnalysisModal
         isOpen={isAnalysisOpen}
         onClose={() => {
@@ -283,6 +333,6 @@ export function AppOverlays({
           setIsAllMarketsOpen(true);
         }}
       />
-    </>
+    </Suspense>
   );
 }

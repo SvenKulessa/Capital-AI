@@ -187,6 +187,16 @@ export function AppShell() {
     selectedModule !== null ||
     selectedSubclass !== null;
 
+  const [overlaysLoaded, setOverlaysLoaded] = useState(false);
+
+  useEffect(() => {
+    if (hasOpenOverlay) {
+      setOverlaysLoaded(true);
+    }
+  }, [hasOpenOverlay]);
+
+  const shouldRenderOverlays = overlaysLoaded || hasOpenOverlay;
+
   return (
     <div className="min-h-screen bg-[#02050e] text-slate-100 flex flex-col items-center justify-start relative overflow-x-hidden">
       <a
@@ -307,7 +317,7 @@ export function AppShell() {
         }}
       />
 
-      {hasOpenOverlay && (
+      {shouldRenderOverlays && (
         <Suspense fallback={null}>
           <AppOverlays
             currentRoute={currentRoute}
