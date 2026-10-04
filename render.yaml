@@ -20,10 +20,6 @@ services:
         value: "10000"
       - key: MARKET_SYMBOLS
         value: BTCUSDT,BTCUSD,AAPL
-      - key: TWELVE_DATA_API_KEY
-        sync: false
-      - key: POLYGON_API_KEY
-        sync: false
       # All optional capabilities fail closed until configured by the owner.
       - key: PUBLIC_APP_ORIGIN
         sync: false
@@ -50,4 +46,4 @@ services:
       - key: MARKET_PUBSUB_ENABLED
         value: "true"
       - key: MARKET_QUOTES_ENABLED
-        value: "true"
+        value: "false"
