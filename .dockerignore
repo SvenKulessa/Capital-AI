@@ -19,6 +19,7 @@
 !server/advisor-security.test.mjs
 !server/billing-catalog.mjs
 !server/vocabulary-checkout.mjs
+!server/vocabulary-quant-pro.mjs
 !server/auth.mjs
 !server/user-provider-vault.mjs
 !server/telegram.mjs
