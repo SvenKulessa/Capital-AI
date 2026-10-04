@@ -6,11 +6,11 @@ export const VOCABULARY_OFFER = {
   currency: 'eur',
   taxBehavior: 'inclusive',
   includedIn: ['pro', 'enterprise'],
-  previewCount: 8,
   name: 'Market Vocabulary',
 } as const;
 
 export const VOCABULARY_GRANT_KEY = 'capital-ai-vocabulary-grant';
+export const VOCABULARY_QUIZ_USED_KEY = 'capital-ai-vocabulary-quiz-used-v1';
 
 export function formatVocabularyPrice() {
   return (VOCABULARY_OFFER.amountCents / 100).toLocaleString('de-DE', {
