@@ -56,11 +56,13 @@ export function runProviderRegistryValidationSuite(): { passed: boolean; results
   // Test 4: Comprehensive Audit Report Generation
   results.push('[TEST 4] Verifying Provider Audit & Alerting generation...');
   const auditReport = ProviderRegistryService.auditProviderHealthAndBudget();
-  if (auditReport.totalProvidersCount >= 5 && auditReport.healthyCount >= 5) {
-    results.push(`  ✓ Audit report successfully generated with avg latency ${auditReport.averageLatencyMs}ms.`);
+  if (auditReport.totalProvidersCount >= 5 && auditReport.admittedProvidersCount === 0 &&
+      auditReport.blockedProvidersCount === auditReport.totalProvidersCount &&
+      auditReport.healthyCount === 0 && auditReport.averageLatencyMs === null) {
+    results.push('  ✓ Audit report exposes no synthetic health/latency evidence for blocked providers.');
   } else {
     allPassed = false;
-    results.push('  ✗ Audit report failed sanity checks.');
+    results.push('  ✗ Audit report exposed blocked provider telemetry as productive evidence.');
   }
 
   return { passed: allPassed, results };
