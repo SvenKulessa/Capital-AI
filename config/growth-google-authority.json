@@ -1,0 +1,25 @@
+{
+  "schema": "CAPITAL_AI_GROWTH_GOOGLE_AUTHORITY@1",
+  "property": "sc-domain:capital-ai.online",
+  "gsc": {
+    "provider": "LukeRenton/google-search-console-mcp",
+    "package": "@lukerent/google-search-console-mcp",
+    "version": "0.1.0",
+    "upstreamCommit": "a701813f030c7b343302b2eb84474add1697c42f",
+    "license": "MIT",
+    "mode": "READ_ONLY",
+    "oauthScope": "https://www.googleapis.com/auth/webmasters.readonly",
+    "blockedTools": ["submit_sitemap"],
+    "capabilities": ["list_properties", "query_search_analytics", "inspect_url", "list_sitemaps"]
+  },
+  "seo": {
+    "authority": "GSC",
+    "status": "FOUNDATION_READY",
+    "plannedReadbacks": ["crawl/index status", "Google-selected canonical", "last crawl", "sitemap membership", "clicks", "impressions", "CTR", "position"]
+  },
+  "ga4": {
+    "provider": null,
+    "status": "PLANNED_SEPARATE_ADAPTER",
+    "note": "LukeRenton/google-search-console-mcp does not expose GA4. GA4 must use a separate Google Analytics Data API/MCP adapter behind this Growth authority boundary."
+  }
+}
