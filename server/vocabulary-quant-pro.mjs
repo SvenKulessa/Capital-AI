@@ -16,7 +16,6 @@ export const QUANT_PRO_TERMS = Object.freeze([
       relatedAssets: ['NVDA', 'SPX', 'BTC/USD'],
       keyTakeaway: 'VWAP filtert Kursspitzen mit geringem Volumen heraus und zeigt das echte institutionelle Preisniveau.',
       searchTags: ['vwap', 'volumen', 'durchschnitt', 'benchmark', 'quant', 'institutionell'],
-    ,
       thesaurus: ['Volume-Weighted Average Price', 'volumengewichteter Durchschnittspreis', 'Volumen-Durchschnittskurs']
     },
   {
@@ -35,7 +34,6 @@ export const QUANT_PRO_TERMS = Object.freeze([
       relatedAssets: ['SPX', 'NDX', 'EUR/USD'],
       keyTakeaway: 'Niedrige Latenz verhindert das Handeln zu veralteten Kursen („Stale Quotes“) und schützt vor Ausführungsverlusten.',
       searchTags: ['latenz', 'latency', 'ping', 'echtzeit', 'sub-45ms', 'websocket'],
-    ,
       thesaurus: ['Latency', 'Verzögerungszeit', 'Übertragungslatenz']
     },
   {
@@ -54,7 +52,6 @@ export const QUANT_PRO_TERMS = Object.freeze([
       relatedAssets: ['BTC/USD', 'NVDA', 'SPX', 'Gold'],
       keyTakeaway: 'Ersetzt subjektives Bauchgefühl durch ein transparentes, datenbasiertes Multi-Faktor-Scoring.',
       searchTags: ['enterprise scorer', 'ki score', 'scoring', 'rating', 'multi-faktor', 'algorithmus'],
-    ,
       thesaurus: ['Multi-Faktor-Scorer', 'KI-Scoringmodell', 'Capital-AI Scorer']
     },
   {
@@ -73,7 +70,6 @@ export const QUANT_PRO_TERMS = Object.freeze([
       relatedAssets: ['BTC/USD', 'ETH/USD'],
       keyTakeaway: 'On-Chain-Daten zeigen tatsächliche Kapitalströme ohne zeitliche Verzögerung von Zwischenberichten.',
       searchTags: ['on-chain', 'whales', 'netflow', 'blockchain daten', 'hodl', 'adressen'],
-    ,
       thesaurus: ['Blockchain-Metriken', 'On-Chain Analytics', 'Blockchain-Kennzahlen']
     },
   {
