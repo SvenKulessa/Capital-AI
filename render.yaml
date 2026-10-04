@@ -49,6 +49,8 @@ services:
         value: "true"
       - key: MARKET_QUOTES_ENABLED
         value: "false"
+      - key: MARKET_CANONICAL_DB_REQUIRED
+        value: "true"
       - key: CAPITAL_AI_FINANCE_SCORER_PRIVATE_ORIGIN
         sync: false
       - key: CAPITAL_AI_SCORER_ORIGIN
