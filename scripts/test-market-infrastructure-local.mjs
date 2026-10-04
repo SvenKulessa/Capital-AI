@@ -15,7 +15,7 @@ function launch(binary, args) { return spawn(binary, args, { stdio: ['ignore', '
 async function stop(child) { if (!child || child.exitCode !== null) return; const exited = once(child, 'exit'); child.kill('SIGTERM'); await exited; }
 const root = await mkdtemp(join(tmpdir(), 'capital-market-'));
 const redisPort = await port(), natsPort = await port();
-const env = { REDIS_URL: `redis://127.0.0.1:${redisPort}`, NATS_URL: `nats://127.0.0.1:${natsPort}`, NATS_TOKEN: 'local-test-only', NATS_REPLICAS: '1' };
+const env = { MARKET_CANONICAL_DB_REQUIRED: 'false', REDIS_URL: `redis://127.0.0.1:${redisPort}`, NATS_URL: `nats://127.0.0.1:${natsPort}`, NATS_TOKEN: 'local-test-only', NATS_REPLICAS: '1' };
 const natsArgs = ['-a', '127.0.0.1', '-p', String(natsPort), '-js', '-sd', join(root, 'jetstream'), '--auth', env.NATS_TOKEN];
 let valkey = launch(process.env.VALKEY_SERVER_BIN, ['--bind', '127.0.0.1', '--port', String(redisPort), '--save', '', '--appendonly', 'no']);
 let nats = launch(process.env.NATS_SERVER_BIN, natsArgs);
