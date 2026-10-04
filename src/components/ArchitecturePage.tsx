@@ -464,7 +464,7 @@ export const ArchitecturePage: React.FC<ArchitecturePageProps> = ({
           }`}
         >
           <Database className="w-4 h-4" />
-          <span>3. OSS Adapter-Matrix</span>
+          <span>3. Provider- &amp; Adapter-Matrix</span>
         </button>
 
         <button
@@ -793,12 +793,12 @@ export const ArchitecturePage: React.FC<ArchitecturePageProps> = ({
           <div className="p-5 rounded-2xl bg-[#090e21] border border-emerald-500/30">
             <div className="flex items-center gap-2 text-emerald-300 font-bold">
               <ShieldCheck className="w-4 h-4" />
-              <span>Open-Source-Only Adapter-Matrix</span>
+              <span>OSS-Software + frei konfigurierbare Datenprovider</span>
             </div>
             <p className="mt-2 text-xs text-slate-300 leading-relaxed">
-              Produktiv auswählbar sind ausschließlich Open-Source-Softwareadapter wie CCXT, Hummingbot/Gateway,
-              OpenBB und das DefiLlama SDK. Die Softwarelizenz eines Adapters ersetzt keine Rechte an Marktdaten.
-              Konkrete Upstreams bleiben bis zum nachweisbaren Nutzungs-, Display-, Retention- und Redistribution-Recht fail-closed.
+              CAPITAL-AI verwendet für eigene Adapter- und Infrastrukturkomponenten ausschließlich Open-Source-Software.
+              Externe Datenprovider bleiben in der Matrix auswählbar und dürfen für Architektur- und Pipeline-Blueprints verwendet werden.
+              Erst die Production-Aktivierung ist an nachweisbare Nutzungs-, Display-, Retention- und Redistribution-Rechte gebunden.
             </p>
             <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
               <div className="p-3 rounded-xl bg-black/40 border border-slate-800">CCXT · MIT · Market Ingress</div>
@@ -809,7 +809,7 @@ export const ArchitecturePage: React.FC<ArchitecturePageProps> = ({
           </div>
         </div>
       )}
-      {false && activeTab === 'providers' && (
+      {activeTab === 'providers' && (
         <div className="space-y-6 animate-fadeIn">
           {/* Header Controls & Category Filters */}
           <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-[#090e21] border border-slate-800">

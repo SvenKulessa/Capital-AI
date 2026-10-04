@@ -23,7 +23,7 @@ export interface CatalogToolEntry {
   latencyMs: number;
   specs: string;
   bafinStandard: string;
-  licenseType: 'Repository Open Source' | 'Open Source MIT' | 'Open Source Apache-2.0' | 'Open Source BSD-3-Clause' | 'N/A (configuration)';
+  licenseType: 'Repository Open Source' | 'Open Source MIT' | 'Open Source Apache-2.0' | 'Open Source BSD-3-Clause' | 'External Provider Terms Required' | 'Public/Sovereign Data Terms' | 'N/A (configuration)';
   revenueAssuranceGrade: 'A+' | 'A' | 'B' | 'Safe' | 'Attention';
   keyFormulas?: string[];
 }
@@ -337,7 +337,91 @@ export const MASTER_TOOL_CATALOG: Record<string, CatalogToolEntry> = {
     revenueAssuranceGrade: 'Safe',
   },
 
-  // --- LAYER 4: CACHING & MEMORY ARCHITECTURE ---
+  
+  // External providers remain selectable for configuration/blueprint creation.
+  // Their presence here does NOT imply production admission or open-source status.
+  'twelvedata': {
+    sku: 'CAP-L3-TWELVE',
+    layerNumber: 3,
+    layerName: 'Ebene 3: Externer Datenprovider',
+    id: 'twelvedata',
+    name: 'TwelveData Financial Feeds',
+    subtitle: 'Aktien, Forex, Rohstoffe & historische Daten',
+    category: 'External Market Data Provider',
+    monthlyCostEur: 8.5,
+    latencyContribution: 'Provider-/Tarif-abhängig',
+    latencyMs: 65,
+    specs: 'REST + WebSocket; Auswahl für Pipeline-Blueprints zulässig',
+    bafinStandard: 'Production BLOCKED bis Nutzungs-/Display-/Retention-/Redistribution-Evidence',
+    licenseType: 'External Provider Terms Required',
+    revenueAssuranceGrade: 'Attention',
+  },
+  'fred': {
+    sku: 'CAP-L3-FRED',
+    layerNumber: 3,
+    layerName: 'Ebene 3: Externer Datenprovider',
+    id: 'fred',
+    name: 'Federal Reserve Bank of St. Louis (FRED)',
+    subtitle: 'Makro- und Zinsdaten',
+    category: 'External Public Data Provider',
+    monthlyCostEur: 0.0,
+    latencyContribution: 'Endpoint-abhängig',
+    latencyMs: 135,
+    specs: 'REST API; Auswahl für Pipeline-Blueprints zulässig',
+    bafinStandard: 'Nutzungs-/Weitergaberechte separat verifizieren',
+    licenseType: 'Public/Sovereign Data Terms',
+    revenueAssuranceGrade: 'Safe',
+  },
+  'binance': {
+    sku: 'CAP-L3-BINANCE',
+    layerNumber: 3,
+    layerName: 'Ebene 3: Externer Datenprovider',
+    id: 'binance',
+    name: 'Binance Market Data Engine',
+    subtitle: 'Krypto Trades, Ticker & Orderbuch',
+    category: 'External Market Data Provider',
+    monthlyCostEur: 0.0,
+    latencyContribution: 'Venue-/Netzwerk-abhängig',
+    latencyMs: 20,
+    specs: 'REST + WebSocket; Auswahl für Pipeline-Blueprints zulässig',
+    bafinStandard: 'Production BLOCKED bis Datenrechte-Evidence',
+    licenseType: 'External Provider Terms Required',
+    revenueAssuranceGrade: 'Attention',
+  },
+  'kraken': {
+    sku: 'CAP-L3-KRAKEN',
+    layerNumber: 3,
+    layerName: 'Ebene 3: Externer Datenprovider',
+    id: 'kraken',
+    name: 'Kraken Financial Ingestion',
+    subtitle: 'Krypto / EUR Marktdaten',
+    category: 'External Market Data Provider',
+    monthlyCostEur: 0.0,
+    latencyContribution: 'Venue-/Netzwerk-abhängig',
+    latencyMs: 25,
+    specs: 'REST + WebSocket; Auswahl für Pipeline-Blueprints zulässig',
+    bafinStandard: 'Production BLOCKED bis Datenrechte-Evidence',
+    licenseType: 'External Provider Terms Required',
+    revenueAssuranceGrade: 'Attention',
+  },
+  'alchemy': {
+    sku: 'CAP-L3-ALCHEMY',
+    layerNumber: 3,
+    layerName: 'Ebene 3: Externer Datenprovider',
+    id: 'alchemy',
+    name: 'Alchemy Supernode RPC',
+    subtitle: 'EVM RPC & On-Chain Events',
+    category: 'External On-Chain Provider',
+    monthlyCostEur: 0.0,
+    latencyContribution: 'Netzwerk-/Tarif-abhängig',
+    latencyMs: 55,
+    specs: 'RPC + WebSocket; Auswahl für Pipeline-Blueprints zulässig',
+    bafinStandard: 'Production BLOCKED bis Datenrechte-/Nutzungs-Evidence',
+    licenseType: 'External Provider Terms Required',
+    revenueAssuranceGrade: 'Attention',
+  },
+
+// --- LAYER 4: CACHING & MEMORY ARCHITECTURE ---
   'valkey-hotstate': {
     sku: 'CAP-L4-VALKEY',
     layerNumber: 4,
