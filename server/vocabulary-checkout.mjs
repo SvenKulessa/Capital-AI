@@ -231,6 +231,7 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
           const state = await access(user.userId);
           json(res, 200, {
             entitled: Boolean(state?.quantProEntitled),
+            quizUsed: Boolean(state?.quizUsed),
             sessionId: grantedSessionId,
             entitlementSource: state?.entitlementSource || null,
           });
