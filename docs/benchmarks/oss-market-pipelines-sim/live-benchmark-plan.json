@@ -975,5 +975,11 @@
     "Commercial provider/product scopes and recurring subscription cost model unverified",
     "CADS release-class mapping and commercial-derived-use contract gaps unresolved",
     "No admitted Open-Source + qualifying Open-Data source for production"
-  ]
+  ],
+  "commercialEvidenceSnapshot": {
+    "path": "docs/licenses/oss-market-stack/commercial-review-20261003.json",
+    "sourceMainSha": "54fb8c55c4f5562d977f1095db2c73877acdc270",
+    "observedAt": "2026-10-03",
+    "status": "PARTIAL_REVIEW_NOT_PRODUCTION_AUTHORIZATION"
+  }
 }
