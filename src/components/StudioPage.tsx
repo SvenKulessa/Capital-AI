@@ -1041,7 +1041,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
                 Sub-20ms High-Frequency Setup
               </h3>
               <p className="text-xs text-slate-400 mt-1">
-                Provider-neutrale OSS-Ingestion mit Fastest-Arrival-Wins, NATS JetStream für Events/Replay und Valkey 8 für Hot-State.
+                OSS-Adapter mit frei wählbaren Datenprovidern, NATS JetStream für Events/Replay und Valkey 8 für Hot-State.
               </p>
               <div className="mt-3 text-xs font-mono text-cyan-400 flex items-center gap-1">
                 <span>Setup konfigurieren</span>
@@ -1561,8 +1561,9 @@ export const StudioPage: React.FC<StudioPageProps> = ({
             </h3>
             <p className="text-xs text-slate-300 leading-relaxed">
               Die Produktarchitektur nutzt ausschließlich Open-Source-Softwarekomponenten. CCXT/OpenBB dienen als Adapterebene,
-              NATS JetStream als Event-/Replay-Backbone und Valkey 8 als Hot-State Cache. Konkrete Upstream-Datenquellen
-              bleiben bis zum nachweisbaren Nutzungs-, Display-, Retention- und Redistribution-Recht fail-closed; Infrastrukturkosten sind keine Datenlizenzkosten.
+              NATS JetStream als Event-/Replay-Backbone und Valkey 8 als Hot-State Cache. Externe Provider wie Binance,
+              Kraken, TwelveData oder FRED bleiben für Konfiguration und Blueprint-Erstellung auswählbar; erst Production
+              benötigt den nachweisbaren Nutzungs-, Display-, Retention- und Redistribution-Rechte-Status.
             </p>
           </div>
 
@@ -1595,7 +1596,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
             {/* 8 Stages Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {[
-                { step: '01', name: 'Ingestion & Raw Capture', tech: 'CCXT/OpenBB OSS Adapter', timeout: '1500ms', status: 'Gated' },
+                { step: '01', name: 'Ingestion & Raw Capture', tech: 'OSS Adapter + gewählter Provider', timeout: '1500ms', status: 'Gated' },
                 { step: '02', name: 'Normalization & Identity', tech: 'ISIN / FIGI Mapping', timeout: '800ms', status: 'Optimal' },
                 { step: '03', name: 'Validation & Outlier Check', tech: '11 Plausibilitätsregeln', timeout: '1000ms', status: 'Enforced' },
                 { step: '04', name: 'Feature Engineering', tech: '7 Feature-Familien', timeout: '2500ms', status: 'Active' },
