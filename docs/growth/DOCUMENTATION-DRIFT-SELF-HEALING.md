@@ -2,7 +2,7 @@
 
 Primary Domain: **GROWTH**. Technical authority: **PLATFORM**. Security/compliance authority: **TRUST**.
 
-Current-main baseline for this slice: `c1a720a32a054c16944e6c582086a509be137fc4`.
+Implementation base for DOC-SH-01 before merge: `c1a720a32a054c16944e6c582086a509be137fc4`.
 
 ## Purpose
 
@@ -28,11 +28,11 @@ The profile uses the canonical five stages:
 
 The first implementation stops after deterministic detection/classification. `autoRepairEnabled=false`; findings are report/PR input only. Promotion to an automatic invariant requires at least three independent positive validation cycles with the same repair fingerprint `STALE_CURRENT_MAIN_METADATA@1`.
 
-The detector may identify `STALE_DOCUMENTARY_PROJECTION`, but it may not promote Security, license, compliance, deployment or public-production claims. Missing evidence remains fail closed.
+The detector may identify `STALE_DOCUMENTARY_PROJECTION`, but it may not promote Security, license, compliance, deployment or public-production claims. Missing evidence remains fail closed. A Living Document must not embed an exact SHA as a durable `current main` promise; the stable remediation is to reclassify that value as an immutable implementation/audit baseline or consume generated current-state metadata.
 
 ## Validation observation
 
-The first real post-merge observation occurred when PR #131 advanced main from `de4c268311c42877f8a7e1361e7de986ffb096cb` to `c1a720a32a054c16944e6c582086a509be137fc4`. The initial detector revision did not recognize the hyphenated phrase `Current-main baseline for this slice`; that false negative is intentionally not counted as a positive cycle. The parser and regression suite now include this exact wording and require post-fix verification before Cycle 1/3 is accepted.
+The first real post-merge observation occurred when PR #131 advanced main from `de4c268311c42877f8a7e1361e7de986ffb096cb` to `c1a720a32a054c16944e6c582086a509be137fc4`. The initial detector revision did not recognize the hyphenated phrase `Current-main baseline for this slice`; that false negative is intentionally not counted as a positive cycle. The parser and regression suite now include this exact wording. The remediation also removes the self-referential `current main` promise instead of chasing the SHA after every merge.
 
 ## Run locally
 
