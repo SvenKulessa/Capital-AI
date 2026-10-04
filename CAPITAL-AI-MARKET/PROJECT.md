@@ -15,5 +15,5 @@ Branch-Präfix: `capital-ai-market/`
 PR-Präfix: `[CAPITAL-AI-MARKET]`
 
 ## Branding
-Badge: `market.webp` — Türkis / Dunkelgrün; Marktbalken mit Kursimpuls.
+Badge: `badge.svg` — Türkis / Dunkelgrün; Marktbalken mit Kursimpuls.
 Lizenznachweis: `market.LICENSE.md`.

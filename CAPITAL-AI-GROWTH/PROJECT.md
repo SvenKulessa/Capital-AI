@@ -15,5 +15,5 @@ Branch-Präfix: `capital-ai-growth/`
 PR-Präfix: `[CAPITAL-AI-GROWTH]`
 
 ## Branding
-Badge: `growth.webp` — Gold / Dunkelbraun; Blatt mit aufsteigendem Pfeil.
+Badge: `badge.svg` — Gold / Dunkelbraun; Blatt mit aufsteigendem Pfeil.
 Lizenznachweis: `growth.LICENSE.md`.

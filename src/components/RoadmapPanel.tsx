@@ -1,6 +1,6 @@
 import React from 'react';
 import { PROJECT_OWNERS, ROADMAP_SNAPSHOT, ROADMAP_STAGES, WORK_PACKAGES } from '../data/roadmapData';
-import type { RoadmapEvidenceState } from '../data/roadmapData';
+import type { ProjectOwner, RoadmapEvidenceState } from '../data/roadmapData';
 
 const STATES: Record<RoadmapEvidenceState, { label: string; style: string }> = {
   VERIFIED: { label: 'VERIFIED · Repo umgesetzt', style: 'border-emerald-400/40 text-emerald-300' },
@@ -8,6 +8,10 @@ const STATES: Record<RoadmapEvidenceState, { label: string; style: string }> = {
   GEHALTEN: { label: 'GEHALTEN · Freigabe ausstehend', style: 'border-rose-400/40 text-rose-300' },
   UNGEKLÄRT: { label: 'UNGEKLÄRT · Backlog-Ziel', style: 'border-slate-600 text-slate-300' },
 };
+
+const PROJECT_OWNER_BY_ID = new Map<ProjectOwner, (typeof PROJECT_OWNERS)[number]>(
+  PROJECT_OWNERS.map(project => [project.id, project]),
+);
 
 export const RoadmapPanel: React.FC = () => {
   const [owner, setOwner] = React.useState('');
@@ -32,6 +36,25 @@ export const RoadmapPanel: React.FC = () => {
         <p className="text-xs">{STATES[key].label}</p>
       </div>)}
     </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-2 my-4" aria-label="CAPITAL-AI Roadmap Domains">
+      {PROJECT_OWNERS.map(project => {
+        const selected = owner === project.id;
+        return <button
+          key={project.id}
+          type="button"
+          aria-pressed={selected}
+          onClick={() => setOwner(current => current === project.id ? '' : project.id)}
+          className={`rounded-xl border bg-slate-950/70 p-2 text-left transition ${project.badgeColor} ${selected ? 'ring-2 ring-current' : 'hover:bg-slate-900'}`}
+          title={project.description}
+        >
+          <img
+            src={project.badgeAsset}
+            alt={`${project.label} Branding-Badge`}
+            className="block h-auto w-full max-w-[360px]"
+          />
+        </button>;
+      })}
+    </div>
     <details className="text-sm text-slate-400 mb-4">
       <summary className="cursor-pointer">Phasen und Abschlussprüfung</summary>
       <ul className="mt-2 space-y-2">{ROADMAP_STAGES.map(phase => <li key={phase.id}>{phase.shortTitle}: Gesamt-Abnahme offen. {phase.description}</li>)}</ul>
@@ -55,22 +78,33 @@ export const RoadmapPanel: React.FC = () => {
     </div>
     <p className="text-sm text-slate-400 mb-3" role="status">{packages.length} von {WORK_PACKAGES.length} Arbeitspaketen</p>
     <div className="grid gap-3 lg:grid-cols-2">
-      {packages.map(item => <article key={item.id} className="rounded-xl border border-slate-700 bg-slate-900 p-4 min-w-0">
-        <div className="flex flex-wrap items-center gap-2 mb-2">
-          <span className={`text-xs rounded-full border px-2 py-1 ${STATES[item.evidenceState].style}`}>{STATES[item.evidenceState].label}</span>
-          <span className="text-xs text-slate-400">{item.owner} · {item.id}</span>
-        </div>
-        <h3 className="font-semibold">{item.title}</h3>
-        <p className="text-sm text-slate-400 mt-2">{item.description}</p>
-        <details className="mt-3 text-sm">
-          <summary className="cursor-pointer text-amber-300">Nächster Schritt und Nachweise</summary>
-          <p className="mt-2">{item.nextStep}</p>
-          {item.evidenceRefs.length > 0 ? <ul className="mt-2 space-y-1">{item.evidenceRefs.map(ref => <li key={ref}>
-            <a className="text-emerald-300 underline break-all" href={ref.startsWith('https://') ? ref : `https://github.com/${ROADMAP_SNAPSHOT.repository}/blob/${ROADMAP_SNAPSHOT.sourceSha}/${ref}`}>{ref}</a>
-          </li>)}</ul> : <p className="text-slate-400 mt-2">Für den vollständigen Zielumfang wurde in diesem Abgleich kein Abschlussnachweis zugeordnet.</p>}
-          {item.dependencies && <p className="text-slate-400 mt-2">Abhängigkeiten: {item.dependencies.join(', ')}</p>}
-        </details>
-      </article>)}
+      {packages.map(item => {
+        const project = PROJECT_OWNER_BY_ID.get(item.owner);
+        return <article key={item.id} className="rounded-xl border border-slate-700 bg-slate-900 p-4 min-w-0">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-3">
+            {project && <img
+              src={project.badgeAsset}
+              alt={`${project.label} Branding-Badge`}
+              loading="lazy"
+              className="h-auto w-full max-w-[280px] sm:max-w-[240px]"
+            />}
+            <span className={`self-start text-xs rounded-full border px-2 py-1 ${STATES[item.evidenceState].style}`}>{STATES[item.evidenceState].label}</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <span className="text-xs text-slate-400">{project?.label ?? item.owner} · {item.id}</span>
+          </div>
+          <h3 className="font-semibold">{item.title}</h3>
+          <p className="text-sm text-slate-400 mt-2">{item.description}</p>
+          <details className="mt-3 text-sm">
+            <summary className="cursor-pointer text-amber-300">Nächster Schritt und Nachweise</summary>
+            <p className="mt-2">{item.nextStep}</p>
+            {item.evidenceRefs.length > 0 ? <ul className="mt-2 space-y-1">{item.evidenceRefs.map(ref => <li key={ref}>
+              <a className="text-emerald-300 underline break-all" href={ref.startsWith('https://') ? ref : `https://github.com/${ROADMAP_SNAPSHOT.repository}/blob/${ROADMAP_SNAPSHOT.sourceSha}/${ref}`}>{ref}</a>
+            </li>)}</ul> : <p className="text-slate-400 mt-2">Für den vollständigen Zielumfang wurde in diesem Abgleich kein Abschlussnachweis zugeordnet.</p>}
+            {item.dependencies && <p className="text-slate-400 mt-2">Abhängigkeiten: {item.dependencies.join(', ')}</p>}
+          </details>
+        </article>;
+      })}
     </div>
     {packages.length === 0 && <p className="text-slate-400 p-4">Keine Arbeitspakete für diese Filter.</p>}
   </section>;

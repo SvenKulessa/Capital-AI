@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "1.0.0",
+  "assetSet": "CAPITAL-AI Roadmap Domain Badges",
+  "generatedAt": "2026-10-04",
+  "sourceRepository": "SvenKulessa/Capital-AI",
+  "sourceBaseline": "984a374910a8065ef6580c90441e0b63e8fecbd8",
+  "financeReference": {
+    "repository": "SvenKulessa/Finance",
+    "currentMain": "dcef421fe6e350a3a2ade61d0299aad9ecca213c",
+    "socialMediaEngine": [
+      "src/platform/SocialMediaEngine/Contracts/MediaProject.ts",
+      "src/platform/SocialMediaEngine/Editing/MediaStudioTemplates.ts",
+      "src/platform/SocialMediaEngine/Visualization/PlanningVisual.ts",
+      "src/platform/SocialMediaEngine/Visualization/D3PlanningVisualAdapter.ts"
+    ],
+    "brandAuthority": "docs/frontend/design-tokens.json"
+  },
+  "assets": [
+    {
+      "domain": "PRODUCT",
+      "path": "CAPITAL-AI-PRODUCT/badge.svg",
+      "sha256": "fc343ec0fc91d6da1e335be7d72bbaeea988f6dead418dbb5ea03105d47432ce",
+      "license": "CAPITAL-AI-PRODUCT/produkt.LICENSE.md"
+    },
+    {
+      "domain": "TRUST",
+      "path": "CAPITAL-AI-TRUST/badge.svg",
+      "sha256": "2b037fd897c592931c94fcee8781af398d2ac6564e3575d4cf3ee62c770e7dad",
+      "license": "CAPITAL-AI-TRUST/trust.LICENSE.md"
+    },
+    {
+      "domain": "MARKET",
+      "path": "CAPITAL-AI-MARKET/badge.svg",
+      "sha256": "22655ab6a7f19e5d100832dd39126ea661f41abe5609dca6db58b00fd1462c13",
+      "license": "CAPITAL-AI-MARKET/market.LICENSE.md"
+    },
+    {
+      "domain": "GROWTH",
+      "path": "CAPITAL-AI-GROWTH/badge.svg",
+      "sha256": "9020b03cb8cc8c82c715d566c0065b8725647c06f0340615c825b221a563c76f",
+      "license": "CAPITAL-AI-GROWTH/growth.LICENSE.md"
+    },
+    {
+      "domain": "PLATFORM",
+      "path": "CAPITAL-AI-PLATFORM/badge.svg",
+      "sha256": "2e4807c864195781f314452f4aa5f285e0feb71c408f467d3610a20d5b7292f0",
+      "license": "CAPITAL-AI-PLATFORM/plattform.LICENSE.md"
+    }
+  ]
+}

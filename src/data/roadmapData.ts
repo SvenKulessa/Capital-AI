@@ -108,6 +108,9 @@ export const PROJECT_OWNERS: {
   label: string;
   lead: string;
   badgeColor: string;
+  badgeAsset: string;
+  badgeSha256: string;
+  licensePath: string;
   description: string;
 }[] = [
   {
@@ -115,6 +118,9 @@ export const PROJECT_OWNERS: {
     label: 'CAPITAL-AI-PRODUCT',
     lead: 'Owner + AI Apps',
     badgeColor: 'border-pink-400/40 bg-rose-950/40 text-pink-300',
+    badgeAsset: new URL('../../CAPITAL-AI-PRODUCT/badge.svg', import.meta.url).href,
+    badgeSha256: 'fc343ec0fc91d6da1e335be7d72bbaeea988f6dead418dbb5ea03105d47432ce',
+    licensePath: 'CAPITAL-AI-PRODUCT/produkt.LICENSE.md',
     description: 'Frontend, Agent Client, UX, Konto/Profil und produktnahe Nutzerflüsse.',
   },
   {
@@ -122,6 +128,9 @@ export const PROJECT_OWNERS: {
     label: 'CAPITAL-AI-MARKET',
     lead: 'Owner + AI Apps',
     badgeColor: 'border-teal-400/40 bg-teal-950/40 text-teal-300',
+    badgeAsset: new URL('../../CAPITAL-AI-MARKET/badge.svg', import.meta.url).href,
+    badgeSha256: '22655ab6a7f19e5d100832dd39126ea661f41abe5609dca6db58b00fd1462c13',
+    licensePath: 'CAPITAL-AI-MARKET/market.LICENSE.md',
     description: 'Fintech, Provider, Scoring, Screener, Market Data und Daten-Evidence.',
   },
   {
@@ -129,6 +138,9 @@ export const PROJECT_OWNERS: {
     label: 'CAPITAL-AI-PLATFORM',
     lead: 'Owner + AI Apps',
     badgeColor: 'border-violet-400/40 bg-violet-950/40 text-violet-300',
+    badgeAsset: new URL('../../CAPITAL-AI-PLATFORM/badge.svg', import.meta.url).href,
+    badgeSha256: '2e4807c864195781f314452f4aa5f285e0feb71c408f467d3610a20d5b7292f0',
+    licensePath: 'CAPITAL-AI-PLATFORM/plattform.LICENSE.md',
     description: 'Render, Docker/OCI, GHCR, NATS, Valkey, CI/CD, Observability und Release Automation.',
   },
   {
@@ -136,6 +148,9 @@ export const PROJECT_OWNERS: {
     label: 'CAPITAL-AI-TRUST',
     lead: 'Owner + AI Apps',
     badgeColor: 'border-slate-300/40 bg-slate-800/40 text-slate-200',
+    badgeAsset: new URL('../../CAPITAL-AI-TRUST/badge.svg', import.meta.url).href,
+    badgeSha256: '2b037fd897c592931c94fcee8781af398d2ac6564e3575d4cf3ee62c770e7dad',
+    licensePath: 'CAPITAL-AI-TRUST/trust.LICENSE.md',
     description: 'Security, Compliance, Governance, QA, Supply Chain und Evidenz-Gates.',
   },
   {
@@ -143,6 +158,9 @@ export const PROJECT_OWNERS: {
     label: 'CAPITAL-AI-GROWTH',
     lead: 'Owner + AI Apps',
     badgeColor: 'border-amber-400/40 bg-amber-950/40 text-amber-300',
+    badgeAsset: new URL('../../CAPITAL-AI-GROWTH/badge.svg', import.meta.url).href,
+    badgeSha256: '9020b03cb8cc8c82c715d566c0065b8725647c06f0340615c825b221a563c76f',
+    licensePath: 'CAPITAL-AI-GROWTH/growth.LICENSE.md',
     description: 'Dokumentation, SEO, Social, Branding und releasebezogene Kommunikation.',
   },
 ];
