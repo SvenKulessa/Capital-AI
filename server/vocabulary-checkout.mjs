@@ -1,5 +1,4 @@
 import { boundedJson, secureUrl } from './http-security.mjs';
-import { QUANT_PRO_TERMS } from './vocabulary-quant-pro.mjs';
 
 const DEFAULT_VOCABULARY_PRICE_ID = 'price_1UMiuIPKr4joNbEclpn8AwFW';
 const DEFAULT_VOCABULARY_PRODUCT_ID = 'prod_VNTsrtlf2ZL8ja';
@@ -176,10 +175,17 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
             json(res, 403, { error: 'vocabulary_entitlement_required' });
             return true;
           }
+          const terms = await rpc(fetchImpl, supabase, 'capital_ai_get_quant_pro_vocabulary', {
+            _user_id: user.userId,
+          });
+          if (!Array.isArray(terms)) {
+            json(res, 403, { error: 'vocabulary_entitlement_required' });
+            return true;
+          }
           json(res, 200, {
             schema: 'CAPITAL_AI_QUANT_PRO_VOCABULARY@1',
-            count: QUANT_PRO_TERMS.length,
-            terms: QUANT_PRO_TERMS,
+            count: terms.length,
+            terms,
           });
         } catch {
           json(res, 503, { error: 'vocabulary_access_unavailable' });
