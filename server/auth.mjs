@@ -172,6 +172,17 @@ function writeSessionCookies(req, res, config, token) {
   return payload;
 }
 
+async function readRequestForm(req) {
+  const chunks = [];
+  let bytes = 0;
+  for await (const chunk of req) {
+    bytes += chunk.length;
+    if (bytes > 4096) throw new Error('REQUEST_TOO_LARGE');
+    chunks.push(chunk);
+  }
+  return new URLSearchParams(Buffer.concat(chunks).toString('utf8'));
+}
+
 async function readRequestJson(req) {
   const chunks = [];
   let bytes = 0;
@@ -202,8 +213,18 @@ function normalizeNewPassword(value) {
 
 export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.now, audit = console.info } = {}) {
   const allow = createLimiter(30, 60_000, 1, now);
+  const mobileTransfers = new Map();
 
   const getConfig = () => configured(env);
+  const pruneMobileTransfers = () => {
+    for (const [key, value] of mobileTransfers) {
+      if (!value || value.expires <= now()) mobileTransfers.delete(key);
+    }
+  };
+  const mobileChallenge = value =>
+    /^[A-Za-z0-9_-]{43}$/.test(String(value || '')) ? String(value) : '';
+  const mobileVerifier = value =>
+    /^[A-Za-z0-9._~-]{43,128}$/.test(String(value || '')) ? String(value) : '';
 
   async function authRequest(config, path, { method = 'GET', body, accessToken } = {}) {
     const headers = { Accept: 'application/json', apikey: config.publishableKey };
@@ -279,6 +300,8 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       'login',
       'login/email',
       'login/google',
+      'mobile-login',
+      'mobile-exchange',
       'register',
       'callback',
       'session',
@@ -339,6 +362,88 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       }
       res.writeHead(303, {
         Location: '/api/auth/login/google?next=%2Fprofile',
+        'Cache-Control': 'no-store',
+        'Referrer-Policy': 'no-referrer',
+      });
+      res.end();
+      return true;
+    }
+
+    if (action === 'mobile-login') {
+      if (req.method !== 'GET') {
+        res.setHeader('Allow', 'GET');
+        json(res, 405, { error: 'method_not_allowed' });
+        return true;
+      }
+      const challenge = mobileChallenge(url.searchParams.get('challenge'));
+      if (!challenge) {
+        json(res, 400, { error: 'invalid_mobile_challenge' });
+        return true;
+      }
+      const verifier = randomBytes(64).toString('base64url');
+      const pkceChallenge = createHash('sha256').update(verifier).digest('base64url');
+      const flow = random();
+      const callback = new URL('/api/auth/callback', config.origin);
+      callback.searchParams.set('flow', flow);
+      appendCookie(
+        res,
+        cookie(
+          PKCE_COOKIE,
+          signEnvelope(config, {
+            version: 1,
+            flow,
+            verifier,
+            next: '/mobile-scorer',
+            mobileChallenge: challenge,
+            expires: now() + PKCE_MAX_AGE_SECONDS * 1000,
+          }),
+          PKCE_MAX_AGE_SECONDS,
+        ),
+      );
+      const target = new URL('/auth/v1/authorize', config.url);
+      target.searchParams.set('provider', 'google');
+      target.searchParams.set('redirect_to', callback.toString());
+      target.searchParams.set('code_challenge', pkceChallenge);
+      target.searchParams.set('code_challenge_method', 's256');
+      res.writeHead(303, {
+        Location: target.toString(),
+        'Cache-Control': 'no-store',
+        'Referrer-Policy': 'no-referrer',
+      });
+      res.end();
+      return true;
+    }
+
+    if (action === 'mobile-exchange') {
+      if (req.method !== 'POST') {
+        res.setHeader('Allow', 'POST');
+        json(res, 405, { error: 'method_not_allowed' });
+        return true;
+      }
+      pruneMobileTransfers();
+      let form;
+      try {
+        form = await readRequestForm(req);
+      } catch {
+        json(res, 400, { error: 'invalid_mobile_exchange' });
+        return true;
+      }
+      const code = String(form.get('code') || '');
+      const verifier = mobileVerifier(form.get('verifier'));
+      const transfer = mobileTransfers.get(code);
+      if (
+        !transfer ||
+        !verifier ||
+        createHash('sha256').update(verifier).digest('base64url') !== transfer.challenge
+      ) {
+        if (transfer) mobileTransfers.delete(code);
+        json(res, 400, { error: 'invalid_mobile_exchange' });
+        return true;
+      }
+      mobileTransfers.delete(code);
+      writeSessionCookies(req, res, config, transfer.token);
+      res.writeHead(303, {
+        Location: '/mobile-scorer',
         'Cache-Control': 'no-store',
         'Referrer-Policy': 'no-referrer',
       });
@@ -407,8 +512,28 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
         json(res, 400, { error: 'authentication_failed' });
         return true;
       }
-      writeSessionCookies(req, res, config, exchanged.data);
       audit('Supabase authentication verified at oauth_callback');
+      if (flowCookie.mobileChallenge) {
+        pruneMobileTransfers();
+        if (mobileTransfers.size >= 100) {
+          json(res, 503, { error: 'mobile_transfer_busy' });
+          return true;
+        }
+        const transferCode = random();
+        mobileTransfers.set(transferCode, {
+          token: exchanged.data,
+          challenge: flowCookie.mobileChallenge,
+          expires: now() + 60_000,
+        });
+        res.writeHead(303, {
+          Location: `capitalai-private://auth/callback?code=${encodeURIComponent(transferCode)}`,
+          'Cache-Control': 'no-store',
+          'Referrer-Policy': 'no-referrer',
+        });
+        res.end();
+        return true;
+      }
+      writeSessionCookies(req, res, config, exchanged.data);
       res.writeHead(303, {
         Location: normalizePath(flowCookie.next),
         'Cache-Control': 'no-store',
