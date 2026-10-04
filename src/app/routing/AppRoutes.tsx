@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import { LoginPage } from '../../components/LoginPage';
+import { LoginPage } from '../../features/auth/LoginPage';
 import {
   LegalAndFaqPages,
   type LegalRoute,
@@ -47,7 +47,7 @@ const StudioPage = lazy(() =>
   })),
 );
 const LearningPortalPage = lazy(() =>
-  import('../../components/LearningPortalPage').then((module) => ({
+  import('../../features/learning/LearningPortalPage').then((module) => ({
     default: module.LearningPortalPage,
   })),
 );

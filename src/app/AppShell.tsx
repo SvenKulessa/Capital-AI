@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Monitor, Smartphone } from 'lucide-react';
-import { PriceAlertToast } from '../components/PriceAlertToast';
+import { PriceAlertToast } from '../features/alerts/PriceAlertToast';
 import { StatusBar } from '../shared/ui/StatusBar';
 import { usePriceAlerts } from '../context/PriceAlertsContext';
 import { CORE_MODULES } from '../data/mockData';

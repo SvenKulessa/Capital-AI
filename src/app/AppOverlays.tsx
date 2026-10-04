@@ -43,22 +43,22 @@ const SubclassDetailModal = lazy(() =>
   })),
 );
 const MarketVocabularyModal = lazy(() =>
-  import('../components/MarketVocabularyModal').then((module) => ({
+  import('../features/learning/MarketVocabularyModal').then((module) => ({
     default: module.MarketVocabularyModal,
   })),
 );
 const PriceAlertsModal = lazy(() =>
-  import('../components/PriceAlertsModal').then((module) => ({
+  import('../features/alerts/PriceAlertsModal').then((module) => ({
     default: module.PriceAlertsModal,
   })),
 );
 const WhaleRadarModal = lazy(() =>
-  import('../components/WhaleRadarModal').then((module) => ({
+  import('../features/whale-radar/WhaleRadarModal').then((module) => ({
     default: module.WhaleRadarModal,
   })),
 );
 const MonetizationModal = lazy(() =>
-  import('../components/MonetizationModal').then((module) => ({
+  import('../features/pricing/MonetizationModal').then((module) => ({
     default: module.MonetizationModal,
   })),
 );
