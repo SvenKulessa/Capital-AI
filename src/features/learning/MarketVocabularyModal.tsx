@@ -46,6 +46,7 @@ import {
   VocabularyCategory,
   VocabularyTerm,
 } from '../../data/vocabularyData';
+import { VOCABULARY_GRANT_KEY, VOCABULARY_OFFER, formatVocabularyPrice } from '../../data/vocabularyOffer';
 
 interface MarketVocabularyModalProps {
   isOpen: boolean;
@@ -64,6 +65,27 @@ export const MarketVocabularyModal: React.FC<MarketVocabularyModalProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<VocabularyCategory>('ALL');
   const [expandedTermId, setExpandedTermId] = useState<string | null>('enterprise-scorer');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [entitled, setEntitled] = useState(false);
+  const [withdrawalWaived, setWithdrawalWaived] = useState(false);
+  const [checkoutError, setCheckoutError] = useState('');
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const stored = window.localStorage.getItem(VOCABULARY_GRANT_KEY);
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('vocabulary_session') || stored || '';
+    if (!sessionId) return;
+    void fetch(`/api/billing/vocabulary/entitlement?session_id=${encodeURIComponent(sessionId)}`)
+      .then((response) => response.json())
+      .then((body) => {
+        if (body?.entitled) {
+          window.localStorage.setItem(VOCABULARY_GRANT_KEY, sessionId);
+          setEntitled(true);
+        }
+      })
+      .catch(() => setCheckoutError('Freischaltung gerade nicht pruefbar.'));
+  }, [isOpen]);
+
 
   // Category Icon helper
   const getCategoryIcon = (cat: VocabularyCategory) => {
@@ -127,6 +149,29 @@ export const MarketVocabularyModal: React.FC<MarketVocabularyModalProps> = ({
       return matchesTerm || matchesAbbr || matchesDef || matchesDetailed || matchesTags || matchesThesaurus;
     });
   }, [searchTerm, selectedCategory]);
+
+  const visibleTerms = entitled ? filteredTerms : filteredTerms.slice(0, VOCABULARY_OFFER.previewCount);
+  const lockedCount = Math.max(0, filteredTerms.length - visibleTerms.length);
+
+  const startCheckout = async () => {
+    setCheckoutError('');
+    if (!withdrawalWaived) {
+      setCheckoutError('Widerrufsverzicht ist fuer digitale Inhalte erforderlich.');
+      return;
+    }
+    const response = await fetch('/api/billing/vocabulary/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ withdrawalWaived: true }),
+    });
+    const body = await response.json();
+    if (!response.ok || !body.url) {
+      setCheckoutError('Checkout ist nicht verfuegbar.');
+      return;
+    }
+    window.location.assign(body.url);
+  };
+
 
   const handleCopyDefinition = (term: VocabularyTerm, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -242,7 +287,7 @@ export const MarketVocabularyModal: React.FC<MarketVocabularyModalProps> = ({
 
         {/* GLOSSARY LIST CONTENT */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 divide-y divide-slate-800/40">
-          {filteredTerms.length === 0 ? (
+          {visibleTerms.length === 0 ? (
             <div className="py-12 text-center">
               <BookOpen className="w-10 h-10 text-slate-600 mx-auto mb-3" />
               <div className="text-sm font-bold text-slate-300">Keine passenden Fachbegriffe gefunden</div>
@@ -261,7 +306,7 @@ export const MarketVocabularyModal: React.FC<MarketVocabularyModalProps> = ({
               </button>
             </div>
           ) : (
-            filteredTerms.map((item) => {
+            visibleTerms.map((item) => {
               const isExpanded = expandedTermId === item.id;
               const isCopied = copiedId === item.id;
 
@@ -345,7 +390,7 @@ export const MarketVocabularyModal: React.FC<MarketVocabularyModalProps> = ({
 
                   {/* Expandable Detailed Section */}
                   <AnimatePresence>
-                    {isExpanded && (
+                    {isExpanded && entitled && (
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
@@ -425,6 +470,17 @@ export const MarketVocabularyModal: React.FC<MarketVocabularyModalProps> = ({
         </div>
 
         {/* MODAL FOOTER */}
+        {!entitled && (
+          <div className="px-4 sm:px-6 py-3 border-t border-amber-400/30 bg-amber-400/10 shrink-0">
+            <p className="text-xs text-amber-100">Vorschau: {VOCABULARY_OFFER.previewCount} Begriffe. {lockedCount} weitere Begriffe, Formeln und Praxisbeispiele sind im Market Vocabulary fuer {formatVocabularyPrice()} freigeschaltet. In Pro und Enterprise enthalten. Keine Anlageberatung.</p>
+            <label className="mt-2 flex items-start gap-2 text-[11px] text-slate-300">
+              <input type="checkbox" checked={withdrawalWaived} onChange={(event) => setWithdrawalWaived(event.target.checked)} className="mt-0.5" />
+              <span>Ich verlange die sofortige Bereitstellung und akzeptiere, dass mein Widerrufsrecht nach § 356 Abs. 5 BGB mit Beginn der Bereitstellung erlischt.</span>
+            </label>
+            {checkoutError && <p className="mt-1 text-[11px] text-rose-300">{checkoutError}</p>}
+            <button type="button" onClick={startCheckout} className="mt-2 rounded-xl bg-amber-400 px-3 py-2 text-xs font-bold text-black">Vocabulary kaufen</button>
+          </div>
+        )}
         <div className="p-4 sm:px-6 bg-[#040816] border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2 text-xs text-slate-400">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
