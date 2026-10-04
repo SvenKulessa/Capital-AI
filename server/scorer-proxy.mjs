@@ -24,9 +24,12 @@ function privateFinanceOrigin(value) {
   }
 }
 
-function admittedSourceCount(policy) {
+function admittedScoringSourceCount(policy) {
   return (policy?.admittedSources || []).filter(
-    source => source?.eligible === true && source?.decision === 'OPEN_SOURCE_OPEN_DATA_ADMITTED',
+    source =>
+      source?.eligible === true &&
+      source?.decision === 'OPEN_SOURCE_OPEN_DATA_ADMITTED' &&
+      source?.capabilities?.scoringPriceInput === true,
   ).length;
 }
 
@@ -104,9 +107,10 @@ export function createScorerProxy({
       return true;
     }
 
-    if (admittedSourceCount(sourcePolicy) === 0) {
+    if (admittedScoringSourceCount(sourcePolicy) === 0) {
       json(res, 503, {
-        error: 'market_source_not_admitted',
+        error: 'scoring_source_not_admitted',
+        requiredCapability: 'scoringPriceInput',
         sourcePolicy: 'OPEN_SOURCE_AND_OPEN_DATA_ONLY',
       });
       return true;
