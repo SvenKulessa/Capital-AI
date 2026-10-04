@@ -1,0 +1,42 @@
+{
+  "schema": "CAPITAL_AI_MOBILE_CI_DIAGNOSTIC@1",
+  "observedAt": "2026-10-05T02:08:00+02:00",
+  "mobilePr": 3,
+  "head": "2c351180076ceb7a620f3beac9dd0da577b41608",
+  "workflowRun": 37244733903,
+  "workflow": "Mobile Quality",
+  "result": "FAIL",
+  "passes": [
+    "UNIT_14_OF_14",
+    "BROWSER",
+    "SOURCE_SECRET_SCAN"
+  ],
+  "expectedMarketFailures": [
+    {
+      "gate": "OSS_SOURCE_ADMISSION",
+      "reason": "OSS_PROVIDER_ADMISSION_REQUIRED"
+    },
+    {
+      "gate": "MULTI_ASSET_LIVE_UNIVERSE",
+      "reason": "OSS_SOURCE_NOT_CONFIGURED"
+    }
+  ],
+  "blockingFailures": [
+    {
+      "gate": "AUTH_CONFIGURATION",
+      "reason": "AUTH_NOT_CONFIGURED"
+    },
+    {
+      "gate": "MOBILE_LOGIN_REDIRECT",
+      "reason": "MOBILE_LOGIN_HTTP_503"
+    }
+  ],
+  "artifact": {
+    "id": 11319010943,
+    "sha256": "844f79a7faaca7e206886e20ce695c5beef7279bf2d2b17afd18c15ac91e20c9"
+  },
+  "marketInterpretation": "MARKET evidence PR is not failing due to the expected source gates; current blocking CI failures are runtime authentication configuration.",
+  "trustStatus": "BLOCKED",
+  "canonicalPayloadSha256": "34a356ba6e0da4c938e291b33ccbfafb780f46ff964cef02e07a23cefce144f7",
+  "hashScope": "UTF-8 JSON with lexicographically sorted keys and separators ',' ':' before adding hash fields"
+}
