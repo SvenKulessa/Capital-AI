@@ -18,6 +18,7 @@
 !server/prompt-injection-guard.test.mjs
 !server/advisor-security.test.mjs
 !server/billing-catalog.mjs
+!server/vocabulary-checkout.mjs
 !server/auth.mjs
 !server/user-provider-vault.mjs
 !server/telegram.mjs
