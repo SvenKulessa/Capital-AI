@@ -3,6 +3,10 @@ import { boundedJson, secureUrl } from './http-security.mjs';
 
 const MAX_BODY_BYTES = 16 * 1024;
 const KRAKEN_BALANCE_PATH = '/0/private/Balance';
+const KRAKEN_TICKER_PATH = '/0/public/Ticker';
+const BYOK_SYMBOLS = Object.freeze({
+  BTCUSD: Object.freeze({ pair: 'XBTUSD', quote: 'USD' }),
+});
 
 function adminConfig(env) {
   try {
@@ -99,6 +103,79 @@ async function krakenBalance(fetchImpl, { apiKey, apiSecret }) {
     throw error;
   }
   return payload.result;
+}
+
+export async function krakenPrivateMarketContext(fetchImpl, credentials, symbol) {
+  const instrument = BYOK_SYMBOLS[String(symbol || '').toUpperCase()];
+  if (!instrument) {
+    const error = new Error('BYOK_SYMBOL_NOT_SUPPORTED');
+    error.code = 'BYOK_SYMBOL_NOT_SUPPORTED';
+    throw error;
+  }
+
+  // Bind every quote request to a live private credential check. The public ticker
+  // response is never promoted to PUBLIC_MARKET_DATA and is never persisted/shared.
+  await krakenBalance(fetchImpl, credentials);
+
+  const target = new URL(KRAKEN_TICKER_PATH, 'https://api.kraken.com');
+  target.searchParams.set('pair', instrument.pair);
+  const response = await fetchImpl(target, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    redirect: 'error',
+    signal: AbortSignal.timeout(7000),
+  });
+  const payload = await boundedJson(response);
+  const rows = payload?.result && typeof payload.result === 'object' ? Object.values(payload.result) : [];
+  const ticker = rows.length === 1 ? rows[0] : null;
+  const price = Number(ticker?.c?.[0]);
+  const bid = Number(ticker?.b?.[0]);
+  const ask = Number(ticker?.a?.[0]);
+  const volume24h = Number(ticker?.v?.[1]);
+
+  if (
+    !response.ok ||
+    !Array.isArray(payload?.error) ||
+    payload.error.length > 0 ||
+    !Number.isFinite(price) ||
+    price <= 0
+  ) {
+    const code = Array.isArray(payload?.error) && payload.error.length
+      ? String(payload.error[0]).slice(0, 120)
+      : `HTTP_${response.status}`;
+    const error = new Error('KRAKEN_PRIVATE_MARKET_CONTEXT_FAILED');
+    error.code = code;
+    throw error;
+  }
+
+  return {
+    schema: 'CAPITAL_AI_BYOK_MARKET_CONTEXT@1',
+    provider: 'kraken',
+    symbol: String(symbol).toUpperCase(),
+    quote: instrument.quote,
+    price,
+    bid: Number.isFinite(bid) && bid > 0 ? bid : null,
+    ask: Number.isFinite(ask) && ask > 0 ? ask : null,
+    volume24h: Number.isFinite(volume24h) && volume24h >= 0 ? volume24h : null,
+    observedAt: Date.now(),
+    dataScope: 'USER_PRIVATE_MARKET_CONTEXT',
+    credentialBound: true,
+    accountVerified: true,
+    actionable: false,
+    rights: {
+      publicMarketDataAdmission: false,
+      redistributionAllowed: false,
+      publicDisplayAllowed: false,
+      sharedCacheAllowed: false,
+      jetStreamPublicationAllowed: false,
+      durableRetentionAllowed: false,
+    },
+    reasonCodes: [
+      'USER_SCOPED_BYOK_CONTEXT',
+      'PUBLIC_MARKET_DATA_ADMISSION_NOT_GRANTED',
+      'NO_REDISTRIBUTION',
+    ],
+  };
 }
 
 function parseStoredSecret(payload) {
@@ -228,6 +305,7 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
           _credential_fingerprint: fingerprint,
           _permissions: {
             fundsQuery: true,
+            privateMarketContext: true,
             trading: false,
             withdrawals: false,
             publicMarketDataAdmission: false,
@@ -258,6 +336,38 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
         }
       } catch {
         json(res, 503, { error: 'provider_vault_write_failed' });
+      }
+      return true;
+    }
+
+    if (url.pathname === '/api/profile/provider-connections/kraken/market-context') {
+      if (req.method !== 'GET') {
+        res.setHeader('Allow', 'GET');
+        json(res, 405, { error: 'method_not_allowed' });
+        return true;
+      }
+      const symbol = String(url.searchParams.get('symbol') || '').toUpperCase().trim();
+      if (!Object.hasOwn(BYOK_SYMBOLS, symbol)) {
+        json(res, 400, { error: 'byok_symbol_not_supported', supportedSymbols: Object.keys(BYOK_SYMBOLS) });
+        return true;
+      }
+      try {
+        const stored = await rpc(fetchImpl, config, 'capital_ai_get_user_provider_secret', {
+          _user_id: user.userId,
+          _provider: 'kraken',
+        });
+        if (!stored?.secretPayload) {
+          json(res, 404, { error: 'provider_connection_not_found' });
+          return true;
+        }
+        const credentials = parseStoredSecret(stored.secretPayload);
+        const context = await krakenPrivateMarketContext(fetchImpl, credentials, symbol);
+        await markStatus(user.userId, 'VERIFIED', null);
+        json(res, 200, context);
+      } catch (error) {
+        const code = typeof error?.code === 'string' ? error.code : 'PRIVATE_MARKET_CONTEXT_UNAVAILABLE';
+        await markStatus(user.userId, 'INVALID', code).catch(() => {});
+        json(res, 503, { error: 'private_market_context_unavailable', code });
       }
       return true;
     }
