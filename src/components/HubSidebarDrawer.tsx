@@ -191,8 +191,8 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         name: 'Data & Providers',
         icon: <Radio className="w-4 h-4 text-emerald-400" />,
         badge: 'Fleet Health',
-        shortDesc: 'Latenz- & Ausführungsstatus der autorisierten Provider-Gateways',
-        tags: ['Kraken', 'Binance', '12Data'],
+        shortDesc: 'Status der Open-Source-Adapter und ihrer separat zugelassenen Upstream-Datenquellen',
+        tags: ['CCXT', 'OpenBB', 'Valkey'],
         path: '/studio?tab=providers',
       },
       {
