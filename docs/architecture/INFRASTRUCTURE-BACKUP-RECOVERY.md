@@ -10,22 +10,22 @@ Recover the application without relying on a single provider or on undocumented 
 ## Recovery layers
 
 1. **Source & release** — Git repository, signed/attested GHCR digests, SBOM, provenance, configuration schemas.
-2. **Identity** — ZITADEL configuration/export where supported, recovery administrators/passkeys, OIDC client configuration references; never export plaintext user passwords.
+2. **Identity** — Supabase Auth project configuration, allowed redirects, recovery factors and server-side session configuration; never export plaintext user passwords, refresh tokens or privileged keys.
 3. **Database** — Supabase daily backup baseline plus separately verified export; PITR only after explicit cost decision.
 4. **Object storage** — periodic inventory and independent copy of critical private buckets.
 5. **Market event evidence** — JetStream file-store backup/restore validation; stream metadata + durable data.
 6. **Cache** — Valkey is reconstructable and is not a backup authority.
 7. **Runtime** — Render service settings/readbacks + immutable image reference; recovery deploy uses an already-attested digest.
 
-## ZITADEL vs Supabase Auth
+## Supabase Auth als führende Identity Authority
 
-**ZITADEL** is the stronger primary identity boundary for CAPITAL-AI when passkeys, B2B/multi-tenancy, policy-driven MFA and long-lived event-sourced audit history are priority requirements. **Supabase Auth** is operationally simpler when tight Postgres/RLS integration and fewer moving parts are the dominant requirement. Running both as independent credential authorities for the same user population would increase account-recovery, session and audit ambiguity.
+Supabase Auth ist die aktive Authentifizierungs- und Identity Authority für CAPITAL-AI. Eine zweite parallele Credential Authority würde Account-Recovery, Sessionbindung und Auditierbarkeit unnötig mehrdeutig machen und ist deshalb nicht Teil des aktiven Recovery-Pfads.
 
 Recommended topology:
-- ZITADEL: authentication/identity authority.
-- Supabase: application data/evidence/storage authority.
-- A stable internal user/subject mapping links them.
-- Supabase Auth remains fallback/recovery candidate only after an explicit migration plan, not a shadow second login authority.
+- Supabase Auth: authentication and identity authority.
+- Supabase Postgres/RLS/Vault: application data and private credential storage with separate least-privilege boundaries.
+- The verified Supabase `user.id` is the stable application identity key; historical Finance data is not linked solely by matching email addresses.
+- Historical ZITADEL evidence remains immutable documentation only and is not an active recovery dependency.
 
 ## Recovery validation
 

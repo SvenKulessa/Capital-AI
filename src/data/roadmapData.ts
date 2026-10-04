@@ -1207,7 +1207,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "owner": "PLATFORM",
   "priority": "Hoch",
   "targetSprint": "Migrationstermin; vor Finance-Suspendierung",
-  "description": "Web-DNS-Cutover darf MX/SPF/DKIM/DMARC und MTA-STS nicht verändern. SMTP/TLS, Absender und Zustellung für ZITADEL-Mails brauchen eigene Evidence.",
+  "description": "Web-DNS-Cutover darf MX/SPF/DKIM/DMARC und MTA-STS nicht verändern. SMTP/TLS, Absender und Zustellung für Supabase-Auth-Mails brauchen eigene Evidence.",
   "nextStep": "Registrierungs-/Bestätigungs- und Passwort-Reset-Mail mit IONOS-Absender, TLS und tatsächlicher Zustellung prüfen.",
   "deliverables": [
     "Registrierungs-/Bestätigungs- und Passwort-Reset-Mail mit IONOS-Absender, TLS und tatsächlicher Zustellung prüfen."
@@ -1407,7 +1407,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
 },
 {
   "id": "AP-CMP-LEGAL",
-  "title": "Rechtstexte aus Finance übernommen und an ZITADEL angepasst",
+  "title": "Rechtstexte aus Finance übernommen und an Supabase Auth angepasst",
   "owner": "TRUST",
   "status": "aktiv",
   "phase": 2,
@@ -1445,7 +1445,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "priority": "Hoch",
   "leadName": "Projektowner",
   "targetSprint": "Nicht terminiert",
-  "description": "Export und Anfrageweg akzeptieren die serverseitig verifizierte OIDC-Sitzung. Der Export ist begrenzt; der Anfrageweg speichert und versendet nichts.",
+  "description": "Export und Anfrageweg akzeptieren die serverseitig verifizierte Supabase-Sitzung. Der Export ist begrenzt; der Anfrageweg speichert und versendet nichts.",
   "deliverables": [
     "Eigenen Export nach echtem Login und Logout auf dem Zielhost abnehmen."
   ]
@@ -1508,18 +1508,18 @@ export const WORK_PACKAGES: WorkPackage[] = [
     "docs/licenses/Capital-AI-BRANDING.md",
     "public/branding/capital-ai-logo.jpg"
   ],
-  "nextStep": "ZITADEL-Branding und produktive Darstellung separat abnehmen.",
+  "nextStep": "Supabase-Auth-Branding und produktive Darstellung separat abnehmen.",
   "priority": "Hoch",
   "leadName": "Projektowner",
   "targetSprint": "Nicht terminiert",
   "description": "Das bereitgestellte Logo ist eingebunden; die drei früheren Logos sind aus dem aktuellen Baum entfernt. Die allgemeine Markenfreigabe bleibt gesondert zu prüfen.",
   "deliverables": [
-    "ZITADEL-Branding und produktive Darstellung separat abnehmen."
+    "Supabase-Auth-Branding und produktive Darstellung separat abnehmen."
   ]
 },
 {
   "id": "AP-SEC-OIDC",
-  "title": "ZITADEL-Anmeldung und Sessiongrenzen implementiert",
+  "title": "Supabase-Auth-Anmeldung und Sessiongrenzen implementiert",
   "owner": "TRUST",
   "status": "aktiv",
   "phase": 1,
@@ -1535,7 +1535,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "priority": "Hoch",
   "leadName": "Projektowner",
   "targetSprint": "Nicht terminiert",
-  "description": "Authorization Code mit PKCE, Tokenprüfung und serverseitige Sitzungen sind implementiert. Live /api/auth/session meldet configured=true, anonymous authenticated=false; öffentliche Discovery antwortet 200 mit S256 und client_secret_basic. Service-Account-Rechte, Policies, Branding und SMTP sind dadurch nicht gelesen.",
+  "description": "Supabase Auth für E-Mail/Passwort und Google OAuth/PKCE, serverseitig verifizierte User-ID und signierte Secure/HttpOnly-Sitzungscookies sind implementiert. Live-Runtime-Evidence bleibt für Provider-Konfiguration und echte Anmeldung getrennt fail-closed.",
   "deliverables": [
     "Login, Logout, Wiederanmeldung und Sessionbindung auf capital-ai.online dokumentieren."
   ]
@@ -1664,15 +1664,15 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "evidenceState": "OFFEN",
   "evidenceRefs": [
     "src/privacy/privacyPolicy.ts",
-    "docs/compliance/ZITADEL-PRIVACY-CUTOVER-20260930.md"
+    "docs/security/BYOK-USER-PRIVATE-DATA.md"
   ],
-  "nextStep": "Render, ZITADEL, externe Schriftarten und gegebenenfalls Telegram mit tatsächlich aktiven Datenflüssen abgleichen.",
+  "nextStep": "Render, Supabase Auth, externe Schriftarten und gegebenenfalls Telegram mit tatsächlich aktiven Datenflüssen abgleichen.",
   "priority": "Hoch",
   "leadName": "Projektowner",
   "targetSprint": "Nicht terminiert",
   "description": "Die Datenschutzhinweise weisen die Prüfung tatsächlicher Providerkonfigurationen und Verträge ausdrücklich aus. Die Texte ersetzen diese Nachweise nicht.",
   "deliverables": [
-    "Render, ZITADEL, externe Schriftarten und gegebenenfalls Telegram mit tatsächlich aktiven Datenflüssen abgleichen."
+    "Render, Supabase Auth, externe Schriftarten und gegebenenfalls Telegram mit tatsächlich aktiven Datenflüssen abgleichen."
   ]
 },
 {
@@ -1719,7 +1719,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "targetSprint": "Nach Digest-/Lizenzabnahme; abgestimmtes Migrationsfenster",
   "description": "Finance ist laut frischem Render-Readback nicht suspendiert. Aktueller HTTPS-Aufruf der Hauptdomain konnte aus dieser Umgebung nicht ausgewertet werden; die ältere Finance-Zuordnung ist historisch, kein heutiger DNS-Nachweis.",
   "deliverables": [
-    "Domainbindungen und DNS frisch sichern, ZITADEL-Callback prüfen, gezielt umstellen und HTTPS/Login/Export abnehmen."
+    "Domainbindungen und DNS frisch sichern, Supabase-Auth-Callback prüfen, gezielt umstellen und HTTPS/Login/Export abnehmen."
   ],
   "dependencies": [
     "AP-SEC-IMAGE",
@@ -1778,7 +1778,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
 },
 {
   "id": "AP-SEC-AUTH-LIVE",
-  "title": "ZITADEL-Login und eigener Export auf der Hauptdomain abnehmen",
+  "title": "Supabase-Auth-Login und eigener Export auf der Hauptdomain abnehmen",
   "owner": "TRUST",
   "status": "pending",
   "phase": 5,
@@ -1786,17 +1786,17 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "progressPercent": null,
   "evidenceState": "OFFEN",
   "evidenceRefs": [
-    "contracts/trust/OIDC_VERIFICATION_STATE@1.yaml",
-    "docs/security/OIDC-VERIFICATION-STATE-20261001.md",
-    "docs/compliance/ZITADEL-PRIVACY-CUTOVER-20260930.md",
+    "scripts/diagnose-supabase-auth.mjs",
+    "server/auth.test.mjs",
+    "docs/security/BYOK-USER-PRIVATE-DATA.md",
     "deploy/DNS-CUTOVER.md",
     "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/compliance/ROADMAP-RECONCILIATION-20261001.md"
   ],
-  "nextStep": "Credential-Authentifizierung und echten Login/Callback/ID-Token/Session-Ablauf nachweisen; erst danach OIDC-Gesamtgate auf grün setzen. Eigenen Export, Logout und anschließendes 401 auf capital-ai.online zusätzlich prüfen.",
+  "nextStep": "Supabase-Konfiguration, Provider-Reachability und echten E-Mail- oder Google-Login mit Callback/Session nachweisen; eigenen Export, Session-Refresh, Logout und anschließendes 401 auf capital-ai.online zusätzlich prüfen.",
   "priority": "Hoch",
   "leadName": "Projektowner",
   "targetSprint": "Nicht terminiert",
-  "description": "OIDC-Verifikation ist fail-closed: vorhandene Konfiguration und Discovery gelten nur als Preflight. Der aktuelle Workflow muss rot bleiben, solange Credential-Authentifizierung und ein echter Login-/Callback-/ID-Token-/Session-Ablauf nicht belegt sind. Frühere grüne Diagnose-Läufe sind keine vollständige OIDC-Abnahme.",
+  "description": "Supabase-Auth-Verifikation ist fail-closed: Konfiguration und Provider-Reachability reichen nicht; echter Login, serverseitig verifizierte Session und Logout müssen separat belegt sein.",
   "deliverables": [
     "Echten Login, eigenen Export, Logout und anschließendes 401 auf capital-ai.online prüfen."
   ]
@@ -1997,7 +1997,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "priority": "Kritisch",
   "leadName": "Projektowner",
   "targetSprint": "Vor Production-Handoff",
-  "description": "Supabase, ZITADEL-Konfiguration, JetStream und Runtime-Artefakte erhalten getrennte Recovery-Pfade; Valkey bleibt rekonstruierbarer Cache.",
+  "description": "Supabase Auth/DB/Vault, JetStream und Runtime-Artefakte erhalten getrennte Recovery-Pfade; Valkey bleibt rekonstruierbarer Cache.",
   "deliverables": [
     "Extern verifizierter Datenbank-/Storage-Backup",
     "JetStream Backup/Restore + Replay Hashprüfung",

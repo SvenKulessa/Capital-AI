@@ -156,7 +156,7 @@ Die Oberfläche und Architektur befinden sich in aktiver Entwicklung. Insbesonde
 - Provider-/Redistribution-Rechte können offen sein.
 - Scoring ist nicht automatisch für produktive Anlageentscheidungen freigegeben.
 - Candidate Images sind erst nach vollständigem Handoff deployEligible.
-- ZITADEL-, Runtime-, Domain-/DNS- und Mail-Flows werden getrennt abgenommen.
+- Supabase-Auth-, Runtime-, Domain-/DNS- und Mail-Flows werden getrennt abgenommen.
 - Öffentliche Dokumentation darf keinen weitergehenden Freigabestatus behaupten als die zugrunde liegende Evidence.
 
 ---
