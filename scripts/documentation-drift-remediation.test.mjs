@@ -266,3 +266,24 @@ test('post-merge correlation fails closed on expected-main mismatch or unsafe pl
   });
   assert.equal(unsafe.action, DOCUMENTATION_ACTIONS.MANUAL_REVIEW_REQUIRED);
 });
+
+
+test('repository promotion config is bounded to the validated fingerprint', () => {
+  const repositoryProfile = JSON.parse(fs.readFileSync(new URL('../documentary/documentation-drift-profile.json', import.meta.url), 'utf8'));
+  const repositoryValidation = JSON.parse(fs.readFileSync(new URL('../docs/growth/DOCUMENTATION-DRIFT-VALIDATION-20261004.json', import.meta.url), 'utf8'));
+  const proposal = repositoryProfile.selfHealing.prProposal;
+  assert.equal(repositoryProfile.selfHealing.autoRepairEnabled, false);
+  assert.equal(proposal.enabled, true);
+  assert.equal(proposal.mode, 'PR_ONLY');
+  assert.equal(proposal.approvedRepairFingerprint, FINGERPRINT);
+  assert.equal(repositoryValidation.repairFingerprint, FINGERPRINT);
+  assert.equal(repositoryValidation.validation.positiveIndependentCycles, 3);
+  assert.equal(repositoryValidation.promotion.eligibleForDocSh02, true);
+  assert.equal(repositoryValidation.promotion.autoRepairEnabled, false);
+  assert.equal(proposal.autoMerge, false);
+  assert.equal(proposal.directMainMutation, false);
+  assert.equal(proposal.productionAuthority, false);
+  assert.ok(proposal.forbiddenPrefixes.includes('docs/security/'));
+  assert.ok(proposal.forbiddenPrefixes.includes('.github/'));
+  assert.ok(proposal.forbiddenExactPaths.includes('AGENTS.md'));
+});
