@@ -39,6 +39,7 @@ import { PriceAlertsProvider, usePriceAlerts } from './context/PriceAlertsContex
 import { PriceAlertToast } from './components/PriceAlertToast';
 import { MarketSentiment } from './components/MarketSentiment';
 import { SectorAnalysis } from './components/SectorAnalysis';
+const ProfilePage = lazy(() => import('./components/ProfilePage').then(module => ({ default: module.ProfilePage })));
 const ArchitecturePage = lazy(() => import('./components/ArchitecturePage').then(module => ({ default: module.ArchitecturePage })));
 const AnalysisModal = lazy(() => import('./components/AnalysisModal').then(module => ({ default: module.AnalysisModal })));
 const ProductTourModal = lazy(() => import('./components/ProductTourModal').then(module => ({ default: module.ProductTourModal })));
@@ -438,12 +439,15 @@ function AppContent() {
 
         <Suspense fallback={<div role="status" className="p-8 text-center text-slate-300">Ansicht wird geladen…</div>}>
         {currentRoute === '/login' ? (
-          /* Dedicated Login Terminal View */
+          /* Dedicated Supabase Login View */
           <LoginPage
             onBackToHome={() => navigateTo('/')}
             onNavigateFaq={() => navigateTo('/faq')}
             onNavigateLegal={navigateTo}
           />
+        ) : currentRoute === '/profile' ? (
+          /* Authenticated user profile with personal provider Vault */
+          <ProfilePage onBackToHome={() => navigateTo('/')} />
         ) : currentRoute === '/pipeline-builder' ? (
           /* Dedicated Pipeline Builder & Synthesizer View */
           <PipelineBuilder
