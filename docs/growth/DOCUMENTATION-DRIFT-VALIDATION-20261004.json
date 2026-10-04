@@ -1,0 +1,106 @@
+{
+  "schema": "CAPITAL_AI_SH_SUPPLY_CHAIN_DOCUMENTATION_DRIFT_VALIDATION@1",
+  "version": "1.0.0",
+  "observedDate": "2026-10-04",
+  "domain": "GROWTH",
+  "technicalAuthority": "PLATFORM",
+  "trustAuthority": "TRUST",
+  "repairFingerprint": "STALE_CURRENT_MAIN_METADATA@1",
+  "repairClass": "STALE_DOCUMENTARY_PROJECTION",
+  "currentMainAtFinalCorrelation": "5d0a7b5bf13977c68cd74ddd65fd092961dc8d15",
+  "validation": {
+    "requiredIndependentPositiveCycles": 3,
+    "positiveIndependentCycles": 3,
+    "approvalStages": [
+      "DETECT",
+      "CORRELATE",
+      "CLASSIFY",
+      "REMEDIATE",
+      "VERIFY"
+    ],
+    "cycles": [
+      {
+        "cycle": 1,
+        "event": {
+          "mergedPr": 131,
+          "previousMainSha": "de4c268311c42877f8a7e1361e7de986ffb096cb",
+          "newMainSha": "c1a720a32a054c16944e6c582086a509be137fc4"
+        },
+        "target": "docs/growth/DOCUMENTATION-DRIFT-SELF-HEALING.md",
+        "finding": "SOURCE_DRIFT",
+        "initialFalseNegativeCounted": false,
+        "remediation": "RECLASSIFY_AS_IMMUTABLE_BASELINE_OR_GENERATED_METADATA",
+        "approve5": {
+          "DETECT": true,
+          "CORRELATE": true,
+          "CLASSIFY": true,
+          "REMEDIATE": true,
+          "VERIFY": true
+        },
+        "result": "PASS"
+      },
+      {
+        "cycle": 2,
+        "event": {
+          "sourcePr": 74,
+          "sourceMergeSha": "1b0129ead46f6ed4daffbc383ade82bef9fad2c0",
+          "independentMergedPr": 75,
+          "independentMergeSha": "42c7c5aef789c5cbd6e2154071f136051840172e"
+        },
+        "target": "src/data/roadmapData.ts",
+        "unchangedBlobAcrossIndependentMerge": "9f5ef506c7caf9197deafd6a1e256d7f7bc8c135",
+        "finding": "SOURCE_DRIFT",
+        "remediation": "RECLASSIFY_AS_IMMUTABLE_BASELINE_OR_GENERATED_METADATA",
+        "approve5": {
+          "DETECT": true,
+          "CORRELATE": true,
+          "CLASSIFY": true,
+          "REMEDIATE": true,
+          "VERIFY": true
+        },
+        "result": "PASS"
+      },
+      {
+        "cycle": 3,
+        "event": {
+          "sourcePr": 89,
+          "sourceMergeSha": "07d0d65a3b7f372d31f7f6e420a19ee366506013",
+          "independentMergedPr": 91,
+          "independentMergeSha": "18d702ef45a3ddcf74a5c33ee8442cb14f6a0c8f"
+        },
+        "target": "docs/architecture/RUNTIME-DEPENDENCY-BOUNDARY.md",
+        "unchangedBlobAcrossIndependentMerge": "a5abdb237324c51d85f398fce8ff6d7d203268fe",
+        "finding": "SOURCE_DRIFT",
+        "remediation": "RECLASSIFY_AS_IMMUTABLE_BASELINE_OR_GENERATED_METADATA",
+        "approve5": {
+          "DETECT": true,
+          "CORRELATE": true,
+          "CLASSIFY": true,
+          "REMEDIATE": true,
+          "VERIFY": true
+        },
+        "result": "PASS"
+      }
+    ]
+  },
+  "promotion": {
+    "sameRepairFingerprint": true,
+    "deterministicLowRiskClass": true,
+    "eligibleForDocSh02": true,
+    "requiredChecksStillAuthoritative": true,
+    "autoRepairEnabled": false,
+    "autoMergeAllowed": false,
+    "productionAuthority": false
+  },
+  "safety": {
+    "historicalEvidenceRewritten": false,
+    "securityPolicyRelaxed": false,
+    "licenseApprovalChanged": false,
+    "complianceApprovalChanged": false,
+    "productionDeploymentPerformed": false,
+    "natsRedeployPerformed": false,
+    "dnsChanged": false,
+    "billingChanged": false,
+    "secretsChanged": false
+  }
+}
