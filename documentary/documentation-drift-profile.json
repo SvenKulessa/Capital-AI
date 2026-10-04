@@ -1,0 +1,86 @@
+{
+  "schema": "CAPITAL_AI_SH_SUPPLY_CHAIN_DOCUMENTATION_DRIFT@1",
+  "version": "1.0.0",
+  "metadata": {
+    "project": "CAPITAL-AI",
+    "domain": "GROWTH",
+    "technicalAuthority": "PLATFORM",
+    "trustAuthority": "TRUST",
+    "status": "PROPOSED"
+  },
+  "authorities": [
+    "DOCUMENTARY_EVIDENCE@1",
+    "CHANGE_PROPAGATION@1",
+    "GROWTH_PROJECTION@1",
+    "POST_MERGE_CORRELATION@2"
+  ],
+  "livingDocuments": {
+    "exact": [
+      "README.md",
+      "AGENTS.md",
+      "src/data/roadmapData.ts",
+      "src/platform/Documentary/README.md",
+      "docs/growth/DOCUMENTATION-DRIFT-SELF-HEALING.md",
+      "docs/security/PRODUCTION-HANDOFF.md",
+      "docs/security/POST-MERGE-CORRELATION-SELF-HEALING.md"
+    ],
+    "prefixes": [
+      "docs/governance/"
+    ]
+  },
+  "historical": {
+    "prefixes": [
+      "docs/security/evidence/",
+      "documentary/evidence/",
+      "generated/"
+    ],
+    "datedFilenameRegex": "(?:^|/)[^/]*20[0-9]{6}[^/]*\\.(?:md|json|ya?ml)$"
+  },
+  "currentMainMarkers": [
+    "current main",
+    "current-main baseline",
+    "currentmain",
+    "main@<sha>",
+    "Main-Snapshot <sha>",
+    "verifiedSourceSha: <sha>",
+    "Basis: <repository>@<sha>"
+  ],
+  "driftClasses": [
+    "SOURCE_DRIFT",
+    "MISSING_LIVING_DOCUMENT",
+    "ROADMAP_DUPLICATE_ID"
+  ],
+  "selfHealing": {
+    "repairFingerprint": "STALE_CURRENT_MAIN_METADATA@1",
+    "validationSteps": [
+      "DETECT",
+      "CORRELATE",
+      "CLASSIFY",
+      "REMEDIATE",
+      "VERIFY"
+    ],
+    "minimumIndependentPositiveValidationCycles": 3,
+    "autoRepairEnabled": false,
+    "repairMode": "REPORT_OR_PR_ONLY",
+    "allowedRepairClasses": [
+      "STALE_DOCUMENTARY_PROJECTION",
+      "POST_MERGE_LOW_RISK_SYNC"
+    ],
+    "forbiddenMutations": [
+      "SECURITY_POLICY_RELAXATION",
+      "LICENSE_APPROVAL",
+      "COMPLIANCE_APPROVAL",
+      "PRODUCTION_DEPLOYMENT",
+      "DNS_CHANGE",
+      "BILLING_CHANGE",
+      "SECRET_ROTATION"
+    ]
+  },
+  "safety": {
+    "historicalEvidenceImmutable": true,
+    "openPullRequestIsNotMainEvidence": true,
+    "runtimeIdentityIsDistinctFromMainIdentity": true,
+    "missingEvidenceMeansSuccess": false,
+    "publicClaimsRequireCanonicalEvidence": true
+  }
+}
