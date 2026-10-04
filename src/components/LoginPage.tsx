@@ -123,7 +123,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
               </p>
             </div>
             <span className="rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1 font-mono text-[10px] text-emerald-300">
-              ZITADEL OFF
+              SUPABASE AUTH
             </span>
           </div>
 
