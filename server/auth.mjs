@@ -315,7 +315,11 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
 
     const config = getConfig();
     if (!config) {
-      json(res, 503, { error: 'authentication_not_configured', provider: 'supabase' });
+      if (action === 'session' && req.method === 'GET') {
+        json(res, 200, { configured: false, authenticated: false, user: null });
+      } else {
+        json(res, 503, { error: 'authentication_not_configured', provider: 'supabase' });
+      }
       return true;
     }
 
