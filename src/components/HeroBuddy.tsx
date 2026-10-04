@@ -14,6 +14,8 @@ type BuddyMessage = { id: string; role: 'buddy' | 'user'; text: string };
 type AssistReason = 'hesitation' | 'repeat' | 'oscillation' | 'dwell';
 
 const DISCLAIMER = 'Portalhilfe aus dem Hero Buddy. Keine Anlageberatung.';
+export const HERO_BUDDY_EVENT = 'capital-ai:open-hero-buddy';
+export function openHeroBuddy() { window.dispatchEvent(new Event(HERO_BUDDY_EVENT)); }
 const COOLDOWN_MS = 90_000;
 
 function answerFor(input: string) {
@@ -43,6 +45,11 @@ export function HeroBuddy(props: HeroBuddyProps) {
   ]);
   const lastAssist = useRef(0);
   const reducedMotion = usePrefersReducedMotion();
+  useEffect(() => {
+    const openFromHero = () => { setOpen(true); setSpeech(null); };
+    window.addEventListener(HERO_BUDDY_EVENT, openFromHero);
+    return () => window.removeEventListener(HERO_BUDDY_EVENT, openFromHero);
+  }, []);
 
   useAssistanceSignal((reason) => {
     if (open || Date.now() - lastAssist.current < COOLDOWN_MS) return;
