@@ -360,6 +360,10 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
           json(res, 404, { error: 'provider_connection_not_found' });
           return true;
         }
+        if (stored?.permissions?.privateMarketContext !== true) {
+          json(res, 403, { error: 'private_market_context_not_enabled' });
+          return true;
+        }
         const credentials = parseStoredSecret(stored.secretPayload);
         const context = await krakenPrivateMarketContext(fetchImpl, credentials, symbol);
         await markStatus(user.userId, 'VERIFIED', null);
