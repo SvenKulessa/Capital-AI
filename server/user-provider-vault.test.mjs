@@ -106,6 +106,9 @@ test('BYOK write stores only through Vault RPC and verifies only Kraken private 
   assert.equal(payload.provider, 'kraken');
   assert.equal(payload.status, 'VERIFIED');
   assert.equal(payload.dataScope, 'USER_PRIVATE_ACCOUNT_DATA');
+  assert.equal(payload.sourceAuthority, 'USER_BYOK');
+  assert.equal(payload.credentialOwner, 'user');
+  assert.equal(payload.publicPipeline, false);
   assert.equal(payload.redistributionAllowed, false);
   assert.equal(payload.publicDisplayAllowed, false);
   assert.deepEqual(payload.holdings, [

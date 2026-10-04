@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { scorerBus } from './scorer-bus.mjs';
-import { MARKET_SOURCE_POLICY, isAdmittedMarketSource } from './open-source-market-policy.mjs';
+import { MARKET_SOURCE_POLICY, admittedMarketSourcesFor, isAdmittedMarketSource } from './open-source-market-policy.mjs';
 
 const MAX_BODY_BYTES = 4096;
 const UNIVERSE_LIMIT = 400;
@@ -248,6 +248,18 @@ export function createMobileScorer(env = process.env) {
 
   return {
     async handle(req, res, url, json, headers) {
+      if (['/api/mobile/enterprise-score', '/api/mobile/scorer/events'].includes(url.pathname) &&
+          admittedMarketSourcesFor('scoringPriceInput').length === 0) {
+        json(res, 503, {
+          error: 'scoring_source_not_admitted',
+          reasonCode: 'NO_ADMITTED_SCORING_PRICE_INPUT_SOURCE',
+          requiredCapability: 'scoringPriceInput',
+          sourcePolicy: MARKET_SOURCE_POLICY.mode,
+          productionAdmission: 'BLOCKED',
+          scoreEligible: false,
+        });
+        return true;
+      }
       if (req.method === 'GET' && url.pathname === '/mobile-scorer') { html(res, headers); return true; }
       if (req.method === 'GET' && url.pathname === '/mobile-scorer/app.js') { javascript(res, headers); return true; }
 

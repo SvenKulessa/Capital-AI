@@ -5,6 +5,36 @@ const isolated = async () => import(`./market.mjs?test=${++instance}`);
 import { infrastructure } from './infrastructure.mjs';
 import { MARKET_SOURCE_POLICY, admittedMarketSourcesFor, evaluateOpenSourceMarketAdmission, isAdmittedMarketSource } from './open-source-market-policy.mjs';
 import { fetchOssAdapterHealth, getOssAdapterInventory } from './oss-provider-adapters.mjs';
+import { createApp } from './index.mjs';
+
+test('HTTP market quotes remain blocked with healthy brokers and an enabled quote flag', async () => {
+  const previousFlag = process.env.MARKET_QUOTES_ENABLED;
+  process.env.MARKET_QUOTES_ENABLED = 'true';
+  const server = createApp();
+  try {
+    await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+    const base = `http://127.0.0.1:${server.address().port}`;
+    for (const symbol of ['BTCUSD', 'BTCUSDT', 'AAPL']) {
+      const response = await fetch(`${base}/api/market/quote?symbol=${symbol}`);
+      assert.equal(response.status, 503);
+      const body = await response.json();
+      assert.equal(body.error, 'open_data_source_not_configured');
+      assert.equal(body.reasonCode, 'NO_ADMITTED_MARKET_QUOTES_SOURCE');
+      assert.equal(body.scoreEligible, false);
+      assert.equal(body.productionAdmission, 'BLOCKED');
+    }
+    const response = await fetch(`${base}/api/market/status`);
+    assert.equal(response.status, 200);
+    const state = await response.json();
+    assert.equal(state.infrastructure.status, 'connected');
+    assert.equal(state.quoteAdmittedSources, 0);
+    assert.equal(state.quotesEnabled, false);
+  } finally {
+    await new Promise(resolve => server.close(resolve));
+    if (previousFlag === undefined) delete process.env.MARKET_QUOTES_ENABLED;
+    else process.env.MARKET_QUOTES_ENABLED = previousFlag;
+  }
+});
 
 const original = { status: infrastructure.status, read: infrastructure.read, persist: infrastructure.persist };
 before(() => {

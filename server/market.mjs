@@ -31,6 +31,9 @@ export async function quote(symbol) {
   if (!allowed.has(symbol)) return [400, { error: 'unsupported_symbol' }];
   if (!sourceAdmissionAvailable) return [503, {
     error: 'open_data_source_not_configured',
+    reasonCode: 'NO_ADMITTED_MARKET_QUOTES_SOURCE',
+    productionAdmission: 'BLOCKED',
+    scoreEligible: false,
     symbol,
     sourcePolicy: MARKET_SOURCE_POLICY.mode,
   }];

@@ -1,6 +1,31 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { canonicalScorerOrigin, loadUniverseForEvidence } from './mobile-scorer.mjs';
+import { canonicalScorerOrigin, createMobileScorer, loadUniverseForEvidence } from './mobile-scorer.mjs';
+import { scorerBus } from './scorer-bus.mjs';
+
+test('non-admitted scoring blocks cache, calculation and SSE before any bus or provider access', async () => {
+  const original = { read: scorerBus.read, persist: scorerBus.persist, subscribe: scorerBus.subscribe, fetch: globalThis.fetch };
+  let calls = 0;
+  const forbidden = async () => { calls++; throw new Error('admission must precede I/O'); };
+  scorerBus.read = scorerBus.persist = scorerBus.subscribe = globalThis.fetch = forbidden;
+  try {
+    const service = createMobileScorer({ CAPITAL_AI_SCORER_ORIGIN: 'https://example.invalid' });
+    for (const [method, path] of [['GET', '/api/mobile/enterprise-score'], ['POST', '/api/mobile/enterprise-score'], ['GET', '/api/mobile/scorer/events']]) {
+      let result;
+      const res = { writeHead() { throw new Error('SSE must not open'); } };
+      const handled = await service.handle({ method, headers: {} }, res,
+        new URL(`http://local${path}?symbol=BTC`), (_, status, body) => { result = { status, body }; }, {});
+      assert.equal(handled, true);
+      assert.equal(result.status, 503);
+      assert.equal(result.body.scoreEligible, false);
+      assert.equal(result.body.productionAdmission, 'BLOCKED');
+      assert.equal(result.body.requiredCapability, 'scoringPriceInput');
+    }
+    assert.equal(calls, 0);
+  } finally {
+    scorerBus.read = original.read; scorerBus.persist = original.persist; scorerBus.subscribe = original.subscribe; globalThis.fetch = original.fetch;
+  }
+});
 
 test('canonical scorer origin is explicit and cannot point back to the public app origin', () => {
   assert.equal(canonicalScorerOrigin({ PUBLIC_APP_ORIGIN: 'https://capital-ai.online' }), null);
