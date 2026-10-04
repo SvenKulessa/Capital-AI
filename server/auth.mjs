@@ -550,5 +550,24 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     return true;
   }
 
-  return { handle, session, sameOrigin };
+  async function verify(req, res) {
+    const config = getConfig();
+    if (!config) return null;
+    try {
+      const stored = await resolveSession(req, res);
+      if (!stored) return null;
+      return {
+        subject: stored.user.id,
+        userId: stored.user.id,
+        issuer: config.issuer,
+        name: stored.user.name,
+        email: stored.user.email,
+        expires: stored.expiresAt * 1000,
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  return { handle, session, verify, sameOrigin };
 }
