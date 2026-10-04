@@ -6,17 +6,25 @@ import {
   VOCABULARY_PUBLIC_COUNT,
   vocabularyMetadata,
 } from '../../../shared/vocabulary-metadata.mjs';
+import { QUANT_PRO_COUNT, QUANT_PRO_IDS } from '../../../server/vocabulary-quant-pro-index.mjs';
 
 function normalize(value: string): string {
   return value.normalize('NFKC').toLocaleLowerCase('de-DE').replace(/[^a-z0-9äöüß]+/g, '');
 }
 
-test('repository vocabulary is deduplicated and exposes exactly three thesaurus entries per term', () => {
-  assert.equal(VOCABULARY_TERMS.length, 294, 'expected the merged four-repository vocabulary count');
-  assert.equal(VOCABULARY_PUBLIC_COUNT, VOCABULARY_TERMS.length, 'SEO projection count must match visible vocabulary');
+test('browser vocabulary contains no paid Quant/Pro payload and canonical total remains stable', () => {
+  assert.ok(VOCABULARY_TERMS.length > 0);
+  assert.ok(QUANT_PRO_COUNT > 0);
+  assert.equal(
+    VOCABULARY_TERMS.length + QUANT_PRO_COUNT,
+    294,
+    'public plus server-side vocabulary index must preserve the canonical merged count',
+  );
+  assert.equal(VOCABULARY_PUBLIC_COUNT, 294, 'canonical SEO projection count remains stable');
+  assert.equal(VOCABULARY_TERMS.some((term) => term.level === 'Quant / Pro'), false);
 
   const normalizedTerms = VOCABULARY_TERMS.map((term) => normalize(term.term));
-  assert.equal(new Set(normalizedTerms).size, normalizedTerms.length, 'term names must be deduplicated');
+  assert.equal(new Set(normalizedTerms).size, normalizedTerms.length, 'public term names must be deduplicated');
 
   for (const term of VOCABULARY_TERMS) {
     assert.equal(term.thesaurus.length, 3, `${term.id} must expose exactly three thesaurus entries`);
@@ -34,9 +42,8 @@ test('presentation vocabulary does not expose repository path provenance', () =>
   }
 });
 
-
-test('SEO vocabulary projection is one-to-one with visible terms', () => {
-  const vocabularyIds = VOCABULARY_TERMS.map((term) => term.id).sort();
+test('canonical metadata covers public and server-only terms exactly once', () => {
+  const vocabularyIds = [...VOCABULARY_TERMS.map((term) => term.id), ...QUANT_PRO_IDS].sort();
   const seoIds = vocabularyMetadata.map((entry) => entry.id).sort();
 
   assert.deepEqual(seoIds, vocabularyIds);

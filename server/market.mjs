@@ -5,6 +5,7 @@ import { MARKET_SOURCE_POLICY, admittedMarketSourcesFor, isAdmittedMarketSource 
 // No network I/O during build or runtime until an Open-Source + Open-Data source is admitted.
 const allowed = new Set((process.env.MARKET_SYMBOLS || 'BTCUSDT,BTCUSD,AAPL').split(',').map(x => x.trim()).filter(Boolean));
 const quoteAdmittedSources = admittedMarketSourcesFor('marketQuotes');
+const scoringAdmittedSources = admittedMarketSourcesFor('scoringPriceInput');
 const sourceAdmissionAvailable = quoteAdmittedSources.length > 0;
 const quotesEnabled = sourceAdmissionAvailable && process.env.MARKET_QUOTES_ENABLED === 'true';
 
@@ -55,5 +56,7 @@ export function health() {
     sourcePolicy: MARKET_SOURCE_POLICY.mode,
     admittedSources: MARKET_SOURCE_POLICY.admittedSources.length,
     quoteAdmittedSources: quoteAdmittedSources.length,
+    scoringAdmittedSources: scoringAdmittedSources.length,
+    scoreDisplayEnabled: scoringAdmittedSources.length > 0,
   };
 }

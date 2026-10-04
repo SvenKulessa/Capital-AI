@@ -16,7 +16,8 @@
  */
 
 import React from 'react';
-import { ArrowRight, Play, BarChart2 } from 'lucide-react';
+import { ArrowRight, Play } from 'lucide-react';
+import { openHeroBuddy } from './HeroBuddy';
 import { motion } from 'motion/react';
 import heroEarthImage from '../assets/images/glowing_earth_nodes_1789997454893.jpg';
 
@@ -161,6 +162,14 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
           </button>
 
           {/* Secondary Button: Dark Glass "Produkt entdecken" */}
+          <button
+            id="hero-buddy-support-btn"
+            type="button"
+            onClick={openHeroBuddy}
+            className="w-full h-[44px] px-5 bg-transparent hover:bg-white/5 active:scale-[0.98] border border-amber-400/40 rounded-2xl text-amber-200 text-[13.5px] font-semibold"
+          >
+            Hero Buddy fragen
+          </button>
           <button
             id="hero-explore-product-btn"
             type="button"

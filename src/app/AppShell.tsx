@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { PriceAlertToast } from '../features/alerts/PriceAlertToast';
+import { HeroBuddy } from '../components/HeroBuddy';
 import { useRouteAnalytics } from '../platform/analytics/useRouteAnalytics';
 import { useMarketAssets } from '../services/marketDataStore';
 import { RouteLoadingFallback } from '../shared/ui/RouteLoadingFallback';
@@ -56,6 +57,15 @@ export function AppShell() {
             .getElementById('market-sentiment-section')
             ?.scrollIntoView({ behavior: 'smooth' });
         }}
+      />
+
+      <HeroBuddy
+        onNavigate={navigateTo}
+        onOpenMonetization={() => ui.setIsMonetizationOpen(true)}
+        onOpenVocabulary={() => ui.setIsVocabularyOpen(true)}
+        onOpenAlerts={() => ui.setIsAlertModalOpen(true)}
+        onOpenWhaleRadar={() => ui.setIsWhaleRadarOpen(true)}
+        onOpenAnalysis={() => ui.setIsAnalysisOpen(true)}
       />
 
       {ui.shouldRenderOverlays && (
