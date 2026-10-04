@@ -2,7 +2,7 @@
 
 > **Status:** Architektur- und Supply-Chain-Vertrag · 2026-10-01  
 > **Domains:** CAPITAL-AI-PLATFORM / CAPITAL-AI-TRUST  
-> **Basis:** `main@2008cac17c8cabc98576d6b20a1ad56048c0028f`
+> **Implementation baseline commit:** `2008cac17c8cabc98576d6b20a1ad56048c0028f` — immutable Entstehungsbasis, keine Current-Main-Aussage.
 
 ## Inhaltsverzeichnis
 

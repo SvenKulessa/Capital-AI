@@ -1584,7 +1584,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "priority": "Hoch",
   "leadName": "Projektowner",
   "targetSprint": "Nicht terminiert",
-  "description": "Main-Snapshot 2150643dae8190fb2f8cd496072a7cc2baa89cfe. Frischer /healthz-Readback des neuen Dienstes: bound=true, Runtime-Source 4fbd1373b07092ed8ef550f60e9cf60f1f3f526d. Render ist auf Index-Digest 53c47463 eingestellt. Main und Runtime sind verschieden.",
+  "description": "Historischer Roadmap-Abgleich vom 01.10.2026 auf Source 2150643dae8190fb2f8cd496072a7cc2baa89cfe: Der damalige /healthz-Readback meldete bound=true und Runtime-Source 4fbd1373b07092ed8ef550f60e9cf60f1f3f526d; Render war auf Index-Digest 53c47463 eingestellt. Diese Werte sind historische Evidence und keine Current-Main-/Runtime-Identität. Current Main und Runtime müssen für jede Freigabe frisch korreliert werden.",
   "deliverables": [
     "Nach Merge dieser Roadmap den neuen Main mit dem Deployment abgleichen."
   ]

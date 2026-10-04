@@ -29,6 +29,7 @@ COPY server/advisor.ts server/http-security.mjs server/mta-sts.mjs server/mta-st
 COPY server/prompt-injection-guard.mjs server/prompt-injection-guard.test.mjs server/billing-catalog.mjs ./server/
 COPY server/advisor-security.test.mjs ./server/
 COPY scripts/billing-catalog.test.mjs ./scripts/
+COPY scripts/documentation-drift.mjs scripts/documentation-drift.test.mjs ./scripts/
 COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/frontend-security.test.mjs scripts/verify-browser-boundary.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
 COPY shared ./shared
 COPY docs/licenses ./docs/licenses
