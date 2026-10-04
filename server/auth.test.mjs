@@ -20,6 +20,7 @@ async function harness(envOverrides = {}) {
     SUPABASE_SECRET_KEY: 'sb_secret_test_0123456789012345678901234567890123456789',
     AUTH_COOKIE_SIGNING_SECRET: 'test-cookie-signing-secret-0123456789abcdef',
     PUBLIC_APP_ORIGIN: 'https://capital.example',
+    SUPABASE_OIDC_PROVIDER: 'custom:enterprise',
     TELEGRAM_BOT_TOKEN: '12345:offline_test_placeholder_only',
     TELEGRAM_CHAT_ID: '-100123',
     TELEGRAM_ALLOWED_SUBJECTS: 'owner-subject',
@@ -242,6 +243,32 @@ test('Supabase registration validates new passwords and creates a backend-owned 
     assert.match(sessionCookieHeader(registered), /__Host-capital_session_count=/);
   } finally {
     await h.stop();
+  }
+});
+
+test('Supabase custom OIDC login uses OAuth authorization code PKCE and fails closed when not configured', async () => {
+  const h = await harness();
+  try {
+    const response = await h.request('/api/auth/login/oidc?next=%2Fprofile');
+    assert.equal(response.status, 303);
+    const target = new URL(response.headers.get('location'));
+    assert.equal(target.origin, 'https://project.supabase.co');
+    assert.equal(target.pathname, '/auth/v1/authorize');
+    assert.equal(target.searchParams.get('provider'), 'custom:enterprise');
+    assert.equal(target.searchParams.get('code_challenge_method'), 's256');
+    assert.match(target.searchParams.get('code_challenge') || '', /^[A-Za-z0-9_-]{43}$/);
+    assert.match(response.headers.getSetCookie().join('\n'), /__Host-capital_pkce=.*HttpOnly; Secure; SameSite=Lax/);
+  } finally {
+    await h.stop();
+  }
+
+  const disabled = await harness({ SUPABASE_OIDC_PROVIDER: '' });
+  try {
+    const response = await disabled.request('/api/auth/login/oidc?next=%2Fprofile');
+    assert.equal(response.status, 503);
+    assert.deepEqual(await response.json(), { error: 'oidc_not_configured', provider: 'supabase' });
+  } finally {
+    await disabled.stop();
   }
 });
 
