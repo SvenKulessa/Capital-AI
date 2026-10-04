@@ -14,6 +14,7 @@ import { createScorerProxy } from './scorer-proxy.mjs';
 import { serveMtaSts } from './mta-sts.mjs';
 import { researchMetadata } from '../shared/research-metadata.mjs';
 import { BILLING_CATALOG } from './billing-catalog.mjs';
+import { createVocabularyCheckout } from './vocabulary-checkout.mjs';
 import {
   VOCABULARY_PUBLIC_COUNT,
   vocabularyMetadata,
@@ -140,6 +141,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const runtimeEnv = options.env || process.env;
   const mobileScorer = createMobileScorer(runtimeEnv);
   const scorerProxy = createScorerProxy({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, sourcePolicy: options.sourcePolicy });
+  const vocabularyCheckout = createVocabularyCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch });
   const server = http.createServer({ maxHeaderSize: 8192, requestTimeout: 10000, headersTimeout: 10000, keepAliveTimeout: 5000 }, async (req, res) => {
   let url;
   const requestContext = beginRequest(req);
@@ -154,6 +156,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await userProviderVault.handle(req, res, url, json)) return;
   if (await privacy(req, res, url, json)) return;
   if (await telegram(req, res, url, json)) return;
+  if (await vocabularyCheckout.handle(req, res, url, json)) return;
   if ((url.pathname === '/api/mobile/enterprise-score' || url.pathname === '/api/mobile/scorer/events') && !auth.session(req)) return json(res, 401, { error: 'authentication_required' });
   if (await scorerProxy.handle(req, res, url, json, requestContext.requestId)) return;
   if (await mobileScorer.handle(req, res, url, json, headers)) return;
