@@ -117,7 +117,7 @@ export function HeroBuddy(props: HeroBuddyProps) {
           )}
         </div>
       )}
-      <button type="button" aria-expanded={open} aria-label="Hero Buddy Support öffnen" onClick={() => { setOpen((value) => !value); setSpeech(null); }} className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-amber-300/50 bg-[#10182e] shadow-[0_8px_24px_rgba(245,176,20,0.28)]">
+      <button type="button" aria-expanded={open} aria-label="Hero Buddy Support öffnen" onClick={() => { setOpen((value) => !value); setSpeech(null); }} className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-amber-300/50 bg-[#10182e] shadow-[0_8px_24px_rgba(245,176,20,0.28)]">
         <BuddyMark pulse={!reducedMotion && !open} speaking={Boolean(speech) && !open} />
       </button>
     </div>
@@ -198,13 +198,20 @@ function usePrefersReducedMotion() {
 
 function BuddyMark({ pulse, speaking }: { pulse: boolean; speaking: boolean }) {
   return (
-    <svg viewBox="0 0 48 48" className={`h-8 w-8 ${pulse ? 'animate-pulse' : ''}`} aria-hidden="true">
-      <circle cx="24" cy="24" r="22" fill="#F5B014" />
-      <circle cx="24" cy="20" r="8" fill="#10182e" />
-      <circle cx="21" cy="19" r="1.4" fill="#F5B014" />
-      <circle cx="27" cy="19" r="1.4" fill="#F5B014" />
-      <path d={speaking ? 'M19 23h10' : 'M20 23c1.2 1.4 2.5 2 4 2s2.8-.6 4-2'} stroke="#F5B014" strokeWidth="1.4" fill="none" />
-      <path d="M14 34c2.5-4 5.8-6 10-6s7.5 2 10 6" stroke="#10182e" strokeWidth="2.4" fill="none" />
+    <svg viewBox="0 0 64 64" className={`h-12 w-12 ${pulse ? 'animate-pulse' : ''}`} aria-hidden="true">
+      <style>{'@keyframes buddy-blink{0%,86%,100%{transform:scaleY(1)}92%{transform:scaleY(0.12)}}'}</style>
+      <circle cx="32" cy="32" r="30" fill="#F5B014" />
+      <circle cx="32" cy="30" r="16" fill="#10182e" />
+      <circle cx="22" cy="31" r="2.2" fill="#F6C56A" />
+      <circle cx="42" cy="31" r="2.2" fill="#F6C56A" />
+      <g style={pulse ? { transformOrigin: '32px 31px', animation: 'buddy-blink 4.2s infinite' } : undefined}>
+        <circle cx="25" cy="28" r="2.4" fill="#F5B014" />
+        <circle cx="39" cy="28" r="2.4" fill="#F5B014" />
+        <circle cx="25.8" cy="27.3" r="0.8" fill="#FFF8E7" />
+        <circle cx="39.8" cy="27.3" r="0.8" fill="#FFF8E7" />
+      </g>
+      <path d={speaking ? 'M26 35c2 2.4 4 3.4 6 3.4s4-1 6-3.4' : 'M25 34c2.2 3.2 4.6 4.6 7 4.6s4.8-1.4 7-4.6'} stroke="#F5B014" strokeWidth="1.8" strokeLinecap="round" fill="none" />
+      <path d="M18 46c3.2-5 8-8 14-8s10.8 3 14 8" stroke="#10182e" strokeWidth="3" fill="none" strokeLinecap="round" />
     </svg>
   );
 }
