@@ -1,105 +1,67 @@
 import { test, before, after } from 'node:test';
 import { strict as assert } from 'node:assert';
 let instance = 0;
-const isolatedQuote = async () => (await import(`./market.mjs?test=${++instance}`)).quote;
+const isolated = async () => import(`./market.mjs?test=${++instance}`);
 import { infrastructure } from './infrastructure.mjs';
-// Offline provider tests inject persistence; real service behavior is tested separately.
+
 const original = { status: infrastructure.status, read: infrastructure.read, persist: infrastructure.persist };
-before(() => { infrastructure.status = () => ({ status: 'connected' }); infrastructure.read = async () => null; infrastructure.persist = async fact => fact; });
+before(() => {
+  infrastructure.status = () => ({ status: 'connected' });
+  infrastructure.read = async () => null;
+  infrastructure.persist = async fact => fact;
+});
 after(() => Object.assign(infrastructure, original));
 
-test('unsupported symbols are rejected before any provider request', async () => {
-  const quote = await isolatedQuote();
+test('unsupported symbols are rejected before source admission', async () => {
+  const {quote} = await isolated();
   const [status, body] = await quote('https://attacker.example');
   assert.equal(status, 400);
   assert.equal(body.error, 'unsupported_symbol');
 });
 
-test('parallel stale-cache requests share one provider request', async () => {
-  const quote = await isolatedQuote();
+test('allowed symbols perform no external provider request without admitted open data', async () => {
+  const {quote} = await isolated();
   const originalFetch = globalThis.fetch;
-  const originalKey = process.env.TWELVE_DATA_API_KEY;
-  process.env.TWELVE_DATA_API_KEY = 'offline-test-key';
   let calls = 0;
-  globalThis.fetch = async () => { calls++; return Response.json({ symbol: 'AAPL', close: 101, datetime: new Date().toISOString() }); };
-  try {
-    const results = await Promise.all(Array.from({ length: 8 }, () => quote('AAPL')));
-    assert.equal(calls, 1);
-    assert.equal(results.every(([status]) => status === 200), true);
-  } finally {
-    globalThis.fetch = originalFetch;
-    if (originalKey === undefined) delete process.env.TWELVE_DATA_API_KEY; else process.env.TWELVE_DATA_API_KEY = originalKey;
-  }
-});
-
-test('failed provider requests get a short negative cache', async () => {
-  const quote = await isolatedQuote();
-  const originalFetch = globalThis.fetch;
-  const previous = [process.env.TWELVE_DATA_API_KEY, process.env.POLYGON_API_KEY];
-  process.env.TWELVE_DATA_API_KEY = 'offline-test-key'; delete process.env.POLYGON_API_KEY;
-  let calls = 0;
-  globalThis.fetch = async () => { calls++; return Response.json({ status: 'error' }); };
-  try {
-    assert.equal((await quote('AAPL'))[0], 503);
-    assert.equal((await quote('AAPL'))[0], 503);
-    assert.equal(calls, 1);
-  } finally {
-    globalThis.fetch = originalFetch;
-    ['TWELVE_DATA_API_KEY', 'POLYGON_API_KEY'].forEach((key, i) => {
-      if (previous[i] === undefined) delete process.env[key]; else process.env[key] = previous[i];
-    });
-  }
-});
-test('missing feed and keys produce no fabricated price', async () => {
-  const quote = await isolatedQuote();
-  delete process.env.TWELVE_DATA_API_KEY;
-  delete process.env.POLYGON_API_KEY;
-  const [status, body] = await quote('AAPL');
-  assert.equal(status, 503);
-  assert.equal(body.error, 'market_data_unavailable');
-  assert.equal(body.price, undefined);
-});
-
-test('oversized provider responses are rejected', async () => {
-  const quote = await isolatedQuote();
-  const originalFetch = globalThis.fetch;
-  const originalKey = process.env.TWELVE_DATA_API_KEY;
-  process.env.TWELVE_DATA_API_KEY = 'offline-test-key';
-  globalThis.fetch = async (_url, options) => {
-    assert.equal(options.redirect, 'error');
-    return new Response('x'.repeat(262145));
-  };
-  try { assert.equal((await quote('BTCUSD'))[0], 503); }
-  finally {
-    globalThis.fetch = originalFetch;
-    if (originalKey === undefined) delete process.env.TWELVE_DATA_API_KEY;
-    else process.env.TWELVE_DATA_API_KEY = originalKey;
-  }
-});
-
-test('stale Twelve Data response continues to a fresh Polygon fallback', async () => {
-  const quote = await isolatedQuote();
-  const originalFetch = globalThis.fetch;
-  const previous = [process.env.TWELVE_DATA_API_KEY, process.env.POLYGON_API_KEY];
-  process.env.TWELVE_DATA_API_KEY = 'offline-test-key';
-  process.env.POLYGON_API_KEY = 'offline-test-key';
-  const calls = [];
-  globalThis.fetch = async (url, options) => {
-    assert.equal(options.redirect, 'error');
-    calls.push(url.hostname);
-    return Response.json(url.hostname === 'api.twelvedata.com'
-      ? { symbol: 'AAPL', close: 100, datetime: new Date(Date.now() - 60000).toISOString() }
-      : { ticker: { ticker: 'AAPL', lastTrade: { p: 101, t: Date.now() } } });
-  };
+  globalThis.fetch = async () => { calls++; throw new Error('network must not be reached'); };
   try {
     const [status, body] = await quote('AAPL');
-    assert.equal(status, 200);
-    assert.equal(body.provider, 'polygon');
-    assert.deepEqual(calls, ['api.twelvedata.com', 'api.polygon.io']);
+    assert.equal(status, 503);
+    assert.equal(body.error, 'open_data_source_not_configured');
+    assert.equal(calls, 0);
+  } finally { globalThis.fetch = originalFetch; }
+});
+
+test('legacy proprietary cache entries are not served', async () => {
+  const {quote} = await isolated();
+  const previousRead = infrastructure.read;
+  infrastructure.read = async () => ({provider:'kraken',symbol:'BTCUSD',price:100});
+  try {
+    const [status, body] = await quote('BTCUSD');
+    assert.equal(status, 503);
+    assert.equal(body.error, 'open_data_source_not_configured');
+  } finally { infrastructure.read = previousRead; }
+});
+
+test('stream startup performs no legacy websocket connection', async () => {
+  const previous = globalThis.WebSocket;
+  let calls = 0;
+  globalThis.WebSocket = class { constructor(){ calls++; } };
+  try {
+    const {startStreams} = await isolated();
+    const stop = startStreams();
+    stop();
+    assert.equal(calls, 0);
   } finally {
-    globalThis.fetch = originalFetch;
-    ['TWELVE_DATA_API_KEY', 'POLYGON_API_KEY'].forEach((key, i) => {
-      if (previous[i] === undefined) delete process.env[key]; else process.env[key] = previous[i];
-    });
+    if(previous === undefined) delete globalThis.WebSocket;
+    else globalThis.WebSocket = previous;
   }
+});
+
+test('health exposes fail-closed Open-Source and Open-Data policy', async () => {
+  const {health} = await isolated();
+  const state = health();
+  assert.equal(state.ingress, 'fail_closed');
+  assert.equal(state.sourcePolicy, 'OPEN_SOURCE_AND_OPEN_DATA_ONLY');
+  assert.equal(state.admittedSources, 0);
 });
