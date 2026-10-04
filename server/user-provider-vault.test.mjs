@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Readable } from 'node:stream';
-import { createUserProviderVault, krakenSignature } from './user-provider-vault.mjs';
+import { createUserProviderVault, krakenPrivateMarketContext, krakenSignature } from './user-provider-vault.mjs';
 
 test('Kraken signing matches the published API-Sign test vector', () => {
   const signature = krakenSignature(
@@ -146,4 +146,69 @@ test('BYOK routes fail closed before any provider or Vault I/O without verified 
   assert.equal(handled, true);
   assert.equal(status, 401);
   assert.equal(networkCalls, 0);
+});
+
+
+test('BYOK private market context requires credential-bound Balance verification and never grants public rights', async () => {
+  const apiKey = 'owner-readonly-api-key';
+  const apiSecret = 'aGVsbG8tdGVzdC1zZWNyZXQtdGhhdC1pcy1sb25nLWVub3VnaA==';
+  const calls = [];
+  const fetchImpl = async (input, options = {}) => {
+    const url = new URL(String(input));
+    calls.push({ url: url.href, method: options.method || 'GET' });
+
+    if (url.pathname === '/0/private/Balance') {
+      assert.equal(options.method, 'POST');
+      assert.equal(options.headers['API-Key'], apiKey);
+      return Response.json({ error: [], result: { XXBT: '0.125' } });
+    }
+    if (url.pathname === '/0/public/Ticker') {
+      assert.equal(url.searchParams.get('pair'), 'XBTUSD');
+      return Response.json({
+        error: [],
+        result: {
+          XXBTZUSD: {
+            c: ['71234.50', '0.1'],
+            b: ['71230.10', '1', '1.0'],
+            a: ['71235.20', '1', '1.0'],
+            v: ['123.4', '456.7'],
+          },
+        },
+      });
+    }
+    throw new Error('Unexpected upstream');
+  };
+
+  const context = await krakenPrivateMarketContext(fetchImpl, { apiKey, apiSecret }, 'BTCUSD');
+  assert.equal(context.schema, 'CAPITAL_AI_BYOK_MARKET_CONTEXT@1');
+  assert.equal(context.provider, 'kraken');
+  assert.equal(context.symbol, 'BTCUSD');
+  assert.equal(context.price, 71234.5);
+  assert.equal(context.bid, 71230.1);
+  assert.equal(context.ask, 71235.2);
+  assert.equal(context.volume24h, 456.7);
+  assert.equal(context.dataScope, 'USER_PRIVATE_MARKET_CONTEXT');
+  assert.equal(context.credentialBound, true);
+  assert.equal(context.accountVerified, true);
+  assert.equal(context.rights.publicMarketDataAdmission, false);
+  assert.equal(context.rights.redistributionAllowed, false);
+  assert.equal(context.rights.publicDisplayAllowed, false);
+  assert.equal(context.rights.sharedCacheAllowed, false);
+  assert.equal(context.rights.jetStreamPublicationAllowed, false);
+  assert.equal(context.rights.durableRetentionAllowed, false);
+  assert.equal(calls.length, 2);
+  assert.doesNotMatch(JSON.stringify(context), new RegExp(apiKey));
+  assert.doesNotMatch(JSON.stringify(context), new RegExp(apiSecret));
+});
+
+test('BYOK private market context rejects unsupported symbols before public quote I/O', async () => {
+  let calls = 0;
+  await assert.rejects(
+    krakenPrivateMarketContext(async () => {
+      calls += 1;
+      throw new Error('must not run');
+    }, { apiKey: 'owner-readonly-api-key', apiSecret: 'secret-secret-secret-secret' }, 'AAPL'),
+    /BYOK_SYMBOL_NOT_SUPPORTED/,
+  );
+  assert.equal(calls, 0);
 });
