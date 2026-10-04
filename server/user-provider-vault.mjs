@@ -8,8 +8,9 @@ function adminConfig(env) {
   try {
     const url = secureUrl(env.SUPABASE_URL || env.VITE_SUPABASE_URL);
     const key = env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY || '';
-    if (url.href !== url.origin + '/' || key.length < 32) return null;
-    return { url: url.origin, key };
+    const fingerprintKey = env.AUTH_COOKIE_SIGNING_SECRET || '';
+    if (url.href !== url.origin + '/' || key.length < 32 || fingerprintKey.length < 32) return null;
+    return { url: url.origin, key, fingerprintKey };
   } catch {
     return null;
   }
@@ -213,7 +214,11 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
         return true;
       }
 
-      const fingerprint = createHash('sha256').update(apiKey).digest('hex').slice(0, 24);
+      const fingerprint = createHmac('sha256', config.fingerprintKey)
+        .update('capital-ai/byok-fingerprint/v1\0')
+        .update(apiKey)
+        .digest('hex')
+        .slice(0, 24);
       const secretPayload = JSON.stringify({ apiKey, apiSecret });
       try {
         await rpc(fetchImpl, config, 'capital_ai_upsert_user_provider_secret', {
