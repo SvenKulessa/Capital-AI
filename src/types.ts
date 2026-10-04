@@ -10,71 +10,15 @@
  * ============================================================================
  */
 
-/* === [PLATZHALTER: DATENQUELLE - ASSET-KLASSIFIKATION & MULTI-MARKT-TAXONOMIE] === */
-export type MainCategory = 'KRYPTO' | 'AKTIEN' | 'INDIZIES' | 'FOREX' | 'ROHSTOFFE';
+import type { MainCategory } from './entities/market/model';
 
-export interface AssetSubclass {
-  id: string;
-  name: string;
-  shortDesc: string;
-  examples: string[];
-  trending?: string;
-}
-
-export interface AssetClassInfo {
-  id: MainCategory;
-  name: string;
-  color: string;
-  description: string;
-  subclasses: AssetSubclass[];
-}
-
-export interface MarketAsset {
-  id: string;
-  name: string;
-  symbol: string;
-  value: string;
-  change: string;
-  isPositive: boolean;
-  mainCategory: MainCategory;
-  subclassId?: string;
-  subclassName?: string;
-  iconType: 'trend' | 'bitcoin' | 'gold' | 'forex' | 'stock' | 'crypto' | 'commodity' | 'index';
-  sparklinePath: string;
-  glowColor: string;
-  borderColor: string;
-  waveColor: string;
-  category: string;
-  high24h: string;
-  low24h: string;
-  volume24h: string;
-  aiScore: number | null;
-  aiRating: string;
-  description: string;
-  evidenceId?: string;
-  observedAt?: number;
-  provider?: string;
-  dataAvailability?: 'live' | 'cached';
-  quoteCurrency?: string;
-  price?: number;
-  actionable?: boolean;
-}
-
-export interface CoreModule {
-  id: string;
-  title: string;
-  description: string;
-  iconType: 'brain' | 'leaf' | 'book' | 'news' | 'screener' | 'builder';
-  tagline: string;
-  brandColor?: string; // Hex color from Brand Manifest v6.0
-  accentColor?: string;
-  details: {
-    features: string[];
-    useCase: string;
-    sampleMetrics: { label: string; value: string; score?: string }[];
-    newsItems?: { headline: string; source: string; time: string; sentiment: 'bullish' | 'bearish' | 'neutral'; impact: string }[];
-  };
-}
+export type {
+  MainCategory,
+  AssetSubclass,
+  AssetClassInfo,
+  MarketAsset,
+} from './entities/market/model';
+export type { CoreModule } from './entities/module/model';
 
 export interface KeyPillar {
   id: string;

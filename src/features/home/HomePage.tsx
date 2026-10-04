@@ -4,15 +4,15 @@ import { KeyPillars } from '../../components/KeyPillars';
 import { MarketOverview } from '../../components/MarketOverview';
 import { CoreModules } from '../../components/CoreModules';
 import { Footer } from '../../components/Footer';
-import { MarketSentiment } from '../../components/MarketSentiment';
-import { SectorAnalysis } from '../../components/SectorAnalysis';
+import { MarketSentiment } from '../market/MarketSentiment';
+import { SectorAnalysis } from '../market/SectorAnalysis';
 import { ResearchProjectSummary } from '../../components/ResearchLicensePages';
 import type {
   AssetSubclass,
-  CoreModule,
   MainCategory,
   MarketAsset,
-} from '../../types';
+} from '../../entities/market/model';
+import type { CoreModule } from '../../entities/module/model';
 
 type HomePageProps = {
   currentRoute: string;

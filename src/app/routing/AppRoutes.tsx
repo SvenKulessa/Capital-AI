@@ -14,10 +14,10 @@ import {
 import { MARKET_ASSETS } from '../../data/mockData';
 import type {
   AssetSubclass,
-  CoreModule,
   MainCategory,
   MarketAsset,
-} from '../../types';
+} from '../../entities/market/model';
+import type { CoreModule } from '../../entities/module/model';
 import { HomePage } from '../../features/home/HomePage';
 import { LEGAL_ROUTES } from './routes';
 
@@ -57,12 +57,12 @@ const ControlCenterPage = lazy(() =>
   })),
 );
 const EnterpriseScorerDashboard = lazy(() =>
-  import('../../components/EnterpriseScorerDashboard').then((module) => ({
+  import('../../features/screener/EnterpriseScorerDashboard').then((module) => ({
     default: module.EnterpriseScorerDashboard,
   })),
 );
 const ScreenerTable = lazy(() =>
-  import('../../components/ScreenerTable').then((module) => ({
+  import('../../features/screener/ScreenerTable').then((module) => ({
     default: module.ScreenerTable,
   })),
 );

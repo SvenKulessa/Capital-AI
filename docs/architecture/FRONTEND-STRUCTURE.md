@@ -60,3 +60,20 @@ korrelierbar.
 Das bestehende 500-kB-Gate wird nicht angehoben. Route-spezifische Ansichten
 bleiben lazy geladen. Die globale Modal-Schicht wird erst geladen, wenn tatsächlich
 ein Overlay geöffnet werden muss.
+
+
+## Migrationsphase 2 — Boundary Enforcement
+
+Ab `capital-ai-product/frontend-boundaries-20261004` gelten zusätzlich:
+
+- stabile Marktmodelle liegen authoritative unter `src/entities/market/model.ts`;
+- stabile Modulmodelle liegen authoritative unter `src/entities/module/model.ts`;
+- bestehende Exporte aus `src/types.ts` bleiben als Kompatibilitätsgrenze erhalten;
+- Screener-/Explainability-Implementierungen liegen unter `src/features/screener/`;
+- Market-Sentiment und Sector-UI liegen unter `src/features/market/`;
+- neutrale Bootstrap-, Status- und Data-Unavailable-UI liegt unter `src/shared/ui/`;
+- Browser-History/Popstate/App-Navigation liegt in `src/app/routing/useBrowserRoute.ts`;
+- `features -> app`, `entities -> app|features` und `shared -> app|features|entities`
+  werden durch `scripts/validate-frontend-boundaries.mjs` fail-closed geprüft;
+- alte `src/components/*`-Pfade bleiben vorläufig als reine Re-Export-Shims bestehen
+  und dürfen keine neue Fachlogik aufnehmen.
