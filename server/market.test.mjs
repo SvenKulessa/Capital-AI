@@ -3,7 +3,7 @@ import { strict as assert } from 'node:assert';
 let instance = 0;
 const isolated = async () => import(`./market.mjs?test=${++instance}`);
 import { infrastructure } from './infrastructure.mjs';
-import { MARKET_SOURCE_POLICY, admittedMarketSourcesFor, evaluateOpenSourceMarketAdmission, isAdmittedMarketSource } from './open-source-market-policy.mjs';
+import { BYOK_PRIVATE_SOURCE_POLICY, MARKET_SOURCE_POLICY, admittedMarketSourcesFor, evaluateOpenSourceMarketAdmission, isAdmittedMarketSource } from './open-source-market-policy.mjs';
 import { fetchOssAdapterHealth, getOssAdapterInventory } from './oss-provider-adapters.mjs';
 
 const original = { status: infrastructure.status, read: infrastructure.read, persist: infrastructure.persist };
@@ -137,4 +137,17 @@ test('reference-only admission cannot create a quote fact', async () => {
   const {observation} = await isolated();
   const fact = observation('AAPL', 'wikidata-reference', 123, Date.now(), 'USD', 'live', {value:123});
   assert.equal(fact, null);
+});
+
+
+test('BYOK private source policy never becomes public market admission', () => {
+  assert.equal(BYOK_PRIVATE_SOURCE_POLICY.mode, 'USER_SCOPED_PRIVATE_CONTEXT_ONLY');
+  assert.equal(BYOK_PRIVATE_SOURCE_POLICY.publicMarketAdmission, false);
+  assert.equal(BYOK_PRIVATE_SOURCE_POLICY.capabilities.privateMarketContext, true);
+  assert.equal(BYOK_PRIVATE_SOURCE_POLICY.capabilities.scoringContext, true);
+  assert.equal(BYOK_PRIVATE_SOURCE_POLICY.capabilities.publicMarketQuotes, false);
+  assert.equal(BYOK_PRIVATE_SOURCE_POLICY.sharedCacheAllowed, false);
+  assert.equal(BYOK_PRIVATE_SOURCE_POLICY.jetStreamPublicationAllowed, false);
+  assert.equal(admittedMarketSourcesFor('marketQuotes').length, 0);
+  assert.equal(isAdmittedMarketSource('kraken', 'marketQuotes'), false);
 });
