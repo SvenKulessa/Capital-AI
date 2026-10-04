@@ -31,6 +31,10 @@ services:
         sync: false
       - key: AUTH_COOKIE_SIGNING_SECRET
         sync: false
+      # Bearer token used by the existing protected /metrics and /api/internal/cads endpoints.
+      # Grafana/Prometheus-compatible collectors consume this contract; no Grafana secret is stored in the repo.
+      - key: OBSERVABILITY_TOKEN
+        sync: false
       - key: TELEGRAM_BOT_TOKEN
         sync: false
       - key: TELEGRAM_CHAT_ID
