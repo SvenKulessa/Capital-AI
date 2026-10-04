@@ -7,13 +7,20 @@ function githubApiError(message, status, body = null) {
   return error;
 }
 
-function validatedFetchUrl(rawUrl, owner, repo) {
+function validatedFetchPath(rawUrl, owner, repo) {
   const url = new URL(rawUrl);
   const prefix = `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/dependency-graph/sbom/fetch-report/`;
-  if (url.protocol !== 'https:' || url.hostname !== 'api.github.com' || !url.pathname.startsWith(prefix)) {
+  if (
+    url.protocol !== 'https:' ||
+    url.hostname !== 'api.github.com' ||
+    url.port ||
+    url.username ||
+    url.password ||
+    !url.pathname.startsWith(prefix)
+  ) {
     throw new Error('GitHub returned an unexpected SBOM fetch URL');
   }
-  return url;
+  return `${url.pathname}${url.search}`;
 }
 
 function positiveInteger(value, fallback, max) {
@@ -34,27 +41,31 @@ export async function requestAsyncSbom({ owner, repo, token, fetchImpl = fetch }
   if (text) {
     try { body = JSON.parse(text); } catch { body = {message:text}; }
   }
-  if (response.status !== 201 || !body?.sbom_url) throw githubApiError(`GitHub async SBOM generation failed with ${response.status}`, response.status, body);
-  return validatedFetchUrl(body.sbom_url, owner, repo).toString();
+  if (response.status !== 201 || !body?.sbom_url) {
+    throw githubApiError(`GitHub async SBOM generation failed with ${response.status}`, response.status, body);
+  }
+  return `https://api.github.com${validatedFetchPath(body.sbom_url, owner, repo)}`;
 }
 
 export async function fetchAsyncSbom({ sbomUrl, owner, repo, token, fetchImpl = fetch }) {
-  const url = validatedFetchUrl(sbomUrl, owner, repo);
-  const response = await fetchImpl(url, { method: 'GET', redirect: 'manual', headers: githubHeaders(token) });
+  const path = validatedFetchPath(sbomUrl, owner, repo);
+
+  // Keep the server-side request target fixed to GitHub's validated REST origin.
+  // The fetch implementation follows GitHub's temporary 302 download redirect;
+  // application code never consumes Location as a new request target.
+  const response = await fetchImpl(`https://api.github.com${path}`, {
+    method: 'GET',
+    redirect: 'follow',
+    headers: githubHeaders(token),
+  });
+
   if (response.status === 202) return {status:'pending', sbom:null};
-  if (response.status !== 302) {
+  if (!response.ok) {
     const text = await response.text();
     throw githubApiError(`GitHub async SBOM fetch failed with ${response.status}`, response.status, text || null);
   }
-  const location = response.headers.get('location');
-  if (!location) throw new Error('GitHub async SBOM redirect is missing Location');
-  const downloadUrl = new URL(location);
-  if (downloadUrl.protocol !== 'https:') throw new Error('GitHub async SBOM download URL must use HTTPS');
 
-  // Never forward the installation token to the temporary download origin.
-  const download = await fetchImpl(downloadUrl, {method:'GET', redirect:'follow', headers:{'user-agent':'legal-policy-github-app/0.2'}});
-  if (!download.ok) throw githubApiError(`GitHub async SBOM download failed with ${download.status}`, download.status);
-  const sbom = await download.json();
+  const sbom = await response.json();
   return {status:'ready', sbom};
 }
 

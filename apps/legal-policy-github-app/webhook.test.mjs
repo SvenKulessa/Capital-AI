@@ -50,19 +50,38 @@ test('SBOM source binding requires exact PR head identity', () => {
   assert.equal(sbomBindsToSource(sbom,'abc'),true); assert.equal(sbomBindsToSource(sbom,'def'),false);
 });
 
-test('asynchronous SBOM flow handles 201, 202 and 302 without leaking installation token to download origin', async () => {
+test('asynchronous SBOM flow keeps every application-level fetch on the validated GitHub report endpoint', async () => {
   const calls=[]; let poll=0;
   const fetchImpl=async (url, options={})=>{
     calls.push({url:String(url),options});
     if(String(url).endsWith('/generate-report')) return new Response(JSON.stringify({sbom_url:'https://api.github.com/repos/acme/repo/dependency-graph/sbom/fetch-report/uuid'}),{status:201,headers:{'content-type':'application/json'}});
-    if(String(url).includes('/fetch-report/uuid')) { poll+=1; if(poll===1) return new Response(null,{status:202}); return new Response(null,{status:302,headers:{location:'https://objects.example.test/sbom.json'}}); }
-    if(String(url)==='https://objects.example.test/sbom.json') return new Response(JSON.stringify({packages:[]}),{status:200,headers:{'content-type':'application/json'}});
+    if(String(url).includes('/fetch-report/uuid')) {
+      poll+=1;
+      if(poll===1) return new Response(null,{status:202});
+      return new Response(JSON.stringify({packages:[]}),{status:200,headers:{'content-type':'application/json'}});
+    }
     throw new Error(`unexpected ${url}`);
   };
   const result=await generateAndFetchAsyncSbom({owner:'acme',repo:'repo',token:'installation-secret',fetchImpl,attempts:3,pollDelayMs:0,sleep:async()=>{}});
-  assert.equal(result.status,'ready'); assert.equal(calls.at(-1).options.headers.authorization,undefined);
+  assert.equal(result.status,'ready');
+  assert.equal(calls.length,3);
+  for (const call of calls) assert.match(call.url,/^https:\/\/api\.github\.com\/repos\/acme\/repo\/dependency-graph\/sbom\//);
+  assert.equal(calls.at(-1).options.redirect,'follow');
 });
 
+test('asynchronous SBOM fetch URL rejects alternate hosts and embedded credentials', async () => {
+  const badUrls=[
+    'https://evil.example/repos/acme/repo/dependency-graph/sbom/fetch-report/uuid',
+    'https://user:pass@api.github.com/repos/acme/repo/dependency-graph/sbom/fetch-report/uuid',
+  ];
+  for (const sbom_url of badUrls) {
+    const fetchImpl=async () => new Response(JSON.stringify({sbom_url}),{status:201,headers:{'content-type':'application/json'}});
+    await assert.rejects(
+      generateAndFetchAsyncSbom({owner:'acme',repo:'repo',token:'secret',fetchImpl,attempts:1,pollDelayMs:0,sleep:async()=>{}}),
+      /unexpected SBOM fetch URL/,
+    );
+  }
+});
 test('evidence hash is canonical and evidence record stores metadata instead of source contents', () => {
   assert.equal(evidenceHash({b:1,a:2}), evidenceHash({a:2,b:1}));
   const result={policyId:'LEGAL_POLICY_COMMUNITY@1',releaseDecision:'ALLOW',counts:{ALLOW:1,ALLOW_WITH_OBLIGATIONS:0,LEGAL_REVIEW_REQUIRED:0,BLOCKED:0},components:[{component:'x',exactVersion:'1',artifactIdentity:'pkg:npm/x@1',licenseExpression:'MIT',usageClass:'BUILD_ONLY',legalStatus:'ALLOW',obligations:[],outstandingObligations:[]}],evaluatedAt:'2026-10-04T00:00:00.000Z'};
