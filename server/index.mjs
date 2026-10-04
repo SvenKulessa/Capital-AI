@@ -15,6 +15,7 @@ import { serveMtaSts } from './mta-sts.mjs';
 import { researchMetadata } from '../shared/research-metadata.mjs';
 import { BILLING_CATALOG } from './billing-catalog.mjs';
 import { createVocabularyCheckout } from './vocabulary-checkout.mjs';
+import { QUANT_PRO_IDS } from './vocabulary-quant-pro.mjs';
 import {
   VOCABULARY_PUBLIC_COUNT,
   vocabularyMetadata,
@@ -36,14 +37,16 @@ const buildIdentity =
     : { bound: false, sourceSha: null };
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.txt': 'text/plain; charset=utf-8', '.json': 'application/json; charset=utf-8' };
 const headers = { 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'strict-origin-when-cross-origin', 'X-Frame-Options': 'DENY', 'Permissions-Policy': 'camera=(), microphone=(), geolocation=()', 'Strict-Transport-Security': 'max-age=31536000', 'Content-Security-Policy': "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" };
+const publicVocabularyEntries = vocabularyMetadata.filter(entry => !QUANT_PRO_IDS.has(entry.id));
+const publicVocabularyCount = publicVocabularyEntries.length;
 const publicVocabularyMetadata = {
   '/learning': {
     title: 'Capital-AI | Learning Portal & Fachbegriffe',
-    description: `Learning Portal von Capital-AI mit ${VOCABULARY_PUBLIC_COUNT} konsolidierten Fachbegriffen aus Marktanalyse, Scoring, Daten, Plattform, Security, Produkt, Governance und Mobile Runtime.`,
+    description: `Learning Portal von Capital-AI mit ${publicVocabularyCount} konsolidierten Fachbegriffen aus Marktanalyse, Scoring, Daten, Plattform, Security, Produkt, Governance und Mobile Runtime.`,
   },
   '/vocabulary': {
-    title: `Capital-AI Vocabulary | ${VOCABULARY_PUBLIC_COUNT} Fachbegriffe & Thesaurus`,
-    description: `${VOCABULARY_PUBLIC_COUNT} konsolidierte Capital-AI Fachbegriffe mit Definitionen und jeweils drei Thesaurus-Begriffen aus Marktanalyse, Scoring, Daten, Plattform, Security, Produkt, Governance und Mobile Runtime.`,
+    title: `Capital-AI Vocabulary | ${publicVocabularyCount} Fachbegriffe & Thesaurus`,
+    description: `${publicVocabularyCount} konsolidierte Capital-AI Fachbegriffe mit Definitionen und jeweils drei Thesaurus-Begriffen aus Marktanalyse, Scoring, Daten, Plattform, Security, Produkt, Governance und Mobile Runtime.`,
   },
 };
 const sitemapBasePaths = [
@@ -74,13 +77,14 @@ function vocabularyFallback(entry) {
   return `<main><article><p><a href="/vocabulary">Capital-AI Vocabulary</a></p><h1>${escapeHtml(entry.term)}</h1><p>${escapeHtml(entry.description)}</p><p>Kategorie: ${escapeHtml(entry.category)}</p><h2>Thesaurus</h2><ul>${thesaurus}</ul></article></main>`;
 }
 function vocabularyLandingFallback() {
-  const links = vocabularyMetadata
+  const links = publicVocabularyEntries
     .map(entry => `<li><a href="${entry.path}">${escapeHtml(entry.term)}</a> – ${escapeHtml(entry.category)}</li>`)
     .join('');
-  return `<main><article><h1>Capital-AI Vocabulary</h1><p>${VOCABULARY_PUBLIC_COUNT} konsolidierte Fachbegriffe mit Definitionen und jeweils drei Thesaurus-Begriffen.</p><ul>${links}</ul></article></main>`;
+  return `<main><article><h1>Capital-AI Vocabulary</h1><p>${publicVocabularyCount} konsolidierte Fachbegriffe mit Definitionen und jeweils drei Thesaurus-Begriffen.</p><ul>${links}</ul></article></main>`;
 }
 function injectVocabularySeo(html, pathname) {
-  const entry = vocabularyMetadataByPath.get(pathname);
+  const candidateEntry = vocabularyMetadataByPath.get(pathname);
+  const entry = candidateEntry && !QUANT_PRO_IDS.has(candidateEntry.id) ? candidateEntry : null;
   const landing = publicVocabularyMetadata[pathname];
   if (!entry && !landing) return html;
 
@@ -122,7 +126,7 @@ function injectVocabularySeo(html, pathname) {
     ? vocabularyFallback(entry)
     : pathname === '/vocabulary'
       ? vocabularyLandingFallback()
-      : `<main><article><h1>Capital-AI Learning Portal</h1><p>${escapeHtml(description)}</p><p><a href="/vocabulary">Zum Vocabulary mit ${VOCABULARY_PUBLIC_COUNT} Fachbegriffen</a></p></article></main>`;
+      : `<main><article><h1>Capital-AI Learning Portal</h1><p>${escapeHtml(description)}</p><p><a href="/vocabulary">Zum Vocabulary mit ${publicVocabularyCount} Fachbegriffen</a></p></article></main>`;
   body = body.replace(
     /<div id="root">[\s\S]*?<script type="module"/,
     `<div id="root">${fallback}</div>\n    <script type="module"`,
@@ -209,7 +213,7 @@ export function createApp(root = defaultRoot, options = {}) {
     return res.end('User-agent: *\nAllow: /\nSitemap: https://capital-ai.online/sitemap.xml\n');
   }
   if (publicPath === '/sitemap.xml') {
-    const paths = [...new Set([...sitemapBasePaths, ...vocabularyMetadata.map(entry => entry.path)])];
+    const paths = [...new Set([...sitemapBasePaths, ...publicVocabularyEntries.map(entry => entry.path)])];
     const xml = '<?xml version="1.0" encoding="UTF-8"?>' +
       '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' +
       paths.map(route => `<url><loc>https://capital-ai.online${escapeXml(route)}</loc></url>`).join('') +
