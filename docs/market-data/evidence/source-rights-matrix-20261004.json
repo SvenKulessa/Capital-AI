@@ -272,6 +272,11 @@
       "termsObserved": {
         "lastUpdated": "2026-01-01",
         "observedAt": "2026-10-04"
+      },
+      "mobileAdmission": {
+        "decision": "BLOCK",
+        "reason": "NO_QUALIFYING_OPEN_DATA_LICENCE_EVIDENCE_FOR_CONCRETE_DATASET",
+        "note": "Kommerzielle Vertragsrechte können Web-/andere Produkt-Scope-Fragen klären, schließen unter Owner-Option A jedoch nicht das Mobile-Open-Data-Gate."
       }
     },
     {
@@ -328,6 +333,11 @@
       "termsObserved": {
         "marketDataTermsLastUpdated": "2025-08-28",
         "observedAt": "2026-10-04"
+      },
+      "mobileAdmission": {
+        "decision": "BLOCK",
+        "reason": "NO_QUALIFYING_OPEN_DATA_LICENCE_EVIDENCE_FOR_CONCRETE_DATASET",
+        "note": "Kommerzielle Vertragsrechte können Web-/andere Produkt-Scope-Fragen klären, schließen unter Owner-Option A jedoch nicht das Mobile-Open-Data-Gate."
       }
     },
     {
@@ -388,6 +398,11 @@
       "quotaCostExpiryTerms": "PUBLISHED_PRICES_ONLY_ACTUAL_PLAN_UNKNOWN",
       "termsObserved": {
         "observedAt": "2026-10-04"
+      },
+      "mobileAdmission": {
+        "decision": "BLOCK",
+        "reason": "NO_QUALIFYING_OPEN_DATA_LICENCE_EVIDENCE_FOR_CONCRETE_DATASET",
+        "note": "Kommerzielle Vertragsrechte können Web-/andere Produkt-Scope-Fragen klären, schließen unter Owner-Option A jedoch nicht das Mobile-Open-Data-Gate."
       }
     },
     {
@@ -438,6 +453,11 @@
       "termsObserved": {
         "globalTermsLastUpdated": "2026-09-14",
         "observedAt": "2026-10-04"
+      },
+      "mobileAdmission": {
+        "decision": "BLOCK",
+        "reason": "NO_QUALIFYING_OPEN_DATA_LICENCE_EVIDENCE_FOR_CONCRETE_DATASET",
+        "note": "Kommerzielle Vertragsrechte können Web-/andere Produkt-Scope-Fragen klären, schließen unter Owner-Option A jedoch nicht das Mobile-Open-Data-Gate."
       }
     }
   ],
@@ -460,24 +480,28 @@
     "currentMobileAdapter": "projek eigener Apache-2.0 Adapter; verified=false bleibt erhalten"
   },
   "architectureFinding": {
-    "state": "OWNER_DECISION_REQUIRED_NO_MUTATION",
+    "state": "OWNER_DECIDED_NO_CODE_MUTATION_REQUIRED",
     "currentMobileGate": "OSI-Softwarelizenz plus CC0/CC-BY/CC-BY-SA/ODbL Datenlizenz",
-    "impact": "Ein proprietär-kommerziell lizenzierter Feed kann selbst mit verifiziertem Vertrag den aktuellen Gate-Code nicht bestehen.",
-    "recommendedOption": "B_TWO_INDEPENDENT_GATES_WITH_EXISTING_AGGREGATE",
-    "options": {
-      "A": "Open-Data-only bleibt die einzige Mobile-Zulassung.",
-      "B": "OSS_SOFTWARE_ADMISSION und DATA_RIGHTS_ADMISSION getrennt, OSS_SOURCE_ADMISSION bleibt fail-closed Aggregat.",
-      "C": "Bestehendes Einzelgate für proprietäre Datenlizenzen erweitern; nicht empfohlen."
-    }
+    "selectedOption": "A_OPEN_DATA_ONLY",
+    "effect": "Der bestehende Mobile-Gate bleibt unverändert und fail-closed. Proprietäre kommerzielle Datenfeeds sind für Mobile nicht zulassungsfähig, solange keine qualifizierende Open-Data-Lizenz für das konkrete Dataset vorliegt.",
+    "supersededRecommendation": "B_TWO_INDEPENDENT_GATES_WITH_EXISTING_AGGREGATE"
   },
   "gateAssessment": {
     "OSS_SOURCE_ADMISSION": {
       "state": "FAIL",
-      "reason": "Keine Quelle besitzt zugleich Mobile-kompatible Open-Data-Evidence und verifizierten kommerziellen Dataset-/Use-Case-Scope."
+      "reason": "Owner-Option A ist entschieden. Keine geprüfte Quelle besitzt derzeit zugleich Mobile-kompatible OSS-Software-/Adapter-Evidence, eine qualifizierende Open-Data-Lizenz für das konkrete Dataset und die erforderliche Use-Case-/Provenance-Evidence."
     },
     "MULTI_ASSET_LIVE_UNIVERSE": {
       "state": "FAIL",
       "reason": "Katalogmanifest vorhanden, aber Rechte nicht admitted, Live-OHLCV/Trading-Status nicht geprüft und Rohstoffpilot enthält nur 8 kanonische Underlyings."
     }
+  },
+  "currentMainCorrelationSha": "c1a720a32a054c16944e6c582086a509be137fc4",
+  "ownerDecision": {
+    "decidedAt": "2026-10-04",
+    "option": "A_OPEN_DATA_ONLY",
+    "scope": "CAPITAL_AI_MOBILE_SOURCE_ADMISSION",
+    "effect": "Mobile accepts only an admitted OSS software/adapter path plus qualifying open-data licence evidence. A proprietary commercial data contract alone cannot satisfy OSS_SOURCE_ADMISSION.",
+    "gateMutationRequired": false
   }
 }
