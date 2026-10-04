@@ -6,19 +6,29 @@ import {
   VOCABULARY_PUBLIC_COUNT,
   vocabularyMetadata,
 } from '../../../shared/vocabulary-metadata.mjs';
+import { QUANT_PRO_TERMS } from '../../../server/vocabulary-quant-pro.mjs';
 
 function normalize(value: string): string {
   return value.normalize('NFKC').toLocaleLowerCase('de-DE').replace(/[^a-z0-9äöüß]+/g, '');
 }
 
-test('repository vocabulary is deduplicated and exposes exactly three thesaurus entries per term', () => {
-  assert.equal(VOCABULARY_TERMS.length, 294, 'expected the merged four-repository vocabulary count');
-  assert.equal(VOCABULARY_PUBLIC_COUNT, VOCABULARY_TERMS.length, 'SEO projection count must match visible vocabulary');
+test('browser vocabulary contains no paid Quant/Pro payload and canonical total remains stable', () => {
+  assert.ok(VOCABULARY_TERMS.length > 0);
+  assert.ok(QUANT_PRO_TERMS.length > 0);
+  assert.equal(
+    VOCABULARY_TERMS.length + QUANT_PRO_TERMS.length,
+    294,
+    'public plus server-only vocabulary must preserve the canonical merged count',
+  );
+  assert.equal(VOCABULARY_PUBLIC_COUNT, 294, 'canonical SEO projection count remains stable');
+  assert.equal(VOCABULARY_TERMS.some((term) => term.level === 'Quant / Pro'), false);
+  assert.equal(QUANT_PRO_TERMS.every((term) => term.level === 'Quant / Pro'), true);
 
-  const normalizedTerms = VOCABULARY_TERMS.map((term) => normalize(term.term));
+  const allTerms = [...VOCABULARY_TERMS, ...QUANT_PRO_TERMS];
+  const normalizedTerms = allTerms.map((term) => normalize(term.term));
   assert.equal(new Set(normalizedTerms).size, normalizedTerms.length, 'term names must be deduplicated');
 
-  for (const term of VOCABULARY_TERMS) {
+  for (const term of allTerms) {
     assert.equal(term.thesaurus.length, 3, `${term.id} must expose exactly three thesaurus entries`);
     for (const equivalent of term.thesaurus) {
       assert.ok(equivalent.trim().length > 0, `${term.id} contains an empty thesaurus entry`);
@@ -27,16 +37,15 @@ test('repository vocabulary is deduplicated and exposes exactly three thesaurus 
 });
 
 test('presentation vocabulary does not expose repository path provenance', () => {
-  for (const term of VOCABULARY_TERMS) {
+  for (const term of [...VOCABULARY_TERMS, ...QUANT_PRO_TERMS]) {
     assert.equal('sourcePath' in term, false);
     assert.equal('sourceFile' in term, false);
     assert.equal('sourceDocument' in term, false);
   }
 });
 
-
-test('SEO vocabulary projection is one-to-one with visible terms', () => {
-  const vocabularyIds = VOCABULARY_TERMS.map((term) => term.id).sort();
+test('canonical metadata covers public and server-only terms exactly once', () => {
+  const vocabularyIds = [...VOCABULARY_TERMS, ...QUANT_PRO_TERMS].map((term) => term.id).sort();
   const seoIds = vocabularyMetadata.map((entry) => entry.id).sort();
 
   assert.deepEqual(seoIds, vocabularyIds);
