@@ -12,6 +12,7 @@
 !server/
 !server/index.mjs
 !server/market.mjs
+!server/open-source-market-policy.mjs
 !server/advisor.ts
 !server/prompt-injection-guard.mjs
 !server/prompt-injection-guard.test.mjs
