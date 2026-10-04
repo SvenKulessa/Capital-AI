@@ -40,8 +40,14 @@ Produktive Marktdaten, Providerrechte, Scoring-Eligibility und Release-Freigaben
 ```mermaid
 flowchart TB
   USER[Web / Agent Client] --> PRODUCT[PRODUCT]
-  PRODUCT --> MARKET[MARKET\nScoring · Screener · Provider]
-  MARKET --> DATA[NATS + Valkey\nEvidence Transport]
+  PROVIDERS[Admitted Open-Data Providers] --> INGEST[Ingestion · Normalize · Admission]
+  INGEST --> NATS[NATS JetStream\nCanonical Event Backbone]
+  NATS --> DB[(Supabase / PostgreSQL\nCanonical Market Source of Record)]
+  NATS --> MARKET[MARKET\nScoring · Screener · Evidence]
+  NATS --> VALKEY[Valkey\nHot State · Read Model]
+  DB --> MARKET
+  VALKEY --> MARKET
+  MARKET --> PRODUCT
   PRODUCT --> PLATFORM[PLATFORM\nRuntime · Docker · CI/CD]
   MARKET --> TRUST[TRUST\nSecurity · License · Governance]
   PLATFORM --> TRUST
@@ -50,6 +56,19 @@ flowchart TB
   GHCR --> RUNTIME[Render Runtime]
   GROWTH[GROWTH\nDocs · SEO · Social · Branding] --> PRODUCT
 ```
+
+### Canonical Market Data Flow
+
+NATS JetStream ist der kanonische Event-Backbone. Erst nach einem bestätigten JetStream-Ack wird ein Market-Fact in die persistente PostgreSQL/Supabase-Ablage übernommen. Valkey enthält ausschließlich regenerierbaren Hot State und ist weder Source of Record noch Evidence-Authority. MARKET darf Cache-Daten nur verwenden, wenn die zugehörige durable Evidence verifizierbar ist.
+
+```text
+Provider → Admission → NATS JetStream
+                     ├─→ Canonical PostgreSQL/Supabase
+                     ├─→ MARKET Scoring/Screener
+                     └─→ Valkey Hot State
+```
+
+`scoreEligible` ist eine Market-Data-/Scoring-Zulassung und bleibt von `decisionEligible` getrennt. `decisionEligible` gehört zum Release-/Policy-Pfad und darf nicht aus einem erfolgreichen Score oder verfügbaren Cache abgeleitet werden.
 
 ### Build-once / Promote-many
 
