@@ -110,6 +110,14 @@ test('paid user receives server-only Quant/Pro terms', async () => {
     if(path.endsWith('/capital_ai_get_vocabulary_access')){
       return new Response(JSON.stringify({quizUsed:true,quantProEntitled:true}),{status:200,headers:{'content-type':'application/json'}});
     }
+    if(path.endsWith('/capital_ai_get_quant_pro_vocabulary')){
+      return new Response(JSON.stringify([{
+        id:'server-only-test',
+        level:'Quant / Pro',
+        term:'Server-only test term',
+        thesaurus:['A','B','C'],
+      }]),{status:200,headers:{'content-type':'application/json'}});
+    }
     throw new Error('unexpected request '+url);
   };
   const checkout=createVocabularyCheckout({env,fetchImpl,auth:auth()});
