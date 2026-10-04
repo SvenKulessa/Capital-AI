@@ -1,6 +1,6 @@
 import { createSign } from 'node:crypto';
 
-const API_VERSION = '2026-03-10';
+export const GITHUB_API_VERSION = '2026-03-10';
 
 function base64url(input) {
   return Buffer.from(input).toString('base64url');
@@ -17,21 +17,29 @@ export function createAppJwt({ appId, privateKey, now = Math.floor(Date.now() / 
   return `${unsigned}.${signer.sign(privateKey, 'base64url')}`;
 }
 
+export function githubHeaders(token, extra = {}) {
+  return {
+    accept: 'application/vnd.github+json',
+    authorization: `Bearer ${token}`,
+    'x-github-api-version': GITHUB_API_VERSION,
+    'user-agent': 'legal-policy-github-app/0.2',
+    ...extra,
+  };
+}
+
 export async function githubJson(path, { token, method = 'GET', body, fetchImpl = fetch } = {}) {
   const response = await fetchImpl(`https://api.github.com${path}`, {
     method,
     redirect: 'follow',
-    headers: {
-      accept: 'application/vnd.github+json',
-      authorization: `Bearer ${token}`,
-      'x-github-api-version': API_VERSION,
-      'user-agent': 'legal-policy-github-app/0.1',
-      ...(body ? {'content-type':'application/json'} : {}),
-    },
+    headers: githubHeaders(token, body ? {'content-type':'application/json'} : {}),
     body: body ? JSON.stringify(body) : undefined,
   });
   const text = await response.text();
-  const parsed = text ? JSON.parse(text) : null;
+  let parsed = null;
+  if (text) {
+    try { parsed = JSON.parse(text); }
+    catch { parsed = {message: text}; }
+  }
   if (!response.ok) {
     const error = new Error(`GitHub API ${method} ${path} failed with ${response.status}`);
     error.status = response.status;
@@ -42,12 +50,7 @@ export async function githubJson(path, { token, method = 'GET', body, fetchImpl 
 }
 
 export async function createInstallationToken({ installationId, appJwt, fetchImpl = fetch }) {
-  const response = await githubJson(`/app/installations/${installationId}/access_tokens`, {
-    token: appJwt,
-    method: 'POST',
-    body: {},
-    fetchImpl,
-  });
+  const response = await githubJson(`/app/installations/${installationId}/access_tokens`, { token: appJwt, method: 'POST', body: {}, fetchImpl });
   return response.token;
 }
 

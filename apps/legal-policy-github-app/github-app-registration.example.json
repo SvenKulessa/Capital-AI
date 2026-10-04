@@ -12,5 +12,5 @@
     "checks": "write",
     "metadata": "read"
   },
-  "events": ["pull_request"]
+  "events": ["pull_request", "installation"]
 }

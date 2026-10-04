@@ -20,10 +20,46 @@ export function dependencyDiffToInventory({ dependencies, repository, sourceSha,
       modified: false,
       evidenceRefs: dependency.source_repository_url ? [dependency.source_repository_url] : [],
     }));
-
   return { subject: repository, sourceSha, components };
+}
+
+export function spdxSbomToInventory({ sbom, repository, sourceSha, repositoryConfig = {} }) {
+  const document = sbom?.sbom ?? sbom;
+  const packages = Array.isArray(document?.packages) ? document.packages : [];
+  const usageClass = repositoryConfig.sbomUsageClass ?? repositoryConfig.defaultUsageClass ?? null;
+  const components = packages
+    .filter((pkg) => pkg?.SPDXID !== 'SPDXRef-Repository' && pkg?.name !== repository)
+    .map((pkg) => {
+      const purl = (pkg.externalRefs ?? []).find((ref) => String(ref.referenceType).toLowerCase() === 'purl')?.referenceLocator ?? null;
+      const declared = pkg.licenseDeclared && pkg.licenseDeclared !== 'NOASSERTION' ? pkg.licenseDeclared : null;
+      const concluded = pkg.licenseConcluded && pkg.licenseConcluded !== 'NOASSERTION' ? pkg.licenseConcluded : null;
+      return {
+        component: pkg.name ?? pkg.SPDXID ?? 'unknown',
+        exactVersion: pkg.versionInfo ?? null,
+        artifactIdentity: purl,
+        licenseExpression: declared ?? concluded,
+        usageClass,
+        modified: false,
+        evidenceRefs: purl ? [purl] : [],
+      };
+    });
+  return { subject: repository, sourceSha, components };
+}
+
+export function sbomBindsToSource(sbom, sourceSha) {
+  if (!sourceSha) return false;
+  const document = sbom?.sbom ?? sbom;
+  const packages = Array.isArray(document?.packages) ? document.packages : [];
+  const repositoryPackage = packages.find((pkg) => pkg?.SPDXID === 'SPDXRef-Repository');
+  if (!repositoryPackage) return false;
+  if (repositoryPackage.versionInfo === sourceSha) return true;
+  return (repositoryPackage.externalRefs ?? []).some((ref) => String(ref.referenceLocator ?? '').endsWith(`@${sourceSha}`));
 }
 
 export function evaluateDependencyDiff(args, policy) {
   return evaluateInventory(dependencyDiffToInventory(args), policy);
+}
+
+export function evaluateSpdxSbom(args, policy) {
+  return evaluateInventory(spdxSbomToInventory(args), policy);
 }
