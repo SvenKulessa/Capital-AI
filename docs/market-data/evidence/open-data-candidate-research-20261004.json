@@ -179,5 +179,107 @@
   },
   "referenceCoverage": {
     "wikidataEntitiesVerified": 3
-  }
+  },
+  "continuationReviews": [
+    {
+      "observedAt": "2026-10-04T19:14:04.087101Z",
+      "currentMainSha": "776a743688f13013b09c95b91a52ef9793d1a5eb",
+      "runtimeCodeBasisSha": "16b2fb506cc5f7c49a1edda2bc18738518d24680",
+      "marketProduction": "BLOCKED",
+      "evidenceScope": "Research only; no source, instrument, rights or runtime admission is granted by this record.",
+      "candidates": [
+        {
+          "id": "coinspectrum-bitcoin",
+          "assetClass": "crypto",
+          "canonicalSymbol": "BTC",
+          "endpoint": "https://coin-spectrum.com/api/v1/assets/bitcoin.json",
+          "authentication": "NONE",
+          "interfaces": [
+            "static HTTPS JSON"
+          ],
+          "dataLicenseClaim": "CC-BY-4.0",
+          "evidenceUrls": [
+            "https://coin-spectrum.com/api/",
+            "https://coin-spectrum.com/faq/",
+            "https://coin-spectrum.com/about/methodology"
+          ],
+          "freshness": {
+            "observedAt": "2026-10-04T19:14:04.087101Z",
+            "snapshotGeneratedAt": "2026-10-04T16:21:26.395Z",
+            "snapshotAgeSeconds": 10358,
+            "providerObservedAt": null,
+            "snapshotSha256": "0d60545988b89409e2a2c53be8dac764f78f6cf29fd3d2e48b3e152a660ce59b"
+          },
+          "upstreamLineage": "FAQ lists exchange and aggregator fallbacks, including Binance and CoinGecko; this payload does not identify the instrument's contributing venue/provider.",
+          "rateLimits": "API documentation claims no per-key limit; CDN abuse protection remains applicable.",
+          "blockers": [
+            "UPSTREAM_COMMERCIAL_RIGHTS_UNVERIFIED",
+            "INSTRUMENT_PROVIDER_PROVENANCE_MISSING",
+            "PROVIDER_OBSERVATION_TIMESTAMP_MISSING",
+            "SNAPSHOT_EXCEEDS_LIVE_QUOTE_FRESHNESS",
+            "PINNED_OPEN_SOURCE_SOFTWARE_EVIDENCE_MISSING"
+          ],
+          "commercialUse": "UNVERIFIED",
+          "displayAllowed": "UNVERIFIED",
+          "derivedUseAllowed": "UNVERIFIED",
+          "retentionAllowed": "UNVERIFIED",
+          "redistributionAllowed": "UNVERIFIED",
+          "productionAdmission": "BLOCKED",
+          "scoreEligible": false
+        },
+        {
+          "id": "bykarantelicom-crypto-datasets",
+          "assetClass": "crypto",
+          "evidenceUrls": [
+            "https://github.com/bykarantelicom/crypto-datasets"
+          ],
+          "dataLicenseClaim": "CC0-1.0 for frozen repository files; subsequent live data has separate terms.",
+          "coverage": "Repository frozen 2026-09-10; includes exchange/derivative daily snapshots, not a current admitted quote.",
+          "blockers": [
+            "FROZEN_DATASET_NOT_LIVE_QUOTES",
+            "UPSTREAM_RIGHTS_UNVERIFIED",
+            "LIVE_COMMERCIAL_PATH_REQUIRES_SEPARATE_BUSINESS_LICENSE"
+          ],
+          "productionAdmission": "BLOCKED",
+          "scoreEligible": false
+        },
+        {
+          "id": "world-bank-commodity-prices-followup",
+          "assetClass": "commodities",
+          "evidenceUrls": [
+            "https://datacatalog.worldbank.org/search/dataset/0038238/commodity-prices-history-and-projections",
+            "https://www.worldbank.org/ext/en/legal/terms-conditions/datasets"
+          ],
+          "dataLicenseClaim": "CC-BY-4.0 subject to dataset attribution and third-party conditions.",
+          "coverage": "Monthly commodity price series; suitable for investigating a separate historical use case, not the live quote contract.",
+          "blockers": [
+            "USE_CASE_FRESHNESS_MISMATCH",
+            "SERIES_SPECIFIC_THIRD_PARTY_RIGHTS_REVIEW_REQUIRED",
+            "REAL_INSTRUMENT_MAPPING_REQUIRED"
+          ],
+          "productionAdmission": "BLOCKED",
+          "scoreEligible": false
+        },
+        {
+          "id": "rateauthority-insurance-rates",
+          "evidenceUrls": [
+            "https://www.rateauthority.org/data/license/"
+          ],
+          "dataLicenseClaim": "CC-BY-4.0",
+          "coverage": "Insurance rate baseline; not a traded market instrument price.",
+          "blockers": [
+            "NOT_MARKET_QUOTE_DATA"
+          ],
+          "productionAdmission": "BLOCKED",
+          "scoreEligible": false
+        }
+      ],
+      "nextEvidenceRequired": [
+        "A single real instrument with provider/venue provenance and provider observation timestamp.",
+        "Verifiable commercial, display, derived-use, retention and redistribution rights for that exact dataset/instrument/use case, plus applicable open-source evidence.",
+        "TRUST review before source admission; then quote -> evidence -> replay -> scoring validation."
+      ],
+      "productionActivationPerformed": false
+    }
+  ]
 }
