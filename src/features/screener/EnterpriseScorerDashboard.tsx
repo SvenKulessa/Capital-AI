@@ -34,6 +34,17 @@ export interface EnterpriseScorerDashboardProps {
   onSelectAsset?: (symbol: string) => void;
 }
 
+interface PrivatePortfolioHolding {
+  asset: string;
+  balance: string;
+}
+
+interface PrivatePortfolioContext {
+  provider: 'kraken';
+  dataScope: 'USER_PRIVATE_ACCOUNT_DATA';
+  holdings: PrivatePortfolioHolding[];
+}
+
 const PRESET_ASSETS: AssetIdentity[] = [
   { assetId: 'ast_aapl', symbol: 'AAPL', name: 'Apple Inc.', assetClass: 'equity_us', venue: 'NASDAQ', currency: 'USD', status: 'active' },
   { assetId: 'ast_btc', symbol: 'BTCUSDT', name: 'Bitcoin / Tether', assetClass: 'crypto', venue: 'BINANCE', currency: 'USDT', status: 'active' },
@@ -50,6 +61,8 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
   const [isLoading, setIsLoading] = useState(false);
   const requestId = React.useRef(0);
   const [scoreError, setScoreError] = useState<string | null>(null);
+  const [privatePortfolioContext, setPrivatePortfolioContext] = useState<PrivatePortfolioContext | null>(null);
+  const [privateContextStatus, setPrivateContextStatus] = useState<'LOADING' | 'VERIFIED' | 'UNAVAILABLE'>('LOADING');
   const dataMode: 'LIVE' | 'DEMO' = 'LIVE';
 
   const featureStore = new FeatureStoreService();
@@ -79,6 +92,52 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
     return () => { requestId.current++; };
   }, [selectedAsset, dataMode]);
 
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetch('/api/profile/provider-connections/kraken/balance', {
+      credentials: 'same-origin',
+      cache: 'no-store',
+      headers: { Accept: 'application/json' },
+      signal: controller.signal,
+    })
+      .then(async response => {
+        if (response.status === 401 || response.status === 404) return null;
+        if (!response.ok) throw new Error('PRIVATE_CONTEXT_UNAVAILABLE');
+        return response.json();
+      })
+      .then(payload => {
+        if (controller.signal.aborted) return;
+        if (
+          payload?.provider === 'kraken' &&
+          payload?.dataScope === 'USER_PRIVATE_ACCOUNT_DATA' &&
+          Array.isArray(payload?.holdings)
+        ) {
+          setPrivatePortfolioContext({
+            provider: 'kraken',
+            dataScope: 'USER_PRIVATE_ACCOUNT_DATA',
+            holdings: payload.holdings,
+          });
+          setPrivateContextStatus('VERIFIED');
+        } else {
+          setPrivatePortfolioContext(null);
+          setPrivateContextStatus('UNAVAILABLE');
+        }
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setPrivatePortfolioContext(null);
+          setPrivateContextStatus('UNAVAILABLE');
+        }
+      });
+    return () => controller.abort();
+  }, []);
+
+  const selectedPrivateHolding = privatePortfolioContext?.holdings.find(holding => {
+    const asset = holding.asset.toUpperCase().replace(/^X|^Z/, '');
+    const symbol = selectedAsset.symbol.toUpperCase();
+    return symbol.startsWith(asset) || asset.startsWith(symbol.replace(/USD[T]?$/, ''));
+  }) ?? null;
+
   return (
     <div className="space-y-6">
       {/* Top Banner & Asset Quick Selector */}
@@ -104,6 +163,33 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
 <span className="px-3 py-1.5 text-xs text-slate-400">Open Data · Source Admission erforderlich</span>
             </div>
           </div>
+        </div>
+
+        <div className="mb-4 rounded-xl border border-cyan-500/20 bg-cyan-500/[0.06] p-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-cyan-300" />
+              <span className="text-[11px] font-black uppercase tracking-wider text-cyan-200">
+                Privater Portfolio-Kontext
+              </span>
+            </div>
+            <span className={`rounded-full border px-2 py-0.5 font-mono text-[10px] font-bold ${
+              privateContextStatus === 'VERIFIED'
+                ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
+                : 'border-slate-700 bg-slate-900 text-slate-500'
+            }`}>
+              {privateContextStatus === 'VERIFIED' ? 'KRAKEN · USER_PRIVATE_ACCOUNT_DATA' : 'NICHT VERBUNDEN'}
+            </span>
+          </div>
+          <p className="mt-2 text-[11px] leading-relaxed text-slate-400">
+            Der persönliche Kraken-Bestand ergänzt die Nutzer-/Portfolio-Perspektive. Er wird nicht als
+            öffentliche Marktpreisquelle, nicht als Fundamentals-Quelle und nicht zur Umgehung der MARKET-Source-Admission verwendet.
+          </p>
+          {selectedPrivateHolding && (
+            <p className="mt-2 font-mono text-[11px] text-cyan-300">
+              Persönlicher Bestand zum ausgewählten Asset: {selectedPrivateHolding.asset} · {selectedPrivateHolding.balance}
+            </p>
+          )}
         </div>
 
         {/* Quick Asset Pills */}
