@@ -3,7 +3,11 @@ export type MainCategory =
   | 'AKTIEN'
   | 'INDIZIES'
   | 'FOREX'
-  | 'ROHSTOFFE';
+  | 'ROHSTOFFE'
+  | 'ETFS'
+  | 'FUTURES'
+  | 'OPTIONEN'
+  | 'ANLEIHEN';
 
 export interface AssetSubclass {
   id: string;

@@ -39,6 +39,10 @@ const CATEGORIES: { id: CategoryFilter; label: string; color: string }[] = [
   { id: 'AKTIEN', label: 'Aktien', color: '#44DE88' },
   { id: 'INDIZIES', label: 'Indizies', color: '#8D26FF' },
   { id: 'FOREX', label: 'Forex', color: '#E879F9' },
+  { id: 'ETFS', label: 'ETFs', color: '#44DE88' },
+  { id: 'FUTURES', label: 'Futures', color: '#8D26FF' },
+  { id: 'OPTIONEN', label: 'Optionen', color: '#E879F9' },
+  { id: 'ANLEIHEN', label: 'Anleihen', color: '#44DE88' },
   { id: 'ROHSTOFFE', label: 'Rohstoffe', color: '#F9BF21' },
 ];
 

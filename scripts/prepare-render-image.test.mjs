@@ -24,5 +24,6 @@ test('image promotion retains server-only Supabase Auth configuration', () => {
   for (const key of ['PUBLIC_APP_ORIGIN', 'SUPABASE_URL', 'SUPABASE_PUBLISHABLE_KEY', 'SUPABASE_SECRET_KEY', 'AUTH_COOKIE_SIGNING_SECRET']) {
     assert.ok(result.includes(`      - key: ${key}\n        sync: false`));
   }
-  assert.ok(!result.includes('VITE_SUPABASE_SECRET_KEY'));\n  assert.ok(!result.includes('OIDC_ISSUER'));
+  assert.ok(!result.includes('VITE_SUPABASE_SECRET_KEY'));
+  assert.ok(!result.includes('OIDC_ISSUER'));
 });

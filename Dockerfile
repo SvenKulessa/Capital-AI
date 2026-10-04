@@ -36,6 +36,7 @@ COPY server/advisor-security.test.mjs ./server/
 COPY scripts/billing-catalog.test.mjs ./scripts/
 COPY scripts/documentation-drift.mjs scripts/documentation-drift.test.mjs ./scripts/
 COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/frontend-security.test.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
+COPY server/market.mjs server/market-delivery.mjs server/infrastructure.mjs server/open-source-market-policy.mjs server/cads-observability.mjs server/observability.mjs ./server/
 COPY shared ./shared
 COPY docs/licenses ./docs/licenses
 COPY docs/security/evidence/license-rights-review.json ./docs/security/evidence/license-rights-review.json
@@ -63,7 +64,7 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/scoring-capacity.json ./evidence/scoring-capacity.json
 COPY server/index.mjs server/market.mjs server/open-source-market-policy.mjs server/auth.mjs server/user-provider-vault.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/mta-sts.mjs server/mobile-scorer.mjs server/scorer-proxy.mjs server/scorer-bus.mjs server/observability.mjs server/cads-observability.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs ./server/
 COPY --from=production-deps /runtime/node_modules ./node_modules
-COPY server/infrastructure.mjs ./server/
+COPY server/infrastructure.mjs server/market-delivery.mjs ./server/
 COPY server/billing-catalog.mjs ./server/
 COPY scripts/verify-private-brokers.mjs ./scripts/
 COPY shared ./shared

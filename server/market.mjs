@@ -1,9 +1,19 @@
-import { instrumentCatalog, QuoteFactSchema, isFresh } from '../shared/market-contracts.mjs';
+import { readFileSync, statSync } from 'node:fs';
+import { InstrumentManifestSchema, instrumentCatalog, QuoteFactSchema, isFresh } from '../shared/market-contracts.mjs';
 import { infrastructure, payloadHash } from './infrastructure.mjs';
 import { MARKET_SOURCE_POLICY, admittedMarketSourcesFor, isAdmittedMarketSource } from './open-source-market-policy.mjs';
 
 // No network I/O during build or runtime until an Open-Source + Open-Data source is admitted.
 const allowed = new Set((process.env.MARKET_SYMBOLS || 'BTCUSDT,BTCUSD,AAPL').split(',').map(x => x.trim()).filter(Boolean));
+export const marketInstruments = (() => {
+  try {
+    const path = process.env.MARKET_INSTRUMENT_MANIFEST;
+    if (!path || statSync(path).size > 2 * 1024 * 1024) return [];
+    return InstrumentManifestSchema.parse(JSON.parse(readFileSync(path, 'utf8')));
+  } catch { return []; }
+})();
+for (const i of marketInstruments) allowed.add(i.symbol);
+const catalog = new Map(marketInstruments.map(i => [i.symbol, i]));
 const quoteAdmittedSources = admittedMarketSourcesFor('marketQuotes');
 const scoringAdmittedSources = admittedMarketSourcesFor('scoringPriceInput');
 const sourceAdmissionAvailable = quoteAdmittedSources.length > 0;
@@ -12,7 +22,7 @@ const quotesEnabled = sourceAdmissionAvailable && process.env.MARKET_QUOTES_ENAB
 export function observation(symbol, provider, price, time, quote, mode, rawPayload, details = {}) {
   if(!isAdmittedMarketSource(provider, 'marketQuotes')) return null;
   const receivedAt = Date.now();
-  const candidate = { schemaVersion: '1.0.0', symbol, venue: instrumentCatalog[symbol]?.venue,
+  const candidate = { schemaVersion: catalog.has(symbol) ? '2.0.0' : '1.0.0', instrument: catalog.get(symbol), symbol, venue: catalog.get(symbol)?.venue || instrumentCatalog[symbol]?.venue,
     provider, price: Number(price), quote, observedAt: Number(time), receivedAt, mode,
     isDemo: false, licenseScope: 'unverified', payloadHash: payloadHash(rawPayload),
     bid: details.bid == null ? null : Number(details.bid), ask: details.ask == null ? null : Number(details.ask),

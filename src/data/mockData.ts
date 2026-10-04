@@ -442,6 +442,11 @@ export const ASSET_CLASSES: AssetClassInfo[] = [
       },
     ],
   },
+  { id: 'ETFS', name: 'ETFs', color: '#44DE88', description: 'Börsengehandelte Fonds', subclasses: [] },
+  { id: 'FUTURES', name: 'Futures', color: '#8D26FF', description: 'Standardisierte Terminkontrakte', subclasses: [] },
+  { id: 'OPTIONEN', name: 'Optionen', color: '#E879F9', description: 'Optionskontrakte', subclasses: [] },
+  { id: 'ANLEIHEN', name: 'Anleihen', color: '#44DE88', description: 'Verzinsliche Wertpapiere', subclasses: [] },
+
 ];
 
 

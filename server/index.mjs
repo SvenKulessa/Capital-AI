@@ -2,6 +2,7 @@ import http from 'node:http';
 import { readFile, stat, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createMarketDelivery } from './market-delivery.mjs';
 import { quote, health, startStreams } from './market.mjs';
 import { createAuth } from './auth.mjs';
 import { createUserProviderVault } from './user-provider-vault.mjs';
@@ -143,6 +144,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const privacy = createPrivacy({ ...options, auth });
   const marketLimit = createLimiter(120);
   const runtimeEnv = options.env || process.env;
+  const delivery = createMarketDelivery({ enabled: runtimeEnv.MARKET_QUOTES_ENABLED === 'true', ...options.marketDelivery });
   const mobileScorer = createMobileScorer(runtimeEnv);
   const scorerProxy = createScorerProxy({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, sourcePolicy: options.sourcePolicy });
   const vocabularyCheckout = createVocabularyCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
@@ -164,6 +166,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if ((url.pathname === '/api/mobile/enterprise-score' || url.pathname === '/api/mobile/scorer/events') && !auth.session(req)) return json(res, 401, { error: 'authentication_required' });
   if (await scorerProxy.handle(req, res, url, json, requestContext.requestId)) return;
   if (await mobileScorer.handle(req, res, url, json, headers)) return;
+  if (await delivery.handle(req, res, url, json)) return;
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return json(res, 405, { error: 'method_not_allowed' }); }
   if (url.pathname === '/healthz') return json(res, 200, { ...health(), buildIdentity });
   if (url.pathname === '/metrics') {
@@ -255,6 +258,7 @@ export function createApp(root = defaultRoot, options = {}) {
   } catch { res.writeHead(404, headers); res.end(); }
 });
   server.maxConnections = 256;
+  server.once('close', () => { void delivery.close(); });
   return server;
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

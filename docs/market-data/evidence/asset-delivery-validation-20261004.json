@@ -1,0 +1,115 @@
+{
+  "schema": "CAPITAL_AI_ASSET_DELIVERY_VALIDATION@1",
+  "observedAt": "2026-10-04T21:09:47.938548+00:00",
+  "baseMainSha": "8e34c7a1f15cf46a89caf08d01ae4d6bf91a8c9f",
+  "implementationCommit": "8e0d587da440e7af6464e698913a82a61564b1e2",
+  "targetPerClass": 100,
+  "realManifestStatus": "CATALOG_EVIDENCE_NOT_RIGHTS_ADMISSION",
+  "coverage": [
+    {
+      "assetClass": "stocks",
+      "canonicalAssets": 20,
+      "target": 100,
+      "gate": "BLOCKED"
+    },
+    {
+      "assetClass": "etfs",
+      "canonicalAssets": 0,
+      "target": 100,
+      "gate": "BLOCKED"
+    },
+    {
+      "assetClass": "indices",
+      "canonicalAssets": 20,
+      "target": 100,
+      "gate": "BLOCKED"
+    },
+    {
+      "assetClass": "crypto",
+      "canonicalAssets": 20,
+      "target": 100,
+      "gate": "BLOCKED"
+    },
+    {
+      "assetClass": "forex",
+      "canonicalAssets": 20,
+      "target": 100,
+      "gate": "BLOCKED"
+    },
+    {
+      "assetClass": "commodities",
+      "canonicalAssets": 8,
+      "target": 100,
+      "gate": "BLOCKED"
+    },
+    {
+      "assetClass": "futures",
+      "canonicalAssets": 0,
+      "target": 100,
+      "gate": "BLOCKED"
+    },
+    {
+      "assetClass": "options",
+      "canonicalAssets": 0,
+      "target": 100,
+      "gate": "BLOCKED"
+    },
+    {
+      "assetClass": "bonds",
+      "canonicalAssets": 0,
+      "target": 100,
+      "gate": "BLOCKED"
+    }
+  ],
+  "admittedQuoteSources": 0,
+  "admittedScoringSources": 0,
+  "sourceFindings": [
+    {
+      "source": "coinmetrics-community",
+      "decision": "BLOCK_COMMERCIAL_PRICE_INPUT",
+      "license": "CC-BY-NC-4.0",
+      "evidence": [
+        "https://github.com/coinmetrics/product-docs/blob/master/docs/access-our-data/api/README.md",
+        "https://creativecommons.org/licenses/by-nc/4.0/"
+      ],
+      "reason": "Official documentation restricts community data to non-commercial use; it links CC BY-NC 4.0."
+    },
+    {
+      "source": "ecb-reference-rates",
+      "decision": "NOT_ADMITTED_FOR_LIVE_QUOTES",
+      "evidence": [
+        "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html",
+        "https://www.ecb.europa.eu/services/using-our-site/disclaimer/html/index.en.html"
+      ],
+      "reason": "Daily EUR reference rates, informational use; 29 currency rows observed. Does not meet 100 raw instruments or the existing 30-second freshness contract. Reuse has attribution, paid-display and modification obligations; no full required-use-case admission recorded."
+    }
+  ],
+  "browser": {
+    "productionUrl": "https://capital-ai.online/",
+    "state": "HYDRATED_FAIL_CLOSED_ZERO_QUOTES",
+    "modesObserved": [
+      "iPhone Frame",
+      "Vollbreite"
+    ],
+    "viewportWidth": 1363,
+    "observedPageWidth": 1348,
+    "candidate": "BLOCKED_BROWSER_NETWORK_POLICY",
+    "candidateError": "ERR_BLOCKED_BY_CLIENT on loopback port 3018",
+    "deviceEmulation": "NOT_PERFORMED",
+    "acceptance": "PARTIAL_NOT_RELEASE_ACCEPTANCE"
+  },
+  "validate": {
+    "localContractsAndCapacity": "PASS_SYNTHETIC_900",
+    "localFaultAndFrontendChecks": "PASS",
+    "realSourceQuoteWebsiteRuntime": "BLOCKED"
+  },
+  "approve": {
+    "PRODUCT": "LOCAL_PASS_BROWSER_PARTIAL",
+    "MARKET": "BLOCKED",
+    "TRUST": "PENDING",
+    "PLATFORM_RUNTIME": "BLOCKED",
+    "OWNER_ARCHITECTURE": "APPROVED_B_RELEASE_NOT_APPROVED"
+  },
+  "productionEligible": false,
+  "externalMutations": []
+}
