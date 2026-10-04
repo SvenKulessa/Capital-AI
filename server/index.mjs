@@ -13,6 +13,13 @@ import { createScorerProxy } from './scorer-proxy.mjs';
 import { serveMtaSts } from './mta-sts.mjs';
 import { researchMetadata } from '../shared/research-metadata.mjs';
 import { BILLING_CATALOG } from './billing-catalog.mjs';
+import {
+  VOCABULARY_PUBLIC_COUNT,
+  vocabularyMetadata,
+  vocabularyMetadataByPath,
+  vocabularyTitle,
+  vocabularyDescription,
+} from '../shared/vocabulary-metadata.mjs';
 import { beginRequest, finishRequest, metricsAuthorized, renderPrometheusMetrics, writeAuditEvent } from './observability.mjs';
 import { cadsSnapshot } from './cads-observability.mjs';
 
@@ -27,6 +34,99 @@ const buildIdentity =
     : { bound: false, sourceSha: null };
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.txt': 'text/plain; charset=utf-8', '.json': 'application/json; charset=utf-8' };
 const headers = { 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'strict-origin-when-cross-origin', 'X-Frame-Options': 'DENY', 'Permissions-Policy': 'camera=(), microphone=(), geolocation=()', 'Strict-Transport-Security': 'max-age=31536000', 'Content-Security-Policy': "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" };
+const publicVocabularyMetadata = {
+  '/learning': {
+    title: 'Capital-AI | Learning Portal & Fachbegriffe',
+    description: `Learning Portal von Capital-AI mit ${VOCABULARY_PUBLIC_COUNT} konsolidierten Fachbegriffen aus Marktanalyse, Scoring, Daten, Plattform, Security, Produkt, Governance und Mobile Runtime.`,
+  },
+  '/vocabulary': {
+    title: `Capital-AI Vocabulary | ${VOCABULARY_PUBLIC_COUNT} Fachbegriffe & Thesaurus`,
+    description: `${VOCABULARY_PUBLIC_COUNT} konsolidierte Capital-AI Fachbegriffe mit Definitionen und jeweils drei Thesaurus-Begriffen aus Marktanalyse, Scoring, Daten, Plattform, Security, Produkt, Governance und Mobile Runtime.`,
+  },
+};
+const sitemapBasePaths = [
+  '/',
+  '/learning',
+  '/vocabulary',
+  '/faq',
+  '/forschung',
+  '/lizenz',
+  '/datenprovider-lizenzen',
+  '/opensource-lizenzen',
+  '/impressum',
+  '/datenschutz',
+  '/agb',
+];
+
+function escapeHtml(text) {
+  return String(text).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+}
+function escapeXml(text) {
+  return escapeHtml(text).replaceAll("'", '&apos;');
+}
+function normalizedPublicPath(pathname) {
+  return pathname.toLowerCase().replace(/\/+$/, '') || '/';
+}
+function vocabularyFallback(entry) {
+  const thesaurus = entry.thesaurus.map(item => `<li>${escapeHtml(item)}</li>`).join('');
+  return `<main><article><p><a href="/vocabulary">Capital-AI Vocabulary</a></p><h1>${escapeHtml(entry.term)}</h1><p>${escapeHtml(entry.description)}</p><p>Kategorie: ${escapeHtml(entry.category)}</p><h2>Thesaurus</h2><ul>${thesaurus}</ul></article></main>`;
+}
+function vocabularyLandingFallback() {
+  const links = vocabularyMetadata
+    .map(entry => `<li><a href="${entry.path}">${escapeHtml(entry.term)}</a> – ${escapeHtml(entry.category)}</li>`)
+    .join('');
+  return `<main><article><h1>Capital-AI Vocabulary</h1><p>${VOCABULARY_PUBLIC_COUNT} konsolidierte Fachbegriffe mit Definitionen und jeweils drei Thesaurus-Begriffen.</p><ul>${links}</ul></article></main>`;
+}
+function injectVocabularySeo(html, pathname) {
+  const entry = vocabularyMetadataByPath.get(pathname);
+  const landing = publicVocabularyMetadata[pathname];
+  if (!entry && !landing) return html;
+
+  const title = entry ? vocabularyTitle(entry) : landing.title;
+  const description = entry ? vocabularyDescription(entry) : landing.description;
+  const canonicalPath = entry ? entry.path : pathname;
+  const canonicalUrl = `https://capital-ai.online${canonicalPath}`;
+  const schema = entry
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'DefinedTerm',
+        name: entry.term,
+        description: entry.description,
+        alternateName: entry.thesaurus,
+        termCode: entry.id,
+        url: canonicalUrl,
+        inDefinedTermSet: 'https://capital-ai.online/vocabulary',
+      }
+    : {
+        '@context': 'https://schema.org',
+        '@type': 'DefinedTermSet',
+        name: pathname === '/vocabulary' ? 'Capital-AI Vocabulary' : 'Capital-AI Learning Portal',
+        url: canonicalUrl,
+        numberOfItems: VOCABULARY_PUBLIC_COUNT,
+      };
+  const safeJsonLd = JSON.stringify(schema).replaceAll('<', '\\u003c');
+  let body = html
+    .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(title)}</title>`)
+    .replace(/(<meta name="description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(description)}$2`)
+    .replace(/(<meta property="og:title" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(title)}$2`)
+    .replace(/(<meta property="og:description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(description)}$2`)
+    .replace(/(<meta property="og:url" content=")[^"]*("\s*\/?>)/, `$1${canonicalUrl}$2`)
+    .replace(/(<meta name="twitter:title" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(title)}$2`)
+    .replace(/(<meta name="twitter:description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(description)}$2`)
+    .replace(/(<link rel="canonical" href=")[^"]*("\s*\/?>)/, `$1${canonicalUrl}$2`)
+    .replace('</head>', `<script type="application/ld+json">${safeJsonLd}</script></head>`);
+
+  const fallback = entry
+    ? vocabularyFallback(entry)
+    : pathname === '/vocabulary'
+      ? vocabularyLandingFallback()
+      : `<main><article><h1>Capital-AI Learning Portal</h1><p>${escapeHtml(description)}</p><p><a href="/vocabulary">Zum Vocabulary mit ${VOCABULARY_PUBLIC_COUNT} Fachbegriffen</a></p></article></main>`;
+  body = body.replace(
+    /<div id="root">[\s\S]*?<script type="module"/,
+    `<div id="root">${fallback}</div>\n    <script type="module"`,
+  );
+  return body;
+}
 function json(res, status, body) { res.writeHead(status, { ...headers, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(body)); }
 
 export function createApp(root = defaultRoot, options = {}) {
@@ -96,6 +196,26 @@ export function createApp(root = defaultRoot, options = {}) {
     finally { inflight--; }
   }
   if (url.pathname.startsWith('/api/')) return json(res, 404, { error: 'not_found' });
+
+  const publicPath = normalizedPublicPath(url.pathname);
+  if (publicPath === '/robots.txt') {
+    res.writeHead(200, { ...headers, 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
+    return res.end('User-agent: *\nAllow: /\nSitemap: https://capital-ai.online/sitemap.xml\n');
+  }
+  if (publicPath === '/sitemap.xml') {
+    const paths = [...new Set([...sitemapBasePaths, ...vocabularyMetadata.map(entry => entry.path)])];
+    const xml = '<?xml version="1.0" encoding="UTF-8"?>' +
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' +
+      paths.map(route => `<url><loc>https://capital-ai.online${escapeXml(route)}</loc></url>`).join('') +
+      '</urlset>';
+    res.writeHead(200, { ...headers, 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
+    return res.end(xml);
+  }
+  if (publicPath.startsWith('/vocabulary/') && !vocabularyMetadataByPath.has(publicPath)) {
+    res.writeHead(404, headers);
+    return res.end();
+  }
+
   let asset;
   try { asset = path.resolve(root, '.' + decodeURIComponent(url.pathname)); } catch { return json(res, 400, { error: 'bad_request' }); }
   if (!asset.startsWith(root + path.sep) && asset !== root) return json(res, 400, { error: 'bad_path' });
@@ -106,16 +226,19 @@ export function createApp(root = defaultRoot, options = {}) {
     const resolved = await realpath(file);
     if (!resolved.startsWith(root + path.sep) || (await stat(resolved)).size > 20 * 1024 * 1024) return json(res, 404, { error: 'not_found' });
     let body = await readFile(resolved);
+    const publicPath = normalizedPublicPath(url.pathname);
+    if (path.extname(file) === '.html') {
+      body = Buffer.from(injectVocabularySeo(body.toString('utf8'), publicPath));
+    }
     // Research/legal titles are visible to crawlers before client hydration.
-    const researchPath = url.pathname.toLowerCase().replace(/\/+$/, '');
+    const researchPath = publicPath;
     if (path.extname(file) === '.html' && Object.hasOwn(researchMetadata, researchPath)) {
       const meta = researchMetadata[researchPath];
-      const escape = text => text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
       body = Buffer.from(body.toString('utf8')
-        .replace(/<title>[^<]*<\/title>/, `<title>${escape(meta.title)}</title>`)
-        .replace(/(<meta name="description" content=")[^"]*("\s*\/?>)/, `$1${escape(meta.description)}$2`)
-        .replace(/(<meta property="og:title" content=")[^"]*("\s*\/?>)/, `$1${escape(meta.title)}$2`)
-        .replace(/(<meta property="og:description" content=")[^"]*("\s*\/?>)/, `$1${escape(meta.description)}$2`)
+        .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(meta.title)}</title>`)
+        .replace(/(<meta name="description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(meta.description)}$2`)
+        .replace(/(<meta property="og:title" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(meta.title)}$2`)
+        .replace(/(<meta property="og:description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(meta.description)}$2`)
         .replace(/(<link rel="canonical" href=")[^"]*("\s*\/?>)/, `$1https://capital-ai.online${researchPath}$2`));
     }
     res.writeHead(200, { ...headers, 'Cache-Control': path.extname(file) === '.html' ? 'no-store' : 'public, max-age=3600', 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(body);

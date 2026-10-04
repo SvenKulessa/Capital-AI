@@ -56,17 +56,16 @@ const STATIC_ROUTE_METADATA: Record<string, StaticRouteMetadata> = {
     canonicalPath: '/impressum',
   },
   '/learning': {
-    title: 'Capital-AI | Learning Portal: Market Vocabulary & Glossar',
+    title: 'Capital-AI | Learning Portal & Fachbegriffe',
     description:
-      'Umfassendes Finanz- & Quant-Glossar von Capital-AI: Fachbegriffe verständlich erklärt mit Berechnungsformeln und Praxisbeispielen.',
+      'Learning Portal von Capital-AI mit 294 konsolidierten Fachbegriffen aus Marktanalyse, Scoring, Daten, Plattform, Security, Produkt, Governance und Mobile Runtime.',
     canonicalPath: '/learning',
   },
   '/vocabulary': {
-    title: 'Capital-AI | Learning Portal: Market Vocabulary & Glossar',
+    title: 'Capital-AI Vocabulary | 294 Fachbegriffe & Thesaurus',
     description:
-      'Umfassendes Finanz- & Quant-Glossar von Capital-AI: Fachbegriffe verständlich erklärt mit Berechnungsformeln und Praxisbeispielen.',
-    canonicalPath: '/learning',
-    trackPath: '/learning',
+      '294 konsolidierte Capital-AI Fachbegriffe mit Definitionen und jeweils drei Thesaurus-Begriffen aus Marktanalyse, Scoring, Daten, Plattform, Security, Produkt, Governance und Mobile Runtime.',
+    canonicalPath: '/vocabulary',
   },
   '/control-center': {
     title: 'Capital-AI | Control Center: Roadmap & Governance Console',
@@ -131,6 +130,10 @@ export function useRouteAnalytics(currentRoute: string) {
   }, []);
 
   useEffect(() => {
+    if (currentRoute.startsWith('/vocabulary/')) {
+      return;
+    }
+
     if (RESEARCH_ROUTES.includes(currentRoute as ResearchRoute)) {
       const meta = researchMetadata[currentRoute as ResearchRoute];
       updatePageSEO({ ...meta, canonicalPath: currentRoute });
