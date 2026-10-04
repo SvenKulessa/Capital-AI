@@ -41,7 +41,7 @@ import {
 import { SubpageSidebarNav, SubpageNavItem } from '../../components/SubpageSidebarNav';
 import { useHubTab } from '../../hooks/useHubTab';
 import { updatePageSEO } from '../../utils/analytics';
-import { VOCABULARY_GRANT_KEY, VOCABULARY_QUIZ_USED_KEY, formatVocabularyPrice } from '../../data/vocabularyOffer';
+import { VOCABULARY_GRANT_KEY, formatVocabularyPrice } from '../../data/vocabularyOffer';
 
 export type LearningPortalTab = 'glossar' | 'guides' | 'quiz';
 const LEARNING_TABS: readonly LearningPortalTab[] = ['glossar', 'guides', 'quiz'];
@@ -95,6 +95,11 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
   const [expandedTermId, setExpandedTermId] = useState<string | null>(initialVocabularyTermId ?? null);
   const [focusedTermId, setFocusedTermId] = useState<string | null>(initialVocabularyTermId ?? null);
   const [copiedTermId, setCopiedTermId] = useState<string | null>(null);
+  const [protectedTerms, setProtectedTerms] = useState<VocabularyTerm[]>([]);
+  const allVocabularyTerms = useMemo(
+    () => [...VOCABULARY_TERMS, ...protectedTerms],
+    [protectedTerms],
+  );
 
   useEffect(() => {
     if (!initialVocabularyTermId) {
@@ -102,7 +107,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       return;
     }
 
-    const term = VOCABULARY_TERMS.find((candidate) => candidate.id === initialVocabularyTermId);
+    const term = allVocabularyTerms.find((candidate) => candidate.id === initialVocabularyTermId);
     if (!term) return;
 
     setActiveTab('glossar');
@@ -117,7 +122,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       description: `${term.shortDefinition} Kategorie: ${term.categoryLabel}. Drei Thesaurus-Begriffe im Capital-AI Vocabulary.`,
       canonicalPath: `/vocabulary/${term.id}`,
     });
-  }, [initialVocabularyTermId, setActiveTab]);
+  }, [initialVocabularyTermId, setActiveTab, allVocabularyTerms]);
 
   // Quiz States
   const [currentQuizIndex, setCurrentQuizIndex] = useState<number>(0);
@@ -126,34 +131,79 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
   const [quizFinished, setQuizFinished] = useState<boolean>(false);
   const [entitled, setEntitled] = useState<boolean>(false);
   const [quizPreviouslyUsed, setQuizPreviouslyUsed] = useState<boolean>(false);
+  const [quizStarted, setQuizStarted] = useState<boolean>(false);
+  const [authenticated, setAuthenticated] = useState<boolean>(false);
+  const [accessLoaded, setAccessLoaded] = useState<boolean>(false);
+  const [quizAccessError, setQuizAccessError] = useState<string>('');
 
   useEffect(() => {
-    setQuizPreviouslyUsed(window.localStorage.getItem(VOCABULARY_QUIZ_USED_KEY) === '1');
-    const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get('vocabulary_session') || window.localStorage.getItem(VOCABULARY_GRANT_KEY) || '';
-    if (!sessionId) return;
-    void fetch(`/api/billing/vocabulary/entitlement?session_id=${encodeURIComponent(sessionId)}`)
-      .then((response) => response.json())
-      .then((body) => {
-        if (body?.entitled) {
-          window.localStorage.setItem(VOCABULARY_GRANT_KEY, sessionId);
-          setEntitled(true);
+    let cancelled = false;
+
+    async function syncVocabularyAccess() {
+      const params = new URLSearchParams(window.location.search);
+      const sessionId = params.get('vocabulary_session') || window.localStorage.getItem(VOCABULARY_GRANT_KEY) || '';
+
+      try {
+        if (sessionId) {
+          const entitlementResponse = await fetch(
+            `/api/billing/vocabulary/entitlement?session_id=${encodeURIComponent(sessionId)}`,
+          );
+          if (entitlementResponse.ok) {
+            const entitlement = await entitlementResponse.json();
+            if (entitlement?.entitled) {
+              window.localStorage.setItem(VOCABULARY_GRANT_KEY, sessionId);
+            }
+          }
         }
-      })
-      .catch(() => undefined);
+
+        const accessResponse = await fetch('/api/billing/vocabulary/access', {
+          headers: { Accept: 'application/json' },
+        });
+        if (cancelled) return;
+        if (accessResponse.status === 401) {
+          setAuthenticated(false);
+          setAccessLoaded(true);
+          return;
+        }
+        if (!accessResponse.ok) throw new Error('VOCABULARY_ACCESS_UNAVAILABLE');
+
+        const access = await accessResponse.json();
+        if (cancelled) return;
+        setAuthenticated(true);
+        setEntitled(Boolean(access?.quantProEntitled));
+        setQuizPreviouslyUsed(Boolean(access?.quizUsed));
+
+        if (access?.quantProEntitled) {
+          const protectedResponse = await fetch('/api/learning/vocabulary/quant-pro', {
+            headers: { Accept: 'application/json' },
+          });
+          if (!protectedResponse.ok) throw new Error('QUANT_PRO_UNAVAILABLE');
+          const protectedPayload = await protectedResponse.json();
+          if (!cancelled && Array.isArray(protectedPayload?.terms)) {
+            setProtectedTerms(protectedPayload.terms as VocabularyTerm[]);
+          }
+        }
+      } catch {
+        if (!cancelled) setQuizAccessError('Lernzugang ist momentan nicht verifizierbar.');
+      } finally {
+        if (!cancelled) setAccessLoaded(true);
+      }
+    }
+
+    void syncVocabularyAccess();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Filtered Vocabulary Terms
   const filteredTerms = useMemo(() => {
-    return VOCABULARY_TERMS.filter((term) => {
+    return allVocabularyTerms.filter((term) => {
       if (focusedTermId && term.id !== focusedTermId) {
         return false;
       }
       // Category filter
       if (selectedCategory !== 'ALL' && term.category !== selectedCategory) {
-        return false;
-      }
-      if (!entitled && term.level === 'Quant / Pro') {
         return false;
       }
       // Level filter
@@ -176,7 +226,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       }
       return true;
     });
-  }, [focusedTermId, selectedCategory, selectedLevel, searchQuery, entitled]);
+  }, [allVocabularyTerms, focusedTermId, selectedCategory, selectedLevel, searchQuery]);
 
   const handleCopyDefinition = (term: VocabularyTerm, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -470,8 +520,8 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
                 {VOCABULARY_CATEGORIES.map((cat) => {
                   const count =
                     cat.id === 'ALL'
-                      ? VOCABULARY_TERMS.length
-                      : VOCABULARY_TERMS.filter((t) => t.category === cat.id).length;
+                      ? allVocabularyTerms.length
+                      : allVocabularyTerms.filter((t) => t.category === cat.id).length;
                   const isSelected = selectedCategory === cat.id;
 
                   return (
@@ -763,7 +813,22 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
             </p>
           </div>
 
-          {!quizFinished && !entitled && quizPreviouslyUsed ? (
+          {!accessLoaded ? (
+            <div className="p-8 rounded-xl bg-[#090e21] border border-slate-800 text-center text-xs text-slate-300 max-w-md mx-auto">
+              Lernzugang wird serverseitig geprüft…
+            </div>
+          ) : !authenticated ? (
+            <div className="p-8 rounded-xl bg-[#090e21] border border-purple-400/30 text-center space-y-4 max-w-md mx-auto">
+              <Award className="w-12 h-12 text-purple-400 mx-auto" />
+              <h3 className="text-xl font-bold text-white">Anmeldung für den Skill-Check erforderlich</h3>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Der kostenlose Quiz-Versuch wird pro Benutzerkonto serverseitig genau einmal vergeben.
+              </p>
+              <button type="button" onClick={onNavigateLogin} className="px-4 py-2 rounded-xl bg-amber-400 text-black font-bold text-xs hover:bg-amber-300 cursor-pointer">
+                Anmelden
+              </button>
+            </div>
+          ) : !quizStarted && !entitled && quizPreviouslyUsed ? (
             <div className="p-8 rounded-xl bg-[#090e21] border border-amber-400/30 text-center space-y-4 max-w-md mx-auto">
               <Award className="w-12 h-12 text-amber-400 mx-auto" />
               <h3 className="text-xl font-bold text-white">Kostenloser Skill-Check bereits verwendet</h3>
@@ -772,6 +837,45 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
               </p>
               <button type="button" onClick={() => setActiveTab('glossar')} className="px-4 py-2 rounded-xl bg-amber-400 text-black font-bold text-xs hover:bg-amber-300 cursor-pointer">
                 Vocabulary-Paket ansehen
+              </button>
+            </div>
+          ) : !quizStarted ? (
+            <div className="p-8 rounded-xl bg-[#090e21] border border-purple-400/30 text-center space-y-4 max-w-md mx-auto">
+              <Award className="w-12 h-12 text-purple-400 mx-auto" />
+              <h3 className="text-xl font-bold text-white">{entitled ? 'Skill-Check starten' : 'Ein kostenloser Skill-Check'}</h3>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                {entitled
+                  ? 'Ihr Vocabulary-Entitlement ist aktiv. Der Skill-Check kann erneut gestartet werden.'
+                  : 'Mit Start wird Ihr einmaliger kostenloser Quiz-Versuch serverseitig für dieses Benutzerkonto verbraucht.'}
+              </p>
+              {quizAccessError && <p className="text-xs text-rose-300">{quizAccessError}</p>}
+              <button
+                type="button"
+                onClick={() => {
+                  setQuizAccessError('');
+                  void fetch('/api/learning/vocabulary/quiz/consume', {
+                    method: 'POST',
+                    headers: { Accept: 'application/json' },
+                  })
+                    .then(async (response) => {
+                      const body = await response.json().catch(() => ({}));
+                      if (response.status === 409) {
+                        setQuizPreviouslyUsed(true);
+                        throw new Error('QUIZ_ALREADY_USED');
+                      }
+                      if (!response.ok || !body?.allowed) throw new Error('QUIZ_ACCESS_DENIED');
+                      setQuizPreviouslyUsed(Boolean(body?.quizUsed));
+                      setQuizStarted(true);
+                    })
+                    .catch((error) => {
+                      if (error?.message !== 'QUIZ_ALREADY_USED') {
+                        setQuizAccessError('Quiz-Start konnte serverseitig nicht freigegeben werden.');
+                      }
+                    });
+                }}
+                className="px-4 py-2 rounded-xl bg-amber-400 text-black font-bold text-xs hover:bg-amber-300 cursor-pointer"
+              >
+                Skill-Check starten
               </button>
             </div>
           ) : !quizFinished ? (
@@ -845,10 +949,6 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
                         if (currentQuizIndex + 1 < QUIZ_QUESTIONS.length) {
                           setCurrentQuizIndex((prev) => prev + 1);
                         } else {
-                          if (!entitled) {
-                            window.localStorage.setItem(VOCABULARY_QUIZ_USED_KEY, '1');
-                            setQuizPreviouslyUsed(true);
-                          }
                           setQuizFinished(true);
                         }
                       }}
@@ -876,6 +976,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
                     setSelectedQuizAnswer(null);
                     setQuizScore(0);
                     setQuizFinished(false);
+                    setQuizStarted(true);
                   }}
                   className="px-4 py-2 rounded-xl bg-amber-400 text-black font-bold text-xs hover:bg-amber-300 cursor-pointer"
                 >
