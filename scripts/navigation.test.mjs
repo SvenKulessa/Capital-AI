@@ -20,6 +20,8 @@ test('footer routes license navigation through the Control Center', () => {
 test('aliases and trailing slash normalize without losing query or hash', () => {
   assert.equal(resolveNavigationTarget('/STUDIO-HUB/?tab=builder&ref=menu#details'), '/studio?tab=builder&ref=menu#details');
   assert.equal(resolveNavigationTarget('/lernportal?tab=quiz'), '/learning?tab=quiz');
+  assert.equal(resolveNavigationTarget('/glossar'), '/vocabulary');
+  assert.equal(resolveNavigationTarget('/vocabulary/mobile-pkce?ref=seo#definition'), '/vocabulary/mobile-pkce?ref=seo#definition');
   assert.equal(resolveNavigationTarget('/roadmap?tab=console'), '/control-center?tab=console');
 });
 
@@ -62,4 +64,13 @@ test('legal and research deep links retain their destination and query state', (
   assert.equal(resolveAppRoute('/oss'), '/opensource-lizenzen');
   assert.equal(resolveAppRoute('/research'), '/forschung');
   assert.equal(resolveAppRoute('/__proto__'), '/');
+});
+
+
+test('vocabulary keeps a dedicated canonical landing route and stable term detail paths', () => {
+  assert.equal(resolveAppRoute('/vocabulary'), '/vocabulary');
+  assert.equal(resolveAppRoute('/GLOSSAR/'), '/vocabulary');
+  assert.equal(resolveAppRoute('/vocabulary/orderbuch/'), '/vocabulary/orderbuch');
+  assert.equal(resolveAppRoute('/vocabulary/finance-voc-aidev-0001'), '/vocabulary/finance-voc-aidev-0001');
+  assert.equal(resolveAppRoute('/vocabulary/not valid'), '/');
 });

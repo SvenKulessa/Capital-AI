@@ -203,9 +203,6 @@ export function AppOverlays({
         isOpen={isVocabularyOpen}
         onClose={() => {
           setIsVocabularyOpen(false);
-          if (currentRoute === '/vocabulary') {
-            navigateTo('/');
-          }
         }}
         onOpenAnalysis={() => {
           setIsVocabularyOpen(false);

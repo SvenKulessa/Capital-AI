@@ -213,7 +213,7 @@ export const CoreModules: React.FC<CoreModulesProps> = ({
                   {module.id === 'market-screener'
                     ? 'Datenprüfung'
                     : module.id === 'learning-portal'
-                    ? '480+ Begriffe'
+                    ? '294 Begriffe'
                     : '40 € / Mo Cap'}
                 </span>
               </div>

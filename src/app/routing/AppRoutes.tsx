@@ -200,12 +200,21 @@ export function AppRoutes({
     );
   }
 
-  if (currentRoute === '/learning' || currentRoute === '/vocabulary') {
+  if (
+    currentRoute === '/learning' ||
+    currentRoute === '/vocabulary' ||
+    currentRoute.startsWith('/vocabulary/')
+  ) {
+    const vocabularyTermId = currentRoute.startsWith('/vocabulary/')
+      ? currentRoute.slice('/vocabulary/'.length)
+      : undefined;
+
     return (
       <LearningPortalPage
         onBackToHome={() => navigateTo('/')}
         onNavigateLogin={() => navigateTo('/login')}
         onNavigateTab={navigateTo}
+        initialVocabularyTermId={vocabularyTermId}
       />
     );
   }

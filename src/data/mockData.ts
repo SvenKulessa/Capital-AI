@@ -86,8 +86,8 @@ const MODULE_CATALOG: CoreModule[] = [
         'Interaktiver Quant & Trader Skill-Check mit Wissensbewertung',
       ],
       sampleMetrics: [
-        { label: 'Eingetragene Fachbegriffe', value: '480+', score: 'Wachsend' },
-        { label: 'Themenbereiche', value: '5 Kategorien', score: 'Strukturiert' },
+        { label: 'Eingetragene Fachbegriffe', value: '294', score: 'Konsolidiert' },
+        { label: 'Themenbereiche', value: '11 Kategorien', score: 'Strukturiert' },
         { label: 'Cheat-Sheets', value: '4 Kern-Guides', score: 'Praxisnah' },
         { label: 'Interaktiver Test', value: 'Skill-Check', score: 'Verfügbar' },
       ],
@@ -225,14 +225,14 @@ const MODULE_CATALOG: CoreModule[] = [
     brandColor: '#F9BF21', // AIF Gold (Primary)
     accentColor: '#FDE047',
     details: {
-      useCase: 'Interaktives Nachschlagewerk mit über 450 Finanz- und KI-Fachbegriffen, verständlichen Praxisbeispielen und Faustformeln.',
+      useCase: 'Interaktives Nachschlagewerk mit 294 konsolidierten Fachbegriffen aus Markt, Scoring, Daten, Plattform, Security, Produkt, Governance und Mobile Runtime.',
       features: [
         'Prägnante Definitionen ohne unnötiges Fachchinesisch',
         'Visuelle Diagramme für komplexe Zusammenhänge',
         'Direkte Verknüpfung mit den aktuellen Marktdaten',
       ],
       sampleMetrics: [
-        { label: 'Eingetragene Fachbegriffe', value: '480+', score: 'Wachsend' },
+        { label: 'Eingetragene Fachbegriffe', value: '294', score: 'Konsolidiert' },
         { label: 'Kategorien', value: '12 Themen', score: 'Strukturiert' },
         { label: 'Durchschnittliche Lesezeit', value: '90 Sek.', score: 'Kompakt' },
       ],

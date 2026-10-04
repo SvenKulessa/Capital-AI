@@ -36,6 +36,7 @@
 !shared/legal-identity.mjs
 !shared/license-engine.mjs
 !shared/research-metadata.mjs
+!shared/vocabulary-metadata.mjs
 !deploy/
 !deploy/runtime/
 !deploy/runtime/package.json

@@ -223,7 +223,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
     glowColor: 'rgba(249, 191, 33, 0.45)',
     accentBg: 'bg-amber-400/15 border-amber-400/50 text-amber-300',
     icon: <BookOpen className="w-5 h-5 text-[#F9BF21]" />,
-    badge: '3 Bereiche • 480+ Termini',
+    badge: '3 Bereiche • 294 Termini',
     description: 'Umfassendes Finanz- & Krypto-Lexikon, praxiserprobte Faustformeln, Guides und Skill-Check.',
     mainPath: '/learning',
     subpages: [
@@ -231,10 +231,10 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         id: 'glossar',
         name: 'Market Vocabulary & Glossar',
         icon: <BookOpen className="w-4 h-4 text-amber-400" />,
-        badge: '480+ Begriffe',
-        shortDesc: 'Umfassendes Finanz- und Krypto-Lexikon mit praxiserprobten Faustformeln',
+        badge: '294 Begriffe',
+        shortDesc: 'Konsolidiertes Fachvokabular mit Definitionen und Thesaurus',
         tags: ['Lexikon', 'Faustformeln', 'Formeln'],
-        path: '/learning?tab=glossar',
+        path: '/vocabulary',
       },
       {
         id: 'guides',

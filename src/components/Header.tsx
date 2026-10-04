@@ -102,6 +102,7 @@ export const Header: React.FC<HeaderProps> = ({
   const isLearningActive =
     currentRoute === '/learning' ||
     currentRoute === '/vocabulary' ||
+    currentRoute?.startsWith('/vocabulary/') ||
     currentRoute === '/glossar';
   const isControlActive =
     currentRoute === '/control-center' ||
@@ -372,7 +373,7 @@ export const Header: React.FC<HeaderProps> = ({
                         glow: "rgba(249, 191, 33, 0.4)",
                         icon: <BookOpen className="w-4 h-4 text-[#F9BF21]" />,
                         badge: "3 Bereiche",
-                        tagline: "480+ Glossar, Cheat-Sheets & Quiz",
+                        tagline: "294 Fachbegriffe, Thesaurus & Quiz",
                       },
                       {
                         id: "control-center" as const,

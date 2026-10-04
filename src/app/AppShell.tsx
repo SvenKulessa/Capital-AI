@@ -39,9 +39,7 @@ export function AppShell() {
   const [isMonetizationOpen, setIsMonetizationOpen] = useState(
     () => currentRoute === '/pricing',
   );
-  const [isVocabularyOpen, setIsVocabularyOpen] = useState(
-    () => currentRoute === '/vocabulary',
-  );
+  const [isVocabularyOpen, setIsVocabularyOpen] = useState(false);
   const [marketCategoryFilter, setMarketCategoryFilter] = useState<
     'ALLE' | MainCategory
   >('ALLE');
