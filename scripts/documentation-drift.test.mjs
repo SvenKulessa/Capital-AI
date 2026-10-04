@@ -110,3 +110,26 @@ test('reports missing configured living documents fail closed', () => {
   const report = analyzeDocumentationDrift({ root, mainSha: MAIN, files: ['README.md'], profile });
   assert.equal(report.findings.some((finding) => finding.class === 'MISSING_LIVING_DOCUMENT'), true);
 });
+
+test('runtime dependency boundary uses an immutable implementation baseline instead of a volatile main promise', () => {
+  const root = fixture({
+    'README.md': 'No volatile main identity.\\n',
+    'src/data/roadmapData.ts': `export const items = [{ id: 'A' }];\\n`,
+    'docs/growth/DOCUMENTATION-DRIFT-SELF-HEALING.md': 'Implementation base for DOC-SH-01: immutable.\\n',
+    'docs/architecture/RUNTIME-DEPENDENCY-BOUNDARY.md': `Implementation baseline commit: \`${OLD}\` — immutable Entstehungsbasis.\\n`,
+  });
+  const localProfile = {
+    ...profile,
+    livingDocuments: {
+      exact: [...profile.livingDocuments.exact, 'docs/architecture/RUNTIME-DEPENDENCY-BOUNDARY.md'],
+      prefixes: profile.livingDocuments.prefixes,
+    },
+  };
+  const report = analyzeDocumentationDrift({
+    root,
+    mainSha: MAIN,
+    files: ['README.md', 'src/data/roadmapData.ts', 'docs/growth/DOCUMENTATION-DRIFT-SELF-HEALING.md', 'docs/architecture/RUNTIME-DEPENDENCY-BOUNDARY.md'],
+    profile: localProfile,
+  });
+  assert.equal(report.summary.driftDetected, false);
+});
