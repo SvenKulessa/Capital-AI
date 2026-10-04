@@ -101,23 +101,7 @@ const BASE_VOCABULARY_TERMS: Omit<VocabularyTerm, 'thesaurus'>[] = [
     keyTakeaway: 'Hohe Latenz und geringe Markttiefe erhöhen die Slippage; deshalb überwacht Capital-AI die Orderbuchdichte in Sub-45ms.',
     searchTags: ['slippage', 'ausführung', 'abgleiten', 'market order', 'latenz'],
   },
-  {
-    id: 'vwap',
-    term: 'VWAP',
-    abbreviation: 'Volume-Weighted Average Price',
-    category: 'TRADING_QUANT',
-    categoryLabel: 'Trading & Quant',
-    level: 'Quant / Pro',
-    shortDefinition: 'Volumen-gewichteter Durchschnittspreis eines Handelsinstruments über einen definierten Zeitabschnitt (oft 1 Tag).',
-    detailedExplanation:
-      'Der VWAP ist der Goldstandard-Benchmark für institutionelle Händler und Pensionsfonds. Ein Kurs oberhalb des VWAP gilt als bullisch (Käufer dominieren mit hohem Volumen); Kurse unterhalb des VWAP signalisieren Bärenmarkt-Druck. Große Fonds streben an, Orders unterhalb des VWAP zu akkumulieren.',
-    formulaOrRule: 'VWAP = ∑ (Preis × gehandeltes Volumen) / ∑ gehandeltes Gesamtvolumen',
-    practicalExample:
-      'Eine Aktie schließt bei 150 $, ihr Tages-VWAP liegt bei 147 $. Händler, die unter 147 $ gekauft haben, erzielten eine Outperformance gegenüber dem Gesamtmarkt.',
-    relatedAssets: ['NVDA', 'SPX', 'BTC/USD'],
-    keyTakeaway: 'VWAP filtert Kursspitzen mit geringem Volumen heraus und zeigt das echte institutionelle Preisniveau.',
-    searchTags: ['vwap', 'volumen', 'durchschnitt', 'benchmark', 'quant', 'institutionell'],
-  },
+  
   {
     id: 'arbitrage',
     term: 'Arbitrage',
@@ -135,42 +119,10 @@ const BASE_VOCABULARY_TERMS: Omit<VocabularyTerm, 'thesaurus'>[] = [
     keyTakeaway: 'Arbitrageure sorgen für globale Markteffizienz und gleichen Preisunterschiede zwischen weltweiten Börsenplätzen aus.',
     searchTags: ['arbitrage', 'spread', 'börsen', 'kraken', 'binance', 'preisunterschied'],
   },
-  {
-    id: 'latenz',
-    term: 'Latenz & FIX-Protokoll',
-    abbreviation: 'Latency (Sub-45ms)',
-    category: 'TRADING_QUANT',
-    categoryLabel: 'Trading & Quant',
-    level: 'Quant / Pro',
-    shortDefinition: 'Verzögerungszeit zwischen der Entstehung eines Börsenkurses und dessen Empfang im Terminal bzw. der Orderausführung.',
-    detailedExplanation:
-      'Im Hochfrequenz- und Quant-Trading entscheiden Millisekunden über Rendite oder Slippage. Standard-Broker weisen oft Verzögerungen von 200–800 ms auf. Institutionelle Terminals wie Capital-AI nutzen direkte WebSocket-Streams und FIX-Protokolle, um Latenzen auf unter 45 ms zu drücken.',
-    formulaOrRule: 'Gesamtlatenz = Börsenserver-Verarbeitung + Netzwerklaufzeit (Ping) + Client-Rendering',
-    practicalExample:
-      'Bei Veröffentlichung der US-Arbeitsmarktdaten reagiert der S&P 500 in 15 ms. Mit Sub-45ms Latenz sieht der Händler die Kursbewegung nahezu in Echtzeit.',
-    relatedAssets: ['SPX', 'NDX', 'EUR/USD'],
-    keyTakeaway: 'Niedrige Latenz verhindert das Handeln zu veralteten Kursen („Stale Quotes“) und schützt vor Ausführungsverlusten.',
-    searchTags: ['latenz', 'latency', 'ping', 'echtzeit', 'sub-45ms', 'websocket'],
-  },
+  
 
   // KI & SCORING MODELLE
-  {
-    id: 'enterprise-scorer',
-    term: 'Enterprise Scorer',
-    abbreviation: 'Capital-AI Scorer (0–100)',
-    category: 'AI_MODELS',
-    categoryLabel: 'KI & Scoring-Modelle',
-    level: 'Quant / Pro',
-    shortDefinition: 'Proprietäres Multi-Faktor-KI-Bewertungsmodell von Capital-AI, das Momentum, Liquidität, Volatilität und Orderbuch-Metriken bündelt.',
-    detailedExplanation:
-      'Der Enterprise Scorer berechnet täglich aus 30 verifizierten 1D-Balken sowie Intraday-Orderbuchdaten einen objektiven Gesamtscore zwischen 0 und 100. Werte ab 70 gelten als stark bullisch mit solider Markttiefe, Werte unter 40 signalisieren erhöhtes Abwärtsrisiko oder mangelnde Liquidität.',
-    formulaOrRule: 'Score = w₁·Trend + w₂·Momentum + w₃·Orderbuch-Tiefe + w₄·Volatilitäts-Qualität - w₅·Datenrisiko',
-    practicalExample:
-      'Bitcoin erreicht einen Enterprise Score von 94/100 durch anhaltendes Momentum, rekordhohe ETF-Nettozuflüsse und starke Bid-Wand-Unterstützung.',
-    relatedAssets: ['BTC/USD', 'NVDA', 'SPX', 'Gold'],
-    keyTakeaway: 'Ersetzt subjektives Bauchgefühl durch ein transparentes, datenbasiertes Multi-Faktor-Scoring.',
-    searchTags: ['enterprise scorer', 'ki score', 'scoring', 'rating', 'multi-faktor', 'algorithmus'],
-  },
+  
   {
     id: 'buffett-value-check',
     term: 'Buffett Value Check',
@@ -275,23 +227,7 @@ const BASE_VOCABULARY_TERMS: Omit<VocabularyTerm, 'thesaurus'>[] = [
     keyTakeaway: 'Ermöglicht grenzenlosen, 24/7 verfügbaren Zugang zu Finanzdienstleistungen bei voller Transparenz auf der Blockchain.',
     searchTags: ['defi', 'decentralized finance', 'tvl', 'smart contracts', 'zinsen', 'lending'],
   },
-  {
-    id: 'on-chain-metriken',
-    term: 'On-Chain-Metriken',
-    abbreviation: 'Blockchain Analytics',
-    category: 'CRYPTO_WEB3',
-    categoryLabel: 'Krypto & Web3',
-    level: 'Quant / Pro',
-    shortDefinition: 'Quantitative Daten, die direkt aus der Blockchain ausgelesen werden (Wal-Bewegungen, Börsenzuflüsse, HODL-Wellen).',
-    detailedExplanation:
-      'Da alle Transaktionen öffentlich einsehbar sind, lassen sich Akkumulationsphasen institutioneller Großinvestoren („Whales“) in Echtzeit tracken. Hohe Zuflüsse auf Börsen deuten auf bevorstehenden Verkaufsdruck hin; Abflüsse in Cold-Storage-Wallets signalisieren langfristiges Vertrauen.',
-    formulaOrRule: 'Exchange Netflow = Zuflüsse auf Börsen - Abflüsse in private Wallets (negativ = bullisch)',
-    practicalExample:
-      'Innerhalb von 24 Stunden verlassen 28.000 BTC die Börsenreserven in Richtung privater Verwahrung. Das verknappt das liquide Angebot an den Handelsplätzen.',
-    relatedAssets: ['BTC/USD', 'ETH/USD'],
-    keyTakeaway: 'On-Chain-Daten zeigen tatsächliche Kapitalströme ohne zeitliche Verzögerung von Zwischenberichten.',
-    searchTags: ['on-chain', 'whales', 'netflow', 'blockchain daten', 'hodl', 'adressen'],
-  },
+  
 
   // FUNDAMENTALANALYSE
   {
@@ -421,17 +357,13 @@ const BASE_THESAURUS_BY_ID: Record<string, [string, string, string]> = {
   'orderbuch': ['Order Book', 'Markttiefe', 'Order Book Depth'],
   'bid-ask-spread': ['Spread', 'Geld-Brief-Spanne', 'Bid/Ask-Differenz'],
   'slippage': ['Ausführungsabweichung', 'Preisabweichung', 'Execution Drift'],
-  'vwap': ['Volume-Weighted Average Price', 'volumengewichteter Durchschnittspreis', 'Volumen-Durchschnittskurs'],
   'arbitrage': ['Preisunterschiedshandel', 'Cross-Venue Arbitrage', 'Arbitragehandel'],
-  'latenz': ['Latency', 'Verzögerungszeit', 'Übertragungslatenz'],
-  'enterprise-scorer': ['Multi-Faktor-Scorer', 'KI-Scoringmodell', 'Capital-AI Scorer'],
   'buffett-value-check': ['Value Check', 'Moat-&-Value-Analyse', 'Buffett-Prüfung'],
   'sentiment-analyse': ['NLP-Sentimentanalyse', 'Stimmungsanalyse', 'Market Sentiment Analysis'],
   'backtesting': ['Backtest', 'historische Simulation', 'Strategietest'],
   'layer-1': ['L1/L2', 'Blockchain-Layer', 'Blockchain-Ebenen'],
   'tokenomics': ['Token Economics', 'Token-Ökonomie', 'Tokenwirtschaft'],
   'defi': ['Decentralized Finance', 'dezentrale Finanzen', 'DeFi-Finanzökosystem'],
-  'on-chain-metriken': ['Blockchain-Metriken', 'On-Chain Analytics', 'Blockchain-Kennzahlen'],
   'margin-of-safety': ['Sicherheitsmarge', 'Safety Margin', 'Bewertungspuffer'],
   'kgv-pe-ratio': ['Price-Earnings Ratio', 'P/E Ratio', 'Kurs-Gewinn-Verhältnis'],
   'free-cash-flow': ['Free Cashflow', 'freier Cashflow', 'freier Geldfluss'],
