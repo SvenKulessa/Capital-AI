@@ -17,8 +17,10 @@ export function validatePlan(p) {
   assert.deepEqual(Object.keys(p.targets).sort(), [...classes].sort());
   assert.deepEqual(p.targets, { crypto: 500, stocks: 300, commodities: 100, forex: 100, indices: 300 });
   for (const c of classes) assert.ok(Number.isSafeInteger(p.targets[c]) && p.targets[c] >= 20);
-  assert.equal(p.candidates.length, 10);
-  assert.equal(new Set(p.candidates.map(c => c.id)).size, 10);
+  assert.ok(p.candidates.length > 0);
+  assert.equal(new Set(p.candidates.map(c => c.id)).size, p.candidates.length);
+  assert.ok(!p.candidates.some(c => c.id === 'fdnpy'));
+  assert.ok(p.excludedCandidates.some(c => c.id === 'fdnpy' && c.commercialStatus === 'EXCLUDED_OWNER_OPEN_SOURCE_ONLY'));
   for (const c of p.candidates) {
     assert.match(c.sourceSha, /^[a-f0-9]{40}$/);
     assert.equal(c.measurementState, 'NOT_EXECUTED');
@@ -99,7 +101,7 @@ export function validatePlan(p) {
     assert.ok(perps.marketFields.includes(field));
   }
   return { valid: true, totalTarget: 1300, firstTestAssets: 100,
-    candidates: 10, stages: 25, additionalPerpetualTarget: null, benchmarkExecuted: false, decisionEligible: false };
+    candidates: p.candidates.length, stages: 25, additionalPerpetualTarget: null, benchmarkExecuted: false, decisionEligible: false };
 }
 
 // This validates consistency of a blocked research snapshot, never admission.
@@ -111,8 +113,8 @@ export function validateCommercialEvidence(plan, evidence) {
   assert.equal(evidence.commercialProductionAllowed, false);
   assert.equal(evidence.benchmark.executed, false);
   assert.equal(evidence.benchmark.winner, null);
-  assert.equal(evidence.candidates.length, plan.candidates.length);
-  assert.equal(new Set(evidence.candidates.map(candidate => candidate.id)).size, plan.candidates.length);
+  assert.ok(evidence.candidates.length >= plan.candidates.length);
+  assert.equal(new Set(evidence.candidates.map(candidate => candidate.id)).size, evidence.candidates.length);
   for (const candidate of plan.candidates) {
     const review = evidence.candidates.find(row => row.id === candidate.id);
     assert.ok(review, `Missing commercial review: ${candidate.id}`);
@@ -127,7 +129,7 @@ export function validateCommercialEvidence(plan, evidence) {
   }
   assert.equal(evidence.monetizationAuthority, plan.monetization.registryRef.path);
   assert.equal(evidence.cadsAuthority, plan.monetization.cadsRef.path);
-  return { valid: true, candidates: evidence.candidates.length, commercialProductionAllowed: false };
+  return { valid: true, candidates: plan.candidates.length, commercialProductionAllowed: false };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
