@@ -47,6 +47,7 @@
   ],
   "driftClasses": [
     "SOURCE_DRIFT",
+    "VOLATILE_MAIN_IDENTITY_CLAIM",
     "MISSING_LIVING_DOCUMENT",
     "ROADMAP_DUPLICATE_ID"
   ],
@@ -74,13 +75,15 @@
       "DNS_CHANGE",
       "BILLING_CHANGE",
       "SECRET_ROTATION"
-    ]
+    ],
+    "remediationStrategy": "RECLASSIFY_AS_IMMUTABLE_BASELINE_OR_GENERATED_METADATA"
   },
   "safety": {
     "historicalEvidenceImmutable": true,
     "openPullRequestIsNotMainEvidence": true,
     "runtimeIdentityIsDistinctFromMainIdentity": true,
     "missingEvidenceMeansSuccess": false,
-    "publicClaimsRequireCanonicalEvidence": true
+    "publicClaimsRequireCanonicalEvidence": true,
+    "livingDocumentCurrentMainShaPolicy": "FORBID_VOLATILE_EXACT_SHA"
   }
 }
