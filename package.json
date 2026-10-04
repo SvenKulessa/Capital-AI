@@ -41,17 +41,17 @@
     "dotenv": "^18.0.4",
     "express": "^5.2.1",
     "jspdf": "^4.2.1",
-    "lucide-react": "^1.48.0",
+    "lucide-react": "1.52.0",
     "motion": "^13.4.5",
+    "nodemailer": "10.0.13",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "recharts": "^3.10.1",
-    "redis": "6.2.1",
+    "redis": "6.3.0",
     "spdx-expression-parse": "5.0.0",
     "spdx-license-ids": "3.0.24",
     "vite": "^8.3.0",
-    "zod": "^4.6.5",
-    "nodemailer": "10.0.13"
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
