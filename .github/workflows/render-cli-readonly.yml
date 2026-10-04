@@ -3,13 +3,13 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'Lesende Diagnose: NATS, OIDC oder beide (keine Production-Freigabe)'
+        description: 'Lesende Diagnose: NATS, Supabase Auth oder beide (keine Production-Freigabe)'
         type: choice
         required: true
         default: nats
         options:
           - nats
-          - oidc
+          - auth
           - both
 
 permissions:
@@ -30,9 +30,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Test credential-free OIDC diagnostics
+      - name: Test credential-free Supabase Auth diagnostics
         if: inputs.mode != 'nats'
-        run: node --test scripts/diagnose-oidc.test.mjs
+        run: node --test scripts/diagnose-supabase-auth.test.mjs
       - name: Install verified Render CLI 2.28.0
         shell: bash
         run: |
@@ -230,7 +230,7 @@ jobs:
           except Exception:
               raise SystemExit("BLOCKED: Render-Diagnose unvollständig; keine Rohdaten veröffentlicht.") from None
           PY
-      - name: Enforce fail-closed OIDC verification without publishing values
+      - name: Enforce fail-closed Supabase Auth verification without publishing values
         if: inputs.mode != 'nats'
         shell: bash
         env:
@@ -241,10 +241,10 @@ jobs:
           curl --fail --silent --show-error --max-time 20 \
             --header "Authorization: Bearer $RENDER_API_KEY" \
             'https://api.render.com/v1/services/srv-dau1rp893c1s73cdhm1g/env-vars?limit=100' \
-            --output "$RUNNER_TEMP/render-oidc-env.json"
-          # OIDC_VERIFICATION_STATE@1: configuration/discovery alone must stay red.
+            --output "$RUNNER_TEMP/render-auth-env.json"
+          # Supabase configuration/provider-settings alone must stay red.
           # This exits non-zero until credential authentication and a real login are evidenced.
-          node scripts/diagnose-oidc.mjs "$RUNNER_TEMP/render-oidc-env.json" >> "$GITHUB_STEP_SUMMARY"
+          node scripts/diagnose-supabase-auth.mjs "$RUNNER_TEMP/render-auth-env.json" >> "$GITHUB_STEP_SUMMARY"
       - name: Remove temporary credentials and responses
         if: always()
         shell: bash
@@ -252,4 +252,4 @@ jobs:
           RENDER_CLI_CONFIG_DIR: ${{ runner.temp }}/render-cli-config
         run: |
           rm -rf -- "$RENDER_CLI_CONFIG_DIR"
-          rm -f -- "$RUNNER_TEMP/render-oidc-env.json" "$RUNNER_TEMP/render-workspace.json" "$RUNNER_TEMP/render-deploys.json" "$RUNNER_TEMP/render-cli-stderr"
+          rm -f -- "$RUNNER_TEMP/render-auth-env.json" "$RUNNER_TEMP/render-workspace.json" "$RUNNER_TEMP/render-deploys.json" "$RUNNER_TEMP/render-cli-stderr"

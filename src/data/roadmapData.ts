@@ -56,7 +56,7 @@ export const ROADMAP_STAGES: StagePhaseInfo[] = [
     id: 'phase-1',
     name: 'Phase 1: Versioned Platform Foundation',
     shortTitle: '1. Platform Foundation',
-    description: 'Repo-weite SemVer-Baseline, fünf Domains, image-backed Render Runtime, ZITADEL-Basis sowie NATS/Valkey-Transport mit nachweisbaren Identitäten.',
+    description: 'Repo-weite SemVer-Baseline, fünf Domains, image-backed Render Runtime, Supabase-Auth-/BYOK-Basis sowie NATS/Valkey-Transport mit nachweisbaren Identitäten.',
     targetRelease: 'v0.8.0-alpha.1',
     completionPercent: null,
     status: 'in_progress',
@@ -1837,15 +1837,15 @@ export const WORK_PACKAGES: WorkPackage[] = [
   "priority": "Hoch",
   "leadName": "Projektowner",
   "targetSprint": "Vor Production-Handoff",
-  "id": "CA-TRUST-ZITADEL-READBACK",
-  "title": "ZITADEL-Service-Account und aktive Konfiguration lesen",
+  "id": "CA-TRUST-SUPABASE-AUTH",
+  "title": "Supabase Auth, Session- und Vault-Konfiguration verifizieren",
   "owner": "TRUST",
   "evidenceRefs": [
     "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/compliance/ROADMAP-RECONCILIATION-20261001.md",
-    "scripts/diagnose-oidc.mjs",
+    "scripts/diagnose-supabase-auth.mjs",
     ".github/workflows/render-cli-readonly.yml"
   ],
-  "description": "OIDC-Client-Credentials sind im Code getrennt von Service-Account-Zugang. Aktuell kein zugängliches Service-Account-Credential und kein Render-Env-Reader im Connector; Existenz, Gültigkeit und Berechtigungen bleiben UNGEPRÜFT.",
+  "description": "Supabase Auth und der persönliche BYOK-Vault sind serverseitig getrennt. Konfiguration, echte Anmeldung und Vault-Zugriff bleiben bis zur Runtime-Evidence fail-closed.",
   "nextStep": "Vorhandenen Secret-Zugriff im berechtigten Laufzeit-/CI-Kontext nutzen; Credential-Typ und begrenzte Leserechte feststellen, danach App-Callbacks, Login-/MFA-/Passkey-Policies, Branding und SMTP ohne Secret-/Benutzerdatenexport lesen.",
   "deliverables": [
     "Secretfreier Bericht: Credential-Typ, Authentifizierung und einzelne Lesegates",

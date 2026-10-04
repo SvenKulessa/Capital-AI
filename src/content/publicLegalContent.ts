@@ -65,28 +65,28 @@ export const PUBLIC_FAQ_ITEMS: PublicFaqItem[] = [
     category: 'Sicherheit & Datenschutz',
     question: 'Welche Kontodaten können verarbeitet werden?',
     answer:
-      'Die Anmeldung erfolgt über ZITADEL. Im neuen Dienst werden die verifizierte Benutzerkennung, der Aussteller, der Profilname und zeitlich begrenzte Sitzungsdaten verwendet. Passwörter und Anmeldefaktoren werden beim Identitätsanbieter verwaltet. Die konkreten Verarbeitungstätigkeiten stehen in der Datenschutzerklärung.',
+      'Die Anmeldung erfolgt über Supabase Auth. Der Dienst verarbeitet die verifizierte Benutzerkennung, E-Mail-/Profilangaben und technisch notwendige Sitzungsdaten. Persönliche Provider-API-Secrets werden ausschließlich serverseitig über den eigenen Vault-Pfad gespeichert und dem Browser nach Speicherung nicht wieder ausgegeben. Details stehen in der Datenschutzerklärung.',
   },
   {
     id: 'privacy-controls',
     category: 'Sicherheit & Datenschutz',
     question: 'Welche Sicherheitskontrollen sind dokumentiert?',
     answer:
-      'Die Anwendung prüft die OIDC-Signatur, Aussteller, Zielanwendung, Ablauf und Nonce, verwendet PKCE und geschützte Sitzungscookies und begrenzt API-Anfragen. Passkeys und MFA richten sich nach der tatsächlichen ZITADEL-Konfiguration. Daraus wird keine externe Zertifizierung oder behördliche Freigabe abgeleitet.',
+      'Die Anwendung verwendet Supabase Auth mit serverseitig verifizierten Sessions, PKCE für OAuth-Flows, signierte HttpOnly-/Secure-Cookies, Same-Origin-Schutz und begrenzte API-Anfragen. Persönliche Provider-Secrets liegen getrennt im Supabase Vault und sind nicht direkt für Browserrollen freigegeben. Daraus wird keine externe Zertifizierung oder behördliche Freigabe abgeleitet.',
   },
   {
     id: 'privacy-rights',
     category: 'Sicherheit & Datenschutz',
     question: 'Wie kann ich Auskunft, Berichtigung oder Löschung meiner Daten anfragen?',
     answer:
-      `Über /datenschutz können Sie eine E-Mail für Auskunft, Berichtigung, Löschung, Einschränkung, Widerspruch oder Datenübertragbarkeit vorbereiten und selbst an ${CONTROLLER.email} senden. Nach einer ZITADEL-Anmeldung kann außerdem ein begrenzter Datenauszug der Identitäts- und Sitzungsdaten dieses Dienstes heruntergeladen werden. Vorbereitete Anfragen werden hier nicht dauerhaft gespeichert oder automatisch versendet.`,
+      `Über /datenschutz können Sie eine E-Mail für Auskunft, Berichtigung, Löschung, Einschränkung, Widerspruch oder Datenübertragbarkeit vorbereiten und selbst an ${CONTROLLER.email} senden. Nach einer Supabase-Anmeldung kann außerdem ein begrenzter Datenauszug der Identitäts- und Sitzungsdaten dieses Dienstes heruntergeladen werden. Vorbereitete Anfragen werden hier nicht dauerhaft gespeichert oder automatisch versendet.`,
   },
   {
     id: 'privacy-cookies',
     category: 'Sicherheit & Datenschutz',
     question: 'Kann ich Analytics- und Cookie-Einstellungen ändern?',
     answer:
-      'Optionales Analytics und Werbung sind in diesem Dienst deaktiviert. Die Anmeldung verwendet technisch notwendige Cookies für die OIDC-Transaktion und Anwendungssitzung; ein Opt-in für Analytics wird nicht vorgetäuscht.',
+      'Optionales Analytics und Werbung sind in diesem Dienst deaktiviert. Die Anmeldung verwendet technisch notwendige Cookies für PKCE/OAuth und die serverseitig verwaltete Anwendungssitzung; ein Opt-in für Analytics wird nicht vorgetäuscht.',
   },
   {
     id: 'account-login',
@@ -128,6 +128,6 @@ export const PUBLIC_FAQ_ITEMS: PublicFaqItem[] = [
     category: 'Recht & Transparenz',
     question: 'Ist CAPITAL-AI behördlich oder extern als DSGVO-konform zertifiziert?',
     answer:
-      'Eine behördliche, gerichtliche oder externe DSGVO-Zertifizierung wird nicht behauptet. Die veröffentlichten Datenschutzinformationen beschreiben den Dienst mit ZITADEL-Anmeldung und die getrennt zu prüfenden Providerkonfigurationen.',
+      'Eine behördliche, gerichtliche oder externe DSGVO-Zertifizierung wird nicht behauptet. Die veröffentlichten Datenschutzinformationen beschreiben Supabase Auth, den persönlichen BYOK-Vault und die weiterhin getrennt zu prüfenden Provider- und Datenrechtsgrenzen.',
   },
 ];

@@ -37,7 +37,7 @@ flowchart LR
 | Scope | Beispiele | Im finalen Webservice-Image |
 |---|---|---|
 | Build | Vite, TypeScript, React-Bundle, Lizenzgenerator | Nein |
-| Runtime | NATS, Valkey/Redis, Zod-Verträge, JOSE/OIDC | Ja |
+| Runtime | NATS, Valkey/Redis, Zod-Verträge, Supabase-Auth-HTTP | Ja |
 | Triggered/Postflight | Scans, Benchmarks, Reports, spätere Mail-/Migrationsjobs | Nur als eigene Unit |
 | Evidence | SBOM, Attestations, Reports | Referenziert, nicht als Toolchain bevorratet |
 
@@ -51,7 +51,6 @@ Aktuell direkt runtime-erforderlich sind:
 - `@nats-io/transport-node`
 - `redis`
 - `zod`
-- `jose`
 
 Nodemailer bleibt im Root-Build-/Lizenzbestand, wird aber nicht in das Runtime-Image aufgenommen, solange kein produktiver Mail-Ausführungspfad es importiert. Dasselbe Prinzip gilt für geplante Express-/FastAPI-/Worker-Komponenten: erst der geprüfte ausführbare Pfad rechtfertigt die Runtime-Aufnahme.
 

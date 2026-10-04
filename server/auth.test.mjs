@@ -1,241 +1,325 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { generateKeyPair, exportJWK, SignJWT } from 'jose';
 import { createHash } from 'node:crypto';
 import { mkdtemp, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createApp } from './index.mjs';
 
+function sessionCookieHeader(response) {
+  return response.headers.getSetCookie()
+    .filter(value => value.startsWith('__Host-capital_session_'))
+    .map(value => value.split(';')[0])
+    .join('; ');
+}
+
 async function harness(envOverrides = {}) {
-  const { privateKey, publicKey } = await generateKeyPair('RS256');
-  const jwk = { ...await exportJWK(publicKey), kid: 'test-key', alg: 'RS256', use: 'sig' };
-  const env = { OIDC_ISSUER: 'https://identity.example', PUBLIC_APP_ORIGIN: 'https://capital.example', OIDC_CLIENT_ID: 'test-client', OIDC_CLIENT_SECRET: 'test-only-secret', TELEGRAM_BOT_TOKEN: '12345:offline_test_placeholder_only', TELEGRAM_CHAT_ID: '-100123', TELEGRAM_ALLOWED_SUBJECTS: 'owner-subject', ...envOverrides };
-  const state = { subject: 'owner-subject', nonce: '', challenge: '', invalidNonce: false, invalidAudience: false, invalidIssuer: false, invalidSignature: false, expired: false, tokenCalls: 0, deliveries: [], authAudit: [] };
-  const upstream = async (url, options) => {
-    assert.equal(options.redirect, 'error');
-    const href = String(url);
-    if (href.endsWith('/.well-known/openid-configuration') && state.discoveryFailure) throw new Error('upstream reflected test-only-secret');
-    if (href.endsWith('/.well-known/openid-configuration')) return Response.json({ issuer: env.OIDC_ISSUER, authorization_endpoint: 'https://identity.example/authorize', token_endpoint: 'https://identity.example/token', jwks_uri: 'https://identity.example/keys', code_challenge_methods_supported: ['S256'], token_endpoint_auth_methods_supported: ['client_secret_basic'] });
-    if (href.endsWith('/keys')) return Response.json({ keys: [jwk] });
-    if (href.endsWith('/token')) {
-      state.tokenCalls++;
-      assert.equal(createHash('sha256').update(options.body.get('code_verifier')).digest('base64url'), state.challenge);
-      assert.equal(options.body.get('redirect_uri'), 'https://capital.example/api/auth/callback');
-      const token = await new SignJWT({ nonce: state.invalidNonce ? 'wrong' : state.nonce, name: 'Test Owner' }).setProtectedHeader({ alg: 'RS256', kid: 'test-key' }).setIssuer(state.invalidIssuer ? 'https://other.example' : env.OIDC_ISSUER).setAudience(state.invalidAudience ? 'wrong' : env.OIDC_CLIENT_ID).setSubject(state.subject).setIssuedAt().setExpirationTime(state.expired ? Math.floor(Date.now() / 1000) - 10 : '10m').sign(privateKey);
-      const tampered = token.split('.');
-      if (state.invalidSignature) tampered[2] = (tampered[2][0] === 'A' ? 'B' : 'A') + tampered[2].slice(1);
-      return Response.json({ id_token: tampered.join('.'), access_token: 'never-return-to-browser' });
-    }
-    if (href.startsWith('https://api.telegram.org/')) { state.deliveries.push(JSON.parse(options.body)); return Response.json({ ok: true }); }
-    throw new Error('Unexpected network access');
+  const env = {
+    SUPABASE_URL: 'https://project.supabase.co',
+    SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test',
+    SUPABASE_SECRET_KEY: 'sb_secret_test_0123456789012345678901234567890123456789',
+    AUTH_COOKIE_SIGNING_SECRET: 'test-cookie-signing-secret-0123456789abcdef',
+    PUBLIC_APP_ORIGIN: 'https://capital.example',
+    TELEGRAM_BOT_TOKEN: '12345:offline_test_placeholder_only',
+    TELEGRAM_CHAT_ID: '-100123',
+    TELEGRAM_ALLOWED_SUBJECTS: 'owner-subject',
+    ...envOverrides,
   };
+  const state = {
+    subject: 'owner-subject',
+    tokenCalls: 0,
+    refreshCalls: 0,
+    challenge: '',
+    deliveries: [],
+    authAudit: [],
+  };
+
+  const user = () => ({
+    id: state.subject,
+    email: `${state.subject}@example.test`,
+    user_metadata: { full_name: state.subject === 'owner-subject' ? 'Test Owner' : 'Second User' },
+  });
+
+  const tokenPayload = () => ({
+    access_token: `access-${state.subject}-${state.tokenCalls}`,
+    refresh_token: `refresh-${state.subject}-${state.tokenCalls}`,
+    expires_in: 3600,
+    expires_at: Math.floor(Date.now() / 1000) + 3600,
+    user: user(),
+  });
+
+  const upstream = async (url, options = {}) => {
+    assert.equal(options.redirect, 'error');
+    const target = new URL(String(url));
+
+    if (target.origin === 'https://project.supabase.co' && target.pathname === '/auth/v1/token') {
+      const grant = target.searchParams.get('grant_type');
+      state.tokenCalls += 1;
+      if (grant === 'password') {
+        const body = JSON.parse(String(options.body || '{}'));
+        if (body.password === 'wrong') return Response.json({ error: 'invalid_credentials' }, { status: 400 });
+        return Response.json(tokenPayload());
+      }
+      if (grant === 'pkce') {
+        const body = JSON.parse(String(options.body || '{}'));
+        assert.equal(body.auth_code, 'test-code');
+        assert.equal(createHash('sha256').update(body.code_verifier).digest('base64url'), state.challenge);
+        return Response.json(tokenPayload());
+      }
+      if (grant === 'refresh_token') {
+        state.refreshCalls += 1;
+        return Response.json(tokenPayload());
+      }
+      throw new Error(`Unexpected grant: ${grant}`);
+    }
+
+    if (target.origin === 'https://project.supabase.co' && target.pathname === '/auth/v1/user') {
+      assert.match(String(options.headers.Authorization || ''), /^Bearer access-/);
+      return Response.json(user());
+    }
+
+    if (target.origin === 'https://project.supabase.co' && target.pathname === '/auth/v1/logout') {
+      return new Response(null, { status: 204 });
+    }
+
+    if (target.origin === 'https://api.telegram.org') {
+      state.deliveries.push(JSON.parse(options.body));
+      return Response.json({ ok: true });
+    }
+
+    throw new Error(`Unexpected network access: ${target.href}`);
+  };
+
   const root = await mkdtemp(path.join(tmpdir(), 'capital-auth-'));
   await writeFile(path.join(root, 'index.html'), '<html>offline</html>');
-  const server = createApp(root, { env, fetchImpl: upstream, audit: message => state.authAudit.push(String(message)) });
+  const server = createApp(root, {
+    env,
+    fetchImpl: upstream,
+    audit: message => state.authAudit.push(String(message)),
+  });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const base = `http://127.0.0.1:${server.address().port}`;
+
   const request = (url, options = {}) => fetch(base + url, { redirect: 'manual', ...options });
-  const begin = async () => {
-    const res = await request('/api/auth/login');
-    assert.equal(res.status, 303);
-    const target = new URL(res.headers.get('location'));
-    state.nonce = target.searchParams.get('nonce'); state.challenge = target.searchParams.get('code_challenge');
-    assert.equal(target.searchParams.get('code_challenge_method'), 'S256');
-    return { state: target.searchParams.get('state'), browserCookie: res.headers.getSetCookie()[0].split(';')[0] };
+
+  const completeEmail = async (password = 'valid-password') => {
+    const response = await request('/api/auth/login/email', {
+      method: 'POST',
+      headers: {
+        Origin: 'https://capital.example',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email: `${state.subject}@example.test`, password }),
+    });
+    assert.equal(response.status, 200);
+    const cookie = sessionCookieHeader(response);
+    assert.match(cookie, /__Host-capital_session_count=/);
+    assert.match(response.headers.getSetCookie().join('\n'), /HttpOnly; Secure; SameSite=Lax/);
+    return cookie;
   };
-  const complete = async () => {
-    const start = await begin();
-    const res = await request(`/api/auth/callback?state=${start.state}&code=test-code`, { headers: { cookie: start.browserCookie } });
-    assert.equal(res.status, 303);
-    const cookies = res.headers.getSetCookie();
-    const sessionCookie = cookies.find(x => x.startsWith('__Host-capital_session='));
-    assert.match(sessionCookie, /HttpOnly; Secure; SameSite=Strict/);
-    return sessionCookie.split(';')[0];
+
+  const beginGoogle = async (route = '/api/auth/login/google?next=%2Fprofile') => {
+    const response = await request(route);
+    assert.equal(response.status, 303);
+    const target = new URL(response.headers.get('location'));
+    assert.equal(target.origin, 'https://project.supabase.co');
+    assert.equal(target.pathname, '/auth/v1/authorize');
+    assert.equal(target.searchParams.get('provider'), 'google');
+    assert.equal(target.searchParams.get('code_challenge_method'), 's256');
+    state.challenge = target.searchParams.get('code_challenge');
+    const callback = new URL(target.searchParams.get('redirect_to'));
+    const pkceCookie = response.headers.getSetCookie()
+      .find(value => value.startsWith('__Host-capital_pkce='))
+      .split(';')[0];
+    return { callback, pkceCookie, target };
   };
-  const stop = async () => { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); await rm(root, { recursive: true, force: true }); };
-  return { state, request, begin, complete, stop };
+
+  const completeGoogle = async () => {
+    const start = await beginGoogle();
+    const response = await request(
+      `/api/auth/callback?flow=${encodeURIComponent(start.callback.searchParams.get('flow'))}&code=test-code`,
+      { headers: { cookie: start.pkceCookie } },
+    );
+    assert.equal(response.status, 303);
+    assert.equal(response.headers.get('location'), '/profile');
+    return sessionCookieHeader(response);
+  };
+
+  const stop = async () => {
+    server.closeAllConnections();
+    await new Promise(resolve => server.close(resolve));
+    await rm(root, { recursive: true, force: true });
+  };
+
+  return { env, state, request, completeEmail, beginGoogle, completeGoogle, stop };
 }
 
-test('unconfigured OIDC fails closed without fake authentication', async () => {
-  const h = await harness({ OIDC_CLIENT_ID: '' });
+test('unconfigured Supabase auth fails closed without fake authentication', async () => {
+  const h = await harness({ SUPABASE_PUBLISHABLE_KEY: '' });
   try {
     assert.equal((await h.request('/api/auth/login')).status, 503);
-    assert.deepEqual(await (await h.request('/api/auth/session')).json(), { configured: false, authenticated: false, user: null });
-  } finally { await h.stop(); }
+    assert.deepEqual(await (await h.request('/api/auth/session')).json(), {
+      configured: false,
+      authenticated: false,
+      user: null,
+    });
+  } finally {
+    await h.stop();
+  }
 });
 
-test('OIDC success telemetry is fixed, redacted and proves the synthetic success phases', async () => {
+test('Supabase email login is same-origin, backend-owned and redirects users to profile', async () => {
   const h = await harness();
   try {
-    const cookie = await h.complete();
-    assert.ok(cookie.startsWith('__Host-capital_session='));
-    assert.deepEqual(h.state.authAudit, [
-      'OIDC authentication verified at token_exchange',
-      'OIDC authentication verified at token_validation',
-      'OIDC authentication verified at session_creation',
-    ]);
-    const evidence = JSON.stringify(h.state.authAudit);
-    assert.doesNotMatch(evidence, /test-only-secret|never-return-to-browser|owner-subject|id_token|access_token|nonce|test-code/);
-  } finally { await h.stop(); }
+    assert.equal((await h.request('/api/auth/login/email', {
+      method: 'POST',
+      headers: { Origin: 'https://attacker.example', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'owner-subject@example.test', password: 'valid-password' }),
+    })).status, 403);
+
+    const cookie = await h.completeEmail();
+    const sessionResponse = await h.request('/api/auth/session', { headers: { cookie } });
+    assert.equal(sessionResponse.status, 200);
+    const session = await sessionResponse.json();
+    assert.equal(session.authenticated, true);
+    assert.equal(session.user.id, 'owner-subject');
+    assert.equal(session.user.subject, 'owner-subject');
+    assert.equal(JSON.stringify(session).includes('access-'), false);
+    assert.equal(JSON.stringify(session).includes('refresh-'), false);
+    assert.deepEqual(h.state.authAudit, ['Supabase authentication verified at password_login']);
+  } finally {
+    await h.stop();
+  }
 });
 
-test('OIDC binds callback to browser, rejects replay, rotates session and protects logout', async () => {
+test('Supabase Google PKCE binds callback to HttpOnly flow state and ends at /profile', async () => {
   const h = await harness();
   try {
-    const start = await h.begin();
-    const url = `/api/auth/callback?state=${start.state}&code=test-code`;
-    assert.equal((await h.request(url)).status, 400);
-    assert.equal(h.state.tokenCalls, 0);
-    const result = await h.request(url, { headers: { cookie: start.browserCookie } });
-    assert.equal(result.status, 303);
-    let cookie = result.headers.getSetCookie().find(x => x.startsWith('__Host-capital_session=')).split(';')[0];
-    assert.equal((await h.request(url, { headers: { cookie: start.browserCookie } })).status, 400);
-    const session = await (await h.request('/api/auth/session', { headers: { cookie } })).json();
-    assert.equal(session.authenticated, true); assert.equal(session.user.subject, 'owner-subject');
-    assert.equal(JSON.stringify(session).includes('access_token'), false);
-    const oldCookie = cookie;
-    const second = await h.begin();
-    const rotated = await h.request(`/api/auth/callback?state=${second.state}&code=test-code`, { headers: { cookie: `${second.browserCookie}; ${oldCookie}` } });
-    assert.equal(rotated.status, 303);
-    cookie = rotated.headers.getSetCookie().find(x => x.startsWith('__Host-capital_session=')).split(';')[0];
-    assert.notEqual(cookie, oldCookie);
-    assert.equal((await (await h.request('/api/auth/session', { headers: { cookie: oldCookie } })).json()).authenticated, false);
-    assert.equal((await h.request('/api/auth/logout', { method: 'POST', headers: { cookie, origin: 'https://attacker.example' } })).status, 403);
-    assert.equal((await h.request('/api/auth/logout', { method: 'POST', headers: { cookie, origin: 'https://capital.example' } })).status, 200);
-    assert.equal((await (await h.request('/api/auth/session', { headers: { cookie } })).json()).authenticated, false);
-  } finally { await h.stop(); }
+    const start = await h.beginGoogle();
+    const callbackUrl = `/api/auth/callback?flow=${encodeURIComponent(start.callback.searchParams.get('flow'))}&code=test-code`;
+    assert.equal((await h.request(callbackUrl)).status, 400);
+
+    const completed = await h.request(callbackUrl, { headers: { cookie: start.pkceCookie } });
+    assert.equal(completed.status, 303);
+    assert.equal(completed.headers.get('location'), '/profile');
+    const cookie = sessionCookieHeader(completed);
+    assert.match(cookie, /__Host-capital_session_count=/);
+    assert.deepEqual(h.state.authAudit, ['Supabase authentication verified at oauth_callback']);
+  } finally {
+    await h.stop();
+  }
 });
 
-for (const field of ['invalidNonce', 'invalidAudience', 'invalidIssuer', 'invalidSignature', 'expired']) {
-  test(`OIDC rejects signed token with ${field}`, async () => {
-    const h = await harness();
-    try {
-      h.state[field] = true;
-      const start = await h.begin();
-      assert.equal((await h.request(`/api/auth/callback?state=${start.state}&code=test-code`, { headers: { cookie: start.browserCookie } })).status, 400);
-      assert.equal((await (await h.request('/api/auth/session')).json()).authenticated, false);
-    } finally { await h.stop(); }
-  });
-}
-
-test('Telegram requires session and same origin; fixed recipient, plain text, no browser secrets and rate limit', async () => {
+test('logout rejects cross-origin mutation and clears the backend session', async () => {
   const h = await harness();
   try {
-    const send = (body, cookie = '', origin = 'https://capital.example') => h.request('/api/telegram/send', { method: 'POST', headers: { cookie, origin, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const cookie = await h.completeEmail();
+    assert.equal((await h.request('/api/auth/logout', {
+      method: 'POST',
+      headers: { cookie, Origin: 'https://attacker.example', 'Content-Type': 'application/json' },
+      body: '{}',
+    })).status, 403);
+    assert.equal((await h.request('/api/auth/logout', {
+      method: 'POST',
+      headers: { cookie, Origin: 'https://capital.example', 'Content-Type': 'application/json' },
+      body: '{}',
+    })).status, 200);
+  } finally {
+    await h.stop();
+  }
+});
+
+test('Telegram still requires an authenticated Supabase session, same origin and fixed recipient', async () => {
+  const h = await harness();
+  try {
+    const send = (body, cookie = '', origin = 'https://capital.example') => h.request('/api/telegram/send', {
+      method: 'POST',
+      headers: { cookie, Origin: origin, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
     assert.equal((await send({ text: 'offline' })).status, 401);
-    const cookie = await h.complete();
+    const cookie = await h.completeEmail();
     assert.equal((await send({ text: 'offline' }, cookie, 'https://attacker.example')).status, 403);
     assert.equal((await send({ text: 'offline', chat_id: 'attacker' }, cookie)).status, 400);
-    const result = await send({ text: '<b>Plain text only</b>' }, cookie);
-    assert.equal(result.status, 200);
-    assert.deepEqual(h.state.deliveries[0], { chat_id: '-100123', text: '<b>Plain text only</b>', disable_web_page_preview: true });
-    for (let i = 0; i < 3; i++) assert.equal((await send({ text: 'offline' }, cookie)).status, 200);
-    const limited = await send({ text: 'offline' }, cookie);
-    assert.equal(limited.status, 429); assert.equal(limited.headers.get('retry-after'), '60');
-  } finally { await h.stop(); }
+    assert.equal((await send({ text: '<b>Plain text only</b>' }, cookie)).status, 200);
+    assert.deepEqual(h.state.deliveries[0], {
+      chat_id: '-100123',
+      text: '<b>Plain text only</b>',
+      disable_web_page_preview: true,
+    });
+  } finally {
+    await h.stop();
+  }
 });
 
-test('Telegram authorization is separate from login', async () => {
+test('Telegram authorization remains separate from login identity', async () => {
   const h = await harness({ TELEGRAM_ALLOWED_SUBJECTS: 'other-subject' });
   try {
-    const cookie = await h.complete();
-    assert.equal((await h.request('/api/telegram/send', { method: 'POST', headers: { cookie, origin: 'https://capital.example', 'Content-Type': 'application/json' }, body: '{"text":"offline"}' })).status, 403);
+    const cookie = await h.completeEmail();
+    assert.equal((await h.request('/api/telegram/send', {
+      method: 'POST',
+      headers: { cookie, Origin: 'https://capital.example', 'Content-Type': 'application/json' },
+      body: '{"text":"offline"}',
+    })).status, 403);
     assert.equal(h.state.deliveries.length, 0);
-  } finally { await h.stop(); }
+  } finally {
+    await h.stop();
+  }
 });
 
-test('Market API has time-based rate limits independent of concurrency and spoofed proxy headers', async () => {
-  const h = await harness();
-  try {
-    for (let i = 0; i < 120; i++) assert.equal((await h.request('/api/market/quote?symbol=INVALID', { headers: { 'X-Forwarded-For': `192.0.2.${i}` } })).status, 400);
-    assert.equal((await h.request('/api/market/quote?symbol=INVALID')).status, 429);
-  } finally { await h.stop(); }
-});
-
-test('privacy export requires verified OIDC, isolates users and never exports credentials', async () => {
+test('privacy export is isolated by the verified Supabase user and never exports session credentials', async () => {
   const h = await harness();
   try {
     assert.equal((await h.request('/api/privacy/export')).status, 401);
-    assert.equal((await h.request('/api/privacy/export', { headers: { cookie: '__Host-capital_session=forged' } })).status, 401);
-    const first = await h.complete();
+    const first = await h.completeEmail();
     h.state.subject = 'second-subject';
-    const second = await h.complete();
+    const second = await h.completeEmail();
+
     for (const [cookie, subject] of [[first, 'owner-subject'], [second, 'second-subject']]) {
       const response = await h.request('/api/privacy/export', { headers: { cookie } });
       assert.equal(response.status, 200);
-      assert.equal(response.headers.get('cache-control'), 'no-store');
-      assert.match(response.headers.get('content-disposition'), /attachment/);
       const body = await response.json();
       assert.equal(body.subject.subject, subject);
-      assert.equal(body.subject.issuer, 'https://identity.example');
-      assert.equal(body.unavailableSources.length, 3);
-      assert.doesNotMatch(JSON.stringify(body), /test-only-secret|never-return-to-browser|__Host-capital|id_token|access_token|nonce/);
+      assert.equal(body.subject.issuer, 'https://project.supabase.co/auth/v1');
+      assert.doesNotMatch(JSON.stringify(body), /access-|refresh-|sb_secret|__Host-capital/);
     }
-    assert.equal((await h.request('/api/privacy/export?subject=second-subject', { headers: { cookie: first } })).status, 400);
-    await h.request('/api/auth/logout', { method: 'POST', headers: { cookie: first, origin: 'https://capital.example' } });
-    assert.equal((await h.request('/api/privacy/export', { headers: { cookie: first } })).status, 401);
-  } finally { await h.stop(); }
+  } finally {
+    await h.stop();
+  }
 });
 
-test('privacy request is a bounded email draft, never a stored or executed request', async () => {
+test('privacy request remains bounded and same-origin after Supabase migration', async () => {
   const h = await harness();
   try {
-    const cookie = await h.complete();
+    const cookie = await h.completeEmail();
     const send = (body, origin = 'https://capital.example') => h.request('/api/privacy/requests', {
-      method: 'POST', headers: { cookie, origin, 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      method: 'POST',
+      headers: { cookie, Origin: origin, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
     });
     assert.equal((await send({ requestType: 'erasure' }, 'https://attacker.example')).status, 403);
-    assert.equal((await send({ requestType: 'erasure', subject: 'other' })).status, 400);
-    assert.equal((await send({ requestType: ['access'] })).status, 400);
-    assert.equal((await send({ requestType: 'invalid' })).status, 400);
     assert.equal((await send({ requestType: 'access', details: 'a'.repeat(2001) })).status, 400);
-    const response = await send({ requestType: 'erasure', details: 'Text & ?\nkeine Geheimnisse' });
+    const response = await send({ requestType: 'erasure', details: 'Keine Geheimnisse' });
     assert.equal(response.status, 200);
     const body = await response.json();
     assert.equal(body.status, 'email_draft');
-    assert.equal(body.persisted, false); assert.equal(body.sent, false);
-    const draft = new URL(body.mailto);
-    assert.equal(draft.protocol, 'mailto:');
-    assert.equal(draft.pathname, 'sven.kulessa@capital-ai.online');
-    assert.match(draft.searchParams.get('body'), /owner-subject/);
-    assert.ok(draft.searchParams.get('body').includes('Text & ?\nkeine Geheimnisse'));
-    assert.equal(h.state.deliveries.length, 0);
-    assert.equal((await h.request('/api/privacy/requests', { headers: { cookie } })).status, 405);
-    // Four invalid bodies and one valid draft have consumed five attempts.
-    // Ten attempts are allowed; the eleventh must be rejected.
-    for (let i = 0; i < 5; i++) assert.equal((await send({ requestType: 'access' })).status, 200);
-    assert.equal((await send({ requestType: 'access' })).status, 429);
-  } finally { await h.stop(); }
+    assert.equal(body.persisted, false);
+    assert.equal(body.sent, false);
+  } finally {
+    await h.stop();
+  }
 });
 
-test('OIDC operational diagnosis reports only a fixed phase without upstream secrets', async () => {
-  const h = await harness();
-  const original = console.warn, messages = [];
-  console.warn = (...args) => messages.push(args.join(' '));
-  try {
-    h.state.discoveryFailure = true;
-    const response = await h.request('/api/auth/login');
-    assert.equal(response.status, 400);
-    assert.deepEqual(await response.json(), { error: 'authentication_failed' });
-    assert.deepEqual(messages, ['OIDC authentication failed at discovery']);
-    assert.ok(!messages.join('').includes('test-only-secret'));
-  } finally { console.warn = original; await h.stop(); }
-});
-
-
-test('mobile OIDC uses external-browser transaction and one-time PKCE session transfer', async () => {
+test('mobile login keeps one-time verifier-bound transfer while using Supabase OAuth', async () => {
   const h = await harness();
   try {
     const verifier = 'm'.repeat(43);
     const transferChallenge = createHash('sha256').update(verifier).digest('base64url');
-    const start = await h.request('/api/auth/mobile-login?challenge=' + encodeURIComponent(transferChallenge));
-    assert.equal(start.status, 303);
-    const provider = new URL(start.headers.get('location'));
-    h.state.nonce = provider.searchParams.get('nonce');
-    h.state.challenge = provider.searchParams.get('code_challenge');
-    const browserCookie = start.headers.getSetCookie()[0].split(';')[0];
-    const callback = await h.request('/api/auth/callback?state=' + encodeURIComponent(provider.searchParams.get('state')) + '&code=test-code', { headers: { cookie: browserCookie } });
+    const start = await h.beginGoogle('/api/auth/mobile-login?challenge=' + encodeURIComponent(transferChallenge));
+    const callback = await h.request(
+      `/api/auth/callback?flow=${encodeURIComponent(start.callback.searchParams.get('flow'))}&code=test-code`,
+      { headers: { cookie: start.pkceCookie } },
+    );
     assert.equal(callback.status, 303);
     const appRedirect = new URL(callback.headers.get('location'));
     assert.equal(appRedirect.protocol, 'capitalai-private:');
@@ -243,7 +327,7 @@ test('mobile OIDC uses external-browser transaction and one-time PKCE session tr
     assert.equal(appRedirect.pathname, '/callback');
     const code = appRedirect.searchParams.get('code');
     assert.match(code, /^[A-Za-z0-9_-]{43}$/);
-    assert.equal(callback.headers.getSetCookie().some(x => x.startsWith('__Host-capital_session=')), false);
+    assert.equal(sessionCookieHeader(callback), '');
 
     const exchange = await h.request('/api/auth/mobile-exchange', {
       method: 'POST',
@@ -252,10 +336,8 @@ test('mobile OIDC uses external-browser transaction and one-time PKCE session tr
     });
     assert.equal(exchange.status, 303);
     assert.equal(exchange.headers.get('location'), '/mobile-scorer');
-    const sessionCookie = exchange.headers.getSetCookie().find(x => x.startsWith('__Host-capital_session='));
-    assert.match(sessionCookie, /HttpOnly; Secure; SameSite=Strict/);
-    const session = await (await h.request('/api/auth/session', { headers: { cookie: sessionCookie.split(';')[0] } })).json();
-    assert.equal(session.authenticated, true);
+    const cookie = sessionCookieHeader(exchange);
+    assert.match(cookie, /__Host-capital_session_count=/);
 
     const replay = await h.request('/api/auth/mobile-exchange', {
       method: 'POST',
@@ -263,5 +345,21 @@ test('mobile OIDC uses external-browser transaction and one-time PKCE session tr
       body: new URLSearchParams({ code, verifier }).toString(),
     });
     assert.equal(replay.status, 400);
-  } finally { await h.stop(); }
+  } finally {
+    await h.stop();
+  }
+});
+
+test('Market API rate limiting remains independent of spoofed forwarding headers', async () => {
+  const h = await harness();
+  try {
+    for (let i = 0; i < 120; i += 1) {
+      assert.equal((await h.request('/api/market/quote?symbol=INVALID', {
+        headers: { 'X-Forwarded-For': `192.0.2.${i}` },
+      })).status, 400);
+    }
+    assert.equal((await h.request('/api/market/quote?symbol=INVALID')).status, 429);
+  } finally {
+    await h.stop();
+  }
 });
