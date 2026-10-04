@@ -67,6 +67,8 @@ test('health exposes fail-closed Open-Source and Open-Data policy', async () => 
   assert.equal(state.sourcePolicy, 'OPEN_SOURCE_AND_OPEN_DATA_ONLY');
   assert.equal(state.admittedSources, 1);
   assert.equal(state.quoteAdmittedSources, 0);
+  assert.equal(state.scoringAdmittedSources, 0);
+  assert.equal(state.scoreDisplayEnabled, false);
   assert.equal(state.quotesEnabled, false);
 });
 
@@ -122,6 +124,7 @@ test('runtime OSS adapter inventory excludes non-admitted proprietary data paths
   assert.equal(isAdmittedMarketSource('wikidata-reference','referenceMetadata'),true);
   assert.equal(isAdmittedMarketSource('wikidata-reference','marketQuotes'),false);
   assert.equal(admittedMarketSourcesFor('marketQuotes').length,0);
+  assert.equal(admittedMarketSourcesFor('scoringPriceInput').length,0);
   const originalFetch=globalThis.fetch;
   let calls=0;
   globalThis.fetch=async()=>{calls++;throw new Error('must not reach network');};
