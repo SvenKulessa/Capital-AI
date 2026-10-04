@@ -40,12 +40,33 @@
         "https://datacatalog.worldbank.org/public-licenses"
       ],
       "requiredNextStep": "Separate commodity adapter, immutable source/version evidence and instrument manifest before capability admission."
+    },
+    {
+      "source": "ercin-dedeoglu-crypto-market-data",
+      "decision": "BLOCK_SCORING_PRICE_INPUT",
+      "dataLicenseClaim": "CC-BY-4.0",
+      "reason": "Commercial reuse is claimed with attribution, but the published collection workflow pulls mutable opaque Docker images and the dataset scope is on-chain/derivatives metrics rather than a provenance-complete spot-price feed. It therefore does not satisfy software provenance/packaging plus scoringPriceInput gates.",
+      "evidence": [
+        "https://github.com/ErcinDedeoglu/crypto-market-data",
+        "https://github.com/ErcinDedeoglu/crypto-market-data/blob/main/.github/workflows/build-and-run.yml"
+      ],
+      "possibleUse": "Supplemental research/scoring features after provenance review; not current price authority."
+    },
+    {
+      "source": "fraudcoins-open-dataset",
+      "decision": "NOT_A_PRICE_SOURCE",
+      "dataLicenseClaim": "CC-BY-4.0",
+      "reason": "Commercially reusable on-chain holder/risk dataset may be useful as a future scoring feature, but it does not provide the live price input required to unlock score display.",
+      "evidence": [
+        "https://github.com/devhumancode/fraudcoins-dataset"
+      ]
     }
   ],
   "enforcement": {
     "scorerRoute": "/api/crypto/score",
     "failClosedWhenNoScoringPriceInput": true,
     "referenceMetadataDoesNotUnlockScores": true,
-    "publicScoreDisplayEnabled": false
+    "publicScoreDisplayEnabled": false,
+    "nextAdmissionRequirement": "At least one source must independently PASS scoringPriceInput plus all required commercial display, derivation, cache, JetStream, replay, retention, backup and audit-evidence gates."
   }
 }
