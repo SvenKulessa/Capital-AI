@@ -70,27 +70,83 @@ Secret-RPCs.
 
 ## Kraken-Prototyp
 
-Der produktnahe Prototyp verwendet ausschließlich:
+Der produktnahe Prototyp verwendet für die Credential-Bindung:
 
 ```text
 POST /0/private/Balance
 ```
 
-Die Signatur wird serverseitig nach dem Kraken-HMAC-SHA512-Verfahren erzeugt.
-Trading-, Order-, Deposit- und Withdrawal-Endpunkte sind nicht Bestandteil
-des Adapters.
+und für den unmittelbar danach erzeugten, ausschließlich nutzerbezogenen
+Marktkontext:
+
+```text
+GET /0/public/Ticker?pair=XBTUSD
+```
+
+Der Ticker-Aufruf wird nur ausgeführt, wenn die private Balance-Abfrage mit
+dem im persönlichen Vault gespeicherten Credential erfolgreich war. Dadurch
+entsteht `USER_PRIVATE_MARKET_CONTEXT`, aber ausdrücklich **keine**
+`PUBLIC_MARKET_DATA`-Admission.
+
+Die Signatur der privaten Abfrage wird serverseitig nach dem
+Kraken-HMAC-SHA512-Verfahren erzeugt. Trading-, Order-, Deposit- und
+Withdrawal-Endpunkte sind nicht Bestandteil des Adapters.
 
 Die Metadaten deklarieren zusätzlich:
 
 ```json
 {
   "dataScope": "USER_PRIVATE_ACCOUNT_DATA",
+  "privateMarketContext": true,
   "redistributionAllowed": false,
   "publicDisplayAllowed": false,
   "sharedCacheAllowed": false,
   "jetStreamPublicationAllowed": false
 }
 ```
+
+## BYOK Private Market Context
+
+Der erste freigegebene Prototyp unterstützt ausschließlich `BTCUSD`. Jeder
+Abruf durchläuft:
+
+```text
+Supabase Session
+      ↓
+Vault Secret Read (service_role only)
+      ↓
+Kraken /0/private/Balance
+      ↓
+Credential verified
+      ↓
+Kraken /0/public/Ticker?pair=XBTUSD
+      ↓
+CAPITAL_AI_BYOK_MARKET_CONTEXT@1
+```
+
+Der zurückgegebene Kontext ist request-scoped und trägt zwingend:
+
+```json
+{
+  "dataScope": "USER_PRIVATE_MARKET_CONTEXT",
+  "credentialBound": true,
+  "accountVerified": true,
+  "actionable": false,
+  "rights": {
+    "publicMarketDataAdmission": false,
+    "redistributionAllowed": false,
+    "publicDisplayAllowed": false,
+    "sharedCacheAllowed": false,
+    "jetStreamPublicationAllowed": false,
+    "durableRetentionAllowed": false
+  }
+}
+```
+
+Der Kontext darf als privater Input in persönliche Analyse-/Scoring-Projektionen
+einfließen. Er darf nicht in den gemeinsamen `CAPITAL_FACTS`-Stream geschrieben,
+nicht als öffentliche Quote ausgespielt und nicht als
+`OPEN_SOURCE_OPEN_DATA_ADMITTED` gewertet werden.
 
 ## Enterprise Scorer
 
