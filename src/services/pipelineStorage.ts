@@ -31,12 +31,8 @@ function parseBoundedPipeline(value: unknown): PipelineDefinition {
 export function getPresetPipelines(): PipelineDefinition[] {
   const now = new Date().toISOString();
 
-  // 1. Institutional Data Authority (BaFin & HFT Ready)
-  const nodeIngestWss = createPipelineNode('provider_websocket', { x: 50, y: 120 }, {
-    endpointUrl: 'wss://stream.binance.com:9443/ws/!ticker@arr',
-    channelType: 'trades',
-    symbols: ['BTCUSDT', 'ETHUSDT'],
-  });
+  // 1. Open-Data Authority Template — intentionally not source-admitted.
+  const nodeIngestWss = createPipelineNode('provider_websocket', { x: 50, y: 120 });
   const nodeEvidence = createPipelineNode('evidence_writer', { x: 340, y: 120 }, {
     hashAlgorithm: 'sha256',
     merkleTreeDepth: 16,
@@ -50,11 +46,11 @@ export function getPresetPipelines(): PipelineDefinition[] {
 
   const pipeline1: PipelineDefinition = {
     id: 'e1111111-1111-4111-8111-111111111111',
-    name: 'Institutional Data Authority',
-    description: 'Sub-15ms Primärbörsen-Referenz mit kryptografischem Merkle-Gate und TradingView Egress.',
+    name: 'Open-Data Authority Template',
+    description: 'Fail-closed Pipeline-Vorlage. Eine reale Quelle muss Open-Source/Open-Data-admitted sein.',
     version: '1.2.0',
-    lifecycle: 'validated',
-    executionMode: 'production',
+    lifecycle: 'draft',
+    executionMode: 'research',
     targetAssetClasses: ['crypto', 'equity_us'],
     nodes: [nodeIngestWss, nodeEvidence, nodeConsensus, nodeNormalizer, nodeTradingView],
     edges: [
@@ -92,18 +88,15 @@ export function getPresetPipelines(): PipelineDefinition[] {
       },
     ],
     metadata: {
-      tags: ['institutional', 'authority', 'tradingview', 'sha256'],
-      benchmarkCostEur: 2400,
+      tags: ['open_data', 'authority', 'tradingview', 'sha256'],
+      evidenceState: 'NOT_MEASURED',
     },
     createdAt: now,
     updatedAt: now,
   };
 
   // 2. High-Frequency Arrow Flight Quant Pipeline
-  const nodeRest = createPipelineNode('provider_rest', { x: 50, y: 120 }, {
-    symbols: ['NVDA', 'AAPL', 'MSFT'],
-    targetAssetClass: 'equity_us',
-  });
+  const nodeRest = createPipelineNode('provider_rest', { x: 50, y: 120 });
   const nodeBudget = createPipelineNode('rate_limit_budget', { x: 340, y: 120 }, {
     monthlyBudgetCapEur: 35.0,
   });
@@ -115,11 +108,11 @@ export function getPresetPipelines(): PipelineDefinition[] {
 
   const pipeline2: PipelineDefinition = {
     id: 'e2222222-2222-4222-8222-222222222222',
-    name: 'High-Frequency Arrow Flight Quant Pipeline',
-    description: 'Zero-Copy PyArrow RecordBatches für ultraschnelle Pandas/Polars Ingestion unter Budget-Cap.',
+    name: 'Open-Data Arrow Flight Template',
+    description: 'Research-Vorlage ohne zugelassene Datenquelle; keine Performance- oder Produktionsbehauptung.',
     version: '2.0.0',
-    lifecycle: 'production',
-    executionMode: 'production',
+    lifecycle: 'draft',
+    executionMode: 'research',
     targetAssetClasses: ['equity_us'],
     nodes: [nodeRest, nodeBudget, nodeDqs, nodeFeatures, nodeArrow],
     edges: [
@@ -157,8 +150,8 @@ export function getPresetPipelines(): PipelineDefinition[] {
       },
     ],
     metadata: {
-      tags: ['quant', 'arrow_flight', 'polars', 'zero_copy'],
-      benchmarkCostEur: 3500,
+      tags: ['open_data', 'quant', 'arrow_flight', 'polars'],
+      evidenceState: 'NOT_MEASURED',
     },
     createdAt: now,
     updatedAt: now,
@@ -174,11 +167,11 @@ export function getPresetPipelines(): PipelineDefinition[] {
 
   const pipeline3: PipelineDefinition = {
     id: 'e3333333-3333-4333-8333-333333333333',
-    name: 'Paper Trading Alpha & Risk Gate',
-    description: 'Event-driven Paper Broker mit SHA-256 Evidence Gate (AP-002), Human Approval (AP-004) und PDF Audit Trail.',
+    name: 'Open-Data Risk Gate Template',
+    description: 'Research-Vorlage mit Evidence- und Human-Gate; Source Admission ist noch offen.',
     version: '1.0.0',
-    lifecycle: 'benchmarked',
-    executionMode: 'paper',
+    lifecycle: 'draft',
+    executionMode: 'research',
     targetAssetClasses: ['crypto'],
     nodes: [nodeWssCrypto, nodeEvidencePaper, nodeOrderflow, nodeApproval, nodePaperBroker, nodePdfReport],
     edges: [
@@ -224,8 +217,8 @@ export function getPresetPipelines(): PipelineDefinition[] {
       },
     ],
     metadata: {
-      tags: ['paper_trading', 'risk_gate', 'human_in_the_loop', 'simulation'],
-      benchmarkCostEur: 1800,
+      tags: ['open_data', 'risk_gate', 'human_in_the_loop'],
+      evidenceState: 'NOT_MEASURED',
     },
     createdAt: now,
     updatedAt: now,
