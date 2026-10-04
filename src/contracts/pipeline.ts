@@ -130,16 +130,27 @@ export function validatePipelineGraph(pipeline: PipelineDefinition): PipelineVal
     });
   }
 
-  // MARKET: provider nodes are never valid until Open-Source + Open-Data admission is explicit.
+  // PRODUCT vs MARKET/TRUST boundary:
+  // - research/blueprint configuration may reference any registered/selected provider;
+  // - paper/production execution remains fail-closed until source admission is explicit.
+  const requiresProductionAdmission =
+    pipeline.executionMode === 'production' || pipeline.executionMode === 'paper';
+
   for (const node of pipeline.nodes.filter(n => n.type === 'provider_websocket' || n.type === 'provider_rest')) {
     if (node.config?.sourceAdmission !== 'OPEN_SOURCE_OPEN_DATA_ADMITTED') {
       issues.push({
-        id: `ERR_OPEN_DATA_ADMISSION_${node.id}`,
-        severity: 'error',
+        id: requiresProductionAdmission
+          ? `ERR_OPEN_DATA_ADMISSION_${node.id}`
+          : `WARN_OPEN_DATA_ADMISSION_${node.id}`,
+        severity: requiresProductionAdmission ? 'error' : 'warning',
         ruleId: 'MARKET-SOURCE-ADMISSION',
         nodeId: node.id,
-        message: 'Provider-Ingestion ist ohne Open-Source/Open-Data-Zulassung blockiert.',
-        remediationAdvice: 'Nur eine kanonisch zugelassene Open-Data-Quelle mit vollständiger Provenienz verwenden.',
+        message: requiresProductionAdmission
+          ? 'Provider-Ingestion ist für Paper/Production ohne nachgewiesene Source Admission blockiert.'
+          : 'Provider ist für Auswahl und Blueprint-Erstellung erlaubt, aber noch nicht für Paper/Production zugelassen.',
+        remediationAdvice: requiresProductionAdmission
+          ? 'MARKET/TRUST Evidence für Nutzungs-, Display-, Retention-, Redistribution- und Provenance-Rechte vollständig nachweisen.'
+          : 'Blueprint darf gespeichert werden; vor Paper/Production muss die MARKET/TRUST Source Admission auf OPEN_SOURCE_OPEN_DATA_ADMITTED wechseln.',
       });
     }
   }

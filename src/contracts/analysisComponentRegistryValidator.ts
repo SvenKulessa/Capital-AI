@@ -10,7 +10,11 @@ const contracts: Record<string, z.ZodType> = {
   ScoreResult: ScoreResultSchema, FinalRankResult: FinalRankResultSchema,
 };
 const providerAliases: Record<string, string> = {
-  binance: 'binance_market_data', kraken: 'kraken_websocket', twelvedata: 'twelve_data_market',
+  binance: 'binance_market_data',
+  kraken: 'kraken_websocket',
+  twelvedata: 'twelve_data_market',
+  fred: 'fred_stlouis_fed',
+  alchemy: 'alchemy_ethereum_rpc',
 };
 export interface RegistryIssue { componentId: string; code: string; reference: string; }
 export function validateAnalysisComponentRegistry(entries: unknown = CANONICAL_50_COMPONENTS,
@@ -21,7 +25,12 @@ export function validateAnalysisComponentRegistry(entries: unknown = CANONICAL_5
     { componentId: 'registry', code: 'REGISTRY_SCHEMA_INVALID', reference: parsed.error.message },
   ] };
   const ids = new Set<string>();
-  const providers = new Set(ProviderRegistryService.getAllProviders().filter(provider => provider.productionAdmission === 'OPEN_SOURCE_OPEN_DATA_ADMITTED').map(provider => provider.id));
+  const registeredProviders = new Set(
+    ProviderRegistryService.getSelectableProviders().map(provider => provider.id)
+  );
+  const productionAdmittedProviders = new Set(
+    ProviderRegistryService.getProductionAdmittedProviders().map(provider => provider.id)
+  );
   if (parsed.data.length !== 50) issues.push({ componentId: 'registry', code: 'REGISTRY_COUNT_INVALID', reference: String(parsed.data.length) });
   for (const entry of parsed.data) {
     const add = (code: string, reference: string) => issues.push({ componentId: entry.componentId, code, reference });
@@ -32,7 +41,11 @@ export function validateAnalysisComponentRegistry(entries: unknown = CANONICAL_5
     }
     for (const ref of entry.providerDependencies) {
       const providerId = Object.hasOwn(providerAliases, ref) ? providerAliases[ref] : ref;
-      if (!providers.has(providerId)) add('PROVIDER_REFERENCE_UNRESOLVED', ref);
+      if (!registeredProviders.has(providerId)) {
+        add('PROVIDER_REFERENCE_UNRESOLVED', ref);
+      } else if (!productionAdmittedProviders.has(providerId)) {
+        add('PROVIDER_NOT_PRODUCTION_ADMITTED', ref);
+      }
     }
     // Raw mathematical formulas alone do not establish normalized live FeatureValues or admission.
     for (const ref of entry.featureDependencies) {
