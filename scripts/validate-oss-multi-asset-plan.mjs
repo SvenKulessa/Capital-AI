@@ -79,6 +79,9 @@ export function validatePlan(p) {
     assert.equal(product.state, 'RIGHTS_UNVERIFIED');
   }
   assert.equal(p.commercialEvidence, 'docs/licenses/oss-market-stack/commercial-review-20261003.json');
+  assert.equal(p.commercialEvidenceSnapshot.path, p.commercialEvidence);
+  assert.match(p.commercialEvidenceSnapshot.sourceMainSha, /^[a-f0-9]{40}$/);
+  assert.equal(p.commercialEvidenceSnapshot.status, 'PARTIAL_REVIEW_NOT_PRODUCTION_AUTHORIZATION');
   const perps = p.additionalPerpetuals;
   assert.equal(perps.enabledForBenchmark, true);
   assert.deepEqual(perps.assetClasses, ['crypto', 'stocks', 'commodities']);
@@ -109,7 +112,7 @@ export function validateCommercialEvidence(plan, evidence) {
   validatePlan(plan);
   assert.equal(evidence.schema, 'CAPITAL_AI_COMMERCIAL_OSS_REVIEW@1');
   assert.equal(evidence.status, 'PARTIAL_REVIEW_NOT_PRODUCTION_AUTHORIZATION');
-  assert.equal(evidence.sourceMainSha, plan.sourceMainSha);
+  assert.equal(evidence.sourceMainSha, plan.commercialEvidenceSnapshot.sourceMainSha);
   assert.equal(evidence.commercialProductionAllowed, false);
   assert.equal(evidence.benchmark.executed, false);
   assert.equal(evidence.benchmark.winner, null);
