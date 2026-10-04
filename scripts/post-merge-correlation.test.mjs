@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { buildCorrelation, classifyOpenPr, ACTIONS } from "./post-merge-correlation.mjs";
+import './documentation-drift-remediation.test.mjs'; // DOC-SH-02 regression in Docker Security preflight
 
 test("workflow passes the unescaped merged SHA and token to checkout and correlation", () => {
   const workflow = readFileSync(new URL('../.github/workflows/post-merge-correlation.yml', import.meta.url), 'utf8');
