@@ -595,7 +595,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
         return true;
       }
       const email = normalizeEmail(body.email);
-      const password = normalizePassword(body.password);
+      const password = normalizeNewPassword(body.password);
       const name = typeof body.name === 'string' ? body.name.trim().slice(0, 120) : '';
       if (!email || !password || !name) {
         json(res, 400, { error: 'invalid_registration' });
