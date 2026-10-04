@@ -128,7 +128,8 @@ function injectVocabularySeo(html, pathname) {
   );
   return body;
 }
-function json(res, status, body) { res.writeHead(status, { ...headers, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(body)); }
+function end(res, body) { res.end(res.capitalAiHeadOnly ? undefined : body); }
+function json(res, status, body) { res.writeHead(status, { ...headers, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); end(res, JSON.stringify(body)); }
 
 export function createApp(root = defaultRoot, options = {}) {
   let inflight = 0;
@@ -143,6 +144,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const server = http.createServer({ maxHeaderSize: 8192, requestTimeout: 10000, headersTimeout: 10000, keepAliveTimeout: 5000 }, async (req, res) => {
   let url;
   const requestContext = beginRequest(req);
+  res.capitalAiHeadOnly = req.method === 'HEAD';
   res.setHeader('x-request-id', requestContext.requestId);
   if ((req.url?.length || 0) > 2048) return json(res, 414, { error: 'uri_too_long' });
   try { url = new URL(req.url, 'http://localhost'); } catch { return json(res, 400, { error: 'bad_request' }); }
@@ -157,7 +159,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if ((url.pathname === '/api/mobile/enterprise-score' || url.pathname === '/api/mobile/scorer/events') && !auth.session(req)) return json(res, 401, { error: 'authentication_required' });
   if (await scorerProxy.handle(req, res, url, json, requestContext.requestId)) return;
   if (await mobileScorer.handle(req, res, url, json, headers)) return;
-  if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return json(res, 405, { error: 'method_not_allowed' }); }
+  if (req.method !== 'GET' && req.method !== 'HEAD') { res.setHeader('Allow', 'GET, HEAD'); return json(res, 405, { error: 'method_not_allowed' }); }
   if (url.pathname === '/healthz') return json(res, 200, { ...health(), buildIdentity });
   if (url.pathname === '/metrics') {
     if (!metricsAuthorized(req)) {
@@ -165,7 +167,7 @@ export function createApp(root = defaultRoot, options = {}) {
       return json(res, 404, { error: 'not_found' });
     }
     res.writeHead(200, { ...headers, 'Content-Type': 'text/plain; version=0.0.4; charset=utf-8', 'Cache-Control': 'no-store' });
-    return res.end(renderPrometheusMetrics());
+    return end(res, renderPrometheusMetrics());
   }
   if (url.pathname === '/api/internal/cads') {
     if (!metricsAuthorized(req)) {
@@ -183,7 +185,11 @@ export function createApp(root = defaultRoot, options = {}) {
     if (!marketLimit()) { res.setHeader('Retry-After', '60'); return json(res, 429, { error: 'rate_limited' }); }
     if (inflight >= 8) { res.setHeader('Retry-After', '5'); return json(res, 429, { error: 'busy' }); }
     inflight++;
-    try { const [status, body] = await quote(url.searchParams.get('symbol') || ''); return json(res, status, body); }
+    try {
+      const [status, body] = await quote(url.searchParams.get('symbol') || '');
+      if (status === 503 && body?.error === 'open_data_source_not_configured') res.capitalAiFailureClass = 'policy_blocked';
+      return json(res, status, body);
+    }
     catch { return json(res, 503, { error: 'market_data_unavailable' }); }
     finally { inflight--; }
   }
@@ -203,7 +209,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const publicPath = normalizedPublicPath(url.pathname);
   if (publicPath === '/robots.txt') {
     res.writeHead(200, { ...headers, 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
-    return res.end('User-agent: *\nAllow: /\nSitemap: https://capital-ai.online/sitemap.xml\n');
+    return end(res, 'User-agent: *\nAllow: /\nSitemap: https://capital-ai.online/sitemap.xml\n');
   }
   if (publicPath === '/sitemap.xml') {
     const paths = [...new Set([...sitemapBasePaths, ...vocabularyMetadata.map(entry => entry.path)])];
@@ -212,11 +218,11 @@ export function createApp(root = defaultRoot, options = {}) {
       paths.map(route => `<url><loc>https://capital-ai.online${escapeXml(route)}</loc></url>`).join('') +
       '</urlset>';
     res.writeHead(200, { ...headers, 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
-    return res.end(xml);
+    return end(res, xml);
   }
   if (publicPath.startsWith('/vocabulary/') && !vocabularyMetadataByPath.has(publicPath)) {
     res.writeHead(404, headers);
-    return res.end();
+    return end(res, );
   }
 
   let asset;
@@ -244,8 +250,8 @@ export function createApp(root = defaultRoot, options = {}) {
         .replace(/(<meta property="og:description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(meta.description)}$2`)
         .replace(/(<link rel="canonical" href=")[^"]*("\s*\/?>)/, `$1https://capital-ai.online${researchPath}$2`));
     }
-    res.writeHead(200, { ...headers, 'Cache-Control': path.extname(file) === '.html' ? 'no-store' : 'public, max-age=3600', 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(body);
-  } catch { res.writeHead(404, headers); res.end(); }
+    res.writeHead(200, { ...headers, 'Cache-Control': path.extname(file) === '.html' ? 'no-store' : 'public, max-age=3600', 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' }); end(res, body);
+  } catch { res.writeHead(404, headers); end(res); }
 });
   server.maxConnections = 256;
   return server;
