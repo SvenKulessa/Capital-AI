@@ -19,6 +19,24 @@ export const MARKET_REQUIRED_USE_CASES = Object.freeze([
   'internalProcessing',
 ]);
 
+export const BYOK_PRIVATE_SOURCE_POLICY = Object.freeze({
+  schema:'CAPITAL_AI_BYOK_PRIVATE_SOURCE_POLICY@1',
+  ownerDecisionAt:'2026-10-04',
+  mode:'USER_SCOPED_PRIVATE_CONTEXT_ONLY',
+  publicMarketAdmission:false,
+  redistributionAllowed:false,
+  publicDisplayAllowed:false,
+  sharedCacheAllowed:false,
+  jetStreamPublicationAllowed:false,
+  durableRetentionAllowed:false,
+  capabilities:Object.freeze({
+    privateAccountData:true,
+    privateMarketContext:true,
+    publicMarketQuotes:false,
+    scoringContext:true,
+  }),
+});
+
 export const MARKET_SOURCE_POLICY = Object.freeze({
   schema:'CAPITAL_AI_OPEN_SOURCE_MARKET_POLICY@1',
   ownerDecisionAt:'2026-10-04',
