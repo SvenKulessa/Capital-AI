@@ -1,8 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { verifyReleaseReadiness, REQUIRED_ASSET_CLASSES } from './verify-release-readiness.mjs';
+import { verifyReleaseReadiness as evaluateReadiness, REQUIRED_ASSET_CLASSES } from './verify-release-readiness.mjs';
+import { productReleaseFixture } from './test-fixtures/product-release-bundle.mjs';
 
 const digest='ghcr.io/svenkulessa/capital-ai@sha256:'+'a'.repeat(64);
+const productEvidence = productReleaseFixture('b'.repeat(40), digest);
+process.on('exit', productEvidence.cleanup);
+const verifyReleaseReadiness = evidence => evaluateReadiness(evidence, { productEvidenceManifest: productEvidence.manifest, productEvidenceDirectory: productEvidence.directory });
 const base={
   sourceSha:'b'.repeat(40), currentMainSha:'b'.repeat(40), requiredChecks:'PASS',
   brokers:{nats:{authenticated:true,jetstream:true},valkey:{connected:true}},
@@ -16,6 +20,12 @@ test('all release gates permit only immutable digest deployment',()=>{
   const r=verifyReleaseReadiness(base);
   assert.equal(r.deployAllowed,true);
   assert.equal(r.assetClasses.length,6);
+});
+
+test('readiness never bypasses missing mandatory product prerequisites', () => {
+  const report = evaluateReadiness(base);
+  assert.equal(report.deployAllowed, false);
+  assert.ok(report.reasons.includes('GATE_FAILED:productReleasePrerequisites'));
 });
 
 test('missing one asset class blocks deployment',()=>{

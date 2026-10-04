@@ -1,5 +1,9 @@
 # Valkey Pub/Sub and paid private NATS
 
+## Zusätzliche Production-Voraussetzung vom 2026-10-04
+
+Vor finaler NATS-Production-Promotion sind alle elf [Produktvoraussetzungen](../docs/security/PRODUCT-RELEASE-PREREQUISITES.md) mit dem gemeinsamen Prüfer für `RELEASE_COMPONENT=nats`, exaktem Main-SHA und tatsächlichem NATS-GHCR-Digest nachzuweisen. Der Docker-/Source-basierte historische Blueprint ist kein Nachweis einer attestierten GHCR-/Runtime-Promotion. Die noch fehlende NATS-Registry-/Provider-Digestkette bleibt BLOCKED; weder App-Digest noch Repo-HEAD ersetzen den Broker-Fingerprint. Alle nachfolgenden technischen Prüfungen bleiben erforderlich.
+
 Scope: SvenKulessa/Capital-AI, workspace AICapital, Frankfurt. Owner authorized continuation and paid NATS on 2026-09-30. Earlier NATS cost rejection is superseded for this bounded service. No change to Finance or its secrets.
 
 ## Implemented behavior

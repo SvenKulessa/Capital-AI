@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { verifyMainRuleset } from './verify-main-ruleset.mjs';
 import { validateContainerIdentity } from './container-evidence-identity.mjs';
+import { verifyProductReleasePrerequisites } from './verify-product-release-prerequisites.mjs';
 
 const SOURCE_SHA = /^[0-9a-f]{40}$/;
 const IMAGE_REF = /^ghcr\.io\/svenkulessa\/capital-ai@sha256:[0-9a-f]{64}$/;
@@ -35,6 +36,8 @@ export function evaluateProductionHandoff({
   registryScan,
   registryPlatformManifest,
   analysisResults = [],
+  productEvidenceManifest,
+  productEvidenceDirectory,
 }) {
   if (!candidate || candidate.status !== 'ATTESTED_CANDIDATE' || candidate.deployEligible !== false) {
     throw new Error('Expected an attested, non-deployable candidate');
@@ -83,7 +86,19 @@ export function evaluateProductionHandoff({
     registryScan?.Metadata?.ImageConfig?.architecture === 'amd64';
 
   const licenseSource = license?.applicationSourceSha || license?.sourceSha || null;
+  const productPrerequisites = verifyProductReleasePrerequisites({
+    manifest: productEvidenceManifest,
+    evidenceDirectory: productEvidenceDirectory,
+    expectedSourceSha: expectedMainSha,
+    expectedImageRef: candidate.imageRef,
+    component: 'web',
+  });
   const gates = [
+    {
+      name: 'PRODUCT_RELEASE_PREREQUISITES',
+      pass: productPrerequisites.releaseEligible,
+      evidence: productPrerequisites,
+    },
     {
       name: 'SOURCE_CURRENT_MAIN',
       pass: SOURCE_SHA.test(expectedMainSha || '') && expectedMainSha === candidate.sourceSha,
@@ -176,6 +191,7 @@ export function evaluateProductionHandoff({
         runtimeProviderDigest: normalizeDigest(deploy?.image?.sha),
       },
     } : null,
+    productPrerequisites,
     gates,
     remainingGates,
   };
@@ -186,7 +202,7 @@ function readJson(path) {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const [candidatePath, licensePath, rulesetsPath, servicePath, deployPath, healthPath, outputPath, registryManifestPath, registryScanPath, analysisResultsPath, platformManifestPath] = process.argv.slice(2);
+  const [candidatePath, licensePath, rulesetsPath, servicePath, deployPath, healthPath, outputPath, registryManifestPath, registryScanPath, analysisResultsPath, platformManifestPath, productEvidencePath] = process.argv.slice(2);
   if (!outputPath) throw new Error('Expected candidate, license, rulesets, service, deploy, health and output paths');
   const report = evaluateProductionHandoff({
     candidate: readJson(candidatePath),
@@ -205,6 +221,8 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     registryManifest: registryManifestPath ? readJson(registryManifestPath) : null,
     registryScan: registryScanPath ? readJson(registryScanPath) : null,
     analysisResults: analysisResultsPath ? readJson(analysisResultsPath) : [],
+    productEvidenceManifest: productEvidencePath ? readJson(productEvidencePath) : undefined,
+    productEvidenceDirectory: productEvidencePath ? dirname(resolve(productEvidencePath)) : undefined,
   });
   mkdirSync(dirname(outputPath), { recursive: true });
   writeFileSync(outputPath, JSON.stringify(report, null, 2) + '\n');

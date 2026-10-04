@@ -1,18 +1,21 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { verifyProductReleasePrerequisites } from './verify-product-release-prerequisites.mjs';
 
 export const REQUIRED_ASSET_CLASSES = ['crypto','equity_us','equity_eu','commodities','forex','fixed_income'];
 
 const digestRef = /^ghcr\.io\/svenkulessa\/capital-ai@sha256:[a-f0-9]{64}$/;
 
-export function verifyReleaseReadiness(evidence) {
+export function verifyReleaseReadiness(evidence, { productEvidenceManifest, productEvidenceDirectory } = {}) {
   const reasons = [];
   const assetEvidence = new Map((evidence.assetClasses || []).map(row => [row.assetClass, row]));
   const uniqueClasses = assetEvidence.size === (evidence.assetClasses || []).length;
   const count = value => Number.isSafeInteger(value) && value >= 0;
+  const productPrerequisites = verifyProductReleasePrerequisites({ manifest: productEvidenceManifest, evidenceDirectory: productEvidenceDirectory, expectedSourceSha: evidence.currentMainSha, expectedImageRef: evidence.imageRef });
 
   const checks = {
+    productReleasePrerequisites: productPrerequisites.releaseEligible,
     sourceIsCurrentMain: Boolean(evidence.sourceSha && evidence.sourceSha === evidence.currentMainSha),
     requiredChecksPass: evidence.requiredChecks === 'PASS',
     natsReachable: evidence.brokers?.nats?.authenticated === true && evidence.brokers?.nats?.jetstream === true,
@@ -53,6 +56,7 @@ export function verifyReleaseReadiness(evidence) {
     currentMainSha: evidence.currentMainSha || null,
     imageRef: evidence.imageRef || null,
     checks,
+    productPrerequisites,
     assetClasses,
     deployAllowed: reasons.length === 0,
     reasons,
@@ -68,8 +72,12 @@ export function verifyReleaseReadiness(evidence) {
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const input = process.argv[2];
   const output = process.argv[3];
-  if (!input) throw new Error('Usage: verify-release-readiness.mjs <evidence.json> [output.json]');
-  const result = verifyReleaseReadiness(JSON.parse(fs.readFileSync(input, 'utf8')));
+  const productEvidencePath = process.argv[4];
+  if (!input) throw new Error('Usage: verify-release-readiness.mjs <evidence.json> [output.json] [product-evidence-manifest.json]');
+  const result = verifyReleaseReadiness(JSON.parse(fs.readFileSync(input, 'utf8')), {
+    productEvidenceManifest: productEvidencePath ? JSON.parse(fs.readFileSync(productEvidencePath, 'utf8')) : undefined,
+    productEvidenceDirectory: productEvidencePath ? path.dirname(path.resolve(productEvidencePath)) : undefined,
+  });
   const body = JSON.stringify(result, null, 2) + '\n';
   if (output) fs.writeFileSync(output, body);
   process.stdout.write(body);

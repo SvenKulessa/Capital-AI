@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { evaluateProductionHandoff } from './verify-production-handoff.mjs';
 import { bindRuntimeIdentity, runtimeIdentityDocument } from './write-runtime-identity.mjs';
+import { productReleaseFixture } from './test-fixtures/product-release-bundle.mjs';
 
 const sourceSha = 'a'.repeat(40);
 const digest = 'sha256:' + 'b'.repeat(64);
@@ -10,9 +11,13 @@ const configDigest = 'sha256:' + 'e'.repeat(64);
 const artifactDigest = 'sha256:' + 'd'.repeat(64);
 const expectedServiceId = 'srv-test';
 const expectedOwnerId = 'tea-test';
+const productEvidence = productReleaseFixture(sourceSha, imageRef);
+process.on('exit', productEvidence.cleanup);
 
 function fixtures() {
   return {
+    productEvidenceManifest: productEvidence.manifest,
+    productEvidenceDirectory: productEvidence.directory,
     candidate: {
       status: 'ATTESTED_CANDIDATE',
       deployEligible: false,
@@ -82,6 +87,13 @@ test('all production handoff gates must pass before deployEligible becomes true'
   const report = evaluateProductionHandoff(fixtures());
   assert.equal(report.deployEligible, true);
   assert.deepEqual(report.remainingGates, []);
+});
+
+test('valid container fingerprints never bypass missing product prerequisites', () => {
+  const input = fixtures(); delete input.productEvidenceManifest;
+  const report = evaluateProductionHandoff(input);
+  assert.equal(report.deployEligible, false);
+  assert.ok(report.remainingGates.includes('PRODUCT_RELEASE_PREREQUISITES'));
 });
 
 test('open redistribution review remains fail closed', () => {

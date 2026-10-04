@@ -1,5 +1,9 @@
 # Production-Handoff Gate
 
+## Zusätzliche Owner-Voraussetzungen vom 2026-10-04
+
+Vor finaler Production-Freigabe müssen alle elf Anforderungen aus [Produktvoraussetzungen](PRODUCT-RELEASE-PREREQUISITES.md) source-/imagegebunden nachgewiesen werden. Der bestehende Validator erzwingt zusätzlich `PRODUCT_RELEASE_PREREQUISITES`; fehlende Evidence bleibt BLOCKED. Alle nachfolgend dokumentierten technischen Gates bleiben erforderlich. Der Produkt-Evidence-Fingerprint ist kein OCI-/Runtime-Digest. Für NATS gilt dieselbe Produktvoraussetzung zusätzlich zur noch separat zu vervollständigenden Registry-/Runtime-Promotionkette.
+
 Aktuelle korrelierte Abnahme: [AP-SEC-IMAGE vom 01.10.2026](AP-SEC-IMAGE-ABNAHME-20261001.md), weiterhin BLOCKED. Die folgenden Abschnitte dokumentieren den ursprünglichen Stand vom 30.09.2026.
 
 Stand: 30.09.2026. Dieser Slice trennt Build-Sicherheit, Kandidaten-Publishing und Production-Handoff strikt.
@@ -60,3 +64,4 @@ Solange einer dieser Nachweise fehlt, ist der Zustand **BLOCKED** und nicht Prod
 ## Reihenfolge ohne zirkuläre Freigabe
 
 Die fünf bestehenden Gates prüfen eine bereits laufende Candidate-Runtime; sie sind eine Abnahme, keine Berechtigung, ungeprüfte Images zu deployen. Vor einem Candidate-Testdeploy müssen exakter Main-SHA, Docker-Gate, attestierter Digest und Lizenzfreigabe positiv sein. Anschließend erfolgt der Testdeploy vor Übernahme der Produktionsdomains. Erst nach Runtime-Digest und imagegebundener Identität sowie real verifiziertem Supabase-Login, Session-Readback und Logout wird die Domainübergabe freigegeben. `candidate.json` bleibt dabei unverändert; `release.json` ist das getrennte Abnahmeergebnis. Aktuell fehlen Lizenzfreigabe und veröffentlichter GHCR-Kandidat, daher wird kein Testdeploy gestartet.
+
