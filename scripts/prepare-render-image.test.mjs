@@ -19,10 +19,17 @@ test('prebuilt config preserves exact digest and isolates new service', () => {
   assert.ok(!result.includes('dockerfilePath:'));
   assert.ok(!result.includes('buildCommand:'));
 });
-test('image promotion retains server-only OIDC configuration', () => {
+test('image promotion retains server-only Supabase auth and Vault configuration', () => {
   const result = blueprint(profile, `ghcr.io/svenkulessa/capital-ai@sha256:${digest}`);
-  for (const key of ['PUBLIC_APP_ORIGIN', 'OIDC_ISSUER', 'OIDC_CLIENT_ID', 'OIDC_CLIENT_SECRET']) {
+  for (const key of [
+    'PUBLIC_APP_ORIGIN',
+    'SUPABASE_URL',
+    'SUPABASE_PUBLISHABLE_KEY',
+    'SUPABASE_SECRET_KEY',
+    'AUTH_COOKIE_SIGNING_SECRET',
+  ]) {
     assert.ok(result.includes(`      - key: ${key}\n        sync: false`));
   }
-  assert.ok(!result.includes('VITE_OIDC'));
+  assert.ok(!result.includes('OIDC_CLIENT_SECRET'));
+  assert.ok(!result.includes('VITE_SUPABASE_SECRET_KEY'));
 });
