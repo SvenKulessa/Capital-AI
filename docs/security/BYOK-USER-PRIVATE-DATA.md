@@ -148,6 +148,52 @@ einfließen. Er darf nicht in den gemeinsamen `CAPITAL_FACTS`-Stream geschrieben
 nicht als öffentliche Quote ausgespielt und nicht als
 `OPEN_SOURCE_OPEN_DATA_ADMITTED` gewertet werden.
 
+## Autonome BYOK-Pipeline-Erweiterung
+
+Nach erfolgreicher Provider-Verifikation wird der persönliche Provider nicht in
+den gemeinsamen Open-Data-Kern geschrieben, sondern automatisch als
+**user-scoped Overlay** aktiviert:
+
+```text
+Open-Source/Open-Data Baseline
+          +
+verifizierter persönlicher BYOK Provider
+          ↓
+USER_PRIVATE_MARKET_CONTEXT
+          ↓
+CAPITAL_AI_BYOK_ENHANCEMENT_REPORT@1
+```
+
+Der Enhancement Report vergleicht belegbare Pipeline-Eigenschaften vor und
+nach Aktivierung des privaten Overlays:
+
+- Quote-Verfügbarkeit;
+- Freshness;
+- Bid/Ask-Beobachtbarkeit;
+- 24h-Volumen-Beobachtbarkeit;
+- zusätzliche Coverage durch den persönlichen Provider.
+
+Die Aktivierung erfolgt nach erfolgreicher Vault-/Credential-Verifikation
+automatisch. Ein Provider ohne explizites
+`permissions.privateMarketContext = true` bleibt fail-closed.
+
+Der Bericht darf keine Score-Verbesserung erfinden. Solange kein identischer
+Enterprise-Scorer-Input einmal ohne und einmal mit BYOK ausgeführt wurde, gilt:
+
+```json
+{
+  "scoreImpact": {
+    "status": "NOT_EVALUATED",
+    "baselineScore": null,
+    "augmentedScore": null,
+    "delta": null
+  }
+}
+```
+
+Erst ein späterer deterministischer A/B-Lauf darf daraus einen echten
+Score-/Confidence-/Eligibility-Delta ableiten.
+
 ## Enterprise Scorer
 
 Der private Kraken-Kontext ist eine **personalisierte Portfolio-Context
