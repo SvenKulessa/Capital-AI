@@ -28,6 +28,7 @@ async function harness(envOverrides = {}) {
   const state = {
     subject: 'owner-subject',
     tokenCalls: 0,
+    signupCalls: 0,
     refreshCalls: 0,
     challenge: '',
     deliveries: [],
@@ -71,6 +72,18 @@ async function harness(envOverrides = {}) {
         return Response.json(tokenPayload());
       }
       throw new Error(`Unexpected grant: ${grant}`);
+    }
+
+    if (target.origin === 'https://project.supabase.co' && target.pathname === '/auth/v1/signup') {
+      state.signupCalls += 1;
+      const body = JSON.parse(String(options.body || '{}'));
+      assert.match(target.searchParams.get('redirect_to') || '', /^https:\/\/capital\.example\/profile$/);
+      assert.equal(body.email, `${state.subject}@example.test`);
+      assert.equal(body.data?.full_name, 'Test Owner');
+      if (body.password === 'rejected-password') {
+        return Response.json({ error: 'signup_rejected' }, { status: 422 });
+      }
+      return Response.json(tokenPayload());
     }
 
     if (target.origin === 'https://project.supabase.co' && target.pathname === '/auth/v1/user') {
@@ -187,6 +200,46 @@ test('Supabase email login is same-origin, backend-owned and redirects users to 
     assert.equal(JSON.stringify(session).includes('access-'), false);
     assert.equal(JSON.stringify(session).includes('refresh-'), false);
     assert.deepEqual(h.state.authAudit, ['Supabase authentication verified at password_login']);
+  } finally {
+    await h.stop();
+  }
+});
+
+test('Supabase registration validates new passwords and creates a backend-owned session', async () => {
+  const h = await harness();
+  try {
+    const invalid = await h.request('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        Origin: 'https://capital.example',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: 'Test Owner',
+        email: 'owner-subject@example.test',
+        password: 'short',
+      }),
+    });
+    assert.equal(invalid.status, 400);
+    assert.equal(h.state.signupCalls, 0);
+
+    const registered = await h.request('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        Origin: 'https://capital.example',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: 'Test Owner',
+        email: 'owner-subject@example.test',
+        password: 'valid-password',
+      }),
+    });
+    assert.equal(registered.status, 200);
+    const body = await registered.json();
+    assert.equal(body.authenticated, true);
+    assert.equal(h.state.signupCalls, 1);
+    assert.match(sessionCookieHeader(registered), /__Host-capital_session_count=/);
   } finally {
     await h.stop();
   }
