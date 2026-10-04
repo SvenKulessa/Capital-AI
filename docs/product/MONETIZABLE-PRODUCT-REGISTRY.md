@@ -28,7 +28,7 @@ A successful build, test or UI is not a production release. Provider rights and 
 | [CAPITAL-AI-MARKET]SOCIAL-MEDIA-ENGINE | PLANNED | 14% | 86% | Kein Publishing-, Approval- oder Measurement-Workflow. |
 | [CAPITAL-AI-MARKET]ENTERPRISE-SCORER | PARTIAL | 42% | 58% | Dashboard vorhanden, Scoring nicht decisionEligible und nicht entitlement-gated. |
 | [CAPITAL-AI-MARKET]WHALE-RADAR | PARTIAL | 39% | 61% | Modal und Section vorhanden, Live-Feed-Rechte und Paid-Gate offen. |
-| [CAPITAL-AI-PRODUCT]MARKET-VOCABULARY | PARTIAL | 38% | 62% | Lernmodul vorhanden, kein eigener Tarif oder Abschlussnachweis. |
+| [CAPITAL-AI-PRODUCT]MARKET-VOCABULARY | MONETIZED | 100% | 0% | Live-SKU prod_VNTsrtlf2ZL8ja, Price price_1UMiuIPKr4joNbEclpn8AwFW, 19,00 EUR inkl., Checkout, Entitlement, Widerrufsverzicht. |
 | [CAPITAL-AI-PRODUCT]PRICE-ALERTS | PARTIAL | 36% | 64% | Alert-UI vorhanden, Zustellung und Tariflimit nicht serverseitig erzwungen. |
 | [CAPITAL-AI-PRODUCT]LEARNING-PORTAL | PARTIAL | 32% | 68% | Seite vorhanden, kein Curriculum-Commerce. |
 | [CAPITAL-AI-MARKET]MOBILE-SCORER-TERMINAL | PARTIAL | 31% | 69% | Server-Scorer und Mobile-Repo vorhanden, Store-Release und Billing fehlen. |
