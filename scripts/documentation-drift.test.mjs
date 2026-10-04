@@ -78,11 +78,23 @@ test('flags stale current-main claims in living documents but ignores dated snap
   assert.equal(report.selfHealing.minimumIndependentPositiveValidationCycles, 3);
 });
 
-test('accepts current main identity in living documents', () => {
+test('matching current-main identity is still volatile in a living document', () => {
   const root = fixture({
     'README.md': `main@${MAIN}\n`,
     'src/data/roadmapData.ts': `export const items = [{ id: 'A' }];\n`,
-    'docs/growth/DOCUMENTATION-DRIFT-SELF-HEALING.md': `Current-main baseline for this slice: \`${MAIN}\`.\n`,
+    'docs/growth/DOCUMENTATION-DRIFT-SELF-HEALING.md': 'Implementation base for DOC-SH-01: immutable.\n',
+  });
+  const report = analyzeDocumentationDrift({ root, mainSha: MAIN, files: ['README.md', 'src/data/roadmapData.ts', 'docs/growth/DOCUMENTATION-DRIFT-SELF-HEALING.md'], profile });
+  assert.equal(report.summary.findingCount, 1);
+  assert.equal(report.findings[0].class, 'VOLATILE_MAIN_IDENTITY_CLAIM');
+  assert.equal(report.findings[0].repairFingerprint, 'STALE_CURRENT_MAIN_METADATA@1');
+});
+
+test('immutable implementation baseline wording does not self-trigger after merge', () => {
+  const root = fixture({
+    'README.md': 'No volatile main identity.\n',
+    'src/data/roadmapData.ts': `export const items = [{ id: 'A' }];\n`,
+    'docs/growth/DOCUMENTATION-DRIFT-SELF-HEALING.md': `Implementation base for DOC-SH-01: \`${MAIN}\`.\n`,
   });
   const report = analyzeDocumentationDrift({ root, mainSha: MAIN, files: ['README.md', 'src/data/roadmapData.ts', 'docs/growth/DOCUMENTATION-DRIFT-SELF-HEALING.md'], profile });
   assert.equal(report.summary.driftDetected, false);
