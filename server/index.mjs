@@ -15,7 +15,7 @@ import { serveMtaSts } from './mta-sts.mjs';
 import { researchMetadata } from '../shared/research-metadata.mjs';
 import { BILLING_CATALOG } from './billing-catalog.mjs';
 import { createVocabularyCheckout } from './vocabulary-checkout.mjs';
-import { QUANT_PRO_IDS } from './vocabulary-quant-pro.mjs';
+import { QUANT_PRO_IDS } from './vocabulary-quant-pro-index.mjs';
 import {
   VOCABULARY_PUBLIC_COUNT,
   vocabularyMetadata,
