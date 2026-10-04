@@ -2,6 +2,7 @@ import { createHmac, createSecretKey, randomBytes, timingSafeEqual } from 'node:
 import { getMarketplaceSubscription, githubJson } from './github.mjs';
 
 const MIN_SIGNING_KEY_BYTES = 32;
+const OAUTH_STATE_HMAC_ALGORITHM = 'sha512';
 
 function base64urlJson(value) {
   return Buffer.from(JSON.stringify(value)).toString('base64url');
@@ -17,7 +18,7 @@ function requireSigningKey(value) {
 }
 
 function sign(value, signingKey) {
-  return createHmac('sha256', signingKey).update(value).digest('base64url');
+  return createHmac(OAUTH_STATE_HMAC_ALGORITHM, signingKey).update(value).digest('base64url');
 }
 
 export function createOAuthState({ installationId, marketplacePlanId = null, secret, now = Date.now() }) {
