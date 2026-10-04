@@ -3,9 +3,11 @@ import { createAppJwt } from './lib/github.mjs';
 import { createOAuthState, exchangeOAuthCode, oauthAuthorizeUrl, verifyBuyerInstallation, verifyOAuthState } from './lib/oauth.mjs';
 import { deleteExpiredEvidence, secureTokenEquals } from './lib/evidence-store.mjs';
 import { handleGitHubEvent, verifyWebhookSignature } from './lib/webhook.mjs';
+import { contentLengthExceedsLimit, DEFAULT_MAX_REQUEST_BYTES, readBoundedRequestBody } from './lib/request-body.mjs';
 
 const port = Number(process.env.PORT ?? 10020);
 const publicUrl = String(process.env.LEGAL_POLICY_PUBLIC_URL ?? '').replace(/\/$/, '');
+const MAX_WEBHOOK_BYTES = DEFAULT_MAX_REQUEST_BYTES;
 
 function cookieValue(request, name) {
   const cookies = String(request.headers.cookie ?? '').split(';').map((part) => part.trim());
@@ -97,9 +99,24 @@ const server = createServer(async (request, response) => {
     return;
   }
 
-  const chunks = [];
-  for await (const chunk of request) chunks.push(chunk);
-  const rawBody = Buffer.concat(chunks);
+  if (contentLengthExceedsLimit(request.headers, MAX_WEBHOOK_BYTES)) {
+    sendJson(response, 413, { error: 'payload_too_large' }, { 'cache-control': 'no-store' });
+    request.resume();
+    return;
+  }
+
+  let rawBody;
+  try {
+    rawBody = await readBoundedRequestBody(request, MAX_WEBHOOK_BYTES);
+  } catch (error) {
+    if (error?.code === 'REQUEST_BODY_TOO_LARGE') {
+      sendJson(response, 413, { error: 'payload_too_large' }, { 'cache-control': 'no-store' });
+      request.pause();
+      return;
+    }
+    throw error;
+  }
+
   if (!verifyWebhookSignature(rawBody, request.headers['x-hub-signature-256'], process.env.LEGAL_POLICY_GITHUB_WEBHOOK_SECRET)) {
     sendJson(response, 401, { error: 'invalid_signature' });
     return;
