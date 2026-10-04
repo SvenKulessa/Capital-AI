@@ -1,6 +1,6 @@
 # CADS Pipeline Observability & Self-Healing
 
-Stand: 2026-10-02  
+Stand: 2026-10-05  
 Primary Domains: PLATFORM + TRUST  
 Market-data semantics: MARKET
 
@@ -49,6 +49,58 @@ Aggregierte Evidence ist geschützt verfügbar über:
 - JSON: `GET /api/internal/cads`
 
 Beide verwenden dasselbe `OBSERVABILITY_TOKEN`-Gate.
+
+## Grafana-Anbindung
+
+Grafana ist **kein zweiter Telemetrie-Authority-Pfad**. CAPITAL-AI exportiert weiterhin ausschließlich den bestehenden Prometheus-kompatiblen `/metrics`-Contract; Grafana beziehungsweise ein Prometheus-kompatibler Collector konsumiert diesen Endpoint.
+
+Verbindliche Regeln:
+
+- `OBSERVABILITY_TOKEN` bleibt ein Runtime-Secret und wird nur in der Zielumgebung gesetzt.
+- Der Endpoint bleibt fail-closed: ohne gültigen Bearer-Token wird `404` zurückgegeben.
+- Keine Grafana API Keys, Cloud Access Policies, Datasource-Credentials oder Remote-Write-Secrets werden im Repository gespeichert.
+- Eine spätere Einführung von Grafana Alloy/OpenTelemetry Collector ist eine eigene Runtime-/Kosten-/Security-Entscheidung und nicht Bestandteil dieser Bindung.
+- Dashboards dürfen nur aggregierte, begrenzte Metriken konsumieren; rohe Auth-, Billing-, Provider- oder Benutzer-Payloads bleiben ausgeschlossen.
+
+Damit bleibt die Observability-Kette:
+
+```text
+CAPITAL-AI Runtime -> /metrics (Bearer Gate) -> Prometheus-kompatibler Scraper -> Grafana
+```
+
+## Supabase Stripe Wrapper
+
+Der Supabase Stripe Wrapper ist eine **read-only Reconciliation-, Reporting- und Observability-Quelle**. Er ersetzt weder Stripe Checkout noch verifizierte Stripe Webhooks als autoritative Payment-/Entitlement-Quelle.
+
+Aktuell verifizierte Boundary:
+
+- Supabase PostgreSQL: 17.11
+- `wrappers`: 0.6.3
+- Foreign Server: `Stripe_wrapper_server`
+- Schema: `stripe`
+- Tabellenrechte auf `stripe.*`: ausschließlich `postgres`; keine Grants an `anon`, `authenticated` oder `service_role`
+- vorhandene replizierte Kernobjekte: Produkte, Preise, Subscriptions, Checkout Sessions und Active Entitlements
+
+Verbindliche Authority-Trennung:
+
+```text
+Checkout / Payment Mutation -> Stripe API
+Event Authority             -> verifizierte Stripe Webhooks
+Application Entitlements    -> Supabase Application Schema / RPC
+Reconciliation / Reporting  -> Supabase Stripe Wrapper (read-only)
+```
+
+Ein Grant von `service_role` oder Browser-Rollen auf `stripe.*` ist **keine Routineintegration**, sondern eine Security-Boundary-Mutation und benötigt eine separate, explizite Owner-Freigabe sowie Least-Privilege-Evidence.
+
+## Supabase 17.11 Post-Upgrade Readback
+
+Der Production-Readback bestätigt PostgreSQL 17.11. Für die Supabase-17.11-Hinweise wurde zusätzlich geprüft:
+
+- UTF-8 / ICU ist aktiv.
+- Es existieren keine `ltree`-Indizes, daher ist kein `ltree`-Reindex erforderlich.
+- `btree_gist` ist installiert, aber es existieren keine GiST-Float-Indizes, daher ist hierfür kein Reindex erforderlich.
+- `pgcrypto` ist installiert; legacy-cipher-spezifische Nutzdaten werden durch diese Repository-Bindung nicht automatisch verändert.
+- Supabase Security Advisor meldet weiterhin `auth_leaked_password_protection` als WARN sowie fünf RLS-Tabellen ohne Policies; diese Findings sind getrennt von der Stripe-/Grafana-Anbindung zu behandeln.
 
 ## Datenleck-Erkennung
 
