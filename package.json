@@ -16,7 +16,7 @@
     "lint": "tsc --noEmit",
     "test:security": "node --test server/market.test.mjs server/security.test.mjs server/auth.test.mjs server/research-pages.test.mjs server/prompt-injection-guard.test.mjs scripts/validate-oidc-positive-cycles.test.mjs && node --import tsx --test scripts/frontend-security.test.mjs server/advisor-security.test.mjs",
     "verify:browser": "node scripts/verify-browser-boundary.mjs",
-    "test:market": "node --test server/market.test.mjs server/market-contracts.test.mjs",
+    "test:market": "node --test server/open-source-market-policy.test.mjs server/market.test.mjs server/market-contracts.test.mjs",
     "test:market:integration": "node --test server/infrastructure.integration.test.mjs",
     "test:market:local": "node scripts/test-market-infrastructure-local.mjs",
     "preflight": "node scripts/preflight.mjs",
