@@ -6,7 +6,7 @@
     "domain": "GROWTH",
     "technicalAuthority": "PLATFORM",
     "trustAuthority": "TRUST",
-    "status": "PROPOSED"
+    "status": "ACTIVE_PR_ONLY"
   },
   "authorities": [
     "DOCUMENTARY_EVIDENCE@1",
@@ -77,7 +77,48 @@
       "BILLING_CHANGE",
       "SECRET_ROTATION"
     ],
-    "remediationStrategy": "RECLASSIFY_AS_IMMUTABLE_BASELINE_OR_GENERATED_METADATA"
+    "remediationStrategy": "RECLASSIFY_AS_IMMUTABLE_BASELINE_OR_GENERATED_METADATA",
+    "prProposal": {
+      "enabled": true,
+      "mode": "PR_ONLY",
+      "approvedRepairFingerprint": "STALE_CURRENT_MAIN_METADATA@1",
+      "promotionEvidenceRef": "docs/growth/DOCUMENTATION-DRIFT-VALIDATION-20261004.json",
+      "allowedTransformIds": [
+        "CURRENT_MAIN_TO_IMPLEMENTATION_BASELINE",
+        "MAIN_SNAPSHOT_TO_HISTORICAL_SOURCE",
+        "MAIN_REF_TO_IMPLEMENTATION_BASELINE"
+      ],
+      "allowedExactPaths": [
+        "README.md",
+        "src/data/roadmapData.ts"
+      ],
+      "allowedPrefixes": [
+        "docs/growth/",
+        "docs/architecture/"
+      ],
+      "forbiddenExactPaths": [
+        "AGENTS.md",
+        "Dockerfile",
+        "Dockerfile.security",
+        "package.json",
+        "package-lock.json"
+      ],
+      "forbiddenPrefixes": [
+        "docs/security/",
+        "docs/governance/",
+        "contracts/",
+        ".github/",
+        "deploy/",
+        "server/",
+        "supabase/"
+      ],
+      "expectedMainShaRequired": true,
+      "sourceDigestRequired": true,
+      "branchPrefix": "capital-ai-growth/docs-self-heal-",
+      "autoMerge": false,
+      "directMainMutation": false,
+      "productionAuthority": false
+    }
   },
   "safety": {
     "historicalEvidenceImmutable": true,

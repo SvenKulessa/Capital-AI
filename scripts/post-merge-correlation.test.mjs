@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { buildCorrelation, classifyOpenPr, ACTIONS } from "./post-merge-correlation.mjs";
+import './documentation-drift-remediation.test.mjs'; // DOC-SH-02 regression in Docker Security preflight
 
 test("workflow passes the unescaped merged SHA and token to checkout and correlation", () => {
   const workflow = readFileSync(new URL('../.github/workflows/post-merge-correlation.yml', import.meta.url), 'utf8');
@@ -136,4 +137,16 @@ test("summary classifies all open PR actions deterministically", () => {
   assert.equal(report.summary.totalOpenPrs, 2);
   assert.equal(report.openPrs[0].action, ACTIONS.MANUAL_REVIEW_REQUIRED);
   assert.equal(report.openPrs[1].action, ACTIONS.NO_ACTION);
+});
+
+
+test("documentation repair workflow is PR-only and race guarded", () => {
+  const workflow = readFileSync(new URL('../.github/workflows/post-merge-correlation.yml', import.meta.url), 'utf8');
+  assert.match(workflow, /propose_documentation_repair:/);
+  assert.match(workflow, /documentation_repair_action == 'PR_PROPOSAL_CANDIDATE'/);
+  assert.match(workflow, /contents: write/);
+  assert.match(workflow, /Expected-Main und PR-only Policy fail-closed prüfen/);
+  assert.match(workflow, /gh pr create/);
+  assert.doesNotMatch(workflow, /gh pr merge|--auto\b|enable-auto-merge/);
+  assert.match(workflow, /test "\$\(gh api "repos\/\$REPOSITORY\/branches\/main" --jq '\.commit\.sha'\)" = "\$EXPECTED_MAIN_SHA"/);
 });
