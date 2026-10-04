@@ -133,6 +133,10 @@
     "identityTranslation": "PROHIBITED",
     "authorizationForwarding": "STRICT_BEARER_ONLY",
     "cookiesForwarded": false,
-    "loopProtection": true
+    "loopProtection": true,
+    "requiredCapability": "scoringPriceInput",
+    "currentAdmission": "BLOCKED_NO_SCORING_PRICE_INPUT_SOURCE",
+    "evidenceReference": "docs/market-data/evidence/score-display-source-admission-20261004.json",
+    "publicScoreDisplayEnabled": false
   }
 }
