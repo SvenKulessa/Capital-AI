@@ -24,7 +24,7 @@ test('Kraken signing matches the published API-Sign test vector', () => {
 });
 
 function request(method, body = null) {
-  const stream = Readable.from(body == null ? [] : [JSON.stringify(body)]);
+  const stream = Readable.from(body == null ? [] : [Buffer.from(JSON.stringify(body), 'utf8')]);
   stream.method = method;
   stream.headers = { origin: 'https://capital.example', 'content-type': 'application/json' };
   return stream;
