@@ -133,6 +133,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderContract> = {
     name: 'Binance Market Data Engine',
     slug: 'binance',
     tier: 'tier1',
+    productionAdmission: 'BLOCKED',
     websiteUrl: 'https://binance.com',
     description: 'High-Throughput WebSocket Feed mit L2 Orderbuch-Streaming und Trade-Tick Tickers.',
     endpoints: {
@@ -193,6 +194,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderContract> = {
     name: 'TwelveData Financial Feeds',
     slug: 'twelvedata',
     tier: 'tier1',
+    productionAdmission: 'BLOCKED',
     websiteUrl: 'https://twelvedata.com',
     description: 'Institutionelle US- & EU-Aktien, Indizes, Forex G10 und ETF-Kurse.',
     endpoints: {
@@ -253,6 +255,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderContract> = {
     name: 'Kraken Financial Ingestion',
     slug: 'kraken',
     tier: 'tier1',
+    productionAdmission: 'BLOCKED',
     websiteUrl: 'https://kraken.com',
     description: 'Regulatorisch konforme europäische Orderbuch-Referenz mit strengem Monotonic Sequencing.',
     endpoints: {
@@ -313,6 +316,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderContract> = {
     name: 'Federal Reserve Bank of St. Louis (FRED)',
     slug: 'fred',
     tier: 'tier0',
+    productionAdmission: 'BLOCKED',
     websiteUrl: 'https://fred.stlouisfed.org',
     description: 'Offizielle US-Zentralbank-Referenz für Zinsstrukturkurven, M2 Geldmenge, CPI und Arbeitsmarktdaten.',
     endpoints: {
@@ -372,6 +376,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderContract> = {
     name: 'Alchemy Supernode RPC',
     slug: 'alchemy',
     tier: 'tier1',
+    productionAdmission: 'BLOCKED',
     websiteUrl: 'https://alchemy.com',
     description: 'EVM On-Chain Transaction Logs, Smart Contract Events und Mempool Whale Tracking.',
     endpoints: {
