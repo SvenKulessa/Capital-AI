@@ -435,15 +435,15 @@ export const vocabularyMetadata = [
     ]
   },
   {
-    "id": "capital-zitadel-readback",
-    "path": "/vocabulary/capital-zitadel-readback",
-    "term": "Zitadel Readback",
+    "id": "capital-supabase-auth-readback",
+    "path": "/vocabulary/capital-supabase-auth-readback",
+    "term": "Supabase Auth Readback",
     "category": "Security & Compliance",
-    "description": "Read-only Rücklesepfad für verifizierbare Identity- und OIDC-Konfiguration ohne Konfigurationsmutation.",
+    "description": "Read-only Rücklesepfad für verifizierbare Supabase-Auth-, Session- und Provider-Konfiguration ohne Secret-Ausgabe.",
     "thesaurus": [
       "Zitadel readback",
       "ZitadelReadback",
-      "Zitadel Readback"
+      "Supabase Auth Readback"
     ]
   },
   {
