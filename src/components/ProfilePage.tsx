@@ -49,6 +49,39 @@ interface PrivateMarketContext {
   actionable: false;
 }
 
+interface ByokEnhancementReport {
+  schema: 'CAPITAL_AI_BYOK_ENHANCEMENT_REPORT@1';
+  provider: string;
+  symbol: string | null;
+  improvementCount: number;
+  baseline: {
+    admittedPublicQuoteSources: number;
+    publicQuoteAvailable: boolean;
+  };
+  augmented: {
+    quoteAvailable: boolean;
+    fresh: boolean;
+    ageMs: number;
+    bidAskAvailable: boolean;
+    volume24hAvailable: boolean;
+  };
+  improvements: Array<{
+    metric: string;
+    before: boolean | string;
+    after: boolean | string;
+    delta?: string;
+    ageMs?: number;
+    spread?: number;
+  }>;
+  scoreImpact: {
+    status: 'NOT_EVALUATED' | 'EVALUATED';
+    reason?: string;
+    baselineScore: number | null;
+    augmentedScore: number | null;
+    delta: number | null;
+  };
+}
+
 async function readJson(response: Response) {
   return response.json().catch(() => null);
 }
@@ -60,6 +93,7 @@ export function ProfilePage({ onBackToHome }: { onBackToHome: () => void }) {
   const [apiSecret, setApiSecret] = useState('');
   const [holdings, setHoldings] = useState<Holding[]>([]);
   const [privateMarketContext, setPrivateMarketContext] = useState<PrivateMarketContext | null>(null);
+  const [enhancementReport, setEnhancementReport] = useState<ByokEnhancementReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -139,6 +173,7 @@ export function ProfilePage({ onBackToHome }: { onBackToHome: () => void }) {
       setHoldings(Array.isArray(body?.holdings) ? body.holdings : []);
       setFeedback('Kraken-Verbindung verifiziert. Die Zugangsdaten liegen verschlüsselt im persönlichen Vault.');
       await loadConnections();
+      await refreshPrivateMarketContext();
     } catch (reason) {
       setError(
         reason instanceof Error && reason.message
@@ -181,23 +216,29 @@ export function ProfilePage({ onBackToHome }: { onBackToHome: () => void }) {
     setFeedback(null);
     setError(null);
     try {
-      const response = await fetch('/api/profile/provider-connections/kraken/market-context?symbol=BTCUSD', {
+      const response = await fetch('/api/profile/provider-connections/kraken/enhancement?symbol=BTCUSD', {
         credentials: 'same-origin',
         cache: 'no-store',
         headers: { Accept: 'application/json' },
       });
       const body = await readJson(response);
-      if (!response.ok || body?.schema !== 'CAPITAL_AI_BYOK_MARKET_CONTEXT@1') {
-        throw new Error(body?.code || body?.error || 'PRIVATE_MARKET_CONTEXT_FAILED');
+      if (
+        !response.ok ||
+        body?.context?.schema !== 'CAPITAL_AI_BYOK_MARKET_CONTEXT@1' ||
+        body?.report?.schema !== 'CAPITAL_AI_BYOK_ENHANCEMENT_REPORT@1'
+      ) {
+        throw new Error(body?.code || body?.error || 'BYOK_ENHANCEMENT_FAILED');
       }
-      setPrivateMarketContext(body as PrivateMarketContext);
-      setFeedback('Privater BTC/USD-Marktkontext ist an deine verifizierte BYOK-Verbindung gebunden und wird nicht geteilt.');
+      setPrivateMarketContext(body.context as PrivateMarketContext);
+      setEnhancementReport(body.report as ByokEnhancementReport);
+      setFeedback('BYOK wurde automatisch als privater Pipeline-Overlay aktiviert. Die messbaren Verbesserungen wurden neu bewertet.');
     } catch (reason) {
       setPrivateMarketContext(null);
+      setEnhancementReport(null);
       setError(
         reason instanceof Error && reason.message
-          ? `Privater Marktkontext nicht verfügbar: ${reason.message}`
-          : 'Privater Marktkontext nicht verfügbar.',
+          ? `BYOK-Pipeline-Erweiterung nicht verfügbar: ${reason.message}`
+          : 'BYOK-Pipeline-Erweiterung nicht verfügbar.',
       );
     } finally {
       setTesting(false);
@@ -218,6 +259,7 @@ export function ProfilePage({ onBackToHome }: { onBackToHome: () => void }) {
       if (!response.ok) throw new Error('DELETE_FAILED');
       setHoldings([]);
       setPrivateMarketContext(null);
+      setEnhancementReport(null);
       setFeedback('Kraken-Verbindung und zugehöriges Vault-Secret wurden gelöscht.');
       await loadConnections();
     } catch {
@@ -423,6 +465,59 @@ export function ProfilePage({ onBackToHome }: { onBackToHome: () => void }) {
               <Database className="h-4 w-4" /> Noch kein privater Kraken-Kontext geladen.
             </div>
           )}
+          {enhancementReport && (
+            <div className="mt-4 rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <p className="font-mono text-[10px] font-black uppercase tracking-wider text-emerald-300">
+                    BYOK PIPELINE IMPACT
+                  </p>
+                  <p className="mt-1 text-sm font-black text-white">
+                    {enhancementReport.improvementCount} messbare Verbesserungen
+                  </p>
+                </div>
+                <span className="rounded-full border border-emerald-500/30 bg-black/20 px-2.5 py-1 font-mono text-[10px] font-bold text-emerald-200">
+                  AUTO-ACTIVE
+                </span>
+              </div>
+              <div className="mt-3 grid gap-2 text-xs sm:grid-cols-2 lg:grid-cols-4">
+                <div className="rounded-lg border border-white/10 bg-black/20 p-2">
+                  <span className="text-slate-500">Quote verfügbar</span>
+                  <p className="font-mono text-white">{enhancementReport.augmented.quoteAvailable ? 'JA' : 'NEIN'}</p>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-black/20 p-2">
+                  <span className="text-slate-500">Freshness</span>
+                  <p className="font-mono text-white">
+                    {enhancementReport.augmented.fresh ? '< 30s' : 'nicht frisch'}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-black/20 p-2">
+                  <span className="text-slate-500">Bid/Ask</span>
+                  <p className="font-mono text-white">{enhancementReport.augmented.bidAskAvailable ? 'verfügbar' : 'fehlt'}</p>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-black/20 p-2">
+                  <span className="text-slate-500">24h Volume</span>
+                  <p className="font-mono text-white">{enhancementReport.augmented.volume24hAvailable ? 'verfügbar' : 'fehlt'}</p>
+                </div>
+              </div>
+              <div className="mt-3 space-y-2">
+                {enhancementReport.improvements.map((item, index) => (
+                  <div key={`${item.metric}-${index}`} className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-[11px]">
+                    <span className="font-mono font-bold text-emerald-200">{item.metric}</span>
+                    <span className="ml-2 text-slate-400">
+                      {String(item.before)} → {String(item.after)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-[11px] text-amber-100">
+                Score-Effekt: {enhancementReport.scoreImpact.status === 'EVALUATED'
+                  ? `${enhancementReport.scoreImpact.delta ?? 0}`
+                  : 'noch nicht bewertet – benötigt echten Baseline-vs-BYOK Enterprise-Scorer-Lauf.'}
+              </div>
+            </div>
+          )}
+
           {privateMarketContext && (
             <div className="mt-4 rounded-xl border border-violet-500/25 bg-violet-500/10 p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
