@@ -222,7 +222,7 @@ export function createApp(root = defaultRoot, options = {}) {
   }
   if (publicPath.startsWith('/vocabulary/') && !vocabularyMetadataByPath.has(publicPath)) {
     res.writeHead(404, headers);
-    return end(res, );
+    return end(res);
   }
 
   let asset;
