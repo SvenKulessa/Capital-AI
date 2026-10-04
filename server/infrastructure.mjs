@@ -4,6 +4,7 @@ import { connect } from '@nats-io/transport-node';
 import { jetstream, jetstreamManager, StorageType, DiscardPolicy } from '@nats-io/jetstream';
 import { QuoteFactSchema, QuoteDeliverySchema, isFresh } from '../shared/market-contracts.mjs';
 import { observeCadsOperation } from './cads-observability.mjs';
+import { canonicalMarketStore } from './canonical-market-store.mjs';
 
 const STREAM = 'CAPITAL_FACTS';
 export function validateStreamConfig(config, replicas) {
@@ -16,7 +17,7 @@ export function validateStreamConfig(config, replicas) {
 export const QUOTE_CHANNEL = 'capital:quote:events:v1';
 export const payloadHash = payload => createHash('sha256').update(JSON.stringify(payload)).digest('hex');
 export class MarketInfrastructure {
-  constructor(env = process.env) { this.env = env; this.redis = null; this.nc = null; this.js = null; this.manager = null; this.natsConnected = false; this.state = 'unavailable'; this.opening = null; this.subscriber = null; this.listeners = new Set(); this.pendingSymbols = new Set(); this.subscribing = null; this.pubsubEnabled = env.MARKET_PUBSUB_ENABLED !== 'false'; this.deliveryMetrics = { verified: 0, lastVerifiedDeliveryAt: null, lastVerifiedSymbol: null }; }
+  constructor(env = process.env, store = canonicalMarketStore) { this.env = env; this.canonicalStore = store; this.canonicalDbRequired = env.MARKET_CANONICAL_DB_REQUIRED !== 'false'; this.redis = null; this.nc = null; this.js = null; this.manager = null; this.natsConnected = false; this.state = 'unavailable'; this.opening = null; this.subscriber = null; this.listeners = new Set(); this.pendingSymbols = new Set(); this.subscribing = null; this.pubsubEnabled = env.MARKET_PUBSUB_ENABLED !== 'false'; this.deliveryMetrics = { verified: 0, lastVerifiedDeliveryAt: null, lastVerifiedSymbol: null }; }
   async start() {
     if (this.status().status === 'connected') return true;
     if (this.opening) return this.opening;
@@ -76,6 +77,8 @@ export class MarketInfrastructure {
     verifiedDeliveries: this.deliveryMetrics.verified,
     lastVerifiedDeliveryAt: this.deliveryMetrics.lastVerifiedDeliveryAt,
     lastVerifiedSymbol: this.deliveryMetrics.lastVerifiedSymbol,
+    canonicalDb: this.canonicalStore?.status?.() || { status: 'unavailable', configured: false },
+    canonicalDbRequired: this.canonicalDbRequired,
     stream: STREAM, storage: 'file', replicasConfigured: Number(this.env.NATS_REPLICAS || 1) }; }
   async subscribeQuotes(listener) {
     if (typeof listener !== 'function') throw new TypeError('INVALID_QUOTE_LISTENER');
@@ -131,7 +134,15 @@ export class MarketInfrastructure {
     if (ack.stream !== STREAM || !Number.isInteger(ack.seq) || ack.seq < 1) throw new Error('EVIDENCE_UNCONFIRMED');
     const delivery = QuoteDeliverySchema.parse({ ...fact, evidenceId: `${STREAM}:${ack.seq}:${hash}`,
       availability: 'live', validated: true, actionable: false, reasonCodes: ['PROVIDER_RIGHTS_UNVERIFIED', 'ANALYSIS_INPUTS_INCOMPLETE'] });
-    // Store only acknowledged facts. Compare timestamp atomically across ingress instances.
+
+    // JetStream is the event authority. Persist the acknowledged envelope to the canonical
+    // PostgreSQL/Supabase source of record before projecting ephemeral hot state to Valkey.
+    if (this.canonicalDbRequired) {
+      await observeCadsOperation({ layer:'storage', service:'supabase-postgres', operation:'quote.persist_canonical', correlationId: fact.symbol },
+        () => this.canonicalStore.persist(delivery, envelope));
+    }
+
+    // Store only acknowledged + canonically persisted facts. Compare timestamp atomically across ingress instances.
     const script = `local old=redis.call('GET',KEYS[1]); if old then local v=cjson.decode(old); if v.observedAt>tonumber(ARGV[2]) then return 0 end; if v.evidenceId==ARGV[4] then return 0 end end; redis.call('SET',KEYS[1],ARGV[1],'PX',ARGV[3]); if ARGV[5]=='true' then redis.call('PUBLISH',ARGV[6],ARGV[1]) end; return 1`;
     const ttl = 30000 - (Date.now() - fact.observedAt);
     if (ttl <= 0) throw new Error('FACT_EXPIRED_DURING_WRITE');
