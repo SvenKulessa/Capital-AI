@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Monitor, Smartphone } from 'lucide-react';
 import { PriceAlertToast } from '../components/PriceAlertToast';
-import { StatusBar } from '../components/StatusBar';
+import { StatusBar } from '../shared/ui/StatusBar';
 import { usePriceAlerts } from '../context/PriceAlertsContext';
 import { CORE_MODULES } from '../data/mockData';
 import { useRouteAnalytics } from '../platform/analytics/useRouteAnalytics';
@@ -14,11 +14,7 @@ import type {
   MarketAsset,
 } from '../types';
 import { AppRoutes } from './routing/AppRoutes';
-import {
-  APP_NAVIGATION_EVENT,
-  navigateAppLocation,
-  resolveAppRoute,
-} from './routing/routes';
+import { useBrowserRoute } from './routing/useBrowserRoute';
 
 const AppOverlays = lazy(() =>
   import('./AppOverlays').then((module) => ({ default: module.AppOverlays })),
@@ -33,31 +29,19 @@ export function AppShell() {
   } = usePriceAlerts();
 
   useMarketAssets();
-
-  const [currentRoute, setCurrentRoute] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return resolveAppRoute(window.location.pathname);
-    }
-    return '/';
-  });
+  const { currentRoute, navigateTo, analysisRequest } = useBrowserRoute();
 
   const [viewMode, setViewMode] = useState<'mockup' | 'fullscreen'>('mockup');
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
   const [isMarketscreenerOpen, setIsMarketscreenerOpen] = useState(false);
   const [isProductTourOpen, setIsProductTourOpen] = useState(false);
   const [isAllMarketsOpen, setIsAllMarketsOpen] = useState(false);
-  const [isMonetizationOpen, setIsMonetizationOpen] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      return resolveAppRoute(window.location.pathname) === '/pricing';
-    }
-    return false;
-  });
-  const [isVocabularyOpen, setIsVocabularyOpen] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      return resolveAppRoute(window.location.pathname) === '/vocabulary';
-    }
-    return false;
-  });
+  const [isMonetizationOpen, setIsMonetizationOpen] = useState(
+    () => currentRoute === '/pricing',
+  );
+  const [isVocabularyOpen, setIsVocabularyOpen] = useState(
+    () => currentRoute === '/vocabulary',
+  );
   const [marketCategoryFilter, setMarketCategoryFilter] = useState<
     'ALLE' | MainCategory
   >('ALLE');
@@ -82,44 +66,12 @@ export function AppShell() {
   >(undefined);
 
   useEffect(() => {
-    const parseUrlState = () => {
-      const resolved = resolveAppRoute(window.location.pathname);
-      setCurrentRoute(resolved);
-
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const analysisParam = params.get('analysis');
-        const tickerParam = params.get('ticker');
-        const sectorParam = params.get('sector');
-
-        if (analysisParam || tickerParam || sectorParam) {
-          if (analysisParam === 'sector' || sectorParam) {
-            setAnalysisInitialTab('sector');
-            if (sectorParam) setAnalysisInitialSectorId(sectorParam);
-          } else {
-            setAnalysisInitialTab('asset');
-            if (tickerParam) setAnalysisInitialTicker(tickerParam);
-          }
-          setIsAnalysisOpen(true);
-        }
-      } catch {
-        // Fail soft: ungültige optionale Query-Parameter dürfen Routing nicht blockieren.
-      }
-    };
-
-    parseUrlState();
-
-    const handleRouteChange = () => {
-      parseUrlState();
-    };
-
-    window.addEventListener('popstate', handleRouteChange);
-    window.addEventListener(APP_NAVIGATION_EVENT, handleRouteChange);
-    return () => {
-      window.removeEventListener('popstate', handleRouteChange);
-      window.removeEventListener(APP_NAVIGATION_EVENT, handleRouteChange);
-    };
-  }, []);
+    if (!analysisRequest) return;
+    setAnalysisInitialTab(analysisRequest.tab);
+    setAnalysisInitialTicker(analysisRequest.ticker);
+    setAnalysisInitialSectorId(analysisRequest.sectorId);
+    setIsAnalysisOpen(true);
+  }, [analysisRequest]);
 
   useRouteAnalytics(currentRoute);
 
@@ -131,12 +83,6 @@ export function AppShell() {
       setIsWhaleRadarOpen(true);
     }
   }, [currentRoute, setIsWhaleRadarOpen]);
-
-  const navigateTo = (path: string) => {
-    const targetRoute = navigateAppLocation(path);
-    setCurrentRoute(targetRoute);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
   const handleOpenModuleById = (moduleId: string) => {
     if (moduleId === 'vocabulary') {

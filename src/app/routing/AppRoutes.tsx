@@ -57,12 +57,12 @@ const ControlCenterPage = lazy(() =>
   })),
 );
 const EnterpriseScorerDashboard = lazy(() =>
-  import('../../components/EnterpriseScorerDashboard').then((module) => ({
+  import('../../features/screener/EnterpriseScorerDashboard').then((module) => ({
     default: module.EnterpriseScorerDashboard,
   })),
 );
 const ScreenerTable = lazy(() =>
-  import('../../components/ScreenerTable').then((module) => ({
+  import('../../features/screener/ScreenerTable').then((module) => ({
     default: module.ScreenerTable,
   })),
 );
