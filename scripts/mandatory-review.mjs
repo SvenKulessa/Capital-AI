@@ -57,9 +57,9 @@ export function evaluateMandatoryReview(snapshot) {
   const providerRightsVerified = providerRights.length > 0 && providerRights.every(p => p?.deployEligible === true && p?.status !== 'CONTRACT_SCOPE_UNVERIFIED');
   const top100Activation = universeCoverage && providerRightsVerified ? 'READY_FOR_RUNTIME_VALIDATION' : 'BLOCKED';
 
-  const oidcConfiguration = snapshot.oidc?.configurationPass === true;
-  const oidcCredentialAuthentication = snapshot.oidc?.credentialAuthenticationVerified === true;
-  const oidcLoginVerified = snapshot.oidc?.loginVerified === true;
+  const authConfiguration = snapshot.auth?.configurationPass === true;
+  const authCredentialAuthentication = snapshot.auth?.credentialAuthenticationVerified === true;
+  const authLoginVerified = snapshot.auth?.loginVerified === true;
   const licenseApproved = snapshot.license?.status === 'APPROVED' && snapshot.license?.deployEligible === true &&
     (snapshot.license?.applicationSourceSha || snapshot.license?.sourceSha) === currentMainSha;
 
@@ -75,9 +75,9 @@ export function evaluateMandatoryReview(snapshot) {
   if (findingReachability === 'OPENPGP_REFERENCE_OBSERVED') blockers.push('GO_2026_5932_REACHABILITY_REVIEW');
   if (!universeCoverage) blockers.push('TOP100_CRYPTO_AND_STOCK_UNIVERSE');
   if (!providerRightsVerified) blockers.push('MARKET_DATA_RIGHTS');
-  if (!oidcConfiguration) blockers.push('OIDC_CONFIGURATION');
-  if (!oidcCredentialAuthentication) blockers.push('OIDC_CREDENTIAL_AUTHENTICATION');
-  if (!oidcLoginVerified) blockers.push('OIDC_REAL_LOGIN');
+  if (!authConfiguration) blockers.push('SUPABASE_AUTH_CONFIGURATION');
+  if (!authCredentialAuthentication) blockers.push('SUPABASE_AUTH_CREDENTIAL_AUTHENTICATION');
+  if (!authLoginVerified) blockers.push('SUPABASE_AUTH_REAL_LOGIN');
 
   return {
     schema: 'CAPITAL_AI_MANDATORY_REVIEW@1',
@@ -117,11 +117,12 @@ export function evaluateMandatoryReview(snapshot) {
       providerRightsVerified,
       activation: top100Activation,
     },
-    oidc: {
-      configurationPass: oidcConfiguration,
-      credentialAuthenticationVerified: oidcCredentialAuthentication,
-      realLoginVerified: oidcLoginVerified,
-      state: snapshot.oidc?.state || 'BLOCKED',
+    auth: {
+      provider: 'supabase',
+      configurationPass: authConfiguration,
+      credentialAuthenticationVerified: authCredentialAuthentication,
+      realLoginVerified: authLoginVerified,
+      state: snapshot.auth?.state || 'BLOCKED',
     },
     license: {
       status: snapshot.license?.status || 'UNKNOWN',
@@ -150,9 +151,9 @@ export function renderMandatoryReview(report) {
     `Top-100 Krypto: ${report.marketUniverse.cryptoConfigured}/${report.marketUniverse.targetCrypto}`,
     `Top-100 Aktien: ${report.marketUniverse.stocksConfigured}/${report.marketUniverse.targetStocks}`,
     `Provider-Rechte: ${yes(report.marketUniverse.providerRightsVerified)}`,
-    `ZITADEL Konfiguration: ${yes(report.oidc.configurationPass)}`,
-    `ZITADEL Credential-Authentifizierung: ${yes(report.oidc.credentialAuthenticationVerified)}`,
-    `ZITADEL echter Login: ${yes(report.oidc.realLoginVerified)}`,
+    `Supabase Auth Konfiguration: ${yes(report.auth.configurationPass)}`,
+    `Supabase Credential-Authentifizierung: ${yes(report.auth.credentialAuthenticationVerified)}`,
+    `Supabase echter Login: ${yes(report.auth.realLoginVerified)}`,
     `Lizenz/Redistribution: ${report.license.status} / deployEligible=${report.license.deployEligible}`,
     '',
     `Production Handoff: ${report.productionHandoff}`,
@@ -176,7 +177,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     renderNats: readJson(path.join(evidenceDir, 'render-nats.json'), {}),
     renderNatsDeploys: readJson(path.join(evidenceDir, 'render-nats-deploys.json'), []),
     health: readJson(path.join(evidenceDir, 'health.json'), {}),
-    oidc: readJson(path.join(evidenceDir, 'oidc.json'), {}),
+    auth: readJson(path.join(evidenceDir, 'auth.json'), {}),
     license: readJson(path.join(root, 'docs/security/evidence/license-rights-review.json'), {}),
     natsFinding: trivyUpdate?.validation?.natsFindingPreserved || {},
     natsOpenPgpSearch: readJson(path.join(evidenceDir, 'nats-openpgp-search.json'), null),
