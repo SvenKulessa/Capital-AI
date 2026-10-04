@@ -1,9 +1,9 @@
 /**
- * CAPITAL AI — BAFIN-KONFORMER PIPELINE BUILDER
+ * CAPITAL AI — OPEN-SOURCE-FIRST PIPELINE BUILDER
  * Work Package: WP-004 / AP-001 / AP-003 / AP-006
  *
  * Konfiguriert Datenpipelines und Screener-Lösungen modular nach institutionellen Architektur-Standards.
- * Ausgangspunkt: Analyse-Tool (z.B. Buffett Value Check) -> Latenz/Taktung -> Provider -> Caching -> BaFin Audit -> Blueprint.
+ * Ausgangspunkt: Analyse-Tool -> Latenz/Taktung -> OSS-Ingestion-Adapter -> Valkey/OSS-Caching -> Audit-Evidence -> Blueprint.
  * Enthält den Reasoning-Kaufberater mit Scientist Stack & Revenue Assurance.
  */
 
@@ -294,7 +294,7 @@ export const LATENCY_INTERVALS: LatencyIntervalItem[] = [
     latencySpec: 'Sub-20ms Tick-by-Tick Feed',
     description: 'Ungefilterter L2-Orderbuch-Stream für High-Frequency-Arbitrage und Wal-Tracking. Höchste Anforderung an CPU & Caching.',
     bandwidthImpact: 'Hoch (> 5 GB / Tag)',
-    costImpactEur: 0, // Mit kostenlosem Binance/Kraken WSS
+    costImpactEur: 0, // OSS-Adapterkosten; Upstream-Datenrechte und Venue-Kosten werden separat geprüft
     bafinCompliance: 'Erfordert monotone Sequenzierung',
   },
 ];
@@ -313,64 +313,44 @@ export interface IngestionProviderItem {
 
 export const INGESTION_PROVIDERS: IngestionProviderItem[] = [
   {
-    id: 'twelvedata',
-    name: 'TwelveData Financial Feeds',
-    category: 'Aktien, Forex, Rohstoffe',
-    monthlyCostEur: 8.5,
-    protocols: 'REST + WSS',
-    typicalLatency: '40 - 80ms',
-    coverage: 'US & EU Aktien (Top 150), DAX, G10 Forex, ETFs',
-    bafinStatus: 'Regulatorisch zugelassen (US/EU)',
-  },
-  {
-    id: 'fred',
-    name: 'Federal Reserve Bank of St. Louis (FRED)',
-    category: 'Makro & Zinsstruktur',
-    monthlyCostEur: 0.0,
-    protocols: 'REST JSON',
-    typicalLatency: '120 - 150ms',
-    coverage: 'US 10Y-2Y Zinskurve, M2 Geldmenge, CPI, Fed Funds Rate',
-    bafinStatus: '100% Free Sovereign Authority',
-  },
-  {
-    id: 'binance',
-    name: 'Binance Market Data Engine',
-    category: 'Krypto Realtime',
-    monthlyCostEur: 0.0,
-    protocols: 'WebSocket (WSS) + REST',
-    typicalLatency: '15 - 25ms',
-    coverage: 'BTC, ETH, Top 100 Altcoins, L2 Depth Ticker',
-    bafinStatus: 'Öffentlicher Public Data Feed',
-  },
-  {
-    id: 'kraken',
-    name: 'Kraken Financial Ingestion',
-    category: 'Krypto & EUR Referenz',
-    monthlyCostEur: 0.0,
-    protocols: 'WebSocket (WSS)',
-    typicalLatency: '20 - 30ms',
-    coverage: 'Krypto/EUR Orderbücher, Monotone Sequenzierung',
-    bafinStatus: 'BaFin-konforme EU-Referenz',
-  },
-  {
-    id: 'alchemy',
-    name: 'Alchemy Supernode Web3 RPC',
-    category: 'On-Chain & Mempool',
-    monthlyCostEur: 0.0,
-    protocols: 'RPC + WebSocket',
-    typicalLatency: '45 - 65ms',
-    coverage: 'Ethereum, Solana, DEX Swaps (Uniswap/Raydium)',
-    bafinStatus: 'Dezentral auditierbare Blockchain Logs',
-  },
-  {
     id: 'ccxt',
-    name: 'CCXT Pro Multiplexer',
-    category: 'Multi-Börsen Ingestion',
+    name: 'CCXT Open-Source Adapter',
+    category: 'Multi-Venue Market Ingress',
     monthlyCostEur: 0.0,
-    protocols: 'Self-Hosted Multiplexer',
-    typicalLatency: '30 - 50ms',
-    coverage: '120+ Krypto-Börsen vereinheitlicht',
-    bafinStatus: 'Open-Source (MIT Lizenz)',
+    protocols: 'REST + WebSocket (venueabhängig)',
+    typicalLatency: 'Venue- und Deployment-abhängig',
+    coverage: 'Provider-neutrale Normalisierung; konkrete Datenquellen werden separat zugelassen',
+    bafinStatus: 'MIT · Datenrechte separat fail-closed prüfen',
+  },
+  {
+    id: 'hummingbot',
+    name: 'Hummingbot / Gateway',
+    category: 'Connector & DEX Gateway',
+    monthlyCostEur: 0.0,
+    protocols: 'REST + WebSocket + Gateway',
+    typicalLatency: 'Deployment- und Venue-abhängig',
+    coverage: 'Self-hosted Connector-Architektur für CEX/DEX-Routen und isolierte Gateway-Dienste',
+    bafinStatus: 'Apache-2.0 / MIT · Datenrechte separat prüfen',
+  },
+  {
+    id: 'openbb',
+    name: 'OpenBB Provider Router',
+    category: 'Multi-Asset Research Ingress',
+    monthlyCostEur: 0.0,
+    protocols: 'Python + REST/API + Provider Router',
+    typicalLatency: 'Upstream-abhängig',
+    coverage: 'Provider-neutrale Multi-Asset-Aggregation; nur freigegebene Upstreams dürfen aktiviert werden',
+    bafinStatus: 'Apache-2.0 · Upstream-Rechte bleiben eigenes Gate',
+  },
+  {
+    id: 'defillama-sdk',
+    name: 'DefiLlama API SDK',
+    category: 'DeFi Fundamentals & Metadata',
+    monthlyCostEur: 0.0,
+    protocols: 'REST + TypeScript SDK',
+    typicalLatency: 'Endpoint-abhängig',
+    coverage: 'TVL-, Yield- und DeFi-Metadaten; kein Tick-by-Tick Venue-Feed',
+    bafinStatus: 'MIT · Nutzungs-/Datenrechte separat verifizieren',
   },
 ];
 
@@ -387,8 +367,8 @@ export interface CachingArchitectureItem {
 
 export const CACHING_ARCHITECTURES: CachingArchitectureItem[] = [
   {
-    id: 'redis-ring',
-    name: 'In-Memory Redis Ring Buffer',
+    id: 'valkey-hotstate',
+    name: 'Valkey 8 Hot-State Cache',
     specs: 'Ringpuffer mit 1.000 Ticks / Symbol',
     description: 'Hält die letzten 1.000 Kurstickets im Arbeitsspeicher. Ermöglicht Sub-5ms Screener-Abfragen für alle Clients ohne API-Last.',
     memoryFootprint: 'Ca. 64 MB RAM',
@@ -474,8 +454,8 @@ export const PipelineBuilder: React.FC<PipelineBuilderProps> = ({
   const [config, setConfig] = useState<PipelineConfigState>({
     analysisFocusId: 'buffett-value',
     latencyIntervalId: 'eod-daily',
-    providerIds: ['twelvedata', 'fred'],
-    cachingId: 'redis-ring',
+    providerIds: ['ccxt', 'openbb'],
+    cachingId: 'valkey-hotstate',
     evidenceId: 'worm-storage',
     selectedIndicators: ['rsi-14', 'macd-12-26-9'],
     selectedPatterns: ['double-bottom'],
@@ -546,7 +526,7 @@ export const PipelineBuilder: React.FC<PipelineBuilderProps> = ({
     let bafinScore = 90;
     if (config.evidenceId === 'worm-storage') bafinScore += 6;
     if (config.evidenceId === 'merkle-tree') bafinScore += 5;
-    if (selectedProviders.some((p) => p.id === 'twelvedata' || p.id === 'kraken')) bafinScore += 2;
+    if (selectedProviders.length > 0 && selectedProviders.every((p) => ['ccxt', 'hummingbot', 'openbb', 'defillama-sdk'].includes(p.id))) bafinScore += 2;
     if ((config.selectedNewsApis || []).includes('news-bafin-press')) bafinScore += 2;
     bafinScore = Math.min(100, bafinScore);
 
@@ -689,7 +669,7 @@ export const PipelineBuilder: React.FC<PipelineBuilderProps> = ({
     doc.text(`${selectedLatency.name} — ${selectedLatency.latencySpec}`, 14, 74);
 
     doc.setFont('helvetica', 'bold');
-    doc.text('3. Ingestion & Data Provider:', 14, 84);
+    doc.text('3. Open-Source Ingestion Adapter:', 14, 84);
     doc.setFont('helvetica', 'normal');
     selectedProviders.forEach((p, idx) => {
       doc.text(`• ${p.name} (${p.category}) — ${p.monthlyCostEur.toFixed(2)} €/Mo`, 18, 90 + idx * 6);
@@ -782,6 +762,17 @@ export const PipelineBuilder: React.FC<PipelineBuilderProps> = ({
         </div>
       </div>
 
+      <div className="mb-5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 px-4 py-3 text-xs text-slate-300">
+        <div className="flex items-center gap-2 font-bold text-emerald-300">
+          <ShieldCheck className="w-4 h-4" />
+          <span>Open-Source-Only Policy aktiv</span>
+        </div>
+        <p className="mt-1 leading-relaxed">
+          Der Konfigurator bietet nur Open-Source-Softwarekomponenten an. Ein OSS-Adapter erteilt keine Marktdatenrechte:
+          Upstream-Datenquellen werden erst nach separater Lizenz-, Nutzungs-, Retention- und Redistribution-Evidence produktiv zugelassen.
+        </p>
+      </div>
+
       {/* ========================================================================= */}
       {/* 2. STICKY / COMPACT STATUS BAR (Pipeline Builder Summary)                 */}
       {/* ========================================================================= */}
@@ -826,8 +817,8 @@ export const PipelineBuilder: React.FC<PipelineBuilderProps> = ({
         {[
           { step: 1, label: '1. Screener-Fokus', desc: 'Buffett / Scoring' },
           { step: 2, label: '2. Taktung & Latenz', desc: 'EOD / Intraday' },
-          { step: 3, label: '3. Data Ingestion', desc: 'TwelveData / FRED' },
-          { step: 4, label: '4. Caching & RAM', desc: 'Redis Ring / Arrow' },
+          { step: 3, label: '3. OSS Ingestion', desc: 'CCXT / OpenBB' },
+          { step: 4, label: '4. Caching & RAM', desc: 'Valkey 8 / Arrow' },
           { step: 5, label: '5. BaFin Evidence', desc: 'WORM / Merkle' },
           { step: 6, label: '6. Fertiges System', desc: 'Blueprint Export' },
         ].map((s) => (
@@ -1331,10 +1322,10 @@ export const PipelineBuilder: React.FC<PipelineBuilderProps> = ({
               <span className="w-6 h-6 rounded-lg bg-amber-400 text-black text-xs font-black flex items-center justify-center font-mono">
                 3
               </span>
-              <span>Data Ingestion &amp; Hardware-Lieferanten (Mehrfachauswahl möglich)</span>
+              <span>Open-Source Ingestion-Adapter (Mehrfachauswahl möglich)</span>
             </h2>
             <p className="text-xs text-slate-400 mt-1">
-              Wählen Sie die autorisierten Gateways. Alle Provider halten sich strikt an die <strong>40 € / Monat Budget-Obergrenze (AP-006)</strong>.
+              Wählen Sie ausschließlich Open-Source-Adapter. Die Softwarelizenz ist offen; <strong>Daten-, Display-, Retention- und Redistribution-Rechte der Upstream-Quelle bleiben ein separates fail-closed Gate</strong>.
             </p>
           </div>
 
@@ -1356,7 +1347,7 @@ export const PipelineBuilder: React.FC<PipelineBuilderProps> = ({
                     <div className="flex items-center justify-between gap-2 mb-1">
                       <h3 className="text-sm font-bold text-white">{provider.name}</h3>
                       <span className="text-xs font-bold font-mono text-cyan-300">
-                        {provider.monthlyCostEur === 0 ? '0,00 € (Free)' : `${provider.monthlyCostEur.toFixed(2)} €/Mo`}
+                        {provider.monthlyCostEur === 0 ? '0,00 € OSS-Lizenz' : `${provider.monthlyCostEur.toFixed(2)} €/Mo`}
                       </span>
                     </div>
 
