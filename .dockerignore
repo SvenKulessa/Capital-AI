@@ -58,6 +58,7 @@
 !scripts/license-engine.mjs
 !scripts/frontend-security.test.mjs
 !scripts/verify-browser-boundary.mjs
+!scripts/validate-frontend-boundaries.mjs
 !scripts/validate-contract-suites.mjs
 !scripts/validate-growth-contracts.mjs
 !scripts/validate-evidence-hardening.mjs
