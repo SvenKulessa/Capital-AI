@@ -28,18 +28,41 @@ export function runProviderRegistryValidationSuite(): { passed: boolean; results
     }
   }
 
-  // Test 2: Open-Source/Open-Data admission blocks legacy routing (AP-003)
-  results.push('[TEST 2] Verifying fail-closed Open-Source/Open-Data routing...');
-  const cryptoProviders = ProviderRegistryService.getHealthyProvidersForAsset('crypto');
-  const macroProviders = ProviderRegistryService.getHealthyProvidersForAsset('fixed_income');
+  // Test 2: PRODUCT selection/blueprint eligibility is independent from Production Admission.
+  results.push('[TEST 2] Verifying selectable/blueprint providers remain visible while BLOCKED...');
+  const selectableProviders = ProviderRegistryService.getSelectableProviders();
+  const blueprintProviders = ProviderRegistryService.getBlueprintEligibleProviders();
+  const blockedProviders = ProviderRegistryService.getAllProviders().filter(
+    provider => provider.productionAdmission === 'BLOCKED'
+  );
+  const selectionInvariantHolds =
+    blockedProviders.length > 0 &&
+    blockedProviders.every(provider =>
+      ProviderRegistryService.isProviderSelectable(provider.id) &&
+      ProviderRegistryService.isProviderBlueprintEligible(provider.id)
+    ) &&
+    selectableProviders.length === ProviderRegistryService.getAllProviders().length &&
+    blueprintProviders.length === ProviderRegistryService.getAllProviders().length;
+
+  if (selectionInvariantHolds) {
+    results.push('  ✓ BLOCKED providers remain selectable and blueprint-eligible.');
+  } else {
+    allPassed = false;
+    results.push('  ✗ productionAdmission incorrectly removed a provider from selection/blueprint scope.');
+  }
+
+  // Test 3: Open-Source/Open-Data admission still blocks runtime routing (AP-003).
+  results.push('[TEST 3] Verifying fail-closed Open-Source/Open-Data production routing...');
+  const cryptoProviders = ProviderRegistryService.getProductionAdmittedHealthyProvidersForAsset('crypto');
+  const macroProviders = ProviderRegistryService.getProductionAdmittedHealthyProvidersForAsset('fixed_income');
   if (cryptoProviders.length === 0 && macroProviders.length === 0) {
-    results.push('  ✓ Legacy provider metadata is not production-routable without OPEN_SOURCE_OPEN_DATA_ADMITTED.');
+    results.push('  ✓ Non-admitted provider metadata is not production-routable without OPEN_SOURCE_OPEN_DATA_ADMITTED.');
   } else {
     allPassed = false;
     results.push('  ✗ Non-admitted provider became production-routable.');
   }
 
-  // Test 3: Budget Constraint & Monthly Operating Cap <= 40 EUR (AP-006)
+  // Test 4: Budget Constraint & Monthly Operating Cap <= 40 EUR (AP-006)
   results.push('[TEST 3] Verifying Monthly Provider Operating Budget <= 40.00 EUR (AP-006)...');
   const budgetAudit = ProviderRegistryService.calculateTotalProviderSpendEur();
   if (budgetAudit.isWithinBudget && budgetAudit.totalMonthlySpendEur <= 40.0) {
@@ -53,8 +76,8 @@ export function runProviderRegistryValidationSuite(): { passed: boolean; results
     );
   }
 
-  // Test 4: Comprehensive Audit Report Generation
-  results.push('[TEST 4] Verifying Provider Audit & Alerting generation...');
+  // Test 5: Comprehensive Audit Report Generation
+  results.push('[TEST 5] Verifying Provider Audit & Alerting generation...');
   const auditReport = ProviderRegistryService.auditProviderHealthAndBudget();
   if (auditReport.totalProvidersCount >= 5 && auditReport.admittedProvidersCount === 0 &&
       auditReport.blockedProvidersCount === auditReport.totalProvidersCount &&
