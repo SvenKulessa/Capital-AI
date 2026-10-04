@@ -40,6 +40,20 @@ Der Workflow darf offene PRs kommentieren und maschinenlesbare Evidence erzeugen
 
 Ein neuer Repository-HEAD allein löst weder Deployment noch NATS-Redeploy aus.
 
+
+## DOC-SH-02 — Dokumentations-PR-Vorschläge
+
+Der promotete Fingerprint `STALE_CURRENT_MAIN_METADATA@1` darf nach der dokumentierten 3/3-Evidence ausschließlich einen **PR-Vorschlag** erzeugen. Die technische Trennung bleibt explizit:
+
+- Der Korrelationsjob besitzt nur `contents: read` und erzeugt Drift-Report, Repair-Plan und Klassifikation.
+- Nur `PR_PROPOSAL_CANDIDATE` darf den separaten Job mit `contents: write` aktivieren.
+- Vor jeder Mutation wird der erwartete Main-SHA über die GitHub-Branch-Authority erneut gelesen; jede Abweichung beendet den Job.
+- Der Patch ist auf exakt geplante Dateien und Source-Digests begrenzt. Security-, Governance-, Workflow-, Contract-, Deploy-, Runtime-, Secret-, Lizenz- und Production-Pfade sind ausgeschlossen.
+- Nach dem Patch müssen die Dokumentations-/Korrelationsregressionen grün sein und der Drift-Report darf keine Findings mehr enthalten.
+- Zulässige Mutation ist nur ein neuer `capital-ai-growth/docs-self-heal-<mainsha>` Branch plus Pull Request. Es existiert kein `gh pr merge`, kein Auto-Merge und keine Production-Authority.
+
+Die 5er-Kette bleibt damit erhalten: `DETECT → CORRELATE → CLASSIFY → REMEDIATE → VERIFY`. Das finale Merge-Gate bleibt Branch Protection/Required Checks plus Review; der Self-Healing-Workflow darf dieses Gate nicht ersetzen.
+
 ## Fünfstufiger Self-Healing-Zyklus
 
 1. **Detect** — Merge-SHA und geänderte Pfade gegen Dependency-, Container-, Workflow-, Contract- und Product-Grenzen klassifizieren.
