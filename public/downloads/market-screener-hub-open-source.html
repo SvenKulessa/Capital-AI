@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="description" content="CAPITAL-AI Market Screener Hub: Open-Source + Open-Data Architektur, Source Admission, NATS JetStream, Valkey, Scoring und Charts." />
+  <title>CAPITAL-AI | OSS + Open-Data Market Screener Architektur</title>
+  <style>
+    :root{--bg:#06111f;--panel:#0b1a2a;--panel2:#0e2235;--line:#173750;--gold:#f5c84c;--cyan:#28d7f2;--blue:#4e8bff;--green:#40d98d;--red:#ff6b6b;--magenta:#f05db3;--text:#d9e4f0;--muted:#91a3b7}
+    *{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:radial-gradient(circle at 80% -10%,#0d3150 0,transparent 28%),var(--bg);color:var(--text);font:15px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    a{color:inherit}.wrap{width:min(1180px,calc(100% - 32px));margin:auto}.topline{height:4px;background:var(--gold)}
+    header{padding:28px 0 18px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(6,17,31,.94);backdrop-filter:blur(18px);z-index:5}.brand{font-weight:900;letter-spacing:.02em}.brand b{color:var(--gold)}
+    nav{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px} .nav,.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:#0a1826;border-radius:12px;padding:9px 12px;text-decoration:none;font-weight:700;font-size:13px}.btn.primary{background:var(--gold);color:#07111d;border-color:var(--gold)}.btn.cyan{border-color:#237185;color:#b8f7ff}
+    main{padding:42px 0 80px}.eyebrow{color:var(--gold);text-transform:uppercase;font-size:12px;font-weight:900;letter-spacing:.18em}.hero{display:grid;grid-template-columns:1.25fr .75fr;gap:24px;align-items:stretch}.hero h1{font-size:clamp(34px,6vw,68px);line-height:.98;margin:12px 0 18px;color:#fff;letter-spacing:-.04em}.hero h1 span{color:var(--cyan)}.lead{font-size:18px;max-width:760px;color:#b7c6d7}.box,.card{border:1px solid var(--line);background:linear-gradient(145deg,rgba(14,34,53,.92),rgba(8,24,39,.94));border-radius:18px;padding:20px}.box.red{border-color:#64333b}.metric{font-size:48px;font-weight:900;color:var(--red);line-height:1}.small{font-size:12px;color:var(--muted)}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}.chip{padding:5px 9px;border-radius:999px;font-size:11px;font-weight:900;border:1px solid currentColor}.green{color:var(--green)}.cyanText{color:var(--cyan)}.gold{color:var(--gold)}.redText{color:var(--red)}.blue{color:var(--blue)}
+    section{margin-top:58px} h2{font-size:30px;color:#fff;margin:0 0 8px;letter-spacing:-.02em} h3{margin:0 0 8px;color:#fff}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.grid.two{grid-template-columns:repeat(2,1fr)}.grid.four{grid-template-columns:repeat(4,1fr)}
+    .card{position:relative;overflow:hidden}.card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent,var(--cyan))}.card p{margin:0;color:var(--muted)}.card code{font-size:12px;color:#cae6ff}
+    .flow{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}.node{min-height:105px;border:1px solid var(--line);border-top:4px solid var(--accent,var(--cyan));border-radius:13px;background:#081827;padding:13px}.node strong{display:block;color:white;margin-bottom:5px}.node span{font-size:12px;color:var(--muted)}
+    table{width:100%;border-collapse:collapse;background:#081827;border:1px solid var(--line);border-radius:16px;overflow:hidden}th,td{padding:12px 13px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}th{color:#8295aa;text-transform:uppercase;font-size:11px;letter-spacing:.07em}td{font-size:13px}tr:last-child td{border-bottom:0}.tag{display:inline-block;padding:4px 7px;border:1px solid currentColor;border-radius:999px;font-size:10px;font-weight:900}
+    .notice{border:1px solid #6b343d;background:#131820;border-radius:16px;padding:18px;color:#ffd2d6}.downloads{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.muted{color:var(--muted)} footer{border-top:1px solid var(--line);padding:28px 0;color:#708398;font-size:12px}
+    @media(max-width:900px){header{position:static}.hero,.grid,.grid.two,.grid.four{grid-template-columns:1fr}.flow{grid-template-columns:repeat(2,1fr)}.hero h1{font-size:44px}}
+    @media print{header,.downloads{display:none!important}body{background:#06111f!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}section{break-inside:avoid}}
+    @media(max-width:520px){.wrap{width:min(100% - 22px,1180px)}.flow{grid-template-columns:1fr}.hero h1{font-size:36px}.downloads .btn{width:100%;justify-content:center}}
+  </style>
+</head>
+<body>
+<div class="topline"></div>
+<header>
+  <div class="wrap">
+    <div class="brand">CAPITAL-<b>AI</b> · MARKET SCREENER HUB</div>
+    <nav aria-label="Seitennavigation">
+      <a class="nav" href="/">Terminal</a>
+      <a class="nav" href="/architecture">Architektur</a>
+      <a class="nav" href="/pipeline-builder">Pipeline Builder</a>
+      <a class="nav" href="/opensource-lizenzen">OSS-Lizenzen</a>
+      <a class="nav" href="#downloads">Downloads</a>
+    </nav>
+  </div>
+</header>
+<main class="wrap">
+  <section class="hero" style="margin-top:0">
+    <div>
+      <div class="eyebrow">Owner Decision · 2026-10-04 · Architecture v2.0</div>
+      <h1>Open Source <span>+</span> Open Data</h1>
+      <p class="lead">Die neue CAPITAL-AI MARKET-Grenze: Ein quelloffener Adapter reicht nicht. Produktive Market Data benötigt zusätzlich ein qualifiziertes Open-Data-Dataset, vollständige Provenance sowie unabhängige Rechte-Evidence für jeden tatsächlich verwendeten Produktpfad.</p>
+      <div class="chips"><span class="chip green">OPEN SOURCE</span><span class="chip cyanText">OPEN DATA</span><span class="chip redText">FAIL-CLOSED</span><span class="chip gold">EVIDENCE-FIRST</span></div>
+      <div id="downloads" class="downloads">
+        <a class="btn primary" href="#end-to-end">Web-Präsentation öffnen</a>
+        <a class="btn cyan" href="#" onclick="window.print();return false">PDF / Drucken</a>
+        <a class="btn" href="/downloads/CAPITAL-AI_Market-Screener-Hub_Open-Source-SOURCES_2026-10-04.md">Quellen / Evidence</a>
+        <a class="btn" href="/downloads/CAPITAL-AI_Market-Screener-Hub_Open-Source-PRESENTATION-LICENSE_2026-10-04.txt">Präsentationslizenz</a>
+      </div>
+    </div>
+    <aside class="box red">
+      <div class="small">CURRENT ADMISSION STATE</div>
+      <div class="metric">0</div>
+      <h3>admittedSources</h3>
+      <p class="muted">Crypto 0 · Stocks 0 · Commodities 0 · FX 0 · Indices 0</p>
+      <div class="notice" style="margin-top:18px"><strong>MARKET_QUOTES_ENABLED = false</strong><br/>Kein Live-Provider-I/O, solange keine Source alle Admission-Gates erfüllt.</div>
+    </aside>
+  </section>
+
+  <section id="end-to-end">
+    <div class="eyebrow">End-to-End</div><h2>Vom Dataset bis zum Chart</h2>
+    <p class="muted">Jede Stufe bleibt eine explizite Trust Boundary.</p>
+    <div class="flow" style="margin-top:18px">
+      <div class="node" style="--accent:var(--cyan)"><strong>Open Data</strong><span>Dataset, Lizenz, Instrumente</span></div>
+      <div class="node" style="--accent:var(--green)"><strong>OSS Adapter</strong><span>REST, WSS, Files, Sidecars</span></div>
+      <div class="node" style="--accent:var(--red)"><strong>Admission</strong><span>MARKET + TRUST Gates</span></div>
+      <div class="node" style="--accent:var(--cyan)"><strong>JetStream</strong><span>durable facts, replay, ack</span></div>
+      <div class="node" style="--accent:var(--green)"><strong>Valkey</strong><span>hot state, pub/sub, locks</span></div>
+      <div class="node" style="--accent:var(--gold)"><strong>Scoring + UI</strong><span>explainable score → React/Recharts</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Admission Contract</div><h2>Alle Gates müssen separat PASS sein</h2>
+    <div class="grid four" style="margin-top:18px">
+      <div class="card" style="--accent:var(--green)"><h3>Software</h3><p>Lizenz · Source SHA · License Blob/NOTICE · Packaging · Supply Chain</p></div>
+      <div class="card" style="--accent:var(--cyan)"><h3>Open Data</h3><p>Dataset-Lizenz · Provenance · Attribution · Snapshot/Scope</p></div>
+      <div class="card" style="--accent:var(--gold)"><h3>Use Cases</h3><p>Web/Mobile Display · Scoring · Cache · JetStream · Replay · Retention · Backup · Audit</p></div>
+      <div class="card" style="--accent:var(--magenta)"><h3>Instrumente</h3><p>Instrument Eligibility · Manifestreferenz · keine pauschale Coverage-Ableitung</p></div>
+    </div>
+    <div class="notice" style="margin-top:14px"><strong>Kein manueller Override.</strong> Öffentliche API-Verfügbarkeit, ein bezahltes Abo oder ein proprietärer Vertrag allein autorisieren die Source nicht.</div>
+  </section>
+
+  <section>
+    <div class="eyebrow">OSS Ingress</div><h2>Open-Source-Adapter sind Kandidaten, keine Datenrechtsquelle</h2>
+    <div style="overflow:auto;margin-top:18px"><table>
+      <thead><tr><th>Komponente</th><th>Code-Lizenz</th><th>Integration</th><th>Data Gate</th><th>Grenze</th></tr></thead>
+      <tbody>
+        <tr><td><strong>CCXT</strong></td><td>MIT</td><td><span class="tag cyanText">ADAPTER READY</span></td><td><span class="tag gold">OPEN DATA REQUIRED</span></td><td>Exchange-/Dataset-Rechte separat.</td></tr>
+        <tr><td><strong>Hummingbot / Gateway</strong></td><td>Apache-2.0</td><td><span class="tag cyanText">ADAPTER READY</span></td><td><span class="tag gold">OPEN DATA REQUIRED</span></td><td>Gateway separat immutable pinnen.</td></tr>
+        <tr><td><strong>Cryptofeed</strong></td><td>AGPL-3.0-or-later + Attribution</td><td><span class="tag cyanText">ADAPTER READY</span></td><td><span class="tag redText">BLOCKED</span></td><td>Copyleft/Packaging/Attribution + Datenrechte offen.</td></tr>
+        <tr><td><strong>OpenBB V5</strong></td><td>Apache-2.0</td><td><span class="tag cyanText">ADAPTER READY</span></td><td><span class="tag gold">OPEN DATA REQUIRED</span></td><td>Provider-Router, Rechte jedes Datasets separat.</td></tr>
+        <tr><td><strong>DefiLlama SDK</strong></td><td>MIT</td><td><span class="tag cyanText">ADAPTER READY</span></td><td><span class="tag gold">OPEN DATA REQUIRED</span></td><td>SDK-Lizenz ist keine API-Dataset-Lizenz.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Open-Data Research</div><h2>Kandidaten mit unterschiedlichen Coverage-Grenzen</h2>
+    <div class="grid two" style="margin-top:18px">
+      <div class="card" style="--accent:var(--gold)"><h3>World Bank</h3><p>GEM: CC BY 4.0 für FX/Indices/Makro. Commodity Prices: CC BY 4.0 für Historie/Projektionen. Keine automatische Realtime-Quote-Coverage.</p></div>
+      <div class="card" style="--accent:var(--cyan)"><h3>Wikidata</h3><p>CC0 1.0. Geeignet als Reference-/Entity-Metadata-Kandidat, nicht als Marktpreisquelle.</p></div>
+      <div class="card" style="--accent:var(--blue)"><h3>SEC · EIA · ECB · Eurostat</h3><p>Öffentliche Statistik-/Referenzpfade, deren Lizenzklassifizierung und Dataset-Scope vor Admission durch TRUST separat abgeschlossen werden müssen.</p></div>
+      <div class="card" style="--accent:var(--red)"><h3>Research-blocked</h3><p>Coin Metrics Community: non-commercial. Pyth Website-Path: non-commercial. DefiLlama API Dataset: Lizenz im geprüften Stand unverified.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Infrastructure</div><h2>NATS JetStream + Valkey bleiben der Kern der Datenbewegung</h2>
+    <div class="grid two" style="margin-top:18px">
+      <div class="card" style="--accent:var(--cyan)"><h3>NATS + JetStream · Apache-2.0</h3><p>Durable Events, Replay, Fan-out, Backpressure und Ack-basierte Verarbeitung. Das Event-System ist Infrastruktur und kann fehlende Datenrechte nicht ersetzen.</p></div>
+      <div class="card" style="--accent:var(--green)"><h3>Valkey · BSD-3-Clause</h3><p>Low-Latency Hot State, Pub/Sub, kurzlebige Locks und Rate Limits. Valkey ist Projection/Cache und kein alleiniger Evidence Store.</p></div>
+      <div class="card" style="--accent:var(--gold)"><h3>System of Record</h3><p>Supabase/PostgreSQL bleibt als transaktionaler Target-Layer für Pipeline-Definitionen, Runs, Evidence Bundles und Audit Events separat zur MARKET-Source bewertet.</p></div>
+      <div class="card" style="--accent:var(--magenta)"><h3>Analytics</h3><p>DuckDB für lokale/reproduzierbare Analytik; ClickHouse und Qdrant optional und nur nach eigenem Benchmark-/Supply-Chain-Gate.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Legacy Isolation</div><h2>Produktiv blockierte Legacy-Provider</h2>
+    <div class="chips"><span class="chip redText">Binance</span><span class="chip redText">Kraken</span><span class="chip redText">Twelve Data</span><span class="chip redText">Polygon</span><span class="chip redText">Massive</span><span class="chip redText">FinancialData.Net</span><span class="chip redText">yfinance / Yahoo</span><span class="chip redText">CoinGecko</span></div>
+    <p class="muted">Historische Evidence bleibt auditierbar, erzeugt jedoch keine Production Admission und darf nicht als Legacy-Fallback genutzt werden.</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Frontend</div><h2>Ein blockierter Datenzustand ist ein gültiger Produktzustand</h2>
+    <div class="grid two" style="margin-top:18px">
+      <div class="box red"><div class="small">MARKET SCREEN</div><h3 style="font-size:26px;color:var(--red)">DATA UNAVAILABLE</h3><p class="muted">Keine admitted Market Source - keine Live-Quote. Keine synthetische Quote wird als Ersatz ausgegeben.</p></div>
+      <div class="card" style="--accent:var(--cyan)"><h3>React + Recharts</h3><p>Charts, Rankings und Analyse-Details konsumieren ausschließlich source-bound Facts. Public Charts sind ein eigener Use Case und benötigen separate Evidence.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">License Boundary</div><h2>Präsentation ist lizenziert - Datenrechte bleiben unangetastet</h2>
+    <p class="muted">Originale Texte, Layouts und Diagramme dieser v2.0-Präsentation sind CC BY 4.0. Drittanbieter-Code, Marken, Dokumentation, APIs und Datasets werden dadurch nicht relicensed.</p>
+  </section>
+</main>
+<footer><div class="wrap">CAPITAL-AI · Market Screener Hub · OSS/Open-Data Architecture v2.0 · Evidence-first · Owner decision 2026-10-04</div></footer>
+</body>
+</html>
