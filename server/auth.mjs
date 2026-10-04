@@ -207,6 +207,11 @@ function normalizeNewPassword(value) {
   return typeof value === 'string' && value.length >= 10 && value.length <= 256 ? value : '';
 }
 
+function configuredOidcProvider(env) {
+  const provider = String(env.SUPABASE_OIDC_PROVIDER || '').trim();
+  return /^custom:[a-z0-9][a-z0-9:-]{0,42}[a-z0-9]$/.test(provider) ? provider : '';
+}
+
 export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.now, audit = console.info } = {}) {
   const allow = createLimiter(30, 60_000, 1, now);
   const mobileTransfers = new Map();
@@ -296,6 +301,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       'login',
       'login/email',
       'login/google',
+      'login/oidc',
       'mobile-login',
       'mobile-exchange',
       'register',
@@ -451,10 +457,15 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       return true;
     }
 
-    if (action === 'login/google') {
+    if (action === 'login/google' || action === 'login/oidc') {
       if (req.method !== 'GET') {
         res.setHeader('Allow', 'GET');
         json(res, 405, { error: 'method_not_allowed' });
+        return true;
+      }
+      const provider = action === 'login/google' ? 'google' : configuredOidcProvider(env);
+      if (!provider) {
+        json(res, 503, { error: 'oidc_not_configured', provider: 'supabase' });
         return true;
       }
       const verifier = randomBytes(64).toString('base64url');
@@ -466,10 +477,21 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       callback.searchParams.set('next', next);
       appendCookie(
         res,
-        cookie(PKCE_COOKIE, signEnvelope(config, { version: 1, flow, verifier, next, expires: now() + PKCE_MAX_AGE_SECONDS * 1000 }), PKCE_MAX_AGE_SECONDS),
+        cookie(
+          PKCE_COOKIE,
+          signEnvelope(config, {
+            version: 1,
+            flow,
+            verifier,
+            next,
+            authProvider: provider,
+            expires: now() + PKCE_MAX_AGE_SECONDS * 1000,
+          }),
+          PKCE_MAX_AGE_SECONDS,
+        ),
       );
       const target = new URL('/auth/v1/authorize', config.url);
-      target.searchParams.set('provider', 'google');
+      target.searchParams.set('provider', provider);
       target.searchParams.set('redirect_to', callback.toString());
       target.searchParams.set('code_challenge', challenge);
       target.searchParams.set('code_challenge_method', 's256');
