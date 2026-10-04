@@ -82,6 +82,15 @@ export function resolveAppRoute(rawPath: string): string {
     return '/control-center';
   }
   if (
+    clean === '/dokumentation' ||
+    clean === '/documentation' ||
+    clean === '/docs' ||
+    clean === '/presentations' ||
+    clean === '/praesentationen'
+  ) {
+    return '/dokumentation';
+  }
+  if (
     clean === '/pricing' ||
     clean === '/preise' ||
     clean === '/tarife' ||
