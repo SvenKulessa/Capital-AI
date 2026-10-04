@@ -56,7 +56,7 @@ ENV NODE_ENV=production PORT=10000
 WORKDIR /app
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/scoring-capacity.json ./evidence/scoring-capacity.json
-COPY server/index.mjs server/market.mjs server/auth.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/mta-sts.mjs server/mobile-scorer.mjs server/scorer-bus.mjs server/observability.mjs server/cads-observability.mjs ./server/
+COPY server/index.mjs server/market.mjs server/open-source-market-policy.mjs server/auth.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/mta-sts.mjs server/mobile-scorer.mjs server/scorer-proxy.mjs server/scorer-bus.mjs server/observability.mjs server/cads-observability.mjs ./server/
 COPY --from=production-deps /runtime/node_modules ./node_modules
 COPY server/infrastructure.mjs ./server/
 COPY server/billing-catalog.mjs ./server/

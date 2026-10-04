@@ -1,6 +1,6 @@
 {
   "schema": "CAPITAL_AI_OSS_MULTI_ASSET_BENCHMARK_PLAN@1",
-  "sourceMainSha": "54fb8c55c4f5562d977f1095db2c73877acdc270",
+  "sourceMainSha": "5d0a7b5bf13977c68cd74ddd65fd092961dc8d15",
   "observedAt": "2026-10-03",
   "state": "PREPARED_NOT_EXECUTED",
   "environment": "isolated-nonproduction",
@@ -386,36 +386,6 @@
       }
     },
     {
-      "repo": "financialdatanet/fdnpy",
-      "url": "https://github.com/financialdatanet/fdnpy",
-      "stars": 55,
-      "metadataLicense": "UNVERIFIED",
-      "archived": false,
-      "pushedAt": "2026-09-08T07:20:16Z",
-      "defaultBranch": "main",
-      "sourceSha": "e46103c95ba04927057609268765a5711b3ad656",
-      "id": "fdnpy",
-      "role": "multi-asset-provider-sdk",
-      "licenseReview": "BLOCKED_ORIGINAL_LICENSE_MISSING",
-      "dataRights": "UNVERIFIED",
-      "buildDigest": null,
-      "stableRelease": null,
-      "measurementState": "NOT_EXECUTED",
-      "fullClassCoverage": "UNVERIFIED",
-      "selectionReason": "existing owner-requested provider candidate; not popularity top-ten",
-      "commercialAdmission": "BLOCKED_PENDING_EVIDENCE",
-      "softwareUsageClasses": [
-        "HOSTED_NETWORK_SERVICE",
-        "DISTRIBUTED_BINARY"
-      ],
-      "softwareLicenceAudit": {
-        "licence": "UNVERIFIED_METADATA_MIT_ONLY",
-        "path": "setup.py",
-        "blobSha": "b3d4f22d579119e94c67aa91b39ada342ca6c7f4",
-        "state": "BLOCKED_ORIGINAL_LICENSE_MISSING"
-      }
-    },
-    {
       "repo": "QuantConnect/Lean",
       "url": "https://github.com/QuantConnect/Lean",
       "stars": 21852,
@@ -689,7 +659,8 @@
     "threeIndependentRunsIncludingRecovery",
     "JetStreamAckAndHashReplay",
     "quotaAndSessionAwareFreshness",
-    "ownerProductionDecision"
+    "ownerProductionDecision",
+    "qualifyingOpenDataLicenseAndProvenance"
   ],
   "blockers": [
     "No admitted 100-instrument dataset manifest",
@@ -795,6 +766,38 @@
       "commercialStatus": "EXCLUDED_PERSONAL_USE_DATA_PATH",
       "reason": "Yahoo Finance data path described as personal-use by yfinance upstream",
       "evidenceUrl": "https://github.com/ranaroussi/yfinance/blob/main/README.md"
+    },
+    {
+      "repo": "financialdatanet/fdnpy",
+      "url": "https://github.com/financialdatanet/fdnpy",
+      "stars": 55,
+      "metadataLicense": "UNVERIFIED",
+      "archived": false,
+      "pushedAt": "2026-09-08T07:20:16Z",
+      "defaultBranch": "main",
+      "sourceSha": "e46103c95ba04927057609268765a5711b3ad656",
+      "id": "fdnpy",
+      "role": "multi-asset-provider-sdk",
+      "licenseReview": "BLOCKED_ORIGINAL_LICENSE_MISSING",
+      "dataRights": "UNVERIFIED",
+      "buildDigest": null,
+      "stableRelease": null,
+      "measurementState": "NOT_EXECUTED",
+      "fullClassCoverage": "UNVERIFIED",
+      "selectionReason": "existing owner-requested provider candidate; not popularity top-ten",
+      "commercialAdmission": "BLOCKED_PENDING_EVIDENCE",
+      "softwareUsageClasses": [
+        "HOSTED_NETWORK_SERVICE",
+        "DISTRIBUTED_BINARY"
+      ],
+      "softwareLicenceAudit": {
+        "licence": "UNVERIFIED_METADATA_MIT_ONLY",
+        "path": "setup.py",
+        "blobSha": "b3d4f22d579119e94c67aa91b39ada342ca6c7f4",
+        "state": "BLOCKED_ORIGINAL_LICENSE_MISSING"
+      },
+      "commercialStatus": "EXCLUDED_OWNER_OPEN_SOURCE_ONLY",
+      "reason": "Original Open-Source-Lizenz nicht belegt; proprietärer FinancialData.Net-Datenpfad ist unter Owner-Policy nicht produktionszulässig."
     }
   ],
   "commercialPolicy": {
@@ -833,7 +836,11 @@
       "contractExpiryAndTermsChangeReview"
     ],
     "futureRiskGuarantee": false,
-    "expiryOrTermsChange": "BLOCK_NEW_PROMOTION_AND_REVIEW_EXISTING_PRODUCT_SCOPE"
+    "expiryOrTermsChange": "BLOCK_NEW_PROMOTION_AND_REVIEW_EXISTING_PRODUCT_SCOPE",
+    "openSourceSoftwareRequired": true,
+    "openDataRequired": true,
+    "proprietaryCommercialContractMayAuthorize": false,
+    "authority": "docs/market-data/open-source-market-policy.json"
   },
   "monetization": {
     "registryRef": {
@@ -947,5 +954,32 @@
     ],
     "winnerAdmission": "ALL_REQUIRED_PRODUCT_SCOPES_VERIFIED_BEFORE_PRODUCT_PROMOTION"
   },
-  "commercialEvidence": "docs/licenses/oss-market-stack/commercial-review-20261003.json"
+  "commercialEvidence": "docs/licenses/oss-market-stack/commercial-review-20261003.json",
+  "ownerSourcePolicy": {
+    "decidedAt": "2026-10-04",
+    "mode": "OPEN_SOURCE_AND_OPEN_DATA_ONLY",
+    "openSourceSoftwareRequired": true,
+    "qualifyingOpenDataRequired": true,
+    "proprietaryCommercialContractMayAuthorize": false,
+    "publicApiMayAuthorize": false,
+    "paidSubscriptionMayAuthorize": false,
+    "authority": "docs/market-data/open-source-market-policy.json"
+  },
+  "sourceBlockers": [
+    "No admitted 100-instrument dataset manifest",
+    "No ten isolated measured candidate runtimes",
+    "No provider/dataset rights admission for five asset classes",
+    "No measured comparisons or winner",
+    "Scoring rubric and operational budgets require pre-run calibration",
+    "No verified per-venue perpetual catalogue, contract mapping or derivative data-rights admission",
+    "Commercial provider/product scopes and recurring subscription cost model unverified",
+    "CADS release-class mapping and commercial-derived-use contract gaps unresolved",
+    "No admitted Open-Source + qualifying Open-Data source for production"
+  ],
+  "commercialEvidenceSnapshot": {
+    "path": "docs/licenses/oss-market-stack/commercial-review-20261003.json",
+    "sourceMainSha": "54fb8c55c4f5562d977f1095db2c73877acdc270",
+    "observedAt": "2026-10-03",
+    "status": "PARTIAL_REVIEW_NOT_PRODUCTION_AUTHORIZATION"
+  }
 }

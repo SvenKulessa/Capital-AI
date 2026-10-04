@@ -27,7 +27,7 @@ import { motion } from 'motion/react';
 import { FinalRankResult, AssetIdentity } from '../contracts/canonicalContracts';
 import { ScoringEngineService } from '../services/scoringEngine';
 import { FeatureStoreService } from '../services/featureStore';
-import { BinanceProviderAdapter, TwelveDataProviderAdapter } from '../services/providerAdapters';
+import { ProviderAdapterRegistry } from '../services/providerAdapters';
 import { ScoreExplainabilityDrawer } from './ScoreExplainabilityDrawer';
 
 export interface EnterpriseScorerDashboardProps {
@@ -53,8 +53,7 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
   const dataMode: 'LIVE' | 'DEMO' = 'LIVE';
 
   const featureStore = new FeatureStoreService();
-  const binanceAdapter = new BinanceProviderAdapter();
-  const twelveDataAdapter = new TwelveDataProviderAdapter();
+  const providerRegistry = React.useMemo(() => new ProviderAdapterRegistry(), []);
 
   const computeAssetScore = async (asset: AssetIdentity, isDemo: boolean) => {
     const currentRequest = ++requestId.current;
@@ -63,16 +62,13 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
     setScoreError(null);
     setIsLoading(true);
     try {
-      const adapter = asset.assetClass === 'crypto'
-        ? binanceAdapter
-        : twelveDataAdapter;
-
+      const adapter = providerRegistry.getAdapterForAsset(asset.assetClass);
       const rawObs = await adapter.fetchObservation(asset);
       const features = featureStore.extractFeatures({ asset, observation: rawObs });
       const res = await ScoringEngineService.computeFinalScore(asset, features, isDemo);
       if (currentRequest === requestId.current) setActiveResult(res);
     } catch (e) {
-      if (currentRequest === requestId.current) setScoreError('Daten nicht verfügbar. Kein verifizierter Score.');
+      if (currentRequest === requestId.current) setScoreError('Keine zugelassene Open-Data-Quelle. Kein verifizierter Score.');
     } finally {
       if (currentRequest === requestId.current) setIsLoading(false);
     }
@@ -105,7 +101,7 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
           <div className="flex items-center gap-2 shrink-0">
             {/* Live / Demo Mode Switcher */}
             <div className="p-1 rounded-xl bg-black/60 border border-slate-800 flex items-center">
-<span className="px-3 py-1.5 text-xs text-slate-400">Provider-Daten · keine Simulation</span>
+<span className="px-3 py-1.5 text-xs text-slate-400">Open Data · Source Admission erforderlich</span>
             </div>
           </div>
         </div>

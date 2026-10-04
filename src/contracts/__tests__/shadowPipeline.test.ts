@@ -40,16 +40,17 @@ function fixture(): { snapshot: PipelineSnapshot; config: ShadowPipelineConfig }
     isDemo: false, asset, features, rights, rawInputReferences: ['TEST-ONLY'] } };
 }
 
-test('legacy configuration edits revoke approval and preserve nested history', () => {
+test('configuration edits revoke approval and unadmitted provider enablement fails closed', () => {
   const c = new PipelineConfiguratorService(), initial = c.getActiveConfig();
   assert.equal(initial.isApprovedForProduction, false);
   initial.stages.stage_01_ingestion.retryCount = 99;
   assert.equal(c.getActiveConfig().stages.stage_01_ingestion.retryCount, 3);
   const old = c.getRevisionHistory();
   c.updateActiveConfig({ isApprovedForProduction: true }, 'test');
-  c.toggleProvider('test-provider', true);
   assert.equal(c.getActiveConfig().isApprovedForProduction, false);
-  assert.equal(c.getRevisionHistory().length, 3);
+  assert.throws(() => c.toggleProvider('test-provider', true), /OPEN_SOURCE_OPEN_DATA_ADMISSION_REQUIRED/);
+  assert.equal(c.getActiveConfig().activeProviders.length, 0);
+  assert.equal(c.getRevisionHistory().length, 2);
   assert.deepEqual(c.getRevisionHistory()[0], old[0]);
 });
 test('configuration revisions reject same-version content changes and isolate returned objects', async () => {

@@ -8,6 +8,7 @@ import { AssetClassSchema, NodePort } from '../common';
 
 // 1. provider_rest
 export const ProviderRestConfigSchema = z.object({
+  sourceAdmission: z.enum(['NOT_ADMITTED', 'OPEN_SOURCE_OPEN_DATA_ADMITTED']).default('NOT_ADMITTED'),
   endpointUrl: z.string().url(),
   method: z.enum(['GET', 'POST']),
   pollIntervalMs: z.number().int().min(100).max(60000).default(1000),
@@ -22,6 +23,7 @@ export type ProviderRestConfig = z.infer<typeof ProviderRestConfigSchema>;
 
 // 2. provider_websocket
 export const ProviderWebsocketConfigSchema = z.object({
+  sourceAdmission: z.enum(['NOT_ADMITTED', 'OPEN_SOURCE_OPEN_DATA_ADMITTED']).default('NOT_ADMITTED'),
   endpointUrl: z.string().regex(/^wss?:\/\//i),
   subscriptionPayload: z.record(z.string(), z.any()),
   reconnectIntervalMs: z.number().int().min(500).max(30000).default(2000),

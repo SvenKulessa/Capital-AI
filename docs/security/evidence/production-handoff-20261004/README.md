@@ -100,3 +100,28 @@ Hauptgründe:
 6. Exakter current-main CodeQL-/Rule-Readback ist in dieser Session nicht vollständig positiv belegt.
 
 Die Umstellung des bestehenden Render-Services von Git-Build auf GHCR-Digest ist eine wesentliche Production-Mutation und benötigt vor Ausführung eine Owner-Entscheidung. NATS wird aufgrund dieses Handoffs nicht neu deployed.
+
+## 8. Owner-Freigabe und Gate-Hold
+
+Owner-Freigabe vom 2026-10-04: **Option A – Gate-first, danach Digest-Promotion**.
+
+Aktueller CURRENT_MAIN nach Merge von #132: `5d0a7b5bf13977c68cd74ddd65fd092961dc8d15`.
+
+Die Freigabe ist ausdrücklich an die bestehenden Gates gebunden. Sie autorisiert **keine** Umgehung von TRUST-, MARKET-, Security- oder Identity-Gates. Der aktuelle MARKET-Stand auf Main bleibt fail-closed:
+
+- `OSS_SOURCE_ADMISSION=FAIL`
+- `MULTI_ASSET_LIVE_UNIVERSE=FAIL`
+- keine admitted Source
+- Open-Data-only ist für Mobile dokumentiert; proprietäre Verträge allein schließen das Mobile-Gate nicht
+- Twelve Data, Massive und FinancialData.Net: Anfragen versendet, keine belastbare schriftliche Rechtefreigabe beobachtet
+- Kraken: Zusatzangaben beantwortet; schriftliche kommerzielle Market-Data-Freigabe weiterhin ausstehend
+
+Folge für PLATFORM: **kein Candidate-Publish, kein Render-Quellenwechsel und kein NATS-Redeploy**, solange diese Gates nicht geschlossen sind.
+
+Nächster zulässiger Übergang:
+1. TRUST/MARKET schließen Source-/Rights-/Coverage-Gates.
+2. CURRENT_MAIN erneut lesen.
+3. Exakten Main einmalig bauen und als GHCR-Candidate veröffentlichen.
+4. OCI Index, Plattformmanifest, Config-Digest, SBOM und Provenance verifizieren.
+5. Ohne Rebuild denselben Digest auf Render promoten.
+6. Provider- und Runtime-Identity erneut readbacken.

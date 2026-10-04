@@ -19,9 +19,10 @@ test('freshness rejects old and future timestamps, not just a provider label', (
  assert.equal(isFresh({ ...sample(), observedAt: Date.now() + 1000 }), false);
  assert.equal(observation('BTCUSD', 'kraken', 100, Date.now() + 1000, 'USD', 'websocket', raw), null);
 });
-test('adapter does not invent microstructure from last trade', () => {
- const value = observation('BTCUSD', 'kraken', 100, Date.now(), 'USD', 'websocket', raw);
- assert.equal(value.fact.bid, null); assert.equal(value.fact.ask, null); assert.equal(value.fact.volume24h, null);
+test('legacy provider observation is blocked before persistence', () => {
+ assert.equal(observation('BTCUSD', 'kraken', 100, Date.now(), 'USD', 'websocket', raw), null);
+ const parsed=QuoteFactSchema.parse(sample());
+ assert.equal(parsed.bid, null); assert.equal(parsed.ask, null); assert.equal(parsed.volume24h, null);
 });
 test('quote delivery requires durable reference and cannot become actionable', () => {
  const value = { ...sample(), evidenceId: 'CAPITAL_FACTS:1:' + 'a'.repeat(64), availability: 'cached', validated: true, actionable: false, reasonCodes: ['PROVIDER_RIGHTS_UNVERIFIED'] };

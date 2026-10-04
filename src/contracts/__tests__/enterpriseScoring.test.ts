@@ -7,9 +7,8 @@ import { ScoringEngineService } from '../../services/scoringEngine';
 import { DataPlausibilityValidator } from '../dataPlausibilityValidator';
 import { AssetIdentity, FeatureValue } from '../canonicalContracts';
 import { PipelineConfiguratorService } from '../../services/pipelineConfigurator';
-import { BinanceProviderAdapter, TwelveDataProviderAdapter } from '../../services/providerAdapters';
+import { ProviderAdapterRegistry } from '../../services/providerAdapters';
 import { ExplicitDemoAdapter } from './fixtures/demoAdapter';
-import { FeatureStoreService } from './fixtures/demoFeatureStore';
 
 export async function runEnterpriseScoringSuite(): Promise<{ passed: boolean; message: string; failures: string[] }> {
   const failures: string[] = [];
@@ -43,7 +42,7 @@ export async function runEnterpriseScoringSuite(): Promise<{ passed: boolean; me
           calculationVersion: '2.1.0',
           qualityScore: 98,
           provenance: {
-            providerId: 'twelvedata_api',
+            providerId: 'open_data_candidate_unverified',
             providerDataset: 'quote',
             observedAt: Date.now() - 1000,
             receivedAt: Date.now() - 950,
@@ -51,7 +50,7 @@ export async function runEnterpriseScoringSuite(): Promise<{ passed: boolean; me
             latencyMs: 50,
             isDelayed: false,
             isDemo: false,
-            sourceReference: 'api://twelvedata/aapl',
+            sourceReference: 'open-data://candidate/aapl',
             licenseScope: 'commercial_redistribution',
           },
         },
@@ -148,36 +147,21 @@ export async function runEnterpriseScoringSuite(): Promise<{ passed: boolean; me
   }
 
   // =========================================================================
-  // 2. INTEGRATION TESTS (Stage 01 to Stage 07)
+  // 2. INTEGRATION TESTS — production registry starts empty until source admission
   // =========================================================================
   try {
-    const twelveData = new TwelveDataProviderAdapter();
-    const featureStore = new FeatureStoreService();
-
-    const asset: AssetIdentity = {
-      assetId: 'ast_int_aapl',
-      symbol: 'AAPL',
-      name: 'Apple Inc.',
-      assetClass: 'equity_us',
-      venue: 'NASDAQ',
-      currency: 'USD',
-      status: 'active',
-    };
-
-    // Offline boundary check: unavailable ingestion must not produce a scoreable observation.
-    const previousFetch = globalThis.fetch;
-    globalThis.fetch = async () => new Response('{}', { status: 503 });
-    try {
-      await twelveData.fetchObservation(asset);
-      failures.push('Integration Test Failed: Unavailable provider produced an observation');
-    } catch (error) {
-      if (!(error instanceof Error) || !error.message.includes('Market data unavailable (503)')) {
-        failures.push('Integration Test Failed: Unexpected provider failure');
-      }
-    } finally {
-      globalThis.fetch = previousFetch;
+    const registry = new ProviderAdapterRegistry();
+    if (registry.getAllAdapters().length !== 0) {
+      failures.push('Integration Test Failed: Production provider registry must start empty.');
     }
-
+    try {
+      registry.getAdapterForAsset('equity_us');
+      failures.push('Integration Test Failed: Unadmitted Open-Data source became routable.');
+    } catch (error) {
+      if (!(error instanceof Error) || !error.message.includes('OPEN_DATA_SOURCE_NOT_CONFIGURED')) {
+        failures.push('Integration Test Failed: Unexpected source-admission failure.');
+      }
+    }
   } catch (err: any) {
     failures.push(`Integration Test Exception: ${err.message}`);
   }
@@ -258,6 +242,17 @@ export async function runEnterpriseScoringSuite(): Promise<{ passed: boolean; me
     }
     if (shadow.environment !== 'shadow_canary') {
       failures.push(`Configurator Test Failed: Shadow environment must be shadow_canary`);
+    }
+    if (active.activeProviders.length !== 0) {
+      failures.push('Configurator Test Failed: Production defaults must not contain unadmitted providers.');
+    }
+    try {
+      configurator.toggleProvider('legacy_provider', true);
+      failures.push('Configurator Test Failed: Unadmitted provider toggle must fail closed.');
+    } catch (error) {
+      if (!(error instanceof Error) || !error.message.includes('OPEN_SOURCE_OPEN_DATA_ADMISSION_REQUIRED')) {
+        failures.push('Configurator Test Failed: Unexpected provider admission error.');
+      }
     }
   } catch (err: any) {
     failures.push(`Configurator Test Exception: ${err.message}`);

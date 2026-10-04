@@ -20,7 +20,7 @@ export const FINANCIAL_DATA_NET_PROVENANCE = Object.freeze({
   sdkRepository: 'https://github.com/financialdatanet/fdnpy',
   sdkCommit: 'e46103c95ba04927057609268765a5711b3ad656',
   sdkVersion: '0.6.0',
-  sdkLicense: 'MIT',
+  sdkLicense: 'UNVERIFIED_METADATA_MIT_ONLY',
   sdkLicenseEvidence: 'PyPI metadata and setup.py classifier; repository root has no LICENSE file in the reviewed snapshot',
   codeVendored: false,
   providerRightsStatus: 'CONTRACT_SCOPE_UNVERIFIED',
@@ -32,7 +32,7 @@ export const FINANCIAL_DATA_NET_CONNECTIONS: readonly {
   label: string;
   kind: FinancialDataNetConnectionKind;
   interface: string;
-  status: 'ADAPTER_READY' | 'CATALOGUED';
+  status: 'EXCLUDED' | 'CATALOGUED';
   notes: string;
 }[] = [
   {
@@ -40,16 +40,16 @@ export const FINANCIAL_DATA_NET_CONNECTIONS: readonly {
     label: 'FinancialData.Net REST API v1',
     kind: 'provider_rest',
     interface: 'HTTPS REST',
-    status: 'ADAPTER_READY',
-    notes: 'Primary provider surface. API-key and provider/dataset rights remain separate activation gates.',
+    status: 'EXCLUDED',
+    notes: 'Proprietärer Datenpfad; unter OPEN_SOURCE_AND_OPEN_DATA_ONLY nicht produktionszulässig.',
   },
   {
     id: 'fdnpy',
     label: 'fdnpy Python SDK',
     kind: 'python_sdk',
     interface: 'Python / requests',
-    status: 'ADAPTER_READY',
-    notes: 'Optional sidecar integration only; no SDK source is vendored into the Node runtime.',
+    status: 'EXCLUDED',
+    notes: 'Originale Open-Source-Lizenz im geprüften Source-Pin nicht belegt; proprietärer Providerpfad.',
   },
   {
     id: 'financialdatanet-universal-query',

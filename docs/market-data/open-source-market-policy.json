@@ -1,0 +1,121 @@
+{
+  "schema": "CAPITAL_AI_OPEN_SOURCE_MARKET_POLICY@1",
+  "ownerDecisionAt": "2026-10-04",
+  "scope": [
+    "CAPITAL-AI-Web",
+    "CAPITAL-AI-Mobile",
+    "MARKET-data-path"
+  ],
+  "mode": "OPEN_SOURCE_AND_OPEN_DATA_ONLY",
+  "softwarePolicy": {
+    "openSourceRequired": true,
+    "licenseEvidenceRequired": true,
+    "allowedLicenseFamilies": [
+      "MIT",
+      "Apache-2.0",
+      "BSD-2-Clause",
+      "BSD-3-Clause",
+      "ISC",
+      "GPL-3.0-only",
+      "GPL-3.0-or-later",
+      "AGPL-3.0-only",
+      "AGPL-3.0-or-later",
+      "LGPL-3.0-only",
+      "LGPL-3.0-or-later",
+      "MPL-2.0"
+    ],
+    "unknownLicense": "BLOCK"
+  },
+  "dataPolicy": {
+    "openDataRequired": true,
+    "allowedLicenses": [
+      "CC0-1.0",
+      "CC-BY-4.0",
+      "CC-BY-SA-4.0",
+      "ODbL-1.0"
+    ],
+    "nonCommercialLicenses": "BLOCK",
+    "proprietaryCommercialContractAloneMayAuthorize": false,
+    "publicApiAloneMayAuthorize": false,
+    "paidSubscriptionAloneMayAuthorize": false,
+    "unknownRights": "BLOCK"
+  },
+  "requiredUseCases": [
+    "commercial_web_display",
+    "commercial_mobile_display",
+    "derived_scoring_rankings_analytics",
+    "normalization",
+    "cache_hot_state",
+    "jetstream_publication",
+    "replay",
+    "retention",
+    "backup_restore",
+    "audit_evidence",
+    "internal_processing"
+  ],
+  "redistributionAndWhiteLabel": "SEPARATE_EXPLICIT_OPEN_DATA_RIGHTS_REQUIRED",
+  "admittedSources": [],
+  "blockedLegacyProviderPaths": [
+    "binance",
+    "kraken",
+    "twelvedata",
+    "polygon",
+    "massive",
+    "financialdatanet",
+    "yfinance",
+    "coingecko"
+  ],
+  "runtimePolicy": "NO_LIVE_PROVIDER_NETWORK_IO_UNTIL_ADMITTED_SOURCE_EXISTS",
+  "credentials": "SERVER_SIDE_ONLY_IF_FUTURE_ADMITTED_SOURCE_REQUIRES_AUTH",
+  "fixtures": "NON_PRODUCTION_ONLY",
+  "optionalUseCasesRequiringSeparateEvidence": [
+    "b2b_api",
+    "redistribution",
+    "customer_exports",
+    "white_label",
+    "public_charts",
+    "social_media",
+    "benchmark_publication"
+  ],
+  "sourceAdmissionContract": {
+    "decision": "OPEN_SOURCE_OPEN_DATA_ADMITTED",
+    "requiredGates": [
+      "SOFTWARE_LICENSE_PASS",
+      "SOFTWARE_PROVENANCE_PASS",
+      "SOFTWARE_PACKAGING_PASS",
+      "OPEN_DATA_LICENSE_PASS",
+      "DATA_PROVENANCE_PASS",
+      "ATTRIBUTION_REVIEW_PASS",
+      "COMMERCIAL_WEB_DISPLAY_PASS",
+      "COMMERCIAL_MOBILE_DISPLAY_PASS",
+      "DERIVED_SCORING_RANKINGS_ANALYTICS_PASS",
+      "NORMALIZATION_PASS",
+      "CACHE_HOT_STATE_PASS",
+      "JETSTREAM_PUBLICATION_PASS",
+      "REPLAY_PASS",
+      "RETENTION_PASS",
+      "BACKUP_RESTORE_PASS",
+      "AUDIT_EVIDENCE_PASS",
+      "INTERNAL_PROCESSING_PASS",
+      "INSTRUMENT_ELIGIBILITY_PASS"
+    ],
+    "independentEvidencePerUseCaseRequired": true,
+    "manualOverrideAllowed": false,
+    "monetizationEntitlementMayOverride": false
+  },
+  "scorerAuthority": {
+    "decidedAt": "2026-10-04",
+    "ownerOption": "B_PUBLIC_REVERSE_PROXY",
+    "publicEndpoint": "https://capital-ai.online/api/crypto/score",
+    "topology": "CAPITAL_AI_PUBLIC_GATEWAY_TO_FINANCE_RENDER_PRIVATE_NETWORK",
+    "upstreamEnvironmentVariable": "CAPITAL_AI_FINANCE_SCORER_PRIVATE_ORIGIN",
+    "upstreamTransport": "HTTP_OVER_RENDER_PRIVATE_NETWORK_PORT_10000",
+    "financePublicOriginUsed": false,
+    "marketSourceAdmissionRequired": true,
+    "entitlementAuthority": "SvenKulessa/Finance verified_screening",
+    "identityTranslation": "PROHIBITED",
+    "authorizationForwarding": "STRICT_BEARER_ONLY",
+    "cookiesForwarded": false,
+    "loopProtection": true
+  }
+}

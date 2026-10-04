@@ -86,8 +86,8 @@ export function runContractValidationSuite(): { passed: boolean; results: string
     results.push('  ✗ AP-002 check failed to reject unverified production pipeline.');
   }
 
-  // Test 4: Verify Valid End-to-End Pipeline
-  results.push('[TEST 4] Verifying fully compliant end-to-end Pipeline with Evidence & Budget Compliance...');
+  // Test 4: A structurally complete market pipeline still blocks without Source Admission.
+  results.push('[TEST 4] Verifying Open-Source/Open-Data Source Admission enforcement...');
   const nodeIngest = createPipelineNode('provider_websocket', { x: 0, y: 0 });
   const nodeEvidence = createPipelineNode('evidence_writer', { x: 250, y: 0 });
   const nodeConsensus = createPipelineNode('provider_consensus', { x: 500, y: 0 });
@@ -137,15 +137,12 @@ export function runContractValidationSuite(): { passed: boolean; results: string
   PipelineDefinitionSchema.parse(validPipeline);
   const validResult = validatePipelineGraph(validPipeline);
 
-  if (validResult.isValid && validResult.budgetCompliant && validResult.evidenceVerified) {
-    results.push(
-      `  ✓ Valid Pipeline passed all checks! DQS: ${validResult.dataQualityScore}%, Latency: ${validResult.estimatedLatencyMs}ms, Monthly Budget: ${validResult.estimatedMonthlyCostEur} € (Compliant <= 40 €)`
-    );
+  if (!validResult.isValid &&
+      validResult.issues.some((issue) => issue.ruleId === 'MARKET-SOURCE-ADMISSION')) {
+    results.push('  ✓ Market pipeline remains fail-closed until a qualifying Open-Data source is admitted.');
   } else {
     allPassed = false;
-    results.push(
-      `  ✗ Valid pipeline unexpectedly failed validation: ${JSON.stringify(validResult.issues)}`
-    );
+    results.push(`  ✗ Source Admission gate did not block the unadmitted provider node: ${JSON.stringify(validResult.issues)}`);
   }
 
   return { passed: allPassed, results };

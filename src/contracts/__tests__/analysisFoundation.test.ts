@@ -48,7 +48,7 @@ test('malformed, duplicate and falsely active entries cannot be admitted', () =>
 });
 test('a verified price produces no synthetic live features', async () => {
   const { observation } = await demo();
-  observation.provenance = { ...observation.provenance, providerId: 'twelvedata', isDemo: false, licenseScope: 'public_realtime' };
+  observation.provenance = { ...observation.provenance, providerId: 'open_data_candidate_unverified', isDemo: false, licenseScope: 'public_realtime' };
   const features = new FeatureStoreService().extractFeatures({ asset, observation });
   assert.equal(features.size, 0);
   const result = await ScoringEngineService.computeFinalScore(asset, features);
@@ -76,7 +76,7 @@ test('demo features cannot be promoted by requesting a live result', async () =>
 test('mixed demo/live provenance is rejected even when demo is requested', async () => {
   const { features } = await demo();
   const f = features.get('rsi_14')!;
-  f.provenance = { ...f.provenance, isDemo: false, providerId: 'twelvedata', licenseScope: 'public_realtime' };
+  f.provenance = { ...f.provenance, isDemo: false, providerId: 'open_data_candidate_unverified', licenseScope: 'public_realtime' };
   const result = await ScoringEngineService.computeFinalScore(asset, features, true);
   assert.equal(result.finalScore, null); assert.ok(result.reasonCodes.includes('DEMO_MODE_MISMATCH')); nonActionable(result);
 });
@@ -112,7 +112,7 @@ test('high-quality alleged live features cannot bypass missing liquidity and reg
   const { features } = await demo();
   for (const f of features.values()) {
     f.qualityScore = 100;
-    f.provenance = { ...f.provenance, isDemo: false, providerId: 'twelvedata', licenseScope: 'public_realtime' };
+    f.provenance = { ...f.provenance, isDemo: false, providerId: 'open_data_candidate_unverified', licenseScope: 'public_realtime' };
   }
   const result = await ScoringEngineService.computeFinalScore(asset, features);
   assert.equal(result.finalScore, null);

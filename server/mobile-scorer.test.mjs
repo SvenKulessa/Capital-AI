@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildBinanceResearchUniverse, buildCoinPaprikaResearchUniverse, canonicalScorerOrigin } from './mobile-scorer.mjs';
+import { canonicalScorerOrigin, loadUniverseForEvidence } from './mobile-scorer.mjs';
 
 test('canonical scorer origin is explicit and cannot point back to the public app origin', () => {
   assert.equal(canonicalScorerOrigin({ PUBLIC_APP_ORIGIN: 'https://capital-ai.online' }), null);
@@ -10,37 +10,30 @@ test('canonical scorer origin is explicit and cannot point back to the public ap
   assert.equal(canonicalScorerOrigin({ PUBLIC_APP_ORIGIN: 'https://capital-ai.online', CAPITAL_AI_SCORER_ORIGIN: 'http://finance.invalid' }), null);
 });
 
-test('research universe deterministically returns the top 400 unique active USDT spot assets by quote volume', () => {
-  const symbols = [];
-  const tickers = [];
-  for (let i = 0; i < 405; i++) {
-    const base = 'C' + String(i).padStart(3, '0');
-    const symbol = base + 'USDT';
-    symbols.push({ symbol, baseAsset: base, quoteAsset: 'USDT', status: 'TRADING', isSpotTradingAllowed: true });
-    tickers.push({ symbol, quoteVolume: String(1000000 - i) });
+test('mobile universe is fail-closed and performs no legacy or generic network access without Source Admission', async () => {
+  const originalFetch = globalThis.fetch;
+  let calls = 0;
+  globalThis.fetch = async () => {
+    calls++;
+    throw new Error('network must not be reached without admitted source');
+  };
+  try {
+    const universe = await loadUniverseForEvidence({
+      MOBILE_CRYPTO_BINANCE_RESEARCH: 'true',
+      MOBILE_CRYPTO_COINPAPRIKA_RESEARCH: 'true',
+      CAPITAL_AI_OSS_CRYPTO_UNIVERSE_URL: 'https://example.invalid',
+      CAPITAL_AI_OSS_CRYPTO_UNIVERSE_SOURCE_ID: 'not-admitted',
+      CAPITAL_AI_SCORER_ORIGIN: 'https://example.invalid',
+    });
+    assert.equal(universe.status, 'BLOCKED');
+    assert.equal(universe.sourcePolicy, 'OPEN_SOURCE_AND_OPEN_DATA_ONLY');
+    assert.equal(universe.admittedSources, 0);
+    assert.equal(universe.count, 0);
+    assert.deepEqual(universe.assets, []);
+    assert.deepEqual(universe.sources, []);
+    assert.equal(universe.rightsScope, 'OPEN_SOURCE_OPEN_DATA_REQUIRED');
+    assert.equal(calls, 0);
+  } finally {
+    globalThis.fetch = originalFetch;
   }
-  symbols.push({ symbol: 'OFFUSDT', baseAsset: 'OFF', quoteAsset: 'USDT', status: 'BREAK', isSpotTradingAllowed: true });
-  symbols.push({ symbol: 'USDTUSDT', baseAsset: 'USDT', quoteAsset: 'USDT', status: 'TRADING', isSpotTradingAllowed: true });
-  const universe = buildBinanceResearchUniverse({ symbols }, tickers);
-  assert.equal(universe.length, 400);
-  assert.equal(universe[0].symbol, 'C000');
-  assert.equal(universe[399].symbol, 'C399');
-  assert.equal(universe[0].universeRank, 1);
-  assert.equal(universe[399].universeRank, 400);
-  assert.equal(new Set(universe.map(x => x.symbol)).size, 400);
-  assert.ok(universe.every(x => x.rankMetric === 'binanceSpotUsdtQuoteVolume24h'));
-  assert.ok(universe.every(x => x.source === 'binance-public-spot-private-research'));
-});
-
-
-test('CoinPaprika private-research universe preserves market-cap rank and de-duplicates symbols', () => {
-  const rows = [];
-  for (let i = 1; i <= 405; i++) rows.push({ rank: i, symbol: 'P' + String(i).padStart(3, '0'), name: 'Paprika ' + i });
-  rows.push({ rank: 2, symbol: 'P002', name: 'Duplicate' });
-  const universe = buildCoinPaprikaResearchUniverse(rows);
-  assert.equal(universe.length, 400);
-  assert.equal(universe[0].universeRank, 1);
-  assert.equal(universe[399].universeRank, 400);
-  assert.ok(universe.every(x => x.rankMetric === 'marketCap'));
-  assert.ok(universe.every(x => x.source === 'coinpaprika-public-private-research'));
 });

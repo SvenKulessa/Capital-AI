@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { scorerBus } from './scorer-bus.mjs';
+import { MARKET_SOURCE_POLICY, isAdmittedMarketSource } from './open-source-market-policy.mjs';
 
 const MAX_BODY_BYTES = 4096;
 const UNIVERSE_LIMIT = 400;
@@ -84,7 +85,8 @@ async function fromCanonicalRegistry(env) {
 }
 
 async function fromOpenSourceUniverseAdapter(env) {
-  if (env.MOBILE_CRYPTO_UNIVERSE_FALLBACK === 'false') return [];
+  const sourceId = String(env.CAPITAL_AI_OSS_CRYPTO_UNIVERSE_SOURCE_ID || '').trim();
+  if (!sourceId || !isAdmittedMarketSource(sourceId)) return [];
   const origin = safeOrigin(env.CAPITAL_AI_OSS_CRYPTO_UNIVERSE_URL, '');
   if (!origin) return [];
   const body = await fetchJson(new URL('/v1/universe/crypto', origin), {
@@ -94,95 +96,73 @@ async function fromOpenSourceUniverseAdapter(env) {
   if (!Array.isArray(rows)) throw new Error('OSS_UNIVERSE_SCHEMA_INVALID');
   return rows
     .map((item, index) => {
-      const asset = normalizeAsset(item, item.marketCapRank ?? null, String(item?.source || 'oss-universe'));
+      const asset = normalizeAsset(item, item.marketCapRank ?? null, sourceId);
       return asset ? { ...asset, universeRank: Number.isInteger(item?.rank) ? item.rank : index + 1, rankMetric: String(item?.rankMetric || 'adapter-rank') } : null;
     })
     .filter(Boolean);
 }
 
-export function buildCoinPaprikaResearchUniverse(rows) {
-  if (!Array.isArray(rows)) throw new Error('COINPAPRIKA_UNIVERSE_SCHEMA_INVALID');
-  const seen = new Set();
-  return rows
-    .filter(row => Number.isInteger(row?.rank) && row.rank > 0)
-    .sort((a, b) => a.rank - b.rank)
-    .map(row => {
-      const asset = normalizeAsset(row, row.rank, 'coinpaprika-public-private-research');
-      return asset ? { ...asset, universeRank: row.rank, rankMetric: 'marketCap' } : null;
-    })
-    .filter(asset => asset && !seen.has(asset.symbol) && seen.add(asset.symbol))
-    .slice(0, UNIVERSE_LIMIT);
-}
-
-async function fromCoinPaprikaResearchUniverse(env) {
-  if (env.MOBILE_CRYPTO_COINPAPRIKA_RESEARCH !== 'true') return [];
-  const rows = await fetchJson(new URL('https://api.coinpaprika.com/v1/tickers?quotes=USD'), {
-    headers: { Accept: 'application/json', 'User-Agent': 'Capital-AI-Private-Research/1.0' },
-  }, 8 * 1024 * 1024);
-  return buildCoinPaprikaResearchUniverse(rows);
-}
-
-export function buildBinanceResearchUniverse(exchangeInfo, tickers) {
-  if (!Array.isArray(exchangeInfo?.symbols) || !Array.isArray(tickers)) throw new Error('BINANCE_UNIVERSE_SCHEMA_INVALID');
-  const volume = new Map(tickers.map(row => [String(row?.symbol || ''), Number(row?.quoteVolume || 0)]));
-  const byBase = new Map();
-  for (const market of exchangeInfo.symbols) {
-    if (market?.status !== 'TRADING' || market?.quoteAsset !== 'USDT' || market?.isSpotTradingAllowed === false) continue;
-    const base = String(market?.baseAsset || '').toUpperCase().trim();
-    if (!/^[A-Z0-9][A-Z0-9._-]{0,31}$/.test(base) || base === 'USDT') continue;
-    const quoteVolume = volume.get(String(market.symbol || '')) || 0;
-    const current = byBase.get(base);
-    if (!current || quoteVolume > current.quoteVolume) byBase.set(base, { symbol: base, name: base, quoteVolume });
-  }
-  return [...byBase.values()]
-    .sort((a, b) => b.quoteVolume - a.quoteVolume || a.symbol.localeCompare(b.symbol))
-    .slice(0, UNIVERSE_LIMIT)
-    .map((row, index) => ({
-      symbol: row.symbol,
-      name: row.name,
-      type: 'crypto',
-      marketCapRank: null,
-      universeRank: index + 1,
-      rankMetric: 'binanceSpotUsdtQuoteVolume24h',
-      source: 'binance-public-spot-private-research',
-    }));
-}
-
-async function fromBinanceResearchUniverse(env) {
-  if (env.MOBILE_CRYPTO_BINANCE_RESEARCH !== 'true') return [];
-  const [exchangeInfo, tickers] = await Promise.all([
-    fetchJson(new URL('https://api.binance.com/api/v3/exchangeInfo'), {}, 6 * 1024 * 1024),
-    fetchJson(new URL('https://api.binance.com/api/v3/ticker/24hr'), {}, 6 * 1024 * 1024),
-  ]);
-  return buildBinanceResearchUniverse(exchangeInfo, tickers);
-}
-
 export async function loadUniverseForEvidence(env = process.env) {
   if (universeCache && Date.now() - universeCache.loadedAt < CACHE_MS) return universeCache;
-  const canonical = await fromCanonicalRegistry(env);
-  const bySymbol = new Map(canonical.map(asset => [asset.symbol, asset]));
 
+  const admittedSourceIds = MARKET_SOURCE_POLICY.admittedSources
+    .filter(source => source.eligible === true && source.decision === 'OPEN_SOURCE_OPEN_DATA_ADMITTED')
+    .map(source => source.providerId);
+
+  if (!admittedSourceIds.length) {
+    universeCache = {
+      contractVersion: 'mobile-crypto-universe/1.0.0',
+      requested: UNIVERSE_LIMIT,
+      count: 0,
+      status: 'BLOCKED',
+      sourcePolicy: MARKET_SOURCE_POLICY.mode,
+      admittedSources: 0,
+      sources: [],
+      rankMetrics: [],
+      rightsScope: 'OPEN_SOURCE_OPEN_DATA_REQUIRED',
+      attribution: null,
+      loadedAt: Date.now(),
+      assets: [],
+    };
+    return universeCache;
+  }
+
+  let external = [];
   try {
-    const external = await fromOpenSourceUniverseAdapter(env);
-    const paprika = external.length ? [] : await fromCoinPaprikaResearchUniverse(env);
-    const rankedAssets = external.length ? external : paprika.length ? paprika : await fromBinanceResearchUniverse(env);
-    for (const ranked of rankedAssets) {
-      const current = bySymbol.get(ranked.symbol);
-      if (current) {
-        bySymbol.set(ranked.symbol, {
-          ...current,
-          marketCapRank: ranked.marketCapRank ?? current.marketCapRank,
-          universeRank: ranked.universeRank ?? ranked.marketCapRank ?? current.universeRank ?? current.marketCapRank,
-          rankMetric: ranked.rankMetric || current.rankMetric || 'adapter-rank',
-          source: current.source + '+' + ranked.source,
-        });
-      } else {
-        bySymbol.set(ranked.symbol, ranked);
-      }
-    }
-  } catch {}
+    external = await fromOpenSourceUniverseAdapter(env);
+  } catch {
+    external = [];
+  }
 
-  const assets = [...bySymbol.values()]
+  if (!external.length) {
+    universeCache = {
+      contractVersion: 'mobile-crypto-universe/1.0.0',
+      requested: UNIVERSE_LIMIT,
+      count: 0,
+      status: 'BLOCKED',
+      sourcePolicy: MARKET_SOURCE_POLICY.mode,
+      admittedSources: admittedSourceIds.length,
+      sources: [],
+      rankMetrics: [],
+      rightsScope: 'ADMITTED_SOURCE_NOT_CONFIGURED',
+      attribution: null,
+      loadedAt: Date.now(),
+      assets: [],
+    };
+    return universeCache;
+  }
+
+  const canonical = await fromCanonicalRegistry(env);
+  const canonicalBySymbol = new Map(canonical.map(asset => [asset.symbol, asset]));
+  const assets = external
+    .map(ranked => {
+      const reference = canonicalBySymbol.get(ranked.symbol);
+      return reference ? {
+        ...ranked,
+        name: reference.name || ranked.name,
+        marketCapRank: ranked.marketCapRank ?? reference.marketCapRank,
+      } : ranked;
+    })
     .sort((a, b) => {
       const ar = a.universeRank ?? a.marketCapRank;
       const br = b.universeRank ?? b.marketCapRank;
@@ -198,16 +178,12 @@ export async function loadUniverseForEvidence(env = process.env) {
     requested: UNIVERSE_LIMIT,
     count: assets.length,
     status: assets.length === UNIVERSE_LIMIT ? 'READY' : 'DEGRADED',
+    sourcePolicy: MARKET_SOURCE_POLICY.mode,
+    admittedSources: admittedSourceIds.length,
     sources: [...new Set(assets.map(asset => asset.source))],
     rankMetrics: [...new Set(assets.map(asset => asset.rankMetric).filter(Boolean))],
-    rightsScope: 'PRIVATE_RESEARCH_ONLY',
-    attribution: assets.some(asset => asset.source.includes('coinpaprika'))
-      ? 'Powered by CoinPaprika · private research use only; commercial use/redistribution requires the applicable CoinPaprika plan and rights.'
-      : assets.some(asset => asset.source.includes('binance'))
-        ? 'Private research universe ranked by Binance public spot USDT 24h quote volume; exchange data terms remain separately applicable.'
-        : assets.some(asset => asset.source.includes('oss'))
-          ? 'Open-source universe adapter used as fallback; upstream exchange/data terms remain separately applicable.'
-          : null,
+    rightsScope: 'OPEN_SOURCE_OPEN_DATA_ADMITTED',
+    attribution: null,
     loadedAt: Date.now(),
     assets,
   };

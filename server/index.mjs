@@ -9,6 +9,7 @@ import { createPrivacy } from './privacy.mjs';
 import { createLimiter } from './http-security.mjs';
 import { infrastructure } from './infrastructure.mjs';
 import { createMobileScorer } from './mobile-scorer.mjs';
+import { createScorerProxy } from './scorer-proxy.mjs';
 import { serveMtaSts } from './mta-sts.mjs';
 import { researchMetadata } from '../shared/research-metadata.mjs';
 import { BILLING_CATALOG } from './billing-catalog.mjs';
@@ -34,7 +35,9 @@ export function createApp(root = defaultRoot, options = {}) {
   const telegram = createTelegram({ ...options, auth });
   const privacy = createPrivacy({ ...options, auth });
   const marketLimit = createLimiter(120);
-  const mobileScorer = createMobileScorer(options.env || process.env);
+  const runtimeEnv = options.env || process.env;
+  const mobileScorer = createMobileScorer(runtimeEnv);
+  const scorerProxy = createScorerProxy({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, sourcePolicy: options.sourcePolicy });
   const server = http.createServer({ maxHeaderSize: 8192, requestTimeout: 10000, headersTimeout: 10000, keepAliveTimeout: 5000 }, async (req, res) => {
   let url;
   const requestContext = beginRequest(req);
@@ -49,6 +52,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await privacy(req, res, url, json)) return;
   if (await telegram(req, res, url, json)) return;
   if ((url.pathname === '/api/mobile/enterprise-score' || url.pathname === '/api/mobile/scorer/events') && !auth.session(req)) return json(res, 401, { error: 'authentication_required' });
+  if (await scorerProxy.handle(req, res, url, json, requestContext.requestId)) return;
   if (await mobileScorer.handle(req, res, url, json, headers)) return;
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return json(res, 405, { error: 'method_not_allowed' }); }
   if (url.pathname === '/healthz') return json(res, 200, { ...health(), buildIdentity });

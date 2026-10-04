@@ -28,22 +28,15 @@ export function runProviderRegistryValidationSuite(): { passed: boolean; results
     }
   }
 
-  // Test 2: Taxonomy Routing based on Asset Classes (AP-003)
-  results.push('[TEST 2] Verifying Taxonomy Routing for asset classes (AP-003)...');
+  // Test 2: Open-Source/Open-Data admission blocks legacy routing (AP-003)
+  results.push('[TEST 2] Verifying fail-closed Open-Source/Open-Data routing...');
   const cryptoProviders = ProviderRegistryService.getHealthyProvidersForAsset('crypto');
-  if (cryptoProviders.length >= 2 && cryptoProviders.some((p) => p.slug === 'binance')) {
-    results.push(`  ✓ Crypto routing resolved ${cryptoProviders.length} healthy providers (Binance, Kraken, Alchemy).`);
-  } else {
-    allPassed = false;
-    results.push('  ✗ Crypto routing failed to return expected providers.');
-  }
-
   const macroProviders = ProviderRegistryService.getHealthyProvidersForAsset('fixed_income');
-  if (macroProviders.length >= 1 && macroProviders.some((p) => p.slug === 'fred')) {
-    results.push(`  ✓ Fixed income / Macro routing resolved FRED St. Louis Fed provider.`);
+  if (cryptoProviders.length === 0 && macroProviders.length === 0) {
+    results.push('  ✓ Legacy provider metadata is not production-routable without OPEN_SOURCE_OPEN_DATA_ADMITTED.');
   } else {
     allPassed = false;
-    results.push('  ✗ Fixed income / Macro routing failed to return FRED.');
+    results.push('  ✗ Non-admitted provider became production-routable.');
   }
 
   // Test 3: Budget Constraint & Monthly Operating Cap <= 40 EUR (AP-006)
@@ -63,11 +56,13 @@ export function runProviderRegistryValidationSuite(): { passed: boolean; results
   // Test 4: Comprehensive Audit Report Generation
   results.push('[TEST 4] Verifying Provider Audit & Alerting generation...');
   const auditReport = ProviderRegistryService.auditProviderHealthAndBudget();
-  if (auditReport.totalProvidersCount >= 5 && auditReport.healthyCount >= 5) {
-    results.push(`  ✓ Audit report successfully generated with avg latency ${auditReport.averageLatencyMs}ms.`);
+  if (auditReport.totalProvidersCount >= 5 && auditReport.admittedProvidersCount === 0 &&
+      auditReport.blockedProvidersCount === auditReport.totalProvidersCount &&
+      auditReport.healthyCount === 0 && auditReport.averageLatencyMs === null) {
+    results.push('  ✓ Audit report exposes no synthetic health/latency evidence for blocked providers.');
   } else {
     allPassed = false;
-    results.push('  ✗ Audit report failed sanity checks.');
+    results.push('  ✗ Audit report exposed blocked provider telemetry as productive evidence.');
   }
 
   return { passed: allPassed, results };
