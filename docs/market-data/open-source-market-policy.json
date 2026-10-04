@@ -102,5 +102,20 @@
     "independentEvidencePerUseCaseRequired": true,
     "manualOverrideAllowed": false,
     "monetizationEntitlementMayOverride": false
+  },
+  "scorerAuthority": {
+    "decidedAt": "2026-10-04",
+    "ownerOption": "B_PUBLIC_REVERSE_PROXY",
+    "publicEndpoint": "https://capital-ai.online/api/crypto/score",
+    "topology": "CAPITAL_AI_PUBLIC_GATEWAY_TO_FINANCE_RENDER_PRIVATE_NETWORK",
+    "upstreamEnvironmentVariable": "CAPITAL_AI_FINANCE_SCORER_PRIVATE_ORIGIN",
+    "upstreamTransport": "HTTP_OVER_RENDER_PRIVATE_NETWORK_PORT_10000",
+    "financePublicOriginUsed": false,
+    "marketSourceAdmissionRequired": true,
+    "entitlementAuthority": "SvenKulessa/Finance verified_screening",
+    "identityTranslation": "PROHIBITED",
+    "authorizationForwarding": "STRICT_BEARER_ONLY",
+    "cookiesForwarded": false,
+    "loopProtection": true
   }
 }
