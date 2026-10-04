@@ -778,9 +778,9 @@ export const AdvisorChatbot: React.FC<AdvisorChatbotProps> = ({
               {
                 step: 3,
                 title: 'Ebene 3: Data Ingestion Gateways',
-                desc: 'CCXT, Hummingbot/Gateway, OpenBB und das DefiLlama SDK bilden die freigegebene Open-Source-Adapterebene. Konkrete Upstream-Datenquellen bleiben bis zum separaten Rechte-Nachweis fail-closed.',
+                desc: 'CCXT, Hummingbot/Gateway, OpenBB und DefiLlama bilden die Open-Source-Adapterebene. Externe Datenprovider wie Binance, Kraken, TwelveData, FRED und Alchemy bleiben auswählbar und können in Blueprints kombiniert werden; Production bleibt an separate Datenrechte-Evidence gebunden.',
                 advisorTip: 'Tipp: Open Source beschreibt die Softwarelizenz des Adapters — nicht automatisch die kommerziellen Nutzungs-, Display-, Retention- oder Redistribution-Rechte der Daten.',
-                actionPrompt: 'Welche OSS-Adapter passen zu meinem Datenrechte-Profil?',
+                actionPrompt: 'Welche OSS-Adapter und Datenprovider passen zu meiner Pipeline?',
               },
               {
                 step: 4,
