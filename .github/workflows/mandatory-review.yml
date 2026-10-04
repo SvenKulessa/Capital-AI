@@ -82,7 +82,7 @@ jobs:
             printf '[]\n' > mandatory-review/rulesets.json
           fi
 
-      - name: Render-, Runtime-, NATS- und OIDC-Evidence lesen
+      - name: Render-, Runtime-, NATS- und Supabase-Auth-Evidence lesen
         if: steps.cadence.outputs.due == 'true'
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY_TEST }}
@@ -108,10 +108,10 @@ jobs:
             printf '{"status":"unavailable","infrastructure":{"status":"unavailable","redis":"unavailable","nats":"unavailable","pubsub":"unavailable"}}\n' > mandatory-review/health.json
           fi
           set +e
-          node scripts/diagnose-oidc.mjs "$RUNNER_TEMP/capital-ai-env.json" > mandatory-review/oidc.json
-          oidc_status=$?
+          node scripts/diagnose-supabase-auth.mjs "$RUNNER_TEMP/capital-ai-env.json" > mandatory-review/auth.json
+          auth_status=$?
           set -e
-          echo "OIDC Diagnose Exit: $oidc_status (Konfiguration allein darf den Login-Gate nicht grün setzen)." >> "$GITHUB_STEP_SUMMARY"
+          echo "Supabase Auth Diagnose Exit: $auth_status (Konfiguration allein darf den Login-Gate nicht grün setzen)." >> "$GITHUB_STEP_SUMMARY"
 
       - name: GO-2026-5932 gegen NATS 2.15.0 korrelieren
         if: steps.cadence.outputs.due == 'true'
@@ -152,7 +152,7 @@ jobs:
             mandatory-review/render-nats.json
             mandatory-review/render-nats-deploys.json
             mandatory-review/health.json
-            mandatory-review/oidc.json
+            mandatory-review/auth.json
             mandatory-review/nats-openpgp-search.json
             mandatory-review/nats-go.mod
           if-no-files-found: warn
