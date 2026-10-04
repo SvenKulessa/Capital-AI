@@ -1,32 +1,52 @@
-import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+import { createHmac, createSecretKey, randomBytes, timingSafeEqual } from 'node:crypto';
 import { getMarketplaceSubscription, githubJson } from './github.mjs';
+
+const MIN_SIGNING_KEY_BYTES = 32;
 
 function base64urlJson(value) {
   return Buffer.from(JSON.stringify(value)).toString('base64url');
 }
 
-function sign(value, secret) {
-  return createHmac('sha256', secret).update(value).digest('base64url');
+function requireSigningKey(value) {
+  if (typeof value !== 'string') throw new Error('OAuth state signing key is required');
+  const bytes = Buffer.from(value, 'utf8');
+  if (bytes.byteLength < MIN_SIGNING_KEY_BYTES) {
+    throw new Error(`OAuth state signing key must contain at least ${MIN_SIGNING_KEY_BYTES} bytes`);
+  }
+  return createSecretKey(bytes);
+}
+
+function sign(value, signingKey) {
+  return createHmac('sha256', signingKey).update(value).digest('base64url');
 }
 
 export function createOAuthState({ installationId, marketplacePlanId = null, secret, now = Date.now() }) {
-  if (!secret) throw new Error('OAuth state secret is required');
+  const signingKey = requireSigningKey(secret);
   const payload = base64urlJson({
     nonce: randomBytes(18).toString('base64url'),
     installationId: Number(installationId),
     marketplacePlanId: marketplacePlanId == null ? null : Number(marketplacePlanId),
     exp: Math.floor(now / 1000) + 10 * 60,
   });
-  return `${payload}.${sign(payload, secret)}`;
+  return `${payload}.${sign(payload, signingKey)}`;
 }
 
 export function verifyOAuthState(state, secret, now = Date.now()) {
-  if (!state || !secret) return null;
+  if (!state) return null;
+
+  let signingKey;
+  try {
+    signingKey = requireSigningKey(secret);
+  } catch {
+    return null;
+  }
+
   const [payload, signature, extra] = String(state).split('.');
   if (!payload || !signature || extra) return null;
-  const expected = Buffer.from(sign(payload, secret));
+  const expected = Buffer.from(sign(payload, signingKey));
   const supplied = Buffer.from(signature);
   if (expected.length !== supplied.length || !timingSafeEqual(expected, supplied)) return null;
+
   let decoded;
   try {
     decoded = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
