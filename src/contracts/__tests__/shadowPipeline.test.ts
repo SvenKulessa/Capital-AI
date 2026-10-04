@@ -202,3 +202,84 @@ test('plausibility confidence threshold matches final rank contract', () => {
     finalScore: 50, subScores: {}, topPositiveDrivers: [], topNegativeDrivers: [], evidenceId: 'EVD-test', isDemo: false };
   assert.ok(DataPlausibilityValidator.validateFinalRankResult(r as any).some(v => v.ruleId === 'PLAU-003-LOW-CONFIDENCE-RANK-PUBLISHED'));
 });
+
+test('plausibility rejects stale live labels, invalid currency and invalid bounds', () => {
+  const { snapshot } = fixture();
+  const feature = snapshot.features[0];
+  const violations = DataPlausibilityValidator.validateMarketDisplayDatum({
+    entityId: 'test-market-datum',
+    value: 101,
+    unit: 'index',
+    currency: 'usd',
+    observedAt: snapshot.evaluatedAt - 60_000,
+    evaluatedAt: snapshot.evaluatedAt,
+    maxStalenessMs: 30_000,
+    displayStatus: 'LIVE',
+    provenance: feature.provenance,
+    min: 0,
+    max: 100,
+  });
+  for (const ruleId of ['PLAU-013-INVALID-CURRENCY', 'PLAU-015-STALE-OR-NONLIVE-DISPLAYED-LIVE', 'PLAU-017-VALUE-OUT-OF-BOUNDS']) {
+    assert.ok(violations.some(v => v.ruleId === ruleId));
+  }
+});
+
+test('plausibility rejects inconsistent category totals', () => {
+  const violations = DataPlausibilityValidator.validateAggregateCounts({
+    entityId: 'test-counts',
+    totalCount: 10,
+    categoryCounts: { a: 4, b: 5 },
+  });
+  assert.equal(violations[0]?.ruleId, 'PLAU-018-COUNT-INCONSISTENCY');
+});
+
+test('plausibility requires evidence for institutional, on-chain, dark-pool and latency claims', () => {
+  const cases = [
+    ['institutional_counterparty', 'PLAU-020-INSTITUTIONAL-COUNTERPARTY-UNVERIFIED'],
+    ['onchain_flow', 'PLAU-021-ONCHAIN-INFERENCE-EVIDENCE-INCOMPLETE'],
+    ['dark_pool', 'PLAU-022-DARK-POOL-EVIDENCE-INCOMPLETE'],
+    ['latency', 'PLAU-023-LATENCY-CLAIM-UNMEASURED'],
+  ] as const;
+  for (const [claimType, ruleId] of cases) {
+    const violations = DataPlausibilityValidator.validateIntelligenceClaim({
+      entityId: `test-${claimType}`,
+      text: 'neutral test claim',
+      claimType,
+    }, 1_790_000_000_000);
+    assert.ok(violations.some(v => v.ruleId === ruleId));
+  }
+});
+
+test('plausibility accepts complete provenance-sensitive claim evidence', () => {
+  const now = 1_790_000_000_000;
+  assert.deepEqual(DataPlausibilityValidator.validateIntelligenceClaim({
+    entityId: 'onchain-ok',
+    text: 'Observed transfer correlates with the monitored flow.',
+    claimType: 'onchain_flow',
+    providerId: 'test-provider-a',
+    sourceReference: 'TEST-FIXTURE-NON-PRODUCTION',
+    observedAt: now - 1000,
+    chain: 'test-chain',
+    transactionReference: 'test-tx',
+    walletLabelConfidence: .95,
+  }, now), []);
+  assert.deepEqual(DataPlausibilityValidator.validateIntelligenceClaim({
+    entityId: 'dark-pool-ok',
+    text: 'Delayed venue activity metric.',
+    claimType: 'dark_pool',
+    providerId: 'test-provider-a',
+    sourceReference: 'TEST-FIXTURE-NON-PRODUCTION',
+    marketScope: 'TEST',
+    delayMs: 900000,
+    methodologyReference: 'TEST-METHOD',
+  }, now), []);
+  assert.deepEqual(DataPlausibilityValidator.validateIntelligenceClaim({
+    entityId: 'latency-ok',
+    text: 'Measured latency was 12 ms.',
+    claimType: 'latency',
+    sourceReference: 'TEST-TELEMETRY',
+    telemetryMeasured: true,
+    measuredLatencyMs: 12,
+  }, now), []);
+});
+
