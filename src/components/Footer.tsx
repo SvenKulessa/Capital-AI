@@ -61,6 +61,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         <a id="footer-nav-lizenz" href="/lizenz" onClick={e => handleNavClick(e, '/lizenz', 'lizenz')} className="text-amber-300 hover:underline">Design & Bildherkunft</a>
         <a id="footer-nav-datenprovider-lizenzen" href="/datenprovider-lizenzen" onClick={e => handleNavClick(e, '/datenprovider-lizenzen', 'datenprovider-lizenzen')} className="text-cyan-300 hover:underline">Datenprovider-Lizenzen</a>
         <a id="footer-nav-opensource-lizenzen" href="/opensource-lizenzen" onClick={e => handleNavClick(e, '/opensource-lizenzen', 'opensource-lizenzen')} className="text-blue-300 hover:underline">Open-Source (OSS)</a>
+        <a id="footer-nav-oss-market-architecture" href="/downloads/market-screener-hub-open-source.html" className="text-emerald-300 hover:underline">OSS Market Architektur</a>
         <a id="footer-nav-forschung" href="/forschung" onClick={e => handleNavClick(e, '/forschung', 'forschung')} className="text-cyan-300 hover:underline">Forschungsprojekt</a>
       </nav>
       <div className="mt-3 text-[11px] text-slate-400 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
