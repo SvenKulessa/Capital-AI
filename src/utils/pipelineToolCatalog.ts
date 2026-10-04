@@ -5,8 +5,8 @@
  * across all 5 architecture layers (Modular Pipeline Builder):
  * 1. Screener & Analysis Focus (e.g. Buffett Value Check, BaFin Scorer, Whale Radar)
  * 2. Timing & Latency Requirements (e.g. EOD, 15m Delayed, 1m Intraday, Sub-20ms Tick)
- * 3. Data Ingestion Gateways (e.g. TwelveData, FRED, Binance, Kraken, Alchemy, CCXT)
- * 4. Caching & Memory Architecture (e.g. Redis Ring Buffer, FlatBuffers Delta, Arrow Flight)
+ * 3. Open-Source Ingestion Adapters (CCXT, Hummingbot, OpenBB, DefiLlama SDK)
+ * 4. Caching & Memory Architecture (e.g. Valkey 8, FlatBuffers Delta, Arrow Flight)
  * 5. BaFin / MiCA Compliance & Audit Evidence (e.g. WORM Storage, Merkle Tree, Outlier Consensus)
  */
 
@@ -23,7 +23,7 @@ export interface CatalogToolEntry {
   latencyMs: number;
   specs: string;
   bafinStandard: string;
-  licenseType: 'Commercial Enterprise' | 'Sovereign Free' | 'Open Source MIT' | 'Public Market Data';
+  licenseType: 'Repository Open Source' | 'Open Source MIT' | 'Open Source Apache-2.0' | 'Open Source BSD-3-Clause' | 'N/A (configuration)';
   revenueAssuranceGrade: 'A+' | 'A' | 'B' | 'Safe' | 'Attention';
   keyFormulas?: string[];
 }
@@ -132,7 +132,7 @@ export const MASTER_TOOL_CATALOG: Record<string, CatalogToolEntry> = {
     latencyMs: 18,
     specs: 'Sharpe Ratio, Sortino Ratio, Value at Risk (VaR 99%), Max Drawdown, Stresstest',
     bafinStandard: 'BaFin MaRisk & WpHG § 83',
-    licenseType: 'Commercial Enterprise',
+    licenseType: 'Repository Open Source',
     revenueAssuranceGrade: 'A+',
     keyFormulas: ['Sharpe = (Rp - Rf) / Sigma', 'VaR_99 = Mu - 2.33 * Sigma'],
   },
@@ -166,7 +166,7 @@ export const MASTER_TOOL_CATALOG: Record<string, CatalogToolEntry> = {
     latencyMs: 35,
     specs: 'DEX Wal-Swaps (>500.000 $), CEX Netflow, ATS Dark Pool Block-Trades',
     bafinStandard: 'MiCA On-Chain Audit',
-    licenseType: 'Commercial Enterprise',
+    licenseType: 'Repository Open Source',
     revenueAssuranceGrade: 'A',
     keyFormulas: ['Netflow = Inflow - Outflow', 'DarkPoolRatio = BlockVol / TotalVol'],
   },
@@ -183,7 +183,7 @@ export const MASTER_TOOL_CATALOG: Record<string, CatalogToolEntry> = {
     latencyMs: 120,
     specs: 'US 10Y-2Y Inversion, M2 Geldmengen-Wachstum, CPI Kerninflation, Credit Spreads',
     bafinStandard: 'Sovereign Data Authority',
-    licenseType: 'Sovereign Free',
+    licenseType: 'N/A (configuration)',
     revenueAssuranceGrade: 'A+',
     keyFormulas: ['YieldSpread = 10Y_Yield - 2Y_Yield'],
   },
@@ -200,7 +200,7 @@ export const MASTER_TOOL_CATALOG: Record<string, CatalogToolEntry> = {
     latencyMs: 18,
     specs: 'L2 Top-of-Book Differenzen, Monotone Sequenzen, VWAP Slippage Kompensation',
     bafinStandard: 'MiFID II Art. 48 Algorithmus-Compliance',
-    licenseType: 'Commercial Enterprise',
+    licenseType: 'Repository Open Source',
     revenueAssuranceGrade: 'A+',
     keyFormulas: ['ArbSpread = BestBid_B - BestAsk_A - 2*Fee'],
   },
@@ -219,7 +219,7 @@ export const MASTER_TOOL_CATALOG: Record<string, CatalogToolEntry> = {
     latencyMs: 200,
     specs: 'Schlusskurse, fundamentale Bilanzdaten, kein Dauer-WebSocket Overhead',
     bafinStandard: 'Vollständig BaFin-auditierbar',
-    licenseType: 'Public Market Data',
+    licenseType: 'N/A (configuration)',
     revenueAssuranceGrade: 'A+',
   },
   'delayed-15m': {
@@ -235,7 +235,7 @@ export const MASTER_TOOL_CATALOG: Record<string, CatalogToolEntry> = {
     latencyMs: 900,
     specs: 'Offizieller Prüfstandard für Vermögensverwalter; 0 € Börsenlizenzgebühr',
     bafinStandard: 'Offizieller BaFin WpHG § 83 Standard',
-    licenseType: 'Public Market Data',
+    licenseType: 'N/A (configuration)',
     revenueAssuranceGrade: 'A+',
   },
   'intraday-1m': {
@@ -251,7 +251,7 @@ export const MASTER_TOOL_CATALOG: Record<string, CatalogToolEntry> = {
     latencyMs: 60,
     specs: 'Kompakte OHLCV Kerzen, ca. 150 MB / Tag, moderater Cache-Bedarf',
     bafinStandard: 'MiFID II Best Execution',
-    licenseType: 'Public Market Data',
+    licenseType: 'N/A (configuration)',
     revenueAssuranceGrade: 'Safe',
   },
   'hft-tick': {
@@ -267,123 +267,91 @@ export const MASTER_TOOL_CATALOG: Record<string, CatalogToolEntry> = {
     latencyMs: 18,
     specs: 'Ungefilterter L2 Orderbuch-Stream mit monotonen Sequenznummern',
     bafinStandard: 'Erfordert monotone Sequenzierung',
-    licenseType: 'Public Market Data',
+    licenseType: 'N/A (configuration)',
     revenueAssuranceGrade: 'A',
   },
 
-  // --- LAYER 3: DATA INGESTION GATEWAYS ---
-  'twelvedata': {
-    sku: 'CAP-L3-TWELVE',
-    layerNumber: 3,
-    layerName: 'Ebene 3: Daten-Gateways',
-    id: 'twelvedata',
-    name: 'TwelveData Financial Feeds',
-    subtitle: 'Aktien, Forex, Rohstoffe & Bilanzen',
-    category: 'Equities & Fundamental Data',
-    monthlyCostEur: 8.5,
-    latencyContribution: '40 - 80ms RTT',
-    latencyMs: 65,
-    specs: 'REST + WSS, US & EU Top 150 Aktien, DAX, G10 Forex, ETFs, 1825 Tage Bilanzhistorie',
-    bafinStandard: 'Regulatorisch zugelassene Referenzkurse (US/EU)',
-    licenseType: 'Commercial Enterprise',
-    revenueAssuranceGrade: 'A+',
-  },
-  'fred': {
-    sku: 'CAP-L3-FRED',
-    layerNumber: 3,
-    layerName: 'Ebene 3: Daten-Gateways',
-    id: 'fred',
-    name: 'Federal Reserve Bank of St. Louis (FRED)',
-    subtitle: 'Makro, Zinsstruktur & Disziplin',
-    category: 'Sovereign Macro Data',
-    monthlyCostEur: 0.0,
-    latencyContribution: '120 - 150ms RTT',
-    latencyMs: 135,
-    specs: 'REST JSON, US 10Y-2Y Zinskurve, M2 Geldmenge, Fed Funds Rate, risikofreie Diskontierung',
-    bafinStandard: '100% Free Sovereign Authority Data',
-    licenseType: 'Sovereign Free',
-    revenueAssuranceGrade: 'A+',
-  },
-  'binance': {
-    sku: 'CAP-L3-BINANCE',
-    layerNumber: 3,
-    layerName: 'Ebene 3: Daten-Gateways',
-    id: 'binance',
-    name: 'Binance Market Data Engine',
-    subtitle: 'Krypto Realtime L2 Orderbuch',
-    category: 'Crypto Liquidity',
-    monthlyCostEur: 0.0,
-    latencyContribution: '15 - 25ms RTT',
-    latencyMs: 20,
-    specs: 'WebSocket (WSS) + REST, BTC/ETH & Top 100 Altcoins, L2 Depth Ticker',
-    bafinStandard: 'Öffentlicher Public Data Feed',
-    licenseType: 'Public Market Data',
-    revenueAssuranceGrade: 'A',
-  },
-  'kraken': {
-    sku: 'CAP-L3-KRAKEN',
-    layerNumber: 3,
-    layerName: 'Ebene 3: Daten-Gateways',
-    id: 'kraken',
-    name: 'Kraken Financial Ingestion',
-    subtitle: 'Krypto & EUR Referenz',
-    category: 'Regulated Crypto/EUR',
-    monthlyCostEur: 0.0,
-    latencyContribution: '20 - 30ms RTT',
-    latencyMs: 25,
-    specs: 'WebSocket (WSS), Krypto/EUR Orderbücher, monotone Sequenzierung, BaFin-Partner',
-    bafinStandard: 'BaFin-konforme EU-Referenz',
-    licenseType: 'Public Market Data',
-    revenueAssuranceGrade: 'A+',
-  },
-  'alchemy': {
-    sku: 'CAP-L3-ALCHEMY',
-    layerNumber: 3,
-    layerName: 'Ebene 3: Daten-Gateways',
-    id: 'alchemy',
-    name: 'Alchemy Supernode Web3 RPC',
-    subtitle: 'On-Chain DEX Swaps & Mempool',
-    category: 'Blockchain RPC',
-    monthlyCostEur: 0.0,
-    latencyContribution: '45 - 65ms RTT',
-    latencyMs: 55,
-    specs: 'RPC + WebSocket, Ethereum & Solana DEX Swaps (Uniswap/Raydium)',
-    bafinStandard: 'Dezentral auditierbare Blockchain Logs (MiCA)',
-    licenseType: 'Public Market Data',
-    revenueAssuranceGrade: 'Safe',
-  },
+  // --- LAYER 3: OPEN-SOURCE DATA INGESTION ADAPTERS ---
   'ccxt': {
     sku: 'CAP-L3-CCXT',
     layerNumber: 3,
-    layerName: 'Ebene 3: Daten-Gateways',
+    layerName: 'Ebene 3: OSS-Daten-Gateways',
     id: 'ccxt',
-    name: 'CCXT Pro Multiplexer',
-    subtitle: 'Multi-Börsen Normalisierung',
-    category: 'Cross-Exchange Bridge',
+    name: 'CCXT Open-Source Adapter',
+    subtitle: 'Provider-neutrale Venue-Normalisierung',
+    category: 'Market Ingress Adapter',
     monthlyCostEur: 0.0,
-    latencyContribution: '30 - 50ms RTT',
+    latencyContribution: 'Venue- und Deployment-abhängig',
     latencyMs: 40,
-    specs: 'Self-Hosted Multiplexer, 120+ Krypto-Börsen vereinheitlicht, Failover-Support',
-    bafinStandard: 'Open-Source (MIT Lizenz)',
+    specs: 'Self-hosted REST/WebSocket-Abstraktion; Upstream-Datenrechte sind nicht Bestandteil der MIT-Softwarelizenz',
+    bafinStandard: 'OSS-Software zugelassen; Provider-/Dataset-Rechte separat fail-closed',
+    licenseType: 'Open Source MIT',
+    revenueAssuranceGrade: 'Safe',
+  },
+  'hummingbot': {
+    sku: 'CAP-L3-HBOT',
+    layerNumber: 3,
+    layerName: 'Ebene 3: OSS-Daten-Gateways',
+    id: 'hummingbot',
+    name: 'Hummingbot / Gateway',
+    subtitle: 'Self-hosted CEX/DEX Connector Layer',
+    category: 'Connector Gateway',
+    monthlyCostEur: 0.0,
+    latencyContribution: 'Venue- und Deployment-abhängig',
+    latencyMs: 45,
+    specs: 'REST/WebSocket/DEX-Gateway; Upstream-Nutzungsrechte bleiben eigener Release-Gate',
+    bafinStandard: 'OSS-Software; Datenrechte und Redistribution separat prüfen',
+    licenseType: 'Open Source Apache-2.0',
+    revenueAssuranceGrade: 'Safe',
+  },
+  'openbb': {
+    sku: 'CAP-L3-OPENBB',
+    layerNumber: 3,
+    layerName: 'Ebene 3: OSS-Daten-Gateways',
+    id: 'openbb',
+    name: 'OpenBB Provider Router',
+    subtitle: 'Multi-Asset Research Abstraction',
+    category: 'Provider Router',
+    monthlyCostEur: 0.0,
+    latencyContribution: 'Upstream-abhängig',
+    latencyMs: 80,
+    specs: 'Provider-neutrales Routing; nur separat freigegebene Upstreams dürfen produktiv aktiviert werden',
+    bafinStandard: 'Apache-2.0 Software; Dataset-/Display-Rechte separat',
+    licenseType: 'Open Source Apache-2.0',
+    revenueAssuranceGrade: 'Safe',
+  },
+  'defillama-sdk': {
+    sku: 'CAP-L3-DEFILLAMA',
+    layerNumber: 3,
+    layerName: 'Ebene 3: OSS-Daten-Gateways',
+    id: 'defillama-sdk',
+    name: 'DefiLlama API SDK',
+    subtitle: 'DeFi Fundamentals & Metadata',
+    category: 'DeFi Metadata Adapter',
+    monthlyCostEur: 0.0,
+    latencyContribution: 'Endpoint-abhängig',
+    latencyMs: 90,
+    specs: 'MIT SDK für TVL/Yield/DeFi-Metadaten; kein Tick-by-Tick Venue-Feed',
+    bafinStandard: 'OSS-Software; Daten-/Nutzungsrechte separat verifizieren',
     licenseType: 'Open Source MIT',
     revenueAssuranceGrade: 'Safe',
   },
 
   // --- LAYER 4: CACHING & MEMORY ARCHITECTURE ---
-  'redis-ring': {
-    sku: 'CAP-L4-REDIS',
+  'valkey-hotstate': {
+    sku: 'CAP-L4-VALKEY',
     layerNumber: 4,
     layerName: 'Ebene 4: Caching & RAM',
-    id: 'redis-ring',
-    name: 'In-Memory Redis Ring Buffer',
-    subtitle: '1.000 Ticks / Symbol im RAM',
+    id: 'valkey-hotstate',
+    name: 'Valkey 8 Hot-State Cache',
+    subtitle: 'Aktuelle Projektionen, TTL & Pub/Sub',
     category: 'In-Memory Cache',
     monthlyCostEur: 0.0,
-    latencyContribution: 'Sub-5ms Query Latenz',
+    latencyContribution: 'Runtime-abhängige In-Memory-Latenz',
     latencyMs: 4,
-    specs: 'Ringpuffer mit 1.000 Ticks / Symbol, ca. 64 MB RAM, entkoppelt Clients verlustfrei',
-    bafinStandard: 'Verlustfreie Entkopplung von Clients nach MaRisk',
-    licenseType: 'Open Source MIT',
+    specs: 'Valkey 8 Hot-State-Projektion für aktuelle Quotes und Scores; NATS JetStream bleibt Replay-/Event-Authority',
+    bafinStandard: 'BSD-3-Clause; Cache ist keine Evidence- oder Replay-Authority',
+    licenseType: 'Open Source BSD-3-Clause',
     revenueAssuranceGrade: 'A+',
   },
   'flatbuffers-delta': {
@@ -449,7 +417,7 @@ export const MASTER_TOOL_CATALOG: Record<string, CatalogToolEntry> = {
     latencyMs: 1,
     specs: 'Kryptografische Schreibsperre (WORM), revisionssicheres Logging für alle Scores',
     bafinStandard: 'WpHG § 83 & BaFin MaRisk konform',
-    licenseType: 'Commercial Enterprise',
+    licenseType: 'Repository Open Source',
     revenueAssuranceGrade: 'A+',
   },
   'merkle-tree': {
@@ -481,7 +449,7 @@ export const MASTER_TOOL_CATALOG: Record<string, CatalogToolEntry> = {
     latencyMs: 2,
     specs: 'Abweichungen > 2% gegenüber Median werden sofort als Spoofing verworfen',
     bafinStandard: 'Erfüllt BaFin MaRisk Vorgaben zur Datenplausibilisierung',
-    licenseType: 'Commercial Enterprise',
+    licenseType: 'Repository Open Source',
     revenueAssuranceGrade: 'A+',
   },
 };
@@ -815,7 +783,7 @@ export function catalogUserSelectedTools(config: PipelineConfigState): Inventory
           latencyMs: 15,
           specs: `${newsItem.updateFrequency} · ${newsItem.description}`,
           bafinStandard: newsItem.bafinRelevance,
-          licenseType: 'Public Market Data',
+          licenseType: 'N/A (configuration)',
           revenueAssuranceGrade: 'A+',
         });
       }
@@ -903,7 +871,7 @@ export function catalogUserSelectedTools(config: PipelineConfigState): Inventory
   let bafinScore = 75;
   if (config.evidenceId === 'worm-storage' || config.evidenceId === 'merkle-tree') bafinScore += 15;
   if (config.providerIds.length >= 2) bafinScore += 5; // Multi-source redundancy
-  if (config.cachingId === 'redis-ring' || config.cachingId === 'token-bucket') bafinScore += 5;
+  if (config.cachingId === 'valkey-hotstate' || config.cachingId === 'token-bucket') bafinScore += 5;
   bafinScore = Math.min(100, bafinScore);
 
   let complianceRating = '95%+ Institutionell (BaFin/MiCA Vollzertifiziert)';

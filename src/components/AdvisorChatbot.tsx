@@ -778,15 +778,15 @@ export const AdvisorChatbot: React.FC<AdvisorChatbotProps> = ({
               {
                 step: 3,
                 title: 'Ebene 3: Data Ingestion Gateways',
-                desc: 'TwelveData für US & EU Aktien, FRED für die US-Zinsstrukturkurve, Binance/Kraken für Krypto L2 Orderbücher und Alchemy für On-Chain DEX Swaps.',
-                advisorTip: 'Tipp: Die Kombination TwelveData (8,50 €) + FRED (0,00 €) ist der Königsweg für Fundamental-Scoring.',
-                actionPrompt: 'Wie kombiniere ich TwelveData und FRED optimal?',
+                desc: 'CCXT, Hummingbot/Gateway, OpenBB und das DefiLlama SDK bilden die freigegebene Open-Source-Adapterebene. Konkrete Upstream-Datenquellen bleiben bis zum separaten Rechte-Nachweis fail-closed.',
+                advisorTip: 'Tipp: Open Source beschreibt die Softwarelizenz des Adapters — nicht automatisch die kommerziellen Nutzungs-, Display-, Retention- oder Redistribution-Rechte der Daten.',
+                actionPrompt: 'Welche OSS-Adapter passen zu meinem Datenrechte-Profil?',
               },
               {
                 step: 4,
                 title: 'Ebene 4: In-Memory Caching & Normalisierung',
-                desc: 'Redis Ring Buffer entkoppelt Screener-Abfragen verlustfrei. FlatBuffers komprimiert binäre Ticks um 70%. Apache Arrow Flight streamt direkt in Python DataFrames.',
-                advisorTip: 'Tipp: Redis Ringpuffer garantiert Sub-5ms Query Latenz ohne Belastung der externen Schnittstellen.',
+                desc: 'Valkey 8 hält Hot-State-Projektionen für schnelle Lesezugriffe, während NATS JetStream Replay und Fan-out übernimmt. FlatBuffers und Apache Arrow bleiben optionale OSS-Formate.',
+                advisorTip: 'Tipp: Valkey dient als Hot-State Cache; konkrete Latenzwerte werden nur aus gemessener Runtime-Evidence ausgewiesen.',
                 actionPrompt: 'Was bringt Apache Arrow Flight für Python Quants?',
               },
               {

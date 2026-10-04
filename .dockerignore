@@ -30,6 +30,7 @@
 !server/observability.mjs
 !server/cads-observability.mjs
 !server/mobile-scorer.mjs
+!server/scorer-proxy.mjs
 !shared/
 !shared/market-contracts.mjs
 !shared/legal-identity.mjs
