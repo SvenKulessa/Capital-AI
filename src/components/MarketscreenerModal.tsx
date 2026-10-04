@@ -44,6 +44,38 @@ export const MarketscreenerModal: React.FC<MarketscreenerModalProps> = ({
   onViewAllMarkets,
   onNavigate,
 }) => {
+  const [krakenPrivateConnected, setKrakenPrivateConnected] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const controller = new AbortController();
+    void fetch('/api/profile/provider-connections', {
+      credentials: 'same-origin',
+      cache: 'no-store',
+      headers: { Accept: 'application/json' },
+      signal: controller.signal,
+    })
+      .then(async response => {
+        if (!response.ok) return null;
+        return response.json();
+      })
+      .then(payload => {
+        if (controller.signal.aborted) return;
+        const connections = Array.isArray(payload?.connections) ? payload.connections : [];
+        setKrakenPrivateConnected(
+          connections.some((connection: any) =>
+            connection?.provider === 'kraken' &&
+            connection?.status === 'VERIFIED' &&
+            connection?.dataScope === 'USER_PRIVATE_ACCOUNT_DATA'
+          ),
+        );
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setKrakenPrivateConnected(false);
+      });
+    return () => controller.abort();
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
@@ -136,6 +168,11 @@ export const MarketscreenerModal: React.FC<MarketscreenerModalProps> = ({
                   <p className="text-[11px] text-slate-400 mt-0.5">
                     Fundamental-Check: ROE &gt; 15%, Burggräben (Moats) &amp; DCF Margin of Safety
                   </p>
+                  {krakenPrivateConnected && (
+                    <p className="mt-1 text-[10px] font-mono text-amber-300">
+                      Kraken-Privatkontext erkannt · nicht als Buffett-Fundamentaldaten zugelassen
+                    </p>
+                  )}
                 </div>
               </div>
               <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-white group-hover:translate-x-1 transition-all shrink-0 ml-2" />
