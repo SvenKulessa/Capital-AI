@@ -24,7 +24,12 @@ function response() {
 function json(res,status,body){ res.status=status; res.body=body; }
 
 const admittedPolicy = {
-  admittedSources:[{ providerId:'open-data-test', eligible:true, decision:'OPEN_SOURCE_OPEN_DATA_ADMITTED' }],
+  admittedSources:[{
+    providerId:'open-data-test',
+    eligible:true,
+    decision:'OPEN_SOURCE_OPEN_DATA_ADMITTED',
+    capabilities:{ scoringPriceInput:true },
+  }],
 };
 
 test('fails closed without admitted MARKET source and performs no network call', async () => {
@@ -37,7 +42,36 @@ test('fails closed without admitted MARKET source and performs no network call',
   const res=response();
   assert.equal(await proxy.handle(request({headers:{'content-type':'application/json'}}),res,new URL('http://local/api/crypto/score'),json,'req-1'),true);
   assert.equal(res.status,503);
-  assert.equal(res.body.error,'market_source_not_admitted');
+  assert.equal(res.body.error,'scoring_source_not_admitted');
+  assert.equal(res.body.requiredCapability,'scoringPriceInput');
+  assert.equal(calls,0);
+});
+
+
+test('reference-only admission does not unlock score display', async () => {
+  let calls=0;
+  const proxy=createScorerProxy({
+    env:{ CAPITAL_AI_FINANCE_SCORER_PRIVATE_ORIGIN:'http://finance-ab12:10000' },
+    fetchImpl:async()=>{ calls++; throw new Error('must not call'); },
+    sourcePolicy:{
+      admittedSources:[{
+        providerId:'wikidata-reference',
+        eligible:true,
+        decision:'OPEN_SOURCE_OPEN_DATA_ADMITTED',
+        capabilities:{ referenceMetadata:true, scoringPriceInput:false },
+      }],
+    },
+  });
+  const res=response();
+  await proxy.handle(
+    request({headers:{'content-type':'application/json'}}),
+    res,
+    new URL('http://local/api/crypto/score'),
+    json,
+    'req-reference-only',
+  );
+  assert.equal(res.status,503);
+  assert.equal(res.body.error,'scoring_source_not_admitted');
   assert.equal(calls,0);
 });
 
