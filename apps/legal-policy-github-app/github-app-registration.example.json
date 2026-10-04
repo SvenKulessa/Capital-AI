@@ -1,0 +1,16 @@
+{
+  "name": "LEGAL_POLICY",
+  "description": "Repository, SBOM and license evidence policy for release decisions.",
+  "url": "https://YOUR_PRODUCT_DOMAIN.example/legal-policy",
+  "hook_url": "https://YOUR_APP_SERVICE.example/webhooks/github",
+  "callback_urls": ["https://YOUR_APP_SERVICE.example/auth/github/callback"],
+  "setup_url": "https://YOUR_APP_SERVICE.example/setup",
+  "public": true,
+  "request_oauth_on_install": false,
+  "permissions": {
+    "contents": "read",
+    "checks": "write",
+    "metadata": "read"
+  },
+  "events": ["pull_request"]
+}
