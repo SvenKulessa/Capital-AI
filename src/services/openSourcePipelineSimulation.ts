@@ -28,7 +28,6 @@ const ingressProfiles: Record<string,{latency:number;throughput:number;recovery:
   cryptofeed:{latency:24,throughput:12000,recovery:90,portability:86,modes:['websocket']},
   openbb:{latency:85,throughput:1600,recovery:88,portability:92,modes:['rest','hybrid']},
   'defillama-sdk':{latency:120,throughput:900,recovery:86,portability:95,modes:['rest']},
-  yfinance:{latency:150,throughput:500,recovery:70,portability:90,modes:['rest','websocket','hybrid']},
 };
 
 function score(latency:number, throughput:number, recovery:number, portability:number, rightsReview:boolean) {
