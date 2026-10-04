@@ -150,7 +150,7 @@ export const MarketVocabularyModal: React.FC<MarketVocabularyModalProps> = ({
     });
   }, [searchTerm, selectedCategory]);
 
-  const visibleTerms = entitled ? filteredTerms : filteredTerms.slice(0, VOCABULARY_OFFER.previewCount);
+  const visibleTerms = entitled ? filteredTerms : filteredTerms.filter((item) => item.level !== 'Quant / Pro');
   const lockedCount = Math.max(0, filteredTerms.length - visibleTerms.length);
 
   const startCheckout = async () => {
@@ -390,7 +390,7 @@ export const MarketVocabularyModal: React.FC<MarketVocabularyModalProps> = ({
 
                   {/* Expandable Detailed Section */}
                   <AnimatePresence>
-                    {isExpanded && entitled && (
+                    {isExpanded && (
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
@@ -472,7 +472,7 @@ export const MarketVocabularyModal: React.FC<MarketVocabularyModalProps> = ({
         {/* MODAL FOOTER */}
         {!entitled && (
           <div className="px-4 sm:px-6 py-3 border-t border-amber-400/30 bg-amber-400/10 shrink-0">
-            <p className="text-xs text-amber-100">Vorschau: {VOCABULARY_OFFER.previewCount} Begriffe. {lockedCount} weitere Begriffe, Formeln und Praxisbeispiele sind im Market Vocabulary fuer {formatVocabularyPrice()} freigeschaltet. In Pro und Enterprise enthalten. Keine Anlageberatung.</p>
+            <p className="text-xs text-amber-100">Das Vocabulary bleibt frei sichtbar. {lockedCount} Quant-/Pro-Begriffe sind nach Kauf des Market Vocabulary fuer {formatVocabularyPrice()} freigeschaltet. In Pro und Enterprise enthalten. Keine Anlageberatung.</p>
             <label className="mt-2 flex items-start gap-2 text-[11px] text-slate-300">
               <input type="checkbox" checked={withdrawalWaived} onChange={(event) => setWithdrawalWaived(event.target.checked)} className="mt-0.5" />
               <span>Ich verlange die sofortige Bereitstellung und akzeptiere, dass mein Widerrufsrecht nach § 356 Abs. 5 BGB mit Beginn der Bereitstellung erlischt.</span>
