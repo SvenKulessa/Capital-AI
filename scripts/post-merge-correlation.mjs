@@ -11,6 +11,28 @@ export const ACTIONS = Object.freeze({
   MANUAL_REVIEW_REQUIRED: "MANUAL_REVIEW_REQUIRED",
 });
 
+export const DOCUMENTATION_ACTIONS = Object.freeze({
+  NO_ACTION: "NO_ACTION",
+  PR_PROPOSAL_CANDIDATE: "PR_PROPOSAL_CANDIDATE",
+  MANUAL_REVIEW_REQUIRED: "MANUAL_REVIEW_REQUIRED",
+});
+
+const DOCUMENTATION_FORBIDDEN_EXACT = new Set([
+  "AGENTS.md",
+  "Dockerfile",
+  "Dockerfile.security",
+  "package.json",
+  "package-lock.json",
+]);
+const DOCUMENTATION_FORBIDDEN_PREFIXES = [
+  ".github/",
+  "contracts/",
+  "deploy/",
+  "docs/security/",
+  "server/",
+  "supabase/",
+];
+
 const HIGH_RISK_PREFIXES = [
   ".github/workflows/",
   "deploy/",
@@ -165,9 +187,72 @@ export function classifyOpenPr({ mergedFiles, mainSha, mergedPr, pr, patternStat
   };
 }
 
+function unsafeDocumentationPath(file) {
+  return DOCUMENTATION_FORBIDDEN_EXACT.has(file)
+    || DOCUMENTATION_FORBIDDEN_PREFIXES.some(prefix => file.startsWith(prefix));
+}
+
+export function classifyDocumentationRepair({ mainSha, plan }) {
+  const findingsCount = Number(plan?.findingsCount || 0);
+  if (!plan || findingsCount === 0) {
+    return {
+      action: DOCUMENTATION_ACTIONS.NO_ACTION,
+      expectedMainSha: mainSha || null,
+      findingsCount,
+      repairFingerprint: plan?.repairFingerprint || null,
+      prOnly: true,
+      autoMerge: false,
+      productionAuthority: false,
+      directMainMutation: false,
+      reasons: ["NO_ELIGIBLE_DOCUMENTATION_DRIFT"],
+    };
+  }
+
+  const operations = Array.isArray(plan.operations) ? plan.operations : [];
+  const unsafePaths = operations.map(operation => String(operation.path || "")).filter(unsafeDocumentationPath);
+  const policySafe = plan.policy?.mode === "PR_ONLY"
+    && plan.policy?.autoMerge === false
+    && plan.policy?.productionAuthority === false
+    && plan.policy?.directMainMutation === false;
+  const expectedMainMatches = Boolean(mainSha && plan.expectedMainSha === mainSha);
+  const promoted = plan.promotion?.promoted === true;
+  const cleanPlan = plan.eligible === true
+    && Array.isArray(plan.blockers)
+    && plan.blockers.length === 0
+    && operations.length === findingsCount;
+
+  const reasons = [];
+  if (!expectedMainMatches) reasons.push("EXPECTED_MAIN_SHA_MISMATCH");
+  if (!policySafe) reasons.push("DOCUMENTATION_POLICY_NOT_PR_ONLY");
+  if (!promoted) reasons.push("DOCUMENTATION_PATTERN_NOT_PROMOTED");
+  if (!cleanPlan) reasons.push("DOCUMENTATION_REPAIR_PLAN_NOT_ELIGIBLE");
+  if (unsafePaths.length) reasons.push("DOCUMENTATION_HIGH_RISK_PATH");
+
+  const action = reasons.length === 0
+    ? DOCUMENTATION_ACTIONS.PR_PROPOSAL_CANDIDATE
+    : DOCUMENTATION_ACTIONS.MANUAL_REVIEW_REQUIRED;
+
+  return {
+    action,
+    expectedMainSha: plan.expectedMainSha || null,
+    findingsCount,
+    repairFingerprint: plan.repairFingerprint || null,
+    unsafePaths,
+    prOnly: true,
+    autoMerge: false,
+    productionAuthority: false,
+    directMainMutation: false,
+    reasons,
+  };
+}
+
 export function buildCorrelation(input) {
   const mergedFiles = uniq(input.files);
   const mergedImpact = classifyFiles(mergedFiles);
+  const documentationRepair = classifyDocumentationRepair({
+    mainSha: input.mainSha,
+    plan: input.documentationRepairPlan || null,
+  });
   const openPrs = (input.openPrs || [])
     .filter(pr => Number(pr.number) !== Number(input.mergedPr))
     .map(pr => classifyOpenPr({
@@ -186,6 +271,8 @@ export function buildCorrelation(input) {
     syncRequired: openPrs.filter(pr => pr.action === ACTIONS.SYNC_REQUIRED).length,
     repairCandidate: openPrs.filter(pr => pr.action === ACTIONS.REPAIR_CANDIDATE).length,
     manualReviewRequired: openPrs.filter(pr => pr.action === ACTIONS.MANUAL_REVIEW_REQUIRED).length,
+    documentationRepairCandidate: documentationRepair.action === DOCUMENTATION_ACTIONS.PR_PROPOSAL_CANDIDATE ? 1 : 0,
+    documentationManualReview: documentationRepair.action === DOCUMENTATION_ACTIONS.MANUAL_REVIEW_REQUIRED ? 1 : 0,
   };
 
   return {
@@ -195,7 +282,8 @@ export function buildCorrelation(input) {
     mergedPr: Number(input.mergedPr),
     mergedFiles,
     mergedImpact,
-    required: openPrs.some(pr => pr.action !== ACTIONS.NO_ACTION),
+    required: openPrs.some(pr => pr.action !== ACTIONS.NO_ACTION)
+      || documentationRepair.action !== DOCUMENTATION_ACTIONS.NO_ACTION,
     rule3: {
       minimumIndependentPositiveValidationCycles: 3,
       promotionRequiresSameFixFingerprint: true,
@@ -206,6 +294,7 @@ export function buildCorrelation(input) {
       allStagesRequiredForAutonomousMutation: true,
     },
     openPrs,
+    documentationRepair,
     summary,
     globalPolicy: {
       autoMutationDefault: false,
@@ -214,6 +303,10 @@ export function buildCorrelation(input) {
       deploy: false,
       productionHandoff: false,
       natsHeadOnlyRedeploy: false,
+      documentationRepairMode: "PR_ONLY",
+      documentationAutoMerge: false,
+      documentationProductionAuthority: false,
+      documentationExpectedMainShaRequired: true,
     },
   };
 }
