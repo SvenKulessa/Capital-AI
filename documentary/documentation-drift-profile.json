@@ -22,7 +22,8 @@
       "src/platform/Documentary/README.md",
       "docs/growth/DOCUMENTATION-DRIFT-SELF-HEALING.md",
       "docs/security/PRODUCTION-HANDOFF.md",
-      "docs/security/POST-MERGE-CORRELATION-SELF-HEALING.md"
+      "docs/security/POST-MERGE-CORRELATION-SELF-HEALING.md",
+      "docs/architecture/RUNTIME-DEPENDENCY-BOUNDARY.md"
     ],
     "prefixes": [
       "docs/governance/"
