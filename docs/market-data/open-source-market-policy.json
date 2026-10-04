@@ -41,10 +41,17 @@
     "unknownRights": "BLOCK"
   },
   "requiredUseCases": [
-    "commercial_display",
-    "commercial_derived_scoring",
-    "cache_storage",
-    "jetstream_replay_retention"
+    "commercial_web_display",
+    "commercial_mobile_display",
+    "derived_scoring_rankings_analytics",
+    "normalization",
+    "cache_hot_state",
+    "jetstream_publication",
+    "replay",
+    "retention",
+    "backup_restore",
+    "audit_evidence",
+    "internal_processing"
   ],
   "redistributionAndWhiteLabel": "SEPARATE_EXPLICIT_OPEN_DATA_RIGHTS_REQUIRED",
   "admittedSources": [],
@@ -60,5 +67,40 @@
   ],
   "runtimePolicy": "NO_LIVE_PROVIDER_NETWORK_IO_UNTIL_ADMITTED_SOURCE_EXISTS",
   "credentials": "SERVER_SIDE_ONLY_IF_FUTURE_ADMITTED_SOURCE_REQUIRES_AUTH",
-  "fixtures": "NON_PRODUCTION_ONLY"
+  "fixtures": "NON_PRODUCTION_ONLY",
+  "optionalUseCasesRequiringSeparateEvidence": [
+    "b2b_api",
+    "redistribution",
+    "customer_exports",
+    "white_label",
+    "public_charts",
+    "social_media",
+    "benchmark_publication"
+  ],
+  "sourceAdmissionContract": {
+    "decision": "OPEN_SOURCE_OPEN_DATA_ADMITTED",
+    "requiredGates": [
+      "SOFTWARE_LICENSE_PASS",
+      "SOFTWARE_PROVENANCE_PASS",
+      "SOFTWARE_PACKAGING_PASS",
+      "OPEN_DATA_LICENSE_PASS",
+      "DATA_PROVENANCE_PASS",
+      "ATTRIBUTION_REVIEW_PASS",
+      "COMMERCIAL_WEB_DISPLAY_PASS",
+      "COMMERCIAL_MOBILE_DISPLAY_PASS",
+      "DERIVED_SCORING_RANKINGS_ANALYTICS_PASS",
+      "NORMALIZATION_PASS",
+      "CACHE_HOT_STATE_PASS",
+      "JETSTREAM_PUBLICATION_PASS",
+      "REPLAY_PASS",
+      "RETENTION_PASS",
+      "BACKUP_RESTORE_PASS",
+      "AUDIT_EVIDENCE_PASS",
+      "INTERNAL_PROCESSING_PASS",
+      "INSTRUMENT_ELIGIBILITY_PASS"
+    ],
+    "independentEvidencePerUseCaseRequired": true,
+    "manualOverrideAllowed": false,
+    "monetizationEntitlementMayOverride": false
+  }
 }

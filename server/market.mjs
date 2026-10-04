@@ -4,7 +4,10 @@ import { MARKET_SOURCE_POLICY, isAdmittedMarketSource } from './open-source-mark
 
 // No network I/O during build or runtime until an Open-Source + Open-Data source is admitted.
 const allowed = new Set((process.env.MARKET_SYMBOLS || 'BTCUSDT,BTCUSD,AAPL').split(',').map(x => x.trim()).filter(Boolean));
-const quotesEnabled = process.env.MARKET_QUOTES_ENABLED !== 'false';
+const sourceAdmissionAvailable = MARKET_SOURCE_POLICY.admittedSources.some(
+  source => source.eligible === true && source.decision === 'OPEN_SOURCE_OPEN_DATA_ADMITTED'
+);
+const quotesEnabled = sourceAdmissionAvailable && process.env.MARKET_QUOTES_ENABLED === 'true';
 
 export function observation(symbol, provider, price, time, quote, mode, rawPayload, details = {}) {
   if(!isAdmittedMarketSource(provider)) return null;
@@ -25,8 +28,13 @@ export function startStreams() {
 }
 
 export async function quote(symbol) {
-  if (!quotesEnabled) return [503, { error: 'pipeline_disabled', symbol }];
   if (!allowed.has(symbol)) return [400, { error: 'unsupported_symbol' }];
+  if (!sourceAdmissionAvailable) return [503, {
+    error: 'open_data_source_not_configured',
+    symbol,
+    sourcePolicy: MARKET_SOURCE_POLICY.mode,
+  }];
+  if (!quotesEnabled) return [503, { error: 'pipeline_disabled', symbol }];
 
   const cached = await infrastructure.read(symbol);
   if (cached && isAdmittedMarketSource(cached.provider)) return [200, cached];

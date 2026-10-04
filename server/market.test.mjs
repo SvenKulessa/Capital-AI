@@ -66,24 +66,49 @@ test('health exposes fail-closed Open-Source and Open-Data policy', async () => 
   assert.equal(state.ingress, 'fail_closed');
   assert.equal(state.sourcePolicy, 'OPEN_SOURCE_AND_OPEN_DATA_ONLY');
   assert.equal(state.admittedSources, 0);
+  assert.equal(state.quotesEnabled, false);
 });
 
 
 test('Open-Source plus qualifying Open-Data evidence is required', () => {
+  const useCases = Object.fromEntries([
+    'commercialWebDisplay',
+    'commercialMobileDisplay',
+    'derivedScoringRankingsAnalytics',
+    'normalization',
+    'cacheHotState',
+    'jetStreamPublication',
+    'replay',
+    'retention',
+    'backupRestore',
+    'auditEvidence',
+    'internalProcessing',
+  ].map(key => [key, {allowed:true,evidenceReference:`https://example.invalid/rights/${key}`}]));
   const valid = {
     softwareLicense:'MIT',
+    softwareSourceSha:'1'.repeat(40),
+    softwareLicenseBlobSha:'2'.repeat(40),
     softwareEvidenceReference:'https://example.invalid/software-license',
+    softwarePackagingCompatible:true,
     dataLicense:'CC-BY-4.0',
     dataLicenseEvidenceReference:'https://example.invalid/data-license',
     provenanceReference:'https://example.invalid/provenance',
-    commercialDisplayAllowed:true,
-    commercialDerivedScoringAllowed:true,
-    cacheStorageAllowed:true,
-    jetStreamReplayRetentionAllowed:true,
+    datasetId:'example-dataset',
+    datasetVersionOrSnapshot:'2026-10-04',
+    attributionObligationsReviewed:true,
+    attributionEvidenceReference:'https://example.invalid/attribution',
+    useCases,
+    instrumentEligibilityVerified:true,
+    instrumentManifestReference:'docs/market-data/evidence/example.json',
   };
+  assert.equal(evaluateOpenSourceMarketAdmission(valid).decision, 'OPEN_SOURCE_OPEN_DATA_ADMITTED');
   assert.equal(evaluateOpenSourceMarketAdmission(valid).eligible, true);
   assert.equal(evaluateOpenSourceMarketAdmission({...valid,dataLicense:'CC-BY-NC-4.0'}).eligible, false);
   assert.equal(evaluateOpenSourceMarketAdmission({...valid,softwareLicense:'UNVERIFIED'}).eligible, false);
+  const missingMobile = structuredClone(valid);
+  missingMobile.useCases.commercialMobileDisplay.allowed = false;
+  missingMobile.manualOverride = true;
+  assert.equal(evaluateOpenSourceMarketAdmission(missingMobile).eligible, false);
 });
 
 test('runtime OSS adapter inventory excludes non-admitted proprietary data paths', async () => {

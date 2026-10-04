@@ -1,0 +1,174 @@
+{
+  "schema": "CAPITAL_AI_OPEN_DATA_CANDIDATE_RESEARCH@1",
+  "observedAt": "2026-10-04",
+  "currentMainSha": "dd1c3ed7cb93c1864c7722395e24f08fb73ac14c",
+  "prHeadBasis": "0e3ee1556fc804e955ba3948367d78cc52e40a20",
+  "policy": "OPEN_SOURCE_AND_OPEN_DATA_ONLY",
+  "status": "RESEARCH_ONLY_NOT_ADMISSION",
+  "admissionRule": "No candidate becomes productive without independent evidence for every required use case and instrument eligibility.",
+  "candidates": [
+    {
+      "id": "world-bank-global-economic-monitor",
+      "assetClasses": [
+        "forex",
+        "indices",
+        "macro"
+      ],
+      "dataLicense": "CC-BY-4.0",
+      "evidenceUrl": "https://datacatalog.worldbank.org/infrastructure-data/search/dataset/0037798/global-economic-monitor",
+      "interfaces": [
+        "API",
+        "DataBank",
+        "files"
+      ],
+      "coverage": "Country-level exchange-rate and equity-market indicators; not individual-stock quote coverage.",
+      "admission": "BLOCKED_PENDING_GRANULAR_USE_CASE_AND_INSTRUMENT_EVIDENCE"
+    },
+    {
+      "id": "world-bank-commodity-prices",
+      "assetClasses": [
+        "commodities"
+      ],
+      "dataLicense": "CC-BY-4.0",
+      "evidenceUrl": "https://datacatalog.worldbank.org/search/dataset/0038238/commodity-prices-history-and-projections",
+      "interfaces": [
+        "files"
+      ],
+      "coverage": "Commodity history/projections; not a real-time venue feed.",
+      "admission": "BLOCKED_PENDING_GRANULAR_USE_CASE_AND_INSTRUMENT_EVIDENCE"
+    },
+    {
+      "id": "wikidata",
+      "assetClasses": [
+        "crypto",
+        "stocks",
+        "commodities",
+        "forex",
+        "indices"
+      ],
+      "dataLicense": "CC0-1.0",
+      "evidenceUrl": "https://www.wikidata.org/wiki/Wikidata:Licensing",
+      "interfaces": [
+        "SPARQL",
+        "API",
+        "dumps"
+      ],
+      "coverage": "Reference/entity metadata only; not a market-price source.",
+      "admission": "BLOCKED_AS_QUOTE_SOURCE_REFERENCE_DATA_ONLY"
+    },
+    {
+      "id": "sec-edgar-reference-data",
+      "assetClasses": [
+        "stocks"
+      ],
+      "dataLicense": "US_GOV_PUBLIC_REUSE_NOT_IN_POLICY_ALLOWLIST",
+      "evidenceUrl": "https://www.sec.gov/about/webmaster-frequently-asked-questions",
+      "interfaces": [
+        "JSON",
+        "REST",
+        "files"
+      ],
+      "coverage": "Issuer/ticker/filing reference data; not market quotes.",
+      "admission": "BLOCKED_PENDING_TRUST_LICENSE_CLASSIFICATION"
+    },
+    {
+      "id": "eia-public-data",
+      "assetClasses": [
+        "commodities"
+      ],
+      "dataLicense": "US_GOV_PUBLIC_DOMAIN_NOT_IN_POLICY_ALLOWLIST",
+      "evidenceUrl": "https://www.eia.gov/about/copyrights_reuse.php",
+      "interfaces": [
+        "API",
+        "files"
+      ],
+      "coverage": "Energy data; does not establish 100 live commodity instruments.",
+      "admission": "BLOCKED_PENDING_TRUST_LICENSE_CLASSIFICATION"
+    },
+    {
+      "id": "ecb-escb-statistics",
+      "assetClasses": [
+        "forex",
+        "indices",
+        "macro"
+      ],
+      "dataLicense": "ESCB_REUSE_POLICY_NOT_IN_POLICY_ALLOWLIST",
+      "evidenceUrl": "https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.en.html",
+      "interfaces": [
+        "API",
+        "files"
+      ],
+      "coverage": "Public ESCB statistics; third-party data excluded and dataset scope must be mapped.",
+      "admission": "BLOCKED_PENDING_TRUST_LICENSE_AND_DATASET_SCOPE_REVIEW"
+    },
+    {
+      "id": "eurostat",
+      "assetClasses": [
+        "macro",
+        "forex"
+      ],
+      "dataLicense": "EC_REUSE_POLICY_DATASET_REVIEW_REQUIRED",
+      "evidenceUrl": "https://ec.europa.eu/eurostat/help/copyright-notice",
+      "interfaces": [
+        "API",
+        "files"
+      ],
+      "coverage": "Statistical/reference data; dataset-level exceptions and third-party rights require review.",
+      "admission": "BLOCKED_PENDING_DATASET_SPECIFIC_TRUST_REVIEW"
+    },
+    {
+      "id": "coin-metrics-community",
+      "assetClasses": [
+        "crypto"
+      ],
+      "dataLicense": "CC-BY-NC-4.0",
+      "evidenceUrl": "https://github.com/coinmetrics/data/blob/master/README.md",
+      "interfaces": [
+        "HTTP",
+        "files"
+      ],
+      "coverage": "Community/free data path is non-commercial.",
+      "admission": "BLOCK"
+    },
+    {
+      "id": "pyth-site-price-feeds",
+      "assetClasses": [
+        "crypto",
+        "stocks",
+        "commodities",
+        "forex"
+      ],
+      "dataLicense": "NON_COMMERCIAL_SITE_TERMS",
+      "evidenceUrl": "https://www.pyth.network/legal/terms-conditions",
+      "interfaces": [
+        "website"
+      ],
+      "coverage": "Website terms do not provide qualifying commercial open-data rights for the price-feed path.",
+      "admission": "BLOCK"
+    },
+    {
+      "id": "defillama-api",
+      "assetClasses": [
+        "crypto"
+      ],
+      "softwareLicense": "MIT",
+      "softwareSourceSha": "f0d43119c746dda0c1ad8460c37ac9e00e8e5161",
+      "dataLicense": "UNVERIFIED",
+      "evidenceUrl": "https://github.com/DefiLlama/api-sdk",
+      "interfaces": [
+        "REST",
+        "TypeScript SDK"
+      ],
+      "coverage": "SDK is open-source software; concrete API dataset rights remain unverified.",
+      "admission": "BLOCKED_PENDING_EVIDENCE"
+    }
+  ],
+  "admittedSources": [],
+  "productiveCoverage": {
+    "crypto": 0,
+    "stocks": 0,
+    "commodities": 0,
+    "forex": 0,
+    "indices": 0
+  }
+}
