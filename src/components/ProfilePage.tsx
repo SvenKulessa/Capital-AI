@@ -33,6 +33,22 @@ interface Holding {
   balance: string;
 }
 
+interface PrivateMarketContext {
+  schema: 'CAPITAL_AI_BYOK_MARKET_CONTEXT@1';
+  provider: 'kraken';
+  symbol: string;
+  quote: string;
+  price: number;
+  bid: number | null;
+  ask: number | null;
+  volume24h: number | null;
+  observedAt: number;
+  dataScope: 'USER_PRIVATE_MARKET_CONTEXT';
+  credentialBound: true;
+  accountVerified: true;
+  actionable: false;
+}
+
 async function readJson(response: Response) {
   return response.json().catch(() => null);
 }
@@ -43,6 +59,7 @@ export function ProfilePage({ onBackToHome }: { onBackToHome: () => void }) {
   const [apiKey, setApiKey] = useState('');
   const [apiSecret, setApiSecret] = useState('');
   const [holdings, setHoldings] = useState<Holding[]>([]);
+  const [privateMarketContext, setPrivateMarketContext] = useState<PrivateMarketContext | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -159,6 +176,34 @@ export function ProfilePage({ onBackToHome }: { onBackToHome: () => void }) {
     }
   };
 
+  const refreshPrivateMarketContext = async () => {
+    setTesting(true);
+    setFeedback(null);
+    setError(null);
+    try {
+      const response = await fetch('/api/profile/provider-connections/kraken/market-context?symbol=BTCUSD', {
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: { Accept: 'application/json' },
+      });
+      const body = await readJson(response);
+      if (!response.ok || body?.schema !== 'CAPITAL_AI_BYOK_MARKET_CONTEXT@1') {
+        throw new Error(body?.code || body?.error || 'PRIVATE_MARKET_CONTEXT_FAILED');
+      }
+      setPrivateMarketContext(body as PrivateMarketContext);
+      setFeedback('Privater BTC/USD-Marktkontext ist an deine verifizierte BYOK-Verbindung gebunden und wird nicht geteilt.');
+    } catch (reason) {
+      setPrivateMarketContext(null);
+      setError(
+        reason instanceof Error && reason.message
+          ? `Privater Marktkontext nicht verfügbar: ${reason.message}`
+          : 'Privater Marktkontext nicht verfügbar.',
+      );
+    } finally {
+      setTesting(false);
+    }
+  };
+
   const deleteKraken = async () => {
     setSaving(true);
     setFeedback(null);
@@ -172,6 +217,7 @@ export function ProfilePage({ onBackToHome }: { onBackToHome: () => void }) {
       });
       if (!response.ok) throw new Error('DELETE_FAILED');
       setHoldings([]);
+      setPrivateMarketContext(null);
       setFeedback('Kraken-Verbindung und zugehöriges Vault-Secret wurden gelöscht.');
       await loadConnections();
     } catch {
@@ -332,6 +378,15 @@ export function ProfilePage({ onBackToHome }: { onBackToHome: () => void }) {
                     </button>
                     <button
                       type="button"
+                      disabled={testing}
+                      onClick={() => void refreshPrivateMarketContext()}
+                      className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-violet-500/30 bg-violet-500/10 px-4 text-xs font-bold text-violet-200 disabled:opacity-50"
+                    >
+                      {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
+                      Privaten BTC/USD Kontext laden
+                    </button>
+                    <button
+                      type="button"
                       disabled={saving}
                       onClick={() => void deleteKraken()}
                       className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 text-xs font-bold text-rose-200 disabled:opacity-50"
@@ -366,6 +421,41 @@ export function ProfilePage({ onBackToHome }: { onBackToHome: () => void }) {
           ) : (
             <div className="mt-4 flex items-center gap-2 rounded-xl border border-white/10 bg-black/20 p-3 text-xs text-slate-500">
               <Database className="h-4 w-4" /> Noch kein privater Kraken-Kontext geladen.
+            </div>
+          )}
+          {privateMarketContext && (
+            <div className="mt-4 rounded-xl border border-violet-500/25 bg-violet-500/10 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <p className="font-mono text-[10px] font-black uppercase tracking-wider text-violet-300">
+                    USER_PRIVATE_MARKET_CONTEXT
+                  </p>
+                  <p className="mt-1 text-sm font-black text-white">
+                    {privateMarketContext.symbol} · {privateMarketContext.provider}
+                  </p>
+                </div>
+                <p className="font-mono text-lg font-black text-violet-200">
+                  {privateMarketContext.price.toLocaleString('de-DE', { maximumFractionDigits: 8 })} {privateMarketContext.quote}
+                </p>
+              </div>
+              <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
+                <div className="rounded-lg border border-white/10 bg-black/20 p-2">
+                  <span className="text-slate-500">Bid</span>
+                  <p className="font-mono text-slate-200">{privateMarketContext.bid ?? '—'}</p>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-black/20 p-2">
+                  <span className="text-slate-500">Ask</span>
+                  <p className="font-mono text-slate-200">{privateMarketContext.ask ?? '—'}</p>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-black/20 p-2">
+                  <span className="text-slate-500">24h Volume</span>
+                  <p className="font-mono text-slate-200">{privateMarketContext.volume24h ?? '—'}</p>
+                </div>
+              </div>
+              <p className="mt-3 text-[11px] leading-relaxed text-violet-100/80">
+                Credential-bound und nur für deinen privaten Analyse-/Scoring-Kontext. Keine öffentliche MARKET-Admission,
+                keine Redistribution, kein Shared Cache und keine JetStream-Publikation.
+              </p>
             </div>
           )}
           <div className="mt-4 flex items-start gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-100">
