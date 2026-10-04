@@ -28,7 +28,7 @@ async function marketQuotesReady(signal: AbortSignal) {
     return marketReady;
   } catch {
     marketReady = false;
-    marketStatusValidUntil = Date.now() + MARKET_STATUS_BLOCKED_RECHECK_MS;
+    marketStatusValidUntil = signal.aborted ? 0 : Date.now() + MARKET_STATUS_BLOCKED_RECHECK_MS;
     return false;
   }
 }
