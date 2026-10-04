@@ -1,4 +1,3 @@
-import { QuoteDeliverySchema, isFresh } from '../../shared/market-contracts.mjs';
 import type { AssetIdentity, DataProvenance } from '../contracts/canonicalContracts';
 
 export interface RawObservation {
@@ -16,66 +15,62 @@ export interface ProviderAdapter {
   healthCheck(): Promise<ProviderHealthReport>;
 }
 
-async function verifiedQuote(asset: AssetIdentity, expectedProvider: string): Promise<RawObservation> {
-  const symbol = asset.symbol.toUpperCase().replace('/', '');
-  const res = await fetch(`/api/market/quote?symbol=${encodeURIComponent(symbol)}`, { cache: 'no-store' });
-  if (!res.ok) throw new Error(`Market data unavailable (${res.status})`);
-  const data = QuoteDeliverySchema.parse(await res.json());
-  if (!isFresh(data) || data.isDemo || data.provider !== expectedProvider || data.symbol !== symbol ||
-      data.venue.toUpperCase() !== asset.venue.toUpperCase() || data.quote !== asset.currency ||
-      (asset.currency === 'USD' && data.quote !== 'USD')) throw new Error('Provider, currency or freshness mismatch');
-  const provenance: DataProvenance = {
-    providerId: expectedProvider, providerDataset: `${data.mode}_quote`, observedAt: data.observedAt,
-    receivedAt: data.receivedAt, publishedAt: data.observedAt,
-    latencyMs: data.receivedAt - data.observedAt, isDelayed: false, isDemo: false,
-    sourceReference: `/api/market/evidence?id=${encodeURIComponent(data.evidenceId)}`, licenseScope: 'unverified',
-  };
-  return { assetId: asset.assetId, symbol: asset.symbol, sourceProvider: expectedProvider,
-    price: data.price, bid: data.bid, ask: data.ask, volume24h: data.volume24h,
-    observedAt: data.observedAt, receivedAt: data.receivedAt, rawPayload: { provider: expectedProvider }, provenance };
+export type OpenDataLicense = 'CC0-1.0' | 'CC-BY-4.0' | 'CC-BY-SA-4.0' | 'ODbL-1.0';
+export interface OpenSourceOpenDataAdmission {
+  verified: true;
+  softwareLicense: string;
+  dataLicense: OpenDataLicense;
+  evidenceReference: string;
+  commercialDisplayAllowed: true;
+  commercialDerivedScoringAllowed: true;
+  cacheStorageAllowed: true;
+  jetStreamReplayRetentionAllowed: true;
 }
 
-abstract class LiveAdapter implements ProviderAdapter {
-  abstract providerId: string; abstract displayName: string; abstract supportedAssetClasses: string[];
-  readonly isDemo = false;
-  fetchObservation(asset: AssetIdentity) { return verifiedQuote(asset, this.providerId); }
-  async healthCheck(): Promise<ProviderHealthReport> {
-    return { providerId: this.providerId, isOnline: false, pingMs: 0, lastMessageAt: 0,
-      errorRateLastHour: 0, activeSockets: 0, isDemoMode: false };
+const OPEN_SOURCE_SOFTWARE_LICENSES = new Set([
+  'MIT','Apache-2.0','BSD-2-Clause','BSD-3-Clause','ISC',
+  'GPL-3.0-only','GPL-3.0-or-later','AGPL-3.0-only','AGPL-3.0-or-later',
+  'LGPL-3.0-only','LGPL-3.0-or-later','MPL-2.0',
+]);
+const OPEN_DATA_LICENSES = new Set<OpenDataLicense>(['CC0-1.0','CC-BY-4.0','CC-BY-SA-4.0','ODbL-1.0']);
+
+function assertAdmission(admission: OpenSourceOpenDataAdmission | undefined): asserts admission is OpenSourceOpenDataAdmission {
+  if (!admission || admission.verified !== true ||
+      !OPEN_SOURCE_SOFTWARE_LICENSES.has(admission.softwareLicense) ||
+      !OPEN_DATA_LICENSES.has(admission.dataLicense) ||
+      !/^https:\/\//.test(admission.evidenceReference) ||
+      admission.commercialDisplayAllowed !== true ||
+      admission.commercialDerivedScoringAllowed !== true ||
+      admission.cacheStorageAllowed !== true ||
+      admission.jetStreamReplayRetentionAllowed !== true) {
+    throw new Error('OPEN_SOURCE_OPEN_DATA_ADMISSION_REQUIRED');
   }
 }
-export class BinanceProviderAdapter extends LiveAdapter {
-  providerId = 'binance'; displayName = 'Binance Spot WebSocket'; supportedAssetClasses = ['crypto'];
-}
-export class KrakenProviderAdapter extends LiveAdapter {
-  providerId = 'kraken'; displayName = 'Kraken WebSocket v2'; supportedAssetClasses = ['crypto'];
-}
-export class TwelveDataProviderAdapter extends LiveAdapter {
-  providerId = 'twelvedata'; displayName = 'Twelve Data REST';
-  supportedAssetClasses = ['equity_us', 'equity_eu', 'forex', 'indices', 'crypto'];
-}
-export class PolygonProviderAdapter extends LiveAdapter {
-  providerId = 'polygon'; displayName = 'Polygon REST'; supportedAssetClasses = ['equity_us', 'crypto'];
-}
-export class SecEdgarProviderAdapter extends LiveAdapter {
-  providerId = 'sec_edgar_filings'; displayName = 'SEC EDGAR (not configured)'; supportedAssetClasses = ['equity_us'];
-  async fetchObservation(_asset: AssetIdentity): Promise<RawObservation> { throw new Error('SEC EDGAR ingestion not configured'); }
-}
-export class FinancialDataNetProviderAdapter extends LiveAdapter {
-  providerId = 'financialdatanet';
-  displayName = 'FinancialData.Net REST (rights review required)';
-  supportedAssetClasses = ['equity_us', 'equity_eu', 'crypto', 'forex', 'commodities'];
-  async fetchObservation(_asset: AssetIdentity): Promise<RawObservation> {
-    throw new Error('FINANCIALDATANET_RIGHTS_AND_DATASET_MAPPING_REQUIRED');
-  }
-}
+
+/**
+ * Production registry starts empty by design.
+ * Historical/proprietary adapters are not registered or silently mapped.
+ */
 export class ProviderAdapterRegistry {
   private adapters = new Map<string, ProviderAdapter>();
-  constructor() { [new BinanceProviderAdapter(), new KrakenProviderAdapter(), new TwelveDataProviderAdapter(),
-    new PolygonProviderAdapter(), new SecEdgarProviderAdapter(), new FinancialDataNetProviderAdapter()]
-      .forEach(adapter => this.adapters.set(adapter.providerId, adapter)); }
-  register(adapter: ProviderAdapter) { this.adapters.set(adapter.providerId, adapter); }
-  getAdapter(id: string): ProviderAdapter { const adapter = this.adapters.get(id);
-    if (!adapter) throw new Error(`Unknown provider: ${id}`); return adapter; }
+
+  register(adapter: ProviderAdapter, admission?: OpenSourceOpenDataAdmission) {
+    if (adapter.isDemo) throw new Error('DEMO_ADAPTER_NOT_PRODUCTION_ADMISSIBLE');
+    assertAdmission(admission);
+    this.adapters.set(adapter.providerId, adapter);
+  }
+
+  getAdapter(id: string): ProviderAdapter {
+    const adapter = this.adapters.get(id);
+    if (!adapter) throw new Error(`OPEN_DATA_SOURCE_NOT_CONFIGURED:${id}`);
+    return adapter;
+  }
+
+  getAdapterForAsset(assetClass: string): ProviderAdapter {
+    const adapter = [...this.adapters.values()].find(candidate => candidate.supportedAssetClasses.includes(assetClass));
+    if (!adapter) throw new Error(`OPEN_DATA_SOURCE_NOT_CONFIGURED:${assetClass}`);
+    return adapter;
+  }
+
   getAllAdapters() { return [...this.adapters.values()]; }
 }
