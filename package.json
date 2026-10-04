@@ -9,7 +9,7 @@
     "build": "vite build",
     "preview": "vite preview --host=127.0.0.1",
     "test:navigation": "node --import tsx --test scripts/navigation.test.mjs",
-    "test": "node --import tsx scripts/validate-contract-suites.mjs && node --import tsx --test src/contracts/__tests__/analysisFoundation.test.ts src/contracts/__tests__/marketDataRightsEligibility.test.ts src/contracts/__tests__/financialDataNetIntegration.test.ts src/platform/Documentary/__tests__/documentaryProjection.test.ts && node --import tsx scripts/generate-documentary.mjs --check && node --test scripts/documentation-drift.test.mjs",
+    "test": "node --import tsx scripts/validate-contract-suites.mjs && node --import tsx --test src/contracts/__tests__/analysisFoundation.test.ts src/contracts/__tests__/marketDataRightsEligibility.test.ts src/contracts/__tests__/financialDataNetIntegration.test.ts src/data/__tests__/vocabularyData.test.ts src/platform/Documentary/__tests__/documentaryProjection.test.ts && node --import tsx scripts/generate-documentary.mjs --check && node --test scripts/documentation-drift.test.mjs",
     "documentary:generate": "node --import tsx scripts/generate-documentary.mjs --write",
     "documentary:check": "node --import tsx scripts/generate-documentary.mjs --check",
     "clean": "rm -rf dist server.js",

@@ -1,10 +1,18 @@
+import { REPOSITORY_VOCABULARY_TERMS } from './repositoryVocabularyData';
+
 export type VocabularyCategory =
   | 'ALL'
   | 'TRADING_QUANT'
   | 'AI_MODELS'
   | 'CRYPTO_WEB3'
   | 'FUNDAMENTAL'
-  | 'MACRO_FOREX';
+  | 'MACRO_FOREX'
+  | 'DATA_EVIDENCE'
+  | 'PLATFORM_ARCHITECTURE'
+  | 'SECURITY_COMPLIANCE'
+  | 'PRODUCT_UX'
+  | 'DELIVERY_GOVERNANCE'
+  | 'MOBILE_RUNTIME';
 
 export type VocabularyLevel = 'Einsteiger' | 'Fortgeschritten' | 'Quant / Pro';
 
@@ -22,6 +30,7 @@ export interface VocabularyTerm {
   relatedAssets?: string[];
   keyTakeaway: string;
   searchTags: string[];
+  thesaurus: [string, string, string];
 }
 
 export const VOCABULARY_CATEGORIES: { id: VocabularyCategory; label: string; count?: number }[] = [
@@ -31,9 +40,15 @@ export const VOCABULARY_CATEGORIES: { id: VocabularyCategory; label: string; cou
   { id: 'CRYPTO_WEB3', label: 'Krypto & Web3' },
   { id: 'FUNDAMENTAL', label: 'Fundamentalanalyse' },
   { id: 'MACRO_FOREX', label: 'Makro & Devisen' },
+  { id: 'DATA_EVIDENCE', label: 'Daten & Evidence' },
+  { id: 'PLATFORM_ARCHITECTURE', label: 'Plattform & Architektur' },
+  { id: 'SECURITY_COMPLIANCE', label: 'Security & Compliance' },
+  { id: 'PRODUCT_UX', label: 'Produkt & UX' },
+  { id: 'DELIVERY_GOVERNANCE', label: 'Delivery & Governance' },
+  { id: 'MOBILE_RUNTIME', label: 'Mobile & Runtime' },
 ];
 
-export const VOCABULARY_TERMS: VocabularyTerm[] = [
+const BASE_VOCABULARY_TERMS: Omit<VocabularyTerm, 'thesaurus'>[] = [
   // TRADING & QUANT
   {
     id: 'orderbuch',
@@ -401,3 +416,50 @@ export const VOCABULARY_TERMS: VocabularyTerm[] = [
     searchTags: ['vix', 'volatilität', 'angstbarometer', 'schwankung', 'absicherung', 'optionen'],
   },
 ];
+
+const BASE_THESAURUS_BY_ID: Record<string, [string, string, string]> = {
+  'orderbuch': ['Order Book', 'Markttiefe', 'Order Book Depth'],
+  'bid-ask-spread': ['Spread', 'Geld-Brief-Spanne', 'Bid/Ask-Differenz'],
+  'slippage': ['Ausführungsabweichung', 'Preisabweichung', 'Execution Drift'],
+  'vwap': ['Volume-Weighted Average Price', 'volumengewichteter Durchschnittspreis', 'Volumen-Durchschnittskurs'],
+  'arbitrage': ['Preisunterschiedshandel', 'Cross-Venue Arbitrage', 'Arbitragehandel'],
+  'latenz': ['Latency', 'Verzögerungszeit', 'Übertragungslatenz'],
+  'enterprise-scorer': ['Multi-Faktor-Scorer', 'KI-Scoringmodell', 'Capital-AI Scorer'],
+  'buffett-value-check': ['Value Check', 'Moat-&-Value-Analyse', 'Buffett-Prüfung'],
+  'sentiment-analyse': ['NLP-Sentimentanalyse', 'Stimmungsanalyse', 'Market Sentiment Analysis'],
+  'backtesting': ['Backtest', 'historische Simulation', 'Strategietest'],
+  'layer-1': ['L1/L2', 'Blockchain-Layer', 'Blockchain-Ebenen'],
+  'tokenomics': ['Token Economics', 'Token-Ökonomie', 'Tokenwirtschaft'],
+  'defi': ['Decentralized Finance', 'dezentrale Finanzen', 'DeFi-Finanzökosystem'],
+  'on-chain-metriken': ['Blockchain-Metriken', 'On-Chain Analytics', 'Blockchain-Kennzahlen'],
+  'margin-of-safety': ['Sicherheitsmarge', 'Safety Margin', 'Bewertungspuffer'],
+  'kgv-pe-ratio': ['Price-Earnings Ratio', 'P/E Ratio', 'Kurs-Gewinn-Verhältnis'],
+  'free-cash-flow': ['Free Cashflow', 'freier Cashflow', 'freier Geldfluss'],
+  'burggraben-moat': ['Economic Moat', 'Wettbewerbsgraben', 'dauerhafter Wettbewerbsvorteil'],
+  'leitzins': ['Policy Rate', 'Fed Funds Rate', 'Zentralbankzins'],
+  'pip': ['Percentage in Point', 'Forex-Pip', 'Kursinkrement'],
+  'vix': ['Volatility Index', 'Angstindex', 'CBOE VIX'],
+};
+
+function normalizeVocabularyKey(value: string): string {
+  return value
+    .normalize('NFKC')
+    .toLocaleLowerCase('de-DE')
+    .replace(/[^a-z0-9äöüß]+/g, '');
+}
+
+const BASE_TERMS_WITH_THESAURUS: VocabularyTerm[] = BASE_VOCABULARY_TERMS.map((term) => ({
+  ...term,
+  thesaurus: BASE_THESAURUS_BY_ID[term.id] ?? [term.term, term.abbreviation ?? term.term, term.term.toLowerCase()],
+}));
+
+const MERGED_VOCABULARY_TERMS = [
+  ...BASE_TERMS_WITH_THESAURUS,
+  ...(REPOSITORY_VOCABULARY_TERMS as VocabularyTerm[]),
+];
+
+export const VOCABULARY_TERMS: VocabularyTerm[] = MERGED_VOCABULARY_TERMS.filter(
+  (term, index, terms) =>
+    terms.findIndex((candidate) => normalizeVocabularyKey(candidate.term) === normalizeVocabularyKey(term.term)) === index,
+);
+
