@@ -45,6 +45,7 @@ test('BYOK write stores only through Vault RPC and verifies only Kraken private 
   const env = {
     SUPABASE_URL: 'https://project.supabase.co',
     SUPABASE_SECRET_KEY: 'sb_secret_test_0123456789012345678901234567890123456789',
+    AUTH_COOKIE_SIGNING_SECRET: 'test-cookie-signing-secret-0123456789abcdef',
   };
   const auth = {
     verify: async () => ({ userId: '11111111-1111-1111-1111-111111111111' }),
@@ -113,7 +114,7 @@ test('BYOK write stores only through Vault RPC and verifies only Kraken private 
   ]);
   assert.doesNotMatch(JSON.stringify(payload), new RegExp(apiKey));
   assert.doesNotMatch(JSON.stringify(payload), new RegExp(apiSecret));
-  assert.equal(calls.filter(call => call.url.startsWith('https://api.kraken.com')).length, 1);
+  assert.equal(calls.filter(call => new URL(call.url).origin === 'https://api.kraken.com').length, 1);
 });
 
 test('BYOK routes fail closed before any provider or Vault I/O without verified session', async () => {
@@ -122,6 +123,7 @@ test('BYOK routes fail closed before any provider or Vault I/O without verified 
     env: {
       SUPABASE_URL: 'https://project.supabase.co',
       SUPABASE_SECRET_KEY: 'sb_secret_test_0123456789012345678901234567890123456789',
+    AUTH_COOKIE_SIGNING_SECRET: 'test-cookie-signing-secret-0123456789abcdef',
     },
     fetchImpl: async () => {
       networkCalls += 1;
