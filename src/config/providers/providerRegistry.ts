@@ -111,6 +111,7 @@ export const ProviderContractSchema = z.object({
   health: ProviderHealthMetricsSchema,
   isPrimaryFor: z.array(AssetClassSchema).default([]),
   fallbackProviderIds: z.array(z.string()).default([]),
+  productionAdmission: z.enum(['OPEN_SOURCE_OPEN_DATA_ADMITTED', 'BLOCKED']).optional(),
   complianceVerification: z.object({
     regulatoryApproved: z.boolean().default(true),
     certificateAuthority: z.string().optional(),
@@ -132,6 +133,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderContract> = {
     name: 'Binance Market Data Engine',
     slug: 'binance',
     tier: 'tier1',
+    productionAdmission: 'BLOCKED',
     websiteUrl: 'https://binance.com',
     description: 'High-Throughput WebSocket Feed mit L2 Orderbuch-Streaming und Trade-Tick Tickers.',
     endpoints: {
@@ -192,6 +194,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderContract> = {
     name: 'TwelveData Financial Feeds',
     slug: 'twelvedata',
     tier: 'tier1',
+    productionAdmission: 'BLOCKED',
     websiteUrl: 'https://twelvedata.com',
     description: 'Institutionelle US- & EU-Aktien, Indizes, Forex G10 und ETF-Kurse.',
     endpoints: {
@@ -252,6 +255,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderContract> = {
     name: 'Kraken Financial Ingestion',
     slug: 'kraken',
     tier: 'tier1',
+    productionAdmission: 'BLOCKED',
     websiteUrl: 'https://kraken.com',
     description: 'Regulatorisch konforme europäische Orderbuch-Referenz mit strengem Monotonic Sequencing.',
     endpoints: {
@@ -312,6 +316,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderContract> = {
     name: 'Federal Reserve Bank of St. Louis (FRED)',
     slug: 'fred',
     tier: 'tier0',
+    productionAdmission: 'BLOCKED',
     websiteUrl: 'https://fred.stlouisfed.org',
     description: 'Offizielle US-Zentralbank-Referenz für Zinsstrukturkurven, M2 Geldmenge, CPI und Arbeitsmarktdaten.',
     endpoints: {
@@ -371,6 +376,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderContract> = {
     name: 'Alchemy Supernode RPC',
     slug: 'alchemy',
     tier: 'tier1',
+    productionAdmission: 'BLOCKED',
     websiteUrl: 'https://alchemy.com',
     description: 'EVM On-Chain Transaction Logs, Smart Contract Events und Mempool Whale Tracking.',
     endpoints: {
@@ -451,6 +457,7 @@ export class ProviderRegistryService {
   static getHealthyProvidersForAsset(assetClass: AssetClass): ProviderContract[] {
     return this.getAllProviders().filter(
       (p) =>
+        p.productionAdmission === 'OPEN_SOURCE_OPEN_DATA_ADMITTED' &&
         p.capabilities.supportedAssetClasses.includes(assetClass) &&
         (p.health.status === 'healthy' || p.health.status === 'degraded') &&
         !p.health.circuitBreakerTripped
@@ -466,7 +473,10 @@ export class ProviderRegistryService {
     remainingBudgetEur: number;
     isWithinBudget: boolean;
   } {
-    const totalMonthlySpendEur = this.getAllProviders().reduce(
+    const admittedProviders = this.getAllProviders().filter(
+      p => p.productionAdmission === 'OPEN_SOURCE_OPEN_DATA_ADMITTED'
+    );
+    const totalMonthlySpendEur = admittedProviders.reduce(
       (sum, p) => sum + p.budget.currentMonthlySpendEur,
       0
     );
@@ -487,14 +497,17 @@ export class ProviderRegistryService {
   static auditProviderHealthAndBudget(): {
     timestamp: string;
     totalProvidersCount: number;
+    admittedProvidersCount: number;
+    blockedProvidersCount: number;
     healthyCount: number;
     degradedCount: number;
     unhealthyCount: number;
-    averageLatencyMs: number;
+    averageLatencyMs: number | null;
     budgetSummary: ReturnType<typeof ProviderRegistryService.calculateTotalProviderSpendEur>;
     alerts: string[];
   } {
-    const providers = this.getAllProviders();
+    const allProviders = this.getAllProviders();
+    const providers = allProviders.filter(p => p.productionAdmission === 'OPEN_SOURCE_OPEN_DATA_ADMITTED');
     const budgetSummary = this.calculateTotalProviderSpendEur();
     const alerts: string[] = [];
 
@@ -534,11 +547,13 @@ export class ProviderRegistryService {
 
     return {
       timestamp: new Date().toISOString(),
-      totalProvidersCount: providers.length,
+      totalProvidersCount: allProviders.length,
+      admittedProvidersCount: providers.length,
+      blockedProvidersCount: allProviders.length - providers.length,
       healthyCount,
       degradedCount,
       unhealthyCount,
-      averageLatencyMs: Math.round(latencySum / (providers.length || 1)),
+      averageLatencyMs: providers.length ? Math.round(latencySum / providers.length) : null,
       budgetSummary,
       alerts,
     };

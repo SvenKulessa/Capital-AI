@@ -16,18 +16,16 @@ export type OssComponent = {
   repository: string;
   interfaces: readonly string[];
   status: 'INTEGRATED' | 'ADAPTER_READY' | 'RESEARCH_ONLY' | 'EXISTING';
-  dataRights: 'SOFTWARE_ONLY' | 'PROVIDER_TERMS_REQUIRED' | 'RESEARCH_ONLY';
+  dataRights: 'SOFTWARE_ONLY' | 'OPEN_DATA_REQUIRED' | 'PROVIDER_TERMS_REQUIRED' | 'RESEARCH_ONLY';
   notes: string;
 };
 
 export const OPEN_SOURCE_STACK: readonly OssComponent[] = [
-  { id:'ccxt', name:'CCXT', layer:'market_ingress', license:'MIT', repository:'https://github.com/ccxt/ccxt', interfaces:['REST','WebSocket via Pro-capable exchange methods'], status:'ADAPTER_READY', dataRights:'PROVIDER_TERMS_REQUIRED', notes:'Exchange abstraction; exchange data terms remain independent.' },
-  { id:'hummingbot', name:'Hummingbot / Gateway', layer:'market_ingress', license:'Apache-2.0 / MIT by subproject', repository:'https://github.com/hummingbot', interfaces:['REST','WebSocket','DEX gateway'], status:'ADAPTER_READY', dataRights:'PROVIDER_TERMS_REQUIRED', notes:'Connector architecture and optional isolated service.' },
-  { id:'cryptofeed', name:'Cryptofeed', layer:'market_ingress', license:'AGPL-3.0-or-later with additional attribution (reviewed source 6cbd9b959f104fe970791d32444a2ef13ddacc2f)', repository:'https://github.com/bmoscon/cryptofeed', interfaces:['WebSocket','normalized market events'], status:'ADAPTER_READY', dataRights:'PROVIDER_TERMS_REQUIRED', notes:'Candidate only, commercially BLOCKED. Pinned licence evidence: docs/licenses/oss-market-stack/commercial-review-20261003.json. Network copyleft, attribution, actual packaging and provider rights require review; older releases are not reclassified.' },
-  { id:'openbb', name:'OpenBB', layer:'market_ingress', license:'Apache-2.0 (current V5 line)', repository:'https://github.com/OpenBB-finance/OpenBB', interfaces:['Python','REST/API','provider routers'], status:'ADAPTER_READY', dataRights:'PROVIDER_TERMS_REQUIRED', notes:'Multi-asset aggregation layer; underlying provider rights still apply.' },
-  { id:'defillama-sdk', name:'DefiLlama API SDK', layer:'market_ingress', license:'MIT', repository:'https://github.com/DefiLlama/api-sdk', interfaces:['REST','TypeScript SDK'], status:'ADAPTER_READY', dataRights:'PROVIDER_TERMS_REQUIRED', notes:'DeFi fundamentals/TVL/yield metadata; not a tick-by-tick venue feed.' },
-  { id:'yfinance', name:'yfinance', layer:'market_ingress', license:'Apache-2.0', repository:'https://github.com/ranaroussi/yfinance', interfaces:['REST-like downloader','WebSocket','AsyncWebSocket'], status:'RESEARCH_ONLY', dataRights:'RESEARCH_ONLY', notes:'Software is permissive; Yahoo data terms are a separate commercial-rights gate.' },
-  { id:'fdnpy', name:'fdnpy / FinancialData.Net SDK', layer:'market_ingress', license:'UNVERIFIED: MIT metadata only; original LICENSE absent in reviewed source e46103c95ba04927057609268765a5711b3ad656', repository:'https://github.com/financialdatanet/fdnpy', interfaces:['Python SDK','FinancialData.Net REST API','Universal Query','MCP server'], status:'ADAPTER_READY', dataRights:'PROVIDER_TERMS_REQUIRED', notes:'Candidate only, commercially BLOCKED pending original licence evidence. SDK 0.6.0 is not vendored. FinancialData.Net provider rights, subscription tier, dataset scope, display/redistribution, retention and resale remain separate fail-closed gates.' },
+  { id:'ccxt', name:'CCXT', layer:'market_ingress', license:'MIT', repository:'https://github.com/ccxt/ccxt', interfaces:['REST','WebSocket via Pro-capable exchange methods'], status:'ADAPTER_READY', dataRights:'OPEN_DATA_REQUIRED', notes:'Exchange abstraction; exchange data terms remain independent.' },
+  { id:'hummingbot', name:'Hummingbot / Gateway', layer:'market_ingress', license:'Apache-2.0', repository:'https://github.com/hummingbot/hummingbot', interfaces:['REST','WebSocket','DEX gateway'], status:'ADAPTER_READY', dataRights:'OPEN_DATA_REQUIRED', notes:'Connector architecture; Gateway is a separate Apache-2.0 repository and requires its own immutable source pin before activation.' },
+  { id:'cryptofeed', name:'Cryptofeed', layer:'market_ingress', license:'AGPL-3.0-or-later with additional attribution (reviewed source 6cbd9b959f104fe970791d32444a2ef13ddacc2f)', repository:'https://github.com/bmoscon/cryptofeed', interfaces:['WebSocket','normalized market events'], status:'ADAPTER_READY', dataRights:'OPEN_DATA_REQUIRED', notes:'Candidate only, commercially BLOCKED. Pinned licence evidence: docs/licenses/oss-market-stack/commercial-review-20261003.json. Network copyleft, attribution, actual packaging and provider rights require review; older releases are not reclassified.' },
+  { id:'openbb', name:'OpenBB', layer:'market_ingress', license:'Apache-2.0 (current V5 line)', repository:'https://github.com/openbq-org/OpenBB', interfaces:['Python','REST/API','provider routers'], status:'ADAPTER_READY', dataRights:'OPEN_DATA_REQUIRED', notes:'Multi-asset aggregation layer; underlying provider rights still apply.' },
+  { id:'defillama-sdk', name:'DefiLlama API SDK', layer:'market_ingress', license:'MIT', repository:'https://github.com/DefiLlama/api-sdk', interfaces:['REST','TypeScript SDK'], status:'ADAPTER_READY', dataRights:'OPEN_DATA_REQUIRED', notes:'DeFi fundamentals/TVL/yield metadata; not a tick-by-tick venue feed.' },
 
   { id:'nats', name:'NATS + JetStream', layer:'event_bus', license:'Apache-2.0', repository:'https://github.com/nats-io/nats-server', interfaces:['NATS','JetStream'], status:'EXISTING', dataRights:'SOFTWARE_ONLY', notes:'Canonical durable event/evidence transport already used by Capital-AI.' },
   { id:'valkey', name:'Valkey', layer:'cache', license:'BSD-3-Clause', repository:'https://github.com/valkey-io/valkey', interfaces:['RESP','Pub/Sub'], status:'EXISTING', dataRights:'SOFTWARE_ONLY', notes:'Canonical low-latency cache/projection layer already used by Capital-AI.' },
@@ -42,3 +40,8 @@ export const OPEN_SOURCE_STACK: readonly OssComponent[] = [
 ] as const;
 
 export const OPEN_SOURCE_MARKET_INGRESS = OPEN_SOURCE_STACK.filter(component => component.layer === 'market_ingress');
+
+export const EXCLUDED_MARKET_INGRESS = Object.freeze([
+  { id:'yfinance', reason:'OPEN_DATA_NOT_ESTABLISHED_PERSONAL_USE_DATA_PATH' },
+  { id:'fdnpy', reason:'OPEN_SOURCE_LICENSE_NOT_VERIFIED_AND_PROPRIETARY_DATA_PATH' },
+]);

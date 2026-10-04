@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { validatePlan, validateCommercialEvidence } from './validate-oss-multi-asset-plan.mjs';
-import { OPEN_SOURCE_STACK } from '../src/data/openSourceStack.ts';
+import { OPEN_SOURCE_STACK, EXCLUDED_MARKET_INGRESS } from '../src/data/openSourceStack.ts';
 
 const plan = JSON.parse(readFileSync(new URL('../docs/benchmarks/oss-market-pipelines-sim/live-benchmark-plan.json', import.meta.url)));
 const evidence = JSON.parse(readFileSync(new URL(`../${plan.commercialEvidence}`, import.meta.url)));
@@ -50,12 +50,15 @@ for (const [name, mutate] of [
   });
 }
 
-test('public catalogue discloses the pinned Cryptofeed and fdnpy review limitations', () => {
+test('public catalogue keeps Cryptofeed blocked and fdnpy excluded from active ingress', () => {
   const cryptofeed = OPEN_SOURCE_STACK.find(row => row.id === 'cryptofeed');
+  assert.ok(cryptofeed);
   assert.match(cryptofeed.license, /AGPL-3\.0-or-later/);
   assert.match(cryptofeed.license, new RegExp(evidence.candidates.find(row => row.id === 'cryptofeed').sourceSha));
   assert.match(cryptofeed.notes, /commercially BLOCKED/);
-  const fdnpy = OPEN_SOURCE_STACK.find(row => row.id === 'fdnpy');
-  assert.match(fdnpy.license, /UNVERIFIED/);
-  assert.match(fdnpy.notes, /commercially BLOCKED/);
+
+  assert.equal(OPEN_SOURCE_STACK.some(row => row.id === 'fdnpy'), false);
+  const fdnpy = EXCLUDED_MARKET_INGRESS.find(row => row.id === 'fdnpy');
+  assert.ok(fdnpy);
+  assert.equal(fdnpy.reason, 'OPEN_SOURCE_LICENSE_NOT_VERIFIED_AND_PROPRIETARY_DATA_PATH');
 });

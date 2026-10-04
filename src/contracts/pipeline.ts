@@ -130,6 +130,20 @@ export function validatePipelineGraph(pipeline: PipelineDefinition): PipelineVal
     });
   }
 
+  // MARKET: provider nodes are never valid until Open-Source + Open-Data admission is explicit.
+  for (const node of pipeline.nodes.filter(n => n.type === 'provider_websocket' || n.type === 'provider_rest')) {
+    if (node.config?.sourceAdmission !== 'OPEN_SOURCE_OPEN_DATA_ADMITTED') {
+      issues.push({
+        id: `ERR_OPEN_DATA_ADMISSION_${node.id}`,
+        severity: 'error',
+        ruleId: 'MARKET-SOURCE-ADMISSION',
+        nodeId: node.id,
+        message: 'Provider-Ingestion ist ohne Open-Source/Open-Data-Zulassung blockiert.',
+        remediationAdvice: 'Nur eine kanonisch zugelassene Open-Data-Quelle mit vollständiger Provenienz verwenden.',
+      });
+    }
+  }
+
   // 3. AP-002: Evidence Before Decision Gate Check
   // In production or paper mode, at least one authority/evidence node must be present
   const hasEvidenceGate = pipeline.nodes.some(

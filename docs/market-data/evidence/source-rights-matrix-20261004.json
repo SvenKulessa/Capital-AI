@@ -275,8 +275,11 @@
       },
       "mobileAdmission": {
         "decision": "BLOCK",
-        "reason": "NO_QUALIFYING_OPEN_DATA_LICENCE_EVIDENCE_FOR_CONCRETE_DATASET",
-        "note": "Kommerzielle Vertragsrechte können Web-/andere Produkt-Scope-Fragen klären, schließen unter Owner-Option A jedoch nicht das Mobile-Open-Data-Gate."
+        "reason": "PROPRIETARY_OR_NO_QUALIFYING_OPEN_DATA_LICENSE_EVIDENCE"
+      },
+      "webMarketAdmission": {
+        "decision": "BLOCK",
+        "reason": "PROPRIETARY_OR_NO_QUALIFYING_OPEN_DATA_LICENSE_EVIDENCE"
       }
     },
     {
@@ -336,8 +339,11 @@
       },
       "mobileAdmission": {
         "decision": "BLOCK",
-        "reason": "NO_QUALIFYING_OPEN_DATA_LICENCE_EVIDENCE_FOR_CONCRETE_DATASET",
-        "note": "Kommerzielle Vertragsrechte können Web-/andere Produkt-Scope-Fragen klären, schließen unter Owner-Option A jedoch nicht das Mobile-Open-Data-Gate."
+        "reason": "PROPRIETARY_OR_NO_QUALIFYING_OPEN_DATA_LICENSE_EVIDENCE"
+      },
+      "webMarketAdmission": {
+        "decision": "BLOCK",
+        "reason": "PROPRIETARY_OR_NO_QUALIFYING_OPEN_DATA_LICENSE_EVIDENCE"
       }
     },
     {
@@ -401,8 +407,11 @@
       },
       "mobileAdmission": {
         "decision": "BLOCK",
-        "reason": "NO_QUALIFYING_OPEN_DATA_LICENCE_EVIDENCE_FOR_CONCRETE_DATASET",
-        "note": "Kommerzielle Vertragsrechte können Web-/andere Produkt-Scope-Fragen klären, schließen unter Owner-Option A jedoch nicht das Mobile-Open-Data-Gate."
+        "reason": "PROPRIETARY_OR_NO_QUALIFYING_OPEN_DATA_LICENSE_EVIDENCE"
+      },
+      "webMarketAdmission": {
+        "decision": "BLOCK",
+        "reason": "PROPRIETARY_OR_NO_QUALIFYING_OPEN_DATA_LICENSE_EVIDENCE"
       }
     },
     {
@@ -456,8 +465,11 @@
       },
       "mobileAdmission": {
         "decision": "BLOCK",
-        "reason": "NO_QUALIFYING_OPEN_DATA_LICENCE_EVIDENCE_FOR_CONCRETE_DATASET",
-        "note": "Kommerzielle Vertragsrechte können Web-/andere Produkt-Scope-Fragen klären, schließen unter Owner-Option A jedoch nicht das Mobile-Open-Data-Gate."
+        "reason": "PROPRIETARY_OR_NO_QUALIFYING_OPEN_DATA_LICENSE_EVIDENCE"
+      },
+      "webMarketAdmission": {
+        "decision": "BLOCK",
+        "reason": "PROPRIETARY_OR_NO_QUALIFYING_OPEN_DATA_LICENSE_EVIDENCE"
       }
     }
   ],
@@ -480,28 +492,28 @@
     "currentMobileAdapter": "projek eigener Apache-2.0 Adapter; verified=false bleibt erhalten"
   },
   "architectureFinding": {
-    "state": "OWNER_DECIDED_NO_CODE_MUTATION_REQUIRED",
-    "currentMobileGate": "OSI-Softwarelizenz plus CC0/CC-BY/CC-BY-SA/ODbL Datenlizenz",
-    "selectedOption": "A_OPEN_DATA_ONLY",
-    "effect": "Der bestehende Mobile-Gate bleibt unverändert und fail-closed. Proprietäre kommerzielle Datenfeeds sind für Mobile nicht zulassungsfähig, solange keine qualifizierende Open-Data-Lizenz für das konkrete Dataset vorliegt.",
-    "supersededRecommendation": "B_TWO_INDEPENDENT_GATES_WITH_EXISTING_AGGREGATE"
+    "state": "OWNER_DECIDED_IMPLEMENTED_IN_FOLLOWUP_BRANCH",
+    "selectedOption": "A_OPEN_SOURCE_AND_OPEN_DATA_ONLY",
+    "authority": "docs/market-data/open-source-market-policy.json",
+    "effect": "Legacy-Providerpfade bleiben als historische/Review-Evidence sichtbar, sind aber nicht production-routable."
   },
   "gateAssessment": {
     "OSS_SOURCE_ADMISSION": {
       "state": "FAIL",
-      "reason": "Owner-Option A ist entschieden. Keine geprüfte Quelle besitzt derzeit zugleich Mobile-kompatible OSS-Software-/Adapter-Evidence, eine qualifizierende Open-Data-Lizenz für das konkrete Dataset und die erforderliche Use-Case-/Provenance-Evidence."
+      "reason": "Keine geprüfte Quelle besitzt derzeit zugleich Open-Source-Software-/Adapter-Provenance, eine qualifizierende Open-Data-Lizenz für das konkrete Dataset und die erforderliche Use-Case-/Provenance-Evidence."
     },
     "MULTI_ASSET_LIVE_UNIVERSE": {
       "state": "FAIL",
       "reason": "Katalogmanifest vorhanden, aber Rechte nicht admitted, Live-OHLCV/Trading-Status nicht geprüft und Rohstoffpilot enthält nur 8 kanonische Underlyings."
     }
   },
-  "currentMainCorrelationSha": "c1a720a32a054c16944e6c582086a509be137fc4",
+  "currentMainCorrelationSha": "5d0a7b5bf13977c68cd74ddd65fd092961dc8d15",
   "ownerDecision": {
     "decidedAt": "2026-10-04",
-    "option": "A_OPEN_DATA_ONLY",
-    "scope": "CAPITAL_AI_MOBILE_SOURCE_ADMISSION",
-    "effect": "Mobile accepts only an admitted OSS software/adapter path plus qualifying open-data licence evidence. A proprietary commercial data contract alone cannot satisfy OSS_SOURCE_ADMISSION.",
-    "gateMutationRequired": false
+    "option": "A_OPEN_SOURCE_AND_OPEN_DATA_ONLY",
+    "scope": "CAPITAL_AI_WEB_AND_MOBILE_MARKET_SOURCE_ADMISSION",
+    "effect": "Web und Mobile akzeptieren nur Open-Source-Software/Adapter plus qualifizierende Open-Data-Lizenz des konkreten Datasets. Proprietäre kommerzielle Verträge allein können MARKET Source Admission nicht schließen.",
+    "gateMutationRequired": true,
+    "implementationBranch": "capital-ai-market/open-source-only-20261004"
   }
 }

@@ -30,7 +30,7 @@ jobs:
             exit 0
           fi
           gh api --paginate "repos/$REPOSITORY/pulls/$PR_NUMBER/files?per_page=100" --jq '.[].filename' > /tmp/mobile-files.txt
-          if grep -Eq '^(mobile/|server/(auth|auth\.test|mobile-scorer|mobile-scorer\.test)\.mjs$|package-lock\.json$)' /tmp/mobile-files.txt; then
+          if grep -Eq '^(mobile/|server/(auth|auth\.test|mobile-scorer|mobile-scorer\.test|scorer-proxy|scorer-proxy\.test|index)\.mjs$|package-lock\.json$)' /tmp/mobile-files.txt; then
             echo "mobile=true" >> "$GITHUB_OUTPUT"
           elif grep -qx 'package.json' /tmp/mobile-files.txt; then
             # Script-only registration does not change mobile dependency closure.
@@ -69,16 +69,22 @@ jobs:
       - name: Dependencies deterministic installieren
         run: npm ci --ignore-scripts
       - name: Mobile OIDC und Universe Unit Tests
-        run: node --test server/auth.test.mjs server/mobile-scorer.test.mjs
-      - name: Live Top-400 Research Universe prüfen
+        run: node --test server/auth.test.mjs server/mobile-scorer.test.mjs server/scorer-proxy.test.mjs
+      - name: MARKET Source-Admission und Top-400 Gate prüfen
         run: |
           set -euo pipefail
           mkdir -p security-reports
-          MOBILE_CRYPTO_COINPAPRIKA_RESEARCH=true node --input-type=module <<'NODE' | tee security-reports/mobile-top400-live.json
+          node --input-type=module <<'NODE' | tee security-reports/mobile-top400-live.json
           import { loadUniverseForEvidence } from './server/mobile-scorer.mjs';
-          const universe = await loadUniverseForEvidence({ MOBILE_CRYPTO_COINPAPRIKA_RESEARCH: 'true' });
+          import { MARKET_SOURCE_POLICY } from './server/open-source-market-policy.mjs';
+          const universe = await loadUniverseForEvidence({});
+          const admittedSources = MARKET_SOURCE_POLICY.admittedSources.filter(
+            source => source.eligible === true && source.decision === 'OPEN_SOURCE_OPEN_DATA_ADMITTED'
+          ).length;
           const evidence = {
-            schema: 'MOBILE_TOP400_RUNTIME@1',
+            schema: 'MOBILE_TOP400_RUNTIME@2',
+            sourcePolicy: MARKET_SOURCE_POLICY.mode,
+            admittedSources,
             status: universe.status,
             requested: universe.requested,
             count: universe.count,
@@ -90,23 +96,44 @@ jobs:
             lastRank: universe.assets.at(-1)?.universeRank ?? null,
           };
           console.log(JSON.stringify(evidence, null, 2));
-          const ranks = universe.assets.map(x => x.universeRank).filter(Number.isInteger);
-          const monotonic = ranks.every((rank, index) => index === 0 || rank >= ranks[index - 1]);
-          if (evidence.status !== 'READY' || evidence.count !== 400 || evidence.uniqueSymbols !== 400 || evidence.firstRank !== 1 || !monotonic || evidence.lastRank < 400) process.exit(1);
+          if (admittedSources === 0) {
+            const failClosed =
+              evidence.sourcePolicy === 'OPEN_SOURCE_AND_OPEN_DATA_ONLY' &&
+              evidence.status === 'BLOCKED' &&
+              evidence.count === 0 &&
+              evidence.uniqueSymbols === 0 &&
+              evidence.sources.length === 0 &&
+              evidence.rightsScope === 'OPEN_SOURCE_OPEN_DATA_REQUIRED';
+            if (!failClosed) process.exit(1);
+          } else {
+            const ranks = universe.assets.map(x => x.universeRank).filter(Number.isInteger);
+            const monotonic = ranks.every((rank, index) => index === 0 || rank >= ranks[index - 1]);
+            if (
+              evidence.status !== 'READY' ||
+              evidence.count !== 400 ||
+              evidence.uniqueSymbols !== 400 ||
+              evidence.firstRank !== 1 ||
+              !monotonic ||
+              evidence.lastRank < 400
+            ) process.exit(1);
+          }
           NODE
-      - name: Kanonische Scorer Authority per HTTP Contract verifizieren
+      - name: Kanonische Scorer Authority oder Fail-Closed Zustand verifizieren
         if: always()
         run: |
           set -euo pipefail
           mkdir -p security-reports
+          admitted_sources="$(node --input-type=module -e "import { MARKET_SOURCE_POLICY } from './server/open-source-market-policy.mjs'; console.log(MARKET_SOURCE_POLICY.admittedSources.filter(source => source.eligible === true && source.decision === 'OPEN_SOURCE_OPEN_DATA_ADMITTED').length)")"
+          if [ "$admitted_sources" = "0" ]; then
+            jq -n --arg admitted "$admitted_sources"               '{schema:"MOBILE_SCORER_ORIGIN_READBACK@3",mode:"FAIL_CLOSED",admittedSources:($admitted|tonumber),networkProbeExecuted:false,verified:true,reason:"NO_ADMITTED_MARKET_SOURCE"}'               | tee security-reports/mobile-scorer-origin.json
+            exit 0
+          fi
           probe() {
             local url="$1"
             curl --silent --show-error --location-trusted --max-redirs 0 --retry 8 --retry-all-errors --retry-delay 2 --connect-timeout 4 --max-time 20               -o /tmp/probe-body -w '%{http_code}' -X POST "$url" -H 'Content-Type: application/json' --data '{}'
           }
           public_status="$(probe 'https://capital-ai.online/api/crypto/score' || true)"
-          finance_status="$(probe 'https://finance-7clq.onrender.com/api/crypto/score' || true)"
-          capital_status="$(probe 'https://capital-ai-uvsl.onrender.com/api/crypto/score' || true)"
-          jq -n --arg public "$public_status" --arg finance "$finance_status" --arg capital "$capital_status"             '{schema:"MOBILE_SCORER_ORIGIN_READBACK@2",publicOrigin:"https://capital-ai.online",publicStatus:$public,financeRenderOrigin:"https://finance-7clq.onrender.com",financeRenderStatus:$finance,capitalRenderOrigin:"https://capital-ai-uvsl.onrender.com",capitalRenderStatus:$capital,verified:(["400","401","402","403","409","422","429"] | index($public) != null)}'             | tee security-reports/mobile-scorer-origin.json
+          jq -n --arg admitted "$admitted_sources" --arg public "$public_status"             '{schema:"MOBILE_SCORER_ORIGIN_READBACK@4",mode:"ACTIVE_SOURCE_VALIDATION",topology:"PUBLIC_REVERSE_PROXY",admittedSources:($admitted|tonumber),networkProbeExecuted:true,publicOrigin:"https://capital-ai.online",publicStatus:$public,financePublicOriginProbeExecuted:false,verified:(["400","401","402","403","409","422","429"] | index($public) != null)}'             | tee security-reports/mobile-scorer-origin.json
           jq -e '.verified == true' security-reports/mobile-scorer-origin.json >/dev/null
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()

@@ -109,9 +109,8 @@ export class PipelineConfiguratorService {
   }
 
   public toggleProvider(providerId: string, enabled: boolean): boolean {
-    const activeProviders = enabled
-      ? [...new Set([...this.currentConfig.activeProviders, providerId])]
-      : this.currentConfig.activeProviders.filter((p) => p !== providerId);
+    if (enabled) throw new Error(`OPEN_SOURCE_OPEN_DATA_ADMISSION_REQUIRED:${providerId}`);
+    const activeProviders = this.currentConfig.activeProviders.filter((p) => p !== providerId);
     this.updateActiveConfig({ activeProviders }, 'provider-toggle');
     return true;
   }
@@ -190,24 +189,24 @@ export class PipelineConfiguratorService {
           circuitBreakerThresholdPct: 2,
         },
       },
-      activeProviders: ['binance_public', 'kraken_public', 'twelvedata_api', 'sec_edgar_filings'],
+      activeProviders: [],
       providerFeatureAssignments: {
-        technical: ['binance_public', 'twelvedata_api'],
-        fundamental: ['sec_edgar_filings'],
-        sentiment: ['gemini_nlp'],
-        macro: ['fred_api', 'twelvedata_api'],
-        orderflow: ['binance_public', 'kraken_public'],
+        technical: [],
+        fundamental: [],
+        sentiment: [],
+        macro: [],
+        orderflow: [],
       },
       assetClassRoutes: {
         crypto: {
-          primaryProvider: 'binance_public',
-          fallbackProvider: 'kraken_public',
+          primaryProvider: 'OPEN_DATA_NOT_ADMITTED',
+          fallbackProvider: 'OPEN_DATA_NOT_ADMITTED',
           maxStalenessSeconds: 15,
           minQualityScore: 85,
         },
         equity_us: {
-          primaryProvider: 'twelvedata_api',
-          fallbackProvider: 'sec_edgar_filings',
+          primaryProvider: 'OPEN_DATA_NOT_ADMITTED',
+          fallbackProvider: 'OPEN_DATA_NOT_ADMITTED',
           maxStalenessSeconds: 60,
           minQualityScore: 90,
         },

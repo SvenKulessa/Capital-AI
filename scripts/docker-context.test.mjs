@@ -66,3 +66,32 @@ test('secrets, git metadata, reports and unrelated server files remain excluded'
     assert.equal(reachable(name), false, 'Unexpected build-context access: ' + name);
   }
 });
+
+
+test('runtime market module dependencies are present in the final image and build context', () => {
+  const market = readFileSync(resolve(root, 'server/market.mjs'), 'utf8');
+  const dockerfile = readFileSync(resolve(root, 'Dockerfile'), 'utf8');
+  assert.match(market, /from ['"]\.\/open-source-market-policy\.mjs['"]/);
+  assert.match(
+    dockerfile,
+    /COPY\s+[^\n]*server\/market\.mjs[^\n]*server\/open-source-market-policy\.mjs[^\n]*\.\/server\//,
+    'Runtime Docker stage must copy the local policy module imported by server/market.mjs',
+  );
+  assert.equal(reachable('server/open-source-market-policy.mjs'), true);
+});
+
+
+test('runtime entrypoint local server imports are copied and reachable', () => {
+  const entrypoint = readFileSync(resolve(root, 'server/index.mjs'), 'utf8');
+  const dockerfile = readFileSync(resolve(root, 'Dockerfile'), 'utf8');
+  const localImports = [...entrypoint.matchAll(/from\s+['"]\.\/([^'"]+)['"]/g)].map(match => match[1]);
+  assert.ok(localImports.length > 0, 'Expected local server imports in runtime entrypoint');
+  for (const imported of localImports) {
+    const source = 'server/' + imported;
+    assert.equal(reachable(source), true, 'Docker context excludes runtime entrypoint dependency: ' + source);
+    assert.ok(
+      dockerfile.split(/\r?\n/).some(line => line.startsWith('COPY ') && line.includes(source) && line.trim().endsWith('./server/')),
+      'Runtime Docker stage must copy local entrypoint dependency: ' + source,
+    );
+  }
+});

@@ -21,7 +21,7 @@ export function validateAnalysisComponentRegistry(entries: unknown = CANONICAL_5
     { componentId: 'registry', code: 'REGISTRY_SCHEMA_INVALID', reference: parsed.error.message },
   ] };
   const ids = new Set<string>();
-  const providers = new Set(ProviderRegistryService.getAllProviders().map(provider => provider.id));
+  const providers = new Set(ProviderRegistryService.getAllProviders().filter(provider => provider.productionAdmission === 'OPEN_SOURCE_OPEN_DATA_ADMITTED').map(provider => provider.id));
   if (parsed.data.length !== 50) issues.push({ componentId: 'registry', code: 'REGISTRY_COUNT_INVALID', reference: String(parsed.data.length) });
   for (const entry of parsed.data) {
     const add = (code: string, reference: string) => issues.push({ componentId: entry.componentId, code, reference });

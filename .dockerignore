@@ -12,6 +12,7 @@
 !server/
 !server/index.mjs
 !server/market.mjs
+!server/open-source-market-policy.mjs
 !server/advisor.ts
 !server/prompt-injection-guard.mjs
 !server/prompt-injection-guard.test.mjs
@@ -29,6 +30,7 @@
 !server/observability.mjs
 !server/cads-observability.mjs
 !server/mobile-scorer.mjs
+!server/scorer-proxy.mjs
 !shared/
 !shared/market-contracts.mjs
 !shared/legal-identity.mjs
