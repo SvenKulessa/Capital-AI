@@ -125,3 +125,8 @@ Nächster zulässiger Übergang:
 4. OCI Index, Plattformmanifest, Config-Digest, SBOM und Provenance verifizieren.
 5. Ohne Rebuild denselben Digest auf Render promoten.
 6. Provider- und Runtime-Identity erneut readbacken.
+
+## Frischer PLATFORM-Readback nach Main 8e34c7a…
+
+Die älteren Snapshot-Angaben oben bleiben historische Evidence. Aktueller Ergänzungsstand: [Digest-Korrelation und Promotion-Preflight](DIGEST-CORRELATION.md), [vollständiger maschinenlesbarer Readback](digest-correlation.json). Ergebnis weiterhin BLOCKED; insbesondere neuerer historischer Candidate, Config-Digest-Konflikt und geänderter Supabase-Katalogstand berücksichtigen. Keine zusätzliche Authority oder Freigabe.
+
