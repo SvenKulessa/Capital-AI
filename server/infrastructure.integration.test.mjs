@@ -24,7 +24,7 @@ test('cache-only connection remains usable while evidence and delivery fail clos
  } finally { await service.close(); }
 });
 test('real Redis / JetStream: acknowledged fact, replay, cache integrity, ordering, restart and outage', { skip: !configured }, async () => {
- const service = new MarketInfrastructure();
+ const service = new MarketInfrastructure({ ...process.env, MARKET_CANONICAL_DB_REQUIRED: 'false' });
  const raw = { testHarness: true, tick: Date.now() };
  const fact = { schemaVersion: '1.0.0', symbol: 'BTCUSD', venue: 'KRAKEN', provider: 'kraken', price: 100,
   quote: 'USD', bid: 99, ask: 101, volume24h: null, observedAt: Date.now() - 1000, receivedAt: Date.now(),
