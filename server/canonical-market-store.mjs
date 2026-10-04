@@ -36,6 +36,39 @@ export class CanonicalMarketStore {
     };
   }
 
+  async readLatest(symbol) {
+    const config = this.config();
+    if (!config) return null;
+    const normalized = String(symbol || '').toUpperCase().trim();
+    if (!/^[A-Z0-9][A-Z0-9._-]{0,31}$/.test(normalized)) return null;
+
+    const headers = { Accept: 'application/json', apikey: config.key };
+    if (config.key.startsWith('eyJ')) headers.Authorization = `Bearer ${config.key}`;
+
+    try {
+      const params = new URLSearchParams({
+        select: 'evidence_id,fact,observed_at',
+        symbol: `eq.${normalized}`,
+        order: 'observed_at.desc',
+        limit: '1',
+      });
+      const response = await this.fetchImpl(
+        `${config.origin}/rest/v1/canonical_market_facts?${params}`,
+        { method: 'GET', headers, signal: AbortSignal.timeout(5000) },
+      );
+      if (!response.ok) throw new Error(`CANONICAL_DB_READ_${response.status}`);
+      const rows = await response.json();
+      if (!Array.isArray(rows) || rows.length !== 1) return null;
+      const fact = QuoteFactSchema.parse(rows[0].fact);
+      if (fact.symbol !== normalized || !EVIDENCE_ID.test(String(rows[0].evidence_id || ''))) return null;
+      this.lastError = null;
+      return { evidenceId: rows[0].evidence_id, fact };
+    } catch (error) {
+      this.lastError = String(error?.message || 'CANONICAL_DB_READ_FAILED').slice(0, 128);
+      return null;
+    }
+  }
+
   async persist(delivery, envelope) {
     const config = this.config();
     if (!config) throw new Error('CANONICAL_DB_NOT_CONFIGURED');
