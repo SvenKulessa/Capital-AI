@@ -58,11 +58,7 @@ function configured(env) {
       env.VITE_SUPABASE_PUBLISHABLE_KEY ||
       env.SUPABASE_ANON_KEY ||
       '';
-    const signingSecret =
-      env.AUTH_COOKIE_SIGNING_SECRET ||
-      env.SUPABASE_SECRET_KEY ||
-      env.SUPABASE_SERVICE_ROLE_KEY ||
-      '';
+    const signingSecret = env.AUTH_COOKIE_SIGNING_SECRET || '';
     if (
       url.href !== url.origin + '/' ||
       origin.href !== origin.origin + '/' ||
