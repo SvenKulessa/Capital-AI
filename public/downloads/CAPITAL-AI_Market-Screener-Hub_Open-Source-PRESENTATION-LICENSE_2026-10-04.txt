@@ -1,0 +1,23 @@
+CAPITAL-AI MARKET SCREENER HUB - OPEN-SOURCE + OPEN-DATA ARCHITECTURE v2.0
+PRESENTATION LICENSE
+
+Copyright (c) 2026 Sven Kulessa / CAPITAL-AI
+
+The original presentation text, original layout, and original diagrams created specifically for this CAPITAL-AI presentation are licensed under:
+
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+SPDX-style identifier for this presentation content: CC-BY-4.0
+
+Attribution suggestion:
+"CAPITAL-AI Market Screener Hub - Open-Source + Open-Data Architecture v2.0, Sven Kulessa / CAPITAL-AI, 2026, CC BY 4.0."
+
+IMPORTANT RIGHTS BOUNDARIES
+
+1. This presentation license applies only to original presentation content created for CAPITAL-AI.
+2. Product names, project names, trademarks, logos, source-code licenses, third-party documentation, datasets, APIs, market data, and provider content are not relicensed by this file.
+3. Open-source software licensing and market-data/dataset licensing are independent rights layers.
+4. The deck does not grant market-data display, redistribution, derived-data, retention, resale, white-label, social-media, or API rights.
+5. Any production use of a market dataset remains subject to the CAPITAL-AI source-admission policy and independent evidence for the relevant use cases and instruments.
+6. Third-party names are used only descriptively to document the architecture and evaluated candidates.
+
+Status basis: Owner decision 2026-10-04 and CAPITAL-AI MARKET PR #133.
