@@ -464,7 +464,7 @@ export const ArchitecturePage: React.FC<ArchitecturePageProps> = ({
           }`}
         >
           <Database className="w-4 h-4" />
-          <span>3. Provider-Matrix</span>
+          <span>3. OSS Adapter-Matrix</span>
         </button>
 
         <button
@@ -583,20 +583,20 @@ export const ArchitecturePage: React.FC<ArchitecturePageProps> = ({
                 </div>
                 <h3 className="text-base font-bold text-white mb-2">Multi-Provider Ingestion</h3>
                 <p className="text-xs text-slate-300 leading-relaxed mb-4">
-                  Permanente WebSocket-Verbindungen zu führenden Low-Cost- und Free-Feed-Providern.
+                  Provider-neutrale Open-Source-Adapter kapseln die Ingestion. Konkrete Upstream-Datenquellen werden erst nach separater Rechte-Evidence freigeschaltet.
                 </p>
                 <div className="space-y-1.5 text-[11px] font-mono text-slate-400">
                   <div className="flex items-center justify-between p-1.5 rounded bg-black/40 border border-white/5">
-                    <span>Binance WSS (Krypto)</span>
-                    <span className="text-emerald-400 font-bold">0€ • &lt;25ms</span>
+                    <span>CCXT Adapter (MIT)</span>
+                    <span className="text-emerald-400 font-bold">OSS • venueabhängig</span>
                   </div>
                   <div className="flex items-center justify-between p-1.5 rounded bg-black/40 border border-white/5">
-                    <span>Finnhub / Polygon (Stocks)</span>
-                    <span className="text-amber-300 font-bold">29€ • &lt;70ms</span>
+                    <span>OpenBB Router (Apache-2.0)</span>
+                    <span className="text-amber-300 font-bold">OSS • upstreamabhängig</span>
                   </div>
                   <div className="flex items-center justify-between p-1.5 rounded bg-black/40 border border-white/5">
-                    <span>Twelve Data (FX/Commodities)</span>
-                    <span className="text-blue-400 font-bold">0€ • &lt;95ms</span>
+                    <span>Hummingbot / Gateway</span>
+                    <span className="text-blue-400 font-bold">OSS • self-hosted</span>
                   </div>
                 </div>
               </div>
@@ -723,9 +723,9 @@ export const ArchitecturePage: React.FC<ArchitecturePageProps> = ({
                 </div>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Beim naiven Ansatz öffnet jeder Web- oder Smartphone-Client eine eigene Verbindung zu Binance, Finnhub 
-                oder Polygon. Bei 2.000 parallelen Tradern führt dies unvermeidlich zu <strong>HTTP 429 Too Many Requests</strong> 
-                oder API-Kosten von tausenden Euro im Monat.
+                Beim naiven Ansatz öffnet jeder Web- oder Smartphone-Client eigene Upstream-Verbindungen. Bei vielen parallelen
+                Clients führt das zu Rate-Limits, unnötigem Netzwerkverkehr und schwer kontrollierbarer Daten-Provenance.
+                Capital-AI entkoppelt Clients deshalb über eine zentrale, provider-neutrale OSS-Ingestion-Schicht.
               </p>
               <div className="p-3.5 rounded-xl bg-black/50 border border-slate-800 text-xs text-slate-300 space-y-2">
                 <div className="flex items-center gap-2 text-emerald-400 font-semibold font-mono text-[11px]">
@@ -733,8 +733,8 @@ export const ArchitecturePage: React.FC<ArchitecturePageProps> = ({
                   <span>Capital-AI Ingestion Prinzip:</span>
                 </div>
                 <p className="text-[11px] text-slate-400">
-                  Unser Node.js/Go Backend hält genau <strong>1 einzige WSS-Verbindung</strong> zum Provider aufrecht. 
-                  Eintreffende Marktticks werden mit ca. 1.200 Ticks/Sekunde in Redis gepusht und über interne 
+                  Das Backend hält kontrollierte Upstream-Verbindungen über freigegebene OSS-Adapter. 
+                  Kanonische Events laufen über NATS JetStream; aktuelle Projektionen werden in Valkey 8 gehalten und über interne 
                   WebSocket-Räume (Rooms nach Symbol: z.B. <code className="text-amber-300">room:BTC/USDT</code>) per 
                   Fan-Out an beliebig viele Clients gestreamt.
                 </p>
@@ -762,9 +762,9 @@ export const ArchitecturePage: React.FC<ArchitecturePageProps> = ({
                   <span>Kaskadierende Failover-Kette:</span>
                 </div>
                 <p className="text-[11px] text-slate-400">
-                  Sendet Binance für &gt; 250ms kein Lebenszeichen, schaltet der Aggregator automatisch und nahtlos auf 
-                  den <strong>Coinbase Advanced WSS</strong> um. Für Aktien wechselt der Stream von Finnhub zu Polygon.io 
-                  oder TwelveData REST Polling. Die Frontend-Clients bemerken keine Verbindungsunterbrechung!
+                  Fällt ein zugelassener Upstream aus, wechselt der Aggregator ausschließlich auf eine zweite separat freigegebene
+                  Datenquelle. Adapter-, Datenrechte- und Provenance-Gates bleiben dabei erhalten; ein Failover darf keine nicht
+                  zugelassene Quelle aktivieren.
                 </p>
               </div>
             </div>
@@ -789,6 +789,27 @@ export const ArchitecturePage: React.FC<ArchitecturePageProps> = ({
       {/* TAB 2: PROVIDER & CONFIGURATION MATRIX */}
       {/* =================================================================== */}
       {activeTab === 'providers' && (
+        <div className="space-y-4 animate-fadeIn">
+          <div className="p-5 rounded-2xl bg-[#090e21] border border-emerald-500/30">
+            <div className="flex items-center gap-2 text-emerald-300 font-bold">
+              <ShieldCheck className="w-4 h-4" />
+              <span>Open-Source-Only Adapter-Matrix</span>
+            </div>
+            <p className="mt-2 text-xs text-slate-300 leading-relaxed">
+              Produktiv auswählbar sind ausschließlich Open-Source-Softwareadapter wie CCXT, Hummingbot/Gateway,
+              OpenBB und das DefiLlama SDK. Die Softwarelizenz eines Adapters ersetzt keine Rechte an Marktdaten.
+              Konkrete Upstreams bleiben bis zum nachweisbaren Nutzungs-, Display-, Retention- und Redistribution-Recht fail-closed.
+            </p>
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
+              <div className="p-3 rounded-xl bg-black/40 border border-slate-800">CCXT · MIT · Market Ingress</div>
+              <div className="p-3 rounded-xl bg-black/40 border border-slate-800">Hummingbot/Gateway · Apache-2.0/MIT</div>
+              <div className="p-3 rounded-xl bg-black/40 border border-slate-800">OpenBB · Apache-2.0 · Provider Router</div>
+              <div className="p-3 rounded-xl bg-black/40 border border-slate-800">DefiLlama SDK · MIT · DeFi Metadata</div>
+            </div>
+          </div>
+        </div>
+      )}
+      {false && activeTab === 'providers' && (
         <div className="space-y-6 animate-fadeIn">
           {/* Header Controls & Category Filters */}
           <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-[#090e21] border border-slate-800">
@@ -1479,7 +1500,7 @@ export const ArchitecturePage: React.FC<ArchitecturePageProps> = ({
               <div className="space-y-1.5 text-[11px] font-mono text-slate-400 pt-2">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Multi-Source Consensus (Binance vs Coinbase Vergleich)</span>
+                  <span>Multi-Source Consensus über separat zugelassene Upstream-Datenquellen</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
@@ -1672,166 +1693,46 @@ export const ArchitecturePage: React.FC<ArchitecturePageProps> = ({
 // PRODUCTION READY CODE BLUEPRINT STRINGS
 // ---------------------------------------------------------------------------
 const MULTIPLEXER_CODE = `/**
- * Capital-AI WebSocket Ingestion & Client Fan-Out Multiplexer
- * =========================================================================
- * - Verbindet sich genau EINMAL zum externen Low-Budget Datenfeed (Binance/Finnhub)
- * - Verteilt Ticks an n-tausend verbundene Browser-Clients via Room-Pub/Sub
- * - Minimiert Netzwerktraffic mit Delta-Kompression
+ * Capital-AI provider-neutral OSS ingestion multiplexer
+ * - Adapter software must be open source.
+ * - Upstream data rights are evaluated independently and fail closed.
+ * - NATS JetStream is the durable event/replay authority.
+ * - Valkey 8 stores hot-state projections only.
  */
-import { WebSocketServer, WebSocket } from 'ws';
-
-export interface CanonicalMarketTick {
-  s: string;  // Symbol (z.B. "BTC/USDT")
-  p: number;  // Aktueller Preis
-  v: number;  // 24h Volumen
-  t: number;  // UTC Timestamp ms
-  d: number;  // 24h Change %
-  q: number;  // Quality Score (0-100)
+export interface OpenSourceIngressAdapter {
+  id: 'ccxt' | 'hummingbot' | 'openbb' | 'defillama-sdk';
+  connect(): Promise<void>;
+  subscribe(symbols: string[]): Promise<void>;
+  onCanonicalEvent(handler: (event: unknown) => void): void;
 }
 
-export class MarketDataMultiplexer {
-  private wss: WebSocketServer;
-  private clientRooms: Map<string, Set<WebSocket>> = new Map();
-  private upstreamSocket: WebSocket | null = null;
-  private lastPrices: Map<string, number> = new Map();
-
-  constructor(port: number = 8080) {
-    this.wss = new WebSocketServer({ port });
-    this.setupClientConnections();
-    this.connectToBinanceStream();
-  }
-
-  // 1. Verbindung zum kostenlosen Binance Public Stream (0€ / Monat)
-  private connectToBinanceStream() {
-    const streamUrl = 'wss://stream.binance.com:9443/ws/!miniTicker@arr';
-    console.log('[UPSTREAM] Verbinde mit Binance Public WebSocket...');
-
-    this.upstreamSocket = new WebSocket(streamUrl);
-
-    this.upstreamSocket.on('message', (raw: Buffer) => {
-      try {
-        const batch = JSON.parse(raw.toString());
-        for (const item of batch) {
-          const symbol = item.s.replace('USDT', '/USDT');
-          const price = parseFloat(item.c);
-          const prev = this.lastPrices.get(symbol);
-
-          // Nur senden wenn sich der Preis geändert hat (Delta-Filter)
-          if (prev !== price) {
-            this.lastPrices.set(symbol, price);
-            const tick: CanonicalMarketTick = {
-              s: symbol,
-              p: price,
-              v: parseFloat(item.v),
-              t: item.E,
-              d: parseFloat(item.c) - parseFloat(item.o),
-              q: 99.4,
-            };
-            this.broadcastToRoom(symbol, tick);
-          }
-        }
-      } catch (err) {
-        console.error('[PARSE ERROR]', err);
-      }
-    });
-
-    this.upstreamSocket.on('close', () => {
-      console.warn('[UPSTREAM] Verbindung getrennt. Reconnect in 2s...');
-      setTimeout(() => this.connectToBinanceStream(), 2000);
-    });
-  }
-
-  // 2. Client Room Subscriptions
-  private setupClientConnections() {
-    this.wss.on('connection', (clientWs: WebSocket) => {
-      clientWs.on('message', (msg: string) => {
-        const payload = JSON.parse(msg.toString());
-        if (payload.action === 'SUBSCRIBE' && payload.symbol) {
-          if (!this.clientRooms.has(payload.symbol)) {
-            this.clientRooms.set(payload.symbol, new Set());
-          }
-          this.clientRooms.get(payload.symbol)!.add(clientWs);
-        }
-      });
-
-      clientWs.on('close', () => {
-        this.clientRooms.forEach((set) => set.delete(clientWs));
-      });
-    });
-  }
-
-  private broadcastToRoom(symbol: string, tick: CanonicalMarketTick) {
-    const subscribers = this.clientRooms.get(symbol);
-    if (!subscribers || subscribers.size === 0) return;
-
-    const message = JSON.stringify(tick);
-    subscribers.forEach((ws) => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send(message);
-      }
-    });
-  }
+export async function startIngress(adapter: OpenSourceIngressAdapter) {
+  await adapter.connect();
+  adapter.onCanonicalEvent((event) => {
+    // publishCanonicalEventToJetStream(event)
+    // projectLatestStateToValkey(event)
+  });
 }`;
 
 const CIRCUIT_BREAKER_CODE = `/**
- * Capital-AI Adaptive Circuit Breaker & Failover Controller
- * =========================================================================
- * - Überwacht Heartbeats des primären Daten-Feeds
- * - Schaltet in < 80ms auf Sekundär-Provider um, falls Heartbeat ausbleibt
- * - Verhindert Fehlauslösungen durch adaptiven Deadman-Switch
+ * Capital-AI rights-aware failover controller
+ * A fallback is eligible only when BOTH the adapter license and upstream
+ * dataset rights are explicitly approved.
  */
-export interface ProviderHealth {
-  id: string;
-  name: string;
-  isAlive: boolean;
-  lastHeartbeat: number;
-  consecutiveDrops: number;
+export interface ApprovedRoute {
+  adapterId: string;
+  upstreamId: string;
+  softwareLicenseApproved: boolean;
+  dataRightsApproved: boolean;
+  healthy: boolean;
 }
 
-export class FeedCircuitBreaker {
-  private primaryProvider: ProviderHealth;
-  private secondaryProvider: ProviderHealth;
-  private activeProviderId: string;
-  private heartbeatTimeoutMs: number = 350; // Max tolerierte Stille
-
-  constructor() {
-    this.primaryProvider = { id: 'binance', name: 'Binance WSS', isAlive: true, lastHeartbeat: Date.now(), consecutiveDrops: 0 };
-    this.secondaryProvider = { id: 'coinbase', name: 'Coinbase Advanced WSS', isAlive: true, lastHeartbeat: Date.now(), consecutiveDrops: 0 };
-    this.activeProviderId = 'binance';
-
-    this.startWatchdog();
-  }
-
-  public recordTick(providerId: string) {
-    if (providerId === this.primaryProvider.id) {
-      this.primaryProvider.lastHeartbeat = Date.now();
-      this.primaryProvider.consecutiveDrops = 0;
-      this.primaryProvider.isAlive = true;
-
-      // Wenn Primär wieder gesund, sanftes Failback
-      if (this.activeProviderId !== this.primaryProvider.id) {
-        console.log('[CIRCUIT BREAKER] Primär-Provider wieder stabil. Führe Failback durch.');
-        this.activeProviderId = this.primaryProvider.id;
-      }
-    }
-  }
-
-  private startWatchdog() {
-    setInterval(() => {
-      const now = Date.now();
-      const primaryLag = now - this.primaryProvider.lastHeartbeat;
-
-      if (primaryLag > this.heartbeatTimeoutMs && this.activeProviderId === this.primaryProvider.id) {
-        this.primaryProvider.consecutiveDrops++;
-        console.warn(\`[ALERT] Primär-Feed reagiert nicht (\${primaryLag}ms). Failover auf Coinbase Pro eingeleitet!\`);
-        this.activeProviderId = this.secondaryProvider.id;
-      }
-    }, 100);
-  }
-
-  public getActiveProvider(): string {
-    return this.activeProviderId;
-  }
+export function selectFailover(routes: ApprovedRoute[]): ApprovedRoute {
+  const eligible = routes.filter(
+    (route) => route.softwareLicenseApproved && route.dataRightsApproved && route.healthy
+  );
+  if (eligible.length === 0) throw new Error('NO_APPROVED_MARKET_DATA_ROUTE');
+  return eligible[0];
 }`;
 
 const HOOK_CODE = `/**

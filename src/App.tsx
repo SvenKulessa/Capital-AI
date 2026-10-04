@@ -29,34 +29,34 @@ import { CoreModules } from './components/CoreModules';
 import { Footer } from './components/Footer';
 import { StatusBar } from './components/StatusBar';
 import { LoginPage } from './components/LoginPage';
-import { AnalysisModal } from './components/AnalysisModal';
-import { ProductTourModal } from './components/ProductTourModal';
-import { AssetDetailModal } from './components/AssetDetailModal';
-import { ModuleDetailModal } from './components/ModuleDetailModal';
-import { AllMarketsModal } from './components/AllMarketsModal';
-import { SubclassDetailModal } from './components/SubclassDetailModal';
 import { LegalAndFaqPages, LegalRoute } from './components/LegalAndFaqPages';
 import { ResearchLicensePages, ResearchProjectSummary } from './components/ResearchLicensePages';
 import { RESEARCH_ROUTES, researchMetadata, type ResearchRoute } from './data/researchLicenses';
 import { MarketAsset, CoreModule, MainCategory, AssetSubclass } from './types';
 import { CORE_MODULES, MARKET_ASSETS } from './data/mockData';
-import { MarketVocabularyModal } from './components/MarketVocabularyModal';
 import { initGoogleAnalytics, trackPageView, updatePageSEO } from './utils/analytics';
 import { PriceAlertsProvider, usePriceAlerts } from './context/PriceAlertsContext';
 import { PriceAlertToast } from './components/PriceAlertToast';
-import { PriceAlertsModal } from './components/PriceAlertsModal';
 import { MarketSentiment } from './components/MarketSentiment';
 import { SectorAnalysis } from './components/SectorAnalysis';
-import { WhaleRadarModal } from './components/WhaleRadarModal';
-import { MonetizationModal } from './components/MonetizationModal';
 const ArchitecturePage = lazy(() => import('./components/ArchitecturePage').then(module => ({ default: module.ArchitecturePage })));
+const AnalysisModal = lazy(() => import('./components/AnalysisModal').then(module => ({ default: module.AnalysisModal })));
+const ProductTourModal = lazy(() => import('./components/ProductTourModal').then(module => ({ default: module.ProductTourModal })));
+const AssetDetailModal = lazy(() => import('./components/AssetDetailModal').then(module => ({ default: module.AssetDetailModal })));
+const ModuleDetailModal = lazy(() => import('./components/ModuleDetailModal').then(module => ({ default: module.ModuleDetailModal })));
+const AllMarketsModal = lazy(() => import('./components/AllMarketsModal').then(module => ({ default: module.AllMarketsModal })));
+const SubclassDetailModal = lazy(() => import('./components/SubclassDetailModal').then(module => ({ default: module.SubclassDetailModal })));
+const MarketVocabularyModal = lazy(() => import('./components/MarketVocabularyModal').then(module => ({ default: module.MarketVocabularyModal })));
+const PriceAlertsModal = lazy(() => import('./components/PriceAlertsModal').then(module => ({ default: module.PriceAlertsModal })));
+const WhaleRadarModal = lazy(() => import('./components/WhaleRadarModal').then(module => ({ default: module.WhaleRadarModal })));
+const MonetizationModal = lazy(() => import('./components/MonetizationModal').then(module => ({ default: module.MonetizationModal })));
+const MarketscreenerModal = lazy(() => import('./components/MarketscreenerModal').then(module => ({ default: module.MarketscreenerModal })));
 const TokenomicsPage = lazy(() => import('./components/TokenomicsPage').then(module => ({ default: module.TokenomicsPage })));
 const PipelineBuilder = lazy(() => import('./components/PipelineBuilder').then(module => ({ default: module.PipelineBuilder })));
 const ProviderStatusDashboard = lazy(() => import('./components/ProviderStatusDashboard').then(module => ({ default: module.ProviderStatusDashboard })));
 const StudioPage = lazy(() => import('./components/StudioPage').then(module => ({ default: module.StudioPage })));
 const LearningPortalPage = lazy(() => import('./components/LearningPortalPage').then(module => ({ default: module.LearningPortalPage })));
 const ControlCenterPage = lazy(() => import('./components/ControlCenterPage').then(module => ({ default: module.ControlCenterPage })));
-import { MarketscreenerModal } from './components/MarketscreenerModal';
 const EnterpriseScorerDashboard = lazy(() => import('./components/EnterpriseScorerDashboard').then(module => ({ default: module.EnterpriseScorerDashboard })));
 const ScreenerTable = lazy(() => import('./components/ScreenerTable').then(module => ({ default: module.ScreenerTable })));
 import { APP_NAVIGATION_EVENT, navigateAppLocation, resolveAppRoute } from './utils/appNavigation';
@@ -622,6 +622,7 @@ function AppContent() {
       </main>
 
       {/* Interactive Modals */}
+      <Suspense fallback={null}>
       <AnalysisModal
         isOpen={isAnalysisOpen}
         onClose={() => {
@@ -821,6 +822,7 @@ function AppContent() {
           setIsAllMarketsOpen(true);
         }}
       />
+      </Suspense>
     </div>
   );
 }
