@@ -21,6 +21,11 @@ import type { CoreModule } from '../../entities/module/model';
 import { HomePage } from '../../features/home/HomePage';
 import { LEGAL_ROUTES } from './routes';
 
+const ProfilePage = lazy(() =>
+  import('../../components/ProfilePage').then((module) => ({
+    default: module.ProfilePage,
+  })),
+);
 const ArchitecturePage = lazy(() =>
   import('../../components/ArchitecturePage').then((module) => ({
     default: module.ArchitecturePage,
@@ -110,6 +115,10 @@ export function AppRoutes({
         onNavigateLegal={navigateTo}
       />
     );
+  }
+
+  if (currentRoute === '/profile') {
+    return <ProfilePage onBackToHome={() => navigateTo('/')} />;
   }
 
   if (currentRoute === '/pipeline-builder') {
