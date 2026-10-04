@@ -124,7 +124,7 @@ The platform architecture defines 8 modular node categories:
 
 ## 4. System of Record: Supabase Schema Architecture
 
-To fulfill the requirements without violating AP-007, the following relational schema is designed for deployment via SQL migration:
+To fulfill the requirements without violating AP-007, the following relational schema documents a **target state**. It is not proof of deployment and does not authorize a production migration. The former local migration `20260926000000_capital_ai_pipeline_builder_schema.sql` was never registered in AIFINANCIAL and its expected tables are absent from the live schema; it has therefore been removed from the active `supabase/migrations` chain rather than marked as applied or executed.
 
 ### 4.1 Table Manifest
 1. `auth.users`: Core multi-tenant identities managed by Supabase Auth.
