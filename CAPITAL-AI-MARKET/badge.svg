@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 72" role="img" aria-labelledby="title desc">
+  <title id="title">CAPITAL-AI-MARKET</title>
+  <desc id="desc">Teal and dark green roadmap badge with market bars and a price impulse.</desc>
+  <rect width="360" height="72" rx="18" fill="#061010"/>
+  <rect x="6" y="6" width="60" height="60" rx="16" fill="#043832"/>
+  <g fill="none" stroke="#2DD4BF" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 50V37h8v13z"/>
+    <path d="M31 50V24h8v26z"/>
+    <path d="M44 50V31h8v19z"/>
+    <path d="M16 31l8-6 8 4 9-10 13 5"/>
+  </g>
+  <text x="86" y="44" fill="#F8FAFC" font-family="Inter,Arial,sans-serif" font-size="23" font-weight="700" letter-spacing=".4">CAPITAL-AI-MARKET</text>
+</svg>

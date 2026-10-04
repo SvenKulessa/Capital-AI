@@ -145,5 +145,38 @@ export function runContractValidationSuite(): { passed: boolean; results: string
     results.push(`  ✗ Source Admission gate did not block the unadmitted provider node: ${JSON.stringify(validResult.issues)}`);
   }
 
+
+  // Test 5: Research/Blueprint mode may retain an unadmitted provider without becoming production-routable.
+  results.push('[TEST 5] Verifying selection/blueprint eligibility is independent from Production Admission...');
+  const researchIngest = createPipelineNode('provider_websocket', { x: 0, y: 0 });
+  const researchEgress = createPipelineNode('target_adapter_python_arrow', { x: 400, y: 0 });
+  const researchBlueprint: PipelineDefinition = {
+    id: '44444444-4444-4444-8444-444444444444',
+    name: 'Provider Selection Blueprint',
+    description: 'Design-time provider selection without production admission',
+    version: '1.0.0',
+    lifecycle: 'draft',
+    executionMode: 'research',
+    targetAssetClasses: ['crypto'],
+    nodes: [researchIngest, researchEgress],
+    edges: [],
+    metadata: { blueprintOnly: true },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  const researchResult = validatePipelineGraph(researchBlueprint);
+  const hasAdmissionWarning = researchResult.issues.some(
+    issue => issue.id === `WARN_OPEN_DATA_ADMISSION_${researchIngest.id}` && issue.severity === 'warning'
+  );
+  const hasAdmissionError = researchResult.issues.some(
+    issue => issue.ruleId === 'MARKET-SOURCE-ADMISSION' && issue.severity === 'error'
+  );
+  if (researchResult.isValid && hasAdmissionWarning && !hasAdmissionError) {
+    results.push('  ✓ Unadmitted provider remains blueprint-eligible in research mode and is clearly marked non-production.');
+  } else {
+    allPassed = false;
+    results.push(`  ✗ Research blueprint was incorrectly blocked or admission warning was missing: ${JSON.stringify(researchResult.issues)}`);
+  }
+
   return { passed: allPassed, results };
 }

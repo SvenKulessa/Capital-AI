@@ -19,6 +19,11 @@ RUN npm ci --ignore-scripts --no-audit --no-fund \
 # Remove the installer itself, including vulnerable bundled http-cache-semantics, before validation.
 COPY index.html vite.config.ts tsconfig.json ./
 COPY src ./src
+COPY CAPITAL-AI-PRODUCT/badge.svg ./CAPITAL-AI-PRODUCT/badge.svg
+COPY CAPITAL-AI-TRUST/badge.svg ./CAPITAL-AI-TRUST/badge.svg
+COPY CAPITAL-AI-MARKET/badge.svg ./CAPITAL-AI-MARKET/badge.svg
+COPY CAPITAL-AI-GROWTH/badge.svg ./CAPITAL-AI-GROWTH/badge.svg
+COPY CAPITAL-AI-PLATFORM/badge.svg ./CAPITAL-AI-PLATFORM/badge.svg
 COPY contracts ./contracts
 COPY documentary/evidence ./documentary/evidence
 COPY generated/documentary ./generated/documentary
@@ -56,7 +61,7 @@ ENV NODE_ENV=production PORT=10000
 WORKDIR /app
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/scoring-capacity.json ./evidence/scoring-capacity.json
-COPY server/index.mjs server/market.mjs server/open-source-market-policy.mjs server/auth.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/mta-sts.mjs server/mobile-scorer.mjs server/scorer-proxy.mjs server/scorer-bus.mjs server/observability.mjs server/cads-observability.mjs ./server/
+COPY server/index.mjs server/market.mjs server/open-source-market-policy.mjs server/auth.mjs server/user-provider-vault.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/mta-sts.mjs server/mobile-scorer.mjs server/scorer-proxy.mjs server/scorer-bus.mjs server/observability.mjs server/cads-observability.mjs ./server/
 COPY --from=production-deps /runtime/node_modules ./node_modules
 COPY server/infrastructure.mjs ./server/
 COPY server/billing-catalog.mjs ./server/

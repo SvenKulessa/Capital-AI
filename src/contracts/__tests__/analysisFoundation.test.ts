@@ -30,11 +30,14 @@ test('all 50 entries are quarantined with truthful availability and no invented 
     assert.equal(c.provenanceMode, c.status === 'mock' ? 'simulated' : 'unavailable');
   }
 });
-test('unresolved contracts, providers, features and asset classes are explicit activation blockers', () => {
+test('provider registration and production admission are distinct activation blockers', () => {
   const report = validateAnalysisComponentRegistry();
   assert.equal(report.schemaValid, true); assert.equal(report.activationAllowed, false);
   for (const code of ['CONTRACT_REFERENCE_UNRESOLVED', 'PROVIDER_REFERENCE_UNRESOLVED',
-    'FEATURE_REFERENCE_UNRESOLVED', 'ASSET_CLASS_UNRESOLVED']) assert.ok(report.issues.some(i => i.code === code));
+    'PROVIDER_NOT_PRODUCTION_ADMITTED', 'FEATURE_REFERENCE_UNRESOLVED', 'ASSET_CLASS_UNRESOLVED'])
+    assert.ok(report.issues.some(i => i.code === code));
+  assert.ok(report.issues.some(i => i.reference === 'binance' && i.code === 'PROVIDER_NOT_PRODUCTION_ADMITTED'));
+  assert.ok(!report.issues.some(i => i.reference === 'binance' && i.code === 'PROVIDER_REFERENCE_UNRESOLVED'));
 });
 test('malformed, duplicate and falsely active entries cannot be admitted', () => {
   assert.equal(validateAnalysisComponentRegistry([{}]).schemaValid, false);

@@ -1,7 +1,7 @@
 export { CONTROLLER, PRIVACY_NOTICE_VERSION } from '../../shared/legal-identity.mjs';
 
 export const PRIVACY_COMPLIANCE_STATUS = {
-  label: 'Datenschutzhinweise für den ZITADEL-Dienst',
+  label: 'Datenschutzhinweise für den Supabase-Auth- und BYOK-Dienst',
   disclaimer: 'Keine behördliche, gerichtliche oder externe DSGVO-Zertifizierung. Providerverträge, tatsächliche Infrastrukturkonfiguration und die Übernahme von Altdaten sind gesondert zu prüfen.',
 } as const;
 
@@ -26,14 +26,24 @@ export const PROCESSING_ACTIVITIES: ProcessingActivity[] = [
     technicalControls: ['HTTPS', 'Content Security Policy', 'kein Browserzugriff auf Server-Secrets', 'begrenzte HTTP-Anfragen'],
   },
   {
-    id: 'zitadel-account', title: 'ZITADEL-Anmeldung und Anwendungssitzung', lifecycle: 'active',
+    id: 'supabase-account', title: 'Supabase-Anmeldung und Anwendungssitzung', lifecycle: 'active',
     purpose: 'Verifikation der Identität und Zugriff auf authentifizierte Funktionen.',
-    dataCategories: ['ZITADEL-Benutzerkennung (subject)', 'Ausstellerkennung (issuer)', 'Profilname', 'Sitzungsablauf und technisch notwendige Sitzungscookies', 'Kontaktdaten und Anmeldefaktoren beim Identitätsanbieter'],
+    dataCategories: ['Supabase-Benutzerkennung (auth.users.id)', 'E-Mail-Adresse und Profilname', 'Ausstellerkennung (issuer)', 'Sitzungsablauf und technisch notwendige Sitzungscookies', 'Anmeldeidentitäten bei Supabase Auth'],
     legalBasis: 'Art. 6 Abs. 1 lit. b DSGVO für die angeforderte Anmeldung; Art. 6 Abs. 1 lit. f DSGVO für die Absicherung des Zugriffs.',
-    recipients: ['die konfigurierte ZITADEL-Instanz', 'Render für die Anwendungssitzung'],
-    transfer: 'Hosting, Betreiber und Subprozessoren der ZITADEL-Instanz müssen anhand der tatsächlich verwendeten Instanz und Verträge geprüft werden.',
-    retention: 'Die serverseitige Anwendungssitzung bleibt höchstens 30 Minuten oder bis zum früheren Tokenablauf gültig und wird bei Abmeldung entfernt. Abgelaufene Sitzungen werden bei nachfolgenden Sitzungsprüfungen bereinigt; ein Neustart verwirft sie. ZITADEL-Kontodaten und Protokolle unterliegen der dortigen Konfiguration.',
-    technicalControls: ['Authorization Code mit PKCE S256', 'Prüfung von Signatur, issuer, audience, nonce und Ablauf', 'HttpOnly-/Secure-/SameSite-Cookies', 'keine Übernahme von Supabase-Identitäten anhand einer E-Mail-Adresse'],
+    recipients: ['Supabase für Authentifizierung und Kontodaten', 'Render für die Anwendungssitzung'],
+    transfer: 'Hosting, Betreiber und Subprozessoren von Supabase und Render müssen anhand der tatsächlich verwendeten Regionen, Verträge und Transfermechanismen geprüft werden.',
+    retention: 'Die Anwendungssitzung wird in signierten HttpOnly-Cookies mit einer maximalen Laufzeit von sieben Tagen geführt und bei Abmeldung lokal entfernt; Supabase-Zugriffs- und Refresh-Tokens werden serverseitig erneuert. Auth-Kontodaten und Providerprotokolle unterliegen zusätzlich der Supabase-Konfiguration.',
+    technicalControls: ['Supabase Auth mit E-Mail/Passwort und Google OAuth', 'PKCE S256 für den Google- und Mobile-Flow', 'serverseitige User-/Session-Verifikation', 'signierte HttpOnly-/Secure-/SameSite-Cookies', 'keine Browserausgabe von Access- oder Refresh-Tokens'],
+  },
+  {
+    id: 'user-provider-vault', title: 'Persönlicher API-Vault und private Providerdaten', lifecycle: 'active',
+    purpose: 'Speicherung eines vom Nutzer selbst bereitgestellten Provider-Zugangs und Abruf kontogebundener privater Daten für persönliche Analysekontexte.',
+    dataCategories: ['Provider-API-Key und privates API-Secret', 'Credential-Fingerprint und Verbindungsstatus', 'Providerberechtigungen', 'private Kontostände/Bestände beim Abruf'],
+    legalBasis: 'Art. 6 Abs. 1 lit. b DSGVO für die ausdrücklich vom Nutzer aktivierte kontogebundene Funktion; weitergehende Provider- oder Marktdatenrechte werden dadurch nicht behauptet.',
+    recipients: ['Supabase Vault für verschlüsselte Secret-Speicherung', 'Kraken bei vom Nutzer ausgelösten privaten API-Aufrufen', 'Render als serverseitige Anwendungslaufzeit'],
+    transfer: 'Kraken- und Supabase-Verarbeitung, Regionen, Subprozessoren und mögliche Drittlandbezüge richten sich nach den jeweils tatsächlich geltenden Providerverträgen und Kontoeinstellungen.',
+    retention: 'Die Provider-Verbindung bleibt bis zur Löschung durch den Nutzer oder zur Kontolöschung gespeichert. Das API-Secret wird dem Browser nach Speicherung nicht wieder ausgegeben. Abgerufene Bestände werden in diesem Prototyp nicht in Shared Cache oder JetStream veröffentlicht.',
+    technicalControls: ['Supabase Vault', 'private Metadatentabelle ohne anon/authenticated-Zugriff', 'Secret-RPCs nur für service_role', 'serverseitige Session-Verifikation vor Secretzugriff', 'Kraken-Adapter auf read-only Balance begrenzt', 'kein Trading und keine Withdrawals'],
   },
   {
     id: 'privacy-requests', title: 'Datenauszug und Datenschutzanfragen', lifecycle: 'active',
