@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { quote, health, startStreams } from './market.mjs';
 import { createAuth } from './auth.mjs';
+import { createUserProviderVault } from './user-provider-vault.mjs';
 import { createTelegram } from './telegram.mjs';
 import { createPrivacy } from './privacy.mjs';
 import { createLimiter } from './http-security.mjs';
@@ -132,6 +133,7 @@ function json(res, status, body) { res.writeHead(status, { ...headers, 'Content-
 export function createApp(root = defaultRoot, options = {}) {
   let inflight = 0;
   const auth = createAuth(options);
+  const userProviderVault = createUserProviderVault({ ...options, auth });
   const telegram = createTelegram({ ...options, auth });
   const privacy = createPrivacy({ ...options, auth });
   const marketLimit = createLimiter(120);
@@ -149,6 +151,7 @@ export function createApp(root = defaultRoot, options = {}) {
   for (const [key, value] of Object.entries(headers)) res.setHeader(key, value);
   if (serveMtaSts(req, res, url)) return;
   if (await auth.handle(req, res, url, json)) return;
+  if (await userProviderVault.handle(req, res, url, json)) return;
   if (await privacy(req, res, url, json)) return;
   if (await telegram(req, res, url, json)) return;
   if ((url.pathname === '/api/mobile/enterprise-score' || url.pathname === '/api/mobile/scorer/events') && !auth.session(req)) return json(res, 401, { error: 'authentication_required' });

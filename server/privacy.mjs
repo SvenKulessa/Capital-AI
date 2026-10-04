@@ -1,7 +1,7 @@
 import { createLimiter, readJson } from './http-security.mjs';
 import { CONTROLLER, PRIVACY_NOTICE_VERSION, PRIVACY_REQUEST_LABELS } from '../shared/legal-identity.mjs';
 
-/** No second identity store: only the server's verified OIDC session is accepted. */
+/** No client-selected identity: only the server's verified Supabase session is accepted. */
 export function createPrivacy({ auth, now = Date.now } = {}) {
   const globalLimit = createLimiter(60, 60_000, 1, now);
   const perIdentity = createLimiter(10, 60 * 60_000, 1024, now);
@@ -23,17 +23,18 @@ export function createPrivacy({ auth, now = Date.now } = {}) {
     }
     if (exportRoute) {
       // Export only known app-side data. Never export cookies, tokens, MFA material,
-      // client credentials, or another user's records. This is not a ZITADEL backup.
+      // client credentials, provider secrets, or another user's records. This is not a complete Supabase account/Vault backup.
       res.setHeader('Content-Disposition', 'attachment; filename="capital-ai-datenauszug.json"');
       json(res, 200, {
         exportVersion: 1, generatedAt: new Date(now()).toISOString(), privacyNoticeVersion: PRIVACY_NOTICE_VERSION,
         controller: CONTROLLER,
         subject: { issuer: session.issuer, subject: session.subject, name: session.name },
         data: { applicationSession: { expiresAt: new Date(session.expires).toISOString() } },
-        scopeNotice: 'Dieser Datenauszug umfasst die verifizierten Identitätsangaben und Sitzungsdaten dieses Dienstes. Er ist kein vollständiger Auskunftsbescheid und enthält keine Datenkopie aus ZITADEL, dem bisherigen Finance-Dienst oder dem E-Mail-Postfach.',
+        scopeNotice: 'Dieser Datenauszug umfasst die verifizierten Identitätsangaben und Sitzungsdaten dieser Anwendung. Er ist kein vollständiger Auskunftsbescheid und enthält insbesondere keine entschlüsselten Vault-Secrets, keine vollständige Supabase-Auth-Historie, keine Finance-Altdaten und keine Postfachkopie.',
         unavailableSources: [
-          { source: 'zitadel', reason: 'ZITADEL-Kontodaten, Anmeldungshistorie und Sicherheitsfaktoren werden durch diesen Dienst nicht exportiert.' },
-          { source: 'finance', reason: 'Altdaten werden nicht automatisch einer ZITADEL-Identität zugeordnet.' },
+          { source: 'supabaseAuth', reason: 'Die vollständige Supabase-Auth-Historie und Sicherheitsfaktoren sind nicht Bestandteil dieses begrenzten Anwendungsexports.' },
+          { source: 'providerVault', reason: 'API-Keys und API-Secrets werden aus Sicherheitsgründen niemals im Datenauszug im Klartext ausgegeben.' },
+          { source: 'finance', reason: 'Altdaten werden nicht automatisch anhand einer E-Mail-Adresse einer Supabase-Identität zugeordnet.' },
           { source: 'privacyRequests', reason: 'Anfragen werden per E-Mail bearbeitet; es besteht hier kein persistentes Anfrageregister.' },
         ],
       });
@@ -48,7 +49,7 @@ export function createPrivacy({ auth, now = Date.now } = {}) {
         json(res, 400, { error: 'invalid_privacy_request' }); return true;
       }
       const subject = `Datenschutzanfrage: ${PRIVACY_REQUEST_LABELS[body.requestType]}`;
-      const text = `Anfragetyp: ${PRIVACY_REQUEST_LABELS[body.requestType]}\nZITADEL-Aussteller: ${session.issuer}\nBenutzerkennung: ${session.subject}\n\n${body.details?.trim() || ''}`;
+      const text = `Anfragetyp: ${PRIVACY_REQUEST_LABELS[body.requestType]}\nSupabase-Aussteller: ${session.issuer}\nBenutzerkennung: ${session.subject}\n\n${body.details?.trim() || ''}`;
       json(res, 200, {
         status: 'email_draft', persisted: false, sent: false,
         mailto: `mailto:${CONTROLLER.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`,

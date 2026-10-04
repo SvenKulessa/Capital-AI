@@ -47,7 +47,7 @@ jobs:
             echo "# Runtime pins"
             grep -E '^FROM ' Dockerfile || true
             grep -E '^FROM ' deploy/Dockerfile.nats || true
-            grep -E '"(@nats-io/|redis|jose|vite|react|express)' package.json || true
+            grep -E '"(@nats-io/|redis|vite|react|express)' package.json || true
           } > security-reports/runtime-pins.txt
       - name: Upload daily evidence
         if: always()

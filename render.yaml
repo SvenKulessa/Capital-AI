@@ -23,11 +23,13 @@ services:
       # All optional capabilities fail closed until configured by the owner.
       - key: PUBLIC_APP_ORIGIN
         sync: false
-      - key: OIDC_ISSUER
+      - key: SUPABASE_URL
         sync: false
-      - key: OIDC_CLIENT_ID
+      - key: SUPABASE_PUBLISHABLE_KEY
         sync: false
-      - key: OIDC_CLIENT_SECRET
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: AUTH_COOKIE_SIGNING_SECRET
         sync: false
       - key: TELEGRAM_BOT_TOKEN
         sync: false

@@ -15,5 +15,5 @@ Branch-Präfix: `capital-ai-product/`
 PR-Präfix: `[CAPITAL-AI-PRODUCT]`
 
 ## Branding
-Badge: `produkt.webp` — Pink / Burgunder; modulares Produktmodul mit Umlaufbahn. Kanonische System-Domain bleibt `PRODUCT`.
+Badge: `badge.svg` — Pink / Burgunder; modulares Produktmodul mit Umlaufbahn. Kanonische System-Domain bleibt `PRODUCT`.
 Lizenznachweis: `produkt.LICENSE.md`.

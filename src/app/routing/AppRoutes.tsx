@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import { LoginPage } from '../../components/LoginPage';
+import { LoginPage } from '../../features/auth/LoginPage';
 import {
   LegalAndFaqPages,
   type LegalRoute,
@@ -21,6 +21,11 @@ import type { CoreModule } from '../../entities/module/model';
 import { HomePage } from '../../features/home/HomePage';
 import { LEGAL_ROUTES } from './routes';
 
+const ProfilePage = lazy(() =>
+  import('../../components/ProfilePage').then((module) => ({
+    default: module.ProfilePage,
+  })),
+);
 const ArchitecturePage = lazy(() =>
   import('../../components/ArchitecturePage').then((module) => ({
     default: module.ArchitecturePage,
@@ -32,7 +37,7 @@ const TokenomicsPage = lazy(() =>
   })),
 );
 const PipelineBuilder = lazy(() =>
-  import('../../components/PipelineBuilder').then((module) => ({
+  import('../../features/pipeline-builder/PipelineBuilder').then((module) => ({
     default: module.PipelineBuilder,
   })),
 );
@@ -42,12 +47,12 @@ const ProviderStatusDashboard = lazy(() =>
   })),
 );
 const StudioPage = lazy(() =>
-  import('../../components/StudioPage').then((module) => ({
+  import('../../features/studio/StudioPage').then((module) => ({
     default: module.StudioPage,
   })),
 );
 const LearningPortalPage = lazy(() =>
-  import('../../components/LearningPortalPage').then((module) => ({
+  import('../../features/learning/LearningPortalPage').then((module) => ({
     default: module.LearningPortalPage,
   })),
 );
@@ -110,6 +115,10 @@ export function AppRoutes({
         onNavigateLegal={navigateTo}
       />
     );
+  }
+
+  if (currentRoute === '/profile') {
+    return <ProfilePage onBackToHome={() => navigateTo('/')} />;
   }
 
   if (currentRoute === '/pipeline-builder') {

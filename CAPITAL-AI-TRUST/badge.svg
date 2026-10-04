@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 72" role="img" aria-labelledby="title desc">
+  <title id="title">CAPITAL-AI-TRUST</title>
+  <desc id="desc">Silver and anthracite roadmap badge with a faceted shield and verification check.</desc>
+  <rect width="360" height="72" rx="18" fill="#08090B"/>
+  <rect x="6" y="6" width="60" height="60" rx="16" fill="#202329"/>
+  <g fill="none" stroke="#E5E7EB" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M36 15l17 7v13c0 11-7 18-17 22-10-4-17-11-17-22V22z"/>
+    <path d="M27 35l6 6 12-13"/>
+    <path d="M36 15v9"/>
+  </g>
+  <text x="86" y="44" fill="#F8FAFC" font-family="Inter,Arial,sans-serif" font-size="23" font-weight="700" letter-spacing=".4">CAPITAL-AI-TRUST</text>
+</svg>

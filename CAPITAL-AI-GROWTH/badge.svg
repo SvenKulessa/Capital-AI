@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 72" role="img" aria-labelledby="title desc">
+  <title id="title">CAPITAL-AI-GROWTH</title>
+  <desc id="desc">Gold and dark brown roadmap badge with a leaf and rising arrow.</desc>
+  <rect width="360" height="72" rx="18" fill="#100C03"/>
+  <rect x="6" y="6" width="60" height="60" rx="16" fill="#3B2B08"/>
+  <g fill="none" stroke="#F9BF21" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20 49c4-17 13-26 29-28 2 16-6 27-24 31"/>
+    <path d="M23 50c8-11 15-17 25-23"/>
+    <path d="M35 44l8-8 7 2"/>
+    <path d="M43 36v8"/>
+  </g>
+  <text x="86" y="44" fill="#F8FAFC" font-family="Inter,Arial,sans-serif" font-size="23" font-weight="700" letter-spacing=".4">CAPITAL-AI-GROWTH</text>
+</svg>

@@ -77,3 +77,23 @@ Ab `capital-ai-product/frontend-boundaries-20261004` gelten zusätzlich:
   werden durch `scripts/validate-frontend-boundaries.mjs` fail-closed geprüft;
 - alte `src/components/*`-Pfade bleiben vorläufig als reine Re-Export-Shims bestehen
   und dürfen keine neue Fachlogik aufnehmen.
+
+
+## Migrationsphase 3 — Feature-Domains und App-Shell
+
+Die zweite Feature-Migration ordnet bestehende UI-Funktionalität ohne Änderung
+der MARKET-/Runtime-Verträge folgenden Authorities zu:
+
+- `features/alerts`: Price- und Sentiment-Alerts;
+- `features/whale-radar`: Whale-Radar-Oberflächen;
+- `features/pricing`: Monetarisierungs-/Pricing-Oberfläche;
+- `features/auth`: Login-Oberfläche;
+- `features/learning`: Learning Portal und Vocabulary Modal;
+- `features/pipeline-builder`: Pipeline Builder und Advisor;
+- `features/studio`: Studio Hub;
+- `app/layout`: reine Viewport-/Preview-Komposition;
+- `app/overlays`: globaler Overlay-Zustand und UI-Interaktionsorchestrierung.
+
+Die bisherigen `components/*`-Pfade bleiben bis zur separat verifizierten
+Legacy-Bereinigung reine Re-Export-Shims. Neue Fachlogik darf dort nicht
+eingeführt werden.

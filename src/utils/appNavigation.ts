@@ -18,6 +18,9 @@ export function resolveAppRoute(rawPath: string): string {
   if (clean === '/login' || clean === '/anmelden' || clean === '/signin') {
     return '/login';
   }
+  if (clean === '/profile' || clean === '/profil' || clean === '/account' || clean === '/konto') {
+    return '/profile';
+  }
   if (clean === '/faq' || clean === '/hilfe' || clean === '/questions') {
     return '/faq';
   }
