@@ -9,10 +9,10 @@ import { useMarketAssets } from '../services/marketDataStore';
 import { RouteLoadingFallback } from '../shared/ui/RouteLoadingFallback';
 import type {
   AssetSubclass,
-  CoreModule,
   MainCategory,
   MarketAsset,
-} from '../types';
+} from '../entities/market/model';
+import type { CoreModule } from '../entities/module/model';
 import { AppRoutes } from './routing/AppRoutes';
 import { useBrowserRoute } from './routing/useBrowserRoute';
 

@@ -9,10 +9,10 @@ import { SectorAnalysis } from '../market/SectorAnalysis';
 import { ResearchProjectSummary } from '../../components/ResearchLicensePages';
 import type {
   AssetSubclass,
-  CoreModule,
   MainCategory,
   MarketAsset,
-} from '../../types';
+} from '../../entities/market/model';
+import type { CoreModule } from '../../entities/module/model';
 
 type HomePageProps = {
   currentRoute: string;

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   APP_NAVIGATION_EVENT,
   navigateAppLocation,
@@ -35,20 +35,19 @@ function readAnalysisRequest(requestId: number): AnalysisRouteRequest {
 }
 
 export function useBrowserRoute() {
+  const requestId = useRef(1);
   const [currentRoute, setCurrentRoute] = useState<string>(() => {
     if (typeof window === 'undefined') return '/';
     return resolveAppRoute(window.location.pathname);
   });
   const [analysisRequest, setAnalysisRequest] =
-    useState<AnalysisRouteRequest>(() => readAnalysisRequest(1));
-  const [requestId, setRequestId] = useState(1);
+    useState<AnalysisRouteRequest>(() => readAnalysisRequest(requestId.current));
 
   useEffect(() => {
     const syncFromLocation = () => {
-      const nextRequestId = requestId + 1;
+      requestId.current += 1;
       setCurrentRoute(resolveAppRoute(window.location.pathname));
-      setAnalysisRequest(readAnalysisRequest(nextRequestId));
-      setRequestId(nextRequestId);
+      setAnalysisRequest(readAnalysisRequest(requestId.current));
     };
 
     window.addEventListener('popstate', syncFromLocation);
@@ -57,7 +56,7 @@ export function useBrowserRoute() {
       window.removeEventListener('popstate', syncFromLocation);
       window.removeEventListener(APP_NAVIGATION_EVENT, syncFromLocation);
     };
-  }, [requestId]);
+  }, []);
 
   const navigateTo = useCallback((path: string) => {
     const targetRoute = navigateAppLocation(path);

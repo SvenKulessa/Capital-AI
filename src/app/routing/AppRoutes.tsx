@@ -14,10 +14,10 @@ import {
 import { MARKET_ASSETS } from '../../data/mockData';
 import type {
   AssetSubclass,
-  CoreModule,
   MainCategory,
   MarketAsset,
-} from '../../types';
+} from '../../entities/market/model';
+import type { CoreModule } from '../../entities/module/model';
 import { HomePage } from '../../features/home/HomePage';
 import { LEGAL_ROUTES } from './routes';
 
