@@ -150,16 +150,37 @@ export class MarketInfrastructure {
     return delivery;
   }
   async read(symbol) {
-    if (!this.redis?.isReady) return null;
+    const normalized = String(symbol || '').toUpperCase().trim();
     try {
-      const value = await observeCadsOperation({ layer:'cache', service:'valkey', operation:'quote.read', correlationId: symbol }, () => this.redis.get(`capital:quote:v1:${symbol}`));
-      if (!value) return null;
-      const fact = QuoteDeliverySchema.parse(JSON.parse(value));
-      if (fact.symbol !== symbol || !isFresh(fact)) return null;
-      // Cache contents are not evidence: verify the durable original before serving.
-      const record = await this.replay(fact.evidenceId);
-      if (JSON.stringify(record.fact) !== JSON.stringify(QuoteFactSchema.parse(fact))) return null;
-      return { ...fact, availability: 'cached' };
+      if (this.redis?.isReady) {
+        const value = await observeCadsOperation({ layer:'cache', service:'valkey', operation:'quote.read', correlationId: normalized }, () => this.redis.get(`capital:quote:v1:${normalized}`));
+        if (value) {
+          const fact = QuoteDeliverySchema.parse(JSON.parse(value));
+          if (fact.symbol === normalized && isFresh(fact)) {
+            // Valkey is only a read model: verify the durable JetStream original before serving.
+            const record = await this.replay(fact.evidenceId);
+            if (JSON.stringify(record.fact) === JSON.stringify(QuoteFactSchema.parse(fact))) {
+              return { ...fact, availability: 'cached' };
+            }
+          }
+        }
+      }
+
+      // Cache miss or rejected cache: query the canonical DB, then bind the row back to
+      // immutable JetStream evidence before exposing it to MARKET.
+      const latest = await observeCadsOperation({ layer:'storage', service:'supabase-postgres', operation:'quote.read_latest', correlationId: normalized },
+        () => this.canonicalStore.readLatest(normalized));
+      if (!latest || !isFresh(latest.fact)) return null;
+      const record = await this.replay(latest.evidenceId);
+      if (JSON.stringify(record.fact) !== JSON.stringify(latest.fact)) return null;
+      return QuoteDeliverySchema.parse({
+        ...latest.fact,
+        evidenceId: latest.evidenceId,
+        availability: 'cached',
+        validated: true,
+        actionable: false,
+        reasonCodes: ['PROVIDER_RIGHTS_UNVERIFIED', 'ANALYSIS_INPUTS_INCOMPLETE'],
+      });
     } catch { this.state = 'degraded'; return null; }
   }
   async replay(id) {
