@@ -6,7 +6,7 @@ import {
   VOCABULARY_PUBLIC_COUNT,
   vocabularyMetadata,
 } from '../../../shared/vocabulary-metadata.mjs';
-import { QUANT_PRO_TERMS } from '../../../server/vocabulary-quant-pro.mjs';
+import { QUANT_PRO_COUNT, QUANT_PRO_IDS } from '../../../server/vocabulary-quant-pro-index.mjs';
 
 function normalize(value: string): string {
   return value.normalize('NFKC').toLocaleLowerCase('de-DE').replace(/[^a-z0-9äöüß]+/g, '');
@@ -14,21 +14,19 @@ function normalize(value: string): string {
 
 test('browser vocabulary contains no paid Quant/Pro payload and canonical total remains stable', () => {
   assert.ok(VOCABULARY_TERMS.length > 0);
-  assert.ok(QUANT_PRO_TERMS.length > 0);
+  assert.ok(QUANT_PRO_COUNT > 0);
   assert.equal(
-    VOCABULARY_TERMS.length + QUANT_PRO_TERMS.length,
+    VOCABULARY_TERMS.length + QUANT_PRO_COUNT,
     294,
-    'public plus server-only vocabulary must preserve the canonical merged count',
+    'public plus server-side vocabulary index must preserve the canonical merged count',
   );
   assert.equal(VOCABULARY_PUBLIC_COUNT, 294, 'canonical SEO projection count remains stable');
   assert.equal(VOCABULARY_TERMS.some((term) => term.level === 'Quant / Pro'), false);
-  assert.equal(QUANT_PRO_TERMS.every((term) => term.level === 'Quant / Pro'), true);
 
-  const allTerms = [...VOCABULARY_TERMS, ...QUANT_PRO_TERMS];
-  const normalizedTerms = allTerms.map((term) => normalize(term.term));
-  assert.equal(new Set(normalizedTerms).size, normalizedTerms.length, 'term names must be deduplicated');
+  const normalizedTerms = VOCABULARY_TERMS.map((term) => normalize(term.term));
+  assert.equal(new Set(normalizedTerms).size, normalizedTerms.length, 'public term names must be deduplicated');
 
-  for (const term of allTerms) {
+  for (const term of VOCABULARY_TERMS) {
     assert.equal(term.thesaurus.length, 3, `${term.id} must expose exactly three thesaurus entries`);
     for (const equivalent of term.thesaurus) {
       assert.ok(equivalent.trim().length > 0, `${term.id} contains an empty thesaurus entry`);
@@ -37,7 +35,7 @@ test('browser vocabulary contains no paid Quant/Pro payload and canonical total 
 });
 
 test('presentation vocabulary does not expose repository path provenance', () => {
-  for (const term of [...VOCABULARY_TERMS, ...QUANT_PRO_TERMS]) {
+  for (const term of VOCABULARY_TERMS) {
     assert.equal('sourcePath' in term, false);
     assert.equal('sourceFile' in term, false);
     assert.equal('sourceDocument' in term, false);
@@ -45,7 +43,7 @@ test('presentation vocabulary does not expose repository path provenance', () =>
 });
 
 test('canonical metadata covers public and server-only terms exactly once', () => {
-  const vocabularyIds = [...VOCABULARY_TERMS, ...QUANT_PRO_TERMS].map((term) => term.id).sort();
+  const vocabularyIds = [...VOCABULARY_TERMS.map((term) => term.id), ...QUANT_PRO_IDS].sort();
   const seoIds = vocabularyMetadata.map((entry) => entry.id).sort();
 
   assert.deepEqual(seoIds, vocabularyIds);
