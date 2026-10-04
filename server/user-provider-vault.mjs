@@ -1,5 +1,6 @@
 import { createHash, createHmac } from 'node:crypto';
 import { boundedJson, secureUrl } from './http-security.mjs';
+import { admittedMarketSourcesFor } from './open-source-market-policy.mjs';
 
 const MAX_BODY_BYTES = 16 * 1024;
 const KRAKEN_BALANCE_PATH = '/0/private/Balance';
@@ -192,6 +193,90 @@ function parseStoredSecret(payload) {
   return { apiKey, apiSecret };
 }
 
+export function buildByokEnhancementReport(context, now = Date.now()) {
+  const publicQuoteSources = admittedMarketSourcesFor('marketQuotes');
+  const publicQuoteAvailable = publicQuoteSources.length > 0;
+  const ageMs = Math.max(0, Number(now) - Number(context?.observedAt || 0));
+  const byokQuoteAvailable = Number.isFinite(context?.price) && context.price > 0;
+  const bidAskAvailable =
+    Number.isFinite(context?.bid) && context.bid > 0 &&
+    Number.isFinite(context?.ask) && context.ask > 0;
+  const volumeAvailable = Number.isFinite(context?.volume24h) && context.volume24h >= 0;
+  const fresh = byokQuoteAvailable && ageMs < 30_000;
+
+  const improvements = [];
+  if (!publicQuoteAvailable && byokQuoteAvailable) {
+    improvements.push({
+      metric: 'quoteAvailability',
+      before: false,
+      after: true,
+      delta: 'AVAILABLE_VIA_USER_BYOK',
+    });
+  }
+  if (fresh) {
+    improvements.push({
+      metric: 'freshness',
+      before: publicQuoteAvailable ? 'PUBLIC_PIPELINE_DEPENDENT' : 'UNAVAILABLE',
+      after: 'FRESH_LT_30S',
+      ageMs,
+    });
+  }
+  if (bidAskAvailable) {
+    improvements.push({
+      metric: 'bidAskObservability',
+      before: false,
+      after: true,
+      spread: context.ask - context.bid,
+    });
+  }
+  if (volumeAvailable) {
+    improvements.push({
+      metric: 'volume24hObservability',
+      before: false,
+      after: true,
+    });
+  }
+
+  return {
+    schema: 'CAPITAL_AI_BYOK_ENHANCEMENT_REPORT@1',
+    provider: context?.provider || 'unknown',
+    symbol: context?.symbol || null,
+    generatedAt: now,
+    baseline: {
+      sourcePolicy: 'OPEN_SOURCE_AND_OPEN_DATA_ONLY',
+      admittedPublicQuoteSources: publicQuoteSources.length,
+      publicQuoteAvailable,
+    },
+    augmented: {
+      source: 'USER_PRIVATE_MARKET_CONTEXT',
+      quoteAvailable: byokQuoteAvailable,
+      fresh,
+      ageMs,
+      bidAskAvailable,
+      volume24hAvailable: volumeAvailable,
+      credentialBound: context?.credentialBound === true,
+      accountVerified: context?.accountVerified === true,
+    },
+    improvements,
+    improvementCount: improvements.length,
+    scoreImpact: {
+      status: 'NOT_EVALUATED',
+      reason: 'ENTERPRISE_SCORER_AB_COMPARISON_REQUIRED',
+      baselineScore: null,
+      augmentedScore: null,
+      delta: null,
+    },
+    rights: {
+      publicMarketDataAdmission: false,
+      redistributionAllowed: false,
+      publicDisplayAllowed: false,
+      sharedCacheAllowed: false,
+      jetStreamPublicationAllowed: false,
+      durableRetentionAllowed: false,
+    },
+  };
+}
+
 function publicBalanceProjection(balance) {
   return Object.entries(balance || {})
     .filter(([asset, value]) => /^[A-Za-z0-9.:-]{1,32}$/.test(asset) && /^-?\d+(?:\.\d+)?$/.test(String(value)))
@@ -372,6 +457,43 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
         const code = typeof error?.code === 'string' ? error.code : 'PRIVATE_MARKET_CONTEXT_UNAVAILABLE';
         await markStatus(user.userId, 'INVALID', code).catch(() => {});
         json(res, 503, { error: 'private_market_context_unavailable', code });
+      }
+      return true;
+    }
+
+    if (url.pathname === '/api/profile/provider-connections/kraken/enhancement') {
+      if (req.method !== 'GET') {
+        res.setHeader('Allow', 'GET');
+        json(res, 405, { error: 'method_not_allowed' });
+        return true;
+      }
+      const symbol = String(url.searchParams.get('symbol') || '').toUpperCase().trim();
+      if (!Object.hasOwn(BYOK_SYMBOLS, symbol)) {
+        json(res, 400, { error: 'byok_symbol_not_supported', supportedSymbols: Object.keys(BYOK_SYMBOLS) });
+        return true;
+      }
+      try {
+        const stored = await rpc(fetchImpl, config, 'capital_ai_get_user_provider_secret', {
+          _user_id: user.userId,
+          _provider: 'kraken',
+        });
+        if (!stored?.secretPayload) {
+          json(res, 404, { error: 'provider_connection_not_found' });
+          return true;
+        }
+        if (stored?.permissions?.privateMarketContext !== true) {
+          json(res, 403, { error: 'private_market_context_not_enabled' });
+          return true;
+        }
+        const credentials = parseStoredSecret(stored.secretPayload);
+        const context = await krakenPrivateMarketContext(fetchImpl, credentials, symbol);
+        const report = buildByokEnhancementReport(context);
+        await markStatus(user.userId, 'VERIFIED', null);
+        json(res, 200, { context, report });
+      } catch (error) {
+        const code = typeof error?.code === 'string' ? error.code : 'BYOK_ENHANCEMENT_UNAVAILABLE';
+        await markStatus(user.userId, 'INVALID', code).catch(() => {});
+        json(res, 503, { error: 'byok_enhancement_unavailable', code });
       }
       return true;
     }
