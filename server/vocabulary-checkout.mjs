@@ -1,9 +1,11 @@
-const VOCABULARY_PRICE_ID = 'price_1UMiuIPKr4joNbEclpn8AwFW';
-const VOCABULARY_PRODUCT_ID = 'prod_VNTsrtlf2ZL8ja';
+const DEFAULT_VOCABULARY_PRICE_ID = 'price_1UMiuIPKr4joNbEclpn8AwFW';
+const DEFAULT_VOCABULARY_PRODUCT_ID = 'prod_VNTsrtlf2ZL8ja';
 const SKU = 'market-vocabulary';
 
-export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch } = {}) {
+export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch, auth } = {}) {
   const secret = env.STRIPE_SECRET_KEY || '';
+  const priceId = env.STRIPE_VOCABULARY_PRICE_ID || DEFAULT_VOCABULARY_PRICE_ID;
+  const productId = env.STRIPE_VOCABULARY_PRODUCT_ID || DEFAULT_VOCABULARY_PRODUCT_ID;
   const baseUrl = (env.PUBLIC_BASE_URL || 'https://capital-ai.online').replace(/\/$/, '');
 
   async function stripe(path, body) {
@@ -30,30 +32,34 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch 
       if (url.pathname === '/api/billing/vocabulary/offer' && req.method === 'GET') {
         json(res, 200, {
           sku: SKU,
-          productId: VOCABULARY_PRODUCT_ID,
-          priceId: VOCABULARY_PRICE_ID,
+          productId,
+          priceId,
           amountCents: 1900,
           currency: 'eur',
           taxBehavior: 'inclusive',
           includedIn: ['pro', 'enterprise'],
-          previewCount: 8,
         });
         return true;
       }
 
       if (url.pathname === '/api/billing/vocabulary/checkout' && req.method === 'POST') {
-        if (!secret) return json(res, 503, { error: 'checkout_unavailable' }), true;
+        if (!secret || !auth) return json(res, 503, { error: 'checkout_unavailable' }), true;
+        if (!auth.sameOrigin(req)) return json(res, 403, { error: 'forbidden_origin' }), true;
+        const user = await auth.verify(req, res);
+        if (!user?.userId) return json(res, 401, { error: 'authentication_required' }), true;
         const raw = await readBody(req);
         let withdrawalWaived = false;
         try { withdrawalWaived = JSON.parse(raw || '{}').withdrawalWaived === true; } catch { return json(res, 400, { error: 'bad_request' }), true; }
         if (!withdrawalWaived) return json(res, 400, { error: 'withdrawal_waiver_required' }), true;
         const form = new URLSearchParams({
           mode: 'payment',
-          'line_items[0][price]': VOCABULARY_PRICE_ID,
+          'line_items[0][price]': priceId,
           'line_items[0][quantity]': '1',
           success_url: `${baseUrl}/vocabulary?vocabulary_session={CHECKOUT_SESSION_ID}`,
           cancel_url: `${baseUrl}/vocabulary?vocabulary=cancelled`,
+          client_reference_id: user.userId,
           'metadata[sku]': SKU,
+          'metadata[user_id]': user.userId,
           'metadata[withdrawal_waived]': 'true',
           'payment_intent_data[statement_descriptor]': 'CAPITAL-AI VOCAB',
         });
@@ -68,10 +74,12 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch 
 
       if (url.pathname === '/api/billing/vocabulary/entitlement' && req.method === 'GET') {
         const sessionId = url.searchParams.get('session_id') || '';
-        if (!secret || !sessionId.startsWith('cs_')) return json(res, 200, { entitled: false }), true;
+        if (!secret || !auth || !sessionId.startsWith('cs_')) return json(res, 200, { entitled: false }), true;
+        const user = await auth.verify(req, res);
+        if (!user?.userId) return json(res, 200, { entitled: false }), true;
         try {
           const session = await stripe(`/checkout/sessions/${encodeURIComponent(sessionId)}`);
-          const entitled = session.payment_status === 'paid' && session.metadata?.sku === SKU;
+          const entitled = session.payment_status === 'paid' && session.metadata?.sku === SKU && session.client_reference_id === user.userId && session.metadata?.user_id === user.userId;
           json(res, 200, { entitled, sessionId: entitled ? session.id : null });
         } catch {
           json(res, 200, { entitled: false });
