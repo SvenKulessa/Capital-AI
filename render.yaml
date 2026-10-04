@@ -41,6 +41,11 @@ services:
         sync: false
       - key: NATS_URL
         sync: false
+      - key: NATS_APP_USER
+        value: capital-ai-market-runtime
+      - key: NATS_APP_PASSWORD
+        sync: false
+      # Legacy migration fallback only; remove after three validated scoped-auth cycles.
       - key: NATS_TOKEN
         sync: false
       - key: NATS_REPLICAS
