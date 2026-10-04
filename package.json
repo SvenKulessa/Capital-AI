@@ -9,11 +9,11 @@
     "build": "vite build",
     "preview": "vite preview --host=127.0.0.1",
     "test:navigation": "node --import tsx --test scripts/navigation.test.mjs",
-    "test": "node --import tsx scripts/validate-contract-suites.mjs && node --import tsx --test src/contracts/__tests__/analysisFoundation.test.ts src/contracts/__tests__/marketDataRightsEligibility.test.ts src/contracts/__tests__/financialDataNetIntegration.test.ts src/platform/Documentary/__tests__/documentaryProjection.test.ts && node --import tsx scripts/generate-documentary.mjs --check && node --test scripts/documentation-drift.test.mjs",
+    "test": "node --import tsx scripts/validate-contract-suites.mjs && node --import tsx --test src/contracts/__tests__/analysisFoundation.test.ts src/contracts/__tests__/marketDataRightsEligibility.test.ts src/contracts/__tests__/financialDataNetIntegration.test.ts src/data/__tests__/vocabularyData.test.ts src/platform/Documentary/__tests__/documentaryProjection.test.ts && node --import tsx scripts/generate-documentary.mjs --check && node --test scripts/documentation-drift.test.mjs",
     "documentary:generate": "node --import tsx scripts/generate-documentary.mjs --write",
     "documentary:check": "node --import tsx scripts/generate-documentary.mjs --check",
     "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit",
+    "lint": "tsc --noEmit && node scripts/validate-frontend-boundaries.mjs",
     "test:security": "node --test server/market.test.mjs server/scorer-proxy.test.mjs server/security.test.mjs server/auth.test.mjs server/research-pages.test.mjs server/prompt-injection-guard.test.mjs scripts/validate-oidc-positive-cycles.test.mjs && node --import tsx --test scripts/frontend-security.test.mjs server/advisor-security.test.mjs",
     "verify:browser": "node scripts/verify-browser-boundary.mjs",
     "test:market": "node --test server/market.test.mjs server/market-contracts.test.mjs",
@@ -26,7 +26,8 @@
     "sponsorship:p2:check": "node scripts/validate-sponsorship-p2-projection.mjs",
     "sponsorship:bundle:check": "node scripts/verify-sponsorship-evidence-bundle.mjs",
     "test:documentary-drift": "node --test scripts/documentation-drift.test.mjs",
-    "documentary:drift": "node scripts/documentation-drift.mjs"
+    "documentary:drift": "node scripts/documentation-drift.mjs",
+    "test:frontend-boundaries": "node scripts/validate-frontend-boundaries.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

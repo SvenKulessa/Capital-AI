@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { AppErrorBoundary, BootstrapFailure } from './components/AppErrorBoundary';
+import { AppErrorBoundary, BootstrapFailure } from './shared/ui/AppErrorBoundary';
 import './index.css';
 
 const host = document.getElementById('root');

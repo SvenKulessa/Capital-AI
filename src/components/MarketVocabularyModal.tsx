@@ -32,6 +32,12 @@ import {
   Globe2,
   ExternalLink,
   Layers,
+  Database,
+  ServerCog,
+  LockKeyhole,
+  PanelsTopLeft,
+  GitPullRequest,
+  Smartphone,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -72,6 +78,18 @@ export const MarketVocabularyModal: React.FC<MarketVocabularyModalProps> = ({
         return <ShieldCheck className="w-3.5 h-3.5 text-amber-300" />;
       case 'MACRO_FOREX':
         return <Globe2 className="w-3.5 h-3.5 text-blue-400" />;
+      case 'DATA_EVIDENCE':
+        return <Database className="w-3.5 h-3.5 text-cyan-300" />;
+      case 'PLATFORM_ARCHITECTURE':
+        return <ServerCog className="w-3.5 h-3.5 text-indigo-300" />;
+      case 'SECURITY_COMPLIANCE':
+        return <LockKeyhole className="w-3.5 h-3.5 text-rose-300" />;
+      case 'PRODUCT_UX':
+        return <PanelsTopLeft className="w-3.5 h-3.5 text-fuchsia-300" />;
+      case 'DELIVERY_GOVERNANCE':
+        return <GitPullRequest className="w-3.5 h-3.5 text-orange-300" />;
+      case 'MOBILE_RUNTIME':
+        return <Smartphone className="w-3.5 h-3.5 text-teal-300" />;
       default:
         return <BookOpen className="w-3.5 h-3.5 text-amber-400" />;
     }
@@ -105,13 +123,14 @@ export const MarketVocabularyModal: React.FC<MarketVocabularyModalProps> = ({
       const matchesDef = item.shortDefinition.toLowerCase().includes(query);
       const matchesDetailed = item.detailedExplanation.toLowerCase().includes(query);
       const matchesTags = item.searchTags.some((tag) => tag.toLowerCase().includes(query));
-      return matchesTerm || matchesAbbr || matchesDef || matchesDetailed || matchesTags;
+      const matchesThesaurus = item.thesaurus.some((entry) => entry.toLowerCase().includes(query));
+      return matchesTerm || matchesAbbr || matchesDef || matchesDetailed || matchesTags || matchesThesaurus;
     });
   }, [searchTerm, selectedCategory]);
 
   const handleCopyDefinition = (term: VocabularyTerm, e: React.MouseEvent) => {
     e.stopPropagation();
-    const textToCopy = `${term.term} (${term.abbreviation || term.categoryLabel})\n\nDefinition:\n${term.shortDefinition}\n\nErklärung:\n${term.detailedExplanation}\n\nFaustformel / Regel:\n${term.formulaOrRule || 'N/A'}\n\nPraxisbeispiel:\n${term.practicalExample}\n\nQuelle: Capital-AI Market Vocabulary Terminal`;
+    const textToCopy = `${term.term} (${term.abbreviation || term.categoryLabel})\n\nThesaurus:\n${term.thesaurus.join(' · ')}\n\nDefinition:\n${term.shortDefinition}\n\nErklärung:\n${term.detailedExplanation}\n\nFaustformel / Regel:\n${term.formulaOrRule || 'N/A'}\n\nPraxisbeispiel:\n${term.practicalExample}`;
     navigator.clipboard.writeText(textToCopy);
     setCopiedId(term.id);
     setTimeout(() => {
@@ -146,7 +165,7 @@ export const MarketVocabularyModal: React.FC<MarketVocabularyModalProps> = ({
                 </span>
               </div>
               <h2 className="text-lg sm:text-xl font-extrabold text-white tracking-tight flex items-center gap-1.5">
-                <span>Finanz- & Quant-Glossar</span>
+                <span>Finanz-, Tech- & Quant-Glossar</span>
               </h2>
             </div>
           </div>
@@ -172,7 +191,7 @@ export const MarketVocabularyModal: React.FC<MarketVocabularyModalProps> = ({
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Begriff, Abkürzung oder Thema suchen (z.B. VWAP, Spread, Moat, L1, Scorer)..."
+              placeholder="Begriff, Abkürzung oder Thesaurus suchen (z.B. VWAP, OIDC, Gate, Scorer)..."
               className="w-full pl-10 pr-9 py-2.5 rounded-xl bg-[#091124] border border-slate-700/80 hover:border-amber-400/40 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 text-xs sm:text-sm text-slate-100 placeholder:text-slate-500 outline-none transition-all"
             />
             {searchTerm && (
@@ -228,7 +247,7 @@ export const MarketVocabularyModal: React.FC<MarketVocabularyModalProps> = ({
               <BookOpen className="w-10 h-10 text-slate-600 mx-auto mb-3" />
               <div className="text-sm font-bold text-slate-300">Keine passenden Fachbegriffe gefunden</div>
               <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                Versuchen Sie einen anderen Suchbegriff wie „Orderbuch“, „Spread“, „Buffett“ oder „Latenz“.
+                Versuchen Sie einen anderen Begriff, eine Abkürzung oder einen Thesaurus-Eintrag.
               </p>
               <button
                 type="button"
@@ -284,7 +303,18 @@ export const MarketVocabularyModal: React.FC<MarketVocabularyModalProps> = ({
                         <span>{item.term}</span>
                       </h3>
 
-                      <p className="text-xs sm:text-[13px] text-slate-300 mt-1 leading-relaxed">
+                      <div className="flex flex-wrap gap-1.5 mt-1.5" aria-label={`Thesaurus zu ${item.term}`}>
+                        {item.thesaurus.map((synonym) => (
+                          <span
+                            key={synonym}
+                            className="px-2 py-0.5 rounded-full bg-cyan-400/5 border border-cyan-400/15 text-[10px] font-medium text-cyan-200/80"
+                          >
+                            {synonym}
+                          </span>
+                        ))}
+                      </div>
+
+                      <p className="text-xs sm:text-[13px] text-slate-300 mt-1.5 leading-relaxed">
                         {item.shortDefinition}
                       </p>
                     </div>
