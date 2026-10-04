@@ -51,6 +51,8 @@
 !scripts/license-evidence.mjs
 !scripts/license-evidence.test.mjs
 !scripts/billing-catalog.test.mjs
+!scripts/documentation-drift.mjs
+!scripts/documentation-drift.test.mjs
 !scripts/license-engine.mjs
 !scripts/frontend-security.test.mjs
 !scripts/verify-browser-boundary.mjs
