@@ -45,7 +45,7 @@ jobs:
       - name: npm-Lizenzmetadaten und Regressionstests prüfen
         run: |
           node scripts/preflight.mjs
-          node --test scripts/verify-go-vuln-reachability.test.mjs
+          node --test scripts/verify-go-vuln-reachability.test.mjs scripts/docker-archive-config.test.mjs
       - name: Gepinnte Sicherheitswerkzeuge bauen
         run: |
           docker build --file Dockerfile.security --tag capital-ai-security .
@@ -182,12 +182,12 @@ jobs:
         id: image_identity
         run: |
           mkdir -p security-reports
-          docker image inspect --format '{{.Id}}' capital-ai:${{ github.sha }} > security-reports/image-id.txt
+          docker save capital-ai:${{ github.sha }} -o security-reports/image.tar
+          node scripts/docker-archive-config.mjs security-reports/image.tar > security-reports/image-id.txt
           echo "image_id=$(cat security-reports/image-id.txt)" >> "$GITHUB_OUTPUT"
           node scripts/container-evidence-identity.mjs set security-reports/container-identity.json localImageId "$(cat security-reports/image-id.txt)"
           docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint cat capital-ai:${{ github.sha }} /app/dist/THIRD_PARTY_NOTICES.txt > security-reports/THIRD_PARTY_NOTICES.txt
           docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint cat capital-ai:${{ github.sha }} /app/dist/frontend-license-inventory.json > security-reports/frontend-license-inventory.json
-          docker save capital-ai:${{ github.sha }} -o security-reports/image.tar
           chmod a+r security-reports/image.tar
           chmod a+rwx security-reports
           docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/image.tar --ignorefile /dev/null --scanners vuln,secret --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format json --output /reports/image.json --exit-code 0
@@ -301,7 +301,9 @@ jobs:
         run: |
           set -euo pipefail
           docker load --input candidate/image.tar
-          test "$(docker image inspect --format '{{.Id}}' "capital-ai:$SOURCE_SHA")" = "$EXPECTED_IMAGE_ID"
+          docker save "capital-ai:$SOURCE_SHA" --output candidate/loaded-image.tar
+          test "$(node scripts/docker-archive-config.mjs candidate/loaded-image.tar)" = "$EXPECTED_IMAGE_ID"
+          rm candidate/loaded-image.tar
           test "$(docker image inspect --format '{{.Os}}/{{.Architecture}}' "capital-ai:$SOURCE_SHA")" = linux/amd64
           docker build --file Dockerfile.security --tag capital-ai-security .
           mkdir -p security-reports
@@ -332,7 +334,7 @@ jobs:
           docker buildx imagetools inspect "$IMAGE_REPOSITORY@$platform_digest" --raw > security-reports/registry-platform-manifest.json
           test "sha256:$(sha256sum security-reports/registry-platform-manifest.json | cut -d ' ' -f 1)" = "$platform_digest"
           docker pull "$image_ref"
-          config_digest=$(docker image inspect --format '{{.Id}}' "$image_ref")
+          config_digest=$(jq -er '.config.digest | select(type == "string" and test("^sha256:[a-f0-9]{64}$"))' security-reports/registry-platform-manifest.json)
           test "$config_digest" = "$EXPECTED_IMAGE_ID"
           node scripts/container-evidence-identity.mjs set security-reports/container-identity.json \
             ociIndexDigest "$registry_digest" \
@@ -347,6 +349,7 @@ jobs:
           set -euo pipefail
           mkdir -p security-reports
           docker save "$IMAGE_REF" --output security-reports/registry-image.tar
+          test "$(node scripts/docker-archive-config.mjs security-reports/registry-image.tar)" = "$EXPECTED_IMAGE_ID"
           chmod a+r security-reports/registry-image.tar
           chmod a+rwx security-reports
           docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/registry-image.tar --ignorefile /dev/null --scanners vuln,secret --severity HIGH,CRITICAL --exit-code 1 --format json --output /reports/registry-image.json

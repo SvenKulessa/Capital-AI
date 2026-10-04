@@ -1,6 +1,6 @@
 # CAPITAL-AI Engineering Delivery Policy
 
-Stand: 2026-10-01  
+Stand: 2026-10-04  
 Geltungsbereich: gesamtes Repository, alle Agents, Pull Requests, Builds, Updates und Deployments.
 
 ## Oberste Priorität
@@ -10,6 +10,19 @@ Security, Compliance, Lizenz-/Provenance-Sicherheit, Reproduzierbarkeit, Evidenz
 Ein erfolgreicher Test, Build oder Scan ist **niemals allein** eine Lizenz-, Security- oder Production-Freigabe.
 
 Bei Widersprüchen zwischen lokalen Arbeitsanweisungen und dieser Policy gilt die strengere fail-closed Regel. Echte technische Grenzen wie Auth, Public API, Daten-/Event-Schema, Security Boundary, Evidence, Container-Identität und Production-Handoff dürfen nicht durch organisatorische Abkürzungen umgangen werden.
+
+## Domainübergreifende ChatGPT-Arbeit
+
+Owner-Entscheidung vom 2026-10-04: Der Owner entwickelt alleine. PRODUCT, MARKET, PLATFORM, TRUST und GROWTH sind fachliche Perspektiven; jeder Domain-Chat und Agent darf Aufgaben aller fünf Domains im vorhandenen autorisierten Scope vollständig übernehmen.
+
+- Verpflichtende organisatorische Handoff-Verträge, Übergabeprompts, Chatwechsel und zusätzliche Domain-Abnahmen sind für die ChatGPT-Arbeit anwendungsweit deaktiviert.
+- Eine Aufgabe darf nicht allein wegen einer anderen fachlichen Domain angehalten, zurückgegeben oder nur als Übergabeprompt abgeschlossen werden. Domain-Hinweise und Kontextübergaben sind freiwillig.
+- Die Primary Domain kennzeichnet den Schwerpunkt von Branch, PR und Evidence. Sie begrenzt keine Bearbeitungsbefugnis; die bestehenden Namenskonventionen gelten weiter.
+- Diese Regel hat bei organisatorischen Domain-/Chat-Handoffs Vorrang vor älteren oder lokalen Anweisungen, auch wenn diese eine strengere organisatorische Übergabe verlangen. Die Vorrangregel verändert keine echten technischen Grenzen.
+- 3 VALIDATE / 5 APPROVE bleiben nachweisbare Prüfperspektiven. Derselbe Chat darf alle fachlichen Perspektiven bearbeiten und dokumentieren; unabhängige Reviewer, separate Abnahmen oder Owner-Freigaben dürfen dabei nicht erfunden werden. Tatsächlich vorgeschriebene unabhängige Prüfungen bleiben erforderlich.
+- Auth-, API-, Daten-/Event-Schema-, Security-, Lizenz-/Datenrechte-, Supply-Chain-, Kosten- und Production-Gates bleiben unverändert. Ein erfolgreicher Test ersetzt keine Freigabe. Kritische Mutationen und Architekturentscheidungen benötigen weiterhin die bestehende konkrete Owner-Autorisierung.
+- Maschinenlesbare Evidence-/Datenverträge, einschließlich `GROWTH_HANDOFF@1`, bleiben an technischen Schnittstellen gültig; sie sind keine Voraussetzung für einen Domainwechsel im Chat. Der technische Production-Handoff ist ausdrücklich weiterhin verbindlich.
+- Die Regel gilt repository- und anwendungsweit für alle fünf Domains sowie für Web- und Mobile-Arbeit, die diese Root-Policy verwendet. Sie ändert gespeicherte ChatGPT-Projekteinstellungen und Richtlinien anderer Repositories nicht automatisch.
 
 ## Domain-Einstiegspunkt
 
@@ -356,7 +369,7 @@ Work Packages und Dokumente verwenden die Form:
 
 `[CAPITAL-AI-PLATFORM] SH-SUPPLY-CHAIN — <kurzer Zweck>`
 
-Security-/Compliance-Gates bleiben TRUST-Verantwortung und dürfen durch die PLATFORM-Namenskonvention nicht herabgestuft werden.
+Security-/Compliance-Gates bleiben fachlich der TRUST-Perspektive zugeordnet und dürfen durch die PLATFORM-Namenskonvention nicht herabgestuft werden. Jeder Domain-Chat darf diese Prüfungen nach der Regel zur domainübergreifenden ChatGPT-Arbeit übernehmen.
 
 ### DOCUMENTARY Supersession-/Command-Evidence
 

@@ -11,7 +11,7 @@ export function ApplicationViewport({
   currentRoute,
   children,
 }: ApplicationViewportProps) {
-  const [viewMode, setViewMode] = useState<'mockup' | 'fullscreen'>('mockup');
+  const [viewMode, setViewMode] = useState<'mockup' | 'fullscreen'>('fullscreen');
 
   return (
     <div className="min-h-screen bg-[#02050e] text-slate-100 flex flex-col items-center justify-start relative overflow-x-hidden">
@@ -45,7 +45,7 @@ export function ApplicationViewport({
       <div className="hidden sm:flex items-center justify-between w-full max-w-xl px-4 py-3 z-30 select-none">
         <div className="flex items-center gap-2 text-xs font-semibold text-amber-400 bg-amber-400/10 px-3 py-1.5 rounded-full border border-amber-400/20 backdrop-blur-md">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-          <span>Capital-AI • Mobile Landing Page Preview</span>
+          <span>Capital-AI • Responsive Preview</span>
         </div>
 
         <div className="flex items-center gap-1 bg-slate-900/80 p-1 rounded-xl border border-slate-800 backdrop-blur-md">
@@ -89,10 +89,10 @@ export function ApplicationViewport({
         tabIndex={-1}
         className={`w-full relative z-10 transition-all duration-300 outline-none ${
           currentRoute !== '/'
-            ? 'max-w-5xl bg-[#02050e]'
+            ? 'max-w-[1440px] bg-[#02050e]'
             : viewMode === 'mockup'
               ? 'sm:my-6 sm:max-w-[412px] sm:rounded-[52px] sm:border-[8px] sm:border-[#2a2f3e] sm:ring-1 sm:ring-amber-500/20 sm:shadow-[0_25px_70px_rgba(0,0,0,0.8),0_0_50px_rgba(245,176,20,0.15)] bg-[#02050e] overflow-hidden'
-              : 'max-w-md bg-[#02050e]'
+              : 'max-w-[1440px] bg-[#02050e]'
         }`}
       >
         {currentRoute === '/' && viewMode === 'mockup' && (

@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { APP_NAVIGATION_EVENT, navigateAppLocation, readHubTab, resolveNavigationTarget, resolveAppRoute } from '../src/utils/appNavigation.ts';
 
-test('all 17 sideboard tab links retain their hub and tab', () => {
+test('all 16 sideboard tab links retain their hub and tab', () => {
   const sidebar = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
   const links = [...sidebar.matchAll(/path: '([^']+\?tab=[^']+)'/g)].map(match => match[1]);
-  assert.equal(links.length, 17);
+  assert.equal(links.length, 16);
   assert.ok(links.includes('/control-center?tab=licenses'));
   for (const link of links) assert.equal(resolveNavigationTarget(link), link);
 });

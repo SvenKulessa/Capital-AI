@@ -20,4 +20,4 @@ Welche Tests, Dateien, Provider-Readbacks oder Runtime-Nachweise belegen den Zus
 - Falls Deploy: App / NATS / andere:
 
 ## Cross-Domain Impact
-Welche anderen Domains werden berührt? Eine Cross-Domain-Änderung ist erlaubt; die Primary Domain bestimmt Branch und PR.
+Welche anderen Domains werden berührt? Jeder Domain-Chat darf die gesamte Änderung übernehmen. Die Primary Domain beschreibt den Schwerpunkt von Branch und PR. Organisatorische Chat-Handoffs und separate Domain-Abnahmen sind nicht erforderlich; technische Security-, Lizenz- und Production-Gates gelten unverändert.
