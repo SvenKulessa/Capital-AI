@@ -192,7 +192,11 @@ function normalizeEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 320 ? email : '';
 }
 
-function normalizePassword(value) {
+function normalizeLoginPassword(value) {
+  return typeof value === 'string' && value.length >= 1 && value.length <= 256 ? value : '';
+}
+
+function normalizeNewPassword(value) {
   return typeof value === 'string' && value.length >= 10 && value.length <= 256 ? value : '';
 }
 
@@ -433,7 +437,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
         return true;
       }
       const email = normalizeEmail(body.email || body.identifier);
-      const password = normalizePassword(body.password);
+      const password = normalizeLoginPassword(body.password);
       if (!email || !password) {
         json(res, 400, { error: 'invalid_credentials_format' });
         return true;
