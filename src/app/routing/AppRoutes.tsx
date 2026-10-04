@@ -80,7 +80,7 @@ type AppRoutesProps = {
   onOpenMonetization: () => void;
   onOpenWhaleRadar: () => void;
   onSelectSubclass: (subclass: AssetSubclass, category: MainCategory) => void;
-  onExploreMarkets: (category?: MainCategory) => void;
+  onExploreMarkets: (category?: MainCategory | 'ALLE') => void;
   onSelectModule: (module: CoreModule) => void;
   onStartProductTour: () => void;
 };

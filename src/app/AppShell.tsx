@@ -169,7 +169,7 @@ export function AppShell() {
     }
   };
 
-  const handleExploreMarkets = (category?: MainCategory) => {
+  const handleExploreMarkets = (category?: MainCategory | 'ALLE') => {
     setMarketCategoryFilter(category ?? 'ALLE');
     setIsAllMarketsOpen(true);
   };
