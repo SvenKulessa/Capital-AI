@@ -101,10 +101,10 @@ export function analyzeDocumentationDrift({ root = DEFAULT_ROOT, mainSha, files,
     if (!fs.existsSync(absolute) || !fs.statSync(absolute).isFile()) continue;
     const content = fs.readFileSync(absolute, 'utf8');
     for (const claim of extractCurrentMainClaims(content)) {
-      if (claim.sha === resolvedMainSha) continue;
+      const stale = claim.sha !== resolvedMainSha;
       findings.push({
-        class: 'SOURCE_DRIFT',
-        severity: 'ERROR',
+        class: stale ? 'SOURCE_DRIFT' : 'VOLATILE_MAIN_IDENTITY_CLAIM',
+        severity: stale ? 'ERROR' : 'WARN',
         path: file,
         line: lineNumberAt(content, claim.index),
         referencedSha: claim.sha,
@@ -113,7 +113,10 @@ export function analyzeDocumentationDrift({ root = DEFAULT_ROOT, mainSha, files,
         repairClass: 'STALE_DOCUMENTARY_PROJECTION',
         repairFingerprint: resolvedProfile.selfHealing.repairFingerprint,
         autoRepairEligible: false,
-        message: 'Living document claims a current-main identity that differs from repository HEAD.',
+        suggestedRemediation: resolvedProfile.selfHealing.remediationStrategy,
+        message: stale
+          ? 'Living document claims a current-main identity that differs from repository HEAD.'
+          : 'Living document embeds the exact current-main SHA and will become stale on the next merge.',
       });
     }
 
