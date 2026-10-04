@@ -146,7 +146,12 @@ export type Ga4McpConfig = z.infer<typeof Ga4McpConfigSchema>;
 
 // 14. search_console_api
 export const SearchConsoleApiConfigSchema = z.object({
-  siteUrl: z.string().url(),
+  provider: z.literal('lukerent-google-search-console-mcp').default('lukerent-google-search-console-mcp'),
+  siteUrl: z.union([
+    z.string().url(),
+    z.string().regex(/^sc-domain:[a-z0-9.-]+$/i),
+  ]),
+  accessMode: z.enum(['read_only', 'owner_approved_write']).default('read_only'),
   searchType: z.enum(['web', 'image', 'news']).default('web'),
   queryFilters: z.array(z.string()).optional(),
   aggregationType: z.enum(['auto', 'byPage', 'byProperty']).default('auto'),

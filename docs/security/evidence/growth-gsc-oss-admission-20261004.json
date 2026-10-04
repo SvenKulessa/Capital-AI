@@ -1,0 +1,48 @@
+{
+  "schema": "CAPITAL_AI_GROWTH_OSS_ADMISSION@1",
+  "reviewedAt": "2026-10-04",
+  "domain": "GROWTH",
+  "component": {
+    "name": "LukeRenton/google-search-console-mcp",
+    "package": "@lukerent/google-search-console-mcp",
+    "version": "0.1.0",
+    "upstreamCommit": "a701813f030c7b343302b2eb84474add1697c42f",
+    "license": "MIT",
+    "commercialSoftwareUse": "PERMITTED_SUBJECT_TO_MIT_NOTICE",
+    "sourceVendored": false
+  },
+  "observedUpstreamCapabilities": [
+    "list_properties",
+    "query_search_analytics",
+    "inspect_url",
+    "list_sitemaps",
+    "submit_sitemap"
+  ],
+  "capitalAiPolicy": {
+    "property": "sc-domain:capital-ai.online",
+    "mode": "READ_ONLY",
+    "oauthScope": "https://www.googleapis.com/auth/webmasters.readonly",
+    "blockedTools": ["submit_sitemap"],
+    "credentialFile": "GSC_TOKEN_FILE or ~/.config/google-search-console-mcp/tokens.json",
+    "credentialFileMode": "0600",
+    "credentialsCommitted": false,
+    "publicWebRuntimeBinding": false
+  },
+  "ga4": {
+    "providedByThisComponent": false,
+    "status": "PLANNED_SEPARATE_ADAPTER"
+  },
+  "evidence": [
+    "https://github.com/LukeRenton/google-search-console-mcp/tree/a701813f030c7b343302b2eb84474add1697c42f",
+    "docs/licenses/LukeRenton-google-search-console-mcp-MIT.txt",
+    "scripts/gsc-auth-readonly.mjs",
+    "scripts/gsc-mcp-guard.mjs",
+    "config/growth-google-authority.json"
+  ],
+  "limitations": [
+    "No Google account credentials are committed or provisioned by this change.",
+    "No claim is made that Google Search Console is authenticated until list_properties succeeds.",
+    "No claim is made that GA4 is implemented by the LukeRenton component.",
+    "The operator MCP path uses npx and is not part of the hardened public Docker runtime."
+  ]
+}

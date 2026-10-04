@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "capital-ai-gsc": {
+      "command": "node",
+      "args": ["scripts/gsc-mcp-guard.mjs"],
+      "env": {
+        "GSC_PROPERTY": "sc-domain:capital-ai.online"
+      }
+    }
+  }
+}

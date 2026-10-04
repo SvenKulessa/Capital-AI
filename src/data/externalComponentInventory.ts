@@ -220,10 +220,24 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     evidence: ['server/telegram.mjs'],
   },
   {
+    id: 'lukerent-gsc-mcp', name: 'LukeRenton Google Search Console MCP', domain: 'GROWTH', kind: 'SEO / Search Console MCP',
+    installedAt: '2026-10-04', activeVersion: '0.1.0', pipelineVersion: '0.1.0 pinned / upstream a701813f', lifecycle: 'APPROVED',
+    functionSummary: 'Read-only Search Console authority for SEO performance, URL inspection and sitemap readback; write tool is blocked by the Capital-AI MCP guard.',
+    webAppBinding: '.mcp.json + scripts/gsc-mcp-guard.mjs; operator/control-plane only', license: 'MIT', cadsScore: 82.0, scoreState: 'PROVISIONAL',
+    domainAssignments: ["sc-domain:capital-ai.online; no public web-runtime binding"],
+    dependencies: ['google-search-console-api'],
+    alternatives: [
+      { name: 'Google Search Console API direct adapter', role: 'fallback', license: 'Google API terms / local adapter code' },
+      { name: 'jurgisgavenas/search-console-mcp', role: 'replacement', license: 'MIT' },
+      { name: 'ncosentino/google-search-console-mcp', role: 'complement', license: 'repository license review required before adoption' },
+    ],
+    evidence: ['config/growth-google-authority.json', 'docs/security/evidence/growth-gsc-oss-admission-20261004.json', 'docs/licenses/LukeRenton-google-search-console-mcp-MIT.txt'],
+  },
+  {
     id: 'google-analytics', name: 'Google Analytics', domain: 'GROWTH', kind: 'Web Analytics',
-    installedAt: null, activeVersion: null, pipelineVersion: 'disabled pending consent decision', lifecycle: 'DISCOVERED',
-    functionSummary: 'Optional analytics adapter; current implementation is intentionally disabled.',
-    webAppBinding: 'src/utils/analytics.ts', license: 'Proprietary service', cadsScore: 60.0, scoreState: 'BLOCKED',
+    installedAt: null, activeVersion: null, pipelineVersion: 'GA4 adapter planned behind Growth Google authority boundary', lifecycle: 'DISCOVERED',
+    functionSummary: 'GA4 remains a separate future adapter; the LukeRenton Search Console MCP does not provide GA4.',
+    webAppBinding: 'src/utils/analytics.ts + future server/operator GA4 adapter', license: 'Proprietary service/API', cadsScore: 60.0, scoreState: 'BLOCKED',
     domainAssignments: ["disabled; no active measurement domain"],
     dependencies: [],
     alternatives: [
