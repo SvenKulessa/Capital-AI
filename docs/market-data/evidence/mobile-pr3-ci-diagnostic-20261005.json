@@ -1,9 +1,9 @@
 {
   "schema": "CAPITAL_AI_MOBILE_CI_DIAGNOSTIC@1",
-  "observedAt": "2026-10-05T02:08:00+02:00",
+  "observedAt": "2026-10-05T02:18:00+02:00",
   "mobilePr": 3,
-  "head": "2c351180076ceb7a620f3beac9dd0da577b41608",
-  "workflowRun": 37244733903,
+  "head": "f24303d241398196820f2569e79672d47443a102",
+  "workflowRun": 37245432767,
   "workflow": "Mobile Quality",
   "result": "FAIL",
   "passes": [
@@ -32,11 +32,11 @@
     }
   ],
   "artifact": {
-    "id": 11319010943,
-    "sha256": "844f79a7faaca7e206886e20ce695c5beef7279bf2d2b17afd18c15ac91e20c9"
+    "id": 11318564306,
+    "sha256": "9ee6ac32d71dc29b8fb120d55e1a9393391856e7fee7f89f28c1667d87f3abff"
   },
-  "marketInterpretation": "MARKET evidence PR is not failing due to the expected source gates; current blocking CI failures are runtime authentication configuration.",
+  "marketInterpretation": "Exact-head rerun confirms MARKET expected source gates remain fail-closed; Mobile Quality is blocked by runtime authentication configuration, not by the evidence projection.",
   "trustStatus": "BLOCKED",
-  "canonicalPayloadSha256": "34a356ba6e0da4c938e291b33ccbfafb780f46ff964cef02e07a23cefce144f7",
+  "canonicalPayloadSha256": "602ba43c1aea2dd7757864d5aac3b8192e9886117bf172ce58e95a3583c29592",
   "hashScope": "UTF-8 JSON with lexicographically sorted keys and separators ',' ':' before adding hash fields"
 }
