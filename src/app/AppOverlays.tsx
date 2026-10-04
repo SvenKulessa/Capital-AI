@@ -7,10 +7,10 @@ import {
 import { MARKET_ASSETS } from '../data/mockData';
 import type {
   AssetSubclass,
-  CoreModule,
   MainCategory,
   MarketAsset,
-} from '../types';
+} from '../entities/market/model';
+import type { CoreModule } from '../entities/module/model';
 
 const AnalysisModal = lazy(() =>
   import('../components/AnalysisModal').then((module) => ({
