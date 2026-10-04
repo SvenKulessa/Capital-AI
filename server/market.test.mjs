@@ -3,6 +3,8 @@ import { strict as assert } from 'node:assert';
 let instance = 0;
 const isolated = async () => import(`./market.mjs?test=${++instance}`);
 import { infrastructure } from './infrastructure.mjs';
+import { MARKET_SOURCE_POLICY, evaluateOpenSourceMarketAdmission } from './open-source-market-policy.mjs';
+import { fetchOssAdapterHealth, getOssAdapterInventory } from './oss-provider-adapters.mjs';
 
 const original = { status: infrastructure.status, read: infrastructure.read, persist: infrastructure.persist };
 before(() => {
@@ -64,4 +66,38 @@ test('health exposes fail-closed Open-Source and Open-Data policy', async () => 
   assert.equal(state.ingress, 'fail_closed');
   assert.equal(state.sourcePolicy, 'OPEN_SOURCE_AND_OPEN_DATA_ONLY');
   assert.equal(state.admittedSources, 0);
+});
+
+
+test('Open-Source plus qualifying Open-Data evidence is required', () => {
+  const valid = {
+    softwareLicense:'MIT',
+    softwareEvidenceReference:'https://example.invalid/software-license',
+    dataLicense:'CC-BY-4.0',
+    dataLicenseEvidenceReference:'https://example.invalid/data-license',
+    provenanceReference:'https://example.invalid/provenance',
+    commercialDisplayAllowed:true,
+    commercialDerivedScoringAllowed:true,
+    cacheStorageAllowed:true,
+    jetStreamReplayRetentionAllowed:true,
+  };
+  assert.equal(evaluateOpenSourceMarketAdmission(valid).eligible, true);
+  assert.equal(evaluateOpenSourceMarketAdmission({...valid,dataLicense:'CC-BY-NC-4.0'}).eligible, false);
+  assert.equal(evaluateOpenSourceMarketAdmission({...valid,softwareLicense:'UNVERIFIED'}).eligible, false);
+});
+
+test('runtime OSS adapter inventory excludes non-admitted proprietary data paths', async () => {
+  const inventory=getOssAdapterInventory();
+  const ids=inventory.map(x=>x.id);
+  assert.deepEqual([...ids].sort(), ['ccxt','cryptofeed','hummingbot','openbb'].sort());
+  assert.ok(inventory.every(x=>x.openDataAdmissionRequired===true));
+  assert.equal(MARKET_SOURCE_POLICY.admittedSources.length,0);
+  const originalFetch=globalThis.fetch;
+  let calls=0;
+  globalThis.fetch=async()=>{calls++;throw new Error('must not reach network');};
+  try{
+    const result=await fetchOssAdapterHealth('ccxt');
+    assert.equal(result.reason,'OPEN_DATA_ADMISSION_REQUIRED');
+    assert.equal(calls,0);
+  }finally{globalThis.fetch=originalFetch;}
 });
