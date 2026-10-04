@@ -201,9 +201,7 @@ Motion:
 
 ## Major-Migrationsentscheidungen
 
-Die Detailentscheidungen liegen separat unter:
-- `TYPE-SCRIPT-7-MIGRATION-DECISION.md`
-- `ANDROID-GRADLE-PLUGIN-9-4-MIGRATION-DECISION.md`
-- `GO-1-27-MIGRATION-DECISION.md`
+Die vier Major-Entscheidungen (TypeScript 7, Android Gradle Plugin 9.4, Go 1.27 und Motion 14) sind konsolidiert in:
+- `MAJOR-MIGRATION-DECISIONS.md`
 
 Keine dieser Major-Migrationen ist Bestandteil dieses Routine-PRs.
