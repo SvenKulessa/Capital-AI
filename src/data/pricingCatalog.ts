@@ -1,4 +1,4 @@
-export const STRIPE_CATALOG_VERSION = '2026-10-02-v2' as const;
+export const STRIPE_CATALOG_VERSION = '2026-10-04-vocabulary' as const;
 
 export type BillingCycle = 'monthly' | 'annual';
 export type PaidTier = 'starter' | 'pro' | 'enterprise';
@@ -22,6 +22,15 @@ export const PRICING_CATALOG = {
     monthly: { priceId: 'price_1UMA51PKr4joNbEcbtWNCcCc', amountCents: 10900 },
     annual: { priceId: 'price_1UMA53PKr4joNbEc3E3XyzgG', amountCents: 128000 },
   },
+} as const;
+
+export const VOCABULARY_PRICE = {
+  label: 'Market Vocabulary',
+  productId: 'prod_VNTsrtlf2ZL8ja',
+  priceId: 'price_1UMiuIPKr4joNbEclpn8AwFW',
+  amountCents: 1900,
+  taxBehavior: 'inclusive',
+  includedIn: ['pro', 'enterprise'],
 } as const;
 
 export function annualDiscountPercent(tier: PaidTier) {
