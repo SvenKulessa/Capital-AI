@@ -1,4 +1,4 @@
-import { instrumentCatalog, QuoteFactSchema, isFresh } from '../shared/market-contracts.mjs';
+import { instrumentCatalog, QuoteFactSchema, isFresh, toCanonicalAssetValue } from '../shared/market-contracts.mjs';
 import { infrastructure, payloadHash } from './infrastructure.mjs';
 import { MARKET_SOURCE_POLICY, admittedMarketSourcesFor, isAdmittedMarketSource } from './open-source-market-policy.mjs';
 
@@ -43,6 +43,37 @@ export async function quote(symbol) {
     error: 'open_data_source_not_configured',
     symbol,
     sourcePolicy: MARKET_SOURCE_POLICY.mode,
+  }];
+}
+
+export async function assetValues() {
+  if (!sourceAdmissionAvailable) return [503, {
+    schema: 'CAPITAL_AI_ASSET_VALUES@1',
+    status: 'BLOCKED',
+    reason: 'NO_ADMITTED_MARKET_QUOTE_SOURCE',
+    sourcePolicy: MARKET_SOURCE_POLICY.mode,
+    values: [],
+  }];
+  if (!quotesEnabled) return [503, {
+    schema: 'CAPITAL_AI_ASSET_VALUES@1',
+    status: 'BLOCKED',
+    reason: 'MARKET_QUOTES_DISABLED',
+    sourcePolicy: MARKET_SOURCE_POLICY.mode,
+    values: [],
+  }];
+
+  const values = [];
+  for (const symbol of allowed) {
+    const [status, delivery] = await quote(symbol);
+    if (status !== 200) continue;
+    values.push(toCanonicalAssetValue(delivery));
+  }
+  return [values.length ? 200 : 503, {
+    schema: 'CAPITAL_AI_ASSET_VALUES@1',
+    status: values.length ? 'READY' : 'BLOCKED',
+    reason: values.length ? null : 'NO_REPLAY_VERIFIED_VALUES',
+    sourcePolicy: MARKET_SOURCE_POLICY.mode,
+    values,
   }];
 }
 
