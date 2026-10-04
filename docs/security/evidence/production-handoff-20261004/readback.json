@@ -4,12 +4,14 @@
   "authority": "AGENTS.md@currentmain + docs/security/PRODUCTION-HANDOFF.md + docs/governance/DOMAIN-RELEASE-GOVERNANCE.md + docs/security/POST-MERGE-CORRELATION-SELF-HEALING.md",
   "status": "BLOCKED",
   "source": {
-    "currentMainSha": "de4c268311c42877f8a7e1361e7de986ffb096cb",
+    "currentMainSha": "5d0a7b5bf13977c68cd74ddd65fd092961dc8d15",
     "openPullRequests": 0,
     "mergedPrerequisites": [
       127,
       128,
-      129
+      129,
+      131,
+      132
     ]
   },
   "checks": {
@@ -149,5 +151,24 @@
     "classification": "TECHNICALLY_CORRELATED_HISTORICAL_NOT_PRODUCTION_APPROVED",
     "doNotLabelKnownGoodProduction": true
   },
-  "nextGate": "Owner-Entscheidung erst nach TRUST/MARKET-Rechtefreigabe und current-main Candidate-Publish; Render-Quellenwechsel ist eine wesentliche Production-Mutation."
+  "nextGate": "TRUST/MARKET source-rights and live-universe gates schließen; danach exakt diesen dann aktuellen Main einmalig als Candidate bauen/publishen und ohne Rebuild promoten.",
+  "ownerApproval": {
+    "observedDate": "2026-10-04",
+    "option": "A_GATE_FIRST_THEN_DIGEST_PROMOTION",
+    "approved": true,
+    "executionState": "HELD_FAIL_CLOSED",
+    "currentMainSha": "5d0a7b5bf13977c68cd74ddd65fd092961dc8d15",
+    "prerequisites": {
+      "trustMarketRights": "OPEN",
+      "ossSourceAdmission": "FAIL",
+      "multiAssetLiveUniverse": "FAIL",
+      "admittedSources": 0
+    },
+    "providerFollowUp": {
+      "twelveData": "REQUEST_SENT_NO_AUTHORITATIVE_REPLY_OBSERVED",
+      "massive": "REQUEST_SENT_NO_AUTHORITATIVE_REPLY_OBSERVED",
+      "financialDataNet": "REQUEST_SENT_NO_AUTHORITATIVE_REPLY_OBSERVED",
+      "kraken": "ADDITIONAL_INFORMATION_SENT_WRITTEN_PERMISSION_PENDING"
+    }
+  }
 }
