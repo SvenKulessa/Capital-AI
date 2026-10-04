@@ -23,7 +23,23 @@ export const MARKET_SOURCE_POLICY = Object.freeze({
   schema:'CAPITAL_AI_OPEN_SOURCE_MARKET_POLICY@1',
   ownerDecisionAt:'2026-10-04',
   mode:'OPEN_SOURCE_AND_OPEN_DATA_ONLY',
-  admittedSources:Object.freeze([]),
+  admittedSources:Object.freeze([
+    Object.freeze({
+      providerId:'wikidata-reference',
+      decision:'OPEN_SOURCE_OPEN_DATA_ADMITTED',
+      eligible:true,
+      scope:'REFERENCE_METADATA_ONLY',
+      dataLicense:'CC0-1.0',
+      evidenceReference:'docs/market-data/evidence/source-admission-wikidata-20261004.json',
+      instrumentManifestReference:'docs/market-data/evidence/wikidata-reference-instrument-manifest-20261004.json',
+      capabilities:Object.freeze({
+        referenceMetadata:true,
+        marketQuotes:false,
+        mobileCryptoUniverse:false,
+        scoringPriceInput:false,
+      }),
+    }),
+  ]),
   blockedLegacyProviderPaths:Object.freeze([
     'binance','kraken','twelvedata','polygon','massive','financialdatanet','yfinance','coingecko',
   ]),
@@ -72,10 +88,14 @@ export function evaluateOpenSourceMarketAdmission(evidence){
   };
 }
 
-export function isAdmittedMarketSource(providerId){
-  return MARKET_SOURCE_POLICY.admittedSources.some(source =>
-    source.providerId===providerId &&
+export function admittedMarketSourcesFor(capability=null){
+  return MARKET_SOURCE_POLICY.admittedSources.filter(source =>
     source.eligible===true &&
-    source.decision==='OPEN_SOURCE_OPEN_DATA_ADMITTED'
+    source.decision==='OPEN_SOURCE_OPEN_DATA_ADMITTED' &&
+    (!capability || source.capabilities?.[capability]===true)
   );
+}
+
+export function isAdmittedMarketSource(providerId, capability=null){
+  return admittedMarketSourcesFor(capability).some(source => source.providerId===providerId);
 }

@@ -10,7 +10,7 @@ test('canonical scorer origin is explicit and cannot point back to the public ap
   assert.equal(canonicalScorerOrigin({ PUBLIC_APP_ORIGIN: 'https://capital-ai.online', CAPITAL_AI_SCORER_ORIGIN: 'http://finance.invalid' }), null);
 });
 
-test('mobile universe is fail-closed and performs no legacy or generic network access without Source Admission', async () => {
+test('mobile universe stays fail-closed without a mobileCryptoUniverse-capable Source Admission', async () => {
   const originalFetch = globalThis.fetch;
   let calls = 0;
   globalThis.fetch = async () => {
