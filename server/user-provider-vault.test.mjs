@@ -212,3 +212,52 @@ test('BYOK private market context rejects unsupported symbols before public quot
   );
   assert.equal(calls, 0);
 });
+
+
+test('BYOK market-context route requires explicit privateMarketContext permission before provider I/O', async () => {
+  const env = {
+    SUPABASE_URL: 'https://project.supabase.co',
+    SUPABASE_SECRET_KEY: 'sb_secret_test_0123456789012345678901234567890123456789',
+    AUTH_COOKIE_SIGNING_SECRET: 'test-cookie-signing-secret-0123456789abcdef',
+  };
+  let providerCalls = 0;
+  const fetchImpl = async (input, options = {}) => {
+    const url = new URL(String(input));
+    if (url.origin === 'https://project.supabase.co' && url.pathname.endsWith('/capital_ai_get_user_provider_secret')) {
+      return Response.json({
+        secretPayload: JSON.stringify({
+          apiKey: 'owner-readonly-api-key',
+          apiSecret: 'aGVsbG8tdGVzdC1zZWNyZXQtdGhhdC1pcy1sb25nLWVub3VnaA==',
+        }),
+        permissions: { fundsQuery: true, privateMarketContext: false },
+        status: 'VERIFIED',
+      });
+    }
+    providerCalls += 1;
+    throw new Error('provider I/O must not run');
+  };
+  const vault = createUserProviderVault({
+    env,
+    fetchImpl,
+    auth: {
+      verify: async () => ({ userId: '11111111-1111-1111-1111-111111111111' }),
+      sameOrigin: () => true,
+    },
+  });
+
+  let status = 0;
+  let payload;
+  await vault.handle(
+    request('GET'),
+    responseHarness(),
+    new URL('https://capital.example/api/profile/provider-connections/kraken/market-context?symbol=BTCUSD'),
+    (_res, nextStatus, nextPayload) => {
+      status = nextStatus;
+      payload = nextPayload;
+    },
+  );
+
+  assert.equal(status, 403);
+  assert.equal(payload.error, 'private_market_context_not_enabled');
+  assert.equal(providerCalls, 0);
+});
