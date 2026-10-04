@@ -7,6 +7,7 @@ import { verifyWebhookSignature } from './lib/webhook.mjs';
 import { createOAuthState, oauthAuthorizeUrl, verifyOAuthState } from './lib/oauth.mjs';
 import { evidenceHash, evidenceRecord, secureTokenEquals } from './lib/evidence-store.mjs';
 import { generateAndFetchAsyncSbom } from './lib/sbom.mjs';
+import { contentLengthExceedsLimit, readBoundedRequestBody } from './lib/request-body.mjs';
 
 test('webhook signature is verified with constant-time comparison', () => {
   const body = Buffer.from('{"ok":true}'); const secret = 'secret'; const signature = `sha256=${createHmac('sha256', secret).update(body).digest('hex')}`;
@@ -29,9 +30,28 @@ test('repository config can classify runtime deployment', () => {
 });
 
 test('OAuth setup state is signed, expires and binds the installation', () => {
-  const now = Date.UTC(2026, 9, 1, 15, 0, 0); const state = createOAuthState({ installationId: 42, marketplacePlanId: 7, secret: 'state-secret', now });
-  const verified = verifyOAuthState(state, 'state-secret', now + 60_000);
-  assert.equal(verified.installationId, 42); assert.equal(verified.marketplacePlanId, 7); assert.equal(verifyOAuthState(state, 'wrong-secret', now + 60_000), null); assert.equal(verifyOAuthState(state, 'state-secret', now + 11 * 60_000), null);
+  const now = Date.UTC(2026, 9, 1, 15, 0, 0);
+  const signingKey = '0123456789abcdef0123456789abcdef';
+  const wrongKey = 'abcdef0123456789abcdef0123456789';
+  const state = createOAuthState({ installationId: 42, marketplacePlanId: 7, secret: signingKey, now });
+  const verified = verifyOAuthState(state, signingKey, now + 60_000);
+  assert.equal(verified.installationId, 42);
+  assert.equal(verified.marketplacePlanId, 7);
+  assert.equal(verifyOAuthState(state, wrongKey, now + 60_000), null);
+  assert.equal(verifyOAuthState(state, signingKey, now + 11 * 60_000), null);
+});
+
+test('OAuth state rejects weak signing keys and tampering fail-closed', () => {
+  const now = Date.UTC(2026, 9, 1, 15, 0, 0);
+  const signingKey = '0123456789abcdef0123456789abcdef';
+  assert.throws(
+    () => createOAuthState({ installationId: 42, secret: 'too-short', now }),
+    /at least 32 bytes/,
+  );
+  assert.equal(verifyOAuthState('invalid.state', 'too-short', now), null);
+  const state = createOAuthState({ installationId: 42, secret: signingKey, now });
+  const [payload, signature] = state.split('.');
+  assert.equal(verifyOAuthState(`${payload}x.${signature}`, signingKey, now + 1_000), null);
 });
 
 test('OAuth authorization URL binds callback and state', () => {
@@ -120,4 +140,31 @@ test('retention and uninstall deletion use bounded evidence-table DELETE filters
   assert.match(calls[1].url,/installation_id=eq\.42/);
   assert.equal(calls[0].options.method,'DELETE');
   assert.equal(calls[1].options.method,'DELETE');
+});
+
+
+test('webhook content-length preflight rejects oversized requests', () => {
+  assert.equal(contentLengthExceedsLimit({'content-length':'1048577'}), true);
+  assert.equal(contentLengthExceedsLimit({'content-length':'1048576'}), false);
+  assert.equal(contentLengthExceedsLimit({}), false);
+});
+
+test('bounded request reader rejects chunked bodies over the limit', async () => {
+  async function* chunks() {
+    yield Buffer.alloc(6);
+    yield Buffer.alloc(5);
+  }
+  await assert.rejects(
+    readBoundedRequestBody(chunks(), 10),
+    (error) => error?.code === 'REQUEST_BODY_TOO_LARGE' && error?.status === 413,
+  );
+});
+
+test('bounded request reader returns bodies at or below the limit', async () => {
+  async function* chunks() {
+    yield Buffer.from('hello');
+    yield Buffer.from('world');
+  }
+  const body = await readBoundedRequestBody(chunks(), 10);
+  assert.equal(body.toString('utf8'), 'helloworld');
 });
