@@ -18,6 +18,7 @@ async function harness(envOverrides = {}) {
     SUPABASE_URL: 'https://project.supabase.co',
     SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test',
     SUPABASE_SECRET_KEY: 'sb_secret_test_0123456789012345678901234567890123456789',
+    AUTH_COOKIE_SIGNING_SECRET: 'test-cookie-signing-secret-0123456789abcdef',
     PUBLIC_APP_ORIGIN: 'https://capital.example',
     TELEGRAM_BOT_TOKEN: '12345:offline_test_placeholder_only',
     TELEGRAM_CHAT_ID: '-100123',
