@@ -1,3 +1,5 @@
+import { MARKET_SOURCE_POLICY } from './open-source-market-policy.mjs';
+
 const MAX_REQUEST_BYTES = 64 * 1024;
 const MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
 const UPSTREAM_TIMEOUT_MS = 8_000;
@@ -84,7 +86,7 @@ function bearerAuthorization(value) {
 export function createScorerProxy({
   env = process.env,
   fetchImpl = fetch,
-  sourcePolicy = { admittedSources: [] },
+  sourcePolicy = MARKET_SOURCE_POLICY,
 } = {}) {
   const upstreamOrigin = privateFinanceOrigin(env.CAPITAL_AI_FINANCE_SCORER_PRIVATE_ORIGIN);
 
