@@ -41,6 +41,7 @@ import {
 import { SubpageSidebarNav, SubpageNavItem } from '../../components/SubpageSidebarNav';
 import { useHubTab } from '../../hooks/useHubTab';
 import { updatePageSEO } from '../../utils/analytics';
+import { VOCABULARY_GRANT_KEY, VOCABULARY_QUIZ_USED_KEY, formatVocabularyPrice } from '../../data/vocabularyOffer';
 
 export type LearningPortalTab = 'glossar' | 'guides' | 'quiz';
 const LEARNING_TABS: readonly LearningPortalTab[] = ['glossar', 'guides', 'quiz'];
@@ -123,6 +124,24 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
   const [selectedQuizAnswer, setSelectedQuizAnswer] = useState<number | null>(null);
   const [quizScore, setQuizScore] = useState<number>(0);
   const [quizFinished, setQuizFinished] = useState<boolean>(false);
+  const [entitled, setEntitled] = useState<boolean>(false);
+  const [quizPreviouslyUsed, setQuizPreviouslyUsed] = useState<boolean>(false);
+
+  useEffect(() => {
+    setQuizPreviouslyUsed(window.localStorage.getItem(VOCABULARY_QUIZ_USED_KEY) === '1');
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('vocabulary_session') || window.localStorage.getItem(VOCABULARY_GRANT_KEY) || '';
+    if (!sessionId) return;
+    void fetch(`/api/billing/vocabulary/entitlement?session_id=${encodeURIComponent(sessionId)}`)
+      .then((response) => response.json())
+      .then((body) => {
+        if (body?.entitled) {
+          window.localStorage.setItem(VOCABULARY_GRANT_KEY, sessionId);
+          setEntitled(true);
+        }
+      })
+      .catch(() => undefined);
+  }, []);
 
   // Filtered Vocabulary Terms
   const filteredTerms = useMemo(() => {
@@ -132,6 +151,9 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       }
       // Category filter
       if (selectedCategory !== 'ALL' && term.category !== selectedCategory) {
+        return false;
+      }
+      if (!entitled && term.level === 'Quant / Pro') {
         return false;
       }
       // Level filter
@@ -154,7 +176,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       }
       return true;
     });
-  }, [focusedTermId, selectedCategory, selectedLevel, searchQuery]);
+  }, [focusedTermId, selectedCategory, selectedLevel, searchQuery, entitled]);
 
   const handleCopyDefinition = (term: VocabularyTerm, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -477,7 +499,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
             {/* Skill Level Filter Buttons */}
             <div className="flex items-center gap-2 pt-2 border-t border-slate-800/80 text-xs">
               <span className="text-slate-400 font-mono text-[11px]">Level:</span>
-              {['ALL', 'Einsteiger', 'Fortgeschritten', 'Quant / Pro'].map((lvl) => (
+              {['ALL', 'Einsteiger', 'Fortgeschritten', ...(entitled ? ['Quant / Pro'] : [])].map((lvl) => (
                 <button
                   key={lvl}
                   type="button"
@@ -495,6 +517,11 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
                 </button>
               ))}
             </div>
+            {!entitled && (
+              <div className="pt-2 text-[11px] text-purple-200">
+                Quant / Pro wird mit dem Market-Vocabulary-Paket für {formatVocabularyPrice()} freigeschaltet.
+              </div>
+            )}
           </div>
 
           {/* Vocabulary Terms Cards Grid */}
@@ -736,7 +763,18 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
             </p>
           </div>
 
-          {!quizFinished ? (
+          {!quizFinished && !entitled && quizPreviouslyUsed ? (
+            <div className="p-8 rounded-xl bg-[#090e21] border border-amber-400/30 text-center space-y-4 max-w-md mx-auto">
+              <Award className="w-12 h-12 text-amber-400 mx-auto" />
+              <h3 className="text-xl font-bold text-white">Kostenloser Skill-Check bereits verwendet</h3>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Der kostenlose Quiz-Versuch kann einmal genutzt werden. Das Market-Vocabulary-Paket schaltet Quant / Pro und den erweiterten Lernzugang für {formatVocabularyPrice()} frei.
+              </p>
+              <button type="button" onClick={() => setActiveTab('glossar')} className="px-4 py-2 rounded-xl bg-amber-400 text-black font-bold text-xs hover:bg-amber-300 cursor-pointer">
+                Vocabulary-Paket ansehen
+              </button>
+            </div>
+          ) : !quizFinished ? (
             <div className="p-6 rounded-xl bg-[#090e21] border border-slate-800 space-y-4 max-w-2xl mx-auto">
               <div className="flex items-center justify-between text-xs font-mono text-slate-400">
                 <span>Frage {currentQuizIndex + 1} von {QUIZ_QUESTIONS.length}</span>
@@ -807,6 +845,10 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
                         if (currentQuizIndex + 1 < QUIZ_QUESTIONS.length) {
                           setCurrentQuizIndex((prev) => prev + 1);
                         } else {
+                          if (!entitled) {
+                            window.localStorage.setItem(VOCABULARY_QUIZ_USED_KEY, '1');
+                            setQuizPreviouslyUsed(true);
+                          }
                           setQuizFinished(true);
                         }
                       }}
@@ -826,18 +868,28 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
                 Sie haben <strong className="text-amber-400 text-base">{quizScore}</strong> von{' '}
                 <strong className="text-white">{QUIZ_QUESTIONS.length}</strong> Fragen richtig beantwortet.
               </p>
-              <button
-                type="button"
-                onClick={() => {
-                  setCurrentQuizIndex(0);
-                  setSelectedQuizAnswer(null);
-                  setQuizScore(0);
-                  setQuizFinished(false);
-                }}
-                className="px-4 py-2 rounded-xl bg-amber-400 text-black font-bold text-xs hover:bg-amber-300 cursor-pointer"
-              >
-                Quiz wiederholen
-              </button>
+              {entitled ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCurrentQuizIndex(0);
+                    setSelectedQuizAnswer(null);
+                    setQuizScore(0);
+                    setQuizFinished(false);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-amber-400 text-black font-bold text-xs hover:bg-amber-300 cursor-pointer"
+                >
+                  Quiz wiederholen
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('glossar')}
+                  className="px-4 py-2 rounded-xl bg-amber-400 text-black font-bold text-xs hover:bg-amber-300 cursor-pointer"
+                >
+                  Vocabulary-Paket für {formatVocabularyPrice()} ansehen
+                </button>
+              )}
             </div>
           )}
         </div>
