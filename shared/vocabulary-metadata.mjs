@@ -441,7 +441,9 @@ export const vocabularyMetadata = [
     "category": "Security & Compliance",
     "description": "Read-only Rücklesepfad für verifizierbare Supabase-Auth-, Session- und Provider-Konfiguration ohne Secret-Ausgabe.",
     "thesaurus": [
-      "Supabase Auth Readback"
+      "Supabase Auth Readback",
+      "Supabase auth inspection",
+      "SupabaseAuthVerification"
     ]
   },
   {

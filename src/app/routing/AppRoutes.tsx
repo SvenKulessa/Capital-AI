@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import { LoginPage } from '../../components/LoginPage';
+import { LoginPage } from '../../features/auth/LoginPage';
 import {
   LegalAndFaqPages,
   type LegalRoute,
@@ -37,7 +37,7 @@ const TokenomicsPage = lazy(() =>
   })),
 );
 const PipelineBuilder = lazy(() =>
-  import('../../components/PipelineBuilder').then((module) => ({
+  import('../../features/pipeline-builder/PipelineBuilder').then((module) => ({
     default: module.PipelineBuilder,
   })),
 );
@@ -47,12 +47,12 @@ const ProviderStatusDashboard = lazy(() =>
   })),
 );
 const StudioPage = lazy(() =>
-  import('../../components/StudioPage').then((module) => ({
+  import('../../features/studio/StudioPage').then((module) => ({
     default: module.StudioPage,
   })),
 );
 const LearningPortalPage = lazy(() =>
-  import('../../components/LearningPortalPage').then((module) => ({
+  import('../../features/learning/LearningPortalPage').then((module) => ({
     default: module.LearningPortalPage,
   })),
 );

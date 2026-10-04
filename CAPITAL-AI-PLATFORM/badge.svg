@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 72" role="img" aria-labelledby="title desc">
+  <title id="title">CAPITAL-AI-PLATFORM</title>
+  <desc id="desc">Violet and dark purple roadmap badge with connected platform nodes.</desc>
+  <rect width="360" height="72" rx="18" fill="#0C0715"/>
+  <rect x="6" y="6" width="60" height="60" rx="16" fill="#251141"/>
+  <g fill="none" stroke="#8D26FF" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="25" cy="25" r="6"/>
+    <circle cx="49" cy="27" r="6"/>
+    <circle cx="36" cy="49" r="6"/>
+    <path d="M30 27l13 1"/>
+    <path d="M28 30l5 13"/>
+    <path d="M46 32l-7 12"/>
+  </g>
+  <text x="86" y="44" fill="#F8FAFC" font-family="Inter,Arial,sans-serif" font-size="23" font-weight="700" letter-spacing=".4">CAPITAL-AI-PLATFORM</text>
+</svg>

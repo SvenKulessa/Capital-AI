@@ -19,6 +19,11 @@ RUN npm ci --ignore-scripts --no-audit --no-fund \
 # Remove the installer itself, including vulnerable bundled http-cache-semantics, before validation.
 COPY index.html vite.config.ts tsconfig.json ./
 COPY src ./src
+COPY CAPITAL-AI-PRODUCT/badge.svg ./CAPITAL-AI-PRODUCT/badge.svg
+COPY CAPITAL-AI-TRUST/badge.svg ./CAPITAL-AI-TRUST/badge.svg
+COPY CAPITAL-AI-MARKET/badge.svg ./CAPITAL-AI-MARKET/badge.svg
+COPY CAPITAL-AI-GROWTH/badge.svg ./CAPITAL-AI-GROWTH/badge.svg
+COPY CAPITAL-AI-PLATFORM/badge.svg ./CAPITAL-AI-PLATFORM/badge.svg
 COPY contracts ./contracts
 COPY documentary/evidence ./documentary/evidence
 COPY generated/documentary ./generated/documentary
