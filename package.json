@@ -9,7 +9,7 @@
     "build": "vite build",
     "preview": "vite preview --host=127.0.0.1",
     "test:navigation": "node --import tsx --test scripts/navigation.test.mjs",
-    "test": "node --import tsx scripts/validate-contract-suites.mjs && node --import tsx --test src/contracts/__tests__/analysisFoundation.test.ts src/contracts/__tests__/marketDataRightsEligibility.test.ts src/contracts/__tests__/financialDataNetIntegration.test.ts src/platform/Documentary/__tests__/documentaryProjection.test.ts && node --import tsx scripts/generate-documentary.mjs --check",
+    "test": "node --import tsx scripts/validate-contract-suites.mjs && node --import tsx --test src/contracts/__tests__/analysisFoundation.test.ts src/contracts/__tests__/marketDataRightsEligibility.test.ts src/contracts/__tests__/financialDataNetIntegration.test.ts src/platform/Documentary/__tests__/documentaryProjection.test.ts && node --import tsx scripts/generate-documentary.mjs --check && node --test scripts/documentation-drift.test.mjs",
     "documentary:generate": "node --import tsx scripts/generate-documentary.mjs --write",
     "documentary:check": "node --import tsx scripts/generate-documentary.mjs --check",
     "clean": "rm -rf dist server.js",
@@ -24,7 +24,9 @@
     "license:report": "node scripts/license-engine.mjs",
     "test:licenses": "node --test scripts/license-engine.test.mjs scripts/license-evidence.test.mjs",
     "sponsorship:p2:check": "node scripts/validate-sponsorship-p2-projection.mjs",
-    "sponsorship:bundle:check": "node scripts/verify-sponsorship-evidence-bundle.mjs"
+    "sponsorship:bundle:check": "node scripts/verify-sponsorship-evidence-bundle.mjs",
+    "test:documentary-drift": "node --test scripts/documentation-drift.test.mjs",
+    "documentary:drift": "node scripts/documentation-drift.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
