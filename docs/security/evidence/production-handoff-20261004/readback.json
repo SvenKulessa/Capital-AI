@@ -1,0 +1,153 @@
+{
+  "schema": "CAPITAL_AI_PRODUCTION_HANDOFF_EVIDENCE@1",
+  "observedDate": "2026-10-04",
+  "authority": "AGENTS.md@currentmain + docs/security/PRODUCTION-HANDOFF.md + docs/governance/DOMAIN-RELEASE-GOVERNANCE.md + docs/security/POST-MERGE-CORRELATION-SELF-HEALING.md",
+  "status": "BLOCKED",
+  "source": {
+    "currentMainSha": "de4c268311c42877f8a7e1361e7de986ffb096cb",
+    "openPullRequests": 0,
+    "mergedPrerequisites": [
+      127,
+      128,
+      129
+    ]
+  },
+  "checks": {
+    "pr129": {
+      "headSha": "3255cf09a193774ad409ff8f10583264c23d99c0",
+      "testedMergeSha": "87824514fb137557cd5d14393792c5c72820c4b5",
+      "dockerSecurity": {
+        "runId": 37161642895,
+        "jobId": 111316128339,
+        "status": "PASS",
+        "localImageConfigDigest": "sha256:b6344f086764a38baaa63c53542c20b92a9f7981fec9bc539cd65bee377a974c"
+      },
+      "domainGovernance": {
+        "runId": 37161642871,
+        "status": "PASS"
+      },
+      "postMergeCorrelation": {
+        "runId": 37161796854,
+        "status": "PASS"
+      },
+      "publishCandidate": "SKIPPED",
+      "productionHandoff": "SKIPPED"
+    },
+    "exactCurrentMainCodeQL": "NOT_VERIFIED_BY_AVAILABLE_READBACK",
+    "note": "Der verfügbare Commit-Workflow-Readback filtert auf pull_request-Runs; ein exakter source-bound CodeQL-Readback für den Squash-Main wurde in dieser Session nicht positiv belegt."
+  },
+  "candidate": {
+    "currentMainPublishedCandidate": null,
+    "status": "MISSING_FOR_CURRENT_MAIN",
+    "historical": {
+      "sourceSha": "4fbd1373b07092ed8ef550f60e9cf60f1f3f526d",
+      "ociIndexDigest": "sha256:53c47463dfdb9e66721be1c997769d9fae3e6ca0e8a3fdd8cf77074785a08d23",
+      "platformManifestDigest": "sha256:3abee0293d0273fa0858e4bbdce00aca8d0f5060f9b9f64ee2c67f9dc6530a3e",
+      "imageConfigDigest": "sha256:c161621d58ea32230750e95adf6551bb6f3c3ac697bfa048b0cf5393cd6356d3",
+      "attestationRunId": 36765644507,
+      "sourceVsCurrentMain": {
+        "aheadBy": 117,
+        "changedFiles": 300,
+        "additions": 23778,
+        "deletions": 84,
+        "includesRuntimeChanges": true
+      },
+      "usableForCurrentMainPromotion": false
+    }
+  },
+  "render": {
+    "workspaceId": "tea-d90o4rj7uimc739i86ug",
+    "serviceId": "srv-dau1rp893c1s73cdhm1g",
+    "serviceName": "Capital-AI",
+    "currentDeployId": "dep-db0ouns9v7es73cdig60",
+    "currentDeployStatus": "live",
+    "sourceCommit": "de4c268311c42877f8a7e1361e7de986ffb096cb",
+    "deploymentSource": "GIT_DOCKER_BUILD",
+    "repository": "SvenKulessa/Capital-AI",
+    "branch": "main",
+    "dockerfile": "./Dockerfile",
+    "autoDeploy": false,
+    "immutableGhcrDigestBound": false,
+    "providerBuildObserved": true,
+    "note": "Render hat das Dockerfile für den aktuellen Deploy neu gebaut; dies ist kein build-once/promote-many-Handoff."
+  },
+  "runtime": {
+    "natsValkeyDelivery": "OBSERVED_OK_IN_RENDER_LOGS",
+    "lastHandoffHealthReadback": {
+      "provenance": "OWNER_HANDOFF_INPUT_NOT_REFETCHED_VIA_PUBLIC_HEALTH_ENDPOINT_IN_THIS_SESSION",
+      "status": "ok",
+      "ingress": "fail_closed",
+      "buildIdentityBound": false,
+      "buildIdentitySourceSha": null
+    },
+    "productionIdentityGate": "FAIL"
+  },
+  "security": {
+    "go20265932": {
+      "rawFinding": "VISIBLE",
+      "package": "golang.org/x/crypto",
+      "installed": "v0.57.0",
+      "severity": "UNKNOWN",
+      "productionClassification": "UNKNOWN",
+      "reason": "Vorhandene CI-Reachability/VEX-Evidence ist nicht als exakter Nachweis für das aktuell auf Render gebaute NATS-Artefakt übertragbar."
+    }
+  },
+  "licensesAndMarket": {
+    "licenseRedistributionReview": "REVIEW_OPEN",
+    "commercialMarketReview": "PARTIAL_REVIEW_NOT_PRODUCTION_AUTHORIZATION",
+    "commercialProductionAllowed": false,
+    "currentDefaultInstrumentCatalog": [
+      "BTCUSDT",
+      "BTCUSD",
+      "AAPL"
+    ],
+    "currentMinimumUniverseGate": {
+      "crypto": 100,
+      "stocks": 100
+    },
+    "benchmarkPlanTarget": {
+      "crypto": 500,
+      "stocks": 300,
+      "commodities": 100,
+      "forex": 100,
+      "indices": 300,
+      "totalBaseAssets": 1300
+    },
+    "realInstrumentCoverageGate": "BLOCKED_PENDING_MARKET_ADMISSION_AND_RIGHTS",
+    "syntheticBenchmarkCountsAsCoverage": false
+  },
+  "supabaseBoundary": {
+    "projectId": "ryzywoktpmyhwzxmstyu",
+    "status": "ACTIVE_HEALTHY",
+    "postgresVersion": "17.6.1.127",
+    "functionSearchPathWarnings": 1,
+    "missingFkIndexes": 4,
+    "rlsInitPlanWarnings": 4,
+    "leakedPasswordProtection": "DISABLED",
+    "unusedIndexAdvisorCount": 110,
+    "remoteMigrationCount": 89,
+    "localMigrationFilesFound": 4,
+    "matchedLocalVersions": [
+      "20261002051549",
+      "20261002052909",
+      "20261002054928"
+    ],
+    "localOnlyVersions": [
+      "20260926000000"
+    ],
+    "remoteWithoutLocalCount": 86,
+    "cron": {
+      "rows": 94258,
+      "totalBytes": 65536000,
+      "oldestStart": "2026-07-30 13:25:00.081662+00",
+      "nonSucceeded": 0
+    },
+    "mutationPerformed": false
+  },
+  "rollback": {
+    "historicalImmutableImageRef": "ghcr.io/svenkulessa/capital-ai@sha256:53c47463dfdb9e66721be1c997769d9fae3e6ca0e8a3fdd8cf77074785a08d23",
+    "classification": "TECHNICALLY_CORRELATED_HISTORICAL_NOT_PRODUCTION_APPROVED",
+    "doNotLabelKnownGoodProduction": true
+  },
+  "nextGate": "Owner-Entscheidung erst nach TRUST/MARKET-Rechtefreigabe und current-main Candidate-Publish; Render-Quellenwechsel ist eine wesentliche Production-Mutation."
+}
