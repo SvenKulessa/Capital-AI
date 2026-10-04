@@ -2,18 +2,18 @@
 
 Private Android surface for the canonical CAPITAL-AI Enterprise Scorer.
 
-## OIDC / mobile session
+## Supabase Auth / mobile session
 
 The identity-provider page is never opened inside the WebView.
 
 1. The WebView emits `capitalai-private://login`.
 2. The native activity creates a random verifier and opens `/api/auth/mobile-login` in the external browser with a SHA-256 challenge.
-3. The existing server-side OIDC confidential client completes PKCE with ZITADEL in the browser.
-4. The callback returns a one-time app transfer code through `capitalai-private://auth/callback`.
+3. The server starts the Supabase Auth Google OAuth flow with PKCE in the external browser.
+4. The Supabase callback returns a one-time app transfer code through `capitalai-private://auth/callback`.
 5. The app posts the transfer code plus its verifier to `/api/auth/mobile-exchange`.
-6. Only a valid one-time transfer receives the server-side `__Host-capital_session` cookie.
+6. Only a valid one-time transfer receives the server-owned Secure/HttpOnly Capital-AI session cookies.
 
-OIDC client secrets and tokens never enter the APK.
+Supabase/Google provider secrets, access tokens and refresh tokens never enter the APK; the app holds only the bounded one-time transfer verifier/code.
 
 ## Runtime boundary
 
