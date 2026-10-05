@@ -86,3 +86,12 @@ test('vocabulary keeps a dedicated canonical landing route and stable term detai
   assert.equal(resolveAppRoute('/vocabulary/finance-voc-aidev-0001'), '/vocabulary/finance-voc-aidev-0001');
   assert.equal(resolveAppRoute('/vocabulary/not valid'), '/');
 });
+
+test('account routes keep profile, security and key vault as separate pages', () => {
+  assert.equal(resolveAppRoute('/profile'), '/profile');
+  assert.equal(resolveAppRoute('/security'), '/profile/security');
+  assert.equal(resolveAppRoute('/profil/sicherheit'), '/profile/security');
+  assert.equal(resolveAppRoute('/key-vault'), '/profile/key-vault');
+  assert.equal(resolveAppRoute('/vault'), '/profile/key-vault');
+  assert.equal(resolveNavigationTarget('/profile/security?ref=account'), '/profile/security?ref=account');
+});
