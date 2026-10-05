@@ -126,8 +126,6 @@ export const Header: React.FC<HeaderProps> = ({
     else window.location.assign(path);
   };
 
-  const navigateProfile = () => navigateAccount('/profile');
-
   const logoutAccount = async () => {
     try {
       const response = await fetch('/api/auth/logout', {
