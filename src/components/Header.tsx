@@ -93,6 +93,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [activeSidebarHub, setActiveSidebarHub] = useState<MainHubId>('marketscreener');
   const [expandedClass, setExpandedClass] = useState<MainCategory | null>('KRYPTO');
   const [authSession, setAuthSession] = useState<HeaderSession | null>(null);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const { activeAlertsCount, triggeredAlertsCount } = usePriceAlerts();
 
   useEffect(() => {
@@ -119,9 +120,32 @@ export const Header: React.FC<HeaderProps> = ({
     ? authSession.account?.subscription?.tier || null
     : null;
 
-  const navigateProfile = () => {
-    if (onNavigate) onNavigate('/profile');
-    else window.location.assign('/profile');
+  const navigateAccount = (path: '/profile' | '/security' | '/key-vault') => {
+    setIsAccountMenuOpen(false);
+    if (onNavigate) onNavigate(path);
+    else window.location.assign(path);
+  };
+
+  const navigateProfile = () => navigateAccount('/profile');
+
+  const logoutAccount = async () => {
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{}',
+      });
+      if (!response.ok) return;
+      setAuthSession({ authenticated: false, user: null, account: null });
+      setIsAccountMenuOpen(false);
+      setIsMenuOpen(false);
+      if (onNavigate) onNavigate('/');
+      else window.location.assign('/');
+    } catch {
+      // A failed network logout must not fake a signed-out UI state.
+    }
   };
 
   const openHubSidebar = (hubId: MainHubId) => {
@@ -316,22 +340,48 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* SESSION-AWARE ACCOUNT / LOGIN */}
         {authSession?.authenticated ? (
-          <button
-            id="header-profile-btn"
-            type="button"
-            onClick={navigateProfile}
-            className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-400/30 hover:border-emerald-300 text-emerald-100 text-xs font-bold transition-all shrink-0"
-            aria-label="Persönliches Profil öffnen"
-            title="Persönliches Profil"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
-            <span className="max-w-24 truncate">{authSession.user?.name || 'Profil'}</span>
-            {accountTier && (
-              <span className="hidden sm:inline rounded-full border border-amber-400/30 bg-amber-400/10 px-1.5 py-0.5 font-mono text-[9px] text-amber-200">
-                {accountTier}
-              </span>
+          <div className="relative shrink-0">
+            <button
+              id="header-profile-btn"
+              type="button"
+              onClick={() => setIsAccountMenuOpen(value => !value)}
+              className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-400/30 hover:border-emerald-300 text-emerald-100 text-xs font-bold transition-all"
+              aria-haspopup="menu"
+              aria-expanded={isAccountMenuOpen}
+              aria-label="Kontomenü öffnen"
+              title="Kontomenü"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
+              <span className="max-w-24 truncate">{authSession.user?.name || 'Profil'}</span>
+              {accountTier && (
+                <span className="hidden sm:inline rounded-full border border-amber-400/30 bg-amber-400/10 px-1.5 py-0.5 font-mono text-[9px] text-amber-200">
+                  {accountTier}
+                </span>
+              )}
+              <ChevronDown className="h-3.5 w-3.5 text-emerald-300" />
+            </button>
+
+            {isAccountMenuOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 top-full z-[70] mt-2 w-52 overflow-hidden rounded-2xl border border-emerald-400/20 bg-[#080d1b]/98 p-2 shadow-2xl backdrop-blur"
+              >
+                <button type="button" role="menuitem" onClick={() => navigateAccount('/profile')} className="w-full rounded-xl px-3 py-2.5 text-left text-xs font-bold text-slate-200 hover:bg-white/5">
+                  Profil
+                </button>
+                <button type="button" role="menuitem" onClick={() => navigateAccount('/security')} className="w-full rounded-xl px-3 py-2.5 text-left text-xs font-bold text-slate-200 hover:bg-white/5">
+                  Sicherheit
+                </button>
+                <button type="button" role="menuitem" onClick={() => navigateAccount('/key-vault')} className="w-full rounded-xl px-3 py-2.5 text-left text-xs font-bold text-slate-200 hover:bg-white/5">
+                  Key Vault
+                </button>
+                <div className="my-1 h-px bg-white/10" />
+                <button type="button" role="menuitem" onClick={() => void logoutAccount()} className="w-full rounded-xl px-3 py-2.5 text-left text-xs font-bold text-rose-300 hover:bg-rose-500/10">
+                  Abmelden
+                </button>
+              </div>
             )}
-          </button>
+          </div>
         ) : (
           <a
             id="header-login-btn"
@@ -395,22 +445,38 @@ export const Header: React.FC<HeaderProps> = ({
                 {/* Mobile Drawer Account / Login CTA */}
                 <div className="mt-4">
                   {authSession?.authenticated ? (
-                    <button
-                      id="drawer-profile-btn"
-                      type="button"
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        navigateProfile();
-                      }}
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-400/30 text-emerald-100 font-bold text-xs transition-all"
-                    >
-                      <span className="flex items-center gap-2 min-w-0">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2 rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-3.5 py-2.5 text-xs font-bold text-emerald-100">
                         <ShieldCheck className="w-4 h-4 text-emerald-300 shrink-0" />
-                        <span className="truncate">{authSession.user?.name || 'Profil'}</span>
+                        <span className="min-w-0 flex-1 truncate">{authSession.user?.name || 'Profil'}</span>
                         {accountTier && <span className="font-mono text-[9px] text-amber-300">{accountTier}</span>}
-                      </span>
-                      <ChevronRight className="w-3.5 h-3.5 text-emerald-300" />
-                    </button>
+                      </div>
+                      {[
+                        ['/profile', 'Profil'],
+                        ['/security', 'Sicherheit'],
+                        ['/key-vault', 'Key Vault'],
+                      ].map(([path, label]) => (
+                        <button
+                          key={path}
+                          type="button"
+                          onClick={() => {
+                            setIsMenuOpen(false);
+                            navigateAccount(path as '/profile' | '/security' | '/key-vault');
+                          }}
+                          className="w-full flex items-center justify-between rounded-xl px-3.5 py-2.5 text-left text-xs font-bold text-slate-300 hover:bg-white/5 hover:text-white"
+                        >
+                          <span>{label}</span>
+                          <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => void logoutAccount()}
+                        className="w-full rounded-xl px-3.5 py-2.5 text-left text-xs font-bold text-rose-300 hover:bg-rose-500/10"
+                      >
+                        Abmelden
+                      </button>
+                    </div>
                   ) : (
                     <a
                       id="drawer-login-btn"
