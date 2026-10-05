@@ -1,6 +1,6 @@
 # Redis und NATS für Market Facts
 
-Die Anwendung benötigt `REDIS_URL`, `NATS_URL`, `NATS_APP_USER` und `NATS_APP_PASSWORD`. `NATS_APP_PASSWORD` bleibt ausschließlich im Secret Store. Der produktive Broker verwendet eine Subject-beschränkte Runtime-Identität für `capital.facts.quote.*` und `capital.scores.crypto.*`; der alte `NATS_TOKEN` ist nur noch ein lokaler Migrationsfallback des Clients. TLS ist verpflichtend, sobald der Transport die bestätigte private Netzwerkgrenze verlässt. NATS betreibt JetStream mit Dateispeicher und persistentem Volume; Browser erhalten niemals direkten Redis-/NATS-Zugriff.
+Die Anwendung benötigt `REDIS_URL`, `NATS_URL`, `NATS_APP_USER` und `NATS_APP_PASSWORD`. `NATS_APP_PASSWORD` bleibt ausschließlich im Secret Store. Der produktive Broker verwendet eine Subject-beschränkte Runtime-Identität für `capital.facts.quote.*`, `capital.market.canonical.*.*` und `capital.scores.crypto.*`; der alte `NATS_TOKEN` ist nur noch ein lokaler Migrationsfallback des Clients. TLS ist verpflichtend, sobald der Transport die bestätigte private Netzwerkgrenze verlässt. NATS betreibt JetStream mit Dateispeicher und persistentem Volume; Browser erhalten niemals direkten Redis-/NATS-Zugriff.
 
 ## Lokal
 
@@ -19,7 +19,7 @@ Bestehenden Webservice und dessen Repo-Zuordnung zuerst prüfen. Redis/Key Value
 
 - Nicht konfigurierte Dienste, unvollständige scoped NATS-Credentials, fehlende JetStream-Bestätigung, abgelaufene Quotes und ungültige Evidence werden fail-closed als `unavailable` geliefert.
 - Cache-TTL basiert auf dem Beobachtungszeitpunkt, maximal 30 Sekunden. Cache-Werte werden gegen den Event-Speicher geprüft.
-- Der Stream verweigert Delete/Purge und verdrängt bei der 1-GB-Grenze keine alten Events. Bei vollem Speicher stoppt die Aufnahme; Kapazitätsalarm und Archivierung sind Betriebsaufgaben.
+- `CAPITAL_FACTS` und `CAPITAL_CANONICAL` verweigern Delete/Purge und verdrängt bei der 1-GB-Grenze keine alten Events. Bei vollem Speicher stoppt die Aufnahme; Kapazitätsalarm und Archivierung sind Betriebsaufgaben.
 - Keine WORM-, BaFin-, Backup- oder 45-ms-Zertifizierung. Produktive Asset-Werte bleiben gesperrt, solange keine Quelle mit `OPEN_SOURCE_OPEN_DATA_ADMITTED` und Capability `marketQuotes` zugelassen ist; Scoring bleibt zusätzlich bis `scoringPriceInput` und vollständigen Analyse-Inputs gesperrt.
 - `/healthz` ist Liveness; `/api/market/status` zeigt Infrastrukturverbindungen. Eine laufende HTTP-App ist kein Nachweis verfügbarer Marktdaten.
 - Feed-/Provider-Ausfälle dürfen durch eigene Überwachung alarmiert werden. Browser-Benachrichtigungen sind keine dauerhaft laufenden Alert-Worker.
