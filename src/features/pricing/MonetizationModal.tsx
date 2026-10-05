@@ -45,7 +45,12 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { MONETIZABLE_PRODUCTS } from '../../data/monetizationRegistry';
 import { BrandLogo } from '../../components/BrandLogo';
-import { PRICING_CATALOG, annualDiscountPercent, displayPriceEur } from '../../data/pricingCatalog';
+import {
+  PRICING_CATALOG,
+  VOCABULARY_PRICE,
+  annualDiscountPercent,
+  displayPriceEur,
+} from '../../data/pricingCatalog';
 
 interface MonetizationModalProps {
   isOpen: boolean;
@@ -489,6 +494,40 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                       <span>Whale Radar &amp; Telegram Live testen →</span>
                     </button>
                   )}
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-violet-400/35 bg-violet-500/10 p-4 sm:p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-mono font-black uppercase tracking-wider text-violet-300">
+                      {VOCABULARY_PRICE.label}
+                    </span>
+                    <span className="rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-mono text-emerald-300">
+                      In Pro &amp; Enterprise inklusive
+                    </span>
+                  </div>
+                  <div className="mt-2 flex items-baseline gap-2">
+                    <span className="text-2xl font-black text-white">
+                      {displayPriceEur(VOCABULARY_PRICE.amountCents)} €
+                    </span>
+                    <span className="text-xs text-slate-400">einmalig</span>
+                  </div>
+                  <p className="mt-2 text-xs leading-relaxed text-slate-300">
+                    Separates Vocabulary-Paket für Nutzer ohne enthaltenen Zugriff. Die Begriffsseiten
+                    bleiben SEO-sichtbar; geschützte Lerninhalte zeigen stattdessen den Paket-Hinweis.
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-mono text-slate-300">
+                    <span className="rounded-lg border border-slate-700 bg-black/20 px-2 py-1">294 Fachbegriffe</span>
+                    <span className="rounded-lg border border-slate-700 bg-black/20 px-2 py-1">Vocabulary-Stufe sichtbar</span>
+                    <span className="rounded-lg border border-slate-700 bg-black/20 px-2 py-1">Starter: Add-on</span>
+                  </div>
+                </div>
+                <div className="shrink-0 text-left sm:text-right">
+                  <div className="text-[10px] font-mono text-slate-500">Stripe Price</div>
+                  <div className="text-[11px] font-mono text-violet-200">{VOCABULARY_PRICE.priceId}</div>
                 </div>
               </div>
             </div>
