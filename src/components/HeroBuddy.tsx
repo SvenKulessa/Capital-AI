@@ -26,7 +26,7 @@ const COOLDOWN_MS = 90_000;
 function answerFor(input: string) {
   const q = input.toLowerCase();
   if (q.includes('preis') || q.includes('tarif') || q.includes('vocabulary') || q.includes('glossar')) {
-    return 'Market Vocabulary kostet 19,00 € einmalig und ist in Pro und Enterprise enthalten.';
+    return 'Market Vocabulary kostet 19,00 € einmalig und ist ein eigenständiges Zusatzprodukt. Es ist nicht in Starter, Pro oder Enterprise enthalten.';
   }
   if (q.includes('beratung') || q.includes('kaufen') || q.includes('verkaufen')) {
     return 'Ich erkläre nur die Plattform. Keine Kauf- oder Verkaufshinweise.';
@@ -56,7 +56,36 @@ export function HeroBuddy(props: HeroBuddyProps) {
   const [messages, setMessages] = useState<BuddyMessage[]>([
     { id: 'welcome', role: 'buddy', text: 'Ich bin der Hero Buddy und der Support-Agent in einer Figur.' },
   ]);
+  const [sessionGreetingApplied, setSessionGreetingApplied] = useState(false);
   const lastAssist = useRef(0);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch('/api/auth/session', {
+      credentials: 'same-origin',
+      cache: 'no-store',
+      headers: { Accept: 'application/json' },
+      signal: controller.signal,
+    })
+      .then(response => response.ok ? response.json() : Promise.reject())
+      .then(session => {
+        if (controller.signal.aborted || sessionGreetingApplied || !session?.authenticated) return;
+        const displayName = typeof session?.user?.name === 'string' ? session.user.name.trim() : '';
+        const firstName = displayName.split(/\s+/)[0];
+        const tier = typeof session?.account?.subscription?.tier === 'string'
+          ? session.account.subscription.tier
+          : '';
+        const greeting = firstName
+          ? `Willkommen zurück, ${firstName}. Ich kann dir bei Navigation, Vocabulary, Analyse und deinem Konto helfen${tier ? ` · Tarif: ${tier}` : ''}.`
+          : `Willkommen zurück. Ich kann dir bei Navigation, Vocabulary, Analyse und deinem Konto helfen${tier ? ` · Tarif: ${tier}` : ''}.`;
+        setMessages(current => [
+          ...current.filter(message => message.id !== 'welcome'),
+          { id: 'welcome-session', role: 'buddy', text: greeting },
+        ]);
+        setSessionGreetingApplied(true);
+      })
+      .catch(() => undefined);
+    return () => controller.abort();
+  }, [sessionGreetingApplied]);
   const reducedMotion = usePrefersReducedMotion();
   useEffect(() => {
     const openFromHero = () => {
