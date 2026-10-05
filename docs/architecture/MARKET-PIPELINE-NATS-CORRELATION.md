@@ -104,7 +104,7 @@ JetStream quote evidence ID
   -> EVD score evidence ID
 ```
 
-The bridge is **not implemented by this document** because its subject/schema and persistence authority are an architecture decision. No NATS subjects, streams, retention, environment variables or runtime deployments are changed here.
+The owner approved Option B. The additive bridge contract and persistence path are now implemented on this branch with `CAPITAL_CANONICAL` and `capital.market.canonical.<assetClass>.<assetId>`. Production activation remains blocked until a provider/dataset passes the existing Open-Source/Open-Data admission policy. No environment variables, secrets or runtime deployments are changed here.
 
 ## Telemetry correlation
 
@@ -129,7 +129,7 @@ These telemetry classes must remain operational telemetry and must not enter det
 ```text
 NATS transport semantics:       VALIDATED BY EXISTING CODE/TEST EVIDENCE
 NATS runtime on this branch:    NOT RE-EXECUTED
-Canonical normalization bridge: BLOCKED
+Canonical normalization bridge: IMPLEMENTED / SOURCE-ADMISSION BLOCKED
 Production feature bridge:      BLOCKED
 Production score/rank delivery: BLOCKED
 Provider rights admission:      BLOCKED
