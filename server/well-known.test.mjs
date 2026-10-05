@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  CHANGE_PASSWORD_TARGET,
   SECURITY_TXT_CANONICAL,
   SECURITY_TXT_EXPIRES,
   securityTxt,
@@ -58,6 +59,40 @@ test('HEAD exposes security.txt headers without body', () => {
   );
   assert.equal(res.status, 200);
   assert.equal(res.body, undefined);
+});
+
+test('change-password well-known redirects temporarily to the account security page', () => {
+  for (const method of ['GET', 'HEAD']) {
+    const res = response();
+    assert.equal(
+      serveWellKnown(
+        { method },
+        res,
+        new URL('https://capital-ai.online/.well-known/change-password'),
+      ),
+      true,
+    );
+    assert.equal(res.status, 302);
+    assert.equal(res.headers.Location, CHANGE_PASSWORD_TARGET);
+    assert.equal(res.headers['Cache-Control'], 'no-store');
+    assert.equal(res.body, undefined);
+  }
+});
+
+test('change-password well-known rejects state-changing methods', () => {
+  for (const method of ['POST', 'PUT', 'PATCH', 'DELETE']) {
+    const res = response();
+    assert.equal(
+      serveWellKnown(
+        { method },
+        res,
+        new URL('https://capital-ai.online/.well-known/change-password'),
+      ),
+      true,
+    );
+    assert.equal(res.status, 405);
+    assert.equal(res.headers.Allow, 'GET, HEAD');
+  }
 });
 
 test('security.txt cannot be changed over HTTP and other well-known paths stay closed', () => {
