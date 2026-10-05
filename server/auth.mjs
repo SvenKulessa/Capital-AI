@@ -607,7 +607,10 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
         body: { email, password, data: { full_name: name } },
       });
       if (!signedUp.response.ok || !signedUp.data?.user?.id) {
-        json(res, signedUp.response.status === 429 ? 429 : 422, { error: 'registration_failed' });
+        const registrationError = signedUp.data?.error_code === 'weak_password'
+          ? 'weak_password'
+          : 'registration_failed';
+        json(res, signedUp.response.status === 429 ? 429 : 422, { error: registrationError });
         return true;
       }
       if (signedUp.data.access_token && signedUp.data.refresh_token) {
