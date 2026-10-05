@@ -57,6 +57,8 @@ test('BYOK write stores only through Vault RPC and verifies only Kraken private 
     calls.push({ url: url.href, headers: options.headers, body: String(options.body || '') });
 
     if (url.origin === 'https://project.supabase.co') {
+      assert.equal(options.headers.apikey, env.SUPABASE_SECRET_KEY);
+      assert.equal(options.headers.Authorization, `Bearer ${env.SUPABASE_SECRET_KEY}`);
       if (url.pathname.endsWith('/capital_ai_upsert_user_provider_secret')) {
         const body = JSON.parse(String(options.body));
         assert.equal(body._provider, 'kraken');
@@ -146,4 +148,39 @@ test('BYOK routes fail closed before any provider or Vault I/O without verified 
   assert.equal(handled, true);
   assert.equal(status, 401);
   assert.equal(networkCalls, 0);
+});
+
+test('BYOK rejects publishable-key misconfiguration and falls back to a valid legacy service role key', async () => {
+  const serviceRolePayload = Buffer.from(JSON.stringify({ role: 'service_role' })).toString('base64url');
+  const legacy = `eyJ.${serviceRolePayload}.signature-padding-01234567890123456789`;
+  let calls = 0;
+  const vault = createUserProviderVault({
+    env: {
+      SUPABASE_URL: 'https://project.supabase.co',
+      SUPABASE_SECRET_KEY: 'sb_publishable_wrong_role_012345678901234567890123',
+      SUPABASE_SERVICE_ROLE_KEY: legacy,
+      AUTH_COOKIE_SIGNING_SECRET: 'test-cookie-signing-secret-0123456789abcdef',
+    },
+    fetchImpl: async (_input, options = {}) => {
+      calls += 1;
+      assert.equal(options.headers.apikey, legacy);
+      assert.equal(options.headers.Authorization, `Bearer ${legacy}`);
+      return Response.json([]);
+    },
+    auth: {
+      verify: async () => ({ userId: '11111111-1111-1111-1111-111111111111' }),
+      sameOrigin: () => true,
+    },
+  });
+
+  let status = 0;
+  await vault.handle(
+    request('GET'),
+    responseHarness(),
+    new URL('https://capital.example/api/profile/provider-connections'),
+    (_res, nextStatus) => { status = nextStatus; },
+  );
+
+  assert.equal(status, 200);
+  assert.equal(calls, 1);
 });
