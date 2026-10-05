@@ -80,6 +80,11 @@ async function harness(envOverrides = {}) {
       assert.match(target.searchParams.get('redirect_to') || '', /^https:\/\/capital\.example\/$/);
       assert.equal(body.email, `${state.subject}@example.test`);
       assert.equal(body.data?.full_name, 'Test Owner');
+      assert.equal(body.data?.terms_accepted, true);
+      assert.equal(body.data?.terms_version, '2026-10-05');
+      assert.equal(body.data?.privacy_acknowledged, true);
+      assert.equal(body.data?.privacy_version, '2026-09-15');
+      assert.equal(body.data?.marketing_consent, false);
       if (body.password === 'rejected-password') {
         return Response.json({ error: 'signup_rejected' }, { status: 422 });
       }
@@ -245,9 +250,50 @@ test('Supabase registration validates new passwords and creates a backend-owned 
         name: 'Test Owner',
         email: 'owner-subject@example.test',
         password: 'short',
+        passwordConfirm: 'short',
+        termsAccepted: true,
+        privacyAcknowledged: true,
       }),
     });
     assert.equal(invalid.status, 400);
+    assert.equal(h.state.signupCalls, 0);
+
+    const mismatch = await h.request('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        Origin: 'https://capital.example',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: 'Test Owner',
+        email: 'owner-subject@example.test',
+        password: 'valid-password',
+        passwordConfirm: 'different-password',
+        termsAccepted: true,
+        privacyAcknowledged: true,
+      }),
+    });
+    assert.equal(mismatch.status, 400);
+    assert.equal((await mismatch.json()).error, 'passwords_do_not_match');
+    assert.equal(h.state.signupCalls, 0);
+
+    const missingConsent = await h.request('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        Origin: 'https://capital.example',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: 'Test Owner',
+        email: 'owner-subject@example.test',
+        password: 'valid-password',
+        passwordConfirm: 'valid-password',
+        termsAccepted: false,
+        privacyAcknowledged: true,
+      }),
+    });
+    assert.equal(missingConsent.status, 400);
+    assert.equal((await missingConsent.json()).error, 'registration_consent_required');
     assert.equal(h.state.signupCalls, 0);
 
     const registered = await h.request('/api/auth/register', {
@@ -260,6 +306,10 @@ test('Supabase registration validates new passwords and creates a backend-owned 
         name: 'Test Owner',
         email: 'owner-subject@example.test',
         password: 'valid-password',
+        passwordConfirm: 'valid-password',
+        termsAccepted: true,
+        privacyAcknowledged: true,
+        marketingConsent: false,
       }),
     });
     assert.equal(registered.status, 200);
