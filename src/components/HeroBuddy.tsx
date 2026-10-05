@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { X } from 'lucide-react';
+import { EyeOff, Move, X } from 'lucide-react';
 
 type HeroBuddyProps = {
   onNavigate?: (path: string) => void;
@@ -15,6 +15,11 @@ type AssistReason = 'hesitation' | 'repeat' | 'oscillation' | 'dwell';
 
 const DISCLAIMER = 'Portalhilfe aus dem Hero Buddy. Keine Anlageberatung.';
 export const HERO_BUDDY_EVENT = 'capital-ai:open-hero-buddy';
+export const HERO_BUDDY_HIDDEN_KEY = 'capital_ai_hero_buddy_hidden_v1';
+const HERO_BUDDY_POSITION_KEY = 'capital_ai_hero_buddy_position_v1';
+type BuddyPosition = 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+const BUDDY_POSITIONS: BuddyPosition[] = ['bottom-right', 'bottom-left', 'top-right', 'top-left'];
+
 export function openHeroBuddy() { window.dispatchEvent(new Event(HERO_BUDDY_EVENT)); }
 const COOLDOWN_MS = 90_000;
 
@@ -40,13 +45,26 @@ export function HeroBuddy(props: HeroBuddyProps) {
   const [open, setOpen] = useState(false);
   const [speech, setSpeech] = useState<AssistReason | null>(null);
   const [draft, setDraft] = useState('');
+  const [hidden, setHidden] = useState(() =>
+    typeof window !== 'undefined' && window.localStorage.getItem(HERO_BUDDY_HIDDEN_KEY) === 'true'
+  );
+  const [position, setPosition] = useState<BuddyPosition>(() => {
+    if (typeof window === 'undefined') return 'bottom-right';
+    const stored = window.localStorage.getItem(HERO_BUDDY_POSITION_KEY) as BuddyPosition | null;
+    return stored && BUDDY_POSITIONS.includes(stored) ? stored : 'bottom-right';
+  });
   const [messages, setMessages] = useState<BuddyMessage[]>([
     { id: 'welcome', role: 'buddy', text: 'Ich bin der Hero Buddy und der Support-Agent in einer Figur.' },
   ]);
   const lastAssist = useRef(0);
   const reducedMotion = usePrefersReducedMotion();
   useEffect(() => {
-    const openFromHero = () => { setOpen(true); setSpeech(null); };
+    const openFromHero = () => {
+      window.localStorage.removeItem(HERO_BUDDY_HIDDEN_KEY);
+      setHidden(false);
+      setOpen(true);
+      setSpeech(null);
+    };
     window.addEventListener(HERO_BUDDY_EVENT, openFromHero);
     return () => window.removeEventListener(HERO_BUDDY_EVENT, openFromHero);
   }, []);
@@ -79,16 +97,48 @@ export function HeroBuddy(props: HeroBuddyProps) {
     setSpeech(null);
   };
 
+  const cyclePosition = () => {
+    const next = BUDDY_POSITIONS[(BUDDY_POSITIONS.indexOf(position) + 1) % BUDDY_POSITIONS.length];
+    setPosition(next);
+    window.localStorage.setItem(HERO_BUDDY_POSITION_KEY, next);
+  };
+
+  const hideBuddy = () => {
+    window.localStorage.setItem(HERO_BUDDY_HIDDEN_KEY, 'true');
+    setOpen(false);
+    setSpeech(null);
+    setHidden(true);
+  };
+
+  if (hidden) return null;
+
+  const positionClass = {
+    'bottom-right': 'bottom-4 right-4',
+    'bottom-left': 'bottom-4 left-4',
+    'top-right': 'top-24 right-4',
+    'top-left': 'top-24 left-4',
+  }[position];
+
   return (
-    <div className="fixed bottom-4 right-4 z-[45] flex items-end gap-2" data-hero-buddy="agent">
+    <div className={`fixed ${positionClass} z-[45] flex items-end gap-2`} data-hero-buddy="agent">
       {(speech || open) && (
         <div className="relative w-[min(88vw,320px)] rounded-2xl border border-amber-300/40 bg-[#10182e] px-3 py-2 text-xs text-slate-100 shadow-lg">
           <span className="absolute -right-1.5 bottom-5 h-3 w-3 rotate-45 border-b border-r border-amber-300/40 bg-[#10182e]" aria-hidden="true" />
           {open ? (
             <div>
-              <div className="mb-2 flex items-center justify-between">
+              <div className="mb-2 flex items-center justify-between gap-2">
                 <p className="font-bold text-amber-300">Hero Buddy · Support</p>
-                <button type="button" aria-label="Chat schließen" onClick={() => setOpen(false)} className="text-slate-400"><X className="h-4 w-4" /></button>
+                <div className="flex items-center gap-1">
+                  <button type="button" aria-label="Hero Buddy verschieben" title="Position ändern" onClick={cyclePosition} className="rounded-md p-1 text-slate-400 hover:text-white">
+                    <Move className="h-4 w-4" />
+                  </button>
+                  <button type="button" aria-label="Hero Buddy ausblenden" title="Ausblenden" onClick={hideBuddy} className="rounded-md p-1 text-slate-400 hover:text-white">
+                    <EyeOff className="h-4 w-4" />
+                  </button>
+                  <button type="button" aria-label="Chat schließen" onClick={() => setOpen(false)} className="rounded-md p-1 text-slate-400 hover:text-white">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
               <div className="max-h-52 space-y-2 overflow-y-auto">
                 {messages.map((message) => (

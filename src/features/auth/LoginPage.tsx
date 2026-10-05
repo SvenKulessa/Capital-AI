@@ -77,12 +77,24 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [privacyAcknowledged, setPrivacyAcknowledged] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [mfaFactors, setMfaFactors] = useState<Array<{ id: string; type: 'totp'; friendlyName: string }>>([]);
   const [selectedFactorId, setSelectedFactorId] = useState('');
   const [totpCode, setTotpCode] = useState('');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    const recoveryError = new URLSearchParams(window.location.search).get('recovery_error');
+    if (recoveryError === 'invalid_link') {
+      setError('Der Passwort-Reset-Link ist ungültig oder unvollständig. Fordere bitte eine neue Reset-Mail an.');
+    } else if (recoveryError === 'verification_failed') {
+      setError('Der Passwort-Reset-Link ist abgelaufen oder wurde bereits verwendet. Fordere bitte eine neue Reset-Mail an.');
+    }
+  }, []);
 
   const passkeySupported = useMemo(
     () => typeof window !== 'undefined' && 'PublicKeyCredential' in window && !!navigator.credentials,
@@ -158,8 +170,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
     const message = reason instanceof Error ? reason.message : 'authentication_failed';
     if (message === 'weak_password' || message === 'invalid_new_password') {
       setError('Das neue Passwort muss mindestens 14 Zeichen lang sein und die Supabase-Sicherheitsanforderungen erfüllen.');
+    } else if (message === 'passwords_do_not_match') {
+      setError('Die beiden Passwörter stimmen nicht überein.');
+    } else if (message === 'registration_consents_required') {
+      setError('Nutzungsbedingungen und Datenschutzhinweis müssen für die Registrierung bestätigt werden.');
     } else if (message === 'registration_failed') {
-      setError('Registrierung fehlgeschlagen. Bitte prüfe die Eingaben oder versuche es erneut.');
+      setError('Registrierung konnte serverseitig nicht abgeschlossen werden. Das Passwort allein ist nicht automatisch die Ursache.');
     } else if (message === 'passkey_unavailable') {
       setError('Passkey-Anmeldung ist im Supabase-Projekt noch nicht freigeschaltet.');
     } else {
@@ -186,7 +202,17 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
         return;
       }
 
-      const result = await postJson('/api/auth/register', { name, email, password });
+      if (password !== passwordConfirm) throw new Error('passwords_do_not_match');
+      if (!termsAccepted || !privacyAcknowledged) throw new Error('registration_consents_required');
+      const result = await postJson('/api/auth/register', {
+        name,
+        email,
+        password,
+        passwordConfirm,
+        termsAccepted,
+        privacyAcknowledged,
+        marketingConsent,
+      });
       if (!result.response.ok) throw new Error(result.body?.error || 'registration_failed');
       if (result.body?.authenticated) {
         window.location.replace('/');
@@ -195,6 +221,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
       setNotice('Registrierung angenommen. Bitte bestätige die E-Mail-Adresse über die CAPITAL-AI Bestätigungsmail.');
       setMode('login');
       setPassword('');
+      setPasswordConfirm('');
+      setTermsAccepted(false);
+      setPrivacyAcknowledged(false);
+      setMarketingConsent(false);
     } catch (reason) {
       showError(reason);
     } finally {
@@ -494,13 +524,87 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                     />
                   </div>
                 </label>
-                {mode === 'register' && <p className="text-[11px] text-slate-500">Mindestens 14 Zeichen.</p>}
+                {mode === 'register' && (
+                  <>
+                    <label className="block text-xs font-bold text-slate-300">
+                      Passwort wiederholen
+                      <div className="relative mt-1">
+                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                        <input
+                          type="password"
+                          value={passwordConfirm}
+                          onChange={event => setPasswordConfirm(event.target.value)}
+                          required
+                          minLength={14}
+                          maxLength={256}
+                          autoComplete="new-password"
+                          className="w-full rounded-xl border border-white/15 bg-black/40 py-3 pl-10 pr-3 text-sm text-white"
+                        />
+                      </div>
+                    </label>
+                    <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-[11px] leading-relaxed text-slate-400">
+                      <p>Mindestens 14 Zeichen. Eine lange, einzigartige Passphrase oder ein Passwortmanager wird empfohlen.</p>
+                      <p className="mt-1">CAPITAL-AI erzwingt keine künstlichen Groß-/Kleinbuchstaben- oder Sonderzeichenregeln.</p>
+                    </div>
+                    <label className="flex items-start gap-2 text-[11px] leading-relaxed text-slate-300">
+                      <input
+                        type="checkbox"
+                        checked={termsAccepted}
+                        onChange={event => setTermsAccepted(event.target.checked)}
+                        required
+                        className="mt-0.5 h-4 w-4 accent-amber-400"
+                      />
+                      <span>
+                        Ich akzeptiere die Nutzungsbedingungen.
+                        {onNavigateLegal && (
+                          <button type="button" onClick={() => onNavigateLegal('/agb')} className="ml-1 text-amber-300 underline">
+                            Anzeigen
+                          </button>
+                        )}
+                      </span>
+                    </label>
+                    <label className="flex items-start gap-2 text-[11px] leading-relaxed text-slate-300">
+                      <input
+                        type="checkbox"
+                        checked={privacyAcknowledged}
+                        onChange={event => setPrivacyAcknowledged(event.target.checked)}
+                        required
+                        className="mt-0.5 h-4 w-4 accent-amber-400"
+                      />
+                      <span>
+                        Ich habe den Datenschutzhinweis gelesen.
+                        {onNavigateLegal && (
+                          <button type="button" onClick={() => onNavigateLegal('/datenschutz')} className="ml-1 text-amber-300 underline">
+                            Anzeigen
+                          </button>
+                        )}
+                      </span>
+                    </label>
+                    <label className="flex items-start gap-2 text-[11px] leading-relaxed text-slate-400">
+                      <input
+                        type="checkbox"
+                        checked={marketingConsent}
+                        onChange={event => setMarketingConsent(event.target.checked)}
+                        className="mt-0.5 h-4 w-4 accent-amber-400"
+                      />
+                      <span>Optional: Produkt- und Forschungsupdates per E-Mail erhalten.</span>
+                    </label>
+                  </>
+                )}
                 {mode === 'login' && (
                   <button type="button" onClick={() => { setMode('forgot'); setError(''); setNotice(''); }} className="min-h-8 text-xs font-bold text-amber-300 hover:text-amber-200">
                     Passwort vergessen?
                   </button>
                 )}
-                <button type="submit" disabled={busy || !session?.configured} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-amber-400 font-black text-black disabled:opacity-40">
+                <button
+                  type="submit"
+                  disabled={
+                    busy ||
+                    !session?.configured ||
+                    (mode === 'register' && (!termsAccepted || !privacyAcknowledged || password !== passwordConfirm))
+                  }
+                  className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-amber-400 font-black text-black disabled:opacity-40"
+                >
                   {mode === 'login' ? <LogIn size={18} /> : <UserPlus size={18} />}
                   {busy ? 'Bitte warten …' : mode === 'login' ? 'Mit E-Mail anmelden' : 'Konto registrieren'}
                 </button>

@@ -58,19 +58,17 @@ test('app error boundary fails closed to the bootstrap fallback', () => {
 });
 
 
-test('index shell reveals recovery only on a real entry-script load failure', async () => {
+test('index loads the app directly and exposes the fail-closed shell only on a bootstrap error', async () => {
   const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-  const watcher = await readFile(new URL('../public/bootstrap-failure.js', import.meta.url), 'utf8');
-
-  assert.match(html, /<main id="capital-ai-bootstrap-fallback" hidden/);
-  assert.match(html, /<script id="capital-ai-entry" type="module" src="\/src\/main\.tsx"><\/script>/);
-  assert.match(html, /<script src="\/bootstrap-failure\.js"><\/script>/);
-  assert.doesNotMatch(html, /10s|10 Sekunden|capitalAiBootstrapFallback|setTimeout/);
-  assert.match(html, /Die Oberfläche konnte nicht geladen werden\./);
-  assert.match(watcher, /entry\.addEventListener\('error'/);
-  assert.match(watcher, /fallback\.hidden = false/);
-  assert.doesNotMatch(watcher, /setTimeout|unhandledrejection/);
-  assert.match(html, /<noscript>/);
+  const bootstrap = await readFile(new URL('../public/bootstrap-failure.js', import.meta.url), 'utf8');
+  assert.match(html, /<div id="root"><\/div>/);
+  assert.match(html, /id="capital-ai-bootstrap-fallback"[\s\S]*hidden/);
+  assert.match(html, /id="capital-ai-entry"[\s\S]*src="\/src\/main\.tsx"/);
+  assert.doesNotMatch(html, /10 seconds|10 Sekunden|capitalAiBootstrapFallback|animation:/);
+  assert.match(bootstrap, /target instanceof HTMLScriptElement/);
+  assert.match(bootstrap, /target\.id === 'capital-ai-entry'/);
+  assert.match(bootstrap, /fallback\.hidden = false/);
+  assert.doesNotMatch(bootstrap, /setTimeout|setInterval/);
 });
 
 test('research pages render source links and never grant project entitlements', () => {

@@ -235,7 +235,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
   const mobileVerifier = value =>
     /^[A-Za-z0-9._~-]{43,128}$/.test(String(value || '')) ? String(value) : '';
 
-  async function authRequest(config, path, { method = 'GET', body, accessToken } = {}) {
+  async function authRequest(config, path, { method = 'GET', body, accessToken, maxResponseBytes = 65_536 } = {}) {
     const headers = { Accept: 'application/json', apikey: config.publishableKey };
     if (body !== undefined) headers['Content-Type'] = 'application/json';
     if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
@@ -249,7 +249,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     let data = null;
     if (response.status !== 204) {
       try {
-        data = await boundedJson(response);
+        data = await boundedJson(response, maxResponseBytes);
       } catch {
         data = null;
       }
@@ -739,15 +739,34 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       }
       const email = normalizeEmail(body.email);
       const password = normalizeNewPassword(body.password);
+      const passwordConfirm = typeof body.passwordConfirm === 'string' ? body.passwordConfirm : '';
       const name = typeof body.name === 'string' ? body.name.trim().slice(0, 120) : '';
-      if (!email || !password || !name) {
-        json(res, 400, { error: 'invalid_registration' });
+      const termsAccepted = body.termsAccepted === true;
+      const privacyAcknowledged = body.privacyAcknowledged === true;
+      const marketingConsent = body.marketingConsent === true;
+      if (!email || !password || password !== passwordConfirm || !name) {
+        json(res, 400, { error: password !== passwordConfirm ? 'passwords_do_not_match' : 'invalid_registration' });
+        return true;
+      }
+      if (!termsAccepted || !privacyAcknowledged) {
+        json(res, 400, { error: 'registration_consents_required' });
         return true;
       }
       const confirmation = new URL('/', config.origin).toString();
       const signedUp = await authRequest(config, `/signup?redirect_to=${encodeURIComponent(confirmation)}`, {
         method: 'POST',
-        body: { email, password, data: { full_name: name } },
+        body: {
+          email,
+          password,
+          data: {
+            full_name: name,
+            terms_accepted: true,
+            terms_version: '2026-10-05',
+            privacy_acknowledged: true,
+            privacy_version: '2026-10-05',
+            marketing_consent: marketingConsent,
+          },
+        },
       });
       if (!signedUp.response.ok || !signedUp.data?.user?.id) {
         const registrationError = signedUp.data?.error_code === 'weak_password'
