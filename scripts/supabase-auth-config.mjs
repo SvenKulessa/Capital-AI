@@ -5,6 +5,16 @@ const EXPECTED_PROJECT_REF = 'ryzywoktpmyhwzxmstyu';
 const EXPECTED_SITE_ORIGIN = 'https://capital-ai.online';
 const RP_ID = 'capital-ai.online';
 
+const SECURITY_NOTIFICATION_KEYS = [
+  'mailer_notifications_password_changed_enabled',
+  'mailer_notifications_email_changed_enabled',
+  'mailer_notifications_phone_changed_enabled',
+  'mailer_notifications_identity_linked_enabled',
+  'mailer_notifications_identity_unlinked_enabled',
+  'mailer_notifications_mfa_factor_enrolled_enabled',
+  'mailer_notifications_mfa_factor_unenrolled_enabled',
+];
+
 const TEMPLATE_KEYS = {
   confirmation: ['mailer_subjects_confirmation', 'mailer_templates_confirmation_content'],
   invite: ['mailer_subjects_invite', 'mailer_templates_invite_content'],
@@ -61,6 +71,21 @@ function render(shell, entry) {
   return rendered;
 }
 
+function validateAbsoluteOrigins(html, name) {
+  const absoluteUrls = html.match(/https?:\/\/[^\s"'<>]+/gi) || [];
+  for (const rawUrl of absoluteUrls) {
+    let parsed;
+    try {
+      parsed = new URL(rawUrl);
+    } catch {
+      fail(`MAIL_TEMPLATE_INVALID_ABSOLUTE_URL:${name}`);
+    }
+    if (parsed.protocol !== 'https:' || parsed.origin !== EXPECTED_SITE_ORIGIN) {
+      fail(`MAIL_TEMPLATE_EXTERNAL_ORIGIN:${name}`);
+    }
+  }
+}
+
 function validateTemplates(shell, templates) {
   const missing = Object.keys(TEMPLATE_KEYS).filter(key => !templates[key]);
   if (missing.length) fail(`MAIL_TEMPLATE_TYPES_MISSING:${missing.join(',')}`);
@@ -72,9 +97,7 @@ function validateTemplates(shell, templates) {
     if (!html.includes('CAPITAL-AI') || !html.includes(EXPECTED_SITE_ORIGIN)) {
       fail(`MAIL_TEMPLATE_BRANDING_MISSING:${name}`);
     }
-    if (/https?:\/\/(?!capital-ai\.online(?:\/|"))/i.test(html)) {
-      fail(`MAIL_TEMPLATE_EXTERNAL_ORIGIN:${name}`);
-    }
+    validateAbsoluteOrigins(html, name);
   }
 
   for (const name of ['confirmation', 'invite', 'magic_link', 'recovery', 'email_change']) {
@@ -87,11 +110,15 @@ function validateTemplates(shell, templates) {
 
 function configPatch(shell, templates) {
   const patch = {
+    mfa_totp_enroll_enabled: true,
+    mfa_totp_verify_enabled: true,
     passkey_enabled: true,
     webauthn_rp_display_name: 'CAPITAL-AI',
     webauthn_rp_id: RP_ID,
     webauthn_rp_origins: EXPECTED_SITE_ORIGIN,
   };
+
+  for (const key of SECURITY_NOTIFICATION_KEYS) patch[key] = true;
 
   for (const [name, [subjectKey, contentKey]] of Object.entries(TEMPLATE_KEYS)) {
     patch[subjectKey] = templates[name].subject;
@@ -164,6 +191,14 @@ if (!wantsRemote) {
       rpOrigin: EXPECTED_SITE_ORIGIN,
       experimental: true,
     },
+    totp: {
+      enrollEnabled: true,
+      verifyEnabled: true,
+    },
+    securityNotifications: {
+      enabled: SECURITY_NOTIFICATION_KEYS,
+    },
+    checkedKeys: Object.keys(patch).sort(),
     mutation: false,
   }));
   process.exit(0);
@@ -180,6 +215,7 @@ if (!wantsApply) {
     status: mismatches.length ? 'DRIFT' : 'PASS',
     mode: 'remote-readonly',
     projectRef,
+    checkedKeys: Object.keys(patch).sort(),
     mismatches,
     mutation: false,
   }));
@@ -198,6 +234,7 @@ console.log(JSON.stringify({
   status: remaining.length ? 'FAILED' : 'PASS',
   mode: 'remote-apply',
   projectRef,
+  checkedKeys: Object.keys(patch).sort(),
   changedKeys: mismatches,
   remainingMismatches: remaining,
   mutation: true,
