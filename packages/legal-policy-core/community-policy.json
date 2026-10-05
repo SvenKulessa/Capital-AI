@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "policyId": "LEGAL_POLICY_COMMUNITY@1",
+  "status": "PRODUCT_BASELINE",
+  "usageClasses": [
+    "BUILD_ONLY",
+    "INTERNAL_RUNTIME",
+    "HOSTED_NETWORK_SERVICE",
+    "BUNDLED_FRONTEND",
+    "DISTRIBUTED_BINARY",
+    "MODIFIED_COMPONENT"
+  ],
+  "blockedLicenses": [],
+  "licenseProfiles": {
+    "PERMISSIVE_NOTICE": {
+      "licenses": ["MIT", "ISC", "BSD-2-Clause", "BSD-3-Clause", "0BSD", "MIT-0", "Zlib"],
+      "defaultStatus": "ALLOW_WITH_OBLIGATIONS",
+      "distributionObligations": ["LICENSE_NOTICE_RETAINED"]
+    },
+    "APACHE_2_0": {
+      "licenses": ["Apache-2.0"],
+      "defaultStatus": "ALLOW_WITH_OBLIGATIONS",
+      "distributionObligations": ["LICENSE_COPY_INCLUDED", "NOTICE_PRESERVED_IF_PRESENT"],
+      "modificationObligations": ["MODIFIED_FILES_MARKED"]
+    },
+    "MPL_2_0": {
+      "licenses": ["MPL-2.0"],
+      "defaultStatus": "ALLOW_WITH_OBLIGATIONS",
+      "distributionObligations": ["MPL_COVERED_SOURCE_AVAILABLE", "MPL_SOURCE_LOCATION_NOTICE"]
+    },
+    "GPL": {
+      "licenses": ["GPL-2.0-only", "GPL-2.0-or-later", "GPL-3.0-only", "GPL-3.0-or-later"],
+      "defaultStatus": "LEGAL_REVIEW_REQUIRED",
+      "reviewReason": "Copyleft scope and source-delivery duties depend on the actual distribution and work-combination facts."
+    },
+    "LGPL": {
+      "licenses": ["LGPL-2.1-only", "LGPL-2.1-or-later", "LGPL-3.0-only", "LGPL-3.0-or-later"],
+      "defaultStatus": "LEGAL_REVIEW_REQUIRED",
+      "reviewReason": "Linking, relinking and corresponding-source duties require fact-specific review."
+    },
+    "AGPL": {
+      "licenses": ["AGPL-3.0-only", "AGPL-3.0-or-later"],
+      "defaultStatus": "LEGAL_REVIEW_REQUIRED",
+      "reviewReason": "Network copyleft can be triggered without conventional binary distribution and requires explicit review."
+    },
+    "OFL_1_1": {
+      "licenses": ["OFL-1.1"],
+      "defaultStatus": "ALLOW_WITH_OBLIGATIONS",
+      "distributionObligations": ["OFL_LICENSE_INCLUDED", "RESERVED_FONT_NAMES_RESPECTED"]
+    },
+    "CC_BY_4_0": {
+      "licenses": ["CC-BY-4.0"],
+      "defaultStatus": "ALLOW_WITH_OBLIGATIONS",
+      "distributionObligations": ["ATTRIBUTION_PROVIDED", "LICENSE_REFERENCE_PROVIDED"],
+      "modificationObligations": ["CHANGES_INDICATED"]
+    }
+  }
+}
