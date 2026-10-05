@@ -1,0 +1,141 @@
+{
+  "schema": "CAPITAL_AI_OPEN_SOURCE_OPEN_DATA_ADMISSION_EVIDENCE@1",
+  "providerId": "faironchain-open-price",
+  "decision": "OPEN_SOURCE_OPEN_DATA_ADMITTED",
+  "eligible": true,
+  "admittedScope": "HISTORICAL_DELAYED_PRICE_DATA",
+  "runtimeCapabilities": {
+    "historicalPriceInput": true,
+    "marketQuotes": false,
+    "scoringPriceInput": false,
+    "liveDisplay": false
+  },
+  "softwareLicense": "MIT",
+  "softwareSourceSha": "ec424983d47dcce77da29699159a4507a2c79c8c",
+  "softwareLicenseBlobSha": "05508608f73afe14b0f16bb50cfe03c9653539a4",
+  "softwareEvidenceReference": "https://github.com/SvenKulessa/Capital-AI/blob/ec424983d47dcce77da29699159a4507a2c79c8c/server/faironchain-historical-adapter.mjs",
+  "softwareLicenseEvidenceReference": "https://github.com/SvenKulessa/Capital-AI/blob/f36857bc57ce8b1f2733c5cfdafc464a79c0949f/licenses/faironchain-historical-adapter.MIT.txt",
+  "softwarePackagingCompatible": true,
+  "dataLicense": "CC-BY-4.0",
+  "dataLicenseEvidenceReference": "https://creativecommons.org/licenses/by/4.0/",
+  "provenanceReference": "https://fair.deepmining.ch/ethereum",
+  "datasetId": "ethereum/chainlink_eth_usd.csv",
+  "datasetVersionOrSnapshot": "Open_Price_Infra@7a883351a1c38328f7baa2dd78989ab3d4a6d859",
+  "datasetUrl": "https://files.deepmining.ch/files/ethereum/prices/chainlink_eth_usd.csv",
+  "attributionObligationsReviewed": true,
+  "attributionEvidenceReference": "https://fair.deepmining.ch/",
+  "useCases": {
+    "commercialWebDisplay": {
+      "allowed": true,
+      "evidenceReference": "https://creativecommons.org/licenses/by/4.0/",
+      "obligations": [
+        "ATTRIBUTION",
+        "LICENSE_LINK",
+        "INDICATE_CHANGES"
+      ]
+    },
+    "commercialMobileDisplay": {
+      "allowed": true,
+      "evidenceReference": "https://creativecommons.org/licenses/by/4.0/",
+      "obligations": [
+        "ATTRIBUTION",
+        "LICENSE_LINK",
+        "INDICATE_CHANGES"
+      ]
+    },
+    "derivedScoringRankingsAnalytics": {
+      "allowed": true,
+      "evidenceReference": "https://creativecommons.org/licenses/by/4.0/",
+      "obligations": [
+        "ATTRIBUTION",
+        "LICENSE_LINK",
+        "INDICATE_CHANGES"
+      ]
+    },
+    "normalization": {
+      "allowed": true,
+      "evidenceReference": "https://creativecommons.org/licenses/by/4.0/",
+      "obligations": [
+        "ATTRIBUTION",
+        "LICENSE_LINK",
+        "INDICATE_CHANGES"
+      ]
+    },
+    "cacheHotState": {
+      "allowed": true,
+      "evidenceReference": "https://creativecommons.org/licenses/by/4.0/",
+      "obligations": [
+        "ATTRIBUTION",
+        "LICENSE_LINK",
+        "INDICATE_CHANGES"
+      ]
+    },
+    "jetStreamPublication": {
+      "allowed": true,
+      "evidenceReference": "https://creativecommons.org/licenses/by/4.0/",
+      "obligations": [
+        "ATTRIBUTION",
+        "LICENSE_LINK",
+        "INDICATE_CHANGES"
+      ]
+    },
+    "replay": {
+      "allowed": true,
+      "evidenceReference": "https://creativecommons.org/licenses/by/4.0/",
+      "obligations": [
+        "ATTRIBUTION",
+        "LICENSE_LINK",
+        "INDICATE_CHANGES"
+      ]
+    },
+    "retention": {
+      "allowed": true,
+      "evidenceReference": "https://creativecommons.org/licenses/by/4.0/",
+      "obligations": [
+        "ATTRIBUTION",
+        "LICENSE_LINK",
+        "INDICATE_CHANGES"
+      ]
+    },
+    "backupRestore": {
+      "allowed": true,
+      "evidenceReference": "https://creativecommons.org/licenses/by/4.0/",
+      "obligations": [
+        "ATTRIBUTION",
+        "LICENSE_LINK",
+        "INDICATE_CHANGES"
+      ]
+    },
+    "auditEvidence": {
+      "allowed": true,
+      "evidenceReference": "https://creativecommons.org/licenses/by/4.0/",
+      "obligations": [
+        "ATTRIBUTION",
+        "LICENSE_LINK",
+        "INDICATE_CHANGES"
+      ]
+    },
+    "internalProcessing": {
+      "allowed": true,
+      "evidenceReference": "https://creativecommons.org/licenses/by/4.0/",
+      "obligations": [
+        "ATTRIBUTION",
+        "LICENSE_LINK",
+        "INDICATE_CHANGES"
+      ]
+    }
+  },
+  "instrumentEligibilityVerified": true,
+  "instrumentManifestReference": "docs/market-data/evidence/faironchain-eth-usd-historical-manifest-20261005.json",
+  "semanticRestrictions": [
+    "HISTORICAL_DELAYED_ONLY",
+    "MUST_NOT_BE_LABELLED_LIVE",
+    "MUST_NOT_ENTER_30_SECOND_QUOTEFACT_PATH",
+    "SCORING_REQUIRES_SEPARATE_TECHNICAL_QUALITY_ADMISSION"
+  ],
+  "evidenceNotes": [
+    "FairOnChain states its Ethereum price CSV files are updated daily and carry per-row provenance.",
+    "CC BY 4.0 permits sharing and adaptation for commercial purposes subject to attribution and related obligations.",
+    "This rights admission does not assert realtime freshness or scoring fitness."
+  ]
+}
