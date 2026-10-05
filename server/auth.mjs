@@ -204,7 +204,7 @@ function normalizeLoginPassword(value) {
 }
 
 function normalizeNewPassword(value) {
-  return typeof value === 'string' && value.length >= 10 && value.length <= 256 ? value : '';
+  return typeof value === 'string' && value.length >= 14 && value.length <= 256 ? value : '';
 }
 
 export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.now, audit = console.info } = {}) {
@@ -698,5 +698,22 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     }
   }
 
-  return { handle, session, verify, sameOrigin };
+  async function credentials(req, res) {
+    const config = getConfig();
+    if (!config) return null;
+    try {
+      const stored = await resolveSession(req, res);
+      if (!stored) return null;
+      return {
+        userId: stored.user.id,
+        accessToken: stored.accessToken,
+        publishableKey: config.publishableKey,
+        url: config.url,
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  return { handle, session, verify, credentials, sameOrigin };
 }
