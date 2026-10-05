@@ -283,8 +283,8 @@ export const Header: React.FC<HeaderProps> = ({
           <span>Dokumentation</span>
         </button>
 
+        {/* Control Center */}
         {isOwner && (
-          {/* Control Center */}
           <button
             type="button"
             onClick={() => onNavigate?.('/control-center')}
