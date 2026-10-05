@@ -171,8 +171,8 @@ function injectVocabularySeo(html, pathname) {
       ? vocabularyLandingFallback()
       : `<main><article><h1>Capital-AI Learning Portal</h1><p>${escapeHtml(description)}</p><p><a href="/vocabulary">Zum Vocabulary mit ${publicVocabularyCount} Fachbegriffen</a></p></article></main>`;
   body = body.replace(
-    /<div id="root">[\s\S]*?<script type="module"/,
-    `<div id="root">${fallback}</div>\n    <script type="module"`,
+    '<div id="root"></div>',
+    `<div id="root">${fallback}</div>`,
   );
   return body;
 }
