@@ -252,11 +252,22 @@ export const StudioPage: React.FC<StudioPageProps> = ({
         <div>
           {/* Breadcrumb Hierarchy */}
           <div className="flex items-center gap-2 text-xs text-slate-400 mb-1.5 font-medium">
-            <span>Capital-AI Enterprise</span>
+            <button type="button" onClick={onBackToHome} className="hover:text-cyan-300 transition-colors">
+              Capital-AI
+            </button>
             <span aria-hidden="true" className="text-slate-600">
               /
             </span>
-            <span className="text-cyan-400 font-semibold">Studio Hub</span>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('architecture');
+                onNavigate?.('/studio');
+              }}
+              className="text-cyan-400 font-semibold hover:text-cyan-200 transition-colors"
+            >
+              Studio Hub
+            </button>
             <span aria-hidden="true" className="text-slate-600">
               /
             </span>
