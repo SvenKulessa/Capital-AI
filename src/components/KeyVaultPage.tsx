@@ -79,8 +79,10 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
       const message = reason instanceof Error ? reason.message : 'provider_vault_unavailable';
       setError(
         message === 'provider_vault_not_configured'
-          ? 'Key Vault ist in der Web-Runtime noch nicht mit dem serverseitigen Supabase-Secret verbunden.'
-          : 'Key Vault konnte nicht sicher geladen werden.',
+          ? 'Key Vault ist in der Web-Runtime noch nicht mit einer gültigen serverseitigen Supabase-Admin-Credential verbunden.'
+          : message === 'provider_vault_admin_credential_rejected'
+            ? 'Die serverseitige Supabase-Admin-Credential der Web-Runtime wurde vom Projekt abgewiesen. Sie muss in der Runtime ersetzt oder korrigiert werden.'
+            : 'Key Vault konnte nicht sicher geladen werden.',
       );
     });
   }, []);
@@ -112,8 +114,10 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
       const message = reason instanceof Error ? reason.message : 'PROVIDER_SAVE_FAILED';
       setError(
         message === 'provider_vault_not_configured'
-          ? 'Serverseitiger Key Vault ist noch nicht konfiguriert.'
-          : `Verbindung konnte nicht gespeichert oder verifiziert werden: ${message}`,
+          ? 'Serverseitiger Key Vault ist noch nicht mit einer gültigen Admin-Credential konfiguriert.'
+          : message === 'provider_vault_admin_credential_rejected'
+            ? 'Die serverseitige Supabase-Admin-Credential wurde abgewiesen. Der Provider-Key wurde nicht gespeichert.'
+            : `Verbindung konnte nicht gespeichert oder verifiziert werden: ${message}`,
       );
     } finally {
       setSaving(false);
