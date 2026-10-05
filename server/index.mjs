@@ -155,25 +155,6 @@ function injectVocabularySeo(html, pathname) {
   const description = entry ? vocabularyDescription(entry) : landing.description;
   const canonicalPath = entry ? entry.path : pathname;
   const canonicalUrl = `https://capital-ai.online${canonicalPath}`;
-  const schema = entry
-    ? {
-        '@context': 'https://schema.org',
-        '@type': 'DefinedTerm',
-        name: entry.term,
-        description: entry.description,
-        alternateName: entry.thesaurus,
-        termCode: entry.id,
-        url: canonicalUrl,
-        inDefinedTermSet: 'https://capital-ai.online/vocabulary',
-      }
-    : {
-        '@context': 'https://schema.org',
-        '@type': 'DefinedTermSet',
-        name: pathname === '/vocabulary' ? 'Capital-AI Vocabulary' : 'Capital-AI Learning Portal',
-        url: canonicalUrl,
-        numberOfItems: VOCABULARY_PUBLIC_COUNT,
-      };
-  const safeJsonLd = JSON.stringify(schema).replaceAll('<', '\\u003c');
   let body = html
     .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(title)}</title>`)
     .replace(/(<meta name="description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(description)}$2`)
@@ -182,8 +163,7 @@ function injectVocabularySeo(html, pathname) {
     .replace(/(<meta property="og:url" content=")[^"]*("\s*\/?>)/, `$1${canonicalUrl}$2`)
     .replace(/(<meta name="twitter:title" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(title)}$2`)
     .replace(/(<meta name="twitter:description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(description)}$2`)
-    .replace(/(<link rel="canonical" href=")[^"]*("\s*\/?>)/, `$1${canonicalUrl}$2`)
-    .replace('</head>', `${SEO_JSONLD_OPEN}${safeJsonLd}${SEO_JSONLD_CLOSE}</head>`);
+    .replace(/(<link rel="canonical" href=")[^"]*("\s*\/?>)/, `$1${canonicalUrl}$2`);
 
   const fallback = entry
     ? vocabularyFallback(entry)
