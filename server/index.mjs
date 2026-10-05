@@ -13,6 +13,11 @@ import { createMobileScorer } from './mobile-scorer.mjs';
 import { createScorerProxy } from './scorer-proxy.mjs';
 import { serveMtaSts } from './mta-sts.mjs';
 import { researchMetadata } from '../shared/research-metadata.mjs';
+import {
+  isSeoIndexable,
+  robotsDirectiveFor,
+  seoIndexableStaticPaths,
+} from '../shared/seo-indexing-policy.mjs';
 import { BILLING_CATALOG } from './billing-catalog.mjs';
 import { createVocabularyCheckout } from './vocabulary-checkout.mjs';
 import { QUANT_PRO_IDS } from './vocabulary-quant-pro-index.mjs';
@@ -49,20 +54,6 @@ const publicVocabularyMetadata = {
     description: `${publicVocabularyCount} konsolidierte Capital-AI Fachbegriffe mit Definitionen und jeweils drei Thesaurus-Begriffen aus Marktanalyse, Scoring, Daten, Plattform, Security, Produkt, Governance und Mobile Runtime.`,
   },
 };
-const sitemapBasePaths = [
-  '/',
-  '/learning',
-  '/vocabulary',
-  '/faq',
-  '/forschung',
-  '/lizenz',
-  '/datenprovider-lizenzen',
-  '/opensource-lizenzen',
-  '/impressum',
-  '/datenschutz',
-  '/agb',
-];
-
 function escapeHtml(text) {
   return String(text).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 }
@@ -71,6 +62,23 @@ function escapeXml(text) {
 }
 function normalizedPublicPath(pathname) {
   return pathname.toLowerCase().replace(/\/+$/, '') || '/';
+}
+function canonicalUrlForPath(pathname) {
+  return pathname === '/' ? 'https://capital-ai.online/' : `https://capital-ai.online${pathname}`;
+}
+function applySeoIndexingPolicy(html, pathname) {
+  const directive = robotsDirectiveFor(pathname);
+  let body = html.replace(
+    /(<meta name="robots" content=")[^"]*("\s*\/?>)/,
+    `$1${directive}$2`,
+  );
+  if (isSeoIndexable(pathname)) {
+    const canonicalUrl = canonicalUrlForPath(pathname);
+    body = body
+      .replace(/(<link rel="canonical" href=")[^"]*("\s*\/?>)/, `$1${canonicalUrl}$2`)
+      .replace(/(<meta property="og:url" content=")[^"]*("\s*\/?>)/, `$1${canonicalUrl}$2`);
+  }
+  return body;
 }
 function vocabularyFallback(entry) {
   const thesaurus = entry.thesaurus.map(item => `<li>${escapeHtml(item)}</li>`).join('');
@@ -133,7 +141,7 @@ function injectVocabularySeo(html, pathname) {
   );
   return body;
 }
-function json(res, status, body) { res.writeHead(status, { ...headers, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(body)); }
+function json(res, status, body) { res.writeHead(status, { ...headers, 'X-Robots-Tag': 'noindex, nofollow', 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(body)); }
 
 export function createApp(root = defaultRoot, options = {}) {
   let inflight = 0;
@@ -153,6 +161,9 @@ export function createApp(root = defaultRoot, options = {}) {
   if ((req.url?.length || 0) > 2048) return json(res, 414, { error: 'uri_too_long' });
   try { url = new URL(req.url, 'http://localhost'); } catch { return json(res, 400, { error: 'bad_request' }); }
   res.once('finish', () => finishRequest(req, res, requestContext, url.pathname));
+  if (!isSeoIndexable(normalizedPublicPath(url.pathname))) {
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  }
   // Apply headers to API responses and OIDC redirects alike.
   for (const [key, value] of Object.entries(headers)) res.setHeader(key, value);
   if (serveMtaSts(req, res, url)) return;
@@ -221,7 +232,7 @@ export function createApp(root = defaultRoot, options = {}) {
     return res.end('User-agent: *\nAllow: /\nSitemap: https://capital-ai.online/sitemap.xml\n');
   }
   if (publicPath === '/sitemap.xml') {
-    const paths = [...new Set([...sitemapBasePaths, ...publicVocabularyEntries.map(entry => entry.path)])];
+    const paths = [...new Set([...seoIndexableStaticPaths(), ...publicVocabularyEntries.map(entry => entry.path)])];
     const xml = '<?xml version="1.0" encoding="UTF-8"?>' +
       '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' +
       paths.map(route => `<url><loc>https://capital-ai.online${escapeXml(route)}</loc></url>`).join('') +
@@ -258,6 +269,9 @@ export function createApp(root = defaultRoot, options = {}) {
         .replace(/(<meta property="og:title" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(meta.title)}$2`)
         .replace(/(<meta property="og:description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(meta.description)}$2`)
         .replace(/(<link rel="canonical" href=")[^"]*("\s*\/?>)/, `$1https://capital-ai.online${researchPath}$2`));
+    }
+    if (path.extname(file) === '.html') {
+      body = Buffer.from(applySeoIndexingPolicy(body.toString('utf8'), publicPath));
     }
     res.writeHead(200, { ...headers, 'Cache-Control': path.extname(file) === '.html' ? 'no-store' : 'public, max-age=3600', 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(body);
   } catch { res.writeHead(404, headers); res.end(); }
