@@ -900,3 +900,103 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
 
               <div className="space-y-2 pt-2">
                 {QUIZ_QUESTIONS[currentQuizIndex].options.map((opt, idx) => {
+                  const isSelected = selectedQuizAnswer === idx;
+                  const isAnswered = selectedQuizAnswer !== null;
+                  const isCorrect = idx === QUIZ_QUESTIONS[currentQuizIndex].correct;
+
+                  let btnStyle = 'bg-black/40 border-slate-800 hover:border-slate-700 text-slate-300';
+                  if (isAnswered) {
+                    if (isCorrect) {
+                      btnStyle = 'bg-emerald-500/20 border-emerald-500/50 text-emerald-200 font-bold';
+                    } else if (isSelected) {
+                      btnStyle = 'bg-rose-500/20 border-rose-500/50 text-rose-200';
+                    }
+                  }
+
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      disabled={isAnswered}
+                      onClick={() => {
+                        setSelectedQuizAnswer(idx);
+                        if (idx === QUIZ_QUESTIONS[currentQuizIndex].correct) {
+                          setQuizScore((prev) => prev + 1);
+                        }
+                      }}
+                      className={`w-full text-left p-3 rounded-lg border text-xs transition-all cursor-pointer ${btnStyle}`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full border border-slate-700 text-[10px] font-mono flex items-center justify-center shrink-0">
+                          {String.fromCharCode(65 + idx)}
+                        </span>
+                        <span>{opt}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {selectedQuizAnswer !== null && (
+                <div className="p-3 rounded-lg bg-black/60 border border-slate-800 text-xs space-y-2 animate-in fade-in">
+                  <div className="font-mono text-[11px] text-amber-400 font-bold">Erklärung:</div>
+                  <p className="text-slate-300 leading-relaxed">
+                    {QUIZ_QUESTIONS[currentQuizIndex].explanation}
+                  </p>
+                  <div className="pt-2 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedQuizAnswer(null);
+                        if (currentQuizIndex + 1 < QUIZ_QUESTIONS.length) {
+                          setCurrentQuizIndex((prev) => prev + 1);
+                        } else {
+                          setQuizFinished(true);
+                        }
+                      }}
+                      className="px-4 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-500 text-black font-bold text-xs cursor-pointer"
+                    >
+                      {currentQuizIndex + 1 < QUIZ_QUESTIONS.length ? 'Nächste Frage →' : 'Ergebnis anzeigen'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="p-8 rounded-xl bg-[#090e21] border border-slate-800 text-center space-y-4 max-w-md mx-auto">
+              <Award className="w-12 h-12 text-amber-400 mx-auto" />
+              <h3 className="text-xl font-bold text-white">Skill-Check abgeschlossen!</h3>
+              <p className="text-xs text-slate-300">
+                Sie haben <strong className="text-amber-400 text-base">{quizScore}</strong> von{' '}
+                <strong className="text-white">{QUIZ_QUESTIONS.length}</strong> Fragen richtig beantwortet.
+              </p>
+              {entitled ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCurrentQuizIndex(0);
+                    setSelectedQuizAnswer(null);
+                    setQuizScore(0);
+                    setQuizFinished(false);
+                    setQuizStarted(true);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-amber-400 text-black font-bold text-xs hover:bg-amber-300 cursor-pointer"
+                >
+                  Quiz wiederholen
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('glossar')}
+                  className="px-4 py-2 rounded-xl bg-amber-400 text-black font-bold text-xs hover:bg-amber-300 cursor-pointer"
+                >
+                  Vocabulary-Paket für {formatVocabularyPrice()} ansehen
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
