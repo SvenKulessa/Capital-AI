@@ -6,23 +6,21 @@ import { DataUnavailable } from './DataUnavailable';
  * 1. GRAFISCHE KOMPONENTE : 
  *    - Interaktiver 4-Tier Daten-Pipeline Visualizer (Ingestion -> Normalisierung -> Caching -> Distribution -> Client/KI)
  *    - Provider- & Konfigurations-Matrix mit dynamischen Multi-Kriterien-Filtern (Assetklasse, Budget, Latenz, Protokoll)
- *    - Live Latency Simulator & Failover Test-Bench mit Reconnect & Circuit-Breaker Simulation
- *    - Low-Budget TCO-Rechner & Hosting Blueprint ($0 - $39/Monat für 10.000+ aktive Nutzer)
+ *    - Latenz- und Failover-Konzept; produktive Messwerte benötigen Runtime-Evidence
+ *    - TCO-/Hosting-Konzept; reale Kosten benötigen aktuelle Provider-/Runtime-Evidence
  *    - Security & Compliance Blueprint (TLS 1.3, mTLS, Token-Bucket Rate Limiter, Zero-Trust Proxy, MiCA/BaFin)
- *    - Production-Ready Code Blueprints (Node.js WebSocket Multiplexer, Redis Ring Buffer, React Client Hook)
+ *    - Code-Blueprints für Research/Design; keine Production-Ready-Behauptung ohne Evidence
  * 2. SCORING-LOGIK        : 
  *    - Data Quality Score (DQS: 0-100 basierend auf Tick-Spreizung, Latenz-Jitter, Orderbuch-Tiefe & VWAP)
  *    - Cost-Efficiency Ratio (CER: Performance-Ticks pro Dollar)
  *    - Multi-Source Consensus Score (Validierung von Ticks gegen Referenz-Preise zur Outlier-Erkennung)
  * 3. DATENANBINDUNG       : 
- *    - Live Feed Simulator (Browser WebSocket Heartbeat Generator mit dynamischem Jitter)
+ *    - Research-Simulator ohne Production-/Realtime-Claim
  *    - WebSocket Multiplexer Abstraction Layer
  *    - In-Memory Ring Buffer Schnittstelle & Delta-Kompression
- * 4. DATENQUELLEN / FEEDS : 
- *    - Krypto: Binance Public WebSocket (0€ / 15-30ms), Coinbase Pro WSS (0€ / 35-50ms)
- *    - Aktien & ETFs: Finnhub.io Starter/Free (0€-29€ / 60-90ms), Polygon.io Starter (29€ / 50-80ms)
- *    - Forex & Rohstoffe: Twelve Data Free Tier (0€ / 80-120ms), AlphaVantage / CCXT Fallback
- *    - Makro & Sentiment: FRED API (0€), Alternative.me Fear & Greed (0€), Whale-Alert Free RSS
+ * 4. DATENQUELLEN / FEEDS :
+ *    - Providerdarstellung folgt dem MARKET-Admission-Contract.
+ *    - Realtime-, Preis-, SLA- und Produktionsclaims bleiben ohne aktuelle Evidence gesperrt.
  * ============================================================================
  */
 
@@ -397,7 +395,7 @@ export const ArchitecturePage: React.FC<ArchitecturePageProps> = ({
           </div>
           <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300">
             <Radio className="w-3 h-3 text-amber-400" />
-            <span>Sim. Ping: {simLatency}ms</span>
+            <span>Research / Evidence erforderlich</span>
           </div>
         </div>
       </div>
@@ -410,16 +408,16 @@ export const ArchitecturePage: React.FC<ArchitecturePageProps> = ({
         </div>
 
         <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
-          High-Performance &amp; Low-Budget{' '}
+          Datenpipeline- und Provider{' '}
           <span className="bg-gradient-to-r from-amber-300 via-amber-400 to-[#FF2E93] bg-clip-text text-transparent">
-            Echtzeit-Kursdaten Anbindung
+            Architekturkonzept
           </span>
         </h1>
 
         <p className="mt-3 text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
-          Umfassendes Architektur-Blueprint für institutionelle Datenqualität, Sub-45ms Latenzen und höchste 
-          Sicherheitsstandards (TLS 1.3, Token-Bucket Rate Limiting, Zero-Trust Proxy) bei einem monatlichen 
-          Budget von unter <strong className="text-amber-400">35 € / Monat</strong> für über 10.000 aktive Nutzer.
+          Research- und Designansicht für Datenpipeline, Provider-Abstraktion, Evidence und Security-Grenzen.
+          Produktive Provider-, Realtime-, Latenz-, Kosten- und SLA-Aussagen werden erst nach aktueller MARKET-
+          und Runtime-Evidence freigegeben.
         </p>
       </div>
 
@@ -789,6 +787,9 @@ export const ArchitecturePage: React.FC<ArchitecturePageProps> = ({
       {/* TAB 2: PROVIDER & CONFIGURATION MATRIX */}
       {/* =================================================================== */}
       {activeTab === 'providers' && (
+        <DataUnavailable title="Provider- und Adapter-Matrix" required="zugelassene Provider-, Datenrechte-, Instrument- und Realtime-Evidence" />
+      )}
+      {false && activeTab === 'providers' && (
         <div className="space-y-4 animate-fadeIn">
           <div className="p-5 rounded-2xl bg-[#090e21] border border-emerald-500/30">
             <div className="flex items-center gap-2 text-emerald-300 font-bold">
