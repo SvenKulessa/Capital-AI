@@ -123,7 +123,7 @@ export function createAuthSecurity({
         json(res, 400, { error: 'email_verification_failed', code: upstreamCode(verified.data, 'verification_failed') });
         return true;
       }
-      let target = type === 'recovery' ? '/login?mode=reset' : '/profile';
+      let target = type === 'recovery' ? '/login?mode=reset' : '/';
       if (verified.data?.access_token && verified.data?.refresh_token && verified.data?.user?.id) {
         const verifiedUser = await authRequest(config, '/user', {
           accessToken: verified.data.access_token,
@@ -135,7 +135,7 @@ export function createAuthSecurity({
         verified.data.user = verifiedUser.data;
         writeSessionCookies(req, res, config, verified.data);
         if (type !== 'recovery' && hasVerifiedTotpFactor(verifiedUser.data)) {
-          target = '/login?mfa=1&next=%2Fprofile';
+          target = '/login?mfa=1';
         }
       }
       audit(`Supabase email verification completed for ${type}`);
@@ -267,7 +267,7 @@ export function createAuthSecurity({
       json(res, 200, {
         authenticated: true,
         mfaRequired,
-        next: mfaRequired ? '/login?mfa=1&next=%2Fprofile' : '/profile',
+        next: mfaRequired ? '/login?mfa=1' : '/',
         user: { id: stored.user.id, name: stored.user.name },
       });
       return true;
@@ -504,7 +504,7 @@ export function createAuthSecurity({
       }
       writeSessionCookies(req, res, config, verified.data);
       audit('Supabase MFA verified at AAL2');
-      json(res, 200, { verified: true, authenticated: true, next: '/profile' });
+      json(res, 200, { verified: true, authenticated: true, next: '/' });
       return true;
     }
 
