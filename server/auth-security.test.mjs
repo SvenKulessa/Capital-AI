@@ -229,3 +229,29 @@ test('TOTP reenrollment removes only same-name pending factor before creating re
   assert.equal(enrollCall.options.maxResponseBytes, 262_144);
   assert.equal(enrollCall.options.body.issuer, 'CAPITAL-AI');
 });
+
+test('recovery accepts a bounded 16-character token hash and redirects invalid recovery links to a safe UI', async () => {
+  const valid = securityHarness({ factor: false });
+  const validRes = responseHarness();
+  await valid.security.handle(
+    { method: 'GET', headers: {} },
+    validRes,
+    new URL('https://capital-ai.online/api/auth/email/verify?token_hash=abcdefghijklmnop&type=recovery'),
+    json,
+  );
+  assert.equal(validRes.status, 303);
+  assert.equal(validRes.getHeader('location'), '/login?mode=reset');
+  assert.equal(valid.calls[0].path, '/verify');
+
+  const invalid = securityHarness({ factor: false });
+  const invalidRes = responseHarness();
+  await invalid.security.handle(
+    { method: 'GET', headers: {} },
+    invalidRes,
+    new URL('https://capital-ai.online/api/auth/email/verify?token_hash=short&type=recovery'),
+    json,
+  );
+  assert.equal(invalidRes.status, 303);
+  assert.equal(invalidRes.getHeader('location'), '/login?mode=forgot&recovery_error=invalid_link');
+  assert.equal(invalid.calls.length, 0);
+});
