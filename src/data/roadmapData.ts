@@ -166,6 +166,35 @@ export const PROJECT_OWNERS: {
 ];
 
 const BACKLOG_TARGETS: WorkPackage[] = [
+  {
+    id: 'CA-PRODUCT-BENCHMARK-MARKETPLACE',
+    title: 'Benchmark Engine für Infrastrukturvergleich und GitHub Marketplace',
+    owner: 'PRODUCT',
+    status: 'aktiv',
+    phase: 4,
+    phaseName: 'Phase 4: DevSecOps, Supply Chain & Release Candidate',
+    progressPercent: null,
+    evidenceState: 'OFFEN',
+    evidenceRefs: [
+      'CAPITAL-AI-PRODUCT/BENCHMARK-ENGINE-PRODUCT.md',
+      'contracts/benchmark/CAPITAL_AI_BENCHMARK_EVIDENCE@1.schema.json',
+      'packages/benchmark-core/index.mjs',
+    ],
+    nextStep: 'CAPITAL_AI_EVENT_BACKBONE@1 isoliert als NATS/Kafka × Node/Rust 4er-Matrix implementieren und jeden Run an Git-SHA, Image-Digests und SBOM-Digest binden.',
+    priority: 'Hoch',
+    leadName: 'Owner + AI Apps',
+    targetSprint: '2026-10',
+    description: 'Monetarisierbare Benchmark Engine auf den bestehenden Stripe-Tiers Starter, Pro und Enterprise aufbauen; GitHub-Marketplace-Entitlements bleiben technisch getrennt und ein Benchmark-PASS erteilt niemals automatisch Production-Freigabe.',
+    deliverables: [
+      'Versionierter Benchmark-Evidence-Contract mit fail-closed Production-Grenze',
+      'Starter/Pro/Enterprise Capability-Matrix ohne neue Stripe-Produkte',
+      'Reproduzierbarer NATS-vs-Kafka und Node-vs-Rust Event-Backbone-Benchmark',
+      'GitHub Check Report mit exakt gebundener Evidence',
+      'Marketplace-Adapter mit getrennten GitHub-Plan-IDs nach erfolgreicher Core-Validierung',
+    ],
+    costImpactEur: 0,
+    dependencies: ['CA-PLATFORM-MARKET-INFRA-BENCH'],
+  },
   // =========================================================================
   // 1. GOVERNANCE (GF & Founder)
   // =========================================================================
