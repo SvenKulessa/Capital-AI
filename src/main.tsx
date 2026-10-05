@@ -1,7 +1,14 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { AppErrorBoundary, BootstrapFailure } from './shared/ui/AppErrorBoundary';
+import App from './App';
+import { AppErrorBoundary } from './shared/ui/AppErrorBoundary';
 import './index.css';
+
+declare global {
+  interface Window {
+    __CAPITAL_AI_BOOTSTRAP_MOUNTED__?: boolean;
+  }
+}
 
 const host = document.getElementById('root');
 if (!host) {
@@ -9,21 +16,13 @@ if (!host) {
 }
 
 const root = createRoot(host);
+root.render(
+  <StrictMode>
+    <AppErrorBoundary>
+      <App />
+    </AppErrorBoundary>
+  </StrictMode>,
+);
 
-void import('./App.tsx')
-  .then(({ default: App }) => {
-    root.render(
-      <StrictMode>
-        <AppErrorBoundary>
-          <App />
-        </AppErrorBoundary>
-      </StrictMode>,
-    );
-  })
-  .catch(() => {
-    root.render(
-      <StrictMode>
-        <BootstrapFailure />
-      </StrictMode>,
-    );
-  });
+window.__CAPITAL_AI_BOOTSTRAP_MOUNTED__ = true;
+window.dispatchEvent(new Event('capital-ai:bootstrap-mounted'));
