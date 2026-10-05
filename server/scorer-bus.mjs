@@ -3,6 +3,7 @@ import { createClient } from 'redis';
 import { connect } from '@nats-io/transport-node';
 import { jetstream, jetstreamManager, StorageType, DiscardPolicy } from '@nats-io/jetstream';
 import { observeCadsOperation } from './cads-observability.mjs';
+import { natsConnectionAuth } from './infrastructure.mjs';
 
 const STREAM = 'CAPITAL_SCORES';
 const SUBJECT_PREFIX = 'capital.scores.crypto';
@@ -30,7 +31,9 @@ export class EnterpriseScorerBus {
   }
 
   async open() {
-    if (!this.env.REDIS_URL || !this.env.NATS_URL || !this.env.NATS_TOKEN?.trim()) return false;
+    if (!this.env.REDIS_URL || !this.env.NATS_URL) return false;
+    let natsAuth;
+    try { natsAuth = natsConnectionAuth(this.env); } catch { return false; }
     try {
       await this.close();
       this.redis = createClient({
@@ -41,9 +44,11 @@ export class EnterpriseScorerBus {
       this.redis.on('error', () => {});
       await observeCadsOperation({ layer:'network', service:'valkey', operation:'scorer.connect' }, () => this.redis.connect());
 
+      const { mode: natsAuthMode, ...credentials } = natsAuth;
+      this.natsAuthMode = natsAuthMode;
       this.nc = await observeCadsOperation({ layer:'network', service:'nats', operation:'scorer.connect' }, () => connect({
         servers: this.env.NATS_URL,
-        token: this.env.NATS_TOKEN,
+        ...credentials,
         timeout: 3000,
         maxReconnectAttempts: 3,
         reconnectTimeWait: 1000,
@@ -102,6 +107,7 @@ export class EnterpriseScorerBus {
       pubsub: this.redis?.isReady ? 'connected' : 'unavailable',
       stream: STREAM,
       channel: SCORE_CHANNEL,
+      authMode: this.natsAuthMode || 'unconfigured',
     };
   }
 
@@ -201,6 +207,7 @@ export class EnterpriseScorerBus {
     this.nc = null;
     this.js = null;
     this.manager = null;
+    this.natsAuthMode = null;
   }
 }
 
