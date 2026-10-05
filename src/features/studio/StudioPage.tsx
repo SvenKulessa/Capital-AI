@@ -784,7 +784,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
               >
                 <div className="text-[10px] font-mono text-cyan-400 mb-1">{bp.badge}</div>
                 <div className="text-xs font-bold truncate text-white">{bp.id}</div>
-                <div className="text-[10px] text-slate-400 mt-1 truncate">{bp.targetLatency}</div>
+                <div className="text-[10px] text-slate-500 mt-1 truncate">Planwert · Evidence offen</div>
               </button>
             ))}
           </div>
@@ -801,22 +801,25 @@ export const StudioPage: React.FC<StudioPageProps> = ({
                 </div>
                 <h3 className="text-lg sm:text-xl font-bold text-white">{activeBlueprint.name}</h3>
                 <p className="text-xs text-slate-300 mt-1">{activeBlueprint.description}</p>
+                <p className="mt-2 text-[11px] font-mono text-amber-300">
+                  Blueprint-Performance bleibt Evidence-gebunden · aktuelle Werte sind Research-/Planwerte.
+                </p>
               </div>
 
               {/* Metrics Pill Grid */}
               <div className="flex flex-wrap items-center gap-3">
                 <div className="p-2.5 rounded-xl bg-black/50 border border-slate-800 text-center min-w-[90px]">
-                  <div className="text-[10px] font-mono text-slate-400">Latenz</div>
+                  <div className="text-[10px] font-mono text-slate-400">Latenz · Planwert</div>
                   <div className="text-xs font-mono font-bold text-emerald-400">
                     {activeBlueprint.targetLatency}
                   </div>
                 </div>
                 <div className="p-2.5 rounded-xl bg-black/50 border border-slate-800 text-center min-w-[90px]">
-                  <div className="text-[10px] font-mono text-slate-400">SLA Uptime</div>
+                  <div className="text-[10px] font-mono text-slate-400">SLA · Zielwert</div>
                   <div className="text-xs font-mono font-bold text-cyan-400">{activeBlueprint.sla}</div>
                 </div>
                 <div className="p-2.5 rounded-xl bg-black/50 border border-slate-800 text-center min-w-[110px]">
-                  <div className="text-[10px] font-mono text-slate-400">Monatlich</div>
+                  <div className="text-[10px] font-mono text-slate-400">Kosten · Modellwert</div>
                   <div className="text-xs font-mono font-bold text-amber-400">
                     {activeBlueprint.monthlyCostEur.toFixed(2)} €
                   </div>
@@ -858,7 +861,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
               <div className="p-4 rounded-xl bg-black/40 border border-slate-800">
                 <div className="text-[11px] font-mono text-slate-400 mb-1">Primärer Use-Case</div>
                 <div className="text-xs font-semibold text-white">{activeBlueprint.primaryUseCase}</div>
-                <div className="text-[11px] text-slate-400 mt-2 font-mono">{activeBlueprint.costNote}</div>
+                <div className="text-[11px] text-slate-500 mt-2 font-mono">Planannahme · nicht als Preis-, SLA- oder Production-Zusage freigegeben</div>
               </div>
 
               <div className="p-4 rounded-xl bg-black/40 border border-slate-800">
