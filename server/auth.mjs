@@ -44,7 +44,7 @@ function clearCookie(res, name) {
   appendCookie(res, cookie(name, '', 0));
 }
 
-function normalizePath(value, fallback = '/profile') {
+function normalizePath(value, fallback = '/') {
   if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//')) return fallback;
   if (value.includes('\\') || value.includes('\0')) return fallback;
   return value.slice(0, 256);
@@ -472,7 +472,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
         return true;
       }
       res.writeHead(303, {
-        Location: '/api/auth/login/google?next=%2Fprofile',
+        Location: '/api/auth/login/google?next=%2F',
         'Cache-Control': 'no-store',
         'Referrer-Policy': 'no-referrer',
       });
@@ -718,7 +718,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       json(res, 200, {
         authenticated: true,
         mfaRequired,
-        next: mfaRequired ? '/login?mfa=1&next=%2Fprofile' : '/profile',
+        next: mfaRequired ? '/login?mfa=1&next=%2F' : '/',
         user: { id: stored.user.id, name: stored.user.name },
       });
       return true;
@@ -744,7 +744,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
         json(res, 400, { error: 'invalid_registration' });
         return true;
       }
-      const confirmation = new URL('/profile', config.origin).toString();
+      const confirmation = new URL('/', config.origin).toString();
       const signedUp = await authRequest(config, `/signup?redirect_to=${encodeURIComponent(confirmation)}`, {
         method: 'POST',
         body: { email, password, data: { full_name: name } },
@@ -758,7 +758,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       }
       if (signedUp.data.access_token && signedUp.data.refresh_token) {
         writeSessionCookies(req, res, config, signedUp.data);
-        json(res, 200, { authenticated: true, next: '/profile' });
+        json(res, 200, { authenticated: true, next: '/' });
       } else {
         json(res, 202, { authenticated: false, confirmationRequired: true });
       }
