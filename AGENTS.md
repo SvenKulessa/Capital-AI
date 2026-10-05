@@ -75,6 +75,16 @@ Für **jede** Domain und jede neue Arbeitssitzung ist der erste verbindliche Kon
 9. **Self-Healing** — wiederkehrende sichere Reparaturmuster nur nach expliziter technischer Zulassung eines reproduzierbaren Fix-Fingerprints als automatische Invariante fest verankern.
 10. **Post-Merge-Korrelation** — nach einem Merge nach `main` muss bei tatsächlicher Datei-, Contract-, Lockfile-, Runtime- oder Evidence-Überschneidung eine Rekorrelation betroffener offener Arbeiten gegen den neuen Main erfolgen. Der kanonische Contract ist `POST_MERGE_CORRELATION@3` in `docs/security/POST-MERGE-CORRELATION-SELF-HEALING.md`. Automatische Fixes bleiben auf explizit zugelassene, deterministische Low-Risk-Fingerprints begrenzt. Ein neuer Repository-HEAD allein ist weder ein Deployment- noch ein NATS-Redeploy-Signal.
 
+## Public-Repository PR- und Standard-Runner-Regel
+
+Owner-Entscheidung vom 2026-10-05: `SvenKulessa/Capital-AI` ist öffentlich. Das Erstellen oder Aktualisieren eines Pull Requests darf nicht wegen gewöhnlicher GitHub-Actions-Minuten, Standard-GitHub-Hosted-Runnern oder einer pauschalen Runner-Kostenbetrachtung verzögert, blockiert oder von einer zusätzlichen Owner-Freigabe abhängig gemacht werden.
+
+- Für PRs dürfen die repositoryseitig vorgesehenen Standard-GitHub-Actions und Required Checks automatisch anlaufen.
+- Ein Agent muss vor dem Erstellen eines PRs nicht auf verfügbare Standard-Runner-Minuten warten und keine separate Runner-Kostenfreigabe einholen.
+- Fehlende, laufende oder fehlgeschlagene Required Checks verhindern nicht die PR-Erstellung, können aber weiterhin Review-, Merge- oder Production-Gates blockieren.
+- Diese Regel ist keine pauschale Kosten- oder Production-Freigabe. Kostenpflichtige Larger Runner, zusätzliche Storage-/Compute-Ressourcen, neue kostenpflichtige GitHub-Produkte, manuelle Production-Deployments sowie Billing-, Auth-, DNS-, Secret-, Ruleset- oder sonstige privilegierte Mutationen behalten ihre eigenen Gates.
+- Security-, Lizenz-, Governance-, Supply-Chain- und Production-Handoff-Anforderungen bleiben vollständig bestehen.
+
 ## Update-Trust-Contract
 
 Für **jedes** Update, Upgrade, Patch und jeden dependency-bezogenen Bugfix gilt zusätzlich eine verpflichtende Herkunfts- und Community-Gegenprüfung.
