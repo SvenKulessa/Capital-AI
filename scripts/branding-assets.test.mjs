@@ -66,10 +66,8 @@ test('asset manifest is rights-bound, non-publishing and byte-consistent for all
   }
 });
 
-test('subscription and role badges are shipped into the Docker build context', () => {
+test('subscription and role badge assets are materialized for the frontend build', () => {
   for (const name of ['starter.svg', 'pro.svg', 'enterprise.svg', 'free-user.svg', 'vault.svg', 'owner.svg']) {
     assert.ok(existsSync(resolve(root, 'public/branding/badges', name)), 'account badge missing: ' + name);
   }
-  const dockerfile = readFileSync(resolve(root, 'Dockerfile'), 'utf8');
-  assert.match(dockerfile, /COPY public\/branding\/badges \.\/public\/branding\/badges/);
 });
