@@ -11,20 +11,11 @@
 import React, { useState } from 'react';
 import {
   X,
-  Sparkles,
   Check,
   ShieldCheck,
-  Zap,
   CreditCard,
-  ArrowRight,
-  Sliders,
-  DollarSign,
-  Layers,
-  Lock,
-  Bell,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import { MONETIZABLE_PRODUCTS } from '../../data/monetizationRegistry';
+import { motion } from 'motion/react';
 import { BrandLogo } from '../../components/BrandLogo';
 import {
   PRICING_CATALOG,
@@ -46,7 +37,6 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
   isOpen,
   onClose,
   onNavigateLogin,
-  onOpenWhaleRadar,
 }) => {
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('annual');
 
@@ -147,107 +137,70 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
 
             </div>
 
-            {/* Pricing Tiers Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-              {/* TIER 1: Starter */}
-              <div className="p-4 rounded-2xl bg-[#030715] border border-slate-800 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold text-slate-400 uppercase">
-                      Starter
-                    </span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">
-                      Paid
-                    </span>
-                  </div>
-                  <div className="mt-2">
-                    <div className="text-2xl font-black text-white flex items-baseline gap-1">
-                      {starterPrice.toFixed(2).replace('.', ',')} €
-                      <span className="text-xs text-slate-400 font-normal">/ Monat</span>
-                    </div>
-                    <span className="text-[11px] text-slate-400">
-                      {billingCycle === 'annual'
-                        ? `${displayPriceEur(PRICING_CATALOG.starter.annual.amountCents)} € jährlich · -${annualDiscountPercent('starter')}%`
-                        : 'Monatlich kündbar'}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-400 mt-2 pb-3 border-b border-slate-800">
-                    Ideal zum Kennenlernen der Plattform und Beobachten globaler Indizes.
-                  </p>
-
-                  <ul className="mt-3 space-y-2 text-xs text-slate-300">
-                  </ul>
-                </div>
-
-                <div className="mt-5 space-y-1.5">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onClose();
-                      onNavigateLogin?.();
-                    }}
-                    className="w-full py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black text-xs font-black transition-all shadow-[0_0_15px_rgba(249,191,33,0.35)] cursor-pointer"
-                  >
-                    Pro auswählen
-                  </button>
-                </div>
-              </div>
-
-              {/* TIER 3: Alpha Elite */}
-              <div className="p-4 rounded-2xl bg-[#030715] border border-cyan-500/40 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold text-cyan-400 uppercase">
-                      Enterprise
-                    </span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold">
-                      Trader &amp; Pro
-                    </span>
-                  </div>
-                  <div className="mt-2">
-                    <div className="text-2xl font-black text-cyan-400 flex items-baseline gap-1">
-                      {enterprisePrice.toFixed(2).replace('.', ',')} €
-                      <span className="text-xs text-slate-400 font-normal">/ Monat</span>
-                    </div>
-                    <span className="text-[10px] text-slate-400 font-mono">
-                      {billingCycle === 'annual'
-                        ? `${displayPriceEur(PRICING_CATALOG.enterprise.annual.amountCents)} € jährliche Abrechnung · -${annualDiscountPercent('enterprise')}%`
-                        : 'Monatlich kündbar'}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-400 mt-2 pb-3 border-b border-slate-800">
-                    Für professionelle Daytrader, Family Offices und quantitative Investoren.
-                  </p>
-
-                  <ul className="mt-3 space-y-2 text-xs text-slate-300">
-                  </ul>
-                </div>
-
-                <div className="mt-5 space-y-1.5">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onClose();
-                      onNavigateLogin?.();
-                    }}
-                    className="w-full py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black text-xs font-black transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)] cursor-pointer"
-                  >
-                    Alpha Elite wählen
-                  </button>
-                  {onOpenWhaleRadar && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onClose();
-                        onOpenWhaleRadar();
-                      }}
-                      className="w-full py-1 rounded-lg text-[11px] font-mono text-cyan-300 hover:text-white transition-colors cursor-pointer flex items-center justify-center gap-1"
+            {/* Pricing Tiers Grid: ausschließlich aktueller Billing-Katalog */}
+            <div className="grid grid-cols-1 gap-3.5 md:grid-cols-3">
+              {([
+                {
+                  id: 'starter',
+                  label: PRICING_CATALOG.starter.label,
+                  monthlyPrice: starterPrice,
+                  annualCents: PRICING_CATALOG.starter.annual.amountCents,
+                  description: 'Einstiegstarif aus dem aktuellen Billing-Katalog.',
+                },
+                {
+                  id: 'pro',
+                  label: PRICING_CATALOG.pro.label,
+                  monthlyPrice: proPrice,
+                  annualCents: PRICING_CATALOG.pro.annual.amountCents,
+                  description: 'Pro-Tarif aus dem aktuellen Billing-Katalog.',
+                },
+                {
+                  id: 'enterprise',
+                  label: PRICING_CATALOG.enterprise.label,
+                  monthlyPrice: enterprisePrice,
+                  annualCents: PRICING_CATALOG.enterprise.annual.amountCents,
+                  description: 'Enterprise-Tarif aus dem aktuellen Billing-Katalog.',
+                },
+              ] as const).map((tier) => (
+                <section
+                  key={tier.id}
+                  aria-labelledby={`pricing-tier-${tier.id}`}
+                  className="flex flex-col justify-between rounded-2xl border border-slate-800 bg-[#030715] p-4"
+                >
+                  <div>
+                    <h3
+                      id={`pricing-tier-${tier.id}`}
+                      className="text-xs font-mono font-bold uppercase text-slate-200"
                     >
-                      <span>Whale Radar öffnen →</span>
-                    </button>
-                  )}
-                </div>
-              </div>
+                      {tier.label}
+                    </h3>
+                    <div className="mt-2">
+                      <div className="flex items-baseline gap-1 text-2xl font-black text-white">
+                        {tier.monthlyPrice.toFixed(2).replace('.', ',')} €
+                        <span className="text-xs font-normal text-slate-400">/ Monat</span>
+                      </div>
+                      <span className="text-[11px] text-slate-400">
+                        {billingCycle === 'annual'
+                          ? `${displayPriceEur(tier.annualCents)} € jährlich · -${annualDiscountPercent(tier.id)}%`
+                          : 'Monatliche Abrechnung'}
+                      </span>
+                    </div>
+                    <p className="mt-2 border-t border-slate-800 pt-3 text-xs leading-relaxed text-slate-400">
+                      {tier.description}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onNavigateLogin?.();
+                    }}
+                    className="mt-5 w-full rounded-xl bg-amber-400 py-2.5 text-xs font-black text-black transition-all hover:bg-amber-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#030715]"
+                  >
+                    {tier.label} auswählen
+                  </button>
+                </section>
+              ))}
             </div>
 
             <div className="rounded-2xl border border-violet-400/35 bg-violet-500/10 p-4 sm:p-5">
@@ -285,7 +238,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
         <div className="mt-5 pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
             <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>Sichere Zahlungsabwicklung via Stripe • Jederzeit kündbar</span>
+            <span>Zahlungsabwicklung über Stripe • Vertragsdetails im jeweiligen Bestellprozess</span>
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
