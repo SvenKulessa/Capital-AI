@@ -1,6 +1,7 @@
 import React from 'react';
 import { ShieldCheck, User } from 'lucide-react';
 import { AccountPageShell } from '../features/account/AccountPageShell';
+import { openHeroBuddy } from './HeroBuddy';
 
 export function ProfilePage({ onNavigate }: { onNavigate: (path: string) => void }) {
   return (
@@ -20,12 +21,18 @@ export function ProfilePage({ onNavigate }: { onNavigate: (path: string) => void
             <div className="mt-4 space-y-2 text-sm">
               <p className="font-bold text-white">{session.user?.name || 'Benutzer'}</p>
               <p className="break-all text-slate-400">{session.user?.email}</p>
-              <p className="break-all font-mono text-[10px] text-slate-500">{session.user?.id}</p>
             </div>
             <div className="mt-5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-200">
               <ShieldCheck className="mb-2 h-4 w-4" />
               Identität wird serverseitig über Supabase Auth verifiziert.
             </div>
+            <button
+              type="button"
+              onClick={openHeroBuddy}
+              className="mt-3 min-h-10 w-full rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-3 text-xs font-bold text-cyan-200"
+            >
+              Hero Buddy anzeigen
+            </button>
           </div>
 
           <div className="rounded-2xl border border-amber-500/25 bg-[#070b19]/90 p-5 md:col-span-2">
@@ -39,11 +46,6 @@ export function ProfilePage({ onNavigate }: { onNavigate: (path: string) => void
                   {session.account.subscription?.status && (
                     <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-slate-300">
                       {session.account.subscription.status}
-                    </span>
-                  )}
-                  {session.account.iamRole && (
-                    <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-2 py-1 font-mono text-cyan-200">
-                      IAM {session.account.iamRole}
                     </span>
                   )}
                 </div>

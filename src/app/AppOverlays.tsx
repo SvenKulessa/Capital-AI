@@ -281,10 +281,6 @@ export function AppOverlays({
           setIsMonetizationOpen(false);
           setIsWhaleRadarOpen(true);
         }}
-        onNavigateTokenomics={() => {
-          setIsMonetizationOpen(false);
-          navigateTo('/tokenomics');
-        }}
       />
 
       <WhaleRadarModal

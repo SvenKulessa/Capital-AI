@@ -122,7 +122,6 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
           amountCents: 1900,
           currency: 'eur',
           taxBehavior: 'inclusive',
-          includedIn: ['pro', 'enterprise'],
           quantProServerGated: true,
           freeQuizAttempts: 1,
         });

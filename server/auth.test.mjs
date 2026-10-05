@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createApp } from './index.mjs';
@@ -232,6 +232,26 @@ test('Supabase email login is same-origin, backend-owned and returns a landing-p
   }
 });
 
+test('Control Center is server-side owner-only and fails closed', async () => {
+  const h = await harness();
+  try {
+    assert.equal((await h.request('/control-center')).status, 404);
+    assert.equal((await h.request('/roadmap')).status, 404);
+
+    const ownerCookie = await h.completeEmail();
+    assert.equal((await h.request('/control-center', { headers: { cookie: ownerCookie } })).status, 200);
+    assert.equal((await h.request('/roadmap', { headers: { cookie: ownerCookie } })).status, 200);
+
+    h.state.subject = 'user-subject';
+    const userCookie = await h.completeEmail();
+    assert.equal((await h.request('/control-center', { headers: { cookie: userCookie } })).status, 404);
+    assert.equal((await h.request('/admin', { headers: { cookie: userCookie } })).status, 404);
+    assert.equal((await h.request('/cost-center', { headers: { cookie: userCookie } })).status, 404);
+  } finally {
+    await h.stop();
+  }
+});
+
 test('Supabase registration validates new passwords and creates a backend-owned session', async () => {
   const h = await harness();
   try {
@@ -245,9 +265,53 @@ test('Supabase registration validates new passwords and creates a backend-owned 
         name: 'Test Owner',
         email: 'owner-subject@example.test',
         password: 'short',
+        passwordConfirm: 'short',
+        termsAccepted: true,
+        privacyAcknowledged: true,
+        marketingConsent: false,
       }),
     });
     assert.equal(invalid.status, 400);
+    assert.equal(h.state.signupCalls, 0);
+
+    const mismatch = await h.request('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        Origin: 'https://capital.example',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: 'Test Owner',
+        email: 'owner-subject@example.test',
+        password: 'valid-password',
+        passwordConfirm: 'different-password',
+        termsAccepted: true,
+        privacyAcknowledged: true,
+        marketingConsent: false,
+      }),
+    });
+    assert.equal(mismatch.status, 400);
+    assert.equal((await mismatch.json()).error, 'passwords_do_not_match');
+    assert.equal(h.state.signupCalls, 0);
+
+    const missingConsent = await h.request('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        Origin: 'https://capital.example',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: 'Test Owner',
+        email: 'owner-subject@example.test',
+        password: 'valid-password',
+        passwordConfirm: 'valid-password',
+        termsAccepted: false,
+        privacyAcknowledged: true,
+        marketingConsent: false,
+      }),
+    });
+    assert.equal(missingConsent.status, 400);
+    assert.equal((await missingConsent.json()).error, 'registration_consents_required');
     assert.equal(h.state.signupCalls, 0);
 
     const registered = await h.request('/api/auth/register', {
@@ -260,6 +324,10 @@ test('Supabase registration validates new passwords and creates a backend-owned 
         name: 'Test Owner',
         email: 'owner-subject@example.test',
         password: 'valid-password',
+        passwordConfirm: 'valid-password',
+        termsAccepted: true,
+        privacyAcknowledged: true,
+        marketingConsent: false,
       }),
     });
     assert.equal(registered.status, 200);
@@ -457,4 +525,27 @@ test('web Google login ignores caller-controlled next targets and returns to lan
   } finally {
     await h.stop();
   }
+});
+
+test('registration consent migration keeps optional marketing consent boolean and non-null', async () => {
+  const sql = await readFile(
+    new URL('../supabase/migrations/20261005155500_fix_registration_consent_null.sql', import.meta.url),
+    'utf8',
+  );
+  assert.match(
+    sql,
+    /coalesce\(new\.raw_user_meta_data->>'marketing_consent', 'false'\) = 'true'/,
+  );
+  assert.match(
+    sql,
+    /coalesce\(new\.raw_user_meta_data->>'terms_accepted', 'false'\) = 'true'/,
+  );
+  assert.match(
+    sql,
+    /coalesce\(new\.raw_user_meta_data->>'privacy_acknowledged', 'false'\) = 'true'/,
+  );
+  assert.doesNotMatch(
+    sql,
+    /new\.raw_user_meta_data->>'marketing_consent' = 'true'/,
+  );
 });
