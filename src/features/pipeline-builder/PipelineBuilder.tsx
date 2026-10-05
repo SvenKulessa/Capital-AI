@@ -60,7 +60,6 @@ import {
   Search,
   TrendingDown,
 } from 'lucide-react';
-import { jsPDF } from 'jspdf';
 import { trackEvent } from '../../utils/analytics';
 import {
   AdvisorChatbot,
@@ -542,7 +541,6 @@ export const PipelineBuilder: React.FC<PipelineBuilderProps> = ({
 
   // Chatbot Drawer / Modal State
   const [isChatbotOpen, setIsChatbotOpen] = useState<boolean>(false);
-  const [copiedCodeSnippet, setCopiedCodeSnippet] = useState<string | null>(null);
 
   // Active Selected Objects
   const selectedFocus = useMemo(
@@ -708,58 +706,8 @@ export const PipelineBuilder: React.FC<PipelineBuilderProps> = ({
     });
   };
 
-  // Copy code helper
-  const handleCopyCode = (snippet: string, key: string) => {
-    navigator.clipboard.writeText(snippet);
-    setCopiedCodeSnippet(key);
-    setTimeout(() => setCopiedCodeSnippet(null), 2000);
-  };
-
-  // Generate PDF Blueprint
-  const handleExportPdfBlueprint = () => {
-    const doc = new jsPDF();
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(18);
-    doc.text('CAPITAL AI — PIPELINE BLUEPRINT SPEZIFIKATION', 14, 20);
-
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Erstellt am: ${new Date().toLocaleString()} | BaFin-Compliance Score: ${calculationSummary.bafinScore}%`, 14, 28);
-    doc.text(`Monatliche Gesamtkosten: ${calculationSummary.totalMonthlyCostEur.toFixed(2)} EUR / 40.00 EUR Budget Cap`, 14, 34);
-
-    doc.line(14, 38, 196, 38);
-
-    doc.setFont('helvetica', 'bold');
-    doc.text('1. Analyse-Fokus & Screener-Ziel:', 14, 46);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`${selectedFocus.title} (${selectedFocus.category})`, 14, 52);
-    doc.text(`Beschreibung: ${selectedFocus.description.slice(0, 100)}...`, 14, 58);
-
-    doc.setFont('helvetica', 'bold');
-    doc.text('2. Taktung & Latenz-Vorgabe:', 14, 68);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`${selectedLatency.name} — ${selectedLatency.latencySpec}`, 14, 74);
-
-    doc.setFont('helvetica', 'bold');
-    doc.text('3. Ingestion Adapter & Data Provider:', 14, 84);
-    doc.setFont('helvetica', 'normal');
-    selectedProviders.forEach((p, idx) => {
-      doc.text(`• ${p.name} (${p.category}) — ${p.monthlyCostEur.toFixed(2)} €/Mo`, 18, 90 + idx * 6);
-    });
-
-    const startCachingY = 96 + selectedProviders.length * 6;
-    doc.setFont('helvetica', 'bold');
-    doc.text('4. Normalisierung & Caching:', 14, startCachingY);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`${selectedCaching.name} (${selectedCaching.specs})`, 14, startCachingY + 6);
-
-    doc.setFont('helvetica', 'bold');
-    doc.text('5. BaFin Evidence & Audit-Trail:', 14, startCachingY + 16);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`${selectedEvidence.name} (${selectedEvidence.bafinParagraph})`, 14, startCachingY + 22);
-
-    doc.save(`capital_ai_pipeline_blueprint_${config.analysisFocusId}.pdf`);
-  };
+  // Full blueprint export is intentionally absent from the public client.
+  const blueprintExportAllowed = false;
 
   return (
     <div className="w-full text-slate-100 min-h-screen py-4 sm:py-6 px-2 sm:px-6 relative">
@@ -1724,19 +1672,20 @@ export const PipelineBuilder: React.FC<PipelineBuilderProps> = ({
                   Ihr individuelles {selectedFocus.title} Datensystem
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-                  Konfiguriert nach der modularen Enterprise Pipeline-Architektur. Erfüllt alle Kriterien für BaFin MaRisk, WpHG § 83 und die 
-                  vertragliche <strong className="text-amber-400 font-mono">40,00 € Monatsbudget-Obergrenze (AP-006)</strong>.
+                  Konfigurationsentwurf für die modulare Pipeline-Architektur. Compliance-, Kosten- und
+                  Production-Eignung werden erst durch die jeweiligen Evidence-Gates festgestellt.
                 </p>
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   type="button"
-                  onClick={handleExportPdfBlueprint}
-                  className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 flex items-center gap-1.5 cursor-pointer shadow-md"
+                  disabled={!blueprintExportAllowed}
+                  title="Erst nach Blueprint-Evidence und Entitlement verfügbar"
+                  className="px-3.5 py-2 rounded-xl bg-slate-800 text-slate-500 font-bold text-xs border border-slate-700 flex items-center gap-1.5 cursor-not-allowed"
                 >
-                  <FileDown className="w-4 h-4" />
-                  <span>PDF Evidence Export</span>
+                  <Lock className="w-4 h-4" />
+                  <span>Blueprint-Export gesperrt</span>
                 </button>
               </div>
             </div>
