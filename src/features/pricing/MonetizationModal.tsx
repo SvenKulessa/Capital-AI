@@ -45,6 +45,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { MONETIZABLE_PRODUCTS } from '../../data/monetizationRegistry';
 import { BrandLogo } from '../../components/BrandLogo';
+import { ProductBadge } from '../../components/ProductBadge';
 import { PRICING_CATALOG, annualDiscountPercent, displayPriceEur } from '../../data/pricingCatalog';
 
 interface MonetizationModalProps {
@@ -274,10 +275,13 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
               {/* TIER 1: Starter */}
               <div className="p-4 rounded-2xl bg-[#030715] border border-slate-800 flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold text-slate-400 uppercase">
-                      Starter
-                    </span>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <ProductBadge badge={PRICING_CATALOG.starter.badgeId} size="md" />
+                      <span className="text-xs font-mono font-bold text-slate-400 uppercase">
+                        Starter
+                      </span>
+                    </div>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">
                       Paid
                     </span>
@@ -333,10 +337,13 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold text-amber-300 uppercase">
-                      Pro
-                    </span>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <ProductBadge badge={PRICING_CATALOG.pro.badgeId} size="md" />
+                      <span className="text-xs font-mono font-bold text-amber-300 uppercase">
+                        Pro
+                      </span>
+                    </div>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 font-bold">
                       Bestseller
                     </span>
@@ -410,10 +417,13 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
               {/* TIER 3: Alpha Elite */}
               <div className="p-4 rounded-2xl bg-[#030715] border border-cyan-500/40 flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold text-cyan-400 uppercase">
-                      Enterprise
-                    </span>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <ProductBadge badge={PRICING_CATALOG.enterprise.badgeId} size="md" />
+                      <span className="text-xs font-mono font-bold text-cyan-400 uppercase">
+                        Enterprise
+                      </span>
+                    </div>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold">
                       Trader &amp; Pro
                     </span>
@@ -698,215 +708,3 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                 <span className="text-xs font-mono font-bold text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-full border border-amber-400/30">
                   Live-Berechnung
                 </span>
-              </div>
-
-              {/* Sliders */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4 text-xs">
-                <div className="space-y-1.5 bg-[#081028] p-3 rounded-xl border border-slate-800">
-                  <div className="flex justify-between font-semibold">
-                    <span className="text-slate-300">Monatlich aktive Nutzer (MAU)</span>
-                    <span className="text-amber-400 font-mono">{mau.toLocaleString('de-DE')}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="5000"
-                    max="250000"
-                    step="5000"
-                    value={mau}
-                    onChange={(e) => setMau(Number(e.target.value))}
-                    className="w-full accent-amber-400 cursor-pointer"
-                  />
-                  <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-                    <span>5k</span>
-                    <span>100k</span>
-                    <span>250k</span>
-                  </div>
-                </div>
-
-                <div className="space-y-1.5 bg-[#081028] p-3 rounded-xl border border-slate-800">
-                  <div className="flex justify-between font-semibold">
-                    <span className="text-slate-300">Paid-Konversionsrate</span>
-                    <span className="text-amber-400 font-mono">{convRate}%</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="1.0"
-                    max="8.0"
-                    step="0.5"
-                    value={convRate}
-                    onChange={(e) => setConvRate(Number(e.target.value))}
-                    className="w-full accent-amber-400 cursor-pointer"
-                  />
-                  <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-                    <span>1%</span>
-                    <span>3.5% (Benchmark)</span>
-                    <span>8%</span>
-                  </div>
-                </div>
-
-                <div className="space-y-1.5 bg-[#081028] p-3 rounded-xl border border-slate-800">
-                  <div className="flex justify-between font-semibold">
-                    <span className="text-slate-300">Anteil Pro vs. Enterprise</span>
-                    <span className="text-amber-400 font-mono">
-                      {proRatio}% Pro / {100 - proRatio}% Enterprise
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min="50"
-                    max="90"
-                    step="5"
-                    value={proRatio}
-                    onChange={(e) => setProRatio(Number(e.target.value))}
-                    className="w-full accent-amber-400 cursor-pointer"
-                  />
-                  <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-                    <span>50%</span>
-                    <span>75%</span>
-                    <span>90%</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* KPI Results Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-slate-800">
-                <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800">
-                  <span className="text-[10px] font-mono text-slate-400 uppercase block">
-                    Zahlende Abonnenten
-                  </span>
-                  <div className="text-xl font-black font-mono text-white mt-0.5">
-                    {payingUsers.toLocaleString('de-DE')}
-                  </div>
-                  <span className="text-[10px] text-slate-500">
-                    {proUsers} Pro • {alphaUsers} Enterprise
-                  </span>
-                </div>
-
-                <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800">
-                  <span className="text-[10px] font-mono text-slate-400 uppercase block">
-                    Monatlicher SaaS-Umsatz (MRR)
-                  </span>
-                  <div className="text-xl font-black font-mono text-emerald-400 mt-0.5">
-                    {mrrSub.toLocaleString('de-DE')} €
-                  </div>
-                  <span className="text-[10px] text-slate-500">Wiederkehrende Abos</span>
-                </div>
-
-                <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800">
-                  <span className="text-[10px] font-mono text-slate-400 uppercase block">
-                    Jährlicher SaaS-Umsatz (ARR)
-                  </span>
-                  <div className="text-xl font-black font-mono text-cyan-400 mt-0.5">
-                    {arrSub.toLocaleString('de-DE')} €
-                  </div>
-                  <span className="text-[10px] text-slate-500">Nur Mitgliedschaften</span>
-                </div>
-
-                <div className="p-3 rounded-xl bg-gradient-to-br from-amber-950/40 to-slate-900/90 border border-amber-500/40">
-                  <span className="text-[10px] font-mono text-amber-300 uppercase block font-bold">
-                    Gesamt-Runrate p.a.
-                  </span>
-                  <div className="text-xl font-black font-mono text-amber-400 mt-0.5">
-                    {totalArr.toLocaleString('de-DE')} €
-                  </div>
-                  <span className="text-[10px] text-amber-200/70">Inkl. Broker-CPA</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 4: Strategie & Compliance */}
-        {activeTab === 'strategy' && (
-          <div className="mt-5 space-y-4 text-xs">
-            <div className="p-4 rounded-2xl bg-[#030715] border border-slate-800">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2 mb-2">
-                <Scale className="w-4 h-4 text-amber-400" />
-                Regulatorischer Rahmen &amp; BaFin Compliance
-              </h3>
-              <p className="text-slate-300 leading-relaxed">
-                Capital-AI agiert rein als <strong>quantitative Analyse- und Informationsplattform</strong>. Alle KI-Scores, Sentiment-Indikatoren und Sektor-Radar-Daten stellen wissenschaftlich-statistische Informationsdienste dar und sind <strong>keine Anlageberatung</strong> im Sinne des § 2 Abs. 22 WpHG bzw. keine erlaubnispflichtige Finanzdienstleistung nach § 32 KWG.
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mt-3 font-mono text-[11px]">
-                <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800">
-                  <span className="text-amber-400 font-bold block mb-1">Keine Verwahrung</span>
-                  <p className="text-slate-400 font-sans text-[11px]">
-                    Kein direkter Kundengeld- oder Asset-Zugriff. Transaktionen erfolgen ausschließlich bei regulierten Partner-Brokern.
-                  </p>
-                </div>
-                <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800">
-                  <span className="text-cyan-400 font-bold block mb-1">Objektive Algorithmen</span>
-                  <p className="text-slate-400 font-sans text-[11px]">
-                    Multi-Faktor Scoring basiert auf publizierten Bilanzen, Kursdaten und Natural-Language-Processing von Medienberichten.
-                  </p>
-                </div>
-                <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800">
-                  <span className="text-emerald-400 font-bold block mb-1">DSGVO &amp; Privacy</span>
-                  <p className="text-slate-400 font-sans text-[11px]">
-                    Hosting in europäischen Rechenzentren (Frankfurt / Dublin) mit strikter Trennung von Nutzerdaten und quantitativen Modellen.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-[#030715] border border-slate-800">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2 mb-2">
-                <Compass className="w-4 h-4 text-cyan-400" />
-                Go-To-Market &amp; Churn-Minimierung
-              </h3>
-              <div className="space-y-2 text-slate-300">
-                <div className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-1.5 shrink-0" />
-                  <span>
-                    <strong>Volatilitäts-Triggered Conversions:</strong> In Marktphasen mit extremem Sentiment (&quot;Extreme Fear&quot; / &quot;Extreme Greed&quot;) steigt das Informationsbedürfnis sprunghaft. Gezielte In-App-Benachrichtigungen konvertieren Free-Nutzer zu Pro.
-                  </span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-1.5 shrink-0" />
-                  <span>
-                    <strong>Gamified Alerts &amp; Watchlist Limits:</strong> Nutzer mit mehr als 3 Watchlist-Werten oder komplexen gekoppelten Sentiment-Alerts werden sanft und mit klarem Mehrwert an das Pro-Abo herangeführt.
-                  </span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-1.5 shrink-0" />
-                  <span>
-                    <strong>B2B API als Margen-Booster:</strong> B2B-Kunden erzeugen hohe Retention (Churn &lt; 0.5% monatlich) und sichern planbare Deckungsbeiträge für Server- und Datenkosten.
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Modal Footer */}
-        <div className="mt-5 pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
-            <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>Sichere Zahlungsabwicklung via Stripe • Jederzeit kündbar</span>
-          </div>
-
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold transition-colors cursor-pointer"
-            >
-              Schließen
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                onNavigateLogin?.();
-              }}
-              className="w-full sm:w-auto px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black text-xs font-black transition-all shadow-[0_0_15px_rgba(249,191,33,0.3)] cursor-pointer"
-            >
-              Konto anlegen / Upgrade
-            </button>
-          </div>
-        </div>
-      </motion.div>
-    </div>
-  );
-};
