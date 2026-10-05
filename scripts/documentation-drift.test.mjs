@@ -17,7 +17,7 @@ const OLD = 'de4c268311c42877f8a7e1361e7de986ffb096cb';
 const profile = {
   schema: 'CAPITAL_AI_SH_SUPPLY_CHAIN_DOCUMENTATION_DRIFT@1',
   version: '1.0.0',
-  authorities: ['DOCUMENTARY_EVIDENCE@1', 'CHANGE_PROPAGATION@1', 'GROWTH_PROJECTION@1', 'POST_MERGE_CORRELATION@2'],
+  authorities: ['DOCUMENTARY_EVIDENCE@1', 'CHANGE_PROPAGATION@1', 'GROWTH_PROJECTION@1', 'POST_MERGE_CORRELATION@3'],
   livingDocuments: { exact: ['README.md', 'src/data/roadmapData.ts', 'docs/growth/DOCUMENTATION-DRIFT-SELF-HEALING.md'], prefixes: ['docs/governance/'] },
   historical: {
     prefixes: ['docs/security/evidence/', 'documentary/evidence/', 'generated/'],
