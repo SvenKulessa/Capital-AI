@@ -3,10 +3,11 @@ import test from 'node:test';
 
 import { VOCABULARY_TERMS } from '../vocabularyData';
 import {
+  VOCABULARY_CANONICAL_COUNT,
   VOCABULARY_PUBLIC_COUNT,
   vocabularyMetadata,
 } from '../../../shared/vocabulary-metadata.mjs';
-import { QUANT_PRO_COUNT, QUANT_PRO_IDS } from '../../../server/vocabulary-quant-pro-index.mjs';
+import { QUANT_PRO_COUNT, QUANT_PRO_IDS } from '../../../shared/vocabulary-access-policy.mjs';
 
 function normalize(value: string): string {
   return value.normalize('NFKC').toLocaleLowerCase('de-DE').replace(/[^a-z0-9äöüß]+/g, '');
@@ -17,10 +18,11 @@ test('browser vocabulary contains no paid Quant/Pro payload and canonical total 
   assert.ok(QUANT_PRO_COUNT > 0);
   assert.equal(
     VOCABULARY_TERMS.length + QUANT_PRO_COUNT,
-    294,
-    'public plus server-side vocabulary index must preserve the canonical merged count',
+    VOCABULARY_CANONICAL_COUNT,
+    'public plus owner-gated Quant/Pro index must preserve the canonical merged count',
   );
-  assert.equal(VOCABULARY_PUBLIC_COUNT, 294, 'canonical SEO projection count remains stable');
+  assert.equal(VOCABULARY_CANONICAL_COUNT, 294, 'canonical vocabulary count remains stable');
+  assert.equal(VOCABULARY_PUBLIC_COUNT, VOCABULARY_TERMS.length, 'public Vocabulary count matches browser-safe entries');
   assert.equal(VOCABULARY_TERMS.some((term) => term.level === 'Quant / Pro'), false);
 
   const normalizedTerms = VOCABULARY_TERMS.map((term) => normalize(term.term));
