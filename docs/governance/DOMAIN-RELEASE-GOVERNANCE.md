@@ -1,6 +1,6 @@
 # CAPITAL-AI Domain-, Versions- und Release-Governance
 
-Stand: 2026-10-04
+Stand: 2026-10-05
 
 ## Oberste Engineering-Priorität
 
@@ -22,13 +22,13 @@ CAPITAL-AI verwendet anwendungsweit genau fünf fachliche Domains:
 
 Eine Domain ist Orientierung und Ownership-Metadatum, keine künstliche Teamgrenze. Ein Work Package darf mehrere Domains berühren; die Primary Domain bestimmt Branch und PR. Harte Contracts gelten nur an echten technischen Grenzen wie Auth, Datenbank-/Event-Schema, Security Boundary, Public API, Evidence und Release Manifest.
 
-## Domainübergreifende ChatGPT-Arbeit
+## ChatGPT-Handoff-Regel
 
-Der Owner entwickelt alleine. Jeder Chat und Agent von PRODUCT, MARKET, PLATFORM, TRUST und GROWTH darf Aufgaben aller fünf Domains im autorisierten Scope vollständig übernehmen. Organisatorische Handoff-Verträge, verpflichtende Übergabeprompts, Chatwechsel und zusätzliche Domain-Abnahmen sind anwendungsweit deaktiviert. Die verbindliche Vorrang- und Geltungsregel steht in `AGENTS.md`, Abschnitt „Domainübergreifende ChatGPT-Arbeit“.
+Für Entwicklung in ChatGPT ist kein organisatorischer Handoff zwischen PRODUCT, MARKET, PLATFORM, TRUST und GROWTH erforderlich. Jeder Chat und Agent darf Aufgaben aller fünf Domains im autorisierten Scope vollständig bearbeiten und abschließen. Ein Domainwechsel verlangt weder Übergabeprompt noch Chatwechsel noch zusätzliche Domain-Abnahme. Die verbindliche Vorrang- und Geltungsregel steht in `AGENTS.md`, Abschnitt „ChatGPT-Handoff-Regel“.
 
-Domain-Zuordnung ist Metadatum; sie erzeugt weder eine Bearbeitungssperre noch einen neuen Freigabeschritt. Freiwillige Kontextübergaben bleiben möglich. Freigaben werden ausschließlich über konkrete technische, Security-, Lizenz-, Supply-Chain- und Production-Gates mit belastbarer Evidence bewertet. Reale technische und ausdrücklich vorgeschriebene unabhängige Prüfungen bleiben erforderlich.
+Domain-Zuordnung ist Metadatum; sie erzeugt weder eine Bearbeitungssperre noch einen neuen Freigabeschritt. Freiwillige Kontextübergaben bleiben möglich.
 
-Maschinenlesbare Evidence-/Datenverträge und der technische Production-Handoff bleiben verbindlich. Die Änderung deaktiviert ausschließlich organisatorische Chat-Handoffs, keine Auth-, Security-, Lizenz-, Datenrechte-, Supply-Chain-, Kosten- oder Release-Gates. Gespeicherte ChatGPT-Projekteinstellungen und Richtlinien anderer Repositories werden durch diesen Contract nicht automatisch geändert.
+Verbindlich bleiben ausschließlich reale technische Handoffs und Gates an tatsächlichen System- und Evidence-Grenzen, insbesondere Production-Handoff, Auth, API, Daten-/Event-Schema, Security, Lizenz-/Datenrechte, Supply Chain, externe Control Planes und maschinenlesbare Schnittstellenverträge. Ein technischer Handoff erzwingt keinen Chat- oder Domainwechsel und kann im selben Chat bearbeitet werden, sofern Scope und Autorisierung dies erlauben.
 
 ## Branches und Pull Requests
 
