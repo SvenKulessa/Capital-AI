@@ -96,3 +96,13 @@ test('account routes keep profile, security and key vault as separate pages', ()
   assert.equal(resolveAppRoute('/vault'), '/profile/key-vault');
   assert.equal(resolveNavigationTarget('/profile/security?ref=account'), '/profile/security?ref=account');
 });
+
+
+test('Control Center navigation is capability-gated to the verified owner session', () => {
+  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  const sidebar = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
+  assert.match(header, /account\?\.iamRole === 'owner'/);
+  assert.match(header, /allowControlCenter=\{isOwner\}/);
+  assert.match(sidebar, /allowControlCenter = false/);
+  assert.match(sidebar, /hubId !== 'control-center' \|\| allowControlCenter/);
+});
