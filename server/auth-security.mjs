@@ -61,6 +61,7 @@ export function createAuthSecurity({
   clearSessionCookies,
   readRequestJson,
   sameOrigin,
+  resolveMfaRequirement,
   audit = console.info,
 } = {}) {
   async function requireSession(req, res, json) {
@@ -130,7 +131,7 @@ export function createAuthSecurity({
       return true;
     }
 
-    if (!sameOrigin(req)) {
+    if (req.method !== 'GET' && !sameOrigin(req)) {
       json(res, 403, { error: 'forbidden_origin' });
       return true;
     }
@@ -231,8 +232,12 @@ export function createAuthSecurity({
         });
         return true;
       }
+      const mfaRequired = await resolveMfaRequirement(config, verified.data);
+      if (mfaRequired === null) {
+        json(res, 503, { error: 'mfa_state_unavailable' });
+        return true;
+      }
       const stored = writeSessionCookies(req, res, config, verified.data);
-      const mfaRequired = hasVerifiedTotpFactor(verified.data.user);
       audit('Supabase authentication verified at passkey_login');
       json(res, 200, {
         authenticated: true,
