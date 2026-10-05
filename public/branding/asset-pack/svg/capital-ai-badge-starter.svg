@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 72" role="img" aria-labelledby="title desc">
+  <title id="title">STARTER</title>
+  <desc id="desc">Green and charcoal Capital-AI subscription badge with a launch rocket.</desc>
+  <metadata>Copyright © 2026 Sven Michael Kulessa. LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0. Authorized Capital-AI brand/product asset.</metadata>
+  <rect width="360" height="72" rx="18" fill="#06100B"/>
+  <rect x="6" y="6" width="60" height="60" rx="16" fill="#0C2F1D"/>
+  <g fill="none" stroke="#44DE88" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M36 17c8 7 12 16 10 27-4 4-8 7-10 8-3-2-7-5-10-8-2-11 2-20 10-27z"/>
+    <circle cx="36" cy="31" r="4"/>
+    <path d="M26 42l-7 6 1-11 7-4M46 42l7 6-1-11-7-4M33 52l3 5 3-5"/>
+  </g>
+  <text x="86" y="44" fill="#F8FAFC" font-family="Inter,Arial,sans-serif" font-size="23" font-weight="700" letter-spacing=".4">STARTER</text>
+</svg>

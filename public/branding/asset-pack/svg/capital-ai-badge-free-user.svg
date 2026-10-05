@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 72" role="img" aria-labelledby="title desc">
+  <title id="title">FREE USER</title>
+  <desc id="desc">Blue and charcoal Capital-AI registered-user badge with profile and verification check.</desc>
+  <metadata>Copyright © 2026 Sven Michael Kulessa. LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0. Authorized Capital-AI brand/product asset.</metadata>
+  <rect width="360" height="72" rx="18" fill="#07111F"/>
+  <rect x="6" y="6" width="60" height="60" rx="16" fill="#102A4A"/>
+  <g fill="none" stroke="#60A5FA" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="32" cy="27" r="7"/>
+    <path d="M18 49c2-9 7-14 14-14s12 5 14 14"/>
+    <circle cx="49" cy="44" r="9"/>
+    <path d="M45 44l3 3 6-7"/>
+    <path d="M15 36c3-10 12-17 23-18M55 35c-1-6-5-11-10-14"/>
+  </g>
+  <text x="86" y="44" fill="#F8FAFC" font-family="Inter,Arial,sans-serif" font-size="21" font-weight="700" letter-spacing=".4">FREE USER</text>
+</svg>

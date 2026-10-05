@@ -1,0 +1,112 @@
+{
+  "schemaVersion": "1.0.0",
+  "assetSet": "CAPITAL-AI Subscription Product and Role Badges",
+  "generatedAt": "2026-10-05",
+  "sourceRepository": "SvenKulessa/Capital-AI",
+  "sourceBaseline": "caa2c14fb4b317529f7a05385ca11eb7016b7f8a",
+  "rights": {
+    "rightsHolder": "Sven Michael Kulessa",
+    "brandProject": "CAPITAL-AI",
+    "licenseRef": "LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0",
+    "licenseDocument": "docs/licenses/CAPITAL-AI-BADGE-ASSET-LICENSE-1.0.md",
+    "generalThirdPartyLicense": false
+  },
+  "financeReference": {
+    "repository": "SvenKulessa/Finance",
+    "currentMain": "dcef421fe6e350a3a2ade61d0299aad9ecca213c",
+    "socialMediaEngine": [
+      "src/platform/SocialMediaEngine/index.ts",
+      "src/platform/SocialMediaEngine/Contracts/MediaProject.ts",
+      "src/platform/SocialMediaEngine/Visualization/PlanningVisual.ts",
+      "scripts/media/capital_ai_media.py"
+    ],
+    "brandAuthority": "docs/frontend/design-tokens.json",
+    "networkPolicy": "offline",
+    "publishingAuthority": false
+  },
+  "format": {
+    "mimeType": "image/svg+xml",
+    "viewBox": "0 0 360 72",
+    "externalAssetsEmbedded": false,
+    "fontFilesEmbedded": false
+  },
+  "assets": [
+    {
+      "id": "capital-ai-badge-starter",
+      "label": "STARTER",
+      "category": "Abonnementstufe",
+      "path": "public/branding/asset-pack/svg/capital-ai-badge-starter.svg",
+      "sha256": "9b5fb29a35c470769310d72276fe061c0ea123a39bb55c98c1f9a9392daa9c11",
+      "accent": "#44DE88",
+      "symbol": "Rakete / Launch",
+      "rightsHolder": "Sven Michael Kulessa",
+      "licenseRef": "LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0"
+    },
+    {
+      "id": "capital-ai-badge-pro",
+      "label": "PRO",
+      "category": "Abonnementstufe",
+      "path": "public/branding/asset-pack/svg/capital-ai-badge-pro.svg",
+      "sha256": "9624712930807cbcbd560932d73eef2137ab5f434f0bb1ab7f1d6d5d2f0822df",
+      "accent": "#22D3EE",
+      "symbol": "Stern / Profi-Emblem",
+      "rightsHolder": "Sven Michael Kulessa",
+      "licenseRef": "LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0"
+    },
+    {
+      "id": "capital-ai-badge-enterprise",
+      "label": "ENTERPRISE",
+      "category": "Abonnementstufe",
+      "path": "public/branding/asset-pack/svg/capital-ai-badge-enterprise.svg",
+      "sha256": "77ac87540dcafb926d4d22e13821a86c9fceb79acb5b19464a1dd5ca28e2c206",
+      "accent": "#F5C453",
+      "symbol": "Enterprise-Skyline / Netzwerk",
+      "rightsHolder": "Sven Michael Kulessa",
+      "licenseRef": "LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0"
+    },
+    {
+      "id": "capital-ai-badge-vocabulary",
+      "label": "VOCABULARY",
+      "category": "Zusatzprodukt",
+      "path": "public/branding/asset-pack/svg/capital-ai-badge-vocabulary.svg",
+      "sha256": "77d83a1e8855d9c69bb169ba98bd4a19b62edb089106a65e751cd24770a2aaea",
+      "accent": "#8D26FF",
+      "symbol": "offenes Lexikon / Sprachblasen",
+      "rightsHolder": "Sven Michael Kulessa",
+      "licenseRef": "LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0"
+    },
+    {
+      "id": "capital-ai-badge-free-user",
+      "label": "FREE USER",
+      "category": "registrierte Free-User-Rolle",
+      "path": "public/branding/asset-pack/svg/capital-ai-badge-free-user.svg",
+      "sha256": "ac9d5d1272823e5005732167dae2b42d8db73ecf54bc08e53868b55797042641",
+      "accent": "#60A5FA",
+      "symbol": "Benutzerprofil / Verifikationsmarke",
+      "rightsHolder": "Sven Michael Kulessa",
+      "licenseRef": "LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0"
+    },
+    {
+      "id": "capital-ai-badge-vault",
+      "label": "VAULT",
+      "category": "API-Key-Verwaltungsoberfläche",
+      "path": "public/branding/asset-pack/svg/capital-ai-badge-vault.svg",
+      "sha256": "c432a60076850218a2d41f91911399b162bfeb465211df8737bf3aed5654ef11",
+      "accent": "#22D3EE",
+      "symbol": "Tresor / Keyhole / Schlüssel",
+      "rightsHolder": "Sven Michael Kulessa",
+      "licenseRef": "LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0"
+    },
+    {
+      "id": "capital-ai-badge-owner",
+      "label": "OWNER",
+      "category": "interne Owner-Rolle",
+      "path": "public/branding/asset-pack/svg/capital-ai-badge-owner.svg",
+      "sha256": "ccc46f2b6c732b97ac3667306223cf87bdbc107e971f69517c3ce6769f86f71f",
+      "accent": "#F87171",
+      "symbol": "Krone / Authority",
+      "rightsHolder": "Sven Michael Kulessa",
+      "licenseRef": "LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0"
+    }
+  ]
+}
