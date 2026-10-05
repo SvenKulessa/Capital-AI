@@ -1,0 +1,108 @@
+{
+  "schema": "CAPITAL_AI_PROVIDER_RIGHTS_EVIDENCE@1",
+  "providerId": "twelvedata",
+  "observedAt": "2026-10-05T00:11:19Z",
+  "sourceType": "WRITTEN_PROVIDER_REPLY",
+  "sourceReference": "Gmail thread 1a103a1a20f5d027 / message 1a1096693efdd971",
+  "evidenceStatus": "WRITTEN_CONDITIONAL_PROVIDER_RIGHTS_CONFIRMED",
+  "productionAdmission": false,
+  "deployEligible": false,
+  "datasetScopeVerified": false,
+  "openSourceOpenDataAdmitted": false,
+  "lane": "COMMERCIAL_LICENSED_DATA",
+  "customerAcquisition": {
+    "intendedModel": "CUSTOMER_ACQUIRES_COMMERCIAL_DATA_ACCESS_VIA_CAPITAL_AI_AS_THIRD_PARTY_PROVIDER",
+    "resellerOrSublicenseRightVerified": false,
+    "state": "REVIEW_REQUIRED",
+    "reason": "The provider reply describes product-use tiers but does not grant CAPITAL-AI reseller, agency, sublicense or pass-through licensing rights. No customer sale may rely on this lane until that right is contractually bound."
+  },
+  "permissions": {
+    "customerFacingDisplay": {
+      "state": "CONDITIONAL_RIGHTS",
+      "writtenStatement": true,
+      "minimumTrack": "Venture (Business track) and above",
+      "conditions": [
+        "applicable entity/account bound",
+        "actual feed/venue/add-on scope bound",
+        "required customer-facing attribution present"
+      ]
+    },
+    "nonReconstructableDerivedScores": {
+      "state": "CONDITIONAL_RIGHTS",
+      "writtenStatement": true,
+      "conditions": [
+        "outputs are non-reconstructable",
+        "applicable entity/account bound",
+        "actual feed/venue/add-on scope bound"
+      ]
+    },
+    "rawApiRedistribution": {
+      "state": "BLOCKED",
+      "writtenStatement": true,
+      "requiredPath": "Enterprise with redistribution rights"
+    },
+    "whiteLabelWithoutAttribution": {
+      "state": "BLOCKED",
+      "writtenStatement": true,
+      "requiredPath": "Enterprise+ / White Label"
+    },
+    "storageDuringSubscription": {
+      "state": "CONDITIONAL_RIGHTS",
+      "writtenStatement": true,
+      "scope": "storage and caching for the licensed purpose"
+    },
+    "replay": {
+      "state": "REVIEW_REQUIRED",
+      "writtenStatement": false
+    },
+    "jetStreamPublication": {
+      "state": "REVIEW_REQUIRED",
+      "writtenStatement": false
+    },
+    "backupRestore": {
+      "state": "REVIEW_REQUIRED",
+      "writtenStatement": false
+    },
+    "indexPricing": {
+      "state": "BLOCKED",
+      "writtenStatement": true,
+      "reason": "Twelve Data stated that it does not currently provide index pricing data."
+    }
+  },
+  "retention": {
+    "rawSourceDataDeletionAfterTerminationDays": 30,
+    "derivedNonReconstructableOutputsMayBeRetained": true,
+    "invariant": "RAW_SOURCE_DELETE_WITHIN_30_DAYS_AFTER_TERMINATION"
+  },
+  "attribution": {
+    "requiredForCustomerFacingDisplay": true,
+    "acceptedProviderWording": [
+      "Data provided by Twelve Data",
+      "Source: Twelve Data"
+    ],
+    "linkRequirement": "dofollow link where full attribution is used",
+    "state": "REQUIRED_CAPABILITY_CONDITION"
+  },
+  "marketScope": {
+    "standardCommercialDisplayMentioned": [
+      "US equities/ETFs",
+      "FX",
+      "crypto",
+      "commodities"
+    ],
+    "otherVenuesAndRealtime": "REVIEW_REQUIRED_ADDONS_OR_EXCHANGE_RIGHTS",
+    "indices": "INDEX_PRICING_NOT_AVAILABLE"
+  },
+  "remainingAdmissionGates": [
+    "contracting entity/account",
+    "selected commercial tier",
+    "feeds/datasets/symbols/venues",
+    "required exchange/data add-ons",
+    "realtime/delay scope",
+    "replay right",
+    "JetStream/message-broker right",
+    "backup/restore right",
+    "technical non-reconstructability evidence",
+    "third-party reseller/agency/sublicense/pass-through right for customer acquisition through CAPITAL-AI"
+  ]
+}
