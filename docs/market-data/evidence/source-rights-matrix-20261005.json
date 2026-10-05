@@ -1,10 +1,9 @@
 {
   "schema": "CAPITAL_AI_SOURCE_RIGHTS_MATRIX@1",
-  "observedAt": "2026-10-05T01:36:00+02:00",
-  "sourceCommit": "8045c78956e163af3011ed47f734184aca14aa04",
+  "observedAt": "2026-10-05T02:36:00+02:00",
+  "sourceCommit": "caa2c14fb4b317529f7a05385ca11eb7016b7f8a",
   "ownerPolicy": "OPEN_SOURCE_AND_OPEN_DATA_ONLY",
   "status": "BLOCKED_NO_COMPLETE_FIVE_CLASS_ADMISSION",
-  "canonicalPayloadSha256": "a95fcd4764f1059e6db99b4e1e00a703593b323a8307f6c6497b99e02f2b3c13",
   "candidates": [
     {
       "id": "ccxt",
@@ -141,5 +140,46 @@
     "OSS_SOURCE_ADMISSION": "FAIL",
     "MULTI_ASSET_LIVE_UNIVERSE": "FAIL",
     "reason": "No source set has verified qualifying open-data rights plus real market-data coverage for all five required basis classes."
-  }
+  },
+  "currentMainCorrelation": {
+    "status": "CORRELATED_TO_CURRENT_MAIN",
+    "currentMain": "caa2c14fb4b317529f7a05385ca11eb7016b7f8a",
+    "natsAuthority": "NATS_JETSTREAM",
+    "cacheAuthority": "VALKEY_REDIS_HOT_STATE",
+    "persistenceAuthority": "SUPABASE_POSTGRESQL",
+    "productionAdmission": "BLOCKED"
+  },
+  "researchUpdates": [
+    {
+      "id": "repod-binance140-cc0",
+      "assetClass": "crypto",
+      "dataset": "140 exchange rates from Binance from 2021-01-01 to 2024-09-30",
+      "dataLicense": "CC0-1.0",
+      "cadence": "1-minute historical snapshot",
+      "source": "https://repod.icm.edu.pl/dataset.xhtml?persistentId=doi:10.18150/WPGY4R",
+      "admission": "REVIEW_REQUIRED_UPSTREAM_RIGHTS_CHAIN",
+      "reason": "Repository dataset is CC0, but production admission still requires evidence that the upstream exchange observations may be commercially relicensed/reused for CAPITAL-AI's required cache, replay, retention, display and derived-scoring uses."
+    },
+    {
+      "id": "zenodo-sp500-20-ohlcv-2026",
+      "assetClass": "stocks",
+      "dataset": "Daily OHLCV Data for 20 S&P 500 Equities and CBOE VIX (1982-2025)",
+      "dataLicense": "CC-BY-4.0",
+      "source": "https://zenodo.org/records/20192822",
+      "admission": "REVIEW_REQUIRED_UPSTREAM_RIGHTS_CHAIN",
+      "reason": "Curatorial dataset is CC BY 4.0, but observations were retrieved from Yahoo Finance; upstream market-data rights are not proven by the repository license."
+    },
+    {
+      "id": "oecd-share-price-indices",
+      "assetClass": "indices",
+      "dataset": "OECD Financial Market - Share prices indices",
+      "dataLicense": "OPEN_ACCESS_WITH_SERIES_LEVEL_THIRD_PARTY_REVIEW",
+      "source": "https://www.oecd.org/en/data/indicators/share-prices.html",
+      "rightsSource": "https://www.oecd.org/en/about/terms-conditions.html",
+      "admission": "REVIEW_REQUIRED_SERIES_SOURCE_OWNERSHIP",
+      "reason": "OECD permits commercial reuse of Data unless additional restrictions or third-party ownership apply; each selected index series must be checked at source level before admission."
+    }
+  ],
+  "canonicalPayloadSha256": "7541fbe5521585f8c897bad6d54e132bfcb7f68a9c10f9ddf314d284dbfe4fdf",
+  "hashScope": "UTF-8 JSON with lexicographically sorted keys and separators ',' ':' before adding hash fields"
 }
