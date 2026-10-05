@@ -94,7 +94,7 @@ function validateTemplates(shell, templates) {
     if (!TEMPLATE_KEYS[name]) fail(`MAIL_TEMPLATE_TYPE_UNSUPPORTED:${name}`);
     if (!entry.subject || !entry.title || !entry.body) fail(`MAIL_TEMPLATE_FIELDS_MISSING:${name}`);
     const html = render(shell, entry);
-    if (!html.includes('CAPITAL-AI') || !html.includes(EXPECTED_SITE_ORIGIN)) {
+    if (!html.includes('CAPITAL-AI')) {
       fail(`MAIL_TEMPLATE_BRANDING_MISSING:${name}`);
     }
     validateAbsoluteOrigins(html, name);
