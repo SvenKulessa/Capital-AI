@@ -7,7 +7,7 @@ status: "ACTIVE_FAIL_CLOSED"
 correlatedAt: "2026-10-05"
 correlationBaseline:
   repository: "SvenKulessa/Capital-AI"
-  mainSha: "52666468b758c9a295709069b12f53ca93e9bfc4"
+  mainSha: "96178b35db215754eb69785535f035b4fb4d96af"
   rootPolicy: "AGENTS.md@currentmain"
   roadmapSource: "src/data/roadmapData.ts"
   domainContract: "CAPITAL-AI-MARKET/PROJECT.md"
