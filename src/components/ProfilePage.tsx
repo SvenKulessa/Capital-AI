@@ -19,6 +19,16 @@ interface SessionUser {
   name: string;
 }
 
+interface AccessState {
+  authenticated: boolean;
+  owner: boolean;
+  allAccess: boolean;
+  iamRole: string;
+  tier: 'Free' | 'Starter' | 'Pro' | 'Enterprise';
+  subscription: { status: string; currentPeriodEnd: string | null };
+  products: Array<{ id: string; label: string; entitled: boolean; source: string }>;
+}
+
 interface ProviderConnection {
   provider: string;
   credentialFingerprint?: string;
@@ -40,6 +50,7 @@ async function readJson(response: Response) {
 export function ProfilePage({ onBackToHome }: { onBackToHome: () => void }) {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [connections, setConnections] = useState<ProviderConnection[]>([]);
+  const [access, setAccess] = useState<AccessState | null>(null);
   const [apiKey, setApiKey] = useState('');
   const [apiSecret, setApiSecret] = useState('');
   const [holdings, setHoldings] = useState<Holding[]>([]);
@@ -86,7 +97,23 @@ export function ProfilePage({ onBackToHome }: { onBackToHome: () => void }) {
           email: String(body.user.email || ''),
           name: String(body.user.name || 'Benutzer'),
         });
-        await loadConnections();
+        setLoading(false);
+
+        void fetch('/api/profile/access', {
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: { Accept: 'application/json' },
+          signal: controller.signal,
+        })
+          .then(async accessResponse => accessResponse.ok ? readJson(accessResponse) : null)
+          .then(accessBody => {
+            if (!controller.signal.aborted && accessBody?.authenticated === true) setAccess(accessBody as AccessState);
+          })
+          .catch(() => undefined);
+
+        void loadConnections().catch(() => {
+          if (!controller.signal.aborted) setError('Provider-Verbindungen konnten nicht geladen werden. Der Profilzugriff bleibt verfügbar.');
+        });
       } catch {
         if (!controller.signal.aborted) setError('Profil und Vault konnten nicht sicher geladen werden.');
       } finally {
@@ -242,6 +269,34 @@ export function ProfilePage({ onBackToHome }: { onBackToHome: () => void }) {
               <ShieldCheck className="mb-2 h-4 w-4" />
               Identität wird serverseitig über Supabase Auth verifiziert. Der Browser entscheidet niemals selbst über den Vault-Eigentümer.
             </div>
+
+            {access && (
+              <div className="mt-4 space-y-3 rounded-xl border border-amber-500/25 bg-amber-500/5 p-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full border border-amber-300/40 bg-amber-300/10 px-2.5 py-1 text-[11px] font-black text-amber-200">
+                    {access.tier}
+                  </span>
+                  {access.owner && (
+                    <span className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-2.5 py-1 text-[11px] font-black text-cyan-200">
+                      OWNER · ALL ACCESS
+                    </span>
+                  )}
+                  {access.products.map(product => (
+                    <span
+                      key={product.id}
+                      className="rounded-full border border-violet-400/30 bg-violet-400/10 px-2.5 py-1 text-[11px] font-bold text-violet-200"
+                    >
+                      {product.label}
+                    </span>
+                  ))}
+                </div>
+                <p className="text-[11px] leading-relaxed text-slate-400">
+                  {access.owner
+                    ? 'Owner-Zugriff wird serverseitig aus der verifizierten Supabase-IAM-Rolle abgeleitet und ist unabhängig von einzelnen Produktkäufen.'
+                    : 'Tarif und Produktzugriffe stammen aus serverseitig verifizierter Subscription-/Entitlement-Evidence.'}
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="rounded-2xl border border-amber-500/25 bg-[#070b19]/90 p-5 md:col-span-2">
