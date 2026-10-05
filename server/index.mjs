@@ -61,6 +61,8 @@ function escapeHtml(text) {
 function escapeXml(text) {
   return escapeHtml(text).replaceAll("'", '&apos;');
 }
+const OWNER_ONLY_UI_PATHS = new Set(['/control-center', '/control', '/admin', '/roadmap', '/cost-center']);
+
 function normalizedPublicPath(pathname) {
   return pathname.toLowerCase().replace(/\/+$/, '') || '/';
 }
@@ -229,6 +231,14 @@ export function createApp(root = defaultRoot, options = {}) {
   if (url.pathname.startsWith('/api/')) return json(res, 404, { error: 'not_found' });
 
   const publicPath = normalizedPublicPath(url.pathname);
+  if (OWNER_ONLY_UI_PATHS.has(publicPath)) {
+    const ownerAllowed = await auth.authorizeIamRole(req, res, 'owner');
+    if (!ownerAllowed) {
+      res.writeHead(404, { ...headers, 'Cache-Control': 'no-store' });
+      res.end();
+      return;
+    }
+  }
   if (publicPath === '/robots.txt') {
     res.writeHead(200, { ...headers, 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
     return res.end('User-agent: *\nAllow: /\nSitemap: https://capital-ai.online/sitemap.xml\n');
