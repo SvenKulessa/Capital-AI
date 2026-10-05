@@ -1028,25 +1028,26 @@
       "sources": [
         "https://twelvedata.com/terms",
         "https://support.twelvedata.com/en/articles/5332349-commercial-and-personal-usage",
-        "https://support.twelvedata.com/en/articles/12647398-attribution-guidelines-for-using-twelve-data"
+        "https://support.twelvedata.com/en/articles/12647398-attribution-guidelines-for-using-twelve-data",
+        "docs/market-data/evidence/twelve-data-rights-20261005.json"
       ],
-      "assessment": "Baseline internal use; external display/redistribution requires applicable tier, add-ons or written agreement. Attribution and exchange permissions must be evidenced for the actual feed.",
-      "status": "CONTRACT_SCOPE_UNVERIFIED",
+      "assessment": "Written Twelve Data reply dated 2026-10-05 confirms conditional customer-facing display and non-reconstructable derived outputs, retention/deletion and attribution rules. Exact entity/account, feeds/venues/add-ons, replay/JetStream/backup rights and any CAPITAL-AI reseller/agency/sublicense/pass-through right remain unbound. Index pricing is explicitly unavailable.",
+      "status": "WRITTEN_CONDITIONAL_RIGHTS_CONTRACT_SCOPE_UNVERIFIED",
       "deployEligible": false,
       "contractEvidence": {
-        "contractOrPermissionReference": null,
+        "contractOrPermissionReference": "docs/market-data/evidence/twelve-data-rights-20261005.json",
         "applicableEntityAndRegion": null,
-        "subscriptionTierAndAddOns": null,
+        "subscriptionTierAndAddOns": "Venture (Business track) and above for standard customer-facing display; Enterprise + redistribution rights for raw/API redistribution; Enterprise+ / White Label for no-attribution white label; exact selected tier/add-ons unbound",
         "feedsSymbolsAndVenues": null,
-        "publicDisplayPermission": null,
-        "apiRedistributionPermission": null,
-        "derivedScoresAndResearchPermission": null,
-        "cacheAndRetentionLimits": null,
-        "exportAndResalePermission": null,
-        "requiredAttribution": null,
-        "validityAndReviewDate": null
+        "publicDisplayPermission": true,
+        "apiRedistributionPermission": false,
+        "derivedScoresAndResearchPermission": true,
+        "cacheAndRetentionLimits": "Storage/cache allowed for licensed purpose while subscribed; raw/source data must be deleted within 30 days after termination; non-reconstructable derived outputs may be retained; replay/JetStream/backup remain REVIEW_REQUIRED",
+        "exportAndResalePermission": false,
+        "requiredAttribution": "Customer-facing display requires Twelve Data attribution; provider reply allows 'Data provided by Twelve Data' with dofollow link or compact 'Source: Twelve Data'.",
+        "validityAndReviewDate": "WRITTEN_REPLY_2026-10-05; contract/entity/feed/add-on scope and third-party reseller/sublicense right remain unverified"
       },
-      "researchScope": "PRIMARY_SOURCE_SEARCH_EXCERPTS_NOT_ARCHIVED_EXECUTED_CONTRACT"
+      "researchScope": "WRITTEN_CONDITIONAL_COMMERCIAL_RIGHTS_NOT_EXECUTED_CONTRACT"
     },
     {
       "id": "polygon",
