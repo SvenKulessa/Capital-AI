@@ -235,7 +235,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
   const mobileVerifier = value =>
     /^[A-Za-z0-9._~-]{43,128}$/.test(String(value || '')) ? String(value) : '';
 
-  async function authRequest(config, path, { method = 'GET', body, accessToken } = {}) {
+  async function authRequest(config, path, { method = 'GET', body, accessToken, maxResponseBytes = 65_536 } = {}) {
     const headers = { Accept: 'application/json', apikey: config.publishableKey };
     if (body !== undefined) headers['Content-Type'] = 'application/json';
     if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
@@ -249,7 +249,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     let data = null;
     if (response.status !== 204) {
       try {
-        data = await boundedJson(response);
+        data = await boundedJson(response, maxResponseBytes);
       } catch {
         data = null;
       }
