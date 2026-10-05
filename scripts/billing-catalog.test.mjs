@@ -43,7 +43,7 @@ test('production pricing surface only renders catalog-backed products and standa
   assert.match(pricing, /PRICING_CATALOG\.pro\.label/);
   assert.match(pricing, /PRICING_CATALOG\.enterprise\.label/);
   assert.match(pricing, /Zusatzprodukte/);
-  assert.match(pricing, /Eigenständiges Entitlement/);
+  assert.match(pricing, /Separates Entitlement/);
   assert.match(pricing, /nicht Bestandteil von Starter,[\s\S]*Pro oder Enterprise/);
 
   assert.doesNotMatch(pricing, /In Pro &amp; Enterprise inklusive/);
