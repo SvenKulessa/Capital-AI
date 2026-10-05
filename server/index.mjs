@@ -14,6 +14,7 @@ import { createScorerProxy } from './scorer-proxy.mjs';
 import { serveMtaSts } from './mta-sts.mjs';
 import { serveWellKnown } from './well-known.mjs';
 import { researchMetadata } from '../shared/research-metadata.mjs';
+import { seoMetadataForPath } from '../shared/seo-metadata.mjs';
 import {
   isSeoIndexable,
   robotsDirectiveFor,
@@ -25,7 +26,6 @@ import { createSubscriptionCheckout } from './subscription-checkout.mjs';
 import { isBlockedPublicArtifactPath } from './public-artifact-policy.mjs';
 import { QUANT_PRO_IDS } from './vocabulary-quant-pro-index.mjs';
 import {
-  VOCABULARY_PUBLIC_COUNT,
   vocabularyMetadata,
   vocabularyMetadataByPath,
   vocabularyTitle,
@@ -68,20 +68,71 @@ const OWNER_ONLY_UI_PATHS = new Set(['/control-center', '/control', '/admin', '/
 function normalizedPublicPath(pathname) {
   return pathname.toLowerCase().replace(/\/+$/, '') || '/';
 }
-function canonicalUrlForPath(pathname) {
-  return pathname === '/' ? 'https://capital-ai.online/' : `https://capital-ai.online${pathname}`;
+const SEO_JSONLD_OPEN = '<script id="capital-ai-seo-jsonld" type="application/ld+json">';
+const SEO_JSONLD_CLOSE = '</script>';
+
+function removeSeoJsonLd(html) {
+  const start = html.indexOf(SEO_JSONLD_OPEN);
+  if (start < 0) return html;
+  const end = html.indexOf(SEO_JSONLD_CLOSE, start + SEO_JSONLD_OPEN.length);
+  if (end < 0) return html;
+  return html.slice(0, start) + html.slice(end + SEO_JSONLD_CLOSE.length);
 }
+
+function upsertSeoJsonLd(html, jsonLd) {
+  const safeJsonLd = JSON.stringify(jsonLd).replaceAll('<', '\\u003c');
+  const script = `${SEO_JSONLD_OPEN}${safeJsonLd}${SEO_JSONLD_CLOSE}`;
+  const start = html.indexOf(SEO_JSONLD_OPEN);
+
+  if (start >= 0) {
+    const end = html.indexOf(SEO_JSONLD_CLOSE, start + SEO_JSONLD_OPEN.length);
+    if (end >= 0) {
+      return html.slice(0, start) + script + html.slice(end + SEO_JSONLD_CLOSE.length);
+    }
+  }
+  return html.replace('</head>', `${script}\n  </head>`);
+}
+
+function injectSeoMetadata(html, pathname) {
+  const metadata = seoMetadataForPath(pathname);
+  if (!metadata) return html;
+
+  let body = html
+    .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(metadata.title)}</title>`)
+    .replace(/(<meta name="description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.description)}$2`)
+    .replace(/(<meta name="robots" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.robots)}$2`)
+    .replace(/(<link rel="canonical" href=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.canonical)}$2`)
+    .replace(/(<meta property="og:type" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.ogType)}$2`)
+    .replace(/(<meta property="og:site_name" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.ogSiteName)}$2`)
+    .replace(/(<meta property="og:locale" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.ogLocale)}$2`)
+    .replace(/(<meta property="og:title" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.title)}$2`)
+    .replace(/(<meta property="og:description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.description)}$2`)
+    .replace(/(<meta property="og:url" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.canonical)}$2`)
+    .replace(/(<meta property="og:image" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.ogImage)}$2`)
+    .replace(/(<meta property="og:image:alt" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.ogImageAlt)}$2`)
+    .replace(/(<meta name="twitter:card" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.twitterCard)}$2`)
+    .replace(/(<meta name="twitter:site" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.twitterSite)}$2`)
+    .replace(/(<meta name="twitter:title" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.title)}$2`)
+    .replace(/(<meta name="twitter:description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.description)}$2`)
+    .replace(/(<meta name="twitter:image" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.ogImage)}$2`)
+    .replace(/(<meta name="twitter:image:alt" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.ogImageAlt)}$2`);
+
+  body = upsertSeoJsonLd(body, metadata.jsonLd);
+  return body;
+}
+
 function applySeoIndexingPolicy(html, pathname) {
   const directive = robotsDirectiveFor(pathname);
   let body = html.replace(
     /(<meta name="robots" content=")[^"]*("\s*\/?>)/,
     `$1${directive}$2`,
   );
-  if (isSeoIndexable(pathname)) {
-    const canonicalUrl = canonicalUrlForPath(pathname);
+
+  if (!isSeoIndexable(pathname)) {
     body = body
-      .replace(/(<link rel="canonical" href=")[^"]*("\s*\/?>)/, `$1${canonicalUrl}$2`)
-      .replace(/(<meta property="og:url" content=")[^"]*("\s*\/?>)/, `$1${canonicalUrl}$2`);
+      .replace(/\s*<link rel="canonical" href="[^"]*"\s*\/?>/g, '')
+      .replace(/\s*<meta property="og:url" content="[^"]*"\s*\/?>/g, '');
+    body = removeSeoJsonLd(body);
   }
   return body;
 }
@@ -105,25 +156,6 @@ function injectVocabularySeo(html, pathname) {
   const description = entry ? vocabularyDescription(entry) : landing.description;
   const canonicalPath = entry ? entry.path : pathname;
   const canonicalUrl = `https://capital-ai.online${canonicalPath}`;
-  const schema = entry
-    ? {
-        '@context': 'https://schema.org',
-        '@type': 'DefinedTerm',
-        name: entry.term,
-        description: entry.description,
-        alternateName: entry.thesaurus,
-        termCode: entry.id,
-        url: canonicalUrl,
-        inDefinedTermSet: 'https://capital-ai.online/vocabulary',
-      }
-    : {
-        '@context': 'https://schema.org',
-        '@type': 'DefinedTermSet',
-        name: pathname === '/vocabulary' ? 'Capital-AI Vocabulary' : 'Capital-AI Learning Portal',
-        url: canonicalUrl,
-        numberOfItems: VOCABULARY_PUBLIC_COUNT,
-      };
-  const safeJsonLd = JSON.stringify(schema).replaceAll('<', '\\u003c');
   let body = html
     .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(title)}</title>`)
     .replace(/(<meta name="description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(description)}$2`)
@@ -132,8 +164,7 @@ function injectVocabularySeo(html, pathname) {
     .replace(/(<meta property="og:url" content=")[^"]*("\s*\/?>)/, `$1${canonicalUrl}$2`)
     .replace(/(<meta name="twitter:title" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(title)}$2`)
     .replace(/(<meta name="twitter:description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(description)}$2`)
-    .replace(/(<link rel="canonical" href=")[^"]*("\s*\/?>)/, `$1${canonicalUrl}$2`)
-    .replace('</head>', `<script type="application/ld+json">${safeJsonLd}</script></head>`);
+    .replace(/(<link rel="canonical" href=")[^"]*("\s*\/?>)/, `$1${canonicalUrl}$2`);
 
   const fallback = entry
     ? vocabularyFallback(entry)
@@ -141,8 +172,8 @@ function injectVocabularySeo(html, pathname) {
       ? vocabularyLandingFallback()
       : `<main><article><h1>Capital-AI Learning Portal</h1><p>${escapeHtml(description)}</p><p><a href="/vocabulary">Zum Vocabulary mit ${publicVocabularyCount} Fachbegriffen</a></p></article></main>`;
   body = body.replace(
-    /<div id="root">[\s\S]*?<script type="module"/,
-    `<div id="root">${fallback}</div>\n    <script type="module"`,
+    '<div id="root"></div>',
+    `<div id="root">${fallback}</div>`,
   );
   return body;
 }
@@ -261,9 +292,12 @@ export function createApp(root = defaultRoot, options = {}) {
     res.end();
     return;
   }
-  if (publicPath.startsWith('/vocabulary/') && !vocabularyMetadataByPath.has(publicPath)) {
-    res.writeHead(404, headers);
-    return res.end();
+  if (publicPath.startsWith('/vocabulary/')) {
+    const vocabularyEntry = vocabularyMetadataByPath.get(publicPath);
+    if (!vocabularyEntry || QUANT_PRO_IDS.has(vocabularyEntry.id)) {
+      res.writeHead(404, { ...headers, 'X-Robots-Tag': 'noindex, nofollow', 'Cache-Control': 'no-store' });
+      return res.end();
+    }
   }
 
   let asset;
@@ -292,6 +326,7 @@ export function createApp(root = defaultRoot, options = {}) {
         .replace(/(<link rel="canonical" href=")[^"]*("\s*\/?>)/, `$1https://capital-ai.online${researchPath}$2`));
     }
     if (path.extname(file) === '.html') {
+      body = Buffer.from(injectSeoMetadata(body.toString('utf8'), publicPath));
       body = Buffer.from(applySeoIndexingPolicy(body.toString('utf8'), publicPath));
     }
     res.writeHead(200, { ...headers, 'Cache-Control': path.extname(file) === '.html' ? 'no-store' : 'public, max-age=3600', 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(body);

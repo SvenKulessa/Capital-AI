@@ -1,5 +1,6 @@
-/** Generated SEO projection of the public Capital-AI vocabulary. No source-file provenance is exposed. */
-export const VOCABULARY_PUBLIC_COUNT = 294;
+/** Canonical vocabulary metadata. Quant/Pro product entries are not public Vocabulary routes. */
+export const VOCABULARY_CANONICAL_COUNT = 294;
+export const VOCABULARY_PUBLIC_COUNT = 132;
 
 export const vocabularyMetadata = [
   {

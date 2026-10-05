@@ -115,9 +115,9 @@ export class DataPlausibilityValidator {
       });
     }
 
-    if (result.isDemo && (result.eligibility || result.rank !== null || result.scoreEligible || result.rankEligible || result.alertEligible)) {
+    if (result.isDemo && (result.eligibility || result.rank !== null || result.scoreEligible || result.rankEligible || result.alertEligible || result.decisionEligible)) {
       violations.push({ ruleId: 'PLAU-DEMO-ELIGIBILITY', ruleDescription: 'Demo darf nicht actionable sein',
-        severity: 'CRITICAL_BLOCKER', entityId: result.assetId, details: 'Demo mit Eligibility/Ranking/Alert-Freigabe' });
+        severity: 'CRITICAL_BLOCKER', entityId: result.assetId, details: 'Demo mit Score/Ranking/Alert/Decision-Freigabe' });
     }
     return violations;
   }

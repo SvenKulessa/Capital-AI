@@ -4,6 +4,7 @@ import {
   vocabularyMetadata,
   vocabularyTitle,
 } from './vocabulary-metadata.mjs';
+import { QUANT_PRO_IDS } from './vocabulary-access-policy.mjs';
 import {
   SEO_INDEXING_STATES,
   resolveSeoIndexingPolicy,
@@ -191,7 +192,11 @@ const staticEntries = [
   }),
 ];
 
-const vocabularyEntries = vocabularyMetadata.map((entry) => contentEntry({
+export const SEO_PUBLIC_VOCABULARY_ENTRIES = Object.freeze(
+  vocabularyMetadata.filter((entry) => !QUANT_PRO_IDS.has(entry.id)),
+);
+
+const vocabularyEntries = SEO_PUBLIC_VOCABULARY_ENTRIES.map((entry) => contentEntry({
   path: entry.path,
   slug: `vocabulary-${entry.id}`,
   title: vocabularyTitle(entry),
@@ -225,7 +230,7 @@ export function validateSeoContentManifest() {
   const allowedDomains = new Set(['PRODUCT', 'MARKET', 'PLATFORM', 'TRUST', 'GROWTH']);
   const expectedPaths = new Set([
     ...seoIndexableStaticPaths(),
-    ...vocabularyMetadata.map((entry) => entry.path),
+    ...SEO_PUBLIC_VOCABULARY_ENTRIES.map((entry) => entry.path),
   ]);
 
   for (const entry of SEO_CONTENT_MANIFEST) {

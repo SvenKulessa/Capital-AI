@@ -17,13 +17,17 @@ baseline:
   target:
     repository: "SvenKulessa/Capital-AI"
     sha: "9c5fc40318cf538308724c2efb18441185e8cbae"
+  currentMainCorrelation:
+    sha: "8244a411b3b5b691adbb78ffdc5880aadd267113"
+    rootPolicy: "AGENTS.md@currentmain"
+    correlationState: "POINT_3_SOURCE_TARGET_MANIFEST_RECORRELATED_SOCIAL_FIRST"
   policy: "target-current-main-contracts-win"
 
 objectives:
   - "Migrate SocialMediaEngine contracts, editing, rendering, approval and distribution semantics without copying credentials or legacy identity state."
   - "Productize the Social Media Engine with licensed documentation and explicit third-party boundaries."
   - "Separate customer/commercial runtime from owner-private tooling."
-  - "Migrate selected advanced MARKET/Data components only where they strengthen the current Capital-AI evidence, feature, shadow and replay architecture."
+  - "Preserve selected advanced Finance MARKET/Data, scoring and weighting concepts as a deferred follow-up backlog; do not start their implementation before the Social Media Engine migration is completed."
   - "Preserve one scoring authority and one publishing authority."
 
 licenseModes:
@@ -137,6 +141,27 @@ migrationMatrix:
       action: "REWRITE_OR_DROP"
       targetRole: "must-not-weaken-current-rights-admission"
 
+followUpBacklog:
+  id: "CAPITAL-AI-FINANCE-SCORING-DATA-FOLLOWUP-01"
+  domain: "MARKET"
+  status: "BLOCKED_BY_SOCIAL_MEDIA_ENGINE_MIGRATION"
+  startGate: "Social Media Engine migration completed and cutover/validation evidence PASS"
+  retainedScope:
+    - "Finance scoring models"
+    - "Finance weighting models and factor-weight semantics"
+    - "ValidatedFinancialFeature and other already implemented Finance data concepts"
+    - "ScoringModelRegistry / ScoringDispatcher semantics for convergence into the single Capital-AI scoring authority"
+    - "UniversalAssetAdapter normalization concepts"
+    - "AnalysisConnectionRegistry capability/evidence concepts"
+    - "Pattern, sentiment, momentum, regime and research-model concepts"
+    - "Deterministic OHLC/candlestick concepts with admitted data provenance"
+  executionRules:
+    - "Fresh-read CURRENT_MAIN and AGENTS.md before starting."
+    - "No second productive scoring authority."
+    - "No provider/data-rights bypass."
+    - "Research-only models remain scoreEligible=false and decisionEligible=false until separately promoted."
+    - "Existing Capital-AI canonical contracts and MARKET_CLAIM_ELIGIBILITY remain authoritative."
+
 sequence:
   - "00_BASELINE_INVENTORY"
   - "01_TOOL_LICENSE_ADMISSION"
@@ -144,7 +169,7 @@ sequence:
   - "03_DETERMINISTIC_MEDIA_RENDERER"
   - "04_VOICE_ASR_PRIVATE_PARTITION"
   - "05_PUBLISHING_DISTRIBUTION"
-  - "06_MARKET_DATA_ADVANCED_MIGRATION"
+  - "06_SOCIAL_ENGINE_MIGRATION_COMPLETION_GATE"
   - "07_SOCIAL_MARKET_CONTENT_FACT"
   - "08_PRODUCT_LICENSED_DOCUMENTATION"
   - "09_VALIDATION_CUTOVER"
@@ -154,8 +179,14 @@ artifacts:
   toolAdmission: "CAPITAL-AI-GROWTH/social-media-tool-admission.yaml"
   productLicenseBoundary: "docs/licenses/SOCIAL-MEDIA-ENGINE-PRODUCT-LICENSE.md"
   roadmapProjection: "src/data/socialContentRoadmap.ts"
+  sourceTargetManifest: "CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json"
+  sourceTargetManifestValidator: "scripts/validate-finance-source-target-manifest.mjs"
+  sourceTargetManifestTest: "scripts/finance-source-target-manifest.test.mjs"
 
 validation:
+  status:
+    source-to-target-file-manifest: "MATERIALIZED_WITH_GIT_BLOB_SHA_GUARD"
+    remainingGates: "OPEN"
   required:
     - "source-to-target-file-manifest"
     - "license-and-rights-matrix"

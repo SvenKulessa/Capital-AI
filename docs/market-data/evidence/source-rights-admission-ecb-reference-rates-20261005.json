@@ -1,0 +1,311 @@
+{
+  "schema": "CAPITAL_AI_OPEN_DATA_RIGHTS_ADMISSION@1",
+  "providerId": "ecb-reference-rates",
+  "provider": "European Central Bank",
+  "observedAt": "2026-10-05T21:36:00+02:00",
+  "sourceMainSha": "85d45f9b1d2973f8e54066055dee0b241ba4fd71",
+  "ownerPolicy": "OPEN_SOURCE_AND_OPEN_DATA_ONLY",
+  "decision": "OPEN_DATA_RIGHTS_ADMITTED",
+  "runtimeAdmission": "BLOCKED_ADAPTER_NOT_IMPLEMENTED",
+  "dataset": {
+    "id": "ECB_EURO_FX_REFERENCE_RATES",
+    "name": "Euro foreign exchange reference rates",
+    "dataLicense": "LicenseRef-ECB-ESCB-STATISTICS-REUSE-2026",
+    "licenseEvidenceReference": "https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.en.html",
+    "copyrightEvidenceReference": "https://www.ecb.europa.eu/services/using-our-site/disclaimer/html/index.en.html",
+    "provenanceReference": "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html",
+    "methodologyReference": "https://www.ecb.europa.eu/stats/pdf/exchange/Frameworkfortheeuroforeignexchangereferencerates.en.pdf",
+    "snapshot": "REUSE_POLICY_AND_FX_FRAMEWORK_OBSERVED_2026-10-05",
+    "semantics": "DAILY_REFERENCE_RATE_INFORMATION_ONLY",
+    "realtime": false,
+    "executionPrice": false,
+    "transactionBenchmark": false,
+    "publicationCadence": "WORKING_DAY_AROUND_16_00_CET"
+  },
+  "rightsBasis": {
+    "commercialUse": true,
+    "freeReuse": true,
+    "publicDisplay": true,
+    "redistributionOfPublishedStatistic": true,
+    "derivedAnalytics": true,
+    "internalStorageAndReplay": true,
+    "conditions": [
+      "ATTRIBUTE_SOURCE_AS_ECB_STATISTICS",
+      "PRESERVE_ORIGINAL_PUBLISHED_STATISTIC_AND_METADATA",
+      "DISCLOSE_MODIFICATIONS_OR_DERIVED_CALCULATIONS",
+      "DO_NOT_TREAT_REFERENCE_RATE_AS_TRANSACTION_OR_EXECUTION_BENCHMARK",
+      "DO_NOT_REUSE_UNDERLYING_THIRD_PARTY_SOURCE_DATA",
+      "IF_ECB_INFORMATION_IS_SOLD_IN_A_PRODUCT_DISCLOSE_THAT_SOURCE_INFORMATION_IS_AVAILABLE_FREE_OF_CHARGE_FROM_ECB"
+    ]
+  },
+  "thirdPartyBoundary": {
+    "allowedObject": "ECB-published final reference-rate statistic",
+    "prohibitedObjects": [
+      "underlying transactional data from major FX platforms",
+      "underlying firm bid/offer quotes",
+      "third-party market data used by ECB during rate setting"
+    ],
+    "rationale": "CAPITAL-AI consumes only the final publicly released ECB statistic; it does not access or redistribute the third-party inputs used by the ECB to set that statistic."
+  },
+  "capabilities": {
+    "marketQuotes": {
+      "rightsEligible": true,
+      "semanticClass": "REFERENCE_RATE",
+      "realtime": false,
+      "publicDisplay": true
+    },
+    "scoringPriceInput": {
+      "rightsEligible": true,
+      "scope": "INFORMATION_AND_ANALYTICS_ONLY",
+      "decisionEligible": false,
+      "executionEligible": false,
+      "obligations": [
+        "ATTRIBUTE_ECB",
+        "DISCLOSE_DERIVED_CALCULATION"
+      ]
+    }
+  },
+  "useCases": {
+    "commercialWebDisplay": {
+      "allowed": true,
+      "evidenceReference": "https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.en.html"
+    },
+    "commercialMobileDisplay": {
+      "allowed": true,
+      "evidenceReference": "https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.en.html"
+    },
+    "derivedScoringRankingsAnalytics": {
+      "allowed": true,
+      "evidenceReference": "https://www.ecb.europa.eu/services/using-our-site/disclaimer/html/index.en.html"
+    },
+    "normalization": {
+      "allowed": true,
+      "evidenceReference": "https://www.ecb.europa.eu/services/using-our-site/disclaimer/html/index.en.html"
+    },
+    "cacheHotState": {
+      "allowed": true,
+      "evidenceReference": "https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.en.html"
+    },
+    "jetStreamPublication": {
+      "allowed": true,
+      "evidenceReference": "https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.en.html"
+    },
+    "replay": {
+      "allowed": true,
+      "evidenceReference": "https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.en.html"
+    },
+    "retention": {
+      "allowed": true,
+      "evidenceReference": "https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.en.html"
+    },
+    "backupRestore": {
+      "allowed": true,
+      "evidenceReference": "https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.en.html"
+    },
+    "auditEvidence": {
+      "allowed": true,
+      "evidenceReference": "https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.en.html"
+    },
+    "internalProcessing": {
+      "allowed": true,
+      "evidenceReference": "https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.en.html"
+    }
+  },
+  "instrumentManifestReference": "docs/market-data/evidence/instrument-manifest-20261005.json",
+  "instrumentEligibilityVerified": true,
+  "instrumentScope": [
+    {
+      "instrumentId": "fx:EUR-USD:ecb-reference",
+      "symbol": "EUR/USD",
+      "providerInstrumentId": "EUR/USD",
+      "venue": "ECB reference rates",
+      "instrumentType": "REFERENCE_RATE",
+      "tradingStatus": "REFERENCE_ONLY_NOT_EXECUTABLE"
+    },
+    {
+      "instrumentId": "fx:EUR-JPY:ecb-reference",
+      "symbol": "EUR/JPY",
+      "providerInstrumentId": "EUR/JPY",
+      "venue": "ECB reference rates",
+      "instrumentType": "REFERENCE_RATE",
+      "tradingStatus": "REFERENCE_ONLY_NOT_EXECUTABLE"
+    },
+    {
+      "instrumentId": "fx:EUR-CZK:ecb-reference",
+      "symbol": "EUR/CZK",
+      "providerInstrumentId": "EUR/CZK",
+      "venue": "ECB reference rates",
+      "instrumentType": "REFERENCE_RATE",
+      "tradingStatus": "REFERENCE_ONLY_NOT_EXECUTABLE"
+    },
+    {
+      "instrumentId": "fx:EUR-DKK:ecb-reference",
+      "symbol": "EUR/DKK",
+      "providerInstrumentId": "EUR/DKK",
+      "venue": "ECB reference rates",
+      "instrumentType": "REFERENCE_RATE",
+      "tradingStatus": "REFERENCE_ONLY_NOT_EXECUTABLE"
+    },
+    {
+      "instrumentId": "fx:EUR-GBP:ecb-reference",
+      "symbol": "EUR/GBP",
+      "providerInstrumentId": "EUR/GBP",
+      "venue": "ECB reference rates",
+      "instrumentType": "REFERENCE_RATE",
+      "tradingStatus": "REFERENCE_ONLY_NOT_EXECUTABLE"
+    },
+    {
+      "instrumentId": "fx:EUR-HUF:ecb-reference",
+      "symbol": "EUR/HUF",
+      "providerInstrumentId": "EUR/HUF",
+      "venue": "ECB reference rates",
+      "instrumentType": "REFERENCE_RATE",
+      "tradingStatus": "REFERENCE_ONLY_NOT_EXECUTABLE"
+    },
+    {
+      "instrumentId": "fx:EUR-PLN:ecb-reference",
+      "symbol": "EUR/PLN",
+      "providerInstrumentId": "EUR/PLN",
+      "venue": "ECB reference rates",
+      "instrumentType": "REFERENCE_RATE",
+      "tradingStatus": "REFERENCE_ONLY_NOT_EXECUTABLE"
+    },
+    {
+      "instrumentId": "fx:EUR-RON:ecb-reference",
+      "symbol": "EUR/RON",
+      "providerInstrumentId": "EUR/RON",
+      "venue": "ECB reference rates",
+      "instrumentType": "REFERENCE_RATE",
+      "tradingStatus": "REFERENCE_ONLY_NOT_EXECUTABLE"
+    },
+    {
+      "instrumentId": "fx:EUR-SEK:ecb-reference",
+      "symbol": "EUR/SEK",
+      "providerInstrumentId": "EUR/SEK",
+      "venue": "ECB reference rates",
+      "instrumentType": "REFERENCE_RATE",
+      "tradingStatus": "REFERENCE_ONLY_NOT_EXECUTABLE"
+    },
+    {
+      "instrumentId": "fx:EUR-CHF:ecb-reference",
+      "symbol": "EUR/CHF",
+      "providerInstrumentId": "EUR/CHF",
+      "venue": "ECB reference rates",
+      "instrumentType": "REFERENCE_RATE",
+      "tradingStatus": "REFERENCE_ONLY_NOT_EXECUTABLE"
+    },
+    {
+      "instrumentId": "fx:EUR-ISK:ecb-reference",
+      "symbol": "EUR/ISK",
+      "providerInstrumentId": "EUR/ISK",
+      "venue": "ECB reference rates",
+      "instrumentType": "REFERENCE_RATE",
+      "tradingStatus": "REFERENCE_ONLY_NOT_EXECUTABLE"
+    },
+    {
+      "instrumentId": "fx:EUR-NOK:ecb-reference",
+      "symbol": "EUR/NOK",
+      "providerInstrumentId": "EUR/NOK",
+      "venue": "ECB reference rates",
+      "instrumentType": "REFERENCE_RATE",
+      "tradingStatus": "REFERENCE_ONLY_NOT_EXECUTABLE"
+    },
+    {
+      "instrumentId": "fx:EUR-TRY:ecb-reference",
+      "symbol": "EUR/TRY",
+      "providerInstrumentId": "EUR/TRY",
+      "venue": "ECB reference rates",
+      "instrumentType": "REFERENCE_RATE",
+      "tradingStatus": "REFERENCE_ONLY_NOT_EXECUTABLE"
+    },
+    {
+      "instrumentId": "fx:EUR-AUD:ecb-reference",
+      "symbol": "EUR/AUD",
+      "providerInstrumentId": "EUR/AUD",
+      "venue": "ECB reference rates",
+      "instrumentType": "REFERENCE_RATE",
+      "tradingStatus": "REFERENCE_ONLY_NOT_EXECUTABLE"
+    },
+    {
+      "instrumentId": "fx:EUR-BRL:ecb-reference",
+      "symbol": "EUR/BRL",
+      "providerInstrumentId": "EUR/BRL",
+      "venue": "ECB reference rates",
+      "instrumentType": "REFERENCE_RATE",
+      "tradingStatus": "REFERENCE_ONLY_NOT_EXECUTABLE"
+    },
+    {
+      "instrumentId": "fx:EUR-CAD:ecb-reference",
+      "symbol": "EUR/CAD",
+      "providerInstrumentId": "EUR/CAD",
+      "venue": "ECB reference rates",
+      "instrumentType": "REFERENCE_RATE",
+      "tradingStatus": "REFERENCE_ONLY_NOT_EXECUTABLE"
+    },
+    {
+      "instrumentId": "fx:EUR-CNY:ecb-reference",
+      "symbol": "EUR/CNY",
+      "providerInstrumentId": "EUR/CNY",
+      "venue": "ECB reference rates",
+      "instrumentType": "REFERENCE_RATE",
+      "tradingStatus": "REFERENCE_ONLY_NOT_EXECUTABLE"
+    },
+    {
+      "instrumentId": "fx:EUR-HKD:ecb-reference",
+      "symbol": "EUR/HKD",
+      "providerInstrumentId": "EUR/HKD",
+      "venue": "ECB reference rates",
+      "instrumentType": "REFERENCE_RATE",
+      "tradingStatus": "REFERENCE_ONLY_NOT_EXECUTABLE"
+    },
+    {
+      "instrumentId": "fx:EUR-IDR:ecb-reference",
+      "symbol": "EUR/IDR",
+      "providerInstrumentId": "EUR/IDR",
+      "venue": "ECB reference rates",
+      "instrumentType": "REFERENCE_RATE",
+      "tradingStatus": "REFERENCE_ONLY_NOT_EXECUTABLE"
+    },
+    {
+      "instrumentId": "fx:EUR-ILS:ecb-reference",
+      "symbol": "EUR/ILS",
+      "providerInstrumentId": "EUR/ILS",
+      "venue": "ECB reference rates",
+      "instrumentType": "REFERENCE_RATE",
+      "tradingStatus": "REFERENCE_ONLY_NOT_EXECUTABLE"
+    }
+  ],
+  "failClosed": {
+    "adapterImplemented": false,
+    "networkIoAllowed": false,
+    "runtimeQuoteAdmission": false,
+    "scoreDisplayEnabled": false,
+    "scoreEligible": false,
+    "decisionEligible": false,
+    "realtimeClaimAllowed": false,
+    "executionClaimAllowed": false
+  },
+  "supersedesFinding": "ECB entry in docs/market-data/evidence/open-data-rights-addendum-20261005.json for rights classification only; historical evidence file remains immutable.",
+  "claimEligibilityBinding": {
+    "contract": "MARKET_CLAIM_ELIGIBILITY@1",
+    "contractPath": "src/contracts/marketClaimEligibility.ts",
+    "timeSemantics": "reference",
+    "providerState": {
+      "selectable": true,
+      "configured": false,
+      "admitted": false,
+      "runtimeReady": false
+    },
+    "expectedEligibility": {
+      "scoreEligible": false,
+      "rankEligible": false,
+      "alertEligible": false,
+      "decisionEligible": false
+    },
+    "expectedClaims": {
+      "realtime": false,
+      "productionReady": false
+    },
+    "rationale": "Rights admission does not imply runtime admission. ECB reference rates remain reference-only and fail closed for actionable claims until adapter/runtime/data/scoring evidence is separately verified."
+  }
+}
