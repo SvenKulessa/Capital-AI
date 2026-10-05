@@ -6,9 +6,11 @@ import path from 'node:path';
 import { createApp } from './index.mjs';
 import { researchMetadata } from '../shared/research-metadata.mjs';
 import {
+  VOCABULARY_CANONICAL_COUNT,
   VOCABULARY_PUBLIC_COUNT,
   vocabularyMetadata,
 } from '../shared/vocabulary-metadata.mjs';
+import { QUANT_PRO_IDS } from '../shared/vocabulary-access-policy.mjs';
 
 test('research deep links expose crawlable metadata without changing API boundaries', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'capital-research-'));
@@ -39,9 +41,12 @@ test('research deep links expose crawlable metadata without changing API boundar
 });
 
 
-test('vocabulary landing, 294 detail routes, sitemap and robots are crawlable without hydration', async () => {
-  assert.equal(VOCABULARY_PUBLIC_COUNT, 294);
-  assert.equal(vocabularyMetadata.length, 294);
+test('public Vocabulary routes stay crawlable without exposing owner-gated Quant/Pro entries', async () => {
+  assert.equal(VOCABULARY_CANONICAL_COUNT, 294);
+  assert.equal(VOCABULARY_PUBLIC_COUNT, 132);
+  assert.equal(vocabularyMetadata.length, VOCABULARY_CANONICAL_COUNT);
+  const publicEntries = vocabularyMetadata.filter((entry) => !QUANT_PRO_IDS.has(entry.id));
+  assert.equal(publicEntries.length, VOCABULARY_PUBLIC_COUNT);
 
   const root = await mkdtemp(path.join(tmpdir(), 'capital-vocabulary-'));
   await writeFile(path.join(root, 'index.html'), await readFile(new URL('../index.html', import.meta.url)));
@@ -53,10 +58,10 @@ test('vocabulary landing, 294 detail routes, sitemap and robots are crawlable wi
     const landingResponse = await fetch(origin + '/vocabulary');
     assert.equal(landingResponse.status, 200);
     const landingHtml = await landingResponse.text();
-    assert.match(landingHtml, /<title>Capital-AI Vocabulary \| 294 Fachbegriffe &amp; Thesaurus<\/title>/);
+    assert.match(landingHtml, /<title>Capital-AI Vocabulary \| 132 Fachbegriffe &amp; Thesaurus<\/title>/);
     assert.match(landingHtml, /href="https:\/\/capital-ai\.online\/vocabulary"/);
     assert.match(landingHtml, /"@type":"DefinedTermSet"/);
-    assert.match(landingHtml, /294 konsolidierte Capital-AI Fachbegriffe/);
+    assert.match(landingHtml, /132 konsolidierte Capital-AI Fachbegriffe/);
     assert.equal((landingHtml.match(/id="capital-ai-seo-jsonld"/g) || []).length, 1);
     assert.match(landingHtml, /href="\/vocabulary\/orderbuch"/);
 
@@ -75,11 +80,17 @@ test('vocabulary landing, 294 detail routes, sitemap and robots are crawlable wi
     assert.equal(sitemapResponse.status, 200);
     assert.match(sitemapResponse.headers.get('content-type') || '', /application\/xml/);
     const sitemap = await sitemapResponse.text();
-    assert.equal((sitemap.match(/<loc>https:\/\/capital-ai\.online\/vocabulary\//g) || []).length, 294);
+    assert.equal((sitemap.match(/<loc>https:\/\/capital-ai\.online\/vocabulary\//g) || []).length, VOCABULARY_PUBLIC_COUNT);
     assert.match(sitemap, /<loc>https:\/\/capital-ai\.online\/vocabulary<\/loc>/);
-    for (const entry of vocabularyMetadata) {
+    for (const entry of publicEntries) {
       assert.ok(sitemap.includes(`<loc>https://capital-ai.online${entry.path}</loc>`), entry.path);
     }
+    const ownerGatedEntry = vocabularyMetadata.find((entry) => QUANT_PRO_IDS.has(entry.id));
+    assert.ok(ownerGatedEntry);
+    assert.equal(sitemap.includes(`<loc>https://capital-ai.online${ownerGatedEntry.path}</loc>`), false);
+    const ownerGatedResponse = await fetch(origin + ownerGatedEntry.path);
+    assert.equal(ownerGatedResponse.status, 404);
+    assert.equal(ownerGatedResponse.headers.get('x-robots-tag'), 'noindex, nofollow');
 
     const robotsResponse = await fetch(origin + '/robots.txt');
     assert.equal(robotsResponse.status, 200);

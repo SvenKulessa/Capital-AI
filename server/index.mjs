@@ -24,7 +24,6 @@ import { BILLING_CATALOG } from './billing-catalog.mjs';
 import { createVocabularyCheckout } from './vocabulary-checkout.mjs';
 import { QUANT_PRO_IDS } from './vocabulary-quant-pro-index.mjs';
 import {
-  VOCABULARY_PUBLIC_COUNT,
   vocabularyMetadata,
   vocabularyMetadataByPath,
   vocabularyTitle,
@@ -284,9 +283,12 @@ export function createApp(root = defaultRoot, options = {}) {
     res.writeHead(200, { ...headers, 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
     return res.end(xml);
   }
-  if (publicPath.startsWith('/vocabulary/') && !vocabularyMetadataByPath.has(publicPath)) {
-    res.writeHead(404, headers);
-    return res.end();
+  if (publicPath.startsWith('/vocabulary/')) {
+    const vocabularyEntry = vocabularyMetadataByPath.get(publicPath);
+    if (!vocabularyEntry || QUANT_PRO_IDS.has(vocabularyEntry.id)) {
+      res.writeHead(404, { ...headers, 'X-Robots-Tag': 'noindex, nofollow', 'Cache-Control': 'no-store' });
+      return res.end();
+    }
   }
 
   let asset;
