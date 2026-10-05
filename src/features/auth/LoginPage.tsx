@@ -87,6 +87,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
 
+  useEffect(() => {
+    const recoveryError = new URLSearchParams(window.location.search).get('recovery_error');
+    if (recoveryError === 'invalid_link') {
+      setError('Der Passwort-Reset-Link ist ungültig oder unvollständig. Fordere bitte eine neue Reset-Mail an.');
+    } else if (recoveryError === 'verification_failed') {
+      setError('Der Passwort-Reset-Link ist abgelaufen oder wurde bereits verwendet. Fordere bitte eine neue Reset-Mail an.');
+    }
+  }, []);
+
   const passkeySupported = useMemo(
     () => typeof window !== 'undefined' && 'PublicKeyCredential' in window && !!navigator.credentials,
     [],
