@@ -98,13 +98,24 @@ export function createAuthSecurity({
     }
 
     if (action === 'email/verify') {
-      if (req.method !== 'GET') {
-        res.setHeader('Allow', 'GET');
+      if (req.method !== 'POST') {
+        res.setHeader('Allow', 'POST');
         json(res, 405, { error: 'method_not_allowed' });
         return true;
       }
-      const tokenHash = String(url.searchParams.get('token_hash') || '');
-      const type = String(url.searchParams.get('type') || '');
+      if (!sameOrigin(req)) {
+        json(res, 403, { error: 'forbidden_origin' });
+        return true;
+      }
+      let body;
+      try {
+        body = await readRequestJson(req);
+      } catch {
+        json(res, 400, { error: 'invalid_request' });
+        return true;
+      }
+      const tokenHash = String(body.tokenHash || '');
+      const type = String(body.type || '');
       if (!TOKEN_HASH_RE.test(tokenHash) || !EMAIL_VERIFY_TYPES.has(type)) {
         json(res, 400, { error: 'invalid_email_verification' });
         return true;
@@ -117,17 +128,14 @@ export function createAuthSecurity({
         json(res, 400, { error: 'email_verification_failed', code: upstreamCode(verified.data, 'verification_failed') });
         return true;
       }
-      if (verified.data?.access_token && verified.data?.refresh_token && verified.data?.user?.id) {
-        writeSessionCookies(req, res, config, verified.data);
+      if (!verified.data?.access_token || !verified.data?.refresh_token || !verified.data?.user?.id) {
+        json(res, 400, { error: 'email_verification_session_missing' });
+        return true;
       }
+      writeSessionCookies(req, res, config, verified.data);
       audit(`Supabase email verification completed for ${type}`);
-      const target = type === 'recovery' ? '/login?mode=reset' : '/profile';
-      res.writeHead(303, {
-        Location: target,
-        'Cache-Control': 'no-store',
-        'Referrer-Policy': 'no-referrer',
-      });
-      res.end();
+      const target = type === 'recovery' || type === 'invite' ? '/login?mode=reset' : '/profile';
+      json(res, 200, { verified: true, authenticated: true, next: target });
       return true;
     }
 
