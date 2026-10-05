@@ -1,7 +1,7 @@
 {
   "schema": "CAPITAL_AI_OPEN_DATA_RIGHTS_ADDENDUM@1",
-  "observedAt": "2026-10-05T02:08:00+02:00",
-  "sourceCommit": "8045c78956e163af3011ed47f734184aca14aa04",
+  "observedAt": "2026-10-05T02:36:00+02:00",
+  "sourceCommit": "caa2c14fb4b317529f7a05385ca11eb7016b7f8a",
   "ownerPolicy": "OPEN_SOURCE_AND_OPEN_DATA_ONLY",
   "findings": [
     {
@@ -59,16 +59,68 @@
       "commercialUse": false,
       "reason": "Community/free archive data are non-commercial; official archive states CC BY-NC 4.0.",
       "evidence": "https://github.com/coinmetrics/data"
+    },
+    {
+      "provider": "RepOD / Wątorek dataset",
+      "dataset": "140 cryptocurrency exchange rates in USDT, 1-minute, 2021-01-01 to 2024-09-30",
+      "status": "QUALIFIED_OPEN_LICENSE_SNAPSHOT_UPSTREAM_RIGHTS_REVIEW_REQUIRED",
+      "commercialUse": "CC0_DATASET_LICENSE_PRESENT",
+      "redistribution": "CC0_DATASET_LICENSE_PRESENT",
+      "derivedScoring": "REVIEW_REQUIRED_UPSTREAM_RIGHTS_CHAIN",
+      "cacheReplayRetention": "REVIEW_REQUIRED_UPSTREAM_RIGHTS_CHAIN",
+      "obligations": [
+        "VERIFY_UPSTREAM_EXCHANGE_RIGHTS_CHAIN",
+        "PIN_DATASET_VERSION_AND_FILE_HASH",
+        "NO_LIVE_FRESHNESS_CLAIM"
+      ],
+      "evidence": "https://repod.icm.edu.pl/dataset.xhtml?persistentId=doi:10.18150/WPGY4R"
+    },
+    {
+      "provider": "Zenodo / University of Ottawa authors",
+      "dataset": "Daily OHLCV for 20 S&P 500 equities and CBOE VIX, 1982-2025",
+      "status": "QUALIFIED_OPEN_LICENSE_SNAPSHOT_UPSTREAM_RIGHTS_REVIEW_REQUIRED",
+      "commercialUse": "CC_BY_4_0_DATASET_LICENSE_PRESENT",
+      "redistribution": "CC_BY_4_0_DATASET_LICENSE_PRESENT",
+      "derivedScoring": "REVIEW_REQUIRED_UPSTREAM_YAHOO_MARKET_DATA_RIGHTS",
+      "cacheReplayRetention": "REVIEW_REQUIRED_UPSTREAM_YAHOO_MARKET_DATA_RIGHTS",
+      "obligations": [
+        "CC_BY_4_0_ATTRIBUTION",
+        "INDICATE_CHANGES",
+        "VERIFY_UPSTREAM_MARKET_DATA_RIGHTS",
+        "NO_LIVE_FRESHNESS_CLAIM"
+      ],
+      "evidence": "https://zenodo.org/records/20192822"
+    },
+    {
+      "provider": "OECD",
+      "dataset": "Financial Market / Share prices indices",
+      "status": "OPEN_REUSE_FRAMEWORK_SERIES_LEVEL_REVIEW_REQUIRED",
+      "commercialUse": true,
+      "redistribution": "ALLOWED_UNLESS_SERIES_HAS_ADDITIONAL_OR_THIRD_PARTY_RESTRICTIONS",
+      "derivedScoring": "SERIES_LEVEL_REVIEW_REQUIRED",
+      "cacheReplayRetention": "SERIES_LEVEL_REVIEW_REQUIRED",
+      "obligations": [
+        "ATTRIBUTION",
+        "CHECK_SERIES_SOURCE_METADATA",
+        "OBTAIN_THIRD_PARTY_PERMISSION_IF_REQUIRED"
+      ],
+      "evidence": "https://www.oecd.org/en/about/terms-conditions.html",
+      "datasetEvidence": "https://www.oecd.org/en/data/indicators/share-prices.html"
     }
   ],
   "gateImpact": {
-    "crypto": "BLOCKED_NO_QUALIFYING_COMMERCIAL_OPEN_DATA_SPOT_OHLCV",
-    "stocks": "BLOCKED_NO_QUALIFYING_OPEN_DATA_PRICE_OHLCV",
-    "commodities": "REFERENCE_IDENTITY_AND_MONTHLY_DATA_PASS_SCORING_FAIL",
-    "forex": "REFERENCE_IDENTITY_AND_DAILY_DATA_PASS_SCORING_SEMANTICS_REVIEW",
-    "indices": "BLOCKED_NO_20_CASH_INDEX_RIGHTS_SET",
+    "crypto": "HISTORICAL_CC0_CANDIDATE_FOUND_BUT_UPSTREAM_RIGHTS_CHAIN_NOT_CLOSED",
+    "stocks": "HISTORICAL_CC_BY_CANDIDATE_FOUND_BUT_UPSTREAM_RIGHTS_CHAIN_NOT_CLOSED",
+    "commodities": "WORLD_BANK_REFERENCE_SERIES_OPEN_DATA_PASS_SCORING_SEMANTICS_NOT_SPOT",
+    "forex": "ECB_REFERENCE_RATES_REUSE_PASS_SCORING_SEMANTICS_REVIEW",
+    "indices": "OECD_REFERENCE_INDEX_CANDIDATE_REQUIRES_SERIES_LEVEL_SOURCE_REVIEW_NO_20_CASH_INDEX_ADMISSION",
     "perpetuals": "DERIBIT_EXCLUDED"
   },
-  "canonicalPayloadSha256": "fab21f80b32ed812393bc8dc4dbfed2020828f139d5bc86ca2d3770d52ada53c",
+  "currentMainCorrelation": {
+    "status": "CORRELATED_TO_CURRENT_MAIN",
+    "currentMain": "caa2c14fb4b317529f7a05385ca11eb7016b7f8a",
+    "productionAdmission": "BLOCKED"
+  },
+  "canonicalPayloadSha256": "fb7654ed339cb6beca27df0ee2f0a192580df9903b8579493f9b9ba94cd31c97",
   "hashScope": "UTF-8 JSON with lexicographically sorted keys and separators ',' ':' before adding hash fields"
 }
