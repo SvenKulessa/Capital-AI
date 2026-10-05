@@ -200,7 +200,7 @@ test('unconfigured Supabase auth fails closed without fake authentication', asyn
   }
 });
 
-test('Supabase email login is same-origin, backend-owned and redirects users to profile', async () => {
+test('Supabase email login is same-origin, backend-owned and returns a landing-page session', async () => {
   const h = await harness();
   try {
     assert.equal((await h.request('/api/auth/login/email', {
@@ -439,6 +439,21 @@ test('Market API rate limiting remains independent of spoofed forwarding headers
       })).status, 400);
     }
     assert.equal((await h.request('/api/market/quote?symbol=INVALID')).status, 429);
+  } finally {
+    await h.stop();
+  }
+});
+
+test('web Google login ignores caller-controlled next targets and returns to landing page', async () => {
+  const h = await harness();
+  try {
+    const start = await h.beginGoogle('/api/auth/login/google?next=%2Fcontrol-center');
+    const response = await h.request(
+      `/api/auth/callback?flow=${encodeURIComponent(start.callback.searchParams.get('flow'))}&code=test-code`,
+      { headers: { cookie: start.pkceCookie } },
+    );
+    assert.equal(response.status, 303);
+    assert.equal(response.headers.get('location'), '/');
   } finally {
     await h.stop();
   }
