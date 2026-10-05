@@ -328,11 +328,22 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
         <div>
           {/* Breadcrumb Hierarchy */}
           <div className="flex items-center gap-2 text-xs text-slate-400 mb-1.5 font-medium">
-            <span>Capital-AI Enterprise</span>
+            <button type="button" onClick={onBackToHome} className="hover:text-amber-300 transition-colors">
+              Capital-AI
+            </button>
             <span aria-hidden="true" className="text-slate-600">
               /
             </span>
-            <span className="text-amber-400 font-semibold">Learning Portal</span>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('glossar');
+                onNavigateTab?.('/learning');
+              }}
+              className="text-amber-400 font-semibold hover:text-amber-200 transition-colors"
+            >
+              Learning Portal
+            </button>
             <span aria-hidden="true" className="text-slate-600">
               /
             </span>
@@ -383,7 +394,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
         </div>
       </div>
 
-      {/* 2. SUBPAGE SIDEBAR (NACH RECHTS AUFKLAPPBAR) */}
+      {/* 2. SUBPAGE SIDEBOARD NAVIGATION */}
       <SubpageSidebarNav
         hubTitle="Learning Portal"
         items={subpageItems}
