@@ -3,7 +3,7 @@ import { strict as assert } from 'node:assert';
 let instance = 0;
 const isolated = async () => import(`./market.mjs?test=${++instance}`);
 import { infrastructure } from './infrastructure.mjs';
-import { MARKET_SOURCE_POLICY, admittedMarketSourcesFor, evaluateOpenSourceMarketAdmission, isAdmittedMarketSource } from './open-source-market-policy.mjs';
+import { MARKET_SOURCE_POLICY, admittedMarketSourcesFor, evaluateOpenDataRightsAdmission, evaluateOpenSourceMarketAdmission, isAdmittedMarketSource, isMarketSourceRightsAdmitted, rightsAdmittedMarketSourcesFor } from './open-source-market-policy.mjs';
 import { fetchOssAdapterHealth, getOssAdapterInventory } from './oss-provider-adapters.mjs';
 
 const original = { status: infrastructure.status, read: infrastructure.read, persist: infrastructure.persist };
@@ -124,11 +124,35 @@ test('Open-Source plus qualifying Open-Data evidence is required', () => {
   assert.equal(evaluateOpenSourceMarketAdmission(missingMobile).eligible, false);
 });
 
+
+
+test('ECB reference-rate rights admission remains runtime-blocked without an adapter', () => {
+  const rightsSource = MARKET_SOURCE_POLICY.rightsAdmittedSources.find(
+    source => source.providerId === 'ecb-reference-rates',
+  );
+  assert.ok(rightsSource);
+  assert.equal(rightsSource.decision, 'OPEN_DATA_RIGHTS_ADMITTED');
+  assert.equal(rightsSource.runtimeEligible, false);
+  assert.equal(rightsSource.capabilities.marketQuotes, true);
+  assert.equal(rightsSource.capabilities.scoringPriceInput, true);
+  assert.equal(rightsSource.capabilities.realtime, false);
+  assert.equal(rightsSource.capabilities.executionPrice, false);
+  assert.equal(rightsSource.capabilities.decisionEligible, false);
+  assert.equal(rightsAdmittedMarketSourcesFor('marketQuotes').length, 1);
+  assert.equal(rightsAdmittedMarketSourcesFor('scoringPriceInput').length, 1);
+  assert.equal(isMarketSourceRightsAdmitted('ecb-reference-rates', 'marketQuotes'), true);
+  assert.equal(isMarketSourceRightsAdmitted('ecb-reference-rates', 'scoringPriceInput'), true);
+  assert.equal(isAdmittedMarketSource('ecb-reference-rates', 'marketQuotes'), false);
+  assert.equal(admittedMarketSourcesFor('marketQuotes').length, 0);
+  assert.equal(admittedMarketSourcesFor('scoringPriceInput').length, 0);
+});
+
 test('runtime OSS adapter inventory excludes non-admitted proprietary data paths', async () => {
   const inventory=getOssAdapterInventory();
   const ids=inventory.map(x=>x.id);
   assert.deepEqual([...ids].sort(), ['ccxt','cryptofeed','hummingbot','openbb'].sort());
   assert.ok(inventory.every(x=>x.openDataAdmissionRequired===true));
+  assert.equal(MARKET_SOURCE_POLICY.rightsAdmittedSources.length,1);
   assert.equal(MARKET_SOURCE_POLICY.admittedSources.length,1);
   assert.equal(isAdmittedMarketSource('wikidata-reference'),true);
   assert.equal(isAdmittedMarketSource('wikidata-reference','referenceMetadata'),true);

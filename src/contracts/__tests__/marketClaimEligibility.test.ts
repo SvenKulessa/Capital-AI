@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import {
   MARKET_CLAIM_SCHEMA_VERSION,
@@ -101,4 +102,41 @@ test('Top-N and production-ready claims require explicit evidence instead of inf
   });
   assert.equal(production.claims.productionReady, true);
   assert.equal(production.claims.verifiedAssetCount, 20);
+});
+
+
+test('ECB rights admission remains reference-only and non-actionable in MARKET_CLAIM_ELIGIBILITY@1', () => {
+  const evidence = JSON.parse(readFileSync(
+    new URL('../../../docs/market-data/evidence/source-rights-admission-ecb-reference-rates-20261005.json', import.meta.url),
+    'utf8',
+  ));
+  const projection = evaluateMarketClaimEligibility({
+    schemaVersion: MARKET_CLAIM_SCHEMA_VERSION,
+    provider: {
+      providerId: evidence.providerId,
+      selectable: evidence.claimEligibilityBinding.providerState.selectable,
+      configured: evidence.claimEligibilityBinding.providerState.configured,
+      admitted: evidence.claimEligibilityBinding.providerState.admitted,
+      runtimeReady: evidence.claimEligibilityBinding.providerState.runtimeReady,
+    },
+    timeSemantics: evidence.claimEligibilityBinding.timeSemantics,
+    dataEvidenceVerified: true,
+    freshnessVerified: true,
+    instrumentManifestBound: true,
+    verifiedAssetCount: evidence.instrumentScope.length,
+    scoreEvidenceVerified: false,
+    rankEvidenceVerified: false,
+    alertEvidenceVerified: false,
+    decisionEvidenceVerified: false,
+    productionEvidenceVerified: false,
+  });
+  assert.equal(projection.dataState, 'reference');
+  assert.equal(projection.claims.realtime, false);
+  assert.equal(projection.claims.productionReady, false);
+  assert.deepEqual(projection.eligibility, {
+    scoreEligible: false,
+    rankEligible: false,
+    alertEligible: false,
+    decisionEligible: false,
+  });
 });

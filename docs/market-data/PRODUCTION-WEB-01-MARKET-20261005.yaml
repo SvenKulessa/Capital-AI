@@ -7,7 +7,7 @@ status: "ACTIVE_FAIL_CLOSED"
 correlatedAt: "2026-10-05"
 correlationBaseline:
   repository: "SvenKulessa/Capital-AI"
-  mainSha: "1517bb0807500da332d1d04ac452e9b421506443"
+  mainSha: "85d45f9b1d2973f8e54066055dee0b241ba4fd71"
   rootPolicy: "AGENTS.md@currentmain"
   roadmapSource: "src/data/roadmapData.ts"
   domainContract: "CAPITAL-AI-MARKET/PROJECT.md"
@@ -68,14 +68,17 @@ currentMainCorrelation:
     mode: "OPEN_SOURCE_AND_OPEN_DATA_ONLY"
     admittedReferenceSources:
       - "wikidata-reference"
+    rightsAdmittedMarketQuoteSourceCount: 1
+    rightsAdmittedScoringPriceInputSourceCount: 1
     admittedMarketQuoteSourceCount: 0
     admittedScoringPriceInputSourceCount: 0
-    productiveQuoteState: "BLOCKED"
-    productiveScoringState: "BLOCKED"
+    productiveQuoteState: "BLOCKED_PENDING_ADAPTER"
+    productiveScoringState: "BLOCKED_PENDING_ADAPTER_AND_SCORING_GATES"
     evidence:
       - "server/open-source-market-policy.mjs"
       - "docs/market-data/open-source-market-policy.json"
       - "docs/market-data/evidence/score-display-source-admission-20261004.json"
+      - "docs/market-data/evidence/source-rights-admission-ecb-reference-rates-20261005.json"
     commercialLicensedDataLane:
       state: "DEFINED_FAIL_CLOSED"
       contract: "src/contracts/commercialLicensedDataLane.ts"
@@ -223,7 +226,7 @@ chronologicalWork:
 
   - sequence: 3
     id: "03-MARKET-RIGHTS-ADMISSION"
-    state: "BLOCKED"
+    state: "RIGHTS_PASS_ECB_REFERENCE_RUNTIME_BLOCKED"
     goal: "Quellen- und Datenrechte capability- sowie instrumentspezifisch zulassen."
     implementation:
       - "Adapter-Softwarelizenz, Source-SHA, Lizenz-Blob und Packaging verifizieren."
@@ -233,7 +236,7 @@ chronologicalWork:
       - "COMMERCIAL_LICENSED_DATA je Provider separat zulassen; kein Mapping auf OPEN_SOURCE_OPEN_DATA_ADMITTED."
       - "Bei Vertrieb an Kunden über CAPITAL-AI zusätzlich Reseller-/Agency-/Sublicense-/Pass-through-Recht als Muss-Gate prüfen."
       - "Twelve Data: Customer Display und nicht rekonstruierbare Derived Scores als CONDITIONAL_RIGHTS führen; Index-Pricing BLOCKED; Raw-Deletion nach Vertragsende <= 30 Tage; Attribution verpflichtend; Replay/JetStream/Backup REVIEW_REQUIRED."
-    exitGate: "Mindestens eine Quelle PASS für marketQuotes; für Scoring zusätzlich scoringPriceInput PASS."
+    exitGate: "PASS: ECB-Referenzraten sind rechte-seitig für marketQuotes (REFERENCE_RATE) und scoringPriceInput (INFORMATION_AND_ANALYTICS_ONLY) zugelassen. Runtime-Admission bleibt bis 04-MARKET-PROVIDER-ADAPTERS gesperrt."
 
   - sequence: 4
     id: "04-MARKET-PROVIDER-ADAPTERS"
