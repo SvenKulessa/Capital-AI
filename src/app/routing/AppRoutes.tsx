@@ -61,6 +61,11 @@ const ControlCenterPage = lazy(() =>
     default: module.ControlCenterPage,
   })),
 );
+const BlueprintDocumentationPage = lazy(() =>
+  import('../../features/documentation/BlueprintDocumentationPage').then((module) => ({
+    default: module.BlueprintDocumentationPage,
+  })),
+);
 const EnterpriseScorerDashboard = lazy(() =>
   import('../../features/screener/EnterpriseScorerDashboard').then((module) => ({
     default: module.EnterpriseScorerDashboard,
@@ -174,10 +179,14 @@ export function AppRoutes({
     );
   }
 
+  if (currentRoute === '/marketscreener/dokumentation') {
+    return <BlueprintDocumentationPage onNavigate={navigateTo} />;
+  }
+
   if (currentRoute === '/screener' || currentRoute === '/marketscreener') {
     return (
       <div className="w-full text-slate-100 min-h-screen py-6 px-3 sm:px-6 space-y-6">
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div className="flex flex-col gap-3 border-b border-slate-800 pb-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2 text-xs text-slate-400 font-mono">
             <span>Capital-AI</span>
             <span>/</span>
@@ -185,13 +194,22 @@ export function AppRoutes({
               Enterprise Screener &amp; Scorer
             </span>
           </div>
-          <button
-            type="button"
-            onClick={() => navigateTo('/')}
-            className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs font-bold transition-all cursor-pointer"
-          >
-            ← Zurück zur Startseite
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => navigateTo('/marketscreener/dokumentation')}
+              className="px-3 py-1.5 rounded-xl border border-amber-400/30 bg-amber-400/10 hover:bg-amber-400/15 text-amber-200 text-xs font-bold transition-all cursor-pointer"
+            >
+              Dokumentation
+            </button>
+            <button
+              type="button"
+              onClick={() => navigateTo('/')}
+              className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs font-bold transition-all cursor-pointer"
+            >
+              ← Zurück zur Startseite
+            </button>
+          </div>
         </div>
         <EnterpriseScorerDashboard
           onSelectAsset={(symbol) => {

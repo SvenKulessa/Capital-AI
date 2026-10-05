@@ -1,6 +1,6 @@
 # BYOK / USER_PRIVATE_ACCOUNT_DATA Boundary
 
-Stand: 2026-10-04  
+Stand: 2026-10-05  
 Owner: PRODUCT, mit MARKET-/TRUST-Grenzen
 
 ## Zweck
@@ -148,5 +148,5 @@ Vor Production-Handoff müssen mindestens erfüllt sein:
 - Vault ACLs weiterhin server-only;
 - Kraken-Key mit ausschließlich benötigten Leserechten;
 - keine Secret-Werte in Browserantworten, Logs oder Evidenz;
-- drei unabhängige Validierungszyklen nach Projekt-Governance;
+- risikobasierte technische Gates und belastbare Evidence gemäß aktueller Root-Governance;
 - MARKET-Rechte-Gates bleiben unabhängig und fail-closed.
