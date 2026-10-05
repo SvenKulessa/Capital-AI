@@ -1,13 +1,37 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 72" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title desc" shape-rendering="geometricPrecision">
   <title id="title">CAPITAL-AI-GROWTH</title>
-  <desc id="desc">Gold and dark brown roadmap badge with a leaf and rising arrow.</desc>
-  <rect width="360" height="72" rx="18" fill="#100C03"/>
-  <rect x="6" y="6" width="60" height="60" rx="16" fill="#3B2B08"/>
-  <g fill="none" stroke="#F9BF21" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M20 49c4-17 13-26 29-28 2 16-6 27-24 31"/>
-    <path d="M23 50c8-11 15-17 25-23"/>
-    <path d="M35 44l8-8 7 2"/>
-    <path d="M43 36v8"/>
+  <desc id="desc">Quadratischer CAPITAL-AI-GROWTH Roadmap-Badge mit Blatt und aufsteigendem Pfeil.</desc>
+  <metadata>Copyright © 2026 Sven Michael Kulessa. LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0. CAPITAL-AI roadmap domain asset.</metadata>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="34%" r="78%">
+      <stop offset="0%" stop-color="#F9BF21" stop-opacity=".14"/>
+      <stop offset="42%" stop-color="#100C03"/>
+      <stop offset="100%" stop-color="#030405"/>
+    </radialGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFF1A8"/>
+      <stop offset="42%" stop-color="#F9BF21"/>
+      <stop offset="100%" stop-color="#F9BF21" stop-opacity=".38"/>
+    </linearGradient>
+    <linearGradient id="icon" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFF1A8"/>
+      <stop offset="52%" stop-color="#F9BF21"/>
+      <stop offset="100%" stop-color="#F9BF21" stop-opacity=".62"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect x="7" y="7" width="242" height="242" rx="34" fill="url(#bg)" stroke="url(#rim)" stroke-width="2.4"/>
+  <rect x="14" y="14" width="228" height="228" rx="29" fill="none" stroke="#FFFFFF" stroke-opacity=".08"/>
+  <path d="M35 24h144c25 0 44 19 44 43" fill="none" stroke="#FFFFFF" stroke-opacity=".15" stroke-width="4" stroke-linecap="round"/>
+  <g transform="translate(0 -7)" fill="none" stroke="url(#icon)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
+    <path d="M77 159c12-50 41-79 89-84 7 47-18 82-73 91"/>
+    <path d="M87 159c25-34 48-53 78-70"/>
+    <path d="M126 140l25-25 22 7"/>
+    <path d="M151 115v25"/>
   </g>
-  <text x="86" y="44" fill="#F8FAFC" font-family="Inter,Arial,sans-serif" font-size="23" font-weight="700" letter-spacing=".4">CAPITAL-AI-GROWTH</text>
+  <line x1="48" y1="185" x2="208" y2="185" stroke="#F9BF21" stroke-opacity=".18"/>
+  <text x="128" y="221" text-anchor="middle" fill="#F8FAFC" font-family="Inter,Arial,sans-serif" font-size="23" font-weight="700" letter-spacing="2">GROWTH</text>
 </svg>
