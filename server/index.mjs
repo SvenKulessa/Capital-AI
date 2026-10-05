@@ -14,6 +14,7 @@ import { createScorerProxy } from './scorer-proxy.mjs';
 import { serveMtaSts } from './mta-sts.mjs';
 import { serveWellKnown } from './well-known.mjs';
 import { researchMetadata } from '../shared/research-metadata.mjs';
+import { seoMetadataForPath } from '../shared/seo-metadata.mjs';
 import {
   isSeoIndexable,
   robotsDirectiveFor,
@@ -66,20 +67,51 @@ const OWNER_ONLY_UI_PATHS = new Set(['/control-center', '/control', '/admin', '/
 function normalizedPublicPath(pathname) {
   return pathname.toLowerCase().replace(/\/+$/, '') || '/';
 }
-function canonicalUrlForPath(pathname) {
-  return pathname === '/' ? 'https://capital-ai.online/' : `https://capital-ai.online${pathname}`;
+function injectSeoMetadata(html, pathname) {
+  const metadata = seoMetadataForPath(pathname);
+  if (!metadata) return html;
+
+  const safeJsonLd = JSON.stringify(metadata.jsonLd).replaceAll('<', '\\u003c');
+  let body = html
+    .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(metadata.title)}</title>`)
+    .replace(/(<meta name="description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.description)}$2`)
+    .replace(/(<meta name="robots" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.robots)}$2`)
+    .replace(/(<link rel="canonical" href=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.canonical)}$2`)
+    .replace(/(<meta property="og:type" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.ogType)}$2`)
+    .replace(/(<meta property="og:site_name" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.ogSiteName)}$2`)
+    .replace(/(<meta property="og:locale" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.ogLocale)}$2`)
+    .replace(/(<meta property="og:title" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.title)}$2`)
+    .replace(/(<meta property="og:description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.description)}$2`)
+    .replace(/(<meta property="og:url" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.canonical)}$2`)
+    .replace(/(<meta property="og:image" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.ogImage)}$2`)
+    .replace(/(<meta property="og:image:alt" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.ogImageAlt)}$2`)
+    .replace(/(<meta name="twitter:card" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.twitterCard)}$2`)
+    .replace(/(<meta name="twitter:site" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.twitterSite)}$2`)
+    .replace(/(<meta name="twitter:title" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.title)}$2`)
+    .replace(/(<meta name="twitter:description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.description)}$2`)
+    .replace(/(<meta name="twitter:image" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.ogImage)}$2`)
+    .replace(/(<meta name="twitter:image:alt" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.ogImageAlt)}$2`)
+    .replace(/\s*<script[^>]*type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/g, '');
+
+  body = body.replace(
+    '</head>',
+    `<script id="capital-ai-seo-jsonld" type="application/ld+json">${safeJsonLd}</script>\n  </head>`,
+  );
+  return body;
 }
+
 function applySeoIndexingPolicy(html, pathname) {
   const directive = robotsDirectiveFor(pathname);
   let body = html.replace(
     /(<meta name="robots" content=")[^"]*("\s*\/?>)/,
     `$1${directive}$2`,
   );
-  if (isSeoIndexable(pathname)) {
-    const canonicalUrl = canonicalUrlForPath(pathname);
+
+  if (!isSeoIndexable(pathname)) {
     body = body
-      .replace(/(<link rel="canonical" href=")[^"]*("\s*\/?>)/, `$1${canonicalUrl}$2`)
-      .replace(/(<meta property="og:url" content=")[^"]*("\s*\/?>)/, `$1${canonicalUrl}$2`);
+      .replace(/\s*<link rel="canonical" href="[^"]*"\s*\/?>/g, '')
+      .replace(/\s*<meta property="og:url" content="[^"]*"\s*\/?>/g, '')
+      .replace(/\s*<script[^>]*type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/g, '');
   }
   return body;
 }
@@ -283,6 +315,7 @@ export function createApp(root = defaultRoot, options = {}) {
         .replace(/(<link rel="canonical" href=")[^"]*("\s*\/?>)/, `$1https://capital-ai.online${researchPath}$2`));
     }
     if (path.extname(file) === '.html') {
+      body = Buffer.from(injectSeoMetadata(body.toString('utf8'), publicPath));
       body = Buffer.from(applySeoIndexingPolicy(body.toString('utf8'), publicPath));
     }
     res.writeHead(200, { ...headers, 'Cache-Control': path.extname(file) === '.html' ? 'no-store' : 'public, max-age=3600', 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(body);
