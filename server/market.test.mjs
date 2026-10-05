@@ -21,6 +21,16 @@ test('unsupported symbols are rejected before source admission', async () => {
   assert.equal(body.error, 'unsupported_symbol');
 });
 
+test('asset values remain fail-closed without an admitted quote source', async () => {
+  const {assetValues} = await isolated();
+  const [status, body] = await assetValues();
+  assert.equal(status, 503);
+  assert.equal(body.schema, 'CAPITAL_AI_ASSET_VALUES@1');
+  assert.equal(body.status, 'BLOCKED');
+  assert.equal(body.reason, 'NO_ADMITTED_MARKET_QUOTE_SOURCE');
+  assert.deepEqual(body.values, []);
+});
+
 test('allowed symbols perform no external provider request without admitted open data', async () => {
   const {quote} = await isolated();
   const originalFetch = globalThis.fetch;
