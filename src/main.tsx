@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { AppErrorBoundary, BootstrapFailure } from './shared/ui/AppErrorBoundary';
+import { AppErrorBoundary } from './shared/ui/AppErrorBoundary';
+import App from './App.tsx';
 import './index.css';
 
 const host = document.getElementById('root');
@@ -10,20 +11,10 @@ if (!host) {
 
 const root = createRoot(host);
 
-void import('./App.tsx')
-  .then(({ default: App }) => {
-    root.render(
-      <StrictMode>
-        <AppErrorBoundary>
-          <App />
-        </AppErrorBoundary>
-      </StrictMode>,
-    );
-  })
-  .catch(() => {
-    root.render(
-      <StrictMode>
-        <BootstrapFailure />
-      </StrictMode>,
-    );
-  });
+root.render(
+  <StrictMode>
+    <AppErrorBoundary>
+      <App />
+    </AppErrorBoundary>
+  </StrictMode>,
+);
