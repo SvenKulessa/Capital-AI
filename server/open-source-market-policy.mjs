@@ -39,6 +39,22 @@ export const MARKET_SOURCE_POLICY = Object.freeze({
         scoringPriceInput:false,
       }),
     }),
+    Object.freeze({
+      providerId:'faironchain-open-price',
+      decision:'OPEN_SOURCE_OPEN_DATA_ADMITTED',
+      eligible:true,
+      scope:'HISTORICAL_DELAYED_PRICE_DATA',
+      dataLicense:'CC-BY-4.0',
+      evidenceReference:'docs/market-data/evidence/source-admission-faironchain-historical-20261005.json',
+      instrumentManifestReference:'docs/market-data/evidence/faironchain-eth-usd-historical-manifest-20261005.json',
+      capabilities:Object.freeze({
+        referenceMetadata:false,
+        historicalPriceInput:true,
+        marketQuotes:false,
+        mobileCryptoUniverse:false,
+        scoringPriceInput:false,
+      }),
+    }),
   ]),
   blockedLegacyProviderPaths:Object.freeze([
     'binance','kraken','twelvedata','polygon','massive','financialdatanet','yfinance','coingecko',
