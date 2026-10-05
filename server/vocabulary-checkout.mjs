@@ -1,8 +1,11 @@
+import { readFile } from 'node:fs/promises';
 import { boundedJson, secureUrl } from './http-security.mjs';
 
 const DEFAULT_VOCABULARY_PRICE_ID = 'price_1UMiuIPKr4joNbEclpn8AwFW';
 const DEFAULT_VOCABULARY_PRODUCT_ID = 'prod_VNTsrtlf2ZL8ja';
 const SKU = 'market-vocabulary';
+const VOCABULARY_BADGE_PATH = new URL('../CAPITAL-AI-PRODUCT/badge.svg', import.meta.url);
+const VOCABULARY_BADGE_LICENSE_PATH = new URL('../docs/licenses/CAPITAL-AI-VOCABULARY-BADGE-CUSTOMER-LICENSE-1.0.md', import.meta.url);
 
 function adminConfig(env) {
   try {
@@ -136,6 +139,52 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
           json(res, 200, { authenticated: true, ...state });
         } catch {
           json(res, 503, { error: 'vocabulary_access_unavailable' });
+        }
+        return true;
+      }
+
+      if (url.pathname === '/api/billing/vocabulary/badge' && req.method === 'GET') {
+        const user = await requireUser(req, res, json);
+        if (!user) return true;
+        try {
+          const state = await access(user.userId);
+          if (!state?.quantProEntitled) {
+            json(res, 403, { error: 'vocabulary_entitlement_required' });
+            return true;
+          }
+          const badge = await readFile(VOCABULARY_BADGE_PATH);
+          res.writeHead(200, {
+            'Content-Type': 'image/svg+xml; charset=utf-8',
+            'Content-Disposition': 'attachment; filename="capital-ai-market-vocabulary-badge.svg"',
+            'Cache-Control': 'private, no-store',
+            'X-Content-Type-Options': 'nosniff',
+          });
+          res.end(badge);
+        } catch {
+          json(res, 503, { error: 'vocabulary_badge_unavailable' });
+        }
+        return true;
+      }
+
+      if (url.pathname === '/api/billing/vocabulary/badge-license' && req.method === 'GET') {
+        const user = await requireUser(req, res, json);
+        if (!user) return true;
+        try {
+          const state = await access(user.userId);
+          if (!state?.quantProEntitled) {
+            json(res, 403, { error: 'vocabulary_entitlement_required' });
+            return true;
+          }
+          const license = await readFile(VOCABULARY_BADGE_LICENSE_PATH);
+          res.writeHead(200, {
+            'Content-Type': 'text/markdown; charset=utf-8',
+            'Content-Disposition': 'attachment; filename="CAPITAL-AI-VOCABULARY-BADGE-LICENSE.md"',
+            'Cache-Control': 'private, no-store',
+            'X-Content-Type-Options': 'nosniff',
+          });
+          res.end(license);
+        } catch {
+          json(res, 503, { error: 'vocabulary_badge_license_unavailable' });
         }
         return true;
       }
