@@ -238,8 +238,8 @@ export const StudioPage: React.FC<StudioPageProps> = ({
       id: 'benchmark',
       label: 'Benchmark Lab',
       icon: <Gauge className="w-4 h-4 text-cyan-400" />,
-      badge: 'Sub-45ms',
-      desc: 'Live Stress-Testing & Conflation',
+      badge: 'Evidence',
+      desc: 'Benchmark-Konzept mit evidenzgebundener Validierung',
     },
   ];
 
@@ -277,9 +277,6 @@ export const StudioPage: React.FC<StudioPageProps> = ({
               <Building2 className="w-6 h-6 text-cyan-400 shrink-0" />
               <span>Capital-AI Studio Hub</span>
             </h1>
-            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
-              STUDIO HUB v2.5
-            </span>
           </div>
         </div>
 
