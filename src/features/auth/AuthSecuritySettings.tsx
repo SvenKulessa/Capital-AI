@@ -16,6 +16,7 @@ interface PasskeyItem {
 interface TotpFactor {
   id: string;
   type: 'totp';
+  status: 'verified' | 'unverified';
   friendlyName: string;
   createdAt: string | null;
   updatedAt: string | null;
@@ -54,6 +55,7 @@ export function AuthSecuritySettings() {
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [passkeyAvailability, setPasskeyAvailability] = useState<'checking' | 'enabled' | 'disabled' | 'unavailable'>('checking');
 
   const passkeySupported = useMemo(
     () => typeof window !== 'undefined' && 'PublicKeyCredential' in window && !!navigator.credentials,
@@ -75,8 +77,22 @@ export function AuthSecuritySettings() {
     ]);
     const passkeyBody = await readJson(passkeyResponse);
     const factorBody = await readJson(factorResponse);
-    if (passkeyResponse.ok) setPasskeys(Array.isArray(passkeyBody?.passkeys) ? passkeyBody.passkeys : []);
-    if (factorResponse.ok) setFactors(Array.isArray(factorBody?.factors) ? factorBody.factors : []);
+
+    if (passkeyResponse.ok) {
+      setPasskeys(Array.isArray(passkeyBody?.passkeys) ? passkeyBody.passkeys : []);
+      setPasskeyAvailability('enabled');
+    } else if (passkeyBody?.code === 'passkey_disabled') {
+      setPasskeys([]);
+      setPasskeyAvailability('disabled');
+    } else {
+      setPasskeyAvailability('unavailable');
+    }
+
+    if (factorResponse.ok) {
+      setFactors(Array.isArray(factorBody?.factors) ? factorBody.factors : []);
+    } else {
+      throw new Error(factorBody?.error || 'mfa_factors_unavailable');
+    }
   };
 
   useEffect(() => {
@@ -112,7 +128,13 @@ export function AuthSecuritySettings() {
       setNotice('Passkey wurde erfolgreich registriert.');
       await refresh();
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Passkey konnte nicht registriert werden.');
+      const message = reason instanceof Error ? reason.message : 'passkey_registration_failed';
+      if (message === 'passkey_disabled' || message === 'passkey_unavailable') {
+        setPasskeyAvailability('disabled');
+        setError('Passkeys sind im produktiven Supabase-Auth-Projekt derzeit noch nicht aktiviert.');
+      } else {
+        setError(`Passkey konnte nicht registriert werden: ${message}`);
+      }
     } finally {
       setBusy('');
     }
@@ -146,7 +168,15 @@ export function AuthSecuritySettings() {
       setEnrollment(result.body as TotpEnrollment);
       setTotpCode('');
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Authenticator konnte nicht vorbereitet werden.');
+      const message = reason instanceof Error ? reason.message : 'totp_enrollment_failed';
+      if (message === 'mfa_factor_name_conflict') {
+        setError('Eine unvollständige Authenticator-Einrichtung mit diesem Namen existiert bereits. Entferne sie unten oder starte die Einrichtung erneut.');
+      } else if (message === 'totp_pending_cleanup_failed') {
+        setError('Die unvollständige Authenticator-Einrichtung konnte nicht sicher bereinigt werden.');
+      } else {
+        setError(`Authenticator konnte nicht vorbereitet werden: ${message}`);
+      }
+      await refresh().catch(() => {});
     } finally {
       setBusy('');
     }
@@ -223,6 +253,17 @@ export function AuthSecuritySettings() {
             Phishing-resistente Anmeldung über Gerätebiometrie, PIN oder Hardware-Sicherheitsschlüssel.
           </p>
 
+          {passkeyAvailability === 'disabled' && (
+            <div className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-[11px] leading-relaxed text-amber-100">
+              Passkeys sind im produktiven Supabase-Auth-Projekt noch deaktiviert. Der Button wird erst freigegeben, wenn die Remote-Passkey-/WebAuthn-Konfiguration aktiviert und erneut gelesen wurde.
+            </div>
+          )}
+          {passkeyAvailability === 'unavailable' && (
+            <div className="mt-3 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-[11px] leading-relaxed text-rose-100">
+              Der aktuelle Passkey-Status konnte nicht sicher gelesen werden.
+            </div>
+          )}
+
           <label className="mt-4 block text-[11px] font-bold text-slate-300">
             Anzeigename
             <input
@@ -234,7 +275,7 @@ export function AuthSecuritySettings() {
           </label>
           <button
             type="button"
-            disabled={!passkeySupported || !!busy}
+            disabled={!passkeySupported || passkeyAvailability !== 'enabled' || !!busy}
             onClick={() => void addPasskey()}
             className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-cyan-400 px-3 text-xs font-black text-black disabled:opacity-40"
           >
@@ -340,17 +381,26 @@ export function AuthSecuritySettings() {
 
           <div className="mt-4 space-y-2">
             {factors.map(item => (
-              <div key={item.id} className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/30 p-3">
+              <div
+                key={item.id}
+                className={`flex items-center justify-between gap-3 rounded-xl border p-3 ${
+                  item.status === 'verified'
+                    ? 'border-emerald-500/20 bg-emerald-500/5'
+                    : 'border-amber-500/25 bg-amber-500/5'
+                }`}
+              >
                 <div className="min-w-0">
                   <p className="truncate text-xs font-bold text-slate-200">{item.friendlyName || 'Authenticator'}</p>
-                  <p className="mt-1 text-[10px] text-emerald-300">Aktiv · TOTP</p>
+                  <p className={`mt-1 text-[10px] ${item.status === 'verified' ? 'text-emerald-300' : 'text-amber-300'}`}>
+                    {item.status === 'verified' ? 'Aktiv · TOTP' : 'Einrichtung unvollständig · TOTP'}
+                  </p>
                 </div>
                 <button
                   type="button"
                   disabled={!!busy}
                   onClick={() => void removeTotp(item.id)}
                   className="rounded-lg border border-rose-500/25 bg-rose-500/10 p-2 text-rose-200 disabled:opacity-40"
-                  aria-label="Authenticator deaktivieren"
+                  aria-label={item.status === 'verified' ? 'Authenticator deaktivieren' : 'Unvollständige Authenticator-Einrichtung entfernen'}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
