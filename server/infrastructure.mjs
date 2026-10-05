@@ -4,7 +4,7 @@ import { connect } from '@nats-io/transport-node';
 import { jetstream, jetstreamManager, StorageType, DiscardPolicy } from '@nats-io/jetstream';
 import { QuoteFactSchema, QuoteDeliverySchema, isFresh } from '../shared/market-contracts.mjs';
 import { CanonicalMarketEventSchema, CanonicalMarketDeliverySchema, CANONICAL_MARKET_STREAM, canonicalMarketSubject } from '../shared/canonical-market-events.mjs';
-import { isAdmittedMarketSource } from './open-source-market-policy.mjs';
+import { admittedMarketSourcesFor, isAdmittedMarketSource } from './open-source-market-policy.mjs';
 import { observeCadsOperation } from './cads-observability.mjs';
 
 const STREAM = 'CAPITAL_FACTS';
@@ -160,6 +160,13 @@ export class MarketInfrastructure {
     const event = CanonicalMarketEventSchema.parse(input);
     if (!isAdmittedMarketSource(event.provenance.providerId, 'marketQuotes')) {
       throw new Error('CANONICAL_PROVIDER_NOT_ADMITTED');
+    }
+    const admittedSource = admittedMarketSourcesFor('marketQuotes')
+      .find(source => source.providerId === event.provenance.providerId);
+    if (!admittedSource ||
+        admittedSource.evidenceReference !== event.provenance.rightsEvidenceReference ||
+        admittedSource.instrumentManifestReference !== event.instrumentManifestReference) {
+      throw new Error('CANONICAL_ADMISSION_EVIDENCE_MISMATCH');
     }
     if (!this.js || !this.manager || !this.nc || this.nc.isClosed() || !this.natsConnected) {
       throw new Error('INFRASTRUCTURE_UNAVAILABLE');
