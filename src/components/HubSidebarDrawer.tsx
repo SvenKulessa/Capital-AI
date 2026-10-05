@@ -404,6 +404,7 @@ interface HubSidebarDrawerProps {
   onOpenSectorAnalysis?: () => void;
   onOpenModule?: (moduleId: string) => void;
   onOpenPriceAlerts?: () => void;
+  allowControlCenter?: boolean;
 }
 
 export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
@@ -416,6 +417,7 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
   onOpenSectorAnalysis,
   onOpenModule,
   onOpenPriceAlerts,
+  allowControlCenter = false,
 }) => {
   // Close on Escape key
   useEffect(() => {
@@ -426,11 +428,16 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  const activeHub = MAIN_HUBS_CONFIG[activeHubId] || MAIN_HUBS_CONFIG.marketscreener;
+  const effectiveHubId = activeHubId === 'control-center' && !allowControlCenter
+    ? 'marketscreener'
+    : activeHubId;
+  const activeHub = MAIN_HUBS_CONFIG[effectiveHubId] || MAIN_HUBS_CONFIG.marketscreener;
+  const visibleHubIds = (Object.keys(MAIN_HUBS_CONFIG) as MainHubId[])
+    .filter(hubId => hubId !== 'control-center' || allowControlCenter);
 
   const handleSubpageClick = (subpage: HubSubpageConfig) => {
     onClose();
-    if (activeHubId === 'marketscreener') {
+    if (effectiveHubId === 'marketscreener') {
       if (subpage.id === 'buffett') {
         if (onOpenModule) onOpenModule('buffett-value');
         else onNavigate?.('/marketscreener');
@@ -537,7 +544,7 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
 
               {/* 4 RUNDE ACTION BUTTONS ZUM SCHNELLEN WECHSEL DER HUBS IN DER SIDEBAR */}
               <div className="grid grid-cols-4 gap-1.5 pt-1">
-                {(Object.keys(MAIN_HUBS_CONFIG) as MainHubId[]).map((hubId) => {
+                {visibleHubIds.map((hubId) => {
                   const hub = MAIN_HUBS_CONFIG[hubId];
                   const isSelected = hubId === activeHubId;
                   return (

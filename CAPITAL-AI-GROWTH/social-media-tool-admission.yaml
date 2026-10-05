@@ -1,0 +1,205 @@
+schemaVersion: "SOCIAL_MEDIA_TOOL_ADMISSION@1"
+id: "CAPITAL-AI-SOCIAL-TOOL-ADMISSION-20261005"
+status: "INITIAL_FAIL_CLOSED_INVENTORY"
+workPackage: "CAPITAL-AI-FINANCE-SOCIAL-MARKET-MIGRATION-01"
+
+baseline:
+  sourceRepository: "SvenKulessa/Finance"
+  sourceSha: "dcef421fe6e350a3a2ade61d0299aad9ecca213c"
+  targetRepository: "SvenKulessa/Capital-AI"
+  targetMainSha: "9c5fc40318cf538308724c2efb18441185e8cbae"
+
+admissionModes:
+  COMMERCIAL_PRODUCT_BUNDLE:
+    customerArtifactAllowed: true
+    commercialOutputAllowed: true
+    requiresRedistributionEvidence: true
+  COMMERCIAL_INTERNAL_SERVICE:
+    customerArtifactAllowed: false
+    commercialOutputAllowed: true
+    requiresServiceUseEvidence: true
+  OWNER_PRIVATE_COMMERCIAL_ALLOWED:
+    customerArtifactAllowed: false
+    commercialOutputAllowed: true
+    ownerOnly: true
+  OWNER_PRIVATE_NONCOMMERCIAL_ONLY:
+    customerArtifactAllowed: false
+    commercialOutputAllowed: false
+    ownerOnly: true
+  RESEARCH_ONLY:
+    customerArtifactAllowed: false
+    commercialOutputAllowed: false
+  BLOCKED_UNKNOWN:
+    customerArtifactAllowed: false
+    commercialOutputAllowed: false
+
+runtimePolicy:
+  defaultMode: "BLOCKED_UNKNOWN"
+  denyOnMissingLicenseEvidence: true
+  denyOnArtifactHashMismatch: true
+  denyOnUnknownTransitiveLicense: true
+  denyOnCommercialIntentForNonCommercialArtifact: true
+  denyOwnerRoleAsLicenseOverride: true
+  separateCodeModelDataAndOutputRights: true
+  customerRuntimeMayLoadOwnerPrivateTools: false
+  customerExportMayContainOwnerPrivateArtifacts: false
+
+tools:
+  - id: "d3"
+    componentType: "library"
+    financeUse: "planning-visual-layout"
+    initialMode: "COMMERCIAL_PRODUCT_BUNDLE"
+    licenseSurface: "ISC"
+    exactArtifactRecheckRequired: true
+    noticeRequired: true
+
+  - id: "pillow"
+    componentType: "library"
+    financeUse: "deterministic-image-frame-rendering"
+    initialMode: "COMMERCIAL_PRODUCT_BUNDLE"
+    licenseSurface: "permissive"
+    exactArtifactRecheckRequired: true
+    noticeRequired: true
+
+  - id: "ffmpeg"
+    componentType: "runtime-binary"
+    financeUse: "video-audio-assembly-probe"
+    initialMode: "BLOCKED_UNKNOWN"
+    reason: "License depends on exact build configuration, enabled codecs and linked components."
+    exactBuildConfigRequired: true
+    denyEnableNonfree: true
+    gplBuildRequiresSeparatePackagingDecision: true
+
+  - id: "poppler"
+    componentType: "runtime-binary"
+    financeUse: "pdf-rasterization"
+    initialMode: "BLOCKED_UNKNOWN"
+    reason: "Exact distribution/build/license obligations must be established for the target packaging model."
+    exactArtifactRecheckRequired: true
+
+  - id: "qwen3-tts-code"
+    componentType: "source-library"
+    financeUse: "tts"
+    initialMode: "COMMERCIAL_INTERNAL_SERVICE"
+    licenseSurface: "Apache-2.0 code surface"
+    exactArtifactRecheckRequired: true
+    modelWeightsSeparatelyAdmitted: false
+
+  - id: "qwen3-tts-weights"
+    componentType: "model-weights"
+    financeUse: "tts"
+    initialMode: "BLOCKED_UNKNOWN"
+    exactArtifactRecheckRequired: true
+    reason: "Exact model/revision license must be bound independently of the code repository."
+
+  - id: "chatterbox-code"
+    componentType: "source-library"
+    financeUse: "tts"
+    initialMode: "COMMERCIAL_INTERNAL_SERVICE"
+    licenseSurface: "MIT code surface"
+    exactArtifactRecheckRequired: true
+    modelWeightsSeparatelyAdmitted: false
+
+  - id: "chatterbox-checkpoints"
+    componentType: "model-weights"
+    financeUse: "tts"
+    initialMode: "BLOCKED_UNKNOWN"
+    exactArtifactRecheckRequired: true
+
+  - id: "f5-tts-code"
+    componentType: "source-library"
+    financeUse: "tts-research"
+    initialMode: "COMMERCIAL_INTERNAL_SERVICE"
+    licenseSurface: "MIT code surface"
+    exactArtifactRecheckRequired: true
+    modelWeightsSeparatelyAdmitted: false
+
+  - id: "f5-tts-official-pretrained-weights"
+    componentType: "model-weights"
+    financeUse: "tts-research"
+    initialMode: "OWNER_PRIVATE_NONCOMMERCIAL_ONLY"
+    licenseSurface: "CC-BY-NC-4.0"
+    commercialOutputAllowed: false
+    customerArtifactAllowed: false
+    reason: "Non-commercial weights cannot be used for commercial product/customer/marketing output merely because execution is owner-private."
+
+  - id: "openai-whisper"
+    componentType: "model-runtime"
+    financeUse: "asr-evidence"
+    initialMode: "BLOCKED_UNKNOWN"
+    exactCodeAndModelArtifactRecheckRequired: true
+    note: "Do not infer model-weight rights from Python package metadata."
+
+  - id: "faster-whisper"
+    componentType: "source-library"
+    financeUse: "asr-transcript-verification-candidate"
+    initialMode: "COMMERCIAL_INTERNAL_SERVICE"
+    licenseSurface: "MIT code surface"
+    exactModelArtifactRecheckRequired: true
+
+  - id: "comfyui"
+    componentType: "workflow-runtime"
+    financeUse: "optional-local-generative-workflows"
+    initialMode: "RESEARCH_ONLY"
+    licenseSurface: "GPL-3.0"
+    customerArtifactAllowed: false
+    commercialRuntimePotential: true
+    requiresCopyleftPackagingReview: true
+    note: "Commercial use is not the same as safe inclusion in a proprietary customer bundle."
+
+  - id: "moneyprinterturbo"
+    componentType: "reference-orchestrator"
+    financeUse: "short-video-reference"
+    initialMode: "RESEARCH_ONLY"
+    licenseSurface: "MIT core surface"
+    exactArtifactRecheckRequired: true
+    transitiveProviderRightsRequired: true
+
+  - id: "musetalk"
+    componentType: "lip-sync-model-runtime"
+    financeUse: "future-ugc"
+    initialMode: "BLOCKED_UNKNOWN"
+    upstreamCommercialClaimPresent: true
+    testDataNonCommercial: true
+    exactDependencyAndModelArtifactRecheckRequired: true
+    customerArtifactAllowed: false
+
+  - id: "wan2.2"
+    componentType: "generative-video-model"
+    financeUse: "future-t2v-i2v"
+    initialMode: "BLOCKED_UNKNOWN"
+    upstreamLicenseSurface: "Apache-2.0 model repository"
+    exactModelVariantAndDependencyRecheckRequired: true
+    customerArtifactAllowed: false
+
+  - id: "remotion"
+    componentType: "video-framework"
+    financeUse: "evaluated-not-baseline"
+    initialMode: "BLOCKED_UNKNOWN"
+    specialCommercialLicense: true
+    customerArtifactAllowed: false
+    reason: "Entity/use-case eligibility and redistribution/derivative restrictions require a current, explicit license decision before use."
+
+contentRights:
+  requireForEveryGeneratedAsset:
+    - "source_content_rights"
+    - "model_or_tool_runtime_rights"
+    - "input_asset_rights"
+    - "output_commercial_use_rights"
+    - "brand_and_persona_rights_if_applicable"
+    - "market_data_claim_rights_if_financial_content"
+  prohibited:
+    - "infer_rights_from_repository_license_only"
+    - "infer_output_rights_from_code_license"
+    - "use_noncommercial_artifact_for_paid_customer_or_marketing_output"
+    - "ship_owner_private_models_or_weights_to_customers"
+
+evidenceRequiredBeforePromotion:
+  - "official_upstream_and_exact_revision"
+  - "artifact_sha256_or_registry_integrity"
+  - "license_text_and_spdx_or_license_ref"
+  - "transitive_dependency_inventory"
+  - "security_advisory_and_supply_chain_review"
+  - "notice_and_attribution_obligations"
+  - "commercial_use_and_redistribution_decision"
+  - "runtime_isolation_test"

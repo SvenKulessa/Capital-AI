@@ -71,6 +71,13 @@ test('index loads the app directly and exposes the fail-closed shell only on a b
   assert.doesNotMatch(bootstrap, /setTimeout|setInterval/);
 });
 
+test('TOTP QR rendering preserves already encoded data URLs', async () => {
+  const source = await readFile(new URL('../src/features/auth/AuthSecuritySettings.tsx', import.meta.url), 'utf8');
+  assert.match(source, /enrollment\.qrCode\.startsWith\('data:'\)/);
+  assert.match(source, /\? enrollment\.qrCode/);
+  assert.match(source, /data:image\/svg\+xml;charset=utf-8/);
+});
+
 test('research pages render source links and never grant project entitlements', () => {
   const markup = renderToStaticMarkup(React.createElement(ResearchLicensePages, { route: '/datenprovider-lizenzen', onNavigate() {} }));
   for (const provider of researchProviders) {

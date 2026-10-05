@@ -3,6 +3,34 @@ import type { WorkPackage } from './roadmapData';
 
 export const SOCIAL_CONTENT_WORK_PACKAGES: WorkPackage[] = [
   {
+    "id": "CA-GROWTH-FIN-SOC-MARKET-MIGRATION",
+    "title": "Finance Social Media Engine und fortgeschrittene MARKET/Data-Komponenten migrieren",
+    "owner": "GROWTH",
+    "status": "planning",
+    "phase": 4,
+    "phaseName": "Phase 4: DevSecOps, Supply Chain & Release Candidate",
+    "progressPercent": null,
+    "evidenceState": "OFFEN",
+    "evidenceRefs": [
+      "https://github.com/SvenKulessa/Capital-AI/blob/8a08f938a519fbf3379749fd9ac59e182851e655/CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.md"
+    ],
+    "nextStep": "PORT/REWRITE/REPLACE/DROP-Inventar und Tool-Admission-Matrix abarbeiten; erst danach Runtime-Komponenten migrieren.",
+    "priority": "Kritisch",
+    "leadName": "Owner + GROWTH/MARKET/PLATFORM/TRUST/PRODUCT",
+    "targetSprint": "Sequenziell nach Lizenz-, Datenrechte- und Security-Gates",
+    "description": "Finance-SocialMediaEngine und selektive fortgeschrittene MARKET/Data-Funktionen werden gegen CURRENT_MAIN migriert. Kommerzieller Kundenpfad und Owner-private Tool-Runtime bleiben strikt getrennt; Non-Commercial-Artefakte dürfen keine kommerziellen Outputs erzeugen.",
+    "deliverables": [
+      "SocialMediaEngine Contracts, Editing, deterministischen Media- und Publishing-Pfad zielkonform migrieren.",
+      "Maschinenlesbare Tool-/Lizenz-Zulassung mit Commercial-, Owner-private-, Research- und BLOCKED-Modi durchsetzen.",
+      "Validated-Financial-Feature-, Pattern-, Sentiment-, Momentum- und Regime-Komponenten ohne zweite Scoring-Authority integrieren.",
+      "Lizenzierte Produktdokumentation und Third-Party-Notices für den auslieferbaren Funktionsumfang bereitstellen."
+    ],
+    "dependencies": [
+      "CA-GROWTH-SOC-MIGRATION",
+      "CA-TRUST-SOC-RIGHTS"
+    ]
+  },
+  {
     "id": "CA-GROWTH-SOC-MIGRATION",
     "title": "Social Media Engine aus Finance prüfen und Migration vorbereiten",
     "owner": "GROWTH",

@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "brace-expansion": "5.0.12",
-    "ip-address": "10.7.2",
+    "ip-address": "10.7.3",
     "undici": "6.29.0"
   }
 }
