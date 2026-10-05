@@ -368,9 +368,11 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
             ))}
             <section aria-disabled="true" className="pointer-events-none select-none opacity-45 rounded-2xl border border-cyan-400/30 bg-cyan-500/10 p-4">
               <div className="flex items-center gap-3">
-                <div className="h-16 w-16 rounded-xl border border-cyan-300/20 bg-[#06202a] flex items-center justify-center text-[10px] font-black text-cyan-200 text-center px-1">
-                  DATA<br/>PIPELINE<br/>BLUEPRINT
-                </div>
+                <img
+                  src="/branding/badges/data-pipeline-blueprint.svg"
+                  alt="Data Pipeline Blueprint Badge"
+                  className="h-16 w-16 rounded-xl border border-cyan-300/20 bg-[#06202a] p-1"
+                />
                 <div>
                   <div className="text-xs font-black text-cyan-200">Data Pipeline Blueprint</div>
                   <p className="mt-1 text-xs text-slate-300">
