@@ -91,6 +91,7 @@
 !docs/
 !docs/licenses/
 !docs/licenses/**
+!docs/licenses/CAPITAL-AI-VOCABULARY-BADGE-CUSTOMER-LICENSE-1.0.md
 !docs/security/
 !docs/security/evidence/
 !docs/security/evidence/license-rights-review.json
