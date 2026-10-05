@@ -15,6 +15,17 @@ export function validateStreamConfig(config, replicas) {
 }
 export const QUOTE_CHANNEL = 'capital:quote:events:v1';
 export const payloadHash = payload => createHash('sha256').update(JSON.stringify(payload)).digest('hex');
+export function natsConnectionAuth(env = process.env) {
+  const user = String(env.NATS_APP_USER || '').trim();
+  const pass = String(env.NATS_APP_PASSWORD || '').trim();
+  if (user || pass) {
+    if (!user || !pass) throw new Error('NATS_SCOPED_CREDENTIALS_INCOMPLETE');
+    return { user, pass, mode: 'scoped_user' };
+  }
+  const token = String(env.NATS_TOKEN || '').trim();
+  if (token) return { token, mode: 'legacy_token' };
+  throw new Error('NATS_CREDENTIALS_REQUIRED');
+}
 export class MarketInfrastructure {
   constructor(env = process.env) { this.env = env; this.redis = null; this.nc = null; this.js = null; this.manager = null; this.natsConnected = false; this.state = 'unavailable'; this.opening = null; this.subscriber = null; this.listeners = new Set(); this.pendingSymbols = new Set(); this.subscribing = null; this.pubsubEnabled = env.MARKET_PUBSUB_ENABLED !== 'false'; this.deliveryMetrics = { verified: 0, lastVerifiedDeliveryAt: null, lastVerifiedSymbol: null }; }
   async start() {
@@ -26,7 +37,11 @@ export class MarketInfrastructure {
   async open() {
     if (!this.env.REDIS_URL) return false;
     // Never fall back to an anonymous connection when the configured broker is reachable.
-    if (this.env.NATS_URL && !this.env.NATS_TOKEN?.trim()) { await this.close(); return false; }
+    let natsAuth = null;
+    if (this.env.NATS_URL) {
+      try { natsAuth = natsConnectionAuth(this.env); }
+      catch { await this.close(); return false; }
+    }
     // A cache connection is useful independently; it is never durable evidence.
     if (this.redis?.isReady && !this.env.NATS_URL) { this.state = 'degraded'; return false; }
     try {
@@ -37,7 +52,9 @@ export class MarketInfrastructure {
       await observeCadsOperation({ layer:'network', service:'valkey', operation:'connect' }, () => this.redis.connect());
       if (this.listeners.size) await this.ensureSubscriber();
       if (!this.env.NATS_URL) { this.state = 'degraded'; return false; }
-      this.nc = await observeCadsOperation({ layer:'network', service:'nats', operation:'connect' }, () => connect({ servers: this.env.NATS_URL, token: this.env.NATS_TOKEN,
+      const { mode: natsAuthMode, ...credentials } = natsAuth;
+      this.natsAuthMode = natsAuthMode;
+      this.nc = await observeCadsOperation({ layer:'network', service:'nats', operation:'connect' }, () => connect({ servers: this.env.NATS_URL, ...credentials,
         timeout: 3000, maxReconnectAttempts: 3, reconnectTimeWait: 1000 }));
       this.natsConnected = true;
       const connection = this.nc;
@@ -76,7 +93,8 @@ export class MarketInfrastructure {
     verifiedDeliveries: this.deliveryMetrics.verified,
     lastVerifiedDeliveryAt: this.deliveryMetrics.lastVerifiedDeliveryAt,
     lastVerifiedSymbol: this.deliveryMetrics.lastVerifiedSymbol,
-    stream: STREAM, storage: 'file', replicasConfigured: Number(this.env.NATS_REPLICAS || 1) }; }
+    stream: STREAM, storage: 'file', replicasConfigured: Number(this.env.NATS_REPLICAS || 1),
+    authMode: this.natsAuthMode || 'unconfigured' }; }
   async subscribeQuotes(listener) {
     if (typeof listener !== 'function') throw new TypeError('INVALID_QUOTE_LISTENER');
     if (this.listeners.size >= 32) throw new Error('PUBSUB_LISTENER_LIMIT');
@@ -166,7 +184,7 @@ export class MarketInfrastructure {
     this.subscriber = null;
     if (this.redis?.isOpen) this.redis.destroy();
     await this.nc?.close();
-    this.redis = null; this.nc = null; this.js = null; this.manager = null; this.natsConnected = false; this.state = 'unavailable';
+    this.redis = null; this.nc = null; this.js = null; this.manager = null; this.natsConnected = false; this.natsAuthMode = null; this.state = 'unavailable';
   }
 }
 export const infrastructure = new MarketInfrastructure();
