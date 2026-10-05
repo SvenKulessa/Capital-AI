@@ -900,6 +900,7 @@ export const Header: React.FC<HeaderProps> = ({
         onOpenSectorAnalysis={onOpenSectorAnalysis}
         onOpenModule={onOpenModule}
         onOpenPriceAlerts={onOpenPriceAlerts}
+        allowControlCenter={isOwner}
       />
     </header>
   );
