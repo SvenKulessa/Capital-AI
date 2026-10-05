@@ -117,8 +117,15 @@ function buildPayload(shell, definitions) {
 function validatePayload(payload) {
   const serialized = JSON.stringify(payload);
   if (!serialized.includes('{{ .TokenHash }}')) throw new Error('TOKEN_HASH_LINKS_MISSING');
-  if (!payload.mailer_templates_recovery_content.includes('type=recovery')) throw new Error('RECOVERY_LINK_INVALID');
-  if (!payload.mailer_templates_confirmation_content.includes('type=signup')) throw new Error('CONFIRMATION_LINK_INVALID');
+  if (!payload.mailer_templates_recovery_content.includes('#email_action=recovery&token_hash={{ .TokenHash }}')) {
+    throw new Error('RECOVERY_LINK_INVALID');
+  }
+  if (!payload.mailer_templates_confirmation_content.includes('#email_action=signup&token_hash={{ .TokenHash }}')) {
+    throw new Error('CONFIRMATION_LINK_INVALID');
+  }
+  if (serialized.includes('/api/auth/email/verify?token_hash=')) {
+    throw new Error('PREFETCH_SENSITIVE_EMAIL_LINK_FORBIDDEN');
+  }
   if (serialized.includes('SUPABASE_ACCESS_TOKEN') || serialized.includes('smtp_pass') || serialized.includes('smtp_user')) {
     throw new Error('SECRET_MATERIAL_FORBIDDEN');
   }
