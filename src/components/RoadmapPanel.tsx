@@ -44,13 +44,13 @@ export const RoadmapPanel: React.FC = () => {
           type="button"
           aria-pressed={selected}
           onClick={() => setOwner(current => current === project.id ? '' : project.id)}
-          className={`rounded-xl border bg-slate-950/70 p-2 text-left transition ${project.badgeColor} ${selected ? 'ring-2 ring-current' : 'hover:bg-slate-900'}`}
+          className={`rounded-xl border bg-slate-950/70 p-2 text-left transition flex items-center justify-center ${project.badgeColor} ${selected ? 'ring-2 ring-current' : 'hover:bg-slate-900'}`}
           title={project.description}
         >
           <img
             src={project.badgeAsset}
             alt={`${project.label} Branding-Badge`}
-            className="block h-auto w-full max-w-[360px]"
+            className="block h-24 w-24 sm:h-28 sm:w-28"
           />
         </button>;
       })}
@@ -86,7 +86,7 @@ export const RoadmapPanel: React.FC = () => {
               src={project.badgeAsset}
               alt={`${project.label} Branding-Badge`}
               loading="lazy"
-              className="h-auto w-full max-w-[280px] sm:max-w-[240px]"
+              className="h-20 w-20 shrink-0 sm:h-24 sm:w-24"
             />}
             <span className={`self-start text-xs rounded-full border px-2 py-1 ${STATES[item.evidenceState].style}`}>{STATES[item.evidenceState].label}</span>
           </div>

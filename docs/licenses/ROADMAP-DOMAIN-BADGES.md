@@ -1,49 +1,20 @@
 # CAPITAL-AI Roadmap-Domain-Badges — Lizenz & Provenienz
 
-**Stand:** 2026-10-04  
+**Stand:** 2026-10-05  
 **Ziel-Repository:** `SvenKulessa/Capital-AI`  
-**Ausgangsbaseline:** `main@984a374910a8065ef6580c90441e0b63e8fecbd8`  
-**Finance-Referenz:** `SvenKulessa/Finance@dcef421fe6e350a3a2ade61d0299aad9ecca213c`
+**Ausgangsbaseline:** `main@ea79af5feb5de24b064db5bd24cf9775712cfe56`  
+**Finance-Referenz:** `SvenKulessa/Finance@dcef421fe6e350a3a2ade61d0299aad9ecca213c`  
+**Rechteinhaber:** **Sven Michael Kulessa**  
+**Lizenz:** `LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0`
 
-## Zweck
-
-Die fünf primären CAPITAL-AI-Domains erhalten je ein eigenes, skalierbares Branding-Badge direkt im jeweiligen Domain-Ordner. Die Roadmap verwendet diese Assets als sichtbare Domain-Labels auf Desktop und Mobile.
-
-## Social-Media-Engine-Korrelation
-
-Die Gestaltung und Einbindung ist gegen die aktuelle Finance-SocialMediaEngine-Baseline korreliert. Relevante Flächen:
-
-- `src/platform/SocialMediaEngine/Contracts/MediaProject.ts`
-- `src/platform/SocialMediaEngine/Editing/MediaStudioTemplates.ts`
-- `src/platform/SocialMediaEngine/Visualization/PlanningVisual.ts`
-- `src/platform/SocialMediaEngine/Visualization/D3PlanningVisualAdapter.ts`
-- `docs/frontend/design-tokens.json`
-
-Die Finance-Engine fordert für Brand-/Planning-Visuals deterministische Brand-Token-Herkunft, Offline-/lokale Renderbarkeit und getrennte Publishing-Authority. Die neuen SVGs folgen diesem Modell: keine Netzwerkabhängigkeit, keine extern eingebetteten Assets, keine Publishing-Authority.
-
-## Assets
+Die fünf kanonischen Domains PRODUCT, MARKET, PLATFORM, TRUST und GROWTH werden in der Roadmap als quadratische SVG-Badges (`256 × 256`, `viewBox 0 0 256 256`) dargestellt. Die Assets sind offline renderbar, enthalten keine Rastereinbettung, Netzressourcen oder externen Fontdateien und sind über SHA-256 gebunden.
 
 | Domain | Asset | SHA-256 | Lizenzdatei |
 | --- | --- | --- | --- |
-| PRODUCT | `CAPITAL-AI-PRODUCT/badge.svg` | `fc343ec0fc91d6da1e335be7d72bbaeea988f6dead418dbb5ea03105d47432ce` | `CAPITAL-AI-PRODUCT/produkt.LICENSE.md` |
-| TRUST | `CAPITAL-AI-TRUST/badge.svg` | `2b037fd897c592931c94fcee8781af398d2ac6564e3575d4cf3ee62c770e7dad` | `CAPITAL-AI-TRUST/trust.LICENSE.md` |
-| MARKET | `CAPITAL-AI-MARKET/badge.svg` | `22655ab6a7f19e5d100832dd39126ea661f41abe5609dca6db58b00fd1462c13` | `CAPITAL-AI-MARKET/market.LICENSE.md` |
-| GROWTH | `CAPITAL-AI-GROWTH/badge.svg` | `9020b03cb8cc8c82c715d566c0065b8725647c06f0340615c825b221a563c76f` | `CAPITAL-AI-GROWTH/growth.LICENSE.md` |
-| PLATFORM | `CAPITAL-AI-PLATFORM/badge.svg` | `2e4807c864195781f314452f4aa5f285e0feb71c408f467d3610a20d5b7292f0` | `CAPITAL-AI-PLATFORM/plattform.LICENSE.md` |
+| PRODUCT | `CAPITAL-AI-PRODUCT/badge.svg` | `d4d7516cc847e0b74677da694156e1d34080818707a0032ca295c929d4ac37d9` | `CAPITAL-AI-PRODUCT/produkt.LICENSE.md` |
+| MARKET | `CAPITAL-AI-MARKET/badge.svg` | `6ab6c1747ea8e5060e9fdf9742251627d8336be7c651b3efcce3e2713e950f20` | `CAPITAL-AI-MARKET/market.LICENSE.md` |
+| PLATFORM | `CAPITAL-AI-PLATFORM/badge.svg` | `eb1a10f8e8415569d6f27ebcef3a191b6b50afaaaa6df1b9d620cedd22de2639` | `CAPITAL-AI-PLATFORM/plattform.LICENSE.md` |
+| TRUST | `CAPITAL-AI-TRUST/badge.svg` | `f86dddae0f253ee0d635c8594a4503856506267fcef94de041deed657b9907ba` | `CAPITAL-AI-TRUST/trust.LICENSE.md` |
+| GROWTH | `CAPITAL-AI-GROWTH/badge.svg` | `3c01f2cee0e4ae1fcab6642967610937e8137a9fb73d25b3c126409047300b26` | `CAPITAL-AI-GROWTH/growth.LICENSE.md` |
 
-## Rechteklassifizierung
-
-Die SVGs sind owner-directed, AI-assisted und als neue, generische Vektorgrafiken für CAPITAL-AI erstellt. Es wurden keine Drittanbieter-Icondateien, Stockgrafiken, Rasterbilder, Markenlogos oder Fontdateien eingebettet. Die im SVG genannten Fontfamilien sind reine Rendering-Fallbacks und verteilen keine Fontsoftware.
-
-Die Asset-Lizenz folgt der jeweiligen Domain-Lizenzdatei und der Repository-Lizenz. Die Badges dürfen nicht als Beleg einer externen Partnerschaft, Zertifizierung oder Markenfreigabe interpretiert werden.
-
-## Verifikation und Freigabe-Evidence
-
-- Domain-Identität und Pfad müssen mit den fünf kanonischen Roadmap-Domains übereinstimmen.
-- SHA-256 bindet das ausgelieferte SVG an dieses Manifest.
-- Roadmap-Integration verwendet ausschließlich registrierte Assets.
-- Brand-/Provenienz- und Lizenz-/Fremdmaterial-Evidence bleibt erforderlich.
-- UI-/Accessibility-Evidence muss das zusätzliche Text-Label belegen.
-- Build-, TypeScript-, Navigation- und Roadmap-Tests werden als konkrete PR-Evidence ausgewertet.
-- Ein Asset- oder Test-PASS autorisiert keinen Merge und ersetzt keine sonstigen technischen Gates.
-
+Die gemeinsame proprietäre Badge-Lizenz gilt; Rechteinhaber ist Sven Michael Kulessa, Produkt-/Markenkontext CAPITAL-AI. Eine allgemeine Dritt-, Open-Source- oder Creative-Commons-Lizenz wird nicht erteilt. `src/data/roadmapData.ts` bindet die Assets über SHA-256; `src/components/RoadmapPanel.tsx` zeigt sie im Domain-Filter und in den Arbeitspaket-Karten.

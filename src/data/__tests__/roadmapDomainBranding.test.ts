@@ -23,6 +23,8 @@ test('every roadmap domain badge is hash-bound and has accessible SVG metadata',
     assert.equal(sha256, project.badgeSha256, `${project.id} badge SHA-256 drift`);
     assert.match(content, /<title id="title">CAPITAL-AI-/);
     assert.match(content, /<desc id="desc">/);
+    assert.match(content, /width="256" height="256" viewBox="0 0 256 256"/);
+    assert.match(content, /LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1\.0/);
     assert.match(project.licensePath, /^CAPITAL-AI-[A-Z]+\/.*\.LICENSE\.md$/);
   }
 });
@@ -34,5 +36,6 @@ test('roadmap panel renders domain badges on filter and work-package cards respo
   assert.match(panel, /src=\{project\.badgeAsset\}/);
   assert.match(panel, /grid-cols-1 sm:grid-cols-2 xl:grid-cols-5/);
   assert.match(panel, /sm:flex-row sm:items-start sm:justify-between/);
-  assert.match(panel, /max-w-\[280px\] sm:max-w-\[240px\]/);
+  assert.match(panel, /h-24 w-24 sm:h-28 sm:w-28/);
+  assert.match(panel, /h-20 w-20 shrink-0 sm:h-24 sm:w-24/);
 });
