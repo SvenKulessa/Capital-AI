@@ -4,12 +4,28 @@ import { boundedJson, secureUrl } from './http-security.mjs';
 const MAX_BODY_BYTES = 16 * 1024;
 const KRAKEN_BALANCE_PATH = '/0/private/Balance';
 
+function serverAdminKey(value) {
+  if (typeof value !== 'string') return '';
+  const key = value.trim();
+  if (key.startsWith('sb_secret_') && key.length >= 32) return key;
+  if (!key.startsWith('eyJ') || key.length < 32) return '';
+  try {
+    const payload = JSON.parse(Buffer.from(key.split('.')[1] || '', 'base64url').toString('utf8'));
+    return payload?.role === 'service_role' ? key : '';
+  } catch {
+    return '';
+  }
+}
+
 function adminConfig(env) {
   try {
     const url = secureUrl(env.SUPABASE_URL || env.VITE_SUPABASE_URL);
-    const key = env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY || '';
+    const key = [
+      env.SUPABASE_SECRET_KEY,
+      env.SUPABASE_SERVICE_ROLE_KEY,
+    ].map(serverAdminKey).find(Boolean) || '';
     const fingerprintKey = env.AUTH_COOKIE_SIGNING_SECRET || '';
-    if (url.href !== url.origin + '/' || key.length < 32 || fingerprintKey.length < 32) return null;
+    if (url.href !== url.origin + '/' || !key || fingerprintKey.length < 32) return null;
     return { url: url.origin, key, fingerprintKey };
   } catch {
     return null;
@@ -38,13 +54,12 @@ function normalizeCredential(value, min, max) {
 }
 
 function rpcHeaders(key) {
-  const headers = {
+  return {
     Accept: 'application/json',
     'Content-Type': 'application/json',
     apikey: key,
+    Authorization: `Bearer ${key}`,
   };
-  if (key.startsWith('eyJ')) headers.Authorization = `Bearer ${key}`;
-  return headers;
 }
 
 async function rpc(fetchImpl, config, name, body) {
