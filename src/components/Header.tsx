@@ -54,6 +54,7 @@ interface HeaderSession {
   authenticated: boolean;
   user?: { name?: string; email?: string } | null;
   account?: {
+    iamRole?: string | null;
     subscription?: { tier?: string; status?: string } | null;
     badges?: Array<{ id: string; label: string; asset: string }>;
   } | null;
@@ -122,6 +123,7 @@ export const Header: React.FC<HeaderProps> = ({
   const accountTier = authSession?.authenticated
     ? authSession.account?.subscription?.tier || null
     : null;
+  const isOwner = authSession?.authenticated === true && authSession.account?.iamRole === 'owner';
 
   const navigateAccount = (path: '/profile' | '/profile/security' | '/profile/key-vault') => {
     setIsAccountOpen(false);
@@ -281,20 +283,22 @@ export const Header: React.FC<HeaderProps> = ({
           <span>Dokumentation</span>
         </button>
 
-        {/* Control Center */}
-        <button
-          type="button"
-          onClick={() => onNavigate?.('/control-center')}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs transition-all cursor-pointer ${
-            isControlActive
-              ? 'bg-rose-500 text-white font-extrabold shadow-sm'
-              : 'text-slate-300 hover:text-white hover:bg-white/5 font-medium'
-          }`}
-          title="Control Center (v1.0 Roadmap, Cockpit, Console & Governance)"
-        >
-          <ShieldCheck className="w-3.5 h-3.5" />
-          <span>Control Center</span>
-        </button>
+        {isOwner && (
+          {/* Control Center */}
+          <button
+            type="button"
+            onClick={() => onNavigate?.('/control-center')}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs transition-all cursor-pointer ${
+              isControlActive
+                ? 'bg-rose-500 text-white font-extrabold shadow-sm'
+                : 'text-slate-300 hover:text-white hover:bg-white/5 font-medium'
+            }`}
+            title="Control Center (v1.0 Roadmap, Cockpit, Console & Governance)"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Control Center</span>
+          </button>
+        )}
       </nav>
 
       {/* RIGHT SIDE: Live Status Chip & Login Button */}
@@ -580,7 +584,7 @@ export const Header: React.FC<HeaderProps> = ({
                         badge: "7 Module",
                         tagline: "Roadmap, Cockpit, Console & Lizenzen",
                       },
-                    ].map((hub) => (
+                    ].filter(hub => hub.id !== 'control-center' || isOwner).map((hub) => (
                       <button
                         key={hub.id}
                         type="button"
