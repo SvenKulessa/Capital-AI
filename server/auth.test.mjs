@@ -245,9 +245,53 @@ test('Supabase registration validates new passwords and creates a backend-owned 
         name: 'Test Owner',
         email: 'owner-subject@example.test',
         password: 'short',
+        passwordConfirm: 'short',
+        termsAccepted: true,
+        privacyAcknowledged: true,
+        marketingConsent: false,
       }),
     });
     assert.equal(invalid.status, 400);
+    assert.equal(h.state.signupCalls, 0);
+
+    const mismatch = await h.request('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        Origin: 'https://capital.example',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: 'Test Owner',
+        email: 'owner-subject@example.test',
+        password: 'valid-password',
+        passwordConfirm: 'different-password',
+        termsAccepted: true,
+        privacyAcknowledged: true,
+        marketingConsent: false,
+      }),
+    });
+    assert.equal(mismatch.status, 400);
+    assert.equal((await mismatch.json()).error, 'passwords_do_not_match');
+    assert.equal(h.state.signupCalls, 0);
+
+    const missingConsent = await h.request('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        Origin: 'https://capital.example',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: 'Test Owner',
+        email: 'owner-subject@example.test',
+        password: 'valid-password',
+        passwordConfirm: 'valid-password',
+        termsAccepted: false,
+        privacyAcknowledged: true,
+        marketingConsent: false,
+      }),
+    });
+    assert.equal(missingConsent.status, 400);
+    assert.equal((await missingConsent.json()).error, 'registration_consents_required');
     assert.equal(h.state.signupCalls, 0);
 
     const registered = await h.request('/api/auth/register', {
@@ -260,6 +304,10 @@ test('Supabase registration validates new passwords and creates a backend-owned 
         name: 'Test Owner',
         email: 'owner-subject@example.test',
         password: 'valid-password',
+        passwordConfirm: 'valid-password',
+        termsAccepted: true,
+        privacyAcknowledged: true,
+        marketingConsent: false,
       }),
     });
     assert.equal(registered.status, 200);
