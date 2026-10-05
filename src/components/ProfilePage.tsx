@@ -1,6 +1,7 @@
 import React from 'react';
 import { ShieldCheck, User } from 'lucide-react';
 import { AccountPageShell } from '../features/account/AccountPageShell';
+import { openHeroBuddy } from './HeroBuddy';
 
 export function ProfilePage({ onNavigate }: { onNavigate: (path: string) => void }) {
   return (
@@ -26,6 +27,13 @@ export function ProfilePage({ onNavigate }: { onNavigate: (path: string) => void
               <ShieldCheck className="mb-2 h-4 w-4" />
               Identität wird serverseitig über Supabase Auth verifiziert.
             </div>
+            <button
+              type="button"
+              onClick={openHeroBuddy}
+              className="mt-3 min-h-10 w-full rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-3 text-xs font-bold text-cyan-200"
+            >
+              Hero Buddy anzeigen
+            </button>
           </div>
 
           <div className="rounded-2xl border border-amber-500/25 bg-[#070b19]/90 p-5 md:col-span-2">
