@@ -63,7 +63,7 @@ SEO wird als **SEO-as-Code**, **Content-as-Code** und evidenzgebundener GROWTH-P
 5. **GSC bleibt standardmäßig read-only.** Sitemap-Submission oder andere Write-Scopes sind ein separater Owner-gated Schritt.
 6. **Keine Spam-Backlinks, Linkfarmen oder automatisierten Community-Posts.**
 7. **Open Source ist Kandidat, nicht automatische Zulassung.** Lizenz, Maintainer-Herkunft, Dependencies, Security, Commercial Use und Betriebsaufwand werden pro Tool verifiziert.
-8. **Kostenrelevante CI bleibt Owner-gated.** SEO-/Content-Änderungen sollen bevorzugt leichte deterministische Checks ausführen; Docker-/Image-Scans werden nicht unnötig dupliziert.
+8. **Standard-PR-CI darf automatisch laufen.** Für das öffentliche Repository dürfen vorgesehene GitHub-hosted Required Checks ohne zusätzliche Minutenfreigabe starten; kostenpflichtige Larger Runner, neue Compute-/Storage-Produkte und Production-Mutationen bleiben separat gegatet.
 
 ## 4. Zeitliche Umsetzungsreihenfolge
 
@@ -89,6 +89,8 @@ Exit-Evidence:
 - realer `npm run test:seo`-Lauf bleibt vor Abschluss von SEO-00 offen.
 
 ### SEO-01 · SEO-/Content-Manifest und Provenance
+
+**Status:** `REPO_IMPLEMENTED / VALIDATION_PENDING` — `shared/seo-content-manifest.mjs` enthält 305 eindeutige INDEX-Einträge (11 statisch + 294 Vocabulary), `scripts/seo-content-manifest.test.mjs` prüft Coverage, Eindeutigkeit, Provenance, Lizenzmarker und Eligibility. `/.well-known/security.txt` ist als exakter RFC-9116-Pfad ergänzt; MTA-STS bleibt erhalten. Reale Required-Check-Evidence steht noch aus.
 
 **Ziel:** SEO-Metadaten nicht mehr verteilt/ad-hoc, sondern deklarativ erzeugen.
 
@@ -120,8 +122,12 @@ Aufgaben:
 - Content-Lizenz und öffentliche Claim-Evidence referenzierbar machen.
 
 Exit-Evidence:
-- Schema-/Typecheck;
-- positive und negative Fixtures;
+- `shared/seo-content-manifest.mjs` mit 305 INDEX-Einträgen;
+- `scripts/seo-content-manifest.test.mjs` für 1:1-Coverage sowie duplicate slug/canonical/title;
+- `docs/growth/SEO-01-CONTENT-MANIFEST-20261005.md`;
+- `server/well-known.mjs` + `server/well-known.test.mjs`;
+- `docs/security/BUILD-DOMEXCEPTION-REVIEW-20261005.md` für den nicht-blockierenden Render-Buildbefund;
+- Docker-Build führt Well-Known-/Manifest-Tests offline aus;
 - keine dynamische Veröffentlichung ohne gültigen Manifest-Eintrag.
 
 ### SEO-02 · Metadata, Canonicals, Structured Data und Social Cards
