@@ -1,6 +1,6 @@
 const PASSKEY_ID_RE = /^[0-9a-fA-F-]{36}$/;
 const FACTOR_ID_RE = /^[0-9a-fA-F-]{36}$/;
-const TOKEN_HASH_RE = /^[A-Za-z0-9._~-]{20,1024}$/;
+const TOKEN_HASH_RE = /^[A-Za-z0-9._~-]{16,1024}$/;
 const TOTP_CODE_RE = /^\d{6,8}$/;
 const EMAIL_VERIFY_TYPES = new Set(['signup', 'invite', 'magiclink', 'email_change', 'recovery']);
 
@@ -118,6 +118,15 @@ export function createAuthSecurity({
       const tokenHash = String(url.searchParams.get('token_hash') || '');
       const type = String(url.searchParams.get('type') || '');
       if (!TOKEN_HASH_RE.test(tokenHash) || !EMAIL_VERIFY_TYPES.has(type)) {
+        if (type === 'recovery') {
+          res.writeHead(303, {
+            Location: '/login?mode=forgot&recovery_error=invalid_link',
+            'Cache-Control': 'no-store',
+            'Referrer-Policy': 'no-referrer',
+          });
+          res.end();
+          return true;
+        }
         json(res, 400, { error: 'invalid_email_verification' });
         return true;
       }
@@ -126,6 +135,15 @@ export function createAuthSecurity({
         body: { token_hash: tokenHash, type },
       });
       if (!verified.response.ok) {
+        if (type === 'recovery') {
+          res.writeHead(303, {
+            Location: '/login?mode=forgot&recovery_error=verification_failed',
+            'Cache-Control': 'no-store',
+            'Referrer-Policy': 'no-referrer',
+          });
+          res.end();
+          return true;
+        }
         json(res, 400, { error: 'email_verification_failed', code: upstreamCode(verified.data, 'verification_failed') });
         return true;
       }
