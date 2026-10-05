@@ -557,7 +557,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                       <span>
                         Ich akzeptiere die Nutzungsbedingungen.
                         {onNavigateLegal && (
-                          <button type="button" onClick={() => onNavigateLegal('/nutzungsbedingungen')} className="ml-1 text-amber-300 underline">
+                          <button type="button" onClick={() => onNavigateLegal('/agb')} className="ml-1 text-amber-300 underline">
                             Anzeigen
                           </button>
                         )}
@@ -596,7 +596,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                     Passwort vergessen?
                   </button>
                 )}
-                <button type="submit" disabled={busy || !session?.configured} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-amber-400 font-black text-black disabled:opacity-40">
+                <button
+                  type="submit"
+                  disabled={
+                    busy ||
+                    !session?.configured ||
+                    (mode === 'register' && (!termsAccepted || !privacyAcknowledged || password !== passwordConfirm))
+                  }
+                  className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-amber-400 font-black text-black disabled:opacity-40"
+                >
                   {mode === 'login' ? <LogIn size={18} /> : <UserPlus size={18} />}
                   {busy ? 'Bitte warten …' : mode === 'login' ? 'Mit E-Mail anmelden' : 'Konto registrieren'}
                 </button>
