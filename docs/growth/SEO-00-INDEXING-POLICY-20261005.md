@@ -49,6 +49,8 @@ Die Sitemap wird aus dieser statischen Allowlist plus den real vorhandenen öffe
 | `/marketscreener/dokumentation` | Blueprint-Dokumentation erst nach SEO-02/03 + Claim-/License-Review |
 | `/dokumentation` | Dokumentations-Hub erst nach eigenständiger Metadata-/Canonical-Abnahme |
 | `/pricing` | derzeit Produkt-/UI-State statt eigenständiger serverseitiger Landingpage |
+| `/.well-known/security.txt` | operativer RFC-9116-Vulnerability-Disclosure-Endpunkt; keine Search-Landingpage |
+| `/.well-known/mta-sts.txt` | operativer MTA-STS-Endpunkt; keine Search-Landingpage |
 | `/documentation/byok.html` | statische Präsentation, noch nicht im kanonischen SEO-Contract |
 | `/documentation/pipeline-architectures.html` | statische Präsentation, noch nicht im kanonischen SEO-Contract |
 | `/documentation/pricing-models.html` | Preis-/Claim-Drift zuerst gegen Preisautorität prüfen |
@@ -97,7 +99,8 @@ Damit wird der bisherige globale `index, follow`-Fallback nicht mehr auf ungekl�
 - Dokumentations-, Architecture- und Screener-Seiten werden erst nach Content-/Claim-/License-Abnahme zu `INDEX` promoted;
 - Alias-301-Redirects folgen in SEO-03;
 - `robots.txt` bleibt crawler-neutral; Search-Freigabe wird über Indexing-Policy, Sitemap, Meta-Robots und X-Robots gesteuert;
-- `llms.txt` oder AI-spezifische Crawler-Policy gehören zu SEO-08.
+- `llms.txt` oder AI-spezifische Crawler-Policy gehören zu SEO-08;
+- `/.well-known/*` wird nicht als Verzeichnis freigegeben: nur explizit behandelte Standards wie `security.txt` und `mta-sts.txt` sind erreichbar.
 
 ## Tests
 
