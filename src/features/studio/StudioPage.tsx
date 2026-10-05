@@ -190,7 +190,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
 
   const runStressTest = () => {}; // Requires real benchmark worker before activation.
 
-  // Studio Hub Subpage items for nach rechts aufklappbare Side-Liste
+  // Studio Hub Sideboard items
   const subpageItems: SubpageNavItem[] = [
     {
       id: 'architecture',
@@ -306,7 +306,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. SUBPAGE SIDEBAR (NACH RECHTS AUFKLAPPBAR)                              */}
+      {/* 2. SUBPAGE SIDEBOARD NAVIGATION                              */}
       {/* ========================================================================= */}
       <SubpageSidebarNav
         hubTitle="Studio Hub"
@@ -783,21 +783,20 @@ export const StudioPage: React.FC<StudioPageProps> = ({
               <div>
                 <div className="flex items-center gap-2 text-xs font-mono text-cyan-400 mb-1">
                   <FileCode className="w-3.5 h-3.5" />
-                  <span>7 KANONISCHE PRODUKTIONS-BLUEPRINTS</span>
+                  <span>7 KANONISCHE ARCHITEKTUR-BLUEPRINTS</span>
                 </div>
                 <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
                   Capital-AI Blueprints
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-                  Schlüsselfertige Architektur-Blaupausen für Tier 1-4 Streaming, Authority Consensus,
-                  hybride Speicher, Multimodal-KI und Screener-Verträge nach AP-001/AP-006.
+                  Architektur-Spezifikationen für Streaming, Authority Consensus, hybride Speicher, multimodale Verarbeitung und Screener-Verträge. Vollständige Artefakte bleiben Evidence- und Entitlement-gebunden.
                 </p>
               </div>
 
               {/* Quick Summary Pill */}
               <div className="p-3 rounded-xl bg-black/40 border border-cyan-500/30 text-xs font-mono text-right shrink-0">
-                <div className="text-cyan-400 font-bold">Low-Budget Garantierte TCO</div>
-                <div className="text-slate-300">Alle Blueprints &lt; 35,00 € / Monat</div>
+                <div className="text-cyan-400 font-bold">Evidence vor Commerce</div>
+                <div className="text-slate-300">Planwerte sind keine Runtime- oder Kostengarantie</div>
               </div>
             </div>
           </div>
@@ -911,31 +910,21 @@ export const StudioPage: React.FC<StudioPageProps> = ({
               </div>
             </div>
 
-            {/* Code Snippet Box */}
-            <div>
-              <div className="flex items-center justify-between text-xs font-mono text-slate-400 mb-2">
-                <span>Produktionsfertiges Code-Snippet ({activeBlueprint.id})</span>
-                <button
-                  type="button"
-                  onClick={() => handleCopy(activeBlueprint.codeSnippet, activeBlueprint.id)}
-                  className="text-cyan-400 hover:text-white flex items-center gap-1.5 cursor-pointer"
-                >
-                  {copiedSnippet === activeBlueprint.id ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      <span className="text-emerald-400">Code kopiert!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5" />
-                      <span>Blueprint kopieren</span>
-                    </>
-                  )}
-                </button>
+            {/* Vollständiger Blueprint-Code wird vor Kauf/Evidence nicht in den öffentlichen DOM gerendert. */}
+            <section className="rounded-xl border border-cyan-500/30 bg-cyan-500/5 p-4">
+              <div className="flex items-center gap-2 text-sm font-bold text-cyan-200">
+                <Lock className="h-4 w-4" />
+                Blueprint-Artefakt geschützt
               </div>
-              <pre className="p-4 rounded-xl bg-black/80 border border-slate-800 text-xs font-mono text-emerald-400 overflow-x-auto leading-relaxed">
-                {activeBlueprint.codeSnippet}
-              </pre>
+              <p className="mt-2 text-xs leading-relaxed text-slate-400">
+                Die öffentliche Ansicht enthält Architektur, Modulgrenzen und Evidence-Anforderungen.
+                Vollständiger Quellcode, ausführbare Konfiguration und Download-Dateien werden erst nach
+                Blueprint-spezifischer Evidence-Prüfung und einem gültigen Entitlement ausgeliefert.
+              </p>
+              <div className="mt-3 text-[11px] font-mono text-amber-300">
+                Status: EVIDENCE_REQUIRED · COMMERCE_NOT_ADMITTED
+              </div>
+            </section>
             </div>
           </div>
         </div>
