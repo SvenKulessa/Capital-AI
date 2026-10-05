@@ -22,6 +22,7 @@ import {
 import { BILLING_CATALOG } from './billing-catalog.mjs';
 import { createVocabularyCheckout } from './vocabulary-checkout.mjs';
 import { createSubscriptionCheckout } from './subscription-checkout.mjs';
+import { isBlockedPublicArtifactPath } from './public-artifact-policy.mjs';
 import { QUANT_PRO_IDS } from './vocabulary-quant-pro-index.mjs';
 import {
   VOCABULARY_PUBLIC_COUNT,
@@ -255,7 +256,7 @@ export function createApp(root = defaultRoot, options = {}) {
     res.writeHead(200, { ...headers, 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
     return res.end(xml);
   }
-  if (publicPath.startsWith('/downloads/blueprints/')) {
+  if (isBlockedPublicArtifactPath(publicPath)) {
     res.writeHead(404, { ...headers, 'Cache-Control': 'no-store' });
     res.end();
     return;
