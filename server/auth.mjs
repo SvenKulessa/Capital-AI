@@ -257,6 +257,77 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     return { response, data };
   }
 
+  async function accountProjection(config, stored) {
+    const headers = {
+      Accept: 'application/json',
+      apikey: config.publishableKey,
+      Authorization: `Bearer ${stored.accessToken}`,
+    };
+
+    const profileUrl = new URL('/rest/v1/profiles', config.url);
+    profileUrl.searchParams.set('select', 'id,iam_role');
+    profileUrl.searchParams.set('id', `eq.${stored.user.id}`);
+    profileUrl.searchParams.set('limit', '1');
+
+    const subscriptionUrl = new URL('/rest/v1/subscriptions', config.url);
+    subscriptionUrl.searchParams.set('select', 'user_id,tier,status,current_period_end');
+    subscriptionUrl.searchParams.set('user_id', `eq.${stored.user.id}`);
+    subscriptionUrl.searchParams.set('limit', '1');
+
+    const read = target => fetchImpl(target, {
+      method: 'GET',
+      headers,
+      redirect: 'error',
+      signal: AbortSignal.timeout(7000),
+    });
+
+    const [profileResponse, subscriptionResponse] = await Promise.all([
+      read(profileUrl),
+      read(subscriptionUrl),
+    ]);
+
+    if (!profileResponse.ok || !subscriptionResponse.ok) {
+      return { available: false, iamRole: null, subscription: null, badges: [] };
+    }
+
+    const [profileRows, subscriptionRows] = await Promise.all([
+      boundedJson(profileResponse),
+      boundedJson(subscriptionResponse),
+    ]);
+    const profile = Array.isArray(profileRows) ? profileRows[0] : null;
+    const subscription = Array.isArray(subscriptionRows) ? subscriptionRows[0] : null;
+
+    const iamRole = ['owner', 'admin', 'supervisor', 'user'].includes(String(profile?.iam_role || ''))
+      ? String(profile.iam_role)
+      : null;
+    const tier = ['Free', 'Starter', 'Pro', 'Enterprise'].includes(String(subscription?.tier || ''))
+      ? String(subscription.tier)
+      : null;
+    const status = typeof subscription?.status === 'string'
+      ? subscription.status.slice(0, 64)
+      : null;
+    const currentPeriodEnd = typeof subscription?.current_period_end === 'string'
+      ? subscription.current_period_end.slice(0, 64)
+      : null;
+
+    const badges = [];
+    const tierAsset = {
+      Free: '/branding/badges/free-user.svg',
+      Starter: '/branding/badges/starter.svg',
+      Pro: '/branding/badges/pro.svg',
+      Enterprise: '/branding/badges/enterprise.svg',
+    }[tier];
+    if (tier && tierAsset) badges.push({ id: tier.toLowerCase(), label: tier.toUpperCase(), asset: tierAsset });
+    if (iamRole === 'owner') badges.push({ id: 'owner', label: 'OWNER', asset: '/branding/badges/owner.svg' });
+
+    return {
+      available: true,
+      iamRole,
+      subscription: tier ? { tier, status, currentPeriodEnd } : null,
+      badges,
+    };
+  }
+
   function session(req) {
     const config = getConfig();
     if (!config) return null;
@@ -362,6 +433,12 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
         }
         const currentLevel = tokenAal(stored.accessToken);
         const mfaRequired = currentLevel !== 'aal2' && hasVerifiedTotpFactor(stored._authUser);
+        let account = { available: false, iamRole: null, subscription: null, badges: [] };
+        try {
+          account = await accountProjection(config, stored);
+        } catch {
+          // Authentication remains authoritative even if the optional account projection is temporarily unavailable.
+        }
         json(res, 200, {
           configured: true,
           authenticated: true,
@@ -373,6 +450,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
             email: stored.user.email,
             name: stored.user.name,
           },
+          account,
         });
       } catch {
         clearSessionCookies(req, res);
