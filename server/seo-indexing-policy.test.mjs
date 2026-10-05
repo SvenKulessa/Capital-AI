@@ -89,12 +89,16 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
     assert.match(faqHtml, /href="https:\/\/capital-ai\.online\/faq"/);
     assert.match(faqHtml, /property="og:url" content="https:\/\/capital-ai\.online\/faq"/);
 
-    for (const route of ['/login', '/profile', '/control-center', '/tokenomics', '/whale-radar', '/dokumentation', '/not-inventory']) {
+    for (const route of ['/login', '/profile', '/tokenomics', '/whale-radar', '/dokumentation', '/not-inventory']) {
       const response = await fetch(origin + route);
       assert.equal(response.status, 200, route);
       assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow', route);
       assert.match(await response.text(), /<meta name="robots" content="noindex, nofollow"/, route);
     }
+
+    const controlCenter = await fetch(origin + '/control-center');
+    assert.equal(controlCenter.status, 404);
+    assert.equal(controlCenter.headers.get('x-robots-tag'), 'noindex, nofollow');
 
     const staticDoc = await fetch(origin + '/documentation/byok.html');
     assert.equal(staticDoc.status, 200);
