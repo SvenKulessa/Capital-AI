@@ -35,7 +35,6 @@ interface AuthResponseBody {
   code?: string;
   authenticated?: boolean;
   mfaRequired?: boolean;
-  next?: string;
   accepted?: boolean;
   reset?: boolean;
   factors?: Array<{ id: string; type: 'totp'; friendlyName: string }>;
@@ -66,11 +65,6 @@ function initialMode(): Mode {
   if (params.get('mode') === 'reset') return 'reset';
   if (params.get('mfa') === '1') return 'mfa';
   return 'login';
-}
-
-function safeNext(): string {
-  const value = new URLSearchParams(window.location.search).get('next') || '/profile';
-  return value.startsWith('/') && !value.startsWith('//') && !value.includes('\\') ? value : '/profile';
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFaq, onNavigateLegal }) => {
@@ -162,7 +156,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
           await loadMfaFactors();
           return;
         }
-        window.location.replace(result.body?.next || '/profile');
+        window.location.replace('/profile');
         return;
       }
 
@@ -233,7 +227,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
         code: totpCode,
       });
       if (!result.response.ok) throw new Error(result.body?.code || result.body?.error || 'totp_verification_failed');
-      window.location.replace(safeNext());
+      window.location.replace('/profile');
     } catch (reason) {
       showError(reason);
     } finally {
@@ -269,7 +263,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
         await loadMfaFactors();
         return;
       }
-      window.location.replace(finish.body?.next || '/profile');
+      window.location.replace('/profile');
     } catch (reason) {
       showError(reason);
     } finally {
