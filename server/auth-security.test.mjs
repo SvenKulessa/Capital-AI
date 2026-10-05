@@ -225,4 +225,7 @@ test('TOTP reenrollment removes only same-name pending factor before creating re
     ],
   );
   assert.equal(res.payload.secret, 'TESTSECRET0123456');
+  const enrollCall = h.calls.find(call => call.path === '/factors' && call.options.method === 'POST');
+  assert.equal(enrollCall.options.maxResponseBytes, 262_144);
+  assert.equal(enrollCall.options.body.issuer, 'CAPITAL-AI');
 });
