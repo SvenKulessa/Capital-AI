@@ -69,6 +69,22 @@
         "mobileCryptoUniverse": false,
         "scoringPriceInput": false
       }
+    },
+    {
+      "providerId": "faironchain-open-price",
+      "decision": "OPEN_SOURCE_OPEN_DATA_ADMITTED",
+      "eligible": true,
+      "scope": "HISTORICAL_DELAYED_PRICE_DATA",
+      "dataLicense": "CC-BY-4.0",
+      "evidenceReference": "docs/market-data/evidence/source-admission-faironchain-historical-20261005.json",
+      "instrumentManifestReference": "docs/market-data/evidence/faironchain-eth-usd-historical-manifest-20261005.json",
+      "capabilities": {
+        "referenceMetadata": false,
+        "historicalPriceInput": true,
+        "marketQuotes": false,
+        "mobileCryptoUniverse": false,
+        "scoringPriceInput": false
+      }
     }
   ],
   "blockedLegacyProviderPaths": [
@@ -81,7 +97,7 @@
     "yfinance",
     "coingecko"
   ],
-  "runtimePolicy": "NO_CAPABILITY_NETWORK_IO_UNTIL_MATCHING_ADMITTED_SOURCE_EXISTS",
+  "runtimePolicy": "NO_CAPABILITY_NETWORK_IO_UNTIL_MATCHING_ADMITTED_SOURCE_EXISTS; HISTORICAL ADMISSION DOES NOT AUTHORIZE LIVE QUOTE OR SCORING PATHS",
   "credentials": "SERVER_SIDE_ONLY_IF_FUTURE_ADMITTED_SOURCE_REQUIRES_AUTH",
   "fixtures": "NON_PRODUCTION_ONLY",
   "optionalUseCasesRequiringSeparateEvidence": [
