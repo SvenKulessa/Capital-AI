@@ -12,6 +12,7 @@ import {
   User,
   WalletCards,
 } from 'lucide-react';
+import { AuthSecuritySettings } from '../features/auth/AuthSecuritySettings';
 
 interface SessionUser {
   id: string;
@@ -78,6 +79,10 @@ export function ProfilePage({ onBackToHome }: { onBackToHome: () => void }) {
         const body = await readJson(response);
         if (!response.ok || !body?.authenticated || !body?.user?.id) {
           if (!controller.signal.aborted) window.location.replace('/login');
+          return;
+        }
+        if (body?.mfaRequired) {
+          if (!controller.signal.aborted) window.location.replace('/login?mfa=1&next=%2Fprofile');
           return;
         }
         if (controller.signal.aborted) return;
@@ -344,6 +349,8 @@ export function ProfilePage({ onBackToHome }: { onBackToHome: () => void }) {
             </form>
           </div>
         </section>
+
+        <AuthSecuritySettings />
 
         <section className="rounded-2xl border border-cyan-500/20 bg-[#070b19]/80 p-5">
           <div className="flex items-center gap-2 text-cyan-300">
