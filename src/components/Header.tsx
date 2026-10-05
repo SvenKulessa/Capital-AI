@@ -19,7 +19,7 @@
  * ============================================================================
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Menu,
   X,
@@ -45,6 +45,15 @@ import { MainCategory, AssetSubclass } from '../types';
 import { trackLoginClick } from '../utils/analytics';
 import { usePriceAlerts } from '../context/PriceAlertsContext';
 import { HubSidebarDrawer, MainHubId } from './HubSidebarDrawer';
+
+interface AccessState {
+  authenticated: boolean;
+  owner: boolean;
+  allAccess: boolean;
+  iamRole: string;
+  tier: 'Free' | 'Starter' | 'Pro' | 'Enterprise';
+  products: Array<{ id: string; label: string; entitled: boolean; source: string }>;
+}
 
 interface HeaderProps {
   currentRoute?: string;
@@ -82,7 +91,24 @@ export const Header: React.FC<HeaderProps> = ({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeSidebarHub, setActiveSidebarHub] = useState<MainHubId>('marketscreener');
   const [expandedClass, setExpandedClass] = useState<MainCategory | null>('KRYPTO');
+  const [access, setAccess] = useState<AccessState | null>(null);
   const { activeAlertsCount, triggeredAlertsCount } = usePriceAlerts();
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch('/api/profile/access', {
+      credentials: 'same-origin',
+      cache: 'no-store',
+      headers: { Accept: 'application/json' },
+      signal: controller.signal,
+    })
+      .then(async response => response.ok ? response.json() : null)
+      .then(value => {
+        if (!controller.signal.aborted && value?.authenticated === true) setAccess(value as AccessState);
+      })
+      .catch(() => undefined);
+    return () => controller.abort();
+  }, []);
 
   const openHubSidebar = (hubId: MainHubId) => {
     setActiveSidebarHub(hubId);
@@ -256,26 +282,58 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="group-hover:underline underline-offset-2">LIVE • Sub-45ms</span>
         </button>
 
-        {/* PROMINENT TOP-RIGHT LOGIN BUTTON LEADING TO /login */}
-        <a
-          id="header-login-btn"
-          href="/login"
-          onClick={(e) => {
-            e.preventDefault();
-            trackLoginClick('header_top_right');
-            onNavigateLogin?.();
-          }}
-          className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400/15 via-[#FF2E93]/15 to-[#8D26FF]/20 hover:from-amber-400/25 hover:via-[#FF2E93]/25 hover:to-[#8D26FF]/35 border border-amber-400/40 hover:border-amber-300 text-amber-200 hover:text-white text-xs font-bold transition-all shadow-[0_0_14px_rgba(249,191,33,0.18)] hover:shadow-[0_0_20px_rgba(255,46,147,0.3)] active:scale-95 cursor-pointer group shrink-0"
-          data-analytics="login-click"
-          data-ga-category="authentication"
-          data-ga-action="click_login"
-          data-ga-label="header_top_right"
-          aria-label="Zum Capital-AI Login /login"
-          title="Terminal Anmeldung (/login)"
-        >
-          <LogIn className="w-3.5 h-3.5 text-amber-400 group-hover:text-amber-200 group-hover:scale-110 transition-all" />
-          <span>Login</span>
-        </a>
+        {access?.authenticated ? (
+          <div className="flex items-center gap-1.5">
+            <a
+              href="/profile"
+              onClick={(e) => {
+                if (!onNavigate) return;
+                e.preventDefault();
+                onNavigate('/profile');
+              }}
+              className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400/20 via-[#FF2E93]/15 to-[#8D26FF]/25 border border-amber-300/50 text-amber-100 text-xs font-black shadow-[0_0_18px_rgba(249,191,33,0.2)]"
+              aria-label={`Profil öffnen – ${access.tier}`}
+              title={access.owner ? 'Owner · vollständiger Zugriff' : `Aktives Abonnement: ${access.tier}`}
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-300" />
+              <span>{access.tier}</span>
+              {access.owner && (
+                <span className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-1.5 py-0.5 text-[9px] text-cyan-200">
+                  OWNER
+                </span>
+              )}
+            </a>
+            {access.products.map(product => (
+              <span
+                key={product.id}
+                className="hidden xl:inline-flex rounded-full border border-violet-400/30 bg-violet-400/10 px-2 py-1 text-[10px] font-bold text-violet-200"
+                title={product.source === 'purchase' ? 'Separat erworbenes Produkt' : 'Im Zugriff enthalten'}
+              >
+                {product.label}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <a
+            id="header-login-btn"
+            href="/login"
+            onClick={(e) => {
+              e.preventDefault();
+              trackLoginClick('header_top_right');
+              onNavigateLogin?.();
+            }}
+            className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400/15 via-[#FF2E93]/15 to-[#8D26FF]/20 hover:from-amber-400/25 hover:via-[#FF2E93]/25 hover:to-[#8D26FF]/35 border border-amber-400/40 hover:border-amber-300 text-amber-200 hover:text-white text-xs font-bold transition-all shadow-[0_0_14px_rgba(249,191,33,0.18)] hover:shadow-[0_0_20px_rgba(255,46,147,0.3)] active:scale-95 cursor-pointer group shrink-0"
+            data-analytics="login-click"
+            data-ga-category="authentication"
+            data-ga-action="click_login"
+            data-ga-label="header_top_right"
+            aria-label="Zum Capital-AI Login /login"
+            title="Terminal Anmeldung (/login)"
+          >
+            <LogIn className="w-3.5 h-3.5 text-amber-400 group-hover:text-amber-200 group-hover:scale-110 transition-all" />
+            <span>Login</span>
+          </a>
+        )}
       </div>
 
       {/* Slide-out Mobile Menu Drawer FROM THE LEFT ("links aufklappbar") */}
