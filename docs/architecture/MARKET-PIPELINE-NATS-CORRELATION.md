@@ -116,11 +116,14 @@ Existing measured operations:
 - `valkey / quote.read`
 - NATS and Valkey connection operations
 
-PART 2 shadow telemetry currently measures:
+PART 2 / runtime telemetry now correlates the following operations:
 
-- `stage_03_validation`
-- `stage_05_scoring`
-- `stage_07_evidence`
+- `quote.publish_ack` — raw CAPITAL_FACTS PubAck
+- `canonical.publish_ack` — normalized CAPITAL_CANONICAL PubAck
+- `canonical.replay` — canonical JetStream readback
+- `stage_03_validation` — shadow validation
+- `stage_05_scoring` — shadow scoring
+- `stage_07_evidence` — deterministic score evidence
 
 These telemetry classes must remain operational telemetry and must not enter deterministic evidence bodies unless explicitly represented as immutable measured input data.
 
@@ -134,3 +137,25 @@ Production feature bridge:      BLOCKED
 Production score/rank delivery: BLOCKED
 Provider rights admission:      BLOCKED
 ```
+
+
+## Telemetry eligibility
+
+The telemetry chain is observational only. A telemetry event is not market-data evidence by itself.
+
+```text
+quote.publish_ack
+  -> raw evidence ID
+canonical.publish_ack
+  -> canonical evidence ID
+canonical.replay
+  -> readback verification
+stage_03_validation
+stage_05_scoring
+stage_07_evidence
+  -> EVD score evidence
+```
+
+Production correlation remains incomplete until a real admitted source produces an actual
+`CAPITAL_FACTS -> CAPITAL_CANONICAL -> FeatureValue -> PipelineSnapshot -> EVD`
+run on the exact source SHA.
