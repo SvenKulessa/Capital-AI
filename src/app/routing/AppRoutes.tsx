@@ -128,7 +128,15 @@ export function AppRoutes({
   }
 
   if (currentRoute === '/profile') {
-    return <ProfilePage onBackToHome={() => navigateTo('/')} />;
+    return <ProfilePage view="profile" onBackToHome={() => navigateTo('/')} onNavigate={navigateTo} />;
+  }
+
+  if (currentRoute === '/security') {
+    return <ProfilePage view="security" onBackToHome={() => navigateTo('/')} onNavigate={navigateTo} />;
+  }
+
+  if (currentRoute === '/key-vault') {
+    return <ProfilePage view="vault" onBackToHome={() => navigateTo('/')} onNavigate={navigateTo} />;
   }
 
   if (currentRoute === '/pipeline-builder') {
