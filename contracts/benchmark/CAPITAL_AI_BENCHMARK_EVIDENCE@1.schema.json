@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "CAPITAL_AI_BENCHMARK_EVIDENCE@1",
+  "title": "CAPITAL-AI Benchmark Evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "profileId",
+    "evaluatedAt",
+    "source",
+    "artifacts",
+    "matrix",
+    "metrics",
+    "security",
+    "evidenceRefs",
+    "decision"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "CAPITAL_AI_BENCHMARK_EVIDENCE@1" },
+    "profileId": { "type": "string", "minLength": 1 },
+    "evaluatedAt": { "type": "string", "format": "date-time" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commitSha"],
+      "properties": {
+        "repository": { "type": ["string", "null"] },
+        "commitSha": { "type": "string", "pattern": "^[0-9a-fA-F]{40}$" }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["brokerImageDigest", "workerImageDigest", "sbomDigest"],
+      "properties": {
+        "brokerImageDigest": { "type": "string", "pattern": "^sha256:[0-9a-fA-F]{64}$" },
+        "workerImageDigest": { "type": "string", "pattern": "^sha256:[0-9a-fA-F]{64}$" },
+        "sbomDigest": { "type": "string", "pattern": "^sha256:[0-9a-fA-F]{64}$" }
+      }
+    },
+    "matrix": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["broker", "worker"],
+      "properties": {
+        "broker": { "enum": ["nats-jetstream", "kafka"] },
+        "worker": { "enum": ["node-typescript", "rust"] }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "latencyMs",
+        "throughputPerSecond",
+        "cpuPercent",
+        "memoryMiB",
+        "diskBytes",
+        "restartRecoveryMs",
+        "droppedEvents",
+        "duplicateEvents"
+      ],
+      "properties": {
+        "latencyMs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["p50", "p95", "p99"],
+          "properties": {
+            "p50": { "type": "number", "minimum": 0 },
+            "p95": { "type": "number", "minimum": 0 },
+            "p99": { "type": "number", "minimum": 0 }
+          }
+        },
+        "throughputPerSecond": { "type": "number", "minimum": 0 },
+        "cpuPercent": { "type": "number", "minimum": 0 },
+        "memoryMiB": { "type": "number", "minimum": 0 },
+        "diskBytes": { "type": "number", "minimum": 0 },
+        "restartRecoveryMs": { "type": "number", "minimum": 0 },
+        "droppedEvents": { "type": "number", "minimum": 0 },
+        "duplicateEvents": { "type": "number", "minimum": 0 }
+      }
+    },
+    "security": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["vulnerabilities", "reachabilityEvidence", "secretsFound"],
+      "properties": {
+        "vulnerabilities": { "type": "array" },
+        "reachabilityEvidence": { "type": "array" },
+        "secretsFound": { "type": "number", "minimum": 0 }
+      }
+    },
+    "evidenceRefs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["benchmarkValid", "productionEligible", "decisionEligible", "reason"],
+      "properties": {
+        "benchmarkValid": { "const": true },
+        "productionEligible": { "const": false },
+        "decisionEligible": { "const": false },
+        "reason": { "const": "BENCHMARK_EVIDENCE_ONLY" }
+      }
+    }
+  }
+}

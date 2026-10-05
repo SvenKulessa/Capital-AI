@@ -79,6 +79,9 @@
 !scripts/seo-content-manifest.test.mjs
 !contracts/
 !contracts/**
+!packages/
+!packages/benchmark-core/
+!packages/benchmark-core/**
 !documentary/
 !documentary/evidence/
 !documentary/evidence/**
