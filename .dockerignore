@@ -45,6 +45,7 @@
 !shared/license-engine.mjs
 !shared/research-metadata.mjs
 !shared/vocabulary-metadata.mjs
+!shared/vocabulary-access-policy.mjs
 !shared/seo-indexing-policy.mjs
 !shared/seo-content-manifest.mjs
 !shared/seo-metadata.mjs
