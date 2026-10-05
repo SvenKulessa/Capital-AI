@@ -81,6 +81,10 @@ export function ProfilePage({ onBackToHome }: { onBackToHome: () => void }) {
           if (!controller.signal.aborted) window.location.replace('/login');
           return;
         }
+        if (body?.mfaRequired) {
+          if (!controller.signal.aborted) window.location.replace('/login?mfa=1&next=%2Fprofile');
+          return;
+        }
         if (controller.signal.aborted) return;
         setUser({
           id: String(body.user.id),
