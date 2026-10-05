@@ -42,6 +42,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('annual');
   const [activeTab, setActiveTab] = useState<PricingTab>('plans');
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
+  const [subscriptionCheckoutEnabled, setSubscriptionCheckoutEnabled] = useState(false);
   const [purchaseMessage, setPurchaseMessage] = useState('');
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -51,18 +52,30 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
     closeButtonRef.current?.focus();
     setPurchaseMessage('');
     const controller = new AbortController();
-    fetch('/api/auth/session', {
-      credentials: 'same-origin',
-      cache: 'no-store',
-      headers: { Accept: 'application/json' },
-      signal: controller.signal,
-    })
-      .then(response => response.ok ? response.json() : Promise.reject())
-      .then(session => {
-        if (!controller.signal.aborted) setAuthenticated(Boolean(session?.authenticated));
+    Promise.all([
+      fetch('/api/auth/session', {
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: { Accept: 'application/json' },
+        signal: controller.signal,
+      }).then(response => response.ok ? response.json() : Promise.reject()),
+      fetch('/api/billing/subscriptions/readiness', {
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: { Accept: 'application/json' },
+        signal: controller.signal,
+      }).then(response => response.ok ? response.json() : Promise.reject()),
+    ])
+      .then(([session, readiness]) => {
+        if (controller.signal.aborted) return;
+        setAuthenticated(Boolean(session?.authenticated));
+        setSubscriptionCheckoutEnabled(readiness?.enabled === true);
       })
       .catch(() => {
-        if (!controller.signal.aborted) setAuthenticated(false);
+        if (!controller.signal.aborted) {
+          setAuthenticated(false);
+          setSubscriptionCheckoutEnabled(false);
+        }
       });
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -101,6 +114,47 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, onClose]);
+
+  const startSubscriptionCheckout = async (tier: 'starter' | 'pro' | 'enterprise') => {
+    setPurchaseMessage('');
+    if (authenticated === false) {
+      onClose();
+      onNavigateLogin?.();
+      return;
+    }
+    if (authenticated !== true) {
+      setPurchaseMessage('Sitzungsstatus wird geprüft. Bitte erneut auswählen.');
+      return;
+    }
+    if (!subscriptionCheckoutEnabled) {
+      setPurchaseMessage('Der Abo-Checkout ist derzeit nicht produktiv freigeschaltet. Es wurde keine Zahlung gestartet.');
+      return;
+    }
+    try {
+      const response = await fetch('/api/billing/subscriptions/checkout', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ tier, cycle: billingCycle }),
+      });
+      const payload = await response.json();
+      if (!response.ok || typeof payload?.url !== 'string') {
+        setPurchaseMessage('Der Checkout konnte nicht gestartet werden. Es wurde keine Zahlung ausgelöst.');
+        return;
+      }
+      const target = new URL(payload.url);
+      if (target.protocol !== 'https:' || target.hostname !== 'checkout.stripe.com') {
+        setPurchaseMessage('Der Checkout wurde aus Sicherheitsgründen blockiert.');
+        return;
+      }
+      window.location.assign(target.toString());
+    } catch {
+      setPurchaseMessage('Der Checkout ist momentan nicht erreichbar. Es wurde keine Zahlung ausgelöst.');
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -276,19 +330,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                   </div>
                   <button
                     type="button"
-                    onClick={() => {
-                      setPurchaseMessage('');
-                      if (authenticated === false) {
-                        onClose();
-                        onNavigateLogin?.();
-                        return;
-                      }
-                      if (authenticated === true) {
-                        setPurchaseMessage('Der Abo-Checkout ist für angemeldete Nutzer noch nicht produktiv freigeschaltet. Es erfolgt keine Weiterleitung zum Login.');
-                        return;
-                      }
-                      setPurchaseMessage('Sitzungsstatus wird geprüft. Bitte erneut auswählen.');
-                    }}
+                    onClick={() => void startSubscriptionCheckout(tier.id)}
                     className="mt-5 w-full rounded-xl bg-amber-400 py-2.5 text-xs font-black text-black transition-all hover:bg-amber-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#030715]"
                   >
                     {tier.label} auswählen
