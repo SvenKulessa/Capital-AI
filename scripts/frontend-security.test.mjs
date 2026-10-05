@@ -112,10 +112,12 @@ test('main entry statically imports App without a first-load chunk waterfall', a
 
 test('commercial Blueprint artifacts remain absent from public client surfaces', async () => {
   const studio = await readFile(new URL('../src/features/studio/StudioPage.tsx', import.meta.url), 'utf8');
+  const studioData = await readFile(new URL('../src/data/studioData.ts', import.meta.url), 'utf8');
   const builder = await readFile(new URL('../src/features/pipeline-builder/PipelineBuilder.tsx', import.meta.url), 'utf8');
   const docs = await readFile(new URL('../src/features/documentation/BlueprintDocumentationPage.tsx', import.meta.url), 'utf8');
 
-  assert.doesNotMatch(studio, /activeBlueprint\.codeSnippet/);
+  assert.doesNotMatch(studio, /activeBlueprint\.codeSnippet|contractCodeSnippet/);
+  assert.doesNotMatch(studioData, /\bcodeSnippet\b|\bcontractCodeSnippet\b|import WebSocket from|navigator\.clipboard/);
   assert.match(studio, /Blueprint-Artefakt geschützt/);
   assert.doesNotMatch(builder, /navigator\.clipboard\.writeText\(snippet\)/);
   assert.match(builder, /PRIVATE_TEST_OR_KEY_VAULT_EVIDENCE_REQUIRED/);
