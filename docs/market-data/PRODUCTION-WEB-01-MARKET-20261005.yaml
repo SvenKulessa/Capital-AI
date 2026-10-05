@@ -1,0 +1,405 @@
+schemaVersion: "CAPITAL_AI_DOMAIN_WORK_PACKAGE@1"
+id: "PRODUCTION-WEB-01-MARKET"
+domain: "MARKET"
+scope: "production-only"
+priority: "high"
+status: "ACTIVE_FAIL_CLOSED"
+correlatedAt: "2026-10-05"
+correlationBaseline:
+  repository: "SvenKulessa/Capital-AI"
+  mainSha: "c14a7b307d3afabe50936fbbdcdd7a462cba56c4"
+  rootPolicy: "AGENTS.md@currentmain"
+  roadmapSource: "src/data/roadmapData.ts"
+  domainContract: "CAPITAL-AI-MARKET/PROJECT.md"
+
+objective:
+  productOutcome: "Kommerziell nutzbarer FinTech-Market-Screener mit evidenzgebundenem Scoring und getrenntem BYOK-Nutzerpfad."
+  sharedMarketLane: "Nur Quellen, Datensätze, Instrumente und Capabilities mit OPEN_SOURCE_OPEN_DATA_ADMITTED dürfen den gemeinsamen produktiven MARKET-Datenpfad speisen."
+  byokLane: "Nutzereigene Provider-Credentials bleiben user-private; sie erweitern weder öffentliche Anzeige-, Redistribution-, Shared-Cache- noch JetStream-Rechte."
+  scoringOutcome: "Ein kanonischer Scoring-Pfad erzeugt nur aus zugelassenen, replay-verifizierbaren Inputs scoreEligible Ergebnisse; decisionEligible bleibt ein separates Gate."
+  noExecutionClaim: true
+
+claimValidation:
+  providerClaims:
+    requireImplementedAdapter: true
+    requireRightsEvidence: true
+  realtimeClaims:
+    requireRealtimeEvidence: true
+  scoringClaims:
+    requireImplementedScoring: true
+    respectScoreEligibility: true
+    respectDecisionEligibility: true
+  assetClaims:
+    requireRealInstrumentManifest: true
+
+providerPresentation:
+  blockedProvider:
+    selectableDescriptionAllowed: true
+    productionReadyClaimAllowed: false
+
+dataPresentation:
+  demoDataAsProduction: false
+  previewDataAsLive: false
+  fallbackDataAsLive: false
+
+websiteRequirements:
+  - "Providerstatus nicht übertreiben"
+  - "Datenrechte korrekt darstellen"
+  - "Realtime nur bei echter Realtime-Evidence behaupten"
+  - "Scoring-Fähigkeiten nur entsprechend CURRENT_MAIN kommunizieren"
+
+marketInvariants:
+  - "Provider-Auswahl ist niemals Source Admission."
+  - "Open-Source-Adaptersoftware ist niemals automatisch Open-Data-Recht."
+  - "marketQuotes und scoringPriceInput werden unabhängig zugelassen."
+  - "scoreEligible und decisionEligible sind getrennte, fail-closed Gates."
+  - "Demo-, Preview-, Fallback-, Research- und synthetische Benchmarkdaten werden niemals als produktive Evidence behandelt."
+  - "Perpetuals zählen nur zusätzlich; ETF-, CFD-, Futures- oder Statistikserien ersetzen keine geforderte Spot-/Cash-Instrumentklasse."
+  - "NATS-/Replay-Transport-Evidence erweitert keine Datenrechte."
+  - "BYOK erweitert keine Rechte des gemeinsamen/public MARKET-Pfads."
+  - "Fehlende, stale, konfliktäre oder nicht replay-verifizierbare Inputs erzeugen keinen neutralen Score."
+  - "Kein Ranking ohne vergleichbare, zugelassene und ausreichend vollständige Score-Evidence."
+
+currentMainCorrelation:
+  sourcePolicy:
+    mode: "OPEN_SOURCE_AND_OPEN_DATA_ONLY"
+    admittedReferenceSources:
+      - "wikidata-reference"
+    admittedMarketQuoteSourceCount: 0
+    admittedScoringPriceInputSourceCount: 0
+    productiveQuoteState: "BLOCKED"
+    productiveScoringState: "BLOCKED"
+    evidence:
+      - "server/open-source-market-policy.mjs"
+      - "docs/market-data/open-source-market-policy.json"
+      - "docs/market-data/evidence/score-display-source-admission-20261004.json"
+  instrumentManifest:
+    status: "PARTIAL_FAIL_CLOSED"
+    firstTestPerClass: 20
+    targetCoverage:
+      crypto: 500
+      stocks: 300
+      commodities: 100
+      forex: 100
+      indices: 300
+    verifiedCurrentCoverage:
+      cryptoBasisInstruments: 0
+      stockIdentityOnly: 20
+      commodities: 0
+      forexReferenceRatesOnly: 20
+      indices: 0
+      cryptoPerpetualsAdditionalOnly: 1
+    evidence:
+      - "docs/market-data/evidence/instrument-manifest-20261005.json"
+  evidenceTransport:
+    durableRawStream: "CAPITAL_FACTS"
+    canonicalNormalizedStreamClaim: "NOT_IMPLEMENTED_IN_CURRENT_MAIN"
+    valueContract: "CAPITAL_AI_ASSET_VALUE@1"
+    currentValueEligibility:
+      scoreEligible: false
+      decisionEligible: false
+    evidence:
+      - "shared/market-contracts.mjs"
+      - "server/market.mjs"
+      - "server/infrastructure.mjs"
+      - "deploy/MARKET-DATA-OPERATIONS.md"
+  scoring:
+    componentRegistry:
+      declaredComponents: 50
+      planned: 45
+      blocked: 5
+      activeValidated: 0
+    currentFinalScore:
+      scoreEligible: false
+      rankEligible: false
+      alertEligible: false
+      replayEvidenceAvailable: false
+    legacyRuntimeDependency: "CAPITAL_AI_FINANCE_SCORER_PRIVATE_ORIGIN"
+    migrationSourceOnly:
+      repository: "SvenKulessa/Finance"
+      references:
+        - "src/platform/Scoring/ScoringModelRegistry.ts"
+        - "src/platform/Scoring/ScoringDispatcher.ts"
+        - "src/types/scoringIntegrity.ts"
+        - "src/platform/Ranking/"
+    evidence:
+      - "src/contracts/analysisComponentRegistry.ts"
+      - "src/contracts/__tests__/analysisFoundation.test.ts"
+      - "src/services/scoringEngine.ts"
+      - "server/scorer-proxy.mjs"
+  byok:
+    currentProvider: "kraken"
+    currentCapability: "USER_PRIVATE_ACCOUNT_DATA_ONLY"
+    privateBalanceRead: true
+    scoringPriceInput: false
+    publicDisplayAllowed: false
+    redistributionAllowed: false
+    sharedCacheAllowed: false
+    jetStreamPublicationAllowed: false
+    evidence:
+      - "server/user-provider-vault.mjs"
+      - "docs/security/BYOK-USER-PRIVATE-DATA.md"
+      - "supabase/migrations/20261004022309_capital_ai_user_provider_vault_20261004.sql"
+
+roadmapAbsorption:
+  - roadmapId: "AP-FIN-01"
+    absorbedInto:
+      - "09-MARKET-FEATURE-DQ"
+      - "10-MARKET-SCORING-AUTHORITY"
+      - "11-MARKET-RANKING"
+      - "12-MARKET-SCREENER"
+    rule: "Die 50-Komponenten-Registry ist Inventar; produktive Capability wird ausschließlich aus implementierten und zugelassenen Komponenten abgeleitet."
+  - roadmapId: "AP-FIN-02"
+    absorbedInto:
+      - "13-MARKET-BUFFETT"
+    rule: "DCF/Buffett nur mit realen, rechtegeprüften Fundamentals und point-in-time Inputs; sonst NOT_APPLICABLE/BLOCKED."
+  - roadmapId: "AP-FIN-03"
+    absorbedInto:
+      - "14-MARKET-SLIPPAGE"
+    rule: "Slippage/Orderbuch-Simulation bleibt Research/Paper, bis echte Orderbuchdaten, Rechte, Replay und Modellvalidierung belegt sind."
+
+chronologicalWork:
+  - sequence: 1
+    id: "01-MARKET-BASELINE"
+    state: "BASELINE_VERIFIED"
+    goal: "CURRENT_MAIN, Root-Policy, MARKET-Code, Evidence, Roadmap und Finance-Migrationsquelle korrelieren."
+    implementation:
+      - "Stale Chat-/Branch-Behauptungen gegen CURRENT_MAIN verwerfen."
+      - "Ist-Fähigkeiten, Blocker und Evidence-Referenzen maschinenlesbar binden."
+    exitGate: "Keine MARKET-Produktionsbehauptung ohne Current-Main-Code- oder Evidence-Referenz."
+
+  - sequence: 2
+    id: "02-MARKET-CLAIMS"
+    state: "OPEN"
+    goal: "Kanonischen MARKET Claim-/Eligibility-Vertrag implementieren."
+    implementation:
+      - "Providerstatus: selectable, configured, admitted und runtime-ready getrennt modellieren."
+      - "Realtime-, delayed-, reference-, historical- und unavailable-Zustände explizit trennen."
+      - "scoreEligible, rankEligible, alertEligible und decisionEligible getrennt führen."
+      - "MARKET-Claim-Projektion für PRODUCT/GROWTH bereitstellen; keine UI-Logik in MARKET duplizieren."
+    exitGate: "Unbelegte Realtime-, 50-Komponenten-, Top-N- oder Production-Ready-Claims sind technisch nicht renderbar."
+
+  - sequence: 3
+    id: "03-MARKET-RIGHTS-ADMISSION"
+    state: "BLOCKED"
+    goal: "Quellen- und Datenrechte capability- sowie instrumentspezifisch zulassen."
+    implementation:
+      - "Adapter-Softwarelizenz, Source-SHA, Lizenz-Blob und Packaging verifizieren."
+      - "Dataset-ID, Snapshot/Version, Open-Data-Lizenz, Provenance und Attribution verifizieren."
+      - "Commercial Web/Mobile Display, Derived Scoring, Normalization, Cache, JetStream, Replay, Retention, Backup/Restore, Audit und interne Verarbeitung einzeln belegen."
+      - "Redistribution separat klassifizieren; nicht benötigte Rechte nicht fingieren."
+    exitGate: "Mindestens eine Quelle PASS für marketQuotes; für Scoring zusätzlich scoringPriceInput PASS."
+
+  - sequence: 4
+    id: "04-MARKET-PROVIDER-ADAPTERS"
+    state: "OPEN"
+    goal: "Provider-neutrale, capability-basierte Adapter implementieren."
+    implementation:
+      - "Legacy Provider-Enums und hardcodierte Symbol/Provider-Kopplung aus produktiver Canonical-Grenze entfernen."
+      - "Adapter-Health, Rate Limits, Sequenz/Freshness und Provider-spezifische Mapping-Evidence typisieren."
+      - "Blockierte Provider dürfen Blueprint-/Auswahlmetadaten liefern, aber niemals produktiv routen."
+    exitGate: "Produktive Route akzeptiert ausschließlich admitted Capability + reales Instrumentmapping."
+
+  - sequence: 5
+    id: "05-MARKET-INSTRUMENTS"
+    state: "PARTIAL_FAIL_CLOSED"
+    goal: "Reales, versioniertes Instrumentmanifest vollständig aufbauen."
+    implementation:
+      - "Zuerst je Assetklasse 20 reale Basisinstrumente mit Identity, Venue, Currency, Trading-Status und Rights-Evidence schließen."
+      - "Danach auf Zieluniversum 500 Krypto, 300 Aktien, 100 Rohstoffe, 100 Forex und 300 Cash-Indizes skalieren."
+      - "Perpetuals nur zusätzlich zählen; keine Substitution durch ETF/CFD/Future/Statistikserie."
+      - "Delisting, Symbolwechsel, Corporate Actions und Restatements versioniert behandeln."
+    exitGate: "Jedes screenerfähige Instrument ist manifestgebunden und hat ein zulässiges Datenmapping."
+
+  - sequence: 6
+    id: "06-MARKET-TIME-SEMANTICS"
+    state: "OPEN"
+    goal: "Realtime-/Delayed-/Reference-/Historical-Semantik beweisbar machen."
+    implementation:
+      - "observedAt, receivedAt, publishedAt, provider, venue, dataset/version und latencyClass verpflichtend."
+      - "Freshness-SLO je Feed/Assetklasse definieren; stale Daten fail-closed kennzeichnen."
+      - "Realtime-Claim nur aus gemessener Runtime-Evidence des konkreten admitted Feeds ableiten."
+    exitGate: "Preview/Cache/Reference/Delayed kann technisch nicht als Live ausgegeben werden."
+
+  - sequence: 7
+    id: "07-MARKET-EVIDENCE"
+    state: "PARTIAL"
+    goal: "Raw Fact → durable Evidence → Replay verbindlich schließen."
+    implementation:
+      - "CAPITAL_FACTS als immutable/raw Evidence-Grenze mit Payload-Hash und Evidence-ID beibehalten."
+      - "PubAck vor Cache/Notification erzwingen; Valkey bleibt rekonstruierbarer Hot State."
+      - "Replay muss Originalpayload, Hash, Zeit und Source Admission verifizieren."
+    exitGate: "Jede produktive Observation besitzt replay-verifizierbare Evidence; Cache allein ist niemals Authority."
+
+  - sequence: 8
+    id: "08-MARKET-CANONICAL"
+    state: "OPEN"
+    goal: "Provider-neutrale Canonical Market Data über der Raw-Evidence-Schicht implementieren."
+    implementation:
+      - "Canonical Observation/AssetValue um Instrumentmanifest-, Dataset-, Rights-, Freshness- und Mapping-Referenzen erweitern."
+      - "Persistenz-/Transportentscheidung an bestehender Evidence-Authority ausrichten; kein nicht implementiertes CAPITAL_CANONICAL als Ist behaupten."
+      - "Canonical-Datensatz deterministisch aus CAPITAL_FACTS reproduzierbar machen."
+    exitGate: "Gleiche Raw Evidence + gleiche Contract-Version erzeugt denselben Canonical Payload und Hash."
+
+  - sequence: 9
+    id: "09-MARKET-FEATURE-DQ"
+    state: "OPEN"
+    goal: "Canonical Observation → FeatureValue mit Data-Quality- und Rights-Gates schließen."
+    implementation:
+      - "Produktive Feature-Builder nur für implementierte, belegte Inputs aktivieren."
+      - "Die 50-Komponenten-Registry in IMPLEMENTED/PLANNED/BLOCKED anhand realer Contracts, Features und Provider-Evidence klassifizieren."
+      - "Keine neutralen Defaults, keine Demo-Features und keine unverifizierten Research-Inputs in produktive Scores."
+      - "Fundamentals, technische Daten, Sentiment, Events, Positioning und Risiko je Assetklasse getrennt zulassen."
+    exitGate: "FeatureValue ist point-in-time, provenance-gebunden, quality-geprüft und scoreEligible-fähig."
+
+  - sequence: 10
+    id: "10-MARKET-SCORING-AUTHORITY"
+    state: "OPEN"
+    goal: "Capital-AI zur alleinigen produktiven Scoring-Authority machen."
+    implementation:
+      - "Finance ScoringModelRegistry, ScoringDispatcher und CanonicalScoreResult nur als geprüfte Migrationsquelle verwenden."
+      - "Kompatible Contracts/Executors in Capital-AI neu korrelieren und testgebunden übernehmen."
+      - "CAPITAL_AI_FINANCE_SCORER_PRIVATE_ORIGIN als produktive Runtime-Abhängigkeit entfernen."
+      - "Champion/Challenger, Modellversion, Weight-Version, Input-Fingerprint, Confidence und Reason Codes deterministisch binden."
+    exitGate: "Ein produktiver Dispatcher in Capital-AI; kein alternativer Score-Pfad und kein Finance-Runtime-Proxy."
+
+  - sequence: 11
+    id: "11-MARKET-RANKING"
+    state: "OPEN"
+    goal: "Vergleichbares Cross-Asset-Ranking und Decision Eligibility implementieren."
+    implementation:
+      - "Ranking nur über vergleichbare, scoreEligible Ergebnisse mit dokumentierter Normalisierung."
+      - "Cross-sectional universe/version/asOf in Ranking-Evidence binden."
+      - "decisionEligible separat von scoreEligible prüfen; Risk-/Tradability-/Liquidity-Vetos erhalten."
+    exitGate: "Kein Rank bei inkompatibler Skala, unvollständigem Universum oder fehlender Evidence."
+
+  - sequence: 12
+    id: "12-MARKET-SCREENER"
+    state: "BLOCKED"
+    goal: "AP-FIN-01 in einen funktionierenden, evidenzgebundenen Multi-Asset-Screener überführen."
+    implementation:
+      - "Nur manifestierte und für die benötigten Capabilities admitted Assets anzeigen/filtern/ranken."
+      - "Filter, Score, Confidence, Freshness, Source und Eligibility aus kanonischen Contracts liefern."
+      - "PE, PB, ROE, FCF-Yield, Debt/Equity, technische und Sentiment-Faktoren nur aktivieren, wenn reale Inputs implementiert und zugelassen sind."
+      - "Top-N ist eine Projektion des realen Universums, keine statische oder synthetische Assetliste."
+    exitGate: "Screener liefert reproduzierbare Ergebnisse ohne Demo-/Fallback-Promotion."
+
+  - sequence: 13
+    id: "13-MARKET-BUFFETT"
+    state: "OPEN"
+    goal: "AP-FIN-02 mit echten Fundamentals als Buffett/DCF-Modell implementieren."
+    implementation:
+      - "Point-in-time FCF, ROE, ROIC, Debt, Shares, WACC-Annahmen und Restatements evidence-binden."
+      - "Bear/Base/Bull DCF, Margin of Safety und Sensitivitäten versionieren."
+      - "Für ungeeignete Assetklassen NOT_APPLICABLE statt Proxy-/Pseudo-Fundamentals."
+    exitGate: "Kein DCF/Buffett-Score ohne vollständige, zulässige Fundamentals und Modell-Evidence."
+
+  - sequence: 14
+    id: "14-MARKET-SLIPPAGE"
+    state: "OPEN"
+    goal: "AP-FIN-03 als Research-/Paper-Simulation evidenzgebunden umsetzen."
+    implementation:
+      - "Orderbook-Tiefe, Spread, Trades und Volumen nur aus zugelassenen realen Daten verwenden."
+      - "Slippage-/Impact-Modell, Parameter, Horizon und Replay-Fingerprint versionieren."
+      - "Keine Live-Execution- oder HFT-Latenzbehauptung aus Simulation ableiten."
+    exitGate: "Reproduzierbare Paper-Simulation; reale Orderausführung bleibt außerhalb dieses MARKET-Pakets."
+
+  - sequence: 15
+    id: "15-MARKET-REPLAY-BACKTEST"
+    state: "OPEN"
+    goal: "Deterministisches Score-/Ranking-Replay und Backtesting schließen."
+    implementation:
+      - "Input-Snapshot, Instrumentmanifest-Version, Rights-Snapshot, Formula-/Model-/Weight-Version und Universe-asOf speichern."
+      - "Score und Ranking aus Evidence erneut berechnen und Hashgleichheit prüfen."
+      - "Look-ahead-, survivorship- und restatement leakage explizit verhindern."
+    exitGate: "Gleicher Evidence-Snapshot erzeugt denselben Score/Rank; Backtest ist point-in-time reproduzierbar."
+
+  - sequence: 16
+    id: "16-MARKET-SHADOW-PROMOTION"
+    state: "OPEN"
+    goal: "Shadow → Paper → Production als messbare Promotion-Pipeline definieren."
+    implementation:
+      - "Bestehenden Shadow-Pfad auf admitted reale Snapshots anbinden."
+      - "Kalibrierung, Coverage, Stability, Missingness, Drift und Regressionen messen."
+      - "Promotion benötigt Evidence; Feature Flag oder Konfiguration allein kann kein Modell aktivieren."
+    exitGate: "Nur validierte Champion-Versionen können scoreEligible werden; decisionEligible bleibt separat."
+
+  - sequence: 17
+    id: "17-MARKET-BYOK"
+    state: "PARTIAL"
+    goal: "BYOK vom Balance-Prototyp zu einem kommerziell nutzbaren, strikt user-privaten Analysepfad erweitern."
+    implementation:
+      - "Vault-/Secret-Grenze beibehalten; Provider-Keys niemals in Browser, Logs, Evidence-Payloads oder Shared Streams geben."
+      - "Provider-spezifische private Daten-/Market-Data-Capabilities nur aktivieren, wenn Account-/Providerrechte den konkreten Nutzer-Use-Case erlauben."
+      - "BYOK-Scores ausschließlich user-private halten, solange Public Display/Redistribution/Shared Cache/JetStream nicht separat zugelassen sind."
+      - "BYOK-Kontext darf den kanonischen öffentlichen Score nicht stillschweigend verändern."
+    exitGate: "BYOK liefert nachvollziehbare private Analyse ohne Rechteeskalation in den Shared/Public MARKET-Pfad."
+
+  - sequence: 18
+    id: "18-MARKET-API"
+    state: "OPEN"
+    goal: "Einheitliche MARKET-API für Web und Mobile bereitstellen."
+    implementation:
+      - "Unavailable/Blocked/Stale/Delayed/Ready mit stabilen Reason Codes und HTTP-Semantik ausgeben."
+      - "Quote, AssetValue, Feature, Score, Rank und Replay-Evidence über versionierte Contracts binden."
+      - "Web und Mobile konsumieren dieselbe MARKET-Authority; keine getrennten Score-Implementierungen."
+    exitGate: "API kann fehlende Evidence nicht als leeren Erfolg oder Live-Wert maskieren."
+
+  - sequence: 19
+    id: "19-MARKET-COMMERCIAL-CLAIMS"
+    state: "OPEN"
+    goal: "Produkt-/Website-Claims direkt aus MARKET-Evidence ableitbar machen."
+    implementation:
+      - "Maschinenlesbaren Provider-/Realtime-/Scoring-/Asset-Capability-Snapshot publizieren."
+      - "Blocked Provider dürfen als konfigurierbar beschrieben, aber nicht als production-ready bezeichnet werden."
+      - "50 Komponenten nur als Registry/Plan zeigen, solange Implementierung und Admission nicht belegt sind."
+      - "Top-N, Realtime und Score-Verfügbarkeit ausschließlich aus aktuellen Runtime-/Manifest-/Eligibility-Daten ableiten."
+    exitGate: "PRODUCT/GROWTH können keine stärkere MARKET-Behauptung als der kanonische Capability-Snapshot darstellen."
+
+  - sequence: 20
+    id: "20-MARKET-COMMERCIAL-EXIT"
+    state: "BLOCKED"
+    goal: "MARKET-Produktionsreife für den kommerziellen und BYOK Market-Screener nachweisen."
+    implementation:
+      - "3 MARKET VALIDATE vollständig mit aktueller Evidence ausführen."
+      - "Shared/Public Lane: Rechte + Adapter + Instrumente + Realtime/Delay-Semantik + Replay + Scoring + Ranking nachweisen."
+      - "BYOK Lane: Vault + User-Isolation + providerseitig zulässige private Analyse + No-Redistribution-Grenze nachweisen."
+      - "Fail-closed Regressionen für fehlende/stale/revoked Rights, Daten, Mapping, Replay und Modelle ausführen."
+    exitGate: "MARKET kann Commercial-Ready erst melden, wenn alle erforderlichen Capabilities PASS sind; bis dahin bleibt der Zustand BLOCKED."
+
+marketValidate:
+  - id: "MARKET-VALIDATE-1"
+    name: "Source, Rights, Adapter, Instrument"
+    passWhen:
+      - "Mindestens ein benötigter Datenpfad besitzt OPEN_SOURCE_OPEN_DATA_ADMITTED für die konkrete Capability."
+      - "Adapter ist implementiert und provenance-gebunden."
+      - "Instrumente sind real, manifestiert und capability-spezifisch zulässig."
+  - id: "MARKET-VALIDATE-2"
+    name: "Canonical Evidence, Freshness, Replay"
+    passWhen:
+      - "Jeder produktive Wert besitzt Raw Evidence, Canonical Mapping und verifizierbaren Replay."
+      - "Realtime/Delayed/Reference-Semantik ist gemessen und korrekt projiziert."
+  - id: "MARKET-VALIDATE-3"
+    name: "Scoring, Ranking, BYOK Separation"
+    passWhen:
+      - "Produktive Scores stammen aus der Capital-AI Scoring-Authority und sind scoreEligible."
+      - "Ranking ist vergleichbar und evidence-gebunden."
+      - "decisionEligible wird separat geprüft."
+      - "BYOK bleibt user-private und kann Shared/Public-Rechte nicht erweitern."
+
+commercialExitCriteria:
+  publicSharedScreener:
+    required: true
+    conditions:
+      - "Mindestens eine kommerziell zulässige MARKET-Datenlane mit realen Instrumenten."
+      - "Funktionierendes, replay-verifizierbares Scoring für die tatsächlich zugelassenen Assetklassen."
+      - "Evidenzgebundenes Ranking/Screener-Verhalten ohne Demo-/Fallback-Promotion."
+  byokScreener:
+    required: true
+    conditions:
+      - "Nutzer-Credentials serverseitig geschützt und strikt isoliert."
+      - "Private Analyse nur im providerseitig zulässigen Scope."
+      - "Kein Shared Cache, JetStream, Public Display oder Redistribution ohne separate Admission."
+  releaseClaim:
+    currentState: "BLOCKED"
+    reason: "CURRENT_MAIN besitzt weder admitted marketQuotes- noch scoringPriceInput-Quelle und keine produktiv scoreEligible/rankEligible Scoring-Kette."
