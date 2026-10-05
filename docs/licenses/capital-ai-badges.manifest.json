@@ -98,6 +98,16 @@
       "height": 256,
       "licenseRef": "LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0",
       "rightsHolder": "Sven Michael Kulessa"
+    },
+    {
+      "id": "capital-ai-badge-data-pipeline-blueprint",
+      "label": "DATA PIPELINE BLUEPRINT",
+      "path": "public/branding/badges/data-pipeline-blueprint.svg",
+      "sha256": "eef4c155f023930a7b729077e9eec98444a7ad4e819e33c51db1468940d2181d",
+      "width": 256,
+      "height": 256,
+      "licenseRef": "LicenseRef-CAPITAL-AI-DATA-PIPELINE-BLUEPRINT-BADGE-1.0",
+      "rightsHolder": "Sven Michael Kulessa"
     }
   ]
 }
