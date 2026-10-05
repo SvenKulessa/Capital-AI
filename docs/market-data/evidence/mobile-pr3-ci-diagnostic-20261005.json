@@ -1,0 +1,42 @@
+{
+  "schema": "CAPITAL_AI_MOBILE_CI_DIAGNOSTIC@1",
+  "observedAt": "2026-10-05T02:18:00+02:00",
+  "mobilePr": 3,
+  "head": "f24303d241398196820f2569e79672d47443a102",
+  "workflowRun": 37245432767,
+  "workflow": "Mobile Quality",
+  "result": "FAIL",
+  "passes": [
+    "UNIT_14_OF_14",
+    "BROWSER",
+    "SOURCE_SECRET_SCAN"
+  ],
+  "expectedMarketFailures": [
+    {
+      "gate": "OSS_SOURCE_ADMISSION",
+      "reason": "OSS_PROVIDER_ADMISSION_REQUIRED"
+    },
+    {
+      "gate": "MULTI_ASSET_LIVE_UNIVERSE",
+      "reason": "OSS_SOURCE_NOT_CONFIGURED"
+    }
+  ],
+  "blockingFailures": [
+    {
+      "gate": "AUTH_CONFIGURATION",
+      "reason": "AUTH_NOT_CONFIGURED"
+    },
+    {
+      "gate": "MOBILE_LOGIN_REDIRECT",
+      "reason": "MOBILE_LOGIN_HTTP_503"
+    }
+  ],
+  "artifact": {
+    "id": 11318564306,
+    "sha256": "9ee6ac32d71dc29b8fb120d55e1a9393391856e7fee7f89f28c1667d87f3abff"
+  },
+  "marketInterpretation": "Exact-head rerun confirms MARKET expected source gates remain fail-closed; Mobile Quality is blocked by runtime authentication configuration, not by the evidence projection.",
+  "trustStatus": "BLOCKED",
+  "canonicalPayloadSha256": "602ba43c1aea2dd7757864d5aac3b8192e9886117bf172ce58e95a3583c29592",
+  "hashScope": "UTF-8 JSON with lexicographically sorted keys and separators ',' ':' before adding hash fields"
+}

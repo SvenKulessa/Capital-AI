@@ -24,6 +24,32 @@ Owner-Entscheidung vom 2026-10-04: Der Owner entwickelt alleine. PRODUCT, MARKET
 - Maschinenlesbare Evidence-/Datenverträge, einschließlich `GROWTH_HANDOFF@1`, bleiben an technischen Schnittstellen gültig; sie sind keine Voraussetzung für einen Domainwechsel im Chat. Der technische Production-Handoff ist ausdrücklich weiterhin verbindlich.
 - Die Regel gilt repository- und anwendungsweit für alle fünf Domains sowie für Web- und Mobile-Arbeit, die diese Root-Policy verwendet. Sie ändert gespeicherte ChatGPT-Projekteinstellungen und Richtlinien anderer Repositories nicht automatisch.
 
+## Chat-Ausgabe: Status-Snippets
+
+Für Status-, Review-, Handoff-, Implementierungs- und Abschlussmeldungen in ChatGPT gilt repositoryweit:
+
+- **Erledigte Schritte** und **offene bzw. nächste Schritte** müssen am Ende der Antwort in **zwei getrennten Code-Snippets** dargestellt werden.
+- Beide Statusblöcke dürfen **nicht** zu einem gemeinsamen Snippet zusammengeführt werden.
+- Der erste Block beginnt mit `✅ ERLEDIGT` und enthält ausschließlich bereits tatsächlich ausgeführte, verifizierte oder nachweislich abgeschlossene Schritte.
+- Der zweite Block beginnt mit `🔧 OFFEN / NÄCHSTE SCHRITTE` und enthält ausschließlich noch ausstehende, blockierte, geplante oder als Nächstes zu prüfende Schritte.
+- Nicht ausgeführte Arbeiten dürfen nicht unter `✅ ERLEDIGT` erscheinen. Ein grüner Test oder Check darf nur als erledigte **Evidence** genannt werden und ersetzt keine Security-, Lizenz-, Governance-, Owner- oder Production-Freigabe.
+- Wenn für eine Antwort eine der beiden Kategorien leer ist, bleibt der betreffende Snippet trotzdem separat erhalten und enthält eine eindeutige Angabe wie `- keine`.
+- Zusätzliche Statusangaben wie `BLOCKED`, `PENDING`, `APPROVED`, `MERGED` oder `PRODUCTION-HANDOFF` dürfen außerhalb oder innerhalb der passenden Kategorie ergänzt werden, dürfen aber die Trennung der beiden Snippets nicht ersetzen.
+
+Beispiel:
+
+```text
+✅ ERLEDIGT
+- CURRENT_MAIN geprüft
+- Required Checks ausgewertet
+```
+
+```text
+🔧 OFFEN / NÄCHSTE SCHRITTE
+- Security-Finding schließen
+- 3 VALIDATE / 5 APPROVE neu bewerten
+```
+
 ## Domain-Einstiegspunkt
 
 Für **jede** Domain und jede neue Arbeitssitzung ist der erste verbindliche Kontext `AGENTS.md@currentmain`.

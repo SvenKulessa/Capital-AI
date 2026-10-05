@@ -1,0 +1,80 @@
+{
+  "schema": "CAPITAL_AI_MARKET_DATA_RIGHTS_EVIDENCE_SNAPSHOT@1",
+  "observedAt": "2026-10-05T02:08:00+02:00",
+  "sourceCommit": "8045c78956e163af3011ed47f734184aca14aa04",
+  "evidence": {
+    "providerId": "ecb",
+    "applicableEntityAndRegion": "PUBLICLY_RELEASED_ESCB_STATISTICS_GLOBAL_REUSE_SUBJECT_TO_POLICY",
+    "subscriptionTierAndAddOns": "OPEN_DATA_NO_SUBSCRIPTION",
+    "feedsSymbolsAndVenues": [
+      "ECB euro foreign exchange reference rates; 20 pilot EUR reference pairs"
+    ],
+    "contractOrPermissionReference": "https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.en.html",
+    "validUntil": null,
+    "reviewedAt": "2026-10-05T00:08:00Z",
+    "permissions": {
+      "internal_analysis": {
+        "allowed": true,
+        "evidenceReference": "https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.en.html",
+        "obligations": [
+          "SOURCE_ATTRIBUTION",
+          "NO_MODIFICATION_OF_PUBLISHED_STATISTICS_OR_METADATA"
+        ]
+      },
+      "scientific_research_tdm": {
+        "allowed": null,
+        "evidenceReference": null,
+        "obligations": []
+      },
+      "public_display": {
+        "allowed": true,
+        "evidenceReference": "https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.en.html",
+        "obligations": [
+          "SOURCE_ATTRIBUTION",
+          "NO_MODIFICATION_OF_PUBLISHED_STATISTICS_OR_METADATA"
+        ]
+      },
+      "api_redistribution": {
+        "allowed": true,
+        "evidenceReference": "https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.en.html",
+        "obligations": [
+          "SOURCE_ATTRIBUTION",
+          "NO_MODIFICATION_OF_PUBLISHED_STATISTICS_OR_METADATA",
+          "EXCLUDE_THIRD_PARTY_DATA"
+        ]
+      },
+      "derived_scoring_research": {
+        "allowed": null,
+        "evidenceReference": null,
+        "obligations": [
+          "OWNER_DECISION_REQUIRED_FOR_DERIVED_COMMERCIAL_USE_SEMANTICS"
+        ]
+      },
+      "cache_retention": {
+        "allowed": true,
+        "evidenceReference": "https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.en.html",
+        "obligations": [
+          "PRESERVE_SOURCE_AND_METADATA",
+          "HANDLE_REVISIONS"
+        ]
+      },
+      "export_resale": {
+        "allowed": true,
+        "evidenceReference": "https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.en.html",
+        "obligations": [
+          "SOURCE_ATTRIBUTION",
+          "NO_MODIFICATION_OF_PUBLISHED_STATISTICS_OR_METADATA",
+          "EXCLUDE_THIRD_PARTY_DATA"
+        ]
+      }
+    },
+    "scientificResearchTdm": null
+  },
+  "evaluationExpectation": {
+    "displayCacheRedistribution": "ALLOW_WITH_OBLIGATIONS_WHEN_EVALUATED_FOR_THOSE_USE_CASES",
+    "mobileScoring": "REVIEW_REQUIRED",
+    "reason": "Existing contract only has derived_scoring_research and the ECB no-modification condition has not been legally mapped to productive derived score semantics."
+  },
+  "canonicalPayloadSha256": "d6520cc1576f4e79987ba1d5fed4e2a93d7fa130d7103f6a352d9f4758fb2499",
+  "hashScope": "UTF-8 JSON with lexicographically sorted keys and separators ',' ':' before adding hash fields"
+}

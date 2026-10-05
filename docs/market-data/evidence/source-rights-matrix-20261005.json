@@ -1,0 +1,145 @@
+{
+  "schema": "CAPITAL_AI_SOURCE_RIGHTS_MATRIX@1",
+  "observedAt": "2026-10-05T01:36:00+02:00",
+  "sourceCommit": "8045c78956e163af3011ed47f734184aca14aa04",
+  "ownerPolicy": "OPEN_SOURCE_AND_OPEN_DATA_ONLY",
+  "status": "BLOCKED_NO_COMPLETE_FIVE_CLASS_ADMISSION",
+  "canonicalPayloadSha256": "a95fcd4764f1059e6db99b4e1e00a703593b323a8307f6c6497b99e02f2b3c13",
+  "candidates": [
+    {
+      "id": "ccxt",
+      "kind": "OSS_ADAPTER",
+      "softwareLicense": "MIT",
+      "actualDataProvider": "EXCHANGE_SPECIFIC",
+      "dataset": "NONE_BUNDLED",
+      "admission": "BLOCKED_DATA_RIGHTS_UNVERIFIED",
+      "evidence": "https://docs.ccxt.com/docs/manual"
+    },
+    {
+      "id": "openbb",
+      "kind": "OSS_DATA_INTEGRATION_PLATFORM",
+      "softwareLicense": "Apache-2.0 (V5)",
+      "actualDataProvider": "PROVIDER_PACKAGE_SPECIFIC",
+      "dataset": "NONE_HOSTED_BY_OPENBB",
+      "admission": "BLOCKED_PER_PROVIDER_DATA_RIGHTS",
+      "evidence": "https://docs.openbb.co/odp/python/extensions/providers"
+    },
+    {
+      "id": "fdnpy",
+      "kind": "SDK",
+      "softwareLicense": "BLOCKED_ORIGINAL_LICENSE_MISSING",
+      "actualDataProvider": "FinancialData.Net",
+      "dataset": "PROPRIETARY",
+      "admission": "EXCLUDED_OWNER_POLICY",
+      "evidence": "https://financialdata.net/terms-of-service"
+    },
+    {
+      "id": "lean",
+      "kind": "OSS_ENGINE",
+      "softwareLicense": "Apache-2.0",
+      "actualDataProvider": "DATASET_MARKET_OR_EXTERNAL_PROVIDER",
+      "dataset": "MOST_DATA_NOT_FREELY_REDISTRIBUTABLE",
+      "admission": "BLOCKED_OWNER_POLICY_AND_REDISTRIBUTION",
+      "evidence": "https://www.quantconnect.com/docs/v2/cloud-platform/datasets/licensing"
+    },
+    {
+      "id": "vnpy",
+      "kind": "OSS_ENGINE",
+      "softwareLicense": "MIT",
+      "actualDataProvider": "CONFIGURED_DATAFEED_SPECIFIC",
+      "dataset": "NONE_BUNDLED",
+      "admission": "BLOCKED_DATA_RIGHTS_UNVERIFIED",
+      "evidence": "https://www.vnpy.com/docs/cn/community/info/datafeed.html"
+    },
+    {
+      "id": "backtrader",
+      "kind": "OSS_ENGINE",
+      "softwareLicense": "GPL-3.0",
+      "actualDataProvider": "FEED_SPECIFIC",
+      "dataset": "NONE_BUNDLED",
+      "admission": "BLOCKED_DATA_RIGHTS_AND_SOFTWARE_REVIEW",
+      "evidence": "https://www.backtrader.com/docu/datafeed/"
+    },
+    {
+      "id": "hummingbot",
+      "kind": "OSS_ENGINE_CONNECTORS",
+      "softwareLicense": "Apache-2.0",
+      "actualDataProvider": "EXCHANGE_OR_BLOCKCHAIN_SPECIFIC",
+      "dataset": "NONE_BUNDLED",
+      "admission": "BLOCKED_DATA_RIGHTS_UNVERIFIED",
+      "evidence": "https://hummingbot.org/connectors/"
+    },
+    {
+      "id": "cryptofeed",
+      "kind": "OSS_FEED_HANDLER",
+      "softwareLicense": "AGPL-3.0-or-later",
+      "actualDataProvider": "EXCHANGE_SPECIFIC",
+      "dataset": "NONE_BUNDLED",
+      "admission": "BLOCKED_DATA_RIGHTS_AND_NETWORK_COPYLEFT_REVIEW",
+      "evidence": "https://github.com/bmoscon/cryptofeed"
+    },
+    {
+      "id": "nautilus_trader",
+      "kind": "OSS_ENGINE_ADAPTERS",
+      "softwareLicense": "LGPL-3.0",
+      "actualDataProvider": "VENUE_OR_PROVIDER_SPECIFIC",
+      "dataset": "NONE_BUNDLED",
+      "admission": "BLOCKED_DATA_RIGHTS_AND_SOFTWARE_REVIEW",
+      "evidence": "https://nautilustrader.io/docs/latest/developer_guide/adapters/"
+    },
+    {
+      "id": "pandas-datareader",
+      "kind": "OSS_DATA_CLIENT",
+      "softwareLicense": "BSD-3-Clause",
+      "actualDataProvider": "REMOTE_SOURCE_SPECIFIC",
+      "dataset": "NONE_BUNDLED",
+      "admission": "BLOCKED_PER_SOURCE_DATA_RIGHTS",
+      "evidence": "https://pydata.github.io/pandas-datareader/"
+    }
+  ],
+  "qualifiedOpenDataEvidence": [
+    {
+      "provider": "European Central Bank",
+      "dataset": "public ESCB statistics / euro reference rates",
+      "reuse": "FREE_REUSE_WITH_ATTRIBUTION_AND_NO_MODIFICATION",
+      "assetClass": "forex",
+      "admission": "PARTIAL_ONLY_REFERENCE_RATES",
+      "evidence": "https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.en.html"
+    },
+    {
+      "provider": "U.S. Energy Information Administration",
+      "dataset": "EIA public data/API",
+      "reuse": "PUBLIC_DOMAIN_REUSE_WITH_ATTRIBUTION",
+      "assetClass": "commodities-related statistics",
+      "admission": "NOT_YET_SPOT_COMMODITY_INSTRUMENT_DATASET",
+      "evidence": "https://www.eia.gov/about/copyrights_reuse.php"
+    }
+  ],
+  "commercialOrRestrictedExamples": [
+    {
+      "provider": "QuantConnect",
+      "finding": "Downloaded datasets are generally licensed for internal LEAN use and most datasets cannot be freely redistributed.",
+      "status": "BLOCKED"
+    },
+    {
+      "provider": "Nasdaq Nordic/Baltic",
+      "finding": "Commercial/value-added redistribution can be fee liable and licensed.",
+      "status": "BLOCKED_OWNER_POLICY"
+    },
+    {
+      "provider": "Cboe",
+      "finding": "Historical/external redistribution can require agreement, approval and fees.",
+      "status": "BLOCKED_OWNER_POLICY"
+    },
+    {
+      "provider": "Twelve Data",
+      "finding": "Written licensing scope remains pending; proprietary commercial licensing cannot satisfy the current owner open-data-only policy.",
+      "status": "EXCLUDED_FOR_ADMISSION"
+    }
+  ],
+  "gates": {
+    "OSS_SOURCE_ADMISSION": "FAIL",
+    "MULTI_ASSET_LIVE_UNIVERSE": "FAIL",
+    "reason": "No source set has verified qualifying open-data rights plus real market-data coverage for all five required basis classes."
+  }
+}
