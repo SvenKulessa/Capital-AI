@@ -1,0 +1,107 @@
+{
+  "schema": "CAPITAL_AI_MARKET_QUOTE_PROVIDER_ADMISSION_ASSESSMENT@1",
+  "observedAt": "2026-10-05T03:01:00+02:00",
+  "branch": "capital-ai-market/canonical-nats-bridge-currentmain-20261005",
+  "ownerPolicy": "OPEN_SOURCE_AND_OPEN_DATA_ONLY",
+  "productionAdmission": "NONE",
+  "candidates": [
+    {
+      "providerId": "faironchain-open-price",
+      "decision": "BLOCK",
+      "eligible": false,
+      "scope": "HISTORICAL_DELAYED_CRYPTO_PRICE_DATA",
+      "exactSoftwareRepo": {
+        "repository": "DeepMining-Lab/openprice-api",
+        "sourceSha": "5c7809403265df18709409cf473ba48e90473d1f",
+        "licenseFileBlobSha": "aac93c57b4e39832acd29516018c851f7ef1b9d5",
+        "declaredLicense": "CC-BY-4.0"
+      },
+      "exactDatasetRepo": {
+        "repository": "DeepMining-Lab/Open_Price_Infra",
+        "sourceSha": "7a883351a1c38328f7baa2dd78989ab3d4a6d859",
+        "licenseFileBlobSha": "b861342415cc5f3c3d5cbd90f7d240f699119d0e",
+        "declaredLicense": "CC-BY-4.0"
+      },
+      "firstInstrumentCandidate": {
+        "instrument": "ETH/USD",
+        "assetClass": "crypto",
+        "datasetPath": "eth/data/chainlink_eth_usd.csv",
+        "upstreamSource": "Chainlink on Ethereum Mainnet",
+        "upstreamContract": "0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419",
+        "latestDocumentedExtractionUtc": "2026-10-04 18:18:35 UTC",
+        "semantics": "HISTORICAL_OR_DELAYED_REFERENCE_PRICE"
+      },
+      "rightsAssessment": {
+        "commercialDisplay": "PASS_WITH_ATTRIBUTION",
+        "derivedScoring": "PASS_WITH_ATTRIBUTION_FOR_DATASET_LICENSE",
+        "normalization": "PASS_WITH_ATTRIBUTION",
+        "cache": "PASS_WITH_ATTRIBUTION",
+        "jetStreamPublication": "PASS_WITH_ATTRIBUTION",
+        "replay": "PASS_WITH_ATTRIBUTION",
+        "retention": "PASS_WITH_ATTRIBUTION",
+        "instrumentScope": "PASS_FOR_DOCUMENTED_ETH_USD_DATASET",
+        "realtimeQuoteSemantics": "FAIL_NOT_REALTIME_TICK_FEED",
+        "softwareOpenSourceGate": "FAIL_CC_BY_4_0_NOT_IN_CAPITAL_AI_OPEN_SOURCE_SOFTWARE_LICENSE_ALLOWLIST"
+      },
+      "evidenceReferences": [
+        "https://fair.deepmining.ch/",
+        "https://github.com/DeepMining-Lab/Open_Price_Infra",
+        "https://github.com/DeepMining-Lab/openprice-api"
+      ],
+      "blockers": [
+        "SOFTWARE_LICENSE_NOT_ADMITTED",
+        "CURRENT_QUOTEFACT_30S_FRESHNESS_INCOMPATIBLE_WITH_DAILY_DATASET_UPDATE",
+        "LIVE_LABEL_NOT_ELIGIBLE"
+      ]
+    },
+    {
+      "providerId": "pyth",
+      "decision": "BLOCK",
+      "eligible": false,
+      "scope": "REALTIME_PRICE_FEEDS",
+      "reasons": [
+        "CURRENT_PYTH_CORE_API_REQUIRES_COMMERCIAL_SUBSCRIPTION",
+        "PYTH_SITE_TERMS_DO_NOT_GRANT_OPEN_DATA_REUSE_RIGHTS_FOR_PRICE_FEED_DATA",
+        "OWNER_POLICY_REQUIRES_OPEN_SOURCE_AND_OPEN_DATA_ONLY"
+      ],
+      "evidenceReferences": [
+        "https://www.pyth.network/legal/terms-conditions",
+        "https://www.pyth.network/blog/the-pyth-core-upgrade"
+      ]
+    },
+    {
+      "providerId": "coinmetrics-community",
+      "decision": "BLOCK",
+      "eligible": false,
+      "scope": "COMMUNITY_REFERENCE_AND_MARKET_DATA",
+      "reasons": [
+        "COMMUNITY_DATA_LICENSE_IS_NON_COMMERCIAL",
+        "COMMERCIAL_DISPLAY_REQUIREMENT_FAILS"
+      ],
+      "evidenceReferences": [
+        "https://community-api.coinmetrics.io/v4",
+        "https://github.com/coinmetrics/data"
+      ]
+    },
+    {
+      "providerId": "yieldo",
+      "decision": "REVIEW_REQUIRED",
+      "eligible": false,
+      "scope": "AGGREGATED_REALTIME_EXCHANGE_DATA",
+      "dataLicense": "CC-BY-4.0",
+      "reasons": [
+        "AGGREGATOR_DECLARED_CC_BY_4_0",
+        "UPSTREAM_EXCHANGE_DATA_RIGHTS_CHAIN_NOT_VERIFIED",
+        "CAPITAL_AI_REQUIRES_PROVIDER_AND_UPSTREAM_RIGHTS_FAIL_CLOSED"
+      ],
+      "evidenceReferences": [
+        "https://yieldo.me/about/data"
+      ]
+    }
+  ],
+  "conclusion": {
+    "admittedRealtimeQuoteProvider": null,
+    "admittedHistoricalPriceDataset": null,
+    "nextSmallestVerifiableStep": "Resolve FairOnChain software-license gate by using a separately OSI-licensed adapter/service or obtaining a qualifying software license without weakening CAPITAL-AI policy; then model it explicitly as delayed/historical rather than LIVE."
+  }
+}
