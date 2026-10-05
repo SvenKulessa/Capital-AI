@@ -7,7 +7,8 @@ baseline:
   sourceRepository: "SvenKulessa/Finance"
   sourceSha: "dcef421fe6e350a3a2ade61d0299aad9ecca213c"
   targetRepository: "SvenKulessa/Capital-AI"
-  targetMainSha: "9c5fc40318cf538308724c2efb18441185e8cbae"
+  targetMainSha: "8244a411b3b5b691adbb78ffdc5880aadd267113"
+  sourceTargetManifest: "CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json"
 
 admissionModes:
   COMMERCIAL_PRODUCT_BUNDLE:

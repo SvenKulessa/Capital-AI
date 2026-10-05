@@ -1,0 +1,989 @@
+{
+  "schemaVersion": "FINANCE_SOURCE_TARGET_MANIFEST@1",
+  "id": "CAPITAL-AI-FINANCE-SOCIAL-MARKET-SOURCE-TARGET-20261005",
+  "status": "MATERIALIZED_FAIL_CLOSED",
+  "correlatedAt": "2026-10-05",
+  "workPackage": "CAPITAL-AI-FINANCE-SOCIAL-MARKET-MIGRATION-01",
+  "source": {
+    "repository": "SvenKulessa/Finance",
+    "commit": "dcef421fe6e350a3a2ade61d0299aad9ecca213c",
+    "treeLicense": "CAPITAL-AI Proprietary / UNLICENSED; third-party imports, models, data and binaries remain separately licensed",
+    "verificationMethod": "GitHub fetch_file at immutable source commit"
+  },
+  "target": {
+    "repository": "SvenKulessa/Capital-AI",
+    "currentMain": "8244a411b3b5b691adbb78ffdc5880aadd267113",
+    "policy": "TARGET_CURRENT_MAIN_CONTRACTS_WIN",
+    "branch": "capital-ai-growth/finance-source-target-manifest-20261005"
+  },
+  "invariants": [
+    "No source credential, OAuth token, Supabase user identity or secret value is migrated.",
+    "No source scoring registry/dispatcher may create a second productive scoring authority.",
+    "No source market-data facade may weaken target market-data rights, freshness or source-admission gates.",
+    "Research scoring/pattern/sentiment/momentum/regime components remain scoreEligible=false and decisionEligible=false until separately promoted.",
+    "Missing target files are proposed destinations only and are not evidence of implemented runtime.",
+    "Existing target authority blob SHA drift requires re-correlation before a later PORT/REWRITE mutation.",
+    "Finance MARKET/scoring/weighting/data entries are backlog inventory only until the Social Media Engine migration is completed and its cutover evidence is PASS."
+  ],
+  "actions": [
+    "PORT",
+    "PORT_ADAPT",
+    "PORT_SELECTIVE",
+    "PORT_WITH_LICENSE_GATE",
+    "PORT_SECURITY_REVIEW",
+    "PORT_CONTRACT_REWRITE_STORAGE",
+    "PORT_RESEARCH_ONLY",
+    "CONVERGE_INTO_EXISTING_AUTHORITY",
+    "REWRITE_CURRENT_AUTH",
+    "REWRITE_CURRENT_PROVIDER_CONTRACTS",
+    "REWRITE_CURRENT_RUNTIME",
+    "REWRITE_STORAGE",
+    "DROP_REDESIGN_SCHEMA",
+    "DROP_NO_MIGRATION",
+    "SUPERSEDED_BY_CURRENT_TARGET"
+  ],
+  "targetAuthorities": [
+    {
+      "id": "TA-ASSET-FEATURE",
+      "path": "src/contracts/canonicalContracts.ts",
+      "blobSha": "161104baf8413fb3a9a6389e32027ecd4bde4768",
+      "role": "AssetIdentity/DataProvenance/FeatureValue/ScoreResult authority"
+    },
+    {
+      "id": "TA-PIPELINE",
+      "path": "src/contracts/pipelineExecution.ts",
+      "blobSha": "2e8603a91ba68c730d72be59ce2d517503bd4402",
+      "role": "Shadow PipelineSnapshot/config/eligibility contract"
+    },
+    {
+      "id": "TA-SCORING",
+      "path": "src/services/scoringEngine.ts",
+      "blobSha": "ce0f52bc95b75eb236197b395b822e6e21ab712b",
+      "role": "Current scoring execution boundary"
+    },
+    {
+      "id": "TA-FEATURE-STORE",
+      "path": "src/services/featureStore.ts",
+      "blobSha": "bf8afa5e648785017b6576e7b100f1a4ecb4bb6a",
+      "role": "Feature storage/extraction boundary"
+    },
+    {
+      "id": "TA-COMPONENT-REGISTRY",
+      "path": "src/contracts/analysisComponentRegistry.ts",
+      "blobSha": "70785bc79ae452f3849b916ac69d8a80e327020c",
+      "role": "Canonical analysis component registry"
+    },
+    {
+      "id": "TA-MARKET-RIGHTS",
+      "path": "src/contracts/marketDataRightsEligibility.ts",
+      "blobSha": "71a15e5d98b2f72856becdd6c78795250f450126",
+      "role": "Fail-closed market-data rights authority"
+    },
+    {
+      "id": "TA-COMMERCIAL-LANE",
+      "path": "src/contracts/commercialLicensedDataLane.ts",
+      "blobSha": "1683be42ed6f4fe8af56763686930c4a5a7a83f3",
+      "role": "Commercial licensed data lane authority"
+    },
+    {
+      "id": "TA-PROVIDER-ADAPTERS",
+      "path": "src/services/providerAdapters.ts",
+      "blobSha": "1a2cd122da25bca9e1e053037c8b638ee6edd0d0",
+      "role": "Current provider adapter and open-data admission boundary"
+    },
+    {
+      "id": "TA-RAW-FEATURES",
+      "path": "src/services/rawFeatureCalculator.ts",
+      "blobSha": "953bc0bcf3e22e6847bda041e7ed8f2fc9e13c9d",
+      "role": "Rights-bound deterministic raw feature calculations"
+    },
+    {
+      "id": "TA-SHADOW-REPLAY",
+      "path": "src/services/shadowPipeline.ts",
+      "blobSha": "37878efeb6b7dc2b2b3739b349626fa71958a476",
+      "role": "Offline shadow/replay evidence authority"
+    },
+    {
+      "id": "TA-MARKET-RUNTIME",
+      "path": "server/market.mjs",
+      "blobSha": "3fbd9a2f058e3318034651ab9f75cfedd8432380",
+      "role": "Current fail-closed market runtime"
+    },
+    {
+      "id": "TA-MARKET-WP",
+      "path": "docs/market-data/PRODUCTION-WEB-01-MARKET-20261005.yaml",
+      "blobSha": "a1a63b88e36dbcc73e59988d7693384f5996a85e",
+      "role": "Production MARKET work-package projection"
+    },
+    {
+      "id": "TA-AUTH",
+      "path": "server/auth.mjs",
+      "blobSha": "28722ee942722c1d29330d4daa4425260878f9a6",
+      "role": "Current session/auth composition"
+    },
+    {
+      "id": "TA-AUTH-SECURITY",
+      "path": "server/auth-security.mjs",
+      "blobSha": "e919adbf47e1ec22ed74bb987f3a6633e0cca5a0",
+      "role": "Current auth security boundary"
+    },
+    {
+      "id": "TA-USER-VAULT",
+      "path": "server/user-provider-vault.mjs",
+      "blobSha": "18ea45ceb52e5cfd3de9c424988c13c9a7840dec",
+      "role": "Current server-side user provider secret boundary"
+    },
+    {
+      "id": "TA-BYOK-BOUNDARY",
+      "path": "docs/security/BYOK-USER-PRIVATE-DATA.md",
+      "blobSha": "5e99489b01cc27b6fb7edc27694b71b969eee6e9",
+      "role": "User-private credentials/data boundary"
+    }
+  ],
+  "entries": [
+    {
+      "id": "SOC-001",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "src/platform/SocialMediaEngine/Contracts/MediaProject.ts",
+        "blobSha": "1c7a4b51119c89e3aaa54b6b44b6521e053cb660"
+      },
+      "action": "PORT",
+      "target": {
+        "path": "src/platform/SocialMediaEngine/Contracts/MediaProject.ts",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": []
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Provider-neutral MediaProjectV2; publish authority remains false."
+      ]
+    },
+    {
+      "id": "SOC-002",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "src/platform/SocialMediaEngine/Contracts/MediaProjectValidation.ts",
+        "blobSha": "633c8d9ec9c42b99063a16e31e8f9d669f84c377"
+      },
+      "action": "PORT",
+      "target": {
+        "path": "src/platform/SocialMediaEngine/Contracts/MediaProjectValidation.ts",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": []
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Retain limits and validation semantics."
+      ]
+    },
+    {
+      "id": "SOC-003",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "src/platform/SocialMediaEngine/Editing/MediaProjectEditing.ts",
+        "blobSha": "68896b533d7c974aa499dc27ccabe9b60d8683d6"
+      },
+      "action": "PORT",
+      "target": {
+        "path": "src/platform/SocialMediaEngine/Editing/MediaProjectEditing.ts",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": []
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": []
+    },
+    {
+      "id": "SOC-004",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "src/platform/SocialMediaEngine/Editing/MediaStudioTemplates.ts",
+        "blobSha": "d7e089110d1e40d32c80720adc43fc77966024ff"
+      },
+      "action": "PORT_ADAPT",
+      "target": {
+        "path": "src/platform/SocialMediaEngine/Editing/MediaStudioTemplates.ts",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": []
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Rebind brand token source to current Capital-AI design authority."
+      ]
+    },
+    {
+      "id": "SOC-005",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "src/platform/SocialMediaEngine/Visualization/PlanningVisual.ts",
+        "blobSha": "f2de63c8d9ad3e792f5fe98129325384240ce23f"
+      },
+      "action": "PORT",
+      "target": {
+        "path": "src/platform/SocialMediaEngine/Visualization/PlanningVisual.ts",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": []
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": []
+    },
+    {
+      "id": "SOC-006",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "src/platform/SocialMediaEngine/Visualization/D3PlanningVisualAdapter.ts",
+        "blobSha": "70870c7c509b54b32986f59f8e96d2f10347a14a"
+      },
+      "action": "PORT_WITH_LICENSE_GATE",
+      "target": {
+        "path": "src/platform/SocialMediaEngine/Visualization/D3PlanningVisualAdapter.ts",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": []
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "d3 exact version/NOTICE remains governed by SOCIAL_MEDIA_TOOL_ADMISSION@1."
+      ]
+    },
+    {
+      "id": "SOC-007",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "src/platform/SocialMediaEngine/Visualization/PlanningVisualMediaProjectAdapter.ts",
+        "blobSha": "c3098cd132b1cf6841c280156a17b145faf33b31"
+      },
+      "action": "PORT_ADAPT",
+      "target": {
+        "path": "src/platform/SocialMediaEngine/Visualization/PlanningVisualMediaProjectAdapter.ts",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": []
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": []
+    },
+    {
+      "id": "SOC-008",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "src/platform/SocialMediaEngine/Visualization/PlanningVisualToolCatalog.ts",
+        "blobSha": "341e2144f6cb2b07dc97f1c2163c42c2e1a968bc"
+      },
+      "action": "PORT_SELECTIVE",
+      "target": {
+        "path": "src/platform/SocialMediaEngine/Visualization/PlanningVisualToolCatalog.ts",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": []
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Catalog facts must be refreshed before runtime/tool admission; evaluated candidates do not become dependencies."
+      ]
+    },
+    {
+      "id": "SOC-009",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "src/platform/SocialMediaEngine/types.ts",
+        "blobSha": "16edc0a5c3dcaaa309e0e73a3e899fe90409293d"
+      },
+      "action": "PORT_SELECTIVE",
+      "target": {
+        "path": "src/platform/SocialMediaEngine/types.ts",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": []
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Remove stale handover claims and split publishing/auth types from provider-neutral media contracts."
+      ]
+    },
+    {
+      "id": "SOC-010",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "src/platform/SocialMediaEngine/index.ts",
+        "blobSha": "67b63b827bf7d77315734ee6d69149c3e81d2a6e"
+      },
+      "action": "PORT_ADAPT",
+      "target": {
+        "path": "src/platform/SocialMediaEngine/index.ts",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": []
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Barrel exported only after each child component passes its own gate."
+      ]
+    },
+    {
+      "id": "SOC-011",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "src/platform/SocialMediaEngine/SocialMediaGeneratorService.ts",
+        "blobSha": "0e2c807dd20b0a0dce5c8ff5a3e65dfafa6ce8bf"
+      },
+      "action": "REWRITE_CURRENT_AUTH",
+      "target": {
+        "path": "src/platform/SocialMediaEngine/SocialMediaGeneratorService.ts",
+        "state": "PROPOSED_REWRITE",
+        "authorityIds": [
+          "TA-AUTH",
+          "TA-AUTH-SECURITY"
+        ]
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Finance authFetch/Supabase session binding must not be copied."
+      ]
+    },
+    {
+      "id": "SOC-012",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "server/socialMedia/textContentGeneration.ts",
+        "blobSha": "708308155a2a28a38b5588c04d23ef298f2b4845"
+      },
+      "action": "PORT_ADAPT",
+      "target": {
+        "path": "server/socialMedia/textContentGeneration.ts",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": [
+          "TA-MARKET-RIGHTS"
+        ]
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Financial claims must bind admitted ContentFact/rights evidence rather than free-form context."
+      ]
+    },
+    {
+      "id": "SOC-013",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "server/socialMedia/scriptTemplates.ts",
+        "blobSha": "b9997507a5187efa9c2e0b1c9309eea01f5f95a2"
+      },
+      "action": "PORT_ADAPT",
+      "target": {
+        "path": "server/socialMedia/scriptTemplates.ts",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": [
+          "TA-MARKET-RIGHTS"
+        ]
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": []
+    },
+    {
+      "id": "SOC-014",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "server/socialMedia/socialContentPackage.ts",
+        "blobSha": "7c2865907c3e26cc08957be7aca0684ac979b96d"
+      },
+      "action": "PORT_ADAPT",
+      "target": {
+        "path": "server/socialMedia/socialContentPackage.ts",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": [
+          "TA-MARKET-RIGHTS"
+        ]
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Preserve provenance and UNKNOWN publication state."
+      ]
+    },
+    {
+      "id": "SOC-015",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "server/socialMedia/voiceContract.ts",
+        "blobSha": "2bfe6147207d19790e8f4405449393162b676103"
+      },
+      "action": "PORT",
+      "target": {
+        "path": "server/socialMedia/voiceContract.ts",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": []
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Voice license/consent references remain mandatory."
+      ]
+    },
+    {
+      "id": "SOC-016",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "server/socialMedia/p1Benchmark.ts",
+        "blobSha": "1d3fc7cc0e3b6c52eee339f9529498eafd1106d8"
+      },
+      "action": "PORT_ADAPT",
+      "target": {
+        "path": "server/socialMedia/p1Benchmark.ts",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": []
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Candidate set must be re-correlated against current artifact licenses before runtime."
+      ]
+    },
+    {
+      "id": "SOC-017",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "server/socialMedia/contentApproval.ts",
+        "blobSha": "b8ad8c3e1512c94c4f871ca1bedfce8bbf9a8eda"
+      },
+      "action": "PORT_CONTRACT_REWRITE_STORAGE",
+      "target": {
+        "path": "server/socialMedia/contentApproval.ts",
+        "state": "PROPOSED_REWRITE",
+        "authorityIds": []
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "In-memory approval store is not acceptable as production persistence."
+      ]
+    },
+    {
+      "id": "SOC-018",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "server/socialMedia/publicationAnalyticsEvidence.ts",
+        "blobSha": "dec00738069a3bd0aba4051bc3b5dc72bf87dc8b"
+      },
+      "action": "PORT_ADAPT",
+      "target": {
+        "path": "server/socialMedia/publicationAnalyticsEvidence.ts",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": []
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Extend provider terminal states to include UNKNOWN/PARTIAL where target publisher requires it."
+      ]
+    },
+    {
+      "id": "SOC-019",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "server/socialMedia/mediaAssetValidation.ts",
+        "blobSha": "bb6569cc29d9e36ced883421eb4ca5684a4618ef"
+      },
+      "action": "PORT_SECURITY_REVIEW",
+      "target": {
+        "path": "server/socialMedia/mediaAssetValidation.ts",
+        "state": "PROPOSED_REWRITE",
+        "authorityIds": [
+          "TA-AUTH-SECURITY"
+        ]
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Preserve SSRF/DNS-rebinding protections; revalidate against target HTTP stack."
+      ]
+    },
+    {
+      "id": "SOC-020",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "server/socialMedia/platformPublishers.ts",
+        "blobSha": "30498e609bd2cbfec3c53122013c060cf25448d9"
+      },
+      "action": "REWRITE_CURRENT_PROVIDER_CONTRACTS",
+      "target": {
+        "path": "server/socialMedia/platformPublishers.ts",
+        "state": "PROPOSED_REWRITE",
+        "authorityIds": [
+          "TA-AUTH",
+          "TA-AUTH-SECURITY"
+        ]
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Provider API versions/scopes/app review and completion readback must be freshly verified."
+      ]
+    },
+    {
+      "id": "SOC-021",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "server/socialMedia/publishLog.ts",
+        "blobSha": "ddf6182dcd8edd53908b20c08d00f4ff20eacbab"
+      },
+      "action": "REWRITE_STORAGE",
+      "target": {
+        "path": "server/socialMedia/publishLog.ts",
+        "state": "PROPOSED_REWRITE",
+        "authorityIds": []
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Do not copy historic Supabase identity assumptions; preserve durable provider-state evidence."
+      ]
+    },
+    {
+      "id": "SOC-022",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "scripts/media/capital_ai_media.py",
+        "blobSha": "31b52e08e77424a1904eceed5b362a49d937715e"
+      },
+      "action": "PORT_WITH_LICENSE_GATE",
+      "target": {
+        "path": "scripts/media/capital_ai_media.py",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": []
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Exact FFmpeg/codec build profile must pass admission before production."
+      ]
+    },
+    {
+      "id": "SOC-023",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "scripts/media/render_content_assets.py",
+        "blobSha": "14cc8758bc7169e2cfab81b55b08e81fea3f26bf"
+      },
+      "action": "PORT_WITH_LICENSE_GATE",
+      "target": {
+        "path": "scripts/media/render_content_assets.py",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": []
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": []
+    },
+    {
+      "id": "SOC-024",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "scripts/docs/export_pdf_media_bundle.py",
+        "blobSha": "6ae78f03cae0962db1f85a601082f81202119bef"
+      },
+      "action": "PORT_WITH_LICENSE_GATE",
+      "target": {
+        "path": "scripts/docs/export_pdf_media_bundle.py",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": []
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Poppler and FFmpeg packaging remain separately admitted."
+      ]
+    },
+    {
+      "id": "SOC-025",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "server/socialMedia/tokenStore.ts",
+        "blobSha": "2ddba28a0c0e54f5c778a719a3b23771eacae31b"
+      },
+      "action": "DROP_NO_MIGRATION",
+      "target": {
+        "path": null,
+        "state": "NO_TARGET_FILE",
+        "authorityIds": [
+          "TA-AUTH",
+          "TA-USER-VAULT",
+          "TA-BYOK-BOUNDARY"
+        ]
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Historic encrypted token rows, user IDs and Supabase assumptions must not migrate."
+      ]
+    },
+    {
+      "id": "SOC-026",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "server/socialMedia/oauthProviders.ts",
+        "blobSha": "906f279985a6d92e777b78e2c731a10bcf8934b0"
+      },
+      "action": "REWRITE_CURRENT_PROVIDER_CONTRACTS",
+      "target": {
+        "path": "server/socialMedia/oauthProviders.ts",
+        "state": "PROPOSED_REWRITE",
+        "authorityIds": [
+          "TA-AUTH",
+          "TA-AUTH-SECURITY"
+        ]
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": []
+    },
+    {
+      "id": "SOC-027",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "server/socialMedia/oauthExchange.ts",
+        "blobSha": "5b8acb5875cc938c294028c9d74b8ccbb7742676"
+      },
+      "action": "REWRITE_CURRENT_AUTH",
+      "target": {
+        "path": "server/socialMedia/oauthExchange.ts",
+        "state": "PROPOSED_REWRITE",
+        "authorityIds": [
+          "TA-AUTH",
+          "TA-AUTH-SECURITY"
+        ]
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "No Finance OAuth state or token persistence is copied."
+      ]
+    },
+    {
+      "id": "SOC-028",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "src/routes/socialMediaRoutes.ts",
+        "blobSha": "561dc61974e9544e2847f0570f7517001c7a0f28"
+      },
+      "action": "REWRITE_CURRENT_RUNTIME",
+      "target": {
+        "path": "server/socialMedia/routes.ts",
+        "state": "PROPOSED_REWRITE",
+        "authorityIds": [
+          "TA-AUTH",
+          "TA-AUTH-SECURITY"
+        ]
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Recompose under current target server/auth boundaries."
+      ]
+    },
+    {
+      "id": "SOC-029",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "supabase/migrations/20260801150000_social_media_publishing.sql",
+        "blobSha": "3e622d0fba3c57dcdd3eea0db431e0d16ec527f9"
+      },
+      "action": "DROP_REDESIGN_SCHEMA",
+      "target": {
+        "path": null,
+        "state": "NO_TARGET_FILE",
+        "authorityIds": [
+          "TA-AUTH",
+          "TA-USER-VAULT"
+        ]
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Do not replay historic migration; new schema must bind current auth identity and secret boundary."
+      ]
+    },
+    {
+      "id": "SOC-030",
+      "domain": "SOCIAL",
+      "source": {
+        "path": "supabase/migrations/20260815140000_social_media_content_approvals.sql",
+        "blobSha": "963fa41abf38b7eb102abb3cf057a26605e97571"
+      },
+      "action": "DROP_REDESIGN_SCHEMA",
+      "target": {
+        "path": null,
+        "state": "NO_TARGET_FILE",
+        "authorityIds": [
+          "TA-AUTH"
+        ]
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Approval persistence must be redesigned with immutable asset/content identity and current user identity."
+      ]
+    },
+    {
+      "id": "MKT-001",
+      "domain": "MARKET",
+      "source": {
+        "path": "src/platform/Scoring/ValidatedFinancialFeatureContract.ts",
+        "blobSha": "f0d015e7ba17eae97ba626343b09e1ac352b7370"
+      },
+      "action": "PORT_ADAPT",
+      "target": {
+        "path": "src/contracts/validatedFinancialFeatureMapping.ts",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": [
+          "TA-ASSET-FEATURE",
+          "TA-PIPELINE",
+          "TA-RAW-FEATURES",
+          "TA-MARKET-RIGHTS"
+        ]
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "One-to-one source-field mapping and provenance are useful; target rights contract remains authoritative."
+      ]
+    },
+    {
+      "id": "MKT-002",
+      "domain": "MARKET",
+      "source": {
+        "path": "src/platform/Scoring/ScoringModelRegistry.ts",
+        "blobSha": "24487bdf420e44e5ffcd8432c4b8aa9b53edbede"
+      },
+      "action": "CONVERGE_INTO_EXISTING_AUTHORITY",
+      "target": {
+        "path": "src/contracts/analysisComponentRegistry.ts",
+        "state": "EXISTING_AUTHORITY",
+        "authorityIds": [
+          "TA-COMPONENT-REGISTRY",
+          "TA-SCORING",
+          "TA-PIPELINE"
+        ]
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Do not create a parallel ScoringModelRegistry until a separate authority migration explicitly replaces current target contracts."
+      ]
+    },
+    {
+      "id": "MKT-003",
+      "domain": "MARKET",
+      "source": {
+        "path": "src/platform/Scoring/ScoringDispatcher.ts",
+        "blobSha": "98b6d017841980257da1288dac6b82e603d8c13b"
+      },
+      "action": "CONVERGE_INTO_EXISTING_AUTHORITY",
+      "target": {
+        "path": "src/services/scoringEngine.ts",
+        "state": "EXISTING_AUTHORITY",
+        "authorityIds": [
+          "TA-SCORING",
+          "TA-PIPELINE",
+          "TA-COMPONENT-REGISTRY"
+        ]
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Dispatcher semantics may inform refactoring; no second productive executor."
+      ]
+    },
+    {
+      "id": "MKT-004",
+      "domain": "MARKET",
+      "source": {
+        "path": "src/platform/Scoring/UniversalAssetAdapter.ts",
+        "blobSha": "45c36805d58caab3eedb1a8f72ae77082a3f895c"
+      },
+      "action": "CONVERGE_INTO_EXISTING_AUTHORITY",
+      "target": {
+        "path": "src/contracts/canonicalContracts.ts",
+        "state": "EXISTING_AUTHORITY",
+        "authorityIds": [
+          "TA-ASSET-FEATURE"
+        ]
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Map useful normalization to existing AssetIdentity; do not create competing asset IDs."
+      ]
+    },
+    {
+      "id": "MKT-005",
+      "domain": "MARKET",
+      "source": {
+        "path": "src/platform/Scoring/AnalysisConnectionRegistry.ts",
+        "blobSha": "c4bc7f75ad2050fa6767a9863c9d448e32a0159d"
+      },
+      "action": "CONVERGE_INTO_EXISTING_AUTHORITY",
+      "target": {
+        "path": "src/contracts/analysisComponentRegistry.ts",
+        "state": "EXISTING_AUTHORITY",
+        "authorityIds": [
+          "TA-COMPONENT-REGISTRY"
+        ]
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Only capability/evidence metadata not already represented may be added."
+      ]
+    },
+    {
+      "id": "MKT-006",
+      "domain": "MARKET",
+      "source": {
+        "path": "src/platform/Scoring/CryptoOrchestratorResearchModels.ts",
+        "blobSha": "8b5216fdc6a2e269ca76c0e24f7c10f6c3b05b50"
+      },
+      "action": "PORT_RESEARCH_ONLY",
+      "target": {
+        "path": "src/services/cryptoResearchModels.ts",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": [
+          "TA-SCORING",
+          "TA-PIPELINE",
+          "TA-MARKET-RIGHTS"
+        ]
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "scoreEligible=false; decisionEligible=false; executionEligible=false until separate promotion."
+      ]
+    },
+    {
+      "id": "MKT-007",
+      "domain": "MARKET",
+      "source": {
+        "path": "src/platform/FinTechCore/Modules/Crypto/Pattern/PatternResearchEngine.ts",
+        "blobSha": "a36d773890c8e24cb83f254279c55c3a49e781ee"
+      },
+      "action": "PORT_RESEARCH_ONLY",
+      "target": {
+        "path": "src/services/patternResearchEngine.ts",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": [
+          "TA-COMPONENT-REGISTRY",
+          "TA-PIPELINE"
+        ]
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Retain RESEARCH_CONTEXT_ONLY authority."
+      ]
+    },
+    {
+      "id": "MKT-008",
+      "domain": "MARKET",
+      "source": {
+        "path": "src/platform/FinTechCore/Modules/Crypto/Pattern/PatternSignalResolver.ts",
+        "blobSha": "34501b1a2f6c9cea94db04cb89a167477ac7c380"
+      },
+      "action": "PORT_RESEARCH_ONLY",
+      "target": {
+        "path": "src/services/patternSignalResolver.ts",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": [
+          "TA-COMPONENT-REGISTRY",
+          "TA-PIPELINE"
+        ]
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": []
+    },
+    {
+      "id": "MKT-009",
+      "domain": "MARKET",
+      "source": {
+        "path": "src/platform/Scoring/CryptoCategoryResearchScoring.ts",
+        "blobSha": "1b3e276fb4f399d98de41838f9ee42e7fe2c142f"
+      },
+      "action": "PORT_RESEARCH_ONLY",
+      "target": {
+        "path": "src/services/cryptoCategoryResearchScoring.ts",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": [
+          "TA-SCORING",
+          "TA-PIPELINE",
+          "TA-MARKET-RIGHTS"
+        ]
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Research composite scores are not canonical productive scores."
+      ]
+    },
+    {
+      "id": "MKT-010",
+      "domain": "MARKET",
+      "source": {
+        "path": "src/services/candlestickPatterns.ts",
+        "blobSha": "d0c2468a0c92f8cd31a56a9190f946df98618ce8"
+      },
+      "action": "PORT_RESEARCH_ONLY",
+      "target": {
+        "path": "src/services/candlestickPatterns.ts",
+        "state": "PROPOSED_NEW_FILE",
+        "authorityIds": [
+          "TA-RAW-FEATURES",
+          "TA-MARKET-RIGHTS"
+        ]
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Remove provider-specific Binance example as authority; require admitted OHLC provenance."
+      ]
+    },
+    {
+      "id": "MKT-011",
+      "domain": "MARKET",
+      "source": {
+        "path": "server/marketData/marketDataCompatibilityFacade.ts",
+        "blobSha": "2ebd8711524812464b5cf1272271989658e2de69"
+      },
+      "action": "SUPERSEDED_BY_CURRENT_TARGET",
+      "target": {
+        "path": "server/market.mjs",
+        "state": "EXISTING_AUTHORITY",
+        "authorityIds": [
+          "TA-MARKET-RUNTIME",
+          "TA-PROVIDER-ADAPTERS",
+          "TA-MARKET-RIGHTS",
+          "TA-COMMERCIAL-LANE"
+        ]
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Current target has stronger fail-closed open-data/commercial-lane rights boundaries; do not port compatibility fallback."
+      ]
+    },
+    {
+      "id": "MKT-012",
+      "domain": "MARKET",
+      "source": {
+        "path": "server/marketData/createApplicationMarketDataRuntime.ts",
+        "blobSha": "170c872b04c84c5930c22aab431269eca05324a2"
+      },
+      "action": "SUPERSEDED_BY_CURRENT_TARGET",
+      "target": {
+        "path": "server/market.mjs",
+        "state": "EXISTING_AUTHORITY",
+        "authorityIds": [
+          "TA-MARKET-RUNTIME",
+          "TA-PROVIDER-ADAPTERS",
+          "TA-MARKET-RIGHTS",
+          "TA-COMMERCIAL-LANE"
+        ]
+      },
+      "licenseGate": "CAPITAL_AI_PROPRIETARY_SOURCE_AND_THIRD_PARTY_RECHECK",
+      "notes": [
+        "Historic static tickers/provider ordering must not supersede current source-admission policy."
+      ]
+    }
+  ],
+  "summary": {
+    "totalEntries": 42,
+    "socialEntries": 30,
+    "marketEntries": 12,
+    "proposedNewOrRewrite": 33,
+    "existingAuthorityConvergence": 6,
+    "noTargetFile": 3
+  },
+  "followUpBacklog": {
+    "id": "CAPITAL-AI-FINANCE-SCORING-DATA-FOLLOWUP-01",
+    "domain": "MARKET",
+    "state": "BLOCKED_BY_SOCIAL_MEDIA_ENGINE_MIGRATION",
+    "startGate": "Social Media Engine migration completed with cutover/validation evidence",
+    "scope": [
+      "Finance scoring models",
+      "Finance weighting models",
+      "already implemented Finance data concepts and data-processing semantics",
+      "research/pattern/sentiment/momentum/regime concepts where compatible with current Capital-AI authorities"
+    ],
+    "rules": [
+      "Re-correlate against CURRENT_MAIN before implementation.",
+      "Preserve one canonical scoring authority; no parallel productive registry or dispatcher.",
+      "Rights/freshness/provenance gates remain fail-closed.",
+      "Research-only models remain scoreEligible=false and decisionEligible=false until separately promoted."
+    ]
+  }
+}

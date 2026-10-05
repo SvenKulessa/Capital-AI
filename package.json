@@ -13,7 +13,7 @@
     "growth:gsc:mcp": "node scripts/gsc-mcp-guard.mjs",
     "test:navigation": "node --import tsx --test scripts/navigation.test.mjs",
     "test:roadmap": "node --import tsx --test src/data/__tests__/roadmapDomainBranding.test.ts",
-    "test": "node --import tsx scripts/validate-contract-suites.mjs && node --import tsx --test scripts/navigation.test.mjs src/contracts/__tests__/analysisFoundation.test.ts src/contracts/__tests__/marketDataRightsEligibility.test.ts src/contracts/__tests__/commercialLicensedDataLane.test.ts src/contracts/__tests__/marketClaimEligibility.test.ts src/contracts/__tests__/financialDataNetIntegration.test.ts src/data/__tests__/vocabularyData.test.ts src/data/__tests__/roadmapDomainBranding.test.ts src/platform/Documentary/__tests__/documentaryProjection.test.ts src/features/auth/webauthn.test.ts && node --import tsx scripts/generate-documentary.mjs --check && node --test scripts/documentation-drift.test.mjs && node --test packages/benchmark-core/index.test.mjs",
+    "test": "node --import tsx scripts/validate-contract-suites.mjs && node --import tsx --test scripts/navigation.test.mjs src/contracts/__tests__/analysisFoundation.test.ts src/contracts/__tests__/marketDataRightsEligibility.test.ts src/contracts/__tests__/commercialLicensedDataLane.test.ts src/contracts/__tests__/marketClaimEligibility.test.ts src/contracts/__tests__/financialDataNetIntegration.test.ts src/data/__tests__/vocabularyData.test.ts src/data/__tests__/roadmapDomainBranding.test.ts src/platform/Documentary/__tests__/documentaryProjection.test.ts src/features/auth/webauthn.test.ts && node --import tsx scripts/generate-documentary.mjs --check && node --test scripts/documentation-drift.test.mjs && node --test packages/benchmark-core/index.test.mjs && node --test scripts/finance-source-target-manifest.test.mjs",
     "documentary:generate": "node --import tsx scripts/generate-documentary.mjs --write",
     "documentary:check": "node --import tsx scripts/generate-documentary.mjs --check",
     "clean": "rm -rf dist server.js",
@@ -34,7 +34,8 @@
     "test:frontend-boundaries": "node scripts/validate-frontend-boundaries.mjs",
     "auth:config:check": "node scripts/supabase-auth-config.mjs",
     "test:webauthn": "node --import tsx --test src/features/auth/webauthn.test.ts",
-    "test:seo": "node --test server/well-known.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-metadata.test.mjs server/seo-indexing-policy.test.mjs server/research-pages.test.mjs"
+    "test:seo": "node --test server/well-known.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-metadata.test.mjs server/seo-indexing-policy.test.mjs server/research-pages.test.mjs",
+    "test:migration-manifest": "node --test scripts/finance-source-target-manifest.test.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.26.0",
