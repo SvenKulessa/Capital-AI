@@ -65,3 +65,11 @@ test('asset manifest is rights-bound, non-publishing and byte-consistent for all
     assert.equal(sha256(path), asset.sha256, 'SHA-256 mismatch: ' + asset.path);
   }
 });
+
+test('subscription and role badges are shipped into the Docker build context', () => {
+  for (const name of ['starter.svg', 'pro.svg', 'enterprise.svg', 'free-user.svg', 'vault.svg', 'owner.svg']) {
+    assert.ok(existsSync(resolve(root, 'public/branding/badges', name)), 'account badge missing: ' + name);
+  }
+  const dockerfile = readFileSync(resolve(root, 'Dockerfile'), 'utf8');
+  assert.match(dockerfile, /COPY public\/branding\/badges \.\/public\/branding\/badges/);
+});
