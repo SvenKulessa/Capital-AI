@@ -107,9 +107,23 @@ describe('provider rights inventory projection', () => {
   const projections = inventory.providers.map(projectProviderRights);
   const cohort = bindFirstActivationCohort(projections);
 
-  it('projects the five inventoried providers without filling null rights', () => {
+  it('projects provider rights without promoting conditional Twelve Data evidence to deployment eligibility', () => {
     assert.deepEqual(projections.map(item => item.providerId), ['binance', 'kraken', 'twelvedata', 'polygon', 'financialdatanet']);
-    for (const projection of projections) {
+
+    const twelveData = projections.find(item => item.providerId === 'twelvedata');
+    assert.ok(twelveData);
+    assert.equal(twelveData.inventoryStatus, 'WRITTEN_CONDITIONAL_RIGHTS_CONTRACT_SCOPE_UNVERIFIED');
+    assert.equal(twelveData.deployEligible, false);
+    assert.equal(twelveData.datasetScopeVerified, false);
+    assert.equal(twelveData.evidence.feedsSymbolsAndVenues, null);
+    assert.equal(twelveData.evidence.permissions.public_display.allowed, true);
+    assert.equal(twelveData.evidence.permissions.derived_scoring_research.allowed, true);
+    assert.equal(twelveData.evidence.permissions.api_redistribution.allowed, false);
+    assert.equal(twelveData.evidence.permissions.export_resale.allowed, false);
+    assert.equal(twelveData.researchOnly.eligible, false);
+    assert.equal(twelveData.commercialProduct.eligible, false);
+
+    for (const projection of projections.filter(item => item.providerId !== 'twelvedata')) {
       assert.equal(projection.inventoryStatus, 'CONTRACT_SCOPE_UNVERIFIED');
       assert.equal(projection.deployEligible, false);
       assert.equal(projection.datasetScopeVerified, false);
@@ -141,12 +155,23 @@ describe('provider rights inventory projection', () => {
     assert.equal(fdn.commercialProduct.decision, 'REVIEW_REQUIRED');
   });
 
-  it('keeps the research path from authorizing the commercial path', () => {
+  it('keeps research and conditional rights fail-closed for commercial redistribution', () => {
     for (const projection of projections) {
+      assert.equal(projection.deployEligible, false);
+      assert.equal(projection.datasetScopeVerified, false);
       assert.equal(projection.researchOnly.eligible, false);
-      assert.equal(evaluateMarketDataRights(projection.evidence, ['scientific_research_tdm', 'api_redistribution']).eligible, false);
-      assert.ok(projection.researchScope?.includes('NOT_ARCHIVED_EXECUTED_CONTRACT'));
+      assert.equal(projection.commercialProduct.eligible, false);
+      assert.equal(
+        evaluateMarketDataRights(projection.evidence, ['scientific_research_tdm', 'api_redistribution']).eligible,
+        false,
+      );
     }
+
+    const twelveData = projections.find(item => item.providerId === 'twelvedata');
+    assert.ok(twelveData);
+    assert.equal(twelveData.evidence.permissions.api_redistribution.allowed, false);
+    assert.notEqual(twelveData.commercialProduct.decision, 'ALLOW');
+    assert.notEqual(twelveData.commercialProduct.decision, 'ALLOW_WITH_OBLIGATIONS');
   });
 
   it('binds integrity, data quality and liquidity without commercial activation', () => {
