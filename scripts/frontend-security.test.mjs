@@ -58,15 +58,19 @@ test('app error boundary fails closed to the bootstrap fallback', () => {
 });
 
 
-test('index shell stays hidden during normal bootstrap and exposes recovery only after 10 seconds', async () => {
+test('index shell reveals recovery only on a real entry-script load failure', async () => {
   const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-  assert.match(html, /<div id="root">[\s\S]*<main id="capital-ai-bootstrap-fallback"/);
-  assert.match(html, /#capital-ai-bootstrap-fallback[\s\S]*visibility:\s*hidden/);
-  assert.match(html, /animation:\s*capitalAiBootstrapFallback 0s linear 10s forwards/);
-  assert.match(html, /Die Oberfläche konnte noch nicht geladen werden\./);
-  assert.match(html, /Dieser Hinweis erscheint erst nach 10 Sekunden ohne erfolgreichen Seitenaufbau\./);
+  const watcher = await readFile(new URL('../public/bootstrap-failure.js', import.meta.url), 'utf8');
+
+  assert.match(html, /<main id="capital-ai-bootstrap-fallback" hidden/);
+  assert.match(html, /<script id="capital-ai-entry" type="module" src="\/src\/main\.tsx"><\/script>/);
+  assert.match(html, /<script src="\/bootstrap-failure\.js"><\/script>/);
+  assert.doesNotMatch(html, /10s|10 Sekunden|capitalAiBootstrapFallback|setTimeout/);
+  assert.match(html, /Die Oberfläche konnte nicht geladen werden\./);
+  assert.match(watcher, /entry\.addEventListener\('error'/);
+  assert.match(watcher, /fallback\.hidden = false/);
+  assert.doesNotMatch(watcher, /setTimeout|unhandledrejection/);
   assert.match(html, /<noscript>/);
-  assert.doesNotMatch(html, /Marktdaten verstehen\. Chancen besser erkennen\./);
 });
 
 test('research pages render source links and never grant project entitlements', () => {
