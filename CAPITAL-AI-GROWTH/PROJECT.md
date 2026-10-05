@@ -16,3 +16,16 @@ PR-Präfix: `[CAPITAL-AI-GROWTH]`
 ## Branding
 Badge: `badge.svg` — Gold / Dunkelbraun; Blatt mit aufsteigendem Pfeil.
 Lizenznachweis: `growth.LICENSE.md`.
+
+## Kanonisches SEO-Arbeitspaket
+
+Die zusammengeführte technische SEO-Roadmap steht in
+`docs/growth/SEO-ARCHITECTURE-WORK-PACKAGE-20261005.md`.
+
+Die Control-Center-Roadmap führt dafür genau ein GROWTH-Paket:
+`CA-GROWTH-SEO-ARCHITECTURE`.
+
+Die Reihenfolge `SEO-00 → SEO-11` ist ausführungsleitend. Bestehende Metadaten,
+Vocabulary-SEO, `robots.txt`, `sitemap.xml`, SEO-Tabellen und der read-only
+GSC-Adapter sind Ausgangsevidence, aber keine pauschale SEO-/Production-Freigabe.
+

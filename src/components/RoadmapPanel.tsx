@@ -98,7 +98,13 @@ export const RoadmapPanel: React.FC = () => {
           <details className="mt-3 text-sm">
             <summary className="cursor-pointer text-amber-300">Nächster Schritt und Nachweise</summary>
             <p className="mt-2">{item.nextStep}</p>
-            {item.evidenceRefs.length > 0 ? <ul className="mt-2 space-y-1">{item.evidenceRefs.map(ref => <li key={ref}>
+            {item.deliverables.length > 0 && <>
+              <p className="mt-3 font-semibold text-slate-200">Arbeitspunkte · Reihenfolge wie in der Roadmap</p>
+              <ol className="mt-2 list-decimal space-y-1 pl-5 text-slate-300">
+                {item.deliverables.map(deliverable => <li key={deliverable}>{deliverable}</li>)}
+              </ol>
+            </>}
+            {item.evidenceRefs.length > 0 ? <ul className="mt-3 space-y-1">{item.evidenceRefs.map(ref => <li key={ref}>
               <a className="text-emerald-300 underline break-all" href={ref.startsWith('https://') ? ref : `https://github.com/${ROADMAP_SNAPSHOT.repository}/blob/${ROADMAP_SNAPSHOT.sourceSha}/${ref}`}>{ref}</a>
             </li>)}</ul> : <p className="text-slate-400 mt-2">Für den vollständigen Zielumfang wurde in diesem Abgleich kein Abschlussnachweis zugeordnet.</p>}
             {item.dependencies && <p className="text-slate-400 mt-2">Abhängigkeiten: {item.dependencies.join(', ')}</p>}

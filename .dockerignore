@@ -30,6 +30,8 @@
 !server/http-security.mjs
 !server/mta-sts.mjs
 !server/mta-sts.test.mjs
+!server/well-known.mjs
+!server/well-known.test.mjs
 !server/shadow-evidence-store.mjs
 !server/infrastructure.mjs
 !server/scorer-bus.mjs
@@ -43,6 +45,8 @@
 !shared/license-engine.mjs
 !shared/research-metadata.mjs
 !shared/vocabulary-metadata.mjs
+!shared/seo-indexing-policy.mjs
+!shared/seo-content-manifest.mjs
 !deploy/
 !deploy/runtime/
 !deploy/runtime/package.json
@@ -72,6 +76,7 @@
 !scripts/generate-documentary.mjs
 !scripts/supabase-auth-config.mjs
 !scripts/supabase-auth-config.test.mjs
+!scripts/seo-content-manifest.test.mjs
 !contracts/
 !contracts/**
 !documentary/

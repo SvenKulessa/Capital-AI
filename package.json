@@ -32,7 +32,8 @@
     "documentary:drift": "node scripts/documentation-drift.mjs",
     "test:frontend-boundaries": "node scripts/validate-frontend-boundaries.mjs",
     "auth:config:check": "node scripts/supabase-auth-config.mjs",
-    "test:webauthn": "node --import tsx --test src/features/auth/webauthn.test.ts"
+    "test:webauthn": "node --import tsx --test src/features/auth/webauthn.test.ts",
+    "test:seo": "node --test server/well-known.test.mjs scripts/seo-content-manifest.test.mjs server/seo-indexing-policy.test.mjs server/research-pages.test.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.26.0",
