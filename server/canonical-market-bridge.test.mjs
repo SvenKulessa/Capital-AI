@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { CanonicalMarketEventSchema, canonicalMarketSubject } from '../shared/canonical-market-events.mjs';
 import { normalizeRawQuoteEvidence } from './canonical-market-bridge.mjs';
+import { MarketInfrastructure } from './infrastructure.mjs';
 
 const rawEvidenceId = 'CAPITAL_FACTS:42:' + 'a'.repeat(64);
 const rawRecord = {
@@ -94,4 +95,21 @@ test('canonical event rejects actionability, broken lineage and inconsistent tim
     ...valid,
     provenance: { ...valid.provenance, latencyMs: 999 },
   }).success, false);
+});
+
+
+test('canonical persistence remains blocked while no market-quote source is admitted', async () => {
+  const event = normalizeRawQuoteEvidence({
+    rawInputEvidenceId: rawEvidenceId,
+    rawRecord,
+    asset,
+    providerDataset: 'fixture-dataset',
+    rightsEvidenceReference: 'TEST-RIGHTS-EVIDENCE',
+    instrumentManifestReference: 'TEST-INSTRUMENT-MANIFEST',
+    normalizationVersion: '1.0.0',
+    publishedAt: rawRecord.fact.receivedAt + 1,
+    licenseScope: 'commercial_redistribution',
+  });
+  const service = new MarketInfrastructure({});
+  await assert.rejects(service.persistCanonical(event), /CANONICAL_PROVIDER_NOT_ADMITTED/);
 });
