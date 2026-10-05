@@ -252,6 +252,11 @@ export function createApp(root = defaultRoot, options = {}) {
     res.writeHead(200, { ...headers, 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
     return res.end(xml);
   }
+  if (publicPath.startsWith('/downloads/blueprints/')) {
+    res.writeHead(404, { ...headers, 'Cache-Control': 'no-store' });
+    res.end();
+    return;
+  }
   if (publicPath.startsWith('/vocabulary/') && !vocabularyMetadataByPath.has(publicPath)) {
     res.writeHead(404, headers);
     return res.end();
