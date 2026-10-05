@@ -47,7 +47,7 @@ test("workflow overlap is manual review required", () => {
   assert.equal(r.exactOverlap.length, 1);
 });
 
-test("relevant low-risk docs overlap requires sync before promotion", () => {
+test("relevant low-risk docs overlap requires sync without explicit admission", () => {
   const r = classifyOpenPr({
     mergedFiles: ["docs/architecture/FOO.md"],
     mainSha,
@@ -56,10 +56,10 @@ test("relevant low-risk docs overlap requires sync before promotion", () => {
     patternState: {},
   });
   assert.equal(r.action, ACTIONS.SYNC_REQUIRED);
-  assert.equal(r.repair.promotionState, "OBSERVE_ONLY");
+  assert.equal(r.repair.admissionState, "NOT_ADMITTED");
 });
 
-test("same low-risk fingerprint becomes repair candidate only after 3 positive cycles", () => {
+test("same low-risk fingerprint becomes repair candidate only with explicit admission", () => {
   const first = classifyOpenPr({
     mergedFiles: ["docs/architecture/FOO.md"],
     mainSha,
@@ -69,8 +69,7 @@ test("same low-risk fingerprint becomes repair candidate only after 3 positive c
   });
   const state = {
     [first.repair.fixFingerprint]: {
-      positiveValidationCount: 3,
-      promotionState: "PROMOTED",
+      admissionState: "ADMITTED",
     },
   };
   const promoted = classifyOpenPr({
@@ -95,7 +94,7 @@ test("NATS is never redeployed from repository head alone", () => {
   assert.equal(report.globalPolicy.deploy, false);
 });
 
-test("five-stage approval blocks autonomous repair until verify is present", () => {
+test("technical checks block autonomous repair until required checks are revalidated", () => {
   const first = classifyOpenPr({
     mergedFiles: ["generated/documentary/index.json"],
     mainSha,
@@ -105,8 +104,7 @@ test("five-stage approval blocks autonomous repair until verify is present", () 
   });
   const state = {
     [first.repair.fixFingerprint]: {
-      positiveValidationCount: 3,
-      promotionState: "PROMOTED",
+      admissionState: "ADMITTED",
     },
   };
   const promoted = classifyOpenPr({
@@ -117,8 +115,9 @@ test("five-stage approval blocks autonomous repair until verify is present", () 
     patternState: state,
   });
   assert.equal(promoted.action, ACTIONS.REPAIR_CANDIDATE);
-  assert.equal(promoted.approve5.A5_VERIFY, false);
-  assert.equal(promoted.fiveStageComplete, false);
+  assert.equal(promoted.technicalChecks.REQUIRED_CHECKS_REVALIDATED, false);
+  assert.equal(promoted.mutationEligible, false);
+  assert.equal(promoted.repair.autoMutationAllowed, false);
 });
 
 test("summary classifies all open PR actions deterministically", () => {
@@ -131,9 +130,9 @@ test("summary classifies all open PR actions deterministically", () => {
       { ...basePr, number: 201, behindBy: 0, files: ["README.md"] },
     ],
   });
-  assert.equal(report.schema, "POST_MERGE_CORRELATION@2");
-  assert.equal(report.rule3.minimumIndependentPositiveValidationCycles, 3);
-  assert.equal(report.rule5.stages.length, 5);
+  assert.equal(report.schema, "POST_MERGE_CORRELATION@3");
+  assert.equal(report.technicalAdmission.explicitRepairAdmissionRequired, true);
+  assert.equal(report.technicalAdmission.requiredChecksRevalidationRequired, true);
   assert.equal(report.summary.totalOpenPrs, 2);
   assert.equal(report.openPrs[0].action, ACTIONS.MANUAL_REVIEW_REQUIRED);
   assert.equal(report.openPrs[1].action, ACTIONS.NO_ACTION);
