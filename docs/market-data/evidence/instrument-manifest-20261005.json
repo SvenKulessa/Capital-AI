@@ -1,10 +1,8 @@
 {
   "schema": "CAPITAL_AI_REAL_INSTRUMENT_MANIFEST@1",
   "manifestVersion": "2026-10-05.1",
-  "sourceCommit": "8045c78956e163af3011ed47f734184aca14aa04",
-  "observedAt": "2026-10-05T01:36:00+02:00",
-  "canonicalPayloadSha256": "e17ca830202f92dae9f2e127c33b53ad05ad3d5d31fce00f120b1d2efea00298",
-  "hashScope": "Canonical JSON payload before adding canonicalPayloadSha256/hashScope",
+  "sourceCommit": "caa2c14fb4b317529f7a05385ca11eb7016b7f8a",
+  "observedAt": "2026-10-05T02:36:00+02:00",
   "status": "PARTIAL_FAIL_CLOSED",
   "policy": {
     "firstTestPerClass": 20,
@@ -1149,5 +1147,14 @@
     "No qualifying open-data spot-commodity instrument catalogue with market-data rights established.",
     "No qualifying open-data cash-index catalogue with market-data rights established.",
     "Deribit perpetual catalogue observed, but commercial reuse/redistribution/cache/replay rights remain unverified."
-  ]
+  ],
+  "currentMainCorrelation": {
+    "status": "REGENERATED_AND_VERIFIED_WITHOUT_NEW_ADMISSION",
+    "currentMain": "caa2c14fb4b317529f7a05385ca11eb7016b7f8a",
+    "sourceRightsMatrix": "docs/market-data/evidence/source-rights-matrix-20261005.json",
+    "rightsAddendum": "docs/market-data/evidence/open-data-rights-addendum-20261005.json",
+    "rule": "No new instruments added from research candidates until upstream rights chain and OPEN_SOURCE_OPEN_DATA_ADMITTED gates pass."
+  },
+  "canonicalPayloadSha256": "2d714b67c42f4a110c37f2102ddec2f591dcbfb8f1aee980e0276c8964d1d125",
+  "hashScope": "UTF-8 JSON with lexicographically sorted keys and separators ',' ':' before adding hash fields"
 }
