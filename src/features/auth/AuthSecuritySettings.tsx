@@ -46,6 +46,7 @@ async function postJson(path: string, body: Record<string, unknown>) {
 
 export function AuthSecuritySettings() {
   const [passkeys, setPasskeys] = useState<PasskeyItem[]>([]);
+  const [passkeyRemoteEnabled, setPasskeyRemoteEnabled] = useState<boolean | null>(null);
   const [factors, setFactors] = useState<TotpFactor[]>([]);
   const [enrollment, setEnrollment] = useState<TotpEnrollment | null>(null);
   const [totpCode, setTotpCode] = useState('');
@@ -75,7 +76,15 @@ export function AuthSecuritySettings() {
     ]);
     const passkeyBody = await readJson(passkeyResponse);
     const factorBody = await readJson(factorResponse);
-    if (passkeyResponse.ok) setPasskeys(Array.isArray(passkeyBody?.passkeys) ? passkeyBody.passkeys : []);
+
+    if (passkeyResponse.ok) {
+      setPasskeyRemoteEnabled(true);
+      setPasskeys(Array.isArray(passkeyBody?.passkeys) ? passkeyBody.passkeys : []);
+    } else if (passkeyBody?.code === 'passkey_disabled' || passkeyBody?.error === 'passkey_list_unavailable') {
+      setPasskeyRemoteEnabled(false);
+      setPasskeys([]);
+    }
+
     if (factorResponse.ok) setFactors(Array.isArray(factorBody?.factors) ? factorBody.factors : []);
   };
 
@@ -112,7 +121,13 @@ export function AuthSecuritySettings() {
       setNotice('Passkey wurde erfolgreich registriert.');
       await refresh();
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Passkey konnte nicht registriert werden.');
+      const message = reason instanceof Error ? reason.message : 'passkey_registration_failed';
+      if (message === 'passkey_disabled' || message === 'passkey_registration_options_failed') {
+        setPasskeyRemoteEnabled(false);
+        setError('Passkeys sind in der Supabase-Auth-Konfiguration noch deaktiviert.');
+      } else {
+        setError(message);
+      }
     } finally {
       setBusy('');
     }
@@ -146,7 +161,12 @@ export function AuthSecuritySettings() {
       setEnrollment(result.body as TotpEnrollment);
       setTotpCode('');
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Authenticator konnte nicht vorbereitet werden.');
+      const message = reason instanceof Error ? reason.message : 'totp_enrollment_failed';
+      setError(
+        message === 'mfa_factor_name_conflict'
+          ? 'Ein Authenticator mit diesem Namen existiert bereits. Lade die Seite neu oder verwende einen anderen Anzeigenamen.'
+          : message,
+      );
     } finally {
       setBusy('');
     }
@@ -232,9 +252,14 @@ export function AuthSecuritySettings() {
               className="mt-1 w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2.5 text-xs text-white"
             />
           </label>
+          {passkeyRemoteEnabled === false && (
+            <div className="mt-3 rounded-xl border border-amber-500/25 bg-amber-500/10 p-3 text-[11px] text-amber-100">
+              Passkeys sind im Supabase-Projekt remote noch deaktiviert. Der Button wird aktiv, sobald <code>passkey_enabled=true</code> angewendet wurde.
+            </div>
+          )}
           <button
             type="button"
-            disabled={!passkeySupported || !!busy}
+            disabled={!passkeySupported || passkeyRemoteEnabled === false || !!busy}
             onClick={() => void addPasskey()}
             className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-cyan-400 px-3 text-xs font-black text-black disabled:opacity-40"
           >
