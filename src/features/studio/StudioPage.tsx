@@ -23,7 +23,6 @@ import {
   Search,
   Filter,
   CheckCircle2,
-  Copy,
   Check,
   ChevronRight,
   ExternalLink,
@@ -153,13 +152,6 @@ export const StudioPage: React.FC<StudioPageProps> = ({
     sandboxPositioning,
     sandboxRiskPenalty,
   ]);
-
-  // Copy helper
-  const handleCopy = (text: string, id: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedSnippet(id);
-    setTimeout(() => setCopiedSnippet(null), 2000);
-  };
 
   // Filtered concepts
   const categories = useMemo(() => {
