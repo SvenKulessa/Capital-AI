@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { assetValues, quote, health, startStreams } from './market.mjs';
 import { createAuth } from './auth.mjs';
 import { createUserProviderVault } from './user-provider-vault.mjs';
+import { createProfileAccess } from './profile-access.mjs';
 import { createTelegram } from './telegram.mjs';
 import { createPrivacy } from './privacy.mjs';
 import { createLimiter } from './http-security.mjs';
@@ -138,6 +139,7 @@ function json(res, status, body) { res.writeHead(status, { ...headers, 'Content-
 export function createApp(root = defaultRoot, options = {}) {
   let inflight = 0;
   const auth = createAuth(options);
+  const profileAccess = createProfileAccess({ env: options.env || process.env, fetchImpl: options.fetchImpl || fetch, auth });
   const userProviderVault = createUserProviderVault({ ...options, auth });
   const telegram = createTelegram({ ...options, auth });
   const privacy = createPrivacy({ ...options, auth });
@@ -157,6 +159,7 @@ export function createApp(root = defaultRoot, options = {}) {
   for (const [key, value] of Object.entries(headers)) res.setHeader(key, value);
   if (serveMtaSts(req, res, url)) return;
   if (await auth.handle(req, res, url, json)) return;
+  if (await profileAccess.handle(req, res, url, json)) return;
   if (await userProviderVault.handle(req, res, url, json)) return;
   if (await privacy(req, res, url, json)) return;
   if (await telegram(req, res, url, json)) return;
