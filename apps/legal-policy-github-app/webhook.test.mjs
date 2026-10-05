@@ -3,7 +3,7 @@ import { createHmac } from 'node:crypto';
 import test from 'node:test';
 import { entitlementForSubscription } from './lib/entitlements.mjs';
 import { dependencyDiffToInventory, spdxSbomToInventory, sbomBindsToSource } from './lib/scanner.mjs';
-import { verifyWebhookSignature } from './lib/webhook.mjs';
+import { handleGitHubEvent, verifyWebhookSignature } from './lib/webhook.mjs';
 import { createOAuthState, oauthAuthorizeUrl, verifyOAuthState } from './lib/oauth.mjs';
 import { evidenceHash, evidenceRecord, secureTokenEquals } from './lib/evidence-store.mjs';
 import { generateAndFetchAsyncSbom } from './lib/sbom.mjs';
@@ -113,7 +113,7 @@ test('maintenance token comparison is exact', () => {
   assert.equal(secureTokenEquals('abc','abc'),true); assert.equal(secureTokenEquals('abc','abd'),false); assert.equal(secureTokenEquals('abc','ab'),false);
 });
 
-import { deleteExpiredEvidence, deleteInstallationEvidence, persistEvidence } from './lib/evidence-store.mjs';
+import { deleteAccountEvidence, deleteExpiredEvidence, deleteInstallationEvidence, persistEvidence } from './lib/evidence-store.mjs';
 
 test('evidence persistence uses backend secret only and writes append-only audit metadata', async () => {
   const calls=[];
@@ -130,16 +130,64 @@ test('evidence persistence uses backend secret only and writes append-only audit
   assert.equal(Object.hasOwn(body,'source_code'),false);
 });
 
-test('retention and uninstall deletion use bounded evidence-table DELETE filters', async () => {
+test('retention, uninstall and cancellation deletion use bounded evidence-table DELETE filters', async () => {
   const calls=[];
   const fetchImpl=async (url, options={}) => { calls.push({url:String(url),options}); return new Response(null,{status:204}); };
   const env={LEGAL_POLICY_SUPABASE_URL:'https://project.supabase.co',LEGAL_POLICY_SUPABASE_SECRET_KEY:'sb_secret_example'};
   await deleteExpiredEvidence({env,now:new Date('2026-10-04T00:00:00Z'),fetchImpl});
   await deleteInstallationEvidence({installationId:42,env,fetchImpl});
+  await deleteAccountEvidence({accountId:99,env,fetchImpl});
   assert.match(calls[0].url,/expires_at=lt\./);
   assert.match(calls[1].url,/installation_id=eq\.42/);
+  assert.match(calls[2].url,/account_id=eq\.99/);
   assert.equal(calls[0].options.method,'DELETE');
   assert.equal(calls[1].options.method,'DELETE');
+  assert.equal(calls[2].options.method,'DELETE');
+});
+
+test('Marketplace lifecycle accepts purchase/change and deletes evidence on cancellation', async () => {
+  const calls=[];
+  const fetchImpl=async (url, options={}) => { calls.push({url:String(url),options}); return new Response(null,{status:204}); };
+  const env={LEGAL_POLICY_SUPABASE_URL:'https://project.supabase.co',LEGAL_POLICY_SUPABASE_SECRET_KEY:'sb_secret_example'};
+
+  const purchased=await handleGitHubEvent({
+    eventName:'marketplace_purchase',
+    payload:{action:'purchased',marketplace_purchase:{account:{id:99}}},
+    env,
+    fetchImpl,
+  });
+  const changed=await handleGitHubEvent({
+    eventName:'marketplace_purchase',
+    payload:{action:'changed',marketplace_purchase:{account:{id:99}}},
+    env,
+    fetchImpl,
+  });
+  const cancelled=await handleGitHubEvent({
+    eventName:'marketplace_purchase',
+    payload:{action:'cancelled',marketplace_purchase:{account:{id:99}}},
+    env,
+    fetchImpl,
+  });
+
+  assert.equal(purchased.action,'purchased');
+  assert.equal(changed.action,'changed');
+  assert.equal(cancelled.action,'cancelled');
+  assert.equal(cancelled.evidenceDeletion.deleted,true);
+  assert.equal(calls.length,1);
+  assert.match(calls[0].url,/legal_policy_evidence\?account_id=eq\.99$/);
+  assert.equal(calls[0].options.method,'DELETE');
+});
+
+test('Marketplace cancellation fails closed without account identity', async () => {
+  await assert.rejects(
+    handleGitHubEvent({
+      eventName:'marketplace_purchase',
+      payload:{action:'cancelled',marketplace_purchase:{}},
+      env:{},
+      fetchImpl:async()=>new Response(null,{status:204}),
+    }),
+    /Missing account id/,
+  );
 });
 
 
