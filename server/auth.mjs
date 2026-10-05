@@ -739,21 +739,50 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       }
       const email = normalizeEmail(body.email);
       const password = normalizeNewPassword(body.password);
+      const passwordConfirm = typeof body.passwordConfirm === 'string' ? body.passwordConfirm : '';
       const name = typeof body.name === 'string' ? body.name.trim().slice(0, 120) : '';
+      const termsAccepted = body.termsAccepted === true;
+      const privacyAcknowledged = body.privacyAcknowledged === true;
+      const marketingConsent = body.marketingConsent === true;
       if (!email || !password || !name) {
         json(res, 400, { error: 'invalid_registration' });
+        return true;
+      }
+      if (password !== passwordConfirm) {
+        json(res, 400, { error: 'passwords_do_not_match' });
+        return true;
+      }
+      if (!termsAccepted || !privacyAcknowledged) {
+        json(res, 400, { error: 'registration_consent_required' });
         return true;
       }
       const confirmation = new URL('/', config.origin).toString();
       const signedUp = await authRequest(config, `/signup?redirect_to=${encodeURIComponent(confirmation)}`, {
         method: 'POST',
-        body: { email, password, data: { full_name: name } },
+        body: {
+          email,
+          password,
+          data: {
+            full_name: name,
+            terms_accepted: true,
+            terms_version: '2026-10-05',
+            privacy_acknowledged: true,
+            privacy_version: '2026-09-15',
+            marketing_consent: marketingConsent,
+          },
+        },
       });
       if (!signedUp.response.ok || !signedUp.data?.user?.id) {
-        const registrationError = signedUp.data?.error_code === 'weak_password'
+        const upstream = typeof signedUp.data?.error_code === 'string' ? signedUp.data.error_code : '';
+        const registrationError = upstream === 'weak_password'
           ? 'weak_password'
-          : 'registration_failed';
-        json(res, signedUp.response.status === 429 ? 429 : 422, { error: registrationError });
+          : upstream === 'unexpected_failure'
+            ? 'registration_backend_failed'
+            : 'registration_failed';
+        json(res, signedUp.response.status === 429 ? 429 : 422, {
+          error: registrationError,
+          code: registrationError,
+        });
         return true;
       }
       if (signedUp.data.access_token && signedUp.data.refresh_token) {
