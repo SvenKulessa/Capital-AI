@@ -22,6 +22,8 @@
 !server/vocabulary-checkout.test.mjs
 !server/vocabulary-quant-pro-index.mjs
 !server/auth.mjs
+!server/auth-security.mjs
+!server/auth-security.test.mjs
 !server/user-provider-vault.mjs
 !server/telegram.mjs
 !server/privacy.mjs
@@ -63,6 +65,7 @@
 !scripts/license-engine.mjs
 !scripts/frontend-security.test.mjs
 !scripts/verify-browser-boundary.mjs
+!scripts/supabase-auth-config-sync.mjs
 !scripts/validate-frontend-boundaries.mjs
 !scripts/validate-contract-suites.mjs
 !scripts/validate-growth-contracts.mjs
@@ -82,6 +85,9 @@
 !docs/security/
 !docs/security/evidence/
 !docs/security/evidence/license-rights-review.json
+!supabase/
+!supabase/email-templates/
+!supabase/email-templates/**
 !public/
 !public/fonts/
 !public/fonts/**
