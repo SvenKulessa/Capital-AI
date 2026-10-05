@@ -36,7 +36,7 @@ COPY public/bootstrap-failure.js ./public/bootstrap-failure.js
 COPY server/advisor.ts server/http-security.mjs server/mta-sts.mjs server/mta-sts.test.mjs server/well-known.mjs server/well-known.test.mjs server/shadow-evidence-store.mjs server/auth-security.mjs server/auth-security.test.mjs ./server/
 COPY server/prompt-injection-guard.mjs server/prompt-injection-guard.test.mjs server/billing-catalog.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/vocabulary-checkout.test.mjs server/subscription-checkout.mjs server/subscription-checkout.test.mjs server/public-artifact-policy.mjs server/public-artifact-policy.test.mjs ./server/
 COPY server/advisor-security.test.mjs ./server/
-COPY scripts/billing-catalog.test.mjs scripts/supabase-auth-config.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs ./scripts/
+COPY scripts/billing-catalog.test.mjs scripts/blueprint-evidence-contract.test.mjs scripts/supabase-auth-config.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs ./scripts/
 COPY supabase/email-templates ./supabase/email-templates
 COPY scripts/documentation-drift.mjs scripts/documentation-drift.test.mjs ./scripts/
 COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/frontend-security.test.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
@@ -45,7 +45,7 @@ COPY docs/licenses ./docs/licenses
 COPY docs/security/evidence/license-rights-review.json ./docs/security/evidence/license-rights-review.json
 COPY scripts/license-engine.mjs ./scripts/license-engine.mjs
 RUN --network=none node --test server/mta-sts.test.mjs server/well-known.test.mjs server/auth-security.test.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs \
-    && node --test server/prompt-injection-guard.test.mjs server/vocabulary-checkout.test.mjs server/subscription-checkout.test.mjs server/public-artifact-policy.test.mjs scripts/billing-catalog.test.mjs \
+    && node --test server/prompt-injection-guard.test.mjs server/vocabulary-checkout.test.mjs server/subscription-checkout.test.mjs server/public-artifact-policy.test.mjs scripts/billing-catalog.test.mjs scripts/blueprint-evidence-contract.test.mjs \
     && node --import tsx --test server/advisor-security.test.mjs \
     && node --test scripts/branding-assets.test.mjs \
     && node --test scripts/license-evidence.test.mjs \
