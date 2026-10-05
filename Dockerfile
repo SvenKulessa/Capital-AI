@@ -25,6 +25,7 @@ COPY CAPITAL-AI-MARKET/badge.svg ./CAPITAL-AI-MARKET/badge.svg
 COPY CAPITAL-AI-GROWTH/badge.svg ./CAPITAL-AI-GROWTH/badge.svg
 COPY CAPITAL-AI-PLATFORM/badge.svg ./CAPITAL-AI-PLATFORM/badge.svg
 COPY contracts ./contracts
+COPY packages/benchmark-core ./packages/benchmark-core
 COPY documentary/evidence ./documentary/evidence
 COPY generated/documentary ./generated/documentary
 COPY public/branding/capital-ai-logo.jpg ./public/branding/capital-ai-logo.jpg
