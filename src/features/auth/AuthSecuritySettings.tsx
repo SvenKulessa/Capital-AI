@@ -345,7 +345,9 @@ export function AuthSecuritySettings() {
               <p className="text-xs font-bold text-amber-200">QR-Code scannen oder Secret manuell eintragen</p>
               {enrollment.qrCode && (
                 <img
-                  src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(enrollment.qrCode)}`}
+                  src={enrollment.qrCode.startsWith('data:')
+                    ? enrollment.qrCode
+                    : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(enrollment.qrCode)}`}
                   alt="QR-Code zur Einrichtung des CAPITAL-AI Authenticators"
                   className="mx-auto mt-3 h-44 w-44 rounded-xl bg-white p-2"
                 />
