@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="free-user-title free-user-desc" shape-rendering="geometricPrecision">
+  <title id="free-user-title">FREE USER</title>
+  <desc id="free-user-desc">Quadratischer blauer CAPITAL-AI FREE USER Badge mit verifiziertem Benutzerprofil.</desc>
+  <metadata>Copyright © 2026 Sven Michael Kulessa. LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0. CAPITAL-AI.</metadata>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="34%" r="78%"><stop offset="0%" stop-color="#60A5FA" stop-opacity=".14"/><stop offset="42%" stop-color="#07111F"/><stop offset="100%" stop-color="#030405"/></radialGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#DCEEFF"/><stop offset="42%" stop-color="#60A5FA"/><stop offset="100%" stop-color="#60A5FA" stop-opacity=".38"/></linearGradient>
+    <linearGradient id="icon" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#DCEEFF"/><stop offset="52%" stop-color="#60A5FA"/><stop offset="100%" stop-color="#60A5FA" stop-opacity=".62"/></linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect x="7" y="7" width="242" height="242" rx="34" fill="url(#bg)" stroke="url(#rim)" stroke-width="2.4"/>
+  <rect x="14" y="14" width="228" height="228" rx="29" fill="none" stroke="#FFFFFF" stroke-opacity=".08"/>
+  <path d="M35 24h144c25 0 44 19 44 43" fill="none" stroke="#FFFFFF" stroke-opacity=".15" stroke-width="4" stroke-linecap="round"/>
+  <g transform="translate(0 5)" fill="none" stroke="url(#icon)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" color="#60A5FA">
+    <circle cx="112" cy="84" r="24"/><path d="M64 151c6-32 24-49 48-49s42 17 48 49"/><circle cx="166" cy="139" r="28"/><path d="M153 139l10 10 20-24"/><path d="M59 107c9-34 37-56 72-59M190 103c-4-19-15-35-32-45"/>
+  </g>
+  <line x1="48" y1="179" x2="208" y2="179" stroke="#60A5FA" stroke-opacity=".18"/>
+  <text x="128" y="216" text-anchor="middle" fill="#F8FAFC" font-family="Inter,Arial,sans-serif" font-size="20" font-weight="700" letter-spacing="2">FREE USER</text>
+</svg>

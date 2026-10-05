@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="vocabulary-title vocabulary-desc" shape-rendering="geometricPrecision">
+  <title id="vocabulary-title">VOCABULARY</title>
+  <desc id="vocabulary-desc">Quadratischer violetter CAPITAL-AI VOCABULARY Badge mit offenem Lexikon.</desc>
+  <metadata>Copyright © 2026 Sven Michael Kulessa. LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0. CAPITAL-AI.</metadata>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="34%" r="78%"><stop offset="0%" stop-color="#8D26FF" stop-opacity=".14"/><stop offset="42%" stop-color="#0C0715"/><stop offset="100%" stop-color="#030405"/></radialGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#E879F9"/><stop offset="42%" stop-color="#8D26FF"/><stop offset="100%" stop-color="#8D26FF" stop-opacity=".38"/></linearGradient>
+    <linearGradient id="icon" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#E879F9"/><stop offset="52%" stop-color="#8D26FF"/><stop offset="100%" stop-color="#8D26FF" stop-opacity=".62"/></linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect x="7" y="7" width="242" height="242" rx="34" fill="url(#bg)" stroke="url(#rim)" stroke-width="2.4"/>
+  <rect x="14" y="14" width="228" height="228" rx="29" fill="none" stroke="#FFFFFF" stroke-opacity=".08"/>
+  <path d="M35 24h144c25 0 44 19 44 43" fill="none" stroke="#FFFFFF" stroke-opacity=".15" stroke-width="4" stroke-linecap="round"/>
+  <g transform="translate(0 5)" fill="none" stroke="url(#icon)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" color="#8D26FF">
+    <path d="M70 83c24-10 43-6 58 9v65c-15-15-34-18-58-9z"/><path d="M186 83c-24-10-43-6-58 9v65c15-15 34-18 58-9z"/><path d="M128 92v65"/><path d="M82 57h32c10 0 17 6 17 15s-7 15-17 15H99l-14 13 4-14c-8-3-12-9-12-15 0-6 2-10 5-14z"/><path d="M145 55h28c10 0 17 6 17 15s-7 15-17 15h-8l-12 12v-12h-8"/>
+  </g>
+  <line x1="48" y1="179" x2="208" y2="179" stroke="#8D26FF" stroke-opacity=".18"/>
+  <text x="128" y="216" text-anchor="middle" fill="#F8FAFC" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="2">VOCABULARY</text>
+</svg>

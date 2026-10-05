@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "2.0.0",
+  "assetSet": "CAPITAL-AI Square Subscription Product and Role Badges",
+  "generatedAt": "2026-10-05",
+  "sourceRepository": "SvenKulessa/Capital-AI",
+  "sourceBaseline": "172e821fb29d2caa953c57c6b7c3653f461201f2",
+  "rights": {
+    "rightsHolder": "Sven Michael Kulessa",
+    "brandProject": "CAPITAL-AI",
+    "licenseRef": "LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0",
+    "licenseDocument": "docs/licenses/CAPITAL-AI-BADGE-ASSET-LICENSE-1.0.md",
+    "generalThirdPartyLicense": false
+  },
+  "financeReference": {
+    "repository": "SvenKulessa/Finance",
+    "currentMain": "dcef421fe6e350a3a2ade61d0299aad9ecca213c",
+    "brandAuthority": "docs/frontend/design-tokens.json",
+    "socialMediaEngine": true,
+    "networkPolicy": "offline",
+    "publishingAuthority": false
+  },
+  "format": {
+    "mimeType": "image/svg+xml",
+    "width": 256,
+    "height": 256,
+    "viewBox": "0 0 256 256",
+    "shape": "square",
+    "externalAssetsEmbedded": false,
+    "fontFilesEmbedded": false
+  },
+  "assets": [
+    {
+      "id": "capital-ai-badge-starter",
+      "label": "STARTER",
+      "path": "public/branding/badges/starter.svg",
+      "sha256": "9d6752801145b198e2d699a45041383291b90387b07fd74643f23112b5fa922e",
+      "width": 256,
+      "height": 256,
+      "licenseRef": "LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0",
+      "rightsHolder": "Sven Michael Kulessa"
+    },
+    {
+      "id": "capital-ai-badge-pro",
+      "label": "PRO",
+      "path": "public/branding/badges/pro.svg",
+      "sha256": "78aa98c4f59f4e2d4c6082a72f5add37191bf61dc0cfce5b75dcb30fe8489447",
+      "width": 256,
+      "height": 256,
+      "licenseRef": "LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0",
+      "rightsHolder": "Sven Michael Kulessa"
+    },
+    {
+      "id": "capital-ai-badge-enterprise",
+      "label": "ENTERPRISE",
+      "path": "public/branding/badges/enterprise.svg",
+      "sha256": "44b298177852d190f91e3fa464ca21764b7aef550a6db5a361294c246436c9f6",
+      "width": 256,
+      "height": 256,
+      "licenseRef": "LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0",
+      "rightsHolder": "Sven Michael Kulessa"
+    },
+    {
+      "id": "capital-ai-badge-vocabulary",
+      "label": "VOCABULARY",
+      "path": "public/branding/badges/vocabulary.svg",
+      "sha256": "853f090eebba6ca849e53a0d6260eada68c8081f562463a3d890ecd0b097dc33",
+      "width": 256,
+      "height": 256,
+      "licenseRef": "LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0",
+      "rightsHolder": "Sven Michael Kulessa"
+    },
+    {
+      "id": "capital-ai-badge-free-user",
+      "label": "FREE USER",
+      "path": "public/branding/badges/free-user.svg",
+      "sha256": "e3412aac88c73cf685be9417c5e2d38c2dd76ea85e650c2f2f50276762ba9fc5",
+      "width": 256,
+      "height": 256,
+      "licenseRef": "LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0",
+      "rightsHolder": "Sven Michael Kulessa"
+    },
+    {
+      "id": "capital-ai-badge-vault",
+      "label": "VAULT",
+      "path": "public/branding/badges/vault.svg",
+      "sha256": "7393a44552d7c1091ce21f1fcaca150a36277447242f641bc90f1851dd2d1d49",
+      "width": 256,
+      "height": 256,
+      "licenseRef": "LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0",
+      "rightsHolder": "Sven Michael Kulessa"
+    },
+    {
+      "id": "capital-ai-badge-owner",
+      "label": "OWNER",
+      "path": "public/branding/badges/owner.svg",
+      "sha256": "57ffcee1bbc9d968c2025ab4f10fd7ccc79c63cb622030aa6afaea57ecc1dcb3",
+      "width": 256,
+      "height": 256,
+      "licenseRef": "LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0",
+      "rightsHolder": "Sven Michael Kulessa"
+    }
+  ]
+}
