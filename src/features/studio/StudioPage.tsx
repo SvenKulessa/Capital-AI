@@ -280,10 +280,6 @@ export const StudioPage: React.FC<StudioPageProps> = ({
             <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
               STUDIO HUB v2.5
             </span>
-            <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Sub-45ms Active
-            </span>
           </div>
         </div>
 
