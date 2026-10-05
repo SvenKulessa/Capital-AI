@@ -58,12 +58,15 @@ test('app error boundary fails closed to the bootstrap fallback', () => {
 });
 
 
-test('index shell remains useful before JavaScript boots', async () => {
+test('index shell stays hidden during normal bootstrap and exposes recovery only after 10 seconds', async () => {
   const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-  assert.match(html, /<div id="root">[\s\S]*<main/);
-  assert.match(html, /Marktdaten verstehen\. Chancen besser erkennen\./);
-  assert.match(html, /Falls JavaScript nicht gestartet werden kann/);
+  assert.match(html, /<div id="root">[\s\S]*<main id="capital-ai-bootstrap-fallback"/);
+  assert.match(html, /#capital-ai-bootstrap-fallback[\s\S]*visibility:\s*hidden/);
+  assert.match(html, /animation:\s*capitalAiBootstrapFallback 0s linear 10s forwards/);
+  assert.match(html, /Die Oberfläche konnte noch nicht geladen werden\./);
+  assert.match(html, /Dieser Hinweis erscheint erst nach 10 Sekunden ohne erfolgreichen Seitenaufbau\./);
   assert.match(html, /<noscript>/);
+  assert.doesNotMatch(html, /Marktdaten verstehen\. Chancen besser erkennen\./);
 });
 
 test('research pages render source links and never grant project entitlements', () => {
