@@ -1,0 +1,118 @@
+{
+  "schema": "CAPITAL_AI_PRODUCTION_HANDOFF_CURRENT_MAIN_CORRELATION@1",
+  "observedAt": "2026-10-05",
+  "status": "BLOCKED",
+  "deployEligible": false,
+  "authority": {
+    "currentMainSha": "caa2c14fb4b317529f7a05385ca11eb7016b7f8a",
+    "agentsBlobSha": "465ade060896732b00c41df1bac06dbe00bc73e5"
+  },
+  "mergedSince8045": [
+    "#161",
+    "#162",
+    "#163",
+    "#166"
+  ],
+  "openPullRequests": [],
+  "checks": {
+    "dockerSecurityGate": {
+      "conclusion": "success",
+      "runId": 37246817255,
+      "jobId": 111566224170
+    },
+    "codeql": [
+      {
+        "language": "actions",
+        "conclusion": "success",
+        "jobId": 111566225609
+      },
+      {
+        "language": "java-kotlin",
+        "conclusion": "success",
+        "jobId": 111566225351
+      },
+      {
+        "language": "python",
+        "conclusion": "success",
+        "jobId": 111566225317
+      },
+      {
+        "language": "javascript-typescript",
+        "conclusion": "success",
+        "jobId": 111566225159
+      }
+    ],
+    "publishCandidate": {
+      "conclusion": "skipped",
+      "jobId": 111566770257
+    },
+    "productionHandoff": {
+      "conclusion": "skipped",
+      "jobId": 111566770682
+    },
+    "supabasePreview": {
+      "conclusion": "skipped",
+      "jobId": 111574423511
+    }
+  },
+  "render": {
+    "application": {
+      "serviceId": "srv-dau1rp893c1s73cdhm1g",
+      "liveDeployId": "dep-db1epvgu01pc73e4ad6g",
+      "sourceSha": "caa2c14fb4b317529f7a05385ca11eb7016b7f8a",
+      "immutableGhcrDigest": null,
+      "sourceModel": "GIT_MAIN_DOCKERFILE"
+    },
+    "nats": {
+      "serviceId": "srv-dauhcoojo6nc738eedjg",
+      "liveDeployId": "dep-db1epuegekts73dg9f0g",
+      "sourceSha": "caa2c14fb4b317529f7a05385ca11eb7016b7f8a"
+    }
+  },
+  "container": {
+    "configDigestFixMerged": true,
+    "currentMainCandidatePublished": false,
+    "ociIndexDigest": null,
+    "platformManifestDigest": null,
+    "configDigest": null,
+    "sbomAttestation": null,
+    "provenanceAttestation": null
+  },
+  "market": {
+    "policy": "OPEN_SOURCE_AND_OPEN_DATA_ONLY",
+    "admittedReferenceSource": "wikidata-reference",
+    "admittedMarketQuoteSources": 0,
+    "admittedScoringPriceInputSources": 0,
+    "productionQuoteGate": "BLOCKED",
+    "productionScoringGate": "BLOCKED"
+  },
+  "license": {
+    "productionRightsGate": "BLOCKED_OR_REVIEW_REQUIRED"
+  },
+  "auth": {
+    "realProductionE2E": "NOT_VERIFIED"
+  },
+  "rollback": {
+    "suitableAttestedImmutableDigest": null
+  },
+  "validate": {
+    "sourceGovernanceRender": "PASS",
+    "containerCandidateAttestation": "BLOCKED",
+    "productionAuthMarketRollbackE2E": "BLOCKED",
+    "positiveIndependentFullCycles": 0
+  },
+  "approve": {
+    "TRUST": "BLOCKED",
+    "MARKET": "BLOCKED",
+    "PLATFORM": "BLOCKED",
+    "RUNTIME_EVIDENCE": "BLOCKED",
+    "OWNER": "CONDITIONAL_GATE_FIRST"
+  },
+  "nextStep": {
+    "workflow": ".github/workflows/build-security.yml",
+    "ref": "main",
+    "exactSha": "caa2c14fb4b317529f7a05385ca11eb7016b7f8a",
+    "publish_candidate": true,
+    "verify_production_handoff": false
+  }
+}
