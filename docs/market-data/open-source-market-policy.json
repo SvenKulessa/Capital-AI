@@ -32,13 +32,21 @@
       "CC0-1.0",
       "CC-BY-4.0",
       "CC-BY-SA-4.0",
-      "ODbL-1.0"
+      "ODbL-1.0",
+      "LicenseRef-ECB-ESCB-STATISTICS-REUSE-2026"
     ],
     "nonCommercialLicenses": "BLOCK",
     "proprietaryCommercialContractAloneMayAuthorize": false,
     "publicApiAloneMayAuthorize": false,
     "paidSubscriptionAloneMayAuthorize": false,
-    "unknownRights": "BLOCK"
+    "unknownRights": "BLOCK",
+    "licenseRefs": {
+      "LicenseRef-ECB-ESCB-STATISTICS-REUSE-2026": {
+        "provider": "European Central Bank",
+        "scope": "Publicly released ESCB statistics / euro foreign exchange reference rates",
+        "evidenceReference": "docs/market-data/evidence/source-rights-admission-ecb-reference-rates-20261005.json"
+      }
+    }
   },
   "requiredUseCases": [
     "commercial_web_display",
@@ -118,7 +126,20 @@
     "independentEvidencePerUseCaseRequired": true,
     "manualOverrideAllowed": false,
     "monetizationEntitlementMayOverride": false,
-    "capabilityIsolationRequired": true
+    "capabilityIsolationRequired": true,
+    "twoStageAdmission": {
+      "rightsStage": {
+        "decision": "OPEN_DATA_RIGHTS_ADMITTED",
+        "mayEnableNetworkIo": false,
+        "mayEnableScoreDisplay": false,
+        "requires": "OPEN_DATA_LICENSE + USE_CASE_RIGHTS + INSTRUMENT_SCOPE"
+      },
+      "runtimeStage": {
+        "decision": "OPEN_SOURCE_OPEN_DATA_ADMITTED",
+        "mayEnableNetworkIo": true,
+        "requires": "RIGHTS_STAGE + IMPLEMENTED_OPEN_SOURCE_ADAPTER + SOFTWARE_PROVENANCE + PACKAGING"
+      }
+    }
   },
   "scorerAuthority": {
     "decidedAt": "2026-10-04",
@@ -138,5 +159,25 @@
     "currentAdmission": "BLOCKED_NO_SCORING_PRICE_INPUT_SOURCE",
     "evidenceReference": "docs/market-data/evidence/score-display-source-admission-20261004.json",
     "publicScoreDisplayEnabled": false
-  }
+  },
+  "rightsAdmittedSources": [
+    {
+      "providerId": "ecb-reference-rates",
+      "decision": "OPEN_DATA_RIGHTS_ADMITTED",
+      "eligible": true,
+      "runtimeEligible": false,
+      "scope": "FOREX_DAILY_REFERENCE_RATES_INFORMATION_ONLY",
+      "dataLicense": "LicenseRef-ECB-ESCB-STATISTICS-REUSE-2026",
+      "evidenceReference": "docs/market-data/evidence/source-rights-admission-ecb-reference-rates-20261005.json",
+      "instrumentManifestReference": "docs/market-data/evidence/instrument-manifest-20261005.json",
+      "capabilities": {
+        "referenceMetadata": true,
+        "marketQuotes": true,
+        "scoringPriceInput": true,
+        "realtime": false,
+        "executionPrice": false,
+        "decisionEligible": false
+      }
+    }
+  ]
 }

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { evaluateCommercialLicensedDataLane } from '../commercialLicensedDataLane';
 
@@ -41,4 +42,15 @@ test('commercial licensed data lane only opens when every rights gate is explici
   });
 
   assert.deepEqual(decision, { eligible: true, reasons: [] });
+});
+
+
+test('production MARKET package keeps real YAML line breaks for the commercial lane', () => {
+  const yaml = readFileSync('docs/market-data/PRODUCTION-WEB-01-MARKET-20261005.yaml', 'utf8');
+  assert.equal(yaml.includes('\\n'), false);
+  assert.match(yaml, /commercialLicensedDataLane:\n\s+state: "DEFINED_FAIL_CLOSED"/);
+  assert.match(yaml, /sharedMarketLane: .*OPEN_SOURCE_OPEN_DATA_ADMITTED/);
+  assert.match(yaml, /twelveDataDeployEligible: false/);
+  assert.match(yaml, /twelveDataDatasetScopeVerified: false/);
+  assert.match(yaml, /twelveDataIndexPricing: "BLOCKED"/);
 });

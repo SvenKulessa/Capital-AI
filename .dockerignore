@@ -97,6 +97,10 @@
 !docs/security/
 !docs/security/evidence/
 !docs/security/evidence/license-rights-review.json
+!docs/market-data/
+!docs/market-data/PRODUCTION-WEB-01-MARKET-20261005.yaml
+!docs/market-data/evidence/
+!docs/market-data/evidence/source-rights-admission-ecb-reference-rates-20261005.json
 !public/
 !public/bootstrap-failure.js
 !public/fonts/
