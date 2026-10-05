@@ -663,21 +663,6 @@ export const Header: React.FC<HeaderProps> = ({
                         </button>
                       )}
 
-                      {/* $CPT TOKENOMICS */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          onNavigate?.('/tokenomics');
-                        }}
-                        className="w-full flex items-center justify-between py-2 px-3 rounded-lg text-xs text-slate-300 hover:text-white hover:bg-white/5 transition-all cursor-pointer"
-                      >
-                        <span className="flex items-center gap-2">
-                          <Coins className="w-3.5 h-3.5 text-amber-400" />
-                          <span>$CPT Tokenomics &amp; Staking</span>
-                        </span>
-                        <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
-                      </button>
                     </div>
                   </div>
 
