@@ -9,6 +9,42 @@ import { EvidenceEngineService } from './evidenceEngine';
 
 export type ExecutionEnvironment = 'active_production' | 'shadow_canary' | 'sandbox_demo';
 
+export const PIPELINE_CONFIGURATOR_VIEWS = [
+  'Pipeline Overview',
+  'Provider Registry',
+  'Component Registry',
+  'Feature Dependency Graph',
+  'Data Freshness Monitor',
+  'Data Quality Monitor',
+  'Run History',
+  'Replay Inspector',
+  'Configuration Diff',
+  'Shadow vs Active Benchmark',
+] as const;
+export type PipelineConfiguratorView = typeof PIPELINE_CONFIGURATOR_VIEWS[number];
+
+export const PIPELINE_PRODUCTION_APPROVAL_GATES = [
+  'MARKET',
+  'TRUST',
+  'PLATFORM',
+  'RUNTIME_EVIDENCE',
+  'OWNER',
+] as const;
+export type PipelineProductionApprovalGate = typeof PIPELINE_PRODUCTION_APPROVAL_GATES[number];
+export type PipelineProductionApprovalState = 'PASS' | 'PENDING' | 'BLOCKED';
+
+export interface PipelineProductionApproval {
+  gate: PipelineProductionApprovalGate;
+  state: PipelineProductionApprovalState;
+  evidenceReference: string | null;
+}
+
+export interface PipelineProductionActivationAssessment {
+  eligible: boolean;
+  reasons: string[];
+  approvals: PipelineProductionApproval[];
+}
+
 export interface StageConfig {
   stageId: string;
   stageName: string;
@@ -92,6 +128,44 @@ export class PipelineConfiguratorService {
 
   public getRevisionHistory(): PipelineConfigModel[] {
     return structuredClone(this.revisionHistory);
+  }
+
+  public getRequiredViews(): readonly PipelineConfiguratorView[] {
+    return PIPELINE_CONFIGURATOR_VIEWS;
+  }
+
+  /**
+   * Read-only production activation assessment. This method never mutates or
+   * promotes configuration; deployment remains a separately governed action.
+   */
+  public assessProductionActivation(
+    approvals: readonly PipelineProductionApproval[],
+  ): PipelineProductionActivationAssessment {
+    const reasons: string[] = [];
+    const byGate = new Map(approvals.map((approval) => [approval.gate, approval]));
+
+    for (const gate of PIPELINE_PRODUCTION_APPROVAL_GATES) {
+      const approval = byGate.get(gate);
+      if (!approval) {
+        reasons.push(`APPROVAL_MISSING:${gate}`);
+        continue;
+      }
+      if (approval.state !== 'PASS') reasons.push(`APPROVAL_NOT_PASS:${gate}`);
+      if (!approval.evidenceReference) reasons.push(`APPROVAL_EVIDENCE_MISSING:${gate}`);
+    }
+
+    if (new Set(approvals.map((approval) => approval.gate)).size !== approvals.length) {
+      reasons.push('DUPLICATE_APPROVAL_GATE');
+    }
+    if (!this.currentConfig.isApprovedForProduction) {
+      reasons.push('CONFIG_NOT_APPROVED_FOR_PRODUCTION');
+    }
+
+    return {
+      eligible: reasons.length === 0,
+      reasons: [...new Set(reasons)].sort(),
+      approvals: structuredClone([...approvals]),
+    };
   }
 
   public updateActiveConfig(updated: Partial<PipelineConfigModel>, user: string): PipelineConfigModel {
