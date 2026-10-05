@@ -48,6 +48,30 @@ function factorProjection(user) {
     .filter(factor => FACTOR_ID_RE.test(factor.id));
 }
 
+function totpEnrollmentPayload(data) {
+  const value = data?.data && typeof data.data === 'object' ? data.data : data;
+  const totp = value?.totp && typeof value.totp === 'object' ? value.totp : null;
+  if (!totp) return null;
+
+  const uri = typeof totp.uri === 'string' ? totp.uri : '';
+  let secret = typeof totp.secret === 'string' ? totp.secret : '';
+  if (!secret && uri) {
+    try {
+      secret = new URL(uri).searchParams.get('secret') || '';
+    } catch {
+      secret = '';
+    }
+  }
+
+  return {
+    id: String(value?.id || ''),
+    friendlyName: typeof value?.friendly_name === 'string' ? value.friendly_name : '',
+    qrCode: typeof totp.qr_code === 'string' ? totp.qr_code : '',
+    secret,
+    uri,
+  };
+}
+
 function passkeyProjection(items) {
   return (Array.isArray(items) ? items : [])
     .map(item => ({
@@ -472,19 +496,25 @@ export function createAuthSecurity({
         accessToken: stored.accessToken,
         body: { factor_type: 'totp', friendly_name: name },
       });
-      if (!enrolled.response.ok || !FACTOR_ID_RE.test(String(enrolled.data?.id || '')) || !enrolled.data?.totp) {
+      const enrollment = totpEnrollmentPayload(enrolled.data);
+      if (
+        !enrolled.response.ok ||
+        !enrollment ||
+        !FACTOR_ID_RE.test(enrollment.id) ||
+        (!enrollment.secret && !enrollment.qrCode && !enrollment.uri)
+      ) {
         json(res, enrolled.response.status === 429 ? 429 : 422, {
           error: 'totp_enrollment_failed',
-          code: upstreamCode(enrolled.data, 'totp_enrollment_failed'),
+          code: upstreamCode(enrolled.data, 'totp_enrollment_payload_invalid'),
         });
         return true;
       }
       json(res, 200, {
-        factorId: enrolled.data.id,
-        friendlyName: enrolled.data.friendly_name || name,
-        qrCode: enrolled.data.totp.qr_code || '',
-        secret: enrolled.data.totp.secret || '',
-        uri: enrolled.data.totp.uri || '',
+        factorId: enrollment.id,
+        friendlyName: enrollment.friendlyName || name,
+        qrCode: enrollment.qrCode,
+        secret: enrollment.secret,
+        uri: enrollment.uri,
       });
       return true;
     }
