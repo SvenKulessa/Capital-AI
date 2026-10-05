@@ -1,4 +1,4 @@
-# POST_MERGE_CORRELATION@2
+# POST_MERGE_CORRELATION@3
 
 Primary Domain: PLATFORM. Cross-Domain: TRUST.
 
@@ -13,37 +13,36 @@ Jeder offene PR erhält genau eine Aktionsklasse:
 - `NO_ACTION` — kein relevanter Datei-/Boundary-Overlap und kein weiterer Handlungsbedarf.
 - `CORRELATE_ONLY` — neuer Main muss als Evidence berücksichtigt werden, aber ein Branch-Update ist technisch nicht erforderlich.
 - `SYNC_REQUIRED` — relevanter Overlap plus veralteter Branch; vor weiterer Bearbeitung gegen Current Main synchronisieren.
-- `REPAIR_CANDIDATE` — ausschließlich ein bereits nach der 3er-Regel promotetes, deterministisches Low-Risk-Muster darf als automatischer Reparaturkandidat gelten.
+- `REPAIR_CANDIDATE` — ausschließlich ein explizit zugelassener, deterministischer Low-Risk-Fix-Fingerprint darf als automatischer Reparaturkandidat gelten.
 - `MANUAL_REVIEW_REQUIRED` — Security-/Governance-/Workflow-/Container-/Auth-/Dependency-/Migration- oder andere mehrdeutige Grenzen.
 
-### 3er-Regel — Promotion
+### Explizite Reparaturzulassung
 
-Ein Fix-Fingerprint darf erst automatisierbar werden, wenn **drei unabhängige positive Validierungszyklen** desselben Reparaturmusters dokumentiert sind. Wiederholungen desselben Runs zählen nur einmal. Ändert sich der Fix-Fingerprint, beginnt der Zähler wieder bei null.
+Ein deterministischer Low-Risk-Fix-Fingerprint ist standardmäßig **nicht zugelassen**. Eine automatische Reparatur darf nur dann überhaupt als Kandidat klassifiziert werden, wenn der exakte Fingerprint in der versionierten Pattern-State-Evidence mit `admissionState: "ADMITTED"` freigegeben ist. Ein geänderter Fingerprint fällt automatisch auf `NOT_ADMITTED` zurück.
 
-Vor 3/3 gilt immer `OBSERVE_ONLY`; insbesondere darf `SYNC_REQUIRED` nicht eigenmächtig zu einer Branch-Mutation eskalieren.
+Die Admission ist keine Security-, Lizenz-, Merge- oder Production-Freigabe. Sie erlaubt lediglich, einen eng begrenzten Reparaturkandidaten den nachfolgenden technischen Checks zu unterwerfen.
 
-### 5er-Regel — Ausführung
+### Technische Mutationsbedingungen
 
-Auch ein promotetes Muster darf nur verändert werden, wenn alle fünf Stufen positiv sind:
+Eine automatische Mutation bleibt gesperrt, solange nicht alle für den konkreten Reparaturkandidaten relevanten Bedingungen positiv sind:
 
-1. `DETECT` — exakten Merge-SHA, Main-SHA und betroffenen Scope binden.
-2. `CORRELATE` — Datei-, Contract-, Runtime-, Evidence- und Dependency-Overlap gegen jeden offenen PR bestimmen.
-3. `CLASSIFY` — genau eine Aktionsklasse und einen reproduzierbaren Fingerprint erzeugen.
-4. `REMEDIATE` — nur promotete Low-Risk-Klassen; keine pauschale Konfliktauflösung.
-5. `VERIFY` — Required Checks und betroffene Regressionen auf dem reparierten Head erneut verifizieren.
-
-Fehlt eine Stufe, bleibt die Mutation gesperrt.
+- exakte Input-Identität aus Main-SHA, PR-Head und PR-Nummer,
+- reproduzierbare Impact-Korrelation,
+- deterministische Aktionsklassifikation,
+- explizite Admission des exakten Fix-Fingerprints,
+- revalidierte Required Checks für mutationsfähige Kandidaten,
+- unveränderte Policy-Grenzen: kein Deploy, kein Production-Handoff, kein Secret-/Auth-/DNS-/Billing-/Branch-Protection-Bypass.
 
 ### Supply-Chain-Grenzen
 
-Der Workflow darf offene PRs kommentieren und maschinenlesbare Evidence erzeugen. Branch-Updates oder Reparaturen sind nur bei promotierten Low-Risk-Mustern und vollständiger 5er-Gate-Kette zulässig. Secrets, Auth, DNS, Billing, Branch Protection, Lizenzfreigaben, Production-Handoff und Security-Policy-Relaxation bleiben immer manuell.
+Der Workflow darf offene PRs kommentieren und maschinenlesbare Evidence erzeugen. Branch-Updates oder Reparaturen sind nur bei explizit zugelassenen Low-Risk-Fingerprints und vollständig positiven technischen Checks zulässig. Secrets, Auth, DNS, Billing, Branch Protection, Lizenzfreigaben, Production-Handoff und Security-Policy-Relaxation bleiben immer manuell.
 
 Ein neuer Repository-HEAD allein löst weder Deployment noch NATS-Redeploy aus.
 
 
 ## DOC-SH-02 — Dokumentations-PR-Vorschläge
 
-Der promotete Fingerprint `STALE_CURRENT_MAIN_METADATA@1` darf nach der dokumentierten 3/3-Evidence ausschließlich einen **PR-Vorschlag** erzeugen. Die technische Trennung bleibt explizit:
+Der explizit zugelassene Fingerprint `STALE_CURRENT_MAIN_METADATA@1` darf ausschließlich einen **PR-Vorschlag** erzeugen; seine Admission-Evidence muss versioniert und an den exakten Fingerprint gebunden sein. Die technische Trennung bleibt explizit:
 
 - Der Korrelationsjob besitzt nur `contents: read` und erzeugt Drift-Report, Repair-Plan und Klassifikation.
 - Nur `PR_PROPOSAL_CANDIDATE` darf den separaten Job mit `contents: write` aktivieren.
@@ -52,15 +51,15 @@ Der promotete Fingerprint `STALE_CURRENT_MAIN_METADATA@1` darf nach der dokument
 - Nach dem Patch müssen die Dokumentations-/Korrelationsregressionen grün sein und der Drift-Report darf keine Findings mehr enthalten.
 - Zulässige Mutation ist nur ein neuer `capital-ai-growth/docs-self-heal-<mainsha>` Branch plus Pull Request. Es existiert kein `gh pr merge`, kein Auto-Merge und keine Production-Authority.
 
-Die 5er-Kette bleibt damit erhalten: `DETECT → CORRELATE → CLASSIFY → REMEDIATE → VERIFY`. Das finale Merge-Gate bleibt Branch Protection/Required Checks plus Review; der Self-Healing-Workflow darf dieses Gate nicht ersetzen.
+Die technische Prüfkette bleibt damit erhalten: Identität und Scope binden, Auswirkungen korrelieren, Aktion deterministisch klassifizieren, Fingerprint-Admission prüfen, Reparatur begrenzen und Required Checks erneut verifizieren. Das finale Merge-Gate bleibt Branch Protection/Required Checks plus Review; der Self-Healing-Workflow darf dieses Gate nicht ersetzen.
 
-## Fünfstufiger Self-Healing-Zyklus
+## Self-Healing-Ablauf
 
-1. **Detect** — Merge-SHA und geänderte Pfade gegen Dependency-, Container-, Workflow-, Contract- und Product-Grenzen klassifizieren.
-2. **Correlate** — nur offene PRs/Arbeitspakete mit überlappenden Dateien, Contracts, Lockfiles, Runtime- oder Evidence-Abhängigkeiten gegen den neuen Main prüfen.
-3. **Repair** — bekannte Low-Risk-Klassen dürfen einen Fix-Kandidaten erzeugen: stale Base/Projection, reproduzierbare Lockfile-Rekonstruktion, Evidence-/Source-SHA-Aktualisierung und konfliktfreie additive Dokumentationsdrift. Kein pauschales `ours/theirs`.
-4. **Validate** — Regression, Domain Governance, Security-/Lizenzgates und betroffene fokussierte Tests müssen auf dem reparierten Head erneut grün sein.
-5. **Learn/Promote** — ein Reparaturmuster wird erst nach mindestens drei unabhängigen positiven Validierungszyklen als automatische Invariante freigeschaltet. Ein geänderter Fix-Fingerprint beginnt wieder bei null.
+- **Detect** — Merge-SHA und geänderte Pfade gegen Dependency-, Container-, Workflow-, Contract- und Product-Grenzen klassifizieren.
+- **Correlate** — nur offene PRs/Arbeitspakete mit überlappenden Dateien, Contracts, Lockfiles, Runtime- oder Evidence-Abhängigkeiten gegen den neuen Main prüfen.
+- **Classify** — genau eine reproduzierbare Aktionsklasse und den exakten Fix-Fingerprint erzeugen.
+- **Admit** — automatische Reparatur nur für einen ausdrücklich zugelassenen Low-Risk-Fingerprint in Betracht ziehen.
+- **Repair & Verify** — bekannten Low-Risk-Fix anwenden, anschließend Regression, Domain Governance, Security-/Lizenzgates und betroffene Required Checks auf dem reparierten Head neu verifizieren.
 
 ## Fail-closed
 
@@ -70,7 +69,7 @@ NATS wird **niemals** allein wegen eines neuen Repository-HEADs neu deployed. Ei
 
 ## Lernspeicher
 
-Je Fix-Klasse werden `patternId`, `triggerFingerprint`, `fixFingerprint`, `positiveValidationCount`, `lastValidatedMainSha`, `rollback` und `promotionState` geführt. Keine Secrets. Promotion erst ab drei positiven unabhängigen Zyklen.
+Je Fix-Klasse werden `patternId`, `triggerFingerprint`, `fixFingerprint`, `admissionState`, `admissionEvidence`, `lastValidatedMainSha` und `rollback` geführt. Keine Secrets. Ein neuer oder geänderter Fix-Fingerprint ist standardmäßig `NOT_ADMITTED`.
 
 ## Fix-Klassen v1
 
@@ -131,7 +130,7 @@ Nach jedem Fix-Kandidaten erneut:
 5. finaler Runtime-Scan,
 6. SBOM/Provenance/Digest-Identität.
 
-Erst wenn der reparierte Kandidat diese Kette vollständig positiv durchläuft, zählt er als **ein** positiver Self-Healing-Validierungszyklus. Drei Wiederholungen desselben CI-Laufs zählen nicht als drei unabhängige Zyklen.
+Erst wenn der reparierte Kandidat diese Kette vollständig positiv durchläuft, kann die Evidence für eine explizite Fingerprint-Admission herangezogen werden. Wiederholungen desselben CI-Laufs erzeugen keine zusätzliche Autorität.
 
 ### Aktuelle Evidence: TypeScript 7 / PR #65
 
@@ -146,4 +145,4 @@ Der erste reale Diagnosezyklus hat das Muster erkannt, aber **nicht positiv vali
 - Entscheidung: `BINARY_AFFECTED`; kein VEX-`NOT_AFFECTED`, keine Suppression, kein Merge.
 - Zulässiger Fix: neues provenance-geprüftes TS7-Compiler-Artefakt mit gepatchter eingebetteter Go-/x/text-Version oder separat CADS-bewertete kompatible Alternative; anschließend vollständige Revalidierung.
 
-Self-Healing-Promotion für `NATIVE_BUILD_TOOL_BINARY_VULNERABILITY@1`: **0/3 positive unabhängige Validierungszyklen**. Das Muster ist dokumentiert und regressionsfähig, aber noch nicht als autonome Reparaturregel freigeschaltet.
+Self-Healing-Admission für `NATIVE_BUILD_TOOL_BINARY_VULNERABILITY@1`: **NOT_ADMITTED**. Das Muster ist dokumentiert und regressionsfähig, aber nicht als autonome Reparaturregel zugelassen.
