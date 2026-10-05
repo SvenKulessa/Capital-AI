@@ -304,7 +304,13 @@ export function createAuthSecurity({
         return true;
       }
       const challengeId = String(body.challengeId || '');
-      if (!PASSKEY_ID_RE.test(challengeId) || !body.credential || typeof body.credential !== 'object') {
+      const requestedName = friendlyName(body.friendlyName, 'CAPITAL-AI Passkey');
+      if (
+        !PASSKEY_ID_RE.test(challengeId) ||
+        !body.credential ||
+        typeof body.credential !== 'object' ||
+        !requestedName
+      ) {
         json(res, 400, { error: 'invalid_passkey_response' });
         return true;
       }
@@ -313,19 +319,34 @@ export function createAuthSecurity({
         accessToken: stored.accessToken,
         body: { challenge_id: challengeId, credential: body.credential },
       });
-      if (!verified.response.ok || !PASSKEY_ID_RE.test(String(verified.data?.id || ''))) {
+      const passkeyId = String(verified.data?.id || '');
+      if (!verified.response.ok || !PASSKEY_ID_RE.test(passkeyId)) {
         json(res, verified.response.status === 429 ? 429 : 422, {
           error: 'passkey_registration_failed',
           code: upstreamCode(verified.data, 'passkey_registration_failed'),
         });
         return true;
       }
+
+      let displayName = verified.data?.friendly_name || '';
+      let renameApplied = false;
+      const renamed = await authRequest(config, `/passkeys/${encodeURIComponent(passkeyId)}`, {
+        method: 'PATCH',
+        accessToken: stored.accessToken,
+        body: { friendly_name: requestedName },
+      }).catch(() => null);
+      if (renamed?.response?.ok) {
+        displayName = renamed.data?.friendly_name || requestedName;
+        renameApplied = true;
+      }
+
       audit('Supabase passkey registered');
       json(res, 200, {
         registered: true,
+        renameApplied,
         passkey: {
-          id: verified.data.id,
-          friendlyName: verified.data.friendly_name || '',
+          id: passkeyId,
+          friendlyName: displayName,
           createdAt: verified.data.created_at || null,
         },
       });
