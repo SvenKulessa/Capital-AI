@@ -51,3 +51,26 @@ Diese Code-Evidence ersetzt keine Browser-/Screenreader-Abnahme.
 - Screenreader-Smoke
 - Kontrast-/Touch-Target-Abnahme
 - Production-Deploy-Evidence
+
+
+## Zusatzprodukte
+
+Die Production-Preissurface trennt SaaS-Tarife und zusätzliche Produkte in zwei Tabs:
+
+- **Starter · Pro · Enterprise** — ausschließlich die drei katalogisierten Abonnements.
+- **Zusatzprodukte** — ausschließlich bereits kaufbare zusätzliche Produkte.
+
+Der aktuelle Zusatzprodukt-Katalog enthält nur **Market Vocabulary**. Geplante B2B-, API-, Token-, NFT-, White-Label- und Affiliate-Produkte werden nicht als verfügbar dargestellt.
+
+### Vocabulary-Badge
+
+Nach erfolgreichem serverseitig verifiziertem Vocabulary-Entitlement stehen ohne Zusatzpreis zur Verfügung:
+
+- `/api/billing/vocabulary/badge`
+- `/api/billing/vocabulary/badge-license`
+
+Beide Endpunkte sind authentifiziert und entitlement-gebunden. Der Badge bleibt proprietär; die zulässige Nutzung wird durch `LicenseRef-CAPITAL-AI-VOCABULARY-BADGE-CUSTOMER-1.0` begrenzt.
+
+## Bootstrap-Fallback
+
+Der statische Bootstrap-Fallback reagiert nur noch auf einen tatsächlichen Ladefehler des App-Entry-Skripts. Eine allgemeine frühe `unhandledrejection` darf die Fehleroberfläche nicht mehr auslösen. Import-/Runtime-Fehler innerhalb der geladenen Anwendung bleiben Aufgabe der React Error Boundary.
