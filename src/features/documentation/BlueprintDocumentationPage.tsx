@@ -12,6 +12,7 @@ import {
   ShoppingBag,
 } from 'lucide-react';
 import { STUDIO_BLUEPRINTS } from '../../data/studioData';
+import { BLUEPRINT_EVIDENCE_CONTRACTS } from '../../data/blueprintEvidenceContracts';
 
 import { BLUEPRINT_DETAILS, VERIFIED_COMMERCE_STATE } from './blueprintDocumentationData';
 import { ByokArchitectureDiagram, SocialMediaArchitectureDiagram } from './ArchitectureGraphics';
@@ -54,6 +55,7 @@ export const BlueprintDocumentationPage: React.FC<BlueprintDocumentationPageProp
 
   const selected = STUDIO_BLUEPRINTS.find((blueprint) => blueprint.id === selectedId) ?? STUDIO_BLUEPRINTS[0];
   const detail = selected ? BLUEPRINT_DETAILS[selected.id] : undefined;
+  const evidenceContract = selected ? BLUEPRINT_EVIDENCE_CONTRACTS[selected.id] : undefined;
 
   const verifyPrivateEvidenceContext = async () => {
     setPrivateEvidenceState('checking');
@@ -183,6 +185,18 @@ export const BlueprintDocumentationPage: React.FC<BlueprintDocumentationPageProp
                         {privateEvidenceState === 'checking' ? 'Privaten Kontext prüfen…' : 'Private Evidence prüfen'}
                       </button>
                     </div>
+                    {evidenceContract && (
+                      <div className="mt-3 rounded-xl border border-slate-800 bg-black/25 p-3">
+                        <div className="text-[11px] font-bold uppercase tracking-wide text-slate-300">
+                          {evidenceContract.schemaVersion} · {evidenceContract.requirements.length} Pflichtnachweise
+                        </div>
+                        <ul className="mt-2 grid gap-1 text-[11px] text-slate-400 sm:grid-cols-2">
+                          {evidenceContract.requirements.map(requirement => (
+                            <li key={requirement.id}>• {requirement.label}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                     <div className="mt-3 text-xs font-mono">
                       {privateEvidenceState === 'idle' && <span className="text-slate-500">Status: OFFEN</span>}
                       {privateEvidenceState === 'verified-context' && (
