@@ -17,6 +17,10 @@ baseline:
   target:
     repository: "SvenKulessa/Capital-AI"
     sha: "9c5fc40318cf538308724c2efb18441185e8cbae"
+  currentMainCorrelation:
+    sha: "96178b35db215754eb69785535f035b4fb4d96af"
+    rootPolicy: "AGENTS.md@currentmain"
+    correlationState: "POINT_3_SOURCE_TARGET_MANIFEST_MATERIALIZED"
   policy: "target-current-main-contracts-win"
 
 objectives:
@@ -154,8 +158,14 @@ artifacts:
   toolAdmission: "CAPITAL-AI-GROWTH/social-media-tool-admission.yaml"
   productLicenseBoundary: "docs/licenses/SOCIAL-MEDIA-ENGINE-PRODUCT-LICENSE.md"
   roadmapProjection: "src/data/socialContentRoadmap.ts"
+  sourceTargetManifest: "CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json"
+  sourceTargetManifestValidator: "scripts/validate-finance-source-target-manifest.mjs"
+  sourceTargetManifestTest: "scripts/finance-source-target-manifest.test.mjs"
 
 validation:
+  status:
+    source-to-target-file-manifest: "MATERIALIZED_WITH_GIT_BLOB_SHA_GUARD"
+    remainingGates: "OPEN"
   required:
     - "source-to-target-file-manifest"
     - "license-and-rights-matrix"
