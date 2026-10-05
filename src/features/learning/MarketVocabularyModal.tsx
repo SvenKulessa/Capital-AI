@@ -40,6 +40,7 @@ import {
   Smartphone,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { ProductBadge } from '../../components/ProductBadge';
 import {
   VOCABULARY_TERMS,
   VOCABULARY_CATEGORIES,
@@ -497,7 +498,10 @@ export const MarketVocabularyModal: React.FC<MarketVocabularyModalProps> = ({
         {/* MODAL FOOTER */}
         {!entitled && (
           <div className="px-4 sm:px-6 py-3 border-t border-amber-400/30 bg-amber-400/10 shrink-0">
-            <p className="text-xs text-amber-100">Das Vocabulary bleibt frei sichtbar. Quant-/Pro-Inhalte werden erst nach serverseitig bestätigtem Kauf des Market Vocabulary für {formatVocabularyPrice()} ausgeliefert. In Pro und Enterprise enthalten. Keine Anlageberatung.</p>
+            <div className="flex items-start gap-3">
+              <ProductBadge badge={VOCABULARY_OFFER.badgeId} size="md" />
+              <p className="text-xs text-amber-100">Das Vocabulary bleibt frei sichtbar. Quant-/Pro-Inhalte werden erst nach serverseitig bestätigtem Kauf des Market Vocabulary für {formatVocabularyPrice()} ausgeliefert. In Pro und Enterprise enthalten. Keine Anlageberatung.</p>
+            </div>
             <label className="mt-2 flex items-start gap-2 text-[11px] text-slate-300">
               <input type="checkbox" checked={withdrawalWaived} onChange={(event) => setWithdrawalWaived(event.target.checked)} className="mt-0.5" />
               <span>Ich verlange die sofortige Bereitstellung und akzeptiere, dass mein Widerrufsrecht nach § 356 Abs. 5 BGB mit Beginn der Bereitstellung erlischt.</span>
