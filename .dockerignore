@@ -82,6 +82,8 @@
 !scripts/supabase-auth-config.test.mjs
 !scripts/seo-content-manifest.test.mjs
 !scripts/seo-metadata.test.mjs
+!scripts/validate-finance-source-target-manifest.mjs
+!scripts/finance-source-target-manifest.test.mjs
 !contracts/
 !contracts/**
 !packages/
@@ -121,6 +123,7 @@
 !CAPITAL-AI-MARKET/
 !CAPITAL-AI-MARKET/badge.svg
 !CAPITAL-AI-GROWTH/
+!CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json
 !CAPITAL-AI-GROWTH/badge.svg
 !CAPITAL-AI-PLATFORM/
 !CAPITAL-AI-PLATFORM/badge.svg
