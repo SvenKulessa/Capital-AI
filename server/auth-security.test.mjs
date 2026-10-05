@@ -226,3 +226,64 @@ test('TOTP reenrollment removes only same-name pending factor before creating re
   );
   assert.equal(res.payload.secret, 'TESTSECRET0123456');
 });
+
+test('TOTP enrollment accepts nested upstream payload and derives manual secret from otpauth URI', async () => {
+  const base = securityHarness({ factor: false });
+  const originalHandle = base.security.handle;
+  void originalHandle;
+
+  const user = { id: 'user-1', email: 'user@example.test', factors: [] };
+  const writes = [];
+  const calls = [];
+  const security = createAuthSecurity({
+    getConfig: () => ({ url: 'https://project.supabase.co', publishableKey: 'publishable' }),
+    authRequest: async (_config, path, options = {}) => {
+      calls.push({ path, options });
+      if (path === '/user') return { response: new Response('{}', { status: 200 }), data: user };
+      if (path === '/factors' && options.method === 'POST') {
+        return {
+          response: new Response('{}', { status: 200 }),
+          data: {
+            data: {
+              id: challengeId,
+              friendly_name: 'CAPITAL-AI Authenticator',
+              totp: {
+                qr_code: 'data:image/svg+xml;charset=utf-8,%3Csvg%3E%3C/svg%3E',
+                uri: 'otpauth://totp/CAPITAL-AI:user@example.test?secret=DERIVEDSECRET1234&issuer=CAPITAL-AI',
+              },
+            },
+          },
+        };
+      }
+      throw new Error(`Unexpected path: ${path}`);
+    },
+    resolveSession: async () => ({
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
+      user: { id: 'user-1' },
+    }),
+    writeSessionCookies: (_req, _res, _config, value) => { writes.push(value); },
+    clearSessionCookies: () => {},
+    readRequestJson: async req => req.body || {},
+    sameOrigin: req => req.headers?.origin === 'https://capital-ai.online',
+    audit: () => {},
+  });
+
+  const res = responseHarness();
+  await security.handle(
+    {
+      method: 'POST',
+      headers: { origin: 'https://capital-ai.online' },
+      body: { friendlyName: 'CAPITAL-AI Authenticator' },
+    },
+    res,
+    new URL('https://capital-ai.online/api/auth/mfa/totp/enroll'),
+    json,
+  );
+
+  assert.equal(res.status, 200);
+  assert.equal(res.payload.factorId, challengeId);
+  assert.equal(res.payload.secret, 'DERIVEDSECRET1234');
+  assert.match(res.payload.qrCode, /^data:image\/svg\+xml/);
+  assert.equal(writes.length, 0);
+});
