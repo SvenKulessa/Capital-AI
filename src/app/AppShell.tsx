@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { PriceAlertToast } from '../features/alerts/PriceAlertToast';
 import { HeroBuddy } from '../components/HeroBuddy';
+import { RouteBreadcrumbs } from '../components/RouteBreadcrumbs';
 import { useRouteAnalytics } from '../platform/analytics/useRouteAnalytics';
 import { useMarketAssets } from '../services/marketDataStore';
 import { RouteLoadingFallback } from '../shared/ui/RouteLoadingFallback';
@@ -27,6 +28,7 @@ export function AppShell() {
   return (
     <>
       <ApplicationViewport currentRoute={currentRoute}>
+        <RouteBreadcrumbs currentRoute={currentRoute} onNavigate={navigateTo} />
         <Suspense fallback={<RouteLoadingFallback />}>
           <AppRoutes
             currentRoute={currentRoute}
