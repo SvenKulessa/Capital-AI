@@ -1,0 +1,119 @@
+{
+  "schema": "CAPITAL_AI_OPEN_DATA_CANDIDATE_ASSESSMENT@1",
+  "assessedAt": "2026-10-05",
+  "authority": "MARKET+TRUST",
+  "policyReference": "server/open-source-market-policy.mjs",
+  "productionAdmission": "NONE",
+  "candidates": [
+    {
+      "providerId": "ecb-statistics",
+      "decision": "REVIEW_REQUIRED",
+      "eligible": false,
+      "datasetScope": "Publicly released ESCB statistics; euro FX reference rates evaluated only as reference/statistical data",
+      "officialEvidence": [
+        "https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.en.html",
+        "https://www.ecb.europa.eu/services/using-our-site/disclaimer/html/index.en.html",
+        "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html"
+      ],
+      "verifiedFacts": [
+        "ESCB publicly released statistics are offered for free reuse, including commercial reuse, subject to attribution and source/metadata integrity conditions.",
+        "Third-party data are excluded from the general reuse permission unless separately permitted.",
+        "ECB euro foreign exchange reference rates are informational reference rates and their use for transaction purposes is strongly discouraged."
+      ],
+      "gateAssessment": {
+        "openSourceSoftware": "UNVERIFIED",
+        "openDataRights": "PARTIAL_PASS_WITH_OBLIGATIONS",
+        "commercialWebDisplay": "ALLOW_WITH_ATTRIBUTION_FOR_ELIGIBLE_ESCB_STATISTICS",
+        "commercialMobileDisplay": "ALLOW_WITH_ATTRIBUTION_FOR_ELIGIBLE_ESCB_STATISTICS",
+        "derivedScoringRankingsAnalytics": "REVIEW_REQUIRED",
+        "normalization": "REVIEW_REQUIRED",
+        "cacheHotState": "REVIEW_REQUIRED",
+        "jetStreamPublication": "REVIEW_REQUIRED",
+        "replay": "REVIEW_REQUIRED",
+        "retention": "REVIEW_REQUIRED",
+        "backupRestore": "REVIEW_REQUIRED",
+        "auditEvidence": "REVIEW_REQUIRED",
+        "internalProcessing": "ALLOW_WITH_OBLIGATIONS"
+      },
+      "blockers": [
+        "OPEN_SOURCE_SOFTWARE_EVIDENCE_MISSING",
+        "DATASET_LEVEL_THIRD_PARTY_RIGHTS_CLASSIFICATION_REQUIRED",
+        "DERIVED_USE_AND_STORAGE_MAPPING_NOT_EXPLICITLY_VERIFIED",
+        "REFERENCE_RATE_NOT_TRANSACTION_PRICE"
+      ]
+    },
+    {
+      "providerId": "fred-api",
+      "decision": "BLOCK",
+      "eligible": false,
+      "datasetScope": "FRED API and individual FRED series",
+      "officialEvidence": [
+        "https://fred.stlouisfed.org/docs/api/terms_of_use.html",
+        "https://fred.stlouisfed.org/legal/fred_terms_of_use.html"
+      ],
+      "verifiedFacts": [
+        "Individual FRED series may be owned by third parties and carry separate restrictions.",
+        "The FRED API terms do not override underlying data-owner rights.",
+        "Current FRED terms restrict API use involving storage, caching or archiving of FRED content and contain additional restrictions relevant to AI/software use."
+      ],
+      "gateAssessment": {
+        "openSourceSoftware": "FAIL",
+        "openDataRights": "DATASET_SPECIFIC",
+        "commercialWebDisplay": "DATASET_SPECIFIC",
+        "commercialMobileDisplay": "DATASET_SPECIFIC",
+        "derivedScoringRankingsAnalytics": "BLOCK_OR_REVIEW_REQUIRED",
+        "normalization": "REVIEW_REQUIRED",
+        "cacheHotState": "BLOCK",
+        "jetStreamPublication": "BLOCK",
+        "replay": "BLOCK",
+        "retention": "BLOCK",
+        "backupRestore": "BLOCK",
+        "auditEvidence": "REVIEW_REQUIRED",
+        "internalProcessing": "DATASET_SPECIFIC"
+      },
+      "blockers": [
+        "FRED_API_NOT_OPEN_SOURCE_SOFTWARE_PROVIDER",
+        "CACHE_ARCHIVE_RETENTION_INCOMPATIBLE_WITH_CURRENT_PIPELINE_REQUIREMENTS",
+        "SERIES_LEVEL_RIGHTS_REQUIRED",
+        "AI_SOFTWARE_USE_RESTRICTION_REQUIRES_TRUST_REVIEW"
+      ]
+    },
+    {
+      "providerId": "sec-edgar",
+      "decision": "REVIEW_REQUIRED",
+      "eligible": false,
+      "datasetScope": "SEC EDGAR public filing data and SEC developer interfaces",
+      "officialEvidence": [
+        "https://www.sec.gov/about/developer-resources",
+        "https://www.sec.gov/about/developer-resources/sec-open-source-policy",
+        "https://www.sec.gov/about/developer-resources/open-source-policy-implementation"
+      ],
+      "verifiedFacts": [
+        "SEC publishes developer resources and applies a fair-access limit of no more than 10 requests per second.",
+        "SEC has an open-source policy and states CC0 for software code released by the SEC under that policy.",
+        "The SEC open-source software policy does not by itself establish blanket redistribution or derived-use rights for every filing or third-party document in EDGAR."
+      ],
+      "gateAssessment": {
+        "openSourceSoftware": "PARTIAL_PASS_FOR_SPECIFIC_SEC_RELEASED_CODE_ONLY",
+        "openDataRights": "REVIEW_REQUIRED_PER_DATASET_OR_FILING_CONTENT",
+        "commercialWebDisplay": "REVIEW_REQUIRED",
+        "commercialMobileDisplay": "REVIEW_REQUIRED",
+        "derivedScoringRankingsAnalytics": "REVIEW_REQUIRED",
+        "normalization": "REVIEW_REQUIRED",
+        "cacheHotState": "REVIEW_REQUIRED",
+        "jetStreamPublication": "REVIEW_REQUIRED",
+        "replay": "REVIEW_REQUIRED",
+        "retention": "REVIEW_REQUIRED",
+        "backupRestore": "REVIEW_REQUIRED",
+        "auditEvidence": "ALLOW_FOR_METADATA_PROVENANCE_ONLY",
+        "internalProcessing": "REVIEW_REQUIRED"
+      },
+      "blockers": [
+        "DATA_RIGHTS_NOT_ESTABLISHED_BY_SOFTWARE_OPEN_SOURCE_POLICY",
+        "FILING_CONTENT_MAY_INCLUDE THIRD_PARTY_RIGHTS",
+        "DATASET_LEVEL_USE_CASE_MAPPING_REQUIRED",
+        "OPEN_SOURCE_ADAPTER_IDENTITY_AND_LICENSE_NOT_PINNED"
+      ]
+    }
+  ]
+}
