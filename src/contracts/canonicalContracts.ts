@@ -119,6 +119,7 @@ const FinalRankResultShape = z.object({
   scoreEligible: z.boolean(),
   rankEligible: z.boolean(),
   alertEligible: z.boolean(),
+  decisionEligible: z.boolean(),
   eligibility: z.boolean(), // Hard gate (0 = blocked, 1 = eligible)
   eligibilityReason: z.string().optional(),
   confidence: z.number().min(0).max(1.0),
@@ -154,14 +155,14 @@ export const FinalRankResultSchema = FinalRankResultShape.superRefine((result, c
   const reject = (message: string) => ctx.addIssue({ code: 'custom', message });
   if (result.isDemo !== (result.dataAvailability === 'simulated')) reject('DEMO_MODE_MISMATCH');
   if ((result.isDemo || result.resultStatus !== 'computed' || result.finalScore === null) &&
-      (result.eligibility || result.scoreEligible || result.rankEligible || result.alertEligible || result.rank !== null)) {
+      (result.eligibility || result.scoreEligible || result.rankEligible || result.alertEligible || result.decisionEligible || result.rank !== null)) {
     reject('NON_ACTIONABLE_RESULT_HAS_ELIGIBILITY');
   }
   if (!result.rankEligible && result.rank !== null) reject('INELIGIBLE_RANK_PUBLISHED');
-  if ((result.rankEligible || result.alertEligible || result.scoreEligible) && !result.eligibility) reject('ELIGIBILITY_REQUIRED');
-  if ((result.eligibility || result.scoreEligible || result.rankEligible || result.alertEligible) &&
+  if ((result.rankEligible || result.alertEligible || result.decisionEligible || result.scoreEligible) && !result.eligibility) reject('ELIGIBILITY_REQUIRED');
+  if ((result.eligibility || result.scoreEligible || result.rankEligible || result.alertEligible || result.decisionEligible) &&
       (!['live', 'delayed', 'cached'].includes(result.dataAvailability) || result.confidence < .9)) reject('DATA_ADMISSION_REQUIRED');
-  if ((result.rankEligible || result.alertEligible) && !result.scoreEligible) reject('SCORE_ELIGIBILITY_REQUIRED');
+  if ((result.rankEligible || result.alertEligible || result.decisionEligible) && !result.scoreEligible) reject('SCORE_ELIGIBILITY_REQUIRED');
   if (['computed', 'demo_fallback'].includes(result.resultStatus) && (result.finalScore === null ||
       Object.values(result.subScores).some(value => value === null))) reject('REQUIRED_INPUT_MISSING');
   if (['insufficient_data', 'blocked_by_risk'].includes(result.resultStatus) && result.finalScore !== null) reject('UNAVAILABLE_SCORE_MUST_BE_NULL');
