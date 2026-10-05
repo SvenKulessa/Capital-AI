@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title desc" shape-rendering="geometricPrecision">
+  <title id="title">CAPITAL-AI Data Pipeline Blueprint</title>
+  <desc id="desc">Quadratischer Cyan-Blau Blueprint-Badge mit hierarchischem Pipeline-Baum, Datenknoten und Evidence-Siegel.</desc>
+  <metadata>Copyright © 2026 Sven Michael Kulessa. LicenseRef-CAPITAL-AI-DATA-PIPELINE-BLUEPRINT-BADGE-1.0. Original CAPITAL-AI asset inspired by the deterministic SocialMediaEngine planning-visual workflow, without copied Finance artwork.</metadata>
+  <defs>
+    <radialGradient id="bg" cx="48%" cy="30%" r="78%">
+      <stop offset="0%" stop-color="#22D3EE" stop-opacity=".17"/>
+      <stop offset="48%" stop-color="#061520"/>
+      <stop offset="100%" stop-color="#02070C"/>
+    </radialGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#CFFAFE"/>
+      <stop offset="45%" stop-color="#22D3EE"/>
+      <stop offset="100%" stop-color="#0891B2"/>
+    </linearGradient>
+    <linearGradient id="flow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#67E8F9"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="3.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect x="7" y="7" width="242" height="242" rx="34" fill="url(#bg)" stroke="url(#rim)" stroke-width="2.4"/>
+  <rect x="14" y="14" width="228" height="228" rx="29" fill="none" stroke="#FFFFFF" stroke-opacity=".08"/>
+  <g fill="none" stroke="url(#flow)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
+    <path d="M64 74h44v28h40"/>
+    <path d="M108 102v38h40"/>
+    <path d="M148 102v76"/>
+    <path d="M148 140h42"/>
+    <rect x="45" y="58" width="38" height="32" rx="8"/>
+    <rect x="128" y="86" width="40" height="32" rx="8"/>
+    <rect x="128" y="124" width="40" height="32" rx="8"/>
+    <rect x="171" y="124" width="36" height="32" rx="8"/>
+  </g>
+  <g transform="translate(173 63)">
+    <path d="M0 13 13 0l13 13-13 13Z" fill="#22D3EE" fill-opacity=".16" stroke="#67E8F9" stroke-width="2"/>
+    <path d="m7 13 4 4 8-9" fill="none" stroke="#CFFAFE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <line x1="42" y1="187" x2="214" y2="187" stroke="#22D3EE" stroke-opacity=".2"/>
+  <text x="128" y="211" text-anchor="middle" fill="#CFFAFE" font-family="Inter,Arial,sans-serif" font-size="12" font-weight="700" letter-spacing="1.5">DATA PIPELINE</text>
+  <text x="128" y="229" text-anchor="middle" fill="#F8FAFC" font-family="Inter,Arial,sans-serif" font-size="17" font-weight="800" letter-spacing="1.8">BLUEPRINT</text>
+</svg>
