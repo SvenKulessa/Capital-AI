@@ -12,13 +12,14 @@ export const SOCIAL_CONTENT_WORK_PACKAGES: WorkPackage[] = [
     "progressPercent": null,
     "evidenceState": "OFFEN",
     "evidenceRefs": [
-      "https://github.com/SvenKulessa/Capital-AI/blob/8a08f938a519fbf3379749fd9ac59e182851e655/CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.md"
+      "https://github.com/SvenKulessa/Capital-AI/blob/8a08f938a519fbf3379749fd9ac59e182851e655/CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.md",
+      "CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json"
     ],
-    "nextStep": "PORT/REWRITE/REPLACE/DROP-Inventar und Tool-Admission-Matrix abarbeiten; erst danach Runtime-Komponenten migrieren.",
+    "nextStep": "Punkt 4: exakte Versionen, Artefakt-Hashes und Lizenz-/Redistribution-Evidence der tatsächlich zu migrierenden Social-Tools bestimmen.",
     "priority": "Kritisch",
     "leadName": "Owner + GROWTH/MARKET/PLATFORM/TRUST/PRODUCT",
     "targetSprint": "Sequenziell nach Lizenz-, Datenrechte- und Security-Gates",
-    "description": "Finance-SocialMediaEngine und selektive fortgeschrittene MARKET/Data-Funktionen werden gegen CURRENT_MAIN migriert. Kommerzieller Kundenpfad und Owner-private Tool-Runtime bleiben strikt getrennt; Non-Commercial-Artefakte dürfen keine kommerziellen Outputs erzeugen.",
+    "description": "Das Source-to-Target-Dateimanifest ist gegen CURRENT_MAIN materialisiert und SHA-gesichert. Finance-SocialMediaEngine und selektive fortgeschrittene MARKET/Data-Funktionen werden danach schrittweise migriert. Kommerzieller Kundenpfad und Owner-private Tool-Runtime bleiben strikt getrennt; Non-Commercial-Artefakte dürfen keine kommerziellen Outputs erzeugen.",
     "deliverables": [
       "SocialMediaEngine Contracts, Editing, deterministischen Media- und Publishing-Pfad zielkonform migrieren.",
       "Maschinenlesbare Tool-/Lizenz-Zulassung mit Commercial-, Owner-private-, Research- und BLOCKED-Modi durchsetzen.",
