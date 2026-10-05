@@ -75,7 +75,7 @@ test('health exposes fail-closed Open-Source and Open-Data policy', async () => 
   const state = health();
   assert.equal(state.ingress, 'fail_closed');
   assert.equal(state.sourcePolicy, 'OPEN_SOURCE_AND_OPEN_DATA_ONLY');
-  assert.equal(state.admittedSources, 1);
+  assert.equal(state.admittedSources, 2);
   assert.equal(state.quoteAdmittedSources, 0);
   assert.equal(state.scoringAdmittedSources, 0);
   assert.equal(state.scoreDisplayEnabled, false);
@@ -129,10 +129,14 @@ test('runtime OSS adapter inventory excludes non-admitted proprietary data paths
   const ids=inventory.map(x=>x.id);
   assert.deepEqual([...ids].sort(), ['ccxt','cryptofeed','hummingbot','openbb'].sort());
   assert.ok(inventory.every(x=>x.openDataAdmissionRequired===true));
-  assert.equal(MARKET_SOURCE_POLICY.admittedSources.length,1);
+  assert.equal(MARKET_SOURCE_POLICY.admittedSources.length,2);
   assert.equal(isAdmittedMarketSource('wikidata-reference'),true);
   assert.equal(isAdmittedMarketSource('wikidata-reference','referenceMetadata'),true);
   assert.equal(isAdmittedMarketSource('wikidata-reference','marketQuotes'),false);
+  assert.equal(isAdmittedMarketSource('faironchain-open-price'),true);
+  assert.equal(isAdmittedMarketSource('faironchain-open-price','historicalPriceInput'),true);
+  assert.equal(isAdmittedMarketSource('faironchain-open-price','marketQuotes'),false);
+  assert.equal(isAdmittedMarketSource('faironchain-open-price','scoringPriceInput'),false);
   assert.equal(admittedMarketSourcesFor('marketQuotes').length,0);
   assert.equal(admittedMarketSourcesFor('scoringPriceInput').length,0);
   const originalFetch=globalThis.fetch;
