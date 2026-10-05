@@ -758,11 +758,6 @@ export const Header: React.FC<HeaderProps> = ({
                                           <span className="text-[11.5px] font-bold text-slate-200 group-hover:text-amber-300 transition-colors">
                                             {sub.name}
                                           </span>
-                                          {sub.trending && (
-                                            <span className="text-[9.5px] font-mono text-emerald-400 font-bold bg-emerald-400/10 px-1 rounded">
-                                              {sub.trending}
-                                            </span>
-                                          )}
                                         </div>
                                         <p className="text-[10px] text-slate-400 mt-0.5 leading-snug line-clamp-2">
                                           {sub.shortDesc}
@@ -792,17 +787,6 @@ export const Header: React.FC<HeaderProps> = ({
 
               {/* Drawer Bottom */}
               <div className="p-5 border-t border-slate-800/80 bg-[#060914]">
-                <div className="text-[11px] text-slate-400 space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span>Echtzeit-Feed:</span>
-                    <span className="text-emerald-400 font-mono">Sub-45ms Latenz</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Sicherheitsstandard:</span>
-                    <span className="text-amber-300 font-mono">SSL 256-Bit • MiCA</span>
-                  </div>
-                </div>
-
                 {/* Direct Legal & FAQ Routing Links in Drawer */}
                 <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-400">
                   <button
