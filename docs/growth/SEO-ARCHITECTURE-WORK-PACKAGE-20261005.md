@@ -132,6 +132,8 @@ Exit-Evidence:
 
 ### SEO-02 · Metadata, Canonicals, Structured Data und Social Cards
 
+**Status:** `REPO_IMPLEMENTED / VALIDATION_PENDING` — `shared/seo-metadata.mjs` projiziert das SEO-01-Manifest auf Title, Description, Canonical, robots, OpenGraph, Twitter/X und claimsafe JSON-LD. Der Server entfernt Canonical/JSON-LD auf nicht indexierbaren HTML-Routen. `/.well-known/change-password` ist als temporärer Redirect auf `/profile/security` ergänzt. Branch-CI steht noch aus.
+
 **Ziel:** Einheitliche Metadaten aus dem Manifest.
 
 Aufgaben:
@@ -155,9 +157,13 @@ Nicht pauschal zulassen:
 - erfundene Preise, Nutzerzahlen oder Performancewerte.
 
 Exit-Evidence:
-- deterministische Metadata-/JSON-LD-Tests;
-- kein Canonical-Duplikat;
-- Social-Preview-Assets lizenz- und hashgebunden.
+- `shared/seo-metadata.mjs` als kanonische Projection;
+- `scripts/seo-metadata.test.mjs` prüft alle Manifest-Einträge und Schema-Graphs;
+- `server/seo-indexing-policy.test.mjs` prüft reale HTML-Injection und NOINDEX-Cleanup;
+- `index.html` enthält einen claimsafe Basis-Graph ohne synthetischen Free-Offer-Claim;
+- `server/well-known.test.mjs` prüft `/.well-known/change-password` als temporären Redirect;
+- Docker-Build führt den neuen Metadata-Test offline aus;
+- realer Branch-CI-/Required-Check-Lauf bleibt vor Abschluss von SEO-02 offen.
 
 ### SEO-03 · Crawlability, Sitemap, Robots, Rendering und Performance
 

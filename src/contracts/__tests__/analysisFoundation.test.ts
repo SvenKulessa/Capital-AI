@@ -18,7 +18,7 @@ async function demo() {
 }
 function nonActionable(result: Awaited<ReturnType<typeof ScoringEngineService.computeFinalScore>>) {
   assert.equal(result.eligibility, false); assert.equal(result.rank, null);
-  assert.equal(result.scoreEligible, false); assert.equal(result.rankEligible, false); assert.equal(result.alertEligible, false);
+  assert.equal(result.scoreEligible, false); assert.equal(result.rankEligible, false); assert.equal(result.alertEligible, false); assert.equal(result.decisionEligible, false);
 }
 
 test('all 50 entries are quarantined with truthful availability and no invented validation date', () => {
@@ -132,7 +132,7 @@ test('result contract rejects demo eligibility and a numeric unavailable score',
 test('unavailable data and low confidence cannot be admitted as actionable computed results', async () => {
   const { features } = await demo(); const result = await ScoringEngineService.computeFinalScore(asset, features, true);
   const alleged = { ...result, isDemo: false, resultStatus: 'computed', eligibility: true,
-    scoreEligible: true, rankEligible: true, alertEligible: true, rank: 1 };
+    scoreEligible: true, rankEligible: true, alertEligible: true, decisionEligible: true, rank: 1 };
   assert.equal(FinalRankResultSchema.safeParse({ ...alleged, dataAvailability: 'unavailable', confidence: 1 }).success, false);
   assert.equal(FinalRankResultSchema.safeParse({ ...alleged, dataAvailability: 'live', confidence: .1 }).success, false);
 });

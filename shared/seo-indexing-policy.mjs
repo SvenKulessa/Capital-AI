@@ -21,6 +21,7 @@ const routes = [
   { path: '/agb', classification: 'INDEX', contentType: 'legal', reason: 'Öffentliche Nutzungsbedingungen.' },
 
   { path: '/.well-known/security.txt', classification: 'NOINDEX', contentType: 'security-disclosure', reason: 'RFC-9116-Kontaktdatei für Vulnerability Disclosure; öffentlich erreichbar, aber keine Search-Landingpage.' },
+  { path: '/.well-known/change-password', classification: 'NOINDEX', contentType: 'account-security', reason: 'Temporärer Discovery-Redirect für Passwortmanager zur kanonischen Sicherheitsseite; keine Search-Landingpage.' },
   { path: '/.well-known/mta-sts.txt', classification: 'NOINDEX', contentType: 'mail-security', reason: 'MTA-STS Policy-Endpunkt; operativer Standardpfad, keine Search-Landingpage.' },
 
   { path: '/login', classification: 'NOINDEX', contentType: 'auth', reason: 'Öffentlicher Auth-Einstieg ohne eigenständigen Suchwert.' },
@@ -38,7 +39,9 @@ const routes = [
   { path: '/documentation/pricing-models.html', classification: 'NOINDEX', contentType: 'documentation-static', reason: 'Preis-/Produktdarstellung benötigt Claim-/Preisautoritäts- und Drift-Prüfung vor Indexierung.' },
   { path: '/documentation/domains.html', classification: 'NOINDEX', contentType: 'documentation-static', reason: 'Öffentliche statische Präsentation; noch nicht in den kanonischen SEO-Contract aufgenommen.' },
 
-  { path: '/profile', classification: 'PRIVATE', contentType: 'account', reason: 'Personenbezogener Konto-/Vault-Bereich.' },
+  { path: '/profile', classification: 'PRIVATE', contentType: 'account', reason: 'Personenbezogener Kontobereich.' },
+  { path: '/profile/security', classification: 'PRIVATE', contentType: 'account-security', reason: 'Personenbezogene Sicherheits-, MFA- und Recovery-Einstellungen.' },
+  { path: '/profile/key-vault', classification: 'PRIVATE', contentType: 'credential-vault', reason: 'Personenbezogener Provider-Credential-Vault; niemals Search-Inhalt.' },
   { path: '/control-center', classification: 'PRIVATE', contentType: 'management', reason: 'Management-, Evidence- und Control-Center-Inhalte sind nicht für Search bestimmt.' },
 
   { path: '/tokenomics', classification: 'BLOCKED', contentType: 'financial-claim', reason: 'Token-/Finanzclaims bleiben bis expliziter rechtlicher und Evidence-Prüfung von Search ausgeschlossen.' },

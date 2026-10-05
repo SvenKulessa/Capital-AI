@@ -24,6 +24,8 @@
 !server/auth.mjs
 !server/auth-security.mjs
 !server/auth-security.test.mjs
+!server/subscription-entitlements.mjs
+!server/subscription-entitlements.test.mjs
 !server/user-provider-vault.mjs
 !server/telegram.mjs
 !server/privacy.mjs
@@ -45,8 +47,10 @@
 !shared/license-engine.mjs
 !shared/research-metadata.mjs
 !shared/vocabulary-metadata.mjs
+!shared/vocabulary-access-policy.mjs
 !shared/seo-indexing-policy.mjs
 !shared/seo-content-manifest.mjs
+!shared/seo-metadata.mjs
 !deploy/
 !deploy/runtime/
 !deploy/runtime/package.json
@@ -77,6 +81,7 @@
 !scripts/supabase-auth-config.mjs
 !scripts/supabase-auth-config.test.mjs
 !scripts/seo-content-manifest.test.mjs
+!scripts/seo-metadata.test.mjs
 !contracts/
 !contracts/**
 !packages/
@@ -95,6 +100,10 @@
 !docs/security/
 !docs/security/evidence/
 !docs/security/evidence/license-rights-review.json
+!docs/market-data/
+!docs/market-data/PRODUCTION-WEB-01-MARKET-20261005.yaml
+!docs/market-data/evidence/
+!docs/market-data/evidence/source-rights-admission-ecb-reference-rates-20261005.json
 !public/
 !public/bootstrap-failure.js
 !public/fonts/

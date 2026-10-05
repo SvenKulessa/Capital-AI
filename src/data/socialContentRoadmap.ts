@@ -4,7 +4,7 @@ import type { WorkPackage } from './roadmapData';
 export const SOCIAL_CONTENT_WORK_PACKAGES: WorkPackage[] = [
   {
     "id": "CA-GROWTH-FIN-SOC-MARKET-MIGRATION",
-    "title": "Finance Social Media Engine und fortgeschrittene MARKET/Data-Komponenten migrieren",
+    "title": "Finance Social Media Engine migrieren; MARKET/Data-Folgepaket vorbereiten",
     "owner": "GROWTH",
     "status": "planning",
     "phase": 4,
@@ -23,12 +23,42 @@ export const SOCIAL_CONTENT_WORK_PACKAGES: WorkPackage[] = [
     "deliverables": [
       "SocialMediaEngine Contracts, Editing, deterministischen Media- und Publishing-Pfad zielkonform migrieren.",
       "Maschinenlesbare Tool-/Lizenz-Zulassung mit Commercial-, Owner-private-, Research- und BLOCKED-Modi durchsetzen.",
-      "Validated-Financial-Feature-, Pattern-, Sentiment-, Momentum- und Regime-Komponenten ohne zweite Scoring-Authority integrieren.",
+      "Finance-Scoring-, Gewichtungs- und Datenkonzepte nur als SHA-gebundenes Inventar für das nachgelagerte MARKET-Arbeitspaket erhalten; keine Runtime-Migration vor Social-Cutover.",
       "Lizenzierte Produktdokumentation und Third-Party-Notices für den auslieferbaren Funktionsumfang bereitstellen."
     ],
     "dependencies": [
       "CA-GROWTH-SOC-MIGRATION",
       "CA-TRUST-SOC-RIGHTS"
+    ]
+  },
+  {
+    "id": "CA-MARKET-FINANCE-SCORING-DATA-FOLLOWUP",
+    "title": "Finance Scoring-, Gewichtungsmodelle und Datenkonzepte nach Social-Migration konvergieren",
+    "owner": "MARKET",
+    "status": "planning",
+    "phase": 4,
+    "phaseName": "Phase 4: DevSecOps, Supply Chain & Release Candidate",
+    "progressPercent": null,
+    "evidenceState": "GEHALTEN",
+    "evidenceRefs": [
+      "CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json",
+      "CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.yaml"
+    ],
+    "nextStep": "Erst nach abgeschlossenem Social-Media-Engine-Cutover CURRENT_MAIN frisch korrelieren und daraus ein separates MARKET-Arbeitspaket für Finance-Scoring-, Gewichtungs- und Datenkonzepte materialisieren.",
+    "priority": "Hoch",
+    "leadName": "Owner + MARKET/TRUST/PLATFORM",
+    "targetSprint": "Nach abgeschlossenem Social-Media-Engine-Cutover; vorher BLOCKED",
+    "description": "Bewahrt die bereits inventarisierten Finance-Scoringmodelle, Faktor-/Gewichtungssemantik und implementierten Datenkonzepte als Folge-Backlog. Die spätere Umsetzung konvergiert ausschließlich in bestehende Capital-AI-Authorities und darf weder eine zweite Scoring-Authority noch Rechte-/Freshness-/Evidence-Gates umgehen.",
+    "deliverables": [
+      "Finance-ScoringModelRegistry- und ScoringDispatcher-Semantik gegen die eine kanonische Scoring-Authority deduplizieren.",
+      "Finance-Gewichtungsmodelle und Faktorlogik mit reproduzierbarer Evidence, Kalibrierung und Replay vergleichen.",
+      "Bereits implementierte Finance-Datenkonzepte wie ValidatedFinancialFeature, UniversalAssetAdapter und AnalysisConnectionRegistry gegen aktuelle Contracts konvergieren.",
+      "Pattern-, Sentiment-, Momentum-, Regime- und Research-Modelle zunächst research-only halten; Promotion separat evidenzbasiert gaten.",
+      "Datenrechte, Provenance, Freshness, Instrumentmanifest und MARKET_CLAIM_ELIGIBILITY vor jeder produktiven Nutzung fail-closed prüfen."
+    ],
+    "dependencies": [
+      "CA-GROWTH-FIN-SOC-MARKET-MIGRATION",
+      "CA-GROWTH-SOC-PILOT"
     ]
   },
   {

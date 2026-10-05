@@ -51,6 +51,8 @@ test('SEO-00 classifies every inventory entry and keeps the static INDEX allowli
 test('SEO-00 is fail-closed for private, claim-sensitive, alias and unknown routes', () => {
   assert.equal(resolveSeoIndexingPolicy('/profile').classification, 'PRIVATE');
   assert.equal(resolveSeoIndexingPolicy('/control-center').classification, 'PRIVATE');
+  assert.equal(resolveSeoIndexingPolicy('/profile/security').classification, 'PRIVATE');
+  assert.equal(resolveSeoIndexingPolicy('/profile/key-vault').classification, 'PRIVATE');
   assert.equal(resolveSeoIndexingPolicy('/tokenomics').classification, 'BLOCKED');
   assert.equal(resolveSeoIndexingPolicy('/whale-radar').classification, 'BLOCKED');
   assert.equal(resolveSeoIndexingPolicy('/login').classification, 'NOINDEX');
@@ -60,6 +62,8 @@ test('SEO-00 is fail-closed for private, claim-sensitive, alias and unknown rout
   assert.equal(resolveSeoIndexingPolicy('/not-inventory').classification, 'BLOCKED');
   assert.equal(resolveSeoIndexingPolicy('/api/auth/session').classification, 'PRIVATE');
   assert.equal(resolveSeoIndexingPolicy('/healthz').classification, 'NOINDEX');
+  assert.equal(resolveSeoIndexingPolicy('/.well-known/security.txt').classification, 'NOINDEX');
+  assert.equal(resolveSeoIndexingPolicy('/.well-known/change-password').classification, 'NOINDEX');
   assert.equal(isSeoIndexable('/vocabulary/orderbuch'), true);
 });
 
@@ -88,12 +92,17 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
     const faqHtml = await faq.text();
     assert.match(faqHtml, /href="https:\/\/capital-ai\.online\/faq"/);
     assert.match(faqHtml, /property="og:url" content="https:\/\/capital-ai\.online\/faq"/);
+    assert.match(faqHtml, /<title>Capital-AI \| FAQ &amp; Hilfe<\/title>/);
+    assert.match(faqHtml, /id="capital-ai-seo-jsonld"/);
 
-    for (const route of ['/login', '/profile', '/tokenomics', '/whale-radar', '/dokumentation', '/not-inventory']) {
+    for (const route of ['/login', '/profile', '/profile/security', '/profile/key-vault', '/tokenomics', '/whale-radar', '/dokumentation', '/not-inventory']) {
       const response = await fetch(origin + route);
       assert.equal(response.status, 200, route);
       assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow', route);
-      assert.match(await response.text(), /<meta name="robots" content="noindex, nofollow"/, route);
+      const html = await response.text();
+      assert.match(html, /<meta name="robots" content="noindex, nofollow"/, route);
+      assert.doesNotMatch(html, /rel="canonical"/, route);
+      assert.doesNotMatch(html, /type="application\/ld\+json"/, route);
     }
 
     const controlCenter = await fetch(origin + '/control-center');

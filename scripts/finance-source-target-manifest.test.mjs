@@ -6,7 +6,7 @@ test('Finance → Capital-AI Source-to-Target-Manifest ist strukturell und gegen
   const result = readAndValidateFinanceSourceTargetManifest();
   assert.equal(result.status, 'PASS');
   assert.equal(result.sourceCommit, 'dcef421fe6e350a3a2ade61d0299aad9ecca213c');
-  assert.equal(result.targetMain, '96178b35db215754eb69785535f035b4fb4d96af');
+  assert.equal(result.targetMain, '8244a411b3b5b691adbb78ffdc5880aadd267113');
   assert.equal(result.entries, 42);
   assert.equal(result.targetAuthorities, 16);
 });

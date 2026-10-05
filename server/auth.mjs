@@ -1,6 +1,7 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { secureUrl, boundedJson, createLimiter } from './http-security.mjs';
 import { createAuthSecurity, hasVerifiedTotpFactor } from './auth-security.mjs';
+import { normalizeStoredPaidTier } from './subscription-entitlements.mjs';
 
 const SESSION_COUNT_COOKIE = '__Host-capital_session_count';
 const SESSION_COOKIE_PREFIX = '__Host-capital_session_';
@@ -879,5 +880,19 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     }
   }
 
-  return { handle, session, verify, authorizeIamRole, sameOrigin };
+  async function resolvePaidTier(req, res) {
+    const config = getConfig();
+    if (!config) return null;
+    try {
+      const stored = await resolveSession(req, res);
+      if (!stored) return null;
+      const account = await accountProjection(config, stored);
+      if (account?.available !== true) return null;
+      return normalizeStoredPaidTier(account.subscription);
+    } catch {
+      return null;
+    }
+  }
+
+  return { handle, session, verify, resolvePaidTier, authorizeIamRole, sameOrigin };
 }

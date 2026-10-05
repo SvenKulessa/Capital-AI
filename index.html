@@ -38,41 +38,38 @@
     <meta name="twitter:image" content="https://capital-ai.online/branding/asset-pack/social/open-graph-1200x630.jpg" />
     <meta name="twitter:image:alt" content="Capital-AI.online — Globus in Blau und Gold" />
 
-    <!-- Schema.org JSON-LD Structured Data -->
-    <script type="application/ld+json">
+    <!-- Schema.org JSON-LD Structured Data; server replaces this from SEO_CONTENT_MANIFEST. -->
+    <script id="capital-ai-seo-jsonld" type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@graph": [
         {
-          "@type": "WebApplication",
-          "@id": "https://capital-ai.online/#app",
-          "name": "Capital-AI",
+          "@type": "WebSite",
+          "@id": "https://capital-ai.online/#website",
           "url": "https://capital-ai.online/",
-          "applicationCategory": "FinanceApplication",
-          "operatingSystem": "All",
-          "description": "Capital-AI erforscht günstige gehostete Infrastruktur, Datenintegrität und nachvollziehbares Multi-Asset-Scoring. Forschungsbedingungen und Datenrechte transparent prüfen.",
-          "image": "https://capital-ai.online/branding/asset-pack/social/open-graph-1200x630.jpg",
-          "offers": {
-            "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "EUR"
-          },
-          "potentialAction": {
-            "@type": "EntryPoint",
-            "actionPlatform": [
-              "http://schema.org/DesktopWebPlatform",
-              "http://schema.org/MobileWebPlatform"
-            ],
-            "urlTemplate": "/login"
-          }
+          "name": "Capital-AI",
+          "inLanguage": "de",
+          "publisher": { "@id": "https://capital-ai.online/#project" }
         },
         {
           "@type": "Project",
-          "@id": "https://capital-ai.online/#org",
+          "@id": "https://capital-ai.online/#project",
           "name": "Capital-AI FinTech-Forschungsprojekt",
-          "description": "Forschungs- und Entwicklungsprojekt von Sven Kulessa zu Datenintegrität, gehosteter Infrastruktur und nachvollziehbarem Multi-Asset-Scoring.",
+          "description": "Forschungs- und Entwicklungsprojekt zu Datenintegrität, gehosteter Infrastruktur und nachvollziehbarem Multi-Asset-Scoring.",
           "url": "https://capital-ai.online/",
           "logo": "https://capital-ai.online/branding/asset-pack/avatars/capital-ai-avatar-512x512.png"
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://capital-ai.online/#primary",
+          "url": "https://capital-ai.online/",
+          "name": "Capital-AI | FinTech-Forschung & Market Intelligence",
+          "description": "Capital-AI erforscht günstige gehostete Infrastruktur, Datenintegrität und nachvollziehbares Multi-Asset-Scoring. Forschungsbedingungen und Datenrechte transparent prüfen.",
+          "inLanguage": "de",
+          "applicationCategory": "FinanceApplication",
+          "operatingSystem": "Web",
+          "image": "https://capital-ai.online/branding/asset-pack/social/open-graph-1200x630.jpg",
+          "isPartOf": { "@id": "https://capital-ai.online/#website" }
         }
       ]
     }

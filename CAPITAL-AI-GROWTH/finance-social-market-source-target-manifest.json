@@ -12,7 +12,7 @@
   },
   "target": {
     "repository": "SvenKulessa/Capital-AI",
-    "currentMain": "96178b35db215754eb69785535f035b4fb4d96af",
+    "currentMain": "8244a411b3b5b691adbb78ffdc5880aadd267113",
     "policy": "TARGET_CURRENT_MAIN_CONTRACTS_WIN",
     "branch": "capital-ai-growth/finance-source-target-manifest-20261005"
   },
@@ -22,7 +22,8 @@
     "No source market-data facade may weaken target market-data rights, freshness or source-admission gates.",
     "Research scoring/pattern/sentiment/momentum/regime components remain scoreEligible=false and decisionEligible=false until separately promoted.",
     "Missing target files are proposed destinations only and are not evidence of implemented runtime.",
-    "Existing target authority blob SHA drift requires re-correlation before a later PORT/REWRITE mutation."
+    "Existing target authority blob SHA drift requires re-correlation before a later PORT/REWRITE mutation.",
+    "Finance MARKET/scoring/weighting/data entries are backlog inventory only until the Social Media Engine migration is completed and its cutover evidence is PASS."
   ],
   "actions": [
     "PORT",
@@ -45,7 +46,7 @@
     {
       "id": "TA-ASSET-FEATURE",
       "path": "src/contracts/canonicalContracts.ts",
-      "blobSha": "434ee30d64d8b7be51807d3a66646566e8c7657c",
+      "blobSha": "161104baf8413fb3a9a6389e32027ecd4bde4768",
       "role": "AssetIdentity/DataProvenance/FeatureValue/ScoreResult authority"
     },
     {
@@ -57,7 +58,7 @@
     {
       "id": "TA-SCORING",
       "path": "src/services/scoringEngine.ts",
-      "blobSha": "a2ce28730078670a0602ac4f17db1b1bf7bb6ade",
+      "blobSha": "ce0f52bc95b75eb236197b395b822e6e21ab712b",
       "role": "Current scoring execution boundary"
     },
     {
@@ -111,13 +112,13 @@
     {
       "id": "TA-MARKET-WP",
       "path": "docs/market-data/PRODUCTION-WEB-01-MARKET-20261005.yaml",
-      "blobSha": "a7012320e463deb97b82c0050716e32426886c13",
+      "blobSha": "a1a63b88e36dbcc73e59988d7693384f5996a85e",
       "role": "Production MARKET work-package projection"
     },
     {
       "id": "TA-AUTH",
       "path": "server/auth.mjs",
-      "blobSha": "01980b76196b65b6c6419852e052881264c8e79e",
+      "blobSha": "28722ee942722c1d29330d4daa4425260878f9a6",
       "role": "Current session/auth composition"
     },
     {
@@ -966,5 +967,23 @@
     "proposedNewOrRewrite": 33,
     "existingAuthorityConvergence": 6,
     "noTargetFile": 3
+  },
+  "followUpBacklog": {
+    "id": "CAPITAL-AI-FINANCE-SCORING-DATA-FOLLOWUP-01",
+    "domain": "MARKET",
+    "state": "BLOCKED_BY_SOCIAL_MEDIA_ENGINE_MIGRATION",
+    "startGate": "Social Media Engine migration completed with cutover/validation evidence",
+    "scope": [
+      "Finance scoring models",
+      "Finance weighting models",
+      "already implemented Finance data concepts and data-processing semantics",
+      "research/pattern/sentiment/momentum/regime concepts where compatible with current Capital-AI authorities"
+    ],
+    "rules": [
+      "Re-correlate against CURRENT_MAIN before implementation.",
+      "Preserve one canonical scoring authority; no parallel productive registry or dispatcher.",
+      "Rights/freshness/provenance gates remain fail-closed.",
+      "Research-only models remain scoreEligible=false and decisionEligible=false until separately promoted."
+    ]
   }
 }
