@@ -25,6 +25,13 @@ test('aliases and trailing slash normalize without losing query or hash', () => 
   assert.equal(resolveNavigationTarget('/roadmap?tab=console'), '/control-center?tab=console');
 });
 
+test('Market Screener documentation aliases keep the dedicated documentation hub', () => {
+  assert.equal(resolveAppRoute('/marketscreener/dokumentation'), '/marketscreener/dokumentation');
+  assert.equal(resolveAppRoute('/MARKET-SCREENER/DOKUMENTATION/'), '/marketscreener/dokumentation');
+  assert.equal(resolveAppRoute('/blueprint-dokumentation'), '/marketscreener/dokumentation');
+  assert.equal(resolveNavigationTarget('/documentation?ref=hub#byok'), '/marketscreener/dokumentation?ref=hub#byok');
+});
+
 test('missing or invalid tab selects a safe default', () => {
   const tabs = ['glossar', 'guides', 'quiz'];
   assert.equal(readHubTab('?tab=quiz', tabs, 'glossar'), 'quiz');

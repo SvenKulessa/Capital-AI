@@ -138,6 +138,14 @@ export function resolveAppRoute(rawPath: string): string {
     return '/studio';
   }
   if (
+    clean === '/marketscreener/dokumentation' ||
+    clean === '/market-screener/dokumentation' ||
+    clean === '/blueprint-dokumentation' ||
+    clean === '/documentation'
+  ) {
+    return '/marketscreener/dokumentation';
+  }
+  if (
     clean === '/marketscreener' ||
     clean === '/screener' ||
     clean === '/analyse-tools' ||
