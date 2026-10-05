@@ -6,7 +6,7 @@ Implementation base for DOC-SH-01 before merge: `c1a720a32a054c16944e6c582086a50
 
 ## Purpose
 
-This slice adds deterministic drift detection to the existing Documentary architecture. It does **not** create a second documentation authority. The canonical inputs remain `DOCUMENTARY_EVIDENCE@1`, `CHANGE_PROPAGATION@1`, `GROWTH_PROJECTION@1` and `POST_MERGE_CORRELATION@2`.
+This slice adds deterministic drift detection to the existing Documentary architecture. It does **not** create a second documentation authority. The canonical inputs remain `DOCUMENTARY_EVIDENCE@1`, `CHANGE_PROPAGATION@1`, `GROWTH_PROJECTION@1` and `POST_MERGE_CORRELATION@3`.
 
 The immediate problem is bounded: living documents can silently retain an obsolete current-main identity after later merges, while dated evidence and generated documentary records must remain immutable historical snapshots.
 
@@ -47,7 +47,7 @@ Use `node scripts/documentation-drift.mjs --report-only` for baseline inventory 
 
 The validated fingerprint `STALE_CURRENT_MAIN_METADATA@1` reached 3/3 independent positive cycles in `docs/growth/DOCUMENTATION-DRIFT-VALIDATION-20261004.json`.
 
-DOC-SH-02 connects the detector to `POST_MERGE_CORRELATION@2` in two stages. The correlation job remains read-only for repository contents and generates `DOCUMENTATION_DRIFT_REPAIR_PLAN@1`. A separate write-scoped job is eligible only for `PR_PROPOSAL_CANDIDATE`, rechecks the exact expected Main SHA, verifies source digests and allowed paths, applies the deterministic marker transformation, reruns the documentation regressions and opens a new `capital-ai-growth/docs-self-heal-<mainsha>` pull request.
+DOC-SH-02 connects the detector to `POST_MERGE_CORRELATION@3` in two stages. The correlation job remains read-only for repository contents and generates `DOCUMENTATION_DRIFT_REPAIR_PLAN@1`. A separate write-scoped job is eligible only for `PR_PROPOSAL_CANDIDATE`, rechecks the exact expected Main SHA, verifies source digests and allowed paths, applies the deterministic marker transformation, reruns the documentation regressions and opens a new `capital-ai-growth/docs-self-heal-<mainsha>` pull request.
 
 The promotion does **not** enable direct repair of `main`: `autoRepairEnabled=false`, `autoMerge=false`, `directMainMutation=false` and `productionAuthority=false` remain invariant. `AGENTS.md`, `.github/`, `docs/security/`, `docs/governance/`, contracts, deploy, server, Supabase, dependency manifests and historical evidence are excluded from the automated patch scope.
 

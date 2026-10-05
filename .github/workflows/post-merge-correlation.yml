@@ -93,14 +93,13 @@ jobs:
             security-reports/post-merge-event.json > security-reports/post-merge-event.tmp.json
           mv security-reports/post-merge-event.tmp.json security-reports/post-merge-event.json
 
-      - name: 3x VALIDATE / 5x APPROVE klassifizieren
+      - name: Technische Korrelation und Repair-Admission prüfen
         id: classify
         run: |
           set -euo pipefail
           node scripts/post-merge-correlation.mjs security-reports/post-merge-event.json | tee security-reports/post-merge-correlation.json
-          jq -e '.schema == "POST_MERGE_CORRELATION@2"' security-reports/post-merge-correlation.json >/dev/null
-          jq -e '.rule3.minimumIndependentPositiveValidationCycles == 3' security-reports/post-merge-correlation.json >/dev/null
-          jq -e '.rule5.stages | length == 5' security-reports/post-merge-correlation.json >/dev/null
+          jq -e '.schema == "POST_MERGE_CORRELATION@3"' security-reports/post-merge-correlation.json >/dev/null
+          jq -e '.technicalAdmission.explicitRepairAdmissionRequired == true and .technicalAdmission.exactFixFingerprintRequired == true and .technicalAdmission.requiredChecksRevalidationRequired == true' security-reports/post-merge-correlation.json >/dev/null
           jq -e '.globalPolicy.deploy == false and .globalPolicy.productionHandoff == false and .globalPolicy.natsHeadOnlyRedeploy == false' security-reports/post-merge-correlation.json >/dev/null
           jq -e '.globalPolicy.documentationRepairMode == "PR_ONLY" and .globalPolicy.documentationAutoMerge == false and .globalPolicy.documentationProductionAuthority == false and .globalPolicy.documentationExpectedMainShaRequired == true' security-reports/post-merge-correlation.json >/dev/null
           echo "documentation_repair_action=$(jq -r '.documentationRepair.action' security-reports/post-merge-correlation.json)" >> "$GITHUB_OUTPUT"
@@ -121,9 +120,8 @@ jobs:
             behind=$(jq -r '.behindBy' <<<"$item")
             exact=$(jq -r 'if (.exactOverlap|length)==0 then "keine" else (.exactOverlap|join(", ")) end' <<<"$item")
             semantic=$(jq -r 'if (.semanticOverlap|length)==0 then "keine" else (.semanticOverlap|join(", ")) end' <<<"$item")
-            promotion=$(jq -r '.repair.promotionState' <<<"$item")
-            count=$(jq -r '.repair.positiveValidationCount' <<<"$item")
-            stages=$(jq -r '[.approve5|to_entries[]|select(.value==true)|.key] | join(", ")' <<<"$item")
+            admission=$(jq -r '.repair.admissionState' <<<"$item")
+            checks=$(jq -r '[.technicalChecks|to_entries[]|select(.value==true)|.key] | join(", ")' <<<"$item")
             body="<!-- CAPITAL_AI_POST_MERGE_CORRELATION -->
           ## Post-Merge-Korrelation · supply_sh_chain
 
@@ -133,10 +131,10 @@ jobs:
           - Branch hinter Main: **$behind Commit(s)**
           - Exakte Dateikollision: $exact
           - Semantische Boundary-Korrelation: $semantic
-          - Self-Healing Promotion: **$promotion ($count/3 positive unabhängige Zyklen)**
-          - 5er-Gates aktuell positiv: $stages
+          - Self-Healing Admission: **$admission**
+          - Technische Checks aktuell positiv: $checks
 
-          REPAIR_CANDIDATE erlaubt keine automatische Mutation, solange nicht 3/3 Promotion und alle 5 Stufen DETECT → CORRELATE → CLASSIFY → REMEDIATE → VERIFY erfüllt sind.
+          REPAIR_CANDIDATE erlaubt keine automatische Mutation ohne explizite Admission des exakten Fix-Fingerprints und vollständig positive technische Checks einschließlich revalidierter Required Checks.
 
           Kein Deploy, kein Production-Handoff und kein NATS-Redeploy wird aus einem neuen Repository-HEAD abgeleitet."
             gh pr comment "$number" --repo "$REPOSITORY" --body "$body"
@@ -146,7 +144,7 @@ jobs:
         shell: bash
         run: |
           {
-            echo "## POST_MERGE_CORRELATION@2"
+            echo "## POST_MERGE_CORRELATION@3"
             echo
             echo "- Main: ${{ github.event.pull_request.merge_commit_sha }}"
             echo "- Merge-PR: #${{ github.event.pull_request.number }}"
@@ -274,7 +272,7 @@ jobs:
           ## Primary Domain
           Domain: GROWTH
 
-          Automated PR-only proposal from `POST_MERGE_CORRELATION@2`.
+          Automated PR-only proposal from `POST_MERGE_CORRELATION@3`.
 
           - Expected main: `$EXPECTED_MAIN_SHA`
           - Repair fingerprint: `$(jq -r '.repairFingerprint' security-reports/documentation-repair-plan.json)`

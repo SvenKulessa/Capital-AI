@@ -26,7 +26,7 @@ Eine Domain ist Orientierung und Ownership-Metadatum, keine künstliche Teamgren
 
 Der Owner entwickelt alleine. Jeder Chat und Agent von PRODUCT, MARKET, PLATFORM, TRUST und GROWTH darf Aufgaben aller fünf Domains im autorisierten Scope vollständig übernehmen. Organisatorische Handoff-Verträge, verpflichtende Übergabeprompts, Chatwechsel und zusätzliche Domain-Abnahmen sind anwendungsweit deaktiviert. Die verbindliche Vorrang- und Geltungsregel steht in `AGENTS.md`, Abschnitt „Domainübergreifende ChatGPT-Arbeit“.
 
-Domain-Zuordnung ist Metadatum; sie erzeugt weder eine Bearbeitungssperre noch einen neuen Freigabeschritt. Freiwillige Kontextübergaben bleiben möglich. 3 VALIDATE / 5 APPROVE bleiben fachliche Prüfperspektiven mit konkreter Evidence; derselbe Chat darf sie bearbeiten, ohne unabhängige Reviews oder Owner-Freigaben zu behaupten. Reale technische und ausdrücklich vorgeschriebene unabhängige Prüfungen bleiben erforderlich.
+Domain-Zuordnung ist Metadatum; sie erzeugt weder eine Bearbeitungssperre noch einen neuen Freigabeschritt. Freiwillige Kontextübergaben bleiben möglich. Freigaben werden ausschließlich über konkrete technische, Security-, Lizenz-, Supply-Chain- und Production-Gates mit belastbarer Evidence bewertet. Reale technische und ausdrücklich vorgeschriebene unabhängige Prüfungen bleiben erforderlich.
 
 Maschinenlesbare Evidence-/Datenverträge und der technische Production-Handoff bleiben verbindlich. Die Änderung deaktiviert ausschließlich organisatorische Chat-Handoffs, keine Auth-, Security-, Lizenz-, Datenrechte-, Supply-Chain-, Kosten- oder Release-Gates. Gespeicherte ChatGPT-Projekteinstellungen und Richtlinien anderer Repositories werden durch diesen Contract nicht automatisch geändert.
 

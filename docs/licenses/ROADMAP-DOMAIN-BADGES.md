@@ -37,17 +37,13 @@ Die SVGs sind owner-directed, AI-assisted und als neue, generische Vektorgrafike
 
 Die Asset-Lizenz folgt der jeweiligen Domain-Lizenzdatei und der Repository-Lizenz. Die Badges dürfen nicht als Beleg einer externen Partnerschaft, Zertifizierung oder Markenfreigabe interpretiert werden.
 
-## 3 Validate / 5 Approve
+## Verifikation und Freigabe-Evidence
 
-**Validate**
-1. Domain-Identität und Pfad stimmen mit den fünf kanonischen Roadmap-Domains überein.
-2. SHA-256 bindet das ausgelieferte SVG an dieses Manifest.
-3. Roadmap-Integration verwendet ausschließlich diese registrierten Assets.
-
-**Approve-Gates**
-1. Brand/Provenance: dokumentiert.
-2. Lizenz/Fremdmaterial: kein eingebettetes Drittmaterial.
-3. UI/Accessibility: Text-Label bleibt zusätzlich zum visuellen Badge erhalten.
-4. Build/TypeScript/Navigation/Roadmap-Test: PR-Evidence erforderlich.
-5. Human Owner Merge: separat; dieser Change autorisiert keinen Merge.
+- Domain-Identität und Pfad müssen mit den fünf kanonischen Roadmap-Domains übereinstimmen.
+- SHA-256 bindet das ausgelieferte SVG an dieses Manifest.
+- Roadmap-Integration verwendet ausschließlich registrierte Assets.
+- Brand-/Provenienz- und Lizenz-/Fremdmaterial-Evidence bleibt erforderlich.
+- UI-/Accessibility-Evidence muss das zusätzliche Text-Label belegen.
+- Build-, TypeScript-, Navigation- und Roadmap-Tests werden als konkrete PR-Evidence ausgewertet.
+- Ein Asset- oder Test-PASS autorisiert keinen Merge und ersetzt keine sonstigen technischen Gates.
 

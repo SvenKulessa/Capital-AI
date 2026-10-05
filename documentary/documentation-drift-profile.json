@@ -12,7 +12,7 @@
     "DOCUMENTARY_EVIDENCE@1",
     "CHANGE_PROPAGATION@1",
     "GROWTH_PROJECTION@1",
-    "POST_MERGE_CORRELATION@2"
+    "POST_MERGE_CORRELATION@3"
   ],
   "livingDocuments": {
     "exact": [
