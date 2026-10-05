@@ -13,11 +13,6 @@
     }
   }, true);
 
-  window.addEventListener('unhandledrejection', () => {
-    const root = document.getElementById('root');
-    if (root && root.childElementCount === 0) showFailure();
-  });
-
   window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('capital-ai-bootstrap-reload')
       ?.addEventListener('click', () => window.location.reload());
