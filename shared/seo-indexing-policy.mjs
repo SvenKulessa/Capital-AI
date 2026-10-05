@@ -20,6 +20,9 @@ const routes = [
   { path: '/datenschutz', classification: 'INDEX', contentType: 'legal', reason: 'Öffentliche Datenschutzerklärung.' },
   { path: '/agb', classification: 'INDEX', contentType: 'legal', reason: 'Öffentliche Nutzungsbedingungen.' },
 
+  { path: '/.well-known/security.txt', classification: 'NOINDEX', contentType: 'security-disclosure', reason: 'RFC-9116-Kontaktdatei für Vulnerability Disclosure; öffentlich erreichbar, aber keine Search-Landingpage.' },
+  { path: '/.well-known/mta-sts.txt', classification: 'NOINDEX', contentType: 'mail-security', reason: 'MTA-STS Policy-Endpunkt; operativer Standardpfad, keine Search-Landingpage.' },
+
   { path: '/login', classification: 'NOINDEX', contentType: 'auth', reason: 'Öffentlicher Auth-Einstieg ohne eigenständigen Suchwert.' },
   { path: '/architecture', classification: 'NOINDEX', contentType: 'product-doc', reason: 'Öffentlich erreichbar, aber noch nicht gegen SEO-Manifest/Claim-Evidence gehärtet.' },
   { path: '/provider-status', classification: 'NOINDEX', contentType: 'operations', reason: 'Operative Statusansicht; keine Search-Landingpage.' },
