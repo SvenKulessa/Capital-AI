@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createApp } from './index.mjs';
@@ -505,4 +505,27 @@ test('web Google login ignores caller-controlled next targets and returns to lan
   } finally {
     await h.stop();
   }
+});
+
+test('registration consent migration keeps optional marketing consent boolean and non-null', async () => {
+  const sql = await readFile(
+    new URL('../supabase/migrations/20261005155500_fix_registration_consent_null.sql', import.meta.url),
+    'utf8',
+  );
+  assert.match(
+    sql,
+    /coalesce\(new\.raw_user_meta_data->>'marketing_consent', 'false'\) = 'true'/,
+  );
+  assert.match(
+    sql,
+    /coalesce\(new\.raw_user_meta_data->>'terms_accepted', 'false'\) = 'true'/,
+  );
+  assert.match(
+    sql,
+    /coalesce\(new\.raw_user_meta_data->>'privacy_acknowledged', 'false'\) = 'true'/,
+  );
+  assert.doesNotMatch(
+    sql,
+    /new\.raw_user_meta_data->>'marketing_consent' = 'true'/,
+  );
 });
