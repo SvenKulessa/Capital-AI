@@ -92,6 +92,7 @@
 !docs/security/evidence/
 !docs/security/evidence/license-rights-review.json
 !public/
+!public/bootstrap-guard.js
 !public/fonts/
 !public/fonts/**
 !public/branding/
