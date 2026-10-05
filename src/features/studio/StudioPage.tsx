@@ -90,7 +90,6 @@ export const StudioPage: React.FC<StudioPageProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [expandedConceptId, setExpandedConceptId] = useState<number | null>(1);
-  const [copiedSnippet, setCopiedSnippet] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
 
   // Blueprints tab state
@@ -621,33 +620,14 @@ export const StudioPage: React.FC<StudioPageProps> = ({
                                 </div>
 
                                 {/* Code Contract Preview */}
-                                <div>
-                                  <div className="flex items-center justify-between text-xs font-mono text-slate-400 mb-1">
-                                    <span>Code Contract (AP-001 Spezifikation)</span>
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleCopy(item.contractCodeSnippet, `tbl-${item.id}`);
-                                      }}
-                                      className="text-amber-400 hover:text-white flex items-center gap-1 cursor-pointer"
-                                    >
-                                      {copiedSnippet === `tbl-${item.id}` ? (
-                                        <>
-                                          <Check className="w-3.5 h-3.5 text-emerald-400" />
-                                          <span className="text-emerald-400">Kopiert!</span>
-                                        </>
-                                      ) : (
-                                        <>
-                                          <Copy className="w-3.5 h-3.5" />
-                                          <span>Snippet kopieren</span>
-                                        </>
-                                      )}
-                                    </button>
+                                <div className="rounded-lg border border-slate-800 bg-black/40 p-3">
+                                  <div className="text-[11px] font-mono text-slate-400">Öffentlicher Contract-Überblick</div>
+                                  <div className="mt-1 text-xs text-slate-300">
+                                    {item.purpose} · Flow: {item.visualFlow.join(' → ')}
                                   </div>
-                                  <pre className="p-3 rounded-lg bg-black/70 border border-slate-800 font-mono text-[11px] text-emerald-400 overflow-x-auto">
-                                    {item.contractCodeSnippet}
-                                  </pre>
+                                  <div className="mt-2 text-[10px] font-mono text-amber-300">
+                                    Vollständige Schnittstellen-Spezifikation: EVIDENCE / ENTITLEMENT REQUIRED
+                                  </div>
                                 </div>
                               </div>
                             </td>
@@ -752,27 +732,12 @@ export const StudioPage: React.FC<StudioPageProps> = ({
                           <span className="text-cyan-300">{item.costImpact}</span>
                         </div>
                       </div>
-
-                      {/* Code Snippet */}
-                      <div>
-                        <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 mb-1">
-                          <span>Schnittstellen-Vertrag</span>
-                          <button
-                            type="button"
-                            onClick={() => handleCopy(item.contractCodeSnippet, `card-${item.id}`)}
-                            className="text-amber-400 hover:text-white flex items-center gap-1 cursor-pointer"
-                          >
-                            {copiedSnippet === `card-${item.id}` ? (
-                              <Check className="w-3 h-3 text-emerald-400" />
-                            ) : (
-                              <Copy className="w-3 h-3" />
-                            )}
-                            <span>Kopieren</span>
-                          </button>
+                      <div className="rounded-lg border border-slate-800 bg-black/40 p-3">
+                        <div className="text-[11px] font-mono text-slate-400">Methodik / Contract-Grenze</div>
+                        <p className="mt-1 text-xs text-slate-300">{item.purpose}</p>
+                        <div className="mt-2 text-[10px] font-mono text-amber-300">
+                          Vollständiger Contract-Code wird nicht im öffentlichen Client ausgeliefert.
                         </div>
-                        <pre className="p-2.5 rounded-lg bg-black/80 border border-slate-800 font-mono text-[10px] text-emerald-400 overflow-x-auto">
-                          {item.contractCodeSnippet}
-                        </pre>
                       </div>
                     </div>
                   )}
