@@ -14,7 +14,7 @@ const AssetClassSchema = z.enum([
 ]);
 
 const AssetIdentitySchema = z.strictObject({
-  assetId: z.string().min(1).max(128).regex(/^[A-Za-z0-9._:-]+$/),
+  assetId: z.string().min(1).max(128).regex(/^[A-Za-z0-9_:-]+$/),
   symbol: z.string().min(1).max(64),
   name: z.string().min(1).max(256),
   assetClass: AssetClassSchema,
