@@ -1,6 +1,6 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { secureUrl, boundedJson, createLimiter } from './http-security.mjs';
-import { createAuthSecurity, hasVerifiedTotpFactor } from './auth-security.mjs';
+import { createAuthSecurity } from './auth-security.mjs';
 
 const SESSION_COUNT_COOKIE = '__Host-capital_session_count';
 const SESSION_COOKIE_PREFIX = '__Host-capital_session_';
@@ -245,6 +245,18 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     return { response, data };
   }
 
+  async function resolveMfaRequirement(config, token) {
+    if (!token?.access_token || !token?.user?.id) return null;
+    try {
+      const user = await authRequest(config, '/user', { accessToken: token.access_token });
+      if (!user.response.ok || user.data?.id !== token.user.id) return null;
+      const factors = Array.isArray(user.data?.factors) ? user.data.factors : [];
+      return factors.some(factor => factor?.factor_type === 'totp' && factor?.status === 'verified');
+    } catch {
+      return null;
+    }
+  }
+
   function session(req) {
     const config = getConfig();
     if (!config) return null;
@@ -298,6 +310,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     clearSessionCookies,
     readRequestJson,
     sameOrigin,
+    resolveMfaRequirement,
     audit,
   });
 
@@ -526,8 +539,13 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
         return true;
       }
       audit('Supabase authentication verified at oauth_callback');
+      const oauthMfaRequired = await resolveMfaRequirement(config, exchanged.data);
+      if (oauthMfaRequired === null) {
+        json(res, 503, { error: 'mfa_state_unavailable' });
+        return true;
+      }
       if (flowCookie.mobileChallenge) {
-        if (hasVerifiedTotpFactor(exchanged.data.user)) {
+        if (oauthMfaRequired) {
           json(res, 403, { error: 'mfa_required_mobile_not_supported' });
           return true;
         }
@@ -552,9 +570,8 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       }
       writeSessionCookies(req, res, config, exchanged.data);
       const googleNext = normalizePath(flowCookie.next);
-      const googleMfaRequired = hasVerifiedTotpFactor(exchanged.data.user);
       res.writeHead(303, {
-        Location: googleMfaRequired
+        Location: oauthMfaRequired
           ? `/login?mfa=1&next=${encodeURIComponent(googleNext)}`
           : googleNext,
         'Cache-Control': 'no-store',
@@ -596,8 +613,12 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
         json(res, signedIn.response.status === 429 ? 429 : 401, { error: 'authentication_failed' });
         return true;
       }
+      const mfaRequired = await resolveMfaRequirement(config, signedIn.data);
+      if (mfaRequired === null) {
+        json(res, 503, { error: 'mfa_state_unavailable' });
+        return true;
+      }
       const stored = writeSessionCookies(req, res, config, signedIn.data);
-      const mfaRequired = hasVerifiedTotpFactor(signedIn.data.user);
       audit('Supabase authentication verified at password_login');
       json(res, 200, {
         authenticated: true,
