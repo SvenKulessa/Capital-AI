@@ -12,6 +12,10 @@ export const PRODUCTION_WEBSITE_WORK_PACKAGES: WorkPackage[] = [
     evidenceState: 'OFFEN',
     evidenceRefs: [
       'src/data/pricingCatalog.ts',
+      'src/data/blueprintEvidenceContracts.ts',
+      'docs/product/SUBSCRIPTION-COMMERCE-CONTRACT-20261005.md',
+      'server/subscription-checkout.test.mjs',
+      'server/subscription-checkout.mjs',
       'scripts/billing-catalog.test.mjs',
       'docs/product/PRODUCTION-PRICING-CORRELATION-20261005.md',
       'src/data/additionalProductsCatalog.ts',
