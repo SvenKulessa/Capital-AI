@@ -1647,9 +1647,9 @@ export const ArchitecturePage: React.FC<ArchitecturePageProps> = ({
       {/* FOOTER NAVIGATION BACK TO SECTIONS */}
       <div className="mt-12 pt-6 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-400">
         <div className="flex items-center gap-2">
-          <span>Capital-AI Architecture Suite • Release v2.4</span>
+          <span>Capital-AI Architekturkonzept</span>
           <span className="text-slate-600">•</span>
-          <span className="text-emerald-400 font-mono font-bold">Sub-45ms Standard Compliant</span>
+          <span className="text-amber-300 font-mono font-bold">Production-Evidence erforderlich</span>
         </div>
 
         <div className="flex items-center gap-3">
