@@ -66,6 +66,11 @@ const BlueprintDocumentationPage = lazy(() =>
     default: module.BlueprintDocumentationPage,
   })),
 );
+const DocumentationHub = lazy(() =>
+  import('../../features/documentation/DocumentationHub').then((module) => ({
+    default: module.DocumentationHub,
+  })),
+);
 const EnterpriseScorerDashboard = lazy(() =>
   import('../../features/screener/EnterpriseScorerDashboard').then((module) => ({
     default: module.EnterpriseScorerDashboard,
@@ -181,6 +186,15 @@ export function AppRoutes({
 
   if (currentRoute === '/marketscreener/dokumentation') {
     return <BlueprintDocumentationPage onNavigate={navigateTo} />;
+  }
+
+  if (currentRoute === '/dokumentation') {
+    return (
+      <DocumentationHub
+        onBackToHome={() => navigateTo('/')}
+        onNavigate={navigateTo}
+      />
+    );
   }
 
   if (currentRoute === '/screener' || currentRoute === '/marketscreener') {
