@@ -44,7 +44,7 @@ test('production pricing surface only renders catalog-backed products and standa
   assert.match(pricing, /PRICING_CATALOG\.enterprise\.label/);
   assert.match(pricing, /Zusatzprodukte/);
   assert.match(pricing, /Eigenständiges Entitlement/);
-  assert.match(pricing, /Nicht Bestandteil von Starter, Pro oder Enterprise/);
+  assert.match(pricing, /nicht Bestandteil von Starter,[\s\S]*Pro oder Enterprise/);
 
   assert.doesNotMatch(pricing, /In Pro &amp; Enterprise inklusive/);
   assert.doesNotMatch(pricing, /B2B &amp; Data API|Ertrags-Simulator|Strategie &amp; Compliance/);
@@ -81,4 +81,21 @@ test('additional products catalog exposes only currently available add-ons', () 
   assert.match(pricing, /ADDITIONAL_PRODUCTS_CATALOG\.map/);
   assert.match(pricing, /Vocabulary ansehen \/ erwerben/);
   assert.doesNotMatch(catalog, /data-api|white-label|cpt-|token|nft/i);
+});
+
+
+test('pricing uses licensed subscription badges and does not force authenticated users to login', () => {
+  const pricing = readFileSync(new URL('../src/features/pricing/MonetizationModal.tsx', import.meta.url), 'utf8');
+
+  assert.match(pricing, /\/branding\/badges\/starter\.svg/);
+  assert.match(pricing, /\/branding\/badges\/pro\.svg/);
+  assert.match(pricing, /\/branding\/badges\/enterprise\.svg/);
+  assert.match(pricing, /\/branding\/badges\/vocabulary\.svg/);
+  assert.match(pricing, /\/branding\/badges\/data-pipeline-blueprint\.svg/);
+  assert.match(pricing, /geschützten Quant-\/Pro-Begriffen/);
+  assert.match(pricing, /serverseitig berechtigte Lernzugang/);
+  assert.match(pricing, /if \(authenticated === false\)/);
+  assert.match(pricing, /if \(authenticated === true\)/);
+  assert.match(pricing, /keine Weiterleitung zum Login/);
+  assert.match(pricing, /pointer-events-none select-none opacity-45/);
 });
