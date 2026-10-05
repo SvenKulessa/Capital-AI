@@ -21,6 +21,23 @@ export function resolveAppRoute(rawPath: string): string {
   if (clean === '/profile' || clean === '/profil' || clean === '/account' || clean === '/konto') {
     return '/profile';
   }
+  if (
+    clean === '/profile/security' ||
+    clean === '/profil/sicherheit' ||
+    clean === '/account/security' ||
+    clean === '/security'
+  ) {
+    return '/profile/security';
+  }
+  if (
+    clean === '/profile/key-vault' ||
+    clean === '/profil/key-vault' ||
+    clean === '/account/key-vault' ||
+    clean === '/key-vault' ||
+    clean === '/vault'
+  ) {
+    return '/profile/key-vault';
+  }
   if (clean === '/faq' || clean === '/hilfe' || clean === '/questions') {
     return '/faq';
   }
