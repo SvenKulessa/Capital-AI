@@ -3,15 +3,25 @@ import { createClient } from 'redis';
 import { connect } from '@nats-io/transport-node';
 import { jetstream, jetstreamManager, StorageType, DiscardPolicy } from '@nats-io/jetstream';
 import { QuoteFactSchema, QuoteDeliverySchema, isFresh } from '../shared/market-contracts.mjs';
+import { CanonicalMarketEventSchema, CanonicalMarketDeliverySchema, CANONICAL_MARKET_STREAM, canonicalMarketSubject } from '../shared/canonical-market-events.mjs';
+import { admittedMarketSourcesFor, isAdmittedMarketSource } from './open-source-market-policy.mjs';
 import { observeCadsOperation } from './cads-observability.mjs';
 
 const STREAM = 'CAPITAL_FACTS';
+const CANONICAL_STREAM = CANONICAL_MARKET_STREAM;
 export function validateStreamConfig(config, replicas) {
   if (!config || config.storage !== StorageType.File || config.discard !== DiscardPolicy.New ||
       !config.deny_delete || !config.deny_purge || config.max_age !== 0 ||
       config.num_replicas !== replicas || config.max_bytes !== 1024 * 1024 * 1024 ||
       config.max_msg_size !== 262144 || config.subjects?.length !== 1 ||
       config.subjects[0] !== 'capital.facts.quote.*') throw new Error('UNSAFE_STREAM_CONFIG');
+}
+export function validateCanonicalStreamConfig(config, replicas) {
+  if (!config || config.storage !== StorageType.File || config.discard !== DiscardPolicy.New ||
+      !config.deny_delete || !config.deny_purge || config.max_age !== 0 ||
+      config.num_replicas !== replicas || config.max_bytes !== 1024 * 1024 * 1024 ||
+      config.max_msg_size !== 262144 || config.subjects?.length !== 1 ||
+      config.subjects[0] !== 'capital.market.canonical.*.*') throw new Error('UNSAFE_CANONICAL_STREAM_CONFIG');
 }
 export const QUOTE_CHANNEL = 'capital:quote:events:v1';
 export const payloadHash = payload => createHash('sha256').update(JSON.stringify(payload)).digest('hex');
@@ -75,6 +85,14 @@ export class MarketInfrastructure {
           max_bytes: 1024 * 1024 * 1024, max_msg_size: 262144,
           max_age: 0, deny_delete: true, deny_purge: true, duplicate_window: 120e9 }); }
       validateStreamConfig(info.config, replicas);
+      let canonicalInfo;
+      try { canonicalInfo = await this.manager.streams.info(CANONICAL_STREAM); }
+      catch (e) { if (Number(e.code) !== 404 && e.apiError?.().code !== 404) throw e;
+        canonicalInfo = await this.manager.streams.add({ name: CANONICAL_STREAM, subjects: ['capital.market.canonical.*.*'],
+          storage: StorageType.File, num_replicas: replicas, discard: DiscardPolicy.New,
+          max_bytes: 1024 * 1024 * 1024, max_msg_size: 262144,
+          max_age: 0, deny_delete: true, deny_purge: true, duplicate_window: 120e9 }); }
+      validateCanonicalStreamConfig(canonicalInfo.config, replicas);
       this.state = 'connected';
       return true;
     } catch {
@@ -93,7 +111,7 @@ export class MarketInfrastructure {
     verifiedDeliveries: this.deliveryMetrics.verified,
     lastVerifiedDeliveryAt: this.deliveryMetrics.lastVerifiedDeliveryAt,
     lastVerifiedSymbol: this.deliveryMetrics.lastVerifiedSymbol,
-    stream: STREAM, storage: 'file', replicasConfigured: Number(this.env.NATS_REPLICAS || 1),
+    stream: STREAM, canonicalStream: CANONICAL_STREAM, storage: 'file', replicasConfigured: Number(this.env.NATS_REPLICAS || 1),
     authMode: this.natsAuthMode || 'unconfigured' }; }
   async subscribeQuotes(listener) {
     if (typeof listener !== 'function') throw new TypeError('INVALID_QUOTE_LISTENER');
@@ -155,6 +173,60 @@ export class MarketInfrastructure {
     if (ttl <= 0) throw new Error('FACT_EXPIRED_DURING_WRITE');
     await observeCadsOperation({ layer:'cache', service:'valkey', operation:'quote.atomic_set_publish', correlationId: fact.symbol }, () => this.redis.eval(script, { keys: [`capital:quote:v1:${fact.symbol}`], arguments: [JSON.stringify(delivery), String(fact.observedAt), String(ttl), delivery.evidenceId, String(this.pubsubEnabled), QUOTE_CHANNEL] }));
     return delivery;
+  }
+  async persistCanonical(input) {
+    const event = CanonicalMarketEventSchema.parse(input);
+    if (!isAdmittedMarketSource(event.provenance.providerId, 'marketQuotes')) {
+      throw new Error('CANONICAL_PROVIDER_NOT_ADMITTED');
+    }
+    const admittedSource = admittedMarketSourcesFor('marketQuotes')
+      .find(source => source.providerId === event.provenance.providerId);
+    if (!admittedSource ||
+        admittedSource.evidenceReference !== event.provenance.rightsEvidenceReference ||
+        admittedSource.instrumentManifestReference !== event.instrumentManifestReference) {
+      throw new Error('CANONICAL_ADMISSION_EVIDENCE_MISMATCH');
+    }
+    if (!this.js || !this.manager || !this.nc || this.nc.isClosed() || !this.natsConnected) {
+      throw new Error('INFRASTRUCTURE_UNAVAILABLE');
+    }
+    const raw = await this.replay(event.rawInputEvidenceId);
+    if (raw.fact.provider !== event.provenance.providerId ||
+        raw.fact.symbol !== event.asset.symbol ||
+        raw.fact.venue !== event.asset.venue ||
+        raw.fact.quote !== event.asset.currency ||
+        raw.fact.observedAt !== event.provenance.observedAt ||
+        raw.fact.receivedAt !== event.provenance.receivedAt ||
+        raw.fact.price !== event.quote.price ||
+        raw.fact.bid !== event.quote.bid ||
+        raw.fact.ask !== event.quote.ask ||
+        raw.fact.volume24h !== event.quote.volume24h) {
+      throw new Error('CANONICAL_RAW_EVIDENCE_MISMATCH');
+    }
+    const canonicalBody = JSON.stringify(event);
+    const hash = payloadHash(event);
+    const ack = await observeCadsOperation({
+      layer:'stream', service:'nats-jetstream', operation:'canonical.publish_ack', correlationId:event.asset.assetId
+    }, () => this.js.publish(canonicalMarketSubject(event), canonicalBody, { msgID: hash }));
+    if (ack.stream !== CANONICAL_STREAM || !Number.isInteger(ack.seq) || ack.seq < 1) {
+      throw new Error('CANONICAL_EVIDENCE_UNCONFIRMED');
+    }
+    const delivery = CanonicalMarketDeliverySchema.parse({
+      ...event,
+      canonicalEvidenceId: `${CANONICAL_STREAM}:${ack.seq}:${hash}`,
+    });
+    const readback = await this.replayCanonical(delivery.canonicalEvidenceId);
+    if (payloadHash(readback) !== hash) throw new Error('CANONICAL_EVIDENCE_READBACK_MISMATCH');
+    return delivery;
+  }
+  async replayCanonical(id) {
+    const match = /^CAPITAL_CANONICAL:([1-9][0-9]*):([a-f0-9]{64})$/.exec(id);
+    if (!match || !this.manager || !Number.isSafeInteger(Number(match[1]))) throw new Error('INVALID_CANONICAL_EVIDENCE_ID');
+    const msg = await observeCadsOperation({ layer:'storage', service:'nats-jetstream', operation:'canonical.replay' },
+      () => this.manager.streams.getMessage(CANONICAL_STREAM, { seq: Number(match[1]) }));
+    if (!msg) throw new Error('CANONICAL_EVIDENCE_NOT_FOUND');
+    const record = CanonicalMarketEventSchema.parse(JSON.parse(new TextDecoder().decode(msg.data)));
+    if (payloadHash(record) !== match[2]) throw new Error('CANONICAL_EVIDENCE_HASH_MISMATCH');
+    return record;
   }
   async read(symbol) {
     if (!this.redis?.isReady) return null;
