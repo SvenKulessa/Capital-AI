@@ -98,3 +98,18 @@ test('all four research routes render their own accessible page and preserve ope
   assert.match(summary, /sind geplant/);
   assert.match(summary, /Förderzusage/);
 });
+
+test('registration migration makes optional marketing consent null-safe', async () => {
+  const migration = await readFile(
+    new URL('../supabase/migrations/20261005155500_fix_registration_marketing_consent_null.sql', import.meta.url),
+    'utf8',
+  );
+  assert.match(
+    migration,
+    /coalesce\(new\.raw_user_meta_data->>'marketing_consent', 'false'\) = 'true'/,
+  );
+  assert.doesNotMatch(
+    migration,
+    /new\.raw_user_meta_data->>'marketing_consent'\s*=\s*'true',\s*\n\s*'consent'/,
+  );
+});
