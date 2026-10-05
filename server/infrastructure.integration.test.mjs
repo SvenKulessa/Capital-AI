@@ -52,6 +52,9 @@ test('real Redis / JetStream: acknowledged fact, replay, cache integrity, orderi
   await assert.rejects(service.persist({ ...fact, observedAt: Date.now() - 31000 }, raw), /INVALID_FACT/);
   const info = await service.manager.streams.info('CAPITAL_FACTS');
   assert.equal(info.config.storage, 'file'); assert.equal(info.config.deny_delete, true); assert.equal(info.config.deny_purge, true);
+  const canonicalInfo = await service.manager.streams.info('CAPITAL_CANONICAL');
+  assert.deepEqual(canonicalInfo.config.subjects, ['capital.market.canonical.*.*']);
+  assert.equal(canonicalInfo.config.storage, 'file'); assert.equal(canonicalInfo.config.deny_delete, true); assert.equal(canonicalInfo.config.deny_purge, true);
   service.redis.destroy();
   await assert.rejects(service.persist(fact, raw), /INFRASTRUCTURE_UNAVAILABLE/);
   assert.equal(await service.read('BTCUSD'), null);
