@@ -470,7 +470,8 @@ export function createAuthSecurity({
       const enrolled = await authRequest(config, '/factors', {
         method: 'POST',
         accessToken: stored.accessToken,
-        body: { factor_type: 'totp', friendly_name: name },
+        body: { factor_type: 'totp', friendly_name: name, issuer: 'CAPITAL-AI' },
+        maxResponseBytes: 262_144,
       });
       if (!enrolled.response.ok || !FACTOR_ID_RE.test(String(enrolled.data?.id || '')) || !enrolled.data?.totp) {
         json(res, enrolled.response.status === 429 ? 429 : 422, {
