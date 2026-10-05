@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
-import { PROJECT_OWNERS } from '../roadmapData';
+import { PROJECT_OWNERS, WORK_PACKAGES } from '../roadmapData';
 
 const EXPECTED = ['PRODUCT', 'MARKET', 'PLATFORM', 'TRUST', 'GROWTH'] as const;
 
@@ -39,3 +39,28 @@ test('roadmap panel renders domain badges on filter and work-package cards respo
   assert.match(panel, /h-24 w-24 sm:h-28 sm:w-28/);
   assert.match(panel, /h-20 w-20 shrink-0 sm:h-24 sm:w-24/);
 });
+
+test('SEO roadmap is consolidated into one chronological GROWTH work package', () => {
+  const seoPackages = WORK_PACKAGES.filter(item =>
+    item.id === 'CA-GROWTH-SEO-ARCHITECTURE' || item.id.startsWith('AP-SEO-')
+  );
+
+  assert.equal(seoPackages.length, 1);
+  const [seo] = seoPackages;
+  assert.equal(seo.id, 'CA-GROWTH-SEO-ARCHITECTURE');
+  assert.equal(seo.owner, 'GROWTH');
+  assert.equal(seo.evidenceState, 'OFFEN');
+  assert.equal(seo.deliverables.length, 12);
+  seo.deliverables.forEach((deliverable, index) => {
+    assert.match(deliverable, new RegExp(`^${String(index + 1).padStart(2, '0')} · SEO-`));
+  });
+});
+
+test('roadmap panel renders work-package deliverables in stored order', () => {
+  const panel = readFileSync(new URL('../../components/RoadmapPanel.tsx', import.meta.url), 'utf8');
+
+  assert.match(panel, /item\.deliverables\.map/);
+  assert.match(panel, /Arbeitspunkte · Reihenfolge wie in der Roadmap/);
+  assert.match(panel, /list-decimal/);
+});
+
