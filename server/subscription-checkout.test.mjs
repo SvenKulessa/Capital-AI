@@ -55,12 +55,26 @@ test('subscription checkout uses only server catalog price and binds user and pl
   assert.equal(stripeForm.get('metadata[user_id]'), '00000000-0000-4000-8000-000000000001');
 });
 
-test('subscription checkout rejects arbitrary tier and price injection', async () => {
-  const handler = createSubscriptionCheckout({ env, fetchImpl: async () => { throw new Error('must not call'); }, auth });
+test('subscription checkout ignores caller-supplied priceId and uses server authority', async () => {
+  let stripeForm;
+  const fetchImpl = async (_url, options) => {
+    stripeForm = new URLSearchParams(String(options.body));
+    return Response.json({ id: 'cs_test_2', url: 'https://checkout.stripe.com/c/pay/test2' });
+  };
+  const handler = createSubscriptionCheckout({ env, fetchImpl, auth });
   const response = res();
   await handler.handle(req({ tier: 'enterprise', cycle: 'monthly', priceId: 'price_attacker' }), response, new URL('https://capital-ai.online/api/billing/subscriptions/checkout'), json);
   assert.equal(response.status, 200);
-  // caller-supplied priceId is ignored; the selected tier/cycle uses server authority.
+  assert.equal(stripeForm.get('line_items[0][price]'), 'price_1UMA51PKr4joNbEcbtWNCcCc');
+  assert.notEqual(stripeForm.get('line_items[0][price]'), 'price_attacker');
+});
+
+test('subscription checkout rejects unknown tier or cycle before Stripe', async () => {
+  const handler = createSubscriptionCheckout({ env, fetchImpl: async () => { throw new Error('must not call'); }, auth });
+  const response = res();
+  await handler.handle(req({ tier: 'owner', cycle: 'lifetime' }), response, new URL('https://capital-ai.online/api/billing/subscriptions/checkout'), json);
+  assert.equal(response.status, 400);
+  assert.equal(response.payload.error, 'invalid_subscription_selection');
 });
 
 test('subscription checkout fails closed when disabled or cross-origin', async () => {
