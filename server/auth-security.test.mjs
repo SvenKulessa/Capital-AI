@@ -56,6 +56,9 @@ function securityHarness({ factor = true } = {}) {
     if (path === '/passkeys/authentication/verify') {
       return { response: new Response('{}', { status: 200 }), data: structuredClone(token) };
     }
+    if (path === '/passkeys') {
+      return { response: new Response('{}', { status: 200 }), data: [] };
+    }
     throw new Error(`Unexpected path: ${path}`);
   };
 
@@ -145,4 +148,29 @@ test('passkey and TOTP mutations remain same-origin protected', async () => {
   );
   assert.equal(res.status, 403);
   assert.equal(h.calls.length, 0);
+});
+
+test('authenticated factor and passkey reads tolerate missing Origin but reject explicit cross-site reads', async () => {
+  const h = securityHarness({ factor: true });
+
+  for (const path of ['/api/auth/mfa/factors', '/api/auth/passkeys']) {
+    const allowed = responseHarness();
+    await h.security.handle(
+      { method: 'GET', headers: { 'sec-fetch-site': 'same-origin' } },
+      allowed,
+      new URL('https://capital-ai.online' + path),
+      json,
+    );
+    assert.equal(allowed.status, 200, path);
+
+    const blocked = responseHarness();
+    await h.security.handle(
+      { method: 'GET', headers: { origin: 'https://attacker.example', 'sec-fetch-site': 'cross-site' } },
+      blocked,
+      new URL('https://capital-ai.online' + path),
+      json,
+    );
+    assert.equal(blocked.status, 403, path);
+    assert.equal(blocked.payload.error, 'forbidden_origin');
+  }
 });

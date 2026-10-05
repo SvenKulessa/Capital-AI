@@ -27,6 +27,8 @@ interface LoginPageProps {
 interface SessionState {
   configured: boolean;
   authenticated: boolean;
+  currentLevel?: 'aal1' | 'aal2';
+  mfaRequired?: boolean;
   user: { id: string; subject: string; email: string; name: string } | null;
 }
 
@@ -117,9 +119,32 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
   useEffect(() => {
     const abort = new AbortController();
     loadSession(abort.signal)
-      .then(value => {
-        if (!abort.signal.aborted && mode === 'mfa' && value.authenticated) {
-          void loadMfaFactors().catch(() => setError('Authenticator-Faktoren konnten nicht geladen werden.'));
+      .then(async value => {
+        if (abort.signal.aborted || mode !== 'mfa') return;
+
+        if (!value.authenticated) {
+          window.history.replaceState(null, '', '/login');
+          setMode('login');
+          return;
+        }
+
+        if (!value.mfaRequired) {
+          window.location.replace('/profile');
+          return;
+        }
+
+        try {
+          const factors = await loadMfaFactors();
+          if (!factors.length && !abort.signal.aborted) {
+            const refreshed = await loadSession(abort.signal);
+            if (refreshed.authenticated && !refreshed.mfaRequired) {
+              window.location.replace('/profile');
+              return;
+            }
+            setError('Der MFA-Zustand ist inkonsistent. Bitte wähle eine andere Anmeldemethode oder melde dich neu an.');
+          }
+        } catch {
+          if (!abort.signal.aborted) setError('Authenticator-Faktoren konnten nicht geladen werden.');
         }
       })
       .catch(() => {
@@ -283,7 +308,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
         body: '{}',
       });
       if (!response.ok) throw new Error();
-      setSession(previous => previous ? { ...previous, authenticated: false, user: null } : previous);
+      setSession(previous => previous ? { ...previous, authenticated: false, mfaRequired: false, user: null } : previous);
+      setMfaFactors([]);
+      setSelectedFactorId('');
+      setTotpCode('');
+      window.history.replaceState(null, '', '/login');
       setMode('login');
     } catch {
       setError('Abmeldung konnte nicht bestätigt werden.');
@@ -359,6 +388,17 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
               <button type="submit" disabled={busy || totpCode.length < 6} className="min-h-12 w-full rounded-xl bg-amber-400 font-black text-black disabled:opacity-40">
                 {busy ? 'Wird geprüft …' : 'Authenticator bestätigen'}
               </button>
+              <button
+                type="button"
+                onClick={() => void logout()}
+                disabled={busy}
+                className="min-h-11 w-full rounded-xl border border-cyan-400/30 bg-cyan-400/10 text-xs font-bold text-cyan-100 disabled:opacity-40"
+              >
+                Andere Anmeldemethode wählen
+              </button>
+              <p className="text-[11px] leading-relaxed text-slate-500">
+                Die Auswahl beendet die angefangene Sitzung und zeigt E-Mail, Google und Passkey erneut an. Ein aktivierter TOTP-Faktor wird dadurch nicht umgangen.
+              </p>
             </form>
           )}
 

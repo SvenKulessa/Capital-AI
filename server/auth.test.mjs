@@ -100,6 +100,25 @@ async function harness(envOverrides = {}) {
       return Response.json({ ok: true });
     }
 
+    if (target.origin === 'https://project.supabase.co' && target.pathname === '/rest/v1/profiles') {
+      assert.match(String(options.headers.Authorization || ''), /^Bearer access-/);
+      assert.equal(options.headers.apikey, 'sb_publishable_test');
+      assert.equal(target.searchParams.get('id'), `eq.${state.subject}`);
+      return Response.json([{ id: state.subject, iam_role: state.subject === 'owner-subject' ? 'owner' : 'user' }]);
+    }
+
+    if (target.origin === 'https://project.supabase.co' && target.pathname === '/rest/v1/subscriptions') {
+      assert.match(String(options.headers.Authorization || ''), /^Bearer access-/);
+      assert.equal(options.headers.apikey, 'sb_publishable_test');
+      assert.equal(target.searchParams.get('user_id'), `eq.${state.subject}`);
+      return Response.json([{
+        user_id: state.subject,
+        tier: state.subject === 'owner-subject' ? 'Enterprise' : 'Free',
+        status: state.subject === 'owner-subject' ? 'active' : 'free',
+        current_period_end: state.subject === 'owner-subject' ? '2026-12-31T00:00:00+00:00' : null,
+      }]);
+    }
+
     throw new Error(`Unexpected network access: ${target.href}`);
   };
 
@@ -197,6 +216,14 @@ test('Supabase email login is same-origin, backend-owned and redirects users to 
     assert.equal(session.authenticated, true);
     assert.equal(session.user.id, 'owner-subject');
     assert.equal(session.user.subject, 'owner-subject');
+    assert.equal(session.account.available, true);
+    assert.equal(session.account.iamRole, 'owner');
+    assert.equal(session.account.subscription.tier, 'Enterprise');
+    assert.equal(session.account.subscription.status, 'active');
+    assert.deepEqual(session.account.badges, [
+      { id: 'enterprise', label: 'ENTERPRISE', asset: '/branding/badges/enterprise.svg' },
+      { id: 'owner', label: 'OWNER', asset: '/branding/badges/owner.svg' },
+    ]);
     assert.equal(JSON.stringify(session).includes('access-'), false);
     assert.equal(JSON.stringify(session).includes('refresh-'), false);
     assert.deepEqual(h.state.authAudit, ['Supabase authentication verified at password_login']);

@@ -19,7 +19,7 @@
  * ============================================================================
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Menu,
   X,
@@ -46,6 +46,15 @@ import { MainCategory, AssetSubclass } from '../types';
 import { trackLoginClick } from '../utils/analytics';
 import { usePriceAlerts } from '../context/PriceAlertsContext';
 import { HubSidebarDrawer, MainHubId } from './HubSidebarDrawer';
+
+interface HeaderSession {
+  authenticated: boolean;
+  user?: { name?: string; email?: string } | null;
+  account?: {
+    subscription?: { tier?: string; status?: string } | null;
+    badges?: Array<{ id: string; label: string; asset: string }>;
+  } | null;
+}
 
 interface HeaderProps {
   currentRoute?: string;
@@ -83,7 +92,37 @@ export const Header: React.FC<HeaderProps> = ({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeSidebarHub, setActiveSidebarHub] = useState<MainHubId>('marketscreener');
   const [expandedClass, setExpandedClass] = useState<MainCategory | null>('KRYPTO');
+  const [authSession, setAuthSession] = useState<HeaderSession | null>(null);
   const { activeAlertsCount, triggeredAlertsCount } = usePriceAlerts();
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch('/api/auth/session', {
+      credentials: 'same-origin',
+      cache: 'no-store',
+      headers: { Accept: 'application/json' },
+      signal: controller.signal,
+    })
+      .then(response => response.ok ? response.json() : Promise.reject())
+      .then(body => {
+        if (!controller.signal.aborted) {
+          setAuthSession(body && typeof body.authenticated === 'boolean' ? body : null);
+        }
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setAuthSession(null);
+      });
+    return () => controller.abort();
+  }, [currentRoute]);
+
+  const accountTier = authSession?.authenticated
+    ? authSession.account?.subscription?.tier || null
+    : null;
+
+  const navigateProfile = () => {
+    if (onNavigate) onNavigate('/profile');
+    else window.location.assign('/profile');
+  };
 
   const openHubSidebar = (hubId: MainHubId) => {
     setActiveSidebarHub(hubId);
@@ -275,26 +314,45 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="group-hover:underline underline-offset-2">LIVE • Sub-45ms</span>
         </button>
 
-        {/* PROMINENT TOP-RIGHT LOGIN BUTTON LEADING TO /login */}
-        <a
-          id="header-login-btn"
-          href="/login"
-          onClick={(e) => {
-            e.preventDefault();
-            trackLoginClick('header_top_right');
-            onNavigateLogin?.();
-          }}
-          className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400/15 via-[#FF2E93]/15 to-[#8D26FF]/20 hover:from-amber-400/25 hover:via-[#FF2E93]/25 hover:to-[#8D26FF]/35 border border-amber-400/40 hover:border-amber-300 text-amber-200 hover:text-white text-xs font-bold transition-all shadow-[0_0_14px_rgba(249,191,33,0.18)] hover:shadow-[0_0_20px_rgba(255,46,147,0.3)] active:scale-95 cursor-pointer group shrink-0"
-          data-analytics="login-click"
-          data-ga-category="authentication"
-          data-ga-action="click_login"
-          data-ga-label="header_top_right"
-          aria-label="Zum Capital-AI Login /login"
-          title="Terminal Anmeldung (/login)"
-        >
-          <LogIn className="w-3.5 h-3.5 text-amber-400 group-hover:text-amber-200 group-hover:scale-110 transition-all" />
-          <span>Login</span>
-        </a>
+        {/* SESSION-AWARE ACCOUNT / LOGIN */}
+        {authSession?.authenticated ? (
+          <button
+            id="header-profile-btn"
+            type="button"
+            onClick={navigateProfile}
+            className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-400/30 hover:border-emerald-300 text-emerald-100 text-xs font-bold transition-all shrink-0"
+            aria-label="Persönliches Profil öffnen"
+            title="Persönliches Profil"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
+            <span className="max-w-24 truncate">{authSession.user?.name || 'Profil'}</span>
+            {accountTier && (
+              <span className="hidden sm:inline rounded-full border border-amber-400/30 bg-amber-400/10 px-1.5 py-0.5 font-mono text-[9px] text-amber-200">
+                {accountTier}
+              </span>
+            )}
+          </button>
+        ) : (
+          <a
+            id="header-login-btn"
+            href="/login"
+            onClick={(e) => {
+              e.preventDefault();
+              trackLoginClick('header_top_right');
+              onNavigateLogin?.();
+            }}
+            className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400/15 via-[#FF2E93]/15 to-[#8D26FF]/20 hover:from-amber-400/25 hover:via-[#FF2E93]/25 hover:to-[#8D26FF]/35 border border-amber-400/40 hover:border-amber-300 text-amber-200 hover:text-white text-xs font-bold transition-all shadow-[0_0_14px_rgba(249,191,33,0.18)] hover:shadow-[0_0_20px_rgba(255,46,147,0.3)] active:scale-95 cursor-pointer group shrink-0"
+            data-analytics="login-click"
+            data-ga-category="authentication"
+            data-ga-action="click_login"
+            data-ga-label="header_top_right"
+            aria-label="Zum Capital-AI Login /login"
+            title="Terminal Anmeldung (/login)"
+          >
+            <LogIn className="w-3.5 h-3.5 text-amber-400 group-hover:text-amber-200 group-hover:scale-110 transition-all" />
+            <span>Login</span>
+          </a>
+        )}
       </div>
 
       {/* Slide-out Mobile Menu Drawer FROM THE LEFT ("links aufklappbar") */}
@@ -334,29 +392,48 @@ export const Header: React.FC<HeaderProps> = ({
                   </button>
                 </div>
 
-                {/* Mobile Drawer Login CTA */}
+                {/* Mobile Drawer Account / Login CTA */}
                 <div className="mt-4">
-                  <a
-                    id="drawer-login-btn"
-                    href="/login"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setIsMenuOpen(false);
-                      trackLoginClick('drawer');
-                      onNavigateLogin?.();
-                    }}
-                    className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400/15 via-[#FF2E93]/15 to-[#8D26FF]/20 border border-amber-400/40 text-amber-200 hover:text-white font-bold text-xs transition-all shadow-[0_0_12px_rgba(249,191,33,0.15)] group"
-                    data-analytics="drawer-login-click"
-                    data-ga-category="authentication"
-                    data-ga-action="click_login"
-                    data-ga-label="drawer_menu"
-                  >
-                    <span className="flex items-center gap-2">
-                      <LogIn className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
-                      <span>Terminal Anmeldung (/Login)</span>
-                    </span>
-                    <ChevronRight className="w-3.5 h-3.5 text-amber-400" />
-                  </a>
+                  {authSession?.authenticated ? (
+                    <button
+                      id="drawer-profile-btn"
+                      type="button"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        navigateProfile();
+                      }}
+                      className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-400/30 text-emerald-100 font-bold text-xs transition-all"
+                    >
+                      <span className="flex items-center gap-2 min-w-0">
+                        <ShieldCheck className="w-4 h-4 text-emerald-300 shrink-0" />
+                        <span className="truncate">{authSession.user?.name || 'Profil'}</span>
+                        {accountTier && <span className="font-mono text-[9px] text-amber-300">{accountTier}</span>}
+                      </span>
+                      <ChevronRight className="w-3.5 h-3.5 text-emerald-300" />
+                    </button>
+                  ) : (
+                    <a
+                      id="drawer-login-btn"
+                      href="/login"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setIsMenuOpen(false);
+                        trackLoginClick('drawer');
+                        onNavigateLogin?.();
+                      }}
+                      className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400/15 via-[#FF2E93]/15 to-[#8D26FF]/20 border border-amber-400/40 text-amber-200 hover:text-white font-bold text-xs transition-all shadow-[0_0_12px_rgba(249,191,33,0.15)] group"
+                      data-analytics="drawer-login-click"
+                      data-ga-category="authentication"
+                      data-ga-action="click_login"
+                      data-ga-label="drawer_menu"
+                    >
+                      <span className="flex items-center gap-2">
+                        <LogIn className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
+                        <span>Terminal Anmeldung (/Login)</span>
+                      </span>
+                      <ChevronRight className="w-3.5 h-3.5 text-amber-400" />
+                    </a>
+                  )}
                 </div>
 
                 {/* Navigation Sections: DIE 4 HAUPTHUBS (RUNDE LEUCHTENDE ACTION BUTTONS MIT AUFKLAPPBARER SIDEBAR) */}

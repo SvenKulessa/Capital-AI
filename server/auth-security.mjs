@@ -72,6 +72,13 @@ export function createAuthSecurity({
     return stored;
   }
 
+  function safeSameSiteRead(req) {
+    const origin = String(req.headers?.origin || '');
+    if (origin && !sameOrigin(req)) return false;
+    const fetchSite = String(req.headers?.['sec-fetch-site'] || '').toLowerCase();
+    return !fetchSite || fetchSite === 'same-origin' || fetchSite === 'same-site' || fetchSite === 'none';
+  }
+
   async function handle(req, res, url, json) {
     if (!url.pathname.startsWith('/api/auth/')) return false;
     const action = url.pathname.slice('/api/auth/'.length);
@@ -141,7 +148,11 @@ export function createAuthSecurity({
       return true;
     }
 
-    if (!sameOrigin(req)) {
+    const safeRead =
+      req.method === 'GET' &&
+      (action === 'passkeys' || action === 'mfa/factors');
+
+    if (safeRead ? !safeSameSiteRead(req) : !sameOrigin(req)) {
       json(res, 403, { error: 'forbidden_origin' });
       return true;
     }
