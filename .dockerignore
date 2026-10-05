@@ -24,6 +24,8 @@
 !server/auth.mjs
 !server/auth-security.mjs
 !server/auth-security.test.mjs
+!server/subscription-entitlements.mjs
+!server/subscription-entitlements.test.mjs
 !server/user-provider-vault.mjs
 !server/telegram.mjs
 !server/privacy.mjs
