@@ -89,3 +89,11 @@ test('all four research routes render their own accessible page and preserve ope
   assert.match(summary, /sind geplant/);
   assert.match(summary, /Förderzusage/);
 });
+
+test('production viewport contains no preview banner and delayed route fallback waits 10 seconds before branding', async () => {
+  const viewport = await readFile(new URL('../src/app/layout/ApplicationViewport.tsx', import.meta.url), 'utf8');
+  const fallback = await readFile(new URL('../src/shared/ui/RouteLoadingFallback.tsx', import.meta.url), 'utf8');
+  assert.doesNotMatch(viewport, /Vorschau:|Responsive Preview|iPhone Frame/);
+  assert.match(fallback, /10_000/);
+  assert.match(fallback, /BrandLogo/);
+});
