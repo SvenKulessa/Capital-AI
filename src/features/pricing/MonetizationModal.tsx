@@ -28,6 +28,7 @@ interface MonetizationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onNavigateLogin?: () => void;
+  onNavigate?: (path: string) => void;
   onOpenWhaleRadar?: () => void;
 }
 
@@ -38,15 +39,33 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
   isOpen,
   onClose,
   onNavigateLogin,
+  onNavigate,
 }) => {
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('annual');
   const [activeTab, setActiveTab] = useState<PricingTab>('plans');
+  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
+  const [purchaseMessage, setPurchaseMessage] = useState('');
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
     closeButtonRef.current?.focus();
+    setPurchaseMessage('');
+    const controller = new AbortController();
+    fetch('/api/auth/session', {
+      credentials: 'same-origin',
+      cache: 'no-store',
+      headers: { Accept: 'application/json' },
+      signal: controller.signal,
+    })
+      .then(response => response.ok ? response.json() : Promise.reject())
+      .then(session => {
+        if (!controller.signal.aborted) setAuthenticated(Boolean(session?.authenticated));
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setAuthenticated(false);
+      });
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -79,7 +98,10 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      controller.abort();
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
@@ -118,7 +140,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                 </span>
               </div>
               <h2 id="pricing-dialog-title" className="text-xl sm:text-2xl font-black text-white mt-0.5">
-                Capital-AI Monetarisierungskonzept
+                Capital-AI Preiskatalog
               </h2>
             </div>
           </div>
@@ -203,6 +225,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
               {([
                 {
                   id: 'starter',
+                  badgeAsset: '/branding/badges/starter.svg',
                   label: PRICING_CATALOG.starter.label,
                   monthlyPrice: starterPrice,
                   annualCents: PRICING_CATALOG.starter.annual.amountCents,
@@ -210,6 +233,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                 },
                 {
                   id: 'pro',
+                  badgeAsset: '/branding/badges/pro.svg',
                   label: PRICING_CATALOG.pro.label,
                   monthlyPrice: proPrice,
                   annualCents: PRICING_CATALOG.pro.annual.amountCents,
@@ -217,6 +241,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                 },
                 {
                   id: 'enterprise',
+                  badgeAsset: '/branding/badges/enterprise.svg',
                   label: PRICING_CATALOG.enterprise.label,
                   monthlyPrice: enterprisePrice,
                   annualCents: PRICING_CATALOG.enterprise.annual.amountCents,
@@ -229,6 +254,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                   className="flex flex-col justify-between rounded-2xl border border-slate-800 bg-[#030715] p-4"
                 >
                   <div>
+                    <img src={tier.badgeAsset} alt={`${tier.label} Badge`} className="mb-3 h-16 w-16 rounded-xl border border-white/10 bg-black/20 p-1" />
                     <h3
                       id={`pricing-tier-${tier.id}`}
                       className="text-xs font-mono font-bold uppercase text-slate-200"
@@ -253,8 +279,17 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      onClose();
-                      onNavigateLogin?.();
+                      setPurchaseMessage('');
+                      if (authenticated === false) {
+                        onClose();
+                        onNavigateLogin?.();
+                        return;
+                      }
+                      if (authenticated === true) {
+                        setPurchaseMessage('Der Abo-Checkout ist für angemeldete Nutzer noch nicht produktiv freigeschaltet. Es erfolgt keine Weiterleitung zum Login.');
+                        return;
+                      }
+                      setPurchaseMessage('Sitzungsstatus wird geprüft. Bitte erneut auswählen.');
                     }}
                     className="mt-5 w-full rounded-xl bg-amber-400 py-2.5 text-xs font-black text-black transition-all hover:bg-amber-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#030715]"
                   >
@@ -284,8 +319,8 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
               >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                   <img
-                    src={product.badgeAsset}
-                    alt="CAPITAL-AI-PRODUCT Badge für Market Vocabulary"
+                    src="/branding/badges/vocabulary.svg"
+                    alt="Market Vocabulary Badge"
                     className="h-20 w-20 rounded-2xl border border-violet-300/20 bg-black/20 p-1"
                   />
                   <div className="min-w-0 flex-1">
@@ -302,8 +337,10 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                       <span className="text-xs text-slate-400">einmalig</span>
                     </div>
                     <p className="mt-2 text-xs leading-relaxed text-slate-300">
-                      Eigenständiges Entitlement. Nicht Bestandteil von Starter, Pro oder Enterprise.
-                      Der lizenzierte Produkt-Badge kann nach erfolgreichem Erwerb ohne Zusatzpreis heruntergeladen werden.
+                      Enthalten sind das erweiterte Market Vocabulary mit geschützten Quant-/Pro-Begriffen,
+                      der serverseitig berechtigte Lernzugang, wiederholbare Skill-Checks für berechtigte Nutzer
+                      sowie der lizenzierte Vocabulary-Badge als Download. Das Paket ist nicht Bestandteil von Starter,
+                      Pro oder Enterprise.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-mono text-slate-300">
                       <span className="rounded-lg border border-slate-700 bg-black/20 px-2 py-1">Separates Entitlement</span>
@@ -311,6 +348,16 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                     </div>
                     <a
                       href={product.productPath}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        if (authenticated === false) {
+                          onClose();
+                          onNavigateLogin?.();
+                          return;
+                        }
+                        onClose();
+                        onNavigate?.(product.productPath);
+                      }}
                       className="mt-4 inline-flex rounded-xl bg-violet-300 px-4 py-2 text-xs font-black text-black hover:bg-violet-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-200"
                     >
                       Vocabulary ansehen / erwerben
@@ -319,6 +366,25 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                 </div>
               </section>
             ))}
+            <section aria-disabled="true" className="pointer-events-none select-none opacity-45 rounded-2xl border border-cyan-400/30 bg-cyan-500/10 p-4">
+              <div className="flex items-center gap-3">
+                <div className="h-16 w-16 rounded-xl border border-cyan-300/20 bg-[#06202a] flex items-center justify-center text-[10px] font-black text-cyan-200 text-center px-1">
+                  DATA<br/>PIPELINE<br/>BLUEPRINT
+                </div>
+                <div>
+                  <div className="text-xs font-black text-cyan-200">Data Pipeline Blueprint</div>
+                  <p className="mt-1 text-xs text-slate-300">
+                    Geplantes Zusatzprodukt. Nicht auswählbar, bis Evidence-, Lizenz-, Entitlement- und Checkout-Gates geschlossen sind.
+                  </p>
+                </div>
+              </div>
+            </section>
+          </div>
+        )}
+
+        {purchaseMessage && (
+          <div role="status" className="mt-4 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-xs text-amber-100">
+            {purchaseMessage}
           </div>
         )}
 
@@ -340,12 +406,17 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
             <button
               type="button"
               onClick={() => {
-                onClose();
-                onNavigateLogin?.();
+                if (authenticated) {
+                  onClose();
+                  onNavigate?.('/profile');
+                } else {
+                  onClose();
+                  onNavigateLogin?.();
+                }
               }}
               className="w-full sm:w-auto px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black text-xs font-black transition-all shadow-[0_0_15px_rgba(249,191,33,0.3)] cursor-pointer"
             >
-              Konto anlegen / Upgrade
+              {authenticated ? 'Konto & Abonnement' : 'Konto anlegen'}
             </button>
           </div>
         </div>
