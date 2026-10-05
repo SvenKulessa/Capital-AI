@@ -5,7 +5,7 @@ import { performance } from 'node:perf_hooks';
 import { createClient } from 'redis';
 import { connect } from '@nats-io/transport-node';
 import { jetstreamManager } from '@nats-io/jetstream';
-import { natsConnectionAuth, validateStreamConfig } from '../server/infrastructure.mjs';
+import { natsConnectionAuth, validateStreamConfig, validateCanonicalStreamConfig } from '../server/infrastructure.mjs';
 
 export async function verifyPrivateBrokers(env = process.env) {
   if (!env.REDIS_URL || !env.NATS_URL) throw new Error('BROKER_ENDPOINTS_REQUIRED');
@@ -32,6 +32,8 @@ export async function verifyPrivateBrokers(env = process.env) {
     manager = await timed('jetstream_manager_ms', () => jetstreamManager(nc, { timeout: 3000 }));
     const facts = await manager.streams.info('CAPITAL_FACTS');
     validateStreamConfig(facts.config, Number(env.NATS_REPLICAS || 1));
+    const canonical = await manager.streams.info('CAPITAL_CANONICAL');
+    validateCanonicalStreamConfig(canonical.config, Number(env.NATS_REPLICAS || 1));
 
     stage = 'authentication';
     let denied = false;
@@ -45,7 +47,7 @@ export async function verifyPrivateBrokers(env = process.env) {
       denied = /authorization|authentication/i.test(String(error.code || error.name || error.message));
     }
     assert.ok(denied, 'Wrong NATS credentials must be rejected by authentication, not a network timeout');
-    results.push({ step: 1, check: 'scoped_authentication_and_capital_facts_policy', authMode, status: 'PASS' });
+    results.push({ step: 1, check: 'scoped_authentication_and_market_stream_policies', authMode, status: 'PASS' });
 
     stage = 'isolated_pubsub';
     subscriber = redis.duplicate(); subscriber.on('error', () => {}); await subscriber.connect();
@@ -80,6 +82,7 @@ export async function verifyPrivateBrokers(env = process.env) {
     nc = await timed('nats_reconnect_ms', () => connect(options));
     manager = await jetstreamManager(nc, { timeout: 3000 });
     validateStreamConfig((await manager.streams.info('CAPITAL_FACTS')).config, Number(env.NATS_REPLICAS || 1));
+    validateCanonicalStreamConfig((await manager.streams.info('CAPITAL_CANONICAL')).config, Number(env.NATS_REPLICAS || 1));
     results.push({ step: 4, check: 'scoped_reconnect_and_stream_policy', status: 'PASS' });
   } catch {
     throw new Error(`BROKER_PROBE_FAILED_${stage.toUpperCase()}`);
