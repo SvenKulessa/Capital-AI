@@ -106,3 +106,43 @@ test('Control Center navigation is capability-gated to the verified owner sessio
   assert.match(sidebar, /allowControlCenter = false/);
   assert.match(sidebar, /hubId !== 'control-center' \|\| allowControlCenter/);
 });
+
+
+test('production navigation does not expose runtime or unsupported MARKET claims', () => {
+  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  const studio = readFileSync(new URL('../src/features/studio/StudioPage.tsx', import.meta.url), 'utf8');
+  const routes = readFileSync(new URL('../src/app/routing/AppRoutes.tsx', import.meta.url), 'utf8');
+
+  assert.doesNotMatch(header, /LIVE • Sub-45ms|Echtzeit-Feed:|Sub-45ms Latenz|SSL 256-Bit • MiCA/);
+  assert.doesNotMatch(header, /sub\.trending/);
+  assert.doesNotMatch(studio, /Sub-45ms Active|STUDIO HUB v2\.5/);
+  assert.match(routes, /title="Provider-Status"/);
+  assert.match(routes, /freigegebene öffentliche Runtime-, Provider- und Health-Evidence/);
+  assert.doesNotMatch(routes, /<ProviderStatusDashboard/);
+});
+
+test('primary mobile navigation exposes dialog semantics and state', () => {
+  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  assert.match(header, /aria-expanded=\{isMenuOpen\}/);
+  assert.match(header, /aria-controls="capital-ai-mobile-navigation"/);
+  assert.match(header, /id="capital-ai-mobile-navigation"/);
+  assert.match(header, /role="dialog"/);
+  assert.match(header, /aria-modal="true"/);
+  assert.match(header, /aria-label="Hauptnavigation"/);
+});
+
+test('canonical product routes and aliases resolve deterministically', () => {
+  const cases = new Map([
+    ['/screener', '/marketscreener'],
+    ['/market-screener', '/marketscreener'],
+    ['/builder', '/pipeline-builder'],
+    ['/architektur', '/architecture'],
+    ['/docs', '/dokumentation'],
+    ['/providers', '/provider-status'],
+    ['/preise', '/pricing'],
+    ['/konto', '/profile'],
+    ['/security', '/profile/security'],
+    ['/vault', '/profile/key-vault'],
+  ]);
+  for (const [alias, canonical] of cases) assert.equal(resolveAppRoute(alias), canonical);
+});

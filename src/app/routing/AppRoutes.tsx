@@ -19,6 +19,7 @@ import type {
 } from '../../entities/market/model';
 import type { CoreModule } from '../../entities/module/model';
 import { HomePage } from '../../features/home/HomePage';
+import { DataUnavailable } from '../../shared/ui/DataUnavailable';
 import { LEGAL_ROUTES } from './routes';
 
 const ProfilePage = lazy(() =>
@@ -49,11 +50,6 @@ const TokenomicsPage = lazy(() =>
 const PipelineBuilder = lazy(() =>
   import('../../features/pipeline-builder/PipelineBuilder').then((module) => ({
     default: module.PipelineBuilder,
-  })),
-);
-const ProviderStatusDashboard = lazy(() =>
-  import('../../components/ProviderStatusDashboard').then((module) => ({
-    default: module.ProviderStatusDashboard,
   })),
 );
 const StudioPage = lazy(() =>
@@ -193,11 +189,9 @@ export function AppRoutes({
 
   if (currentRoute === '/provider-status') {
     return (
-      <ProviderStatusDashboard
-        onBackToHome={() => navigateTo('/')}
-        onNavigateArchitecture={() => navigateTo('/architecture')}
-        onNavigateLogin={() => navigateTo('/login')}
-        isStandaloneView={true}
+      <DataUnavailable
+        title="Provider-Status"
+        required="freigegebene öffentliche Runtime-, Provider- und Health-Evidence"
       />
     );
   }

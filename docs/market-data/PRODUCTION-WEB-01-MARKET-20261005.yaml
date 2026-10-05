@@ -7,7 +7,7 @@ status: "ACTIVE_FAIL_CLOSED"
 correlatedAt: "2026-10-05"
 correlationBaseline:
   repository: "SvenKulessa/Capital-AI"
-  mainSha: "c14a7b307d3afabe50936fbbdcdd7a462cba56c4"
+  mainSha: "4d98d9c6ed8128c109ee86d99980d57e6fdb826b"
   rootPolicy: "AGENTS.md@currentmain"
   roadmapSource: "src/data/roadmapData.ts"
   domainContract: "CAPITAL-AI-MARKET/PROJECT.md"
@@ -403,3 +403,25 @@ commercialExitCriteria:
   releaseClaim:
     currentState: "BLOCKED"
     reason: "CURRENT_MAIN besitzt weder admitted marketQuotes- noch scoringPriceInput-Quelle und keine produktiv scoreEligible/rankEligible Scoring-Kette."
+
+
+productProjectionCorrelation:
+  correlatedAt: "2026-10-05"
+  baselineMainSha: "4d98d9c6ed8128c109ee86d99980d57e6fdb826b"
+  authoritativeState:
+    admittedMarketQuoteSourceCount: 0
+    admittedScoringPriceInputSourceCount: 0
+    productiveQuoteState: "BLOCKED"
+    productiveScoringState: "BLOCKED"
+  websiteProjection:
+    realtimeClaimAllowed: false
+    latencySlaClaimAllowed: false
+    providerRuntimeStatusPublic: false
+    mockTrendAsMarketStateAllowed: false
+    providerMatrixProductionClaimAllowed: false
+  affectedSurfaces:
+    - "src/components/Header.tsx"
+    - "src/features/studio/StudioPage.tsx"
+    - "src/components/ArchitecturePage.tsx"
+    - "src/app/routing/AppRoutes.tsx"
+  rule: "PRODUCT darf keine stärkere MARKET-Aussage rendern als der kanonische MARKET-Status."

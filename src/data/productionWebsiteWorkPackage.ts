@@ -13,9 +13,11 @@ export const PRODUCTION_WEBSITE_WORK_PACKAGES: WorkPackage[] = [
     evidenceRefs: [
       'src/data/pricingCatalog.ts',
       'scripts/navigation.test.mjs',
+      'docs/product/PRODUCTION-WEB-CLAIM-CORRELATION-20261005.md',
+      'docs/market-data/PRODUCTION-WEB-01-MARKET-20261005.yaml',
       'src/platform/analytics/useRouteAnalytics.ts',
     ],
-    nextStep: 'Website-Inhalte gegen CURRENT_MAIN-Code und kanonische Dokumente abgleichen, Abweichungen klassifizieren und nur belegte Inhalte in Mobile-, Tablet- und Desktop-UX projizieren.',
+    nextStep: 'Browser-Evidence für Mobile, Tablet und Desktop sowie vollständige Accessibility-Abnahme auf der evidenzgebundenen Website-Projektion schließen.',
     priority: 'Kritisch',
     leadName: 'Projektowner',
     targetSprint: 'Vor Production-Handoff',
