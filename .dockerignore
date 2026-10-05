@@ -102,6 +102,7 @@
 !docs/security/
 !docs/security/evidence/
 !docs/security/evidence/license-rights-review.json
+!docs/security/BYOK-USER-PRIVATE-DATA.md
 !docs/market-data/
 !docs/market-data/PRODUCTION-WEB-01-MARKET-20261005.yaml
 !docs/market-data/evidence/

@@ -42,6 +42,8 @@ COPY scripts/documentation-drift.mjs scripts/documentation-drift.test.mjs ./scri
 COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/frontend-security.test.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
 COPY shared ./shared
 COPY CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json ./CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json
+COPY server/market.mjs server/auth.mjs server/user-provider-vault.mjs ./server/
+COPY docs/security/BYOK-USER-PRIVATE-DATA.md ./docs/security/BYOK-USER-PRIVATE-DATA.md
 COPY docs/licenses ./docs/licenses
 COPY docs/security/evidence/license-rights-review.json ./docs/security/evidence/license-rights-review.json
 COPY docs/market-data/PRODUCTION-WEB-01-MARKET-20261005.yaml ./docs/market-data/PRODUCTION-WEB-01-MARKET-20261005.yaml
