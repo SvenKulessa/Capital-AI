@@ -198,7 +198,7 @@ export class ScoringEngineService {
       resultStatus: isDemo && canCompute ? 'demo_fallback' :
         reasons.has('ASSET_NOT_TRADABLE') || reasons.has('BLOCKED_BY_RISK') ? 'blocked_by_risk' : 'insufficient_data',
       dataAvailability: isDemo ? 'simulated' : 'unavailable',
-      scoreEligible: false, rankEligible: false, alertEligible: false, eligibility: false,
+      scoreEligible: false, rankEligible: false, alertEligible: false, decisionEligible: false, eligibility: false,
       eligibilityReason: [...reasons].join(', '), confidence, riskPenalty, subScores, weightsApplied: weights,
       topPositiveDrivers: [], topNegativeDrivers: [], reasonCodes: [...reasons], modelVersion: this.MODEL_VERSION,
       evidenceId: `UNVERIFIED-${asset.assetId}`, computedAt: now, isDemo,
