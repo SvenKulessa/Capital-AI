@@ -37,6 +37,7 @@ import {
   CreditCard,
   Building2,
   LineChart,
+  LibraryBig,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BrandLogo } from './BrandLogo';
@@ -89,7 +90,7 @@ export const Header: React.FC<HeaderProps> = ({
     setIsSidebarOpen(true);
   };
 
-  // Active Hub Calculation for the 4 Reiter
+  // Active Hub Calculation
   const isMarketscreenerActive =
     !currentRoute ||
     currentRoute === '/' ||
@@ -109,6 +110,9 @@ export const Header: React.FC<HeaderProps> = ({
     currentRoute === '/admin' ||
     currentRoute === '/roadmap' ||
     currentRoute === '/cost-center';
+  const isDocumentationActive =
+    currentRoute === '/dokumentation' ||
+    currentRoute === '/marketscreener/dokumentation';
 
   const renderClassIcon = (id: MainCategory) => {
     switch (id) {
@@ -195,6 +199,21 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <BookOpen className="w-3.5 h-3.5" />
           <span>Learning Portal</span>
+        </button>
+
+        {/* Dokumentation */}
+        <button
+          type="button"
+          onClick={() => onNavigate?.('/dokumentation')}
+          className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs transition-all cursor-pointer ${
+            isDocumentationActive
+              ? 'bg-violet-500 text-white font-extrabold shadow-sm'
+              : 'text-slate-300 hover:text-white hover:bg-white/5 font-medium'
+          }`}
+          title="Dokumentation: Blueprints, BYOK, Pipeline-Architekturen, Preismodelle und Domains"
+        >
+          <LibraryBig className="w-3.5 h-3.5" />
+          <span>Dokumentation</span>
         </button>
 
         {/* Control Center */}
@@ -374,6 +393,15 @@ export const Header: React.FC<HeaderProps> = ({
                         icon: <BookOpen className="w-4 h-4 text-[#F9BF21]" />,
                         badge: "3 Bereiche",
                         tagline: "294 Fachbegriffe, Thesaurus & Quiz",
+                      },
+                      {
+                        id: "documentation" as const,
+                        name: "Dokumentation",
+                        color: "#8B5CF6",
+                        glow: "rgba(139, 92, 246, 0.4)",
+                        icon: <LibraryBig className="w-4 h-4 text-violet-300" />,
+                        badge: "5 Bereiche",
+                        tagline: "Blueprints, BYOK, Pipelines, Preise & Domains",
                       },
                       {
                         id: "control-center" as const,
