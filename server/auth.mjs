@@ -844,6 +844,19 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     return true;
   }
 
+  async function authorizeIamRole(req, res, requiredRole = 'owner') {
+    const config = getConfig();
+    if (!config) return false;
+    try {
+      const stored = await resolveSession(req, res);
+      if (!stored) return false;
+      const account = await accountProjection(config, stored);
+      return account?.available === true && account.iamRole === requiredRole;
+    } catch {
+      return false;
+    }
+  }
+
   async function verify(req, res) {
     const config = getConfig();
     if (!config) return null;
@@ -866,5 +879,5 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     }
   }
 
-  return { handle, session, verify, sameOrigin };
+  return { handle, session, verify, authorizeIamRole, sameOrigin };
 }
