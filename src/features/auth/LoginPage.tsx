@@ -77,6 +77,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [privacyAcknowledged, setPrivacyAcknowledged] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [mfaFactors, setMfaFactors] = useState<Array<{ id: string; type: 'totp'; friendlyName: string }>>([]);
   const [selectedFactorId, setSelectedFactorId] = useState('');
   const [totpCode, setTotpCode] = useState('');
@@ -158,6 +161,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
     const message = reason instanceof Error ? reason.message : 'authentication_failed';
     if (message === 'weak_password' || message === 'invalid_new_password') {
       setError('Das neue Passwort muss mindestens 14 Zeichen lang sein und die Supabase-Sicherheitsanforderungen erfüllen.');
+    } else if (message === 'passwords_do_not_match') {
+      setError('Die beiden Passwörter stimmen nicht überein.');
+    } else if (message === 'registration_consent_required') {
+      setError('Für die Registrierung müssen die AGB akzeptiert und die Datenschutzhinweise bestätigt werden.');
+    } else if (message === 'registration_backend_failed') {
+      setError('Die Registrierung konnte serverseitig nicht abgeschlossen werden. Es wurde kein vollständiges Konto angelegt.');
     } else if (message === 'registration_failed') {
       setError('Registrierung fehlgeschlagen. Bitte prüfe die Eingaben oder versuche es erneut.');
     } else if (message === 'passkey_unavailable') {
@@ -186,8 +195,20 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
         return;
       }
 
-      const result = await postJson('/api/auth/register', { name, email, password });
-      if (!result.response.ok) throw new Error(result.body?.error || 'registration_failed');
+      if (password.length < 14) throw new Error('invalid_new_password');
+      if (password !== passwordConfirm) throw new Error('passwords_do_not_match');
+      if (!termsAccepted || !privacyAcknowledged) throw new Error('registration_consent_required');
+
+      const result = await postJson('/api/auth/register', {
+        name,
+        email,
+        password,
+        passwordConfirm,
+        termsAccepted,
+        privacyAcknowledged,
+        marketingConsent,
+      });
+      if (!result.response.ok) throw new Error(result.body?.code || result.body?.error || 'registration_failed');
       if (result.body?.authenticated) {
         window.location.replace('/');
         return;
@@ -195,6 +216,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
       setNotice('Registrierung angenommen. Bitte bestätige die E-Mail-Adresse über die CAPITAL-AI Bestätigungsmail.');
       setMode('login');
       setPassword('');
+      setPasswordConfirm('');
+      setTermsAccepted(false);
+      setPrivacyAcknowledged(false);
+      setMarketingConsent(false);
     } catch (reason) {
       showError(reason);
     } finally {
@@ -490,11 +515,71 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                       minLength={mode === 'register' ? 14 : 1}
                       maxLength={256}
                       autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                      aria-describedby={mode === 'register' ? 'registration-password-help' : undefined}
                       className="w-full rounded-xl border border-white/15 bg-black/40 py-3 pl-10 pr-3 text-sm text-white"
                     />
                   </div>
                 </label>
-                {mode === 'register' && <p className="text-[11px] text-slate-500">Mindestens 14 Zeichen.</p>}
+                {mode === 'register' && (
+                  <>
+                    <label className="block text-xs font-bold text-slate-300">
+                      Passwort wiederholen
+                      <input
+                        type="password"
+                        value={passwordConfirm}
+                        onChange={event => setPasswordConfirm(event.target.value)}
+                        required
+                        minLength={14}
+                        maxLength={256}
+                        autoComplete="new-password"
+                        className="mt-1 w-full rounded-xl border border-white/15 bg-black/40 px-3 py-3 text-sm text-white"
+                      />
+                    </label>
+                    <p id="registration-password-help" className="text-[11px] leading-relaxed text-slate-500">
+                      Mindestens 14 Zeichen. Verwende möglichst ein einzigartiges, vom Passwortmanager erzeugtes Passwort oder eine lange Passphrase. CAPITAL-AI erzwingt keine unnötigen Sonderzeichenregeln.
+                    </p>
+                    <label className="flex items-start gap-3 rounded-xl border border-white/10 bg-black/20 p-3 text-[11px] leading-relaxed text-slate-300">
+                      <input
+                        type="checkbox"
+                        checked={termsAccepted}
+                        onChange={event => setTermsAccepted(event.target.checked)}
+                        required
+                        className="mt-0.5 h-4 w-4"
+                      />
+                      <span>
+                        Ich akzeptiere die{' '}
+                        <button type="button" onClick={() => onNavigateLegal?.('/agb')} className="font-bold text-amber-300 underline">
+                          AGB
+                        </button>.
+                      </span>
+                    </label>
+                    <label className="flex items-start gap-3 rounded-xl border border-white/10 bg-black/20 p-3 text-[11px] leading-relaxed text-slate-300">
+                      <input
+                        type="checkbox"
+                        checked={privacyAcknowledged}
+                        onChange={event => setPrivacyAcknowledged(event.target.checked)}
+                        required
+                        className="mt-0.5 h-4 w-4"
+                      />
+                      <span>
+                        Ich habe die{' '}
+                        <button type="button" onClick={() => onNavigateLegal?.('/datenschutz')} className="font-bold text-amber-300 underline">
+                          Datenschutzhinweise
+                        </button>{' '}
+                        zur Kenntnis genommen.
+                      </span>
+                    </label>
+                    <label className="flex items-start gap-3 rounded-xl border border-white/10 bg-black/20 p-3 text-[11px] leading-relaxed text-slate-400">
+                      <input
+                        type="checkbox"
+                        checked={marketingConsent}
+                        onChange={event => setMarketingConsent(event.target.checked)}
+                        className="mt-0.5 h-4 w-4"
+                      />
+                      <span>Optional: Ich möchte Produkt- und Forschungsinformationen per E-Mail erhalten. Diese Einwilligung ist keine Voraussetzung für die Registrierung.</span>
+                    </label>
+                  </>
+                )}
                 {mode === 'login' && (
                   <button type="button" onClick={() => { setMode('forgot'); setError(''); setNotice(''); }} className="min-h-8 text-xs font-bold text-amber-300 hover:text-amber-200">
                     Passwort vergessen?
