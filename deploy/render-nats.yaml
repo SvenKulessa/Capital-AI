@@ -20,5 +20,7 @@ services:
       mountPath: /var/data
       sizeGB: 5
     envVars:
-      - key: NATS_TOKEN
+      - key: NATS_APP_USER
+        value: capital-ai-market-runtime
+      - key: NATS_APP_PASSWORD
         sync: false

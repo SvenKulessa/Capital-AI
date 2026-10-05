@@ -1,24 +1,23 @@
 import assert from 'node:assert/strict';
-import { randomUUID, createHash } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { performance } from 'node:perf_hooks';
 import { createClient } from 'redis';
 import { connect } from '@nats-io/transport-node';
-import { jetstream, jetstreamManager, StorageType, DiscardPolicy } from '@nats-io/jetstream';
-import { validateStreamConfig } from '../server/infrastructure.mjs';
+import { jetstreamManager } from '@nats-io/jetstream';
+import { natsConnectionAuth, validateStreamConfig } from '../server/infrastructure.mjs';
 
 export async function verifyPrivateBrokers(env = process.env) {
-  if (!env.REDIS_URL || !env.NATS_URL || !env.NATS_TOKEN?.trim()) throw new Error('BROKER_CREDENTIALS_REQUIRED');
+  if (!env.REDIS_URL || !env.NATS_URL) throw new Error('BROKER_ENDPOINTS_REQUIRED');
+  const auth = natsConnectionAuth(env);
+  const { mode: authMode, ...credentials } = auth;
   const id = randomUUID().replaceAll('-', '');
-  const stream = `CAPITAL_PROBE_${id}`;
-  const subject = `capital.probe.${id}.quote`;
   const key = `capital:probe:${id}:cache`, channel = `capital:probe:${id}:events`;
   const payload = JSON.stringify({ probe: true, nonce: id });
-  const hash = value => createHash('sha256').update(value).digest('hex');
   const redis = createClient({ url: env.REDIS_URL, disableOfflineQueue: true,
     socket: { connectTimeout: 3000, reconnectStrategy: false } });
   redis.on('error', () => {});
-  let subscriber, nc, manager, created = false, stage = 'connect', cleanupFailed = false;
+  let subscriber, nc, manager, stage = 'connect', cleanupFailed = false;
   const results = [];
   const timings = {};
   const timed = async (name, fn) => {
@@ -26,18 +25,27 @@ export async function verifyPrivateBrokers(env = process.env) {
     try { return await fn(); }
     finally { timings[name] = +(performance.now() - started).toFixed(3); }
   };
+  const options = { servers: env.NATS_URL, ...credentials, timeout: 3000, reconnect: false };
   try {
     await timed('valkey_connect_ms', () => redis.connect());
-    const options = { servers: env.NATS_URL, token: env.NATS_TOKEN, timeout: 3000, reconnect: false };
     nc = await timed('nats_connect_ms', () => connect(options));
     manager = await timed('jetstream_manager_ms', () => jetstreamManager(nc, { timeout: 3000 }));
-    validateStreamConfig((await manager.streams.info('CAPITAL_FACTS')).config, Number(env.NATS_REPLICAS || 1));
+    const facts = await manager.streams.info('CAPITAL_FACTS');
+    validateStreamConfig(facts.config, Number(env.NATS_REPLICAS || 1));
+
     stage = 'authentication';
     let denied = false;
-    try { const unauthorized = await connect({ ...options, token: randomUUID() }); await unauthorized.close(); }
-    catch (error) { denied = /authorization|authentication/i.test(String(error.code || error.name || error.message)); }
-    assert.ok(denied, 'Wrong token must be rejected by authentication, not a network timeout');
-    results.push({ step: 1, check: 'authenticated_connections_and_stream_policy', status: 'PASS' });
+    const badCredentials = authMode === 'scoped_user'
+      ? { user: credentials.user, pass: randomUUID() }
+      : { token: randomUUID() };
+    try {
+      const unauthorized = await connect({ servers: env.NATS_URL, ...badCredentials, timeout: 3000, reconnect: false });
+      await unauthorized.close();
+    } catch (error) {
+      denied = /authorization|authentication/i.test(String(error.code || error.name || error.message));
+    }
+    assert.ok(denied, 'Wrong NATS credentials must be rejected by authentication, not a network timeout');
+    results.push({ step: 1, check: 'scoped_authentication_and_capital_facts_policy', authMode, status: 'PASS' });
 
     stage = 'isolated_pubsub';
     subscriber = redis.duplicate(); subscriber.on('error', () => {}); await subscriber.connect();
@@ -45,7 +53,6 @@ export async function verifyPrivateBrokers(env = process.env) {
     const delivery = new Promise(resolve => { resolveDelivery = resolve; });
     await subscriber.subscribe(channel, message => resolveDelivery(message));
     try {
-      // Exercise the application's atomic SET/PUBLISH pattern, on probe-only names with short TTL.
       await timed('valkey_set_publish_ms', () => redis.eval("redis.call('SET',KEYS[1],ARGV[1],'PX',5000);return redis.call('PUBLISH',ARGV[2],ARGV[1])",
         { keys: [key], arguments: [payload, channel] }));
       const received = await Promise.race([delivery, new Promise((_, reject) => {
@@ -56,27 +63,27 @@ export async function verifyPrivateBrokers(env = process.env) {
     } finally { clearTimeout(timer); }
     results.push({ step: 2, check: 'isolated_atomic_cache_pubsub_and_ttl', status: 'PASS' });
 
-    stage = 'isolated_jetstream';
-    await manager.streams.add({ name: stream, subjects: [subject], storage: StorageType.File,
-      num_replicas: 1, discard: DiscardPolicy.New, max_bytes: 1048576, max_msgs: 2,
-      max_msg_size: 1024, max_age: 120e9, duplicate_window: 30e9 });
-    created = true;
-    const js = jetstream(nc, { timeout: 3000 });
-    const ack = await timed('jetstream_publish_ack_ms', () => js.publish(subject, payload, { msgID: hash(payload) }));
-    const duplicate = await js.publish(subject, payload, { msgID: hash(payload) });
-    assert.equal(ack.stream, stream); assert.equal(ack.seq, duplicate.seq); assert.equal(duplicate.duplicate, true);
-    assert.equal(hash((await timed('jetstream_replay_ms', () => manager.streams.getMessage(stream, { seq: ack.seq }))).string()), hash(payload));
-    results.push({ step: 3, check: 'isolated_file_ack_deduplication_and_hash_replay', status: 'PASS' });
+    stage = 'read_only_replay_authority';
+    const factsState = facts.state || {};
+    let lastEvidenceReadable = null;
+    if (Number.isSafeInteger(factsState.last_seq) && factsState.last_seq > 0) {
+      const message = await timed('jetstream_last_message_read_ms',
+        () => manager.streams.getMessage('CAPITAL_FACTS', { seq: factsState.last_seq }));
+      assert.ok(message, 'Last CAPITAL_FACTS evidence message must be readable');
+      lastEvidenceReadable = true;
+    }
+    results.push({ step: 3, check: 'capital_facts_read_only_replay_authority', status: 'PASS',
+      streamMessages: factsState.messages ?? null, lastEvidenceReadable });
 
     stage = 'reconnect';
-    await nc.close(); nc = await timed('nats_reconnect_ms', () => connect(options)); manager = await jetstreamManager(nc, { timeout: 3000 });
-    assert.equal(hash((await timed('jetstream_reconnect_replay_ms', () => manager.streams.getMessage(stream, { seq: ack.seq }))).string()), hash(payload));
-    results.push({ step: 4, check: 'new_connection_replay', status: 'PASS' });
+    await nc.close();
+    nc = await timed('nats_reconnect_ms', () => connect(options));
+    manager = await jetstreamManager(nc, { timeout: 3000 });
+    validateStreamConfig((await manager.streams.info('CAPITAL_FACTS')).config, Number(env.NATS_REPLICAS || 1));
+    results.push({ step: 4, check: 'scoped_reconnect_and_stream_policy', status: 'PASS' });
   } catch {
     throw new Error(`BROKER_PROBE_FAILED_${stage.toUpperCase()}`);
   } finally {
-    // Never delete application streams/keys. Any leftover probe stream is age/size bounded.
-    if (created) { try { await manager.streams.delete(stream); } catch { cleanupFailed = true; } }
     if (redis.isReady) { try { await redis.del(key); } catch { cleanupFailed = true; } }
     if (subscriber?.isOpen) subscriber.destroy();
     if (redis.isOpen) redis.destroy();
@@ -86,8 +93,10 @@ export async function verifyPrivateBrokers(env = process.env) {
   const measured = Object.values(timings);
   return {
     status: 'PASS',
-    schema: 'CAPITAL_AI_PRIVATE_BROKER_PROBE@2',
+    schema: 'CAPITAL_AI_PRIVATE_BROKER_PROBE@3',
+    natsAuthMode: authMode,
     productionQuotesWritten: false,
+    productionStreamsMutated: false,
     productionProcessesRestarted: false,
     timings,
     latencySummary: {

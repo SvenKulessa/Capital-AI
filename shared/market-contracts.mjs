@@ -29,6 +29,41 @@ export const QuoteDeliverySchema = QuoteFactSchema.safeExtend({
   availability: z.enum(['live', 'cached']), validated: z.literal(true),
   actionable: z.literal(false), reasonCodes: z.array(z.string()),
 });
+export const CanonicalAssetValueSchema = z.object({
+  schema: z.literal('CAPITAL_AI_ASSET_VALUE@1'),
+  instrumentId: z.string().min(1),
+  symbol: z.string().min(1),
+  value: z.number().positive().finite(),
+  quoteCurrency: z.string().min(1),
+  observedAt: z.number().int().positive(),
+  provider: z.string().min(1),
+  venue: z.string().min(1),
+  evidenceId: z.string().regex(/^CAPITAL_FACTS:[1-9][0-9]*:[a-f0-9]{64}$/),
+  replayVerified: z.literal(true),
+  sourceAdmission: z.literal('OPEN_SOURCE_OPEN_DATA_ADMITTED'),
+  scoreEligible: z.literal(false),
+  decisionEligible: z.literal(false),
+  reasonCodes: z.array(z.string()).min(1),
+});
+export function toCanonicalAssetValue(delivery) {
+  const f = QuoteDeliverySchema.parse(delivery);
+  return CanonicalAssetValueSchema.parse({
+    schema: 'CAPITAL_AI_ASSET_VALUE@1',
+    instrumentId: `market:${f.venue}:${f.symbol}`,
+    symbol: f.symbol,
+    value: f.price,
+    quoteCurrency: f.quote,
+    observedAt: f.observedAt,
+    provider: f.provider,
+    venue: f.venue,
+    evidenceId: f.evidenceId,
+    replayVerified: true,
+    sourceAdmission: 'OPEN_SOURCE_OPEN_DATA_ADMITTED',
+    scoreEligible: false,
+    decisionEligible: false,
+    reasonCodes: ['SCORING_INPUTS_NOT_YET_COMPLETE'],
+  });
+}
 export function isFresh(fact, now = Date.now()) {
   return fact.observedAt <= now && fact.receivedAt <= now && now - fact.observedAt < 30000;
 }
@@ -39,5 +74,6 @@ export const MarketStatusSchema = z.object({
   infrastructure: z.object({ status: z.enum(['connected', 'degraded', 'unavailable']),
     redis: z.enum(['connected', 'unavailable']), nats: z.enum(['connected', 'unavailable']),
     pubsub: z.enum(['connected', 'unavailable', 'disabled']).optional(),
-    stream: z.literal('CAPITAL_FACTS'), storage: z.literal('file'), replicasConfigured: z.number().int().positive() }),
+    stream: z.literal('CAPITAL_FACTS'), storage: z.literal('file'), replicasConfigured: z.number().int().positive(),
+    authMode: z.enum(['scoped_user', 'legacy_token', 'unconfigured']).optional() }),
 });

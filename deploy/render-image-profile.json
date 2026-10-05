@@ -14,13 +14,17 @@
   "requiredRuntimeSecrets": [
     "REDIS_URL",
     "NATS_URL",
-    "NATS_TOKEN",
-    "TWELVE_DATA_API_KEY",
-    "POLYGON_API_KEY",
+    "NATS_APP_PASSWORD",
     "PUBLIC_APP_ORIGIN",
     "SUPABASE_URL",
     "SUPABASE_PUBLISHABLE_KEY",
     "SUPABASE_SECRET_KEY",
     "AUTH_COOKIE_SIGNING_SECRET"
-  ]
+  ],
+  "natsRuntimeIdentity": {
+    "userEnvironmentVariable": "NATS_APP_USER",
+    "passwordSecret": "NATS_APP_PASSWORD",
+    "legacyTokenRequired": false
+  },
+  "marketDataPolicy": "OPEN_SOURCE_AND_OPEN_DATA_ONLY"
 }

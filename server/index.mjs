@@ -2,7 +2,7 @@ import http from 'node:http';
 import { readFile, stat, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { quote, health, startStreams } from './market.mjs';
+import { assetValues, quote, health, startStreams } from './market.mjs';
 import { createAuth } from './auth.mjs';
 import { createUserProviderVault } from './user-provider-vault.mjs';
 import { createTelegram } from './telegram.mjs';
@@ -193,6 +193,11 @@ export function createApp(root = defaultRoot, options = {}) {
     try { const [status, body] = await quote(url.searchParams.get('symbol') || ''); return json(res, status, body); }
     catch { return json(res, 503, { error: 'market_data_unavailable' }); }
     finally { inflight--; }
+  }
+  if (url.pathname === '/api/market/values') {
+    if (!marketLimit()) return json(res, 429, { error: 'rate_limited' });
+    const [status, body] = await assetValues();
+    return json(res, status, body);
   }
   if (url.pathname === '/api/market/status') return json(res, 200, health());
   if (url.pathname === '/api/billing/catalog') return json(res, 200, BILLING_CATALOG);
