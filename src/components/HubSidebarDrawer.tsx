@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * CAPITAL AI — HUB SIDEBAR DRAWER (AUFKLAPPBARE SIDEBAR FÜR DIE 4 HAUPTHUBS)
+ * CAPITAL AI — HUB SIDEBAR DRAWER (AUFKLAPPBARE SIDEBAR FÜR DIE HAUPTHUBS)
  * ----------------------------------------------------------------------------
  * Wird direkt geöffnet bei Klick auf die runden, leuchtenden Action Buttons:
  * 1. Market Screener Hub (Gold #F5B014)
@@ -43,7 +43,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-export type MainHubId = 'marketscreener' | 'studio' | 'learning' | 'control-center';
+export type MainHubId = 'marketscreener' | 'studio' | 'learning' | 'documentation' | 'control-center';
 
 export interface HubSubpageConfig {
   id: string;
@@ -253,6 +253,65 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         shortDesc: 'Interaktiver Wissenstest mit Sofort-Auswertung & Skill-Level Einstufung',
         tags: ['Skill-Test', 'Zertifikat'],
         path: '/learning?tab=quiz',
+      },
+    ],
+  },
+  documentation: {
+    id: 'documentation',
+    name: 'Dokumentation',
+    shortTitle: 'Dokumentation',
+    color: '#8B5CF6',
+    glowColor: 'rgba(139, 92, 246, 0.45)',
+    accentBg: 'bg-violet-500/15 border-violet-400/50 text-violet-300',
+    icon: <BookOpen className="w-5 h-5 text-violet-300" />,
+    badge: '5 Bereiche',
+    description: 'Blueprints, BYOK, Pipeline-Architekturen, Preismodelle und Domain-Aufbau.',
+    mainPath: '/dokumentation',
+    subpages: [
+      {
+        id: 'hub',
+        name: 'Dokumentations-Hub',
+        icon: <BookOpen className="w-4 h-4 text-violet-300" />,
+        badge: 'Übersicht',
+        shortDesc: 'Zentraler Einstieg in alle Dokumentationen und HTML/CSS-Präsentationen.',
+        tags: ['Docs', 'Presentation'],
+        path: '/dokumentation',
+      },
+      {
+        id: 'blueprints',
+        name: 'Blueprint-Dokumentation',
+        icon: <FileCode className="w-4 h-4 text-cyan-400" />,
+        badge: '7 Blueprints',
+        shortDesc: 'Kanonische Datenkonzept-Blueprints mit Architektur-Grafiken und BYOK-Kontext.',
+        tags: ['Blueprints', 'Datenkonzepte'],
+        path: '/marketscreener/dokumentation',
+      },
+      {
+        id: 'byok',
+        name: 'BYOK Präsentation',
+        icon: <ShieldCheck className="w-4 h-4 text-emerald-400" />,
+        badge: 'Vault',
+        shortDesc: 'Private API-Keys, Vault-Boundary, Provider-Adapter und Scoring-Anbindung.',
+        tags: ['BYOK', 'Vault'],
+        path: '/dokumentation',
+      },
+      {
+        id: 'pipelines',
+        name: 'Pipeline-Architekturen',
+        icon: <Layers className="w-4 h-4 text-cyan-400" />,
+        badge: 'Layer',
+        shortDesc: 'Ingestion, NATS JetStream, Valkey, Evidence und Scoring als Systempfad.',
+        tags: ['NATS', 'Valkey', 'Replay'],
+        path: '/dokumentation',
+      },
+      {
+        id: 'pricing',
+        name: 'Preismodelle & Domains',
+        icon: <DollarSign className="w-4 h-4 text-amber-400" />,
+        badge: 'Pricing',
+        shortDesc: 'SaaS-Tarife, Market Vocabulary und die fünf CAPITAL-AI Domains.',
+        tags: ['Stripe', 'Vocabulary', 'Domains'],
+        path: '/dokumentation',
       },
     ],
   },
