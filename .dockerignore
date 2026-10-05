@@ -115,3 +115,5 @@
 !supabase/
 !supabase/email-templates/
 !supabase/email-templates/**
+!supabase/migrations/
+!supabase/migrations/20261005155500_fix_registration_marketing_consent_null.sql
