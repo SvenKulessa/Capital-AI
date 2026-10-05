@@ -28,7 +28,7 @@ const STATIC_ROUTE_METADATA: Record<string, StaticRouteMetadata> = {
   '/login': {
     title: 'Capital-AI | Terminal Anmeldung & Login',
     description:
-      'Sicherer Zugang zum Capital-AI Terminal: KI-gestützte Echtzeit-Marktdaten, automatisierte Portfolio-Analysen und institutionelles Scoring.',
+      'Sicherer Zugang zum Capital-AI Konto und zu freigeschalteten Produktfunktionen.',
     canonicalPath: '/login',
   },
   '/faq': {
@@ -74,9 +74,9 @@ const STATIC_ROUTE_METADATA: Record<string, StaticRouteMetadata> = {
     canonicalPath: '/control-center',
   },
   '/pricing': {
-    title: 'Capital-AI | Preise, Tarife & Monetarisierungskonzept',
+    title: 'Capital-AI | Preiskatalog',
     description:
-      'Capital-AI Business Model: Transparente B2C SaaS Tarife (Free, Pro, Alpha Elite), B2B Data APIs, Broker-Affiliates und interaktiver Ertrags-Simulator.',
+      'Starter, Pro, Enterprise und eigenständige Zusatzprodukte aus dem aktuellen Billing-Katalog von Capital-AI.',
     canonicalPath: '/pricing',
   },
   '/whale-radar': {
@@ -119,7 +119,7 @@ const STATIC_ROUTE_METADATA: Record<string, StaticRouteMetadata> = {
   '/provider-status': {
     title: 'Capital-AI | Data Provider Status Dashboard & Health Monitor',
     description:
-      'Echtzeit-Überwachung aller autorisierten Data-Provider: Latenz, Jitter, Circuit-Breaker, AP-006 Budget (<40€) und Zod-Vertrags-Audits.',
+      'Provider-Status wird nur bei freigegebener öffentlicher Runtime-, Rechte- und Health-Evidence dargestellt.',
     canonicalPath: '/provider-status',
   },
 };
