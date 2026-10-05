@@ -101,6 +101,12 @@ export async function deleteInstallationEvidence({installationId, env, fetchImpl
   return {deleted:true, installationId:String(installationId)};
 }
 
+export async function deleteAccountEvidence({accountId, env, fetchImpl = fetch}) {
+  if (!accountId) throw new Error('accountId is required');
+  await supabaseRequest(`legal_policy_evidence?account_id=eq.${encodeURIComponent(String(accountId))}`, {env, method:'DELETE', fetchImpl, prefer:'return=minimal'});
+  return {deleted:true, accountId:String(accountId)};
+}
+
 export async function deleteExpiredEvidence({env, now = new Date(), fetchImpl = fetch}) {
   await supabaseRequest(`legal_policy_evidence?expires_at=lt.${encodeURIComponent(now.toISOString())}`, {env, method:'DELETE', fetchImpl, prefer:'return=minimal'});
   return {deleted:true, before:now.toISOString()};
