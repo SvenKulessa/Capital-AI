@@ -116,11 +116,22 @@ export function createAuthSecurity({
         json(res, 400, { error: 'email_verification_failed', code: upstreamCode(verified.data, 'verification_failed') });
         return true;
       }
+      let target = type === 'recovery' ? '/login?mode=reset' : '/profile';
       if (verified.data?.access_token && verified.data?.refresh_token && verified.data?.user?.id) {
+        const verifiedUser = await authRequest(config, '/user', {
+          accessToken: verified.data.access_token,
+        });
+        if (!verifiedUser.response.ok || verifiedUser.data?.id !== verified.data.user.id) {
+          json(res, 503, { error: 'authentication_security_state_unavailable' });
+          return true;
+        }
+        verified.data.user = verifiedUser.data;
         writeSessionCookies(req, res, config, verified.data);
+        if (type !== 'recovery' && hasVerifiedTotpFactor(verifiedUser.data)) {
+          target = '/login?mfa=1&next=%2Fprofile';
+        }
       }
       audit(`Supabase email verification completed for ${type}`);
-      const target = type === 'recovery' ? '/login?mode=reset' : '/profile';
       res.writeHead(303, {
         Location: target,
         'Cache-Control': 'no-store',
@@ -231,8 +242,16 @@ export function createAuthSecurity({
         });
         return true;
       }
+      const passkeyUser = await authRequest(config, '/user', {
+        accessToken: verified.data.access_token,
+      });
+      if (!passkeyUser.response.ok || passkeyUser.data?.id !== verified.data.user.id) {
+        json(res, 503, { error: 'authentication_security_state_unavailable' });
+        return true;
+      }
+      verified.data.user = passkeyUser.data;
       const stored = writeSessionCookies(req, res, config, verified.data);
-      const mfaRequired = hasVerifiedTotpFactor(verified.data.user);
+      const mfaRequired = hasVerifiedTotpFactor(passkeyUser.data);
       audit('Supabase authentication verified at passkey_login');
       json(res, 200, {
         authenticated: true,
