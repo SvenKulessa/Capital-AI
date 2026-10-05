@@ -14,6 +14,8 @@ export const PRODUCTION_WEBSITE_WORK_PACKAGES: WorkPackage[] = [
       'src/data/pricingCatalog.ts',
       'scripts/billing-catalog.test.mjs',
       'docs/product/PRODUCTION-PRICING-CORRELATION-20261005.md',
+      'src/data/additionalProductsCatalog.ts',
+      'docs/licenses/CAPITAL-AI-VOCABULARY-BADGE-CUSTOMER-LICENSE-1.0.md',
       'scripts/navigation.test.mjs',
       'docs/product/PRODUCTION-WEB-CLAIM-CORRELATION-20261005.md',
       'docs/market-data/PRODUCTION-WEB-01-MARKET-20261005.yaml',
