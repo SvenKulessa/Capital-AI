@@ -5,7 +5,6 @@ export const VOCABULARY_OFFER = {
   amountCents: 1900,
   currency: 'eur',
   taxBehavior: 'inclusive',
-  includedIn: ['pro', 'enterprise'],
   name: 'Market Vocabulary',
 } as const;
 

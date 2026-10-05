@@ -54,6 +54,7 @@ interface HeaderSession {
   authenticated: boolean;
   user?: { name?: string; email?: string } | null;
   account?: {
+    iamRole?: string | null;
     subscription?: { tier?: string; status?: string } | null;
     badges?: Array<{ id: string; label: string; asset: string }>;
   } | null;
@@ -122,6 +123,7 @@ export const Header: React.FC<HeaderProps> = ({
   const accountTier = authSession?.authenticated
     ? authSession.account?.subscription?.tier || null
     : null;
+  const isOwner = authSession?.authenticated === true && authSession.account?.iamRole === 'owner';
 
   const navigateAccount = (path: '/profile' | '/profile/security' | '/profile/key-vault') => {
     setIsAccountOpen(false);
@@ -282,19 +284,21 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         {/* Control Center */}
-        <button
-          type="button"
-          onClick={() => onNavigate?.('/control-center')}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs transition-all cursor-pointer ${
-            isControlActive
-              ? 'bg-rose-500 text-white font-extrabold shadow-sm'
-              : 'text-slate-300 hover:text-white hover:bg-white/5 font-medium'
-          }`}
-          title="Control Center (v1.0 Roadmap, Cockpit, Console & Governance)"
-        >
-          <ShieldCheck className="w-3.5 h-3.5" />
-          <span>Control Center</span>
-        </button>
+        {isOwner && (
+          <button
+            type="button"
+            onClick={() => onNavigate?.('/control-center')}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs transition-all cursor-pointer ${
+              isControlActive
+                ? 'bg-rose-500 text-white font-extrabold shadow-sm'
+                : 'text-slate-300 hover:text-white hover:bg-white/5 font-medium'
+            }`}
+            title="Control Center (v1.0 Roadmap, Cockpit, Console & Governance)"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Control Center</span>
+          </button>
+        )}
       </nav>
 
       {/* RIGHT SIDE: Live Status Chip & Login Button */}
@@ -580,7 +584,7 @@ export const Header: React.FC<HeaderProps> = ({
                         badge: "7 Module",
                         tagline: "Roadmap, Cockpit, Console & Lizenzen",
                       },
-                    ].map((hub) => (
+                    ].filter(hub => hub.id !== 'control-center' || isOwner).map((hub) => (
                       <button
                         key={hub.id}
                         type="button"
@@ -659,21 +663,6 @@ export const Header: React.FC<HeaderProps> = ({
                         </button>
                       )}
 
-                      {/* $CPT TOKENOMICS */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          onNavigate?.('/tokenomics');
-                        }}
-                        className="w-full flex items-center justify-between py-2 px-3 rounded-lg text-xs text-slate-300 hover:text-white hover:bg-white/5 transition-all cursor-pointer"
-                      >
-                        <span className="flex items-center gap-2">
-                          <Coins className="w-3.5 h-3.5 text-amber-400" />
-                          <span>$CPT Tokenomics &amp; Staking</span>
-                        </span>
-                        <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
-                      </button>
                     </div>
                   </div>
 
@@ -896,6 +885,7 @@ export const Header: React.FC<HeaderProps> = ({
         onOpenSectorAnalysis={onOpenSectorAnalysis}
         onOpenModule={onOpenModule}
         onOpenPriceAlerts={onOpenPriceAlerts}
+        allowControlCenter={isOwner}
       />
     </header>
   );

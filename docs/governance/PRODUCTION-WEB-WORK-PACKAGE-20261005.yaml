@@ -1,0 +1,158 @@
+schemaVersion: "CAPITAL_AI_PRODUCTION_WORK_PACKAGE@1"
+id: "PRODUCTION-WEB-01"
+title: "Production-Website Alignment"
+scope: "production-only"
+repository: "SvenKulessa/Capital-AI"
+sourceBaseline:
+  branch: "main"
+  sha: "9c5fc40318cf538308724c2efb18441185e8cbae"
+status: "planning"
+evidenceState: "OFFEN"
+targetRelease: "v1.0.0"
+
+invariants:
+  - "User-visible content MUST match CURRENT_MAIN code and canonical documentation."
+  - "Unimplemented products, tokens, features, providers, runtime state and internal system information MUST NOT be presented as available."
+  - "Market Vocabulary MUST be a standalone package and MUST NOT be bundled into Pro or Enterprise."
+  - "Control Center MUST require a server-verified Supabase IAM role equal to Owner."
+  - "Client-side hiding MUST NOT be treated as authorization."
+  - "Load-failure UI MUST remain hidden unless a terminal website load failure is actually detected."
+  - "YAML configuration MUST use schema validation and safe loading only."
+  - "Secrets MUST NOT be stored in YAML, client bundles, user-visible responses or roadmap evidence."
+
+domains:
+  PRODUCT:
+    workPackageId: "PRODUCTION-WEB-01-PRODUCT"
+    priority: "critical"
+    tasks:
+      - id: "PROD-UX-001"
+        action: "reconcile_website_content"
+        inputs:
+          - "CURRENT_MAIN source code"
+          - "canonical documentation"
+        acceptance:
+          - "No stale or unsupported user-facing claims"
+          - "Code/docs/UI claim matrix completed"
+      - id: "PROD-UX-002"
+        action: "rebuild_pricing_surface"
+        acceptance:
+          - "Vocabulary is standalone"
+          - "Vocabulary is not included in Pro"
+          - "Vocabulary is not included in Enterprise"
+          - "No token product appears in pricing"
+      - id: "PROD-UX-003"
+        action: "responsive_navigation"
+        viewports:
+          - "mobile"
+          - "tablet"
+          - "desktop"
+        acceptance:
+          - "All primary navigation paths are reachable by keyboard and pointer"
+          - "No horizontal navigation trap"
+      - id: "PROD-UX-004"
+        action: "accessibility_hardening"
+        acceptance:
+          - "Semantic landmarks"
+          - "Visible keyboard focus"
+          - "Accessible names for controls"
+          - "Screen-reader compatible navigation"
+      - id: "PROD-UX-005"
+        action: "remove_preview_information"
+      - id: "PROD-UX-006"
+        action: "remove_user_visible_system_information"
+
+  GROWTH:
+    workPackageId: "PRODUCTION-WEB-01-GROWTH"
+    priority: "high"
+    tasks:
+      - id: "PROD-CONTENT-001"
+        action: "audit_public_claims"
+        acceptance:
+          - "Every public product claim maps to current code or canonical documentation"
+      - id: "PROD-CONTENT-002"
+        action: "normalize_pricing_copy"
+        forbiddenClaims:
+          - "Token availability"
+          - "Vocabulary included in Pro"
+          - "Vocabulary included in Enterprise"
+          - "Preview wording on production surfaces"
+      - id: "PROD-CONTENT-003"
+        action: "remove_internal_technical_details_from_user_surfaces"
+
+  TRUST:
+    workPackageId: "PRODUCTION-WEB-01-TRUST"
+    priority: "critical"
+    tasks:
+      - id: "PROD-AUTHZ-001"
+        action: "owner_only_control_center"
+        authority: "Supabase IAM"
+        requiredRole: "Owner"
+        enforcement:
+          serverSide: true
+          clientSideProjection: true
+        negativeTests:
+          - "anonymous -> deny"
+          - "authenticated non-owner -> deny"
+          - "owner -> allow"
+      - id: "PROD-SEC-002"
+        action: "prevent_system_information_disclosure"
+      - id: "PROD-YAML-001"
+        action: "yaml_security_gate"
+        requirements:
+          safeLoaderOnly: true
+          schemaValidation: true
+          customTags: false
+          arbitraryObjectConstruction: false
+          executableValues: false
+          secretsAllowed: false
+
+  PLATFORM:
+    workPackageId: "PRODUCTION-WEB-01-PLATFORM"
+    priority: "high"
+    tasks:
+      - id: "PROD-LOAD-001"
+        action: "fail_closed_load_failure_ui"
+        states:
+          loading:
+            showFailureInfo: false
+          hydrating:
+            showFailureInfo: false
+          ready:
+            showFailureInfo: false
+          recoverable_error:
+            showFailureInfo: false
+          terminal_load_failure:
+            showFailureInfo: true
+        publicErrorDetail: "generic"
+      - id: "PROD-ROUTE-001"
+        action: "canonical_route_validation"
+        acceptance:
+          - "Canonical route direct-load works"
+          - "Alias normalizes to canonical route"
+          - "Browser reload works"
+          - "Menu links resolve to canonical paths"
+
+  MARKET:
+    workPackageId: "PRODUCTION-WEB-01-MARKET"
+    priority: "high"
+    tasks:
+      - id: "PROD-MARKET-001"
+        action: "reconcile_market_claims"
+        acceptance:
+          - "No blocked provider presented as production-admitted"
+          - "No demo or preview data presented as live production data"
+          - "Scoring claims match implemented eligibility semantics"
+          - "Data-rights status is not overstated"
+
+releaseGates:
+  - "lint"
+  - "typescript"
+  - "unit-tests"
+  - "navigation-tests"
+  - "authz-negative-tests"
+  - "accessibility-review"
+  - "mobile-browser-evidence"
+  - "tablet-browser-evidence"
+  - "desktop-browser-evidence"
+  - "security-review"
+  - "content-code-docs-reconciliation"

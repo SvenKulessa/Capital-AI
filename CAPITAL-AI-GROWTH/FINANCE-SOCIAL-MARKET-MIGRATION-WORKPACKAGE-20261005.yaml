@@ -1,0 +1,178 @@
+schemaVersion: "CAPITAL_AI_DOMAIN_WORK_PACKAGE@1"
+id: "CAPITAL-AI-FINANCE-SOCIAL-MARKET-MIGRATION-01"
+domain: "GROWTH"
+crossDomains:
+  - "MARKET"
+  - "PLATFORM"
+  - "TRUST"
+  - "PRODUCT"
+scope: "finance-to-capital-ai-social-market-migration"
+priority: "critical"
+status: "PLANNED"
+
+baseline:
+  source:
+    repository: "SvenKulessa/Finance"
+    sha: "dcef421fe6e350a3a2ade61d0299aad9ecca213c"
+  target:
+    repository: "SvenKulessa/Capital-AI"
+    sha: "9c5fc40318cf538308724c2efb18441185e8cbae"
+  policy: "target-current-main-contracts-win"
+
+objectives:
+  - "Migrate SocialMediaEngine contracts, editing, rendering, approval and distribution semantics without copying credentials or legacy identity state."
+  - "Productize the Social Media Engine with licensed documentation and explicit third-party boundaries."
+  - "Separate customer/commercial runtime from owner-private tooling."
+  - "Migrate selected advanced MARKET/Data components only where they strengthen the current Capital-AI evidence, feature, shadow and replay architecture."
+  - "Preserve one scoring authority and one publishing authority."
+
+licenseModes:
+  COMMERCIAL_PRODUCT_BUNDLE:
+    customerArtifactAllowed: true
+    commercialOutputAllowed: true
+    redistributionEvidenceRequired: true
+  COMMERCIAL_INTERNAL_SERVICE:
+    customerArtifactAllowed: false
+    commercialOutputAllowed: true
+    serviceUseEvidenceRequired: true
+  OWNER_PRIVATE_COMMERCIAL_ALLOWED:
+    ownerOnly: true
+    customerArtifactAllowed: false
+    commercialOutputAllowed: true
+    exactLicensePermissionRequired: true
+  OWNER_PRIVATE_NONCOMMERCIAL_ONLY:
+    ownerOnly: true
+    customerArtifactAllowed: false
+    commercialOutputAllowed: false
+  RESEARCH_ONLY:
+    customerArtifactAllowed: false
+    commercialOutputAllowed: false
+  BLOCKED_UNKNOWN:
+    customerArtifactAllowed: false
+    commercialOutputAllowed: false
+
+hardGates:
+  - id: "LIC-01"
+    rule: "Non-commercial artifacts must never generate commercial/customer/marketing outputs."
+    failure: "BLOCKED"
+  - id: "LIC-02"
+    rule: "Code license, model/weight license, data/input rights and output rights are evaluated independently."
+    failure: "BLOCKED"
+  - id: "LIC-03"
+    rule: "Unknown exact artifact/revision/license remains fail-closed."
+    failure: "BLOCKED"
+  - id: "SEC-01"
+    rule: "No OAuth token, API key, Supabase identity, historic secret or user credential is migrated from Finance."
+    failure: "BLOCKED"
+  - id: "ARCH-01"
+    rule: "No second scoring authority may coexist with the Capital-AI canonical scoring boundary."
+    failure: "BLOCKED"
+  - id: "ARCH-02"
+    rule: "No second publishing authority may bypass the Capital-AI approval/publisher boundary."
+    failure: "BLOCKED"
+  - id: "MARKET-01"
+    rule: "Market/social claims require admitted data rights, freshness and evidence."
+    failure: "BLOCKED"
+  - id: "EVIDENCE-01"
+    rule: "Missing, failed or partial evidence must not be reported as PASS."
+    failure: "BLOCKED"
+
+migrationMatrix:
+  social:
+    - source: "src/platform/SocialMediaEngine/Contracts/MediaProject.ts"
+      action: "PORT"
+      targetRole: "canonical-provider-neutral-media-project-contract"
+    - source: "src/platform/SocialMediaEngine/Editing/"
+      action: "PORT"
+      targetRole: "non-destructive-editing-core"
+    - source: "src/platform/SocialMediaEngine/Visualization/"
+      action: "PORT"
+      targetRole: "deterministic-planning-and-social-visualization"
+    - source: "scripts/media/"
+      action: "PORT_WITH_LICENSE_GATE"
+      targetRole: "deterministic-render-worker"
+    - source: "server/socialMedia/voiceContract.ts"
+      action: "PORT"
+      targetRole: "voice-evidence-contract"
+    - source: "server/socialMedia/p1Benchmark.ts"
+      action: "PORT"
+      targetRole: "tts-quality-evidence-harness"
+    - source: "server/socialMedia/platformPublishers.ts"
+      action: "REWRITE"
+      targetRole: "current-auth-current-provider-contract-publishers"
+    - source: "supabase social-media identity/token state"
+      action: "DROP"
+      targetRole: "must-not-migrate"
+
+  market:
+    - source: "src/platform/Scoring/ValidatedFinancialFeatureContract.ts"
+      action: "PORT_ADAPT"
+      targetRole: "FeatureValue-PipelineSnapshot evidence/freshness bridge"
+    - source: "src/platform/Scoring/ScoringModelRegistry.ts"
+      action: "CONVERGE"
+      targetRole: "single-scoring-authority"
+    - source: "src/platform/Scoring/ScoringDispatcher.ts"
+      action: "CONVERGE"
+      targetRole: "single-scoring-execution-boundary"
+    - source: "src/platform/Scoring/UniversalAssetAdapter.ts"
+      action: "ADAPT"
+      targetRole: "existing-AssetIdentity"
+    - source: "src/platform/Scoring/AnalysisConnectionRegistry.ts"
+      action: "PORT_AFTER_DEDUPE"
+      targetRole: "capability-and-evidence-registry"
+    - source: "src/platform/FinTechCore/Modules/Crypto/Pattern/"
+      action: "PORT_RESEARCH_ONLY"
+      targetRole: "pattern-context"
+      scoreEligible: false
+      decisionEligible: false
+    - source: "src/platform/Scoring/CryptoOrchestratorResearchModels.ts"
+      action: "PORT_SELECTIVELY_RESEARCH_ONLY"
+      targetRole: "sentiment-momentum-regime-pattern-signal-fusion"
+      scoreEligible: false
+      decisionEligible: false
+    - source: "src/services/candlestickPatterns.ts"
+      action: "PORT"
+      targetRole: "deterministic-ohlc-pattern-detection"
+    - source: "server/marketData/marketDataCompatibilityFacade.ts"
+      action: "REWRITE_OR_DROP"
+      targetRole: "must-not-weaken-current-rights-admission"
+
+sequence:
+  - "00_BASELINE_INVENTORY"
+  - "01_TOOL_LICENSE_ADMISSION"
+  - "02_SOCIAL_CORE"
+  - "03_DETERMINISTIC_MEDIA_RENDERER"
+  - "04_VOICE_ASR_PRIVATE_PARTITION"
+  - "05_PUBLISHING_DISTRIBUTION"
+  - "06_MARKET_DATA_ADVANCED_MIGRATION"
+  - "07_SOCIAL_MARKET_CONTENT_FACT"
+  - "08_PRODUCT_LICENSED_DOCUMENTATION"
+  - "09_VALIDATION_CUTOVER"
+
+artifacts:
+  workPackageDocument: "CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.md"
+  toolAdmission: "CAPITAL-AI-GROWTH/social-media-tool-admission.yaml"
+  productLicenseBoundary: "docs/licenses/SOCIAL-MEDIA-ENGINE-PRODUCT-LICENSE.md"
+  roadmapProjection: "src/data/socialContentRoadmap.ts"
+
+validation:
+  required:
+    - "source-to-target-file-manifest"
+    - "license-and-rights-matrix"
+    - "third-party-notices"
+    - "commercial-build-dependency-inventory"
+    - "owner-private-runtime-isolation-test"
+    - "media-determinism-and-hash-test"
+    - "market-data-rights-and-freshness-test"
+    - "shadow-replay-regression"
+    - "single-scoring-authority-test"
+    - "publishing-idempotency-and-unknown-state-test"
+    - "security-supply-chain-scan"
+    - "exact-head-correlation"
+
+production:
+  runtimeMutationAuthorized: false
+  providerMutationAuthorized: false
+  credentialMutationAuthorized: false
+  modelDownloadAuthorized: false
+  mergeAuthorized: false

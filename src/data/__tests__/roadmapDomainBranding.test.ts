@@ -64,3 +64,22 @@ test('roadmap panel renders work-package deliverables in stored order', () => {
   assert.match(panel, /list-decimal/);
 });
 
+
+
+test('MARKET production package is one chronological fail-closed commercial work package', () => {
+  const market = WORK_PACKAGES.find(item => item.id === 'PRODUCTION-WEB-01-MARKET');
+
+  assert.ok(market);
+  assert.equal(market.owner, 'MARKET');
+  assert.equal(market.status, 'aktiv');
+  assert.equal(market.evidenceState, 'OFFEN');
+  assert.equal(market.progressPercent, null);
+  assert.equal(market.deliverables.length, 20);
+  market.deliverables.forEach((deliverable, index) => {
+    assert.match(deliverable, new RegExp(`^${String(index + 1).padStart(2, '0')} · MARKET-`));
+  });
+
+  for (const legacyId of ['AP-FIN-01', 'AP-FIN-02', 'AP-FIN-03']) {
+    assert.ok(WORK_PACKAGES.some(item => item.id === legacyId), `${legacyId} remains traceable in the roadmap`);
+  }
+});

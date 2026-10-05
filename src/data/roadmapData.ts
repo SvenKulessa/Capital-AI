@@ -7,6 +7,7 @@
  */
 
 import { SOCIAL_CONTENT_WORK_PACKAGES } from './socialContentRoadmap';
+import { PRODUCTION_WEBSITE_WORK_PACKAGES } from './productionWebsiteWorkPackage';
 
 export type ProjectOwner =
   | 'PRODUCT'
@@ -2056,6 +2057,7 @@ export const WORK_PACKAGES: WorkPackage[] = [
     "Rollback auf stabile Boundary"
   ]
 },
+...PRODUCTION_WEBSITE_WORK_PACKAGES,
 ...SOCIAL_CONTENT_WORK_PACKAGES,
 ...BACKLOG_TARGETS,
 ];

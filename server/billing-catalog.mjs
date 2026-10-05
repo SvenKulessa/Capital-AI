@@ -12,7 +12,6 @@ export const BILLING_CATALOG = Object.freeze({
       priceId: 'price_1UMiuIPKr4joNbEclpn8AwFW',
       amountCents: 1900,
       taxBehavior: 'inclusive',
-      includedIn: ['pro', 'enterprise'],
     },
   },
 });

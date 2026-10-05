@@ -232,6 +232,26 @@ test('Supabase email login is same-origin, backend-owned and returns a landing-p
   }
 });
 
+test('Control Center is server-side owner-only and fails closed', async () => {
+  const h = await harness();
+  try {
+    assert.equal((await h.request('/control-center')).status, 404);
+    assert.equal((await h.request('/roadmap')).status, 404);
+
+    const ownerCookie = await h.completeEmail();
+    assert.equal((await h.request('/control-center', { headers: { cookie: ownerCookie } })).status, 200);
+    assert.equal((await h.request('/roadmap', { headers: { cookie: ownerCookie } })).status, 200);
+
+    h.state.subject = 'user-subject';
+    const userCookie = await h.completeEmail();
+    assert.equal((await h.request('/control-center', { headers: { cookie: userCookie } })).status, 404);
+    assert.equal((await h.request('/admin', { headers: { cookie: userCookie } })).status, 404);
+    assert.equal((await h.request('/cost-center', { headers: { cookie: userCookie } })).status, 404);
+  } finally {
+    await h.stop();
+  }
+});
+
 test('Supabase registration validates new passwords and creates a backend-owned session', async () => {
   const h = await harness();
   try {
