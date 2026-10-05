@@ -25,6 +25,14 @@ test('aliases and trailing slash normalize without losing query or hash', () => 
   assert.equal(resolveNavigationTarget('/roadmap?tab=console'), '/control-center?tab=console');
 });
 
+test('account routes keep dedicated profile, security and key-vault pages', () => {
+  assert.equal(resolveAppRoute('/profile'), '/profile');
+  assert.equal(resolveAppRoute('/sicherheit'), '/security');
+  assert.equal(resolveAppRoute('/vault'), '/key-vault');
+  assert.equal(resolveNavigationTarget('/account-security?ref=menu'), '/security?ref=menu');
+  assert.equal(resolveNavigationTarget('/api-vault#provider'), '/key-vault#provider');
+});
+
 test('Market Screener documentation aliases keep the dedicated blueprint documentation hub', () => {
   assert.equal(resolveAppRoute('/marketscreener/dokumentation'), '/marketscreener/dokumentation');
   assert.equal(resolveAppRoute('/MARKET-SCREENER/DOKUMENTATION/'), '/marketscreener/dokumentation');
