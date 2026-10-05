@@ -26,6 +26,16 @@ const ProfilePage = lazy(() =>
     default: module.ProfilePage,
   })),
 );
+const SecurityPage = lazy(() =>
+  import('../../components/SecurityPage').then((module) => ({
+    default: module.SecurityPage,
+  })),
+);
+const KeyVaultPage = lazy(() =>
+  import('../../components/KeyVaultPage').then((module) => ({
+    default: module.KeyVaultPage,
+  })),
+);
 const ArchitecturePage = lazy(() =>
   import('../../components/ArchitecturePage').then((module) => ({
     default: module.ArchitecturePage,
@@ -128,7 +138,15 @@ export function AppRoutes({
   }
 
   if (currentRoute === '/profile') {
-    return <ProfilePage onBackToHome={() => navigateTo('/')} />;
+    return <ProfilePage onNavigate={navigateTo} />;
+  }
+
+  if (currentRoute === '/profile/security') {
+    return <SecurityPage onNavigate={navigateTo} />;
+  }
+
+  if (currentRoute === '/profile/key-vault') {
+    return <KeyVaultPage onNavigate={navigateTo} />;
   }
 
   if (currentRoute === '/pipeline-builder') {
