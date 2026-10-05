@@ -67,11 +67,35 @@ const OWNER_ONLY_UI_PATHS = new Set(['/control-center', '/control', '/admin', '/
 function normalizedPublicPath(pathname) {
   return pathname.toLowerCase().replace(/\/+$/, '') || '/';
 }
+const SEO_JSONLD_OPEN = '<script id="capital-ai-seo-jsonld" type="application/ld+json">';
+const SEO_JSONLD_CLOSE = '</script>';
+
+function removeSeoJsonLd(html) {
+  const start = html.indexOf(SEO_JSONLD_OPEN);
+  if (start < 0) return html;
+  const end = html.indexOf(SEO_JSONLD_CLOSE, start + SEO_JSONLD_OPEN.length);
+  if (end < 0) return html;
+  return html.slice(0, start) + html.slice(end + SEO_JSONLD_CLOSE.length);
+}
+
+function upsertSeoJsonLd(html, jsonLd) {
+  const safeJsonLd = JSON.stringify(jsonLd).replaceAll('<', '\\u003c');
+  const script = `${SEO_JSONLD_OPEN}${safeJsonLd}${SEO_JSONLD_CLOSE}`;
+  const start = html.indexOf(SEO_JSONLD_OPEN);
+
+  if (start >= 0) {
+    const end = html.indexOf(SEO_JSONLD_CLOSE, start + SEO_JSONLD_OPEN.length);
+    if (end >= 0) {
+      return html.slice(0, start) + script + html.slice(end + SEO_JSONLD_CLOSE.length);
+    }
+  }
+  return html.replace('</head>', `${script}\n  </head>`);
+}
+
 function injectSeoMetadata(html, pathname) {
   const metadata = seoMetadataForPath(pathname);
   if (!metadata) return html;
 
-  const safeJsonLd = JSON.stringify(metadata.jsonLd).replaceAll('<', '\\u003c');
   let body = html
     .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(metadata.title)}</title>`)
     .replace(/(<meta name="description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.description)}$2`)
@@ -90,13 +114,9 @@ function injectSeoMetadata(html, pathname) {
     .replace(/(<meta name="twitter:title" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.title)}$2`)
     .replace(/(<meta name="twitter:description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.description)}$2`)
     .replace(/(<meta name="twitter:image" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.ogImage)}$2`)
-    .replace(/(<meta name="twitter:image:alt" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.ogImageAlt)}$2`)
-    .replace(/\s*<script[^>]*type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/g, '');
+    .replace(/(<meta name="twitter:image:alt" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(metadata.ogImageAlt)}$2`);
 
-  body = body.replace(
-    '</head>',
-    `<script id="capital-ai-seo-jsonld" type="application/ld+json">${safeJsonLd}</script>\n  </head>`,
-  );
+  body = upsertSeoJsonLd(body, metadata.jsonLd);
   return body;
 }
 
@@ -110,8 +130,8 @@ function applySeoIndexingPolicy(html, pathname) {
   if (!isSeoIndexable(pathname)) {
     body = body
       .replace(/\s*<link rel="canonical" href="[^"]*"\s*\/?>/g, '')
-      .replace(/\s*<meta property="og:url" content="[^"]*"\s*\/?>/g, '')
-      .replace(/\s*<script[^>]*type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/g, '');
+      .replace(/\s*<meta property="og:url" content="[^"]*"\s*\/?>/g, '');
+    body = removeSeoJsonLd(body);
   }
   return body;
 }
@@ -163,7 +183,7 @@ function injectVocabularySeo(html, pathname) {
     .replace(/(<meta name="twitter:title" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(title)}$2`)
     .replace(/(<meta name="twitter:description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(description)}$2`)
     .replace(/(<link rel="canonical" href=")[^"]*("\s*\/?>)/, `$1${canonicalUrl}$2`)
-    .replace('</head>', `<script type="application/ld+json">${safeJsonLd}</script></head>`);
+    .replace('</head>', `${SEO_JSONLD_OPEN}${safeJsonLd}${SEO_JSONLD_CLOSE}</head>`);
 
   const fallback = entry
     ? vocabularyFallback(entry)
