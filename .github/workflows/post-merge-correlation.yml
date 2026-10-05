@@ -272,7 +272,7 @@ jobs:
           ## Primary Domain
           Domain: GROWTH
 
-          Automated PR-only proposal from `POST_MERGE_CORRELATION@2`.
+          Automated PR-only proposal from `POST_MERGE_CORRELATION@3`.
 
           - Expected main: `$EXPECTED_MAIN_SHA`
           - Repair fingerprint: `$(jq -r '.repairFingerprint' security-reports/documentation-repair-plan.json)`
