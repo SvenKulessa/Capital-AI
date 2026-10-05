@@ -65,6 +65,7 @@ async function postJson(
 function initialMode(): Mode {
   const params = new URLSearchParams(window.location.search);
   if (params.get('mode') === 'reset') return 'reset';
+  if (params.get('mode') === 'forgot') return 'forgot';
   if (params.get('mfa') === '1') return 'mfa';
   return 'login';
 }
@@ -129,7 +130,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
         }
 
         if (!value.mfaRequired) {
-          window.location.replace('/profile');
+          window.location.replace('/');
           return;
         }
 
@@ -138,7 +139,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
           if (!factors.length && !abort.signal.aborted) {
             const refreshed = await loadSession(abort.signal);
             if (refreshed.authenticated && !refreshed.mfaRequired) {
-              window.location.replace('/profile');
+              window.location.replace('/');
               return;
             }
             setError('Der MFA-Zustand ist inkonsistent. Bitte wähle eine andere Anmeldemethode oder melde dich neu an.');
@@ -181,14 +182,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
           await loadMfaFactors();
           return;
         }
-        window.location.replace('/profile');
+        window.location.replace('/');
         return;
       }
 
       const result = await postJson('/api/auth/register', { name, email, password });
       if (!result.response.ok) throw new Error(result.body?.error || 'registration_failed');
       if (result.body?.authenticated) {
-        window.location.replace('/profile');
+        window.location.replace('/');
         return;
       }
       setNotice('Registrierung angenommen. Bitte bestätige die E-Mail-Adresse über die CAPITAL-AI Bestätigungsmail.');
@@ -252,7 +253,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
         code: totpCode,
       });
       if (!result.response.ok) throw new Error(result.body?.code || result.body?.error || 'totp_verification_failed');
-      window.location.replace('/profile');
+      window.location.replace('/');
     } catch (reason) {
       showError(reason);
     } finally {
@@ -288,7 +289,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
         await loadMfaFactors();
         return;
       }
-      window.location.replace('/profile');
+      window.location.replace('/');
     } catch (reason) {
       showError(reason);
     } finally {
@@ -510,7 +511,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
               </div>
 
               <a
-                href="/api/auth/login/google?next=%2Fprofile"
+                href="/api/auth/login/google?next=%2F"
                 className="flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border border-white/15 bg-white text-sm font-bold text-slate-900 transition hover:bg-slate-100"
                 aria-label="Mit Google anmelden"
               >
