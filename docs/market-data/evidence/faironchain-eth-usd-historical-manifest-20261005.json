@@ -1,0 +1,48 @@
+{
+  "schema": "CAPITAL_AI_HISTORICAL_INSTRUMENT_MANIFEST@1",
+  "observedAt": "2026-10-05T06:16:00+02:00",
+  "providerId": "faironchain-open-price",
+  "datasetId": "ethereum/chainlink_eth_usd.csv",
+  "datasetUrl": "https://files.deepmining.ch/files/ethereum/prices/chainlink_eth_usd.csv",
+  "dataLicense": "CC-BY-4.0",
+  "semantics": "HISTORICAL_DELAYED_REFERENCE_PRICE",
+  "displayStatus": "DELAYED",
+  "liveEligible": false,
+  "marketQuoteEligible": false,
+  "scoreEligible": false,
+  "instruments": [
+    {
+      "assetId": "crypto:ETH:USD:CHAINLINK_ETHEREUM",
+      "symbol": "ETHUSD",
+      "baseAsset": "ETH",
+      "quoteAsset": "USD",
+      "assetClass": "crypto",
+      "venue": "CHAINLINK_ETHEREUM",
+      "network": "Ethereum Mainnet",
+      "chainId": 1,
+      "upstreamSource": "Chainlink",
+      "feedProxyAddress": "0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419",
+      "sinceUtc": "2020-01-15",
+      "updateCadence": "DATASET_UPDATED_DAILY",
+      "provenanceFieldsRequired": [
+        "global_round_id",
+        "round_updated_at_utc",
+        "extraction_run_id",
+        "schema_version",
+        "extraction_timestamp_utc",
+        "client_name",
+        "client_version",
+        "chain_id",
+        "feed_proxy_address",
+        "feed_description",
+        "extraction_script_hash",
+        "abi_hash"
+      ]
+    }
+  ],
+  "evidenceReferences": [
+    "https://fair.deepmining.ch/ethereum",
+    "https://github.com/DeepMining-Lab/Open_Price_Infra/tree/7a883351a1c38328f7baa2dd78989ab3d4a6d859",
+    "https://creativecommons.org/licenses/by/4.0/"
+  ]
+}
