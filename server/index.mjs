@@ -12,6 +12,7 @@ import { infrastructure } from './infrastructure.mjs';
 import { createMobileScorer } from './mobile-scorer.mjs';
 import { createScorerProxy } from './scorer-proxy.mjs';
 import { serveMtaSts } from './mta-sts.mjs';
+import { serveWellKnown } from './well-known.mjs';
 import { researchMetadata } from '../shared/research-metadata.mjs';
 import {
   isSeoIndexable,
@@ -167,6 +168,7 @@ export function createApp(root = defaultRoot, options = {}) {
   // Apply headers to API responses and OIDC redirects alike.
   for (const [key, value] of Object.entries(headers)) res.setHeader(key, value);
   if (serveMtaSts(req, res, url)) return;
+  if (serveWellKnown(req, res, url)) return;
   if (await auth.handle(req, res, url, json)) return;
   if (await userProviderVault.handle(req, res, url, json)) return;
   if (await privacy(req, res, url, json)) return;
