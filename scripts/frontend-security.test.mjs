@@ -101,3 +101,27 @@ test('all four research routes render their own accessible page and preserve ope
   assert.match(summary, /sind geplant/);
   assert.match(summary, /Förderzusage/);
 });
+
+
+test('main entry statically imports App without a first-load chunk waterfall', async () => {
+  const main = await readFile(new URL('../src/main.tsx', import.meta.url), 'utf8');
+  assert.match(main, /import App from '.\/App\.tsx'/);
+  assert.match(main, /root\.render\(/);
+  assert.doesNotMatch(main, /import\(['"]\.\/App\.tsx['"]\)/);
+});
+
+test('commercial Blueprint artifacts remain absent from public DOM and static download path is denied', async () => {
+  const studio = await readFile(new URL('../src/features/studio/StudioPage.tsx', import.meta.url), 'utf8');
+  const builder = await readFile(new URL('../src/features/pipeline-builder/PipelineBuilder.tsx', import.meta.url), 'utf8');
+  const docs = await readFile(new URL('../src/features/documentation/BlueprintDocumentationPage.tsx', import.meta.url), 'utf8');
+  const server = await readFile(new URL('../server/index.mjs', import.meta.url), 'utf8');
+
+  assert.doesNotMatch(studio, /activeBlueprint\.codeSnippet/);
+  assert.match(studio, /Blueprint-Artefakt geschützt/);
+  assert.doesNotMatch(builder, /navigator\.clipboard\.writeText\(snippet\)/);
+  assert.match(builder, /PRIVATE_TEST_OR_KEY_VAULT_EVIDENCE_REQUIRED/);
+  assert.doesNotMatch(docs, /href=\{\x60\/downloads\/blueprints/);
+  assert.match(docs, /Private Evidence prüfen/);
+  assert.match(docs, /\/api\/profile\/provider-connections/);
+  assert.match(server, /publicPath\.startsWith\('\/downloads\/blueprints\/'\)/);
+});
