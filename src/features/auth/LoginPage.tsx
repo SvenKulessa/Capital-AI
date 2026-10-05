@@ -38,12 +38,16 @@ interface AuthResponseBody {
   next?: string;
   accepted?: boolean;
   reset?: boolean;
+  verified?: boolean;
   factors?: Array<{ id: string; type: 'totp'; friendlyName: string }>;
   challengeId?: string;
   options?: PublicKeyCredentialRequestOptionsJSON;
 }
 
-type Mode = 'login' | 'register' | 'forgot' | 'reset' | 'mfa';
+type Mode = 'login' | 'register' | 'forgot' | 'reset' | 'mfa' | 'verify';
+
+type EmailActionType = 'signup' | 'invite' | 'magiclink' | 'email_change' | 'recovery';
+const EMAIL_ACTION_TYPES = new Set<EmailActionType>(['signup', 'invite', 'magiclink', 'email_change', 'recovery']);
 
 async function postJson(
   path: string,
@@ -61,7 +65,16 @@ async function postJson(
   return { response, body: parsed };
 }
 
+function emailActionFromFragment(): { tokenHash: string; type: EmailActionType } | null {
+  const fragment = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  const tokenHash = fragment.get('token_hash') || '';
+  const type = fragment.get('email_action') || '';
+  if (tokenHash.length < 20 || !EMAIL_ACTION_TYPES.has(type as EmailActionType)) return null;
+  return { tokenHash, type: type as EmailActionType };
+}
+
 function initialMode(): Mode {
+  if (emailActionFromFragment()) return 'verify';
   const params = new URLSearchParams(window.location.search);
   if (params.get('mode') === 'reset') return 'reset';
   if (params.get('mfa') === '1') return 'mfa';
@@ -75,6 +88,7 @@ function safeNext(): string {
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFaq, onNavigateLegal }) => {
   const [session, setSession] = useState<SessionState | null>(null);
+  const [emailAction] = useState(emailActionFromFragment);
   const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
@@ -175,6 +189,31 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
       setNotice('Registrierung angenommen. Bitte bestätige die E-Mail-Adresse über die CAPITAL-AI Bestätigungsmail.');
       setMode('login');
       setPassword('');
+    } catch (reason) {
+      showError(reason);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const confirmEmailAction = async () => {
+    if (!emailAction) {
+      setError('Ungültiger oder unvollständiger Bestätigungslink.');
+      return;
+    }
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      const result = await postJson('/api/auth/email/verify', {
+        tokenHash: emailAction.tokenHash,
+        type: emailAction.type,
+      });
+      if (!result.response.ok || !result.body?.verified) {
+        throw new Error(result.body?.code || result.body?.error || 'email_verification_failed');
+      }
+      window.history.replaceState(null, '', '/login');
+      window.location.replace(result.body.next || '/profile');
     } catch (reason) {
       showError(reason);
     } finally {
@@ -298,7 +337,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
     }
   };
 
-  const specialMode = mode === 'reset' || mode === 'mfa';
+  const specialMode = mode === 'reset' || mode === 'mfa' || mode === 'verify';
 
   return (
     <main className="min-h-screen bg-[#02050e] px-4 py-8 text-slate-100 flex justify-center">
@@ -312,7 +351,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
           <div className="mt-6 flex items-center justify-between gap-3">
             <div>
               <h1 className="text-2xl font-bold">
-                {mode === 'forgot' ? 'Passwort vergessen' : mode === 'reset' ? 'Neues Passwort setzen' : mode === 'mfa' ? 'Authenticator bestätigen' : 'CAPITAL-AI Anmeldung'}
+                {mode === 'forgot'
+                  ? 'Passwort vergessen'
+                  : mode === 'reset'
+                    ? 'Neues Passwort setzen'
+                    : mode === 'mfa'
+                      ? 'Authenticator bestätigen'
+                      : mode === 'verify'
+                        ? 'E-Mail-Aktion bestätigen'
+                        : 'CAPITAL-AI Anmeldung'}
               </h1>
               <p className="mt-2 text-sm text-slate-300">
                 Passkey, Google, E-Mail/Passwort und optionaler TOTP-Authenticator über eine serverseitige Supabase-Session.
@@ -330,6 +377,28 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
             <p role="status" className="mt-4 rounded-xl bg-amber-500/10 p-3 text-sm text-amber-200">
               Supabase Auth ist serverseitig noch nicht vollständig konfiguriert.
             </p>
+          )}
+
+          {mode === 'verify' && (
+            <div className="mt-5 space-y-3">
+              <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/10 p-3 text-xs leading-relaxed text-cyan-100">
+                <ShieldCheck className="mb-2 h-4 w-4" />
+                {emailAction?.type === 'recovery'
+                  ? 'Bestätige den Vorgang, um anschließend ein neues Passwort zu setzen.'
+                  : emailAction?.type === 'invite'
+                    ? 'Bestätige die Einladung. Anschließend legst du dein Passwort fest.'
+                    : 'Bestätige diese CAPITAL-AI E-Mail-Aktion bewusst. Der Link wird nicht automatisch beim Öffnen verbraucht.'}
+              </div>
+              <button
+                type="button"
+                onClick={() => void confirmEmailAction()}
+                disabled={busy || !emailAction}
+                className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-amber-400 font-black text-black disabled:opacity-40"
+              >
+                <CheckCircle2 size={18} />
+                {busy ? 'Wird bestätigt …' : 'Jetzt bestätigen'}
+              </button>
+            </div>
           )}
 
           {mode === 'mfa' && (
