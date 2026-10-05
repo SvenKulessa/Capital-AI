@@ -1,6 +1,6 @@
--- Fix registration trigger so an omitted optional marketing consent is stored as false,
--- not NULL. This prevents auth.users signup from aborting on user_consents.granted NOT NULL.
--- Production execution remains gated by the canonical Supabase migration workflow.
+-- Fix registration consent trigger so omitted optional marketing consent never writes NULL
+-- into public.user_consents.granted.
+-- Production execution remains gated by the canonical migration workflow.
 
 begin;
 
@@ -23,7 +23,7 @@ begin
   values (new.id, null, 'free', 'Free')
   on conflict (user_id) do nothing;
 
-  if new.raw_user_meta_data->>'terms_accepted' = 'true'
+  if coalesce(new.raw_user_meta_data->>'terms_accepted', 'false') = 'true'
      and coalesce(new.raw_user_meta_data->>'terms_version', '') <> '' then
     insert into public.user_consents (
       user_id, consent_type, document_version, granted, evidence_kind
@@ -32,7 +32,7 @@ begin
     ) on conflict (user_id, consent_type, document_version) do nothing;
   end if;
 
-  if new.raw_user_meta_data->>'privacy_acknowledged' = 'true'
+  if coalesce(new.raw_user_meta_data->>'privacy_acknowledged', 'false') = 'true'
      and coalesce(new.raw_user_meta_data->>'privacy_version', '') <> '' then
     insert into public.user_consents (
       user_id, consent_type, document_version, granted, evidence_kind
@@ -46,7 +46,7 @@ begin
   ) values (
     new.id,
     'marketing',
-    coalesce(nullif(new.raw_user_meta_data->>'privacy_version', ''), '2026-09-15'),
+    coalesce(nullif(new.raw_user_meta_data->>'privacy_version', ''), '2026-10-05'),
     coalesce(new.raw_user_meta_data->>'marketing_consent', 'false') = 'true',
     'consent'
   ) on conflict (user_id, consent_type, document_version) do nothing;
@@ -54,5 +54,7 @@ begin
   return new;
 end;
 $$;
+
+revoke all on function public.handle_new_user() from public, anon, authenticated;
 
 commit;

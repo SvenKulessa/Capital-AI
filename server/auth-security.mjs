@@ -1,6 +1,6 @@
 const PASSKEY_ID_RE = /^[0-9a-fA-F-]{36}$/;
 const FACTOR_ID_RE = /^[0-9a-fA-F-]{36}$/;
-const TOKEN_HASH_RE = /^[A-Za-z0-9._~-]{20,1024}$/;
+const TOKEN_HASH_RE = /^[A-Za-z0-9._~-]{16,1024}$/;
 const TOTP_CODE_RE = /^\d{6,8}$/;
 const EMAIL_VERIFY_TYPES = new Set(['signup', 'invite', 'magiclink', 'email_change', 'recovery']);
 
@@ -46,30 +46,6 @@ function factorProjection(user) {
       updatedAt: factor.updated_at || null,
     }))
     .filter(factor => FACTOR_ID_RE.test(factor.id));
-}
-
-function totpEnrollmentPayload(data) {
-  const value = data?.data && typeof data.data === 'object' ? data.data : data;
-  const totp = value?.totp && typeof value.totp === 'object' ? value.totp : null;
-  if (!totp) return null;
-
-  const uri = typeof totp.uri === 'string' ? totp.uri : '';
-  let secret = typeof totp.secret === 'string' ? totp.secret : '';
-  if (!secret && uri) {
-    try {
-      secret = new URL(uri).searchParams.get('secret') || '';
-    } catch {
-      secret = '';
-    }
-  }
-
-  return {
-    id: String(value?.id || ''),
-    friendlyName: typeof value?.friendly_name === 'string' ? value.friendly_name : '',
-    qrCode: typeof totp.qr_code === 'string' ? totp.qr_code : '',
-    secret,
-    uri,
-  };
 }
 
 function passkeyProjection(items) {
@@ -142,6 +118,15 @@ export function createAuthSecurity({
       const tokenHash = String(url.searchParams.get('token_hash') || '');
       const type = String(url.searchParams.get('type') || '');
       if (!TOKEN_HASH_RE.test(tokenHash) || !EMAIL_VERIFY_TYPES.has(type)) {
+        if (type === 'recovery') {
+          res.writeHead(303, {
+            Location: '/login?mode=forgot&recovery_error=invalid_link',
+            'Cache-Control': 'no-store',
+            'Referrer-Policy': 'no-referrer',
+          });
+          res.end();
+          return true;
+        }
         json(res, 400, { error: 'invalid_email_verification' });
         return true;
       }
@@ -150,6 +135,15 @@ export function createAuthSecurity({
         body: { token_hash: tokenHash, type },
       });
       if (!verified.response.ok) {
+        if (type === 'recovery') {
+          res.writeHead(303, {
+            Location: '/login?mode=forgot&recovery_error=verification_failed',
+            'Cache-Control': 'no-store',
+            'Referrer-Policy': 'no-referrer',
+          });
+          res.end();
+          return true;
+        }
         json(res, 400, { error: 'email_verification_failed', code: upstreamCode(verified.data, 'verification_failed') });
         return true;
       }
@@ -494,27 +488,22 @@ export function createAuthSecurity({
       const enrolled = await authRequest(config, '/factors', {
         method: 'POST',
         accessToken: stored.accessToken,
-        body: { factor_type: 'totp', friendly_name: name },
+        body: { factor_type: 'totp', friendly_name: name, issuer: 'CAPITAL-AI' },
+        maxResponseBytes: 262_144,
       });
-      const enrollment = totpEnrollmentPayload(enrolled.data);
-      if (
-        !enrolled.response.ok ||
-        !enrollment ||
-        !FACTOR_ID_RE.test(enrollment.id) ||
-        (!enrollment.secret && !enrollment.qrCode && !enrollment.uri)
-      ) {
+      if (!enrolled.response.ok || !FACTOR_ID_RE.test(String(enrolled.data?.id || '')) || !enrolled.data?.totp) {
         json(res, enrolled.response.status === 429 ? 429 : 422, {
           error: 'totp_enrollment_failed',
-          code: upstreamCode(enrolled.data, 'totp_enrollment_payload_invalid'),
+          code: upstreamCode(enrolled.data, 'totp_enrollment_failed'),
         });
         return true;
       }
       json(res, 200, {
-        factorId: enrollment.id,
-        friendlyName: enrollment.friendlyName || name,
-        qrCode: enrollment.qrCode,
-        secret: enrollment.secret,
-        uri: enrollment.uri,
+        factorId: enrolled.data.id,
+        friendlyName: enrolled.data.friendly_name || name,
+        qrCode: enrolled.data.totp.qr_code || '',
+        secret: enrolled.data.totp.secret || '',
+        uri: enrolled.data.totp.uri || '',
       });
       return true;
     }

@@ -92,7 +92,7 @@
 !docs/security/evidence/
 !docs/security/evidence/license-rights-review.json
 !public/
-!public/bootstrap-guard.js
+!public/bootstrap-failure.js
 !public/fonts/
 !public/fonts/**
 !public/branding/
@@ -115,5 +115,3 @@
 !supabase/
 !supabase/email-templates/
 !supabase/email-templates/**
-!supabase/migrations/
-!supabase/migrations/20261005155500_fix_registration_marketing_consent_null.sql

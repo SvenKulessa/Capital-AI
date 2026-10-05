@@ -235,7 +235,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
   const mobileVerifier = value =>
     /^[A-Za-z0-9._~-]{43,128}$/.test(String(value || '')) ? String(value) : '';
 
-  async function authRequest(config, path, { method = 'GET', body, accessToken } = {}) {
+  async function authRequest(config, path, { method = 'GET', body, accessToken, maxResponseBytes = 65_536 } = {}) {
     const headers = { Accept: 'application/json', apikey: config.publishableKey };
     if (body !== undefined) headers['Content-Type'] = 'application/json';
     if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
@@ -249,7 +249,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     let data = null;
     if (response.status !== 204) {
       try {
-        data = await boundedJson(response);
+        data = await boundedJson(response, maxResponseBytes);
       } catch {
         data = null;
       }
@@ -744,16 +744,12 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       const termsAccepted = body.termsAccepted === true;
       const privacyAcknowledged = body.privacyAcknowledged === true;
       const marketingConsent = body.marketingConsent === true;
-      if (!email || !password || !name) {
-        json(res, 400, { error: 'invalid_registration' });
-        return true;
-      }
-      if (password !== passwordConfirm) {
-        json(res, 400, { error: 'passwords_do_not_match' });
+      if (!email || !password || password !== passwordConfirm || !name) {
+        json(res, 400, { error: password !== passwordConfirm ? 'passwords_do_not_match' : 'invalid_registration' });
         return true;
       }
       if (!termsAccepted || !privacyAcknowledged) {
-        json(res, 400, { error: 'registration_consent_required' });
+        json(res, 400, { error: 'registration_consents_required' });
         return true;
       }
       const confirmation = new URL('/', config.origin).toString();
@@ -767,22 +763,16 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
             terms_accepted: true,
             terms_version: '2026-10-05',
             privacy_acknowledged: true,
-            privacy_version: '2026-09-15',
+            privacy_version: '2026-10-05',
             marketing_consent: marketingConsent,
           },
         },
       });
       if (!signedUp.response.ok || !signedUp.data?.user?.id) {
-        const upstream = typeof signedUp.data?.error_code === 'string' ? signedUp.data.error_code : '';
-        const registrationError = upstream === 'weak_password'
+        const registrationError = signedUp.data?.error_code === 'weak_password'
           ? 'weak_password'
-          : upstream === 'unexpected_failure'
-            ? 'registration_backend_failed'
-            : 'registration_failed';
-        json(res, signedUp.response.status === 429 ? 429 : 422, {
-          error: registrationError,
-          code: registrationError,
-        });
+          : 'registration_failed';
+        json(res, signedUp.response.status === 429 ? 429 : 422, { error: registrationError });
         return true;
       }
       if (signedUp.data.access_token && signedUp.data.refresh_token) {

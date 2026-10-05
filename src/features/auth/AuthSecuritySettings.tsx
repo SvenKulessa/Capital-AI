@@ -364,7 +364,7 @@ export function AuthSecuritySettings() {
                   inputMode="numeric"
                   autoComplete="one-time-code"
                   value={totpCode}
-                  onChange={event => setTotpCode(event.target.value.replace(/\D/g, '').slice(0, 8))}
+                  onChange={event => setTotpCode(event.target.value.replace(/D/g, '').slice(0, 8))}
                   className="mt-1 w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2.5 font-mono text-sm tracking-[0.25em] text-white"
                   placeholder="123456"
                 />

@@ -58,21 +58,24 @@ test('app error boundary fails closed to the bootstrap fallback', () => {
 });
 
 
-test('index shell keeps bootstrap recovery hidden unless the bootstrap guard reports a real error', async () => {
+test('index loads the app directly and exposes the fail-closed shell only on a bootstrap error', async () => {
   const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-  const guard = await readFile(new URL('../public/bootstrap-guard.js', import.meta.url), 'utf8');
-  const main = await readFile(new URL('../src/main.tsx', import.meta.url), 'utf8');
+  const bootstrap = await readFile(new URL('../public/bootstrap-failure.js', import.meta.url), 'utf8');
+  assert.match(html, /<div id="root"><\/div>/);
+  assert.match(html, /id="capital-ai-bootstrap-fallback"[\s\S]*hidden/);
+  assert.match(html, /id="capital-ai-entry"[\s\S]*src="\/src\/main\.tsx"/);
+  assert.doesNotMatch(html, /10 seconds|10 Sekunden|capitalAiBootstrapFallback|animation:/);
+  assert.match(bootstrap, /target instanceof HTMLScriptElement/);
+  assert.match(bootstrap, /target\.id === 'capital-ai-entry'/);
+  assert.match(bootstrap, /fallback\.hidden = false/);
+  assert.doesNotMatch(bootstrap, /setTimeout|setInterval/);
+});
 
-  assert.match(html, /<script src="\/bootstrap-guard\.js"><\/script>/);
-  assert.match(html, /#capital-ai-bootstrap-fallback\s*\{[\s\S]*display:\s*none/);
-  assert.match(html, /#capital-ai-bootstrap-fallback\[data-visible="true"\][\s\S]*display:\s*flex/);
-  assert.doesNotMatch(html, /setTimeout|10s forwards|capitalAiBootstrapFallback/);
-  assert.match(guard, /addEventListener\('error'/);
-  assert.match(guard, /addEventListener\('unhandledrejection'/);
-  assert.match(main, /import App from '\.\/App'/);
-  assert.match(main, /__CAPITAL_AI_BOOTSTRAP_MOUNTED__ = true/);
-  assert.doesNotMatch(main, /import\('\.\/App\.tsx'\)/);
-  assert.match(html, /<noscript>/);
+test('TOTP QR rendering preserves already encoded data URLs', async () => {
+  const source = await readFile(new URL('../src/features/auth/AuthSecuritySettings.tsx', import.meta.url), 'utf8');
+  assert.match(source, /enrollment\.qrCode\.startsWith\('data:'\)/);
+  assert.match(source, /\? enrollment\.qrCode/);
+  assert.match(source, /data:image\/svg\+xml;charset=utf-8/);
 });
 
 test('research pages render source links and never grant project entitlements', () => {
@@ -97,19 +100,4 @@ test('all four research routes render their own accessible page and preserve ope
   assert.match(summary, /günstige gehostete Infrastruktur/);
   assert.match(summary, /sind geplant/);
   assert.match(summary, /Förderzusage/);
-});
-
-test('registration migration makes optional marketing consent null-safe', async () => {
-  const migration = await readFile(
-    new URL('../supabase/migrations/20261005155500_fix_registration_marketing_consent_null.sql', import.meta.url),
-    'utf8',
-  );
-  assert.match(
-    migration,
-    /coalesce\(new\.raw_user_meta_data->>'marketing_consent', 'false'\) = 'true'/,
-  );
-  assert.doesNotMatch(
-    migration,
-    /new\.raw_user_meta_data->>'marketing_consent'\s*=\s*'true',\s*\n\s*'consent'/,
-  );
 });

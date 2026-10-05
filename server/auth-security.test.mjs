@@ -225,65 +225,33 @@ test('TOTP reenrollment removes only same-name pending factor before creating re
     ],
   );
   assert.equal(res.payload.secret, 'TESTSECRET0123456');
+  const enrollCall = h.calls.find(call => call.path === '/factors' && call.options.method === 'POST');
+  assert.equal(enrollCall.options.maxResponseBytes, 262_144);
+  assert.equal(enrollCall.options.body.issuer, 'CAPITAL-AI');
 });
 
-test('TOTP enrollment accepts nested upstream payload and derives manual secret from otpauth URI', async () => {
-  const base = securityHarness({ factor: false });
-  const originalHandle = base.security.handle;
-  void originalHandle;
-
-  const user = { id: 'user-1', email: 'user@example.test', factors: [] };
-  const writes = [];
-  const calls = [];
-  const security = createAuthSecurity({
-    getConfig: () => ({ url: 'https://project.supabase.co', publishableKey: 'publishable' }),
-    authRequest: async (_config, path, options = {}) => {
-      calls.push({ path, options });
-      if (path === '/user') return { response: new Response('{}', { status: 200 }), data: user };
-      if (path === '/factors' && options.method === 'POST') {
-        return {
-          response: new Response('{}', { status: 200 }),
-          data: {
-            data: {
-              id: challengeId,
-              friendly_name: 'CAPITAL-AI Authenticator',
-              totp: {
-                qr_code: 'data:image/svg+xml;charset=utf-8,%3Csvg%3E%3C/svg%3E',
-                uri: 'otpauth://totp/CAPITAL-AI:user@example.test?secret=DERIVEDSECRET1234&issuer=CAPITAL-AI',
-              },
-            },
-          },
-        };
-      }
-      throw new Error(`Unexpected path: ${path}`);
-    },
-    resolveSession: async () => ({
-      accessToken: 'access-token',
-      refreshToken: 'refresh-token',
-      user: { id: 'user-1' },
-    }),
-    writeSessionCookies: (_req, _res, _config, value) => { writes.push(value); },
-    clearSessionCookies: () => {},
-    readRequestJson: async req => req.body || {},
-    sameOrigin: req => req.headers?.origin === 'https://capital-ai.online',
-    audit: () => {},
-  });
-
-  const res = responseHarness();
-  await security.handle(
-    {
-      method: 'POST',
-      headers: { origin: 'https://capital-ai.online' },
-      body: { friendlyName: 'CAPITAL-AI Authenticator' },
-    },
-    res,
-    new URL('https://capital-ai.online/api/auth/mfa/totp/enroll'),
+test('recovery accepts a bounded 16-character token hash and redirects invalid recovery links to a safe UI', async () => {
+  const valid = securityHarness({ factor: false });
+  const validRes = responseHarness();
+  await valid.security.handle(
+    { method: 'GET', headers: {} },
+    validRes,
+    new URL('https://capital-ai.online/api/auth/email/verify?token_hash=abcdefghijklmnop&type=recovery'),
     json,
   );
+  assert.equal(validRes.status, 303);
+  assert.equal(validRes.getHeader('location'), '/login?mode=reset');
+  assert.equal(valid.calls[0].path, '/verify');
 
-  assert.equal(res.status, 200);
-  assert.equal(res.payload.factorId, challengeId);
-  assert.equal(res.payload.secret, 'DERIVEDSECRET1234');
-  assert.match(res.payload.qrCode, /^data:image\/svg\+xml/);
-  assert.equal(writes.length, 0);
+  const invalid = securityHarness({ factor: false });
+  const invalidRes = responseHarness();
+  await invalid.security.handle(
+    { method: 'GET', headers: {} },
+    invalidRes,
+    new URL('https://capital-ai.online/api/auth/email/verify?token_hash=short&type=recovery'),
+    json,
+  );
+  assert.equal(invalidRes.status, 303);
+  assert.equal(invalidRes.getHeader('location'), '/login?mode=forgot&recovery_error=invalid_link');
+  assert.equal(invalid.calls.length, 0);
 });
