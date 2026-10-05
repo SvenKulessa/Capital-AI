@@ -39,11 +39,11 @@ test('security.txt exposes the exact RFC 9116 well-known path', () => {
   assert.match(res.body, new RegExp(`^Canonical: ${SECURITY_TXT_CANONICAL.replaceAll('.', '\\.')}$`, 'm'));
 });
 
-test('security.txt expiry remains future-bounded to less than one year from this review', () => {
-  const review = Date.parse('2026-10-05T00:00:00Z');
+test('security.txt expiry remains current and less than one year ahead', () => {
+  const now = Date.now();
   const expiry = Date.parse(SECURITY_TXT_EXPIRES);
-  assert.ok(expiry > review);
-  assert.ok(expiry - review < 365 * 24 * 60 * 60 * 1000);
+  assert.ok(expiry > now, 'security.txt expiry must be renewed before it becomes stale');
+  assert.ok(expiry - now < 365 * 24 * 60 * 60 * 1000);
 });
 
 test('HEAD exposes security.txt headers without body', () => {
