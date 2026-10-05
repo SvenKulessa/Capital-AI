@@ -11,9 +11,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   X,
-  Check,
   ShieldCheck,
-  CreditCard,
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { BrandLogo } from '../../components/BrandLogo';
