@@ -7,7 +7,7 @@ status: "ACTIVE_FAIL_CLOSED"
 correlatedAt: "2026-10-05"
 correlationBaseline:
   repository: "SvenKulessa/Capital-AI"
-  mainSha: "52666468b758c9a295709069b12f53ca93e9bfc4"
+  mainSha: "96178b35db215754eb69785535f035b4fb4d96af"
   rootPolicy: "AGENTS.md@currentmain"
   roadmapSource: "src/data/roadmapData.ts"
   domainContract: "CAPITAL-AI-MARKET/PROJECT.md"
@@ -65,14 +65,17 @@ currentMainCorrelation:
     mode: "OPEN_SOURCE_AND_OPEN_DATA_ONLY"
     admittedReferenceSources:
       - "wikidata-reference"
+    rightsAdmittedMarketQuoteSourceCount: 1
+    rightsAdmittedScoringPriceInputSourceCount: 1
     admittedMarketQuoteSourceCount: 0
     admittedScoringPriceInputSourceCount: 0
-    productiveQuoteState: "BLOCKED"
-    productiveScoringState: "BLOCKED"
+    productiveQuoteState: "BLOCKED_PENDING_ADAPTER"
+    productiveScoringState: "BLOCKED_PENDING_ADAPTER_AND_SCORING_GATES"
     evidence:
       - "server/open-source-market-policy.mjs"
       - "docs/market-data/open-source-market-policy.json"
-      - "docs/market-data/evidence/score-display-source-admission-20261004.json"\n    commercialLicensedDataLane:\n      state: "DEFINED_FAIL_CLOSED"\n      contract: "src/contracts/commercialLicensedDataLane.ts"\n      twelveDataEvidence: "docs/market-data/evidence/twelve-data-rights-20261005.json"\n      twelveDataDeployEligible: false\n      twelveDataDatasetScopeVerified: false\n      twelveDataIndexPricing: "BLOCKED"\n      twelveDataReplay: "REVIEW_REQUIRED"\n      twelveDataJetStream: "REVIEW_REQUIRED"\n      twelveDataBackupRestore: "REVIEW_REQUIRED"\n      customerAcquisitionViaCapitalAi: "REVIEW_REQUIRED_RESELLER_OR_SUBLICENSE_RIGHT_UNVERIFIED"
+      - "docs/market-data/evidence/score-display-source-admission-20261004.json"
+      - "docs/market-data/evidence/source-rights-admission-ecb-reference-rates-20261005.json"\n    commercialLicensedDataLane:\n      state: "DEFINED_FAIL_CLOSED"\n      contract: "src/contracts/commercialLicensedDataLane.ts"\n      twelveDataEvidence: "docs/market-data/evidence/twelve-data-rights-20261005.json"\n      twelveDataDeployEligible: false\n      twelveDataDatasetScopeVerified: false\n      twelveDataIndexPricing: "BLOCKED"\n      twelveDataReplay: "REVIEW_REQUIRED"\n      twelveDataJetStream: "REVIEW_REQUIRED"\n      twelveDataBackupRestore: "REVIEW_REQUIRED"\n      customerAcquisitionViaCapitalAi: "REVIEW_REQUIRED_RESELLER_OR_SUBLICENSE_RIGHT_UNVERIFIED"
   instrumentManifest:
     status: "PARTIAL_FAIL_CLOSED"
     firstTestPerClass: 20
@@ -181,14 +184,14 @@ chronologicalWork:
 
   - sequence: 3
     id: "03-MARKET-RIGHTS-ADMISSION"
-    state: "BLOCKED"
+    state: "RIGHTS_PASS_ECB_REFERENCE_RUNTIME_BLOCKED"
     goal: "Quellen- und Datenrechte capability- sowie instrumentspezifisch zulassen."
     implementation:
       - "Adapter-Softwarelizenz, Source-SHA, Lizenz-Blob und Packaging verifizieren."
       - "Dataset-ID, Snapshot/Version, Open-Data-Lizenz, Provenance und Attribution verifizieren."
       - "Commercial Web/Mobile Display, Derived Scoring, Normalization, Cache, JetStream, Replay, Retention, Backup/Restore, Audit und interne Verarbeitung einzeln belegen."
       - "Redistribution separat klassifizieren; nicht benötigte Rechte nicht fingieren."\n      - "COMMERCIAL_LICENSED_DATA je Provider separat zulassen; kein Mapping auf OPEN_SOURCE_OPEN_DATA_ADMITTED."\n      - "Bei Vertrieb an Kunden über CAPITAL-AI zusätzlich Reseller-/Agency-/Sublicense-/Pass-through-Recht als Muss-Gate prüfen."\n      - "Twelve Data: Customer Display und nicht rekonstruierbare Derived Scores als CONDITIONAL_RIGHTS führen; Index-Pricing BLOCKED; Raw-Deletion nach Vertragsende <= 30 Tage; Attribution verpflichtend; Replay/JetStream/Backup REVIEW_REQUIRED."
-    exitGate: "Mindestens eine Quelle PASS für marketQuotes; für Scoring zusätzlich scoringPriceInput PASS."
+    exitGate: "PASS: ECB-Referenzraten sind rechte-seitig für marketQuotes (REFERENCE_RATE) und scoringPriceInput (INFORMATION_AND_ANALYTICS_ONLY) zugelassen. Runtime-Admission bleibt bis 04-MARKET-PROVIDER-ADAPTERS gesperrt."
 
   - sequence: 4
     id: "04-MARKET-PROVIDER-ADAPTERS"
