@@ -93,7 +93,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
       setMode('login');
       setPassword('');
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Anmeldung ist derzeit nicht verfügbar.');
+      const message = reason instanceof Error ? reason.message : 'authentication_failed';
+      setError(
+        message === 'weak_password'
+          ? 'Das Passwort erfüllt die Supabase-Sicherheitsanforderungen nicht. Verwende mindestens 14 Zeichen.'
+          : message === 'registration_failed'
+            ? 'Registrierung fehlgeschlagen. Bitte Eingaben prüfen oder später erneut versuchen.'
+            : message,
+      );
     } finally {
       setBusy(false);
     }
@@ -217,6 +224,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                       autoComplete="email"
                       className="w-full rounded-xl border border-white/15 bg-black/40 py-3 pl-10 pr-3 text-sm text-white"
                     />
+                    {mode === 'register' && (
+                      <p className="mt-1 text-[11px] text-slate-500">Mindestens 14 Zeichen.</p>
+                    )}
                   </div>
                 </label>
                 <label className="block text-xs font-bold text-slate-300">
@@ -228,7 +238,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                       value={password}
                       onChange={event => setPassword(event.target.value)}
                       required
-                      minLength={10}
+                      minLength={mode === 'login' ? 1 : 14}
                       maxLength={256}
                       autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                       className="w-full rounded-xl border border-white/15 bg-black/40 py-3 pl-10 pr-3 text-sm text-white"
