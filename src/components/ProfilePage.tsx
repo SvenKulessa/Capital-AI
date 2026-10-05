@@ -12,6 +12,7 @@ import {
   User,
   WalletCards,
 } from 'lucide-react';
+import { ProductBadge } from './ProductBadge';
 
 interface SessionUser {
   id: string;
@@ -247,9 +248,12 @@ export function ProfilePage({ onBackToHome }: { onBackToHome: () => void }) {
           <div className="rounded-2xl border border-amber-500/25 bg-[#070b19]/90 p-5 md:col-span-2">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="flex items-center gap-2 text-amber-300">
-                  <KeyRound className="h-4 w-4" />
-                  <span className="text-xs font-black uppercase tracking-wider">Kraken BYOK</span>
+                <div className="flex items-center gap-3 text-amber-300">
+                  <ProductBadge badge="vault" size="md" />
+                  <div className="flex items-center gap-2">
+                    <KeyRound className="h-4 w-4" />
+                    <span className="text-xs font-black uppercase tracking-wider">Kraken BYOK</span>
+                  </div>
                 </div>
                 <h2 className="mt-2 text-lg font-black">Eigene Kraken API anbinden</h2>
                 <p className="mt-1 text-xs leading-relaxed text-slate-400">
