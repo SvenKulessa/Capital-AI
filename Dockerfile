@@ -43,6 +43,7 @@ COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/licen
 COPY shared ./shared
 COPY docs/licenses ./docs/licenses
 COPY docs/security/evidence/license-rights-review.json ./docs/security/evidence/license-rights-review.json
+COPY docs/market-data/PRODUCTION-WEB-01-MARKET-20261005.yaml ./docs/market-data/PRODUCTION-WEB-01-MARKET-20261005.yaml
 COPY scripts/license-engine.mjs ./scripts/license-engine.mjs
 RUN --network=none node --test server/mta-sts.test.mjs server/well-known.test.mjs server/auth-security.test.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs \
     && node --test server/prompt-injection-guard.test.mjs server/vocabulary-checkout.test.mjs scripts/billing-catalog.test.mjs \
