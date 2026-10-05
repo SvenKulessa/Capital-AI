@@ -47,6 +47,7 @@
 !shared/vocabulary-metadata.mjs
 !shared/seo-indexing-policy.mjs
 !shared/seo-content-manifest.mjs
+!shared/seo-metadata.mjs
 !deploy/
 !deploy/runtime/
 !deploy/runtime/package.json
@@ -77,6 +78,7 @@
 !scripts/supabase-auth-config.mjs
 !scripts/supabase-auth-config.test.mjs
 !scripts/seo-content-manifest.test.mjs
+!scripts/seo-metadata.test.mjs
 !contracts/
 !contracts/**
 !packages/
