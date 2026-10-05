@@ -66,3 +66,18 @@ test('production pricing dialog exposes keyboard and modal semantics', () => {
   assert.match(pricing, /event\.key !== 'Tab'/);
   assert.match(pricing, /closeButtonRef\.current\?\.focus\(\)/);
 });
+
+
+test('additional products catalog exposes only currently available add-ons', () => {
+  const catalog = readFileSync(new URL('../src/data/additionalProductsCatalog.ts', import.meta.url), 'utf8');
+  const pricing = readFileSync(new URL('../src/features/pricing/MonetizationModal.tsx', import.meta.url), 'utf8');
+
+  assert.match(catalog, /id: 'market-vocabulary'/);
+  assert.match(catalog, /state: 'available'/);
+  assert.match(catalog, /badgeLicense: 'LicenseRef-CAPITAL-AI-VOCABULARY-BADGE-CUSTOMER-1\.0'/);
+  assert.match(pricing, /Starter · Pro · Enterprise/);
+  assert.match(pricing, /Zusatzprodukte/);
+  assert.match(pricing, /ADDITIONAL_PRODUCTS_CATALOG\.map/);
+  assert.match(pricing, /Vocabulary ansehen \/ erwerben/);
+  assert.doesNotMatch(catalog, /data-api|white-label|cpt-|token|nft/i);
+});
