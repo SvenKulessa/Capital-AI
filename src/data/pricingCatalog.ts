@@ -30,7 +30,6 @@ export const VOCABULARY_PRICE = {
   priceId: 'price_1UMiuIPKr4joNbEclpn8AwFW',
   amountCents: 1900,
   taxBehavior: 'inclusive',
-  includedIn: ['pro', 'enterprise'],
 } as const;
 
 export function annualDiscountPercent(tier: PaidTier) {
