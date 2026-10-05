@@ -7,14 +7,15 @@ status: "ACTIVE_FAIL_CLOSED"
 correlatedAt: "2026-10-05"
 correlationBaseline:
   repository: "SvenKulessa/Capital-AI"
-  mainSha: "96178b35db215754eb69785535f035b4fb4d96af"
+  mainSha: "85d45f9b1d2973f8e54066055dee0b241ba4fd71"
   rootPolicy: "AGENTS.md@currentmain"
   roadmapSource: "src/data/roadmapData.ts"
   domainContract: "CAPITAL-AI-MARKET/PROJECT.md"
 
 objective:
   productOutcome: "Kommerziell nutzbarer FinTech-Market-Screener mit evidenzgebundenem Scoring und getrenntem BYOK-Nutzerpfad."
-  sharedMarketLane: "OPEN_SOURCE_OPEN_DATA_ADMITTED bleibt eine eigenständige produktive Lane und wird durch kommerzielle Providerrechte nicht erweitert."\n  commercialLicensedDataLane: "Kommerziell lizenzierte Daten dürfen separat über COMMERCIAL_LICENSED_DATA geführt und Kunden über CAPITAL-AI als Drittanbieter angeboten werden, jedoch nur wenn Providervertrag, Entity, Dataset/Feeds, Attribution sowie ein ausdrückliches Reseller-/Agency-/Sublicense-/Pass-through-Recht für dieses Vertriebsmodell belegt sind."
+  sharedMarketLane: "OPEN_SOURCE_OPEN_DATA_ADMITTED bleibt eine eigenständige produktive Lane und wird durch kommerzielle Providerrechte nicht erweitert."
+  commercialLicensedDataLane: "Kommerziell lizenzierte Daten dürfen separat über COMMERCIAL_LICENSED_DATA geführt und Kunden über CAPITAL-AI als Drittanbieter angeboten werden, jedoch nur wenn Providervertrag, Entity, Dataset/Feeds, Attribution sowie ein ausdrückliches Reseller-/Agency-/Sublicense-/Pass-through-Recht für dieses Vertriebsmodell belegt sind."
   byokLane: "Nutzereigene Provider-Credentials bleiben user-private; sie erweitern weder öffentliche Anzeige-, Redistribution-, Shared-Cache- noch JetStream-Rechte."
   scoringOutcome: "Ein kanonischer Scoring-Pfad erzeugt nur aus zugelassenen, replay-verifizierbaren Inputs scoreEligible Ergebnisse; decisionEligible bleibt ein separates Gate."
   noExecutionClaim: true
@@ -50,7 +51,9 @@ websiteRequirements:
 
 marketInvariants:
   - "Provider-Auswahl ist niemals Source Admission."
-  - "Open-Source-Adaptersoftware ist niemals automatisch Open-Data-Recht."\n  - "COMMERCIAL_LICENSED_DATA ist von OPEN_SOURCE_OPEN_DATA_ADMITTED strikt getrennt und kann dessen Admission nicht implizit erfüllen."\n  - "Kundenbezug über CAPITAL-AI als Drittanbieter setzt ein ausdrückliches Reseller-/Agency-/Sublicense-/Pass-through-Recht des Providers voraus; allgemeine Produktnutzungsrechte reichen nicht."
+  - "Open-Source-Adaptersoftware ist niemals automatisch Open-Data-Recht."
+  - "COMMERCIAL_LICENSED_DATA ist von OPEN_SOURCE_OPEN_DATA_ADMITTED strikt getrennt und kann dessen Admission nicht implizit erfüllen."
+  - "Kundenbezug über CAPITAL-AI als Drittanbieter setzt ein ausdrückliches Reseller-/Agency-/Sublicense-/Pass-through-Recht des Providers voraus; allgemeine Produktnutzungsrechte reichen nicht."
   - "marketQuotes und scoringPriceInput werden unabhängig zugelassen."
   - "scoreEligible und decisionEligible sind getrennte, fail-closed Gates."
   - "Demo-, Preview-, Fallback-, Research- und synthetische Benchmarkdaten werden niemals als produktive Evidence behandelt."
@@ -75,7 +78,39 @@ currentMainCorrelation:
       - "server/open-source-market-policy.mjs"
       - "docs/market-data/open-source-market-policy.json"
       - "docs/market-data/evidence/score-display-source-admission-20261004.json"
-      - "docs/market-data/evidence/source-rights-admission-ecb-reference-rates-20261005.json"\n    commercialLicensedDataLane:\n      state: "DEFINED_FAIL_CLOSED"\n      contract: "src/contracts/commercialLicensedDataLane.ts"\n      twelveDataEvidence: "docs/market-data/evidence/twelve-data-rights-20261005.json"\n      twelveDataDeployEligible: false\n      twelveDataDatasetScopeVerified: false\n      twelveDataIndexPricing: "BLOCKED"\n      twelveDataReplay: "REVIEW_REQUIRED"\n      twelveDataJetStream: "REVIEW_REQUIRED"\n      twelveDataBackupRestore: "REVIEW_REQUIRED"\n      customerAcquisitionViaCapitalAi: "REVIEW_REQUIRED_RESELLER_OR_SUBLICENSE_RIGHT_UNVERIFIED"
+      - "docs/market-data/evidence/source-rights-admission-ecb-reference-rates-20261005.json"
+    commercialLicensedDataLane:
+      state: "DEFINED_FAIL_CLOSED"
+      contract: "src/contracts/commercialLicensedDataLane.ts"
+      twelveDataEvidence: "docs/market-data/evidence/twelve-data-rights-20261005.json"
+      twelveDataDeployEligible: false
+      twelveDataDatasetScopeVerified: false
+      twelveDataIndexPricing: "BLOCKED"
+      twelveDataReplay: "REVIEW_REQUIRED"
+      twelveDataJetStream: "REVIEW_REQUIRED"
+      twelveDataBackupRestore: "REVIEW_REQUIRED"
+      customerAcquisitionViaCapitalAi: "REVIEW_REQUIRED_RESELLER_OR_SUBLICENSE_RIGHT_UNVERIFIED"
+  claimEligibility:
+    state: "PARTIAL_FAIL_CLOSED"
+    contract: "src/contracts/marketClaimEligibility.ts"
+    test: "src/contracts/__tests__/marketClaimEligibility.test.ts"
+    providerLifecycleStates:
+      - "selectable"
+      - "configured"
+      - "admitted"
+      - "runtimeReady"
+    timeSemantics:
+      - "realtime"
+      - "delayed"
+      - "reference"
+      - "historical"
+      - "unavailable"
+    canonicalEligibility:
+      scoreEligible: "SEPARATE_GATE"
+      rankEligible: "SEPARATE_GATE"
+      alertEligible: "SEPARATE_GATE"
+      decisionEligible: "SEPARATE_GATE"
+    productGrowthProjection: "AVAILABLE_NOT_YET_WIRED"
   instrumentManifest:
     status: "PARTIAL_FAIL_CLOSED"
     firstTestPerClass: 20
@@ -173,13 +208,20 @@ chronologicalWork:
 
   - sequence: 2
     id: "02-MARKET-CLAIMS"
-    state: "OPEN"
+    state: "PARTIAL"
     goal: "Kanonischen MARKET Claim-/Eligibility-Vertrag implementieren."
     implementation:
       - "Providerstatus: selectable, configured, admitted und runtime-ready getrennt modellieren."
       - "Realtime-, delayed-, reference-, historical- und unavailable-Zustände explizit trennen."
       - "scoreEligible, rankEligible, alertEligible und decisionEligible getrennt führen."
       - "MARKET-Claim-Projektion für PRODUCT/GROWTH bereitstellen; keine UI-Logik in MARKET duplizieren."
+    evidence:
+      - "src/contracts/marketClaimEligibility.ts"
+      - "src/contracts/__tests__/marketClaimEligibility.test.ts"
+      - "src/contracts/canonicalContracts.ts"
+      - "src/services/scoringEngine.ts"
+    remaining:
+      - "PRODUCT/GROWTH Claim-Surfaces an die kanonische Projection binden und direkte Provider-/Realtime-/Production-Ready-Inferenz entfernen."
     exitGate: "Unbelegte Realtime-, 50-Komponenten-, Top-N- oder Production-Ready-Claims sind technisch nicht renderbar."
 
   - sequence: 3
@@ -190,7 +232,10 @@ chronologicalWork:
       - "Adapter-Softwarelizenz, Source-SHA, Lizenz-Blob und Packaging verifizieren."
       - "Dataset-ID, Snapshot/Version, Open-Data-Lizenz, Provenance und Attribution verifizieren."
       - "Commercial Web/Mobile Display, Derived Scoring, Normalization, Cache, JetStream, Replay, Retention, Backup/Restore, Audit und interne Verarbeitung einzeln belegen."
-      - "Redistribution separat klassifizieren; nicht benötigte Rechte nicht fingieren."\n      - "COMMERCIAL_LICENSED_DATA je Provider separat zulassen; kein Mapping auf OPEN_SOURCE_OPEN_DATA_ADMITTED."\n      - "Bei Vertrieb an Kunden über CAPITAL-AI zusätzlich Reseller-/Agency-/Sublicense-/Pass-through-Recht als Muss-Gate prüfen."\n      - "Twelve Data: Customer Display und nicht rekonstruierbare Derived Scores als CONDITIONAL_RIGHTS führen; Index-Pricing BLOCKED; Raw-Deletion nach Vertragsende <= 30 Tage; Attribution verpflichtend; Replay/JetStream/Backup REVIEW_REQUIRED."
+      - "Redistribution separat klassifizieren; nicht benötigte Rechte nicht fingieren."
+      - "COMMERCIAL_LICENSED_DATA je Provider separat zulassen; kein Mapping auf OPEN_SOURCE_OPEN_DATA_ADMITTED."
+      - "Bei Vertrieb an Kunden über CAPITAL-AI zusätzlich Reseller-/Agency-/Sublicense-/Pass-through-Recht als Muss-Gate prüfen."
+      - "Twelve Data: Customer Display und nicht rekonstruierbare Derived Scores als CONDITIONAL_RIGHTS führen; Index-Pricing BLOCKED; Raw-Deletion nach Vertragsende <= 30 Tage; Attribution verpflichtend; Replay/JetStream/Backup REVIEW_REQUIRED."
     exitGate: "PASS: ECB-Referenzraten sind rechte-seitig für marketQuotes (REFERENCE_RATE) und scoringPriceInput (INFORMATION_AND_ANALYTICS_ONLY) zugelassen. Runtime-Admission bleibt bis 04-MARKET-PROVIDER-ADAPTERS gesperrt."
 
   - sequence: 4

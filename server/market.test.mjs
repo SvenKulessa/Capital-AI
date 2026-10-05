@@ -126,6 +126,7 @@ test('Open-Source plus qualifying Open-Data evidence is required', () => {
 });
 
 
+
 test('ECB reference rates pass data-rights admission but remain runtime-blocked until an adapter is implemented', () => {
   const evidence = JSON.parse(readFileSync(
     new URL('../docs/market-data/evidence/source-rights-admission-ecb-reference-rates-20261005.json', import.meta.url),

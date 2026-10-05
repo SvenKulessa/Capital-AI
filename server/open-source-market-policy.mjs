@@ -78,57 +78,34 @@ function isHttpsReference(value){
 
 export function evaluateOpenDataRightsAdmission(evidence){
   const reasons=[];
-  if(!evidence || typeof evidence!=='object') {
-    return {decision:'BLOCK',eligible:false,reasons:['EVIDENCE_MISSING']};
-  }
-
+  if(!evidence || typeof evidence!=='object') return {decision:'BLOCK',eligible:false,reasons:['EVIDENCE_MISSING']};
   if(!OPEN_DATA_LICENSES.has(evidence.dataLicense)) reasons.push('OPEN_DATA_LICENSE_NOT_ADMITTED');
   if(!isHttpsReference(evidence.dataLicenseEvidenceReference)) reasons.push('DATA_LICENSE_EVIDENCE_MISSING');
   if(!isHttpsReference(evidence.provenanceReference)) reasons.push('PROVENANCE_EVIDENCE_MISSING');
-  if(typeof evidence.datasetId!=='string' || !evidence.datasetId.trim()) reasons.push('DATASET_ID_MISSING');
-  if(typeof evidence.datasetVersionOrSnapshot!=='string' || !evidence.datasetVersionOrSnapshot.trim()) reasons.push('DATASET_SNAPSHOT_MISSING');
+  if(typeof evidence.datasetId!=='string' || evidence.datasetId.length===0) reasons.push('DATASET_ID_MISSING');
+  if(typeof evidence.datasetVersionOrSnapshot!=='string' || evidence.datasetVersionOrSnapshot.length===0) reasons.push('DATASET_VERSION_OR_SNAPSHOT_MISSING');
   if(evidence.attributionObligationsReviewed!==true) reasons.push('ATTRIBUTION_REVIEW_MISSING');
   if(!isHttpsReference(evidence.attributionEvidenceReference)) reasons.push('ATTRIBUTION_EVIDENCE_MISSING');
-
-  for(const useCase of MARKET_REQUIRED_USE_CASES){
-    const permission=evidence.useCases?.[useCase];
-    if(permission?.allowed!==true || !isHttpsReference(permission?.evidenceReference)){
-      reasons.push(`USE_CASE_NOT_ADMITTED:${useCase}`);
-    }
+  for(const capability of MARKET_REQUIRED_USE_CASES){
+    const item=evidence.useCases?.[capability];
+    if(item?.allowed!==true) reasons.push(`USE_CASE_NOT_ALLOWED:${capability}`);
+    if(!isHttpsReference(item?.evidenceReference)) reasons.push(`USE_CASE_EVIDENCE_MISSING:${capability}`);
   }
-
-  if(evidence.instrumentEligibilityVerified!==true) reasons.push('INSTRUMENT_ELIGIBILITY_NOT_VERIFIED');
-  if(typeof evidence.instrumentManifestReference!=='string' || !evidence.instrumentManifestReference.trim()){
-    reasons.push('INSTRUMENT_MANIFEST_REFERENCE_MISSING');
-  }
-
-  return {
-    decision:reasons.length===0?'OPEN_DATA_RIGHTS_ADMITTED':'BLOCK',
-    eligible:reasons.length===0,
-    reasons,
-  };
+  if(evidence.instrumentEligibilityVerified!==true) reasons.push('INSTRUMENT_ELIGIBILITY_UNVERIFIED');
+  if(typeof evidence.instrumentManifestReference!=='string' || evidence.instrumentManifestReference.length===0) reasons.push('INSTRUMENT_MANIFEST_REFERENCE_MISSING');
+  return {decision:reasons.length===0?'OPEN_DATA_RIGHTS_ADMITTED':'BLOCK',eligible:reasons.length===0,reasons};
 }
 
 export function evaluateOpenSourceMarketAdmission(evidence){
   const reasons=[];
-  if(!evidence || typeof evidence!=='object') {
-    return {decision:'BLOCK',eligible:false,reasons:['EVIDENCE_MISSING']};
-  }
-
+  if(!evidence || typeof evidence!=='object') return {decision:'BLOCK',eligible:false,reasons:['EVIDENCE_MISSING']};
   if(!OPEN_SOURCE_SOFTWARE_LICENSES.has(evidence.softwareLicense)) reasons.push('SOFTWARE_LICENSE_NOT_ADMITTED');
   if(!/^[a-f0-9]{40}$/.test(evidence.softwareSourceSha||'')) reasons.push('SOFTWARE_SOURCE_SHA_MISSING');
   if(!/^[a-f0-9]{40}$/.test(evidence.softwareLicenseBlobSha||'')) reasons.push('SOFTWARE_LICENSE_BLOB_SHA_MISSING');
   if(!isHttpsReference(evidence.softwareEvidenceReference)) reasons.push('SOFTWARE_EVIDENCE_MISSING');
   if(evidence.softwarePackagingCompatible!==true) reasons.push('SOFTWARE_PACKAGING_NOT_ADMITTED');
-
-  const rights=evaluateOpenDataRightsAdmission(evidence);
-  reasons.push(...rights.reasons);
-
-  return {
-    decision:reasons.length===0?'OPEN_SOURCE_OPEN_DATA_ADMITTED':'BLOCK',
-    eligible:reasons.length===0,
-    reasons,
-  };
+  reasons.push(...evaluateOpenDataRightsAdmission(evidence).reasons);
+  return {decision:reasons.length===0?'OPEN_SOURCE_OPEN_DATA_ADMITTED':'BLOCK',eligible:reasons.length===0,reasons};
 }
 
 export function rightsAdmittedMarketSourcesFor(capability=null){

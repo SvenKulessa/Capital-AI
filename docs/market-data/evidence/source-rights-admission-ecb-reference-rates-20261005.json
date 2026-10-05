@@ -3,7 +3,7 @@
   "providerId": "ecb-reference-rates",
   "provider": "European Central Bank",
   "observedAt": "2026-10-05T21:36:00+02:00",
-  "sourceMainSha": "96178b35db215754eb69785535f035b4fb4d96af",
+  "sourceMainSha": "85d45f9b1d2973f8e54066055dee0b241ba4fd71",
   "ownerPolicy": "OPEN_SOURCE_AND_OPEN_DATA_ONLY",
   "decision": "OPEN_DATA_RIGHTS_ADMITTED",
   "runtimeAdmission": "BLOCKED_ADAPTER_NOT_IMPLEMENTED",
@@ -285,5 +285,27 @@
     "realtimeClaimAllowed": false,
     "executionClaimAllowed": false
   },
-  "supersedesFinding": "ECB entry in docs/market-data/evidence/open-data-rights-addendum-20261005.json for rights classification only; historical evidence file remains immutable."
+  "supersedesFinding": "ECB entry in docs/market-data/evidence/open-data-rights-addendum-20261005.json for rights classification only; historical evidence file remains immutable.",
+  "claimEligibilityBinding": {
+    "contract": "MARKET_CLAIM_ELIGIBILITY@1",
+    "contractPath": "src/contracts/marketClaimEligibility.ts",
+    "timeSemantics": "reference",
+    "providerState": {
+      "selectable": true,
+      "configured": false,
+      "admitted": false,
+      "runtimeReady": false
+    },
+    "expectedEligibility": {
+      "scoreEligible": false,
+      "rankEligible": false,
+      "alertEligible": false,
+      "decisionEligible": false
+    },
+    "expectedClaims": {
+      "realtime": false,
+      "productionReady": false
+    },
+    "rationale": "Rights admission does not imply runtime admission. ECB reference rates remain reference-only and fail closed for actionable claims until adapter/runtime/data/scoring evidence is separately verified."
+  }
 }
