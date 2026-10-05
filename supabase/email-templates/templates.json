@@ -4,7 +4,7 @@
     "title": "E-Mail bestätigen",
     "body": "Willkommen bei CAPITAL-AI. Bestätige deine E-Mail-Adresse, um die Registrierung sicher abzuschließen.",
     "actionLabel": "E-Mail bestätigen",
-    "actionUrl": "{{ .SiteURL }}/api/auth/email/verify?token_hash={{ .TokenHash }}&type=signup",
+    "actionUrl": "{{ .SiteURL }}/login#email_action=signup&token_hash={{ .TokenHash }}",
     "detail": "Die Bestätigung ist einmalig und zeitlich begrenzt."
   },
   "invite": {
@@ -12,7 +12,7 @@
     "title": "Einladung annehmen",
     "body": "Du wurdest zu CAPITAL-AI eingeladen. Über den folgenden sicheren Link kannst du die Einladung bestätigen.",
     "actionLabel": "Einladung annehmen",
-    "actionUrl": "{{ .SiteURL }}/api/auth/email/verify?token_hash={{ .TokenHash }}&type=invite",
+    "actionUrl": "{{ .SiteURL }}/login#email_action=invite&token_hash={{ .TokenHash }}",
     "detail": "Wenn du keine Einladung erwartest, kannst du diese Nachricht ignorieren."
   },
   "magic_link": {
@@ -20,7 +20,7 @@
     "title": "Passwortlos anmelden",
     "body": "Nutze diesen einmaligen Link, um dich bei CAPITAL-AI anzumelden.",
     "actionLabel": "Sicher anmelden",
-    "actionUrl": "{{ .SiteURL }}/api/auth/email/verify?token_hash={{ .TokenHash }}&type=magiclink",
+    "actionUrl": "{{ .SiteURL }}/login#email_action=magiclink&token_hash={{ .TokenHash }}",
     "detail": "Der Link ist nur kurz gültig und kann nur einmal verwendet werden."
   },
   "recovery": {
@@ -28,7 +28,7 @@
     "title": "Passwort zurücksetzen",
     "body": "Für dein CAPITAL-AI Konto wurde ein Passwort-Reset angefordert. Öffne den sicheren Reset-Flow und vergib anschließend ein neues Passwort.",
     "actionLabel": "Neues Passwort setzen",
-    "actionUrl": "{{ .SiteURL }}/api/auth/email/verify?token_hash={{ .TokenHash }}&type=recovery",
+    "actionUrl": "{{ .SiteURL }}/login#email_action=recovery&token_hash={{ .TokenHash }}",
     "detail": "Falls du den Reset nicht angefordert hast, ignoriere diese Nachricht."
   },
   "email_change": {
@@ -36,7 +36,7 @@
     "title": "E-Mail-Adresse ändern",
     "body": "Bestätige die neue E-Mail-Adresse {{ .NewEmail }} für dein CAPITAL-AI Konto.",
     "actionLabel": "Neue E-Mail bestätigen",
-    "actionUrl": "{{ .SiteURL }}/api/auth/email/verify?token_hash={{ .TokenHash }}&type=email_change",
+    "actionUrl": "{{ .SiteURL }}/login#email_action=email_change&token_hash={{ .TokenHash }}",
     "detail": "Wenn du diese Änderung nicht angefordert hast, bestätige den Link nicht."
   },
   "reauthentication": {
