@@ -1,0 +1,106 @@
+{
+  "confirmation": {
+    "subject": "E-Mail bestätigen | CAPITAL-AI",
+    "title": "E-Mail bestätigen",
+    "body": "Willkommen bei CAPITAL-AI. Bestätige deine E-Mail-Adresse, um die Registrierung sicher abzuschließen.",
+    "actionLabel": "E-Mail bestätigen",
+    "actionUrl": "{{ .SiteURL }}/api/auth/email/verify?token_hash={{ .TokenHash }}&type=signup",
+    "detail": "Die Bestätigung ist einmalig und zeitlich begrenzt."
+  },
+  "invite": {
+    "subject": "Einladung zu CAPITAL-AI",
+    "title": "Einladung annehmen",
+    "body": "Du wurdest zu CAPITAL-AI eingeladen. Über den folgenden sicheren Link kannst du die Einladung bestätigen.",
+    "actionLabel": "Einladung annehmen",
+    "actionUrl": "{{ .SiteURL }}/api/auth/email/verify?token_hash={{ .TokenHash }}&type=invite",
+    "detail": "Wenn du keine Einladung erwartest, kannst du diese Nachricht ignorieren."
+  },
+  "magic_link": {
+    "subject": "Dein CAPITAL-AI Anmeldelink",
+    "title": "Passwortlos anmelden",
+    "body": "Nutze diesen einmaligen Link, um dich bei CAPITAL-AI anzumelden.",
+    "actionLabel": "Sicher anmelden",
+    "actionUrl": "{{ .SiteURL }}/api/auth/email/verify?token_hash={{ .TokenHash }}&type=magiclink",
+    "detail": "Der Link ist nur kurz gültig und kann nur einmal verwendet werden."
+  },
+  "recovery": {
+    "subject": "CAPITAL-AI Passwort zurücksetzen",
+    "title": "Passwort zurücksetzen",
+    "body": "Für dein CAPITAL-AI Konto wurde ein Passwort-Reset angefordert. Öffne den sicheren Reset-Flow und vergib anschließend ein neues Passwort.",
+    "actionLabel": "Neues Passwort setzen",
+    "actionUrl": "{{ .SiteURL }}/api/auth/email/verify?token_hash={{ .TokenHash }}&type=recovery",
+    "detail": "Falls du den Reset nicht angefordert hast, ignoriere diese Nachricht."
+  },
+  "email_change": {
+    "subject": "Neue E-Mail-Adresse bestätigen | CAPITAL-AI",
+    "title": "E-Mail-Adresse ändern",
+    "body": "Bestätige die neue E-Mail-Adresse {{ .NewEmail }} für dein CAPITAL-AI Konto.",
+    "actionLabel": "Neue E-Mail bestätigen",
+    "actionUrl": "{{ .SiteURL }}/api/auth/email/verify?token_hash={{ .TokenHash }}&type=email_change",
+    "detail": "Wenn du diese Änderung nicht angefordert hast, bestätige den Link nicht."
+  },
+  "reauthentication": {
+    "subject": "{{ .Token }} ist dein CAPITAL-AI Sicherheitscode",
+    "title": "Identität erneut bestätigen",
+    "body": "Für einen sensiblen Vorgang ist eine erneute Bestätigung deiner Identität erforderlich.",
+    "actionLabel": "",
+    "actionUrl": "",
+    "detail": "Dein einmaliger Code: <strong style=\"font-size:24px;letter-spacing:5px;color:#f9bf21;\">{{ .Token }}</strong>"
+  },
+  "password_changed_notification": {
+    "subject": "CAPITAL-AI Passwort wurde geändert",
+    "title": "Passwort geändert",
+    "body": "Das Passwort deines CAPITAL-AI Kontos wurde geändert.",
+    "actionLabel": "",
+    "actionUrl": "",
+    "detail": "Wenn du diese Änderung nicht vorgenommen hast, nutze sofort den Passwort-Reset und prüfe deine Anmeldemethoden."
+  },
+  "email_changed_notification": {
+    "subject": "CAPITAL-AI E-Mail-Adresse wurde geändert",
+    "title": "E-Mail-Adresse geändert",
+    "body": "Die E-Mail-Adresse deines Kontos wurde von {{ .OldEmail }} auf {{ .Email }} geändert.",
+    "actionLabel": "",
+    "actionUrl": "",
+    "detail": "Wenn du diese Änderung nicht vorgenommen hast, sichere dein Konto unverzüglich."
+  },
+  "phone_changed_notification": {
+    "subject": "CAPITAL-AI Telefonnummer wurde geändert",
+    "title": "Telefonnummer geändert",
+    "body": "Die Telefonnummer deines Kontos wurde von {{ .OldPhone }} auf {{ .Phone }} geändert.",
+    "actionLabel": "",
+    "actionUrl": "",
+    "detail": "Wenn du diese Änderung nicht vorgenommen hast, sichere dein Konto unverzüglich."
+  },
+  "identity_linked_notification": {
+    "subject": "Neue CAPITAL-AI Anmeldemethode verknüpft",
+    "title": "Anmeldemethode hinzugefügt",
+    "body": "Die Anmeldemethode {{ .Provider }} wurde mit deinem CAPITAL-AI Konto verknüpft.",
+    "actionLabel": "",
+    "actionUrl": "",
+    "detail": "Prüfe deine Sicherheitsmethoden im Profil, falls du diese Verknüpfung nicht selbst vorgenommen hast."
+  },
+  "identity_unlinked_notification": {
+    "subject": "CAPITAL-AI Anmeldemethode entfernt",
+    "title": "Anmeldemethode entfernt",
+    "body": "Die Anmeldemethode {{ .Provider }} wurde von deinem CAPITAL-AI Konto entfernt.",
+    "actionLabel": "",
+    "actionUrl": "",
+    "detail": "Wenn du dies nicht selbst ausgelöst hast, sichere dein Konto unverzüglich."
+  },
+  "mfa_factor_enrolled_notification": {
+    "subject": "CAPITAL-AI Sicherheitsmethode aktiviert",
+    "title": "Sicherheitsmethode aktiviert",
+    "body": "Eine neue Verifizierungsmethode vom Typ {{ .FactorType }} wurde für dein CAPITAL-AI Konto aktiviert.",
+    "actionLabel": "",
+    "actionUrl": "",
+    "detail": "Wenn du diese Methode nicht eingerichtet hast, entferne sie im Profil und sichere dein Konto."
+  },
+  "mfa_factor_unenrolled_notification": {
+    "subject": "CAPITAL-AI Sicherheitsmethode deaktiviert",
+    "title": "Sicherheitsmethode deaktiviert",
+    "body": "Eine Verifizierungsmethode vom Typ {{ .FactorType }} wurde von deinem CAPITAL-AI Konto entfernt.",
+    "actionLabel": "",
+    "actionUrl": "",
+    "detail": "Wenn du diese Änderung nicht vorgenommen hast, sichere dein Konto unverzüglich."
+  }
+}
