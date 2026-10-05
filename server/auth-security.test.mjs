@@ -94,7 +94,7 @@ test('magic-link verification with verified TOTP cannot bypass AAL2 challenge', 
   );
   assert.equal(handled, true);
   assert.equal(res.status, 303);
-  assert.equal(res.getHeader('location'), '/login?mfa=1&next=%2Fprofile');
+  assert.equal(res.getHeader('location'), '/login?mfa=1');
   assert.equal(h.writes.length, 1);
   assert.deepEqual(h.calls.map(call => call.path), ['/verify', '/user']);
 });
@@ -132,7 +132,7 @@ test('passkey login performs fresh user-factor readback before deciding MFA requ
   assert.equal(res.status, 200);
   assert.equal(res.payload.authenticated, true);
   assert.equal(res.payload.mfaRequired, true);
-  assert.equal(res.payload.next, '/login?mfa=1&next=%2Fprofile');
+  assert.equal(res.payload.next, '/login?mfa=1');
   assert.deepEqual(h.calls.map(call => call.path), ['/passkeys/authentication/verify', '/user']);
   assert.doesNotMatch(JSON.stringify(res.payload), /access-token|refresh-token/);
 });
