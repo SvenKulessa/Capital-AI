@@ -17,6 +17,24 @@ const DISCLAIMER = 'Portalhilfe aus dem Hero Buddy. Keine Anlageberatung.';
 export const HERO_BUDDY_EVENT = 'capital-ai:open-hero-buddy';
 export function openHeroBuddy() { window.dispatchEvent(new Event(HERO_BUDDY_EVENT)); }
 const COOLDOWN_MS = 90_000;
+const BUDDY_VISIBILITY_KEY = 'capital_ai_hero_buddy_visible_v1';
+const BUDDY_SIDE_KEY = 'capital_ai_hero_buddy_side_v1';
+
+function storedBuddyVisibility() {
+  try {
+    return window.localStorage.getItem(BUDDY_VISIBILITY_KEY) !== 'false';
+  } catch {
+    return true;
+  }
+}
+
+function storedBuddySide(): 'left' | 'right' {
+  try {
+    return window.localStorage.getItem(BUDDY_SIDE_KEY) === 'left' ? 'left' : 'right';
+  } catch {
+    return 'right';
+  }
+}
 
 function answerFor(input: string) {
   const q = input.toLowerCase();
@@ -38,6 +56,8 @@ function lineFor(reason: AssistReason) {
 
 export function HeroBuddy(props: HeroBuddyProps) {
   const [open, setOpen] = useState(false);
+  const [visible, setVisible] = useState(storedBuddyVisibility);
+  const [side, setSide] = useState<'left' | 'right'>(storedBuddySide);
   const [speech, setSpeech] = useState<AssistReason | null>(null);
   const [draft, setDraft] = useState('');
   const [messages, setMessages] = useState<BuddyMessage[]>([
@@ -46,7 +66,12 @@ export function HeroBuddy(props: HeroBuddyProps) {
   const lastAssist = useRef(0);
   const reducedMotion = usePrefersReducedMotion();
   useEffect(() => {
-    const openFromHero = () => { setOpen(true); setSpeech(null); };
+    const openFromHero = () => {
+      setVisible(true);
+      try { window.localStorage.setItem(BUDDY_VISIBILITY_KEY, 'true'); } catch {}
+      setOpen(true);
+      setSpeech(null);
+    };
     window.addEventListener(HERO_BUDDY_EVENT, openFromHero);
     return () => window.removeEventListener(HERO_BUDDY_EVENT, openFromHero);
   }, []);
@@ -79,16 +104,51 @@ export function HeroBuddy(props: HeroBuddyProps) {
     setSpeech(null);
   };
 
+  const hideBuddy = () => {
+    setVisible(false);
+    setOpen(false);
+    setSpeech(null);
+    try { window.localStorage.setItem(BUDDY_VISIBILITY_KEY, 'false'); } catch {}
+  };
+
+  const moveBuddy = () => {
+    const next = side === 'right' ? 'left' : 'right';
+    setSide(next);
+    try { window.localStorage.setItem(BUDDY_SIDE_KEY, next); } catch {}
+  };
+
+  if (!visible) return null;
+
   return (
-    <div className="fixed bottom-4 right-4 z-[45] flex items-end gap-2" data-hero-buddy="agent">
+    <div
+      className={`fixed bottom-4 z-[45] flex items-end gap-2 ${side === 'right' ? 'right-4' : 'left-4 flex-row-reverse'}`}
+      data-hero-buddy="agent"
+      data-hero-buddy-side={side}
+    >
       {(speech || open) && (
         <div className="relative w-[min(88vw,320px)] rounded-2xl border border-amber-300/40 bg-[#10182e] px-3 py-2 text-xs text-slate-100 shadow-lg">
           <span className="absolute -right-1.5 bottom-5 h-3 w-3 rotate-45 border-b border-r border-amber-300/40 bg-[#10182e]" aria-hidden="true" />
           {open ? (
             <div>
-              <div className="mb-2 flex items-center justify-between">
+              <div className="mb-2 flex items-start justify-between gap-2">
                 <p className="font-bold text-amber-300">Hero Buddy · Support</p>
                 <button type="button" aria-label="Chat schließen" onClick={() => setOpen(false)} className="text-slate-400"><X className="h-4 w-4" /></button>
+              </div>
+              <div className="mb-2 flex flex-wrap gap-1">
+                <button
+                  type="button"
+                  onClick={moveBuddy}
+                  className="rounded-full border border-slate-700 px-2 py-1 text-[10px] text-slate-300"
+                >
+                  {side === 'right' ? 'Nach links verschieben' : 'Nach rechts verschieben'}
+                </button>
+                <button
+                  type="button"
+                  onClick={hideBuddy}
+                  className="rounded-full border border-slate-700 px-2 py-1 text-[10px] text-slate-300"
+                >
+                  Ausblenden
+                </button>
               </div>
               <div className="max-h-52 space-y-2 overflow-y-auto">
                 {messages.map((message) => (
