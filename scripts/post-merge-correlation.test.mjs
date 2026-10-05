@@ -76,7 +76,7 @@ test("same low-risk fingerprint becomes repair candidate only with explicit admi
     mergedFiles: ["docs/architecture/FOO.md"],
     mainSha,
     mergedPr: 199,
-    pr: { ...basePr, files: ["docs/architecture/FOO.md"] },
+    pr: { ...basePr, files: ["docs/architecture/FOO.md"], requiredChecksRevalidated: true },
     patternState: state,
   });
   assert.equal(promoted.action, ACTIONS.REPAIR_CANDIDATE);
