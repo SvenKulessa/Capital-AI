@@ -1,8 +1,8 @@
 # Production-Handoff Gate
 
-## Geltung bei domainübergreifender Chat-Arbeit
+## Geltung nach der ChatGPT-Handoff-Regel
 
-Die Owner-Entscheidung vom 2026-10-04 deaktiviert organisatorische Handoff-Verträge zwischen den fünf ChatGPT-Domains nach `AGENTS.md`. Jeder Domain-Chat darf diesen technischen Production-Handoff bearbeiten. Die unten definierten Lizenz-, Main-Schutz-, Source-/Digest-, Provider- und Runtime-Gates bleiben vollständig verbindlich; ein Domainwechsel ist weder Voraussetzung noch Freigabe.
+Nach der kanonischen `AGENTS.md`-ChatGPT-Handoff-Regel ist für Entwicklung in ChatGPT kein organisatorischer Domain-Handoff erforderlich. Derselbe Chat darf diesen technischen Production-Handoff bearbeiten. Der Production-Handoff bleibt jedoch als reale technische Release- und Evidence-Grenze vollständig verbindlich; seine Lizenz-, Main-Schutz-, Source-/Digest-, Provider- und Runtime-Gates werden durch die ChatGPT-Handoff-Regel weder ersetzt noch abgeschwächt.
 
 Aktuelle korrelierte Abnahme: [AP-SEC-IMAGE vom 01.10.2026](AP-SEC-IMAGE-ABNAHME-20261001.md), weiterhin BLOCKED. Die folgenden Abschnitte dokumentieren den ursprünglichen Stand vom 30.09.2026.
 

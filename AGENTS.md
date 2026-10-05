@@ -11,17 +11,19 @@ Ein erfolgreicher Test, Build oder Scan ist **niemals allein** eine Lizenz-, Sec
 
 Bei Widersprüchen zwischen lokalen Arbeitsanweisungen und dieser Policy gilt die strengere fail-closed Regel. Echte technische Grenzen wie Auth, Public API, Daten-/Event-Schema, Security Boundary, Evidence, Container-Identität und Production-Handoff dürfen nicht durch organisatorische Abkürzungen umgangen werden.
 
-## Domainübergreifende ChatGPT-Arbeit
+## ChatGPT-Handoff-Regel
 
-Owner-Entscheidung vom 2026-10-04: Der Owner entwickelt alleine. PRODUCT, MARKET, PLATFORM, TRUST und GROWTH sind fachliche Perspektiven; jeder Domain-Chat und Agent darf Aufgaben aller fünf Domains im vorhandenen autorisierten Scope vollständig übernehmen.
+Owner-Entscheidung vom 2026-10-05: Für Entwicklung, Analyse, Review, Implementierung und Fehlerbehebung innerhalb von ChatGPT ist **kein organisatorischer Handoff** zwischen PRODUCT, MARKET, PLATFORM, TRUST und GROWTH erforderlich. Der Owner entwickelt alleine; die fünf Domains sind fachliche Perspektiven und keine künstlichen Teamgrenzen.
 
-- Verpflichtende organisatorische Handoff-Verträge, Übergabeprompts, Chatwechsel und zusätzliche Domain-Abnahmen sind für die ChatGPT-Arbeit anwendungsweit deaktiviert.
-- Eine Aufgabe darf nicht allein wegen einer anderen fachlichen Domain angehalten, zurückgegeben oder nur als Übergabeprompt abgeschlossen werden. Domain-Hinweise und Kontextübergaben sind freiwillig.
-- Die Primary Domain kennzeichnet den Schwerpunkt von Branch, PR und Evidence. Sie begrenzt keine Bearbeitungsbefugnis; die bestehenden Namenskonventionen gelten weiter.
-- Diese Regel hat bei organisatorischen Domain-/Chat-Handoffs Vorrang vor älteren oder lokalen Anweisungen, auch wenn diese eine strengere organisatorische Übergabe verlangen. Die Vorrangregel verändert keine echten technischen Grenzen.
-- Prüfungen und Freigaben werden ausschließlich über konkrete, risikobasierte technische Gates und belastbare Evidence abgebildet. Pauschale zahlenbasierte Freigabemodelle sind nicht Teil der repositoryweiten Delivery-Policy. Tatsächlich vorgeschriebene unabhängige Prüfungen bleiben erforderlich.
-- Auth-, API-, Daten-/Event-Schema-, Security-, Lizenz-/Datenrechte-, Supply-Chain-, Kosten- und Production-Gates bleiben unverändert. Ein erfolgreicher Test ersetzt keine Freigabe. Kritische Mutationen und Architekturentscheidungen benötigen weiterhin die bestehende konkrete Owner-Autorisierung.
-- Maschinenlesbare Evidence-/Datenverträge, einschließlich `GROWTH_HANDOFF@1`, bleiben an technischen Schnittstellen gültig; sie sind keine Voraussetzung für einen Domainwechsel im Chat. Der technische Production-Handoff ist ausdrücklich weiterhin verbindlich.
+- Derselbe Chat oder Agent darf Aufgaben aller fünf Domains im vorhandenen autorisierten Scope vollständig bearbeiten und abschließen.
+- Ein Domainwechsel verlangt keinen Übergabeprompt, keinen Chatwechsel, keinen separaten Handoff-Vertrag und keine zusätzliche Domain-Abnahme.
+- Eine Aufgabe darf nicht wegen einer anderen fachlichen Domain angehalten, zurückgegeben oder ausschließlich als Handoff-Prompt beendet werden. Domain-Hinweise und freiwillige Kontextübergaben bleiben möglich.
+- Die Primary Domain kennzeichnet nur den Schwerpunkt von Branch, PR und Evidence. Sie begrenzt keine Bearbeitungsbefugnis; die bestehenden Namenskonventionen gelten weiter.
+- Diese ChatGPT-Handoff-Regel hat Vorrang vor älteren oder lokalen organisatorischen Domain-Handoff-Anweisungen.
+- Verbindliche Handoffs bestehen nur dort fort, wo sie eine **reale technische Übergabe oder Evidence-Grenze** darstellen, insbesondere Production-Handoff, Auth-/API-/Daten-/Event-Schema-Grenzen, Security-/Lizenz-/Datenrechte-Gates, Supply-Chain-Nachweise, externe Control-Plane-Mutationen oder maschinenlesbare Schnittstellenverträge.
+- Ein technischer Handoff ist kein Chatwechsel und keine organisatorische Domain-Abnahme. Derselbe Chat darf auch den technischen Handoff bearbeiten, sofern Scope und konkrete Autorisierung dies erlauben.
+- Prüfungen und Freigaben werden ausschließlich über konkrete, risikobasierte technische Gates und belastbare Evidence abgebildet. Ein erfolgreicher Test ersetzt keine Security-, Lizenz-, Owner- oder Production-Freigabe.
+- Maschinenlesbare Evidence-/Datenverträge, einschließlich `GROWTH_HANDOFF@1`, bleiben an ihren technischen Schnittstellen gültig; sie begründen keine Pflicht zu einem Chat- oder Domainwechsel.
 - Die Regel gilt repository- und anwendungsweit für alle fünf Domains sowie für Web- und Mobile-Arbeit, die diese Root-Policy verwendet. Sie ändert gespeicherte ChatGPT-Projekteinstellungen und Richtlinien anderer Repositories nicht automatisch.
 
 ## Chat-Ausgabe: Status-Snippets
