@@ -7,14 +7,14 @@ status: "ACTIVE_FAIL_CLOSED"
 correlatedAt: "2026-10-05"
 correlationBaseline:
   repository: "SvenKulessa/Capital-AI"
-  mainSha: "4d98d9c6ed8128c109ee86d99980d57e6fdb826b"
+  mainSha: "52666468b758c9a295709069b12f53ca93e9bfc4"
   rootPolicy: "AGENTS.md@currentmain"
   roadmapSource: "src/data/roadmapData.ts"
   domainContract: "CAPITAL-AI-MARKET/PROJECT.md"
 
 objective:
   productOutcome: "Kommerziell nutzbarer FinTech-Market-Screener mit evidenzgebundenem Scoring und getrenntem BYOK-Nutzerpfad."
-  sharedMarketLane: "Nur Quellen, Datensätze, Instrumente und Capabilities mit OPEN_SOURCE_OPEN_DATA_ADMITTED dürfen den gemeinsamen produktiven MARKET-Datenpfad speisen."
+  sharedMarketLane: "OPEN_SOURCE_OPEN_DATA_ADMITTED bleibt eine eigenständige produktive Lane und wird durch kommerzielle Providerrechte nicht erweitert."\n  commercialLicensedDataLane: "Kommerziell lizenzierte Daten dürfen separat über COMMERCIAL_LICENSED_DATA geführt und Kunden über CAPITAL-AI als Drittanbieter angeboten werden, jedoch nur wenn Providervertrag, Entity, Dataset/Feeds, Attribution sowie ein ausdrückliches Reseller-/Agency-/Sublicense-/Pass-through-Recht für dieses Vertriebsmodell belegt sind."
   byokLane: "Nutzereigene Provider-Credentials bleiben user-private; sie erweitern weder öffentliche Anzeige-, Redistribution-, Shared-Cache- noch JetStream-Rechte."
   scoringOutcome: "Ein kanonischer Scoring-Pfad erzeugt nur aus zugelassenen, replay-verifizierbaren Inputs scoreEligible Ergebnisse; decisionEligible bleibt ein separates Gate."
   noExecutionClaim: true
@@ -50,7 +50,7 @@ websiteRequirements:
 
 marketInvariants:
   - "Provider-Auswahl ist niemals Source Admission."
-  - "Open-Source-Adaptersoftware ist niemals automatisch Open-Data-Recht."
+  - "Open-Source-Adaptersoftware ist niemals automatisch Open-Data-Recht."\n  - "COMMERCIAL_LICENSED_DATA ist von OPEN_SOURCE_OPEN_DATA_ADMITTED strikt getrennt und kann dessen Admission nicht implizit erfüllen."\n  - "Kundenbezug über CAPITAL-AI als Drittanbieter setzt ein ausdrückliches Reseller-/Agency-/Sublicense-/Pass-through-Recht des Providers voraus; allgemeine Produktnutzungsrechte reichen nicht."
   - "marketQuotes und scoringPriceInput werden unabhängig zugelassen."
   - "scoreEligible und decisionEligible sind getrennte, fail-closed Gates."
   - "Demo-, Preview-, Fallback-, Research- und synthetische Benchmarkdaten werden niemals als produktive Evidence behandelt."
@@ -72,7 +72,7 @@ currentMainCorrelation:
     evidence:
       - "server/open-source-market-policy.mjs"
       - "docs/market-data/open-source-market-policy.json"
-      - "docs/market-data/evidence/score-display-source-admission-20261004.json"
+      - "docs/market-data/evidence/score-display-source-admission-20261004.json"\n    commercialLicensedDataLane:\n      state: "DEFINED_FAIL_CLOSED"\n      contract: "src/contracts/commercialLicensedDataLane.ts"\n      twelveDataEvidence: "docs/market-data/evidence/twelve-data-rights-20261005.json"\n      twelveDataDeployEligible: false\n      twelveDataDatasetScopeVerified: false\n      twelveDataIndexPricing: "BLOCKED"\n      twelveDataReplay: "REVIEW_REQUIRED"\n      twelveDataJetStream: "REVIEW_REQUIRED"\n      twelveDataBackupRestore: "REVIEW_REQUIRED"\n      customerAcquisitionViaCapitalAi: "REVIEW_REQUIRED_RESELLER_OR_SUBLICENSE_RIGHT_UNVERIFIED"
   instrumentManifest:
     status: "PARTIAL_FAIL_CLOSED"
     firstTestPerClass: 20
@@ -187,7 +187,7 @@ chronologicalWork:
       - "Adapter-Softwarelizenz, Source-SHA, Lizenz-Blob und Packaging verifizieren."
       - "Dataset-ID, Snapshot/Version, Open-Data-Lizenz, Provenance und Attribution verifizieren."
       - "Commercial Web/Mobile Display, Derived Scoring, Normalization, Cache, JetStream, Replay, Retention, Backup/Restore, Audit und interne Verarbeitung einzeln belegen."
-      - "Redistribution separat klassifizieren; nicht benötigte Rechte nicht fingieren."
+      - "Redistribution separat klassifizieren; nicht benötigte Rechte nicht fingieren."\n      - "COMMERCIAL_LICENSED_DATA je Provider separat zulassen; kein Mapping auf OPEN_SOURCE_OPEN_DATA_ADMITTED."\n      - "Bei Vertrieb an Kunden über CAPITAL-AI zusätzlich Reseller-/Agency-/Sublicense-/Pass-through-Recht als Muss-Gate prüfen."\n      - "Twelve Data: Customer Display und nicht rekonstruierbare Derived Scores als CONDITIONAL_RIGHTS führen; Index-Pricing BLOCKED; Raw-Deletion nach Vertragsende <= 30 Tage; Attribution verpflichtend; Replay/JetStream/Backup REVIEW_REQUIRED."
     exitGate: "Mindestens eine Quelle PASS für marketQuotes; für Scoring zusätzlich scoringPriceInput PASS."
 
   - sequence: 4
