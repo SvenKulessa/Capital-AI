@@ -208,6 +208,18 @@ function normalizeNewPassword(value) {
   return typeof value === 'string' && value.length >= 14 && value.length <= 256 ? value : '';
 }
 
+function tokenAal(accessToken) {
+  if (typeof accessToken !== 'string') return 'aal1';
+  const parts = accessToken.split('.');
+  if (parts.length !== 3) return 'aal1';
+  try {
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
+    return payload?.aal === 'aal2' ? 'aal2' : 'aal1';
+  } catch {
+    return 'aal1';
+  }
+}
+
 export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.now, audit = console.info } = {}) {
   const allow = createLimiter(30, 60_000, 1, now);
   const mobileTransfers = new Map();
@@ -274,7 +286,10 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     const refreshNeeded = stored.expiresAt <= Math.floor(now() / 1000) + 60;
     if (!refreshNeeded) {
       const verified = await authRequest(config, '/user', { accessToken: stored.accessToken });
-      if (verified.response.ok && verified.data?.id === stored.user.id) return stored;
+      if (verified.response.ok && verified.data?.id === stored.user.id) {
+        stored._authUser = verified.data;
+        return stored;
+      }
     }
 
     const refreshed = await authRequest(config, '/token?grant_type=refresh_token', {
@@ -286,6 +301,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       return null;
     }
     stored = writeSessionCookies(req, res, config, refreshed.data);
+    stored._authUser = refreshed.data.user || null;
     audit('Supabase authentication verified at session_refresh');
     return stored;
   }
@@ -344,9 +360,13 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
           json(res, 200, { configured: true, authenticated: false, user: null });
           return true;
         }
+        const currentLevel = tokenAal(stored.accessToken);
+        const mfaRequired = currentLevel !== 'aal2' && hasVerifiedTotpFactor(stored._authUser);
         json(res, 200, {
           configured: true,
           authenticated: true,
+          currentLevel,
+          mfaRequired,
           user: {
             id: stored.user.id,
             subject: stored.user.id,
@@ -527,7 +547,13 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       }
       audit('Supabase authentication verified at oauth_callback');
       if (flowCookie.mobileChallenge) {
-        if (hasVerifiedTotpFactor(exchanged.data.user)) {
+        const mobileUser = await authRequest(config, '/user', { accessToken: exchanged.data.access_token });
+        if (!mobileUser.response.ok || mobileUser.data?.id !== exchanged.data.user?.id) {
+          json(res, 503, { error: 'authentication_security_state_unavailable' });
+          return true;
+        }
+        exchanged.data.user = mobileUser.data;
+        if (hasVerifiedTotpFactor(mobileUser.data)) {
           json(res, 403, { error: 'mfa_required_mobile_not_supported' });
           return true;
         }
@@ -550,9 +576,15 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
         res.end();
         return true;
       }
+      const googleUser = await authRequest(config, '/user', { accessToken: exchanged.data.access_token });
+      if (!googleUser.response.ok || googleUser.data?.id !== exchanged.data.user?.id) {
+        json(res, 503, { error: 'authentication_security_state_unavailable' });
+        return true;
+      }
+      exchanged.data.user = googleUser.data;
       writeSessionCookies(req, res, config, exchanged.data);
       const googleNext = normalizePath(flowCookie.next);
-      const googleMfaRequired = hasVerifiedTotpFactor(exchanged.data.user);
+      const googleMfaRequired = tokenAal(exchanged.data.access_token) !== 'aal2' && hasVerifiedTotpFactor(googleUser.data);
       res.writeHead(303, {
         Location: googleMfaRequired
           ? `/login?mfa=1&next=${encodeURIComponent(googleNext)}`
@@ -596,8 +628,14 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
         json(res, signedIn.response.status === 429 ? 429 : 401, { error: 'authentication_failed' });
         return true;
       }
+      const signedInUser = await authRequest(config, '/user', { accessToken: signedIn.data.access_token });
+      if (!signedInUser.response.ok || signedInUser.data?.id !== signedIn.data.user?.id) {
+        json(res, 503, { error: 'authentication_security_state_unavailable' });
+        return true;
+      }
+      signedIn.data.user = signedInUser.data;
       const stored = writeSessionCookies(req, res, config, signedIn.data);
-      const mfaRequired = hasVerifiedTotpFactor(signedIn.data.user);
+      const mfaRequired = tokenAal(signedIn.data.access_token) !== 'aal2' && hasVerifiedTotpFactor(signedInUser.data);
       audit('Supabase authentication verified at password_login');
       json(res, 200, {
         authenticated: true,
@@ -667,7 +705,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
         json(res, 400, { error: 'invalid_email' });
         return true;
       }
-      const redirectTo = new URL('/profile', config.origin).toString();
+      const redirectTo = new URL('/login?mode=reset', config.origin).toString();
       await authRequest(config, `/recover?redirect_to=${encodeURIComponent(redirectTo)}`, {
         method: 'POST',
         body: { email },
@@ -715,6 +753,8 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     try {
       const stored = await resolveSession(req, res);
       if (!stored) return null;
+      const currentLevel = tokenAal(stored.accessToken);
+      if (currentLevel !== 'aal2' && hasVerifiedTotpFactor(stored._authUser)) return null;
       return {
         subject: stored.user.id,
         userId: stored.user.id,
@@ -722,6 +762,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
         name: stored.user.name,
         email: stored.user.email,
         expires: stored.expiresAt * 1000,
+        aal: currentLevel,
       };
     } catch {
       return null;
