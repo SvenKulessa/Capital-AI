@@ -19,10 +19,10 @@ import { motion } from 'motion/react';
 import { BrandLogo } from '../../components/BrandLogo';
 import {
   PRICING_CATALOG,
-  VOCABULARY_PRICE,
   annualDiscountPercent,
   displayPriceEur,
 } from '../../data/pricingCatalog';
+import { ADDITIONAL_PRODUCTS_CATALOG } from '../../data/additionalProductsCatalog';
 
 interface MonetizationModalProps {
   isOpen: boolean;
@@ -32,6 +32,7 @@ interface MonetizationModalProps {
 }
 
 type BillingCycle = 'monthly' | 'annual';
+type PricingTab = 'plans' | 'products';
 
 export const MonetizationModal: React.FC<MonetizationModalProps> = ({
   isOpen,
@@ -39,6 +40,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
   onNavigateLogin,
 }) => {
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('annual');
+  const [activeTab, setActiveTab] = useState<PricingTab>('plans');
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -131,12 +133,28 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
           </button>
         </div>
 
-        <div className="mt-4 rounded-2xl border border-slate-800 bg-[#030716] px-4 py-3">
-          <p className="text-xs font-bold text-slate-200">Aktuelle Produkte &amp; Preise</p>
-          <p className="mt-1 text-[11px] text-slate-500">Ausschließlich aus dem aktuellen Stripe-/Billing-Katalog.</p>
+        <div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl border border-slate-800 bg-[#030716] p-1.5" role="tablist" aria-label="Preiskatalog">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'plans'}
+            onClick={() => setActiveTab('plans')}
+            className={`rounded-xl px-3 py-2 text-xs font-bold transition-colors ${activeTab === 'plans' ? 'bg-amber-400 text-black' : 'text-slate-300 hover:bg-white/5'}`}
+          >
+            Starter · Pro · Enterprise
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'products'}
+            onClick={() => setActiveTab('products')}
+            className={`rounded-xl px-3 py-2 text-xs font-bold transition-colors ${activeTab === 'products' ? 'bg-violet-400 text-black' : 'text-slate-300 hover:bg-white/5'}`}
+          >
+            Zusatzprodukte
+          </button>
         </div>
 
-        {/* TAB 1: B2C SaaS Tarife (Freemium, Pro, Enterprise) */}
+        {activeTab === 'plans' && (
         <div className="mt-5 space-y-5">
             {/* Billing toggle */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 rounded-2xl bg-[#030716] border border-slate-800">
@@ -246,36 +264,63 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
               ))}
             </div>
 
-            <div className="rounded-2xl border border-violet-400/35 bg-violet-500/10 p-4 sm:p-5">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-mono font-black uppercase tracking-wider text-violet-300">
-                      {VOCABULARY_PRICE.label}
-                    </span>
-                    <span className="rounded-full border border-violet-400/30 bg-violet-500/15 px-2 py-0.5 text-[10px] font-mono text-violet-200">
-                      Eigenständiges Paket
-                    </span>
-                  </div>
-                  <div className="mt-2 flex items-baseline gap-2">
-                    <span className="text-2xl font-black text-white">
-                      {displayPriceEur(VOCABULARY_PRICE.amountCents)} €
-                    </span>
-                    <span className="text-xs text-slate-400">einmalig</span>
-                  </div>
-                  <p className="mt-2 text-xs leading-relaxed text-slate-300">
-                    Eigenständiges Vocabulary-Paket mit separatem Entitlement. Es ist nicht Bestandteil
-                    von Starter, Pro oder Enterprise.
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-mono text-slate-300">
-                    <span className="rounded-lg border border-slate-700 bg-black/20 px-2 py-1">294 Fachbegriffe</span>
-                    <span className="rounded-lg border border-slate-700 bg-black/20 px-2 py-1">Vocabulary-Stufe sichtbar</span>
-                    <span className="rounded-lg border border-slate-700 bg-black/20 px-2 py-1">Separates Entitlement</span>
+          </div>
+        )}
+
+        {activeTab === 'products' && (
+          <div className="mt-5 space-y-4">
+            <div className="rounded-2xl border border-slate-800 bg-[#030716] p-4">
+              <h3 className="text-sm font-bold text-white">Katalog bestehender Zusatzprodukte</h3>
+              <p className="mt-1 text-xs leading-relaxed text-slate-400">
+                Hier erscheinen ausschließlich bereits vorhandene, kaufbare Zusatzprodukte. Geplante Token-, NFT-, B2B- oder API-Produkte werden nicht als verfügbar dargestellt.
+              </p>
+            </div>
+
+            {ADDITIONAL_PRODUCTS_CATALOG.map((product) => (
+              <section
+                key={product.id}
+                className="rounded-2xl border border-violet-400/35 bg-violet-500/10 p-4 sm:p-5"
+                aria-labelledby={`additional-product-${product.id}`}
+              >
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                  <img
+                    src={product.badgeAsset}
+                    alt="CAPITAL-AI-PRODUCT Badge für Market Vocabulary"
+                    className="h-20 w-20 rounded-2xl border border-violet-300/20 bg-black/20 p-1"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 id={`additional-product-${product.id}`} className="text-sm font-black text-violet-200">
+                        {product.label}
+                      </h3>
+                      <span className="rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-mono text-emerald-300">
+                        Verfügbar
+                      </span>
+                    </div>
+                    <div className="mt-2 flex items-baseline gap-2">
+                      <span className="text-2xl font-black text-white">{displayPriceEur(product.amountCents)} €</span>
+                      <span className="text-xs text-slate-400">einmalig</span>
+                    </div>
+                    <p className="mt-2 text-xs leading-relaxed text-slate-300">
+                      Eigenständiges Entitlement. Nicht Bestandteil von Starter, Pro oder Enterprise.
+                      Der lizenzierte Produkt-Badge kann nach erfolgreichem Erwerb ohne Zusatzpreis heruntergeladen werden.
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-mono text-slate-300">
+                      <span className="rounded-lg border border-slate-700 bg-black/20 px-2 py-1">Separates Entitlement</span>
+                      <span className="rounded-lg border border-slate-700 bg-black/20 px-2 py-1">{product.badgeLicense}</span>
+                    </div>
+                    <a
+                      href={product.productPath}
+                      className="mt-4 inline-flex rounded-xl bg-violet-300 px-4 py-2 text-xs font-black text-black hover:bg-violet-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-200"
+                    >
+                      Vocabulary ansehen / erwerben
+                    </a>
                   </div>
                 </div>
-              </div>
-            </div>
+              </section>
+            ))}
           </div>
+        )}
 
         {/* Modal Footer */}
         <div className="mt-5 pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
