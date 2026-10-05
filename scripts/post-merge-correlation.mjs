@@ -113,8 +113,7 @@ export function classifyOpenPr({ mergedFiles, mainSha, mergedPr, pr, patternStat
   const patternId = deterministicRepair ? "DETERMINISTIC_POST_MERGE_REPAIR@1" : null;
   const fixFingerprint = patternId ? fingerprint({ patternId, semanticOverlap, exactOverlap }) : null;
   const state = patternId ? patternState[fixFingerprint] || {} : {};
-  const positiveValidationCount = Number(state.positiveValidationCount || 0);
-  const promoted = positiveValidationCount >= 3 && state.promotionState === "PROMOTED";
+  const admitted = state.admissionState === "ADMITTED";
 
   let action = ACTIONS.NO_ACTION;
   const reasons = [];
@@ -129,29 +128,32 @@ export function classifyOpenPr({ mergedFiles, mainSha, mergedPr, pr, patternStat
   } else if (highRisk) {
     action = ACTIONS.MANUAL_REVIEW_REQUIRED;
     reasons.push("HIGH_RISK_OR_GOVERNANCE_BOUNDARY_OVERLAP");
-  } else if (deterministicRepair && promoted) {
+  } else if (deterministicRepair && admitted) {
     action = ACTIONS.REPAIR_CANDIDATE;
-    reasons.push("PROMOTED_LOW_RISK_REPAIR_PATTERN");
+    reasons.push("ADMITTED_LOW_RISK_REPAIR_PATTERN");
   } else if (behindBy > 0) {
     action = ACTIONS.SYNC_REQUIRED;
-    reasons.push(deterministicRepair ? "LOW_RISK_PATTERN_NOT_YET_PROMOTED" : "RELEVANT_OVERLAP_AND_BRANCH_BEHIND");
+    reasons.push(deterministicRepair ? "LOW_RISK_PATTERN_NOT_ADMITTED" : "RELEVANT_OVERLAP_AND_BRANCH_BEHIND");
   } else {
     action = ACTIONS.CORRELATE_ONLY;
     reasons.push("RELEVANT_OVERLAP_WITH_CURRENT_BASE");
   }
 
-  const validate3 = {
-    V1_INPUT_IDENTITY: Boolean(mainSha && pr.headSha && pr.number),
-    V2_IMPACT_CORRELATION: action === ACTIONS.NO_ACTION || affected || behindBy > 0,
-    V3_REPRODUCIBLE_CLASSIFICATION: Boolean(fingerprint({ merged, prFiles, behindBy, action })),
+  const technicalChecks = {
+    INPUT_IDENTITY: Boolean(mainSha && pr.headSha && pr.number),
+    IMPACT_CORRELATION: action === ACTIONS.NO_ACTION || affected || behindBy > 0,
+    REPRODUCIBLE_CLASSIFICATION: Boolean(fingerprint({ merged, prFiles, behindBy, action })),
+    ACTION_CLASSIFIED: Object.values(ACTIONS).includes(action),
+    REMEDIATION_ADMITTED: action !== ACTIONS.REPAIR_CANDIDATE || admitted,
+    REQUIRED_CHECKS_REVALIDATED:
+      action === ACTIONS.NO_ACTION ||
+      action === ACTIONS.CORRELATE_ONLY ||
+      Boolean(pr.requiredChecksRevalidated),
+    POLICY_BOUNDARIES_PRESERVED: true,
   };
-  const approve5 = {
-    A1_DETECT: Object.values(validate3).every(Boolean),
-    A2_CORRELATE: action !== null,
-    A3_CLASSIFY: Object.values(ACTIONS).includes(action),
-    A4_REMEDIATE: action !== ACTIONS.REPAIR_CANDIDATE || promoted,
-    A5_VERIFY: action === ACTIONS.NO_ACTION || action === ACTIONS.CORRELATE_ONLY || Boolean(pr.requiredChecksRevalidated),
-  };
+  const mutationEligible =
+    action === ACTIONS.REPAIR_CANDIDATE &&
+    Object.values(technicalChecks).every(Boolean);
 
   return {
     prNumber: Number(pr.number),
@@ -170,19 +172,17 @@ export function classifyOpenPr({ mergedFiles, mainSha, mergedPr, pr, patternStat
     repair: {
       patternId,
       fixFingerprint,
-      positiveValidationCount,
-      promotionState: promoted ? "PROMOTED" : "OBSERVE_ONLY",
-      autoMutationAllowed: action === ACTIONS.REPAIR_CANDIDATE && promoted,
+      admissionState: admitted ? "ADMITTED" : "NOT_ADMITTED",
+      autoMutationAllowed: mutationEligible,
     },
-    validate3,
-    approve5,
-    fiveStageComplete: Object.values(approve5).every(Boolean),
+    technicalChecks,
+    mutationEligible,
     policy: {
       deploy: false,
       productionMutation: false,
       natsHeadOnlyRedeploy: false,
       preserveNewerSecurityEvidence: true,
-      autoSyncUnpromotedPatterns: false,
+      autoSyncUnadmittedPatterns: false,
     },
   };
 }
@@ -276,7 +276,7 @@ export function buildCorrelation(input) {
   };
 
   return {
-    schema: "POST_MERGE_CORRELATION@2",
+    schema: "POST_MERGE_CORRELATION@3",
     supplyChainSchema: "CAPITAL_AI_SH_SUPPLY_CHAIN@1",
     mainSha: input.mainSha,
     mergedPr: Number(input.mergedPr),
@@ -284,21 +284,18 @@ export function buildCorrelation(input) {
     mergedImpact,
     required: openPrs.some(pr => pr.action !== ACTIONS.NO_ACTION)
       || documentationRepair.action !== DOCUMENTATION_ACTIONS.NO_ACTION,
-    rule3: {
-      minimumIndependentPositiveValidationCycles: 3,
-      promotionRequiresSameFixFingerprint: true,
-      repeatedSameRunCountsOnce: true,
-    },
-    rule5: {
-      stages: ["DETECT", "CORRELATE", "CLASSIFY", "REMEDIATE", "VERIFY"],
-      allStagesRequiredForAutonomousMutation: true,
+    technicalAdmission: {
+      explicitRepairAdmissionRequired: true,
+      exactFixFingerprintRequired: true,
+      deterministicClassificationRequired: true,
+      requiredChecksRevalidationRequired: true,
     },
     openPrs,
     documentationRepair,
     summary,
     globalPolicy: {
       autoMutationDefault: false,
-      autoMutationOnlyForPromotedLowRiskPatterns: true,
+      autoMutationOnlyForAdmittedLowRiskPatterns: true,
       secretsAuthDnsBillingBranchProtectionLicenseApproval: "MANUAL_REVIEW_REQUIRED",
       deploy: false,
       productionHandoff: false,

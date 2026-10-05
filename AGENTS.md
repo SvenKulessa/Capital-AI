@@ -1,6 +1,6 @@
 # CAPITAL-AI Engineering Delivery Policy
 
-Stand: 2026-10-04  
+Stand: 2026-10-05  
 Geltungsbereich: gesamtes Repository, alle Agents, Pull Requests, Builds, Updates und Deployments.
 
 ## Oberste Priorität
@@ -19,7 +19,7 @@ Owner-Entscheidung vom 2026-10-04: Der Owner entwickelt alleine. PRODUCT, MARKET
 - Eine Aufgabe darf nicht allein wegen einer anderen fachlichen Domain angehalten, zurückgegeben oder nur als Übergabeprompt abgeschlossen werden. Domain-Hinweise und Kontextübergaben sind freiwillig.
 - Die Primary Domain kennzeichnet den Schwerpunkt von Branch, PR und Evidence. Sie begrenzt keine Bearbeitungsbefugnis; die bestehenden Namenskonventionen gelten weiter.
 - Diese Regel hat bei organisatorischen Domain-/Chat-Handoffs Vorrang vor älteren oder lokalen Anweisungen, auch wenn diese eine strengere organisatorische Übergabe verlangen. Die Vorrangregel verändert keine echten technischen Grenzen.
-- 3 VALIDATE / 5 APPROVE bleiben nachweisbare Prüfperspektiven. Derselbe Chat darf alle fachlichen Perspektiven bearbeiten und dokumentieren; unabhängige Reviewer, separate Abnahmen oder Owner-Freigaben dürfen dabei nicht erfunden werden. Tatsächlich vorgeschriebene unabhängige Prüfungen bleiben erforderlich.
+- Prüfungen und Freigaben werden ausschließlich über konkrete, risikobasierte technische Gates und belastbare Evidence abgebildet. Pauschale zahlenbasierte Freigabemodelle sind nicht Teil der repositoryweiten Delivery-Policy. Tatsächlich vorgeschriebene unabhängige Prüfungen bleiben erforderlich.
 - Auth-, API-, Daten-/Event-Schema-, Security-, Lizenz-/Datenrechte-, Supply-Chain-, Kosten- und Production-Gates bleiben unverändert. Ein erfolgreicher Test ersetzt keine Freigabe. Kritische Mutationen und Architekturentscheidungen benötigen weiterhin die bestehende konkrete Owner-Autorisierung.
 - Maschinenlesbare Evidence-/Datenverträge, einschließlich `GROWTH_HANDOFF@1`, bleiben an technischen Schnittstellen gültig; sie sind keine Voraussetzung für einen Domainwechsel im Chat. Der technische Production-Handoff ist ausdrücklich weiterhin verbindlich.
 - Die Regel gilt repository- und anwendungsweit für alle fünf Domains sowie für Web- und Mobile-Arbeit, die diese Root-Policy verwendet. Sie ändert gespeicherte ChatGPT-Projekteinstellungen und Richtlinien anderer Repositories nicht automatisch.
@@ -47,7 +47,7 @@ Beispiel:
 ```text
 🔧 OFFEN / NÄCHSTE SCHRITTE
 - Security-Finding schließen
-- 3 VALIDATE / 5 APPROVE neu bewerten
+- betroffene Required Checks und technische Gates neu bewerten
 ```
 
 ## Domain-Einstiegspunkt
@@ -70,8 +70,8 @@ Für **jede** Domain und jede neue Arbeitssitzung ist der erste verbindliche Kon
 6. **Security-Updates** — nicht durch Komfortregeln unterdrücken. Kritische Fixes dürfen schneller bearbeitet werden, aber Production-Gates bleiben unverändert.
 7. **Konflikte** — keine pauschale `ours/theirs`-Auflösung für Lockfiles, Vendor-Patches oder Security-Evidence. Von aktuellem `main` rekonstruieren und bereits neuere sichere Änderungen bewahren.
 8. **Neueste stabile Version** — bevorzugen, wenn unterstützt und kompatibel. "Latest" ersetzt keine Migrationsprüfung.
-9. **Self-Healing** — wiederkehrende sichere Reparaturmuster erst nach mindestens drei positiven Validierungszyklen als automatische Invariante fest verankern.
-10. **Post-Merge-Korrelation** — nach einem Merge nach `main` muss bei tatsächlicher Datei-, Contract-, Lockfile-, Runtime- oder Evidence-Überschneidung eine Rekorrelation betroffener offener Arbeiten gegen den neuen Main erfolgen. Der kanonische Contract ist `POST_MERGE_CORRELATION@2` in `docs/security/POST-MERGE-CORRELATION-SELF-HEALING.md`. Automatische Fixes bleiben auf validierte Low-Risk-Klassen begrenzt und werden erst nach drei unabhängigen positiven Zyklen promotet. Ein neuer Repository-HEAD allein ist weder ein Deployment- noch ein NATS-Redeploy-Signal.
+9. **Self-Healing** — wiederkehrende sichere Reparaturmuster nur nach expliziter technischer Zulassung eines reproduzierbaren Fix-Fingerprints als automatische Invariante fest verankern.
+10. **Post-Merge-Korrelation** — nach einem Merge nach `main` muss bei tatsächlicher Datei-, Contract-, Lockfile-, Runtime- oder Evidence-Überschneidung eine Rekorrelation betroffener offener Arbeiten gegen den neuen Main erfolgen. Der kanonische Contract ist `POST_MERGE_CORRELATION@3` in `docs/security/POST-MERGE-CORRELATION-SELF-HEALING.md`. Automatische Fixes bleiben auf explizit zugelassene, deterministische Low-Risk-Fingerprints begrenzt. Ein neuer Repository-HEAD allein ist weder ein Deployment- noch ein NATS-Redeploy-Signal.
 
 ## Update-Trust-Contract
 
