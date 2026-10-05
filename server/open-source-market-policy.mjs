@@ -3,7 +3,7 @@ const OPEN_SOURCE_SOFTWARE_LICENSES = new Set([
   'GPL-3.0-only','GPL-3.0-or-later','AGPL-3.0-only','AGPL-3.0-or-later',
   'LGPL-3.0-only','LGPL-3.0-or-later','MPL-2.0',
 ]);
-const OPEN_DATA_LICENSES = new Set(['CC0-1.0','CC-BY-4.0','CC-BY-SA-4.0','ODbL-1.0']);
+const OPEN_DATA_LICENSES = new Set(['CC0-1.0','CC-BY-4.0','CC-BY-SA-4.0','ODbL-1.0','LicenseRef-ECB-ESCB-STATISTICS-REUSE-2026']);
 
 export const MARKET_REQUIRED_USE_CASES = Object.freeze([
   'commercialWebDisplay',
@@ -23,6 +23,33 @@ export const MARKET_SOURCE_POLICY = Object.freeze({
   schema:'CAPITAL_AI_OPEN_SOURCE_MARKET_POLICY@1',
   ownerDecisionAt:'2026-10-04',
   mode:'OPEN_SOURCE_AND_OPEN_DATA_ONLY',
+  rightsAdmittedSources:Object.freeze([
+    Object.freeze({
+      providerId:'ecb-reference-rates',
+      decision:'OPEN_DATA_RIGHTS_ADMITTED',
+      eligible:true,
+      runtimeEligible:false,
+      scope:'FOREX_DAILY_REFERENCE_RATES_INFORMATION_ONLY',
+      dataLicense:'LicenseRef-ECB-ESCB-STATISTICS-REUSE-2026',
+      evidenceReference:'docs/market-data/evidence/source-rights-admission-ecb-reference-rates-20261005.json',
+      instrumentManifestReference:'docs/market-data/evidence/instrument-manifest-20261005.json',
+      obligations:Object.freeze([
+        'ATTRIBUTE_SOURCE_AS_ECB_STATISTICS',
+        'PRESERVE_ORIGINAL_PUBLISHED_STATISTIC_AND_METADATA',
+        'DISCLOSE_MODIFICATIONS_OR_DERIVED_CALCULATIONS',
+        'DO_NOT_TREAT_REFERENCE_RATE_AS_TRANSACTION_OR_EXECUTION_BENCHMARK',
+        'DO_NOT_REUSE_UNDERLYING_THIRD_PARTY_SOURCE_DATA',
+      ]),
+      capabilities:Object.freeze({
+        referenceMetadata:true,
+        marketQuotes:true,
+        scoringPriceInput:true,
+        realtime:false,
+        executionPrice:false,
+        decisionEligible:false,
+      }),
+    }),
+  ]),
   admittedSources:Object.freeze([
     Object.freeze({
       providerId:'wikidata-reference',
@@ -49,17 +76,11 @@ function isHttpsReference(value){
   return typeof value === 'string' && /^https:\/\//.test(value);
 }
 
-export function evaluateOpenSourceMarketAdmission(evidence){
+export function evaluateOpenDataRightsAdmission(evidence){
   const reasons=[];
   if(!evidence || typeof evidence!=='object') {
     return {decision:'BLOCK',eligible:false,reasons:['EVIDENCE_MISSING']};
   }
-
-  if(!OPEN_SOURCE_SOFTWARE_LICENSES.has(evidence.softwareLicense)) reasons.push('SOFTWARE_LICENSE_NOT_ADMITTED');
-  if(!/^[a-f0-9]{40}$/.test(evidence.softwareSourceSha||'')) reasons.push('SOFTWARE_SOURCE_SHA_MISSING');
-  if(!/^[a-f0-9]{40}$/.test(evidence.softwareLicenseBlobSha||'')) reasons.push('SOFTWARE_LICENSE_BLOB_SHA_MISSING');
-  if(!isHttpsReference(evidence.softwareEvidenceReference)) reasons.push('SOFTWARE_EVIDENCE_MISSING');
-  if(evidence.softwarePackagingCompatible!==true) reasons.push('SOFTWARE_PACKAGING_NOT_ADMITTED');
 
   if(!OPEN_DATA_LICENSES.has(evidence.dataLicense)) reasons.push('OPEN_DATA_LICENSE_NOT_ADMITTED');
   if(!isHttpsReference(evidence.dataLicenseEvidenceReference)) reasons.push('DATA_LICENSE_EVIDENCE_MISSING');
@@ -82,10 +103,44 @@ export function evaluateOpenSourceMarketAdmission(evidence){
   }
 
   return {
+    decision:reasons.length===0?'OPEN_DATA_RIGHTS_ADMITTED':'BLOCK',
+    eligible:reasons.length===0,
+    reasons,
+  };
+}
+
+export function evaluateOpenSourceMarketAdmission(evidence){
+  const reasons=[];
+  if(!evidence || typeof evidence!=='object') {
+    return {decision:'BLOCK',eligible:false,reasons:['EVIDENCE_MISSING']};
+  }
+
+  if(!OPEN_SOURCE_SOFTWARE_LICENSES.has(evidence.softwareLicense)) reasons.push('SOFTWARE_LICENSE_NOT_ADMITTED');
+  if(!/^[a-f0-9]{40}$/.test(evidence.softwareSourceSha||'')) reasons.push('SOFTWARE_SOURCE_SHA_MISSING');
+  if(!/^[a-f0-9]{40}$/.test(evidence.softwareLicenseBlobSha||'')) reasons.push('SOFTWARE_LICENSE_BLOB_SHA_MISSING');
+  if(!isHttpsReference(evidence.softwareEvidenceReference)) reasons.push('SOFTWARE_EVIDENCE_MISSING');
+  if(evidence.softwarePackagingCompatible!==true) reasons.push('SOFTWARE_PACKAGING_NOT_ADMITTED');
+
+  const rights=evaluateOpenDataRightsAdmission(evidence);
+  reasons.push(...rights.reasons);
+
+  return {
     decision:reasons.length===0?'OPEN_SOURCE_OPEN_DATA_ADMITTED':'BLOCK',
     eligible:reasons.length===0,
     reasons,
   };
+}
+
+export function rightsAdmittedMarketSourcesFor(capability=null){
+  return MARKET_SOURCE_POLICY.rightsAdmittedSources.filter(source =>
+    source.eligible===true &&
+    source.decision==='OPEN_DATA_RIGHTS_ADMITTED' &&
+    (!capability || source.capabilities?.[capability]===true)
+  );
+}
+
+export function isMarketSourceRightsAdmitted(providerId, capability=null){
+  return rightsAdmittedMarketSourcesFor(capability).some(source => source.providerId===providerId);
 }
 
 export function admittedMarketSourcesFor(capability=null){
