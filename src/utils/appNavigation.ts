@@ -140,10 +140,18 @@ export function resolveAppRoute(rawPath: string): string {
   if (
     clean === '/marketscreener/dokumentation' ||
     clean === '/market-screener/dokumentation' ||
-    clean === '/blueprint-dokumentation' ||
-    clean === '/documentation'
+    clean === '/blueprint-dokumentation'
   ) {
     return '/marketscreener/dokumentation';
+  }
+  if (
+    clean === '/dokumentation' ||
+    clean === '/documentation' ||
+    clean === '/docs' ||
+    clean === '/presentations' ||
+    clean === '/praesentationen'
+  ) {
+    return '/dokumentation';
   }
   if (
     clean === '/marketscreener' ||

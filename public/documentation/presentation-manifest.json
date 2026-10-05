@@ -1,0 +1,10 @@
+{
+  "version": "2026-10-04",
+  "generator": "CAPITAL-AI deterministic documentation presentation profile",
+  "format": ["text/html", "text/css", "image/svg+xml"],
+  "presentations": ["byok.html", "pipeline-architectures.html", "pricing-models.html", "domains.html"],
+  "provenance": "Derived exclusively from CAPITAL-AI repository/product concepts and existing domain badges.",
+  "thirdPartyMedia": false,
+  "licenseNotice": "Presentation copy and layout are CAPITAL-AI project assets. Existing repository/project licensing terms apply. Provider and product names are informational references; no third-party logos are bundled.",
+  "publicationStatus": "draft-review"
+}
