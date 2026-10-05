@@ -1,6 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { ArrowLeft, CheckCircle2, Lock, LogIn, Mail, UserPlus } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Fingerprint,
+  KeyRound,
+  Lock,
+  LogIn,
+  Mail,
+  RotateCcw,
+  ShieldCheck,
+  UserPlus,
+} from 'lucide-react';
 import { BrandLogo } from '../../components/BrandLogo';
+import {
+  prepareAuthenticationOptions,
+  serializeAuthenticationCredential,
+  type PublicKeyCredentialRequestOptionsJSON,
+} from './webauthn';
 
 interface LoginPageProps {
   onBackToHome: () => void;
@@ -16,8 +32,18 @@ interface SessionState {
 
 interface AuthResponseBody {
   error?: string;
+  code?: string;
   authenticated?: boolean;
+  mfaRequired?: boolean;
+  next?: string;
+  accepted?: boolean;
+  reset?: boolean;
+  factors?: Array<{ id: string; type: 'totp'; friendlyName: string }>;
+  challengeId?: string;
+  options?: PublicKeyCredentialRequestOptionsJSON;
 }
+
+type Mode = 'login' | 'register' | 'forgot' | 'reset' | 'mfa';
 
 async function postJson(
   path: string,
@@ -31,44 +57,95 @@ async function postJson(
     body: JSON.stringify(body),
   });
   const payload: unknown = await response.json().catch(() => null);
-  const parsed =
-    payload && typeof payload === 'object'
-      ? (payload as AuthResponseBody)
-      : null;
+  const parsed = payload && typeof payload === 'object' ? (payload as AuthResponseBody) : null;
   return { response, body: parsed };
+}
+
+function initialMode(): Mode {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('mode') === 'reset') return 'reset';
+  if (params.get('mfa') === '1') return 'mfa';
+  return 'login';
+}
+
+function safeNext(): string {
+  const value = new URLSearchParams(window.location.search).get('next') || '/profile';
+  return value.startsWith('/') && !value.startsWith('//') && !value.includes('\\') ? value : '/profile';
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFaq, onNavigateLegal }) => {
   const [session, setSession] = useState<SessionState | null>(null);
-  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [mfaFactors, setMfaFactors] = useState<Array<{ id: string; type: 'totp'; friendlyName: string }>>([]);
+  const [selectedFactorId, setSelectedFactorId] = useState('');
+  const [totpCode, setTotpCode] = useState('');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    const abort = new AbortController();
-    fetch('/api/auth/session', {
+  const passkeySupported = useMemo(
+    () => typeof window !== 'undefined' && 'PublicKeyCredential' in window && !!navigator.credentials,
+    [],
+  );
+
+  const loadSession = async (signal?: AbortSignal) => {
+    const response = await fetch('/api/auth/session', {
       credentials: 'same-origin',
       cache: 'no-store',
       headers: { Accept: 'application/json' },
-      signal: abort.signal,
-    })
-      .then(async response => {
-        if (!response.ok) throw new Error();
-        return response.json();
-      })
+      signal,
+    });
+    if (!response.ok) throw new Error('SESSION_UNAVAILABLE');
+    const value = await response.json();
+    if (typeof value?.configured !== 'boolean' || typeof value?.authenticated !== 'boolean') throw new Error('INVALID_SESSION');
+    setSession(value);
+    return value as SessionState;
+  };
+
+  const loadMfaFactors = async () => {
+    const response = await fetch('/api/auth/mfa/factors', {
+      credentials: 'same-origin',
+      cache: 'no-store',
+      headers: { Accept: 'application/json' },
+    });
+    const body = await response.json().catch(() => null);
+    if (!response.ok) throw new Error(body?.error || 'mfa_factors_unavailable');
+    const factors = Array.isArray(body?.factors) ? body.factors : [];
+    setMfaFactors(factors);
+    setSelectedFactorId(previous => previous || factors[0]?.id || '');
+    return factors;
+  };
+
+  useEffect(() => {
+    const abort = new AbortController();
+    loadSession(abort.signal)
       .then(value => {
-        if (typeof value?.configured !== 'boolean' || typeof value?.authenticated !== 'boolean') throw new Error();
-        if (!abort.signal.aborted) setSession(value);
+        if (!abort.signal.aborted && mode === 'mfa' && value.authenticated) {
+          void loadMfaFactors().catch(() => setError('Authenticator-Faktoren konnten nicht geladen werden.'));
+        }
       })
       .catch(() => {
         if (!abort.signal.aborted) setError('Der Supabase-Anmeldedienst ist derzeit nicht erreichbar.');
       });
     return () => abort.abort();
   }, []);
+
+  const showError = (reason: unknown) => {
+    const message = reason instanceof Error ? reason.message : 'authentication_failed';
+    if (message === 'weak_password' || message === 'invalid_new_password') {
+      setError('Das neue Passwort muss mindestens 14 Zeichen lang sein und die Supabase-Sicherheitsanforderungen erfüllen.');
+    } else if (message === 'registration_failed') {
+      setError('Registrierung fehlgeschlagen. Bitte prüfe die Eingaben oder versuche es erneut.');
+    } else if (message === 'passkey_unavailable') {
+      setError('Passkey-Anmeldung ist im Supabase-Projekt noch nicht freigeschaltet.');
+    } else {
+      setError(message);
+    }
+  };
 
   const submitEmail = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -79,7 +156,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
       if (mode === 'login') {
         const result = await postJson('/api/auth/login/email', { email, password });
         if (!result.response.ok) throw new Error(result.body?.error || 'authentication_failed');
-        window.location.replace('/profile');
+        if (result.body?.mfaRequired) {
+          setMode('mfa');
+          setPassword('');
+          await loadMfaFactors();
+          return;
+        }
+        window.location.replace(result.body?.next || '/profile');
         return;
       }
 
@@ -89,11 +172,106 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
         window.location.replace('/profile');
         return;
       }
-      setNotice('Registrierung angenommen. Bitte bestätige die E-Mail-Adresse und melde dich danach an.');
+      setNotice('Registrierung angenommen. Bitte bestätige die E-Mail-Adresse über die CAPITAL-AI Bestätigungsmail.');
       setMode('login');
       setPassword('');
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Anmeldung ist derzeit nicht verfügbar.');
+      showError(reason);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const submitForgot = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      const result = await postJson('/api/auth/password/forgot', { email });
+      if (!result.response.ok) throw new Error(result.body?.error || 'password_recovery_failed');
+      setNotice('Falls ein Konto zu dieser E-Mail existiert, wurde eine CAPITAL-AI Passwort-Reset-Mail versendet.');
+    } catch (reason) {
+      showError(reason);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const submitReset = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      if (password.length < 14 || password !== passwordConfirm) {
+        throw new Error(password !== passwordConfirm ? 'passwords_do_not_match' : 'invalid_new_password');
+      }
+      const result = await postJson('/api/auth/password/reset', { password });
+      if (!result.response.ok) throw new Error(result.body?.code || result.body?.error || 'password_reset_failed');
+      setPassword('');
+      setPasswordConfirm('');
+      setNotice('Passwort wurde geändert. Alle Sitzungen wurden beendet; melde dich jetzt mit dem neuen Passwort an.');
+      setMode('login');
+      await loadSession();
+    } catch (reason) {
+      showError(reason);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const verifyMfa = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      if (!selectedFactorId) throw new Error('mfa_factor_missing');
+      const result = await postJson('/api/auth/mfa/totp/verify', {
+        factorId: selectedFactorId,
+        code: totpCode,
+      });
+      if (!result.response.ok) throw new Error(result.body?.code || result.body?.error || 'totp_verification_failed');
+      window.location.replace(safeNext());
+    } catch (reason) {
+      showError(reason);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const loginWithPasskey = async () => {
+    if (!passkeySupported) {
+      setError('Dieser Browser oder dieses Gerät unterstützt Passkeys nicht.');
+      return;
+    }
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      const start = await postJson('/api/auth/passkey/options', {});
+      if (!start.response.ok || !start.body?.options || !start.body?.challengeId) {
+        throw new Error(start.body?.code || start.body?.error || 'passkey_unavailable');
+      }
+      const credential = await navigator.credentials.get({
+        publicKey: prepareAuthenticationOptions(start.body.options),
+      });
+      if (!(credential instanceof PublicKeyCredential)) throw new Error('passkey_ceremony_cancelled');
+
+      const finish = await postJson('/api/auth/passkey/verify', {
+        challengeId: start.body.challengeId,
+        credential: serializeAuthenticationCredential(credential),
+      });
+      if (!finish.response.ok) throw new Error(finish.body?.code || finish.body?.error || 'passkey_authentication_failed');
+      if (finish.body?.mfaRequired) {
+        setMode('mfa');
+        await loadMfaFactors();
+        return;
+      }
+      window.location.replace(finish.body?.next || '/profile');
+    } catch (reason) {
+      showError(reason);
     } finally {
       setBusy(false);
     }
@@ -112,12 +290,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
       });
       if (!response.ok) throw new Error();
       setSession(previous => previous ? { ...previous, authenticated: false, user: null } : previous);
+      setMode('login');
     } catch {
       setError('Abmeldung konnte nicht bestätigt werden.');
     } finally {
       setBusy(false);
     }
   };
+
+  const specialMode = mode === 'reset' || mode === 'mfa';
 
   return (
     <main className="min-h-screen bg-[#02050e] px-4 py-8 text-slate-100 flex justify-center">
@@ -130,9 +311,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
           <BrandLogo variant="stacked" size="lg" showSubtitle={false} />
           <div className="mt-6 flex items-center justify-between gap-3">
             <div>
-              <h1 className="text-2xl font-bold">Supabase Anmeldung</h1>
+              <h1 className="text-2xl font-bold">
+                {mode === 'forgot' ? 'Passwort vergessen' : mode === 'reset' ? 'Neues Passwort setzen' : mode === 'mfa' ? 'Authenticator bestätigen' : 'CAPITAL-AI Anmeldung'}
+              </h1>
               <p className="mt-2 text-sm text-slate-300">
-                Backend-first Session mit Redirect auf dein persönliches Profil und API-Vault.
+                Passkey, Google, E-Mail/Passwort und optionaler TOTP-Authenticator über eine serverseitige Supabase-Session.
               </p>
             </div>
             <span className="rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1 font-mono text-[10px] text-emerald-300">
@@ -149,7 +332,78 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
             </p>
           )}
 
-          {session?.authenticated ? (
+          {mode === 'mfa' && (
+            <form onSubmit={verifyMfa} className="mt-5 space-y-3">
+              <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-100">
+                <ShieldCheck className="mb-2 h-4 w-4" />
+                Dieses Konto verlangt einen zweiten Faktor. Öffne deine Authenticator-App und gib den aktuellen Code ein.
+              </div>
+              {mfaFactors.length > 1 && (
+                <label className="block text-xs font-bold text-slate-300">
+                  Authenticator
+                  <select
+                    value={selectedFactorId}
+                    onChange={event => setSelectedFactorId(event.target.value)}
+                    className="mt-1 w-full rounded-xl border border-white/15 bg-black/40 px-3 py-3 text-sm text-white"
+                  >
+                    {mfaFactors.map(factor => <option key={factor.id} value={factor.id}>{factor.friendlyName || 'Authenticator'}</option>)}
+                  </select>
+                </label>
+              )}
+              <label className="block text-xs font-bold text-slate-300">
+                Einmalcode
+                <input
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  value={totpCode}
+                  onChange={event => setTotpCode(event.target.value.replace(/\D/g, '').slice(0, 8))}
+                  required
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-black/40 px-3 py-3 font-mono text-lg tracking-[0.3em] text-white"
+                  placeholder="123456"
+                />
+              </label>
+              <button type="submit" disabled={busy || totpCode.length < 6} className="min-h-12 w-full rounded-xl bg-amber-400 font-black text-black disabled:opacity-40">
+                {busy ? 'Wird geprüft …' : 'Authenticator bestätigen'}
+              </button>
+            </form>
+          )}
+
+          {mode === 'reset' && (
+            <form onSubmit={submitReset} className="mt-5 space-y-3">
+              <label className="block text-xs font-bold text-slate-300">
+                Neues Passwort
+                <input type="password" value={password} onChange={event => setPassword(event.target.value)} required minLength={14} maxLength={256} autoComplete="new-password" className="mt-1 w-full rounded-xl border border-white/15 bg-black/40 px-3 py-3 text-sm text-white" />
+              </label>
+              <label className="block text-xs font-bold text-slate-300">
+                Neues Passwort wiederholen
+                <input type="password" value={passwordConfirm} onChange={event => setPasswordConfirm(event.target.value)} required minLength={14} maxLength={256} autoComplete="new-password" className="mt-1 w-full rounded-xl border border-white/15 bg-black/40 px-3 py-3 text-sm text-white" />
+              </label>
+              <p className="text-[11px] text-slate-500">Mindestens 14 Zeichen. Nach dem Reset werden alle Sitzungen beendet.</p>
+              <button type="submit" disabled={busy} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-amber-400 font-black text-black disabled:opacity-40">
+                <RotateCcw size={18} /> {busy ? 'Wird geändert …' : 'Passwort neu setzen'}
+              </button>
+            </form>
+          )}
+
+          {mode === 'forgot' && (
+            <form onSubmit={submitForgot} className="mt-5 space-y-3">
+              <label className="block text-xs font-bold text-slate-300">
+                E-Mail
+                <div className="relative mt-1">
+                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                  <input type="email" value={email} onChange={event => setEmail(event.target.value)} required autoComplete="email" className="w-full rounded-xl border border-white/15 bg-black/40 py-3 pl-10 pr-3 text-sm text-white" />
+                </div>
+              </label>
+              <button type="submit" disabled={busy || !session?.configured} className="min-h-12 w-full rounded-xl bg-amber-400 font-black text-black disabled:opacity-40">
+                {busy ? 'Wird versendet …' : 'Passwort-Reset-Mail senden'}
+              </button>
+              <button type="button" onClick={() => setMode('login')} className="min-h-11 w-full text-xs font-bold text-slate-400 hover:text-white">
+                Zurück zur Anmeldung
+              </button>
+            </form>
+          )}
+
+          {!specialMode && mode !== 'forgot' && session?.authenticated ? (
             <div className="mt-5 space-y-3">
               <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3">
                 <p className="flex items-center gap-2 text-sm font-bold text-emerald-200">
@@ -157,37 +411,20 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                 </p>
                 <p className="mt-1 break-all text-xs text-emerald-100/70">{session.user?.email}</p>
               </div>
-              <button
-                type="button"
-                onClick={() => window.location.assign('/profile')}
-                className="min-h-12 w-full rounded-xl bg-amber-400 font-black text-black"
-              >
+              <button type="button" onClick={() => window.location.assign('/profile')} className="min-h-12 w-full rounded-xl bg-amber-400 font-black text-black">
                 Zum persönlichen Profil & Vault
               </button>
-              <button
-                type="button"
-                onClick={() => void logout()}
-                disabled={busy}
-                className="min-h-12 w-full rounded-xl bg-slate-700 disabled:opacity-50"
-              >
+              <button type="button" onClick={() => void logout()} disabled={busy} className="min-h-12 w-full rounded-xl bg-slate-700 disabled:opacity-50">
                 {busy ? 'Abmeldung läuft …' : 'Abmelden'}
               </button>
             </div>
-          ) : (
+          ) : !specialMode && mode !== 'forgot' ? (
             <>
               <div className="mt-5 grid grid-cols-2 gap-1 rounded-xl border border-white/10 bg-black/30 p-1">
-                <button
-                  type="button"
-                  onClick={() => setMode('login')}
-                  className={`rounded-lg px-3 py-2 text-xs font-bold ${mode === 'login' ? 'bg-amber-400 text-black' : 'text-slate-400'}`}
-                >
+                <button type="button" onClick={() => setMode('login')} className={`rounded-lg px-3 py-2 text-xs font-bold ${mode === 'login' ? 'bg-amber-400 text-black' : 'text-slate-400'}`}>
                   Anmelden
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setMode('register')}
-                  className={`rounded-lg px-3 py-2 text-xs font-bold ${mode === 'register' ? 'bg-[#8D26FF] text-white' : 'text-slate-400'}`}
-                >
+                <button type="button" onClick={() => setMode('register')} className={`rounded-lg px-3 py-2 text-xs font-bold ${mode === 'register' ? 'bg-[#8D26FF] text-white' : 'text-slate-400'}`}>
                   Registrieren
                 </button>
               </div>
@@ -196,27 +433,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                 {mode === 'register' && (
                   <label className="block text-xs font-bold text-slate-300">
                     Name
-                    <input
-                      value={name}
-                      onChange={event => setName(event.target.value)}
-                      required
-                      maxLength={120}
-                      className="mt-1 w-full rounded-xl border border-white/15 bg-black/40 px-3 py-3 text-sm text-white"
-                    />
+                    <input value={name} onChange={event => setName(event.target.value)} required maxLength={120} className="mt-1 w-full rounded-xl border border-white/15 bg-black/40 px-3 py-3 text-sm text-white" />
                   </label>
                 )}
                 <label className="block text-xs font-bold text-slate-300">
                   E-Mail
                   <div className="relative mt-1">
                     <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={event => setEmail(event.target.value)}
-                      required
-                      autoComplete="email"
-                      className="w-full rounded-xl border border-white/15 bg-black/40 py-3 pl-10 pr-3 text-sm text-white"
-                    />
+                    <input type="email" value={email} onChange={event => setEmail(event.target.value)} required autoComplete="email" className="w-full rounded-xl border border-white/15 bg-black/40 py-3 pl-10 pr-3 text-sm text-white" />
                   </div>
                 </label>
                 <label className="block text-xs font-bold text-slate-300">
@@ -228,18 +452,20 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                       value={password}
                       onChange={event => setPassword(event.target.value)}
                       required
-                      minLength={10}
+                      minLength={mode === 'register' ? 14 : 1}
                       maxLength={256}
                       autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                       className="w-full rounded-xl border border-white/15 bg-black/40 py-3 pl-10 pr-3 text-sm text-white"
                     />
                   </div>
                 </label>
-                <button
-                  type="submit"
-                  disabled={busy || !session?.configured}
-                  className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-amber-400 font-black text-black disabled:opacity-40"
-                >
+                {mode === 'register' && <p className="text-[11px] text-slate-500">Mindestens 14 Zeichen.</p>}
+                {mode === 'login' && (
+                  <button type="button" onClick={() => { setMode('forgot'); setError(''); setNotice(''); }} className="min-h-8 text-xs font-bold text-amber-300 hover:text-amber-200">
+                    Passwort vergessen?
+                  </button>
+                )}
+                <button type="submit" disabled={busy || !session?.configured} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-amber-400 font-black text-black disabled:opacity-40">
                   {mode === 'login' ? <LogIn size={18} /> : <UserPlus size={18} />}
                   {busy ? 'Bitte warten …' : mode === 'login' ? 'Mit E-Mail anmelden' : 'Konto registrieren'}
                 </button>
@@ -254,11 +480,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                 className="flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border border-white/15 bg-white text-sm font-bold text-slate-900 transition hover:bg-slate-100"
                 aria-label="Mit Google anmelden"
               >
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 24 24"
-                  className="h-5 w-5 shrink-0"
-                >
+                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 shrink-0">
                   <path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.54h3.24c1.9-1.75 2.98-4.32 2.98-7.41Z" />
                   <path fill="#34A853" d="M12 22c2.7 0 4.97-.9 6.62-2.36l-3.24-2.54c-.9.6-2.05.96-3.38.96-2.61 0-4.82-1.76-5.61-4.13H3.04v2.62A10 10 0 0 0 12 22Z" />
                   <path fill="#FBBC05" d="M6.39 13.93A6.02 6.02 0 0 1 6.08 12c0-.67.11-1.32.31-1.93V7.45H3.04A10 10 0 0 0 2 12c0 1.61.39 3.14 1.04 4.55l3.35-2.62Z" />
@@ -266,11 +488,24 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                 </svg>
                 Mit Google anmelden
               </a>
+
+              <button
+                type="button"
+                onClick={() => void loginWithPasskey()}
+                disabled={busy || !passkeySupported || !session?.configured}
+                className="mt-3 flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border border-cyan-400/30 bg-cyan-400/10 text-sm font-black text-cyan-100 transition hover:bg-cyan-400/15 disabled:opacity-40"
+              >
+                <Fingerprint className="h-5 w-5" />
+                Mit Passkey anmelden
+              </button>
             </>
-          )}
+          ) : null}
 
           <p className="mt-4 flex gap-2 text-xs text-slate-400">
             <Lock size={16} /> Access- und Refresh-Tokens verbleiben in signierten HttpOnly-Secure-Cookies.
+          </p>
+          <p className="mt-2 flex gap-2 text-[11px] text-slate-500">
+            <KeyRound size={15} /> Passkey ist passwortlos; TOTP wird bei aktivierter MFA als zweiter Faktor angefordert.
           </p>
 
           <nav className="mt-6 flex flex-wrap gap-4 text-sm text-amber-300">
