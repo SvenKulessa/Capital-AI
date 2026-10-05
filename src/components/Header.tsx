@@ -4,7 +4,6 @@
  * ----------------------------------------------------------------------------
  * 1. GRAFISCHE KOMPONENTE : 
  *    - Vector Brand Logo mit goldenem Glowing-Effekt
- *    - Live Latency Status Chip (`Sub-45ms Latenz`)
  *    - Schnellzugriff-Buttons (Analyse, Sektoren, Whale Radar, Tarife, Login)
  *    - Vollintegriertes Hamburger-Drawer-Menü mit Assetklassen-Hierarchie
  * 2. SCORING-LOGIK        : 
@@ -207,6 +206,9 @@ export const Header: React.FC<HeaderProps> = ({
           id="mobile-menu-btn"
           type="button"
           aria-label="Navigation öffnen"
+          aria-expanded={isMenuOpen}
+          aria-controls="capital-ai-mobile-navigation"
+          aria-haspopup="dialog"
           onClick={() => setIsMenuOpen(true)}
           className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 hover:bg-white/10 active:bg-white/15 text-amber-300 border border-amber-500/20 hover:border-amber-500/40 transition-all shadow-[0_0_12px_rgba(249,191,33,0.12)] cursor-pointer shrink-0"
         >
@@ -232,7 +234,7 @@ export const Header: React.FC<HeaderProps> = ({
               ? 'bg-amber-400 text-black font-extrabold shadow-sm'
               : 'text-slate-300 hover:text-white hover:bg-white/5 font-medium'
           }`}
-          title="Marketscreener (Echtzeit-Marktdaten & Scorer)"
+          title="Marketscreener (Analyse, Datenstatus & Scoring)"
         >
           <LineChart className="w-3.5 h-3.5" />
           <span>Marketscreener</span>
@@ -331,17 +333,6 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <Building2 className="w-3.5 h-3.5 text-cyan-400" />
           <span>Studio Hub</span>
-        </button>
-
-        {/* LIVE LATENCY STATUS CHIP */}
-        <button
-          type="button"
-          onClick={() => onNavigate?.('/provider-status')}
-          className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 hover:border-emerald-500/40 text-[11px] font-mono text-emerald-400 transition-all cursor-pointer group shrink-0"
-          title="Data Provider Status Dashboard, Latenzen & Health Monitor (/provider-status)"
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="group-hover:underline underline-offset-2">LIVE • Sub-45ms</span>
         </button>
 
         {/* SESSION-AWARE ACCOUNT / LOGIN */}
@@ -448,6 +439,10 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Left Slide-in Drawer */}
             <motion.div
+              id="capital-ai-mobile-navigation"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Hauptnavigation"
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
