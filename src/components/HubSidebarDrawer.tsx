@@ -238,11 +238,11 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
       },
       {
         id: 'guides',
-        name: 'Cheat-Sheets & Guides',
+        name: 'Analyse-Module & Methodik',
         icon: <Layers className="w-4 h-4 text-cyan-400" />,
         badge: '4 Guides',
-        shortDesc: 'Spickzettel für Buffett Value Investing, BaFin WORM & Latenz-Architektur',
-        tags: ['DCF', 'MaRisk', 'Cheatsheets'],
+        shortDesc: 'Fachliche Modulübersicht: verwendete Analysewerkzeuge, Datenpfade und methodischer Aufbau',
+        tags: ['Analyse-Module', 'Methodik', 'Datenpfade'],
         path: '/learning?tab=guides',
       },
       {
@@ -306,10 +306,10 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
       },
       {
         id: 'pricing',
-        name: 'Preismodelle & Domains',
+        name: 'Preiskatalog & Domains',
         icon: <DollarSign className="w-4 h-4 text-amber-400" />,
         badge: 'Pricing',
-        shortDesc: 'SaaS-Tarife, Market Vocabulary und die fünf CAPITAL-AI Domains.',
+        shortDesc: 'Starter, Pro, Enterprise, Market Vocabulary und weitere freigegebene Produktpakete.',
         tags: ['Stripe', 'Vocabulary', 'Domains'],
         path: '/dokumentation',
       },
@@ -492,16 +492,16 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
             aria-hidden="true"
           />
 
-          {/* Slide-in Sidebar from the Right */}
+          {/* Sideboard navigation from the left */}
           <motion.aside
-            initial={{ x: '100%' }}
+            initial={{ x: '-100%' }}
             animate={{ x: 0 }}
-            exit={{ x: '100%' }}
+            exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 26, stiffness: 260 }}
-            className="fixed top-0 right-0 bottom-0 z-50 w-full sm:w-[460px] md:w-[490px] bg-[#060c1d] border-l border-slate-800 shadow-[0_0_60px_rgba(0,0,0,0.9)] flex flex-col justify-between overflow-hidden"
+            className="fixed top-0 left-0 bottom-0 z-50 w-full sm:w-[460px] md:w-[490px] bg-[#060c1d] border-r border-slate-800 shadow-[0_0_60px_rgba(0,0,0,0.9)] flex flex-col justify-between overflow-hidden"
             role="dialog"
             aria-modal="true"
-            aria-label={`${activeHub.name} Sidebar-Navigation`}
+            aria-label={`${activeHub.name} Sideboard-Navigation`}
           >
             {/* 1. TOP HEADER & HUB SWITCHER */}
             <div className="p-5 border-b border-slate-800/80 bg-[#070e24]">
