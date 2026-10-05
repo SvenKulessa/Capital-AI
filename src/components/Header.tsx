@@ -38,6 +38,9 @@ import {
   Building2,
   LineChart,
   LibraryBig,
+  User,
+  KeyRound,
+  LogOut,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BrandLogo } from './BrandLogo';
@@ -93,6 +96,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [activeSidebarHub, setActiveSidebarHub] = useState<MainHubId>('marketscreener');
   const [expandedClass, setExpandedClass] = useState<MainCategory | null>('KRYPTO');
   const [authSession, setAuthSession] = useState<HeaderSession | null>(null);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
   const { activeAlertsCount, triggeredAlertsCount } = usePriceAlerts();
 
   useEffect(() => {
@@ -119,9 +123,31 @@ export const Header: React.FC<HeaderProps> = ({
     ? authSession.account?.subscription?.tier || null
     : null;
 
-  const navigateProfile = () => {
-    if (onNavigate) onNavigate('/profile');
-    else window.location.assign('/profile');
+  const navigateAccount = (path: '/profile' | '/profile/security' | '/profile/key-vault') => {
+    setIsAccountOpen(false);
+    setIsMenuOpen(false);
+    if (onNavigate) onNavigate(path);
+    else window.location.assign(path);
+  };
+
+  const logout = async () => {
+    setIsAccountOpen(false);
+    setIsMenuOpen(false);
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{}',
+      });
+      if (!response.ok) throw new Error('LOGOUT_FAILED');
+      setAuthSession(previous => previous ? { ...previous, authenticated: false, user: null } : previous);
+      if (onNavigate) onNavigate('/');
+      else window.location.assign('/');
+    } catch {
+      window.location.assign('/login');
+    }
   };
 
   const openHubSidebar = (hubId: MainHubId) => {
@@ -316,22 +342,69 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* SESSION-AWARE ACCOUNT / LOGIN */}
         {authSession?.authenticated ? (
-          <button
-            id="header-profile-btn"
-            type="button"
-            onClick={navigateProfile}
-            className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-400/30 hover:border-emerald-300 text-emerald-100 text-xs font-bold transition-all shrink-0"
-            aria-label="Persönliches Profil öffnen"
-            title="Persönliches Profil"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
-            <span className="max-w-24 truncate">{authSession.user?.name || 'Profil'}</span>
-            {accountTier && (
-              <span className="hidden sm:inline rounded-full border border-amber-400/30 bg-amber-400/10 px-1.5 py-0.5 font-mono text-[9px] text-amber-200">
-                {accountTier}
+          <div className="relative shrink-0">
+            <button
+              id="header-profile-btn"
+              type="button"
+              onClick={() => setIsAccountOpen(value => !value)}
+              className="flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-400/30 hover:border-emerald-300 text-emerald-100 text-xs font-bold transition-all"
+              aria-haspopup="menu"
+              aria-expanded={isAccountOpen}
+              aria-label="Kontomenü öffnen"
+              title="Kontomenü"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
+              <span className="flex min-w-0 flex-col items-start leading-tight">
+                <span className="max-w-28 truncate">{authSession.user?.name || 'Profil'}</span>
+                {accountTier && (
+                  <span className="font-mono text-[9px] text-amber-300">{accountTier}</span>
+                )}
               </span>
+              <ChevronDown className={`h-3.5 w-3.5 text-emerald-300 transition-transform ${isAccountOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isAccountOpen && (
+              <div
+                role="menu"
+                aria-label="Kontomenü"
+                className="absolute right-0 top-full z-[70] mt-2 w-52 overflow-hidden rounded-2xl border border-white/10 bg-[#080d1b]/98 p-2 shadow-2xl backdrop-blur-xl"
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => navigateAccount('/profile')}
+                  className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-slate-100 hover:bg-white/10"
+                >
+                  <User className="h-4 w-4 text-amber-300" /> Profil
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => navigateAccount('/profile/security')}
+                  className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-slate-100 hover:bg-white/10"
+                >
+                  <ShieldCheck className="h-4 w-4 text-cyan-300" /> Sicherheit
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => navigateAccount('/profile/key-vault')}
+                  className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-slate-100 hover:bg-white/10"
+                >
+                  <KeyRound className="h-4 w-4 text-violet-300" /> Key Vault
+                </button>
+                <div className="my-1 border-t border-white/10" />
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => void logout()}
+                  className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-rose-200 hover:bg-rose-500/10"
+                >
+                  <LogOut className="h-4 w-4" /> Logout
+                </button>
+              </div>
             )}
-          </button>
+          </div>
         ) : (
           <a
             id="header-login-btn"
@@ -395,22 +468,40 @@ export const Header: React.FC<HeaderProps> = ({
                 {/* Mobile Drawer Account / Login CTA */}
                 <div className="mt-4">
                   {authSession?.authenticated ? (
-                    <button
-                      id="drawer-profile-btn"
-                      type="button"
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        navigateProfile();
-                      }}
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-400/30 text-emerald-100 font-bold text-xs transition-all"
-                    >
-                      <span className="flex items-center gap-2 min-w-0">
-                        <ShieldCheck className="w-4 h-4 text-emerald-300 shrink-0" />
-                        <span className="truncate">{authSession.user?.name || 'Profil'}</span>
-                        {accountTier && <span className="font-mono text-[9px] text-amber-300">{accountTier}</span>}
-                      </span>
-                      <ChevronRight className="w-3.5 h-3.5 text-emerald-300" />
-                    </button>
+                    <div className="space-y-1 rounded-2xl border border-emerald-400/25 bg-emerald-500/5 p-2">
+                      <div className="px-2 py-2">
+                        <div className="flex items-center gap-2">
+                          <ShieldCheck className="h-4 w-4 text-emerald-300" />
+                          <span className="truncate text-xs font-black text-emerald-100">{authSession.user?.name || 'Konto'}</span>
+                        </div>
+                        {accountTier && <p className="mt-1 pl-6 font-mono text-[9px] text-amber-300">{accountTier}</p>}
+                      </div>
+                      {[
+                        { path: '/profile' as const, label: 'Profil', icon: User },
+                        { path: '/profile/security' as const, label: 'Sicherheit', icon: ShieldCheck },
+                        { path: '/profile/key-vault' as const, label: 'Key Vault', icon: KeyRound },
+                      ].map(item => {
+                        const Icon = item.icon;
+                        return (
+                          <button
+                            key={item.path}
+                            type="button"
+                            onClick={() => navigateAccount(item.path)}
+                            className="flex min-h-10 w-full items-center justify-between rounded-xl px-3 text-xs font-bold text-slate-200 hover:bg-white/10"
+                          >
+                            <span className="flex items-center gap-2"><Icon className="h-4 w-4" /> {item.label}</span>
+                            <ChevronRight className="h-3.5 w-3.5 text-slate-500" />
+                          </button>
+                        );
+                      })}
+                      <button
+                        type="button"
+                        onClick={() => void logout()}
+                        className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-xs font-bold text-rose-200 hover:bg-rose-500/10"
+                      >
+                        <LogOut className="h-4 w-4" /> Logout
+                      </button>
+                    </div>
                   ) : (
                     <a
                       id="drawer-login-btn"

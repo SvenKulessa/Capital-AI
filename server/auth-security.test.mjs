@@ -27,14 +27,14 @@ function json(res, status, payload) {
   res.ended = true;
 }
 
-function securityHarness({ factor = true } = {}) {
+function securityHarness({ factor = true, factorStatus = 'verified' } = {}) {
   const writes = [];
   const calls = [];
   const user = {
     id: 'user-1',
     email: 'user@example.test',
     factors: factor
-      ? [{ id: factorId, factor_type: 'totp', status: 'verified', friendly_name: 'Authenticator' }]
+      ? [{ id: factorId, factor_type: 'totp', status: factorStatus, friendly_name: factorStatus === 'verified' ? 'Authenticator' : 'CAPITAL-AI Authenticator' }]
       : [],
   };
   const token = {
@@ -58,6 +58,19 @@ function securityHarness({ factor = true } = {}) {
     }
     if (path === '/passkeys') {
       return { response: new Response('{}', { status: 200 }), data: [] };
+    }
+    if (path === `/factors/${factorId}` && options.method === 'DELETE') {
+      return { response: new Response(null, { status: 204 }), data: null };
+    }
+    if (path === '/factors' && options.method === 'POST') {
+      return {
+        response: new Response('{}', { status: 200 }),
+        data: {
+          id: challengeId,
+          friendly_name: options.body?.friendly_name || 'CAPITAL-AI Authenticator',
+          totp: { qr_code: '<svg></svg>', secret: 'TESTSECRET0123456', uri: 'otpauth://totp/test' },
+        },
+      };
     }
     throw new Error(`Unexpected path: ${path}`);
   };
@@ -94,7 +107,7 @@ test('magic-link verification with verified TOTP cannot bypass AAL2 challenge', 
   );
   assert.equal(handled, true);
   assert.equal(res.status, 303);
-  assert.equal(res.getHeader('location'), '/login?mfa=1&next=%2Fprofile');
+  assert.equal(res.getHeader('location'), '/login?mfa=1');
   assert.equal(h.writes.length, 1);
   assert.deepEqual(h.calls.map(call => call.path), ['/verify', '/user']);
 });
@@ -132,7 +145,7 @@ test('passkey login performs fresh user-factor readback before deciding MFA requ
   assert.equal(res.status, 200);
   assert.equal(res.payload.authenticated, true);
   assert.equal(res.payload.mfaRequired, true);
-  assert.equal(res.payload.next, '/login?mfa=1&next=%2Fprofile');
+  assert.equal(res.payload.next, '/login?mfa=1');
   assert.deepEqual(h.calls.map(call => call.path), ['/passkeys/authentication/verify', '/user']);
   assert.doesNotMatch(JSON.stringify(res.payload), /access-token|refresh-token/);
 });
@@ -173,4 +186,43 @@ test('authenticated factor and passkey reads tolerate missing Origin but reject 
     assert.equal(blocked.status, 403, path);
     assert.equal(blocked.payload.error, 'forbidden_origin');
   }
+});
+
+test('TOTP factor projection exposes pending state so incomplete enrollment can be removed', async () => {
+  const h = securityHarness({ factor: true, factorStatus: 'unverified' });
+  const res = responseHarness();
+  await h.security.handle(
+    { method: 'GET', headers: { 'sec-fetch-site': 'same-origin' } },
+    res,
+    new URL('https://capital-ai.online/api/auth/mfa/factors'),
+    json,
+  );
+  assert.equal(res.status, 200);
+  assert.equal(res.payload.factors.length, 1);
+  assert.equal(res.payload.factors[0].status, 'unverified');
+});
+
+test('TOTP reenrollment removes only same-name pending factor before creating replacement', async () => {
+  const h = securityHarness({ factor: true, factorStatus: 'unverified' });
+  const res = responseHarness();
+  await h.security.handle(
+    {
+      method: 'POST',
+      headers: { origin: 'https://capital-ai.online' },
+      body: { friendlyName: 'CAPITAL-AI Authenticator' },
+    },
+    res,
+    new URL('https://capital-ai.online/api/auth/mfa/totp/enroll'),
+    json,
+  );
+  assert.equal(res.status, 200);
+  assert.deepEqual(
+    h.calls.map(call => [call.path, call.options.method || 'GET']),
+    [
+      ['/user', 'GET'],
+      [`/factors/${factorId}`, 'DELETE'],
+      ['/factors', 'POST'],
+    ],
+  );
+  assert.equal(res.payload.secret, 'TESTSECRET0123456');
 });

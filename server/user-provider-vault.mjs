@@ -4,12 +4,29 @@ import { boundedJson, secureUrl } from './http-security.mjs';
 const MAX_BODY_BYTES = 16 * 1024;
 const KRAKEN_BALANCE_PATH = '/0/private/Balance';
 
+function serviceRoleJwt(key) {
+  if (!key.startsWith('eyJ')) return false;
+  const parts = key.split('.');
+  if (parts.length !== 3) return false;
+  try {
+    const claims = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
+    return claims?.role === 'service_role';
+  } catch {
+    return false;
+  }
+}
+
 function adminConfig(env) {
   try {
     const url = secureUrl(env.SUPABASE_URL || env.VITE_SUPABASE_URL);
     const key = env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY || '';
     const fingerprintKey = env.AUTH_COOKIE_SIGNING_SECRET || '';
-    if (url.href !== url.origin + '/' || key.length < 32 || fingerprintKey.length < 32) return null;
+    const supportedAdminKey = key.startsWith('sb_secret_') || serviceRoleJwt(key);
+    if (
+      url.href !== url.origin + '/' ||
+      !supportedAdminKey ||
+      fingerprintKey.length < 32
+    ) return null;
     return { url: url.origin, key, fingerprintKey };
   } catch {
     return null;
@@ -63,7 +80,11 @@ async function rpc(fetchImpl, config, name, body) {
       payload = null;
     }
   }
-  if (!response.ok) throw new Error(`SUPABASE_RPC_${response.status}`);
+  if (!response.ok) {
+    const error = new Error('SUPABASE_RPC_FAILED');
+    error.status = response.status;
+    throw error;
+  }
   return payload;
 }
 
@@ -166,8 +187,12 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
           _user_id: user.userId,
         });
         json(res, 200, { connections: Array.isArray(connections) ? connections : [] });
-      } catch {
-        json(res, 503, { error: 'provider_vault_unavailable' });
+      } catch (error) {
+        json(res, 503, {
+          error: error?.status === 401
+            ? 'provider_vault_admin_credential_rejected'
+            : 'provider_vault_unavailable',
+        });
       }
       return true;
     }
@@ -256,8 +281,12 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
             code,
           });
         }
-      } catch {
-        json(res, 503, { error: 'provider_vault_write_failed' });
+      } catch (error) {
+        json(res, 503, {
+          error: error?.status === 401
+            ? 'provider_vault_admin_credential_rejected'
+            : 'provider_vault_write_failed',
+        });
       }
       return true;
     }

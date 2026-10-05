@@ -98,6 +98,8 @@
 !public/branding/capital-ai-logo.jpg
 !public/branding/asset-pack/
 !public/branding/asset-pack/**
+!public/branding/badges/
+!public/branding/badges/**
 !CAPITAL-AI-PRODUCT/
 !CAPITAL-AI-PRODUCT/badge.svg
 !CAPITAL-AI-TRUST/

@@ -77,7 +77,7 @@ async function harness(envOverrides = {}) {
     if (target.origin === 'https://project.supabase.co' && target.pathname === '/auth/v1/signup') {
       state.signupCalls += 1;
       const body = JSON.parse(String(options.body || '{}'));
-      assert.match(target.searchParams.get('redirect_to') || '', /^https:\/\/capital\.example\/profile$/);
+      assert.match(target.searchParams.get('redirect_to') || '', /^https:\/\/capital\.example\/$/);
       assert.equal(body.email, `${state.subject}@example.test`);
       assert.equal(body.data?.full_name, 'Test Owner');
       if (body.password === 'rejected-password') {
@@ -150,7 +150,7 @@ async function harness(envOverrides = {}) {
     return cookie;
   };
 
-  const beginGoogle = async (route = '/api/auth/login/google?next=%2Fprofile') => {
+  const beginGoogle = async (route = '/api/auth/login/google?next=%2F') => {
     const response = await request(route);
     assert.equal(response.status, 303);
     const target = new URL(response.headers.get('location'));
@@ -173,7 +173,7 @@ async function harness(envOverrides = {}) {
       { headers: { cookie: start.pkceCookie } },
     );
     assert.equal(response.status, 303);
-    assert.equal(response.headers.get('location'), '/profile');
+    assert.equal(response.headers.get('location'), '/');
     return sessionCookieHeader(response);
   };
 
@@ -200,7 +200,7 @@ test('unconfigured Supabase auth fails closed without fake authentication', asyn
   }
 });
 
-test('Supabase email login is same-origin, backend-owned and redirects users to profile', async () => {
+test('Supabase email login is same-origin, backend-owned and returns a landing-page session', async () => {
   const h = await harness();
   try {
     assert.equal((await h.request('/api/auth/login/email', {
@@ -272,7 +272,7 @@ test('Supabase registration validates new passwords and creates a backend-owned 
   }
 });
 
-test('Supabase Google PKCE binds callback to HttpOnly flow state and ends at /profile', async () => {
+test('Supabase Google PKCE binds callback to HttpOnly flow state and ends at landing page', async () => {
   const h = await harness();
   try {
     const start = await h.beginGoogle();
@@ -281,7 +281,7 @@ test('Supabase Google PKCE binds callback to HttpOnly flow state and ends at /pr
 
     const completed = await h.request(callbackUrl, { headers: { cookie: start.pkceCookie } });
     assert.equal(completed.status, 303);
-    assert.equal(completed.headers.get('location'), '/profile');
+    assert.equal(completed.headers.get('location'), '/');
     const cookie = sessionCookieHeader(completed);
     assert.match(cookie, /__Host-capital_session_count=/);
     assert.deepEqual(h.state.authAudit, ['Supabase authentication verified at oauth_callback']);
@@ -439,6 +439,21 @@ test('Market API rate limiting remains independent of spoofed forwarding headers
       })).status, 400);
     }
     assert.equal((await h.request('/api/market/quote?symbol=INVALID')).status, 429);
+  } finally {
+    await h.stop();
+  }
+});
+
+test('web Google login ignores caller-controlled next targets and returns to landing page', async () => {
+  const h = await harness();
+  try {
+    const start = await h.beginGoogle('/api/auth/login/google?next=%2Fcontrol-center');
+    const response = await h.request(
+      `/api/auth/callback?flow=${encodeURIComponent(start.callback.searchParams.get('flow'))}&code=test-code`,
+      { headers: { cookie: start.pkceCookie } },
+    );
+    assert.equal(response.status, 303);
+    assert.equal(response.headers.get('location'), '/');
   } finally {
     await h.stop();
   }

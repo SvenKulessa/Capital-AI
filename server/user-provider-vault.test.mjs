@@ -147,3 +147,74 @@ test('BYOK routes fail closed before any provider or Vault I/O without verified 
   assert.equal(status, 401);
   assert.equal(networkCalls, 0);
 });
+
+test('BYOK rejects a publishable key accidentally placed in the server secret slot before network I/O', async () => {
+  let networkCalls = 0;
+  const vault = createUserProviderVault({
+    env: {
+      SUPABASE_URL: 'https://project.supabase.co',
+      SUPABASE_SECRET_KEY: 'sb_publishable_wrong_0123456789012345678901234567890',
+      AUTH_COOKIE_SIGNING_SECRET: 'test-cookie-signing-secret-0123456789abcdef',
+    },
+    fetchImpl: async () => {
+      networkCalls += 1;
+      throw new Error('must not run');
+    },
+    auth: {
+      verify: async () => ({ userId: '11111111-1111-1111-1111-111111111111' }),
+      sameOrigin: () => true,
+    },
+  });
+
+  let status = 0;
+  let payload;
+  await vault.handle(
+    request('GET'),
+    responseHarness(),
+    new URL('https://capital.example/api/profile/provider-connections'),
+    (_res, nextStatus, nextPayload) => {
+      status = nextStatus;
+      payload = nextPayload;
+    },
+  );
+
+  assert.equal(status, 503);
+  assert.equal(payload.error, 'provider_vault_not_configured');
+  assert.equal(networkCalls, 0);
+});
+
+test('BYOK surfaces rejected server admin credential without exposing its value', async () => {
+  const env = {
+    SUPABASE_URL: 'https://project.supabase.co',
+    SUPABASE_SECRET_KEY: 'sb_secret_test_0123456789012345678901234567890123456789',
+    AUTH_COOKIE_SIGNING_SECRET: 'test-cookie-signing-secret-0123456789abcdef',
+  };
+  const vault = createUserProviderVault({
+    env,
+    fetchImpl: async input => {
+      const url = new URL(String(input));
+      assert.equal(url.pathname, '/rest/v1/rpc/capital_ai_list_user_provider_connections');
+      return Response.json({ message: 'invalid api key' }, { status: 401 });
+    },
+    auth: {
+      verify: async () => ({ userId: '11111111-1111-1111-1111-111111111111' }),
+      sameOrigin: () => true,
+    },
+  });
+
+  let status = 0;
+  let payload;
+  await vault.handle(
+    request('GET'),
+    responseHarness(),
+    new URL('https://capital.example/api/profile/provider-connections'),
+    (_res, nextStatus, nextPayload) => {
+      status = nextStatus;
+      payload = nextPayload;
+    },
+  );
+
+  assert.equal(status, 503);
+  assert.equal(payload.error, 'provider_vault_admin_credential_rejected');
+  assert.doesNotMatch(JSON.stringify(payload), /sb_secret_/);
+});

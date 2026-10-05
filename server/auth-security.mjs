@@ -29,12 +29,18 @@ export function hasVerifiedTotpFactor(user) {
   return verifiedFactors(user).some(factor => factor.factor_type === 'totp');
 }
 
+function totpFactors(user) {
+  return Array.isArray(user?.factors)
+    ? user.factors.filter(factor => factor && factor.factor_type === 'totp')
+    : [];
+}
+
 function factorProjection(user) {
-  return verifiedFactors(user)
-    .filter(factor => factor.factor_type === 'totp')
+  return totpFactors(user)
     .map(factor => ({
       id: String(factor.id || ''),
       type: 'totp',
+      status: factor.status === 'verified' ? 'verified' : 'unverified',
       friendlyName: typeof factor.friendly_name === 'string' ? factor.friendly_name.slice(0, 120) : '',
       createdAt: factor.created_at || null,
       updatedAt: factor.updated_at || null,
@@ -123,7 +129,7 @@ export function createAuthSecurity({
         json(res, 400, { error: 'email_verification_failed', code: upstreamCode(verified.data, 'verification_failed') });
         return true;
       }
-      let target = type === 'recovery' ? '/login?mode=reset' : '/profile';
+      let target = type === 'recovery' ? '/login?mode=reset' : '/';
       if (verified.data?.access_token && verified.data?.refresh_token && verified.data?.user?.id) {
         const verifiedUser = await authRequest(config, '/user', {
           accessToken: verified.data.access_token,
@@ -135,7 +141,7 @@ export function createAuthSecurity({
         verified.data.user = verifiedUser.data;
         writeSessionCookies(req, res, config, verified.data);
         if (type !== 'recovery' && hasVerifiedTotpFactor(verifiedUser.data)) {
-          target = '/login?mfa=1&next=%2Fprofile';
+          target = '/login?mfa=1';
         }
       }
       audit(`Supabase email verification completed for ${type}`);
@@ -267,7 +273,7 @@ export function createAuthSecurity({
       json(res, 200, {
         authenticated: true,
         mfaRequired,
-        next: mfaRequired ? '/login?mfa=1&next=%2Fprofile' : '/profile',
+        next: mfaRequired ? '/login?mfa=1' : '/',
         user: { id: stored.user.id, name: stored.user.name },
       });
       return true;
@@ -435,6 +441,32 @@ export function createAuthSecurity({
         json(res, 400, { error: 'invalid_factor_name' });
         return true;
       }
+
+      const currentUser = await authRequest(config, '/user', { accessToken: stored.accessToken });
+      if (!currentUser.response.ok || currentUser.data?.id !== stored.user.id) {
+        json(res, 503, { error: 'mfa_security_state_unavailable' });
+        return true;
+      }
+
+      const stalePending = totpFactors(currentUser.data).filter(factor =>
+        factor.status !== 'verified' &&
+        String(factor.friendly_name || '') === name &&
+        FACTOR_ID_RE.test(String(factor.id || ''))
+      );
+      for (const factor of stalePending) {
+        const removed = await authRequest(config, `/factors/${encodeURIComponent(String(factor.id))}`, {
+          method: 'DELETE',
+          accessToken: stored.accessToken,
+        });
+        if (!removed.response.ok) {
+          json(res, 422, {
+            error: 'totp_pending_cleanup_failed',
+            code: upstreamCode(removed.data, 'totp_pending_cleanup_failed'),
+          });
+          return true;
+        }
+      }
+
       const enrolled = await authRequest(config, '/factors', {
         method: 'POST',
         accessToken: stored.accessToken,
@@ -504,7 +536,7 @@ export function createAuthSecurity({
       }
       writeSessionCookies(req, res, config, verified.data);
       audit('Supabase MFA verified at AAL2');
-      json(res, 200, { verified: true, authenticated: true, next: '/profile' });
+      json(res, 200, { verified: true, authenticated: true, next: '/' });
       return true;
     }
 
