@@ -22,6 +22,8 @@
 !server/vocabulary-checkout.test.mjs
 !server/vocabulary-quant-pro-index.mjs
 !server/auth.mjs
+!server/profile-access.mjs
+!server/profile-access.test.mjs
 !server/user-provider-vault.mjs
 !server/telegram.mjs
 !server/privacy.mjs
