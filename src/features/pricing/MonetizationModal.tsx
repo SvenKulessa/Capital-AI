@@ -39,8 +39,6 @@ import {
   Compass,
   Bell,
   Scale,
-  Coins,
-  Flame,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MONETIZABLE_PRODUCTS } from '../../data/monetizationRegistry';
@@ -57,22 +55,19 @@ interface MonetizationModalProps {
   onClose: () => void;
   onNavigateLogin?: () => void;
   onOpenWhaleRadar?: () => void;
-  onNavigateTokenomics?: () => void;
 }
 
 type BillingCycle = 'monthly' | 'annual';
-type ActiveTab = 'plans' | 'b2b' | 'tokenomics' | 'calculator' | 'strategy';
+type ActiveTab = 'plans' | 'b2b' | 'calculator' | 'strategy';
 
 export const MonetizationModal: React.FC<MonetizationModalProps> = ({
   isOpen,
   onClose,
   onNavigateLogin,
   onOpenWhaleRadar,
-  onNavigateTokenomics,
 }) => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('plans');
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('annual');
-  const payWithCpt = false;
 
   // Interactive Revenue Calculator state
   const [mau, setMau] = useState<number>(50000); // Monthly Active Users
@@ -81,7 +76,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Stripe v2 is the price authority. Token discounts stay display-disabled until dedicated Stripe Prices exist.
+  // Stripe is the price authority for products that exist in the current catalog.
   const starterPrice = (billingCycle === 'annual'
     ? PRICING_CATALOG.starter.annual.amountCents / 12
     : PRICING_CATALOG.starter.monthly.amountCents) / 100;
@@ -123,10 +118,6 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                 </span>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold">
                   Multi-Pillar Strategy
-                </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-400/30 font-semibold flex items-center gap-1">
-                  <Coins className="w-3 h-3 text-amber-400" />
-                  $CPT Utility Powered
                 </span>
               </div>
               <h2 className="text-xl sm:text-2xl font-black text-white mt-0.5">
@@ -173,22 +164,6 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
 
           <button
             type="button"
-            onClick={() => setActiveTab('tokenomics')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
-              activeTab === 'tokenomics'
-                ? 'bg-amber-400 text-black shadow-[0_0_15px_rgba(249,191,33,0.3)]'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Coins className="w-3.5 h-3.5" />
-            <span>$CPT Utilities &amp; Staking</span>
-            <span className="text-[9px] font-mono px-1 rounded bg-black/20 text-black font-extrabold">
-              NEU
-            </span>
-          </button>
-
-          <button
-            type="button"
             onClick={() => setActiveTab('calculator')}
             className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'calculator'
@@ -217,7 +192,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
         {/* TAB 1: B2C SaaS Tarife (Freemium, Pro, Enterprise) */}
         {activeTab === 'plans' && (
           <div className="mt-5 space-y-5">
-            {/* Billing toggle & $CPT discount toggle */}
+            {/* Billing toggle */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 rounded-2xl bg-[#030716] border border-slate-800">
               <div className="flex items-center gap-3">
                 <span
@@ -254,24 +229,6 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                 </div>
               </div>
 
-              {/* $CPT Payment Switch */}
-              <div className="flex items-center gap-2.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800/80 w-full sm:w-auto justify-end">
-                <div className="flex items-center gap-1 text-xs">
-                  <Coins className="w-3.5 h-3.5 text-amber-400" />
-                  <span className="text-slate-300 font-semibold">Zahlung mit $CPT:</span>
-                </div>
-                <button
-                  type="button"
-                  disabled
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold font-mono transition-all flex items-center gap-1.5 cursor-pointer border ${
-                    payWithCpt
-                      ? 'bg-amber-400 text-black border-amber-300 shadow-[0_0_10px_rgba(249,191,33,0.3)]'
-                      : 'bg-slate-800/90 text-slate-400 border-slate-700 hover:text-white'
-                  }`}
-                >
-                  <span>{payWithCpt ? 'Aktiv' : 'Separater Stripe-Price erforderlich'}</span>
-                </button>
-              </div>
             </div>
 
             {/* Pricing Tiers Grid */}
@@ -303,85 +260,6 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                   </p>
 
                   <ul className="mt-3 space-y-2 text-xs text-slate-300">
-                    <li className="flex items-start gap-2">
-                      <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                      <span>15-Minuten Delayed Kursdaten</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                      <span>Basis Fear &amp; Greed Index</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                      <span>Bis zu 3 aktive Preis-Alerts</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                      <span>1 Watchlist mit max. 10 Werten</span>
-                    </li>
-                  </ul>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="mt-5 w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-colors cursor-pointer"
-                >
-                  Starter auswählen
-                </button>
-              </div>
-
-              {/* TIER 2: Pro Investor (Popular) */}
-              <div className="p-4 rounded-2xl bg-gradient-to-b from-[#101b44] to-[#080e26] border-2 border-amber-400/80 shadow-[0_0_30px_rgba(249,191,33,0.18)] flex flex-col justify-between relative">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-400 text-black px-3 py-0.5 rounded-full text-[10px] font-black tracking-wider uppercase shadow-md">
-                  Empfohlen für Privatanleger
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold text-amber-300 uppercase">
-                      Pro
-                    </span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 font-bold">
-                      Bestseller
-                    </span>
-                  </div>
-                  <div className="mt-2">
-                    <div className="text-2xl font-black text-amber-400 flex items-baseline gap-1">
-                      {proPrice.toFixed(2).replace('.', ',')} €
-                      <span className="text-xs text-slate-400 font-normal">/ Monat</span>
-                    </div>
-                    <span className="text-[10px] text-slate-400 font-mono">
-                      {billingCycle === 'annual'
-                        ? `${displayPriceEur(PRICING_CATALOG.pro.annual.amountCents)} € jährliche Abrechnung · -${annualDiscountPercent('pro')}%`
-                        : 'Monatlich kündbar'}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-300 mt-2 pb-3 border-b border-slate-800">
-                    Für ambitionierte Anleger, die datenbasiert und ohne Zeitverzögerung handeln.
-                  </p>
-
-                  <ul className="mt-3 space-y-2 text-xs text-slate-200">
-                    <li className="flex items-start gap-2">
-                      <Check className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                      <strong className="text-white">Echtzeit-Streaming Marktdaten</strong>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                      <span>Vollständige KI-Sektor-Rotationsanalyse</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                      <span>Unbegrenzte Preis- &amp; Sentiment-Alerts</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                      <span>Buffett Value Check &amp; Enterprise Scorer</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Coins className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                      <span className="text-amber-300 font-semibold">Kostenlos ab Tier II Staking (5.000 $CPT)</span>
-                    </li>
                   </ul>
                 </div>
 
@@ -396,19 +274,6 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                   >
                     Pro auswählen
                   </button>
-                  {onNavigateTokenomics && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onClose();
-                        onNavigateTokenomics();
-                      }}
-                      className="w-full py-1 text-[11px] font-mono text-amber-300/80 hover:text-amber-300 transition-colors text-center cursor-pointer flex items-center justify-center gap-1"
-                    >
-                      <Coins className="w-3 h-3 text-amber-400" />
-                      <span>Mit 5.000 $CPT staken &amp; freischalten →</span>
-                    </button>
-                  )}
                 </div>
               </div>
 
@@ -439,22 +304,6 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                   </p>
 
                   <ul className="mt-3 space-y-2 text-xs text-slate-300">
-                    <li className="flex items-start gap-2">
-                      <Zap className="w-3.5 h-3.5 text-cyan-400 shrink-0 mt-0.5" />
-                      <strong className="text-white">Alle Pro-Funktionen inklusive</strong>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0 mt-0.5" />
-                      <span>Ultra-Low-Latency Webhooks &amp; Telegram Push</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0 mt-0.5" />
-                      <span>Smart Money Flow &amp; On-Chain Whale Radar</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Coins className="w-3.5 h-3.5 text-cyan-400 shrink-0 mt-0.5" />
-                      <span className="text-cyan-300 font-semibold">Kostenlos ab Tier III Staking (25.000 $CPT)</span>
-                    </li>
                   </ul>
                 </div>
 
@@ -469,19 +318,6 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                   >
                     Alpha Elite wählen
                   </button>
-                  {onNavigateTokenomics && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onClose();
-                        onNavigateTokenomics();
-                      }}
-                      className="w-full py-1 text-[11px] font-mono text-cyan-300/80 hover:text-cyan-300 transition-colors text-center cursor-pointer flex items-center justify-center gap-1"
-                    >
-                      <Coins className="w-3 h-3 text-cyan-400" />
-                      <span>Mit 25.000 $CPT staken &amp; freischalten →</span>
-                    </button>
-                  )}
                   {onOpenWhaleRadar && (
                     <button
                       type="button"
@@ -604,115 +440,6 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                   </span>
                   <p className="text-slate-300 leading-snug">
                     Dauerhafte Beteiligung an generierten Handelsgebühren (10–25% RevShare) bei Krypto-Börsen und CFD-Plattformen.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB: $CPT Tokenomics & Utilities */}
-        {activeTab === 'b2b' && (
-          <div className="mt-4 rounded-2xl border border-cyan-400/20 bg-cyan-500/5 p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div><p className="text-xs font-mono uppercase tracking-wider text-cyan-300">Neue Produktkomponente</p><h3 className="font-bold text-white">OSS Pipeline Simulation Engine</h3></div>
-              <span className="rounded-full border border-cyan-400/30 px-2 py-1 text-[10px] text-cyan-200">MONETARISIERBAR</span>
-            </div>
-            <p className="mt-2 text-xs text-slate-300">Vergleicht reproduzierbar Provider-, REST-/WebSocket-, NATS-, Valkey-, Analytics- und Observability-Pipelines mit CADS-Evidence. Simulierte Scores sind keine Produktionsfreigabe.</p>
-          </div>
-        )}
-
-        {activeTab === 'b2b' && (
-          <div className="mt-4 rounded-2xl border border-slate-700 bg-slate-950/70 p-4">
-            <h3 className="text-sm font-bold text-white">Kanonisches Monetarisierungsregister</h3>
-            <p className="mt-1 text-xs text-slate-400">Orderbuch, Market Depth, Sentiment und weitere Analyseprodukte bleiben im Prompt-2-/50-Komponenten-MARKET-Programm und werden hier nicht doppelt gepflegt.</p>
-            <div className="mt-3 grid gap-2 sm:grid-cols-2">
-              {MONETIZABLE_PRODUCTS.map(product => (
-                <div key={product.id} className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
-                  <div className="font-mono text-[11px] text-cyan-200">{product.name}</div>
-                  <div className="mt-1 text-[10px] uppercase tracking-wider text-slate-500">{product.domain} · {product.state}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'tokenomics' && (
-          <div className="mt-5 space-y-4">
-            <div className="p-5 rounded-2xl bg-gradient-to-br from-[#0c1638] via-[#070e24] to-[#030612] border border-amber-500/30">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 font-bold uppercase tracking-wider">
-                      Deflationary Token Economy
-                    </span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">
-                      100M Hard Cap Fixed
-                    </span>
-                  </div>
-                  <h3 className="text-lg font-black text-white flex items-center gap-2">
-                    <Coins className="w-5 h-5 text-amber-400" />
-                    <span>$CPT Rolle im Monetarisierungs-Schwungrad</span>
-                  </h3>
-                  <p className="text-xs text-slate-300 mt-1 max-w-xl leading-relaxed">
-                    $CPT ist das wirtschaftliche Rückgrat der Capital-AI Plattform. Echte SaaS- und B2B-Umsätze erzeugen kontinuierliche Kaufkraft für das Token-Ökosystem.
-                  </p>
-                </div>
-
-                {onNavigateTokenomics && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onClose();
-                      onNavigateTokenomics();
-                    }}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black text-xs font-black transition-all shadow-[0_0_15px_rgba(249,191,33,0.3)] shrink-0 cursor-pointer"
-                  >
-                    <span>Vollständiges Whitepaper</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
-
-              {/* 4 Pillars of Monetization + Tokenomics */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 text-xs">
-                <div className="p-3.5 rounded-xl bg-[#020512] border border-amber-500/25">
-                  <div className="flex items-center gap-2 text-amber-300 font-bold mb-1">
-                    <Flame className="w-4 h-4 text-rose-400" />
-                    <span>1. 25% Revenue Buyback &amp; Burn</span>
-                  </div>
-                  <p className="text-slate-300 leading-snug text-[11.5px]">
-                    Ein Viertel aller Brutto-SaaS-Abonnements (19€–49€) und B2B-API-Lizenzen (ab 249€/Mo) wird quartalsweise zum marktüblichen Rückkauf von $CPT an dezentralen Börsen und anschließendem permanenten On-Chain-Burn verwendet.
-                  </p>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-[#020512] border border-cyan-500/25">
-                  <div className="flex items-center gap-2 text-cyan-300 font-bold mb-1">
-                    <Zap className="w-4 h-4 text-cyan-400" />
-                    <span>2. Stake-to-Access Modell</span>
-                  </div>
-                  <p className="text-slate-300 leading-snug text-[11.5px]">
-                    Statt monatlicher Fiat-Zahlungen können Nutzer $CPT staken: <strong>5.000 $CPT (Tier II)</strong> schalten das Pro-Abo frei, <strong>25.000 $CPT (Tier III)</strong> schalten Alpha Elite mit Sub-20ms L3-Feeds und Whale Radar frei.
-                  </p>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-[#020512] border border-emerald-500/25">
-                  <div className="flex items-center gap-2 text-emerald-300 font-bold mb-1">
-                    <Percent className="w-4 h-4 text-emerald-400" />
-                    <span>3. 30% Dauerrabatt bei $CPT-Zahlung</span>
-                  </div>
-                  <p className="text-slate-300 leading-snug text-[11.5px]">
-                    Nutzer, die ihre SaaS-Gebühren direkt in $CPT begleichen, erhalten dauerhaft 30% Preisnachlass. Die vereinnahmten Tokens werden zu 50% gelockt und zu 50% verbrannt.
-                  </p>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-[#020512] border border-purple-500/25">
-                  <div className="flex items-center gap-2 text-purple-300 font-bold mb-1">
-                    <Building2 className="w-4 h-4 text-purple-400" />
-                    <span>4. B2B Micro-Payments &amp; Gas Credits</span>
-                  </div>
-                  <p className="text-slate-300 leading-snug text-[11.5px]">
-                    Entwickler und quantitative Fonds können B2B-API-Aufrufe per Micro-Payment in $CPT ohne Mindestvertragslaufzeit abrechnen lassen (Pay-as-you-Trade).
                   </p>
                 </div>
               </div>
