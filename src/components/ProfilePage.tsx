@@ -20,6 +20,23 @@ interface SessionUser {
   name: string;
 }
 
+interface AccountBadge {
+  id: string;
+  label: string;
+  asset: string;
+}
+
+interface AccountProjection {
+  available: boolean;
+  iamRole: string | null;
+  subscription: {
+    tier: string;
+    status: string | null;
+    currentPeriodEnd: string | null;
+  } | null;
+  badges: AccountBadge[];
+}
+
 interface ProviderConnection {
   provider: string;
   credentialFingerprint?: string;
@@ -40,6 +57,7 @@ async function readJson(response: Response) {
 
 export function ProfilePage({ onBackToHome }: { onBackToHome: () => void }) {
   const [user, setUser] = useState<SessionUser | null>(null);
+  const [account, setAccount] = useState<AccountProjection | null>(null);
   const [connections, setConnections] = useState<ProviderConnection[]>([]);
   const [apiKey, setApiKey] = useState('');
   const [apiSecret, setApiSecret] = useState('');
@@ -91,6 +109,29 @@ export function ProfilePage({ onBackToHome }: { onBackToHome: () => void }) {
           email: String(body.user.email || ''),
           name: String(body.user.name || 'Benutzer'),
         });
+        setAccount(body?.account && typeof body.account === 'object' ? {
+          available: body.account.available === true,
+          iamRole: typeof body.account.iamRole === 'string' ? body.account.iamRole : null,
+          subscription: body.account.subscription && typeof body.account.subscription === 'object'
+            ? {
+                tier: String(body.account.subscription.tier || ''),
+                status: typeof body.account.subscription.status === 'string' ? body.account.subscription.status : null,
+                currentPeriodEnd: typeof body.account.subscription.currentPeriodEnd === 'string'
+                  ? body.account.subscription.currentPeriodEnd
+                  : null,
+              }
+            : null,
+          badges: Array.isArray(body.account.badges)
+            ? body.account.badges.filter((badge: unknown): badge is AccountBadge => {
+                if (!badge || typeof badge !== 'object') return false;
+                const value = badge as Record<string, unknown>;
+                return typeof value.id === 'string'
+                  && typeof value.label === 'string'
+                  && typeof value.asset === 'string'
+                  && value.asset.startsWith('/branding/badges/');
+              })
+            : [],
+        } : null);
         await loadConnections();
       } catch {
         if (!controller.signal.aborted) setError('Profil und Vault konnten nicht sicher geladen werden.');
@@ -246,6 +287,40 @@ export function ProfilePage({ onBackToHome }: { onBackToHome: () => void }) {
             <div className="mt-5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-200">
               <ShieldCheck className="mb-2 h-4 w-4" />
               Identität wird serverseitig über Supabase Auth verifiziert. Der Browser entscheidet niemals selbst über den Vault-Eigentümer.
+            </div>
+            <div className="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/5 p-3">
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-300">Abo & Berechtigungen</p>
+              {account?.available ? (
+                <>
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                    <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-1 font-bold text-amber-100">
+                      {account.subscription?.tier || 'Kein Tarif'}
+                    </span>
+                    {account.subscription?.status && (
+                      <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-slate-300">
+                        {account.subscription.status}
+                      </span>
+                    )}
+                    {account.iamRole && (
+                      <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-2 py-1 font-mono text-cyan-200">
+                        IAM {account.iamRole}
+                      </span>
+                    )}
+                  </div>
+                  {account.badges.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2" aria-label="Kontobadges">
+                      {account.badges.map(badge => (
+                        <figure key={badge.id} className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/20 p-2">
+                          <img src={badge.asset} alt="" className="h-10 w-10 rounded-lg" />
+                          <figcaption className="text-[10px] font-black tracking-wider text-slate-200">{badge.label}</figcaption>
+                        </figure>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="mt-2 text-xs text-slate-400">Abo- und Rollenstatus konnte nicht sicher geladen werden.</p>
+              )}
             </div>
           </div>
 
