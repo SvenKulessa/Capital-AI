@@ -45,8 +45,8 @@ COPY docs/licenses ./docs/licenses
 COPY docs/security/evidence/license-rights-review.json ./docs/security/evidence/license-rights-review.json
 COPY scripts/license-engine.mjs ./scripts/license-engine.mjs
 RUN --network=none node --test server/mta-sts.test.mjs server/well-known.test.mjs server/auth-security.test.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs \
-    && node --test server/prompt-injection-guard.test.mjs server/vocabulary-checkout.test.mjs server/subscription-checkout.test.mjs server/public-artifact-policy.test.mjs scripts/billing-catalog.test.mjs scripts/blueprint-evidence-contract.test.mjs \
-    && node --import tsx --test server/advisor-security.test.mjs \
+    && node --test server/prompt-injection-guard.test.mjs server/vocabulary-checkout.test.mjs server/subscription-checkout.test.mjs server/public-artifact-policy.test.mjs scripts/billing-catalog.test.mjs \
+    && node --import tsx --test server/advisor-security.test.mjs scripts/blueprint-evidence-contract.test.mjs \
     && node --test scripts/branding-assets.test.mjs \
     && node --test scripts/license-evidence.test.mjs \
     && node scripts/license-evidence.mjs \
