@@ -3,12 +3,12 @@
   "observedAt": "2026-10-05T03:01:00+02:00",
   "branch": "capital-ai-market/canonical-nats-bridge-currentmain-20261005",
   "ownerPolicy": "OPEN_SOURCE_AND_OPEN_DATA_ONLY",
-  "productionAdmission": "NONE",
+  "productionAdmission": "HISTORICAL_DELAYED_ONLY",
   "candidates": [
     {
       "providerId": "faironchain-open-price",
-      "decision": "BLOCK",
-      "eligible": false,
+      "decision": "OPEN_SOURCE_OPEN_DATA_ADMITTED",
+      "eligible": true,
       "scope": "HISTORICAL_DELAYED_CRYPTO_PRICE_DATA",
       "exactSoftwareRepo": {
         "repository": "DeepMining-Lab/openprice-api",
@@ -41,7 +41,7 @@
         "retention": "PASS_WITH_ATTRIBUTION",
         "instrumentScope": "PASS_FOR_DOCUMENTED_ETH_USD_DATASET",
         "realtimeQuoteSemantics": "FAIL_NOT_REALTIME_TICK_FEED",
-        "softwareOpenSourceGate": "FAIL_CC_BY_4_0_NOT_IN_CAPITAL_AI_OPEN_SOURCE_SOFTWARE_LICENSE_ALLOWLIST"
+        "softwareOpenSourceGate": "PASS_CAPITAL_AI_FILE_SPECIFIC_MIT_ADAPTER"
       },
       "evidenceReferences": [
         "https://fair.deepmining.ch/",
@@ -49,10 +49,12 @@
         "https://github.com/DeepMining-Lab/openprice-api"
       ],
       "blockers": [
-        "SOFTWARE_LICENSE_NOT_ADMITTED",
         "CURRENT_QUOTEFACT_30S_FRESHNESS_INCOMPATIBLE_WITH_DAILY_DATASET_UPDATE",
-        "LIVE_LABEL_NOT_ELIGIBLE"
-      ]
+        "LIVE_LABEL_NOT_ELIGIBLE",
+        "SCORING_TECHNICAL_QUALITY_ADMISSION_NOT_GRANTED"
+      ],
+      "admissionEvidenceReference": "docs/market-data/evidence/source-admission-faironchain-historical-20261005.json",
+      "instrumentManifestReference": "docs/market-data/evidence/faironchain-eth-usd-historical-manifest-20261005.json"
     },
     {
       "providerId": "pyth",
@@ -97,11 +99,33 @@
       "evidenceReferences": [
         "https://yieldo.me/about/data"
       ]
+    },
+    {
+      "providerId": "dia",
+      "decision": "BLOCK",
+      "eligible": false,
+      "scope": "REALTIME_ORACLE_AND_API_DATA",
+      "softwareLicense": "GPL-3.0",
+      "reasons": [
+        "DIA_DATA_USAGE_AGREEMENT_REQUIRES_INDIVIDUAL_LICENSE",
+        "REDISTRIBUTION_DISPLAY_AND_DERIVED_WORKS_ARE_RESTRICTED_OR_REQUIRE_PRIOR_APPROVAL",
+        "LICENSE_FEES_MAY_APPLY",
+        "OWNER_POLICY_REQUIRES_OPEN_SOURCE_AND_OPEN_DATA_ONLY"
+      ],
+      "evidenceReferences": [
+        "https://github.com/diadata-org/diadata",
+        "https://www.diadata.org/data-usage/"
+      ]
     }
   ],
   "conclusion": {
     "admittedRealtimeQuoteProvider": null,
-    "admittedHistoricalPriceDataset": null,
-    "nextSmallestVerifiableStep": "Resolve FairOnChain software-license gate by using a separately OSI-licensed adapter/service or obtaining a qualifying software license without weakening CAPITAL-AI policy; then model it explicitly as delayed/historical rather than LIVE."
+    "admittedHistoricalPriceDataset": "faironchain-open-price",
+    "nextSmallestVerifiableStep": "Find or prove a realtime provider whose software and data rights both satisfy OPEN_SOURCE_AND_OPEN_DATA_ONLY; until then CAPITAL_FACTS live quote ingress and scoring remain blocked."
+  },
+  "supersession": {
+    "previousFinding": "FairOnChain blocked by software-license gate",
+    "newFinding": "Gate closed with CAPITAL-AI file-specific MIT adapter; data remains historical/delayed only",
+    "effectiveOnBranch": "capital-ai-market/canonical-nats-bridge-currentmain2-20261005"
   }
 }
