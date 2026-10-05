@@ -4,7 +4,7 @@ import { createAppJwt, createInstallationToken, getMarketplaceSubscription, gith
 import { entitlementForSubscription } from './entitlements.mjs';
 import { evaluateDependencyDiff, evaluateSpdxSbom, sbomBindsToSource } from './scanner.mjs';
 import { generateAndFetchAsyncSbom } from './sbom.mjs';
-import { deleteExpiredEvidence, deleteInstallationEvidence, persistEvidence } from './evidence-store.mjs';
+import { deleteAccountEvidence, deleteExpiredEvidence, deleteInstallationEvidence, persistEvidence } from './evidence-store.mjs';
 
 const communityPolicy = JSON.parse(await readFile(new URL('../../../packages/legal-policy-core/community-policy.json', import.meta.url), 'utf8'));
 const FALLBACK_STATUSES = new Set([403, 404, 500, 503]);
@@ -208,7 +208,13 @@ export async function handleGitHubEvent({ eventName, payload, env, fetchImpl = f
     return {accepted:true, action:'deleted', evidenceDeletion:deletion};
   }
   if (eventName === 'marketplace_purchase') {
-    return {accepted: true, action: payload.action, accountId: payload.marketplace_purchase?.account?.id ?? null};
+    const accountId = payload.marketplace_purchase?.account?.id ?? null;
+    if (payload.action === 'cancelled') {
+      if (!accountId) throw new Error('Missing account id for Marketplace cancellation');
+      const deletion = await deleteAccountEvidence({accountId, env, fetchImpl});
+      return {accepted:true, action:'cancelled', accountId, evidenceDeletion:deletion};
+    }
+    return {accepted:true, action:payload.action, accountId};
   }
   if (eventName === 'pull_request' && ['opened', 'reopened', 'synchronize'].includes(payload.action)) {
     return handlePullRequest(payload, env, fetchImpl);
