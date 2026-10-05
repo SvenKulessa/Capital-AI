@@ -1,6 +1,5 @@
 import { test, before, after } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { readFileSync } from 'node:fs';
 let instance = 0;
 const isolated = async () => import(`./market.mjs?test=${++instance}`);
 import { infrastructure } from './infrastructure.mjs';
@@ -127,32 +126,18 @@ test('Open-Source plus qualifying Open-Data evidence is required', () => {
 
 
 
-test('ECB reference rates pass data-rights admission but remain runtime-blocked until an adapter is implemented', () => {
-  const evidence = JSON.parse(readFileSync(
-    new URL('../docs/market-data/evidence/source-rights-admission-ecb-reference-rates-20261005.json', import.meta.url),
-    'utf8',
-  ));
-  const admission = evaluateOpenDataRightsAdmission({
-    dataLicense: evidence.dataset.dataLicense,
-    dataLicenseEvidenceReference: evidence.dataset.licenseEvidenceReference,
-    provenanceReference: evidence.dataset.provenanceReference,
-    datasetId: evidence.dataset.id,
-    datasetVersionOrSnapshot: evidence.dataset.snapshot,
-    attributionObligationsReviewed: true,
-    attributionEvidenceReference: evidence.dataset.copyrightEvidenceReference,
-    useCases: evidence.useCases,
-    instrumentEligibilityVerified: evidence.instrumentEligibilityVerified,
-    instrumentManifestReference: evidence.instrumentManifestReference,
-  });
-  assert.equal(admission.decision, 'OPEN_DATA_RIGHTS_ADMITTED');
-  assert.equal(admission.eligible, true);
-  assert.equal(evidence.instrumentScope.length, 20);
-  assert.equal(evidence.capabilities.marketQuotes.rightsEligible, true);
-  assert.equal(evidence.capabilities.marketQuotes.realtime, false);
-  assert.equal(evidence.capabilities.scoringPriceInput.rightsEligible, true);
-  assert.equal(evidence.capabilities.scoringPriceInput.decisionEligible, false);
-  assert.equal(evidence.failClosed.runtimeQuoteAdmission, false);
-  assert.equal(evidence.failClosed.scoreDisplayEnabled, false);
+test('ECB reference-rate rights admission remains runtime-blocked without an adapter', () => {
+  const rightsSource = MARKET_SOURCE_POLICY.rightsAdmittedSources.find(
+    source => source.providerId === 'ecb-reference-rates',
+  );
+  assert.ok(rightsSource);
+  assert.equal(rightsSource.decision, 'OPEN_DATA_RIGHTS_ADMITTED');
+  assert.equal(rightsSource.runtimeEligible, false);
+  assert.equal(rightsSource.capabilities.marketQuotes, true);
+  assert.equal(rightsSource.capabilities.scoringPriceInput, true);
+  assert.equal(rightsSource.capabilities.realtime, false);
+  assert.equal(rightsSource.capabilities.executionPrice, false);
+  assert.equal(rightsSource.capabilities.decisionEligible, false);
   assert.equal(rightsAdmittedMarketSourcesFor('marketQuotes').length, 1);
   assert.equal(rightsAdmittedMarketSourcesFor('scoringPriceInput').length, 1);
   assert.equal(isMarketSourceRightsAdmitted('ecb-reference-rates', 'marketQuotes'), true);
