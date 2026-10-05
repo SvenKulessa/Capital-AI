@@ -1,5 +1,6 @@
 export const VOCABULARY_OFFER = {
   sku: 'market-vocabulary',
+  badgeId: 'vocabulary' as const,
   productId: 'prod_VNTsrtlf2ZL8ja',
   priceId: 'price_1UMiuIPKr4joNbEclpn8AwFW',
   amountCents: 1900,
