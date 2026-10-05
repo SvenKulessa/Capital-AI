@@ -13,6 +13,15 @@ import {
   seoIndexableStaticPaths,
 } from '../shared/seo-indexing-policy.mjs';
 
+async function readIndexTemplate() {
+  try {
+    return await readFile(new URL('../index.html', import.meta.url));
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
+    return readFile(new URL('../dist/index.html', import.meta.url));
+  }
+}
+
 const EXPECTED_INDEX_PATHS = [
   '/',
   '/learning',
@@ -56,7 +65,7 @@ test('SEO-00 is fail-closed for private, claim-sensitive, alias and unknown rout
 
 test('server enforces INDEX versus noindex and derives sitemap from SEO-00 policy', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'capital-seo00-'));
-  await writeFile(path.join(root, 'index.html'), await readFile(new URL('../index.html', import.meta.url)));
+  await writeFile(path.join(root, 'index.html'), await readIndexTemplate());
   await mkdir(path.join(root, 'documentation'), { recursive: true });
   await writeFile(
     path.join(root, 'documentation', 'byok.html'),
