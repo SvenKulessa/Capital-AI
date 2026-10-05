@@ -2,7 +2,7 @@
 
 Stand: 2026-10-05  
 Primary Domain: CAPITAL-AI-GROWTH  
-Baseline: `SvenKulessa/Capital-AI@9c5fc40318cf538308724c2efb18441185e8cbae`  
+Baseline: `SvenKulessa/Capital-AI@96178b35db215754eb69785535f035b4fb4d96af`  
 Branch: `capital-ai-growth/seo-02-metadata-20261005`  
 Status: `REPO_IMPLEMENTED / VALIDATION_PENDING`
 
