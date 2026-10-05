@@ -68,7 +68,7 @@ test('index loads the app directly and exposes the fail-closed shell only on a b
   assert.match(bootstrap, /target instanceof HTMLScriptElement/);
   assert.match(bootstrap, /target\.id === 'capital-ai-entry'/);
   assert.match(bootstrap, /fallback\.hidden = false/);
-  assert.doesNotMatch(bootstrap, /setTimeout|setInterval/);
+  assert.doesNotMatch(bootstrap, /setTimeout|setInterval|unhandledrejection/);
 });
 
 test('TOTP QR rendering preserves already encoded data URLs', async () => {

@@ -24,7 +24,7 @@ function response() {
     headers:new Map(),
     setHeader(k,v){ this.headers.set(String(k).toLowerCase(),String(v)); },
     getHeader(k){ return this.headers.get(String(k).toLowerCase()); },
-    writeHead(status){ this.status=status; },
+    writeHead(status, headers={}){ this.status=status; for (const [k,v] of Object.entries(headers)) this.headers.set(String(k).toLowerCase(),String(v)); },
     end(payload){ this.payload=payload; },
   };
 }
@@ -171,4 +171,43 @@ test('validated paid Stripe session is persisted as entitlement', async () => {
   assert.equal(granted,true);
   assert.equal(res.payload.entitled,true);
   assert.equal(res.payload.entitlementSource,'stripe_checkout');
+});
+
+
+test('badge download is entitlement-gated and includes attachment metadata', async () => {
+  const fetchImpl=async(url)=>{
+    const path=new URL(url).pathname;
+    if(path.endsWith('/capital_ai_get_vocabulary_access')){
+      return new Response(JSON.stringify({quizUsed:true,quantProEntitled:true}),{status:200,headers:{'content-type':'application/json'}});
+    }
+    throw new Error('unexpected request '+url);
+  };
+  const checkout=createVocabularyCheckout({env,fetchImpl,auth:auth()});
+
+  const badge=response();
+  await checkout.handle(request(), badge, new URL('https://capital-ai.online/api/billing/vocabulary/badge'), json);
+  assert.equal(badge.status,200);
+  assert.match(badge.headers.get('content-disposition'), /capital-ai-market-vocabulary-badge\.svg/);
+  assert.match(String(badge.payload), /CAPITAL-AI-PRODUCT/);
+
+  const license=response();
+  await checkout.handle(request(), license, new URL('https://capital-ai.online/api/billing/vocabulary/badge-license'), json);
+  assert.equal(license.status,200);
+  assert.match(license.headers.get('content-disposition'), /CAPITAL-AI-VOCABULARY-BADGE-LICENSE\.md/);
+  assert.match(String(license.payload), /LicenseRef-CAPITAL-AI-VOCABULARY-BADGE-CUSTOMER-1\.0/);
+});
+
+test('badge download is denied without Vocabulary entitlement', async () => {
+  const fetchImpl=async(url)=>{
+    const path=new URL(url).pathname;
+    if(path.endsWith('/capital_ai_get_vocabulary_access')){
+      return new Response(JSON.stringify({quizUsed:false,quantProEntitled:false}),{status:200,headers:{'content-type':'application/json'}});
+    }
+    throw new Error('unexpected request '+url);
+  };
+  const checkout=createVocabularyCheckout({env,fetchImpl,auth:auth()});
+  const res=response();
+  await checkout.handle(request(), res, new URL('https://capital-ai.online/api/billing/vocabulary/badge'), json);
+  assert.equal(res.status,403);
+  assert.equal(res.payload.error,'vocabulary_entitlement_required');
 });
