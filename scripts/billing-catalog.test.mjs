@@ -26,10 +26,11 @@ test('catalog exposes only version, currency and public product/price identifier
     assert.match(tier.annualPriceId, /^price_[A-Za-z0-9]+$/);
   }
   assert.deepEqual(Object.keys(BILLING_CATALOG.addons.vocabulary).sort(), [
-    'amountCents', 'includedIn', 'priceId', 'productId', 'taxBehavior',
+    'amountCents', 'priceId', 'productId', 'taxBehavior',
   ]);
   assert.match(BILLING_CATALOG.addons.vocabulary.productId, /^prod_[A-Za-z0-9]+$/);
   assert.match(BILLING_CATALOG.addons.vocabulary.priceId, /^price_[A-Za-z0-9]+$/);
   assert.equal(BILLING_CATALOG.addons.vocabulary.amountCents, 1900);
   assert.equal(BILLING_CATALOG.addons.vocabulary.taxBehavior, 'inclusive');
+  assert.equal('includedIn' in BILLING_CATALOG.addons.vocabulary, false);
 });
