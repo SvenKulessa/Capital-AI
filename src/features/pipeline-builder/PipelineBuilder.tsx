@@ -19,8 +19,6 @@ import {
   Sparkles,
   Sliders,
   CheckCircle2,
-  FileCode,
-  FileDown,
   Copy,
   Check,
   Coins,
