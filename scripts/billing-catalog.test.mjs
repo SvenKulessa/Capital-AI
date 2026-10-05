@@ -84,7 +84,7 @@ test('additional products catalog exposes only currently available add-ons', () 
 });
 
 
-test('pricing uses licensed subscription badges and does not force authenticated users to login', () => {
+test('pricing uses licensed badges and server-authorized subscription checkout state', () => {
   const pricing = readFileSync(new URL('../src/features/pricing/MonetizationModal.tsx', import.meta.url), 'utf8');
 
   assert.match(pricing, /\/branding\/badges\/starter\.svg/);
@@ -95,7 +95,10 @@ test('pricing uses licensed subscription badges and does not force authenticated
   assert.match(pricing, /geschützten Quant-\/Pro-Begriffen/);
   assert.match(pricing, /serverseitig berechtigte Lernzugang/);
   assert.match(pricing, /if \(authenticated === false\)/);
-  assert.match(pricing, /if \(authenticated === true\)/);
-  assert.match(pricing, /keine Weiterleitung zum Login/);
+  assert.match(pricing, /\/api\/billing\/subscriptions\/readiness/);
+  assert.match(pricing, /\/api\/billing\/subscriptions\/checkout/);
+  assert.match(pricing, /if \(!subscriptionCheckoutEnabled\)/);
+  assert.match(pricing, /Es wurde keine Zahlung gestartet/);
+  assert.match(pricing, /target\.hostname !== 'checkout\.stripe\.com'/);
   assert.match(pricing, /pointer-events-none select-none opacity-45/);
 });
