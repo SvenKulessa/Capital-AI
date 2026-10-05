@@ -23,6 +23,7 @@
 !server/vocabulary-quant-pro-index.mjs
 !server/auth.mjs
 !server/auth-security.mjs
+!server/auth-security.test.mjs
 !server/user-provider-vault.mjs
 !server/telegram.mjs
 !server/privacy.mjs
@@ -69,6 +70,8 @@
 !scripts/validate-growth-contracts.mjs
 !scripts/validate-evidence-hardening.mjs
 !scripts/generate-documentary.mjs
+!scripts/supabase-auth-config.mjs
+!scripts/supabase-auth-config.test.mjs
 !contracts/
 !contracts/**
 !documentary/
@@ -100,3 +103,7 @@
 !CAPITAL-AI-GROWTH/badge.svg
 !CAPITAL-AI-PLATFORM/
 !CAPITAL-AI-PLATFORM/badge.svg
+
+!supabase/
+!supabase/email-templates/
+!supabase/email-templates/**
