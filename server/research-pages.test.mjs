@@ -56,7 +56,8 @@ test('vocabulary landing, 294 detail routes, sitemap and robots are crawlable wi
     assert.match(landingHtml, /<title>Capital-AI Vocabulary \| 294 Fachbegriffe &amp; Thesaurus<\/title>/);
     assert.match(landingHtml, /href="https:\/\/capital-ai\.online\/vocabulary"/);
     assert.match(landingHtml, /"@type":"DefinedTermSet"/);
-    assert.match(landingHtml, /294 konsolidierte Fachbegriffe/);
+    assert.match(landingHtml, /294 konsolidierte Capital-AI Fachbegriffe/);
+    assert.equal((landingHtml.match(/id="capital-ai-seo-jsonld"/g) || []).length, 1);
     assert.match(landingHtml, /href="\/vocabulary\/orderbuch"/);
 
     const termResponse = await fetch(origin + '/vocabulary/orderbuch?title=%3Cscript%3E');
@@ -67,6 +68,7 @@ test('vocabulary landing, 294 detail routes, sitemap and robots are crawlable wi
     assert.match(termHtml, /Echtzeit-Verzeichnis aller offenen Kauf-/);
     assert.match(termHtml, /Markttiefe/);
     assert.match(termHtml, /"@type":"DefinedTerm"/);
+    assert.equal((termHtml.match(/id="capital-ai-seo-jsonld"/g) || []).length, 1);
     assert.doesNotMatch(termHtml, /sourcePath|sourceFile|sourceDocument|title=%3Cscript/);
 
     const sitemapResponse = await fetch(origin + '/sitemap.xml');
