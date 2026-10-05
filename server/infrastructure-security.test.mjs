@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MarketInfrastructure, natsConnectionAuth, validateStreamConfig } from './infrastructure.mjs';
+import { MarketInfrastructure, natsConnectionAuth, validateStreamConfig, validateCanonicalStreamConfig } from './infrastructure.mjs';
 
 const safe = { storage: 'file', discard: 'new', deny_delete: true, deny_purge: true,
   max_age: 0, num_replicas: 1, max_bytes: 1073741824, max_msg_size: 262144,
@@ -11,6 +11,14 @@ test('stream drift cannot remove resource bounds or widen the event subject', ()
     { subjects: ['>'] }, { storage: 'memory' }, { deny_delete: false }, { deny_purge: false },
     { max_age: 1 }, { num_replicas: 3 }]) {
     assert.throws(() => validateStreamConfig({ ...safe, ...change }, 1), /UNSAFE_STREAM_CONFIG/);
+  }
+});
+test('canonical stream drift cannot widen subject or relax durability bounds', () => {
+  const safeCanonical = { ...safe, subjects: ['capital.market.canonical.*.*'] };
+  assert.doesNotThrow(() => validateCanonicalStreamConfig(safeCanonical, 1));
+  for (const change of [{ subjects: ['capital.market.canonical.>'] }, { subjects: ['>'] },
+    { deny_delete: false }, { deny_purge: false }, { max_age: 1 }, { num_replicas: 3 }]) {
+    assert.throws(() => validateCanonicalStreamConfig({ ...safeCanonical, ...change }, 1), /UNSAFE_CANONICAL_STREAM_CONFIG/);
   }
 });
 test('scoped NATS credentials are preferred and incomplete credentials fail closed', () => {
