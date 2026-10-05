@@ -65,6 +65,7 @@ async function postJson(
 function initialMode(): Mode {
   const params = new URLSearchParams(window.location.search);
   if (params.get('mode') === 'reset') return 'reset';
+  if (params.get('mode') === 'forgot') return 'forgot';
   if (params.get('mfa') === '1') return 'mfa';
   return 'login';
 }
@@ -129,7 +130,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
         }
 
         if (!value.mfaRequired) {
-          window.location.replace('/profile');
+          window.location.replace('/');
           return;
         }
 
@@ -138,7 +139,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
           if (!factors.length && !abort.signal.aborted) {
             const refreshed = await loadSession(abort.signal);
             if (refreshed.authenticated && !refreshed.mfaRequired) {
-              window.location.replace('/profile');
+              window.location.replace('/');
               return;
             }
             setError('Der MFA-Zustand ist inkonsistent. Bitte wähle eine andere Anmeldemethode oder melde dich neu an.');
@@ -159,8 +160,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
       setError('Das neue Passwort muss mindestens 14 Zeichen lang sein und die Supabase-Sicherheitsanforderungen erfüllen.');
     } else if (message === 'registration_failed') {
       setError('Registrierung fehlgeschlagen. Bitte prüfe die Eingaben oder versuche es erneut.');
-    } else if (message === 'passkey_unavailable') {
-      setError('Passkey-Anmeldung ist im Supabase-Projekt noch nicht freigeschaltet.');
+    } else if (message === 'passkey_unavailable' || message === 'passkey_disabled') {
+      setError('Passkeys sind im Supabase-Projekt noch nicht aktiviert. Die Anmeldung per E-Mail oder Google bleibt verfügbar.');
+    } else if (message === 'mfa_factor_name_conflict') {
+      setError('Ein Authenticator mit diesem Namen existiert bereits. Lade die Sicherheitsseite neu oder verwende einen anderen Anzeigenamen.');
     } else {
       setError(message);
     }
@@ -181,14 +184,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
           await loadMfaFactors();
           return;
         }
-        window.location.replace('/profile');
+        window.location.replace('/');
         return;
       }
 
       const result = await postJson('/api/auth/register', { name, email, password });
       if (!result.response.ok) throw new Error(result.body?.error || 'registration_failed');
       if (result.body?.authenticated) {
-        window.location.replace('/profile');
+        window.location.replace('/');
         return;
       }
       setNotice('Registrierung angenommen. Bitte bestätige die E-Mail-Adresse über die CAPITAL-AI Bestätigungsmail.');
@@ -252,7 +255,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
         code: totpCode,
       });
       if (!result.response.ok) throw new Error(result.body?.code || result.body?.error || 'totp_verification_failed');
-      window.location.replace('/profile');
+      window.location.replace('/');
     } catch (reason) {
       showError(reason);
     } finally {
@@ -288,7 +291,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
         await loadMfaFactors();
         return;
       }
-      window.location.replace('/profile');
+      window.location.replace('/');
     } catch (reason) {
       showError(reason);
     } finally {
@@ -445,8 +448,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                 </p>
                 <p className="mt-1 break-all text-xs text-emerald-100/70">{session.user?.email}</p>
               </div>
-              <button type="button" onClick={() => window.location.assign('/profile')} className="min-h-12 w-full rounded-xl bg-amber-400 font-black text-black">
-                Zum persönlichen Profil & Vault
+              <button type="button" onClick={() => window.location.assign('/')} className="min-h-12 w-full rounded-xl bg-amber-400 font-black text-black">
+                Zur Landingpage
+              </button>
+              <button type="button" onClick={() => window.location.assign('/profile')} className="min-h-11 w-full rounded-xl border border-white/10 bg-white/5 text-xs font-bold text-slate-200">
+                Profil öffnen
               </button>
               <button type="button" onClick={() => void logout()} disabled={busy} className="min-h-12 w-full rounded-xl bg-slate-700 disabled:opacity-50">
                 {busy ? 'Abmeldung läuft …' : 'Abmelden'}
@@ -496,7 +502,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                 {mode === 'register' && <p className="text-[11px] text-slate-500">Mindestens 14 Zeichen.</p>}
                 {mode === 'login' && (
                   <button type="button" onClick={() => { setMode('forgot'); setError(''); setNotice(''); }} className="min-h-8 text-xs font-bold text-amber-300 hover:text-amber-200">
-                    Passwort vergessen?
+                    Passwort vergessen / zurücksetzen
                   </button>
                 )}
                 <button type="submit" disabled={busy || !session?.configured} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-amber-400 font-black text-black disabled:opacity-40">
@@ -510,7 +516,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
               </div>
 
               <a
-                href="/api/auth/login/google?next=%2Fprofile"
+                href="/api/auth/login/google?next=%2F"
                 className="flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border border-white/15 bg-white text-sm font-bold text-slate-900 transition hover:bg-slate-100"
                 aria-label="Mit Google anmelden"
               >
