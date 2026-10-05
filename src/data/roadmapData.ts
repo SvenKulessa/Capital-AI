@@ -168,6 +168,35 @@ export const PROJECT_OWNERS: {
 
 const BACKLOG_TARGETS: WorkPackage[] = [
   {
+    id: 'CA-PRODUCT-VOCABULARY-NFT-MINTING',
+    title: 'Vocabulary-Badge NFT-Minting mit künftigem Tokenomics-Konzept evaluieren',
+    owner: 'PRODUCT',
+    status: 'planning',
+    phase: 4,
+    phaseName: 'Phase 4: DevSecOps, Supply Chain & Release Candidate',
+    progressPercent: null,
+    evidenceState: 'OFFEN',
+    evidenceRefs: [
+      'src/data/additionalProductsCatalog.ts',
+      'docs/licenses/CAPITAL-AI-VOCABULARY-BADGE-CUSTOMER-LICENSE-1.0.md',
+      'src/data/monetizationRegistry.ts',
+    ],
+    nextStep: 'Zuerst Token-/Tokenomics-Rechte-, Wallet-, Chain-, Minting-, Metadata- und Transfer-Contract definieren; bis dahin kein NFT minten und keinen handelbaren Token-/Eigentumsclaim darstellen.',
+    priority: 'Mittel',
+    leadName: 'Projektowner',
+    targetSprint: 'Backlog nach Tokenomics-/Token-Konzept',
+    description: 'Optionaler späterer Produktpfad, um einen erworbenen Vocabulary-Badge mit einem separaten NFT-Minting-Prozess zu verknüpfen. Der heutige Badge-Download bleibt ein nicht übertragbares, entitlement-gebundenes Lizenzasset und ist ausdrücklich kein NFT oder Token.',
+    deliverables: [
+      'Entscheidung, ob NFT technisch und wirtschaftlich einen echten Zusatznutzen gegenüber dem bestehenden Entitlement liefert',
+      'Chain-/Wallet-/Gas-/Custody- und Datenschutzmodell ohne versteckte Kosten',
+      'Token-/NFT-Metadatenvertrag mit unveränderlicher Provenienz und Lizenzreferenz',
+      'Minting nur nach explizitem Nutzer-Opt-in und getrennt vom Vocabulary-Kauf',
+      'Keine Wert-, Rendite-, Investment- oder Eigentumsversprechen aus dem Badge ableiten',
+      'Security-, Compliance-, Marken- und Lizenzreview vor jeder öffentlichen Aktivierung',
+    ],
+    costImpactEur: 0,
+  },
+  {
     id: 'CA-PRODUCT-BENCHMARK-MARKETPLACE',
     title: 'Benchmark Engine für Infrastrukturvergleich und GitHub Marketplace',
     owner: 'PRODUCT',
