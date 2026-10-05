@@ -1,0 +1,74 @@
+{
+  "schema": "CAPITAL_AI_OPEN_DATA_RIGHTS_ADDENDUM@1",
+  "observedAt": "2026-10-05T02:08:00+02:00",
+  "sourceCommit": "8045c78956e163af3011ed47f734184aca14aa04",
+  "ownerPolicy": "OPEN_SOURCE_AND_OPEN_DATA_ONLY",
+  "findings": [
+    {
+      "provider": "European Central Bank",
+      "dataset": "Publicly released ESCB statistics / euro foreign exchange reference rates",
+      "status": "QUALIFIED_OPEN_DATA_WITH_OBLIGATIONS",
+      "commercialUse": true,
+      "redistribution": true,
+      "derivedScoring": "REVIEW_REQUIRED_NO_MODIFICATION_CONDITION",
+      "cacheReplayRetention": "ALLOW_FOR_UNMODIFIED_STATISTICS_SUBJECT_TO_ATTRIBUTION_AND_SOURCE_TERMS",
+      "obligations": [
+        "QUOTE_SOURCE_ECB_STATISTICS",
+        "DO_NOT_MODIFY_PUBLISHED_STATISTICS_OR_METADATA",
+        "THIRD_PARTY_DATA_EXCLUDED"
+      ],
+      "evidence": "https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.en.html"
+    },
+    {
+      "provider": "World Bank",
+      "dataset": "Commodity Markets Data (Pink Sheet)",
+      "status": "QUALIFIED_OPEN_DATA_REFERENCE_SERIES",
+      "commercialUse": true,
+      "redistribution": true,
+      "derivedScoring": true,
+      "cacheReplayRetention": true,
+      "obligations": [
+        "CC_BY_4_ATTRIBUTION",
+        "INDICATE_CHANGES",
+        "COMPLY_WITH_WBG_ADDITIONAL_DATASET_TERMS",
+        "NO_IMPLIED_ENDORSEMENT"
+      ],
+      "evidence": "https://datacatalog.worldbank.org/public-licenses",
+      "datasetEvidence": "https://www.worldbank.org/en/research/commodity-markets"
+    },
+    {
+      "provider": "Deribit",
+      "dataset": "Exchange market data and derived data",
+      "status": "EXCLUDED_OWNER_POLICY_AND_RIGHTS",
+      "commercialUse": false,
+      "reason": "Current Deribit terms limit market/derived data to personal use absent prior written approval.",
+      "evidence": "https://support.deribit.com/hc/en-us/articles/25944532191645-Deribit-Exchange-Membership-Terms-Deribit-FZE"
+    },
+    {
+      "provider": "Kraken",
+      "dataset": "Public API market data",
+      "status": "EXCLUDED_OWNER_POLICY_AND_RIGHTS",
+      "commercialUse": "PRIOR_PERMISSION_REQUIRED",
+      "reason": "Kraken API notice requires prior permission for non-personal commercial use of public endpoint data.",
+      "evidence": "https://docs-legacy.kraken.com/api/docs/guides/global-intro/"
+    },
+    {
+      "provider": "Coin Metrics Community",
+      "dataset": "Community API / free data archives",
+      "status": "EXCLUDED_NONCOMMERCIAL",
+      "commercialUse": false,
+      "reason": "Community/free archive data are non-commercial; official archive states CC BY-NC 4.0.",
+      "evidence": "https://github.com/coinmetrics/data"
+    }
+  ],
+  "gateImpact": {
+    "crypto": "BLOCKED_NO_QUALIFYING_COMMERCIAL_OPEN_DATA_SPOT_OHLCV",
+    "stocks": "BLOCKED_NO_QUALIFYING_OPEN_DATA_PRICE_OHLCV",
+    "commodities": "REFERENCE_IDENTITY_AND_MONTHLY_DATA_PASS_SCORING_FAIL",
+    "forex": "REFERENCE_IDENTITY_AND_DAILY_DATA_PASS_SCORING_SEMANTICS_REVIEW",
+    "indices": "BLOCKED_NO_20_CASH_INDEX_RIGHTS_SET",
+    "perpetuals": "DERIBIT_EXCLUDED"
+  },
+  "canonicalPayloadSha256": "fab21f80b32ed812393bc8dc4dbfed2020828f139d5bc86ca2d3770d52ada53c",
+  "hashScope": "UTF-8 JSON with lexicographically sorted keys and separators ',' ':' before adding hash fields"
+}
