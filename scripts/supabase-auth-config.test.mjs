@@ -15,6 +15,13 @@ test('CAPITAL-AI auth email configuration validates locally without secrets or n
   assert.equal(report.mode, 'local-check');
   assert.equal(report.templateCount, 13);
   assert.equal(report.passkey.rpId, 'capital-ai.online');
+  assert.equal(report.passkey.rpOrigin, 'https://capital-ai.online');
+  assert.equal(report.totp.enrollEnabled, true);
+  assert.equal(report.totp.verifyEnabled, true);
+  assert.equal(report.securityNotifications.enabled.length, 7);
+  assert.equal(report.checkedKeys.length, 39);
+  assert.ok(report.checkedKeys.includes('mailer_notifications_password_changed_enabled'));
+  assert.ok(report.checkedKeys.includes('mailer_notifications_mfa_factor_unenrolled_enabled'));
   assert.equal(report.mutation, false);
   assert.doesNotMatch(run.stdout, /sb_secret|access_token|refresh_token/i);
 });
@@ -25,4 +32,11 @@ test('all Supabase email actions use first-party TokenHash verification routes',
     assert.match(templates[name].actionUrl, /^\{\{ \.SiteURL \}\}\/api\/auth\/email\/verify\?token_hash=\{\{ \.TokenHash \}\}&type=/);
     assert.doesNotMatch(templates[name].actionUrl, /ConfirmationURL/);
   }
+});
+
+test('auth config validator uses parsed HTTPS origins instead of hostname substring matching', async () => {
+  const source = await readFile('scripts/supabase-auth-config.mjs', 'utf8');
+  assert.match(source, /new URL\(rawUrl\)/);
+  assert.match(source, /parsed\.protocol !== 'https:' \|\| parsed\.origin !== EXPECTED_SITE_ORIGIN/);
+  assert.doesNotMatch(source, /\(\?!capital-ai\\\.online/);
 });
