@@ -21,8 +21,32 @@ const CONTROL_TAB_LABELS: Record<ControlCenterTab, string> = {
 };
 interface ControlCenterPageProps { onBackToHome?: () => void; onNavigateLogin?: () => void; onNavigateTab?: (path: string) => void; initialTab?: ControlCenterTab; }
 export const ControlCenterPage: React.FC<ControlCenterPageProps> = ({ onBackToHome, initialTab = 'roadmap' }) => {
+ const [ownerAccess, setOwnerAccess] = React.useState<'checking' | 'allowed' | 'denied'>('checking');
  const [activeTab, setActiveTab] = useHubTab(CONTROL_TABS, initialTab);
+ React.useEffect(() => {
+   const controller = new AbortController();
+   fetch('/api/auth/session', {
+     credentials: 'same-origin',
+     cache: 'no-store',
+     headers: { Accept: 'application/json' },
+     signal: controller.signal,
+   })
+     .then(response => response.ok ? response.json() : Promise.reject())
+     .then(session => {
+       const allowed = session?.authenticated === true && session?.account?.iamRole === 'owner';
+       if (!controller.signal.aborted) setOwnerAccess(allowed ? 'allowed' : 'denied');
+       if (!allowed && !controller.signal.aborted) onBackToHome?.();
+     })
+     .catch(() => {
+       if (!controller.signal.aborted) {
+         setOwnerAccess('denied');
+         onBackToHome?.();
+       }
+     });
+   return () => controller.abort();
+ }, [onBackToHome]);
  const [search, setSearch] = React.useState('');
+ if (ownerAccess !== 'allowed') return null;
  const report = validateAnalysisComponentRegistry();
  const components = CANONICAL_50_COMPONENTS.filter(c => `${c.componentId} ${c.displayName}`.toLowerCase().includes(search.toLowerCase()));
  return <div className="w-full text-slate-100 min-h-screen py-4 px-3 sm:px-6">
