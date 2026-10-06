@@ -3,7 +3,7 @@ import { cadsCommercialReadinessPct } from './cadsCommercialReadiness';
 /**
  * Canonical monetizable product list.
  * Readiness is the share of a sellable, compliant launch already evidenced in repo.
- * Gap is the remaining distance to market. Scan baseline: main @ 824d429, 2026-10-06.
+ * Gap is the remaining distance to market. Scan baseline: main @ 0bf052c, 2026-10-06.
  *
  * Weights: definition 15, user surface 25, commercial path 25, data/compliance gate 20, production evidence 15.
  * A build or UI is not a production release. Provider rights and decisionEligible stay fail-closed.
