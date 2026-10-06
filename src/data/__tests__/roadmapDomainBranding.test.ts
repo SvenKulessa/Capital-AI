@@ -83,3 +83,32 @@ test('MARKET production package is one chronological fail-closed commercial work
     assert.ok(WORK_PACKAGES.some(item => item.id === legacyId), `${legacyId} remains traceable in the roadmap`);
   }
 });
+
+
+test('multi-agent roadmap remains planning-only until owner architecture decision', () => {
+  const orchestration = WORK_PACKAGES.find(item => item.id === 'CA-PRODUCT-MULTI-AGENT-ORCHESTRATION');
+  const trajectory = WORK_PACKAGES.find(item => item.id === 'CA-PLATFORM-AGENT-TRAJECTORY-OBSERVABILITY');
+  const control = WORK_PACKAGES.find(item => item.id === 'CA-PRODUCT-AGENT-PATH-CONTROL-CENTER');
+  const rebalance = WORK_PACKAGES.find(item => item.id === 'AP-AGT-03');
+
+  assert.ok(orchestration);
+  assert.ok(trajectory);
+  assert.ok(control);
+  assert.ok(rebalance);
+
+  assert.equal(orchestration.status, 'planning');
+  assert.equal(orchestration.evidenceState, 'UNGEKLÄRT');
+  assert.match(orchestration.nextStep, /Owner entscheidet Architekturvariante A\/B\/C/);
+
+  assert.equal(trajectory.status, 'planning');
+  assert.match(trajectory.deliverables.join(' '), /CAPITAL_AI_AGENT_TRAJECTORY@1/);
+  assert.match(trajectory.description, /Operational Telemetry ersetzt keinen Security Audit/);
+
+  assert.equal(control.status, 'planning');
+  assert.ok(control.dependencies?.includes('CA-PLATFORM-AGENT-TRAJECTORY-OBSERVABILITY'));
+
+  assert.match(rebalance.description, /Proposal-only/);
+  assert.match(rebalance.description, /kein Agent erhält aus dem Graph-Routing selbst Trading- oder Mutation-Authority/);
+  assert.ok(rebalance.dependencies?.includes('CA-PRODUCT-MULTI-AGENT-ORCHESTRATION'));
+  assert.ok(rebalance.dependencies?.includes('CA-TRUST-AUTONOMOUS-RESEARCH-GOVERNANCE'));
+});
