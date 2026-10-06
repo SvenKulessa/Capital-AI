@@ -1,6 +1,6 @@
 # PLATFORM · NATS / Valkey / Rust Provider-Bridge Production Correlation
 
-Stand: 2026-10-06  
+Stand: 2026-10-06
 CURRENT_MAIN: `4fa3e3f92547cd6356f46490a38e9b7515f69a6d`
 
 ## Live Runtime
