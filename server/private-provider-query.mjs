@@ -210,24 +210,35 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault } = 
   function enforceCostGate(userRef, input) {
     const policy = CONTRACT.providers?.[input.provider]?.operations?.[input.operation] || {};
     const minIntervalMs = Number(policy.minIntervalMs || 0);
+    const globalMinIntervalMs = Number(policy.globalMinIntervalMs || 0);
     const costUnits = Number(policy.costUnits || 1);
-    if (!Number.isSafeInteger(minIntervalMs) || minIntervalMs < 0 || !Number.isSafeInteger(costUnits) || costUnits < 1) {
+    if (!Number.isSafeInteger(minIntervalMs) || minIntervalMs < 0 ||
+        !Number.isSafeInteger(globalMinIntervalMs) || globalMinIntervalMs < 0 ||
+        !Number.isSafeInteger(costUnits) || costUnits < 1) {
       throw new Error('INVALID_OPERATION_COST_POLICY');
     }
-    if (minIntervalMs === 0) return { costUnits, retryAfterSeconds: 0 };
+    if (minIntervalMs === 0 && globalMinIntervalMs === 0) return { costUnits, retryAfterSeconds: 0 };
 
     const now = Date.now();
-    const key = `${userRef}:${input.provider}:${input.operation}`;
-    const previous = highCostWindows.get(key) || 0;
-    const remaining = minIntervalMs - (now - previous);
-    if (remaining > 0) {
+    const keys = [
+      [`user:${userRef}:${input.provider}:${input.operation}`, minIntervalMs],
+      [`global:${input.provider}:${input.operation}`, globalMinIntervalMs],
+    ].filter(([, interval]) => interval > 0);
+
+    let retryAfterSeconds = 0;
+    for (const [key, interval] of keys) {
+      const previous = highCostWindows.get(key) || 0;
+      const remaining = interval - (now - previous);
+      if (remaining > 0) retryAfterSeconds = Math.max(retryAfterSeconds, Math.ceil(remaining / 1000));
+    }
+    if (retryAfterSeconds > 0) {
       const error = new Error('PROVIDER_QUERY_COST_THROTTLED');
       error.code = 'PROVIDER_QUERY_COST_THROTTLED';
-      error.retryAfterSeconds = Math.max(1, Math.ceil(remaining / 1000));
+      error.retryAfterSeconds = Math.max(1, retryAfterSeconds);
       error.costUnits = costUnits;
       throw error;
     }
-    highCostWindows.set(key, now);
+    for (const [key] of keys) highCostWindows.set(key, now);
     if (highCostWindows.size > 4096) {
       for (const [candidate, timestamp] of highCostWindows) {
         if (now - timestamp > 10 * 60_000) highCostWindows.delete(candidate);
