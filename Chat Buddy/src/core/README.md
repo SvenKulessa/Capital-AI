@@ -4,6 +4,4 @@ Provider-neutral reusable primitives for classification, graph retrieval, resear
 
 This directory is intentionally free of JaJa branding, seat/pricing rules, voice branding and provider credentials.
 
-License status: **NOT YET ASSIGNED**.
-
-Do not redistribute this directory as open source until an explicit license is selected and the repository license/evidence gates are updated. Technical isolation is not a license grant.
+License status: **MIT**, scoped to this directory only. See `LICENSE`, `NOTICE.md` and `LICENSE-EVIDENCE.json`. JaJa/Capital-AI brand, character, voice, pricing, entitlement and product-layer rights are explicitly excluded.
