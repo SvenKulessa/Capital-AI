@@ -134,7 +134,24 @@
           ],
           "costUnits": 2400,
           "minIntervalMs": 60000,
-          "notes": "Binance request weight 2400; CAPITAL-AI permits at most one attempt per user per minute."
+          "notes": "Binance request weight 2400; CAPITAL-AI permits at most one attempt per user per minute.",
+          "requiredParams": [
+            "type"
+          ],
+          "paramRules": {
+            "type": {
+              "enum": [
+                "SPOT",
+                "MARGIN",
+                "FUTURES"
+              ]
+            },
+            "limit": {
+              "min": 7,
+              "max": 30
+            }
+          },
+          "maxWindowMs": 2592000000
         },
         "spot.account": {
           "params": [
@@ -153,6 +170,9 @@
             "startTime",
             "endTime",
             "limit"
+          ],
+          "requiredParams": [
+            "symbol"
           ]
         },
         "spot.my_trades": {
@@ -163,6 +183,9 @@
             "endTime",
             "fromId",
             "limit"
+          ],
+          "requiredParams": [
+            "symbol"
           ]
         },
         "futures.account": {
