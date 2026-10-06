@@ -26,7 +26,9 @@
         "enforcedPrGate": false,
         "api": false,
         "selfHostedRunner": false
-      }
+      },
+      "availableFor": "ORGANIZATIONS_ONLY",
+      "freeTrialEnabled": false
     },
     {
       "id": "pro",
@@ -48,7 +50,9 @@
         "enforcedPrGate": false,
         "api": false,
         "selfHostedRunner": false
-      }
+      },
+      "availableFor": "ORGANIZATIONS_ONLY",
+      "freeTrialEnabled": false
     },
     {
       "id": "enterprise",
@@ -70,11 +74,14 @@
         "enforcedPrGate": true,
         "api": true,
         "selfHostedRunner": true
-      }
+      },
+      "availableFor": "ORGANIZATIONS_ONLY",
+      "freeTrialEnabled": false
     }
   ],
   "priceValues": {
     "state": "OWNER_INPUT_REQUIRED_IN_GITHUB_MARKETPLACE",
     "reason": "GitHub Marketplace prices are authoritative in USD and are not inferred from EUR website pricing."
-  }
+  },
+  "audience": "B2B"
 }
