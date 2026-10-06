@@ -56,7 +56,22 @@ test('Uniswap quote forwards bounded inputs and never enables swap execution', a
     auth,
     fetchImpl:async(url,options)=>{
       observed={url:String(url),headers:options.headers,body:JSON.parse(String(options.body))};
-      return Response.json({quote:{output:'12345'},routing:'CLASSIC'});
+      return Response.json({
+        requestId:'req_quote_1',
+        routing:'CLASSIC',
+        quote:{
+          quoteId:'quote_1',
+          input:{amount:'1000000000000000000',token:'0x1111111111111111111111111111111111111111',maximumAmount:'1000000000000000000'},
+          output:{amount:'12345',token:'0x2222222222222222222222222222222222222222',minimumAmount:'12000',recipient:'0x3333333333333333333333333333333333333333'},
+          slippageTolerance:0.5,
+          classicGasUseEstimateUSD:'1.23',
+          encodedOrder:'0xdeadbeef',
+          orderInfo:{nonce:'secret-execution-shape'},
+        },
+        swapTransaction:{to:'0x4444444444444444444444444444444444444444',data:'0xdeadbeef'},
+        permitTransaction:{data:'0xcafe'},
+        permitData:{values:{amount:'100'}},
+      });
     },
   });
   const body={
@@ -78,6 +93,12 @@ test('Uniswap quote forwards bounded inputs and never enables swap execution', a
   assert.equal(result.payload.executionEnabled,false);
   assert.equal(result.payload.walletSignatureRequired,true);
   assert.equal(result.payload.arbitrageExecutionEligible,false);
+  assert.equal(result.payload.executionPayloadStripped,true);
+  assert.equal(result.payload.routing,'CLASSIC');
+  assert.equal(result.payload.quote.output.amount,'12345');
+  assert.equal(result.payload.quote.output.minimumAmount,'12000');
+  assert.equal(result.payload.quote.classicGasUseEstimateUSD,'1.23');
+  assert.doesNotMatch(JSON.stringify(result.payload),/swapTransaction|permitTransaction|permitData|encodedOrder|orderInfo|deadbeef|secret-execution-shape/);
   assert.doesNotMatch(JSON.stringify(result.payload),/uniswap-secret-test/);
 });
 
