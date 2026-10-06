@@ -1,6 +1,6 @@
 # CAPITAL-AI Engineering Delivery Policy
 
-Stand: 2026-10-05  
+Stand: 2026-10-07  
 Geltungsbereich: gesamtes Repository, alle Agents, Pull Requests, Builds, Updates und Deployments.
 
 ## Oberste Priorität
@@ -22,7 +22,7 @@ Owner-Entscheidung vom 2026-10-05: Für Entwicklung, Analyse, Review, Implementi
 - Diese ChatGPT-Handoff-Regel hat Vorrang vor älteren oder lokalen organisatorischen Domain-Handoff-Anweisungen.
 - Verbindliche Handoffs bestehen nur dort fort, wo sie eine **reale technische Übergabe oder Evidence-Grenze** darstellen, insbesondere Production-Handoff, Auth-/API-/Daten-/Event-Schema-Grenzen, Security-/Lizenz-/Datenrechte-Gates, Supply-Chain-Nachweise, externe Control-Plane-Mutationen oder maschinenlesbare Schnittstellenverträge.
 - Ein technischer Handoff ist kein Chatwechsel und keine organisatorische Domain-Abnahme. Derselbe Chat darf auch den technischen Handoff bearbeiten, sofern Scope und konkrete Autorisierung dies erlauben.
-- Prüfungen und Freigaben werden ausschließlich über konkrete, risikobasierte technische Gates und belastbare Evidence abgebildet. Ein erfolgreicher Test ersetzt keine Security-, Lizenz-, Owner- oder Production-Freigabe.
+- Prüfungen und Freigaben werden ausschließlich über konkrete, risikobasierte technische Gates und belastbare Evidence abgebildet. Ein einzelner erfolgreicher Test, Scan oder Admission-Status ersetzt niemals den vollständigen Gate-Satz. Ein Production-Deployment darf jedoch automatisch autorisiert und ausgeführt werden, wenn alle in den verbindlichen Policies definierten Deployment-Gates für die exakte Candidate-Identität vollständig PASS sind; dafür ist keine zusätzliche Owner-/Admission-Freigabe erforderlich.
 - Maschinenlesbare Evidence-/Datenverträge, einschließlich `GROWTH_HANDOFF@1`, bleiben an ihren technischen Schnittstellen gültig; sie begründen keine Pflicht zu einem Chat- oder Domainwechsel.
 - Die Regel gilt repository- und anwendungsweit für alle fünf Domains sowie für Web- und Mobile-Arbeit, die diese Root-Policy verwendet. Sie ändert gespeicherte ChatGPT-Projekteinstellungen und Richtlinien anderer Repositories nicht automatisch.
 
@@ -77,14 +77,14 @@ Für **jede** Domain und jede neue Arbeitssitzung ist der erste verbindliche Kon
 
 ## Kritischer Preflight vor Pull-Request-Erstellung
 
-Für jeden neuen Pull Request muss der exakte Branch-Head **vor der PR-Erstellung** einen kritischen Preflight erfolgreich durchlaufen haben. Der Preflight ist Evidence für den Branch-Head und ersetzt weder Required Checks noch Security-, Lizenz-, Governance-, Owner- oder Production-Freigaben.
+Für jeden neuen Pull Request muss der exakte Branch-Head **vor der PR-Erstellung** einen kritischen Preflight erfolgreich durchlaufen haben. Der Preflight ist Evidence für den Branch-Head und ersetzt weder Required Checks noch den vollständigen Security-, Lizenz-, Governance- und Deployment-Gate-Satz.
 
 - Mindestumfang nach `npm ci --ignore-scripts --no-audit --no-fund`: `npm run preflight:full`.
 - Domain-/Scope-kritische Regressionen müssen zusätzlich ausgeführt werden, wenn sie nicht bereits vollständig im Full-Preflight enthalten sind.
 - Änderungen unter `.github/workflows/**` müssen vor der PR-Erstellung gegen den aktuellen Main-Workflowbestand geprüft werden: Trigger, Required-Check-Namen, SHA-Pinning externer Actions, Permissions/Least-Privilege und unbeabsichtigte Scan-/Build-Duplikate.
 - Der Feature-Branch-Push-Workflow `Pre-PR Critical Preflight` liefert dafür repositoryseitige Evidence. Bei einem durch Agenten erstellten PR ist dessen erfolgreicher Lauf auf dem exakten Head abzuwarten.
 - Ein nach PR-Erstellung korrigierter älterer PR kann die zeitliche Reihenfolge nicht rückwirkend erfüllen; für seinen neuen exakten Head ist der gleiche Preflight dennoch vor weiterer Merge-Bewertung nachzuholen.
-- Ein grüner Preflight ist niemals allein Merge-, Lizenz-, Security- oder Production-Freigabe.
+- Ein grüner Preflight ist niemals allein Merge-, Lizenz-, Security- oder Deployment-Freigabe. Deployment-Autorität entsteht ausschließlich aus dem vollständig positiven, policy-definierten Gate-Satz.
 
 ## Public-Repository PR- und Standard-Runner-Regel
 
@@ -93,8 +93,24 @@ Owner-Entscheidung vom 2026-10-05: `SvenKulessa/Capital-AI` ist öffentlich. Das
 - Für PRs dürfen die repositoryseitig vorgesehenen Standard-GitHub-Actions und Required Checks automatisch anlaufen.
 - Ein Agent muss vor dem Erstellen eines PRs nicht auf verfügbare Standard-Runner-Minuten warten und keine separate Runner-Kostenfreigabe einholen.
 - Fehlende, laufende oder fehlgeschlagene Required Checks verhindern nicht die PR-Erstellung, können aber weiterhin Review-, Merge- oder Production-Gates blockieren.
-- Diese Regel ist keine pauschale Kosten- oder Production-Freigabe. Kostenpflichtige Larger Runner, zusätzliche Storage-/Compute-Ressourcen, neue kostenpflichtige GitHub-Produkte, manuelle Production-Deployments sowie Billing-, Auth-, DNS-, Secret-, Ruleset- oder sonstige privilegierte Mutationen behalten ihre eigenen Gates.
-- Security-, Lizenz-, Governance-, Supply-Chain- und Production-Handoff-Anforderungen bleiben vollständig bestehen.
+- Diese Regel ist keine pauschale Kosten- oder Control-Plane-Freigabe. Kostenpflichtige Larger Runner, zusätzliche Storage-/Compute-Ressourcen, neue kostenpflichtige GitHub-Produkte sowie Billing-, Auth-, DNS-, Secret-, Ruleset- oder sonstige privilegierte Mutationen behalten ihre eigenen Gates.
+- Security-, Lizenz-, Governance-, Supply-Chain- und Production-Handoff-Anforderungen bleiben vollständig bestehen. Der Production-Handoff ist dabei ein technischer, maschinenprüfbarer Gate-Satz und keine zusätzliche Human-/Owner-Admission.
+
+## Automatische Deployment-Entscheidung
+
+Owner-Entscheidung vom 2026-10-07: Da CAPITAL-AI durch einen einzelnen Owner entwickelt und betrieben wird, benötigt ein Deployment **keine separate Admission, Human-Approval oder erneute Owner-Bestätigung**, wenn die verbindlichen Repository-Policies den vollständigen technischen Gate-Satz bereits definieren.
+
+- Die Erstellung bzw. Aktualisierung eines Pull Requests darf die vorgesehenen Pipeline-, Security-, Lizenz-, Governance-, Supply-Chain- und Production-Handoff-Prüfungen automatisch auslösen.
+- Ein Deployment darf automatisch erfolgen, wenn **alle** für den konkreten Deployment-Pfad vorgeschriebenen Gates auf der exakten Candidate-Identität terminal `PASS` sind und die Policy den auslösenden Ref/Event-Scope zulässt.
+- Die Pipeline darf in diesem Zustand selbst `deployEligible:true` ableiten und den vorgesehenen Deployment-Schritt ausführen.
+- Es ist **keine zusätzliche Admission** und keine manuelle Owner-Freigabe erforderlich, wenn der vollständige Gate-Satz bereits positiv ist.
+- Fehlende, laufende, übersprungene, unbekannte oder fehlgeschlagene Pflicht-Gates führen fail-closed zu **kein Deployment**.
+- Ein einzelner grüner Test, Scan, Benchmark, Admission-Status oder eine einzelne Evidence-Datei darf niemals allein Deployment-Autorität erzeugen.
+- Source-SHA, OCI-/Artifact-Digest, Lizenz-/Redistribution-Evidence, Required Checks, Security-/Governance-Gates und Runtime-Identität müssen dort korreliert werden, wo der jeweilige Deployment-Vertrag dies verlangt.
+- Ein neuer Repository-HEAD allein bleibt ausdrücklich **kein** Deployment- oder NATS-Redeploy-Signal.
+- Billing-, Auth-, DNS-, Secret-/Credential-, Ruleset-/Branch-Protection- und sonstige externe Control-Plane-Mutationen, die nicht Bestandteil des definierten normalen Deployment-Pfads sind, behalten ihre separaten Sicherheitsgrenzen.
+
+Der `Production-Handoff` bezeichnet damit den **technischen Deployment-Gate-Vertrag**, nicht eine organisatorische oder menschliche Freigabestufe.
 
 ## Update-Trust-Contract
 
@@ -185,7 +201,7 @@ Vor einer Aufgabe soll geprüft werden, ob ein vorhandenes spezialisiertes Tool/
 Die Low-Risk-Freigabe ist **keine pauschale Schreib- oder Produktionsvollmacht**. Bestehende strengere Regeln bleiben vorrangig. Eine gesonderte Freigabe bzw. das dafür definierte Gate bleibt erforderlich, wenn eine Aktion insbesondere:
 
 - externe Daten, Konfigurationen oder Ressourcen zustandsverändernd schreibt/löscht,
-- Build-, Test-, Deploy- oder andere kostenrelevante Workflows startet, soweit hierfür eine Owner-Freigabe vorgeschrieben ist,
+- Build-, Test- oder andere kostenrelevante Workflows startet, soweit hierfür eine Owner-Freigabe vorgeschrieben ist; policy-konforme Deployment-Workflows benötigen keine zusätzliche Owner-Freigabe, wenn ihr vollständiger Gate-Satz PASS ist,
 - Production, DNS/Domain, Auth, Billing, Branch Protection, Rulesets oder Security Controls verändert,
 - Secrets, Credentials, Tokens oder privilegierte Identitäten erzeugt, rotiert oder exponieren könnte,
 - kostenpflichtige Ressourcen oder Abonnements erzeugt/verändert,
