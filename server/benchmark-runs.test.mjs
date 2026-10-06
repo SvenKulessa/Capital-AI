@@ -113,3 +113,73 @@ test('history is Pro/Enterprise only while direct status remains owner-scoped', 
   assert.equal(starterHistory.status,403);
   assert.equal(starterHistory.payload.error,'benchmark_history_not_entitled');
 });
+
+test('evidence export is Pro/Enterprise only and exports only the persisted evidence manifest', async () => {
+  const store=memoryStore();
+  const pro=createBenchmarkRuns({env:{BENCHMARK_RUN_API_ENABLED:'true'},auth:auth('pro'),store});
+  const created=res();
+  await pro.handle(
+    req('POST',{repository:'SvenKulessa/Capital-AI',commitSha:'e'.repeat(40)}),
+    created,
+    new URL('https://capital-ai.online/api/benchmark/runs'),
+    json,
+  );
+  const row=store.rows[0];
+  row.status='SUCCEEDED';
+  row.completedAt='2026-10-06T18:00:00.000Z';
+  row.evidenceId='evidence/cads/run-001';
+  row.usage={
+    schemaVersion:'CAPITAL_AI_BENCHMARK_USAGE@1',
+    measurementStatus:'MEASURED',
+    cost:{currency:'EUR',totalEur:0},
+    credits:{calibrated:false,unitsCharged:null},
+  };
+
+  const exported=res();
+  await pro.handle(
+    req('GET'),
+    exported,
+    new URL('https://capital-ai.online/api/benchmark/runs/'+row.id+'/evidence'),
+    json,
+  );
+  assert.equal(exported.status,200);
+  assert.equal(exported.payload.schemaVersion,'CAPITAL_AI_BENCHMARK_EVIDENCE_EXPORT@1');
+  assert.equal(exported.payload.evidenceId,'evidence/cads/run-001');
+  assert.equal(exported.payload.evidencePayloadIncluded,false);
+  assert.equal(exported.payload.benchmarkEvidenceOnly,true);
+  assert.equal(exported.payload.productionEligible,false);
+  assert.equal(exported.payload.decisionEligible,false);
+  assert.equal(Object.hasOwn(exported.payload.run,'userId'),false);
+
+  const starter=createBenchmarkRuns({env:{BENCHMARK_RUN_API_ENABLED:'true'},auth:auth('starter'),store});
+  const denied=res();
+  await starter.handle(
+    req('GET'),
+    denied,
+    new URL('https://capital-ai.online/api/benchmark/runs/'+row.id+'/evidence'),
+    json,
+  );
+  assert.equal(denied.status,403);
+  assert.equal(denied.payload.error,'benchmark_evidence_export_not_entitled');
+});
+
+test('evidence export fails closed until a bounded evidence reference exists', async () => {
+  const store=memoryStore();
+  const handler=createBenchmarkRuns({env:{BENCHMARK_RUN_API_ENABLED:'true'},auth:auth('enterprise'),store});
+  const created=res();
+  await handler.handle(
+    req('POST',{repository:'SvenKulessa/Capital-AI',commitSha:'f'.repeat(40)}),
+    created,
+    new URL('https://capital-ai.online/api/benchmark/runs'),
+    json,
+  );
+  const response=res();
+  await handler.handle(
+    req('GET'),
+    response,
+    new URL('https://capital-ai.online/api/benchmark/runs/'+created.payload.run.id+'/evidence'),
+    json,
+  );
+  assert.equal(response.status,409);
+  assert.equal(response.payload.error,'benchmark_evidence_not_ready');
+});

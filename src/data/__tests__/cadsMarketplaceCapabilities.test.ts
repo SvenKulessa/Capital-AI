@@ -5,7 +5,7 @@ import {
   CADS_MARKETPLACE_COMMERCIAL_BOUNDARY,
 } from '../cadsMarketplaceCapabilities';
 
-test('CADS capability packaging is independent from pricing and Marketplace plan IDs', () => {
+test('CADS Marketplace capabilities stay independent from website billing, pricing and plan IDs', () => {
   assert.equal(CADS_MARKETPLACE_CAPABILITIES.length, 6);
   assert.equal(CADS_MARKETPLACE_CAPABILITIES.every(capability => capability.planAssignment === 'UNASSIGNED'), true);
   assert.equal(CADS_MARKETPLACE_COMMERCIAL_BOUNDARY.pricingAssigned, false);

@@ -2,87 +2,93 @@
 
 Status: **BLOCKED_FOR_PAID_LISTING**
 
-This document binds the CADS productization path to the GitHub Marketplace requirements checked on 2026-10-06. It does not approve a price, Marketplace listing, security release, software license or production deployment.
+Correlation baseline: `main@cef1d11f607778f5226ca1df97376ba408652c69`.
 
-## Product boundary
+This document describes the **additional GitHub Marketplace channel** for CADS. It does not replace the already implemented website-commerce authority from PR #216 and it does not approve a price, listing, production deployment, security release or software/data license.
 
-- Product: `[CAPITAL-AI-PRODUCT]CADS-BENCHMARK-GITHUB-APP`
+## Authority boundary
+
+- Canonical product: `[CAPITAL-AI-PRODUCT]CADS-BENCHMARK-ENGINE`
 - Product ID: `cads-app`
 - Product owner: **PRODUCT**
-- Assurance / admission: **TRUST**
-- Target channel: GitHub Marketplace
-- Pricing authority: **not assigned**
-- Marketplace plan IDs: **not assigned**
-- Purchase: **disabled / fail-closed**
+- Assurance/admission: **TRUST**
+- Website billing: `server/billing-catalog.mjs` + Stripe Subscription Checkout
+- Website entitlement: `public.subscriptions` via `auth.resolvePaidTier()`
+- GitHub Marketplace billing/entitlement: **separate and not configured**
+- GitHub Marketplace pricing authority: **unassigned**
+- Marketplace plan IDs: **unassigned**
+- Marketplace purchase path: **disabled / fail-closed**
+
+The website slice remains `productionEligible=false` and `decisionEligible=false` until its own runtime/evidence gates close.
 
 ## Current GitHub Marketplace requirements
 
-Official GitHub documentation checked on 2026-10-06 establishes the following requirements relevant to a paid CADS listing:
+Official GitHub documentation checked on 2026-10-06 requires or describes for the paid-app path:
 
-1. A paid GitHub App must be owned by an organization.
-2. Paid plans require a verified publisher.
-3. A GitHub App must have at least 100 installations before a paid listing can be published.
-4. Paid subscriptions must support both monthly and annual billing.
-5. Marketplace prices are defined and processed in US dollars.
-6. A listing can publish up to ten plans.
-7. The app must process Marketplace purchase lifecycle events, including:
-   - `purchased` for new purchases/free trials/free plans;
-   - `changed` for upgrades/downgrades;
-   - `cancelled` for cancellations.
-8. The Marketplace listing needs its own webhook for plan changes.
-9. Privacy, support/contact and publisher/listing requirements must be complete before review.
+1. Paid plans are published by an organization-owned app under a verified publisher.
+2. GitHub Apps should have at least 100 installations before a paid listing is published.
+3. Paid subscriptions support monthly and annual billing.
+4. Prices are set in USD; a listing can offer up to ten plans.
+5. Marketplace purchase handling covers purchases/free trials, upgrades/downgrades and cancellations via `marketplace_purchase`.
+6. Plan-change/cancellation webhook handling must be configured.
+7. Listings need valid publisher contact, privacy and support information and the required listing assets.
+8. On cancellation, the customer account is deactivated and customer data is removed within 30 days; token/webhook cleanup applies where relevant.
+9. Because CADS already has a paid service outside GitHub Marketplace, a free Marketplace listing cannot remain the sole Marketplace offer once the paid-app requirements are met.
 
 Official references:
 
 - https://docs.github.com/en/apps/github-marketplace/creating-apps-for-github-marketplace/requirements-for-listing-an-app
 - https://docs.github.com/en/apps/github-marketplace/github-marketplace-overview/applying-for-publisher-verification-for-your-organization
 - https://docs.github.com/en/apps/github-marketplace/selling-your-app-on-github-marketplace/pricing-plans-for-github-marketplace-apps
-- https://docs.github.com/en/apps/github-marketplace/listing-an-app-on-github-marketplace/setting-pricing-plans-for-your-listing
 - https://docs.github.com/en/apps/github-marketplace/using-the-github-marketplace-api-in-your-app
-- https://docs.github.com/en/apps/github-marketplace/listing-an-app-on-github-marketplace/configuring-a-webhook-to-notify-you-of-plan-changes
+- https://docs.github.com/en/apps/github-marketplace/using-the-github-marketplace-api-in-your-app/handling-plan-cancellations
 
 ## Repository evidence already present
 
-The repository already contains a reusable Marketplace lifecycle implementation in `apps/legal-policy-github-app`:
+The repository contains reusable Marketplace architecture in `apps/legal-policy-github-app`:
 
 - HMAC-SHA256 webhook verification;
 - signed/expiring OAuth state;
-- GitHub Marketplace subscription readback;
+- Marketplace subscription readback;
 - entitlement capability mapping;
-- `marketplace_purchase` webhook acceptance;
-- append-only evidence metadata in Supabase/Postgres;
-- retention and uninstall deletion behavior.
+- `marketplace_purchase` event acceptance;
+- evidence retention and installation-deletion handling.
 
-This is architecture evidence only. It does **not** prove that CADS itself has a Marketplace listing, publisher approval, 100 installations, plan IDs or approved pricing.
+This is **architecture evidence only**. The current `marketplace_purchase` handler does not by itself prove a CADS-specific idempotent entitlement lifecycle, listing, pricing, plan IDs, cancellation cleanup or Marketplace approval.
 
-## CADS-specific blockers
+## CADS-specific gates
 
 | Gate | State |
 |---|---|
+| Website Starter/Pro/Enterprise entitlement runtime evidence | REQUIRED |
 | CADS GitHub App owned by target organization | UNVERIFIED |
 | Verified publisher | UNVERIFIED |
 | >=100 CADS GitHub App installations | UNVERIFIED |
 | CADS Marketplace draft listing | UNVERIFIED |
-| CADS Marketplace listing webhook | UNVERIFIED |
-| Privacy/support/contact listing evidence | UNVERIFIED |
+| CADS Marketplace plan-change webhook | UNVERIFIED |
+| Privacy/support/contact/listing assets | UNVERIFIED |
 | Monthly USD price | UNASSIGNED |
 | Annual USD price | UNASSIGNED |
 | Marketplace plan IDs | UNASSIGNED |
-| Authoritative CADS entitlement readback | REQUIRED |
+| Idempotent purchased/changed/cancelled lifecycle | REQUIRED |
+| Cancellation account/token/data cleanup <=30 days | REQUIRED |
+| Authoritative Marketplace subscription readback | REQUIRED |
 | Customer-facing CADS report/history | REQUIRED |
 | Exact release artifact/runtime correlation | REQUIRED |
 
-## Monetization sequencing
+## Conservative sequence
 
-1. Create/identify the CADS GitHub App under the intended organization.
-2. Minimize and document permissions.
-3. Create a draft Marketplace listing and dedicated Marketplace plan-change webhook.
-4. Bind `purchased`, `changed`, `cancelled` to idempotent entitlement transitions.
-5. Verify publisher status and installation count.
-6. Bind privacy/support/contact evidence.
-7. Assign capabilities to plans.
-8. **Only after these gates:** owner decision on monthly/annual USD prices.
-9. Test Marketplace purchase flows against the draft listing.
-10. Re-run TRUST, supply-chain and release evidence before requesting listing review.
+1. Verify the existing website CADS entitlement slice against real Starter/Pro/Enterprise subscriptions.
+2. Create or identify the CADS GitHub App under the intended organization.
+3. Minimize and document permissions.
+4. Create the draft Marketplace listing and its plan-change webhook.
+5. Bind `purchased`, `changed` and `cancelled` to idempotent entitlement transitions.
+6. Implement cancellation deactivation/token cleanup/data deletion evidence.
+7. Verify publisher status and installation threshold.
+8. Bind privacy/support/contact and listing assets.
+9. Map capabilities to Marketplace plans.
+10. Only then assign monthly/annual USD prices and plan IDs through an Owner decision.
+11. Test Marketplace billing flows and authoritative subscription readback.
+12. Re-run TRUST, supply-chain and release evidence before requesting listing review.
 
-A paid entitlement must never override security, software licensing, provider/data rights, source-bound evidence or production-release gates.
+Paid entitlement never overrides security, software licensing, provider/data rights, source-bound evidence or production-release gates.

@@ -2,41 +2,40 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   CADS_COMMERCIAL_READINESS,
-  cadsCommerciallyAdmitted,
-  cadsCommercialReadinessPct,
+  cadsMarketplaceCommerciallyAdmitted,
 } from '../cadsCommercialReadiness';
 
-test('CADS commercial readiness is conservative and fail-closed', () => {
-  assert.equal(
-    CADS_COMMERCIAL_READINESS.dimensions.reduce((sum, dimension) => sum + dimension.weightPct, 0),
-    100,
-  );
-  assert.equal(cadsCommercialReadinessPct(), 50);
+test('CADS website commerce survives Marketplace productization without an invented readiness score', () => {
+  assert.equal(CADS_COMMERCIAL_READINESS.readinessPct, null);
   assert.equal(CADS_COMMERCIAL_READINESS.owner, 'PRODUCT');
   assert.equal(CADS_COMMERCIAL_READINESS.assuranceOwner, 'TRUST');
-  assert.equal(CADS_COMMERCIAL_READINESS.pricingAuthority, null);
-  assert.equal(CADS_COMMERCIAL_READINESS.marketplaceListingApproved, false);
-  assert.equal(CADS_COMMERCIAL_READINESS.checkoutOrPurchaseEnabled, false);
-  assert.equal(cadsCommerciallyAdmitted(), false);
+  assert.equal(CADS_COMMERCIAL_READINESS.websiteCommerce.state, 'WEB_SAAS_ENTITLEMENT_SLICE');
+  assert.equal(CADS_COMMERCIAL_READINESS.websiteCommerce.billingAuthority, 'server/billing-catalog.mjs');
+  assert.equal(CADS_COMMERCIAL_READINESS.websiteCommerce.entitlementAuthority, 'public.subscriptions via auth.resolvePaidTier');
+  assert.equal(CADS_COMMERCIAL_READINESS.websiteCommerce.productionEligible, false);
+  assert.equal(CADS_COMMERCIAL_READINESS.websiteCommerce.decisionEligible, false);
 });
 
-test('Grafana Cloud operator context does not become production evidence by assertion alone', () => {
-  assert.equal(CADS_COMMERCIAL_READINESS.operatorContext.grafanaCloudSupabaseConnected, true);
-  assert.equal(
-    CADS_COMMERCIAL_READINESS.operatorContext.evidenceState,
-    'OPERATOR_CONFIRMED_REPO_READBACK_PENDING',
-  );
+test('GitHub Marketplace remains a separate fail-closed authority', () => {
+  const market = CADS_COMMERCIAL_READINESS.githubMarketplace;
+  assert.equal(market.pricingAuthority, null);
+  assert.equal(market.marketplaceListingApproved, false);
+  assert.equal(market.checkoutOrPurchaseEnabled, false);
+  assert.equal(market.entitlementAuthority, 'GITHUB_MARKETPLACE_API_REQUIRED');
+  assert.equal(market.status, 'BLOCKED_FOR_PAID_LISTING');
+  assert.equal(cadsMarketplaceCommerciallyAdmitted(), false);
 });
 
-test('current GitHub Marketplace paid-listing requirements stay fail-closed', () => {
-  const admission = CADS_COMMERCIAL_READINESS.marketplaceAdmission;
-  assert.equal(admission.officialRequirements.appOwnedByOrganizationForPaidPlans, true);
-  assert.equal(admission.officialRequirements.verifiedPublisherRequiredForPaidPlans, true);
-  assert.equal(admission.officialRequirements.minimumGitHubAppInstallationsForPaidListing, 100);
-  assert.equal(admission.officialRequirements.monthlyAndAnnualBillingRequired, true);
-  assert.equal(admission.officialRequirements.pricingCurrency, 'USD');
-  assert.equal(admission.officialRequirements.maximumPublishedPlans, 10);
-  assert.deepEqual(admission.officialRequirements.requiredMarketplacePurchaseActions, ['purchased', 'changed', 'cancelled']);
-  assert.equal(admission.status, 'BLOCKED_FOR_PAID_LISTING');
-  assert.equal(Object.values(admission.evidence).every(Boolean), false);
+test('current paid-listing and cancellation requirements remain explicit', () => {
+  const req = CADS_COMMERCIAL_READINESS.githubMarketplace.officialRequirements;
+  assert.equal(req.appOwnedByOrganizationForPaidPlans, true);
+  assert.equal(req.verifiedPublisherRequiredForPaidPlans, true);
+  assert.equal(req.minimumGitHubAppInstallationsForPaidListing, 100);
+  assert.equal(req.monthlyAndAnnualBillingRequired, true);
+  assert.equal(req.pricingCurrency, 'USD');
+  assert.equal(req.maximumPublishedPlans, 10);
+  assert.deepEqual(req.requiredMarketplacePurchaseActions, ['purchased', 'changed', 'cancelled']);
+  assert.equal(req.planChangeWebhookRequired, true);
+  assert.equal(req.customerDataDeletionWithinDaysAfterCancellation, 30);
+  assert.equal(req.externalPaidServiceRequiresMarketplacePaidPlanOncePaidRequirementsMet, true);
 });

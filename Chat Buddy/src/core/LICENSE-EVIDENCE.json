@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "CAPITAL_AI_OSS_CORE_LICENSE_EVIDENCE@1",
+  "generatedAt": "2026-10-06",
+  "scope": "Chat Buddy/src/core/",
+  "license": {
+    "spdx": "MIT",
+    "file": "Chat Buddy/src/core/LICENSE",
+    "scopeOnly": true
+  },
+  "rightsHolder": "Sven Michael Kulessa / CAPITAL-AI",
+  "provenance": {
+    "repository": "SvenKulessa/Capital-AI",
+    "pullRequest": 215,
+    "sourceBranch": "capital-ai-product/jaja-buddy-20261006",
+    "sourceHead": "c4a703309e797e0bbb4e6b8637b8799f6adc1dc8",
+    "sourceFiles": [
+      {
+        "path": "Chat Buddy/src/core/graph.ts",
+        "gitBlobSha": "1d4d280a62b2b87c730e3248c39af2caa6e1f083"
+      },
+      {
+        "path": "Chat Buddy/src/core/nlu.ts",
+        "gitBlobSha": "f348a8afad9fd7369982391343f8f91d0fdc984d"
+      },
+      {
+        "path": "Chat Buddy/src/core/research.ts",
+        "gitBlobSha": "936867ea9947639e98c727c1a987b199c1f1d445"
+      },
+      {
+        "path": "Chat Buddy/src/core/reversible.ts",
+        "gitBlobSha": "5f5a0abba1e17de58d0a58bac343d47559e8e9a6"
+      },
+      {
+        "path": "Chat Buddy/src/core/types.ts",
+        "gitBlobSha": "e878b6fe832da922289d2b093736e4ead805d901"
+      }
+    ]
+  },
+  "exclusions": [
+    "JaJa name/character/voice/persona/imprint",
+    "CAPITAL-AI brand assets",
+    "seat/pricing/entitlement logic",
+    "provider-specific product configuration and credential handling",
+    "files outside Chat Buddy/src/core/ unless separately licensed"
+  ],
+  "authority": {
+    "productionApproval": false,
+    "securityApproval": false,
+    "tradingAuthority": false,
+    "writeAuthority": false,
+    "publicationAuthority": false,
+    "legalAuthority": false
+  }
+}

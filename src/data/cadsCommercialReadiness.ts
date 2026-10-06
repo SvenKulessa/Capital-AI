@@ -1,31 +1,34 @@
 /**
- * CADS commercial readiness authority.
+ * CADS commercial-channel readiness authority.
  *
- * This is a conservative evidence score, not a production, license, security,
- * Marketplace-listing, or pricing approval. Any missing authority fails closed.
+ * CURRENT_MAIN already contains a website SaaS entitlement slice. GitHub Marketplace
+ * is modeled as a separate, fail-closed distribution/billing channel. This module
+ * intentionally does not synthesize an overall readiness percentage.
  */
-export type CadsReadinessDimension = {
-  id: 'definition' | 'userSurface' | 'commercialPath' | 'complianceGate' | 'productionEvidence';
-  weightPct: number;
-  scorePct: number;
-  evidence: string[];
-};
-
 export const CADS_COMMERCIAL_READINESS = {
-  schemaVersion: 'CAPITAL_AI_CADS_COMMERCIAL_READINESS@1',
+  schemaVersion: 'CAPITAL_AI_CADS_COMMERCIAL_READINESS@2',
   productId: 'cads-app',
-  productName: '[CAPITAL-AI-PRODUCT]CADS-BENCHMARK-GITHUB-APP',
+  productName: '[CAPITAL-AI-PRODUCT]CADS-BENCHMARK-ENGINE',
   owner: 'PRODUCT',
   assuranceOwner: 'TRUST',
-  baselineMainSha: '0bf052cbc8f7774db29cc77493f6f24bb28bd93b',
+  correlatedMainSha: 'cef1d11f607778f5226ca1df97376ba408652c69',
   correlatedAt: '2026-10-06',
-  targetChannel: 'github-marketplace',
-  state: 'PRE_LISTING_FAIL_CLOSED',
-  pricingAuthority: null,
-  marketplaceListingApproved: false,
-  checkoutOrPurchaseEnabled: false,
-  entitlementAuthority: 'GITHUB_MARKETPLACE_API_REQUIRED',
-  marketplaceAdmission: {
+  readinessPct: null,
+  websiteCommerce: {
+    state: 'WEB_SAAS_ENTITLEMENT_SLICE',
+    billingAuthority: 'server/billing-catalog.mjs',
+    entitlementAuthority: 'public.subscriptions via auth.resolvePaidTier',
+    checkoutPath: '/api/billing/subscriptions/checkout',
+    runtimeEvidenceVerified: false,
+    productionEligible: false,
+    decisionEligible: false,
+  },
+  githubMarketplace: {
+    state: 'PRE_LISTING_FAIL_CLOSED',
+    pricingAuthority: null,
+    marketplaceListingApproved: false,
+    checkoutOrPurchaseEnabled: false,
+    entitlementAuthority: 'GITHUB_MARKETPLACE_API_REQUIRED',
     sourceCheckedAt: '2026-10-06',
     officialRequirements: {
       appOwnedByOrganizationForPaidPlans: true,
@@ -35,16 +38,23 @@ export const CADS_COMMERCIAL_READINESS = {
       pricingCurrency: 'USD',
       maximumPublishedPlans: 10,
       requiredMarketplacePurchaseActions: ['purchased', 'changed', 'cancelled'],
+      planChangeWebhookRequired: true,
+      customerDataDeletionWithinDaysAfterCancellation: 30,
+      externalPaidServiceRequiresMarketplacePaidPlanOncePaidRequirementsMet: true,
     },
     evidence: {
       organizationOwnershipVerified: false,
       verifiedPublisherVerified: false,
       installationThresholdVerified: false,
-      cadSpecificListingDraftVerified: false,
-      cadSpecificMarketplaceWebhookVerified: false,
+      cadsListingDraftVerified: false,
+      cadsMarketplaceWebhookVerified: false,
       monthlyAnnualPricingAssigned: false,
       planIdsAssigned: false,
       privacySupportListingEvidenceVerified: false,
+      purchaseLifecycleVerified: false,
+      cancellationLifecycleVerified: false,
+      cancellationDeletionVerified: false,
+      authoritativeMarketplaceReadbackVerified: false,
     },
     status: 'BLOCKED_FOR_PAID_LISTING',
   },
@@ -52,76 +62,15 @@ export const CADS_COMMERCIAL_READINESS = {
     grafanaCloudSupabaseConnected: true,
     evidenceState: 'OPERATOR_CONFIRMED_REPO_READBACK_PENDING',
   },
-  dimensions: [
-    {
-      id: 'definition',
-      weightPct: 15,
-      scorePct: 100,
-      evidence: [
-        'AGENTS.md',
-        'docs/governance/TOOL-AND-ARCHITECTURE-BENCHMARKING.md',
-        'docs/governance/COMPONENT-LIFECYCLE-VERSIONING.md',
-      ],
-    },
-    {
-      id: 'userSurface',
-      weightPct: 25,
-      scorePct: 20,
-      evidence: [
-        'server/index.mjs#/api/internal/cads',
-        'server/cads-observability.mjs',
-      ],
-    },
-    {
-      id: 'commercialPath',
-      weightPct: 25,
-      scorePct: 40,
-      evidence: [
-        'apps/legal-policy-github-app/README.md',
-        'apps/legal-policy-github-app/lib/webhook.mjs',
-        'src/data/monetizationRegistry.ts',
-      ],
-    },
-    {
-      id: 'complianceGate',
-      weightPct: 20,
-      scorePct: 60,
-      evidence: [
-        'src/contracts/truthAuthorityGate.ts',
-        'src/contracts/zeroCostApiThresholds.ts',
-        'docs/security/ARCHITECTURE-A-GRAPHRAG-TOKENOMICS-TRUTH-WORK-PACKAGE-20261006.md',
-      ],
-    },
-    {
-      id: 'productionEvidence',
-      weightPct: 15,
-      scorePct: 53,
-      evidence: [
-        'server/cads-observability.test.mjs',
-        'scripts/verify-release-readiness.mjs',
-        'scripts/preflight.mjs',
-      ],
-    },
-  ] satisfies readonly CadsReadinessDimension[],
 } as const;
 
-export function cadsCommercialReadinessPct(): number {
-  const dimensions = CADS_COMMERCIAL_READINESS.dimensions;
-  const weightTotal = dimensions.reduce((sum, dimension) => sum + dimension.weightPct, 0);
-  if (weightTotal !== 100) throw new Error('cads_readiness_weights_must_total_100');
-
-  const weighted = dimensions.reduce(
-    (sum, dimension) => sum + (dimension.weightPct * dimension.scorePct) / 100,
-    0,
-  );
-  return Math.round(weighted);
-}
-
-export function cadsCommerciallyAdmitted(): boolean {
+export function cadsMarketplaceCommerciallyAdmitted(): boolean {
+  const market = CADS_COMMERCIAL_READINESS.githubMarketplace;
   return Boolean(
-    CADS_COMMERCIAL_READINESS.marketplaceListingApproved &&
-    CADS_COMMERCIAL_READINESS.checkoutOrPurchaseEnabled &&
-    CADS_COMMERCIAL_READINESS.pricingAuthority &&
-    CADS_COMMERCIAL_READINESS.entitlementAuthority !== 'GITHUB_MARKETPLACE_API_REQUIRED',
+    market.marketplaceListingApproved &&
+    market.checkoutOrPurchaseEnabled &&
+    market.pricingAuthority &&
+    market.entitlementAuthority !== 'GITHUB_MARKETPLACE_API_REQUIRED' &&
+    Object.values(market.evidence).every(Boolean),
   );
 }

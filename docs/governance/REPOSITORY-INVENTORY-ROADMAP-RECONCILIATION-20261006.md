@@ -6,98 +6,77 @@ Status: **evidence-oriented working baseline; no Production/Security/License app
 
 - Repository: `SvenKulessa/Capital-AI`
 - Default branch: `main`
-- Main SHA: `0bf052cbc8f7774db29cc77493f6f24bb28bd93b`
-- Main commit: `[CAPITAL-AI-MARKET] Rust/NATS Private-Provider-Bridge read-only integrieren (#212)`
-- Recursive tree: 1,236 entries, 1,063 blobs/files, 173 trees/directories.
-- Dominant areas: `docs` 329, `src` 270, `public` 132, `scripts` 104, `supabase` 104, `server` 66, `contracts` 41.
-- Dominant file classes: Markdown 190, MJS 184, JSON 147, TypeScript 125, SQL 102, TSX 98.
-- Active repository ruleset: `main-production-protection`.
+- Current main SHA: `cef1d11f607778f5226ca1df97376ba408652c69`
+- PR #216 is merged and provides the current CADS Website-Commerce slice.
+- PR #215 is merged and contributes the JaJa/Agent-Core boundary without changing the CADS commerce authority.
+- PR #214 remains open and is not counted as main evidence.
 
-## Open pull requests at reconciliation time
+Exact historical tree/file counts from the earlier `0bf052c` scan are intentionally not reused after the two main-branch merges.
 
-| PR | Domain | State | Observation |
-|---|---|---|---|
-| #214 | PRODUCT | open | Multi-agent roadmap / trajectory preparation; now marked ready for review, but still not `main` evidence. |
-| #215 | PRODUCT | draft | JaJa Universe Buddy on the compliant PRODUCT branch/title path. |
-
-Open PRs are not treated as `main` evidence until merged and re-correlated.
-
-## Application and repository inventory
+## Domain correlation
 
 ### PRODUCT
-- React 19 + Vite + TypeScript 6 frontend.
-- Pricing/monetization surfaces, Learning Portal, Control Center and agent-oriented UI assets.
-- Vocabulary product has a live Stripe SKU/Price and entitlement flow.
-- CADS has internal decision evidence, observability and tests, but no CADS-specific Marketplace listing or purchase authority.
-- Multi-agent/LangGraph trajectory work remains PR-scoped (#214), therefore is not yet a `main` capability.
+
+- CADS Website-Commerce exists through existing Starter/Pro/Enterprise Stripe subscriptions.
+- GitHub Marketplace is a separate distribution/billing channel and remains fail-closed.
+- CADS remains evidence/benchmark functionality; benchmark output is not production or trading authority.
+- Multi-agent/LangGraph work in PR #214 remains PR-scoped until merged and re-correlated.
 
 ### MARKET
-- Canonical market-data contracts and evidence gates.
-- NATS/JetStream and Valkey/Redis-compatible infrastructure.
-- ECB/reference-rate work, source-rights governance and the merged Rust/NATS private-provider read-only bridge (#212), including authenticated HTTP boundaries, vault-backed execution, NATS role separation, replay protection and Binance/Kraken read-only query gates.
-- Production scoring remains fail-closed where rights, data-quality or scoring evidence is incomplete.
+
+- Private-provider query, vault and Rust/NATS bridge from PR #212 remain main evidence.
+- Provider/data-rights, DQ and scoring gates remain independent from CADS commercial entitlements.
+- No paid product grants raw-data redistribution or decision eligibility.
 
 ### PLATFORM
-- Docker/OCI, Render descriptors, GHCR/release evidence, server runtime and CI/CD.
-- Structured observability and Prometheus-compatible metrics exist.
-- Grafana Cloud + Supabase is **operator-confirmed as already connected**. Repository/runtime readback, export path, retention and redaction evidence still need binding before marking the integration VERIFIED.
-- OTel/collector selection remains an optimization/evidence question; it is not a prerequisite for acknowledging the existing Grafana Cloud connection.
+
+- Existing Docker/Render/NATS/Valkey and observability paths remain unchanged by this PR.
+- Grafana Cloud + Supabase is operator-confirmed as connected.
+- Repository/runtime readback, redaction, retention and tenant-boundary evidence remain separate operational gates.
 
 ### TRUST
-- Truth/Authority gates, zero-cost thresholds, public-artifact policy, prompt-injection guard, supply-chain/license evidence and release-readiness logic.
-- CADS is Decision Evidence, never an automatic release, license or security approval.
-- GitHub Marketplace lifecycle primitives already exist in `apps/legal-policy-github-app`: HMAC webhook verification, OAuth state binding, Marketplace subscription readback, entitlements, evidence retention and uninstall cleanup.
+
+- Security, licensing, provider rights, source identity and production release stay independent authorities.
+- The LEGAL_POLICY GitHub App provides reusable Marketplace architecture only; it is not CADS Marketplace admission evidence.
+- Marketplace cancellation requires explicit lifecycle and deletion evidence; event acceptance alone is insufficient.
 
 ### GROWTH
-- SEO, social and content work packages exist.
-- Social publishing/provider admission and consent-based outreach stay gated by rights, consent and evidence.
 
-## Roadmap reconciliation
+- Marketplace listing copy, screenshots/brand assets and SEO are downstream of product, rights and listing-evidence gates.
 
-1. Keep PRODUCT, MARKET, PLATFORM, TRUST and GROWTH as orientation, not artificial team silos.
-2. Use `main @ 0bf052c` as the evidence baseline; open PRs are future candidates only.
-3. Record Grafana Cloud + Supabase as an operator-confirmed existing integration while keeping technical readback/retention/export evidence OPEN.
-4. Move CADS commercial product ownership to **PRODUCT** and retain **TRUST** as assurance/gate authority.
-5. Reuse proven Marketplace lifecycle patterns from the LEGAL_POLICY GitHub App without conflating the two product identities.
-6. Do not infer CADS pricing, listing, purchase or entitlement activation from technical readiness.
+## CADS monetization state after PR #216
 
-## CADS monetization state
+The canonical product registry keeps CADS in `WEB_SAAS_ENTITLEMENT_SLICE`.
 
-Canonical readiness authority: `src/data/cadsCommercialReadiness.ts`
-
-Conservative readiness: **50%** under the existing registry weighting:
-- Definition: 100/100 × 15%
-- User/customer surface: 20/100 × 25%
-- Commercial path: 40/100 × 25%
-- Compliance gate: 60/100 × 20%
-- Production evidence: 53/100 × 15%
-
-The rounded result is 50%. This number is product-readiness evidence only.
+No synthetic global readiness percentage is assigned. The earlier percentage was invalidated by material implementation changes and remains `null` until a complete weighted re-measurement is performed.
 
 ### Present
-- CADS governance and benchmarking semantics.
-- CADS operation telemetry and Prometheus metrics.
-- CADS tests.
-- Internal `/api/internal/cads` surface.
-- Release-readiness references.
-- Reusable GitHub Marketplace webhook/OAuth/subscription/entitlement pattern in LEGAL_POLICY.
 
-### Sale blockers
+- Existing Stripe Starter/Pro/Enterprise catalog and checkout.
+- Server-side paid-tier resolution.
+- CADS capability projection from the benchmark authority.
+- Authenticated CADS entitlement endpoint.
+- Benchmark/CADS observability and tests.
+
+### Still open
+
+- Real website subscription/runtime evidence.
+- Real four-way benchmark execution and release correlation.
 - CADS-specific GitHub App/listing identity.
-- Marketplace plan IDs.
-- Approved pricing authority.
-- Privacy/support/listing publisher evidence.
-- CADS-specific authoritative Marketplace entitlement mapping.
+- Verified-publisher and installation-threshold evidence.
+- Marketplace webhook + idempotent purchase/change/cancel lifecycle.
+- Cancellation cleanup and <=30-day customer-data deletion evidence.
+- Marketplace plan IDs and approved monthly/annual USD pricing.
+- Authoritative Marketplace subscription readback.
 - Customer-facing CADS report/history surface.
-- Exact released-app artifact and runtime evidence correlation.
 
-## Next sequence
+## Conservative next sequence
 
-1. **PRODUCT + TRUST:** CADS GitHub App/listing identity and least-privilege permission matrix.
-2. **PRODUCT:** capability matrix without assigning prices yet.
-3. **TRUST:** privacy/support/data-retention and Marketplace-entitlement authority.
-4. **PRODUCT + PLATFORM:** CADS app packaging and customer report surface.
-5. **PLATFORM:** Grafana/telemetry export evidence plus released artifact digest.
-6. **TRUST:** supply-chain, security, license and public-claim gates.
-7. **PRODUCT/Owner:** only then Marketplace plan IDs and pricing.
-8. **GROWTH:** listing copy/SEO only after product claims are evidence-backed.
+1. Close website entitlement runtime evidence without changing current Stripe SKUs.
+2. Keep GitHub Marketplace as a separate fail-closed channel.
+3. Establish the CADS GitHub App identity and least-privilege permission matrix.
+4. Establish Marketplace listing/webhook/publisher/install evidence.
+5. Implement and test purchase/change/cancel plus deletion lifecycle.
+6. Map capabilities to plans.
+7. Owner assigns Marketplace prices/plan IDs only after the preceding gates.
+8. Re-run release/security/license/evidence gates before Marketplace review.
