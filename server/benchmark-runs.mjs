@@ -127,13 +127,17 @@ export function createBenchmarkRuns({ env = process.env, auth, store } = {}) {
         return true;
       }
 
-      const run = await store.create({
-        userId: context.user.userId,
-        tier: context.tier,
-        ...request,
-        status: 'QUEUED',
-      });
-      json(res, 202, { run: publicRun(run) });
+      try {
+        const run = await store.create({
+          userId: context.user.userId,
+          tier: context.tier,
+          ...request,
+          status: 'QUEUED',
+        });
+        json(res, 202, { run: publicRun(run) });
+      } catch {
+        json(res, 503, { error: 'benchmark_store_unavailable' });
+      }
       return true;
     }
 
@@ -149,8 +153,12 @@ export function createBenchmarkRuns({ env = process.env, auth, store } = {}) {
       }
       const requested = Number.parseInt(url.searchParams.get('limit') || '20', 10);
       const limit = Number.isInteger(requested) ? Math.max(1, Math.min(requested, 50)) : 20;
-      const rows = await store.list(context.user.userId, limit);
-      json(res, 200, { runs: Array.isArray(rows) ? rows.map(publicRun).filter(Boolean) : [] });
+      try {
+        const rows = await store.list(context.user.userId, limit);
+        json(res, 200, { runs: Array.isArray(rows) ? rows.map(publicRun).filter(Boolean) : [] });
+      } catch {
+        json(res, 503, { error: 'benchmark_store_unavailable' });
+      }
       return true;
     }
 
@@ -166,12 +174,16 @@ export function createBenchmarkRuns({ env = process.env, auth, store } = {}) {
         json(res, 400, { error: 'invalid_benchmark_run_id' });
         return true;
       }
-      const run = await store.getById(context.user.userId, id);
-      if (!run) {
-        json(res, 404, { error: 'benchmark_run_not_found' });
-        return true;
+      try {
+        const run = await store.getById(context.user.userId, id);
+        if (!run) {
+          json(res, 404, { error: 'benchmark_run_not_found' });
+          return true;
+        }
+        json(res, 200, { run: publicRun(run) });
+      } catch {
+        json(res, 503, { error: 'benchmark_store_unavailable' });
       }
-      json(res, 200, { run: publicRun(run) });
       return true;
     }
 
