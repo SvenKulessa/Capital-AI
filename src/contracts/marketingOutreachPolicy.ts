@@ -1,9 +1,14 @@
-export const MARKETING_OUTREACH_POLICY_VERSION = 'MARKETING_OUTREACH_POLICY@2' as const;
+export const MARKETING_OUTREACH_POLICY_VERSION = 'MARKETING_OUTREACH_POLICY@3' as const;
 export const MARKETING_FROM_ADDRESS = 'support@capital-ai.online' as const;
 
-export type MarketingLegalBasis =
+export type EmailMarketingPermission =
   | 'EXPLICIT_CONSENT'
-  | 'EXISTING_CUSTOMER_SIMILAR_PRODUCTS'
+  | 'EXISTING_CUSTOMER_EXCEPTION'
+  | 'NONE';
+
+export type GdprProcessingBasis =
+  | 'CONSENT'
+  | 'LEGITIMATE_INTERESTS'
   | 'NONE';
 
 export type MarketingSuppressionReason =
@@ -28,18 +33,26 @@ export interface MarketingEmailEligibilityInput {
   explicitConsent: boolean;
   consentEvidenceRef?: string;
   consentWithdrawn?: boolean;
+
   existingCustomer: boolean;
   addressObtainedDuringSale: boolean;
   ownSimilarProductsOnly: boolean;
+
+  gdprProcessingBasis: GdprProcessingBasis;
+  gdprBasisEvidenceRef?: string;
+
   objected: boolean;
   optOutNoticeAtCollection: boolean;
   optOutNoticeInMessage: boolean;
   unsubscribeMechanismAvailable?: boolean;
+
   suppressed: boolean;
   suppressionReason?: MarketingSuppressionReason;
   suppressionEvidenceRef?: string;
+
   frequencyCapAllowed: boolean;
   frequency?: MarketingFrequencyWindow;
+
   senderIdentityVerified?: boolean;
   auditEvidenceRef?: string;
 }
@@ -47,9 +60,20 @@ export interface MarketingEmailEligibilityInput {
 export interface MarketingOutreachDecision {
   policyVersion: typeof MARKETING_OUTREACH_POLICY_VERSION;
   allowed: boolean;
-  legalBasis: MarketingLegalBasis;
+  emailPermission: EmailMarketingPermission;
+  gdprProcessingBasis: GdprProcessingBasis;
   reasons: string[];
 }
+
+export interface MarketingOutreachPermit {
+  policyVersion: typeof MARKETING_OUTREACH_POLICY_VERSION;
+  from: typeof MARKETING_FROM_ADDRESS;
+  emailPermission: Exclude<EmailMarketingPermission, 'NONE'>;
+  gdprProcessingBasis: Exclude<GdprProcessingBasis, 'NONE'>;
+  auditEvidenceRef: string;
+}
+
+export type MarketingOutreachRuntimeEnv = Record<string, string | undefined>;
 
 export function evaluateFrequencyCap(window: MarketingFrequencyWindow): boolean {
   const values = [
@@ -69,10 +93,14 @@ export function evaluateFrequencyCap(window: MarketingFrequencyWindow): boolean 
     && window.sentLast30Days < window.maxPer30Days;
 }
 
-export function determineMarketingLegalBasis(
+export function determineEmailMarketingPermission(
   input: MarketingEmailEligibilityInput,
-): MarketingLegalBasis {
-  if (input.explicitConsent && input.consentEvidenceRef && !input.consentWithdrawn) {
+): EmailMarketingPermission {
+  if (
+    input.explicitConsent
+    && input.consentEvidenceRef
+    && !input.consentWithdrawn
+  ) {
     return 'EXPLICIT_CONSENT';
   }
 
@@ -81,20 +109,40 @@ export function determineMarketingLegalBasis(
     && input.addressObtainedDuringSale
     && input.ownSimilarProductsOnly
     && input.optOutNoticeAtCollection
+    && !input.objected
   ) {
-    return 'EXISTING_CUSTOMER_SIMILAR_PRODUCTS';
+    return 'EXISTING_CUSTOMER_EXCEPTION';
   }
 
   return 'NONE';
+}
+
+function isGdprBasisCompatible(
+  permission: EmailMarketingPermission,
+  input: MarketingEmailEligibilityInput,
+): boolean {
+  if (!input.gdprBasisEvidenceRef) return false;
+
+  if (permission === 'EXPLICIT_CONSENT') {
+    return input.gdprProcessingBasis === 'CONSENT';
+  }
+
+  if (permission === 'EXISTING_CUSTOMER_EXCEPTION') {
+    return input.gdprProcessingBasis === 'LEGITIMATE_INTERESTS';
+  }
+
+  return false;
 }
 
 export function evaluateMarketingOutreach(
   input: MarketingEmailEligibilityInput,
 ): MarketingOutreachDecision {
   const reasons: string[] = [];
-  const legalBasis = determineMarketingLegalBasis(input);
+  const emailPermission = determineEmailMarketingPermission(input);
 
-  if (legalBasis === 'NONE') reasons.push('NO_ADMITTED_LEGAL_BASIS');
+  if (emailPermission === 'NONE') reasons.push('NO_EMAIL_MARKETING_PERMISSION');
+  if (!isGdprBasisCompatible(emailPermission, input)) reasons.push('GDPR_BASIS_NOT_ADMITTED');
+
   if (input.consentWithdrawn) reasons.push('CONSENT_WITHDRAWN');
   if (input.suppressed) reasons.push('SUPPRESSED');
   if (input.objected) reasons.push('OBJECTED');
@@ -114,11 +162,40 @@ export function evaluateMarketingOutreach(
   return {
     policyVersion: MARKETING_OUTREACH_POLICY_VERSION,
     allowed: reasons.length === 0,
-    legalBasis,
+    emailPermission,
+    gdprProcessingBasis: input.gdprProcessingBasis,
     reasons,
   };
 }
 
 export function isMarketingEmailEligible(input: MarketingEmailEligibilityInput): boolean {
   return evaluateMarketingOutreach(input).allowed;
+}
+
+export function authorizeMarketingOutreach(
+  input: MarketingEmailEligibilityInput,
+  env: MarketingOutreachRuntimeEnv = process.env,
+): MarketingOutreachPermit {
+  if (env.GROWTH_OUTREACH_KILL_SWITCH === 'true') {
+    throw new Error('MARKETING_OUTREACH_KILL_SWITCH');
+  }
+  if (env.GROWTH_OUTREACH_ENABLED !== 'true') {
+    throw new Error('MARKETING_OUTREACH_DISABLED');
+  }
+
+  const decision = evaluateMarketingOutreach(input);
+  if (!decision.allowed ||
+      decision.emailPermission === 'NONE' ||
+      decision.gdprProcessingBasis === 'NONE' ||
+      !input.auditEvidenceRef) {
+    throw new Error('MARKETING_OUTREACH_NOT_ELIGIBLE');
+  }
+
+  return {
+    policyVersion: MARKETING_OUTREACH_POLICY_VERSION,
+    from: MARKETING_FROM_ADDRESS,
+    emailPermission: decision.emailPermission,
+    gdprProcessingBasis: decision.gdprProcessingBasis,
+    auditEvidenceRef: input.auditEvidenceRef,
+  };
 }
