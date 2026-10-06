@@ -10,25 +10,67 @@
       "id": "starter",
       "name": "Starter",
       "priceModel": "FLAT_RATE",
-      "billing": ["monthly", "yearly"],
+      "billing": [
+        "monthly",
+        "yearly"
+      ],
       "marketplacePlanIdEnv": "CADS_GITHUB_MARKETPLACE_STARTER_PLAN_ID",
-      "capabilities": ["standardProfiles", "neutralGithubCheck"]
+      "capabilities": {
+        "standardProfiles": true,
+        "githubCheck": "neutral",
+        "history": false,
+        "regressionDetection": false,
+        "evidenceExport": false,
+        "customProfiles": false,
+        "customThresholds": false,
+        "enforcedPrGate": false,
+        "api": false,
+        "selfHostedRunner": false
+      }
     },
     {
       "id": "pro",
       "name": "Pro",
       "priceModel": "FLAT_RATE",
-      "billing": ["monthly", "yearly"],
+      "billing": [
+        "monthly",
+        "yearly"
+      ],
       "marketplacePlanIdEnv": "CADS_GITHUB_MARKETPLACE_PRO_PLAN_ID",
-      "capabilities": ["standardProfiles", "neutralGithubCheck", "history", "regressionDetection", "evidenceExport"]
+      "capabilities": {
+        "standardProfiles": true,
+        "githubCheck": "neutral",
+        "history": true,
+        "regressionDetection": true,
+        "evidenceExport": true,
+        "customProfiles": false,
+        "customThresholds": false,
+        "enforcedPrGate": false,
+        "api": false,
+        "selfHostedRunner": false
+      }
     },
     {
       "id": "enterprise",
       "name": "Enterprise",
       "priceModel": "FLAT_RATE",
-      "billing": ["monthly", "yearly"],
+      "billing": [
+        "monthly",
+        "yearly"
+      ],
       "marketplacePlanIdEnv": "CADS_GITHUB_MARKETPLACE_ENTERPRISE_PLAN_ID",
-      "capabilities": ["standardProfiles", "history", "regressionDetection", "evidenceExport", "customProfiles", "customThresholds", "enforcedPrGate", "api", "selfHostedRunner"]
+      "capabilities": {
+        "standardProfiles": true,
+        "githubCheck": "enforced",
+        "history": true,
+        "regressionDetection": true,
+        "evidenceExport": true,
+        "customProfiles": true,
+        "customThresholds": true,
+        "enforcedPrGate": true,
+        "api": true,
+        "selfHostedRunner": true
+      }
     }
   ],
   "priceValues": {
