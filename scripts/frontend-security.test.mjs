@@ -198,6 +198,18 @@ test('account security UI supports at most two Passkeys and two TOTP factors wit
   assert.match(security, /CAPITAL-AI Authenticator 2/);
 });
 
+test('key vault clears browser credential state and exposes encryption evidence without returning secrets', async () => {
+  const vault = await readFile(new URL('../src/components/KeyVaultPage.tsx', import.meta.url), 'utf8');
+
+  assert.match(vault, /setApiKey\(''\)/);
+  assert.match(vault, /setApiSecret\(''\)/);
+  assert.match(vault, /setShowSecret\(false\)/);
+  assert.match(vault, /Supabase Vault · verschlüsselt gespeichert/);
+  assert.match(vault, /authentifiziert verschlüsselt \(AEAD\) at rest/);
+  assert.match(vault, /weder Klartext noch Ciphertext zurück/);
+  assert.match(vault, /Credential-Fingerprint/);
+});
+
 test('key vault keeps Spot and Futures credential families separate and execution fail-closed', async () => {
   const vault = await readFile(new URL('../src/components/KeyVaultPage.tsx', import.meta.url), 'utf8');
 
@@ -207,4 +219,30 @@ test('key vault keeps Spot and Futures credential families separate and executio
   assert.match(vault, /nicht als Spot-Key umgedeutet/);
   assert.match(vault, /Funding, Transfers und Withdrawals bleiben abgewiesen/);
   assert.match(vault, /Live-Execution ist bis zu separaten Risk-, Confirmation- und Production-Gates deaktiviert/);
+});
+
+
+test('control center observability remains owner-projected without browser metrics token', async () => {
+  const control = await readFile(new URL('../src/components/ControlCenterPage.tsx', import.meta.url), 'utf8');
+  const dashboard = await readFile(new URL('../src/components/ObservabilityDashboard.tsx', import.meta.url), 'utf8');
+  const server = await readFile(new URL('../server/index.mjs', import.meta.url), 'utf8');
+
+  assert.match(control, /observability: 'Observability'/);
+  assert.match(control, /<ObservabilityDashboard \/>/);
+  assert.match(dashboard, /\/api\/internal\/observability/);
+  assert.doesNotMatch(dashboard, /OBSERVABILITY_TOKEN|Authorization:\s*['"]Bearer/);
+  assert.match(server, /auth\.authorizeIamRole\(req, res, 'owner'\)/);
+  assert.match(server, /operationalSnapshot\(\)/);
+});
+
+
+test('registration mirrors the observed Supabase password classes before submit', async () => {
+  const login = await readFile(new URL('../src/features/auth/LoginPage.tsx', import.meta.url), 'utf8');
+
+  assert.match(login, /newPasswordMeetsObservedPolicy/);
+  assert.match(login, /\[a-z\]/);
+  assert.match(login, /\[A-Z\]/);
+  assert.match(login, /\[0-9\]/);
+  assert.match(login, /mindestens 14 Zeichen sowie Kleinbuchstaben, Großbuchstaben, Zahl und Sonderzeichen/);
+  assert.match(login, /throw new Error\('weak_password'\)/);
 });
