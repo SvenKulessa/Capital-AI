@@ -153,7 +153,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     if env::args().nth(1).as_deref() == Some("--healthcheck") {
         client.flush().await?;
-        client.close().await;
         return Ok(());
     }
 
