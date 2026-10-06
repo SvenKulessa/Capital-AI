@@ -19,6 +19,22 @@ const acceptance = readFileSync(
   new URL('../docs/security/CADS-PACKAGE-ACCEPTANCE.md', import.meta.url),
   'utf8',
 );
+const security = readFileSync(
+  new URL('../docs/security/CADS-SECURITY.md', import.meta.url),
+  'utf8',
+);
+const privacy = readFileSync(
+  new URL('../docs/legal/CADS-MARKETPLACE-PRIVACY.md', import.meta.url),
+  'utf8',
+);
+const support = readFileSync(
+  new URL('../docs/product/CADS-MARKETPLACE-SUPPORT.md', import.meta.url),
+  'utf8',
+);
+const terms = readFileSync(
+  new URL('../docs/legal/CADS-MARKETPLACE-B2B-TERMS-DRAFT.md', import.meta.url),
+  'utf8',
+);
 const plans = JSON.parse(readFileSync(
   new URL('../apps/cads-github-app/marketplace-plans.production.json', import.meta.url),
   'utf8',
@@ -75,4 +91,18 @@ test('acceptance policy keeps technical PASS separate from release authorities',
   assert.match(acceptance, /(Lizenz|License).*separat/i);
   assert.match(acceptance, /Marketplace.*separat/i);
   assert.match(acceptance, /Production.*separat/i);
+});
+
+
+test('Marketplace listing documentation covers security privacy support and B2B terms', () => {
+  assert.match(security, /HMAC-SHA256/i);
+  assert.match(security, /OAuth token.*revoked/i);
+  assert.match(security, /service-role/i);
+  assert.match(privacy, /29 days/i);
+  assert.match(privacy, /support@capital-ai\.online/i);
+  assert.match(support, /support@capital-ai\.online/i);
+  assert.match(support, /must \*\*not\*\* send/i);
+  assert.match(terms, /DRAFT.*OWNER.*LEGAL/i);
+  assert.match(terms, /GitHub Marketplace/i);
+  assert.match(terms, /No source-code ownership/i);
 });
