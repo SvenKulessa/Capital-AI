@@ -98,6 +98,21 @@ marketing outreach compliance gate
 
 Diese Kombination ist **noch nicht** zum Standard promoted. Sie ist die priorisierte Benchmark-Kombination unter der bestehenden Zero-Cost-/Self-hosted-Präferenz.
 
+## Outreach Compliance Reference
+
+Offizielle Rechtsquellen für den technischen Fail-Closed-Contract:
+
+- § 7 UWG: https://www.gesetze-im-internet.de/uwg_2004/__7.html
+- DSGVO Art. 21: https://eur-lex.europa.eu/eli/reg/2016/679/oj
+
+Technische Umsetzung in `MARKETING_OUTREACH_POLICY@3`:
+
+- E-Mail-Marketing-Erlaubnis und DSGVO-Verarbeitungsbasis sind getrennte Gates;
+- die Bestandskunden-Ausnahme erfordert sämtliche im Contract abgebildeten §-7-Abs.-3-Bedingungen;
+- Widerspruch, Consent Withdrawal, Suppression oder Frequency-Cap-Verstoß blockieren;
+- Runtime-Versand ist zusätzlich standardmäßig deaktiviert und besitzt einen Kill-Switch;
+- der Contract ersetzt keine Einzelfall-Rechtsberatung und keine persistente Consent-/Suppression-Evidence.
+
 ## Umami Evaluation
 
 - Repository: https://github.com/umami-software/umami
