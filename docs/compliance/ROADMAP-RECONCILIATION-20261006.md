@@ -1,7 +1,7 @@
 # Roadmap-Reconciliation — 06.10.2026
 
-Basis-Main: `0bf052cbc8f7774db29cc77493f6f24bb28bd93b`
-Arbeitsbranch: `capital-ai-product/cads-monetization-roadmap-20261006`
+Basis-Main: `cef1d11f607778f5226ca1df97376ba408652c69`
+Arbeitsbranch: `capital-ai-trust/cads-community-marketplace-20261006`
 Primary Domain: PRODUCT
 Cross-Domain: MARKET / PLATFORM / TRUST / GROWTH
 
@@ -146,3 +146,21 @@ Auth-, Runtime- oder Evidence-Dateien überlappen.
 Dieser Bericht belegt den Repository-Zustand und den auf diesem Branch implementierten Roadmap-/CADS-Slice.
 Er ist **keine** Production-Freigabe, kein Lizenzgutachten, kein Datenrechte-Nachweis und keine
 GitHub-Marketplace-Zulassung.
+
+
+## Community-first CADS Marketplace Follow-up
+
+Der aktuelle Main enthält bereits den Website-CADS-Commerce-Slice mit bestehenden
+Stripe-Tiers. Der Folgeslice trennt davon den GitHub-Marketplace-Pfad:
+
+1. Community FREE als einzige Marketplace-Plan-Konfiguration.
+2. GitHub App Minimalrechte: metadata:read, contents:read, pull_requests:read, checks:write.
+3. Neutraler Check; kein Enforced PR Gate im Community-Tier.
+4. `purchased` und `cancelled` als Free-Lifecycle; `changed` bleibt bis Paid-Admission blockiert.
+5. Keine Stripe-Autorität für Marketplace-Entitlements.
+6. Keine persistente Evidence-History oder private Kundendaten im Community-Contract.
+7. Reale App-Registrierung, Draft Listing, Privacy/Support und Webhook-Readback bleiben offene externe Evidence.
+
+Grafana Cloud + Supabase sind operatorseitig bereits verbunden. Die bestehende repo-seitige
+Observability-Baseline bleibt VERIFIED; externer Export, Retention und Tenant-Isolation werden
+separat über Runtime-Readback evidenziert.
