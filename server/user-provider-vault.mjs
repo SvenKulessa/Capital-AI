@@ -4,14 +4,13 @@ import { boundedJson, secureUrl } from './http-security.mjs';
 const MAX_BODY_BYTES = 16 * 1024;
 const KRAKEN_BALANCE_PATH = '/0/private/Balance';
 const KRAKEN_API_KEY_INFO_PATH = '/0/private/GetApiKeyInfo';
+const KRAKEN_FUTURES_KEY_INFO_PATH = '/api/auth/v1/api-keys/v3/check';
 let lastKrakenNonce = 0n;
 
-const KRAKEN_WRITE_PERMISSIONS = new Set([
+const KRAKEN_FORBIDDEN_FUNDING_PERMISSIONS = new Set([
   'add-funds',
   'withdraw-funds',
   'earn-funds',
-  'modify-trades',
-  'close-trades',
   'add-withdraw-address',
   'update-withdraw-address',
 ]);
@@ -34,11 +33,7 @@ function adminConfig(env) {
     const key = env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY || '';
     const fingerprintKey = env.AUTH_COOKIE_SIGNING_SECRET || '';
     const supportedAdminKey = key.startsWith('sb_secret_') || serviceRoleJwt(key);
-    if (
-      url.href !== url.origin + '/' ||
-      !supportedAdminKey ||
-      fingerprintKey.length < 32
-    ) return null;
+    if (url.href !== url.origin + '/' || !supportedAdminKey || fingerprintKey.length < 32) return null;
     return { url: url.origin, key, fingerprintKey };
   } catch {
     return null;
@@ -86,11 +81,7 @@ async function rpc(fetchImpl, config, name, body) {
   });
   let payload = null;
   if (response.status !== 204) {
-    try {
-      payload = await boundedJson(response);
-    } catch {
-      payload = null;
-    }
+    try { payload = await boundedJson(response); } catch { payload = null; }
   }
   if (!response.ok) {
     const error = new Error('SUPABASE_RPC_FAILED');
@@ -106,6 +97,13 @@ export function krakenSignature(urlPath, payload, apiSecret) {
   const digest = createHash('sha256').update(nonce + encoded).digest();
   const message = Buffer.concat([Buffer.from(urlPath, 'utf8'), digest]);
   return createHmac('sha512', Buffer.from(apiSecret, 'base64')).update(message).digest('base64');
+}
+
+export function krakenFuturesSignature(endpointPath, postData, nonce, apiSecret) {
+  const digest = createHash('sha256')
+    .update(String(postData || '') + String(nonce || '') + endpointPath)
+    .digest();
+  return createHmac('sha512', Buffer.from(apiSecret, 'base64')).update(digest).digest('base64');
 }
 
 function nextKrakenNonce() {
@@ -143,46 +141,93 @@ async function krakenPrivatePost(fetchImpl, path, { apiKey, apiSecret }) {
   return payload.result;
 }
 
-function krakenCapabilities(info) {
+function krakenSpotCapabilities(info) {
   const permissions = Array.isArray(info?.permissions)
     ? info.permissions.filter(value => typeof value === 'string').map(value => value.slice(0, 80))
     : [];
-  const unsafePermissions = permissions.filter(permission => KRAKEN_WRITE_PERMISSIONS.has(permission));
+  const forbiddenPermissions = permissions.filter(permission => KRAKEN_FORBIDDEN_FUNDING_PERMISSIONS.has(permission));
   return {
     permissions,
     fundsQuery: permissions.includes('query-funds'),
     websocketToken: permissions.includes('create-ws-token'),
+    orderCreate: permissions.includes('modify-trades'),
+    orderCancel: permissions.includes('close-trades'),
     trading: permissions.includes('modify-trades') || permissions.includes('close-trades'),
-    withdrawals:
-      permissions.includes('withdraw-funds') ||
-      permissions.includes('add-withdraw-address') ||
-      permissions.includes('update-withdraw-address'),
-    writeScopeDetected: unsafePermissions.length > 0,
-    unsafePermissions,
+    forbiddenPermissions,
   };
 }
 
 async function krakenKeyInfo(fetchImpl, credentials) {
   const result = await krakenPrivatePost(fetchImpl, KRAKEN_API_KEY_INFO_PATH, credentials);
-  return { info: result, capabilities: krakenCapabilities(result) };
+  return { info: result, capabilities: krakenSpotCapabilities(result) };
 }
 
 async function krakenBalance(fetchImpl, credentials) {
   return krakenPrivatePost(fetchImpl, KRAKEN_BALANCE_PATH, credentials);
 }
 
-function parseStoredSecret(payload) {
+async function krakenFuturesKeyInfo(fetchImpl, { apiKey, apiSecret }) {
+  const nonce = nextKrakenNonce();
+  const authent = krakenFuturesSignature(KRAKEN_FUTURES_KEY_INFO_PATH, '', nonce, apiSecret);
+  const response = await fetchImpl(new URL(KRAKEN_FUTURES_KEY_INFO_PATH, 'https://futures.kraken.com'), {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+      APIKey: apiKey,
+      Authent: authent,
+      Nonce: nonce,
+    },
+    redirect: 'error',
+    signal: AbortSignal.timeout(7000),
+  });
+  const payload = await boundedJson(response);
+  if (!response.ok) {
+    const error = new Error('KRAKEN_FUTURES_VERIFICATION_FAILED');
+    error.code = `HTTP_${response.status}`;
+    throw error;
+  }
+  const permissions = payload?.apiKey?.permissions || payload?.result?.permissions || payload?.permissions;
+  const general = String(permissions?.general || 'NO_ACCESS').toUpperCase();
+  const transfer = String(permissions?.transfer || 'NO_ACCESS').toUpperCase();
+  if (!['NO_ACCESS', 'READ_ONLY', 'FULL_ACCESS'].includes(general) ||
+      !['NO_ACCESS', 'READ_ONLY', 'FULL_ACCESS'].includes(transfer)) {
+    const error = new Error('KRAKEN_FUTURES_VERIFICATION_FAILED');
+    error.code = 'INVALID_PERMISSION_READBACK';
+    throw error;
+  }
+  return {
+    general,
+    transfer,
+    configured: general !== 'NO_ACCESS',
+    trading: general === 'FULL_ACCESS',
+    perpetuals: general !== 'NO_ACCESS',
+  };
+}
+
+function normalizePair(value) {
+  const apiKey = normalizeCredential(value?.apiKey, 8, 512);
+  const apiSecret = normalizeCredential(value?.apiSecret, 16, 1024);
+  return apiKey && apiSecret ? { apiKey, apiSecret } : null;
+}
+
+function parseStoredVaultPayload(payload) {
   if (typeof payload !== 'string' || payload.length > 8192) throw new Error('VAULT_SECRET_INVALID');
   let parsed;
-  try {
-    parsed = JSON.parse(payload);
-  } catch {
+  try { parsed = JSON.parse(payload); } catch { throw new Error('VAULT_SECRET_INVALID'); }
+
+  const legacy = normalizePair(parsed);
+  if (legacy) return { version: 2, spot: legacy, futures: null };
+
+  const spot = parsed?.spot == null ? null : normalizePair(parsed.spot);
+  const futures = parsed?.futures == null ? null : normalizePair(parsed.futures);
+  if (parsed?.version !== 2 || (parsed?.spot != null && !spot) || (parsed?.futures != null && !futures)) {
     throw new Error('VAULT_SECRET_INVALID');
   }
-  const apiKey = normalizeCredential(parsed?.apiKey, 8, 512);
-  const apiSecret = normalizeCredential(parsed?.apiSecret, 16, 1024);
-  if (!apiKey || !apiSecret) throw new Error('VAULT_SECRET_INVALID');
-  return { apiKey, apiSecret };
+  return { version: 2, spot, futures };
+}
+
+function emptyVaultPayload() {
+  return { version: 2, spot: null, futures: null };
 }
 
 function publicBalanceProjection(balance) {
@@ -190,6 +235,41 @@ function publicBalanceProjection(balance) {
     .filter(([asset, value]) => /^[A-Za-z0-9.:-]{1,32}$/.test(asset) && /^-?\d+(?:\.\d+)?$/.test(String(value)))
     .map(([asset, value]) => ({ asset, balance: String(value) }))
     .slice(0, 500);
+}
+
+function combinePermissions(spot, futures) {
+  const spotState = spot || {};
+  const futuresState = futures || {};
+  const trading = spotState.trading === true || futuresState.trading === true;
+  return {
+    fundsQuery: spotState.fundsQuery === true,
+    websocketToken: spotState.websocketToken === true,
+    trading,
+    withdrawals: false,
+    spotTrading: spotState.trading === true,
+    spotOrderCreate: spotState.orderCreate === true,
+    spotOrderCancel: spotState.orderCancel === true,
+    futuresConfigured: futuresState.configured === true,
+    futuresTrading: futuresState.trading === true,
+    perpetuals: futuresState.perpetuals === true,
+    futuresAccess: futuresState.general || 'NO_ACCESS',
+    orderTypes: trading ? ['market', 'limit'] : [],
+    executionEnabled: false,
+    publicMarketDataAdmission: false,
+    spot: spotState,
+    futures: futuresState,
+  };
+}
+
+function fingerprintForPayload(config, payload) {
+  return createHmac('sha256', config.fingerprintKey)
+    .update('capital-ai/byok-fingerprint/v2\0')
+    .update(JSON.stringify({
+      spot: payload.spot?.apiKey || null,
+      futures: payload.futures?.apiKey || null,
+    }))
+    .digest('hex')
+    .slice(0, 24);
 }
 
 export function createUserProviderVault({ env = process.env, fetchImpl = fetch, auth } = {}) {
@@ -212,6 +292,18 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
       _status: status,
       _error_code: errorCode,
     });
+  }
+
+  async function readStored(userId) {
+    try {
+      return await rpc(fetchImpl, config, 'capital_ai_get_user_provider_secret', {
+        _user_id: userId,
+        _provider: 'kraken',
+      });
+    } catch (error) {
+      if (error?.status === 404) return null;
+      throw error;
+    }
   }
 
   async function handle(req, res, url, json) {
@@ -275,12 +367,14 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
       }
 
       let body;
-      try {
-        body = await readJson(req);
-      } catch (error) {
+      try { body = await readJson(req); }
+      catch (error) {
         json(res, error.message === 'REQUEST_TOO_LARGE' ? 413 : 400, { error: 'invalid_request' });
         return true;
       }
+
+      const credentialFamily = body.credentialFamily === 'futures' ? 'futures' : 'spot';
+      const allowTrading = body.allowTrading === true;
       const apiKey = normalizeCredential(body.apiKey, 8, 512);
       const apiSecret = normalizeCredential(body.apiSecret, 16, 1024);
       if (!apiKey || !apiSecret) {
@@ -288,43 +382,98 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
         return true;
       }
 
-      const fingerprint = createHmac('sha256', config.fingerprintKey)
-        .update('capital-ai/byok-fingerprint/v1\0')
-        .update(apiKey)
-        .digest('hex')
-        .slice(0, 24);
-      const secretPayload = JSON.stringify({ apiKey, apiSecret });
       try {
+        const stored = await readStored(user.userId);
+        const vaultPayload = stored?.secretPayload
+          ? parseStoredVaultPayload(stored.secretPayload)
+          : emptyVaultPayload();
         const credentials = { apiKey, apiSecret };
-        const verification = await krakenKeyInfo(fetchImpl, credentials);
-        if (verification.capabilities.writeScopeDetected) {
-          json(res, 422, {
-            provider: 'kraken',
-            status: 'REJECTED',
-            error: 'kraken_key_permissions_too_broad',
-            unsafePermissions: verification.capabilities.unsafePermissions,
-          });
-          return true;
-        }
-
-        const permissions = {
-          fundsQuery: verification.capabilities.fundsQuery,
-          websocketToken: verification.capabilities.websocketToken,
-          trading: false,
-          withdrawals: false,
-          publicMarketDataAdmission: false,
-        };
-
+        let spotState = stored?.permissions?.spot || null;
+        let futuresState = stored?.permissions?.futures || null;
         let holdings = [];
-        if (permissions.fundsQuery) {
-          const balance = await krakenBalance(fetchImpl, credentials);
-          holdings = publicBalanceProjection(balance);
+
+        if (credentialFamily === 'spot') {
+          const verification = await krakenKeyInfo(fetchImpl, credentials);
+          const caps = verification.capabilities;
+          if (caps.forbiddenPermissions.length > 0) {
+            json(res, 422, {
+              provider: 'kraken',
+              status: 'REJECTED',
+              error: 'kraken_funding_or_withdrawal_permissions_forbidden',
+              forbiddenPermissions: caps.forbiddenPermissions,
+            });
+            return true;
+          }
+          if (caps.trading && !allowTrading) {
+            json(res, 422, {
+              provider: 'kraken',
+              status: 'REJECTED',
+              error: 'kraken_spot_trading_requires_opt_in',
+            });
+            return true;
+          }
+          if (allowTrading && !caps.orderCreate) {
+            json(res, 422, {
+              provider: 'kraken',
+              status: 'REJECTED',
+              error: 'kraken_spot_order_create_permission_missing',
+            });
+            return true;
+          }
+          vaultPayload.spot = credentials;
+          spotState = {
+            configured: true,
+            fundsQuery: caps.fundsQuery,
+            websocketToken: caps.websocketToken,
+            trading: allowTrading && caps.trading,
+            orderCreate: allowTrading && caps.orderCreate,
+            orderCancel: allowTrading && caps.orderCancel,
+          };
+          if (caps.fundsQuery) holdings = publicBalanceProjection(await krakenBalance(fetchImpl, credentials));
+        } else {
+          const caps = await krakenFuturesKeyInfo(fetchImpl, credentials);
+          if (caps.transfer !== 'NO_ACCESS') {
+            json(res, 422, {
+              provider: 'kraken',
+              status: 'REJECTED',
+              error: 'kraken_futures_transfer_permission_forbidden',
+              transferAccess: caps.transfer,
+            });
+            return true;
+          }
+          if (caps.trading && !allowTrading) {
+            json(res, 422, {
+              provider: 'kraken',
+              status: 'REJECTED',
+              error: 'kraken_futures_trading_requires_opt_in',
+            });
+            return true;
+          }
+          if (allowTrading && !caps.trading) {
+            json(res, 422, {
+              provider: 'kraken',
+              status: 'REJECTED',
+              error: 'kraken_futures_full_access_required_for_orders',
+              generalAccess: caps.general,
+            });
+            return true;
+          }
+          vaultPayload.futures = credentials;
+          futuresState = {
+            configured: caps.configured,
+            trading: allowTrading && caps.trading,
+            perpetuals: caps.perpetuals,
+            general: caps.general,
+            transfer: caps.transfer,
+          };
         }
 
+        const permissions = combinePermissions(spotState, futuresState);
+        const fingerprint = fingerprintForPayload(config, vaultPayload);
         await rpc(fetchImpl, config, 'capital_ai_upsert_user_provider_secret', {
           _user_id: user.userId,
           _provider: 'kraken',
-          _secret_payload: secretPayload,
+          _secret_payload: JSON.stringify(vaultPayload),
           _credential_fingerprint: fingerprint,
           _permissions: permissions,
         });
@@ -332,12 +481,16 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
 
         json(res, 200, {
           provider: 'kraken',
+          credentialFamily,
           status: 'VERIFIED',
           credentialFingerprint: fingerprint,
           dataScope: 'USER_PRIVATE_ACCOUNT_DATA',
           redistributionAllowed: false,
           publicDisplayAllowed: false,
+          sharedCacheAllowed: false,
+          jetStreamPublicationAllowed: false,
           capabilities: permissions,
+          executionEnabled: false,
           portfolioAvailable: permissions.fundsQuery,
           holdings,
         });
@@ -368,27 +521,37 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
         return true;
       }
       try {
-        const stored = await rpc(fetchImpl, config, 'capital_ai_get_user_provider_secret', {
-          _user_id: user.userId,
-          _provider: 'kraken',
-        });
+        const stored = await readStored(user.userId);
         if (!stored?.secretPayload) {
           json(res, 404, { error: 'provider_connection_not_found' });
           return true;
         }
-        const credentials = parseStoredSecret(stored.secretPayload);
-        const verification = await krakenKeyInfo(fetchImpl, credentials);
-        if (verification.capabilities.writeScopeDetected) {
+        const vaultPayload = parseStoredVaultPayload(stored.secretPayload);
+        if (!vaultPayload.spot) {
+          json(res, 404, { error: 'kraken_spot_connection_not_found' });
+          return true;
+        }
+        const verification = await krakenKeyInfo(fetchImpl, vaultPayload.spot);
+        if (verification.capabilities.forbiddenPermissions.length > 0) {
           json(res, 403, {
-            error: 'kraken_key_permissions_too_broad',
-            unsafePermissions: verification.capabilities.unsafePermissions,
+            error: 'kraken_funding_or_withdrawal_permissions_forbidden',
+            forbiddenPermissions: verification.capabilities.forbiddenPermissions,
           });
           return true;
         }
         const fundsQuery = verification.capabilities.fundsQuery;
         const holdings = fundsQuery
-          ? publicBalanceProjection(await krakenBalance(fetchImpl, credentials))
+          ? publicBalanceProjection(await krakenBalance(fetchImpl, vaultPayload.spot))
           : [];
+        const spotState = {
+          configured: true,
+          fundsQuery,
+          websocketToken: verification.capabilities.websocketToken,
+          trading: stored?.permissions?.spotTrading === true && verification.capabilities.trading,
+          orderCreate: stored?.permissions?.spotOrderCreate === true && verification.capabilities.orderCreate,
+          orderCancel: stored?.permissions?.spotOrderCancel === true && verification.capabilities.orderCancel,
+        };
+        const permissions = combinePermissions(spotState, stored?.permissions?.futures || null);
         await markStatus(user.userId, 'VERIFIED', null);
         json(res, 200, {
           provider: 'kraken',
@@ -398,13 +561,8 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
           publicDisplayAllowed: false,
           sharedCacheAllowed: false,
           jetStreamPublicationAllowed: false,
-          capabilities: {
-            fundsQuery,
-            websocketToken: verification.capabilities.websocketToken,
-            trading: false,
-            withdrawals: false,
-            publicMarketDataAdmission: false,
-          },
+          capabilities: permissions,
+          executionEnabled: false,
           portfolioAvailable: fundsQuery,
           holdings,
         });

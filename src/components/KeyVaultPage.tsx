@@ -24,6 +24,15 @@ interface ProviderConnection {
     websocketToken?: boolean;
     trading?: boolean;
     withdrawals?: boolean;
+    spotTrading?: boolean;
+    spotOrderCreate?: boolean;
+    spotOrderCancel?: boolean;
+    futuresConfigured?: boolean;
+    futuresTrading?: boolean;
+    perpetuals?: boolean;
+    futuresAccess?: string;
+    orderTypes?: string[];
+    executionEnabled?: boolean;
     publicMarketDataAdmission?: boolean;
   };
 }
@@ -37,7 +46,7 @@ const PROVIDERS = [
   {
     id: 'kraken',
     label: 'Kraken',
-    description: 'Kraken Spot API: REST-Credential-Verifikation, optionaler Funds-Readback und WebSocket-Token-Capability; Trading und Withdrawals bleiben deaktiviert.',
+    description: 'Kraken Spot sowie Futures/Perps: getrennte Credential-Familien im serverseitigen Vault. Trading-Rechte sind explizit opt-in; Funding und Withdrawals bleiben verboten.',
   },
 ] as const;
 
@@ -50,6 +59,8 @@ async function readJson(response: Response) {
 export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => void }) {
   const [provider, setProvider] = useState<ProviderId>('kraken');
   const [connections, setConnections] = useState<ProviderConnection[]>([]);
+  const [credentialFamily, setCredentialFamily] = useState<'spot' | 'futures'>('spot');
+  const [allowTrading, setAllowTrading] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [apiSecret, setApiSecret] = useState('');
   const [showSecret, setShowSecret] = useState(false);
@@ -108,16 +119,18 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
           Accept: 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ apiKey, apiSecret }),
+        body: JSON.stringify({ apiKey, apiSecret, credentialFamily, allowTrading }),
       });
       const body = await readJson(response);
       if (!response.ok) throw new Error(body?.code || body?.error || 'PROVIDER_SAVE_FAILED');
 
       setApiSecret('');
       setHoldings(Array.isArray(body?.holdings) ? body.holdings : []);
-      const portfolio = body?.portfolioAvailable === true ? ' · Spot-Portfolio verfügbar' : ' · kein Funds-Readback angefordert';
+      const portfolio = body?.portfolioAvailable === true ? ' · Spot-Portfolio verfügbar' : '';
       const websocket = body?.capabilities?.websocketToken === true ? ' · WebSocket-Token erlaubt' : '';
-      setFeedback(`${PROVIDERS.find(item => item.id === provider)?.label || provider} wurde erfolgreich verifiziert und sicher gespeichert${portfolio}${websocket}.`);
+      const trading = body?.capabilities?.trading === true ? ' · Orderrechte erkannt' : '';
+      const family = credentialFamily === 'futures' ? 'Futures/Perps' : 'Spot';
+      setFeedback(`${family}-Credential wurde erfolgreich verifiziert und sicher gespeichert${portfolio}${websocket}${trading}. Live-Ausführung bleibt gesperrt.`);
       await loadConnections();
     } catch (reason) {
       const message = reason instanceof Error ? reason.message : 'PROVIDER_SAVE_FAILED';
@@ -246,6 +259,21 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
               </label>
 
               <label className="text-xs font-bold text-slate-300">
+                Credential-Familie
+                <select
+                  value={credentialFamily}
+                  onChange={event => {
+                    setCredentialFamily(event.target.value as 'spot' | 'futures');
+                    setAllowTrading(false);
+                  }}
+                  className="mt-1 w-full rounded-xl border border-white/15 bg-black/50 px-3 py-3 text-sm text-white"
+                >
+                  <option value="spot">Spot REST / WebSocket</option>
+                  <option value="futures">Futures / Perpetuals</option>
+                </select>
+              </label>
+
+              <label className="text-xs font-bold text-slate-300">
                 API Key
                 <input
                   type="text"
@@ -287,13 +315,28 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
                 </div>
               </label>
 
+              <label className="flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-xs text-slate-300">
+                <input
+                  type="checkbox"
+                  checked={allowTrading}
+                  onChange={event => setAllowTrading(event.target.checked)}
+                  className="mt-0.5 h-4 w-4"
+                />
+                <span>
+                  <strong className="text-amber-200">Orderrechte zulassen.</strong>{' '}
+                  Der Key darf Market-/Limit-Orders der gewählten Credential-Familie ermöglichen.
+                  CAPITAL-AI speichert die Capability, führt in diesem PR aber noch keine Live-Order aus.
+                  Funding-, Transfer- und Withdrawal-Rechte bleiben unzulässig.
+                </span>
+              </label>
+
               <button
                 type="submit"
                 disabled={saving}
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-amber-400 px-4 text-sm font-black text-black disabled:opacity-50"
               >
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <LockKeyhole className="h-4 w-4" />}
-                Spot API-Key speichern & read-only verifizieren
+                {credentialFamily === 'futures' ? 'Futures/Perps-Key' : 'Spot API-Key'} speichern & verifizieren
               </button>
             </form>
 
@@ -305,7 +348,7 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
                     {connection.status === 'VERIFIED' ? 'Provider erfolgreich verbunden' : 'Provider-Verbindungsstatus'}
                   </p>
                 </div>
-                <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                   <div className="rounded-xl border border-white/10 bg-black/20 p-2.5">
                     <div className="text-[9px] font-mono uppercase text-slate-500">Spot REST Auth</div>
                     <div className="mt-1 text-[11px] font-bold text-emerald-200">VERIFIZIERT</div>
@@ -320,6 +363,24 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
                     <div className="text-[9px] font-mono uppercase text-slate-500">Spot WebSocket Token</div>
                     <div className={`mt-1 text-[11px] font-bold ${connection.permissions?.websocketToken ? 'text-emerald-200' : 'text-slate-400'}`}>
                       {connection.permissions?.websocketToken ? 'ERLAUBT' : 'NICHT ERLAUBT'}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-white/10 bg-black/20 p-2.5">
+                    <div className="text-[9px] font-mono uppercase text-slate-500">Spot Orders</div>
+                    <div className={`mt-1 text-[11px] font-bold ${connection.permissions?.spotTrading ? 'text-emerald-200' : 'text-slate-400'}`}>
+                      {connection.permissions?.spotTrading ? 'MARKET + LIMIT BEREIT' : 'NICHT FREIGEGEBEN'}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-white/10 bg-black/20 p-2.5">
+                    <div className="text-[9px] font-mono uppercase text-slate-500">Futures / Perps</div>
+                    <div className={`mt-1 text-[11px] font-bold ${connection.permissions?.futuresTrading ? 'text-emerald-200' : 'text-slate-400'}`}>
+                      {connection.permissions?.futuresTrading ? 'MARKET + LIMIT BEREIT' : connection.permissions?.futuresConfigured ? 'READ ONLY' : 'NICHT VERBUNDEN'}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-white/10 bg-black/20 p-2.5">
+                    <div className="text-[9px] font-mono uppercase text-slate-500">Execution Gate</div>
+                    <div className="mt-1 text-[11px] font-bold text-amber-200">
+                      {connection.permissions?.executionEnabled ? 'AKTIV' : 'BLOCKED'}
                     </div>
                   </div>
                 </div>
@@ -343,7 +404,7 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
                     className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-3 text-xs font-bold text-cyan-100 disabled:opacity-50"
                   >
                     {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-                    Verbindung prüfen
+                    Spot Funds prüfen
                   </button>
                   <button
                     type="button"
@@ -376,10 +437,10 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
           <section className="rounded-2xl border border-slate-800 bg-[#070b19]/70 p-4 text-[11px] leading-relaxed text-slate-400">
             <h2 className="font-black text-white">Credential-Grenze</h2>
             <p className="mt-2">
-              Der aktuelle Vault-Slot ist ein Kraken-Spot-Credential. REST und die Berechtigung zum Erzeugen eines privaten Spot-WebSocket-Tokens werden als Capabilities desselben Spot-Keys geprüft.
+              Der Kraken-Vault-Slot enthält getrennte Spot- und Futures/Perps-Credential-Familien. Die Secrets bleiben serverseitig verschlüsselt; ein Futures-Key wird nicht als Spot-Key umgedeutet.
             </p>
             <p className="mt-2 text-amber-200">
-              Kraken Futures verwendet eine getrennte Authentifizierungsfamilie und ist in diesem Slot noch nicht speicherbar. Dafür ist eine additive Vault-Schemaerweiterung erforderlich; ein Futures-Key wird nicht als Spot-Key umgedeutet.
+              Trading-Rechte können explizit zugelassen werden. Funding, Transfers und Withdrawals bleiben abgewiesen. Die erkannte Order-Capability bereitet den späteren MarketScreener für Market-/Limit-Orders vor; Live-Execution ist bis zu separaten Risk-, Confirmation- und Production-Gates deaktiviert.
             </p>
           </section>
         </div>

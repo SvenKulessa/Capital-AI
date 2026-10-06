@@ -6,8 +6,7 @@ Owner: PRODUCT, mit MARKET-/TRUST-Grenzen
 ## Zweck
 
 CAPITAL-AI erlaubt einem authentifizierten Nutzer, eigene Provider-Credentials
-serverseitig zu hinterlegen. Der erste Prototyp verwendet einen vom Nutzer
-erzeugten Kraken-API-Key ausschließlich für private Kontoabfragen.
+serverseitig zu hinterlegen. Der aktuelle Prototyp unterstützt nutzereigene Kraken-Credentials für private Kontoabfragen sowie explizit opt-in-fähige Trading-Capabilities. Spot und Futures/Perps bleiben getrennte Credential-Familien; eine erkannte Trading-Capability aktiviert noch keine Live-Orderausführung.
 
 Dieser Pfad ist **kein Ersatz für MARKET Source Admission** und belegt keine
 allgemeinen kommerziellen Anzeige-, Redistribution- oder Marktdatenrechte.
@@ -80,13 +79,28 @@ POST /0/private/Balance         # nur wenn query-funds tatsächlich erlaubt ist
 Die Signatur wird serverseitig nach dem Kraken-HMAC-SHA512-Verfahren erzeugt.
 Ein Spot-Key kann deshalb auch ohne `query-funds` als gültiges REST-Credential
 verifiziert werden. `create-ws-token` wird als separate Capability desselben
-Spot-Keys ausgewiesen. Schreibende Berechtigungen für Trading, Funding oder
-Withdrawals werden im read-only Vault-Pfad abgewiesen.
+Spot-Keys ausgewiesen. Spot-Rechte `modify-trades` / `close-trades` dürfen nach explizitem Nutzer-Opt-in
+als Order-Capability gespeichert werden. Funding-, Transfer- und Withdrawal-Rechte
+bleiben hart abgewiesen.
 
-Kraken Futures ist **nicht** Teil dieses Credential-Slots. Futures verwendet
-einen getrennten Authentifizierungsvertrag und benötigt vor Implementierung
-eine additive Vault-/Credential-Family-Entscheidung; Futures-Keys werden nicht
-als Spot-Keys interpretiert.
+Der verschlüsselte Kraken-Vault-Payload verwendet Version 2 mit getrennten
+`spot`- und `futures`-Credential-Familien. Futures/Perps werden über den
+separaten Kraken-Futures-Authentifizierungsvertrag verifiziert. `general=FULL_ACCESS`
+darf nur nach explizitem Trading-Opt-in gespeichert werden; `transfer` muss
+`NO_ACCESS` bleiben.
+
+Für beide Trading-Familien gilt in diesem Slice:
+
+```json
+{
+  "orderTypes": ["market", "limit"],
+  "executionEnabled": false,
+  "withdrawals": false
+}
+```
+
+Damit kann der spätere MarketScreener die vorhandene Capability auswerten, ohne
+bereits heute eine Live-Orderroute freizuschalten.
 
 Die Metadaten deklarieren zusätzlich:
 
@@ -154,7 +168,7 @@ Vor Production-Handoff müssen mindestens erfüllt sein:
 - Redirect auf `/profile` erfolgreich;
 - BYOK negative auth / same-origin tests erfolgreich;
 - Vault ACLs weiterhin server-only;
-- Kraken-Key mit ausschließlich benötigten Leserechten;
+- Kraken-Key mit ausschließlich benötigten Lese-/Orderrechten; Funding/Transfer/Withdrawal bleibt verboten;
 - keine Secret-Werte in Browserantworten, Logs oder Evidenz;
 - risikobasierte technische Gates und belastbare Evidence gemäß aktueller Root-Governance;
 - MARKET-Rechte-Gates bleiben unabhängig und fail-closed.

@@ -1,68 +1,46 @@
-# Kraken Credential Families – Entscheidungsstand 2026-10-06
+# Kraken Credential Families – Owner-Entscheidung 2026-10-06
 
-Status: OWNER_DECISION_REQUIRED  
+Status: OWNER_DECIDED_IMPLEMENTED_FAIL_CLOSED  
 Domain: PRODUCT + MARKET + TRUST
 
-## Beobachteter Ist-Zustand
+## Entscheidung
 
-Der bestehende Vault besitzt genau einen eindeutigen Slot pro `(user_id, provider)` und erlaubt aktuell nur `provider='kraken'`.
+Der bestehende serverseitige Kraken-Vault-Slot bleibt ein Eintrag pro `(user_id, provider='kraken')`,
+enthält aber einen versionierten verschlüsselten Payload mit zwei strikt getrennten Credential-Familien:
 
-Dieser Slot ist jetzt fachlich als **Kraken Spot Credential** definiert:
+- `spot` — Kraken Spot REST / privater WebSocket-Token / optionale Orderrechte
+- `futures` — Kraken Futures/Perpetuals mit eigenem Authentifizierungsvertrag
 
-- Spot REST Credential-Verifikation über `GetApiKeyInfo`
-- optional `query-funds` für privaten Spot-Portfolio-Readback
-- optional `create-ws-token` als Spot-WebSocket-Capability
-- keine Trading-/Withdrawal-Berechtigungen
-- keine Public-Market-Data-Rechteeskalation
+Damit wird keine Futures-Credential als Spot-Key interpretiert und für PR #203 ist keine destruktive
+Datenbankmigration erforderlich.
 
-Kraken Futures verwendet einen getrennten Authentifizierungsvertrag und wird nicht in den Spot-Slot hineingedeutet.
+## Zulässige Schreibrechte
 
-## Owner-Entscheidung für die additive Schemaerweiterung
+Spot:
+- `modify-trades` darf nach explizitem Nutzer-Opt-in als Create/Modify-Order-Capability gespeichert werden.
+- `close-trades` darf nach explizitem Nutzer-Opt-in als Cancel/Close-Order-Capability gespeichert werden.
 
-### Option A – Zwei Credential Families (empfohlen)
+Futures/Perps:
+- `general=FULL_ACCESS` darf nach explizitem Nutzer-Opt-in als Trading-Capability gespeichert werden.
+- `general=READ_ONLY` bleibt als nicht schreibende Futures-Capability zulässig.
 
-- `kraken_spot`
-  - REST und WebSocket als Capabilities desselben Spot-Credentials
-- `kraken_futures`
-  - eigener Futures-Key / eigener Authent-Contract
+Hart verboten:
+- Spot Funding-/Withdrawal-/Withdrawal-Address-Rechte.
+- Futures `transfer != NO_ACCESS`.
+- automatische Rechteeskalation aus einem Read-only-Key.
 
-Vorteile:
-- entspricht der Provider-Semantik;
-- minimale Schemaerweiterung;
-- keine künstliche Trennung von Spot REST und Spot WebSocket;
-- klare Security-/Permission-Gates.
+## Execution-Grenze
 
-Nachteil:
-- Nutzer mit bewusst getrennten Spot-REST- und Spot-WebSocket-Keys können nicht beide gleichzeitig speichern.
+Der Vault speichert ausschließlich Credential- und Capability-Evidence. PR #203 aktiviert **keine** Live-Orderausführung:
 
-### Option B – Drei feste Slots
+- `orderTypes = ["market", "limit"]` kann als Capability erscheinen;
+- `executionEnabled = false` bleibt zwingend;
+- keine Market-/Limit-Order wird durch das Speichern oder Prüfen eines Keys erzeugt;
+- spätere MarketScreener-Execution benötigt separate Order-Preview-, Bestätigungs-, Risk-, Idempotency-, Rate-Limit- und Audit-Gates.
 
-- `kraken_spot_rest`
-- `kraken_spot_websocket`
-- `kraken_futures`
+Funding und Withdrawals gehören ausdrücklich nicht zum geplanten MarketScreener-Tradingpfad.
 
-Vorteile:
-- entspricht exakt einer Bedienoberfläche mit drei getrennten Keys;
-- getrennte Rotation und Least-Privilege-Keys möglich.
+## Daten-/Rechte-Grenze
 
-Nachteile:
-- Spot REST und WebSocket sind technisch dieselbe Kraken-Spot-Key-Familie;
-- mehr Vault-, RPC-, UI- und Testaufwand.
-
-### Option C – Generisches Multi-Slot-Modell
-
-Tabelle erhält zusätzlich `credential_family` und `slot_name`, mit mehreren Credentials je Provider.
-
-Vorteile:
-- später auch für weitere Provider wiederverwendbar;
-- frei erweiterbar.
-
-Nachteile:
-- größter Migrations- und Governance-Scope;
-- mehr Konflikt-/Auswahlregeln im Produkt.
-
-## Empfehlung
-
-**Option A**, sofern kein zwingender Bedarf besteht, zwei getrennte Spot-Keys parallel zu halten. Falls der Owner ausdrücklich getrennte REST- und WebSocket-Keys verlangt, Option B.
-
-Bis zur Entscheidung bleibt Futures fail-closed und der bestehende Spot-Slot wird nicht destruktiv migriert.
+USER_PRIVATE_ACCOUNT_DATA und nutzereigene Trading-Credentials ersetzen keine MARKET Source Admission,
+keine Redistribution-Rechte und keine Production-Freigabe.
