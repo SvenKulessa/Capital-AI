@@ -5,6 +5,7 @@ import { sanitizeTelemetry, writeOperationalLog } from './observability.mjs';
 export const AGENT_STATE_SCHEMA = 'CAPITAL_AI_AGENT_STATE@1';
 export const AGENT_TRAJECTORY_SCHEMA = 'CAPITAL_AI_AGENT_TRAJECTORY@1';
 export const LANGGRAPH_ADAPTER_SCHEMA = 'CAPITAL_AI_LANGGRAPH_ADAPTER@1';
+export const AGENT_CHECKPOINT_SCHEMA = 'CAPITAL_AI_AGENT_CHECKPOINT@1';
 
 const ALLOWED_CAPABILITIES = new Set(['research', 'market-read', 'portfolio-proposal', 'truth-review']);
 const ROUTES = Object.freeze({
@@ -222,4 +223,83 @@ export function emitTrajectory(event) {
 export function actorHash(value) {
   if (typeof value !== 'string' || value.length < 1 || value.length > 512) throw new Error('AGENT_ACTOR_INVALID');
   return sha256(value);
+}
+
+
+function canonicalValue(value) {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value);
+  if (Array.isArray(value)) return '[' + value.map(canonicalValue).join(',') + ']';
+  const keys = Object.keys(value).sort();
+  return '{' + keys.map(key => JSON.stringify(key) + ':' + canonicalValue(value[key])).join(',') + '}';
+}
+
+export function agentStateFingerprint(state) {
+  assertShadowAuthority(state);
+  return sha256(canonicalValue(state));
+}
+
+export function createAgentCheckpoint(state) {
+  assertShadowAuthority(state);
+  const seedFingerprint = agentStateFingerprint(state);
+  const checkpointId = 'cp-' + seedFingerprint.slice('sha256:'.length, 'sha256:'.length + 32);
+  const snapshot = Object.freeze({
+    ...structuredClone(state),
+    checkpointId,
+  });
+  const stateFingerprint = agentStateFingerprint(snapshot);
+  return Object.freeze({
+    schema: AGENT_CHECKPOINT_SCHEMA,
+    checkpointId,
+    stateFingerprint,
+    state: snapshot,
+  });
+}
+
+export function restoreAgentCheckpoint(checkpoint) {
+  if (!checkpoint || checkpoint.schema !== AGENT_CHECKPOINT_SCHEMA) throw new Error('AGENT_CHECKPOINT_SCHEMA_INVALID');
+  if (typeof checkpoint.checkpointId !== 'string' || !ID.test(checkpoint.checkpointId)) {
+    throw new Error('AGENT_CHECKPOINT_ID_INVALID');
+  }
+  const state = structuredClone(checkpoint.state);
+  assertShadowAuthority(state);
+  if (state.checkpointId !== checkpoint.checkpointId) throw new Error('AGENT_CHECKPOINT_ID_MISMATCH');
+  if (agentStateFingerprint(state) !== checkpoint.stateFingerprint) throw new Error('AGENT_CHECKPOINT_INTEGRITY_FAILED');
+  return Object.freeze(state);
+}
+
+export function replaySupervisorFromCheckpoint(checkpoint, expectedFingerprint = null) {
+  const restored = restoreAgentCheckpoint(checkpoint);
+  const routed = supervisorRoute(restored);
+  const fingerprint = agentStateFingerprint(routed);
+  if (expectedFingerprint !== null && fingerprint !== expectedFingerprint) {
+    throw new Error('AGENT_REPLAY_DIVERGENCE');
+  }
+  return Object.freeze({ state: routed, fingerprint });
+}
+
+export async function executeShadowWithRetry({
+  state,
+  invoke,
+  maxAttempts = 3,
+  isRetryable = () => false,
+} = {}) {
+  assertShadowAuthority(state);
+  if (typeof invoke !== 'function' || typeof isRetryable !== 'function') throw new Error('AGENT_RETRY_HANDLER_INVALID');
+  if (!Number.isSafeInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > 3) {
+    throw new Error('AGENT_RETRY_LIMIT_INVALID');
+  }
+
+  let lastError = null;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const before = Object.freeze({ ...state, attempt });
+    try {
+      const raw = await invoke(structuredClone(before), attempt);
+      const after = normalizeGraphOutput(before, raw);
+      return Object.freeze({ state: after, attempts: attempt });
+    } catch (error) {
+      lastError = error;
+      if (attempt >= maxAttempts || !isRetryable(error)) throw error;
+    }
+  }
+  throw lastError || new Error('AGENT_RETRY_FAILED');
 }
