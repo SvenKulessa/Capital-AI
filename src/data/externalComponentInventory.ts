@@ -220,6 +220,17 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     evidence: ['server/telegram.mjs'],
   },
   {
+    id: 'metricool-mcp', name: 'Metricool MCP', domain: 'GROWTH', kind: 'Social Publishing / Analytics MCP',
+    installedAt: '2026-10-06', activeVersion: 'managed remote MCP', pipelineVersion: 'https://ai.metricool.com/mcp', lifecycle: 'APPROVED',
+    functionSummary: 'Kostenfreie MCP-Control-Plane-Anbindung für Social-Planung und Analytics innerhalb der jeweiligen Metricool-Tariflimits; keine Metricool-REST-API und keine automatische Production-Publisher-Authority.',
+    webAppBinding: '.mcp.json; operator/control-plane only; OAuth außerhalb des Repositories; keine Browser- oder Web-Runtime-Bindung',
+    license: 'Proprietary service; MCP access available on Metricool Free plan', cadsScore: 74.0, scoreState: 'PROVISIONAL',
+    domainAssignments: ['operator MCP control plane; no public runtime domain'],
+    dependencies: [],
+    alternatives: [],
+    evidence: ['docs/growth/METRICOOL-MCP-INTEGRATION-20261006.md'],
+  },
+  {
     id: 'lukerent-gsc-mcp', name: 'LukeRenton Google Search Console MCP', domain: 'GROWTH', kind: 'SEO / Search Console MCP',
     installedAt: '2026-10-04', activeVersion: '0.1.0', pipelineVersion: '0.1.0 pinned / upstream a701813f', lifecycle: 'APPROVED',
     functionSummary: 'Read-only Search Console authority for SEO performance, URL inspection and sitemap readback; write tool is blocked by the Capital-AI MCP guard.',
