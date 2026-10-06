@@ -1,6 +1,6 @@
 # CAPITAL-AI Engineering Delivery Policy
 
-Stand: 2026-10-07  
+Stand: 2026-10-07
 Geltungsbereich: gesamtes Repository, alle Agents, Pull Requests, Builds, Updates und Deployments.
 
 ## Oberste Priorität
