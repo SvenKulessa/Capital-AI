@@ -27,3 +27,16 @@ test('Grafana Cloud operator context does not become production evidence by asse
     'OPERATOR_CONFIRMED_REPO_READBACK_PENDING',
   );
 });
+
+test('current GitHub Marketplace paid-listing requirements stay fail-closed', () => {
+  const admission = CADS_COMMERCIAL_READINESS.marketplaceAdmission;
+  assert.equal(admission.officialRequirements.appOwnedByOrganizationForPaidPlans, true);
+  assert.equal(admission.officialRequirements.verifiedPublisherRequiredForPaidPlans, true);
+  assert.equal(admission.officialRequirements.minimumGitHubAppInstallationsForPaidListing, 100);
+  assert.equal(admission.officialRequirements.monthlyAndAnnualBillingRequired, true);
+  assert.equal(admission.officialRequirements.pricingCurrency, 'USD');
+  assert.equal(admission.officialRequirements.maximumPublishedPlans, 10);
+  assert.deepEqual(admission.officialRequirements.requiredMarketplacePurchaseActions, ['purchased', 'changed', 'cancelled']);
+  assert.equal(admission.status, 'BLOCKED_FOR_PAID_LISTING');
+  assert.equal(Object.values(admission.evidence).every(Boolean), false);
+});
