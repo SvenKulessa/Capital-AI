@@ -1,8 +1,8 @@
 # CAPITAL-AI SEO-Architektur — kanonisches Arbeitspaket
 
-Stand: 2026-10-05  
-Primary Domain: CAPITAL-AI-GROWTH  
-Baseline: `SvenKulessa/Capital-AI@c9fc1bb55dcfcdf2b121c879d6d7580fe9388e84`  
+Stand: 2026-10-05
+Primary Domain: CAPITAL-AI-GROWTH
+Baseline: `SvenKulessa/Capital-AI@c9fc1bb55dcfcdf2b121c879d6d7580fe9388e84`
 Status: `OFFEN` — geplant/teilweise vorhandene Grundlagen; keine Production- oder Ranking-Freigabe.
 
 ## 1. Ziel
