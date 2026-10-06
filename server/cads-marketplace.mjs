@@ -1,10 +1,12 @@
-import { createHash, createHmac, createSign, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, createSign, randomBytes, timingSafeEqual } from 'node:crypto';
 import { benchmarkEntitlementForTier } from '../packages/benchmark-core/index.mjs';
 import { boundedJson, secureUrl } from './http-security.mjs';
 
 const GITHUB_API_VERSION = '2026-03-10';
 const MARKETPLACE_WEBHOOK_PATH = '/api/integrations/github/cads-marketplace';
 const MARKETPLACE_READINESS_PATH = '/api/cads/marketplace/readiness';
+const MARKETPLACE_SETUP_PATH = '/api/cads/marketplace/setup';
+const MARKETPLACE_OAUTH_CALLBACK_PATH = '/api/cads/marketplace/oauth/callback';
 const PAID_TIERS = Object.freeze(['starter', 'pro', 'enterprise']);
 const PURCHASE_ACTIONS = new Set(['purchased', 'changed', 'cancelled']);
 const MAX_WEBHOOK_BYTES = 256 * 1024;
@@ -48,6 +50,14 @@ export function cadsMarketplaceConfig(env = process.env) {
   const listingSlug = boundedText(env.CADS_GITHUB_MARKETPLACE_LISTING_SLUG, 100);
   const privateKey = String(env.CADS_GITHUB_APP_PRIVATE_KEY || '');
   const webhookSecret = String(env.CADS_GITHUB_MARKETPLACE_WEBHOOK_SECRET || '');
+  const clientId = boundedText(env.CADS_GITHUB_CLIENT_ID, 200);
+  const clientSecret = String(env.CADS_GITHUB_CLIENT_SECRET || '');
+  const oauthStateSecret = String(env.CADS_GITHUB_OAUTH_STATE_SECRET || '');
+  let publicUrl = null;
+  try {
+    const parsed = secureUrl(env.CADS_GITHUB_PUBLIC_URL || '');
+    if (parsed.href === parsed.origin + '/') publicUrl = parsed.origin;
+  } catch {}
   const planIds = {
     starter: positiveInteger(env.CADS_GITHUB_MARKETPLACE_STARTER_PLAN_ID),
     pro: positiveInteger(env.CADS_GITHUB_MARKETPLACE_PRO_PLAN_ID),
@@ -59,6 +69,10 @@ export function cadsMarketplaceConfig(env = process.env) {
     Boolean(appId && ownerOrg && listingSlug) &&
     privateKey.startsWith('-----BEGIN') &&
     webhookSecret.length >= 32;
+  const oauthConfigured =
+    Boolean(clientId && publicUrl) &&
+    clientSecret.length >= 32 &&
+    oauthStateSecret.length >= 32;
   const store = supabaseConfig(env);
 
   return Object.freeze({
@@ -67,10 +81,16 @@ export function cadsMarketplaceConfig(env = process.env) {
     listingSlug,
     privateKey,
     webhookSecret,
+    clientId,
+    clientSecret,
+    oauthStateSecret,
+    publicUrl,
     planIds: Object.freeze(planIds),
     distinctPlanIds,
     store,
-    runtimeReady: Boolean(appConfigured && distinctPlanIds && store),
+    appConfigured,
+    oauthConfigured,
+    runtimeReady: Boolean(appConfigured && oauthConfigured && distinctPlanIds && store),
   });
 }
 
@@ -84,13 +104,8 @@ export function publicCadsMarketplaceReadiness(env = process.env) {
     pricingCurrency: 'USD',
     monthlyAndAnnualRequired: true,
     freePlanEnabled: false,
-    appConfigured: Boolean(
-      config.appId &&
-      config.ownerOrg &&
-      config.listingSlug &&
-      config.privateKey.startsWith('-----BEGIN') &&
-      config.webhookSecret.length >= 32
-    ),
+    appConfigured: config.appConfigured,
+    buyerLinkConfigured: config.oauthConfigured,
     planIdsConfigured: config.distinctPlanIds,
     entitlementStoreConfigured: Boolean(config.store),
     runtimeReady: config.runtimeReady,
@@ -171,6 +186,101 @@ function base64url(input) {
   return Buffer.from(input).toString('base64url');
 }
 
+function cookieValue(req, name) {
+  const prefix = name + '=';
+  const entry = String(req.headers.cookie || '').split(';').map(part => part.trim()).find(part => part.startsWith(prefix));
+  return entry ? decodeURIComponent(entry.slice(prefix.length)) : null;
+}
+
+function secureEqualText(left, right) {
+  if (!left || !right) return false;
+  const a = Buffer.from(String(left));
+  const b = Buffer.from(String(right));
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+export function createCadsMarketplaceOAuthState({ userId, installationId, secret, now = Date.now() }) {
+  const boundedUserId = boundedText(userId, 128);
+  const normalizedInstallationId = positiveInteger(installationId);
+  if (!boundedUserId || !normalizedInstallationId || String(secret || '').length < 32) {
+    throw new Error('invalid_marketplace_oauth_state_input');
+  }
+  const payload = base64url(JSON.stringify({
+    v: 1,
+    userId: boundedUserId,
+    installationId: normalizedInstallationId,
+    nonce: randomBytes(18).toString('base64url'),
+    exp: Math.floor(now / 1000) + 10 * 60,
+  }));
+  const signature = createHmac('sha256', secret).update(payload).digest('base64url');
+  return payload + '.' + signature;
+}
+
+export function verifyCadsMarketplaceOAuthState(state, secret, now = Date.now()) {
+  if (!state || String(secret || '').length < 32) return null;
+  const [payload, signature, extra] = String(state).split('.');
+  if (!payload || !signature || extra) return null;
+  const expected = createHmac('sha256', secret).update(payload).digest('base64url');
+  if (!secureEqualText(expected, signature)) return null;
+  let decoded;
+  try { decoded = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')); }
+  catch { return null; }
+  if (decoded?.v !== 1) return null;
+  if (!boundedText(decoded.userId, 128) || !positiveInteger(decoded.installationId)) return null;
+  if (!Number.isInteger(decoded.exp) || decoded.exp < Math.floor(now / 1000)) return null;
+  return decoded;
+}
+
+function oauthAuthorizeUrl(config, state) {
+  const url = new URL('https://github.com/login/oauth/authorize');
+  url.searchParams.set('client_id', config.clientId);
+  url.searchParams.set('redirect_uri', config.publicUrl + MARKETPLACE_OAUTH_CALLBACK_PATH);
+  url.searchParams.set('state', state);
+  return url.toString();
+}
+
+async function exchangeOAuthCode(config, code, fetchImpl) {
+  const response = await fetchImpl('https://github.com/login/oauth/access_token', {
+    method: 'POST',
+    redirect: 'error',
+    headers: {
+      accept: 'application/json',
+      'content-type': 'application/json',
+      'user-agent': 'capital-ai-cads-marketplace/1',
+    },
+    body: JSON.stringify({
+      client_id: config.clientId,
+      client_secret: config.clientSecret,
+      code,
+      redirect_uri: config.publicUrl + MARKETPLACE_OAUTH_CALLBACK_PATH,
+    }),
+    signal: AbortSignal.timeout(7000),
+  });
+  const body = await boundedJson(response, 32 * 1024);
+  if (!body?.access_token) throw new Error('github_oauth_exchange_failed');
+  return String(body.access_token);
+}
+
+async function verifyBuyerInstallation(userToken, installationId, fetchImpl) {
+  const response = await fetchImpl('https://api.github.com/user/installations?per_page=100', {
+    method: 'GET',
+    redirect: 'error',
+    headers: {
+      accept: 'application/vnd.github+json',
+      authorization: 'Bearer ' + userToken,
+      'x-github-api-version': GITHUB_API_VERSION,
+      'user-agent': 'capital-ai-cads-marketplace/1',
+    },
+    signal: AbortSignal.timeout(7000),
+  });
+  const body = await boundedJson(response, 128 * 1024);
+  const installation = (body?.installations || []).find(item => positiveInteger(item?.id) === positiveInteger(installationId));
+  if (!installation?.account?.id || !installation?.account?.login || !['User','Organization'].includes(installation?.account?.type)) {
+    throw new Error('github_installation_not_authorized');
+  }
+  return installation;
+}
+
 export function createCadsGitHubAppJwt({ appId, privateKey, now = Math.floor(Date.now() / 1000) }) {
   if (!positiveInteger(appId) || !privateKey?.startsWith('-----BEGIN')) throw new Error('invalid_github_app_credentials');
   const header = base64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
@@ -239,6 +349,7 @@ export function createCadsMarketplace({
   env = process.env,
   fetchImpl = fetch,
   audit = () => {},
+  auth,
   now = () => new Date(),
 } = {}) {
   const config = cadsMarketplaceConfig(env);
@@ -272,7 +383,122 @@ export function createCadsMarketplace({
     return { subscription, tier };
   }
 
+  async function linkUser({ userId, accountId, installationId }) {
+    if (!config.store) throw new Error('marketplace_store_not_configured');
+    return storeRpc(fetchImpl, config.store, 'capital_ai_link_cads_marketplace_user', {
+      _user_id: userId,
+      _account_id: accountId,
+      _installation_id: installationId,
+    });
+  }
+
+  async function resolveTierForUser(userId) {
+    if (!config.store || !boundedText(userId, 128)) return null;
+    const payload = await storeRpc(fetchImpl, config.store, 'capital_ai_get_cads_marketplace_user_entitlement', {
+      _user_id: userId,
+    });
+    const tier = boundedText(payload?.tier, 32);
+    return PAID_TIERS.includes(tier) ? tier : null;
+  }
+
+  async function handleSetup(req, res, url, json) {
+    if (req.method !== 'GET') {
+      res.setHeader('Allow', 'GET');
+      json(res, 405, { error: 'method_not_allowed' });
+      return true;
+    }
+    if (!config.runtimeReady) {
+      json(res, 503, { error: 'cads_marketplace_not_configured' });
+      return true;
+    }
+    const user = await auth?.verify?.(req, res);
+    if (!user?.userId) {
+      json(res, 401, { error: 'authentication_required' });
+      return true;
+    }
+    const installationId = positiveInteger(url.searchParams.get('installation_id'));
+    if (!installationId) {
+      json(res, 400, { error: 'invalid_installation_id' });
+      return true;
+    }
+    const state = createCadsMarketplaceOAuthState({
+      userId: user.userId,
+      installationId,
+      secret: config.oauthStateSecret,
+      now: now().getTime(),
+    });
+    const cookie = 'cads_marketplace_oauth_state=' + encodeURIComponent(state) +
+      '; HttpOnly; Secure; SameSite=Lax; Path=' + MARKETPLACE_OAUTH_CALLBACK_PATH + '; Max-Age=600';
+    res.writeHead(302, {
+      Location: oauthAuthorizeUrl(config, state),
+      'Set-Cookie': cookie,
+      'Cache-Control': 'no-store',
+    });
+    res.end();
+    return true;
+  }
+
+  async function handleOAuthCallback(req, res, url, json) {
+    if (req.method !== 'GET') {
+      res.setHeader('Allow', 'GET');
+      json(res, 405, { error: 'method_not_allowed' });
+      return true;
+    }
+    if (!config.runtimeReady) {
+      json(res, 503, { error: 'cads_marketplace_not_configured' });
+      return true;
+    }
+    const state = url.searchParams.get('state');
+    const cookieState = cookieValue(req, 'cads_marketplace_oauth_state');
+    if (!secureEqualText(state, cookieState)) {
+      json(res, 401, { error: 'marketplace_oauth_state_mismatch' });
+      return true;
+    }
+    const statePayload = verifyCadsMarketplaceOAuthState(state, config.oauthStateSecret, now().getTime());
+    const user = await auth?.verify?.(req, res);
+    if (!statePayload || !user?.userId || user.userId !== statePayload.userId) {
+      json(res, 401, { error: 'marketplace_oauth_identity_mismatch' });
+      return true;
+    }
+    const code = boundedText(url.searchParams.get('code'), 512);
+    if (!code) {
+      json(res, 400, { error: 'missing_oauth_code' });
+      return true;
+    }
+
+    try {
+      const userToken = await exchangeOAuthCode(config, code, fetchImpl);
+      const installation = await verifyBuyerInstallation(userToken, statePayload.installationId, fetchImpl);
+      const accountId = positiveInteger(installation.account.id);
+      const readback = await authoritativeTierForAccount(accountId);
+      if (!readback.subscription || !readback.tier) {
+        json(res, 403, { error: 'active_marketplace_subscription_required' });
+        return true;
+      }
+      await linkUser({
+        userId: user.userId,
+        accountId,
+        installationId: statePayload.installationId,
+      });
+      audit({ eventType: 'cads.marketplace.user_link', result: 'LINKED', tier: readback.tier });
+      res.writeHead(303, {
+        Location: '/profile?cads_marketplace=linked',
+        'Set-Cookie': 'cads_marketplace_oauth_state=; HttpOnly; Secure; SameSite=Lax; Path=' +
+          MARKETPLACE_OAUTH_CALLBACK_PATH + '; Max-Age=0',
+        'Cache-Control': 'no-store',
+      });
+      res.end();
+      return true;
+    } catch {
+      json(res, 401, { error: 'marketplace_oauth_authorization_failed' });
+      return true;
+    }
+  }
+
   async function handle(req, res, url, json) {
+    if (url.pathname === MARKETPLACE_SETUP_PATH) return handleSetup(req, res, url, json);
+    if (url.pathname === MARKETPLACE_OAUTH_CALLBACK_PATH) return handleOAuthCallback(req, res, url, json);
+
     if (url.pathname === MARKETPLACE_READINESS_PATH) {
       if (req.method !== 'GET') {
         res.setHeader('Allow', 'GET');
@@ -423,5 +649,7 @@ export function createCadsMarketplace({
     readiness: () => publicCadsMarketplaceReadiness(env),
     purgeCancelledData,
     authoritativeTierForAccount,
+    resolveTierForUser,
+    linkUser,
   });
 }
