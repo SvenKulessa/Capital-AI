@@ -35,6 +35,10 @@ function gitBlobSha(buffer) {
 }
 
 const sourceSha = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+const expectedSourceSha = String(process.env.CADS_SOURCE_SHA || '').trim().toLowerCase();
+if (expectedSourceSha && sourceSha.toLowerCase() !== expectedSourceSha) {
+  throw new Error('CADS_EXPORT_SOURCE_IDENTITY_MISMATCH expected=' + expectedSourceSha + ' actual=' + sourceSha);
+}
 const files = EXPORT_PATHS.map(path => {
   const bytes = readFileSync(path);
   return {
