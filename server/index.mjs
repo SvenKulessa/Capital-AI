@@ -211,10 +211,15 @@ export function createApp(root = defaultRoot, options = {}) {
   const vocabularyCheckout = createVocabularyCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
   const subscriptionCheckout = createSubscriptionCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
   const benchmarkStore = options.benchmarkStore ?? createBenchmarkStore({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch });
-  const benchmarkRuns = createBenchmarkRuns({ env: runtimeEnv, auth, store: benchmarkStore });
-  const cadsMarketplace = createCadsMarketplace({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, audit: writeAuditEvent });
+  const cadsMarketplace = createCadsMarketplace({
+    env: runtimeEnv,
+    fetchImpl: options.fetchImpl || fetch,
+    audit: writeAuditEvent,
+    auth,
+  });
   cadsMarketplace.start();
-  const cadsCommerce = createCadsCommerce({ auth, env: runtimeEnv });
+  const benchmarkRuns = createBenchmarkRuns({ env: runtimeEnv, auth, store: benchmarkStore, marketplace: cadsMarketplace });
+  const cadsCommerce = createCadsCommerce({ auth, env: runtimeEnv, marketplace: cadsMarketplace });
   const server = http.createServer({ maxHeaderSize: 8192, requestTimeout: 10000, headersTimeout: 10000, keepAliveTimeout: 5000 }, async (req, res) => {
   let url;
   const requestContext = beginRequest(req);
