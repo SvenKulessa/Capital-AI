@@ -26,3 +26,14 @@ test('cancelled Marketplace customer data has an explicit purge path', () => {
   assert.match(sql, /cancelled_at < _before/i);
   assert.match(sql, /delete from public\.cads_marketplace_event_inbox/i);
 });
+
+test('Marketplace user links are service-role-only and require an active entitlement', () => {
+  assert.match(sql, /create table if not exists public\.cads_marketplace_user_links/i);
+  assert.match(sql, /alter table public\.cads_marketplace_user_links enable row level security/i);
+  assert.match(sql, /revoke all on table public\.cads_marketplace_user_links from public, anon, authenticated, service_role/i);
+  assert.match(sql, /capital_ai_link_cads_marketplace_user/i);
+  assert.match(sql, /status = 'ACTIVE'/i);
+  assert.match(sql, /ACTIVE_CADS_MARKETPLACE_ENTITLEMENT_REQUIRED/i);
+  assert.match(sql, /capital_ai_get_cads_marketplace_user_entitlement/i);
+  assert.match(sql, /when 'enterprise' then 3[\s\S]*when 'pro' then 2[\s\S]*when 'starter' then 1/i);
+});
