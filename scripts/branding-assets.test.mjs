@@ -65,3 +65,24 @@ test('asset manifest is rights-bound, non-publishing and byte-consistent for all
     assert.equal(sha256(path), asset.sha256, 'SHA-256 mismatch: ' + asset.path);
   }
 });
+
+
+test('social brand icons are local and provenance-bound', () => {
+  const socialRoot = resolve(root, 'public/branding/social');
+  const provenance = readFileSync(resolve(root, 'docs/licenses/SOCIAL-BRAND-ICONS-SIMPLE-ICONS-16.33.0.md'), 'utf8');
+  const upstreamLicense = readFileSync(resolve(root, 'docs/licenses/SIMPLE-ICONS-16.33.0-CC0-1.0.md'), 'utf8');
+
+  for (const name of ['github', 'tiktok', 'threads', 'youtube', 'x']) {
+    const svg = readFileSync(resolve(socialRoot, name + '.svg'), 'utf8');
+    assert.match(svg, /viewBox="0 0 24 24"/);
+    assert.match(svg, /<title>[^<]+<\/title>/);
+    assert.doesNotMatch(svg, /https?:\/\//);
+  }
+
+  assert.match(provenance, /Simple Icons/);
+  assert.match(provenance, /16\.33\.0/);
+  assert.match(provenance, /CC0-1\.0/);
+  assert.match(provenance, /Marken/);
+  assert.match(upstreamLicense, /CC0 1\.0 Universal/);
+  assert.match(upstreamLicense, /No trademark or patent rights/);
+});
