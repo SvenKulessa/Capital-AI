@@ -18,6 +18,7 @@ const EXPORT_PATHS = Object.freeze([
   'docs/licenses/CADS-THIRD-PARTY-NOTICES.md',
   'docs/product/CADS-MARKETPLACE-INSTALLATION.md',
   'docs/product/CADS-MARKETPLACE-SUPPORT.md',
+  'docs/product/CADS-STANDALONE-REPO-EXPORT.md',
   'docs/security/CADS-PACKAGE-ACCEPTANCE.md',
   'docs/security/CADS-SECURITY.md',
   'docs/legal/CADS-MARKETPLACE-PRIVACY.md',
