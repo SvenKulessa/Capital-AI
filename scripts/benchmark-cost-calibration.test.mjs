@@ -29,5 +29,8 @@ test('pricing evidence is bound to the current Render runner candidate and FX ob
   assert.equal(evidence.render.currentWebPlan,'0.5c-512mb');
   assert.equal(evidence.render.isolatedCronCandidate.usdPerMinute,0.00016);
   assert.equal(evidence.fx.usdToEur,0.891373);
-  assert.equal(evidence.render.sources.includes('https://render.com/pricing'),true);
+  assert.deepEqual(evidence.render.sources, [
+    'https://render.com/pricing',
+    'https://render.com/docs/compute-plans',
+  ]);
 });
