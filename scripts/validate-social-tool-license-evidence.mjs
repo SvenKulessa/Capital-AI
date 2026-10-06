@@ -36,6 +36,31 @@ export function validateSocialToolLicenseEvidence(raw) {
       !ids.has('chatterbox-multilingual-v3-weights') || !ids.has('openai-whisper-code')) {
     fail('required point-4 baseline item missing');
   }
+  const pillow = raw.items.find(item => item.id === 'pillow');
+  if (pillow?.upstream?.targetArtifactSha256 !== '236ff70b9312fb68943c703aa842ca6a758abfa45ac187a5e7c1452e96ef72b5') {
+    fail('Pillow target wheel hash drift');
+  }
+  const qwenCode = raw.items.find(item => item.id === 'qwen3-tts-code');
+  if (qwenCode?.upstream?.wheelSha256 !== '11a290d8dabc7ef91a90c54478c8ab19b3edb1d85c0882313721892bdc4af15d') {
+    fail('Qwen package wheel hash drift');
+  }
+  const qwenWeights = raw.items.find(item => item.id === 'qwen3-tts-weights');
+  if (qwenWeights?.upstream?.selectedRevision !== '5ecdb67327fd37bb2e042aab12ff7391903235d3') {
+    fail('Qwen immutable revision drift');
+  }
+  const chatterbox = raw.items.find(item => item.id === 'chatterbox-multilingual-v3-weights');
+  if (chatterbox?.upstream?.selectedRevision !== '5bb1f6ee58e50c3b8d408bc82a6d3740c2db6e18') {
+    fail('Chatterbox immutable revision drift');
+  }
+  const whisper = raw.items.find(item => item.id === 'openai-whisper-code');
+  if (whisper?.upstream?.smallModelSha256 !== '9ecf779972d90ba49c06d968637d720dd632c55bbf19d441fb42bf17a411e794' ||
+      whisper?.upstream?.largeV3ModelSha256 !== 'e5b1a55b89c1367dacf97e3e19bfd829a01529dbfdeefa8caeb59b3f1b81dadb') {
+    fail('Whisper model hash drift');
+  }
+  const poppler = raw.items.find(item => item.id === 'poppler');
+  if (poppler?.decision?.requiredForSocialCore !== false || poppler?.decision?.customerArtifactAllowed !== false) {
+    fail('Poppler customer-runtime exclusion drift');
+  }
   return {status:'PASS', items:raw.items.length, productionEligible:[...fullyEligible]};
 }
 
