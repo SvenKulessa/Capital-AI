@@ -16,10 +16,13 @@ test('production Marketplace exposes paid Starter Pro Enterprise only', () => {
   assert.equal(manifest.strategy, 'PAID_PRODUCTION');
   assert.equal(manifest.currency, 'USD');
   assert.equal(manifest.freePlanEnabled, false);
+  assert.equal(manifest.audience, 'B2B');
   assert.deepEqual(manifest.plans.map(plan => plan.id), ['starter', 'pro', 'enterprise']);
   for (const plan of manifest.plans) {
     assert.equal(plan.priceModel, 'FLAT_RATE');
     assert.deepEqual(plan.billing, ['monthly', 'yearly']);
+    assert.equal(plan.availableFor, 'ORGANIZATIONS_ONLY');
+    assert.equal(plan.freeTrialEnabled, false);
   }
 });
 
