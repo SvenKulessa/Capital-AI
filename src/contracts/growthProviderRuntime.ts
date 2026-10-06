@@ -7,7 +7,8 @@ export const GROWTH_AI_PRICEBOOK_VERSION = 'GROWTH_AI_PRICEBOOK@2026-10-06' as c
 
 export const GrowthModelIdSchema = z.enum([
   'gemini-3.8-flash',
-  'gemini-3.1-flash-image',
+  'gemini-nano-banana-2.1',
+  'gemini-3.1-flash-lite-image',
   'gemini-3.8-flash-tts',
   'gemini-3.8-flash-lite-tts',
   'veo-3.1-generate-preview',
@@ -32,8 +33,8 @@ export const GROWTH_MODEL_ROUTER = {
     envKey: 'GROWTH_AI_URL_CONTEXT_MODEL',
   },
   IMAGE_GENERATION: {
-    preferred: 'gemini-3.1-flash-image',
-    allowed: ['gemini-3.1-flash-image'],
+    preferred: 'gemini-3.1-flash-lite-image',
+    allowed: ['gemini-3.1-flash-lite-image', 'gemini-nano-banana-2.1'],
     envKey: 'GROWTH_AI_IMAGE_MODEL',
   },
   TTS: {
@@ -57,14 +58,14 @@ export const GROWTH_AI_PRICEBOOK = {
     inputUsdPerMillionTokens: 0.75,
     outputUsdPerMillionTokens: 3.75,
   },
-  'gemini-3.1-flash-image': {
-    inputUsdPerMillionTokens: 0.50,
-    textOutputUsdPerMillionTokens: 3.00,
+  'gemini-nano-banana-2.1': {
+    priceState: 'UNVERIFIED_ON_2026-10-06',
+  },
+  'gemini-3.1-flash-lite-image': {
+    inputUsdPerMillionTokens: 0.25,
+    textOutputUsdPerMillionTokens: 1.50,
     imageOutputUsd: {
-      '0.5K': 0.045,
-      '1K': 0.067,
-      '2K': 0.101,
-      '4K': 0.151,
+      '1K': 0.0336,
     },
   },
   'gemini-3.8-flash-tts': {
@@ -200,11 +201,14 @@ export function estimateGrowthRequestCostUsd(input: {
       return ((inputTokens + urlToolTokens) / 1_000_000) * price.inputUsdPerMillionTokens
         + (Math.max(0, input.maxOutputTokens ?? 2048) / 1_000_000) * price.outputUsdPerMillionTokens;
     }
-    case 'gemini-3.1-flash-image': {
+    case 'gemini-nano-banana-2.1':
+      throw new Error('GROWTH_AI_PRICEBOOK_NOT_VERIFIED');
+    case 'gemini-3.1-flash-lite-image': {
       const price = GROWTH_AI_PRICEBOOK[input.model];
       const imageSize = input.imageSize ?? '1K';
+      if (imageSize !== '1K') throw new Error('GROWTH_AI_IMAGE_SIZE_NOT_SUPPORTED');
       return ((inputTokens + urlToolTokens) / 1_000_000) * price.inputUsdPerMillionTokens
-        + price.imageOutputUsd[imageSize];
+        + price.imageOutputUsd['1K'];
     }
     case 'gemini-3.8-flash-tts':
     case 'gemini-3.8-flash-lite-tts': {
