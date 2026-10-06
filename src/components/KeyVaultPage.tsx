@@ -19,6 +19,13 @@ interface ProviderConnection {
   dataScope?: string;
   lastVerifiedAt?: string | null;
   lastErrorCode?: string | null;
+  permissions?: {
+    fundsQuery?: boolean;
+    websocketToken?: boolean;
+    trading?: boolean;
+    withdrawals?: boolean;
+    publicMarketDataAdmission?: boolean;
+  };
 }
 
 interface Holding {
@@ -30,7 +37,7 @@ const PROVIDERS = [
   {
     id: 'kraken',
     label: 'Kraken',
-    description: 'Privater Funds-Readback; Trading und Withdrawals bleiben deaktiviert.',
+    description: 'Kraken Spot API: REST-Credential-Verifikation, optionaler Funds-Readback und WebSocket-Token-Capability; Trading und Withdrawals bleiben deaktiviert.',
   },
 ] as const;
 
@@ -108,7 +115,9 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
 
       setApiSecret('');
       setHoldings(Array.isArray(body?.holdings) ? body.holdings : []);
-      setFeedback(`${PROVIDERS.find(item => item.id === provider)?.label || provider} wurde erfolgreich verifiziert und sicher gespeichert.`);
+      const portfolio = body?.portfolioAvailable === true ? ' · Spot-Portfolio verfügbar' : ' · kein Funds-Readback angefordert';
+      const websocket = body?.capabilities?.websocketToken === true ? ' · WebSocket-Token erlaubt' : '';
+      setFeedback(`${PROVIDERS.find(item => item.id === provider)?.label || provider} wurde erfolgreich verifiziert und sicher gespeichert${portfolio}${websocket}.`);
       await loadConnections();
     } catch (reason) {
       const message = reason instanceof Error ? reason.message : 'PROVIDER_SAVE_FAILED';
@@ -280,7 +289,7 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-amber-400 px-4 text-sm font-black text-black disabled:opacity-50"
               >
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <LockKeyhole className="h-4 w-4" />}
-                Speichern & read-only verifizieren
+                Spot API-Key speichern & read-only verifizieren
               </button>
             </form>
 
@@ -292,6 +301,25 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
                     {connection.status === 'VERIFIED' ? 'Provider erfolgreich verbunden' : 'Provider-Verbindungsstatus'}
                   </p>
                 </div>
+                <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                  <div className="rounded-xl border border-white/10 bg-black/20 p-2.5">
+                    <div className="text-[9px] font-mono uppercase text-slate-500">Spot REST Auth</div>
+                    <div className="mt-1 text-[11px] font-bold text-emerald-200">VERIFIZIERT</div>
+                  </div>
+                  <div className="rounded-xl border border-white/10 bg-black/20 p-2.5">
+                    <div className="text-[9px] font-mono uppercase text-slate-500">Portfolio / Query Funds</div>
+                    <div className={`mt-1 text-[11px] font-bold ${connection.permissions?.fundsQuery ? 'text-emerald-200' : 'text-slate-400'}`}>
+                      {connection.permissions?.fundsQuery ? 'ERLAUBT' : 'NICHT ERLAUBT'}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-white/10 bg-black/20 p-2.5">
+                    <div className="text-[9px] font-mono uppercase text-slate-500">Spot WebSocket Token</div>
+                    <div className={`mt-1 text-[11px] font-bold ${connection.permissions?.websocketToken ? 'text-emerald-200' : 'text-slate-400'}`}>
+                      {connection.permissions?.websocketToken ? 'ERLAUBT' : 'NICHT ERLAUBT'}
+                    </div>
+                  </div>
+                </div>
+
                 <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
                   <div>
                     <dt className="opacity-70">Credential-Fingerprint</dt>
@@ -341,9 +369,15 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
             </section>
           )}
 
-          <p className="text-[11px] leading-relaxed text-slate-500">
-            Aktuell ist serverseitig ein aktiver Credential-Slot pro Provider definiert. Mehrere parallele Kraken-Key-Slots erfordern eine additive Vault-Schemaerweiterung und werden nicht stillschweigend eingeführt.
-          </p>
+          <section className="rounded-2xl border border-slate-800 bg-[#070b19]/70 p-4 text-[11px] leading-relaxed text-slate-400">
+            <h2 className="font-black text-white">Credential-Grenze</h2>
+            <p className="mt-2">
+              Der aktuelle Vault-Slot ist ein Kraken-Spot-Credential. REST und die Berechtigung zum Erzeugen eines privaten Spot-WebSocket-Tokens werden als Capabilities desselben Spot-Keys geprüft.
+            </p>
+            <p className="mt-2 text-amber-200">
+              Kraken Futures verwendet eine getrennte Authentifizierungsfamilie und ist in diesem Slot noch nicht speicherbar. Dafür ist eine additive Vault-Schemaerweiterung erforderlich; ein Futures-Key wird nicht als Spot-Key umgedeutet.
+            </p>
+          </section>
         </div>
       )}
     </AccountPageShell>
