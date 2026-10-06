@@ -134,6 +134,9 @@ test('landing page uses exactly three Vocabulary flashcards and keeps research i
   const docs = await readFile(new URL('../src/features/documentation/DocumentationHub.tsx', import.meta.url), 'utf8');
 
   assert.match(home, /VocabularyFlashcards/);
+  assert.match(home, /const VocabularyFlashcards = lazy\(\(\) =>/);
+  assert.match(home, /import\('\.\.\/\.\.\/components\/VocabularyFlashcards'\)/);
+  assert.doesNotMatch(home, /import \{ VocabularyFlashcards \} from/);
   assert.doesNotMatch(home, /ResearchProjectSummary/);
   assert.match(cards, /VOCABULARY_TERMS\.slice\(0, 3\)/);
   assert.match(cards, /term\.shortDefinition/);
