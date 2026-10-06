@@ -25,6 +25,8 @@
 !server/advisor-security.test.mjs
 !server/agent-shadow-runtime.mjs
 !server/agent-shadow-runtime.test.mjs
+!server/agent-trajectory-observability.mjs
+!server/agent-trajectory-observability.test.mjs
 !server/billing-catalog.mjs
 !server/vocabulary-checkout.mjs
 !server/vocabulary-checkout.test.mjs
@@ -90,6 +92,8 @@
 !scripts/
 !scripts/harden-npm-toolchain.mjs
 !scripts/benchmark-scoring-capacity.mjs
+!scripts/benchmark-agent-orchestration.mjs
+!scripts/agent-orchestration-benchmark-contract.test.mjs
 !scripts/verify-private-brokers.mjs
 !scripts/branding-assets.test.mjs
 !scripts/license-evidence.mjs
