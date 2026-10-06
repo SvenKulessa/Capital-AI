@@ -31,6 +31,8 @@
 !server/public-artifact-policy.mjs
 !server/subscription-checkout.test.mjs
 !server/subscription-checkout.mjs
+!server/cads-marketplace-community.mjs
+!server/cads-marketplace-community.test.mjs
 !server/cads-commerce.mjs
 !server/cads-commerce.test.mjs
 !server/benchmark-runs.mjs
@@ -94,6 +96,7 @@
 !scripts/branding-assets.test.mjs
 !scripts/license-evidence.mjs
 !scripts/license-evidence.test.mjs
+!scripts/cads-marketplace-manifest.test.mjs
 !scripts/billing-catalog.test.mjs
 !scripts/stripe-catalog-readback.test.mjs
 !scripts/stripe-subscription-sync-migration.test.mjs
@@ -129,6 +132,10 @@
 !packages/
 !packages/benchmark-core/
 !packages/benchmark-core/**
+!apps/
+!apps/cads-github-app/
+!apps/cads-github-app/github-app-registration.example.json
+!apps/cads-github-app/marketplace-plans.json
 !services/
 !services/provider-bridge-rs/
 !services/provider-bridge-rs/**
