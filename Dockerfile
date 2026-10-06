@@ -1,30 +1,3 @@
-FROM rust:1.99.0-alpine@sha256:a96ea6d18d4062e38f16cfbadd8b4541d622f2527dd0a5eca1fb36d301da4e88 AS provider-bridge-tools
-RUN cargo install --locked cargo-audit --version 0.22.2 \
-    && cargo install --locked cargo-deny --version 0.20.2
-
-FROM rust:1.99.0-alpine@sha256:a96ea6d18d4062e38f16cfbadd8b4541d622f2527dd0a5eca1fb36d301da4e88 AS provider-bridge-build
-WORKDIR /bridge
-COPY --from=provider-bridge-tools /usr/local/cargo/bin/cargo-audit /usr/local/cargo/bin/cargo-audit
-COPY --from=provider-bridge-tools /usr/local/cargo/bin/cargo-deny /usr/local/cargo/bin/cargo-deny
-COPY services/provider-bridge-rs/Cargo.toml services/provider-bridge-rs/rust-toolchain.toml services/provider-bridge-rs/deny.toml ./
-COPY services/provider-bridge-rs/src ./src
-COPY contracts/private-provider-query-operations.json /contracts/private-provider-query-operations.json
-RUN mkdir -p /bridge/evidence \
-    && cargo generate-lockfile \
-    && echo '---CAPITAL_AI_CARGO_LOCK_BEGIN---' \
-    && cat Cargo.lock \
-    && echo '---CAPITAL_AI_CARGO_LOCK_END---' \
-    && cargo fmt --check \
-    && cargo clippy --all-targets --all-features --locked -- -D warnings \
-    && cargo test --release --locked \
-    && cargo audit --json > /bridge/evidence/rustsec-audit.json \
-    && cargo deny --config deny.toml check \
-    && cargo metadata --locked --format-version 1 > /bridge/evidence/cargo-metadata.json \
-    && cargo build --release --locked \
-    && cp Cargo.lock /bridge/evidence/Cargo.lock \
-    && sha256sum Cargo.lock > /bridge/evidence/Cargo.lock.sha256 \
-    && sha256sum target/release/capital-ai-provider-bridge > /bridge/evidence/provider-bridge.sha256
-
 FROM node:26.10.0-alpine@sha256:0b36e8c136b94cd4fcf02188228e76c31ad5872eef3fec8cbd2eee500cfd9e80 AS crypto-base
 # Keep a security floor while allowing newer patches from the base image's Alpine branch.
 # Build and runtime reuse this one resolved layer instead of fetching two package indexes.
@@ -112,8 +85,6 @@ COPY --from=build /app/CAPITAL-AI-PRODUCT/badge.svg ./CAPITAL-AI-PRODUCT/badge.s
 COPY docs/licenses/CAPITAL-AI-VOCABULARY-BADGE-CUSTOMER-LICENSE-1.0.md ./docs/licenses/CAPITAL-AI-VOCABULARY-BADGE-CUSTOMER-LICENSE-1.0.md
 COPY --from=build /app/scoring-capacity.json ./evidence/scoring-capacity.json
 COPY --from=build /app/packages/benchmark-core ./packages/benchmark-core
-COPY --from=provider-bridge-build /bridge/target/release/capital-ai-provider-bridge ./bin/capital-ai-provider-bridge
-COPY --from=provider-bridge-build /bridge/evidence ./evidence/provider-bridge
 COPY server/index.mjs server/market.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/auth.mjs server/auth-security.mjs server/subscription-entitlements.mjs server/user-provider-vault.mjs server/private-provider-query.mjs server/kraken-order-dry-run.mjs server/uniswap-trading.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/mta-sts.mjs server/well-known.mjs server/mobile-scorer.mjs server/scorer-proxy.mjs server/scorer-bus.mjs server/observability.mjs server/cads-observability.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/subscription-checkout.mjs server/benchmark-runs.mjs server/benchmark-store.mjs server/public-artifact-policy.mjs ./server/
 COPY --from=production-deps /runtime/node_modules ./node_modules
 COPY server/infrastructure.mjs ./server/
