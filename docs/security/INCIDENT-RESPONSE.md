@@ -1,6 +1,6 @@
 # CAPITAL-AI Incident Response
 
-Stand: 2026-10-07  
+Stand: 2026-10-07
 Primary Domain: TRUST
 
 ## Zweck
