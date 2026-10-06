@@ -6,10 +6,10 @@ import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 
-test('positive admission erzeugt keine automatische Mutationsautoritaet', () => {
+test('positive Einzel-Admission erzeugt keine allgemeine automatische Mutationsautoritaet', () => {
   const security = read('SECURITY.md');
 
-  assert.match(security, /positives Security-, Compliance-, Lizenz- oder Admission-Ergebnis ist ausschließlich Evidence/i);
+  assert.match(security, /positives einzelnes Security-, Compliance-, Lizenz- oder Admission-Ergebnis ist ausschließlich Evidence/i);
   assert.match(security, /keine automatische Mutationsautorität/i);
   assert.match(security, /Admission allein reicht dafür niemals aus/i);
 
@@ -19,7 +19,7 @@ test('positive admission erzeugt keine automatische Mutationsautoritaet', () => 
     'Branch-Erstellung',
     'Pull Requests',
     'Merges',
-    'Deployments',
+    'Deployments außerhalb eines vollständig positiven, policy-definierten automatischen Deployment-Gate-Vertrags',
     'Secret- oder Credential-Rotation',
     'Permission-/Role-/Ruleset-Änderungen',
     'Infrastruktur-Mutationen',
@@ -37,6 +37,7 @@ test('SECURITY.md bleibt mit Root- und Governance-Policies fail-closed kompatibe
 
   assert.match(agents, /Ein erfolgreicher Test, Build oder Scan ist \*\*niemals allein\*\* eine Lizenz-, Security- oder Production-Freigabe/);
   assert.match(governance, /Ein erfolgreicher Test, Build oder Scan ist niemals allein eine Lizenz-, Security- oder Production-Freigabe/);
+  assert.match(governance, /keine zusätzliche menschliche Deployment-Admission erforderlich/i);
   assert.match(trust, /Keine Security-Ausnahme, Lizenzfreigabe oder Production-Freigabe automatisch aus einem grünen Test ableiten/);
 
   assert.match(postMerge, /Admission ist keine Security-, Lizenz-, Merge- oder Production-Freigabe/);
@@ -48,4 +49,22 @@ test('Security Policy behauptet Private Vulnerability Reporting nicht ungeprüft
   const security = read('SECURITY.md');
   assert.match(security, /sofern die Funktion repositoryseitig aktiviert ist/);
   assert.doesNotMatch(security, /Private Vulnerability Reporting ist aktiviert/i);
+});
+
+test('vollstaendiger policy-definierter Gate-Satz darf Deployment automatisch autorisieren', () => {
+  const agents = read('AGENTS.md');
+  const security = read('SECURITY.md');
+  const governance = read('docs/governance/DOMAIN-RELEASE-GOVERNANCE.md');
+  const handoff = read('docs/security/PRODUCTION-HANDOFF.md');
+
+  assert.match(agents, /keine separate Admission, Human-Approval oder erneute Owner-Bestätigung/i);
+  assert.match(agents, /alle.*Deployment-Gates.*terminal.*PASS/is);
+  assert.match(security, /Pipeline-Authorized Deployment/);
+  assert.match(security, /vollständigen Gate-Satz.*deployEligible:true/is);
+  assert.match(governance, /ohne zusätzliche Owner-\/Admission-Freigabe.*deployEligible:true/is);
+  assert.match(handoff, /vollständige PASS ist die technische Deployment-Autorität/i);
+
+  for (const blocked of ['fehlende', 'laufende', 'übersprungene', 'unbekannte', 'fehlgeschlagene']) {
+    assert.match(security, new RegExp(blocked, 'i'));
+  }
 });
