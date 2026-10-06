@@ -2,7 +2,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { connect } from '@nats-io/transport-node';
 
-import { natsConnectionAuth } from './infrastructure.mjs';
+import { natsConnectionAuth } from './nats-auth.mjs';
 
 const CONTRACT = Object.freeze(JSON.parse(readFileSync(
   new URL('../contracts/private-provider-query-operations.json', import.meta.url),
