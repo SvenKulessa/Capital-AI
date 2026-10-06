@@ -57,6 +57,17 @@ Insbesondere darf ein positives Ergebnis **nicht automatisch** autorisieren oder
 
 Explizit zugelassene, deterministische Low-Risk-Self-Healing-Pfade bleiben nur innerhalb ihrer separat versionierten Fingerprint-, Scope-, Revalidation- und Rollback-Gates zulässig. **Admission allein reicht dafür niemals aus.** Für normale Deployments gilt separat: Der vollständige, verbindlich definierte Pipeline-Gate-Satz darf ohne zusätzliche Human-/Owner-Admission Deployment-Autorität erzeugen.
 
+## Human Merge Boundary
+
+Merge-Autorität ist von Test-, Admission- und Deployment-Autorität strikt getrennt.
+
+- Pull Requests dürfen automatisiert erstellt, aktualisiert und vollständig geprüft werden.
+- Kein erfolgreicher Test, Scan, Benchmark, Admission-Status, `deployEligible:true` oder vollständiger Deployment-Gate-PASS autorisiert einen Merge.
+- Codeänderungen dürfen nur vom Human Repository Owner gemerged werden.
+- Ein Agent darf einen Merge nur ausführen, wenn der Owner im Chat ausdrücklich den Merge des konkret bezeichneten Pull Requests freigibt.
+- Diese Freigabe gilt nicht pauschal für andere PRs und nicht automatisch für materiell veränderte spätere Heads.
+- Auto-Merge, Bot-Merge oder vergleichbare Mechanismen dürfen diese Grenze nicht umgehen.
+
 ## Pipeline-Authorized Deployment
 
 Ein Production-Deployment darf ohne separate Owner- oder Admission-Freigabe automatisch erfolgen, wenn die verbindlichen Repository-Policies den vollständigen Deployment-Gate-Satz definieren und **alle** Pflicht-Gates auf der exakten Candidate-Identität terminal `PASS` sind.
