@@ -13,7 +13,7 @@ const ecbReferenceCatalog = Object.fromEntries(ECB_REFERENCE_CURRENCIES.map(curr
     name: `Euro / ${currency}`,
     venue: 'ECB reference rates',
     quote: currency,
-    category: 'FOREX_REFERENCE',
+    category: 'FOREX',
     providers: ['ecb-reference-rates'],
     timeSemantics: 'reference',
   }];
