@@ -16,4 +16,5 @@ export { VOICE_PRESETS, presetProfile, shapeUtterance, canSpeak, loadVoices, spe
 export { answerLocally, systemPrompt } from "./brain";
 export type { LocalAnswer } from "./brain";
 export { PROVIDERS, providerMeta } from "./providers";
-export type { Lang, Intent, ProviderId, GraphHit, ResearchBrief, Trace, TraceStep, VoiceProfile, ChatTurn } from "./core/types";
+export type { Lang, Intent, GraphHit, ResearchBrief, Trace, TraceStep, ChatTurn } from "./core/types";
+export type { ProviderId, VoiceProfile, VoicePresetId } from "./product-types";
