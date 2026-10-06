@@ -106,14 +106,20 @@
     {
       "id": "TA-MARKET-RUNTIME",
       "path": "server/market.mjs",
-      "blobSha": "3fbd9a2f058e3318034651ab9f75cfedd8432380",
-      "role": "Current fail-closed market runtime"
+      "blobSha": "7b03def93bf8991205cb9bfcf8f2339cd2822836",
+      "role": "Current fail-closed market runtime",
+      "recorrelatedAt": "2026-10-06",
+      "recorrelationBaseMain": "73ad214e3a8af73f99c08531533ddcaaca530be3",
+      "recorrelationReason": "PRODUCTION-WEB-01-MARKET Punkt 04 ECB Reference-Rate Adapter"
     },
     {
       "id": "TA-MARKET-WP",
       "path": "docs/market-data/PRODUCTION-WEB-01-MARKET-20261005.yaml",
-      "blobSha": "a1a63b88e36dbcc73e59988d7693384f5996a85e",
-      "role": "Production MARKET work-package projection"
+      "blobSha": "da486955d3d842689434afaf86c6caea3e04009c",
+      "role": "Production MARKET work-package projection",
+      "recorrelatedAt": "2026-10-06",
+      "recorrelationBaseMain": "73ad214e3a8af73f99c08531533ddcaaca530be3",
+      "recorrelationReason": "PRODUCTION-WEB-01-MARKET Punkt 04 ECB Reference-Rate Adapter"
     },
     {
       "id": "TA-AUTH",
