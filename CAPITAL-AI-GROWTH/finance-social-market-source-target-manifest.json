@@ -138,11 +138,11 @@
     {
       "id": "TA-USER-VAULT",
       "path": "server/user-provider-vault.mjs",
-      "blobSha": "dde9b883df4618f2017b216cc3d292beeef3b0ac",
+      "blobSha": "12362c6dc2bb63323b0319bbf6962e3dc4c2763d",
       "role": "Current server-side user provider secret boundary",
       "recorrelatedAt": "2026-10-06",
-      "recorrelationReason": "PR #209 Kraken Spot Validate-only Trading-Grenze",
-      "recorrelationBaseMain": "c3d1a939902b419e0282373056769165a68eaf4b"
+      "recorrelationReason": "PR #212 read-only Kraken/Binance Provider-Vault-Härtung; Finance-Cutover bleibt BLOCKED",
+      "recorrelationBaseMain": "824d42913bbeccb68366c2ae70714ccb960717e5"
     },
     {
       "id": "TA-BYOK-BOUNDARY",

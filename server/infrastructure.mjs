@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { natsConnectionAuth } from './nats-auth.mjs';
 import { createClient } from 'redis';
 import { connect } from '@nats-io/transport-node';
 import { jetstream, jetstreamManager, StorageType, DiscardPolicy } from '@nats-io/jetstream';
@@ -15,17 +16,7 @@ export function validateStreamConfig(config, replicas) {
 }
 export const QUOTE_CHANNEL = 'capital:quote:events:v1';
 export const payloadHash = payload => createHash('sha256').update(JSON.stringify(payload)).digest('hex');
-export function natsConnectionAuth(env = process.env) {
-  const user = String(env.NATS_APP_USER || '').trim();
-  const pass = String(env.NATS_APP_PASSWORD || '').trim();
-  if (user || pass) {
-    if (!user || !pass) throw new Error('NATS_SCOPED_CREDENTIALS_INCOMPLETE');
-    return { user, pass, mode: 'scoped_user' };
-  }
-  const token = String(env.NATS_TOKEN || '').trim();
-  if (token) return { token, mode: 'legacy_token' };
-  throw new Error('NATS_CREDENTIALS_REQUIRED');
-}
+export { natsConnectionAuth };
 export class MarketInfrastructure {
   constructor(env = process.env) { this.env = env; this.redis = null; this.nc = null; this.js = null; this.manager = null; this.natsConnected = false; this.state = 'unavailable'; this.opening = null; this.subscriber = null; this.listeners = new Set(); this.pendingSymbols = new Set(); this.subscribing = null; this.pubsubEnabled = env.MARKET_PUBSUB_ENABLED !== 'false'; this.deliveryMetrics = { verified: 0, lastVerifiedDeliveryAt: null, lastVerifiedSymbol: null }; }
   async start() {

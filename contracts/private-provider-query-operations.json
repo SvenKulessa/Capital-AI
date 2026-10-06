@@ -1,0 +1,259 @@
+{
+  "schemaVersion": "CAPITAL_AI_PRIVATE_PROVIDER_CONTRACT@1",
+  "requestSchema": "CAPITAL_AI_PRIVATE_PROVIDER_QUERY@1",
+  "resultSchema": "CAPITAL_AI_PRIVATE_PROVIDER_RESULT@1",
+  "querySubject": "capital.private.provider.query.v1",
+  "executeSubject": "capital.private.provider.execute.v1",
+  "maxRequestBytes": 65536,
+  "maxResponseBytes": 262144,
+  "maxTtlMs": 30000,
+  "providers": {
+    "kraken": {
+      "operations": {
+        "account.key_info": {
+          "params": []
+        },
+        "account.balance": {
+          "params": []
+        },
+        "account.trade_balance": {
+          "params": [
+            "asset"
+          ]
+        },
+        "orders.open": {
+          "params": [
+            "trades",
+            "userref"
+          ]
+        },
+        "orders.closed": {
+          "params": [
+            "trades",
+            "userref",
+            "start",
+            "end",
+            "ofs",
+            "closetime"
+          ]
+        },
+        "orders.query": {
+          "params": [
+            "txid",
+            "trades",
+            "userref",
+            "consolidate_taker"
+          ]
+        },
+        "trades.history": {
+          "params": [
+            "type",
+            "trades",
+            "start",
+            "end",
+            "ofs"
+          ]
+        },
+        "trades.query": {
+          "params": [
+            "txid",
+            "trades"
+          ]
+        },
+        "positions.open": {
+          "params": [
+            "txid",
+            "docalcs",
+            "consolidation"
+          ]
+        },
+        "ledgers.list": {
+          "params": [
+            "asset",
+            "aclass",
+            "type",
+            "start",
+            "end",
+            "ofs",
+            "without_count"
+          ]
+        },
+        "ledgers.query": {
+          "params": [
+            "id",
+            "trades"
+          ]
+        },
+        "trade.volume": {
+          "params": [
+            "pair",
+            "fee-info"
+          ]
+        },
+        "futures.account": {
+          "params": []
+        },
+        "futures.open_positions": {
+          "params": []
+        },
+        "futures.open_orders": {
+          "params": []
+        },
+        "futures.fills": {
+          "params": [
+            "lastFillTime"
+          ]
+        },
+        "futures.position_events": {
+          "params": [
+            "since",
+            "before",
+            "sort",
+            "continuationToken"
+          ]
+        }
+      }
+    },
+    "binance": {
+      "operations": {
+        "account.permissions": {
+          "params": []
+        },
+        "account.info": {
+          "params": []
+        },
+        "account.status": {
+          "params": []
+        },
+        "account.snapshot": {
+          "params": [
+            "type",
+            "startTime",
+            "endTime",
+            "limit"
+          ],
+          "costUnits": 2400,
+          "minIntervalMs": 60000,
+          "notes": "Binance request weight 2400; CAPITAL-AI permits at most one attempt per user per minute.",
+          "requiredParams": [
+            "type"
+          ],
+          "paramRules": {
+            "type": {
+              "enum": [
+                "SPOT",
+                "MARGIN",
+                "FUTURES"
+              ]
+            },
+            "limit": {
+              "min": 7,
+              "max": 30
+            }
+          },
+          "maxWindowMs": 2592000000,
+          "globalMinIntervalMs": 60000
+        },
+        "spot.account": {
+          "params": [
+            "omitZeroBalances"
+          ]
+        },
+        "spot.open_orders": {
+          "params": [
+            "symbol"
+          ]
+        },
+        "spot.all_orders": {
+          "params": [
+            "symbol",
+            "orderId",
+            "startTime",
+            "endTime",
+            "limit"
+          ],
+          "requiredParams": [
+            "symbol"
+          ]
+        },
+        "spot.my_trades": {
+          "params": [
+            "symbol",
+            "orderId",
+            "startTime",
+            "endTime",
+            "fromId",
+            "limit"
+          ],
+          "requiredParams": [
+            "symbol"
+          ]
+        },
+        "futures.account": {
+          "params": []
+        },
+        "futures.balance": {
+          "params": []
+        },
+        "futures.position_risk": {
+          "params": [
+            "symbol"
+          ]
+        },
+        "futures.open_orders": {
+          "params": [
+            "symbol"
+          ]
+        },
+        "futures.all_orders": {
+          "params": [
+            "symbol",
+            "orderId",
+            "startTime",
+            "endTime",
+            "limit"
+          ]
+        },
+        "futures.user_trades": {
+          "params": [
+            "symbol",
+            "orderId",
+            "startTime",
+            "endTime",
+            "fromId",
+            "limit"
+          ]
+        },
+        "futures.income": {
+          "params": [
+            "symbol",
+            "incomeType",
+            "startTime",
+            "endTime",
+            "page",
+            "limit"
+          ]
+        }
+      }
+    }
+  },
+  "forbiddenOperationClasses": [
+    "order.create",
+    "order.cancel",
+    "order.amend",
+    "withdraw",
+    "transfer",
+    "borrow",
+    "repay",
+    "staking",
+    "earn",
+    "subaccount.mutate"
+  ],
+  "dataPolicy": {
+    "scope": "USER_PRIVATE_ACCOUNT_DATA",
+    "jetStreamPublicationAllowed": false,
+    "sharedCacheAllowed": false,
+    "publicDisplayAllowed": false,
+    "redistributionAllowed": false
+  }
+}
