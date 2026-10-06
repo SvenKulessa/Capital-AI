@@ -45,7 +45,7 @@ export function parseGrowthMarketingDraftJson(raw: string): GrowthMarketingDraft
 }
 
 
-function assertDraftBoundToRequest(
+export function assertDraftBoundToRequest(
   draft: GrowthMarketingDraft,
   input: GrowthAiDraftRequest,
   model: string,
