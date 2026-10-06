@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "CAPITAL_AI_BENCHMARK_COST_CALIBRATION@1",
+  "observedAt": "2026-10-06T07:32:00Z",
+  "productionEligible": false,
+  "decisionEligible": false,
+  "render": {
+    "serviceId": "srv-dau1rp893c1s73cdhm1g",
+    "region": "frankfurt",
+    "currentWebPlan": "0.5c-512mb",
+    "cpu": 0.5,
+    "memoryMiB": 512,
+    "monthlyWebServiceUsd": 7,
+    "isolatedCronCandidate": {
+      "plan": "0.5c-512mb",
+      "usdPerMinute": 0.00016,
+      "billing": "prorated_by_second"
+    },
+    "sources": [
+      "https://render.com/pricing",
+      "https://render.com/docs/compute-plans"
+    ]
+  },
+  "fx": {
+    "pair": "USD/EUR",
+    "usdToEur": 0.891373,
+    "observedAt": "2026-10-06T07:32:00Z",
+    "eurPerRunnerMinute": 0.00014261968,
+    "eurPerRunnerSecond": 0.000002376994666666667
+  },
+  "measuredBaseline": {
+    "scope": "ENGINE_CAPACITY_ONLY",
+    "executionEnvironment": "github-actions-docker-security-gate",
+    "sourceSha": "c3d1a939902b419e0282373056769165a68eaf4b",
+    "artifactId": 11397068353,
+    "artifactDigest": "sha256:1dba1ef6018e169a41ff4f52fa3f4eacab61bd4eb63c0619768278fce558152c",
+    "attempted": 600,
+    "succeeded": 600,
+    "failed": 0,
+    "wallTimeMs": 82.1,
+    "actualBilledCostEur": null,
+    "equivalentRenderCronComputeEur": 1.9515126213333333e-7
+  },
+  "limitations": [
+    "The measured baseline is the synthetic scoring-capacity workload, not CAPITAL_AI_EVENT_BACKBONE@1.",
+    "The GitHub Actions run was not billed as a Render cron job; equivalentRenderCronComputeEur is a pricing-model projection, not an invoice.",
+    "Credits remain uncalibrated and must not be charged until the event-backbone runner has real measured resource evidence."
+  ],
+  "credits": {
+    "calibrated": false,
+    "unitsCharged": null
+  }
+}

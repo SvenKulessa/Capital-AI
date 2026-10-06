@@ -2,10 +2,16 @@
   "mcpServers": {
     "capital-ai-gsc": {
       "command": "node",
-      "args": ["scripts/gsc-mcp-guard.mjs"],
+      "args": [
+        "scripts/gsc-mcp-guard.mjs"
+      ],
       "env": {
         "GSC_PROPERTY": "sc-domain:capital-ai.online"
       }
+    },
+    "metricool": {
+      "type": "http",
+      "url": "https://ai.metricool.com/mcp"
     }
   }
 }
