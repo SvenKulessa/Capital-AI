@@ -19,7 +19,7 @@ services:
       - key: PORT
         value: "10000"
       - key: MARKET_SYMBOLS
-        value: BTCUSDT,BTCUSD,AAPL
+        value: EUR/USD,EUR/JPY,EUR/CZK,EUR/DKK,EUR/GBP,EUR/HUF,EUR/PLN,EUR/RON,EUR/SEK,EUR/CHF,EUR/ISK,EUR/NOK,EUR/TRY,EUR/AUD,EUR/BRL,EUR/CAD,EUR/CNY,EUR/HKD,EUR/IDR,EUR/ILS
       # All optional capabilities fail closed until configured by the owner.
       - key: PUBLIC_APP_ORIGIN
         sync: false
@@ -53,6 +53,8 @@ services:
       - key: MARKET_PUBSUB_ENABLED
         value: "true"
       - key: MARKET_QUOTES_ENABLED
+        value: "false"
+      - key: MARKET_ECB_REFERENCE_RATES_ENABLED
         value: "false"
       - key: CAPITAL_AI_FINANCE_SCORER_PRIVATE_ORIGIN
         sync: false
