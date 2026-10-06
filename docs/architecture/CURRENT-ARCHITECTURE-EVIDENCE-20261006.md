@@ -1,8 +1,8 @@
 # CAPITAL-AI — Current Architecture Evidence Baseline
 
-Stand: 2026-10-06  
-Primary Domain: TRUST  
-Cross-Domain: PRODUCT / PLATFORM / MARKET  
+Stand: 2026-10-06
+Primary Domain: TRUST
+Cross-Domain: PRODUCT / PLATFORM / MARKET
 Baseline: main@4fa3e3f92547cd6356f46490a38e9b7515f69a6d
 
 ## Zweck
