@@ -485,6 +485,108 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
     };
   }
 
+  async function executePrivateQuery(userId, provider, operation, params = {}) {
+    if (!config) {
+      const error = new Error('PROVIDER_VAULT_NOT_CONFIGURED');
+      error.code = 'PROVIDER_VAULT_NOT_CONFIGURED';
+      throw error;
+    }
+    if (!['kraken', 'binance'].includes(provider)) {
+      const error = new Error('UNSUPPORTED_PROVIDER');
+      error.code = 'UNSUPPORTED_PROVIDER';
+      throw error;
+    }
+    const stored = await readProviderStored(userId, provider);
+    if (!stored?.secretPayload) {
+      const error = new Error('PROVIDER_CONNECTION_NOT_FOUND');
+      error.code = 'PROVIDER_CONNECTION_NOT_FOUND';
+      throw error;
+    }
+    const payload = parseStoredVaultPayload(stored.secretPayload);
+    const cleanParams = normalizeProviderParams(params);
+
+    if (provider === 'kraken') {
+      if (operation.startsWith('futures.')) {
+        if (!payload.futures) {
+          const error = new Error('KRAKEN_FUTURES_CONNECTION_NOT_FOUND');
+          error.code = 'KRAKEN_FUTURES_CONNECTION_NOT_FOUND';
+          throw error;
+        }
+        const permissions = await krakenFuturesKeyInfo(fetchImpl, payload.futures);
+        if (permissions.transfer !== 'NO_ACCESS') {
+          const error = new Error('KRAKEN_FUTURES_TRANSFER_PERMISSION_FORBIDDEN');
+          error.code = 'KRAKEN_FUTURES_TRANSFER_PERMISSION_FORBIDDEN';
+          throw error;
+        }
+        if (!permissions.configured) {
+          const error = new Error('KRAKEN_FUTURES_READ_ACCESS_REQUIRED');
+          error.code = 'KRAKEN_FUTURES_READ_ACCESS_REQUIRED';
+          throw error;
+        }
+        const path = KRAKEN_FUTURES_QUERY_PATHS[operation];
+        if (!path) {
+          const error = new Error('OPERATION_NOT_ADMITTED');
+          error.code = 'OPERATION_NOT_ADMITTED';
+          throw error;
+        }
+        return krakenFuturesPrivateGet(fetchImpl, path, payload.futures, cleanParams);
+      }
+
+      if (!payload.spot) {
+        const error = new Error('KRAKEN_SPOT_CONNECTION_NOT_FOUND');
+        error.code = 'KRAKEN_SPOT_CONNECTION_NOT_FOUND';
+        throw error;
+      }
+      const verification = await krakenKeyInfo(fetchImpl, payload.spot);
+      if (verification.capabilities.forbiddenPermissions.length > 0) {
+        const error = new Error('KRAKEN_FUNDING_OR_WITHDRAWAL_PERMISSIONS_FORBIDDEN');
+        error.code = 'KRAKEN_FUNDING_OR_WITHDRAWAL_PERMISSIONS_FORBIDDEN';
+        throw error;
+      }
+      if (operation === 'account.key_info') {
+        return { info: verification.info, capabilities: verification.capabilities };
+      }
+      const path = KRAKEN_SPOT_QUERY_PATHS[operation];
+      if (!path) {
+        const error = new Error('OPERATION_NOT_ADMITTED');
+        error.code = 'OPERATION_NOT_ADMITTED';
+        throw error;
+      }
+      return krakenPrivatePost(fetchImpl, path, payload.spot, cleanParams);
+    }
+
+    const isFutures = operation.startsWith('futures.');
+    const credentials = isFutures ? payload.futures : payload.spot;
+    if (!credentials) {
+      const error = new Error(isFutures ? 'BINANCE_FUTURES_CONNECTION_NOT_FOUND' : 'BINANCE_SPOT_CONNECTION_NOT_FOUND');
+      error.code = error.message;
+      throw error;
+    }
+    const permissions = await binanceKeyInfo(fetchImpl, credentials);
+    if (!permissions.reading) {
+      const error = new Error('BINANCE_READING_PERMISSION_REQUIRED');
+      error.code = 'BINANCE_READING_PERMISSION_REQUIRED';
+      throw error;
+    }
+    if (permissions.forbiddenTransfers) {
+      const error = new Error('BINANCE_TRANSFER_OR_WITHDRAWAL_PERMISSION_FORBIDDEN');
+      error.code = 'BINANCE_TRANSFER_OR_WITHDRAWAL_PERMISSION_FORBIDDEN';
+      throw error;
+    }
+    if (isFutures && !permissions.futures) {
+      const error = new Error('BINANCE_FUTURES_ACCESS_REQUIRED');
+      error.code = 'BINANCE_FUTURES_ACCESS_REQUIRED';
+      throw error;
+    }
+    const target = BINANCE_QUERY_PATHS[operation];
+    if (!target) {
+      const error = new Error('OPERATION_NOT_ADMITTED');
+      error.code = 'OPERATION_NOT_ADMITTED';
+      throw error;
+    }
+    return binancePrivateGet(fetchImpl, target[0], target[1], credentials, cleanParams);
+  }
+
   async function handle(req, res, url, json) {
     if (!url.pathname.startsWith('/api/profile/provider-connections')) return false;
 
@@ -757,5 +859,5 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
     return true;
   }
 
-  return { handle, readKrakenSpotTradingCredential };
+  return { handle, readKrakenSpotTradingCredential, executePrivateQuery };
 }
