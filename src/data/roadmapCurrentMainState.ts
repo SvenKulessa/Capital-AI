@@ -712,6 +712,19 @@ export const ROADMAP_CURRENT_STATE_OVERRIDES: Readonly<Record<string, RoadmapRec
       "public/branding/social"
     ],
     "nextStep": "Persistente Content-Jobs, Freigabe-Bindung und Provider-Readbacks vervollständigen; Secrets und Kanal-Credentials bleiben außerhalb öffentlicher Artefakte."
+  },
+  "PRODUCTION-WEB-01-MARKET": {
+    "status": "aktiv",
+    "evidenceState": "OFFEN",
+    "progressPercent": null,
+    "evidenceRefs": [
+      "server/private-provider-query.mjs",
+      "contracts/private-provider-query-operations.json",
+      "server/user-provider-vault.mjs",
+      "services/provider-bridge-rs/src/main.rs",
+      "supabase/migrations/20261006131500_enable_binance_user_provider_vault.sql"
+    ],
+    "nextStep": "MARKET-05 Instrumentmanifest fortführen; parallel den in Main integrierten Kraken/Binance Read-only Private-Provider-Pfad über NATS/Rust-Bridge mit echter Runtime-Evidence abnehmen. Mutierende Orders, Shared/Public-Rechte und Score-Promotion bleiben separate Gates."
   }
 });
 
