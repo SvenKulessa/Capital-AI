@@ -183,15 +183,12 @@ async function readJson(req) {
   }
 }
 
-export function createPrivateProviderQuery({ env = process.env, auth, vault } = {}) {
+export function createPrivateProviderQuery({ env = process.env, auth, vault, state } = {}) {
   let requestNc = null;
   let executorNc = null;
   let subscription = null;
   let executorLoop = null;
   let opening = null;
-  const highCostWindows = new Map();
-  const requestWindows = new Map();
-  const replayWindow = new Map();
 
   function enabled() {
     return env.PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true';
@@ -202,26 +199,14 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault } = 
     await executorNc.publish(message.reply, Buffer.from(JSON.stringify(payload), 'utf8'));
   }
 
-  function enforceRequestRate(userRef) {
+  async function enforceRequestRate(userRef) {
     const configured = Number(env.PRIVATE_PROVIDER_QUERY_RATE_LIMIT_PER_MINUTE || 30);
     const limit = Number.isSafeInteger(configured) && configured >= 1 && configured <= 120 ? configured : 30;
-    const now = Date.now();
-    const current = requestWindows.get(userRef);
-    if (!current || now - current.startedAt >= 60_000) {
-      requestWindows.set(userRef, { startedAt: now, count: 1 });
-      return { limit, remaining: limit - 1 };
-    }
-    if (current.count >= limit) {
-      const error = new Error('PRIVATE_PROVIDER_RATE_LIMITED');
-      error.code = 'PRIVATE_PROVIDER_RATE_LIMITED';
-      error.retryAfterSeconds = Math.max(1, Math.ceil((60_000 - (now - current.startedAt)) / 1000));
-      throw error;
-    }
-    current.count += 1;
-    return { limit, remaining: limit - current.count };
+    if (!state?.consumeProviderRate) throw new Error('PROVIDER_STATE_UNAVAILABLE');
+    return state.consumeProviderRate(userRef, limit, 60_000);
   }
 
-  function enforceCostGate(userRef, input) {
+  async function enforceCostGate(userRef, input) {
     const policy = CONTRACT.providers?.[input.provider]?.operations?.[input.operation] || {};
     const minIntervalMs = Number(policy.minIntervalMs || 0);
     const globalMinIntervalMs = Number(policy.globalMinIntervalMs || 0);
@@ -232,31 +217,18 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault } = 
       throw new Error('INVALID_OPERATION_COST_POLICY');
     }
     if (minIntervalMs === 0 && globalMinIntervalMs === 0) return { costUnits, retryAfterSeconds: 0 };
+    if (!state?.claimProviderCostScopes) throw new Error('PROVIDER_STATE_UNAVAILABLE');
 
-    const now = Date.now();
-    const keys = [
-      [`user:${userRef}:${input.provider}:${input.operation}`, minIntervalMs],
-      [`global:${input.provider}:${input.operation}`, globalMinIntervalMs],
-    ].filter(([, interval]) => interval > 0);
+    const scopes = [
+      { key: `user:${userRef}:${input.provider}:${input.operation}`, intervalMs: minIntervalMs },
+      { key: `global:${input.provider}:${input.operation}`, intervalMs: globalMinIntervalMs },
+    ].filter(scope => scope.intervalMs > 0);
 
-    let retryAfterSeconds = 0;
-    for (const [key, interval] of keys) {
-      const previous = highCostWindows.get(key) || 0;
-      const remaining = interval - (now - previous);
-      if (remaining > 0) retryAfterSeconds = Math.max(retryAfterSeconds, Math.ceil(remaining / 1000));
-    }
-    if (retryAfterSeconds > 0) {
-      const error = new Error('PROVIDER_QUERY_COST_THROTTLED');
-      error.code = 'PROVIDER_QUERY_COST_THROTTLED';
-      error.retryAfterSeconds = Math.max(1, retryAfterSeconds);
-      error.costUnits = costUnits;
+    try {
+      await state.claimProviderCostScopes(scopes);
+    } catch (error) {
+      if (error?.code === 'PROVIDER_QUERY_COST_THROTTLED') error.costUnits = costUnits;
       throw error;
-    }
-    for (const [key] of keys) highCostWindows.set(key, now);
-    if (highCostWindows.size > 4096) {
-      for (const [candidate, timestamp] of highCostWindows) {
-        if (now - timestamp > 10 * 60_000) highCostWindows.delete(candidate);
-      }
     }
     return { costUnits, retryAfterSeconds: 0 };
   }
@@ -267,7 +239,8 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault } = 
       if (message.data.length > MAX_BODY_BYTES) throw new Error('REQUEST_TOO_LARGE');
       envelope = JSON.parse(new TextDecoder().decode(message.data));
       if (!verifyProviderQueryEnvelope(envelope, env)) throw new Error('INVALID_QUERY_PROOF');
-      assertNotReplayed(replayWindow, envelope);
+      if (!state?.claimProviderReplay) throw new Error('PROVIDER_STATE_UNAVAILABLE');
+      await state.claimProviderReplay(envelope.requestId, envelope.expiresAt);
       const data = safeProviderResult(await vault.executePrivateQuery(
         envelope.userRef,
         envelope.provider,
@@ -350,7 +323,7 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault } = 
     let input;
     try {
       try {
-        enforceRequestRate(user.userId);
+        await enforceRequestRate(user.userId);
       } catch (error) {
         res.setHeader('Retry-After', String(error.retryAfterSeconds || 60));
         json(res, 429, { error: 'private_provider_rate_limited' });
@@ -359,7 +332,7 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault } = 
       input = validateProviderQueryRequest(await readJson(req));
       let costGate;
       try {
-        costGate = enforceCostGate(user.userId, input);
+        costGate = await enforceCostGate(user.userId, input);
       } catch (error) {
         if (error?.code === 'PROVIDER_QUERY_COST_THROTTLED') {
           res.setHeader('Retry-After', String(error.retryAfterSeconds || 60));
