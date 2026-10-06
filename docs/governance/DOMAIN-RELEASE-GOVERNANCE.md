@@ -1,6 +1,6 @@
 # CAPITAL-AI Domain-, Versions- und Release-Governance
 
-Stand: 2026-10-05
+Stand: 2026-10-07
 
 ## Oberste Engineering-Priorität
 
@@ -62,7 +62,7 @@ Die Evidence muss den autorisierten Scope, die ausgeführten Änderungen und ein
 
 ## Release-Vertrag
 
-Ein Release ist erst Production-fähig, wenn Produktversion, Git SHA, OCI Digest, SBOM/Attestation und Runtime-Identität korreliert sind. `candidate.json` bleibt fail-closed; nur der bestehende Production-Handoff darf `deployEligible:true` erzeugen.
+Ein Release ist erst Production-fähig, wenn Produktversion, Git SHA, OCI Digest, SBOM/Attestation und Runtime-Identität korreliert sind. `candidate.json` bleibt fail-closed; der Production-Handoff ist der technische, maschinenprüfbare Gate-Vertrag. Sind alle darin vorgeschriebenen Gates für die exakte Candidate-Identität terminal `PASS`, darf die Pipeline ohne zusätzliche Owner-/Admission-Freigabe `deployEligible:true` erzeugen und den vorgesehenen Deployment-Pfad ausführen.
 
 NATS wird nicht bei jedem App-Release neu deployed. Ein NATS-Deploy wird nur durch Änderungen an NATS-Image, Konfiguration, Entry Point, Broker-Security oder explizit freigegebene Runtime-/CVE-Maßnahmen ausgelöst.
 
@@ -72,7 +72,7 @@ Abhängigkeiten, Tools, Runtimes, GitHub Actions und Container-Bases werden rege
 
 **Jedes** Update, Upgrade, Patch und jeder dependency-bezogene Bugfix unterliegt zusätzlich dem `docs/security/DEPENDENCY-UPDATE-TRUST-MODEL.md`: offizielle Herkunft, Registry-/Artefakt-Evidenz, Security Intelligence, Lizenz-/Redistribution-Prüfung sowie Maintainer-/Community-Gegenprüfung auf Supply-Chain-Kompromittierung, Takeover, Typosquatting, zurückgezogene Releases und relevante Regressionen. Community-Signale ergänzen die offizielle Evidenz, ersetzen sie aber nicht.
 
-Automatische Update-PRs dürfen erstellt werden; Deployment bleibt an CI, Security Gates, Component-Diff und Production-Handoff gebunden. Major Upgrades, Auth-/Security-Runtimes und persistente Broker werden niemals ungeprüft direkt aus einem Versionsscan deployed. Ungeklärte Herkunfts-, Kompromittierungs- oder Lizenzsignale führen fail-closed zu `BLOCKED` oder `ESCALATED`.
+Automatische Update-PRs dürfen erstellt werden; Deployment bleibt an CI, Security Gates, Component-Diff und Production-Handoff gebunden. Sind alle policy-definierten Pflicht-Gates terminal PASS, ist keine zusätzliche menschliche Deployment-Admission erforderlich. Major Upgrades, Auth-/Security-Runtimes und persistente Broker werden niemals ungeprüft direkt aus einem Versionsscan deployed. Ungeklärte Herkunfts-, Kompromittierungs- oder Lizenzsignale führen fail-closed zu `BLOCKED` oder `ESCALATED`.
 
 ## Self-Healing
 
