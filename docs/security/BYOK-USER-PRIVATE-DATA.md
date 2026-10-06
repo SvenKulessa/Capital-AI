@@ -1,6 +1,6 @@
 # BYOK / USER_PRIVATE_ACCOUNT_DATA Boundary
 
-Stand: 2026-10-05  
+Stand: 2026-10-06  
 Owner: PRODUCT, mit MARKET-/TRUST-Grenzen
 
 ## Zweck
@@ -70,15 +70,23 @@ Secret-RPCs.
 
 ## Kraken-Prototyp
 
-Der produktnahe Prototyp verwendet ausschließlich:
+Der produktnahe Spot-Prototyp trennt Credential-Verifikation und Portfoliozugriff:
 
 ```text
-POST /0/private/Balance
+POST /0/private/GetApiKeyInfo   # Credential-/Permission-Readback
+POST /0/private/Balance         # nur wenn query-funds tatsächlich erlaubt ist
 ```
 
 Die Signatur wird serverseitig nach dem Kraken-HMAC-SHA512-Verfahren erzeugt.
-Trading-, Order-, Deposit- und Withdrawal-Endpunkte sind nicht Bestandteil
-des Adapters.
+Ein Spot-Key kann deshalb auch ohne `query-funds` als gültiges REST-Credential
+verifiziert werden. `create-ws-token` wird als separate Capability desselben
+Spot-Keys ausgewiesen. Schreibende Berechtigungen für Trading, Funding oder
+Withdrawals werden im read-only Vault-Pfad abgewiesen.
+
+Kraken Futures ist **nicht** Teil dieses Credential-Slots. Futures verwendet
+einen getrennten Authentifizierungsvertrag und benötigt vor Implementierung
+eine additive Vault-/Credential-Family-Entscheidung; Futures-Keys werden nicht
+als Spot-Keys interpretiert.
 
 Die Metadaten deklarieren zusätzlich:
 
