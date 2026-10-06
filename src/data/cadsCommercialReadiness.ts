@@ -1,17 +1,17 @@
 /**
  * CADS commercial-channel readiness authority.
  *
- * CURRENT_MAIN already contains a website SaaS entitlement slice. GitHub Marketplace
- * is modeled as a separate, fail-closed distribution/billing channel. This module
- * intentionally does not synthesize an overall readiness percentage.
+ * Website SaaS and GitHub Marketplace are separate billing/entitlement authorities.
+ * The Marketplace runtime is implemented for paid production but external publication
+ * remains fail-closed until GitHub organization/publisher/listing evidence is real.
  */
 export const CADS_COMMERCIAL_READINESS = {
-  schemaVersion: 'CAPITAL_AI_CADS_COMMERCIAL_READINESS@2',
+  schemaVersion: 'CAPITAL_AI_CADS_COMMERCIAL_READINESS@3',
   productId: 'cads-app',
   productName: '[CAPITAL-AI-PRODUCT]CADS-BENCHMARK-ENGINE',
   owner: 'PRODUCT',
   assuranceOwner: 'TRUST',
-  correlatedMainSha: 'cef1d11f607778f5226ca1df97376ba408652c69',
+  correlatedMainSha: '4fa3e3f92547cd6356f46490a38e9b7515f69a6d',
   correlatedAt: '2026-10-06',
   readinessPct: null,
   websiteCommerce: {
@@ -24,39 +24,54 @@ export const CADS_COMMERCIAL_READINESS = {
     decisionEligible: false,
   },
   githubMarketplace: {
-    state: 'PRE_LISTING_FAIL_CLOSED',
-    pricingAuthority: null,
+    target: 'PAID_PRODUCTION',
+    state: 'RUNTIME_IMPLEMENTED_EXTERNAL_ADMISSION_BLOCKED',
+    pricingAuthority: 'GITHUB_MARKETPLACE_LISTING',
+    pricingCurrency: 'USD',
     marketplaceListingApproved: false,
     checkoutOrPurchaseEnabled: false,
-    entitlementAuthority: 'GITHUB_MARKETPLACE_API_REQUIRED',
+    entitlementAuthority: 'server/cads-marketplace.mjs + Supabase entitlement ledger',
     sourceCheckedAt: '2026-10-06',
+    plans: ['starter', 'pro', 'enterprise'],
+    freePlanEnabled: false,
     officialRequirements: {
       appOwnedByOrganizationForPaidPlans: true,
       verifiedPublisherRequiredForPaidPlans: true,
       minimumGitHubAppInstallationsForPaidListing: 100,
       monthlyAndAnnualBillingRequired: true,
-      pricingCurrency: 'USD',
       maximumPublishedPlans: 10,
       requiredMarketplacePurchaseActions: ['purchased', 'changed', 'cancelled'],
       planChangeWebhookRequired: true,
       customerDataDeletionWithinDaysAfterCancellation: 30,
-      externalPaidServiceRequiresMarketplacePaidPlanOncePaidRequirementsMet: true,
+      financialOnboardingRequired: true,
+      listingReviewRequired: true,
+    },
+    implementation: {
+      hmacWebhookVerification: true,
+      authoritativeMarketplaceReadbackBeforeActivationOrPlanChange: true,
+      idempotentDeliveryLedger: true,
+      starterProEnterpriseCapabilityMapping: true,
+      cancellationDeactivation: true,
+      cancellationDataPurgeBeforeDay30: true,
+      secretsExcludedFromRepository: true,
+      exactUsdPricesStoredInRepository: false,
     },
     evidence: {
       organizationOwnershipVerified: false,
       verifiedPublisherVerified: false,
       installationThresholdVerified: false,
       cadsListingDraftVerified: false,
-      cadsMarketplaceWebhookVerified: false,
-      monthlyAnnualPricingAssigned: false,
-      planIdsAssigned: false,
+      cadsMarketplaceWebhookRuntimeVerified: false,
+      monthlyAnnualPricingAssignedInMarketplace: false,
+      planIdsAssignedInRuntime: false,
       privacySupportListingEvidenceVerified: false,
-      purchaseLifecycleVerified: false,
-      cancellationLifecycleVerified: false,
-      cancellationDeletionVerified: false,
-      authoritativeMarketplaceReadbackVerified: false,
+      purchaseLifecycleRuntimeVerified: false,
+      planChangeLifecycleRuntimeVerified: false,
+      cancellationLifecycleRuntimeVerified: false,
+      cancellationDeletionRuntimeVerified: false,
+      authoritativeMarketplaceReadbackRuntimeVerified: false,
     },
-    status: 'BLOCKED_FOR_PAID_LISTING',
+    status: 'BLOCKED_EXTERNAL_GITHUB_ADMISSION',
   },
   operatorContext: {
     grafanaCloudSupabaseConnected: true,
@@ -70,7 +85,6 @@ export function cadsMarketplaceCommerciallyAdmitted(): boolean {
     market.marketplaceListingApproved &&
     market.checkoutOrPurchaseEnabled &&
     market.pricingAuthority &&
-    market.entitlementAuthority !== 'GITHUB_MARKETPLACE_API_REQUIRED' &&
     Object.values(market.evidence).every(Boolean),
   );
 }
