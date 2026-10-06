@@ -54,7 +54,11 @@ export interface MarketAsset {
   evidenceId?: string;
   observedAt?: number;
   provider?: string;
-  dataAvailability?: 'live' | 'cached';
+  dataAvailability?: 'live' | 'cached' | 'reference';
+  timeSemantics?: 'realtime' | 'reference';
+  observedAtPrecision?: 'instant' | 'date';
+  publishedAt?: number | null;
+  referenceDate?: string | null;
   quoteCurrency?: string;
   price?: number;
   actionable?: boolean;
