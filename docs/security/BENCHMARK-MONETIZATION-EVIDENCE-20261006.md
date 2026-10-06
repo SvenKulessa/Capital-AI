@@ -1,6 +1,6 @@
 # Benchmark-Monetarisierung — Subscription- und Runtime-Evidence 2026-10-06
 
-Primary Domain: TRUST  
+Primary Domain: TRUST
 Cross-Domain: PRODUCT / PLATFORM
 
 ## Current-Main-Basis
