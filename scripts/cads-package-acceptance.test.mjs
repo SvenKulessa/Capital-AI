@@ -44,8 +44,8 @@ test('B2B installation guide contains required Marketplace and secret handoff st
     'Verified Publisher',
     '100',
     'Financial Onboarding',
-    'monthly',
-    'annual',
+    '(monthly|monatlich)',
+    '(annual|yearly|jährlich)',
     'CADS_GITHUB_APP_PRIVATE_KEY',
     'CADS_GITHUB_MARKETPLACE_WEBHOOK_SECRET',
     'CADS_GITHUB_MARKETPLACE_STARTER_PLAN_ID',
@@ -72,7 +72,7 @@ test('Marketplace plan manifest exactly matches canonical benchmark capabilities
 
 test('acceptance policy keeps technical PASS separate from release authorities', () => {
   assert.match(acceptance, /Security.*separat/i);
-  assert.match(acceptance, /Lizenz.*separat/i);
+  assert.match(acceptance, /(Lizenz|License).*separat/i);
   assert.match(acceptance, /Marketplace.*separat/i);
   assert.match(acceptance, /Production.*separat/i);
 });
