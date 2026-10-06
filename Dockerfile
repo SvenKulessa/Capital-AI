@@ -18,7 +18,7 @@ RUN npm ci --ignore-scripts --no-audit --no-fund \
     && rm -rf /root/.npm /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 # All subsequent validation is offline. Node's script runner needs no npm/cache transport.
 # Remove the installer itself, including vulnerable bundled http-cache-semantics, before validation.
-COPY index.html vite.config.ts tsconfig.json ./
+COPY index.html vite.config.ts tsconfig.json OPEN_SOURCE_LICENSES.md ./
 COPY src ./src
 COPY CAPITAL-AI-PRODUCT/badge.svg ./CAPITAL-AI-PRODUCT/badge.svg
 COPY CAPITAL-AI-TRUST/badge.svg ./CAPITAL-AI-TRUST/badge.svg
@@ -40,7 +40,7 @@ COPY server/prompt-injection-guard.mjs server/prompt-injection-guard.test.mjs se
 COPY server/advisor-security.test.mjs ./server/
 COPY scripts/billing-catalog.test.mjs scripts/stripe-catalog-readback.test.mjs scripts/stripe-three-purchase-e2e.mjs scripts/stripe-three-purchase-e2e.test.mjs scripts/stripe-subscription-sync-migration.test.mjs scripts/benchmark-ledger-migration.test.mjs scripts/benchmark-cost-calibration.test.mjs scripts/blueprint-evidence-contract.test.mjs scripts/supabase-auth-config.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-metadata.test.mjs scripts/finance-source-target-manifest.test.mjs scripts/validate-finance-source-target-manifest.mjs scripts/social-engine-completion-gate.test.mjs scripts/validate-social-engine-completion-gate.mjs ./scripts/
 COPY supabase/email-templates ./supabase/email-templates
-COPY supabase/migrations/20261006072600_sync_stripe_subscription_catalog_v2.sql supabase/migrations/20261006080124_benchmark_run_usage_ledger.sql ./supabase/migrations/
+COPY supabase/migrations/20261005010039_legal_policy_evidence_store_isolated.sql supabase/migrations/20261005155500_fix_registration_consent_null.sql supabase/migrations/20261006072600_sync_stripe_subscription_catalog_v2.sql supabase/migrations/20261006080124_benchmark_run_usage_ledger.sql ./supabase/migrations/
 COPY scripts/documentation-drift.mjs scripts/documentation-drift.test.mjs ./scripts/
 COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/social-tool-license-evidence.test.mjs scripts/validate-social-tool-license-evidence.mjs scripts/frontend-security.test.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
 COPY shared ./shared
