@@ -181,7 +181,7 @@ jobs:
             -v "$PWD/shared:/app/shared:ro" \
             --entrypoint node capital-ai:${{ github.sha }} --run test:seo
       - name: Server-Regressionstests
-        run: docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m --cap-drop ALL --security-opt no-new-privileges -v "$PWD/server:/app/server:ro" -v "$PWD/supabase/migrations:/app/supabase/migrations:ro" --entrypoint node capital-ai:${{ github.sha }} --test /app/server/market.test.mjs /app/server/market-contracts.test.mjs /app/server/security.test.mjs /app/server/auth.test.mjs /app/server/user-provider-vault.test.mjs /app/server/infrastructure-security.test.mjs /app/server/seo-indexing-policy.test.mjs /app/server/well-known.test.mjs
+        run: docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m --cap-drop ALL --security-opt no-new-privileges -v "$PWD/server:/app/server:ro" -v "$PWD/supabase/migrations:/app/supabase/migrations:ro" --entrypoint node capital-ai:${{ github.sha }} --test /app/server/ecb-reference-rates.test.mjs /app/server/market.test.mjs /app/server/market-contracts.test.mjs /app/server/scorer-proxy.test.mjs /app/server/security.test.mjs /app/server/auth.test.mjs /app/server/user-provider-vault.test.mjs /app/server/infrastructure-security.test.mjs /app/server/seo-indexing-policy.test.mjs /app/server/well-known.test.mjs
       - name: 600-Asset-Scoring-Kapazitätsevidence übernehmen
         run: |
           mkdir -p security-reports

@@ -24,12 +24,14 @@ function privateFinanceOrigin(value) {
   }
 }
 
-function admittedScoringSourceCount(policy) {
+function admittedScoringSourceCount(policy, requiredAssetClass) {
   return (policy?.admittedSources || []).filter(
     source =>
       source?.eligible === true &&
       source?.decision === 'OPEN_SOURCE_OPEN_DATA_ADMITTED' &&
-      source?.capabilities?.scoringPriceInput === true,
+      source?.capabilities?.scoringPriceInput === true &&
+      Array.isArray(source?.capabilities?.scoringAssetClasses) &&
+      source.capabilities.scoringAssetClasses.includes(requiredAssetClass),
   ).length;
 }
 
@@ -107,10 +109,11 @@ export function createScorerProxy({
       return true;
     }
 
-    if (admittedScoringSourceCount(sourcePolicy) === 0) {
+    if (admittedScoringSourceCount(sourcePolicy, 'crypto') === 0) {
       json(res, 503, {
         error: 'scoring_source_not_admitted',
         requiredCapability: 'scoringPriceInput',
+        requiredAssetClass: 'crypto',
         sourcePolicy: 'OPEN_SOURCE_AND_OPEN_DATA_ONLY',
       });
       return true;

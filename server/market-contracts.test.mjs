@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { QuoteFactSchema, QuoteDeliverySchema, isFresh } from '../shared/market-contracts.mjs';
+import { QuoteFactSchema, QuoteDeliverySchema, cacheTtlMs, isFresh } from '../shared/market-contracts.mjs';
 import { observation } from './market.mjs';
 import { MarketInfrastructure, payloadHash } from './infrastructure.mjs';
 const raw = { testHarness: true };
@@ -36,4 +36,42 @@ test('missing infrastructure cannot accept real or invented facts', async () => 
  await assert.rejects(service.persist(sample(), raw), /INFRASTRUCTURE_UNAVAILABLE/);
  await assert.rejects(service.persist(sample(), {}), /INVALID_FACT/);
  assert.equal(await service.read('BTCUSD'), null);
+});
+
+
+test('ECB reference-rate facts are date-precise, replay-safe and never actionable', () => {
+  const referenceDate = '2026-10-05';
+  const observedAt = Date.parse(referenceDate + 'T00:00:00.000Z');
+  const publishedAt = Date.parse('2026-10-05T14:00:00.000Z');
+  const receivedAt = Date.parse('2026-10-05T14:00:10.000Z');
+  const rawPayload = { sourceUrl:'https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml', body:'fixture' };
+  const fact = QuoteFactSchema.parse({
+    schemaVersion:'1.0.0',
+    symbol:'EUR/USD',
+    venue:'ECB reference rates',
+    provider:'ecb-reference-rates',
+    price:1.1204,
+    quote:'USD',
+    bid:null,
+    ask:null,
+    volume24h:null,
+    observedAt,
+    observedAtPrecision:'date',
+    publishedAt,
+    publishedAtSource:'http_last_modified',
+    receivedAt,
+    referenceDate,
+    timeSemantics:'reference',
+    mode:'rest',
+    isDemo:false,
+    licenseScope:'open_data_admitted',
+    payloadHash:payloadHash(rawPayload),
+  });
+  assert.equal(fact.timeSemantics, 'reference');
+  assert.equal(fact.referenceDate, referenceDate);
+  assert.equal(isFresh(fact, receivedAt), true);
+  assert.ok(cacheTtlMs(fact, receivedAt) > 24 * 60 * 60 * 1000);
+  assert.equal(isFresh(fact, publishedAt + 9 * 24 * 60 * 60 * 1000), false);
+  assert.equal(QuoteFactSchema.safeParse({ ...fact, timeSemantics:'realtime' }).success, false);
+  assert.equal(QuoteFactSchema.safeParse({ ...fact, bid:1.1 }).success, false);
 });
