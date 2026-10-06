@@ -198,6 +198,18 @@ test('account security UI supports at most two Passkeys and two TOTP factors wit
   assert.match(security, /CAPITAL-AI Authenticator 2/);
 });
 
+test('key vault clears browser credential state and exposes encryption evidence without returning secrets', async () => {
+  const vault = await readFile(new URL('../src/components/KeyVaultPage.tsx', import.meta.url), 'utf8');
+
+  assert.match(vault, /setApiKey\(''\)/);
+  assert.match(vault, /setApiSecret\(''\)/);
+  assert.match(vault, /setShowSecret\(false\)/);
+  assert.match(vault, /Supabase Vault · verschlüsselt gespeichert/);
+  assert.match(vault, /authentifiziert verschlüsselt \(AEAD\) at rest/);
+  assert.match(vault, /weder Klartext noch Ciphertext zurück/);
+  assert.match(vault, /Credential-Fingerprint/);
+});
+
 test('key vault keeps Spot and Futures credential families separate and execution fail-closed', async () => {
   const vault = await readFile(new URL('../src/components/KeyVaultPage.tsx', import.meta.url), 'utf8');
 
