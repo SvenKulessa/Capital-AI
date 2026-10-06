@@ -18,6 +18,7 @@ export const GrowthMediaApprovalSchema = z.object({
   policyVersion: z.literal(GROWTH_MEDIA_APPROVAL_POLICY_VERSION),
   capability: GrowthMediaCapabilitySchema,
   socialEngineGateRef: z.string().min(1),
+  approvalEvidenceRef: z.string().min(1),
   sourceRightsEvidenceRef: z.string().min(1),
   outputCommercialUseEvidenceRef: z.string().min(1),
   brandApprovalRef: z.string().min(1),
