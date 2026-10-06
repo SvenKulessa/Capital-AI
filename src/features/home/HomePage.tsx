@@ -5,7 +5,6 @@ import { KeyPillars } from '../../components/KeyPillars';
 import { Footer } from '../../components/Footer';
 import { MarketSentiment } from '../market/MarketSentiment';
 import { SectorAnalysis } from '../market/SectorAnalysis';
-import { VocabularyFlashcards } from '../../components/VocabularyFlashcards';
 import type {
   AssetSubclass,
   MainCategory,
@@ -16,6 +15,12 @@ import type { CoreModule } from '../../entities/module/model';
 const MarketOverview = lazy(() =>
   import('../../components/MarketOverview').then((module) => ({
     default: module.MarketOverview,
+  })),
+);
+
+const VocabularyFlashcards = lazy(() =>
+  import('../../components/VocabularyFlashcards').then((module) => ({
+    default: module.VocabularyFlashcards,
   })),
 );
 
@@ -85,7 +90,9 @@ export function HomePage({
         onExploreProduct={onStartProductTour}
       />
 
-      <VocabularyFlashcards onNavigate={onNavigate} />
+      <Suspense fallback={null}>
+        <VocabularyFlashcards onNavigate={onNavigate} />
+      </Suspense>
       <KeyPillars />
 
       <SectorAnalysis
