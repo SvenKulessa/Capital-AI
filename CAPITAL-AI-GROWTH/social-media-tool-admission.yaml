@@ -1,13 +1,13 @@
 schemaVersion: "SOCIAL_MEDIA_TOOL_ADMISSION@1"
 id: "CAPITAL-AI-SOCIAL-TOOL-ADMISSION-20261005"
-status: "POINT_4_EXACT_EVIDENCE_PARTIAL_FAIL_CLOSED"
+status: "POINT_4_ARTIFACT_LOCK_ADVANCED_FAIL_CLOSED"
 workPackage: "CAPITAL-AI-FINANCE-SOCIAL-MARKET-MIGRATION-01"
 
 baseline:
   sourceRepository: "SvenKulessa/Finance"
   sourceSha: "dcef421fe6e350a3a2ade61d0299aad9ecca213c"
   targetRepository: "SvenKulessa/Capital-AI"
-  targetMainSha: "73ad214e3a8af73f99c08531533ddcaaca530be3"
+  targetMainSha: "051ec288b518e7184e7082420b89410935752269"
   sourceTargetManifest: "CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json"
   exactEvidence: "CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json"
 
@@ -65,9 +65,11 @@ tools:
     licenseSurface: "MIT-CMU"
     exactVersion: "12.3.0"
     sourceArtifactSha256: "3b8182a766685eaa002637e28b4ec8d6b18819a0c71f579bf0dbaa5830297cce"
+    targetArtifact: "pillow-12.3.0-cp311-cp311-musllinux_1_2_x86_64.whl"
+    targetArtifactSha256: "236ff70b9312fb68943c703aa842ca6a758abfa45ac187a5e7c1452e96ef72b5"
     productionEligible: false
-    exactArtifactRecheckRequired: true
-    blockReason: "Target runtime wheel/platform artifact not selected and hash-bound."
+    exactArtifactRecheckRequired: false
+    blockReason: "Artifact lock complete; renderer worker SBOM/image admission still pending."
     noticeRequired: true
 
   - id: "ffmpeg"
@@ -82,9 +84,11 @@ tools:
   - id: "poppler"
     componentType: "runtime-binary"
     financeUse: "pdf-rasterization"
-    initialMode: "BLOCKED_UNKNOWN"
-    reason: "Exact distribution/build/license obligations must be established for the target packaging model."
-    exactArtifactRecheckRequired: true
+    initialMode: "RESEARCH_ONLY"
+    customerArtifactAllowed: false
+    requiredForSocialCore: false
+    reason: "Excluded from sold/customer runtime baseline; optional operator/research companion only."
+    exactArtifactRecheckRequired: false
 
   - id: "qwen3-tts-code"
     componentType: "source-library"
@@ -225,9 +229,16 @@ point4Decision:
     - "chatterbox-multilingual-v3-weights"
     - "openai-whisper-code"
   fullyBlocked:
-    - "poppler"
+    - "ffmpeg"
+  artifactLockedRuntimePending:
+    - "pillow"
     - "qwen3-tts-code"
     - "qwen3-tts-weights"
+    - "chatterbox-code"
+    - "chatterbox-multilingual-v3-weights"
+    - "openai-whisper-code"
+  excludedFromCustomerRuntime:
+    - "poppler"
   financeScoringMigration:
     status: "BLOCKED_BY_SOCIAL_MEDIA_ENGINE_MIGRATION"
     mutationAllowed: false
