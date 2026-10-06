@@ -4,4 +4,7 @@ COPY --from=hadolint /bin/hadolint /usr/local/bin/hadolint
 ENV TRIVY_CACHE_DIR=/tmp/trivy \
     TRIVY_SKIP_DB_UPDATE=false
 USER 1000:1000
+# Tooling image is normally short-lived; the healthcheck validates the scanner binary
+# if the image is ever kept alive by a runner or debugging environment.
+HEALTHCHECK --interval=60s --timeout=5s --retries=1 CMD ["trivy", "--version"]
 ENTRYPOINT ["trivy"]

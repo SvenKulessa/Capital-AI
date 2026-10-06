@@ -106,7 +106,7 @@ export function krakenFuturesSignature(endpointPath, postData, nonce, apiSecret)
   return createHmac('sha512', Buffer.from(apiSecret, 'base64')).update(digest).digest('base64');
 }
 
-function nextKrakenNonce() {
+export function nextKrakenNonce() {
   const now = BigInt(Date.now());
   lastKrakenNonce = now > lastKrakenNonce ? now : lastKrakenNonce + 1n;
   return String(lastKrakenNonce);
@@ -304,6 +304,48 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
       if (error?.status === 404) return null;
       throw error;
     }
+  }
+
+  async function readKrakenSpotTradingCredential(userId) {
+    if (!config) {
+      const error = new Error('PROVIDER_VAULT_NOT_CONFIGURED');
+      error.code = 'PROVIDER_VAULT_NOT_CONFIGURED';
+      throw error;
+    }
+    const stored = await readStored(userId);
+    if (!stored?.secretPayload) {
+      const error = new Error('KRAKEN_SPOT_CONNECTION_NOT_FOUND');
+      error.code = 'KRAKEN_SPOT_CONNECTION_NOT_FOUND';
+      throw error;
+    }
+    const vaultPayload = parseStoredVaultPayload(stored.secretPayload);
+    if (!vaultPayload.spot) {
+      const error = new Error('KRAKEN_SPOT_CONNECTION_NOT_FOUND');
+      error.code = 'KRAKEN_SPOT_CONNECTION_NOT_FOUND';
+      throw error;
+    }
+    const verification = await krakenKeyInfo(fetchImpl, vaultPayload.spot);
+    if (verification.capabilities.forbiddenPermissions.length > 0) {
+      const error = new Error('KRAKEN_FUNDING_OR_WITHDRAWAL_PERMISSIONS_FORBIDDEN');
+      error.code = 'KRAKEN_FUNDING_OR_WITHDRAWAL_PERMISSIONS_FORBIDDEN';
+      throw error;
+    }
+    if (stored?.permissions?.spotTrading !== true ||
+        stored?.permissions?.spotOrderCreate !== true ||
+        verification.capabilities.orderCreate !== true) {
+      const error = new Error('KRAKEN_SPOT_ORDER_CREATE_NOT_AUTHORIZED');
+      error.code = 'KRAKEN_SPOT_ORDER_CREATE_NOT_AUTHORIZED';
+      throw error;
+    }
+    return {
+      credentials: { ...vaultPayload.spot },
+      credentialFingerprint: String(stored?.credentialFingerprint || '').slice(0, 64) || null,
+      capabilities: {
+        orderCreate: true,
+        orderCancel: stored?.permissions?.spotOrderCancel === true && verification.capabilities.orderCancel === true,
+        withdrawals: false,
+      },
+    };
   }
 
   async function handle(req, res, url, json) {
@@ -578,5 +620,5 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
     return true;
   }
 
-  return { handle };
+  return { handle, readKrakenSpotTradingCredential };
 }

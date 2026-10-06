@@ -1,9 +1,9 @@
 {
   "schemaVersion": "SOCIAL_TOOL_LICENSE_EVIDENCE@1",
   "id": "CAPITAL-AI-SOCIAL-TOOL-LICENSE-EVIDENCE-20261006",
-  "status": "POINT_4_PARTIAL_FAIL_CLOSED",
+  "status": "POINT_4_ARTIFACT_LOCK_ADVANCED_FAIL_CLOSED",
   "correlatedAt": "2026-10-06",
-  "targetMain": "73ad214e3a8af73f99c08531533ddcaaca530be3",
+  "targetMain": "051ec288b518e7184e7082420b89410935752269",
   "financeSource": "dcef421fe6e350a3a2ade61d0299aad9ecca213c",
   "scope": "Social-Media-Engine implementation dependencies only; Finance MARKET/scoring migration remains deferred until Social cutover PASS.",
   "policy": {
@@ -11,7 +11,9 @@
     "codeAndWeightsEvaluatedSeparately": true,
     "nonCommercialOwnerOverrideForbidden": true,
     "systemPackageVersionWithoutArtifactDigestProductionEligible": false,
-    "dynamicLatestModelRevisionProductionEligible": false
+    "dynamicLatestModelRevisionProductionEligible": false,
+    "popplerExcludedFromCustomerRuntime": true,
+    "modelDownloadsPerformed": false
   },
   "items": [
     {
@@ -51,18 +53,21 @@
         "sourceSha256": "3b8182a766685eaa002637e28b4ec8d6b18819a0c71f579bf0dbaa5830297cce",
         "license": "MIT-CMU",
         "trustedPublishing": true,
-        "officialEvidence": "https://pypi.org/project/pillow/"
+        "officialEvidence": "https://pypi.org/project/pillow/",
+        "targetArtifact": "pillow-12.3.0-cp311-cp311-musllinux_1_2_x86_64.whl",
+        "targetArtifactSha256": "236ff70b9312fb68943c703aa842ca6a758abfa45ac187a5e7c1452e96ef72b5",
+        "targetPlatform": "CPython 3.11 / musllinux 1.2 / x86_64"
       },
       "decision": {
         "mode": "COMMERCIAL_PRODUCT_BUNDLE",
         "implementationEligible": true,
         "productionEligible": false,
         "noticeRequired": true,
-        "reason": "Source provenance is exact, but the target runtime wheel/platform artifact has not yet been selected and hash-bound."
+        "reason": "Exact CPython 3.11 musllinux x86_64 wheel is now selected and SHA-256 bound. Production runtime remains gated on the dedicated renderer worker/image and its native-library/SBOM evidence."
       },
       "unblock": [
-        "Select target Python/platform wheel or deterministic source-build path.",
-        "Bind exact artifact SHA-256 and transitive native-library inventory."
+        "Build the dedicated renderer worker/image from the selected wheel.",
+        "Capture worker SBOM/native-library inventory and image digest."
       ]
     },
     {
@@ -73,22 +78,25 @@
         "financeLocalBuildAssessment": "--enable-gpl present; explicitly rejected as production/distribution evidence"
       },
       "upstream": {
-        "licenseDefault": "LGPL-2.1-or-later",
-        "gplWhenEnabled": "GPL-2.0-or-later",
-        "nonfreeEffect": "unredistributable when --enable-nonfree is used",
-        "officialEvidence": "https://ffmpeg.org/legal.html"
+        "version": "9.0.2",
+        "releaseDate": "2026-09-18",
+        "sourceArtifact": "ffmpeg-9.0.2.tar.xz",
+        "sourceUrl": "https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz",
+        "sourceSha256": "8c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e",
+        "signatureUrl": "https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz.asc",
+        "officialEvidence": "https://ffmpeg.org/download.html",
+        "buildProfile": "deploy/social-media/ffmpeg-build-profile.json"
       },
       "decision": {
-        "mode": "BLOCKED_UNKNOWN",
+        "mode": "COMMERCIAL_INTERNAL_SERVICE",
         "implementationEligible": true,
         "productionEligible": false,
-        "reason": "No exact target FFmpeg binary/package digest and configure flags are bound. The historical Finance local build is GPL-enabled and intentionally not accepted for production."
+        "reason": "FFmpeg 9.0.2 source and an LGPL-only shared-library build profile are now pinned. The Finance renderer uses native mpeg4/aac only, so no GPL codec library is required. Production remains blocked until the actual worker binaries and OCI image are built, hashed, scanned, and their buildconf proves GPL/nonfree are absent."
       },
       "unblock": [
-        "Select exact target FFmpeg package/build.",
-        "Capture version, package/binary SHA-256 and ffmpeg -buildconf.",
-        "Require --enable-nonfree absent.",
-        "Review GPL/LGPL codec/linkage obligations for the selected build."
+        "Build worker from deploy/social-media/ffmpeg-build-profile.json.",
+        "Bind ffmpeg/ffprobe SHA-256, ffmpeg -buildconf, OCI digest and SBOM.",
+        "Run deterministic media render/decode tests on that exact worker image."
       ]
     },
     {
@@ -103,15 +111,16 @@
         "officialProject": "https://poppler.freedesktop.org/"
       },
       "decision": {
-        "mode": "BLOCKED_UNKNOWN",
+        "mode": "RESEARCH_ONLY",
         "implementationEligible": false,
         "productionEligible": false,
-        "reason": "Exact target binary/package digest and packaging/distribution model are not bound; GPL obligations require a dedicated packaging/legal review before inclusion in the commercial product."
+        "customerArtifactAllowed": false,
+        "requiredForSocialCore": false,
+        "reason": "Poppler is removed from the sold/customer Social Media Engine baseline. PDF rasterization remains an optional operator/research companion and may not be bundled until a separate GPL packaging decision is approved."
       },
       "unblock": [
-        "Decide whether PDF companion is required in the sold product or can remain an external/operator tool.",
-        "Bind exact Poppler package/binary and SHA-256.",
-        "Complete GPL packaging/redistribution review."
+        "No unblock required for Social Core/renderer cutover because Poppler is not a required customer-runtime dependency.",
+        "If later bundled, open a separate GPL packaging/redistribution review."
       ]
     },
     {
@@ -128,18 +137,24 @@
       },
       "upstream": {
         "repository": "https://github.com/QwenLM/Qwen3-TTS",
-        "license": "Apache-2.0"
+        "license": "Apache-2.0",
+        "package": "qwen-tts",
+        "version": "0.1.1",
+        "wheel": "qwen_tts-0.1.1-py3-none-any.whl",
+        "wheelSha256": "11a290d8dabc7ef91a90c54478c8ab19b3edb1d85c0882313721892bdc4af15d",
+        "sdistSha256": "afba5fa235806a6883f46a389e67540b46f8a55da457216bf1d7342903814780",
+        "trustedPublishing": false,
+        "officialEvidence": "https://pypi.org/project/qwen-tts/"
       },
       "decision": {
         "mode": "COMMERCIAL_INTERNAL_SERVICE",
-        "implementationEligible": false,
+        "implementationEligible": true,
         "productionEligible": false,
-        "reason": "Version is pinned in Finance but the exact qwen-tts 0.1.1 distribution hash and full transitive runtime inventory are not yet bound in Capital-AI."
+        "reason": "qwen-tts 0.1.1 wheel and sdist are now exact-hash bound; production remains blocked on the complete transitive GPU/runtime lock, advisory review, and the model-weight/runtime acceptance gate."
       },
       "unblock": [
-        "Bind qwen-tts 0.1.1 wheel/sdist SHA-256 from official registry.",
-        "Capture full transitive dependency lock and license inventory.",
-        "Re-run supply-chain/advisory check at selected artifacts."
+        "Capture complete transitive runtime lock/license inventory for the selected GPU worker.",
+        "Re-run security/advisory review for the immutable worker image."
       ]
     },
     {
@@ -156,19 +171,21 @@
         "modelFile": "model.safetensors",
         "currentModelFileSha256": "391e8db219f292c515297cdceeb43e4eae67cdde35fa57e79a6a8a532fca0522",
         "license": "Apache-2.0",
-        "officialEvidence": "https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign"
+        "officialEvidence": "https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign",
+        "selectedRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+        "modelFileSha256": "391e8db219f292c515297cdceeb43e4eae67cdde35fa57e79a6a8a532fca0522",
+        "speechTokenizerModelSha256": "836b7b357f5ea43e889936a3709af68dfe3751881acefe4ecf0dbd30ba571258"
       },
       "decision": {
-        "mode": "BLOCKED_UNKNOWN",
-        "implementationEligible": false,
+        "mode": "COMMERCIAL_INTERNAL_SERVICE",
+        "implementationEligible": true,
         "productionEligible": false,
-        "reason": "Finance benchmark resolved model revision dynamically and the expired artifact no longer exposes the exact historical revision/hash in repository evidence. Current upstream main cannot be substituted for historical runtime evidence."
+        "reason": "A new Capital-AI immutable Hugging Face revision is selected and the two large safetensors weight artifacts are SHA-256 bound under Apache-2.0. This is a new target lock, not a retroactive claim about the historical Finance benchmark. Production remains blocked until the complete snapshot inventory and new runtime/listening evidence pass."
       },
       "unblock": [
-        "Choose and record an immutable full Hugging Face revision for Capital-AI.",
-        "Bind every required weight/tokenizer artifact SHA-256.",
-        "Verify model-card license at that exact revision.",
-        "Run new immutable runtime benchmark and listening evidence."
+        "Hash-bind all remaining tokenizer/config artifacts at revision 5ecdb67327fd37bb2e042aab12ff7391903235d3.",
+        "Run new immutable runtime benchmark.",
+        "Record Human/Owner listening PASS for accepted German profiles."
       ]
     },
     {
@@ -209,18 +226,23 @@
         "modelFile": "t3_mtl23ls_v3.safetensors",
         "modelFileSha256": "5abca8321ede76f8e61f1cc0d19aea6c946b28871017ce8726f8a69203f05953",
         "license": "MIT",
-        "officialEvidence": "https://huggingface.co/ResembleAI/chatterbox/blob/main/t3_mtl23ls_v3.safetensors"
+        "officialEvidence": "https://huggingface.co/ResembleAI/chatterbox/blob/main/t3_mtl23ls_v3.safetensors",
+        "selectedRevision": "5bb1f6ee58e50c3b8d408bc82a6d3740c2db6e18",
+        "t3MultilingualV3Sha256": "5abca8321ede76f8e61f1cc0d19aea6c946b28871017ce8726f8a69203f05953",
+        "s3genV3SafetensorsSha256": "4a46190f3dccc2230fbb3488a930bccc925862ee68f2662433dfcfe93ce6c2cb",
+        "s3genV3PtSha256": "f7abce4b196dae2d08d9296cbebc6521b046079577643b42a19a03499d08721e",
+        "voiceEncoderSafetensorsSha256": "f0921cab452fa278bc25cd23ffd59d36f816d7dc5181dd1bef9751a7fb61f63c"
       },
       "decision": {
         "mode": "COMMERCIAL_INTERNAL_SERVICE",
         "implementationEligible": true,
         "productionEligible": false,
-        "reason": "Checkpoint hash and MIT model-card surface are known, but a full immutable repository revision plus all companion model files/dependencies must be bound before production."
+        "reason": "A full immutable model-repository revision is selected and the principal V3 T3, S3Gen V3 and voice-encoder artifacts are SHA-256 bound. Production remains blocked until tokenizer/condition companion artifacts, dependency lock and new listening acceptance are complete."
       },
       "unblock": [
-        "Resolve and store full immutable Hugging Face revision containing the checkpoint.",
-        "Inventory every companion checkpoint/tokenizer artifact used by from_pretrained.",
-        "Run fresh Capital-AI listening benchmark; historical Finance quality had only one accepted reference of eight."
+        "Hash-bind tokenizer/condition companion artifacts actually loaded by the pinned code commit.",
+        "Bind complete Python dependency/license lock.",
+        "Run fresh Capital-AI German listening benchmark and record PASS candidates."
       ]
     },
     {
@@ -239,17 +261,20 @@
         "sourceArtifact": "openai_whisper-20250625.tar.gz",
         "sourceSha256": "37a91a3921809d9f44748ffc73c0a55c9f366c85a3ef5c2ae0cc09540432eb96",
         "license": "MIT",
-        "officialEvidence": "https://pypi.org/project/openai-whisper/"
+        "officialEvidence": "https://pypi.org/project/openai-whisper/",
+        "smallModelSha256": "9ecf779972d90ba49c06d968637d720dd632c55bbf19d441fb42bf17a411e794",
+        "largeV3ModelSha256": "e5b1a55b89c1367dacf97e3e19bfd829a01529dbfdeefa8caeb59b3f1b81dadb",
+        "modelHashAuthority": "openai/whisper whisper/__init__.py _MODELS"
       },
       "decision": {
         "mode": "COMMERCIAL_INTERNAL_SERVICE",
         "implementationEligible": true,
         "productionEligible": false,
-        "reason": "Code package artifact is hash-bound, but the downloaded small/large-v3 model weights are not hash-bound in the migration evidence."
+        "reason": "Code package and the exact upstream small/large-v3 model SHA-256 identifiers are now bound. Production use remains blocked on the selected worker FFmpeg preprocessing build and worker image/SBOM evidence."
       },
       "unblock": [
-        "Bind exact Whisper small and large-v3 model artifact URLs/revisions and SHA-256.",
-        "Inventory ffmpeg dependency used by ASR preprocessing."
+        "Bind the FFmpeg preprocessing build used by the ASR worker.",
+        "Build and scan immutable ASR worker image."
       ]
     }
   ],
@@ -266,18 +291,28 @@
     "fullyProductionEligible": [
       "d3"
     ],
-    "implementationEligibleButProductionBlocked": [
+    "exactArtifactLockedButRuntimeImagePending": [
       "pillow",
-      "ffmpeg",
+      "qwen3-tts-code",
+      "qwen3-tts-weights",
       "chatterbox-code",
       "chatterbox-multilingual-v3-weights",
       "openai-whisper-code"
     ],
-    "fullyBlocked": [
-      "poppler",
-      "qwen3-tts-code",
-      "qwen3-tts-weights"
+    "requiredRuntimeBlockers": [
+      "ffmpeg-binary-and-worker-image-evidence"
+    ],
+    "excludedFromCustomerRuntime": [
+      "poppler"
     ],
     "deferredCandidatesRemainNonBaseline": true
-  }
+  },
+  "point4Remaining": [
+    "Build the pinned FFmpeg 9.0.2 LGPL-only profile and bind resulting ffmpeg/ffprobe SHA-256, buildconf, OCI digest and SBOM.",
+    "Complete Pillow renderer-worker SBOM/image digest evidence.",
+    "Complete Qwen/Chatterbox companion artifact and transitive dependency locks.",
+    "Run fresh Qwen/Chatterbox runtime + Human/Owner listening acceptance.",
+    "Build and scan immutable TTS/ASR worker images.",
+    "Only then promote status to POINT_4_PASS."
+  ]
 }

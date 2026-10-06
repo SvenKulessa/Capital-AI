@@ -71,8 +71,18 @@ Dieser Contract aktiviert keine Render-Variable und führt keinen Production-Kau
 Die aktuell über Supabase synchronisierten sechs Subscription-Prices sind `livemode=true`.
 Sie dürfen deshalb **nicht** für die drei Testkäufe verwendet werden.
 
-Für die E2E-Evidence müssen getrennte Stripe-Testmode-Price-IDs und ein `sk_test_...`-Credential
-verwendet werden. Pro Tier wird genau ein Kauf ausgeführt:
+Der produktive Checkout-Test verwendet deshalb keine vorgetäuschte Testmode-Kombination mehr.
+Die reale Testmatrix besitzt einen separaten Runner:
+
+- `npm run stripe:test-purchases:create`
+- `npm run stripe:test-purchases:verify`
+
+Dafür sind ausschließlich `STRIPE_TEST_SECRET_KEY=sk_test_...` sowie drei getrennte
+Test-Price-IDs zulässig: `STRIPE_TEST_STARTER_PRICE_ID`,
+`STRIPE_TEST_PRO_PRICE_ID`, `STRIPE_TEST_ENTERPRISE_PRICE_ID`.
+Der Runner verweigert jede der sechs Live-Price-IDs fail-closed.
+
+Pro Tier wird genau ein Kauf ausgeführt:
 
 1. Starter
 2. Pro
@@ -84,7 +94,11 @@ Production-Freigabe.
 
 ## Supabase Stripe Security Gate
 
-Der Readback vom 06.10.2026 zeigt 29 Tabellen im `stripe`-Schema ohne RLS.
-Diese Exposure-Frage bleibt **BLOCKED** und muss vor Production-Handoff durch eine
-bewusste Data-API-/RLS-Entscheidung geschlossen werden. In diesem PR wurde keine
-automatische RLS-Mutation ausgeführt.
+Der Wrapper besitzt 29 Tabellen im `stripe`-Schema ohne RLS. Der anschließende
+Rechte-Readback zeigt jedoch für `anon` und `authenticated` weder Schema-`USAGE`
+noch `SELECT` auf `stripe.products`, `stripe.prices` oder `stripe.subscriptions`.
+Auch der aktuelle Supabase-Security-Advisor meldet keinen Stripe-RLS-Finding.
+
+Daher gilt für diese Evidence `PASS_NO_CLIENT_PRIVILEGES_OBSERVED`. Es wurde bewusst
+keine pauschale RLS-Mutation vorgenommen. Diese Aussage ersetzt keine spätere
+Production-/Data-API-Konfigurationsprüfung.

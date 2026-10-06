@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "SOCIAL_FFMPEG_BUILD_PROFILE@1",
+  "id": "CAPITAL-AI-SOCIAL-FFMPEG-LGPL-9.0.2",
+  "source": {
+    "version": "9.0.2",
+    "releaseDate": "2026-09-18",
+    "url": "https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz",
+    "sha256": "8c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e",
+    "signatureUrl": "https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz.asc",
+    "verification": "PGP signature required during worker build"
+  },
+  "licenseProfile": {
+    "intended": "LGPL-2.1-or-later",
+    "sharedLibraries": true,
+    "staticLibraries": false,
+    "forbiddenConfigureFlags": [
+      "--enable-gpl",
+      "--enable-version3",
+      "--enable-nonfree"
+    ],
+    "requiredConfigureFlags": [
+      "--disable-autodetect",
+      "--disable-doc",
+      "--disable-debug",
+      "--disable-ffplay",
+      "--disable-network",
+      "--enable-shared",
+      "--disable-static"
+    ]
+  },
+  "rendererRequirements": {
+    "programs": [
+      "ffmpeg",
+      "ffprobe"
+    ],
+    "videoEncoder": "mpeg4",
+    "audioEncoder": "aac",
+    "inputDemuxer": "concat",
+    "filters": [
+      "fps",
+      "format",
+      "apad",
+      "atrim"
+    ],
+    "outputContainer": "mp4",
+    "pixelFormat": "yuv420p",
+    "externalCodecLibrariesRequired": false
+  },
+  "runtimeEvidenceRequiredBeforeProduction": [
+    "exact compiled ffmpeg binary SHA-256",
+    "exact compiled ffprobe binary SHA-256",
+    "ffmpeg -version",
+    "ffmpeg -buildconf",
+    "ffmpeg -L",
+    "worker OCI image digest",
+    "worker SBOM",
+    "vulnerability scan",
+    "license inventory",
+    "negative assertion: --enable-gpl absent",
+    "negative assertion: --enable-nonfree absent"
+  ],
+  "productionEligible": false,
+  "reason": "Source and build policy are pinned, but binaries/image have not yet been built and hashed."
+}

@@ -103,7 +103,12 @@
   },
   "securityGate": {
     "stripeSchemaTablesWithoutRls": 29,
-    "dataApiExposureReview": "BLOCKED",
+    "effectiveAnonSchemaUsage": false,
+    "effectiveAuthenticatedSchemaUsage": false,
+    "effectiveAnonProductsPricesSubscriptionsSelect": false,
+    "effectiveAuthenticatedProductsPricesSubscriptionsSelect": false,
+    "supabaseSecurityAdvisorStripeRlsFinding": false,
+    "dataApiExposureReview": "PASS_NO_CLIENT_PRIVILEGES_OBSERVED",
     "automaticRemediationApplied": false,
     "evidenceDoesNotGrantProductionApproval": true
   }

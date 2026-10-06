@@ -4,6 +4,7 @@
 !.dockerignore
 !package.json
 !package-lock.json
+!OPEN_SOURCE_LICENSES.md
 !index.html
 !vite.config.ts
 !tsconfig.json
@@ -30,6 +31,10 @@
 !server/public-artifact-policy.mjs
 !server/subscription-checkout.test.mjs
 !server/subscription-checkout.mjs
+!server/benchmark-runs.mjs
+!server/benchmark-runs.test.mjs
+!server/benchmark-store.mjs
+!server/benchmark-store.test.mjs
 !server/auth.mjs
 !server/auth-security.mjs
 !server/auth-security.test.mjs
@@ -37,6 +42,8 @@
 !server/subscription-entitlements.test.mjs
 !server/user-provider-vault.mjs
 !server/user-provider-vault.test.mjs
+!server/kraken-order-dry-run.mjs
+!server/kraken-order-dry-run.test.mjs
 !server/uniswap-trading.mjs
 !server/uniswap-trading.test.mjs
 !server/telegram.mjs
@@ -62,11 +69,14 @@
 !shared/vocabulary-access-policy.mjs
 !shared/seo-indexing-policy.mjs
 !shared/seo-content-manifest.mjs
+!shared/seo-source-provenance.mjs
 !shared/seo-metadata.mjs
 !deploy/
 !deploy/runtime/
 !deploy/runtime/package.json
 !deploy/runtime/package-lock.json
+!deploy/social-media/
+!deploy/social-media/ffmpeg-build-profile.json
 !deploy/npm-security-patches/
 !deploy/npm-security-patches/package.json
 !deploy/npm-security-patches/package-lock.json
@@ -81,6 +91,11 @@
 !scripts/license-evidence.test.mjs
 !scripts/billing-catalog.test.mjs
 !scripts/stripe-catalog-readback.test.mjs
+!scripts/stripe-subscription-sync-migration.test.mjs
+!scripts/benchmark-ledger-migration.test.mjs
+!scripts/benchmark-cost-calibration.test.mjs
+!scripts/stripe-three-purchase-e2e.mjs
+!scripts/stripe-three-purchase-e2e.test.mjs
 !scripts/blueprint-evidence-contract.test.mjs
 !scripts/documentation-drift.mjs
 !scripts/documentation-drift.test.mjs
@@ -95,6 +110,7 @@
 !scripts/supabase-auth-config.mjs
 !scripts/supabase-auth-config.test.mjs
 !scripts/seo-content-manifest.test.mjs
+!scripts/seo-source-provenance-drift.test.mjs
 !scripts/seo-metadata.test.mjs
 !scripts/validate-finance-source-target-manifest.mjs
 !scripts/finance-source-target-manifest.test.mjs
@@ -122,6 +138,7 @@
 !docs/security/evidence/
 !docs/security/evidence/license-rights-review.json
 !docs/security/evidence/stripe-catalog-readback-20261006.json
+!docs/security/evidence/benchmark-cost-calibration-20261006.json
 !docs/security/BYOK-USER-PRIVATE-DATA.md
 !docs/market-data/
 !docs/market-data/PRODUCTION-WEB-01-MARKET-20261005.yaml
@@ -160,3 +177,8 @@
 !supabase/
 !supabase/email-templates/
 !supabase/email-templates/**
+!supabase/migrations/
+!supabase/migrations/20261005010039_legal_policy_evidence_store_isolated.sql
+!supabase/migrations/20261005155500_fix_registration_consent_null.sql
+!supabase/migrations/20261006072600_sync_stripe_subscription_catalog_v2.sql
+!supabase/migrations/20261006080124_benchmark_run_usage_ledger.sql
