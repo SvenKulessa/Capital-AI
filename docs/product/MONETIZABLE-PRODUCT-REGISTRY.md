@@ -2,7 +2,7 @@
 
 Naming convention: `[CAPITAL-AI-MARKET]PRODUKTNAME` or `[CAPITAL-AI-PRODUCT]PRODUKTNAME`.
 
-Scan: 2026-10-06, baseline `main` @ `824d429`. Readiness is the evidenced share of a sellable, compliant launch. Gap is the remaining distance to market.
+Scan: 2026-10-06, baseline `main` @ `0bf052c`. Readiness is the evidenced share of a sellable, compliant launch. Gap is the remaining distance to market.
 
 Weights: definition 15, user surface 25, commercial path 25, data/compliance gate 20, production evidence 15.
 
