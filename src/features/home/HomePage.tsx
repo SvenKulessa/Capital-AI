@@ -6,7 +6,7 @@ import { CoreModules } from '../../components/CoreModules';
 import { Footer } from '../../components/Footer';
 import { MarketSentiment } from '../market/MarketSentiment';
 import { SectorAnalysis } from '../market/SectorAnalysis';
-import { ResearchProjectSummary } from '../../components/ResearchLicensePages';
+import { ResearchProjectSummary } from '../../components/ResearchProjectSummary';
 import type {
   AssetSubclass,
   MainCategory,
