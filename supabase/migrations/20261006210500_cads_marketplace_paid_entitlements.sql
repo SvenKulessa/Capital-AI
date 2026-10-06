@@ -82,6 +82,7 @@ as $function$
 declare
   v_inserted integer;
   v_status text;
+  v_existing_payload_sha256 text;
 begin
   if _delivery_id is null or length(_delivery_id) not between 8 and 128
      or _action not in ('purchased','changed','cancelled')
@@ -104,11 +105,23 @@ begin
 
   get diagnostics v_inserted = row_count;
   if v_inserted = 0 then
+    select payload_sha256
+      into v_existing_payload_sha256
+      from public.cads_marketplace_event_inbox
+     where delivery_id = _delivery_id;
+
+    if v_existing_payload_sha256 is null
+       or v_existing_payload_sha256 is distinct from _payload_sha256 then
+      raise exception 'CADS_MARKETPLACE_DELIVERY_PAYLOAD_MISMATCH';
+    end if;
+
     select status into v_status
       from public.cads_marketplace_entitlements
      where account_id = _account_id;
+
     return pg_catalog.jsonb_build_object(
       'duplicate', true,
+      'payloadHashVerified', true,
       'status', v_status,
       'tier', _tier
     );
