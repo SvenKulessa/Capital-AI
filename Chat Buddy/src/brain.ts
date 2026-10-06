@@ -1,9 +1,9 @@
 import { copy } from "./i18n";
-import { graphContext, retrieve, scenarioLines } from "./graph";
-import { classify } from "./nlu";
-import { buildResearch, formatResearch } from "./research";
-import { createTrace } from "./reversible";
-import type { GraphHit, Lang, ResearchBrief, Trace, TraceStep } from "./types";
+import { graphContext, retrieve, scenarioLines } from "./core/graph";
+import { classify } from "./core/nlu";
+import { buildResearch, formatResearch } from "./core/research";
+import { createTrace } from "./core/reversible";
+import type { GraphHit, Lang, ResearchBrief, Trace, TraceStep } from "./core/types";
 
 const STEP: Record<Lang, Record<TraceStep["kind"], string>> = {
   de: { hear: "Hören", classify: "NLU", retrieve: "Graph", reason: "Denken", speak: "Sagen" },
