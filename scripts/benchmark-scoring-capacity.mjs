@@ -44,9 +44,14 @@ async function scoreOne(assetValue) {
 }
 
 const assets=CLASSES.flatMap(assetClass=>Array.from({length:100},(_,i)=>asset(assetClass,i+1)));
+const processStartedCpu=process.cpuUsage();
 const wallStarted=performance.now();
 const settled=await Promise.allSettled(assets.map(scoreOne));
 const wallMs=performance.now()-wallStarted;
+const cpu=process.cpuUsage(processStartedCpu);
+const runtimeResources=process.resourceUsage();
+const cpuTimeMs=(cpu.user+cpu.system)/1000;
+const peakMemoryMiB=runtimeResources.maxRSS/1024;
 
 const rows=CLASSES.map(assetClass=>{
   const indexes=assets.map((a,i)=>a.assetClass===assetClass?i:-1).filter(i=>i>=0);
@@ -78,6 +83,18 @@ const evidence={
   succeeded:settled.filter(x=>x.status==='fulfilled').length,
   failed:settled.filter(x=>x.status==='rejected').length,
   wallMs:+wallMs.toFixed(3),
+  resourceMeasurement:{
+    schemaVersion:'CAPITAL_AI_BENCHMARK_RESOURCE_MEASUREMENT@1',
+    wallTimeMs:+wallMs.toFixed(3),
+    cpuTimeMs:+cpuTimeMs.toFixed(3),
+    peakMemoryMiB:+peakMemoryMiB.toFixed(3),
+    diskBytesWritten:null,
+    networkBytes:0,
+    cost:{ currency:'EUR', computeEur:null, storageEur:null, networkEur:null, totalEur:null, pricingEvidenceRefs:[] },
+    credits:{ calibrated:false, unitsCharged:null },
+    productionEligible:false,
+    decisionEligible:false,
+  },
   assetClasses:rows,
 };
 
