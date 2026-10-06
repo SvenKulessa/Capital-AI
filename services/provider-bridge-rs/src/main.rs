@@ -2,13 +2,19 @@ use async_nats::{Client, ConnectOptions};
 use futures_util::StreamExt;
 use serde::Deserialize;
 use serde_json::{json, Map, Value};
-use std::{env, time::{Duration, SystemTime, UNIX_EPOCH}};
+use std::{env, sync::OnceLock, time::{Duration, SystemTime, UNIX_EPOCH}};
 
 const QUERY_SUBJECT: &str = "capital.private.provider.query.v1";
 const EXECUTE_SUBJECT: &str = "capital.private.provider.execute.v1";
 const MAX_REQUEST_BYTES: usize = 64 * 1024;
 const MAX_RESPONSE_BYTES: usize = 256 * 1024;
 const MAX_TTL_MS: i64 = 30_000;
+const CONTRACT_JSON: &str = include_str!("../contracts/private-provider-query-operations.json");
+
+fn contract() -> &'static Value {
+    static CONTRACT: OnceLock<Value> = OnceLock::new();
+    CONTRACT.get_or_init(|| serde_json::from_str(CONTRACT_JSON).expect("embedded provider contract must be valid JSON"))
+}
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -37,50 +43,32 @@ fn is_safe_id(value: &str, max: usize) -> bool {
         && value.bytes().all(|b| b.is_ascii_alphanumeric() || matches!(b, b'-' | b'_' | b':' | b'.'))
 }
 
-fn operation_allowed(provider: &str, operation: &str) -> bool {
-    match provider {
-        "kraken" => matches!(operation,
-            "account.key_info" |
-            "account.balance" |
-            "account.trade_balance" |
-            "orders.open" |
-            "orders.closed" |
-            "orders.query" |
-            "trades.history" |
-            "trades.query" |
-            "positions.open" |
-            "ledgers.list" |
-            "ledgers.query" |
-            "trade.volume" |
-            "futures.account" |
-            "futures.open_positions" |
-            "futures.open_orders" |
-            "futures.fills" |
-            "futures.position_events"
-        ),
-        "binance" => matches!(operation,
-            "account.permissions" |
-            "spot.account" |
-            "spot.open_orders" |
-            "spot.all_orders" |
-            "spot.my_trades" |
-            "account.snapshot" |
-            "futures.account" |
-            "futures.balance" |
-            "futures.position_risk" |
-            "futures.open_orders" |
-            "futures.all_orders" |
-            "futures.user_trades" |
-            "futures.income"
-        ),
-        _ => false,
-    }
+fn operation_allowed(provider: &str, operation: &str, params: &Map<String, Value>) -> bool {
+    let Some(operation_policy) = contract()
+        .get("providers")
+        .and_then(|v| v.get(provider))
+        .and_then(|v| v.get("operations"))
+        .and_then(|v| v.get(operation))
+    else {
+        return false;
+    };
+
+    let Some(allowed_params) = operation_policy.get("params").and_then(Value::as_array) else {
+        return false;
+    };
+
+    params.keys().all(|key| {
+        allowed_params
+            .iter()
+            .filter_map(Value::as_str)
+            .any(|allowed| allowed == key)
+    })
 }
 
 fn contains_forbidden_key(value: &Value) -> bool {
     match value {
         Value::Object(map) => map.iter().any(|(key, value)| {
-            let normalized = key.to_ascii_lowercase().replace(['_', '-'], "");
+            let normalized = key.to_ascii_lowercase().replace('_', "").replace('-', "");
             let forbidden = [
                 "apikey", "apisecret", "secret", "password",
                 "credential", "privatekey", "authorization", "token",
@@ -107,7 +95,7 @@ fn validate(payload: &[u8]) -> Result<QueryEnvelope, &'static str> {
     if !is_safe_id(&envelope.request_id, 96) || !is_safe_id(&envelope.user_ref, 96) {
         return Err("IDENTIFIER_INVALID");
     }
-    if !operation_allowed(&envelope.provider, &envelope.operation) {
+    if !operation_allowed(&envelope.provider, &envelope.operation, &envelope.params) {
         return Err("OPERATION_NOT_ADMITTED");
     }
     let now = now_ms();
@@ -142,8 +130,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     let client = ConnectOptions::new()
         .user_and_password(user, pass)
-        .connection_timeout(Duration::from_secs(5))
-        .subscription_capacity(128)
         .connect(nats_url)
         .await?;
 
@@ -219,6 +205,23 @@ mod tests {
         body["params"] = json!({"apiSecret": "must-never-cross-nats"});
         let error = validate(&serde_json::to_vec(&body).unwrap()).unwrap_err();
         assert_eq!(error, "SECRET_MATERIAL_FORBIDDEN");
+    }
+
+    #[test]
+    fn accepts_binance_read_only_request() {
+        let mut body = valid();
+        body["provider"] = json!("binance");
+        body["operation"] = json!("spot.open_orders");
+        body["params"] = json!({"symbol": "BTCUSDT"});
+        assert!(validate(&serde_json::to_vec(&body).unwrap()).is_ok());
+    }
+
+    #[test]
+    fn rejects_unknown_parameter() {
+        let mut body = valid();
+        body["params"] = json!({"unexpected": "x"});
+        let error = validate(&serde_json::to_vec(&body).unwrap()).unwrap_err();
+        assert_eq!(error, "OPERATION_NOT_ADMITTED");
     }
 
     #[test]
