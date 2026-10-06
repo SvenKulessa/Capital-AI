@@ -1,13 +1,28 @@
+FROM rust:1.99.0-alpine@sha256:a96ea6d18d4062e38f16cfbadd8b4541d622f2527dd0a5eca1fb36d301da4e88 AS provider-bridge-tools
+RUN cargo install --locked cargo-audit --version 0.22.2 \
+    && cargo install --locked cargo-deny --version 0.20.2
+
 FROM rust:1.99.0-alpine@sha256:a96ea6d18d4062e38f16cfbadd8b4541d622f2527dd0a5eca1fb36d301da4e88 AS provider-bridge-build
 WORKDIR /bridge
-COPY services/provider-bridge-rs/Cargo.toml ./
+COPY --from=provider-bridge-tools /usr/local/cargo/bin/cargo-audit /usr/local/cargo/bin/cargo-audit
+COPY --from=provider-bridge-tools /usr/local/cargo/bin/cargo-deny /usr/local/cargo/bin/cargo-deny
+COPY services/provider-bridge-rs/Cargo.toml services/provider-bridge-rs/rust-toolchain.toml services/provider-bridge-rs/deny.toml ./
 COPY services/provider-bridge-rs/src ./src
-COPY contracts/private-provider-query-operations.json ./contracts/private-provider-query-operations.json
-RUN cargo generate-lockfile \
+COPY contracts/private-provider-query-operations.json /contracts/private-provider-query-operations.json
+RUN mkdir -p /bridge/evidence \
+    && cargo generate-lockfile \
+    && echo '---CAPITAL_AI_CARGO_LOCK_BEGIN---' \
+    && cat Cargo.lock \
+    && echo '---CAPITAL_AI_CARGO_LOCK_END---' \
+    && cargo fmt --check \
+    && cargo clippy --all-targets --all-features --locked -- -D warnings \
     && cargo test --release --locked \
+    && cargo audit --json > /bridge/evidence/rustsec-audit.json \
+    && cargo deny --config deny.toml check \
+    && cargo metadata --locked --format-version 1 > /bridge/evidence/cargo-metadata.json \
     && cargo build --release --locked \
-    && mkdir -p /bridge/evidence \
     && cp Cargo.lock /bridge/evidence/Cargo.lock \
+    && sha256sum Cargo.lock > /bridge/evidence/Cargo.lock.sha256 \
     && sha256sum target/release/capital-ai-provider-bridge > /bridge/evidence/provider-bridge.sha256
 
 FROM node:26.10.0-alpine@sha256:0b36e8c136b94cd4fcf02188228e76c31ad5872eef3fec8cbd2eee500cfd9e80 AS crypto-base
