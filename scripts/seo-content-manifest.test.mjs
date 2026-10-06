@@ -63,4 +63,3 @@ test('SEO-01 returns only admitted content paths', () => {
   assert.equal(seoContentForPath('/tokenomics'), null);
   assert.equal(seoContentForPath('/not-inventory'), null);
 });
-
