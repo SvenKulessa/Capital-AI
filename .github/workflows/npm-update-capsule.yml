@@ -55,6 +55,8 @@ jobs:
           cp package-lock.json security-reports/npm-update/package-lock.before.json
           npm install --package-lock-only --ignore-scripts --no-audit --no-fund --save-exact \
             redis@6.3.0 lucide-react@1.52.0
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund --save-dev --save-exact \
+            @langchain/langgraph@1.4.19
           cp package.json security-reports/npm-update/package.after.json
           cp package-lock.json security-reports/npm-update/package-lock.after.json
           git diff -- package.json package-lock.json > security-reports/npm-update/root-lockfile.diff
@@ -94,7 +96,7 @@ jobs:
           node --input-type=module <<'NODE'
           import { readFileSync, writeFileSync } from 'node:fs';
           const lock=JSON.parse(readFileSync('package-lock.json','utf8'));
-          const direct=['redis','lucide-react','motion'];
+          const direct=['redis','lucide-react','motion','@langchain/langgraph'];
           const evidence=Object.fromEntries(direct.map(name=>[name,lock.packages?.['node_modules/'+name]??null]));
           writeFileSync('security-reports/npm-update/direct-integrity-readback.json',JSON.stringify(evidence,null,2)+'\n');
           NODE
@@ -107,6 +109,8 @@ jobs:
           npm ci --prefix deploy/runtime --ignore-scripts --no-audit --no-fund
           npm run lint
           npm test
+          CAPITAL_AI_BENCHMARK_ENV=isolated-nonproduction node scripts/benchmark-agent-orchestration.mjs \
+            | tee security-reports/npm-update/agent-orchestration-benchmark.json
 
       - name: Lizenz- und CVE-Evidence
         if: always()
@@ -137,7 +141,7 @@ jobs:
             security-reports/npm-update/**
 
       - name: Verifizierten Routine-Candidate in PR-Branch übernehmen
-        if: success() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'capital-ai-trust/toolchain-update-20261004'
+        if: success() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && (github.event.pull_request.head.ref == 'capital-ai-trust/toolchain-update-20261004' || github.event.pull_request.head.ref == 'capital-ai-product/multi-agent-roadmap-20261006')
         env:
           TARGET_BRANCH: ${{ github.event.pull_request.head.ref }}
         shell: bash
@@ -152,6 +156,10 @@ jobs:
           if (root.dependencies['lucide-react'] !== '1.52.0') throw new Error('unexpected lucide-react version');
           if (root.dependencies.motion !== '^13.4.5') throw new Error('Motion major changed unexpectedly');
           if (runtime.dependencies.redis !== '6.3.0') throw new Error('unexpected runtime redis version');
+          if (process.env.TARGET_BRANCH === 'capital-ai-product/multi-agent-roadmap-20261006' &&
+              root.devDependencies?.['@langchain/langgraph'] !== '1.4.19') {
+            throw new Error('unexpected LangGraph benchmark version');
+          }
           NODE
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
