@@ -63,9 +63,9 @@ test('Uniswap quote forwards bounded inputs and never enables swap execution', a
           quoteId:'quote_1',
           input:{amount:'1000000000000000000',token:'0x1111111111111111111111111111111111111111',maximumAmount:'1000000000000000000'},
           output:{amount:'12345',token:'0x2222222222222222222222222222222222222222',minimumAmount:'12000',recipient:'0x3333333333333333333333333333333333333333'},
-          slippage:0.5,
+          slippageTolerance:0.5,
           priceImpact:0.14,
-          gasFeeUSD:'1.23',
+          classicGasUseEstimateUSD:'1.23',
           gasUseEstimate:'180350',
           encodedOrder:'0xdeadbeef',
           orderInfo:{nonce:'secret-execution-shape'},
@@ -85,6 +85,11 @@ test('Uniswap quote forwards bounded inputs and never enables swap execution', a
     swapper:'0x3333333333333333333333333333333333333333',
     slippageTolerance:0.5,
     malicious:'ignored',
+    analysis:{
+      notionalUsd:1000,
+      expectedGrossProfitUsd:50,
+      maxLossUsd:20,
+    },
   };
   const result=await invoke(handler,'POST',body,'/api/market/arbitrage/uniswap/quote');
   assert.equal(result.status,200);
@@ -99,12 +104,51 @@ test('Uniswap quote forwards bounded inputs and never enables swap execution', a
   assert.equal(result.payload.routing,'CLASSIC');
   assert.equal(result.payload.quote.output.amount,'12345');
   assert.equal(result.payload.quote.output.minimumAmount,'12000');
-  assert.equal(result.payload.quote.gasFeeUSD,'1.23');
+  assert.equal(result.payload.quote.gasFeeUsd,'1.23');
   assert.equal(result.payload.quote.gasUseEstimate,'180350');
-  assert.equal(result.payload.quote.slippage,0.5);
-  assert.equal(result.payload.quote.priceImpact,0.14);
+  assert.equal(result.payload.quote.slippagePercent,0.5);
+  assert.equal(result.payload.quote.priceImpactPercent,0.14);
+  assert.equal('analysis' in observed.body,false);
+  assert.equal(result.payload.risk.checks.slippage.pass,true);
+  assert.equal(result.payload.risk.checks.priceImpact.pass,true);
+  assert.equal(result.payload.risk.checks.gas.pass,true);
+  assert.equal(result.payload.risk.checks.lossLimit.pass,true);
+  assert.equal(result.payload.risk.executionEligible,false);
+  assert.equal(result.payload.walletPrivateKeyServerSide,false);
+  assert.equal(result.payload.signatureAuthority,'USER_WALLET');
   assert.doesNotMatch(JSON.stringify(result.payload),/swapTransaction|permitTransaction|permitData|encodedOrder|orderInfo|deadbeef|secret-execution-shape/);
   assert.doesNotMatch(JSON.stringify(result.payload),/uniswap-secret-test/);
+});
+
+test('Uniswap arbitrage risk remains blocked without price-impact and loss evidence', async()=>{
+  const handler=createUniswapTrading({
+    env:{UNISWAP_API_KEY:'uniswap-secret-test',UNISWAP_QUOTE_ENABLED:'true'},
+    auth,
+    fetchImpl:async()=>Response.json({
+      requestId:'req_quote_2',
+      routing:'CLASSIC',
+      quote:{
+        input:{amount:'1000000',token:'0x1111111111111111111111111111111111111111'},
+        output:{amount:'990000',token:'0x2222222222222222222222222222222222222222'},
+        slippageTolerance:0.5,
+        classicGasUseEstimateUSD:'2.00',
+      },
+    }),
+  });
+  const result=await invoke(handler,'POST',{
+    tokenIn:'0x1111111111111111111111111111111111111111',
+    tokenOut:'0x2222222222222222222222222222222222222222',
+    tokenInChainId:1,
+    tokenOutChainId:1,
+    amount:'1000000',
+    swapper:'0x3333333333333333333333333333333333333333',
+    slippageTolerance:0.5,
+  },'/api/market/arbitrage/uniswap/quote');
+  assert.equal(result.status,200);
+  assert.equal(result.payload.arbitrageAnalysisEligible,false);
+  assert.equal(result.payload.arbitrageExecutionEligible,false);
+  assert.equal(result.payload.risk.checks.priceImpact.pass,false);
+  assert.equal(result.payload.risk.checks.lossLimit.pass,false);
 });
 
 test('invalid Uniswap quote is rejected before upstream I/O', async()=>{
