@@ -1,5 +1,6 @@
 import { bcp47 } from "./i18n";
-import type { Lang, VoicePresetId, VoiceProfile } from "./core/types";
+import type { Lang } from "./core/types";
+import type { VoicePresetId, VoiceProfile } from "./product-types";
 
 export const VOICE_PRESETS: Record<Exclude<VoicePresetId, "custom">, { pitch: number; rate: number }> = {
   jaja: { pitch: 1.62, rate: 1.08 },
