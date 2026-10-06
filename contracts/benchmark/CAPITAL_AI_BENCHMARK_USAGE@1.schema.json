@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "CAPITAL_AI_BENCHMARK_USAGE@1",
+  "title": "CAPITAL-AI Benchmark Usage and Cost Evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "runId",
+    "profileId",
+    "tier",
+    "source",
+    "measurementStatus",
+    "resources",
+    "cost",
+    "credits",
+    "decision"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "CAPITAL_AI_BENCHMARK_USAGE@1" },
+    "runId": { "type": "string", "format": "uuid" },
+    "profileId": { "type": "string", "minLength": 1 },
+    "tier": { "enum": ["starter", "pro", "enterprise"] },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commitSha"],
+      "properties": {
+        "repository": { "type": "string", "pattern": "^[A-Za-z0-9_.-]{1,100}/[A-Za-z0-9_.-]{1,100}$" },
+        "commitSha": { "type": "string", "pattern": "^[0-9a-fA-F]{40}$" }
+      }
+    },
+    "measurementStatus": { "enum": ["PENDING", "MEASURED"] },
+    "resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["wallTimeMs", "cpuTimeMs", "peakMemoryMiB", "diskBytesWritten", "networkBytes"],
+      "properties": {
+        "wallTimeMs": { "type": ["number", "null"], "minimum": 0 },
+        "cpuTimeMs": { "type": ["number", "null"], "minimum": 0 },
+        "peakMemoryMiB": { "type": ["number", "null"], "minimum": 0 },
+        "diskBytesWritten": { "type": ["number", "null"], "minimum": 0 },
+        "networkBytes": { "type": ["number", "null"], "minimum": 0 }
+      }
+    },
+    "cost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["currency", "computeEur", "storageEur", "networkEur", "totalEur", "pricingEvidenceRefs"],
+      "properties": {
+        "currency": { "const": "EUR" },
+        "computeEur": { "type": ["number", "null"], "minimum": 0 },
+        "storageEur": { "type": ["number", "null"], "minimum": 0 },
+        "networkEur": { "type": ["number", "null"], "minimum": 0 },
+        "totalEur": { "type": ["number", "null"], "minimum": 0 },
+        "pricingEvidenceRefs": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "credits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["calibrated", "unitsCharged"],
+      "properties": {
+        "calibrated": { "type": "boolean" },
+        "unitsCharged": { "type": ["number", "null"], "minimum": 0 }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["productionEligible", "decisionEligible"],
+      "properties": {
+        "productionEligible": { "const": false },
+        "decisionEligible": { "const": false }
+      }
+    }
+  }
+}
