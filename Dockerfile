@@ -71,7 +71,8 @@ RUN --network=none node --test server/mta-sts.test.mjs server/well-known.test.mj
     && node --import tsx --test scripts/frontend-security.test.mjs \
     && node --run lint && node --run test && node --run build \
     && node scripts/verify-browser-boundary.mjs \
-    && CAPITAL_AI_BENCHMARK_ENV=isolated-nonproduction node --import tsx scripts/benchmark-scoring-capacity.mjs > /app/scoring-capacity.json
+    && CAPITAL_AI_BENCHMARK_ENV=isolated-nonproduction node --import tsx scripts/benchmark-scoring-capacity.mjs > /app/scoring-capacity.json \
+    && CAPITAL_AI_BENCHMARK_ENV=isolated-nonproduction node scripts/benchmark-agent-orchestration.mjs > /app/agent-orchestration-benchmark.json
 
 FROM crypto-base AS production-deps
 WORKDIR /runtime
