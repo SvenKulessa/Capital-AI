@@ -99,3 +99,45 @@ test('subscription readiness is public but contains no secret values', async () 
   assert.equal(response.payload.enabled, true);
   assert.equal(JSON.stringify(response.payload).includes('sk_test_'), false);
 });
+
+
+test('checkout is ready with secret when optional kill-switch is omitted', async () => {
+  const handler = createSubscriptionCheckout({
+    env: {
+      STRIPE_SECRET_KEY: 'sk_test_example',
+      PUBLIC_BASE_URL: 'https://capital-ai.online',
+    },
+    auth,
+  });
+  const response = res();
+  const request = req();
+  request.method = 'GET';
+  await handler.handle(
+    request,
+    response,
+    new URL('https://capital-ai.online/api/billing/subscriptions/readiness'),
+    json,
+  );
+  assert.equal(response.status, 200);
+  assert.equal(response.payload.enabled, true);
+});
+
+test('explicit false remains an emergency checkout kill-switch', async () => {
+  const handler = createSubscriptionCheckout({
+    env: {
+      STRIPE_SECRET_KEY: 'sk_test_example',
+      STRIPE_SUBSCRIPTION_CHECKOUT_ENABLED: 'false',
+      PUBLIC_BASE_URL: 'https://capital-ai.online',
+    },
+    auth,
+  });
+  const response = res();
+  await handler.handle(
+    req({ tier: 'starter', cycle: 'monthly' }),
+    response,
+    new URL('https://capital-ai.online/api/billing/subscriptions/checkout'),
+    json,
+  );
+  assert.equal(response.status, 503);
+  assert.equal(response.payload.error, 'subscription_checkout_not_enabled');
+});
