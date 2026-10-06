@@ -88,3 +88,22 @@ PLATFORM führt `CAPITAL_AI_EVENT_BACKBONE@1` als reale NATS/Kafka × Node/Rust 
 TRUST bindet SBOM/CVE/Reachability-Evidence. PRODUCT ergänzt Ergebnisprojektion und Runtime-Readback.
 Danach kann die separate GitHub-Marketplace-App mit Minimalrechten, Plan IDs und
 `marketplace_purchase`-Lifecycle implementiert werden.
+
+
+## Pro-/Enterprise-Evidence-Export
+
+Der erste tarifgebundene CADS-Feature-Endpunkt ist serverseitig erzwungen:
+
+`GET /api/benchmark/runs/:runId/evidence`
+
+- Starter: `403 benchmark_evidence_export_not_entitled`
+- Pro / Enterprise: Zugriff nur auf eigene Runs
+- ohne gebundenes `evidenceId`: fail-closed `409 benchmark_evidence_not_ready`
+- exportiert ein bounded `CAPITAL_AI_BENCHMARK_EVIDENCE_EXPORT@1` Manifest mit Run-/Usage-/Cost-Metadaten
+- behauptet kein nicht persistiertes Rohartefakt: `evidencePayloadIncluded=false`
+- `benchmarkEvidenceOnly=true`
+- `productionEligible=false`
+- `decisionEligible=false`
+
+Regression Detection, Custom Profiles/Thresholds, Enforced PR Gate, API-Produktisierung und Self-hosted Runner
+bleiben getrennte Folge-Slices und werden nicht allein durch die Capability-Matrix als implementiert behauptet.
