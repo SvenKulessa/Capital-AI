@@ -44,6 +44,7 @@ import {
   FileText,
   TrendingUp,
   PieChart,
+  Lock,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { DATA_CONCEPTS, STUDIO_BLUEPRINTS, DataConcept, StudioBlueprint } from '../../data/studioData';
