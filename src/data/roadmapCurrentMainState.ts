@@ -8,7 +8,7 @@ export type RoadmapReconciliationPatch = {
 
 export const ROADMAP_RECONCILIATION = Object.freeze({
   schema: 'CAPITAL_AI_ROADMAP_RECONCILIATION@1',
-  baseMainSha: '0bf052cbc8f7774db29cc77493f6f24bb28bd93b',
+  baseMainSha: 'cef1d11f607778f5226ca1df97376ba408652c69',
   reviewedAt: '2026-10-06',
   packageCount: 108,
   packageSources: [
@@ -592,7 +592,7 @@ export const ROADMAP_CURRENT_STATE_OVERRIDES: Readonly<Record<string, RoadmapRec
       "server/cads-commerce.mjs",
       "CAPITAL-AI-PRODUCT/BENCHMARK-ENGINE-PRODUCT.md"
     ],
-    "nextStep": "CADS-Web-SaaS-Entitlements gegen reale Starter/Pro/Enterprise-Subscriptions abnehmen und danach GitHub-Marketplace-Plan-/marketplace_purchase-Lifecycle separat implementieren."
+    "nextStep": "CADS-Web-SaaS-Entitlements gegen reale Starter/Pro/Enterprise-Subscriptions abnehmen; parallel den getrennten GitHub-Marketplace-Community-Free-Slice als echte App registrieren, Draft Listing anlegen und purchased/cancelled readback-smoken. Paid Marketplace bleibt separat gesperrt."
   },
   "CA-PRODUCT-CADS-GITHUB-MARKETPLACE": {
     "status": "aktiv",
@@ -600,11 +600,15 @@ export const ROADMAP_CURRENT_STATE_OVERRIDES: Readonly<Record<string, RoadmapRec
     "progressPercent": null,
     "evidenceRefs": [
       "server/cads-commerce.mjs",
+      "server/cads-marketplace-community.mjs",
+      "apps/cads-github-app/github-app-registration.example.json",
+      "apps/cads-github-app/marketplace-plans.json",
+      "docs/product/CADS-GITHUB-MARKETPLACE-COMMUNITY-20261006.md",
       "packages/benchmark-core/index.mjs",
       "src/features/pricing/MonetizationModal.tsx",
       "CAPITAL-AI-PRODUCT/BENCHMARK-ENGINE-PRODUCT.md"
     ],
-    "nextStep": "Bestehende Stripe-Tiers als Website-CADS-Entitlements produktiv verifizieren; GitHub App Minimalrechte, Marketplace Plan IDs und marketplace_purchase bleiben als getrennte nächste Authority offen."
+    "nextStep": "Community-first: CADS GitHub App mit Minimalrechten real registrieren, Free-Draft-Listing + separaten Marketplace-Webhook konfigurieren und purchased/cancelled gegen die GitHub Marketplace Subscription Authority smoken. Paid Plan IDs und Pricing bleiben unassigned."
   },
   "CA-PLATFORM-COMPONENT-INVENTORY": {
     "status": "aktiv",
@@ -627,7 +631,7 @@ export const ROADMAP_CURRENT_STATE_OVERRIDES: Readonly<Record<string, RoadmapRec
       "server/observability.test.mjs",
       "server/cads-observability.test.mjs"
     ],
-    "nextStep": "Runtime-Retention und optionalen externen OTLP-Export getrennt evaluieren; bestehende Redaction-/Metrics-/Audit-Baseline beibehalten."
+    "nextStep": "Bestehende Redaction-/Metrics-/Audit-Baseline beibehalten. Grafana Cloud + Supabase sind operatorseitig bereits verbunden; jetzt technischen Readback, Retention, Tenant-Grenzen und den tatsächlichen externen Prometheus/OTLP-Export separat evidenzieren."
   },
   "PRODUCTION-WEB-01-PRODUCT": {
     "status": "aktiv",
