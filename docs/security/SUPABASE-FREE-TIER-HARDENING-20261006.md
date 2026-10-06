@@ -1,7 +1,7 @@
 # Supabase Free-Tier Hardening — Production Evidence
 
-Stand: 2026-10-06  
-Projekt: Capital-AI  
+Stand: 2026-10-06
+Projekt: Capital-AI
 Plan: Free
 
 ## Ergebnis
