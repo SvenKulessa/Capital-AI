@@ -96,6 +96,19 @@ Owner-Entscheidung vom 2026-10-05: `SvenKulessa/Capital-AI` ist öffentlich. Das
 - Diese Regel ist keine pauschale Kosten- oder Control-Plane-Freigabe. Kostenpflichtige Larger Runner, zusätzliche Storage-/Compute-Ressourcen, neue kostenpflichtige GitHub-Produkte sowie Billing-, Auth-, DNS-, Secret-, Ruleset- oder sonstige privilegierte Mutationen behalten ihre eigenen Gates.
 - Security-, Lizenz-, Governance-, Supply-Chain- und Production-Handoff-Anforderungen bleiben vollständig bestehen. Der Production-Handoff ist dabei ein technischer, maschinenprüfbarer Gate-Satz und keine zusätzliche Human-/Owner-Admission.
 
+## Human Merge Authority
+
+Owner-Entscheidung vom 2026-10-07: **Jede Codeänderung, die über einen Pull Request in das Repository eingebracht wird, muss vom Human Repository Owner selbst gemerged werden.**
+
+- Automatische Merges sind standardmäßig verboten.
+- Erfolgreiche Required Checks, Security-/Lizenz-/Governance-Gates, Benchmarks, Admissions oder ein vollständiger Deployment-Gate-Satz erzeugen **keine Merge-Autorität**.
+- Agents, Bots, Workflows und Self-Healing dürfen einen Pull Request vorbereiten, aktualisieren, testen, kommentieren und zur Review-Reife bringen, aber nicht eigenständig mergen.
+- Eine Ausnahme gilt ausschließlich, wenn der Owner **im Chat ausdrücklich die Freigabe zum Merge eines konkreten Pull Requests** erteilt. Diese Freigabe gilt nur für den konkret bezeichneten PR und den dabei geprüften Head-/Gate-Zustand.
+- Eine allgemeine Formulierung wie "alle Checks sind grün", ein `deployEligible:true`, eine Admission oder ein früheres Merge-Einverständnis darf nicht als implizite Merge-Freigabe für andere oder spätere PRs interpretiert werden.
+- Ändert sich der PR-Head nach einer ausdrücklichen Chat-Merge-Freigabe materiell, ist die Freigabe für den neuen Head erneut erforderlich.
+- Auto-Merge, Merge Queue oder Bot-Merge dürfen diese Human-Grenze nicht umgehen.
+- Die automatische Deployment-Entscheidung bleibt hiervon getrennt: Ein policy-konformer Deployment-Gate-Satz kann Deployment-Autorität erzeugen, **aber niemals Merge-Autorität**.
+
 ## Automatische Deployment-Entscheidung
 
 Owner-Entscheidung vom 2026-10-07: Da CAPITAL-AI durch einen einzelnen Owner entwickelt und betrieben wird, benötigt ein Deployment **keine separate Admission, Human-Approval oder erneute Owner-Bestätigung**, wenn die verbindlichen Repository-Policies den vollständigen technischen Gate-Satz bereits definieren.
