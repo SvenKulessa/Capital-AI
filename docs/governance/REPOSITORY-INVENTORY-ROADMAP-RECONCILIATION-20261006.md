@@ -6,20 +6,18 @@ Status: **evidence-oriented working baseline; no Production/Security/License app
 
 - Repository: `SvenKulessa/Capital-AI`
 - Default branch: `main`
-- Main SHA: `824d42913bbeccb68366c2ae70714ccb960717e5`
-- Main commit: `[CAPITAL-AI-TRUST] Architektur A: Zero-Cost-Gates, GraphRAG & Truth Authority (#207)`
-- Recursive tree: 1,224 entries, 1,054 blobs/files, 170 trees/directories.
-- Dominant areas: `docs` 329, `src` 270, `public` 132, `scripts` 104, `supabase` 103, `server` 63, `contracts` 40.
-- Dominant file classes: Markdown 190, MJS 181, JSON 146, TypeScript 125, SQL 101, TSX 98.
+- Main SHA: `0bf052cbc8f7774db29cc77493f6f24bb28bd93b`
+- Main commit: `[CAPITAL-AI-MARKET] Rust/NATS Private-Provider-Bridge read-only integrieren (#212)`
+- Recursive tree: 1,236 entries, 1,063 blobs/files, 173 trees/directories.
+- Dominant areas: `docs` 329, `src` 270, `public` 132, `scripts` 104, `supabase` 104, `server` 66, `contracts` 41.
+- Dominant file classes: Markdown 190, MJS 184, JSON 147, TypeScript 125, SQL 102, TSX 98.
 - Active repository ruleset: `main-production-protection`.
 
 ## Open pull requests at reconciliation time
 
 | PR | Domain | State | Observation |
 |---|---|---|---|
-| #212 | MARKET | open | Rust/NATS private-provider bridge; read-only provider boundary. |
-| #213 | legacy/misaligned | open | JaJa Buddy branch/title does not follow the current PRODUCT domain convention. |
-| #214 | PRODUCT | draft | Multi-agent roadmap / trajectory preparation. |
+| #214 | PRODUCT | open | Multi-agent roadmap / trajectory preparation; now marked ready for review, but still not `main` evidence. |
 | #215 | PRODUCT | draft | JaJa Universe Buddy on the compliant PRODUCT branch/title path. |
 
 Open PRs are not treated as `main` evidence until merged and re-correlated.
@@ -36,7 +34,7 @@ Open PRs are not treated as `main` evidence until merged and re-correlated.
 ### MARKET
 - Canonical market-data contracts and evidence gates.
 - NATS/JetStream and Valkey/Redis-compatible infrastructure.
-- ECB/reference-rate work, private-provider boundary, read-only exchange direction and source-rights governance.
+- ECB/reference-rate work, source-rights governance and the merged Rust/NATS private-provider read-only bridge (#212), including authenticated HTTP boundaries, vault-backed execution, NATS role separation, replay protection and Binance/Kraken read-only query gates.
 - Production scoring remains fail-closed where rights, data-quality or scoring evidence is incomplete.
 
 ### PLATFORM
@@ -57,7 +55,7 @@ Open PRs are not treated as `main` evidence until merged and re-correlated.
 ## Roadmap reconciliation
 
 1. Keep PRODUCT, MARKET, PLATFORM, TRUST and GROWTH as orientation, not artificial team silos.
-2. Use `main @ 824d429` as the evidence baseline; open PRs are future candidates only.
+2. Use `main @ 0bf052c` as the evidence baseline; open PRs are future candidates only.
 3. Record Grafana Cloud + Supabase as an operator-confirmed existing integration while keeping technical readback/retention/export evidence OPEN.
 4. Move CADS commercial product ownership to **PRODUCT** and retain **TRUST** as assurance/gate authority.
 5. Reuse proven Marketplace lifecycle patterns from the LEGAL_POLICY GitHub App without conflating the two product identities.
