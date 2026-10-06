@@ -38,7 +38,7 @@ CAPITAL-AI folgt einem fail-closed Sicherheitsmodell.
 
 Ein erfolgreicher Test, Build, Benchmark, Scan, Admission-Check oder CI-Workflow ist **niemals allein** eine Lizenz-, Security-, Merge-, Owner- oder Production-Freigabe.
 
-Ein positives Security-, Compliance-, Lizenz- oder Admission-Ergebnis ist ausschließlich Evidence. Es erzeugt **keine automatische Mutationsautorität**.
+Ein positives einzelnes Security-, Compliance-, Lizenz- oder Admission-Ergebnis ist ausschließlich Evidence. Es erzeugt **für sich allein keine automatische Mutationsautorität**.
 
 Insbesondere darf ein positives Ergebnis **nicht automatisch** autorisieren oder auslösen:
 
@@ -47,7 +47,7 @@ Insbesondere darf ein positives Ergebnis **nicht automatisch** autorisieren oder
 - Branch-Erstellung,
 - Pull Requests,
 - Merges,
-- Deployments,
+- Deployments außerhalb eines vollständig positiven, policy-definierten automatischen Deployment-Gate-Vertrags,
 - Secret- oder Credential-Rotation,
 - Permission-/Role-/Ruleset-Änderungen,
 - Auth-, DNS-, Billing- oder Branch-Protection-Änderungen,
@@ -55,7 +55,21 @@ Insbesondere darf ein positives Ergebnis **nicht automatisch** autorisieren oder
 - Provider- oder Dataset-Aktivierung,
 - Production Enablement.
 
-Explizit zugelassene, deterministische Low-Risk-Self-Healing-Pfade bleiben nur innerhalb ihrer separat versionierten Fingerprint-, Scope-, Revalidation- und Rollback-Gates zulässig. **Admission allein reicht dafür niemals aus.**
+Explizit zugelassene, deterministische Low-Risk-Self-Healing-Pfade bleiben nur innerhalb ihrer separat versionierten Fingerprint-, Scope-, Revalidation- und Rollback-Gates zulässig. **Admission allein reicht dafür niemals aus.** Für normale Deployments gilt separat: Der vollständige, verbindlich definierte Pipeline-Gate-Satz darf ohne zusätzliche Human-/Owner-Admission Deployment-Autorität erzeugen.
+
+## Pipeline-Authorized Deployment
+
+Ein Production-Deployment darf ohne separate Owner- oder Admission-Freigabe automatisch erfolgen, wenn die verbindlichen Repository-Policies den vollständigen Deployment-Gate-Satz definieren und **alle** Pflicht-Gates auf der exakten Candidate-Identität terminal `PASS` sind.
+
+Dabei gilt:
+
+- Pull-Request-Erstellung bzw. -Aktualisierung darf die vorgesehenen Prüfketten automatisch auslösen.
+- Die Pipeline darf nur aus dem vollständigen Gate-Satz `deployEligible:true` ableiten.
+- Ein einzelner Test, Scan, Benchmark oder Admission-Status reicht niemals aus.
+- Fehlende, laufende, übersprungene, unbekannte oder fehlgeschlagene Pflicht-Gates bedeuten fail-closed: kein Deployment.
+- Der Deployment-Job muss dieselbe gebundene Source-/Artifact-Identität konsumieren, die durch die Gates verifiziert wurde.
+- Ein neuer Repository-HEAD allein ist kein Deployment-Signal.
+- Auth-, DNS-, Billing-, Secret-/Credential-, Ruleset-/Branch-Protection- und andere privilegierte Control-Plane-Mutationen außerhalb des normalen Deployment-Vertrags bleiben separat geschützt.
 
 ## Authentication and Authorization
 
@@ -140,7 +154,7 @@ Automatisierung darf Write Authority insbesondere nicht allein ableiten aus:
 - erfolgreicher Korrelation,
 - geändertem Repository-HEAD.
 
-Automatische Reparatur-Commits, Branches, Pull Requests, Merges, Deployments oder Permission-Änderungen benötigen die dafür ausdrücklich definierte Autorisierung und alle zugehörigen technischen Gates.
+Automatische Reparatur-Commits, Branches, Pull Requests, Merges oder Permission-Änderungen benötigen die dafür ausdrücklich definierte Autorisierung und alle zugehörigen technischen Gates. Normale Deployments dürfen dagegen durch den vollständigen policy-definierten Deployment-Gate-Satz automatisch autorisiert werden.
 
 ## Incident Handling
 
@@ -175,7 +189,7 @@ Dazu gehören je nach Scope:
 - Deployment-Konfiguration,
 - Vulnerability Reports.
 
-Evidence beschreibt beobachteten Zustand. Sie ersetzt keine Security-, Lizenz-, Owner-, Merge- oder Production-Freigabe.
+Evidence beschreibt beobachteten Zustand. Einzelne Evidence ersetzt keine Security-, Lizenz- oder Merge-Freigabe. Für Deployments darf ausschließlich die vollständig korrelierte, policy-definierte Gate-Kette automatisch Deployment-Autorität erzeugen.
 
 ## Policy Relationship
 
