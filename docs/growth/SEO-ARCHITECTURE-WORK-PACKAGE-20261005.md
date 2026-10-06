@@ -255,7 +255,7 @@ Exit-Evidence:
 
 ### SEO-06A · Gemini-first Growth Generation
 
-**Status:** `REPO_IMPLEMENTED / VALIDATION_PENDING` auf `main@c13de16d8af006c37b08db616d1016173c99e7db`.
+**Status:** `MAIN_FOUNDATION + BRANCH_CONTROLS / VALIDATION_PENDING` — Main-Basis `4fa3e3f92547cd6356f46490a38e9b7515f69a6d`; erweiterte Controls auf `capital-ai-growth/growth-engine-controls-20261006`.
 
 **Ziel:** Gemini bevorzugt für eigene Produktkommunikation verwenden, ohne Search-Grounding-Bedingungen, Claim-Gates oder Publication Authority zu umgehen.
 
@@ -268,6 +268,12 @@ Umgesetzt:
 - Veo bleibt bis separater Modelstatus-/Kosten-/Terms-Admission production-ineligible;
 - `server/growth-ai-gateway.ts` validiert Gemini-Marketingoutput vollständig gegen ein striktes Zod-Schema;
 - Lead Discovery bleibt OSS/provider-neutral und Outreach Delivery fail-closed.
+- `src/contracts/growthProviderRuntime.ts` ergänzt providerweiten Kill-Switch, Model Router, Request-/Monatsbudget, Preis-/Usage-Evidence und public-safe URL-Context-Allowlist;
+- `src/contracts/growthMediaApproval.ts` bindet Image/TTS an expliziten Social-Engine-PASS sowie Rights-/Brand-/Voice-Evidence;
+- `src/contracts/growthDiscovery.ts` implementiert robots-/Terms-Provenance und deterministisches Lead-Scoring ohne Outreach-Authority;
+- `MARKETING_OUTREACH_POLICY@2` erzwingt Legal Basis, Suppression, Unsubscribe, Sender Identity, Audit und Frequency Caps;
+- `src/contracts/growthAttribution.ts` korreliert GSC, First-Party-Analytics und Social-Evidence ohne die Quellen semantisch zu vermischen;
+- Crawlee/SearXNG/Umami bleiben bis CADS-/Security-/License-Benchmark reine Kandidaten.
 
 Provider-Evidence:
 - `docs/growth/GEMINI-FIRST-GROWTH-ENGINE-20261006.md`.
