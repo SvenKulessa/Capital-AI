@@ -18,9 +18,9 @@ baseline:
     repository: "SvenKulessa/Capital-AI"
     sha: "9c5fc40318cf538308724c2efb18441185e8cbae"
   currentMainCorrelation:
-    sha: "8244a411b3b5b691adbb78ffdc5880aadd267113"
+    sha: "73ad214e3a8af73f99c08531533ddcaaca530be3"
     rootPolicy: "AGENTS.md@currentmain"
-    correlationState: "POINT_3_SOURCE_TARGET_MANIFEST_RECORRELATED_SOCIAL_FIRST"
+    correlationState: "POINT_6_SOCIAL_ENGINE_COMPLETION_GATE_EVALUATED_BLOCKED"
   policy: "target-current-main-contracts-win"
 
 objectives:
@@ -182,10 +182,15 @@ artifacts:
   sourceTargetManifest: "CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json"
   sourceTargetManifestValidator: "scripts/validate-finance-source-target-manifest.mjs"
   sourceTargetManifestTest: "scripts/finance-source-target-manifest.test.mjs"
+  socialEngineCompletionGate: "CAPITAL-AI-GROWTH/social-engine-completion-gate.json"
+  socialEngineCompletionGateValidator: "scripts/validate-social-engine-completion-gate.mjs"
+  socialEngineCompletionGateTest: "scripts/social-engine-completion-gate.test.mjs"
 
 validation:
   status:
     source-to-target-file-manifest: "MATERIALIZED_WITH_GIT_BLOB_SHA_GUARD"
+    social-engine-completion-gate: "BLOCKED_RUNTIME_NOT_MIGRATED"
+    finance-scoring-data-followup: "BLOCKED_BY_SOCIAL_MEDIA_ENGINE_MIGRATION"
     remainingGates: "OPEN"
   required:
     - "source-to-target-file-manifest"
