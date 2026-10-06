@@ -197,12 +197,18 @@ export function createKrakenOrderDryRun({
   }
 
   function auditEvent(eventType, userId, digest, requestId, result, metadata = {}) {
+    const authorizationDecision =
+      result === 'PREVIEWED'
+        ? 'PREVIEW_ONLY'
+        : result === 'DENIED'
+          ? 'DENIED'
+          : 'USER_CONFIRMED_DRY_RUN';
     audit({
       eventType,
       requestId,
       actorRef: actorRef(userId),
       domain: 'MARKET',
-      authorizationDecision: 'USER_CONFIRMED_DRY_RUN',
+      authorizationDecision,
       sanitizedActionHash: digest,
       result,
       metadata: {
