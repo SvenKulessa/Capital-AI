@@ -385,9 +385,14 @@ export function createCadsMarketplace({
 
   async function authoritativeTierForAccount(accountId) {
     const subscription = await githubMarketplaceSubscription(accountId, config, fetchImpl);
-    if (!subscription) return { subscription: null, tier: null };
-    const tier = tierForMarketplacePlanId(subscription.plan?.id, env);
-    return { subscription, tier };
+    if (!subscription) return { subscription: null, tier: null, accountId: null, planId: null };
+    const readbackAccountId = positiveInteger(subscription.id ?? subscription.account?.id);
+    const readbackPlanId = positiveInteger(
+      subscription.marketplace_purchase?.plan?.id ??
+      subscription.plan?.id
+    );
+    const tier = tierForMarketplacePlanId(readbackPlanId, env);
+    return { subscription, tier, accountId: readbackAccountId, planId: readbackPlanId };
   }
 
   async function linkUser({ userId, accountId, installationId }) {
@@ -578,8 +583,8 @@ export function createCadsMarketplace({
         json(res, 503, { error: 'marketplace_readback_unavailable' });
         return true;
       }
-      const readbackAccountId = positiveInteger(readback.subscription?.account?.id);
-      const readbackPlanId = positiveInteger(readback.subscription?.plan?.id);
+      const readbackAccountId = readback.accountId;
+      const readbackPlanId = readback.planId;
       if (!readback.subscription || readbackAccountId !== account.id || !readback.tier || readbackPlanId !== planId) {
         audit({ eventType: 'cads.marketplace.webhook.denied', action, result: 'READBACK_MISMATCH' });
         json(res, 409, { error: 'marketplace_readback_mismatch' });
