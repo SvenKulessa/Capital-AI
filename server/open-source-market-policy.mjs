@@ -1,9 +1,14 @@
+import { ECB_REFERENCE_RATE_INSTRUMENTS } from './ecb-reference-rates.mjs';
+
 const OPEN_SOURCE_SOFTWARE_LICENSES = new Set([
   'MIT','Apache-2.0','BSD-2-Clause','BSD-3-Clause','ISC',
   'GPL-3.0-only','GPL-3.0-or-later','AGPL-3.0-only','AGPL-3.0-or-later',
   'LGPL-3.0-only','LGPL-3.0-or-later','MPL-2.0',
 ]);
 const OPEN_DATA_LICENSES = new Set(['CC0-1.0','CC-BY-4.0','CC-BY-SA-4.0','ODbL-1.0','LicenseRef-ECB-ESCB-STATISTICS-REUSE-2026']);
+const ECB_PRODUCTION_INSTRUMENT_IDS = Object.freeze(
+  ECB_REFERENCE_RATE_INSTRUMENTS.map(instrument => instrument.instrumentId),
+);
 
 export const MARKET_REQUIRED_USE_CASES = Object.freeze([
   'commercialWebDisplay',
@@ -33,7 +38,9 @@ export const MARKET_SOURCE_POLICY = Object.freeze({
       scope:'FOREX_DAILY_REFERENCE_RATES_INFORMATION_ONLY',
       dataLicense:'LicenseRef-ECB-ESCB-STATISTICS-REUSE-2026',
       evidenceReference:'docs/market-data/evidence/source-rights-admission-ecb-reference-rates-20261005.json',
-      instrumentManifestReference:'docs/market-data/evidence/instrument-manifest-20261005.json',
+      instrumentManifestReference:'docs/market-data/evidence/instrument-manifest-ecb-production-20261006.json',
+      identityManifestReference:'docs/market-data/evidence/instrument-manifest-20261005.json',
+      instrumentIds:ECB_PRODUCTION_INSTRUMENT_IDS,
       obligations:Object.freeze([
         'ATTRIBUTE_SOURCE_AS_ECB_STATISTICS',
         'PRESERVE_ORIGINAL_PUBLISHED_STATISTIC_AND_METADATA',
@@ -76,7 +83,9 @@ export const MARKET_SOURCE_POLICY = Object.freeze({
       softwareLicense:'MIT',
       dataLicense:'LicenseRef-ECB-ESCB-STATISTICS-REUSE-2026',
       evidenceReference:'docs/market-data/evidence/source-admission-ecb-reference-rates-20261006.json',
-      instrumentManifestReference:'docs/market-data/evidence/instrument-manifest-20261005.json',
+      instrumentManifestReference:'docs/market-data/evidence/instrument-manifest-ecb-production-20261006.json',
+      identityManifestReference:'docs/market-data/evidence/instrument-manifest-20261005.json',
+      instrumentIds:ECB_PRODUCTION_INSTRUMENT_IDS,
       capabilities:Object.freeze({
         referenceMetadata:true,
         marketQuotes:true,
@@ -151,4 +160,25 @@ export function admittedMarketSourcesFor(capability=null){
 
 export function isAdmittedMarketSource(providerId, capability=null){
   return admittedMarketSourcesFor(capability).some(source => source.providerId===providerId);
+}
+
+
+export function rightsAdmittedMarketInstrumentsFor(providerId, capability=null){
+  const source = rightsAdmittedMarketSourcesFor(capability).find(item => item.providerId===providerId);
+  return Array.isArray(source?.instrumentIds) ? [...source.instrumentIds] : [];
+}
+
+export function isMarketInstrumentRightsAdmitted(providerId, instrumentId, capability=null){
+  return typeof instrumentId === 'string' &&
+    rightsAdmittedMarketInstrumentsFor(providerId, capability).includes(instrumentId);
+}
+
+export function admittedMarketInstrumentsFor(providerId, capability=null){
+  const source = admittedMarketSourcesFor(capability).find(item => item.providerId===providerId);
+  return Array.isArray(source?.instrumentIds) ? [...source.instrumentIds] : [];
+}
+
+export function isAdmittedMarketInstrument(providerId, instrumentId, capability=null){
+  return typeof instrumentId === 'string' &&
+    admittedMarketInstrumentsFor(providerId, capability).includes(instrumentId);
 }
