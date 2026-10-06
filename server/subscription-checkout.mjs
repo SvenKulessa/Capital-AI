@@ -40,7 +40,7 @@ function readBody(req) {
 
 export function createSubscriptionCheckout({ env = process.env, fetchImpl = fetch, auth } = {}) {
   const secret = env.STRIPE_SECRET_KEY || '';
-  const enabled = env.STRIPE_SUBSCRIPTION_CHECKOUT_ENABLED === 'true';
+  const enabled = env.STRIPE_SUBSCRIPTION_CHECKOUT_ENABLED !== 'false';
   const baseUrl = String(env.PUBLIC_BASE_URL || 'https://capital-ai.online').replace(/\/$/, '');
 
   async function stripeCreateSession(form) {
