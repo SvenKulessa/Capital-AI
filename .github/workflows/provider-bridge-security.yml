@@ -40,6 +40,9 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Deployment Contract prüfen
+        run: node --test scripts/provider-bridge-deployment-contract.test.mjs
+
       - name: Rust 1.99.0 und Supply-Chain-Tools
         run: |
           set -euo pipefail
