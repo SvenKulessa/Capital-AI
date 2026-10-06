@@ -38,7 +38,7 @@ function responseHarness() {
   };
 }
 
-test('BYOK write stores only through Vault RPC and verifies only Kraken private Balance', async () => {
+test('BYOK write verifies Kraken Spot key permissions, stores through Vault and reads portfolio only when allowed', async () => {
   const calls = [];
   const apiKey = 'owner-readonly-api-key';
   const apiSecret = 'aGVsbG8tdGVzdC1zZWNyZXQtdGhhdC1pcy1sb25nLWVub3VnaA==';
@@ -63,6 +63,13 @@ test('BYOK write stores only through Vault RPC and verifies only Kraken private 
         const stored = JSON.parse(body._secret_payload);
         assert.equal(stored.apiKey, apiKey);
         assert.equal(stored.apiSecret, apiSecret);
+        assert.deepEqual(body._permissions, {
+          fundsQuery: true,
+          websocketToken: true,
+          trading: false,
+          withdrawals: false,
+          publicMarketDataAdmission: false,
+        });
         return Response.json({
           provider: 'kraken',
           status: 'PENDING',
@@ -76,12 +83,20 @@ test('BYOK write stores only through Vault RPC and verifies only Kraken private 
     }
 
     if (url.origin === 'https://api.kraken.com') {
-      assert.equal(url.pathname, '/0/private/Balance');
       assert.equal(options.method, 'POST');
       assert.equal(options.headers['API-Key'], apiKey);
       assert.ok(options.headers['API-Sign']);
       assert.doesNotMatch(url.href, /AddOrder|Withdraw|Deposit/);
-      return Response.json({ error: [], result: { XXBT: '0.125', ZEUR: '42.00' } });
+      if (url.pathname === '/0/private/GetApiKeyInfo') {
+        return Response.json({
+          error: [],
+          result: { apiKeyName: 'Capital-AI', permissions: ['query-funds', 'create-ws-token'] },
+        });
+      }
+      if (url.pathname === '/0/private/Balance') {
+        return Response.json({ error: [], result: { XXBT: '0.125', ZEUR: '42.00' } });
+      }
+      throw new Error('Unexpected Kraken path');
     }
 
     throw new Error('Unexpected upstream');
@@ -108,13 +123,128 @@ test('BYOK write stores only through Vault RPC and verifies only Kraken private 
   assert.equal(payload.dataScope, 'USER_PRIVATE_ACCOUNT_DATA');
   assert.equal(payload.redistributionAllowed, false);
   assert.equal(payload.publicDisplayAllowed, false);
+  assert.equal(payload.capabilities.fundsQuery, true);
+  assert.equal(payload.capabilities.websocketToken, true);
+  assert.equal(payload.portfolioAvailable, true);
   assert.deepEqual(payload.holdings, [
     { asset: 'XXBT', balance: '0.125' },
     { asset: 'ZEUR', balance: '42.00' },
   ]);
   assert.doesNotMatch(JSON.stringify(payload), new RegExp(apiKey));
   assert.doesNotMatch(JSON.stringify(payload), new RegExp(apiSecret));
-  assert.equal(calls.filter(call => new URL(call.url).origin === 'https://api.kraken.com').length, 1);
+  assert.deepEqual(
+    calls
+      .filter(call => new URL(call.url).origin === 'https://api.kraken.com')
+      .map(call => new URL(call.url).pathname),
+    ['/0/private/GetApiKeyInfo', '/0/private/Balance'],
+  );
+});
+
+
+test('valid Spot REST key without Query Funds can be stored without pretending a portfolio is available', async () => {
+  const apiKey = 'readonly-rest-api-key';
+  const apiSecret = 'aGVsbG8tdGVzdC1zZWNyZXQtdGhhdC1pcy1sb25nLWVub3VnaA==';
+  const calls = [];
+  const env = {
+    SUPABASE_URL: 'https://project.supabase.co',
+    SUPABASE_SECRET_KEY: 'sb_secret_test_0123456789012345678901234567890123456789',
+    AUTH_COOKIE_SIGNING_SECRET: 'test-cookie-signing-secret-0123456789abcdef',
+  };
+  const auth = {
+    verify: async () => ({ userId: '11111111-1111-1111-1111-111111111111' }),
+    sameOrigin: () => true,
+  };
+  const fetchImpl = async (input, options = {}) => {
+    const url = new URL(String(input));
+    calls.push(url.pathname);
+    if (url.origin === 'https://api.kraken.com') {
+      assert.equal(url.pathname, '/0/private/GetApiKeyInfo');
+      return Response.json({
+        error: [],
+        result: { apiKeyName: 'REST read only', permissions: ['query-ledger'] },
+      });
+    }
+    if (url.origin === 'https://project.supabase.co') {
+      if (url.pathname.endsWith('/capital_ai_upsert_user_provider_secret')) {
+        const body = JSON.parse(String(options.body));
+        assert.equal(body._permissions.fundsQuery, false);
+        assert.equal(body._permissions.websocketToken, false);
+        return Response.json({ provider: 'kraken', status: 'PENDING' });
+      }
+      if (url.pathname.endsWith('/capital_ai_mark_user_provider_status')) {
+        return new Response(null, { status: 204 });
+      }
+    }
+    throw new Error('Unexpected upstream');
+  };
+
+  const vault = createUserProviderVault({ env, fetchImpl, auth });
+  let status = 0;
+  let payload;
+  await vault.handle(
+    request('PUT', { apiKey, apiSecret }),
+    responseHarness(),
+    new URL('https://capital.example/api/profile/provider-connections/kraken'),
+    (_res, nextStatus, nextPayload) => {
+      status = nextStatus;
+      payload = nextPayload;
+    },
+  );
+
+  assert.equal(status, 200);
+  assert.equal(payload.status, 'VERIFIED');
+  assert.equal(payload.portfolioAvailable, false);
+  assert.equal(payload.capabilities.fundsQuery, false);
+  assert.deepEqual(payload.holdings, []);
+  assert.equal(calls.includes('/0/private/Balance'), false);
+});
+
+test('Spot key with write or withdrawal permissions is rejected before Vault storage', async () => {
+  let vaultWrites = 0;
+  const env = {
+    SUPABASE_URL: 'https://project.supabase.co',
+    SUPABASE_SECRET_KEY: 'sb_secret_test_0123456789012345678901234567890123456789',
+    AUTH_COOKIE_SIGNING_SECRET: 'test-cookie-signing-secret-0123456789abcdef',
+  };
+  const vault = createUserProviderVault({
+    env,
+    auth: {
+      verify: async () => ({ userId: '11111111-1111-1111-1111-111111111111' }),
+      sameOrigin: () => true,
+    },
+    fetchImpl: async input => {
+      const url = new URL(String(input));
+      if (url.origin === 'https://api.kraken.com') {
+        return Response.json({
+          error: [],
+          result: { permissions: ['query-funds', 'modify-trades', 'withdraw-funds'] },
+        });
+      }
+      vaultWrites += 1;
+      throw new Error('Vault must not be called for over-privileged key');
+    },
+  });
+
+  let status = 0;
+  let payload;
+  await vault.handle(
+    request('PUT', {
+      apiKey: 'overprivileged-api-key',
+      apiSecret: 'aGVsbG8tdGVzdC1zZWNyZXQtdGhhdC1pcy1sb25nLWVub3VnaA==',
+    }),
+    responseHarness(),
+    new URL('https://capital.example/api/profile/provider-connections/kraken'),
+    (_res, nextStatus, nextPayload) => {
+      status = nextStatus;
+      payload = nextPayload;
+    },
+  );
+
+  assert.equal(status, 422);
+  assert.equal(payload.error, 'kraken_key_permissions_too_broad');
+  assert.ok(payload.unsafePermissions.includes('modify-trades'));
+  assert.ok(payload.unsafePermissions.includes('withdraw-funds'));
+  assert.equal(vaultWrites, 0);
 });
 
 test('BYOK routes fail closed before any provider or Vault I/O without verified session', async () => {
