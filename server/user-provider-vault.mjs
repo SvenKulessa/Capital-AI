@@ -242,6 +242,97 @@ async function krakenFuturesKeyInfo(fetchImpl, { apiKey, apiSecret }) {
   };
 }
 
+function normalizeProviderParams(params) {
+  if (params == null) return {};
+  if (!params || typeof params !== 'object' || Array.isArray(params)) throw new Error('INVALID_PROVIDER_QUERY_PARAMS');
+  const out = {};
+  for (const [key, value] of Object.entries(params)) {
+    if (!/^[A-Za-z0-9_.-]{1,40}$/.test(key)) throw new Error('INVALID_PROVIDER_QUERY_PARAM');
+    if (!['string', 'number', 'boolean'].includes(typeof value)) throw new Error('INVALID_PROVIDER_QUERY_PARAM');
+    if (typeof value === 'string' && value.length > 256) throw new Error('INVALID_PROVIDER_QUERY_PARAM');
+    if (typeof value === 'number' && !Number.isSafeInteger(value)) throw new Error('INVALID_PROVIDER_QUERY_PARAM');
+    out[key] = value;
+  }
+  return out;
+}
+
+function queryString(params) {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(normalizeProviderParams(params))) query.set(key, String(value));
+  return query.toString();
+}
+
+async function krakenFuturesPrivateGet(fetchImpl, path, { apiKey, apiSecret }, params = {}) {
+  const nonce = nextKrakenNonce();
+  const postData = queryString(params);
+  const authent = krakenFuturesSignature(path, postData, nonce, apiSecret);
+  const url = new URL(path, 'https://futures.kraken.com');
+  if (postData) url.search = postData;
+  const response = await fetchImpl(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json', APIKey: apiKey, Authent: authent, Nonce: nonce },
+    redirect: 'error',
+    signal: AbortSignal.timeout(7000),
+  });
+  const payload = await boundedJson(response);
+  if (!response.ok || payload?.error) {
+    const error = new Error('KRAKEN_FUTURES_QUERY_FAILED');
+    error.code = payload?.error ? String(payload.error).slice(0, 120) : `HTTP_${response.status}`;
+    throw error;
+  }
+  return payload;
+}
+
+export function binanceSignature(query, apiSecret) {
+  return createHmac('sha256', apiSecret).update(query).digest('hex');
+}
+
+async function binancePrivateGet(fetchImpl, origin, path, { apiKey, apiSecret }, params = {}) {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(normalizeProviderParams(params))) query.set(key, String(value));
+  query.set('recvWindow', '5000');
+  query.set('timestamp', String(Date.now()));
+  const unsigned = query.toString();
+  query.set('signature', binanceSignature(unsigned, apiSecret));
+  const url = new URL(path, origin);
+  url.search = query.toString();
+  const response = await fetchImpl(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json', 'X-MBX-APIKEY': apiKey },
+    redirect: 'error',
+    signal: AbortSignal.timeout(7000),
+  });
+  const payload = await boundedJson(response);
+  if (!response.ok || (typeof payload?.code === 'number' && payload.code < 0)) {
+    const error = new Error('BINANCE_PRIVATE_QUERY_FAILED');
+    error.code = typeof payload?.code === 'number' ? `BINANCE_${payload.code}` : `HTTP_${response.status}`;
+    throw error;
+  }
+  return payload;
+}
+
+async function binanceKeyInfo(fetchImpl, credentials) {
+  const info = await binancePrivateGet(fetchImpl, 'https://api.binance.com', '/sapi/v1/account/apiRestrictions', credentials);
+  const reading = info?.enableReading === true;
+  const forbiddenTransfers = info?.enableWithdrawals === true ||
+    info?.enableInternalTransfer === true ||
+    info?.permitsUniversalTransfer === true;
+  const spotTrading = info?.enableSpotAndMarginTrading === true;
+  const futures = info?.enableFutures === true;
+  const trading = spotTrading || futures || info?.enablePortfolioMarginTrading === true;
+  return {
+    raw: info,
+    reading,
+    forbiddenTransfers,
+    spotTrading,
+    futures,
+    trading,
+    withdrawals: info?.enableWithdrawals === true,
+    internalTransfers: info?.enableInternalTransfer === true,
+    universalTransfers: info?.permitsUniversalTransfer === true,
+  };
+}
+
 function normalizePair(value) {
   const apiKey = normalizeCredential(value?.apiKey, 8, 512);
   const apiSecret = normalizeCredential(value?.apiSecret, 16, 1024);
