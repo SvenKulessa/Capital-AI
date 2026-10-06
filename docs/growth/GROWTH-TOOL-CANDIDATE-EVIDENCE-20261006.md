@@ -1,7 +1,7 @@
 # GROWTH Tool Candidate & Provider Evidence — 2026-10-06
 
-Primary Domain: CAPITAL-AI-GROWTH  
-Baseline: `SvenKulessa/Capital-AI@4fa3e3f92547cd6356f46490a38e9b7515f69a6d`  
+Primary Domain: CAPITAL-AI-GROWTH
+Baseline: `SvenKulessa/Capital-AI@4fa3e3f92547cd6356f46490a38e9b7515f69a6d`
 Status: `CANDIDATE_EVIDENCE / NO_RUNTIME_ADMISSION`
 
 ## Zweck
