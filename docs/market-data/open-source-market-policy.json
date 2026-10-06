@@ -94,7 +94,10 @@
         "scoringPriceInput": true,
         "realtime": false,
         "executionPrice": false,
-        "decisionEligible": false
+        "decisionEligible": false,
+        "scoringAssetClasses": [
+          "forex"
+        ]
       }
     }
   ],
@@ -197,7 +200,10 @@
         "scoringPriceInput": true,
         "realtime": false,
         "executionPrice": false,
-        "decisionEligible": false
+        "decisionEligible": false,
+        "scoringAssetClasses": [
+          "forex"
+        ]
       },
       "runtimeAdmissionReference": "docs/market-data/evidence/source-admission-ecb-reference-rates-20261006.json"
     }
