@@ -227,4 +227,3 @@ CURRENT_MAIN für diese Vorintegration: `5f333bcd5e219ae160a611941ba1e9fde01f4c9
 - Die separate Metricool REST API ist laut aktueller Metricool-Dokumentation nur für Advanced/Custom verfügbar und wird deshalb unter der CAPITAL-AI-No-Cost-Grenze **nicht** integriert.
 - Für die kommende Social Media Engine dient Metricool zunächst als optionaler, provider-neutral abgegrenzter Operator-Adapter. Vollautomatische serverseitige Veröffentlichung über Metricool bleibt gehalten, solange dafür kostenpflichtiger API-Zugriff erforderlich wäre.
 - Ein späterer Wechsel auf Metricool API, White-Label oder serverseitige Integration ist eine eigenständige Kosten-/Provider-/Security-Entscheidung und darf nicht durch diese MCP-Registrierung impliziert werden.
-
