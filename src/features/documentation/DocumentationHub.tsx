@@ -112,6 +112,15 @@ const presentations = [
     meta: 'OSS • Lizenzen • Notices',
   },
   {
+    title: 'Schriftlizenz',
+    description:
+      'Lokaler OFL-Lizenztext der ausgelieferten Plus Jakarta Sans Schriftdateien. Der Link bleibt auf derselben Origin und lädt keine externen Font-Dienste.',
+    href: '/fonts/OFL.txt',
+    internal: false,
+    icon: <FileText className="h-5 w-5" />,
+    meta: 'Fonts • OFL • Local Origin',
+  },
+  {
     title: 'CAPITAL-AI Domains',
     description:
       'PRODUCT, MARKET, PLATFORM, TRUST und GROWTH mit den bestehenden Domain-Badges und technischen Systemgrenzen.',
