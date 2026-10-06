@@ -68,6 +68,20 @@ jobs:
           ) > tts-snapshot-evidence/SHA256SUMS.txt
 
           manifest="CAPITAL-AI-GROWTH/social-tts-snapshot-lock-20261006.json"
+          while IFS= read -r entry; do
+            path="$(jq -r '.key' <<<"$entry")"
+            expected="$(jq -r '.value' <<<"$entry")"
+            actual="$(sha256sum "tts-snapshot-evidence/qwen/$path" | cut -d ' ' -f 1)"
+            test "$actual" = "$expected"
+          done < <(jq -c '.qwen.model.smallArtifactHashes | to_entries[]' "$manifest")
+
+          while IFS= read -r entry; do
+            path="$(jq -r '.key' <<<"$entry")"
+            expected="$(jq -r '.value' <<<"$entry")"
+            actual="$(sha256sum "tts-snapshot-evidence/chatterbox/$path" | cut -d ' ' -f 1)"
+            test "$actual" = "$expected"
+          done < <(jq -c '.chatterbox.model.smallArtifactHashes | to_entries[]' "$manifest")
+
           jq -n             --arg schemaVersion "SOCIAL_TTS_SMALL_ARTIFACT_EVIDENCE@1"             --arg sourceSha "$GITHUB_SHA"             --arg qwenRevision "$(jq -r '.qwen.model.revision' "$manifest")"             --arg chatterboxRevision "$(jq -r '.chatterbox.model.revision' "$manifest")"             --rawfile sums tts-snapshot-evidence/SHA256SUMS.txt             '{
               schemaVersion:$schemaVersion,
               sourceSha:$sourceSha,
