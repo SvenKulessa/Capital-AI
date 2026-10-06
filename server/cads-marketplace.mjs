@@ -288,6 +288,31 @@ async function verifyBuyerInstallation(userToken, installationId, fetchImpl) {
   return installation;
 }
 
+async function revokeOAuthToken(config, userToken, fetchImpl) {
+  const basic = Buffer.from(config.clientId + ':' + config.clientSecret).toString('base64');
+  const response = await fetchImpl(
+    'https://api.github.com/applications/' + encodeURIComponent(config.clientId) + '/token',
+    {
+      method: 'DELETE',
+      redirect: 'error',
+      headers: {
+        accept: 'application/vnd.github+json',
+        authorization: 'Basic ' + basic,
+        'content-type': 'application/json',
+        'x-github-api-version': GITHUB_API_VERSION,
+        'user-agent': 'capital-ai-cads-marketplace/1',
+      },
+      body: JSON.stringify({ access_token: userToken }),
+      signal: AbortSignal.timeout(7000),
+    },
+  );
+  if (response.status !== 204) {
+    await response.body?.cancel();
+    throw new Error('github_oauth_token_revocation_failed');
+  }
+  await response.body?.cancel();
+}
+
 export function createCadsGitHubAppJwt({ appId, privateKey, now = Math.floor(Date.now() / 1000) }) {
   if (!positiveInteger(appId) || !privateKey?.startsWith('-----BEGIN')) throw new Error('invalid_github_app_credentials');
   const header = base64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
@@ -484,9 +509,11 @@ export function createCadsMarketplace({
       const accountId = positiveInteger(installation.account.id);
       const readback = await authoritativeTierForAccount(accountId);
       if (!readback.subscription || !readback.tier) {
+        await revokeOAuthToken(config, userToken, fetchImpl);
         json(res, 403, { error: 'active_marketplace_subscription_required' });
         return true;
       }
+      await revokeOAuthToken(config, userToken, fetchImpl);
       await linkUser({
         userId: user.userId,
         accountId,
