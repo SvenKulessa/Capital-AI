@@ -17,7 +17,15 @@ const EXPORT_PATHS = Object.freeze([
   'docs/licenses/CADS-PRODUCT-LICENSE.md',
   'docs/licenses/CADS-THIRD-PARTY-NOTICES.md',
   'docs/product/CADS-MARKETPLACE-INSTALLATION.md',
+  'docs/product/CADS-MARKETPLACE-SUPPORT.md',
   'docs/security/CADS-PACKAGE-ACCEPTANCE.md',
+  'docs/security/CADS-SECURITY.md',
+  'docs/legal/CADS-MARKETPLACE-PRIVACY.md',
+  'docs/legal/CADS-MARKETPLACE-B2B-TERMS-DRAFT.md',
+  'scripts/cads-package-benchmark.mjs',
+  'scripts/cads-b2b-flow-benchmark.mjs',
+  'scripts/cads-package-acceptance.test.mjs',
+  'scripts/cads-package-acceptance-report.mjs',
 ]);
 
 function gitBlobSha(buffer) {
