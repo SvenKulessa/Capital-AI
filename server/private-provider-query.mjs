@@ -1,4 +1,3 @@
-import { spawn } from 'node:child_process';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { connect } from '@nats-io/transport-node';
@@ -14,7 +13,6 @@ const EXECUTE_SUBJECT = CONTRACT.executeSubject;
 const MAX_BODY_BYTES = Number(CONTRACT.maxRequestBytes || 65536);
 const MAX_RESPONSE_BYTES = Number(CONTRACT.maxResponseBytes || 262144);
 const MAX_TTL_MS = Number(CONTRACT.maxTtlMs || 30000);
-const DEFAULT_BRIDGE_BINARY = '/app/bin/capital-ai-provider-bridge';
 
 function canonicalJson(value) {
   if (Array.isArray(value)) return '[' + value.map(canonicalJson).join(',') + ']';
@@ -190,7 +188,6 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault } = 
   let executorNc = null;
   let subscription = null;
   let executorLoop = null;
-  let bridge = null;
   let opening = null;
   const highCostWindows = new Map();
   const requestWindows = new Map();
@@ -295,29 +292,9 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault } = 
     }
   }
 
-  function startBridgeProcess() {
-    if (bridge && bridge.exitCode == null) return;
-    const user = String(env.NATS_BRIDGE_USER || '').trim();
-    const password = String(env.NATS_BRIDGE_PASSWORD || '');
-    const natsUrl = String(env.NATS_URL || '').trim();
-    if (!user || password.length < 24 || !natsUrl) throw new Error('PRIVATE_PROVIDER_BRIDGE_CREDENTIALS_REQUIRED');
-    const binary = String(env.PRIVATE_PROVIDER_BRIDGE_BINARY || DEFAULT_BRIDGE_BINARY);
-    bridge = spawn(binary, [], {
-      env: {
-        PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
-        NATS_URL: natsUrl,
-        NATS_BRIDGE_USER: user,
-        NATS_BRIDGE_PASSWORD: password,
-      },
-      stdio: ['ignore', 'ignore', 'ignore'],
-    });
-    bridge.once('exit', () => { bridge = null; });
-    bridge.once('error', () => { bridge = null; });
-  }
-
   async function start() {
     if (!enabled()) return false;
-    if (requestNc && !requestNc.isClosed() && executorNc && !executorNc.isClosed() && bridge) return true;
+    if (requestNc && !requestNc.isClosed() && executorNc && !executorNc.isClosed()) return true;
     if (opening) return opening;
     opening = (async () => {
       const appAuth = natsConnectionAuth(env);
@@ -343,8 +320,6 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault } = 
       executorLoop = (async () => {
         for await (const message of subscription) await executor(message);
       })().catch(() => {});
-      startBridgeProcess();
-      await new Promise(resolve => setTimeout(resolve, 200));
       return true;
     })().finally(() => { opening = null; });
     return opening;
@@ -399,7 +374,7 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault } = 
         throw error;
       }
       await start();
-      if (!requestNc || requestNc.isClosed() || !executorNc || executorNc.isClosed() || !bridge) {
+      if (!requestNc || requestNc.isClosed() || !executorNc || executorNc.isClosed()) {
         throw new Error('PRIVATE_PROVIDER_BRIDGE_UNAVAILABLE');
       }
       const envelope = createProviderQueryEnvelope({
@@ -444,8 +419,6 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault } = 
   async function close() {
     try { subscription?.unsubscribe(); } catch {}
     subscription = null;
-    if (bridge && bridge.exitCode == null) bridge.kill('SIGTERM');
-    bridge = null;
     try { await requestNc?.close(); } catch {}
     try { await executorNc?.close(); } catch {}
     requestNc = null;
