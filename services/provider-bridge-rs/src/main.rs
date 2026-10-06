@@ -25,6 +25,7 @@ struct QueryEnvelope {
     provider: String,
     operation: String,
     expires_at: i64,
+    proof: String,
     #[serde(default)]
     params: Map<String, Value>,
 }
@@ -71,7 +72,8 @@ fn contains_forbidden_key(value: &Value) -> bool {
             let normalized = key.to_ascii_lowercase().replace('_', "").replace('-', "");
             let forbidden = [
                 "apikey", "apisecret", "secret", "password",
-                "credential", "privatekey", "authorization", "token",
+                "credential", "privatekey", "authorization",
+                "accesstoken", "authtoken", "bearertoken",
             ].iter().any(|needle| normalized.contains(needle));
             forbidden || contains_forbidden_key(value)
         }),
@@ -97,6 +99,9 @@ fn validate(payload: &[u8]) -> Result<QueryEnvelope, &'static str> {
     }
     if !operation_allowed(&envelope.provider, &envelope.operation, &envelope.params) {
         return Err("OPERATION_NOT_ADMITTED");
+    }
+    if envelope.proof.len() != 64 || !envelope.proof.bytes().all(|b| b.is_ascii_hexdigit()) {
+        return Err("INVALID_QUERY_PROOF");
     }
     let now = now_ms();
     if envelope.expires_at < now || envelope.expires_at > now.saturating_add(MAX_TTL_MS) {
@@ -189,6 +194,7 @@ mod tests {
             "provider": "kraken",
             "operation": "account.balance",
             "expiresAt": now_ms() + 5000,
+            "proof": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             "params": {}
         })
     }
