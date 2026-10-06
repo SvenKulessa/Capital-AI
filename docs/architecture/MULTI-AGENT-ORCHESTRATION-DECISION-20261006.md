@@ -199,3 +199,19 @@ Die nächsten Gates sind in dieser Reihenfolge zu schließen:
 7. Erst danach OTLP Collector / persistentes Trace-Backend separat benchmarken und gegebenenfalls über PLATFORM promoten.
 
 Bis zu diesen Gates bleibt die Runtime-Promotion **BLOCKED**; die Architekturentscheidung allein ist keine Production-Freigabe.
+
+
+## Implementierungsstand 2026-10-06
+
+Auf diesem PR-Branch sind die ersten Gates codebasiert materialisiert:
+
+- `src/contracts/agentState.ts` definiert `CAPITAL_AI_AGENT_STATE@1`.
+- `src/contracts/agentTrajectory.ts` definiert `CAPITAL_AI_AGENT_TRAJECTORY@1`.
+- `server/agent-shadow-runtime.mjs` implementiert einen deterministischen Supervisor/Router für ausschließlich `SHADOW`/Proposal-Pfade.
+- Der LangGraph-Port akzeptiert nur einen injizierten, bereits kompilierten Graphen; `@langchain/langgraph` wird noch nicht als Repository-Dependency installiert.
+- Jede Authority-Eskalation auf Write, Trade, Publish oder Legal wird fail-closed verworfen.
+- Tool-Calls können mit `capabilityGrantId` und `approvalId` korreliert werden, ohne dass diese Referenzen selbst Authority verleihen.
+- Persistiert/telemetriert werden Fingerprints und Referenzen; der transiente Rohprompt wird nicht Teil des Agent-State-Contracts.
+- Die Shadow-Artefakte werden in CI gebaut und getestet, aber bewusst nicht in das finale Runtime-Image kopiert.
+
+Damit sind Gate 1 und ein begrenzter Teil von Gate 4/5 implementiert. Gate 2/3 — realer LangGraph-Benchmark sowie exakte Version-/Lizenz-/Provenance-/Advisory-/Supply-Chain-Prüfung — bleiben **BLOCKED** vor Runtime-Promotion.
