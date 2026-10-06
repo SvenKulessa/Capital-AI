@@ -1,0 +1,76 @@
+name: CADS Package Acceptance
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'packages/benchmark-core/**'
+      - 'server/cads-*.mjs'
+      - 'server/http-security.mjs'
+      - 'apps/cads-github-app/**'
+      - 'supabase/migrations/20261006210500_cads_marketplace_paid_entitlements.sql'
+      - 'scripts/cads-*.mjs'
+      - 'docs/licenses/CADS-*.md'
+      - 'docs/product/CADS-*.md'
+      - 'docs/security/CADS-*.md'
+      - 'package.json'
+      - '.github/workflows/cads-package-acceptance.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cads-package-acceptance:
+    name: CADS Package Acceptance
+    runs-on: ubuntu-26.04
+    timeout-minutes: 8
+    env:
+      CADS_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Use pinned Node runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '26.10.0'
+
+      - name: CADS functional, Marketplace and license-boundary tests
+        run: npm run test:cads-acceptance
+
+      - name: CADS package microbenchmark
+        run: node scripts/cads-package-benchmark.mjs --write security-reports/cads-package-benchmark.json
+
+      - name: CADS B2B Marketplace lifecycle benchmark
+        run: node scripts/cads-b2b-flow-benchmark.mjs --write security-reports/cads-b2b-flow-benchmark.json
+
+      - name: Bind exact export provenance
+        run: node scripts/cads-export-provenance.mjs security-reports/cads-export-provenance.json
+
+      - name: Aggregate bounded acceptance evidence
+        run: |
+          node scripts/cads-package-acceptance-report.mjs             security-reports/cads-package-benchmark.json             security-reports/cads-b2b-flow-benchmark.json             security-reports/cads-export-provenance.json             security-reports/cads-package-acceptance.json
+
+      - name: Refuse accidental secret material in CADS evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -RIE '(BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|sb_secret_[A-Za-z0-9_-]{16,}|gh[opsu]_[A-Za-z0-9]{20,}|CADS_GITHUB_APP_PRIVATE_KEY=.+|CADS_GITHUB_CLIENT_SECRET=.+)'               security-reports/cads-*.json; then
+            echo "Secret-like material detected in CADS evidence."
+            exit 1
+          fi
+
+      - name: Upload CADS acceptance evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cads-package-acceptance-${{ github.event.pull_request.head.sha || github.sha }}
+          retention-days: 30
+          if-no-files-found: error
+          path: |
+            security-reports/cads-package-benchmark.json
+            security-reports/cads-b2b-flow-benchmark.json
+            security-reports/cads-export-provenance.json
+            security-reports/cads-package-acceptance.json
