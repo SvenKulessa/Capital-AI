@@ -11,7 +11,9 @@ function emit() { listeners.forEach(fn => fn()); }
 export function toMarketAsset(value: unknown): MarketAsset {
   const f = QuoteDeliverySchema.parse(value);
   if (!isFresh(f)) throw new Error('QUOTE_EXPIRED');
-  const i = instrumentCatalog[f.symbol];
+  const catalog = instrumentCatalog as Record<string, (typeof instrumentCatalog)[keyof typeof instrumentCatalog]>;
+  const i = catalog[f.symbol];
+  if (!i) throw new Error('INSTRUMENT_UNKNOWN');
   return { id: f.symbol, symbol: f.symbol, name: i.name, mainCategory: i.category as MarketAsset['mainCategory'],
     value: `${f.price.toLocaleString('de-DE', { maximumFractionDigits: 8 })} ${f.quote}`,
     change: 'Nicht verfügbar', isPositive: false, category: i.category,
@@ -19,8 +21,10 @@ export function toMarketAsset(value: unknown): MarketAsset {
     glowColor: '#F9BF21', borderColor: '#F9BF21', waveColor: '#F9BF21',
     high24h: 'Nicht verfügbar', low24h: 'Nicht verfügbar',
     volume24h: f.volume24h === null ? 'Nicht verfügbar' : String(f.volume24h),
-    aiScore: null, aiRating: 'Pflichtdaten fehlen', description: `${f.provider} · ${f.venue} · ${f.quote}`,
-    evidenceId: f.evidenceId, observedAt: f.observedAt, provider: f.provider,
+    aiScore: null, aiRating: 'Pflichtdaten fehlen',
+    description: `${f.provider} · ${f.venue} · ${f.quote} · ${f.timeSemantics === 'reference' ? 'Referenzkurs' : 'Marktdaten'}`,
+    evidenceId: f.evidenceId, observedAt: f.observedAt, observedAtPrecision: f.observedAtPrecision,
+    publishedAt: f.publishedAt, referenceDate: f.referenceDate, timeSemantics: f.timeSemantics, provider: f.provider,
     dataAvailability: f.availability, quoteCurrency: f.quote, price: f.price, actionable: false };
 }
 async function refresh() {
@@ -34,7 +38,7 @@ async function refresh() {
     return toMarketAsset(value);
   }));
   if (signal.aborted || !users) return;
-  MARKET_ASSETS = results.flatMap(result => result.status === 'fulfilled' ? [result.value] : []).filter(asset => asset.observedAt !== undefined && Date.now() - asset.observedAt < 30000);
+  MARKET_ASSETS = results.flatMap(result => result.status === 'fulfilled' ? [result.value] : []);
   emit();
   timer = setTimeout(() => void refresh(), 5000);
 }
