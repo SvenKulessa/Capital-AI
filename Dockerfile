@@ -44,7 +44,7 @@ COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/licen
 COPY shared ./shared
 COPY CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json CAPITAL-AI-GROWTH/social-engine-completion-gate.json CAPITAL-AI-GROWTH/social-media-tool-admission.yaml CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.yaml ./CAPITAL-AI-GROWTH/
 COPY CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json ./CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json
-COPY server/market.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/ecb-reference-rates.LICENSE.txt server/ecb-reference-rates.test.mjs server/auth.mjs server/user-provider-vault.mjs server/user-provider-vault.test.mjs server/uniswap-trading.mjs server/uniswap-trading.test.mjs ./server/
+COPY server/market.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/ecb-reference-rates.LICENSE.txt server/ecb-reference-rates.test.mjs server/auth.mjs server/user-provider-vault.mjs server/user-provider-vault.test.mjs server/kraken-order-dry-run.mjs server/kraken-order-dry-run.test.mjs server/uniswap-trading.mjs server/uniswap-trading.test.mjs ./server/
 COPY docs/security/BYOK-USER-PRIVATE-DATA.md ./docs/security/BYOK-USER-PRIVATE-DATA.md
 COPY docs/licenses ./docs/licenses
 COPY docs/security/evidence/license-rights-review.json ./docs/security/evidence/license-rights-review.json
@@ -56,7 +56,7 @@ COPY scripts/ecb-reference-admission.test.mjs ./scripts/ecb-reference-admission.
 COPY scripts/license-engine.mjs ./scripts/license-engine.mjs
 RUN --network=none node --test server/mta-sts.test.mjs server/well-known.test.mjs server/auth-security.test.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs \
     && node --test server/prompt-injection-guard.test.mjs server/vocabulary-checkout.test.mjs server/subscription-checkout.test.mjs server/public-artifact-policy.test.mjs scripts/billing-catalog.test.mjs \
-    && node --test server/user-provider-vault.test.mjs server/uniswap-trading.test.mjs scripts/stripe-catalog-readback.test.mjs scripts/stripe-three-purchase-e2e.test.mjs \
+    && node --test server/user-provider-vault.test.mjs server/kraken-order-dry-run.test.mjs server/uniswap-trading.test.mjs scripts/stripe-catalog-readback.test.mjs scripts/stripe-three-purchase-e2e.test.mjs \
     && node --import tsx --test server/advisor-security.test.mjs scripts/blueprint-evidence-contract.test.mjs \
     && node --test scripts/branding-assets.test.mjs \
     && node --test scripts/license-evidence.test.mjs \
@@ -78,7 +78,7 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/CAPITAL-AI-PRODUCT/badge.svg ./CAPITAL-AI-PRODUCT/badge.svg
 COPY docs/licenses/CAPITAL-AI-VOCABULARY-BADGE-CUSTOMER-LICENSE-1.0.md ./docs/licenses/CAPITAL-AI-VOCABULARY-BADGE-CUSTOMER-LICENSE-1.0.md
 COPY --from=build /app/scoring-capacity.json ./evidence/scoring-capacity.json
-COPY server/index.mjs server/market.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/auth.mjs server/auth-security.mjs server/subscription-entitlements.mjs server/user-provider-vault.mjs server/uniswap-trading.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/mta-sts.mjs server/well-known.mjs server/mobile-scorer.mjs server/scorer-proxy.mjs server/scorer-bus.mjs server/observability.mjs server/cads-observability.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/subscription-checkout.mjs server/public-artifact-policy.mjs ./server/
+COPY server/index.mjs server/market.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/auth.mjs server/auth-security.mjs server/subscription-entitlements.mjs server/user-provider-vault.mjs server/kraken-order-dry-run.mjs server/uniswap-trading.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/mta-sts.mjs server/well-known.mjs server/mobile-scorer.mjs server/scorer-proxy.mjs server/scorer-bus.mjs server/observability.mjs server/cads-observability.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/subscription-checkout.mjs server/public-artifact-policy.mjs ./server/
 COPY --from=production-deps /runtime/node_modules ./node_modules
 COPY server/infrastructure.mjs ./server/
 COPY server/billing-catalog.mjs ./server/
