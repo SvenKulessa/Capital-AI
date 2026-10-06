@@ -42,6 +42,7 @@
 !server/subscription-entitlements.test.mjs
 !server/user-provider-vault.mjs
 !server/user-provider-vault.test.mjs
+!server/nats-auth.mjs
 !server/private-provider-query.mjs
 !server/private-provider-query.test.mjs
 !server/kraken-order-dry-run.mjs
