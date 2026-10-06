@@ -19,6 +19,10 @@ function baseEnv() {
     CADS_GITHUB_MARKETPLACE_WEBHOOK_SECRET: 'x'.repeat(48),
     CADS_GITHUB_MARKETPLACE_OWNER_ORG: 'capital-ai-online',
     CADS_GITHUB_MARKETPLACE_LISTING_SLUG: 'capital-ai-cads',
+    CADS_GITHUB_CLIENT_ID: 'Iv1.cads-example',
+    CADS_GITHUB_CLIENT_SECRET: 'client-secret-' + 'x'.repeat(32),
+    CADS_GITHUB_OAUTH_STATE_SECRET: 'state-secret-' + 'x'.repeat(32),
+    CADS_GITHUB_PUBLIC_URL: 'https://capital-ai.online',
     CADS_GITHUB_MARKETPLACE_STARTER_PLAN_ID: '1001',
     CADS_GITHUB_MARKETPLACE_PRO_PLAN_ID: '1002',
     CADS_GITHUB_MARKETPLACE_ENTERPRISE_PLAN_ID: '1003',
@@ -35,6 +39,7 @@ test('paid Marketplace runtime requires app, distinct plan IDs and service-role 
   assert.equal(ready.monthlyAndAnnualRequired, true);
   assert.equal(ready.freePlanEnabled, false);
   assert.equal(ready.appConfigured, true);
+  assert.equal(ready.buyerLinkConfigured, true);
   assert.equal(ready.planIdsConfigured, true);
   assert.equal(ready.entitlementStoreConfigured, true);
   assert.equal(ready.runtimeReady, true);
@@ -229,4 +234,134 @@ test('invalid webhook signature is rejected before GitHub or Supabase access', a
   assert.equal(status, 401);
   assert.equal(payload.error, 'invalid_webhook_signature');
   assert.equal(fetched, false);
+});
+
+function redirectHarness() {
+  return {
+    status: 0,
+    headers: {},
+    ended: false,
+    setHeader(name, value) { this.headers[String(name).toLowerCase()] = value; },
+    writeHead(status, headers = {}) {
+      this.status = status;
+      for (const [name, value] of Object.entries(headers)) this.headers[String(name).toLowerCase()] = value;
+    },
+    end() { this.ended = true; },
+  };
+}
+
+test('setup binds installation to authenticated CAPITAL-AI user before GitHub OAuth', async () => {
+  const env = baseEnv();
+  const auth = { verify: async () => ({ userId: '00000000-0000-4000-8000-000000000001' }) };
+  const marketplace = createCadsMarketplace({ env, auth });
+  const req = { method: 'GET', headers: {} };
+  const res = redirectHarness();
+  const handled = await marketplace.handle(
+    req,
+    res,
+    new URL('https://capital-ai.online/api/cads/marketplace/setup?installation_id=77&marketplace_listing_plan_id=999999'),
+    () => { throw new Error('json response not expected'); },
+  );
+  assert.equal(handled, true);
+  assert.equal(res.status, 302);
+  const location = new URL(res.headers.location);
+  assert.equal(location.origin + location.pathname, 'https://github.com/login/oauth/authorize');
+  assert.equal(location.searchParams.get('client_id'), env.CADS_GITHUB_CLIENT_ID);
+  assert.ok(location.searchParams.get('state'));
+  assert.match(String(res.headers['set-cookie']), /^cads_marketplace_oauth_state=/);
+  assert.equal(location.searchParams.has('marketplace_listing_plan_id'), false);
+});
+
+test('OAuth callback verifies user installation, Marketplace subscription and links Supabase user', async () => {
+  const env = baseEnv();
+  const userId = '00000000-0000-4000-8000-000000000001';
+  const auth = { verify: async () => ({ userId }) };
+  const calls = [];
+  const fetchImpl = async (url, options = {}) => {
+    calls.push({ url: String(url), options });
+    if (String(url) === 'https://github.com/login/oauth/access_token') {
+      return new Response(JSON.stringify({ access_token: 'github-user-token' }), { status: 200 });
+    }
+    if (String(url).startsWith('https://api.github.com/user/installations')) {
+      return new Response(JSON.stringify({
+        installations: [{ id: 77, account: { id: 42, login: 'acme', type: 'Organization' } }],
+      }), { status: 200 });
+    }
+    if (String(url).startsWith('https://api.github.com/marketplace_listing/accounts/42')) {
+      return new Response(JSON.stringify({ account: { id: 42 }, plan: { id: 1002 } }), { status: 200 });
+    }
+    if (String(url).includes('/rest/v1/rpc/capital_ai_link_cads_marketplace_user')) {
+      return new Response(JSON.stringify({ linked: true, accountId: 42, tier: 'pro' }), { status: 200 });
+    }
+    throw new Error('unexpected fetch ' + url);
+  };
+  const marketplace = createCadsMarketplace({ env, auth, fetchImpl });
+
+  const setupReq = { method: 'GET', headers: {} };
+  const setupRes = redirectHarness();
+  await marketplace.handle(
+    setupReq,
+    setupRes,
+    new URL('https://capital-ai.online/api/cads/marketplace/setup?installation_id=77'),
+    () => { throw new Error('json response not expected'); },
+  );
+  const authorize = new URL(setupRes.headers.location);
+  const state = authorize.searchParams.get('state');
+  const cookie = String(setupRes.headers['set-cookie']).split(';')[0];
+
+  const callbackReq = { method: 'GET', headers: { cookie } };
+  const callbackRes = redirectHarness();
+  await marketplace.handle(
+    callbackReq,
+    callbackRes,
+    new URL('https://capital-ai.online/api/cads/marketplace/oauth/callback?code=oauth-code&state=' + encodeURIComponent(state)),
+    (_res, status, payload) => { throw new Error('unexpected json ' + status + ' ' + JSON.stringify(payload)); },
+  );
+  assert.equal(callbackRes.status, 303);
+  assert.equal(callbackRes.headers.location, '/profile?cads_marketplace=linked');
+  const linkCall = calls.find(call => call.url.includes('capital_ai_link_cads_marketplace_user'));
+  assert.ok(linkCall);
+  const linkBody = JSON.parse(linkCall.options.body);
+  assert.equal(linkBody._user_id, userId);
+  assert.equal(linkBody._account_id, 42);
+  assert.equal(linkBody._installation_id, 77);
+});
+
+test('OAuth callback rejects spoofed installation_id not authorized to GitHub user', async () => {
+  const env = baseEnv();
+  const auth = { verify: async () => ({ userId: '00000000-0000-4000-8000-000000000001' }) };
+  let storeReached = false;
+  const fetchImpl = async (url) => {
+    if (String(url) === 'https://github.com/login/oauth/access_token') {
+      return new Response(JSON.stringify({ access_token: 'github-user-token' }), { status: 200 });
+    }
+    if (String(url).startsWith('https://api.github.com/user/installations')) {
+      return new Response(JSON.stringify({
+        installations: [{ id: 88, account: { id: 99, login: 'other', type: 'Organization' } }],
+      }), { status: 200 });
+    }
+    storeReached = true;
+    throw new Error('must not reach Marketplace/store');
+  };
+  const marketplace = createCadsMarketplace({ env, auth, fetchImpl });
+  const setupRes = redirectHarness();
+  await marketplace.handle(
+    { method: 'GET', headers: {} },
+    setupRes,
+    new URL('https://capital-ai.online/api/cads/marketplace/setup?installation_id=77'),
+    () => { throw new Error('json response not expected'); },
+  );
+  const state = new URL(setupRes.headers.location).searchParams.get('state');
+  const cookie = String(setupRes.headers['set-cookie']).split(';')[0];
+  let status = 0;
+  let payload = null;
+  await marketplace.handle(
+    { method: 'GET', headers: { cookie } },
+    redirectHarness(),
+    new URL('https://capital-ai.online/api/cads/marketplace/oauth/callback?code=oauth-code&state=' + encodeURIComponent(state)),
+    (_res, nextStatus, nextPayload) => { status = nextStatus; payload = nextPayload; },
+  );
+  assert.equal(status, 401);
+  assert.equal(payload.error, 'marketplace_oauth_authorization_failed');
+  assert.equal(storeReached, false);
 });
