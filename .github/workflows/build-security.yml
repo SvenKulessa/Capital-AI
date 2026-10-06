@@ -176,8 +176,6 @@ jobs:
           docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m --cap-drop ALL --security-opt no-new-privileges \
             -v "$PWD/package.json:/app/package.json:ro" \
             -v "$PWD/index.html:/app/index.html:ro" \
-            -v "$PWD/OPEN_SOURCE_LICENSES.md:/app/OPEN_SOURCE_LICENSES.md:ro" \
-            -v "$PWD/src:/app/src:ro" \
             -v "$PWD/server:/app/server:ro" \
             -v "$PWD/scripts:/app/scripts:ro" \
             -v "$PWD/shared:/app/shared:ro" \
