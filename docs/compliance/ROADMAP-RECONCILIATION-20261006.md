@@ -10,7 +10,7 @@ Cross-Domain: MARKET / PLATFORM / TRUST / GROWTH
 Dieser Abgleich rekonstruiert die kanonische CAPITAL-AI-Roadmap aus dem aktuellen Code- und Dokumentzustand.
 Er ersetzt keine Runtime-, Lizenz-, Security-, Provider-, Marketplace- oder Production-Freigabe.
 
-Die Roadmap enthält aktuell **108 eindeutige Work-Packages**. Die Vollständigkeit wird durch
+Die Roadmap enthält aktuell **111 eindeutige Work-Packages**. Die Vollständigkeit wird durch
 `src/data/roadmapCurrentMainState.ts` und
 `src/data/__tests__/roadmapCurrentMainState.test.ts` regressiv erzwungen.
 
@@ -18,11 +18,11 @@ Die Roadmap enthält aktuell **108 eindeutige Work-Packages**. Die Vollständigk
 
 | Quelle | Work-Packages |
 |---|---:|
-| `src/data/roadmapData.ts` | 80 |
+| `src/data/roadmapData.ts` | 83 |
 | `src/data/productionWebsiteWorkPackage.ts` | 5 |
 | `src/data/socialContentRoadmap.ts` | 13 |
 | `src/data/trustArchitectureAWorkPackages.ts` | 10 |
-| **Gesamt** | **108** |
+| **Gesamt** | **111** |
 
 Jede ID ist genau einmal im Reconciliation-Snapshot enthalten. Wird ein Paket hinzugefügt, entfernt oder
 umbenannt, schlägt die Roadmap-Reconciliation fehl, bis der Snapshot bewusst aktualisiert wurde.
@@ -146,3 +146,14 @@ Auth-, Runtime- oder Evidence-Dateien überlappen.
 Dieser Bericht belegt den Repository-Zustand und den auf diesem Branch implementierten Roadmap-/CADS-Slice.
 Er ist **keine** Production-Freigabe, kein Lizenzgutachten, kein Datenrechte-Nachweis und keine
 GitHub-Marketplace-Zulassung.
+
+
+### Multi-Agent Ergänzung aus PR #214
+
+Die Reconciliation auf diesem Branch erweitert die kanonische Paketmenge von 108 auf 111:
+
+- `CA-PRODUCT-MULTI-AGENT-ORCHESTRATION`
+- `CA-PLATFORM-AGENT-TRAJECTORY-OBSERVABILITY`
+- `CA-PRODUCT-AGENT-PATH-CONTROL-CENTER`
+
+Baseline für diese Konvergenz ist `main@d2a3b1175b10c07e5c3446d913371505311b6a48` (#216). Die drei Pakete bleiben evidence-bound und erteilen keine Production-, Write-, Trading-, Publication- oder Legal-Authority.
