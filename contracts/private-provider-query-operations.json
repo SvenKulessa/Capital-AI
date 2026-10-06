@@ -151,7 +151,8 @@
               "max": 30
             }
           },
-          "maxWindowMs": 2592000000
+          "maxWindowMs": 2592000000,
+          "globalMinIntervalMs": 60000
         },
         "spot.account": {
           "params": [
