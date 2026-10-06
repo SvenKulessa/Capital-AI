@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "SOCIAL_ENGINE_COMPLETION_GATE@1",
+  "id": "CAPITAL-AI-SOCIAL-ENGINE-COMPLETION-20261006",
+  "workPackage": "CAPITAL-AI-FINANCE-SOCIAL-MARKET-MIGRATION-01",
+  "point": "06_SOCIAL_ENGINE_MIGRATION_COMPLETION_GATE",
+  "correlatedMain": "73ad214e3a8af73f99c08531533ddcaaca530be3",
+  "declaredState": "BLOCKED",
+  "blockingFollowUp": "CAPITAL-AI-FINANCE-SCORING-DATA-FOLLOWUP-01",
+  "policy": {
+    "scoringMigrationMayStartOnlyOnPass": true,
+    "missingEvidenceIsPass": false,
+    "partialImplementationIsPass": false,
+    "docsOnlyIsPass": false,
+    "historicalFinanceRuntimeIsPass": false
+  },
+  "requiredRuntimeArtifacts": [
+    "src/platform/SocialMediaEngine/Contracts/MediaProject.ts",
+    "src/platform/SocialMediaEngine/Contracts/MediaProjectValidation.ts",
+    "src/platform/SocialMediaEngine/Editing/MediaProjectEditing.ts",
+    "src/platform/SocialMediaEngine/Editing/MediaStudioTemplates.ts",
+    "src/platform/SocialMediaEngine/Visualization/PlanningVisual.ts",
+    "src/platform/SocialMediaEngine/Visualization/D3PlanningVisualAdapter.ts",
+    "src/platform/SocialMediaEngine/Visualization/PlanningVisualMediaProjectAdapter.ts",
+    "src/platform/SocialMediaEngine/SocialMediaGeneratorService.ts",
+    "server/socialMedia/textContentGeneration.ts",
+    "server/socialMedia/contentApproval.ts",
+    "server/socialMedia/voiceContract.ts",
+    "server/socialMedia/platformPublishers.ts",
+    "server/socialMedia/publicationAnalyticsEvidence.ts"
+  ],
+  "requiredRendererArtifacts": [
+    "scripts/media/capital_ai_media.py",
+    "scripts/media/render_content_assets.py"
+  ],
+  "requiredEvidenceArtifacts": [
+    "CAPITAL-AI-GROWTH/social-media-tool-admission.yaml",
+    "docs/licenses/SOCIAL-MEDIA-ENGINE-PRODUCT-LICENSE.md",
+    "CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json"
+  ],
+  "forbiddenFinanceScoringRuntimeBeforePass": [
+    "src/platform/Scoring/ScoringModelRegistry.ts",
+    "src/platform/Scoring/ScoringDispatcher.ts",
+    "src/platform/Scoring/ValidatedFinancialFeatureContract.ts",
+    "src/platform/Scoring/UniversalAssetAdapter.ts",
+    "src/platform/Scoring/AnalysisConnectionRegistry.ts",
+    "src/platform/Scoring/CryptoOrchestratorResearchModels.ts",
+    "src/platform/FinTechCore/Modules/Crypto/Pattern/PatternResearchEngine.ts",
+    "src/platform/FinTechCore/Modules/Crypto/Pattern/PatternSignalResolver.ts"
+  ],
+  "currentEvaluation": {
+    "runtimeArtifactsPresent": 0,
+    "runtimeArtifactsRequired": 13,
+    "rendererArtifactsPresent": 0,
+    "rendererArtifactsRequired": 2,
+    "evidenceArtifactsPresent": 3,
+    "evidenceArtifactsRequired": 3,
+    "result": "BLOCKED",
+    "blockers": [
+      "SocialMediaEngine runtime has not been migrated to Capital-AI main.",
+      "Deterministic media renderer has not been migrated to Capital-AI main.",
+      "Publishing/distribution runtime is not present in Capital-AI main.",
+      "Therefore Finance scoring/data follow-up must remain blocked."
+    ]
+  },
+  "passDefinition": [
+    "All required SocialMediaEngine runtime artifacts exist in target repository.",
+    "All deterministic renderer artifacts exist and their license/build gates are admitted.",
+    "Required license/provenance evidence artifacts exist.",
+    "Work package no longer declares the Finance scoring/data follow-up BLOCKED.",
+    "No missing or failed validation is represented as PASS."
+  ]
+}
