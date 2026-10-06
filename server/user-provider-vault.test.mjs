@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash, createHmac } from 'node:crypto';
 import { Readable } from 'node:stream';
-import { createUserProviderVault, krakenSignature, krakenFuturesSignature } from './user-provider-vault.mjs';
+import { binanceSignature, createUserProviderVault, krakenSignature, krakenFuturesSignature } from './user-provider-vault.mjs';
 
 const env = {
   SUPABASE_URL: 'https://project.supabase.co',
@@ -213,4 +213,242 @@ test('BYOK rejects a publishable key in the server secret slot before network I/
   assert.equal(result.status,503);
   assert.equal(result.payload.error,'provider_vault_not_configured');
   assert.equal(networkCalls,0);
+});
+
+
+test('Binance signing binds the exact query bytes', () => {
+  const query = 'symbol=BTCUSDT&timestamp=1700000000000';
+  assert.equal(
+    binanceSignature(query, 'binance-test-secret-0123456789'),
+    createHmac('sha256', 'binance-test-secret-0123456789').update(query).digest('hex'),
+  );
+});
+
+test('Binance read-only key is admitted to Vault without exposing credential material', async () => {
+  let storedPayload;
+  const fetchImpl = async (input, options = {}) => {
+    const url = new URL(String(input));
+    if (url.origin === 'https://api.binance.com' && url.pathname === '/sapi/v1/account/apiRestrictions') {
+      assert.ok(options.headers['X-MBX-APIKEY']);
+      assert.match(url.searchParams.get('signature') || '', /^[0-9a-f]{64}$/);
+      return Response.json({
+        enableReading: true,
+        enableWithdrawals: false,
+        enableInternalTransfer: false,
+        permitsUniversalTransfer: false,
+        enableSpotAndMarginTrading: false,
+        enableFutures: false,
+      });
+    }
+    if (url.origin === 'https://project.supabase.co') {
+      if (url.pathname.endsWith('/capital_ai_get_user_provider_secret')) return Response.json(null);
+      if (url.pathname.endsWith('/capital_ai_upsert_user_provider_secret')) {
+        const body = JSON.parse(String(options.body));
+        assert.equal(body._provider, 'binance');
+        storedPayload = JSON.parse(body._secret_payload);
+        return Response.json({ provider: 'binance', status: 'PENDING' });
+      }
+      if (url.pathname.endsWith('/capital_ai_mark_user_provider_status')) return new Response(null, { status: 204 });
+    }
+    throw new Error('Unexpected upstream ' + url.href);
+  };
+  const vault = createUserProviderVault({ env, fetchImpl, auth });
+  const result = await invoke(
+    vault,
+    'PUT',
+    { apiKey: 'binance-read-key', apiSecret: 'binance-read-secret-0123456789', credentialFamily: 'spot' },
+    '/api/profile/provider-connections/binance',
+  );
+  assert.equal(result.status, 200);
+  assert.equal(result.payload.provider, 'binance');
+  assert.equal(result.payload.executionEnabled, false);
+  assert.equal(storedPayload.spot.apiKey, 'binance-read-key');
+  assert.equal(storedPayload.futures, null);
+  assert.doesNotMatch(JSON.stringify(result.payload), /binance-read-key|binance-read-secret/);
+});
+
+test('Binance transfer/withdrawal-capable key is rejected before Vault write', async () => {
+  let writes = 0;
+  const fetchImpl = async (input) => {
+    const url = new URL(String(input));
+    if (url.origin === 'https://api.binance.com' && url.pathname === '/sapi/v1/account/apiRestrictions') {
+      return Response.json({
+        enableReading: true,
+        enableWithdrawals: true,
+        enableInternalTransfer: false,
+        permitsUniversalTransfer: false,
+        enableSpotAndMarginTrading: false,
+        enableFutures: false,
+      });
+    }
+    if (url.origin === 'https://project.supabase.co' && url.pathname.endsWith('/capital_ai_upsert_user_provider_secret')) writes += 1;
+    if (url.origin === 'https://project.supabase.co' && url.pathname.endsWith('/capital_ai_get_user_provider_secret')) return Response.json(null);
+    throw new Error('Unexpected upstream ' + url.href);
+  };
+  const vault = createUserProviderVault({ env, fetchImpl, auth });
+  const result = await invoke(
+    vault,
+    'PUT',
+    { apiKey: 'binance-unsafe-key', apiSecret: 'binance-unsafe-secret-0123456789', credentialFamily: 'spot' },
+    '/api/profile/provider-connections/binance',
+  );
+  assert.equal(result.status, 422);
+  assert.equal(result.payload.error, 'binance_transfer_or_withdrawal_permission_forbidden');
+  assert.equal(writes, 0);
+});
+
+test('Private provider executor resolves Binance credential only inside Vault authority', async () => {
+  const secretPayload = JSON.stringify({
+    version: 2,
+    spot: { apiKey: 'binance-read-key', apiSecret: 'binance-read-secret-0123456789' },
+    futures: null,
+  });
+  const fetchImpl = async (input) => {
+    const url = new URL(String(input));
+    if (url.origin === 'https://project.supabase.co' && url.pathname.endsWith('/capital_ai_get_user_provider_secret')) {
+      return Response.json({ secretPayload, permissions: { executionEnabled: false } });
+    }
+    if (url.origin === 'https://api.binance.com' && url.pathname === '/sapi/v1/account/apiRestrictions') {
+      return Response.json({
+        enableReading: true,
+        enableWithdrawals: false,
+        enableInternalTransfer: false,
+        permitsUniversalTransfer: false,
+        enableSpotAndMarginTrading: false,
+        enableFutures: false,
+      });
+    }
+    if (url.origin === 'https://api.binance.com' && url.pathname === '/api/v3/openOrders') {
+      assert.equal(url.searchParams.get('symbol'), 'BTCUSDT');
+      return Response.json([{ symbol: 'BTCUSDT', orderId: 42, status: 'NEW' }]);
+    }
+    throw new Error('Unexpected upstream ' + url.href);
+  };
+  const vault = createUserProviderVault({ env, fetchImpl, auth });
+  const result = await vault.executePrivateQuery(
+    '11111111-1111-1111-1111-111111111111',
+    'binance',
+    'spot.open_orders',
+    { symbol: 'BTCUSDT' },
+  );
+  assert.equal(result[0].orderId, 42);
+  assert.doesNotMatch(JSON.stringify(result), /binance-read-key|binance-read-secret/);
+});
+
+
+test('Kraken read-only executor signs and forwards admitted query parameters', async () => {
+  const secretPayload = JSON.stringify({
+    version: 2,
+    spot: { apiKey: 'kraken-query-key', apiSecret: secret },
+    futures: null,
+  });
+  let openOrdersBody = '';
+  const fetchImpl = async (input, options = {}) => {
+    const url = new URL(String(input));
+    if (url.origin === 'https://project.supabase.co' && url.pathname.endsWith('/capital_ai_get_user_provider_secret')) {
+      return Response.json({ secretPayload, permissions: { executionEnabled: false } });
+    }
+    if (url.origin === 'https://api.kraken.com' && url.pathname === '/0/private/GetApiKeyInfo') {
+      return Response.json({ error: [], result: { permissions: ['query-open-trades'] } });
+    }
+    if (url.origin === 'https://api.kraken.com' && url.pathname === '/0/private/OpenOrders') {
+      openOrdersBody = String(options.body || '');
+      assert.ok(options.headers['API-Sign']);
+      return Response.json({ error: [], result: { open: {} } });
+    }
+    throw new Error('Unexpected upstream ' + url.href);
+  };
+  const vault = createUserProviderVault({ env, fetchImpl, auth });
+  const result = await vault.executePrivateQuery(
+    '11111111-1111-1111-1111-111111111111',
+    'kraken',
+    'orders.open',
+    { trades: true, userref: 42 },
+  );
+  const form = new URLSearchParams(openOrdersBody);
+  assert.equal(form.get('trades'), 'true');
+  assert.equal(form.get('userref'), '42');
+  assert.match(form.get('nonce') || '', /^\d+$/);
+  assert.deepEqual(result, { open: {} });
+});
+
+test('Kraken key-info query strips API key material before provider result leaves Vault authority', async () => {
+  const secretPayload = JSON.stringify({
+    version: 2,
+    spot: { apiKey: 'kraken-query-key', apiSecret: secret },
+    futures: null,
+  });
+  const fetchImpl = async (input) => {
+    const url = new URL(String(input));
+    if (url.origin === 'https://project.supabase.co' && url.pathname.endsWith('/capital_ai_get_user_provider_secret')) {
+      return Response.json({ secretPayload, permissions: { executionEnabled: false } });
+    }
+    if (url.origin === 'https://api.kraken.com' && url.pathname === '/0/private/GetApiKeyInfo') {
+      return Response.json({
+        error: [],
+        result: {
+          apiKeyName: 'read-only',
+          apiKey: 'must-not-leave-vault',
+          nonce: '123',
+          permissions: ['query-funds'],
+          validUntil: '0',
+          queryFrom: '0',
+          queryTo: '0',
+          createdTime: '1700000000',
+        },
+      });
+    }
+    throw new Error('Unexpected upstream ' + url.href);
+  };
+  const vault = createUserProviderVault({ env, fetchImpl, auth });
+  const result = await vault.executePrivateQuery(
+    '11111111-1111-1111-1111-111111111111',
+    'kraken',
+    'account.key_info',
+    {},
+  );
+  assert.equal(result.info.apiKeyName, 'read-only');
+  assert.equal(Object.hasOwn(result.info, 'apiKey'), false);
+  assert.equal(Object.hasOwn(result.info, 'nonce'), false);
+  assert.doesNotMatch(JSON.stringify(result), /must-not-leave-vault|kraken-query-key/);
+});
+
+test('Binance safety gate rejects each transfer-capable permission independently', async (t) => {
+  for (const flag of ['enableWithdrawals', 'enableInternalTransfer', 'permitsUniversalTransfer']) {
+    await t.test(flag, async () => {
+      let writes = 0;
+      const fetchImpl = async (input) => {
+        const url = new URL(String(input));
+        if (url.origin === 'https://api.binance.com' && url.pathname === '/sapi/v1/account/apiRestrictions') {
+          return Response.json({
+            enableReading: true,
+            enableWithdrawals: false,
+            enableInternalTransfer: false,
+            permitsUniversalTransfer: false,
+            enableSpotAndMarginTrading: false,
+            enableFutures: false,
+            [flag]: true,
+          });
+        }
+        if (url.origin === 'https://project.supabase.co' && url.pathname.endsWith('/capital_ai_get_user_provider_secret')) {
+          return Response.json(null);
+        }
+        if (url.origin === 'https://project.supabase.co' && url.pathname.endsWith('/capital_ai_upsert_user_provider_secret')) {
+          writes += 1;
+          return Response.json({});
+        }
+        throw new Error('Unexpected upstream ' + url.href);
+      };
+      const vault = createUserProviderVault({ env, fetchImpl, auth });
+      const result = await invoke(
+        vault,
+        'PUT',
+        { apiKey: 'binance-unsafe-key', apiSecret: 'binance-unsafe-secret-0123456789', credentialFamily: 'spot' },
+        '/api/profile/provider-connections/binance',
+      );
+      assert.equal(result.status, 422);
+      assert.equal(result.payload.error, 'binance_transfer_or_withdrawal_permission_forbidden');
+      assert.equal(writes, 0);
+    });
+  }
 });

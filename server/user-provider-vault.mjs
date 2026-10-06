@@ -5,6 +5,44 @@ const MAX_BODY_BYTES = 16 * 1024;
 const KRAKEN_BALANCE_PATH = '/0/private/Balance';
 const KRAKEN_API_KEY_INFO_PATH = '/0/private/GetApiKeyInfo';
 const KRAKEN_FUTURES_KEY_INFO_PATH = '/api/auth/v1/api-keys/v3/check';
+const KRAKEN_SPOT_QUERY_PATHS = Object.freeze({
+  'account.key_info': '/0/private/GetApiKeyInfo',
+  'account.balance': '/0/private/Balance',
+  'account.trade_balance': '/0/private/TradeBalance',
+  'orders.open': '/0/private/OpenOrders',
+  'orders.closed': '/0/private/ClosedOrders',
+  'orders.query': '/0/private/QueryOrders',
+  'trades.history': '/0/private/TradesHistory',
+  'trades.query': '/0/private/QueryTrades',
+  'positions.open': '/0/private/OpenPositions',
+  'ledgers.list': '/0/private/Ledgers',
+  'ledgers.query': '/0/private/QueryLedgers',
+  'trade.volume': '/0/private/TradeVolume',
+});
+const KRAKEN_FUTURES_QUERY_PATHS = Object.freeze({
+  'futures.account': '/derivatives/api/v3/accounts',
+  'futures.open_positions': '/derivatives/api/v3/openpositions',
+  'futures.open_orders': '/derivatives/api/v3/openorders',
+  'futures.fills': '/derivatives/api/v3/fills',
+  'futures.position_events': '/api/history/v3/positions',
+});
+const BINANCE_QUERY_PATHS = Object.freeze({
+  'account.permissions': ['https://api.binance.com', '/sapi/v1/account/apiRestrictions'],
+  'account.info': ['https://api.binance.com', '/sapi/v1/account/info'],
+  'account.status': ['https://api.binance.com', '/sapi/v1/account/status'],
+  'account.snapshot': ['https://api.binance.com', '/sapi/v1/accountSnapshot'],
+  'spot.account': ['https://api.binance.com', '/api/v3/account'],
+  'spot.open_orders': ['https://api.binance.com', '/api/v3/openOrders'],
+  'spot.all_orders': ['https://api.binance.com', '/api/v3/allOrders'],
+  'spot.my_trades': ['https://api.binance.com', '/api/v3/myTrades'],
+  'futures.account': ['https://fapi.binance.com', '/fapi/v3/account'],
+  'futures.balance': ['https://fapi.binance.com', '/fapi/v3/balance'],
+  'futures.position_risk': ['https://fapi.binance.com', '/fapi/v3/positionRisk'],
+  'futures.open_orders': ['https://fapi.binance.com', '/fapi/v1/openOrders'],
+  'futures.all_orders': ['https://fapi.binance.com', '/fapi/v1/allOrders'],
+  'futures.user_trades': ['https://fapi.binance.com', '/fapi/v1/userTrades'],
+  'futures.income': ['https://fapi.binance.com', '/fapi/v1/income'],
+});
 let lastKrakenNonce = 0n;
 
 const KRAKEN_FORBIDDEN_FUNDING_PERMISSIONS = new Set([
@@ -112,9 +150,9 @@ export function nextKrakenNonce() {
   return String(lastKrakenNonce);
 }
 
-async function krakenPrivatePost(fetchImpl, path, { apiKey, apiSecret }) {
+async function krakenPrivatePost(fetchImpl, path, { apiKey, apiSecret }, params = {}) {
   const nonce = nextKrakenNonce();
-  const form = { nonce };
+  const form = { nonce, ...params };
   const body = new URLSearchParams(form).toString();
   const signature = krakenSignature(path, form, apiSecret);
   const response = await fetchImpl(new URL(path, 'https://api.kraken.com'), {
@@ -204,6 +242,97 @@ async function krakenFuturesKeyInfo(fetchImpl, { apiKey, apiSecret }) {
   };
 }
 
+function normalizeProviderParams(params) {
+  if (params == null) return {};
+  if (!params || typeof params !== 'object' || Array.isArray(params)) throw new Error('INVALID_PROVIDER_QUERY_PARAMS');
+  const out = {};
+  for (const [key, value] of Object.entries(params)) {
+    if (!/^[A-Za-z0-9_.-]{1,40}$/.test(key)) throw new Error('INVALID_PROVIDER_QUERY_PARAM');
+    if (!['string', 'number', 'boolean'].includes(typeof value)) throw new Error('INVALID_PROVIDER_QUERY_PARAM');
+    if (typeof value === 'string' && value.length > 256) throw new Error('INVALID_PROVIDER_QUERY_PARAM');
+    if (typeof value === 'number' && !Number.isSafeInteger(value)) throw new Error('INVALID_PROVIDER_QUERY_PARAM');
+    out[key] = value;
+  }
+  return out;
+}
+
+function queryString(params) {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(normalizeProviderParams(params))) query.set(key, String(value));
+  return query.toString();
+}
+
+async function krakenFuturesPrivateGet(fetchImpl, path, { apiKey, apiSecret }, params = {}) {
+  const nonce = nextKrakenNonce();
+  const postData = queryString(params);
+  const authent = krakenFuturesSignature(path, postData, nonce, apiSecret);
+  const url = new URL(path, 'https://futures.kraken.com');
+  if (postData) url.search = postData;
+  const response = await fetchImpl(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json', APIKey: apiKey, Authent: authent, Nonce: nonce },
+    redirect: 'error',
+    signal: AbortSignal.timeout(7000),
+  });
+  const payload = await boundedJson(response);
+  if (!response.ok || payload?.error) {
+    const error = new Error('KRAKEN_FUTURES_QUERY_FAILED');
+    error.code = payload?.error ? String(payload.error).slice(0, 120) : `HTTP_${response.status}`;
+    throw error;
+  }
+  return payload;
+}
+
+export function binanceSignature(query, apiSecret) {
+  return createHmac('sha256', apiSecret).update(query).digest('hex');
+}
+
+async function binancePrivateGet(fetchImpl, origin, path, { apiKey, apiSecret }, params = {}) {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(normalizeProviderParams(params))) query.set(key, String(value));
+  query.set('recvWindow', '5000');
+  query.set('timestamp', String(Date.now()));
+  const unsigned = query.toString();
+  query.set('signature', binanceSignature(unsigned, apiSecret));
+  const url = new URL(path, origin);
+  url.search = query.toString();
+  const response = await fetchImpl(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json', 'X-MBX-APIKEY': apiKey },
+    redirect: 'error',
+    signal: AbortSignal.timeout(7000),
+  });
+  const payload = await boundedJson(response);
+  if (!response.ok || (typeof payload?.code === 'number' && payload.code < 0)) {
+    const error = new Error('BINANCE_PRIVATE_QUERY_FAILED');
+    error.code = typeof payload?.code === 'number' ? `BINANCE_${payload.code}` : `HTTP_${response.status}`;
+    throw error;
+  }
+  return payload;
+}
+
+async function binanceKeyInfo(fetchImpl, credentials) {
+  const info = await binancePrivateGet(fetchImpl, 'https://api.binance.com', '/sapi/v1/account/apiRestrictions', credentials);
+  const reading = info?.enableReading === true;
+  const forbiddenTransfers = info?.enableWithdrawals === true ||
+    info?.enableInternalTransfer === true ||
+    info?.permitsUniversalTransfer === true;
+  const spotTrading = info?.enableSpotAndMarginTrading === true;
+  const futures = info?.enableFutures === true;
+  const trading = spotTrading || futures || info?.enablePortfolioMarginTrading === true;
+  return {
+    raw: info,
+    reading,
+    forbiddenTransfers,
+    spotTrading,
+    futures,
+    trading,
+    withdrawals: info?.enableWithdrawals === true,
+    internalTransfers: info?.enableInternalTransfer === true,
+    universalTransfers: info?.permitsUniversalTransfer === true,
+  };
+}
+
 function normalizePair(value) {
   const apiKey = normalizeCredential(value?.apiKey, 8, 512);
   const apiSecret = normalizeCredential(value?.apiSecret, 16, 1024);
@@ -261,6 +390,26 @@ function combinePermissions(spot, futures) {
   };
 }
 
+function combineBinancePermissions(spot, futures) {
+  const spotState = spot || {};
+  const futuresState = futures || {};
+  return {
+    reading: spotState.reading === true || futuresState.reading === true,
+    trading: spotState.trading === true || futuresState.trading === true,
+    withdrawals: false,
+    internalTransfers: false,
+    universalTransfers: false,
+    spotConfigured: spotState.configured === true,
+    spotTrading: spotState.trading === true,
+    futuresConfigured: futuresState.configured === true,
+    futuresTrading: futuresState.trading === true,
+    executionEnabled: false,
+    publicMarketDataAdmission: false,
+    spot: spotState,
+    futures: futuresState,
+  };
+}
+
 function fingerprintForPayload(config, payload) {
   return createHmac('sha256', config.fingerprintKey)
     .update('capital-ai/byok-fingerprint/v2\0')
@@ -284,26 +433,34 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
     return verified;
   }
 
-  async function markStatus(userId, status, errorCode = null) {
+  async function markProviderStatus(userId, provider, status, errorCode = null) {
     if (!config) return;
     await rpc(fetchImpl, config, 'capital_ai_mark_user_provider_status', {
       _user_id: userId,
-      _provider: 'kraken',
+      _provider: provider,
       _status: status,
       _error_code: errorCode,
     });
   }
 
-  async function readStored(userId) {
+  async function markStatus(userId, status, errorCode = null) {
+    return markProviderStatus(userId, 'kraken', status, errorCode);
+  }
+
+  async function readProviderStored(userId, provider) {
     try {
       return await rpc(fetchImpl, config, 'capital_ai_get_user_provider_secret', {
         _user_id: userId,
-        _provider: 'kraken',
+        _provider: provider,
       });
     } catch (error) {
       if (error?.status === 404) return null;
       throw error;
     }
+  }
+
+  async function readStored(userId) {
+    return readProviderStored(userId, 'kraken');
   }
 
   async function readKrakenSpotTradingCredential(userId) {
@@ -348,6 +505,120 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
     };
   }
 
+  async function executePrivateQuery(userId, provider, operation, params = {}) {
+    if (!config) {
+      const error = new Error('PROVIDER_VAULT_NOT_CONFIGURED');
+      error.code = 'PROVIDER_VAULT_NOT_CONFIGURED';
+      throw error;
+    }
+    if (!['kraken', 'binance'].includes(provider)) {
+      const error = new Error('UNSUPPORTED_PROVIDER');
+      error.code = 'UNSUPPORTED_PROVIDER';
+      throw error;
+    }
+    const stored = await readProviderStored(userId, provider);
+    if (!stored?.secretPayload) {
+      const error = new Error('PROVIDER_CONNECTION_NOT_FOUND');
+      error.code = 'PROVIDER_CONNECTION_NOT_FOUND';
+      throw error;
+    }
+    const payload = parseStoredVaultPayload(stored.secretPayload);
+    const cleanParams = normalizeProviderParams(params);
+
+    if (provider === 'kraken') {
+      if (operation.startsWith('futures.')) {
+        if (!payload.futures) {
+          const error = new Error('KRAKEN_FUTURES_CONNECTION_NOT_FOUND');
+          error.code = 'KRAKEN_FUTURES_CONNECTION_NOT_FOUND';
+          throw error;
+        }
+        const permissions = await krakenFuturesKeyInfo(fetchImpl, payload.futures);
+        if (permissions.transfer !== 'NO_ACCESS') {
+          const error = new Error('KRAKEN_FUTURES_TRANSFER_PERMISSION_FORBIDDEN');
+          error.code = 'KRAKEN_FUTURES_TRANSFER_PERMISSION_FORBIDDEN';
+          throw error;
+        }
+        if (!permissions.configured) {
+          const error = new Error('KRAKEN_FUTURES_READ_ACCESS_REQUIRED');
+          error.code = 'KRAKEN_FUTURES_READ_ACCESS_REQUIRED';
+          throw error;
+        }
+        const path = KRAKEN_FUTURES_QUERY_PATHS[operation];
+        if (!path) {
+          const error = new Error('OPERATION_NOT_ADMITTED');
+          error.code = 'OPERATION_NOT_ADMITTED';
+          throw error;
+        }
+        return krakenFuturesPrivateGet(fetchImpl, path, payload.futures, cleanParams);
+      }
+
+      if (!payload.spot) {
+        const error = new Error('KRAKEN_SPOT_CONNECTION_NOT_FOUND');
+        error.code = 'KRAKEN_SPOT_CONNECTION_NOT_FOUND';
+        throw error;
+      }
+      const verification = await krakenKeyInfo(fetchImpl, payload.spot);
+      if (verification.capabilities.forbiddenPermissions.length > 0) {
+        const error = new Error('KRAKEN_FUNDING_OR_WITHDRAWAL_PERMISSIONS_FORBIDDEN');
+        error.code = 'KRAKEN_FUNDING_OR_WITHDRAWAL_PERMISSIONS_FORBIDDEN';
+        throw error;
+      }
+      if (operation === 'account.key_info') {
+        const info = verification.info || {};
+        return {
+          info: {
+            apiKeyName: typeof info.apiKeyName === 'string' ? info.apiKeyName.slice(0, 160) : null,
+            permissions: verification.capabilities.permissions,
+            ibanPresent: typeof info.iban === 'string' && info.iban.length > 0,
+            validUntil: String(info.validUntil || '0').slice(0, 40),
+            queryFrom: String(info.queryFrom || '0').slice(0, 40),
+            queryTo: String(info.queryTo || '0').slice(0, 40),
+            createdTime: String(info.createdTime || '0').slice(0, 40),
+          },
+          capabilities: verification.capabilities,
+        };
+      }
+      const path = KRAKEN_SPOT_QUERY_PATHS[operation];
+      if (!path) {
+        const error = new Error('OPERATION_NOT_ADMITTED');
+        error.code = 'OPERATION_NOT_ADMITTED';
+        throw error;
+      }
+      return krakenPrivatePost(fetchImpl, path, payload.spot, cleanParams);
+    }
+
+    const isFutures = operation.startsWith('futures.');
+    const credentials = isFutures ? payload.futures : payload.spot;
+    if (!credentials) {
+      const error = new Error(isFutures ? 'BINANCE_FUTURES_CONNECTION_NOT_FOUND' : 'BINANCE_SPOT_CONNECTION_NOT_FOUND');
+      error.code = error.message;
+      throw error;
+    }
+    const permissions = await binanceKeyInfo(fetchImpl, credentials);
+    if (!permissions.reading) {
+      const error = new Error('BINANCE_READING_PERMISSION_REQUIRED');
+      error.code = 'BINANCE_READING_PERMISSION_REQUIRED';
+      throw error;
+    }
+    if (permissions.forbiddenTransfers) {
+      const error = new Error('BINANCE_TRANSFER_OR_WITHDRAWAL_PERMISSION_FORBIDDEN');
+      error.code = 'BINANCE_TRANSFER_OR_WITHDRAWAL_PERMISSION_FORBIDDEN';
+      throw error;
+    }
+    if (isFutures && !permissions.futures) {
+      const error = new Error('BINANCE_FUTURES_ACCESS_REQUIRED');
+      error.code = 'BINANCE_FUTURES_ACCESS_REQUIRED';
+      throw error;
+    }
+    const target = BINANCE_QUERY_PATHS[operation];
+    if (!target) {
+      const error = new Error('OPERATION_NOT_ADMITTED');
+      error.code = 'OPERATION_NOT_ADMITTED';
+      throw error;
+    }
+    return binancePrivateGet(fetchImpl, target[0], target[1], credentials, cleanParams);
+  }
+
   async function handle(req, res, url, json) {
     if (!url.pathname.startsWith('/api/profile/provider-connections')) return false;
 
@@ -375,6 +646,139 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
           error: error?.status === 401
             ? 'provider_vault_admin_credential_rejected'
             : 'provider_vault_unavailable',
+        });
+      }
+      return true;
+    }
+
+    if (url.pathname === '/api/profile/provider-connections/binance') {
+      if (req.method === 'DELETE') {
+        if (!auth.sameOrigin(req)) {
+          json(res, 403, { error: 'forbidden_origin' });
+          return true;
+        }
+        try {
+          await rpc(fetchImpl, config, 'capital_ai_delete_user_provider_secret', {
+            _user_id: user.userId,
+            _provider: 'binance',
+          });
+          json(res, 200, { deleted: true, provider: 'binance' });
+        } catch {
+          json(res, 503, { error: 'provider_connection_delete_failed' });
+        }
+        return true;
+      }
+
+      if (req.method !== 'PUT') {
+        res.setHeader('Allow', 'PUT, DELETE');
+        json(res, 405, { error: 'method_not_allowed' });
+        return true;
+      }
+      if (!auth.sameOrigin(req)) {
+        json(res, 403, { error: 'forbidden_origin' });
+        return true;
+      }
+
+      let body;
+      try { body = await readJson(req); }
+      catch (error) {
+        json(res, error.message === 'REQUEST_TOO_LARGE' ? 413 : 400, { error: 'invalid_request' });
+        return true;
+      }
+
+      const credentialFamily = body.credentialFamily === 'futures' ? 'futures' : 'spot';
+      const allowTrading = body.allowTrading === true;
+      const apiKey = normalizeCredential(body.apiKey, 8, 512);
+      const apiSecret = normalizeCredential(body.apiSecret, 16, 1024);
+      if (!apiKey || !apiSecret) {
+        json(res, 400, { error: 'invalid_binance_credentials_format' });
+        return true;
+      }
+
+      try {
+        const credentials = { apiKey, apiSecret };
+        const verification = await binanceKeyInfo(fetchImpl, credentials);
+        if (!verification.reading) {
+          json(res, 422, { provider: 'binance', status: 'REJECTED', error: 'binance_reading_permission_required' });
+          return true;
+        }
+        if (verification.forbiddenTransfers) {
+          json(res, 422, {
+            provider: 'binance',
+            status: 'REJECTED',
+            error: 'binance_transfer_or_withdrawal_permission_forbidden',
+            withdrawals: verification.withdrawals,
+            internalTransfers: verification.internalTransfers,
+            universalTransfers: verification.universalTransfers,
+          });
+          return true;
+        }
+        if (verification.trading && !allowTrading) {
+          json(res, 422, {
+            provider: 'binance',
+            status: 'REJECTED',
+            error: 'binance_trading_permissions_require_opt_in',
+          });
+          return true;
+        }
+        if (credentialFamily === 'futures' && !verification.futures) {
+          json(res, 422, {
+            provider: 'binance',
+            status: 'REJECTED',
+            error: 'binance_futures_access_required',
+          });
+          return true;
+        }
+
+        const stored = await readProviderStored(user.userId, 'binance');
+        const vaultPayload = stored?.secretPayload ? parseStoredVaultPayload(stored.secretPayload) : emptyVaultPayload();
+        let spotState = stored?.permissions?.spot || null;
+        let futuresState = stored?.permissions?.futures || null;
+        const state = {
+          configured: true,
+          reading: true,
+          trading: allowTrading && verification.trading,
+          spotTrading: allowTrading && verification.spotTrading,
+          futuresAccess: verification.futures,
+        };
+        if (credentialFamily === 'spot') {
+          vaultPayload.spot = credentials;
+          spotState = state;
+        } else {
+          vaultPayload.futures = credentials;
+          futuresState = state;
+        }
+
+        const permissions = combineBinancePermissions(spotState, futuresState);
+        const fingerprint = fingerprintForPayload(config, vaultPayload);
+        await rpc(fetchImpl, config, 'capital_ai_upsert_user_provider_secret', {
+          _user_id: user.userId,
+          _provider: 'binance',
+          _secret_payload: JSON.stringify(vaultPayload),
+          _credential_fingerprint: fingerprint,
+          _permissions: permissions,
+        });
+        await markProviderStatus(user.userId, 'binance', 'VERIFIED', null);
+        json(res, 200, {
+          provider: 'binance',
+          credentialFamily,
+          status: 'VERIFIED',
+          credentialFingerprint: fingerprint,
+          dataScope: 'USER_PRIVATE_ACCOUNT_DATA',
+          redistributionAllowed: false,
+          publicDisplayAllowed: false,
+          sharedCacheAllowed: false,
+          jetStreamPublicationAllowed: false,
+          capabilities: permissions,
+          executionEnabled: false,
+        });
+      } catch (error) {
+        const code = typeof error?.code === 'string' ? error.code : 'BINANCE_VERIFICATION_FAILED';
+        json(res, error?.status ? 503 : 422, {
+          provider: 'binance',
+          status: 'INVALID',
+          error: error?.status === 401 ? 'provider_vault_admin_credential_rejected' : 'binance_verification_failed',
+          code,
         });
       }
       return true;
@@ -620,5 +1024,5 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
     return true;
   }
 
-  return { handle, readKrakenSpotTradingCredential };
+  return { handle, readKrakenSpotTradingCredential, executePrivateQuery };
 }
