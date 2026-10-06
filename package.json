@@ -40,7 +40,7 @@
     "test:social-engine-gate": "node --test scripts/social-engine-completion-gate.test.mjs"
   },
   "dependencies": {
-    "@google/genai": "^2.26.0",
+    "@google/genai": "^2.27.0",
     "@nats-io/jetstream": "3.4.0",
     "@nats-io/transport-node": "3.4.0",
     "@tailwindcss/vite": "^4.3.3",
