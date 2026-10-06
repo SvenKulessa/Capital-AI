@@ -85,7 +85,7 @@ test('MARKET production package is one chronological fail-closed commercial work
 });
 
 
-test('multi-agent roadmap remains planning-only until owner architecture decision', () => {
+test('multi-agent roadmap records LangGraph owner decision while runtime remains planning-only', () => {
   const orchestration = WORK_PACKAGES.find(item => item.id === 'CA-PRODUCT-MULTI-AGENT-ORCHESTRATION');
   const trajectory = WORK_PACKAGES.find(item => item.id === 'CA-PLATFORM-AGENT-TRAJECTORY-OBSERVABILITY');
   const control = WORK_PACKAGES.find(item => item.id === 'CA-PRODUCT-AGENT-PATH-CONTROL-CENTER');
@@ -97,8 +97,11 @@ test('multi-agent roadmap remains planning-only until owner architecture decisio
   assert.ok(rebalance);
 
   assert.equal(orchestration.status, 'planning');
-  assert.equal(orchestration.evidenceState, 'UNGEKLÄRT');
-  assert.match(orchestration.nextStep, /Owner entscheidet Architekturvariante A\/B\/C/);
+  assert.equal(orchestration.evidenceState, 'OFFEN');
+  assert.match(orchestration.title, /LangGraph als Zielarchitektur/);
+  assert.match(orchestration.nextStep, /CAPITAL_AI_AGENT_STATE@1/);
+  assert.match(orchestration.nextStep, /LangGraph.*benchmarken/);
+  assert.doesNotMatch(orchestration.nextStep, /Owner entscheidet Architekturvariante/);
 
   assert.equal(trajectory.status, 'planning');
   assert.match(trajectory.deliverables.join(' '), /CAPITAL_AI_AGENT_TRAJECTORY@1/);
