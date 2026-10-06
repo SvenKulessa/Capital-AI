@@ -3,7 +3,7 @@
   "id": "CAPITAL-AI-SOCIAL-ENGINE-COMPLETION-20261006",
   "workPackage": "CAPITAL-AI-FINANCE-SOCIAL-MARKET-MIGRATION-01",
   "point": "06_SOCIAL_ENGINE_MIGRATION_COMPLETION_GATE",
-  "correlatedMain": "73ad214e3a8af73f99c08531533ddcaaca530be3",
+  "correlatedMain": "e33b24730c1ec96b3bbace8f876369d8976a09cc",
   "declaredState": "BLOCKED",
   "blockingFollowUp": "CAPITAL-AI-FINANCE-SCORING-DATA-FOLLOWUP-01",
   "policy": {
@@ -11,7 +11,8 @@
     "missingEvidenceIsPass": false,
     "partialImplementationIsPass": false,
     "docsOnlyIsPass": false,
-    "historicalFinanceRuntimeIsPass": false
+    "historicalFinanceRuntimeIsPass": false,
+    "socialToolLicenseEvidenceMustPass": true
   },
   "requiredRuntimeArtifacts": [
     "src/platform/SocialMediaEngine/Contracts/MediaProject.ts",
@@ -35,7 +36,8 @@
   "requiredEvidenceArtifacts": [
     "CAPITAL-AI-GROWTH/social-media-tool-admission.yaml",
     "docs/licenses/SOCIAL-MEDIA-ENGINE-PRODUCT-LICENSE.md",
-    "CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json"
+    "CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json",
+    "CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json"
   ],
   "forbiddenFinanceScoringRuntimeBeforePass": [
     "src/platform/Scoring/ScoringModelRegistry.ts",
@@ -52,21 +54,29 @@
     "runtimeArtifactsRequired": 13,
     "rendererArtifactsPresent": 0,
     "rendererArtifactsRequired": 2,
-    "evidenceArtifactsPresent": 3,
-    "evidenceArtifactsRequired": 3,
+    "evidenceArtifactsPresent": 4,
+    "evidenceArtifactsRequired": 4,
     "result": "BLOCKED",
     "blockers": [
+      "Point 4 social-tool license evidence is still PARTIAL_FAIL_CLOSED and is not POINT_4_PASS.",
       "SocialMediaEngine runtime has not been migrated to Capital-AI main.",
       "Deterministic media renderer has not been migrated to Capital-AI main.",
       "Publishing/distribution runtime is not present in Capital-AI main.",
       "Therefore Finance scoring/data follow-up must remain blocked."
-    ]
+    ],
+    "socialToolLicenseEvidenceStatus": "POINT_4_PARTIAL_FAIL_CLOSED",
+    "socialToolLicenseEvidencePass": false
   },
   "passDefinition": [
     "All required SocialMediaEngine runtime artifacts exist in target repository.",
     "All deterministic renderer artifacts exist and their license/build gates are admitted.",
     "Required license/provenance evidence artifacts exist.",
+    "Social tool license evidence status is explicitly POINT_4_PASS.",
     "Work package no longer declares the Finance scoring/data follow-up BLOCKED.",
-    "No missing or failed validation is represented as PASS."
-  ]
+    "No missing, failed or partial evidence is represented as PASS."
+  ],
+  "requiredSocialToolLicenseEvidence": {
+    "path": "CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json",
+    "requiredStatus": "POINT_4_PASS"
+  }
 }

@@ -1,14 +1,15 @@
 schemaVersion: "SOCIAL_MEDIA_TOOL_ADMISSION@1"
 id: "CAPITAL-AI-SOCIAL-TOOL-ADMISSION-20261005"
-status: "INITIAL_FAIL_CLOSED_INVENTORY"
+status: "POINT_4_EXACT_EVIDENCE_PARTIAL_FAIL_CLOSED"
 workPackage: "CAPITAL-AI-FINANCE-SOCIAL-MARKET-MIGRATION-01"
 
 baseline:
   sourceRepository: "SvenKulessa/Finance"
   sourceSha: "dcef421fe6e350a3a2ade61d0299aad9ecca213c"
   targetRepository: "SvenKulessa/Capital-AI"
-  targetMainSha: "8244a411b3b5b691adbb78ffdc5880aadd267113"
+  targetMainSha: "73ad214e3a8af73f99c08531533ddcaaca530be3"
   sourceTargetManifest: "CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json"
+  exactEvidence: "CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json"
 
 admissionModes:
   COMMERCIAL_PRODUCT_BUNDLE:
@@ -51,15 +52,22 @@ tools:
     financeUse: "planning-visual-layout"
     initialMode: "COMMERCIAL_PRODUCT_BUNDLE"
     licenseSurface: "ISC"
-    exactArtifactRecheckRequired: true
+    exactVersion: "7.9.0"
+    registryIntegrity: "sha512-e1U46jVP+w7Iut8Jt8ri1YsPOvFpg46k+K8TpCb0P+zjCkjkPnV7WzfDJzMHy1LnA+wj5pLT1wjO901gLXeEhA=="
+    productionEligible: true
+    exactArtifactRecheckRequired: false
     noticeRequired: true
 
   - id: "pillow"
     componentType: "library"
     financeUse: "deterministic-image-frame-rendering"
     initialMode: "COMMERCIAL_PRODUCT_BUNDLE"
-    licenseSurface: "permissive"
+    licenseSurface: "MIT-CMU"
+    exactVersion: "12.3.0"
+    sourceArtifactSha256: "3b8182a766685eaa002637e28b4ec8d6b18819a0c71f579bf0dbaa5830297cce"
+    productionEligible: false
     exactArtifactRecheckRequired: true
+    blockReason: "Target runtime wheel/platform artifact not selected and hash-bound."
     noticeRequired: true
 
   - id: "ffmpeg"
@@ -204,3 +212,22 @@ evidenceRequiredBeforePromotion:
   - "notice_and_attribution_obligations"
   - "commercial_use_and_redistribution_decision"
   - "runtime_isolation_test"
+
+point4Decision:
+  activeScope: "SOCIAL_MEDIA_ENGINE_ONLY"
+  evidence: "CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json"
+  fullyProductionEligible:
+    - "d3"
+  implementationEligibleProductionBlocked:
+    - "pillow"
+    - "ffmpeg"
+    - "chatterbox-code"
+    - "chatterbox-multilingual-v3-weights"
+    - "openai-whisper-code"
+  fullyBlocked:
+    - "poppler"
+    - "qwen3-tts-code"
+    - "qwen3-tts-weights"
+  financeScoringMigration:
+    status: "BLOCKED_BY_SOCIAL_MEDIA_ENGINE_MIGRATION"
+    mutationAllowed: false

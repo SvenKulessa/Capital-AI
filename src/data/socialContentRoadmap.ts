@@ -14,13 +14,14 @@ export const SOCIAL_CONTENT_WORK_PACKAGES: WorkPackage[] = [
     "evidenceRefs": [
       "https://github.com/SvenKulessa/Capital-AI/blob/8a08f938a519fbf3379749fd9ac59e182851e655/CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.md",
       "CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json",
+      "CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json",
       "CAPITAL-AI-GROWTH/social-engine-completion-gate.json"
     ],
-    "nextStep": "Punkt 6 ist fail-closed BLOCKED: Social Core, Renderer sowie Publishing/Distribution aus Punkt 2–5 implementieren und validieren; Finance-Scoring bleibt bis zum Social-Cutover gesperrt.",
+    "nextStep": "Punkt 4 Restgates schließen; Punkt 6 bleibt bis zur validierten Social-Core-, Renderer- und Publishing-Migration BLOCKED. Finance-Scoring bleibt bis zum Social-Cutover gesperrt.",
     "priority": "Kritisch",
     "leadName": "Owner + GROWTH/MARKET/PLATFORM/TRUST/PRODUCT",
     "targetSprint": "Sequenziell nach Lizenz-, Datenrechte- und Security-Gates",
-    "description": "Das Source-to-Target-Dateimanifest ist gegen CURRENT_MAIN materialisiert und SHA-gesichert. Finance-SocialMediaEngine und selektive fortgeschrittene MARKET/Data-Funktionen werden danach schrittweise migriert. Kommerzieller Kundenpfad und Owner-private Tool-Runtime bleiben strikt getrennt; Non-Commercial-Artefakte dürfen keine kommerziellen Outputs erzeugen.",
+    "description": "Source-to-Target-Manifest und exakte Social-Tool-Lizenz-Evidence sind materialisiert; Punkt 4 bleibt PARTIAL_FAIL_CLOSED und Punkt 6 bewertet die noch nicht migrierte Social-Runtime als BLOCKED. Finance-Scoring/Weighting/Data bleibt bis zum Social-Cutover ausdrücklich gesperrt. Kommerzieller Kundenpfad und Owner-private Tool-Runtime bleiben strikt getrennt.",
     "deliverables": [
       "SocialMediaEngine Contracts, Editing, deterministischen Media- und Publishing-Pfad zielkonform migrieren.",
       "Maschinenlesbare Tool-/Lizenz-Zulassung mit Commercial-, Owner-private-, Research- und BLOCKED-Modi durchsetzen.",

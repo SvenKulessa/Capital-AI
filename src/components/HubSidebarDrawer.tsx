@@ -238,11 +238,11 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
       },
       {
         id: 'guides',
-        name: 'Cheat-Sheets & Guides',
+        name: 'Analyse-Module & Methodik',
         icon: <Layers className="w-4 h-4 text-cyan-400" />,
         badge: '4 Guides',
-        shortDesc: 'Spickzettel für Buffett Value Investing, BaFin WORM & Latenz-Architektur',
-        tags: ['DCF', 'MaRisk', 'Cheatsheets'],
+        shortDesc: 'Fachliche Modulübersicht: verwendete Analysewerkzeuge, Datenpfade und methodischer Aufbau',
+        tags: ['Analyse-Module', 'Methodik', 'Datenpfade'],
         path: '/learning?tab=guides',
       },
       {
@@ -306,10 +306,10 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
       },
       {
         id: 'pricing',
-        name: 'Preismodelle & Domains',
+        name: 'Preiskatalog & Domains',
         icon: <DollarSign className="w-4 h-4 text-amber-400" />,
         badge: 'Pricing',
-        shortDesc: 'SaaS-Tarife, Market Vocabulary und die fünf CAPITAL-AI Domains.',
+        shortDesc: 'Starter, Pro, Enterprise, Market Vocabulary und weitere freigegebene Produktpakete.',
         tags: ['Stripe', 'Vocabulary', 'Domains'],
         path: '/dokumentation',
       },
@@ -492,16 +492,16 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
             aria-hidden="true"
           />
 
-          {/* Slide-in Sidebar from the Right */}
+          {/* Sideboard navigation from the left */}
           <motion.aside
-            initial={{ x: '100%' }}
+            initial={{ x: '-100%' }}
             animate={{ x: 0 }}
-            exit={{ x: '100%' }}
+            exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 26, stiffness: 260 }}
-            className="fixed top-0 right-0 bottom-0 z-50 w-full sm:w-[460px] md:w-[490px] bg-[#060c1d] border-l border-slate-800 shadow-[0_0_60px_rgba(0,0,0,0.9)] flex flex-col justify-between overflow-hidden"
+            className="fixed top-0 left-0 bottom-0 z-50 w-full sm:w-[460px] md:w-[490px] bg-[#060c1d] border-r border-slate-800 shadow-[0_0_60px_rgba(0,0,0,0.9)] flex flex-col justify-between overflow-hidden"
             role="dialog"
             aria-modal="true"
-            aria-label={`${activeHub.name} Sidebar-Navigation`}
+            aria-label={`${activeHub.name} Sideboard-Navigation`}
           >
             {/* 1. TOP HEADER & HUB SWITCHER */}
             <div className="p-5 border-b border-slate-800/80 bg-[#070e24]">
@@ -524,7 +524,7 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
                         className="w-2 h-2 rounded-full animate-pulse"
                         style={{ backgroundColor: activeHub.color }}
                       />
-                      <span>Aufklappbare Sidebar</span>
+                      <span>Hub Sideboard</span>
                     </div>
                     <h3 className="text-base font-bold text-white tracking-tight">
                       {activeHub.name}
@@ -536,13 +536,13 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
                   type="button"
                   onClick={onClose}
                   className="w-11 h-11 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-slate-800 transition-colors cursor-pointer"
-                  aria-label="Sidebar schließen"
+                  aria-label="Sideboard schließen"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* 4 RUNDE ACTION BUTTONS ZUM SCHNELLEN WECHSEL DER HUBS IN DER SIDEBAR */}
+              {/* Hub switcher */}
               <div className="grid grid-cols-4 gap-1.5 pt-1">
                 {visibleHubIds.map((hubId) => {
                   const hub = MAIN_HUBS_CONFIG[hubId];
@@ -584,8 +584,8 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
               </div>
             </div>
 
-            {/* 2. SUBPAGES LIST (ALLE GEMAPPETEN UNTERSEITEN DIREKT AUFRUFBAR) */}
-            <div className="flex-1 p-5 overflow-y-auto space-y-2.5">
+            {/* Folder-tree Sideboard: alle gemappten Unterseiten direkt navigierbar */}
+            <div className="flex-1 p-5 overflow-y-auto space-y-2.5" role="tree" aria-label={`${activeHub.name} Bereiche`}>
               <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 pb-1">
                 <span>{activeHub.subpages.length} Unterseiten direkt aufrufbar:</span>
                 <span
@@ -609,6 +609,8 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
                   <motion.div
                     key={subpage.id}
                     aria-current={isActive ? 'page' : undefined}
+                    role="treeitem"
+                    aria-level={2}
                     whileHover={{ x: 3 }}
                     onClick={() => handleSubpageClick(subpage)}
                     className={`p-3.5 rounded-xl border transition-all cursor-pointer group relative overflow-hidden ${
@@ -620,8 +622,18 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
                       borderColor: isActive ? activeHub.color : undefined,
                     }}
                   >
-                    {/* Top Row: Icon + Name + Badge */}
-                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-0 top-0 h-full w-1"
+                      style={{ backgroundColor: isActive ? activeHub.color : `${activeHub.color}35` }}
+                    />
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-3 top-1/2 h-px w-4"
+                      style={{ backgroundColor: `${activeHub.color}55` }}
+                    />
+                    {/* Folder-tree row: Hub → Bereich */}
+                    <div className="flex items-center justify-between gap-2 mb-1.5 pl-3">
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div
                           className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border"

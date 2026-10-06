@@ -114,7 +114,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           className="hover:text-amber-300 transition-colors cursor-pointer text-amber-300 font-bold hover:underline underline-offset-4 flex items-center gap-1"
           data-analytics="footer-pricing"
         >
-          Preise &amp; Tarife
+          Preiskatalog
         </a>
         <span className="text-slate-600">•</span>
         <a

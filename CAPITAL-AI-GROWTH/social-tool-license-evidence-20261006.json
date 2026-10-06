@@ -1,0 +1,283 @@
+{
+  "schemaVersion": "SOCIAL_TOOL_LICENSE_EVIDENCE@1",
+  "id": "CAPITAL-AI-SOCIAL-TOOL-LICENSE-EVIDENCE-20261006",
+  "status": "POINT_4_PARTIAL_FAIL_CLOSED",
+  "correlatedAt": "2026-10-06",
+  "targetMain": "73ad214e3a8af73f99c08531533ddcaaca530be3",
+  "financeSource": "dcef421fe6e350a3a2ade61d0299aad9ecca213c",
+  "scope": "Social-Media-Engine implementation dependencies only; Finance MARKET/scoring migration remains deferred until Social cutover PASS.",
+  "policy": {
+    "exactArtifactRequiredForProduction": true,
+    "codeAndWeightsEvaluatedSeparately": true,
+    "nonCommercialOwnerOverrideForbidden": true,
+    "systemPackageVersionWithoutArtifactDigestProductionEligible": false,
+    "dynamicLatestModelRevisionProductionEligible": false
+  },
+  "items": [
+    {
+      "id": "d3",
+      "role": "deterministic planning visual layout",
+      "sourceEvidence": {
+        "financePackageJson": "d3:^7.9.0",
+        "financePackageLockVersion": "7.9.0",
+        "registryArtifact": "d3-7.9.0.tgz",
+        "integrity": "sha512-e1U46jVP+w7Iut8Jt8ri1YsPOvFpg46k+K8TpCb0P+zjCkjkPnV7WzfDJzMHy1LnA+wj5pLT1wjO901gLXeEhA=="
+      },
+      "upstream": {
+        "package": "d3",
+        "version": "7.9.0",
+        "license": "ISC",
+        "officialEvidence": "https://www.npmjs.com/package/d3"
+      },
+      "decision": {
+        "mode": "COMMERCIAL_PRODUCT_BUNDLE",
+        "implementationEligible": true,
+        "productionEligible": true,
+        "noticeRequired": true,
+        "reason": "Exact npm version and integrity are bound; permissive ISC license is compatible with commercial redistribution subject to notice retention."
+      }
+    },
+    {
+      "id": "pillow",
+      "role": "deterministic image/frame renderer",
+      "sourceEvidence": {
+        "financeRequirement": "Pillow==12.3.0",
+        "localEvidenceVersion": "12.3.0"
+      },
+      "upstream": {
+        "package": "Pillow",
+        "version": "12.3.0",
+        "sourceArtifact": "pillow-12.3.0.tar.gz",
+        "sourceSha256": "3b8182a766685eaa002637e28b4ec8d6b18819a0c71f579bf0dbaa5830297cce",
+        "license": "MIT-CMU",
+        "trustedPublishing": true,
+        "officialEvidence": "https://pypi.org/project/pillow/"
+      },
+      "decision": {
+        "mode": "COMMERCIAL_PRODUCT_BUNDLE",
+        "implementationEligible": true,
+        "productionEligible": false,
+        "noticeRequired": true,
+        "reason": "Source provenance is exact, but the target runtime wheel/platform artifact has not yet been selected and hash-bound."
+      },
+      "unblock": [
+        "Select target Python/platform wheel or deterministic source-build path.",
+        "Bind exact artifact SHA-256 and transitive native-library inventory."
+      ]
+    },
+    {
+      "id": "ffmpeg",
+      "role": "video/audio assembly and ffprobe validation",
+      "sourceEvidence": {
+        "financeLocalEvidenceVersion": "7.1.5 Debian Build",
+        "financeLocalBuildAssessment": "--enable-gpl present; explicitly rejected as production/distribution evidence"
+      },
+      "upstream": {
+        "licenseDefault": "LGPL-2.1-or-later",
+        "gplWhenEnabled": "GPL-2.0-or-later",
+        "nonfreeEffect": "unredistributable when --enable-nonfree is used",
+        "officialEvidence": "https://ffmpeg.org/legal.html"
+      },
+      "decision": {
+        "mode": "BLOCKED_UNKNOWN",
+        "implementationEligible": true,
+        "productionEligible": false,
+        "reason": "No exact target FFmpeg binary/package digest and configure flags are bound. The historical Finance local build is GPL-enabled and intentionally not accepted for production."
+      },
+      "unblock": [
+        "Select exact target FFmpeg package/build.",
+        "Capture version, package/binary SHA-256 and ffmpeg -buildconf.",
+        "Require --enable-nonfree absent.",
+        "Review GPL/LGPL codec/linkage obligations for the selected build."
+      ]
+    },
+    {
+      "id": "poppler",
+      "role": "optional PDF companion rasterization via pdfinfo/pdftoppm",
+      "sourceEvidence": {
+        "financeLocalEvidenceVersion": "25.06.0",
+        "invocation": "separate CLI process"
+      },
+      "upstream": {
+        "licenseSurface": "GPL",
+        "officialProject": "https://poppler.freedesktop.org/"
+      },
+      "decision": {
+        "mode": "BLOCKED_UNKNOWN",
+        "implementationEligible": false,
+        "productionEligible": false,
+        "reason": "Exact target binary/package digest and packaging/distribution model are not bound; GPL obligations require a dedicated packaging/legal review before inclusion in the commercial product."
+      },
+      "unblock": [
+        "Decide whether PDF companion is required in the sold product or can remain an external/operator tool.",
+        "Bind exact Poppler package/binary and SHA-256.",
+        "Complete GPL packaging/redistribution review."
+      ]
+    },
+    {
+      "id": "qwen3-tts-code",
+      "role": "primary TTS code/runtime candidate",
+      "sourceEvidence": {
+        "financeRuntimePackage": "qwen-tts==0.1.1",
+        "python": "3.11",
+        "torch": "2.6.0",
+        "torchaudio": "2.6.0",
+        "flashAttn": "2.7.4.post1",
+        "soundfile": "0.13.1",
+        "huggingfaceHub": "0.36.0"
+      },
+      "upstream": {
+        "repository": "https://github.com/QwenLM/Qwen3-TTS",
+        "license": "Apache-2.0"
+      },
+      "decision": {
+        "mode": "COMMERCIAL_INTERNAL_SERVICE",
+        "implementationEligible": false,
+        "productionEligible": false,
+        "reason": "Version is pinned in Finance but the exact qwen-tts 0.1.1 distribution hash and full transitive runtime inventory are not yet bound in Capital-AI."
+      },
+      "unblock": [
+        "Bind qwen-tts 0.1.1 wheel/sdist SHA-256 from official registry.",
+        "Capture full transitive dependency lock and license inventory.",
+        "Re-run supply-chain/advisory check at selected artifacts."
+      ]
+    },
+    {
+      "id": "qwen3-tts-weights",
+      "role": "Qwen3-TTS VoiceDesign weights",
+      "sourceEvidence": {
+        "financeModelRepo": "Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign",
+        "financeRuntimeRevisionPolicy": "dynamic HfApi model_info(repo).sha at execution time",
+        "benchmarkArtifactDigest": "sha256:6b67f244ae765bcdb97d3da6ef00e42cf9bc30057eddcd5028e9de350e5bfdab",
+        "benchmarkArtifactExpired": true
+      },
+      "upstream": {
+        "currentMainShortRevision": "5ecdb67",
+        "modelFile": "model.safetensors",
+        "currentModelFileSha256": "391e8db219f292c515297cdceeb43e4eae67cdde35fa57e79a6a8a532fca0522",
+        "license": "Apache-2.0",
+        "officialEvidence": "https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign"
+      },
+      "decision": {
+        "mode": "BLOCKED_UNKNOWN",
+        "implementationEligible": false,
+        "productionEligible": false,
+        "reason": "Finance benchmark resolved model revision dynamically and the expired artifact no longer exposes the exact historical revision/hash in repository evidence. Current upstream main cannot be substituted for historical runtime evidence."
+      },
+      "unblock": [
+        "Choose and record an immutable full Hugging Face revision for Capital-AI.",
+        "Bind every required weight/tokenizer artifact SHA-256.",
+        "Verify model-card license at that exact revision.",
+        "Run new immutable runtime benchmark and listening evidence."
+      ]
+    },
+    {
+      "id": "chatterbox-code",
+      "role": "TTS fallback and current usable German prosody reference",
+      "sourceEvidence": {
+        "financeGitCommit": "5de7a54aa4e5e2baadb0182dde554908b48b85c2",
+        "financeRuntimeLogConfirmedCommit": true,
+        "soundfile": "0.13.1"
+      },
+      "upstream": {
+        "repository": "https://github.com/resemble-ai/chatterbox",
+        "license": "MIT"
+      },
+      "decision": {
+        "mode": "COMMERCIAL_INTERNAL_SERVICE",
+        "implementationEligible": true,
+        "productionEligible": false,
+        "reason": "Source code commit is immutable and repository license is MIT; production remains blocked until the complete dependency and model-weight artifact set is pinned."
+      },
+      "unblock": [
+        "Bind full transitive Python dependency lock/license inventory.",
+        "Bind checkpoint revision and all required artifact hashes.",
+        "Repeat security/advisory review for the exact commit/dependency set."
+      ]
+    },
+    {
+      "id": "chatterbox-multilingual-v3-weights",
+      "role": "Multilingual V3 checkpoint",
+      "sourceEvidence": {
+        "financeModelRepo": "ResembleAI/chatterbox",
+        "financeExpectedFile": "t3_mtl23ls_v3.safetensors",
+        "acceptedReferenceAudioSha256": "fa0f6a312095f35607bf470325e643ad3f625c01bd3f3a55e98b0b118afd37b0",
+        "remediatedFinanceAudioSha256": "78b1dac9f55bb7cda41b8c57d6fafa6447fe5b9d852c8dec1ad152b2b3ef5303"
+      },
+      "upstream": {
+        "modelRevisionShort": "e2d6902",
+        "modelFile": "t3_mtl23ls_v3.safetensors",
+        "modelFileSha256": "5abca8321ede76f8e61f1cc0d19aea6c946b28871017ce8726f8a69203f05953",
+        "license": "MIT",
+        "officialEvidence": "https://huggingface.co/ResembleAI/chatterbox/blob/main/t3_mtl23ls_v3.safetensors"
+      },
+      "decision": {
+        "mode": "COMMERCIAL_INTERNAL_SERVICE",
+        "implementationEligible": true,
+        "productionEligible": false,
+        "reason": "Checkpoint hash and MIT model-card surface are known, but a full immutable repository revision plus all companion model files/dependencies must be bound before production."
+      },
+      "unblock": [
+        "Resolve and store full immutable Hugging Face revision containing the checkpoint.",
+        "Inventory every companion checkpoint/tokenizer artifact used by from_pretrained.",
+        "Run fresh Capital-AI listening benchmark; historical Finance quality had only one accepted reference of eight."
+      ]
+    },
+    {
+      "id": "openai-whisper-code",
+      "role": "ASR evidence runtime",
+      "sourceEvidence": {
+        "financePackage": "openai-whisper==20250625",
+        "modelsUsed": [
+          "small",
+          "large-v3"
+        ]
+      },
+      "upstream": {
+        "package": "openai-whisper",
+        "version": "20250625",
+        "sourceArtifact": "openai_whisper-20250625.tar.gz",
+        "sourceSha256": "37a91a3921809d9f44748ffc73c0a55c9f366c85a3ef5c2ae0cc09540432eb96",
+        "license": "MIT",
+        "officialEvidence": "https://pypi.org/project/openai-whisper/"
+      },
+      "decision": {
+        "mode": "COMMERCIAL_INTERNAL_SERVICE",
+        "implementationEligible": true,
+        "productionEligible": false,
+        "reason": "Code package artifact is hash-bound, but the downloaded small/large-v3 model weights are not hash-bound in the migration evidence."
+      },
+      "unblock": [
+        "Bind exact Whisper small and large-v3 model artifact URLs/revisions and SHA-256.",
+        "Inventory ffmpeg dependency used by ASR preprocessing."
+      ]
+    }
+  ],
+  "deferredCandidates": [
+    "f5-tts",
+    "faster-whisper",
+    "comfyui",
+    "moneyprinterturbo",
+    "musetalk",
+    "wan2.2",
+    "remotion"
+  ],
+  "summary": {
+    "fullyProductionEligible": [
+      "d3"
+    ],
+    "implementationEligibleButProductionBlocked": [
+      "pillow",
+      "ffmpeg",
+      "chatterbox-code",
+      "chatterbox-multilingual-v3-weights",
+      "openai-whisper-code"
+    ],
+    "fullyBlocked": [
+      "poppler",
+      "qwen3-tts-code",
+      "qwen3-tts-weights"
+    ],
+    "deferredCandidatesRemainNonBaseline": true
+  }
+}

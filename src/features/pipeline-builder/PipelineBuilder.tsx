@@ -19,8 +19,6 @@ import {
   Sparkles,
   Sliders,
   CheckCircle2,
-  FileCode,
-  FileDown,
   Copy,
   Check,
   Coins,
@@ -60,7 +58,6 @@ import {
   Search,
   TrendingDown,
 } from 'lucide-react';
-import { jsPDF } from 'jspdf';
 import { trackEvent } from '../../utils/analytics';
 import {
   AdvisorChatbot,
@@ -542,7 +539,6 @@ export const PipelineBuilder: React.FC<PipelineBuilderProps> = ({
 
   // Chatbot Drawer / Modal State
   const [isChatbotOpen, setIsChatbotOpen] = useState<boolean>(false);
-  const [copiedCodeSnippet, setCopiedCodeSnippet] = useState<string | null>(null);
 
   // Active Selected Objects
   const selectedFocus = useMemo(
@@ -708,58 +704,8 @@ export const PipelineBuilder: React.FC<PipelineBuilderProps> = ({
     });
   };
 
-  // Copy code helper
-  const handleCopyCode = (snippet: string, key: string) => {
-    navigator.clipboard.writeText(snippet);
-    setCopiedCodeSnippet(key);
-    setTimeout(() => setCopiedCodeSnippet(null), 2000);
-  };
-
-  // Generate PDF Blueprint
-  const handleExportPdfBlueprint = () => {
-    const doc = new jsPDF();
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(18);
-    doc.text('CAPITAL AI — PIPELINE BLUEPRINT SPEZIFIKATION', 14, 20);
-
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Erstellt am: ${new Date().toLocaleString()} | BaFin-Compliance Score: ${calculationSummary.bafinScore}%`, 14, 28);
-    doc.text(`Monatliche Gesamtkosten: ${calculationSummary.totalMonthlyCostEur.toFixed(2)} EUR / 40.00 EUR Budget Cap`, 14, 34);
-
-    doc.line(14, 38, 196, 38);
-
-    doc.setFont('helvetica', 'bold');
-    doc.text('1. Analyse-Fokus & Screener-Ziel:', 14, 46);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`${selectedFocus.title} (${selectedFocus.category})`, 14, 52);
-    doc.text(`Beschreibung: ${selectedFocus.description.slice(0, 100)}...`, 14, 58);
-
-    doc.setFont('helvetica', 'bold');
-    doc.text('2. Taktung & Latenz-Vorgabe:', 14, 68);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`${selectedLatency.name} — ${selectedLatency.latencySpec}`, 14, 74);
-
-    doc.setFont('helvetica', 'bold');
-    doc.text('3. Ingestion Adapter & Data Provider:', 14, 84);
-    doc.setFont('helvetica', 'normal');
-    selectedProviders.forEach((p, idx) => {
-      doc.text(`• ${p.name} (${p.category}) — ${p.monthlyCostEur.toFixed(2)} €/Mo`, 18, 90 + idx * 6);
-    });
-
-    const startCachingY = 96 + selectedProviders.length * 6;
-    doc.setFont('helvetica', 'bold');
-    doc.text('4. Normalisierung & Caching:', 14, startCachingY);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`${selectedCaching.name} (${selectedCaching.specs})`, 14, startCachingY + 6);
-
-    doc.setFont('helvetica', 'bold');
-    doc.text('5. BaFin Evidence & Audit-Trail:', 14, startCachingY + 16);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`${selectedEvidence.name} (${selectedEvidence.bafinParagraph})`, 14, startCachingY + 22);
-
-    doc.save(`capital_ai_pipeline_blueprint_${config.analysisFocusId}.pdf`);
-  };
+  // Full blueprint export is intentionally absent from the public client.
+  const blueprintExportAllowed = false;
 
   return (
     <div className="w-full text-slate-100 min-h-screen py-4 sm:py-6 px-2 sm:px-6 relative">
@@ -1724,19 +1670,20 @@ export const PipelineBuilder: React.FC<PipelineBuilderProps> = ({
                   Ihr individuelles {selectedFocus.title} Datensystem
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-                  Konfiguriert nach der modularen Enterprise Pipeline-Architektur. Erfüllt alle Kriterien für BaFin MaRisk, WpHG § 83 und die 
-                  vertragliche <strong className="text-amber-400 font-mono">40,00 € Monatsbudget-Obergrenze (AP-006)</strong>.
+                  Konfigurationsentwurf für die modulare Pipeline-Architektur. Compliance-, Kosten- und
+                  Production-Eignung werden erst durch die jeweiligen Evidence-Gates festgestellt.
                 </p>
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   type="button"
-                  onClick={handleExportPdfBlueprint}
-                  className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 flex items-center gap-1.5 cursor-pointer shadow-md"
+                  disabled={!blueprintExportAllowed}
+                  title="Erst nach Blueprint-Evidence und Entitlement verfügbar"
+                  className="px-3.5 py-2 rounded-xl bg-slate-800 text-slate-500 font-bold text-xs border border-slate-700 flex items-center gap-1.5 cursor-not-allowed"
                 >
-                  <FileDown className="w-4 h-4" />
-                  <span>PDF Evidence Export</span>
+                  <Lock className="w-4 h-4" />
+                  <span>Blueprint-Export gesperrt</span>
                 </button>
               </div>
             </div>
@@ -1877,138 +1824,31 @@ export const PipelineBuilder: React.FC<PipelineBuilderProps> = ({
             </div>
           </div>
 
-          {/* Code Blueprint Snippets */}
-          <div className="p-5 rounded-xl bg-[#090e21] border border-slate-800 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Code2 className="w-4 h-4 text-cyan-400" />
-                <span>Generierter Code Blueprint ({selectedFocus.id === 'buffett-value' ? 'Python Buffett Screener' : 'TypeScript Contract'})</span>
-              </h3>
-              <button
-                type="button"
-                onClick={() =>
-                  handleCopyCode(
-                    selectedFocus.id === 'buffett-value'
-                      ? `# Buffett Value Check Screener Engine (BaFin WpHG § 83)
-import pandas as pd
-import numpy as np
-
-def calculate_buffett_score(ticker, financial_history_10y):
-    # 1. 10-Jahres Eigenkapitalrendite (ROE > 15%)
-    avg_roe = financial_history_10y['roe'].mean()
-    moat_score = 100 if avg_roe > 0.15 else (avg_roe / 0.15) * 80
-    
-    # 2. Verschuldungsgrad (Debt/Equity < 0.5)
-    debt_equity = financial_history_10y['debt_equity'].iloc[-1]
-    debt_score = 100 if debt_equity < 0.5 else 50
-    
-    # 3. Discounted Cashflow Margin of Safety (> 25%)
-    fair_value = financial_history_10y['dcf_fair_value'].iloc[-1]
-    current_price = financial_history_10y['close'].iloc[-1]
-    margin_of_safety = (fair_value - current_price) / fair_value
-    
-    composite_score = (moat_score * 0.4) + (debt_score * 0.3) + (max(0, margin_of_safety) * 100 * 0.3)
-    return {
-        "ticker": ticker,
-        "buffett_composite_score": round(composite_score, 1),
-        "is_undervalued": margin_of_safety > 0.25,
-        "evidence_hash": "sha256_merkle_root_verified"
-    }`
-                      : `// Capital-AI Provider Contract Blueprint (AP-001 / AP-003 / AP-006)
-import { z } from 'zod';
-
-export const ConfiguredPipelineContract = z.object({
-  screenerFocus: z.literal('${config.analysisFocusId}'),
-  latencyInterval: z.literal('${config.latencyIntervalId}'),
-  selectedProviders: z.array(z.string()).default(${JSON.stringify(config.providerIds)}),
-  selectedNewsApis: z.array(z.string()).default(${JSON.stringify(config.selectedNewsApis || [])}),
-  selectedIndicators: z.array(z.string()).default(${JSON.stringify(config.selectedIndicators || [])}),
-  selectedPatterns: z.array(z.string()).default(${JSON.stringify(config.selectedPatterns || [])}),
-  selectedAssetClasses: z.array(z.string()).default(${JSON.stringify(config.selectedAssetClasses || [])}),
-  logicalOperator: z.enum(['AND', 'OR']).default('${config.logicalOperator || 'AND'}'),
-  cachingTier: z.literal('${config.cachingId}'),
-  evidenceCompliance: z.literal('${config.evidenceId}'),
-  budgetLimitEur: z.number().max(40.0).default(${calculationSummary.totalMonthlyCostEur}),
-  bafinComplianceScore: z.literal(${calculationSummary.bafinScore}),
-});`,
-                    'blueprint'
-                  )
-                }
-                className="px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-mono text-slate-300 hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
-              >
-                {copiedCodeSnippet === 'blueprint' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>Code kopieren</span>
-              </button>
+          {/* Vollständiger verkaufsrelevanter Blueprint-Code bleibt außerhalb des öffentlichen DOM. */}
+          <section className="p-5 rounded-xl bg-[#090e21] border border-cyan-500/30 space-y-3">
+            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+              <Lock className="w-4 h-4 text-cyan-400" />
+              <span>Blueprint-Artefakt · Evidence erforderlich</span>
+            </h3>
+            <p className="text-xs leading-relaxed text-slate-300">
+              Der Builder zeigt öffentlich nur die gewählten Modulklassen, Abhängigkeiten und
+              Evidence-Anforderungen. Ausführbarer Blueprint-Code und exportierbare Vollartefakte
+              werden nicht clientseitig gerendert, solange Blueprint-Evidence und Entitlement fehlen.
+            </p>
+            <div className="grid gap-2 sm:grid-cols-2 text-xs">
+              <div className="rounded-lg border border-slate-800 bg-black/30 p-3">
+                <span className="text-slate-500">Analyse-Fokus</span>
+                <div className="mt-1 font-mono text-cyan-200">{selectedFocus.title}</div>
+              </div>
+              <div className="rounded-lg border border-slate-800 bg-black/30 p-3">
+                <span className="text-slate-500">Evidence-Profil</span>
+                <div className="mt-1 font-mono text-cyan-200">{selectedEvidence.name}</div>
+              </div>
             </div>
-
-            <pre className="p-4 rounded-xl bg-black/60 border border-slate-800 text-xs font-mono text-cyan-200 overflow-x-auto leading-relaxed">
-              {selectedFocus.id === 'buffett-value' ? (
-`# Buffett Value Check Screener Engine (BaFin WpHG § 83 Konform)
-import pandas as pd
-import numpy as np
-
-def calculate_buffett_score(ticker, financial_history_10y):
-    # 1. 10-Jahres Eigenkapitalrendite (ROE > 15%)
-    avg_roe = financial_history_10y['roe'].mean()
-    moat_score = 100 if avg_roe > 0.15 else (avg_roe / 0.15) * 80
-    
-    # 2. Verschuldungsgrad (Debt/Equity < 0.5)
-    debt_equity = financial_history_10y['debt_equity'].iloc[-1]
-    debt_score = 100 if debt_equity < 0.5 else 50
-    
-    # 3. Discounted Cashflow Margin of Safety (> 25%)
-    fair_value = financial_history_10y['dcf_fair_value'].iloc[-1]
-    current_price = financial_history_10y['close'].iloc[-1]
-    margin_of_safety = (fair_value - current_price) / fair_value
-    
-    composite_score = (moat_score * 0.4) + (debt_score * 0.3) + (max(0, margin_of_safety) * 100 * 0.3)
-    return {
-        "ticker": ticker,
-        "buffett_composite_score": round(composite_score, 1),
-        "is_undervalued": margin_of_safety > 0.25,
-        "evidence_hash": "sha256_merkle_root_verified"
-    }`
-              ) : (
-`// Capital-AI Provider Contract Blueprint (AP-001 / AP-003 / AP-006)
-import { z } from 'zod';
-
-export const ConfiguredPipelineContract = z.object({
-  screenerFocus: z.literal('${config.analysisFocusId}'),
-  latencyInterval: z.literal('${config.latencyIntervalId}'),
-  selectedProviders: z.array(z.string()).default(${JSON.stringify(config.providerIds)}),
-  selectedNewsApis: z.array(z.string()).default(${JSON.stringify(config.selectedNewsApis || [])}),
-  selectedIndicators: z.array(z.string()).default(${JSON.stringify(config.selectedIndicators || [])}),
-  selectedPatterns: z.array(z.string()).default(${JSON.stringify(config.selectedPatterns || [])}),
-  selectedAssetClasses: z.array(z.string()).default(${JSON.stringify(config.selectedAssetClasses || [])}),
-  logicalOperator: z.enum(['AND', 'OR']).default('${config.logicalOperator || 'AND'}'),
-  cachingTier: z.literal('${config.cachingId}'),
-  evidenceCompliance: z.literal('${config.evidenceId}'),
-  budgetLimitEur: z.number().max(40.0).default(${calculationSummary.totalMonthlyCostEur}),
-  bafinComplianceScore: z.literal(${calculationSummary.bafinScore}),
-});`
-              )}
-            </pre>
-          </div>
-
-          <div className="flex justify-between pt-4">
-            <button
-              type="button"
-              onClick={() => setCurrentStep(1)}
-              className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-medium border border-white/10 cursor-pointer"
-            >
-              Konfiguration von vorn anpassen
-            </button>
-            {onNavigateFounder && (
-              <button
-                type="button"
-                onClick={onNavigateFounder}
-                className="px-5 py-2.5 rounded-xl bg-amber-400 text-black font-bold text-xs shadow-lg hover:bg-amber-300 flex items-center gap-2 cursor-pointer"
-              >
-                <span>Zum Studio Hub (Architektur &amp; Blueprints)</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            )}
-          </div>
+            <div className="text-[11px] font-mono text-amber-300">
+              PRIVATE_TEST_OR_KEY_VAULT_EVIDENCE_REQUIRED · DOWNLOAD_LOCKED
+            </div>
+          </section>
         </div>
       )}
 

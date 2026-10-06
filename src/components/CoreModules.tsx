@@ -166,7 +166,7 @@ export const CoreModules: React.FC<CoreModulesProps> = ({
             title="Aufklappbare Sideliste für alle Module öffnen"
           >
             <PanelRightOpen className="w-3.5 h-3.5" />
-            <span>Sideliste aufklappen</span>
+            <span>Module öffnen</span>
             <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-black/40 text-amber-200">
               {CORE_MODULES.length} Module
             </span>
@@ -245,10 +245,10 @@ export const CoreModules: React.FC<CoreModulesProps> = ({
                   color: module.brandColor || '#F9BF21',
                   borderColor: `${module.brandColor}40`,
                 }}
-                title={`${module.title} Einträge & Aktionen in der Sideliste aufklappen`}
+                title={`${module.title} Einträge & Aktionen in der Module öffnen`}
               >
                 <PanelRightOpen className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
-                <span>Einträge &amp; Sideliste aufklappen</span>
+                <span>Einträge &amp; Module öffnen</span>
               </button>
 
               <button

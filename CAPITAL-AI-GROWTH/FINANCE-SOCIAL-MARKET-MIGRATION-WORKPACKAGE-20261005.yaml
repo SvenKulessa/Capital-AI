@@ -18,9 +18,9 @@ baseline:
     repository: "SvenKulessa/Capital-AI"
     sha: "9c5fc40318cf538308724c2efb18441185e8cbae"
   currentMainCorrelation:
-    sha: "73ad214e3a8af73f99c08531533ddcaaca530be3"
+    sha: "e33b24730c1ec96b3bbace8f876369d8976a09cc"
     rootPolicy: "AGENTS.md@currentmain"
-    correlationState: "POINT_6_SOCIAL_ENGINE_COMPLETION_GATE_EVALUATED_BLOCKED"
+    correlationState: "POINT_6_BLOCKED_WITH_POINT_4_FAIL_CLOSED_PRESERVED"
   policy: "target-current-main-contracts-win"
 
 objectives:
@@ -182,6 +182,9 @@ artifacts:
   sourceTargetManifest: "CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json"
   sourceTargetManifestValidator: "scripts/validate-finance-source-target-manifest.mjs"
   sourceTargetManifestTest: "scripts/finance-source-target-manifest.test.mjs"
+  socialToolLicenseEvidence: "CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json"
+  socialToolLicenseValidator: "scripts/validate-social-tool-license-evidence.mjs"
+  socialToolLicenseTest: "scripts/social-tool-license-evidence.test.mjs"
   socialEngineCompletionGate: "CAPITAL-AI-GROWTH/social-engine-completion-gate.json"
   socialEngineCompletionGateValidator: "scripts/validate-social-engine-completion-gate.mjs"
   socialEngineCompletionGateTest: "scripts/social-engine-completion-gate.test.mjs"
@@ -189,8 +192,9 @@ artifacts:
 validation:
   status:
     source-to-target-file-manifest: "MATERIALIZED_WITH_GIT_BLOB_SHA_GUARD"
+    license-and-rights-matrix: "POINT_4_PARTIAL_FAIL_CLOSED"
     social-engine-completion-gate: "BLOCKED_RUNTIME_NOT_MIGRATED"
-    finance-scoring-data-followup: "BLOCKED_BY_SOCIAL_MEDIA_ENGINE_MIGRATION"
+    finance-scoring-follow-up: "BLOCKED_BY_SOCIAL_MEDIA_ENGINE_MIGRATION"
     remainingGates: "OPEN"
   required:
     - "source-to-target-file-manifest"

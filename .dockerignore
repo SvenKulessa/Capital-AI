@@ -21,6 +21,10 @@
 !server/vocabulary-checkout.mjs
 !server/vocabulary-checkout.test.mjs
 !server/vocabulary-quant-pro-index.mjs
+!server/public-artifact-policy.test.mjs
+!server/public-artifact-policy.mjs
+!server/subscription-checkout.test.mjs
+!server/subscription-checkout.mjs
 !server/auth.mjs
 !server/auth-security.mjs
 !server/auth-security.test.mjs
@@ -68,6 +72,7 @@
 !scripts/license-evidence.mjs
 !scripts/license-evidence.test.mjs
 !scripts/billing-catalog.test.mjs
+!scripts/blueprint-evidence-contract.test.mjs
 !scripts/documentation-drift.mjs
 !scripts/documentation-drift.test.mjs
 !scripts/license-engine.mjs
@@ -84,6 +89,8 @@
 !scripts/seo-metadata.test.mjs
 !scripts/validate-finance-source-target-manifest.mjs
 !scripts/finance-source-target-manifest.test.mjs
+!scripts/social-tool-license-evidence.test.mjs
+!scripts/validate-social-tool-license-evidence.mjs
 !scripts/validate-social-engine-completion-gate.mjs
 !scripts/social-engine-completion-gate.test.mjs
 !contracts/
@@ -127,6 +134,7 @@
 !CAPITAL-AI-MARKET/badge.svg
 !CAPITAL-AI-GROWTH/
 !CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json
+!CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json
 !CAPITAL-AI-GROWTH/social-engine-completion-gate.json
 !CAPITAL-AI-GROWTH/social-media-tool-admission.yaml
 !CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.yaml

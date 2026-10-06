@@ -21,6 +21,7 @@ export function evaluateSocialEngineCompletionGate() {
   if (gate.schemaVersion !== 'SOCIAL_ENGINE_COMPLETION_GATE@1') fail('schemaVersion mismatch');
   if (gate.point !== '06_SOCIAL_ENGINE_MIGRATION_COMPLETION_GATE') fail('point mismatch');
   if (!/^[0-9a-f]{40}$/.test(gate.correlatedMain || '')) fail('correlatedMain must be immutable SHA');
+  if (gate.policy?.socialToolLicenseEvidenceMustPass !== true) fail('Point 4 license prerequisite must be explicit');
 
   const runtimePresent = present(gate.requiredRuntimeArtifacts || []);
   const rendererPresent = present(gate.requiredRendererArtifacts || []);
@@ -29,10 +30,25 @@ export function evaluateSocialEngineCompletionGate() {
   const missingRenderer = (gate.requiredRendererArtifacts || []).filter(path => !rendererPresent.includes(path));
   const missingEvidence = (gate.requiredEvidenceArtifacts || []).filter(path => !evidencePresent.includes(path));
 
+  const licenseRequirement = gate.requiredSocialToolLicenseEvidence;
+  if (!licenseRequirement?.path || !licenseRequirement?.requiredStatus) {
+    fail('Point 4 social-tool license evidence requirement missing');
+  }
+
+  let licenseEvidenceStatus = null;
+  if (existsSync(resolve(root, licenseRequirement.path))) {
+    const licenseEvidence = JSON.parse(readFileSync(resolve(root, licenseRequirement.path), 'utf8'));
+    licenseEvidenceStatus = licenseEvidence.status || null;
+  }
+  const licenseEvidencePass = licenseEvidenceStatus === licenseRequirement.requiredStatus;
+
   const runtimeComplete = missingRuntime.length === 0;
   const rendererComplete = missingRenderer.length === 0;
   const evidenceComplete = missingEvidence.length === 0;
-  const actualState = runtimeComplete && rendererComplete && evidenceComplete ? 'PASS' : 'BLOCKED';
+  const actualState =
+    runtimeComplete && rendererComplete && evidenceComplete && licenseEvidencePass
+      ? 'PASS'
+      : 'BLOCKED';
 
   const forbiddenPresent = present(gate.forbiddenFinanceScoringRuntimeBeforePass || []);
   if (actualState !== 'PASS' && forbiddenPresent.length > 0) {
@@ -59,6 +75,11 @@ export function evaluateSocialEngineCompletionGate() {
     runtime: { present: runtimePresent.length, required: gate.requiredRuntimeArtifacts.length, missing: missingRuntime },
     renderer: { present: rendererPresent.length, required: gate.requiredRendererArtifacts.length, missing: missingRenderer },
     evidence: { present: evidencePresent.length, required: gate.requiredEvidenceArtifacts.length, missing: missingEvidence },
+    licenseEvidence: {
+      status: licenseEvidenceStatus,
+      requiredStatus: licenseRequirement.requiredStatus,
+      pass: licenseEvidencePass,
+    },
     financeScoringRuntimePresentBeforePass: forbiddenPresent,
     followUpBacklogStatus: backlogStatus,
   };

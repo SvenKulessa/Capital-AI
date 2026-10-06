@@ -264,7 +264,7 @@ export const Header: React.FC<HeaderProps> = ({
               ? 'bg-amber-400 text-black font-extrabold shadow-sm'
               : 'text-slate-300 hover:text-white hover:bg-white/5 font-medium'
           }`}
-          title="Learning Portal (Vocabulary, Glossar & Cheat-Sheets)"
+          title="Learning Portal (Vocabulary, Analyse-Module & Methodik)"
         >
           <BookOpen className="w-3.5 h-3.5" />
           <span>Learning Portal</span>
@@ -652,7 +652,7 @@ export const Header: React.FC<HeaderProps> = ({
                         >
                           <span className="flex items-center gap-2">
                             <CreditCard className="w-3.5 h-3.5 text-amber-400" />
-                            <span>Preise &amp; SaaS Tarife</span>
+                            <span>Preiskatalog</span>
                           </span>
                           <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
                         </button>

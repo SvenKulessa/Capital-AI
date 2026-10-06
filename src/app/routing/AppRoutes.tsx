@@ -1,12 +1,5 @@
 import { lazy } from 'react';
-import { LoginPage } from '../../features/auth/LoginPage';
-import {
-  LegalAndFaqPages,
-  type LegalRoute,
-} from '../../components/LegalAndFaqPages';
-import {
-  ResearchLicensePages,
-} from '../../components/ResearchLicensePages';
+import type { LegalRoute } from '../../components/LegalAndFaqPages';
 import {
   RESEARCH_ROUTES,
   type ResearchRoute,
@@ -21,6 +14,22 @@ import type { CoreModule } from '../../entities/module/model';
 import { HomePage } from '../../features/home/HomePage';
 import { DataUnavailable } from '../../shared/ui/DataUnavailable';
 import { LEGAL_ROUTES } from './routes';
+
+const LoginPage = lazy(() =>
+  import('../../features/auth/LoginPage').then((module) => ({
+    default: module.LoginPage,
+  })),
+);
+const LegalAndFaqPages = lazy(() =>
+  import('../../components/LegalAndFaqPages').then((module) => ({
+    default: module.LegalAndFaqPages,
+  })),
+);
+const ResearchLicensePages = lazy(() =>
+  import('../../components/ResearchLicensePages').then((module) => ({
+    default: module.ResearchLicensePages,
+  })),
+);
 
 const ProfilePage = lazy(() =>
   import('../../components/ProfilePage').then((module) => ({
