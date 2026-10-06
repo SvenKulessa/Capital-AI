@@ -1,7 +1,9 @@
+import { cadsCommercialReadinessPct } from './cadsCommercialReadiness';
+
 /**
  * Canonical monetizable product list.
  * Readiness is the share of a sellable, compliant launch already evidenced in repo.
- * Gap is the remaining distance to market. Scan baseline: main @ d31b223, 2026-10-04.
+ * Gap is the remaining distance to market. Scan baseline: main @ 824d429, 2026-10-06.
  *
  * Weights: definition 15, user surface 25, commercial path 25, data/compliance gate 20, production evidence 15.
  * A build or UI is not a production release. Provider rights and decisionEligible stay fail-closed.
@@ -24,7 +26,7 @@ export const MONETIZABLE_PRODUCTS = [
   { id: 'broker', name: '[CAPITAL-AI-MARKET]BROKER-AFFILIATE-ROUTING', domain: 'MARKET', state: 'PARTIAL', readinessPct: 39, gapPct: 61, blocker: 'Kraken-Referral-Banner vorhanden, Routing-Matrix und Disclosure-Gate unvollständig.' },
   { id: 'fee-share', name: '[CAPITAL-AI-MARKET]TRADING-FEE-REVENUE-SHARE', domain: 'MARKET', state: 'PLANNED', readinessPct: 8, gapPct: 92, blocker: 'Keine Broker-Order-Anbindung und keine Revenue-Share-Abrechnung.' },
   { id: 'pipeline-sim', name: '[CAPITAL-AI-MARKET]OSS-PIPELINE-SIMULATION-ENGINE', domain: 'MARKET', state: 'INTEGRATED', readinessPct: 44, gapPct: 56, blocker: 'Pipeline Builder integriert, nicht als bezahltes Paket mit SLA geschnitten.' },
-  { id: 'cads-app', name: '[CAPITAL-AI-MARKET]CADS-BENCHMARK-MARKET-APP', domain: 'MARKET', state: 'PARTIAL', readinessPct: 25, gapPct: 75, blocker: 'Observability-Code vorhanden, keine Marketplace-App und kein Billing.' },
+  { id: 'cads-app', name: '[CAPITAL-AI-PRODUCT]CADS-BENCHMARK-GITHUB-APP', domain: 'PRODUCT', state: 'PRODUCTIZATION', readinessPct: cadsCommercialReadinessPct(), gapPct: 100 - cadsCommercialReadinessPct(), blocker: 'CADS Core, Observability und ein wiederverwendbarer GitHub-Marketplace-Lifecycle sind vorhanden; CADS-spezifische Listing-/Plan-IDs, Pricing-Authority und Marketplace-Entitlement-Bindung bleiben fail-closed.' },
   { id: 'ghcr-app', name: '[CAPITAL-AI-MARKET]GHCR-DIGEST-BLUEPRINT-MARKETPLACE-APP', domain: 'MARKET', state: 'PLANNED', readinessPct: 26, gapPct: 74, blocker: 'Digest-Pipeline dokumentiert, App und kommerzielle Evidence-Tiers fehlen.' },
   { id: 'cpt-stake', name: '[CAPITAL-AI-MARKET]CPT-STAKE-TO-ACCESS', domain: 'MARKET', state: 'PLANNED', readinessPct: 24, gapPct: 76, blocker: 'Tokenomics-Seite vorhanden, Stake-Gate und $CPT-Zahlung deaktiviert.' },
   { id: 'cpt-micro', name: '[CAPITAL-AI-MARKET]CPT-MICROPAYMENTS', domain: 'MARKET', state: 'PLANNED', readinessPct: 10, gapPct: 90, blocker: 'Kein Wallet-, Settlement- oder Usage-Meter.' },
