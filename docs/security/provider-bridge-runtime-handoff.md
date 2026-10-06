@@ -1,7 +1,7 @@
 # Provider-Bridge Runtime Handoff
 
-Stand: 2026-10-06  
-Primary Domain: TRUST  
+Stand: 2026-10-06
+Primary Domain: TRUST
 Cross-Domain: PLATFORM / MARKET
 
 ## Freigabegrenze
