@@ -14,7 +14,7 @@ Path: `src/core/`
 
 This layer contains no JaJa ownership, seat pricing, trademark/imprint policy, voice preset, or provider credential handling.
 
-**License status: NOT YET ASSIGNED.** Technical separation does not grant an open-source license. Explicit Owner/TRUST license selection and evidence are required before OSS publication.
+**License status: MIT (scoped to `src/core/` only).** `src/core/LICENSE`, `src/core/NOTICE.md` and `src/core/LICENSE-EVIDENCE.json` define scope, provenance and exclusions. This grant does not include JaJa or CAPITAL-AI brand rights.
 
 ## Proprietary PRODUCT layer
 
