@@ -58,7 +58,19 @@
         "speech_tokenizer/configuration.json",
         "speech_tokenizer/preprocessor_config.json"
       ],
-      "runtimeAcceptance": "OPEN"
+      "runtimeAcceptance": "OPEN",
+      "smallArtifactHashes": {
+        "config.json": "aecd2cc4c1fe9edef1cb7ca7c401685a43879ad43f3f9e883f1c6760b61731e0",
+        "generation_config.json": "f1b90b4513f3b34c62851049e2492d7b4c5940daf1276f89c82b8ef04127f3aa",
+        "merges.txt": "599bab54075088774b1733fde865d5bd747cbcc7a547c5bc12610e874e26f5e3",
+        "preprocessor_config.json": "efdde1022ea9d76928bf7a9cd53139138f5ba2e466e837f08f6105ab1af1c119",
+        "tokenizer_config.json": "dc3c31c3bdaedd5016382bb3cbe07323026775ad51f5a4fb564505992ae4a670",
+        "vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910",
+        "speech_tokenizer/config.json": "ee65bb901c876664ab8707c487157aa1a6ee57c65969b28fb5ec9dc211e68167",
+        "speech_tokenizer/configuration.json": "6bc26d64eb5024b4d1dab5a52371958b429256d6c9d59787f1f5294a54e0cebd",
+        "speech_tokenizer/preprocessor_config.json": "fcb3805e597e786d4067706e602f6688524640f8d3396790e2e09b5942fcbdfb"
+      },
+      "snapshotHashStatus": "COMPLETE_FOR_DECLARED_RUNTIME_FILES"
     }
   },
   "chatterbox": {
@@ -145,7 +157,12 @@
           "sha256": "f0921cab452fa278bc25cd23ffd59d36f816d7dc5181dd1bef9751a7fb61f63c"
         }
       ],
-      "runtimeAcceptance": "OPEN"
+      "runtimeAcceptance": "OPEN",
+      "smallArtifactHashes": {
+        "grapheme_mtl_merged_expanded_v1.json": "69632f47220a788a52ce2661d096453c5655e9bf25289d89a8d832c46ee07dbf",
+        "Cangjie5_TC.json": "7073fd9de919443ae88e0bd2449917a65fe54898a4413ed1edcc4b67f28bce8c"
+      },
+      "snapshotHashStatus": "COMPLETE_FOR_PINNED_FINANCE_MTL_LOADER_FILES"
     }
   },
   "passDefinition": [
@@ -156,5 +173,12 @@
     "Immutable worker images pass vulnerability/license/SBOM gates.",
     "German runtime benchmark and Human/Owner listening acceptance pass."
   ],
-  "status": "PARTIAL_FAIL_CLOSED"
+  "status": "PARTIAL_FAIL_CLOSED",
+  "evidenceArtifact": {
+    "workflowRunId": 37519027971,
+    "artifactId": 11439055707,
+    "artifactDigest": "sha256:32bc24c69ae1112d4ead76d1532d5c5bbefef6fc1117a2a7408fe5d36336b5a2",
+    "sourceSha": "1d246d0f6398a8c9d45c459b0170a3599b7a3670",
+    "result": "PASS"
+  }
 }
