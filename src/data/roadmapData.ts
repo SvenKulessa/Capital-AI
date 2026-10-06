@@ -9,6 +9,7 @@
 import { SOCIAL_CONTENT_WORK_PACKAGES } from './socialContentRoadmap';
 import { PRODUCTION_WEBSITE_WORK_PACKAGES } from './productionWebsiteWorkPackage';
 import { ARCHITECTURE_A_TRUST_WORK_PACKAGES } from './trustArchitectureAWorkPackages';
+import { reconcileRoadmapPackages } from './roadmapCurrentMainState';
 
 export type ProjectOwner =
   | 'PRODUCT'
@@ -1062,7 +1063,7 @@ export const ROADMAP_SNAPSHOT = {
   ]
 } as const;
 
-export const WORK_PACKAGES: WorkPackage[] = [
+const RAW_WORK_PACKAGES: WorkPackage[] = [
 {
   "status": "pending",
   "phase": 4,
@@ -2153,3 +2154,5 @@ export const WORK_PACKAGES: WorkPackage[] = [
 ...ARCHITECTURE_A_TRUST_WORK_PACKAGES,
 ...BACKLOG_TARGETS,
 ];
+
+export const WORK_PACKAGES: WorkPackage[] = reconcileRoadmapPackages(RAW_WORK_PACKAGES);
