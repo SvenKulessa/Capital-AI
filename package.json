@@ -44,7 +44,11 @@
     "test:growth-ai": "node --import tsx --test src/contracts/__tests__/growthAiPromotion.test.ts server/growth-ai-gateway.test.ts",
     "test:trust-architecture-a": "node --import tsx --test src/contracts/__tests__/zeroCostApiThresholds.test.ts src/contracts/__tests__/truthAuthorityGate.test.ts src/contracts/__tests__/researchArchitecture.test.ts src/contracts/__tests__/marketingOutreachPolicy.test.ts src/contracts/__tests__/publicAuthoritySurface.test.ts src/data/__tests__/architectureAResearchInventory.test.ts",
     "test:private-provider": "node --test server/user-provider-vault.test.mjs server/private-provider-query.test.mjs",
-    "test:cads-marketplace": "node --test server/cads-marketplace.test.mjs scripts/cads-marketplace-migration.test.mjs scripts/cads-marketplace-production-manifest.test.mjs && node --import tsx --test src/data/__tests__/cadsCommercialReadiness.test.ts src/data/__tests__/cadsMarketplaceCapabilities.test.ts"
+    "test:cads-marketplace": "node --test server/cads-marketplace.test.mjs scripts/cads-marketplace-migration.test.mjs scripts/cads-marketplace-production-manifest.test.mjs && node --import tsx --test src/data/__tests__/cadsCommercialReadiness.test.ts src/data/__tests__/cadsMarketplaceCapabilities.test.ts",
+    "test:cads-acceptance": "node --test packages/benchmark-core/index.test.mjs server/cads-marketplace.test.mjs server/cads-commerce.test.mjs scripts/cads-marketplace-migration.test.mjs scripts/cads-marketplace-production-manifest.test.mjs scripts/cads-package-acceptance.test.mjs",
+    "benchmark:cads-package": "node scripts/cads-package-benchmark.mjs",
+    "benchmark:cads-b2b": "node scripts/cads-b2b-flow-benchmark.mjs",
+    "evidence:cads-export": "node scripts/cads-export-provenance.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.27.0",
