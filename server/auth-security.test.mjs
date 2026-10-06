@@ -282,20 +282,14 @@ test('TOTP enrollment refuses a third verified factor', async () => {
 });
 
 test('TOTP enrollment cleans stale pending factors regardless of their old display name', async () => {
-  const pendingId = '66666666-6666-4666-8666-666666666666';
-  const h = securityHarness({
+  const canonical = securityHarness({
     factor: false,
     factors: [
-      { id: pendingId, factor_type: 'totp', status: 'unverified', friendly_name: 'Abgebrochene Einrichtung' },
+      { id: factorId, factor_type: 'totp', status: 'unverified', friendly_name: 'Abgebrochene Einrichtung' },
     ],
   });
-  const originalAuthRequest = h.calls;
   const res = responseHarness();
-
-  // The harness only knows the canonical test factor delete path, so use the canonical id for this regression.
-  h.calls.length = 0;
-  const canonical = securityHarness({ factor: true, factorStatus: 'unverified' });
-  canonical.security.handle && await canonical.security.handle(
+  await canonical.security.handle(
     {
       method: 'POST',
       headers: { origin: 'https://capital-ai.online' },
