@@ -9,6 +9,6 @@ export function evaluatePublicAuthority(i:PublicAuthorityInput):PublicAuthorityD
  const reasons:string[]=[]; if(i.classification!=='PUBLIC')reasons.push('NON_PUBLIC_CLASSIFICATION'); if(i.evidenceRefs.length===0)reasons.push('MISSING_EVIDENCE');
  if(!i.rightsVerified)reasons.push('RIGHTS_NOT_VERIFIED'); if(!i.strategyDisclosureApproved)reasons.push('STRATEGY_DISCLOSURE_NOT_APPROVED');
  if(i.regulatoryReviewRequired&&!i.regulatoryReviewApproved)reasons.push('REGULATORY_REVIEW_NOT_APPROVED');
- if(detectStrategicExposure(i.text).length>0&&i.claimRisk!=='GENERAL')reasons.push('STRATEGIC_OR_REGULATED_CONTENT_DETECTED');
+ if(detectStrategicExposure(i.text).length>0)reasons.push('STRATEGIC_OR_REGULATED_CONTENT_DETECTED');
  return{allowed:reasons.length===0,reasons};
 }
