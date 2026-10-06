@@ -1,4 +1,4 @@
-import type { Lang } from "./types";
+import type { Lang } from "./core/types";
 
 export const LANGUAGE_OPTIONS: { id: Lang; label: string; bcp47: string; modelName: string }[] = [
   { id: "de", label: "Deutsch", bcp47: "de-DE", modelName: "German" },
