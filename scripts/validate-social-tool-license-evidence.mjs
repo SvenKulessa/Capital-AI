@@ -57,6 +57,13 @@ export function validateSocialToolLicenseEvidence(raw) {
       whisper?.upstream?.largeV3ModelSha256 !== 'e5b1a55b89c1367dacf97e3e19bfd829a01529dbfdeefa8caeb59b3f1b81dadb') {
     fail('Whisper model hash drift');
   }
+  const ffmpeg = raw.items.find(item => item.id === 'ffmpeg');
+  if (ffmpeg?.upstream?.sourceSha256 !== '8c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e') {
+    fail('FFmpeg source hash drift');
+  }
+  if (ffmpeg?.upstream?.buildProfile !== 'deploy/social-media/ffmpeg-build-profile.json') {
+    fail('FFmpeg build profile reference drift');
+  }
   const poppler = raw.items.find(item => item.id === 'poppler');
   if (poppler?.decision?.requiredForSocialCore !== false || poppler?.decision?.customerArtifactAllowed !== false) {
     fail('Poppler customer-runtime exclusion drift');
