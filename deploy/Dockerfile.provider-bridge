@@ -1,0 +1,25 @@
+# Rust 1.99.0 alpine3.23 linux/amd64 manifest pinned from Docker Hub.
+FROM rust:1.99.0-alpine3.23@sha256:6daa5ad789a3023ceb2f1b3d1307d5e8c38326c8c95aa8d58ec4d112f69653c8 AS build
+
+WORKDIR /workspace
+COPY services/provider-bridge-rs/Cargo.toml services/provider-bridge-rs/Cargo.lock services/provider-bridge-rs/rust-toolchain.toml services/provider-bridge-rs/deny.toml ./services/provider-bridge-rs/
+COPY services/provider-bridge-rs/src ./services/provider-bridge-rs/src
+COPY contracts/private-provider-query-operations.json ./contracts/private-provider-query-operations.json
+
+RUN cargo test --locked --manifest-path services/provider-bridge-rs/Cargo.toml \
+    && cargo build --release --locked --manifest-path services/provider-bridge-rs/Cargo.toml \
+    && test -x services/provider-bridge-rs/target/release/capital-ai-provider-bridge
+
+FROM scratch
+LABEL org.opencontainers.image.source="https://github.com/SvenKulessa/Capital-AI"
+LABEL org.opencontainers.image.title="Capital-AI Provider Bridge"
+LABEL org.opencontainers.image.description="Read-only Rust NATS bridge for private provider queries"
+
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=build --chown=65532:65532 /workspace/services/provider-bridge-rs/target/release/capital-ai-provider-bridge /usr/local/bin/capital-ai-provider-bridge
+
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+USER 65532:65532
+STOPSIGNAL SIGTERM
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD ["/usr/local/bin/capital-ai-provider-bridge", "--healthcheck"]
+ENTRYPOINT ["/usr/local/bin/capital-ai-provider-bridge"]
