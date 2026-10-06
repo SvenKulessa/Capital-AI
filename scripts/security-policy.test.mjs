@@ -68,3 +68,21 @@ test('vollstaendiger policy-definierter Gate-Satz darf Deployment automatisch au
     assert.match(security, new RegExp(blocked, 'i'));
   }
 });
+
+test('merge authority bleibt beim Human Owner und entsteht niemals aus Gates', () => {
+  const agents = read('AGENTS.md');
+  const security = read('SECURITY.md');
+  const governance = read('docs/governance/DOMAIN-RELEASE-GOVERNANCE.md');
+
+  assert.match(agents, /Jede Codeänderung.*Pull Request.*Human Repository Owner selbst gemerged/is);
+  assert.match(agents, /Automatische Merges sind standardmäßig verboten/i);
+  assert.match(agents, /im Chat ausdrücklich die Freigabe zum Merge eines konkreten Pull Requests/i);
+  assert.match(agents, /Deployment-Autorität.*niemals Merge-Autorität/is);
+
+  assert.match(security, /Human Merge Boundary/);
+  assert.match(security, /kein erfolgreicher Test, Scan, Benchmark, Admission-Status.*autorisiert einen Merge/is);
+  assert.match(security, /Human Repository Owner gemerged/i);
+
+  assert.match(governance, /Standardzustand: kein automatischer Merge/i);
+  assert.match(governance, /ausdrückliche Chat-Freigabe des Owners.*konkret bezeichneten PR/is);
+});
