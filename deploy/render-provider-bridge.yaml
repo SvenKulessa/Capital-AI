@@ -1,0 +1,24 @@
+# CAPITAL-AI PLATFORM · Rust/NATS Private Provider Bridge
+# Background worker only: no inbound HTTP/TCP listener and no public surface.
+# Sync/apply only after the provider-bridge image/security gates pass.
+previews:
+  generation: 'off'
+services:
+  - type: worker
+    name: capital-ai-provider-bridge
+    runtime: docker
+    repo: https://github.com/SvenKulessa/Capital-AI
+    branch: main
+    region: frankfurt
+    plan: 0.5c-512mb
+    numInstances: 1
+    autoDeployTrigger: 'off'
+    dockerfilePath: ./deploy/Dockerfile.provider-bridge
+    dockerContext: .
+    envVars:
+      - key: NATS_URL
+        sync: false
+      - key: NATS_BRIDGE_USER
+        value: capital-ai-provider-bridge
+      - key: NATS_BRIDGE_PASSWORD
+        sync: false
