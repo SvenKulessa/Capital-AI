@@ -549,3 +549,23 @@ test('registration consent migration keeps optional marketing consent boolean an
     /new\.raw_user_meta_data->>'marketing_consent' = 'true'/,
   );
 });
+
+test('Google login preserves only the allowlisted CADS Marketplace setup return path', async () => {
+  const h = await harness();
+  try {
+    const safeNext = '/api/cads/marketplace/setup?installation_id=77';
+    const safe = await h.beginGoogle('/api/auth/login/google?next=' + encodeURIComponent(safeNext));
+    assert.equal(safe.callback.searchParams.get('next'), safeNext);
+    const safeResponse = await h.request(
+      '/api/auth/callback?flow=' + encodeURIComponent(safe.callback.searchParams.get('flow')) + '&code=test-code',
+      { headers: { cookie: safe.pkceCookie } },
+    );
+    assert.equal(safeResponse.status, 303);
+    assert.equal(safeResponse.headers.get('location'), safeNext);
+
+    const unsafe = await h.beginGoogle('/api/auth/login/google?next=' + encodeURIComponent('https://evil.example/steal'));
+    assert.equal(unsafe.callback.searchParams.get('next'), '/');
+  } finally {
+    await h.stop();
+  }
+});
