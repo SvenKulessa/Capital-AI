@@ -77,6 +77,13 @@ function signingSecret(env) {
   return secret;
 }
 
+export function executorNatsConnectionAuth(env = process.env) {
+  const user = String(env.NATS_EXECUTOR_USER || '').trim();
+  const pass = String(env.NATS_EXECUTOR_PASSWORD || '');
+  if (!user || pass.length < 24) throw new Error('NATS_EXECUTOR_CREDENTIALS_REQUIRED');
+  return { user, pass, mode: 'scoped_executor' };
+}
+
 export function createProviderQueryEnvelope({ userRef, requestId, provider, operation, params }, env = process.env, now = Date.now()) {
   if (!safeIdentifier(userRef) || !safeIdentifier(requestId)) throw new Error('INVALID_QUERY_IDENTITY');
   const envelope = {
@@ -144,19 +151,50 @@ async function readJson(req) {
 }
 
 export function createPrivateProviderQuery({ env = process.env, auth, vault } = {}) {
-  let nc = null;
+  let requestNc = null;
+  let executorNc = null;
   let subscription = null;
   let executorLoop = null;
   let bridge = null;
   let opening = null;
+  const highCostWindows = new Map();
 
   function enabled() {
     return env.PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true';
   }
 
   async function respond(message, payload) {
-    if (!message.reply || !nc || nc.isClosed()) return;
-    await nc.publish(message.reply, Buffer.from(JSON.stringify(payload), 'utf8'));
+    if (!message.reply || !executorNc || executorNc.isClosed()) return;
+    await executorNc.publish(message.reply, Buffer.from(JSON.stringify(payload), 'utf8'));
+  }
+
+  function enforceCostGate(userRef, input) {
+    const policy = CONTRACT.providers?.[input.provider]?.operations?.[input.operation] || {};
+    const minIntervalMs = Number(policy.minIntervalMs || 0);
+    const costUnits = Number(policy.costUnits || 1);
+    if (!Number.isSafeInteger(minIntervalMs) || minIntervalMs < 0 || !Number.isSafeInteger(costUnits) || costUnits < 1) {
+      throw new Error('INVALID_OPERATION_COST_POLICY');
+    }
+    if (minIntervalMs === 0) return { costUnits, retryAfterSeconds: 0 };
+
+    const now = Date.now();
+    const key = `${userRef}:${input.provider}:${input.operation}`;
+    const previous = highCostWindows.get(key) || 0;
+    const remaining = minIntervalMs - (now - previous);
+    if (remaining > 0) {
+      const error = new Error('PROVIDER_QUERY_COST_THROTTLED');
+      error.code = 'PROVIDER_QUERY_COST_THROTTLED';
+      error.retryAfterSeconds = Math.max(1, Math.ceil(remaining / 1000));
+      error.costUnits = costUnits;
+      throw error;
+    }
+    highCostWindows.set(key, now);
+    if (highCostWindows.size > 4096) {
+      for (const [candidate, timestamp] of highCostWindows) {
+        if (now - timestamp > 10 * 60_000) highCostWindows.delete(candidate);
+      }
+    }
+    return { costUnits, retryAfterSeconds: 0 };
   }
 
   async function executor(message) {
@@ -211,19 +249,29 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault } = 
 
   async function start() {
     if (!enabled()) return false;
-    if (nc && !nc.isClosed() && bridge) return true;
+    if (requestNc && !requestNc.isClosed() && executorNc && !executorNc.isClosed() && bridge) return true;
     if (opening) return opening;
     opening = (async () => {
-      const natsAuth = natsConnectionAuth(env);
-      const { mode: _mode, ...credentials } = natsAuth;
-      nc = await connect({
+      const appAuth = natsConnectionAuth(env);
+      const { mode: _appMode, ...appCredentials } = appAuth;
+      const executorAuth = executorNatsConnectionAuth(env);
+      const { mode: _executorMode, ...executorCredentials } = executorAuth;
+
+      requestNc = await connect({
         servers: env.NATS_URL,
-        ...credentials,
+        ...appCredentials,
         timeout: 3000,
         maxReconnectAttempts: 3,
         reconnectTimeWait: 1000,
       });
-      subscription = nc.subscribe(EXECUTE_SUBJECT, { queue: 'capital-private-provider-executor' });
+      executorNc = await connect({
+        servers: env.NATS_URL,
+        ...executorCredentials,
+        timeout: 3000,
+        maxReconnectAttempts: 3,
+        reconnectTimeWait: 1000,
+      });
+      subscription = executorNc.subscribe(EXECUTE_SUBJECT, { queue: 'capital-private-provider-executor' });
       executorLoop = (async () => {
         for await (const message of subscription) await executor(message);
       })().catch(() => {});
@@ -258,14 +306,32 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault } = 
     let input;
     try {
       input = validateProviderQueryRequest(await readJson(req));
+      let costGate;
+      try {
+        costGate = enforceCostGate(user.userId, input);
+      } catch (error) {
+        if (error?.code === 'PROVIDER_QUERY_COST_THROTTLED') {
+          res.setHeader('Retry-After', String(error.retryAfterSeconds || 60));
+          json(res, 429, {
+            error: 'provider_query_cost_throttled',
+            provider: input.provider,
+            operation: input.operation,
+            costUnits: error.costUnits || null,
+          });
+          return true;
+        }
+        throw error;
+      }
       await start();
-      if (!nc || nc.isClosed() || !bridge) throw new Error('PRIVATE_PROVIDER_BRIDGE_UNAVAILABLE');
+      if (!requestNc || requestNc.isClosed() || !executorNc || executorNc.isClosed() || !bridge) {
+        throw new Error('PRIVATE_PROVIDER_BRIDGE_UNAVAILABLE');
+      }
       const envelope = createProviderQueryEnvelope({
         userRef: user.userId,
         requestId,
         ...input,
       }, env);
-      const response = await nc.request(
+      const response = await requestNc.request(
         QUERY_SUBJECT,
         Buffer.from(JSON.stringify(envelope), 'utf8'),
         { timeout: 9500 },
@@ -286,6 +352,7 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault } = 
         sharedCacheAllowed: false,
         jetStreamPublicationAllowed: false,
         executionEnabled: false,
+        costUnits: costGate.costUnits,
         data: result.data,
       });
     } catch (error) {
@@ -303,8 +370,10 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault } = 
     subscription = null;
     if (bridge && bridge.exitCode == null) bridge.kill('SIGTERM');
     bridge = null;
-    try { await nc?.close(); } catch {}
-    nc = null;
+    try { await requestNc?.close(); } catch {}
+    try { await executorNc?.close(); } catch {}
+    requestNc = null;
+    executorNc = null;
     await Promise.resolve(executorLoop).catch(() => {});
     executorLoop = null;
   }
