@@ -86,7 +86,7 @@
       "softwareLicense": "MIT",
       "dataLicense": "LicenseRef-ECB-ESCB-STATISTICS-REUSE-2026",
       "evidenceReference": "docs/market-data/evidence/source-admission-ecb-reference-rates-20261006.json",
-      "instrumentManifestReference": "docs/market-data/evidence/instrument-manifest-20261005.json",
+      "instrumentManifestReference": "docs/market-data/evidence/instrument-manifest-ecb-production-20261006.json",
       "capabilities": {
         "referenceMetadata": true,
         "marketQuotes": true,
@@ -98,7 +98,30 @@
         "scoringAssetClasses": [
           "forex"
         ]
-      }
+      },
+      "identityManifestReference": "docs/market-data/evidence/instrument-manifest-20261005.json",
+      "instrumentIds": [
+        "fx:EUR-USD:ecb-reference",
+        "fx:EUR-JPY:ecb-reference",
+        "fx:EUR-CZK:ecb-reference",
+        "fx:EUR-DKK:ecb-reference",
+        "fx:EUR-GBP:ecb-reference",
+        "fx:EUR-HUF:ecb-reference",
+        "fx:EUR-PLN:ecb-reference",
+        "fx:EUR-RON:ecb-reference",
+        "fx:EUR-SEK:ecb-reference",
+        "fx:EUR-CHF:ecb-reference",
+        "fx:EUR-ISK:ecb-reference",
+        "fx:EUR-NOK:ecb-reference",
+        "fx:EUR-TRY:ecb-reference",
+        "fx:EUR-AUD:ecb-reference",
+        "fx:EUR-BRL:ecb-reference",
+        "fx:EUR-CAD:ecb-reference",
+        "fx:EUR-CNY:ecb-reference",
+        "fx:EUR-HKD:ecb-reference",
+        "fx:EUR-IDR:ecb-reference",
+        "fx:EUR-ILS:ecb-reference"
+      ]
     }
   ],
   "blockedLegacyProviderPaths": [
@@ -193,7 +216,7 @@
       "scope": "FOREX_DAILY_REFERENCE_RATES_INFORMATION_ONLY",
       "dataLicense": "LicenseRef-ECB-ESCB-STATISTICS-REUSE-2026",
       "evidenceReference": "docs/market-data/evidence/source-rights-admission-ecb-reference-rates-20261005.json",
-      "instrumentManifestReference": "docs/market-data/evidence/instrument-manifest-20261005.json",
+      "instrumentManifestReference": "docs/market-data/evidence/instrument-manifest-ecb-production-20261006.json",
       "capabilities": {
         "referenceMetadata": true,
         "marketQuotes": true,
@@ -205,7 +228,39 @@
           "forex"
         ]
       },
-      "runtimeAdmissionReference": "docs/market-data/evidence/source-admission-ecb-reference-rates-20261006.json"
+      "runtimeAdmissionReference": "docs/market-data/evidence/source-admission-ecb-reference-rates-20261006.json",
+      "identityManifestReference": "docs/market-data/evidence/instrument-manifest-20261005.json",
+      "instrumentIds": [
+        "fx:EUR-USD:ecb-reference",
+        "fx:EUR-JPY:ecb-reference",
+        "fx:EUR-CZK:ecb-reference",
+        "fx:EUR-DKK:ecb-reference",
+        "fx:EUR-GBP:ecb-reference",
+        "fx:EUR-HUF:ecb-reference",
+        "fx:EUR-PLN:ecb-reference",
+        "fx:EUR-RON:ecb-reference",
+        "fx:EUR-SEK:ecb-reference",
+        "fx:EUR-CHF:ecb-reference",
+        "fx:EUR-ISK:ecb-reference",
+        "fx:EUR-NOK:ecb-reference",
+        "fx:EUR-TRY:ecb-reference",
+        "fx:EUR-AUD:ecb-reference",
+        "fx:EUR-BRL:ecb-reference",
+        "fx:EUR-CAD:ecb-reference",
+        "fx:EUR-CNY:ecb-reference",
+        "fx:EUR-HKD:ecb-reference",
+        "fx:EUR-IDR:ecb-reference",
+        "fx:EUR-ILS:ecb-reference"
+      ]
     }
-  ]
+  ],
+  "instrumentAdmissionContract": {
+    "model": "Provider × Instrument × Use Case × Rights Evidence",
+    "providerWideImplicitAdmission": false,
+    "unknownProvider": "BLOCK",
+    "unknownInstrument": "BLOCK",
+    "unknownUseCase": "BLOCK",
+    "evidenceRequired": true,
+    "productionScoreRequiresSeparateScoringEligibility": true
+  }
 }
