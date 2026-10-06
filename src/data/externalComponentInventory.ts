@@ -194,16 +194,16 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   {
     id: 'google-genai', name: 'Google Gemini / GenAI SDK', domain: 'PRODUCT', kind: 'AI Provider',
     installedAt: null, activeVersion: 'lockfile-managed server SDK', pipelineVersion: 'current stable review required', lifecycle: 'ACTIVE',
-    functionSummary: 'Server-side AI advisor capability; forbidden from browser artifacts by the app-boundary gate.',
-    webAppBinding: 'server/advisor.ts', license: 'Google service terms + Apache-2.0 SDK metadata', cadsScore: 77.0, scoreState: 'PROVISIONAL',
-    domainAssignments: ["server-side provider endpoint; no browser domain binding"],
+    functionSummary: 'Server-side AI advisor plus governed GROWTH draft capability; Gemini Search Grounding is not admitted as an autonomous lead-discovery index.',
+    webAppBinding: 'server/advisor.ts + server/growth-ai-gateway.ts', license: 'Google service terms + Apache-2.0 SDK metadata', cadsScore: 77.0, scoreState: 'PROVISIONAL',
+    domainAssignments: ["server-side provider endpoint; PRODUCT advisor + GROWTH draft generation; no browser domain binding"],
     dependencies: ['render'],
     alternatives: [
       { name: 'llama.cpp', role: 'fallback', license: 'MIT' },
       { name: 'vLLM', role: 'optimization', license: 'Apache-2.0' },
       { name: 'Ollama', role: 'replacement', license: 'MIT' },
     ],
-    evidence: ['server/advisor.ts', 'scripts/browser-boundary-policy.mjs'],
+    evidence: ['server/advisor.ts', 'server/growth-ai-gateway.ts', 'src/contracts/growthAiPromotion.ts', 'docs/growth/GEMINI-FIRST-GROWTH-ENGINE-20261006.md', 'scripts/browser-boundary-policy.mjs'],
   },
   {
     id: 'telegram-bot-api', name: 'Telegram Bot API', domain: 'GROWTH', kind: 'Notification / Social',
