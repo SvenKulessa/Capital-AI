@@ -4,6 +4,8 @@ import { boundedJson, secureUrl } from './http-security.mjs';
 const MAX_BODY_BYTES = 16 * 1024;
 const KRAKEN_BALANCE_PATH = '/0/private/Balance';
 const KRAKEN_API_KEY_INFO_PATH = '/0/private/GetApiKeyInfo';
+let lastKrakenNonce = 0n;
+
 const KRAKEN_WRITE_PERMISSIONS = new Set([
   'add-funds',
   'withdraw-funds',
@@ -106,8 +108,14 @@ export function krakenSignature(urlPath, payload, apiSecret) {
   return createHmac('sha512', Buffer.from(apiSecret, 'base64')).update(message).digest('base64');
 }
 
+function nextKrakenNonce() {
+  const now = BigInt(Date.now());
+  lastKrakenNonce = now > lastKrakenNonce ? now : lastKrakenNonce + 1n;
+  return String(lastKrakenNonce);
+}
+
 async function krakenPrivatePost(fetchImpl, path, { apiKey, apiSecret }) {
-  const nonce = String(Date.now());
+  const nonce = nextKrakenNonce();
   const form = { nonce };
   const body = new URLSearchParams(form).toString();
   const signature = krakenSignature(path, form, apiSecret);
@@ -334,8 +342,7 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
           holdings,
         });
       } catch (error) {
-        const code = typeof error?.code === 'string' ? error.code : 'KRAKEN_VERIFICATION_FAILED';
-        if (code !== 'KRAKEN_VERIFICATION_FAILED' && error?.status) {
+        if (error?.status) {
           json(res, 503, {
             error: error.status === 401
               ? 'provider_vault_admin_credential_rejected'
@@ -343,6 +350,7 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
           });
           return true;
         }
+        const code = typeof error?.code === 'string' ? error.code : 'KRAKEN_VERIFICATION_FAILED';
         json(res, 422, {
           provider: 'kraken',
           status: 'INVALID',
