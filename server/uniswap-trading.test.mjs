@@ -63,8 +63,10 @@ test('Uniswap quote forwards bounded inputs and never enables swap execution', a
           quoteId:'quote_1',
           input:{amount:'1000000000000000000',token:'0x1111111111111111111111111111111111111111',maximumAmount:'1000000000000000000'},
           output:{amount:'12345',token:'0x2222222222222222222222222222222222222222',minimumAmount:'12000',recipient:'0x3333333333333333333333333333333333333333'},
-          slippageTolerance:0.5,
-          classicGasUseEstimateUSD:'1.23',
+          slippage:0.5,
+          priceImpact:0.14,
+          gasFeeUSD:'1.23',
+          gasUseEstimate:'180350',
           encodedOrder:'0xdeadbeef',
           orderInfo:{nonce:'secret-execution-shape'},
         },
@@ -97,7 +99,10 @@ test('Uniswap quote forwards bounded inputs and never enables swap execution', a
   assert.equal(result.payload.routing,'CLASSIC');
   assert.equal(result.payload.quote.output.amount,'12345');
   assert.equal(result.payload.quote.output.minimumAmount,'12000');
-  assert.equal(result.payload.quote.classicGasUseEstimateUSD,'1.23');
+  assert.equal(result.payload.quote.gasFeeUSD,'1.23');
+  assert.equal(result.payload.quote.gasUseEstimate,'180350');
+  assert.equal(result.payload.quote.slippage,0.5);
+  assert.equal(result.payload.quote.priceImpact,0.14);
   assert.doesNotMatch(JSON.stringify(result.payload),/swapTransaction|permitTransaction|permitData|encodedOrder|orderInfo|deadbeef|secret-execution-shape/);
   assert.doesNotMatch(JSON.stringify(result.payload),/uniswap-secret-test/);
 });
