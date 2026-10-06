@@ -4,7 +4,7 @@
  * Zentrales Learning Portal der Anwendung.
  * Beinhaltet:
  * 1. Vollständiges Market Vocabulary & Glossar (Filterbar nach Kategorien & Skill-Levels)
- * 2. Interaktive Cheat-Sheets & Guides (Fintech Pipeline, BaFin MaRisk, Buffett DCF)
+ * 2. Öffentliche Analyse-Module & Methodik (Werkzeuge, Datenpfade, Modulaufbau)
  * 3. Quant- & Trader Skill-Check (Interaktives Quiz)
  */
 
@@ -74,10 +74,10 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
     },
     {
       id: 'guides',
-      label: 'Cheat-Sheets & Guides',
+      label: 'Analyse-Module & Methodik',
       icon: <Layers className="w-4 h-4 text-cyan-400" />,
-      badge: '4 Guides',
-      desc: 'DCF, MaRisk & Latenzen',
+      badge: '4 Module',
+      desc: 'Werkzeuge, Datenpfade & Modulaufbau',
     },
     {
       id: 'quiz',
@@ -328,17 +328,28 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
         <div>
           {/* Breadcrumb Hierarchy */}
           <div className="flex items-center gap-2 text-xs text-slate-400 mb-1.5 font-medium">
-            <span>Capital-AI Enterprise</span>
+            <button type="button" onClick={onBackToHome} className="hover:text-amber-300 transition-colors">
+              Capital-AI
+            </button>
             <span aria-hidden="true" className="text-slate-600">
               /
             </span>
-            <span className="text-amber-400 font-semibold">Learning Portal</span>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('glossar');
+                onNavigateTab?.('/learning');
+              }}
+              className="text-amber-400 font-semibold hover:text-amber-200 transition-colors"
+            >
+              Learning Portal
+            </button>
             <span aria-hidden="true" className="text-slate-600">
               /
             </span>
             <span className="text-cyan-300 font-medium">
               {activeTab === 'glossar' && 'Finanz-Vocabulary & Glossar'}
-              {activeTab === 'guides' && 'Cheat-Sheets & Pipeline Guides'}
+              {activeTab === 'guides' && 'Analyse-Module & Methodik'}
               {activeTab === 'quiz' && 'Quant & Trader Skill-Check'}
             </span>
           </div>
@@ -383,7 +394,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
         </div>
       </div>
 
-      {/* 2. SUBPAGE SIDEBAR (NACH RECHTS AUFKLAPPBAR) */}
+      {/* 2. SUBPAGE SIDEBOARD NAVIGATION */}
       <SubpageSidebarNav
         hubTitle="Learning Portal"
         items={subpageItems}
@@ -422,7 +433,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
-          <span>Cheat-Sheets &amp; Guides</span>
+          <span>Analyse-Module &amp; Methodik</span>
         </button>
 
         {/* TAB 3: QUIZ & SKILL-CHECK */}
@@ -720,80 +731,74 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
         <div className="space-y-6">
           <div className="p-6 rounded-2xl bg-gradient-to-r from-cyan-500/15 via-[#0d1530] to-purple-500/15 border border-cyan-500/40">
             <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-              Kompakte Cheat-Sheets &amp; Spickzettel
+              Analyse-Module &amp; Methodik
             </h2>
-            <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-              Zusammenfassende Leitfäden für Quant-Methoden, BaFin MaRisk Vorgaben und die Funktionsweise moderner
-              Fintech-Pipelines.
+            <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-3xl leading-relaxed">
+              Öffentliche Fachübersicht der Analysewerkzeuge und Modulgrenzen. Interne Schwellenwerte,
+              Implementierungsdetails, proprietäre Heuristiken, Secrets und produktionsnahe Konfigurationen
+              werden hier bewusst nicht offengelegt.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Guide 1: Buffett DCF Formeln */}
-            <div className="p-5 rounded-xl bg-[#090e21] border border-slate-800 space-y-3">
+            <section className="p-5 rounded-xl bg-[#090e21] border border-slate-800 space-y-3">
               <div className="flex items-center gap-2 text-amber-400">
                 <Calculator className="w-5 h-5" />
-                <h3 className="text-sm font-bold text-white">1. Buffett Value Check &amp; DCF Formel-Spickzettel</h3>
+                <h3 className="text-sm font-bold text-white">Fundamental- &amp; Value-Modul</h3>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Warren Buffetts Kernphilosophie verlangt ein planbares Geschäftsmodell mit dauerhaft hoher Rendite auf
-                das eingesetzte Kapital.
+                Verwendet validierte Fundamentals, Cashflow-, Bilanz- und Bewertungsmerkmale zur
+                strukturierten Einordnung eines Assets. Das Modul trennt Rohfakten, abgeleitete Features
+                und Score-Beiträge und kennzeichnet fehlende Pflichtdaten fail-closed.
               </p>
-              <div className="p-3 rounded-lg bg-black/40 border border-slate-800 font-mono text-xs text-amber-300 space-y-1.5">
-                <div>• ROE = Net Income / Shareholder Equity &gt; 15%</div>
-                <div>• Fair Value = Σ (FCF_t / (1 + WACC)^t) + Terminal Value</div>
-                <div>• Margin of Safety = (Fair Value - Marktpreis) / Fair Value &gt; 25%</div>
+              <div className="p-3 rounded-lg bg-black/40 border border-slate-800 text-xs text-slate-400">
+                Werkzeugklassen: Fundamentals-Adapter · Feature-Normalisierung · Value-Faktoren · Evidence-Referenzen.
               </div>
-            </div>
+            </section>
 
-            {/* Guide 2: BaFin MaRisk & WpHG 83 */}
-            <div className="p-5 rounded-xl bg-[#090e21] border border-slate-800 space-y-3">
+            <section className="p-5 rounded-xl bg-[#090e21] border border-slate-800 space-y-3">
               <div className="flex items-center gap-2 text-purple-400">
                 <ShieldCheck className="w-5 h-5" />
-                <h3 className="text-sm font-bold text-white">2. BaFin MaRisk &amp; WpHG § 83 Leitfaden</h3>
+                <h3 className="text-sm font-bold text-white">Risk- &amp; Evidence-Modul</h3>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Finanzsoftware und algorithmische Screener müssen im BaFin-Raum strenge Kriterien an die Nachvollziehbarkeit
-                erfüllen.
+                Bewertet Datenvollständigkeit, Provenienz, Freshness, Ausreißer- und Risikoindikatoren.
+                Ergebnisse bleiben von Entscheidungsfreigaben getrennt; Evidence und Reproduzierbarkeit
+                sind Bestandteil des Modulvertrags.
               </p>
-              <div className="p-3 rounded-lg bg-black/40 border border-slate-800 font-mono text-xs text-purple-300 space-y-1.5">
-                <div>• WORM-Speicherung: Signale 5 Jahre unveränderbar archivieren</div>
-                <div>• SHA-256 Merkle Root: Jede Datenzeile manipulationssicher hashen</div>
-                <div>• Notfallkonzept: Automatisches Failover bei Provider-Ausfällen</div>
+              <div className="p-3 rounded-lg bg-black/40 border border-slate-800 text-xs text-slate-400">
+                Werkzeugklassen: Validation Gates · Freshness · Outlier-Prüfung · Replay-/Evidence-Pfade.
               </div>
-            </div>
+            </section>
 
-            {/* Guide 3: Sub-45ms Latenz & In-Memory Pipeline */}
-            <div className="p-5 rounded-xl bg-[#090e21] border border-slate-800 space-y-3">
+            <section className="p-5 rounded-xl bg-[#090e21] border border-slate-800 space-y-3">
               <div className="flex items-center gap-2 text-cyan-400">
                 <Zap className="w-5 h-5" />
-                <h3 className="text-sm font-bold text-white">3. Zero-Copy &amp; Latenz-Architektur</h3>
+                <h3 className="text-sm font-bold text-white">Market- &amp; Momentum-Modul</h3>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed">
-                High-Frequency Datenströme dürfen nicht durch JSON-Serialisierung ausgebremst werden.
+                Ordnet kanonische Marktzeitreihen in technische und relative Marktmerkmale ein.
+                Provider-, Instrument- und Datenrechte-Gates entscheiden vor jeder Nutzung, ob Daten
+                überhaupt für Analyse oder Scoring zugelassen sind.
               </p>
-              <div className="p-3 rounded-lg bg-black/40 border border-slate-800 font-mono text-xs text-cyan-300 space-y-1.5">
-                <div>• Ringpuffer: O(1) Zeitkomplexität für das Einfügen neuer Ticks</div>
-                <div>• FlatBuffers: Binäre Deserialisierung direkt im Speicher</div>
-                <div>• Outlier-Filter: 3-Sigma Consensus filtert fehlerhafte Ticks</div>
+              <div className="p-3 rounded-lg bg-black/40 border border-slate-800 text-xs text-slate-400">
+                Werkzeugklassen: OHLCV/Quote-Facts · technische Features · Cross-Sectional Ranking · Eligibility Gates.
               </div>
-            </div>
+            </section>
 
-            {/* Guide 4: Whale Radar & On-Chain Daten */}
-            <div className="p-5 rounded-xl bg-[#090e21] border border-slate-800 space-y-3">
+            <section className="p-5 rounded-xl bg-[#090e21] border border-slate-800 space-y-3">
               <div className="flex items-center gap-2 text-emerald-400">
                 <TrendingUp className="w-5 h-5" />
-                <h3 className="text-sm font-bold text-white">4. Smart Money &amp; Whale Radar Verstehen</h3>
+                <h3 className="text-sm font-bold text-white">Sentiment- &amp; Kontext-Modul</h3>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Große Marktteilnehmer hinterlassen Spuren im Mempool und auf der Blockchain vor signifikanten Kursbewegungen.
+                Führt zugelassene News-, Social-, Makro- oder On-Chain-Kontexte als getrennte Evidence-
+                und Feature-Kanäle. Quellenstatus und Rechte werden nicht aus dem Frontend abgeleitet.
               </p>
-              <div className="p-3 rounded-lg bg-black/40 border border-slate-800 font-mono text-xs text-emerald-300 space-y-1.5">
-                <div>• Wallet-Akkumulation: Abflüsse von Börsen deuten auf HODL-Druck</div>
-                <div>• Exchange Inflows: Zuflüsse kündigen oft Verkaufsdruck an</div>
-                <div>• Cluster-Analyse: Zusammenhängende Wal-Netzwerke identifizieren</div>
+              <div className="p-3 rounded-lg bg-black/40 border border-slate-800 text-xs text-slate-400">
+                Werkzeugklassen: Source Adapters · Normalisierung · Kontext-Features · Confidence-/Evidence-Verknüpfung.
               </div>
-            </div>
+            </section>
           </div>
         </div>
       )}

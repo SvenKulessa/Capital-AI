@@ -146,3 +146,20 @@ test('canonical product routes and aliases resolve deterministically', () => {
   ]);
   for (const [alias, canonical] of cases) assert.equal(resolveAppRoute(alias), canonical);
 });
+
+
+test('production navigation uses Preiskatalog and clickable canonical breadcrumbs', () => {
+  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  const footer = readFileSync(new URL('../src/components/Footer.tsx', import.meta.url), 'utf8');
+  const breadcrumbs = readFileSync(new URL('../src/components/RouteBreadcrumbs.tsx', import.meta.url), 'utf8');
+  const sideboard = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
+
+  assert.match(header, /Preiskatalog/);
+  assert.match(footer, /Preiskatalog/);
+  assert.doesNotMatch(header, /Preise & SaaS Tarife/);
+  assert.doesNotMatch(sideboard, /Aufklappbare Sidebar|Sideliste aufklappen/);
+  assert.match(sideboard, /role="tree"/);
+  assert.match(sideboard, /role="treeitem"/);
+  assert.match(breadcrumbs, /onClick=\{\(\) => onNavigate\(item\.path\)\}/);
+  assert.match(breadcrumbs, /aria-current="page"/);
+});

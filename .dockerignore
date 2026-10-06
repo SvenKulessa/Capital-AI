@@ -21,6 +21,10 @@
 !server/vocabulary-checkout.mjs
 !server/vocabulary-checkout.test.mjs
 !server/vocabulary-quant-pro-index.mjs
+!server/public-artifact-policy.test.mjs
+!server/public-artifact-policy.mjs
+!server/subscription-checkout.test.mjs
+!server/subscription-checkout.mjs
 !server/auth.mjs
 !server/auth-security.mjs
 !server/auth-security.test.mjs
@@ -68,6 +72,7 @@
 !scripts/license-evidence.mjs
 !scripts/license-evidence.test.mjs
 !scripts/billing-catalog.test.mjs
+!scripts/blueprint-evidence-contract.test.mjs
 !scripts/documentation-drift.mjs
 !scripts/documentation-drift.test.mjs
 !scripts/license-engine.mjs
