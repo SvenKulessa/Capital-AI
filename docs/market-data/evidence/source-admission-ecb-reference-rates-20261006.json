@@ -264,7 +264,10 @@
     "scoringPriceInput": true,
     "realtime": false,
     "executionPrice": false,
-    "decisionEligible": false
+    "decisionEligible": false,
+    "scoringAssetClasses": [
+      "forex"
+    ]
   },
   "evidenceTransport": {
     "durableStream": "CAPITAL_FACTS",
@@ -289,7 +292,9 @@
     "scoreEligible": false,
     "rankEligible": false,
     "alertEligible": false,
-    "decisionEligible": false
+    "decisionEligible": false,
+    "cryptoScoreRouteEligible": false,
+    "cryptoScoreRouteReason": "ECB_REFERENCE_RATES_ARE_FOREX_ONLY"
   },
   "obligations": [
     "ATTRIBUTE_SOURCE_AS_ECB_STATISTICS",
