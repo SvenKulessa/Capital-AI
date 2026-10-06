@@ -1,8 +1,8 @@
 # Gemini-first Growth-/SEO-Engine — Capability Contract
 
-Stand: 2026-10-06  
-Primary Domain: CAPITAL-AI-GROWTH  
-Baseline: `SvenKulessa/Capital-AI@c13de16d8af006c37b08db616d1016173c99e7db`  
+Stand: 2026-10-06
+Primary Domain: CAPITAL-AI-GROWTH
+Baseline: `SvenKulessa/Capital-AI@c13de16d8af006c37b08db616d1016173c99e7db`
 Policy: `GROWTH_AI_PROMOTION_POLICY@1`
 
 ## Ziel
