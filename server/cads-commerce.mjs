@@ -1,6 +1,6 @@
 import { BENCHMARK_TIERS, benchmarkEntitlementForTier } from '../packages/benchmark-core/index.mjs';
 import { BILLING_CATALOG } from './billing-catalog.mjs';
-import { publicCadsMarketplaceReadiness } from './cads-marketplace.mjs';
+import { highestCadsTier, publicCadsMarketplaceReadiness } from './cads-marketplace.mjs';
 
 function publicTierProjection() {
   return Object.fromEntries(Object.entries(BENCHMARK_TIERS).map(([tier, entitlement]) => [
@@ -13,7 +13,7 @@ function publicTierProjection() {
   ]));
 }
 
-export function createCadsCommerce({ auth, env = process.env } = {}) {
+export function createCadsCommerce({ auth, env = process.env, marketplace } = {}) {
   async function handle(req, res, url, json) {
     if (url.pathname === '/api/cads/commerce/readiness') {
       if (req.method !== 'GET') {
@@ -57,11 +57,19 @@ export function createCadsCommerce({ auth, env = process.env } = {}) {
       return true;
     }
 
-    const tier = await auth?.resolvePaidTier?.(req, res);
+    const websiteTier = await auth?.resolvePaidTier?.(req, res);
+    let marketplaceTier = null;
+    try {
+      marketplaceTier = await marketplace?.resolveTierForUser?.(user.userId);
+    } catch {
+      marketplaceTier = null;
+    }
+    const tier = highestCadsTier(websiteTier, marketplaceTier);
     if (!tier) {
       json(res, 403, {
         error: 'paid_cads_entitlement_required',
         checkoutPath: '/api/billing/subscriptions/checkout',
+        marketplaceSetupRequired: true,
       });
       return true;
     }
@@ -74,15 +82,21 @@ export function createCadsCommerce({ auth, env = process.env } = {}) {
       return true;
     }
 
+    const authorities = [
+      ...(websiteTier ? ['STRIPE_SUBSCRIPTION'] : []),
+      ...(marketplaceTier ? ['GITHUB_MARKETPLACE'] : []),
+    ];
+
     json(res, 200, {
-      schema: 'CAPITAL_AI_CADS_ENTITLEMENT@1',
+      schema: 'CAPITAL_AI_CADS_ENTITLEMENT@2',
       product: 'CADS Benchmark Engine',
       tier,
       label: entitlement.label,
       capabilities: { ...entitlement.capabilities },
-      billingAuthority: 'STRIPE_SUBSCRIPTION',
-      entitlementAuthority: 'PUBLIC_SUBSCRIPTIONS',
-      marketplaceEntitlement: false,
+      billingAuthority: authorities.length === 2 ? 'MULTI_CHANNEL' : authorities[0],
+      entitlementAuthorities: authorities,
+      websiteEntitlement: Boolean(websiteTier),
+      marketplaceEntitlement: Boolean(marketplaceTier),
       benchmarkEvidenceOnly: true,
       productionEligible: false,
       decisionEligible: false,
