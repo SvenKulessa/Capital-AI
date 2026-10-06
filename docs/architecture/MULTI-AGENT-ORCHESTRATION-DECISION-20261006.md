@@ -1,7 +1,7 @@
 # Multi-Agent Orchestration Decision — 2026-10-06
 
 Status: OWNER_DECIDED_OPTION_A / BENCHMARK_REQUIRED
-CURRENT_MAIN: `824d42913bbeccb68366c2ae70714ccb960717e5`
+CURRENT_MAIN: `cef1d11f607778f5226ca1df97376ba408652c69`
 Primary Domain: CAPITAL-AI-PRODUCT
 Cross-Domain: PLATFORM / TRUST / MARKET
 
@@ -31,7 +31,7 @@ Bereits vorhanden:
 - W3C Trace Context / strukturierte Logs / geschützte Prometheus-Metriken als Observability-Ziel
 - `CA-PLATFORM-OTEL-COLLECTOR` als noch zu benchmarkender Export-Layer
 - `CA-TRUST-AUTONOMOUS-RESEARCH-GOVERNANCE`
-- offener PR #213 mit JaJa Buddy, lokalem Finanzgraph und GraphRagAdapter
+- gemergter PR #215 mit JaJa Buddy; `Chat Buddy/src/core/` ist als MIT Agent-Core mit NLU-, Graph-, Research- und reversible Trace-Primitiven verfügbar
 - offener PR #212 mit read-only Provider-Query-Bridge; keine Trading-Authority
 
 ## Owner-Entscheidung — 2026-10-06
@@ -46,6 +46,10 @@ Damit ist **Option A verbindliches Zielbild**:
 - Die bestehende W3C-/JSON-/Prometheus-Observability wird zuerst weiterverwendet.
 - Ein eigener OTLP Collector / persistentes Trace-Backend bleibt ein nachgelagerter PLATFORM-Benchmark und wird nicht allein durch diese Architekturentscheidung promoted.
 - Einführung bleibt fail-closed bis LangGraph-Version, Lizenz, Supply Chain, Security, CADS-Workload und Replay-/Checkpoint-Semantik reproduzierbar geprüft sind.
+
+## Agent-Core Korrelation
+
+Der in `main` vorhandene MIT Agent-Core wird nicht durch LangGraph ersetzt. LangGraph orchestriert seine providerneutralen Primitiven über schmale Adapter. JaJa Branding, Persona, Voice, Pricing und produktseitige Providerlogik bleiben außerhalb des OSS-Core. Weder Agent-Core noch LangGraph erhalten dadurch Write-, Trading-, Publication-, Legal- oder Credential-Authority.
 
 ## Bewertete Architekturvarianten
 
