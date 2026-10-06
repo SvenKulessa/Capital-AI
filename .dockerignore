@@ -28,6 +28,8 @@
 !server/agent-shadow-runtime.test.mjs
 !server/agent-shadow-nodes.mjs
 !server/agent-shadow-nodes.test.mjs
+!server/agent-graphrag-evidence-adapter.mjs
+!server/agent-graphrag-evidence-adapter.test.mjs
 !server/agent-shadow-runtime.mjs
 !server/billing-catalog.mjs
 !server/vocabulary-checkout.mjs
