@@ -253,6 +253,32 @@ Exit-Evidence:
 - kanonische URL bleibt primäre Quelle;
 - immutable Asset-/Claim-Bindung vor Publish.
 
+### SEO-06A · Gemini-first Growth Generation
+
+**Status:** `REPO_IMPLEMENTED / VALIDATION_PENDING` auf `main@c13de16d8af006c37b08db616d1016173c99e7db`.
+
+**Ziel:** Gemini bevorzugt für eigene Produktkommunikation verwenden, ohne Search-Grounding-Bedingungen, Claim-Gates oder Publication Authority zu umgehen.
+
+Umgesetzt:
+- `src/contracts/growthAiPromotion.ts` definiert `GROWTH_AI_PROMOTION_POLICY@1`;
+- Gemini 3.8 Flash ist Primärprovider für draft-only Produkt-/SEO-Copy;
+- Gemini URL Context ist read-only/draft-only zugelassen;
+- Google Search Grounding ist ausdrücklich **nicht** als Lead-Discovery-/Crawler-Quelle zugelassen;
+- Gemini 3.1 Flash Image und Gemini 3.8 Flash TTS sind draft-only hinter Asset-/Rights-/Approval-Gates vorgesehen;
+- Veo bleibt bis separater Modelstatus-/Kosten-/Terms-Admission production-ineligible;
+- `server/growth-ai-gateway.ts` validiert Gemini-Marketingoutput vollständig gegen ein striktes Zod-Schema;
+- Lead Discovery bleibt OSS/provider-neutral und Outreach Delivery fail-closed.
+
+Provider-Evidence:
+- `docs/growth/GEMINI-FIRST-GROWTH-ENGINE-20261006.md`.
+
+Exit-Evidence vor Abschluss:
+- `npm run test:growth-ai` auf exaktem Branch-Head PASS;
+- `npm run preflight:full` auf exaktem Branch-Head PASS;
+- kein Search-Grounding-Linkharvesting;
+- keine Auto-Outreach-Authority;
+- kein Secret im Browser oder Repository.
+
 ### SEO-07 · Google, Bing und Search Evidence
 
 **Ziel:** Search-Performance read-only messen und Indexprobleme reproduzierbar zurückführen.
