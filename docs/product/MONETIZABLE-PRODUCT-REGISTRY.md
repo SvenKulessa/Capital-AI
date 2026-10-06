@@ -2,7 +2,7 @@
 
 Naming convention: `[CAPITAL-AI-MARKET]PRODUKTNAME` or `[CAPITAL-AI-PRODUCT]PRODUKTNAME`.
 
-Scan: 2026-10-04, baseline `main` @ `d31b223`. Readiness is the evidenced share of a sellable, compliant launch. Gap is the remaining distance to market.
+Scan: 2026-10-06, baseline `main` @ `824d429`. Readiness is the evidenced share of a sellable, compliant launch. Gap is the remaining distance to market.
 
 Weights: definition 15, user surface 25, commercial path 25, data/compliance gate 20, production evidence 15.
 
@@ -17,7 +17,7 @@ A successful build, test or UI is not a production release. Provider rights and 
 | [CAPITAL-AI-MARKET]BROKER-AFFILIATE-ROUTING | PARTIAL | 39% | 61% | Kraken-Referral-Banner vorhanden, Routing-Matrix und Disclosure-Gate unvollständig. |
 | [CAPITAL-AI-MARKET]TRADING-FEE-REVENUE-SHARE | PLANNED | 8% | 92% | Keine Broker-Order-Anbindung und keine Revenue-Share-Abrechnung. |
 | [CAPITAL-AI-MARKET]OSS-PIPELINE-SIMULATION-ENGINE | INTEGRATED | 44% | 56% | Pipeline Builder integriert, nicht als bezahltes Paket mit SLA geschnitten. |
-| [CAPITAL-AI-MARKET]CADS-BENCHMARK-MARKET-APP | PARTIAL | 25% | 75% | Observability-Code vorhanden, keine Marketplace-App und kein Billing. |
+| [CAPITAL-AI-PRODUCT]CADS-BENCHMARK-GITHUB-APP | PRODUCTIZATION | 50% | 50% | CADS Core, Observability und Marketplace-Lifecycle-Muster sind vorhanden; CADS-spezifische Listing-/Plan-IDs, Pricing-Authority und Marketplace-Entitlement-Bindung bleiben fail-closed. |
 | [CAPITAL-AI-MARKET]GHCR-DIGEST-BLUEPRINT-MARKETPLACE-APP | PLANNED | 26% | 74% | Digest-Pipeline dokumentiert, App und kommerzielle Evidence-Tiers fehlen. |
 | [CAPITAL-AI-MARKET]CPT-STAKE-TO-ACCESS | PLANNED | 24% | 76% | Tokenomics-Seite vorhanden, Stake-Gate und $CPT-Zahlung deaktiviert. |
 | [CAPITAL-AI-MARKET]CPT-MICROPAYMENTS | PLANNED | 10% | 90% | Kein Wallet-, Settlement- oder Usage-Meter. |
@@ -41,3 +41,14 @@ Orderbook and Market Depth stay owned by the 50-component MARKET program / Promp
 Repository → Build → SBOM → Security Scan → Attestation → Immutable GHCR Digest → Render Blueprint → Runtime Readback → Source SHA correlation → Release Evidence.
 
 The app must never rebuild between verified candidate and promotion. Commercial tiers may package evidence retention, policy profiles and API/reporting, but the underlying digest identity remains immutable.
+
+## CADS commercial packaging
+
+The CADS commercial path is intentionally split into independent authorities:
+
+- `src/data/cadsCommercialReadiness.ts` — conservative readiness/evidence score.
+- `src/data/cadsMarketplaceCapabilities.ts` — customer capability catalog.
+- GitHub Marketplace plan IDs and pricing — **not assigned yet**.
+- Security, licensing and provider/data-rights gates cannot be overridden by a paid entitlement.
+
+This separation allows PRODUCT to package customer value while TRUST retains release, rights and evidence boundaries.
