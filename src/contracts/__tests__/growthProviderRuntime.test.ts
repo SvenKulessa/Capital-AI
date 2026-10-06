@@ -27,6 +27,18 @@ test('provider kill switch and model router fail closed', () => {
     'gemini-3.8-flash-lite-tts',
   );
 
+  assert.equal(
+    resolveGrowthModel('IMAGE_GENERATION', {}),
+    'gemini-3.1-flash-lite-image',
+  );
+
+  assert.equal(
+    resolveGrowthModel('IMAGE_GENERATION', {
+      GROWTH_AI_IMAGE_MODEL: 'gemini-nano-banana-2.1',
+    }),
+    'gemini-nano-banana-2.1',
+  );
+
   assert.throws(
     () => resolveGrowthModel('TTS', { GROWTH_AI_TTS_MODEL: 'gemini-3.8-flash' }),
     /MODEL_NOT_ADMITTED/,
@@ -72,11 +84,29 @@ test('cost estimates cover text, image, TTS and Veo', () => {
 
   assert.equal(
     estimateGrowthRequestCostUsd({
-      model: 'gemini-3.1-flash-image',
+      model: 'gemini-3.1-flash-lite-image',
       inputText: 'asset',
       imageSize: '1K',
-    }) > 0.067,
+    }) > 0.0336,
     true,
+  );
+
+  assert.throws(
+    () => estimateGrowthRequestCostUsd({
+      model: 'gemini-3.1-flash-lite-image',
+      inputText: 'asset',
+      imageSize: '2K',
+    }),
+    /IMAGE_SIZE_NOT_SUPPORTED/,
+  );
+
+  assert.throws(
+    () => estimateGrowthRequestCostUsd({
+      model: 'gemini-nano-banana-2.1',
+      inputText: 'asset',
+      imageSize: '2K',
+    }),
+    /PRICEBOOK_NOT_VERIFIED/,
   );
 
   assert.equal(
