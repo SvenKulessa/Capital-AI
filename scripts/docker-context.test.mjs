@@ -72,12 +72,18 @@ test('runtime market module dependencies are present in the final image and buil
   const market = readFileSync(resolve(root, 'server/market.mjs'), 'utf8');
   const dockerfile = readFileSync(resolve(root, 'Dockerfile'), 'utf8');
   assert.match(market, /from ['"]\.\/open-source-market-policy\.mjs['"]/);
+  assert.match(market, /from ['"]\.\/ecb-reference-rates\.mjs['"]/);
   assert.match(
     dockerfile,
     /COPY\s+[^\n]*server\/market\.mjs[^\n]*server\/open-source-market-policy\.mjs[^\n]*\.\/server\//,
     'Runtime Docker stage must copy the local policy module imported by server/market.mjs',
   );
   assert.equal(reachable('server/open-source-market-policy.mjs'), true);
+  assert.equal(reachable('server/ecb-reference-rates.mjs'), true);
+  assert.ok(
+    dockerfile.split(/\r?\n/).some(line => line.startsWith('COPY ') && line.includes('server/ecb-reference-rates.mjs') && line.trim().endsWith('./server/')),
+    'Runtime Docker stage must copy the ECB adapter imported by server/market.mjs',
+  );
 });
 
 

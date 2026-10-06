@@ -7,7 +7,7 @@ status: "ACTIVE_FAIL_CLOSED"
 correlatedAt: "2026-10-05"
 correlationBaseline:
   repository: "SvenKulessa/Capital-AI"
-  mainSha: "85d45f9b1d2973f8e54066055dee0b241ba4fd71"
+  mainSha: "73ad214e3a8af73f99c08531533ddcaaca530be3"
   rootPolicy: "AGENTS.md@currentmain"
   roadmapSource: "src/data/roadmapData.ts"
   domainContract: "CAPITAL-AI-MARKET/PROJECT.md"
@@ -70,15 +70,17 @@ currentMainCorrelation:
       - "wikidata-reference"
     rightsAdmittedMarketQuoteSourceCount: 1
     rightsAdmittedScoringPriceInputSourceCount: 1
-    admittedMarketQuoteSourceCount: 0
-    admittedScoringPriceInputSourceCount: 0
-    productiveQuoteState: "BLOCKED_PENDING_ADAPTER"
-    productiveScoringState: "BLOCKED_PENDING_ADAPTER_AND_SCORING_GATES"
+    admittedMarketQuoteSourceCount: 1
+    admittedScoringPriceInputSourceCount: 1
+    productiveQuoteState: "REFERENCE_SOURCE_ADMITTED_RUNTIME_FLAG_AND_EVIDENCE_GATED"
+    productiveScoringState: "BLOCKED_FEATURE_DQ_AND_SCORING_GATES"
     evidence:
       - "server/open-source-market-policy.mjs"
       - "docs/market-data/open-source-market-policy.json"
       - "docs/market-data/evidence/score-display-source-admission-20261004.json"
       - "docs/market-data/evidence/source-rights-admission-ecb-reference-rates-20261005.json"
+      - "docs/market-data/evidence/source-admission-ecb-reference-rates-20261006.json"
+      - "server/ecb-reference-rates.mjs"
     commercialLicensedDataLane:
       state: "DEFINED_FAIL_CLOSED"
       contract: "src/contracts/commercialLicensedDataLane.ts"
@@ -136,6 +138,20 @@ currentMainCorrelation:
     currentValueEligibility:
       scoreEligible: false
       decisionEligible: false
+    referenceRateAdapter:
+      provider: "ecb-reference-rates"
+      sourceAdmission: "OPEN_SOURCE_OPEN_DATA_ADMITTED"
+      instrumentCount: 20
+      timeSemantics: "reference"
+      realtime: false
+      executionPrice: false
+      observedAtPrecision: "date"
+      publishedAtEvidence: "HTTP_LAST_MODIFIED_REQUIRED"
+      receivedAt: "LOCAL_RECEIVE_TIMESTAMP"
+      runtimeFlags:
+        - "MARKET_QUOTES_ENABLED=true"
+        - "MARKET_ECB_REFERENCE_RATES_ENABLED=true"
+      scoreDisplayEnabled: false
     evidence:
       - "shared/market-contracts.mjs"
       - "server/market.mjs"
@@ -240,13 +256,24 @@ chronologicalWork:
 
   - sequence: 4
     id: "04-MARKET-PROVIDER-ADAPTERS"
-    state: "OPEN"
+    state: "IMPLEMENTED_PENDING_CI_AND_RUNTIME_EVIDENCE"
     goal: "Provider-neutrale, capability-basierte Adapter implementieren."
     implementation:
       - "Legacy Provider-Enums und hardcodierte Symbol/Provider-Kopplung aus produktiver Canonical-Grenze entfernen."
       - "Adapter-Health, Rate Limits, Sequenz/Freshness und Provider-spezifische Mapping-Evidence typisieren."
       - "Blockierte Provider dürfen Blueprint-/Auswahlmetadaten liefern, aber niemals produktiv routen."
-    exitGate: "Produktive Route akzeptiert ausschließlich admitted Capability + reales Instrumentmapping."
+    evidence:
+      - "server/ecb-reference-rates.mjs"
+      - "server/ecb-reference-rates.LICENSE.txt"
+      - "server/ecb-reference-rates.test.mjs"
+      - "scripts/ecb-reference-admission.test.mjs"
+      - "docs/market-data/evidence/source-admission-ecb-reference-rates-20261006.json"
+      - "shared/market-contracts.mjs"
+      - "server/infrastructure.mjs"
+    remaining:
+      - "CI/Required Checks terminal prüfen."
+      - "Production-Runtime-Evidence erst nach separater Deployment-/Environment-Freigabe erzeugen; dieser PR mutiert keine externe Runtime."
+    exitGate: "Code/Provenance/20er-Mapping/Reference-Time-Semantik/CAPITAL_FACTS-Replay implementiert; Runtime-Ready-Claim erst nach realem Fetch + PubAck + Replay in der autorisierten Production-Runtime."
 
   - sequence: 5
     id: "05-MARKET-INSTRUMENTS"
@@ -450,17 +477,17 @@ commercialExitCriteria:
       - "Kein Shared Cache, JetStream, Public Display oder Redistribution ohne separate Admission."
   releaseClaim:
     currentState: "BLOCKED"
-    reason: "CURRENT_MAIN besitzt weder admitted marketQuotes- noch scoringPriceInput-Quelle und keine produktiv scoreEligible/rankEligible Scoring-Kette."
+    reason: "ECB Reference Rates sind als reference-only marketQuotes/scoringPriceInput admitted; Commercial Exit bleibt wegen fehlender Production-Runtime-Evidence sowie offener Feature-/DQ-/Scoring-/Ranking-Gates BLOCKED."
 
 
 productProjectionCorrelation:
   correlatedAt: "2026-10-05"
   baselineMainSha: "4d98d9c6ed8128c109ee86d99980d57e6fdb826b"
   authoritativeState:
-    admittedMarketQuoteSourceCount: 0
-    admittedScoringPriceInputSourceCount: 0
-    productiveQuoteState: "BLOCKED"
-    productiveScoringState: "BLOCKED"
+    admittedMarketQuoteSourceCount: 1
+    admittedScoringPriceInputSourceCount: 1
+    productiveQuoteState: "REFERENCE_ONLY_RUNTIME_EVIDENCE_PENDING"
+    productiveScoringState: "BLOCKED_FEATURE_DQ_AND_SCORING_GATES"
   websiteProjection:
     realtimeClaimAllowed: false
     latencySlaClaimAllowed: false
