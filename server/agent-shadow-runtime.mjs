@@ -13,7 +13,8 @@ const ROUTES = Object.freeze({
   'portfolio-proposal': 'portfolio-proposal',
   'truth-review': 'truth',
 });
-const SECRET_KEY = /(secret|token|password|authorization|cookie|api[_-]?key|private[_-]?key|credential|rawprompt|prompttext)/i;
+const SECRET_KEY = /(secret|password|authorization|cookie|api[_-]?key|private[_-]?key|credential|access[_-]?token|auth[_-]?token|bearer[_-]?token|rawprompt|prompttext)/i;
+const ALLOWED_NODES = new Set(['supervisor', 'research', 'market', 'portfolio-proposal', 'truth']);
 const ID = /^[A-Za-z0-9._:-]{1,128}$/;
 const HASH_REF = /^sha256:[0-9a-f]{64}$/;
 
@@ -99,6 +100,36 @@ export function supervisorRoute(state) {
   });
 }
 
+function normalizeGraphOutput(state, output) {
+  if (!output || typeof output !== 'object' || Array.isArray(output) || containsForbiddenKey(output)) {
+    throw new Error('LANGGRAPH_OUTPUT_INVALID');
+  }
+  const allowed = new Set(['currentNode', 'evidenceRefs', 'checkpointId', 'attempt', 'policyDecisionIds', 'authority']);
+  for (const key of Object.keys(output)) {
+    if (!allowed.has(key)) throw new Error('LANGGRAPH_OUTPUT_FIELD_NOT_ADMITTED');
+  }
+  const currentNode = output.currentNode ?? state.currentNode;
+  if (!ALLOWED_NODES.has(currentNode)) throw new Error('LANGGRAPH_NODE_NOT_ADMITTED');
+  const checkpointId = output.checkpointId ?? state.checkpointId;
+  if (checkpointId !== null && (typeof checkpointId !== 'string' || !ID.test(checkpointId))) {
+    throw new Error('LANGGRAPH_CHECKPOINT_INVALID');
+  }
+  const attempt = output.attempt ?? state.attempt;
+  if (!Number.isSafeInteger(attempt) || attempt < 1 || attempt > 100) throw new Error('LANGGRAPH_ATTEMPT_INVALID');
+  const next = {
+    ...state,
+    currentNode,
+    evidenceRefs: output.evidenceRefs === undefined ? state.evidenceRefs : boundedRefs(output.evidenceRefs),
+    checkpointId,
+    attempt,
+    policyDecisionIds: output.policyDecisionIds === undefined
+      ? state.policyDecisionIds
+      : boundedRefs(output.policyDecisionIds),
+    authority: output.authority ?? state.authority,
+  };
+  return assertShadowAuthority(next);
+}
+
 export function createLangGraphAdapter({ compiledGraph, packageVersion = null } = {}) {
   if (!compiledGraph || typeof compiledGraph.invoke !== 'function') throw new Error('LANGGRAPH_COMPILED_GRAPH_REQUIRED');
   return Object.freeze({
@@ -110,8 +141,7 @@ export function createLangGraphAdapter({ compiledGraph, packageVersion = null } 
       assertShadowAuthority(state);
       if (containsForbiddenKey(config)) throw new Error('LANGGRAPH_CONFIG_FORBIDDEN');
       const output = await compiledGraph.invoke(structuredClone(state), sanitizeTelemetry(config));
-      if (!output || typeof output !== 'object' || containsForbiddenKey(output)) throw new Error('LANGGRAPH_OUTPUT_INVALID');
-      return assertShadowAuthority({ ...state, ...output, authority: output.authority || state.authority });
+      return normalizeGraphOutput(state, output);
     },
   });
 }
