@@ -290,6 +290,9 @@ test('OAuth callback verifies user installation, Marketplace subscription and li
     if (String(url).startsWith('https://api.github.com/marketplace_listing/accounts/42')) {
       return new Response(JSON.stringify({ id: 42, login: 'acme', type: 'Organization', marketplace_purchase: { plan: { id: 1002 } } }), { status: 200 });
     }
+    if (String(url).startsWith('https://api.github.com/applications/') && options.method === 'DELETE') {
+      return new Response(null, { status: 204 });
+    }
     if (String(url).includes('/rest/v1/rpc/capital_ai_link_cads_marketplace_user')) {
       return new Response(JSON.stringify({ linked: true, accountId: 42, tier: 'pro' }), { status: 200 });
     }
@@ -319,7 +322,11 @@ test('OAuth callback verifies user installation, Marketplace subscription and li
   );
   assert.equal(callbackRes.status, 303);
   assert.equal(callbackRes.headers.location, '/profile?cads_marketplace=linked');
-  const linkCall = calls.find(call => call.url.includes('capital_ai_link_cads_marketplace_user'));
+  const revokeIndex = calls.findIndex(call => call.url.startsWith('https://api.github.com/applications/') && call.options.method === 'DELETE');
+  const linkIndex = calls.findIndex(call => call.url.includes('capital_ai_link_cads_marketplace_user'));
+  assert.ok(revokeIndex >= 0);
+  assert.ok(linkIndex > revokeIndex);
+  const linkCall = calls[linkIndex];
   assert.ok(linkCall);
   const linkBody = JSON.parse(linkCall.options.body);
   assert.equal(linkBody._user_id, userId);
