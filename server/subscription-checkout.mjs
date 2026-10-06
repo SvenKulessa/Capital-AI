@@ -40,7 +40,7 @@ function readBody(req) {
 
 export function createSubscriptionCheckout({ env = process.env, fetchImpl = fetch, auth } = {}) {
   const secret = env.STRIPE_SECRET_KEY || '';
-  const enabled = env.STRIPE_SUBSCRIPTION_CHECKOUT_ENABLED === 'true';
+  const enabled = env.STRIPE_SUBSCRIPTION_CHECKOUT_ENABLED !== 'false';
   const baseUrl = String(env.PUBLIC_BASE_URL || 'https://capital-ai.online').replace(/\/$/, '');
 
   async function stripeCreateSession(form) {
@@ -71,6 +71,14 @@ export function createSubscriptionCheckout({ env = process.env, fetchImpl = fetc
           cycles: ['monthly', 'annual'],
           priceAuthority: 'server/billing-catalog.mjs',
           entitlementAuthority: 'public.subscriptions via Stripe-managed subscription sync',
+          catalogVersion: BILLING_CATALOG.version,
+          catalogEvidence: 'docs/security/evidence/stripe-catalog-readback-20261006.json',
+          testPurchaseRequirement: {
+            count: 3,
+            tiers: ['starter', 'pro', 'enterprise'],
+            stripeMode: 'test',
+            livePriceIdsAllowed: false,
+          },
         });
         return true;
       }

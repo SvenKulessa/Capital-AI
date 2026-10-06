@@ -8,6 +8,10 @@ import {
   FileText,
   KeyRound,
   Layers3,
+  Network,
+  FlaskConical,
+  Scale,
+  Database,
   ShieldCheck,
 } from 'lucide-react';
 
@@ -52,6 +56,69 @@ const presentations = [
     internal: false,
     icon: <BadgeEuro className="h-5 w-5" />,
     meta: 'Abonnements • Zusatzprodukte • Stripe',
+  },
+  {
+    title: 'FinTech Architektur',
+    description:
+      'Technische Architekturansicht mit Pipeline-, Daten-, Evidence- und Systemgrenzen. Die Architektur ist Teil der Dokumentation und nicht mehr Bestandteil der unteren Hauptnavigation.',
+    href: '/architecture',
+    internal: true,
+    icon: <Network className="h-5 w-5" />,
+    meta: 'Architektur • Pipeline • Evidence',
+  },
+  {
+    title: 'FinTech Forschungsprojekt',
+    description:
+      'Research- und Lizenzkontext des FinTech-Forschungsprojekts. Dieser Inhalt bleibt dokumentarisch und wird nicht mehr auf der Landingpage beworben.',
+    href: '/forschung',
+    internal: true,
+    icon: <FlaskConical className="h-5 w-5" />,
+    meta: 'Research • Quellen • Evidence',
+  },
+  {
+    title: 'OSS Market Architektur',
+    description:
+      'Statische Open-Source-Market-Architektur mit den dokumentierten Komponenten, Grenzen und Lizenzbezügen.',
+    href: '/downloads/market-screener-hub-open-source.html',
+    internal: false,
+    icon: <Layers3 className="h-5 w-5" />,
+    meta: 'OSS • Market • Architektur',
+  },
+  {
+    title: 'Lizenzen & Nachweise',
+    description:
+      'Design-/Bildherkunft, Datenprovider-Rechte und Open-Source-Lizenzen über die bestehenden dokumentierten Nachweisrouten.',
+    href: '/lizenz',
+    internal: true,
+    icon: <Scale className="h-5 w-5" />,
+    meta: 'Assets • Rechte • Provenienz',
+  },
+  {
+    title: 'Datenprovider-Lizenzen',
+    description:
+      'Providerbezogene Datenrechte, Nutzungsgrenzen und aktuelle Evidence ohne stillschweigende Production-Freigabe.',
+    href: '/datenprovider-lizenzen',
+    internal: true,
+    icon: <Database className="h-5 w-5" />,
+    meta: 'Provider • Datenrechte • Scope',
+  },
+  {
+    title: 'Open-Source-Lizenzen',
+    description:
+      'Open-Source-Komponenten und Lizenznachweise der öffentlich dokumentierten Software-Bausteine.',
+    href: '/opensource-lizenzen',
+    internal: true,
+    icon: <ShieldCheck className="h-5 w-5" />,
+    meta: 'OSS • Lizenzen • Notices',
+  },
+  {
+    title: 'Schriftlizenz',
+    description:
+      'Lokaler OFL-Lizenztext der ausgelieferten Plus Jakarta Sans Schriftdateien. Der Link bleibt auf derselben Origin und lädt keine externen Font-Dienste.',
+    href: '/fonts/OFL.txt',
+    internal: false,
+    icon: <FileText className="h-5 w-5" />,
+    meta: 'Fonts • OFL • Local Origin',
   },
   {
     title: 'CAPITAL-AI Domains',
@@ -99,8 +166,8 @@ export const DocumentationHub: React.FC<DocumentationHubProps> = ({ onBackToHome
           CAPITAL-AI Dokumentations-Hub
         </h1>
         <p className="max-w-3xl text-sm leading-relaxed text-slate-400 sm:text-base">
-          Zentraler Einstieg in Blueprint-Dokumentation sowie deterministische Präsentationen zu BYOK,
-          Pipeline-Architekturen, dem Preiskatalog und dem Aufbau der fünf CAPITAL-AI Domains.
+          Zentraler Einstieg in Blueprints, FinTech- und OSS-Architektur, Forschungsprojekt, BYOK,
+          Pipeline-Architekturen, Lizenzen, Datenrechte, Preiskatalog und die fünf CAPITAL-AI Domains.
         </p>
       </section>
 

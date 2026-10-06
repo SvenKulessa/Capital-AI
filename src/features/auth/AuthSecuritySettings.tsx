@@ -99,12 +99,26 @@ export function AuthSecuritySettings() {
     void refresh().catch(() => setError('Sicherheitsmethoden konnten nicht geladen werden.'));
   }, []);
 
+  const verifiedFactors = factors.filter(item => item.status === 'verified');
+  const passkeyLimitReached = passkeys.length >= 2;
+  const totpLimitReached = verifiedFactors.length >= 2;
+
+  useEffect(() => {
+    if (verifiedFactors.length === 1 && factorName === 'CAPITAL-AI Authenticator') {
+      setFactorName('CAPITAL-AI Authenticator 2');
+    }
+  }, [verifiedFactors.length, factorName]);
+
   const updatePasskeyName = (value: string) => setPasskeyName(value.slice(0, 120));
   const updateFactorName = (value: string) => setFactorName(value.slice(0, 120));
 
   const addPasskey = async () => {
     if (!passkeySupported) {
       setError('Dieser Browser oder dieses Gerät unterstützt WebAuthn/Passkeys nicht.');
+      return;
+    }
+    if (passkeyLimitReached) {
+      setError('Es können maximal zwei Passkeys gleichzeitig hinterlegt werden.');
       return;
     }
     setBusy('passkey-add');
@@ -129,7 +143,9 @@ export function AuthSecuritySettings() {
       await refresh();
     } catch (reason) {
       const message = reason instanceof Error ? reason.message : 'passkey_registration_failed';
-      if (message === 'passkey_disabled' || message === 'passkey_unavailable') {
+      if (message === 'passkey_limit_reached') {
+        setError('Es können maximal zwei Passkeys gleichzeitig hinterlegt werden.');
+      } else if (message === 'passkey_disabled' || message === 'passkey_unavailable') {
         setPasskeyAvailability('disabled');
         setError('Passkeys sind im produktiven Supabase-Auth-Projekt derzeit noch nicht aktiviert.');
       } else {
@@ -157,6 +173,10 @@ export function AuthSecuritySettings() {
   };
 
   const startTotp = async () => {
+    if (totpLimitReached) {
+      setError('Es können maximal zwei Authenticator-Faktoren gleichzeitig hinterlegt werden.');
+      return;
+    }
     setBusy('totp-enroll');
     setError('');
     setNotice('');
@@ -169,7 +189,9 @@ export function AuthSecuritySettings() {
       setTotpCode('');
     } catch (reason) {
       const message = reason instanceof Error ? reason.message : 'totp_enrollment_failed';
-      if (message === 'mfa_factor_name_conflict') {
+      if (message === 'totp_limit_reached') {
+        setError('Es können maximal zwei Authenticator-Faktoren gleichzeitig hinterlegt werden.');
+      } else if (message === 'mfa_factor_name_conflict') {
         setError('Eine unvollständige Authenticator-Einrichtung mit diesem Namen existiert bereits. Entferne sie unten oder starte die Einrichtung erneut.');
       } else if (message === 'totp_pending_cleanup_failed') {
         setError('Die unvollständige Authenticator-Einrichtung konnte nicht sicher bereinigt werden.');
@@ -275,13 +297,14 @@ export function AuthSecuritySettings() {
           </label>
           <button
             type="button"
-            disabled={!passkeySupported || passkeyAvailability !== 'enabled' || !!busy}
+            disabled={!passkeySupported || passkeyAvailability !== 'enabled' || passkeyLimitReached || !!busy}
             onClick={() => void addPasskey()}
             className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-cyan-400 px-3 text-xs font-black text-black disabled:opacity-40"
           >
             {busy === 'passkey-add' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Fingerprint className="h-4 w-4" />}
-            Passkey hinzufügen
+            {passkeyLimitReached ? 'Maximum 2 Passkeys erreicht' : 'Passkey hinzufügen'}
           </button>
+          <p className="mt-2 text-[10px] font-mono text-slate-500">{passkeys.length}/2 Passkeys hinterlegt</p>
 
           <div className="mt-4 space-y-2">
             {passkeys.length ? passkeys.map(item => (
@@ -330,13 +353,14 @@ export function AuthSecuritySettings() {
               </label>
               <button
                 type="button"
-                disabled={!!busy}
+                disabled={!!busy || totpLimitReached}
                 onClick={() => void startTotp()}
                 className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-amber-400 px-3 text-xs font-black text-black disabled:opacity-40"
               >
                 {busy === 'totp-enroll' ? <Loader2 className="h-4 w-4 animate-spin" /> : <QrCode className="h-4 w-4" />}
-                Authenticator aktivieren
+                {totpLimitReached ? 'Maximum 2 Authenticatoren erreicht' : 'Authenticator hinzufügen'}
               </button>
+              <p className="mt-2 text-[10px] font-mono text-slate-500">{verifiedFactors.length}/2 Authenticatoren aktiv</p>
             </>
           )}
 
@@ -364,7 +388,7 @@ export function AuthSecuritySettings() {
                   inputMode="numeric"
                   autoComplete="one-time-code"
                   value={totpCode}
-                  onChange={event => setTotpCode(event.target.value.replace(/D/g, '').slice(0, 8))}
+                  onChange={event => setTotpCode(event.target.value.replace(/\D/g, '').slice(0, 8))}
                   className="mt-1 w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2.5 font-mono text-sm tracking-[0.25em] text-white"
                   placeholder="123456"
                 />

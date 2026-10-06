@@ -28,7 +28,7 @@ const admittedPolicy = {
     providerId:'open-data-test',
     eligible:true,
     decision:'OPEN_SOURCE_OPEN_DATA_ADMITTED',
-    capabilities:{ scoringPriceInput:true },
+    capabilities:{ scoringPriceInput:true, scoringAssetClasses:['crypto'] },
   }],
 };
 
@@ -44,6 +44,7 @@ test('fails closed without admitted MARKET source and performs no network call',
   assert.equal(res.status,503);
   assert.equal(res.body.error,'scoring_source_not_admitted');
   assert.equal(res.body.requiredCapability,'scoringPriceInput');
+  assert.equal(res.body.requiredAssetClass,'crypto');
   assert.equal(calls,0);
 });
 
@@ -72,6 +73,40 @@ test('reference-only admission does not unlock score display', async () => {
   );
   assert.equal(res.status,503);
   assert.equal(res.body.error,'scoring_source_not_admitted');
+  assert.equal(calls,0);
+});
+
+
+test('admitted ECB forex reference input cannot unlock the crypto scorer', async () => {
+  let calls=0;
+  const proxy=createScorerProxy({
+    env:{ CAPITAL_AI_FINANCE_SCORER_PRIVATE_ORIGIN:'http://finance-ab12:10000' },
+    fetchImpl:async()=>{ calls++; throw new Error('must not call'); },
+    sourcePolicy:{
+      admittedSources:[{
+        providerId:'ecb-reference-rates',
+        eligible:true,
+        decision:'OPEN_SOURCE_OPEN_DATA_ADMITTED',
+        capabilities:{
+          scoringPriceInput:true,
+          scoringAssetClasses:['forex'],
+          realtime:false,
+          decisionEligible:false,
+        },
+      }],
+    },
+  });
+  const res=response();
+  await proxy.handle(
+    request({headers:{'content-type':'application/json'}}),
+    res,
+    new URL('http://local/api/crypto/score'),
+    json,
+    'req-ecb-forex',
+  );
+  assert.equal(res.status,503);
+  assert.equal(res.body.error,'scoring_source_not_admitted');
+  assert.equal(res.body.requiredAssetClass,'crypto');
   assert.equal(calls,0);
 });
 

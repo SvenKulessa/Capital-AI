@@ -77,6 +77,28 @@
         "mobileCryptoUniverse": false,
         "scoringPriceInput": false
       }
+    },
+    {
+      "providerId": "ecb-reference-rates",
+      "decision": "OPEN_SOURCE_OPEN_DATA_ADMITTED",
+      "eligible": true,
+      "scope": "FOREX_DAILY_REFERENCE_RATES_INFORMATION_ONLY",
+      "softwareLicense": "MIT",
+      "dataLicense": "LicenseRef-ECB-ESCB-STATISTICS-REUSE-2026",
+      "evidenceReference": "docs/market-data/evidence/source-admission-ecb-reference-rates-20261006.json",
+      "instrumentManifestReference": "docs/market-data/evidence/instrument-manifest-20261005.json",
+      "capabilities": {
+        "referenceMetadata": true,
+        "marketQuotes": true,
+        "mobileCryptoUniverse": false,
+        "scoringPriceInput": true,
+        "realtime": false,
+        "executionPrice": false,
+        "decisionEligible": false,
+        "scoringAssetClasses": [
+          "forex"
+        ]
+      }
     }
   ],
   "blockedLegacyProviderPaths": [
@@ -156,16 +178,18 @@
     "cookiesForwarded": false,
     "loopProtection": true,
     "requiredCapability": "scoringPriceInput",
-    "currentAdmission": "BLOCKED_NO_SCORING_PRICE_INPUT_SOURCE",
+    "currentAdmission": "REFERENCE_PRICE_INPUT_ADMITTED_FEATURE_DQ_SCORING_GATES_BLOCKED",
     "evidenceReference": "docs/market-data/evidence/score-display-source-admission-20261004.json",
-    "publicScoreDisplayEnabled": false
+    "publicScoreDisplayEnabled": false,
+    "currentScoringSource": "ecb-reference-rates",
+    "currentScoringSourceSemantics": "REFERENCE_INFORMATION_AND_ANALYTICS_ONLY"
   },
   "rightsAdmittedSources": [
     {
       "providerId": "ecb-reference-rates",
       "decision": "OPEN_DATA_RIGHTS_ADMITTED",
       "eligible": true,
-      "runtimeEligible": false,
+      "runtimeEligible": true,
       "scope": "FOREX_DAILY_REFERENCE_RATES_INFORMATION_ONLY",
       "dataLicense": "LicenseRef-ECB-ESCB-STATISTICS-REUSE-2026",
       "evidenceReference": "docs/market-data/evidence/source-rights-admission-ecb-reference-rates-20261005.json",
@@ -176,8 +200,12 @@
         "scoringPriceInput": true,
         "realtime": false,
         "executionPrice": false,
-        "decisionEligible": false
-      }
+        "decisionEligible": false,
+        "scoringAssetClasses": [
+          "forex"
+        ]
+      },
+      "runtimeAdmissionReference": "docs/market-data/evidence/source-admission-ecb-reference-rates-20261006.json"
     }
   ]
 }

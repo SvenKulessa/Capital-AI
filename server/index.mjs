@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { assetValues, quote, health, startStreams } from './market.mjs';
 import { createAuth } from './auth.mjs';
 import { createUserProviderVault } from './user-provider-vault.mjs';
+import { createUniswapTrading } from './uniswap-trading.mjs';
+import { createKrakenOrderDryRun } from './kraken-order-dry-run.mjs';
 import { createTelegram } from './telegram.mjs';
 import { createPrivacy } from './privacy.mjs';
 import { createLimiter } from './http-security.mjs';
@@ -183,6 +185,14 @@ export function createApp(root = defaultRoot, options = {}) {
   let inflight = 0;
   const auth = createAuth(options);
   const userProviderVault = createUserProviderVault({ ...options, auth });
+  const krakenOrderDryRun = createKrakenOrderDryRun({
+    env: options.env || process.env,
+    fetchImpl: options.fetchImpl || fetch,
+    auth,
+    vault: userProviderVault,
+    audit: writeAuditEvent,
+  });
+  const uniswapTrading = createUniswapTrading({ env: options.env || process.env, fetchImpl: options.fetchImpl || fetch, auth });
   const telegram = createTelegram({ ...options, auth });
   const privacy = createPrivacy({ ...options, auth });
   const marketLimit = createLimiter(120);
@@ -207,6 +217,8 @@ export function createApp(root = defaultRoot, options = {}) {
   if (serveWellKnown(req, res, url)) return;
   if (await auth.handle(req, res, url, json)) return;
   if (await userProviderVault.handle(req, res, url, json)) return;
+  if (await krakenOrderDryRun.handle(req, res, url, json, requestContext.requestId)) return;
+  if (await uniswapTrading.handle(req, res, url, json)) return;
   if (await privacy(req, res, url, json)) return;
   if (await telegram(req, res, url, json)) return;
   if (await vocabularyCheckout.handle(req, res, url, json)) return;

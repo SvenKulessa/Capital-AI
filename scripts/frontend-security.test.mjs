@@ -126,3 +126,85 @@ test('commercial Blueprint artifacts remain absent from public client surfaces',
   assert.match(docs, /Private Evidence prüfen/);
   assert.match(docs, /\/api\/profile\/provider-connections/);
 });
+
+
+test('landing page uses exactly three Vocabulary flashcards and keeps research in documentation', async () => {
+  const home = await readFile(new URL('../src/features/home/HomePage.tsx', import.meta.url), 'utf8');
+  const cards = await readFile(new URL('../src/components/VocabularyFlashcards.tsx', import.meta.url), 'utf8');
+  const docs = await readFile(new URL('../src/features/documentation/DocumentationHub.tsx', import.meta.url), 'utf8');
+
+  assert.match(home, /VocabularyFlashcards/);
+  assert.match(home, /const VocabularyFlashcards = lazy\(\(\) =>/);
+  assert.match(home, /import\('\.\.\/\.\.\/components\/VocabularyFlashcards'\)/);
+  assert.doesNotMatch(home, /import \{ VocabularyFlashcards \} from/);
+  assert.doesNotMatch(home, /ResearchProjectSummary/);
+  assert.match(cards, /VOCABULARY_TERMS\.slice\(0, 3\)/);
+  assert.match(cards, /term\.shortDefinition/);
+  assert.match(cards, /rotateY\(180deg\)/);
+  assert.match(cards, /data-social-engine-generated="false"/);
+  assert.match(docs, /FinTech Forschungsprojekt/);
+  assert.match(docs, /href: '\/forschung'/);
+});
+
+test('large optional navigation stays outside the initial landing bundle', async () => {
+  const header = await readFile(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+
+  assert.match(header, /const HubSidebarDrawer = lazy\(\(\) =>/);
+  assert.match(header, /import\('\.\/HubSidebarDrawer'\)/);
+  assert.match(header, /import type \{ MainHubId \} from '\.\/HubSidebarDrawer'/);
+  assert.doesNotMatch(header, /import \{ HubSidebarDrawer,/);
+  assert.match(header, /\{isSidebarOpen && \(/);
+});
+
+test('footer uses locally bundled provider logos and consolidates license navigation into documentation', async () => {
+  const footer = await readFile(new URL('../src/components/Footer.tsx', import.meta.url), 'utf8');
+  const docs = await readFile(new URL('../src/features/documentation/DocumentationHub.tsx', import.meta.url), 'utf8');
+
+  assert.match(footer, /\/branding\/social\/\$\{id\}\.svg/);
+  assert.match(footer, /Dokumentation &amp; Lizenzen/);
+  assert.doesNotMatch(footer, /footer-nav-forschung|footer-nav-oss-market-architecture|Schriftlizenz/);
+  assert.match(docs, /OSS Market Architektur/);
+  assert.match(docs, /market-screener-hub-open-source\.html/);
+  assert.match(docs, /Datenprovider-Lizenzen/);
+  assert.match(docs, /Open-Source-Lizenzen/);
+});
+
+test('architecture is removed from drawer footer and remains reachable from documentation', async () => {
+  const header = await readFile(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  const docs = await readFile(new URL('../src/features/documentation/DocumentationHub.tsx', import.meta.url), 'utf8');
+
+  assert.doesNotMatch(header, />\s*FinTech Architektur\s*</);
+  assert.match(docs, /title: 'FinTech Architektur'/);
+  assert.match(docs, /href: '\/architecture'/);
+});
+
+test('learning portal exposes architecture video previews without claiming completed renderer evidence', async () => {
+  const learning = await readFile(new URL('../src/features/learning/LearningPortalPage.tsx', import.meta.url), 'utf8');
+
+  assert.match(learning, /'glossar' \| 'guides' \| 'videos' \| 'quiz'/);
+  assert.match(learning, /Architektur Videos/);
+  assert.match(learning, /PREVIEW · VIDEO NOCH NICHT GERENDERT/);
+  assert.match(learning, /BLOCKED_RUNTIME_NOT_MIGRATED/);
+});
+
+test('account security UI supports at most two Passkeys and two TOTP factors with numeric code sanitization', async () => {
+  const security = await readFile(new URL('../src/features/auth/AuthSecuritySettings.tsx', import.meta.url), 'utf8');
+
+  assert.match(security, /passkeys\.length >= 2/);
+  assert.match(security, /verifiedFactors\.length >= 2/);
+  assert.match(security, /Maximum 2 Passkeys erreicht/);
+  assert.match(security, /Maximum 2 Authenticatoren erreicht/);
+  assert.match(security, /replace\(\/\\D\/g, ''\)/);
+  assert.match(security, /CAPITAL-AI Authenticator 2/);
+});
+
+test('key vault keeps Spot and Futures credential families separate and execution fail-closed', async () => {
+  const vault = await readFile(new URL('../src/components/KeyVaultPage.tsx', import.meta.url), 'utf8');
+
+  assert.match(vault, /Spot REST Auth/);
+  assert.match(vault, /Spot WebSocket Token/);
+  assert.match(vault, /Futures \/ Perpetuals/);
+  assert.match(vault, /nicht als Spot-Key umgedeutet/);
+  assert.match(vault, /Funding, Transfers und Withdrawals bleiben abgewiesen/);
+  assert.match(vault, /Live-Execution ist bis zu separaten Risk-, Confirmation- und Production-Gates deaktiviert/);
+});
