@@ -28,20 +28,30 @@ docker run -d \
   -v capital-nats-smoke-data:/var/data \
   capital-nats:${GITHUB_SHA:?GITHUB_SHA required}
 
+ready=false
 for attempt in $(seq 1 30); do
   if docker logs capital-nats-smoke 2>&1 | grep -q 'Server is ready'; then
+    ready=true
+    break
+  fi
+  if test "$(docker inspect --format '{{.State.Running}}' capital-nats-smoke 2>/dev/null || true)" != "true"; then
     break
   fi
   sleep 1
 done
 
-docker logs capital-nats-smoke 2>&1 | grep -q 'Server is ready'
-docker exec capital-nats-smoke sh -ec '
-  grep -q "capital.private.provider.query.v1" /etc/nats/nats-server.conf
-  grep -q "capital.private.provider.execute.v1" /etc/nats/nats-server.conf
-  test "$(grep -c "user: \\$NATS_BRIDGE_USER" /etc/nats/nats-server.conf)" = 1
-  test "$(grep -c "user: \\$NATS_EXECUTOR_USER" /etc/nats/nats-server.conf)" = 1
-'
+if test "$ready" != "true"; then
+  echo 'NATS smoke did not reach ready state' >&2
+  docker logs capital-nats-smoke >&2 || true
+  exit 1
+fi
+
+# Validate the committed authority file, not expanded credential values.
+test "$(docker exec capital-nats-smoke grep -Fc 'user: $NATS_BRIDGE_USER' /etc/nats/nats-server.conf)" = 1
+test "$(docker exec capital-nats-smoke grep -Fc 'user: $NATS_EXECUTOR_USER' /etc/nats/nats-server.conf)" = 1
+test "$(docker exec capital-nats-smoke grep -Fc 'capital.private.provider.query.v1' /etc/nats/nats-server.conf)" = 2
+test "$(docker exec capital-nats-smoke grep -Fc 'capital.private.provider.execute.v1' /etc/nats/nats-server.conf)" = 2
+
 docker exec capital-nats-smoke sh -c '
   test "$(id -u)" = 0
   grep -Eq "^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$" /proc/1/status
