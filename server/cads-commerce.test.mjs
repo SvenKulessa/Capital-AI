@@ -76,3 +76,15 @@ test('CADS commerce exposes no mutating method', async () => {
   const result = await invoke(commerce, '/api/cads/commerce/readiness', 'POST');
   assert.equal(result.status, 405);
 });
+
+test('CADS entitlement response does not expose redundant user identifiers', async () => {
+  const commerce = createCadsCommerce({
+    auth: {
+      verify: async () => ({ userId: '00000000-0000-4000-8000-000000000001' }),
+      resolvePaidTier: async () => 'starter',
+    },
+  });
+  const result = await invoke(commerce, '/api/cads/commerce/entitlement');
+  assert.equal(result.status, 200);
+  assert.equal('userId' in result.payload, false);
+});
