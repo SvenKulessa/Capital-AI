@@ -7,6 +7,8 @@ Assurance: TRUST
 
 ## 1. Voraussetzungen für den Publisher
 
+Zielgruppe der produktiven Pläne: **B2B / GitHub-Organisationen only**. Persönliche Accounts sind im CADS-Planvertrag nicht vorgesehen.
+
 Für einen bezahlten GitHub-Marketplace-Plan müssen vor Veröffentlichung extern belegt sein:
 
 1. CADS GitHub App gehört einer GitHub-Organisation.
