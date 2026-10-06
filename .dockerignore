@@ -12,6 +12,9 @@
 !server/
 !server/index.mjs
 !server/market.mjs
+!server/ecb-reference-rates.mjs
+!server/ecb-reference-rates.test.mjs
+!server/ecb-reference-rates.LICENSE.txt
 !server/open-source-market-policy.mjs
 !server/advisor.ts
 !server/prompt-injection-guard.mjs
@@ -84,6 +87,7 @@
 !scripts/seo-metadata.test.mjs
 !scripts/validate-finance-source-target-manifest.mjs
 !scripts/finance-source-target-manifest.test.mjs
+!scripts/ecb-reference-admission.test.mjs
 !contracts/
 !contracts/**
 !packages/
@@ -107,6 +111,8 @@
 !docs/market-data/PRODUCTION-WEB-01-MARKET-20261005.yaml
 !docs/market-data/evidence/
 !docs/market-data/evidence/source-rights-admission-ecb-reference-rates-20261005.json
+!docs/market-data/evidence/source-admission-ecb-reference-rates-20261006.json
+!docs/market-data/evidence/instrument-manifest-20261005.json
 !public/
 !public/bootstrap-failure.js
 !public/fonts/
