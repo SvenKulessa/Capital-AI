@@ -372,3 +372,26 @@ test('OAuth callback rejects spoofed installation_id not authorized to GitHub us
   assert.equal(payload.error, 'marketplace_oauth_authorization_failed');
   assert.equal(storeReached, false);
 });
+
+test('unauthenticated Marketplace setup redirects only to same-origin login continuation', async () => {
+  const env = baseEnv();
+  const marketplace = createCadsMarketplace({
+    env,
+    auth: { verify: async () => null },
+  });
+  const res = redirectHarness();
+  await marketplace.handle(
+    { method: 'GET', headers: {} },
+    res,
+    new URL('https://capital-ai.online/api/cads/marketplace/setup?installation_id=77&marketplace_listing_plan_id=1003'),
+    () => { throw new Error('json response not expected'); },
+  );
+  assert.equal(res.status, 303);
+  const location = new URL(res.headers.location, 'https://capital-ai.online');
+  assert.equal(location.origin, 'https://capital-ai.online');
+  assert.equal(location.pathname, '/login');
+  assert.equal(
+    location.searchParams.get('next'),
+    '/api/cads/marketplace/setup?installation_id=77',
+  );
+});
