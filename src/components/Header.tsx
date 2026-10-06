@@ -793,17 +793,6 @@ export const Header: React.FC<HeaderProps> = ({
                     type="button"
                     onClick={() => {
                       setIsMenuOpen(false);
-                      onNavigate?.('/architecture');
-                    }}
-                    className="hover:text-amber-300 transition-colors font-bold text-amber-400 cursor-pointer"
-                  >
-                    FinTech Architektur
-                  </button>
-                  <span>•</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsMenuOpen(false);
                       onNavigate?.('/faq');
                     }}
                     className="hover:text-amber-300 transition-colors cursor-pointer"
