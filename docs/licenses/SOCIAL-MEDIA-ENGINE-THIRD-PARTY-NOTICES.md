@@ -26,7 +26,7 @@ These components are not customer-bundled by this notice. Their exact model/runt
 
 ## FFmpeg
 
-FFmpeg remains **BLOCKED for production packaging** until CAPITAL-AI selects one exact worker build, records its binary/package SHA-256 and `ffmpeg -buildconf`, verifies `--enable-nonfree` is absent, and resolves the resulting LGPL/GPL obligations. Historical Finance FFmpeg 7.1.5 evidence was GPL-enabled and is not accepted as product-distribution evidence.
+FFmpeg 9.0.2 source is pinned to SHA-256 `8c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e`. CAPITAL-AI uses a dedicated LGPL-only shared-library build profile (`deploy/social-media/ffmpeg-build-profile.json`) with `--enable-gpl`, `--enable-version3` and `--enable-nonfree` forbidden. The Finance renderer requires only native MPEG-4 Part 2 video, native AAC audio, concat and standard filters. Production packaging remains blocked until the actual ffmpeg/ffprobe binaries, `ffmpeg -buildconf`, OCI digest and SBOM are bound. Historical Finance FFmpeg 7.1.5 evidence was GPL-enabled and is not accepted as product-distribution evidence.
 
 ## Poppler
 
