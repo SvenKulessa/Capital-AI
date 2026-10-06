@@ -76,7 +76,8 @@ test('social brand icons are local and provenance-bound', () => {
     const svg = readFileSync(resolve(socialRoot, name + '.svg'), 'utf8');
     assert.match(svg, /viewBox="0 0 24 24"/);
     assert.match(svg, /<title>[^<]+<\/title>/);
-    assert.doesNotMatch(svg, /https?:\/\//);
+    assert.doesNotMatch(svg, /(?:href|src)\s*=\s*["']https?:\/\//i);
+    assert.doesNotMatch(svg, /<(?:script|image|use)\b[^>]*(?:href|src)=/i);
   }
 
   assert.match(provenance, /Simple Icons/);
