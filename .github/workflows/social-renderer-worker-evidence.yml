@@ -90,6 +90,7 @@ jobs:
           docker run --rm --entrypoint ffmpeg "$image" -hide_banner -filters > social-renderer-evidence/ffmpeg-filters.txt
           docker run --rm --entrypoint ffmpeg "$image" -hide_banner -demuxers > social-renderer-evidence/ffmpeg-demuxers.txt
           docker run --rm --entrypoint ffprobe "$image" -hide_banner -version > social-renderer-evidence/ffprobe-version.txt
+          docker run --rm --entrypoint apk "$image" info -v libcrypto3 libssl3 libuuid > social-renderer-evidence/runtime-security-packages.txt
 
           ! grep -E -- '--enable-(gpl|nonfree|version3)([ =]|$)' social-renderer-evidence/ffmpeg-buildconf.txt
           grep -E '[[:space:]]mpeg4[[:space:]]' social-renderer-evidence/ffmpeg-encoders.txt
@@ -130,6 +131,8 @@ jobs:
             "$image" -euc '
               test "$(id -u)" = "10001"
               python -c "from PIL import Image; assert Image.__version__ == \"12.3.0\""
+              ! command -v pip
+              test ! -d /usr/local/lib/python3.11/site-packages/setuptools
               ffmpeg -hide_banner -version >/dev/null
               ffprobe -hide_banner -version >/dev/null
             '
