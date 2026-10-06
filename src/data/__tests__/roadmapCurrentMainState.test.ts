@@ -12,6 +12,7 @@ test('roadmap reconciliation covers every canonical work package exactly once', 
   const reviewedIds = ROADMAP_RECONCILIATION.packageSources.map(item => item.id).sort();
 
   assert.equal(ROADMAP_RECONCILIATION.schema, 'CAPITAL_AI_ROADMAP_RECONCILIATION@1');
+  assert.equal(ROADMAP_RECONCILIATION.baseMainSha, 'cef1d11f607778f5226ca1df97376ba408652c69');
   assert.equal(ROADMAP_RECONCILIATION.packageCount, 111);
   assert.equal(new Set(packageIds).size, packageIds.length);
   assert.equal(new Set(reviewedIds).size, reviewedIds.length);
