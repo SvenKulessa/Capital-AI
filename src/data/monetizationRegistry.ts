@@ -2,7 +2,7 @@
  * Canonical monetizable product list.
  * Readiness is the share of a sellable, compliant launch already evidenced in repo.
  * Gap is the remaining distance to market. Current-state correlation baseline:
- * 824d42913bbeccb68366c2ae70714ccb960717e5, 2026-10-06.
+ * 0bf052cbc8f7774db29cc77493f6f24bb28bd93b, 2026-10-06.
  *
  * The historical weighted scan used: definition 15, user surface 25, commercial path 25,
  * data/compliance gate 20, production evidence 15. When material implementation changes

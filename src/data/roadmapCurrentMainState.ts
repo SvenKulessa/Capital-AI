@@ -8,7 +8,7 @@ export type RoadmapReconciliationPatch = {
 
 export const ROADMAP_RECONCILIATION = Object.freeze({
   schema: 'CAPITAL_AI_ROADMAP_RECONCILIATION@1',
-  baseMainSha: '824d42913bbeccb68366c2ae70714ccb960717e5',
+  baseMainSha: '0bf052cbc8f7774db29cc77493f6f24bb28bd93b',
   reviewedAt: '2026-10-06',
   packageCount: 108,
   packageSources: [

@@ -2,7 +2,7 @@
 
 Naming convention: `[CAPITAL-AI-MARKET]PRODUKTNAME` or `[CAPITAL-AI-PRODUCT]PRODUKTNAME`.
 
-Current-state correlation: 2026-10-06, implementation baseline `824d42913bbeccb68366c2ae70714ccb960717e5`. Readiness/Gap remain the historical weighted measure only where the underlying implementation state did not materially change. A dash means the old percentage was invalidated and has not been re-measured.
+Current-state correlation: 2026-10-06, implementation baseline `0bf052cbc8f7774db29cc77493f6f24bb28bd93b`. Readiness/Gap remain the historical weighted measure only where the underlying implementation state did not materially change. A dash means the old percentage was invalidated and has not been re-measured.
 
 Weights: definition 15, user surface 25, commercial path 25, data/compliance gate 20, production evidence 15.
 

@@ -1,6 +1,6 @@
 # Roadmap-Reconciliation — 06.10.2026
 
-Basis-Main: `824d42913bbeccb68366c2ae70714ccb960717e5`  
+Basis-Main: `0bf052cbc8f7774db29cc77493f6f24bb28bd93b`  
 Arbeitsbranch: `capital-ai-product/cads-monetization-roadmap-20261006`  
 Primary Domain: PRODUCT  
 Cross-Domain: MARKET / PLATFORM / TRUST / GROWTH
@@ -61,6 +61,7 @@ Für materiell fortgeschrittene, aber noch nicht abgeschlossene Pakete bleibt
   Idempotency-Slice und Audit-Evidence; Live-Submit bleibt blockiert.
 - Kraken Futures/Perpetuals besitzen getrennte Credential-Capabilities, aber keine Live-Execution.
 - Uniswap ist als Quote-/Arbitrage-Analysepfad integriert; Wallet-Signatur und Execution bleiben getrennt.
+- PR #212 ist in Main: Kraken/Binance Read-only BYOK, zentraler Private-Provider-Query-Contract und eine getrennte Rust/NATS-Bridge sind implementiert; Runtime-/Deployment-Evidence und mutierende Execution bleiben separat.
 - Die Infrastruktur-/Benchmark-Arbeit ist aktiv, reale NATS/Kafka × Node/Rust Evidence bleibt auszuführen.
 
 ### PLATFORM
@@ -133,11 +134,10 @@ Diese Capability-Matrix ist Produktkonfiguration. Benchmark-Evidence bleibt
 
 ## Offene PRs zum Basiszeitpunkt
 
-- #212 — MARKET Rust/NATS Private-Provider-Bridge read-only
-- #213 — Chat Buddy / JaJa Universe Buddy
-- #214 — PRODUCT Multi-Agent-Roadmap und Agent-Trajectory, Draft
+- #214 — PRODUCT Multi-Agent-Roadmap und Agent-Trajectory
+- #215 — PRODUCT JaJa Universe Buddy v0.1, Draft
 
-Diese PRs sind nicht Bestandteil des Basis-Main und werden daher nicht als implementierter Main-Zustand
+Diese offenen PRs sind nicht Bestandteil des Basis-Main und werden daher nicht als implementierter Main-Zustand
 ausgegeben. Nach Merge ist eine Post-Merge-Rekorrelation erforderlich, falls Roadmap-, CADS-,
 Auth-, Runtime- oder Evidence-Dateien überlappen.
 

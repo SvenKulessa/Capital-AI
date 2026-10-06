@@ -1050,7 +1050,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
 /** Statischer Repo-Snapshot; wird nach einem belegten Abgleich aktualisiert. */
 export const ROADMAP_SNAPSHOT = {
   "repository": "SvenKulessa/Capital-AI",
-  "sourceSha": "824d42913bbeccb68366c2ae70714ccb960717e5",
+  "sourceSha": "0bf052cbc8f7774db29cc77493f6f24bb28bd93b",
   "reviewDate": "2026-10-06",
   "scope": "Main-Snapshot 824d4291; 108 Work-Packages vollständig korreliert; 24 belegte Current-State-Overrides; CADS Website-Commerce-Slice im Folgebranch umgesetzt; Runtime-, Lizenz-, Marketplace- und Production-Gates separat",
   "githubSettingsReviewDate": "2026-10-01",
@@ -1059,9 +1059,8 @@ export const ROADMAP_SNAPSHOT = {
   "productVersionBaseline": "0.8.0-alpha.1",
   "securitySourceSha": "07b3ff1785d2306bc743f41c990c975a69365d0b",
   "openPullRequests": [
-    212,
-    213,
-    214
+    214,
+    215
   ]
 } as const;
 
