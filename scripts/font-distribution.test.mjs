@@ -26,5 +26,5 @@ test('font requests and license access stay on the application origin', () => {
   assert.match(css, /PlusJakartaSans-Regular\.ttf/);
   assert.match(css, /PlusJakartaSans-Italic\.ttf/);
   assert.doesNotMatch(css, /https?:\/\//);
-  assert.match(read('src/components/Footer.tsx').toString(), /href="\/fonts\/OFL.txt"/);
+  assert.match(read('src/features/documentation/DocumentationHub.tsx').toString(), /href: '\/fonts\/OFL.txt'/);
 });
