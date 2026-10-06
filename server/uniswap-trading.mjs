@@ -137,20 +137,21 @@ function evaluateUniswapRisk(projected, analysis, policy, receivedAtMs) {
   let estimatedWorstCaseLossUsd = null;
   let estimatedNetProfitUsd = null;
   let lossLimitPass = false;
+  let profitabilityPass = false;
 
   if (analysis && typeof slippage === 'number' && typeof priceImpact === 'number' && gasFeeUsd !== null) {
     estimatedWorstCaseLossUsd =
       analysis.notionalUsd * (slippage + Math.abs(priceImpact)) / 100 + gasFeeUsd;
     estimatedNetProfitUsd = analysis.expectedGrossProfitUsd - estimatedWorstCaseLossUsd;
     lossLimitPass = estimatedWorstCaseLossUsd <= analysis.maxLossUsd;
+    profitabilityPass = estimatedNetProfitUsd > 0;
   }
 
+  const analysisEligible = slippagePass && priceImpactPass && gasPass && lossLimitPass && profitabilityPass;
   const routing = String(projected.routing || '');
   return {
-    decision: slippagePass && priceImpactPass && gasPass && lossLimitPass
-      ? 'PASS_ANALYSIS_ONLY'
-      : 'BLOCKED',
-    analysisEligible: slippagePass && priceImpactPass && gasPass && lossLimitPass,
+    decision: analysisEligible ? 'PASS_ANALYSIS_ONLY' : 'BLOCKED',
+    analysisEligible,
     executionEligible: false,
     freshness: {
       basis: 'LOCAL_RECEIVED_AT_ONLY',
@@ -167,12 +168,16 @@ function evaluateUniswapRisk(projected, analysis, policy, receivedAtMs) {
         analysisContextPresent: Boolean(analysis),
         estimatedWorstCaseLossUsd,
         maxLossUsd: analysis?.maxLossUsd ?? null,
-        estimatedNetProfitUsd,
         pass: lossLimitPass,
+      },
+      profitability: {
+        expectedGrossProfitUsd: analysis?.expectedGrossProfitUsd ?? null,
+        estimatedNetProfitUsd,
+        pass: profitabilityPass,
       },
       mev: {
         routing,
-        verifiedProtection: routing === 'PRIORITY',
+        priorityRouteObserved: routing === 'PRIORITY',
         executionPass: false,
       },
     },
