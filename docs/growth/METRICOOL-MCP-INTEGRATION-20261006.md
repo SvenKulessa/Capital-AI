@@ -1,7 +1,7 @@
 # Metricool MCP Integration — CAPITAL-AI
 
-Stand: 2026-10-06  
-Primary Domain: GROWTH  
+Stand: 2026-10-06
+Primary Domain: GROWTH
 Baseline: `main@5f333bcd5e219ae160a611941ba1e9fde01f4c94`
 
 ## Entscheidung
