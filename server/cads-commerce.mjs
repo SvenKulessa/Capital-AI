@@ -1,5 +1,6 @@
 import { BENCHMARK_TIERS, benchmarkEntitlementForTier } from '../packages/benchmark-core/index.mjs';
 import { BILLING_CATALOG } from './billing-catalog.mjs';
+import { publicCadsMarketplaceReadiness } from './cads-marketplace.mjs';
 
 function publicTierProjection() {
   return Object.fromEntries(Object.entries(BENCHMARK_TIERS).map(([tier, entitlement]) => [
@@ -12,7 +13,7 @@ function publicTierProjection() {
   ]));
 }
 
-export function createCadsCommerce({ auth } = {}) {
+export function createCadsCommerce({ auth, env = process.env } = {}) {
   async function handle(req, res, url, json) {
     if (url.pathname === '/api/cads/commerce/readiness') {
       if (req.method !== 'GET') {
@@ -31,10 +32,11 @@ export function createCadsCommerce({ auth } = {}) {
         checkoutPath: '/api/billing/subscriptions/checkout',
         benchmarkReadinessPath: '/api/benchmark/readiness',
         githubMarketplace: {
-          billingAuthority: 'SEPARATE_NOT_CONFIGURED',
-          entitlementAuthority: 'SEPARATE_NOT_CONFIGURED',
+          ...publicCadsMarketplaceReadiness(env),
+          billingAuthority: 'GITHUB_MARKETPLACE',
+          entitlementAuthority: 'GITHUB_MARKETPLACE_API_PLUS_SUPABASE_LEDGER',
           stripeStatusAuthoritative: false,
-          marketplacePurchaseLifecycleImplemented: false,
+          marketplacePurchaseLifecycleImplemented: true,
         },
         productionEligible: false,
         decisionEligible: false,
