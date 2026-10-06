@@ -5,7 +5,8 @@
  * Beinhaltet:
  * 1. Vollständiges Market Vocabulary & Glossar (Filterbar nach Kategorien & Skill-Levels)
  * 2. Öffentliche Analyse-Module & Methodik (Werkzeuge, Datenpfade, Modulaufbau)
- * 3. Quant- & Trader Skill-Check (Interaktives Quiz)
+ * 3. Architektur-Video-Vorschau (Renderer-Evidence bleibt fail-closed)
+ * 4. Quant- & Trader Skill-Check (Interaktives Quiz)
  */
 
 import React, { useEffect, useState, useMemo } from 'react';
