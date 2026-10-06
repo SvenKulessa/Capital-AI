@@ -37,6 +37,7 @@ COPY public/bootstrap-failure.js ./public/bootstrap-failure.js
 COPY server/advisor.ts server/http-security.mjs server/mta-sts.mjs server/mta-sts.test.mjs server/well-known.mjs server/well-known.test.mjs server/shadow-evidence-store.mjs server/auth-security.mjs server/auth-security.test.mjs ./server/
 COPY server/prompt-injection-guard.mjs server/prompt-injection-guard.test.mjs server/billing-catalog.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/vocabulary-checkout.test.mjs server/subscription-checkout.mjs server/subscription-checkout.test.mjs server/public-artifact-policy.mjs server/public-artifact-policy.test.mjs ./server/
 COPY server/advisor-security.test.mjs ./server/
+COPY server/growth-ai-gateway.ts server/growth-ai-gateway.test.ts ./server/
 COPY scripts/billing-catalog.test.mjs scripts/stripe-catalog-readback.test.mjs scripts/blueprint-evidence-contract.test.mjs scripts/supabase-auth-config.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-metadata.test.mjs scripts/finance-source-target-manifest.test.mjs scripts/validate-finance-source-target-manifest.mjs scripts/social-engine-completion-gate.test.mjs scripts/validate-social-engine-completion-gate.mjs ./scripts/
 COPY supabase/email-templates ./supabase/email-templates
 COPY scripts/documentation-drift.mjs scripts/documentation-drift.test.mjs ./scripts/
