@@ -79,6 +79,7 @@
 !scripts/license-evidence.test.mjs
 !scripts/billing-catalog.test.mjs
 !scripts/stripe-catalog-readback.test.mjs
+!scripts/stripe-subscription-sync-migration.test.mjs
 !scripts/blueprint-evidence-contract.test.mjs
 !scripts/documentation-drift.mjs
 !scripts/documentation-drift.test.mjs
@@ -158,3 +159,5 @@
 !supabase/
 !supabase/email-templates/
 !supabase/email-templates/**
+!supabase/migrations/
+!supabase/migrations/20261006072600_sync_stripe_subscription_catalog_v2.sql
