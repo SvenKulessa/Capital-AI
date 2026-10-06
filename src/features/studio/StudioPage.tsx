@@ -896,7 +896,6 @@ export const StudioPage: React.FC<StudioPageProps> = ({
                 Status: EVIDENCE_REQUIRED · COMMERCE_NOT_ADMITTED
               </div>
             </section>
-            </div>
           </div>
         </div>
       )}
