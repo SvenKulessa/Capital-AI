@@ -17,7 +17,7 @@ export const CADS_COMMERCIAL_READINESS = {
   productName: '[CAPITAL-AI-PRODUCT]CADS-BENCHMARK-GITHUB-APP',
   owner: 'PRODUCT',
   assuranceOwner: 'TRUST',
-  baselineMainSha: '824d42913bbeccb68366c2ae70714ccb960717e5',
+  baselineMainSha: '0bf052cbc8f7774db29cc77493f6f24bb28bd93b',
   correlatedAt: '2026-10-06',
   targetChannel: 'github-marketplace',
   state: 'PRE_LISTING_FAIL_CLOSED',
