@@ -25,7 +25,7 @@ export const CADS_COMMERCIAL_READINESS = {
   },
   githubMarketplace: {
     target: 'PAID_PRODUCTION',
-    state: 'RUNTIME_IMPLEMENTED_EXTERNAL_ADMISSION_BLOCKED',
+    state: 'BILLING_RUNTIME_IMPLEMENTED_EXECUTION_AND_EXTERNAL_ADMISSION_BLOCKED',
     pricingAuthority: 'GITHUB_MARKETPLACE_LISTING',
     pricingCurrency: 'USD',
     marketplaceListingApproved: false,
@@ -49,6 +49,7 @@ export const CADS_COMMERCIAL_READINESS = {
     implementation: {
       hmacWebhookVerification: true,
       authoritativeMarketplaceReadbackBeforeActivationOrPlanChange: true,
+      verifiedGitHubInstallationToSupabaseUserLink: true,
       idempotentDeliveryLedger: true,
       starterProEnterpriseCapabilityMapping: true,
       cancellationDeactivation: true,
@@ -70,8 +71,10 @@ export const CADS_COMMERCIAL_READINESS = {
       cancellationLifecycleRuntimeVerified: false,
       cancellationDeletionRuntimeVerified: false,
       authoritativeMarketplaceReadbackRuntimeVerified: false,
+      buyerOAuthUserLinkRuntimeVerified: false,
+      benchmarkExecutionRuntimeVerified: false,
     },
-    status: 'BLOCKED_EXTERNAL_GITHUB_ADMISSION',
+    status: 'BLOCKED_EXECUTION_AND_EXTERNAL_GITHUB_ADMISSION',
   },
   operatorContext: {
     grafanaCloudSupabaseConnected: true,
