@@ -30,6 +30,8 @@ import {
   ChevronDown,
   ExternalLink,
   Code2,
+  PlayCircle,
+  Video,
 } from 'lucide-react';
 import {
   VOCABULARY_CATEGORIES,
@@ -43,8 +45,8 @@ import { useHubTab } from '../../hooks/useHubTab';
 import { updatePageSEO } from '../../utils/analytics';
 import { VOCABULARY_GRANT_KEY, formatVocabularyPrice } from '../../data/vocabularyOffer';
 
-export type LearningPortalTab = 'glossar' | 'guides' | 'quiz';
-const LEARNING_TABS: readonly LearningPortalTab[] = ['glossar', 'guides', 'quiz'];
+export type LearningPortalTab = 'glossar' | 'guides' | 'videos' | 'quiz';
+const LEARNING_TABS: readonly LearningPortalTab[] = ['glossar', 'guides', 'videos', 'quiz'];
 
 interface LearningPortalPageProps {
   onBackToHome?: () => void;
@@ -78,6 +80,13 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       icon: <Layers className="w-4 h-4 text-cyan-400" />,
       badge: '4 Module',
       desc: 'Werkzeuge, Datenpfade & Modulaufbau',
+    },
+    {
+      id: 'videos',
+      label: 'Architektur Videos',
+      icon: <Video className="w-4 h-4 text-emerald-400" />,
+      badge: 'Vorschau',
+      desc: 'Pipeline, BYOK & Evidence',
     },
     {
       id: 'quiz',
@@ -350,6 +359,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
             <span className="text-cyan-300 font-medium">
               {activeTab === 'glossar' && 'Finanz-Vocabulary & Glossar'}
               {activeTab === 'guides' && 'Analyse-Module & Methodik'}
+              {activeTab === 'videos' && 'Architektur Videos'}
               {activeTab === 'quiz' && 'Quant & Trader Skill-Check'}
             </span>
           </div>
@@ -436,7 +446,22 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
           <span>Analyse-Module &amp; Methodik</span>
         </button>
 
-        {/* TAB 3: QUIZ & SKILL-CHECK */}
+        {/* TAB 3: ARCHITEKTUR VIDEOS */}
+        <button
+          type="button"
+          onClick={() => setActiveTab('videos')}
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
+            activeTab === 'videos'
+              ? 'bg-emerald-500 text-black font-bold shadow-sm'
+              : 'text-slate-300 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <PlayCircle className="w-3.5 h-3.5" />
+          <span>Architektur Videos</span>
+          <span className="text-[10px] px-1.5 py-0.2 rounded bg-black/20 font-mono">Vorschau</span>
+        </button>
+
+        {/* TAB 4: QUIZ & SKILL-CHECK */}
         <button
           type="button"
           onClick={() => setActiveTab('quiz')}
