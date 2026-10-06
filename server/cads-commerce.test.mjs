@@ -29,8 +29,12 @@ test('CADS readiness projects the existing Stripe tiers without inventing a new 
   assert.equal(result.payload.tiers.starter.stripeProductId, BILLING_CATALOG.tiers.starter.productId);
   assert.equal(result.payload.tiers.pro.capabilities.history, true);
   assert.equal(result.payload.tiers.enterprise.capabilities.enforcedPrGate, true);
+  assert.equal(result.payload.githubMarketplace.target, 'PAID_PRODUCTION');
+  assert.equal(result.payload.githubMarketplace.freePlanEnabled, false);
+  assert.equal(result.payload.githubMarketplace.pricingCurrency, 'USD');
   assert.equal(result.payload.githubMarketplace.stripeStatusAuthoritative, false);
-  assert.equal(result.payload.githubMarketplace.marketplacePurchaseLifecycleImplemented, false);
+  assert.equal(result.payload.githubMarketplace.marketplacePurchaseLifecycleImplemented, true);
+  assert.equal(result.payload.githubMarketplace.runtimeReady, false);
   assert.equal(result.payload.productionEligible, false);
   assert.equal(result.payload.decisionEligible, false);
 });
