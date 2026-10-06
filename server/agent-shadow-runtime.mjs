@@ -100,14 +100,36 @@ export function supervisorRoute(state) {
   });
 }
 
+function sameRefs(left, right) {
+  return Array.isArray(left) && Array.isArray(right) &&
+    left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
 function normalizeGraphOutput(state, output) {
   if (!output || typeof output !== 'object' || Array.isArray(output) || containsForbiddenKey(output)) {
     throw new Error('LANGGRAPH_OUTPUT_INVALID');
   }
-  const allowed = new Set(['currentNode', 'evidenceRefs', 'checkpointId', 'attempt', 'policyDecisionIds', 'authority']);
+  const allowed = new Set([
+    'schema', 'agentRunId', 'graphRunId', 'traceId', 'actorRef', 'mode',
+    'requestedCapability', 'currentNode', 'inputFingerprint', 'evidenceRefs',
+    'capabilityGrantIds', 'approvalIds', 'policyDecisionIds', 'checkpointId',
+    'attempt', 'authority',
+  ]);
   for (const key of Object.keys(output)) {
     if (!allowed.has(key)) throw new Error('LANGGRAPH_OUTPUT_FIELD_NOT_ADMITTED');
   }
+
+  const immutable = ['schema', 'agentRunId', 'graphRunId', 'traceId', 'actorRef', 'mode', 'requestedCapability', 'inputFingerprint'];
+  for (const key of immutable) {
+    if (output[key] !== undefined && output[key] !== state[key]) throw new Error('LANGGRAPH_STATE_IDENTITY_MUTATION_DENIED');
+  }
+  if (output.capabilityGrantIds !== undefined && !sameRefs(output.capabilityGrantIds, state.capabilityGrantIds)) {
+    throw new Error('LANGGRAPH_CAPABILITY_MUTATION_DENIED');
+  }
+  if (output.approvalIds !== undefined && !sameRefs(output.approvalIds, state.approvalIds)) {
+    throw new Error('LANGGRAPH_APPROVAL_MUTATION_DENIED');
+  }
+
   const currentNode = output.currentNode ?? state.currentNode;
   if (!ALLOWED_NODES.has(currentNode)) throw new Error('LANGGRAPH_NODE_NOT_ADMITTED');
   const checkpointId = output.checkpointId ?? state.checkpointId;
@@ -116,6 +138,7 @@ function normalizeGraphOutput(state, output) {
   }
   const attempt = output.attempt ?? state.attempt;
   if (!Number.isSafeInteger(attempt) || attempt < 1 || attempt > 100) throw new Error('LANGGRAPH_ATTEMPT_INVALID');
+
   const next = {
     ...state,
     currentNode,
