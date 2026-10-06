@@ -113,6 +113,8 @@ test('Uniswap quote forwards bounded inputs and never enables swap execution', a
   assert.equal(result.payload.risk.checks.priceImpact.pass,true);
   assert.equal(result.payload.risk.checks.gas.pass,true);
   assert.equal(result.payload.risk.checks.lossLimit.pass,true);
+  assert.equal(result.payload.risk.checks.profitability.pass,true);
+  assert.ok(result.payload.risk.checks.profitability.estimatedNetProfitUsd > 0);
   assert.equal(result.payload.risk.executionEligible,false);
   assert.equal(result.payload.walletPrivateKeyServerSide,false);
   assert.equal(result.payload.signatureAuthority,'USER_WALLET');
@@ -149,6 +151,40 @@ test('Uniswap arbitrage risk remains blocked without price-impact and loss evide
   assert.equal(result.payload.arbitrageExecutionEligible,false);
   assert.equal(result.payload.risk.checks.priceImpact.pass,false);
   assert.equal(result.payload.risk.checks.lossLimit.pass,false);
+});
+
+test('Uniswap arbitrage analysis blocks a non-positive estimated net profit', async()=>{
+  const handler=createUniswapTrading({
+    env:{UNISWAP_API_KEY:'uniswap-secret-test',UNISWAP_QUOTE_ENABLED:'true'},
+    auth,
+    fetchImpl:async()=>Response.json({
+      requestId:'req_quote_loss',
+      routing:'PRIORITY',
+      quote:{
+        input:{amount:'1000000',token:'0x1111111111111111111111111111111111111111'},
+        output:{amount:'999000',token:'0x2222222222222222222222222222222222222222'},
+        slippageTolerance:0.5,
+        priceImpact:0.1,
+        classicGasUseEstimateUSD:'5.00',
+      },
+    }),
+  });
+  const result=await invoke(handler,'POST',{
+    tokenIn:'0x1111111111111111111111111111111111111111',
+    tokenOut:'0x2222222222222222222222222222222222222222',
+    tokenInChainId:1,
+    tokenOutChainId:1,
+    amount:'1000000',
+    swapper:'0x3333333333333333333333333333333333333333',
+    slippageTolerance:0.5,
+    analysis:{notionalUsd:1000,expectedGrossProfitUsd:5,maxLossUsd:20},
+  },'/api/market/arbitrage/uniswap/quote');
+  assert.equal(result.status,200);
+  assert.equal(result.payload.risk.checks.lossLimit.pass,true);
+  assert.equal(result.payload.risk.checks.profitability.pass,false);
+  assert.equal(result.payload.risk.checks.mev.priorityRouteObserved,true);
+  assert.equal(result.payload.arbitrageAnalysisEligible,false);
+  assert.equal(result.payload.arbitrageExecutionEligible,false);
 });
 
 test('invalid Uniswap quote is rejected before upstream I/O', async()=>{
