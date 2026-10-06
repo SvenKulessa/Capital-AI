@@ -6,7 +6,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { sanitizeAlertPreferences } from '../src/utils/alertPreferences.ts';
 import { PipelineStorageService, getPresetPipelines } from '../src/services/pipelineStorage.ts';
 import { AppErrorBoundary, BootstrapFailure } from '../src/components/AppErrorBoundary.tsx';
-import { ResearchLicensePages, ResearchProjectSummary } from '../src/components/ResearchLicensePages.tsx';
+import { ResearchLicensePages } from '../src/components/ResearchLicensePages.tsx';
+import { ResearchProjectSummary } from '../src/components/ResearchProjectSummary.tsx';
 import { RESEARCH_ROUTES, researchProviders } from '../src/data/researchLicenses.ts';
 
 test('legacy Telegram credentials and unknown fields are discarded on reload and serialization', () => {
