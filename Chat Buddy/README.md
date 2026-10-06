@@ -1,6 +1,6 @@
 # Chat Buddy — JaJa Universe Buddy v0.1.0
 
-Eigenes Capital-AI-Modul. Die Prägung gehört Capital-AI und ist **nicht an Dritte lizenzierbar**.
+PRODUCT-Modul mit klarer Core/Brand-Grenze. Die JaJa-Prägung gehört Capital-AI und ist **nicht an Dritte lizenzierbar**. Wiederverwendbare Agent-Primitiven liegen getrennt unter `src/core/`; deren Open-Source-Lizenzierung ist bis zu einer expliziten Owner/TRUST-Entscheidung nicht freigegeben.
 
 JaJa ist ein originaler kleiner Finanzheld mit der Erde in der Hand. Keine Filmfigur, keine Franchise-Marke, keine fremde Dialekt-Imitation.
 
