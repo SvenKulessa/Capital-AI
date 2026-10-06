@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { createClient } from 'redis';
 import { connect } from '@nats-io/transport-node';
 import { jetstream, jetstreamManager, StorageType, DiscardPolicy } from '@nats-io/jetstream';
-import { QuoteFactSchema, QuoteDeliverySchema, isFresh } from '../shared/market-contracts.mjs';
+import { QuoteFactSchema, QuoteDeliverySchema, cacheTtlMs, deliveryReasonCodes, isFresh } from '../shared/market-contracts.mjs';
 import { observeCadsOperation } from './cads-observability.mjs';
 
 const STREAM = 'CAPITAL_FACTS';
@@ -130,8 +130,8 @@ export class MarketInfrastructure {
       const record = await this.replay(delivery.evidenceId);
       if (!isFresh(delivery) || JSON.stringify(record.fact) !== JSON.stringify(QuoteFactSchema.parse(delivery))) return;
       const verified = QuoteDeliverySchema.parse({ ...record.fact, evidenceId: delivery.evidenceId,
-        availability: 'live', validated: true, actionable: false,
-        reasonCodes: ['PROVIDER_RIGHTS_UNVERIFIED', 'ANALYSIS_INPUTS_INCOMPLETE'] });
+        availability: record.fact.timeSemantics === 'reference' ? 'reference' : 'live',
+        validated: true, actionable: false, reasonCodes: deliveryReasonCodes(record.fact) });
       this.deliveryMetrics.verified += 1;
       this.deliveryMetrics.lastVerifiedDeliveryAt = Date.now();
       this.deliveryMetrics.lastVerifiedSymbol = verified.symbol;
@@ -148,10 +148,11 @@ export class MarketInfrastructure {
     const ack = await observeCadsOperation({ layer:'stream', service:'nats-jetstream', operation:'quote.publish_ack', correlationId: fact.symbol }, () => this.js.publish(`capital.facts.quote.${fact.symbol}`, JSON.stringify(envelope), { msgID: hash }));
     if (ack.stream !== STREAM || !Number.isInteger(ack.seq) || ack.seq < 1) throw new Error('EVIDENCE_UNCONFIRMED');
     const delivery = QuoteDeliverySchema.parse({ ...fact, evidenceId: `${STREAM}:${ack.seq}:${hash}`,
-      availability: 'live', validated: true, actionable: false, reasonCodes: ['PROVIDER_RIGHTS_UNVERIFIED', 'ANALYSIS_INPUTS_INCOMPLETE'] });
+      availability: fact.timeSemantics === 'reference' ? 'reference' : 'live',
+      validated: true, actionable: false, reasonCodes: deliveryReasonCodes(fact) });
     // Store only acknowledged facts. Compare timestamp atomically across ingress instances.
     const script = `local old=redis.call('GET',KEYS[1]); if old then local v=cjson.decode(old); if v.observedAt>tonumber(ARGV[2]) then return 0 end; if v.evidenceId==ARGV[4] then return 0 end end; redis.call('SET',KEYS[1],ARGV[1],'PX',ARGV[3]); if ARGV[5]=='true' then redis.call('PUBLISH',ARGV[6],ARGV[1]) end; return 1`;
-    const ttl = 30000 - (Date.now() - fact.observedAt);
+    const ttl = cacheTtlMs(fact);
     if (ttl <= 0) throw new Error('FACT_EXPIRED_DURING_WRITE');
     await observeCadsOperation({ layer:'cache', service:'valkey', operation:'quote.atomic_set_publish', correlationId: fact.symbol }, () => this.redis.eval(script, { keys: [`capital:quote:v1:${fact.symbol}`], arguments: [JSON.stringify(delivery), String(fact.observedAt), String(ttl), delivery.evidenceId, String(this.pubsubEnabled), QUOTE_CHANNEL] }));
     return delivery;
@@ -166,7 +167,7 @@ export class MarketInfrastructure {
       // Cache contents are not evidence: verify the durable original before serving.
       const record = await this.replay(fact.evidenceId);
       if (JSON.stringify(record.fact) !== JSON.stringify(QuoteFactSchema.parse(fact))) return null;
-      return { ...fact, availability: 'cached' };
+      return { ...fact, availability: fact.timeSemantics === 'reference' ? 'reference' : 'cached' };
     } catch { this.state = 'degraded'; return null; }
   }
   async replay(id) {
