@@ -334,3 +334,121 @@ test('Private provider executor resolves Binance credential only inside Vault au
   assert.equal(result[0].orderId, 42);
   assert.doesNotMatch(JSON.stringify(result), /binance-read-key|binance-read-secret/);
 });
+
+
+test('Kraken read-only executor signs and forwards admitted query parameters', async () => {
+  const secretPayload = JSON.stringify({
+    version: 2,
+    spot: { apiKey: 'kraken-query-key', apiSecret: secret },
+    futures: null,
+  });
+  let openOrdersBody = '';
+  const fetchImpl = async (input, options = {}) => {
+    const url = new URL(String(input));
+    if (url.origin === 'https://project.supabase.co' && url.pathname.endsWith('/capital_ai_get_user_provider_secret')) {
+      return Response.json({ secretPayload, permissions: { executionEnabled: false } });
+    }
+    if (url.origin === 'https://api.kraken.com' && url.pathname === '/0/private/GetApiKeyInfo') {
+      return Response.json({ error: [], result: { permissions: ['query-open-trades'] } });
+    }
+    if (url.origin === 'https://api.kraken.com' && url.pathname === '/0/private/OpenOrders') {
+      openOrdersBody = String(options.body || '');
+      assert.ok(options.headers['API-Sign']);
+      return Response.json({ error: [], result: { open: {} } });
+    }
+    throw new Error('Unexpected upstream ' + url.href);
+  };
+  const vault = createUserProviderVault({ env, fetchImpl, auth });
+  const result = await vault.executePrivateQuery(
+    '11111111-1111-1111-1111-111111111111',
+    'kraken',
+    'orders.open',
+    { trades: true, userref: 42 },
+  );
+  const form = new URLSearchParams(openOrdersBody);
+  assert.equal(form.get('trades'), 'true');
+  assert.equal(form.get('userref'), '42');
+  assert.match(form.get('nonce') || '', /^\d+$/);
+  assert.deepEqual(result, { open: {} });
+});
+
+test('Kraken key-info query strips API key material before provider result leaves Vault authority', async () => {
+  const secretPayload = JSON.stringify({
+    version: 2,
+    spot: { apiKey: 'kraken-query-key', apiSecret: secret },
+    futures: null,
+  });
+  const fetchImpl = async (input) => {
+    const url = new URL(String(input));
+    if (url.origin === 'https://project.supabase.co' && url.pathname.endsWith('/capital_ai_get_user_provider_secret')) {
+      return Response.json({ secretPayload, permissions: { executionEnabled: false } });
+    }
+    if (url.origin === 'https://api.kraken.com' && url.pathname === '/0/private/GetApiKeyInfo') {
+      return Response.json({
+        error: [],
+        result: {
+          apiKeyName: 'read-only',
+          apiKey: 'must-not-leave-vault',
+          nonce: '123',
+          permissions: ['query-funds'],
+          validUntil: '0',
+          queryFrom: '0',
+          queryTo: '0',
+          createdTime: '1700000000',
+        },
+      });
+    }
+    throw new Error('Unexpected upstream ' + url.href);
+  };
+  const vault = createUserProviderVault({ env, fetchImpl, auth });
+  const result = await vault.executePrivateQuery(
+    '11111111-1111-1111-1111-111111111111',
+    'kraken',
+    'account.key_info',
+    {},
+  );
+  assert.equal(result.info.apiKeyName, 'read-only');
+  assert.equal(Object.hasOwn(result.info, 'apiKey'), false);
+  assert.equal(Object.hasOwn(result.info, 'nonce'), false);
+  assert.doesNotMatch(JSON.stringify(result), /must-not-leave-vault|kraken-query-key/);
+});
+
+test('Binance safety gate rejects each transfer-capable permission independently', async (t) => {
+  for (const flag of ['enableWithdrawals', 'enableInternalTransfer', 'permitsUniversalTransfer']) {
+    await t.test(flag, async () => {
+      let writes = 0;
+      const fetchImpl = async (input) => {
+        const url = new URL(String(input));
+        if (url.origin === 'https://api.binance.com' && url.pathname === '/sapi/v1/account/apiRestrictions') {
+          return Response.json({
+            enableReading: true,
+            enableWithdrawals: false,
+            enableInternalTransfer: false,
+            permitsUniversalTransfer: false,
+            enableSpotAndMarginTrading: false,
+            enableFutures: false,
+            [flag]: true,
+          });
+        }
+        if (url.origin === 'https://project.supabase.co' && url.pathname.endsWith('/capital_ai_get_user_provider_secret')) {
+          return Response.json(null);
+        }
+        if (url.origin === 'https://project.supabase.co' && url.pathname.endsWith('/capital_ai_upsert_user_provider_secret')) {
+          writes += 1;
+          return Response.json({});
+        }
+        throw new Error('Unexpected upstream ' + url.href);
+      };
+      const vault = createUserProviderVault({ env, fetchImpl, auth });
+      const result = await invoke(
+        vault,
+        'PUT',
+        { apiKey: 'binance-unsafe-key', apiSecret: 'binance-unsafe-secret-0123456789', credentialFamily: 'spot' },
+        '/api/profile/provider-connections/binance',
+      );
+      assert.equal(result.status, 422);
+      assert.equal(result.payload.error, 'binance_transfer_or_withdrawal_permission_forbidden');
+      assert.equal(writes, 0);
+    });
+  }
+});
