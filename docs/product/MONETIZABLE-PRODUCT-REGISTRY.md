@@ -2,7 +2,7 @@
 
 Naming convention: `[CAPITAL-AI-MARKET]PRODUKTNAME` or `[CAPITAL-AI-PRODUCT]PRODUKTNAME`.
 
-Current-state correlation: 2026-10-06, implementation baseline `0bf052cbc8f7774db29cc77493f6f24bb28bd93b`. Readiness/Gap remain the historical weighted measure only where the underlying implementation state did not materially change. A dash means the old percentage was invalidated and has not been re-measured.
+Current-state correlation: 2026-10-06, implementation baseline `cef1d11f607778f5226ca1df97376ba408652c69`. Readiness/Gap remain the historical weighted measure only where the underlying implementation state did not materially change. A dash means the old percentage was invalidated and has not been re-measured.
 
 Weights: definition 15, user surface 25, commercial path 25, data/compliance gate 20, production evidence 15.
 
@@ -17,7 +17,7 @@ A successful build, test or UI is not a production release. Provider rights and 
 | [CAPITAL-AI-MARKET]BROKER-AFFILIATE-ROUTING | PARTIAL | 39% | 61% | Kraken-Referral-Banner vorhanden, Routing-Matrix und Disclosure-Gate unvollständig. |
 | [CAPITAL-AI-MARKET]TRADING-FEE-REVENUE-SHARE | DRY_RUN_ONLY | — | — | Kraken Spot `AddOrder(validate=true)` ist als nicht ausführender Dry-Run vorbereitet; Live-Submit, persistente Idempotency/Audit und Revenue-Share-Abrechnung bleiben blockiert. |
 | [CAPITAL-AI-MARKET]OSS-PIPELINE-SIMULATION-ENGINE | INTEGRATED | 44% | 56% | Pipeline Builder integriert, nicht als bezahltes Paket mit SLA geschnitten. |
-| [CAPITAL-AI-MARKET]CADS-BENCHMARK-MARKET-APP | WEB_SAAS_ENTITLEMENT_SLICE | — | — | CADS/Benchmark ist an Starter/Pro/Enterprise-Subscriptions, Capability-Matrix und Benchmark-API gebunden; reale 4er-Benchmark-Ausführung, Runtime-Aktivierung und GitHub Marketplace bleiben offen. |
+| [CAPITAL-AI-PRODUCT]CADS-BENCHMARK-GITHUB-APP | WEB_SAAS_PLUS_COMMUNITY_MARKETPLACE_SLICE | — | — | Website-CADS nutzt bestehende Starter/Pro/Enterprise-Entitlements; der getrennte GitHub-Marketplace-Community-Free-Contract ist implementiert. Reale App-Registrierung, Listing-/Webhook-Readback, 4er-Benchmark-Runtime und Paid-Marketplace-Admission bleiben offen. |
 | [CAPITAL-AI-MARKET]GHCR-DIGEST-BLUEPRINT-MARKETPLACE-APP | PLANNED | 26% | 74% | Digest-Pipeline dokumentiert, App und kommerzielle Evidence-Tiers fehlen. |
 | [CAPITAL-AI-MARKET]CPT-STAKE-TO-ACCESS | PLANNED | 24% | 76% | Tokenomics-Seite vorhanden, Stake-Gate und $CPT-Zahlung deaktiviert. |
 | [CAPITAL-AI-MARKET]CPT-MICROPAYMENTS | PLANNED | 10% | 90% | Kein Wallet-, Settlement- oder Usage-Meter. |
@@ -54,4 +54,24 @@ Die Website monetarisiert CADS **ohne neue Stripe-SKUs**:
 - Commerce Projection: `GET /api/cads/commerce/readiness`.
 - Benutzergebundenes Entitlement: `GET /api/cads/commerce/entitlement`.
 - Benchmark Runs bleiben `productionEligible=false` und `decisionEligible=false`.
-- GitHub Marketplace besitzt weiterhin eine separate, noch nicht implementierte Billing-/Entitlement-Authority.
+- GitHub Marketplace besitzt eine separate Authority. Der Community-Free-Contract ist implementiert; reale GitHub-App-/Listing-/Subscription-Readbacks sind noch offen.
+
+
+## CADS Community-first Marketplace Slice — 2026-10-06
+
+Der Marketplace-Pfad startet bewusst kostenlos und getrennt vom Website-Billing:
+
+- `Community` ist ein echter FREE-Plan-Contract.
+- GitHub Marketplace ist für diesen Plan die alleinige Entitlement Authority.
+- Stripe-Status ist **nicht** autoritativ für Marketplace-Entitlements.
+- Community umfasst Standardprofile, neutralen GitHub Check, bounded Run Summary und source-bound Evidence-Referenzen.
+- History, Regression Detection, Evidence Export, Custom Profiles/Thresholds, Enforced PR Gate, API und Self-hosted Runner bleiben ausgeschlossen.
+- `purchased` und `cancelled` sind als Free-Lifecycle modelliert; `changed` bleibt fail-closed, solange keine Paid-Marketplace-Pläne existieren.
+- Paid Marketplace Plan IDs und Pricing bleiben unassigned.
+
+Referenzen:
+
+- `server/cads-marketplace-community.mjs`
+- `apps/cads-github-app/github-app-registration.example.json`
+- `apps/cads-github-app/marketplace-plans.json`
+- `docs/product/CADS-GITHUB-MARKETPLACE-COMMUNITY-20261006.md`
