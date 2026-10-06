@@ -126,7 +126,7 @@ export async function runTruthReviewNode(state, { reviewEvidence } = {}) {
   assertResultShape(result, new Set(['decision', 'evidenceRef', 'reasonCodes']));
   if (!['pass', 'blocked'].includes(result.decision)) throw new Error('TRUTH_REVIEW_DECISION_INVALID');
   if (typeof result.evidenceRef !== 'string' || !REF.test(result.evidenceRef)) throw new Error('TRUTH_REVIEW_EVIDENCE_INVALID');
-  const reasons = safeRefs(result.reasonCodes || [], 'TRUTH_REVIEW_REASON_INVALID');
+  safeRefs(result.reasonCodes || [], 'TRUTH_REVIEW_REASON_INVALID');
   return Object.freeze(assertShadowAuthority({
     ...state,
     currentNode: 'truth',
@@ -135,8 +135,6 @@ export async function runTruthReviewNode(state, { reviewEvidence } = {}) {
       state,
       result.decision === 'pass' ? 'TRUTH_REVIEW_PASS_SHADOW' : 'TRUTH_REVIEW_BLOCKED',
     ),
-    truthReview: undefined,
     // A passing shadow review is evidence only. Publication/legal authority remains denied by state authority.
-    ...(reasons.length ? {} : {}),
   }));
 }
