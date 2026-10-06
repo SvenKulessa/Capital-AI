@@ -84,6 +84,8 @@
 !scripts/seo-metadata.test.mjs
 !scripts/validate-finance-source-target-manifest.mjs
 !scripts/finance-source-target-manifest.test.mjs
+!scripts/validate-social-engine-completion-gate.mjs
+!scripts/social-engine-completion-gate.test.mjs
 !contracts/
 !contracts/**
 !packages/
@@ -125,6 +127,9 @@
 !CAPITAL-AI-MARKET/badge.svg
 !CAPITAL-AI-GROWTH/
 !CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json
+!CAPITAL-AI-GROWTH/social-engine-completion-gate.json
+!CAPITAL-AI-GROWTH/social-media-tool-admission.yaml
+!CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.yaml
 !CAPITAL-AI-GROWTH/badge.svg
 !CAPITAL-AI-PLATFORM/
 !CAPITAL-AI-PLATFORM/badge.svg
