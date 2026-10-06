@@ -1,4 +1,4 @@
-import type { ProviderId } from "./types";
+import type { ProviderId } from "./core/types";
 
 export type ProviderMeta = {
   id: ProviderId;
