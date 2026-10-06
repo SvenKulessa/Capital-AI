@@ -127,7 +127,7 @@ export const GROWTH_AI_CAPABILITY_POLICY: Readonly<Record<GrowthCapability, Grow
     state: 'RESTRICTED',
     allowedModes: ['DRAFT'],
     productionEligible: false,
-    modelHint: 'veo-3.1',
+    modelHint: 'veo-3.1-generate-preview',
     restrictions: [
       'draft-only until current model status, pricing and production terms are explicitly admitted',
       'generation cost requires the existing owner budget gate',
