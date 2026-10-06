@@ -2,7 +2,7 @@
  * Canonical monetizable product list.
  * Readiness is the share of a sellable, compliant launch already evidenced in repo.
  * Gap is the remaining distance to market. Current-state correlation baseline:
- * 0bf052cbc8f7774db29cc77493f6f24bb28bd93b, 2026-10-06.
+ * cef1d11f607778f5226ca1df97376ba408652c69, 2026-10-06.
  *
  * The historical weighted scan used: definition 15, user surface 25, commercial path 25,
  * data/compliance gate 20, production evidence 15. When material implementation changes
@@ -27,7 +27,7 @@ export const MONETIZABLE_PRODUCTS = [
   { id: 'broker', name: '[CAPITAL-AI-MARKET]BROKER-AFFILIATE-ROUTING', domain: 'MARKET', state: 'PARTIAL', readinessPct: 39, gapPct: 61, blocker: 'Kraken-Referral-Banner vorhanden, Routing-Matrix und Disclosure-Gate unvollständig.' },
   { id: 'fee-share', name: '[CAPITAL-AI-MARKET]TRADING-FEE-REVENUE-SHARE', domain: 'MARKET', state: 'DRY_RUN_ONLY', readinessPct: null, gapPct: null, blocker: 'Kraken Spot validate-only Order-Dry-Run ist implementiert; Live-Submit, persistente Idempotency/Audit und Revenue-Share-Abrechnung bleiben blockiert.' },
   { id: 'pipeline-sim', name: '[CAPITAL-AI-MARKET]OSS-PIPELINE-SIMULATION-ENGINE', domain: 'MARKET', state: 'INTEGRATED', readinessPct: 44, gapPct: 56, blocker: 'Pipeline Builder integriert, nicht als bezahltes Paket mit SLA geschnitten.' },
-  { id: 'cads-app', name: '[CAPITAL-AI-MARKET]CADS-BENCHMARK-MARKET-APP', domain: 'MARKET', state: 'WEB_SAAS_ENTITLEMENT_SLICE', readinessPct: null, gapPct: null, blocker: 'CADS/Benchmark ist an bestehende Starter/Pro/Enterprise-Subscriptions und die Benchmark-API gebunden; reale 4er-Benchmark-Ausführung, Runtime-Aktivierung und separater GitHub-Marketplace-Lifecycle bleiben offen.' },
+  { id: 'cads-app', name: '[CAPITAL-AI-PRODUCT]CADS-BENCHMARK-ENGINE', domain: 'PRODUCT', state: 'WEB_SAAS_ENTITLEMENT_SLICE', readinessPct: null, gapPct: null, blocker: 'CADS/Benchmark ist an bestehende Starter/Pro/Enterprise-Subscriptions und die Benchmark-API gebunden; reale 4er-Benchmark-Ausführung, Runtime-Aktivierung und der separate GitHub-Marketplace-Lifecycle bleiben offen.' },
   { id: 'ghcr-app', name: '[CAPITAL-AI-MARKET]GHCR-DIGEST-BLUEPRINT-MARKETPLACE-APP', domain: 'MARKET', state: 'PLANNED', readinessPct: 26, gapPct: 74, blocker: 'Digest-Pipeline dokumentiert, App und kommerzielle Evidence-Tiers fehlen.' },
   { id: 'cpt-stake', name: '[CAPITAL-AI-MARKET]CPT-STAKE-TO-ACCESS', domain: 'MARKET', state: 'PLANNED', readinessPct: 24, gapPct: 76, blocker: 'Tokenomics-Seite vorhanden, Stake-Gate und $CPT-Zahlung deaktiviert.' },
   { id: 'cpt-micro', name: '[CAPITAL-AI-MARKET]CPT-MICROPAYMENTS', domain: 'MARKET', state: 'PLANNED', readinessPct: 10, gapPct: 90, blocker: 'Kein Wallet-, Settlement- oder Usage-Meter.' },
