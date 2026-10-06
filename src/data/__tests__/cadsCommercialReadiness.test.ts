@@ -16,7 +16,8 @@ test('CADS targets paid GitHub Marketplace production but external admission sta
   assert.equal(market.implementation.idempotentDeliveryLedger, true);
   assert.equal(market.implementation.authoritativeMarketplaceReadbackBeforeActivationOrPlanChange, true);
   assert.equal(market.implementation.cancellationDataPurgeBeforeDay30, true);
-  assert.equal(market.status, 'BLOCKED_EXTERNAL_GITHUB_ADMISSION');
+  assert.equal(market.implementation.verifiedGitHubInstallationToSupabaseUserLink, true);
+  assert.equal(market.status, 'BLOCKED_EXECUTION_AND_EXTERNAL_GITHUB_ADMISSION');
   assert.equal(cadsMarketplaceCommerciallyAdmitted(), false);
 });
 
@@ -27,6 +28,8 @@ test('Marketplace production admission requires real external evidence, not code
   assert.equal(evidence.installationThresholdVerified, false);
   assert.equal(evidence.monthlyAnnualPricingAssignedInMarketplace, false);
   assert.equal(evidence.planIdsAssignedInRuntime, false);
+  assert.equal(evidence.buyerOAuthUserLinkRuntimeVerified, false);
+  assert.equal(evidence.benchmarkExecutionRuntimeVerified, false);
   assert.equal(Object.values(evidence).every(Boolean), false);
 });
 
