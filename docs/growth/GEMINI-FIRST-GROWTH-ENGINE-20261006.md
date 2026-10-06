@@ -34,7 +34,7 @@ Das ist eine Provider-/Vertragsbewertung und keine Aussage, dass jeder generiert
 | Produkt-/SEO-Copy | Gemini 3.8 Flash | ADMITTED / DRAFT | striktes Zod-Schema, Evidence für Claims |
 | URL-Analyse | Gemini URL Context | RESTRICTED | nur zugelassene URLs; kein Prospect-Harvesting |
 | Search Grounding | Gemini Google Search | RESTRICTED / INTERACTIVE | kein Lead-Index, kein Link-Harvesting, keine Persistenz des Grounded Result |
-| Marketing-Bilder | Gemini 3.1 Flash Image | ADMITTED / DRAFT | Brand-/Rights-/Claim-Review + Asset-Hash |
+| Marketing-Bilder | Gemini 3.1 Flash Lite Image operational; Nano Banana 2.1 price-gated | ADMITTED / DRAFT | Brand-/Rights-/Claim-Review + Asset-Hash; kein Aufruf ohne verifiziertes Cost Meter |
 | TTS | Gemini 3.8 Flash TTS | ADMITTED / DRAFT | Voice-Consent, Asset-Hash, Approval |
 | Video | Veo 3.1 | RESTRICTED / DRAFT | Production erst nach Modellstatus-, Kosten- und Terms-Admission |
 | Business-Lead-Enrichment | Gemini | RESTRICTED | nur zugelassene Business-Evidence; keine sensitiven Inferenzattribute |
