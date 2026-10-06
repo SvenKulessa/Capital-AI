@@ -7,4 +7,7 @@ COPY --chmod=0555 deploy/nats-entrypoint.sh /usr/local/bin/capital-nats-entrypoi
 # Root is used only to prepare the mounted disk; the server runs as UID/GID 1000.
 USER 0:0
 EXPOSE 4222
+# Keep the broker's health contract private: verify that nats-server remains the
+# running PID without opening an additional monitoring port.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD ["sh", "-ec", "pidof nats-server >/dev/null"]
 ENTRYPOINT ["/usr/local/bin/capital-nats-entrypoint"]
