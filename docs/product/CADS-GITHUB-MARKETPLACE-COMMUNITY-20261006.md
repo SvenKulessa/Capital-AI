@@ -2,7 +2,7 @@
 
 Primary Domain: **PRODUCT**  
 Assurance: **TRUST**  
-Baseline: `main@cef1d11f607778f5226ca1df97376ba408652c69`  
+Implementation baseline: `cef1d11f607778f5226ca1df97376ba408652c69`  
 Status: **COMMUNITY_CONTRACT_IMPLEMENTED / LISTING_EVIDENCE_OPEN**
 
 ## Decision
