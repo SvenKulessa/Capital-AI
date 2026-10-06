@@ -24,10 +24,16 @@ Verifizierter Stand am 2026-10-06:
 | Capability | Modell | Status / Preisbasis |
 |---|---|---|
 | Text / URL Context | `gemini-3.8-flash` | unterstützt URL Context; Standard Paid bis 2026-12-31: USD 0.75 / 1M Input, USD 3.75 / 1M Output |
-| Image | `gemini-3.1-flash-image` | stable model; Paid-only Image-Ausgabe; 1K derzeit USD 0.067 je Bild, 2K USD 0.101, 4K USD 0.151 |
+| Image | `gemini-3.1-flash-lite-image` operational / `gemini-nano-banana-2.1` strategic | Nano Banana 2.1 ist seit 2026-10-06 GA und ersetzt das am 2026-10-29 auslaufende `gemini-3.1-flash-image`. Da beim Readback noch kein eindeutig zuordenbarer Nano-2.1-Preis im offiziellen Pricing-Dokument verifiziert wurde, blockiert der Cost Meter Nano 2.1 fail-closed. Operational bleibt vorerst Flash Lite Image mit verifiziertem 1K-Preis USD 0.0336. |
 | TTS | `gemini-3.8-flash-tts` | stable model; bis 2026-12-31 USD 0.50 / 1M Input, USD 9 / 1M Audio-Output; 25 Audio-Tokens/s |
 | TTS fallback | `gemini-3.8-flash-lite-tts` | explizit auswählbare, nicht automatische Alternative; USD 6 / 1M Audio-Output bis 2026-12-31 |
 | Video | `veo-3.1-generate-preview` | Preview; kein Free Tier; Standard 720p/1080p USD 0.40/s, 4K USD 0.60/s |
+
+Provider-Drift am selben Prüftag:
+- Google Release Notes vom 2026-10-06 führen `gemini-nano-banana-2.1` als GA und kündigen `gemini-3.1-flash-image` zum 2026-10-29 ab.
+- `gemini-3.1-flash-image` ist deshalb kein Router-Default mehr.
+- `gemini-nano-banana-2.1` darf erst nach verifiziertem Pricebook-Eintrag kostenpflichtig aufgerufen werden; bis dahin wirft der Cost Meter `GROWTH_AI_PRICEBOOK_NOT_VERIFIED`.
+- `gemini-3.1-flash-lite-image` bleibt als aktuelle GA-/Cost-verified 1K-Route zugelassen.
 
 Konsequenz:
 
