@@ -3,6 +3,16 @@ import { boundedJson, secureUrl } from './http-security.mjs';
 
 const MAX_BODY_BYTES = 16 * 1024;
 const KRAKEN_BALANCE_PATH = '/0/private/Balance';
+const KRAKEN_API_KEY_INFO_PATH = '/0/private/GetApiKeyInfo';
+const KRAKEN_WRITE_PERMISSIONS = new Set([
+  'add-funds',
+  'withdraw-funds',
+  'earn-funds',
+  'modify-trades',
+  'close-trades',
+  'add-withdraw-address',
+  'update-withdraw-address',
+]);
 
 function serviceRoleJwt(key) {
   if (!key.startsWith('eyJ')) return false;
@@ -96,11 +106,12 @@ export function krakenSignature(urlPath, payload, apiSecret) {
   return createHmac('sha512', Buffer.from(apiSecret, 'base64')).update(message).digest('base64');
 }
 
-async function krakenBalance(fetchImpl, { apiKey, apiSecret }) {
+async function krakenPrivatePost(fetchImpl, path, { apiKey, apiSecret }) {
   const nonce = String(Date.now());
-  const body = new URLSearchParams({ nonce }).toString();
-  const signature = krakenSignature(KRAKEN_BALANCE_PATH, { nonce }, apiSecret);
-  const response = await fetchImpl(new URL(KRAKEN_BALANCE_PATH, 'https://api.kraken.com'), {
+  const form = { nonce };
+  const body = new URLSearchParams(form).toString();
+  const signature = krakenSignature(path, form, apiSecret);
+  const response = await fetchImpl(new URL(path, 'https://api.kraken.com'), {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -114,12 +125,42 @@ async function krakenBalance(fetchImpl, { apiKey, apiSecret }) {
   });
   const payload = await boundedJson(response);
   if (!response.ok || !Array.isArray(payload?.error) || payload.error.length > 0 || typeof payload?.result !== 'object') {
-    const code = Array.isArray(payload?.error) && payload.error.length ? String(payload.error[0]).slice(0, 120) : `HTTP_${response.status}`;
+    const code = Array.isArray(payload?.error) && payload.error.length
+      ? String(payload.error[0]).slice(0, 120)
+      : `HTTP_${response.status}`;
     const error = new Error('KRAKEN_VERIFICATION_FAILED');
     error.code = code;
     throw error;
   }
   return payload.result;
+}
+
+function krakenCapabilities(info) {
+  const permissions = Array.isArray(info?.permissions)
+    ? info.permissions.filter(value => typeof value === 'string').map(value => value.slice(0, 80))
+    : [];
+  const unsafePermissions = permissions.filter(permission => KRAKEN_WRITE_PERMISSIONS.has(permission));
+  return {
+    permissions,
+    fundsQuery: permissions.includes('query-funds'),
+    websocketToken: permissions.includes('create-ws-token'),
+    trading: permissions.includes('modify-trades') || permissions.includes('close-trades'),
+    withdrawals:
+      permissions.includes('withdraw-funds') ||
+      permissions.includes('add-withdraw-address') ||
+      permissions.includes('update-withdraw-address'),
+    writeScopeDetected: unsafePermissions.length > 0,
+    unsafePermissions,
+  };
+}
+
+async function krakenKeyInfo(fetchImpl, credentials) {
+  const result = await krakenPrivatePost(fetchImpl, KRAKEN_API_KEY_INFO_PATH, credentials);
+  return { info: result, capabilities: krakenCapabilities(result) };
+}
+
+async function krakenBalance(fetchImpl, credentials) {
+  return krakenPrivatePost(fetchImpl, KRAKEN_BALANCE_PATH, credentials);
 }
 
 function parseStoredSecret(payload) {
@@ -246,46 +287,67 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
         .slice(0, 24);
       const secretPayload = JSON.stringify({ apiKey, apiSecret });
       try {
+        const credentials = { apiKey, apiSecret };
+        const verification = await krakenKeyInfo(fetchImpl, credentials);
+        if (verification.capabilities.writeScopeDetected) {
+          json(res, 422, {
+            provider: 'kraken',
+            status: 'REJECTED',
+            error: 'kraken_key_permissions_too_broad',
+            unsafePermissions: verification.capabilities.unsafePermissions,
+          });
+          return true;
+        }
+
+        const permissions = {
+          fundsQuery: verification.capabilities.fundsQuery,
+          websocketToken: verification.capabilities.websocketToken,
+          trading: false,
+          withdrawals: false,
+          publicMarketDataAdmission: false,
+        };
+
+        let holdings = [];
+        if (permissions.fundsQuery) {
+          const balance = await krakenBalance(fetchImpl, credentials);
+          holdings = publicBalanceProjection(balance);
+        }
+
         await rpc(fetchImpl, config, 'capital_ai_upsert_user_provider_secret', {
           _user_id: user.userId,
           _provider: 'kraken',
           _secret_payload: secretPayload,
           _credential_fingerprint: fingerprint,
-          _permissions: {
-            fundsQuery: true,
-            trading: false,
-            withdrawals: false,
-            publicMarketDataAdmission: false,
-          },
+          _permissions: permissions,
         });
+        await markStatus(user.userId, 'VERIFIED', null);
 
-        try {
-          const balance = await krakenBalance(fetchImpl, { apiKey, apiSecret });
-          await markStatus(user.userId, 'VERIFIED', null);
-          json(res, 200, {
-            provider: 'kraken',
-            status: 'VERIFIED',
-            credentialFingerprint: fingerprint,
-            dataScope: 'USER_PRIVATE_ACCOUNT_DATA',
-            redistributionAllowed: false,
-            publicDisplayAllowed: false,
-            holdings: publicBalanceProjection(balance),
-          });
-        } catch (error) {
-          const code = typeof error?.code === 'string' ? error.code : 'KRAKEN_VERIFICATION_FAILED';
-          await markStatus(user.userId, 'INVALID', code).catch(() => {});
-          json(res, 422, {
-            provider: 'kraken',
-            status: 'INVALID',
-            error: 'kraken_verification_failed',
-            code,
-          });
-        }
+        json(res, 200, {
+          provider: 'kraken',
+          status: 'VERIFIED',
+          credentialFingerprint: fingerprint,
+          dataScope: 'USER_PRIVATE_ACCOUNT_DATA',
+          redistributionAllowed: false,
+          publicDisplayAllowed: false,
+          capabilities: permissions,
+          portfolioAvailable: permissions.fundsQuery,
+          holdings,
+        });
       } catch (error) {
-        json(res, 503, {
-          error: error?.status === 401
-            ? 'provider_vault_admin_credential_rejected'
-            : 'provider_vault_write_failed',
+        const code = typeof error?.code === 'string' ? error.code : 'KRAKEN_VERIFICATION_FAILED';
+        if (code !== 'KRAKEN_VERIFICATION_FAILED' && error?.status) {
+          json(res, 503, {
+            error: error.status === 401
+              ? 'provider_vault_admin_credential_rejected'
+              : 'provider_vault_write_failed',
+          });
+          return true;
+        }
+        json(res, 422, {
+          provider: 'kraken',
+          status: 'INVALID',
+          error: 'kraken_verification_failed',
+          code,
         });
       }
       return true;
@@ -307,7 +369,18 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
           return true;
         }
         const credentials = parseStoredSecret(stored.secretPayload);
-        const balance = await krakenBalance(fetchImpl, credentials);
+        const verification = await krakenKeyInfo(fetchImpl, credentials);
+        if (verification.capabilities.writeScopeDetected) {
+          json(res, 403, {
+            error: 'kraken_key_permissions_too_broad',
+            unsafePermissions: verification.capabilities.unsafePermissions,
+          });
+          return true;
+        }
+        const fundsQuery = verification.capabilities.fundsQuery;
+        const holdings = fundsQuery
+          ? publicBalanceProjection(await krakenBalance(fetchImpl, credentials))
+          : [];
         await markStatus(user.userId, 'VERIFIED', null);
         json(res, 200, {
           provider: 'kraken',
@@ -317,7 +390,15 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
           publicDisplayAllowed: false,
           sharedCacheAllowed: false,
           jetStreamPublicationAllowed: false,
-          holdings: publicBalanceProjection(balance),
+          capabilities: {
+            fundsQuery,
+            websocketToken: verification.capabilities.websocketToken,
+            trading: false,
+            withdrawals: false,
+            publicMarketDataAdmission: false,
+          },
+          portfolioAvailable: fundsQuery,
+          holdings,
         });
       } catch (error) {
         const code = typeof error?.code === 'string' ? error.code : 'PRIVATE_CONTEXT_UNAVAILABLE';
