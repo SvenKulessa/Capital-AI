@@ -138,10 +138,11 @@
     {
       "id": "TA-USER-VAULT",
       "path": "server/user-provider-vault.mjs",
-      "blobSha": "7a5d8fa2762ae16e9b279f8ea8de654c6f9a7d43",
+      "blobSha": "dde9b883df4618f2017b216cc3d292beeef3b0ac",
       "role": "Current server-side user provider secret boundary",
       "recorrelatedAt": "2026-10-06",
-      "recorrelationReason": "PR #203 Auth-/BYOK-/Trading-Capability-Härtung"
+      "recorrelationReason": "PR #209 Kraken Spot Validate-only Trading-Grenze",
+      "recorrelationBaseMain": "c3d1a939902b419e0282373056769165a68eaf4b"
     },
     {
       "id": "TA-BYOK-BOUNDARY",

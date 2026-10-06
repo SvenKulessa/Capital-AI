@@ -4,7 +4,7 @@ import { EventEmitter } from 'node:events';
 import { createSubscriptionCheckout } from './subscription-checkout.mjs';
 
 const env = {
-  STRIPE_SECRET_KEY: 'sk_test_example',
+  STRIPE_SECRET_KEY: 'sk_live_example',
   STRIPE_SUBSCRIPTION_CHECKOUT_ENABLED: 'true',
   PUBLIC_BASE_URL: 'https://capital-ai.online',
 };
@@ -142,10 +142,10 @@ test('explicit false remains an emergency checkout kill-switch', async () => {
   assert.equal(response.payload.error, 'subscription_checkout_not_enabled');
 });
 
-test('three-tier test-mode matrix creates exactly one server-authorized checkout session per tier', async () => {
+test('three-tier live catalog resolves exactly one server-authorized monthly Price ID per tier', async () => {
   const seen = [];
   const fetchImpl = async (_url, options) => {
-    assert.match(options.headers.Authorization, /^Bearer sk_test_/);
+    assert.match(options.headers.Authorization, /^Bearer sk_live_/);
     const form = new URLSearchParams(String(options.body));
     seen.push({
       priceId: form.get('line_items[0][price]'),

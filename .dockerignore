@@ -39,6 +39,8 @@
 !server/subscription-entitlements.test.mjs
 !server/user-provider-vault.mjs
 !server/user-provider-vault.test.mjs
+!server/kraken-order-dry-run.mjs
+!server/kraken-order-dry-run.test.mjs
 !server/uniswap-trading.mjs
 !server/uniswap-trading.test.mjs
 !server/telegram.mjs
@@ -86,6 +88,8 @@
 !scripts/stripe-subscription-sync-migration.test.mjs
 !scripts/benchmark-ledger-migration.test.mjs
 !scripts/benchmark-cost-calibration.test.mjs
+!scripts/stripe-three-purchase-e2e.mjs
+!scripts/stripe-three-purchase-e2e.test.mjs
 !scripts/blueprint-evidence-contract.test.mjs
 !scripts/documentation-drift.mjs
 !scripts/documentation-drift.test.mjs
