@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "CAPITAL_AI_AGENT_ORCHESTRATION_BENCHMARK@1",
+  "benchmarkEnvironment": "isolated-nonproduction",
+  "candidate": {
+    "package": "@langchain/langgraph",
+    "version": "1.4.19",
+    "runtimePromotion": false
+  },
+  "baseline": "CAPITAL_AI_SHADOW_ROUTER",
+  "iterations": {
+    "default": 1000,
+    "min": 100,
+    "max": 5000
+  },
+  "workloads": [
+    {
+      "id": "research",
+      "requestedCapability": "research",
+      "expectedNode": "research"
+    },
+    {
+      "id": "market-read",
+      "requestedCapability": "market-read",
+      "expectedNode": "market"
+    },
+    {
+      "id": "portfolio-proposal",
+      "requestedCapability": "portfolio-proposal",
+      "expectedNode": "portfolio-proposal"
+    },
+    {
+      "id": "truth-review",
+      "requestedCapability": "truth-review",
+      "expectedNode": "truth"
+    }
+  ],
+  "functionalGate": {
+    "identicalStateFingerprintRequired": true,
+    "authorityEscalationAllowed": false,
+    "capabilityGrantMutationAllowed": false,
+    "approvalMutationAllowed": false,
+    "rawPromptPersistenceAllowed": false
+  },
+  "performanceEvidence": {
+    "metrics": [
+      "p50Ms",
+      "p95Ms",
+      "meanMs",
+      "operationsPerSecond"
+    ],
+    "productionApproval": false,
+    "decisionAuthority": false
+  }
+}
