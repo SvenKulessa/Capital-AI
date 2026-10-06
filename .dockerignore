@@ -28,6 +28,8 @@
 !server/public-artifact-policy.mjs
 !server/subscription-checkout.test.mjs
 !server/subscription-checkout.mjs
+!server/benchmark-runs.mjs
+!server/benchmark-runs.test.mjs
 !server/auth.mjs
 !server/auth-security.mjs
 !server/auth-security.test.mjs
