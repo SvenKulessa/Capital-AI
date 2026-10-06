@@ -58,7 +58,7 @@ COPY scripts/ecb-reference-admission.test.mjs ./scripts/ecb-reference-admission.
 COPY scripts/license-engine.mjs ./scripts/license-engine.mjs
 RUN --network=none node --test server/mta-sts.test.mjs server/well-known.test.mjs server/auth-security.test.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs \
     && node --test server/prompt-injection-guard.test.mjs server/vocabulary-checkout.test.mjs server/subscription-checkout.test.mjs server/benchmark-runs.test.mjs server/benchmark-store.test.mjs server/public-artifact-policy.test.mjs scripts/billing-catalog.test.mjs \
-    && node --test server/user-provider-vault.test.mjs server/kraken-order-dry-run.test.mjs server/uniswap-trading.test.mjs scripts/stripe-catalog-readback.test.mjs scripts/stripe-three-purchase-e2e.test.mjs \ scripts/benchmark-ledger-migration.test.mjs scripts/benchmark-cost-calibration.test.mjs
+    && node --test server/user-provider-vault.test.mjs server/kraken-order-dry-run.test.mjs server/uniswap-trading.test.mjs scripts/stripe-catalog-readback.test.mjs scripts/stripe-three-purchase-e2e.test.mjs scripts/benchmark-ledger-migration.test.mjs scripts/benchmark-cost-calibration.test.mjs \
     && node --import tsx --test server/advisor-security.test.mjs scripts/blueprint-evidence-contract.test.mjs \
     && node --test scripts/branding-assets.test.mjs \
     && node --test scripts/license-evidence.test.mjs \
