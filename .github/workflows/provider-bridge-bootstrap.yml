@@ -1,0 +1,42 @@
+name: PLATFORM Provider Bridge Bootstrap
+on:
+  push:
+    branches:
+      - capital-ai-platform/render-provider-bridge-20261006
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: provider-bridge-bootstrap-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  lock-and-test:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Rust 1.99.0 installieren
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.99.0 --profile minimal --component clippy
+          rustup override set 1.99.0
+          test "$(rustc --version | awk '{print $2}')" = "1.99.0"
+      - name: Lockfile materialisieren und Bridge prüfen
+        run: |
+          set -euo pipefail
+          cargo generate-lockfile --manifest-path services/provider-bridge-rs/Cargo.toml
+          cargo test --locked --manifest-path services/provider-bridge-rs/Cargo.toml
+          cargo clippy --locked --manifest-path services/provider-bridge-rs/Cargo.toml --all-targets -- -D warnings
+          test -s services/provider-bridge-rs/Cargo.lock
+          sha256sum services/provider-bridge-rs/Cargo.lock > provider-bridge-cargo-lock.sha256
+      - name: Reproduzierbares Lockfile sichern
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: provider-bridge-cargo-lock
+          path: |
+            services/provider-bridge-rs/Cargo.lock
+            provider-bridge-cargo-lock.sha256
+          if-no-files-found: error
+          retention-days: 1
