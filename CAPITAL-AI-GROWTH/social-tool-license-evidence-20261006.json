@@ -3,7 +3,7 @@
   "id": "CAPITAL-AI-SOCIAL-TOOL-LICENSE-EVIDENCE-20261006",
   "status": "POINT_4_ARTIFACT_LOCK_ADVANCED_FAIL_CLOSED",
   "correlatedAt": "2026-10-06",
-  "targetMain": "cd5c336d984eaef0b3f032ab35477dbc971f7e38",
+  "targetMain": "051ec288b518e7184e7082420b89410935752269",
   "financeSource": "dcef421fe6e350a3a2ade61d0299aad9ecca213c",
   "scope": "Social-Media-Engine implementation dependencies only; Finance MARKET/scoring migration remains deferred until Social cutover PASS.",
   "policy": {
