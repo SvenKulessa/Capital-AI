@@ -413,26 +413,34 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
     return verified;
   }
 
-  async function markStatus(userId, status, errorCode = null) {
+  async function markProviderStatus(userId, provider, status, errorCode = null) {
     if (!config) return;
     await rpc(fetchImpl, config, 'capital_ai_mark_user_provider_status', {
       _user_id: userId,
-      _provider: 'kraken',
+      _provider: provider,
       _status: status,
       _error_code: errorCode,
     });
   }
 
-  async function readStored(userId) {
+  async function markStatus(userId, status, errorCode = null) {
+    return markProviderStatus(userId, 'kraken', status, errorCode);
+  }
+
+  async function readProviderStored(userId, provider) {
     try {
       return await rpc(fetchImpl, config, 'capital_ai_get_user_provider_secret', {
         _user_id: userId,
-        _provider: 'kraken',
+        _provider: provider,
       });
     } catch (error) {
       if (error?.status === 404) return null;
       throw error;
     }
+  }
+
+  async function readStored(userId) {
+    return readProviderStored(userId, 'kraken');
   }
 
   async function readKrakenSpotTradingCredential(userId) {
