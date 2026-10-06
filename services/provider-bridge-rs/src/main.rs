@@ -69,7 +69,7 @@ fn operation_allowed(provider: &str, operation: &str, params: &Map<String, Value
 fn contains_forbidden_key(value: &Value) -> bool {
     match value {
         Value::Object(map) => map.iter().any(|(key, value)| {
-            let normalized = key.to_ascii_lowercase().replace('_', "").replace('-', "");
+            let normalized = key.to_ascii_lowercase().replace(['_', '-'], "");
             let forbidden = [
                 "apikey", "apisecret", "secret", "password",
                 "credential", "privatekey", "authorization",
