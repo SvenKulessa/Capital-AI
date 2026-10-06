@@ -1,0 +1,221 @@
+name: Social Renderer Worker Evidence
+
+on:
+  pull_request:
+    paths:
+      - "deploy/social-media/**"
+      - ".github/workflows/social-renderer-worker-evidence.yml"
+      - "CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json"
+      - "CAPITAL-AI-GROWTH/social-engine-completion-gate.json"
+      - "docs/licenses/SOCIAL-MEDIA-ENGINE-THIRD-PARTY-NOTICES.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: social-renderer-worker-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  evidence:
+    name: Renderer Worker Build + Supply Chain Evidence
+    runs-on: ubuntu-26.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Gepinnte Sicherheitswerkzeuge bauen
+        run: |
+          set -euo pipefail
+          docker build --file Dockerfile.security --tag capital-ai-security .
+          test "$(docker run --rm capital-ai-security --version | sed -n 's/^Version: //p' | head -n1)" = "0.75.0"
+          mkdir -p "$RUNNER_TEMP/trivy-cache" social-renderer-evidence
+          chmod a+rwx "$RUNNER_TEMP/trivy-cache" social-renderer-evidence
+
+      - name: Immutable Build-Inputs auflösen
+        id: inputs
+        run: |
+          set -euo pipefail
+          profile="deploy/social-media/ffmpeg-build-profile.json"
+          test "$(jq -r '.schemaVersion' "$profile")" = "SOCIAL_FFMPEG_BUILD_PROFILE@1"
+          test "$(jq -r '.licenseProfile.intended' "$profile")" = "LGPL-2.1-or-later"
+          jq -e '.licenseProfile.forbiddenConfigureFlags == ["--enable-gpl","--enable-version3","--enable-nonfree"]' "$profile" >/dev/null
+
+          ffmpeg_version="$(jq -r '.source.version' "$profile")"
+          ffmpeg_sha256="$(jq -r '.source.sha256' "$profile")"
+          [[ "$ffmpeg_sha256" =~ ^[0-9a-f]{64}$ ]]
+
+          base_tag="python:3.11-alpine3.22"
+          docker pull "$base_tag"
+          base_ref="$(docker image inspect --format '{{index .RepoDigests 0}}' "$base_tag")"
+          [[ "$base_ref" =~ ^python@sha256:[0-9a-f]{64}$ ]]
+
+          printf '%s\n' "$base_ref" > social-renderer-evidence/base-image-ref.txt
+          printf '%s\n' "$ffmpeg_version" > social-renderer-evidence/ffmpeg-source-version.txt
+          printf '%s\n' "$ffmpeg_sha256" > social-renderer-evidence/ffmpeg-source-sha256.txt
+
+          {
+            echo "python_base=$base_ref"
+            echo "ffmpeg_version=$ffmpeg_version"
+            echo "ffmpeg_sha256=$ffmpeg_sha256"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Renderer Worker real bauen
+        env:
+          PYTHON_BASE: ${{ steps.inputs.outputs.python_base }}
+          FFMPEG_VERSION: ${{ steps.inputs.outputs.ffmpeg_version }}
+          FFMPEG_SHA256: ${{ steps.inputs.outputs.ffmpeg_sha256 }}
+        run: |
+          set -euo pipefail
+          docker build \
+            --file deploy/social-media/Dockerfile.renderer \
+            --build-arg "PYTHON_BASE=$PYTHON_BASE" \
+            --build-arg "FFMPEG_VERSION=$FFMPEG_VERSION" \
+            --build-arg "FFMPEG_SHA256=$FFMPEG_SHA256" \
+            --tag "capital-ai-social-renderer:$GITHUB_SHA" \
+            .
+
+      - name: LGPL-Profil und benötigte Renderer-Capabilities verifizieren
+        run: |
+          set -euo pipefail
+          image="capital-ai-social-renderer:$GITHUB_SHA"
+
+          docker run --rm --entrypoint ffmpeg "$image" -hide_banner -version > social-renderer-evidence/ffmpeg-version.txt
+          docker run --rm --entrypoint ffmpeg "$image" -hide_banner -buildconf > social-renderer-evidence/ffmpeg-buildconf.txt
+          docker run --rm --entrypoint ffmpeg "$image" -hide_banner -L > social-renderer-evidence/ffmpeg-license.txt
+          docker run --rm --entrypoint ffmpeg "$image" -hide_banner -encoders > social-renderer-evidence/ffmpeg-encoders.txt
+          docker run --rm --entrypoint ffmpeg "$image" -hide_banner -filters > social-renderer-evidence/ffmpeg-filters.txt
+          docker run --rm --entrypoint ffmpeg "$image" -hide_banner -demuxers > social-renderer-evidence/ffmpeg-demuxers.txt
+          docker run --rm --entrypoint ffprobe "$image" -hide_banner -version > social-renderer-evidence/ffprobe-version.txt
+          docker run --rm --entrypoint apk "$image" info -v libcrypto3 libssl3 libuuid > social-renderer-evidence/runtime-security-packages.txt
+
+          ! grep -E -- '--enable-(gpl|nonfree|version3)([ =]|$)' social-renderer-evidence/ffmpeg-buildconf.txt
+          grep -E '[[:space:]]mpeg4[[:space:]]' social-renderer-evidence/ffmpeg-encoders.txt
+          grep -E '[[:space:]]aac[[:space:]]' social-renderer-evidence/ffmpeg-encoders.txt
+          grep -E '[[:space:]]concat[[:space:]]' social-renderer-evidence/ffmpeg-demuxers.txt
+          for filter in fps format apad atrim; do
+            grep -E "[[:space:]]${filter}[[:space:]]" social-renderer-evidence/ffmpeg-filters.txt
+          done
+
+      - name: Binary- und lokale Image-Identität binden
+        run: |
+          set -euo pipefail
+          image="capital-ai-social-renderer:$GITHUB_SHA"
+          container="$(docker create "$image")"
+          trap 'docker rm -f "$container" >/dev/null 2>&1 || true' EXIT
+          docker cp "$container:/opt/ffmpeg/bin/ffmpeg" social-renderer-evidence/ffmpeg
+          docker cp "$container:/opt/ffmpeg/bin/ffprobe" social-renderer-evidence/ffprobe
+          docker rm -f "$container" >/dev/null
+          trap - EXIT
+
+          sha256sum social-renderer-evidence/ffmpeg | tee social-renderer-evidence/ffmpeg.sha256
+          sha256sum social-renderer-evidence/ffprobe | tee social-renderer-evidence/ffprobe.sha256
+          docker image inspect --format '{{.Id}}' "$image" | tee social-renderer-evidence/local-image-id.txt
+
+          docker save "$image" --output social-renderer-evidence/renderer-image.tar
+          sha256sum social-renderer-evidence/renderer-image.tar | tee social-renderer-evidence/renderer-image-archive.sha256
+
+      - name: Read-only/non-root Runtime Smoke
+        run: |
+          set -euo pipefail
+          image="capital-ai-social-renderer:$GITHUB_SHA"
+          docker run --rm \
+            --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid,size=32m \
+            --cap-drop ALL \
+            --security-opt no-new-privileges \
+            --entrypoint sh \
+            "$image" -euc '
+              test "$(id -u)" = "10001"
+              python -c "from PIL import Image; assert Image.__version__ == \"12.3.0\""
+              ! command -v pip
+              test ! -d /usr/local/lib/python3.11/site-packages/setuptools
+              ffmpeg -hide_banner -version >/dev/null
+              ffprobe -hide_banner -version >/dev/null
+            '
+
+      - name: Trivy, SBOM und Runtime-Lizenzinventar erzeugen
+        run: |
+          set -euo pipefail
+          chmod a+r social-renderer-evidence/renderer-image.tar
+          docker run --rm \
+            -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" \
+            -v "$PWD/social-renderer-evidence:/reports" \
+            capital-ai-security image \
+            --input /reports/renderer-image.tar \
+            --ignorefile /dev/null \
+            --scanners vuln,secret \
+            --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL \
+            --format json \
+            --output /reports/renderer-image.trivy.json \
+            --exit-code 0
+          node scripts/summarize-trivy.mjs social-renderer-evidence/renderer-image.trivy.json > social-renderer-evidence/renderer-image.trivy.summary.json
+          node scripts/summarize-trivy.mjs social-renderer-evidence/renderer-image.trivy.json --gate
+
+          docker run --rm \
+            -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" \
+            -v "$PWD/social-renderer-evidence:/reports" \
+            capital-ai-security image \
+            --input /reports/renderer-image.tar \
+            --ignorefile /dev/null \
+            --scanners vuln \
+            --format cyclonedx \
+            --output /reports/renderer-worker.sbom.cdx.json
+
+          docker run --rm \
+            -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" \
+            -v "$PWD/social-renderer-evidence:/reports" \
+            capital-ai-security image \
+            --input /reports/renderer-image.tar \
+            --ignorefile /dev/null \
+            --scanners license \
+            --license-full \
+            --format json \
+            --output /reports/renderer-worker.licenses.json \
+            --exit-code 0
+
+      - name: Maschinenlesbare Evidence schreiben
+        run: |
+          set -euo pipefail
+          ffmpeg_sha="$(cut -d ' ' -f 1 social-renderer-evidence/ffmpeg.sha256)"
+          ffprobe_sha="$(cut -d ' ' -f 1 social-renderer-evidence/ffprobe.sha256)"
+          archive_sha="$(cut -d ' ' -f 1 social-renderer-evidence/renderer-image-archive.sha256)"
+          base_ref="$(cat social-renderer-evidence/base-image-ref.txt)"
+          image_id="$(cat social-renderer-evidence/local-image-id.txt)"
+          jq -n \
+            --arg schemaVersion "SOCIAL_RENDERER_WORKER_EVIDENCE@1" \
+            --arg sourceSha "$GITHUB_SHA" \
+            --arg baseImageRef "$base_ref" \
+            --arg imageId "$image_id" \
+            --arg imageArchiveSha256 "$archive_sha" \
+            --arg ffmpegSha256 "$ffmpeg_sha" \
+            --arg ffprobeSha256 "$ffprobe_sha" \
+            --arg ffmpegSourceVersion "$(cat social-renderer-evidence/ffmpeg-source-version.txt)" \
+            --arg ffmpegSourceSha256 "$(cat social-renderer-evidence/ffmpeg-source-sha256.txt)" \
+            '{
+              schemaVersion:$schemaVersion,
+              sourceSha:$sourceSha,
+              baseImageRef:$baseImageRef,
+              localImageId:$imageId,
+              imageArchiveSha256:$imageArchiveSha256,
+              ffmpeg:{version:$ffmpegSourceVersion,sourceSha256:$ffmpegSourceSha256,binarySha256:$ffmpegSha256},
+              ffprobe:{binarySha256:$ffprobeSha256},
+              runtime:{uid:10001,readOnlySmoke:true,capDropAll:true,noNewPrivileges:true},
+              licenseProfile:{intended:"LGPL-2.1-or-later",gplEnabled:false,nonfreeEnabled:false,version3Enabled:false},
+              productionEligible:false,
+              productionBlocker:"OCI registry digest and release handoff are intentionally not created by PR validation."
+            }' > social-renderer-evidence/renderer-worker-evidence.json
+
+          rm social-renderer-evidence/renderer-image.tar social-renderer-evidence/ffmpeg social-renderer-evidence/ffprobe
+
+      - name: Evidence-Artefakt sichern
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: social-renderer-worker-evidence-${{ github.sha }}
+          path: social-renderer-evidence/
+          if-no-files-found: error
+          retention-days: 7
