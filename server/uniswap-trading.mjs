@@ -47,6 +47,48 @@ function normalizeQuoteRequest(payload) {
   };
 }
 
+function boundedText(value, max = 256) {
+  return typeof value === 'string' && value.length > 0 && value.length <= max ? value : null;
+}
+
+function projectedAmount(value) {
+  if (!value || typeof value !== 'object') return null;
+  const amount = boundedText(value.amount, 96);
+  const token = boundedText(value.token, 96);
+  if (!amount || !token) return null;
+  const projection = { amount, token };
+  const minimumAmount = boundedText(value.minimumAmount, 96);
+  const maximumAmount = boundedText(value.maximumAmount, 96);
+  const recipient = boundedText(value.recipient, 96);
+  if (minimumAmount) projection.minimumAmount = minimumAmount;
+  if (maximumAmount) projection.maximumAmount = maximumAmount;
+  if (recipient && ADDRESS.test(recipient)) projection.recipient = recipient;
+  return projection;
+}
+
+export function projectUniswapQuote(payload) {
+  if (!payload || typeof payload !== 'object' || !payload.quote || typeof payload.quote !== 'object') return null;
+  const input = projectedAmount(payload.quote.input);
+  const output = projectedAmount(payload.quote.output);
+  if (!input || !output) return null;
+
+  const quote = { input, output };
+  const quoteId = boundedText(payload.quote.quoteId, 256);
+  const gasUsd = boundedText(payload.quote.classicGasUseEstimateUSD, 64);
+  const slippageTolerance = Number(payload.quote.slippageTolerance);
+  if (quoteId) quote.quoteId = quoteId;
+  if (gasUsd) quote.classicGasUseEstimateUSD = gasUsd;
+  if (Number.isFinite(slippageTolerance) && slippageTolerance >= 0 && slippageTolerance <= 100) {
+    quote.slippageTolerance = slippageTolerance;
+  }
+
+  return {
+    requestId: boundedText(payload.requestId, 256),
+    routing: boundedText(payload.routing, 64),
+    quote,
+  };
+}
+
 export function createUniswapTrading({ env = process.env, fetchImpl = fetch, auth } = {}) {
   const apiKey = String(env.UNISWAP_API_KEY || '');
   const quoteEnabled = env.UNISWAP_QUOTE_ENABLED === 'true' && apiKey.length >= 8;
@@ -136,14 +178,18 @@ export function createUniswapTrading({ env = process.env, fetchImpl = fetch, aut
         signal: AbortSignal.timeout(7000),
       });
       const payload = await boundedJson(response);
-      if (!response.ok || !payload || typeof payload !== 'object') {
+      const projected = response.ok ? projectUniswapQuote(payload) : null;
+      if (!projected) {
         json(res, 502, { error: 'uniswap_quote_rejected' });
         return true;
       }
       json(res, 200, {
         provider: 'uniswap',
         dataScope: 'USER_PRIVATE_TRADING_QUOTE',
-        quote: payload,
+        requestId: projected.requestId,
+        routing: projected.routing,
+        quote: projected.quote,
+        executionPayloadStripped: true,
         executionEnabled: false,
         walletSignatureRequired: true,
         arbitrageExecutionEligible: false,
