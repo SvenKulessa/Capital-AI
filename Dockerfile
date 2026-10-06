@@ -27,6 +27,7 @@ COPY CAPITAL-AI-GROWTH/badge.svg ./CAPITAL-AI-GROWTH/badge.svg
 COPY CAPITAL-AI-PLATFORM/badge.svg ./CAPITAL-AI-PLATFORM/badge.svg
 COPY contracts ./contracts
 COPY packages/benchmark-core ./packages/benchmark-core
+COPY apps/cads-github-app/github-app-registration.example.json apps/cads-github-app/marketplace-plans.json ./apps/cads-github-app/
 COPY documentary/evidence ./documentary/evidence
 COPY generated/documentary ./generated/documentary
 COPY public/branding/capital-ai-logo.jpg ./public/branding/capital-ai-logo.jpg
@@ -40,7 +41,7 @@ COPY server/prompt-injection-guard.mjs server/prompt-injection-guard.test.mjs se
 COPY server/advisor-security.test.mjs ./server/
 COPY server/nats-auth.mjs server/private-provider-query.mjs server/private-provider-query.test.mjs ./server/
 COPY server/growth-ai-gateway.ts server/growth-ai-gateway.test.ts ./server/
-COPY scripts/billing-catalog.test.mjs scripts/stripe-catalog-readback.test.mjs scripts/stripe-three-purchase-e2e.mjs scripts/stripe-three-purchase-e2e.test.mjs scripts/stripe-subscription-sync-migration.test.mjs scripts/benchmark-ledger-migration.test.mjs scripts/benchmark-cost-calibration.test.mjs scripts/blueprint-evidence-contract.test.mjs scripts/supabase-auth-config.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-source-provenance-drift.test.mjs scripts/seo-metadata.test.mjs scripts/finance-source-target-manifest.test.mjs scripts/validate-finance-source-target-manifest.mjs scripts/social-engine-completion-gate.test.mjs scripts/validate-social-engine-completion-gate.mjs ./scripts/
+COPY scripts/cads-marketplace-manifest.test.mjs scripts/billing-catalog.test.mjs scripts/stripe-catalog-readback.test.mjs scripts/stripe-three-purchase-e2e.mjs scripts/stripe-three-purchase-e2e.test.mjs scripts/stripe-subscription-sync-migration.test.mjs scripts/benchmark-ledger-migration.test.mjs scripts/benchmark-cost-calibration.test.mjs scripts/blueprint-evidence-contract.test.mjs scripts/supabase-auth-config.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-source-provenance-drift.test.mjs scripts/seo-metadata.test.mjs scripts/finance-source-target-manifest.test.mjs scripts/validate-finance-source-target-manifest.mjs scripts/social-engine-completion-gate.test.mjs scripts/validate-social-engine-completion-gate.mjs ./scripts/
 COPY supabase/email-templates ./supabase/email-templates
 COPY supabase/migrations/20261005010039_legal_policy_evidence_store_isolated.sql supabase/migrations/20261005155500_fix_registration_consent_null.sql supabase/migrations/20261006072600_sync_stripe_subscription_catalog_v2.sql supabase/migrations/20261006080124_benchmark_run_usage_ledger.sql supabase/migrations/20261006131500_enable_binance_user_provider_vault.sql ./supabase/migrations/
 COPY scripts/documentation-drift.mjs scripts/documentation-drift.test.mjs ./scripts/
@@ -61,7 +62,7 @@ COPY docs/market-data/evidence/source-admission-ecb-reference-rates-20261006.jso
 COPY scripts/ecb-reference-admission.test.mjs ./scripts/ecb-reference-admission.test.mjs
 COPY scripts/license-engine.mjs ./scripts/license-engine.mjs
 RUN --network=none node --test server/mta-sts.test.mjs server/well-known.test.mjs server/auth-security.test.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-source-provenance-drift.test.mjs \
-    && node --test server/prompt-injection-guard.test.mjs server/vocabulary-checkout.test.mjs server/subscription-checkout.test.mjs server/cads-marketplace-community.test.mjs server/cads-commerce.test.mjs server/benchmark-runs.test.mjs server/benchmark-store.test.mjs server/public-artifact-policy.test.mjs scripts/billing-catalog.test.mjs \
+    && node --test server/prompt-injection-guard.test.mjs server/vocabulary-checkout.test.mjs server/subscription-checkout.test.mjs server/cads-marketplace-community.test.mjs server/cads-commerce.test.mjs server/benchmark-runs.test.mjs server/benchmark-store.test.mjs server/public-artifact-policy.test.mjs scripts/cads-marketplace-manifest.test.mjs scripts/billing-catalog.test.mjs \
     && node --test server/user-provider-vault.test.mjs server/private-provider-query.test.mjs server/kraken-order-dry-run.test.mjs server/uniswap-trading.test.mjs scripts/stripe-catalog-readback.test.mjs scripts/stripe-three-purchase-e2e.test.mjs scripts/benchmark-ledger-migration.test.mjs scripts/benchmark-cost-calibration.test.mjs \
     && node --import tsx --test server/advisor-security.test.mjs scripts/blueprint-evidence-contract.test.mjs \
     && node --test scripts/branding-assets.test.mjs \
