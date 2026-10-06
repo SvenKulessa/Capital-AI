@@ -13,13 +13,14 @@ export const SOCIAL_CONTENT_WORK_PACKAGES: WorkPackage[] = [
     "evidenceState": "OFFEN",
     "evidenceRefs": [
       "https://github.com/SvenKulessa/Capital-AI/blob/8a08f938a519fbf3379749fd9ac59e182851e655/CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.md",
-      "CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json"
+      "CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json",
+      "CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json"
     ],
-    "nextStep": "Punkt 4: exakte Versionen, Artefakt-Hashes und Lizenz-/Redistribution-Evidence der tatsächlich zu migrierenden Social-Tools bestimmen.",
+    "nextStep": "Punkt 4 Restgates schließen: exakten FFmpeg-/Poppler-Auslieferungsbuild sowie Qwen-/Chatterbox-/Whisper-Gewichtsrevisionen vollständig hash-binden; erst danach Social-Core/Renderer portieren.",
     "priority": "Kritisch",
     "leadName": "Owner + GROWTH/MARKET/PLATFORM/TRUST/PRODUCT",
     "targetSprint": "Sequenziell nach Lizenz-, Datenrechte- und Security-Gates",
-    "description": "Das Source-to-Target-Dateimanifest ist gegen CURRENT_MAIN materialisiert und SHA-gesichert. Finance-SocialMediaEngine und selektive fortgeschrittene MARKET/Data-Funktionen werden danach schrittweise migriert. Kommerzieller Kundenpfad und Owner-private Tool-Runtime bleiben strikt getrennt; Non-Commercial-Artefakte dürfen keine kommerziellen Outputs erzeugen.",
+    "description": "Das Source-to-Target-Dateimanifest und die erste exakte Social-Tool-Lizenz-Evidence sind gegen CURRENT_MAIN materialisiert. Finance-Scoring/Weighting/Data bleibt bis zum Social-Cutover ausdrücklich blockiert. Die Finance-SocialMediaEngine wird danach schrittweise migriert. Kommerzieller Kundenpfad und Owner-private Tool-Runtime bleiben strikt getrennt; Non-Commercial-Artefakte dürfen keine kommerziellen Outputs erzeugen.",
     "deliverables": [
       "SocialMediaEngine Contracts, Editing, deterministischen Media- und Publishing-Pfad zielkonform migrieren.",
       "Maschinenlesbare Tool-/Lizenz-Zulassung mit Commercial-, Owner-private-, Research- und BLOCKED-Modi durchsetzen.",
