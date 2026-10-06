@@ -5,6 +5,44 @@ const MAX_BODY_BYTES = 16 * 1024;
 const KRAKEN_BALANCE_PATH = '/0/private/Balance';
 const KRAKEN_API_KEY_INFO_PATH = '/0/private/GetApiKeyInfo';
 const KRAKEN_FUTURES_KEY_INFO_PATH = '/api/auth/v1/api-keys/v3/check';
+const KRAKEN_SPOT_QUERY_PATHS = Object.freeze({
+  'account.key_info': '/0/private/GetApiKeyInfo',
+  'account.balance': '/0/private/Balance',
+  'account.trade_balance': '/0/private/TradeBalance',
+  'orders.open': '/0/private/OpenOrders',
+  'orders.closed': '/0/private/ClosedOrders',
+  'orders.query': '/0/private/QueryOrders',
+  'trades.history': '/0/private/TradesHistory',
+  'trades.query': '/0/private/QueryTrades',
+  'positions.open': '/0/private/OpenPositions',
+  'ledgers.list': '/0/private/Ledgers',
+  'ledgers.query': '/0/private/QueryLedgers',
+  'trade.volume': '/0/private/TradeVolume',
+});
+const KRAKEN_FUTURES_QUERY_PATHS = Object.freeze({
+  'futures.account': '/derivatives/api/v3/accounts',
+  'futures.open_positions': '/derivatives/api/v3/openpositions',
+  'futures.open_orders': '/derivatives/api/v3/openorders',
+  'futures.fills': '/derivatives/api/v3/fills',
+  'futures.position_events': '/api/history/v3/positions',
+});
+const BINANCE_QUERY_PATHS = Object.freeze({
+  'account.permissions': ['https://api.binance.com', '/sapi/v1/account/apiRestrictions'],
+  'account.info': ['https://api.binance.com', '/sapi/v1/account/info'],
+  'account.status': ['https://api.binance.com', '/sapi/v1/account/status'],
+  'account.snapshot': ['https://api.binance.com', '/sapi/v1/accountSnapshot'],
+  'spot.account': ['https://api.binance.com', '/api/v3/account'],
+  'spot.open_orders': ['https://api.binance.com', '/api/v3/openOrders'],
+  'spot.all_orders': ['https://api.binance.com', '/api/v3/allOrders'],
+  'spot.my_trades': ['https://api.binance.com', '/api/v3/myTrades'],
+  'futures.account': ['https://fapi.binance.com', '/fapi/v3/account'],
+  'futures.balance': ['https://fapi.binance.com', '/fapi/v3/balance'],
+  'futures.position_risk': ['https://fapi.binance.com', '/fapi/v3/positionRisk'],
+  'futures.open_orders': ['https://fapi.binance.com', '/fapi/v1/openOrders'],
+  'futures.all_orders': ['https://fapi.binance.com', '/fapi/v1/allOrders'],
+  'futures.user_trades': ['https://fapi.binance.com', '/fapi/v1/userTrades'],
+  'futures.income': ['https://fapi.binance.com', '/fapi/v1/income'],
+});
 let lastKrakenNonce = 0n;
 
 const KRAKEN_FORBIDDEN_FUNDING_PERMISSIONS = new Set([
@@ -112,9 +150,9 @@ export function nextKrakenNonce() {
   return String(lastKrakenNonce);
 }
 
-async function krakenPrivatePost(fetchImpl, path, { apiKey, apiSecret }) {
+async function krakenPrivatePost(fetchImpl, path, { apiKey, apiSecret }, params = {}) {
   const nonce = nextKrakenNonce();
-  const form = { nonce };
+  const form = { nonce, ...params };
   const body = new URLSearchParams(form).toString();
   const signature = krakenSignature(path, form, apiSecret);
   const response = await fetchImpl(new URL(path, 'https://api.kraken.com'), {
