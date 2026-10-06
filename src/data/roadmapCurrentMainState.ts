@@ -8,9 +8,9 @@ export type RoadmapReconciliationPatch = {
 
 export const ROADMAP_RECONCILIATION = Object.freeze({
   schema: 'CAPITAL_AI_ROADMAP_RECONCILIATION@1',
-  baseMainSha: '0bf052cbc8f7774db29cc77493f6f24bb28bd93b',
+  baseMainSha: 'd2a3b1175b10c07e5c3446d913371505311b6a48',
   reviewedAt: '2026-10-06',
-  packageCount: 108,
+  packageCount: 111,
   packageSources: [
   {
     "id": "AP-AGT-01",
@@ -350,6 +350,18 @@ export const ROADMAP_RECONCILIATION = Object.freeze({
   },
   {
     "id": "CA-PLATFORM-VERSIONING",
+    "source": "src/data/roadmapData.ts"
+  },
+  {
+    "id": "CA-PLATFORM-AGENT-TRAJECTORY-OBSERVABILITY",
+    "source": "src/data/roadmapData.ts"
+  },
+  {
+    "id": "CA-PRODUCT-AGENT-PATH-CONTROL-CENTER",
+    "source": "src/data/roadmapData.ts"
+  },
+  {
+    "id": "CA-PRODUCT-MULTI-AGENT-ORCHESTRATION",
     "source": "src/data/roadmapData.ts"
   },
   {
