@@ -1,9 +1,6 @@
 import { lazy } from 'react';
 import type { LegalRoute } from '../../components/LegalAndFaqPages';
 import {
-  ResearchLicensePages,
-} from '../../components/ResearchLicensePages';
-import {
   RESEARCH_ROUTES,
   type ResearchRoute,
 } from '../../data/researchLicenses';
@@ -26,6 +23,11 @@ const LoginPage = lazy(() =>
 const LegalAndFaqPages = lazy(() =>
   import('../../components/LegalAndFaqPages').then((module) => ({
     default: module.LegalAndFaqPages,
+  })),
+);
+const ResearchLicensePages = lazy(() =>
+  import('../../components/ResearchLicensePages').then((module) => ({
+    default: module.ResearchLicensePages,
   })),
 );
 
