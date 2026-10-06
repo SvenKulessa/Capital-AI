@@ -154,7 +154,7 @@ jobs:
           const runtime=JSON.parse(readFileSync('deploy/runtime/package.json','utf8'));
           if (root.dependencies.redis !== '6.3.0') throw new Error('unexpected redis root version');
           if (root.dependencies['lucide-react'] !== '1.52.0') throw new Error('unexpected lucide-react version');
-          if (root.dependencies.motion !== '^13.4.5') throw new Error('Motion major changed unexpectedly');
+          if (root.dependencies.motion !== '^14.0.0') throw new Error('Motion major changed unexpectedly');
           if (runtime.dependencies.redis !== '6.3.0') throw new Error('unexpected runtime redis version');
           if (process.env.TARGET_BRANCH === 'capital-ai-product/multi-agent-roadmap-20261006' &&
               root.devDependencies?.['@langchain/langgraph'] !== '1.4.19') {
