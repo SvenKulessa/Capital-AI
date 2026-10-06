@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import {
   GrowthAiDraftRequestSchema,
+  assertDraftBoundToRequest,
   createGeminiMarketingDraft,
   parseGrowthMarketingDraftJson,
 } from './growth-ai-gateway.ts';
@@ -106,4 +107,43 @@ test('production Gemini calls stay blocked while zero-cost policy is not admitte
     if (previousEnabled === undefined) delete process.env.GROWTH_AI_ENABLED; else process.env.GROWTH_AI_ENABLED = previousEnabled;
     if (previousKey === undefined) delete process.env.GEMINI_API_KEY; else process.env.GEMINI_API_KEY = previousKey;
   }
+});
+
+
+test('Gemini output stays bound to request identity and permitted evidence URLs', () => {
+  const input = GrowthAiDraftRequestSchema.parse({
+    productId: 'capital-ai',
+    sourceSha: validDraft.sourceSha,
+    locale: 'de-DE',
+    canonicalUrl: validDraft.canonicalUrl,
+    channels: ['WEBSITE'],
+    brief: 'Create a concise product summary.',
+    sourceUrls: ['https://capital-ai.online/documentary'],
+  });
+
+  assert.doesNotThrow(() => assertDraftBoundToRequest(validDraft, input, 'gemini-3.8-flash'));
+
+  assert.throws(
+    () => assertDraftBoundToRequest(
+      { ...validDraft, sourceSha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' },
+      input,
+      'gemini-3.8-flash',
+    ),
+    /GROWTH_AI_OUTPUT_BINDING_MISMATCH/,
+  );
+
+  assert.throws(
+    () => assertDraftBoundToRequest(
+      {
+        ...validDraft,
+        claims: [{
+          ...validDraft.claims[0],
+          evidenceUrls: ['https://example.com/unapproved'],
+        }],
+      },
+      input,
+      'gemini-3.8-flash',
+    ),
+    /GROWTH_AI_UNBOUND_EVIDENCE_URL/,
+  );
 });
