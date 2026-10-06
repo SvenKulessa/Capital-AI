@@ -103,6 +103,12 @@ export function AuthSecuritySettings() {
   const passkeyLimitReached = passkeys.length >= 2;
   const totpLimitReached = verifiedFactors.length >= 2;
 
+  useEffect(() => {
+    if (verifiedFactors.length === 1 && factorName === 'CAPITAL-AI Authenticator') {
+      setFactorName('CAPITAL-AI Authenticator 2');
+    }
+  }, [verifiedFactors.length, factorName]);
+
   const updatePasskeyName = (value: string) => setPasskeyName(value.slice(0, 120));
   const updateFactorName = (value: string) => setFactorName(value.slice(0, 120));
 
