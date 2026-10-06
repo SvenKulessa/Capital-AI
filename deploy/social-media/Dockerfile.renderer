@@ -34,9 +34,9 @@ RUN test -n "${FFMPEG_VERSION}" \
       --disable-static \
     && make -j2 \
     && make install \
-    && /opt/ffmpeg/bin/ffmpeg -hide_banner -version \
-    && /opt/ffmpeg/bin/ffmpeg -hide_banner -buildconf \
-    && /opt/ffmpeg/bin/ffmpeg -hide_banner -L
+    && LD_LIBRARY_PATH=/opt/ffmpeg/lib /opt/ffmpeg/bin/ffmpeg -hide_banner -version \
+    && LD_LIBRARY_PATH=/opt/ffmpeg/lib /opt/ffmpeg/bin/ffmpeg -hide_banner -buildconf \
+    && LD_LIBRARY_PATH=/opt/ffmpeg/lib /opt/ffmpeg/bin/ffmpeg -hide_banner -L
 
 ARG PYTHON_BASE
 FROM ${PYTHON_BASE} AS runtime
