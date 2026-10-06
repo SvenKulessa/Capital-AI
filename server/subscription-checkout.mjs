@@ -71,6 +71,14 @@ export function createSubscriptionCheckout({ env = process.env, fetchImpl = fetc
           cycles: ['monthly', 'annual'],
           priceAuthority: 'server/billing-catalog.mjs',
           entitlementAuthority: 'public.subscriptions via Stripe-managed subscription sync',
+          catalogVersion: BILLING_CATALOG.version,
+          catalogEvidence: 'docs/security/evidence/stripe-catalog-readback-20261006.json',
+          testPurchaseRequirement: {
+            count: 3,
+            tiers: ['starter', 'pro', 'enterprise'],
+            stripeMode: 'test',
+            livePriceIdsAllowed: false,
+          },
         });
         return true;
       }
