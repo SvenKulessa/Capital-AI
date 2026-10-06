@@ -1,7 +1,7 @@
 # Roadmap-Reconciliation — 06.10.2026
 
-Basis-Main: `0bf052cbc8f7774db29cc77493f6f24bb28bd93b`
-Arbeitsbranch: `capital-ai-product/cads-monetization-roadmap-20261006`
+Basis-Main: `cef1d11f607778f5226ca1df97376ba408652c69`
+Arbeitsbranch: `capital-ai-product/multi-agent-roadmap-20261006`
 Primary Domain: PRODUCT
 Cross-Domain: MARKET / PLATFORM / TRUST / GROWTH
 
@@ -135,11 +135,13 @@ Diese Capability-Matrix ist Produktkonfiguration. Benchmark-Evidence bleibt
 ## Offene PRs zum Basiszeitpunkt
 
 - #214 — PRODUCT Multi-Agent-Roadmap und Agent-Trajectory
-- #215 — PRODUCT JaJa Universe Buddy v0.1, Draft
+- #217 — TRUST Repo-Inventur, Roadmap-Korrelation und CADS-Monetarisierung, Draft
+- #218 — TRUST CADS Community-first Marketplace-Grenzen, Draft
 
-Diese offenen PRs sind nicht Bestandteil des Basis-Main und werden daher nicht als implementierter Main-Zustand
-ausgegeben. Nach Merge ist eine Post-Merge-Rekorrelation erforderlich, falls Roadmap-, CADS-,
-Auth-, Runtime- oder Evidence-Dateien überlappen.
+PR #215 — JaJa Universe Buddy v0.1 — ist in `main@cef1d11f607778f5226ca1df97376ba408652c69` gemergt. Dessen MIT-lizenzierter
+`Chat Buddy/src/core/`-Bereich wird deshalb als vorhandene Agent-Core-Baseline korreliert; JaJa Branding,
+Persona, Voice, Pricing und PRODUCT-spezifische Logik bleiben außerhalb dieses OSS-Core. Die offenen PRs
+werden nicht als implementierter Main-Zustand ausgegeben.
 
 ## Freigabegrenze
 
@@ -156,4 +158,4 @@ Die Reconciliation auf diesem Branch erweitert die kanonische Paketmenge von 108
 - `CA-PLATFORM-AGENT-TRAJECTORY-OBSERVABILITY`
 - `CA-PRODUCT-AGENT-PATH-CONTROL-CENTER`
 
-Baseline für diese Konvergenz ist `main@d2a3b1175b10c07e5c3446d913371505311b6a48` (#216). Die drei Pakete bleiben evidence-bound und erteilen keine Production-, Write-, Trading-, Publication- oder Legal-Authority.
+Baseline für diese Konvergenz ist `main@cef1d11f607778f5226ca1df97376ba408652c69` nach Merge von #215. Der neue MIT Agent-Core wird als wiederverwendbare Primitive korreliert; es besteht kein Dateioverlap mit den #214-Roadmap-/Trajectory-Dateien, daher ist die Post-Merge-Aktion `CORRELATE_ONLY`. Die drei Pakete bleiben evidence-bound und erteilen keine Production-, Write-, Trading-, Publication- oder Legal-Authority.
