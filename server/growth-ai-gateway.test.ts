@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import {
   GrowthAiDraftRequestSchema,
+  createGeminiMarketingDraft,
   parseGrowthMarketingDraftJson,
 } from './growth-ai-gateway.ts';
 import { GROWTH_AI_PROMOTION_POLICY_VERSION } from '../src/contracts/growthAiPromotion.ts';
@@ -77,4 +78,32 @@ test('Gemini output parser rejects non-JSON, unknown fields and evidence-free cl
       evidenceUrls: [],
     }],
   })));
+});
+
+
+test('production Gemini calls stay blocked while zero-cost policy is not admitted', async () => {
+  const previousNodeEnv = process.env.NODE_ENV;
+  const previousEnabled = process.env.GROWTH_AI_ENABLED;
+  const previousKey = process.env.GEMINI_API_KEY;
+  try {
+    process.env.NODE_ENV = 'production';
+    process.env.GROWTH_AI_ENABLED = 'true';
+    process.env.GEMINI_API_KEY = 'test-only-not-a-real-key';
+    await assert.rejects(
+      () => createGeminiMarketingDraft({
+        productId: 'capital-ai',
+        sourceSha: validDraft.sourceSha,
+        locale: 'de-DE',
+        canonicalUrl: validDraft.canonicalUrl,
+        channels: ['WEBSITE'],
+        brief: 'Draft only.',
+        sourceUrls: [],
+      }),
+      /GROWTH_AI_PRODUCTION_NOT_ADMITTED/,
+    );
+  } finally {
+    if (previousNodeEnv === undefined) delete process.env.NODE_ENV; else process.env.NODE_ENV = previousNodeEnv;
+    if (previousEnabled === undefined) delete process.env.GROWTH_AI_ENABLED; else process.env.GROWTH_AI_ENABLED = previousEnabled;
+    if (previousKey === undefined) delete process.env.GEMINI_API_KEY; else process.env.GEMINI_API_KEY = previousKey;
+  }
 });
