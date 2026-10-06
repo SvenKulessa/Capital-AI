@@ -95,7 +95,7 @@ test('paid purchase is applied only after authoritative GitHub Marketplace readb
   const fetchImpl = async (url, options = {}) => {
     calls.push({ url: String(url), options });
     if (String(url).startsWith('https://api.github.com/marketplace_listing/accounts/42')) {
-      return new Response(JSON.stringify({ account: { id: 42 }, plan: { id: 1002 } }), {
+      return new Response(JSON.stringify({ id: 42, login: 'acme', type: 'Organization', marketplace_purchase: { plan: { id: 1002 } } }), {
         status: 200,
         headers: { 'content-type': 'application/json' },
       });
@@ -143,7 +143,7 @@ test('plan change fails closed when GitHub readback disagrees with webhook plan'
   const env = baseEnv();
   const fetchImpl = async (url) => {
     if (String(url).startsWith('https://api.github.com/marketplace_listing/accounts/42')) {
-      return new Response(JSON.stringify({ account: { id: 42 }, plan: { id: 1003 } }), {
+      return new Response(JSON.stringify({ id: 42, login: 'acme', type: 'Organization', marketplace_purchase: { plan: { id: 1003 } } }), {
         status: 200,
         headers: { 'content-type': 'application/json' },
       });
@@ -288,7 +288,7 @@ test('OAuth callback verifies user installation, Marketplace subscription and li
       }), { status: 200 });
     }
     if (String(url).startsWith('https://api.github.com/marketplace_listing/accounts/42')) {
-      return new Response(JSON.stringify({ account: { id: 42 }, plan: { id: 1002 } }), { status: 200 });
+      return new Response(JSON.stringify({ id: 42, login: 'acme', type: 'Organization', marketplace_purchase: { plan: { id: 1002 } } }), { status: 200 });
     }
     if (String(url).includes('/rest/v1/rpc/capital_ai_link_cads_marketplace_user')) {
       return new Response(JSON.stringify({ linked: true, accountId: 42, tier: 'pro' }), { status: 200 });
