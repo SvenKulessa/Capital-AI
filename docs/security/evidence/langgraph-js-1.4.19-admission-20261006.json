@@ -103,7 +103,8 @@
       "Docker Security PASS",
       "identical-workload functional equivalence benchmark",
       "checkpoint/replay/authority regression PASS"
-    ]
+    ],
+    "benchmarkPinMaterialized": true
   },
   "authority": {
     "graphRoutingGrantsAuthority": false,
@@ -111,5 +112,75 @@
     "trade": false,
     "publish": false,
     "legalDecision": false
+  },
+  "lockReadback": {
+    "sourceHead": "f8b23b7bac61ff2297b774a616017d6b3a01c028",
+    "packageLockBlobSha": "4c224b8b3aaafec20a41c02fd2cd5f3493d4f74a",
+    "resolved": [
+      {
+        "name": "@langchain/langgraph",
+        "version": "1.4.19",
+        "license": "MIT",
+        "integrity": "sha512-wfT1Nyfwnu/N56piXRXxX6SQQ48ju6rqkGOQPD3/9laSB91ht+pVnq97/3FKO+LybvXfXKiBkfxyIlumdBhIQQ==",
+        "dev": true
+      },
+      {
+        "name": "@langchain/langgraph-checkpoint",
+        "version": "1.1.5",
+        "license": "MIT",
+        "integrity": "sha512-BwDwl5VeTOh6CVuiIPgsUgfK51vTJDMSbFcSCUfjJWsl8/DPdK/mbv+ejxJstkSk/BlSPMP4JfXWcN6jD2ea2Q==",
+        "dev": true
+      },
+      {
+        "name": "@langchain/langgraph-sdk",
+        "version": "1.12.1",
+        "license": "MIT",
+        "integrity": "sha512-V/XSE7auTpfS5p3ByggDM6bKvRLeEjImb7/H+ng9qHkwCrYCGrZpVcuve2lH9pHQVOQlEtnHUsRZKQTWumcdhw==",
+        "dev": true
+      },
+      {
+        "name": "@langchain/protocol",
+        "version": "0.0.19",
+        "license": "MIT",
+        "integrity": "sha512-9hKcRrH7cBX6gfutdfXPoft1OCchHe4FEpALoDJMl5Qu+n/YG5ynZmyu8+8cxORlPwHBoKTxggvXz+76M1yX1Q==",
+        "dev": true
+      },
+      {
+        "name": "@langchain/core",
+        "version": "1.2.16",
+        "license": "MIT",
+        "integrity": "sha512-CdESZETgotCG/xz0G1wyNq8AH3Px3BN50FDfOqA4PjoqOWhBtMP2DJxkRzuSNcsr11Z1pf0JMF1puAPw4HPxSQ==",
+        "dev": true,
+        "peer": true
+      },
+      {
+        "name": "@standard-schema/spec",
+        "version": "1.1.0",
+        "license": "MIT",
+        "integrity": "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="
+      }
+    ],
+    "productionRuntimeReachability": false
+  },
+  "benchmarkEvidence": {
+    "workflowRunId": 37512930543,
+    "workflowRunNumber": 145,
+    "sourceHead": "806ba4a4f63bea3d08153adbf54d02da52787f76",
+    "environment": "isolated-nonproduction",
+    "comparedTransitions": 4000,
+    "functionalEquivalence": true,
+    "baseline": {
+      "meanMs": 0.001168,
+      "p50Ms": 0.000982,
+      "p95Ms": 0.002003,
+      "operationsPerSecond": 856146.059
+    },
+    "langGraph": {
+      "meanMs": 0.925382,
+      "p50Ms": 0.8123,
+      "p95Ms": 1.408323,
+      "operationsPerSecond": 1080.635
+    },
+    "productionApproval": false
   }
 }
