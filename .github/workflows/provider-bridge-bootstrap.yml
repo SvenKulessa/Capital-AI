@@ -10,7 +10,7 @@ on:
       - .github/workflows/provider-bridge-bootstrap.yml
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 concurrency:
   group: provider-bridge-bootstrap-${{ github.ref }}
   cancel-in-progress: true
