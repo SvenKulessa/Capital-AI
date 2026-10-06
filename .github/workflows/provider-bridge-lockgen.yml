@@ -1,0 +1,45 @@
+name: Provider Bridge Lock Generation
+
+on:
+  push:
+    branches:
+      - 'capital-ai-trust/provider-bridge-lockgen-20261006'
+
+permissions:
+  contents: read
+
+jobs:
+  lock-and-test:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Rust 1.99.0 installieren
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.99.0 --profile minimal --component clippy
+          rustc +1.99.0 --version
+          cargo +1.99.0 --version
+
+      - name: Lockfile erzeugen und Tests locked ausführen
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo +1.99.0 generate-lockfile --manifest-path services/provider-bridge-rs/Cargo.toml
+          cargo +1.99.0 test --locked --manifest-path services/provider-bridge-rs/Cargo.toml
+          cargo +1.99.0 clippy --locked --manifest-path services/provider-bridge-rs/Cargo.toml --all-targets -- -D warnings
+          sha256sum services/provider-bridge-rs/Cargo.lock > services/provider-bridge-rs/Cargo.lock.sha256
+
+      - name: Lock-Evidence sichern
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: provider-bridge-lock-${{ github.sha }}
+          retention-days: 7
+          if-no-files-found: error
+          path: |
+            services/provider-bridge-rs/Cargo.lock
+            services/provider-bridge-rs/Cargo.lock.sha256
