@@ -1,6 +1,6 @@
 # Uniswap Arbitrage Integration – Gate 2026-10-06
 
-Status: QUOTE_INTEGRATED_EXECUTION_BLOCKED  
+Status: QUOTE_INTEGRATED_EXECUTION_BLOCKED
 Domain: MARKET + TRUST + PRODUCT
 
 ## Scope
