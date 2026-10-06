@@ -47,9 +47,147 @@ function normalizeQuoteRequest(payload) {
   };
 }
 
+function boundedText(value, max = 256) {
+  return typeof value === 'string' && value.length > 0 && value.length <= max ? value : null;
+}
+
+function projectedAmount(value) {
+  if (!value || typeof value !== 'object') return null;
+  const amount = boundedText(value.amount, 96);
+  const token = boundedText(value.token, 96);
+  if (!amount || !token) return null;
+  const projection = { amount, token };
+  const minimumAmount = boundedText(value.minimumAmount, 96);
+  const maximumAmount = boundedText(value.maximumAmount, 96);
+  const recipient = boundedText(value.recipient, 96);
+  if (minimumAmount) projection.minimumAmount = minimumAmount;
+  if (maximumAmount) projection.maximumAmount = maximumAmount;
+  if (recipient && ADDRESS.test(recipient)) projection.recipient = recipient;
+  return projection;
+}
+
+export function projectUniswapQuote(payload) {
+  if (!payload || typeof payload !== 'object' || !payload.quote || typeof payload.quote !== 'object') return null;
+  const input = projectedAmount(payload.quote.input);
+  const output = projectedAmount(payload.quote.output);
+  if (!input || !output) return null;
+
+  const quote = { input, output };
+  const quoteId = boundedText(payload.quote.quoteId, 256);
+  const gasFeeUsd = boundedText(payload.quote.classicGasUseEstimateUSD, 64) ||
+    boundedText(payload.quote.gasFeeUSD, 64);
+  const gasUseEstimate = boundedText(payload.quote.gasUseEstimate, 64);
+  const slippagePercent = Number(payload.quote.slippageTolerance ?? payload.quote.slippage);
+  const priceImpactPercent = Number(payload.quote.priceImpact);
+  if (quoteId) quote.quoteId = quoteId;
+  if (gasFeeUsd) quote.gasFeeUsd = gasFeeUsd;
+  if (gasUseEstimate) quote.gasUseEstimate = gasUseEstimate;
+  if (Number.isFinite(slippagePercent) && slippagePercent >= 0 && slippagePercent <= 100) {
+    quote.slippagePercent = slippagePercent;
+  }
+  if (Number.isFinite(priceImpactPercent) && priceImpactPercent >= -100 && priceImpactPercent <= 100) {
+    quote.priceImpactPercent = priceImpactPercent;
+  }
+
+  return {
+    requestId: boundedText(payload.requestId, 256),
+    routing: boundedText(payload.routing, 64),
+    quote,
+  };
+}
+
+function boundedNumber(value, min, max) {
+  const number = Number(value);
+  return Number.isFinite(number) && number >= min && number <= max ? number : null;
+}
+
+function normalizeAnalysisContext(value) {
+  if (value == null) return null;
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const allowed = new Set(['notionalUsd', 'expectedGrossProfitUsd', 'maxLossUsd']);
+  if (Object.keys(value).some(key => !allowed.has(key))) return null;
+  const notionalUsd = boundedNumber(value.notionalUsd, 0.01, 1_000_000_000);
+  const expectedGrossProfitUsd = boundedNumber(value.expectedGrossProfitUsd, 0, 100_000_000);
+  const maxLossUsd = boundedNumber(value.maxLossUsd, 0.01, 100_000_000);
+  if (notionalUsd === null || expectedGrossProfitUsd === null || maxLossUsd === null) return null;
+  return { notionalUsd, expectedGrossProfitUsd, maxLossUsd };
+}
+
+function policyNumber(env, key, fallback, min, max) {
+  return boundedNumber(env[key] ?? fallback, min, max) ?? fallback;
+}
+
+function uniswapRiskPolicy(env) {
+  return {
+    maxQuoteAgeMs: policyNumber(env, 'UNISWAP_MAX_QUOTE_AGE_MS', 15000, 1000, 60000),
+    maxSlippagePercent: policyNumber(env, 'UNISWAP_MAX_SLIPPAGE_PERCENT', 1, 0.01, 5),
+    maxPriceImpactPercent: policyNumber(env, 'UNISWAP_MAX_PRICE_IMPACT_PERCENT', 2, 0.01, 20),
+    maxGasFeeUsd: policyNumber(env, 'UNISWAP_MAX_GAS_FEE_USD', 25, 0.01, 10000),
+  };
+}
+
+function evaluateUniswapRisk(projected, analysis, policy, receivedAtMs) {
+  const slippage = projected.quote.slippagePercent;
+  const priceImpact = projected.quote.priceImpactPercent;
+  const gasFeeUsd = boundedNumber(projected.quote.gasFeeUsd, 0, 1_000_000);
+  const slippagePass = typeof slippage === 'number' && slippage <= policy.maxSlippagePercent;
+  const priceImpactPass = typeof priceImpact === 'number' &&
+    Math.abs(priceImpact) <= policy.maxPriceImpactPercent;
+  const gasPass = gasFeeUsd !== null && gasFeeUsd <= policy.maxGasFeeUsd;
+  let estimatedWorstCaseLossUsd = null;
+  let estimatedNetProfitUsd = null;
+  let lossLimitPass = false;
+  let profitabilityPass = false;
+
+  if (analysis && typeof slippage === 'number' && typeof priceImpact === 'number' && gasFeeUsd !== null) {
+    estimatedWorstCaseLossUsd =
+      analysis.notionalUsd * (slippage + Math.abs(priceImpact)) / 100 + gasFeeUsd;
+    estimatedNetProfitUsd = analysis.expectedGrossProfitUsd - estimatedWorstCaseLossUsd;
+    lossLimitPass = estimatedWorstCaseLossUsd <= analysis.maxLossUsd;
+    profitabilityPass = estimatedNetProfitUsd > 0;
+  }
+
+  const analysisEligible = slippagePass && priceImpactPass && gasPass && lossLimitPass && profitabilityPass;
+  const routing = String(projected.routing || '');
+  return {
+    decision: analysisEligible ? 'PASS_ANALYSIS_ONLY' : 'BLOCKED',
+    analysisEligible,
+    executionEligible: false,
+    freshness: {
+      basis: 'LOCAL_RECEIVED_AT_ONLY',
+      providerObservedAt: null,
+      receivedAt: new Date(receivedAtMs).toISOString(),
+      expiresAt: new Date(receivedAtMs + policy.maxQuoteAgeMs).toISOString(),
+      maxQuoteAgeMs: policy.maxQuoteAgeMs,
+    },
+    checks: {
+      slippage: { valuePercent: typeof slippage === 'number' ? slippage : null, maxPercent: policy.maxSlippagePercent, pass: slippagePass },
+      priceImpact: { valuePercent: typeof priceImpact === 'number' ? priceImpact : null, maxPercent: policy.maxPriceImpactPercent, pass: priceImpactPass },
+      gas: { valueUsd: gasFeeUsd, maxUsd: policy.maxGasFeeUsd, pass: gasPass },
+      lossLimit: {
+        analysisContextPresent: Boolean(analysis),
+        estimatedWorstCaseLossUsd,
+        maxLossUsd: analysis?.maxLossUsd ?? null,
+        pass: lossLimitPass,
+      },
+      profitability: {
+        expectedGrossProfitUsd: analysis?.expectedGrossProfitUsd ?? null,
+        estimatedNetProfitUsd,
+        pass: profitabilityPass,
+      },
+      mev: {
+        routing,
+        priorityRouteObserved: routing === 'PRIORITY',
+        executionPass: false,
+      },
+    },
+  };
+}
+
 export function createUniswapTrading({ env = process.env, fetchImpl = fetch, auth } = {}) {
   const apiKey = String(env.UNISWAP_API_KEY || '');
   const quoteEnabled = env.UNISWAP_QUOTE_ENABLED === 'true' && apiKey.length >= 8;
+  const riskPolicy = uniswapRiskPolicy(env);
 
   async function handle(req, res, url, json) {
     if (url.pathname === '/api/market/trading/capabilities' && req.method === 'GET') {
@@ -71,6 +209,7 @@ export function createUniswapTrading({ env = process.env, fetchImpl = fetch, aut
             quoteEnabled,
             quoteSource: 'UNISWAP_TRADE_API',
             walletSignatureRequired: true,
+            walletPrivateKeyServerSide: false,
             executionEnabled: false,
             arbitrageExecutionEligible: false,
           },
@@ -85,6 +224,10 @@ export function createUniswapTrading({ env = process.env, fetchImpl = fetch, aut
         quoteEnabled,
         executionEnabled: false,
         walletSignatureRequired: true,
+        walletPrivateKeyServerSide: false,
+        signatureAuthority: 'USER_WALLET',
+        custodyEnabled: false,
+        riskPolicy,
         apiKeyConfigured: apiKey.length >= 8,
       });
       return true;
@@ -111,8 +254,15 @@ export function createUniswapTrading({ env = process.env, fetchImpl = fetch, aut
     }
 
     let quoteRequest;
+    let analysisContext;
     try {
-      quoteRequest = normalizeQuoteRequest(await readJson(req));
+      const body = await readJson(req);
+      quoteRequest = normalizeQuoteRequest(body);
+      analysisContext = normalizeAnalysisContext(body.analysis);
+      if (body.analysis != null && !analysisContext) {
+        json(res, 400, { error: 'invalid_uniswap_analysis_context' });
+        return true;
+      }
     } catch (error) {
       json(res, error.message === 'REQUEST_TOO_LARGE' ? 413 : 400, { error: 'bad_request' });
       return true;
@@ -136,16 +286,27 @@ export function createUniswapTrading({ env = process.env, fetchImpl = fetch, aut
         signal: AbortSignal.timeout(7000),
       });
       const payload = await boundedJson(response);
-      if (!response.ok || !payload || typeof payload !== 'object') {
+      const projected = response.ok ? projectUniswapQuote(payload) : null;
+      if (!projected) {
         json(res, 502, { error: 'uniswap_quote_rejected' });
         return true;
       }
+      const receivedAtMs = Date.now();
+      const risk = evaluateUniswapRisk(projected, analysisContext, riskPolicy, receivedAtMs);
       json(res, 200, {
         provider: 'uniswap',
         dataScope: 'USER_PRIVATE_TRADING_QUOTE',
-        quote: payload,
+        requestId: projected.requestId,
+        routing: projected.routing,
+        quote: projected.quote,
+        risk,
+        executionPayloadStripped: true,
         executionEnabled: false,
         walletSignatureRequired: true,
+        walletPrivateKeyServerSide: false,
+        signatureAuthority: 'USER_WALLET',
+        custodyEnabled: false,
+        arbitrageAnalysisEligible: risk.analysisEligible,
         arbitrageExecutionEligible: false,
       });
     } catch {

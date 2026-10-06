@@ -34,6 +34,11 @@ test('test-purchase policy requires exactly three Stripe test-mode purchases and
   assert.equal(evidence.testPurchasePolicy.requiredCount,3);
   assert.equal(evidence.testPurchasePolicy.stripeMode,'test');
   assert.equal(evidence.testPurchasePolicy.livePriceIdsAllowed,false);
-  assert.equal(evidence.securityGate.dataApiExposureReview,'BLOCKED');
+  assert.equal(evidence.securityGate.dataApiExposureReview,'PASS_NO_CLIENT_PRIVILEGES_OBSERVED');
+  assert.equal(evidence.securityGate.effectiveAnonSchemaUsage,false);
+  assert.equal(evidence.securityGate.effectiveAuthenticatedSchemaUsage,false);
+  assert.equal(evidence.securityGate.effectiveAnonProductsPricesSubscriptionsSelect,false);
+  assert.equal(evidence.securityGate.effectiveAuthenticatedProductsPricesSubscriptionsSelect,false);
+  assert.equal(evidence.securityGate.supabaseSecurityAdvisorStripeRlsFinding,false);
   assert.equal(evidence.securityGate.evidenceDoesNotGrantProductionApproval,true);
 });
