@@ -21,6 +21,18 @@ create table if not exists public.cads_marketplace_event_inbox (
   received_at timestamptz not null default pg_catalog.clock_timestamp()
 );
 
+create table if not exists public.cads_marketplace_user_links (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  account_id bigint not null references public.cads_marketplace_entitlements(account_id) on delete cascade,
+  installation_id bigint not null check (installation_id > 0),
+  linked_at timestamptz not null default pg_catalog.clock_timestamp(),
+  updated_at timestamptz not null default pg_catalog.clock_timestamp(),
+  primary key (user_id, account_id)
+);
+
+create index if not exists cads_marketplace_user_links_user_idx
+  on public.cads_marketplace_user_links (user_id);
+
 create index if not exists cads_marketplace_entitlements_status_cancelled_idx
   on public.cads_marketplace_entitlements (status, cancelled_at)
   where status = 'CANCELLED';
@@ -30,6 +42,7 @@ create index if not exists cads_marketplace_event_inbox_received_idx
 
 alter table public.cads_marketplace_entitlements enable row level security;
 alter table public.cads_marketplace_event_inbox enable row level security;
+alter table public.cads_marketplace_user_links enable row level security;
 
 drop policy if exists cads_marketplace_entitlements_explicit_deny on public.cads_marketplace_entitlements;
 create policy cads_marketplace_entitlements_explicit_deny
@@ -41,8 +54,14 @@ create policy cads_marketplace_event_inbox_explicit_deny
   on public.cads_marketplace_event_inbox for all to anon, authenticated
   using (false) with check (false);
 
+drop policy if exists cads_marketplace_user_links_explicit_deny on public.cads_marketplace_user_links;
+create policy cads_marketplace_user_links_explicit_deny
+  on public.cads_marketplace_user_links for all to anon, authenticated
+  using (false) with check (false);
+
 revoke all on table public.cads_marketplace_entitlements from public, anon, authenticated, service_role;
 revoke all on table public.cads_marketplace_event_inbox from public, anon, authenticated, service_role;
+revoke all on table public.cads_marketplace_user_links from public, anon, authenticated, service_role;
 
 create or replace function public.capital_ai_apply_cads_marketplace_purchase(
   _delivery_id text,
@@ -141,6 +160,76 @@ begin
 end;
 $function$;
 
+create or replace function public.capital_ai_link_cads_marketplace_user(
+  _user_id uuid,
+  _account_id bigint,
+  _installation_id bigint
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = pg_catalog
+as $function$
+declare
+  v_tier text;
+begin
+  if _user_id is null or _account_id is null or _account_id <= 0
+     or _installation_id is null or _installation_id <= 0 then
+    raise exception 'INVALID_CADS_MARKETPLACE_USER_LINK';
+  end if;
+
+  select tier into v_tier
+    from public.cads_marketplace_entitlements
+   where account_id = _account_id
+     and status = 'ACTIVE';
+
+  if v_tier is null then
+    raise exception 'ACTIVE_CADS_MARKETPLACE_ENTITLEMENT_REQUIRED';
+  end if;
+
+  insert into public.cads_marketplace_user_links (
+    user_id, account_id, installation_id, linked_at, updated_at
+  ) values (
+    _user_id, _account_id, _installation_id,
+    pg_catalog.clock_timestamp(), pg_catalog.clock_timestamp()
+  )
+  on conflict (user_id, account_id) do update set
+    installation_id = excluded.installation_id,
+    updated_at = pg_catalog.clock_timestamp();
+
+  return pg_catalog.jsonb_build_object(
+    'linked', true,
+    'accountId', _account_id,
+    'tier', v_tier
+  );
+end;
+$function$;
+
+create or replace function public.capital_ai_get_cads_marketplace_user_entitlement(_user_id uuid)
+returns jsonb
+language sql
+security definer
+set search_path = pg_catalog
+as $function$
+  select pg_catalog.jsonb_build_object(
+    'tier', e.tier,
+    'accountId', e.account_id,
+    'installationId', l.installation_id,
+    'status', e.status
+  )
+  from public.cads_marketplace_user_links l
+  join public.cads_marketplace_entitlements e on e.account_id = l.account_id
+  where l.user_id = _user_id
+    and e.status = 'ACTIVE'
+  order by case e.tier
+    when 'enterprise' then 3
+    when 'pro' then 2
+    when 'starter' then 1
+    else 0
+  end desc, e.updated_at desc
+  limit 1;
+$function$;
+
 create or replace function public.capital_ai_get_cads_marketplace_entitlement(_account_id bigint)
 returns jsonb
 language sql
@@ -195,6 +284,10 @@ revoke all on function public.capital_ai_apply_cads_marketplace_purchase(
 ) from public, anon, authenticated;
 revoke all on function public.capital_ai_get_cads_marketplace_entitlement(bigint)
   from public, anon, authenticated;
+revoke all on function public.capital_ai_link_cads_marketplace_user(uuid,bigint,bigint)
+  from public, anon, authenticated;
+revoke all on function public.capital_ai_get_cads_marketplace_user_entitlement(uuid)
+  from public, anon, authenticated;
 revoke all on function public.capital_ai_purge_cads_marketplace_data(timestamptz)
   from public, anon, authenticated;
 
@@ -203,6 +296,10 @@ grant execute on function public.capital_ai_apply_cads_marketplace_purchase(
 ) to service_role;
 grant execute on function public.capital_ai_get_cads_marketplace_entitlement(bigint)
   to service_role;
+grant execute on function public.capital_ai_link_cads_marketplace_user(uuid,bigint,bigint)
+  to service_role;
+grant execute on function public.capital_ai_get_cads_marketplace_user_entitlement(uuid)
+  to service_role;
 grant execute on function public.capital_ai_purge_cads_marketplace_data(timestamptz)
   to service_role;
 
@@ -210,3 +307,6 @@ comment on table public.cads_marketplace_entitlements is
   'Service-role-only GitHub Marketplace entitlement state for CADS. No raw webhook payloads or secrets.';
 comment on table public.cads_marketplace_event_inbox is
   'Idempotency ledger for CADS marketplace_purchase deliveries; stores only bounded metadata and SHA-256.';
+
+comment on table public.cads_marketplace_user_links is
+  'Verified binding between a CAPITAL-AI Supabase user and a GitHub App installation/account with an active CADS Marketplace entitlement.';
