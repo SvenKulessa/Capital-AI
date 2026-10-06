@@ -63,3 +63,13 @@ test('CADS monetization is active but GitHub Marketplace remains an open authori
   assert.match(marketplace.nextStep, /Marketplace Plan IDs/);
   assert.ok(marketplace.evidenceRefs.includes('server/cads-commerce.mjs'));
 });
+
+test('MARKET production package reflects the merged private-provider read-only bridge', () => {
+  const market = WORK_PACKAGES.find(item => item.id === 'PRODUCTION-WEB-01-MARKET');
+  assert.ok(market);
+  assert.equal(market.status, 'aktiv');
+  assert.equal(market.evidenceState, 'OFFEN');
+  assert.ok(market.evidenceRefs.includes('server/private-provider-query.mjs'));
+  assert.ok(market.evidenceRefs.includes('services/provider-bridge-rs/src/main.rs'));
+  assert.match(market.nextStep, /Kraken\/Binance Read-only Private-Provider-Pfad/);
+});
