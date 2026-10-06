@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  assertNotReplayed,
   createProviderQueryEnvelope,
   executorNatsConnectionAuth,
   safeProviderResult,
@@ -95,5 +96,22 @@ test('Binance snapshot contract requires bounded high-cost parameters', () => {
       params: { type: 'SPOT', startTime: 1, endTime: 2_592_000_002 },
     }),
     /QUERY_WINDOW_TOO_LARGE/,
+  );
+});
+
+
+test('replay window rejects duplicate request IDs until expiry', () => {
+  const state = new Map();
+  const envelope = { requestId: 'req-replay-1', expiresAt: 1_800_000_010_000 };
+  assert.doesNotThrow(() => assertNotReplayed(state, envelope, 1_800_000_000_000));
+  assert.throws(() => assertNotReplayed(state, envelope, 1_800_000_000_100), /QUERY_REPLAY_REJECTED/);
+  assert.doesNotThrow(() => assertNotReplayed(state, { requestId: 'req-replay-2', expiresAt: 1_800_000_020_000 }, 1_800_000_011_000));
+  assert.equal(state.has('req-replay-1'), false);
+});
+
+test('provider result payload is bounded', () => {
+  assert.throws(
+    () => safeProviderResult({ payload: 'x'.repeat(300_000) }),
+    /PROVIDER_RESULT_TOO_LARGE/,
   );
 });
