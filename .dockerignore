@@ -31,6 +31,8 @@
 !server/public-artifact-policy.mjs
 !server/subscription-checkout.test.mjs
 !server/subscription-checkout.mjs
+!server/cads-commerce.mjs
+!server/cads-commerce.test.mjs
 !server/benchmark-runs.mjs
 !server/benchmark-runs.test.mjs
 !server/benchmark-store.mjs

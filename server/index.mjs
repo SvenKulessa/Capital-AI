@@ -27,6 +27,7 @@ import { BILLING_CATALOG } from './billing-catalog.mjs';
 import { createVocabularyCheckout } from './vocabulary-checkout.mjs';
 import { createSubscriptionCheckout } from './subscription-checkout.mjs';
 import { createBenchmarkRuns } from './benchmark-runs.mjs';
+import { createCadsCommerce } from './cads-commerce.mjs';
 import { createBenchmarkStore } from './benchmark-store.mjs';
 import { isBlockedPublicArtifactPath } from './public-artifact-policy.mjs';
 import { QUANT_PRO_IDS } from './vocabulary-quant-pro-index.mjs';
@@ -210,6 +211,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const subscriptionCheckout = createSubscriptionCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
   const benchmarkStore = options.benchmarkStore ?? createBenchmarkStore({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch });
   const benchmarkRuns = createBenchmarkRuns({ env: runtimeEnv, auth, store: benchmarkStore });
+  const cadsCommerce = createCadsCommerce({ auth });
   const server = http.createServer({ maxHeaderSize: 8192, requestTimeout: 10000, headersTimeout: 10000, keepAliveTimeout: 5000 }, async (req, res) => {
   let url;
   const requestContext = beginRequest(req);
@@ -234,6 +236,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await vocabularyCheckout.handle(req, res, url, json)) return;
   if (await subscriptionCheckout.handle(req, res, url, json)) return;
   if (await benchmarkRuns.handle(req, res, url, json)) return;
+  if (await cadsCommerce.handle(req, res, url, json)) return;
   if (url.pathname === '/api/mobile/enterprise-score' || url.pathname === '/api/mobile/scorer/events') {
     const mobileIdentity = await auth.verify(req, res);
     if (!mobileIdentity) return json(res, 401, { error: 'authentication_required' });
