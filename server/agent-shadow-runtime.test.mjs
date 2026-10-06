@@ -70,6 +70,16 @@ test('LangGraph adapter accepts an injected compiled graph but rejects authority
   });
   await assert.rejects(() => extraField.invoke(state), /LANGGRAPH_OUTPUT_FIELD_NOT_ADMITTED/);
 
+  const grantMutation = createLangGraphAdapter({
+    compiledGraph: { invoke: async current => ({ ...current, capabilityGrantIds: ['grant-escalated'] }) },
+  });
+  await assert.rejects(() => grantMutation.invoke(state), /LANGGRAPH_CAPABILITY_MUTATION_DENIED/);
+
+  const approvalMutation = createLangGraphAdapter({
+    compiledGraph: { invoke: async current => ({ ...current, approvalIds: ['approval-escalated'] }) },
+  });
+  await assert.rejects(() => approvalMutation.invoke(state), /LANGGRAPH_APPROVAL_MUTATION_DENIED/);
+
 });
 
 test('trajectory correlates tool, capability and approval references without making them authority', () => {
