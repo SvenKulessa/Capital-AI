@@ -1,17 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { EventEmitter } from 'node:events';
+import { Readable } from 'node:stream';
 import { randomUUID } from 'node:crypto';
 import { createBenchmarkRuns } from './benchmark-runs.mjs';
 
 function req(method='GET', body=null, origin='https://capital-ai.online') {
-  const stream = new EventEmitter();
+  const stream = Readable.from(body === null ? [] : [Buffer.from(JSON.stringify(body))]);
   stream.method = method;
   stream.headers = { origin };
-  setImmediate(() => {
-    if (body !== null) stream.emit('data', Buffer.from(JSON.stringify(body)));
-    stream.emit('end');
-  });
   return stream;
 }
 function res() {
