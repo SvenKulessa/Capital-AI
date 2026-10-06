@@ -2,7 +2,7 @@
 
 Primary Domain: PRODUCT  
 Cross-Domain: PLATFORM / TRUST  
-Status: VERTICAL_SLICE_STARTED
+Status: WEB_SAAS_ENTITLEMENT_SLICE_IMPLEMENTED
 
 ## Ziel
 
@@ -71,8 +71,20 @@ Stripe und GitHub Marketplace bleiben getrennte Commerce-/Entitlement-Systeme:
 - Kein Stripe-Status wird als autoritative Marketplace-Entitlement-Quelle interpretiert.
 - Gemeinsame Capability-Namen können geteilt werden; Billing Authority bleibt systemspezifisch.
 
+## Implementierter Website-Commerce-Slice
+
+PRODUCT bindet CADS jetzt ohne neue Stripe-SKUs an die bestehenden SaaS-Tiers:
+
+- `server/cads-commerce.mjs` projiziert die kanonische Capability-Matrix.
+- `auth.resolvePaidTier()` bleibt die serverseitige Website-Entitlement-Authority.
+- `GET /api/cads/commerce/readiness` veröffentlicht nur nicht-sensitive Produkt-/Capability-Metadaten.
+- `GET /api/cads/commerce/entitlement` verlangt verifizierte Authentifizierung und ein aktives/trialing Paid-Tier.
+- Die Pricing-Oberfläche zeigt CADS-Funktionen je Starter/Pro/Enterprise direkt aus `BENCHMARK_TIERS`.
+- GitHub Marketplace wird ausdrücklich nicht aus Stripe-Status abgeleitet.
+
 ## Nächster Vertical Slice
 
-PLATFORM implementiert `CAPITAL_AI_EVENT_BACKBONE@1` zunächst isoliert und ohne Production-Daten.
-TRUST bindet SBOM/CVE/Reachability-Evidence. PRODUCT projiziert Ergebnisse und Entitlements in die
-bestehende Monetarisierungsoberfläche, ohne bestehende Stripe-Preise zu verändern.
+PLATFORM führt `CAPITAL_AI_EVENT_BACKBONE@1` als reale NATS/Kafka × Node/Rust 4er-Matrix isoliert aus.
+TRUST bindet SBOM/CVE/Reachability-Evidence. PRODUCT ergänzt Ergebnisprojektion und Runtime-Readback.
+Danach kann die separate GitHub-Marketplace-App mit Minimalrechten, Plan IDs und
+`marketplace_purchase`-Lifecycle implementiert werden.
