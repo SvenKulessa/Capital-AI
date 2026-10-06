@@ -28,6 +28,10 @@
 !server/public-artifact-policy.mjs
 !server/subscription-checkout.test.mjs
 !server/subscription-checkout.mjs
+!server/benchmark-runs.mjs
+!server/benchmark-runs.test.mjs
+!server/benchmark-store.mjs
+!server/benchmark-store.test.mjs
 !server/auth.mjs
 !server/auth-security.mjs
 !server/auth-security.test.mjs
@@ -81,6 +85,9 @@
 !scripts/license-evidence.test.mjs
 !scripts/billing-catalog.test.mjs
 !scripts/stripe-catalog-readback.test.mjs
+!scripts/stripe-subscription-sync-migration.test.mjs
+!scripts/benchmark-ledger-migration.test.mjs
+!scripts/benchmark-cost-calibration.test.mjs
 !scripts/stripe-three-purchase-e2e.mjs
 !scripts/stripe-three-purchase-e2e.test.mjs
 !scripts/blueprint-evidence-contract.test.mjs
@@ -124,6 +131,7 @@
 !docs/security/evidence/
 !docs/security/evidence/license-rights-review.json
 !docs/security/evidence/stripe-catalog-readback-20261006.json
+!docs/security/evidence/benchmark-cost-calibration-20261006.json
 !docs/security/BYOK-USER-PRIVATE-DATA.md
 !docs/market-data/
 !docs/market-data/PRODUCTION-WEB-01-MARKET-20261005.yaml
@@ -162,3 +170,6 @@
 !supabase/
 !supabase/email-templates/
 !supabase/email-templates/**
+!supabase/migrations/
+!supabase/migrations/20261006072600_sync_stripe_subscription_catalog_v2.sql
+!supabase/migrations/20261006080124_benchmark_run_usage_ledger.sql
