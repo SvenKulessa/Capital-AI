@@ -139,13 +139,19 @@ test("summary classifies all open PR actions deterministically", () => {
 });
 
 
-test("documentation repair workflow is PR-only and race guarded", () => {
+test("post-merge correlation workflow cannot mutate repository contents", () => {
   const workflow = readFileSync(new URL('../.github/workflows/post-merge-correlation.yml', import.meta.url), 'utf8');
-  assert.match(workflow, /propose_documentation_repair:/);
-  assert.match(workflow, /documentation_repair_action == 'PR_PROPOSAL_CANDIDATE'/);
-  assert.match(workflow, /contents: write/);
-  assert.match(workflow, /Expected-Main und PR-only Policy fail-closed prüfen/);
-  assert.match(workflow, /gh pr create/);
-  assert.doesNotMatch(workflow, /gh pr merge|--auto\b|enable-auto-merge/);
-  assert.match(workflow, /test "\$\(gh api "repos\/\$REPOSITORY\/branches\/main" --jq '\.commit\.sha'\)" = "\$EXPECTED_MAIN_SHA"/);
+
+  assert.match(workflow, /permissions:\n  contents: read\n  pull-requests: write/);
+  assert.match(workflow, /permissions:\n      contents: read\n      pull-requests: write/);
+
+  assert.doesNotMatch(workflow, /contents: write/);
+  assert.doesNotMatch(workflow, /propose_documentation_repair:/);
+  assert.doesNotMatch(workflow, /\bgit\s+push\b/);
+  assert.doesNotMatch(workflow, /\bgit\s+commit\b/);
+  assert.doesNotMatch(workflow, /\bgh\s+pr\s+create\b/);
+  assert.doesNotMatch(workflow, /\bgh\s+pr\s+merge\b|--auto\b|enable-auto-merge/);
+
+  assert.match(workflow, /gh pr comment/);
+  assert.match(workflow, /actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/);
 });
