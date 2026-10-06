@@ -60,8 +60,11 @@ test('CADS monetization is active but GitHub Marketplace remains an open authori
   assert.equal(marketplace.status, 'aktiv');
   assert.equal(benchmark.evidenceState, 'OFFEN');
   assert.equal(marketplace.evidenceState, 'OFFEN');
-  assert.match(marketplace.nextStep, /Marketplace Plan IDs/);
+  assert.match(marketplace.nextStep, /Community-first/);
+  assert.match(marketplace.nextStep, /Paid Plan IDs.*unassigned/);
   assert.ok(marketplace.evidenceRefs.includes('server/cads-commerce.mjs'));
+  assert.ok(marketplace.evidenceRefs.includes('server/cads-marketplace-community.mjs'));
+  assert.ok(marketplace.evidenceRefs.includes('apps/cads-github-app/marketplace-plans.json'));
 });
 
 test('MARKET production package reflects the merged private-provider read-only bridge', () => {
@@ -72,4 +75,12 @@ test('MARKET production package reflects the merged private-provider read-only b
   assert.ok(market.evidenceRefs.includes('server/private-provider-query.mjs'));
   assert.ok(market.evidenceRefs.includes('services/provider-bridge-rs/src/main.rs'));
   assert.match(market.nextStep, /Kraken\/Binance Read-only Private-Provider-Pfad/);
+});
+
+test('observability keeps Grafana Cloud/Supabase as an existing operator-confirmed integration', () => {
+  const observability = WORK_PACKAGES.find(item => item.id === 'CA-PLATFORM-OBSERVABILITY-BASELINE');
+  assert.ok(observability);
+  assert.equal(observability.evidenceState, 'VERIFIED');
+  assert.match(observability.nextStep, /Grafana Cloud \+ Supabase/);
+  assert.match(observability.nextStep, /technischen Readback/);
 });
