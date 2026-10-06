@@ -608,7 +608,7 @@ export const ROADMAP_CURRENT_STATE_OVERRIDES: Readonly<Record<string, RoadmapRec
       "src/data/cadsCommercialReadiness.ts",
       "src/data/cadsMarketplaceCapabilities.ts"
     ],
-    "nextStep": "Paid-Runtime ist implementiert. Jetzt externe GitHub-Admission schließen: organisations-eigene CADS App, Verified Publisher, >=100 Installationen, Financial Onboarding, monatliche+jährliche USD-Preise, reale Marketplace Plan IDs, Listing Approval und Production Billing-Smoke."
+    "nextStep": "Paid Billing/Entitlement Runtime ist implementiert. P0 parallel schließen: PLATFORM bindet CAPITAL_AI_EVENT_BACKBONE@1 an einen realen reproduzierbaren Runner; PRODUCT/TRUST schließen organisations-eigene CADS App, Verified Publisher, >=100 Installationen, Financial Onboarding, monatliche+jährliche USD-Preise, reale Marketplace Plan IDs, Listing Approval und Production Billing-Smoke."
   },
   "CA-PLATFORM-COMPONENT-INVENTORY": {
     "status": "aktiv",
