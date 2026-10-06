@@ -45,13 +45,13 @@ const presentations = [
     meta: 'Ingestion • Eventing • Replay',
   },
   {
-    title: 'Preismodelle & Produktpakete',
+    title: 'Preiskatalog & Produktpakete',
     description:
       'Starter, Pro, Enterprise und Market Vocabulary mit Stripe-v2 als Preisautorität.',
     href: '/documentation/pricing-models.html',
     internal: false,
     icon: <BadgeEuro className="h-5 w-5" />,
-    meta: 'SaaS • Add-ons • Stripe',
+    meta: 'Abonnements • Zusatzprodukte • Stripe',
   },
   {
     title: 'CAPITAL-AI Domains',
@@ -100,7 +100,7 @@ export const DocumentationHub: React.FC<DocumentationHubProps> = ({ onBackToHome
         </h1>
         <p className="max-w-3xl text-sm leading-relaxed text-slate-400 sm:text-base">
           Zentraler Einstieg in Blueprint-Dokumentation sowie deterministische Präsentationen zu BYOK,
-          Pipeline-Architekturen, Preismodellen und dem Aufbau der fünf CAPITAL-AI Domains.
+          Pipeline-Architekturen, dem Preiskatalog und dem Aufbau der fünf CAPITAL-AI Domains.
         </p>
       </section>
 

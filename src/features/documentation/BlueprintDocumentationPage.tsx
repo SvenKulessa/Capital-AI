@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react';
 import {
   ArrowLeft,
   BookOpen,
-  Download,
   ExternalLink,
   FileText,
   KeyRound,
@@ -13,6 +12,7 @@ import {
   ShoppingBag,
 } from 'lucide-react';
 import { STUDIO_BLUEPRINTS } from '../../data/studioData';
+import { BLUEPRINT_EVIDENCE_CONTRACTS } from '../../data/blueprintEvidenceContracts';
 
 import { BLUEPRINT_DETAILS, VERIFIED_COMMERCE_STATE } from './blueprintDocumentationData';
 import { ByokArchitectureDiagram, SocialMediaArchitectureDiagram } from './ArchitectureGraphics';
@@ -40,6 +40,7 @@ function SectionList({ title, items }: { title: string; items: string[] }) {
 export const BlueprintDocumentationPage: React.FC<BlueprintDocumentationPageProps> = ({ onNavigate }) => {
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState(STUDIO_BLUEPRINTS[0]?.id ?? 'TIER_1_4_LIVE');
+  const [privateEvidenceState, setPrivateEvidenceState] = useState<'idle' | 'checking' | 'verified-context' | 'unavailable'>('idle');
 
   const filteredBlueprints = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -54,6 +55,28 @@ export const BlueprintDocumentationPage: React.FC<BlueprintDocumentationPageProp
 
   const selected = STUDIO_BLUEPRINTS.find((blueprint) => blueprint.id === selectedId) ?? STUDIO_BLUEPRINTS[0];
   const detail = selected ? BLUEPRINT_DETAILS[selected.id] : undefined;
+  const evidenceContract = selected ? BLUEPRINT_EVIDENCE_CONTRACTS[selected.id] : undefined;
+
+  const verifyPrivateEvidenceContext = async () => {
+    setPrivateEvidenceState('checking');
+    try {
+      const response = await fetch('/api/profile/provider-connections', {
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: { Accept: 'application/json' },
+      });
+      if (!response.ok) {
+        setPrivateEvidenceState('unavailable');
+        return;
+      }
+      const payload = await response.json();
+      const hasVerifiedContext = Array.isArray(payload?.connections)
+        && payload.connections.some((connection: { status?: string }) => connection?.status === 'VERIFIED');
+      setPrivateEvidenceState(hasVerifiedContext ? 'verified-context' : 'unavailable');
+    } catch {
+      setPrivateEvidenceState('unavailable');
+    }
+  };
 
   return (
     <main className="min-h-screen bg-[#030712] px-3 py-5 text-slate-100 sm:px-6 lg:px-8">
@@ -142,8 +165,61 @@ export const BlueprintDocumentationPage: React.FC<BlueprintDocumentationPageProp
                     {selected.dataConceptsUsed.map((concept) => <span key={concept} className="rounded-lg border border-cyan-400/20 bg-cyan-400/5 px-2 py-1 text-xs text-cyan-200">{concept}</span>)}
                   </div>
 
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    <a href={`/downloads/blueprints/${selected.id}.md`} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-amber-400 px-4 text-sm font-bold text-slate-950 hover:bg-amber-300"><Download className="h-4 w-4" /> Markdown-Dokument</a>
+                  <div className="mt-5 rounded-2xl border border-cyan-400/25 bg-cyan-400/5 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <div className="text-xs font-bold text-cyan-200">Blueprint Evidence Gate</div>
+                        <p className="mt-1 max-w-2xl text-xs leading-relaxed text-slate-400">
+                          Vollständiger Blueprint-Code und Dateien bleiben gesperrt, solange kein Blueprint-spezifisches
+                          Evidence-Set, kein separates Entitlement und kein freigegebener Commerce-Pfad vorliegen.
+                          Ein verifizierter privater Key-Vault-Kontext ist nur ein Eingangsbeleg und keine Production-Freigabe.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => void verifyPrivateEvidenceContext()}
+                        disabled={privateEvidenceState === 'checking'}
+                        className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-cyan-400/40 bg-cyan-400/10 px-4 text-sm font-bold text-cyan-100 hover:bg-cyan-400/15 disabled:cursor-wait disabled:opacity-60"
+                      >
+                        <ShieldCheck className="h-4 w-4" />
+                        {privateEvidenceState === 'checking' ? 'Privaten Kontext prüfen…' : 'Private Evidence prüfen'}
+                      </button>
+                    </div>
+                    {evidenceContract && (
+                      <div className="mt-3 rounded-xl border border-slate-800 bg-black/25 p-3">
+                        <div className="text-[11px] font-bold uppercase tracking-wide text-slate-300">
+                          {evidenceContract.schemaVersion} · {evidenceContract.requirements.length} Pflichtnachweise
+                        </div>
+                        <ul className="mt-2 grid gap-1 text-[11px] text-slate-400 sm:grid-cols-2">
+                          {evidenceContract.requirements.map(requirement => (
+                            <li key={requirement.id}>• {requirement.label}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    <div className="mt-3 text-xs font-mono">
+                      {privateEvidenceState === 'idle' && <span className="text-slate-500">Status: OFFEN</span>}
+                      {privateEvidenceState === 'verified-context' && (
+                        <span className="text-emerald-300">
+                          PRIVATE_CONTEXT_VERIFIED · Blueprint-Download bleibt bis Blueprint-Evidence + Entitlement gesperrt.
+                        </span>
+                      )}
+                      {privateEvidenceState === 'unavailable' && (
+                        <span className="text-amber-300">
+                          PRIVATE_CONTEXT_UNAVAILABLE · Key Vault oder verifizierte Provider-Verbindung fehlt.
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      disabled
+                      title="Blueprint-Datei erst nach Evidence-, Entitlement- und Commerce-Freigabe"
+                      className="inline-flex min-h-11 cursor-not-allowed items-center gap-2 rounded-xl bg-slate-800 px-4 text-sm font-bold text-slate-500"
+                    >
+                      <FileText className="h-4 w-4" /> Blueprint-Datei gesperrt
+                    </button>
                     <a href="/studio?tab=blueprints" onClick={(event) => { event.preventDefault(); onNavigate?.('/studio?tab=blueprints'); }} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-4 text-sm font-bold text-cyan-200 hover:bg-cyan-400/15"><Layers3 className="h-4 w-4" /> Blueprint im Studio</a>
                   </div>
                 </div>

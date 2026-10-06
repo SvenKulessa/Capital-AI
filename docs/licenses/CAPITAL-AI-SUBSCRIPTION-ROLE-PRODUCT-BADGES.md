@@ -30,6 +30,7 @@ Alle sieben Badges werden als **kleine quadratische SVG-Vektorgrafiken** gespeic
 | FREE USER | `public/branding/badges/free-user.svg` | `e3412aac88c73cf685be9417c5e2d38c2dd76ea85e650c2f2f50276762ba9fc5` |
 | VAULT | `public/branding/badges/vault.svg` | `7393a44552d7c1091ce21f1fcaca150a36277447242f641bc90f1851dd2d1d49` |
 | OWNER | `public/branding/badges/owner.svg` | `57ffcee1bbc9d968c2025ab4f10fd7ccc79c63cb622030aa6afaea57ecc1dcb3` |
+| DATA PIPELINE BLUEPRINT | `public/branding/badges/data-pipeline-blueprint.svg` | `eef4c155f023930a7b729077e9eec98444a7ad4e819e33c51db1468940d2181d` |
 
 ## SocialMediaEngine-Korrelation
 
@@ -42,3 +43,8 @@ Die Visualisierung folgt den technischen Invarianten der Finance SocialMediaEngi
 - **Accessibility:** `title`, `desc` und sichtbares Label je SVG.
 - **Build / CI:** Required Checks des PR müssen terminal PASS sein.
 - **Merge:** bleibt eine separate Owner-Entscheidung.
+
+
+## Data Pipeline Blueprint Badge
+
+Der zusätzliche Blueprint-Badge folgt dem cyanfarbenen Studio-Hub-Kontext. Seine Provenienz und künftige Käuferlizenz sind separat in `docs/licenses/CAPITAL-AI-DATA-PIPELINE-BLUEPRINT-BADGE.md` dokumentiert. Die Finance SocialMediaEngine wurde nur als deterministische Prozessreferenz verwendet; kein Finance-Bildasset oder Runtime-Code wurde übernommen.

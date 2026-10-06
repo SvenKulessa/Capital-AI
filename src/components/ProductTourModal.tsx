@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { X, Play, CheckCircle2, ChevronRight, ArrowRight, Shield, Zap, Globe, Newspaper } from 'lucide-react';
 import { motion } from 'motion/react';
 import { BrandLogo } from './BrandLogo';
@@ -13,10 +13,10 @@ const TOUR_STEPS = [
   {
     step: 1,
     title: 'Multi-Börsen Datenfeed',
-    desc: 'Live-Aggregation von über 50 Börsen, Krypto-Exchanges und Devisenmärkten in sub-sekündlicher Präzision.',
+    desc: 'Provider- und Datenfeed-Architektur mit fail-closed Datenrechten, Quellenherkunft und Evidence-Gates.',
     icon: Globe,
     color: 'text-[#F9BF21]',
-    highlight: '50+ Börsen vernetzt',
+    highlight: 'Evidence vor Live-Claim',
   },
   {
     step: 2,
@@ -37,15 +37,29 @@ const TOUR_STEPS = [
   {
     step: 4,
     title: 'AI Newsfeed & Sentiment Pulse',
-    desc: 'Echtzeit-Aggregation von 4.200+ globalen Finanzquellen mit semantischem Impact-Scoring für Ihr Portfolio.',
+    desc: 'News- und Sentiment-Architektur mit getrennten Quellen-, Rechte- und Scoring-Gates.',
     icon: Newspaper,
     color: 'text-[#F87171]',
-    highlight: '4.200+ Quellen/min',
+    highlight: 'Quellenstatus evidenzgebunden',
   },
 ];
 
 export const ProductTourModal: React.FC<ProductTourModalProps> = ({ isOpen, onClose, onStartAnalysis }) => {
   const [activeTab, setActiveTab] = useState(0);
+  const touchStartX = useRef<number | null>(null);
+  const onTouchStart = (event: React.TouchEvent) => {
+    touchStartX.current = event.changedTouches[0]?.clientX ?? null;
+  };
+  const onTouchEnd = (event: React.TouchEvent) => {
+    if (touchStartX.current == null) return;
+    const endX = event.changedTouches[0]?.clientX ?? touchStartX.current;
+    const delta = endX - touchStartX.current;
+    touchStartX.current = null;
+    if (Math.abs(delta) < 48) return;
+    setActiveTab(current => delta < 0
+      ? Math.min(TOUR_STEPS.length - 1, current + 1)
+      : Math.max(0, current - 1));
+  };
 
   if (!isOpen) return null;
 
@@ -58,7 +72,9 @@ export const ProductTourModal: React.FC<ProductTourModalProps> = ({ isOpen, onCl
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 30 }}
-        className="w-full max-w-lg bg-[#070e22] border border-amber-500/30 rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto"
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        className="w-full max-w-lg bg-[#070e22] border border-amber-500/30 rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto touch-pan-y"
       >
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-800">

@@ -168,6 +168,35 @@ export const PROJECT_OWNERS: {
 
 const BACKLOG_TARGETS: WorkPackage[] = [
   {
+    id: 'CA-PRODUCT-BLUEPRINT-COMMERCE-EVIDENCE',
+    title: 'Data Pipeline Blueprints evidenzgebunden produktisieren',
+    owner: 'PRODUCT',
+    status: 'aktiv',
+    phase: 3,
+    phaseName: 'Phase 3: Product, Account & Agent Integration',
+    progressPercent: null,
+    evidenceState: 'OFFEN',
+    evidenceRefs: [
+      'src/data/blueprintDeliveryPolicy.ts',
+      'src/features/documentation/BlueprintDocumentationPage.tsx',
+      'public/branding/badges/data-pipeline-blueprint.svg',
+      'docs/licenses/CAPITAL-AI-DATA-PIPELINE-BLUEPRINT-BADGE.md',
+    ],
+    nextStep: 'Je Blueprint reproduzierbare private Test-/Key-Vault-Evidence definieren, danach SKU, Entitlement und serverseitige Artefakt-Auslieferung implementieren; öffentliche Vollartefakte bleiben bis dahin gesperrt.',
+    priority: 'Hoch',
+    leadName: 'Projektowner',
+    targetSprint: 'Nach Evidence-Contract und Stripe-Produktentscheidung',
+    description: 'Blueprint-Architektur bleibt öffentlich erklärbar, vollständiger Code und Dateien werden jedoch erst nach Blueprint-spezifischer Evidence, aktivem Entitlement, freigegebenem Commerce-SKU und Lizenzbindung ausgeliefert.',
+    deliverables: [
+      'Blueprint Evidence Contract pro Blueprint',
+      'Private Test-API oder Key-Vault-gebundener Testkontext ohne Secret-Export',
+      'Standalone SKU-/Entitlement-Vertrag',
+      'Serverseitig autorisierte Blueprint-Dateiauslieferung',
+      'Blueprint-Badge und Käuferlizenz je ausgeliefertem Blueprint',
+    ],
+    costImpactEur: 0,
+  },
+  {
     id: 'CA-PRODUCT-VOCABULARY-NFT-MINTING',
     title: 'Vocabulary-Badge NFT-Minting mit künftigem Tokenomics-Konzept evaluieren',
     owner: 'PRODUCT',
