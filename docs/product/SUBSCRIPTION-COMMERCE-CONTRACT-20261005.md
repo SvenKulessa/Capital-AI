@@ -25,13 +25,13 @@ Der Client übermittelt **keine autoritative Price-ID**. Tier und Zyklus werden 
 
 `POST /api/billing/subscriptions/checkout` ist nur aktiv, wenn:
 
-1. `STRIPE_SUBSCRIPTION_CHECKOUT_ENABLED=true`
-2. ein serverseitiger `STRIPE_SECRET_KEY` vorhanden ist
+1. ein serverseitiger `STRIPE_SECRET_KEY` vorhanden ist
+2. `STRIPE_SUBSCRIPTION_CHECKOUT_ENABLED` nicht explizit auf `false` gesetzt ist
 3. die Anfrage same-origin ist
 4. eine verifizierte Benutzer-Session existiert
 5. Tier und Billing-Zyklus im Serverkatalog enthalten sind
 
-Fehlt eine Bedingung, wird keine Stripe-Session erstellt.
+Fehlt eine Bedingung, wird keine Stripe-Session erstellt. `STRIPE_SUBSCRIPTION_CHECKOUT_ENABLED=false` bleibt ein expliziter Not-/Kill-Switch; bei nicht gesetzter Variable entscheidet die vorhandene serverseitige Stripe-Konfiguration über die Readiness.
 
 ## Stripe Metadata Contract
 
