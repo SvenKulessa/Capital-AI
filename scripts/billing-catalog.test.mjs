@@ -106,3 +106,16 @@ test('pricing uses licensed badges and server-authorized subscription checkout s
   assert.match(pricing, /target\.hostname !== 'checkout\.stripe\.com'/);
   assert.match(pricing, /pointer-events-none select-none opacity-45/);
 });
+
+test('profile reads CADS entitlements only from the authenticated server endpoint', () => {
+  const profile = readFileSync(new URL('../src/components/ProfilePage.tsx', import.meta.url), 'utf8');
+
+  assert.match(profile, /\/api\/cads\/commerce\/entitlement/);
+  assert.match(profile, /credentials: 'same-origin'/);
+  assert.match(profile, /cache: 'no-store'/);
+  assert.match(profile, /response\.status === 403/);
+  assert.match(profile, /CADS-Berechtigungen konnten nicht sicher geladen werden und bleiben fail-closed/);
+  assert.match(profile, /Es wurde keine CADS-Berechtigung clientseitig abgeleitet/);
+  assert.match(profile, /serverseitig verifiziert/);
+  assert.doesNotMatch(profile, /price_1UMA4/);
+});
