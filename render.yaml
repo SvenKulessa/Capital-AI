@@ -45,6 +45,13 @@ services:
         value: capital-ai-market-runtime
       - key: NATS_APP_PASSWORD
         sync: false
+      - key: NATS_EXECUTOR_USER
+        value: capital-ai-provider-executor
+      - key: NATS_EXECUTOR_PASSWORD
+        sync: false
+      # Remains disabled until NATS + worker runtime evidence is complete.
+      - key: PRIVATE_PROVIDER_BRIDGE_ENABLED
+        value: "false"
       # Legacy migration fallback only; remove after three validated scoped-auth cycles.
       - key: NATS_TOKEN
         sync: false
@@ -60,3 +67,21 @@ services:
         value: https://capital-ai.online
       - key: CAPITAL_AI_SCORER_ALLOW_SAME_ORIGIN
         value: "true"
+
+  - type: worker
+    name: capital-ai-provider-bridge
+    runtime: docker
+    plan: 0.5c-512mb
+    numInstances: 1
+    region: frankfurt
+    branch: main
+    dockerfilePath: ./deploy/Dockerfile.provider-bridge
+    dockerContext: .
+    autoDeployTrigger: off
+    envVars:
+      - key: NATS_URL
+        sync: false
+      - key: NATS_BRIDGE_USER
+        value: capital-ai-provider-bridge
+      - key: NATS_BRIDGE_PASSWORD
+        sync: false

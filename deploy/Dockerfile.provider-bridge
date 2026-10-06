@@ -1,0 +1,25 @@
+# syntax=docker/dockerfile:1.7
+# Dedicated private-provider bridge image. No customer/provider secrets are baked into this image.
+FROM rust:1.99.0-slim-bookworm@sha256:2c3a22f0a5533ea2dd5a16627bc841228151faa2d4de2644ac9987e4a2f1f2fa AS build
+WORKDIR /build
+
+COPY services/provider-bridge-rs/Cargo.toml services/provider-bridge-rs/Cargo.lock ./services/provider-bridge-rs/
+COPY services/provider-bridge-rs/src ./services/provider-bridge-rs/src
+COPY contracts/private-provider-query-operations.json ./contracts/private-provider-query-operations.json
+
+RUN cargo build --release --locked --manifest-path services/provider-bridge-rs/Cargo.toml \
+    && test -x services/provider-bridge-rs/target/release/capital-ai-provider-bridge
+
+FROM debian:bookworm-slim@sha256:7c7b2c966bc9ee8cedfeef67e0e279108992c77681fa595db4a9d65c06ccc587
+LABEL org.opencontainers.image.title="Capital-AI Provider Bridge" \
+      org.opencontainers.image.source="https://github.com/SvenKulessa/Capital-AI" \
+      org.opencontainers.image.licenses="MIT"
+
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=build /build/services/provider-bridge-rs/target/release/capital-ai-provider-bridge /usr/local/bin/capital-ai-provider-bridge
+
+USER 65532:65532
+WORKDIR /
+STOPSIGNAL SIGTERM
+HEALTHCHECK --interval=30s --timeout=8s --start-period=10s --retries=3 CMD ["/usr/local/bin/capital-ai-provider-bridge", "--healthcheck"]
+ENTRYPOINT ["/usr/local/bin/capital-ai-provider-bridge"]

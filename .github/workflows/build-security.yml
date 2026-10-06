@@ -59,6 +59,7 @@ jobs:
           docker run --rm --entrypoint hadolint -v "$PWD:/work:ro" capital-ai-security /work/Dockerfile
           # Disk bootstrap drops to UID 1000; its bounded exception remains source-scanned.
           docker run --rm --entrypoint hadolint -v "$PWD:/work:ro" capital-ai-security --ignore DL3002 /work/deploy/Dockerfile.nats
+          docker run --rm --entrypoint hadolint -v "$PWD:/work:ro" capital-ai-security /work/deploy/Dockerfile.provider-bridge
       - name: NATS-Disk-Bootstrap und nicht-root Server verifizieren
         run: |
           mkdir -p security-reports
@@ -132,6 +133,90 @@ jobs:
             security-reports/nats-go-2026-5932.cdx.vex.json
 
           rm security-reports/nats-image.tar security-reports/nats-server
+      - name: Provider-Bridge Image, NATS-Health und Supply-Chain-Evidence
+        run: |
+          set -euo pipefail
+          mkdir -p security-reports
+          docker build --pull --file deploy/Dockerfile.provider-bridge --tag capital-ai-provider-bridge:${{ github.sha }} .
+          test "$(docker image inspect --format '{{.Config.User}}' capital-ai-provider-bridge:${{ github.sha }})" = "65532:65532"
+          docker image inspect capital-ai-provider-bridge:${{ github.sha }} > security-reports/provider-bridge-image-identity.json
+
+          network=capital-provider-bridge-smoke
+          volume=capital-provider-bridge-smoke-data
+          cleanup_provider_bridge() {
+            docker logs capital-provider-bridge-smoke > security-reports/provider-bridge-smoke.log 2>&1 || true
+            docker logs capital-provider-bridge-nats > security-reports/provider-bridge-nats.log 2>&1 || true
+            docker rm -f capital-provider-bridge-smoke capital-provider-bridge-nats >/dev/null 2>&1 || true
+            docker network rm "$network" >/dev/null 2>&1 || true
+            docker volume rm "$volume" >/dev/null 2>&1 || true
+          }
+          trap cleanup_provider_bridge EXIT
+          docker network create "$network"
+          docker volume create "$volume"
+          docker run -d \
+            --name capital-provider-bridge-nats \
+            --network "$network" \
+            --read-only \
+            --cap-drop ALL \
+            --cap-add CHOWN \
+            --cap-add FOWNER \
+            --cap-add SETUID \
+            --cap-add SETGID \
+            --security-opt no-new-privileges \
+            -e NATS_APP_USER=capital-ai-market-runtime \
+            -e NATS_APP_PASSWORD=local-ci-password \
+            -e NATS_BRIDGE_USER=capital-ai-provider-bridge \
+            -e NATS_BRIDGE_PASSWORD=local-ci-bridge-password-123456 \
+            -e NATS_EXECUTOR_USER=capital-ai-provider-executor \
+            -e NATS_EXECUTOR_PASSWORD=local-ci-executor-password-123456 \
+            -v "$volume:/var/data" \
+            capital-nats:${{ github.sha }}
+          ready=false
+          for attempt in $(seq 1 30); do
+            if docker logs capital-provider-bridge-nats 2>&1 | grep -q 'Server is ready'; then ready=true; break; fi
+            sleep 1
+          done
+          test "$ready" = "true"
+
+          docker run -d \
+            --name capital-provider-bridge-smoke \
+            --network "$network" \
+            --read-only \
+            --cap-drop ALL \
+            --security-opt no-new-privileges \
+            -e NATS_URL=nats://capital-provider-bridge-nats:4222 \
+            -e NATS_BRIDGE_USER=capital-ai-provider-bridge \
+            -e NATS_BRIDGE_PASSWORD=local-ci-bridge-password-123456 \
+            capital-ai-provider-bridge:${{ github.sha }}
+          bridge_ready=false
+          for attempt in $(seq 1 30); do
+            if docker logs capital-provider-bridge-smoke 2>&1 | grep -q 'provider-bridge ready subject=capital.private.provider.query.v1'; then bridge_ready=true; break; fi
+            sleep 1
+          done
+          test "$bridge_ready" = "true"
+          test "$(docker inspect --format '{{.State.Running}}' capital-provider-bridge-smoke)" = "true"
+
+          docker run --rm \
+            --network "$network" \
+            --read-only \
+            --cap-drop ALL \
+            --security-opt no-new-privileges \
+            -e NATS_URL=nats://capital-provider-bridge-nats:4222 \
+            -e NATS_BRIDGE_USER=capital-ai-provider-bridge \
+            -e NATS_BRIDGE_PASSWORD=local-ci-bridge-password-123456 \
+            capital-ai-provider-bridge:${{ github.sha }} --healthcheck
+
+          docker save capital-ai-provider-bridge:${{ github.sha }} --output security-reports/provider-bridge-image.tar
+          chmod a+r security-reports/provider-bridge-image.tar
+          chmod a+rwx security-reports
+          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/provider-bridge-image.tar --ignorefile /dev/null --scanners vuln,secret --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --exit-code 0 --format json --output /reports/provider-bridge-image.json
+          node scripts/summarize-trivy.mjs security-reports/provider-bridge-image.json > security-reports/provider-bridge-image.summary.json
+          node scripts/summarize-trivy.mjs security-reports/provider-bridge-image.json --gate
+          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/provider-bridge-image.tar --ignorefile /dev/null --scanners vuln --format cyclonedx --output /reports/provider-bridge.sbom.cdx.json
+          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/provider-bridge-image.tar --ignorefile /dev/null --scanners license --license-full --format json --output /reports/provider-bridge-image-licenses.json --exit-code 0
+          rm security-reports/provider-bridge-image.tar
+          cleanup_provider_bridge
+          trap - EXIT
       - name: Quellcode, Secrets und Konfiguration scannen
         run: |
           mkdir -p security-reports
@@ -247,6 +332,9 @@ jobs:
             security-reports/smoke.log
             security-reports/nats-smoke.log
             security-reports/nats-image.summary.json
+            security-reports/provider-bridge-image.summary.json
+            security-reports/provider-bridge-smoke.log
+            security-reports/provider-bridge-nats.log
             security-reports/nats-reachability-image-identity.json
             security-reports/nats-go-2026-5932-reachability.json
             security-reports/nats-govulncheck-1.openvex.json
