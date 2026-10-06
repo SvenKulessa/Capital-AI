@@ -130,20 +130,26 @@
     {
       "id": "TA-AUTH-SECURITY",
       "path": "server/auth-security.mjs",
-      "blobSha": "e919adbf47e1ec22ed74bb987f3a6633e0cca5a0",
-      "role": "Current auth security boundary"
+      "blobSha": "4dab5c83c5b38cadae624fa06335c4cddeb83c20",
+      "role": "Current auth security boundary",
+      "recorrelatedAt": "2026-10-06",
+      "recorrelationReason": "PR #203 Auth-/BYOK-/Trading-Capability-Härtung"
     },
     {
       "id": "TA-USER-VAULT",
       "path": "server/user-provider-vault.mjs",
-      "blobSha": "18ea45ceb52e5cfd3de9c424988c13c9a7840dec",
-      "role": "Current server-side user provider secret boundary"
+      "blobSha": "7a5d8fa2762ae16e9b279f8ea8de654c6f9a7d43",
+      "role": "Current server-side user provider secret boundary",
+      "recorrelatedAt": "2026-10-06",
+      "recorrelationReason": "PR #203 Auth-/BYOK-/Trading-Capability-Härtung"
     },
     {
       "id": "TA-BYOK-BOUNDARY",
       "path": "docs/security/BYOK-USER-PRIVATE-DATA.md",
-      "blobSha": "5e99489b01cc27b6fb7edc27694b71b969eee6e9",
-      "role": "User-private credentials/data boundary"
+      "blobSha": "f84eb3dceab835c663926bc258755aea5f4ea32d",
+      "role": "User-private credentials/data boundary",
+      "recorrelatedAt": "2026-10-06",
+      "recorrelationReason": "PR #203 Auth-/BYOK-/Trading-Capability-Härtung"
     }
   ],
   "entries": [
