@@ -5,6 +5,9 @@ test -n "${NATS_APP_PASSWORD:-}" || { echo 'NATS_APP_PASSWORD is required' >&2; 
 test -n "${NATS_BRIDGE_USER:-}" || { echo 'NATS_BRIDGE_USER is required' >&2; exit 1; }
 test -n "${NATS_BRIDGE_PASSWORD:-}" || { echo 'NATS_BRIDGE_PASSWORD is required' >&2; exit 1; }
 test "${#NATS_BRIDGE_PASSWORD}" -ge 24 || { echo 'NATS_BRIDGE_PASSWORD is too short' >&2; exit 1; }
+test -n "${NATS_EXECUTOR_USER:-}" || { echo 'NATS_EXECUTOR_USER is required' >&2; exit 1; }
+test -n "${NATS_EXECUTOR_PASSWORD:-}" || { echo 'NATS_EXECUTOR_PASSWORD is required' >&2; exit 1; }
+test "${#NATS_EXECUTOR_PASSWORD}" -ge 24 || { echo 'NATS_EXECUTOR_PASSWORD is too short' >&2; exit 1; }
 mkdir -p /var/data/jetstream
 chown 1000:1000 /var/data/jetstream
 chmod 0700 /var/data/jetstream
