@@ -1961,11 +1961,11 @@ export const WORK_PACKAGES: WorkPackage[] = [
     "server/observability.mjs",
     "docs/security/SECRET-IP-DATA-PROTECTION-BASELINE.md"
   ],
-  "nextStep": "Strukturierte Logs, W3C-Trace-Korrelation und geschützte Prometheus-Metriken im Preflight testen; Retention und externen Export separat entscheiden.",
+  "nextStep": "Grafana Cloud + Supabase gelten operatorseitig als verbunden. Jetzt technischen Readback, Secret-Redaction, Retention, Tenant-/User-Grenzen und den tatsächlichen Prometheus/OTLP-Export evidenzieren; bis dahin bleibt die Integrationsbehauptung repo-seitig OFFEN.",
   "priority": "Hoch",
   "leadName": "Projektowner",
   "targetSprint": "Phase 4",
-  "description": "Operational Telemetry und Security Audit bleiben getrennt; Secret-/Credential-Felder werden vor Ausgabe redigiert, Metriken sind nicht öffentlich.",
+  "description": "Operational Telemetry und Security Audit bleiben getrennt. Grafana Cloud ist laut Operator bereits mit Supabase verbunden; diese Betriebsangabe ersetzt keinen technischen Readback. Secret-/Credential-Felder werden vor Export redigiert und Metriken bleiben nicht öffentlich.",
   "deliverables": [
     "Structured JSON Logging",
     "Secret-Redaction und W3C Trace Context",
