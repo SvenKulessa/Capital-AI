@@ -1,7 +1,7 @@
 # Security Policy
 
-Stand: 2026-10-07  
-Primary Domain: TRUST  
+Stand: 2026-10-07
+Primary Domain: TRUST
 Geltungsbereich: gesamtes Repository, produktive Webanwendung, Auth-, Daten-, Provider-, Agent-, CI/CD- und Supply-Chain-Grenzen.
 
 ## Supported Versions
