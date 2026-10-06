@@ -13,9 +13,10 @@ export const SOCIAL_CONTENT_WORK_PACKAGES: WorkPackage[] = [
     "evidenceState": "OFFEN",
     "evidenceRefs": [
       "https://github.com/SvenKulessa/Capital-AI/blob/8a08f938a519fbf3379749fd9ac59e182851e655/CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.md",
-      "CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json"
+      "CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json",
+      "CAPITAL-AI-GROWTH/social-engine-completion-gate.json"
     ],
-    "nextStep": "Punkt 4: exakte Versionen, Artefakt-Hashes und Lizenz-/Redistribution-Evidence der tatsächlich zu migrierenden Social-Tools bestimmen.",
+    "nextStep": "Punkt 6 ist fail-closed BLOCKED: Social Core, Renderer sowie Publishing/Distribution aus Punkt 2–5 implementieren und validieren; Finance-Scoring bleibt bis zum Social-Cutover gesperrt.",
     "priority": "Kritisch",
     "leadName": "Owner + GROWTH/MARKET/PLATFORM/TRUST/PRODUCT",
     "targetSprint": "Sequenziell nach Lizenz-, Datenrechte- und Security-Gates",
@@ -42,7 +43,8 @@ export const SOCIAL_CONTENT_WORK_PACKAGES: WorkPackage[] = [
     "evidenceState": "GEHALTEN",
     "evidenceRefs": [
       "CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json",
-      "CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.yaml"
+      "CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.yaml",
+      "CAPITAL-AI-GROWTH/social-engine-completion-gate.json"
     ],
     "nextStep": "Erst nach abgeschlossenem Social-Media-Engine-Cutover CURRENT_MAIN frisch korrelieren und daraus ein separates MARKET-Arbeitspaket für Finance-Scoring-, Gewichtungs- und Datenkonzepte materialisieren.",
     "priority": "Hoch",
