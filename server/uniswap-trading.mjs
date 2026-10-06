@@ -74,13 +74,15 @@ export function projectUniswapQuote(payload) {
 
   const quote = { input, output };
   const quoteId = boundedText(payload.quote.quoteId, 256);
-  const gasUsd = boundedText(payload.quote.classicGasUseEstimateUSD, 64);
-  const slippageTolerance = Number(payload.quote.slippageTolerance);
+  const gasFeeUSD = boundedText(payload.quote.gasFeeUSD, 64);
+  const gasUseEstimate = boundedText(payload.quote.gasUseEstimate, 64);
+  const slippage = Number(payload.quote.slippage);
+  const priceImpact = Number(payload.quote.priceImpact);
   if (quoteId) quote.quoteId = quoteId;
-  if (gasUsd) quote.classicGasUseEstimateUSD = gasUsd;
-  if (Number.isFinite(slippageTolerance) && slippageTolerance >= 0 && slippageTolerance <= 100) {
-    quote.slippageTolerance = slippageTolerance;
-  }
+  if (gasFeeUSD) quote.gasFeeUSD = gasFeeUSD;
+  if (gasUseEstimate) quote.gasUseEstimate = gasUseEstimate;
+  if (Number.isFinite(slippage) && slippage >= 0 && slippage <= 100) quote.slippage = slippage;
+  if (Number.isFinite(priceImpact) && priceImpact >= -100 && priceImpact <= 100) quote.priceImpact = priceImpact;
 
   return {
     requestId: boundedText(payload.requestId, 256),
