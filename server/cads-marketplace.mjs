@@ -129,6 +129,13 @@ export function tierForMarketplacePlanId(planId, env = process.env) {
   return null;
 }
 
+export function highestCadsTier(...tiers) {
+  const rank = { starter: 1, pro: 2, enterprise: 3 };
+  return tiers
+    .filter(tier => PAID_TIERS.includes(tier))
+    .sort((left, right) => rank[right] - rank[left])[0] || null;
+}
+
 function verifySignature(rawBody, header, secret) {
   if (!Buffer.isBuffer(rawBody) || !header?.startsWith('sha256=') || !secret) return false;
   const expected = Buffer.from('sha256=' + createHmac('sha256', secret).update(rawBody).digest('hex'));
