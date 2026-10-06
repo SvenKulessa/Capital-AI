@@ -600,11 +600,15 @@ export const ROADMAP_CURRENT_STATE_OVERRIDES: Readonly<Record<string, RoadmapRec
     "progressPercent": null,
     "evidenceRefs": [
       "server/cads-commerce.mjs",
-      "packages/benchmark-core/index.mjs",
-      "src/features/pricing/MonetizationModal.tsx",
-      "CAPITAL-AI-PRODUCT/BENCHMARK-ENGINE-PRODUCT.md"
+      "server/cads-marketplace.mjs",
+      "server/cads-marketplace.test.mjs",
+      "supabase/migrations/20261006210500_cads_marketplace_paid_entitlements.sql",
+      "apps/cads-github-app/marketplace-plans.production.json",
+      "apps/cads-github-app/github-app-registration.production.example.json",
+      "src/data/cadsCommercialReadiness.ts",
+      "src/data/cadsMarketplaceCapabilities.ts"
     ],
-    "nextStep": "Bestehende Stripe-Tiers als Website-CADS-Entitlements produktiv verifizieren; GitHub App Minimalrechte, Marketplace Plan IDs und marketplace_purchase bleiben als getrennte nächste Authority offen."
+    "nextStep": "Paid-Runtime ist implementiert. Jetzt externe GitHub-Admission schließen: organisations-eigene CADS App, Verified Publisher, >=100 Installationen, Financial Onboarding, monatliche+jährliche USD-Preise, reale Marketplace Plan IDs, Listing Approval und Production Billing-Smoke."
   },
   "CA-PLATFORM-COMPONENT-INVENTORY": {
     "status": "aktiv",
