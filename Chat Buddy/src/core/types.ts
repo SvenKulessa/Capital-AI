@@ -11,8 +11,6 @@ export type Intent =
   | "market"
   | "smalltalk";
 
-export type ProviderId = "local" | "deepseek" | "gemini" | "mistral";
-
 export type ChatTurn = { role: "user" | "assistant"; content: string };
 
 export type GraphHit = {
@@ -48,14 +46,4 @@ export type Trace = {
   steps: TraceStep[];
   cursor: number;
   answer: string;
-};
-
-export type VoicePresetId = "jaja" | "desk" | "briefing" | "custom";
-
-export type VoiceProfile = {
-  preset: VoicePresetId;
-  pitch: number;
-  rate: number;
-  voiceURI: string;
-  lang: Lang;
 };
