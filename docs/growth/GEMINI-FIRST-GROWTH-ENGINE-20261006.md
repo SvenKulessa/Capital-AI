@@ -102,7 +102,7 @@ Auf dem Branch `capital-ai-growth/growth-engine-controls-20261006` sind folgende
 3. `src/contracts/growthMediaApproval.ts`: Image/TTS nur hinter explizitem `SOCIAL_ENGINE_COMPLETION_GATE=PASS`, Rights-, Brand-, Claim- und Voice-Consent-Evidence; Public Publish bleibt gesperrt;
 4. Veo bleibt ohne vollständige `VeoProductionAdmission` production-ineligible;
 5. `src/contracts/growthDiscovery.ts`: robots-/Terms-/Purpose-Provenance und deterministisches 0–100 Lead Scoring; Discovery kann keine Outreach-Authority erzeugen;
-6. `MARKETING_OUTREACH_POLICY@2`: Legal Basis, Suppression, Unsubscribe, Sender Identity, Audit und Frequency Caps;
+6. `MARKETING_OUTREACH_POLICY@3`: E-Mail-Marketing-Erlaubnis und DSGVO-Basis getrennt; Suppression, Unsubscribe, Sender Identity, Audit, Frequency Caps sowie ein standardmäßig deaktiviertes Runtime-Authorization-Gate;
 7. `GROWTH_ATTRIBUTION_POLICY@1`: GSC, Umami-Kandidat und Social-Provider-Evidence werden über Canonical/Campaign/Content korreliert, semantisch aber getrennt gehalten;
 8. `docs/growth/GROWTH-TOOL-CANDIDATE-EVIDENCE-20261006.md`: Crawlee v3.18.2, SearXNG und Umami v3.4.0 als Benchmark-Kandidaten dokumentiert, ohne Runtime-Admission oder Dependency-Aufnahme.
 
