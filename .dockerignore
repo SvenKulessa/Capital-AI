@@ -79,6 +79,8 @@
 !scripts/license-evidence.test.mjs
 !scripts/billing-catalog.test.mjs
 !scripts/stripe-catalog-readback.test.mjs
+!scripts/stripe-three-purchase-e2e.mjs
+!scripts/stripe-three-purchase-e2e.test.mjs
 !scripts/blueprint-evidence-contract.test.mjs
 !scripts/documentation-drift.mjs
 !scripts/documentation-drift.test.mjs
