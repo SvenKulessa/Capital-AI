@@ -1,0 +1,94 @@
+name: Social TTS Snapshot Evidence
+
+on:
+  pull_request:
+    paths:
+      - "CAPITAL-AI-GROWTH/social-tts-snapshot-lock-20261006.json"
+      - ".github/workflows/social-tts-snapshot-evidence.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: social-tts-snapshot-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  snapshot:
+    name: Qwen + Chatterbox immutable small-file evidence
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Manifest fail-closed prüfen
+        run: |
+          set -euo pipefail
+          file="CAPITAL-AI-GROWTH/social-tts-snapshot-lock-20261006.json"
+          test "$(jq -r '.schemaVersion' "$file")" = "SOCIAL_TTS_SNAPSHOT_LOCK@1"
+          jq -e '.policy.immutableRevisionRequired == true and .policy.noHistoricalRevisionSubstitution == true' "$file" >/dev/null
+          for rev in "$(jq -r '.qwen.model.revision' "$file")" "$(jq -r '.chatterbox.model.revision' "$file")"; do
+            [[ "$rev" =~ ^[0-9a-f]{40}$ ]]
+          done
+          test "$(jq -r '.chatterbox.code.revision' "$file")" = "5de7a54aa4e5e2baadb0182dde554908b48b85c2"
+          jq -e '.chatterbox.code.actualSnapshotAllowPatterns == ["ve.pt","t3_mtl23ls_v3.safetensors","s3gen.pt","grapheme_mtl_merged_expanded_v1.json","conds.pt","Cangjie5_TC.json"]' "$file" >/dev/null
+
+      - name: Nur kleine Companion-Artefakte an immutable Revisionen laden
+        run: |
+          set -euo pipefail
+          manifest="CAPITAL-AI-GROWTH/social-tts-snapshot-lock-20261006.json"
+          mkdir -p tts-snapshot-evidence/qwen/speech_tokenizer tts-snapshot-evidence/chatterbox
+          qrev="$(jq -r '.qwen.model.revision' "$manifest")"
+          crev="$(jq -r '.chatterbox.model.revision' "$manifest")"
+
+          while IFS= read -r path; do
+            test -n "$path"
+            dest="tts-snapshot-evidence/qwen/$path"
+            mkdir -p "$(dirname "$dest")"
+            curl --proto '=https' --tlsv1.2 --fail --show-error --location               --retry 3 --retry-all-errors               "https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign/resolve/$qrev/$path"               --output "$dest"
+            test "$(stat -c %s "$dest")" -lt 10000000
+          done < <(jq -r '.qwen.model.smallArtifactsToHash[]' "$manifest")
+
+          while IFS= read -r path; do
+            test -n "$path"
+            dest="tts-snapshot-evidence/chatterbox/$path"
+            curl --proto '=https' --tlsv1.2 --fail --show-error --location               --retry 3 --retry-all-errors               "https://huggingface.co/ResembleAI/chatterbox/resolve/$crev/$path"               --output "$dest"
+            test "$(stat -c %s "$dest")" -lt 10000000
+          done < <(jq -r '.chatterbox.model.smallArtifactsToHash[]' "$manifest")
+
+      - name: SHA-256 Manifest erzeugen
+        run: |
+          set -euo pipefail
+          (
+            cd tts-snapshot-evidence
+            find qwen chatterbox -type f -print0 | sort -z | xargs -0 sha256sum
+          ) > tts-snapshot-evidence/SHA256SUMS.txt
+
+          manifest="CAPITAL-AI-GROWTH/social-tts-snapshot-lock-20261006.json"
+          jq -n             --arg schemaVersion "SOCIAL_TTS_SMALL_ARTIFACT_EVIDENCE@1"             --arg sourceSha "$GITHUB_SHA"             --arg qwenRevision "$(jq -r '.qwen.model.revision' "$manifest")"             --arg chatterboxRevision "$(jq -r '.chatterbox.model.revision' "$manifest")"             --rawfile sums tts-snapshot-evidence/SHA256SUMS.txt             '{
+              schemaVersion:$schemaVersion,
+              sourceSha:$sourceSha,
+              qwenRevision:$qwenRevision,
+              chatterboxRevision:$chatterboxRevision,
+              sha256sums:($sums | split("\n") | map(select(length > 0))),
+              productionEligible:false,
+              productionBlockers:[
+                "transitive dependency locks incomplete",
+                "immutable TTS worker images absent",
+                "German runtime benchmark absent",
+                "Human/Owner listening acceptance absent"
+              ]
+            }' > tts-snapshot-evidence/evidence.json
+
+      - name: Evidence sichern
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: social-tts-snapshot-evidence-${{ github.sha }}
+          path: |
+            tts-snapshot-evidence/SHA256SUMS.txt
+            tts-snapshot-evidence/evidence.json
+          if-no-files-found: error
+          retention-days: 7
