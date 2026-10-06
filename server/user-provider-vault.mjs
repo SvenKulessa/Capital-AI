@@ -390,6 +390,26 @@ function combinePermissions(spot, futures) {
   };
 }
 
+function combineBinancePermissions(spot, futures) {
+  const spotState = spot || {};
+  const futuresState = futures || {};
+  return {
+    reading: spotState.reading === true || futuresState.reading === true,
+    trading: spotState.trading === true || futuresState.trading === true,
+    withdrawals: false,
+    internalTransfers: false,
+    universalTransfers: false,
+    spotConfigured: spotState.configured === true,
+    spotTrading: spotState.trading === true,
+    futuresConfigured: futuresState.configured === true,
+    futuresTrading: futuresState.trading === true,
+    executionEnabled: false,
+    publicMarketDataAdmission: false,
+    spot: spotState,
+    futures: futuresState,
+  };
+}
+
 function fingerprintForPayload(config, payload) {
   return createHmac('sha256', config.fingerprintKey)
     .update('capital-ai/byok-fingerprint/v2\0')
@@ -614,6 +634,139 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
           error: error?.status === 401
             ? 'provider_vault_admin_credential_rejected'
             : 'provider_vault_unavailable',
+        });
+      }
+      return true;
+    }
+
+    if (url.pathname === '/api/profile/provider-connections/binance') {
+      if (req.method === 'DELETE') {
+        if (!auth.sameOrigin(req)) {
+          json(res, 403, { error: 'forbidden_origin' });
+          return true;
+        }
+        try {
+          await rpc(fetchImpl, config, 'capital_ai_delete_user_provider_secret', {
+            _user_id: user.userId,
+            _provider: 'binance',
+          });
+          json(res, 200, { deleted: true, provider: 'binance' });
+        } catch {
+          json(res, 503, { error: 'provider_connection_delete_failed' });
+        }
+        return true;
+      }
+
+      if (req.method !== 'PUT') {
+        res.setHeader('Allow', 'PUT, DELETE');
+        json(res, 405, { error: 'method_not_allowed' });
+        return true;
+      }
+      if (!auth.sameOrigin(req)) {
+        json(res, 403, { error: 'forbidden_origin' });
+        return true;
+      }
+
+      let body;
+      try { body = await readJson(req); }
+      catch (error) {
+        json(res, error.message === 'REQUEST_TOO_LARGE' ? 413 : 400, { error: 'invalid_request' });
+        return true;
+      }
+
+      const credentialFamily = body.credentialFamily === 'futures' ? 'futures' : 'spot';
+      const allowTrading = body.allowTrading === true;
+      const apiKey = normalizeCredential(body.apiKey, 8, 512);
+      const apiSecret = normalizeCredential(body.apiSecret, 16, 1024);
+      if (!apiKey || !apiSecret) {
+        json(res, 400, { error: 'invalid_binance_credentials_format' });
+        return true;
+      }
+
+      try {
+        const credentials = { apiKey, apiSecret };
+        const verification = await binanceKeyInfo(fetchImpl, credentials);
+        if (!verification.reading) {
+          json(res, 422, { provider: 'binance', status: 'REJECTED', error: 'binance_reading_permission_required' });
+          return true;
+        }
+        if (verification.forbiddenTransfers) {
+          json(res, 422, {
+            provider: 'binance',
+            status: 'REJECTED',
+            error: 'binance_transfer_or_withdrawal_permission_forbidden',
+            withdrawals: verification.withdrawals,
+            internalTransfers: verification.internalTransfers,
+            universalTransfers: verification.universalTransfers,
+          });
+          return true;
+        }
+        if (verification.trading && !allowTrading) {
+          json(res, 422, {
+            provider: 'binance',
+            status: 'REJECTED',
+            error: 'binance_trading_permissions_require_opt_in',
+          });
+          return true;
+        }
+        if (credentialFamily === 'futures' && !verification.futures) {
+          json(res, 422, {
+            provider: 'binance',
+            status: 'REJECTED',
+            error: 'binance_futures_access_required',
+          });
+          return true;
+        }
+
+        const stored = await readProviderStored(user.userId, 'binance');
+        const vaultPayload = stored?.secretPayload ? parseStoredVaultPayload(stored.secretPayload) : emptyVaultPayload();
+        let spotState = stored?.permissions?.spot || null;
+        let futuresState = stored?.permissions?.futures || null;
+        const state = {
+          configured: true,
+          reading: true,
+          trading: allowTrading && verification.trading,
+          spotTrading: allowTrading && verification.spotTrading,
+          futuresAccess: verification.futures,
+        };
+        if (credentialFamily === 'spot') {
+          vaultPayload.spot = credentials;
+          spotState = state;
+        } else {
+          vaultPayload.futures = credentials;
+          futuresState = state;
+        }
+
+        const permissions = combineBinancePermissions(spotState, futuresState);
+        const fingerprint = fingerprintForPayload(config, vaultPayload);
+        await rpc(fetchImpl, config, 'capital_ai_upsert_user_provider_secret', {
+          _user_id: user.userId,
+          _provider: 'binance',
+          _secret_payload: JSON.stringify(vaultPayload),
+          _credential_fingerprint: fingerprint,
+          _permissions: permissions,
+        });
+        await markProviderStatus(user.userId, 'binance', 'VERIFIED', null);
+        json(res, 200, {
+          provider: 'binance',
+          credentialFamily,
+          status: 'VERIFIED',
+          credentialFingerprint: fingerprint,
+          dataScope: 'USER_PRIVATE_ACCOUNT_DATA',
+          redistributionAllowed: false,
+          publicDisplayAllowed: false,
+          sharedCacheAllowed: false,
+          jetStreamPublicationAllowed: false,
+          capabilities: permissions,
+          executionEnabled: false,
+        });
+      } catch (error) {
+        const code = typeof error?.code === 'string' ? error.code : 'BINANCE_VERIFICATION_FAILED';
+        json(res, error?.status ? 503 : 422, {
+          provider: 'binance',
+          status: 'INVALID',
+          error: error?.status === 401 ? 'provider_vault_admin_credential_rejected' : 'binance_verification_failed',
+          code,
         });
       }
       return true;
