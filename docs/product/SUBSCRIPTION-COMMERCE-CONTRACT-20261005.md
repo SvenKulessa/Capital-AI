@@ -1,6 +1,6 @@
 # Subscription Commerce Contract
 
-Stand: 2026-10-06  
+Stand: 2026-10-06
 Baseline für diesen Slice: `main@96178b35db215754eb69785535f035b4fb4d96af`
 
 ## Authority
