@@ -60,6 +60,22 @@ test('preview creates bounded confirmation and never calls provider', async () =
   assert.equal(calls, 0);
 });
 
+test('preview audit does not claim user confirmation', async () => {
+  const events = [];
+  const handler = createKrakenOrderDryRun({
+    env,
+    auth,
+    audit: event => events.push(event),
+    now: () => 1_800_000_000_000,
+  });
+  const result = await invoke(handler, '/api/market/trading/kraken/spot/preview', baseOrder);
+  assert.equal(result.status, 200);
+  assert.equal(events.length, 1);
+  assert.equal(events[0].result, 'PREVIEWED');
+  assert.equal(events[0].authorizationDecision, 'PREVIEW_ONLY');
+  assert.equal(events[0].metadata.liveExecution, false);
+});
+
 test('risk gate rejects limit exposure above declared bound before provider I/O', async () => {
   let calls = 0;
   const handler = createKrakenOrderDryRun({
