@@ -6,10 +6,15 @@ import {
   AGENT_TRAJECTORY_SCHEMA,
   LANGGRAPH_ADAPTER_SCHEMA,
   actorHash,
+  agentStateFingerprint,
   assertShadowAuthority,
+  createAgentCheckpoint,
   createLangGraphAdapter,
   createShadowAgentState,
   createTrajectoryEvent,
+  executeShadowWithRetry,
+  replaySupervisorFromCheckpoint,
+  restoreAgentCheckpoint,
   supervisorRoute,
 } from './agent-shadow-runtime.mjs';
 
@@ -138,4 +143,83 @@ test('secret-bearing state/config/trajectory metadata fails closed', async () =>
     tool: { apiSecret: 'forbidden' },
   }), /AGENT_TRAJECTORY_SECRET_FORBIDDEN/);
   assert.doesNotThrow(() => assertShadowAuthority(state));
+});
+
+
+test('checkpoint integrity, resume and deterministic replay remain fail closed', () => {
+  const state = createShadowAgentState({
+    actorRef: actorHash('user-123'),
+    transientInput: 'research checkpoint',
+    requestedCapability: 'research',
+    evidenceRefs: ['ev-1'],
+    capabilityGrantIds: ['grant-read-1'],
+    approvalIds: ['approval-reference-only'],
+    agentRunId: 'agent-run-1',
+    graphRunId: 'graph-run-1',
+    traceId: '0123456789abcdef0123456789abcdef',
+  });
+  const checkpoint = createAgentCheckpoint(state);
+  const restored = restoreAgentCheckpoint(checkpoint);
+  const first = replaySupervisorFromCheckpoint(checkpoint);
+  const second = replaySupervisorFromCheckpoint(checkpoint, first.fingerprint);
+
+  assert.equal(restored.checkpointId, checkpoint.checkpointId);
+  assert.equal(first.fingerprint, second.fingerprint);
+  assert.equal(first.fingerprint, agentStateFingerprint(second.state));
+  assert.equal(second.state.currentNode, 'research');
+  assert.equal(second.state.authority.write, false);
+  assert.equal(second.state.authority.trade, false);
+
+  const tampered = structuredClone(checkpoint);
+  tampered.state.currentNode = 'truth';
+  assert.throws(() => restoreAgentCheckpoint(tampered), /AGENT_CHECKPOINT_INTEGRITY_FAILED/);
+  assert.throws(
+    () => replaySupervisorFromCheckpoint(checkpoint, 'sha256:' + '0'.repeat(64)),
+    /AGENT_REPLAY_DIVERGENCE/,
+  );
+});
+
+test('bounded retry preserves identity, grants, approvals and shadow authority', async () => {
+  const state = createShadowAgentState({
+    actorRef: actorHash('user-123'),
+    transientInput: 'market retry',
+    requestedCapability: 'market-read',
+    capabilityGrantIds: ['grant-read-1'],
+    approvalIds: ['approval-1'],
+    agentRunId: 'agent-run-2',
+    graphRunId: 'graph-run-2',
+    traceId: 'abcdef0123456789abcdef0123456789',
+  });
+  let calls = 0;
+  const result = await executeShadowWithRetry({
+    state,
+    maxAttempts: 3,
+    isRetryable: error => error?.code === 'TRANSIENT',
+    invoke: async current => {
+      calls += 1;
+      if (calls < 2) {
+        const error = new Error('temporary');
+        error.code = 'TRANSIENT';
+        throw error;
+      }
+      return supervisorRoute(current);
+    },
+  });
+
+  assert.equal(result.attempts, 2);
+  assert.equal(result.state.currentNode, 'market');
+  assert.equal(result.state.agentRunId, state.agentRunId);
+  assert.deepEqual(result.state.capabilityGrantIds, state.capabilityGrantIds);
+  assert.deepEqual(result.state.approvalIds, state.approvalIds);
+  assert.equal(result.state.authority.write, false);
+  assert.equal(result.state.authority.trade, false);
+
+  await assert.rejects(
+    () => executeShadowWithRetry({
+      state,
+      maxAttempts: 4,
+      invoke: async current => current,
+    }),
+    /AGENT_RETRY_LIMIT_INVALID/,
+  );
 });
