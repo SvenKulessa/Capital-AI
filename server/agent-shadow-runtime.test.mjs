@@ -64,6 +64,12 @@ test('LangGraph adapter accepts an injected compiled graph but rejects authority
     compiledGraph: { invoke: async current => ({ ...current, authority: { ...current.authority, trade: true } }) },
   });
   await assert.rejects(() => unsafe.invoke(state), /AGENT_AUTHORITY_ESCALATION_DENIED/);
+
+  const extraField = createLangGraphAdapter({
+    compiledGraph: { invoke: async () => ({ currentNode: 'truth', rawText: 'must-not-enter-state' }) },
+  });
+  await assert.rejects(() => extraField.invoke(state), /LANGGRAPH_OUTPUT_FIELD_NOT_ADMITTED/);
+
 });
 
 test('trajectory correlates tool, capability and approval references without making them authority', () => {
