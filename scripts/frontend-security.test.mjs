@@ -220,3 +220,17 @@ test('key vault keeps Spot and Futures credential families separate and executio
   assert.match(vault, /Funding, Transfers und Withdrawals bleiben abgewiesen/);
   assert.match(vault, /Live-Execution ist bis zu separaten Risk-, Confirmation- und Production-Gates deaktiviert/);
 });
+
+
+test('control center observability remains owner-projected without browser metrics token', async () => {
+  const control = await readFile(new URL('../src/components/ControlCenterPage.tsx', import.meta.url), 'utf8');
+  const dashboard = await readFile(new URL('../src/components/ObservabilityDashboard.tsx', import.meta.url), 'utf8');
+  const server = await readFile(new URL('../server/index.mjs', import.meta.url), 'utf8');
+
+  assert.match(control, /observability: 'Observability'/);
+  assert.match(control, /<ObservabilityDashboard \/>/);
+  assert.match(dashboard, /\/api\/internal\/observability/);
+  assert.doesNotMatch(dashboard, /OBSERVABILITY_TOKEN|Authorization:\s*['"]Bearer/);
+  assert.match(server, /auth\.authorizeIamRole\(req, res, 'owner'\)/);
+  assert.match(server, /operationalSnapshot\(\)/);
+});
