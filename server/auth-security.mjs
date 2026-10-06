@@ -2,6 +2,8 @@ const PASSKEY_ID_RE = /^[0-9a-fA-F-]{36}$/;
 const FACTOR_ID_RE = /^[0-9a-fA-F-]{36}$/;
 const TOKEN_HASH_RE = /^[A-Za-z0-9._~-]{16,1024}$/;
 const TOTP_CODE_RE = /^\d{6,8}$/;
+const MAX_PASSKEYS_PER_USER = 2;
+const MAX_TOTP_FACTORS_PER_USER = 2;
 const EMAIL_VERIFY_TYPES = new Set(['signup', 'invite', 'magiclink', 'email_change', 'recovery']);
 
 function upstreamCode(data, fallback) {
@@ -322,6 +324,25 @@ export function createAuthSecurity({
       }
       const stored = await requireSession(req, res, json);
       if (!stored) return true;
+
+      const currentPasskeys = await authRequest(config, '/passkeys', {
+        accessToken: stored.accessToken,
+      });
+      if (!currentPasskeys.response.ok) {
+        json(res, 503, {
+          error: 'passkey_list_unavailable',
+          code: upstreamCode(currentPasskeys.data, 'passkey_list_failed'),
+        });
+        return true;
+      }
+      if (passkeyProjection(currentPasskeys.data).length >= MAX_PASSKEYS_PER_USER) {
+        json(res, 409, {
+          error: 'passkey_limit_reached',
+          limit: MAX_PASSKEYS_PER_USER,
+        });
+        return true;
+      }
+
       const options = await authRequest(config, '/passkeys/registration/options', {
         method: 'POST',
         accessToken: stored.accessToken,
@@ -466,9 +487,24 @@ export function createAuthSecurity({
         return true;
       }
 
-      const stalePending = totpFactors(currentUser.data).filter(factor =>
+      const existingTotp = totpFactors(currentUser.data);
+      const verifiedTotp = existingTotp.filter(factor => factor.status === 'verified');
+
+      if (verifiedTotp.length >= MAX_TOTP_FACTORS_PER_USER) {
+        json(res, 409, {
+          error: 'totp_limit_reached',
+          limit: MAX_TOTP_FACTORS_PER_USER,
+        });
+        return true;
+      }
+
+      if (verifiedTotp.some(factor => String(factor.friendly_name || '') === name)) {
+        json(res, 409, { error: 'mfa_factor_name_conflict' });
+        return true;
+      }
+
+      const stalePending = existingTotp.filter(factor =>
         factor.status !== 'verified' &&
-        String(factor.friendly_name || '') === name &&
         FACTOR_ID_RE.test(String(factor.id || ''))
       );
       for (const factor of stalePending) {
