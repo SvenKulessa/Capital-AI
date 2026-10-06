@@ -1,6 +1,6 @@
 # Kraken Credential Families – Owner-Entscheidung 2026-10-06
 
-Status: OWNER_DECIDED_IMPLEMENTED_FAIL_CLOSED  
+Status: OWNER_DECIDED_IMPLEMENTED_FAIL_CLOSED
 Domain: PRODUCT + MARKET + TRUST
 
 ## Entscheidung
