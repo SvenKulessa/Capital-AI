@@ -38,7 +38,8 @@
     "docs/licenses/SOCIAL-MEDIA-ENGINE-PRODUCT-LICENSE.md",
     "CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json",
     "CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json",
-    "docs/licenses/SOCIAL-MEDIA-ENGINE-THIRD-PARTY-NOTICES.md"
+    "docs/licenses/SOCIAL-MEDIA-ENGINE-THIRD-PARTY-NOTICES.md",
+    "deploy/social-media/ffmpeg-build-profile.json"
   ],
   "forbiddenFinanceScoringRuntimeBeforePass": [
     "src/platform/Scoring/ScoringModelRegistry.ts",
@@ -55,12 +56,12 @@
     "runtimeArtifactsRequired": 13,
     "rendererArtifactsPresent": 0,
     "rendererArtifactsRequired": 2,
-    "evidenceArtifactsPresent": 5,
-    "evidenceArtifactsRequired": 5,
+    "evidenceArtifactsPresent": 6,
+    "evidenceArtifactsRequired": 6,
     "result": "BLOCKED",
     "blockers": [
       "Point 4 social-tool license evidence has advanced immutable artifact locks but is still not POINT_4_PASS.",
-      "Exact FFmpeg worker build/package SHA-256 and build configuration are still missing.",
+      "Pinned FFmpeg 9.0.2 LGPL-only source/build profile exists, but compiled binary/OCI/SBOM evidence is still missing.",
       "Pillow/TTS/ASR dedicated worker image digests and SBOM evidence are not yet present.",
       "Qwen/Chatterbox companion artifact/dependency locks and new Human/Owner listening PASS are still open.",
       "SocialMediaEngine runtime and deterministic renderer have not been migrated to Capital-AI main.",
