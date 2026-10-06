@@ -75,7 +75,6 @@ export function createCadsCommerce({ auth } = {}) {
     json(res, 200, {
       schema: 'CAPITAL_AI_CADS_ENTITLEMENT@1',
       product: 'CADS Benchmark Engine',
-      userId: user.userId,
       tier,
       label: entitlement.label,
       capabilities: { ...entitlement.capabilities },
