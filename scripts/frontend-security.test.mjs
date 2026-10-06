@@ -185,11 +185,13 @@ test('account security UI supports at most two Passkeys and two TOTP factors wit
   assert.match(security, /CAPITAL-AI Authenticator 2/);
 });
 
-test('key vault presents Spot REST and WebSocket capabilities without treating Futures as Spot', async () => {
+test('key vault keeps Spot and Futures credential families separate and execution fail-closed', async () => {
   const vault = await readFile(new URL('../src/components/KeyVaultPage.tsx', import.meta.url), 'utf8');
 
   assert.match(vault, /Spot REST Auth/);
   assert.match(vault, /Spot WebSocket Token/);
-  assert.match(vault, /Kraken Futures verwendet eine getrennte Authentifizierungsfamilie/);
+  assert.match(vault, /Futures \/ Perpetuals/);
   assert.match(vault, /nicht als Spot-Key umgedeutet/);
+  assert.match(vault, /Funding, Transfers und Withdrawals bleiben abgewiesen/);
+  assert.match(vault, /Live-Execution ist bis zu separaten Risk-, Confirmation- und Production-Gates deaktiviert/);
 });
