@@ -99,12 +99,18 @@ test('multi-agent roadmap records LangGraph owner decision while runtime remains
   assert.equal(orchestration.status, 'planning');
   assert.equal(orchestration.evidenceState, 'OFFEN');
   assert.match(orchestration.title, /LangGraph als Zielarchitektur/);
-  assert.match(orchestration.nextStep, /CAPITAL_AI_AGENT_STATE@1/);
-  assert.match(orchestration.nextStep, /LangGraph.*benchmarken/);
+  assert.match(orchestration.deliverables.join(' '), /CAPITAL_AI_AGENT_STATE@1/);
+  assert.ok(orchestration.evidenceRefs.includes('src/contracts/agentState.ts'));
+  assert.ok(orchestration.evidenceRefs.includes('contracts/agent-orchestration-benchmark.json'));
+  assert.match(orchestration.nextStep, /npm-Lock/);
+  assert.match(orchestration.nextStep, /StateGraph-Parität/);
   assert.doesNotMatch(orchestration.nextStep, /Owner entscheidet Architekturvariante/);
 
   assert.equal(trajectory.status, 'planning');
   assert.match(trajectory.deliverables.join(' '), /CAPITAL_AI_AGENT_TRAJECTORY@1/);
+  assert.ok(trajectory.evidenceRefs.includes('server/agent-trajectory-observability.mjs'));
+  assert.match(trajectory.nextStep, /Checkpoint\/Resume/);
+  assert.match(trajectory.nextStep, /Prometheus\/SLO/);
   assert.match(trajectory.description, /Operational Telemetry ersetzt keinen Security Audit/);
 
   assert.equal(control.status, 'planning');
