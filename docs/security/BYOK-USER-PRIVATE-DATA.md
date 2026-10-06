@@ -1,6 +1,6 @@
 # BYOK / USER_PRIVATE_ACCOUNT_DATA Boundary
 
-Stand: 2026-10-06  
+Stand: 2026-10-06
 Owner: PRODUCT, mit MARKET-/TRUST-Grenzen
 
 ## Zweck
