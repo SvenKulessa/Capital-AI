@@ -13,7 +13,7 @@ function req(body = {}, origin = 'https://capital-ai.online') {
   const stream = new EventEmitter();
   stream.method = 'POST';
   stream.headers = { origin };
-  queueMicrotask(() => {
+  setImmediate(() => {
     stream.emit('data', Buffer.from(JSON.stringify(body)));
     stream.emit('end');
   });
