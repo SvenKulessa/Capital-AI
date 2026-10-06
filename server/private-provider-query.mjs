@@ -154,6 +154,22 @@ export function safeProviderResult(value) {
   return value;
 }
 
+export function assertNotReplayed(state, envelope, now = Date.now()) {
+  if (!(state instanceof Map) || !safeIdentifier(envelope?.requestId) || !Number.isSafeInteger(envelope?.expiresAt)) {
+    throw new Error('INVALID_REPLAY_STATE');
+  }
+  for (const [requestId, expiresAt] of state) {
+    if (expiresAt < now) state.delete(requestId);
+  }
+  if (state.has(envelope.requestId)) {
+    const error = new Error('QUERY_REPLAY_REJECTED');
+    error.code = 'QUERY_REPLAY_REJECTED';
+    throw error;
+  }
+  if (state.size >= 8192) throw new Error('REPLAY_WINDOW_CAPACITY_EXCEEDED');
+  state.set(envelope.requestId, envelope.expiresAt);
+}
+
 async function readJson(req) {
   const chunks = [];
   let bytes = 0;
@@ -178,6 +194,7 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault } = 
   let opening = null;
   const highCostWindows = new Map();
   const requestWindows = new Map();
+  const replayWindow = new Map();
 
   function enabled() {
     return env.PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true';
@@ -253,6 +270,7 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault } = 
       if (message.data.length > MAX_BODY_BYTES) throw new Error('REQUEST_TOO_LARGE');
       envelope = JSON.parse(new TextDecoder().decode(message.data));
       if (!verifyProviderQueryEnvelope(envelope, env)) throw new Error('INVALID_QUERY_PROOF');
+      assertNotReplayed(replayWindow, envelope);
       const data = safeProviderResult(await vault.executePrivateQuery(
         envelope.userRef,
         envelope.provider,
