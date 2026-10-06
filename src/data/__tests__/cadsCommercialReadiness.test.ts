@@ -5,37 +5,35 @@ import {
   cadsMarketplaceCommerciallyAdmitted,
 } from '../cadsCommercialReadiness';
 
-test('CADS website commerce survives Marketplace productization without an invented readiness score', () => {
-  assert.equal(CADS_COMMERCIAL_READINESS.readinessPct, null);
-  assert.equal(CADS_COMMERCIAL_READINESS.owner, 'PRODUCT');
-  assert.equal(CADS_COMMERCIAL_READINESS.assuranceOwner, 'TRUST');
-  assert.equal(CADS_COMMERCIAL_READINESS.websiteCommerce.state, 'WEB_SAAS_ENTITLEMENT_SLICE');
-  assert.equal(CADS_COMMERCIAL_READINESS.websiteCommerce.billingAuthority, 'server/billing-catalog.mjs');
-  assert.equal(CADS_COMMERCIAL_READINESS.websiteCommerce.entitlementAuthority, 'public.subscriptions via auth.resolvePaidTier');
-  assert.equal(CADS_COMMERCIAL_READINESS.websiteCommerce.productionEligible, false);
-  assert.equal(CADS_COMMERCIAL_READINESS.websiteCommerce.decisionEligible, false);
-});
-
-test('GitHub Marketplace remains a separate fail-closed authority', () => {
+test('CADS targets paid GitHub Marketplace production but external admission stays fail-closed', () => {
   const market = CADS_COMMERCIAL_READINESS.githubMarketplace;
-  assert.equal(market.pricingAuthority, null);
-  assert.equal(market.marketplaceListingApproved, false);
-  assert.equal(market.checkoutOrPurchaseEnabled, false);
-  assert.equal(market.entitlementAuthority, 'GITHUB_MARKETPLACE_API_REQUIRED');
-  assert.equal(market.status, 'BLOCKED_FOR_PAID_LISTING');
+  assert.equal(market.target, 'PAID_PRODUCTION');
+  assert.deepEqual(market.plans, ['starter', 'pro', 'enterprise']);
+  assert.equal(market.freePlanEnabled, false);
+  assert.equal(market.pricingAuthority, 'GITHUB_MARKETPLACE_LISTING');
+  assert.equal(market.pricingCurrency, 'USD');
+  assert.equal(market.implementation.hmacWebhookVerification, true);
+  assert.equal(market.implementation.idempotentDeliveryLedger, true);
+  assert.equal(market.implementation.authoritativeMarketplaceReadbackBeforeActivationOrPlanChange, true);
+  assert.equal(market.implementation.cancellationDataPurgeBeforeDay30, true);
+  assert.equal(market.status, 'BLOCKED_EXTERNAL_GITHUB_ADMISSION');
   assert.equal(cadsMarketplaceCommerciallyAdmitted(), false);
 });
 
-test('current paid-listing and cancellation requirements remain explicit', () => {
-  const req = CADS_COMMERCIAL_READINESS.githubMarketplace.officialRequirements;
-  assert.equal(req.appOwnedByOrganizationForPaidPlans, true);
-  assert.equal(req.verifiedPublisherRequiredForPaidPlans, true);
-  assert.equal(req.minimumGitHubAppInstallationsForPaidListing, 100);
-  assert.equal(req.monthlyAndAnnualBillingRequired, true);
-  assert.equal(req.pricingCurrency, 'USD');
-  assert.equal(req.maximumPublishedPlans, 10);
-  assert.deepEqual(req.requiredMarketplacePurchaseActions, ['purchased', 'changed', 'cancelled']);
-  assert.equal(req.planChangeWebhookRequired, true);
-  assert.equal(req.customerDataDeletionWithinDaysAfterCancellation, 30);
-  assert.equal(req.externalPaidServiceRequiresMarketplacePaidPlanOncePaidRequirementsMet, true);
+test('Marketplace production admission requires real external evidence, not code completion', () => {
+  const evidence = CADS_COMMERCIAL_READINESS.githubMarketplace.evidence;
+  assert.equal(evidence.organizationOwnershipVerified, false);
+  assert.equal(evidence.verifiedPublisherVerified, false);
+  assert.equal(evidence.installationThresholdVerified, false);
+  assert.equal(evidence.monthlyAnnualPricingAssignedInMarketplace, false);
+  assert.equal(evidence.planIdsAssignedInRuntime, false);
+  assert.equal(Object.values(evidence).every(Boolean), false);
+});
+
+test('Grafana Cloud operator context remains separate from Marketplace admission', () => {
+  assert.equal(CADS_COMMERCIAL_READINESS.operatorContext.grafanaCloudSupabaseConnected, true);
+  assert.equal(
+    CADS_COMMERCIAL_READINESS.operatorContext.evidenceState,
+    'OPERATOR_CONFIRMED_REPO_READBACK_PENDING',
+  );
 });
