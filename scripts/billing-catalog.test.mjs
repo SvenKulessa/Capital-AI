@@ -78,6 +78,10 @@ test('additional products catalog exposes only currently available add-ons', () 
   assert.match(catalog, /badgeLicense: 'LicenseRef-CAPITAL-AI-VOCABULARY-BADGE-CUSTOMER-1\.0'/);
   assert.match(pricing, /Starter · Pro · Enterprise/);
   assert.match(pricing, /Zusatzprodukte/);
+  assert.match(pricing, /BENCHMARK_TIERS/);
+  assert.match(pricing, /CADS Benchmark Engine enthalten/);
+  assert.match(pricing, /GitHub Check · enforced/);
+  assert.match(pricing, /Benchmark-Evidence unterstützt Entscheidungen/);
   assert.match(pricing, /ADDITIONAL_PRODUCTS_CATALOG\.map/);
   assert.match(pricing, /Vocabulary ansehen \/ erwerben/);
   assert.doesNotMatch(catalog, /data-api|white-label|cpt-|token|nft/i);
