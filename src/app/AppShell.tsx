@@ -1,9 +1,9 @@
 import { lazy, Suspense } from 'react';
-import { PriceAlertToast } from '../features/alerts/PriceAlertToast';
 import { HeroBuddy } from '../components/HeroBuddy';
 import { RouteBreadcrumbs } from '../components/RouteBreadcrumbs';
 import { useRouteAnalytics } from '../platform/analytics/useRouteAnalytics';
 import { useMarketAssets } from '../services/marketDataStore';
+import { usePriceAlerts } from '../context/PriceAlertsContext';
 import { RouteLoadingFallback } from '../shared/ui/RouteLoadingFallback';
 import { ApplicationViewport } from './layout/ApplicationViewport';
 import { useAppOverlayController } from './overlays/useAppOverlayController';
@@ -13,9 +13,15 @@ import { useBrowserRoute } from './routing/useBrowserRoute';
 const AppOverlays = lazy(() =>
   import('./AppOverlays').then((module) => ({ default: module.AppOverlays })),
 );
+const PriceAlertToast = lazy(() =>
+  import('../features/alerts/PriceAlertToast').then((module) => ({
+    default: module.PriceAlertToast,
+  })),
+);
 
 export function AppShell() {
   useMarketAssets();
+  const { activeToast } = usePriceAlerts();
   const { currentRoute, navigateTo, analysisRequest } = useBrowserRoute();
   useRouteAnalytics(currentRoute);
 
@@ -52,14 +58,18 @@ export function AppShell() {
         </Suspense>
       </ApplicationViewport>
 
-      <PriceAlertToast
-        onSelectAsset={ui.setSelectedAsset}
-        onOpenSentiment={() => {
-          document
-            .getElementById('market-sentiment-section')
-            ?.scrollIntoView({ behavior: 'smooth' });
-        }}
-      />
+      {activeToast && (
+        <Suspense fallback={null}>
+          <PriceAlertToast
+            onSelectAsset={ui.setSelectedAsset}
+            onOpenSentiment={() => {
+              document
+                .getElementById('market-sentiment-section')
+                ?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          />
+        </Suspense>
+      )}
 
       <HeroBuddy
         onNavigate={navigateTo}
