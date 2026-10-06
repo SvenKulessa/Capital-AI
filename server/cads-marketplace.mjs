@@ -448,14 +448,20 @@ export function createCadsMarketplace({
       json(res, 503, { error: 'cads_marketplace_not_configured' });
       return true;
     }
-    const user = await auth?.verify?.(req, res);
-    if (!user?.userId) {
-      json(res, 401, { error: 'authentication_required' });
-      return true;
-    }
     const installationId = positiveInteger(url.searchParams.get('installation_id'));
     if (!installationId) {
       json(res, 400, { error: 'invalid_installation_id' });
+      return true;
+    }
+    const user = await auth?.verify?.(req, res);
+    if (!user?.userId) {
+      const next = MARKETPLACE_SETUP_PATH + '?installation_id=' + encodeURIComponent(String(installationId));
+      res.writeHead(303, {
+        Location: '/login?next=' + encodeURIComponent(next),
+        'Cache-Control': 'no-store',
+        'Referrer-Policy': 'no-referrer',
+      });
+      res.end();
       return true;
     }
     const state = createCadsMarketplaceOAuthState({
