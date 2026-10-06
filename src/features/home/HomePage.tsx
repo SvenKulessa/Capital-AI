@@ -5,7 +5,7 @@ import { KeyPillars } from '../../components/KeyPillars';
 import { Footer } from '../../components/Footer';
 import { MarketSentiment } from '../market/MarketSentiment';
 import { SectorAnalysis } from '../market/SectorAnalysis';
-import { ResearchProjectSummary } from '../../components/ResearchProjectSummary';
+import { VocabularyFlashcards } from '../../components/VocabularyFlashcards';
 import type {
   AssetSubclass,
   MainCategory,
@@ -85,7 +85,7 @@ export function HomePage({
         onExploreProduct={onStartProductTour}
       />
 
-      <ResearchProjectSummary onNavigate={onNavigate} />
+      <VocabularyFlashcards onNavigate={onNavigate} />
       <KeyPillars />
 
       <SectorAnalysis
