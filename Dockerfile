@@ -8,6 +8,7 @@ WORKDIR /app
 RUN npm install --global npm@12.2.0 --ignore-scripts --no-audit --no-fund \
     && rm -rf /usr/local/lib/node_modules/corepack /usr/local/bin/corepack /opt/yarn* /usr/local/bin/yarn* /usr/local/bin/pnpm* /root/.npm
 COPY deploy/npm-security-patches/package.json deploy/npm-security-patches/package-lock.json /opt/npm-security-patches/
+COPY deploy/social-media/ffmpeg-build-profile.json ./deploy/social-media/ffmpeg-build-profile.json
 COPY scripts/harden-npm-toolchain.mjs /opt/harden-npm-toolchain.mjs
 RUN npm ci --prefix /opt/npm-security-patches --ignore-scripts --no-audit --no-fund \
     && node /opt/harden-npm-toolchain.mjs /usr/local/lib/node_modules/npm /opt/npm-security-patches/node_modules \
