@@ -4,6 +4,7 @@
 !.dockerignore
 !package.json
 !package-lock.json
+!OPEN_SOURCE_LICENSES.md
 !index.html
 !vite.config.ts
 !tsconfig.json
@@ -66,6 +67,7 @@
 !shared/vocabulary-access-policy.mjs
 !shared/seo-indexing-policy.mjs
 !shared/seo-content-manifest.mjs
+!shared/seo-source-provenance.mjs
 !shared/seo-metadata.mjs
 !deploy/
 !deploy/runtime/
@@ -173,5 +175,7 @@
 !supabase/email-templates/
 !supabase/email-templates/**
 !supabase/migrations/
+!supabase/migrations/20261005010039_legal_policy_evidence_store_isolated.sql
+!supabase/migrations/20261005155500_fix_registration_consent_null.sql
 !supabase/migrations/20261006072600_sync_stripe_subscription_catalog_v2.sql
 !supabase/migrations/20261006080124_benchmark_run_usage_ledger.sql
