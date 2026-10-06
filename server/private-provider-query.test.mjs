@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   createProviderQueryEnvelope,
+  executorNatsConnectionAuth,
   safeProviderResult,
   validateProviderQueryRequest,
   verifyProviderQueryEnvelope,
@@ -45,4 +46,54 @@ test('query proof binds user, operation, expiry and params', () => {
 test('provider result refuses credential-shaped fields', () => {
   assert.deepEqual(safeProviderResult({ balances: [{ asset: 'BTC', free: '0.1' }] }), { balances: [{ asset: 'BTC', free: '0.1' }] });
   assert.throws(() => safeProviderResult({ apiSecret: 'never' }), /SECRET_MATERIAL_IN_PROVIDER_RESULT/);
+});
+
+
+test('executor NATS credentials are separate and fail closed', () => {
+  assert.deepEqual(
+    executorNatsConnectionAuth({
+      NATS_EXECUTOR_USER: 'capital-ai-provider-executor',
+      NATS_EXECUTOR_PASSWORD: 'executor-password-0123456789012345',
+    }),
+    {
+      user: 'capital-ai-provider-executor',
+      pass: 'executor-password-0123456789012345',
+      mode: 'scoped_executor',
+    },
+  );
+  assert.throws(
+    () => executorNatsConnectionAuth({ NATS_EXECUTOR_USER: 'executor', NATS_EXECUTOR_PASSWORD: 'short' }),
+    /NATS_EXECUTOR_CREDENTIALS_REQUIRED/,
+  );
+});
+
+test('Binance snapshot contract requires bounded high-cost parameters', () => {
+  assert.deepEqual(
+    validateProviderQueryRequest({
+      provider: 'binance',
+      operation: 'account.snapshot',
+      params: { type: 'SPOT', limit: 7 },
+    }),
+    {
+      provider: 'binance',
+      operation: 'account.snapshot',
+      params: { type: 'SPOT', limit: 7 },
+    },
+  );
+  assert.throws(
+    () => validateProviderQueryRequest({ provider: 'binance', operation: 'account.snapshot', params: {} }),
+    /REQUIRED_PARAM_MISSING/,
+  );
+  assert.throws(
+    () => validateProviderQueryRequest({ provider: 'binance', operation: 'account.snapshot', params: { type: 'SPOT', limit: 31 } }),
+    /INVALID_PARAM_VALUE/,
+  );
+  assert.throws(
+    () => validateProviderQueryRequest({
+      provider: 'binance',
+      operation: 'account.snapshot',
+      params: { type: 'SPOT', startTime: 1, endTime: 2_592_000_002 },
+    }),
+    /QUERY_WINDOW_TOO_LARGE/,
+  );
 });
