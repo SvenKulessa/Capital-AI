@@ -234,3 +234,15 @@ test('control center observability remains owner-projected without browser metri
   assert.match(server, /auth\.authorizeIamRole\(req, res, 'owner'\)/);
   assert.match(server, /operationalSnapshot\(\)/);
 });
+
+
+test('registration mirrors the observed Supabase password classes before submit', async () => {
+  const login = await readFile(new URL('../src/features/auth/LoginPage.tsx', import.meta.url), 'utf8');
+
+  assert.match(login, /newPasswordMeetsObservedPolicy/);
+  assert.match(login, /\[a-z\]/);
+  assert.match(login, /\[A-Z\]/);
+  assert.match(login, /\[0-9\]/);
+  assert.match(login, /mindestens 14 Zeichen sowie Kleinbuchstaben, Großbuchstaben, Zahl und Sonderzeichen/);
+  assert.match(login, /throw new Error\('weak_password'\)/);
+});
