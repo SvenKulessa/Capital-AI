@@ -13,7 +13,6 @@ export interface DataConcept {
   bafinCompliance: string;
   latencyTarget: string;
   costImpact: string;
-  contractCodeSnippet: string;
   visualFlow: string[];
 }
 
@@ -28,16 +27,6 @@ export const DATA_CONCEPTS: DataConcept[] = [
     bafinCompliance: 'MaRisk AT 7.2 konforme Entkopplung von Ingestion und Auswertung',
     latencyTarget: '< 35 ms E2E',
     costImpact: 'Spart bis zu 85% Egress-Bandbreite durch T2 Conflation (max 4 Ticks/s statt 1.000/s)',
-    contractCodeSnippet: `// TIER 1 -> TIER 2 INGESTION CONTRACT (AP-001)
-export interface ConflatedTickStream {
-  symbol: 'BTC/EUR' | 'AAPL' | 'EUR/USD';
-  t1_raw_timestamp_ns: number;
-  t2_gate_timestamp_ns: number;
-  tick_window_ms: 250;
-  conflated_bid: number;
-  conflated_ask: number;
-  tick_count_in_window: number;
-}`,
     visualFlow: ['T1: Raw Ingress', 'T2: Tick Gate (250ms)', 'T3: Fan-Out Bus', 'T4: UI / AI Consumer'],
   },
   {
@@ -50,16 +39,6 @@ export interface ConflatedTickStream {
     bafinCompliance: 'Vollständige Revisionssicherheit für algorithmische Empfehlungen nach BaFin MaRisk',
     latencyTarget: '40 - 50 ms',
     costImpact: 'Eliminiert fatale Fehl-Trades durch False-Tick Filterung und Preisausreißer (>1.5%)',
-    contractCodeSnippet: `// AUTHORITY PLANE & EVIDENCE FINGERPRINT CONTRACT (AP-002)
-export interface CanonicalEvidenceSnapshot {
-  consensus_id: string;
-  symbol: string;
-  canonical_price: number;
-  participating_providers: ['binance', 'kraken', 'coinbase'];
-  median_deviation_pct: number;
-  evidence_sha256: string;
-  score_eligible: boolean;
-}`,
     visualFlow: ['Provider Consensus', 'Median Filter', 'Canonical Snapshot', 'SHA-256 Fingerprint', 'Scoring Plane'],
   },
   {
@@ -72,13 +51,6 @@ export interface CanonicalEvidenceSnapshot {
     bafinCompliance: 'Lückenlose 10-Jahres-Archivierung bei gleichzeitiger Sub-20ms Abfragegeschwindigkeit',
     latencyTarget: '1 - 25 ms (Cache-Hit)',
     costImpact: 'Bleibt garantiert unter 35€ / Monat durch lokalen Redis-Cache vor teuren externen REST-APIs',
-    contractCodeSnippet: `// HYBRID MULTI-TIER STORAGE CONTRACT (AP-003)
-export interface HybridDataRoute {
-  live_stream: 'wss://multiplexer.capital-ai.local';
-  short_term_buffer: 'redis://cache:6379/ring_buffer_3600';
-  cold_storage: 'postgresql://db:5432/market_candles_history';
-  cache_hit_ttl_ms: 1000;
-}`,
     visualFlow: ['Live WebSocket Ingest', 'In-Memory Ring Buffer (Redis)', 'TimescaleDB / Postgres Archive', 'Unified Query Gateway'],
   },
   {
@@ -91,14 +63,6 @@ export interface HybridDataRoute {
     bafinCompliance: 'Ausfallsicherheit nach MaRisk (Zero Single Point of Failure für kritische Feeds)',
     latencyTarget: '18 ms (Fastest-Wins)',
     costImpact: 'Zero zusätzliche API-Kosten durch Nutzung freier Public WebSockets mit Multiplexer',
-    contractCodeSnippet: `// PARALLEL HOMOGENEOUS ROUTER CONTRACT
-export interface ParallelHomogeneousRouter {
-  pair: 'BTC-EUR';
-  channels: ['binance_wss', 'kraken_wss', 'coinbase_wss'];
-  selection_strategy: 'fastest_healthy_response' | 'median_consensus';
-  heartbeat_timeout_ms: 1200;
-  active_circuit_breaker: boolean;
-}`,
     visualFlow: ['Binance WebSocket', 'Kraken WebSocket', 'Coinbase WebSocket', 'Race Resolver (Fastest Wins)', 'Sanitized Stream'],
   },
   {
@@ -111,15 +75,6 @@ export interface ParallelHomogeneousRouter {
     bafinCompliance: 'Multidimensionale Risiko-Beurteilung vor automatischer Score-Vergabe',
     latencyTarget: '120 ms (Gesamt-Signal)',
     costImpact: 'Selektive Abfrage: Fundamentals nur bei News-Ereignis neu laden spart 90% Quota',
-    contractCodeSnippet: `// MULTI-MODAL MARKET SIGNAL CONTRACT
-export interface MultiModalMarketSignal {
-  symbol: string;
-  last_price: number;
-  orderbook_imbalance_ratio: number;
-  sentiment_score_gemini: number;
-  piotroski_f_score: number;
-  composite_confidence: number;
-}`,
     visualFlow: ['Price Stream', 'L2 Orderbook Depth', 'Financial News RSS', 'SEC Fundamentals', 'Gemini Context Vectorizer'],
   },
   {
@@ -132,13 +87,6 @@ export interface MultiModalMarketSignal {
     bafinCompliance: 'Datenminimierung nach DSGVO und striktes Zielgruppen-Audit',
     latencyTarget: 'Batch / On-Demand (Cache 4ms)',
     costImpact: 'Spart 92% unnötige WebSocket-Verbindungen bei rein fundamentalen Value-Tools',
-    contractCodeSnippet: `// BUFFETT VALUE CHECK INDIVIDUAL PACKAGE CONTRACT
-export interface BuffettValueCheckContract {
-  target_tool: 'BUFFETT_VALUE_CHECK';
-  required_fields: ['roe_10y_avg', 'debt_to_equity', 'fcf_growth', 'moat_rating'];
-  update_interval: 'DAILY' | 'QUARTERLY';
-  tickstream_required: false;
-}`,
     visualFlow: ['Buffett Screener Target', 'Contract-First Filter', 'Targeted Fundamentals Loader', 'DCF / Moat Engine'],
   },
   {
@@ -151,14 +99,6 @@ export interface BuffettValueCheckContract {
     bafinCompliance: 'Unveränderbarer Audit-Trail nach WORM-Prinzip (Write Once, Read Many)',
     latencyTarget: 'Sub-10ms Append',
     costImpact: 'Hohe Kompression durch Protocol Buffers & Zstandard Event-Logs',
-    contractCodeSnippet: `// EVENT-SOURCED MARKET JOURNAL CONTRACT
-export interface MarketEventJournalEntry {
-  event_id: string;
-  sequence_no: number;
-  event_type: 'PRICE_TICK' | 'ORDERBOOK_DELTA' | 'NEWS_FLASH';
-  payload_hash: string;
-  recorded_at_utc: string;
-}`,
     visualFlow: ['Market Action', 'Event Generation', 'Append-Only Event Store', 'Materialized Views / Projections'],
   },
   {
@@ -171,15 +111,6 @@ export interface MarketEventJournalEntry {
     bafinCompliance: 'Verhinderung von Marktmanipulations- und Backtest-Fehlschlüssen nach MiFID II',
     latencyTarget: 'Historisch indexiert',
     costImpact: 'Vermeidet teure Fehlallokationen durch verzerrte historische Analysen',
-    contractCodeSnippet: `// BITEMPORAL RECORD CONTRACT
-export interface BitemporalRecord {
-  symbol: string;
-  metric_name: 'net_income';
-  valid_from: '2025-12-31';
-  transaction_recorded_at: '2026-02-14T08:30:00Z';
-  stated_value: 125000000;
-  is_restatement: boolean;
-}`,
     visualFlow: ['Real-World Event (Valid Time)', 'Filing Publication', 'Ingestion & Stamping (Transaction Time)', 'Bias-Free Time-Travel Engine'],
   },
   {
@@ -192,14 +123,6 @@ export interface BitemporalRecord {
     bafinCompliance: 'Lückenlose Archivierung von Marktpreisen nach MiFID II Best-Execution Vorgaben',
     latencyTarget: 'Sub-15ms Window Queries',
     costImpact: '80% Speicherplatz-Ersparnis durch Delta-of-Delta Kompression und Chunking',
-    contractCodeSnippet: `// TIME-SERIES CHUNK CONTRACT
-export interface TimeSeriesChunk {
-  symbol: string;
-  granularity: '1m' | '1h' | '1d';
-  chunk_start_epoch: number;
-  compressed_deltas: string;
-  aggregations: { vwap: number; high: number; low: number; volume: number };
-}`,
     visualFlow: ['Raw Tick Ingest', '1s Aggregator', '1m / 1h Rollups', 'Compressed Columnar Chunks'],
   },
   {
@@ -212,13 +135,6 @@ export interface TimeSeriesChunk {
     bafinCompliance: 'Fehlerfreie Rekonstruktion der Markttiefe zu jedem Zeitpunkt',
     latencyTarget: '< 20 ms Delta-Apply',
     costImpact: 'Bandbreiten-Kollaps von 50 MB/s auf unter 200 KB/s pro Stream',
-    contractCodeSnippet: `// SNAPSHOT + DELTA STREAMING CONTRACT
-export interface OrderbookDeltaStream {
-  snapshot_sequence: 1048202;
-  delta_sequence: 1048203;
-  changes: Array<['bids' | 'asks', number /* price */, number /* size */]>;
-  checksum: number;
-}`,
     visualFlow: ['Initial L2 Snapshot', 'WebSocket Delta Stream', 'Client Local Orderbook Apply', 'Checksum Verification'],
   },
   {
@@ -231,17 +147,6 @@ export interface OrderbookDeltaStream {
     bafinCompliance: 'Standardisierte Feature-Definitionen ohne Trainings-/Inferenz-Skew',
     latencyTarget: '< 5 ms Feature Lookup',
     costImpact: 'Reduziert CPU-Auslastung der Scoring-Server um 60%',
-    contractCodeSnippet: `// CENTRAL FEATURE STORE CONTRACT
-export interface MarketFeatureStoreEntry {
-  entity_id: 'BINANCE:BTCUSDT';
-  features: {
-    rsi_14: 62.4;
-    macd_divergence: 0.015;
-    whale_accumulation_score: 88;
-    news_sentiment_polarity: 0.74;
-  };
-  computed_at: number;
-}`,
     visualFlow: ['Feature Calculation Workers', 'Online Store (Redis)', 'Offline Store (Parquet)', 'Unified SDK Consumption'],
   },
   {
@@ -254,14 +159,6 @@ export interface MarketFeatureStoreEntry {
     bafinCompliance: 'Langzeit-Sicherung und historische Stresstests für quantitative Algorithmen',
     latencyTarget: 'Columnar Batch Scans',
     costImpact: 'Günstigste Speicherform: ~0,02 € pro Gigabyte/Monat',
-    contractCodeSnippet: `// LAKEHOUSE DATASET METADATA CONTRACT
-export interface LakehouseDatasetMetadata {
-  dataset_id: 'crypto_trades_2020_2025_parquet';
-  row_count: 850000000;
-  format: 'PARQUET_ZSTD';
-  query_engine: 'DUCKDB_WASM';
-  partitions: ['year', 'month', 'asset_class'];
-}`,
     visualFlow: ['Historical Raw Dumps', 'Parquet / ZSTD Compactor', 'Cloud Object Storage', 'DuckDB In-Browser Engine'],
   },
   {
@@ -274,13 +171,6 @@ export interface LakehouseDatasetMetadata {
     bafinCompliance: 'Klare Trennung von Datenprüfung und Datenpräsentation',
     latencyTarget: '< 2 ms UI Read',
     costImpact: 'Keine teuren DB-Joins bei Nutzer-Aufrufen im Frontend',
-    contractCodeSnippet: `// CQRS READ PROJECTION CONTRACT
-export interface DashboardProjectionModel {
-  market_id: 'CRYPTO_TOP_50';
-  precomputed_ranks: Array<{ rank: number; symbol: string; score: number }>;
-  last_projected_at: string;
-  cache_etag: string;
-}`,
     visualFlow: ['Command (Ingest & Validate)', 'Write Model (Relational / Event)', 'Projection Worker', 'Read Model (Denormalized Cache)'],
   },
   {
@@ -293,14 +183,6 @@ export interface DashboardProjectionModel {
     bafinCompliance: 'Nachweis der Robustheit und Risikomodellierung (Stress-Testing nach MaRisk)',
     latencyTarget: '10x - 100x Zeitraffer',
     costImpact: 'Findet Algorithmusschwächen vor dem Live-Deployment und schützt Kapital',
-    contractCodeSnippet: `// REPLAY & STRESS TESTING SESSION CONTRACT
-export interface ReplaySessionConfig {
-  session_id: 'replay_ftx_liquidity_drain';
-  start_timestamp: 1667865600;
-  end_timestamp: 1668038400;
-  speed_multiplier: 5.0;
-  injected_jitter_ms: 12;
-}`,
     visualFlow: ['Historical Event Store', 'Virtual Clock Sequencer', 'Replay Emitter', 'Pipeline Under Stress Test'],
   },
   {
@@ -313,17 +195,6 @@ export interface ReplaySessionConfig {
     bafinCompliance: 'Eindeutige Identifikation aller Wertpapiere und Kryptoassets nach MiFIR',
     latencyTarget: 'In-Memory Map (< 1 ms)',
     costImpact: 'Verhindert Dubletten und Fehlzuordnungen in Portfolios',
-    contractCodeSnippet: `// MASTER INSTRUMENT IDENTITY CONTRACT
-export interface MasterInstrumentIdentity {
-  canonical_id: 'INST_BTC_SPOT';
-  exchange_symbols: {
-    kraken: 'XXBTZUSD';
-    binance: 'BTCUSDT';
-    coinbase: 'BTC-USD';
-    boerse_frankfurt: 'BTC.DE';
-  };
-  figi: 'BBG000BLNNV0';
-}`,
     visualFlow: ['Incoming Heterogeneous Tickers', 'Symbology Master Registry', 'Canonical UUID Stamping', 'Uniform System Route'],
   },
   {
@@ -336,15 +207,6 @@ export interface MasterInstrumentIdentity {
     bafinCompliance: 'Klare Zuständigkeiten und Daten-Owner nach MaRisk AT 4.3',
     latencyTarget: 'Domänenspezifisch optimiert',
     costImpact: 'Autonome Skalierung einzelner Domänen ohne Gesamtsystem-Restart',
-    contractCodeSnippet: `// DOMAIN DATA PRODUCT CONTRACT
-export interface DomainDataProductContract {
-  domain: 'EQUITY_FUNDAMENTALS';
-  owner: 'Fundamental-Data-Squad';
-  sla_availability: 0.999;
-  schema_version: 'v2.1.0';
-  freshness_seconds: 86400;
-  primary_format: 'JSON_SCHEMA_ZOD';
-}`,
     visualFlow: ['Crypto Domain Product', 'Equity Domain Product', 'FX Domain Product', 'Federated Governance & Mesh'],
   },
 ];
@@ -362,7 +224,6 @@ export interface StudioBlueprint {
   primaryUseCase: string;
   dataConceptsUsed: string[];
   topologyNodes: Array<{ id: string; name: string; type: string; tier: string }>;
-  codeSnippet: string;
 }
 
 export const STUDIO_BLUEPRINTS: StudioBlueprint[] = [
@@ -384,28 +245,6 @@ export const STUDIO_BLUEPRINTS: StudioBlueprint[] = [
       { id: 't3', name: 'T3: Redis Pub/Sub Fan-out Bus', type: 'Bus', tier: 'Tier 3' },
       { id: 't4', name: 'T4: React Client & KI Consumer', type: 'Egress', tier: 'Tier 4' },
     ],
-    codeSnippet: `// BLUEPRINT: TIER_1_4_LIVE (Node.js + Redis)
-import WebSocket from 'ws';
-import Redis from 'ioredis';
-
-const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
-const ws = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@ticker');
-
-let lastTickWindow = 0;
-const CONFLATION_MS = 250;
-
-ws.on('message', (data) => {
-  const now = Date.now();
-  if (now - lastTickWindow >= CONFLATION_MS) {
-    lastTickWindow = now;
-    const tick = JSON.parse(data.toString());
-    redis.publish('market:live:btcusdt', JSON.stringify({
-      price: parseFloat(tick.c),
-      volume: parseFloat(tick.v),
-      timestamp_ns: now * 1_000_000
-    }));
-  }
-});`,
   },
   {
     id: 'AUTHORITY_PLANE',
@@ -425,24 +264,6 @@ ws.on('message', (data) => {
       { id: 'ap3', name: 'Canonical Snapshot & SHA-256 Store', type: 'Evidence', tier: 'Tier 3' },
       { id: 'ap4', name: 'Audited Scoring Engine (BaFin)', type: 'Scoring', tier: 'Tier 4' },
     ],
-    codeSnippet: `// BLUEPRINT: AUTHORITY_PLANE (Evidence Engine)
-import crypto from 'crypto';
-
-export function createEvidenceSnapshot(symbol: string, prices: number[]) {
-  // 1. Median calculation
-  const sorted = [...prices].sort((a, b) => a - b);
-  const median = sorted[Math.floor(sorted.length / 2)];
-  
-  // 2. Reject outliers > 1.5%
-  const valid = prices.filter(p => Math.abs(p - median) / median < 0.015);
-  const canonical = valid.reduce((a, b) => a + b, 0) / valid.length;
-
-  // 3. Cryptographic Fingerprint for BaFin Audit Trail
-  const payload = JSON.stringify({ symbol, canonical, ts: Date.now() });
-  const sha256 = crypto.createHash('sha256').update(payload).digest('hex');
-
-  return { canonicalPrice: canonical, evidenceHash: sha256, isAuditCompliant: true };
-}`,
   },
   {
     id: 'HYBRID',
@@ -462,21 +283,6 @@ export function createEvidenceSnapshot(symbol: string, prices: number[]) {
       { id: 'hy3', name: 'TimescaleDB / Postgres Archive', type: 'Cold Storage', tier: 'Tier 3' },
       { id: 'hy4', name: 'Unified Query Router (Cache-First)', type: 'Gateway', tier: 'Tier 4' },
     ],
-    codeSnippet: `// BLUEPRINT: HYBRID (Cache-First Router)
-export async function getMarketHistory(symbol: string, timeframe: string) {
-  // Check Ring Buffer first (< 5ms)
-  const cached = await redis.lrange(\`ring:\${symbol}:\${timeframe}\`, 0, 500);
-  if (cached && cached.length > 0) {
-    return { source: 'REDIS_RING_BUFFER', data: cached.map(JSON.parse) };
-  }
-
-  // Fallback to PostgreSQL TimescaleDB (< 35ms)
-  const result = await db.query(
-    'SELECT * FROM ohlcv WHERE symbol = $1 AND timeframe = $2 ORDER BY time DESC LIMIT 500',
-    [symbol, timeframe]
-  );
-  return { source: 'TIMESCALE_POSTGRES', data: result.rows };
-}`,
   },
   {
     id: 'MIXED_DOMAIN',
@@ -496,14 +302,6 @@ export async function getMarketHistory(symbol: string, timeframe: string) {
       { id: 'md3', name: 'Macro Rates (EZB / FRED API)', type: 'Ingress', tier: 'Tier 1' },
       { id: 'md4', name: 'Harmonized Multi-Asset Bus', type: 'Harmonizer', tier: 'Tier 3' },
     ],
-    codeSnippet: `// BLUEPRINT: MIXED_DOMAIN (Cross-Asset Normalizer)
-export interface HarmonizedCrossAssetTick {
-  unified_id: string; // e.g. "BTC" or "AAPL"
-  asset_type: 'CRYPTO' | 'EQUITY' | 'MACRO_RATE';
-  normalized_eur_price: number;
-  liquidity_rating: 'A' | 'B' | 'C';
-  macro_correlation_coefficient: number;
-}`,
   },
   {
     id: 'PARALLEL_HOMOGENEOUS',
@@ -523,19 +321,6 @@ export interface HarmonizedCrossAssetTick {
       { id: 'ph3', name: 'Coinbase WSS (Hot Standby)', type: 'Ingress', tier: 'Tier 1' },
       { id: 'ph4', name: 'Race Resolver (Sub-20ms)', type: 'Gate', tier: 'Tier 2' },
     ],
-    codeSnippet: `// BLUEPRINT: PARALLEL_HOMOGENEOUS (Race Resolver)
-export class MultiProviderRaceResolver {
-  private latestSeenTimestamp = 0;
-
-  ingestTick(provider: string, price: number, epochMs: number) {
-    // Only accept fresher ticks, dropping laggy duplicate streams
-    if (epochMs > this.latestSeenTimestamp) {
-      this.latestSeenTimestamp = epochMs;
-      return { winner: provider, price, accepted: true };
-    }
-    return { winner: provider, price, accepted: false, reason: 'LATE_TICK' };
-  }
-}`,
   },
   {
     id: 'PARALLEL_MIXED',
@@ -555,20 +340,6 @@ export class MultiProviderRaceResolver {
       { id: 'pm3', name: 'SEC EDGAR Fundamentals Ingest', type: 'Ingress', tier: 'Tier 1' },
       { id: 'pm4', name: 'Gemini Context Vectorizer & Scorer', type: 'AI Reasoning', tier: 'Tier 4' },
     ],
-    codeSnippet: `// BLUEPRINT: PARALLEL_MIXED (AI Context Combiner)
-export async function buildMultiModalContext(ticker: string) {
-  const [ticks, orderbook, news, fundamentals] = await Promise.all([
-    fetchRecentTicks(ticker),
-    fetchOrderbookDepth(ticker),
-    fetchLatestNewsRss(ticker),
-    fetchSecFinancials(ticker),
-  ]);
-
-  return {
-    promptContext: \`Marktlage \${ticker}: Preis \${ticks.last}, Spread \${orderbook.spread}, Sentiment \${news.headline}, KGV \${fundamentals.pe}\`,
-    readyForGemini: true
-  };
-}`,
   },
   {
     id: 'INDIVIDUAL_PACKAGE',
@@ -588,14 +359,5 @@ export async function buildMultiModalContext(ticker: string) {
       { id: 'ip3', name: 'Cached Screener Read-Model', type: 'Projection', tier: 'Tier 3' },
       { id: 'ip4', name: 'Buffett Value Check UI Card', type: 'Client', tier: 'Tier 4' },
     ],
-    codeSnippet: `// BLUEPRINT: INDIVIDUAL_PACKAGE (Buffett Screener Contract)
-export interface BuffettScreenerContract {
-  symbol: string;
-  roe_10y_median: number;       // Benchmark: > 15%
-  debt_to_equity: number;       // Benchmark: < 0.8
-  free_cash_flow_growth_5y: number; // Benchmark: > 10%
-  economic_moat: 'WIDE' | 'NARROW' | 'NONE';
-  margin_of_safety_pct: number;
-}`,
   },
 ];

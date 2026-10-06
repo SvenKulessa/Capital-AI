@@ -277,6 +277,7 @@ export function AppOverlays({
           setIsMonetizationOpen(false);
           navigateTo('/login');
         }}
+        onNavigate={navigateTo}
         onOpenWhaleRadar={() => {
           setIsMonetizationOpen(false);
           setIsWhaleRadarOpen(true);
