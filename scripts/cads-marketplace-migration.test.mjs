@@ -14,9 +14,13 @@ test('CADS Marketplace entitlement tables are service-role-only and RLS protecte
   assert.match(sql, /grant execute on function public\.capital_ai_apply_cads_marketplace_purchase[\s\S]*to service_role/i);
 });
 
-test('Marketplace purchase application is idempotent by delivery id', () => {
+test('Marketplace purchase application binds delivery id to the original payload hash', () => {
   assert.match(sql, /delivery_id text primary key/i);
   assert.match(sql, /on conflict \(delivery_id\) do nothing/i);
+  assert.match(sql, /select payload_sha256[\s\S]*where delivery_id = _delivery_id/i);
+  assert.match(sql, /v_existing_payload_sha256 is distinct from _payload_sha256/i);
+  assert.match(sql, /CADS_MARKETPLACE_DELIVERY_PAYLOAD_MISMATCH/i);
+  assert.match(sql, /'payloadHashVerified', true/i);
   assert.match(sql, /'duplicate', true/i);
 });
 
