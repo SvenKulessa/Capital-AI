@@ -1,0 +1,5 @@
+import assert from'node:assert/strict';import test from'node:test';import{ZERO_COST_API_THRESHOLDS,evaluateUsageThreshold}from'../zeroCostApiThresholds.ts';
+test('no automatic paid escalation',()=>{for(const p of Object.values(ZERO_COST_API_THRESHOLDS))assert.equal(p.automaticPaidEscalation,false);});
+test('billable known free tiers stop before allowance',()=>{for(const p of Object.values(ZERO_COST_API_THRESHOLDS))for(const t of Object.values(p.thresholds))if(t.billableBeyondAllowance&&t.providerFreeAllowance&&t.providerFreeAllowance>0)assert.ok(t.hardStop<t.providerFreeAllowance);});
+test('Web Risk and BigQuery hard stop',()=>{assert.equal(evaluateUsageThreshold('GOOGLE_WEB_RISK_URI_LOOKUP','uriLookupsPerMonth',90_000),'HARD_STOP');assert.equal(evaluateUsageThreshold('GOOGLE_BIGQUERY_ON_DEMAND','queryBytesPerMonth',900*(1024**3)),'HARD_STOP');});
+test('paid AI and cloud observability default disabled',()=>{assert.equal(ZERO_COST_API_THRESHOLDS.GEMINI_GENERATIVE.defaultEnabled,false);assert.equal(ZERO_COST_API_THRESHOLDS.GOOGLE_CLOUD_OBSERVABILITY.defaultEnabled,false);});

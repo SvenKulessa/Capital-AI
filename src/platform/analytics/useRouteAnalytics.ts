@@ -98,9 +98,9 @@ const STATIC_ROUTE_METADATA: Record<string, StaticRouteMetadata> = {
     canonicalPath: '/architecture',
   },
   '/tokenomics': {
-    title: 'Capital-AI | $CPT Tokenomics, Staking & Deflations-Konzept',
+    title: 'Capital-AI | Tokenomics, Privacy & Utility Research',
     description:
-      'Wirtschafts- und Token-Konzept von Capital-AI ($CPT): 100M Hard Cap, Staking-Tiers für Sub-45ms Latenz, 25% Revenue Buyback & Burn sowie dezentrale Kuration.',
+      'Research zu datenschutzorientierten Utility- und Entitlement-Modellen. Kein öffentlich freigegebener handelbarer Token, keine APY- oder Renditezusage.',
     canonicalPath: '/tokenomics',
   },
   '/studio': {

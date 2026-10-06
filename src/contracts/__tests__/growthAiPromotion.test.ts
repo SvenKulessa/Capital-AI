@@ -12,9 +12,9 @@ test('Gemini is the preferred admitted provider for owned marketing-content gene
   assert.equal(GROWTH_AI_CAPABILITY_POLICY.CONTENT_DRAFTING.provider, 'GEMINI');
   assert.equal(GROWTH_AI_CAPABILITY_POLICY.IMAGE_GENERATION.provider, 'GEMINI');
   assert.equal(GROWTH_AI_CAPABILITY_POLICY.TTS.provider, 'GEMINI');
-  assert.equal(GROWTH_AI_CAPABILITY_POLICY.CONTENT_DRAFTING.productionEligible, true);
-  assert.equal(GROWTH_AI_CAPABILITY_POLICY.IMAGE_GENERATION.productionEligible, true);
-  assert.equal(GROWTH_AI_CAPABILITY_POLICY.TTS.productionEligible, true);
+  assert.equal(GROWTH_AI_CAPABILITY_POLICY.CONTENT_DRAFTING.productionEligible, false);
+  assert.equal(GROWTH_AI_CAPABILITY_POLICY.IMAGE_GENERATION.productionEligible, false);
+  assert.equal(GROWTH_AI_CAPABILITY_POLICY.TTS.productionEligible, false);
 });
 
 test('Google Search Grounding is fail-closed for autonomous lead discovery', () => {

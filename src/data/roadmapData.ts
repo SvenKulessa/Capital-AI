@@ -8,6 +8,7 @@
 
 import { SOCIAL_CONTENT_WORK_PACKAGES } from './socialContentRoadmap';
 import { PRODUCTION_WEBSITE_WORK_PACKAGES } from './productionWebsiteWorkPackage';
+import { ARCHITECTURE_A_TRUST_WORK_PACKAGES } from './trustArchitectureAWorkPackages';
 
 export type ProjectOwner =
   | 'PRODUCT'
@@ -2149,5 +2150,6 @@ export const WORK_PACKAGES: WorkPackage[] = [
 },
 ...PRODUCTION_WEBSITE_WORK_PACKAGES,
 ...SOCIAL_CONTENT_WORK_PACKAGES,
+...ARCHITECTURE_A_TRUST_WORK_PACKAGES,
 ...BACKLOG_TARGETS,
 ];

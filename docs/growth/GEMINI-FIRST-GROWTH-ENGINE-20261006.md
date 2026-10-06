@@ -1,4 +1,4 @@
-# Gemini-first Growth-/SEO-Engine — Capability Contract
+# Architecture A Growth-/SEO-Engine — Standard-API/OSS first, Gemini generative
 
 Stand: 2026-10-06
 Primary Domain: CAPITAL-AI-GROWTH
@@ -7,7 +7,7 @@ Policy: `GROWTH_AI_PROMOTION_POLICY@1`
 
 ## Ziel
 
-CAPITAL-AI nutzt Google/Gemini bevorzugt für eigene Produktvermarktung, wenn die jeweilige Fähigkeit nach aktuellen Providerbedingungen technisch und kommerziell zulässig ist. Die strategischen Kontrollpunkte bleiben jedoch CAPITAL-AI-eigen: Discovery, Provenance, Compliance, Claim-Evidence, Approval, Publication Authority und Analytics-Attribution werden nicht an ein LLM delegiert.
+CAPITAL-AI nutzt kostenlose, kommerziell zulässige Standard-APIs und OSS bevorzugt. Gemini ist ein generativer Draft-/Research-Provider, wenn deterministische Standard-APIs die Aufgabe nicht sinnvoll lösen und Kosten-/Terms-Gates separat erfüllt sind. Die strategischen Kontrollpunkte bleiben jedoch CAPITAL-AI-eigen: Discovery, Provenance, Compliance, Claim-Evidence, Approval, Publication Authority und Analytics-Attribution werden nicht an ein LLM delegiert.
 
 ## Verifizierter Providerstand am 2026-10-06
 
@@ -112,3 +112,6 @@ Ein erfolgreicher Gemini-Aufruf ist dadurch niemals automatisch eine Veröffentl
 - ungeprüfte Finanz-/Performance-/Regulatory-Claims;
 - direkte Veröffentlichung von Gemini-Bild-, Audio- oder Videooutputs;
 - Veo-Production ohne separaten Kosten-/Terms-/Modelstatus-Nachweis.
+
+## Architecture A Zero-Cost Override
+Kanonisch ist `src/contracts/zeroCostApiThresholds.ts`; kein Free Tier darf still in bezahlte Nutzung überlaufen.
