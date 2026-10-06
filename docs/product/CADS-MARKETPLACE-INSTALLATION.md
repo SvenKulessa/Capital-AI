@@ -89,6 +89,8 @@ die Ziel-Supabase-Instanz zurückgelesen werden.
 
 ## 5. Kauf- und Entitlement-Lifecycle
 
+GitHub liefert Planänderungen über das Event `marketplace_purchase`.
+
 ### purchased
 
 1. HMAC-SHA256 des Marketplace-Webhooks prüfen.
