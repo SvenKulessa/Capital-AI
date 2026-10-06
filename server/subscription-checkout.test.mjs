@@ -99,3 +99,90 @@ test('subscription readiness is public but contains no secret values', async () 
   assert.equal(response.payload.enabled, true);
   assert.equal(JSON.stringify(response.payload).includes('sk_test_'), false);
 });
+
+
+test('checkout is ready with secret when optional kill-switch is omitted', async () => {
+  const handler = createSubscriptionCheckout({
+    env: {
+      STRIPE_SECRET_KEY: 'sk_test_example',
+      PUBLIC_BASE_URL: 'https://capital-ai.online',
+    },
+    auth,
+  });
+  const response = res();
+  const request = req();
+  request.method = 'GET';
+  await handler.handle(
+    request,
+    response,
+    new URL('https://capital-ai.online/api/billing/subscriptions/readiness'),
+    json,
+  );
+  assert.equal(response.status, 200);
+  assert.equal(response.payload.enabled, true);
+});
+
+test('explicit false remains an emergency checkout kill-switch', async () => {
+  const handler = createSubscriptionCheckout({
+    env: {
+      STRIPE_SECRET_KEY: 'sk_test_example',
+      STRIPE_SUBSCRIPTION_CHECKOUT_ENABLED: 'false',
+      PUBLIC_BASE_URL: 'https://capital-ai.online',
+    },
+    auth,
+  });
+  const response = res();
+  await handler.handle(
+    req({ tier: 'starter', cycle: 'monthly' }),
+    response,
+    new URL('https://capital-ai.online/api/billing/subscriptions/checkout'),
+    json,
+  );
+  assert.equal(response.status, 503);
+  assert.equal(response.payload.error, 'subscription_checkout_not_enabled');
+});
+
+test('three-tier test-mode matrix creates exactly one server-authorized checkout session per tier', async () => {
+  const seen = [];
+  const fetchImpl = async (_url, options) => {
+    assert.match(options.headers.Authorization, /^Bearer sk_test_/);
+    const form = new URLSearchParams(String(options.body));
+    seen.push({
+      priceId: form.get('line_items[0][price]'),
+      planId: form.get('metadata[plan_id]'),
+    });
+    return Response.json({ id: `cs_test_${seen.length}`, url: `https://checkout.stripe.com/c/pay/test-${seen.length}` });
+  };
+  const handler = createSubscriptionCheckout({ env, fetchImpl, auth });
+  for (const tier of ['starter', 'pro', 'enterprise']) {
+    const response = res();
+    await handler.handle(
+      req({ tier, cycle: 'monthly' }),
+      response,
+      new URL('https://capital-ai.online/api/billing/subscriptions/checkout'),
+      json,
+    );
+    assert.equal(response.status, 200);
+  }
+  assert.equal(seen.length, 3);
+  assert.deepEqual(seen.map(item => item.planId), ['STARTER', 'PRO', 'ENTERPRISE']);
+  assert.deepEqual(seen.map(item => item.priceId), [
+    'price_1UMA4qPKr4joNbEcvJXFWw45',
+    'price_1UMA4yPKr4joNbEckWSj3cJE',
+    'price_1UMA51PKr4joNbEcbtWNCcCc',
+  ]);
+});
+
+test('readiness publishes the three-purchase test contract without enabling live test purchases', async () => {
+  const handler = createSubscriptionCheckout({ env, auth });
+  const response = res();
+  const request = req();
+  request.method = 'GET';
+  await handler.handle(request, response, new URL('https://capital-ai.online/api/billing/subscriptions/readiness'), json);
+  assert.equal(response.status, 200);
+  assert.equal(response.payload.testPurchaseRequirement.count, 3);
+  assert.deepEqual(response.payload.testPurchaseRequirement.tiers, ['starter', 'pro', 'enterprise']);
+  assert.equal(response.payload.testPurchaseRequirement.stripeMode, 'test');
+  assert.equal(response.payload.testPurchaseRequirement.livePriceIdsAllowed, false);
+  assert.equal(response.payload.catalogVersion, '2026-10-04-vocabulary');
+});
