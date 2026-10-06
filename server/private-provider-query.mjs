@@ -45,6 +45,28 @@ function normalizeParams(raw, allowed) {
   return out;
 }
 
+function validateParamPolicy(params, policy) {
+  for (const required of Array.isArray(policy.requiredParams) ? policy.requiredParams : []) {
+    if (!Object.hasOwn(params, required)) throw new Error('REQUIRED_PARAM_MISSING');
+  }
+  for (const [key, rule] of Object.entries(policy.paramRules || {})) {
+    if (!Object.hasOwn(params, key)) continue;
+    const value = params[key];
+    if (Array.isArray(rule.enum) && !rule.enum.includes(value)) throw new Error('INVALID_PARAM_VALUE');
+    if (typeof value === 'number') {
+      if (Number.isFinite(rule.min) && value < rule.min) throw new Error('INVALID_PARAM_VALUE');
+      if (Number.isFinite(rule.max) && value > rule.max) throw new Error('INVALID_PARAM_VALUE');
+    }
+  }
+  if (Number.isSafeInteger(policy.maxWindowMs) &&
+      Number.isSafeInteger(params.startTime) && Number.isSafeInteger(params.endTime)) {
+    if (params.endTime < params.startTime || params.endTime - params.startTime > policy.maxWindowMs) {
+      throw new Error('QUERY_WINDOW_TOO_LARGE');
+    }
+  }
+  return params;
+}
+
 export function validateProviderQueryRequest(raw) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('INVALID_REQUEST');
   const provider = String(raw.provider || '').trim().toLowerCase();
@@ -52,11 +74,8 @@ export function validateProviderQueryRequest(raw) {
   const operationPolicy = CONTRACT.providers?.[provider]?.operations?.[operation];
   if (!operationPolicy) throw new Error('OPERATION_NOT_ADMITTED');
   const allowedParams = new Set(Array.isArray(operationPolicy.params) ? operationPolicy.params : []);
-  return {
-    provider,
-    operation,
-    params: normalizeParams(raw.params, allowedParams),
-  };
+  const params = validateParamPolicy(normalizeParams(raw.params, allowedParams), operationPolicy);
+  return { provider, operation, params };
 }
 
 function proofMaterial(envelope) {
@@ -158,6 +177,7 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault } = 
   let bridge = null;
   let opening = null;
   const highCostWindows = new Map();
+  const requestWindows = new Map();
 
   function enabled() {
     return env.PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true';
@@ -166,6 +186,25 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault } = 
   async function respond(message, payload) {
     if (!message.reply || !executorNc || executorNc.isClosed()) return;
     await executorNc.publish(message.reply, Buffer.from(JSON.stringify(payload), 'utf8'));
+  }
+
+  function enforceRequestRate(userRef) {
+    const configured = Number(env.PRIVATE_PROVIDER_QUERY_RATE_LIMIT_PER_MINUTE || 30);
+    const limit = Number.isSafeInteger(configured) && configured >= 1 && configured <= 120 ? configured : 30;
+    const now = Date.now();
+    const current = requestWindows.get(userRef);
+    if (!current || now - current.startedAt >= 60_000) {
+      requestWindows.set(userRef, { startedAt: now, count: 1 });
+      return { limit, remaining: limit - 1 };
+    }
+    if (current.count >= limit) {
+      const error = new Error('PRIVATE_PROVIDER_RATE_LIMITED');
+      error.code = 'PRIVATE_PROVIDER_RATE_LIMITED';
+      error.retryAfterSeconds = Math.max(1, Math.ceil((60_000 - (now - current.startedAt)) / 1000));
+      throw error;
+    }
+    current.count += 1;
+    return { limit, remaining: limit - current.count };
   }
 
   function enforceCostGate(userRef, input) {
@@ -284,6 +323,7 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault } = 
 
   async function handle(req, res, url, json, requestId) {
     if (url.pathname !== '/api/profile/provider-query') return false;
+    res.setHeader('Cache-Control', 'no-store');
     if (req.method !== 'POST') {
       res.setHeader('Allow', 'POST');
       json(res, 405, { error: 'method_not_allowed' });
@@ -305,6 +345,13 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault } = 
 
     let input;
     try {
+      try {
+        enforceRequestRate(user.userId);
+      } catch (error) {
+        res.setHeader('Retry-After', String(error.retryAfterSeconds || 60));
+        json(res, 429, { error: 'private_provider_rate_limited' });
+        return true;
+      }
       input = validateProviderQueryRequest(await readJson(req));
       let costGate;
       try {
