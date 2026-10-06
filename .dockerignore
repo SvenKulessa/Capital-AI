@@ -34,6 +34,9 @@
 !server/subscription-entitlements.mjs
 !server/subscription-entitlements.test.mjs
 !server/user-provider-vault.mjs
+!server/user-provider-vault.test.mjs
+!server/uniswap-trading.mjs
+!server/uniswap-trading.test.mjs
 !server/telegram.mjs
 !server/privacy.mjs
 !server/http-security.mjs
@@ -75,6 +78,7 @@
 !scripts/license-evidence.mjs
 !scripts/license-evidence.test.mjs
 !scripts/billing-catalog.test.mjs
+!scripts/stripe-catalog-readback.test.mjs
 !scripts/blueprint-evidence-contract.test.mjs
 !scripts/documentation-drift.mjs
 !scripts/documentation-drift.test.mjs
@@ -115,6 +119,7 @@
 !docs/security/
 !docs/security/evidence/
 !docs/security/evidence/license-rights-review.json
+!docs/security/evidence/stripe-catalog-readback-20261006.json
 !docs/security/BYOK-USER-PRIVATE-DATA.md
 !docs/market-data/
 !docs/market-data/PRODUCTION-WEB-01-MARKET-20261005.yaml
@@ -132,6 +137,8 @@
 !public/branding/asset-pack/**
 !public/branding/badges/
 !public/branding/badges/**
+!public/branding/social/
+!public/branding/social/**
 !CAPITAL-AI-PRODUCT/
 !CAPITAL-AI-PRODUCT/badge.svg
 !CAPITAL-AI-TRUST/

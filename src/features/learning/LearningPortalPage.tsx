@@ -5,7 +5,8 @@
  * Beinhaltet:
  * 1. Vollständiges Market Vocabulary & Glossar (Filterbar nach Kategorien & Skill-Levels)
  * 2. Öffentliche Analyse-Module & Methodik (Werkzeuge, Datenpfade, Modulaufbau)
- * 3. Quant- & Trader Skill-Check (Interaktives Quiz)
+ * 3. Architektur-Video-Vorschau (Renderer-Evidence bleibt fail-closed)
+ * 4. Quant- & Trader Skill-Check (Interaktives Quiz)
  */
 
 import React, { useEffect, useState, useMemo } from 'react';
@@ -30,6 +31,8 @@ import {
   ChevronDown,
   ExternalLink,
   Code2,
+  PlayCircle,
+  Video,
 } from 'lucide-react';
 import {
   VOCABULARY_CATEGORIES,
@@ -43,8 +46,8 @@ import { useHubTab } from '../../hooks/useHubTab';
 import { updatePageSEO } from '../../utils/analytics';
 import { VOCABULARY_GRANT_KEY, formatVocabularyPrice } from '../../data/vocabularyOffer';
 
-export type LearningPortalTab = 'glossar' | 'guides' | 'quiz';
-const LEARNING_TABS: readonly LearningPortalTab[] = ['glossar', 'guides', 'quiz'];
+export type LearningPortalTab = 'glossar' | 'guides' | 'videos' | 'quiz';
+const LEARNING_TABS: readonly LearningPortalTab[] = ['glossar', 'guides', 'videos', 'quiz'];
 
 interface LearningPortalPageProps {
   onBackToHome?: () => void;
@@ -78,6 +81,13 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       icon: <Layers className="w-4 h-4 text-cyan-400" />,
       badge: '4 Module',
       desc: 'Werkzeuge, Datenpfade & Modulaufbau',
+    },
+    {
+      id: 'videos',
+      label: 'Architektur Videos',
+      icon: <Video className="w-4 h-4 text-emerald-400" />,
+      badge: 'Vorschau',
+      desc: 'Pipeline, BYOK & Evidence',
     },
     {
       id: 'quiz',
@@ -350,6 +360,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
             <span className="text-cyan-300 font-medium">
               {activeTab === 'glossar' && 'Finanz-Vocabulary & Glossar'}
               {activeTab === 'guides' && 'Analyse-Module & Methodik'}
+              {activeTab === 'videos' && 'Architektur Videos'}
               {activeTab === 'quiz' && 'Quant & Trader Skill-Check'}
             </span>
           </div>
@@ -436,7 +447,22 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
           <span>Analyse-Module &amp; Methodik</span>
         </button>
 
-        {/* TAB 3: QUIZ & SKILL-CHECK */}
+        {/* TAB 3: ARCHITEKTUR VIDEOS */}
+        <button
+          type="button"
+          onClick={() => setActiveTab('videos')}
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
+            activeTab === 'videos'
+              ? 'bg-emerald-500 text-black font-bold shadow-sm'
+              : 'text-slate-300 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <PlayCircle className="w-3.5 h-3.5" />
+          <span>Architektur Videos</span>
+          <span className="text-[10px] px-1.5 py-0.2 rounded bg-black/20 font-mono">Vorschau</span>
+        </button>
+
+        {/* TAB 4: QUIZ & SKILL-CHECK */}
         <button
           type="button"
           onClick={() => setActiveTab('quiz')}
@@ -804,7 +830,78 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* TAB CONTENT 3: INTERACTIVE QUIZ & SKILL-CHECK                             */}
+      {/* TAB CONTENT 3: ARCHITEKTUR-VIDEO-VORSCHAU                                */}
+      {/* ========================================================================= */}
+      {activeTab === 'videos' && (
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 via-[#0d1530] to-cyan-500/10 p-6">
+            <div className="flex items-center gap-2 text-xs font-mono text-emerald-300">
+              <Video className="h-4 w-4" />
+              ARCHITEKTUR VIDEO LIBRARY · PREVIEW
+            </div>
+            <h2 className="mt-2 text-xl font-bold text-white sm:text-2xl">Architektur verständlich in Sequenzen</h2>
+            <p className="mt-2 max-w-3xl text-xs leading-relaxed text-slate-300 sm:text-sm">
+              Die Vorschau strukturiert die vorhandene CAPITAL-AI Architektur in kurze Lernsequenzen.
+              Video-Renderings werden erst nach erfolgreichem Social-Media-Engine-Completion-Gate als erzeugte Medien veröffentlicht.
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            {[
+              {
+                title: 'BYOK · Key → Vault → Provider',
+                note: 'Private Credentials, same-origin BFF, Vault-Grenze und read-only Provider-Kontext.',
+                href: '/dokumentation',
+                tag: 'SECURITY ARCHITECTURE',
+              },
+              {
+                title: 'MARKET · Provider → CAPITAL_FACTS → Replay',
+                note: 'Von Provider-Observation über immutable Evidence und PubAck bis zum deterministischen Replay.',
+                href: '/marketscreener/dokumentation',
+                tag: 'MARKET DATA',
+              },
+              {
+                title: 'Scoring · Features → Snapshot → Shadow',
+                note: 'Feature-Berechnung, PipelineSnapshot, Score-Eligibility und die Trennung von Shadow und Production.',
+                href: '/architecture',
+                tag: 'SCORING CONTRACT',
+              },
+            ].map((video) => (
+              <article key={video.title} className="overflow-hidden rounded-2xl border border-slate-800 bg-[#071022]">
+                <div className="relative flex aspect-video items-center justify-center bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.18),transparent_55%),#030712]">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full border border-emerald-400/40 bg-emerald-400/10 text-emerald-300">
+                    <PlayCircle className="h-7 w-7" />
+                  </div>
+                  <span className="absolute left-3 top-3 rounded-full border border-white/10 bg-black/50 px-2 py-1 font-mono text-[9px] text-slate-300">
+                    {video.tag}
+                  </span>
+                  <span className="absolute bottom-3 right-3 rounded bg-black/60 px-2 py-1 font-mono text-[9px] text-amber-300">
+                    PREVIEW · VIDEO NOCH NICHT GERENDERT
+                  </span>
+                </div>
+                <div className="p-4">
+                  <h3 className="text-sm font-black text-white">{video.title}</h3>
+                  <p className="mt-2 text-xs leading-relaxed text-slate-400">{video.note}</p>
+                  <button
+                    type="button"
+                    onClick={() => onNavigateTab?.(video.href)}
+                    className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-xl border border-cyan-400/25 bg-cyan-400/10 px-3 text-xs font-bold text-cyan-200"
+                  >
+                    Architektur-Dokumentation öffnen <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <p className="rounded-xl border border-amber-400/20 bg-amber-400/5 p-3 text-[11px] leading-relaxed text-amber-100">
+            Social-Media-Engine Status: BLOCKED_RUNTIME_NOT_MIGRATED. Diese Karten sind deshalb eine UI-Vorschau und keine behauptete Video-/Renderer-Evidence.
+          </p>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB CONTENT 4: INTERACTIVE QUIZ & SKILL-CHECK                             */}
       {/* ========================================================================= */}
       {activeTab === 'quiz' && (
         <div className="space-y-6">

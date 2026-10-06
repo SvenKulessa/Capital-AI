@@ -27,15 +27,17 @@ function json(res, status, payload) {
   res.ended = true;
 }
 
-function securityHarness({ factor = true, factorStatus = 'verified' } = {}) {
+function securityHarness({ factor = true, factorStatus = 'verified', factors, passkeyCount = 0 } = {}) {
   const writes = [];
   const calls = [];
   const user = {
     id: 'user-1',
     email: 'user@example.test',
-    factors: factor
-      ? [{ id: factorId, factor_type: 'totp', status: factorStatus, friendly_name: factorStatus === 'verified' ? 'Authenticator' : 'CAPITAL-AI Authenticator' }]
-      : [],
+    factors: Array.isArray(factors)
+      ? factors
+      : factor
+        ? [{ id: factorId, factor_type: 'totp', status: factorStatus, friendly_name: factorStatus === 'verified' ? 'Authenticator' : 'CAPITAL-AI Authenticator' }]
+        : [],
   };
   const token = {
     access_token: 'access-token',
@@ -57,7 +59,15 @@ function securityHarness({ factor = true, factorStatus = 'verified' } = {}) {
       return { response: new Response('{}', { status: 200 }), data: structuredClone(token) };
     }
     if (path === '/passkeys') {
-      return { response: new Response('{}', { status: 200 }), data: [] };
+      return {
+        response: new Response('{}', { status: 200 }),
+        data: Array.from({ length: passkeyCount }, (_, index) => ({
+          id: index === 0 ? '33333333-3333-4333-8333-333333333333' : '44444444-4444-4444-8444-444444444444',
+          friendly_name: 'Passkey ' + (index + 1),
+          created_at: null,
+          last_used_at: null,
+        })),
+      };
     }
     if (path === `/factors/${factorId}` && options.method === 'DELETE') {
       return { response: new Response(null, { status: 204 }), data: null };
@@ -202,7 +212,7 @@ test('TOTP factor projection exposes pending state so incomplete enrollment can 
   assert.equal(res.payload.factors[0].status, 'unverified');
 });
 
-test('TOTP reenrollment removes only same-name pending factor before creating replacement', async () => {
+test('TOTP reenrollment removes a stale pending factor before creating replacement', async () => {
   const h = securityHarness({ factor: true, factorStatus: 'unverified' });
   const res = responseHarness();
   await h.security.handle(
@@ -228,6 +238,76 @@ test('TOTP reenrollment removes only same-name pending factor before creating re
   const enrollCall = h.calls.find(call => call.path === '/factors' && call.options.method === 'POST');
   assert.equal(enrollCall.options.maxResponseBytes, 262_144);
   assert.equal(enrollCall.options.body.issuer, 'CAPITAL-AI');
+});
+
+
+test('passkey registration refuses a third credential before issuing a challenge', async () => {
+  const h = securityHarness({ factor: false, passkeyCount: 2 });
+  const res = responseHarness();
+  await h.security.handle(
+    { method: 'POST', headers: { origin: 'https://capital-ai.online' }, body: {} },
+    res,
+    new URL('https://capital-ai.online/api/auth/passkeys/register/options'),
+    json,
+  );
+  assert.equal(res.status, 409);
+  assert.equal(res.payload.error, 'passkey_limit_reached');
+  assert.equal(res.payload.limit, 2);
+  assert.deepEqual(h.calls.map(call => call.path), ['/passkeys']);
+});
+
+test('TOTP enrollment refuses a third verified factor', async () => {
+  const h = securityHarness({
+    factor: false,
+    factors: [
+      { id: '11111111-1111-4111-8111-111111111111', factor_type: 'totp', status: 'verified', friendly_name: 'Authenticator 1' },
+      { id: '55555555-5555-4555-8555-555555555555', factor_type: 'totp', status: 'verified', friendly_name: 'Authenticator 2' },
+    ],
+  });
+  const res = responseHarness();
+  await h.security.handle(
+    {
+      method: 'POST',
+      headers: { origin: 'https://capital-ai.online' },
+      body: { friendlyName: 'Authenticator 3' },
+    },
+    res,
+    new URL('https://capital-ai.online/api/auth/mfa/totp/enroll'),
+    json,
+  );
+  assert.equal(res.status, 409);
+  assert.equal(res.payload.error, 'totp_limit_reached');
+  assert.equal(res.payload.limit, 2);
+  assert.deepEqual(h.calls.map(call => call.path), ['/user']);
+});
+
+test('TOTP enrollment cleans stale pending factors regardless of their old display name', async () => {
+  const canonical = securityHarness({
+    factor: false,
+    factors: [
+      { id: factorId, factor_type: 'totp', status: 'unverified', friendly_name: 'Abgebrochene Einrichtung' },
+    ],
+  });
+  const res = responseHarness();
+  await canonical.security.handle(
+    {
+      method: 'POST',
+      headers: { origin: 'https://capital-ai.online' },
+      body: { friendlyName: 'Neuer Authenticator' },
+    },
+    res,
+    new URL('https://capital-ai.online/api/auth/mfa/totp/enroll'),
+    json,
+  );
+  assert.equal(res.status, 200);
+  assert.deepEqual(
+    canonical.calls.map(call => [call.path, call.options.method || 'GET']),
+    [
+      ['/user', 'GET'],
+      ['/factors/' + factorId, 'DELETE'],
+      ['/factors', 'POST'],
+    ],
+  );
 });
 
 test('recovery accepts a bounded 16-character token hash and redirects invalid recovery links to a safe UI', async () => {

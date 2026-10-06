@@ -11,11 +11,12 @@ test('all 16 sideboard tab links retain their hub and tab', () => {
   for (const link of links) assert.equal(resolveNavigationTarget(link), link);
 });
 
-test('footer keeps license navigation on the public canonical license route', () => {
+test('footer consolidates public license navigation into documentation', () => {
   const footer = readFileSync(new URL('../src/components/Footer.tsx', import.meta.url), 'utf8');
-  assert.match(footer, /href="\/lizenz"/);
+  assert.match(footer, /href="\/dokumentation"/);
+  assert.match(footer, /Dokumentation &amp; Lizenzen/);
   assert.doesNotMatch(footer, /href="\/control-center\?tab=licenses"/);
-  assert.match(footer, /Lizenzen &amp; Nachweise/);
+  assert.doesNotMatch(footer, /id="footer-nav-lizenz"/);
 });
 
 test('aliases and trailing slash normalize without losing query or hash', () => {

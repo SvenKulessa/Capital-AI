@@ -1,16 +1,10 @@
 import React from 'react';
 import { BrandLogo } from './BrandLogo';
-import { AtSign, Music2, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { socialLinks } from '../data/socialLinks';
 import { trackEvent } from '../utils/analytics';
 
-const socialIcons = {
-  github: <span className="font-mono text-[10px] font-bold" aria-hidden="true">GH</span>,
-  tiktok: <Music2 size={16} aria-hidden="true" />,
-  threads: <AtSign size={16} aria-hidden="true" />,
-  youtube: <span className="text-sm leading-none" aria-hidden="true">▶</span>,
-  x: <span className="text-base leading-none" aria-hidden="true">𝕏</span>,
-} satisfies Record<(typeof socialLinks)[number]['id'], React.ReactNode>;
+const socialIconPath = (id: (typeof socialLinks)[number]['id']) => `/branding/social/${id}.svg`;
 
 interface FooterProps {
   onNavigate?: (path: string) => void;
@@ -49,21 +43,15 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           <a key={link.id} href={link.href} target="_blank" rel="noopener noreferrer"
             className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-amber-500/20 bg-slate-950/60 px-4 py-2 text-xs font-medium text-slate-300 transition-colors hover:border-amber-400/60 hover:text-amber-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400"
             aria-label={`${link.label} – öffnet in einem neuen Tab`}>
-            {socialIcons[link.id]}
+            <span className="flex h-5 w-5 items-center justify-center rounded bg-white p-0.5" aria-hidden="true">
+              <img src={socialIconPath(link.id)} alt="" className="h-4 w-4 object-contain" />
+            </span>
             <span>{link.label}</span>
             <ExternalLink size={12} className="text-amber-400/70" aria-hidden="true" />
           </a>
         ))}
       </nav>
-
-      {/* Small copyright & legal navigation with dedicated routing paths */}
-      <nav aria-label="Forschung und Lizenzen" className="my-4 flex flex-wrap justify-center gap-4 text-xs">
-        <a id="footer-nav-lizenz" href="/lizenz" onClick={e => handleNavClick(e, '/lizenz', 'lizenz')} className="text-amber-300 hover:underline">Design & Bildherkunft</a>
-        <a id="footer-nav-datenprovider-lizenzen" href="/datenprovider-lizenzen" onClick={e => handleNavClick(e, '/datenprovider-lizenzen', 'datenprovider-lizenzen')} className="text-cyan-300 hover:underline">Datenprovider-Lizenzen</a>
-        <a id="footer-nav-opensource-lizenzen" href="/opensource-lizenzen" onClick={e => handleNavClick(e, '/opensource-lizenzen', 'opensource-lizenzen')} className="text-blue-300 hover:underline">Open-Source (OSS)</a>
-        <a id="footer-nav-oss-market-architecture" href="/downloads/market-screener-hub-open-source.html" className="text-emerald-300 hover:underline">OSS Market Architektur</a>
-        <a id="footer-nav-forschung" href="/forschung" onClick={e => handleNavClick(e, '/forschung', 'forschung')} className="text-cyan-300 hover:underline">Forschungsprojekt</a>
-      </nav>
+      {/* Consolidated legal and documentation navigation */}
       <div className="mt-3 text-[11px] text-slate-400 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
         <span>© {new Date().getFullYear()} Capital-AI</span>
         <span className="text-slate-600">•</span>
@@ -118,17 +106,13 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         </a>
         <span className="text-slate-600">•</span>
         <a
-          id="footer-nav-lizenzen"
-          href="/lizenz"
-          onClick={(e) => handleNavClick(e, '/lizenz', 'licenses')}
-          className="hover:text-amber-400 transition-colors cursor-pointer text-amber-300 font-semibold hover:underline underline-offset-4"
-          data-analytics="footer-lizenzen"
+          id="footer-nav-documentation"
+          href="/dokumentation"
+          onClick={(e) => handleNavClick(e, '/dokumentation', 'documentation')}
+          className="hover:text-cyan-300 transition-colors cursor-pointer text-cyan-300 font-semibold hover:underline underline-offset-4"
+          data-analytics="footer-documentation"
         >
-          Lizenzen &amp; Nachweise
-        </a>
-        <span className="text-slate-600">•</span>
-        <a href="/fonts/OFL.txt" className="hover:text-amber-400 transition-colors hover:underline underline-offset-4">
-          Schriftlizenz
+          Dokumentation &amp; Lizenzen
         </a>
       </div>
 

@@ -18,7 +18,7 @@
  * ============================================================================
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useState } from 'react';
 import {
   Menu,
   X,
@@ -47,7 +47,13 @@ import { ASSET_CLASSES } from '../data/mockData';
 import { MainCategory, AssetSubclass } from '../types';
 import { trackLoginClick } from '../utils/analytics';
 import { usePriceAlerts } from '../context/PriceAlertsContext';
-import { HubSidebarDrawer, MainHubId } from './HubSidebarDrawer';
+import type { MainHubId } from './HubSidebarDrawer';
+
+const HubSidebarDrawer = lazy(() =>
+  import('./HubSidebarDrawer').then((module) => ({
+    default: module.HubSidebarDrawer,
+  })),
+);
 
 interface HeaderSession {
   authenticated: boolean;
@@ -793,17 +799,6 @@ export const Header: React.FC<HeaderProps> = ({
                     type="button"
                     onClick={() => {
                       setIsMenuOpen(false);
-                      onNavigate?.('/architecture');
-                    }}
-                    className="hover:text-amber-300 transition-colors font-bold text-amber-400 cursor-pointer"
-                  >
-                    FinTech Architektur
-                  </button>
-                  <span>•</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsMenuOpen(false);
                       onNavigate?.('/faq');
                     }}
                     className="hover:text-amber-300 transition-colors cursor-pointer"
@@ -854,18 +849,22 @@ export const Header: React.FC<HeaderProps> = ({
         )}
       </AnimatePresence>
 
-      <HubSidebarDrawer
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-        activeHubId={activeSidebarHub}
-        onSelectHub={(hub) => setActiveSidebarHub(hub)}
-        onNavigate={onNavigate}
-        currentPath={currentRoute}
-        onOpenSectorAnalysis={onOpenSectorAnalysis}
-        onOpenModule={onOpenModule}
-        onOpenPriceAlerts={onOpenPriceAlerts}
-        allowControlCenter={isOwner}
-      />
+      {isSidebarOpen && (
+        <Suspense fallback={null}>
+          <HubSidebarDrawer
+            isOpen
+            onClose={() => setIsSidebarOpen(false)}
+            activeHubId={activeSidebarHub}
+            onSelectHub={(hub) => setActiveSidebarHub(hub)}
+            onNavigate={onNavigate}
+            currentPath={currentRoute}
+            onOpenSectorAnalysis={onOpenSectorAnalysis}
+            onOpenModule={onOpenModule}
+            onOpenPriceAlerts={onOpenPriceAlerts}
+            allowControlCenter={isOwner}
+          />
+        </Suspense>
+      )}
     </header>
   );
 };
