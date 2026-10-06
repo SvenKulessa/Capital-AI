@@ -4,6 +4,7 @@ const MAX_BODY_BYTES = 8 * 1024;
 const RUN_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const REPOSITORY = /^[A-Za-z0-9_.-]{1,100}\/[A-Za-z0-9_.-]{1,100}$/;
 const COMMIT_SHA = /^[0-9a-f]{40}$/i;
+const EVIDENCE_ID = /^[A-Za-z0-9._:/-]{1,256}$/;
 const STANDARD_PROFILE = 'CAPITAL_AI_EVENT_BACKBONE@1';
 
 async function readJson(req) {
@@ -156,6 +157,50 @@ export function createBenchmarkRuns({ env = process.env, auth, store } = {}) {
       try {
         const rows = await store.list(context.user.userId, limit);
         json(res, 200, { runs: Array.isArray(rows) ? rows.map(publicRun).filter(Boolean) : [] });
+      } catch {
+        json(res, 503, { error: 'benchmark_store_unavailable' });
+      }
+      return true;
+    }
+
+    const evidenceMatch = url.pathname.match(/^\/api\/benchmark\/runs\/([^/]+)\/evidence$/);
+    if (evidenceMatch) {
+      if (req.method !== 'GET') {
+        res.setHeader('Allow', 'GET');
+        json(res, 405, { error: 'method_not_allowed' });
+        return true;
+      }
+      if (!context.entitlement.capabilities.evidenceExport) {
+        json(res, 403, { error: 'benchmark_evidence_export_not_entitled' });
+        return true;
+      }
+      const id = String(evidenceMatch[1] || '');
+      if (!RUN_ID.test(id)) {
+        json(res, 400, { error: 'invalid_benchmark_run_id' });
+        return true;
+      }
+      try {
+        const run = await store.getById(context.user.userId, id);
+        if (!run) {
+          json(res, 404, { error: 'benchmark_run_not_found' });
+          return true;
+        }
+        const evidenceId = typeof run.evidenceId === 'string' ? run.evidenceId.trim() : '';
+        if (!EVIDENCE_ID.test(evidenceId)) {
+          json(res, 409, { error: 'benchmark_evidence_not_ready' });
+          return true;
+        }
+        json(res, 200, {
+          schemaVersion: 'CAPITAL_AI_BENCHMARK_EVIDENCE_EXPORT@1',
+          benchmarkEvidenceSchema: 'CAPITAL_AI_BENCHMARK_EVIDENCE@1',
+          evidenceId,
+          run: publicRun(run),
+          evidencePayloadIncluded: false,
+          benchmarkEvidenceOnly: true,
+          productionEligible: false,
+          decisionEligible: false,
+          reason: 'BENCHMARK_EVIDENCE_ONLY',
+        });
       } catch {
         json(res, 503, { error: 'benchmark_store_unavailable' });
       }

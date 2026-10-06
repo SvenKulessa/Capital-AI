@@ -21,6 +21,7 @@ import {
   displayPriceEur,
 } from '../../data/pricingCatalog';
 import { ADDITIONAL_PRODUCTS_CATALOG } from '../../data/additionalProductsCatalog';
+import { BENCHMARK_TIERS } from '../../../packages/benchmark-core/index.mjs';
 
 interface MonetizationModalProps {
   isOpen: boolean;
@@ -32,6 +33,30 @@ interface MonetizationModalProps {
 
 type BillingCycle = 'monthly' | 'annual';
 type PricingTab = 'plans' | 'products';
+
+const CADS_CAPABILITY_LABELS: Record<string, string> = {
+  standardProfiles: 'CADS Standardprofile',
+  history: 'Historische Vergleiche',
+  regressionDetection: 'Regression Detection',
+  evidenceExport: 'Evidence Export',
+  customProfiles: 'Custom Profiles',
+  customThresholds: 'Custom Thresholds',
+  enforcedPrGate: 'Enforced PR Gate',
+  api: 'CADS API',
+  selfHostedRunner: 'Self-hosted Runner',
+};
+
+function cadsFeaturesForTier(tier: 'starter' | 'pro' | 'enterprise') {
+  const capabilities = BENCHMARK_TIERS[tier].capabilities as Record<string, boolean | string>;
+  const features = Object.entries(capabilities)
+    .filter(([key, value]) => key !== 'githubCheck' && value === true)
+    .map(([key]) => CADS_CAPABILITY_LABELS[key])
+    .filter(Boolean);
+  features.unshift(capabilities.githubCheck === 'enforced'
+    ? 'GitHub Check · enforced'
+    : 'GitHub Check · neutral');
+  return features;
+}
 
 export const MonetizationModal: React.FC<MonetizationModalProps> = ({
   isOpen,
@@ -282,6 +307,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                   monthlyPrice: starterPrice,
                   annualCents: PRICING_CATALOG.starter.annual.amountCents,
                   description: 'Einstiegstarif aus dem aktuellen Billing-Katalog.',
+                  cadsFeatures: cadsFeaturesForTier('starter'),
                 },
                 {
                   id: 'pro',
@@ -290,6 +316,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                   monthlyPrice: proPrice,
                   annualCents: PRICING_CATALOG.pro.annual.amountCents,
                   description: 'Pro-Tarif aus dem aktuellen Billing-Katalog.',
+                  cadsFeatures: cadsFeaturesForTier('pro'),
                 },
                 {
                   id: 'enterprise',
@@ -298,6 +325,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                   monthlyPrice: enterprisePrice,
                   annualCents: PRICING_CATALOG.enterprise.annual.amountCents,
                   description: 'Enterprise-Tarif aus dem aktuellen Billing-Katalog.',
+                  cadsFeatures: cadsFeaturesForTier('enterprise'),
                 },
               ] as const).map((tier) => (
                 <section
@@ -327,6 +355,19 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                     <p className="mt-2 border-t border-slate-800 pt-3 text-xs leading-relaxed text-slate-400">
                       {tier.description}
                     </p>
+                    <div className="mt-3 rounded-xl border border-cyan-400/20 bg-cyan-500/5 p-3">
+                      <div className="text-[10px] font-mono font-bold uppercase tracking-wide text-cyan-300">
+                        CADS Benchmark Engine enthalten
+                      </div>
+                      <ul className="mt-2 space-y-1 text-[11px] text-slate-300">
+                        {tier.cadsFeatures.map((feature) => (
+                          <li key={feature}>• {feature}</li>
+                        ))}
+                      </ul>
+                      <p className="mt-2 text-[10px] leading-relaxed text-slate-500">
+                        Benchmark-Evidence unterstützt Entscheidungen, erteilt aber keine Production-Freigabe.
+                      </p>
+                    </div>
                   </div>
                   <button
                     type="button"

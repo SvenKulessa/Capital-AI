@@ -23,10 +23,10 @@
 !server/prompt-injection-guard.mjs
 !server/prompt-injection-guard.test.mjs
 !server/advisor-security.test.mjs
-!server/agent-shadow-runtime.mjs
-!server/agent-shadow-runtime.test.mjs
-!server/agent-trajectory-observability.mjs
 !server/agent-trajectory-observability.test.mjs
+!server/agent-trajectory-observability.mjs
+!server/agent-shadow-runtime.test.mjs
+!server/agent-shadow-runtime.mjs
 !server/billing-catalog.mjs
 !server/vocabulary-checkout.mjs
 !server/vocabulary-checkout.test.mjs
@@ -35,6 +35,8 @@
 !server/public-artifact-policy.mjs
 !server/subscription-checkout.test.mjs
 !server/subscription-checkout.mjs
+!server/cads-commerce.mjs
+!server/cads-commerce.test.mjs
 !server/benchmark-runs.mjs
 !server/benchmark-runs.test.mjs
 !server/benchmark-store.mjs
@@ -92,8 +94,8 @@
 !scripts/
 !scripts/harden-npm-toolchain.mjs
 !scripts/benchmark-scoring-capacity.mjs
-!scripts/benchmark-agent-orchestration.mjs
 !scripts/agent-orchestration-benchmark-contract.test.mjs
+!scripts/benchmark-agent-orchestration.mjs
 !scripts/verify-private-brokers.mjs
 !scripts/branding-assets.test.mjs
 !scripts/license-evidence.mjs
