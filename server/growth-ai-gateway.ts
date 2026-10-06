@@ -8,6 +8,7 @@ import {
   type GrowthMarketingDraft,
 } from '../src/contracts/growthAiPromotion.ts';
 import { assertPromptSafe } from './prompt-injection-guard.mjs';
+import { ZERO_COST_API_THRESHOLDS } from '../src/contracts/zeroCostApiThresholds.ts';
 
 const DEFAULT_MODEL = 'gemini-3.8-flash';
 const ALLOWED_MODELS = new Set([DEFAULT_MODEL]);
@@ -84,7 +85,16 @@ export async function createGeminiMarketingDraft(
   rawInput: GrowthAiDraftRequest,
 ): Promise<GrowthMarketingDraft> {
   assertGatewayEnabled();
-  assertGrowthCapabilityAllowed('CONTENT_DRAFTING', 'DRAFT');
+  const contentPolicy = assertGrowthCapabilityAllowed('CONTENT_DRAFTING', 'DRAFT');
+  if (process.env.NODE_ENV === 'production') {
+    const zeroCostPolicy = ZERO_COST_API_THRESHOLDS.GEMINI_GENERATIVE;
+    const paidBudget = zeroCostPolicy.thresholds.paidBudgetEurPerMonth;
+    if (!contentPolicy.productionEligible ||
+        !zeroCostPolicy.defaultEnabled ||
+        paidBudget.hardStop <= 0) {
+      throw new Error('GROWTH_AI_PRODUCTION_NOT_ADMITTED');
+    }
+  }
 
   const input = GrowthAiDraftRequestSchema.parse(rawInput);
   const model = resolveModel();
