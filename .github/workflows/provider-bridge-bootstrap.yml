@@ -1,8 +1,13 @@
-name: PLATFORM Provider Bridge Bootstrap
+name: TRUST Provider Bridge Bootstrap
 on:
   push:
     branches:
       - capital-ai-platform/render-provider-bridge-20261006
+    paths:
+      - services/provider-bridge-rs/Cargo.toml
+      - services/provider-bridge-rs/deny.toml
+      - services/provider-bridge-rs/src/main.rs
+      - .github/workflows/provider-bridge-bootstrap.yml
   workflow_dispatch:
 permissions:
   contents: read
@@ -12,7 +17,7 @@ concurrency:
 jobs:
   lock-and-test:
     runs-on: ubuntu-26.04
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -23,20 +28,48 @@ jobs:
           rustup toolchain install 1.99.0 --profile minimal --component clippy
           rustup override set 1.99.0
           test "$(rustc --version | awk '{print $2}')" = "1.99.0"
-      - name: Lockfile materialisieren und Bridge prüfen
+      - name: Supply-Chain-Tools installieren
+        run: |
+          set -euo pipefail
+          cargo install cargo-audit --version 0.22.2 --locked
+          cargo install cargo-deny --version 0.20.2 --locked
+          test "$(cargo audit --version | awk '{print $2}')" = "0.22.2"
+          test "$(cargo deny --version | awk '{print $2}')" = "0.20.2"
+      - name: Lockfile materialisieren und Rust-Gates prüfen
         run: |
           set -euo pipefail
           cargo generate-lockfile --manifest-path services/provider-bridge-rs/Cargo.toml
           cargo test --locked --manifest-path services/provider-bridge-rs/Cargo.toml
           cargo clippy --locked --manifest-path services/provider-bridge-rs/Cargo.toml --all-targets -- -D warnings
+          cargo audit --file services/provider-bridge-rs/Cargo.lock
+          (
+            cd services/provider-bridge-rs
+            cargo deny check advisories licenses bans sources
+          )
+          cargo build --release --locked --manifest-path services/provider-bridge-rs/Cargo.toml
           test -s services/provider-bridge-rs/Cargo.lock
-          sha256sum services/provider-bridge-rs/Cargo.lock > provider-bridge-cargo-lock.sha256
-      - name: Reproduzierbares Lockfile sichern
+          test -x services/provider-bridge-rs/target/release/capital-ai-provider-bridge
+          mkdir -p provider-bridge-evidence
+          sha256sum services/provider-bridge-rs/Cargo.lock | tee provider-bridge-evidence/cargo-lock.sha256
+          sha256sum services/provider-bridge-rs/target/release/capital-ai-provider-bridge | tee provider-bridge-evidence/binary.sha256
+          rustc --version > provider-bridge-evidence/rustc-version.txt
+          cargo --version > provider-bridge-evidence/cargo-version.txt
+          cargo metadata --locked --format-version 1 --manifest-path services/provider-bridge-rs/Cargo.toml > provider-bridge-evidence/cargo-metadata.json
+      - name: Cargo.lock nach bestandenen Gates auf Branch schreiben
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "${GITHUB_REF_NAME}" = "capital-ai-platform/render-provider-bridge-20261006"
+          content="$(base64 -w0 services/provider-bridge-rs/Cargo.lock)"
+          gh api --method PUT "repos/${GITHUB_REPOSITORY}/contents/services/provider-bridge-rs/Cargo.lock" \
+            -f message='[CAPITAL-AI-TRUST] Cargo.lock mit Rust 1.99.0 materialisieren' \
+            -f branch="${GITHUB_REF_NAME}" \
+            -f content="$content" >/dev/null
+      - name: Reproduzierbare Rust-Evidence sichern
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: provider-bridge-cargo-lock
-          path: |
-            services/provider-bridge-rs/Cargo.lock
-            provider-bridge-cargo-lock.sha256
+          name: provider-bridge-rust-evidence
+          path: provider-bridge-evidence/
           if-no-files-found: error
-          retention-days: 1
+          retention-days: 7
