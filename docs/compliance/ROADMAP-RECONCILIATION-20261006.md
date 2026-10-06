@@ -1,8 +1,8 @@
 # Roadmap-Reconciliation — 06.10.2026
 
-Basis-Main: `0bf052cbc8f7774db29cc77493f6f24bb28bd93b`  
-Arbeitsbranch: `capital-ai-product/cads-monetization-roadmap-20261006`  
-Primary Domain: PRODUCT  
+Basis-Main: `0bf052cbc8f7774db29cc77493f6f24bb28bd93b`
+Arbeitsbranch: `capital-ai-product/cads-monetization-roadmap-20261006`
+Primary Domain: PRODUCT
 Cross-Domain: MARKET / PLATFORM / TRUST / GROWTH
 
 ## Zweck
