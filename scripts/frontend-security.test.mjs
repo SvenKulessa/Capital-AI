@@ -146,6 +146,16 @@ test('landing page uses exactly three Vocabulary flashcards and keeps research i
   assert.match(docs, /href: '\/forschung'/);
 });
 
+test('large optional navigation stays outside the initial landing bundle', async () => {
+  const header = await readFile(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+
+  assert.match(header, /const HubSidebarDrawer = lazy\(\(\) =>/);
+  assert.match(header, /import\('\.\/HubSidebarDrawer'\)/);
+  assert.match(header, /import type \{ MainHubId \} from '\.\/HubSidebarDrawer'/);
+  assert.doesNotMatch(header, /import \{ HubSidebarDrawer,/);
+  assert.match(header, /\{isSidebarOpen && \(/);
+});
+
 test('footer uses locally bundled provider logos and consolidates license navigation into documentation', async () => {
   const footer = await readFile(new URL('../src/components/Footer.tsx', import.meta.url), 'utf8');
   const docs = await readFile(new URL('../src/features/documentation/DocumentationHub.tsx', import.meta.url), 'utf8');
