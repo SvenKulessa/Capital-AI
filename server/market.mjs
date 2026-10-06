@@ -1,6 +1,6 @@
 import { instrumentCatalog, QuoteFactSchema, isFresh, toCanonicalAssetValue } from '../shared/market-contracts.mjs';
 import { infrastructure, payloadHash } from './infrastructure.mjs';
-import { MARKET_SOURCE_POLICY, admittedMarketSourcesFor, isAdmittedMarketSource } from './open-source-market-policy.mjs';
+import { MARKET_SOURCE_POLICY, admittedMarketSourcesFor, isAdmittedMarketInstrument, isAdmittedMarketSource } from './open-source-market-policy.mjs';
 import { ECB_REFERENCE_RATE_SYMBOLS, fetchEcbReferenceRates } from './ecb-reference-rates.mjs';
 
 const defaultSymbols = ['BTCUSDT','BTCUSD','AAPL', ...ECB_REFERENCE_RATE_SYMBOLS];
@@ -23,7 +23,8 @@ const ecbAdapterState = {
 };
 
 export function observation(symbol, provider, price, time, quote, mode, rawPayload, details = {}) {
-  if (!isAdmittedMarketSource(provider, 'marketQuotes')) return null;
+  const instrument = instrumentCatalog[symbol];
+  if (!instrument || !isAdmittedMarketInstrument(provider, instrument.instrumentId, 'marketQuotes')) return null;
   const receivedAt = Number(details.receivedAt ?? Date.now());
   const candidate = {
     schemaVersion:'1.0.0',
@@ -141,18 +142,23 @@ export function startStreams() {
 
 export async function quote(symbol) {
   if (!allowed.has(symbol)) return [400, { error:'unsupported_symbol' }];
+  const instrument = instrumentCatalog[symbol];
   if (!sourceAdmissionAvailable) return [503, {
     error:'open_data_source_not_configured',
     symbol,
     sourcePolicy:MARKET_SOURCE_POLICY.mode,
   }];
   if (!quotesEnabled) return [503, { error:'pipeline_disabled', symbol }];
-  if (instrumentCatalog[symbol]?.providers?.includes('ecb-reference-rates') && !ecbConfigured) {
+  if (!instrument?.providers?.some(provider =>
+    isAdmittedMarketInstrument(provider, instrument.instrumentId, 'marketQuotes'))) {
+    return [503, { error:'instrument_not_admitted', symbol, sourcePolicy:MARKET_SOURCE_POLICY.mode }];
+  }
+  if (instrument.providers.includes('ecb-reference-rates') && !ecbConfigured) {
     return [503, { error:'provider_not_configured', symbol }];
   }
 
   const cached = await infrastructure.read(symbol);
-  if (cached && isAdmittedMarketSource(cached.provider, 'marketQuotes')) return [200, cached];
+  if (cached && isAdmittedMarketInstrument(cached.provider, instrument.instrumentId, 'marketQuotes')) return [200, cached];
 
   return [503, {
     error:instrumentCatalog[symbol]?.timeSemantics === 'reference'
