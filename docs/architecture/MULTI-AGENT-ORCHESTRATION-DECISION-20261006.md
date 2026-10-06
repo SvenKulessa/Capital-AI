@@ -1,6 +1,6 @@
 # Multi-Agent Orchestration Decision — 2026-10-06
 
-Status: OWNER_DECISION_REQUIRED  
+Status: OWNER_DECIDED_OPTION_A / BENCHMARK_REQUIRED  
 CURRENT_MAIN: `824d42913bbeccb68366c2ae70714ccb960717e5`  
 Primary Domain: CAPITAL-AI-PRODUCT  
 Cross-Domain: PLATFORM / TRUST / MARKET
@@ -34,7 +34,20 @@ Bereits vorhanden:
 - offener PR #213 mit JaJa Buddy, lokalem Finanzgraph und GraphRagAdapter
 - offener PR #212 mit read-only Provider-Query-Bridge; keine Trading-Authority
 
-## Architekturvarianten
+## Owner-Entscheidung — 2026-10-06
+
+Der Owner hat das Zielbild auf eine **Open-Source Multi-Agent-LangGraph-Architektur** mit autonom planbaren Agentenpfaden sowie verpflichtender Telemetrie und Observability festgelegt.
+
+Damit ist **Option A verbindliches Zielbild**:
+
+- LangGraph wird als isolierter, providerneutraler Orchestrierungskern eingeführt.
+- Bestehende CAPITAL-AI Authorities bleiben maßgeblich; Graph-Routing erteilt keine eigene Write-, Trading-, Publication- oder Legal-Authority.
+- `CAPITAL_AI_AGENT_TRAJECTORY@1` wird vor Runtime-Promotion als kanonischer Pfad-/Trace-Contract definiert.
+- Die bestehende W3C-/JSON-/Prometheus-Observability wird zuerst weiterverwendet.
+- Ein eigener OTLP Collector / persistentes Trace-Backend bleibt ein nachgelagerter PLATFORM-Benchmark und wird nicht allein durch diese Architekturentscheidung promoted.
+- Einführung bleibt fail-closed bis LangGraph-Version, Lizenz, Supply Chain, Security, CADS-Workload und Replay-/Checkpoint-Semantik reproduzierbar geprüft sind.
+
+## Bewertete Architekturvarianten
 
 ### Option A — LangGraph als Orchestrierungskern, bestehende CAPITAL-AI Authorities bleiben maßgeblich
 
@@ -171,10 +184,18 @@ Nicht standardmäßig speichern:
 - unredigierte personenbezogene Prompts,
 - komplette Provider-Rohdaten ohne eigene Rights-/Retention-Authority.
 
-## Offene Owner-Entscheidung
+## Verbindlicher nächster Architekturpfad
 
-- A: LangGraph Adapter + bestehende Observability zuerst **(empfohlen)**
-- B: eigener CAPITAL-AI Agent-State-Graph
-- C: LangGraph + vollständiger OTel-Stack sofort
+**Gewählt: A — LangGraph Adapter + bestehende Observability zuerst.**
 
-Nach Auswahl: CADS-Workload, Security-/License-Gates und exakte Runtime-Topologie festlegen.
+Die nächsten Gates sind in dieser Reihenfolge zu schließen:
+
+1. `CAPITAL_AI_AGENT_STATE@1` und `CAPITAL_AI_AGENT_TRAJECTORY@1` definieren.
+2. LangGraph gegen denselben CAPITAL-AI Agent-Workload reproduzierbar benchmarken.
+3. Exakte stabile LangGraph-/Python-Version, Lizenz, Provenance, Advisories und transitive Supply Chain prüfen.
+4. Supervisor-/Router-, Research-, MARKET-, Portfolio- und Truth-Nodes zunächst Shadow/Proposal-only anbinden.
+5. Checkpoint/Resume, Retry, deterministischen Replay und Policy-/Approval-Korrelation testen.
+6. Agent Path Control Center auf serverseitiger Trace-/Audit-Evidence aufbauen.
+7. Erst danach OTLP Collector / persistentes Trace-Backend separat benchmarken und gegebenenfalls über PLATFORM promoten.
+
+Bis zu diesen Gates bleibt die Runtime-Promotion **BLOCKED**; die Architekturentscheidung allein ist keine Production-Freigabe.
