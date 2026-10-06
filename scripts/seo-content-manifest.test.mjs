@@ -11,6 +11,9 @@ import {
   seoContentForPath,
   validateSeoContentManifest,
 } from '../shared/seo-content-manifest.mjs';
+import {
+  SEO_PROVENANCE_GENERATED_AT_MAIN_SHA,
+} from '../shared/seo-source-provenance.mjs';
 
 test('SEO-01 manifest covers every INDEX route exactly once', () => {
   const publicVocabulary = vocabularyMetadata.filter((entry) => !QUANT_PRO_IDS.has(entry.id));
@@ -25,8 +28,14 @@ test('SEO-01 manifest covers every INDEX route exactly once', () => {
 
 test('SEO-01 provenance and eligibility are explicit for every manifest entry', () => {
   assert.match(SEO_CONTENT_SOURCE_SHA, /^[0-9a-f]{40}$/);
+  assert.equal(SEO_CONTENT_SOURCE_SHA, SEO_PROVENANCE_GENERATED_AT_MAIN_SHA);
   for (const entry of SEO_CONTENT_MANIFEST) {
     assert.equal(entry.sourceSha, SEO_CONTENT_SOURCE_SHA);
+    assert.match(entry.sourceBlobSha, /^[0-9a-f]{40}$/);
+    assert.match(entry.contentDigest, /^sha256:[0-9a-f]{64}$/);
+    assert.match(entry.generatedAtMainSha, /^[0-9a-f]{40}$/);
+    assert.equal(entry.indexingState, 'INDEX');
+    assert.equal(Object.keys(entry.sourceBlobShas).length, entry.sourceRefs.length);
     assert.equal(entry.searchEligible, true);
     assert.equal(typeof entry.socialEligible, 'boolean');
     assert.equal(typeof entry.aiSearchEligible, 'boolean');

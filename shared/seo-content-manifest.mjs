@@ -10,9 +10,15 @@ import {
   resolveSeoIndexingPolicy,
   seoIndexableStaticPaths,
 } from './seo-indexing-policy.mjs';
+import {
+  SEO_PROVENANCE_GENERATED_AT_MAIN_SHA,
+  seoSourceProvenance,
+} from './seo-source-provenance.mjs';
 
 export const SEO_CONTENT_MANIFEST_VERSION = '2026-10-05';
-export const SEO_CONTENT_SOURCE_SHA = 'c9fc1bb55dcfcdf2b121c879d6d7580fe9388e84';
+// Backward-compatible generation anchor. Per-route content identity is carried by
+// sourceBlobSha/contentDigest/sourceBlobShas below.
+export const SEO_CONTENT_SOURCE_SHA = SEO_PROVENANCE_GENERATED_AT_MAIN_SHA;
 
 const DEFAULT_ROBOTS = 'index, follow, max-snippet:-1, max-image-preview:large';
 const DEFAULT_LANGUAGE = 'de';
@@ -35,12 +41,19 @@ function contentEntry({
   aiSearchEligible,
   sourceRefs,
 }) {
+  const provenance = seoSourceProvenance(sourceRefs);
+  if (!provenance) throw new Error(`Missing SEO source provenance for ${path}`);
   return Object.freeze({
     path,
+    sourceBlobSha: provenance.sourceBlobSha,
+    sourceBlobShas: provenance.sourceBlobShas,
+    contentDigest: provenance.contentDigest,
     slug,
     title,
     description,
     canonical: canonicalFor(path),
+    indexingState: SEO_INDEXING_STATES.INDEX,
+    generatedAtMainSha: provenance.generatedAtMainSha,
     contentType,
     domain,
     language: DEFAULT_LANGUAGE,
@@ -245,6 +258,11 @@ export function validateSeoContentManifest() {
     if (!allowedDomains.has(entry.domain)) errors.push(`${entry.path}: invalid domain`);
     if (entry.language !== 'de') errors.push(`${entry.path}: unexpected language`);
     if (!/^[0-9a-f]{40}$/.test(entry.sourceSha)) errors.push(`${entry.path}: invalid sourceSha`);
+    if (!/^[0-9a-f]{40}$/.test(entry.sourceBlobSha)) errors.push(`${entry.path}: invalid sourceBlobSha`);
+    if (!/^sha256:[0-9a-f]{64}$/.test(entry.contentDigest)) errors.push(`${entry.path}: invalid contentDigest`);
+    if (!/^[0-9a-f]{40}$/.test(entry.generatedAtMainSha)) errors.push(`${entry.path}: invalid generatedAtMainSha`);
+    if (entry.indexingState !== SEO_INDEXING_STATES.INDEX) errors.push(`${entry.path}: invalid indexingState`);
+    if (Object.keys(entry.sourceBlobShas).length !== entry.sourceRefs.length) errors.push(`${entry.path}: sourceBlobShas/sourceRefs mismatch`);
     if (entry.license !== 'PROPRIETARY') errors.push(`${entry.path}: unreviewed license marker`);
     if (entry.searchEligible !== true) errors.push(`${entry.path}: manifest entry must be searchEligible`);
     if (typeof entry.socialEligible !== 'boolean') errors.push(`${entry.path}: socialEligible must be boolean`);
