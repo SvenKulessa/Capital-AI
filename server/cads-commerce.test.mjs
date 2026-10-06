@@ -92,3 +92,41 @@ test('CADS entitlement response does not expose redundant user identifiers', asy
   assert.equal(result.status, 200);
   assert.equal('userId' in result.payload, false);
 });
+
+test('CADS Marketplace-only entitlement grants the canonical paid tier', async () => {
+  const commerce = createCadsCommerce({
+    auth: {
+      verify: async () => ({ userId: '00000000-0000-4000-8000-000000000001' }),
+      resolvePaidTier: async () => null,
+    },
+    marketplace: {
+      resolveTierForUser: async () => 'pro',
+    },
+  });
+  const result = await invoke(commerce, '/api/cads/commerce/entitlement');
+  assert.equal(result.status, 200);
+  assert.equal(result.payload.tier, 'pro');
+  assert.equal(result.payload.billingAuthority, 'GITHUB_MARKETPLACE');
+  assert.equal(result.payload.marketplaceEntitlement, true);
+  assert.equal(result.payload.websiteEntitlement, false);
+  assert.equal(result.payload.capabilities.history, true);
+  assert.equal(result.payload.capabilities.evidenceExport, true);
+});
+
+test('CADS chooses the highest entitlement across Stripe and Marketplace without conflating authorities', async () => {
+  const commerce = createCadsCommerce({
+    auth: {
+      verify: async () => ({ userId: '00000000-0000-4000-8000-000000000001' }),
+      resolvePaidTier: async () => 'starter',
+    },
+    marketplace: {
+      resolveTierForUser: async () => 'enterprise',
+    },
+  });
+  const result = await invoke(commerce, '/api/cads/commerce/entitlement');
+  assert.equal(result.status, 200);
+  assert.equal(result.payload.tier, 'enterprise');
+  assert.equal(result.payload.billingAuthority, 'MULTI_CHANNEL');
+  assert.deepEqual(result.payload.entitlementAuthorities, ['STRIPE_SUBSCRIPTION', 'GITHUB_MARKETPLACE']);
+  assert.equal(result.payload.capabilities.enforcedPrGate, true);
+});
