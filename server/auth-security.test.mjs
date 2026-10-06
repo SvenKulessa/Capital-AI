@@ -212,7 +212,7 @@ test('TOTP factor projection exposes pending state so incomplete enrollment can 
   assert.equal(res.payload.factors[0].status, 'unverified');
 });
 
-test('TOTP reenrollment removes only same-name pending factor before creating replacement', async () => {
+test('TOTP reenrollment removes a stale pending factor before creating replacement', async () => {
   const h = securityHarness({ factor: true, factorStatus: 'unverified' });
   const res = responseHarness();
   await h.security.handle(
