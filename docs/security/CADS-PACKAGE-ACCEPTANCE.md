@@ -70,6 +70,10 @@ Measured microbenchmarks:
 - Marketplace plan mapping;
 - signed OAuth-state roundtrip.
 
+Additionally, `npm run benchmark:cads-b2b` runs the real CADS Marketplace HMAC/JWT/readback/store
+application path for `purchased`, `changed` and `cancelled` with deterministic mocked network
+boundaries. This measures the package logic without claiming a real GitHub/Supabase E2E.
+
 The thresholds are regression guards, not customer SLA claims. Benchmark PASS cannot grant Security,
 License, Marketplace or Production approval.
 
