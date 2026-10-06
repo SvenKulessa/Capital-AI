@@ -60,7 +60,8 @@ test('CADS monetization is active but GitHub Marketplace remains an open authori
   assert.equal(marketplace.status, 'aktiv');
   assert.equal(benchmark.evidenceState, 'OFFEN');
   assert.equal(marketplace.evidenceState, 'OFFEN');
-  assert.match(marketplace.nextStep, /Paid-Runtime ist implementiert/);
+  assert.match(marketplace.nextStep, /Paid Billing\/Entitlement Runtime ist implementiert/);
+  assert.match(marketplace.nextStep, /CAPITAL_AI_EVENT_BACKBONE@1/);
   assert.match(marketplace.nextStep, /Verified Publisher/);
   assert.ok(marketplace.evidenceRefs.includes('server/cads-commerce.mjs'));
   assert.ok(marketplace.evidenceRefs.includes('server/cads-marketplace.mjs'));
