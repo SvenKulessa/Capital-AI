@@ -78,22 +78,25 @@
         "financeLocalBuildAssessment": "--enable-gpl present; explicitly rejected as production/distribution evidence"
       },
       "upstream": {
-        "licenseDefault": "LGPL-2.1-or-later",
-        "gplWhenEnabled": "GPL-2.0-or-later",
-        "nonfreeEffect": "unredistributable when --enable-nonfree is used",
-        "officialEvidence": "https://ffmpeg.org/legal.html"
+        "version": "9.0.2",
+        "releaseDate": "2026-09-18",
+        "sourceArtifact": "ffmpeg-9.0.2.tar.xz",
+        "sourceUrl": "https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz",
+        "sourceSha256": "8c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e",
+        "signatureUrl": "https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz.asc",
+        "officialEvidence": "https://ffmpeg.org/download.html",
+        "buildProfile": "deploy/social-media/ffmpeg-build-profile.json"
       },
       "decision": {
-        "mode": "BLOCKED_UNKNOWN",
+        "mode": "COMMERCIAL_INTERNAL_SERVICE",
         "implementationEligible": true,
         "productionEligible": false,
-        "reason": "No exact target FFmpeg binary/package digest and configure flags are bound. The historical Finance local build is GPL-enabled and intentionally not accepted for production."
+        "reason": "FFmpeg 9.0.2 source and an LGPL-only shared-library build profile are now pinned. The Finance renderer uses native mpeg4/aac only, so no GPL codec library is required. Production remains blocked until the actual worker binaries and OCI image are built, hashed, scanned, and their buildconf proves GPL/nonfree are absent."
       },
       "unblock": [
-        "Select exact target FFmpeg package/build.",
-        "Capture version, package/binary SHA-256 and ffmpeg -buildconf.",
-        "Require --enable-nonfree absent.",
-        "Review GPL/LGPL codec/linkage obligations for the selected build."
+        "Build worker from deploy/social-media/ffmpeg-build-profile.json.",
+        "Bind ffmpeg/ffprobe SHA-256, ffmpeg -buildconf, OCI digest and SBOM.",
+        "Run deterministic media render/decode tests on that exact worker image."
       ]
     },
     {
@@ -297,7 +300,7 @@
       "openai-whisper-code"
     ],
     "requiredRuntimeBlockers": [
-      "ffmpeg"
+      "ffmpeg-binary-and-worker-image-evidence"
     ],
     "excludedFromCustomerRuntime": [
       "poppler"
@@ -305,7 +308,7 @@
     "deferredCandidatesRemainNonBaseline": true
   },
   "point4Remaining": [
-    "Select/build exact FFmpeg worker binary and bind binary/package SHA-256 plus ffmpeg -buildconf; --enable-nonfree must be absent.",
+    "Build the pinned FFmpeg 9.0.2 LGPL-only profile and bind resulting ffmpeg/ffprobe SHA-256, buildconf, OCI digest and SBOM.",
     "Complete Pillow renderer-worker SBOM/image digest evidence.",
     "Complete Qwen/Chatterbox companion artifact and transitive dependency locks.",
     "Run fresh Qwen/Chatterbox runtime + Human/Owner listening acceptance.",
