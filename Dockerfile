@@ -39,9 +39,10 @@ COPY server/advisor-security.test.mjs ./server/
 COPY scripts/billing-catalog.test.mjs scripts/blueprint-evidence-contract.test.mjs scripts/supabase-auth-config.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-metadata.test.mjs scripts/finance-source-target-manifest.test.mjs scripts/validate-finance-source-target-manifest.mjs ./scripts/
 COPY supabase/email-templates ./supabase/email-templates
 COPY scripts/documentation-drift.mjs scripts/documentation-drift.test.mjs ./scripts/
-COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/frontend-security.test.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
+COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/social-tool-license-evidence.test.mjs scripts/validate-social-tool-license-evidence.mjs scripts/frontend-security.test.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
 COPY shared ./shared
 COPY CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json ./CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json
+COPY CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json ./CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json
 COPY server/market.mjs server/auth.mjs server/user-provider-vault.mjs ./server/
 COPY docs/security/BYOK-USER-PRIVATE-DATA.md ./docs/security/BYOK-USER-PRIVATE-DATA.md
 COPY docs/licenses ./docs/licenses
