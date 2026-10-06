@@ -1,0 +1,17 @@
+{
+  "name": "CAPITAL-AI CADS Community",
+  "description": "Evidence-bound CADS benchmark checks for GitHub repositories.",
+  "url": "https://capital-ai.online",
+  "hook_url": "https://YOUR_CADS_APP_SERVICE.example/webhooks/github",
+  "setup_url": "https://YOUR_CADS_APP_SERVICE.example/setup",
+  "public": true,
+  "request_oauth_on_install": false,
+  "permissions": {
+    "metadata": "read",
+    "contents": "read",
+    "pull_requests": "read",
+    "checks": "write"
+  },
+  "events": ["pull_request", "installation"],
+  "marketplace_webhook": "CONFIGURE_SEPARATELY_IN_DRAFT_LISTING"
+}
