@@ -2,7 +2,7 @@ use async_nats::{Client, ConnectOptions};
 use futures_util::StreamExt;
 use serde::Deserialize;
 use serde_json::{json, Map, Value};
-use std::{env, sync::OnceLock, time::{Duration, SystemTime, UNIX_EPOCH}};
+use std::{env, future::Future, sync::OnceLock, time::{Duration, SystemTime, UNIX_EPOCH}};
 
 const QUERY_SUBJECT: &str = "capital.private.provider.query.v1";
 const EXECUTE_SUBJECT: &str = "capital.private.provider.execute.v1";
@@ -113,6 +113,29 @@ fn validate(payload: &[u8]) -> Result<QueryEnvelope, &'static str> {
     Ok(envelope)
 }
 
+async fn with_executor_timeout<F, T>(future: F, timeout: Duration) -> Result<T, &'static str>
+where
+    F: Future<Output = T>,
+{
+    tokio::time::timeout(timeout, future)
+        .await
+        .map_err(|_| "EXECUTOR_TIMEOUT")
+}
+
+async fn connect_bridge() -> Result<Client, Box<dyn std::error::Error + Send + Sync>> {
+    let nats_url = env::var("NATS_URL")?;
+    let user = env::var("NATS_BRIDGE_USER")?;
+    let pass = env::var("NATS_BRIDGE_PASSWORD")?;
+    if user.trim().is_empty() || pass.len() < 24 {
+        return Err("bridge credentials are incomplete".into());
+    }
+    Ok(ConnectOptions::new()
+        .user_and_password(user, pass)
+        .connection_timeout(Duration::from_secs(5))
+        .connect(nats_url)
+        .await?)
+}
+
 async fn respond_error(client: &Client, reply: Option<async_nats::Subject>, request_id: Option<&str>, code: &str) {
     let Some(reply) = reply else { return };
     let body = json!({
@@ -126,17 +149,13 @@ async fn respond_error(client: &Client, reply: Option<async_nats::Subject>, requ
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let nats_url = env::var("NATS_URL")?;
-    let user = env::var("NATS_BRIDGE_USER")?;
-    let pass = env::var("NATS_BRIDGE_PASSWORD")?;
-    if user.trim().is_empty() || pass.len() < 24 {
-        return Err("bridge credentials are incomplete".into());
-    }
+    let client = connect_bridge().await?;
 
-    let client = ConnectOptions::new()
-        .user_and_password(user, pass)
-        .connect(nats_url)
-        .await?;
+    if env::args().nth(1).as_deref() == Some("--healthcheck") {
+        client.flush().await?;
+        client.close().await;
+        return Ok(());
+    }
 
     let mut subscriber = client
         .queue_subscribe(QUERY_SUBJECT, "capital-private-provider-bridge".to_string())
@@ -155,9 +174,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         };
         let request_id = envelope.request_id.clone();
 
-        let response = tokio::time::timeout(
-            Duration::from_secs(8),
+        let response = with_executor_timeout(
             client.request(EXECUTE_SUBJECT, message.payload.clone()),
+            Duration::from_secs(8),
         ).await;
 
         match response {
@@ -173,8 +192,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             Ok(Err(_)) => {
                 respond_error(&client, reply, Some(&request_id), "EXECUTOR_UNAVAILABLE").await;
             }
-            Err(_) => {
-                respond_error(&client, reply, Some(&request_id), "EXECUTOR_TIMEOUT").await;
+            Err(code) => {
+                respond_error(&client, reply, Some(&request_id), code).await;
             }
         }
     }
@@ -236,5 +255,26 @@ mod tests {
         body["operation"] = json!("orders.create");
         let error = validate(&serde_json::to_vec(&body).unwrap()).unwrap_err();
         assert_eq!(error, "OPERATION_NOT_ADMITTED");
+    }
+
+    #[test]
+    fn rejects_expired_and_oversized_requests() {
+        let mut expired = valid();
+        expired["expiresAt"] = json!(now_ms() - 1);
+        assert_eq!(
+            validate(&serde_json::to_vec(&expired).unwrap()).unwrap_err(),
+            "REQUEST_EXPIRED"
+        );
+        let oversized = vec![b'x'; MAX_REQUEST_BYTES + 1];
+        assert_eq!(validate(&oversized).unwrap_err(), "REQUEST_SIZE_INVALID");
+    }
+
+    #[tokio::test]
+    async fn executor_timeout_is_bounded() {
+        let result = with_executor_timeout(
+            std::future::pending::<()>(),
+            Duration::from_millis(5),
+        ).await;
+        assert_eq!(result.unwrap_err(), "EXECUTOR_TIMEOUT");
     }
 }
