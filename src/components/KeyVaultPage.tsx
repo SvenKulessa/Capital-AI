@@ -146,7 +146,11 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
       const body = await readJson(response);
       if (!response.ok) throw new Error(body?.code || body?.error || 'PROVIDER_READ_FAILED');
       setHoldings(Array.isArray(body?.holdings) ? body.holdings : []);
-      setFeedback('Verbindung erfolgreich geprüft.');
+      setFeedback(
+        body?.portfolioAvailable === true
+          ? 'Spot-Credential und Funds-Readback erfolgreich geprüft.'
+          : 'Spot-Credential erfolgreich geprüft. Dieser Key besitzt kein Query-Funds-Recht; deshalb wird kein Portfolio gelesen.',
+      );
       await loadConnections();
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Verbindung konnte nicht geprüft werden.');
