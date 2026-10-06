@@ -215,3 +215,16 @@ Historischer 1-von-8-Hörtest ist ein Fehlermuster, kein neuer erfolgreicher Sel
 - [Aktuelle Social-Roadmap mit älteren Statuszeilen](https://github.com/capital-ai-online/Finance/blob/dcef421fe6e350a3a2ade61d0299aad9ecca213c/docs/social-media/CAPITAL-AI-SOCIAL/ROADMAP.md)
 - [YouTube Uploadvertrag](https://developers.google.com/youtube/v3/docs/videos/insert)
 - [TikTok Direct Post](https://developers.tiktok.com/doc/content-posting-api-reference-direct-post)
+
+## Metricool MCP Vorintegration — 2026-10-06
+
+CURRENT_MAIN für diese Vorintegration: `5f333bcd5e219ae160a611941ba1e9fde01f4c94`.
+
+- Der offizielle Metricool-MCP-Endpunkt `https://ai.metricool.com/mcp` wird repositoryseitig als externer HTTP-MCP in `.mcp.json` registriert.
+- Die Anbindung bleibt **Operator-/Control-Plane-only**. Sie wird nicht in den öffentlichen Web-Runtime-Bundle, Server-Runtime oder einen autonomen Publisher eingebaut.
+- Authentifizierung erfolgt über Metricool OAuth im jeweiligen MCP-Client. Tokens, API-Keys und Sessiondaten dürfen nicht im Repository stehen.
+- Metricool MCP ist laut aktueller Metricool-Dokumentation auch im Free-Tarif verfügbar. Die Free-Tariflimits gelten unverändert.
+- Die separate Metricool REST API ist laut aktueller Metricool-Dokumentation nur für Advanced/Custom verfügbar und wird deshalb unter der CAPITAL-AI-No-Cost-Grenze **nicht** integriert.
+- Für die kommende Social Media Engine dient Metricool zunächst als optionaler, provider-neutral abgegrenzter Operator-Adapter. Vollautomatische serverseitige Veröffentlichung über Metricool bleibt gehalten, solange dafür kostenpflichtiger API-Zugriff erforderlich wäre.
+- Ein späterer Wechsel auf Metricool API, White-Label oder serverseitige Integration ist eine eigenständige Kosten-/Provider-/Security-Entscheidung und darf nicht durch diese MCP-Registrierung impliziert werden.
+
