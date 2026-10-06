@@ -38,6 +38,16 @@ PR-Titel: `[CAPITAL-AI-<DOMAIN>] <präziser Titel>`
 
 Labels beschreiben Art und Risiko, nicht die Domain. Zielmenge: `Bug`, `Fix`, `Patch`, `Security`, `Feature`, `Docs`, `Dependencies`, `Release`, `Breaking`.
 
+## Merge Authority
+
+Alle Codeänderungen werden über Pull Requests integriert. Der Merge selbst bleibt eine Human-Owner-Entscheidung.
+
+- Standardzustand: kein automatischer Merge.
+- Ein vollständiger CI-/Security-/Lizenz-/Governance-/Deployment-Gate-PASS macht einen PR review- bzw. releasefähig, erzeugt aber keine Merge-Autorität.
+- Agents, Bots und Workflows dürfen nicht eigenständig mergen.
+- Nur eine ausdrückliche Chat-Freigabe des Owners für einen konkret bezeichneten PR erlaubt dem ausführenden Agenten, diesen PR zu mergen.
+- Die Freigabe ist an den geprüften PR-/Head-Zustand gebunden; materielle Head-Änderungen benötigen eine erneute ausdrückliche Merge-Freigabe.
+
 ## Versionierung
 
 Produktversion: Semantic Versioning (SemVer), Quelle `VERSION`.
