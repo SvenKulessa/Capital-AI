@@ -44,6 +44,35 @@ export function parseGrowthMarketingDraftJson(raw: string): GrowthMarketingDraft
   return GrowthMarketingDraftSchema.parse(decoded);
 }
 
+
+function assertDraftBoundToRequest(
+  draft: GrowthMarketingDraft,
+  input: GrowthAiDraftRequest,
+  model: string,
+): void {
+  if (draft.productId !== input.productId ||
+      draft.sourceSha !== input.sourceSha ||
+      draft.locale !== input.locale ||
+      draft.canonicalUrl !== input.canonicalUrl ||
+      draft.generatedBy.model !== model) {
+    throw new Error('GROWTH_AI_OUTPUT_BINDING_MISMATCH');
+  }
+
+  const requestedChannels = [...input.channels].sort();
+  const returnedChannels = [...draft.channels].sort();
+  if (requestedChannels.length !== returnedChannels.length ||
+      requestedChannels.some((channel, index) => channel !== returnedChannels[index])) {
+    throw new Error('GROWTH_AI_OUTPUT_BINDING_MISMATCH');
+  }
+
+  const allowedEvidenceUrls = new Set([input.canonicalUrl, ...input.sourceUrls]);
+  for (const claim of draft.claims) {
+    if (claim.evidenceUrls.some((url) => !allowedEvidenceUrls.has(url))) {
+      throw new Error('GROWTH_AI_UNBOUND_EVIDENCE_URL');
+    }
+  }
+}
+
 function resolveModel(): string {
   const configured = process.env.GROWTH_AI_MODEL?.trim() || DEFAULT_MODEL;
   if (!ALLOWED_MODELS.has(configured)) {
@@ -122,5 +151,7 @@ export async function createGeminiMarketingDraft(
     throw new Error('GROWTH_AI_EMPTY_RESPONSE');
   }
 
-  return parseGrowthMarketingDraftJson(output);
+  const draft = parseGrowthMarketingDraftJson(output);
+  assertDraftBoundToRequest(draft, input, model);
+  return draft;
 }
