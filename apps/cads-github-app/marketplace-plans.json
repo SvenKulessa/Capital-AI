@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "CAPITAL_AI_CADS_MARKETPLACE_PLANS@1",
+  "strategy": "COMMUNITY_FIRST",
+  "plans": [
+    {
+      "id": "community",
+      "name": "Community",
+      "priceModel": "FREE",
+      "billing": [],
+      "capabilities": [
+        "standardProfiles",
+        "neutralGithubCheck",
+        "runSummary",
+        "sourceBoundEvidenceRefs"
+      ]
+    }
+  ],
+  "paidPlans": {
+    "enabled": false,
+    "planIdsAssigned": false,
+    "pricingAssigned": false,
+    "futureCandidates": ["Starter", "Pro", "Enterprise"]
+  }
+}
