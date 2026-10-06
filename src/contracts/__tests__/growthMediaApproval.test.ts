@@ -9,6 +9,7 @@ import {
 const base = {
   policyVersion: GROWTH_MEDIA_APPROVAL_POLICY_VERSION,
   socialEngineGateRef: 'CAPITAL-AI-GROWTH/social-engine-completion-gate.json',
+  approvalEvidenceRef: 'approval:media:1',
   sourceRightsEvidenceRef: 'rights:source:1',
   outputCommercialUseEvidenceRef: 'rights:output:1',
   brandApprovalRef: 'brand:capital-ai:1',
