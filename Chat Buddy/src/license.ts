@@ -1,4 +1,4 @@
-import type { ProviderId } from "./types";
+import type { ProviderId } from "./core/types";
 
 /** Proprietary imprint. Not a third-party or franchise license. */
 export const IMPRINT = {
