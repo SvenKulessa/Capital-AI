@@ -2,7 +2,7 @@
 
 Naming convention: `[CAPITAL-AI-MARKET]PRODUKTNAME` or `[CAPITAL-AI-PRODUCT]PRODUKTNAME`.
 
-Scan: 2026-10-04, baseline `main` @ `d31b223`. Readiness is the evidenced share of a sellable, compliant launch. Gap is the remaining distance to market.
+Current-state correlation: 2026-10-06, implementation baseline `824d42913bbeccb68366c2ae70714ccb960717e5`. Readiness/Gap remain the historical weighted measure only where the underlying implementation state did not materially change. A dash means the old percentage was invalidated and has not been re-measured.
 
 Weights: definition 15, user surface 25, commercial path 25, data/compliance gate 20, production evidence 15.
 
@@ -10,14 +10,14 @@ A successful build, test or UI is not a production release. Provider rights and 
 
 | Product | State | Readiness | Gap | Blocker |
 |---|---|---:|---:|---|
-| [CAPITAL-AI-MARKET]SAAS-MEMBERSHIP | ACTIVE | 57% | 43% | Stripe-Price-IDs und Tarif-UI vorhanden, Checkout-Session und Entitlement-Gate fehlen. |
+| [CAPITAL-AI-MARKET]SAAS-MEMBERSHIP | ACTIVE_COMMERCE_SLICE | — | — | Server-authorized Stripe Checkout und Subscription-Tier-Entitlements sind implementiert; drei echte Testmode-Käufe, Upgrade/Downgrade/Cancel/Reactivation und produktive Runtime-Evidence bleiben offen. |
 | [CAPITAL-AI-MARKET]B2B-DATA-API | PLANNED | 20% | 80% | Kein API-Key-, Metering- oder Vertragsprodukt. |
 | [CAPITAL-AI-MARKET]SENTIMENT-API | PROMPT-2 / 50-COMPONENTS | 31% | 69% | MarketSentiment-Oberfläche vorhanden, API-Produktisierung offen. |
 | [CAPITAL-AI-MARKET]WHITE-LABEL-WIDGETS | PLANNED | 10% | 90% | Kein Embed-SDK, kein Tenant-Theme, kein Lizenzvertrag. |
 | [CAPITAL-AI-MARKET]BROKER-AFFILIATE-ROUTING | PARTIAL | 39% | 61% | Kraken-Referral-Banner vorhanden, Routing-Matrix und Disclosure-Gate unvollständig. |
-| [CAPITAL-AI-MARKET]TRADING-FEE-REVENUE-SHARE | PLANNED | 8% | 92% | Keine Broker-Order-Anbindung und keine Revenue-Share-Abrechnung. |
+| [CAPITAL-AI-MARKET]TRADING-FEE-REVENUE-SHARE | DRY_RUN_ONLY | — | — | Kraken Spot `AddOrder(validate=true)` ist als nicht ausführender Dry-Run vorbereitet; Live-Submit, persistente Idempotency/Audit und Revenue-Share-Abrechnung bleiben blockiert. |
 | [CAPITAL-AI-MARKET]OSS-PIPELINE-SIMULATION-ENGINE | INTEGRATED | 44% | 56% | Pipeline Builder integriert, nicht als bezahltes Paket mit SLA geschnitten. |
-| [CAPITAL-AI-MARKET]CADS-BENCHMARK-MARKET-APP | PARTIAL | 25% | 75% | Observability-Code vorhanden, keine Marketplace-App und kein Billing. |
+| [CAPITAL-AI-MARKET]CADS-BENCHMARK-MARKET-APP | WEB_SAAS_ENTITLEMENT_SLICE | — | — | CADS/Benchmark ist an Starter/Pro/Enterprise-Subscriptions, Capability-Matrix und Benchmark-API gebunden; reale 4er-Benchmark-Ausführung, Runtime-Aktivierung und GitHub Marketplace bleiben offen. |
 | [CAPITAL-AI-MARKET]GHCR-DIGEST-BLUEPRINT-MARKETPLACE-APP | PLANNED | 26% | 74% | Digest-Pipeline dokumentiert, App und kommerzielle Evidence-Tiers fehlen. |
 | [CAPITAL-AI-MARKET]CPT-STAKE-TO-ACCESS | PLANNED | 24% | 76% | Tokenomics-Seite vorhanden, Stake-Gate und $CPT-Zahlung deaktiviert. |
 | [CAPITAL-AI-MARKET]CPT-MICROPAYMENTS | PLANNED | 10% | 90% | Kein Wallet-, Settlement- oder Usage-Meter. |
@@ -41,3 +41,17 @@ Orderbook and Market Depth stay owned by the 50-component MARKET program / Promp
 Repository → Build → SBOM → Security Scan → Attestation → Immutable GHCR Digest → Render Blueprint → Runtime Readback → Source SHA correlation → Release Evidence.
 
 The app must never rebuild between verified candidate and promotion. Commercial tiers may package evidence retention, policy profiles and API/reporting, but the underlying digest identity remains immutable.
+
+
+## CADS Website-Commerce Slice — 2026-10-06
+
+Die Website monetarisiert CADS **ohne neue Stripe-SKUs**:
+
+- Preisautorität: bestehende Starter/Pro/Enterprise-Produkte in `server/billing-catalog.mjs`.
+- Subscription Authority: `public.subscriptions`, serverseitig über `auth.resolvePaidTier()`.
+- Capability Authority: `packages/benchmark-core/index.mjs`.
+- User Surface: `src/features/pricing/MonetizationModal.tsx`.
+- Commerce Projection: `GET /api/cads/commerce/readiness`.
+- Benutzergebundenes Entitlement: `GET /api/cads/commerce/entitlement`.
+- Benchmark Runs bleiben `productionEligible=false` und `decisionEligible=false`.
+- GitHub Marketplace besitzt weiterhin eine separate, noch nicht implementierte Billing-/Entitlement-Authority.
