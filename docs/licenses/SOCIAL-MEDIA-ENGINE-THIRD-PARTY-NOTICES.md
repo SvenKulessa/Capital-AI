@@ -1,6 +1,6 @@
 # SOCIAL MEDIA ENGINE — Third-Party Notices
 
-Stand: 2026-10-06  
+Stand: 2026-10-06
 Scope: CAPITAL-AI Social Media Engine migration baseline.
 
 This notice is an engineering distribution inventory. It does not override upstream license texts. Only artifacts explicitly admitted by the machine-readable Social Tool Admission may enter a customer/commercial bundle.
