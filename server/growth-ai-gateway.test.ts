@@ -7,9 +7,12 @@ import {
   createGeminiMarketingDraft,
   parseGrowthMarketingDraftJson,
 } from './growth-ai-gateway.ts';
-import { GROWTH_AI_PROMOTION_POLICY_VERSION } from '../src/contracts/growthAiPromotion.ts';
+import {
+  GROWTH_AI_PROMOTION_POLICY_VERSION,
+  type GrowthMarketingDraft,
+} from '../src/contracts/growthAiPromotion.ts';
 
-const validDraft = {
+const validDraft: GrowthMarketingDraft = {
   policyVersion: GROWTH_AI_PROMOTION_POLICY_VERSION,
   productId: 'capital-ai',
   sourceSha: 'c13de16d8af006c37b08db616d1016173c99e7db',
