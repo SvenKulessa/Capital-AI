@@ -17,7 +17,7 @@ A successful build, test or UI is not a production release. Provider rights and 
 | [CAPITAL-AI-MARKET]BROKER-AFFILIATE-ROUTING | PARTIAL | 39% | 61% | Kraken-Referral-Banner vorhanden, Routing-Matrix und Disclosure-Gate unvollständig. |
 | [CAPITAL-AI-MARKET]TRADING-FEE-REVENUE-SHARE | DRY_RUN_ONLY | — | — | Kraken Spot `AddOrder(validate=true)` ist als nicht ausführender Dry-Run vorbereitet; Live-Submit, persistente Idempotency/Audit und Revenue-Share-Abrechnung bleiben blockiert. |
 | [CAPITAL-AI-MARKET]OSS-PIPELINE-SIMULATION-ENGINE | INTEGRATED | 44% | 56% | Pipeline Builder integriert, nicht als bezahltes Paket mit SLA geschnitten. |
-| [CAPITAL-AI-PRODUCT]CADS-BENCHMARK-ENGINE | GITHUB_MARKETPLACE_PAID_RUNTIME_IMPLEMENTED | — | — | Starter/Pro/Enterprise Paid-Marketplace-Runtime mit HMAC, GitHub-Subscription-Readback, idempotentem Supabase-Entitlement-Ledger und Cancellation-Cleanup ist implementiert. Externe GitHub-Admission, USD-Preise, echte Plan-IDs und Listing-Approval bleiben offen. |
+| [CAPITAL-AI-PRODUCT]CADS-BENCHMARK-ENGINE | GITHUB_MARKETPLACE_BILLING_RUNTIME_IMPLEMENTED | — | — | Starter/Pro/Enterprise Paid-Marketplace-Runtime mit HMAC, GitHub-Subscription-Readback, idempotentem Supabase-Entitlement-Ledger und Cancellation-Cleanup ist implementiert. Externe GitHub-Admission, USD-Preise, echte Plan-IDs und Listing-Approval bleiben offen. |
 | [CAPITAL-AI-MARKET]GHCR-DIGEST-BLUEPRINT-MARKETPLACE-APP | PLANNED | 26% | 74% | Digest-Pipeline dokumentiert, App und kommerzielle Evidence-Tiers fehlen. |
 | [CAPITAL-AI-MARKET]CPT-STAKE-TO-ACCESS | PLANNED | 24% | 76% | Tokenomics-Seite vorhanden, Stake-Gate und $CPT-Zahlung deaktiviert. |
 | [CAPITAL-AI-MARKET]CPT-MICROPAYMENTS | PLANNED | 10% | 90% | Kein Wallet-, Settlement- oder Usage-Meter. |
@@ -86,3 +86,22 @@ Der Zielkanal ist **produktive Paid-Monetarisierung im GitHub Marketplace**. Com
 Runtime authority: `server/cads-marketplace.mjs`  
 Persistence: `supabase/migrations/20261006210500_cads_marketplace_paid_entitlements.sql`  
 Plan contract: `apps/cads-github-app/marketplace-plans.production.json`
+
+
+### Marketplace buyer identity
+
+Marketplace billing and CAPITAL-AI application identity are bound explicitly:
+
+```text
+GitHub Marketplace purchase
+  -> GitHub App installation
+  -> CAPITAL-AI authenticated session
+  -> signed 10-minute OAuth state
+  -> GitHub user OAuth
+  -> /user/installations verification
+  -> Marketplace subscription readback
+  -> Supabase user/account/installation link
+  -> CADS effective tier
+```
+
+A setup URL `installation_id` is treated as untrusted input until GitHub OAuth verifies that the user is authorized for that installation. Stripe and Marketplace remain independent billing authorities; application access selects the highest valid CADS tier without converting one billing system into the other.
