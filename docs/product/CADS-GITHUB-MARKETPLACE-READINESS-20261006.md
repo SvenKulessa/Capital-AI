@@ -1,6 +1,6 @@
 # CADS GitHub Marketplace Production Readiness — 2026-10-06
 
-Status: **PAID_RUNTIME_IMPLEMENTED / EXTERNAL_GITHUB_ADMISSION_BLOCKED**
+Status: **PAID_BILLING_RUNTIME_IMPLEMENTED / BENCHMARK_EXECUTION + EXTERNAL_GITHUB_ADMISSION BLOCKED**
 
 Implementation baseline: `main@4fa3e3f92547cd6356f46490a38e9b7515f69a6d`.
 
@@ -70,6 +70,10 @@ CADS_GITHUB_APP_PRIVATE_KEY
 CADS_GITHUB_MARKETPLACE_WEBHOOK_SECRET
 CADS_GITHUB_MARKETPLACE_OWNER_ORG
 CADS_GITHUB_MARKETPLACE_LISTING_SLUG
+CADS_GITHUB_CLIENT_ID
+CADS_GITHUB_CLIENT_SECRET
+CADS_GITHUB_OAUTH_STATE_SECRET
+CADS_GITHUB_PUBLIC_URL
 
 CADS_GITHUB_MARKETPLACE_STARTER_PLAN_ID
 CADS_GITHUB_MARKETPLACE_PRO_PLAN_ID
@@ -80,6 +84,14 @@ SUPABASE_SECRET_KEY
 ```
 
 The three Marketplace plan IDs must be positive and distinct. Missing or invalid values make the runtime fail closed.
+
+Buyer access is also fail-closed. GitHub's untrusted `installation_id` from the setup URL is never sufficient on its own. The setup flow requires an authenticated CAPITAL-AI session, a signed/expiring state, GitHub user OAuth, verification that the OAuth user is authorized for the installation, authoritative Marketplace subscription readback, and only then a Supabase user↔Marketplace account/installation link.
+
+## Product execution gate still required
+
+`GET /api/benchmark/readiness` currently reports `executionBound=false`. The billing/entitlement channel can therefore be production-hardened without yet making the paid benchmark product functionally complete.
+
+Before a paid Marketplace listing is submitted, PLATFORM must bind `CAPITAL_AI_EVENT_BACKBONE@1` to a real reproducible execution unit and verify the NATS/Kafka × Node/Rust matrix with source SHA, immutable image digests, SBOM digest, resource/usage evidence and bounded failure handling.
 
 ## External GitHub admission still required
 
@@ -129,9 +141,10 @@ A paid entitlement never overrides:
 8. Bind the real plan IDs to Render/runtime secrets.
 9. Apply the Supabase migration.
 10. Configure Marketplace plan-change webhook.
-11. Deploy the exact validated image.
-12. Execute real purchase / changed / cancellation / deletion smokes.
-13. Submit the listing for Marketplace review.
-14. Only after approval mark Marketplace publication evidence VERIFIED.
+11. Bind and validate the real `CAPITAL_AI_EVENT_BACKBONE@1` execution worker.
+12. Deploy the exact validated image plus the admitted worker artifact.
+13. Execute real install/OAuth-link/purchase/changed/cancellation/deletion smokes.
+14. Submit the listing for Marketplace review.
+15. Only after approval and functional runtime evidence mark Marketplace publication evidence VERIFIED.
 
 A successful test, build or billing event is not by itself a security, license or production-release approval.
