@@ -264,7 +264,7 @@ Umgesetzt:
 - Gemini 3.8 Flash ist Primärprovider für draft-only Produkt-/SEO-Copy;
 - Gemini URL Context ist read-only/draft-only zugelassen;
 - Google Search Grounding ist ausdrücklich **nicht** als Lead-Discovery-/Crawler-Quelle zugelassen;
-- Gemini 3.1 Flash Image und Gemini 3.8 Flash TTS sind draft-only hinter Asset-/Rights-/Approval-Gates vorgesehen;
+- Gemini Image (operational zunächst `gemini-3.1-flash-lite-image`; Nano Banana 2.1 bis Pricebook-Readback fail-closed) und Gemini 3.8 Flash TTS sind draft-only hinter Asset-/Rights-/Approval-Gates vorgesehen;
 - Veo bleibt bis separater Modelstatus-/Kosten-/Terms-Admission production-ineligible;
 - `server/growth-ai-gateway.ts` validiert Gemini-Marketingoutput vollständig gegen ein striktes Zod-Schema;
 - Lead Discovery bleibt OSS/provider-neutral und Outreach Delivery fail-closed.
