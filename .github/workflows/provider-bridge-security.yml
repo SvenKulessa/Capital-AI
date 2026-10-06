@@ -1,0 +1,132 @@
+name: PLATFORM Provider Bridge Security
+on:
+  pull_request:
+    paths:
+      - services/provider-bridge-rs/**
+      - contracts/private-provider-query-operations.json
+      - deploy/Dockerfile.provider-bridge
+      - deploy/render-provider-bridge.yaml
+      - deploy/render-nats.yaml
+      - render.yaml
+      - .github/workflows/provider-bridge-security.yml
+  push:
+    branches:
+      - main
+      - 'capital-ai-platform/**'
+    paths:
+      - services/provider-bridge-rs/**
+      - contracts/private-provider-query-operations.json
+      - deploy/Dockerfile.provider-bridge
+      - deploy/render-provider-bridge.yaml
+      - deploy/render-nats.yaml
+      - render.yaml
+      - .github/workflows/provider-bridge-security.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: provider-bridge-security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Rust Bridge Supply Chain & OCI
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Rust 1.99.0 und Supply-Chain-Tools
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.99.0 --profile minimal --component clippy
+          rustup override set 1.99.0
+          test "$(rustc --version | awk '{print $2}')" = "1.99.0"
+          cargo install cargo-audit --version 0.22.2 --locked
+          cargo install cargo-deny --version 0.20.2 --locked
+
+      - name: Locked Rust Gates
+        run: |
+          set -euo pipefail
+          test -s services/provider-bridge-rs/Cargo.lock
+          cargo test --locked --manifest-path services/provider-bridge-rs/Cargo.toml
+          cargo clippy --locked --manifest-path services/provider-bridge-rs/Cargo.toml --all-targets -- -D warnings
+          cargo audit --file services/provider-bridge-rs/Cargo.lock
+          (
+            cd services/provider-bridge-rs
+            cargo deny check advisories licenses bans sources
+          )
+
+      - name: Gepinnte Security-Toolchain bauen
+        run: |
+          set -euo pipefail
+          docker build --file Dockerfile.security --tag capital-ai-security .
+          test "$(docker run --rm capital-ai-security --version | sed -n 's/^Version: //p' | head -n1)" = "0.75.0"
+          mkdir -p provider-bridge-evidence "$RUNNER_TEMP/trivy-cache"
+          chmod a+rwx "$RUNNER_TEMP/trivy-cache"
+
+      - name: Provider-Bridge Dockerfile linten und bauen
+        run: |
+          set -euo pipefail
+          docker run --rm --entrypoint hadolint -v "$PWD:/work:ro" capital-ai-security /work/deploy/Dockerfile.provider-bridge
+          docker build --pull --file deploy/Dockerfile.provider-bridge --tag capital-ai-provider-bridge:${{ github.sha }} .
+          docker image inspect capital-ai-provider-bridge:${{ github.sha }} > provider-bridge-evidence/image-inspect.json
+          test "$(docker image inspect --format '{{.Config.User}}' capital-ai-provider-bridge:${{ github.sha }})" = "65532:65532"
+          test "$(docker image inspect --format '{{json .Config.Entrypoint}}' capital-ai-provider-bridge:${{ github.sha }})" = '["/usr/local/bin/capital-ai-provider-bridge"]'
+          docker image inspect --format '{{json .Config.Healthcheck}}' capital-ai-provider-bridge:${{ github.sha }} | grep -q -- '--healthcheck'
+
+      - name: Hardened Runtime Smoke
+        run: |
+          set -euo pipefail
+          set +e
+          docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges --network none \
+            -e NATS_URL=nats://127.0.0.1:4222 \
+            -e NATS_BRIDGE_USER=capital-ai-provider-bridge \
+            -e NATS_BRIDGE_PASSWORD=000000000000000000000000 \
+            capital-ai-provider-bridge:${{ github.sha }} --healthcheck \
+            >provider-bridge-evidence/runtime-smoke.stdout 2>provider-bridge-evidence/runtime-smoke.stderr
+          status=$?
+          set -e
+          test "$status" -ne 0
+          test ! -s provider-bridge-evidence/runtime-smoke.stdout
+          ! grep -Eqi '(password=|secret=|token=|authorization:)' provider-bridge-evidence/runtime-smoke.stderr
+
+      - name: OCI Scan und SBOM
+        run: |
+          set -euo pipefail
+          docker save capital-ai-provider-bridge:${{ github.sha }} --output provider-bridge-evidence/provider-bridge-image.tar
+          chmod a+r provider-bridge-evidence/provider-bridge-image.tar
+          docker run --rm \
+            -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" \
+            -v "$PWD/provider-bridge-evidence:/reports" \
+            capital-ai-security image --input /reports/provider-bridge-image.tar \
+            --ignorefile /dev/null --scanners vuln,secret \
+            --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --exit-code 0 \
+            --format json --output /reports/provider-bridge-image.json
+          node scripts/summarize-trivy.mjs provider-bridge-evidence/provider-bridge-image.json --gate
+          docker run --rm \
+            -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" \
+            -v "$PWD/provider-bridge-evidence:/reports" \
+            capital-ai-security image --input /reports/provider-bridge-image.tar \
+            --ignorefile /dev/null --scanners vuln --format cyclonedx \
+            --output /reports/provider-bridge.sbom.cdx.json
+          docker run --rm \
+            -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" \
+            -v "$PWD/provider-bridge-evidence:/reports" \
+            capital-ai-security image --input /reports/provider-bridge-image.tar \
+            --ignorefile /dev/null --scanners license --license-full \
+            --format json --output /reports/provider-bridge-licenses.json --exit-code 0
+          sha256sum services/provider-bridge-rs/Cargo.lock > provider-bridge-evidence/cargo-lock.sha256
+          docker image inspect --format '{{.Id}}' capital-ai-provider-bridge:${{ github.sha }} > provider-bridge-evidence/image-id.txt
+
+      - name: Evidence sichern
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: provider-bridge-security-${{ github.sha }}
+          path: provider-bridge-evidence/
+          if-no-files-found: error
+          retention-days: 7
