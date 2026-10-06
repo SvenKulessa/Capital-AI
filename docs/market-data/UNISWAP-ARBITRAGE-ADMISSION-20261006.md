@@ -20,6 +20,9 @@ Routen:
 - `UNISWAP_API_KEY` bleibt ausschließlich serverseitig.
 - Quote-Aufrufe verlangen verifizierte User-Session und same-origin.
 - Token-/Wallet-Adressen, Chain-IDs, Betrag und Slippage werden bounded validiert.
+- Die Upstream-`/quote`-Antwort wird auf Analysefelder projiziert; `swapTransaction`,
+  `permitTransaction`, `permitData`, `encodedOrder` und andere ausführbare
+  Payloads werden im Quote-only-Slice nicht an den Browser weitergereicht.
 - `executionEnabled=false` und `arbitrageExecutionEligible=false` bleiben hart gesetzt.
 - Ein späterer Swap benötigt User-Wallet-Signatur oder einen separat genehmigten Custody-Vertrag.
 - Kein Kraken-/Supabase-Secret wird für Uniswap wiederverwendet.
