@@ -9,7 +9,7 @@ const EXECUTE_SUBJECT: &str = "capital.private.provider.execute.v1";
 const MAX_REQUEST_BYTES: usize = 64 * 1024;
 const MAX_RESPONSE_BYTES: usize = 256 * 1024;
 const MAX_TTL_MS: i64 = 30_000;
-const CONTRACT_JSON: &str = include_str!("../contracts/private-provider-query-operations.json");
+const CONTRACT_JSON: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../contracts/private-provider-query-operations.json"));
 
 fn contract() -> &'static Value {
     static CONTRACT: OnceLock<Value> = OnceLock::new();
