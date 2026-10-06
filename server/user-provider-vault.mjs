@@ -564,7 +564,19 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
         throw error;
       }
       if (operation === 'account.key_info') {
-        return { info: verification.info, capabilities: verification.capabilities };
+        const info = verification.info || {};
+        return {
+          info: {
+            apiKeyName: typeof info.apiKeyName === 'string' ? info.apiKeyName.slice(0, 160) : null,
+            permissions: verification.capabilities.permissions,
+            ibanPresent: typeof info.iban === 'string' && info.iban.length > 0,
+            validUntil: String(info.validUntil || '0').slice(0, 40),
+            queryFrom: String(info.queryFrom || '0').slice(0, 40),
+            queryTo: String(info.queryTo || '0').slice(0, 40),
+            createdTime: String(info.createdTime || '0').slice(0, 40),
+          },
+          capabilities: verification.capabilities,
+        };
       }
       const path = KRAKEN_SPOT_QUERY_PATHS[operation];
       if (!path) {
