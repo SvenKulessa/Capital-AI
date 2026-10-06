@@ -122,6 +122,8 @@
 !public/branding/asset-pack/**
 !public/branding/badges/
 !public/branding/badges/**
+!public/branding/social/
+!public/branding/social/**
 !CAPITAL-AI-PRODUCT/
 !CAPITAL-AI-PRODUCT/badge.svg
 !CAPITAL-AI-TRUST/
