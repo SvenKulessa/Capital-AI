@@ -45,6 +45,7 @@ export const MARKET_SOURCE_POLICY = Object.freeze({
         referenceMetadata:true,
         marketQuotes:true,
         scoringPriceInput:true,
+        scoringAssetClasses:Object.freeze(['forex']),
         realtime:false,
         executionPrice:false,
         decisionEligible:false,
