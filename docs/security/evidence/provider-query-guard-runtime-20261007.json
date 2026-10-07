@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "evidenceType": "CAPITAL_AI_PROVIDER_QUERY_GUARD_RUNTIME_EVIDENCE",
+  "observedAt": "2026-10-07T21:52:00Z",
+  "repository": "SvenKulessa/Capital-AI",
+  "pullRequest": 232,
+  "baseMainSha": "596c2ef1c4d1f4937108e21a99655c164db56138",
+  "project": {
+    "ref": "ryzywoktpmyhwzxmstyu",
+    "name": "AIFINANCIAL",
+    "region": "eu-west-1",
+    "postgres": "17.11.0.002",
+    "status": "ACTIVE_HEALTHY"
+  },
+  "migration": {
+    "version": "20261007214554",
+    "name": "provider_query_guard",
+    "repositoryPath": "supabase/migrations/20261007214554_provider_query_guard.sql",
+    "proposalPath": "supabase/proposals/provider_query_guard.sql",
+    "applied": true
+  },
+  "accessControl": {
+    "rlsEnabled": true,
+    "anonTableSelect": false,
+    "authenticatedTableInsert": false,
+    "serviceRoleTableSelect": true,
+    "anonRpcExecute": false,
+    "authenticatedRpcExecute": false,
+    "serviceRoleRpcExecute": true,
+    "securityDefiner": false,
+    "searchPath": "",
+    "lockTimeoutMs": 1500
+  },
+  "concurrency": {
+    "mechanism": "pg_cron 1.6.4 separate database sessions",
+    "maxRunningJobs": 32,
+    "replay": {
+      "firstPairStartDeltaMs": 1.173,
+      "jobIds": [
+        3,
+        4
+      ],
+      "resultState": {
+        "replayUses": 1,
+        "rateUses": 1
+      },
+      "status": "PASS"
+    },
+    "rate": {
+      "firstPairStartDeltaMs": 2.258,
+      "jobIds": [
+        5,
+        6
+      ],
+      "resultState": {
+        "sharedRateUses": 1,
+        "replayWinnerUses": 1,
+        "replayDeniedUses": 0
+      },
+      "status": "PASS"
+    },
+    "cost": {
+      "firstPairStartDeltaMs": 1.225,
+      "jobIds": [
+        7,
+        8
+      ],
+      "resultState": {
+        "globalCostUses": 1,
+        "winnerReplayUses": 1,
+        "winnerRateUses": 1,
+        "winnerUserCostUses": 1,
+        "deniedReplayUses": 0,
+        "deniedRateUses": 0,
+        "deniedUserCostUses": 0
+      },
+      "status": "PASS"
+    },
+    "temporaryJobsRemaining": 0,
+    "temporaryGuardRowsRemaining": 0
+  },
+  "failClosed": {
+    "expiredProof": "INVALID_QUERY_PROOF",
+    "malformedScope": "INVALID_PROVIDER_STATE_REQUEST",
+    "anonRpc": "POSTGRES_42501_PERMISSION_DENIED",
+    "authenticatedRpc": "POSTGRES_42501_PERMISSION_DENIED",
+    "storageTimeoutUnknownCommit": {
+      "evidence": "server/provider-query-state.test.mjs",
+      "behavior": "single attempt then PROVIDER_STATE_UNAVAILABLE; no automatic retry",
+      "status": "CI_TESTED_NOT_NETWORK_FAULT_INJECTED"
+    }
+  },
+  "latency": {
+    "source": "extensions.pg_stat_statements",
+    "calls": 80,
+    "meanMs": 5.228,
+    "minMs": 3.209,
+    "maxMs": 19.933,
+    "totalMs": 418.227,
+    "scope": "DATABASE_FUNCTION_ONLY_NOT_POSTGREST_NETWORK"
+  },
+  "advisors": {
+    "providerRelatedSecurityFindings": 0,
+    "providerRelatedPerformanceFindings": 0
+  },
+  "activation": {
+    "privateProviderBridgeEnabled": false,
+    "productionDeployPerformed": false,
+    "endToEndQueryBridgeExecutorVault": "NOT_PROVEN",
+    "serviceRolePostgrestSuccessFromDeployedExecutor": "NOT_PROVEN",
+    "activationEligible": false
+  }
+}
