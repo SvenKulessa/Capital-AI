@@ -124,7 +124,9 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
       const body = await readJson(response);
       if (!response.ok) throw new Error(body?.code || body?.error || 'PROVIDER_SAVE_FAILED');
 
+      setApiKey('');
       setApiSecret('');
+      setShowSecret(false);
       setHoldings(Array.isArray(body?.holdings) ? body.holdings : []);
       const portfolio = body?.portfolioAvailable === true ? ' · Spot-Portfolio verfügbar' : '';
       const websocket = body?.capabilities?.websocketToken === true ? ' · WebSocket-Token erlaubt' : '';
@@ -231,7 +233,7 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
                 </div>
                 <h2 className="mt-2 text-lg font-black">Eigenen API-Zugang hinterlegen</h2>
                 <p className="mt-1 text-xs leading-relaxed text-slate-400">
-                  API-Key bleibt sichtbar editierbar. Der Private Key wird als Secret-Eingabe behandelt und nach erfolgreicher Speicherung nicht wieder aus dem Vault angezeigt.
+                  API-Key und Private Secret werden nur zur Verifikation eingegeben. Nach erfolgreicher Speicherung werden beide Werte aus dem Browser-State entfernt; die Oberfläche zeigt anschließend ausschließlich Fingerprint und Vault-Status.
                 </p>
               </div>
 
@@ -385,6 +387,16 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
                   </div>
                 </div>
 
+                <div className="mt-3 rounded-xl border border-cyan-400/20 bg-cyan-400/5 p-3">
+                  <div className="flex items-center gap-2 text-xs font-black text-cyan-100">
+                    <LockKeyhole className="h-4 w-4" />
+                    Supabase Vault · verschlüsselt gespeichert
+                  </div>
+                  <p className="mt-1 text-[10px] leading-relaxed text-slate-300">
+                    API-Key und Secret liegen gemeinsam im serverseitigen Supabase Vault. Vault speichert Secret-Inhalte authentifiziert verschlüsselt (AEAD) at rest; die Website erhält weder Klartext noch Ciphertext zurück. Sichtbar bleibt nur der nicht reversible Credential-Fingerprint.
+                  </p>
+                </div>
+
                 <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
                   <div>
                     <dt className="opacity-70">Credential-Fingerprint</dt>
@@ -437,7 +449,7 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
           <section className="rounded-2xl border border-slate-800 bg-[#070b19]/70 p-4 text-[11px] leading-relaxed text-slate-400">
             <h2 className="font-black text-white">Credential-Grenze</h2>
             <p className="mt-2">
-              Der Kraken-Vault-Slot enthält getrennte Spot- und Futures/Perps-Credential-Familien. Die Secrets bleiben serverseitig verschlüsselt; ein Futures-Key wird nicht als Spot-Key umgedeutet.
+              Der Kraken-Vault-Slot enthält getrennte Spot- und Futures/Perps-Credential-Familien. API-Key und Secret werden gemeinsam als versionierter Payload im serverseitigen Supabase Vault gespeichert. Die Website liest ausschließlich Metadaten/Fingerprint zurück; ein Futures-Key wird nicht als Spot-Key umgedeutet.
             </p>
             <p className="mt-2 text-amber-200">
               Trading-Rechte können explizit zugelassen werden. Funding, Transfers und Withdrawals bleiben abgewiesen. Die erkannte Order-Capability bereitet den späteren MarketScreener für Market-/Limit-Orders vor; Live-Execution ist bis zu separaten Risk-, Confirmation- und Production-Gates deaktiviert.

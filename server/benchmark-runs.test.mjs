@@ -183,3 +183,43 @@ test('evidence export fails closed until a bounded evidence reference exists', a
   assert.equal(response.status,409);
   assert.equal(response.payload.error,'benchmark_evidence_not_ready');
 });
+
+test('Marketplace-only user can access benchmark features without a Stripe subscription', async () => {
+  const store=memoryStore();
+  const marketplace={ async resolveTierForUser(){ return 'pro'; } };
+  const handler=createBenchmarkRuns({
+    env:{BENCHMARK_RUN_API_ENABLED:'true'},
+    auth:auth(null),
+    store,
+    marketplace,
+  });
+  const response=res();
+  await handler.handle(
+    req('POST',{repository:'SvenKulessa/Capital-AI',commitSha:'1'.repeat(40)}),
+    response,
+    new URL('https://capital-ai.online/api/benchmark/runs'),
+    json,
+  );
+  assert.equal(response.status,202);
+  assert.equal(store.rows[0].tier,'pro');
+});
+
+test('highest valid channel tier governs benchmark capability access', async () => {
+  const store=memoryStore();
+  const marketplace={ async resolveTierForUser(){ return 'enterprise'; } };
+  const handler=createBenchmarkRuns({
+    env:{BENCHMARK_RUN_API_ENABLED:'true'},
+    auth:auth('starter'),
+    store,
+    marketplace,
+  });
+  const created=res();
+  await handler.handle(
+    req('POST',{repository:'SvenKulessa/Capital-AI',commitSha:'2'.repeat(40)}),
+    created,
+    new URL('https://capital-ai.online/api/benchmark/runs'),
+    json,
+  );
+  assert.equal(created.status,202);
+  assert.equal(store.rows[0].tier,'enterprise');
+});

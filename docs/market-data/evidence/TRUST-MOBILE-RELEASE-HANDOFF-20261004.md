@@ -1,3 +1,6 @@
+> **SUPERSEDED / NON-AUTHORIZING — 2026-10-07**
+> Diese Datei bleibt als historische oder fachliche Dokumentation erhalten. Sie erzeugt keine zusätzlichen Repository-Gates, Admissions, Handoffs, Pflichtreviews oder Merge-/Deployment-Regeln. Autoritativ ist ausschließlich `AGENTS.md` mit `SOLO_MAINTAINER_FLOW@1`. Konkrete gesetzliche, regulatorische, Security- oder Provider-/Lizenzpflichten bleiben davon unberührt.
+
 # MARKET → TRUST Mobile-Release-Handoff — 2026-10-04
 
 ## Status
@@ -19,7 +22,7 @@ Diese Übergabe wurde zuletzt gegen `SvenKulessa/Capital-AI@c1a720a32a054c16944e
 
 ## Instrumentmanifest
 
-Manifest: `docs/market-data/evidence/instrument-manifest-20261004.json`  
+Manifest: `docs/market-data/evidence/instrument-manifest-20261004.json`
 SHA-256: `fd25579bd3ddd6bd6c2597ae6056f7a995e6cff4ac2670ac3f48df565651a011`
 
 Katalogpilot:

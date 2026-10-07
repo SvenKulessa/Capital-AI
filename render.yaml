@@ -10,7 +10,7 @@ services:
     dockerfilePath: ./Dockerfile
     dockerContext: .
     healthCheckPath: /healthz
-    autoDeployTrigger: off
+    autoDeployTrigger: checksPass
     previews:
       generation: off
     envVars:

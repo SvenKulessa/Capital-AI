@@ -28,6 +28,7 @@ import { createVocabularyCheckout } from './vocabulary-checkout.mjs';
 import { createSubscriptionCheckout } from './subscription-checkout.mjs';
 import { createBenchmarkRuns } from './benchmark-runs.mjs';
 import { createCadsCommerce } from './cads-commerce.mjs';
+import { createCadsMarketplace } from './cads-marketplace.mjs';
 import { createBenchmarkStore } from './benchmark-store.mjs';
 import { isBlockedPublicArtifactPath } from './public-artifact-policy.mjs';
 import { QUANT_PRO_IDS } from './vocabulary-quant-pro-index.mjs';
@@ -37,7 +38,7 @@ import {
   vocabularyTitle,
   vocabularyDescription,
 } from '../shared/vocabulary-metadata.mjs';
-import { beginRequest, finishRequest, metricsAuthorized, renderPrometheusMetrics, writeAuditEvent } from './observability.mjs';
+import { beginRequest, finishRequest, metricsAuthorized, operationalSnapshot, renderPrometheusMetrics, writeAuditEvent } from './observability.mjs';
 import { cadsSnapshot } from './cads-observability.mjs';
 
 const moduleRoot = path.dirname(fileURLToPath(import.meta.url));
@@ -189,7 +190,7 @@ export function createApp(root = defaultRoot, options = {}) {
   let inflight = 0;
   const auth = createAuth(options);
   const userProviderVault = createUserProviderVault({ ...options, auth });
-  const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault });
+  const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault, state: infrastructure });
   if ((options.env || process.env).PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true') {
     void privateProviderQuery.start().catch(() => {});
   }
@@ -210,8 +211,15 @@ export function createApp(root = defaultRoot, options = {}) {
   const vocabularyCheckout = createVocabularyCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
   const subscriptionCheckout = createSubscriptionCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
   const benchmarkStore = options.benchmarkStore ?? createBenchmarkStore({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch });
-  const benchmarkRuns = createBenchmarkRuns({ env: runtimeEnv, auth, store: benchmarkStore });
-  const cadsCommerce = createCadsCommerce({ auth });
+  const cadsMarketplace = createCadsMarketplace({
+    env: runtimeEnv,
+    fetchImpl: options.fetchImpl || fetch,
+    audit: writeAuditEvent,
+    auth,
+  });
+  cadsMarketplace.start();
+  const benchmarkRuns = createBenchmarkRuns({ env: runtimeEnv, auth, store: benchmarkStore, marketplace: cadsMarketplace });
+  const cadsCommerce = createCadsCommerce({ auth, env: runtimeEnv, marketplace: cadsMarketplace });
   const server = http.createServer({ maxHeaderSize: 8192, requestTimeout: 10000, headersTimeout: 10000, keepAliveTimeout: 5000 }, async (req, res) => {
   let url;
   const requestContext = beginRequest(req);
@@ -236,6 +244,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await vocabularyCheckout.handle(req, res, url, json)) return;
   if (await subscriptionCheckout.handle(req, res, url, json)) return;
   if (await benchmarkRuns.handle(req, res, url, json)) return;
+  if (await cadsMarketplace.handle(req, res, url, json)) return;
   if (await cadsCommerce.handle(req, res, url, json)) return;
   if (url.pathname === '/api/mobile/enterprise-score' || url.pathname === '/api/mobile/scorer/events') {
     const mobileIdentity = await auth.verify(req, res);
@@ -263,6 +272,19 @@ export function createApp(root = defaultRoot, options = {}) {
       sourceSha: process.env.RENDER_GIT_COMMIT || null,
       infrastructure: infrastructure.status(),
       operations: cadsSnapshot(),
+    });
+  }
+  if (url.pathname === '/api/internal/observability') {
+    const ownerAllowed = await auth.authorizeIamRole(req, res, 'owner');
+    if (!ownerAllowed) {
+      writeAuditEvent({ eventType: 'observability.owner_snapshot.denied', requestId: requestContext.requestId, result: 'DENIED' });
+      return json(res, 404, { error: 'not_found' });
+    }
+    return json(res, 200, {
+      ...operationalSnapshot(),
+      sourceSha: process.env.RENDER_GIT_COMMIT || null,
+      infrastructure: infrastructure.status(),
+      cads: cadsSnapshot(),
     });
   }
   if (url.pathname === '/api/market/quote') {
@@ -359,7 +381,7 @@ export function createApp(root = defaultRoot, options = {}) {
   } catch { res.writeHead(404, headers); res.end(); }
 });
   server.maxConnections = 256;
-  server.once('close', () => { void privateProviderQuery.close(); });
+  server.once('close', () => { cadsMarketplace.close(); void privateProviderQuery.close(); });
   return server;
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

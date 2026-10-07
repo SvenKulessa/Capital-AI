@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
 import {
   assertNotReplayed,
@@ -114,4 +115,14 @@ test('provider result payload is bounded', () => {
     () => safeProviderResult({ payload: 'x'.repeat(300_000) }),
     /PROVIDER_RESULT_TOO_LARGE/,
   );
+});
+
+
+test('runtime centralizes replay rate and high-cost state in Valkey instead of process-local maps', () => {
+  const source = readFileSync(new URL('./private-provider-query.mjs', import.meta.url), 'utf8');
+  assert.doesNotMatch(source, /const (?:highCostWindows|requestWindows|replayWindow) = new Map\(\)/);
+  assert.match(source, /state\.consumeProviderRate/);
+  assert.match(source, /state\.claimProviderCostScopes/);
+  assert.match(source, /state\.claimProviderReplay/);
+  assert.match(source, /PROVIDER_STATE_UNAVAILABLE/);
 });
