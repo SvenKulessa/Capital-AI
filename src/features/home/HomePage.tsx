@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Header } from '../../components/Header';
 import { Hero } from '../../components/Hero';
+import { ContentEngineConcept } from './ContentEngineConcept';
 import { KeyPillars } from '../../components/KeyPillars';
 import { Footer } from '../../components/Footer';
 import { MarketSentiment } from '../market/MarketSentiment';
@@ -94,6 +95,7 @@ export function HomePage({
         <VocabularyFlashcards onNavigate={onNavigate} />
       </Suspense>
       <KeyPillars />
+      <ContentEngineConcept onNavigate={onNavigate} />
 
       <SectorAnalysis
         onSelectAsset={onSelectAsset}
