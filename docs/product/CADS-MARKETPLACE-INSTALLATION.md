@@ -2,7 +2,7 @@
 
 Status: **PRE-PUBLICATION RUNBOOK**
 
-Primary domain: PRODUCT  
+Primary domain: PRODUCT
 Assurance: TRUST
 
 ## 1. Voraussetzungen für den Publisher
