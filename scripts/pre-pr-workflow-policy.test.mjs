@@ -33,7 +33,7 @@ test('alle externen GitHub Actions sind auf volle Commit-SHAs gepinnt', () => {
 });
 
 test('Branch Early Feedback bleibt schnell, read-only und deckt alle Domain-Branches ab', () => {
-  const source = read('.github/workflows/pre-pr-critical.yml');
+  const source = readFileSync(join(root, '.github', 'workflows', 'pre-pr-critical.yml'), 'utf8');
   const name = '.github/workflows/pre-pr-critical.yml';
 
   assert.ok(source.includes('name: Branch Early Feedback'));
