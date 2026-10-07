@@ -45,6 +45,15 @@ services:
         value: capital-ai-market-runtime
       - key: NATS_APP_PASSWORD
         sync: false
+      - key: NATS_EXECUTOR_USER
+        value: capital-ai-provider-executor
+      - key: NATS_EXECUTOR_PASSWORD
+        sync: false
+      - key: PRIVATE_PROVIDER_QUERY_SIGNING_SECRET
+        sync: false
+      # Enable only after the dedicated Rust worker is live and its healthcheck passes.
+      - key: PRIVATE_PROVIDER_BRIDGE_ENABLED
+        value: "false"
       # Legacy migration fallback only; remove after three validated scoped-auth cycles.
       - key: NATS_TOKEN
         sync: false
