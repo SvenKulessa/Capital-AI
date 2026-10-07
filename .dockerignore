@@ -203,3 +203,6 @@
 !supabase/migrations/20261006131500_enable_binance_user_provider_vault.sql
 
 !supabase/migrations/20261006210500_cads_marketplace_paid_entitlements.sql
+
+!server/provider-query-state.mjs
+!server/provider-query-state.test.mjs
