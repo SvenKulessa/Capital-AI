@@ -206,3 +206,8 @@
 
 !server/provider-query-state.mjs
 !server/provider-query-state.test.mjs
+
+!scripts/provider-query-guard-migration.test.mjs
+!supabase/proposals/
+!supabase/proposals/provider_query_guard.sql
+!supabase/migrations/20261007214554_provider_query_guard.sql
