@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "CAPITAL_AI_PROVIDER_BRIDGE_RUNTIME_EVIDENCE@1",
+  "observedAt": "2026-10-07T23:34:47Z",
+  "repository": "SvenKulessa/Capital-AI",
+  "repositoryMainSha": "acb328b5dc4d0892335735f4467f6ff8717a3626",
+  "status": {
+    "providerBridgeRuntime": "PROVEN",
+    "executorRuntime": "NOT_PROVEN",
+    "queryBridgeExecutorRoundtrip": "NOT_PROVEN",
+    "executorSupabaseGuard": "NOT_PROVEN",
+    "vaultHandoff": "NOT_PROVEN",
+    "providerIo": "NOT_PROVEN"
+  },
+  "render": {
+    "workspace": "AICapital",
+    "serviceId": "srv-db3d8mui0phs739mfq20",
+    "serviceName": "capital-ai-provider-bridge",
+    "serviceType": "background_worker",
+    "region": "frankfurt",
+    "branch": "main",
+    "dockerfilePath": "deploy/Dockerfile.provider-bridge",
+    "autoDeploy": "off",
+    "numInstances": 1,
+    "deployId": "dep-db3dds5chlcc73e9r7kg",
+    "deployStatus": "live",
+    "deployCommit": "acb328b5dc4d0892335735f4467f6ff8717a3626"
+  },
+  "runtimeProof": {
+    "containerBuildTests": {
+      "passed": 7,
+      "failed": 0
+    },
+    "readyLog": "provider-bridge ready subject=capital.private.provider.query.v1",
+    "readyObservedAt": "2026-10-07T23:34:46.241756342Z",
+    "readySemantics": [
+      "connect_bridge completed successfully",
+      "NATS bridge credentials accepted",
+      "queue_subscribe on capital.private.provider.query.v1 completed successfully"
+    ],
+    "querySubject": "capital.private.provider.query.v1",
+    "executeSubject": "capital.private.provider.execute.v1"
+  },
+  "enforcedBoundaries": {
+    "readOnlyContractOnly": true,
+    "secretMaterialRejected": true,
+    "mutatingOperationsRejected": true,
+    "maxRequestBytes": 65536,
+    "maxResponseBytes": 262144,
+    "maxTtlMs": 30000,
+    "executorTimeoutSeconds": 8,
+    "providerSecretsPresentInBridge": false
+  },
+  "activationBoundary": {
+    "privateProviderBridgeEnabled": false,
+    "fullProviderPathProductionEligible": false,
+    "reason": "Executor/Supabase/Vault/provider end-to-end runtime remains NOT_PROVEN"
+  }
+}
