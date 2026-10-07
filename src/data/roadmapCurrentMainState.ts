@@ -221,6 +221,10 @@ export const ROADMAP_RECONCILIATION = Object.freeze({
     "source": "src/data/socialContentRoadmap.ts"
   },
   {
+    "id": "CA-GROWTH-CONTENT-SOCIAL-PACKAGE",
+    "source": "src/data/socialContentRoadmap.ts"
+  },
+  {
     "id": "CA-GROWTH-CREATOR-REVENUE",
     "source": "src/data/trustArchitectureAWorkPackages.ts"
   },

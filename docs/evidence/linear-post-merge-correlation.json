@@ -1,13 +1,12 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "71881d789246f5d382643dce8cc7eaa6daec582f",
-  "mergedPr": 222,
-  "targetPr": 220,
-  "targetBranch": "capital-ai-trust/cads-paid-marketplace-production-20261006",
-  "targetHeadSha": "b90504ca41c25b614a72da78b139afb71ff609be",
+  "mainSha": "596c2ef1c4d1f4937108e21a99655c164db56138",
+  "mergedPr": 235,
+  "targetPr": 232,
+  "targetBranch": "capital-ai-trust/supabase-provider-guards-20261007",
+  "targetHeadSha": "0c95641f41be7a59d72a003d1ef70f2f507cf8dc",
   "exactOverlap": [
-    "package.json",
-    "src/data/trustArchitectureAWorkPackages.ts"
+    "Dockerfile"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,

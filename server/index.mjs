@@ -190,7 +190,7 @@ export function createApp(root = defaultRoot, options = {}) {
   let inflight = 0;
   const auth = createAuth(options);
   const userProviderVault = createUserProviderVault({ ...options, auth });
-  const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault, state: infrastructure });
+  const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault });
   if ((options.env || process.env).PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true') {
     void privateProviderQuery.start().catch(() => {});
   }
