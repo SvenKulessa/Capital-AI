@@ -53,7 +53,7 @@ function measure(name, fn, thresholdP95Ms) {
   };
 }
 
-const oauthStateMacKey = createSecretKey(Buffer.from('cads-benchmark-oauth-state-key!!', 'utf8').subarray(0, 32));
+const oauthStateKey = createSecretKey(Buffer.from('cads-benchmark-oauth-state-key!!', 'utf8').subarray(0, 32));
 const fixedNow = Date.parse('2026-10-06T12:00:00.000Z');
 
 const beforeHeap = process.memoryUsage().heapUsed;
@@ -70,10 +70,10 @@ const cases = [
     const state = createCadsMarketplaceOAuthState({
       userId: 'benchmark-user-' + (i % 10),
       installationId: 42 + (i % 10),
-      macKey: oauthStateMacKey,
+      stateKey: oauthStateKey,
       now: fixedNow,
     });
-    const verified = verifyCadsMarketplaceOAuthState(state, oauthStateMacKey, fixedNow + 1000);
+    const verified = verifyCadsMarketplaceOAuthState(state, oauthStateKey, fixedNow + 1000);
     if (!verified) throw new Error('OAUTH_STATE_ROUNDTRIP_FAILED');
   }, 5),
 ];
