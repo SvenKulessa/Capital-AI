@@ -1,0 +1,137 @@
+name: Social TTS Dependency Lock Evidence
+
+on:
+  pull_request:
+    paths:
+      - "deploy/social-media/tts/**"
+      - ".github/workflows/social-tts-dependency-lock.yml"
+      - "CAPITAL-AI-GROWTH/social-tts-snapshot-lock-20261006.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: social-tts-dependency-lock-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  resolve:
+    name: Qwen + Chatterbox Python 3.11 dependency resolution
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Resolver-Base auf Registry-Digest binden
+        id: base
+        run: |
+          set -euo pipefail
+          mkdir -p tts-dependency-evidence
+          tag="python:3.11-slim-bookworm"
+          docker pull "$tag"
+          ref="$(docker image inspect --format '{{index .RepoDigests 0}}' "$tag")"
+          [[ "$ref" =~ ^python@sha256:[0-9a-f]{64}$ ]]
+          printf '%s\n' "$ref" | tee tts-dependency-evidence/python-base-ref.txt
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+
+      - name: Qwen dependency report auflösen
+        env:
+          PYTHON_BASE: ${{ steps.base.outputs.ref }}
+        run: |
+          set -euo pipefail
+          docker run --rm -v "$PWD:/work" -w /work "$PYTHON_BASE" sh -euc '
+            python -m pip --version
+            python -m pip install --disable-pip-version-check --dry-run --ignore-installed \
+              --report /work/tts-dependency-evidence/qwen-pip-report.json \
+              -r /work/deploy/social-media/tts/qwen-runtime.in
+          '
+
+      - name: Chatterbox dependency report auflösen
+        env:
+          PYTHON_BASE: ${{ steps.base.outputs.ref }}
+        run: |
+          set -euo pipefail
+          docker run --rm -v "$PWD:/work" -w /work "$PYTHON_BASE" sh -euc '
+            apt-get update >/dev/null
+            apt-get install -y --no-install-recommends git ca-certificates >/dev/null
+            rm -rf /var/lib/apt/lists/*
+            python -m pip install --disable-pip-version-check --dry-run --ignore-installed \
+              --report /work/tts-dependency-evidence/chatterbox-pip-report.json \
+              -r /work/deploy/social-media/tts/chatterbox-runtime.in
+          '
+
+      - name: Reports in fail-closed Lock-Manifest normalisieren
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('tts-dependency-evidence')
+          output = {
+              'schemaVersion': 'SOCIAL_TTS_DEPENDENCY_LOCK_EVIDENCE@1',
+              'sourceSha': '${{ github.sha }}',
+              'pythonBaseRef': (root / 'python-base-ref.txt').read_text().strip(),
+              'perthTargetRevision': 'ff1c8ac55a976971245cdd53c18d6131ca00d993',
+              'runtimes': {},
+              'productionEligible': False,
+              'productionBlockers': [
+                  'resolved dependency report has not yet been promoted into immutable worker images',
+                  'runtime vulnerability/license scans pending',
+                  'German runtime benchmark pending',
+                  'Human/Owner listening acceptance pending',
+              ],
+          }
+
+          for name in ('qwen', 'chatterbox'):
+              report = json.loads((root / f'{name}-pip-report.json').read_text())
+              packages = []
+              missing_hash = []
+              for item in report.get('install', []):
+                  meta = item.get('metadata', {})
+                  info = item.get('download_info', {})
+                  archive = info.get('archive_info', {})
+                  hashes = archive.get('hashes', {})
+                  entry = {
+                      'name': meta.get('name'),
+                      'version': meta.get('version'),
+                      'url': info.get('url'),
+                      'sha256': hashes.get('sha256'),
+                      'directUrl': bool(item.get('is_direct')),
+                  }
+                  if entry['url'] and 'git+' in entry['url']:
+                      entry['vcsImmutableRevisionRequired'] = True
+                  elif not entry['sha256']:
+                      missing_hash.append(f"{entry['name']}=={entry['version']}")
+                  packages.append(entry)
+              output['runtimes'][name] = {
+                  'packages': packages,
+                  'missingArchiveHashes': missing_hash,
+                  'packageCount': len(packages),
+              }
+
+          for runtime in output['runtimes'].values():
+              runtime['missingArchiveHashes'] = [
+                  x for x in runtime['missingArchiveHashes']
+                  if not x.lower().startswith('resemble-perth==')
+              ]
+              if runtime['missingArchiveHashes']:
+                  raise SystemExit(f"missing archive hashes: {runtime['missingArchiveHashes']}")
+
+          (root / 'dependency-lock-evidence.json').write_text(json.dumps(output, indent=2) + '\n')
+          PY
+
+      - name: Evidence sichern
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: social-tts-dependency-lock-${{ github.sha }}
+          path: |
+            tts-dependency-evidence/python-base-ref.txt
+            tts-dependency-evidence/qwen-pip-report.json
+            tts-dependency-evidence/chatterbox-pip-report.json
+            tts-dependency-evidence/dependency-lock-evidence.json
+          if-no-files-found: error
+          retention-days: 7
