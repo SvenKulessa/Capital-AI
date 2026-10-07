@@ -19,7 +19,7 @@ test('Content Engine komponiert vorhandene Growth Tools ohne Publication Authori
   const plan = planContentCampaign(base);
   const modules = plan.modules.map((entry) => entry.module);
 
-  for (const expected of ['COPY', 'URL_CONTEXT', 'IMAGE', 'TTS', 'VIDEO', 'ATTRIBUTION', 'PUBLISHER']) {
+  for (const expected of ['COPY', 'URL_CONTEXT', 'IMAGE', 'TTS', 'VIDEO', 'ATTRIBUTION', 'PUBLISHER'] as const) {
     assert.ok(modules.includes(expected));
   }
 
