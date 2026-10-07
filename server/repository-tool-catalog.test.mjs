@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { buildRepositoryToolCatalog, createRepositoryToolCatalog } from './repository-tool-catalog.mjs';
 
 const SHA = 'a'.repeat(40);
@@ -76,6 +77,24 @@ test('isolated package boundaries and nonproduction tooling retain precise prove
   assert.equal(get('tool:android-gradle-plugin').version, '8.13.2');
   assert.equal(get('tool:rust').version, '1.99.0');
   assert.equal(get('tool:npm-cli').version, '12.2.0');
+});
+
+test('real first-party registries catalog 50 analysis modules and pipeline selection tools', () => {
+  const analysisPath = 'src/contracts/analysisComponentRegistry.ts';
+  const pipelinePath = 'src/utils/pipelineToolCatalog.ts';
+  const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
+  const entries = buildRepositoryToolCatalog({
+    sourceSha: SHA, tree: [...TREE, ...[analysisPath, pipelinePath].map(path => ({ type: 'blob', path }))],
+    pkg, lock, cargo,
+    supplementary: { [analysisPath]: read(analysisPath), [pipelinePath]: read(pipelinePath) },
+  });
+  const analyses = entries.filter(row => row.kind === 'ANALYSE_KOMPONENTE');
+  const pipelineTools = entries.filter(row => row.id.startsWith('pipeline:'));
+  assert.equal(analyses.length, 50);
+  assert.ok(analyses.some(row => row.name === 'Market Integrity Gate' && row.version === '1.2.0'));
+  assert.ok(analyses.some(row => row.application.includes('Status: blocked')));
+  assert.ok(pipelineTools.length >= 26);
+  assert.ok(pipelineTools.some(row => row.name === 'Buffett Value Check Engine' && row.version === null));
 });
 
 test('invalid snapshot and unverified third-party paths fail closed', () => {
