@@ -1,8 +1,11 @@
+> **SUPERSEDED / NON-AUTHORIZING — 2026-10-07**
+> Diese Datei bleibt als historische oder fachliche Dokumentation erhalten. Sie erzeugt keine zusätzlichen Repository-Gates, Admissions, Handoffs, Pflichtreviews oder Merge-/Deployment-Regeln. Autoritativ ist ausschließlich `AGENTS.md` mit `SOLO_MAINTAINER_FLOW@1`. Konkrete gesetzliche, regulatorische, Security- oder Provider-/Lizenzpflichten bleiben davon unberührt.
+
 # SEO-00 — Route-/Content-Inventar und Indexing-Policy
 
-Stand: 2026-10-05  
-Primary Domain: CAPITAL-AI-GROWTH  
-Baseline: `SvenKulessa/Capital-AI@c9fc1bb55dcfcdf2b121c879d6d7580fe9388e84`  
+Stand: 2026-10-05
+Primary Domain: CAPITAL-AI-GROWTH
+Baseline: `SvenKulessa/Capital-AI@c9fc1bb55dcfcdf2b121c879d6d7580fe9388e84`
 Policy-Quelle: `shared/seo-indexing-policy.mjs`
 
 ## Ziel

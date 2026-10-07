@@ -1,3 +1,6 @@
+> **SUPERSEDED / NON-AUTHORIZING — 2026-10-07**
+> Diese Datei bleibt als historische oder fachliche Dokumentation erhalten. Sie erzeugt keine zusätzlichen Repository-Gates, Admissions, Handoffs, Pflichtreviews oder Merge-/Deployment-Regeln. Autoritativ ist ausschließlich `AGENTS.md` mit `SOLO_MAINTAINER_FLOW@1`. Konkrete gesetzliche, regulatorische, Security- oder Provider-/Lizenzpflichten bleiben davon unberührt.
+
 # Valkey Pub/Sub and paid private NATS
 
 Scope: SvenKulessa/Capital-AI, workspace AICapital, Frankfurt. Owner authorized continuation and paid NATS on 2026-09-30. Earlier NATS cost rejection is superseded for this bounded service. No change to Finance or its secrets.

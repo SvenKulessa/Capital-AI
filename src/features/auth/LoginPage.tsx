@@ -70,6 +70,15 @@ function initialMode(): Mode {
   return 'login';
 }
 
+
+function newPasswordMeetsObservedPolicy(value: string) {
+  return value.length >= 14 &&
+    /[a-z]/.test(value) &&
+    /[A-Z]/.test(value) &&
+    /[0-9]/.test(value) &&
+    /[!@#$%^&*()_+\-=\[\]{};'\\:"|<>?,./`~]/.test(value);
+}
+
 export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFaq, onNavigateLegal }) => {
   const [session, setSession] = useState<SessionState | null>(null);
   const [mode, setMode] = useState<Mode>(initialMode);
@@ -169,7 +178,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
   const showError = (reason: unknown) => {
     const message = reason instanceof Error ? reason.message : 'authentication_failed';
     if (message === 'weak_password' || message === 'invalid_new_password') {
-      setError('Das neue Passwort muss mindestens 14 Zeichen lang sein und die Supabase-Sicherheitsanforderungen erfüllen.');
+      setError('Das Passwort benötigt mindestens 14 Zeichen sowie Kleinbuchstaben, Großbuchstaben, Zahl und Sonderzeichen.');
     } else if (message === 'passwords_do_not_match') {
       setError('Die beiden Passwörter stimmen nicht überein.');
     } else if (message === 'registration_consents_required') {
@@ -203,6 +212,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
       }
 
       if (password !== passwordConfirm) throw new Error('passwords_do_not_match');
+      if (!newPasswordMeetsObservedPolicy(password)) throw new Error('weak_password');
       if (!termsAccepted || !privacyAcknowledged) throw new Error('registration_consents_required');
       const result = await postJson('/api/auth/register', {
         name,
@@ -254,7 +264,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
     setError('');
     setNotice('');
     try {
-      if (password.length < 14 || password !== passwordConfirm) {
+      if (password !== passwordConfirm || !newPasswordMeetsObservedPolicy(password)) {
         throw new Error(password !== passwordConfirm ? 'passwords_do_not_match' : 'invalid_new_password');
       }
       const result = await postJson('/api/auth/password/reset', { password });

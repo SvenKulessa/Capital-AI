@@ -1,3 +1,6 @@
+> **SUPERSEDED / NON-AUTHORIZING — 2026-10-07**
+> Diese Datei bleibt nur als historische Dokumentation bzw. Evidence erhalten. Sie definiert keine zusätzlichen Gates, Admissions, Handoffs, Pflichtreviews oder Merge-/Deployment-Regeln. Die einzige autorisierende Repository-Richtlinie ist `AGENTS.md` mit `SOLO_MAINTAINER_FLOW@1`.
+
 # Tool & Architecture Benchmarking Contract
 
 Stand: 2026-10-01

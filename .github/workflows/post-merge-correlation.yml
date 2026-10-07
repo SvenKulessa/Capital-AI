@@ -6,11 +6,11 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
-  pull-requests: write
+  contents: write
+  pull-requests: read
 
 concurrency:
-  group: post-merge-correlation-${{ github.event.pull_request.merge_commit_sha }}
+  group: post-merge-correlation
   cancel-in-progress: false
 
 jobs:
@@ -18,23 +18,16 @@ jobs:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-26.04
     timeout-minutes: 8
-    permissions:
-      contents: read
-      pull-requests: write
-    outputs:
-      documentation_repair_action: ${{ steps.classify.outputs.documentation_repair_action }}
-      expected_main_sha: ${{ steps.classify.outputs.expected_main_sha }}
     steps:
       - name: Checkout merged main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: 0
           persist-credentials: false
 
-      - name: Regression der Korrelationslogik
-        run: node --test scripts/post-merge-correlation.test.mjs
-
-      - name: Merge-Diff und offene PR-Matrix lesen
+      - name: Ersten betroffenen linearen PR bestimmen
+        id: target
         env:
           GH_TOKEN: ${{ github.token }}
           REPOSITORY: ${{ github.repository }}
@@ -43,251 +36,77 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p security-reports
-          gh api --paginate "repos/$REPOSITORY/pulls/$MERGED_PR/files?per_page=100" --jq '.[].filename' > security-reports/merged-files.txt
-          gh api --paginate "repos/$REPOSITORY/pulls?state=open&base=main&per_page=100" > security-reports/open-prs.raw.json
-          jq -s 'add // []' security-reports/open-prs.raw.json > security-reports/open-prs.json
-          : > security-reports/open-pr-matrix.ndjson
+          mkdir -p correlation
 
-          jq -c '.[]' security-reports/open-prs.json | while IFS= read -r pr; do
-            number=$(jq -r '.number' <<<"$pr")
-            head_sha=$(jq -r '.head.sha' <<<"$pr")
-            base_sha=$(jq -r '.base.sha' <<<"$pr")
-            title=$(jq -r '.title' <<<"$pr")
-            gh api --paginate "repos/$REPOSITORY/pulls/$number/files?per_page=100" --jq '.[].filename' > "security-reports/pr-$number-files.txt"
-            compare=$(gh api "repos/$REPOSITORY/compare/main...$head_sha")
-            ahead=$(jq -r '.ahead_by // 0' <<<"$compare")
-            behind=$(jq -r '.behind_by // 0' <<<"$compare")
-            files=$(jq -R -s 'split("\n") | map(select(length > 0))' "security-reports/pr-$number-files.txt")
-            jq -cn --argjson number "$number" --arg title "$title" --arg headSha "$head_sha" --arg baseSha "$base_sha" \
-              --argjson aheadBy "$ahead" --argjson behindBy "$behind" --argjson files "$files" \
-              '{number:$number,title:$title,headSha:$headSha,baseSha:$baseSha,aheadBy:$aheadBy,behindBy:$behindBy,files:$files,requiredChecksRevalidated:false}' \
-              >> security-reports/open-pr-matrix.ndjson
-          done
+          gh api --paginate "repos/$REPOSITORY/pulls/$MERGED_PR/files?per_page=100"             --jq '.[].filename' | sort -u > correlation/merged-files.txt
 
-          jq -s '.' security-reports/open-pr-matrix.ndjson > security-reports/open-pr-matrix.json
-          merged_files=$(jq -R -s 'split("\n") | map(select(length > 0))' security-reports/merged-files.txt)
-          pattern_state='{}'
-          test ! -f docs/security/evidence/post-merge-pattern-state.json || pattern_state=$(cat docs/security/evidence/post-merge-pattern-state.json)
+          gh api --paginate "repos/$REPOSITORY/pulls?state=open&base=main&per_page=100&sort=created&direction=asc"             > correlation/open-prs.raw.json
+          jq -s 'add // []' correlation/open-prs.raw.json > correlation/open-prs.json
 
-          jq -n --arg mainSha "$MAIN_SHA" --argjson mergedPr "$MERGED_PR" --argjson files "$merged_files" \
-            --slurpfile openPrs security-reports/open-pr-matrix.json --argjson patternState "$pattern_state" \
-            '{mainSha:$mainSha,mergedPr:$mergedPr,files:$files,openPrs:$openPrs[0],patternState:$patternState}' \
-            > security-reports/post-merge-event.json
+          selected=""
+          jq -c 'sort_by(.number)[] | select((.title | contains("[HOLD]")) | not) | select(.head.repo.full_name == env.REPOSITORY)'             correlation/open-prs.json | while IFS= read -r pr; do
+              number=$(jq -r '.number' <<<"$pr")
+              branch=$(jq -r '.head.ref' <<<"$pr")
+              head_sha=$(jq -r '.head.sha' <<<"$pr")
 
-      - name: Dokumentationsdrift und bounded PR-Plan erzeugen
-        env:
-          MAIN_SHA: ${{ github.event.pull_request.merge_commit_sha }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          node scripts/documentation-drift.mjs --report-only > security-reports/documentation-drift.json
-          node scripts/documentation-drift-remediation.mjs plan \
-            --report security-reports/documentation-drift.json \
-            --profile documentary/documentation-drift-profile.json \
-            --validation docs/growth/DOCUMENTATION-DRIFT-VALIDATION-20261004.json \
-            --expected-main "$MAIN_SHA" \
-            > security-reports/documentation-repair-plan.json
-          jq --slurpfile plan security-reports/documentation-repair-plan.json \
-            '. + {documentationRepairPlan:$plan[0]}' \
-            security-reports/post-merge-event.json > security-reports/post-merge-event.tmp.json
-          mv security-reports/post-merge-event.tmp.json security-reports/post-merge-event.json
+              gh api --paginate "repos/$REPOSITORY/pulls/$number/files?per_page=100"                 --jq '.[].filename' | sort -u > "correlation/pr-$number-files.txt"
 
-      - name: Technische Korrelation und Repair-Admission prüfen
-        id: classify
-        run: |
-          set -euo pipefail
-          node scripts/post-merge-correlation.mjs security-reports/post-merge-event.json | tee security-reports/post-merge-correlation.json
-          jq -e '.schema == "POST_MERGE_CORRELATION@3"' security-reports/post-merge-correlation.json >/dev/null
-          jq -e '.technicalAdmission.explicitRepairAdmissionRequired == true and .technicalAdmission.exactFixFingerprintRequired == true and .technicalAdmission.requiredChecksRevalidationRequired == true' security-reports/post-merge-correlation.json >/dev/null
-          jq -e '.globalPolicy.deploy == false and .globalPolicy.productionHandoff == false and .globalPolicy.natsHeadOnlyRedeploy == false' security-reports/post-merge-correlation.json >/dev/null
-          jq -e '.globalPolicy.documentationRepairMode == "PR_ONLY" and .globalPolicy.documentationAutoMerge == false and .globalPolicy.documentationProductionAuthority == false and .globalPolicy.documentationExpectedMainShaRequired == true' security-reports/post-merge-correlation.json >/dev/null
-          echo "documentation_repair_action=$(jq -r '.documentationRepair.action' security-reports/post-merge-correlation.json)" >> "$GITHUB_OUTPUT"
-          echo "expected_main_sha=$(jq -r '.mainSha' security-reports/post-merge-correlation.json)" >> "$GITHUB_OUTPUT"
+              exact=$(comm -12 correlation/merged-files.txt "correlation/pr-$number-files.txt" || true)
+              exact_count=$(printf '%s\n' "$exact" | sed '/^$/d' | wc -l)
 
-      - name: Betroffene offene PRs mit Handlung korrelieren
+              if [ "$exact_count" -gt 0 ]; then
+                jq -n                   --arg schema "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1"                   --arg mainSha "$MAIN_SHA"                   --argjson mergedPr "$MERGED_PR"                   --argjson targetPr "$number"                   --arg targetBranch "$branch"                   --arg targetHeadSha "$head_sha"                   --argjson exactOverlap "$(printf '%s\n' "$exact" | jq -R -s 'split("\n") | map(select(length > 0))')"                   '{schema:$schema,mainSha:$mainSha,mergedPr:$mergedPr,targetPr:$targetPr,targetBranch:$targetBranch,targetHeadSha:$targetHeadSha,exactOverlap:$exactOverlap,authority:"EVIDENCE_ONLY",mergeAuthority:false,deployAuthority:false}'                   > correlation/selected.json
+                echo "pr=$number" >> "$GITHUB_OUTPUT"
+                echo "branch=$branch" >> "$GITHUB_OUTPUT"
+                echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+            done < <(jq -c 'sort_by(.number)[] | select(.draft == true) | select((.title | contains("[HOLD]")) | not) | select(.head.repo.full_name == env.REPOSITORY)' correlation/open-prs.json)
+
+          if ! grep -q '^pr=' "$GITHUB_OUTPUT"; then
+            echo "pr=" >> "$GITHUB_OUTPUT"
+            echo "branch=" >> "$GITHUB_OUTPUT"
+            echo "head_sha=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Korrelations-Commit auf bestehendem PR-Branch erzeugen
+        if: steps.target.outputs.pr != ''
         env:
           GH_TOKEN: ${{ github.token }}
           REPOSITORY: ${{ github.repository }}
-          MAIN_SHA: ${{ github.event.pull_request.merge_commit_sha }}
-          MERGED_PR: ${{ github.event.pull_request.number }}
+          TARGET_PR: ${{ steps.target.outputs.pr }}
+          TARGET_BRANCH: ${{ steps.target.outputs.branch }}
+          EXPECTED_HEAD: ${{ steps.target.outputs.head_sha }}
         shell: bash
         run: |
           set -euo pipefail
-          jq -c '.openPrs[] | select(.action != "NO_ACTION")' security-reports/post-merge-correlation.json | while IFS= read -r item; do
-            number=$(jq -r '.prNumber' <<<"$item")
-            action=$(jq -r '.action' <<<"$item")
-            behind=$(jq -r '.behindBy' <<<"$item")
-            exact=$(jq -r 'if (.exactOverlap|length)==0 then "keine" else (.exactOverlap|join(", ")) end' <<<"$item")
-            semantic=$(jq -r 'if (.semanticOverlap|length)==0 then "keine" else (.semanticOverlap|join(", ")) end' <<<"$item")
-            admission=$(jq -r '.repair.admissionState' <<<"$item")
-            checks=$(jq -r '[.technicalChecks|to_entries[]|select(.value==true)|.key] | join(", ")' <<<"$item")
-            body="<!-- CAPITAL_AI_POST_MERGE_CORRELATION -->
-          ## Post-Merge-Korrelation · supply_sh_chain
 
-          Merge #$MERGED_PR hat main@$MAIN_SHA verändert.
+          current_head=$(gh api "repos/$REPOSITORY/pulls/$TARGET_PR" --jq '.head.sha')
+          test "$current_head" = "$EXPECTED_HEAD"
 
-          - Entscheidung: **$action**
-          - Branch hinter Main: **$behind Commit(s)**
-          - Exakte Dateikollision: $exact
-          - Semantische Boundary-Korrelation: $semantic
-          - Self-Healing Admission: **$admission**
-          - Technische Checks aktuell positiv: $checks
+          git fetch --no-tags origin "$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH"
+          git checkout --detach "$EXPECTED_HEAD"
 
-          REPAIR_CANDIDATE erlaubt keine automatische Mutation ohne explizite Admission des exakten Fix-Fingerprints und vollständig positive technische Checks einschließlich revalidierter Required Checks.
+          mkdir -p docs/evidence
+          cp correlation/selected.json docs/evidence/linear-post-merge-correlation.json
 
-          Kein Deploy, kein Production-Handoff und kein NATS-Redeploy wird aus einem neuen Repository-HEAD abgeleitet."
-            gh pr comment "$number" --repo "$REPOSITORY" --body "$body"
-          done
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/evidence/linear-post-merge-correlation.json
 
-      - name: Supply-Chain-Zusammenfassung
-        shell: bash
-        run: |
-          {
-            echo "## POST_MERGE_CORRELATION@3"
-            echo
-            echo "- Main: ${{ github.event.pull_request.merge_commit_sha }}"
-            echo "- Merge-PR: #${{ github.event.pull_request.number }}"
-            echo "- Offene PRs: $(jq -r '.summary.totalOpenPrs' security-reports/post-merge-correlation.json)"
-            echo "- Nur korrelieren: $(jq -r '.summary.correlateOnly' security-reports/post-merge-correlation.json)"
-            echo "- Sync erforderlich: $(jq -r '.summary.syncRequired' security-reports/post-merge-correlation.json)"
-            echo "- Repair-Kandidat: $(jq -r '.summary.repairCandidate' security-reports/post-merge-correlation.json)"
-            echo "- Manuelles Review: $(jq -r '.summary.manualReviewRequired' security-reports/post-merge-correlation.json)"
-            echo "- Documentation Repair: $(jq -r '.documentationRepair.action' security-reports/post-merge-correlation.json)"
-            echo
-            echo "Repository-HEAD allein autorisiert keinen Deploy/NATS-Redeploy."
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Korrelations-Evidence sichern
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: post-merge-supply-chain-${{ github.event.pull_request.merge_commit_sha }}
-          path: |
-            security-reports/post-merge-event.json
-            security-reports/post-merge-correlation.json
-            security-reports/open-pr-matrix.json
-            security-reports/merged-files.txt
-            security-reports/documentation-drift.json
-            security-reports/documentation-repair-plan.json
-          if-no-files-found: error
-          retention-days: 14
-
-  propose_documentation_repair:
-    name: Documentation Repair PR Proposal
-    needs: correlate
-    if: ${{ needs.correlate.outputs.documentation_repair_action == 'PR_PROPOSAL_CANDIDATE' && github.repository == 'SvenKulessa/Capital-AI' }}
-    runs-on: ubuntu-26.04
-    timeout-minutes: 8
-    permissions:
-      actions: read
-      contents: write
-      pull-requests: write
-    env:
-      GH_TOKEN: ${{ github.token }}
-      REPOSITORY: ${{ github.repository }}
-      EXPECTED_MAIN_SHA: ${{ needs.correlate.outputs.expected_main_sha }}
-    steps:
-      - name: Checkout expected main
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ needs.correlate.outputs.expected_main_sha }}
-          fetch-depth: 0
-
-      - name: Korrelations-Evidence laden
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: post-merge-supply-chain-${{ needs.correlate.outputs.expected_main_sha }}
-          path: security-reports
-          digest-mismatch: error
-
-      - name: Expected-Main und PR-only Policy fail-closed prüfen
-        shell: bash
-        run: |
-          set -euo pipefail
-          actual_main=$(gh api "repos/$REPOSITORY/branches/main" --jq '.commit.sha')
-          test "$actual_main" = "$EXPECTED_MAIN_SHA"
-          test "$(git rev-parse HEAD)" = "$EXPECTED_MAIN_SHA"
-          jq -e --arg sha "$EXPECTED_MAIN_SHA" '
-            .eligible == true
-            and .expectedMainSha == $sha
-            and .promotion.promoted == true
-            and .policy.mode == "PR_ONLY"
-            and .policy.autoMerge == false
-            and .policy.productionAuthority == false
-            and .policy.directMainMutation == false
-            and .blockers == []
-          ' security-reports/documentation-repair-plan.json >/dev/null
-
-      - name: Bounded Dokumentationspatch anwenden
-        run: |
-          set -euo pipefail
-          node scripts/documentation-drift-remediation.mjs apply \
-            --plan security-reports/documentation-repair-plan.json \
-            --expected-main "$EXPECTED_MAIN_SHA"
-          jq -r '.operations[].path' security-reports/documentation-repair-plan.json | sort -u > security-reports/expected-doc-files.txt
-          git diff --name-only | sort -u > security-reports/actual-doc-files.txt
-          diff -u security-reports/expected-doc-files.txt security-reports/actual-doc-files.txt
-          git diff --check
-
-      - name: Reparierten Dokumentationszustand verifizieren
-        shell: bash
-        run: |
-          set -euo pipefail
-          node --test scripts/post-merge-correlation.test.mjs
-          node scripts/documentation-drift.mjs --report-only > security-reports/documentation-drift-after-repair.json
-          jq -e '.summary.driftDetected == false' security-reports/documentation-drift-after-repair.json >/dev/null
-
-      - name: PR-Branch erzeugen und Pull Request öffnen
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "$(gh api "repos/$REPOSITORY/branches/main" --jq '.commit.sha')" = "$EXPECTED_MAIN_SHA"
-          short_sha="${EXPECTED_MAIN_SHA:0:12}"
-          branch_name="capital-ai-growth/docs-self-heal-$short_sha"
-
-          existing_pr=$(gh pr list --repo "$REPOSITORY" --state open --head "$branch_name" --json number --jq '.[0].number // empty')
-          if test -n "$existing_pr"; then
-            echo "Existing documentation repair PR: #$existing_pr" >> "$GITHUB_STEP_SUMMARY"
+          if git diff --cached --quiet; then
+            echo "Korrelations-Evidence ist bereits identisch; kein Commit nötig."
             exit 0
           fi
 
-          if git ls-remote --exit-code --heads origin "refs/heads/$branch_name" >/dev/null 2>&1; then
-            echo "::error::Repair branch exists without an open PR: $branch_name"
-            exit 1
+          git commit -m "[CAPITAL-AI-TRUST] Post-Merge-Korrelation für PR #$TARGET_PR"
+          git push "https://x-access-token:$GH_TOKEN@github.com/$REPOSITORY.git" "HEAD:refs/heads/$TARGET_BRANCH"
+
+      - name: Zusammenfassung
+        shell: bash
+        run: |
+          if [ -n "${{ steps.target.outputs.pr }}" ]; then
+            echo "Korrelations-Evidence wurde auf PR #${{ steps.target.outputs.pr }} aktualisiert." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Keine exakte Dateikollision mit einem aktiven linearen PR; kein Commit erzeugt." >> "$GITHUB_STEP_SUMMARY"
           fi
-
-          git switch -c "$branch_name"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          while IFS= read -r file; do
-            test -n "$file" && git add -- "$file"
-          done < security-reports/expected-doc-files.txt
-          git commit -m "[CAPITAL-AI-GROWTH] Propose bounded documentation drift repair"
-
-          test "$(gh api "repos/$REPOSITORY/branches/main" --jq '.commit.sha')" = "$EXPECTED_MAIN_SHA"
-          git push origin "HEAD:refs/heads/$branch_name"
-
-          cat > security-reports/pr-body.md <<EOF
-          ## Primary Domain
-          Domain: GROWTH
-
-          Automated PR-only proposal from `POST_MERGE_CORRELATION@3`.
-
-          - Expected main: `$EXPECTED_MAIN_SHA`
-          - Repair fingerprint: `$(jq -r '.repairFingerprint' security-reports/documentation-repair-plan.json)`
-          - Positive validation cycles: `$(jq -r '.promotion.positive' security-reports/documentation-repair-plan.json)/$(jq -r '.promotion.required' security-reports/documentation-repair-plan.json)`
-          - Mode: `PR_ONLY`
-          - Auto-merge: `false`
-          - Production authority: `false`
-          - Direct main mutation: `false`
-
-          Only the exact paths in the deterministic repair plan were staged. Required checks and human/domain review remain authoritative.
-          EOF
-
-          gh pr create \
-            --repo "$REPOSITORY" \
-            --base main \
-            --head "$branch_name" \
-            --title "[CAPITAL-AI-GROWTH] Self-heal documentation drift for $short_sha" \
-            --body-file security-reports/pr-body.md

@@ -554,10 +554,9 @@ export const ROADMAP_CURRENT_STATE_OVERRIDES: Readonly<Record<string, RoadmapRec
     "progressPercent": 100,
     "evidenceRefs": [
       "scripts/validate-contract-suites.mjs",
-      "scripts/preflight.mjs",
       ".github/workflows/build-security.yml"
     ],
-    "nextStep": "Provider-/Contract-Suites bei jeder neuen Execution-/Data-Authority erweitern; Preflight und Docker-Gate bleiben verpflichtende Regressionsevidence."
+    "nextStep": "Provider-/Contract-Suites bei jeder neuen Execution-/Data-Authority erweitern; die autoritativen Regressionen laufen im Docker Security Gate und den übrigen Required Checks auf GitHub."
   },
   "AP-SOC-01": {
     "status": "aktiv",
