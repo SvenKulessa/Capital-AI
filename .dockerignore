@@ -31,6 +31,8 @@
 !server/public-artifact-policy.mjs
 !server/subscription-checkout.test.mjs
 !server/subscription-checkout.mjs
+!server/cads-marketplace.mjs
+!server/cads-marketplace.test.mjs
 !server/cads-commerce.mjs
 !server/cads-commerce.test.mjs
 !server/benchmark-runs.mjs
@@ -96,6 +98,8 @@
 !scripts/branding-assets.test.mjs
 !scripts/license-evidence.mjs
 !scripts/license-evidence.test.mjs
+!scripts/cads-marketplace-migration.test.mjs
+!scripts/cads-marketplace-production-manifest.test.mjs
 !scripts/billing-catalog.test.mjs
 !scripts/stripe-catalog-readback.test.mjs
 !scripts/stripe-subscription-sync-migration.test.mjs
@@ -131,6 +135,10 @@
 !packages/
 !packages/benchmark-core/
 !packages/benchmark-core/**
+!apps/
+!apps/cads-github-app/
+!apps/cads-github-app/marketplace-plans.production.json
+!apps/cads-github-app/github-app-registration.production.example.json
 !services/
 !services/provider-bridge-rs/
 !services/provider-bridge-rs/**
@@ -193,3 +201,5 @@
 !supabase/migrations/20261006072600_sync_stripe_subscription_catalog_v2.sql
 !supabase/migrations/20261006080124_benchmark_run_usage_ledger.sql
 !supabase/migrations/20261006131500_enable_binance_user_provider_vault.sql
+
+!supabase/migrations/20261006210500_cads_marketplace_paid_entitlements.sql

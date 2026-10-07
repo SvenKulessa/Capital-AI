@@ -124,7 +124,7 @@
     {
       "id": "TA-AUTH",
       "path": "server/auth.mjs",
-      "blobSha": "28722ee942722c1d29330d4daa4425260878f9a6",
+      "blobSha": "575086deda2dac5abce833369e238e602f547e38",
       "role": "Current session/auth composition"
     },
     {
@@ -998,5 +998,9 @@
       "Rights/freshness/provenance gates remain fail-closed.",
       "Research-only models remain scoreEligible=false and decisionEligible=false until separately promoted."
     ]
+  },
+  "correlation": {
+    "recorrelationReason": "CADS Marketplace buyer OAuth/setup integration changed server/auth.mjs on PR #220; exact branch blob rebound after review.",
+    "recorrelationDate": "2026-10-06"
   }
 }

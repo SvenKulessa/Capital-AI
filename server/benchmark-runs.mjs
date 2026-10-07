@@ -1,4 +1,5 @@
 import { benchmarkEntitlementForTier } from '../packages/benchmark-core/index.mjs';
+import { highestCadsTier } from './cads-marketplace.mjs';
 
 const MAX_BODY_BYTES = 8 * 1024;
 const RUN_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -48,7 +49,7 @@ function publicRun(run) {
   };
 }
 
-export function createBenchmarkRuns({ env = process.env, auth, store } = {}) {
+export function createBenchmarkRuns({ env = process.env, auth, store, marketplace } = {}) {
   const enabled = env.BENCHMARK_RUN_API_ENABLED === 'true';
 
   async function requirePaidUser(req, res, json) {
@@ -57,7 +58,14 @@ export function createBenchmarkRuns({ env = process.env, auth, store } = {}) {
       json(res, 401, { error: 'authentication_required' });
       return null;
     }
-    const tier = await auth?.resolvePaidTier?.(req, res);
+    const websiteTier = await auth?.resolvePaidTier?.(req, res);
+    let marketplaceTier = null;
+    try {
+      marketplaceTier = await marketplace?.resolveTierForUser?.(user.userId);
+    } catch {
+      marketplaceTier = null;
+    }
+    const tier = highestCadsTier(websiteTier, marketplaceTier);
     if (!tier) {
       json(res, 403, { error: 'paid_benchmark_entitlement_required' });
       return null;

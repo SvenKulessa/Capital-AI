@@ -51,6 +51,21 @@ function normalizePath(value, fallback = '/') {
   return value.slice(0, 256);
 }
 
+function normalizeMarketplaceAuthNext(value) {
+  const path = normalizePath(value, '/');
+  if (path === '/') return '/';
+  try {
+    const parsed = new URL(path, 'https://capital-ai.invalid');
+    if (parsed.origin !== 'https://capital-ai.invalid') return '/';
+    if (parsed.pathname !== '/api/cads/marketplace/setup') return '/';
+    const installationId = Number(parsed.searchParams.get('installation_id'));
+    if (!Number.isSafeInteger(installationId) || installationId <= 0) return '/';
+    return '/api/cads/marketplace/setup?installation_id=' + encodeURIComponent(String(installationId));
+  } catch {
+    return '/';
+  }
+}
+
 function configured(env) {
   try {
     const url = secureUrl(env.SUPABASE_URL || env.VITE_SUPABASE_URL);
@@ -572,7 +587,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       const verifier = randomBytes(64).toString('base64url');
       const challenge = createHash('sha256').update(verifier).digest('base64url');
       const flow = random();
-      const next = '/';
+      const next = normalizeMarketplaceAuthNext(url.searchParams.get('next'));
       const callback = new URL('/api/auth/callback', config.origin);
       callback.searchParams.set('flow', flow);
       callback.searchParams.set('next', next);
@@ -662,7 +677,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       }
       exchanged.data.user = googleUser.data;
       writeSessionCookies(req, res, config, exchanged.data);
-      const googleNext = '/';
+      const googleNext = normalizeMarketplaceAuthNext(flowCookie.next);
       const googleMfaRequired = tokenAal(exchanged.data.access_token) !== 'aal2' && hasVerifiedTotpFactor(googleUser.data);
       res.writeHead(303, {
         Location: googleMfaRequired

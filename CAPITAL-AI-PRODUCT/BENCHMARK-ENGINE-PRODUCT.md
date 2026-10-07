@@ -62,14 +62,19 @@ Jeder Run muss an exakten Git-SHA, Broker-Image-Digest, Worker-Image-Digest und 
 Ein erfolgreicher Benchmark darf später von einer separaten Release Policy als Evidence konsumiert werden,
 erteilt aber niemals selbst eine Production-Freigabe.
 
-## GitHub Marketplace
+## GitHub Marketplace — Paid Production
 
 Stripe und GitHub Marketplace bleiben getrennte Commerce-/Entitlement-Systeme:
 
 - CAPITAL-AI Website: bestehende Stripe-Tiers Starter / Pro / Enterprise.
-- GitHub Marketplace: eigene Marketplace Plan IDs und `marketplace_purchase`-Lifecycle.
-- Kein Stripe-Status wird als autoritative Marketplace-Entitlement-Quelle interpretiert.
-- Gemeinsame Capability-Namen können geteilt werden; Billing Authority bleibt systemspezifisch.
+- GitHub Marketplace: produktive Paid-Pläne Starter / Pro / Enterprise.
+- Marketplace Pricing Authority ist das GitHub Marketplace Listing in USD.
+- Jeder Paid-Plan benötigt monatliche und jährliche Abrechnung.
+- Real Marketplace Plan IDs werden als Runtime-Konfiguration gebunden.
+- `marketplace_purchase` verarbeitet purchased / changed / cancelled.
+- Purchase und Planwechsel werden vor Entitlement-Aktivierung gegen die GitHub Marketplace API zurückgelesen.
+- Kein Stripe-Status wird als Marketplace-Entitlement interpretiert.
+- Gemeinsame Capability-Namen kommen ausschließlich aus `BENCHMARK_TIERS`; Billing Authority bleibt systemspezifisch.
 
 ## Implementierter Website-Commerce-Slice
 
@@ -86,8 +91,9 @@ PRODUCT bindet CADS jetzt ohne neue Stripe-SKUs an die bestehenden SaaS-Tiers:
 
 PLATFORM führt `CAPITAL_AI_EVENT_BACKBONE@1` als reale NATS/Kafka × Node/Rust 4er-Matrix isoliert aus.
 TRUST bindet SBOM/CVE/Reachability-Evidence. PRODUCT ergänzt Ergebnisprojektion und Runtime-Readback.
-Danach kann die separate GitHub-Marketplace-App mit Minimalrechten, Plan IDs und
-`marketplace_purchase`-Lifecycle implementiert werden.
+Der separate GitHub-Marketplace-Paid-Runtime-Slice ist implementiert. Extern offen bleiben
+Organisation/Verified Publisher, Installationsschwelle, Financial Onboarding, reale monatliche+jährliche
+USD-Preise, Marketplace Plan IDs, Listing Approval und produktive Billing-Smokes.
 
 
 ## Pro-/Enterprise-Evidence-Export
