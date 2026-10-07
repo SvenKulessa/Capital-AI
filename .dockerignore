@@ -12,6 +12,8 @@
 !src/**
 !server/
 !server/index.mjs
+!server/repository-tool-catalog.mjs
+!server/repository-tool-catalog.test.mjs
 !server/market.mjs
 !server/ecb-reference-rates.mjs
 !server/ecb-reference-rates.test.mjs
