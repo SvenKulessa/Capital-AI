@@ -41,19 +41,27 @@ Es gibt keinen vorgelagerten Preflight und keinen separaten Branch-Precheck.
 
 Alle autoritativen Prüfungen laufen kostenlos in GitHub Actions auf dem Pull Request. Entwicklung und PR-Erstellung werden nicht durch lokale oder vorgelagerte Preflight-Schichten blockiert.
 
-## Security, Lizenz und Provider-Rechte
+## Gesetzliche und regulatorische Grundlage
 
-Security-, Lizenz- und Rechteprüfungen bleiben dort fail-closed, wo die konkrete Änderung diese Grenze tatsächlich berührt.
+CAPITAL-AI führt keine parallele interne Compliance-Bürokratie neben geltendem Recht ein.
 
-Eine separate Admission ist nur erforderlich für **neue privilegierte Capabilities oder externe Rechte-/Trust-Grenzen**, insbesondere:
-- neue produktive Daten-/API-/AI-Providerrechte,
-- Raw-/Redistribution-/Sublicensing-/Pass-through-Rechte,
-- neue schreibende externe Control-Plane-Capabilities,
-- neue Auth-/Secret-/Credential-Trust-Boundaries,
-- neue autonome Mutationsfähigkeit,
-- neue kostenpflichtige oder anderweitig privilegierte Infrastruktur.
+Maßgeblich sind ausschließlich die **für das konkrete Produkt und die konkrete Tätigkeit tatsächlich anwendbaren** gesetzlichen, regulatorischen und vertraglichen Anforderungen, insbesondere soweit einschlägig:
 
-Normale Bugfixes, UI-/Produktänderungen, Refactorings, Dokumentation, Tests, bestehende Dependency-Updates, Scoring-Entwicklung, Analysewerkzeuge und gewöhnliche Deployments benötigen keine separate Admission.
+- deutsches und europäisches Finanzaufsichtsrecht einschließlich der jeweils anwendbaren BaFin-Aufsichtspraxis,
+- Anforderungen aus KWG, WpIG/WpHG, ZAG, KAGB, GwG, MiCA oder DORA nur soweit der konkrete CAPITAL-AI-Dienst in deren Anwendungsbereich fällt,
+- Datenschutz- und IT-Sicherheitsrecht,
+- Lizenz-, Urheber-, Datenbank- und vertragliche Providerrechte.
+
+Es werden **keine zusätzlichen internen Admissions, Handoffs oder Governance-Gates** allein vorsorglich eingeführt.
+
+Neue interne Schutzregeln werden nur ergänzt, wenn:
+
+1. eine gesetzliche/regulatorische Pflicht sie konkret erfordert,
+2. ein tatsächliches Security-/Betriebsproblem nachgewiesen wurde,
+3. ein Provider-/Lizenzvertrag sie verlangt,
+4. oder der Human Repository Owner sie ausdrücklich beschließt.
+
+Normale Bugfixes, UI-/Produktänderungen, Refactorings, Dokumentation, Tests, bestehende Dependency-Updates, Scoring-Entwicklung und Analysewerkzeuge benötigen keine separate Admission.
 
 ## Production
 
