@@ -67,15 +67,24 @@ Normale Bugfixes, UI-/Produktänderungen, Refactorings, Dokumentation, Tests, be
 - Ein Repository-HEAD allein löst keinen NATS-Redeploy aus.
 - NATS wird nur bei NATS-spezifischen Änderungen oder einer ausdrücklich erforderlichen Runtime-/Security-Maßnahme neu deployed.
 
-## Keine automatische Rekorrelationsschleife
+## Lineare Post-Merge-Korrelation
 
-Ein Merge nach `main` startet **keine automatische Post-Merge-Korrelation offener PRs** und keine automatischen Repair-, Branch-, Commit- oder PR-Aktionen.
+Nach einem Merge nach `main` läuft die Post-Merge-Korrelation weiterhin automatisch.
 
-Offene PRs werden nur dann gegen den neuen Main korreliert, wenn:
-- eine konkrete Dateikollision vorliegt,
-- GitHub einen Merge-Konflikt meldet,
-- ein Required Check nach dem Merge fehlschlägt,
-- oder der Owner ausdrücklich eine Rekorrelation verlangt.
+Sie darf ausschließlich:
+
+- den Merge-Diff gegen offene PRs auswerten,
+- den **ersten tatsächlich betroffenen offenen PR in linearer Reihenfolge** bestimmen,
+- `[HOLD]`-PRs überspringen,
+- nur PRs berücksichtigen, deren Head-Branch im selben Repository liegt,
+- genau **einen Korrelations-Commit** auf diesem bereits existierenden PR-Branch erzeugen,
+- darin ausschließlich maschinenlesbare Korrelations-Evidence zum letzten Main-Merge aktualisieren.
+
+Sie darf **keine neuen Branches, keine neuen PRs, keine Repair-Commits außerhalb dieser Evidence-Datei, keinen Merge und keinen Deploy** erzeugen.
+
+Ein Korrelations-Commit ist keine Admission, keine Merge-Freigabe und keine Anweisung, fachlichen Code automatisch umzuschreiben. Er dokumentiert nur, welche Überschneidung mit dem neuen `main` besteht.
+
+Wenn kein offener PR tatsächlich betroffen ist, wird kein Commit erzeugt.
 
 ## Reviews und Wartung
 
