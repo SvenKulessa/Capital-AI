@@ -191,7 +191,7 @@ export function createApp(root = defaultRoot, options = {}) {
   let inflight = 0;
   const auth = createAuth(options);
   const userProviderVault = createUserProviderVault({ ...options, auth });
-  const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault, state: infrastructure });
+  const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault });
   if ((options.env || process.env).PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true') {
     void privateProviderQuery.start().catch(() => {});
   }
@@ -277,18 +277,18 @@ export function createApp(root = defaultRoot, options = {}) {
     });
   }
   if (url.pathname === '/api/internal/repository-tools') {
-     const ownerAllowed = await auth.authorizeIamRole(req, res, 'owner');
-     if (!ownerAllowed) {
-       writeAuditEvent({ eventType: 'catalog.owner_access.denied', requestId: requestContext.requestId, result: 'DENIED' });
-       return json(res, 404, { error: 'not_found' });
-     }
-     try {
-       return json(res, 200, await repositoryToolCatalog.snapshot());
-     } catch {
-       return json(res, 503, { error: 'repository_catalog_unavailable' });
-     }
-   }
-   if (url.pathname === '/api/internal/observability') {
+    const ownerAllowed = await auth.authorizeIamRole(req, res, 'owner');
+    if (!ownerAllowed) {
+      writeAuditEvent({ eventType: 'catalog.owner_access.denied', requestId: requestContext.requestId, result: 'DENIED' });
+      return json(res, 404, { error: 'not_found' });
+    }
+    try {
+      return json(res, 200, await repositoryToolCatalog.snapshot());
+    } catch {
+      return json(res, 503, { error: 'repository_catalog_unavailable' });
+    }
+  }
+  if (url.pathname === '/api/internal/observability') {
     const ownerAllowed = await auth.authorizeIamRole(req, res, 'owner');
     if (!ownerAllowed) {
       writeAuditEvent({ eventType: 'observability.owner_snapshot.denied', requestId: requestContext.requestId, result: 'DENIED' });

@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { connect } from '@nats-io/transport-node';
 
 import { natsConnectionAuth } from './nats-auth.mjs';
+import { createSupabaseProviderState } from './provider-query-state.mjs';
 
 const CONTRACT = Object.freeze(JSON.parse(readFileSync(
   new URL('../contracts/private-provider-query-operations.json', import.meta.url),
@@ -183,7 +184,29 @@ async function readJson(req) {
   }
 }
 
-export function createPrivateProviderQuery({ env = process.env, auth, vault, state } = {}) {
+export async function executeGuardedProviderQuery({ envelope, env = process.env, state, vault }) {
+  if (!verifyProviderQueryEnvelope(envelope, env)) throw new Error('INVALID_QUERY_PROOF');
+  const policy = CONTRACT.providers[envelope.provider].operations[envelope.operation];
+  const intervals = [Number(policy.minIntervalMs || 0), Number(policy.globalMinIntervalMs || 0)];
+  const costUnits = Number(policy.costUnits || 1);
+  if (intervals.some(interval => !Number.isSafeInteger(interval) || interval < 0 || interval > 3600000) ||
+      !Number.isSafeInteger(costUnits) || costUnits < 1) throw new Error('INVALID_OPERATION_COST_POLICY');
+  const configured = Number(env.PRIVATE_PROVIDER_QUERY_RATE_LIMIT_PER_MINUTE || 30);
+  const rateLimit = Number.isSafeInteger(configured) && configured >= 1 && configured <= 120 ? configured : 30;
+  const scopes = [
+    { key: `user:${envelope.userRef}:${envelope.provider}:${envelope.operation}`, intervalMs: intervals[0] },
+    { key: `global:${envelope.provider}:${envelope.operation}`, intervalMs: intervals[1] },
+  ].filter(scope => scope.intervalMs > 0);
+  if (!state?.claimProviderQuery) throw new Error('PROVIDER_STATE_UNAVAILABLE');
+  await state.claimProviderQuery({ envelope, rateLimit, scopes });
+  // A timeout or uncertain commit is never retried. Expiry is checked again after storage I/O.
+  if (!verifyProviderQueryEnvelope(envelope, env)) throw new Error('INVALID_QUERY_PROOF');
+  return safeProviderResult(await vault.executePrivateQuery(
+    envelope.userRef, envelope.provider, envelope.operation, envelope.params,
+  ));
+}
+
+export function createPrivateProviderQuery({ env = process.env, auth, vault, state = createSupabaseProviderState({ env }) } = {}) {
   let requestNc = null;
   let executorNc = null;
   let subscription = null;
@@ -199,54 +222,12 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault, sta
     await executorNc.publish(message.reply, Buffer.from(JSON.stringify(payload), 'utf8'));
   }
 
-  async function enforceRequestRate(userRef) {
-    const configured = Number(env.PRIVATE_PROVIDER_QUERY_RATE_LIMIT_PER_MINUTE || 30);
-    const limit = Number.isSafeInteger(configured) && configured >= 1 && configured <= 120 ? configured : 30;
-    if (!state?.consumeProviderRate) throw new Error('PROVIDER_STATE_UNAVAILABLE');
-    return state.consumeProviderRate(userRef, limit, 60_000);
-  }
-
-  async function enforceCostGate(userRef, input) {
-    const policy = CONTRACT.providers?.[input.provider]?.operations?.[input.operation] || {};
-    const minIntervalMs = Number(policy.minIntervalMs || 0);
-    const globalMinIntervalMs = Number(policy.globalMinIntervalMs || 0);
-    const costUnits = Number(policy.costUnits || 1);
-    if (!Number.isSafeInteger(minIntervalMs) || minIntervalMs < 0 ||
-        !Number.isSafeInteger(globalMinIntervalMs) || globalMinIntervalMs < 0 ||
-        !Number.isSafeInteger(costUnits) || costUnits < 1) {
-      throw new Error('INVALID_OPERATION_COST_POLICY');
-    }
-    if (minIntervalMs === 0 && globalMinIntervalMs === 0) return { costUnits, retryAfterSeconds: 0 };
-    if (!state?.claimProviderCostScopes) throw new Error('PROVIDER_STATE_UNAVAILABLE');
-
-    const scopes = [
-      { key: `user:${userRef}:${input.provider}:${input.operation}`, intervalMs: minIntervalMs },
-      { key: `global:${input.provider}:${input.operation}`, intervalMs: globalMinIntervalMs },
-    ].filter(scope => scope.intervalMs > 0);
-
-    try {
-      await state.claimProviderCostScopes(scopes);
-    } catch (error) {
-      if (error?.code === 'PROVIDER_QUERY_COST_THROTTLED') error.costUnits = costUnits;
-      throw error;
-    }
-    return { costUnits, retryAfterSeconds: 0 };
-  }
-
   async function executor(message) {
     let envelope;
     try {
       if (message.data.length > MAX_BODY_BYTES) throw new Error('REQUEST_TOO_LARGE');
       envelope = JSON.parse(new TextDecoder().decode(message.data));
-      if (!verifyProviderQueryEnvelope(envelope, env)) throw new Error('INVALID_QUERY_PROOF');
-      if (!state?.claimProviderReplay) throw new Error('PROVIDER_STATE_UNAVAILABLE');
-      await state.claimProviderReplay(envelope.requestId, envelope.expiresAt);
-      const data = safeProviderResult(await vault.executePrivateQuery(
-        envelope.userRef,
-        envelope.provider,
-        envelope.operation,
-        envelope.params,
-      ));
+      const data = await executeGuardedProviderQuery({ envelope, env, state, vault });
       await respond(message, {
         schema: CONTRACT.resultSchema,
         requestId: envelope.requestId,
@@ -261,6 +242,7 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault, sta
         requestId: envelope?.requestId || null,
         ok: false,
         error: String(error?.code || error?.message || 'PRIVATE_PROVIDER_QUERY_FAILED').slice(0, 120),
+        retryAfterSeconds: error?.retryAfterSeconds || null,
       }).catch(() => {});
     }
   }
@@ -322,30 +304,7 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault, sta
 
     let input;
     try {
-      try {
-        await enforceRequestRate(user.userId);
-      } catch (error) {
-        res.setHeader('Retry-After', String(error.retryAfterSeconds || 60));
-        json(res, 429, { error: 'private_provider_rate_limited' });
-        return true;
-      }
       input = validateProviderQueryRequest(await readJson(req));
-      let costGate;
-      try {
-        costGate = await enforceCostGate(user.userId, input);
-      } catch (error) {
-        if (error?.code === 'PROVIDER_QUERY_COST_THROTTLED') {
-          res.setHeader('Retry-After', String(error.retryAfterSeconds || 60));
-          json(res, 429, {
-            error: 'provider_query_cost_throttled',
-            provider: input.provider,
-            operation: input.operation,
-            costUnits: error.costUnits || null,
-          });
-          return true;
-        }
-        throw error;
-      }
       await start();
       if (!requestNc || requestNc.isClosed() || !executorNc || executorNc.isClosed()) {
         throw new Error('PRIVATE_PROVIDER_BRIDGE_UNAVAILABLE');
@@ -363,7 +322,10 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault, sta
       if (response.data.length > MAX_RESPONSE_BYTES) throw new Error('PROVIDER_RESULT_TOO_LARGE');
       const result = JSON.parse(new TextDecoder().decode(response.data));
       if (result?.schema !== CONTRACT.resultSchema || result?.requestId !== requestId || result?.ok !== true) {
-        json(res, 503, { error: 'private_provider_query_failed', code: String(result?.error || 'INVALID_RESULT').slice(0, 120) });
+        const code = String(result?.error || 'INVALID_RESULT').slice(0, 120);
+        const throttled = ['PROVIDER_QUERY_RATE_LIMITED', 'PROVIDER_QUERY_COST_THROTTLED'].includes(code);
+        if (throttled) res.setHeader('Retry-After', String(Number.isSafeInteger(result.retryAfterSeconds) && result.retryAfterSeconds > 0 ? Math.min(result.retryAfterSeconds, 3600) : 60));
+        json(res, throttled ? 429 : 503, { error: 'private_provider_query_failed', code });
         return true;
       }
       safeProviderResult(result.data);
@@ -376,7 +338,7 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault, sta
         sharedCacheAllowed: false,
         jetStreamPublicationAllowed: false,
         executionEnabled: false,
-        costUnits: costGate.costUnits,
+        costUnits: Number(CONTRACT.providers[input.provider].operations[input.operation].costUnits || 1),
         data: result.data,
       });
     } catch (error) {

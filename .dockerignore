@@ -205,3 +205,11 @@
 !supabase/migrations/20261006131500_enable_binance_user_provider_vault.sql
 
 !supabase/migrations/20261006210500_cads_marketplace_paid_entitlements.sql
+
+!server/provider-query-state.mjs
+!server/provider-query-state.test.mjs
+
+!scripts/provider-query-guard-migration.test.mjs
+!supabase/proposals/
+!supabase/proposals/provider_query_guard.sql
+!supabase/migrations/20261007214554_provider_query_guard.sql
