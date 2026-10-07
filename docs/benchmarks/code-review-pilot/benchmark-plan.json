@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "repository": "SvenKulessa/Capital-AI",
+  "correlatedMainSha": "ac78733bbea7fdbf66b798a9fc379ef71b171e70",
+  "reviewerSourceSha": "8e5a9295973b24af4b70cafd0b660a230811ef9e",
+  "executionStatus": "BLOCKED",
+  "blockingReasons": [
+    "PR-Agent lock findings and mutable action image",
+    "No model runtime or credentials in execution environment"
+  ],
+  "mode": "plain-diff, isolated working directory without .git, no GitHub token, no repository code execution",
+  "scope": "Curated changed-file subsets, not full PR or repository-context benchmark",
+  "samples": [
+    {
+      "id": "pr223-rust",
+      "prNumber": 223,
+      "baseSha": "4beff8093cecaa36ab5a3185a6796f8601c93f45",
+      "headSha": "f9443a06ecf49c98b7bc4e6e7ece98dbd6ded019",
+      "snapshot": "merged change",
+      "paths": [
+        "deploy/Dockerfile.provider-bridge",
+        "deploy/render-provider-bridge.yaml",
+        "services/provider-bridge-rs/deny.toml"
+      ],
+      "focus": [
+        "immutable build inputs",
+        "private worker runtime",
+        "Rust dependency policy"
+      ]
+    },
+    {
+      "id": "pr228-typescript",
+      "prNumber": 228,
+      "baseSha": "4beff8093cecaa36ab5a3185a6796f8601c93f45",
+      "headSha": "5f2c21556f3b09a6f30667fb785c18239f84e15d",
+      "snapshot": "observed workflow head; frozen sample, not latest PR claim",
+      "paths": [
+        "src/contracts/contentEngine.ts",
+        "src/data/contentCampaigns.ts"
+      ],
+      "focus": [
+        "type compatibility",
+        "contract consistency"
+      ]
+    },
+    {
+      "id": "pr224-auth-vault",
+      "prNumber": 224,
+      "baseSha": "e19e6ae2b4220ee6f97aada9ddefcd16a972ba0f",
+      "headSha": "e2e448ab71dca2b29bb7390eff6d68b413ed092d",
+      "snapshot": "historical PR head",
+      "paths": [
+        "src/features/auth/LoginPage.tsx",
+        "src/components/KeyVaultPage.tsx",
+        "supabase/migrations/20261006203618_trust_vault_rls_pgaudit_hardening_20261006.sql"
+      ],
+      "focus": [
+        "authentication failure handling",
+        "vault claims",
+        "row-level security"
+      ]
+    }
+  ],
+  "protocol": {
+    "repetitionsPerSample": 3,
+    "model": "UNSELECTED",
+    "temperature": 0,
+    "fallbackModels": [],
+    "referenceFindings": "UNLABELED; human evaluation needed before precision/recall claims",
+    "measurements": [
+      "exact diff hash",
+      "exact reviewer/model identity",
+      "runtime",
+      "reported token usage",
+      "measured provider cost if available",
+      "human-classified TP/FP/FN",
+      "coverage omissions"
+    ],
+    "modelReportIsProductionApproval": false
+  }
+}

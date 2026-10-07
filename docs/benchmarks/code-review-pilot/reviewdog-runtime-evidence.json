@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "sourceRunId": 37685755516,
+  "sourceRunConclusion": "success",
+  "artifactId": 11510911589,
+  "artifactSha256": "bab3073a29ac026442fbb4e016c090916c240f4c892bc7ef49ebfb2563b8507c",
+  "sourceReportSha256": "76da2334d09c382940a14e89f84b4b646488311a1405b3c757cceb9b308badbe",
+  "reviewdogVersion": "0.21.2",
+  "reviewdogArchiveSha256": "30413aa3c7443e9c3c157fe5766cad40e3bb39a32e210ee69b710a8d5c4b8e51",
+  "convertMilliseconds": 65.694,
+  "renderMilliseconds": 4.312,
+  "renderExitCode": 0,
+  "environment": "local container; not GitHub Actions runtime",
+  "evidence": {
+    "schemaVersion": 1,
+    "sourceIdentity": {
+      "sourceSha": "f9443a06ecf49c98b7bc4e6e7ece98dbd6ded019",
+      "testedSha": "f9443a06ecf49c98b7bc4e6e7ece98dbd6ded019",
+      "pullRequestHeadSha": null,
+      "baseMainSha": null
+    },
+    "scannerStatus": "PASS",
+    "diagnosticCount": 2,
+    "reviewStatus": "ADVISORY",
+    "inlineLocationsAvailable": false,
+    "completeness": "PUBLIC_SUMMARY_ONLY"
+  },
+  "qualityBenchmark": "NOT_APPLICABLE; presentation of existing scanner results only",
+  "githubWorkflowExecution": "NOT_RUN"
+}
