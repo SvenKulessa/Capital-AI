@@ -1,7 +1,7 @@
 {
   "schemaVersion": "SOCIAL_TTS_SNAPSHOT_LOCK@1",
   "id": "CAPITAL-AI-SOCIAL-TTS-SNAPSHOT-LOCK-20261006",
-  "correlatedMain": "4fa3e3f92547cd6356f46490a38e9b7515f69a6d",
+  "correlatedMain": "d8b5d471b34fcfaf061a7d8a8b62eac7406c8864",
   "financeSource": "dcef421fe6e350a3a2ade61d0299aad9ecca213c",
   "policy": {
     "immutableRevisionRequired": true,
@@ -173,12 +173,21 @@
     "Immutable worker images pass vulnerability/license/SBOM gates.",
     "German runtime benchmark and Human/Owner listening acceptance pass."
   ],
-  "status": "PARTIAL_FAIL_CLOSED",
+  "status": "SNAPSHOT_COMPLETE_DEPENDENCY_AND_RUNTIME_GATES_OPEN",
   "evidenceArtifact": {
     "workflowRunId": 37519027971,
     "artifactId": 11439055707,
     "artifactDigest": "sha256:32bc24c69ae1112d4ead76d1532d5c5bbefef6fc1117a2a7408fe5d36336b5a2",
     "sourceSha": "1d246d0f6398a8c9d45c459b0170a3599b7a3670",
     "result": "PASS"
+  },
+  "summary": {
+    "qwenSnapshot": "COMPLETE_FOR_DECLARED_RUNTIME_FILES",
+    "chatterboxSnapshot": "COMPLETE_FOR_PINNED_FINANCE_MTL_LOADER_FILES",
+    "qwenTransitiveLock": "OPEN",
+    "chatterboxTransitiveLock": "BLOCKED_MUTABLE_PERTH_AND_UNPINNED_DEPENDENCIES",
+    "immutableTtsWorkerImages": "OPEN",
+    "germanRuntimeBenchmark": "OPEN",
+    "humanOwnerListeningAcceptance": "OPEN"
   }
 }
