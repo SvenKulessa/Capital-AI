@@ -10,7 +10,7 @@ export const ROADMAP_RECONCILIATION = Object.freeze({
   schema: 'CAPITAL_AI_ROADMAP_RECONCILIATION@1',
   baseMainSha: '0bf052cbc8f7774db29cc77493f6f24bb28bd93b',
   reviewedAt: '2026-10-06',
-  packageCount: 108,
+  packageCount: 109,
   packageSources: [
   {
     "id": "AP-AGT-01",
@@ -215,6 +215,10 @@ export const ROADMAP_RECONCILIATION = Object.freeze({
   {
     "id": "CA-GROWTH-CONSENT-OUTREACH",
     "source": "src/data/trustArchitectureAWorkPackages.ts"
+  },
+  {
+    "id": "CA-GROWTH-CONTENT-ENGINE",
+    "source": "src/data/socialContentRoadmap.ts"
   },
   {
     "id": "CA-GROWTH-CREATOR-REVENUE",
