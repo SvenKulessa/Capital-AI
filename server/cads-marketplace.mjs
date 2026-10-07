@@ -22,22 +22,11 @@ function boundedText(value, maxLength = 255) {
   return text && text.length <= maxLength ? text : null;
 }
 
-function serviceRoleJwt(key) {
-  if (!key?.startsWith('eyJ')) return false;
-  const parts = key.split('.');
-  if (parts.length !== 3) return false;
-  try {
-    return JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'))?.role === 'service_role';
-  } catch {
-    return false;
-  }
-}
-
 function supabaseConfig(env) {
   try {
     const url = secureUrl(env.SUPABASE_URL || env.VITE_SUPABASE_URL);
-    const key = env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY || '';
-    if (url.href !== url.origin + '/' || !(key.startsWith('sb_secret_') || serviceRoleJwt(key))) return null;
+    const key = String(env.SUPABASE_SECRET_KEY || '');
+    if (url.href !== url.origin + '/' || !key.startsWith('sb_secret_') || key.length < 32) return null;
     return { url: url.origin, key };
   } catch {
     return null;
