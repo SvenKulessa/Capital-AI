@@ -265,6 +265,46 @@ function redirectHarness() {
   };
 }
 
+test('Marketplace OAuth setup is rate limited before repeated auth work', async () => {
+  const env = baseEnv();
+  let verifies = 0;
+  const auth = {
+    verify: async () => {
+      verifies += 1;
+      return { userId: '00000000-0000-4000-8000-000000000001' };
+    },
+  };
+  const marketplace = createCadsMarketplace({ env, auth });
+  const url = new URL('https://capital-ai.online/api/cads/marketplace/setup?installation_id=77');
+
+  for (let index = 0; index < 30; index += 1) {
+    const res = redirectHarness();
+    await marketplace.handle(
+      { method: 'GET', headers: {} },
+      res,
+      url,
+      () => { throw new Error('json response not expected before limit'); },
+    );
+    assert.equal(res.status, 302);
+  }
+
+  const res = redirectHarness();
+  let status = 0;
+  let payload = null;
+  const handled = await marketplace.handle(
+    { method: 'GET', headers: {} },
+    res,
+    url,
+    (_res, nextStatus, nextPayload) => { status = nextStatus; payload = nextPayload; },
+  );
+
+  assert.equal(handled, true);
+  assert.equal(status, 429);
+  assert.equal(payload.error, 'cads_marketplace_rate_limited');
+  assert.equal(res.headers['retry-after'], '60');
+  assert.equal(verifies, 30);
+});
+
 test('setup binds installation to authenticated CAPITAL-AI user before GitHub OAuth', async () => {
   const env = baseEnv();
   const auth = { verify: async () => ({ userId: '00000000-0000-4000-8000-000000000001' }) };
