@@ -1,4 +1,4 @@
-import { createHash, createHmac, createSecretKey, createSign, randomBytes, timingSafeEqual } from 'node:crypto';
+import { createCipheriv, createDecipheriv, createHash, createHmac, createSecretKey, createSign, randomBytes, timingSafeEqual } from 'node:crypto';
 import { benchmarkEntitlementForTier } from '../packages/benchmark-core/index.mjs';
 import { boundedJson, createLimiter, secureUrl } from './http-security.mjs';
 
@@ -24,7 +24,7 @@ function boundedText(value, maxLength = 255) {
   return text && text.length <= maxLength ? text : null;
 }
 
-function oauthStateMacKey(value) {
+function oauthStateKey(value) {
   const encoded = boundedText(value, 64);
   if (!encoded || !/^[A-Za-z0-9_-]{43}$/.test(encoded)) return null;
   try {
@@ -56,7 +56,7 @@ export function cadsMarketplaceConfig(env = process.env) {
   const webhookSecret = String(env.CADS_GITHUB_MARKETPLACE_WEBHOOK_SECRET || '');
   const clientId = boundedText(env.CADS_GITHUB_CLIENT_ID, 200);
   const clientSecret = String(env.CADS_GITHUB_CLIENT_SECRET || '');
-  const oauthStateKey = oauthStateMacKey(env.CADS_GITHUB_OAUTH_STATE_KEY_B64);
+  const oauthStateKey = oauthStateKey(env.CADS_GITHUB_OAUTH_STATE_KEY_B64);
   let publicUrl = null;
   try {
     const parsed = secureUrl(env.CADS_GITHUB_PUBLIC_URL || '');
@@ -209,36 +209,60 @@ function secureEqualText(left, right) {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-export function createCadsMarketplaceOAuthState({ userId, installationId, macKey, now = Date.now() }) {
+const OAUTH_STATE_AAD = Buffer.from('CAPITAL_AI_CADS_OAUTH_STATE@1', 'utf8');
+
+export function createCadsMarketplaceOAuthState({ userId, installationId, stateKey, now = Date.now() }) {
   const boundedUserId = boundedText(userId, 128);
   const normalizedInstallationId = positiveInteger(installationId);
-  if (!boundedUserId || !normalizedInstallationId || macKey?.type !== 'secret') {
+  if (!boundedUserId || !normalizedInstallationId || stateKey?.type !== 'secret') {
     throw new Error('invalid_marketplace_oauth_state_input');
   }
-  const payload = base64url(JSON.stringify({
+
+  const plaintext = Buffer.from(JSON.stringify({
     v: 1,
     userId: boundedUserId,
     installationId: normalizedInstallationId,
     nonce: randomBytes(18).toString('base64url'),
     exp: Math.floor(now / 1000) + 10 * 60,
-  }));
-  const signature = createHmac('sha256', macKey).update(payload).digest('base64url');
-  return payload + '.' + signature;
+  }), 'utf8');
+  const iv = randomBytes(12);
+  const cipher = createCipheriv('aes-256-gcm', stateKey, iv, { authTagLength: 16 });
+  cipher.setAAD(OAUTH_STATE_AAD);
+  const ciphertext = Buffer.concat([cipher.update(plaintext), cipher.final()]);
+  const tag = cipher.getAuthTag();
+
+  return [
+    'v1',
+    iv.toString('base64url'),
+    ciphertext.toString('base64url'),
+    tag.toString('base64url'),
+  ].join('.');
 }
 
-export function verifyCadsMarketplaceOAuthState(state, macKey, now = Date.now()) {
-  if (!state || macKey?.type !== 'secret') return null;
-  const [payload, signature, extra] = String(state).split('.');
-  if (!payload || !signature || extra) return null;
-  const expected = createHmac('sha256', macKey).update(payload).digest('base64url');
-  if (!secureEqualText(expected, signature)) return null;
-  let decoded;
-  try { decoded = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')); }
-  catch { return null; }
-  if (decoded?.v !== 1) return null;
-  if (!boundedText(decoded.userId, 128) || !positiveInteger(decoded.installationId)) return null;
-  if (!Number.isInteger(decoded.exp) || decoded.exp < Math.floor(now / 1000)) return null;
-  return decoded;
+export function verifyCadsMarketplaceOAuthState(state, stateKey, now = Date.now()) {
+  if (!state || stateKey?.type !== 'secret') return null;
+  const [version, ivText, ciphertextText, tagText, extra] = String(state).split('.');
+  if (version !== 'v1' || !ivText || !ciphertextText || !tagText || extra) return null;
+
+  try {
+    const iv = Buffer.from(ivText, 'base64url');
+    const ciphertext = Buffer.from(ciphertextText, 'base64url');
+    const tag = Buffer.from(tagText, 'base64url');
+    if (iv.length !== 12 || tag.length !== 16 || ciphertext.length === 0) return null;
+
+    const decipher = createDecipheriv('aes-256-gcm', stateKey, iv, { authTagLength: 16 });
+    decipher.setAAD(OAUTH_STATE_AAD);
+    decipher.setAuthTag(tag);
+    const plaintext = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+    const decoded = JSON.parse(plaintext.toString('utf8'));
+
+    if (decoded?.v !== 1) return null;
+    if (!boundedText(decoded.userId, 128) || !positiveInteger(decoded.installationId)) return null;
+    if (!Number.isInteger(decoded.exp) || decoded.exp < Math.floor(now / 1000)) return null;
+    return decoded;
+  } catch {
+    return null;
+  }
 }
 
 function oauthAuthorizeUrl(config, state) {
@@ -478,7 +502,7 @@ export function createCadsMarketplace({
     const state = createCadsMarketplaceOAuthState({
       userId: user.userId,
       installationId,
-      macKey: config.oauthStateKey,
+      stateKey: config.oauthStateKey,
       now: now().getTime(),
     });
     const cookie = 'cads_marketplace_oauth_state=' + encodeURIComponent(state) +
