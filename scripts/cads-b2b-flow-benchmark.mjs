@@ -20,7 +20,7 @@ const env = {
   CADS_GITHUB_CLIENT_ID: 'Iv1.cadsbenchmark',
   CADS_GITHUB_CLIENT_SECRET: 'cads-client-secret-'.padEnd(64, 'x'),
   CADS_GITHUB_MARKETPLACE_WEBHOOK_SECRET: WEBHOOK_SECRET,
-  CADS_GITHUB_OAUTH_STATE_SECRET: 'cads-oauth-secret-'.padEnd(64, 'x'),
+  CADS_GITHUB_OAUTH_STATE_KEY_B64: Buffer.from('cads-oauth-state-key-material-32b', 'utf8').subarray(0, 32).toString('base64url'),
   CADS_GITHUB_MARKETPLACE_OWNER_ORG: 'capital-ai-benchmark',
   CADS_GITHUB_MARKETPLACE_LISTING_SLUG: 'capital-ai-cads',
   CADS_GITHUB_MARKETPLACE_STARTER_PLAN_ID: '1001',
