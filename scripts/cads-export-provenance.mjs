@@ -54,15 +54,24 @@ const report = {
   generatedAt: new Date().toISOString(),
   sourceRepository: 'SvenKulessa/Capital-AI',
   sourceCommit: sourceSha,
-  exportTarget: 'ORGANIZATION_REPOSITORY/CADS',
+  exportTarget: 'capital-ai-online/CADS',
+  targetState: {
+    initialStandalonePullRequest: 1,
+    initialStandaloneMergeCommit: 'c8e8d91a4c988e75b93f587c4bf6e592016bcb71',
+    initialCapitalAiSourceCommit: '0276d389412f806d2727c6b7b65d8215c703dbb1',
+    laterSourceChangesRequireDeltaSync: true,
+  },
   files,
   invariants: [
-    'Export only the listed CADS product/runtime/evidence files plus dedicated-repository scaffolding.',
+    'This manifest binds the Capital-AI CADS source candidate; the standalone repository owns its explicit transformation manifest.',
+    'The standalone target is capital-ai-online/CADS.',
+    'Benchmark-only event-backbone comparison artifacts are not automatically CADS release evidence.',
+    'The unsuccessful NATS/Go comparison path must not be represented as CADS PASS, Marketplace approval or Production evidence.',
     'Do not export MARKET provider credentials, provider data, JaJa assets, Social Engine, SEO application code or unrelated Capital-AI UI.',
     'Do not export secrets or runtime credential values.',
     'First-party CADS licensing remains governed by LicenseRef-CAPITAL-AI-CADS-PROPRIETARY-1.0.',
     'Third-party runtime and service obligations remain independently applicable.',
-    'A successful export does not confer GitHub Marketplace or Production approval.',
+    'A successful source-package acceptance or export does not confer Security, License, GitHub Marketplace or Production approval.',
   ],
 };
 
