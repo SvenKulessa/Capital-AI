@@ -1,20 +1,36 @@
-# CADS GitHub Marketplace Production Readiness — 2026-10-06
+# CADS GitHub Marketplace Production Readiness — 2026-10-07
 
-Status: **PAID_BILLING_RUNTIME_IMPLEMENTED / BENCHMARK_EXECUTION + EXTERNAL_GITHUB_ADMISSION BLOCKED**
+Status: **STANDALONE REPOSITORY CREATED / PAID BILLING RUNTIME IMPLEMENTED / EXTERNAL GITHUB ADMISSION + RELEASE HARDENING OPEN**
 
-Implementation baseline: `main@4fa3e3f92547cd6356f46490a38e9b7515f69a6d`.
+Current Capital-AI main observed during reconciliation:
+`71881d789246f5d382643dce8cc7eaa6daec582f`.
+
+Dedicated product repository:
+
+`capital-ai-online/CADS`
+
+Initial standalone merge:
+
+`capital-ai-online/CADS#1` → `c8e8d91a4c988e75b93f587c4bf6e592016bcb71`
+
+Initial accepted Capital-AI source:
+
+`0276d389412f806d2727c6b7b65d8215c703dbb1`
+
+Later changes in Capital-AI PR #220 require explicit delta synchronization before they may be claimed
+for the standalone repository.
 
 ## Product decision
 
-CADS is intended to be **productively monetized and productively distributed in GitHub Marketplace**.
+CADS is intended to be productively monetized and distributed in GitHub Marketplace.
 
-The production Marketplace offer is:
+Paid plans:
 
 - **Starter**
 - **Pro**
 - **Enterprise**
 
-There is no Community-only production target. The existing website/Stripe CADS channel remains separate.
+Website/Stripe and GitHub Marketplace remain separate billing/entitlement authorities.
 
 ## Implemented repository/runtime authority
 
@@ -23,10 +39,13 @@ There is no Community-only production target. The existing website/Stripe CADS c
 `apps/cads-github-app/marketplace-plans.production.json`
 
 - paid Starter / Pro / Enterprise only;
-- flat-rate monthly + yearly billing model;
+- flat-rate monthly + yearly billing declaration;
 - USD is the Marketplace pricing currency;
-- capabilities are locked to `packages/benchmark-core/index.mjs`;
-- exact Marketplace prices are not inferred from the EUR website catalogue.
+- exact Marketplace prices are not invented in source;
+- exact Marketplace plan IDs remain runtime configuration.
+
+The standalone repository separates the tier/capability authority into
+`packages/cads-core/index.mjs`.
 
 ### GitHub App runtime
 
@@ -39,8 +58,9 @@ Implemented:
 - `marketplace_purchase` actions `purchased`, `changed`, `cancelled`;
 - GitHub Marketplace API readback before purchase/plan-change entitlement activation;
 - runtime mapping from real Marketplace plan IDs to Starter / Pro / Enterprise;
+- signed/expiring OAuth state and authenticated buyer linking;
 - no Stripe entitlement reuse;
-- no secrets or private keys in repository state;
+- no secrets/private keys in repository state;
 - bounded audit output without raw webhook payloads.
 
 ### Entitlement persistence
@@ -49,20 +69,29 @@ Implemented:
 
 Implemented:
 
-- service-role-only entitlement table;
+- service-role-only entitlement storage;
 - service-role-only delivery/idempotency ledger;
 - RLS explicit deny for anon/authenticated;
 - duplicate webhook protection by GitHub delivery ID;
 - purchase/plan-change upsert;
 - cancellation deactivation;
-- bounded metadata only; no raw webhook body;
-- purge RPC for cancelled customer data and old event metadata.
+- bounded metadata only;
+- purge path for cancelled customer data and old event metadata.
 
-The server invokes the purge path against a 29-day boundary so cleanup occurs before GitHub's 30-day cancellation-data limit when the runtime remains healthy.
+## Event-backbone comparison is not a CADS listing gate
+
+CADS Marketplace readiness does **not** require a successful NATS/Kafka × Node/Rust comparison
+benchmark merely to establish the CADS paid-product boundary.
+
+The unsuccessful NATS/Go path must not be represented as CADS PASS.
+
+If an individual CADS capability later promises event-backbone comparison or execution, that
+capability requires its own reproducible PRODUCT/PLATFORM/TRUST evidence before it may be enabled or
+advertised. This is separate from the Marketplace billing/entitlement runtime.
 
 ## Production environment contract
 
-The productive runtime requires these values outside Git:
+Required outside Git:
 
 ```text
 CADS_GITHUB_APP_ID
@@ -83,68 +112,53 @@ SUPABASE_URL
 SUPABASE_SECRET_KEY
 ```
 
-The three Marketplace plan IDs must be positive and distinct. Missing or invalid values make the runtime fail closed.
-
-Buyer access is also fail-closed. GitHub's untrusted `installation_id` from the setup URL is never sufficient on its own. The setup flow requires an authenticated CAPITAL-AI session, a signed/expiring state, GitHub user OAuth, verification that the OAuth user is authorized for the installation, authoritative Marketplace subscription readback, and only then a Supabase user↔Marketplace account/installation link.
-
-## Product execution gate still required
-
-`GET /api/benchmark/readiness` currently reports `executionBound=false`. The billing/entitlement channel can therefore be production-hardened without yet making the paid benchmark product functionally complete.
-
-Before a paid Marketplace listing is submitted, PLATFORM must bind `CAPITAL_AI_EVENT_BACKBONE@1` to a real reproducible execution unit and verify the NATS/Kafka × Node/Rust matrix with source SHA, immutable image digests, SBOM digest, resource/usage evidence and bounded failure handling.
+Missing, invalid or ambiguous values must fail closed.
 
 ## External GitHub admission still required
 
-The repository cannot manufacture these GitHub-side facts:
+Repository tests cannot manufacture these GitHub-side facts:
 
-1. CADS GitHub App owned by the intended GitHub organization.
-2. Verified Publisher for that organization.
-3. At least 100 GitHub App installations for a paid listing.
-4. GitHub financial onboarding.
-5. Draft Marketplace listing and listing assets.
-6. Monthly and annual USD price for Starter, Pro and Enterprise.
-7. Real Marketplace plan IDs copied into runtime configuration.
-8. Production Marketplace webhook configured to:
-   `https://capital-ai.online/api/integrations/github/cads-marketplace`
-9. Marketplace listing review/approval.
-10. Real purchase, upgrade/downgrade and cancellation smokes.
+1. GitHub App owned by the intended organization;
+2. Verified Publisher;
+3. any current paid-listing installation threshold required by GitHub;
+4. financial onboarding;
+5. Marketplace listing and approved assets;
+6. monthly and annual USD prices;
+7. real Marketplace plan IDs;
+8. production webhook configuration;
+9. listing review/approval;
+10. real install/OAuth-link/purchase/changed/cancelled/deletion smokes.
 
-Current connected GitHub account context exposed during this reconciliation has no organization membership available to the connector. That prevents claiming organization ownership or Verified Publisher evidence.
+These requirements must be checked against current GitHub Marketplace rules at publication time.
 
-## Plan capability authority
+## Repository and release handoff
 
-The Marketplace does not create a second CADS feature matrix.
+The target repository is no longer a placeholder:
 
-`packages/benchmark-core/index.mjs` remains canonical:
+`capital-ai-online/CADS`
 
-- Starter: standard profiles + neutral GitHub check.
-- Pro: Starter + history + regression detection + evidence export.
-- Enterprise: Pro + custom profiles + custom thresholds + enforced PR gate + API + self-hosted runner.
+Organization PR #1 has been merged. The repository is currently public.
 
-A paid entitlement never overrides:
+Public visibility means the proprietary CADS source is publicly readable even though the
+first-party license does not grant an open-source license. Any future visibility/licensing change is
+a separate OWNER/LEGAL decision.
 
-- Security/Trust gates;
-- software or asset licensing;
-- provider/data rights;
-- source-bound evidence requirements;
-- Production Handoff.
+The initial standalone repository has its own provenance and acceptance boundary. Later PR #220
+hardening must be synchronized by a dedicated delta PR and revalidated there.
 
 ## Production sequence
 
-1. Create/connect the target GitHub organization.
-2. Register or transfer the CADS GitHub App to that organization.
-3. Complete Publisher Verification.
-4. Reach/verify the paid-listing installation requirement.
-5. Complete financial onboarding.
-6. Create Starter / Pro / Enterprise paid Marketplace plans.
-7. Set monthly + yearly USD pricing in GitHub Marketplace.
-8. Bind the real plan IDs to Render/runtime secrets.
-9. Apply the Supabase migration.
-10. Configure Marketplace plan-change webhook.
-11. Bind and validate the real `CAPITAL_AI_EVENT_BACKBONE@1` execution worker.
-12. Deploy the exact validated image plus the admitted worker artifact.
-13. Execute real install/OAuth-link/purchase/changed/cancellation/deletion smokes.
-14. Submit the listing for Marketplace review.
-15. Only after approval and functional runtime evidence mark Marketplace publication evidence VERIFIED.
+1. Correlate the latest accepted Capital-AI CADS delta against `capital-ai-online/CADS@main`.
+2. Export only the admitted delta with explicit source/transformation provenance.
+3. Run standalone CADS CI again.
+4. Build/scan the exact deployable artifact if one is introduced.
+5. Generate standalone SBOM and runtime license inventory.
+6. Complete organization/publisher/financial Marketplace admission.
+7. Configure real plan IDs and prices.
+8. Apply/verify required Supabase migration state.
+9. Execute real install/OAuth-link/purchase/change/cancellation/deletion smokes.
+10. Submit the listing for Marketplace review.
+11. Only after separate TRUST/OWNER gates mark Production/Marketplace publication approved.
 
-A successful test, build or billing event is not by itself a security, license or production-release approval.
+A successful test, build or billing event is not by itself a Security, License, Marketplace or
+Production approval.
