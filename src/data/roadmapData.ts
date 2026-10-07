@@ -1963,7 +1963,7 @@ const RAW_WORK_PACKAGES: WorkPackage[] = [
     "server/observability.mjs",
     "docs/security/SECRET-IP-DATA-PROTECTION-BASELINE.md"
   ],
-  "nextStep": "Strukturierte Logs, W3C-Trace-Korrelation und geschützte Prometheus-Metriken im Preflight testen; Retention und externen Export separat entscheiden.",
+  "nextStep": "Strukturierte Logs, W3C-Trace-Korrelation und geschützte Prometheus-Metriken im GitHub Security Gate testen; Retention und externen Export separat entscheiden.",
   "priority": "Hoch",
   "leadName": "Projektowner",
   "targetSprint": "Phase 4",
