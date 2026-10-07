@@ -24,7 +24,12 @@ The existing **Komponenten & CADS** panel remains a separate curated assessment.
 |---|---|---|
 | Capital AI application | package.json | Web application release version |
 | Direct npm package | package-lock.json package resolution; declaration fallback | Exact locked version vs. explicit unresolved range |
+| Isolierte npm Runtime- und Build-Patch-Dependencies | deploy/runtime und deploy/npm-security-patches package.json/-lock.json | Individuell gelockte Deployment-Boundary und npm Security-Patches |
 | Rust bridge + direct crates | services/provider-bridge-rs/Cargo.toml | Declared crate versions; not a compiled-binary attestation |
+| Rust/Android Build-Toolchain | rust-toolchain.toml und mobile/android-private/build.gradle | Pinned Build-Version, kein Runtime-Proof |
+| Android Private App | mobile/android-private/app/build.gradle | Private App-Version, getrennt von der Web-Distribution |
+| Python / FFmpeg Social Renderer | renderer-requirements.txt und ffmpeg-build-profile.json | Hash-pinned Pillow und FFmpeg-Source-Policy; FFmpeg weiterhin nicht produktiv freigegeben |
+| npm CLI | Dockerfile | Build-Pin; explizit nicht Bestandteil der Web-Runtime |
 | OCI base images | Dockerfile, deploy/Dockerfile* | Image tag plus pinned digest, not live Render image |
 | Internal UI/API/service modules | Actual GitHub file tree + web app version | Inherited app version, not an independent module version |
 | Scripts and GitHub workflows | Actual GitHub file tree + web app version | Source-controlled tool/automation, inherited release only |
