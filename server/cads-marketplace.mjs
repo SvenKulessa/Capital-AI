@@ -1,6 +1,6 @@
 import { createHash, createHmac, createSign, randomBytes, timingSafeEqual } from 'node:crypto';
 import { benchmarkEntitlementForTier } from '../packages/benchmark-core/index.mjs';
-import { boundedJson, secureUrl } from './http-security.mjs';
+import { boundedJson, createLimiter, secureUrl } from './http-security.mjs';
 
 const GITHUB_API_VERSION = '2026-03-10';
 const MARKETPLACE_WEBHOOK_PATH = '/api/integrations/github/cads-marketplace';
@@ -11,6 +11,8 @@ const PAID_TIERS = Object.freeze(['starter', 'pro', 'enterprise']);
 const PURCHASE_ACTIONS = new Set(['purchased', 'changed', 'cancelled']);
 const MAX_WEBHOOK_BYTES = 256 * 1024;
 const CANCELLATION_RETENTION_DAYS = 29;
+const OAUTH_REQUESTS_PER_MINUTE = 30;
+const WEBHOOK_REQUESTS_PER_MINUTE = 120;
 
 function positiveInteger(value) {
   const number = Number(value);
@@ -374,7 +376,15 @@ export function createCadsMarketplace({
   now = () => new Date(),
 } = {}) {
   const config = cadsMarketplaceConfig(env);
+  const oauthLimit = createLimiter(OAUTH_REQUESTS_PER_MINUTE);
+  const webhookLimit = createLimiter(WEBHOOK_REQUESTS_PER_MINUTE);
   let cleanupTimer = null;
+
+  function rejectRateLimited(res, json) {
+    res.setHeader('Retry-After', '60');
+    json(res, 429, { error: 'cads_marketplace_rate_limited' });
+    return true;
+  }
 
   async function purgeCancelledData() {
     if (!config.store) return { configured: false };
@@ -530,8 +540,14 @@ export function createCadsMarketplace({
   }
 
   async function handle(req, res, url, json) {
-    if (url.pathname === MARKETPLACE_SETUP_PATH) return handleSetup(req, res, url, json);
-    if (url.pathname === MARKETPLACE_OAUTH_CALLBACK_PATH) return handleOAuthCallback(req, res, url, json);
+    if (url.pathname === MARKETPLACE_SETUP_PATH) {
+      if (!oauthLimit()) return rejectRateLimited(res, json);
+      return handleSetup(req, res, url, json);
+    }
+    if (url.pathname === MARKETPLACE_OAUTH_CALLBACK_PATH) {
+      if (!oauthLimit()) return rejectRateLimited(res, json);
+      return handleOAuthCallback(req, res, url, json);
+    }
 
     if (url.pathname === MARKETPLACE_READINESS_PATH) {
       if (req.method !== 'GET') {
@@ -544,6 +560,7 @@ export function createCadsMarketplace({
     }
 
     if (url.pathname !== MARKETPLACE_WEBHOOK_PATH) return false;
+    if (!webhookLimit()) return rejectRateLimited(res, json);
     if (req.method !== 'POST') {
       res.setHeader('Allow', 'POST');
       json(res, 405, { error: 'method_not_allowed' });
