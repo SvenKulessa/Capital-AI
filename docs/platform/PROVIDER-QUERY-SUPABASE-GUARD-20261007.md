@@ -1,78 +1,99 @@
 # Durable private-provider guards
 
-The owner selected Supabase transactions on 2026-10-07 for replay, per-user
-execution rate and user/global cost protection immediately before Vault/provider
-access. Valkey remains cache/PubSub and is not authoritative for these guards.
+The owner selected Supabase/PostgreSQL as the durable authority for private-provider
+replay, per-user execution rate and user/global cost guards. Valkey remains
+cache/PubSub and is not authoritative for these protections.
 
 The Node executor verifies the signed envelope and read-only operation contract,
-then calls one server-only Supabase RPC before Vault/provider access. It checks
-proof expiry again after the RPC. Storage/configuration/timeout/unknown-result
-failures refuse execution and are not automatically retried because an uncertain
-database commit must never cause a second provider call.
+then calls one server-only Supabase RPC before Vault/provider access. Storage,
+timeout, malformed or uncertain results fail closed. Unknown commits are not
+automatically retried because a second attempt could duplicate provider execution.
 
 ## Live migration
 
-The reviewed SQL in `supabase/proposals/provider_query_guard.sql` was applied to
-the Supabase project as migration:
+The reviewed SQL is live as Supabase migration:
 
 `20261007214554_provider_query_guard`
 
-The repository migration
-`supabase/migrations/20261007214554_provider_query_guard.sql` retains the exact
-reviewed SQL bytes. CI verifies proposal/migration byte identity.
+Repository source:
 
-Live readback on PostgreSQL 17 confirmed:
+- `supabase/proposals/provider_query_guard.sql`
+- `supabase/migrations/20261007214554_provider_query_guard.sql`
 
-- RLS enabled on `private.capital_ai_provider_query_state`.
-- `anon` and `authenticated` have neither table access nor RPC EXECUTE.
-- `service_role` has the bounded table privileges and RPC EXECUTE.
-- `capital_ai_claim_provider_query` is SECURITY INVOKER, not SECURITY DEFINER.
-- `search_path` is empty and `lock_timeout` is 1500 ms.
-- no provider-query-related Supabase security/performance advisor findings.
+Both files have the same Git blob
+`66c642ccac580b761b7ef3bcc68dd236ccd46d16`. CI verifies byte identity and
+least-privilege SQL properties.
 
-## Concurrent PostgreSQL evidence
+Live PostgreSQL readback confirmed RLS on
+`private.capital_ai_provider_query_state`, no RPC EXECUTE for `anon` or
+`authenticated`, bounded table/RPC authority for `service_role`, SECURITY
+INVOKER, empty `search_path` and `lock_timeout=1500ms`. Supabase advisors
+reported no guard-specific security or performance finding.
 
-True separate database sessions were created through the already-installed
-`pg_cron 1.6.4` module. The first test pairs started within 1.173 ms (replay),
-2.258 ms (rate) and 1.225 ms (cost).
+## True concurrent PostgreSQL evidence
 
-Observed state:
+The already-installed `pg_cron 1.6.4` module was used only as a short-lived test
+harness so separate PostgreSQL sessions could start concurrently without exposing
+database credentials.
 
-- replay: exactly one live replay claim and one admitted rate use;
-- rate limit 1: shared rate counter stayed at 1, one replay claim remained 1 and
-  the denied request remained 0;
-- shared global cost: global cost was consumed once; winner replay/rate/user-cost
-  markers became 1 while every corresponding denied-request marker remained 0.
+First-pair start deltas:
 
-This is direct evidence that a global cost denial does not partially consume
-replay, rate or user-cost state. All temporary cron jobs were unscheduled and all
-temporary guard rows were removed after the evidence run.
+- replay: 1.173 ms
+- rate: 2.258 ms
+- shared cost: 1.225 ms
+
+Observed state proved atomic admission:
+
+- replay produced exactly one live replay claim and one admitted rate use;
+- rate limit 1 left the shared rate counter at 1, with one replay winner and one
+  denied replay placeholder at 0;
+- shared global cost was consumed once; the winning replay/rate/user-cost markers
+  became 1 while all corresponding denied-request markers stayed 0.
+
+Therefore a denied global cost claim does not partially consume replay, rate or
+user-cost state.
+
+## Real lock-timeout evidence
+
+A separate PostgreSQL session held the target rate row for three seconds. A caller
+started 2.628 ms later, delayed 200 ms, then invoked the guard RPC. PostgreSQL
+cancelled the guard at the configured lock timeout with
+`canceling statement due to lock timeout`.
+
+The aborted transaction created no replay claim and left the rate counter at 0.
+This demonstrates transactional rollback under real row contention. The Node
+adapter separately maps timeout/storage/uncertain RPC failures to
+`PROVIDER_STATE_UNAVAILABLE` with one attempt and no automatic retry.
+
+All temporary cron jobs were unscheduled and all guard test rows were removed.
 
 ## Fail-closed and latency evidence
 
-Live database checks returned `INVALID_QUERY_PROOF` for an expired proof and
-`INVALID_PROVIDER_STATE_REQUEST` for a malformed cost scope. Calls attempted
-under the real `anon` and `authenticated` PostgreSQL roles failed with 42501
-permission denied.
+Live checks also confirmed:
 
-`pg_stat_statements` measured 80 guard calls at mean 5.228 ms, minimum 3.209 ms
-and maximum 19.933 ms. These numbers are database-function execution time only;
-they are not a PostgREST/network or deployed-executor latency claim.
+- expired proof → `INVALID_QUERY_PROOF`;
+- malformed cost scope → `INVALID_PROVIDER_STATE_REQUEST`;
+- `anon` RPC → PostgreSQL 42501 permission denied;
+- `authenticated` RPC → PostgreSQL 42501 permission denied.
 
-The Node adapter tests cover storage/timeout/malformed/oversized/uncertain results:
-one request is attempted, the adapter returns `PROVIDER_STATE_UNAVAILABLE`, and
-it does not automatically retry an unknown commit.
+`pg_stat_statements` recorded 80 guard calls with mean 5.228 ms, minimum
+3.209 ms and maximum 19.933 ms. These are database-function timings only and
+must not be represented as PostgREST/network or deployed-executor latency.
 
-Machine-readable evidence:
-`docs/security/evidence/provider-query-guard-runtime-20261007.json`.
+Canonical machine-readable evidence:
+`docs/security/evidence/provider-query-guard-live-20261007.json`.
 
 ## Activation boundary
 
-The schema migration is live, but this is not a provider-runtime activation.
-`PRIVATE_PROVIDER_BRIDGE_ENABLED` remains false. No provider call, credential
-read, worker deploy or NATS redeploy was authorized by the migration.
+The schema migration is live, but private provider execution remains disabled.
+This work did not authorize a provider call, credential read, worker deploy or
+NATS redeploy.
 
-After merge and approved deployment, the remaining activation evidence is the
-authenticated read-only Query → Bridge → Executor → Vault roundtrip plus a
-successful service-role PostgREST call from the deployed executor. Until that
-evidence exists, production provider execution remains fail-closed.
+After merge and approved deployment, activation still requires:
+
+1. successful service-role PostgREST RPC from the deployed executor;
+2. authenticated read-only Query → Bridge → Executor → Vault → provider roundtrip;
+3. deployed end-to-end latency/runtime identity;
+4. explicit Owner activation.
+
+Until those checks pass, keep `PRIVATE_PROVIDER_BRIDGE_ENABLED=false`.
