@@ -61,11 +61,13 @@ jobs:
                 echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
                 exit 0
               fi
-            done
+            done < <(jq -c 'sort_by(.number)[] | select(.draft == true) | select((.title | contains("[HOLD]")) | not) | select(.head.repo.full_name == env.REPOSITORY)' correlation/open-prs.json)
 
-          echo "pr=" >> "$GITHUB_OUTPUT"
-          echo "branch=" >> "$GITHUB_OUTPUT"
-          echo "head_sha=" >> "$GITHUB_OUTPUT"
+          if ! grep -q '^pr=' "$GITHUB_OUTPUT"; then
+            echo "pr=" >> "$GITHUB_OUTPUT"
+            echo "branch=" >> "$GITHUB_OUTPUT"
+            echo "head_sha=" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Korrelations-Commit auf bestehendem PR-Branch erzeugen
         if: steps.target.outputs.pr != ''
