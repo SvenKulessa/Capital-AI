@@ -1,4 +1,4 @@
-import { createHash, createHmac, createSign, randomBytes, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, createSecretKey, createSign, randomBytes, timingSafeEqual } from 'node:crypto';
 import { benchmarkEntitlementForTier } from '../packages/benchmark-core/index.mjs';
 import { boundedJson, createLimiter, secureUrl } from './http-security.mjs';
 
@@ -24,6 +24,19 @@ function boundedText(value, maxLength = 255) {
   return text && text.length <= maxLength ? text : null;
 }
 
+function oauthStateMacKey(value) {
+  const encoded = boundedText(value, 64);
+  if (!encoded || !/^[A-Za-z0-9_-]{43}$/.test(encoded)) return null;
+  try {
+    const bytes = Buffer.from(encoded, 'base64url');
+    if (bytes.length !== 32 || bytes.toString('base64url') !== encoded) return null;
+    return createSecretKey(bytes);
+  } catch {
+    return null;
+  }
+}
+
+
 function supabaseConfig(env) {
   try {
     const url = secureUrl(env.SUPABASE_URL || env.VITE_SUPABASE_URL);
@@ -43,7 +56,7 @@ export function cadsMarketplaceConfig(env = process.env) {
   const webhookSecret = String(env.CADS_GITHUB_MARKETPLACE_WEBHOOK_SECRET || '');
   const clientId = boundedText(env.CADS_GITHUB_CLIENT_ID, 200);
   const clientSecret = String(env.CADS_GITHUB_CLIENT_SECRET || '');
-  const oauthStateSecret = String(env.CADS_GITHUB_OAUTH_STATE_SECRET || '');
+  const oauthStateKey = oauthStateMacKey(env.CADS_GITHUB_OAUTH_STATE_KEY_B64);
   let publicUrl = null;
   try {
     const parsed = secureUrl(env.CADS_GITHUB_PUBLIC_URL || '');
@@ -61,9 +74,8 @@ export function cadsMarketplaceConfig(env = process.env) {
     privateKey.startsWith('-----BEGIN') &&
     webhookSecret.length >= 32;
   const oauthConfigured =
-    Boolean(clientId && publicUrl) &&
-    clientSecret.length >= 32 &&
-    oauthStateSecret.length >= 32;
+    Boolean(clientId && publicUrl && oauthStateKey) &&
+    clientSecret.length >= 32;
   const store = supabaseConfig(env);
 
   return Object.freeze({
@@ -74,7 +86,7 @@ export function cadsMarketplaceConfig(env = process.env) {
     webhookSecret,
     clientId,
     clientSecret,
-    oauthStateSecret,
+    oauthStateKey,
     publicUrl,
     planIds: Object.freeze(planIds),
     distinctPlanIds,
@@ -197,10 +209,10 @@ function secureEqualText(left, right) {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-export function createCadsMarketplaceOAuthState({ userId, installationId, secret, now = Date.now() }) {
+export function createCadsMarketplaceOAuthState({ userId, installationId, macKey, now = Date.now() }) {
   const boundedUserId = boundedText(userId, 128);
   const normalizedInstallationId = positiveInteger(installationId);
-  if (!boundedUserId || !normalizedInstallationId || String(secret || '').length < 32) {
+  if (!boundedUserId || !normalizedInstallationId || macKey?.type !== 'secret') {
     throw new Error('invalid_marketplace_oauth_state_input');
   }
   const payload = base64url(JSON.stringify({
@@ -210,15 +222,15 @@ export function createCadsMarketplaceOAuthState({ userId, installationId, secret
     nonce: randomBytes(18).toString('base64url'),
     exp: Math.floor(now / 1000) + 10 * 60,
   }));
-  const signature = createHmac('sha256', secret).update(payload).digest('base64url');
+  const signature = createHmac('sha256', macKey).update(payload).digest('base64url');
   return payload + '.' + signature;
 }
 
-export function verifyCadsMarketplaceOAuthState(state, secret, now = Date.now()) {
-  if (!state || String(secret || '').length < 32) return null;
+export function verifyCadsMarketplaceOAuthState(state, macKey, now = Date.now()) {
+  if (!state || macKey?.type !== 'secret') return null;
   const [payload, signature, extra] = String(state).split('.');
   if (!payload || !signature || extra) return null;
-  const expected = createHmac('sha256', secret).update(payload).digest('base64url');
+  const expected = createHmac('sha256', macKey).update(payload).digest('base64url');
   if (!secureEqualText(expected, signature)) return null;
   let decoded;
   try { decoded = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')); }
@@ -466,7 +478,7 @@ export function createCadsMarketplace({
     const state = createCadsMarketplaceOAuthState({
       userId: user.userId,
       installationId,
-      secret: config.oauthStateSecret,
+      macKey: config.oauthStateKey,
       now: now().getTime(),
     });
     const cookie = 'cads_marketplace_oauth_state=' + encodeURIComponent(state) +
@@ -496,7 +508,7 @@ export function createCadsMarketplace({
       json(res, 401, { error: 'marketplace_oauth_state_mismatch' });
       return true;
     }
-    const statePayload = verifyCadsMarketplaceOAuthState(state, config.oauthStateSecret, now().getTime());
+    const statePayload = verifyCadsMarketplaceOAuthState(state, config.oauthStateKey, now().getTime());
     const user = await auth?.verify?.(req, res);
     if (!statePayload || !user?.userId || user.userId !== statePayload.userId) {
       json(res, 401, { error: 'marketplace_oauth_identity_mismatch' });
