@@ -9,6 +9,7 @@ const TREE = [
   'scripts/verify-private-brokers.mjs', '.github/workflows/build-security.yml',
   'services/provider-bridge-rs/Cargo.toml', 'deploy/Dockerfile.nats',
   'config/tool-catalog-integrations.json',
+  'src/contracts/nodes/ingestion.ts', 'Chat Buddy/README.md', 'Chat Buddy/src/brain.ts',
 ].map(path => ({ type: 'blob', path }));
 const pkg = {
   name: 'capital-ai', version: '0.8.0-alpha.1',
@@ -37,6 +38,9 @@ test('repository catalog extracts locked versions, pinned images, services and a
   assert.equal(byId('file:src/features/home/HomePage.tsx').kind, 'WEB_MODUL');
   assert.equal(byId('file:server/auth.test.mjs'), undefined);
   assert.equal(byId('integration:stripe').version, null);
+  assert.equal(byId('file:src/contracts/nodes/ingestion.ts').kind, 'PIPELINE_TOOL');
+  assert.equal(byId('app:chat-buddy').version, null);
+  assert.equal(byId('file:Chat Buddy/src/brain.ts').kind, 'ASSISTANT_MODULE');
   assert.ok(entries.every(item => item.path && item.application && item.versionBasis));
 });
 
