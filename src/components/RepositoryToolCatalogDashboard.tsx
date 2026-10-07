@@ -34,7 +34,7 @@ function formatDate(value: string) {
 }
 function repoLink(snapshot: CatalogSnapshot, path: string) {
   const firstPath = path.split(' → ')[0];
-  if (!/^[a-zA-Z0-9_@./+-]+$/.test(firstPath)) return null;
+  if (!/^[a-zA-Z0-9_@./+ -]+$/.test(firstPath)) return null;
   return 'https://github.com/' + snapshot.repository + '/blob/' + snapshot.sourceSha + '/' +
     firstPath.split('/').map(encodeURIComponent).join('/');
 }
