@@ -84,6 +84,8 @@
 !deploy/runtime/package-lock.json
 !deploy/social-media/
 !deploy/social-media/ffmpeg-build-profile.json
+!deploy/social-media/renderer-requirements.txt
+!deploy/social-media/Dockerfile.renderer
 !deploy/npm-security-patches/
 !deploy/npm-security-patches/package.json
 !deploy/npm-security-patches/package-lock.json

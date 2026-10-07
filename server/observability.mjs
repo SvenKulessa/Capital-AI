@@ -142,6 +142,33 @@ export function renderPrometheusMetrics() {
   return lines.join('\n') + '\n' + renderCadsPrometheusMetrics();
 }
 
+
+export function operationalSnapshot() {
+  const requests = [...metrics.requests.entries()].map(([key, count]) => {
+    const [method, route, status] = key.split('|');
+    return { method, route, status, count };
+  });
+  const durations = [...metrics.duration.entries()].map(([key, value]) => {
+    const [method, route] = key.split('|');
+    return {
+      method,
+      route,
+      count: value.count,
+      avgMs: value.count ? Number((value.sumMs / value.count).toFixed(3)) : 0,
+      maxMs: Number(value.maxMs.toFixed(3)),
+    };
+  });
+  return sanitizeTelemetry({
+    schema: 'CAPITAL_AI_OPERATIONAL_SNAPSHOT@1',
+    generatedAt: new Date().toISOString(),
+    uptimeSeconds: Number(process.uptime().toFixed(3)),
+    residentMemoryBytes: process.memoryUsage().rss,
+    telemetryRedactions,
+    requests,
+    durations,
+  });
+}
+
 export function metricsAuthorized(req) {
   const expected = process.env.OBSERVABILITY_TOKEN;
   if (!expected || expected.length < 24) return false;

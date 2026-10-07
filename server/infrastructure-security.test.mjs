@@ -27,3 +27,66 @@ test('missing broker credentials fail closed before contacting Redis or NATS', a
   assert.equal(service.nc, null);
   assert.equal(service.status().status, 'unavailable');
 });
+
+
+test('provider replay state is centralized in Valkey with NX and bounded TTL', async () => {
+  const calls = [];
+  const service = new MarketInfrastructure({});
+  service.redis = {
+    isReady: true,
+    async set(key, value, options) {
+      calls.push({ key, value, options });
+      return calls.length === 1 ? 'OK' : null;
+    },
+  };
+
+  const first = await service.claimProviderReplay('req-central-1', 1_800_000_010_000, 1_800_000_000_000);
+  assert.equal(first.claimed, true);
+  assert.equal(first.ttlMs, 10_000);
+  assert.equal(calls[0].options.NX, true);
+  assert.equal(calls[0].options.PX, 10_000);
+  assert.doesNotMatch(calls[0].key, /req-central-1/);
+  await assert.rejects(
+    service.claimProviderReplay('req-central-1', 1_800_000_010_000, 1_800_000_000_100),
+    /QUERY_REPLAY_REJECTED/,
+  );
+});
+
+test('provider request rate and cost gates use atomic Valkey scripts and fail closed without Valkey', async () => {
+  const service = new MarketInfrastructure({});
+  await assert.rejects(service.consumeProviderRate('user-1', 30), /PROVIDER_STATE_UNAVAILABLE/);
+  await assert.rejects(
+    service.claimProviderCostScopes([{ key: 'global:binance:account.snapshot', intervalMs: 60_000 }]),
+    /PROVIDER_STATE_UNAVAILABLE/,
+  );
+
+  const scripts = [];
+  service.redis = {
+    isReady: true,
+    async eval(script, options) {
+      scripts.push({ script, options });
+      if (script.includes("INCR")) return scripts.length === 1 ? [1, 60_000] : [31, 42_000];
+      return scripts.length === 3 ? [0] : [28_000];
+    },
+  };
+
+  assert.deepEqual(await service.consumeProviderRate('user-1', 30), { limit: 30, remaining: 29, ttlMs: 60_000 });
+  await assert.rejects(service.consumeProviderRate('user-1', 30), error => {
+    assert.equal(error.code, 'PRIVATE_PROVIDER_RATE_LIMITED');
+    assert.equal(error.retryAfterSeconds, 42);
+    return true;
+  });
+
+  assert.deepEqual(
+    await service.claimProviderCostScopes([{ key: 'global:binance:account.snapshot', intervalMs: 60_000 }]),
+    { claimed: true },
+  );
+  await assert.rejects(
+    service.claimProviderCostScopes([{ key: 'global:binance:account.snapshot', intervalMs: 60_000 }]),
+    error => {
+      assert.equal(error.code, 'PROVIDER_QUERY_COST_THROTTLED');
+      assert.equal(error.retryAfterSeconds, 28);
+      return true;
+    },
+  );
+});

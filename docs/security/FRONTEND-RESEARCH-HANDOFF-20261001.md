@@ -1,3 +1,6 @@
+> **SUPERSEDED / NON-AUTHORIZING — 2026-10-07**
+> Diese Datei bleibt als historische oder fachliche Dokumentation erhalten. Sie erzeugt keine zusätzlichen Repository-Gates, Admissions, Handoffs, Pflichtreviews oder Merge-/Deployment-Regeln. Autoritativ ist ausschließlich `AGENTS.md` mit `SOLO_MAINTAINER_FLOW@1`. Konkrete gesetzliche, regulatorische, Security- oder Provider-/Lizenzpflichten bleiben davon unberührt.
+
 # FRONTEND-Transfer: Forschung, Designherkunft & Lizenzmodul
 
 Zielbasis: Capital-AI@16b9ced4950317bee3efe6bf8d5154d1551e7cc9.

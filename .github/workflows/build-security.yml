@@ -42,10 +42,41 @@ jobs:
           mkdir -p security-reports
           node scripts/container-evidence-identity.mjs init security-reports/container-identity.json
           node scripts/write-runtime-identity.mjs "$GITHUB_SHA"
-      - name: npm-Lizenzmetadaten und Regressionstests prüfen
+      - name: Lizenz- und Regressionstests direkt in GitHub ausführen
         run: |
-          node scripts/preflight.mjs
-          node --test scripts/verify-go-vuln-reachability.test.mjs scripts/docker-archive-config.test.mjs
+          node --test \
+            scripts/docker-context.test.mjs \
+            scripts/container-evidence-identity.test.mjs \
+            scripts/license-evidence.test.mjs \
+            scripts/summarize-trivy.test.mjs \
+            scripts/publish-security-summary.test.mjs \
+            scripts/diagnose-supabase-auth.test.mjs \
+            scripts/verify-main-ruleset.test.mjs \
+            scripts/npm-security-patch-policy.test.mjs \
+            scripts/percentage-parser.test.mjs \
+            scripts/growth-google-authority.test.mjs \
+            server/observability.test.mjs \
+            server/prompt-injection-guard.test.mjs \
+            scripts/billing-catalog.test.mjs \
+            server/cads-observability.test.mjs \
+            server/cads-commerce.test.mjs \
+            scripts/font-distribution.test.mjs \
+            server/ecb-reference-rates.test.mjs \
+            server/user-provider-vault.test.mjs \
+            server/kraken-order-dry-run.test.mjs \
+            server/uniswap-trading.test.mjs \
+            server/subscription-checkout.test.mjs \
+            scripts/stripe-catalog-readback.test.mjs \
+            scripts/stripe-subscription-sync-migration.test.mjs \
+            scripts/benchmark-ledger-migration.test.mjs \
+            scripts/benchmark-cost-calibration.test.mjs \
+            scripts/stripe-three-purchase-e2e.test.mjs \
+            scripts/ecb-reference-admission.test.mjs \
+            scripts/validate-oss-multi-asset-plan.test.mjs \
+            scripts/verify-release-readiness.test.mjs \
+            scripts/verify-go-vuln-reachability.test.mjs \
+            scripts/docker-archive-config.test.mjs
+          node scripts/license-evidence.mjs
       - name: Gepinnte Sicherheitswerkzeuge bauen
         run: |
           docker build --file Dockerfile.security --tag capital-ai-security .

@@ -1,0 +1,77 @@
+ARG PYTHON_BASE
+FROM ${PYTHON_BASE} AS ffmpeg-build
+
+ARG FFMPEG_VERSION
+ARG FFMPEG_SHA256
+
+RUN apk add --no-cache \
+      build-base \
+      ca-certificates \
+      curl \
+      linux-headers \
+      nasm \
+      perl \
+      xz \
+      yasm
+
+WORKDIR /tmp
+RUN test -n "${FFMPEG_VERSION}" \
+    && test -n "${FFMPEG_SHA256}" \
+    && curl --proto '=https' --tlsv1.2 --fail --show-error --location \
+      "https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz" \
+      --output ffmpeg.tar.xz \
+    && printf '%s  %s\n' "${FFMPEG_SHA256}" ffmpeg.tar.xz | sha256sum -c - \
+    && tar -xJf ffmpeg.tar.xz \
+    && cd "ffmpeg-${FFMPEG_VERSION}" \
+    && ./configure \
+      --prefix=/opt/ffmpeg \
+      --disable-autodetect \
+      --disable-doc \
+      --disable-debug \
+      --disable-ffplay \
+      --disable-network \
+      --enable-shared \
+      --disable-static \
+    && make -j2 \
+    && make install \
+    && LD_LIBRARY_PATH=/opt/ffmpeg/lib /opt/ffmpeg/bin/ffmpeg -hide_banner -version \
+    && LD_LIBRARY_PATH=/opt/ffmpeg/lib /opt/ffmpeg/bin/ffmpeg -hide_banner -buildconf \
+    && LD_LIBRARY_PATH=/opt/ffmpeg/lib /opt/ffmpeg/bin/ffmpeg -hide_banner -L
+
+ARG PYTHON_BASE
+FROM ${PYTHON_BASE} AS runtime
+
+RUN apk add --no-cache \
+      'libcrypto3>=3.5.8-r0' \
+      'libssl3>=3.5.8-r0' \
+      'libuuid>=2.41.6-r1'
+
+COPY deploy/social-media/renderer-requirements.txt /tmp/renderer-requirements.txt
+RUN python -m pip install \
+      --disable-pip-version-check \
+      --no-cache-dir \
+      --only-binary=:all: \
+      --require-hashes \
+      --requirement /tmp/renderer-requirements.txt \
+    && rm /tmp/renderer-requirements.txt \
+    && rm -rf \
+      /usr/local/lib/python3.11/site-packages/setuptools* \
+      /usr/local/lib/python3.11/site-packages/wheel* \
+      /usr/local/lib/python3.11/site-packages/pip* \
+      /usr/local/bin/pip*
+
+COPY --from=ffmpeg-build /opt/ffmpeg /opt/ffmpeg
+
+ENV PATH="/opt/ffmpeg/bin:${PATH}" \
+    LD_LIBRARY_PATH="/opt/ffmpeg/lib"
+
+RUN addgroup -S -g 10001 renderer \
+    && adduser -S -D -H -u 10001 -G renderer renderer \
+    && python -c "from PIL import Image; print(Image.__version__)" \
+    && ffmpeg -hide_banner -version \
+    && ffprobe -hide_banner -version
+
+WORKDIR /work
+USER 10001:10001
+
+CMD ["python", "-c", "from PIL import Image; print('capital-ai-social-renderer-ready', Image.__version__)"]

@@ -194,7 +194,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   {
     id: 'google-genai', name: 'Google Gemini / GenAI SDK', domain: 'PRODUCT', kind: 'AI Provider',
     installedAt: null, activeVersion: 'lockfile-managed server SDK', pipelineVersion: 'current stable review required', lifecycle: 'ACTIVE',
-    functionSummary: 'Server-side AI advisor plus governed GROWTH draft capability; Gemini Search Grounding is not admitted as an autonomous lead-discovery index.',
+    functionSummary: 'Server-side AI advisor plus governed GROWTH draft capability with request/month budget, provider/model kill-switch, model routing and public-source URL Context gate; Search Grounding remains excluded from autonomous lead discovery.',
     webAppBinding: 'server/advisor.ts + server/growth-ai-gateway.ts', license: 'Google service terms + Apache-2.0 SDK metadata', cadsScore: 77.0, scoreState: 'PROVISIONAL',
     domainAssignments: ["server-side provider endpoint; PRODUCT advisor + GROWTH draft generation; no browser domain binding"],
     dependencies: ['render'],
@@ -203,7 +203,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
       { name: 'vLLM', role: 'optimization', license: 'Apache-2.0' },
       { name: 'Ollama', role: 'replacement', license: 'MIT' },
     ],
-    evidence: ['server/advisor.ts', 'server/growth-ai-gateway.ts', 'src/contracts/growthAiPromotion.ts', 'docs/growth/GEMINI-FIRST-GROWTH-ENGINE-20261006.md', 'scripts/browser-boundary-policy.mjs'],
+    evidence: ['server/advisor.ts', 'server/growth-ai-gateway.ts', 'src/contracts/growthAiPromotion.ts', 'src/contracts/growthProviderRuntime.ts', 'src/contracts/growthMediaApproval.ts', 'docs/growth/GEMINI-FIRST-GROWTH-ENGINE-20261006.md', 'docs/growth/GROWTH-TOOL-CANDIDATE-EVIDENCE-20261006.md', 'scripts/browser-boundary-policy.mjs'],
   },
   {
     id: 'telegram-bot-api', name: 'Telegram Bot API', domain: 'GROWTH', kind: 'Notification / Social',
@@ -246,7 +246,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'google-analytics', name: 'Google Analytics', domain: 'GROWTH', kind: 'Web Analytics',
-    installedAt: null, activeVersion: null, pipelineVersion: 'GA4 adapter planned behind Growth Google authority boundary', lifecycle: 'DISCOVERED',
+    installedAt: null, activeVersion: null, pipelineVersion: 'GA4 remains separate; Umami v3.4.0 is a benchmark-pending first-party candidate', lifecycle: 'DISCOVERED',
     functionSummary: 'GA4 remains a separate future adapter; the LukeRenton Search Console MCP does not provide GA4.',
     webAppBinding: 'src/utils/analytics.ts + future server/operator GA4 adapter', license: 'Proprietary service/API', cadsScore: 60.0, scoreState: 'BLOCKED',
     domainAssignments: ["disabled; no active measurement domain"],
@@ -256,7 +256,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
       { name: 'Matomo', role: 'fallback', license: 'GPL-3.0' },
       { name: 'Plausible Community Edition', role: 'optimization', license: 'AGPL-3.0' },
     ],
-    evidence: ['src/utils/analytics.ts', 'scripts/privacy-analytics.test.mjs'],
+    evidence: ['src/utils/analytics.ts', 'scripts/privacy-analytics.test.mjs', 'src/contracts/growthAttribution.ts', 'docs/growth/GROWTH-TOOL-CANDIDATE-EVIDENCE-20261006.md'],
   },
   {
     id: 'binance-market-data', name: 'Binance Market Data', domain: 'MARKET', kind: 'Market Data Provider',
