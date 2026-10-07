@@ -1,0 +1,16 @@
+{
+  "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
+  "mainSha": "2d631cb5d22e94fb1f893e350418b0de861e5b46",
+  "mergedPr": 227,
+  "targetPr": 220,
+  "targetBranch": "capital-ai-trust/cads-paid-marketplace-production-20261006",
+  "targetHeadSha": "60d5c028c802429c8d5a4a535e25dca7813deab9",
+  "exactOverlap": [
+    "package.json",
+    "scripts/preflight.mjs",
+    "src/data/roadmapCurrentMainState.ts"
+  ],
+  "authority": "EVIDENCE_ONLY",
+  "mergeAuthority": false,
+  "deployAuthority": false
+}
