@@ -80,7 +80,7 @@ function cargoDependencies(text) {
   }).filter(Boolean);
 }
 
-export function buildRepositoryToolCatalog({ sourceSha, tree, pkg, lock, cargo, dockerfiles = {}, integrations = [] }) {
+export function buildRepositoryToolCatalog({ sourceSha, tree, pkg, lock, cargo, dockerfiles = {}, integrations = [], supplementary = {} }) {
   if (!SHA.test(sourceSha) || !Array.isArray(tree) || tree.length > 8000) throw new Error('CATALOG_INVALID_TREE');
   const paths = new Set(tree.filter(item => item?.type === 'blob' && typeof item.path === 'string' && item.path.length < 260 && SAFE_PATH.test(item.path)).map(item => item.path));
   const rows = new Map();
@@ -99,6 +99,61 @@ export function buildRepositoryToolCatalog({ sourceSha, tree, pkg, lock, cargo, 
         domainForPath(name)));
     }
   }
+
+
+  for (const [prefix, type, area] of [
+    ['deploy/runtime', 'NPM_PRODUCTION_BOUNDARY', 'Minimale Web-Runtime-Abhängigkeiten'],
+    ['deploy/npm-security-patches', 'NPM_SECURITY_PATCH', 'Isolierte npm-Build-Security-Patches'],
+  ]) {
+    const manifest = supplementary[prefix + '/package.json'];
+    const manifestLock = supplementary[prefix + '/package-lock.json'];
+    if (!paths.has(prefix + '/package.json') || !manifest) continue;
+    add(entry('app:' + prefix, manifest.name || prefix, 'ANWENDUNG', prefix + '/package.json',
+      area, manifest.version || null, 'package.json:version', 'PLATFORM'));
+    for (const [name, range] of Object.entries(manifest.dependencies || {})) {
+      const pinned = manifestLock?.packages?.['node_modules/' + name]?.version || null;
+      add(entry('npm:' + prefix + ':' + name, name, type, prefix + '/package.json → ' +
+        prefix + '/package-lock.json#node_modules/' + name, area, pinned || range,
+        pinned ? 'package-lock.json (aufgelöst)' : 'package.json (Versionsbereich, nicht aufgelöst)', 'PLATFORM'));
+    }
+  }
+
+  const pythonPath = 'deploy/social-media/renderer-requirements.txt';
+  if (paths.has(pythonPath)) {
+    for (const line of String(supplementary[pythonPath] || '').split('\n')) {
+      const match = line.match(/^([a-zA-Z0-9_-]+)==([^\s;#]+)/);
+      if (match) add(entry('python:' + match[1], match[1], 'PYTHON_PAKET', pythonPath,
+        'Social Media Renderer (Build-Requirement)', match[2], 'Requirements mit Hash-Pin; keine Worker-Deployment-Evidence', 'GROWTH'));
+    }
+  }
+  const androidPath = 'mobile/android-private/app/build.gradle';
+  if (paths.has(androidPath)) {
+    const name = String(supplementary[androidPath] || '').match(/versionName\s+"([^"]+)"/)?.[1] || null;
+    add(entry('app:android-private', 'Capital AI Android Private', 'ANWENDUNG', androidPath,
+      'Private Android-App (separate Distribution)', name, 'Gradle versionName; nicht installiert bestätigt', 'PRODUCT'));
+  }
+  const gradlePath = 'mobile/android-private/build.gradle';
+  if (paths.has(gradlePath)) {
+    const gradleVersion = String(supplementary[gradlePath] || '').match(/com\.android\.application['"]\s+version\s+['"]([^'"]+)/)?.[1] || null;
+    add(entry('tool:android-gradle-plugin', 'Android Gradle Plugin', 'BUILD_TOOL', gradlePath,
+      'Android Build Toolchain', gradleVersion, 'Gradle Plugin-Pin', 'PLATFORM'));
+  }
+  const toolchainPath = 'services/provider-bridge-rs/rust-toolchain.toml';
+  if (paths.has(toolchainPath)) {
+    const rustVersion = String(supplementary[toolchainPath] || '').match(/channel\s*=\s*"([^"]+)"/)?.[1] || null;
+    add(entry('tool:rust', 'Rust Toolchain', 'BUILD_TOOL', toolchainPath,
+      'Rust Provider-Bridge Toolchain', rustVersion, 'rust-toolchain.toml (Pin, nicht Runtime)', 'PLATFORM'));
+  }
+  const ffmpegPath = 'deploy/social-media/ffmpeg-build-profile.json';
+  if (paths.has(ffmpegPath) && supplementary[ffmpegPath]) {
+    const profile = supplementary[ffmpegPath];
+    add(entry('tool:ffmpeg', 'FFmpeg Social Renderer', 'BUILD_PROFILE', ffmpegPath,
+      'Medien-Worker (Quelle deklariert; Runtime separat nachzuweisen)', profile.source?.version || null,
+      profile.productionEligible === false ? 'Build-Profil, ausdrücklich NICHT productionEligible' : 'Build-Profil, keine Runtime-Evidence', 'GROWTH'));
+  }
+  const npmBuildVersion = String(dockerfiles.Dockerfile || '').match(/npm install --global npm@([0-9.]+)/)?.[1];
+  if (npmBuildVersion) add(entry('tool:npm-cli', 'npm CLI', 'BUILD_TOOL', 'Dockerfile',
+    'Nur Build-Toolchain; im Runtime-Image entfernt', npmBuildVersion, 'Dockerfile global npm Pin', 'PLATFORM'));
 
   if (paths.has('services/provider-bridge-rs/Cargo.toml')) {
     const crateVersion = String(cargo || '').match(/^version\s*=\s*"([^"]+)"/m)?.[1] || null;
@@ -160,12 +215,22 @@ export function createRepositoryToolCatalog({ fetchImpl = fetch, now = Date.now,
     const fromMain = (file, max, optional = false) => readText(fetchImpl, RAW + sha + '/' + file, max, optional);
     const files = ['package.json', 'package-lock.json', 'services/provider-bridge-rs/Cargo.toml',
       'Dockerfile', 'deploy/Dockerfile.nats', 'deploy/Dockerfile.provider-bridge', 'deploy/social-media/Dockerfile.renderer',
-      'config/tool-catalog-integrations.json'];
-    const sources = await Promise.all(files.map((file, index) => fromMain(file, index === 1 ? 2_400_000 : 85_000, index >= 2)));
+      'config/tool-catalog-integrations.json', 'deploy/runtime/package.json', 'deploy/runtime/package-lock.json',
+      'deploy/npm-security-patches/package.json', 'deploy/npm-security-patches/package-lock.json',
+      'deploy/social-media/renderer-requirements.txt', 'mobile/android-private/app/build.gradle',
+      'mobile/android-private/build.gradle', 'services/provider-bridge-rs/rust-toolchain.toml',
+      'deploy/social-media/ffmpeg-build-profile.json'];
+    const sources = await Promise.all(files.map((file, index) =>
+      fromMain(file, file.endsWith('package-lock.json') ? 2_400_000 : 85_000, index >= 2)));
+    const supplementary = Object.fromEntries(files.slice(8).map((p, i) => {
+      const value = sources[i + 8];
+      return [p, p.endsWith('package.json') || p.endsWith('package-lock.json') || p.endsWith('ffmpeg-build-profile.json')
+        ? parseJson(value) : value];
+    }));
     const entries = buildRepositoryToolCatalog({
       sourceSha: sha, tree: treeResult.tree, pkg: parseJson(sources[0]), lock: parseJson(sources[1]),
       cargo: sources[2], dockerfiles: Object.fromEntries(files.slice(3, 7).map((p, i) => [p, sources[i + 3]])),
-      integrations: parseJson(sources[7], []) || [],
+      integrations: parseJson(sources[7], []) || [], supplementary,
     });
     if (!entries.length) throw new Error('CATALOG_EMPTY');
     return {
