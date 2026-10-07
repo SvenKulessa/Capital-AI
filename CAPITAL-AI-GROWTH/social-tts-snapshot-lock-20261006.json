@@ -31,7 +31,7 @@
           "einops"
         ]
       },
-      "transitiveLockStatus": "OPEN"
+      "transitiveLockStatus": "DEPENDENCY_RESOLUTION_PENDING"
     },
     "model": {
       "repo": "Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign",
@@ -111,11 +111,19 @@
           "pyloudnorm",
           "omegaconf"
         ],
-        "mutableVcs": [
-          "resemble-perth @ git+https://github.com/resemble-ai/Perth.git@master"
+        "mutableVcs": [],
+        "targetImmutableVcs": [
+          "resemble-perth @ git+https://github.com/resemble-ai/Perth.git@ff1c8ac55a976971245cdd53c18d6131ca00d993"
         ]
       },
-      "transitiveLockStatus": "BLOCKED_MUTABLE_PERTH_AND_UNPINNED_DEPENDENCIES"
+      "transitiveLockStatus": "TARGET_PERTH_IMMUTABLE_DEPENDENCY_RESOLUTION_PENDING",
+      "targetPerth": {
+        "repository": "resemble-ai/Perth",
+        "immutableRevision": "ff1c8ac55a976971245cdd53c18d6131ca00d993",
+        "selection": "current immutable target lock; not asserted as historical Finance master resolution",
+        "license": "MIT",
+        "compatibilityStatus": "PENDING_DEPENDENCY_RESOLUTION_AND_WORKER_TEST"
+      }
     },
     "model": {
       "repo": "ResembleAI/chatterbox",
