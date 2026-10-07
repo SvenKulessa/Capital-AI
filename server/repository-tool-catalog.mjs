@@ -82,6 +82,48 @@ function cargoDependencies(text) {
   }).filter(Boolean);
 }
 
+// Inventory only: source declarations are not runtime endorsements or market-data permissions.
+function registryItems(source, name) {
+  const start = String(source || '').indexOf('export const ' + name);
+  if (start < 0) return '';
+  const section = String(source).slice(start);
+  return section.slice(0, section.indexOf(name === 'MASTER_TOOL_CATALOG' ? '\n};' : '\n];') + 3);
+}
+function quotedField(body, field) {
+  const match = body.match(new RegExp('(?:^|\\n)\\s*' + field + ":\\s*'([^']*)'"));
+  return match?.[1] || null;
+}
+function enumerateAnalysisComponents(source) {
+  const segment = registryItems(source, 'CANONICAL_50_COMPONENTS');
+  const results = [];
+  for (const match of segment.matchAll(/componentId:\s*'([^']+)'[\s\S]{0,160}?displayName:\s*'([^']+)'[\s\S]{0,100}?domain:\s*'([^']+)'[\s\S]{0,250}?status:\s*'([^']+)'/g)) {
+    const next = segment.slice(match.index, match.index + 1800);
+    const version = quotedField(next, 'calculationVersion');
+    results.push({ id: match[1], name: match[2], domain: match[3], status: match[4], version });
+  }
+  return results;
+}
+function enumeratePipelineTools(source) {
+  const results = [];
+  const registry = registryItems(source, 'MASTER_TOOL_CATALOG');
+  for (const match of registry.matchAll(/^\s{2}'([^']+)':\s*\{([\s\S]*?)(?=^\s{2}\},)/gm)) {
+    const name = quotedField(match[2], 'name');
+    const layer = quotedField(match[2], 'layerName');
+    if (name) results.push({ id: match[1], name, layer: layer || 'Pipeline-Konfiguration', category: 'PIPELINE_TOOL' });
+  }
+  for (const [registryName, category] of [
+    ['MASTER_INDICATORS_CATALOG', 'INDIKATOR'],
+    ['MASTER_PATTERNS_CATALOG', 'MUSTER'],
+    ['MASTER_NEWS_APIS_CATALOG', 'NEWS_API'],
+  ]) {
+    const segment = registryItems(source, registryName);
+    for (const match of segment.matchAll(/\{\s*\n\s*id:\s*'([^']+)',\s*\n\s*name:\s*'([^']+)'/g)) {
+      results.push({ id: match[1], name: match[2], layer: registryName.replace('MASTER_', '').replace('_CATALOG',''), category });
+    }
+  }
+  return results;
+}
+
 export function buildRepositoryToolCatalog({ sourceSha, tree, pkg, lock, cargo, dockerfiles = {}, integrations = [], supplementary = {} }) {
   if (!SHA.test(sourceSha) || !Array.isArray(tree) || tree.length > 8000) throw new Error('CATALOG_INVALID_TREE');
   const paths = new Set(tree.filter(item => item?.type === 'blob' && typeof item.path === 'string' && item.path.length < 260 && SAFE_PATH.test(item.path)).map(item => item.path));
@@ -157,6 +199,23 @@ export function buildRepositoryToolCatalog({ sourceSha, tree, pkg, lock, cargo, 
   if (npmBuildVersion) add(entry('tool:npm-cli', 'npm CLI', 'BUILD_TOOL', 'Dockerfile',
     'Nur Build-Toolchain; im Runtime-Image entfernt', npmBuildVersion, 'Dockerfile global npm Pin', 'PLATFORM'));
 
+  const analysisPath = 'src/contracts/analysisComponentRegistry.ts';
+  if (paths.has(analysisPath)) {
+    for (const tool of enumerateAnalysisComponents(supplementary[analysisPath])) {
+      add(entry('analysis:' + tool.id, tool.name, 'ANALYSE_KOMPONENTE', analysisPath,
+        'Enterprise Analyse (' + tool.domain + ') · Status: ' + tool.status,
+        tool.version, 'calculationVersion laut Quellregistry; keine produktive Aktivierung', 'MARKET'));
+    }
+  }
+  const pipelinePath = 'src/utils/pipelineToolCatalog.ts';
+  if (paths.has(pipelinePath)) {
+    for (const tool of enumeratePipelineTools(supplementary[pipelinePath])) {
+      add(entry('pipeline:' + tool.category + ':' + tool.id, tool.name, tool.category, pipelinePath,
+        tool.layer + ' · Pipeline-Builder-Konfiguration, keine aktivierte Runtime',
+        null, 'Katalogtool ohne separate installierte Versionsangabe', 'PRODUCT'));
+    }
+  }
+
   if (paths.has('Chat Buddy/README.md')) add(entry('app:chat-buddy', 'Chat Buddy', 'ANWENDUNG', 'Chat Buddy/README.md',
     'First-Party Assistant SDK / Chat-Assistent', null, 'Keine separate Release-Version im Katalog belegt', 'PRODUCT'));
 
@@ -230,9 +289,10 @@ export function createRepositoryToolCatalog({ fetchImpl = fetch, now = Date.now,
       'deploy/npm-security-patches/package.json', 'deploy/npm-security-patches/package-lock.json',
       'deploy/social-media/renderer-requirements.txt', 'mobile/android-private/app/build.gradle',
       'mobile/android-private/build.gradle', 'services/provider-bridge-rs/rust-toolchain.toml',
-      'deploy/social-media/ffmpeg-build-profile.json'];
+      'deploy/social-media/ffmpeg-build-profile.json',
+      'src/contracts/analysisComponentRegistry.ts', 'src/utils/pipelineToolCatalog.ts'];
     const sources = await Promise.all(files.map((file, index) =>
-      fromMain(file, file.endsWith('package-lock.json') ? 2_400_000 : 85_000, index >= 2)));
+      fromMain(file, file.endsWith('package-lock.json') ? 2_400_000 : 100_000, index >= 2)));
     const supplementary = Object.fromEntries(files.slice(8).map((p, i) => {
       const value = sources[i + 8];
       return [p, p.endsWith('package.json') || p.endsWith('package-lock.json') || p.endsWith('ffmpeg-build-profile.json')
