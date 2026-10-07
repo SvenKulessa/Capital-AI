@@ -1,0 +1,116 @@
+[
+  {
+    "name": "GitHub + GHCR",
+    "domain": "TRUST",
+    "path": ".github/workflows/build-security.yml",
+    "application": "Quellcode, Pull Requests, OCI-Artefakte"
+  },
+  {
+    "name": "Render",
+    "domain": "PLATFORM",
+    "path": "render.yaml",
+    "application": "Hosting, Webservice, Deployment-Konfiguration"
+  },
+  {
+    "name": "Supabase",
+    "domain": "PLATFORM",
+    "path": "supabase/migrations/20261002051549_external_component_inventory_private_registry.sql",
+    "application": "PostgreSQL, Vault-/Evidence-Datenhaltung"
+  },
+  {
+    "name": "ZITADEL",
+    "domain": "TRUST",
+    "path": "docs/security/ZITADEL-READBACK.md",
+    "application": "Identitätsanbieter / OIDC (dokumentierte Integration)"
+  },
+  {
+    "name": "IONOS SMTP",
+    "domain": "PLATFORM",
+    "path": "docs/mail/SMTP.md",
+    "application": "Transaktionale E-Mails"
+  },
+  {
+    "name": "IONOS DNS",
+    "domain": "PLATFORM",
+    "path": "docs/security/IONOS-INVENTORY.md",
+    "application": "Domain und DNS"
+  },
+  {
+    "name": "Stripe",
+    "domain": "PRODUCT",
+    "path": "server/subscription-checkout.mjs",
+    "application": "Abonnements und Checkout"
+  },
+  {
+    "name": "NATS JetStream",
+    "domain": "PLATFORM",
+    "path": "deploy/Dockerfile.nats",
+    "application": "Privater Event Bus"
+  },
+  {
+    "name": "Valkey",
+    "domain": "PLATFORM",
+    "path": "server/infrastructure.mjs",
+    "application": "Cache und Pub/Sub"
+  },
+  {
+    "name": "Google Gemini",
+    "domain": "GROWTH",
+    "path": "server/growth-ai-gateway.ts",
+    "application": "KI-gestützte Content-Workflows"
+  },
+  {
+    "name": "Metricool",
+    "domain": "GROWTH",
+    "path": "docs/growth/METRICOOL-MCP-INTEGRATION-20261006.md",
+    "application": "Social Publisher (dokumentierter Integrationspfad)"
+  },
+  {
+    "name": "Twelve Data",
+    "domain": "MARKET",
+    "path": "docs/market-data/evidence/twelve-data-rights-20261005.json",
+    "application": "Marktdatenprovider / Lizenzprüfung"
+  },
+  {
+    "name": "Binance",
+    "domain": "MARKET",
+    "path": "supabase/migrations/20261006131500_enable_binance_user_provider_vault.sql",
+    "application": "BYOK-Provider-Integration"
+  },
+  {
+    "name": "Kraken",
+    "domain": "MARKET",
+    "path": "server/kraken-order-dry-run.mjs",
+    "application": "Order-Intent / Dry Run"
+  },
+  {
+    "name": "ECB",
+    "domain": "MARKET",
+    "path": "server/ecb-reference-rates.mjs",
+    "application": "Referenzwechselkurse"
+  },
+  {
+    "name": "Grafana Cloud",
+    "domain": "PLATFORM",
+    "path": "docs/platform/NATS-VALKEY-RUST-PRODUCTION-CORRELATION-20261006.md",
+    "application": "Monitoring / Betriebsevidence"
+  },
+  {
+    "name": "Telegram",
+    "domain": "PRODUCT",
+    "path": "server/telegram.mjs",
+    "application": "Benachrichtigungen"
+  },
+  {
+    "name": "GitHub Marketplace",
+    "domain": "PRODUCT",
+    "path": "apps/cads-github-app/marketplace-plans.production.json",
+    "application": "CADS Marketplace-Konfiguration"
+  },
+  {
+    "name": "Prometheus",
+    "domain": "PLATFORM",
+    "path": "server/observability.mjs",
+    "application": "Betriebsmetriken und Export"
+  }
+]
