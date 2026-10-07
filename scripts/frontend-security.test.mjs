@@ -236,6 +236,19 @@ test('control center observability remains owner-projected without browser metri
 });
 
 
+test('provider bridge readiness remains owner-only and probe-only', async () => {
+  const server = await readFile(new URL('../server/index.mjs', import.meta.url), 'utf8');
+  const bridge = await readFile(new URL('../server/private-provider-query.mjs', import.meta.url), 'utf8');
+
+  assert.match(server, /\/api\/internal\/provider-bridge/);
+  assert.match(server, /auth\.authorizeIamRole\(req, res, 'owner'\)/);
+  assert.match(server, /CAPITAL_AI_PROVIDER_BRIDGE_READINESS@1/);
+  assert.match(bridge, /proofScope: 'APP_NATS_RUST_BRIDGE_EXECUTOR_ONLY'/);
+  assert.match(bridge, /stateIoProven: false/);
+  assert.match(bridge, /vaultIoProven: false/);
+  assert.match(bridge, /providerIoProven: false/);
+});
+
 test('registration mirrors the observed Supabase password classes before submit', async () => {
   const login = await readFile(new URL('../src/features/auth/LoginPage.tsx', import.meta.url), 'utf8');
 
