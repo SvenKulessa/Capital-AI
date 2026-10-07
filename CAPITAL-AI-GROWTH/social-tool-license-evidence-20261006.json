@@ -2,8 +2,8 @@
   "schemaVersion": "SOCIAL_TOOL_LICENSE_EVIDENCE@1",
   "id": "CAPITAL-AI-SOCIAL-TOOL-LICENSE-EVIDENCE-20261006",
   "status": "POINT_4_ARTIFACT_LOCK_ADVANCED_FAIL_CLOSED",
-  "correlatedAt": "2026-10-06",
-  "targetMain": "051ec288b518e7184e7082420b89410935752269",
+  "correlatedAt": "2026-10-08",
+  "targetMain": "d8b5d471b34fcfaf061a7d8a8b62eac7406c8864",
   "financeSource": "dcef421fe6e350a3a2ade61d0299aad9ecca213c",
   "scope": "Social-Media-Engine implementation dependencies only; Finance MARKET/scoring migration remains deferred until Social cutover PASS.",
   "policy": {
@@ -63,11 +63,10 @@
         "implementationEligible": true,
         "productionEligible": false,
         "noticeRequired": true,
-        "reason": "Exact CPython 3.11 musllinux x86_64 wheel is now selected and SHA-256 bound. Production runtime remains gated on the dedicated renderer worker/image and its native-library/SBOM evidence."
+        "reason": "Exact Pillow 12.3.0 wheel is hash-bound and a real renderer worker was built successfully with SBOM/license/Trivy evidence. The historical worker had one non-blocking MEDIUM xz-libs finding; a hardened rebuild with xz-libs >= 5.8.3-r0 is now required before this worker evidence is accepted as current."
       },
       "unblock": [
-        "Build the dedicated renderer worker/image from the selected wheel.",
-        "Capture worker SBOM/native-library inventory and image digest."
+        "Complete hardened renderer-worker rebuild with xz-libs >= 5.8.3-r0 and bind its new image/binary/SBOM evidence."
       ]
     },
     {
@@ -91,13 +90,25 @@
         "mode": "COMMERCIAL_INTERNAL_SERVICE",
         "implementationEligible": true,
         "productionEligible": false,
-        "reason": "FFmpeg 9.0.2 source and an LGPL-only shared-library build profile are now pinned. The Finance renderer uses native mpeg4/aac only, so no GPL codec library is required. Production remains blocked until the actual worker binaries and OCI image are built, hashed, scanned, and their buildconf proves GPL/nonfree are absent."
+        "reason": "FFmpeg 9.0.2 was really compiled in CI under the LGPL-only profile; ffmpeg/ffprobe hashes, buildconf, SBOM, license inventory and Trivy evidence exist. The historical worker image is superseded pending a rebuild that raises xz-libs to the fixed floor."
       },
       "unblock": [
-        "Build worker from deploy/social-media/ffmpeg-build-profile.json.",
-        "Bind ffmpeg/ffprobe SHA-256, ffmpeg -buildconf, OCI digest and SBOM.",
-        "Run deterministic media render/decode tests on that exact worker image."
-      ]
+        "Complete hardened rebuild with xz-libs >= 5.8.3-r0.",
+        "Bind new ffmpeg/ffprobe/image/SBOM evidence from that exact rebuild.",
+        "OCI registry digest remains release-time evidence, not PR validation evidence."
+      ],
+      "runtimeEvidence": {
+        "historicalWorkflowRunId": 37520859593,
+        "ffmpegBinarySha256": "5dc8afa27e566af954bc9184f6eaf7c3e0a1ff1574b5a250d57f8af4c4b5ef86",
+        "ffprobeBinarySha256": "872f0b0c21296186a22297a038c5d892ae2191f7f33799636242f2d9204faefe",
+        "localImageId": "sha256:047d04161283c74c7c69ccd53a163ec5b9dc25a3e6c5fad847c85f0d02c776d8",
+        "imageArchiveSha256": "e1d3b77b05732727812e850422d67144f38609205526c95e33edded9021d6646",
+        "gplEnabled": false,
+        "nonfreeEnabled": false,
+        "version3Enabled": false,
+        "blockingFindings": 0,
+        "supersededPendingHardenedRebuild": true
+      }
     },
     {
       "id": "poppler",
@@ -314,5 +325,13 @@
     "Run fresh Qwen/Chatterbox runtime + Human/Owner listening acceptance.",
     "Build and scan immutable TTS/ASR worker images.",
     "Only then promote status to POINT_4_PASS."
-  ]
+  ],
+  "rendererWorkerEvidence": {
+    "path": "CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json",
+    "priorRunStatus": "SUPERSEDED_PENDING_HARDENED_REBUILD",
+    "historicalWorkflowRunId": 37520859593,
+    "historicalArtifactDigest": "sha256:1a96945746ccbf0573c86a2beafce391eed3d1b475a3b5a5ca7e2ce752e95c89",
+    "historicalBlockingFindings": 0,
+    "historicalNonBlockingFinding": "CVE-2026-34743 xz-libs 5.8.1-r0 -> fixed floor 5.8.3-r0"
+  }
 }
