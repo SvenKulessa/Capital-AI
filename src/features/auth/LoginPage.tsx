@@ -70,6 +70,20 @@ function initialMode(): Mode {
   return 'login';
 }
 
+function safePostAuthPath(): string {
+  const candidate = new URLSearchParams(window.location.search).get('next');
+  if (!candidate) return '/';
+  try {
+    const parsed = new URL(candidate, window.location.origin);
+    if (parsed.origin !== window.location.origin) return '/';
+    if (parsed.pathname !== '/api/cads/marketplace/setup') return '/';
+    const installationId = Number(parsed.searchParams.get('installation_id'));
+    if (!Number.isSafeInteger(installationId) || installationId <= 0) return '/';
+    return `/api/cads/marketplace/setup?installation_id=${encodeURIComponent(String(installationId))}`;
+  } catch {
+    return '/';
+  }
+}
 
 function newPasswordMeetsObservedPolicy(value: string) {
   return value.length >= 14 &&
@@ -95,6 +109,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
+  const postAuthPath = useMemo(safePostAuthPath, []);
 
   useEffect(() => {
     const recoveryError = new URLSearchParams(window.location.search).get('recovery_error');
@@ -151,7 +166,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
         }
 
         if (!value.mfaRequired) {
-          window.location.replace('/');
+          window.location.replace(postAuthPath);
           return;
         }
 
@@ -160,7 +175,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
           if (!factors.length && !abort.signal.aborted) {
             const refreshed = await loadSession(abort.signal);
             if (refreshed.authenticated && !refreshed.mfaRequired) {
-              window.location.replace('/');
+              window.location.replace(postAuthPath);
               return;
             }
             setError('Der MFA-Zustand ist inkonsistent. Bitte wähle eine andere Anmeldemethode oder melde dich neu an.');
@@ -207,7 +222,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
           await loadMfaFactors();
           return;
         }
-        window.location.replace('/');
+        window.location.replace(postAuthPath);
         return;
       }
 
@@ -225,7 +240,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
       });
       if (!result.response.ok) throw new Error(result.body?.error || 'registration_failed');
       if (result.body?.authenticated) {
-        window.location.replace('/');
+        window.location.replace(postAuthPath);
         return;
       }
       setNotice('Registrierung angenommen. Bitte bestätige die E-Mail-Adresse über die CAPITAL-AI Bestätigungsmail.');
@@ -293,7 +308,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
         code: totpCode,
       });
       if (!result.response.ok) throw new Error(result.body?.code || result.body?.error || 'totp_verification_failed');
-      window.location.replace('/');
+      window.location.replace(postAuthPath);
     } catch (reason) {
       showError(reason);
     } finally {
@@ -329,7 +344,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
         await loadMfaFactors();
         return;
       }
-      window.location.replace('/');
+      window.location.replace(postAuthPath);
     } catch (reason) {
       showError(reason);
     } finally {
@@ -625,7 +640,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
               </div>
 
               <a
-                href="/api/auth/login/google?next=%2F"
+                href={`/api/auth/login/google?next=${encodeURIComponent(postAuthPath)}`}
                 className="flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border border-white/15 bg-white text-sm font-bold text-slate-900 transition hover:bg-slate-100"
                 aria-label="Mit Google anmelden"
               >
