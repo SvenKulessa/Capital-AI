@@ -31,7 +31,7 @@ function baseEnv() {
   };
 }
 
-test('paid Marketplace runtime requires app, distinct plan IDs and service-role store', () => {
+test('paid Marketplace runtime requires app, distinct plan IDs and Supabase secret-key store', () => {
   const ready = publicCadsMarketplaceReadiness(baseEnv());
   assert.equal(ready.target, 'PAID_PRODUCTION');
   assert.deepEqual(ready.plans, ['starter', 'pro', 'enterprise']);
@@ -70,6 +70,21 @@ test('cleanup is fail-closed when the entitlement store is absent', async () => 
   const marketplace = createCadsMarketplace({ env, fetchImpl: async () => { throw new Error('must not fetch'); } });
   assert.deepEqual(await marketplace.purgeCancelledData(), { configured: false });
 });
+
+test('legacy service-role JWT claims are not trusted without cryptographic verification', () => {
+  const env = baseEnv();
+  delete env.SUPABASE_SECRET_KEY;
+  env.SUPABASE_SERVICE_ROLE_KEY = [
+    Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url'),
+    Buffer.from(JSON.stringify({ role: 'service_role' })).toString('base64url'),
+    'forged-signature',
+  ].join('.');
+
+  const ready = publicCadsMarketplaceReadiness(env);
+  assert.equal(ready.entitlementStoreConfigured, false);
+  assert.equal(ready.runtimeReady, false);
+});
+
 
 function webhookRequest(payload, secret, headers = {}) {
   const raw = Buffer.from(JSON.stringify(payload));
