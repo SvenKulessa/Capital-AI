@@ -77,3 +77,7 @@ Before standalone production:
 
 A successful unit test, benchmark, HMAC check or vulnerability scan does not automatically grant
 security approval. TRUST approval is separate and must bind the exact release SHA/artifact digest.
+
+## State confidentiality and request bounds
+
+OAuth state uses AES-256-GCM with a fresh nonce and authenticated tag. The runtime requires a canonical base64url-encoded 32-byte `CADS_GITHUB_OAUTH_STATE_KEY_B64`; the legacy state secret is refused. Supabase persistence accepts modern `sb_secret_` keys only, not locally decoded legacy service-role JWT claims. OAuth and webhook requests are rate-limited. Delivery identity is bound to the payload hash to reject conflicting reuse.

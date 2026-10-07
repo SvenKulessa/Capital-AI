@@ -1,0 +1,580 @@
+--- a/README.md
++++ b/README.md
+@@ -2,7 +2,7 @@
+ 
+ Standalone-Staging-Repository für **CAPITAL-AI Decision Score (CADS)**.
+ 
+-Quelle: `SvenKulessa/Capital-AI@0276d389412f806d2727c6b7b65d8215c703dbb1`.
++Quelle: `SvenKulessa/Capital-AI@4beff8093cecaa36ab5a3185a6796f8601c93f45`.
+ 
+ ## Produktgrenze
+ 
+@@ -18,3 +18,5 @@
+ ```
+ 
+ Ein grüner Test ist keine automatische Security-, Lizenz-, Production- oder Marketplace-Freigabe.
++
++Das Sicherheitsdelta vom 7. Oktober 2026 übernimmt AES-256-GCM-OAuth-State, moderne Supabase-Secret-Keys, Request-Limits und Delivery-/Payload-Bindung. Standalone-Ausführung, Production und Marketplace-Veröffentlichung sind weiterhin nicht nachgewiesen.
+--- a/docs/product/CADS-MARKETPLACE-INSTALLATION.md
++++ b/docs/product/CADS-MARKETPLACE-INSTALLATION.md
+@@ -2,7 +2,7 @@
+ 
+ Status: **PRE-PUBLICATION RUNBOOK**
+ 
+-Primary domain: PRODUCT  
++Primary domain: PRODUCT
+ Assurance: TRUST
+ 
+ ## 1. Voraussetzungen für den Publisher
+@@ -57,7 +57,7 @@
+ CADS_GITHUB_CLIENT_ID
+ CADS_GITHUB_CLIENT_SECRET
+ CADS_GITHUB_MARKETPLACE_WEBHOOK_SECRET
+-CADS_GITHUB_OAUTH_STATE_SECRET
++CADS_GITHUB_OAUTH_STATE_KEY_B64
+ CADS_GITHUB_MARKETPLACE_OWNER_ORG
+ CADS_GITHUB_MARKETPLACE_LISTING_SLUG
+ CADS_GITHUB_MARKETPLACE_STARTER_PLAN_ID
+@@ -161,3 +161,11 @@
+ 
+ Ein PASS dieser technischen Checks allein ist keine Marketplace-, Security-, Lizenz- oder
+ Production-Freigabe.
++
++## OAuth-State-Schlüssel und Deployment
++
++`CADS_GITHUB_OAUTH_STATE_KEY_B64` enthält exakt 32 zufällige Bytes als kanonisches Base64url ohne Padding (43 Zeichen). OAuth-State wird mit AES-256-GCM einschließlich Authentifizierungs-Tag verschlüsselt. Der frühere `CADS_GITHUB_OAUTH_STATE_SECRET` wird nicht akzeptiert; alte Setup-Flows müssen nach einer Umstellung neu gestartet werden.
++
++Der Marketplace-Store akzeptiert ausschließlich `SUPABASE_SECRET_KEY` im Format `sb_secret_…`; ein lediglich decodiertes Legacy-Service-Role-JWT ist kein Konfigurationsnachweis. Schlüssel ausschließlich im Secret-Manager erzeugen und hinterlegen; keine Werte in Logs, Tickets oder Repository-Evidence aufnehmen.
++
++OAuth- und Webhook-Anfragen besitzen begrenzte Request-Budgets. Der Delivery-Ledger bindet die GitHub-Delivery-ID zusätzlich an den Payload-Hash; dieselbe ID mit anderem Payload wird abgewiesen.
+--- a/docs/security/CADS-SECURITY.md
++++ b/docs/security/CADS-SECURITY.md
+@@ -77,3 +77,7 @@
+ 
+ A successful unit test, benchmark, HMAC check or vulnerability scan does not automatically grant
+ security approval. TRUST approval is separate and must bind the exact release SHA/artifact digest.
++
++## State confidentiality and request bounds
++
++OAuth state uses AES-256-GCM with a fresh nonce and authenticated tag. The runtime requires a canonical base64url-encoded 32-byte `CADS_GITHUB_OAUTH_STATE_KEY_B64`; the legacy state secret is refused. Supabase persistence accepts modern `sb_secret_` keys only, not locally decoded legacy service-role JWT claims. OAuth and webhook requests are rate-limited. Delivery identity is bound to the payload hash to reject conflicting reuse.
+--- a/evidence/source-export-manifest.json
++++ b/evidence/source-export-manifest.json
+@@ -1,8 +1,8 @@
+ {
+   "schemaVersion": "CAPITAL_AI_CADS_STANDALONE_SOURCE_MANIFEST@2",
+   "sourceRepository": "SvenKulessa/Capital-AI",
+-  "sourceCommit": "0276d389412f806d2727c6b7b65d8215c703dbb1",
+-  "targetRepository": "SvenKulessa/CADS",
++  "sourceCommit": "4beff8093cecaa36ab5a3185a6796f8601c93f45",
++  "targetRepository": "capital-ai-online/CADS",
+   "policy": "fail-closed",
+   "scope": {
+     "include": [
+@@ -39,16 +39,17 @@
+     },
+     {
+       "path": "server/cads-marketplace.mjs",
+-      "targetGitBlobSha": "8a586c8d4f339057532f86d6d951801d358a4298",
+-      "sourceGitBlobSha": "b41d14aa9014f7ea51b0b598cc5a35f224e8bc6a",
++      "targetGitBlobSha": "eeb5fe92dd806e8f7ddbe6868ed7bf7ca854986d",
++      "sourceGitBlobSha": "fa9785230f711d3dc98bf4ff99d54a4e79baa70d",
+       "mode": "TRANSFORMED",
+-      "transformation": "Use CADS core entitlement contract; remove benchmark-only naming."
++      "transformation": "Use standalone CADS core entitlement contract; omit benchmark-only response flag; retain current source security behavior."
+     },
+     {
+       "path": "server/cads-marketplace.test.mjs",
+-      "targetGitBlobSha": "1e32b46ec3364696b773bbbea01bcb7e6bf1323d",
+-      "sourceGitBlobSha": "665dd08a664b14bba045c336e4c2e7707076ce03",
+-      "mode": "TRANSFORMED"
++      "targetGitBlobSha": "568075d8adb66c9dd35df6debc977c54acffd2df",
++      "sourceGitBlobSha": "7c2d38e2cbdf94c8b6d8df331c24160b57eb83cf",
++      "mode": "TRANSFORMED",
++      "transformation": "Retain current source Marketplace security regressions; use CADS naming; add standalone negative tests for state confidentiality, key mismatch, ciphertext/tag tampering, expiry and noncanonical key encoding."
+     },
+     {
+       "path": "server/cads-commerce.mjs",
+@@ -113,14 +114,14 @@
+     },
+     {
+       "path": "supabase/migrations/20261006210500_cads_marketplace_paid_entitlements.sql",
+-      "targetGitBlobSha": "fbbc120c4d11ce1fd29fec89a8361a5c2929838d",
+-      "sourceGitBlobSha": "fbbc120c4d11ce1fd29fec89a8361a5c2929838d",
++      "targetGitBlobSha": "baf7a216281dbe14ed8fea0d461ae7469fdbe761",
++      "sourceGitBlobSha": "baf7a216281dbe14ed8fea0d461ae7469fdbe761",
+       "mode": "BYTE_IDENTICAL"
+     },
+     {
+       "path": "scripts/cads-marketplace-migration.test.mjs",
+-      "targetGitBlobSha": "7ed1bebe3797f1115f37627b96d2e2612cb2bd82",
+-      "sourceGitBlobSha": "7ed1bebe3797f1115f37627b96d2e2612cb2bd82",
++      "targetGitBlobSha": "d4bbcdaa649977ba2764750901c7d46e2803ead4",
++      "sourceGitBlobSha": "d4bbcdaa649977ba2764750901c7d46e2803ead4",
+       "mode": "BYTE_IDENTICAL"
+     },
+     {
+@@ -137,9 +138,10 @@
+     },
+     {
+       "path": "docs/product/CADS-MARKETPLACE-INSTALLATION.md",
+-      "targetGitBlobSha": "f4377183e72565bb4b80d50b80ef664fd445f424",
+-      "sourceGitBlobSha": "f4377183e72565bb4b80d50b80ef664fd445f424",
+-      "mode": "BYTE_IDENTICAL"
++      "targetGitBlobSha": "979ee2867ce145af7014bbc7a477373bd246565d",
++      "sourceGitBlobSha": "e6d210aa6a4e1f04aacd168a1c409ebaaa9cb24a",
++      "mode": "TRANSFORMED",
++      "transformation": "Update OAuth-state key runbook to current AES-256-GCM runtime, modern Supabase key requirement and bounded request/delivery controls; no secret values."
+     },
+     {
+       "path": "docs/product/CADS-MARKETPLACE-SUPPORT.md",
+@@ -149,9 +151,10 @@
+     },
+     {
+       "path": "docs/security/CADS-SECURITY.md",
+-      "targetGitBlobSha": "8abfff19c66d448ec0aabbc3e0c2134db9ada895",
++      "targetGitBlobSha": "6ed88e484f3a8f4b49507be063abe958fc433b47",
+       "sourceGitBlobSha": "8abfff19c66d448ec0aabbc3e0c2134db9ada895",
+-      "mode": "BYTE_IDENTICAL"
++      "mode": "TRANSFORMED",
++      "transformation": "Update OAuth-state key runbook to current AES-256-GCM runtime, modern Supabase key requirement and bounded request/delivery controls; no secret values."
+     },
+     {
+       "path": "docs/legal/CADS-MARKETPLACE-PRIVACY.md",
+@@ -177,5 +180,6 @@
+     "licenseApproval": false,
+     "productionApproval": false,
+     "marketplaceApproval": false
+-  }
++  },
++  "initialSourceCommit": "0276d389412f806d2727c6b7b65d8215c703dbb1"
+ }
+--- a/scripts/cads-marketplace-migration.test.mjs
++++ b/scripts/cads-marketplace-migration.test.mjs
+@@ -14,9 +14,13 @@
+   assert.match(sql, /grant execute on function public\.capital_ai_apply_cads_marketplace_purchase[\s\S]*to service_role/i);
+ });
+ 
+-test('Marketplace purchase application is idempotent by delivery id', () => {
++test('Marketplace purchase application binds delivery id to the original payload hash', () => {
+   assert.match(sql, /delivery_id text primary key/i);
+   assert.match(sql, /on conflict \(delivery_id\) do nothing/i);
++  assert.match(sql, /select payload_sha256[\s\S]*where delivery_id = _delivery_id/i);
++  assert.match(sql, /v_existing_payload_sha256 is distinct from _payload_sha256/i);
++  assert.match(sql, /CADS_MARKETPLACE_DELIVERY_PAYLOAD_MISMATCH/i);
++  assert.match(sql, /'payloadHashVerified', true/i);
+   assert.match(sql, /'duplicate', true/i);
+ });
+ 
+--- a/server/cads-marketplace.mjs
++++ b/server/cads-marketplace.mjs
+@@ -1,6 +1,6 @@
+-import { createHash, createHmac, createSign, randomBytes, timingSafeEqual } from 'node:crypto';
++import { createCipheriv, createDecipheriv, createHash, createHmac, createSecretKey, createSign, randomBytes, timingSafeEqual } from 'node:crypto';
+ import { cadsEntitlementForTier } from '../packages/cads-core/index.mjs';
+-import { boundedJson, secureUrl } from './http-security.mjs';
++import { boundedJson, createLimiter, secureUrl } from './http-security.mjs';
+ 
+ const GITHUB_API_VERSION = '2026-03-10';
+ const MARKETPLACE_WEBHOOK_PATH = '/api/integrations/github/cads-marketplace';
+@@ -11,6 +11,8 @@
+ const PURCHASE_ACTIONS = new Set(['purchased', 'changed', 'cancelled']);
+ const MAX_WEBHOOK_BYTES = 256 * 1024;
+ const CANCELLATION_RETENTION_DAYS = 29;
++const OAUTH_REQUESTS_PER_MINUTE = 30;
++const WEBHOOK_REQUESTS_PER_MINUTE = 120;
+ 
+ function positiveInteger(value) {
+   const number = Number(value);
+@@ -22,22 +24,24 @@
+   return text && text.length <= maxLength ? text : null;
+ }
+ 
+-function serviceRoleJwt(key) {
+-  if (!key?.startsWith('eyJ')) return false;
+-  const parts = key.split('.');
+-  if (parts.length !== 3) return false;
++function decodeOauthStateKey(value) {
++  const encoded = boundedText(value, 64);
++  if (!encoded || !/^[A-Za-z0-9_-]{43}$/.test(encoded)) return null;
+   try {
+-    return JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'))?.role === 'service_role';
++    const bytes = Buffer.from(encoded, 'base64url');
++    if (bytes.length !== 32 || bytes.toString('base64url') !== encoded) return null;
++    return createSecretKey(bytes);
+   } catch {
+-    return false;
+-  }
+-}
++    return null;
++  }
++}
++
+ 
+ function supabaseConfig(env) {
+   try {
+     const url = secureUrl(env.SUPABASE_URL || env.VITE_SUPABASE_URL);
+-    const key = env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY || '';
+-    if (url.href !== url.origin + '/' || !(key.startsWith('sb_secret_') || serviceRoleJwt(key))) return null;
++    const key = String(env.SUPABASE_SECRET_KEY || '');
++    if (url.href !== url.origin + '/' || !key.startsWith('sb_secret_') || key.length < 32) return null;
+     return { url: url.origin, key };
+   } catch {
+     return null;
+@@ -52,7 +56,7 @@
+   const webhookSecret = String(env.CADS_GITHUB_MARKETPLACE_WEBHOOK_SECRET || '');
+   const clientId = boundedText(env.CADS_GITHUB_CLIENT_ID, 200);
+   const clientSecret = String(env.CADS_GITHUB_CLIENT_SECRET || '');
+-  const oauthStateSecret = String(env.CADS_GITHUB_OAUTH_STATE_SECRET || '');
++  const oauthStateKey = decodeOauthStateKey(env.CADS_GITHUB_OAUTH_STATE_KEY_B64);
+   let publicUrl = null;
+   try {
+     const parsed = secureUrl(env.CADS_GITHUB_PUBLIC_URL || '');
+@@ -70,9 +74,8 @@
+     privateKey.startsWith('-----BEGIN') &&
+     webhookSecret.length >= 32;
+   const oauthConfigured =
+-    Boolean(clientId && publicUrl) &&
+-    clientSecret.length >= 32 &&
+-    oauthStateSecret.length >= 32;
++    Boolean(clientId && publicUrl && oauthStateKey) &&
++    clientSecret.length >= 32;
+   const store = supabaseConfig(env);
+ 
+   return Object.freeze({
+@@ -83,7 +86,7 @@
+     webhookSecret,
+     clientId,
+     clientSecret,
+-    oauthStateSecret,
++    oauthStateKey,
+     publicUrl,
+     planIds: Object.freeze(planIds),
+     distinctPlanIds,
+@@ -206,36 +209,60 @@
+   return a.length === b.length && timingSafeEqual(a, b);
+ }
+ 
+-export function createCadsMarketplaceOAuthState({ userId, installationId, secret, now = Date.now() }) {
++const OAUTH_STATE_AAD = Buffer.from('CAPITAL_AI_CADS_OAUTH_STATE@1', 'utf8');
++
++export function createCadsMarketplaceOAuthState({ userId, installationId, stateKey, now = Date.now() }) {
+   const boundedUserId = boundedText(userId, 128);
+   const normalizedInstallationId = positiveInteger(installationId);
+-  if (!boundedUserId || !normalizedInstallationId || String(secret || '').length < 32) {
++  if (!boundedUserId || !normalizedInstallationId || stateKey?.type !== 'secret') {
+     throw new Error('invalid_marketplace_oauth_state_input');
+   }
+-  const payload = base64url(JSON.stringify({
++
++  const plaintext = Buffer.from(JSON.stringify({
+     v: 1,
+     userId: boundedUserId,
+     installationId: normalizedInstallationId,
+     nonce: randomBytes(18).toString('base64url'),
+     exp: Math.floor(now / 1000) + 10 * 60,
+-  }));
+-  const signature = createHmac('sha256', secret).update(payload).digest('base64url');
+-  return payload + '.' + signature;
+-}
+-
+-export function verifyCadsMarketplaceOAuthState(state, secret, now = Date.now()) {
+-  if (!state || String(secret || '').length < 32) return null;
+-  const [payload, signature, extra] = String(state).split('.');
+-  if (!payload || !signature || extra) return null;
+-  const expected = createHmac('sha256', secret).update(payload).digest('base64url');
+-  if (!secureEqualText(expected, signature)) return null;
+-  let decoded;
+-  try { decoded = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')); }
+-  catch { return null; }
+-  if (decoded?.v !== 1) return null;
+-  if (!boundedText(decoded.userId, 128) || !positiveInteger(decoded.installationId)) return null;
+-  if (!Number.isInteger(decoded.exp) || decoded.exp < Math.floor(now / 1000)) return null;
+-  return decoded;
++  }), 'utf8');
++  const iv = randomBytes(12);
++  const cipher = createCipheriv('aes-256-gcm', stateKey, iv, { authTagLength: 16 });
++  cipher.setAAD(OAUTH_STATE_AAD);
++  const ciphertext = Buffer.concat([cipher.update(plaintext), cipher.final()]);
++  const tag = cipher.getAuthTag();
++
++  return [
++    'v1',
++    iv.toString('base64url'),
++    ciphertext.toString('base64url'),
++    tag.toString('base64url'),
++  ].join('.');
++}
++
++export function verifyCadsMarketplaceOAuthState(state, stateKey, now = Date.now()) {
++  if (!state || stateKey?.type !== 'secret') return null;
++  const [version, ivText, ciphertextText, tagText, extra] = String(state).split('.');
++  if (version !== 'v1' || !ivText || !ciphertextText || !tagText || extra) return null;
++
++  try {
++    const iv = Buffer.from(ivText, 'base64url');
++    const ciphertext = Buffer.from(ciphertextText, 'base64url');
++    const tag = Buffer.from(tagText, 'base64url');
++    if (iv.length !== 12 || tag.length !== 16 || ciphertext.length === 0) return null;
++
++    const decipher = createDecipheriv('aes-256-gcm', stateKey, iv, { authTagLength: 16 });
++    decipher.setAAD(OAUTH_STATE_AAD);
++    decipher.setAuthTag(tag);
++    const plaintext = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
++    const decoded = JSON.parse(plaintext.toString('utf8'));
++
++    if (decoded?.v !== 1) return null;
++    if (!boundedText(decoded.userId, 128) || !positiveInteger(decoded.installationId)) return null;
++    if (!Number.isInteger(decoded.exp) || decoded.exp < Math.floor(now / 1000)) return null;
++    return decoded;
++  } catch {
++    return null;
++  }
+ }
+ 
+ function oauthAuthorizeUrl(config, state) {
+@@ -385,7 +412,15 @@
+   now = () => new Date(),
+ } = {}) {
+   const config = cadsMarketplaceConfig(env);
++  const oauthLimit = createLimiter(OAUTH_REQUESTS_PER_MINUTE);
++  const webhookLimit = createLimiter(WEBHOOK_REQUESTS_PER_MINUTE);
+   let cleanupTimer = null;
++
++  function rejectRateLimited(res, json) {
++    res.setHeader('Retry-After', '60');
++    json(res, 429, { error: 'cads_marketplace_rate_limited' });
++    return true;
++  }
+ 
+   async function purgeCancelledData() {
+     if (!config.store) return { configured: false };
+@@ -467,7 +502,7 @@
+     const state = createCadsMarketplaceOAuthState({
+       userId: user.userId,
+       installationId,
+-      secret: config.oauthStateSecret,
++      stateKey: config.oauthStateKey,
+       now: now().getTime(),
+     });
+     const cookie = 'cads_marketplace_oauth_state=' + encodeURIComponent(state) +
+@@ -497,7 +532,7 @@
+       json(res, 401, { error: 'marketplace_oauth_state_mismatch' });
+       return true;
+     }
+-    const statePayload = verifyCadsMarketplaceOAuthState(state, config.oauthStateSecret, now().getTime());
++    const statePayload = verifyCadsMarketplaceOAuthState(state, config.oauthStateKey, now().getTime());
+     const user = await auth?.verify?.(req, res);
+     if (!statePayload || !user?.userId || user.userId !== statePayload.userId) {
+       json(res, 401, { error: 'marketplace_oauth_identity_mismatch' });
+@@ -541,8 +576,14 @@
+   }
+ 
+   async function handle(req, res, url, json) {
+-    if (url.pathname === MARKETPLACE_SETUP_PATH) return handleSetup(req, res, url, json);
+-    if (url.pathname === MARKETPLACE_OAUTH_CALLBACK_PATH) return handleOAuthCallback(req, res, url, json);
++    if (url.pathname === MARKETPLACE_SETUP_PATH) {
++      if (!oauthLimit()) return rejectRateLimited(res, json);
++      return handleSetup(req, res, url, json);
++    }
++    if (url.pathname === MARKETPLACE_OAUTH_CALLBACK_PATH) {
++      if (!oauthLimit()) return rejectRateLimited(res, json);
++      return handleOAuthCallback(req, res, url, json);
++    }
+ 
+     if (url.pathname === MARKETPLACE_READINESS_PATH) {
+       if (req.method !== 'GET') {
+@@ -555,6 +596,7 @@
+     }
+ 
+     if (url.pathname !== MARKETPLACE_WEBHOOK_PATH) return false;
++    if (!webhookLimit()) return rejectRateLimited(res, json);
+     if (req.method !== 'POST') {
+       res.setHeader('Allow', 'POST');
+       json(res, 405, { error: 'method_not_allowed' });
+@@ -666,7 +708,6 @@
+       tier,
+       capabilities: entitlement.capabilities,
+       billingAuthority: 'GITHUB_MARKETPLACE',
+-      entitlementOnly: true,
+       productionEligible: false,
+       decisionEligible: false,
+     });
+--- a/server/cads-marketplace.test.mjs
++++ b/server/cads-marketplace.test.mjs
+@@ -4,6 +4,8 @@
+ import test from 'node:test';
+ import {
+   cadsMarketplaceConfig,
++  createCadsMarketplaceOAuthState,
++  verifyCadsMarketplaceOAuthState,
+   createCadsMarketplace,
+   publicCadsMarketplaceReadiness,
+   tierForMarketplacePlanId,
+@@ -21,7 +23,7 @@
+     CADS_GITHUB_MARKETPLACE_LISTING_SLUG: 'capital-ai-cads',
+     CADS_GITHUB_CLIENT_ID: 'Iv1.cads-example',
+     CADS_GITHUB_CLIENT_SECRET: 'client-secret-' + 'x'.repeat(32),
+-    CADS_GITHUB_OAUTH_STATE_SECRET: 'state-secret-' + 'x'.repeat(32),
++    CADS_GITHUB_OAUTH_STATE_KEY_B64: Buffer.from('x'.repeat(32), 'utf8').toString('base64url'),
+     CADS_GITHUB_PUBLIC_URL: 'https://capital-ai.online',
+     CADS_GITHUB_MARKETPLACE_STARTER_PLAN_ID: '1001',
+     CADS_GITHUB_MARKETPLACE_PRO_PLAN_ID: '1002',
+@@ -31,7 +33,16 @@
+   };
+ }
+ 
+-test('paid Marketplace runtime requires app, distinct plan IDs and service-role store', () => {
++test('legacy OAuth state secret input is not accepted as a MAC key', () => {
++  const env = baseEnv();
++  delete env.CADS_GITHUB_OAUTH_STATE_KEY_B64;
++  env.CADS_GITHUB_OAUTH_STATE_SECRET = 'legacy-secret-' + 'x'.repeat(32);
++  const ready = publicCadsMarketplaceReadiness(env);
++  assert.equal(ready.buyerLinkConfigured, false);
++  assert.equal(ready.runtimeReady, false);
++});
++
++test('paid Marketplace runtime requires app, distinct plan IDs and Supabase secret-key store', () => {
+   const ready = publicCadsMarketplaceReadiness(baseEnv());
+   assert.equal(ready.target, 'PAID_PRODUCTION');
+   assert.deepEqual(ready.plans, ['starter', 'pro', 'enterprise']);
+@@ -71,6 +82,21 @@
+   assert.deepEqual(await marketplace.purgeCancelledData(), { configured: false });
+ });
+ 
++test('legacy service-role JWT claims are not trusted without cryptographic verification', () => {
++  const env = baseEnv();
++  delete env.SUPABASE_SECRET_KEY;
++  env.SUPABASE_SERVICE_ROLE_KEY = [
++    Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url'),
++    Buffer.from(JSON.stringify({ role: 'service_role' })).toString('base64url'),
++    'forged-signature',
++  ].join('.');
++
++  const ready = publicCadsMarketplaceReadiness(env);
++  assert.equal(ready.entitlementStoreConfigured, false);
++  assert.equal(ready.runtimeReady, false);
++});
++
++
+ function webhookRequest(payload, secret, headers = {}) {
+   const raw = Buffer.from(JSON.stringify(payload));
+   const req = Readable.from([raw]);
+@@ -249,6 +275,46 @@
+     end() { this.ended = true; },
+   };
+ }
++
++test('Marketplace OAuth setup is rate limited before repeated auth work', async () => {
++  const env = baseEnv();
++  let verifies = 0;
++  const auth = {
++    verify: async () => {
++      verifies += 1;
++      return { userId: '00000000-0000-4000-8000-000000000001' };
++    },
++  };
++  const marketplace = createCadsMarketplace({ env, auth });
++  const url = new URL('https://capital-ai.online/api/cads/marketplace/setup?installation_id=77');
++
++  for (let index = 0; index < 30; index += 1) {
++    const res = redirectHarness();
++    await marketplace.handle(
++      { method: 'GET', headers: {} },
++      res,
++      url,
++      () => { throw new Error('json response not expected before limit'); },
++    );
++    assert.equal(res.status, 302);
++  }
++
++  const res = redirectHarness();
++  let status = 0;
++  let payload = null;
++  const handled = await marketplace.handle(
++    { method: 'GET', headers: {} },
++    res,
++    url,
++    (_res, nextStatus, nextPayload) => { status = nextStatus; payload = nextPayload; },
++  );
++
++  assert.equal(handled, true);
++  assert.equal(status, 429);
++  assert.equal(payload.error, 'cads_marketplace_rate_limited');
++  assert.equal(res.headers['retry-after'], '60');
++  assert.equal(verifies, 30);
++});
+ 
+ test('setup binds installation to authenticated CAPITAL-AI user before GitHub OAuth', async () => {
+   const env = baseEnv();
+@@ -395,3 +461,37 @@
+     '/api/cads/marketplace/setup?installation_id=77',
+   );
+ });
++
++test('encrypted OAuth state refuses wrong keys, tampering and expiry without exposing buyer identity', () => {
++  const key = cadsMarketplaceConfig(baseEnv()).oauthStateKey;
++  const now = 1_700_000_000_000;
++  const input = { userId: 'buyer-security-fixture', installationId: 77, stateKey: key, now };
++  const state = createCadsMarketplaceOAuthState(input);
++  const decoded = verifyCadsMarketplaceOAuthState(state, key, now);
++  assert.equal(decoded.userId, input.userId);
++  assert.equal(decoded.installationId, input.installationId);
++  assert.equal(state.includes(input.userId), false);
++  assert.equal(Buffer.from(state.split('.')[2], 'base64url').includes(Buffer.from(input.userId)), false);
++  const second = createCadsMarketplaceOAuthState(input);
++  assert.notEqual(second, state);
++  const otherEnv = baseEnv();
++  otherEnv.CADS_GITHUB_OAUTH_STATE_KEY_B64 = Buffer.alloc(32, 121).toString('base64url');
++  assert.equal(verifyCadsMarketplaceOAuthState(state, cadsMarketplaceConfig(otherEnv).oauthStateKey, now), null);
++  for (const position of [1, 2, 3]) {
++    const parts = state.split('.');
++    const bytes = Buffer.from(parts[position], 'base64url');
++    bytes[0] ^= 1;
++    parts[position] = bytes.toString('base64url');
++    assert.equal(verifyCadsMarketplaceOAuthState(parts.join('.'), key, now), null);
++  }
++  assert.equal(verifyCadsMarketplaceOAuthState(state, key, now + 601_000), null);
++});
++
++test('OAuth-state key configuration rejects padded and wrong-length encodings', () => {
++  for (const encoded of [Buffer.alloc(31).toString('base64url'), Buffer.alloc(33).toString('base64url'),
++    Buffer.alloc(32).toString('base64url') + '=', 'x'.repeat(43)]) {
++    const env = baseEnv();
++    env.CADS_GITHUB_OAUTH_STATE_KEY_B64 = encoded;
++    assert.equal(cadsMarketplaceConfig(env).oauthConfigured, false);
++  }
++});
+--- a/supabase/migrations/20261006210500_cads_marketplace_paid_entitlements.sql
++++ b/supabase/migrations/20261006210500_cads_marketplace_paid_entitlements.sql
+@@ -82,6 +82,7 @@
+ declare
+   v_inserted integer;
+   v_status text;
++  v_existing_payload_sha256 text;
+ begin
+   if _delivery_id is null or length(_delivery_id) not between 8 and 128
+      or _action not in ('purchased','changed','cancelled')
+@@ -104,11 +105,23 @@
+ 
+   get diagnostics v_inserted = row_count;
+   if v_inserted = 0 then
++    select payload_sha256
++      into v_existing_payload_sha256
++      from public.cads_marketplace_event_inbox
++     where delivery_id = _delivery_id;
++
++    if v_existing_payload_sha256 is null
++       or v_existing_payload_sha256 is distinct from _payload_sha256 then
++      raise exception 'CADS_MARKETPLACE_DELIVERY_PAYLOAD_MISMATCH';
++    end if;
++
+     select status into v_status
+       from public.cads_marketplace_entitlements
+      where account_id = _account_id;
++
+     return pg_catalog.jsonb_build_object(
+       'duplicate', true,
++      'payloadHashVerified', true,
+       'status', v_status,
+       'tier', _tier
+     );
