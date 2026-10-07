@@ -1,0 +1,190 @@
+{
+  "schemaVersion": "CAPITAL_AI_CADS_SECURITY_DELTA_REVIEW@1",
+  "sourceRepository": "SvenKulessa/Capital-AI",
+  "sourceCommit": "4beff8093cecaa36ab5a3185a6796f8601c93f45",
+  "targetRepository": "capital-ai-online/CADS",
+  "targetBaseCommit": "c8e8d91a4c988e75b93f587c4bf6e592016bcb71",
+  "targetPublicationStatus": "BLOCKED_CONNECTOR_WRITE_403",
+  "patch": "docs/security/evidence/cads-standalone-security-delta-20261007.patch",
+  "patchSha256": "4aec4c83fa5f79ff35344c96bb55aefeaa45f45a14482bdfce0ff74c719304d8",
+  "validation": {
+    "runtime": "Node 24.19.0",
+    "cadsAcceptance": {
+      "passed": 42,
+      "failed": 0,
+      "skipped": 0
+    },
+    "provenanceStatus": "PASS",
+    "gitApplyCheck": "PASS",
+    "pinnedNode26Ci": "NOT_RUN_IN_TARGET_REPOSITORY"
+  },
+  "files": [
+    {
+      "path": "packages/cads-core/index.mjs",
+      "mode": "TRANSFORMED",
+      "gitBlobSha": "cdb5ddd9dbd5c40ccde50912a5fa0373b2a7a1f9",
+      "sha256": "285b6db69292b2801d16d04e49623ee48cc07dd17188cde1e11c575c4b177fef",
+      "status": "PASS"
+    },
+    {
+      "path": "packages/cads-core/index.test.mjs",
+      "mode": "NEW_STANDALONE_TEST",
+      "gitBlobSha": "41ddeb367b0b36ef2138c6cbc43d0ba07871b440",
+      "sha256": "9e219546725943907199765521f855ba2d9f315225fd20015d687a144aeea13e",
+      "status": "PASS"
+    },
+    {
+      "path": "server/cads-marketplace.mjs",
+      "mode": "TRANSFORMED",
+      "gitBlobSha": "eeb5fe92dd806e8f7ddbe6868ed7bf7ca854986d",
+      "sha256": "7b947755f5b7fefe0385435ed83a836151519019d014a6b0ce4fe2d55b776c63",
+      "status": "PASS"
+    },
+    {
+      "path": "server/cads-marketplace.test.mjs",
+      "mode": "TRANSFORMED",
+      "gitBlobSha": "568075d8adb66c9dd35df6debc977c54acffd2df",
+      "sha256": "494e0305c11b884026953f5ec0ed9f86cc9e32516401a32c1a35eea5b9b6ef53",
+      "status": "PASS"
+    },
+    {
+      "path": "server/cads-commerce.mjs",
+      "mode": "TRANSFORMED",
+      "gitBlobSha": "7e85900741f6423a60117e4bc161dbb9aa309c81",
+      "sha256": "219a0eba932b42f80e0575e788ff547b1d297f4db5d71df2d36acbabb5f0144f",
+      "status": "PASS"
+    },
+    {
+      "path": "server/cads-commerce.test.mjs",
+      "mode": "TRANSFORMED",
+      "gitBlobSha": "77b6b47d4883a41abc1e6db436366bb82c5d2ccd",
+      "sha256": "3b9882439947b284157adb85412a052e7edeb2522b20d098a338d4f8e5135737",
+      "status": "PASS"
+    },
+    {
+      "path": "scripts/cads-marketplace-production-manifest.test.mjs",
+      "mode": "TRANSFORMED",
+      "gitBlobSha": "f8099ade83a277294ebadc0e7766be8174e3d029",
+      "sha256": "5c7b33813cd729e44d331f4169889342b48415839c80e21ac48c6791ca67e3c6",
+      "status": "PASS"
+    },
+    {
+      "path": "scripts/cads-package-acceptance.test.mjs",
+      "mode": "TRANSFORMED",
+      "gitBlobSha": "0cb20b6ca52266b2b75e374c229061f1f11b205d",
+      "sha256": "e43b20ad3c58f911b084c9062eaaf4c3af89b78e3fb849d467424aa047e44a2b",
+      "status": "PASS"
+    },
+    {
+      "path": "server/cads-observability.mjs",
+      "mode": "BYTE_IDENTICAL",
+      "gitBlobSha": "66f6352fbaed2d854c3c9361921b00c331455070",
+      "sha256": "04167bca51ea0080a7d5ec420c2bbf4eb820956beb8486f5710b7acf29f734b5",
+      "status": "PASS"
+    },
+    {
+      "path": "server/cads-observability.test.mjs",
+      "mode": "BYTE_IDENTICAL",
+      "gitBlobSha": "3dac7bb40344117c31e107b768ee6be1d987501e",
+      "sha256": "507d00902c7b1848710e5ed9dcb3573644d39e377f61838a2a913358c311b7eb",
+      "status": "PASS"
+    },
+    {
+      "path": "server/http-security.mjs",
+      "mode": "BYTE_IDENTICAL",
+      "gitBlobSha": "ad73afdfee662c474150878e5eee9e21b22a40a3",
+      "sha256": "9711eda26636d3fcc481fef1191a7bf60cbc482e5d31a17eebc77a3153de6e88",
+      "status": "PASS"
+    },
+    {
+      "path": "server/billing-catalog.mjs",
+      "mode": "BYTE_IDENTICAL",
+      "gitBlobSha": "3571e3bd5f151dbd0b93255b15ed06939dd4e063",
+      "sha256": "cb24838c254897874539ae4c9a2f583a98a7dff1ab391a0e4aa73cc4fe6db4ea",
+      "status": "PASS"
+    },
+    {
+      "path": "apps/cads-github-app/github-app-registration.production.example.json",
+      "mode": "BYTE_IDENTICAL",
+      "gitBlobSha": "041bd4e582197fe0effbfe50696694a1056ebbd5",
+      "sha256": "8af2ddcd45acbbbc525e678fc61d23778958b120e454e3d89003079e58b2194e",
+      "status": "PASS"
+    },
+    {
+      "path": "apps/cads-github-app/marketplace-plans.production.json",
+      "mode": "BYTE_IDENTICAL",
+      "gitBlobSha": "a6778bcf5aeda7fe634076de16cc9fa44803cbd5",
+      "sha256": "d1ce318ec2ddc9e1e96269e4b4c17086a71fec08e80778d53e39c737bebb3662",
+      "status": "PASS"
+    },
+    {
+      "path": "supabase/migrations/20261006210500_cads_marketplace_paid_entitlements.sql",
+      "mode": "BYTE_IDENTICAL",
+      "gitBlobSha": "baf7a216281dbe14ed8fea0d461ae7469fdbe761",
+      "sha256": "4cc1819d6e14e9d17c295c365e812251f9700e3c9a03e246b136a22254b88e75",
+      "status": "PASS"
+    },
+    {
+      "path": "scripts/cads-marketplace-migration.test.mjs",
+      "mode": "BYTE_IDENTICAL",
+      "gitBlobSha": "d4bbcdaa649977ba2764750901c7d46e2803ead4",
+      "sha256": "7ba9684d1923c43df399fd226a9f400292818df315ad21c04d0d3a7f04b5ab41",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/licenses/CADS-PRODUCT-LICENSE.md",
+      "mode": "BYTE_IDENTICAL",
+      "gitBlobSha": "a6a7dcb2ab3b174016b1bc62ead0b11c890e7109",
+      "sha256": "4e19146c53565d1fa898567607bf083dfeec5ad460fd8f626f7b6e9a2e6ab9c7",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/licenses/CADS-THIRD-PARTY-NOTICES.md",
+      "mode": "BYTE_IDENTICAL",
+      "gitBlobSha": "40b38b0c4145cb765190f642d02792adb363a941",
+      "sha256": "7af38f3581f141d422f29de13ba728311a977c185354e8b05281d4b6fc8d6642",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/product/CADS-MARKETPLACE-INSTALLATION.md",
+      "mode": "TRANSFORMED",
+      "gitBlobSha": "979ee2867ce145af7014bbc7a477373bd246565d",
+      "sha256": "a469935b28fba3eb135a56a6309969585a4a908474556b511041c5a8453954b0",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/product/CADS-MARKETPLACE-SUPPORT.md",
+      "mode": "BYTE_IDENTICAL",
+      "gitBlobSha": "fd2511d2ff1dfd62e9f53156fff1315553c359ff",
+      "sha256": "b15d8195f229628f66915742d38f2d069c83e485b767ae6f1315817e81a6a04c",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/security/CADS-SECURITY.md",
+      "mode": "TRANSFORMED",
+      "gitBlobSha": "6ed88e484f3a8f4b49507be063abe958fc433b47",
+      "sha256": "43b4a53149606642edd9258c07db59c35322036a7e0daa415a952284fbb7186c",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/legal/CADS-MARKETPLACE-PRIVACY.md",
+      "mode": "BYTE_IDENTICAL",
+      "gitBlobSha": "7472703c60591ff4c8eadd6f1260a8557d104284",
+      "sha256": "df66d38968a6954d4264f0da905ac3220fa06c25505e89bcb782a68e4af31a72",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/legal/CADS-MARKETPLACE-B2B-TERMS-DRAFT.md",
+      "mode": "BYTE_IDENTICAL",
+      "gitBlobSha": "520c27d1875ff7606dc294b78fc3a0d66d4fc652",
+      "sha256": "6a8313020723867eb4ba55d4903064be03b7fe0993b47b07641c4ba2fe89ff6d",
+      "status": "PASS"
+    }
+  ],
+  "authorityBoundary": {
+    "securityApproval": false,
+    "licenseApproval": false,
+    "productionApproval": false,
+    "marketplaceApproval": false
+  }
+}

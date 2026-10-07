@@ -61,3 +61,14 @@ No selected option or production mutation is implied by this document.
 
 The Render worker configuration, auto-deploy reconciliation and protection-state architecture
 remain separate owner decisions. No merge, deploy, credential rotation or database write occurred.
+
+## Standalone CADS publication blocker
+
+The GitHub connector returned HTTP 403 `Resource not accessible by integration`
+when creating a branch in `capital-ai-online/CADS`. The target repository was not modified.
+The prepared security delta is retained as an applicable patch under
+`docs/security/evidence/cads-standalone-security-delta-20261007.patch`.
+Its paired JSON binds source, target base, patch hash, exact file hashes and validation:
+42/42 standalone tests, provenance PASS and `git apply --check` PASS under Node 24.19.0.
+Target CI under pinned Node 26.10.0 remains unexecuted.
+Browser fallback needs user approval under the browser connector-fallback policy.
