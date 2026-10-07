@@ -75,16 +75,16 @@ Für **jede** Domain und jede neue Arbeitssitzung ist der erste verbindliche Kon
 9. **Self-Healing** — wiederkehrende sichere Reparaturmuster nur nach expliziter technischer Zulassung eines reproduzierbaren Fix-Fingerprints als automatische Invariante fest verankern.
 10. **Post-Merge-Korrelation** — nach einem Merge nach `main` muss bei tatsächlicher Datei-, Contract-, Lockfile-, Runtime- oder Evidence-Überschneidung eine Rekorrelation betroffener offener Arbeiten gegen den neuen Main erfolgen. Der kanonische Contract ist `POST_MERGE_CORRELATION@3` in `docs/security/POST-MERGE-CORRELATION-SELF-HEALING.md`. Automatische Fixes bleiben auf explizit zugelassene, deterministische Low-Risk-Fingerprints begrenzt. Ein neuer Repository-HEAD allein ist weder ein Deployment- noch ein NATS-Redeploy-Signal.
 
-## Kritischer Preflight vor Pull-Request-Erstellung
+## Branch Early Feedback und autoritative PR-Gates
 
-Für jeden neuen Pull Request muss der exakte Branch-Head **vor der PR-Erstellung** einen kritischen Preflight erfolgreich durchlaufen haben. Der Preflight ist Evidence für den Branch-Head und ersetzt weder Required Checks noch den vollständigen Security-, Lizenz-, Governance- und Deployment-Gate-Satz.
+Owner-Entscheidung vom 2026-10-07: Ein Pull Request darf jederzeit erstellt oder aktualisiert werden. Ein vollständiger Preflight **vor** der PR-Erstellung ist nicht mehr verpflichtend.
 
-- Mindestumfang nach `npm ci --ignore-scripts --no-audit --no-fund`: `npm run preflight:full`.
-- Domain-/Scope-kritische Regressionen müssen zusätzlich ausgeführt werden, wenn sie nicht bereits vollständig im Full-Preflight enthalten sind.
-- Änderungen unter `.github/workflows/**` müssen vor der PR-Erstellung gegen den aktuellen Main-Workflowbestand geprüft werden: Trigger, Required-Check-Namen, SHA-Pinning externer Actions, Permissions/Least-Privilege und unbeabsichtigte Scan-/Build-Duplikate.
-- Der Feature-Branch-Push-Workflow `Pre-PR Critical Preflight` liefert dafür repositoryseitige Evidence. Bei einem durch Agenten erstellten PR ist dessen erfolgreicher Lauf auf dem exakten Head abzuwarten.
-- Ein nach PR-Erstellung korrigierter älterer PR kann die zeitliche Reihenfolge nicht rückwirkend erfüllen; für seinen neuen exakten Head ist der gleiche Preflight dennoch vor weiterer Merge-Bewertung nachzuholen.
-- Ein grüner Preflight ist niemals allein Merge-, Lizenz-, Security- oder Deployment-Freigabe. Deployment-Autorität entsteht ausschließlich aus dem vollständig positiven, policy-definierten Gate-Satz.
+- Der Branch-Workflow `Branch Early Feedback` liefert schnelles Feedback zu Workflow-Policy und `git diff --check`, ist aber **kein** PR-, Merge- oder Deployment-Gate.
+- Für die Merge-Bewertung sind ausschließlich die auf dem aktuellen PR-Head laufenden Required Checks autoritativ.
+- Der Required-Check-Satz soll klein und aggregiert bleiben. Für den aktuellen Solo-Maintainer-Flow genügen die bestehenden Gate-Familien `Docker Security Gate` und `Domain Governance`; zusätzliche Required Checks werden nur bei einer realen, nicht bereits abgedeckten Trust Boundary eingeführt.
+- Ein Agent darf einen PR erstellen, ohne auf den Branch-Early-Feedback-Lauf zu warten.
+- Fehlende oder fehlgeschlagene Required Checks blockieren den Merge, nicht die PR-Erstellung.
+- Ein erfolgreicher Required Check ist Evidence für seinen Scope und erzeugt weder Merge-Autorität noch pauschale Lizenz-/Providerrechte.
 
 ## Public-Repository PR- und Standard-Runner-Regel
 
@@ -92,9 +92,39 @@ Owner-Entscheidung vom 2026-10-05: `SvenKulessa/Capital-AI` ist öffentlich. Das
 
 - Für PRs dürfen die repositoryseitig vorgesehenen Standard-GitHub-Actions und Required Checks automatisch anlaufen.
 - Ein Agent muss vor dem Erstellen eines PRs nicht auf verfügbare Standard-Runner-Minuten warten und keine separate Runner-Kostenfreigabe einholen.
-- Fehlende, laufende oder fehlgeschlagene Required Checks verhindern nicht die PR-Erstellung, können aber weiterhin Review-, Merge- oder Production-Gates blockieren.
+- Fehlende, laufende oder fehlgeschlagene Required Checks verhindern nicht die PR-Erstellung, blockieren aber den Merge und gegebenenfalls den nachgelagerten Production-Pfad.
 - Diese Regel ist keine pauschale Kosten- oder Control-Plane-Freigabe. Kostenpflichtige Larger Runner, zusätzliche Storage-/Compute-Ressourcen, neue kostenpflichtige GitHub-Produkte sowie Billing-, Auth-, DNS-, Secret-, Ruleset- oder sonstige privilegierte Mutationen behalten ihre eigenen Gates.
 - Security-, Lizenz-, Governance-, Supply-Chain- und Production-Handoff-Anforderungen bleiben vollständig bestehen. Der Production-Handoff ist dabei ein technischer, maschinenprüfbarer Gate-Satz und keine zusätzliche Human-/Owner-Admission.
+
+## SOLO_MAINTAINER_FLOW@1
+
+CAPITAL-AI wird als Solo-Maintainer-Repository betrieben. Governance wird an reale technische Risiken gebunden und nicht an künstliche Rollen- oder Freigabeschichten.
+
+Der normale Entwicklungsfluss lautet:
+
+1. Branch erstellen und entwickeln.
+2. Pull Request jederzeit erstellen oder aktualisieren.
+3. Autoritative PR-Gates automatisch ausführen.
+4. Bei Gate-PASS ist der PR technisch `READY_TO_MERGE`.
+5. Merge ausschließlich durch den Human Repository Owner oder nach dessen ausdrücklicher Chat-Freigabe für den konkreten PR.
+6. Nur ein Merge nach `main` darf den normalen Production-Deployment-Pfad auslösen.
+7. Production deployt automatisch, wenn die für den `main`-Commit definierten technischen Gates PASS sind.
+8. Runtime-Identität und Health werden nach dem Deployment verifiziert; bei Fehlern gilt fail-closed bzw. Rollback.
+
+### Admission-Scope
+
+Eine separate Admission ist **nicht** Teil normaler Entwicklung, PR-Erstellung, Merge-Bereitschaft oder gewöhnlicher Deployments.
+
+Admission wird nur verwendet, wenn eine **neue privilegierte Capability oder externe Rechte-/Trust-Grenze** eingeführt oder erweitert wird, insbesondere:
+
+- neue externe Daten-/API-/AI-Provider mit produktiven Nutzungsrechten,
+- neue Raw-/Redistribution-/Sublicensing-/Pass-through-Rechte,
+- neue schreibende oder privilegierte externe Control-Plane-Capability,
+- neue Auth-/Authorization- oder Secret-Management-Trust-Boundary,
+- neue autonome Self-Healing-Mutationsfähigkeit,
+- neue kostenpflichtige oder anderweitig privilegierte Infrastruktur-Capability.
+
+Normale Bugfixes, UI-/Produktänderungen, Refactorings, Dokumentation, Tests, bestehende Dependency-Updates und der normale `main`-Deployment-Pfad benötigen **keine separate Admission**.
 
 ## Human Merge Authority
 
@@ -345,15 +375,19 @@ Verbindliche Detailregel:
 
 ## Production Deployment
 
-1. Merge nur über geschützten `main` mit erforderlichen Checks.
-2. Candidate aus dem bereits geprüften Image erzeugen.
-3. GHCR ausschließlich über unveränderlichen Digest als Deployment-Identität verwenden.
-4. Render-Image-Quelle gegen den attestierten GHCR-Digest zurücklesen.
-5. Runtime-Digest und eingebetteten Source-SHA über Health/Evidence verifizieren.
-6. Lizenz-/Redistribution-Gate, Main-Schutz, Image-Quelle, Runtime-Digest und Runtime-Identity müssen gemeinsam positiv sein.
-7. Erst danach Production-Handoff beziehungsweise Domain-Umschaltung.
-8. Rollback erfolgt auf einen zuvor attestierten bekannten Digest; kein spontaner Rebuild.
-9. Auto-Deploy darf diese Handoff-Grenze nicht umgehen.
+Der normale Production-Pfad ist bewusst einfach und `main`-gebunden:
+
+1. Code gelangt ausschließlich per Pull Request nach `main`.
+2. Der Human Repository Owner führt den Merge aus oder erteilt im Chat ausdrücklich die Freigabe für den konkret bezeichneten PR.
+3. Nur `main` darf Production-Deployments auslösen; PR-/Feature-Branches dürfen Production nicht deployen.
+4. Die für den resultierenden `main`-Commit definierten Required Checks müssen erfolgreich sein.
+5. Render verwendet für den produktiven Webservice `branch: main` und `autoDeployTrigger: checksPass`.
+6. Nach dem Deploy müssen Runtime-Health und Source-/Deployment-Identität gegen den deployten `main`-Commit korreliert werden.
+7. Scope-abhängige Lizenz-/Providerrechte werden nur dann als Deployment-Gate ausgewertet, wenn die konkrete Änderung diese Rechte tatsächlich berührt.
+8. Ein fehlender oder negativer Pflicht-Gate-Status führt zu keinem Deployment bzw. zu fail-closed Recovery/Rollback.
+9. Ein neuer Repository-HEAD allein löst niemals einen NATS-Redeploy aus; NATS wird nur bei NATS-spezifischen Änderungen oder expliziten Runtime-/Security-Maßnahmen deployed.
+
+Der `Production-Handoff` ist damit ein technischer Verifikationsvertrag und **keine zusätzliche Human-/Admission-Stufe**.
 
 ## Web-/API-Architektur
 

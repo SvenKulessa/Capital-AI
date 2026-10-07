@@ -30,6 +30,18 @@ Domain-Zuordnung ist Metadatum; sie erzeugt weder eine Bearbeitungssperre noch e
 
 Verbindlich bleiben ausschließlich reale technische Handoffs und Gates an tatsächlichen System- und Evidence-Grenzen, insbesondere Production-Handoff, Auth, API, Daten-/Event-Schema, Security, Lizenz-/Datenrechte, Supply Chain, externe Control Planes und maschinenlesbare Schnittstellenverträge. Ein technischer Handoff erzwingt keinen Chat- oder Domainwechsel und kann im selben Chat bearbeitet werden, sofern Scope und Autorisierung dies erlauben.
 
+## Solo-Maintainer-Flow
+
+Der normale CAPITAL-AI-Entwicklungsweg folgt `SOLO_MAINTAINER_FLOW@1` aus `AGENTS.md`:
+
+- PR-Erstellung ist jederzeit zulässig und benötigt keinen vorgelagerten Full-Preflight.
+- Branch Early Feedback ist nicht autoritativ.
+- Autoritativ für Merge-Bereitschaft sind die Required Checks auf dem aktuellen PR-Head.
+- Der Required-Check-Satz bleibt klein und aggregiert; aktuell sind `Docker Security Gate` und `Domain Governance` die zentralen Required Checks.
+- Merge Authority bleibt beim Human Repository Owner; technische Gates erzeugen keine Merge Authority.
+- Production darf ausschließlich aus `main` erfolgen.
+- Normale Deployments benötigen keine separate Admission; Admission bleibt neuen privilegierten Capabilities und externen Rechte-/Trust-Grenzen vorbehalten.
+
 ## Branches und Pull Requests
 
 Branch: `capital-ai-<domain>/<kurzer-zweck>-YYYYMMDD`
@@ -72,7 +84,16 @@ Die Evidence muss den autorisierten Scope, die ausgeführten Änderungen und ein
 
 ## Release-Vertrag
 
-Ein Release ist erst Production-fähig, wenn Produktversion, Git SHA, OCI Digest, SBOM/Attestation und Runtime-Identität korreliert sind. `candidate.json` bleibt fail-closed; der Production-Handoff ist der technische, maschinenprüfbare Gate-Vertrag. Sind alle darin vorgeschriebenen Gates für die exakte Candidate-Identität terminal `PASS`, darf die Pipeline ohne zusätzliche Owner-/Admission-Freigabe `deployEligible:true` erzeugen und den vorgesehenen Deployment-Pfad ausführen.
+Der normale Release-Vertrag ist `main`-gebunden:
+
+1. Pull Request mit autoritativen Required Checks.
+2. Human-Owner-Merge nach `main`.
+3. Production-Deployment ausschließlich aus dem resultierenden `main`-Commit.
+4. Render-Deployment erst nach erfolgreichen CI-Checks (`autoDeployTrigger: checksPass`).
+5. Nach dem Deployment Runtime-Health und Source-/Deployment-Identität verifizieren.
+6. Lizenz-/Provider-Gates nur anwenden, wenn der konkrete Änderungsscope diese Rechte berührt.
+
+Ein vollständiger technischer Gate-PASS darf Deployment-Autorität erzeugen; eine zusätzliche menschliche Deployment-Admission ist nicht erforderlich. Merge Authority bleibt davon strikt getrennt.
 
 NATS wird nicht bei jedem App-Release neu deployed. Ein NATS-Deploy wird nur durch Änderungen an NATS-Image, Konfiguration, Entry Point, Broker-Security oder explizit freigegebene Runtime-/CVE-Maßnahmen ausgelöst.
 

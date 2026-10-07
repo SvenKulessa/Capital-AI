@@ -68,13 +68,21 @@ Merge-Autorität ist von Test-, Admission- und Deployment-Autorität strikt getr
 - Diese Freigabe gilt nicht pauschal für andere PRs und nicht automatisch für materiell veränderte spätere Heads.
 - Auto-Merge, Bot-Merge oder vergleichbare Mechanismen dürfen diese Grenze nicht umgehen.
 
+## Admission Scope
+
+Admission ist kein allgemeiner Entwicklungsschritt.
+
+Eine separate Admission ist nur für neue privilegierte Capabilities oder externe Rechte-/Trust-Grenzen erforderlich, insbesondere neue Provider-/Datennutzungsrechte, Raw-/Redistribution-/Sublicensing-Rechte, neue schreibende externe Control-Plane-Capabilities, neue Auth-/Secret-Trust-Boundaries oder neue autonome Self-Healing-Mutationsfähigkeit.
+
+Normale Codeänderungen, Bugfixes, Refactorings, Dokumentation, Tests, bestehende Dependency-Updates, PR-Erstellung, Merge-Bereitschaft und normale `main`-Deployments benötigen keine separate Admission.
+
 ## Pipeline-Authorized Deployment
 
-Ein Production-Deployment darf ohne separate Owner- oder Admission-Freigabe automatisch erfolgen, wenn die verbindlichen Repository-Policies den vollständigen Deployment-Gate-Satz definieren und **alle** Pflicht-Gates auf der exakten Candidate-Identität terminal `PASS` sind.
+Ein Production-Deployment darf ohne separate Owner- oder Admission-Freigabe automatisch erfolgen, wenn es aus `main` stammt und die verbindlichen Repository-Policies den vollständigen Deployment-Gate-Satz definieren und **alle** Pflicht-Gates auf der exakten Deployment-Identität terminal `PASS` sind.
 
 Dabei gilt:
 
-- Pull-Request-Erstellung bzw. -Aktualisierung darf die vorgesehenen Prüfketten automatisch auslösen.
+- Pull-Request-Erstellung bzw. -Aktualisierung darf jederzeit erfolgen und die vorgesehenen Prüfketten automatisch auslösen.
 - Die Pipeline darf nur aus dem vollständigen Gate-Satz `deployEligible:true` ableiten.
 - Ein einzelner Test, Scan, Benchmark oder Admission-Status reicht niemals aus.
 - Fehlende, laufende, übersprungene, unbekannte oder fehlgeschlagene Pflicht-Gates bedeuten fail-closed: kein Deployment.
