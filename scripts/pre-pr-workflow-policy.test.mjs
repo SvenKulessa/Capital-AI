@@ -32,14 +32,25 @@ test('alle externen GitHub Actions sind auf volle Commit-SHAs gepinnt', () => {
   }
 });
 
-test('Pre-PR Critical Preflight deckt alle Domain-Branches und Full-Preflight ab', () => {
-  const name = 'pre-pr-critical.yml';
-  const source = readFileSync(join(workflowDir, name), 'utf8');
-  for (const domain of ['product', 'market', 'platform', 'trust', 'growth']) {
-    assert.ok(source.includes(`capital-ai-${domain}/**`), `${name}: Branch-Muster für ${domain} fehlt`);
-  }
-  assert.ok(source.includes('npm ci --ignore-scripts --no-audit --no-fund'));
-  assert.ok(source.includes('npm run preflight:full'));
-  assert.ok(source.includes('git diff --name-only origin/main...HEAD -- .github/workflows'));
-  assert.ok(source.includes('git diff --check origin/main...HEAD'));
+test('Branch Early Feedback bleibt leicht', () => {
+  const source = readFileSync(join(workflowDir, 'pre-pr-critical.yml'), 'utf8');
+  assert.match(source, /name: Branch Early Feedback/);
+  assert.match(source, /contents: read/);
+  assert.match(source, /git diff --check origin\/main\.\.\.HEAD/);
+  assert.doesNotMatch(source, /npm ci|preflight:full|gh pr create|gh pr merge/);
+});
+
+test('Post-Merge bleibt linear und erzeugt keine neuen PRs oder Branches', () => {
+  const source = readFileSync(join(workflowDir, 'post-merge-correlation.yml'), 'utf8');
+  assert.match(source, /pull_request:/);
+  assert.match(source, /contents: write/);
+  assert.match(source, /linear-post-merge-correlation\.json/);
+  assert.match(source, /\[HOLD\]/);
+  assert.doesNotMatch(source, /gh pr create|gh pr merge|checkout -b|git switch -c/);
+});
+
+test('Pflichtreview ist nicht mehr periodisch', () => {
+  const source = readFileSync(join(workflowDir, 'mandatory-review.yml'), 'utf8');
+  assert.match(source, /workflow_dispatch/);
+  assert.doesNotMatch(source, /schedule:/);
 });
