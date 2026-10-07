@@ -175,10 +175,10 @@
   ],
   "status": "SNAPSHOT_COMPLETE_DEPENDENCY_AND_RUNTIME_GATES_OPEN",
   "evidenceArtifact": {
-    "workflowRunId": 37519027971,
-    "artifactId": 11439055707,
-    "artifactDigest": "sha256:32bc24c69ae1112d4ead76d1532d5c5bbefef6fc1117a2a7408fe5d36336b5a2",
-    "sourceSha": "1d246d0f6398a8c9d45c459b0170a3599b7a3670",
+    "workflowRunId": 37700333054,
+    "artifactId": 11517002602,
+    "artifactDigest": "sha256:812768c05a67274cc791698e99d626ad7bf067c3583dec75f23604ca8d2d2c4a",
+    "sourceSha": "3e9ae4a3769b899d37ac507548144dc07e38f9c6",
     "result": "PASS"
   },
   "summary": {
@@ -189,5 +189,13 @@
     "immutableTtsWorkerImages": "OPEN",
     "germanRuntimeBenchmark": "OPEN",
     "humanOwnerListeningAcceptance": "OPEN"
+  },
+  "currentVerification": {
+    "verifiedAt": "2026-10-08",
+    "qwenSmallArtifactCount": 9,
+    "chatterboxSmallArtifactCount": 2,
+    "qwenRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+    "chatterboxRevision": "5bb1f6ee58e50c3b8d408bc82a6d3740c2db6e18",
+    "allDeclaredHashesMatched": true
   }
 }
