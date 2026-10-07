@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import {
   assertNotReplayed,
   executeGuardedProviderQuery,
+  createProviderBridgeProbeEnvelope,
   createProviderQueryEnvelope,
   executorNatsConnectionAuth,
   safeProviderResult,
@@ -44,6 +45,30 @@ test('query proof binds user, operation, expiry and params', () => {
   assert.equal(verifyProviderQueryEnvelope({ ...envelope, userRef: '22222222-2222-2222-2222-222222222222' }, env, now + 100), false);
   assert.equal(verifyProviderQueryEnvelope({ ...envelope, operation: 'spot.all_orders' }, env, now + 100), false);
   assert.equal(verifyProviderQueryEnvelope(envelope, env, envelope.expiresAt + 1), false);
+});
+
+
+
+test('runtime bridge probe is signed and performs no state, vault or provider I/O', async () => {
+  const now = Date.now();
+  const envelope = createProviderBridgeProbeEnvelope('bridge-probe-1', env, now);
+  assert.equal(verifyProviderQueryEnvelope(envelope, env, now + 100), true);
+  let stateCalls = 0;
+  let vaultCalls = 0;
+  const result = await executeGuardedProviderQuery({
+    envelope,
+    env,
+    state: { claimProviderQuery: async () => { stateCalls += 1; } },
+    vault: { executePrivateQuery: async () => { vaultCalls += 1; return {}; } },
+  });
+  assert.deepEqual(result, {
+    bridgeProbe: true,
+    stateIo: false,
+    vaultIo: false,
+    providerIo: false,
+  });
+  assert.equal(stateCalls, 0);
+  assert.equal(vaultCalls, 0);
 });
 
 test('provider result refuses credential-shaped fields', () => {

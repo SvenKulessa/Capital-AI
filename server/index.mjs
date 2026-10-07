@@ -193,7 +193,21 @@ export function createApp(root = defaultRoot, options = {}) {
   const userProviderVault = createUserProviderVault({ ...options, auth });
   const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault });
   if ((options.env || process.env).PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true') {
-    void privateProviderQuery.start().catch(() => {});
+    const probeRequestId = 'startup:' + String((options.env || process.env).RENDER_GIT_COMMIT || 'runtime').slice(0, 40);
+    void privateProviderQuery.start()
+      .then(() => privateProviderQuery.probe(probeRequestId))
+      .then(result => writeAuditEvent({
+        eventType: 'provider_bridge.readiness',
+        result: result.status,
+        sourceSha: (options.env || process.env).RENDER_GIT_COMMIT || null,
+        latencyMs: result.latencyMs,
+      }))
+      .catch(error => writeAuditEvent({
+        eventType: 'provider_bridge.readiness',
+        result: 'NOT_PROVEN',
+        sourceSha: (options.env || process.env).RENDER_GIT_COMMIT || null,
+        error: String(error?.code || error?.message || 'BRIDGE_PROBE_FAILED').slice(0, 120),
+      }));
   }
   const krakenOrderDryRun = createKrakenOrderDryRun({
     env: options.env || process.env,
@@ -287,6 +301,27 @@ export function createApp(root = defaultRoot, options = {}) {
     } catch {
       return json(res, 503, { error: 'repository_catalog_unavailable' });
     }
+  }
+  if (url.pathname === '/api/internal/provider-bridge') {
+    const ownerAllowed = await auth.authorizeIamRole(req, res, 'owner');
+    if (!ownerAllowed) {
+      writeAuditEvent({ eventType: 'provider_bridge.owner_readiness.denied', requestId: requestContext.requestId, result: 'DENIED' });
+      return json(res, 404, { error: 'not_found' });
+    }
+    let status = privateProviderQuery.status();
+    if (status.enabled && status.readiness.status !== 'PROVEN') {
+      try {
+        await privateProviderQuery.probe('owner:' + requestContext.requestId);
+      } catch {
+        // Status remains fail-closed and carries the sanitized probe error.
+      }
+      status = privateProviderQuery.status();
+    }
+    return json(res, 200, {
+      schema: 'CAPITAL_AI_PROVIDER_BRIDGE_READINESS@1',
+      sourceSha: process.env.RENDER_GIT_COMMIT || null,
+      ...status,
+    });
   }
   if (url.pathname === '/api/internal/observability') {
     const ownerAllowed = await auth.authorizeIamRole(req, res, 'owner');
