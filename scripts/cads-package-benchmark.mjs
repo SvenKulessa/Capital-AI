@@ -1,10 +1,8 @@
+import { createSecretKey } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import {
-  benchmarkEntitlementForTier,
-  createBenchmarkEvidence,
-} from '../packages/benchmark-core/index.mjs';
+import { benchmarkEntitlementForTier } from '../packages/benchmark-core/index.mjs';
 import {
   createCadsMarketplaceOAuthState,
   tierForMarketplacePlanId,
@@ -22,37 +20,6 @@ const benchmarkEnv = {
   CADS_GITHUB_MARKETPLACE_PRO_PLAN_ID: '1002',
   CADS_GITHUB_MARKETPLACE_ENTERPRISE_PLAN_ID: '1003',
 };
-
-const evidenceFixture = Object.freeze({
-  profileId: 'CAPITAL_AI_EVENT_BACKBONE@1',
-  evaluatedAt: '2026-10-06T00:00:00.000Z',
-  source: {
-    repository: 'SvenKulessa/Capital-AI',
-    commitSha: 'a'.repeat(40),
-  },
-  artifacts: {
-    brokerImageDigest: 'sha256:' + '1'.repeat(64),
-    workerImageDigest: 'sha256:' + '2'.repeat(64),
-    sbomDigest: 'sha256:' + '3'.repeat(64),
-  },
-  matrix: { broker: 'nats-jetstream', worker: 'node-typescript' },
-  metrics: {
-    latencyMs: { p50: 1, p95: 2, p99: 3 },
-    throughputPerSecond: 1000,
-    cpuPercent: 20,
-    memoryMiB: 128,
-    diskBytes: 1024,
-    restartRecoveryMs: 50,
-    droppedEvents: 0,
-    duplicateEvents: 0,
-  },
-  security: {
-    vulnerabilities: [],
-    reachabilityEvidence: [],
-    secretsFound: 0,
-  },
-  evidenceRefs: ['synthetic:self-benchmark'],
-});
 
 function percentile(values, q) {
   const sorted = [...values].sort((a, b) => a - b);
@@ -86,7 +53,7 @@ function measure(name, fn, thresholdP95Ms) {
   };
 }
 
-const secret = 'cads-benchmark-oauth-state-secret-'.padEnd(64, 'x');
+const oauthStateMacKey = createSecretKey(Buffer.from('cads-benchmark-oauth-state-key!!', 'utf8').subarray(0, 32));
 const fixedNow = Date.parse('2026-10-06T12:00:00.000Z');
 
 const beforeHeap = process.memoryUsage().heapUsed;
@@ -94,12 +61,6 @@ const cases = [
   measure('tier-entitlement-lookup', (i) => {
     benchmarkEntitlementForTier(['starter','pro','enterprise'][i % 3]);
   }, 1),
-  measure('benchmark-evidence-validation', () => {
-    const result = createBenchmarkEvidence(evidenceFixture);
-    if (result.decision.productionEligible !== false || result.decision.decisionEligible !== false) {
-      throw new Error('BENCHMARK_EVIDENCE_ESCALATED_AUTHORITY');
-    }
-  }, 2),
   measure('marketplace-plan-mapping', (i) => {
     const planId = [1001, 1002, 1003][i % 3];
     const tier = tierForMarketplacePlanId(planId, benchmarkEnv);
@@ -109,10 +70,10 @@ const cases = [
     const state = createCadsMarketplaceOAuthState({
       userId: 'benchmark-user-' + (i % 10),
       installationId: 42 + (i % 10),
-      secret,
+      macKey: oauthStateMacKey,
       now: fixedNow,
     });
-    const verified = verifyCadsMarketplaceOAuthState(state, secret, fixedNow + 1000);
+    const verified = verifyCadsMarketplaceOAuthState(state, oauthStateMacKey, fixedNow + 1000);
     if (!verified) throw new Error('OAUTH_STATE_ROUNDTRIP_FAILED');
   }, 5),
 ];
@@ -132,7 +93,7 @@ const report = {
     warmupIterations: WARMUP,
     measuredIterationsPerCase: ITERATIONS,
     timing: 'performance.now',
-    workload: 'dependency-free deterministic CADS contract microbenchmark; no network or secrets',
+    workload: 'dependency-free deterministic CADS product-contract microbenchmark; no network, no event-backbone comparison and no runtime secrets',
     thresholdsAreReleaseRegressionGuardsNotSla: true,
   },
   memory: {
