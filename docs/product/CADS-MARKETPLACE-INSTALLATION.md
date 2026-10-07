@@ -57,7 +57,7 @@ CADS_GITHUB_APP_PRIVATE_KEY
 CADS_GITHUB_CLIENT_ID
 CADS_GITHUB_CLIENT_SECRET
 CADS_GITHUB_MARKETPLACE_WEBHOOK_SECRET
-CADS_GITHUB_OAUTH_STATE_SECRET
+CADS_GITHUB_OAUTH_STATE_KEY_B64
 CADS_GITHUB_MARKETPLACE_OWNER_ORG
 CADS_GITHUB_MARKETPLACE_LISTING_SLUG
 CADS_GITHUB_MARKETPLACE_STARTER_PLAN_ID
@@ -161,3 +161,11 @@ Pflicht:
 
 Ein PASS dieser technischen Checks allein ist keine Marketplace-, Security-, Lizenz- oder
 Production-Freigabe.
+
+## OAuth-State-Schlüssel und Deployment
+
+`CADS_GITHUB_OAUTH_STATE_KEY_B64` enthält exakt 32 zufällige Bytes als kanonisches Base64url ohne Padding (43 Zeichen). OAuth-State wird mit AES-256-GCM einschließlich Authentifizierungs-Tag verschlüsselt. Der frühere `CADS_GITHUB_OAUTH_STATE_SECRET` wird nicht akzeptiert; alte Setup-Flows müssen nach einer Umstellung neu gestartet werden.
+
+Der Marketplace-Store akzeptiert ausschließlich `SUPABASE_SECRET_KEY` im Format `sb_secret_…`; ein lediglich decodiertes Legacy-Service-Role-JWT ist kein Konfigurationsnachweis. Schlüssel ausschließlich im Secret-Manager erzeugen und hinterlegen; keine Werte in Logs, Tickets oder Repository-Evidence aufnehmen.
+
+OAuth- und Webhook-Anfragen besitzen begrenzte Request-Budgets. Der Delivery-Ledger bindet die GitHub-Delivery-ID zusätzlich an den Payload-Hash; dieselbe ID mit anderem Payload wird abgewiesen.
