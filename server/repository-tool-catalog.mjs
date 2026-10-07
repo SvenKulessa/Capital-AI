@@ -4,7 +4,7 @@ const API = 'https://api.github.com/repos/' + REPO;
 const RAW = 'https://raw.githubusercontent.com/' + REPO + '/';
 const TTL_MS = 300_000;
 const MAX_ROWS = 850;
-const SAFE_PATH = /^[a-zA-Z0-9_@./+-]+$/;
+const SAFE_PATH = /^[a-zA-Z0-9_@./+ -]+$/;
 const SHA = /^[a-f0-9]{40}$/;
 
 async function readText(fetchImpl, url, maxBytes, optional = false) {
@@ -50,6 +50,8 @@ function domainForPath(path) {
 function applicationArea(path) {
   if (path.startsWith('src/features/') || path.startsWith('src/components/')) return 'Webanwendung / Benutzeroberfläche';
   if (path.startsWith('src/services/')) return 'Frontend-Domänendienst';
+  if (path.startsWith('src/contracts/nodes/')) return 'Pipeline-/Analyse-Tool-Vertrag';
+  if (path.startsWith('Chat Buddy/')) return 'Chat Buddy / KI-Assistenz';
   if (path.startsWith('server/')) return 'Backend / API';
   if (path.startsWith('scripts/')) return 'Entwicklung / Automatisierung';
   if (path.startsWith('.github/workflows/')) return 'CI/CD / Sicherheit';
@@ -155,6 +157,9 @@ export function buildRepositoryToolCatalog({ sourceSha, tree, pkg, lock, cargo, 
   if (npmBuildVersion) add(entry('tool:npm-cli', 'npm CLI', 'BUILD_TOOL', 'Dockerfile',
     'Nur Build-Toolchain; im Runtime-Image entfernt', npmBuildVersion, 'Dockerfile global npm Pin', 'PLATFORM'));
 
+  if (paths.has('Chat Buddy/README.md')) add(entry('app:chat-buddy', 'Chat Buddy', 'ANWENDUNG', 'Chat Buddy/README.md',
+    'First-Party Assistant SDK / Chat-Assistent', null, 'Keine separate Release-Version im Katalog belegt', 'PRODUCT'));
+
   if (paths.has('services/provider-bridge-rs/Cargo.toml')) {
     const crateVersion = String(cargo || '').match(/^version\s*=\s*"([^"]+)"/m)?.[1] || null;
     add(entry('app:provider-bridge', 'Capital AI Provider Bridge', 'ANWENDUNG', 'services/provider-bridge-rs/Cargo.toml',
@@ -177,17 +182,23 @@ export function buildRepositoryToolCatalog({ sourceSha, tree, pkg, lock, cargo, 
   }
 
   for (const path of [...paths].sort()) {
-    const isWeb = /^src\/features\/[^/]+\/[^/]+(?:Page|Dashboard|Panel)\.tsx$/.test(path) ||
-      /^src\/components\/[^/]+(?:Page|Dashboard|Panel)\.tsx$/.test(path);
+    const isWeb = /^src\/features\/[^/]+\/[^/]+\.tsx$/.test(path) ||
+      /^src\/components\/[^/]+\.tsx$/.test(path);
     const isDomainService = /^src\/services\/[^/]+\.ts$/.test(path);
+    const isPipelineTool = /^src\/contracts\/nodes\/[^/]+\.ts$/.test(path) ||
+      ['src/contracts/analysisComponentRegistry.ts', 'src/utils/pipelineToolCatalog.ts',
+        'src/config/providers/providerRegistry.ts', 'src/data/openSourceStack.ts'].includes(path);
+    const isBuddy = /^Chat Buddy\/src\/[^/]+\.ts$/.test(path);
     const isBackend = /^server\/[^/]+\.mjs$/.test(path) && !/\.test\.mjs$/.test(path);
     const isScript = /^scripts\/[^/]+\.mjs$/.test(path) && !/\.test\.mjs$/.test(path);
     const isWorkflow = /^\.github\/workflows\/[^/]+\.ya?ml$/.test(path);
     const isDeploy = /^deploy\/(?:Dockerfile[^/]*|render[^/]*\.ya?ml|compose[^/]*\.ya?ml)$/.test(path);
     const isGitHubApp = /^apps\/[^/]+\/server\.mjs$/.test(path);
-    if (!(isWeb || isDomainService || isBackend || isScript || isWorkflow || isDeploy || isGitHubApp)) continue;
-    const kind = isWeb ? 'WEB_MODUL' : isDomainService ? 'FRONTEND_SERVICE' : isBackend ? 'API_MODUL' :
-      isScript ? 'AUTOMATISIERUNG' : isWorkflow ? 'GITHUB_ACTION' : isDeploy ? 'DEPLOYMENT' : 'ANWENDUNG';
+    if (!(isWeb || isDomainService || isPipelineTool || isBuddy || isBackend || isScript || isWorkflow || isDeploy || isGitHubApp)) continue;
+    const kind = isWeb ? (/(?:Page|Dashboard|Panel|Builder|Chatbot)\.tsx$/.test(path) ? 'WEB_MODUL' : 'UI_KOMPONENTE') :
+      isDomainService ? 'FRONTEND_SERVICE' : isPipelineTool ? 'PIPELINE_TOOL' : isBuddy ? 'ASSISTANT_MODULE' :
+      isBackend ? 'API_MODUL' : isScript ? 'AUTOMATISIERUNG' : isWorkflow ? 'GITHUB_ACTION' :
+      isDeploy ? 'DEPLOYMENT' : 'ANWENDUNG';
     add(entry('file:' + path, displayName(path), kind, path, applicationArea(path), projectVersion,
       'package.json (geerbte App-Version; keine Einzelversion)'));
   }
