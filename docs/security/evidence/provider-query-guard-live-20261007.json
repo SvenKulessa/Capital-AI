@@ -1,0 +1,137 @@
+{
+  "schemaVersion": "CAPITAL_AI_PROVIDER_QUERY_GUARD_EVIDENCE@1",
+  "observedDate": "2026-10-07",
+  "repository": "SvenKulessa/Capital-AI",
+  "mainSha": "596c2ef1c4d1f4937108e21a99655c164db56138",
+  "pr": 232,
+  "migrationBlobSha": "66c642ccac580b761b7ef3bcc68dd236ccd46d16",
+  "supabase": {
+    "projectRef": "ryzywoktpmyhwzxmstyu",
+    "projectName": "AIFINANCIAL",
+    "region": "eu-west-1",
+    "projectStatus": "ACTIVE_HEALTHY",
+    "postgresVersion": "17.11.0.002",
+    "migration": {
+      "version": "20261007214554",
+      "name": "provider_query_guard",
+      "repositoryPath": "supabase/migrations/20261007214554_provider_query_guard.sql",
+      "proposalPath": "supabase/proposals/provider_query_guard.sql",
+      "byteIdentical": true,
+      "applied": true
+    },
+    "functionSecurity": {
+      "securityDefiner": false,
+      "securityInvoker": true,
+      "searchPath": "",
+      "lockTimeoutMs": 1500,
+      "anonExecute": false,
+      "authenticatedExecute": false,
+      "serviceRoleExecute": true
+    },
+    "tableSecurity": {
+      "rlsEnabled": true,
+      "anonSelect": false,
+      "authenticatedInsert": false,
+      "serviceRoleSelect": true
+    }
+  },
+  "verification": {
+    "overlappingConcurrentSessions": {
+      "mechanism": "pg_cron 1.6.4 separate PostgreSQL sessions",
+      "replay": {
+        "jobIds": [
+          3,
+          4
+        ],
+        "firstPairStartDeltaMs": 1.173,
+        "replayUses": 1,
+        "rateUses": 1,
+        "status": "VERIFIED"
+      },
+      "rate": {
+        "jobIds": [
+          5,
+          6
+        ],
+        "firstPairStartDeltaMs": 2.258,
+        "sharedRateUses": 1,
+        "winnerReplayUses": 1,
+        "deniedReplayUses": 0,
+        "status": "VERIFIED"
+      },
+      "cost": {
+        "jobIds": [
+          7,
+          8
+        ],
+        "firstPairStartDeltaMs": 1.225,
+        "globalCostUses": 1,
+        "winnerReplayUses": 1,
+        "winnerRateUses": 1,
+        "winnerUserCostUses": 1,
+        "deniedReplayUses": 0,
+        "deniedRateUses": 0,
+        "deniedUserCostUses": 0,
+        "status": "VERIFIED"
+      }
+    },
+    "lockTimeout": {
+      "holderJobId": 9,
+      "callerJobId": 10,
+      "firstPairStartDeltaMs": 2.628,
+      "preCallDelayMs": 200,
+      "configuredMs": 1500,
+      "callerWallMs": 1716.136,
+      "outcome": "canceling statement due to lock timeout",
+      "deniedReplayRowPresent": false,
+      "rateUsesAfterTimeout": 0,
+      "status": "VERIFIED"
+    },
+    "failClosed": {
+      "expiredProof": "INVALID_QUERY_PROOF",
+      "malformedScope": "INVALID_PROVIDER_STATE_REQUEST",
+      "anonRpc": "POSTGRES_42501_PERMISSION_DENIED",
+      "authenticatedRpc": "POSTGRES_42501_PERMISSION_DENIED",
+      "storageTimeoutUnknownCommit": {
+        "evidence": "server/provider-query-state.test.mjs",
+        "automaticRetries": 0,
+        "providerIoOnGuardFailure": 0,
+        "result": "PROVIDER_STATE_UNAVAILABLE",
+        "status": "CI_TESTED"
+      }
+    },
+    "databaseLatency": {
+      "source": "extensions.pg_stat_statements",
+      "calls": 80,
+      "meanMs": 5.228,
+      "minMs": 3.209,
+      "maxMs": 19.933,
+      "totalMs": 418.227,
+      "status": "VERIFIED_DB_ONLY",
+      "excludes": [
+        "POSTGREST",
+        "NETWORK",
+        "DEPLOYED_EXECUTOR"
+      ]
+    },
+    "advisor": {
+      "guardSpecificSecurityFindings": 0,
+      "guardSpecificPerformanceFindings": 0
+    },
+    "cleanup": {
+      "remainingTestCronJobs": 0,
+      "remainingTestGuardRows": 0
+    }
+  },
+  "activation": {
+    "privateProviderBridgeEnabled": false,
+    "productionDeployPerformedByThisWork": false,
+    "productionEligible": false,
+    "remaining": [
+      "SERVICE_ROLE_POSTGREST_SUCCESS_FROM_DEPLOYED_EXECUTOR",
+      "QUERY_BRIDGE_EXECUTOR_VAULT_PROVIDER_ROUNDTRIP",
+      "DEPLOYED_END_TO_END_LATENCY_AND_RUNTIME_IDENTITY",
+      "OWNER_ACTIVATION"
+    ]
+  }
+}
