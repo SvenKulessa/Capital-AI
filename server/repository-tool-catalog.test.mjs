@@ -40,6 +40,40 @@ test('repository catalog extracts locked versions, pinned images, services and a
   assert.ok(entries.every(item => item.path && item.application && item.versionBasis));
 });
 
+test('isolated package boundaries and nonproduction tooling retain precise provenance', () => {
+  const extraTree = [
+    'deploy/runtime/package.json', 'deploy/runtime/package-lock.json',
+    'deploy/npm-security-patches/package.json', 'deploy/npm-security-patches/package-lock.json',
+    'deploy/social-media/renderer-requirements.txt', 'deploy/social-media/ffmpeg-build-profile.json',
+    'mobile/android-private/build.gradle', 'mobile/android-private/app/build.gradle',
+    'services/provider-bridge-rs/rust-toolchain.toml', 'Dockerfile',
+  ].map(path => ({ type: 'blob', path }));
+  const entries = buildRepositoryToolCatalog({
+    sourceSha: SHA, tree: [...TREE, ...extraTree], pkg, lock, cargo,
+    dockerfiles: { Dockerfile: 'FROM node:26.10.0-alpine\nRUN npm install --global npm@12.2.0 --ignore-scripts' },
+    supplementary: {
+      'deploy/runtime/package.json': { name: 'runtime', version: '0.8.0', dependencies: { redis: '^6' } },
+      'deploy/runtime/package-lock.json': { packages: { 'node_modules/redis': { version: '6.3.0' } } },
+      'deploy/npm-security-patches/package.json': { dependencies: { undici: '6.29.0' } },
+      'deploy/npm-security-patches/package-lock.json': { packages: { 'node_modules/undici': { version: '6.29.0' } } },
+      'deploy/social-media/renderer-requirements.txt': 'Pillow==12.3.0 --hash=sha256:abc',
+      'deploy/social-media/ffmpeg-build-profile.json': { source: { version: '9.0.2' }, productionEligible: false },
+      'mobile/android-private/build.gradle': "id 'com.android.application' version '8.13.2' apply false",
+      'mobile/android-private/app/build.gradle': 'versionName "0.1.0-private"',
+      'services/provider-bridge-rs/rust-toolchain.toml': 'channel = "1.99.0"',
+    },
+  });
+  const get = id => entries.find(x => x.id === id);
+  assert.equal(get('npm:deploy/runtime:redis').version, '6.3.0');
+  assert.equal(get('npm:deploy/npm-security-patches:undici').version, '6.29.0');
+  assert.equal(get('python:Pillow').version, '12.3.0');
+  assert.match(get('tool:ffmpeg').versionBasis, /NICHT productionEligible/);
+  assert.equal(get('app:android-private').version, '0.1.0-private');
+  assert.equal(get('tool:android-gradle-plugin').version, '8.13.2');
+  assert.equal(get('tool:rust').version, '1.99.0');
+  assert.equal(get('tool:npm-cli').version, '12.2.0');
+});
+
 test('invalid snapshot and unverified third-party paths fail closed', () => {
   assert.throws(() => buildRepositoryToolCatalog({ sourceSha: 'main', tree: TREE, pkg, lock, cargo }), /INVALID_TREE/);
   const entries = buildRepositoryToolCatalog({ sourceSha: SHA, tree: TREE, pkg, lock, cargo,
