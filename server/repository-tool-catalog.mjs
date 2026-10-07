@@ -69,7 +69,7 @@ function entry(id, name, kind, path, application, version, versionBasis, domain 
 }
 
 function cargoDependencies(text) {
-  const section = String(text || '').match(/^\[dependencies\]\s*\n([\s\S]*?)(?=^\[|\s*$)/m);
+  const section = String(text || '').match(/^\[dependencies\][^\r\n]*\r?\n([\s\S]*?)(?=\r?\n\[|(?![\s\S]))/m);
   if (!section) return [];
   return section[1].split('\n').map(line => {
     const match = line.match(/^([a-zA-Z0-9_-]+)\s*=\s*(.+)$/);
