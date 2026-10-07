@@ -108,8 +108,16 @@ jobs:
             -v "$PWD/provider-bridge-evidence:/reports:ro" \
             capital-ai-security image --input /reports/provider-bridge-image.tar \
             --ignorefile /dev/null --scanners vuln,secret \
-            --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --exit-code 0 \
+            --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --list-all-pkgs --exit-code 0 \
             --format json > provider-bridge-evidence/provider-bridge-image.json
+          node --input-type=module -e '
+            import assert from "node:assert/strict";
+            import { readFileSync } from "node:fs";
+            const report = JSON.parse(readFileSync("provider-bridge-evidence/provider-bridge-image.json", "utf8"));
+            assert.ok(report.Results?.some(result => result.Type === "cargo" &&
+              result.Target.endsWith("Cargo.lock") && result.Packages?.length > 0),
+              "Rust dependency coverage is missing; an empty image report is not PASS");
+          '
           node scripts/summarize-trivy.mjs provider-bridge-evidence/provider-bridge-image.json --gate
           docker run --rm \
             -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" \

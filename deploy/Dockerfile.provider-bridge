@@ -16,6 +16,9 @@ LABEL org.opencontainers.image.title="Capital-AI Provider Bridge"
 LABEL org.opencontainers.image.description="Read-only Rust NATS bridge for private provider queries"
 
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+# Bound source metadata enables Cargo coverage for this non-auditable static binary.
+# This is a conservative dependency inventory, not a claim of exact linked-crate coverage.
+COPY --from=build /workspace/services/provider-bridge-rs/Cargo.toml /workspace/services/provider-bridge-rs/Cargo.lock /usr/share/capital-ai/
 COPY --from=build --chown=65532:65532 /workspace/services/provider-bridge-rs/target/release/capital-ai-provider-bridge /usr/local/bin/capital-ai-provider-bridge
 
 ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
