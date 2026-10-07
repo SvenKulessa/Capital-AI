@@ -21,10 +21,10 @@ A new repository HEAD alone is not a reason to redeploy NATS.
 
 - PR #228: `contentEngine.test.ts` expected module list needed literal types.
 - PR #229: Nodemailer 10.0.14 requires exact registry integrity plus unchanged upstream license bytes; installed-artifact verification is performed in CI.
-- PR #223: locked Rust tests (7/7), Clippy, RustSec, cargo-deny, Docker build and hardened smoke passed in run 37680249103. OCI scanning stopped because its non-root scanner could not write `/reports`. The fix sends report JSON through stdout to host-owned files, mounts input reports read-only, and uploads evidence even after failure. The new head still requires its own terminal result.
+- PR #223: locked Rust tests (7/7), Clippy, RustSec, cargo-deny, Docker build and hardened smoke passed in run 37680249103. OCI scanning stopped because its non-root scanner could not write `/reports`. The fix sends report JSON through stdout to host-owned files, mounts input reports read-only, and uploads evidence even after failure. Head `167f6e7931cd49ebc9ba14cc42a9cb1dac968e2f` subsequently passed both Required Checks and both Rust/OCI runs. PR run 37683299052 / job 113004585404 / artifact 11509819109 contains 160 scanned Cargo packages, zero vulnerabilities and 161 SBOM components. Cargo build metadata is retained in the image to enable conservative coverage; empty reports remain rejected. The owner merged #223 as `f9443a06ecf49c98b7bc4e6e7ece98dbd6ded019` at 20:56:03 UTC.
 - PR #230 contains the same Cargo.lock blob as #223 (`98f8e3096956ad63f2e5d738746ce9cbf22caeda`). No automatic PR closure or merge is performed.
 
-## Valkey protection state — owner decision required
+## Valkey protection state — owner selected Supabase transactions
 
 Observed cache: `red-dau61kvavr4c73fr1plg`, Valkey 8.1.10,
 `maxmemoryPolicy=allkeys_lru`, `persistenceMode=off`.
@@ -33,13 +33,13 @@ They can be evicted under memory pressure and are lost on restart.
 The application fails closed when state is unavailable, but an evicted marker
 looks like an absent marker; cache availability alone does not prove replay safety.
 
-Option A (proposed recommendation): place replay/rate/cost state in Supabase private
+Option A (selected by the owner in chat before implementation): place replay/rate/cost state in Supabase private
 tables with server-only transactional RPCs. Atomically claim a unique request ID
 until expiry, update fixed-window counters, and claim user/global cooldown scopes
 in one transaction. Keep Valkey for quotes and PubSub. Refuse provider execution
 on storage error. Proposed tests: concurrent duplicate claims, process/cache
 restart, cache eviction, expiry, atomic multi-scope rollback and caller grants.
-No schema change has been applied; latency/quota impact requires measurement.
+Draft PR #232 implements the Node executor adapter and a tested SQL proposal. Locally 15 Node tests, 25 SQL assertions and a disk-backed database reopen replay test passed. No live schema change has been applied; real concurrent sessions and Supabase latency/quota impact still require measurement.
 
 Option B: dedicated persistent Valkey protection store using `noeviction`.
 Require documented persistence/recovery guarantees and refuse requests on capacity
@@ -48,7 +48,7 @@ needed before provisioning. RDB snapshots alone do not guarantee survival of eve
 recent replay marker.
 
 Option C: suspend private-provider queries until one of these approaches is verified.
-No selected option or production mutation is implied by this document.
+Option A is selected. No production mutation is implied by this document.
 
 ## Smallest runtime evidence chain after an owner-authorized merge
 
@@ -59,8 +59,7 @@ No selected option or production mutation is implied by this document.
 5. Confirm readiness and an authenticated read-only Query → Bridge → Executor → Vault roundtrip.
 6. Verify replay/invalid-proof/expiry/cost limits fail closed and no credential material appears in results, logs, JetStream or shared cache.
 
-The Render worker configuration, auto-deploy reconciliation and protection-state architecture
-remain separate owner decisions. No merge, deploy, credential rotation or database write occurred.
+The owner merged #223. The worker blueprint is now available on merged main, but the Render connector cannot create Docker background workers; browser fallback requires user approval. Auto-deploy reconciliation remains a runtime change to approve. This agent performed no merge, deploy, credential rotation or live database write.
 
 ## Standalone CADS publication blocker
 
