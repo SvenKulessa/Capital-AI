@@ -78,10 +78,7 @@ Der verbindliche Einstiegspunkt für Engineering- und Agent-Arbeit ist [AGENTS.m
 
 ## Entwicklung
 
-```sh
-npm ci --ignore-scripts
-npm run preflight:full
-```
+Pull Requests können jederzeit erstellt oder aktualisiert werden. Die autoritativen Prüfungen laufen in den kostenlosen GitHub-Actions-Checks des Pull Requests.
 
 Für einen lokalen Build:
 

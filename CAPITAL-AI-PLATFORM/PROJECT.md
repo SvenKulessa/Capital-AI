@@ -1,3 +1,6 @@
+> **INFORMATIONAL / NON-AUTHORIZING — 2026-10-07**
+> Dieses Domain-Dokument beschreibt nur Scope und Kontext. Es setzt keine zusätzlichen Engineering-, Governance-, Admission-, Handoff-, Merge- oder Deployment-Regeln. Autoritativ ist ausschließlich `AGENTS.md` mit `SOLO_MAINTAINER_FLOW@1`.
+
 # CAPITAL-AI-PLATFORM
 
 Zuständig für Render, Docker/OCI, GHCR, NATS, Valkey, CI/CD, Release Controller, Observability, Deployments und Self-Healing.

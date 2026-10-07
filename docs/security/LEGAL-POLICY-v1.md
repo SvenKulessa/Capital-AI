@@ -1,8 +1,11 @@
+> **SUPERSEDED / NON-AUTHORIZING — 2026-10-07**
+> Diese Datei bleibt nur als historische Dokumentation bzw. Evidence erhalten. Sie definiert keine zusätzlichen Gates, Admissions, Handoffs, Pflichtreviews oder Merge-/Deployment-Regeln. Die einzige autorisierende Repository-Richtlinie ist `AGENTS.md` mit `SOLO_MAINTAINER_FLOW@1`.
+
 # CAPITAL-AI LEGAL_POLICY@1
 
-Stand: 2026-10-01  
-Status: REVIEW_DRAFT  
-Domain: TRUST + PLATFORM  
+Stand: 2026-10-01
+Status: REVIEW_DRAFT
+Domain: TRUST + PLATFORM
 Base: `main@2008cac17c8cabc98576d6b20a1ad56048c0028f`
 
 ## Zweck

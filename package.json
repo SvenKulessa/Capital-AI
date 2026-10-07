@@ -23,8 +23,6 @@
     "test:market": "node --test server/ecb-reference-rates.test.mjs server/market.test.mjs server/market-contracts.test.mjs server/scorer-proxy.test.mjs scripts/ecb-reference-admission.test.mjs server/kraken-order-dry-run.test.mjs server/uniswap-trading.test.mjs",
     "test:market:integration": "node --test server/infrastructure.integration.test.mjs",
     "test:market:local": "node scripts/test-market-infrastructure-local.mjs",
-    "preflight": "node scripts/preflight.mjs",
-    "preflight:full": "node scripts/preflight.mjs --full",
     "license:report": "node scripts/license-engine.mjs",
     "test:licenses": "node --test scripts/license-engine.test.mjs scripts/license-evidence.test.mjs",
     "sponsorship:p2:check": "node scripts/validate-sponsorship-p2-projection.mjs",
