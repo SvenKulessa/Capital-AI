@@ -102,7 +102,7 @@ export const GROWTH_AI_CAPABILITY_POLICY: Readonly<Record<GrowthCapability, Grow
     state: 'ADMITTED',
     allowedModes: ['DRAFT'],
     productionEligible: false,
-    modelHint: 'gemini-3.1-flash-image',
+    modelHint: 'gemini-3.1-flash-lite-image',
     restrictions: [
       'use only rights-cleared input assets and CAPITAL-AI branding references',
       'generated marketing assets require brand, rights and claim review before publication',
