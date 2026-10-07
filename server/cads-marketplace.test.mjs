@@ -21,7 +21,7 @@ function baseEnv() {
     CADS_GITHUB_MARKETPLACE_LISTING_SLUG: 'capital-ai-cads',
     CADS_GITHUB_CLIENT_ID: 'Iv1.cads-example',
     CADS_GITHUB_CLIENT_SECRET: 'client-secret-' + 'x'.repeat(32),
-    CADS_GITHUB_OAUTH_STATE_SECRET: 'state-secret-' + 'x'.repeat(32),
+    CADS_GITHUB_OAUTH_STATE_KEY_B64: Buffer.from('x'.repeat(32), 'utf8').toString('base64url'),
     CADS_GITHUB_PUBLIC_URL: 'https://capital-ai.online',
     CADS_GITHUB_MARKETPLACE_STARTER_PLAN_ID: '1001',
     CADS_GITHUB_MARKETPLACE_PRO_PLAN_ID: '1002',
@@ -30,6 +30,15 @@ function baseEnv() {
     SUPABASE_SECRET_KEY: 'sb_secret_' + 'x'.repeat(40),
   };
 }
+
+test('legacy OAuth state secret input is not accepted as a MAC key', () => {
+  const env = baseEnv();
+  delete env.CADS_GITHUB_OAUTH_STATE_KEY_B64;
+  env.CADS_GITHUB_OAUTH_STATE_SECRET = 'legacy-secret-' + 'x'.repeat(32);
+  const ready = publicCadsMarketplaceReadiness(env);
+  assert.equal(ready.buyerLinkConfigured, false);
+  assert.equal(ready.runtimeReady, false);
+});
 
 test('paid Marketplace runtime requires app, distinct plan IDs and Supabase secret-key store', () => {
   const ready = publicCadsMarketplaceReadiness(baseEnv());
