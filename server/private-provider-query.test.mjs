@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 
 import {
   assertNotReplayed,
+  executeGuardedProviderQuery,
   createProviderQueryEnvelope,
   executorNatsConnectionAuth,
   safeProviderResult,
@@ -118,11 +119,47 @@ test('provider result payload is bounded', () => {
 });
 
 
-test('runtime centralizes replay rate and high-cost state in Valkey instead of process-local maps', () => {
-  const source = readFileSync(new URL('./private-provider-query.mjs', import.meta.url), 'utf8');
-  assert.doesNotMatch(source, /const (?:highCostWindows|requestWindows|replayWindow) = new Map\(\)/);
-  assert.match(source, /state\.consumeProviderRate/);
-  assert.match(source, /state\.claimProviderCostScopes/);
-  assert.match(source, /state\.claimProviderReplay/);
-  assert.match(source, /PROVIDER_STATE_UNAVAILABLE/);
+test('executor claims all durable guards before any provider I/O', async () => {
+  const envelope = createProviderQueryEnvelope({ userRef: '11111111-1111-4111-8111-111111111111',
+    requestId: 'req-guard', provider: 'binance', operation: 'account.snapshot', params: { type: 'SPOT' } }, env);
+  const order = [];
+  const state = { claimProviderQuery: async claim => {
+    order.push('claim');
+    assert.equal(claim.rateLimit, 30);
+    assert.deepEqual(claim.scopes, [
+      { key: `user:${envelope.userRef}:binance:account.snapshot`, intervalMs: 60000 },
+      { key: 'global:binance:account.snapshot', intervalMs: 60000 },
+    ]);
+  } };
+  const vault = { executePrivateQuery: async () => { order.push('provider'); return { balances: [] }; } };
+  assert.deepEqual(await executeGuardedProviderQuery({ envelope, env, state, vault }), { balances: [] });
+  assert.deepEqual(order, ['claim', 'provider']);
+});
+
+test('invalid proof, denied guard and storage failure never invoke provider', async () => {
+  const envelope = createProviderQueryEnvelope({ userRef: '11111111-1111-4111-8111-111111111111',
+    requestId: 'req-denied', provider: 'kraken', operation: 'account.balance', params: {} }, env);
+  let providerCalls = 0, claims = 0;
+  const vault = { executePrivateQuery: async () => { providerCalls++; return {}; } };
+  const state = { claimProviderQuery: async () => { claims++; throw new Error('PROVIDER_STATE_UNAVAILABLE'); } };
+  await assert.rejects(executeGuardedProviderQuery({ envelope: { ...envelope, proof: '0'.repeat(64) }, env, state, vault }), /INVALID_QUERY_PROOF/);
+  assert.equal(claims, 0);
+  await assert.rejects(executeGuardedProviderQuery({ envelope, env, state, vault }), /PROVIDER_STATE_UNAVAILABLE/);
+  await assert.rejects(executeGuardedProviderQuery({ envelope, env, state: {}, vault }), /PROVIDER_STATE_UNAVAILABLE/);
+  assert.equal(providerCalls, 0);
+});
+
+test('proof that expires during durable claim is rejected before provider I/O', async () => {
+  const original = Date.now;
+  const now = original();
+  const envelope = createProviderQueryEnvelope({ userRef: '11111111-1111-4111-8111-111111111111',
+    requestId: 'req-expired', provider: 'kraken', operation: 'account.balance', params: {} }, env, now);
+  let providerCalls = 0;
+  try {
+    Date.now = () => now;
+    const state = { claimProviderQuery: async () => { Date.now = () => envelope.expiresAt + 1; } };
+    await assert.rejects(executeGuardedProviderQuery({ envelope, env, state,
+      vault: { executePrivateQuery: async () => { providerCalls++; } } }), /INVALID_QUERY_PROOF/);
+    assert.equal(providerCalls, 0);
+  } finally { Date.now = original; }
 });
