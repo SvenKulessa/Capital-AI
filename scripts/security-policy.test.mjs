@@ -61,8 +61,9 @@ test('vollstaendiger policy-definierter Gate-Satz darf Deployment automatisch au
   assert.match(agents, /alle.*Deployment-Gates.*terminal.*PASS/is);
   assert.match(security, /Pipeline-Authorized Deployment/);
   assert.match(security, /vollständigen Gate-Satz.*deployEligible:true/is);
-  assert.match(governance, /ohne zusätzliche Owner-\/Admission-Freigabe.*deployEligible:true/is);
-  assert.match(handoff, /vollständige PASS ist die technische Deployment-Autorität/i);
+  assert.match(governance, /keine zusätzliche menschliche Deployment-Admission erforderlich/i);
+  assert.match(handoff, /technischer Verifikationsvertrag/i);
+  assert.match(handoff, /Nur der resultierende `main`-Commit darf Production auslösen/i);
 
   for (const blocked of ['fehlende', 'laufende', 'übersprungene', 'unbekannte', 'fehlgeschlagene']) {
     assert.match(security, new RegExp(blocked, 'i'));
@@ -85,4 +86,14 @@ test('merge authority bleibt beim Human Owner und entsteht niemals aus Gates', (
 
   assert.match(governance, /Standardzustand: kein automatischer Merge/i);
   assert.match(governance, /ausdrückliche Chat-Freigabe des Owners.*konkret bezeichneten PR/is);
+});
+
+test('normale Entwicklung benoetigt keine separate Admission', () => {
+  const agents = read('AGENTS.md');
+  const security = read('SECURITY.md');
+  const handoff = read('docs/security/PRODUCTION-HANDOFF.md');
+
+  assert.match(agents, /Eine separate Admission ist \*\*nicht\*\* Teil normaler Entwicklung/i);
+  assert.match(security, /Admission ist kein allgemeiner Entwicklungsschritt/i);
+  assert.match(handoff, /Normale Bugfixes, Produktänderungen, Refactorings, Dokumentation, Tests.*keine separate Admission/is);
 });
