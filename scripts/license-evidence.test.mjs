@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { bundleLicenseEvidence, lockInventory } from './license-evidence.mjs';
@@ -123,7 +123,12 @@ test('MIT-0 review does not cover arbitrary packages or frontend distribution', 
   assert.throws(() => bundleLicenseEvidence(f.root, [f.id]), /explicit distribution review/);
 });
 
-test('installed Nodemailer artifact matches reviewed lock identity and upstream license bytes', () => {
+test('installed Nodemailer artifact matches reviewed lock identity and upstream license bytes', {
+  skip: process.env.CAPITAL_AI_REQUIRE_INSTALLED_LICENSE_EVIDENCE !== 'true' &&
+    !existsSync(new URL('../node_modules/nodemailer/package.json', import.meta.url))
+    ? 'Source-only stage: installed artifact is required and verified in the Docker build'
+    : false,
+}, () => {
   const root = new URL('../', import.meta.url);
   const currentLock = JSON.parse(readFileSync(new URL('package-lock.json', root)));
   const reviewed = JSON.parse(readFileSync(new URL('docs/licenses/nodemailer-license-review.json', root)));

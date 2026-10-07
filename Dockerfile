@@ -66,7 +66,7 @@ RUN --network=none node --test server/mta-sts.test.mjs server/well-known.test.mj
     && node --test server/user-provider-vault.test.mjs server/private-provider-query.test.mjs server/kraken-order-dry-run.test.mjs server/uniswap-trading.test.mjs scripts/stripe-catalog-readback.test.mjs scripts/stripe-three-purchase-e2e.test.mjs scripts/benchmark-ledger-migration.test.mjs scripts/benchmark-cost-calibration.test.mjs \
     && node --import tsx --test server/advisor-security.test.mjs scripts/blueprint-evidence-contract.test.mjs \
     && node --test scripts/branding-assets.test.mjs \
-    && node --test scripts/license-evidence.test.mjs \
+    && CAPITAL_AI_REQUIRE_INSTALLED_LICENSE_EVIDENCE=true node --test scripts/license-evidence.test.mjs \
     && node scripts/license-evidence.mjs \
     && node --import tsx --test scripts/frontend-security.test.mjs \
     && node --run lint && node --run test && node --run build \
