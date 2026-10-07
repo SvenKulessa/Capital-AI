@@ -607,7 +607,7 @@ export const ROADMAP_CURRENT_STATE_OVERRIDES: Readonly<Record<string, RoadmapRec
       "src/data/cadsCommercialReadiness.ts",
       "src/data/cadsMarketplaceCapabilities.ts"
     ],
-    "nextStep": "Initialer Standalone-Handoff nach capital-ai-online/CADS ist gemergt. Nächstes Ziel: den accepted PR-#220-Delta source-bound ins Org-Repo synchronisieren und danach Organization-App, Verified Publisher, Financial Onboarding, aktuelle GitHub-Paid-Listing-Voraussetzungen, reale USD-Preise/Plan-IDs sowie Install/OAuth/Purchase/Changed/Cancelled/Delete-Smokes schließen."
+    "nextStep": "Paid Billing/Entitlement Runtime ist implementiert. Der initiale Standalone-Handoff nach capital-ai-online/CADS ist gemergt. Nächstes Ziel: den accepted PR-#220-Delta source-bound ins Org-Repo synchronisieren und danach Organization-App, Verified Publisher, Financial Onboarding, aktuelle GitHub-Paid-Listing-Voraussetzungen, reale USD-Preise/Plan-IDs sowie Install/OAuth/Purchase/Changed/Cancelled/Delete-Smokes schließen."
   },
   "CA-PLATFORM-COMPONENT-INVENTORY": {
     "status": "aktiv",
