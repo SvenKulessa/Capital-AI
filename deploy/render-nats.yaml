@@ -24,3 +24,11 @@ services:
         value: capital-ai-market-runtime
       - key: NATS_APP_PASSWORD
         sync: false
+      - key: NATS_BRIDGE_USER
+        value: capital-ai-provider-bridge
+      - key: NATS_BRIDGE_PASSWORD
+        sync: false
+      - key: NATS_EXECUTOR_USER
+        value: capital-ai-provider-executor
+      - key: NATS_EXECUTOR_PASSWORD
+        sync: false
