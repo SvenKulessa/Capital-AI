@@ -1,23 +1,25 @@
 {
   "schemaVersion": 1,
   "package": "nodemailer",
-  "version": "10.0.13",
+  "version": "10.0.14",
   "declaredLicense": "MIT-0",
-  "licenseFile": "docs/licenses/nodemailer-10.0.13-MIT-0.txt",
+  "licenseFile": "docs/licenses/nodemailer-10.0.14-MIT-0.txt",
   "licenseTextSha256": "4f814dcacd2da618d62829ea1f6238701cf421f18a6b36c91c5d8212245e2c78",
   "registry": "https://registry.npmjs.org",
-  "tarball": "https://registry.npmjs.org/nodemailer/-/nodemailer-10.0.13.tgz",
-  "integrity": "sha512-SzG86OlvcW/NNhUFC6uROMwRTL4n7MswfQqC/T8mhkmnY1YVa23zUEMYi4ijSeXSl9GLz9ZeTJDUatEDuY5FeQ==",
+  "tarball": "https://registry.npmjs.org/nodemailer/-/nodemailer-10.0.14.tgz",
+  "integrity": "sha512-eJoLFKg55fesSlzUekmfOv/SBXh4KUYT8oiQc2RLP0tfG0rbNMJBK7wgHJwXTJwqyKlSJMz9UzDZ4v+aHEvo8g==",
   "upstream": "https://github.com/nodemailer/nodemailer",
   "licenseDocumentation": "https://nodemailer.com/license",
-  "status": "LICENSE_TEXT_VERIFIED",
+  "status": "UPSTREAM_LICENSE_VERIFIED_REGISTRY_INSTALL_CHECK_REQUIRED",
   "scope": "Exact npm dependency only; no provider data rights or whole-image approval",
   "deployEligible": false,
   "notes": [
-    "Installed with --ignore-scripts from the official npm registry; exact version and integrity retained in package-lock.json.",
+    "Lockfile pins official npm registry version and integrity. CI npm ci verifies registry integrity; the installed-artifact regression checks package metadata and LICENSE bytes. Direct tarball retrieval was unavailable in the restricted review workspace.",
     "MIT-0 permits use, modification and redistribution, including commercial use, without an attribution requirement. The complete upstream license text is retained anyway.",
     "Runtime retains node_modules/nodemailer/LICENSE and a separate /app/licenses copy.",
     "No additional runtime dependencies in this published package.",
     "Other container, provider, font and asset reviews remain independent."
-  ]
+  ],
+  "upstreamLicense": "https://github.com/nodemailer/nodemailer/blob/v10.0.14/LICENSE",
+  "upstreamLicenseGitBlobSha": "fdfc9676bf9f4363b1292847d61f94a17a47618e"
 }

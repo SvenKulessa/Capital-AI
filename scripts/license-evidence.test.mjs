@@ -1,6 +1,7 @@
+import { createHash } from 'node:crypto';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { bundleLicenseEvidence, lockInventory } from './license-evidence.mjs';
@@ -80,12 +81,12 @@ test('README fallback is version bounded and includes the actual license text', 
 });
 
 test('Nodemailer review requires the exact registry artifact and unchanged license text', t => {
-  const f = fixture(t, 'MIT-0', '10.0.13', 'nodemailer');
+  const f = fixture(t, 'MIT-0', '10.0.14', 'nodemailer');
   const currentLock = JSON.parse(readFileSync(new URL('../package-lock.json', import.meta.url)));
   const reviewed = currentLock.packages['node_modules/nodemailer'];
-  const license = readFileSync(new URL('../docs/licenses/nodemailer-10.0.13-MIT-0.txt', import.meta.url));
+  const license = readFileSync(new URL('../docs/licenses/nodemailer-10.0.14-MIT-0.txt', import.meta.url));
   mkdirSync(join(f.root, 'docs/licenses'), { recursive: true });
-  writeFileSync(join(f.root, 'docs/licenses/nodemailer-10.0.13-MIT-0.txt'), license);
+  writeFileSync(join(f.root, 'docs/licenses/nodemailer-10.0.14-MIT-0.txt'), license);
   const writeLock = entry => writeFileSync(join(f.root, 'package-lock.json'), JSON.stringify({
     lockfileVersion: 3, packages: { '': {}, 'node_modules/nodemailer': entry },
   }));
@@ -93,14 +94,14 @@ test('Nodemailer review requires the exact registry artifact and unchanged licen
   assert.equal(lockInventory(f.root).packages[0].metadataStatus, 'DEPENDENCY_DISTRIBUTION_REVIEW');
   assert.equal(lockInventory(f.root).deployEligible, false);
   for (const change of [
-    { version: '10.0.14' }, { integrity: 'changed' },
+    { version: '10.0.15' }, { integrity: 'changed' },
     { resolved: 'https://untrusted.example/nodemailer.tgz' }, { license: 'AGPL-3.0-only' },
   ]) {
     writeLock({ ...reviewed, ...change });
     assert.equal(lockInventory(f.root).packages[0].metadataStatus, 'UNREVIEWED');
   }
   writeLock(reviewed);
-  writeFileSync(join(f.root, 'docs/licenses/nodemailer-10.0.13-MIT-0.txt'), 'altered license');
+  writeFileSync(join(f.root, 'docs/licenses/nodemailer-10.0.14-MIT-0.txt'), 'altered license');
   assert.equal(lockInventory(f.root).packages[0].metadataStatus, 'UNREVIEWED');
 });
 
@@ -120,4 +121,29 @@ test('MIT-0 review does not cover arbitrary packages or frontend distribution', 
   writeFileSync(join(f.dir, 'LICENSE'), 'MIT-0');
   assert.equal(lockInventory(f.root).packages[0].metadataStatus, 'UNREVIEWED');
   assert.throws(() => bundleLicenseEvidence(f.root, [f.id]), /explicit distribution review/);
+});
+
+test('installed Nodemailer artifact matches reviewed lock identity and upstream license bytes', {
+  skip: process.env.CAPITAL_AI_REQUIRE_INSTALLED_LICENSE_EVIDENCE !== 'true' &&
+    !existsSync(new URL('../node_modules/nodemailer/package.json', import.meta.url))
+    ? 'Source-only stage: installed artifact is required and verified in the Docker build'
+    : false,
+}, () => {
+  const root = new URL('../', import.meta.url);
+  const currentLock = JSON.parse(readFileSync(new URL('package-lock.json', root)));
+  const reviewed = JSON.parse(readFileSync(new URL('docs/licenses/nodemailer-license-review.json', root)));
+  const locked = currentLock.packages['node_modules/nodemailer'];
+  const installed = JSON.parse(readFileSync(new URL('node_modules/nodemailer/package.json', root)));
+  const license = readFileSync(new URL('node_modules/nodemailer/LICENSE', root));
+  const retained = readFileSync(new URL(reviewed.licenseFile, root));
+  assert.equal(installed.name, reviewed.package);
+  assert.equal(installed.version, reviewed.version);
+  assert.equal(installed.license, reviewed.declaredLicense);
+  assert.equal(locked.version, reviewed.version);
+  assert.equal(locked.resolved, reviewed.tarball);
+  assert.equal(locked.integrity, reviewed.integrity);
+  assert.equal(createHash('sha256').update(license).digest('hex'), reviewed.licenseTextSha256);
+  assert.deepEqual(license, retained);
+  assert.equal(Object.keys(installed.dependencies || {}).length, 0);
+  assert.equal(reviewed.deployEligible, false);
 });

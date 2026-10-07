@@ -17,10 +17,10 @@ function reviewedSpdxData(p) {
 
 // Package-bounded review: do not treat arbitrary MIT-0 metadata as reviewed.
 function reviewedNodemailer(root, path, p) {
-  const licensePath = join(root, 'docs/licenses/nodemailer-10.0.13-MIT-0.txt');
-  return path === 'node_modules/nodemailer' && p.version === '10.0.13' && p.license === 'MIT-0'
-    && p.resolved === 'https://registry.npmjs.org/nodemailer/-/nodemailer-10.0.13.tgz'
-    && p.integrity === 'sha512-SzG86OlvcW/NNhUFC6uROMwRTL4n7MswfQqC/T8mhkmnY1YVa23zUEMYi4ijSeXSl9GLz9ZeTJDUatEDuY5FeQ=='
+  const licensePath = join(root, 'docs/licenses/nodemailer-10.0.14-MIT-0.txt');
+  return path === 'node_modules/nodemailer' && p.version === '10.0.14' && p.license === 'MIT-0'
+    && p.resolved === 'https://registry.npmjs.org/nodemailer/-/nodemailer-10.0.14.tgz'
+    && p.integrity === 'sha512-eJoLFKg55fesSlzUekmfOv/SBXh4KUYT8oiQc2RLP0tfG0rbNMJBK7wgHJwXTJwqyKlSJMz9UzDZ4v+aHEvo8g=='
     && existsSync(licensePath)
     && sha256(readFileSync(licensePath)) === '4f814dcacd2da618d62829ea1f6238701cf421f18a6b36c91c5d8212245e2c78';
 }
