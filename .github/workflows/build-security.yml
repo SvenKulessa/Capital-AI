@@ -46,6 +46,7 @@ jobs:
         run: |
           node --test \
             scripts/docker-context.test.mjs \
+            scripts/reviewdog-public-report.test.mjs \
             scripts/container-evidence-identity.test.mjs \
             scripts/license-evidence.test.mjs \
             scripts/summarize-trivy.test.mjs \
