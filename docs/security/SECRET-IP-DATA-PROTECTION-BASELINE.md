@@ -1,6 +1,9 @@
+> **SUPERSEDED / NON-AUTHORIZING — 2026-10-07**
+> Diese Datei bleibt als historische oder fachliche Dokumentation erhalten. Sie erzeugt keine zusätzlichen Repository-Gates, Admissions, Handoffs, Pflichtreviews oder Merge-/Deployment-Regeln. Autoritativ ist ausschließlich `AGENTS.md` mit `SOLO_MAINTAINER_FLOW@1`. Konkrete gesetzliche, regulatorische, Security- oder Provider-/Lizenzpflichten bleiben davon unberührt.
+
 # Password, Secret, Intellectual-Property and Protected-Data Baseline
 
-Date: 2026-10-02  
+Date: 2026-10-02
 Domains: TRUST + PLATFORM
 
 ## Data classes

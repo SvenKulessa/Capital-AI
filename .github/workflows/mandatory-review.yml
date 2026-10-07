@@ -1,193 +1,19 @@
-name: CAPITAL-AI Pflichtreview
+name: Optional Repository Review
 
 on:
-  schedule:
-    # GitHub cron kennt kein monatsübergreifend exaktes "alle 72 Stunden".
-    # Der tägliche Trigger wird unten ab 2026-10-02 auf exakt jeden dritten UTC-Tag gegated.
-    - cron: '17 6 * * *'
   workflow_dispatch:
 
 permissions:
   contents: read
   actions: read
 
-concurrency:
-  group: capital-ai-mandatory-review
-  cancel-in-progress: false
-
-env:
-  APP_SERVICE_ID: srv-dau1rp893c1s73cdhm1g
-  NATS_SERVICE_ID: srv-dauhcoojo6nc738eedjg
-  LEGACY_SMTP_SERVICE_ID: srv-d91o1o9o3t8c73edi55g
-  RENDER_OWNER_ID: tea-d90o4rj7uimc739i86ug
-
 jobs:
   review:
-    name: TRUST / PLATFORM Pflichtreview
-    if: github.repository == 'SvenKulessa/Capital-AI' && github.ref == 'refs/heads/main'
+    name: Optional Manual Review
     runs-on: ubuntu-26.04
-    timeout-minutes: 12
+    timeout-minutes: 2
     steps:
-      - name: Exakten Drei-Tage-Takt bestimmen
-        id: cadence
-        shell: bash
+      - name: Hinweis
         run: |
-          set -euo pipefail
-          if [ "${GITHUB_EVENT_NAME}" = 'workflow_dispatch' ]; then
-            echo 'due=true' >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          anchor=$(date -u -d '2026-10-02T06:17:00Z' +%s)
-          now=$(date -u +%s)
-          days=$(( (now - anchor) / 86400 ))
-          if [ "$days" -ge 0 ] && [ $((days % 3)) -eq 0 ]; then
-            echo 'due=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'due=false' >> "$GITHUB_OUTPUT"
-            echo 'Kein Pflichtreview-Tag; der tägliche Cron dient nur als exakter 72h-Kadenz-Gate.' >> "$GITHUB_STEP_SUMMARY"
-          fi
-
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        if: steps.cadence.outputs.due == 'true'
-        with:
-          persist-credentials: false
-
-      - name: Nodemailer deterministisch installieren und Review-Skripte prüfen
-        if: steps.cadence.outputs.due == 'true'
-        run: |
-          set -euo pipefail
-          npm ci --ignore-scripts --omit=dev
-          node --check scripts/mandatory-review.mjs
-          node --check scripts/send-mandatory-review-mail.mjs
-
-      - name: GitHub- und Main-Governance-Evidence lesen
-        if: steps.cadence.outputs.due == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          umask 077
-          mkdir -p mandatory-review
-          gh api "repos/$GITHUB_REPOSITORY/branches/main" > mandatory-review/main.json
-          gh api "repos/$GITHUB_REPOSITORY/pulls?state=open&per_page=100" > mandatory-review/open-prs.json
-          gh api "repos/$GITHUB_REPOSITORY/rulesets" --jq '.[].id' > "$RUNNER_TEMP/ruleset-ids.txt"
-          : > "$RUNNER_TEMP/rulesets.ndjson"
-          while IFS= read -r id; do
-            test -z "$id" || gh api "repos/$GITHUB_REPOSITORY/rulesets/$id" >> "$RUNNER_TEMP/rulesets.ndjson"
-          done < "$RUNNER_TEMP/ruleset-ids.txt"
-          if test -s "$RUNNER_TEMP/rulesets.ndjson"; then
-            jq -s '.' "$RUNNER_TEMP/rulesets.ndjson" > mandatory-review/rulesets.json
-          else
-            printf '[]\n' > mandatory-review/rulesets.json
-          fi
-
-      - name: Render-, Runtime-, NATS- und Supabase-Auth-Evidence lesen
-        if: steps.cadence.outputs.due == 'true'
-        env:
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY_TEST }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          umask 077
-          test -n "$RENDER_API_KEY" || { echo 'RENDER_API_KEY_TEST fehlt.'; exit 1; }
-          auth="Authorization: Bearer $RENDER_API_KEY"
-          curl --fail --silent --show-error --max-time 20 --header "$auth" \
-            "https://api.render.com/v1/services/$APP_SERVICE_ID" > mandatory-review/render-app.json
-          curl --fail --silent --show-error --max-time 20 --header "$auth" \
-            "https://api.render.com/v1/services/$APP_SERVICE_ID/deploys?limit=20" > mandatory-review/render-app-deploys.json
-          curl --fail --silent --show-error --max-time 20 --header "$auth" \
-            "https://api.render.com/v1/services/$NATS_SERVICE_ID" > mandatory-review/render-nats.json
-          curl --fail --silent --show-error --max-time 20 --header "$auth" \
-            "https://api.render.com/v1/services/$NATS_SERVICE_ID/deploys?limit=20" > mandatory-review/render-nats-deploys.json
-          curl --fail --silent --show-error --max-time 20 --header "$auth" \
-            "https://api.render.com/v1/services/$APP_SERVICE_ID/env-vars?limit=100" > "$RUNNER_TEMP/capital-ai-env.json"
-          service_url=$(jq -er '.serviceDetails.url | select(type == "string" and startswith("https://"))' mandatory-review/render-app.json)
-          if ! curl --fail --silent --show-error --retry 4 --retry-all-errors --retry-delay 2 \
-            --connect-timeout 4 --max-time 10 "$service_url/healthz" > mandatory-review/health.json; then
-            printf '{"status":"unavailable","infrastructure":{"status":"unavailable","redis":"unavailable","nats":"unavailable","pubsub":"unavailable"}}\n' > mandatory-review/health.json
-          fi
-          set +e
-          node scripts/diagnose-supabase-auth.mjs "$RUNNER_TEMP/capital-ai-env.json" > mandatory-review/auth.json
-          auth_status=$?
-          set -e
-          echo "Supabase Auth Diagnose Exit: $auth_status (Konfiguration allein darf den Login-Gate nicht grün setzen)." >> "$GITHUB_STEP_SUMMARY"
-
-      - name: GO-2026-5932 gegen NATS 2.15.0 korrelieren
-        if: steps.cadence.outputs.due == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          if ! gh api -X GET search/code -f q='golang.org/x/crypto/openpgp repo:nats-io/nats-server' > mandatory-review/nats-openpgp-search.json; then
-            printf '{"total_count":null,"error":"SEARCH_UNAVAILABLE"}\n' > mandatory-review/nats-openpgp-search.json
-          fi
-          if ! gh api 'repos/nats-io/nats-server/contents/go.mod?ref=v2.15.0' --jq .content | tr -d '\n' | base64 -d > mandatory-review/nats-go.mod; then
-            : > mandatory-review/nats-go.mod
-          fi
-          # Der Befund wird absichtlich nicht suppressed. Die Paket-Reachability wird getrennt bewertet.
-          grep -q 'golang.org/x/crypto v0.57.0' mandatory-review/nats-go.mod || true
-
-      - name: Pflichtreview auswerten
-        if: steps.cadence.outputs.due == 'true'
-        run: |
-          set -euo pipefail
-          node scripts/mandatory-review.mjs mandatory-review mandatory-review/mandatory-review.json mandatory-review/mandatory-review.txt
-          cat mandatory-review/mandatory-review.txt >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Bereinigte Review-Evidence sichern
-        if: steps.cadence.outputs.due == 'true' && always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: mandatory-review-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            mandatory-review/mandatory-review.json
-            mandatory-review/mandatory-review.txt
-            mandatory-review/main.json
-            mandatory-review/open-prs.json
-            mandatory-review/rulesets.json
-            mandatory-review/render-app.json
-            mandatory-review/render-app-deploys.json
-            mandatory-review/render-nats.json
-            mandatory-review/render-nats-deploys.json
-            mandatory-review/health.json
-            mandatory-review/auth.json
-            mandatory-review/nats-openpgp-search.json
-            mandatory-review/nats-go.mod
-          if-no-files-found: warn
-          retention-days: 14
-
-      - name: IONOS-SMTP ausschließlich aus Render lesen und Report senden
-        if: steps.cadence.outputs.due == 'true' && always() && hashFiles('mandatory-review/mandatory-review.txt') != ''
-        env:
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY_TEST }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          umask 077
-          test -n "$RENDER_API_KEY"
-          auth="Authorization: Bearer $RENDER_API_KEY"
-          has_smtp() {
-            jq -e '[.[] | (.envVar // .) | select(.key == "SMTP_HOST" or .key == "SMTP_USER" or .key == "SMTP_PASSWORD") | select((.value | type) == "string" and (.value | length) > 0)] | length == 3' "$1" >/dev/null
-          }
-          if has_smtp "$RUNNER_TEMP/capital-ai-env.json"; then
-            cp "$RUNNER_TEMP/capital-ai-env.json" "$RUNNER_TEMP/smtp-env.json"
-            smtp_source="$APP_SERVICE_ID"
-          else
-            curl --fail --silent --show-error --max-time 20 --header "$auth" \
-              "https://api.render.com/v1/services/$LEGACY_SMTP_SERVICE_ID/env-vars?limit=100" > "$RUNNER_TEMP/legacy-smtp-env.json"
-            has_smtp "$RUNNER_TEMP/legacy-smtp-env.json" || { echo 'Vollständige SMTP-Konfiguration fehlt in Render.'; exit 1; }
-            cp "$RUNNER_TEMP/legacy-smtp-env.json" "$RUNNER_TEMP/smtp-env.json"
-            smtp_source="$LEGACY_SMTP_SERVICE_ID"
-          fi
-          echo "SMTP-Quelle: Render-Service $smtp_source; Secret-Werte werden weder geloggt noch als Artifact gespeichert." >> "$GITHUB_STEP_SUMMARY"
-          node scripts/send-mandatory-review-mail.mjs \
-            "$RUNNER_TEMP/smtp-env.json" mandatory-review/mandatory-review.txt mandatory-review/mandatory-review.json
-          rm -f "$RUNNER_TEMP/smtp-env.json" "$RUNNER_TEMP/legacy-smtp-env.json" "$RUNNER_TEMP/capital-ai-env.json"
-
-      - name: Fail-closed Review-Ergebnis anwenden
-        if: steps.cadence.outputs.due == 'true' && always() && hashFiles('mandatory-review/mandatory-review.json') != ''
-        run: |
-          set -euo pipefail
-          jq -e '.productionHandoff != "BLOCKED"' mandatory-review/mandatory-review.json >/dev/null
+          echo "Periodische Pflichtreviews sind durch SOLO_MAINTAINER_FLOW@1 deaktiviert."
+          echo "Security-, Dependency- und Runtime-Monitoring bleiben Evidence, aber kein Entwicklungs- oder Release-Gate."

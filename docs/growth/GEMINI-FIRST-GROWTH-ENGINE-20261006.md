@@ -2,7 +2,7 @@
 
 Stand: 2026-10-06
 Primary Domain: CAPITAL-AI-GROWTH
-Baseline: `SvenKulessa/Capital-AI@c13de16d8af006c37b08db616d1016173c99e7db`
+Baseline: `SvenKulessa/Capital-AI@4fa3e3f92547cd6356f46490a38e9b7515f69a6d`
 Policy: `GROWTH_AI_PROMOTION_POLICY@1`
 
 ## Ziel
@@ -34,7 +34,7 @@ Das ist eine Provider-/Vertragsbewertung und keine Aussage, dass jeder generiert
 | Produkt-/SEO-Copy | Gemini 3.8 Flash | ADMITTED / DRAFT | striktes Zod-Schema, Evidence für Claims |
 | URL-Analyse | Gemini URL Context | RESTRICTED | nur zugelassene URLs; kein Prospect-Harvesting |
 | Search Grounding | Gemini Google Search | RESTRICTED / INTERACTIVE | kein Lead-Index, kein Link-Harvesting, keine Persistenz des Grounded Result |
-| Marketing-Bilder | Gemini 3.1 Flash Image | ADMITTED / DRAFT | Brand-/Rights-/Claim-Review + Asset-Hash |
+| Marketing-Bilder | Gemini 3.1 Flash Lite Image operational; Nano Banana 2.1 price-gated | ADMITTED / DRAFT | Brand-/Rights-/Claim-Review + Asset-Hash; kein Aufruf ohne verifiziertes Cost Meter |
 | TTS | Gemini 3.8 Flash TTS | ADMITTED / DRAFT | Voice-Consent, Asset-Hash, Approval |
 | Video | Veo 3.1 | RESTRICTED / DRAFT | Production erst nach Modellstatus-, Kosten- und Terms-Admission |
 | Business-Lead-Enrichment | Gemini | RESTRICTED | nur zugelassene Business-Evidence; keine sensitiven Inferenzattribute |
@@ -93,16 +93,20 @@ publisher / email connector
 
 Ein erfolgreicher Gemini-Aufruf ist dadurch niemals automatisch eine Veröffentlichungserlaubnis.
 
-## Nächster Implementierungsslice
+## Umsetzungsstand nach CURRENT_MAIN-Korrelation 2026-10-06
 
-1. serverseitigen `GrowthAiGateway` auf der vorhandenen `@google/genai`-Dependency aufbauen;
-2. Gemini-Responses vor jeder Weitergabe mit `GrowthMarketingDraftSchema` validieren;
-3. Kostenmeter, Model Router und Kill-Switch ergänzen;
-4. URL Context zunächst nur read-only anbinden;
-5. Search Grounding nur für interaktive Research-/Copy-Flows zulassen;
-6. Gemini Image/TTS als draft-only Asset-Generatoren hinter Social-Engine-Gates anbinden;
-7. Lead Discovery separat über admitted OSS-Bausteine implementieren;
-8. Outreach erst nach eigenem Compliance-/Suppression-/Audit-Gate aktivieren.
+Auf dem Branch `capital-ai-growth/growth-engine-controls-20261006` sind folgende noch nicht auf Main vorhandene Controls umgesetzt:
+
+1. `src/contracts/growthProviderRuntime.ts`: providerweiter Kill-Switch, Modell-Allowlist/-Router, Request- und Monatsbudget, Pricebook/Cost Estimate, Usage Evidence sowie URL-Context-Allowlist;
+2. `server/growth-ai-gateway.ts`: Budget-Prüfung vor Provideraufruf, Usage-/Cost-Evidence danach und URL Context nur für public-safe CAPITAL-AI-Quellen;
+3. `src/contracts/growthMediaApproval.ts`: Image/TTS nur hinter explizitem `SOCIAL_ENGINE_COMPLETION_GATE=PASS`, Rights-, Brand-, Claim- und Voice-Consent-Evidence; Public Publish bleibt gesperrt;
+4. Veo bleibt ohne vollständige `VeoProductionAdmission` production-ineligible;
+5. `src/contracts/growthDiscovery.ts`: robots-/Terms-/Purpose-Provenance und deterministisches 0–100 Lead Scoring; Discovery kann keine Outreach-Authority erzeugen;
+6. `MARKETING_OUTREACH_POLICY@3`: E-Mail-Marketing-Erlaubnis und DSGVO-Basis getrennt; Suppression, Unsubscribe, Sender Identity, Audit, Frequency Caps sowie ein standardmäßig deaktiviertes Runtime-Authorization-Gate;
+7. `GROWTH_ATTRIBUTION_POLICY@1`: GSC, Umami-Kandidat und Social-Provider-Evidence werden über Canonical/Campaign/Content korreliert, semantisch aber getrennt gehalten;
+8. `docs/growth/GROWTH-TOOL-CANDIDATE-EVIDENCE-20261006.md`: Crawlee v3.18.2, SearXNG und Umami v3.4.0 als Benchmark-Kandidaten dokumentiert, ohne Runtime-Admission oder Dependency-Aufnahme.
+
+Noch offen sind insbesondere persistente Consent-/Suppression-/Audit-Stores, realer Bounce-/Complaint-Readback, Social-Engine Completion PASS, ein reproduzierbarer Crawlee/SearXNG/Umami-CADS-Benchmark und jede Production-/Publish-/Outreach-Autorität.
 
 ## Nicht freigegeben
 

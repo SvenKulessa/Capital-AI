@@ -37,7 +37,7 @@ import {
   vocabularyTitle,
   vocabularyDescription,
 } from '../shared/vocabulary-metadata.mjs';
-import { beginRequest, finishRequest, metricsAuthorized, renderPrometheusMetrics, writeAuditEvent } from './observability.mjs';
+import { beginRequest, finishRequest, metricsAuthorized, operationalSnapshot, renderPrometheusMetrics, writeAuditEvent } from './observability.mjs';
 import { cadsSnapshot } from './cads-observability.mjs';
 
 const moduleRoot = path.dirname(fileURLToPath(import.meta.url));
@@ -189,7 +189,7 @@ export function createApp(root = defaultRoot, options = {}) {
   let inflight = 0;
   const auth = createAuth(options);
   const userProviderVault = createUserProviderVault({ ...options, auth });
-  const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault });
+  const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault, state: infrastructure });
   if ((options.env || process.env).PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true') {
     void privateProviderQuery.start().catch(() => {});
   }
@@ -263,6 +263,19 @@ export function createApp(root = defaultRoot, options = {}) {
       sourceSha: process.env.RENDER_GIT_COMMIT || null,
       infrastructure: infrastructure.status(),
       operations: cadsSnapshot(),
+    });
+  }
+  if (url.pathname === '/api/internal/observability') {
+    const ownerAllowed = await auth.authorizeIamRole(req, res, 'owner');
+    if (!ownerAllowed) {
+      writeAuditEvent({ eventType: 'observability.owner_snapshot.denied', requestId: requestContext.requestId, result: 'DENIED' });
+      return json(res, 404, { error: 'not_found' });
+    }
+    return json(res, 200, {
+      ...operationalSnapshot(),
+      sourceSha: process.env.RENDER_GIT_COMMIT || null,
+      infrastructure: infrastructure.status(),
+      cads: cadsSnapshot(),
     });
   }
   if (url.pathname === '/api/market/quote') {

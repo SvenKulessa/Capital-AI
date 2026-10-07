@@ -8,11 +8,13 @@ import { useHubTab } from '../hooks/useHubTab';
 import { LicenseEnginePanel } from './LicenseEnginePanel';
 import { ComponentInventoryDashboard } from './ComponentInventoryDashboard';
 import { TokenomicsResearchPanel } from './TokenomicsResearchPanel';
-export type ControlCenterTab = 'roadmap' | 'components' | 'research' | 'console' | 'cockpit' | 'team' | 'cost_center' | 'system' | 'licenses';
-const CONTROL_TABS: readonly ControlCenterTab[] = ['roadmap', 'components', 'research', 'console', 'cockpit', 'team', 'cost_center', 'system', 'licenses'];
+import { ObservabilityDashboard } from './ObservabilityDashboard';
+export type ControlCenterTab = 'roadmap' | 'components' | 'observability' | 'research' | 'console' | 'cockpit' | 'team' | 'cost_center' | 'system' | 'licenses';
+const CONTROL_TABS: readonly ControlCenterTab[] = ['roadmap', 'components', 'observability', 'research', 'console', 'cockpit', 'team', 'cost_center', 'system', 'licenses'];
 const CONTROL_TAB_LABELS: Record<ControlCenterTab, string> = {
   roadmap: 'Roadmap',
   components: 'Komponenten & CADS',
+  observability: 'Observability',
   research: 'Research & Tokenomics',
   console: 'Console',
   cockpit: 'Cockpit',
@@ -57,8 +59,9 @@ export const ControlCenterPage: React.FC<ControlCenterPageProps> = ({ onBackToHo
   {activeTab === 'licenses' && <LicenseEnginePanel />}
   {activeTab === 'roadmap' && <RoadmapPanel />}
   {activeTab === 'components' && <ComponentInventoryDashboard />}
+  {activeTab === 'observability' && <ObservabilityDashboard />}
   {activeTab === 'research' && <TokenomicsResearchPanel />}
-  {!['licenses', 'components', 'research'].includes(activeTab) && <>
+  {!['licenses', 'components', 'observability', 'research'].includes(activeTab) && <>
   <ProviderStatusDashboard onBackToHome={onBackToHome} />
   <h2 className="text-xl font-bold mt-6">50 Analyse-Komponenten</h2>
   <p className="text-sm text-slate-400 my-3">{CANONICAL_50_COMPONENTS.filter(c => c.status === 'planned').length} geplant · {CANONICAL_50_COMPONENTS.filter(c => c.status === 'blocked').length} gesperrt. {report.issues.length} offene Referenz- und Aktivierungsprüfungen. Es gibt derzeit keinen produktiv freigegebenen Score.</p>

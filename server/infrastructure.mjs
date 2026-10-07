@@ -86,6 +86,97 @@ export class MarketInfrastructure {
     lastVerifiedSymbol: this.deliveryMetrics.lastVerifiedSymbol,
     stream: STREAM, storage: 'file', replicasConfigured: Number(this.env.NATS_REPLICAS || 1),
     authMode: this.natsAuthMode || 'unconfigured' }; }
+  providerStateKey(scope) {
+    return 'capital:provider:state:v1:' + createHash('sha256').update(String(scope)).digest('hex');
+  }
+  requireProviderState() {
+    if (!this.redis?.isReady) {
+      const error = new Error('PROVIDER_STATE_UNAVAILABLE');
+      error.code = 'PROVIDER_STATE_UNAVAILABLE';
+      throw error;
+    }
+    return this.redis;
+  }
+  async claimProviderReplay(requestId, expiresAt, now = Date.now()) {
+    if (typeof requestId !== 'string' || !/^[A-Za-z0-9_.:-]{1,96}$/.test(requestId) ||
+        !Number.isSafeInteger(expiresAt) || expiresAt <= now) {
+      throw new Error('INVALID_REPLAY_STATE');
+    }
+    const redis = this.requireProviderState();
+    const ttlMs = Math.max(1, Math.min(60_000, expiresAt - now));
+    const key = this.providerStateKey('replay:' + requestId);
+    const claimed = await redis.set(key, String(expiresAt), { NX: true, PX: ttlMs });
+    if (claimed !== 'OK') {
+      const error = new Error('QUERY_REPLAY_REJECTED');
+      error.code = 'QUERY_REPLAY_REJECTED';
+      throw error;
+    }
+    return { claimed: true, ttlMs };
+  }
+  async consumeProviderRate(userRef, limit, windowMs = 60_000) {
+    if (typeof userRef !== 'string' || !userRef || !Number.isSafeInteger(limit) || limit < 1 || limit > 120 ||
+        !Number.isSafeInteger(windowMs) || windowMs < 1000 || windowMs > 300_000) {
+      throw new Error('INVALID_PROVIDER_RATE_POLICY');
+    }
+    const redis = this.requireProviderState();
+    const key = this.providerStateKey('rate:' + userRef);
+    const script = `local count=redis.call('INCR',KEYS[1]); if count==1 then redis.call('PEXPIRE',KEYS[1],ARGV[1]) end; local ttl=redis.call('PTTL',KEYS[1]); return {count,ttl}`;
+    const result = await redis.eval(script, { keys: [key], arguments: [String(windowMs)] });
+    const count = Number(result?.[0]);
+    const ttlMs = Number(result?.[1]);
+    if (!Number.isSafeInteger(count) || count < 1 || !Number.isSafeInteger(ttlMs) || ttlMs < 0) {
+      throw new Error('PROVIDER_RATE_STATE_INVALID');
+    }
+    if (count > limit) {
+      const error = new Error('PRIVATE_PROVIDER_RATE_LIMITED');
+      error.code = 'PRIVATE_PROVIDER_RATE_LIMITED';
+      error.retryAfterSeconds = Math.max(1, Math.ceil(ttlMs / 1000));
+      throw error;
+    }
+    return { limit, remaining: Math.max(0, limit - count), ttlMs };
+  }
+  async claimProviderCostScopes(scopes) {
+    if (!Array.isArray(scopes) || !scopes.length || scopes.length > 2) {
+      throw new Error('INVALID_PROVIDER_COST_POLICY');
+    }
+    const normalized = scopes.map(scope => {
+      if (!scope || typeof scope.key !== 'string' || !scope.key ||
+          !Number.isSafeInteger(scope.intervalMs) || scope.intervalMs < 1 || scope.intervalMs > 24 * 60 * 60_000) {
+        throw new Error('INVALID_PROVIDER_COST_POLICY');
+      }
+      return { key: this.providerStateKey('cost:' + scope.key), intervalMs: scope.intervalMs };
+    });
+    const redis = this.requireProviderState();
+    const script = `
+      local max_ttl=0
+      for i=1,#KEYS do
+        local ttl=redis.call('PTTL',KEYS[i])
+        if ttl == -1 then return {-1} end
+        if ttl > max_ttl then max_ttl=ttl end
+      end
+      if max_ttl > 0 then return {max_ttl} end
+      for i=1,#KEYS do
+        redis.call('SET',KEYS[i],'1','PX',ARGV[i])
+      end
+      return {0}
+    `;
+    const result = await redis.eval(script, {
+      keys: normalized.map(scope => scope.key),
+      arguments: normalized.map(scope => String(scope.intervalMs)),
+    });
+    const ttlMs = Number(result?.[0]);
+    if (!Number.isSafeInteger(ttlMs) || ttlMs < 0) {
+      throw new Error('PROVIDER_COST_STATE_INVALID');
+    }
+    if (ttlMs > 0) {
+      const error = new Error('PROVIDER_QUERY_COST_THROTTLED');
+      error.code = 'PROVIDER_QUERY_COST_THROTTLED';
+      error.retryAfterSeconds = Math.max(1, Math.ceil(ttlMs / 1000));
+      throw error;
+    }
+    return { claimed: true };
+  }
+
   async subscribeQuotes(listener) {
     if (typeof listener !== 'function') throw new TypeError('INVALID_QUOTE_LISTENER');
     if (this.listeners.size >= 32) throw new Error('PUBSUB_LISTENER_LIMIT');

@@ -34,7 +34,7 @@ const validDraft: GrowthMarketingDraft = {
   },
 };
 
-test('growth AI request is strict and bounds URL Context input to twenty URLs', () => {
+test('growth AI request is strict and bounds URL Context input to five URLs', () => {
   const parsed = GrowthAiDraftRequestSchema.parse({
     productId: 'capital-ai',
     sourceSha: validDraft.sourceSha,
@@ -54,7 +54,7 @@ test('growth AI request is strict and bounds URL Context input to twenty URLs', 
 
   assert.throws(() => GrowthAiDraftRequestSchema.parse({
     ...parsed,
-    sourceUrls: Array.from({ length: 21 }, (_, index) => `https://example.com/${index}`),
+    sourceUrls: Array.from({ length: 6 }, (_, index) => `https://example.com/${index}`),
   }));
 });
 
@@ -148,5 +148,47 @@ test('Gemini output stays bound to request identity and permitted evidence URLs'
       'gemini-3.8-flash',
     ),
     /GROWTH_AI_UNBOUND_EVIDENCE_URL/,
+  );
+});
+
+
+test('non-production Gemini calls still require an explicit request and monthly budget', async () => {
+  await assert.rejects(
+    () => createGeminiMarketingDraft({
+      productId: 'capital-ai',
+      sourceSha: validDraft.sourceSha,
+      locale: 'de-DE',
+      canonicalUrl: validDraft.canonicalUrl,
+      channels: ['WEBSITE'],
+      brief: 'Draft only.',
+      sourceUrls: [],
+    }, {
+      NODE_ENV: 'test',
+      GROWTH_AI_ENABLED: 'true',
+      GEMINI_API_KEY: 'test-only-not-a-real-key',
+    }),
+    /GROWTH_AI_BUDGET_NOT_ADMITTED/,
+  );
+});
+
+test('URL Context rejects non-CAPITAL-AI sources before any provider call', async () => {
+  await assert.rejects(
+    () => createGeminiMarketingDraft({
+      productId: 'capital-ai',
+      sourceSha: validDraft.sourceSha,
+      locale: 'de-DE',
+      canonicalUrl: validDraft.canonicalUrl,
+      channels: ['WEBSITE'],
+      brief: 'Draft only.',
+      sourceUrls: ['https://example.com/'],
+    }, {
+      NODE_ENV: 'test',
+      GROWTH_AI_ENABLED: 'true',
+      GEMINI_API_KEY: 'test-only-not-a-real-key',
+      GROWTH_AI_MAX_REQUEST_USD: '1',
+      GROWTH_AI_MONTHLY_BUDGET_USD: '10',
+      GROWTH_AI_MONTHLY_SPEND_USD: '0',
+    }),
+    /GROWTH_URL_CONTEXT_SOURCE_NOT_ALLOWED/,
   );
 });
