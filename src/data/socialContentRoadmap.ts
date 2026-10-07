@@ -16,9 +16,10 @@ export const SOCIAL_CONTENT_WORK_PACKAGES: WorkPackage[] = [
       "src/data/contentCampaigns.ts",
       "docs/growth/CAPITAL-AI-CONTENT-ENGINE-20261007.md",
       "server/growth-ai-gateway.ts",
-      "src/contracts/growthAttribution.ts"
+      "src/contracts/growthAttribution.ts",
+      "src/features/home/ContentEngineConcept.tsx"
     ],
-    "nextStep": "Kampagnenassets aus der Scoring-First-Kampagne über die bestehenden Draft-Tools erzeugen, Asset-Evidence binden und danach den Publisher-Adapter an die migrierte Social Media Engine anschließen.",
+    "nextStep": "Gemergte Landingpage-Darstellung gegen den Live-Render-Deploy visuell abnehmen; danach Kampagnenassets über die bestehenden Draft-Tools erzeugen und den gemeinsamen Growth/Social-Package-Vertrag vorbereiten.",
     "priority": "Hoch",
     "leadName": "Owner + GROWTH/PRODUCT/PLATFORM",
     "targetSprint": "Vor Social-Media-Engine-Cutover",
@@ -31,6 +32,45 @@ export const SOCIAL_CONTENT_WORK_PACKAGES: WorkPackage[] = [
       "spätere grafische Content-Studio-Aufbereitung ohne Änderung der Tool-Contracts"
     ],
     "dependencies": []
+  },
+
+  {
+    "id": "CA-GROWTH-CONTENT-SOCIAL-PACKAGE",
+    "title": "Content Engine, Social Media Engine und Content Studio als modulares Growth-Paket konvergieren",
+    "owner": "GROWTH",
+    "status": "planning",
+    "phase": 4,
+    "phaseName": "Phase 4: DevSecOps, Supply Chain & Release Candidate",
+    "progressPercent": null,
+    "evidenceState": "OFFEN",
+    "evidenceRefs": [
+      "src/contracts/contentEngine.ts",
+      "src/features/home/ContentEngineConcept.tsx",
+      "docs/growth/CAPITAL-AI-CONTENT-ENGINE-20261007.md",
+      "docs/growth/CAPITAL-AI-GROWTH-SOCIAL-PACKAGE-20261007.md",
+      "CAPITAL-AI-GROWTH/CONTENT-SOCIAL-PACKAGE-WORKPACKAGE-20261007.yaml",
+      "CAPITAL-AI-GROWTH/SOCIAL-ENGINE-MIGRATION.md",
+      "src/data/socialContentRoadmap.ts"
+    ],
+    "nextStep": "Nach Live-UI-Abnahme und Social-Media-Engine-Cutover einen gemeinsamen Package Manifest Contract definieren, Content Studio an denselben Campaign-/Asset-/Evidence-IDs binden und anschließend Publisher/Attribution end-to-end integrieren.",
+    "priority": "Hoch",
+    "leadName": "Owner + GROWTH/PRODUCT/PLATFORM",
+    "targetSprint": "Nach Social-Media-Engine-Cutover; vor dauerhaftem Social-Pilot",
+    "description": "Führt die bereits implementierte Content Engine später mit Content Studio und Social Media Engine zu einem modularen Growth-/Social-Paket zusammen. Die Schichten behalten klare Zuständigkeiten: Content Engine orchestriert, Studio reviewt/autorisiert, Social Engine plant und verteilt, Attribution misst. Keine zweite Provider-, Rechte- oder Publication-Authority.",
+    "deliverables": [
+      "ein gemeinsamer Package-Manifest-Vertrag für Campaign, Content, Asset, Approval, Delivery und Attribution",
+      "Content Studio als grafische Oberfläche über denselben Contracts statt eigener Business-Logik",
+      "Social Media Engine als austauschbarer Publisher-/Scheduler-Layer hinter dem Content-Engine-PUBLISHER-Adapter",
+      "durchgängige Campaign-ID, Content-ID, Asset-Hash, Approval-Ref und Provider-Delivery-ID",
+      "kanalbezogene Preview-, Safe-Area-, Accessibility- und Mobile/Desktop-Darstellung",
+      "End-to-End-Fluss Draft → Review → Render → Schedule → Publish → Measure ohne Public-Publish aus der Content Engine"
+    ],
+    "dependencies": [
+      "CA-GROWTH-CONTENT-ENGINE",
+      "CA-GROWTH-SOC-MIGRATION",
+      "CA-PRODUCT-SOC-STUDIO",
+      "CA-PLATFORM-SOC-DISTRIBUTION"
+    ]
   },
 
   {
