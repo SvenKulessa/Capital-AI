@@ -1,0 +1,115 @@
+schemaVersion: "CAPITAL_AI_GROWTH_WORK_PACKAGE@1"
+id: "CA-GROWTH-CONTENT-ENGINE-CAMPAIGN-01"
+domain: "GROWTH"
+scope: "content-engine-and-distribution"
+priority: "high"
+status: "active"
+
+objective: >
+  Die in PR #222 eingeführten Growth-Tools über CAPITAL_AI_CONTENT_ENGINE@1
+  modular komponieren, eine Scoring-First-Kampagne erzeugen und die spätere
+  Social Media Engine als getrennten Publisher-/Scheduler-Adapter anbinden.
+
+principles:
+  - "Scoring und Analysewerkzeuge sind die primäre Produktbotschaft."
+  - "Storage-Skalierung ist Scale-on-demand und keine MVP-Botschaft."
+  - "Jedes generative Asset bleibt bis zur Publication-Schicht DRAFT."
+  - "Campaign-ID und Content-ID werden durchgängig für Attribution verwendet."
+  - "Keine automatische Outreach- oder Public-Publish-Authority."
+
+modules:
+  COPY:
+    source: "CONTENT_DRAFTING"
+    purpose: "kanalspezifische Texte, Hooks, Scripts, CTA"
+  URL_CONTEXT:
+    source: "URL_CONTEXT"
+    purpose: "quellengestützte CAPITAL-AI Fakten"
+  IMAGE:
+    source: "IMAGE_GENERATION"
+    purpose: "Carousel, Thumbnail, Social Visual"
+  TTS:
+    source: "TTS"
+    purpose: "Podcast und Voice-over Drafts"
+  VIDEO:
+    source: "VIDEO_GENERATION"
+    purpose: "Short/Reel/Explainer Drafts"
+  DISCOVERY:
+    source: "LEAD_DISCOVERY"
+    purpose: "spätere erlaubte B2B Discovery, nicht für Kampagnen-Outreach"
+  ENRICHMENT:
+    source: "BUSINESS_LEAD_ENRICHMENT"
+    purpose: "spätere erlaubte Unternehmenskontexte"
+  ATTRIBUTION:
+    source: "GROWTH_ATTRIBUTION_POLICY@1"
+    purpose: "GSC, Product und Social getrennt messen"
+  PUBLISHER:
+    source: "SOCIAL_MEDIA_ENGINE"
+    purpose: "später Scheduling, Provider-Adapter und Delivery"
+    state: "INTEGRATION_PENDING"
+
+campaign:
+  id: "capital-ai-score-builder-20261007"
+  name: "Build your own FinTech Score"
+  canonicalUrl: "https://capital-ai.online/"
+  channels:
+    - "WEBSITE"
+    - "LINKEDIN"
+    - "YOUTUBE"
+    - "REDDIT"
+    - "PODCAST"
+
+execution:
+  - step: 1
+    task: "Website-/Roadmap-Fakten als kanonischen Source Brief binden"
+    tools: ["URL_CONTEXT", "COPY"]
+    output: "source brief"
+  - step: 2
+    task: "LinkedIn Launch und Technical Deep Dive erzeugen"
+    tools: ["COPY", "IMAGE"]
+    output: "2 review-ready drafts"
+  - step: 3
+    task: "YouTube Short Script und Storyboard erzeugen"
+    tools: ["COPY", "IMAGE", "TTS", "VIDEO"]
+    output: "short-form video package"
+  - step: 4
+    task: "Reddit Engineering Post erzeugen"
+    tools: ["COPY"]
+    output: "technical discussion draft"
+  - step: 5
+    task: "Website Campaign Landing Copy erzeugen"
+    tools: ["COPY", "IMAGE"]
+    output: "campaign landing draft"
+  - step: 6
+    task: "Podcast Deep-Dive Script und Voice Draft erzeugen"
+    tools: ["COPY", "TTS"]
+    output: "podcast draft"
+  - step: 7
+    task: "Asset-Hashes, Quellen und Campaign-/Content-IDs binden"
+    tools: ["ATTRIBUTION"]
+    output: "evidence bundle"
+  - step: 8
+    task: "Social Media Engine Publisher-Adapter anschließen"
+    tools: ["PUBLISHER"]
+    output: "provider-neutral distribution interface"
+    blockedUntil: "Social Media Engine Cutover"
+  - step: 9
+    task: "Scheduling und Kanalprofile anbinden"
+    tools: ["PUBLISHER"]
+    output: "distribution plan"
+    blockedUntil: "Publisher Adapter available"
+  - step: 10
+    task: "GSC, Product Analytics und Social Provider getrennt erfassen"
+    tools: ["ATTRIBUTION"]
+    output: "campaign measurement"
+  - step: 11
+    task: "Kanal-/Asset-Leistung vergleichen und nächste Draft-Generation steuern"
+    tools: ["ATTRIBUTION", "COPY", "IMAGE", "VIDEO"]
+    output: "iteration brief"
+
+successMetrics:
+  - "100% der Assets mit Campaign-ID und Content-ID"
+  - "100% der Claims an erlaubte Quellen gebunden"
+  - "kein Public Publish aus der Content Engine selbst"
+  - "kanalgetrennte Attribution vorhanden"
+  - "mindestens ein wiederverwendbarer Text-, Bild-, Video- und Podcast-Pipelinepfad"
+  - "Social Media Engine kann später ohne Änderung der Content-Contracts angeschlossen werden"
