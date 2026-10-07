@@ -24,7 +24,7 @@ function boundedText(value, maxLength = 255) {
   return text && text.length <= maxLength ? text : null;
 }
 
-function oauthStateKey(value) {
+function decodeOauthStateKey(value) {
   const encoded = boundedText(value, 64);
   if (!encoded || !/^[A-Za-z0-9_-]{43}$/.test(encoded)) return null;
   try {
@@ -56,7 +56,7 @@ export function cadsMarketplaceConfig(env = process.env) {
   const webhookSecret = String(env.CADS_GITHUB_MARKETPLACE_WEBHOOK_SECRET || '');
   const clientId = boundedText(env.CADS_GITHUB_CLIENT_ID, 200);
   const clientSecret = String(env.CADS_GITHUB_CLIENT_SECRET || '');
-  const oauthStateKey = oauthStateKey(env.CADS_GITHUB_OAUTH_STATE_KEY_B64);
+  const oauthStateKey = decodeOauthStateKey(env.CADS_GITHUB_OAUTH_STATE_KEY_B64);
   let publicUrl = null;
   try {
     const parsed = secureUrl(env.CADS_GITHUB_PUBLIC_URL || '');
