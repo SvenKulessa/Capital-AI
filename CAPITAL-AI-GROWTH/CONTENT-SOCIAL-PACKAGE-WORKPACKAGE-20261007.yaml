@@ -1,0 +1,64 @@
+schemaVersion: "CAPITAL_AI_GROWTH_WORK_PACKAGE@1"
+id: "CA-GROWTH-CONTENT-SOCIAL-PACKAGE"
+domain: "GROWTH"
+scope: "content-social-studio-package"
+priority: "high"
+status: "planning"
+
+objective: >
+  Die bestehende CAPITAL_AI_CONTENT_ENGINE@1 nach dem Social-Media-Engine-Cutover
+  mit Content Studio, Publisher/Scheduler und Attribution zu einem modularen
+  CAPITAL-AI Growth / Social Package zusammenführen.
+
+authorities:
+  contentEngine: "orchestration-only"
+  contentStudio: "review-and-approval-ui"
+  socialMediaEngine: "scheduling-and-delivery"
+  attribution: "measurement"
+  providerRights: "existing contracts only"
+  publicPublish: "social-media-engine after approval only"
+
+sharedIdentity:
+  - campaignId
+  - contentId
+  - sourceSha
+  - canonicalUrl
+  - assetId
+  - assetSha256
+  - approvalRef
+  - channel
+  - providerDeliveryId
+
+phases:
+  - id: "LIVE_UI_QA"
+    task: "Landingpage Content-Engine-Konzept gegen Render-Production visuell prüfen"
+    state: "OPEN"
+  - id: "SOCIAL_CUTOVER"
+    task: "Social Media Engine Migration und Publisher-Grundlage abschließen"
+    state: "BLOCKED_BY_EXISTING_SOCIAL_WORK_PACKAGES"
+  - id: "PACKAGE_MANIFEST"
+    task: "gemeinsamen Campaign/Asset/Approval/Delivery Manifest Contract definieren"
+    state: "PLANNED"
+  - id: "STUDIO_BINDING"
+    task: "Content Studio an bestehende Content-Engine- und Asset-Contracts binden"
+    state: "PLANNED"
+  - id: "PUBLISHER_BINDING"
+    task: "Content Engine PUBLISHER Adapter an Social Media Engine anbinden"
+    state: "PLANNED"
+  - id: "ATTRIBUTION_E2E"
+    task: "Campaign-/Content-ID über Search, Product und Social korrelieren"
+    state: "PLANNED"
+  - id: "VISUAL_PACKAGE_QA"
+    task: "Mobile/Desktop, kanalbezogene Previews und Statusdarstellung abnehmen"
+    state: "PLANNED"
+  - id: "SOCIAL_PILOT"
+    task: "Draft → Review → Schedule → Publish → Measure Pilot ausführen"
+    state: "BLOCKED_UNTIL_PREVIOUS_PHASES_PASS"
+
+successCriteria:
+  - "keine doppelte Provider-, Rechte- oder Publication-Authority"
+  - "100% publizierter Assets an Asset-Hash und Approval-Ref gebunden"
+  - "Campaign-ID und Content-ID durch alle Schichten erhalten"
+  - "Publisher- und Delivery-State provider-neutral modelliert"
+  - "Attribution quellengetrennt und trotzdem campaign-korrelierbar"
+  - "Content Studio enthält keine eigene Business- oder Provider-Authority"
