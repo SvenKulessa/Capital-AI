@@ -1,7 +1,7 @@
 FROM node:26.10.0-alpine@sha256:0b36e8c136b94cd4fcf02188228e76c31ad5872eef3fec8cbd2eee500cfd9e80 AS crypto-base
 # Keep a security floor while allowing newer patches from the base image's Alpine branch.
 # Build and runtime reuse this one resolved layer instead of fetching two package indexes.
-RUN apk add --no-cache 'libcrypto3>=3.5.8-r0' 'libssl3>=3.5.8-r0'
+RUN apk add --no-cache 'libcrypto3>=3.5.8-r0' 'libssl3>=3.5.8-r0' 'zlib>=1.3.2-r1'
 
 FROM crypto-base AS build
 WORKDIR /app
@@ -66,7 +66,7 @@ RUN --network=none node --test server/mta-sts.test.mjs server/well-known.test.mj
     && node --test server/user-provider-vault.test.mjs server/private-provider-query.test.mjs server/provider-query-state.test.mjs server/kraken-order-dry-run.test.mjs server/uniswap-trading.test.mjs scripts/stripe-catalog-readback.test.mjs scripts/stripe-three-purchase-e2e.test.mjs scripts/benchmark-ledger-migration.test.mjs scripts/benchmark-cost-calibration.test.mjs \
     && node --import tsx --test server/advisor-security.test.mjs scripts/blueprint-evidence-contract.test.mjs \
     && node --test scripts/branding-assets.test.mjs \
-    && node --test scripts/license-evidence.test.mjs \
+    && CAPITAL_AI_REQUIRE_INSTALLED_LICENSE_EVIDENCE=true node --test scripts/license-evidence.test.mjs \
     && node scripts/license-evidence.mjs \
     && node --import tsx --test scripts/frontend-security.test.mjs \
     && node --run lint && node --run test && node --run build \
