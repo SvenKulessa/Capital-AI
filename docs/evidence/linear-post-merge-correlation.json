@@ -1,13 +1,14 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "71881d789246f5d382643dce8cc7eaa6daec582f",
-  "mergedPr": 222,
-  "targetPr": 220,
-  "targetBranch": "capital-ai-trust/cads-paid-marketplace-production-20261006",
-  "targetHeadSha": "b90504ca41c25b614a72da78b139afb71ff609be",
+  "mainSha": "5412f9bcbddc64acb97e88c2f19b34ffbb7a9482",
+  "mergedPr": 232,
+  "targetPr": 236,
+  "targetBranch": "capital-ai-product/live-repository-tool-catalog-20261007",
+  "targetHeadSha": "d60786cdbbbc6dbff9d76de1f670fe4685301f13",
   "exactOverlap": [
-    "package.json",
-    "src/data/trustArchitectureAWorkPackages.ts"
+    ".dockerignore",
+    "Dockerfile",
+    "server/index.mjs"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,
