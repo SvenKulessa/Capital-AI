@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-07T21:00:30.478818+00:00",
+  "upstream": "The-PR-Agent/pr-agent",
+  "release": "v0.47.0",
+  "sourceSha": "8e5a9295973b24af4b70cafd0b660a230811ef9e",
+  "packageMetadataVersion": "0.46.0",
+  "sha256": {
+    "uv.lock": "2f8bf6b1a354ea151648816ca6740c3a17a8d52027b162b3ac275baa6cdbf0f8",
+    "pyproject.toml": "4b07218079d2893b735e913ec3b4271466a949204bd6142681584dc5cc2d8f22",
+    "LICENSE": "ea19f3b6bfd70ce0bf8d60fc5b15cdb789fcf86a63c0d6542977f888519f5788",
+    "action.yaml": "91a7baba1ec9c695d5e3846131ebefd4e295c42e62714d90be4713e34ea180cc",
+    "Dockerfile.github_action_dockerhub": "4bf63ca4ef4ff0cedb8746d952cd0fcacfb765595bf81a6c5c9896947b9f1d7d"
+  },
+  "auditTool": "pip-audit==2.10.1",
+  "auditService": "PyPI Python Packaging Advisory Database",
+  "method": "Audit every registry name/version in uv.lock, including optional/dev entries; duplicate-version alternatives audited separately; no dependency resolution or project execution",
+  "registryEntries": 185,
+  "auditedUniqueNameVersions": 185,
+  "findings": [
+    {
+      "package": "fsspec",
+      "version": "2025.12.0",
+      "dependencyPath": [
+        "pr-agent",
+        "litellm",
+        "tokenizers",
+        "huggingface-hub",
+        "fsspec"
+      ],
+      "scope": "BASE_DEPENDENCY_CLOSURE",
+      "exploitability": "NOT_PROVEN",
+      "advisories": [
+        {
+          "id": "CVE-2026-104851",
+          "aliases": [
+            "GHSA-27vj-qcqg-25rc"
+          ],
+          "fix_versions": [
+            "2026.6.0"
+          ]
+        }
+      ]
+    },
+    {
+      "package": "langgraph-sdk",
+      "version": "0.4.2",
+      "dependencyPath": null,
+      "scope": "OPTIONAL_OR_DEV_LOCK_ENTRY",
+      "exploitability": "NOT_PROVEN",
+      "advisories": [
+        {
+          "id": "CVE-2026-104873",
+          "aliases": [
+            "GHSA-fvww-7h3r-vfhp"
+          ],
+          "fix_versions": [
+            "0.4.4"
+          ]
+        }
+      ]
+    },
+    {
+      "package": "multidict",
+      "version": "6.7.1",
+      "dependencyPath": [
+        "pr-agent",
+        "aiohttp",
+        "multidict"
+      ],
+      "scope": "BASE_DEPENDENCY_CLOSURE",
+      "exploitability": "NOT_PROVEN",
+      "advisories": [
+        {
+          "id": "CVE-2026-104874",
+          "aliases": [
+            "GHSA-54p9-h82j-f925"
+          ],
+          "fix_versions": [
+            "6.9.1"
+          ]
+        }
+      ]
+    },
+    {
+      "package": "oauthlib",
+      "version": "3.3.1",
+      "dependencyPath": [
+        "pr-agent",
+        "atlassian-python-api",
+        "oauthlib"
+      ],
+      "scope": "BASE_DEPENDENCY_CLOSURE",
+      "exploitability": "NOT_PROVEN",
+      "advisories": [
+        {
+          "id": "PYSEC-2026-4114",
+          "aliases": [
+            "CVE-2026-49265",
+            "GHSA-xpv3-w29h-x7cv"
+          ],
+          "fix_versions": [
+            "4.0.0"
+          ]
+        }
+      ]
+    }
+  ],
+  "alternateVersionAudit": [
+    {
+      "name": "fsspec",
+      "version": "2026.6.0",
+      "vulnerabilities": 0
+    },
+    {
+      "name": "google-cloud-storage",
+      "version": "3.12.0",
+      "vulnerabilities": 0
+    }
+  ],
+  "readiness": "BLOCKED_FOR_INSTALLATION",
+  "reasons": [
+    "Known vulnerable lock entries",
+    "Action Dockerfile uses mutable pragent/pr-agent:github_action despite commit pin",
+    "Release tag v0.47.0 differs from package metadata 0.46.0"
+  ],
+  "runtimeImageScan": "NOT_RUN",
+  "modelBenchmark": "BLOCKED_NO_MODEL_RUNTIME_OR_CREDENTIALS",
+  "permissionsForFutureOfflineDiffBenchmark": {
+    "githubWrite": false,
+    "repositoryExecution": false,
+    "publishesComments": false
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "samples": [
+    {
+      "id": "pr223-rust",
+      "baseSha": "4beff8093cecaa36ab5a3185a6796f8601c93f45",
+      "headSha": "f9443a06ecf49c98b7bc4e6e7ece98dbd6ded019",
+      "diffSha256": "490415557c585e48e1e8faa68b9b1dcdd3f63112eaad755257e802480bf9cd92",
+      "bytes": 3632,
+      "changedFiles": 3,
+      "scope": "SELECTED_PATHS_ONLY",
+      "modelRun": "NOT_RUN",
+      "truePositives": null,
+      "falsePositives": null,
+      "missedFindings": null,
+      "runtimeMilliseconds": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "measuredCost": null
+    },
+    {
+      "id": "pr228-typescript",
+      "baseSha": "4beff8093cecaa36ab5a3185a6796f8601c93f45",
+      "headSha": "5f2c21556f3b09a6f30667fb785c18239f84e15d",
+      "diffSha256": "3e17742eb7a171d41ab3e4b6064797c76c67db248e29d8ee6efcbf3b20e92ea7",
+      "bytes": 10911,
+      "changedFiles": 2,
+      "scope": "SELECTED_PATHS_ONLY",
+      "modelRun": "NOT_RUN",
+      "truePositives": null,
+      "falsePositives": null,
+      "missedFindings": null,
+      "runtimeMilliseconds": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "measuredCost": null
+    },
+    {
+      "id": "pr224-auth-vault",
+      "baseSha": "e19e6ae2b4220ee6f97aada9ddefcd16a972ba0f",
+      "headSha": "e2e448ab71dca2b29bb7390eff6d68b413ed092d",
+      "diffSha256": "d0f91b4c26af5c14e7ad9791844e22b1dd82d6845707b9a61f5be8d7fce5d31e",
+      "bytes": 11756,
+      "changedFiles": 3,
+      "scope": "SELECTED_PATHS_ONLY",
+      "modelRun": "NOT_RUN",
+      "truePositives": null,
+      "falsePositives": null,
+      "missedFindings": null,
+      "runtimeMilliseconds": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "measuredCost": null
+    }
+  ]
+}
