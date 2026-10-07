@@ -83,8 +83,8 @@ Der Zielkanal ist **produktive Paid-Monetarisierung im GitHub Marketplace**. Com
 - Kündigungen deaktivieren Entitlements und Kundendaten werden vor Ablauf von 30 Tagen bereinigt.
 - Stripe-/Website-Entitlements bleiben eine separate Authority und erzeugen keine Marketplace-Rechte.
 
-Runtime authority: `server/cads-marketplace.mjs`  
-Persistence: `supabase/migrations/20261006210500_cads_marketplace_paid_entitlements.sql`  
+Runtime authority: `server/cads-marketplace.mjs`
+Persistence: `supabase/migrations/20261006210500_cads_marketplace_paid_entitlements.sql`
 Plan contract: `apps/cads-github-app/marketplace-plans.production.json`
 
 
