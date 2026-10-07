@@ -40,6 +40,7 @@ import {
 } from '../shared/vocabulary-metadata.mjs';
 import { beginRequest, finishRequest, metricsAuthorized, operationalSnapshot, renderPrometheusMetrics, writeAuditEvent } from './observability.mjs';
 import { cadsSnapshot } from './cads-observability.mjs';
+import { createRepositoryToolCatalog } from './repository-tool-catalog.mjs';
 
 const moduleRoot = path.dirname(fileURLToPath(import.meta.url));
 const defaultRoot = path.resolve(moduleRoot, '../dist');
@@ -206,6 +207,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const privacy = createPrivacy({ ...options, auth });
   const marketLimit = createLimiter(120);
   const runtimeEnv = options.env || process.env;
+  const repositoryToolCatalog = createRepositoryToolCatalog({ fetchImpl: options.fetchImpl || fetch, env: runtimeEnv });
   const mobileScorer = createMobileScorer(runtimeEnv);
   const scorerProxy = createScorerProxy({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, sourcePolicy: options.sourcePolicy });
   const vocabularyCheckout = createVocabularyCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
@@ -273,6 +275,18 @@ export function createApp(root = defaultRoot, options = {}) {
       infrastructure: infrastructure.status(),
       operations: cadsSnapshot(),
     });
+  }
+  if (url.pathname === '/api/internal/repository-tools') {
+    const ownerAllowed = await auth.authorizeIamRole(req, res, 'owner');
+    if (!ownerAllowed) {
+      writeAuditEvent({ eventType: 'catalog.owner_access.denied', requestId: requestContext.requestId, result: 'DENIED' });
+      return json(res, 404, { error: 'not_found' });
+    }
+    try {
+      return json(res, 200, await repositoryToolCatalog.snapshot());
+    } catch {
+      return json(res, 503, { error: 'repository_catalog_unavailable' });
+    }
   }
   if (url.pathname === '/api/internal/observability') {
     const ownerAllowed = await auth.authorizeIamRole(req, res, 'owner');

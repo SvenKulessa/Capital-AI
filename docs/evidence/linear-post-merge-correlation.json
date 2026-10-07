@@ -1,12 +1,14 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "596c2ef1c4d1f4937108e21a99655c164db56138",
-  "mergedPr": 235,
-  "targetPr": 232,
-  "targetBranch": "capital-ai-trust/supabase-provider-guards-20261007",
-  "targetHeadSha": "0c95641f41be7a59d72a003d1ef70f2f507cf8dc",
+  "mainSha": "5412f9bcbddc64acb97e88c2f19b34ffbb7a9482",
+  "mergedPr": 232,
+  "targetPr": 236,
+  "targetBranch": "capital-ai-product/live-repository-tool-catalog-20261007",
+  "targetHeadSha": "d60786cdbbbc6dbff9d76de1f670fe4685301f13",
   "exactOverlap": [
-    "Dockerfile"
+    ".dockerignore",
+    "Dockerfile",
+    "server/index.mjs"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,
