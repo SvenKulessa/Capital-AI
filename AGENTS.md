@@ -35,14 +35,11 @@ Weitere Required Checks werden nur bei einem real nachgewiesenen, nicht bereits 
 
 Ein erfolgreicher Check ist Evidence für seinen technischen Scope. Er erzeugt keine Merge Authority und keine pauschalen Lizenz-/Providerrechte.
 
-## Branch Early Feedback
+## GitHub Checks
 
-Der Branch-Workflow dient ausschließlich schnellem Feedback:
-- Workflow-Policy prüfen
-- `git diff --check`
-- keine Dependency-Installation
-- kein `preflight:full`
-- kein PR-/Merge-/Deployment-Gate
+Es gibt keinen vorgelagerten Preflight und keinen separaten Branch-Precheck.
+
+Alle autoritativen Prüfungen laufen kostenlos in GitHub Actions auf dem Pull Request. Entwicklung und PR-Erstellung werden nicht durch lokale oder vorgelagerte Preflight-Schichten blockiert.
 
 ## Security, Lizenz und Provider-Rechte
 
