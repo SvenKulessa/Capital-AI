@@ -3,6 +3,37 @@ import type { WorkPackage } from './roadmapData';
 
 export const SOCIAL_CONTENT_WORK_PACKAGES: WorkPackage[] = [
   {
+    "id": "CA-GROWTH-CONTENT-ENGINE",
+    "title": "CAPITAL-AI Content Engine modularisieren und Scoring-First-Kampagne ausrollen",
+    "owner": "GROWTH",
+    "status": "aktiv",
+    "phase": 3,
+    "phaseName": "Phase 3: Product, Account & Agent Integration",
+    "progressPercent": null,
+    "evidenceState": "OFFEN",
+    "evidenceRefs": [
+      "src/contracts/contentEngine.ts",
+      "src/data/contentCampaigns.ts",
+      "docs/growth/CAPITAL-AI-CONTENT-ENGINE-20261007.md",
+      "server/growth-ai-gateway.ts",
+      "src/contracts/growthAttribution.ts"
+    ],
+    "nextStep": "Kampagnenassets aus der Scoring-First-Kampagne über die bestehenden Draft-Tools erzeugen, Asset-Evidence binden und danach den Publisher-Adapter an die migrierte Social Media Engine anschließen.",
+    "priority": "Hoch",
+    "leadName": "Owner + GROWTH/PRODUCT/PLATFORM",
+    "targetSprint": "Vor Social-Media-Engine-Cutover",
+    "description": "Komponiert Copy, URL Context, Bild, TTS, Video, Discovery und Attribution hinter einem kleinen Content-Engine-Vertrag. Publishing bleibt bis zur Social-Media-Engine-Integration ein separater Adapter. Erste Kampagne positioniert CAPITAL-AI als BYOK Scoring- und Screener-Baukasten.",
+    "deliverables": [
+      "CAPITAL_AI_CONTENT_ENGINE@1 als provider-neutrale Modul-Orchestrierung",
+      "Scoring-First-Kampagne mit kanalbezogenen DRAFT-Assets",
+      "Campaign-/Content-ID-basierte Attribution",
+      "Publisher-Adaptergrenze für die spätere Social Media Engine",
+      "spätere grafische Content-Studio-Aufbereitung ohne Änderung der Tool-Contracts"
+    ],
+    "dependencies": []
+  },
+
+  {
     "id": "CA-GROWTH-FIN-SOC-MARKET-MIGRATION",
     "title": "Finance Social Media Engine migrieren; MARKET/Data-Folgepaket vorbereiten",
     "owner": "GROWTH",
