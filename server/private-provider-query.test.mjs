@@ -50,7 +50,7 @@ test('query proof binds user, operation, expiry and params', () => {
 
 
 test('runtime bridge probe is signed and performs no state, vault or provider I/O', async () => {
-  const now = 1_800_000_000_000;
+  const now = Date.now();
   const envelope = createProviderBridgeProbeEnvelope('bridge-probe-1', env, now);
   assert.equal(verifyProviderQueryEnvelope(envelope, env, now + 100), true);
   let stateCalls = 0;
