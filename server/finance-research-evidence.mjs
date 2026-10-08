@@ -194,6 +194,11 @@ export async function persistFinanceResearchReceipt(evaluation, context, {
   if (ack.stream !== FINANCE_RESEARCH_STREAM || !Number.isSafeInteger(ack.seq) || ack.seq < 1) {
     throw new Error('RESEARCH_JETSTREAM_PUBACK_INVALID');
   }
+  // Do not persist a receipt until the exact stream byte payload has been replay-verified.
+  const stored = await bus.manager.streams.getMessage(FINANCE_RESEARCH_STREAM, { seq: ack.seq });
+  if (!stored?.data || new TextDecoder().decode(stored.data) !== projected.raw) {
+    throw new Error('RESEARCH_JETSTREAM_REPLAY_MISMATCH');
+  }
   // Publication into the ephemeral cache MUST wait for durable Supabase confirmation.
   await saveReceipt(fetchImpl, config, projected, ack.seq);
   const delivery = {
