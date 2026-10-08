@@ -9,7 +9,7 @@ function fixture(category) {
   const refs = Array.from({ length: 50 }, (_, i) => ({
     ticker: category === 'FOREX' ? 'C:EUR' + String.fromCharCode(65 + Math.floor(i / 26)) + 'AA'.slice(0, 1) + String.fromCharCode(65 + i % 26)
       : (category === 'INDIZIES' ? 'I:' : '') + 'FIX' + i,
-    active: true, market: markets[category], type: 'CS', currency_symbol: 'USD', name: 'Fixture ' + i,
+    active: true, market: markets[category], type: 'CS', currency_name: 'usd', name: 'Fixture ' + i,
   }));
   const prices = refs.map(r => ({ ticker: r.ticker, type: markets[category],
     value: 123, last_updated: NOW * 1e6, timeframe: 'DELAYED',

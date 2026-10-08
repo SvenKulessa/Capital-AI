@@ -101,7 +101,7 @@ export async function fetchMassiveClass({ category, token, fetchImpl = fetch, no
     const observedAt = timestamp(category === 'INDIZIES' ? row.last_updated
       : category === 'ROHSTOFFE' ? row.last_trade?.last_updated : row.session?.last_updated);
     const quote = category === 'INDIZIES' ? null : category === 'FOREX' ? row.ticker.slice(-3)
-      : String(instrument.currency_symbol || '').toUpperCase();
+      : String(instrument.currency_symbol || instrument.currency_name || '').toUpperCase();
     // Overnight / weekend snapshots can be old; keep provider time and never label them live.
     if (!positive(price) || !observedAt || observedAt > receivedAt + 5000
       || receivedAt - observedAt > 8 * 86400000 || category !== 'INDIZIES' && !currency(quote)) continue;

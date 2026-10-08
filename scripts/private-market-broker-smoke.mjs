@@ -48,7 +48,7 @@ const fetchImpl = async (input, init) => {
   const symbols = Array.from({ length: 50 }, (_, i) => market === 'indices' ? `I:FIX${i}`
     : market === 'fx' ? 'C:EUR' + String.fromCharCode(65 + Math.floor(i / 26)) + 'A' + String.fromCharCode(65 + i % 26) : `FIX${i}`);
   if (url.pathname.endsWith('/tickers')) return Response.json({ status: 'OK', results: symbols.map(ticker =>
-    ({ ticker, active: true, market, type: 'CS', currency_symbol: 'USD' })) });
+    ({ ticker, active: true, market, type: 'CS', currency_name: 'usd' })) });
   if (url.pathname.endsWith('/products')) return Response.json({ status: 'OK', results: [
     { product_code: 'CL', asset_class: 'commodity', type: 'single', trade_currency_code: 'USD', price_quotation: 'USD per barrel' }] });
   if (url.pathname.endsWith('/contracts')) return Response.json({ status: 'OK', results: symbols.map(ticker =>
