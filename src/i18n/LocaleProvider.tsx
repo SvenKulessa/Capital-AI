@@ -1,8 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 import { isLocale, messages, type Locale, type MessageKey } from './messages';
+import { sectionMessages, type SectionKey } from './landingSectionCopy';
 
-type LocaleValue = { locale: Locale; setLocale: (locale: Locale) => void; t: (key: MessageKey) => string };
+type LocaleValue = { locale: Locale; setLocale: (locale: Locale) => void; t: (key: MessageKey) => string; tSection: (key: SectionKey) => string };
 const Context = createContext<LocaleValue | null>(null);
 function initialLocale(): Locale {
   try {
@@ -22,7 +23,8 @@ export function LocaleProvider({children}: PropsWithChildren) {
   }, []);
   useEffect(() => { document.documentElement.lang = locale; }, [locale]);
   const t = useCallback((key: MessageKey) => messages[locale][key], [locale]);
-  const value = useMemo(() => ({locale,setLocale,t}), [locale,setLocale,t]);
+  const tSection = useCallback((key: SectionKey) => sectionMessages[locale][key], [locale]);
+  const value = useMemo(() => ({locale,setLocale,t,tSection}), [locale,setLocale,t,tSection]);
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }
 export function useLocale() {

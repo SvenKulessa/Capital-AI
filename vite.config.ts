@@ -124,8 +124,17 @@ function chatBuddyKeyPlugin(): Plugin {
 export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss(), advisorApiPlugin(), chatBuddyKeyPlugin(), thirdPartyNoticesPlugin(), licenseEnginePlugin(), chunkCycleGuard()],
-    // Let Rolldown preserve module evaluation order. Size-based forced groups
-    // split Motion's mutually dependent modules into circular vendor chunks.
+    // Separate only the leaf I18N data catalog, not React, Motion or shared runtime code.
+    // Retain strict 500 kB chunk budget and acyclic module-graph validation.
+    build: {
+      rolldownOptions: {
+        output: {
+          codeSplitting: {
+            groups: [{ name: 'i18n-landing-copy', test: /[/\\]src[/\\]i18n[/\\]landingSectionCopy\.ts$/ }],
+          },
+        },
+      },
+    },
     resolve: {
       alias: {
         '@': path.resolve(import.meta.dirname, '.'),
