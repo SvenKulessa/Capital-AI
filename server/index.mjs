@@ -237,7 +237,12 @@ export function createApp(root = defaultRoot, options = {}) {
   const uniswapTrading = createUniswapTrading({ env: options.env || process.env, fetchImpl: options.fetchImpl || fetch, auth });
   const telegram = createTelegram({ ...options, auth });
   const privacy = createPrivacy({ ...options, auth });
-  const marketLimit = createLimiter(120);
+  // Public batch reads and expensive per-item reads must not starve each other.
+  // These remain process-local abuse bounds, not user identity/rate entitlements.
+  const marketCatalogLimit = createLimiter(240);
+  const marketValuesLimit = createLimiter(240);
+  const marketQuoteLimit = createLimiter(120);
+  const marketEvidenceLimit = createLimiter(60);
   const runtimeEnv = options.env || process.env;
   const repositoryToolCatalog = createRepositoryToolCatalog({ fetchImpl: options.fetchImpl || fetch, env: runtimeEnv });
   const mobileScorer = createMobileScorer(runtimeEnv);
@@ -356,11 +361,14 @@ export function createApp(root = defaultRoot, options = {}) {
     });
   }
   if (url.pathname === '/api/market/assets') {
-    if (!marketLimit()) return json(res, 429, { error: 'rate_limited' });
+    if (!marketCatalogLimit()) {
+      res.setHeader('Retry-After', '60');
+      return json(res, 429, { error: 'rate_limited' });
+    }
     return json(res, 200, assetCatalog());
   }
   if (url.pathname === '/api/market/quote') {
-    if (!marketLimit()) { res.setHeader('Retry-After', '60'); return json(res, 429, { error: 'rate_limited' }); }
+    if (!marketQuoteLimit()) { res.setHeader('Retry-After', '60'); return json(res, 429, { error: 'rate_limited' }); }
     if (inflight >= 8) { res.setHeader('Retry-After', '5'); return json(res, 429, { error: 'busy' }); }
     inflight++;
     try { const [status, body] = await quote(url.searchParams.get('symbol') || ''); return json(res, status, body); }
@@ -368,8 +376,12 @@ export function createApp(root = defaultRoot, options = {}) {
     finally { inflight--; }
   }
   if (url.pathname === '/api/market/values') {
-    if (!marketLimit()) return json(res, 429, { error: 'rate_limited' });
+    if (!marketValuesLimit()) {
+      res.setHeader('Retry-After', '60');
+      return json(res, 429, { error: 'rate_limited' });
+    }
     const [status, body] = await assetValues();
+    if (status === 503) res.setHeader('Retry-After', '300');
     return json(res, status, body);
   }
   if (url.pathname === '/api/market/status') return json(res, 200, health());
@@ -384,7 +396,10 @@ export function createApp(root = defaultRoot, options = {}) {
   }
   if (url.pathname === '/api/billing/catalog') return json(res, 200, BILLING_CATALOG);
   if (url.pathname === '/api/market/evidence') {
-    if (!marketLimit()) return json(res, 429, { error: 'rate_limited' });
+    if (!marketEvidenceLimit()) {
+      res.setHeader('Retry-After', '60');
+      return json(res, 429, { error: 'rate_limited' });
+    }
     if (inflight >= 8) return json(res, 429, { error: 'busy' });
     inflight++;
     try { const record = await infrastructure.replay(url.searchParams.get('id') || '');
