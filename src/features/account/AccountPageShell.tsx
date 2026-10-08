@@ -31,7 +31,7 @@ export interface AccountSession {
 }
 
 type AccountPageShellProps = {
-  active: '/profile' | '/profile/security' | '/profile/key-vault' | '/profile/workspace';
+  active: '/profile' | '/profile/security' | '/profile/key-vault' | '/profile/workspace' | '/profile/render-dashboard';
   title: string;
   description: string;
   onNavigate: (path: string) => void;
@@ -61,6 +61,7 @@ export function AccountPageShell({
 }: AccountPageShellProps) {
   const [session, setSession] = useState<AccountSession | null>(null);
   const [error, setError] = useState('');
+  const [renderOwnerAllowed, setRenderOwnerAllowed] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -76,6 +77,13 @@ export function AccountPageShell({
           return;
         }
         setSession(value);
+        // The server, not the email in the browser, decides whether this tab exists.
+        void fetch('/api/profile/render-owner-dashboard', {
+          credentials: 'same-origin', cache: 'no-store', signal: controller.signal,
+          headers: { Accept: 'application/json' },
+        }).then(response => {
+          if (!controller.signal.aborted && response.ok) setRenderOwnerAllowed(true);
+        }).catch(() => {});
       })
       .catch(() => {
         if (!controller.signal.aborted) setError('Kontositzung konnte nicht sicher geladen werden.');
@@ -126,6 +134,7 @@ export function AccountPageShell({
     { path: '/profile/security' as const, label: 'Sicherheit', icon: ShieldCheck },
     { path: '/profile/key-vault' as const, label: 'Key Vault', icon: KeyRound },
     { path: '/profile/workspace' as const, label: 'Workspace', icon: LayoutDashboard },
+    ...(renderOwnerAllowed ? [{ path: '/profile/render-dashboard' as const, label: 'Privates Dashboard', icon: LayoutDashboard }] : []),
   ];
 
   return (
@@ -166,7 +175,7 @@ export function AccountPageShell({
             </div>
           </div>
 
-          <nav aria-label="Kontobereiche" className="mt-5 grid gap-2 sm:grid-cols-4">
+          <nav aria-label="Kontobereiche" className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
             {items.map(item => {
               const Icon = item.icon;
               const selected = active === item.path;
