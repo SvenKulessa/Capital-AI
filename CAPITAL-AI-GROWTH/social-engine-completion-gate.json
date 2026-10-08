@@ -3,7 +3,7 @@
   "id": "CAPITAL-AI-SOCIAL-ENGINE-COMPLETION-20261006",
   "workPackage": "CAPITAL-AI-FINANCE-SOCIAL-MARKET-MIGRATION-01",
   "point": "06_SOCIAL_ENGINE_MIGRATION_COMPLETION_GATE",
-  "correlatedMain": "d8b5d471b34fcfaf061a7d8a8b62eac7406c8864",
+  "correlatedMain": "a445b454916eb31ced500f89bafab2e9aae4db7b",
   "declaredState": "BLOCKED",
   "blockingFollowUp": "CAPITAL-AI-FINANCE-SCORING-DATA-FOLLOWUP-01",
   "policy": {
@@ -62,14 +62,21 @@
     "result": "BLOCKED",
     "blockers": [
       "Point 4 remains fail-closed.",
-      "Renderer worker real-build evidence exists, but the previous worker is superseded pending xz-libs >= 5.8.3-r0 hardened rebuild evidence.",
-      "Qwen/Chatterbox transitive dependency locks and immutable TTS/ASR worker images remain open.",
+      "Qwen/Chatterbox dependency and companion-artifact locks are not yet durably merged; Qwen, Chatterbox and Whisper immutable worker gates remain open.",
       "German runtime benchmark and Human/Owner listening acceptance remain open.",
       "SocialMediaEngine runtime and deterministic renderer source have not yet completed target cutover.",
       "Finance scoring/data follow-up remains blocked until Social completion."
     ],
     "socialToolLicenseEvidenceStatus": "POINT_4_ARTIFACT_LOCK_ADVANCED_FAIL_CLOSED",
-    "socialToolLicenseEvidencePass": false
+    "socialToolLicenseEvidencePass": false,
+    "rendererEvidenceStatus": "HARDENED_REBUILD_VERIFIED",
+    "verified": [
+      "Hardened renderer real-build evidence is VERIFIED on workflow run 37713808050.",
+      "Renderer scan contains 0 vulnerabilities, 0 secrets and 0 blocking findings.",
+      "xz-libs 5.8.4-r0 and zlib 1.3.2-r1 are bound in the renderer SBOM.",
+      "CVE-2026-34743 and CVE-2026-85091 are absent.",
+      "FFmpeg 9.0.2 LGPL-only profile, read-only/non-root smoke, SBOM and runtime license inventory passed."
+    ]
   },
   "passDefinition": [
     "All required SocialMediaEngine runtime artifacts exist in target repository.",
