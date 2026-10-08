@@ -52,14 +52,22 @@ export function normalizeVideo(data, expectedId) {
     assetHash: null, assetVerified: false };
 }
 
-export function createHeygenOwner({ env = process.env, fetchImpl = fetch, auth, now = Date.now } = {}) {
+export function createHeygenOwner({ env = process.env, fetchImpl = fetch, auth, now = Date.now, publicRoot = path.resolve('dist') } = {}) {
   const limit = createLimiter(10);
+  async function stateDirectory() {
+    if (!path.isAbsolute(env.HEYGEN_STATE_DIR || '')) fail('heygen_state_unconfigured');
+    const dir = await realpath(env.HEYGEN_STATE_DIR);
+    let root;
+    try { root = await realpath(publicRoot); } catch { root = path.resolve(publicRoot); }
+    const relative = path.relative(root, dir);
+    if (dir === '/tmp' || dir.startsWith('/tmp/') || relative === '' || (!relative.startsWith('..' + path.sep) && relative !== '..' && !path.isAbsolute(relative))) fail('heygen_state_unconfigured');
+    return dir;
+  }
   async function config() {
     if (env.HEYGEN_ENABLED !== 'true') fail('heygen_disabled');
     if (!text(env.HEYGEN_API_KEY, 4096) || /[\r\n]/.test(env.HEYGEN_API_KEY)) fail('heygen_key_unconfigured');
     if (env.HEYGEN_PAID_USAGE_APPROVED !== 'true') fail('heygen_paid_usage_unapproved');
-    if (!path.isAbsolute(env.HEYGEN_STATE_DIR || '') || env.HEYGEN_STATE_DIR.startsWith('/tmp')) fail('heygen_state_unconfigured');
-    const dir = await realpath(env.HEYGEN_STATE_DIR);
+    const dir = await stateDirectory();
     return { jobs: approvedJobs(env, now()), dir };
   }
   async function call(method, suffix = '', body, key) {
@@ -138,8 +146,7 @@ export function createHeygenOwner({ env = process.env, fetchImpl = fetch, auth, 
       if (req.method === 'GET' && match) {
         // Poll submitted jobs after the generation approval expires; no creation or budget consumption.
         if (env.HEYGEN_ENABLED !== 'true' || !text(env.HEYGEN_API_KEY, 4096) || /[\r\n]/.test(env.HEYGEN_API_KEY)) fail('heygen_disabled');
-        if (!path.isAbsolute(env.HEYGEN_STATE_DIR || '') || env.HEYGEN_STATE_DIR.startsWith('/tmp')) fail('heygen_state_unconfigured');
-        const dir = await realpath(env.HEYGEN_STATE_DIR);
+        const dir = await stateDirectory();
         const existing = await record(path.join(dir, match[1] + '.json'));
         if (!existing) fail('heygen_job_unknown');
         if (!existing.videoId) { json(res, 200, existing); return true; }

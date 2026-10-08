@@ -191,7 +191,7 @@ function json(res, status, body) { res.writeHead(status, { ...headers, 'X-Robots
 export function createApp(root = defaultRoot, options = {}) {
   let inflight = 0;
   const auth = createAuth(options);
-  const heygenOwner = createHeygenOwner({ ...options, auth });
+  const heygenOwner = createHeygenOwner({ ...options, auth, publicRoot: root });
   const userProviderVault = createUserProviderVault({ ...options, auth });
   const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault });
   if (

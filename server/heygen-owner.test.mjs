@@ -113,3 +113,11 @@ test('unknown jobs and oversized requests fail before network', async t => {
   assert.equal((await f.request('POST', '/videos', { jobId: 'x'.repeat(2000) })).status, 400);
   assert.equal(f.calls.length, 0);
 });
+test('state directory cannot expose approval records through the public root', async t => {
+  const f = await fixture(t);
+  const service = createHeygenOwner({ env: f.env, auth: f.auth, publicRoot: f.dir, fetchImpl: () => assert.fail('public state reached provider') });
+  const req = Readable.from([JSON.stringify({ jobId: job.jobId })]); req.method = 'POST'; req.headers = { 'content-type': 'application/json' };
+  await service.handle(req, { setHeader() {} }, new URL('https://capital-ai.online/api/growth/heygen/videos'), (_r, s, body) => {
+    assert.equal(s, 503); assert.equal(body.error, 'heygen_state_unconfigured');
+  });
+});
