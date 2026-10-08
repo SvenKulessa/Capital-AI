@@ -17,7 +17,7 @@ function fixture(providerId='kraken') {
   };
   const observedAt=at-2000,receivedAt=at-1000;
   const validatedData={
-    sourceRepository:'SvenKulessa/Finance' as const,sourceCommit:FINANCE_PINN_SOURCE_SHA,
+    sourceRepository:'SvenKulessa/Finance' as const,sourceCommit:FINANCE_PINNED_SOURCE_SHA,
     sourceContractVersion:'validated-data-input/1.0.0' as const,
     correlationId:snapshot.runId,assetId:snapshot.asset.assetId,symbol:snapshot.asset.symbol,
     evaluatedAt:new Date(at).toISOString(),aggregateStatus:'PASS' as const,
@@ -35,7 +35,7 @@ function fixture(providerId='kraken') {
     }],
   };
   const sourceModel={
-    sourceCommit:FINANCE_PINN_SOURCE_SHA,
+    sourceCommit:FINANCE_PINNED_SOURCE_SHA,
     sourceAsset:{contractVersion:'uai/1.0.0' as const,assetId:'fx:EURUSD',
       symbol:'EURUSD',assetClass:'forex' as const,instrumentKind:null},
     modelId:'traditional-scoring',modelVersion:'2.1.0',
