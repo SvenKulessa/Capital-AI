@@ -16,7 +16,7 @@ Der Readback verwendet ausschließlich anonyme GETs, folgt keinen Redirects und 
 
 ## Tatsächliche Evidence
 
-`evidence/public-readback-20261009.json`: zwölf Manifest-Seiten (alle zehn statischen Seiten und zwei Vocabulary-Stichproben), HTML-Inhalt ohne JavaScript, Canonicals, JSON-LD-Syntax, Indexierung, exakte Sitemap-Allowlist, robots.txt, llms.txt, sitemap.md und Login-Noindex: PASS. Die Sitemap wird vollständig gegen das Manifest verglichen; die HTML-Seitenprüfung ist eine Stichprobe, kein vollständiger Link-/Browser-Crawl.
+`evidence/public-readback-20261009.json`: alle 142 Manifest-Seiten mit 868 erfolgreichen Einzelprüfungen, HTML-Inhalt ohne JavaScript, Canonicals, JSON-LD-Syntax, Indexierung, exakte Sitemap-Allowlist, robots.txt, llms.txt, sitemap.md und Login-Noindex: PASS. Die Sitemap wird vollständig gegen das Manifest verglichen; die HTML-Seitenprüfung deckt das vollständige Manifest ab, bleibt aber kein Browser- oder vollständiger ausgehender Link-Crawl.
 
 - Subscription-Checkout: öffentlich als konfiguriert gemeldet; Kauf, Webhook, Entitlement und Kündigung bleiben NOT_PROVEN.
 - CADS Marketplace: `runtimeReady=false`; keine Verkaufsfreigabe aus dieser Prüfung.
@@ -30,3 +30,7 @@ Der Readback verwendet ausschließlich anonyme GETs, folgt keinen Redirects und 
 Vollständige HTML-/Link-Abdeckung, Runtime-Quellenidentität ohne Aufwertung bloßer Umgebungswerte zu Attestation, Domain-Konvergenz und drei Testmode-Käufe mit Entitlement-Lifecycle. Danach SEO-04 mit belegten Content-Clustern. Keine Ranking-, Umsatz- oder Produktionsreifebehauptung aus dem technischen PASS.
 
 Rollback: den PR-Commit revertieren; der Readback ändert keinen produktiven Daten- oder Providerpfad. Die lokalen Regressionstests sind Bestandteil des bestehenden Docker Security Gate, kein neuer Required Check.
+
+## Stripe-Katalog und Produktprojektion
+
+`evidence/stripe-catalog-readback-20261009.json`: alle sieben kanonischen Live-Preise, Produkt-IDs, EUR-Beträge und Abrechnungsintervalle stimmen mit dem Bestand überein; vier Produkte sind aktiv. Nur lesende Stripe-GETs. Der Connector bietet derzeit keine Testumgebung. Keine Zahlung oder Preisänderung. Abo-Preise melden `tax_behavior=unspecified`; der separate steuerliche Gesamtzustand ist NOT_PROVEN und wurde nicht verändert. Vocabulary- und Social-Projektionen unterscheiden nun belegten Katalog bzw. vorhandenen Publishing-Code von Käufer-/Distributions-E2E.

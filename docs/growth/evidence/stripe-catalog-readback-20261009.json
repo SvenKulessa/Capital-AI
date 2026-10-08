@@ -1,0 +1,81 @@
+{
+  "schema": "CAPITAL_AI_STRIPE_CATALOG_READBACK@1",
+  "observedAt": "2026-10-08T23:40:44.162Z",
+  "sourceMainSha": "dfb633012b0e2ac681eaf11127b008c3419c2b00",
+  "operation": "GET /v1/prices",
+  "livemode": true,
+  "purchaseEvidence": "NOT_PROVEN",
+  "taxConfiguration": "NOT_PROVEN",
+  "prices": [
+    {
+      "id": "price_1UMiuIPKr4joNbEclpn8AwFW",
+      "productId": "prod_VNTsrtlf2ZL8ja",
+      "productActive": true,
+      "priceActive": true,
+      "currency": "eur",
+      "amountCents": 1900,
+      "interval": null,
+      "taxBehavior": "inclusive"
+    },
+    {
+      "id": "price_1UMA4wPKr4joNbEc1tgkxagi",
+      "productId": "prod_VMtsmoPBqTHdww",
+      "productActive": true,
+      "priceActive": true,
+      "currency": "eur",
+      "amountCents": 7560,
+      "interval": "year",
+      "taxBehavior": "unspecified"
+    },
+    {
+      "id": "price_1UMA4qPKr4joNbEcvJXFWw45",
+      "productId": "prod_VMtsmoPBqTHdww",
+      "productActive": true,
+      "priceActive": true,
+      "currency": "eur",
+      "amountCents": 700,
+      "interval": "month",
+      "taxBehavior": "unspecified"
+    },
+    {
+      "id": "price_1UMA50PKr4joNbEcrj0Lm79I",
+      "productId": "prod_VMtsNeuSad0Dvx",
+      "productActive": true,
+      "priceActive": true,
+      "currency": "eur",
+      "amountCents": 24800,
+      "interval": "year",
+      "taxBehavior": "unspecified"
+    },
+    {
+      "id": "price_1UMA4yPKr4joNbEckWSj3cJE",
+      "productId": "prod_VMtsNeuSad0Dvx",
+      "productActive": true,
+      "priceActive": true,
+      "currency": "eur",
+      "amountCents": 2900,
+      "interval": "month",
+      "taxBehavior": "unspecified"
+    },
+    {
+      "id": "price_1UMA53PKr4joNbEc3E3XyzgG",
+      "productId": "prod_VMtsvVRz0nORcx",
+      "productActive": true,
+      "priceActive": true,
+      "currency": "eur",
+      "amountCents": 128000,
+      "interval": "year",
+      "taxBehavior": "unspecified"
+    },
+    {
+      "id": "price_1UMA51PKr4joNbEcbtWNCcCc",
+      "productId": "prod_VMtsvVRz0nORcx",
+      "productActive": true,
+      "priceActive": true,
+      "currency": "eur",
+      "amountCents": 10900,
+      "interval": "month",
+      "taxBehavior": "unspecified"
+    }
+  ]
+}
