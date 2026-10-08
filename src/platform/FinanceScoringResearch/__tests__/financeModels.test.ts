@@ -127,7 +127,7 @@ test('missing source factors renormalize only available weight and preserve dist
 test('pinned Finance scoring-golden/1.1.0 stock and forex synthetic reference cases replay in research mode', () => {
   // Source: Finance@dcef421, tests/fixtures/scoringGoldenV1.ts;
   // Git blob cda86ad11bb065813ec56d361e0fc7050dac85b2; synthetic fixtures only.
-  const cases = [
+  const cases: {model:'stock' | 'forex';expected:number;values:Record<string,number|null>}[] = [
     {model:'stock' as const,expected:50,values:{
       trend:50,momentum:50,breakout_quality:50,volatility_quality:50,
       relative_strength:50,value:50,dividend:50,quality:50,
@@ -154,7 +154,7 @@ test('Finance source technical-only and no-factor reference semantics remain dis
   // blob 8d1469a66097e1af3922515fce94f34c4a095f05.
   // The source returns 0 with NO used factors; target returns null, not evidence of zero.
   const meta={assetId:'synthetic:AAPL',model:'stock' as const,
-    sourceSha:sha,evidenceRefs:['synthetic://finance/traditional']};
+    sourceSha:sha as typeof sha,evidenceRefs:['synthetic://finance/traditional']};
   const available=composeFinanceResearchFactors({...meta,values:{
     trend:100,momentum:100,breakout_quality:100,
     volatility_quality:100,relative_strength:100,
