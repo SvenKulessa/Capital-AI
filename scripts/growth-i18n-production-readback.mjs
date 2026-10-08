@@ -58,8 +58,8 @@ function browserTests(){
       assert.ok(html.includes(word),lang+' translated hero absent, hydration may have failed');
       // The source HTML intentionally contains a hidden fallback even after successful React hydration.
       // A visible fallback, not the mere presence of its text, signals bootstrap failure.
-      const fallback = html.match(/<main\\b[^>]*\\bid="capital-ai-bootstrap-fallback"[^>]*>/i)?.[0];
-      if (fallback) assert.match(fallback, /\\bhidden(?:\\s|=|>)/i, lang+' bootstrap fallback became visible');
+      const fallback = html.match(/<main\b[^>]*\bid="capital-ai-bootstrap-fallback"[^>]*>/i)?.[0];
+      if (fallback) assert.match(fallback, /\bhidden(?:\s|=|>)/i, lang+' bootstrap fallback became visible');
       console.log('BROWSER_DOM_PASS',lang,viewport.mobile?'mobile-emulated':'desktop');
     }
   }
