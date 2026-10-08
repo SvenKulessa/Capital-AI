@@ -30,6 +30,7 @@ import { FeatureStoreService } from '../../services/featureStore';
 import { ProviderAdapterRegistry } from '../../services/providerAdapters';
 import { ScoreExplainabilityDrawer } from './ScoreExplainabilityDrawer';
 import { createUnavailableResult, safeScorePresentation } from '../analysis/scorePresentation';
+import { DataStatusBadge } from '../analysis/AnalysisUi';
 
 export interface EnterpriseScorerDashboardProps {
   onSelectAsset?: (symbol: string) => void;
@@ -252,15 +253,7 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
                     <h3 className="text-lg font-bold text-white">
                       {selectedAsset.name} ({selectedAsset.symbol})
                     </h3>
-                    <span
-                      className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${
-                        activeResult.isDemo
-                          ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                          : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                      }`}
-                    >
-                      {displayed?.data.toUpperCase() ?? 'UNAVAILABLE'}
-                    </span>
+                    <DataStatusBadge mode={displayed?.data ?? 'unavailable'} />
                   </div>
 
                   <div className="flex items-center gap-2 mt-1.5 flex-wrap">
@@ -271,7 +264,7 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
                           : 'bg-rose-500/15 border-rose-500/40 text-rose-300'
                       }`}
                     >
-                      {activeResult.eligibility && displayed?.score !== null ? '✓ ELIGIBLE (Gate Bestanden)' : '🚫 INELIGIBLE (Hard Veto)'}
+                      {activeResult.eligibility && displayed?.score !== null ? 'Zugelassen · Gates erfüllt' : 'Nicht zugelassen · Pflichtdaten oder Gates fehlen'}
                     </span>
                     <span className="text-xs text-slate-400 font-mono">
                       Konfidenz: <span className="text-cyan-400 font-bold">{displayed?.score === null ? 'Nicht verfügbar' : `${Math.round(activeResult.confidence * 100)}%`}</span>
