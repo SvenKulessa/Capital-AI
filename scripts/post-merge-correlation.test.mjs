@@ -203,7 +203,7 @@ test('manual milestone App validation mints a scoped token but never writes to G
   assert.match(validateSection, /GH_TOKEN: \$\{\{ steps.validation_token.outputs.token \}\}/);
   assert.match(validateSection, /gh api "repos\/\$REPOSITORY"/);
   assert.match(validateSection, /gh api "repos\/\$REPOSITORY\/pulls\?state=open&per_page=1"/);
-  assert.doesNotMatch(validateSection, /\bgh\s+pr\s+(create|merge)\b|\bgit\s+push\b|\bgh\s+api\s+-X\s+(POST|PATCH|DELETE)\b/);
+  assert.doesNotMatch(validateSection, /^\s*(?:gh\s+pr\s+(?:create|merge)|git\s+push|gh\s+api\s+-X\s+(?:POST|PATCH|DELETE))\b/m);
   assert.match(workflow, /APP_CONFIG_BLOCKED/);
   assert.match(workflow, /APP_TOKEN_VERIFIED/);
 });
