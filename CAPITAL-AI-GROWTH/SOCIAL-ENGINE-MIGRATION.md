@@ -30,9 +30,9 @@ Reifegrad 0 bedeutet hier keine belegte Fähigkeit, nicht schlechte Bildqualitä
 | Generatives Image-to-Video | 1 | Providerneutral konzipierbar | Kein belegter Adapter/Output |
 | KI-UGC / Avatar / Lip-sync | 0 | In gezielter UGC-Suche keine Implementierung gefunden | Synthetische Persona, Rechte, Stimme, Lip-sync, Kennzeichnung und Abnahme neu aufbauen |
 | Social Copy / Skripte | 2 | Deterministische DE/EN-Vorlagen, Threads, Captions, Podcast-/Video-Outlines, Emoji- und Längenregeln | Begrenzte kreative Vielfalt; kein belegter quellengestützter LLM-Redaktionspfad |
-| TTS / deutsche Finanzsprache | 3 technisch, fachlich gehalten | Qwen/Chatterbox-WAV- und ASR-Nachweise dokumentiert | Hörbericht: 1 PASS, 7 FAIL wegen abgehackter Sprache; P1 bleibt blockiert |
+| TTS / deutsche Finanzsprache | deaktiviert | Kein aktives Social-TTS-Modell | Qwen und Chatterbox wurden durch Owner-Entscheidung aus der Social Media Engine entfernt |
 | Podcasts / mehrere Stimmen | 2 | Rollen-/Sprachverträge und Dialog-Outlines vorhanden | Kein abgenommener vollständiger Podcast-Export |
-| Untertitel / Accessibility | 1–2 | ASR-Evidence vorhanden | Kein belegter Produktionspfad für korrigierte SRT/VTT, Timing und Safe Areas |
+| Untertitel / Accessibility | 1–2 | kein aktives ASR-Modell | Whisper/Faster-Whisper wurden aus der Social Media Engine entfernt; Captions dürfen ohne neuen explizit ausgewählten Provider weiterhin deterministisch/manuell vorbereitet werden |
 | Timeline / Editing UX | 2 | MediaProject v2, Undo/Redo, Import/Export, Vorschau, Canvas-Presets | Export ist JSON, nicht gerendertes MP4; Entwurf bleibt draft-only |
 | Content-Provenienz / Freigabe | 2 | Kanonische Pakete, Metadatenhash und Single-use-Freigaben vorhanden | Approval Store in-memory; ausgelieferte Medienbytes nicht durch Approval-URL allein geschützt |
 | Distribution | 2 | Echte YouTube/TikTok/Instagram/X/Facebook-Aufrufe im Code | Berechtigungen, aktuelle API-Verträge, zuverlässige Job-/Abschlussnachweise nicht abgenommen |
@@ -41,7 +41,7 @@ Reifegrad 0 bedeutet hier keine belegte Fähigkeit, nicht schlechte Bildqualitä
 | Kosten / Betrieb | 2 | Begrenzte Renderer, getrennte Runtimepfade; Modal-Benchmark dokumentiert | Keine aktuellen €/accepted-asset-, VRAM-, p95- oder Kapazitätsmesswerte |
 
 ### Relevante Befunde
-1. **TTS ist der bekannte Qualitätsengpass.** SOCIAL_P1_RUNTIME_ACCEPTANCE_2026-09-20.md enthält das spätere Hörupdate vom 22.09.: Nur Chatterbox-Beispiel 4 ist akzeptiert. ASR-PASS bestätigt keine natürliche Prosodie. Das spätere Remediation-Implementierungsdokument meldet HOSTED_RUNTIME_PENDING; daraus folgt kein neuer PASS. Rejected WAVs bleiben historisch, dürfen aber nicht in neue Shorts übernommen werden.
+1. **Social-Audio-Modelle sind deaktiviert.** Qwen/Qwen3-TTS, Chatterbox und die Whisper-Familie wurden am 08.10.2026 durch Owner-Entscheidung aus der Social Media Engine entfernt. Historische Finance-WAV-/ASR-Nachweise bleiben ausschließlich Provenienz und dürfen keine neue Runtime- oder Provider-Authority erzeugen.
 2. **Video-Encoderprofil ist noch kanalbezogen abzunehmen.** Der vorhandene Renderer nutzt MPEG-4 Part 2 plus AAC, nicht automatisch H.264. Die Wahl eines späteren H.264-Encoders erfordert Build-, Codec-/Lizenz- und Providerprüfung; libx264 darf nicht still das vorhandene GPL-Gate umgehen. 720P-Modellmaterial wird durch Skalierung auf 1080×1920 nicht zu nativem 1080P.
 3. **Daueranpassung kann Audio abschneiden.** apad/atrim bindet Audio an die Videolänge. Es prüft nicht, ob letzter Satz/Disclaimer vollständig hörbar ist. Im geprüften ffprobe-Code werden Dimensionen, begrenzte Dauer und Audioanzahl geprüft; A/V-Drift, Clipping, Satzende und erwartete exakte Videodauer benötigen zusätzliche Tests.
 4. **Hörfreigabe wird als Feld/Referenz konsumiert.** validate_voiceover_binding prüft PASS, Hash und Pflichttexte; es lädt keine signierte Hörentscheidung aus einem vertrauenswürdigen Store. In einer neuen API darf ein Nutzer durch gesetztes acceptanceStatus=PASS keine Abnahme selbst behaupten.
@@ -105,9 +105,9 @@ Alle Angaben sind recherchierte Kandidaten vom 01.10.2026, keine Installations-/
 | Datenvisualisierung | Branding-Karten / D3-Planungsadapter | Vega-Lite (BSD-3-Clause), bestehende D3-/Chartverträge | Exakte Werte/Quellen deterministisch; PNG/SVG-Export für Video |
 | Produkt-Screen-capture | nicht migriert | Playwright (Apache-2.0) | Erst mit freigegebener Fixture-/Testidentität; keine Session-/PII-/Kontostand-Leaks |
 | Motion / 3D / Branding-Animation | statische Framefolge | Blender (GPL) als separater Headless-Worker | Optional für Intros/Erde; Asset-/Fontlizenzen separat; Renderbudget begrenzen |
-| TTS / Stimmen / Podcasts | Qwen/Chatterbox-Vertrag | Chatterbox V3 (MIT Code) zunächst reparieren; Qwen3-TTS als vorhandenen Kandidaten neu prüfen | Akzeptierte Stimme gegen Beispiel 4; Code-/Checkpointlizenz und deutsches Hörbenchmark sind Pflicht |
-| ASR / Zahlenprüfung | Whisper-Evidenzharness | faster-whisper (MIT) | Wiederverwenden/vereinheitlichen; Required-Term-Prüfung plus Satz-/Zahlenkontrolle |
-| Captions / Alignment | kein abgenommener Export | WhisperX (BSD-2-Clause) und FFmpeg/libass nach Buildprüfung | Alignment-/Diarization-Modelle separat prüfen; SRT/VTT plus visuelles Timing |
+| TTS / Stimmen / Podcasts | providerneutraler Voice-Vertrag | kein aktives Modell | Neue TTS-Integration nur nach neuer expliziter Owner-Entscheidung und eigenständiger Lizenz-/Runtime-Evidence |
+| ASR / Zahlenprüfung | kein aktiver ASR-Provider | keiner | Whisper/Faster-Whisper sind entfernt; neue ASR-Lösung nur nach neuer expliziter Owner-Entscheidung |
+| Captions / Alignment | kein abgenommener Export | FFmpeg/libass und deterministische Caption-Dateien | Kein Whisper-Familienmodell; Timing/Accessibility separat prüfen |
 | T2V / I2V / B-roll | Entwurf | Wan2.2 TI2V-5B (Apache-2.0 laut Upstream) via Diffusers | Priorisierter generativer Pilot; offizielles Beispiel benötigt mindestens 24 GB VRAM, Auflösung 1280×704/704×1280; keine eigene Messung |
 | Speech-to-Video / Character Motion | fehlt | Wan2.2 S2V-14B / Animate-14B | Späterer Benchmark, größeres Modell-/Hardwarebudget, Rechte an Referenzbewegungen separat |
 | UGC / Lip-sync | fehlt | MuseTalk (MIT Code) | Nur eigener/erlaubter Presenter; Upstream-Testdaten nicht kommerziell; zusätzliche Gesichts-/Posemodelle und Gewichte vollständig prüfen |
@@ -119,7 +119,7 @@ Alle Angaben sind recherchierte Kandidaten vom 01.10.2026, keine Installations-/
 | Analytics / Attribution | Evidence-Schemas | Umami (MIT) für Website-Konversion + offizielle Social-Metriken | Website-Analytics ersetzt keine Social-Retention; Quellen/Fenster und Datenschutz getrennt |
 | Zuverlässigkeit / Monitoring | begrenzte Jobs | bestehende JetStream-/Valkey-/Observability-Verträge | Kein zusätzlicher Workflow-Cluster als Pilotvoraussetzung; bounded Retry und Dead-letter |
 
-Primärquellen stehen im maschinenlesbaren research-candidates.json neben diesem Bericht. Qwen3-TTS-Upstream konnte über den Webreader nicht zuverlässig geöffnet werden; der Code-/Checkpoint-Lizenzstand bleibt ausdrücklich zu prüfen, statt Apache-2.0 aus anderen Qwen-Modellen zu übertragen.
+Primärquellen stehen im maschinenlesbaren research-candidates.json neben diesem Bericht. Frühere Audio-Modellbewertungen sind historische Research-Evidence; Qwen, Chatterbox und die Whisper-Familie sind nicht Teil des aktiven Social-Media-Engine-Zielpfads.
 
 Nicht als kostenfreie OSS-Baseline wählen:
 - Remotion ohne Prüfung seiner aktuellen kommerziellen Bedingungen; source-visible bedeutet nicht uneingeschränkt OSS/kostenfrei.
@@ -162,7 +162,7 @@ Kanonische Arbeitspakete stehen in src/data/socialContentRoadmap.ts und werden d
 | 3 · CA-PLATFORM-SOC-FOUNDATION | PLATFORM / TRUST | versionierte Contracts, persistente Jobs/Outbox/Assets, ZITADEL-Rollen, Tokenverschlüsselung, idempotenter Transport | 1, 2 | echte Neustart-/Redelivery-/Tenant-/SSRF-/Budgettests; keine Supabase-ID-Kopie |
 | 4 · CA-GROWTH-SOC-COPY | GROWTH / MARKET, TRUST | freigegebene Website-/Releasequellen, Kanalskripte, Fakt-/Zahlen-/Disclaimerprüfung | 2, 3 | 12 Brief-Fixtures, Quellentreue und Grenzfalltests |
 | 5 · CA-PLATFORM-SOC-MEDIA | PLATFORM / PRODUCT, TRUST | Pillow/FFmpeg sauber portieren, Fonts/Tokens, Website-Capture, Bilder, Captions, Audioqualität | 3, 4 | CPU-Pilot mit immutable Outputs, Decoder-/Buildprofilprüfung |
-| 6 · CA-GROWTH-SOC-TTS | GROWTH / PLATFORM, TRUST | Chatterbox-Prosodie, Qwen-Vergleich, Voice-Personas, Finanzglossar | 2, 3, 4 | DE-Benchmark plus Hör-PASS gegen Beispiel 4; neue immutable WAVs |
+| 6 · CA-GROWTH-SOC-TTS | GROWTH / PLATFORM, TRUST | providerneutrale Voice-Contract-Grenze ohne aktives Modell | 2, 3, 4 | kein TTS-/ASR-Modell aktiv; spätere Auswahl nur nach neuer Owner-Entscheidung |
 | 7 · CA-PLATFORM-SOC-GENVIDEO | PLATFORM / GROWTH, TRUST | FLUX-4B/Wan-Adapter, GPU-Pool, B-roll/T2V/I2V, Budget-/Timeoutlimits | 2, 3, 5 | tatsächliche Hardwarefreigabe, Benchmark, gepinnte Gewichte/OCI-Digests |
 | 8 · CA-PRODUCT-SOC-STUDIO | PRODUCT / GROWTH, TRUST | deutschsprachige Redaktion, Vorschau, Quellen-/Rechte-/Kostenanzeige, Assetvergleich, Freigabe/Widerruf | 3, 4, 5 | Mobile/Desktop und Rollen-/Cross-tenant-Tests; kein JSON-Export als Video-Render |
 | 9 · CA-GROWTH-SOC-UGC | GROWTH / PRODUCT, PLATFORM, TRUST | synthetischer Presenter + MuseTalk/Voice + Produktdemo; sichtbare KI-Herkunft | 2, 5, 6, 7, 8 | drei bewertete Clips, Persona-/Voice-Rechte, Lip-sync-/Audio-/Claim-PASS |

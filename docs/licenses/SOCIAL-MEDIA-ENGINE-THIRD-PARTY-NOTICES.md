@@ -18,11 +18,10 @@ These components are not customer-bundled by this notice. Their exact model/runt
 
 | Component | Locked identity | License surface | State |
 |---|---|---|---|
-| qwen-tts | 0.1.1 wheel SHA-256 `11a290d8dabc7ef91a90c54478c8ab19b3edb1d85c0882313721892bdc4af15d` | Apache-2.0 | internal-service candidate; transitive runtime lock pending |
-| Qwen3-TTS VoiceDesign | HF revision `5ecdb67327fd37bb2e042aab12ff7391903235d3`; model SHA-256 `391e8db219f292c515297cdceeb43e4eae67cdde35fa57e79a6a8a532fca0522`; speech-tokenizer SHA-256 `836b7b357f5ea43e889936a3709af68dfe3751881acefe4ecf0dbd30ba571258` | Apache-2.0 model card | runtime/listening acceptance pending |
-| Chatterbox source | Git commit `5de7a54aa4e5e2baadb0182dde554908b48b85c2` | MIT | dependency lock pending |
-| Chatterbox model snapshot | HF revision `5bb1f6ee58e50c3b8d408bc82a6d3740c2db6e18`; principal weight hashes in machine-readable evidence | MIT model card | companion hashes + listening acceptance pending |
-| OpenAI Whisper | package 20250625; small SHA-256 `9ecf779972d90ba49c06d968637d720dd632c55bbf19d441fb42bf17a411e794`; large-v3 SHA-256 `e5b1a55b89c1367dacf97e3e19bfd829a01529dbfdeefa8caeb59b3f1b81dadb` | MIT | FFmpeg/worker image gate pending |
+
+## Removed Social audio runtimes
+
+By owner decision on 2026-10-08, Qwen/Qwen3-TTS, Chatterbox and the Whisper family (OpenAI Whisper and Faster-Whisper) are not part of the CAPITAL-AI Social Media Engine runtime, distribution baseline or active model admission. No model weights or worker runtime for these candidates may be promoted through the Social Media Engine without a new explicit owner decision.
 
 ## FFmpeg
 
