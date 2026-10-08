@@ -27,7 +27,7 @@ function json(res, status, payload) {
   res.ended = true;
 }
 
-function securityHarness({ factor = true, factorStatus = 'verified', factors, passkeyCount = 0 } = {}) {
+function securityHarness({ factor = true, factorStatus = 'verified', factors, passkeyCount = 0, enrollmentTotp = null } = {}) {
   const writes = [];
   const calls = [];
   const user = {
@@ -78,7 +78,7 @@ function securityHarness({ factor = true, factorStatus = 'verified', factors, pa
         data: {
           id: challengeId,
           friendly_name: options.body?.friendly_name || 'CAPITAL-AI Authenticator',
-          totp: { qr_code: '<svg></svg>', secret: 'TESTSECRET0123456', uri: 'otpauth://totp/test' },
+          totp: enrollmentTotp || { qr_code: '<svg></svg>', secret: 'JBSWY3DPEHPK3PXP', uri: 'otpauth://totp/test?secret=JBSWY3DPEHPK3PXP' },
         },
       };
     }
@@ -234,12 +234,46 @@ test('TOTP reenrollment removes a stale pending factor before creating replaceme
       ['/factors', 'POST'],
     ],
   );
-  assert.equal(res.payload.secret, 'TESTSECRET0123456');
+  assert.equal(res.payload.secret, 'JBSWY3DPEHPK3PXP');
   const enrollCall = h.calls.find(call => call.path === '/factors' && call.options.method === 'POST');
   assert.equal(enrollCall.options.maxResponseBytes, 262_144);
   assert.equal(enrollCall.options.body.issuer, 'CAPITAL-AI');
 });
 
+
+test('TOTP QR setup can recover the secret from a valid otpauth URI', async () => {
+  const h = securityHarness({ factor: false, enrollmentTotp: {
+    qr_code: '<svg></svg>',
+    secret: '',
+    uri: 'otpauth://totp/CAPITAL-AI%3Atest?secret=JBSWY3DPEHPK3PXP&issuer=CAPITAL-AI',
+  } });
+  const res = responseHarness();
+  await h.security.handle(
+    { method: 'POST', headers: { origin: 'https://capital-ai.online' }, body: {} },
+    res,
+    new URL('https://capital-ai.online/api/auth/mfa/totp/enroll'),
+    json,
+  );
+  assert.equal(res.status, 200);
+  assert.equal(res.payload.secret, 'JBSWY3DPEHPK3PXP');
+  assert.equal(res.payload.qrCode, '<svg></svg>');
+});
+
+test('TOTP setup missing usable secret fails closed without leaking provider material', async () => {
+  const h = securityHarness({ factor: false, enrollmentTotp: {
+    qr_code: '<svg></svg>',
+    uri: 'otpauth://totp/CAPITAL-AI%3Atest?issuer=CAPITAL-AI',
+  } });
+  const res = responseHarness();
+  await h.security.handle(
+    { method: 'POST', headers: { origin: 'https://capital-ai.online' }, body: {} },
+    res,
+    new URL('https://capital-ai.online/api/auth/mfa/totp/enroll'),
+    json,
+  );
+  assert.equal(res.status, 502);
+  assert.deepEqual(res.payload, { error: 'totp_setup_material_unavailable' });
+});
 
 test('passkey registration refuses a third credential before issuing a challenge', async () => {
   const h = securityHarness({ factor: false, passkeyCount: 2 });

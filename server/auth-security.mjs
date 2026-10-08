@@ -21,6 +21,27 @@ function friendlyName(value, fallback) {
   return name.length <= 120 && !/[\u0000-\u001f\u007f]/.test(name) ? name : '';
 }
 
+function totpEnrollmentProjection(totp) {
+  if (!totp || typeof totp !== 'object') return null;
+  const uri = typeof totp.uri === 'string' && totp.uri.length <= 2048 ? totp.uri : '';
+  let secret = typeof totp.secret === 'string' ? totp.secret.trim().toUpperCase() : '';
+  // GoTrue versions can omit the separate secret while still returning the
+  // otpauth URI. Extract it only server-side; never expose it in diagnostics.
+  if (!secret && uri) {
+    try {
+      const parsed = new URL(uri);
+      if (parsed.protocol === 'otpauth:' && parsed.hostname === 'totp') {
+        secret = String(parsed.searchParams.get('secret') || '').toUpperCase();
+      }
+    } catch {
+      return null;
+    }
+  }
+  if (!/^[A-Z2-7]{16,128}$/.test(secret)) return null;
+  const qrCode = typeof totp.qr_code === 'string' && totp.qr_code.length <= 220000 ? totp.qr_code : '';
+  return { secret, qrCode, uri };
+}
+
 function verifiedFactors(user) {
   return Array.isArray(user?.factors)
     ? user.factors.filter(factor => factor && factor.status === 'verified')
@@ -534,12 +555,20 @@ export function createAuthSecurity({
         });
         return true;
       }
+      const setup = totpEnrollmentProjection(enrolled.data.totp);
+      if (!setup) {
+        // Do not claim enrollment success if there is no usable OTP secret.
+        // Pending factors remain identifiable through the existing factor-list
+        // endpoint so the user can retry without disclosing a secret.
+        json(res, 502, { error: 'totp_setup_material_unavailable' });
+        return true;
+      }
       json(res, 200, {
         factorId: enrolled.data.id,
         friendlyName: enrolled.data.friendly_name || name,
-        qrCode: enrolled.data.totp.qr_code || '',
-        secret: enrolled.data.totp.secret || '',
-        uri: enrolled.data.totp.uri || '',
+        qrCode: setup.qrCode,
+        secret: setup.secret,
+        uri: setup.uri,
       });
       return true;
     }
