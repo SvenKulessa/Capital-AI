@@ -199,3 +199,24 @@ test('reference-only admission cannot create a quote fact', async () => {
   const fact = observation('AAPL', 'wikidata-reference', 123, Date.now(), 'USD', 'live', {value:123});
   assert.equal(fact, null);
 });
+
+
+test('asset catalog exposes only admitted market-quote instruments without inventing values', async () => {
+  const {assetCatalog} = await isolated();
+  const catalog = assetCatalog();
+  assert.equal(catalog.schema, 'CAPITAL_AI_MARKET_ASSET_CATALOG@1');
+  assert.equal(catalog.sourcePolicy, 'OPEN_SOURCE_AND_OPEN_DATA_ONLY');
+  assert.equal(catalog.quotesEnabled, false);
+  assert.equal(catalog.assets.length, 20);
+  assert.ok(catalog.assets.every(asset => asset.provider === 'ecb-reference-rates'));
+  assert.ok(catalog.assets.every(asset => asset.category === 'FOREX'));
+  assert.ok(catalog.assets.every(asset => asset.timeSemantics === 'reference'));
+  assert.ok(catalog.assets.every(asset => asset.sourceAdmission === 'OPEN_SOURCE_OPEN_DATA_ADMITTED'));
+  assert.ok(catalog.assets.every(asset => asset.marketQuotesEligible === true));
+  assert.ok(catalog.assets.every(asset => asset.runtimeEnabled === false));
+  assert.ok(catalog.assets.every(asset => asset.scoreEligible === false));
+  assert.ok(catalog.assets.every(asset => asset.decisionEligible === false));
+  assert.ok(catalog.assets.every(asset => asset.actionable === false));
+  assert.equal(catalog.assets.some(asset => asset.symbol === 'BTCUSD'), false);
+  assert.equal(catalog.assets.some(asset => asset.symbol === 'AAPL'), false);
+});

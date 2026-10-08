@@ -41,6 +41,8 @@ import {
   PUBLIC_FAQ_ITEMS,
 } from '../content/publicLegalContent';
 import { BrandLogo } from './BrandLogo';
+import { useLocale } from '../i18n/LocaleProvider';
+import { legalAvailabilityNotice } from '../i18n/legalAvailability';
 
 export type LegalRoute = '/faq' | '/datenschutz' | '/agb' | '/impressum';
 
@@ -59,6 +61,7 @@ const REQUEST_LABELS: Record<PrivacyRequestType, string> = {
 };
 
 export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPagesProps) {
+  const { locale } = useLocale();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('Alle');
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
@@ -263,8 +266,13 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
       </div>
 
       <div className="w-full max-w-4xl z-10 mt-6">
+        {locale !== 'de' && (
+          <div role="note" className="mb-5 rounded-xl border border-amber-400/40 bg-amber-400/10 px-4 py-3 text-sm leading-relaxed text-amber-100">
+            {legalAvailabilityNotice[locale]}
+          </div>
+        )}
         {route === '/faq' && (
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+          <motion.div lang="de" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <div className="text-center max-w-2xl mx-auto space-y-3">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-bold tracking-wider uppercase">
                 <Sparkles className="w-3.5 h-3.5" />
@@ -379,7 +387,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
         )}
 
         {route === '/datenschutz' && (
-          <motion.div
+          <motion.div lang="de"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6 bg-[#070b19]/90 border border-emerald-500/20 rounded-3xl p-6 sm:p-8"
@@ -532,7 +540,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
         )}
 
         {route === '/agb' && (
-          <motion.div
+          <motion.div lang="de"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6 bg-[#070b19]/90 border border-pink-500/20 rounded-3xl p-6 sm:p-8"
@@ -661,7 +669,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
         )}
 
         {route === '/impressum' && (
-          <motion.div
+          <motion.div lang="de"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6 bg-[#070b19]/90 border border-purple-500/20 rounded-3xl p-6 sm:p-8"
