@@ -48,6 +48,8 @@ jobs:
             scripts/docker-context.test.mjs \
             scripts/reviewdog-public-report.test.mjs \
             scripts/container-evidence-identity.test.mjs \
+            scripts/post-merge-followup.test.mjs \
+            scripts/post-merge-correlation.test.mjs \
             scripts/license-evidence.test.mjs \
             scripts/summarize-trivy.test.mjs \
             scripts/publish-security-summary.test.mjs \

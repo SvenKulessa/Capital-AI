@@ -1,0 +1,10 @@
+{
+  "schema": "CAPITAL_AI_ROADMAP_MERGE_AUDIT@1",
+  "state": "NOT_RUN",
+  "lastReconciledPr": null,
+  "mergeCount": 0,
+  "packages": [],
+  "sourceSha": null,
+  "sourceDigests": [],
+  "reconciledAt": null
+}

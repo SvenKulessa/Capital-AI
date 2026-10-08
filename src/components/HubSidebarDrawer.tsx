@@ -326,7 +326,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
     glowColor: 'rgba(244, 63, 94, 0.45)',
     accentBg: 'bg-rose-500/15 border-rose-500/50 text-rose-300',
     icon: <ShieldCheck className="w-5 h-5 text-rose-400" />,
-    badge: '10 Reiter',
+    badge: '11 Reiter',
     description: 'v1.0 Go-Live Roadmap mit 11 Ownern, Executive Cockpit, Console, Team-Rollen & Cost Center.',
     mainPath: '/control-center',
     subpages: [
@@ -362,6 +362,14 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         badge: 'Monitoring',
         shortDesc: 'Betriebs-, Trace- und Runtime-Evidence',
         path: '/control-center?tab=observability',
+      },
+      {
+        id: 'news',
+        name: 'News & Repository-Updates',
+        icon: <FileCode className="w-4 h-4 text-cyan-400" />,
+        badge: 'Blog',
+        shortDesc: 'Quellgebundene Blogentwürfe nach jeweils 20 gemergten PRs',
+        path: '/control-center?tab=news',
       },
       {
         id: 'console',
@@ -699,7 +707,7 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
                       {subpage.shortDesc}
                     </p>
 
-                    {/* Tags & Path Footer */}
+                    {/* Tags & navigation indicator (route stays internal) */}
                     <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-slate-800/60 pl-9">
                       <div className="flex items-center gap-1 flex-wrap">
                         {subpage.tags?.map((tag) => (
@@ -713,8 +721,7 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
                       </div>
 
                       <span className="text-[10px] font-mono text-slate-500 group-hover:text-amber-400 flex items-center gap-1 shrink-0 ml-2">
-                        <span>{subpage.path}</span>
-                        <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                        <ChevronRight aria-hidden="true" className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                       </span>
                     </div>
                   </motion.div>

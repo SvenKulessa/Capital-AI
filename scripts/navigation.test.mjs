@@ -6,7 +6,8 @@ import { APP_NAVIGATION_EVENT, navigateAppLocation, readHubTab, resolveNavigatio
 test('all current sideboard tab links retain their hub and tab', () => {
   const sidebar = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
   const links = [...sidebar.matchAll(/path: '([^']+\?tab=[^']+)'/g)].map(match => match[1]);
-  assert.equal(links.length, 23);
+  assert.equal(links.length, 24);
+  assert.ok(links.includes('/control-center?tab=news'));
   assert.ok(links.includes('/studio?tab=console'));
   assert.ok(links.includes('/learning?tab=flashcards'));
   assert.ok(links.includes('/learning?tab=videos'));
@@ -168,6 +169,14 @@ test('production navigation uses Preiskatalog and clickable canonical breadcrumb
   assert.match(sideboard, /role="treeitem"/);
   assert.match(breadcrumbs, /onClick=\{\(\) => onNavigate\(item\.path\)\}/);
   assert.match(breadcrumbs, /aria-current="page"/);
+});
+
+test('hub sideboard hides raw URL paths in subpage cards while keeping navigation', () => {
+  const sideboard = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
+  assert.doesNotMatch(sideboard, /\{\s*subpage\.path\s*\}/);
+  assert.match(sideboard, /onNavigate\?\.\(subpage\.path\)/);
+  assert.match(sideboard, /window\.location\.assign\(subpage\.path\)/);
+  assert.match(sideboard, /subpage\.tags\?\.map/);
 });
 
 test('homepage hub directory shares the canonical catalog and excludes protected routes by default', () => {

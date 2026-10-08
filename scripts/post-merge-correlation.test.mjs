@@ -139,19 +139,25 @@ test("summary classifies all open PR actions deterministically", () => {
 });
 
 
-test("post-merge correlation workflow cannot mutate repository contents", () => {
+test("post-merge correlation stays within the single evidence commit boundary", () => {
   const workflow = readFileSync(new URL('../.github/workflows/post-merge-correlation.yml', import.meta.url), 'utf8');
-
-  assert.match(workflow, /permissions:\n  contents: read\n  pull-requests: write/);
-  assert.match(workflow, /permissions:\n      contents: read\n      pull-requests: write/);
-
-  assert.doesNotMatch(workflow, /contents: write/);
-  assert.doesNotMatch(workflow, /propose_documentation_repair:/);
-  assert.doesNotMatch(workflow, /\bgit\s+push\b/);
-  assert.doesNotMatch(workflow, /\bgit\s+commit\b/);
-  assert.doesNotMatch(workflow, /\bgh\s+pr\s+create\b/);
-  assert.doesNotMatch(workflow, /\bgh\s+pr\s+merge\b|--auto\b|enable-auto-merge/);
-
-  assert.match(workflow, /gh pr comment/);
+  assert.match(workflow, /permissions:\n  contents: write\n  pull-requests: read\n  checks: read/);
+  assert.match(workflow, /git add docs\/evidence\/linear-post-merge-correlation\.json/);
+  assert.match(workflow, /git commit -m/);
+  assert.match(workflow, /refs\/heads\/\$TARGET_BRANCH/);
+  assert.doesNotMatch(workflow, /\bgh\s+pr\s+create\b|\bgh\s+pr\s+merge\b|enable-auto-merge/);
+  assert.doesNotMatch(workflow, /git add -A|git add \./);
+  assert.doesNotMatch(workflow, /select\(\.draft == true\)/);
+  assert.match(workflow, /node scripts\/post-merge-followup\.mjs/);
+  assert.match(workflow, /node --test scripts\/post-merge-followup\.test\.mjs/);
   assert.match(workflow, /actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/);
+});
+
+test('merge milestone workflow keeps GitHub expressions unescaped', () => {
+  const workflow = readFileSync(new URL('../.github/workflows/merge-milestones.yml', import.meta.url), 'utf8');
+  assert.ok(!workflow.includes('\\' + '${{'), 'Escaped expressions break checkout and tokens');
+  assert.match(workflow, /ref: \$\{\{ github\.event\.pull_request\.merge_commit_sha \}\}/);
+  assert.match(workflow, /GH_TOKEN: \$\{\{ github\.token \}\}/);
+  assert.match(workflow, /SOURCE_SHA: \$\{\{ github\.event\.pull_request\.merge_commit_sha \}\}/);
+  assert.match(workflow, /persist-credentials: false/);
 });
