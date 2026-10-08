@@ -10,9 +10,10 @@ Copyright holder: Sven Michael Kulessa / CAPITAL-AI
 
 - `graph.ts`
 - `nlu.ts`
-- `research.ts`
 - `reversible.ts`
 - `types.ts`
+
+The historic `LICENSE-EVIDENCE.json` records the 2026-10-06 source commit, not the currently present file set. The removed research module remains traceable only through immutable Git history.
 
 ## Explicitly excluded from this MIT grant
 
