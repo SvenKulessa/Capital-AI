@@ -161,7 +161,11 @@ export const ContentStudioPanel: React.FC = () => {
             >
               <div className="text-xs font-bold text-slate-100">{channel}</div>
               <div className="mt-1 text-[9px] font-bold uppercase tracking-[0.08em] text-amber-300">
-                {state === 'READY' ? 'Ready' : 'Integration folgt'}
+                {state === 'READY'
+                  ? 'Ready'
+                  : state === 'IMPLEMENTED_DISABLED'
+                    ? 'Implementiert · Live-Evidence offen'
+                    : 'Integration folgt'}
               </div>
             </div>
           ))}
