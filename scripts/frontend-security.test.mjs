@@ -244,6 +244,11 @@ test('provider bridge readiness remains owner-only and probe-only', async () => 
   assert.match(server, /auth\.authorizeIamRole\(req, res, 'owner'\)/);
   assert.match(server, /CAPITAL_AI_PROVIDER_BRIDGE_READINESS@1/);
   assert.match(bridge, /proofScope: 'APP_NATS_RUST_BRIDGE_EXECUTOR_ONLY'/);
+  assert.match(bridge, /PRIVATE_PROVIDER_BRIDGE_PROBE_ENABLED/);
+  assert.match(bridge, /probeEnabled: probeEnabled\(\)/);
+  assert.match(server, /PRIVATE_PROVIDER_BRIDGE_PROBE_ENABLED === 'true'/);
+  assert.match(server, /status\.probeEnabled/);
+  assert.match(bridge, /if \(!queryEnabled\(\)\)[\s\S]*private_provider_bridge_disabled/);
   assert.match(bridge, /stateIoProven: false/);
   assert.match(bridge, /vaultIoProven: false/);
   assert.match(bridge, /providerIoProven: false/);
