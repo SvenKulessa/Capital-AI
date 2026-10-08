@@ -17,3 +17,5 @@ Scope: PRODUCT (Frontend, Navigation, UX); bestehende Server-Owner-Boundary blei
 Regressionstests: `npm run test:navigation` (kanonische Routen, bestehende Query-Deep-Links, Navigation, PRIVATE-/Owner-Gates). Ergänzend `npm run lint` und `npm run build` sowie vorhandene Required GitHub Checks im Pull Request.
 
 Keine neuen Dependencies, externen APIs, kostenpflichtigen Ressourcen oder geänderten Berechtigungsrollen. Navigation ersetzt keine serverseitige Autorisierung.
+
+- Die optionale Breadcrumb-Navigation wird separat geladen, damit die Hauptanwendung ihr bestehendes 500-kB-JavaScript-Budget einhält, ohne Budgetgrenzen oder Sicherheitsprüfungen zu lockern.

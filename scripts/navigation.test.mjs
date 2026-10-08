@@ -244,3 +244,11 @@ test('Hub navigation entries use native focusable anchors for keyboard and modif
   assert.match(sidebar, /event\.metaKey \|\| event\.ctrlKey/);
   assert.doesNotMatch(sidebar, /onKeyDown=\{\(event\) => \{[\s\S]*?event\.key === 'Enter'/);
 });
+
+
+test('optional route breadcrumbs do not inflate the synchronous bootstrap chunk', () => {
+  const shell = readFileSync(new URL('../src/app/AppShell.tsx', import.meta.url), 'utf8');
+  assert.match(shell, /const RouteBreadcrumbs = lazy\(\(\) =>/);
+  assert.match(shell, /import\('\.\.\/components\/RouteBreadcrumbs'\)/);
+  assert.match(shell, /<Suspense fallback=\{null\}>[\s\S]*?<RouteBreadcrumbs/);
+});
