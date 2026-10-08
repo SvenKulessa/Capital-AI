@@ -2,6 +2,7 @@ ARG PYTHON_BASE
 FROM ${PYTHON_BASE} AS deps-build
 
 ARG RUNTIME
+ARG QWEN_TTS_REVISION=00969daa8064e23adc9e5f52cdf20cf247f94159
 ARG CHATTERBOX_REVISION=5de7a54aa4e5e2baadb0182dde554908b48b85c2
 ARG PERTH_REVISION=ff1c8ac55a976971245cdd53c18d6131ca00d993
 
@@ -39,8 +40,12 @@ RUN python -m pip install \
       --target /opt/python \
       --requirement /tmp/runtime-requirements.txt \
     && if [ "${RUNTIME}" = "qwen" ]; then \
-         printf '%s\n' 'qwen-tts==0.1.1 --hash=sha256:11a290d8dabc7ef91a90c54478c8ab19b3edb1d85c0882313721892bdc4af15d' > /tmp/qwen-package.txt \
-         && python -m pip install --disable-pip-version-check --no-cache-dir --no-build-isolation --no-deps --require-hashes --target /opt/python --requirement /tmp/qwen-package.txt; \
+         git init /tmp/qwen \
+         && git -C /tmp/qwen remote add origin https://github.com/QwenLM/Qwen3-TTS.git \
+         && git -C /tmp/qwen fetch --depth=1 origin refs/pull/360/head \
+         && git -C /tmp/qwen checkout --detach FETCH_HEAD \
+         && test "$(git -C /tmp/qwen rev-parse HEAD)" = "${QWEN_TTS_REVISION}" \
+         && python -m pip install --disable-pip-version-check --no-cache-dir --no-build-isolation --no-deps --target /opt/python /tmp/qwen; \
        fi \
     && if [ "${RUNTIME}" = "chatterbox" ]; then \
          printf '%s\n' 'uv-build==0.12.7 --hash=sha256:ab959502eb15c05a1c381e5b96e3f4abdbcf32d7f19765c00d737ade21cc682b' > /tmp/uv-build-requirement.txt \
@@ -55,25 +60,16 @@ RUN python -m pip install \
          && python -m pip install --disable-pip-version-check --no-cache-dir --no-build-isolation --no-deps --target /opt/python /tmp/chatterbox; \
        fi
 
-ARG PYTHON_BASE
-FROM ${PYTHON_BASE} AS runtime
-
-ARG RUNTIME
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends libsndfile1 \
-    && if [ "${RUNTIME}" = "qwen" ]; then apt-get install -y --no-install-recommends sox; fi \
-    && rm -rf /var/lib/apt/lists/* \
-    && python -m pip uninstall -y pip setuptools wheel
+ARG RUNTIME_BASE
+FROM ${RUNTIME_BASE} AS runtime
 
 COPY --from=deps-build /opt/python /opt/python
 
 ENV PYTHONPATH="/opt/python" \
     NUMBA_CACHE_DIR="/tmp/numba"
 
-RUN groupadd --gid 10001 tts \
-    && useradd --uid 10001 --gid 10001 --no-create-home --shell /usr/sbin/nologin tts
-
 USER 10001:10001
 WORKDIR /work
 
-CMD ["python","-c","import torch; print(torch.__version__)"]
+ENTRYPOINT ["/usr/bin/python3"]
+CMD ["-c","import torch; print(torch.__version__)"]
