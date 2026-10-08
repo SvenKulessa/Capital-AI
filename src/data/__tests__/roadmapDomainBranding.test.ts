@@ -34,9 +34,11 @@ test('roadmap panel renders domain badges on filter and work-package cards respo
 
   assert.match(panel, /aria-label="CAPITAL-AI Roadmap Domains"/);
   assert.match(panel, /src=\{project\.badgeAsset\}/);
-  assert.match(panel, /grid-cols-1 sm:grid-cols-2 xl:grid-cols-5/);
+  assert.match(panel, /Domains auswählen/);
+  assert.match(panel, /type="checkbox"/);
+  assert.match(panel, /checked=\{selectedOwners\.includes\(project\.id\)\}/);
   assert.match(panel, /sm:flex-row sm:items-start sm:justify-between/);
-  assert.match(panel, /h-24 w-24 sm:h-28 sm:w-28/);
+  assert.match(panel, /h-8 w-8/);
   assert.match(panel, /h-20 w-20 shrink-0 sm:h-24 sm:w-24/);
 });
 
@@ -82,4 +84,16 @@ test('MARKET production package is one chronological fail-closed commercial work
   for (const legacyId of ['AP-FIN-01', 'AP-FIN-02', 'AP-FIN-03']) {
     assert.ok(WORK_PACKAGES.some(item => item.id === legacyId), `${legacyId} remains traceable in the roadmap`);
   }
+});
+
+test('Control Center roadmap reads GitHub main on a 90-minute bounded refresh while retaining review evidence', () => {
+  const panel = readFileSync(new URL('../../components/RoadmapPanel.tsx', import.meta.url), 'utf8');
+  assert.match(panel, /90 \* 60 \* 1000/);
+  assert.match(panel, /\/api\/internal\/repository-tools/);
+  assert.match(panel, /credentials: 'same-origin'/);
+  assert.match(panel, /cache: 'no-store'/);
+  assert.match(panel, /controller\.abort\(\)/);
+  assert.match(panel, /ROADMAP_SNAPSHOT\.reviewDate/);
+  assert.match(panel, /repositoryStatus\.sourceSha/);
+  assert.match(panel, /selectedOwners\.includes\(item\.owner\)/);
 });
