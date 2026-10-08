@@ -37,8 +37,12 @@ jobs:
           node --import tsx scripts/merge-milestone.mjs news | tee /tmp/news-milestone.txt
           roadmap_number=$(sed -n 's/^MILESTONE_READY_//p' /tmp/roadmap-milestone.txt | tail -1)
           news_number=$(sed -n 's/^MILESTONE_READY_//p' /tmp/news-milestone.txt | tail -1)
+          roadmap_date=$(sed -n 's/^MILESTONE_DATE_//p' /tmp/roadmap-milestone.txt | tail -1)
+          news_date=$(sed -n 's/^MILESTONE_DATE_//p' /tmp/news-milestone.txt | tail -1)
           echo "roadmap=$roadmap_number" >> "$GITHUB_OUTPUT"
           echo "news=$news_number" >> "$GITHUB_OUTPUT"
+          echo "roadmap_date=$roadmap_date" >> "$GITHUB_OUTPUT"
+          echo "news_date=$news_date" >> "$GITHUB_OUTPUT"
       # Check both credentials before token minting; never print or persist private-key material.
       # An incomplete Owner setup must not turn a draft-only milestone into an authentication failure.
       - name: Check dedicated GitHub App configuration
@@ -92,6 +96,8 @@ jobs:
           SOURCE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
           ROADMAP_NUMBER: ${{ steps.milestones.outputs.roadmap }}
           NEWS_NUMBER: ${{ steps.milestones.outputs.news }}
+          ROADMAP_DATE: ${{ steps.milestones.outputs.roadmap_date }}
+          NEWS_DATE: ${{ steps.milestones.outputs.news_date }}
         shell: bash
         run: |
           set -euo pipefail
@@ -101,18 +107,25 @@ jobs:
               number="$ROADMAP_NUMBER"
               target="src/data/roadmapMergeReconciliation.json"
               doc="docs/product/roadmap-merge-reconciliation-$number.json"
-              branch="capital-ai-product/roadmap-merge-pr-$number"
+              date_suffix="$ROADMAP_DATE"
+              branch="capital-ai-product/roadmap-merge-pr-$number-$date_suffix"
               title="[CAPITAL-AI-PRODUCT] Roadmap code- und dokumentbasiert bis PR #$number abgleichen"
               description="Deterministischer 10-PR-Abgleich mit Pfadexistenz, SHA-256 und fehlenden Nachweisen. Keine automatischen VERIFIED-Beförderungen."
             else
               number="$NEWS_NUMBER"
               target="src/data/controlCenterNews.json"
               doc="docs/growth/news-release-pr-$number.md"
-              branch="capital-ai-growth/news-batch-pr-$number"
+              date_suffix="$NEWS_DATE"
+              branch="capital-ai-growth/news-batch-pr-$number-$date_suffix"
               title="[CAPITAL-AI-GROWTH] News-Blogentwurf zu 20 PR-Merges bis #$number"
               description="Quellgebundener Blogentwurf und Content-Engine-Plan. Social Media Engine publisher INTEGRATION_PENDING; keine Veröffentlichung."
             fi
             if [ -z "$number" ]; then continue; fi
+            # Enforce the Domain Governance YYYYMMDD branch suffix before any write.
+            if [[ ! "$date_suffix" =~ ^[0-9]{8}$ ]]; then
+              echo "::error::Missing or invalid milestone date for $category; refusing branch creation."
+              exit 1
+            fi
             if gh pr list --repo "$REPOSITORY" --state all --head "$branch" --json number --jq 'length' | grep -qx '[1-9][0-9]*'; then
               echo "A milestone PR already exists for $branch."
               continue
