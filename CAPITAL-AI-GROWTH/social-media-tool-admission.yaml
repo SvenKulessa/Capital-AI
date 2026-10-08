@@ -1,6 +1,6 @@
 schemaVersion: "SOCIAL_MEDIA_TOOL_ADMISSION@1"
 id: "CAPITAL-AI-SOCIAL-TOOL-ADMISSION-20261005"
-status: "POINT_4_ARTIFACT_LOCK_ADVANCED_FAIL_CLOSED"
+status: "POINT_4_AUDIO_MODELS_REMOVED_FAIL_CLOSED"
 workPackage: "CAPITAL-AI-FINANCE-SOCIAL-MARKET-MIGRATION-01"
 
 baseline:
@@ -90,35 +90,6 @@ tools:
     reason: "Excluded from sold/customer runtime baseline; optional operator/research companion only."
     exactArtifactRecheckRequired: false
 
-  - id: "qwen3-tts-code"
-    componentType: "source-library"
-    financeUse: "tts"
-    initialMode: "COMMERCIAL_INTERNAL_SERVICE"
-    licenseSurface: "Apache-2.0 code surface"
-    exactArtifactRecheckRequired: true
-    modelWeightsSeparatelyAdmitted: false
-
-  - id: "qwen3-tts-weights"
-    componentType: "model-weights"
-    financeUse: "tts"
-    initialMode: "BLOCKED_UNKNOWN"
-    exactArtifactRecheckRequired: true
-    reason: "Exact model/revision license must be bound independently of the code repository."
-
-  - id: "chatterbox-code"
-    componentType: "source-library"
-    financeUse: "tts"
-    initialMode: "COMMERCIAL_INTERNAL_SERVICE"
-    licenseSurface: "MIT code surface"
-    exactArtifactRecheckRequired: true
-    modelWeightsSeparatelyAdmitted: false
-
-  - id: "chatterbox-checkpoints"
-    componentType: "model-weights"
-    financeUse: "tts"
-    initialMode: "BLOCKED_UNKNOWN"
-    exactArtifactRecheckRequired: true
-
   - id: "f5-tts-code"
     componentType: "source-library"
     financeUse: "tts-research"
@@ -135,20 +106,6 @@ tools:
     commercialOutputAllowed: false
     customerArtifactAllowed: false
     reason: "Non-commercial weights cannot be used for commercial product/customer/marketing output merely because execution is owner-private."
-
-  - id: "openai-whisper"
-    componentType: "model-runtime"
-    financeUse: "asr-evidence"
-    initialMode: "BLOCKED_UNKNOWN"
-    exactCodeAndModelArtifactRecheckRequired: true
-    note: "Do not infer model-weight rights from Python package metadata."
-
-  - id: "faster-whisper"
-    componentType: "source-library"
-    financeUse: "asr-transcript-verification-candidate"
-    initialMode: "COMMERCIAL_INTERNAL_SERVICE"
-    licenseSurface: "MIT code surface"
-    exactModelArtifactRecheckRequired: true
 
   - id: "comfyui"
     componentType: "workflow-runtime"
@@ -225,18 +182,19 @@ point4Decision:
   implementationEligibleProductionBlocked:
     - "pillow"
     - "ffmpeg"
-    - "chatterbox-code"
-    - "chatterbox-multilingual-v3-weights"
-    - "openai-whisper-code"
   fullyBlocked:
     - "ffmpeg"
   artifactLockedRuntimePending:
     - "pillow"
-    - "qwen3-tts-code"
-    - "qwen3-tts-weights"
-    - "chatterbox-code"
-    - "chatterbox-multilingual-v3-weights"
-    - "openai-whisper-code"
+    - "ffmpeg"
+  socialAudioRuntime:
+    activeTtsModel: null
+    activeAsrModel: null
+    removedByOwnerDecision:
+      - "qwen3-tts"
+      - "chatterbox"
+      - "openai-whisper"
+      - "faster-whisper"
   excludedFromCustomerRuntime:
     - "poppler"
   financeScoringMigration:
