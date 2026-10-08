@@ -54,3 +54,16 @@ test('one root policy and chat integrations describe skill routing without autho
   assert.match(copilot, /\.agents\/skills\/registry\.json/);
   assert.match(copilot, /no gates/i);
 });
+
+test('ChatGPT plugin discovery is contextual, least-privileged and non-blocking', () => {
+  const policy = read('AGENTS.md');
+  assert.match(policy, /## ChatGPT-Plugin-Discovery und Tool-Nutzung/);
+  assert.match(policy, /bereits installiertes und verbundenes ChatGPT-Plugin/);
+  assert.match(policy, /direkt nutzen/);
+  assert.match(policy, /Plugin-Suche/);
+  assert.match(policy, /freiwilligen/);
+  assert.match(policy, /NOT_PROVEN/);
+  assert.match(policy, /Least Privilege/);
+  assert.match(policy, /keine neuen CI-Checks/);
+  for (const domain of expected) assert.match(policy, new RegExp(domain));
+});
