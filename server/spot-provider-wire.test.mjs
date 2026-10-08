@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   spotWireRequest,parseSpotWireFrame,ingestSpotWireFrame,spotWireInventory,
   fetchAdmittedSpotRest,startAdmittedSpotWebSocket,
+  fetchPrivateUserSpotTrade,
 } from './spot-provider-wire.mjs';
 
 const now=Date.now();
@@ -108,4 +109,42 @@ test('network REST and websocket connectors refuse unlicensed providers before A
 test('Kraken REST replies for an unrelated trade pair cannot be relabeled as BTCUSD',()=>{
   assert.throws(()=>parseSpotWireFrame({provider:'kraken',symbol:'BTCUSD',transport:'rest',
     payload:{error:[],result:{ETHUSD:[['2000','0.1',now/1000]]}}}),/KRAKEN_TRADES_INVALID/);
+});
+
+test('private BYOK snapshot returns only non-actionable user data; no shared cache or publisher',async()=>{
+  let calls=0;
+  const row=await fetchPrivateUserSpotTrade({
+    provider:'binance',symbol:'BTCUSDT',now:()=>now,
+    fetchImpl:async(url,options)=>{
+      calls++;
+      assert.equal(new URL(url).hostname,'api.binance.com');
+      assert.equal(options.credentials,'omit');
+      assert.equal(options.redirect,'error');
+      assert.equal(options.method,'GET');
+      assert.equal(JSON.stringify(options).includes('API-KEY'),false);
+      return Response.json([{id:1,price:'65432.1',time:now}]);
+    },
+  });
+  assert.equal(calls,1);
+  assert.deepEqual(row,{
+    provider:'binance',symbol:'BTCUSDT',quote:'USDT',price:65432.1,observedAt:now,
+    mode:'rest',timeSemantics:'realtime',dataScope:'USER_PRIVATE_MARKET_DATA',
+    publicDisplayAllowed:false,redistributionAllowed:false,sharedCacheAllowed:false,
+    jetStreamPublicationAllowed:false,actionable:false,executionEnabled:false,
+  });
+});
+test('private market snapshot rejects stale data, other symbols and oversized responses',async()=>{
+  const freshResponse=payload=>Response.json(payload);
+  await assert.rejects(fetchPrivateUserSpotTrade({
+    provider:'binance',symbol:'BTCUSDT',now:()=>now,
+    fetchImpl:async()=>freshResponse([{price:'100',time:now-31000}]),
+  }),/PRIVATE_SPOT_QUOTE_STALE/);
+  await assert.rejects(fetchPrivateUserSpotTrade({
+    provider:'kraken',symbol:'BTCUSD',now:()=>now,
+    fetchImpl:async()=>freshResponse({error:[],result:{ETHUSD:[['100','1',now/1000]]}}),
+  }),/KRAKEN_TRADES_INVALID/);
+  await assert.rejects(fetchPrivateUserSpotTrade({
+    provider:'binance',symbol:'BTCUSDT',now:()=>now,
+    fetchImpl:async()=>new Response('x'.repeat(65537),{headers:{'content-type':'application/json'}}),
+  }),/SPOT_HTTP_BODY_TOO_LARGE/);
 });
