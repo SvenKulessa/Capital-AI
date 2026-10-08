@@ -3,7 +3,7 @@
   "id": "CAPITAL-AI-SOCIAL-ENGINE-COMPLETION-20261006",
   "workPackage": "CAPITAL-AI-FINANCE-SOCIAL-MARKET-MIGRATION-01",
   "point": "06_SOCIAL_ENGINE_MIGRATION_COMPLETION_GATE",
-  "correlatedMain": "a445b454916eb31ced500f89bafab2e9aae4db7b",
+  "correlatedMain": "9a8b4e782d8e1ffbd84cf0beb8a1dfccffbb2ad2",
   "declaredState": "BLOCKED",
   "blockingFollowUp": "CAPITAL-AI-FINANCE-SCORING-DATA-FOLLOWUP-01",
   "policy": {
@@ -40,7 +40,11 @@
     "CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json",
     "docs/licenses/SOCIAL-MEDIA-ENGINE-THIRD-PARTY-NOTICES.md",
     "deploy/social-media/ffmpeg-build-profile.json",
-    "CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json"
+    "CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json",
+    "CAPITAL-AI-GROWTH/social-tts-dependency-lock-evidence-20261008.json",
+    "deploy/social-media/tts/qwen-runtime.lock.json",
+    "deploy/social-media/tts/chatterbox-runtime.lock.json",
+    "CAPITAL-AI-GROWTH/social-p1-runtime-port-provenance-20261008.json"
   ],
   "forbiddenFinanceScoringRuntimeBeforePass": [
     "src/platform/Scoring/ScoringModelRegistry.ts",
@@ -57,25 +61,25 @@
     "runtimeArtifactsRequired": 13,
     "rendererArtifactsPresent": 0,
     "rendererArtifactsRequired": 2,
-    "evidenceArtifactsPresent": 7,
-    "evidenceArtifactsRequired": 7,
+    "evidenceArtifactsPresent": 11,
+    "evidenceArtifactsRequired": 11,
     "result": "BLOCKED",
     "blockers": [
       "Point 4 remains fail-closed.",
-      "Qwen/Chatterbox dependency and companion-artifact locks are not yet durably merged; Qwen, Chatterbox and Whisper immutable worker gates remain open.",
-      "German runtime benchmark and Human/Owner listening acceptance remain open.",
-      "SocialMediaEngine runtime and deterministic renderer source have not yet completed target cutover.",
+      "Hardened renderer evidence is VERIFIED; renderer release handoff remains separate from Point 4 runtime acceptance.",
+      "Qwen and Chatterbox dependency locks are hash-bound in this candidate branch; immutable worker image scans remain pending.",
+      "Whisper ASR immutable worker image admission remains pending.",
+      "German GPU runtime benchmark and Human/Owner listening acceptance remain open.",
+      "SocialMediaEngine runtime and deterministic renderer source cutover remain blocked until Point 4 passes.",
       "Finance scoring/data follow-up remains blocked until Social completion."
     ],
     "socialToolLicenseEvidenceStatus": "POINT_4_ARTIFACT_LOCK_ADVANCED_FAIL_CLOSED",
     "socialToolLicenseEvidencePass": false,
     "rendererEvidenceStatus": "HARDENED_REBUILD_VERIFIED",
     "verified": [
-      "Hardened renderer real-build evidence is VERIFIED on workflow run 37713808050.",
-      "Renderer scan contains 0 vulnerabilities, 0 secrets and 0 blocking findings.",
-      "xz-libs 5.8.4-r0 and zlib 1.3.2-r1 are bound in the renderer SBOM.",
-      "CVE-2026-34743 and CVE-2026-85091 are absent.",
-      "FFmpeg 9.0.2 LGPL-only profile, read-only/non-root smoke, SBOM and runtime license inventory passed."
+      "Hardened renderer real-build evidence remains VERIFIED from main.",
+      "Renderer scan has 0 vulnerabilities, 0 secrets and 0 blocking findings.",
+      "CVE-2026-34743 and CVE-2026-85091 remain absent."
     ]
   },
   "passDefinition": [
