@@ -113,7 +113,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
 
   useEffect(() => {
     const recoveryError = new URLSearchParams(window.location.search).get('recovery_error');
-    if (recoveryError === 'invalid_link') {
+    const oauthError = new URLSearchParams(window.location.search).get('oauth_error');
+    if (oauthError === 'provider_rejected') {
+      setError('Google hat die Anmeldung nicht abgeschlossen. Bitte erneut versuchen und die Google-Kontofreigabe prüfen.');
+    } else if (oauthError === 'token_exchange_failed') {
+      setError('Die Google-Anmeldung konnte nicht in eine CAPITAL-AI-Sitzung umgewandelt werden. Bitte erneut versuchen.');
+    } else if (recoveryError === 'invalid_link') {
       setError('Der Passwort-Reset-Link ist ungültig oder unvollständig. Fordere bitte eine neue Reset-Mail an.');
     } else if (recoveryError === 'verification_failed') {
       setError('Der Passwort-Reset-Link ist abgelaufen oder wurde bereits verwendet. Fordere bitte eine neue Reset-Mail an.');
@@ -639,7 +644,29 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                 <span className="h-px flex-1 bg-white/10" /> oder <span className="h-px flex-1 bg-white/10" />
               </div>
 
-              <a
+              {mode === 'register' ? (
+                <form method="POST" action={`/api/auth/login/google?next=${encodeURIComponent(postAuthPath)}`}>
+                  <input type="hidden" name="registration" value="true" />
+                  <input type="hidden" name="termsAccepted" value={String(termsAccepted)} />
+                  <input type="hidden" name="privacyAcknowledged" value={String(privacyAcknowledged)} />
+                  <input type="hidden" name="marketingConsent" value={String(marketingConsent)} />
+                  <button
+                    type="submit"
+                    disabled={!session?.configured || !termsAccepted || !privacyAcknowledged || busy}
+                    aria-label="Mit Google registrieren"
+                    className="flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border border-white/15 bg-white text-sm font-bold text-slate-900 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                  <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 shrink-0">
+                                    <path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.54h3.24c1.9-1.75 2.98-4.32 2.98-7.41Z" />
+                                    <path fill="#34A853" d="M12 22c2.7 0 4.97-.9 6.62-2.36l-3.24-2.54c-.9.6-2.05.96-3.38.96-2.61 0-4.82-1.76-5.61-4.13H3.04v2.62A10 10 0 0 0 12 22Z" />
+                                    <path fill="#FBBC05" d="M6.39 13.93A6.02 6.02 0 0 1 6.08 12c0-.67.11-1.32.31-1.93V7.45H3.04A10 10 0 0 0 2 12c0 1.61.39 3.14 1.04 4.55l3.35-2.62Z" />
+                                    <path fill="#EA4335" d="M12 5.94c1.47 0 2.79.5 3.82 1.5l2.87-2.87A9.64 9.64 0 0 0 12 2a10 10 0 0 0-8.96 5.45l3.35 2.62C7.18 7.7 9.39 5.94 12 5.94Z" />
+                                  </svg>
+                    Mit Google registrieren
+                  </button>
+                </form>
+              ) : (
+                <a
                 href={`/api/auth/login/google?next=${encodeURIComponent(postAuthPath)}`}
                 className="flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border border-white/15 bg-white text-sm font-bold text-slate-900 transition hover:bg-slate-100"
                 aria-label="Mit Google anmelden"
@@ -652,6 +679,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                 </svg>
                 Mit Google anmelden
               </a>
+              )}
 
               <button
                 type="button"

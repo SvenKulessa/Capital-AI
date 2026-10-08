@@ -6,6 +6,12 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createApp } from './index.mjs';
 
+function callbackRequestPath(value) {
+  const url = new URL(value);
+  url.searchParams.set('code', 'test-code');
+  return url.pathname + url.search;
+}
+
 function sessionCookieHeader(response) {
   return response.headers.getSetCookie()
     .filter(value => value.startsWith('__Host-capital_session_'))
@@ -33,6 +39,8 @@ async function harness(envOverrides = {}) {
     challenge: '',
     deliveries: [],
     authAudit: [],
+    consentWrites: [],
+    rejectConsentWrites: false,
   };
 
   const user = () => ({
@@ -100,6 +108,15 @@ async function harness(envOverrides = {}) {
       return Response.json({ ok: true });
     }
 
+    if (target.origin === 'https://project.supabase.co' && target.pathname === '/rest/v1/user_consents') {
+      assert.equal(options.method, 'POST');
+      assert.match(String(options.headers.Authorization || ''), /^Bearer sb_secret_/);
+      assert.equal(options.headers.Prefer, 'resolution=ignore-duplicates,return=minimal');
+      assert.equal(target.searchParams.get('on_conflict'), 'user_id,consent_type,document_version');
+      state.consentWrites.push(JSON.parse(String(options.body)));
+      return new Response(null, { status: state.rejectConsentWrites ? 503 : 201 });
+    }
+
     if (target.origin === 'https://project.supabase.co' && target.pathname === '/rest/v1/profiles') {
       assert.match(String(options.headers.Authorization || ''), /^Bearer access-/);
       assert.equal(options.headers.apikey, 'sb_publishable_test');
@@ -150,8 +167,8 @@ async function harness(envOverrides = {}) {
     return cookie;
   };
 
-  const beginGoogle = async (route = '/api/auth/login/google?next=%2F') => {
-    const response = await request(route);
+  const beginGoogle = async (route = '/api/auth/login/google?next=%2F', options = {}) => {
+    const response = await request(route, options);
     assert.equal(response.status, 303);
     const target = new URL(response.headers.get('location'));
     assert.equal(target.origin, 'https://project.supabase.co');
@@ -160,6 +177,7 @@ async function harness(envOverrides = {}) {
     assert.equal(target.searchParams.get('code_challenge_method'), 's256');
     state.challenge = target.searchParams.get('code_challenge');
     const callback = new URL(target.searchParams.get('redirect_to'));
+    if (route.startsWith('/api/auth/login/google')) assert.equal(callback.search, '', 'web PKCE callback must have a stable allowlisted URL');
     const pkceCookie = response.headers.getSetCookie()
       .find(value => value.startsWith('__Host-capital_pkce='))
       .split(';')[0];
@@ -169,7 +187,7 @@ async function harness(envOverrides = {}) {
   const completeGoogle = async () => {
     const start = await beginGoogle();
     const response = await request(
-      `/api/auth/callback?flow=${encodeURIComponent(start.callback.searchParams.get('flow'))}&code=test-code`,
+      callbackRequestPath(start.callback),
       { headers: { cookie: start.pkceCookie } },
     );
     assert.equal(response.status, 303);
@@ -344,7 +362,7 @@ test('Supabase Google PKCE binds callback to HttpOnly flow state and ends at lan
   const h = await harness();
   try {
     const start = await h.beginGoogle();
-    const callbackUrl = `/api/auth/callback?flow=${encodeURIComponent(start.callback.searchParams.get('flow'))}&code=test-code`;
+    const callbackUrl = callbackRequestPath(start.callback);
     assert.equal((await h.request(callbackUrl)).status, 400);
 
     const completed = await h.request(callbackUrl, { headers: { cookie: start.pkceCookie } });
@@ -353,6 +371,64 @@ test('Supabase Google PKCE binds callback to HttpOnly flow state and ends at lan
     const cookie = sessionCookieHeader(completed);
     assert.match(cookie, /__Host-capital_session_count=/);
     assert.deepEqual(h.state.authAudit, ['Supabase authentication verified at oauth_callback']);
+  } finally {
+    await h.stop();
+  }
+});
+
+test('Google OAuth provider denial returns to a safe login error without leaking provider params', async () => {
+  const h = await harness();
+  try {
+    const start = await h.beginGoogle();
+    const response = await h.request(
+      '/api/auth/callback?error=access_denied&error_description=' + encodeURIComponent('private upstream detail'),
+      { headers: { cookie: start.pkceCookie } },
+    );
+    assert.equal(response.status, 303);
+    assert.equal(response.headers.get('location'), '/login?oauth_error=provider_rejected');
+    assert.equal(sessionCookieHeader(response), '');
+  } finally {
+    await h.stop();
+  }
+});
+
+test('Google signup rejects unconsented or cross-origin requests and records signed consent after verified PKCE', async () => {
+  const h = await harness();
+  const route = '/api/auth/login/google?next=%2F';
+  const data = new URLSearchParams({ registration: 'true', termsAccepted: 'true', privacyAcknowledged: 'true', marketingConsent: 'false' });
+  const options = { method: 'POST', headers: { Origin: 'https://capital.example', 'Content-Type': 'application/x-www-form-urlencoded' }, body: data.toString() };
+  try {
+    assert.equal((await h.request(route, { ...options, headers: { ...options.headers, Origin: 'https://attacker.example' } })).status, 403);
+    assert.equal((await h.request(route, { ...options, body: new URLSearchParams({ registration: 'true', termsAccepted: 'false', privacyAcknowledged: 'true' }).toString() })).status, 400);
+    assert.equal(h.state.consentWrites.length, 0);
+
+    const start = await h.beginGoogle(route, options);
+    const callback = callbackRequestPath(start.callback);
+    const completed = await h.request(callback, { headers: { cookie: start.pkceCookie } });
+    assert.equal(completed.status, 303);
+    assert.match(sessionCookieHeader(completed), /__Host-capital_session_count=/);
+    assert.deepEqual(h.state.consentWrites[0].map(row => [row.consent_type, row.granted, row.evidence_kind]), [
+      ['terms', true, 'contract_acceptance'],
+      ['privacy', true, 'acknowledgement'],
+      ['marketing', false, 'consent'],
+    ]);
+    assert.equal(h.state.consentWrites[0].every(row => row.user_id === h.state.subject), true);
+  } finally {
+    await h.stop();
+  }
+});
+
+test('Google signup stays fail-closed if consent storage is unavailable', async () => {
+  const h = await harness();
+  const data = new URLSearchParams({ registration: 'true', termsAccepted: 'true', privacyAcknowledged: 'true' });
+  try {
+    const start = await h.beginGoogle('/api/auth/login/google', { method: 'POST', headers: { Origin: 'https://capital.example', 'Content-Type': 'application/x-www-form-urlencoded' }, body: data.toString() });
+    h.state.rejectConsentWrites = true;
+    const callback = callbackRequestPath(start.callback);
+    const completed = await h.request(callback, { headers: { cookie: start.pkceCookie } });
+    assert.equal(completed.status, 503);
+    assert.equal((await completed.json()).error, 'registration_consent_persistence_failed');
+    assert.equal(sessionCookieHeader(completed), '');
   } finally {
     await h.stop();
   }
@@ -465,7 +541,7 @@ test('mobile login keeps one-time verifier-bound transfer while using Supabase O
     const transferChallenge = createHash('sha256').update(verifier).digest('base64url');
     const start = await h.beginGoogle('/api/auth/mobile-login?challenge=' + encodeURIComponent(transferChallenge));
     const callback = await h.request(
-      `/api/auth/callback?flow=${encodeURIComponent(start.callback.searchParams.get('flow'))}&code=test-code`,
+      callbackRequestPath(start.callback),
       { headers: { cookie: start.pkceCookie } },
     );
     assert.equal(callback.status, 303);
@@ -517,7 +593,7 @@ test('web Google login ignores caller-controlled next targets and returns to lan
   try {
     const start = await h.beginGoogle('/api/auth/login/google?next=%2Fcontrol-center');
     const response = await h.request(
-      `/api/auth/callback?flow=${encodeURIComponent(start.callback.searchParams.get('flow'))}&code=test-code`,
+      callbackRequestPath(start.callback),
       { headers: { cookie: start.pkceCookie } },
     );
     assert.equal(response.status, 303);
@@ -555,16 +631,22 @@ test('Google login preserves only the allowlisted CADS Marketplace setup return 
   try {
     const safeNext = '/api/cads/marketplace/setup?installation_id=77';
     const safe = await h.beginGoogle('/api/auth/login/google?next=' + encodeURIComponent(safeNext));
-    assert.equal(safe.callback.searchParams.get('next'), safeNext);
+    assert.equal(safe.callback.search, '');
     const safeResponse = await h.request(
-      '/api/auth/callback?flow=' + encodeURIComponent(safe.callback.searchParams.get('flow')) + '&code=test-code',
+      callbackRequestPath(safe.callback),
       { headers: { cookie: safe.pkceCookie } },
     );
     assert.equal(safeResponse.status, 303);
     assert.equal(safeResponse.headers.get('location'), safeNext);
 
     const unsafe = await h.beginGoogle('/api/auth/login/google?next=' + encodeURIComponent('https://evil.example/steal'));
-    assert.equal(unsafe.callback.searchParams.get('next'), '/');
+    assert.equal(unsafe.callback.search, '');
+    const unsafeResponse = await h.request(
+      callbackRequestPath(unsafe.callback),
+      { headers: { cookie: unsafe.pkceCookie } },
+    );
+    assert.equal(unsafeResponse.status, 303);
+    assert.equal(unsafeResponse.headers.get('location'), '/');
   } finally {
     await h.stop();
   }
