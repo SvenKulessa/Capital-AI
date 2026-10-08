@@ -583,6 +583,11 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
         const { fetchPrivateUserSpotTrade } = await import('./spot-provider-wire.mjs');
         return fetchPrivateUserSpotTrade({provider:'kraken',symbol:cleanParams.symbol,fetchImpl});
       }
+      if (operation === 'market.spot_ws_snapshot') {
+        const { fetchPrivateUserSpotWsSnapshot } = await import('./spot-provider-wire.mjs');
+        return fetchPrivateUserSpotWsSnapshot({provider:'kraken',symbol:cleanParams.symbol});
+      }
+
       const path = KRAKEN_SPOT_QUERY_PATHS[operation];
       if (!path) {
         const error = new Error('OPERATION_NOT_ADMITTED');
@@ -619,6 +624,11 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
       const { fetchPrivateUserSpotTrade } = await import('./spot-provider-wire.mjs');
       return fetchPrivateUserSpotTrade({provider:'binance',symbol:cleanParams.symbol,fetchImpl});
     }
+    if (operation === 'market.spot_ws_snapshot') {
+      const { fetchPrivateUserSpotWsSnapshot } = await import('./spot-provider-wire.mjs');
+      return fetchPrivateUserSpotWsSnapshot({provider:'binance',symbol:cleanParams.symbol});
+    }
+
     const target = BINANCE_QUERY_PATHS[operation];
     if (!target) {
       const error = new Error('OPERATION_NOT_ADMITTED');
