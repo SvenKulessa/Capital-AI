@@ -95,7 +95,8 @@ test('Control Center roadmap reads GitHub main on a 90-minute bounded refresh wh
   assert.match(panel, /credentials: 'same-origin'/);
   assert.match(panel, /cache: 'no-store'/);
   assert.match(panel, /controller\.abort\(\)/);
-  assert.match(panel, /ROADMAP_SNAPSHOT\.reviewDate/);
+  assert.match(panel, /mergeAudit\.lastReconciledPr/);
+  assert.match(panel, /ROADMAP_SNAPSHOT\.repository/);
   assert.match(panel, /repositoryStatus\.sourceSha/);
   assert.match(panel, /selectedOwners\.includes\(item\.owner\)/);
   assert.match(panel, /selectedStates\.includes\(item\.evidenceState\)/);
