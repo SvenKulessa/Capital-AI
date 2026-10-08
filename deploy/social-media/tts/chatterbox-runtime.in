@@ -1,7 +1,8 @@
-# CAPITAL-AI Chatterbox inference-only runtime resolution input (Python 3.11)
+# CAPITAL-AI Chatterbox inference-only runtime resolution input (Python 3.13)
 # Source and Perth are installed separately --no-deps from immutable revisions.
-# Demo/web UI dependency Gradio is intentionally excluded from the worker image.
-numpy>=1.24.0,<2.0.0
+# Mirrors upstream Python 3.13 support by using NumPy 2.x.
+# Demo/web UI dependency Gradio is intentionally excluded.
+numpy>=2.0.0
 librosa==0.11.0
 s3tokenizer
 torch==2.14.1
