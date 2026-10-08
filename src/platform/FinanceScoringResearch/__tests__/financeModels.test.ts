@@ -106,7 +106,7 @@ test('Finance source factor golden vectors preserve original absolute weights an
   }
 });
 test('missing source factors renormalize only available weight and preserve distinct fingerprints', () => {
-  const base={assetId:'stock:AAPL',model:'stock' as const,sourceSha:sha,
+  const base={assetId:'stock:AAPL',model:'stock' as const,sourceSha:sha as typeof sha,
     evidenceRefs:['synthetic://finance/replay-partial']};
   const first=composeFinanceResearchFactors({...base,values:{trend:100,momentum:null,value:0}});
   const reordered=composeFinanceResearchFactors({...base,values:{value:0,trend:100,momentum:null}});
