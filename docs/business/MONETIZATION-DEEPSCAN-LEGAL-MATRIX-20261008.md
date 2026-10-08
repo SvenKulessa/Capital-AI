@@ -2,7 +2,7 @@
 
 **Stichtag:** 2026-10-08 (Europe/Berlin)  
 **Repository:** `SvenKulessa/Capital-AI`  
-**Baseline:** `main@ba6fc7183c3d017e116a88e247af6054d7690fa4` (Merge #287)  
+**Baseline:** `main@ed5c47611208ae4b145d110e03fb88657f51912c` (Merge #288; Scan nach Main-Fortschreibung, ursprüngliche Baseline #287)  
 **Primary domain:** TRUST (Produktentscheidung: PRODUCT; Scoring/Provider: MARKET; Runtime: PLATFORM; Vermarktung: GROWTH)  
 **Methode:** GitHub-basierter **Code-/Datei-/Dokumenten-DeepScan** zentraler Produkt-, Preis-, Runtime-, Vertrags-, Lizenz- und Readiness-Quellen; kein vollständiger statischer Code-Scan jeder Datei, kein Dynamic-Scanning, kein echter Käufer-/Provider-Roundtrip, keine Live-Stripe-/Render-/Supabase-Verifikation. Alle Statusangaben sind **Scope-bezogen**; `MONETIZED` im Produktregister bedeutet nicht automatisch Live-Umsatz oder erlaubten Verkauf.
 
@@ -22,7 +22,7 @@
 | `src/features/studio/*`, `src/features/pipeline-builder/*`, `src/data/roadmapData.ts` | Pipeline-Simulation, Konfiguration, Benchmark-/Dokumentationsoberflächen vorhanden; als eigenständige Bezahlfunktion noch nicht komplett zugeschnitten. |
 | `server/social-media/*`, `CAPITAL-AI-GROWTH/SOCIAL-ENGINE-MIGRATION.md` | Content-/Social-Pipeline-Teile; reale Distribution, TTS-/GPU-Qualität, Provider-Accounts, Medien-/Modellrechte nicht pauschal abgenommen. |
 | `docs/security/LICENSE-REVIEW.md`, `docs/security/LICENSE-RIGHTS.md`, `docs/licenses/CADS-PRODUCT-LICENSE.md` | Eigene IP ist getrennt von OSS-Bibliotheken, Bildern, Logos und Drittprovider-Rechten; Version/SBOM/NOTICE im ausgelieferten Artefakt prüfen. |
-| PR #288 | Persönlicher BYOK/BYOM-Workspace als ungemergte Branch-Implementierung; nicht in `main` als Kundenfunktion bewerten. |
+| Merge #288 | Persönlicher BYOK/BYOM-Workspace als Code in `main` integriert; noch keine produktive Migration, modellseitige Token-Ausführung oder hosted Providerlizenz belegt. |
 | Merge #287 | Finance-Research-Transport via JetStream/Valkey/Supabase ergänzt, aber ausdrücklich ohne live Scoring-/Datenrechtefreigabe. |
 
 ## Bewertungsskala
@@ -51,8 +51,8 @@ Diese Einstufung ist eine qualitative Produkt-/Rechtsrisiko-Vorbewertung und **k
 | 11 | **B2B Beratung / Custom Integration** | nachgewiesene Platform/Trust/Market-Artefakte | Auftrag / Festpreis / SLA | A/B | Leistungs-/Haftungsgrenzen, Auftragsdaten, keine ungeprüfte Compliance-Zertifizierung |
 | 12 | **Revenue-/Tarif-Simulationen** | Revenue Simulator, Pricing Catalog | Einmalreport / Team-Tool | A/B | Plausible Annahmen, Szenarien und nicht garantierte Ergebnisse klar kennzeichnen |
 | 13 | **Price Alerts / Watchlists** | Alerts-UI und Markt-Screener | Premium-Kontingente | B/C | Zustellung, Nutzerquota, echte Datenberechtigungen und keine unerlaubte öffentliche Feed-Anzeige |
-| 14 | **Private BYOK Scoring SaaS** | Vault, Rust Bridge, Private Market Batch; PR #288 | Mathematik-Abo, Nutzer zahlt extern | B/C | Individuelle Tarif-/ToS-Prüfung *einschließlich Hosted-Service*, Tenant E2E, RLS, Private Cache, Scoring-Eligibility |
-| 15 | **BYOM KI-Analyse / Token-Budgets** | Modell-/Agentenentwürfe; PR #288 nur Zuordnung | Nutzer-Key; optional Compute-Meter | B/C | Eigenes encrypted Model-Vault, Einwilligung, Budget/Retention, Modell-/Prompt-Rechte, kein stiller Provider-Datenexport |
+| 14 | **Private BYOK Scoring SaaS** | Vault, Rust Bridge, Private Market Batch; Merge #288 (nur Bindings) | Mathematik-Abo, Nutzer zahlt extern | B/C | Individuelle Tarif-/ToS-Prüfung *einschließlich Hosted-Service*, Tenant E2E, RLS, Private Cache, Scoring-Eligibility |
+| 15 | **BYOM KI-Analyse / Token-Budgets** | Modell-/Agentenentwürfe; Merge #288 nur Zuordnung | Nutzer-Key; optional Compute-Meter | B/C | Eigenes encrypted Model-Vault, Einwilligung, Budget/Retention, Modell-/Prompt-Rechte, kein stiller Provider-Datenexport |
 | 16 | **ECB-/Open-Data FX-Analytics** | ECB Reference Adapter | Indikatoren/Visualisierungen/Alerts | B | Quellhinweis, korrekte Daily-Kennzeichnung, Nutzungsbedingungen, operative Daten-E2E |
 | 17 | **Sentiment-Analytik** | UI + 50er Registry | Add-on / Analyse-API | C | Dritttext-/Social-Dataset-Rechte, belegbare Features, Lizenz für Derived Data, MAR-Abgrenzung |
 | 18 | **B2B Score-/Feature-API** | Scoring Contracts / Research | metered API / Vertrag | C | Keine Provider-Rohdaten/Derived-Feeds ohne Rechte, Key-/Metering-/Tenant-Security, Modellvalidierung |
@@ -104,5 +104,7 @@ Diese Einstufung ist eine qualitative Produkt-/Rechtsrisiko-Vorbewertung und **k
 ## Kostenannahmen / Entscheidung
 
 `NOT_PROVEN`: Stripe-Transaktionsgebühren, verbleibende CI-Kontingente, Render/DB/NATS/Valkey/Egress, Massive Business-Feedpreis, Börsenlizenzen, Kraken-/Modelltarife, GPU-Compute, App-Marketplace-Gebühren und Kosten je akzeptiertem Scoringlauf. Kein neues kostenpflichtiges Paket, keine Modellinferenz oder Nutzerabrechnung in diesem PR.
+
+**Wichtig zur Main-Fortschreibung:** #288 wurde während des Scans gemergt. Code-Inventarisierung und Feature-Bindings sind dadurch nachgewiesen, aber RLS-Livereadbacks, Produktionsmigration, Provider-/Modell-Ausführung und produktive User-E2E bleiben `NOT_PROVEN`.
 
 **Nicht durchgeführt:** Produktionsmigration, neues Checkout-SKU, GitHub Marketplace-Publisher-Verifikation, Providervertragsabschluss, Unternehmens-/Steuer- oder BaFin-Rechtsgutachten, Score-Aktivierung, Trading, Token Sale, externer Providerabruf. Dieser DeepScan ist die **Prüfmatrix für konkrete nächste Arbeitspakete**, keine allgemeine Lizenz- oder Marktfreigabe.
