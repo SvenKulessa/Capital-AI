@@ -63,6 +63,7 @@ test('all five provider channels map to legacy OAuth/account/log platform keys',
     assert.equal(socialChannelForPlatform(platform), channel);
   }
   assert.throws(() => socialPlatformForChannel('LINKEDIN'), /CHANNEL_UNSUPPORTED/);
+  assert.throws(() => socialPlatformForChannel('toString'), /CHANNEL_UNSUPPORTED/);
 });
 
 test('manifest and handoff must match immutable asset and approval exactly', () => {
