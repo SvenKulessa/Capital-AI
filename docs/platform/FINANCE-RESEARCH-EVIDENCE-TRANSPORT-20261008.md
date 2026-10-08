@@ -47,3 +47,39 @@ Approved, non-private market source + verified rights
 - On NATS PubAck/replay failure or absent Supabase confirmation, the Valkey cache and Pub/Sub do not update. Postgres retry conflict is accepted only on matching event ID/hash/JetStream sequence.
 - New stream consumes up to 64 MiB of the existing NATS file budget; one transient 60-second Valkey metadata key per unique event; Postgres metadata rows accrue indefinitely until an explicit retention policy is approved. Costs, quotas, budget and disk headroom: NOT_PROVEN. No new paid plan automatically activated.
 - No live end-to-end evidence, new commercial redistribution grant, approved production score, model promotion or provider execution is claimed.
+
+## 2026-10-08 follow-up: value-sensitive replay and internal scorer handoff
+
+The canonical Finance evaluator was extended by the merged Finance replay change to include
+`researchReplayFingerprint` over actual normalized factor values, provenance, version and
+effective weights. Prior receipt validation rejected this new field and older receipt identities
+would not distinguish numerically changed factors. The follow-up makes this fingerprint
+mandatory in **new application records** and persists it in a nullable, additive column so
+previous append-only records remain unchanged. Historical NULL does not mean replay verified.
+
+`src/services/financeResearchReceiptOrchestrator.ts` is the new internal MARKET orchestration
+boundary. It calls `ScoringEngineService.inspectFinanceModelResearch` and can submit
+RESEARCH_EVALUATED results to an internal receipt sink, only after exact current
+open-source/open-data policy admission, per-provider feed/venue matching and full rights
+checks. It refuses private Kraken/Massive BYOK, demo, future timestamps and unimplemented
+provider obligations. The currently admitted ECB reference source carries mandatory
+obligations, so no production receipts are emitted until fulfilment is demonstrated.
+
+The sink is dependency-injected; the new code does not mount an HTTP endpoint, activate
+provider keys, grant licences or enable a new production process. The Node receipt transport
+remains behind `FINANCE_RESEARCH_TRANSPORT_ENABLED=true` and must only be wired from a
+trusted, server-side orchestrator through an approved build/runtime boundary. No browser
+imports or frontend connection are allowed.
+
+Supabase: apply `20261008173500_finance_research_value_replay_fingerprint.sql` using
+the reviewed migration flow. Previous migration `20261008161645` was already applied
+on 2026-10-08; verify the new column and check grants/RLS after the new merge.
+
+NATS: deployment `4fa3e3f9` remains the live NATS base at the time of this readback,
+while `main` includes new `capital.research.score.*` ACL. NATS configuration really
+changed but NATS must be deployed only after a targeted ACL/disk/rollback review.
+It must never follow generic repository HEAD changes. The private Rust bridge deploy
+`acb328b5` is not proof of a live credential-bound Provider→Scoring roundtrip.
+
+No test in this branch claims actual licensed provider data, verified source obligations,
+live scoring, user-specific private score storage, or Supabase/JetStream production roundtrips.
