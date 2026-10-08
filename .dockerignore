@@ -88,6 +88,9 @@
 !deploy/social-media/ffmpeg-build-profile.json
 !deploy/social-media/renderer-requirements.txt
 !deploy/social-media/Dockerfile.renderer
+!deploy/social-media/tts/
+!deploy/social-media/tts/qwen-runtime.lock.json
+!deploy/social-media/tts/chatterbox-runtime.lock.json
 !deploy/npm-security-patches/
 !deploy/npm-security-patches/package.json
 !deploy/npm-security-patches/package-lock.json
@@ -189,6 +192,8 @@
 !CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json
 !CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json
 !CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json
+!CAPITAL-AI-GROWTH/social-tts-dependency-lock-evidence-20261008.json
+!CAPITAL-AI-GROWTH/social-p1-runtime-port-provenance-20261008.json
 !CAPITAL-AI-GROWTH/social-engine-completion-gate.json
 !CAPITAL-AI-GROWTH/social-media-tool-admission.yaml
 !CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.yaml
