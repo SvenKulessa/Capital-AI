@@ -24,6 +24,7 @@
 !Chat Buddy/src/**
 !server/
 !server/index.mjs
+!server/seo-agent-discovery.mjs
 !server/chat-buddy-keys.mjs
 !server/chat-buddy-learn.mjs
 !server/repository-tool-catalog.mjs
