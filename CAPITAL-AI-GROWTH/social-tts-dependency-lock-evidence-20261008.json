@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "SOCIAL_TTS_DEPENDENCY_LOCK_BINDING@1",
+  "correlatedMain": "19673cf50bf6948ef563126f23bd1d64d9ae6398",
+  "workflowRunId": 37708563864,
+  "artifactId": 11520483754,
+  "artifactDigest": "sha256:0cf11260b4f583c7c3ce72c0b0ccd1676d2bfd38bb6a9f9e9304c6e7d17da75b",
+  "sourceSha": "ef71fde2d8721798a4460f1963eef800b6ab22c4",
+  "pythonBaseRef": "python@sha256:0a310eeecf4e1f5a0743f9a6520c90c88d089c903ca5fd283f501e3a805f5f89",
+  "runtimes": {
+    "qwen": {
+      "packageCount": 102,
+      "lockPath": "deploy/social-media/tts/qwen-runtime.lock.json",
+      "allArchiveHashesPresent": true
+    },
+    "chatterbox": {
+      "packageCount": 123,
+      "lockPath": "deploy/social-media/tts/chatterbox-runtime.lock.json",
+      "allArchiveHashesPresent": true,
+      "immutablePerthRevision": "ff1c8ac55a976971245cdd53c18d6131ca00d993"
+    }
+  },
+  "productionEligible": false,
+  "productionBlockers": [
+    "immutable worker image scans pending",
+    "German GPU runtime benchmark pending",
+    "Human/Owner listening acceptance pending"
+  ]
+}
