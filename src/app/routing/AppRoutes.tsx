@@ -1,9 +1,6 @@
 import { lazy } from 'react';
 import type { LegalRoute } from '../../components/LegalAndFaqPages';
-import {
-  RESEARCH_ROUTES,
-  type ResearchRoute,
-} from '../../data/researchLicenses';
+import { LICENSE_ROUTES, type LicenseRoute } from '../../data/providerLicenseReview';
 import { MARKET_ASSETS } from '../../data/mockData';
 import type {
   AssetSubclass,
@@ -25,9 +22,9 @@ const LegalAndFaqPages = lazy(() =>
     default: module.LegalAndFaqPages,
   })),
 );
-const ResearchLicensePages = lazy(() =>
-  import('../../components/ResearchLicensePages').then((module) => ({
-    default: module.ResearchLicensePages,
+const LicenseInformationPages = lazy(() =>
+  import('../../components/LicenseInformationPages').then((module) => ({
+    default: module.LicenseInformationPages,
   })),
 );
 
@@ -291,10 +288,10 @@ export function AppRoutes({
     );
   }
 
-  if (RESEARCH_ROUTES.includes(currentRoute as ResearchRoute)) {
+  if (LICENSE_ROUTES.includes(currentRoute as LicenseRoute)) {
     return (
-      <ResearchLicensePages
-        route={currentRoute as ResearchRoute}
+      <LicenseInformationPages
+        route={currentRoute as LicenseRoute}
         onNavigate={navigateTo}
       />
     );

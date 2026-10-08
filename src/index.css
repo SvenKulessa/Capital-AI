@@ -29,10 +29,10 @@
 }
 
 @media print {
-  body:has(.research-report) * { visibility: hidden; }
-  body:has(.research-report) .research-report,
-  body:has(.research-report) .research-report * { visibility: visible; color: #111 !important; background: white !important; box-shadow: none !important; }
-  .research-report { position: absolute; top: 0; left: 0; width: 100%; }
-  .research-report button, .research-report nav { display: none; }
-  .research-report article { break-inside: avoid; border-color: #ccc; }
+  body:has(.license-report) * { visibility: hidden; }
+  body:has(.license-report) .license-report,
+  body:has(.license-report) .license-report * { visibility: visible; color: #111 !important; background: white !important; box-shadow: none !important; }
+  .license-report { position: absolute; top: 0; left: 0; width: 100%; }
+  .license-report button, .license-report nav { display: none; }
+  .license-report article { break-inside: avoid; border-color: #ccc; }
 }

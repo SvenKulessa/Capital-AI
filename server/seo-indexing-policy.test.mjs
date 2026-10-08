@@ -27,7 +27,6 @@ const EXPECTED_INDEX_PATHS = [
   '/learning',
   '/vocabulary',
   '/faq',
-  '/forschung',
   '/lizenz',
   '/datenprovider-lizenzen',
   '/opensource-lizenzen',
@@ -59,6 +58,7 @@ test('SEO-00 is fail-closed for private, claim-sensitive, alias and unknown rout
   assert.equal(resolveSeoIndexingPolicy('/dokumentation').classification, 'NOINDEX');
   assert.equal(resolveSeoIndexingPolicy('/documentation/byok.html').classification, 'NOINDEX');
   assert.equal(resolveSeoIndexingPolicy('/research').classification, 'BLOCKED');
+  assert.equal(resolveSeoIndexingPolicy('/forschung').classification, 'BLOCKED');
   assert.equal(resolveSeoIndexingPolicy('/not-inventory').classification, 'BLOCKED');
   assert.equal(resolveSeoIndexingPolicy('/api/auth/session').classification, 'PRIVATE');
   assert.equal(resolveSeoIndexingPolicy('/healthz').classification, 'NOINDEX');

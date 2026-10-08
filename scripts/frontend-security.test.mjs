@@ -6,9 +6,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { sanitizeAlertPreferences } from '../src/utils/alertPreferences.ts';
 import { PipelineStorageService, getPresetPipelines } from '../src/services/pipelineStorage.ts';
 import { AppErrorBoundary, BootstrapFailure } from '../src/components/AppErrorBoundary.tsx';
-import { ResearchLicensePages } from '../src/components/ResearchLicensePages.tsx';
-import { ResearchProjectSummary } from '../src/components/ResearchProjectSummary.tsx';
-import { RESEARCH_ROUTES, researchProviders } from '../src/data/researchLicenses.ts';
+import { LicenseInformationPages } from '../src/components/LicenseInformationPages.tsx';
+import { LICENSE_ROUTES, providerLicenseReviews } from '../src/data/providerLicenseReview.ts';
 
 test('legacy Telegram credentials and unknown fields are discarded on reload and serialization', () => {
   const legacy = { inAppNotifications: true, autoCheckIntervalSec: 1, botToken: 'old-secret', telegram: { enabled: true, botToken: 'old-secret', chatId: '12345', unknown: 'old-secret' } };
@@ -79,30 +78,26 @@ test('TOTP QR rendering preserves already encoded data URLs', async () => {
   assert.match(source, /data:image\/svg\+xml;charset=utf-8/);
 });
 
-test('research pages render source links and never grant project entitlements', () => {
-  const markup = renderToStaticMarkup(React.createElement(ResearchLicensePages, { route: '/datenprovider-lizenzen', onNavigate() {} }));
-  for (const provider of researchProviders) {
+test('provider license pages expose rights sources without granting entitlements', () => {
+  const markup = renderToStaticMarkup(React.createElement(LicenseInformationPages, { route: '/datenprovider-lizenzen', onNavigate() {} }));
+  for (const provider of providerLicenseReviews) {
     assert.match(markup, new RegExp(provider.status));
     for (const source of provider.sources) assert.ok(markup.includes(source.url));
   }
   assert.match(markup, /ersetzen keine erforderliche Erlaubnis/);
   assert.match(markup, /bestätigt keine Provider-Lizenz/);
-  assert.doesNotMatch(markup, /Academic Approved|100% Konform|Dr\. Maximilian|HRB 128490|CAI-MASTER/);
+  assert.doesNotMatch(markup, /Academic Approved|100% Konform|HRB 128490/);
 });
 
-test('all four research routes render their own accessible page and preserve operator truth', () => {
-  for (const route of RESEARCH_ROUTES) {
-    const markup = renderToStaticMarkup(React.createElement(ResearchLicensePages, { route, onNavigate() {} }));
-    assert.match(markup, /aria-labelledby="research-page-title"/);
+test('all three required license routes render without the deleted project page', () => {
+  assert.equal(LICENSE_ROUTES.length, 3);
+  for (const route of LICENSE_ROUTES) {
+    const markup = renderToStaticMarkup(React.createElement(LicenseInformationPages, { route, onNavigate() {} }));
+    assert.match(markup, /aria-labelledby="license-page-title"/);
     assert.ok(markup.includes('aria-current="page"'));
     assert.doesNotMatch(markup, /Capital-AI Technologies GmbH|rechtssichere Urkunde|vollständig zertifiziert/);
   }
-  const summary = renderToStaticMarkup(React.createElement(ResearchProjectSummary, { onNavigate() {} }));
-  assert.match(summary, /günstige gehostete Infrastruktur/);
-  assert.match(summary, /sind geplant/);
-  assert.match(summary, /Förderzusage/);
 });
-
 
 test('main entry statically imports App without a first-load chunk waterfall', async () => {
   const main = await readFile(new URL('../src/main.tsx', import.meta.url), 'utf8');
@@ -128,7 +123,7 @@ test('commercial Blueprint artifacts remain absent from public client surfaces',
 });
 
 
-test('Learning Portal owns three Vocabulary flashcards and research remains in documentation', async () => {
+test('Learning Portal owns three Vocabulary flashcards without a project page', async () => {
   const home = await readFile(new URL('../src/features/home/HomePage.tsx', import.meta.url), 'utf8');
   const learning = await readFile(new URL('../src/features/learning/LearningPortalPage.tsx', import.meta.url), 'utf8');
   const cards = await readFile(new URL('../src/components/VocabularyFlashcards.tsx', import.meta.url), 'utf8');
@@ -144,8 +139,8 @@ test('Learning Portal owns three Vocabulary flashcards and research remains in d
   assert.match(cards, /term\.shortDefinition/);
   assert.match(cards, /rotateY\(180deg\)/);
   assert.match(cards, /data-social-engine-generated="false"/);
-  assert.match(docs, /FinTech Forschungsprojekt/);
-  assert.match(docs, /href: '\/forschung'/);
+  assert.doesNotMatch(docs, /FinTech Forschungsprojekt/);
+  assert.doesNotMatch(docs, /href: '\/forschung'/);
 });
 
 test('large optional navigation stays outside the initial landing bundle', async () => {

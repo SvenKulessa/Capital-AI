@@ -8,6 +8,14 @@
 !index.html
 !vite.config.ts
 !tsconfig.json
+!AGENTS.md
+!.agents/
+!.agents/skills/
+!.agents/skills/**
+!.github/
+!.github/agents/
+!.github/agents/**
+!.github/copilot-instructions.md
 !src/
 !src/**
 !server/
@@ -74,7 +82,10 @@
 !shared/market-contracts.mjs
 !shared/legal-identity.mjs
 !shared/license-engine.mjs
-!shared/research-metadata.mjs
+!shared/license-metadata.mjs
+!src/components/LicenseInformationPages.tsx
+!src/data/providerLicenseReview.ts
+!server/license-pages.test.mjs
 !shared/vocabulary-metadata.mjs
 !shared/vocabulary-access-policy.mjs
 !shared/seo-indexing-policy.mjs
@@ -96,6 +107,7 @@
 !deploy/nats-server.conf
 !deploy/nats-entrypoint.sh
 !scripts/
+!scripts/domain-skills.test.mjs
 !scripts/harden-npm-toolchain.mjs
 !scripts/benchmark-scoring-capacity.mjs
 !scripts/verify-private-brokers.mjs
@@ -125,6 +137,8 @@
 !scripts/supabase-auth-config.mjs
 !scripts/supabase-auth-config.test.mjs
 !scripts/seo-content-manifest.test.mjs
+!scripts/merge-milestone.mjs
+!scripts/merge-milestone.test.mjs
 !scripts/seo-source-provenance-drift.test.mjs
 !scripts/refresh-seo-source-provenance.mjs
 !scripts/seo-metadata.test.mjs

@@ -9,7 +9,6 @@ import {
   KeyRound,
   Layers3,
   Network,
-  FlaskConical,
   Scale,
   Database,
   ShieldCheck,
@@ -65,15 +64,6 @@ const presentations = [
     internal: true,
     icon: <Network className="h-5 w-5" />,
     meta: 'Architektur • Pipeline • Evidence',
-  },
-  {
-    title: 'FinTech Forschungsprojekt',
-    description:
-      'Research- und Lizenzkontext des FinTech-Forschungsprojekts. Dieser Inhalt bleibt dokumentarisch und wird nicht mehr auf der Landingpage beworben.',
-    href: '/forschung',
-    internal: true,
-    icon: <FlaskConical className="h-5 w-5" />,
-    meta: 'Research • Quellen • Evidence',
   },
   {
     title: 'OSS Market Architektur',
@@ -166,7 +156,7 @@ export const DocumentationHub: React.FC<DocumentationHubProps> = ({ onBackToHome
           CAPITAL-AI Dokumentations-Hub
         </h1>
         <p className="max-w-3xl text-sm leading-relaxed text-slate-400 sm:text-base">
-          Zentraler Einstieg in Blueprints, FinTech- und OSS-Architektur, Forschungsprojekt, BYOK,
+          Zentraler Einstieg in Blueprints, FinTech- und OSS-Architektur, BYOK,
           Pipeline-Architekturen, Lizenzen, Datenrechte, Preiskatalog und die fünf CAPITAL-AI Domains.
         </p>
       </section>

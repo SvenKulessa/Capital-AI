@@ -288,8 +288,8 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
     glowColor: 'rgba(139, 92, 246, 0.45)',
     accentBg: 'bg-violet-500/15 border-violet-400/50 text-violet-300',
     icon: <BookOpen className="w-5 h-5 text-violet-300" />,
-    badge: '13 Bereiche',
-    description: 'Blueprints, BYOK, Architektur, Forschung, Lizenzen, Preise und Domain-Aufbau.',
+    badge: '12 Bereiche',
+    description: 'Blueprints, BYOK, Architektur, Lizenzen, Preise und Domain-Aufbau.',
     mainPath: '/dokumentation',
     subpages: [
       { id: 'hub', name: 'Dokumentations-Hub', icon: <BookOpen className="w-4 h-4 text-violet-300" />,
@@ -304,8 +304,6 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         shortDesc: 'Preismodell-Präsentation der Produktpakete', path: '/documentation/pricing-models.html' },
       { id: 'architecture', name: 'FinTech Architektur', icon: <Layers className="w-4 h-4 text-cyan-400" />,
         shortDesc: 'Architekturansicht und Systemgrenzen', path: '/architecture' },
-      { id: 'research', name: 'FinTech Forschungsprojekt', icon: <Gauge className="w-4 h-4 text-violet-400" />,
-        shortDesc: 'Forschung und Lizenzkontext', path: '/forschung' },
       { id: 'oss-market', name: 'OSS Market Architektur', icon: <Server className="w-4 h-4 text-emerald-400" />,
         shortDesc: 'Statische Open-Source-Market-Architektur', path: '/downloads/market-screener-hub-open-source.html' },
       { id: 'licenses', name: 'Lizenzen & Nachweise', icon: <FileCode className="w-4 h-4 text-violet-400" />,
@@ -366,12 +364,12 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         path: '/control-center?tab=observability',
       },
       {
-        id: 'research',
-        name: 'Research & Tokenomics',
-        icon: <Gauge className="w-4 h-4 text-purple-400" />,
-        badge: 'Research',
-        shortDesc: 'Forschungs- und Tokenomics-Übersicht',
-        path: '/control-center?tab=research',
+        id: 'news',
+        name: 'News & Repository-Updates',
+        icon: <FileCode className="w-4 h-4 text-cyan-400" />,
+        badge: 'Blog',
+        shortDesc: 'Quellgebundene Blogentwürfe nach jeweils 20 gemergten PRs',
+        path: '/control-center?tab=news',
       },
       {
         id: 'console',
@@ -709,7 +707,7 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
                       {subpage.shortDesc}
                     </p>
 
-                    {/* Tags & Path Footer */}
+                    {/* Tags & navigation indicator (route stays internal) */}
                     <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-slate-800/60 pl-9">
                       <div className="flex items-center gap-1 flex-wrap">
                         {subpage.tags?.map((tag) => (
@@ -723,8 +721,7 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
                       </div>
 
                       <span className="text-[10px] font-mono text-slate-500 group-hover:text-amber-400 flex items-center gap-1 shrink-0 ml-2">
-                        <span>{subpage.path}</span>
-                        <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                        <ChevronRight aria-hidden="true" className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                       </span>
                     </div>
                   </motion.div>

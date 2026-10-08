@@ -90,7 +90,7 @@ jobs:
           docker run --rm --entrypoint ffmpeg "$image" -hide_banner -filters > social-renderer-evidence/ffmpeg-filters.txt
           docker run --rm --entrypoint ffmpeg "$image" -hide_banner -demuxers > social-renderer-evidence/ffmpeg-demuxers.txt
           docker run --rm --entrypoint ffprobe "$image" -hide_banner -version > social-renderer-evidence/ffprobe-version.txt
-          docker run --rm --entrypoint apk "$image" info -v libcrypto3 libssl3 libuuid xz-libs > social-renderer-evidence/runtime-security-packages.txt
+          docker run --rm --entrypoint apk "$image" info -v libcrypto3 libssl3 libuuid xz-libs zlib > social-renderer-evidence/runtime-security-packages.txt
 
           ! grep -E -- '--enable-(gpl|nonfree|version3)([ =]|$)' social-renderer-evidence/ffmpeg-buildconf.txt
           grep -E '[[:space:]]mpeg4[[:space:]]' social-renderer-evidence/ffmpeg-encoders.txt
@@ -155,6 +155,7 @@ jobs:
           node scripts/summarize-trivy.mjs social-renderer-evidence/renderer-image.trivy.json > social-renderer-evidence/renderer-image.trivy.summary.json
           node scripts/summarize-trivy.mjs social-renderer-evidence/renderer-image.trivy.json --gate
           jq -e '[.vulnerabilities[]? | select(.id == "CVE-2026-34743")] | length == 0' social-renderer-evidence/renderer-image.trivy.summary.json >/dev/null
+          jq -e '[.vulnerabilities[]? | select(.id == "CVE-2026-85091")] | length == 0' social-renderer-evidence/renderer-image.trivy.summary.json >/dev/null
 
           docker run --rm \
             -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" \

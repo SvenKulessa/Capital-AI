@@ -8,6 +8,7 @@ test('all current sideboard tab links retain their hub and tab', () => {
   const sidebar = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
   const links = [...sidebar.matchAll(/path: '([^']+\?tab=[^']+)'/g)].map(match => match[1]);
   assert.equal(links.length, 24);
+  assert.ok(links.includes('/control-center?tab=news'));
   assert.ok(links.includes('/studio?tab=console'));
   assert.ok(links.includes('/learning?tab=flashcards'));
   assert.ok(links.includes('/learning?tab=videos'));
@@ -75,14 +76,15 @@ test('same-hub transitions notify subscribers and avoid duplicate history', () =
   }
 });
 
-test('legal and research deep links retain their destination and query state', () => {
-  for (const route of ['/lizenz', '/datenprovider-lizenzen', '/opensource-lizenzen', '/forschung', '/impressum', '/datenschutz', '/agb']) {
+test('license and legal deep links retain their destination and query state', () => {
+  for (const route of ['/lizenz', '/datenprovider-lizenzen', '/opensource-lizenzen', '/impressum', '/datenschutz', '/agb']) {
     assert.equal(resolveAppRoute(route), route);
     assert.equal(resolveNavigationTarget(route.toUpperCase() + '/?ref=footer#details'), route + '?ref=footer#details');
   }
   assert.equal(resolveNavigationTarget('/academic-terms?provider=binance'), '/datenprovider-lizenzen?provider=binance');
   assert.equal(resolveAppRoute('/oss'), '/opensource-lizenzen');
-  assert.equal(resolveAppRoute('/research'), '/forschung');
+  assert.equal(resolveAppRoute('/research'), '/');
+  assert.equal(resolveAppRoute('/forschung'), '/');
   assert.equal(resolveAppRoute('/__proto__'), '/');
 });
 
@@ -172,6 +174,14 @@ test('production navigation uses Preiskatalog and clickable canonical breadcrumb
   assert.match(breadcrumbs, /aria-current="page"/);
 });
 
+test('hub sideboard hides raw URL paths in subpage cards while keeping navigation', () => {
+  const sideboard = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
+  assert.doesNotMatch(sideboard, /\{\s*subpage\.path\s*\}/);
+  assert.match(sideboard, /onNavigate\?\.\(subpage\.path\)/);
+  assert.match(sideboard, /window\.location\.assign\(subpage\.path\)/);
+  assert.match(sideboard, /subpage\.tags\?\.map/);
+});
+
 test('homepage hub directory shares the canonical catalog and excludes protected routes by default', () => {
   const home = readFileSync(new URL('../src/features/home/HomePage.tsx', import.meta.url), 'utf8');
   const directory = readFileSync(new URL('../src/components/HomeHubDirectory.tsx', import.meta.url), 'utf8');
@@ -195,5 +205,5 @@ test('documentation hub catalog links to the existing content instead of reopeni
   }
   assert.match(home, /window\.location\.assign\(subpage\.path\)/);
   assert.match(catalog, /window\.location\.assign\(subpage\.path\)/);
-  assert.ok(catalog.includes("badge: '13 Bereiche'"));
+  assert.ok(catalog.includes("badge: '12 Bereiche'"));
 });
