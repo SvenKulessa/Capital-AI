@@ -36,24 +36,33 @@ jobs:
           mkdir -p "$RUNNER_TEMP/trivy-cache" "tts-worker-evidence/${{ matrix.runtime }}"
           chmod a+rwx "$RUNNER_TEMP/trivy-cache" "tts-worker-evidence/${{ matrix.runtime }}"
 
-      - name: Python Base und Hash-Lock binden
+      - name: Python Build Base, distroless Runtime Base und Hash-Lock binden
         id: base
         run: |
           set -euo pipefail
           runtime="${{ matrix.runtime }}"
-          ref="python@sha256:e529028263dbe6910a2d96f7d2b8f5266385e917fd45d286ef166977c094a51e"
-          [[ "$ref" =~ ^python@sha256:[0-9a-f]{64}$ ]]
-          docker pull "$ref"
-          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+
+          build_tag="python:3.13-slim-trixie"
+          docker pull "$build_tag"
+          build_ref="$(docker image inspect --format '{{index .RepoDigests 0}}' "$build_tag")"
+          [[ "$build_ref" =~ ^python@sha256:[0-9a-f]{64}$ ]]
+
+          runtime_tag="gcr.io/distroless/python3-debian13:nonroot"
+          docker pull "$runtime_tag"
+          runtime_ref="$(docker image inspect --format '{{index .RepoDigests 0}}' "$runtime_tag")"
+          [[ "$runtime_ref" =~ ^gcr\.io/distroless/python3-debian13@sha256:[0-9a-f]{64}$ ]]
+
+          echo "build_ref=$build_ref" >> "$GITHUB_OUTPUT"
+          echo "runtime_ref=$runtime_ref" >> "$GITHUB_OUTPUT"
 
           report="tts-worker-evidence/$runtime/pip-report.json"
-          docker run --rm -v "$PWD:/work" -w /work "$ref" sh -euc "
+          docker run --rm -v "$PWD:/work" -w /work "$build_ref" sh -euc "
             python -m pip install --disable-pip-version-check --dry-run --ignore-installed               --report /work/$report               -r /work/deploy/social-media/tts/$runtime-runtime.in
           "
 
-          python3 - "$runtime" "$ref" "$report" <<'PY'
+          python3 - "$runtime" "$build_ref" "$runtime_ref" "$report" <<'PY'
           import json, pathlib, sys
-          runtime, base_ref, report_path = sys.argv[1:]
+          runtime, build_ref, runtime_ref, report_path = sys.argv[1:]
           report=json.loads(pathlib.Path(report_path).read_text())
           packages=[]
           for item in report.get('install',[]):
@@ -67,16 +76,20 @@ jobs:
               'schemaVersion':'SOCIAL_TTS_RUNTIME_LOCK@1',
               'runtime':runtime,
               'sourceSha':'${{ github.sha }}',
-              'pythonBaseRef':base_ref,
+              'pythonBaseRef':build_ref,
+              'runtimeBaseRef':runtime_ref,
               'packageCount':len(packages),
               'packages':packages,
           }
           if runtime == 'qwen':
-              lock['runtimePackage']={
-                  'name':'qwen-tts',
-                  'version':'0.1.1',
-                  'sha256':'11a290d8dabc7ef91a90c54478c8ab19b3edb1d85c0882313721892bdc4af15d',
-              }
+              lock['immutableVcs']=[{
+                  'name':'qwen3-tts-transformers5-candidate',
+                  'repository':'QwenLM/Qwen3-TTS',
+                  'pullRequest':360,
+                  'revision':'00969daa8064e23adc9e5f52cdf20cf247f94159',
+                  'license':'Apache-2.0',
+                  'upstreamMerged':False,
+              }]
           else:
               lock['immutableVcs']=[
                   {'name':'resemble-perth','revision':'ff1c8ac55a976971245cdd53c18d6131ca00d993'},
@@ -90,24 +103,29 @@ jobs:
 
       - name: Hash-locked Worker bauen
         env:
-          PYTHON_BASE: ${{ steps.base.outputs.ref }}
+          PYTHON_BASE: ${{ steps.base.outputs.build_ref }}
+          RUNTIME_BASE: ${{ steps.base.outputs.runtime_ref }}
         run: |
           set -euo pipefail
-          docker build             --file deploy/social-media/Dockerfile.tts-runtime             --build-arg "PYTHON_BASE=$PYTHON_BASE"             --build-arg "RUNTIME=${{ matrix.runtime }}"             --tag "capital-ai-social-tts-${{ matrix.runtime }}:$GITHUB_SHA"             .
+          docker build \
+            --file deploy/social-media/Dockerfile.tts-runtime \
+            --build-arg "PYTHON_BASE=$PYTHON_BASE" \
+            --build-arg "RUNTIME_BASE=$RUNTIME_BASE" \
+            --build-arg "RUNTIME=${{ matrix.runtime }}" \
+            --tag "capital-ai-social-tts-${{ matrix.runtime }}:$GITHUB_SHA" \
+            .
 
       - name: Import- und non-root Smoke
         run: |
           set -euo pipefail
           image="capital-ai-social-tts-${{ matrix.runtime }}:$GITHUB_SHA"
-          docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m             --cap-drop ALL --security-opt no-new-privileges             --entrypoint sh "$image" -euc '
-              test "$(id -u)" = "10001"
-              mkdir -p "$NUMBA_CACHE_DIR"
-              python -c "import torch, torchaudio; print(torch.__version__, torchaudio.__version__)"
-            '
+          docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --entrypoint /usr/bin/python3 "$image" -c 'import os; assert os.getuid()==10001; os.makedirs("/tmp/numba", exist_ok=True); import torch, torchaudio; print(torch.__version__, torchaudio.__version__)'
           if [ "${{ matrix.runtime }}" = "qwen" ]; then
-            docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m               --cap-drop ALL --security-opt no-new-privileges               --entrypoint python "$image" -c 'import qwen_tts; print("qwen-import-pass")'
+            docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m               --cap-drop ALL --security-opt no-new-privileges               --entrypoint /usr/bin/python3 "$image" -c 'import qwen_tts; print("qwen-import-pass")'
           else
-            docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m               --cap-drop ALL --security-opt no-new-privileges               --entrypoint python "$image" -c 'import chatterbox; print("chatterbox-import-pass")'
+            docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m               --cap-drop ALL --security-opt no-new-privileges               --entrypoint /usr/bin/python3 "$image" -c 'import chatterbox; print("chatterbox-import-pass")'
           fi
 
       - name: Image Identität, SBOM, Lizenzinventar und Scan
@@ -129,11 +147,12 @@ jobs:
 
           docker run --rm             -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy"             -v "$PWD/$out:/reports"             capital-ai-security image             --input /reports/image.tar             --ignorefile /dev/null             --scanners license             --license-full             --format json             --output /reports/worker.licenses.json             --exit-code 0
 
-          jq -n             --arg schemaVersion "SOCIAL_TTS_WORKER_EVIDENCE@1"             --arg runtime "$runtime"             --arg sourceSha "$GITHUB_SHA"             --arg baseImageRef "$(jq -r '.pythonBaseRef' "deploy/social-media/tts/$runtime-runtime.lock.json")"             --arg imageId "$(cat "$out/local-image-id.txt")"             --arg archiveSha256 "$(cut -d ' ' -f1 "$out/image-archive.sha256")"             --arg lockSha256 "$(sha256sum "deploy/social-media/tts/$runtime-runtime.lock.json" | cut -d ' ' -f1)"             '{
+          jq -n             --arg schemaVersion "SOCIAL_TTS_WORKER_EVIDENCE@1"             --arg runtime "$runtime"             --arg sourceSha "$GITHUB_SHA"             --arg baseImageRef "$(jq -r '.pythonBaseRef' "deploy/social-media/tts/$runtime-runtime.lock.json")"             --arg runtimeBaseRef "$(jq -r '.runtimeBaseRef' "deploy/social-media/tts/$runtime-runtime.lock.json")"             --arg imageId "$(cat "$out/local-image-id.txt")"             --arg archiveSha256 "$(cut -d ' ' -f1 "$out/image-archive.sha256")"             --arg lockSha256 "$(sha256sum "deploy/social-media/tts/$runtime-runtime.lock.json" | cut -d ' ' -f1)"             '{
               schemaVersion:$schemaVersion,
               runtime:$runtime,
               sourceSha:$sourceSha,
               baseImageRef:$baseImageRef,
+              runtimeBaseRef:$runtimeBaseRef,
               localImageId:$imageId,
               imageArchiveSha256:$archiveSha256,
               runtimeLockSha256:$lockSha256,
@@ -144,7 +163,8 @@ jobs:
                 "model snapshot must be mounted at immutable revision with declared hashes",
                 "GPU runtime benchmark pending",
                 "German runtime benchmark pending",
-                "Human/Owner listening acceptance pending"
+                "Human/Owner listening acceptance pending",
+                ($runtime == "qwen" ? "Qwen Transformers-5 compatibility is pinned to unmerged upstream PR #360" : empty)
               ]
             }' > "$out/evidence.json"
           rm "$out/image.tar"
