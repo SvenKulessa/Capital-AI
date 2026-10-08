@@ -7,6 +7,7 @@
  * Never makes live provider requests or mutates model promotion state.
  */
 import { z } from 'zod';
+import { AssetIdentitySchema } from '../../contracts/canonicalContracts.ts';
 import {
   MarketDataRightsEvidenceSchema, evaluateMarketDataRights,
 } from '../../contracts/marketDataRightsEligibility.ts';
@@ -21,6 +22,7 @@ const iso = z.string().datetime();
 const nonblank = z.string().trim().min(1).max(500);
 const inputSchema = z.strictObject({
   sourceCommit: z.literal(FINANCE_PINNED_SOURCE_SHA),
+  asset: AssetIdentitySchema,
   providerId: nonblank,
   providerDataset: nonblank,
   venue: nonblank,
@@ -49,7 +51,7 @@ const failure = (reasons: string[]) => Object.freeze({
 export function inspectFinancePointInTimeVintage(input: FinancePitAdmissionInput) {
   const parsed = inputSchema.safeParse(input);
   if (!parsed.success) return failure(['FINANCE_PIT_INPUT_INVALID']);
-  const {providerId,providerDataset,venue,decisionAt,evaluatedAt,vintage,rights} = parsed.data;
+  const {asset,providerId,providerDataset,venue,decisionAt,evaluatedAt,vintage,rights} = parsed.data;
   const reasons: string[] = [];
   const decisionMs = Date.parse(decisionAt), evaluatedMs = Date.parse(evaluatedAt);
   const availableMs = Date.parse(vintage.availableAt);
@@ -59,6 +61,11 @@ export function inspectFinancePointInTimeVintage(input: FinancePitAdmissionInput
   if (!Number.isFinite(retrievedMs) || retrievedMs > evaluatedMs) reasons.push('FINANCE_PIT_FUTURE_RETRIEVAL');
   if (!vintage.assetId?.trim() || !vintage.symbol?.trim() || !vintage.featureKey?.trim()) {
     reasons.push('FINANCE_PIT_ASSET_OR_FEATURE_MISSING');
+  }
+  if (asset.assetClass !== 'commodities' || vintage.assetId !== asset.assetId
+      || vintage.symbol !== asset.symbol || venue !== asset.venue
+      || !asset.assetId || !asset.venue) {
+    reasons.push('FINANCE_PIT_TARGET_ASSET_IDENTITY_MISMATCH');
   }
   if (rights.providerId !== providerId) reasons.push('FINANCE_PIT_PROVIDER_ID_MISMATCH');
   const feed = providerDataset + ':' + vintage.symbol + ':' + venue;

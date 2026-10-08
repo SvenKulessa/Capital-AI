@@ -95,7 +95,9 @@ const vintage = {
   acquisitionMode:'ARCHIVED_RELEASE_CAPTURE' as const,
 };
 const pit = {
-  sourceCommit:FINANCE_PINNED_SOURCE_SHA,providerId,providerDataset:'historical-eia',
+  sourceCommit:FINANCE_PINNED_SOURCE_SHA,providerId,
+  asset:{assetId:'commodities:WTI',symbol:'WTI',name:'WTI Benchmark',assetClass:'commodities' as const,
+    venue:'NYMEX',currency:'USD',status:'active' as const},providerDataset:'historical-eia',
   venue:'NYMEX',evaluatedAt:'2026-10-08T12:00:00.000Z',
   decisionAt:'2022-09-04T00:00:00.000Z',rights,vintage,
 };
@@ -117,6 +119,10 @@ test('PIT admission rejects lookahead, latest-history leakage and missing provid
     ...rights.permissions,derived_scoring_research:permission(false),
   }}});
   assert.ok(denied.reasons.includes('FINANCE_PIT_RIGHTS_NOT_ADMITTED'));
+  const wrongAsset = inspectFinancePointInTimeVintage({
+    ...pit,asset:{...pit.asset,assetId:'commodities:BRENT'},
+  });
+  assert.ok(wrongAsset.reasons.includes('FINANCE_PIT_TARGET_ASSET_IDENTITY_MISMATCH'));
   const notScoped = inspectFinancePointInTimeVintage({...pit,providerDataset:'unknown'});
   assert.ok(notScoped.reasons.includes('FINANCE_PIT_PROVIDER_FEED_OUT_OF_SCOPE'));
 });
