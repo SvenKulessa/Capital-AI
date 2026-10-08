@@ -167,6 +167,7 @@
 !scripts/validate-social-tool-license-evidence.mjs
 !scripts/validate-social-engine-completion-gate.mjs
 !scripts/social-engine-completion-gate.test.mjs
+!scripts/social-provider-db-smoke.sh
 !contracts/
 !contracts/**
 !packages/
@@ -225,6 +226,8 @@
 !CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json
 !CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json
 !CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json
+!CAPITAL-AI-GROWTH/social-core-port-provenance-20261008.json
+!CAPITAL-AI-GROWTH/social-publishing-cutover-provenance-20261008.json
 !CAPITAL-AI-GROWTH/social-engine-completion-gate.json
 !CAPITAL-AI-GROWTH/social-media-tool-admission.yaml
 !CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.yaml
@@ -252,6 +255,7 @@
 !supabase/proposals/provider_query_guard.sql
 !supabase/migrations/20261007214554_provider_query_guard.sql
 !supabase/migrations/20261008181500_private_user_analysis_bindings.sql
+!supabase/migrations/20261008113000_social_provider_store.sql
 !server/social-media/
 !server/social-media/provider-adapter.mjs
 !server/social-media/provider-adapter.test.mjs

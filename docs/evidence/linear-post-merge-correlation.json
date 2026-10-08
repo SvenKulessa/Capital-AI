@@ -1,12 +1,12 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "5b6b8b79ec0f29d3da99b55eed6920a7bd9c8cbf",
-  "mergedPr": 297,
-  "targetPr": 298,
-  "targetBranch": "capital-ai-product/enterprise-analysis-ui-20261008",
-  "targetHeadSha": "6f7df1863655bd626965cef9d65a92c7a8999982",
+  "mainSha": "03325f00412290bb457823de347e7f3171904d12",
+  "mergedPr": 306,
+  "targetPr": 305,
+  "targetBranch": "capital-ai-growth/social-publishing-cutover-20261008",
+  "targetHeadSha": "43672f303b1ef7b85e5e2bbb192e84c00ef6c6b5",
   "exactOverlap": [
-    "package.json"
+    ".dockerignore"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,

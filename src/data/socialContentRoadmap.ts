@@ -93,11 +93,11 @@ export const SOCIAL_CONTENT_WORK_PACKAGES: WorkPackage[] = [
       "CAPITAL-AI-GROWTH/social-engine-completion-gate.json",
       "docs/licenses/SOCIAL-MEDIA-ENGINE-THIRD-PARTY-NOTICES.md"
     ],
-    "nextStep": "Social Core, MediaProjectV2, Editing, PlanningVisual und deterministischer Renderer sind in PR #302 materialisiert; CI terminal prüfen und danach Text/Approval/Publishing/Analytics-Cutover ohne aktives TTS/ASR-Modell fortsetzen.",
+    "nextStep": "Social Core/Renderer sind in PR #302 materialisiert; Publishing/Distribution konvergiert im separaten Folge-PR auf die bestehenden Capital-AI Provider-Authorities und bleibt disabled. CI terminal auswerten; POINT_4 bleibt fail-closed.",
     "priority": "Kritisch",
     "leadName": "Owner + GROWTH/MARKET/PLATFORM/TRUST/PRODUCT",
     "targetSprint": "Sequenziell nach Lizenz-, Datenrechte- und Security-Gates",
-    "description": "Qwen, Chatterbox und Whisper/Faster-Whisper sind entfernt. PR #302 materialisiert 7/13 Social-Runtime-Artefakte sowie 2/2 Renderer-Quellen mit aktuellem CAPITAL-AI Branding; CI und Publishing-/Approval-Cutover bleiben offen. Punkt 4 bleibt fail-closed, Social Completion bleibt BLOCKED und Finance-Scoring/Weighting/Data bleibt bis zum Social-Cutover gesperrt.",
+    "description": "Qwen, Chatterbox und Whisper/Faster-Whisper sind entfernt. Social Core/Renderer sind materialisiert; Publishing/Distribution nutzt die bereits vorhandenen hashgebundenen Capital-AI Approval-, Asset-, Provider-, UNKNOWN- und Attribution-Authorities statt Finance-Duplikaten. Alle Provider bleiben disabled. Punkt 4 und Social Completion bleiben BLOCKED; Finance-Scoring/Weighting/Data bleibt gesperrt.",
     "deliverables": [
       "SocialMediaEngine Contracts, Editing, deterministischen Media- und Publishing-Pfad zielkonform migrieren.",
       "Maschinenlesbare Tool-/Lizenz-Zulassung mit Commercial-, Owner-private-, Research- und BLOCKED-Modi durchsetzen.",

@@ -58,11 +58,14 @@ COPY scripts/documentation-drift.mjs scripts/documentation-drift.test.mjs ./scri
 COPY scripts/domain-skills.test.mjs ./scripts/domain-skills.test.mjs
 COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/social-tool-license-evidence.test.mjs scripts/validate-social-tool-license-evidence.mjs scripts/frontend-security.test.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
 COPY scripts/media ./scripts/media
+COPY scripts/social-provider-db-smoke.sh ./scripts/social-provider-db-smoke.sh
+COPY supabase/migrations/20261008113000_social_provider_store.sql ./supabase/migrations/20261008113000_social_provider_store.sql
 COPY shared ./shared
 COPY contracts/private-provider-query-operations.json ./contracts/private-provider-query-operations.json
 COPY CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json CAPITAL-AI-GROWTH/social-engine-completion-gate.json CAPITAL-AI-GROWTH/social-media-tool-admission.yaml CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.yaml ./CAPITAL-AI-GROWTH/
 COPY CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json ./CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json
 COPY CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json ./CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json
+COPY CAPITAL-AI-GROWTH/social-core-port-provenance-20261008.json CAPITAL-AI-GROWTH/social-publishing-cutover-provenance-20261008.json ./CAPITAL-AI-GROWTH/
 COPY server/market.mjs server/market-spot-ingestion.mjs server/spot-provider-wire.mjs server/private-market-batch.mjs server/private-market-cache.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/ecb-reference-rates.LICENSE.txt server/ecb-reference-rates.test.mjs server/auth.mjs server/user-provider-vault.mjs server/user-analysis-bindings.mjs server/user-provider-vault.test.mjs server/user-analysis-bindings.test.mjs server/kraken-order-dry-run.mjs server/kraken-order-dry-run.test.mjs server/uniswap-trading.mjs server/uniswap-trading.test.mjs ./server/
 COPY docs/business/MONETIZATION-DEEPSCAN-LEGAL-MATRIX-20261008.md ./docs/business/MONETIZATION-DEEPSCAN-LEGAL-MATRIX-20261008.md
 COPY docs/security/BYOK-USER-PRIVATE-DATA.md ./docs/security/BYOK-USER-PRIVATE-DATA.md
