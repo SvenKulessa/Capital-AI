@@ -89,7 +89,7 @@ export const SOCIAL_CONTENT_WORK_PACKAGES: WorkPackage[] = [
       "CAPITAL-AI-GROWTH/social-engine-completion-gate.json",
       "docs/licenses/SOCIAL-MEDIA-ENGINE-THIRD-PARTY-NOTICES.md"
     ],
-    "nextStep": "Renderer-Hardening-Rebuild mit xz-libs >= 5.8.3-r0 terminal abnehmen; danach Qwen/Chatterbox Dependency-Locks, immutable TTS/ASR-Worker-Images und deutschen Listening-Benchmark schließen. Erst danach Social-Core/Renderer-Cutover fortsetzen.",
+    "nextStep": "Renderer-zlib-Rebuild terminal abnehmen; Qwen/Chatterbox Dependency-Locks sind vollständig SHA-gebunden. Danach immutable TTS-/ASR-Worker-Scans sowie deutschen 4×2 GPU-Runtime-Benchmark und Human/Owner Listening schließen. Erst danach Social-Core/Renderer-Cutover fortsetzen.",
     "priority": "Kritisch",
     "leadName": "Owner + GROWTH/MARKET/PLATFORM/TRUST/PRODUCT",
     "targetSprint": "Sequenziell nach Lizenz-, Datenrechte- und Security-Gates",
