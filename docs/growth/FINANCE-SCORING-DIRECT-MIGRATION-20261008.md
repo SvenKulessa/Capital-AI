@@ -39,3 +39,16 @@ No paid service, external provider fetch, secrets, GPU worker or model download.
 `src/services/scoringEngine.ts#ScoringEngineService.inspectFinanceSourceForShadow` now validates Finance feature candidates with the merged Finance evidence bridge and invokes only the existing `computeShadowScore` when every input is mappable. Duplicate canonical feature/provider keys are blocked, and returned projections are strictly non-production, non-ranking and non-decision. Tests include missing rights and cross-asset source mutations.
 
 Imported original Finance `AnalysisConnectionRegistry`, `CommodityBacktestingContracts`, `CommodityModelValidation`, `CommodityHistoricalBacktestEngine` and `CommodityHistoricalVintage` provide the source semantics for capability inventory, walk-forward/OOS backtests and revision/vintage evidence. There is still no automatic provider fetch or model promotion.
+
+## Additional Finance evidence surfaces
+
+Exact source-matched crypto source modules now cover contract-code identity/audits/formal proof, oracle source/fallback health, exploit lifecycle, meme/DeFi hard-gate projections, and source-attested market sentiment. The code is isolated under `FinanceScoringResearch/`, so source `PASS` applies only to the supplied evidence snapshot; it does not grant Capital-AI production-model, provider, trade, or public score authority. Source files are pinned below.
+
+- `CryptoContractAssuranceEvidence.ts` Finance git-blob `788c8c3b12c789cd9d4d6400626bb74781fe22a3`
+- `CryptoOracleEvidence.ts` Finance git-blob `da7cdab65530a960b5fdeeabe5b366a4a16e4009`
+- `CryptoExploitIncidentEvidence.ts` Finance git-blob `98dbe74fbc10e583492a8eec095b6ba8eed75583`
+- `CryptoResearchGateEvidence.ts` Finance git-blob `e10b9695908ecc17db355bc4f4ec5defe1b5d1b1`
+- `SentimentEvidenceProjection.ts` Finance git-blob `c926c3f3ed0e76f3a79f4f569761437877e7a9b8`
+- `CryptoContractAssuranceHardGateProjection.ts` Finance git-blob `4cd1c93b2d646bad2849bfdec1905f629162c296`
+- `CryptoOracleHardGateProjection.ts` Finance git-blob `24c5b99867d75941bc70f8f0c3df981049b7a296`
+- `CryptoExploitHardGateProjection.ts` Finance git-blob `0a4ca40a8724c1525accb8d050a8f1e8a9f7605f`
