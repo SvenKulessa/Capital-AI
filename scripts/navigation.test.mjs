@@ -257,3 +257,23 @@ test('optional route breadcrumbs do not inflate the synchronous bootstrap chunk'
   assert.match(shell, /import\('\.\.\/components\/RouteBreadcrumbs'\)/);
   assert.match(shell, /<Suspense fallback=\{null\}>[\s\S]*?<RouteBreadcrumbs/);
 });
+
+test('six non-indexed language roots resolve to the public homepage without exposing private routes', () => {
+  for (const code of ['de','en','it','fr','pt','es']) {
+    assert.equal(resolveAppRoute('/' + code + '/'), '/');
+    assert.equal(resolveAppRoute('/' + code), '/');
+    // Internal actions remain canonical (language choice is a client preference).
+    assert.equal(resolveNavigationTarget('/' + code + '/'), '/');
+  }
+  for (const path of ['/en/profile','/fr/login','/it/agb','/pt/control-center']) {
+    assert.equal(resolveAppRoute(path), '/');
+  }
+});
+
+test('language switcher has a keyboard-accessible native select and shareable homepage URL', () => {
+  const switcher = readFileSync(new URL('../src/components/LanguageSwitcher.tsx', import.meta.url), 'utf8');
+  assert.match(switcher, /<select/);
+  assert.match(switcher, /aria-label=\{t\('language'\)\}/);
+  assert.match(switcher, /setLocale\(next\)/);
+  assert.match(switcher, /window\.history\.replaceState/);
+});
