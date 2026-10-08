@@ -7,6 +7,7 @@ import { createAuth } from './auth.mjs';
 import { createSocialOAuthCallback } from './social-media/oauth-callback.mjs';
 import { createPrivateMarketCache } from './private-market-cache.mjs';
 import { createUserProviderVault } from './user-provider-vault.mjs';
+import { createUserAnalysisBindings } from './user-analysis-bindings.mjs';
 import { createPrivateProviderQuery } from './private-provider-query.mjs';
 import { createUniswapTrading } from './uniswap-trading.mjs';
 import { createKrakenOrderDryRun } from './kraken-order-dry-run.mjs';
@@ -206,6 +207,7 @@ export function createApp(root = defaultRoot, options = {}) {
     env: options.env || process.env, getRedis: () => infrastructure.requireProviderState(),
   });
   const userProviderVault = createUserProviderVault({ ...options, auth, privateMarketCache });
+  const userAnalysisBindings = createUserAnalysisBindings({ ...options, auth });
   const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault });
   if (
     (options.env || process.env).PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true' ||
@@ -276,6 +278,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await auth.handle(req, res, url, json)) return;
   if (await socialOAuthCallback.handle(req, res, url, json)) return;
   if (await userProviderVault.handle(req, res, url, json)) return;
+  if (await userAnalysisBindings.handle(req, res, url, json)) return;
   if (await privateProviderQuery.handle(req, res, url, json, requestContext.requestId)) return;
   if (await krakenOrderDryRun.handle(req, res, url, json, requestContext.requestId)) return;
   if (await uniswapTrading.handle(req, res, url, json)) return;
