@@ -171,6 +171,14 @@ test('production navigation uses Preiskatalog and clickable canonical breadcrumb
   assert.match(breadcrumbs, /aria-current="page"/);
 });
 
+test('hub sideboard hides raw URL paths in subpage cards while keeping navigation', () => {
+  const sideboard = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
+  assert.doesNotMatch(sideboard, /\{\s*subpage\.path\s*\}/);
+  assert.match(sideboard, /onNavigate\?\.\(subpage\.path\)/);
+  assert.match(sideboard, /window\.location\.assign\(subpage\.path\)/);
+  assert.match(sideboard, /subpage\.tags\?\.map/);
+});
+
 test('homepage hub directory shares the canonical catalog and excludes protected routes by default', () => {
   const home = readFileSync(new URL('../src/features/home/HomePage.tsx', import.meta.url), 'utf8');
   const directory = readFileSync(new URL('../src/components/HomeHubDirectory.tsx', import.meta.url), 'utf8');
