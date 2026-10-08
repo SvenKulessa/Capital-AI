@@ -128,16 +128,18 @@ test('commercial Blueprint artifacts remain absent from public client surfaces',
 });
 
 
-test('landing page uses exactly three Vocabulary flashcards and keeps research in documentation', async () => {
+test('Learning Portal owns three Vocabulary flashcards and research remains in documentation', async () => {
   const home = await readFile(new URL('../src/features/home/HomePage.tsx', import.meta.url), 'utf8');
+  const learning = await readFile(new URL('../src/features/learning/LearningPortalPage.tsx', import.meta.url), 'utf8');
   const cards = await readFile(new URL('../src/components/VocabularyFlashcards.tsx', import.meta.url), 'utf8');
   const docs = await readFile(new URL('../src/features/documentation/DocumentationHub.tsx', import.meta.url), 'utf8');
 
-  assert.match(home, /VocabularyFlashcards/);
-  assert.match(home, /const VocabularyFlashcards = lazy\(\(\) =>/);
-  assert.match(home, /import\('\.\.\/\.\.\/components\/VocabularyFlashcards'\)/);
-  assert.doesNotMatch(home, /import \{ VocabularyFlashcards \} from/);
-  assert.doesNotMatch(home, /ResearchProjectSummary/);
+  assert.doesNotMatch(home, /VocabularyFlashcards/);
+  assert.match(learning, /const VocabularyFlashcards = React\.lazy\(\(\) =>/);
+  assert.match(learning, /import\('\.\.\/\.\.\/components\/VocabularyFlashcards'\)/);
+  assert.match(learning, /'glossar' \| 'flashcards' \| 'guides' \| 'videos' \| 'quiz'/);
+  assert.match(learning, /activeTab === 'flashcards'/);
+  assert.doesNotMatch(learning, /SubpageSidebarNav/);
   assert.match(cards, /VOCABULARY_TERMS\.slice\(0, 3\)/);
   assert.match(cards, /term\.shortDefinition/);
   assert.match(cards, /rotateY\(180deg\)/);
@@ -181,7 +183,7 @@ test('architecture is removed from drawer footer and remains reachable from docu
 test('learning portal exposes architecture video previews without claiming completed renderer evidence', async () => {
   const learning = await readFile(new URL('../src/features/learning/LearningPortalPage.tsx', import.meta.url), 'utf8');
 
-  assert.match(learning, /'glossar' \| 'guides' \| 'videos' \| 'quiz'/);
+  assert.match(learning, /'glossar' \| 'flashcards' \| 'guides' \| 'videos' \| 'quiz'/);
   assert.match(learning, /Architektur Videos/);
   assert.match(learning, /PREVIEW · VIDEO NOCH NICHT GERENDERT/);
   assert.match(learning, /BLOCKED_RUNTIME_NOT_MIGRATED/);

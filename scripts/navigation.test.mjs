@@ -3,10 +3,14 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { APP_NAVIGATION_EVENT, navigateAppLocation, readHubTab, resolveNavigationTarget, resolveAppRoute } from '../src/utils/appNavigation.ts';
 
-test('all 16 sideboard tab links retain their hub and tab', () => {
+test('all current sideboard tab links retain their hub and tab', () => {
   const sidebar = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
   const links = [...sidebar.matchAll(/path: '([^']+\?tab=[^']+)'/g)].map(match => match[1]);
-  assert.equal(links.length, 16);
+  assert.equal(links.length, 24);
+  assert.ok(links.includes('/studio?tab=console'));
+  assert.ok(links.includes('/learning?tab=flashcards'));
+  assert.ok(links.includes('/learning?tab=videos'));
+  assert.ok(links.includes('/control-center?tab=tools'));
   assert.ok(links.includes('/control-center?tab=licenses'));
   for (const link of links) assert.equal(resolveNavigationTarget(link), link);
 });
@@ -163,4 +167,30 @@ test('production navigation uses Preiskatalog and clickable canonical breadcrumb
   assert.match(sideboard, /role="treeitem"/);
   assert.match(breadcrumbs, /onClick=\{\(\) => onNavigate\(item\.path\)\}/);
   assert.match(breadcrumbs, /aria-current="page"/);
+});
+
+test('homepage hub directory shares the canonical catalog and excludes protected routes by default', () => {
+  const home = readFileSync(new URL('../src/features/home/HomePage.tsx', import.meta.url), 'utf8');
+  const directory = readFileSync(new URL('../src/components/HomeHubDirectory.tsx', import.meta.url), 'utf8');
+  const learning = readFileSync(new URL('../src/features/learning/LearningPortalPage.tsx', import.meta.url), 'utf8');
+  const studio = readFileSync(new URL('../src/features/studio/StudioPage.tsx', import.meta.url), 'utf8');
+  assert.match(home, /HomeHubDirectory/);
+  assert.match(directory, /MAIN_HUBS_CONFIG/);
+  assert.match(directory, /hubId !== 'control-center' \|\| isOwner/);
+  assert.match(directory, /session\?\.authenticated === true && session\?\.account\?\.iamRole === 'owner'/);
+  assert.match(directory, /aria-expanded=\{isExpanded\}/);
+  assert.match(directory, /onNavigate\(subpage\.path\)/);
+  assert.doesNotMatch(learning, /SubpageSidebarNav/);
+  assert.doesNotMatch(studio, /SubpageSidebarNav/);
+});
+
+test('documentation hub catalog links to the existing content instead of reopening the overview', () => {
+  const catalog = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
+  const home = readFileSync(new URL('../src/components/HomeHubDirectory.tsx', import.meta.url), 'utf8');
+  for (const route of ['/documentation/byok.html', '/documentation/pipeline-architectures.html', '/documentation/pricing-models.html', '/documentation/domains.html']) {
+    assert.ok(catalog.includes("path: '" + route + "'"));
+  }
+  assert.match(home, /window\.location\.assign\(subpage\.path\)/);
+  assert.match(catalog, /window\.location\.assign\(subpage\.path\)/);
+  assert.ok(catalog.includes("badge: '13 Bereiche'"));
 });

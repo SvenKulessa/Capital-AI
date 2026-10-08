@@ -19,9 +19,9 @@ const MarketOverview = lazy(() =>
   })),
 );
 
-const VocabularyFlashcards = lazy(() =>
-  import('../../components/VocabularyFlashcards').then((module) => ({
-    default: module.VocabularyFlashcards,
+const HomeHubDirectory = lazy(() =>
+  import('../../components/HomeHubDirectory').then((module) => ({
+    default: module.HomeHubDirectory,
   })),
 );
 
@@ -92,7 +92,12 @@ export function HomePage({
       />
 
       <Suspense fallback={null}>
-        <VocabularyFlashcards onNavigate={onNavigate} />
+        <HomeHubDirectory
+          onNavigate={onNavigate}
+          onOpenModule={onOpenModule}
+          onOpenSectorAnalysis={onOpenSectorAnalysis}
+          onOpenPriceAlerts={onOpenPriceAlerts}
+        />
       </Suspense>
       <KeyPillars />
       <ContentEngineConcept onNavigate={onNavigate} />

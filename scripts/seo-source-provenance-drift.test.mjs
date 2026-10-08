@@ -4,6 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { SEO_CONTENT_MANIFEST } from '../shared/seo-content-manifest.mjs';
+import { calculateSeoSourceProvenanceUpdate } from './refresh-seo-source-provenance.mjs';
 import {
   SEO_SOURCE_ARTIFACTS,
   seoSourceSetKey,
@@ -34,4 +35,10 @@ test('SEO-01 source blob and SHA-256 provenance fails closed on source drift', a
     assert.equal(entry.contentDigest, `sha256:${digest}`, `${entry.path}: source-set digest drift`);
     assert.equal(seoSourceSetKey(entry.sourceRefs), [...entry.sourceRefs].sort().join('|'));
   }
+});
+
+test('SEO provenance refresh stays deterministic and does not alter tracked sources in CI', async () => {
+  const { original, updated, changed } = await calculateSeoSourceProvenanceUpdate();
+  assert.equal(changed, false);
+  assert.equal(updated, original);
 });

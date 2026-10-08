@@ -6,12 +6,12 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
     contentSha256: '5b8c980c69c1158341577deaf54ae7f164f85d5be469ccc6aff5c9181bd9ce5c',
   }),
   'src/features/home/HomePage.tsx': Object.freeze({
-    sourceBlobSha: 'bd643c7d556e678bed97b3ffc1dcfe4cc233f2a6',
-    contentSha256: 'f9278905b23ac8cfa07656e7c93759d3f1a1e06d63afc14a7b02d35f086a5a3d',
+    sourceBlobSha: 'a8e4e67048ff11a4e97d0081eff00fc92ff46cbf',
+    contentSha256: '4e51b82b357596ca5336683aae82f9959a8e92ffcdd3810ffb0de592ee7c10a6',
   }),
   'src/features/learning/LearningPortalPage.tsx': Object.freeze({
-    sourceBlobSha: '95a393a74c4bb2e8c1df8a2042ec5cca9fbaa6c6',
-    contentSha256: '930629c5309d6069d497f17da57c81723c200dd1e40cd7ed8c656ba2164bc459',
+    sourceBlobSha: '1b34a2e8ca6164bd201085c76d652bb241403280',
+    contentSha256: 'ffa35393dfe8409fc535f80792bf6f5e54d0b580ab0f6891bd99e96b901cfbfb',
   }),
   'shared/vocabulary-metadata.mjs': Object.freeze({
     sourceBlobSha: '5ebed53fc03776879bbc7ff8997bc2e513a122e4',
@@ -56,8 +56,8 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
 });
 
 const SEO_SOURCE_SET_DIGESTS = Object.freeze({
-  'index.html|src/features/home/HomePage.tsx': '11da750139910a1d3e24cb001df3206cae29042797a156dd86d5bfbb32d2e567',
-  'shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': 'd335a22c92f4642020f27706e46d78f73b0faf863ea38066af6b2a11380512a7',
+  'index.html|src/features/home/HomePage.tsx': '6b649fb09813299a316921d99f124db2affb399f0cfb0536a6bf2adb2b044072',
+  'shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': 'c9ea28de6afc8e62e67fa303c5f0930d3f102b123cc751c6116b85dc08867041',
   'src/components/LegalAndFaqPages.tsx|src/content/publicLegalContent.ts': 'a9039d8721bdd7d6833f24f15547c8a63bd0f6bc46a426b4ab84582e9c9c8e30',
   'shared/research-metadata.mjs|src/components/ResearchLicensePages.tsx': 'e0f94982794bf502ef4c92b84f49bbdac610063f6a5a9d5313d8025fcb078696',
   'shared/research-metadata.mjs|src/data/researchLicenses.ts': 'd298323c58cbc7c283f5f10baad58e8c786f456761c0160c989e0450876f920f',

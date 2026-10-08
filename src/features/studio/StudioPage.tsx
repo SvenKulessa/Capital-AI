@@ -54,7 +54,6 @@ import { AdvisorChatbot } from '../pipeline-builder/AdvisorChatbot';
 import { PipelineConfigState } from '../../utils/pipelineToolCatalog';
 import { ScoringEngineService } from '../../services/scoringEngine';
 import { PipelineConfiguratorService } from '../../services/pipelineConfigurator';
-import { SubpageSidebarNav, SubpageNavItem } from '../../components/SubpageSidebarNav';
 import { useHubTab } from '../../hooks/useHubTab';
 
 export type StudioTabKey =
@@ -182,59 +181,6 @@ export const StudioPage: React.FC<StudioPageProps> = ({
 
   const runStressTest = () => {}; // Requires real benchmark worker before activation.
 
-  // Studio Hub Sideboard items
-  const subpageItems: SubpageNavItem[] = [
-    {
-      id: 'architecture',
-      label: 'Pipeline Architektur',
-      icon: <Layers className="w-4 h-4 text-amber-400" />,
-      badge: '16 Konzepte',
-      desc: 'Vollständige Ingestion-Spezifikation',
-    },
-    {
-      id: 'blueprints',
-      label: 'Blueprints',
-      icon: <FileCode className="w-4 h-4 text-cyan-400" />,
-      badge: '7 Schemata',
-      desc: 'TradingView, Python & Bloomberg',
-    },
-    {
-      id: 'builder',
-      label: 'Pipeline Builder',
-      icon: <SlidersHorizontal className="w-4 h-4 text-emerald-400" />,
-      badge: 'Modular',
-      desc: '5-Ebenen Konfigurator & BoM',
-    },
-    {
-      id: 'advisor',
-      label: 'AI Kauf-Berater',
-      icon: <Bot className="w-4 h-4 text-purple-400" />,
-      badge: 'Advisor',
-      desc: 'MaRisk- & Latenz-Optimierung',
-    },
-    {
-      id: 'providers',
-      label: 'Data & Providers',
-      icon: <Radio className="w-4 h-4 text-emerald-400" />,
-      badge: 'Fleet Health',
-      desc: 'Tier 1 bis Tier 4 Gateway Status',
-    },
-    {
-      id: 'analytics',
-      label: 'Analytics & Scoring',
-      icon: <BarChart3 className="w-4 h-4 text-amber-400" />,
-      badge: '50 Faktoren',
-      desc: 'Multi-Faktor & Z-Scores',
-    },
-    {
-      id: 'benchmark',
-      label: 'Benchmark Lab',
-      icon: <Gauge className="w-4 h-4 text-cyan-400" />,
-      badge: 'Evidence',
-      desc: 'Benchmark-Konzept mit evidenzgebundener Validierung',
-    },
-  ];
-
   return (
     <div className="w-full text-slate-100 min-h-screen py-4 sm:py-6 px-2 sm:px-6 relative">
       {/* ========================================================================= */}
@@ -307,17 +253,6 @@ export const StudioPage: React.FC<StudioPageProps> = ({
           )}
         </div>
       </div>
-
-      {/* ========================================================================= */}
-      {/* 2. SUBPAGE SIDEBOARD NAVIGATION                              */}
-      {/* ========================================================================= */}
-      <SubpageSidebarNav
-        hubTitle="Studio Hub"
-        items={subpageItems}
-        activeId={activeTab}
-        onSelect={(id) => setActiveTab(id as StudioTabKey)}
-        accentColor="cyan"
-      />
 
       {/* ========================================================================= */}
       {/* 3. STUDIO HUB TABS (Die 7 Studio-Tabs im Überblick)                      */}

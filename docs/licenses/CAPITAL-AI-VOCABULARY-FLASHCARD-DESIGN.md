@@ -1,6 +1,6 @@
 # CAPITAL-AI Vocabulary Flashcard Design – Lizenz und Provenienz
 
-Stand: 2026-10-06
+Stand: 2026-10-08
 Design-ID: CAPITAL_AI_VOCABULARY_FLASHCARD@1
 
 ## Urheberschaft
@@ -17,7 +17,7 @@ Die Flashcard darf erst nach einem späteren reproduzierbaren Social-Engine-Run 
 
 ## Inhalte
 
-Die auf der Landingpage verwendeten Begriffe und Kurzdefinitionen werden direkt aus dem öffentlichen CAPITAL-AI Vocabulary geladen. Es werden keine fremden Bilder oder externen Schriftarten eingebunden.
+Die im Learning Portal unter `/learning?tab=flashcards` verwendeten Begriffe und Kurzdefinitionen werden direkt aus dem öffentlichen CAPITAL-AI Vocabulary geladen. Es werden keine fremden Bilder oder externen Schriftarten eingebunden.
 
 ## Nutzungsrecht
 

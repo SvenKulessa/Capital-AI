@@ -124,6 +124,7 @@
 !scripts/supabase-auth-config.test.mjs
 !scripts/seo-content-manifest.test.mjs
 !scripts/seo-source-provenance-drift.test.mjs
+!scripts/refresh-seo-source-provenance.mjs
 !scripts/seo-metadata.test.mjs
 !scripts/validate-finance-source-target-manifest.mjs
 !scripts/finance-source-target-manifest.test.mjs
