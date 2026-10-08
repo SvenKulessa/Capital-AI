@@ -65,6 +65,7 @@ export function spotWireRequest({provider,symbol,transport}) {
     const url = new URL(ENDPOINTS[provider].rest);
     url.searchParams.set(provider === 'binance' ? 'symbol' : 'pair',mapped.exchangeSymbol);
     if (provider === 'binance') url.searchParams.set('limit','1');
+    if (provider === 'kraken') { url.searchParams.set('count','1'); url.searchParams.set('assetVersion','1'); }
     return Object.freeze({method:'GET',url:url.toString(),credentials:'omit',redirect:'error',maxResponseBytes:MAX_FRAME_BYTES});
   }
   if (transport === 'websocket') {
