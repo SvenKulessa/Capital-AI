@@ -1,0 +1,50 @@
+name: Frontend Pull Request Label
+# Metadata-only automation. Never checkout or execute untrusted PR code.
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+jobs:
+  label_frontend:
+    name: Classify frontend change
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPOSITORY: ${{ github.repository }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+    steps:
+      - name: Inspect changed filenames and apply Frontend label
+        shell: bash
+        run: |
+          set -euo pipefail
+          frontend=false
+          while IFS= read -r file; do
+            case "$file" in
+              src/components/*|src/features/*|src/hooks/*|src/app/*|src/shared/ui/*|src/index.css|index.html|vite.config.ts|public/*)
+                frontend=true
+                break
+                ;;
+            esac
+          done < <(gh api --paginate "repos/${GH_REPOSITORY}/pulls/${PR_NUMBER}/files?per_page=100" --jq '.[].filename')
+          if [[ "$frontend" != true ]]; then
+            echo 'No frontend files changed; leaving labels unchanged.'
+            exit 0
+          fi
+          if gh api "repos/${GH_REPOSITORY}/labels/Frontend" --silent 2>/dev/null; then
+            # Existing label may have GitHub's neutral gray default; enforce chosen turquoise.
+            gh api -X PATCH "repos/${GH_REPOSITORY}/labels/Frontend" \
+              -f color=29C6D3 \
+              -f description='UI, Navigation und Frontend - automatisch anhand des PR-Diffs' >/dev/null
+          else
+            gh api -X POST "repos/${GH_REPOSITORY}/labels" \
+              -f name=Frontend \
+              -f color=29C6D3 \
+              -f description='UI, Navigation und Frontend - automatisch anhand des PR-Diffs' >/dev/null
+          fi
+          gh api -X POST "repos/${GH_REPOSITORY}/issues/${PR_NUMBER}/labels" \
+            -f labels[]=Frontend >/dev/null
+          echo 'Frontend label applied (turquoise #29C6D3).'

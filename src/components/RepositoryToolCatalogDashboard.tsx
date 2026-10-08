@@ -73,7 +73,13 @@ export function RepositoryToolCatalogDashboard() {
   React.useEffect(() => {
     const controller = new AbortController();
     void refresh(controller.signal);
-    return () => controller.abort();
+    const interval = window.setInterval(() => {
+      if (!document.hidden) void refresh(controller.signal);
+    }, 90 * 60 * 1000);
+    return () => {
+      controller.abort();
+      window.clearInterval(interval);
+    };
   }, [refresh]);
 
   const kinds = React.useMemo(() => Array.from(new Set(snapshot?.entries.map(item => item.kind) || [])).sort(), [snapshot]);
@@ -116,6 +122,7 @@ export function RepositoryToolCatalogDashboard() {
         Versionsstand bezeichnet den Source-Lock, die App-Releaseversion oder einen Image-Pin —
         niemals automatisch den produktiv laufenden Stand. Für SaaS ohne belastbare Versionsangabe steht „unbekannt“.
         GitHub-Antworten werden serverseitig höchstens fünf Minuten zwischengespeichert.
+        Bei geöffneter Katalogansicht erfolgt alle 90 Minuten ein neuer Abgleich.
       </p>
     </header>
 

@@ -13,65 +13,178 @@ const PROJECT_OWNER_BY_ID = new Map<ProjectOwner, (typeof PROJECT_OWNERS)[number
   PROJECT_OWNERS.map(project => [project.id, project]),
 );
 
+type RepositoryStatus = {
+  repository: string;
+  sourceSha: string;
+  deployedSha: string | null;
+  observedAt: string;
+  freshness: 'LIVE' | 'CACHED' | 'STALE';
+};
+const REPOSITORY_SYNC_INTERVAL_MS = 90 * 60 * 1000;
+const SOURCE_SHA = /^[a-f0-9]{40}$/;
+
 export const RoadmapPanel: React.FC = () => {
-  const [owner, setOwner] = React.useState('');
-  const [state, setState] = React.useState('');
+  const [selectedOwners, setSelectedOwners] = React.useState<ProjectOwner[]>(
+    () => PROJECT_OWNERS.map(project => project.id),
+  );
+  const [repositoryStatus, setRepositoryStatus] = React.useState<RepositoryStatus | null>(null);
+  const [syncError, setSyncError] = React.useState(false);
+  const [syncing, setSyncing] = React.useState(false);
+  const [lastSyncAttempt, setLastSyncAttempt] = React.useState<number>(0);
+
+  const syncRepository = React.useCallback(async (signal?: AbortSignal) => {
+    setSyncing(true);
+    try {
+      const response = await fetch('/api/internal/repository-tools', {
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: { Accept: 'application/json' },
+        signal,
+      });
+      if (!response.ok) throw new Error('repository_unavailable');
+      const data: unknown = await response.json();
+      const payload = data as Record<string, unknown>;
+      if (!payload || payload.schema !== 'CAPITAL_AI_REPOSITORY_TOOL_CATALOG@1' ||
+          typeof payload.sourceSha !== 'string' || !SOURCE_SHA.test(payload.sourceSha) ||
+          typeof payload.repository !== 'string' ||
+          typeof payload.observedAt !== 'string' ||
+          !['LIVE', 'CACHED', 'STALE'].includes(String(payload.freshness))) {
+        throw new Error('invalid_repository_snapshot');
+      }
+      if (!signal?.aborted) {
+        setRepositoryStatus({
+          repository: payload.repository,
+          sourceSha: payload.sourceSha,
+          deployedSha: typeof payload.deployedSha === 'string' && SOURCE_SHA.test(payload.deployedSha)
+            ? payload.deployedSha : null,
+          observedAt: payload.observedAt,
+          freshness: payload.freshness as RepositoryStatus['freshness'],
+        });
+        setSyncError(payload.freshness === 'STALE');
+      }
+    } catch {
+      if (!signal?.aborted) setSyncError(true);
+    } finally {
+      if (!signal?.aborted) {
+        setSyncing(false);
+        setLastSyncAttempt(Date.now());
+      }
+    }
+  }, []);
+
+  React.useEffect(() => {
+    const controller = new AbortController();
+    void syncRepository(controller.signal);
+    const interval = window.setInterval(() => {
+      if (!document.hidden) void syncRepository(controller.signal);
+    }, REPOSITORY_SYNC_INTERVAL_MS);
+    const resume = () => {
+      if (!document.hidden && Date.now() - lastAttempt.current >= REPOSITORY_SYNC_INTERVAL_MS) {
+        void syncRepository(controller.signal);
+      }
+    };
+    document.addEventListener('visibilitychange', resume);
+    return () => {
+      controller.abort();
+      window.clearInterval(interval);
+      document.removeEventListener('visibilitychange', resume);
+    };
+  }, [syncRepository]);
+
+  const lastAttempt = React.useRef(0);
+  React.useEffect(() => { lastAttempt.current = lastSyncAttempt; }, [lastSyncAttempt]);
+  const toggleOwner = (id: ProjectOwner) =>
+    setSelectedOwners(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id]);
+  const [selectedStates, setSelectedStates] = React.useState<RoadmapEvidenceState[]>(
+    () => Object.keys(STATES) as RoadmapEvidenceState[],
+  );
+  const toggleState = (value: RoadmapEvidenceState) =>
+    setSelectedStates(current => current.includes(value) ? current.filter(item => item !== value) : [...current, value]);
   const [search, setSearch] = React.useState('');
   const packages = WORK_PACKAGES.filter(item =>
-    (!owner || item.owner === owner) &&
-    (!state || item.evidenceState === state) &&
+    selectedOwners.includes(item.owner) &&
+    selectedStates.includes(item.evidenceState) &&
     `${item.id} ${item.title} ${item.description}`.toLocaleLowerCase('de').includes(search.toLocaleLowerCase('de'))
   );
   return <section aria-labelledby="roadmap-heading" className="my-6">
     <h2 id="roadmap-heading" className="text-xl font-bold">Roadmap · belegter Repo-Stand</h2>
-    <p className="text-sm text-slate-400 mt-2">
-      Stand {ROADMAP_SNAPSHOT.reviewDate} · Main{' '}
-      <a className="text-amber-300 underline" href={`https://github.com/${ROADMAP_SNAPSHOT.repository}/commit/${ROADMAP_SNAPSHOT.sourceSha}`}>{ROADMAP_SNAPSHOT.sourceSha.slice(0, 7)}</a>.
-      {' '}VERIFIED bestätigt den beschriebenen Repo-Umfang. Produktive Abnahmen stehen separat in der Roadmap.
-      Ungeklärte Ziele erhalten keine geschätzten Prozentwerte. Dieser Snapshot wird nach einem belegten Abgleich aktualisiert.
-    </p>
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 my-4">
-      {(Object.keys(STATES) as RoadmapEvidenceState[]).map(key => <div key={key} className={`rounded-xl border p-3 bg-slate-900 ${STATES[key].style}`}>
-        <p className="text-xl font-bold">{WORK_PACKAGES.filter(item => item.evidenceState === key).length}</p>
-        <p className="text-xs">{STATES[key].label}</p>
-      </div>)}
+    <div className="mt-3 space-y-2 rounded-xl border border-slate-700 bg-slate-950/70 p-3 text-sm text-slate-300" aria-live="polite">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="font-semibold text-white">Repository main:</span>
+        {repositoryStatus
+          ? <a href={`https://github.com/${repositoryStatus.repository}/commit/${repositoryStatus.sourceSha}`}
+              className="text-cyan-300 underline underline-offset-2" target="_blank" rel="noopener noreferrer">
+              {repositoryStatus.sourceSha.slice(0, 12)}
+            </a>
+          : <span className="text-amber-300">Noch nicht live verifiziert</span>}
+        {repositoryStatus && <span className="text-xs">{repositoryStatus.freshness} · Quelle gelesen {new Date(repositoryStatus.observedAt).toLocaleString('de-DE')}</span>}
+        <button type="button" disabled={syncing} onClick={() => void syncRepository()}
+          className="ml-auto min-h-10 rounded-lg border border-slate-600 px-3 py-1.5 text-xs hover:bg-white/5 disabled:opacity-60">
+          {syncing ? 'Aktualisiere …' : 'Jetzt abgleichen'}
+        </button>
+      </div>
+      <p className="text-xs text-slate-400">Automatischer GitHub-Abgleich alle 90 Minuten, solange das Control Center geöffnet ist.
+        Roadmap-Nachweise: geprüft am {ROADMAP_SNAPSHOT.reviewDate} ·
+        <a className="ml-1 text-amber-300 underline underline-offset-2"
+          href={`https://github.com/${ROADMAP_SNAPSHOT.repository}/commit/${ROADMAP_SNAPSHOT.sourceSha}`}>
+          {ROADMAP_SNAPSHOT.sourceSha.slice(0, 7)}
+        </a> (historischer Review, kein Live-Nachweis).
+      </p>
+      {repositoryStatus?.deployedSha && <p className="text-xs text-slate-400">Webservice: {repositoryStatus.deployedSha.slice(0, 12)}
+        {repositoryStatus.deployedSha !== repositoryStatus.sourceSha && <span className="text-amber-300"> · Deployment weicht von main ab</span>}
+      </p>}
+      {syncError && <p role="alert" className="text-xs text-amber-300">GitHub-Abgleich fehlgeschlagen oder veraltet. Der letzte verifizierte Stand bleibt sichtbar.</p>}
+      <p className="text-xs text-slate-500">VERIFIED in Arbeitspaketen wird nicht aus dem GitHub-HEAD abgeleitet; dafür sind separate Nachweise erforderlich.</p>
     </div>
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-2 my-4" aria-label="CAPITAL-AI Roadmap Domains">
-      {PROJECT_OWNERS.map(project => {
-        const selected = owner === project.id;
-        return <button
-          key={project.id}
-          type="button"
-          aria-pressed={selected}
-          onClick={() => setOwner(current => current === project.id ? '' : project.id)}
-          className={`rounded-xl border bg-slate-950/70 p-2 text-left transition flex items-center justify-center ${project.badgeColor} ${selected ? 'ring-2 ring-current' : 'hover:bg-slate-900'}`}
-          title={project.description}
-        >
-          <img
-            src={project.badgeAsset}
-            alt={`${project.label} Branding-Badge`}
-            className="block h-24 w-24 sm:h-28 sm:w-28"
-          />
-        </button>;
-      })}
-    </div>
+    <details className="my-4 rounded-xl border border-slate-700 bg-slate-950/70 p-3" aria-label="Roadmap Statusfilter">
+      <summary className="cursor-pointer text-sm font-semibold text-white">
+        Status auswählen · {selectedStates.length} von {Object.keys(STATES).length} <span className="text-slate-400">(Mehrfachauswahl)</span>
+      </summary>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button type="button" className="min-h-10 rounded-lg border border-slate-600 px-3 text-xs hover:bg-slate-800"
+          onClick={() => setSelectedStates(Object.keys(STATES) as RoadmapEvidenceState[])}>Alle wählen</button>
+        <button type="button" className="min-h-10 rounded-lg border border-slate-600 px-3 text-xs hover:bg-slate-800"
+          onClick={() => setSelectedStates([])}>Keine wählen</button>
+      </div>
+      <fieldset className="mt-3 grid gap-2 sm:grid-cols-2">
+        <legend className="sr-only">Roadmap-Status filtern</legend>
+        {(Object.keys(STATES) as RoadmapEvidenceState[]).map(key => (
+          <label key={key} className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-xs ${STATES[key].style}`}>
+            <input type="checkbox" checked={selectedStates.includes(key)} onChange={() => toggleState(key)}
+              className="h-4 w-4 accent-amber-400" />
+            <span>{STATES[key].label} · {WORK_PACKAGES.filter(item => item.evidenceState === key).length}</span>
+          </label>
+        ))}
+      </fieldset>
+    </details>
+    <details className="my-4 rounded-xl border border-slate-700 bg-slate-950/70 p-3" aria-label="CAPITAL-AI Roadmap Domains">
+      <summary className="cursor-pointer text-sm font-semibold text-white">
+        Domains auswählen · {selectedOwners.length} von {PROJECT_OWNERS.length} <span className="text-slate-400">(Mehrfachauswahl)</span>
+      </summary>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button type="button" className="min-h-10 rounded-lg border border-slate-600 px-3 text-xs text-white hover:bg-slate-800"
+          onClick={() => setSelectedOwners(PROJECT_OWNERS.map(project => project.id))}>Alle wählen</button>
+        <button type="button" className="min-h-10 rounded-lg border border-slate-600 px-3 text-xs text-white hover:bg-slate-800"
+          onClick={() => setSelectedOwners([])}>Keine wählen</button>
+      </div>
+      <fieldset className="mt-3 grid gap-2 sm:grid-cols-2">
+        <legend className="sr-only">Domains filtern</legend>
+        {PROJECT_OWNERS.map(project => (
+          <label key={project.id} className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-slate-700 px-3 py-2 text-sm ${selectedOwners.includes(project.id) ? 'bg-slate-800 text-white' : 'text-slate-400'}`}>
+            <input type="checkbox" checked={selectedOwners.includes(project.id)}
+              onChange={() => toggleOwner(project.id)} className="h-4 w-4 accent-amber-400" />
+            <img src={project.badgeAsset} alt="" aria-hidden="true" className="h-8 w-8" />
+            {project.label}
+          </label>
+        ))}
+      </fieldset>
+    </details>
     <details className="text-sm text-slate-400 mb-4">
       <summary className="cursor-pointer">Phasen und Abschlussprüfung</summary>
       <ul className="mt-2 space-y-2">{ROADMAP_STAGES.map(phase => <li key={phase.id}>{phase.shortTitle}: Gesamt-Abnahme offen. {phase.description}</li>)}</ul>
     </details>
-    <div className="grid gap-3 sm:grid-cols-3 my-4">
-      <label className="text-sm">Domain
-        <select className="block w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl p-3" value={owner} onChange={event => setOwner(event.target.value)}>
-          <option value="">Alle Domains</option>
-          {PROJECT_OWNERS.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}
-        </select>
-      </label>
-      <label className="text-sm">Status
-        <select className="block w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl p-3" value={state} onChange={event => setState(event.target.value)}>
-          <option value="">Alle Zustände</option>
-          {(Object.keys(STATES) as RoadmapEvidenceState[]).map(key => <option key={key} value={key}>{STATES[key].label}</option>)}
-        </select>
-      </label>
+    <div className="grid gap-3 my-4">
+
       <label className="text-sm">Arbeitspaket suchen
         <input className="block w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl p-3" value={search} onChange={event => setSearch(event.target.value)} placeholder="Titel oder Kennung" />
       </label>
