@@ -65,28 +65,45 @@ function scheduleRefresh(delayMs: number) {
   timer = setTimeout(() => void refresh(), delayMs);
 }
 
+function retryAfterMs(response: Response, fallbackMs: number) {
+  const seconds = Number(response.headers.get('Retry-After'));
+  if (!Number.isFinite(seconds) || seconds <= 0) return fallbackMs;
+  return Math.min(10 * 60_000, Math.max(15_000, seconds * 1000));
+}
+
 async function refresh() {
   controller?.abort();
   controller = new AbortController();
   const signal = controller.signal;
+  let retryDelayMs = 15_000;
   try {
     const catalogResponse = await fetch('/api/market/assets', {
       cache: 'no-store',
       signal: AbortSignal.any([signal, AbortSignal.timeout(6000)]),
     });
-    if (!catalogResponse.ok) throw new Error('ASSET_CATALOG_UNAVAILABLE');
+    if (!catalogResponse.ok) {
+      retryDelayMs = retryAfterMs(catalogResponse, 15_000);
+      throw new Error('ASSET_CATALOG_UNAVAILABLE');
+    }
     const catalog = MarketAssetCatalogSchema.parse(await catalogResponse.json());
 
     const runtimeAssets = catalog.assets.filter(asset => asset.runtimeEnabled);
     // Catalog identity must survive a failed data-read. Never request an unadmitted instrument.
     let verified: MarketAsset[] = [];
     if (catalog.quotesEnabled && runtimeAssets.length) {
+      retryDelayMs = 60_000;
       try {
         const valuesResponse = await fetch('/api/market/values', {
           cache: 'no-store',
           signal: AbortSignal.any([signal, AbortSignal.timeout(8000)]),
         });
-        if (!valuesResponse.ok) throw new Error('MARKET_VALUES_UNAVAILABLE');
+        if (!valuesResponse.ok) {
+          retryDelayMs = retryAfterMs(
+            valuesResponse,
+            valuesResponse.status === 503 ? 300_000 : 60_000,
+          );
+          throw new Error('MARKET_VALUES_UNAVAILABLE');
+        }
         const body: unknown = await valuesResponse.json();
         if (!body || typeof body !== 'object' ||
             !('schema' in body) || body.schema !== 'CAPITAL_AI_ASSET_VALUES@1' ||
@@ -120,7 +137,7 @@ async function refresh() {
     MARKET_ASSET_CATALOG = catalog;
     MARKET_ASSETS = verified;
     emit();
-    scheduleRefresh(catalog.quotesEnabled ? 60_000 : 15_000);
+    scheduleRefresh(catalog.quotesEnabled ? retryDelayMs : 15_000);
   } catch {
     if (signal.aborted || !users) return;
     MARKET_ASSET_CATALOG = {
@@ -131,7 +148,7 @@ async function refresh() {
     };
     MARKET_ASSETS = [];
     emit();
-    scheduleRefresh(15000);
+    scheduleRefresh(retryDelayMs);
   }
 }
 
