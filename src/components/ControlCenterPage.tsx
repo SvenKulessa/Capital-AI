@@ -8,16 +8,16 @@ import { useHubTab } from '../hooks/useHubTab';
 import { LicenseEnginePanel } from './LicenseEnginePanel';
 import { ComponentInventoryDashboard } from './ComponentInventoryDashboard';
 import { RepositoryToolCatalogDashboard } from './RepositoryToolCatalogDashboard';
-import { TokenomicsResearchPanel } from './TokenomicsResearchPanel';
+import { ControlCenterNewsPanel } from './ControlCenterNewsPanel';
 import { ObservabilityDashboard } from './ObservabilityDashboard';
-export type ControlCenterTab = 'roadmap' | 'components' | 'tools' | 'observability' | 'research' | 'console' | 'cockpit' | 'team' | 'cost_center' | 'system' | 'licenses';
-const CONTROL_TABS: readonly ControlCenterTab[] = ['roadmap', 'components', 'tools', 'observability', 'research', 'console', 'cockpit', 'team', 'cost_center', 'system', 'licenses'];
+export type ControlCenterTab = 'roadmap' | 'components' | 'tools' | 'observability' | 'news' | 'console' | 'cockpit' | 'team' | 'cost_center' | 'system' | 'licenses';
+const CONTROL_TABS: readonly ControlCenterTab[] = ['roadmap', 'components', 'tools', 'observability', 'news', 'console', 'cockpit', 'team', 'cost_center', 'system', 'licenses'];
 const CONTROL_TAB_LABELS: Record<ControlCenterTab, string> = {
   roadmap: 'Roadmap',
   components: 'Komponenten & CADS',
   tools: 'Tools & Anwendungen',
   observability: 'Observability',
-  research: 'Research & Tokenomics',
+  news: 'News',
   console: 'Console',
   cockpit: 'Cockpit',
   team: 'Team & Rollen',
@@ -63,8 +63,8 @@ export const ControlCenterPage: React.FC<ControlCenterPageProps> = ({ onBackToHo
   {activeTab === 'components' && <ComponentInventoryDashboard />}
   {activeTab === 'tools' && <RepositoryToolCatalogDashboard />}
   {activeTab === 'observability' && <ObservabilityDashboard />}
-  {activeTab === 'research' && <TokenomicsResearchPanel />}
-  {!['licenses', 'components', 'tools', 'observability', 'research'].includes(activeTab) && <>
+  {activeTab === 'news' && <ControlCenterNewsPanel />}
+  {!['licenses', 'components', 'tools', 'observability', 'news'].includes(activeTab) && <>
   <ProviderStatusDashboard onBackToHome={onBackToHome} />
   <h2 className="text-xl font-bold mt-6">50 Analyse-Komponenten</h2>
   <p className="text-sm text-slate-400 my-3">{CANONICAL_50_COMPONENTS.filter(c => c.status === 'planned').length} geplant · {CANONICAL_50_COMPONENTS.filter(c => c.status === 'blocked').length} gesperrt. {report.issues.length} offene Referenz- und Aktivierungsprüfungen. Es gibt derzeit keinen produktiv freigegebenen Score.</p>

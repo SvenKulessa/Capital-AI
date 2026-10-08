@@ -1,6 +1,7 @@
 import React from 'react';
-import { PROJECT_OWNERS, ROADMAP_SNAPSHOT, ROADMAP_STAGES, WORK_PACKAGES } from '../data/roadmapData';
+import { PROJECT_OWNERS, ROADMAP_STAGES, WORK_PACKAGES } from '../data/roadmapData';
 import type { ProjectOwner, RoadmapEvidenceState } from '../data/roadmapData';
+import mergeAudit from '../data/roadmapMergeReconciliation.json';
 
 const STATES: Record<RoadmapEvidenceState, { label: string; style: string }> = {
   VERIFIED: { label: 'VERIFIED · Repo umgesetzt', style: 'border-emerald-400/40 text-emerald-300' },
@@ -124,17 +125,21 @@ export const RoadmapPanel: React.FC = () => {
         </button>
       </div>
       <p className="text-xs text-slate-400">Automatischer GitHub-Abgleich alle 90 Minuten, solange das Control Center geöffnet ist.
-        Roadmap-Nachweise: geprüft am {ROADMAP_SNAPSHOT.reviewDate} ·
-        <a className="ml-1 text-amber-300 underline underline-offset-2"
-          href={`https://github.com/${ROADMAP_SNAPSHOT.repository}/commit/${ROADMAP_SNAPSHOT.sourceSha}`}>
-          {ROADMAP_SNAPSHOT.sourceSha.slice(0, 7)}
-        </a> (historischer Review, kein Live-Nachweis).
+        Letzter Code-/Dokumentenabgleich: {mergeAudit.lastReconciledPr
+          ? <a className="ml-1 text-cyan-300 underline underline-offset-2"
+              href={`https://github.com/SvenKulessa/Capital-AI/pull/${mergeAudit.lastReconciledPr}`}>
+              PR #{mergeAudit.lastReconciledPr}
+            </a>
+          : <span className="ml-1 text-amber-300">noch kein vollständiger 10er-Merge-Abgleich</span>}.
+        Der Abgleich dokumentiert Quellen und Belegpfade; fachliche Abschlussbewertungen bleiben gesondert.
       </p>
       {repositoryStatus?.deployedSha && <p className="text-xs text-slate-400">Webservice: {repositoryStatus.deployedSha.slice(0, 12)}
         {repositoryStatus.deployedSha !== repositoryStatus.sourceSha && <span className="text-amber-300"> · Deployment weicht von main ab</span>}
       </p>}
       {syncError && <p role="alert" className="text-xs text-amber-300">GitHub-Abgleich fehlgeschlagen oder veraltet. Der letzte verifizierte Stand bleibt sichtbar.</p>}
-      <p className="text-xs text-slate-500">VERIFIED in Arbeitspaketen wird nicht aus dem GitHub-HEAD abgeleitet; dafür sind separate Nachweise erforderlich.</p>
+      <p className="text-xs text-slate-500">Automatischer Abgleich nach jeweils 10 gemergten PRs, Änderungs-PR mit geprüftem Ergebnis.
+        {mergeAudit.state === 'RECONCILED_CODE_AND_DOCUMENTS' && ` ${mergeAudit.unproven} Arbeitspakete mit offenen / nicht auflösbaren Referenzen.`}
+        VERIFIED wird nicht aus einem GitHub-HEAD oder einer bloßen Datei-Existenz abgeleitet.</p>
     </div>
     <details className="my-4 rounded-xl border border-slate-700 bg-slate-950/70 p-3" aria-label="Roadmap Statusfilter">
       <summary className="cursor-pointer text-sm font-semibold text-white">
