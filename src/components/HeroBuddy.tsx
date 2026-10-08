@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { EyeOff, Move, X } from 'lucide-react';
+import { EyeOff, Move, Settings, X } from 'lucide-react';
+import { answerLocally } from '../../Chat Buddy/src/index';
 
 type HeroBuddyProps = {
   onNavigate?: (path: string) => void;
@@ -13,7 +14,7 @@ type HeroBuddyProps = {
 type BuddyMessage = { id: string; role: 'buddy' | 'user'; text: string };
 type AssistReason = 'hesitation' | 'repeat' | 'oscillation' | 'dwell';
 
-const DISCLAIMER = 'Portalhilfe aus dem Hero Buddy. Keine Anlageberatung.';
+const DISCLAIMER = 'JaJa erklärt Zusammenhänge. Keine Anlageberatung.';
 export const HERO_BUDDY_EVENT = 'capital-ai:open-hero-buddy';
 export const HERO_BUDDY_HIDDEN_KEY = 'capital_ai_hero_buddy_hidden_v1';
 const HERO_BUDDY_POSITION_KEY = 'capital_ai_hero_buddy_position_v1';
@@ -23,15 +24,33 @@ const BUDDY_POSITIONS: BuddyPosition[] = ['bottom-right', 'bottom-left', 'top-ri
 export function openHeroBuddy() { window.dispatchEvent(new Event(HERO_BUDDY_EVENT)); }
 const COOLDOWN_MS = 90_000;
 
+type BuddyKeyState = 'missing' | 'blocked' | 'ready' | 'unused';
+type BuddyKeyRow = {
+  id: string;
+  env: string;
+  label: string;
+  needed: boolean;
+  bills: boolean;
+  present: boolean;
+  used: boolean;
+  state: BuddyKeyState;
+  detail: string;
+};
+type BuddyKeyReport = { schema: string; active: string; keys: BuddyKeyRow[] };
+type LearnHit = { path: string; title: string; snippet: string; score: number };
+type LearnTool = { id: string; name: string; license: string; note: string; connected: boolean };
+type LearnStatus = { files: number; chunks: number; hits: LearnHit[]; tools: LearnTool[] };
+
+function weaveLearned(answer: string, hits: LearnHit[]) {
+  if (!hits.length) return answer;
+  const lead = hits[0];
+  const line = `Aus dem lokalen Bestand ${lead.path}: ${lead.snippet}`;
+  if (/keinen Knoten|no node|pas de nœud|no tengo nodo|non ho un nodo/i.test(answer)) return `Ja ja! ${line}`;
+  return `${answer}\n${line}`;
+}
+
 function answerFor(input: string) {
-  const q = input.toLowerCase();
-  if (q.includes('preis') || q.includes('tarif') || q.includes('vocabulary') || q.includes('glossar')) {
-    return 'Market Vocabulary kostet 19,00 € einmalig und ist ein eigenständiges Zusatzprodukt. Es ist nicht in Starter, Pro oder Enterprise enthalten.';
-  }
-  if (q.includes('beratung') || q.includes('kaufen') || q.includes('verkaufen')) {
-    return 'Ich erkläre nur die Plattform. Keine Kauf- oder Verkaufshinweise.';
-  }
-  return 'Tarife, Vocabulary, Analyse, Whale Radar und Alerts kann ich direkt öffnen.';
+  return answerLocally(input, 'de', false, 2).answer;
 }
 
 function lineFor(reason: AssistReason) {
@@ -54,9 +73,13 @@ export function HeroBuddy(props: HeroBuddyProps) {
     return stored && BUDDY_POSITIONS.includes(stored) ? stored : 'bottom-right';
   });
   const [messages, setMessages] = useState<BuddyMessage[]>([
-    { id: 'welcome', role: 'buddy', text: 'Ich bin der Hero Buddy und der Support-Agent in einer Figur.' },
+    { id: 'welcome', role: 'buddy', text: 'Ja ja. Ich bin JaJa, der Chat Buddy. Ich erkläre Zins, Bewertung und Risiko, ohne Kauf oder Verkauf.' },
   ]);
   const [sessionGreetingApplied, setSessionGreetingApplied] = useState(false);
+  const [settingsOn, setSettingsOn] = useState(false);
+  const [keyReport, setKeyReport] = useState<BuddyKeyReport | null>(null);
+  const [learnReport, setLearnReport] = useState<LearnStatus | null>(null);
+  const [keyNote, setKeyNote] = useState('');
   const lastAssist = useRef(0);
   useEffect(() => {
     const controller = new AbortController();
@@ -86,6 +109,29 @@ export function HeroBuddy(props: HeroBuddyProps) {
       .catch(() => undefined);
     return () => controller.abort();
   }, [sessionGreetingApplied]);
+  useEffect(() => {
+    if (!settingsOn) return;
+    const controller = new AbortController();
+    fetch('/api/chat-buddy/keys', { cache: 'no-store', headers: { Accept: 'application/json' }, signal: controller.signal })
+      .then((response) => (response.ok ? response.json() : Promise.reject()))
+      .then((report: BuddyKeyReport) => {
+        if (!controller.signal.aborted) {
+          setKeyReport(report);
+          setKeyNote('');
+        }
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setKeyNote('Schlüsselstatus gerade nicht erreichbar.');
+      });
+    fetch('/api/chat-buddy/learn', { cache: 'no-store', headers: { Accept: 'application/json' }, signal: controller.signal })
+      .then((response) => (response.ok ? response.json() : Promise.reject()))
+      .then((report: LearnStatus) => {
+        if (!controller.signal.aborted) setLearnReport(report);
+      })
+      .catch(() => undefined);
+    return () => controller.abort();
+  }, [settingsOn]);
+
   const reducedMotion = usePrefersReducedMotion();
   useEffect(() => {
     const openFromHero = () => {
@@ -116,14 +162,24 @@ export function HeroBuddy(props: HeroBuddyProps) {
   const send = (text: string) => {
     const clean = text.trim();
     if (!clean) return;
+    const buddyId = `b-${Date.now()}`;
+    const local = answerFor(clean);
     setMessages((current) => [
       ...current,
-      { id: `u-${current.length}`, role: 'user', text: clean },
-      { id: `b-${current.length}`, role: 'buddy', text: answerFor(clean) },
+      { id: `u-${buddyId}`, role: 'user', text: clean },
+      { id: buddyId, role: 'buddy', text: local },
     ]);
     setDraft('');
     setOpen(true);
     setSpeech(null);
+    fetch(`/api/chat-buddy/learn?q=${encodeURIComponent(clean)}`, { cache: 'no-store', headers: { Accept: 'application/json' } })
+      .then((response) => (response.ok ? response.json() : Promise.reject()))
+      .then((report: LearnStatus) => {
+        const next = weaveLearned(local, report.hits ?? []);
+        if (next === local) return;
+        setMessages((current) => current.map((message) => (message.id === buddyId ? { ...message, text: next } : message)));
+      })
+      .catch(() => undefined);
   };
 
   const cyclePosition = () => {
@@ -156,8 +212,11 @@ export function HeroBuddy(props: HeroBuddyProps) {
           {open ? (
             <div>
               <div className="mb-2 flex items-center justify-between gap-2">
-                <p className="font-bold text-amber-300">Hero Buddy · Support</p>
+                <p className="font-bold text-amber-300">JaJa · Chat Buddy</p>
                 <div className="flex items-center gap-1">
+                  <button type="button" aria-expanded={settingsOn} aria-label="Einstellungen" title="Einstellungen" onClick={() => setSettingsOn((value) => !value)} className="rounded-md p-1 text-slate-400 hover:text-white">
+                    <Settings className="h-4 w-4" />
+                  </button>
                   <button type="button" aria-label="Hero Buddy verschieben" title="Position ändern" onClick={cyclePosition} className="rounded-md p-1 text-slate-400 hover:text-white">
                     <Move className="h-4 w-4" />
                   </button>
@@ -169,6 +228,34 @@ export function HeroBuddy(props: HeroBuddyProps) {
                   </button>
                 </div>
               </div>
+              {settingsOn ? (
+                <div className="mb-2 rounded-xl border border-slate-700 bg-[#030716] px-2 py-2">
+                  <p className="text-[11px] text-slate-300">Schlüssel aus Render. Kostenpflichtige Schlüssel werden nicht genutzt. Die Antwort bleibt lokal.</p>
+                  {keyNote ? <p className="mt-1 text-[11px] text-amber-300">{keyNote}</p> : null}
+                  <ul className="mt-2 space-y-1">
+                    {(keyReport?.keys ?? []).map((item) => (
+                      <li key={item.env}>
+                        <span className="font-medium text-slate-100">{item.env}</span>
+                        <span className="text-slate-400"> · {item.state === 'missing' ? 'fehlt' : item.state === 'blocked' ? 'gesetzt, nicht genutzt' : item.state}</span>
+                        <span className="block text-[10px] text-slate-500">{item.detail}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-2 text-[11px] text-slate-300">
+                    Gelernt aus Doku und Code
+                    {learnReport ? ` · ${learnReport.files} Dateien · ${learnReport.chunks} Abschnitte` : ''}.
+                  </p>
+                  <ul className="mt-1 space-y-1">
+                    {(learnReport?.tools ?? []).map((tool) => (
+                      <li key={tool.id}>
+                        <span className="font-medium text-slate-100">{tool.name}</span>
+                        <span className="text-slate-400"> · {tool.license} · {tool.connected ? 'verbunden' : 'nicht verbunden'}</span>
+                        <span className="block text-[10px] text-slate-500">{tool.note}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
               <div className="max-h-52 space-y-2 overflow-y-auto">
                 {messages.map((message) => (
                   <p key={message.id} className={`rounded-xl px-2 py-1.5 ${message.role === 'user' ? 'ml-6 bg-amber-400 text-black' : 'mr-4 bg-slate-900'}`}>{message.text}</p>
