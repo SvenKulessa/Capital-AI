@@ -233,8 +233,8 @@ export class ScoringEngineService {
         reasons.add('FEATURE_CONTRACT_INVALID'); continue;
       }
       const f = parsed.data, p = f.provenance;
-      if (p.observedAt > now + 3000 || f.observedAt > now + 3000 || p.receivedAt > now + 3000 ||
-          p.publishedAt > now + 3000 || p.receivedAt < p.observedAt || p.publishedAt < p.receivedAt ||
+      if (p.observedAt > now || f.observedAt > now || p.receivedAt > now ||
+          p.publishedAt > now || p.receivedAt < p.observedAt || p.publishedAt < p.receivedAt ||
           p.latencyMs !== p.receivedAt - p.observedAt || now - f.observedAt > 30_000 ||
           now - p.observedAt > 30_000) {
         reasons.add('FEATURE_STALE_OR_TIMESTAMP_INVALID'); continue;
