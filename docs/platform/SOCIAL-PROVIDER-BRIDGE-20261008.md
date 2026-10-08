@@ -1,88 +1,47 @@
-# CAPITAL-AI Social Provider Bridge — controlled provider migration (2026-10-08)
+# Social Provider Bridge — PLATFORM (2026-10-08)
 
-## Scope and authority
+**Authority:** `AGENTS.md` / `SOLO_MAINTAINER_FLOW@1`. Primary domain PLATFORM, related GROWTH and TRUST. PR #268 (Growth Content Social Package) is already merged on main. PR #269 is a separate draft implementation. Publishing authority remains `SOCIAL_MEDIA_ENGINE_ONLY`. No server component can publish merely because a manifest is valid.
 
-- **Primary domain:** PLATFORM; **related:** GROWTH (Social), TRUST (OAuth, publication evidence).
-- **Stacked dependency:** PR #268, `CAPITAL_AI_CONTENT_SOCIAL_PACKAGE@1` / `CAPITAL_AI_CONTENT_SOCIAL_PUBLISHER_ADAPTER@1`.
-- **Implementation:** `server/social-media/provider-adapter.mjs` (server-only), `server/social-media/provider-adapter.test.mjs`.
-- **Authority:** `SOCIAL_MEDIA_ENGINE_ONLY`. No Content Studio or Content Engine direct publish.
-- **Status:** `PREPARED_FAIL_CLOSED`. No provider network calls, OAuth redirects/exchanges, secret reads, production activations, delivery job writes, or deployments have been introduced. Default adapter readiness in the public contract remains `INTEGRATION_PENDING`.
+## Current implementation
 
-## Exact binding to existing Supabase tables
-
-| Existing table | Bridge mapping | Enforced boundaries |
+| Boundary | Implementation | Evidence and limitation |
 | --- | --- | --- |
-| `social_media_accounts` | `id`, `user_id`, `platform`, `status`, `scopes`, `token_expires_at`, `external_account_id`, `handle` | Account owner and platform exact match, connected/encrypted token present, token not near expiry; encrypted token material never leaves server-only account readback |
-| `social_media_oauth_states` | `state_token`, `user_id`, `platform`, `redirect_uri`, `code_verifier`, `expires_at`, `used_at` | CSPRNG state stored **as SHA-256**, redirect exact allowlist, X requires PKCE, expiry and constant-time hash comparison. **Callback must first atomically claim `used_at`** before token exchange; inspection alone does not prevent replay |
-| `social_media_content_approvals` | `id`, `user_id`, `status`, `platforms`, `decided_by` | Existing schema lacks `asset_id` and `asset_sha256`; no trusted hash-bound publish approval is yet representable |
-| `social_media_publish_log` | `user_id`, `episode_id` (content ID), `platform`, `account_id`, `status`, `publish_type`, `published_url`, `created_at` | Only provider-verified terminal `published` / `failed` may enter legacy log; `UNKNOWN`, async accepted and processing never count as published |
+| Manifest binding | `server/social-media/provider-adapter.mjs` | Exact campaign/content/source SHA, asset byte SHA-256, channel, approval and delivery identity |
+| Account / OAuth | Existing `social_media_accounts` and `social_media_oauth_states`; `server/social-media/provider-store.mjs` | User ID and platform required; OAuth SHA-256 state, PKCE for X, atomic RPC consumes once before code exchange |
+| HTTP callback | `server/social-media/oauth-callback.mjs`, registered in `server/index.mjs` | Session verified using existing Supabase Auth; HTTPS exact callback URL; no tokens in response; **disabled** without `SOCIAL_OAUTH_CALLBACK_ENABLED=true` AND server-injected provider token exchanger |
+| Approval and job | `supabase/migrations/20261008113000_social_provider_store.sql` | Versioned additive migration **committed, not applied to production**; old approvals default no public authority, unique user/delivery key, RLS and service-role-only RPCs |
+| DB state machine | `claim_delivery`, `note_unknown`, `complete_delivery` RPCs | Claimed `→ UNKNOWN → PUBLISHED/FAILED` only after trusted provider status; reservations never automatically reclaimed, no blind re-send, one publish-log entry |
+| Media / rights | `server/social-media/asset-readback.mjs` | Real server-fetched bytes are SHA-256 checked; rights reference required; injection boundary awaits a private storage backend, no external URLs accepted |
+| YouTube / TikTok | `server/social-media/provider-readback.mjs` | Read-only, owner-channel check for YouTube, privacy status and processing checked; TikTok `publish_id` status separate from publish-complete; requests disabled unless explicit server setting |
+| Instagram / Facebook / X | `server/social-media/provider-external-readback.mjs` | Pure provider-output normalization with exact account owner and HTTPS host checks. X read-only lookup also requires `SOCIAL_X_PAID_READBACK_APPROVED=true` plus general readback flag; Meta live Graph calls are **not** implemented |
 
-Mappings for `YOUTUBE`, `TIKTOK`, `INSTAGRAM`, `X`, `FACEBOOK` preserve the legacy lowercase database enum. `LINKEDIN` and other channels stay unsupported for this provider bridge.
+### Fail-closed contract and runtime integration
 
-## Mandatory remaining storage/runtime implementation
+- The callback route returns 503 by default. Even with its feature switch enabled, a missing, owner-verified token exchanger blocks state consumption. No OAuth authorization-start URL, token persistence or public-facing account-connect activation is included.
+- The Docker runtime copies only the callback and its two dependencies. Other provider modules are build-only and covered by CI. There is **no** provider upload, direct post, background worker, Cron trigger or automatic delivery/retry endpoint.
+- `social_media_publish_log` accepts only terminal states after trusted server readback; `UNKNOWN` remains a durable job record without publish-log creation.
+- The SQL migration uses `SECURITY INVOKER`, explicitly revokes anon/authenticated function EXECUTE, and grants service_role only. No direct browser table writes.
+- Finance legacy Meta Graph v19 calls, old OAuth tokens and implicit TikTok public privacy are not migrated.
 
-The bridge's `prepareSocialProviderDelivery` intentionally requires **all** evidence below (default: none available). These are implementation preconditions rather than new repository-level governance checks.
+## Verification
 
-1. The authoritative, **server-fetched** content package and handoff match campaign/content/source, immutable `assetSha256`, channel, approval reference and deterministic delivery key. The manifest's approval array by itself is **not trusted**.
-2. A current authenticated Supabase user ID matches the service-role-read social account row and the persistent approval. The historical Finance user IDs, credentials and tokens are **never migrated**.
-3. An additive, reviewed schema evolution introduces a durable approval binding to `asset_id` + `asset_sha256`, with an immutable-asset byte readback and rights evidence. The current `social_media_content_approvals` table does not contain these columns.
-4. A durable, **uniquely reserved** delivery job stores at least `user_id`, `delivery_key`, `asset_sha256`, `approval_ref`, reservation expiry, provider delivery ID, readback status and evidence reference. Claim must be atomic in the database. The current `social_media_publish_log` has no delivery key or provider ID, and cannot replace a job store.
-5. Provider-specific OAuth configuration, scopes, app review, account type, rights, API versions, quotas and usage costs are freshly verified, persisted as trusted operator evidence; do not promote `READY` based only on a local flag.
-6. Resumable uploads, source URL protections (SSRF/DNS rebinding), content-type, payload limits and media specifications are verified against the current provider API. Upstream Finance source uses old Meta v19.0 calls, hardcoded public TikTok privacy and an incomplete YouTube multipart content type. Those calls have **not** been copied.
-7. Provider acceptance, processing, explicit unknown and final publication are separate states. Only a provider-side readback tied to the correct delivery key and provider ID may generate `PUBLISHED`; on timeout, reconcile by provider ID before retrying. Never auto-republish on redelivery without idempotent proof.
-8. A server-only production route may be attached **after** persistent approval/job and secret-store scoping are implemented; enforce authenticated owner capability, no browser-visible secrets, CSRF/origin protection, bounded input, quotas, observability and sanitized logs.
+- **Main PR dependency:** GROWTH PR #268 merged.
+- **GitHub CI:** `Social Provider PostgreSQL Contract` succeeded on 2026-10-08 in an earlier PR #269 commit. Subsequent commits must rerun this test; no stale CI result is a current-head approval.
+- **Disposable PostgreSQL 17:** GitHub Actions runs the original two Social schema migrations followed by `20261008113000_social_provider_store.sql`. The test fixtures exercise OAuth CAS/replay, missing legacy hash approval, cross-user account denial, RLS, two independent concurrent writers claiming the same delivery key, zero published logs before terminal readback, UNKNOWN receipt and exactly one completed log.
+- **Node:** `npm run test:social-provider`, `npm test`, `npm run test:security`; includes mock HTTP status requests and no real provider calls.
+- **Supabase:** Read-only observation of connected `AIFINANCIAL` found existing legacy social tables and zero account rows. Target production-project identity, migrated schema, service-role secret configuration, actual provider scopes, account tokens and live OAuth E2E are **NOT_PROVEN**. No DDL applied.
+- The implementation used a versioned repository migration filename compatible with surrounding migrations; Supabase CLI was unavailable in the editing runtime. A separate CLI-generated migration file must **not** be created with duplicate DDL.
 
-## Validation
+## External provider evidence
 
-```bash
-npm run test:social-provider
-npm test
-npm run test:security
-npm run lint
-```
+- **YouTube:** `videos.list` supports `snippet,status` and its `snippet.channelId`; this readback has a documented 1-unit quota cost. Upload via `videos.insert` may be restricted to private videos for unverified projects. https://developers.google.com/youtube/v3/docs/videos/list and https://developers.google.com/youtube/v3/docs/videos
+- **TikTok:** Creator information, allowed privacy options, app audit and separate status readback must be validated before publishing. https://developers.tiktok.com/docs/en/content-posting-api-get-started and https://developers.tiktok.com/docs/en/content-posting-api-reference-get-video-status
+- **Instagram:** Meta provides separate `status_code=FINISHED` (container ready) and `media_publish` steps; **FINISHED is not PUBLISHED**. The Facebook Login vs Instagram Login permissions differ; see https://www.postman.com/meta/instagram/documentation/6yqw8pt/instagram-api
+- **Facebook:** Real Page task rights, target Graph API version, publish and page ownership readback are still NOT_PROVEN; no HTTP transport activated.
+- **X:** `GET /2/tweets/{id}` supports post lookup and author attribution. It may be billable. https://docs.x.com/x-api/posts/get-post-by-id and https://docs.x.com/x-api/getting-started/pricing
 
-New suite covers the five mappings, manifest identity/hash binding, account user scoping and token redaction, legacy approval fail-closed, immutable byte evidence and reservation, async/unknown readback, terminal publish-log mapping, OAuth PKCE/state expiry/replay.
+## Costs, deploy and rollback
 
-## Cost / license and release boundary
+No provider charge, production DDL, provider upload, new Render service, NATS/Valkey deployment or Secret rotation initiated. Additional optional PostgreSQL GitHub workflow consumes CI minutes and pulls an official PostgreSQL container; execution stays within the repository's existing CI. A moving `postgres:17.11-alpine` tag is version constrained but not digest-locked yet; capture and pin its digest before production-grade supply-chain attestation. Current provider quotas, paid API credits, token permissions, Stripe entitlements and ongoing storage/CPU/network usage are **NOT_PROVEN**.
 
-No new dependencies, external provider requests, billable resources, broker changes, credentials, or migrations were introduced in this slice. Provider API usage, app review, quotas and possible per-post/upload charges remain **NOT_PROVEN**. The next implementation should check official provider contracts and quota/cost specifics before enabling any outbound traffic; a local mock or successful CI test is not a live API/rights approval.
-
-**Rollout:** PR-based review only. No main merge, no Render deploy, no NATS/Valkey redeploy. Remove the server-only bridge and its test/script changes to roll back this slice without changing production data.
-
-## Erweiterung: persistenter Provider-Store (Stand 2026-10-08)
-
-- `server/social-media/provider-store.mjs` kapselt die aktuellen Supabase-REST-/RPC-Verträge mit serverseitigem Service-Role-Secret, 7-s-Timeouts, begrenzten Responses und error-sanitizing. Es gibt weiterhin **keinen registrierten öffentlichen HTTP-Handler**.
-- `supabase/proposals/social_provider_store.sql` ist ein **nicht ausgeführter** additiver SQL-Vorschlag: asset-/hashgebundene Approval-Erweiterung, `social_media_delivery_jobs` mit `unique(user_id, delivery_key)` sowie Service-Role-only/RLS und atomare RPCs für OAuth-State-Verbrauch, Delivery-Claim und terminales Publish-Log.
-- `server/social-media/provider-store.test.mjs` testet OAuth-State-Hash, die Reihenfolge `DB CAS → Token-Exchange`, Replay-Rejection, Hash-Mismatch ohne RPC und terminale Log-Erzeugung mit isolierten Mocks.
-- `server/social-media/provider-readback.mjs` und Tests materialisieren **nur Readbacks**: YouTube `videos.list(part=status)` und TikTok `post/publish/status/fetch`. Nicht-finaler Upload/Moderation/Privatstatus ⇒ `UNKNOWN`. `SOCIAL_PROVIDER_READBACK_ENABLED` ist ohne explizites serverseitiges `true` inaktiv. Keine direkten Publish-/Upload-Calls, keine Meta-/X-Liveadapter.
-- Aktivierung hängt zusätzlich von gesichertem Medienobjekt-Byte-Hash, persistierter zuständiger Approval, Provider-Rechten, Consumer-Identität, sicherem Secret-Unwrapping, Kontokontext und einem kontrollierten Scheduling-/Reconciliation-Prozess ab. Keine User-Payload darf `verifiedBy` oder `capability` als Authority setzen.
-
-### Live-Schema-Readback (read-only)
-
-Im aktuell verbundenen Supabase-Projekt `AIFINANCIAL` sind `social_media_accounts`, `social_media_oauth_states`, `social_media_publish_log` und `social_media_content_approvals` existent, RLS aktiviert und bei Prüfung ohne Zeilen. `social_media_delivery_jobs` ist dort noch nicht angelegt. Die Verbindung zum definitiven CAPITAL-AI-Produktionsprojekt ist damit nicht automatisch nachgewiesen. Es erfolgte **keine** Live-Schemaänderung.
-
-### Offizielle Provider-Evidence und offene Kosten
-
-| Channel | Aktuell extern belegte API-Eigenschaft | Runtime |
-| --- | --- | --- |
-| YouTube | `videos.insert` und resumable Upload werden offiziell dokumentiert; unverified API-Projekte können private Sichtbarkeit erzwingen. Readback/Projektquote müssen verifiziert werden. Quelle: https://developers.google.com/youtube/v3/docs/videos/insert und https://developers.google.com/youtube/v3/guides/using_resumable_upload_protocol | `READBACK_STAGED`, Publishing BLOCKED |
-| TikTok | Creator-Info muss vor Direct Post erfragt werden; Privatsphäre aus erlaubten Optionen, API-Audit und `publish_id`-Status vor Veröffentlichung. Quelle: https://developers.tiktok.com/docs/en/content-posting-api-get-started und https://developers.tiktok.com/docs/en/content-posting-api-reference-get-video-status | `READBACK_STAGED`, Publishing BLOCKED |
-| Instagram / Facebook | Finance-Referenz mit Graph v19.0 wird ausdrücklich **nicht** in die produktive Runtime übernommen. Aktuelle API-Version, Page-/Business-Rechte, App-Review und Container-/Media-Readback sind **NOT_PROVEN**. | BLOCKED |
-| X | PKCE ist im OAuth-Vertrag verpflichtend; Preis-/Quota-/App-Review-/Write-Scope des konkreten Kontos und Live-Readback sind **NOT_PROVEN**. | BLOCKED |
-
-**Kosten:** Neue Provider-Requests, Paid-Tarife, Render-Dienste, Supabase-DDL, externe Publish-Vorgänge und GPU-Verbrauch: **nicht ausgelöst**. Künftige API-Aufrufe können quotas oder Provider-/Cloud-Kosten verursachen; aktuelle Kontingente und Tarife sind `NOT_PROVEN`. Für die stufenweise Aktivierung zuerst read-only Provider-Evidence und Budget überprüfen. Zusätzlicher Supabase-Speicher/Transaktionen erhöhen eventuell DB-Nutzung; im aktuellen PR nicht materialisiert.
-
-### Migrations- und Testgrenze
-
-`supabase/proposals/social_provider_store.sql` ist **noch keine registrierte Supabase-Migration**. Erst mit lokal verfügbarer Supabase CLI und verifizierter Ziel-Datenbank ein offizielles `supabase migration new social_provider_store` erzeugen, Vorschlag übernehmen und in einer sicheren Testumgebung `supabase test db`, RLS-Deny-/Allow-Tests, Parallel-Claim-Replay, CAS- und Rollback-Szenarien ausführen. Keinen Live-Deploy ohne geprüften Datenbankstand.
-
-```bash
-npm run test:social-provider
-npm run test:security
-npm test
-npm run lint
-# Only after a checked-out repository and Supabase CLI are available:
-supabase --version
-supabase migration new social_provider_store
-supabase test db
-```
+Rollback before database deploy: revert PR #269. After any eventual database migration, additive schema data must be preserved; never automatically drop jobs or approvals. Before a release, verify exact main SHA, CI, production DB identity, offline secret provisioning, OAuth session/PKCE E2E, approval/rights byte hashes and provider-specific contracts. Owner review/merge remains separate from technical tests.
