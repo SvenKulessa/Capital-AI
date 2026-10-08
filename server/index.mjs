@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assetValues, quote, health, startStreams } from './market.mjs';
 import { createAuth } from './auth.mjs';
+import { createSocialOAuthCallback } from './social-media/oauth-callback.mjs';
 import { createUserProviderVault } from './user-provider-vault.mjs';
 import { createPrivateProviderQuery } from './private-provider-query.mjs';
 import { createUniswapTrading } from './uniswap-trading.mjs';
@@ -193,6 +194,13 @@ function json(res, status, body) { res.writeHead(status, { ...headers, 'X-Robots
 export function createApp(root = defaultRoot, options = {}) {
   let inflight = 0;
   const auth = createAuth(options);
+  const socialOAuthCallback = createSocialOAuthCallback({
+    env: options.env || process.env,
+    auth,
+    fetchImpl: options.fetchImpl || fetch,
+    store: options.socialOAuthStore || null,
+    exchangeCode: options.socialOAuthCodeExchange || null,
+  });
   const userProviderVault = createUserProviderVault({ ...options, auth });
   const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault });
   if (
@@ -257,6 +265,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (serveMtaSts(req, res, url)) return;
   if (serveWellKnown(req, res, url)) return;
   if (await auth.handle(req, res, url, json)) return;
+  if (await socialOAuthCallback.handle(req, res, url, json)) return;
   if (await userProviderVault.handle(req, res, url, json)) return;
   if (await privateProviderQuery.handle(req, res, url, json, requestContext.requestId)) return;
   if (await krakenOrderDryRun.handle(req, res, url, json, requestContext.requestId)) return;
