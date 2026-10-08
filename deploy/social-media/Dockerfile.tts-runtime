@@ -38,6 +38,10 @@ RUN python -m pip install \
       --require-hashes \
       --target /opt/python \
       --requirement /tmp/runtime-requirements.txt \
+    && if [ "${RUNTIME}" = "qwen" ]; then \
+         printf '%s\n' 'qwen-tts==0.1.1 --hash=sha256:11a290d8dabc7ef91a90c54478c8ab19b3edb1d85c0882313721892bdc4af15d' > /tmp/qwen-package.txt \
+         && python -m pip install --disable-pip-version-check --no-cache-dir --no-build-isolation --no-deps --require-hashes --target /opt/python --requirement /tmp/qwen-package.txt; \
+       fi \
     && if [ "${RUNTIME}" = "chatterbox" ]; then \
          printf '%s\n' 'uv-build==0.12.7 --hash=sha256:ab959502eb15c05a1c381e5b96e3f4abdbcf32d7f19765c00d737ade21cc682b' > /tmp/uv-build-requirement.txt \
          && python -m pip install --disable-pip-version-check --no-cache-dir --only-binary=:all: --require-hashes --requirement /tmp/uv-build-requirement.txt \
