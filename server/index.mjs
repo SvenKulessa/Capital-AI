@@ -9,6 +9,7 @@ import { createPrivateMarketCache } from './private-market-cache.mjs';
 import { createUserProviderVault } from './user-provider-vault.mjs';
 import { createUserAnalysisBindings } from './user-analysis-bindings.mjs';
 import { createPrivateProviderQuery } from './private-provider-query.mjs';
+import { createRenderOwnerDashboard } from './render-owner-dashboard.mjs';
 import { createUniswapTrading } from './uniswap-trading.mjs';
 import { createKrakenOrderDryRun } from './kraken-order-dry-run.mjs';
 import { createTelegram } from './telegram.mjs';
@@ -209,6 +210,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const userProviderVault = createUserProviderVault({ ...options, auth, privateMarketCache });
   const userAnalysisBindings = createUserAnalysisBindings({ ...options, auth });
   const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault });
+  const renderOwnerDashboard = createRenderOwnerDashboard({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   if (
     (options.env || process.env).PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true' ||
     (options.env || process.env).PRIVATE_PROVIDER_BRIDGE_PROBE_ENABLED === 'true'
@@ -280,6 +282,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await userProviderVault.handle(req, res, url, json)) return;
   if (await userAnalysisBindings.handle(req, res, url, json)) return;
   if (await privateProviderQuery.handle(req, res, url, json, requestContext.requestId)) return;
+  if (await renderOwnerDashboard.handle(req, res, url, json)) return;
   if (await krakenOrderDryRun.handle(req, res, url, json, requestContext.requestId)) return;
   if (await uniswapTrading.handle(req, res, url, json)) return;
   if (await privacy(req, res, url, json)) return;
@@ -413,6 +416,11 @@ export function createApp(root = defaultRoot, options = {}) {
   if (url.pathname.startsWith('/api/')) return json(res, 404, { error: 'not_found' });
 
   const publicPath = normalizedPublicPath(url.pathname);
+  if (publicPath === '/profile/render-dashboard' && !await renderOwnerDashboard.authorized(req, res)) {
+    res.writeHead(404, { ...headers, 'Cache-Control': 'no-store' });
+    res.end();
+    return;
+  }
   if (OWNER_ONLY_UI_PATHS.has(publicPath) || publicPath.startsWith('/control-center/')) {
     const ownerAllowed = await auth.authorizeIamRole(req, res, 'owner');
     if (!ownerAllowed) {

@@ -983,6 +983,9 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
         issuer: config.issuer,
         name: stored.user.name,
         email: stored.user.email,
+        // Never authorize owner-only Render secrets from an unconfirmed or stale email.
+        emailVerified: Boolean(stored._authUser?.email_confirmed_at &&
+          String(stored._authUser?.email || '').toLowerCase() === String(stored.user.email || '').toLowerCase()),
         expires: stored.expiresAt * 1000,
         aal: currentLevel,
       };
