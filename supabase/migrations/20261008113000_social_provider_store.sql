@@ -150,7 +150,7 @@ create or replace function public.capital_social_note_unknown(
   p_user_id uuid, p_job_id uuid, p_provider_delivery_id text, p_evidence_ref text
 ) returns public.social_media_delivery_jobs
 language plpgsql security invoker set search_path = ''
-as $
+as $social$
 declare v_job public.social_media_delivery_jobs%rowtype;
 begin
   if nullif(p_evidence_ref, '') is null
@@ -171,7 +171,7 @@ begin
   if not found then raise exception 'SOCIAL_DELIVERY_UNKNOWN_UPDATE_DENIED'; end if;
   return v_job;
 end;
-$;
+$social$;
 revoke all on function public.capital_social_note_unknown(uuid,uuid,text,text)
   from public, anon, authenticated;
 grant execute on function public.capital_social_note_unknown(uuid,uuid,text,text)
