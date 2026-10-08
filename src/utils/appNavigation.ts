@@ -1,10 +1,10 @@
-/** Case-insensitive pathname normalization with existing German/English aliases. */
 /** Canonical protected Control Center subpages (kept in sync with the Hub catalog). */
 export const CONTROL_CENTER_SECTION_IDS = [
   'roadmap', 'components', 'tools', 'observability', 'news',
   'console', 'cockpit', 'team', 'cost_center', 'system', 'licenses',
 ] as const;
 
+/** Case-insensitive pathname normalization with existing German/English aliases. */
 export function resolveAppRoute(rawPath: string): string {
   if (!rawPath) return '/';
   const clean = rawPath.trim().toLowerCase().replace(/\/+$/, '') || '/';
