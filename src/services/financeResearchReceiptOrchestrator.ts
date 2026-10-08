@@ -26,7 +26,7 @@ export async function evaluateFinanceResearchForReceipt(
   const snapshot = PipelineSnapshotSchema.parse(request.snapshot);
   const source = FinanceValidatedDataInputSchema.safeParse(request.validatedData);
   if (!source.success) return blocked(['VALIDATED_DATA_INVALID']);
-  if (snapshot.isDemo || snapshot.evaluatedAt > now + 3000)
+  if (snapshot.isDemo || snapshot.evaluatedAt > now)
     return blocked(['DEMO_OR_FUTURE_DATA_BLOCKED']);
 
   const rightsEvidence = [];

@@ -83,6 +83,13 @@ test('Finance metadata projection is deterministic, excludes score values and se
   assert.equal(a.raw.includes('researchCompositeValue'), false);
 });
 
+test('receipt rejects one millisecond future evaluation without clock-skew promotion', () => {
+  const source = context();
+  assert.doesNotThrow(() => projectFinanceResearchReceipt(result(), source, source.evaluatedAt));
+  for (const futureBy of [1, 2999, 3000])
+    assert.throws(() => projectFinanceResearchReceipt(result(), source, source.evaluatedAt - futureBy), /RESEARCH_PROVENANCE_INVALID/);
+});
+
 test('value-sensitive replay lineage produces distinct receipt identity and rejects missing lineage', () => {
   const one = projectFinanceResearchReceipt(result(), context());
   const changed = projectFinanceResearchReceipt({

@@ -77,13 +77,13 @@ export type FeatureValue = z.infer<typeof FeatureValueSchema>;
 // 4. SCORE RESULT CONTRACT
 // =============================================================================
 
-export const ScoreResultSchema = z.object({
+export const ScoreResultSchema = z.strictObject({
   componentId: z.string().min(1),
   assetId: z.string().min(1),
-  score: z.number().min(0).max(100),
+  score: z.number().finite().min(0).max(100).nullable(),
   scoreRange: z.object({
-    min: z.number().default(0),
-    max: z.number().default(100),
+    min: z.number().finite().min(0).max(100).default(0),
+    max: z.number().finite().min(0).max(100).default(100),
   }),
   confidence: z.number().min(0).max(1.0), // 0.0 to 1.0 reflecting completeness & freshness
   status: z.enum(['computed', 'insufficient_data', 'stale', 'blocked_by_risk', 'demo_fallback']),
@@ -91,8 +91,16 @@ export const ScoreResultSchema = z.object({
   inputFeatureIds: z.array(z.string()),
   riskFlags: z.array(z.string()),
   calculationVersion: z.string().regex(/^\d+\.\d+\.\d+$/),
+  modelVersion: z.string().regex(/^\d+\.\d+\.\d+$/),
   computedAt: z.number().int().positive(),
   evidenceId: z.string().min(1), // SHA-256 reference
+}).superRefine((result, ctx) => {
+  const reject = (message: string) => ctx.addIssue({ code: 'custom', message });
+  const computable = result.status === 'computed' || result.status === 'demo_fallback';
+  if (computable !== (result.score !== null)) reject('SCORE_STATUS_VALUE_MISMATCH');
+  if (result.scoreRange.min > result.scoreRange.max) reject('SCORE_RANGE_INVALID');
+  if (result.score !== null && (result.score < result.scoreRange.min || result.score > result.scoreRange.max))
+    reject('SCORE_OUTSIDE_DECLARED_RANGE');
 });
 export type ScoreResult = z.infer<typeof ScoreResultSchema>;
 

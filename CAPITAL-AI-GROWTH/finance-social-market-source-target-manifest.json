@@ -46,8 +46,11 @@
     {
       "id": "TA-ASSET-FEATURE",
       "path": "src/contracts/canonicalContracts.ts",
-      "blobSha": "161104baf8413fb3a9a6389e32027ecd4bde4768",
-      "role": "AssetIdentity/DataProvenance/FeatureValue/ScoreResult authority"
+      "blobSha": "27d4973608f47218800736cb8877485d01124173",
+      "role": "AssetIdentity/DataProvenance/FeatureValue/ScoreResult authority",
+      "recorrelatedAt": "2026-10-08",
+      "recorrelationBaseMain": "e94d47cddde8ae32da749d08bc161daad323b914",
+      "recorrelationReason": "MARKET instrument-contract boundaries: required ScoreResult modelVersion and strict future timestamp rejection. No live scoring or provider admission granted."
     },
     {
       "id": "TA-PIPELINE",
@@ -58,11 +61,11 @@
     {
       "id": "TA-SCORING",
       "path": "src/services/scoringEngine.ts",
-      "blobSha": "9b8c58a5d09aefe1dfcf66c5e0abc4309f403ecd",
+      "blobSha": "fdeb58f4a35103b1818463166f87afca20b9347f",
       "role": "Current scoring execution boundary",
       "recorrelatedAt": "2026-10-08",
-      "recorrelationBaseMain": "4c7dbb9e22e6ac4725998c1845b38bc8d9686235",
-      "recorrelationReason": "PR #284 FIN-12 validated DATA plus source UAI/model/weight correlation on Capital-AI ScoringEngineService. Exact branch-head authority blob; research only; no second dispatcher, runtime score, rank, trade or provider authority granted."
+      "recorrelationBaseMain": "e94d47cddde8ae32da749d08bc161daad323b914",
+      "recorrelationReason": "MARKET instrument-contract boundaries: required ScoreResult modelVersion and strict future timestamp rejection. No live scoring or provider admission granted."
     },
     {
       "id": "TA-FEATURE-STORE",
@@ -136,7 +139,7 @@
       "blobSha": "6cf6b39df87f8a5d260f9406821dfa0ca65a74e7",
       "role": "Current auth security boundary",
       "recorrelatedAt": "2026-10-06",
-      "recorrelationReason": "PR #203 Auth-/BYOK-/Trading-Capability-H\u00e4rtung"
+      "recorrelationReason": "PR #203 Auth-/BYOK-/Trading-Capability-Härtung"
     },
     {
       "id": "TA-USER-VAULT",
@@ -144,7 +147,7 @@
       "blobSha": "44d66c06cf9170f7ee973d48f13a984b5595b51a",
       "role": "Current server-side user provider secret boundary",
       "recorrelatedAt": "2026-10-06",
-      "recorrelationReason": "PR #212 read-only Kraken/Binance Provider-Vault-H\u00e4rtung; Finance-Cutover bleibt BLOCKED",
+      "recorrelationReason": "PR #212 read-only Kraken/Binance Provider-Vault-Härtung; Finance-Cutover bleibt BLOCKED",
       "recorrelationBaseMain": "824d42913bbeccb68366c2ae70714ccb960717e5",
       "correlatedAt": "2026-10-08",
       "correlationReason": "Private Massive/Polygon 50-asset REST batches; user-bound Vault access and connection-scoped encrypted Valkey cache; account and trading contracts retained."
@@ -155,7 +158,7 @@
       "blobSha": "f84eb3dceab835c663926bc258755aea5f4ea32d",
       "role": "User-private credentials/data boundary",
       "recorrelatedAt": "2026-10-06",
-      "recorrelationReason": "PR #203 Auth-/BYOK-/Trading-Capability-H\u00e4rtung"
+      "recorrelationReason": "PR #203 Auth-/BYOK-/Trading-Capability-Härtung"
     }
   ],
   "entries": [
