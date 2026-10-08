@@ -3,6 +3,7 @@
 // Never open vendor connections on import; the existing source/right gates own persistence.
 import { instrumentCatalog } from '../shared/market-contracts.mjs';
 import { evaluateSpotIngestion, ingestAdmittedSpotQuote } from './market-spot-ingestion.mjs';
+import { infrastructure } from './infrastructure.mjs';
 
 const MAX_FRAME_BYTES = 64 * 1024;
 const SPOT_WIRE_PROVIDERS = Object.freeze(['binance', 'kraken']);
@@ -140,4 +141,97 @@ export function spotWireInventory() {
     supportedSymbols:Object.keys(SUPPORTED_SYMBOLS[provider]),
     rights:'NOT_ADMITTED',publicDisplay:false,connectionsStarted:false,
   }));
+}
+
+// These explicit entrypoints are dormant unless MARKET_SPOT_INGESTION_ENABLED=true AND
+// source-specific commercial market-data rights are recorded in MARKET_SOURCE_POLICY.
+// No cron, background subscription, user BYOK key or client-side websocket is created here.
+function requireSpotPermission(provider,symbol,transport,env) {
+  return evaluateSpotIngestion({provider,symbol,transport,env});
+}
+function boundedResponseBytes(response) {
+  const declared=Number(response?.headers?.get?.('content-length') || 0);
+  if (!Number.isSafeInteger(declared) || declared > MAX_FRAME_BYTES) throw new Error('SPOT_HTTP_BODY_TOO_LARGE');
+  const type=String(response?.headers?.get?.('content-type') || '').toLowerCase();
+  if (!type.startsWith('application/json')) throw new Error('SPOT_HTTP_CONTENT_TYPE_INVALID');
+}
+async function readBoundedJson(response) {
+  boundedResponseBytes(response);
+  if (!response.body || typeof response.body.getReader !== 'function') throw new Error('SPOT_HTTP_STREAM_REQUIRED');
+  const reader=response.body.getReader();
+  const chunks=[];let bytes=0;
+  try {
+    while(true) {
+      const {done,value}=await reader.read();
+      if(done) break;
+      if (!(value instanceof Uint8Array)) throw new Error('SPOT_HTTP_CHUNK_INVALID');
+      bytes+=value.byteLength;
+      if(bytes>MAX_FRAME_BYTES) throw new Error('SPOT_HTTP_BODY_TOO_LARGE');
+      chunks.push(value);
+    }
+  } finally { reader.releaseLock(); }
+  const content=new Uint8Array(bytes);let offset=0;
+  for(const chunk of chunks){content.set(chunk,offset);offset+=chunk.length;}
+  return new TextDecoder('utf-8',{fatal:true}).decode(content);
+}
+
+export async function fetchAdmittedSpotRest({
+  provider,symbol,env=process.env,store=infrastructure,
+  fetchImpl=globalThis.fetch,
+}={}) {
+  const admission=requireSpotPermission(provider,symbol,'rest',env);
+  if(!admission.allowed) return Object.freeze({status:'BLOCKED',reason:admission.reason});
+  if(store.status().status!=='connected') return Object.freeze({status:'BLOCKED',reason:'INFRASTRUCTURE_UNAVAILABLE'});
+  if(typeof fetchImpl!=='function') throw new Error('SPOT_FETCH_UNAVAILABLE');
+  const req=spotWireRequest({provider,symbol,transport:'rest'});
+  const response=await fetchImpl(req.url,{method:'GET',redirect:'error',cache:'no-store',
+    credentials:'omit',headers:{accept:'application/json'},signal:AbortSignal.timeout(5000)});
+  if(!response?.ok) throw new Error('SPOT_HTTP_STATUS_INVALID');
+  const payload=await readBoundedJson(response);
+  return ingestSpotWireFrame({provider,symbol,transport:'rest',payload},{env,store});
+}
+
+export function startAdmittedSpotWebSocket({
+  provider,symbol,env=process.env,store=infrastructure,
+  SocketClass=globalThis.WebSocket,
+}={}) {
+  const admission=requireSpotPermission(provider,symbol,'websocket',env);
+  if(!admission.allowed) return Object.freeze({status:'BLOCKED',reason:admission.reason});
+  if(store.status().status!=='connected') return Object.freeze({status:'BLOCKED',reason:'INFRASTRUCTURE_UNAVAILABLE'});
+  if(typeof SocketClass!=='function') throw new Error('SPOT_WEBSOCKET_UNAVAILABLE');
+  const request=spotWireRequest({provider,symbol,transport:'websocket'});
+  const socket=new SocketClass(request.url);
+  let stopped=false,processing=false,accepted=0,rejected=0,dropped=0;
+  const close=()=>{
+    stopped=true;clearTimeout(timer);
+    if(socket.readyState===0||socket.readyState===1) socket.close(1000,'session_end');
+  };
+  const timer=setTimeout(close,30*60_000);
+  timer.unref?.();
+  socket.addEventListener('open',()=>{
+    if(stopped) return;
+    try{socket.send(request.subscribe);}catch{close();}
+  });
+  socket.addEventListener('message',event=>{
+    if(stopped) return;
+    // Bound memory and pressure on JetStream; drop rather than buffering unbounded frames.
+    if(processing){dropped++;return;}
+    processing=true;
+    void (async()=>{
+      try {
+        const raw=event.data;
+        if(typeof raw!=='string' || Buffer.byteLength(raw,'utf8')>MAX_FRAME_BYTES) throw new Error('SPOT_FRAME_SIZE_INVALID');
+        const result=await ingestSpotWireFrame({provider,symbol,transport:'websocket',payload:raw},{env,store});
+        if(result.status==='READY') accepted++; else rejected++;
+      }catch{rejected++;}
+      finally{processing=false;}
+    })();
+  });
+  socket.addEventListener('close',()=>{stopped=true;clearTimeout(timer);});
+  socket.addEventListener('error',()=>{close();});
+  return Object.freeze({
+    status:'CONNECTING',provider,symbol,
+    stop:close,
+    metrics:()=>Object.freeze({accepted,rejected,dropped,stopped}),
+  });
 }
