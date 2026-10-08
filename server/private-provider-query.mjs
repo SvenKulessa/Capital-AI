@@ -248,8 +248,12 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault, sta
     error: null,
   });
 
-  function enabled() {
+  function queryEnabled() {
     return env.PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true';
+  }
+
+  function probeEnabled() {
+    return queryEnabled() || env.PRIVATE_PROVIDER_BRIDGE_PROBE_ENABLED === 'true';
   }
 
   async function respond(message, payload) {
@@ -283,7 +287,7 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault, sta
   }
 
   async function start() {
-    if (!enabled()) return false;
+    if (!probeEnabled()) return false;
     if (requestNc && !requestNc.isClosed() && executorNc && !executorNc.isClosed()) return true;
     if (opening) return opening;
     opening = (async () => {
@@ -318,8 +322,8 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault, sta
   async function probe(requestId) {
     const observedAt = new Date().toISOString();
     const startedAt = Date.now();
-    if (!enabled()) {
-      lastProbe = Object.freeze({ status: 'DISABLED', observedAt, latencyMs: null, error: 'PRIVATE_PROVIDER_BRIDGE_DISABLED' });
+    if (!probeEnabled()) {
+      lastProbe = Object.freeze({ status: 'DISABLED', observedAt, latencyMs: null, error: 'PRIVATE_PROVIDER_BRIDGE_PROBE_DISABLED' });
       return lastProbe;
     }
     try {
@@ -364,7 +368,8 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault, sta
 
   function status() {
     return Object.freeze({
-      enabled: enabled(),
+      enabled: queryEnabled(),
+      probeEnabled: probeEnabled(),
       requestConnection: requestNc && !requestNc.isClosed() ? 'CONNECTED' : 'DISCONNECTED',
       executorConnection: executorNc && !executorNc.isClosed() ? 'CONNECTED' : 'DISCONNECTED',
       readiness: lastProbe,
@@ -383,7 +388,7 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault, sta
       json(res, 405, { error: 'method_not_allowed' });
       return true;
     }
-    if (!enabled()) {
+    if (!queryEnabled()) {
       json(res, 503, { error: 'private_provider_bridge_disabled' });
       return true;
     }
