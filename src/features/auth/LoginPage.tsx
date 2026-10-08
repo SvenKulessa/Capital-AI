@@ -12,6 +12,7 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { BrandLogo } from '../../components/BrandLogo';
+import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 import { useLocale } from '../../i18n/LocaleProvider';
 import { authCopy } from '../../i18n/authCopy';
 import { legalAvailabilityNotice } from '../../i18n/legalAvailability';
@@ -392,9 +393,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
   return (
     <main className="min-h-screen bg-[#02050e] px-4 py-8 text-slate-100 flex justify-center">
       <section className="w-full max-w-lg">
-        <button onClick={onBackToHome} className="flex min-h-11 items-center gap-2 text-amber-300">
-          <ArrowLeft size={18} /> {tr.back}
-        </button>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <button onClick={onBackToHome} className="flex min-h-11 items-center gap-2 text-amber-300">
+            <ArrowLeft size={18} /> {tr.back}
+          </button>
+          <LanguageSwitcher />
+        </div>
 
         <div className="mt-6 rounded-3xl border border-amber-500/20 bg-slate-900/80 p-5 sm:p-8">
           <BrandLogo variant="stacked" size="lg" showSubtitle={false} />

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, type ReactNode } from 'react';
 import { ArrowLeft, KeyRound, LayoutDashboard, Loader2, LogOut, ShieldCheck, User } from 'lucide-react';
+import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 import { useLocale } from '../../i18n/LocaleProvider';
 import { accountCopy } from '../../i18n/accountWorkspaceCopy';
 
@@ -161,7 +162,8 @@ export function AccountPageShell({
                 )}
               </div>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <LanguageSwitcher />
               <button
                 type="button"
                 onClick={() => onNavigate('/')}
