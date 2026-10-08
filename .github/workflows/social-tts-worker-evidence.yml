@@ -59,6 +59,7 @@ jobs:
           image="capital-ai-social-tts-${{ matrix.runtime }}:$GITHUB_SHA"
           docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m             --cap-drop ALL --security-opt no-new-privileges             --entrypoint sh "$image" -euc '
               test "$(id -u)" = "10001"
+              mkdir -p "$NUMBA_CACHE_DIR"
               python -c "import torch, torchaudio; print(torch.__version__, torchaudio.__version__)"
             '
           if [ "${{ matrix.runtime }}" = "qwen" ]; then
