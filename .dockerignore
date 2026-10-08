@@ -8,6 +8,14 @@
 !index.html
 !vite.config.ts
 !tsconfig.json
+!AGENTS.md
+!.agents/
+!.agents/skills/
+!.agents/skills/**
+!.github/
+!.github/agents/
+!.github/agents/**
+!.github/copilot-instructions.md
 !src/
 !src/**
 !server/
@@ -94,6 +102,7 @@
 !deploy/nats-server.conf
 !deploy/nats-entrypoint.sh
 !scripts/
+!scripts/domain-skills.test.mjs
 !scripts/harden-npm-toolchain.mjs
 !scripts/benchmark-scoring-capacity.mjs
 !scripts/verify-private-brokers.mjs
