@@ -3,7 +3,7 @@
   "id": "CAPITAL-AI-SOCIAL-TOOL-LICENSE-EVIDENCE-20261006",
   "status": "POINT_4_ARTIFACT_LOCK_ADVANCED_FAIL_CLOSED",
   "correlatedAt": "2026-10-08",
-  "targetMain": "d8b5d471b34fcfaf061a7d8a8b62eac7406c8864",
+  "targetMain": "19673cf50bf6948ef563126f23bd1d64d9ae6398",
   "financeSource": "dcef421fe6e350a3a2ade61d0299aad9ecca213c",
   "scope": "Social-Media-Engine implementation dependencies only; Finance MARKET/scoring migration remains deferred until Social cutover PASS.",
   "policy": {
@@ -328,10 +328,15 @@
   ],
   "rendererWorkerEvidence": {
     "path": "CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json",
-    "priorRunStatus": "SUPERSEDED_PENDING_HARDENED_REBUILD",
-    "historicalWorkflowRunId": 37520859593,
-    "historicalArtifactDigest": "sha256:1a96945746ccbf0573c86a2beafce391eed3d1b475a3b5a5ca7e2ce752e95c89",
-    "historicalBlockingFindings": 0,
-    "historicalNonBlockingFinding": "CVE-2026-34743 xz-libs 5.8.1-r0 -> fixed floor 5.8.3-r0"
+    "latestTerminalWorkflowRunId": 37708563881,
+    "latestArtifactDigest": "sha256:0f0d6a6ee04d5d9acfc82e214ec55f4851036cf64e4484ab773d658262af8445",
+    "xzCveResolved": true,
+    "zlibCvePendingRebuild": "CVE-2026-85091"
+  },
+  "ttsDependencyLocks": {
+    "path": "CAPITAL-AI-GROWTH/social-tts-dependency-lock-evidence-20261008.json",
+    "qwen": "COMPLETE_102_PACKAGES_SHA256_BOUND",
+    "chatterbox": "COMPLETE_123_PACKAGES_PLUS_IMMUTABLE_PERTH",
+    "workerImages": "IN_PROGRESS_PR_246"
   }
 }
