@@ -3,7 +3,7 @@
   "id": "CAPITAL-AI-SOCIAL-ENGINE-COMPLETION-20261006",
   "workPackage": "CAPITAL-AI-FINANCE-SOCIAL-MARKET-MIGRATION-01",
   "point": "06_SOCIAL_ENGINE_MIGRATION_COMPLETION_GATE",
-  "correlatedMain": "07b34ab4cbbd4df9624f49fe072b3173e72446af",
+  "correlatedMain": "c881081e1d6a08e1babd98c15371f6a8615d645b",
   "declaredState": "BLOCKED",
   "blockingFollowUp": "CAPITAL-AI-FINANCE-SCORING-DATA-FOLLOWUP-01",
   "policy": {
