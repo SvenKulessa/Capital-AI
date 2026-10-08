@@ -1,0 +1,2332 @@
+{
+  "schemaVersion": "CAPITAL_AI_PRODUCT_ANALYSIS_UI_REPORT@1",
+  "auditedMain": "71fe8ba6a26925cce5d0b8bf629ccba8c37ad253",
+  "integratedMain": "12fc92e779500420025cef118dc180814f1a2720",
+  "date": "2026-10-08",
+  "scope": "UI_AND_OFFLINE_SHADOW_NOT_PRODUCTION_ACTIVATION",
+  "componentCounts": {
+    "planned": 45,
+    "mock": 0,
+    "shadow": 0,
+    "active": 0,
+    "degraded": 0,
+    "blocked": 5,
+    "retired": 0
+  },
+  "componentsByLifecycle": {
+    "planned": [
+      "data_quality_scorer",
+      "multi_timeframe_trend_regime_scorer",
+      "relative_strength_scorer",
+      "momentum_persistence_scorer",
+      "breakout_quality_scorer",
+      "mean_reversion_opportunity_scorer",
+      "volume_confirmation_scorer",
+      "volatility_regime_scorer",
+      "support_resistance_proximity_scorer",
+      "pattern_confidence_scorer",
+      "vwap_location_scorer",
+      "market_breadth_scorer",
+      "sector_rotation_scorer",
+      "correlation_diversification_scorer",
+      "cross_asset_regime_scorer",
+      "macro_surprise_scorer",
+      "economic_calendar_risk_scorer",
+      "entity_resolution_engine",
+      "news_relevance_scorer",
+      "financial_sentiment_scorer",
+      "sentiment_velocity_scorer",
+      "sentiment_dispersion_scorer",
+      "news_novelty_scorer",
+      "source_authority_scorer",
+      "event_detection_classification_engine",
+      "event_impact_scorer",
+      "catalyst_strength_scorer",
+      "market_reaction_validator",
+      "narrative_emergence_scorer",
+      "narrative_saturation_scorer",
+      "social_attention_velocity_scorer",
+      "social_engagement_quality_scorer",
+      "bot_manipulation_risk_scorer",
+      "fundamental_quality_scorer",
+      "growth_acceleration_scorer",
+      "valuation_peer_comparison_scorer",
+      "earnings_revision_scorer",
+      "earnings_surprise_guidance_scorer",
+      "financial_distress_scorer",
+      "insider_institutional_flow_scorer",
+      "options_positioning_gamma_scorer",
+      "open_interest_funding_regime_scorer",
+      "orderflow_liquidity_imbalance_scorer",
+      "onchain_flow_holder_behavior_scorer",
+      "protocol_fundamentals_tokenomics_scorer"
+    ],
+    "mock": [],
+    "shadow": [],
+    "active": [],
+    "degraded": [],
+    "blocked": [
+      "market_integrity_gate",
+      "liquidity_eligibility_scorer",
+      "spread_slippage_risk_scorer",
+      "tradability_gate",
+      "final_rank_confidence_evidence_scorer"
+    ],
+    "retired": []
+  },
+  "registryIssueCount": 364,
+  "unresolvedProviderDependencies": [
+    {
+      "componentId": "market_integrity_gate",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "market_integrity_gate",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "kraken"
+    },
+    {
+      "componentId": "market_integrity_gate",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "coinbase"
+    },
+    {
+      "componentId": "market_integrity_gate",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "data_quality_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "data_quality_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "kraken"
+    },
+    {
+      "componentId": "data_quality_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "data_quality_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "alphavantage"
+    },
+    {
+      "componentId": "liquidity_eligibility_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "liquidity_eligibility_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "kraken"
+    },
+    {
+      "componentId": "liquidity_eligibility_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "spread_slippage_risk_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "spread_slippage_risk_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "kraken"
+    },
+    {
+      "componentId": "tradability_gate",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "tradability_gate",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "multi_timeframe_trend_regime_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "multi_timeframe_trend_regime_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "relative_strength_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "momentum_persistence_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "momentum_persistence_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "breakout_quality_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "breakout_quality_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "mean_reversion_opportunity_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "mean_reversion_opportunity_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "volume_confirmation_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "volume_confirmation_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "volatility_regime_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "volatility_regime_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "support_resistance_proximity_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "support_resistance_proximity_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "pattern_confidence_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "vwap_location_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "vwap_location_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "kraken"
+    },
+    {
+      "componentId": "market_breadth_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "sector_rotation_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "correlation_diversification_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "correlation_diversification_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "cross_asset_regime_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "fred"
+    },
+    {
+      "componentId": "cross_asset_regime_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "macro_surprise_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "fred"
+    },
+    {
+      "componentId": "economic_calendar_risk_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "fred"
+    },
+    {
+      "componentId": "entity_resolution_engine",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "gemini"
+    },
+    {
+      "componentId": "entity_resolution_engine",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "internal_master_data"
+    },
+    {
+      "componentId": "news_relevance_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "gemini"
+    },
+    {
+      "componentId": "financial_sentiment_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "gemini"
+    },
+    {
+      "componentId": "sentiment_velocity_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "gemini"
+    },
+    {
+      "componentId": "sentiment_dispersion_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "gemini"
+    },
+    {
+      "componentId": "news_novelty_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "gemini"
+    },
+    {
+      "componentId": "source_authority_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "internal_master_data"
+    },
+    {
+      "componentId": "event_detection_classification_engine",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "gemini"
+    },
+    {
+      "componentId": "event_impact_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "gemini"
+    },
+    {
+      "componentId": "catalyst_strength_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "internal_master_data"
+    },
+    {
+      "componentId": "market_reaction_validator",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "market_reaction_validator",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "narrative_emergence_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "gemini"
+    },
+    {
+      "componentId": "narrative_saturation_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "gemini"
+    },
+    {
+      "componentId": "social_attention_velocity_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "internal_master_data"
+    },
+    {
+      "componentId": "social_engagement_quality_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "internal_master_data"
+    },
+    {
+      "componentId": "bot_manipulation_risk_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "internal_master_data"
+    },
+    {
+      "componentId": "bot_manipulation_risk_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "gemini"
+    },
+    {
+      "componentId": "fundamental_quality_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "sec_edgar"
+    },
+    {
+      "componentId": "fundamental_quality_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "financialmodelingprep"
+    },
+    {
+      "componentId": "growth_acceleration_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "sec_edgar"
+    },
+    {
+      "componentId": "growth_acceleration_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "financialmodelingprep"
+    },
+    {
+      "componentId": "valuation_peer_comparison_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "financialmodelingprep"
+    },
+    {
+      "componentId": "earnings_revision_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "financialmodelingprep"
+    },
+    {
+      "componentId": "earnings_surprise_guidance_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "financialmodelingprep"
+    },
+    {
+      "componentId": "earnings_surprise_guidance_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "sec_edgar"
+    },
+    {
+      "componentId": "financial_distress_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "sec_edgar"
+    },
+    {
+      "componentId": "financial_distress_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "financialmodelingprep"
+    },
+    {
+      "componentId": "insider_institutional_flow_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "sec_edgar"
+    },
+    {
+      "componentId": "options_positioning_gamma_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "open_interest_funding_regime_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "open_interest_funding_regime_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "kraken"
+    },
+    {
+      "componentId": "orderflow_liquidity_imbalance_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "orderflow_liquidity_imbalance_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "kraken"
+    },
+    {
+      "componentId": "onchain_flow_holder_behavior_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "onchain_flow_holder_behavior_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "internal_master_data"
+    },
+    {
+      "componentId": "protocol_fundamentals_tokenomics_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "internal_master_data"
+    },
+    {
+      "componentId": "final_rank_confidence_evidence_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "internal_consensus_engine"
+    }
+  ],
+  "registryIssues": [
+    {
+      "componentId": "market_integrity_gate",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "RawTickStreamContract"
+    },
+    {
+      "componentId": "market_integrity_gate",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "ExchangeStatusContract"
+    },
+    {
+      "componentId": "market_integrity_gate",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "IntegrityStatusContract"
+    },
+    {
+      "componentId": "market_integrity_gate",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "market_integrity_gate",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "kraken"
+    },
+    {
+      "componentId": "market_integrity_gate",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "coinbase"
+    },
+    {
+      "componentId": "market_integrity_gate",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "market_integrity_gate",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "bid_ask_spread"
+    },
+    {
+      "componentId": "market_integrity_gate",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "sequence_continuity"
+    },
+    {
+      "componentId": "market_integrity_gate",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "timestamp_jitter"
+    },
+    {
+      "componentId": "market_integrity_gate",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "indices"
+    },
+    {
+      "componentId": "market_integrity_gate",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "futures"
+    },
+    {
+      "componentId": "market_integrity_gate",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "bonds"
+    },
+    {
+      "componentId": "data_quality_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "FeedLatencyMetricContract"
+    },
+    {
+      "componentId": "data_quality_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "TickGapContract"
+    },
+    {
+      "componentId": "data_quality_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "DataQualityScoreContract"
+    },
+    {
+      "componentId": "data_quality_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "data_quality_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "kraken"
+    },
+    {
+      "componentId": "data_quality_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "data_quality_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "alphavantage"
+    },
+    {
+      "componentId": "data_quality_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "latency_jitter_ms"
+    },
+    {
+      "componentId": "data_quality_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "missing_ticks_ratio"
+    },
+    {
+      "componentId": "data_quality_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "provider_agreement_score"
+    },
+    {
+      "componentId": "data_quality_scorer",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "indices"
+    },
+    {
+      "componentId": "liquidity_eligibility_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "OrderbookDepthContract"
+    },
+    {
+      "componentId": "liquidity_eligibility_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "DailyTurnoverContract"
+    },
+    {
+      "componentId": "liquidity_eligibility_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "LiquidityEligibilityContract"
+    },
+    {
+      "componentId": "liquidity_eligibility_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "liquidity_eligibility_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "kraken"
+    },
+    {
+      "componentId": "liquidity_eligibility_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "liquidity_eligibility_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "turnover_24h_eur"
+    },
+    {
+      "componentId": "liquidity_eligibility_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "orderbook_depth_2pct_eur"
+    },
+    {
+      "componentId": "liquidity_eligibility_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "median_trade_size"
+    },
+    {
+      "componentId": "spread_slippage_risk_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "L1TopBookContract"
+    },
+    {
+      "componentId": "spread_slippage_risk_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "TradeExecutionEstimateContract"
+    },
+    {
+      "componentId": "spread_slippage_risk_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "SlippageRiskContract"
+    },
+    {
+      "componentId": "spread_slippage_risk_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "spread_slippage_risk_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "kraken"
+    },
+    {
+      "componentId": "spread_slippage_risk_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "effective_spread_bps"
+    },
+    {
+      "componentId": "spread_slippage_risk_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "modeled_market_impact_50k"
+    },
+    {
+      "componentId": "tradability_gate",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "MarketHaltContract"
+    },
+    {
+      "componentId": "tradability_gate",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "RegulatoryTradingStatusContract"
+    },
+    {
+      "componentId": "tradability_gate",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "TradabilityStatusContract"
+    },
+    {
+      "componentId": "tradability_gate",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "tradability_gate",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "tradability_gate",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "exchange_trading_state"
+    },
+    {
+      "componentId": "tradability_gate",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "circuit_breaker_active"
+    },
+    {
+      "componentId": "tradability_gate",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "indices"
+    },
+    {
+      "componentId": "tradability_gate",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "futures"
+    },
+    {
+      "componentId": "tradability_gate",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "bonds"
+    },
+    {
+      "componentId": "multi_timeframe_trend_regime_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "MultiTimeframeCandlesContract"
+    },
+    {
+      "componentId": "multi_timeframe_trend_regime_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "TrendRegimeScoreContract"
+    },
+    {
+      "componentId": "multi_timeframe_trend_regime_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "multi_timeframe_trend_regime_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "multi_timeframe_trend_regime_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "ema_20_50_200_alignment"
+    },
+    {
+      "componentId": "multi_timeframe_trend_regime_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "adx_14_strength"
+    },
+    {
+      "componentId": "multi_timeframe_trend_regime_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "higher_highs_structure"
+    },
+    {
+      "componentId": "multi_timeframe_trend_regime_scorer",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "indices"
+    },
+    {
+      "componentId": "relative_strength_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "BenchmarkReturnContract"
+    },
+    {
+      "componentId": "relative_strength_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "AssetReturnContract"
+    },
+    {
+      "componentId": "relative_strength_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "RelativeStrengthScoreContract"
+    },
+    {
+      "componentId": "relative_strength_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "relative_strength_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "alpha_vs_sp500_60d"
+    },
+    {
+      "componentId": "relative_strength_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "rs_percentile_rank_in_sector"
+    },
+    {
+      "componentId": "momentum_persistence_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "HistoricalCandlesContract"
+    },
+    {
+      "componentId": "momentum_persistence_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "MomentumPersistenceScoreContract"
+    },
+    {
+      "componentId": "momentum_persistence_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "momentum_persistence_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "momentum_persistence_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "rate_of_change_14d"
+    },
+    {
+      "componentId": "momentum_persistence_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "hurst_exponent"
+    },
+    {
+      "componentId": "momentum_persistence_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "positive_day_ratio_30d"
+    },
+    {
+      "componentId": "momentum_persistence_scorer",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "indices"
+    },
+    {
+      "componentId": "breakout_quality_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "RecentBreakoutContract"
+    },
+    {
+      "componentId": "breakout_quality_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "VolumeExpansionContract"
+    },
+    {
+      "componentId": "breakout_quality_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "BreakoutQualityScoreContract"
+    },
+    {
+      "componentId": "breakout_quality_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "breakout_quality_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "breakout_quality_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "consolidation_range_duration_days"
+    },
+    {
+      "componentId": "breakout_quality_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "breakout_volume_multiple"
+    },
+    {
+      "componentId": "breakout_quality_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "close_above_resistance_pct"
+    },
+    {
+      "componentId": "mean_reversion_opportunity_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "OscillatorContract"
+    },
+    {
+      "componentId": "mean_reversion_opportunity_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "BollingerBandContract"
+    },
+    {
+      "componentId": "mean_reversion_opportunity_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "MeanReversionScoreContract"
+    },
+    {
+      "componentId": "mean_reversion_opportunity_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "mean_reversion_opportunity_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "mean_reversion_opportunity_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "rsi_14_oversold"
+    },
+    {
+      "componentId": "mean_reversion_opportunity_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "z_score_vs_20d_sma"
+    },
+    {
+      "componentId": "mean_reversion_opportunity_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "bollinger_percent_b"
+    },
+    {
+      "componentId": "mean_reversion_opportunity_scorer",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "indices"
+    },
+    {
+      "componentId": "volume_confirmation_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "IntradayVolumeContract"
+    },
+    {
+      "componentId": "volume_confirmation_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "HistoricalAverageVolumeContract"
+    },
+    {
+      "componentId": "volume_confirmation_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "VolumeConfirmationScoreContract"
+    },
+    {
+      "componentId": "volume_confirmation_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "volume_confirmation_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "volume_confirmation_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "obv_trend_direction"
+    },
+    {
+      "componentId": "volume_confirmation_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "volume_profile_poc_proximity"
+    },
+    {
+      "componentId": "volume_confirmation_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "rvol_intraday"
+    },
+    {
+      "componentId": "volatility_regime_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "ATRContract"
+    },
+    {
+      "componentId": "volatility_regime_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "HistoricalVolatilityContract"
+    },
+    {
+      "componentId": "volatility_regime_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "VolatilityRegimeScoreContract"
+    },
+    {
+      "componentId": "volatility_regime_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "volatility_regime_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "volatility_regime_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "atr_14_percentile"
+    },
+    {
+      "componentId": "volatility_regime_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "parkinson_volatility"
+    },
+    {
+      "componentId": "volatility_regime_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "implied_vs_realized_ratio"
+    },
+    {
+      "componentId": "volatility_regime_scorer",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "indices"
+    },
+    {
+      "componentId": "support_resistance_proximity_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "KeyLevelsContract"
+    },
+    {
+      "componentId": "support_resistance_proximity_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "CurrentPriceContract"
+    },
+    {
+      "componentId": "support_resistance_proximity_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "KeyLevelProximityScoreContract"
+    },
+    {
+      "componentId": "support_resistance_proximity_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "support_resistance_proximity_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "support_resistance_proximity_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "distance_to_major_support_pct"
+    },
+    {
+      "componentId": "support_resistance_proximity_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "distance_to_major_resistance_pct"
+    },
+    {
+      "componentId": "support_resistance_proximity_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "level_touch_count"
+    },
+    {
+      "componentId": "support_resistance_proximity_scorer",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "indices"
+    },
+    {
+      "componentId": "pattern_confidence_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "ChartPatternDetectionContract"
+    },
+    {
+      "componentId": "pattern_confidence_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "PatternConfidenceScoreContract"
+    },
+    {
+      "componentId": "pattern_confidence_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "pattern_confidence_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "pattern_geometry_symmetry"
+    },
+    {
+      "componentId": "pattern_confidence_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "completion_ratio"
+    },
+    {
+      "componentId": "pattern_confidence_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "historical_win_rate_in_regime"
+    },
+    {
+      "componentId": "pattern_confidence_scorer",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "indices"
+    },
+    {
+      "componentId": "vwap_location_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "IntradayTickVolumeContract"
+    },
+    {
+      "componentId": "vwap_location_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "VWAPLocationScoreContract"
+    },
+    {
+      "componentId": "vwap_location_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "vwap_location_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "kraken"
+    },
+    {
+      "componentId": "vwap_location_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "price_vs_session_vwap_pct"
+    },
+    {
+      "componentId": "vwap_location_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "vwap_standard_deviation_band"
+    },
+    {
+      "componentId": "vwap_location_scorer",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "futures"
+    },
+    {
+      "componentId": "market_breadth_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "ConstituentAdvanceDeclineContract"
+    },
+    {
+      "componentId": "market_breadth_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "MarketBreadthScoreContract"
+    },
+    {
+      "componentId": "market_breadth_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "market_breadth_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "advance_decline_ratio"
+    },
+    {
+      "componentId": "market_breadth_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "stocks_above_50d_sma_pct"
+    },
+    {
+      "componentId": "market_breadth_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "new_highs_vs_lows"
+    },
+    {
+      "componentId": "sector_rotation_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "SectorETFReturnsContract"
+    },
+    {
+      "componentId": "sector_rotation_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "SectorRotationScoreContract"
+    },
+    {
+      "componentId": "sector_rotation_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "sector_rotation_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "cyclical_vs_defensive_ratio"
+    },
+    {
+      "componentId": "sector_rotation_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "tech_vs_utilities_spread"
+    },
+    {
+      "componentId": "sector_rotation_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "sector_momentum_rank"
+    },
+    {
+      "componentId": "correlation_diversification_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "CrossAssetCorrelationMatrixContract"
+    },
+    {
+      "componentId": "correlation_diversification_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "CorrelationDiversificationScoreContract"
+    },
+    {
+      "componentId": "correlation_diversification_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "correlation_diversification_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "correlation_diversification_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "rolling_correlation_btc_sp500"
+    },
+    {
+      "componentId": "correlation_diversification_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "gold_equity_decoupling_index"
+    },
+    {
+      "componentId": "correlation_diversification_scorer",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "bonds"
+    },
+    {
+      "componentId": "cross_asset_regime_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "MacroYieldCurveContract"
+    },
+    {
+      "componentId": "cross_asset_regime_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "DXYContract"
+    },
+    {
+      "componentId": "cross_asset_regime_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "CommodityIndexContract"
+    },
+    {
+      "componentId": "cross_asset_regime_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "CrossAssetRegimeScoreContract"
+    },
+    {
+      "componentId": "cross_asset_regime_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "fred"
+    },
+    {
+      "componentId": "cross_asset_regime_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "cross_asset_regime_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "us_10y_2y_yield_spread"
+    },
+    {
+      "componentId": "cross_asset_regime_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "dxy_strength_trend"
+    },
+    {
+      "componentId": "cross_asset_regime_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "crude_oil_momentum"
+    },
+    {
+      "componentId": "cross_asset_regime_scorer",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "indices"
+    },
+    {
+      "componentId": "cross_asset_regime_scorer",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "bonds"
+    },
+    {
+      "componentId": "macro_surprise_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "EconomicReleaseVsConsensusContract"
+    },
+    {
+      "componentId": "macro_surprise_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "MacroSurpriseScoreContract"
+    },
+    {
+      "componentId": "macro_surprise_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "fred"
+    },
+    {
+      "componentId": "macro_surprise_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "cpi_surprise_delta"
+    },
+    {
+      "componentId": "macro_surprise_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "nfp_surprise_zscore"
+    },
+    {
+      "componentId": "macro_surprise_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "rate_decision_deviation"
+    },
+    {
+      "componentId": "macro_surprise_scorer",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "indices"
+    },
+    {
+      "componentId": "macro_surprise_scorer",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "bonds"
+    },
+    {
+      "componentId": "economic_calendar_risk_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "UpcomingEventsContract"
+    },
+    {
+      "componentId": "economic_calendar_risk_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "EventRiskScoreContract"
+    },
+    {
+      "componentId": "economic_calendar_risk_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "fred"
+    },
+    {
+      "componentId": "economic_calendar_risk_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "hours_until_fomc_decision"
+    },
+    {
+      "componentId": "economic_calendar_risk_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "tier1_event_clustering_index"
+    },
+    {
+      "componentId": "economic_calendar_risk_scorer",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "indices"
+    },
+    {
+      "componentId": "economic_calendar_risk_scorer",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "bonds"
+    },
+    {
+      "componentId": "entity_resolution_engine",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "RawNewsHeadlineContract"
+    },
+    {
+      "componentId": "entity_resolution_engine",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "SocialMentionContract"
+    },
+    {
+      "componentId": "entity_resolution_engine",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "ResolvedEntityContract"
+    },
+    {
+      "componentId": "entity_resolution_engine",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "gemini"
+    },
+    {
+      "componentId": "entity_resolution_engine",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "internal_master_data"
+    },
+    {
+      "componentId": "entity_resolution_engine",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "fuzzy_symbol_matching_confidence"
+    },
+    {
+      "componentId": "entity_resolution_engine",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "isin_figi_lei_lookup"
+    },
+    {
+      "componentId": "news_relevance_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "NewsArticleBodyContract"
+    },
+    {
+      "componentId": "news_relevance_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "NewsRelevanceScoreContract"
+    },
+    {
+      "componentId": "news_relevance_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "gemini"
+    },
+    {
+      "componentId": "news_relevance_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "entity_mention_prominence"
+    },
+    {
+      "componentId": "news_relevance_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "title_vs_body_salience"
+    },
+    {
+      "componentId": "news_relevance_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "ticker_relevance_pct"
+    },
+    {
+      "componentId": "financial_sentiment_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "FilteredNewsStreamContract"
+    },
+    {
+      "componentId": "financial_sentiment_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "FinancialSentimentScoreContract"
+    },
+    {
+      "componentId": "financial_sentiment_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "gemini"
+    },
+    {
+      "componentId": "financial_sentiment_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "polarity_score_gemini"
+    },
+    {
+      "componentId": "financial_sentiment_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "finbert_domain_sentiment"
+    },
+    {
+      "componentId": "financial_sentiment_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "forward_looking_tone"
+    },
+    {
+      "componentId": "financial_sentiment_scorer",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "indices"
+    },
+    {
+      "componentId": "sentiment_velocity_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "SentimentTimeSeriesContract"
+    },
+    {
+      "componentId": "sentiment_velocity_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "SentimentVelocityScoreContract"
+    },
+    {
+      "componentId": "sentiment_velocity_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "gemini"
+    },
+    {
+      "componentId": "sentiment_velocity_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "sentiment_change_1h"
+    },
+    {
+      "componentId": "sentiment_velocity_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "sentiment_change_24h"
+    },
+    {
+      "componentId": "sentiment_velocity_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "velocity_acceleration"
+    },
+    {
+      "componentId": "sentiment_dispersion_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "MultiSourceSentimentContract"
+    },
+    {
+      "componentId": "sentiment_dispersion_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "SentimentDispersionScoreContract"
+    },
+    {
+      "componentId": "sentiment_dispersion_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "gemini"
+    },
+    {
+      "componentId": "sentiment_dispersion_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "source_sentiment_variance"
+    },
+    {
+      "componentId": "sentiment_dispersion_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "retail_vs_institutional_divergence"
+    },
+    {
+      "componentId": "news_novelty_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "ArticleEmbeddingContract"
+    },
+    {
+      "componentId": "news_novelty_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "HistoricalNewsStoreContract"
+    },
+    {
+      "componentId": "news_novelty_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "NewsNoveltyScoreContract"
+    },
+    {
+      "componentId": "news_novelty_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "gemini"
+    },
+    {
+      "componentId": "news_novelty_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "cosine_distance_to_historical_clusters"
+    },
+    {
+      "componentId": "news_novelty_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "is_breaking_news"
+    },
+    {
+      "componentId": "source_authority_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "PublisherDomainContract"
+    },
+    {
+      "componentId": "source_authority_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "SourceAuthorityScoreContract"
+    },
+    {
+      "componentId": "source_authority_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "internal_master_data"
+    },
+    {
+      "componentId": "source_authority_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "domain_reputation_tier"
+    },
+    {
+      "componentId": "source_authority_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "historical_accuracy_rating"
+    },
+    {
+      "componentId": "source_authority_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "sec_filing_flag"
+    },
+    {
+      "componentId": "event_detection_classification_engine",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "StructuredNewsEventContract"
+    },
+    {
+      "componentId": "event_detection_classification_engine",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "ClassifiedEventContract"
+    },
+    {
+      "componentId": "event_detection_classification_engine",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "gemini"
+    },
+    {
+      "componentId": "event_detection_classification_engine",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "event_type_taxonomy"
+    },
+    {
+      "componentId": "event_detection_classification_engine",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "merger_acquisition_flag"
+    },
+    {
+      "componentId": "event_detection_classification_engine",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "lawsuit_penalty_flag"
+    },
+    {
+      "componentId": "event_impact_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "ClassifiedEventContract"
+    },
+    {
+      "componentId": "event_impact_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "MarketCapContract"
+    },
+    {
+      "componentId": "event_impact_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "EventImpactScoreContract"
+    },
+    {
+      "componentId": "event_impact_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "gemini"
+    },
+    {
+      "componentId": "event_impact_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "estimated_ebitda_impact_pct"
+    },
+    {
+      "componentId": "event_impact_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "regulatory_threat_level"
+    },
+    {
+      "componentId": "catalyst_strength_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "UpcomingCatalystCalendarContract"
+    },
+    {
+      "componentId": "catalyst_strength_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "CatalystStrengthScoreContract"
+    },
+    {
+      "componentId": "catalyst_strength_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "internal_master_data"
+    },
+    {
+      "componentId": "catalyst_strength_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "days_to_catalyst"
+    },
+    {
+      "componentId": "catalyst_strength_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "historical_catalyst_volatility_move"
+    },
+    {
+      "componentId": "market_reaction_validator",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "ClassifiedEventContract"
+    },
+    {
+      "componentId": "market_reaction_validator",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "PostEventTickWindowContract"
+    },
+    {
+      "componentId": "market_reaction_validator",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "MarketReactionValidationContract"
+    },
+    {
+      "componentId": "market_reaction_validator",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "market_reaction_validator",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "market_reaction_validator",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "initial_reaction_direction"
+    },
+    {
+      "componentId": "market_reaction_validator",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "reversal_in_15m_flag"
+    },
+    {
+      "componentId": "market_reaction_validator",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "abnormal_trading_volume"
+    },
+    {
+      "componentId": "narrative_emergence_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "TopicClusteringStreamContract"
+    },
+    {
+      "componentId": "narrative_emergence_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "NarrativeEmergenceScoreContract"
+    },
+    {
+      "componentId": "narrative_emergence_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "gemini"
+    },
+    {
+      "componentId": "narrative_emergence_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "new_topic_growth_rate_48h"
+    },
+    {
+      "componentId": "narrative_emergence_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "cross_channel_adoption_rate"
+    },
+    {
+      "componentId": "narrative_saturation_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "TopicFrequencyContract"
+    },
+    {
+      "componentId": "narrative_saturation_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "NarrativeSaturationScoreContract"
+    },
+    {
+      "componentId": "narrative_saturation_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "gemini"
+    },
+    {
+      "componentId": "narrative_saturation_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "mainstream_media_saturation_index"
+    },
+    {
+      "componentId": "narrative_saturation_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "search_trend_exhaustion"
+    },
+    {
+      "componentId": "social_attention_velocity_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "SocialMentionVolumeContract"
+    },
+    {
+      "componentId": "social_attention_velocity_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "SocialAttentionVelocityScoreContract"
+    },
+    {
+      "componentId": "social_attention_velocity_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "internal_master_data"
+    },
+    {
+      "componentId": "social_attention_velocity_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "mention_zscore_vs_30d"
+    },
+    {
+      "componentId": "social_attention_velocity_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "retweet_spread_velocity"
+    },
+    {
+      "componentId": "social_engagement_quality_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "SocialAuthorProfilesContract"
+    },
+    {
+      "componentId": "social_engagement_quality_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "SocialEngagementQualityScoreContract"
+    },
+    {
+      "componentId": "social_engagement_quality_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "internal_master_data"
+    },
+    {
+      "componentId": "social_engagement_quality_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "account_age_distribution"
+    },
+    {
+      "componentId": "social_engagement_quality_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "follower_to_following_ratio"
+    },
+    {
+      "componentId": "social_engagement_quality_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "verified_author_ratio"
+    },
+    {
+      "componentId": "bot_manipulation_risk_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "SocialTimeFrequencyContract"
+    },
+    {
+      "componentId": "bot_manipulation_risk_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "OrderbookSpoofingContract"
+    },
+    {
+      "componentId": "bot_manipulation_risk_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "ManipulationRiskScoreContract"
+    },
+    {
+      "componentId": "bot_manipulation_risk_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "internal_master_data"
+    },
+    {
+      "componentId": "bot_manipulation_risk_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "gemini"
+    },
+    {
+      "componentId": "bot_manipulation_risk_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "sybil_attack_probability"
+    },
+    {
+      "componentId": "bot_manipulation_risk_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "pump_and_dump_pattern_similarity"
+    },
+    {
+      "componentId": "fundamental_quality_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "SEC10K10QFinancialsContract"
+    },
+    {
+      "componentId": "fundamental_quality_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "FundamentalQualityScoreContract"
+    },
+    {
+      "componentId": "fundamental_quality_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "sec_edgar"
+    },
+    {
+      "componentId": "fundamental_quality_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "financialmodelingprep"
+    },
+    {
+      "componentId": "fundamental_quality_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "piotroski_f_score"
+    },
+    {
+      "componentId": "fundamental_quality_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "return_on_equity_10y_median"
+    },
+    {
+      "componentId": "fundamental_quality_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "free_cash_flow_margin"
+    },
+    {
+      "componentId": "growth_acceleration_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "QuarterlyFinancialsSeriesContract"
+    },
+    {
+      "componentId": "growth_acceleration_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "GrowthAccelerationScoreContract"
+    },
+    {
+      "componentId": "growth_acceleration_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "sec_edgar"
+    },
+    {
+      "componentId": "growth_acceleration_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "financialmodelingprep"
+    },
+    {
+      "componentId": "growth_acceleration_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "revenue_growth_yoy_sequential_delta"
+    },
+    {
+      "componentId": "growth_acceleration_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "eps_growth_3y_cagr"
+    },
+    {
+      "componentId": "valuation_peer_comparison_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "CompanyMultiplesContract"
+    },
+    {
+      "componentId": "valuation_peer_comparison_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "SectorPeersMultiplesContract"
+    },
+    {
+      "componentId": "valuation_peer_comparison_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "ValuationScoreContract"
+    },
+    {
+      "componentId": "valuation_peer_comparison_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "financialmodelingprep"
+    },
+    {
+      "componentId": "valuation_peer_comparison_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "pe_ratio_vs_sector_median"
+    },
+    {
+      "componentId": "valuation_peer_comparison_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "ev_to_ebitda_percentile"
+    },
+    {
+      "componentId": "valuation_peer_comparison_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "peg_ratio"
+    },
+    {
+      "componentId": "earnings_revision_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "ConsensusEstimatesContract"
+    },
+    {
+      "componentId": "earnings_revision_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "EarningsRevisionScoreContract"
+    },
+    {
+      "componentId": "earnings_revision_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "financialmodelingprep"
+    },
+    {
+      "componentId": "earnings_revision_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "eps_estimate_upward_revisions_30d"
+    },
+    {
+      "componentId": "earnings_revision_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "revenue_revision_diffusion_index"
+    },
+    {
+      "componentId": "earnings_surprise_guidance_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "EarningsHistoryContract"
+    },
+    {
+      "componentId": "earnings_surprise_guidance_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "EarningsSurpriseScoreContract"
+    },
+    {
+      "componentId": "earnings_surprise_guidance_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "financialmodelingprep"
+    },
+    {
+      "componentId": "earnings_surprise_guidance_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "sec_edgar"
+    },
+    {
+      "componentId": "earnings_surprise_guidance_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "last_earnings_surprise_pct"
+    },
+    {
+      "componentId": "earnings_surprise_guidance_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "forward_guidance_raised_flag"
+    },
+    {
+      "componentId": "financial_distress_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "BalanceSheetDebtContract"
+    },
+    {
+      "componentId": "financial_distress_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "FinancialDistressScoreContract"
+    },
+    {
+      "componentId": "financial_distress_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "sec_edgar"
+    },
+    {
+      "componentId": "financial_distress_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "financialmodelingprep"
+    },
+    {
+      "componentId": "financial_distress_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "altman_z_score"
+    },
+    {
+      "componentId": "financial_distress_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "interest_coverage_ratio"
+    },
+    {
+      "componentId": "financial_distress_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "debt_to_equity"
+    },
+    {
+      "componentId": "insider_institutional_flow_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "SECForm4Contract"
+    },
+    {
+      "componentId": "insider_institutional_flow_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "SEC13FHoldingsContract"
+    },
+    {
+      "componentId": "insider_institutional_flow_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "InsiderInstitutionalFlowScoreContract"
+    },
+    {
+      "componentId": "insider_institutional_flow_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "sec_edgar"
+    },
+    {
+      "componentId": "insider_institutional_flow_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "insider_net_buying_ratio_90d"
+    },
+    {
+      "componentId": "insider_institutional_flow_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "institutional_ownership_change_qoq"
+    },
+    {
+      "componentId": "options_positioning_gamma_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "OptionsChainContract"
+    },
+    {
+      "componentId": "options_positioning_gamma_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "GammaPositioningScoreContract"
+    },
+    {
+      "componentId": "options_positioning_gamma_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "twelvedata"
+    },
+    {
+      "componentId": "options_positioning_gamma_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "gamma_exposure_gex_regime"
+    },
+    {
+      "componentId": "options_positioning_gamma_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "put_call_ratio_open_interest"
+    },
+    {
+      "componentId": "options_positioning_gamma_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "max_pain_price_distance"
+    },
+    {
+      "componentId": "options_positioning_gamma_scorer",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "indices"
+    },
+    {
+      "componentId": "open_interest_funding_regime_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "FuturesOpenInterestContract"
+    },
+    {
+      "componentId": "open_interest_funding_regime_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "PerpetualFundingRateContract"
+    },
+    {
+      "componentId": "open_interest_funding_regime_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "PerpetualMarketRegimeScoreContract"
+    },
+    {
+      "componentId": "open_interest_funding_regime_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "open_interest_funding_regime_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "kraken"
+    },
+    {
+      "componentId": "open_interest_funding_regime_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "funding_rate_annualized"
+    },
+    {
+      "componentId": "open_interest_funding_regime_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "oi_weighted_by_market_cap"
+    },
+    {
+      "componentId": "open_interest_funding_regime_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "liquidation_cascade_risk_score"
+    },
+    {
+      "componentId": "orderflow_liquidity_imbalance_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "L2OrderbookDeltaContract"
+    },
+    {
+      "componentId": "orderflow_liquidity_imbalance_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "AggregatedTradesContract"
+    },
+    {
+      "componentId": "orderflow_liquidity_imbalance_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "OrderflowImbalanceScoreContract"
+    },
+    {
+      "componentId": "orderflow_liquidity_imbalance_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "orderflow_liquidity_imbalance_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "kraken"
+    },
+    {
+      "componentId": "orderflow_liquidity_imbalance_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "cumulative_volume_delta_cvd"
+    },
+    {
+      "componentId": "orderflow_liquidity_imbalance_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "bid_ask_imbalance_ratio_l2"
+    },
+    {
+      "componentId": "orderflow_liquidity_imbalance_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "iceberg_order_detection_flag"
+    },
+    {
+      "componentId": "orderflow_liquidity_imbalance_scorer",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "futures"
+    },
+    {
+      "componentId": "onchain_flow_holder_behavior_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "OnChainWalletTransferContract"
+    },
+    {
+      "componentId": "onchain_flow_holder_behavior_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "ExchangeReserveContract"
+    },
+    {
+      "componentId": "onchain_flow_holder_behavior_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "OnChainHoldersScoreContract"
+    },
+    {
+      "componentId": "onchain_flow_holder_behavior_scorer",
+      "code": "PROVIDER_NOT_PRODUCTION_ADMITTED",
+      "reference": "binance"
+    },
+    {
+      "componentId": "onchain_flow_holder_behavior_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "internal_master_data"
+    },
+    {
+      "componentId": "onchain_flow_holder_behavior_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "exchange_net_inflow_outflow_btc"
+    },
+    {
+      "componentId": "onchain_flow_holder_behavior_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "long_term_holder_supply_pct"
+    },
+    {
+      "componentId": "onchain_flow_holder_behavior_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "whale_wallet_accumulation_30d"
+    },
+    {
+      "componentId": "protocol_fundamentals_tokenomics_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "DefiTvlFeesContract"
+    },
+    {
+      "componentId": "protocol_fundamentals_tokenomics_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "TokenEmissionScheduleContract"
+    },
+    {
+      "componentId": "protocol_fundamentals_tokenomics_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "TokenomicsScoreContract"
+    },
+    {
+      "componentId": "protocol_fundamentals_tokenomics_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "internal_master_data"
+    },
+    {
+      "componentId": "protocol_fundamentals_tokenomics_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "tvl_growth_30d"
+    },
+    {
+      "componentId": "protocol_fundamentals_tokenomics_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "protocol_revenue_vs_market_cap"
+    },
+    {
+      "componentId": "protocol_fundamentals_tokenomics_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "annual_token_inflation_rate"
+    },
+    {
+      "componentId": "final_rank_confidence_evidence_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "CompositeScoresContract"
+    },
+    {
+      "componentId": "final_rank_confidence_evidence_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "EligibilityContract"
+    },
+    {
+      "componentId": "final_rank_confidence_evidence_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "EvidenceHashesContract"
+    },
+    {
+      "componentId": "final_rank_confidence_evidence_scorer",
+      "code": "CONTRACT_REFERENCE_UNRESOLVED",
+      "reference": "CanonicalActionableRankContract"
+    },
+    {
+      "componentId": "final_rank_confidence_evidence_scorer",
+      "code": "PROVIDER_REFERENCE_UNRESOLVED",
+      "reference": "internal_consensus_engine"
+    },
+    {
+      "componentId": "final_rank_confidence_evidence_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "weighted_composite_score"
+    },
+    {
+      "componentId": "final_rank_confidence_evidence_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "total_evidence_sha256"
+    },
+    {
+      "componentId": "final_rank_confidence_evidence_scorer",
+      "code": "FEATURE_REFERENCE_UNRESOLVED",
+      "reference": "aggregate_data_confidence"
+    },
+    {
+      "componentId": "final_rank_confidence_evidence_scorer",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "indices"
+    },
+    {
+      "componentId": "final_rank_confidence_evidence_scorer",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "futures"
+    },
+    {
+      "componentId": "final_rank_confidence_evidence_scorer",
+      "code": "ASSET_CLASS_UNRESOLVED",
+      "reference": "bonds"
+    }
+  ],
+  "files": [
+    "M\t.env.example",
+    "A\tdocs/product/enterprise-analysis-ui-audit-20261008.md",
+    "M\tpackage.json",
+    "M\tscripts/navigation.test.mjs",
+    "M\tsrc/app/routing/AppRoutes.tsx",
+    "M\tsrc/components/ControlCenterPage.tsx",
+    "M\tsrc/components/HubSidebarDrawer.tsx",
+    "A\tsrc/features/analysis/AnalysisComponentExplorer.tsx",
+    "A\tsrc/features/analysis/AnalysisShadowSession.ts",
+    "A\tsrc/features/analysis/AnalysisUi.tsx",
+    "A\tsrc/features/analysis/EnterpriseAnalysisHub.tsx",
+    "A\tsrc/features/analysis/MarketIntelligencePanels.tsx",
+    "A\tsrc/features/analysis/PipelineConfiguratorConsole.tsx",
+    "A\tsrc/features/analysis/__tests__/analysisUi.test.tsx",
+    "A\tsrc/features/analysis/analysisPresentation.ts",
+    "A\tsrc/features/analysis/analysisUiFlags.ts",
+    "A\tsrc/features/analysis/scorePresentation.ts",
+    "A\tsrc/features/analysis/screenerProjection.ts",
+    "A\tsrc/features/analysis/useAnalysisQuery.ts",
+    "M\tsrc/features/market/MarketSentiment.tsx",
+    "M\tsrc/features/screener/EnterpriseScorerDashboard.tsx",
+    "M\tsrc/features/screener/ScoreExplainabilityDrawer.tsx",
+    "M\tsrc/features/screener/ScreenerTable.tsx",
+    "M\tsrc/features/studio/StudioPage.tsx",
+    "M\tsrc/features/whale-radar/WhaleRadarModal.tsx",
+    "M\tsrc/features/whale-radar/WhaleRadarSection.tsx",
+    "A\tdocs/product/enterprise-analysis-ui-report-20261008.md",
+    "A\tdocs/product/enterprise-analysis-ui-inventory-20261008.json"
+  ]
+}

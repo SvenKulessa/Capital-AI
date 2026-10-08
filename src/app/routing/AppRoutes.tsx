@@ -93,15 +93,8 @@ const DocumentationHub = lazy(() =>
     default: module.DocumentationHub,
   })),
 );
-const EnterpriseScorerDashboard = lazy(() =>
-  import('../../features/screener/EnterpriseScorerDashboard').then((module) => ({
-    default: module.EnterpriseScorerDashboard,
-  })),
-);
-const ScreenerTable = lazy(() =>
-  import('../../features/screener/ScreenerTable').then((module) => ({
-    default: module.ScreenerTable,
-  })),
+const EnterpriseAnalysisHub = lazy(() =>
+  import('../../features/analysis/EnterpriseAnalysisHub').then((module) => ({ default: module.EnterpriseAnalysisHub })),
 );
 
 type AppRoutesProps = {
@@ -259,18 +252,13 @@ export function AppRoutes({
             </button>
           </div>
         </div>
-        <EnterpriseScorerDashboard
+        <EnterpriseAnalysisHub
           onSelectAsset={(symbol) => {
             const found = MARKET_ASSETS.find((asset) => asset.symbol === symbol);
             if (found) onSelectAsset(found);
           }}
         />
-        <div className="pt-4 border-t border-slate-800 space-y-3">
-          <h3 className="text-base font-bold text-white font-mono flex items-center gap-2">
-            <span>Vollständige Screener-Tabelle (Cross-Sectional Ranking)</span>
-          </h3>
-          <ScreenerTable />
-        </div>
+
       </div>
     );
   }

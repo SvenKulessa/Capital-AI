@@ -369,3 +369,27 @@ test('recovery accepts a bounded 16-character token hash and redirects invalid r
   assert.equal(invalidRes.getHeader('location'), '/login?mode=forgot&recovery_error=invalid_link');
   assert.equal(invalid.calls.length, 0);
 });
+
+test('retired Finance TOTP and step-up endpoints never read providers or sessions', async () => {
+  const h = securityHarness();
+  for (const action of ['totp/setup', 'totp/verify-setup', 'step-up/verify', 'break-glass/redeem']) {
+    const res = responseHarness();
+    assert.equal(await h.security.handle({ method: 'POST', headers: {}, body: {} }, res,
+      new URL('https://capital-ai.online/api/auth/' + action), json), true);
+    assert.equal(res.status, 410);
+    assert.equal(res.payload.error, 'legacy_totp_retired');
+  }
+  assert.equal(h.calls.length, 0);
+});
+
+test('TOTP enrollment accepts valid padded and grouped Base32 provider secrets', async () => {
+  const h = securityHarness({ factor: false, enrollmentTotp: {
+    qr_code: '', secret: 'jbsw y3dp ehpk 3pxp====', uri: '',
+  } });
+  const res = responseHarness();
+  await h.security.handle({ method: 'POST', headers: { origin: 'https://capital-ai.online' }, body: {} }, res,
+    new URL('https://capital-ai.online/api/auth/mfa/totp/enroll'), json);
+  assert.equal(res.status, 200);
+  assert.equal(res.payload.secret, 'JBSWY3DPEHPK3PXP');
+  assert.equal(res.payload.qrCode, ''); // Manual setup remains possible without QR material.
+});

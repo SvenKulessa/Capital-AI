@@ -12,7 +12,7 @@ function upstreamCode(data, fallback) {
     : typeof data?.code === 'string'
       ? data.code
       : '';
-  return code.slice(0, 120) || fallback;
+  return /^[a-z][a-z0-9_]{0,119}$/i.test(code) ? code : fallback;
 }
 
 function friendlyName(value, fallback) {
@@ -24,14 +24,15 @@ function friendlyName(value, fallback) {
 function totpEnrollmentProjection(totp) {
   if (!totp || typeof totp !== 'object') return null;
   const uri = typeof totp.uri === 'string' && totp.uri.length <= 2048 ? totp.uri : '';
-  let secret = typeof totp.secret === 'string' ? totp.secret.trim().toUpperCase() : '';
+  const normalizeSecret = value => String(value || '').replace(/\s/g, '').replace(/=+$/, '').toUpperCase();
+  let secret = typeof totp.secret === 'string' ? normalizeSecret(totp.secret) : '';
   // GoTrue versions can omit the separate secret while still returning the
   // otpauth URI. Extract it only server-side; never expose it in diagnostics.
   if (!secret && uri) {
     try {
       const parsed = new URL(uri);
       if (parsed.protocol === 'otpauth:' && parsed.hostname === 'totp') {
-        secret = String(parsed.searchParams.get('secret') || '').toUpperCase();
+        secret = normalizeSecret(parsed.searchParams.get('secret'));
       }
     } catch {
       return null;
@@ -111,6 +112,11 @@ export function createAuthSecurity({
   async function handle(req, res, url, json) {
     if (!url.pathname.startsWith('/api/auth/')) return false;
     const action = url.pathname.slice('/api/auth/'.length);
+    // Retired Finance endpoints must never revive the profile-based TOTP lane.
+    if (action.startsWith('totp/') || action.startsWith('step-up/') || action.startsWith('break-glass/')) {
+      json(res, 410, { error: 'legacy_totp_retired', provider: 'supabase' });
+      return true;
+    }
     const handled =
       action === 'email/verify' ||
       action === 'password/reset' ||
@@ -549,6 +555,7 @@ export function createAuthSecurity({
         maxResponseBytes: 262_144,
       });
       if (!enrolled.response.ok || !FACTOR_ID_RE.test(String(enrolled.data?.id || '')) || !enrolled.data?.totp) {
+        audit(`Supabase TOTP enrollment rejected: status=${enrolled.response.status}; code=${upstreamCode(enrolled.data, 'totp_enrollment_failed')}`);
         json(res, enrolled.response.status === 429 ? 429 : 422, {
           error: 'totp_enrollment_failed',
           code: upstreamCode(enrolled.data, 'totp_enrollment_failed'),
@@ -557,6 +564,7 @@ export function createAuthSecurity({
       }
       const setup = totpEnrollmentProjection(enrolled.data.totp);
       if (!setup) {
+        audit('Supabase TOTP enrollment rejected: usable setup material missing');
         // Do not claim enrollment success if there is no usable OTP secret.
         // Pending factors remain identifiable through the existing factor-list
         // endpoint so the user can retry without disclosing a secret.

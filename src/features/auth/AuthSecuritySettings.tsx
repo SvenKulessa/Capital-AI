@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { totpQrImage } from './totpEnrollment';
 import { CheckCircle2, Copy, Fingerprint, KeyRound, Loader2, QrCode, ShieldCheck, Trash2 } from 'lucide-react';
 import {
   prepareRegistrationOptions,
@@ -99,14 +100,7 @@ export function AuthSecuritySettings() {
     void refresh().catch(() => setError('Sicherheitsmethoden konnten nicht geladen werden.'));
   }, []);
 
-  const qrImage = useMemo(() => {
-    const raw = enrollment?.qrCode?.trim() || '';
-    if (raw.startsWith('data:image/svg+xml') || raw.startsWith('data:image/png')) return raw;
-    if (raw.startsWith('<svg') && raw.endsWith('</svg>')) {
-      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(raw);
-    }
-    return '';
-  }, [enrollment?.qrCode]);
+  const qrImage = useMemo(() => totpQrImage(enrollment?.qrCode), [enrollment?.qrCode]);
 
   const verifiedFactors = factors.filter(item => item.status === 'verified');
   const passkeyLimitReached = passkeys.length >= 2;
@@ -189,6 +183,8 @@ export function AuthSecuritySettings() {
     setBusy('totp-enroll');
     setError('');
     setNotice('');
+    setEnrollment(null);
+    setTotpCode('');
     try {
       const result = await postJson('/api/auth/mfa/totp/enroll', { friendlyName: factorName });
       if (!result.response.ok || !result.body?.factorId || !result.body?.secret) {
@@ -348,7 +344,7 @@ export function AuthSecuritySettings() {
             <h3 className="text-sm font-black text-white">Authenticator (TOTP)</h3>
           </div>
           <p className="mt-1 text-[11px] text-slate-500">
-            Kompatibel mit Google Authenticator, 1Password, Authy und anderen TOTP-Apps.
+            Kompatibel mit Google Authenticator, 1Password, Authy und anderen TOTP-Apps. Alte Finance-TOTP-Einrichtungen sind deaktiviert; richte hier einen neuen Supabase-Authenticator ein.
           </p>
 
           {!enrollment && (
