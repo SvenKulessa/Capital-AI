@@ -1,299 +1,365 @@
-/**
- * CAPITAL AI — SCORE EXPLAINABILITY DRAWER (PART 3)
- * Full audit-grade explainability in German (de-DE).
- * Displays formula breakdown, waterfall contributions, feature values, weights,
- * reason codes, and strict separation between facts, derived features, and model inferences.
- */
-
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  X,
-  Shield,
-  ShieldCheck,
-  ShieldAlert,
-  Cpu,
-  Layers,
-  FileCode,
-  CheckCircle2,
-  AlertTriangle,
-  Info,
-  Clock,
-  Database,
-  ArrowRight,
-  TrendingUp,
-  TrendingDown,
-  Copy,
-  Check,
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import { FinalRankResult, DriverContribution } from '../../contracts/canonicalContracts';
-
+  FinalRankResult,
+  FeatureValue,
+  FeatureValueSchema,
+} from '../../contracts/canonicalContracts';
+import {
+  AnalysisDialog,
+  DataStatusBadge,
+  panelClass,
+} from '../analysis/AnalysisUi';
+import { safeScorePresentation } from '../analysis/scorePresentation';
 export interface ScoreExplainabilityDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   result: FinalRankResult | null;
+  features?: readonly FeatureValue[];
 }
-
-export const ScoreExplainabilityDrawer: React.FC<ScoreExplainabilityDrawerProps> = ({
-  isOpen,
-  onClose,
-  result,
-}) => {
-  const [copied, setCopied] = React.useState(false);
-
-  if (!isOpen || !result) return null;
-
-  const handleCopyEvidence = () => {
-    navigator.clipboard.writeText(result.evidenceId);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const formattedDate = new Date(result.computedAt).toLocaleString('de-DE', {
-    dateStyle: 'medium',
-    timeStyle: 'medium',
-  });
-
+const FAMILIES = [
+  ['momentumScore', 'weightMomentum', 'Momentum'],
+  ['technicalScore', 'weightTechnical', 'Technik'],
+  ['fundamentalScore', 'weightFundamental', 'Fundamental'],
+  ['sentimentScore', 'weightSentiment', 'Sentiment'],
+  ['eventScore', 'weightEvent', 'Ereignisse'],
+  ['positioningScore', 'weightPositioning', 'Positionierung'],
+] as const;
+export const ScoreExplainabilityDrawer: React.FC<
+  ScoreExplainabilityDrawerProps
+> = ({ isOpen, onClose, result: inputResult, features = [] }) => {
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    if (!isOpen) return;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [isOpen]);
+  const presentation = inputResult
+    ? safeScorePresentation(inputResult, now)
+    : null;
+  const result = presentation?.result;
+  const validFeatures = features.filter(
+    (f) =>
+      FeatureValueSchema.safeParse(f).success && f.assetId === result?.assetId,
+  );
+  const available = presentation?.score !== null;
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-sm">
-        {/* Backdrop click */}
-        <div className="flex-1" onClick={onClose} />
-
-        {/* Drawer Content */}
-        <motion.div
-          initial={{ x: '100%' }}
-          animate={{ x: 0 }}
-          exit={{ x: '100%' }}
-          transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="w-full max-w-2xl h-full bg-[#070b19] border-l border-slate-800 shadow-2xl overflow-y-auto flex flex-col"
-        >
-          {/* Header */}
-          <div className="p-5 bg-gradient-to-r from-[#0d1633] via-[#090e21] to-[#070b19] border-b border-slate-800 flex items-start justify-between gap-4 sticky top-0 z-20 backdrop-blur-md">
-            <div>
-              <div className="flex items-center gap-2 text-xs font-mono text-cyan-400 mb-1">
-                <Cpu className="w-3.5 h-3.5" />
-                <span>CAPITAL AI • SCORE EXPLAINABILITY &amp; AUDIT INSPECTOR</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <h2 className="text-xl font-bold text-white tracking-tight">
-                  {result.symbol} — Detaillierte Score-Herleitung
-                </h2>
-                <span
-                  className={`text-[11px] font-mono px-2.5 py-0.5 rounded-full font-bold border ${
-                    result.eligibility
-                      ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
-                      : 'bg-rose-500/15 border-rose-500/40 text-rose-300'
-                  }`}
-                >
-                  {result.eligibility ? '✓ ELIGIBLE (GATE PASSED)' : '🚫 INELIGIBLE (VETO)'}
-                </span>
-                <span
-                  className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${
-                    result.isDemo
-                      ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                      : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                  }`}
-                >
-                  {result.dataAvailability.toUpperCase()}
-                </span>
-              </div>
-              <p className="text-xs text-slate-400 mt-1">
-                Asset-Klasse: <span className="text-slate-200 font-mono uppercase">{result.assetClass}</span> • Modellversion: <span className="text-slate-200 font-mono">{result.modelVersion}</span> • Berechnet: <span className="text-slate-200 font-mono">{formattedDate}</span>
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition-all cursor-pointer"
-              title="Schließen"
-            >
-              <X className="w-5 h-5" />
-            </button>
+    <AnalysisDialog
+      open={isOpen && !!inputResult}
+      onClose={onClose}
+      title={`${result?.symbol ?? 'Asset'} · Score-Herleitung`}
+    >
+      {!result && inputResult && (
+        <p role="alert">
+          Ergebnisvertrag ungültig. Keine Score-Herleitung verfügbar.
+        </p>
+      )}
+      {result && presentation && (
+        <>
+          <div className="flex flex-wrap items-center gap-3">
+            <DataStatusBadge mode={presentation.data} />
+            <span className="text-sm text-rose-200">
+              {presentation.ranked
+                ? `Rang ${result.rank}`
+                : 'Kein freigegebener Rang'}
+            </span>
+            <span className="text-xs text-slate-400">
+              Modell {result.modelVersion}
+            </span>
           </div>
-
-          <div className="p-6 space-y-6 flex-1">
-            {/* 1. Final Score Summary Box */}
-            <div className="p-5 rounded-2xl bg-[#090e21] border border-amber-500/40 relative overflow-hidden">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="text-center p-3 rounded-xl bg-[#0d1633] border border-amber-500/40 min-w-[90px]">
-                    <div className="text-[10px] font-mono uppercase text-slate-400">Finaler Score</div>
-                    <div className={`${result.finalScore === null ? 'text-base' : 'text-3xl'} font-extrabold font-mono text-amber-400`}>
-                      {result.finalScore ?? 'Nicht verfügbar'}
-                    </div>
-                    <div className="text-[9px] font-mono text-slate-500">von 100 Pkt.</div>
-                  </div>
-
-                  <div>
-                    <div className="text-xs font-bold text-white flex items-center gap-2">
-                      <span>Rang: {result.rank !== null ? `#${result.rank}` : 'Keine Platzierung'}</span>
-                      <span className="text-[11px] font-mono text-cyan-400 font-normal">
-                        (Konfidenz: {Math.round(result.confidence * 100)}%)
+          <p className="text-sm text-amber-100">
+            {presentation.reason ??
+              'Freigegebener Ergebnisvertrag; Quellenbelege separat prüfen.'}
+          </p>
+          <dl className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
+            {[
+              [
+                'Finaler Score (0–100)',
+                presentation.score ?? 'Nicht verfügbar',
+              ],
+              [
+                'Konfidenz',
+                available
+                  ? `${Math.round(result.confidence * 100)}%`
+                  : 'Nicht verfügbar',
+              ],
+              [
+                'Eligibility',
+                result.eligibility && available ? 'Bestanden' : 'Gesperrt',
+              ],
+              [
+                'Risiko-Abzug',
+                available ? `${result.riskPenalty} Punkte` : 'Nicht verfügbar',
+              ],
+            ].map(([label, value]) => (
+              <div key={label}>
+                <dt className="text-xs text-slate-400">{label}</dt>
+                <dd className="mt-2 font-mono text-slate-100">{value}</dd>
+              </div>
+            ))}
+          </dl>
+          <section className={panelClass}>
+            <h3 className="font-semibold text-white">
+              Versionierte Formel · Modellinterpretation
+            </h3>
+            <p className="mt-3 break-words rounded-lg bg-black/40 p-3 font-mono text-xs leading-relaxed text-cyan-200">
+              finalRank = eligibilityMultiplier × confidence × Σ(weight ×
+              subScore) − riskPenalty
+            </p>
+            <p className="mt-3 text-xs text-slate-400">
+              Das Eligibility-Gate blockiert die Veröffentlichung vollständig.
+              Ein gesperrter Rang ist kein Score von 0. Scores werden auf 0–100
+              begrenzt.
+            </p>
+          </section>
+          <section className={panelClass}>
+            <h3 className="font-semibold text-white">
+              Beitrags-Wasserfall & Gewichte
+            </h3>
+            <p className="mt-2 text-xs text-slate-400">
+              Positive gewichtete Beiträge, anschließend Risiko-Abzug. Ohne
+              freigegebenen Ergebnisvertrag werden keine Beiträge ergänzt.
+            </p>
+            <div className="mt-4 space-y-3">
+              {FAMILIES.map(([scoreKey, weightKey, label]) => {
+                const score = result.subScores[scoreKey];
+                const weight = result.weightsApplied[weightKey];
+                const contribution =
+                  available && score !== null
+                    ? score * weight * result.confidence
+                    : null;
+                return (
+                  <div key={scoreKey}>
+                    <div className="flex flex-wrap justify-between gap-2 text-xs text-slate-300">
+                      <span>
+                        {label} · Gewicht {Math.round(weight * 100)}%
+                      </span>
+                      <span>
+                        Subscore: {score ?? '—'} · Beitrag:{' '}
+                        {contribution === null
+                          ? 'nicht verfügbar'
+                          : `+${contribution.toFixed(2)} Pkt.`}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                      {result.eligibility
-                        ? 'Die implementierten Eligibility-Gates sind erfüllt.'
-                        : `Hard-Gate Veto aktiv: ${result.eligibilityReason || 'Handelsaussetzung oder erhöhtes Risiko'}.`}
+                    <div
+                      className="mt-2 h-2 overflow-hidden rounded bg-slate-800"
+                      aria-hidden="true"
+                    >
+                      <div
+                        className="h-full bg-cyan-400"
+                        style={{ width: `${contribution ?? 0}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+              <div className="border-t border-slate-700 pt-3 text-xs text-rose-200">
+                Risiko-Abzug:{' '}
+                {available
+                  ? `−${result.riskPenalty.toFixed(2)} Punkte`
+                  : 'nicht verfügbar'}
+              </div>
+            </div>
+          </section>
+          <section className={panelClass}>
+            <h3 className="font-semibold text-white">
+              Fakten · Quellen und Beobachtungen
+            </h3>
+            <p className="mt-2 text-xs text-slate-400">
+              Provider-Rohdaten sind separat belegpflichtig. Feature-Provenienz
+              belegt die Herkunft, ersetzt aber keinen Rohdatensnapshot.
+            </p>
+            {!validFeatures.length ? (
+              <p className="mt-3 text-sm text-amber-100">
+                Kein Quellen- oder Feature-Snapshot mit diesem Ergebnis
+                übergeben.
+              </p>
+            ) : (
+              <ul className="mt-3 space-y-3 text-xs">
+                {validFeatures.map((f, i) => (
+                  <li
+                    key={f.featureId + i}
+                    className="break-words rounded border border-slate-700 p-3"
+                  >
+                    <p className="font-semibold text-cyan-200">
+                      {f.provenance.providerId} · {f.provenance.providerDataset}
                     </p>
-                  </div>
-                </div>
-
-                <div className="text-right sm:border-l sm:border-slate-800 sm:pl-4">
-                  <div className="text-[10px] font-mono text-slate-400">Risiko-Abzug</div>
-                  <div className="text-sm font-mono font-bold text-rose-400">
-                    {result.finalScore === null ? 'Nicht verfügbar' : `-${result.riskPenalty} Pkt.`}
-                  </div>
-                  <div className="text-[9px] text-slate-500 font-mono mt-0.5">Spread &amp; Volatilität</div>
-                </div>
-              </div>
-            </div>
-
-            {/* 2. Canonical Formula Breakdown */}
-            <div className="p-5 rounded-2xl bg-[#090e21] border border-slate-800 space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 font-mono flex items-center gap-2">
-                  <Layers className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Versionierte Modellformel</span>
-                </h3>
-                <span className="text-[10px] font-mono text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded">
-                  AP-002 Formula
-                </span>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-black/60 border border-slate-800/80 font-mono text-xs text-slate-200 overflow-x-auto leading-relaxed">
-                <span className="text-amber-400 font-bold">finalRank</span> ={' '}
-                <span className="text-emerald-400">eligibilityMultiplier</span> ({result.eligibility ? '1.0' : '0.0'}) ×{' '}
-                <span className="text-cyan-400">confidence</span> ({result.confidence}) × [
-                <br className="hidden sm:inline" />
-                {'  '}
-                <span className="text-amber-300">{result.weightsApplied.weightMomentum}</span>·Mom ({result.subScores.momentumScore}) +{' '}
-                <span className="text-cyan-300">{result.weightsApplied.weightTechnical}</span>·Tech ({result.subScores.technicalScore}) +{' '}
-                <span className="text-emerald-300">{result.weightsApplied.weightFundamental}</span>·Fund ({result.subScores.fundamentalScore}) +{' '}
-                <span className="text-purple-300">{result.weightsApplied.weightSentiment}</span>·Sent ({result.subScores.sentimentScore}) +{' '}
-                <span className="text-amber-300">{result.weightsApplied.weightEvent}</span>·Evt ({result.subScores.eventScore}) +{' '}
-                <span className="text-cyan-300">{result.weightsApplied.weightPositioning}</span>·Pos ({result.subScores.positioningScore})
-                ] - <span className="text-rose-400">riskPenalty</span> ({result.riskPenalty})
-              </div>
-            </div>
-
-            {/* 3. Subscore Contribution Waterfall */}
-            <div className="space-y-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 font-mono flex items-center gap-2">
-                <TrendingUp className="w-3.5 h-3.5 text-amber-400" />
-                <span>Subscore-Beiträge &amp; Gewichtungs-Matrix</span>
-              </h3>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {[
-                  { label: 'Momentum', score: result.subScores.momentumScore, weight: result.weightsApplied.weightMomentum, color: 'text-amber-400', bar: 'bg-amber-400' },
-                  { label: 'Technik', score: result.subScores.technicalScore, weight: result.weightsApplied.weightTechnical, color: 'text-cyan-400', bar: 'bg-cyan-400' },
-                  { label: 'Fundamentaldaten', score: result.subScores.fundamentalScore, weight: result.weightsApplied.weightFundamental, color: 'text-emerald-400', bar: 'bg-emerald-400' },
-                  { label: 'Sentiment', score: result.subScores.sentimentScore, weight: result.weightsApplied.weightSentiment, color: 'text-purple-400', bar: 'bg-purple-400' },
-                  { label: 'Event / Katalysator', score: result.subScores.eventScore, weight: result.weightsApplied.weightEvent, color: 'text-amber-300', bar: 'bg-amber-300' },
-                  { label: 'Positioning / Orderflow', score: result.subScores.positioningScore, weight: result.weightsApplied.weightPositioning, color: 'text-cyan-300', bar: 'bg-cyan-300' },
-                ].map((s) => (
-                  <div key={s.label} className="p-3 rounded-xl bg-[#090e21] border border-slate-800">
-                    <div className="flex justify-between items-center text-[11px] mb-1">
-                      <span className="text-slate-400">{s.label}</span>
-                      <span className={`font-mono font-bold ${s.color}`}>{s.score === null ? 'Nicht verfügbar' : `${s.score}/100`}</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mb-1.5">
-                      <div className={`h-full ${s.bar}`} style={{ width: `${s.score ?? 0}%` }} />
-                    </div>
-                    <div className="text-[10px] text-slate-500 font-mono">
-                      Gewicht: {(s.weight * 100).toFixed(0)}%
-                    </div>
-                  </div>
+                    <p className="mt-2">
+                      Quelle: {f.provenance.sourceReference}
+                    </p>
+                    <p>
+                      Beobachtet:{' '}
+                      {new Date(f.provenance.observedAt).toLocaleString(
+                        'de-DE',
+                      )}
+                    </p>
+                    <p>
+                      Empfangen:{' '}
+                      {new Date(f.provenance.receivedAt).toLocaleString(
+                        'de-DE',
+                      )}{' '}
+                      · {f.provenance.latencyMs} ms
+                    </p>
+                    <p>Umfang: {f.provenance.licenseScope}</p>
+                    <DataStatusBadge
+                      mode={
+                        f.provenance.isDemo
+                          ? 'simulated'
+                          : now < f.observedAt
+                            ? 'unavailable'
+                            : now - f.observedAt > 30000
+                              ? 'degraded'
+                              : f.provenance.isDelayed
+                                ? 'delayed'
+                                : 'cached'
+                      }
+                    />
+                  </li>
                 ))}
-              </div>
-            </div>
-
-            <div className="p-4 rounded-xl bg-black/40 border border-slate-800 text-xs text-slate-300">
-              {result.isDemo ? 'Synthetische Demo-Features; keine Provider-Fakten oder gemessene Datenkonfidenz.'
-                : 'Pflichtdaten oder Validierungsnachweise fehlen. Keine verifizierte Marktintelligenz.'}
-              <ul className="mt-2 space-y-1 font-mono text-[10px]">
-                {result.reasonCodes.map(code => <li key={code}>{code}</li>)}
               </ul>
-            </div>
-
-            {/* 5. Drivers & Reason Codes */}
-            <div className="space-y-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 font-mono">
-                Treiber-Analyse &amp; Reason-Codes
-              </h3>
-
-              {result.topPositiveDrivers.length > 0 && (
-                <div className="space-y-2">
-                  <div className="text-[11px] font-mono text-emerald-400 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Top Positive Treiber:</span>
-                  </div>
-                  {result.topPositiveDrivers.map((d, i) => (
-                    <div key={i} className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-slate-300">
-                      <div className="font-bold text-white flex justify-between">
-                        <span>{d.nameDe}</span>
-                        <span className="font-mono text-emerald-400">+{d.contributionScore} Pkt.</span>
-                      </div>
-                      <div className="text-[11px] text-slate-400 mt-0.5">{d.evidenceSummary}</div>
-                    </div>
+            )}
+          </section>
+          <section className={panelClass}>
+            <h3 className="font-semibold text-white">Abgeleitete Features</h3>
+            <div className="mt-3 overflow-x-auto">
+              <table className="w-full min-w-[30rem] text-left text-xs">
+                <caption className="sr-only">
+                  Feature-Werte mit Einheiten, Qualität und Version
+                </caption>
+                <thead>
+                  <tr>
+                    {[
+                      'Feature',
+                      'Wert / Einheit',
+                      'Normalisiert',
+                      'Qualität',
+                      'Version',
+                    ].map((x) => (
+                      <th className="p-2" scope="col" key={x}>
+                        {x}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {validFeatures.map((f, i) => (
+                    <tr key={f.featureId + i}>
+                      <th scope="row" className="p-2 font-normal">
+                        {f.featureId}
+                      </th>
+                      <td className="p-2">
+                        {f.value} {f.unit}
+                      </td>
+                      <td className="p-2">{f.normalizedValue}/100</td>
+                      <td className="p-2">{f.qualityScore}/100</td>
+                      <td className="p-2">{f.calculationVersion}</td>
+                    </tr>
                   ))}
+                  {!validFeatures.length && (
+                    <tr>
+                      <td colSpan={5} className="p-3 text-slate-400">
+                        Keine validierten Feature-Werte verfügbar.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+          <section className={panelClass}>
+            <h3 className="font-semibold text-white">Provider-Signale</h3>
+            <p className="mt-2 text-sm text-slate-400">
+              Keine separat belegten Drittanbieter-Scores übergeben.
+              Provider-Signale werden nicht als Markt-Fakten ausgewiesen.
+            </p>
+          </section>
+          <section className={panelClass}>
+            <h3 className="font-semibold text-white">
+              Modellinterpretation · Treiber
+            </h3>
+            <div className="mt-3 grid gap-4 sm:grid-cols-2">
+              {[
+                ['Positive Treiber', result.topPositiveDrivers],
+                ['Negative Treiber', result.topNegativeDrivers],
+              ].map(([label, drivers]) => (
+                <div key={label as string}>
+                  <h4 className="text-sm text-slate-300">{label as string}</h4>
+                  <ul className="mt-2 space-y-2 text-xs">
+                    {(drivers as FinalRankResult['topPositiveDrivers'])
+                      .slice(0, 3)
+                      .map((d) => (
+                        <li key={d.componentId}>
+                          <strong>{d.nameDe}</strong> · {d.contributionScore}{' '}
+                          Punkte
+                          <p className="text-slate-400">{d.evidenceSummary}</p>
+                        </li>
+                      ))}
+                  </ul>
+                  {!(drivers as unknown[]).length && (
+                    <p className="mt-2 text-xs text-slate-400">
+                      Keine belegten Treiber verfügbar.
+                    </p>
+                  )}
                 </div>
-              )}
-
-              {result.topNegativeDrivers.length > 0 && (
-                <div className="space-y-2">
-                  <div className="text-[11px] font-mono text-rose-400 flex items-center gap-1.5">
-                    <AlertTriangle className="w-3.5 h-3.5" />
-                    <span>Risiko-Faktoren &amp; Abzüge:</span>
-                  </div>
-                  {result.topNegativeDrivers.map((d, i) => (
-                    <div key={i} className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-slate-300">
-                      <div className="font-bold text-white flex justify-between">
-                        <span>{d.nameDe}</span>
-                        <span className="font-mono text-rose-400">{d.contributionScore} Pkt.</span>
-                      </div>
-                      <div className="text-[11px] text-slate-400 mt-0.5">{d.evidenceSummary}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              ))}
             </div>
-
-            {/* 6. Cryptographic Audit Trail & Replay Token */}
-            <div className="p-4 rounded-xl bg-black/60 border border-slate-800 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-mono text-slate-400 flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Evidence-Referenz (nicht verifiziert)</span>
-                </span>
-                <button
-                  type="button"
-                  onClick={handleCopyEvidence}
-                  className="flex items-center gap-1 text-[10px] font-mono text-cyan-400 hover:text-cyan-300 cursor-pointer"
-                >
-                  {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                  <span>{copied ? 'Kopiert' : 'Kopieren'}</span>
-                </button>
+          </section>
+          <section className={panelClass}>
+            <h3 className="font-semibold text-white">
+              Reason-Codes & Risiko-Flags
+            </h3>
+            <p className="mt-2 text-xs text-slate-400">
+              Veto und fehlende Pflichtdaten dürfen nicht durch hohe Subscores
+              verdeckt werden.
+            </p>
+            <ul className="mt-3 space-y-2 break-words font-mono text-xs text-amber-100">
+              {result.reasonCodes.map((code, i) => (
+                <li key={code + i}>{code}</li>
+              ))}
+            </ul>
+            <p className="mt-3 text-xs text-slate-400">
+              Separate Risiko-Flags sind in diesem Ergebnisvertrag nicht
+              enthalten; Risiko- und Gate-Gründe stehen oben.
+            </p>
+          </section>
+          <section className={panelClass}>
+            <h3 className="font-semibold text-white">Evidence & Replay</h3>
+            <dl className="mt-3 space-y-3 text-sm">
+              <div>
+                <dt className="text-xs text-slate-400">
+                  Evidence-Referenz · ohne Readback nicht verifiziert
+                </dt>
+                <dd className="mt-1 break-all font-mono text-xs text-cyan-200">
+                  {result.evidenceId}
+                </dd>
               </div>
-              <div className="p-2.5 rounded-lg bg-[#090e21] border border-slate-800 text-[11px] font-mono text-cyan-300 break-all select-all">
-                {result.evidenceId}
+              <div>
+                <dt className="text-xs text-slate-400">Berechnet</dt>
+                <dd>{new Date(result.computedAt).toLocaleString('de-DE')}</dd>
               </div>
-              <div className="text-[10px] text-slate-500 font-mono">
-                Replay: noch nicht verfügbar
+              <div>
+                <dt className="text-xs text-slate-400">Modellversion</dt>
+                <dd>{result.modelVersion}</dd>
               </div>
-            </div>
-
-            {/* Disclaimer */}
-            <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 text-[11px] text-slate-400 leading-relaxed">
-              <span className="font-bold text-slate-300">Regulatorischer Hinweis: </span>
-              {result.regulatoryDisclaimer}
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    </AnimatePresence>
+              <div>
+                <dt className="text-xs text-slate-400">
+                  Konfigurationsversion / Replay-ID
+                </dt>
+                <dd>Nicht im Ergebnisvertrag enthalten</dd>
+              </div>
+            </dl>
+            <p className="mt-3 text-xs text-slate-400">
+              Offline-Shadow-Läufe können Owner separat in der geschützten
+              Pipeline-Konsole replayen. Für diesen Score ist kein
+              Replay-Backend angebunden.
+            </p>
+          </section>
+          <p className="text-xs leading-relaxed text-slate-400">
+            {result.regulatoryDisclaimer} Ein hoher Score beschreibt
+            Modellausrichtung, keine garantierte Rendite. Konfidenz ist keine
+            Vorhersagewahrscheinlichkeit.
+          </p>
+        </>
+      )}
+    </AnalysisDialog>
   );
 };

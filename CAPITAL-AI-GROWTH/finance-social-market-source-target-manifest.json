@@ -127,16 +127,16 @@
     {
       "id": "TA-AUTH",
       "path": "server/auth.mjs",
-      "blobSha": "52c8f00b04d001bb825b9ac4c873253ccd3b2f58",
+      "blobSha": "401ab957369fc1ccbd355b453ba116e2be3d4cf8",
       "role": "Current session/auth composition"
     },
     {
       "id": "TA-AUTH-SECURITY",
       "path": "server/auth-security.mjs",
-      "blobSha": "713f132dcd1a19a5680b9118597be5629dc4ee94",
+      "blobSha": "6cf6b39df87f8a5d260f9406821dfa0ca65a74e7",
       "role": "Current auth security boundary",
       "recorrelatedAt": "2026-10-06",
-      "recorrelationReason": "PR #203 Auth-/BYOK-/Trading-Capability-Härtung"
+      "recorrelationReason": "PR #203 Auth-/BYOK-/Trading-Capability-H\u00e4rtung"
     },
     {
       "id": "TA-USER-VAULT",
@@ -144,7 +144,7 @@
       "blobSha": "44d66c06cf9170f7ee973d48f13a984b5595b51a",
       "role": "Current server-side user provider secret boundary",
       "recorrelatedAt": "2026-10-06",
-      "recorrelationReason": "PR #212 read-only Kraken/Binance Provider-Vault-Härtung; Finance-Cutover bleibt BLOCKED",
+      "recorrelationReason": "PR #212 read-only Kraken/Binance Provider-Vault-H\u00e4rtung; Finance-Cutover bleibt BLOCKED",
       "recorrelationBaseMain": "824d42913bbeccb68366c2ae70714ccb960717e5",
       "correlatedAt": "2026-10-08",
       "correlationReason": "Private Massive/Polygon 50-asset REST batches; user-bound Vault access and connection-scoped encrypted Valkey cache; account and trading contracts retained."
@@ -155,7 +155,7 @@
       "blobSha": "f84eb3dceab835c663926bc258755aea5f4ea32d",
       "role": "User-private credentials/data boundary",
       "recorrelatedAt": "2026-10-06",
-      "recorrelationReason": "PR #203 Auth-/BYOK-/Trading-Capability-Härtung"
+      "recorrelationReason": "PR #203 Auth-/BYOK-/Trading-Capability-H\u00e4rtung"
     }
   ],
   "entries": [

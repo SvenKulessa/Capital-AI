@@ -99,6 +99,14 @@ async function harness(envOverrides = {}) {
       return Response.json(user());
     }
 
+    if (target.origin === 'https://project.supabase.co' && target.pathname === '/auth/v1/factors') {
+      if (state.rejectMfaEnrollment) return Response.json({ error_code: 'mfa_totp_enroll_disabled', message: 'DO_NOT_EXPOSE_PROVIDER_PAYLOAD' }, { status: 422 });
+      return Response.json({ id: '11111111-1111-4111-8111-111111111111', totp: {
+        secret: 'JBSWY3DPEHPK3PXP', uri: 'otpauth://totp/test?secret=JBSWY3DPEHPK3PXP',
+        qr_code: '<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg"></svg>',
+      } });
+    }
+
     if (target.origin === 'https://project.supabase.co' && target.pathname === '/auth/v1/logout') {
       return new Response(null, { status: 204 });
     }
@@ -689,4 +697,27 @@ test('all eleven Control Center subpages enforce owner identity on direct docume
   } finally {
     await h.stop();
   }
+});
+
+
+test('signed session can enroll native TOTP and configuration failures retain only safe error codes', async () => {
+  const h = await harness();
+  try {
+    const cookie = await h.completeEmail();
+    const enroll = () => h.request('/api/auth/mfa/totp/enroll', {
+      method: 'POST', headers: { cookie, Origin: 'https://capital.example', 'Content-Type': 'application/json' }, body: '{}',
+    });
+    const enrolled = await enroll();
+    assert.equal(enrolled.status, 200);
+    const setup = await enrolled.json();
+    assert.equal(setup.secret, 'JBSWY3DPEHPK3PXP');
+    assert.match(setup.qrCode, /<svg/);
+    assert.match(enrolled.headers.get('cache-control'), /no-store/);
+    h.state.rejectMfaEnrollment = true;
+    const failed = await enroll();
+    assert.equal(failed.status, 422);
+    assert.deepEqual(await failed.json(), { error: 'totp_enrollment_failed', code: 'mfa_totp_enroll_disabled' });
+    assert.equal(JSON.stringify(h.state.authAudit).includes('DO_NOT_EXPOSE_PROVIDER_PAYLOAD'), false);
+    assert.equal(JSON.stringify(h.state.authAudit).includes('JBSWY3DPEHPK3PXP'), false);
+  } finally { await h.stop(); }
 });
