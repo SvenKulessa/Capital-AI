@@ -152,6 +152,26 @@ export function createSocialProviderStore({ env = process.env, fetchImpl = fetch
     return Object.freeze({ ...plan, jobId: job.id });
   }
 
+  // Called after an ambiguous provider receipt, timeout or transient response.
+  // UNKNOWN is sticky, no dispatch retries; only provider readback can finalize.
+  async function noteUnknownDelivery({ plan, providerDeliveryId = null, evidenceRef }) {
+    assert(UUID.test(plan?.jobId ?? '') && UUID.test(plan?.userId ?? ''),
+      'SOCIAL_STORE_JOB_REQUIRED');
+    assert((providerDeliveryId === null || (typeof providerDeliveryId === 'string'
+      && providerDeliveryId.length > 0 && providerDeliveryId.length <= 200))
+      && typeof evidenceRef === 'string' && evidenceRef.length > 0
+      && evidenceRef.length <= 512, 'SOCIAL_STORE_RECEIPT_REQUIRED');
+    const job = await request('/rest/v1/rpc/capital_social_note_unknown', {
+      p_user_id: plan.userId, p_job_id: plan.jobId,
+      p_provider_delivery_id: providerDeliveryId, p_evidence_ref: evidenceRef,
+    });
+    assert(job?.id === plan.jobId && job?.user_id === plan.userId
+      && job?.status === 'UNKNOWN' && job?.publish_log_id == null,
+      'SOCIAL_STORE_UNKNOWN_NOT_CONFIRMED');
+    return Object.freeze({ jobId: job.id, deliveryState: 'UNKNOWN',
+      providerDeliveryId: job.provider_delivery_id ?? null });
+  }
+
   async function completeDelivery({ plan, readback }) {
     assert(UUID.test(plan?.jobId ?? ''), 'SOCIAL_STORE_JOB_REQUIRED');
     const outcome = classifySocialProviderReadback(plan, readback);
@@ -173,5 +193,5 @@ export function createSocialProviderStore({ env = process.env, fetchImpl = fetch
     });
   }
 
-  return Object.freeze({ beginOAuth, consumeOAuthCallback, claimDelivery, completeDelivery });
+  return Object.freeze({ beginOAuth, consumeOAuthCallback, claimDelivery, noteUnknownDelivery, completeDelivery });
 }
