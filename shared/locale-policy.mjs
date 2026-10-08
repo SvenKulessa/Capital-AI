@@ -37,7 +37,7 @@ export function localeFromCookie(header) {
 export function resolveLocale({cookieHeader, countryHeader, acceptLanguage} = {}) {
   const selected = localeFromCookie(cookieHeader);
   if (selected) return {locale:selected, source:'manual'};
-  if (typeof countryHeader === 'string' && /^[A-Z]{2}$/i.test(countryHeader)) {
+  if (typeof countryHeader === 'string' && /^(?:[A-Z]{2}|T1)$/i.test(countryHeader)) {
     return {locale:localeFromCountry(countryHeader), source:'country'};
   }
   return {locale:localeFromAcceptLanguage(acceptLanguage), source:'browser'};
