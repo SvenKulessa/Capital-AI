@@ -45,3 +45,31 @@
 No provider charge, production DDL, provider upload, new Render service, NATS/Valkey deployment or Secret rotation initiated. Additional optional PostgreSQL GitHub workflow consumes CI minutes and pulls an official PostgreSQL container; execution stays within the repository's existing CI. A moving `postgres:17.11-alpine` tag is version constrained but not digest-locked yet; capture and pin its digest before production-grade supply-chain attestation. Current provider quotas, paid API credits, token permissions, Stripe entitlements and ongoing storage/CPU/network usage are **NOT_PROVEN**.
 
 Rollback before database deploy: revert PR #269. After any eventual database migration, additive schema data must be preserved; never automatically drop jobs or approvals. Before a release, verify exact main SHA, CI, production DB identity, offline secret provisioning, OAuth session/PKCE E2E, approval/rights byte hashes and provider-specific contracts. Owner review/merge remains separate from technical tests.
+
+
+## Five-provider readback adapter (2026-10-08 update)
+
+`createSocialProviderAdapter` in `server/social-media/provider-readback.mjs`
+routes YOUTUBE, TIKTOK, INSTAGRAM, FACEBOOK and X to their actual readback
+transports. Both readback modules are now included in the runtime Docker image.
+Instagram uses Graph API with Facebook Login for professional accounts; Facebook
+uses Page-post readback. Both require the operator-selected
+`SOCIAL_META_GRAPH_API_VERSION` (for example `v26.0`); no silently stale default.
+Fields were checked against Meta's official `facebook-python-business-sdk`
+`igmedia.py` and `pagepost.py` on 2026-10-08:
+https://github.com/facebook/facebook-python-business-sdk/tree/main/facebook_business/adobjects
+
+All transports retain `SOCIAL_PROVIDER_READBACK_ENABLED=true`; X additionally
+requires `SOCIAL_X_PAID_READBACK_APPROVED=true`. X Post lookup is billable under
+https://docs.x.com/x-api/getting-started/pricing (checked 2026-10-08).
+Neither switch provisions credentials, grants scopes, connects an account,
+authorizes publication or supplies a cost budget. Tokens must come from the
+verified user's private server-side connection, never browser-supplied material.
+The adapter is a server-only API and is not exposed through an unauthenticated
+HTTP endpoint. OAuth authorize-start, built-in code exchangers and encrypted
+account-token persistence remain absent; this change does not claim live OAuth
+or posting for any provider. Production activation requires a main merge,
+configured credentials/scopes, interactive consent and live evidence.
+
+Local evidence: 36 social-provider tests and 5 Docker-context tests pass using
+fixture transports only. No live or paid provider request was performed.

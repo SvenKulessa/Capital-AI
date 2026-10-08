@@ -75,3 +75,52 @@ test('X mock transport only sends a bounded GET to the official post lookup', as
   assert.equal(calls[0].options.method, 'GET');
   assert.equal(calls[0].options.redirect, 'error');
 });
+
+
+test('Meta transports use fixed Graph origin, bearer headers and exact owner readback', async () => {
+  const { createMetaReadbackTransport } = await import('./provider-external-readback.mjs');
+  const calls = [];
+  const transport = createMetaReadbackTransport({
+    env: { SOCIAL_PROVIDER_READBACK_ENABLED: 'true', SOCIAL_META_GRAPH_API_VERSION: 'v26.0' },
+    fetchImpl: async (url, init) => {
+      calls.push({ url: new URL(url), init });
+      assert.equal(init.method, 'GET'); assert.equal(init.redirect, 'error');
+      assert.equal(init.headers.Authorization, 'Bearer fixture-token');
+      assert.equal(new URL(url).origin, 'https://graph.facebook.com');
+      assert.ok(!String(url).includes('fixture-token'));
+      return new Response(JSON.stringify(new URL(url).pathname.endsWith('/111')
+        ? { id: '111', owner: { id: '222' }, permalink: 'https://www.instagram.com/p/fixture/' }
+        : { id: '222_333', from: { id: '222' }, is_published: true,
+          permalink_url: 'https://www.facebook.com/222/posts/333' }));
+    },
+  });
+  assert.equal((await transport.instagram({ mediaId: '111', accountId: '222',
+    token: 'fixture-token', deliveryKey: 'ig:fixture', evidenceRef: 'evidence://fixture' })).status,
+  'VERIFIED_PUBLISHED');
+  assert.equal((await transport.facebook({ postId: '222_333', pageId: '222',
+    token: 'fixture-token', deliveryKey: 'fb:fixture', evidenceRef: 'evidence://fixture' })).status,
+  'VERIFIED_PUBLISHED');
+  await assert.rejects(transport.facebook({ postId: '999_333', pageId: '222',
+    token: 'fixture-token' }), /INVALID_READBACK_IDENTITY/);
+  await assert.rejects(transport.instagram({ mediaId: '../me', accountId: '222',
+    token: 'fixture-token' }), /INVALID_READBACK_IDENTITY/);
+  assert.equal(calls.length, 2);
+});
+
+test('Meta configuration and unavailable responses fail closed', async () => {
+  const { createMetaReadbackTransport } = await import('./provider-external-readback.mjs');
+  const args = { mediaId: '111', accountId: '222', token: 'fixture-token' };
+  for (const [env, pattern] of [[{}, /DISABLED/],
+    [{ SOCIAL_PROVIDER_READBACK_ENABLED: 'true' }, /VERSION_REQUIRED/],
+    [{ SOCIAL_PROVIDER_READBACK_ENABLED: 'true', SOCIAL_META_GRAPH_API_VERSION: 'https://evil.invalid' }, /VERSION_REQUIRED/]]) {
+    await assert.rejects(createMetaReadbackTransport({ env,
+      fetchImpl: () => { throw new Error('must not call'); } }).instagram(args), pattern);
+  }
+  for (const [body, status, pattern] of [['{}', 403, /UNAVAILABLE/],
+    ['x'.repeat(32001), 200, /TOO_LARGE/], ['bad-json', 200, /INVALID_JSON/]]) {
+    await assert.rejects(createMetaReadbackTransport({
+      env: { SOCIAL_PROVIDER_READBACK_ENABLED: 'true', SOCIAL_META_GRAPH_API_VERSION: 'v26.0' },
+      fetchImpl: async () => new Response(body, { status }),
+    }).instagram(args), pattern);
+  }
+});

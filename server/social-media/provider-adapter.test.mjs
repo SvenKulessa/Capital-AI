@@ -231,3 +231,21 @@ test('OAuth state entropy cannot be substituted by caller-provided random functi
   assert.notEqual(first.state, second.state);
   assert.notEqual(first.row.state_token, second.row.state_token);
 });
+
+
+test('OAuth derivation rejects forged context and malformed digest', () => {
+  const redirectUri = 'https://capital-ai.online/api/social-media/auth/callback';
+  const oauth = createSocialOAuthState({ userId: USER, channel: 'YOUTUBE', redirectUri,
+    allowedRedirectUris: [redirectUri], now: NOW });
+  const snapshot = { state: oauth.state, row: oauth.row, userId: USER,
+    channel: 'YOUTUBE', redirectUri, now: NOW };
+  assert.throws(() => assertSocialOAuthStateSnapshot({ ...snapshot, userId: OTHER,
+    row: { ...oauth.row, user_id: OTHER } }), /STATE_INVALID/);
+  assert.throws(() => assertSocialOAuthStateSnapshot({ ...snapshot, channel: 'FACEBOOK',
+    row: { ...oauth.row, platform: 'facebook' } }), /STATE_INVALID/);
+  assert.throws(() => assertSocialOAuthStateSnapshot({ ...snapshot,
+    redirectUri: 'https://capital-ai.online/other',
+    row: { ...oauth.row, redirect_uri: 'https://capital-ai.online/other' } }), /STATE_INVALID/);
+  assert.throws(() => assertSocialOAuthStateSnapshot({ ...snapshot,
+    row: { ...oauth.row, state_token: 'xyz' } }), /STATE_INVALID/);
+});

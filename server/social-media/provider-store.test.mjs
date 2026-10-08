@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createHash } from 'node:crypto';
+import { scryptSync } from 'node:crypto';
 import { createSocialProviderStore } from './provider-store.mjs';
 
 const USER = 'd0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101';
@@ -67,7 +67,7 @@ test('OAuth state stored hashed and atomically consumed before exchange', async 
   } });
   const issued = await store.beginOAuth({ userId: USER, channel: 'X', redirectUri: CALLBACK,
     allowedRedirectUris: [CALLBACK], codeVerifier: 'v'.repeat(43), now });
-  assert.equal(stored.state_token, createHash('sha256').update(issued.state).digest('hex'));
+  assert.equal(stored.state_token, scryptSync(issued.state, JSON.stringify(['capital-social-oauth-state-v1', USER, 'x', CALLBACK]), 32, { N: 16384, r: 8, p: 1, maxmem: 64 * 1024 * 1024 }).toString('hex'));
   assert.ok(!JSON.stringify(calls).includes(issued.state));
   let exchanges = 0;
   const result = await store.consumeOAuthCallback({ userId: USER, channel: 'X',

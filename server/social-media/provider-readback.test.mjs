@@ -109,3 +109,33 @@ test('mock TikTok status lookup sends publish_id, never initiates publication', 
   assert.equal(JSON.parse(calls[0].req.body).publish_id, 'v_pub_url~123');
   assert.equal(calls[0].req.redirect, 'error');
 });
+
+
+test('adapter dispatches all five social providers and rejects unknown channels without I/O', async () => {
+  const { createSocialProviderAdapter } = await import('./provider-readback.mjs');
+  const calls = [];
+  const adapter = createSocialProviderAdapter({
+    env: { SOCIAL_PROVIDER_READBACK_ENABLED: 'true', SOCIAL_X_PAID_READBACK_APPROVED: 'true',
+      SOCIAL_META_GRAPH_API_VERSION: 'v26.0' },
+    fetchImpl: async url => {
+      calls.push(new URL(url).hostname);
+      return new Response(JSON.stringify({ error: { code: 'ok' }, data: {} }));
+    },
+  });
+  assert.deepEqual([...adapter.channels].sort(), ['FACEBOOK', 'INSTAGRAM', 'TIKTOK', 'X', 'YOUTUBE']);
+  const inputs = {
+    YOUTUBE: { providerId: 'video_123', accountChannelId: 'channel_123' },
+    TIKTOK: { publishId: 'publish-123', accountHandle: 'fixture' },
+    INSTAGRAM: { mediaId: '111', accountId: '222' },
+    FACEBOOK: { postId: '222_333', pageId: '222' },
+    X: { postId: '333', accountUserId: '222', accountHandle: 'fixture' },
+  };
+  for (const [channel, input] of Object.entries(inputs)) {
+    const result = await adapter.readback(channel, { ...input, token: 'fixture-token',
+      deliveryKey: 'fixture:' + channel, evidenceRef: 'evidence://fixture' });
+    assert.equal(result.channel, channel); assert.equal(result.status, 'UNKNOWN');
+  }
+  await assert.rejects(adapter.readback('__proto__', {}), /UNSUPPORTED_CHANNEL/);
+  assert.deepEqual(calls, ['www.googleapis.com', 'open.tiktokapis.com',
+    'graph.facebook.com', 'graph.facebook.com', 'api.x.com']);
+});

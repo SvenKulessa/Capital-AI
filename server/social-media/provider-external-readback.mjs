@@ -1,5 +1,5 @@
 // CAPITAL_AI_SOCIAL_EXTERNAL_READBACK@1
-// Provider status normalization only; not a posting API. Meta network disabled.
+// Provider readback only; never initiates publication.
 import { providerPublicationUrlAllowed } from './provider-adapter.mjs';
 
 const numericId = value => typeof value === 'string' && /^[0-9]{1,32}$/.test(value);
@@ -45,7 +45,7 @@ export function normalizeFacebookPageReadback({
 }
 
 // X Post Lookup may be billable. Two separate server-only switches are required.
-// No POST and no Meta Graph calls are implemented here.
+// X lookup never initiates publication.
 export function createXReadbackTransport({ env = process.env, fetchImpl = fetch } = {}) {
   async function lookup({ deliveryKey, postId, accountUserId, accountHandle,
     token, evidenceRef }) {
@@ -75,4 +75,43 @@ export function createXReadbackTransport({ env = process.env, fetchImpl = fetch 
     });
   }
   return Object.freeze({ lookup });
+}
+
+/** Meta Graph readback via Facebook Login for IG professional accounts / Pages.
+ * API version is operator-selected; credentials never enter URLs or responses.
+ */
+export function createMetaReadbackTransport({ env = process.env, fetchImpl = fetch } = {}) {
+  async function lookup(channel, args) {
+    if (env.SOCIAL_PROVIDER_READBACK_ENABLED !== 'true') throw new Error('SOCIAL_READBACK_DISABLED');
+    const version = env.SOCIAL_META_GRAPH_API_VERSION;
+    if (typeof version !== 'string' || !/^v[1-9][0-9]\.0$/.test(version)) {
+      throw new Error('SOCIAL_META_API_VERSION_REQUIRED');
+    }
+    const id = channel === 'INSTAGRAM' ? args.mediaId : args.postId;
+    const owner = channel === 'INSTAGRAM' ? args.accountId : args.pageId;
+    if (!numericId(owner) || (channel === 'INSTAGRAM' ? !numericId(id)
+      : typeof id !== 'string' || !/^[0-9]{1,32}_[0-9]{1,32}$/.test(id)
+        || id.split('_')[0] !== owner)
+      || typeof args.token !== 'string' || !args.token.length) {
+      throw new Error('SOCIAL_META_INVALID_READBACK_IDENTITY');
+    }
+    const url = new URL('https://graph.facebook.com/' + version + '/' + id);
+    url.searchParams.set('fields', channel === 'INSTAGRAM'
+      ? 'id,owner,permalink' : 'id,from,is_published,permalink_url');
+    let response;
+    try {
+      response = await fetchImpl(url, { method: 'GET', redirect: 'error',
+        headers: { Authorization: 'Bearer ' + args.token, Accept: 'application/json' },
+        signal: AbortSignal.timeout(7000) });
+    } catch { throw new Error('SOCIAL_META_NETWORK_UNKNOWN'); }
+    if (!response.ok) throw new Error('SOCIAL_META_READBACK_UNAVAILABLE');
+    const body = await response.text();
+    if (body.length > 32_000) throw new Error('SOCIAL_META_RESPONSE_TOO_LARGE');
+    let payload;
+    try { payload = JSON.parse(body); } catch { throw new Error('SOCIAL_META_INVALID_JSON'); }
+    return channel === 'INSTAGRAM' ? normalizeInstagramMediaReadback({ ...args, payload })
+      : normalizeFacebookPageReadback({ ...args, payload });
+  }
+  return Object.freeze({ instagram: args => lookup('INSTAGRAM', args),
+    facebook: args => lookup('FACEBOOK', args) });
 }

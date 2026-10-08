@@ -1,5 +1,6 @@
 // CAPITAL_AI_SOCIAL_PROVIDER_READBACK@1
 // Readback-only transport: no POST to a publishing endpoint, no upload, no retry.
+import { createMetaReadbackTransport, createXReadbackTransport } from './provider-external-readback.mjs';
 import { providerPublicationUrlAllowed } from './provider-adapter.mjs';
 
 const SHA = /^[a-zA-Z0-9_-]{1,160}$/;
@@ -112,4 +113,22 @@ export function createSocialProviderReadbackTransport({
     return normalizeTiktokReadback({ deliveryKey, publishId, accountHandle, payload, evidenceRef });
   }
   return Object.freeze({ youtube, tiktok });
+}
+
+
+/** Server-only dispatch; every supported social provider has a real transport.
+ * Enabling the adapter does not grant OAuth scopes, publication or cost consent.
+ */
+export function createSocialProviderAdapter({ env = process.env, fetchImpl = fetch } = {}) {
+  const base = createSocialProviderReadbackTransport({ env, fetchImpl });
+  const meta = createMetaReadbackTransport({ env, fetchImpl });
+  const x = createXReadbackTransport({ env, fetchImpl });
+  const providers = Object.freeze({ YOUTUBE: base.youtube, TIKTOK: base.tiktok,
+    INSTAGRAM: meta.instagram, FACEBOOK: meta.facebook, X: x.lookup });
+  return Object.freeze({ channels: Object.freeze(Object.keys(providers)),
+    async readback(channel, args) {
+      if (!Object.hasOwn(providers, channel)) throw new Error('SOCIAL_PROVIDER_UNSUPPORTED_CHANNEL');
+      return providers[channel](args);
+    },
+  });
 }

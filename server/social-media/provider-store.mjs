@@ -1,9 +1,8 @@
 // CAPITAL_AI_SOCIAL_PROVIDER_STORE@1 — server-only, not registered on HTTP routes.
-import { createHash } from 'node:crypto';
 import {
   assertSocialManifestHandoff, publicSocialAccountProjection,
   prepareSocialProviderDelivery, classifySocialProviderReadback,
-  createSocialOAuthState, socialPlatformForChannel,
+  createSocialOAuthState, socialPlatformForChannel, socialOAuthStateDigest,
 } from './provider-adapter.mjs';
 
 const SERVICE_ROLE_KEY_PREFIX = 'sb_secret_';
@@ -77,7 +76,7 @@ export function createSocialProviderStore({ env = process.env, fetchImpl = fetch
       && typeof code === 'string' && code.length >= 1 && code.length <= 2048,
       'SOCIAL_OAUTH_CALLBACK_INVALID');
     assert(typeof exchangeCode === 'function', 'SOCIAL_OAUTH_EXCHANGE_REQUIRED');
-    const stateHash = createHash('sha256').update(state).digest('hex');
+    const stateHash = socialOAuthStateDigest({ state, userId, channel, redirectUri });
     // The database performs a single atomic UPDATE ... WHERE used_at IS NULL
     // and expires_at > now() and matches user/platform/redirect. Replay fails.
     const consumed = await request('/rest/v1/rpc/capital_social_consume_oauth_state', {

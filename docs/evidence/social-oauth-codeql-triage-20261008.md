@@ -18,3 +18,16 @@ Rule reference: https://codeql.github.com/codeql-query-help/javascript/js-insuff
 ## Completion boundary
 
 The source assessment is complete for these two locations. This document is neither a scanner waiver nor risk acceptance. No hash call was concealed, no test removed and no CodeQL threshold weakened. Actual GitHub alert dismissal, fresh CodeQL result and review-thread resolution remain unverified. The available GitHub connector does not expose the code-scanning disposition operation. Do not describe this PR as security-cleared until those live states have been checked.
+
+
+## Remediation on 2026-10-08
+
+Replaced both OAuth-state SHA-256 sinks with an explicit scrypt derivation
+(N=16384, r=8, p=1, 32-byte output, 64 MiB maximum memory). The domain-separated
+salt binds the random 256-bit state to the user ID, provider and exact redirect.
+The persisted 64-hex-character contract and atomic consume RPC remain compatible.
+Old SHA-256 states fail closed and expire after ten minutes; users restart OAuth.
+The persistence regression independently computes the scrypt expected result.
+Additional tests reject rewritten user/provider/redirect context and malformed digests.
+No query suppression, ignored path, removed test or threshold change was introduced.
+Fresh GitHub CodeQL completion is required before claiming alerts 13/14 resolved.

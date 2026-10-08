@@ -1,7 +1,7 @@
 // CAPITAL_AI_CONTENT_SOCIAL_PROVIDER_BRIDGE@1
 // Server-only, fail-closed bridge. Does NOT execute OAuth redirects, token exchange,
 // provider calls or publication. The Social Media Engine remains the sole authority.
-import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
+import { scryptSync, randomBytes, timingSafeEqual } from 'node:crypto';
 
 export const SOCIAL_PROVIDER_BRIDGE_VERSION = 'CAPITAL_AI_CONTENT_SOCIAL_PROVIDER_BRIDGE@1';
 export const SOCIAL_PLATFORMS = Object.freeze({
@@ -272,9 +272,19 @@ export function buildLegacySocialPublishLogRow(plan, completion, now = new Date(
 
 /**
  * Issue a high-entropy OAuth state for the existing social_media_oauth_states
- * columns. Store only its SHA-256 hash. The callback MUST compare the hash and
+ * columns. Store only its context-bound scrypt derivation. The callback MUST compare the hash and
  * atomically consume used_at (CAS) before exchanging an authorization code.
  */
+export function socialOAuthStateDigest({ state, userId, channel, redirectUri }) {
+  assert(typeof state === 'string' && /^[A-Za-z0-9_-]{43}$/.test(state),
+    'SOCIAL_PROVIDER_OAUTH_STATE_INVALID');
+  assert(validUserId(userId) && validHttpsUrl(redirectUri),
+    'SOCIAL_PROVIDER_OAUTH_STATE_INVALID');
+  const salt = JSON.stringify(['capital-social-oauth-state-v1', userId,
+    socialPlatformForChannel(channel), redirectUri]);
+  return scryptSync(state, salt, 32, { N: 16384, r: 8, p: 1, maxmem: 64 * 1024 * 1024 }).toString('hex');
+}
+
 export function createSocialOAuthState(input) {
   // Production entropy is sourced exclusively from Node's CSPRNG; no caller override.
   const { userId, channel, redirectUri, allowedRedirectUris, codeVerifier = null,
@@ -289,7 +299,7 @@ export function createSocialOAuthState(input) {
   }
   const state = randomBytes(32).toString('base64url');
   assert(state.length >= 40, 'SOCIAL_PROVIDER_OAUTH_ENTROPY_REQUIRED');
-  const stateHash = createHash('sha256').update(state).digest('hex');
+  const stateHash = socialOAuthStateDigest({ state, userId, channel, redirectUri });
   return Object.freeze({
     state,
     row: Object.freeze({
@@ -312,7 +322,7 @@ export function assertSocialOAuthStateSnapshot(input) {
   assert(typeof state === 'string' && state.length >= 40 && state.length <= 100,
     'SOCIAL_PROVIDER_OAUTH_STATE_INVALID');
   const expected = Buffer.from(row.state_token ?? '', 'hex');
-  const actual = createHash('sha256').update(state).digest();
+  const actual = Buffer.from(socialOAuthStateDigest({ state, userId, channel, redirectUri }), 'hex');
   assert(expected.length === actual.length && timingSafeEqual(expected, actual),
     'SOCIAL_PROVIDER_OAUTH_STATE_INVALID');
   // This is an observation, NOT a consumption; the caller must CAS used_at in DB.
