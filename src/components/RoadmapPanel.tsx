@@ -95,11 +95,15 @@ export const RoadmapPanel: React.FC = () => {
   React.useEffect(() => { lastAttempt.current = lastSyncAttempt; }, [lastSyncAttempt]);
   const toggleOwner = (id: ProjectOwner) =>
     setSelectedOwners(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id]);
-  const [state, setState] = React.useState('');
+  const [selectedStates, setSelectedStates] = React.useState<RoadmapEvidenceState[]>(
+    () => Object.keys(STATES) as RoadmapEvidenceState[],
+  );
+  const toggleState = (value: RoadmapEvidenceState) =>
+    setSelectedStates(current => current.includes(value) ? current.filter(item => item !== value) : [...current, value]);
   const [search, setSearch] = React.useState('');
   const packages = WORK_PACKAGES.filter(item =>
     selectedOwners.includes(item.owner) &&
-    (!state || item.evidenceState === state) &&
+    selectedStates.includes(item.evidenceState) &&
     `${item.id} ${item.title} ${item.description}`.toLocaleLowerCase('de').includes(search.toLocaleLowerCase('de'))
   );
   return <section aria-labelledby="roadmap-heading" className="my-6">
@@ -132,12 +136,27 @@ export const RoadmapPanel: React.FC = () => {
       {syncError && <p role="alert" className="text-xs text-amber-300">GitHub-Abgleich fehlgeschlagen oder veraltet. Der letzte verifizierte Stand bleibt sichtbar.</p>}
       <p className="text-xs text-slate-500">VERIFIED in Arbeitspaketen wird nicht aus dem GitHub-HEAD abgeleitet; dafür sind separate Nachweise erforderlich.</p>
     </div>
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 my-4">
-      {(Object.keys(STATES) as RoadmapEvidenceState[]).map(key => <div key={key} className={`rounded-xl border p-3 bg-slate-900 ${STATES[key].style}`}>
-        <p className="text-xl font-bold">{WORK_PACKAGES.filter(item => item.evidenceState === key).length}</p>
-        <p className="text-xs">{STATES[key].label}</p>
-      </div>)}
-    </div>
+    <details className="my-4 rounded-xl border border-slate-700 bg-slate-950/70 p-3" aria-label="Roadmap Statusfilter">
+      <summary className="cursor-pointer text-sm font-semibold text-white">
+        Status auswählen · {selectedStates.length} von {Object.keys(STATES).length} <span className="text-slate-400">(Mehrfachauswahl)</span>
+      </summary>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button type="button" className="min-h-10 rounded-lg border border-slate-600 px-3 text-xs hover:bg-slate-800"
+          onClick={() => setSelectedStates(Object.keys(STATES) as RoadmapEvidenceState[])}>Alle wählen</button>
+        <button type="button" className="min-h-10 rounded-lg border border-slate-600 px-3 text-xs hover:bg-slate-800"
+          onClick={() => setSelectedStates([])}>Keine wählen</button>
+      </div>
+      <fieldset className="mt-3 grid gap-2 sm:grid-cols-2">
+        <legend className="sr-only">Roadmap-Status filtern</legend>
+        {(Object.keys(STATES) as RoadmapEvidenceState[]).map(key => (
+          <label key={key} className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-xs ${STATES[key].style}`}>
+            <input type="checkbox" checked={selectedStates.includes(key)} onChange={() => toggleState(key)}
+              className="h-4 w-4 accent-amber-400" />
+            <span>{STATES[key].label} · {WORK_PACKAGES.filter(item => item.evidenceState === key).length}</span>
+          </label>
+        ))}
+      </fieldset>
+    </details>
     <details className="my-4 rounded-xl border border-slate-700 bg-slate-950/70 p-3" aria-label="CAPITAL-AI Roadmap Domains">
       <summary className="cursor-pointer text-sm font-semibold text-white">
         Domains auswählen · {selectedOwners.length} von {PROJECT_OWNERS.length} <span className="text-slate-400">(Mehrfachauswahl)</span>
@@ -164,14 +183,8 @@ export const RoadmapPanel: React.FC = () => {
       <summary className="cursor-pointer">Phasen und Abschlussprüfung</summary>
       <ul className="mt-2 space-y-2">{ROADMAP_STAGES.map(phase => <li key={phase.id}>{phase.shortTitle}: Gesamt-Abnahme offen. {phase.description}</li>)}</ul>
     </details>
-    <div className="grid gap-3 sm:grid-cols-2 my-4">
+    <div className="grid gap-3 my-4">
 
-      <label className="text-sm">Status
-        <select className="block w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl p-3" value={state} onChange={event => setState(event.target.value)}>
-          <option value="">Alle Zustände</option>
-          {(Object.keys(STATES) as RoadmapEvidenceState[]).map(key => <option key={key} value={key}>{STATES[key].label}</option>)}
-        </select>
-      </label>
       <label className="text-sm">Arbeitspaket suchen
         <input className="block w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl p-3" value={search} onChange={event => setSearch(event.target.value)} placeholder="Titel oder Kennung" />
       </label>

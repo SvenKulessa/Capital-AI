@@ -35,6 +35,8 @@ test('roadmap panel renders domain badges on filter and work-package cards respo
   assert.match(panel, /aria-label="CAPITAL-AI Roadmap Domains"/);
   assert.match(panel, /src=\{project\.badgeAsset\}/);
   assert.match(panel, /Domains auswählen/);
+  assert.match(panel, /Status auswählen/);
+  assert.match(panel, /selectedStates\.includes\(item\.evidenceState\)/);
   assert.match(panel, /type="checkbox"/);
   assert.match(panel, /checked=\{selectedOwners\.includes\(project\.id\)\}/);
   assert.match(panel, /sm:flex-row sm:items-start sm:justify-between/);
@@ -96,4 +98,5 @@ test('Control Center roadmap reads GitHub main on a 90-minute bounded refresh wh
   assert.match(panel, /ROADMAP_SNAPSHOT\.reviewDate/);
   assert.match(panel, /repositoryStatus\.sourceSha/);
   assert.match(panel, /selectedOwners\.includes\(item\.owner\)/);
+  assert.match(panel, /selectedStates\.includes\(item\.evidenceState\)/);
 });
