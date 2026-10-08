@@ -62,6 +62,7 @@
 !server/mta-sts.test.mjs
 !server/well-known.mjs
 !server/well-known.test.mjs
+!server/locale-html.test.mjs
 !server/shadow-evidence-store.mjs
 !server/infrastructure.mjs
 !server/scorer-bus.mjs
@@ -80,6 +81,7 @@
 !shared/seo-content-manifest.mjs
 !shared/seo-source-provenance.mjs
 !shared/seo-metadata.mjs
+!shared/locale-policy.mjs
 !deploy/
 !deploy/runtime/
 !deploy/runtime/package.json
@@ -126,6 +128,7 @@
 !scripts/seo-source-provenance-drift.test.mjs
 !scripts/refresh-seo-source-provenance.mjs
 !scripts/seo-metadata.test.mjs
+!scripts/locale-policy.test.mjs
 !scripts/validate-finance-source-target-manifest.mjs
 !scripts/finance-source-target-manifest.test.mjs
 !scripts/ecb-reference-admission.test.mjs
