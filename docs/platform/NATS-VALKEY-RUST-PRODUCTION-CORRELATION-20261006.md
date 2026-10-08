@@ -90,3 +90,48 @@ Finale Aktivierungsreihenfolge:
 8. App erneut deployen und negativen Mutations-/Secret-Leak-Test wiederholen.
 
 Bis Schritt 6 bleibt der private Provider Endpoint fail-closed.
+## Runtime Update 2026-10-07 — Provider Bridge
+
+Runtime-Stand: `acb328b5dc4d0892335735f4467f6ff8717a3626`
+
+### PROVIDER_BRIDGE_RUNTIME = PROVEN
+
+Der dedizierte Render Background Worker `capital-ai-provider-bridge` ist in Frankfurt live und verwendet `deploy/Dockerfile.provider-bridge` mit Auto Deploy `off`.
+
+Live-Evidence:
+- Render Service: `srv-db3d8mui0phs739mfq20`
+- Render Deploy: `dep-db3dds5chlcc73e9r7kg`
+- Deploy-Status: `live`
+- Commit: `acb328b5dc4d0892335735f4467f6ff8717a3626`
+- Dockerfile: `deploy/Dockerfile.provider-bridge`
+- Runtime: Docker Background Worker, Frankfurt, 1 Instance
+- Auto Deploy: `off`
+- Build: Rust Provider Bridge 0.1.0
+- Container-Buildtests: 7/7 PASS
+- Runtime-Log: `provider-bridge ready subject=capital.private.provider.query.v1`
+
+Die Ready-Meldung wird im Rust-Code erst nach erfolgreichem `connect_bridge()` und erfolgreichem `queue_subscribe()` auf `capital.private.provider.query.v1` ausgegeben. Damit sind für diesen exakten Runtime-Stand NATS-Erreichbarkeit, Bridge-Credential-Akzeptanz und die Query-Subscription live belegt.
+
+Die Bridge bleibt auf ihren schmalen Vertrag begrenzt:
+- nur read-only admitted operations aus dem eingebetteten Contract
+- Secret-Material in Requests wird abgewiesen
+- mutierende Operationen werden abgewiesen
+- maximal 64 KiB Request / 256 KiB Response
+- maximal 30 s TTL
+- Executor-Request ist auf 8 s begrenzt
+- kein Provider-Secret liegt im Bridge-Worker
+
+### Weiterhin NOT_PROVEN
+
+Der Bridge-Runtime-Nachweis ist ausdrücklich keine End-to-End-Providerfreigabe. Weiterhin nicht als produktiv bewiesen gelten:
+- `capital.private.provider.execute.v1` Node-Executor als laufende Runtime
+- service-role Supabase Guard aus dem tatsächlich deployten Executor
+- Query → Bridge → Executor → Supabase Guard Roundtrip
+- Vault-Handoff
+- realer Provider-I/O
+- End-to-End-Latenz und Retry-/Timeout-Verhalten der vollständigen Kette
+
+`PRIVATE_PROVIDER_BRIDGE_ENABLED` bleibt deshalb `false`. Ein erfolgreicher Bridge-Runtime-Test allein erteilt keine Provider-, Vault-, Lizenz- oder Production-Authority für den vollständigen privaten Providerpfad.
+
+Maschinenlesbare Evidence: `docs/security/evidence/provider-bridge-runtime-20261007.json`.
+

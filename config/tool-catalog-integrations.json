@@ -1,0 +1,254 @@
+[
+  {
+    "name": "GitHub + GHCR",
+    "domain": "TRUST",
+    "path": ".github/workflows/build-security.yml",
+    "application": "Quellcode, Pull Requests, OCI-Artefakte"
+  },
+  {
+    "name": "Render",
+    "domain": "PLATFORM",
+    "path": "render.yaml",
+    "application": "Hosting, Webservice, Deployment-Konfiguration"
+  },
+  {
+    "name": "Supabase",
+    "domain": "PLATFORM",
+    "path": "supabase/migrations/20261002051549_external_component_inventory_private_registry.sql",
+    "application": "PostgreSQL, Vault-/Evidence-Datenhaltung"
+  },
+  {
+    "name": "ZITADEL",
+    "domain": "TRUST",
+    "path": "docs/security/ZITADEL-READBACK.md",
+    "application": "Identitätsanbieter / OIDC (dokumentierte Integration)"
+  },
+  {
+    "name": "IONOS SMTP",
+    "domain": "PLATFORM",
+    "path": "docs/mail/SMTP.md",
+    "application": "Transaktionale E-Mails"
+  },
+  {
+    "name": "IONOS DNS",
+    "domain": "PLATFORM",
+    "path": "docs/security/IONOS-INVENTORY.md",
+    "application": "Domain und DNS"
+  },
+  {
+    "name": "Stripe",
+    "domain": "PRODUCT",
+    "path": "server/subscription-checkout.mjs",
+    "application": "Abonnements und Checkout"
+  },
+  {
+    "name": "NATS JetStream",
+    "domain": "PLATFORM",
+    "path": "deploy/Dockerfile.nats",
+    "application": "Privater Event Bus"
+  },
+  {
+    "name": "Valkey",
+    "domain": "PLATFORM",
+    "path": "server/infrastructure.mjs",
+    "application": "Cache und Pub/Sub"
+  },
+  {
+    "name": "Google Gemini",
+    "domain": "GROWTH",
+    "path": "server/growth-ai-gateway.ts",
+    "application": "KI-gestützte Content-Workflows"
+  },
+  {
+    "name": "Metricool",
+    "domain": "GROWTH",
+    "path": "docs/growth/METRICOOL-MCP-INTEGRATION-20261006.md",
+    "application": "Social Publisher (dokumentierter Integrationspfad)"
+  },
+  {
+    "name": "Twelve Data",
+    "domain": "MARKET",
+    "path": "docs/market-data/evidence/twelve-data-rights-20261005.json",
+    "application": "Marktdatenprovider / Lizenzprüfung"
+  },
+  {
+    "name": "Binance",
+    "domain": "MARKET",
+    "path": "supabase/migrations/20261006131500_enable_binance_user_provider_vault.sql",
+    "application": "BYOK-Provider-Integration"
+  },
+  {
+    "name": "Kraken",
+    "domain": "MARKET",
+    "path": "server/kraken-order-dry-run.mjs",
+    "application": "Order-Intent / Dry Run"
+  },
+  {
+    "name": "ECB",
+    "domain": "MARKET",
+    "path": "server/ecb-reference-rates.mjs",
+    "application": "Referenzwechselkurse"
+  },
+  {
+    "name": "Grafana Cloud",
+    "domain": "PLATFORM",
+    "path": "docs/platform/NATS-VALKEY-RUST-PRODUCTION-CORRELATION-20261006.md",
+    "application": "Monitoring / Betriebsevidence"
+  },
+  {
+    "name": "Telegram",
+    "domain": "PRODUCT",
+    "path": "server/telegram.mjs",
+    "application": "Benachrichtigungen"
+  },
+  {
+    "name": "GitHub Marketplace",
+    "domain": "PRODUCT",
+    "path": "apps/cads-github-app/marketplace-plans.production.json",
+    "application": "CADS Marketplace-Konfiguration"
+  },
+  {
+    "name": "Prometheus",
+    "domain": "PLATFORM",
+    "path": "server/observability.mjs",
+    "application": "Betriebsmetriken und Export"
+  },
+  {
+    "name": "OpenTelemetry Collector",
+    "domain": "PLATFORM",
+    "path": "src/data/externalComponentInventory.ts",
+    "application": "Observability · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
+  },
+  {
+    "name": "OSS Review Toolkit",
+    "domain": "TRUST",
+    "path": "src/data/externalComponentInventory.ts",
+    "application": "License Compliance · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
+  },
+  {
+    "name": "ScanCode Toolkit",
+    "domain": "TRUST",
+    "path": "src/data/externalComponentInventory.ts",
+    "application": "License Compliance · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
+  },
+  {
+    "name": "Google Gemini / GenAI SDK",
+    "domain": "PRODUCT",
+    "path": "src/data/externalComponentInventory.ts",
+    "application": "AI Provider · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
+  },
+  {
+    "name": "Telegram Bot API",
+    "domain": "GROWTH",
+    "path": "src/data/externalComponentInventory.ts",
+    "application": "Notification / Social · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
+  },
+  {
+    "name": "Metricool MCP",
+    "domain": "GROWTH",
+    "path": "src/data/externalComponentInventory.ts",
+    "application": "Social Publishing / Analytics MCP · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
+  },
+  {
+    "name": "LukeRenton Google Search Console MCP",
+    "domain": "GROWTH",
+    "path": "src/data/externalComponentInventory.ts",
+    "application": "SEO / Search Console MCP · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
+  },
+  {
+    "name": "Google Analytics",
+    "domain": "GROWTH",
+    "path": "src/data/externalComponentInventory.ts",
+    "application": "Web Analytics · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
+  },
+  {
+    "name": "Binance Market Data",
+    "domain": "MARKET",
+    "path": "src/data/externalComponentInventory.ts",
+    "application": "Market Data Provider · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
+  },
+  {
+    "name": "Kraken Market Data",
+    "domain": "MARKET",
+    "path": "src/data/externalComponentInventory.ts",
+    "application": "Market Data Provider · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
+  },
+  {
+    "name": "Massive / Polygon",
+    "domain": "MARKET",
+    "path": "src/data/externalComponentInventory.ts",
+    "application": "Market Data Provider · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
+  },
+  {
+    "name": "GitHub Actions Ubuntu Runner",
+    "domain": "PLATFORM",
+    "path": "src/data/externalComponentInventory.ts",
+    "application": "CI Runner · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
+  },
+  {
+    "name": "GitHub CodeQL Default Setup",
+    "domain": "TRUST",
+    "path": "src/data/externalComponentInventory.ts",
+    "application": "Static Analysis · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
+  },
+  {
+    "name": "Node.js",
+    "domain": "PLATFORM",
+    "path": "src/data/externalComponentInventory.ts",
+    "application": "Runtime · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
+  },
+  {
+    "name": "npm CLI",
+    "domain": "PLATFORM",
+    "path": "src/data/externalComponentInventory.ts",
+    "application": "Package Manager · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
+  },
+  {
+    "name": "Trivy",
+    "domain": "TRUST",
+    "path": "src/data/externalComponentInventory.ts",
+    "application": "Vulnerability / Secret / License Scanner · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
+  },
+  {
+    "name": "Hadolint",
+    "domain": "TRUST",
+    "path": "src/data/externalComponentInventory.ts",
+    "application": "Dockerfile Linter · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
+  },
+  {
+    "name": "Go Toolchain",
+    "domain": "TRUST",
+    "path": "src/data/externalComponentInventory.ts",
+    "application": "Security Analysis Runtime · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
+  },
+  {
+    "name": "govulncheck",
+    "domain": "TRUST",
+    "path": "src/data/externalComponentInventory.ts",
+    "application": "Go Vulnerability Reachability · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
+  },
+  {
+    "name": "Pinned GitHub Actions Toolchain",
+    "domain": "TRUST",
+    "path": "src/data/externalComponentInventory.ts",
+    "application": "CI/CD Supply Chain · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
+  },
+  {
+    "name": "Android Gradle Plugin",
+    "domain": "PLATFORM",
+    "path": "src/data/externalComponentInventory.ts",
+    "application": "Android Build Toolchain · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
+  },
+  {
+    "name": "Web Build Stack",
+    "domain": "PRODUCT",
+    "path": "src/data/externalComponentInventory.ts",
+    "application": "Frontend Build Toolchain · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
+  },
+  {
+    "name": "Web Runtime Dependency Closure",
+    "domain": "PLATFORM",
+    "path": "src/data/externalComponentInventory.ts",
+    "application": "Node Runtime Dependencies · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
+  }
+]

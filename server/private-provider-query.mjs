@@ -14,6 +14,9 @@ const EXECUTE_SUBJECT = CONTRACT.executeSubject;
 const MAX_BODY_BYTES = Number(CONTRACT.maxRequestBytes || 65536);
 const MAX_RESPONSE_BYTES = Number(CONTRACT.maxResponseBytes || 262144);
 const MAX_TTL_MS = Number(CONTRACT.maxTtlMs || 30000);
+const BRIDGE_PROBE_USER = 'capital-ai-runtime-probe';
+const BRIDGE_PROBE_PROVIDER = 'kraken';
+const BRIDGE_PROBE_OPERATION = 'account.key_info';
 
 function canonicalJson(value) {
   if (Array.isArray(value)) return '[' + value.map(canonicalJson).join(',') + ']';
@@ -117,6 +120,24 @@ export function createProviderQueryEnvelope({ userRef, requestId, provider, oper
   return Object.freeze({ ...envelope, proof });
 }
 
+export function createProviderBridgeProbeEnvelope(requestId, env = process.env, now = Date.now()) {
+  return createProviderQueryEnvelope({
+    userRef: BRIDGE_PROBE_USER,
+    requestId,
+    provider: BRIDGE_PROBE_PROVIDER,
+    operation: BRIDGE_PROBE_OPERATION,
+    params: {},
+  }, env, now);
+}
+
+export function isProviderBridgeProbeEnvelope(envelope) {
+  return envelope?.userRef === BRIDGE_PROBE_USER &&
+    envelope?.provider === BRIDGE_PROBE_PROVIDER &&
+    envelope?.operation === BRIDGE_PROBE_OPERATION &&
+    envelope?.params && typeof envelope.params === 'object' &&
+    !Array.isArray(envelope.params) && Object.keys(envelope.params).length === 0;
+}
+
 export function verifyProviderQueryEnvelope(envelope, env = process.env, now = Date.now()) {
   if (!envelope || envelope.schema !== CONTRACT.requestSchema ||
       !safeIdentifier(envelope.requestId) || !safeIdentifier(envelope.userRef) ||
@@ -186,6 +207,14 @@ async function readJson(req) {
 
 export async function executeGuardedProviderQuery({ envelope, env = process.env, state, vault }) {
   if (!verifyProviderQueryEnvelope(envelope, env)) throw new Error('INVALID_QUERY_PROOF');
+  if (isProviderBridgeProbeEnvelope(envelope)) {
+    return Object.freeze({
+      bridgeProbe: true,
+      stateIo: false,
+      vaultIo: false,
+      providerIo: false,
+    });
+  }
   const policy = CONTRACT.providers[envelope.provider].operations[envelope.operation];
   const intervals = [Number(policy.minIntervalMs || 0), Number(policy.globalMinIntervalMs || 0)];
   const costUnits = Number(policy.costUnits || 1);
@@ -212,9 +241,19 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault, sta
   let subscription = null;
   let executorLoop = null;
   let opening = null;
+  let lastProbe = Object.freeze({
+    status: 'NOT_PROVEN',
+    observedAt: null,
+    latencyMs: null,
+    error: null,
+  });
 
-  function enabled() {
+  function queryEnabled() {
     return env.PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true';
+  }
+
+  function probeEnabled() {
+    return queryEnabled() || env.PRIVATE_PROVIDER_BRIDGE_PROBE_ENABLED === 'true';
   }
 
   async function respond(message, payload) {
@@ -248,7 +287,7 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault, sta
   }
 
   async function start() {
-    if (!enabled()) return false;
+    if (!probeEnabled()) return false;
     if (requestNc && !requestNc.isClosed() && executorNc && !executorNc.isClosed()) return true;
     if (opening) return opening;
     opening = (async () => {
@@ -280,6 +319,67 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault, sta
     return opening;
   }
 
+  async function probe(requestId) {
+    const observedAt = new Date().toISOString();
+    const startedAt = Date.now();
+    if (!probeEnabled()) {
+      lastProbe = Object.freeze({ status: 'DISABLED', observedAt, latencyMs: null, error: 'PRIVATE_PROVIDER_BRIDGE_PROBE_DISABLED' });
+      return lastProbe;
+    }
+    try {
+      await start();
+      if (!requestNc || requestNc.isClosed() || !executorNc || executorNc.isClosed()) {
+        throw new Error('PRIVATE_PROVIDER_BRIDGE_UNAVAILABLE');
+      }
+      const envelope = createProviderBridgeProbeEnvelope(requestId, env);
+      const response = await requestNc.request(
+        QUERY_SUBJECT,
+        Buffer.from(JSON.stringify(envelope), 'utf8'),
+        { timeout: 5000 },
+      );
+      if (response.data.length > MAX_RESPONSE_BYTES) throw new Error('PROVIDER_RESULT_TOO_LARGE');
+      const result = JSON.parse(new TextDecoder().decode(response.data));
+      if (
+        result?.schema !== CONTRACT.resultSchema ||
+        result?.requestId !== requestId ||
+        result?.ok !== true ||
+        result?.data?.bridgeProbe !== true ||
+        result?.data?.stateIo !== false ||
+        result?.data?.vaultIo !== false ||
+        result?.data?.providerIo !== false
+      ) throw new Error('BRIDGE_PROBE_INVALID_RESULT');
+      lastProbe = Object.freeze({
+        status: 'PROVEN',
+        observedAt,
+        latencyMs: Math.max(0, Date.now() - startedAt),
+        error: null,
+      });
+      return lastProbe;
+    } catch (error) {
+      lastProbe = Object.freeze({
+        status: 'NOT_PROVEN',
+        observedAt,
+        latencyMs: Math.max(0, Date.now() - startedAt),
+        error: String(error?.code || error?.message || 'BRIDGE_PROBE_FAILED').slice(0, 120),
+      });
+      throw error;
+    }
+  }
+
+  function status() {
+    return Object.freeze({
+      enabled: queryEnabled(),
+      probeEnabled: probeEnabled(),
+      requestConnection: requestNc && !requestNc.isClosed() ? 'CONNECTED' : 'DISCONNECTED',
+      executorConnection: executorNc && !executorNc.isClosed() ? 'CONNECTED' : 'DISCONNECTED',
+      readiness: lastProbe,
+      proofScope: 'APP_NATS_RUST_BRIDGE_EXECUTOR_ONLY',
+      stateIoProven: false,
+      vaultIoProven: false,
+      providerIoProven: false,
+    });
+  }
+
   async function handle(req, res, url, json, requestId) {
     if (url.pathname !== '/api/profile/provider-query') return false;
     res.setHeader('Cache-Control', 'no-store');
@@ -288,7 +388,7 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault, sta
       json(res, 405, { error: 'method_not_allowed' });
       return true;
     }
-    if (!enabled()) {
+    if (!queryEnabled()) {
       json(res, 503, { error: 'private_provider_bridge_disabled' });
       return true;
     }
@@ -362,5 +462,5 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault, sta
     executorLoop = null;
   }
 
-  return { start, handle, close };
+  return { start, probe, status, handle, close };
 }
