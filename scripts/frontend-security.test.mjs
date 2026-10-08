@@ -227,7 +227,7 @@ test('control center observability remains owner-projected without browser metri
   const dashboard = await readFile(new URL('../src/components/ObservabilityDashboard.tsx', import.meta.url), 'utf8');
   const server = await readFile(new URL('../server/index.mjs', import.meta.url), 'utf8');
 
-  assert.match(control, /observability: 'Observability'/);
+  assert.match(control, /activeTab === 'observability' && <ObservabilityDashboard \/>/);
   assert.match(control, /<ObservabilityDashboard \/>/);
   assert.match(dashboard, /\/api\/internal\/observability/);
   assert.doesNotMatch(dashboard, /OBSERVABILITY_TOKEN|Authorization:\s*['"]Bearer/);

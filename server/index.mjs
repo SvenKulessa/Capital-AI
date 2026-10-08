@@ -378,7 +378,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (url.pathname.startsWith('/api/')) return json(res, 404, { error: 'not_found' });
 
   const publicPath = normalizedPublicPath(url.pathname);
-  if (OWNER_ONLY_UI_PATHS.has(publicPath)) {
+  if (OWNER_ONLY_UI_PATHS.has(publicPath) || publicPath.startsWith('/control-center/')) {
     const ownerAllowed = await auth.authorizeIamRole(req, res, 'owner');
     if (!ownerAllowed) {
       res.writeHead(404, { ...headers, 'Cache-Control': 'no-store' });
