@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "SOCIAL_AUDIO_MODEL_REMOVAL@1",
+  "decidedAt": "2026-10-08",
+  "ownerDecision": true,
+  "scope": "CAPITAL-AI Social Media Engine",
+  "removed": [
+    "Qwen/Qwen3-TTS",
+    "Chatterbox",
+    "OpenAI Whisper",
+    "Faster-Whisper",
+    "WhisperX as active Social alignment candidate"
+  ],
+  "runtimeState": {
+    "activeTtsModel": null,
+    "activeAsrModel": null,
+    "modelWeightsInSocialRuntime": false
+  },
+  "deletedActiveArtifacts": [
+    "deploy/social-media/tts/qwen-runtime.in",
+    "deploy/social-media/tts/chatterbox-runtime.in",
+    "CAPITAL-AI-GROWTH/social-tts-snapshot-lock-20261006.json",
+    ".github/workflows/social-tts-snapshot-evidence.yml",
+    ".github/workflows/social-tts-dependency-lock.yml"
+  ],
+  "retained": [
+    "provider-neutral voice contract",
+    "deterministic FFmpeg/Pillow renderer",
+    "historical Git provenance"
+  ],
+  "reintroductionRequires": "new explicit owner decision"
+}
