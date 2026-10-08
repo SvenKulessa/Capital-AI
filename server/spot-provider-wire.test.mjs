@@ -4,6 +4,7 @@ import {
   spotWireRequest,parseSpotWireFrame,ingestSpotWireFrame,spotWireInventory,
   fetchAdmittedSpotRest,startAdmittedSpotWebSocket,
   fetchPrivateUserSpotTrade,
+  fetchPrivateUserSpotWsSnapshot,
 } from './spot-provider-wire.mjs';
 
 const now=Date.now();
@@ -229,3 +230,73 @@ test('missing private Vault connection stops user market snapshots before public
 });
 
 }
+
+test('private Kraken WebSocket snapshot closes immediately after one verified market tick',async()=>{
+  const time=Date.now();
+  const sockets=[];
+  class MockSocket {
+    readyState=0; listeners=new Map(); sent=[]; closed=false;
+    constructor(url){this.url=url;sockets.push(this);queueMicrotask(()=>{this.readyState=1;this.emit('open',{});});}
+    addEventListener(event,fn){this.listeners.set(event,fn);}
+    emit(event,value){this.listeners.get(event)?.(value);}
+    send(payload){
+      this.sent.push(payload);
+      queueMicrotask(()=>{
+        this.emit('message',{data:JSON.stringify({method:'subscribe',success:true})});
+        this.emit('message',{data:JSON.stringify({channel:'ticker',type:'update',
+          data:[{symbol:'BTC/USD',last:'72004',timestamp:new Date(time).toISOString()}]})});
+      });
+    }
+    close(){this.closed=true;this.readyState=3;this.emit('close',{});}
+  }
+  const result=await fetchPrivateUserSpotWsSnapshot({
+    provider:'kraken',symbol:'BTCUSD',SocketClass:MockSocket,now:()=>time,
+  });
+  assert.equal(sockets.length,1);
+  assert.equal(sockets[0].url,'wss://ws.kraken.com/v2');
+  assert.deepEqual(JSON.parse(sockets[0].sent[0]),{
+    method:'subscribe',params:{channel:'ticker',symbol:['BTC/USD'],snapshot:true},
+  });
+  assert.equal(sockets[0].closed,true);
+  assert.deepEqual(result,{
+    provider:'kraken',symbol:'BTCUSD',quote:'USD',price:72004,observedAt:time,
+    mode:'websocket',timeSemantics:'realtime',dataScope:'USER_PRIVATE_MARKET_DATA',
+    publicDisplayAllowed:false,redistributionAllowed:false,sharedCacheAllowed:false,
+    jetStreamPublicationAllowed:false,actionable:false,executionEnabled:false,
+  });
+});
+test('private WS snapshots fail closed on spoofed symbol, stale price and non-market frame',async()=>{
+  const time=Date.now();
+  let created=0,closed=0;
+  const fake=(frame)=>class {
+    readyState=0;handlers={};
+    constructor(){created++;queueMicrotask(()=>{this.readyState=1;this.handlers.open?.({});});}
+    addEventListener(event,fn){this.handlers[event]=fn;}
+    send(){queueMicrotask(()=>this.handlers.message?.({data:JSON.stringify(frame)}));}
+    close(){closed++;this.readyState=3;this.handlers.close?.({});}
+  };
+  for(const frame of [
+    {e:'trade',s:'ETHUSDT',p:'72001',T:time},
+    {e:'trade',s:'BTCUSDT',p:'72001',T:time-31000},
+    {channel:'ticker',type:'update',data:[{symbol:'ETH/USD',last:72001,timestamp:new Date(time).toISOString()}]},
+  ]){
+    const provider=frame.e?'binance':'kraken';
+    const symbol=provider==='binance'?'BTCUSDT':'BTCUSD';
+    await assert.rejects(fetchPrivateUserSpotWsSnapshot({
+      provider,symbol,SocketClass:fake(frame),now:()=>time,
+    }),/PRIVATE_SPOT_WS_FRAME_REJECTED/);
+  }
+  assert.equal(created,3);
+  assert.equal(closed,3);
+});
+test('private WebSocket snapshot cannot open unsupported provider, cross-mapped symbol or live trading route',async()=>{
+  let created=0;
+  class UnauthorizedSocket {constructor(){created++;}}
+  await assert.rejects(fetchPrivateUserSpotWsSnapshot({
+    provider:'kraken',symbol:'AAPL',SocketClass:UnauthorizedSocket,
+  }),/SPOT_SYMBOL_MAPPING_UNADMITTED/);
+  await assert.rejects(fetchPrivateUserSpotWsSnapshot({
+    provider:'unsupported',symbol:'BTCUSD',SocketClass:UnauthorizedSocket,
+  }),/SPOT_PROVIDER_UNSUPPORTED/);
+  assert.equal(created,0);
+});
