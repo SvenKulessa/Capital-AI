@@ -44,7 +44,8 @@ FROM ${PYTHON_BASE} AS runtime
 RUN apk add --no-cache \
       'libcrypto3>=3.5.8-r0' \
       'libssl3>=3.5.8-r0' \
-      'libuuid>=2.41.6-r1'
+      'libuuid>=2.41.6-r1' \
+      'xz-libs>=5.8.3-r0'
 
 COPY deploy/social-media/renderer-requirements.txt /tmp/renderer-requirements.txt
 RUN python -m pip install \
