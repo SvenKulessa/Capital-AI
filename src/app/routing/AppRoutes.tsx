@@ -43,6 +43,11 @@ const KeyVaultPage = lazy(() =>
     default: module.KeyVaultPage,
   })),
 );
+const PersonalWorkspacePage = lazy(() =>
+  import('../../components/PersonalWorkspacePage').then((module) => ({
+    default: module.PersonalWorkspacePage,
+  })),
+);
 const ArchitecturePage = lazy(() =>
   import('../../components/ArchitecturePage').then((module) => ({
     default: module.ArchitecturePage,
@@ -149,6 +154,9 @@ export function AppRoutes({
 
   if (currentRoute === '/profile/key-vault') {
     return <KeyVaultPage onNavigate={navigateTo} />;
+  }
+  if (currentRoute === '/profile/workspace') {
+    return <PersonalWorkspacePage onNavigate={navigateTo} />;
   }
 
   if (currentRoute === '/pipeline-builder') {
