@@ -18,9 +18,9 @@ baseline:
     repository: "SvenKulessa/Capital-AI"
     sha: "9c5fc40318cf538308724c2efb18441185e8cbae"
   currentMainCorrelation:
-    sha: "5b6b8b79ec0f29d3da99b55eed6920a7bd9c8cbf"
+    sha: "07b34ab4cbbd4df9624f49fe072b3173e72446af"
     rootPolicy: "AGENTS.md@currentmain"
-    correlationState: "POINT_4_AUDIO_MODELS_REMOVED_ON_CURRENT_MAIN"
+    correlationState: "SOCIAL_CORE_CURRENT_MAIN_07B34AB4_PR302_PENDING_CI_POINT4_BLOCKED"
   policy: "target-current-main-contracts-win"
 
 objectives:
@@ -187,13 +187,15 @@ artifacts:
   socialEngineCompletionGateValidator: "scripts/validate-social-engine-completion-gate.mjs"
   socialEngineCompletionGateTest: "scripts/social-engine-completion-gate.test.mjs"
   socialRendererWorkerEvidence: "CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json"
+  socialCorePortProvenance: "CAPITAL-AI-GROWTH/social-core-port-provenance-20261008.json"
+  socialRenderBrandTokens: "public/branding/asset-pack/meta/social-render-tokens.json"
 
 validation:
   status:
     source-to-target-file-manifest: "MATERIALIZED_WITH_GIT_BLOB_SHA_GUARD"
     license-and-rights-matrix: "POINT_4_AUDIO_MODELS_REMOVED_FAIL_CLOSED"
     third-party-notices: "MATERIALIZED"
-    social-engine-completion-gate: "BLOCKED_RUNTIME_NOT_MIGRATED"
+    social-engine-completion-gate: "BLOCKED_PARTIAL_RUNTIME_7_OF_13"
     finance-scoring-follow-up: "BLOCKED_BY_SOCIAL_MEDIA_ENGINE_MIGRATION"
     remainingGates: "OPEN"
   required:

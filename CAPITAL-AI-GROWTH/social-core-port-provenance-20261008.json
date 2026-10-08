@@ -1,0 +1,88 @@
+{
+  "schemaVersion": "FINANCE_SOCIAL_CORE_PORT_PROVENANCE@1",
+  "source": {
+    "repository": "SvenKulessa/Finance",
+    "commit": "dcef421fe6e350a3a2ade61d0299aad9ecca213c"
+  },
+  "target": {
+    "repository": "SvenKulessa/Capital-AI",
+    "stackedOnPr": null,
+    "baseHead": "07b34ab4cbbd4df9624f49fe072b3173e72446af",
+    "currentMain": "07b34ab4cbbd4df9624f49fe072b3173e72446af",
+    "removalMerge": "22ffb122592260b2d4a8f181963403fc917b88ce"
+  },
+  "status": "IMPLEMENTED_BRANCH_CURRENT_MAIN_PENDING_CI",
+  "activeAudioModels": [],
+  "files": [
+    {
+      "path": "src/platform/SocialMediaEngine/Contracts/MediaProject.ts",
+      "sourceBlobSha": "1c7a4b51119c89e3aaa54b6b44b6521e053cb660",
+      "adaptation": "brandTokenSource rebound to current CAPITAL-AI target token contract"
+    },
+    {
+      "path": "src/platform/SocialMediaEngine/Contracts/MediaProjectValidation.ts",
+      "sourceBlobSha": "633c8d9ec9c42b99063a16e31e8f9d669f84c377",
+      "adaptation": "brand token authority follows target MediaProject constant"
+    },
+    {
+      "path": "src/platform/SocialMediaEngine/Contracts/media-project-v2.schema.json",
+      "sourceBlobSha": "01089507ffbe87dc841c4e79e80eb7bf0d7df1d8",
+      "adaptation": "brand token const rebound to target"
+    },
+    {
+      "path": "src/platform/SocialMediaEngine/Editing/MediaProjectEditing.ts",
+      "sourceBlobSha": "68896b533d7c974aa499dc27ccabe9b60d8683d6",
+      "adaptation": "none"
+    },
+    {
+      "path": "src/platform/SocialMediaEngine/Editing/MediaStudioTemplates.ts",
+      "sourceBlobSha": "d7e089110d1e40d32c80720adc43fc77966024ff",
+      "adaptation": "brand token authority rebound"
+    },
+    {
+      "path": "src/platform/SocialMediaEngine/Visualization/PlanningVisual.ts",
+      "sourceBlobSha": "f2de63c8d9ad3e792f5fe98129325384240ce23f",
+      "adaptation": "brand token authority rebound"
+    },
+    {
+      "path": "src/platform/SocialMediaEngine/Visualization/D3PlanningVisualAdapter.ts",
+      "sourceBlobSha": "70870c7c509b54b32986f59f8e96d2f10347a14a",
+      "adaptation": "import narrowed from d3 umbrella to directly locked d3-scale@4.0.2"
+    },
+    {
+      "path": "src/platform/SocialMediaEngine/Visualization/PlanningVisualMediaProjectAdapter.ts",
+      "sourceBlobSha": "c3098cd132b1cf6841c280156a17b145faf33b31",
+      "adaptation": "target contracts only"
+    },
+    {
+      "path": "scripts/media/capital_ai_media.py",
+      "sourceBlobSha": "31b52e08e77424a1904eceed5b362a49d937715e",
+      "adaptation": "DEFAULT_TOKEN_PATH rebound to current CAPITAL-AI target token contract"
+    },
+    {
+      "path": "scripts/media/render_content_assets.py",
+      "sourceBlobSha": "14cc8758bc7169e2cfab81b55b08e81fea3f26bf",
+      "adaptation": "none; no publisher authority"
+    }
+  ],
+  "dependencies": {
+    "d3-scale": {
+      "version": "4.0.2",
+      "integrity": "sha512-GZW464g1SH7ag3Y7hXjf8RoUuAFIqklOAq3MRl4OaWabTFJY9PN/E1YklhXLh+OQ3fM9yS2nOkCoS+WLZ6kvxQ==",
+      "license": "ISC"
+    },
+    "@types/d3-scale": {
+      "version": "4.0.9",
+      "integrity": "sha512-dLmtwB8zkAeO/juAMfnV+sItKjlsw2lKdZVVy6LRr0cBmegxSABiLEpGVmSJJ8O08i4+sGR6qQtb6WtuwJdvVw==",
+      "license": "MIT"
+    }
+  },
+  "invariants": {
+    "publishReady": false,
+    "rendererNetworkPolicy": "offline",
+    "qwenAbsent": true,
+    "chatterboxAbsent": true,
+    "whisperAbsent": true,
+    "financeScoringMigrationBlockedUntilSocialCompletion": true
+  }
+}

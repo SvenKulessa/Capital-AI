@@ -9,7 +9,7 @@ This notice is an engineering distribution inventory. It does not override upstr
 
 | Component | Locked artifact | License | Distribution decision |
 |---|---|---|---|
-| D3 | 7.9.0; npm integrity `sha512-e1U46jVP+w7Iut8Jt8ri1YsPOvFpg46k+K8TpCb0P+zjCkjkPnV7WzfDJzMHy1LnA+wj5pLT1wjO901gLXeEhA==` | ISC | commercial bundle allowed; retain copyright/license notice |
+| D3 Scale | 4.0.2; npm integrity `sha512-GZW464g1SH7ag3Y7hXjf8RoUuAFIqklOAq3MRl4OaWabTFJY9PN/E1YklhXLh+OQ3fM9yS2nOkCoS+WLZ6kvxQ==` | ISC | commercial bundle allowed; target imports only `scalePoint`; retain copyright/license notice |
 | Pillow | 12.3.0; CPython 3.11 musllinux x86_64 wheel SHA-256 `236ff70b9312fb68943c703aa842ca6a758abfa45ac187a5e7c1452e96ef72b5` | MIT-CMU | artifact locked; customer/runtime shipment waits for renderer-worker SBOM/image admission |
 
 ## Commercial internal-service candidates

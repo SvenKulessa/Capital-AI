@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "CAPITAL_AI_SOCIAL_RENDER_TOKENS@1",
+  "authority": {
+    "logo": "public/branding/capital-ai-logo.jpg",
+    "logoSha256": "6244629091073823b4cff86908adb0403a217779219bfb44883bd956548243e3",
+    "evidence": [
+      "docs/branding/LOGO-20260930.md",
+      "docs/security/evidence/frontend-origin/DESIGN_AND_IMAGE_LICENSE.md",
+      "src/components/BrandLogo.tsx",
+      "src/index.css"
+    ]
+  },
+  "color": {
+    "background": {
+      "$value": "#02050E"
+    },
+    "foreground": {
+      "$value": "#F8FAFC"
+    },
+    "brand": {
+      "primary": {
+        "$value": "#F9BF21"
+      },
+      "cyan": {
+        "$value": "#22D3EE"
+      },
+      "accent": {
+        "$value": "#A855F7"
+      }
+    },
+    "print": {
+      "textPrimary": {
+        "$value": "#F8FAFC"
+      },
+      "textSecondary": {
+        "$value": "#94A3B8"
+      },
+      "surfaceLight": {
+        "$value": "#090E21"
+      },
+      "borderLight": {
+        "$value": "#25304A"
+      }
+    }
+  },
+  "publishReady": false
+}

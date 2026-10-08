@@ -93,11 +93,11 @@ export const SOCIAL_CONTENT_WORK_PACKAGES: WorkPackage[] = [
       "CAPITAL-AI-GROWTH/social-engine-completion-gate.json",
       "docs/licenses/SOCIAL-MEDIA-ENGINE-THIRD-PARTY-NOTICES.md"
     ],
-    "nextStep": "Qwen, Chatterbox und Whisper/Faster-Whisper sind aus der Social Media Engine entfernt. Als nächstes Social-Core, deterministischen Renderer und Publishing-Cutover ohne aktives TTS/ASR-Modell fortsetzen.",
+    "nextStep": "Social Core, MediaProjectV2, Editing, PlanningVisual und deterministischer Renderer sind in PR #302 materialisiert; CI terminal prüfen und danach Text/Approval/Publishing/Analytics-Cutover ohne aktives TTS/ASR-Modell fortsetzen.",
     "priority": "Kritisch",
     "leadName": "Owner + GROWTH/MARKET/PLATFORM/TRUST/PRODUCT",
     "targetSprint": "Sequenziell nach Lizenz-, Datenrechte- und Security-Gates",
-    "description": "Source-to-Target-Manifest und Renderer-/Lizenz-Evidence sind materialisiert; Qwen, Chatterbox und Whisper/Faster-Whisper sind aus der Social Media Engine entfernt. Punkt 4 bleibt AUDIO_MODELS_REMOVED_FAIL_CLOSED und Punkt 6 bewertet die noch nicht migrierte Social-Runtime als BLOCKED. Finance-Scoring/Weighting/Data bleibt bis zum Social-Cutover ausdrücklich gesperrt. Kommerzieller Kundenpfad und Owner-private Tool-Runtime bleiben strikt getrennt.",
+    "description": "Qwen, Chatterbox und Whisper/Faster-Whisper sind entfernt. PR #302 materialisiert 7/13 Social-Runtime-Artefakte sowie 2/2 Renderer-Quellen mit aktuellem CAPITAL-AI Branding; CI und Publishing-/Approval-Cutover bleiben offen. Punkt 4 bleibt fail-closed, Social Completion bleibt BLOCKED und Finance-Scoring/Weighting/Data bleibt bis zum Social-Cutover gesperrt.",
     "deliverables": [
       "SocialMediaEngine Contracts, Editing, deterministischen Media- und Publishing-Pfad zielkonform migrieren.",
       "Maschinenlesbare Tool-/Lizenz-Zulassung mit Commercial-, Owner-private-, Research- und BLOCKED-Modi durchsetzen.",
