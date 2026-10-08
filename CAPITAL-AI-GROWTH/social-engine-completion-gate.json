@@ -3,7 +3,7 @@
   "id": "CAPITAL-AI-SOCIAL-ENGINE-COMPLETION-20261006",
   "workPackage": "CAPITAL-AI-FINANCE-SOCIAL-MARKET-MIGRATION-01",
   "point": "06_SOCIAL_ENGINE_MIGRATION_COMPLETION_GATE",
-  "correlatedMain": "d8b5d471b34fcfaf061a7d8a8b62eac7406c8864",
+  "correlatedMain": "19673cf50bf6948ef563126f23bd1d64d9ae6398",
   "declaredState": "BLOCKED",
   "blockingFollowUp": "CAPITAL-AI-FINANCE-SCORING-DATA-FOLLOWUP-01",
   "policy": {
@@ -40,7 +40,11 @@
     "CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json",
     "docs/licenses/SOCIAL-MEDIA-ENGINE-THIRD-PARTY-NOTICES.md",
     "deploy/social-media/ffmpeg-build-profile.json",
-    "CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json"
+    "CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json",
+    "CAPITAL-AI-GROWTH/social-tts-dependency-lock-evidence-20261008.json",
+    "deploy/social-media/tts/qwen-runtime.lock.json",
+    "deploy/social-media/tts/chatterbox-runtime.lock.json",
+    "CAPITAL-AI-GROWTH/social-p1-runtime-port-provenance-20261008.json"
   ],
   "forbiddenFinanceScoringRuntimeBeforePass": [
     "src/platform/Scoring/ScoringModelRegistry.ts",
@@ -57,15 +61,16 @@
     "runtimeArtifactsRequired": 13,
     "rendererArtifactsPresent": 0,
     "rendererArtifactsRequired": 2,
-    "evidenceArtifactsPresent": 7,
-    "evidenceArtifactsRequired": 7,
+    "evidenceArtifactsPresent": 11,
+    "evidenceArtifactsRequired": 11,
     "result": "BLOCKED",
     "blockers": [
       "Point 4 remains fail-closed.",
-      "Renderer worker real-build evidence exists, but the previous worker is superseded pending xz-libs >= 5.8.3-r0 hardened rebuild evidence.",
-      "Qwen/Chatterbox transitive dependency locks and immutable TTS/ASR worker images remain open.",
-      "German runtime benchmark and Human/Owner listening acceptance remain open.",
-      "SocialMediaEngine runtime and deterministic renderer source have not yet completed target cutover.",
+      "Renderer xz CVE is closed; zlib CVE-2026-85091 rebuild evidence is pending in PR #246.",
+      "Qwen and Chatterbox dependency locks are complete and hash-bound; immutable worker image scans are pending in PR #246.",
+      "Whisper ASR worker image evidence is pending in PR #246.",
+      "German GPU runtime benchmark and Human/Owner listening acceptance remain open.",
+      "SocialMediaEngine runtime and deterministic renderer source cutover remain blocked until Point 4 passes.",
       "Finance scoring/data follow-up remains blocked until Social completion."
     ],
     "socialToolLicenseEvidenceStatus": "POINT_4_ARTIFACT_LOCK_ADVANCED_FAIL_CLOSED",
