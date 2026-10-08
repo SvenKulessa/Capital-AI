@@ -130,7 +130,7 @@ export default defineConfig(() => {
       rolldownOptions: {
         output: {
           codeSplitting: {
-            groups: [{ name: 'i18n-landing-copy', test: /[/\\]src[/\\]i18n[/\\]landingSectionCopy\\.ts$/ }],
+            groups: [{ name: 'i18n-landing-copy', test: /[/\\]src[/\\]i18n[/\\]landingSectionCopy\.ts$/ }],
           },
         },
       },
