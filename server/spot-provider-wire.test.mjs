@@ -335,7 +335,10 @@ test('Vault-authorized private WS roundtrip requires own user key before opening
     throw Error('unexpected upstream');
   };
   try{
-    const vault=createUserProviderVault({env,auth,fetchImpl});
+    const vault=createUserProviderVault({
+      env:{SUPABASE_URL:'https://project.supabase.co',SUPABASE_SECRET_KEY:'sb_secret_test_0123456789012345678901234567890123456789',AUTH_COOKIE_SIGNING_SECRET:'test-cookie-signing-secret-0123456789abcdef'},
+      auth:{verify:async()=>({userId}),sameOrigin:()=>true},fetchImpl,
+    });
     const row=await vault.executePrivateQuery(userId,'kraken','market.spot_ws_snapshot',{symbol:'BTCUSD'});
     assert.equal(row.dataScope,'USER_PRIVATE_MARKET_DATA');
     assert.equal(row.mode,'websocket');
