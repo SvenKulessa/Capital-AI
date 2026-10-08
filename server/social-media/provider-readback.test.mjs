@@ -25,7 +25,7 @@ test('YouTube only marks publicly processed exact-ID video as complete', () => {
     { privacyStatus: 'public', uploadStatus: 'uploaded' },
   ]) {
     assert.equal(normalizeYoutubeReadback({ ...args,
-      payload: { items: [{ id: 'video123', status }] } }).status, 'UNKNOWN');
+      payload: { items: [{ id: 'video123', snippet: { channelId: accountChannelId }, status }] } }).status, 'UNKNOWN');
   }
   assert.equal(normalizeYoutubeReadback({ ...args,
     payload: { items: [{ id: 'other', snippet: { channelId: accountChannelId }, status: {
