@@ -1,7 +1,6 @@
 import {
   GrowthAttributionEventSchema,
-  type GrowthAttributionEvent,
-  type GrowthAttributionMetric,
+  type GrowthAttributionEvent
 } from './growthAttribution.ts';
 import {
   ContentSocialPackageManifestSchema,
@@ -15,7 +14,7 @@ export function buildSocialDeliveryAttribution(input: {
   providerDeliveryId: string;
   occurredAt: string;
   evidenceRef: string;
-  metrics: readonly GrowthAttributionMetric[];
+  metrics: GrowthAttributionEvent['metrics'];
 }): GrowthAttributionEvent {
   const manifest = ContentSocialPackageManifestSchema.parse(input.manifest);
   const channel = SocialPublisherChannelSchema.parse(input.channel);
