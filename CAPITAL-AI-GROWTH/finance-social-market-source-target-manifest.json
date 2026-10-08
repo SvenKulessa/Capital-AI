@@ -138,11 +138,13 @@
     {
       "id": "TA-USER-VAULT",
       "path": "server/user-provider-vault.mjs",
-      "blobSha": "9358a562beeaa58e108c2b109084a4d97fc73009",
+      "blobSha": "02a10f24555f74fbf6a55e8377e0d9e23b719a19",
       "role": "Current server-side user provider secret boundary",
       "recorrelatedAt": "2026-10-06",
       "recorrelationReason": "PR #212 read-only Kraken/Binance Provider-Vault-Härtung; Finance-Cutover bleibt BLOCKED",
-      "recorrelationBaseMain": "824d42913bbeccb68366c2ae70714ccb960717e5"
+      "recorrelationBaseMain": "824d42913bbeccb68366c2ae70714ccb960717e5",
+      "correlatedAt": "2026-10-08",
+      "correlationReason": "Private Massive/Polygon 50-asset REST batches; user-bound Vault access and connection-scoped encrypted Valkey cache; account and trading contracts retained."
     },
     {
       "id": "TA-BYOK-BOUNDARY",

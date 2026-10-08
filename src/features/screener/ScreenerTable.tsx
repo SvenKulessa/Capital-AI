@@ -24,6 +24,7 @@ import {
 import { FinalRankResult, AssetIdentity } from '../../contracts/canonicalContracts';
 import { ScoreExplainabilityDrawer } from './ScoreExplainabilityDrawer';
 import { useMarketAssets } from '../../services/marketDataStore';
+import { PrivateMarketBatchQuotes } from './PrivateMarketBatchQuotes';
 import { PrivateByokSpotQuotes } from './PrivateByokSpotQuotes';
 
 export interface ScreenerRowItem {
@@ -117,6 +118,7 @@ export const ScreenerTable: React.FC = () => {
         )}
       </section>
       <PrivateByokSpotQuotes />
+      <PrivateMarketBatchQuotes />
       {/* Filters Bar */}
       <div className="p-4 rounded-2xl bg-[#090e21] border border-slate-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
         <div className="flex items-center gap-2 flex-1">

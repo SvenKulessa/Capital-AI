@@ -295,3 +295,17 @@ test('two signed users keep REST and WS query claims and results isolated', asyn
   }
   assert.deepEqual(claims, [...users, ...users]);
 });
+
+test('five private class batches use the existing signed broker contract without browser symbol/credential injection', () => {
+  for (const [provider, category] of [['kraken', 'KRYPTO'], ['massive', 'AKTIEN'],
+    ['massive', 'INDIZIES'], ['massive', 'FOREX'], ['massive', 'ROHSTOFFE']]) {
+    assert.deepEqual(validateProviderQueryRequest({ provider, operation: 'market.asset_class_snapshot',
+      params: { category } }), { provider, operation: 'market.asset_class_snapshot', params: { category } });
+  }
+  for (const params of [{ category: 'AKTIEN', apiKey: 'forbidden' }, { category: 'AKTIEN', symbols: 'evil' },
+    { category: 'UNLISTED' }, {}]) {
+    assert.throws(() => validateProviderQueryRequest({ provider: 'massive', operation: 'market.asset_class_snapshot', params }));
+  }
+  assert.throws(() => validateProviderQueryRequest({ provider: 'kraken', operation: 'market.asset_class_snapshot',
+    params: { category: 'AKTIEN' } }), /INVALID_PARAM_VALUE/);
+});

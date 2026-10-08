@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { assetCatalog, assetValues, quote, health, startStreams } from './market.mjs';
 import { createAuth } from './auth.mjs';
 import { createSocialOAuthCallback } from './social-media/oauth-callback.mjs';
+import { createPrivateMarketCache } from './private-market-cache.mjs';
 import { createUserProviderVault } from './user-provider-vault.mjs';
 import { createPrivateProviderQuery } from './private-provider-query.mjs';
 import { createUniswapTrading } from './uniswap-trading.mjs';
@@ -201,7 +202,10 @@ export function createApp(root = defaultRoot, options = {}) {
     store: options.socialOAuthStore || null,
     exchangeCode: options.socialOAuthCodeExchange || null,
   });
-  const userProviderVault = createUserProviderVault({ ...options, auth });
+  const privateMarketCache = options.privateMarketCache || createPrivateMarketCache({
+    env: options.env || process.env, getRedis: () => infrastructure.requireProviderState(),
+  });
+  const userProviderVault = createUserProviderVault({ ...options, auth, privateMarketCache });
   const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault });
   if (
     (options.env || process.env).PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true' ||
