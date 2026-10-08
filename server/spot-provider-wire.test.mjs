@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   spotWireRequest,parseSpotWireFrame,ingestSpotWireFrame,spotWireInventory,
+  fetchAdmittedSpotRest,startAdmittedSpotWebSocket,
 } from './spot-provider-wire.mjs';
 
 const now=Date.now();
@@ -88,4 +89,23 @@ test('unlicensed REST/WS ingestion cannot parse frames or write to NATS/Valkey',
     }
   }
   assert.equal(touched,0);
+});
+
+test('network REST and websocket connectors refuse unlicensed providers before ANY I/O',async()=>{
+  let networkCalls=0;
+  class FakeSocket {constructor(){networkCalls++;throw Error('forbidden websocket');}}
+  const fetchImpl=()=>{networkCalls++;throw Error('forbidden HTTP');};
+  const store={status(){networkCalls++;throw Error('forbidden broker read');}};
+  for(const provider of ['kraken','binance']){
+    const symbol=provider==='kraken'?'BTCUSD':'BTCUSDT';
+    assert.deepEqual(await fetchAdmittedSpotRest({provider,symbol,env:enabled,store,fetchImpl}),
+      {status:'BLOCKED',reason:'REALTIME_MARKET_DATA_RIGHTS_NOT_ADMITTED'});
+    assert.deepEqual(startAdmittedSpotWebSocket({provider,symbol,env:enabled,store,SocketClass:FakeSocket}),
+      {status:'BLOCKED',reason:'REALTIME_MARKET_DATA_RIGHTS_NOT_ADMITTED'});
+  }
+  assert.equal(networkCalls,0);
+});
+test('Kraken REST replies for an unrelated trade pair cannot be relabeled as BTCUSD',()=>{
+  assert.throws(()=>parseSpotWireFrame({provider:'kraken',symbol:'BTCUSD',transport:'rest',
+    payload:{error:[],result:{ETHUSD:[['2000','0.1',now/1000]]}}}),/KRAKEN_TRADES_INVALID/);
 });
