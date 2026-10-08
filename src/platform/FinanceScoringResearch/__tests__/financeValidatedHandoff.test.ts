@@ -126,3 +126,21 @@ test('PIT admission rejects lookahead, latest-history leakage and missing provid
   const notScoped = inspectFinancePointInTimeVintage({...pit,providerDataset:'unknown'});
   assert.ok(notScoped.reasons.includes('FINANCE_PIT_PROVIDER_FEED_OUT_OF_SCOPE'));
 });
+
+test('PIT invalid untrusted vintage payloads are blocked instead of throwing', () => {
+  const candidates = [
+    { ...pit, vintage: { ...vintage, assetId: 42 } },
+    { ...pit, vintage: { ...vintage, availableAt: null } },
+    { ...pit, vintage: { ...vintage, sourcePath: {} } },
+    { ...pit, vintage: { ...vintage, unsupportedField: 'bypass' } },
+  ];
+  for (const candidate of candidates) {
+    assert.doesNotThrow(() => inspectFinancePointInTimeVintage(candidate as never));
+    const result = inspectFinancePointInTimeVintage(candidate as never);
+    assert.equal(result.state, 'BLOCKED');
+    assert.ok(result.reasons.includes('FINANCE_PIT_INPUT_INVALID'));
+    assert.equal(result.vintage, null);
+    assert.equal(result.productionEligible, false);
+    assert.equal(result.scoreEligible, false);
+  }
+});

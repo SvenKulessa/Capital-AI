@@ -12,7 +12,7 @@ import {
   MarketDataRightsEvidenceSchema, evaluateMarketDataRights,
 } from '../../contracts/marketDataRightsEligibility.ts';
 import {
-  buildCommodityHistoricalVintage, type CommodityHistoricalVintageInput,
+  buildCommodityHistoricalVintage,
   type CommodityHistoricalVintageArtifact,
 } from './CommodityHistoricalVintage.ts';
 import { FINANCE_PINNED_SOURCE_SHA } from '../../contracts/financeResearchFeatureBridge.ts';
@@ -28,8 +28,35 @@ const inputSchema = z.strictObject({
   venue: nonblank,
   evaluatedAt: iso,
   decisionAt: iso,
-  vintage: z.custom<CommodityHistoricalVintageInput>(
-    (v) => !!v && typeof v === 'object' && !Array.isArray(v)),
+  vintage: z.strictObject({
+    providerId: z.enum([
+      'eia', 'usda-fas-psd', 'cftc-cot', 'usgs-mcs', 'eu-crma',
+      'commodity-market-evidence', 'governed-futures-curve-evidence',
+      'governed-official-supply-evidence',
+    ]),
+    assetId: nonblank,
+    symbol: nonblank,
+    domain: z.enum(['energy','industrial-metals','precious-metals','agriculture']),
+    featureKey: nonblank,
+    value: z.number().finite(),
+    unit: nonblank,
+    source: nonblank,
+    sourceVersion: nonblank,
+    sourcePath: nonblank,
+    observedAt: iso,
+    availableAt: iso,
+    retrievedAt: iso,
+    evidenceId: nonblank,
+    releaseId: nonblank.nullable().optional(),
+    revisionId: nonblank.nullable().optional(),
+    availabilityEvidenceId: nonblank.nullable().optional(),
+    acquisitionMode: z.enum([
+      'LIVE_API_CURRENT_HISTORY', 'ARCHIVED_RELEASE_CAPTURE',
+      'VERSIONED_ANNUAL_RELEASE', 'REGULATORY_ASSESSMENT_RELEASE',
+      'GOVERNED_MARKET_CAPTURE',
+    ]),
+    periodLabel: nonblank.nullable().optional(),
+  }),
   rights: MarketDataRightsEvidenceSchema,
 });
 export type FinancePitAdmissionInput = z.infer<typeof inputSchema>;
