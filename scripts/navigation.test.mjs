@@ -6,7 +6,9 @@ import { APP_NAVIGATION_EVENT, navigateAppLocation, readHubTab, resolveNavigatio
 test('all current sideboard tab links retain their hub and tab', () => {
   const sidebar = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
   const links = [...sidebar.matchAll(/path: '([^']+\?tab=[^']+)'/g)].map(match => match[1]);
-  assert.equal(links.length, 24);
+  assert.equal(links.length, 25);
+  assert.ok(links.includes('/control-center?tab=news'));
+  assert.ok(links.includes('/control-center?tab=research'));
   assert.ok(links.includes('/studio?tab=console'));
   assert.ok(links.includes('/learning?tab=flashcards'));
   assert.ok(links.includes('/learning?tab=videos'));
