@@ -1,0 +1,141 @@
+{
+  "schema_version": "1.0.0",
+  "manifest_id": "capital-ai-social-p1-tts-benchmark-2026-09-11",
+  "project": "CAPITAL-AI-SOCIAL",
+  "roadmap_item": "SOCIAL-P1",
+  "created_at": "2026-09-11T00:00:00.000Z",
+  "text_rights": {
+    "origin": "CAPITAL-AI repository-authored benchmark fixtures",
+    "usage": "repository test/benchmark fixture",
+    "external_redistribution_license": "not_asserted",
+    "third_party_text_included": false
+  },
+  "voice_reference_policy": {
+    "bundled_reference_audio": false,
+    "real_person_cloning_authorized": false,
+    "require_license_reference": true,
+    "require_consent_reference": true,
+    "require_audio_sha256": true
+  },
+  "samples": [
+    {
+      "sample_id": "de-finance-numbers-v1",
+      "language": "de-DE",
+      "role": "marketing_host",
+      "text": "Aussprachetest: 12,5 Prozent und 1.234,56 Euro sind hier reine Testwerte, keine Marktdaten. Sprich BTC, ETH und CAPITAL-AI klar aus; dies ist keine Anlageberatung.",
+      "required_terms": [
+        "12,5 Prozent",
+        "1.234,56 Euro",
+        "BTC",
+        "ETH",
+        "CAPITAL-AI"
+      ],
+      "text_sha256": "64500a9a4e80fb5e078984e527351f93c2d193806cf1579bb159a75c13eb5b14"
+    },
+    {
+      "sample_id": "en-it-architecture-v1",
+      "language": "en-US",
+      "role": "it_architect",
+      "text": "Pronunciation test: say OAuth 2.0, AES-256-GCM, PostgreSQL, TypeScript, SHA-256, and API gateway clearly. These are technical terms, not credentials.",
+      "required_terms": [
+        "OAuth 2.0",
+        "AES-256-GCM",
+        "PostgreSQL",
+        "TypeScript",
+        "SHA-256",
+        "API gateway"
+      ],
+      "text_sha256": "e51a6c64395919b6174479bdcde4b0077a4d13f9a53232042b3d495695c28223"
+    },
+    {
+      "sample_id": "de-dialogue-host-v1",
+      "language": "de-DE",
+      "role": "marketing_host",
+      "text": "Willkommen zum CAPITAL-AI Technikdialog. Heute sprechen wir über nachvollziehbare Evidenz, klare Risiken und reproduzierbare Prozesse.",
+      "required_terms": [
+        "CAPITAL-AI",
+        "Evidenz",
+        "Risiken",
+        "reproduzierbare Prozesse"
+      ],
+      "text_sha256": "be408c85160b5914bbcfaa059fd2d4170c61ee66d8b185627c7e7f214382d05f"
+    },
+    {
+      "sample_id": "en-dialogue-cohost-v1",
+      "language": "en-GB",
+      "role": "it_architect",
+      "text": "I will add the architecture view: deterministic inputs, immutable hashes, explicit approval boundaries, and no hidden publishing authority.",
+      "required_terms": [
+        "deterministic inputs",
+        "immutable hashes",
+        "approval boundaries",
+        "publishing authority"
+      ],
+      "text_sha256": "9a05e074b073b52b02cbec579e818938448cec36b5fffe48d3469a41b141c83d"
+    }
+  ],
+  "persona_intents": [
+    {
+      "voice_profile_id": "vp_marketing_designed_v1",
+      "role": "marketing_host",
+      "mode": "designed",
+      "languages": [
+        "de-DE",
+        "en-US"
+      ],
+      "style_intent": "creative, brisk and friendly; synthetic persona; do not imitate a real person"
+    },
+    {
+      "voice_profile_id": "vp_architect_designed_v1",
+      "role": "it_architect",
+      "mode": "designed",
+      "languages": [
+        "de-DE",
+        "en-US",
+        "en-GB"
+      ],
+      "style_intent": "calm, realistic and precise; synthetic persona; do not imitate a real person"
+    }
+  ],
+  "candidate_sources": [
+    {
+      "candidate_id": "qwen3-tts",
+      "source": "https://github.com/QwenLM/Qwen3-TTS",
+      "license_surface": "Apache-2.0",
+      "artifact_license_recheck_required": true
+    },
+    {
+      "candidate_id": "chatterbox-multilingual-v3",
+      "source": "https://github.com/resemble-ai/chatterbox",
+      "license_surface": "MIT repository surface",
+      "artifact_license_recheck_required": true
+    },
+    {
+      "candidate_id": "fun-cosyvoice3-0.5b-2512",
+      "source": "https://huggingface.co/FunAudioLLM/Fun-CosyVoice3-0.5B-2512",
+      "license_surface": "Apache-2.0",
+      "artifact_license_recheck_required": true
+    },
+    {
+      "candidate_id": "kokoro-82m",
+      "source": "https://huggingface.co/hexgrad/Kokoro-82M",
+      "license_surface": "Apache-2.0",
+      "artifact_license_recheck_required": true
+    },
+    {
+      "candidate_id": "f5-tts",
+      "source": "https://github.com/SWivid/F5-TTS",
+      "license_surface": "MIT code / CC-BY-NC pretrained weights",
+      "artifact_license_recheck_required": true
+    },
+    {
+      "candidate_id": "eleven-v3",
+      "source": "https://elevenlabs.io/v3",
+      "license_surface": "commercial provider terms",
+      "artifact_license_recheck_required": true
+    }
+  ],
+  "generated_audio": [],
+  "generated_audio_status": "NOT_RUN",
+  "runtime_boundary": "Protected model/provider runtime provisioning is not owned by CAPITAL-AI-SOCIAL."
+}
