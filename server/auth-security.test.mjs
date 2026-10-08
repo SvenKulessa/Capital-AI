@@ -78,7 +78,7 @@ function securityHarness({ factor = true, factorStatus = 'verified', factors, pa
         data: {
           id: challengeId,
           friendly_name: options.body?.friendly_name || 'CAPITAL-AI Authenticator',
-          totp: enrollmentTotp || { qr_code: '<svg></svg>', secret: 'TESTSECRET0123456', uri: 'otpauth://totp/test' },
+          totp: enrollmentTotp || { qr_code: '<svg></svg>', secret: 'JBSWY3DPEHPK3PXP', uri: 'otpauth://totp/test?secret=JBSWY3DPEHPK3PXP' },
         },
       };
     }
@@ -234,7 +234,7 @@ test('TOTP reenrollment removes a stale pending factor before creating replaceme
       ['/factors', 'POST'],
     ],
   );
-  assert.equal(res.payload.secret, 'TESTSECRET0123456');
+  assert.equal(res.payload.secret, 'JBSWY3DPEHPK3PXP');
   const enrollCall = h.calls.find(call => call.path === '/factors' && call.options.method === 'POST');
   assert.equal(enrollCall.options.maxResponseBytes, 262_144);
   assert.equal(enrollCall.options.body.issuer, 'CAPITAL-AI');

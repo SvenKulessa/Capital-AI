@@ -640,7 +640,13 @@ test('Google login preserves only the allowlisted CADS Marketplace setup return 
     assert.equal(safeResponse.headers.get('location'), safeNext);
 
     const unsafe = await h.beginGoogle('/api/auth/login/google?next=' + encodeURIComponent('https://evil.example/steal'));
-    assert.equal(unsafe.callback.searchParams.get('next'), '/');
+    assert.equal(unsafe.callback.search, '');
+    const unsafeResponse = await h.request(
+      callbackRequestPath(unsafe.callback),
+      { headers: { cookie: unsafe.pkceCookie } },
+    );
+    assert.equal(unsafeResponse.status, 303);
+    assert.equal(unsafeResponse.headers.get('location'), '/');
   } finally {
     await h.stop();
   }
