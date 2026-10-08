@@ -129,7 +129,7 @@ const staticEntries = [
     structuredDataType: 'WebPage',
     socialEligible: false,
     aiSearchEligible: true,
-    sourceRefs: ['shared/license-metadata.mjs', 'src/components/ResearchLicensePages.tsx'],
+    sourceRefs: ['shared/license-metadata.mjs', 'src/components/LicenseInformationPages.tsx'],
   }),
   contentEntry({
     path: '/datenprovider-lizenzen',
