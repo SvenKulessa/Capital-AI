@@ -125,3 +125,25 @@ test('missing references and denied Capital-AI provider rights fail closed',()=>
   assert.equal(noRights.state,'BLOCKED');
   assert.ok(noRights.reasons.includes('FINANCE_HISTORICAL_TARGET_RESEARCH_NOT_ADMITTED'));
 });
+
+
+test('CFTC 2025-09-30 report is not point-in-time available for 2025-10-03 decision',()=>{
+  // Public CFTC historical release bulletin says the report originally scheduled
+  // for 2025-10-03 was actually released 2025-11-19 due to publication suspension.
+  // Source: https://www.cftc.gov/MarketReports/CommitmentsofTraders/HistoricalSpecialAnnouncements/index.htm
+  // These are synthetic test bytes with official release-date metadata ONLY.
+  // 00:00Z below denotes the documented release CALENDAR DAY, not a proved hour.
+  const original=sample();
+  const candidate=inspectFinanceHistoricalParityCandidate({
+    ...original,reference:{...original.reference,
+      observedAt:'2025-09-30T00:00:00.000Z',
+      availableAt:'2025-11-19T00:00:00.000Z',
+      capturedAt:'2025-11-19T00:00:00.000Z',
+      decisionAt:'2025-10-03T23:59:59.000Z',
+    },
+  });
+  assert.equal(candidate.state,'BLOCKED');
+  assert.ok(candidate.reasons.includes('FINANCE_HISTORICAL_VINTAGE_ORDER_UNPROVEN'));
+  assert.equal(candidate.empiricalHistoricalParityProven,false);
+  assert.equal(candidate.productionEligible,false);
+});
