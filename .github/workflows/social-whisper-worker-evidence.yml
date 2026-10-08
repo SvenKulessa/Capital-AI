@@ -1,0 +1,169 @@
+name: Social Whisper ASR Worker Evidence
+
+on:
+  pull_request:
+    paths:
+      - "deploy/social-media/asr/**"
+      - "deploy/social-media/Dockerfile.asr-runtime"
+      - ".github/workflows/social-whisper-worker-evidence.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: social-whisper-worker-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Whisper ASR Worker
+    runs-on: ubuntu-26.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Security Tools und Evidence-Verzeichnis
+        run: |
+          set -euo pipefail
+          docker build --file Dockerfile.security --tag capital-ai-security .
+          mkdir -p "$RUNNER_TEMP/trivy-cache" asr-worker-evidence deploy/social-media/asr
+          chmod a+rwx "$RUNNER_TEMP/trivy-cache" asr-worker-evidence
+
+      - name: Python Base binden
+        id: base
+        run: |
+          set -euo pipefail
+          ref="$(jq -r '.pythonBaseRef' deploy/social-media/tts/qwen-runtime.lock.json)"
+          [[ "$ref" =~ ^python@sha256:[0-9a-f]{64}$ ]]
+          docker pull "$ref"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+
+      - name: Whisper Dependency-Lock erzeugen
+        env:
+          PYTHON_BASE: ${{ steps.base.outputs.ref }}
+        run: |
+          set -euo pipefail
+          docker run --rm -v "$PWD:/work" -w /work "$PYTHON_BASE" sh -euc '
+            python -m pip install --disable-pip-version-check --dry-run --ignore-installed \
+              --report /work/asr-worker-evidence/pip-report.json \
+              openai-whisper==20250625 \
+              torch==2.6.0 \
+              torchaudio==2.6.0 \
+              soundfile==0.13.1
+          '
+          python3 - <<'PY'
+          import json, pathlib
+          report=json.loads(pathlib.Path('asr-worker-evidence/pip-report.json').read_text())
+          packages=[]
+          req=[]
+          for item in report.get('install',[]):
+              m=item.get('metadata',{})
+              info=item.get('download_info',{})
+              sha=info.get('archive_info',{}).get('hashes',{}).get('sha256')
+              if not sha:
+                  raise SystemExit(f"missing SHA-256 for {m.get('name')} {m.get('version')}")
+              packages.append({'name':m.get('name'),'version':m.get('version'),'sha256':sha})
+              req.append(f"{m.get('name')}=={m.get('version')} --hash=sha256:{sha}")
+          whisper=next(x for x in packages if x['name'].lower().replace('_','-')=='openai-whisper')
+          if whisper['version']!='20250625' or whisper['sha256']!='37a91a3921809d9f44748ffc73c0a55c9f366c85a3ef5c2ae0cc09540432eb96':
+              raise SystemExit('Whisper package identity drift')
+          pathlib.Path('deploy/social-media/asr/whisper-runtime.generated.txt').write_text('\n'.join(req)+'\n')
+          pathlib.Path('asr-worker-evidence/dependency-lock.json').write_text(json.dumps({
+              'schemaVersion':'SOCIAL_ASR_DEPENDENCY_LOCK@1',
+              'sourceSha':'${{ github.sha }}',
+              'packageCount':len(packages),
+              'packages':packages
+          },indent=2)+'\n')
+          PY
+
+      - name: Hash-locked ASR Worker bauen
+        env:
+          PYTHON_BASE: ${{ steps.base.outputs.ref }}
+        run: |
+          set -euo pipefail
+          docker build \
+            --file deploy/social-media/Dockerfile.asr-runtime \
+            --build-arg "PYTHON_BASE=$PYTHON_BASE" \
+            --tag "capital-ai-social-asr:$GITHUB_SHA" \
+            .
+
+      - name: Runtime und FFmpeg Lizenzprofil prüfen
+        run: |
+          set -euo pipefail
+          image="capital-ai-social-asr:$GITHUB_SHA"
+          docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --entrypoint sh "$image" -euc '
+              test "$(id -u)" = "10001"
+              python -c "import whisper, torch; print(torch.__version__)"
+              ffmpeg -hide_banner -version >/dev/null
+              ffprobe -hide_banner -version >/dev/null
+            '
+          docker run --rm --entrypoint ffmpeg "$image" -hide_banner -buildconf > asr-worker-evidence/ffmpeg-buildconf.txt
+          ! grep -E -- '--enable-(gpl|nonfree|version3)([ =]|$)' asr-worker-evidence/ffmpeg-buildconf.txt
+
+      - name: Image Identity, Scan, SBOM und Lizenzinventar
+        run: |
+          set -euo pipefail
+          image="capital-ai-social-asr:$GITHUB_SHA"
+          docker image inspect --format '{{.Id}}' "$image" | tee asr-worker-evidence/local-image-id.txt
+          docker save "$image" -o asr-worker-evidence/image.tar
+          sha256sum asr-worker-evidence/image.tar | tee asr-worker-evidence/image-archive.sha256
+          chmod a+r asr-worker-evidence/image.tar
+
+          docker run --rm \
+            -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" \
+            -v "$PWD/asr-worker-evidence:/reports" \
+            capital-ai-security image --input /reports/image.tar --ignorefile /dev/null \
+            --scanners vuln,secret --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL \
+            --format json --output /reports/trivy.json --exit-code 0
+          node scripts/summarize-trivy.mjs asr-worker-evidence/trivy.json > asr-worker-evidence/trivy.summary.json
+          node scripts/summarize-trivy.mjs asr-worker-evidence/trivy.json --gate
+
+          docker run --rm \
+            -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" \
+            -v "$PWD/asr-worker-evidence:/reports" \
+            capital-ai-security image --input /reports/image.tar --ignorefile /dev/null \
+            --scanners vuln --format cyclonedx --output /reports/worker.sbom.cdx.json
+
+          docker run --rm \
+            -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" \
+            -v "$PWD/asr-worker-evidence:/reports" \
+            capital-ai-security image --input /reports/image.tar --ignorefile /dev/null \
+            --scanners license --license-full --format json \
+            --output /reports/worker.licenses.json --exit-code 0
+
+          jq -n \
+            --arg schemaVersion "SOCIAL_ASR_WORKER_EVIDENCE@1" \
+            --arg sourceSha "$GITHUB_SHA" \
+            --arg baseImageRef "${{ steps.base.outputs.ref }}" \
+            --arg imageId "$(cat asr-worker-evidence/local-image-id.txt)" \
+            --arg archiveSha256 "$(cut -d ' ' -f1 asr-worker-evidence/image-archive.sha256)" \
+            '{
+              schemaVersion:$schemaVersion,
+              sourceSha:$sourceSha,
+              baseImageRef:$baseImageRef,
+              localImageId:$imageId,
+              imageArchiveSha256:$archiveSha256,
+              whisperPackage:"20250625",
+              whisperSmallSha256:"9ecf779972d90ba49c06d968637d720dd632c55bbf19d441fb42bf17a411e794",
+              whisperLargeV3Sha256:"e5b1a55b89c1367dacf97e3e19bfd829a01529dbfdeefa8caeb59b3f1b81dadb",
+              modelsEmbedded:false,
+              ffmpegLicenseProfile:"LGPL-2.1-or-later",
+              uid:10001,
+              productionEligible:false,
+              productionBlocker:"ASR model artifacts remain external and runtime benchmark is pending."
+            }' > asr-worker-evidence/evidence.json
+          rm asr-worker-evidence/image.tar
+
+      - name: Evidence sichern
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: social-whisper-worker-${{ github.sha }}
+          path: asr-worker-evidence/
+          if-no-files-found: error
+          retention-days: 7
