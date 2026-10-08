@@ -35,6 +35,12 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends build-essential ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
+RUN printf '%s\n' \
+      'setuptools==84.0.0 --hash=sha256:51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670' \
+      'wheel==0.48.0 --hash=sha256:3217dcc807155e45db462d7ef2431f5ddda0d7273b700d05a67b271ceb1287ab' \
+      > /tmp/build-tools.txt \
+    && python -m pip install --disable-pip-version-check --no-cache-dir --only-binary=:all: --require-hashes --requirement /tmp/build-tools.txt
+
 COPY deploy/social-media/asr/whisper-runtime.generated.txt /tmp/whisper-runtime.txt
 RUN python -m pip install \
       --disable-pip-version-check \
