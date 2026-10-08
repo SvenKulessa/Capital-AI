@@ -34,7 +34,12 @@ jobs:
             echo 'No frontend files changed; leaving labels unchanged.'
             exit 0
           fi
-          if ! gh api "repos/${GH_REPOSITORY}/labels/Frontend" --silent 2>/dev/null; then
+          if gh api "repos/${GH_REPOSITORY}/labels/Frontend" --silent 2>/dev/null; then
+            # Existing label may have GitHub's neutral gray default; enforce chosen turquoise.
+            gh api -X PATCH "repos/${GH_REPOSITORY}/labels/Frontend" \
+              -f color=29C6D3 \
+              -f description='UI, Navigation und Frontend - automatisch anhand des PR-Diffs' >/dev/null
+          else
             gh api -X POST "repos/${GH_REPOSITORY}/labels" \
               -f name=Frontend \
               -f color=29C6D3 \
