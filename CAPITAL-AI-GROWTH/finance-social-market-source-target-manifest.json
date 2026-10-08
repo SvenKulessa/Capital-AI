@@ -138,7 +138,7 @@
     {
       "id": "TA-USER-VAULT",
       "path": "server/user-provider-vault.mjs",
-      "blobSha": "fac8c4a065b1ce6ddc275e45f64c803ce50505cc",
+      "blobSha": "9358a562beeaa58e108c2b109084a4d97fc73009",
       "role": "Current server-side user provider secret boundary",
       "recorrelatedAt": "2026-10-06",
       "recorrelationReason": "PR #212 read-only Kraken/Binance Provider-Vault-Härtung; Finance-Cutover bleibt BLOCKED",
