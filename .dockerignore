@@ -20,6 +20,8 @@
 !server/ecb-reference-rates.LICENSE.txt
 !server/open-source-market-policy.mjs
 !server/advisor.ts
+!server/heygen-owner.mjs
+!server/heygen-owner.test.mjs
 !server/growth-ai-gateway.ts
 !server/growth-ai-gateway.test.ts
 !server/prompt-injection-guard.mjs
