@@ -192,7 +192,7 @@ test('merge milestone PR creation requires dedicated repo-scoped GitHub App', ()
 test('manual milestone App validation mints a scoped token but never writes to GitHub', () => {
   const workflow = readFileSync(new URL('../.github/workflows/merge-milestones.yml', import.meta.url), 'utf8');
   assert.match(workflow, /  workflow_dispatch:/);
-  assert.match(workflow, /validate_app:\n    if: github.event_name == 'workflow_dispatch'/);
+  assert.match(workflow, /validate_app:\n    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs\/heads\/main'/);
   assert.match(workflow, /audit:\n    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true/);
   const [validateSection] = workflow.split(/\n  audit:\n/);
   assert.match(validateSection, /uses: actions\/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1/);
