@@ -30,7 +30,7 @@ export function sanitizedTitle(value) {
 
 export function sourcePath(ref) {
   return typeof ref === 'string' && ref.length < 250 &&
-    !ref.includes('..') && /^[a-zA-Z0-9_./@ +()-]+$/.test(ref) ? ref : null;
+    !ref.includes('..') && !path.isAbsolute(ref) && /^[a-zA-Z0-9_./@ +()-]+$/.test(ref) ? ref : null;
 }
 
 async function githubJson(route) {
