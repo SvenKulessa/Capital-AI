@@ -111,6 +111,16 @@ Die fünf Domain-Perspektiven erhalten **zwei funktionale Skills pro Domain**: `
 4. **Governance:** Skills und Chat-Profile sind **nicht autorisierende Arbeitsanleitungen** unter dieser `AGENTS.md`. Sie erzeugen keine neuen Pflichtchecks, Admissions, Reviews, Handovers, Write-Permissions oder Production-Freigaben. Für Branch/PR gilt allein die Primary Domain; Merge-Regel und reale technische Trust Boundaries bleiben unverändert.
 5. **Validierung:** `npm run test:domain-skills` kontrolliert Skill-Dateien, Registry und Chat-Profil-Verweise. Ein bestandener Strukturtest belegt keine Live-Skill-Ausführung in externen ChatGPT-Sitzungen.
 
+## ChatGPT-Plugin-Discovery und Tool-Nutzung
+
+Für **PRODUCT, MARKET, PLATFORM, TRUST und GROWTH** gilt bei konkreten Chat-Aufträgen folgende **bedarfsbezogene** Vorgehensweise, soweit die jeweilige ChatGPT-/Agent-Laufzeit Plugin-, Connector- oder Tool-Funktionen tatsächlich bereitstellt:
+
+1. **Vorhandenes zuerst:** Prüfen, ob ein für die konkrete Aufgabe geeigneter nativer Dienst oder bereits installiertes und verbundenes ChatGPT-Plugin verfügbar ist. Geeignete verbundene Tools innerhalb ihrer tatsächlichen Berechtigungen und des erteilten Auftrags direkt nutzen; ihre Existenz, Installation und Ergebnisse niemals nur aus Repository-Dateien ableiten.
+2. **Discovery bei Bedarf:** Fehlt eine geeignete verfügbare Integration und ist ein externer Dienst für die Aufgabe ein substanzieller Mehrwert, über die tatsächlich angebotene Plugin-Suche nach passenden Optionen suchen und dem Nutzer die sinnvollen Integrationen zur **freiwilligen** Installation/Verbindung vorschlagen. Keine pauschale Katalogsuche bei jeder Nachricht und keine wiederholten irrelevanten Vorschläge.
+3. **Transparente Empfehlung:** Zweck und Grenzen des Plugins, erforderliche OAuth-/Daten-/Schreibrechte, relevante Datenschutz-/Security-/Lizenzrisiken sowie mögliche Tarif-, Free-Tier-, API- und Nutzungskosten benennen. Ungeprüfte Preise, Berechtigungen oder Verfügbarkeit als **`NOT_PROVEN`** kennzeichnen und gegebenenfalls eine native oder Open-Source-Alternative nennen.
+4. **Autorisierung und Least Privilege:** Weder Plugin-Installation, Kontoverbindung, OAuth-Zustimmung, Berechtigungserweiterung, kostenpflichtige Aktivierung noch Datenweitergabe oder mutierende Aktionen als durch diese Richtlinie genehmigt behandeln. Verfügbare Schreibaktionen nur im Umfang der tatsächlichen Nutzerautorisierung ausführen; persönliche Freigaben und Zahlungen bleiben beim Owner. Secrets niemals in Repository-Dokumentation oder Chat-Antworten offenlegen.
+5. **Laufzeitgrenzen:** Sind Plugin-Verzeichnis oder benötigte Funktionen in einem Chat nicht verfügbar, den Status offen benennen und keine Suche, Installation oder Ausführung behaupten. Diese Repository-Richtlinie installiert oder aktiviert selbst **keine** ChatGPT-Plugins und erzeugt keine neuen CI-Checks, Admissions, Domain-Handoffs oder Entwicklungsblockaden.
+
 ## Status in ChatGPT
 
 Status-, Review-, Implementierungs- und Abschlussmeldungen enden mit zwei getrennten Code-Snippets:
