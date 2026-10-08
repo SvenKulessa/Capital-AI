@@ -13,7 +13,7 @@ export function projectCanonicalAssetValue(raw: unknown, now = Date.now()): Mark
   const value = CanonicalAssetValueSchema.parse(raw);
   const instrument = instrumentCatalog[value.symbol as keyof typeof instrumentCatalog];
   if (!instrument || value.instrumentId !== instrument.instrumentId ||
-      value.provider !== instrument.providers[0] || value.venue !== instrument.venue ||
+      !instrument.providers.includes(value.provider) || value.venue !== instrument.venue ||
       value.quoteCurrency !== instrument.quote || value.timeSemantics !== instrument.timeSemantics) {
     throw new Error('MARKET_INSTRUMENT_MISMATCH');
   }
