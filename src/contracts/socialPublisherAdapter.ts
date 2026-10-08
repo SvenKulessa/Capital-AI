@@ -17,16 +17,16 @@ export const SocialPublisherChannelSchema = z.enum([
 ]);
 export type SocialPublisherChannel = z.infer<typeof SocialPublisherChannelSchema>;
 
-export type SocialPublisherAdapterState = 'INTEGRATION_PENDING' | 'READY';
+export type SocialPublisherAdapterState = 'INTEGRATION_PENDING' | 'IMPLEMENTED_DISABLED' | 'READY';
 
 export const CURRENT_SOCIAL_PUBLISHER_ADAPTERS: Readonly<
   Record<SocialPublisherChannel, SocialPublisherAdapterState>
 > = {
-  YOUTUBE: 'INTEGRATION_PENDING',
-  TIKTOK: 'INTEGRATION_PENDING',
-  INSTAGRAM: 'INTEGRATION_PENDING',
-  X: 'INTEGRATION_PENDING',
-  FACEBOOK: 'INTEGRATION_PENDING',
+  YOUTUBE: 'IMPLEMENTED_DISABLED',
+  TIKTOK: 'IMPLEMENTED_DISABLED',
+  INSTAGRAM: 'IMPLEMENTED_DISABLED',
+  X: 'IMPLEMENTED_DISABLED',
+  FACEBOOK: 'IMPLEMENTED_DISABLED',
 } as const;
 
 export const SocialPublisherHandoffSchema = z.object({

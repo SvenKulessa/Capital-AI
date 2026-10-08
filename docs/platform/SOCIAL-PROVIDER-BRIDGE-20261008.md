@@ -73,3 +73,37 @@ configured credentials/scopes, interactive consent and live evidence.
 
 Local evidence: 36 social-provider tests and 5 Docker-context tests pass using
 fixture transports only. No live or paid provider request was performed.
+
+## Outbound Publisher Transport — 2026-10-08
+
+Der nächste PLATFORM-Slice ergänzt serverseitige, standardmäßig deaktivierte
+Outbound-Transporte in `server/social-media/provider-publish.mjs` sowie die
+durable Execution-Bindung in `server/social-media/provider-execution.mjs`.
+
+- YouTube: multipart `videos.insert`; Standard-Sichtbarkeit `private`.
+  Öffentliche/unlisted Sichtbarkeit bleibt hinter
+  `SOCIAL_YOUTUBE_PUBLIC_UPLOAD_APPROVED=true`.
+- TikTok: `creator_info/query` vor jedem Direct Post, explizite
+  `privacy_level`-Auswahl und Creator-Consent; FILE_UPLOAD ist im ersten
+  Slice auf einen vollständig übertragenen Einzelchunk bis 64 MiB begrenzt.
+- Instagram: Reels-Container über explizit konfigurierte Graph-API-Version;
+  Media-URL nur von einer serverseitigen Host-Allowlist. Container-Finalisierung
+  ist separat und bleibt readback-gebunden.
+- Facebook: Page-Feed oder Page-Video über die explizite Graph-API-Version.
+- X: Text-Post nur wenn zusätzlich `SOCIAL_X_PAID_WRITE_APPROVED=true`.
+
+Alle Kanäle benötigen `SOCIAL_PROVIDER_PUBLISH_ENABLED=true` plus einen
+kanalspezifischen Publish-Switch. Es existiert weiterhin kein öffentlicher
+Publish-HTTP-Endpoint. Tokens werden ausschließlich über einen serverseitig
+injizierten `tokenResolver` bezogen.
+
+Ein Provider-Receipt ist **kein** Publish-Erfolg. Jede Submission wird zuerst
+über den bestehenden Store als `UNKNOWN` persistiert. Erst der bereits
+bestehende Provider-Readback darf `PUBLISHED` oder `FAILED` erzeugen.
+Ambige Netzwerkfehler werden ohne Blind-Retry ebenfalls als `UNKNOWN`
+festgehalten.
+
+Die UI-/Contract-Zustände wechseln deshalb nur von `INTEGRATION_PENDING` zu
+`IMPLEMENTED_DISABLED`. `READY` bleibt für jeden Provider separat offen,
+bis echte Account-/Scope-/Audit-/Kosten- und Live-Readback-Evidence vorliegt.
+

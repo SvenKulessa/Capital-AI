@@ -255,6 +255,9 @@
 !server/social-media/asset-readback.test.mjs
 !server/social-media/provider-external-readback.mjs
 !server/social-media/provider-external-readback.test.mjs
+!server/social-media/provider-publish.mjs
+!server/social-media/provider-publish.test.mjs
+!server/social-media/provider-execution.mjs
 
 !server/private-market-batch.mjs
 !server/private-market-cache.mjs
