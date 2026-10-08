@@ -22,6 +22,8 @@ interface ProviderConnection {
   lastErrorCode?: string | null;
   permissions?: {
     fundsQuery?: boolean;
+    reading?: boolean;
+    spotConfigured?: boolean;
     websocketToken?: boolean;
     trading?: boolean;
     withdrawals?: boolean;
@@ -378,15 +380,15 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
                     </div>
                   </div>
                   <div className="rounded-xl border border-white/10 bg-black/20 p-2.5">
-                    <div className="text-[9px] font-mono uppercase text-slate-500">Portfolio / Query Funds</div>
-                    <div className={`mt-1 text-[11px] font-bold ${connection.permissions?.fundsQuery ? 'text-emerald-200' : 'text-slate-400'}`}>
-                      {connection.permissions?.fundsQuery ? 'ERLAUBT' : 'NICHT ERLAUBT'}
+                    <div className="text-[9px] font-mono uppercase text-slate-500">{provider === 'binance' ? 'Privater Konto-Lesezugriff' : 'Portfolio / Query Funds'}</div>
+                    <div className={`mt-1 text-[11px] font-bold ${(provider === 'binance' ? connection.permissions?.reading : connection.permissions?.fundsQuery) ? 'text-emerald-200' : 'text-slate-400'}`}>
+                      {(provider === 'binance' ? connection.permissions?.reading : connection.permissions?.fundsQuery) ? 'ERLAUBT' : 'NICHT ERLAUBT'}
                     </div>
                   </div>
                   <div className="rounded-xl border border-white/10 bg-black/20 p-2.5">
-                    <div className="text-[9px] font-mono uppercase text-slate-500">Spot WebSocket Token</div>
-                    <div className={`mt-1 text-[11px] font-bold ${connection.permissions?.websocketToken ? 'text-emerald-200' : 'text-slate-400'}`}>
-                      {connection.permissions?.websocketToken ? 'ERLAUBT' : 'NICHT ERLAUBT'}
+                    <div className="text-[9px] font-mono uppercase text-slate-500">{provider === 'binance' ? 'Spot-Konto verbunden' : 'Spot WebSocket Token'}</div>
+                    <div className={`mt-1 text-[11px] font-bold ${(provider === 'binance' ? connection.permissions?.spotConfigured : connection.permissions?.websocketToken) ? 'text-emerald-200' : 'text-slate-400'}`}>
+                      {(provider === 'binance' ? connection.permissions?.spotConfigured : connection.permissions?.websocketToken) ? 'ERLAUBT' : 'NICHT ERLAUBT'}
                     </div>
                   </div>
                   <div className="rounded-xl border border-white/10 bg-black/20 p-2.5">
