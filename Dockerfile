@@ -19,6 +19,10 @@ RUN npm ci --ignore-scripts --no-audit --no-fund \
 # All subsequent validation is offline. Node's script runner needs no npm/cache transport.
 # Remove the installer itself, including vulnerable bundled http-cache-semantics, before validation.
 COPY index.html vite.config.ts tsconfig.json OPEN_SOURCE_LICENSES.md ./
+COPY AGENTS.md ./AGENTS.md
+COPY .agents/skills ./.agents/skills
+COPY .github/agents ./.github/agents
+COPY .github/copilot-instructions.md ./.github/copilot-instructions.md
 COPY src ./src
 COPY CAPITAL-AI-PRODUCT/badge.svg ./CAPITAL-AI-PRODUCT/badge.svg
 COPY CAPITAL-AI-TRUST/badge.svg ./CAPITAL-AI-TRUST/badge.svg
@@ -47,6 +51,7 @@ COPY supabase/email-templates ./supabase/email-templates
 COPY supabase/migrations/20261005010039_legal_policy_evidence_store_isolated.sql supabase/migrations/20261005155500_fix_registration_consent_null.sql supabase/migrations/20261006072600_sync_stripe_subscription_catalog_v2.sql supabase/migrations/20261006080124_benchmark_run_usage_ledger.sql supabase/migrations/20261006131500_enable_binance_user_provider_vault.sql supabase/migrations/20261006210500_cads_marketplace_paid_entitlements.sql supabase/migrations/20261007214554_provider_query_guard.sql ./supabase/migrations/
 COPY supabase/proposals/provider_query_guard.sql ./supabase/proposals/provider_query_guard.sql
 COPY scripts/documentation-drift.mjs scripts/documentation-drift.test.mjs ./scripts/
+COPY scripts/domain-skills.test.mjs ./scripts/domain-skills.test.mjs
 COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/social-tool-license-evidence.test.mjs scripts/validate-social-tool-license-evidence.mjs scripts/frontend-security.test.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
 COPY shared ./shared
 COPY contracts/private-provider-query-operations.json ./contracts/private-provider-query-operations.json
