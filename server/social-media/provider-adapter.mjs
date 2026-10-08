@@ -40,8 +40,9 @@ function validHttpsUrl(value) {
   }
 }
 export function socialPlatformForChannel(channel) {
+  assert(typeof channel === 'string' && Object.hasOwn(SOCIAL_PLATFORMS, channel),
+    'SOCIAL_PROVIDER_CHANNEL_UNSUPPORTED');
   const platform = SOCIAL_PLATFORMS[channel];
-  assert(platform !== undefined, 'SOCIAL_PROVIDER_CHANNEL_UNSUPPORTED');
   return platform;
 }
 export function socialChannelForPlatform(platform) {
