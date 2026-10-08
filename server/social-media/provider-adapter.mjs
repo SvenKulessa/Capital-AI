@@ -276,8 +276,9 @@ export function buildLegacySocialPublishLogRow(plan, completion, now = new Date(
  * atomically consume used_at (CAS) before exchanging an authorization code.
  */
 export function createSocialOAuthState(input) {
+  // Production entropy is sourced exclusively from Node's CSPRNG; no caller override.
   const { userId, channel, redirectUri, allowedRedirectUris, codeVerifier = null,
-    now = Date.now(), random = randomBytes } = input ?? {};
+    now = Date.now() } = input ?? {};
   const platform = socialPlatformForChannel(channel);
   assert(validUserId(userId), 'SOCIAL_PROVIDER_OAUTH_USER_REQUIRED');
   assert(validHttpsUrl(redirectUri) && Array.isArray(allowedRedirectUris)
@@ -286,7 +287,7 @@ export function createSocialOAuthState(input) {
     assert(typeof codeVerifier === 'string' && codeVerifier.length >= 43
       && codeVerifier.length <= 128, 'SOCIAL_PROVIDER_OAUTH_PKCE_REQUIRED');
   }
-  const state = random(32).toString('base64url');
+  const state = randomBytes(32).toString('base64url');
   assert(state.length >= 40, 'SOCIAL_PROVIDER_OAUTH_ENTROPY_REQUIRED');
   const stateHash = createHash('sha256').update(state).digest('hex');
   return Object.freeze({
