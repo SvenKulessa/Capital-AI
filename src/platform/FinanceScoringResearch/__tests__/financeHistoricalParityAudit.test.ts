@@ -64,7 +64,7 @@ function sample(score=80):FinanceHistoricalParityCandidateInput {
           normalizationVersion:'1.0.0',normalizationEvidenceRef:normRef,
           qualityScore:98,observedAt:time(-1000),retrievedAt:time(-900),
           provenance:{providerId,providerDataset:'ohlc',observedAt:now-1000,
-            receivedAt:now-900,publishedAt:now-950,latencyMs:100,
+            receivedAt:now-900,publishedAt:now-800,latencyMs:100,
             isDelayed:false,isDemo:false,sourceReference:featureRef,
             licenseScope:'public_realtime'}}]},
       factorModel:'stock',bindings:[{factor:'trend',sourceField:'finance.traditional.trend'}],
