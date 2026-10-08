@@ -1,7 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { MarketAssetCatalogSchema, QuoteDeliverySchema, instrumentCatalog, isFresh } from '../../shared/market-contracts.mjs';
 import type { MarketAsset } from '../types';
-import { projectCanonicalAssetValue } from './marketValuesProjection';
 
 export type MarketAssetCatalog = ReturnType<typeof MarketAssetCatalogSchema.parse>;
 export type MarketCatalogAsset = MarketAssetCatalog['assets'][number];
@@ -96,6 +95,8 @@ async function refresh() {
             body.values.length > runtimeAssets.length) {
           throw new Error('MARKET_VALUES_INVALID');
         }
+        // Keep the initial bundle below its strict 500 kB cap; load quote projection on demand.
+        const { projectCanonicalAssetValue } = await import('./marketValuesProjection');
         const eligible = new Map(runtimeAssets.map(asset => [asset.symbol, asset]));
         verified = body.values.map(raw => {
           const item = projectCanonicalAssetValue(raw);
