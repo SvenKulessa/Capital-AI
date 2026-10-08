@@ -1,0 +1,91 @@
+name: Optional PR-Agent Runtime Evidence
+
+on:
+  pull_request:
+    paths:
+      - deploy/pr-agent/**
+      - .github/workflows/pr-agent-runtime-evidence.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  runtime:
+    name: Reviewer candidate build and scan
+    runs-on: ubuntu-26.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: The-PR-Agent/pr-agent
+          ref: 8e5a9295973b24af4b70cafd0b660a230811ef9e
+          path: reviewer-source
+          persist-credentials: false
+      - name: Stage isolated build context
+        run: |
+          set -euo pipefail
+          test "$(git -C reviewer-source rev-parse HEAD)" = 8e5a9295973b24af4b70cafd0b660a230811ef9e
+          python - <<'PY'
+          import hashlib, json, pathlib
+          root = pathlib.Path('deploy/pr-agent')
+          evidence = json.loads((root / 'provenance.json').read_text())
+          for name, expected in evidence['sha256'].items():
+              assert hashlib.sha256((root / name).read_bytes()).hexdigest() == expected, name
+          assert hashlib.sha256(pathlib.Path('reviewer-source/pyproject.toml').read_bytes()).hexdigest() == evidence['sha256']['pyproject.toml']
+          PY
+          mkdir -p reviewer-context reviewer-evidence
+          cp deploy/pr-agent/Dockerfile deploy/pr-agent/.dockerignore deploy/pr-agent/pyproject.toml deploy/pr-agent/uv.lock deploy/pr-agent/UPSTREAM-LICENSE.txt deploy/pr-agent/benchmark-entrypoint.py deploy/pr-agent/smoke.py reviewer-context/
+          cp -a reviewer-source/pr_agent reviewer-context/pr_agent
+      - name: Build candidate OCI archive with offline compatibility smoke
+        run: |
+          docker buildx create --driver docker-container --driver-opt image=moby/buildkit:v0.34.0@sha256:b059f8d7226d0b326bc871af489a5dddf65e36af4d20d14251b072974d9ee87c --name reviewer-candidate --use
+          docker buildx build --platform linux/amd64 --provenance=false --output type=oci,dest=reviewer-evidence/runtime.oci.tar reviewer-context
+          python - <<'PY'
+          import hashlib, json, pathlib, tarfile
+          archive = pathlib.Path('reviewer-evidence/runtime.oci.tar')
+          with tarfile.open(archive) as tar:
+              index = json.load(tar.extractfile('index.json'))
+              digest = index['manifests'][0]['digest']
+              blob = tar.extractfile('blobs/sha256/' + digest.split(':')[1]).read()
+              assert 'sha256:' + hashlib.sha256(blob).hexdigest() == digest
+              manifest = json.loads(blob)
+              if 'manifests' in manifest:
+                  assert len(manifest['manifests']) == 1, 'Expected single platform without attestations'
+                  digest = manifest['manifests'][0]['digest']
+                  blob = tar.extractfile('blobs/sha256/' + digest.split(':')[1]).read()
+                  assert 'sha256:' + hashlib.sha256(blob).hexdigest() == digest
+                  manifest = json.loads(blob)
+              config_digest = manifest['config']['digest']
+              config_blob = tar.extractfile('blobs/sha256/' + config_digest.split(':')[1]).read()
+              assert 'sha256:' + hashlib.sha256(config_blob).hexdigest() == config_digest
+              config = json.loads(config_blob)['config']
+              assert config['User'] == '10001:10001'
+              assert config['WorkingDir'] == '/bench'
+          pathlib.Path('reviewer-evidence/runtime-identity.json').write_text(json.dumps({
+              'testedRepositorySha': '${{ github.sha }}',
+              'reviewerSourceSha': '8e5a9295973b24af4b70cafd0b660a230811ef9e',
+              'platformManifestDigest': digest, 'configDigest': manifest['config']['digest'],
+              'archiveSha256': hashlib.sha256(archive.read_bytes()).hexdigest(),
+              'mode': 'candidate-only; no registry publish or deployment'
+          }, indent=2) + '\n')
+          PY
+      - name: Scan candidate and record SBOM
+        run: |
+          docker run --rm -v "$PWD/reviewer-evidence:/reports" aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa image --input /reports/runtime.oci.tar --scanners vuln,secret --ignorefile /dev/null --format json --output /reports/runtime-scan.json --exit-code 0
+          node scripts/summarize-trivy.mjs reviewer-evidence/runtime-scan.json > reviewer-evidence/runtime-scan.public.json
+          docker run --rm -v "$PWD/reviewer-evidence:/reports" aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa image --input /reports/runtime.oci.tar --scanners vuln --format cyclonedx --output /reports/runtime.sbom.cdx.json
+          node scripts/summarize-trivy.mjs reviewer-evidence/runtime-scan.json --gate
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: pr-agent-runtime-evidence-${{ github.sha }}
+          path: |
+            reviewer-evidence/runtime-identity.json
+            reviewer-evidence/runtime-scan.public.json
+            reviewer-evidence/runtime.sbom.cdx.json
+          if-no-files-found: warn
+          retention-days: 7
