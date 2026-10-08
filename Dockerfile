@@ -53,6 +53,8 @@ COPY contracts/private-provider-query-operations.json ./contracts/private-provid
 COPY CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json CAPITAL-AI-GROWTH/social-engine-completion-gate.json CAPITAL-AI-GROWTH/social-media-tool-admission.yaml CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.yaml ./CAPITAL-AI-GROWTH/
 COPY CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json ./CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json
 COPY CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json ./CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json
+COPY CAPITAL-AI-GROWTH/social-tts-dependency-lock-evidence-20261008.json CAPITAL-AI-GROWTH/social-p1-runtime-port-provenance-20261008.json ./CAPITAL-AI-GROWTH/
+COPY deploy/social-media/tts/qwen-runtime.lock.json deploy/social-media/tts/chatterbox-runtime.lock.json ./deploy/social-media/tts/
 COPY server/market.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/ecb-reference-rates.LICENSE.txt server/ecb-reference-rates.test.mjs server/auth.mjs server/user-provider-vault.mjs server/user-provider-vault.test.mjs server/kraken-order-dry-run.mjs server/kraken-order-dry-run.test.mjs server/uniswap-trading.mjs server/uniswap-trading.test.mjs ./server/
 COPY docs/security/BYOK-USER-PRIVATE-DATA.md ./docs/security/BYOK-USER-PRIVATE-DATA.md
 COPY docs/licenses ./docs/licenses
