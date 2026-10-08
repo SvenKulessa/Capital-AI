@@ -8,11 +8,12 @@ test('native country mapping', () => {
   }
 });
 test('unsupported and multilingual countries use English', () => {
-  for (const country of ['PL','CH','BE','JP','XX','']) assert.equal(localeFromCountry(country),'en');
+  for (const country of ['PL','CH','BE','JP','XX','T1','']) assert.equal(localeFromCountry(country),'en');
 });
 test('manual preference wins; unsupported country overrides browser', () => {
   assert.deepEqual(resolveLocale({cookieHeader:'a=b; capital_ai_locale=es',countryHeader:'DE',acceptLanguage:'de'}),{locale:'es',source:'manual'});
   assert.deepEqual(resolveLocale({countryHeader:'PL',acceptLanguage:'de'}),{locale:'en',source:'country'});
+  assert.deepEqual(resolveLocale({countryHeader:'T1',acceptLanguage:'de'}),{locale:'en',source:'country'});
   assert.deepEqual(resolveLocale({cookieHeader:'capital_ai_locale=xx',countryHeader:'DE'}),{locale:'de',source:'country'});
 });
 test('browser language is fallback only without country', () => {

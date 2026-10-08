@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { MAIN_HUBS_CONFIG } from './HubSidebarDrawer';
+import { useLocale } from '../i18n/LocaleProvider';
+import type { SectionKey } from '../i18n/landingSectionCopy';
 import type { MainHubId, HubSubpageConfig } from './HubSidebarDrawer';
 
 interface HomeHubDirectoryProps {
@@ -17,6 +19,7 @@ export function HomeHubDirectory({
   onOpenSectorAnalysis,
   onOpenPriceAlerts,
 }: HomeHubDirectoryProps) {
+  const {locale, tSection} = useLocale();
   const [expandedHub, setExpandedHub] = useState<MainHubId | null>(null);
   const [isOwner, setIsOwner] = useState(false);
 
@@ -40,6 +43,11 @@ export function HomeHubDirectory({
     return () => controller.abort();
   }, []);
 
+  const summaries: Record<MainHubId, SectionKey> = {
+    marketscreener:'hubMarketDescription', studio:'hubStudioDescription',
+    learning:'hubLearningDescription', documentation:'hubDocsDescription',
+    'control-center':'hubControlDescription'
+  };
   const hubs = (Object.keys(MAIN_HUBS_CONFIG) as MainHubId[])
     .filter(hubId => hubId !== 'control-center' || isOwner);
 
@@ -74,10 +82,10 @@ export function HomeHubDirectory({
   return (
     <section id="hub-directory" aria-labelledby="hub-directory-heading" className="mx-3 my-8 rounded-3xl border border-slate-800 bg-[#050b18] px-3 py-6 text-slate-100 sm:mx-6 sm:p-7">
       <div className="mb-5">
-        <p className="text-xs font-mono uppercase tracking-[0.2em] text-amber-300">Plattformnavigation</p>
-        <h2 id="hub-directory-heading" className="mt-2 text-2xl font-black sm:text-3xl">Hubs &amp; Inhalte</h2>
+        <p className="text-xs font-mono uppercase tracking-[0.2em] text-amber-300">{tSection('hubOverline')}</p>
+        <h2 id="hub-directory-heading" className="mt-2 text-2xl font-black sm:text-3xl">{tSection('hubTitle')}</h2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-400">
-          Hub aufklappen und einen Reiter direkt öffnen. Alle Bereiche sind auch über die Hauptnavigation erreichbar.
+          {tSection('hubDescription')}
         </p>
       </div>
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
@@ -97,14 +105,14 @@ export function HomeHubDirectory({
                 <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border" style={{ backgroundColor: `${hub.color}18`, borderColor: `${hub.color}55`, color: hub.color }}>{hub.icon}</span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-bold text-white">{hub.name}</span>
-                  <span className="mt-1 block text-xs text-slate-400">{hub.subpages.length} Bereiche · {hub.description}</span>
+                  <span className="mt-1 block text-xs text-slate-400">{hub.subpages.length} {tSection('hubSections')} · {tSection(summaries[hubId])}</span>
                 </span>
                 <ChevronDown className={`h-5 w-5 shrink-0 text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} aria-hidden="true" />
               </button>
               <div id={panelId} hidden={!isExpanded} className="border-t border-slate-800 p-3">
                 {isExpanded && (
                   <>
-                    <nav aria-label={`${hub.name} Reiter`} className="grid gap-2">
+                    <nav aria-label={`${hub.name} ${tSection('hubTabs')}`} className="grid gap-2">
                       {hub.subpages.map(subpage => (
                         <button
                           key={subpage.id}
@@ -115,7 +123,7 @@ export function HomeHubDirectory({
                           <span aria-hidden="true" className="shrink-0" style={{ color: hub.color }}>{subpage.icon}</span>
                           <span className="min-w-0 flex-1">
                             <span className="block text-xs font-semibold text-white">{subpage.name}</span>
-                            <span className="mt-1 block text-[11px] text-slate-400">{subpage.shortDesc}</span>
+                            <span lang={locale === 'de' ? undefined : 'de'} className="mt-1 block text-[11px] text-slate-400">{subpage.shortDesc}</span>
                           </span>
                           <ArrowRight className="h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
                         </button>
@@ -127,7 +135,7 @@ export function HomeHubDirectory({
                       className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border px-3 text-sm font-bold transition-colors hover:bg-white/10"
                       style={{ borderColor: `${hub.color}70`, color: hub.color }}
                     >
-                      {hub.name} öffnen <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                      {tSection('hubOpen')} {hub.name} <ArrowRight className="h-4 w-4" aria-hidden="true" />
                     </button>
                   </>
                 )}
