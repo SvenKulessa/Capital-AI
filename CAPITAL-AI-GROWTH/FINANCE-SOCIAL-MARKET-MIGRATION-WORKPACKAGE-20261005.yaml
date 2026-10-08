@@ -18,9 +18,9 @@ baseline:
     repository: "SvenKulessa/Capital-AI"
     sha: "9c5fc40318cf538308724c2efb18441185e8cbae"
   currentMainCorrelation:
-    sha: "07b34ab4cbbd4df9624f49fe072b3173e72446af"
+    sha: "c881081e1d6a08e1babd98c15371f6a8615d645b"
     rootPolicy: "AGENTS.md@currentmain"
-    correlationState: "SOCIAL_CORE_CURRENT_MAIN_07B34AB4_PR302_PENDING_CI_POINT4_BLOCKED"
+    correlationState: "SOCIAL_CORE_CURRENT_MAIN_C881081E_PR302_PENDING_CI_POINT4_BLOCKED"
   policy: "target-current-main-contracts-win"
 
 objectives:
