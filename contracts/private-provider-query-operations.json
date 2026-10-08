@@ -111,6 +111,46 @@
             "sort",
             "continuationToken"
           ]
+        },
+        "market.spot_trade": {
+          "params": [
+            "symbol"
+          ],
+          "requiredParams": [
+            "symbol"
+          ],
+          "paramRules": {
+            "symbol": {
+              "enum": [
+                "BTCUSD"
+              ]
+            }
+          },
+          "costUnits": 1,
+          "minIntervalMs": 10000,
+          "globalMinIntervalMs": 1000,
+          "dataScope": "USER_PRIVATE_MARKET_DATA",
+          "notes": "Single user-bound Vault-verified read-only snapshot. Private HTTP response only, no shared market cache, no JetStream quote facts, no public redisplay. Exchange's own market-data usage terms still apply."
+        },
+        "market.spot_ws_snapshot": {
+          "params": [
+            "symbol"
+          ],
+          "requiredParams": [
+            "symbol"
+          ],
+          "paramRules": {
+            "symbol": {
+              "enum": [
+                "BTCUSD"
+              ]
+            }
+          },
+          "costUnits": 1,
+          "minIntervalMs": 20000,
+          "globalMinIntervalMs": 1000,
+          "dataScope": "USER_PRIVATE_MARKET_DATA",
+          "notes": "One bounded server-side user-owned WebSocket snapshot. 6s max, 16 frames, then stop. Requires authenticated private Vault read-only permission; no browser WS and no public shared redistribution."
         }
       }
     },
@@ -233,6 +273,46 @@
             "page",
             "limit"
           ]
+        },
+        "market.spot_trade": {
+          "params": [
+            "symbol"
+          ],
+          "requiredParams": [
+            "symbol"
+          ],
+          "paramRules": {
+            "symbol": {
+              "enum": [
+                "BTCUSDT"
+              ]
+            }
+          },
+          "costUnits": 25,
+          "minIntervalMs": 10000,
+          "globalMinIntervalMs": 1000,
+          "dataScope": "USER_PRIVATE_MARKET_DATA",
+          "notes": "Single user-bound Vault-verified read-only snapshot. Private HTTP response only, no shared market cache, no JetStream quote facts, no public redisplay. Exchange's own market-data usage terms still apply."
+        },
+        "market.spot_ws_snapshot": {
+          "params": [
+            "symbol"
+          ],
+          "requiredParams": [
+            "symbol"
+          ],
+          "paramRules": {
+            "symbol": {
+              "enum": [
+                "BTCUSDT"
+              ]
+            }
+          },
+          "costUnits": 25,
+          "minIntervalMs": 20000,
+          "globalMinIntervalMs": 1000,
+          "dataScope": "USER_PRIVATE_MARKET_DATA",
+          "notes": "One bounded server-side user-owned WebSocket snapshot. 6s max, 16 frames, then stop. Requires authenticated private Vault read-only permission; no browser WS and no public shared redistribution."
         }
       }
     }

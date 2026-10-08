@@ -18,8 +18,9 @@ services:
         value: production
       - key: PORT
         value: "10000"
+      # Only currently admitted daily ECB reference instruments; no proprietary market-price redistribution.
       - key: MARKET_SYMBOLS
-        value: BTCUSDT,BTCUSD,AAPL
+        value: "EUR/USD,EUR/JPY,EUR/CZK,EUR/DKK,EUR/GBP,EUR/HUF,EUR/PLN,EUR/RON,EUR/SEK,EUR/CHF,EUR/ISK,EUR/NOK,EUR/TRY,EUR/AUD,EUR/BRL,EUR/CAD,EUR/CNY,EUR/HKD,EUR/IDR,EUR/ILS"
       # All optional capabilities fail closed until configured by the owner.
       - key: PUBLIC_APP_ORIGIN
         sync: false
@@ -64,8 +65,11 @@ services:
         value: "1"
       - key: MARKET_PUBSUB_ENABLED
         value: "true"
+      # Enabling this path does not authorize legacy providers, trading or scoring.
       - key: MARKET_QUOTES_ENABLED
-        value: "false"
+        value: "true"
+      - key: MARKET_ECB_REFERENCE_RATES_ENABLED
+        value: "true"
       - key: CAPITAL_AI_FINANCE_SCORER_PRIVATE_ORIGIN
         sync: false
       - key: CAPITAL_AI_SCORER_ORIGIN
