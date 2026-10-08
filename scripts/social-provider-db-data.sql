@@ -1,7 +1,9 @@
 -- Disposable Supabase-like fixture data and grants; no production secrets.
+-- Match the production ACL: the legacy approval table has NO service_role
+-- SELECT grant before the provider migration. Tests must not silently fix it.
 grant select, insert, update, delete on
   public.social_media_accounts, public.social_media_oauth_states,
-  public.social_media_publish_log, public.social_media_content_approvals
+  public.social_media_publish_log
   to service_role;
 
 insert into auth.users(id) values

@@ -20,7 +20,7 @@
 - The callback route returns 503 by default. Even with its feature switch enabled, a missing, owner-verified token exchanger blocks state consumption. No OAuth authorization-start URL, token persistence or public-facing account-connect activation is included.
 - The Docker runtime copies only the callback and its two dependencies. Other provider modules are build-only and covered by CI. There is **no** provider upload, direct post, background worker, Cron trigger or automatic delivery/retry endpoint.
 - `social_media_publish_log` accepts only terminal states after trusted server readback; `UNKNOWN` remains a durable job record without publish-log creation.
-- The SQL migration uses `SECURITY INVOKER`, explicitly revokes anon/authenticated function EXECUTE, and grants service_role only. No direct browser table writes.
+- The SQL migration uses `SECURITY INVOKER`, explicitly revokes anon/authenticated function EXECUTE, and grants service_role only. A live 2026-10-08 PostgreSQL ACL readback found that `service_role` lacked `SELECT` on legacy `social_media_content_approvals`. The migration now grants **SELECT only to service_role**; disposable tests deliberately preserve this restrictive pre-migration ACL and assert that anon/authenticated still cannot read approvals. No direct browser table writes.
 - Finance legacy Meta Graph v19 calls, old OAuth tokens and implicit TikTok public privacy are not migrated.
 
 ## Verification

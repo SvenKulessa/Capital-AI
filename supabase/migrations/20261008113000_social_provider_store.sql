@@ -18,6 +18,11 @@ alter table public.social_media_content_approvals
   add constraint social_approval_asset_sha256_format
   check (asset_sha256 is null or asset_sha256 ~ '^[a-f0-9]{64}$');
 
+-- Production ACL readback (2026-10-08): this legacy table was created with
+-- no service_role SELECT privilege. SECURITY INVOKER claim_delivery requires
+-- exactly that privilege; never grant approval reads to browser roles.
+grant select on public.social_media_content_approvals to service_role;
+
 -- Old "approved" rows remain readable but fail the new asset/hash/owner contract.
 -- No destructive updates or blanket legacy backfills.
 create table if not exists public.social_media_delivery_jobs (

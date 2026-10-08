@@ -7,6 +7,14 @@ begin
     'public.capital_social_consume_oauth_state(text,uuid,text,text)', 'EXECUTE') then
     raise exception 'FAIL: public social RPC execute privilege';
   end if;
+  if not has_table_privilege('service_role',
+       'public.social_media_content_approvals', 'SELECT')
+     or has_table_privilege('anon',
+       'public.social_media_content_approvals', 'SELECT')
+     or has_table_privilege('authenticated',
+       'public.social_media_content_approvals', 'SELECT') then
+    raise exception 'FAIL: minimum production approval read grant';
+  end if;
   if (select count(*) from public.social_media_delivery_jobs) <> 0 then
     raise exception 'FAIL: jobs should be empty before parallel claim';
   end if;
