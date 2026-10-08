@@ -1,0 +1,116 @@
+name: Social TTS Worker Evidence
+
+on:
+  pull_request:
+    paths:
+      - "deploy/social-media/tts/**"
+      - "deploy/social-media/Dockerfile.tts-runtime"
+      - ".github/workflows/social-tts-worker-evidence.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: social-tts-worker-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime: [qwen, chatterbox]
+    name: TTS Worker ${{ matrix.runtime }}
+    runs-on: ubuntu-26.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Gepinnte Security Tools bauen
+        run: |
+          set -euo pipefail
+          docker build --file Dockerfile.security --tag capital-ai-security .
+          mkdir -p "$RUNNER_TEMP/trivy-cache" "tts-worker-evidence/${{ matrix.runtime }}"
+          chmod a+rwx "$RUNNER_TEMP/trivy-cache" "tts-worker-evidence/${{ matrix.runtime }}"
+
+      - name: Python Base aus Runtime-Lock binden
+        id: base
+        run: |
+          set -euo pipefail
+          lock="deploy/social-media/tts/${{ matrix.runtime }}-runtime.lock.json"
+          ref="$(jq -r '.pythonBaseRef' "$lock")"
+          [[ "$ref" =~ ^python@sha256:[0-9a-f]{64}$ ]]
+          docker pull "$ref"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+
+      - name: Hash-locked Worker bauen
+        env:
+          PYTHON_BASE: ${{ steps.base.outputs.ref }}
+        run: |
+          set -euo pipefail
+          docker build             --file deploy/social-media/Dockerfile.tts-runtime             --build-arg "PYTHON_BASE=$PYTHON_BASE"             --build-arg "RUNTIME=${{ matrix.runtime }}"             --tag "capital-ai-social-tts-${{ matrix.runtime }}:$GITHUB_SHA"             .
+
+      - name: Import- und non-root Smoke
+        run: |
+          set -euo pipefail
+          image="capital-ai-social-tts-${{ matrix.runtime }}:$GITHUB_SHA"
+          docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m             --cap-drop ALL --security-opt no-new-privileges             --entrypoint sh "$image" -euc '
+              test "$(id -u)" = "10001"
+              python -c "import torch, torchaudio; print(torch.__version__, torchaudio.__version__)"
+            '
+          if [ "${{ matrix.runtime }}" = "qwen" ]; then
+            docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m               --cap-drop ALL --security-opt no-new-privileges               --entrypoint python "$image" -c 'import qwen_tts; print("qwen-import-pass")'
+          else
+            docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m               --cap-drop ALL --security-opt no-new-privileges               --entrypoint python "$image" -c 'import chatterbox; print("chatterbox-import-pass")'
+          fi
+
+      - name: Image Identität, SBOM, Lizenzinventar und Scan
+        run: |
+          set -euo pipefail
+          runtime="${{ matrix.runtime }}"
+          image="capital-ai-social-tts-$runtime:$GITHUB_SHA"
+          out="tts-worker-evidence/$runtime"
+          docker image inspect --format '{{.Id}}' "$image" | tee "$out/local-image-id.txt"
+          docker save "$image" --output "$out/image.tar"
+          sha256sum "$out/image.tar" | tee "$out/image-archive.sha256"
+          chmod a+r "$out/image.tar"
+
+          docker run --rm             -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy"             -v "$PWD/$out:/reports"             capital-ai-security image             --input /reports/image.tar             --ignorefile /dev/null             --scanners vuln,secret             --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL             --format json             --output /reports/trivy.json             --exit-code 0
+          node scripts/summarize-trivy.mjs "$out/trivy.json" > "$out/trivy.summary.json"
+          node scripts/summarize-trivy.mjs "$out/trivy.json" --gate
+
+          docker run --rm             -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy"             -v "$PWD/$out:/reports"             capital-ai-security image             --input /reports/image.tar             --ignorefile /dev/null             --scanners vuln             --format cyclonedx             --output /reports/worker.sbom.cdx.json
+
+          docker run --rm             -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy"             -v "$PWD/$out:/reports"             capital-ai-security image             --input /reports/image.tar             --ignorefile /dev/null             --scanners license             --license-full             --format json             --output /reports/worker.licenses.json             --exit-code 0
+
+          jq -n             --arg schemaVersion "SOCIAL_TTS_WORKER_EVIDENCE@1"             --arg runtime "$runtime"             --arg sourceSha "$GITHUB_SHA"             --arg baseImageRef "$(jq -r '.pythonBaseRef' "deploy/social-media/tts/$runtime-runtime.lock.json")"             --arg imageId "$(cat "$out/local-image-id.txt")"             --arg archiveSha256 "$(cut -d ' ' -f1 "$out/image-archive.sha256")"             --arg lockSha256 "$(sha256sum "deploy/social-media/tts/$runtime-runtime.lock.json" | cut -d ' ' -f1)"             '{
+              schemaVersion:$schemaVersion,
+              runtime:$runtime,
+              sourceSha:$sourceSha,
+              baseImageRef:$baseImageRef,
+              localImageId:$imageId,
+              imageArchiveSha256:$archiveSha256,
+              runtimeLockSha256:$lockSha256,
+              modelsEmbedded:false,
+              uid:10001,
+              productionEligible:false,
+              productionBlockers:[
+                "model snapshot must be mounted at immutable revision with declared hashes",
+                "GPU runtime benchmark pending",
+                "German runtime benchmark pending",
+                "Human/Owner listening acceptance pending"
+              ]
+            }' > "$out/evidence.json"
+          rm "$out/image.tar"
+
+      - name: Evidence sichern
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: social-tts-worker-${{ matrix.runtime }}-${{ github.sha }}
+          path: tts-worker-evidence/${{ matrix.runtime }}/
+          if-no-files-found: error
+          retention-days: 7
