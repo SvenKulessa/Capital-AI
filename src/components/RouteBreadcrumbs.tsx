@@ -18,6 +18,17 @@ const LABELS: Record<string, string> = {
   security: 'Sicherheit',
   'key-vault': 'Key Vault',
   'control-center': 'Control Center',
+  roadmap: 'Roadmap',
+  components: 'Komponenten & CADS',
+  tools: 'Tools & Anwendungen',
+  observability: 'Observability',
+  news: 'News',
+  console: 'Console',
+  cockpit: 'Cockpit',
+  team: 'Team & Rollen',
+  cost_center: 'Cost Center',
+  system: 'System',
+  licenses: 'Lizenzen & Nachweise',
   tokenomics: 'Tokenomics',
 };
 

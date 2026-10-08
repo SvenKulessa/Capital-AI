@@ -1,19 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { APP_NAVIGATION_EVENT, navigateAppLocation, readHubTab, resolveNavigationTarget, resolveAppRoute } from '../src/utils/appNavigation.ts';
+import { APP_NAVIGATION_EVENT, navigateAppLocation, readHubTab, resolveNavigationTarget, resolveAppRoute, CONTROL_CENTER_SECTION_IDS } from '../src/utils/appNavigation.ts';
 import { messages } from '../src/i18n/messages.ts';
 
 test('all current sideboard tab links retain their hub and tab', () => {
   const sidebar = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
   const links = [...sidebar.matchAll(/path: '([^']+\?tab=[^']+)'/g)].map(match => match[1]);
-  assert.equal(links.length, 24);
-  assert.ok(links.includes('/control-center?tab=news'));
+  assert.equal(links.length, 13);
   assert.ok(links.includes('/studio?tab=console'));
   assert.ok(links.includes('/learning?tab=flashcards'));
   assert.ok(links.includes('/learning?tab=videos'));
-  assert.ok(links.includes('/control-center?tab=tools'));
-  assert.ok(links.includes('/control-center?tab=licenses'));
   for (const link of links) assert.equal(resolveNavigationTarget(link), link);
 });
 
@@ -206,4 +203,35 @@ test('documentation hub catalog links to the existing content instead of reopeni
   assert.match(home, /window\.location\.assign\(subpage\.path\)/);
   assert.match(catalog, /window\.location\.assign\(subpage\.path\)/);
   assert.ok(catalog.includes("badge: '12 Bereiche'"));
+});
+
+
+test('Control Center offers eleven dedicated, keyboard-accessible routes and legacy query links', () => {
+  const sidebar = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
+  const page = readFileSync(new URL('../src/components/ControlCenterPage.tsx', import.meta.url), 'utf8');
+  const appRoutes = readFileSync(new URL('../src/app/routing/AppRoutes.tsx', import.meta.url), 'utf8');
+  const destinations = [...sidebar.matchAll(/path: '(\/control-center\/[a-z_]+)'/g)].map((match) => match[1]);
+  assert.equal(destinations.length, CONTROL_CENTER_SECTION_IDS.length);
+  for (const id of CONTROL_CENTER_SECTION_IDS) {
+    const canonical = '/control-center/' + id;
+    assert.ok(destinations.includes(canonical), canonical);
+    assert.equal(resolveAppRoute(canonical.toUpperCase() + '/'), canonical);
+    assert.equal(resolveNavigationTarget('/control-center?tab=' + id), '/control-center?tab=' + id);
+  }
+  assert.equal(resolveAppRoute('/control-center/unknown'), '/');
+  assert.match(appRoutes, /currentRoute\.startsWith\('\/control-center\/'\)/);
+  assert.match(page, /aria-current=\{isActive \? 'page' : undefined\}/);
+  assert.match(page, /<select/);
+  assert.match(page, /focus-visible:outline/);
+  assert.match(page, /APP_NAVIGATION_EVENT/);
+  assert.doesNotMatch(page, /role="tablist"/);
+});
+
+test('all dedicated Control Center documents retain owner-only server gating and private SEO', async () => {
+  const server = readFileSync(new URL('../server/index.mjs', import.meta.url), 'utf8');
+  const { resolveSeoIndexingPolicy } = await import('../shared/seo-indexing-policy.mjs');
+  assert.match(server, /OWNER_ONLY_UI_PATHS\.has\(publicPath\) \|\| publicPath\.startsWith\('\/control-center\/'\)/);
+  for (const id of CONTROL_CENTER_SECTION_IDS) {
+    assert.equal(resolveSeoIndexingPolicy('/control-center/' + id).classification, 'PRIVATE');
+  }
 });

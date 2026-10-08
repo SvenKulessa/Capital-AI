@@ -337,7 +337,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         badge: '11 Owner',
         shortDesc: 'Navigationsfreundliche Roadmap filterbar nach 11 Projektownern & 5 Phasen',
         tags: ['11 Owner', '5 Phasen', 'AP-001..011'],
-        path: '/control-center?tab=roadmap',
+        path: '/control-center/roadmap',
       },
       {
         id: 'components',
@@ -345,7 +345,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         icon: <Layers className="w-4 h-4 text-rose-400" />,
         badge: 'Analyse',
         shortDesc: 'Komponenteninventar und Analyse-Verträge',
-        path: '/control-center?tab=components',
+        path: '/control-center/components',
       },
       {
         id: 'tools',
@@ -353,7 +353,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         icon: <FileCode className="w-4 h-4 text-cyan-400" />,
         badge: 'Repository',
         shortDesc: 'Repository-Katalog mit read-only Live-Anbindung',
-        path: '/control-center?tab=tools',
+        path: '/control-center/tools',
       },
       {
         id: 'observability',
@@ -361,7 +361,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         icon: <Activity className="w-4 h-4 text-emerald-400" />,
         badge: 'Monitoring',
         shortDesc: 'Betriebs-, Trace- und Runtime-Evidence',
-        path: '/control-center?tab=observability',
+        path: '/control-center/observability',
       },
       {
         id: 'news',
@@ -369,7 +369,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         icon: <FileCode className="w-4 h-4 text-cyan-400" />,
         badge: 'Blog',
         shortDesc: 'Quellgebundene Blogentwürfe nach jeweils 20 gemergten PRs',
-        path: '/control-center?tab=news',
+        path: '/control-center/news',
       },
       {
         id: 'console',
@@ -378,7 +378,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         badge: 'Admin & Audit',
         shortDesc: 'Shadow-Run Orchestrierung, 50-Komponenten Health & BaFin Revisionskontrolle',
         tags: ['Shadow Run', 'Audit Trail', 'Governance'],
-        path: '/control-center?tab=console',
+        path: '/control-center/console',
       },
       {
         id: 'cockpit',
@@ -387,7 +387,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         badge: 'GF & Founder',
         shortDesc: 'SLA-Monitoring, MaRisk Compliance-Score & Schnell-Aktionen für Geschäftsführung',
         tags: ['GF / Founder', 'MaRisk', 'KPIs'],
-        path: '/control-center?tab=cockpit',
+        path: '/control-center/cockpit',
       },
       {
         id: 'team',
@@ -396,7 +396,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         badge: '11 Leads',
         shortDesc: 'Verantwortlichkeits- und Berechtigungsmatrix aller 11 Projektverantwortlichen',
         tags: ['Rollenmatrix', 'Leads'],
-        path: '/control-center?tab=team',
+        path: '/control-center/team',
       },
       {
         id: 'cost_center',
@@ -405,7 +405,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         badge: '40 € Cap',
         shortDesc: 'AP-006 Budget-Governance & monatliche Kostenkontrolle unter 40 €',
         tags: ['Finanzen', 'AP-006', 'Budget-Cap'],
-        path: '/control-center?tab=cost_center',
+        path: '/control-center/cost_center',
       },
       {
         id: 'licenses',
@@ -414,7 +414,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         badge: 'Evidence',
         shortDesc: 'SPDX, Scannerberichte, Original-Lizenztexte und offene Provider-Rechte ohne automatische Freigabe',
         tags: ['SPDX', 'Scanner', 'Provider-Rechte'],
-        path: '/control-center?tab=licenses',
+        path: '/control-center/licenses',
       },
       {
         id: 'system',
@@ -423,7 +423,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         badge: 'Optionen',
         shortDesc: 'Feature Flags, Auto-Healing & WORM-Archivierungsstatus für Administratoren',
         tags: ['Feature Flags', 'System-Optionen'],
-        path: '/control-center?tab=system',
+        path: '/control-center/system',
       },
     ],
   },
@@ -642,6 +642,7 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
               {activeHub.subpages.map((subpage, idx) => {
                 const isActive =
                   activeLocation === subpage.path ||
+                  (effectiveHubId === 'control-center' && activeLocation === '/control-center?tab=' + subpage.id) ||
                   (activeLocation.startsWith(subpage.path + '#') && subpage.path !== '/');
 
                 return (
@@ -650,9 +651,16 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
                     aria-current={isActive ? 'page' : undefined}
                     role="treeitem"
                     aria-level={2}
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        handleSubpageClick(subpage);
+                      }
+                    }}
                     whileHover={{ x: 3 }}
                     onClick={() => handleSubpageClick(subpage)}
-                    className={`p-3.5 rounded-xl border transition-all cursor-pointer group relative overflow-hidden ${
+                    className={`p-3.5 rounded-xl border transition-all cursor-pointer group relative overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 ${
                       isActive
                         ? 'bg-slate-800/90 border-slate-600 shadow-md'
                         : 'bg-[#0b142e]/70 hover:bg-[#0f1b3e] border-slate-800/90 hover:border-slate-700'
