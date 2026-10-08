@@ -93,11 +93,11 @@ export const SOCIAL_CONTENT_WORK_PACKAGES: WorkPackage[] = [
       "CAPITAL-AI-GROWTH/social-engine-completion-gate.json",
       "docs/licenses/SOCIAL-MEDIA-ENGINE-THIRD-PARTY-NOTICES.md"
     ],
-    "nextStep": "Renderer-Hardening-Rebuild mit xz-libs >= 5.8.3-r0 terminal abnehmen; danach Qwen/Chatterbox Dependency-Locks, immutable TTS/ASR-Worker-Images und deutschen Listening-Benchmark schließen. Erst danach Social-Core/Renderer-Cutover fortsetzen.",
+    "nextStep": "Qwen, Chatterbox und Whisper/Faster-Whisper sind aus der Social Media Engine entfernt. Als nächstes Social-Core, deterministischen Renderer und Publishing-Cutover ohne aktives TTS/ASR-Modell fortsetzen.",
     "priority": "Kritisch",
     "leadName": "Owner + GROWTH/MARKET/PLATFORM/TRUST/PRODUCT",
     "targetSprint": "Sequenziell nach Lizenz-, Datenrechte- und Security-Gates",
-    "description": "Source-to-Target-Manifest, Third-Party-Notices und erweiterte immutable Social-Tool-Artefakt-Locks sind materialisiert; Punkt 4 bleibt ARTIFACT_LOCK_ADVANCED_FAIL_CLOSED und Punkt 6 bewertet die noch nicht migrierte Social-Runtime als BLOCKED. Finance-Scoring/Weighting/Data bleibt bis zum Social-Cutover ausdrücklich gesperrt. Kommerzieller Kundenpfad und Owner-private Tool-Runtime bleiben strikt getrennt.",
+    "description": "Source-to-Target-Manifest und Renderer-/Lizenz-Evidence sind materialisiert; Qwen, Chatterbox und Whisper/Faster-Whisper sind aus der Social Media Engine entfernt. Punkt 4 bleibt AUDIO_MODELS_REMOVED_FAIL_CLOSED und Punkt 6 bewertet die noch nicht migrierte Social-Runtime als BLOCKED. Finance-Scoring/Weighting/Data bleibt bis zum Social-Cutover ausdrücklich gesperrt. Kommerzieller Kundenpfad und Owner-private Tool-Runtime bleiben strikt getrennt.",
     "deliverables": [
       "SocialMediaEngine Contracts, Editing, deterministischen Media- und Publishing-Pfad zielkonform migrieren.",
       "Maschinenlesbare Tool-/Lizenz-Zulassung mit Commercial-, Owner-private-, Research- und BLOCKED-Modi durchsetzen.",
@@ -273,13 +273,13 @@ export const SOCIAL_CONTENT_WORK_PACKAGES: WorkPackage[] = [
     "evidenceRefs": [
       "https://github.com/SvenKulessa/Capital-AI/blob/867406f3aa9a478c14913ac731749fb33daeb9ac/CAPITAL-AI-GROWTH/SOCIAL-ENGINE-MIGRATION.md"
     ],
-    "nextStep": "Chatterbox-Prosodie gegen akzeptiertes Beispiel 4 reparieren; Qwen-Kandidat mit exakter Modell-/Lizenzbindung vergleichen; neue immutable WAVs bewerten.",
+    "nextStep": "Kein aktives TTS-/ASR-Modell konfigurieren. Ein späterer Voice-over-Provider darf nur nach neuer expliziter Owner-Entscheidung als separater Kandidat aufgenommen werden.",
     "priority": "Hoch",
     "leadName": "Owner + zuständige Domain",
     "targetSprint": "Nach erfüllten Abhängigkeiten; nicht terminiert",
-    "description": "Finance dokumentiert sieben abgelehnte von acht Hörbeispielen. Neue deutsche Kandidaten benötigen Hör-PASS; ASR-PASS allein genügt nicht.",
+    "description": "Qwen, Chatterbox und Whisper/Faster-Whisper sind aus der Social Media Engine entfernt. Der Voice-over-Bereich bleibt providerneutral und ohne aktives Modell; historische Finance-Hörtests erzeugen keine Runtime-Authority.",
     "deliverables": [
-      "Chatterbox-Prosodie gegen akzeptiertes Beispiel 4 reparieren; Qwen-Kandidat mit exakter Modell-/Lizenzbindung vergleichen; neue immutable WAVs bewerten."
+      "Providerneutrale Voice-Contract-Grenze ohne aktives TTS-/ASR-Modell erhalten; neue Kandidaten nur nach expliziter Owner-Entscheidung aufnehmen."
     ],
     "dependencies": [
       "CA-TRUST-SOC-RIGHTS",
