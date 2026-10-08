@@ -235,3 +235,12 @@ test('all dedicated Control Center documents retain owner-only server gating and
     assert.equal(resolveSeoIndexingPolicy('/control-center/' + id).classification, 'PRIVATE');
   }
 });
+
+
+test('Hub navigation entries use native focusable anchors for keyboard and modified clicks', () => {
+  const sidebar = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
+  assert.match(sidebar, /<motion\.a[\s\S]*?href=\{subpage\.path\}/);
+  assert.match(sidebar, /role="treeitem"/);
+  assert.match(sidebar, /event\.metaKey \|\| event\.ctrlKey/);
+  assert.doesNotMatch(sidebar, /onKeyDown=\{\(event\) => \{[\s\S]*?event\.key === 'Enter'/);
+});

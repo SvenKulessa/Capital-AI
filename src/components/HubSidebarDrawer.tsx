@@ -646,21 +646,18 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
                   (activeLocation.startsWith(subpage.path + '#') && subpage.path !== '/');
 
                 return (
-                  <motion.div
+                  <motion.a
                     key={subpage.id}
+                    href={subpage.path}
                     aria-current={isActive ? 'page' : undefined}
                     role="treeitem"
                     aria-level={2}
-                    tabIndex={0}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
-                        handleSubpageClick(subpage);
-                      }
+                    onClick={(event) => {
+                      if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                      event.preventDefault();
+                      handleSubpageClick(subpage);
                     }}
-                    whileHover={{ x: 3 }}
-                    onClick={() => handleSubpageClick(subpage)}
-                    className={`p-3.5 rounded-xl border transition-all cursor-pointer group relative overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 ${
+                    className={`block p-3.5 rounded-xl border transition-all cursor-pointer group relative overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 ${
                       isActive
                         ? 'bg-slate-800/90 border-slate-600 shadow-md'
                         : 'bg-[#0b142e]/70 hover:bg-[#0f1b3e] border-slate-800/90 hover:border-slate-700'
@@ -673,11 +670,6 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
                       aria-hidden="true"
                       className="absolute left-0 top-0 h-full w-1"
                       style={{ backgroundColor: isActive ? activeHub.color : `${activeHub.color}35` }}
-                    />
-                    <span
-                      aria-hidden="true"
-                      className="absolute left-3 top-1/2 h-px w-4"
-                      style={{ backgroundColor: `${activeHub.color}55` }}
                     />
                     {/* Folder-tree row: Hub → Bereich */}
                     <div className="flex items-center justify-between gap-2 mb-1.5 pl-3">
@@ -732,7 +724,7 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
                         <ChevronRight aria-hidden="true" className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                       </span>
                     </div>
-                  </motion.div>
+                  </motion.a>
                 );
               })}
             </div>
