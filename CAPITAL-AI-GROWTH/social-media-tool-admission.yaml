@@ -7,7 +7,7 @@ baseline:
   sourceRepository: "SvenKulessa/Finance"
   sourceSha: "dcef421fe6e350a3a2ade61d0299aad9ecca213c"
   targetRepository: "SvenKulessa/Capital-AI"
-  targetMainSha: "5b6b8b79ec0f29d3da99b55eed6920a7bd9c8cbf"
+  targetMainSha: "c881081e1d6a08e1babd98c15371f6a8615d645b"
   sourceTargetManifest: "CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json"
   exactEvidence: "CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json"
 
@@ -47,13 +47,13 @@ runtimePolicy:
   customerExportMayContainOwnerPrivateArtifacts: false
 
 tools:
-  - id: "d3"
+  - id: "d3-scale"
     componentType: "library"
-    financeUse: "planning-visual-layout"
+    financeUse: "planning-visual-layout; narrowed target dependency from Finance d3 umbrella"
     initialMode: "COMMERCIAL_PRODUCT_BUNDLE"
     licenseSurface: "ISC"
-    exactVersion: "7.9.0"
-    registryIntegrity: "sha512-e1U46jVP+w7Iut8Jt8ri1YsPOvFpg46k+K8TpCb0P+zjCkjkPnV7WzfDJzMHy1LnA+wj5pLT1wjO901gLXeEhA=="
+    exactVersion: "4.0.2"
+    registryIntegrity: "sha512-GZW464g1SH7ag3Y7hXjf8RoUuAFIqklOAq3MRl4OaWabTFJY9PN/E1YklhXLh+OQ3fM9yS2nOkCoS+WLZ6kvxQ=="
     productionEligible: true
     exactArtifactRecheckRequired: false
     noticeRequired: true
@@ -178,7 +178,7 @@ point4Decision:
   activeScope: "SOCIAL_MEDIA_ENGINE_ONLY"
   evidence: "CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json"
   fullyProductionEligible:
-    - "d3"
+    - "d3-scale"
   implementationEligibleProductionBlocked:
     - "pillow"
     - "ffmpeg"

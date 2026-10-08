@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - "deploy/social-media/**"
+      - "scripts/media/**"
+      - "public/branding/asset-pack/meta/social-render-tokens.json"
       - ".github/workflows/social-renderer-worker-evidence.yml"
       - "CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json"
       - "CAPITAL-AI-GROWTH/social-engine-completion-gate.json"
@@ -130,7 +132,30 @@ jobs:
             --entrypoint sh \
             "$image" -euc '
               test "$(id -u)" = "10001"
-              python -c "from PIL import Image; assert Image.__version__ == \"12.3.0\""
+              python -c "from PIL import Image; import capital_ai_media; assert Image.__version__ == \"12.3.0\"; palette=capital_ai_media.load_brand_palette(); assert palette.gold == \"#F9BF21\""
+              python /opt/capital-ai-media/scripts/media/render_content_assets.py --help >/dev/null
+              cat > /tmp/social-render-smoke.json <<'"'"'JSON'"'"'
+              {
+                "schemaVersion": "1.0.0",
+                "slug": "ci-render-smoke",
+                "title": "CAPITAL-AI Social Renderer",
+                "subtitle": "Deterministischer Offline-Smoke",
+                "disclaimer": "Keine Anlageberatung. CI-Evidence.",
+                "scenes": [
+                  {
+                    "title": "DATA → EVIDENCE",
+                    "body": "Deterministischer Renderer ohne aktives TTS- oder ASR-Modell.",
+                    "durationSeconds": 5
+                  }
+                ]
+              }
+              JSON
+              python /opt/capital-ai-media/scripts/media/render_content_assets.py \
+                --manifest /tmp/social-render-smoke.json \
+                --out-dir /tmp/social-render-out \
+                --video >/tmp/social-render-result.json
+              python -c "import json,pathlib; p=json.loads(pathlib.Path('"'"'/tmp/social-render-out/ci-render-smoke-asset-manifest.json'"'"').read_text()); assert p['"'"'publishReady'"'"'] is False; assert p['"'"'renderer'"'"']['"'"'networkAccess'"'"'] is False; assert p['"'"'renderer'"'"']['"'"'voiceover'"'"'] is None; assert len(p['"'"'assets'"'"']) == 5"
+              test -s /tmp/social-render-out/ci-render-smoke-short-1080x1920.mp4
               ! command -v pip
               test ! -d /usr/local/lib/python3.11/site-packages/setuptools
               ffmpeg -hide_banner -version >/dev/null

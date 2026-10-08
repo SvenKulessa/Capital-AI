@@ -3,7 +3,7 @@
   "id": "CAPITAL-AI-SOCIAL-ENGINE-COMPLETION-20261006",
   "workPackage": "CAPITAL-AI-FINANCE-SOCIAL-MARKET-MIGRATION-01",
   "point": "06_SOCIAL_ENGINE_MIGRATION_COMPLETION_GATE",
-  "correlatedMain": "5b6b8b79ec0f29d3da99b55eed6920a7bd9c8cbf",
+  "correlatedMain": "c881081e1d6a08e1babd98c15371f6a8615d645b",
   "declaredState": "BLOCKED",
   "blockingFollowUp": "CAPITAL-AI-FINANCE-SCORING-DATA-FOLLOWUP-01",
   "policy": {
@@ -53,17 +53,19 @@
     "src/platform/FinTechCore/Modules/Crypto/Pattern/PatternSignalResolver.ts"
   ],
   "currentEvaluation": {
-    "runtimeArtifactsPresent": 0,
+    "runtimeArtifactsPresent": 7,
     "runtimeArtifactsRequired": 13,
-    "rendererArtifactsPresent": 0,
+    "rendererArtifactsPresent": 2,
     "rendererArtifactsRequired": 2,
     "evidenceArtifactsPresent": 7,
     "evidenceArtifactsRequired": 7,
     "result": "BLOCKED",
     "blockers": [
-      "Point 4 remains fail-closed.",
-      "Qwen, Chatterbox and Whisper/Faster-Whisper have been removed from the Social Media Engine by owner decision; no active Social TTS/ASR model is configured.",
-      "SocialMediaEngine runtime and deterministic renderer source have not yet completed target cutover.",
+      "Point 4 remains fail-closed by explicit owner instruction.",
+      "MediaProjectV2, validation, editing, templates and PlanningVisual runtime are implemented on stacked PR #302 but CI is not yet terminal.",
+      "Deterministic Pillow/FFmpeg renderer source is implemented and wired into the hardened renderer worker; new end-to-end worker evidence is pending.",
+      "SocialMediaGeneratorService, text-content boundary, durable approval, provider publisher and publication analytics cutover are still missing.",
+      "No active TTS/ASR model is configured; Qwen, Chatterbox and Whisper-family implementations remain absent.",
       "Finance scoring/data follow-up remains blocked until Social completion."
     ],
     "socialToolLicenseEvidenceStatus": "POINT_4_AUDIO_MODELS_REMOVED_FAIL_CLOSED",
@@ -74,8 +76,10 @@
       "Renderer scan contains 0 vulnerabilities, 0 secrets and 0 blocking findings.",
       "xz-libs 5.8.4-r0 and zlib 1.3.2-r1 are bound in the renderer SBOM.",
       "CVE-2026-34743 and CVE-2026-85091 are absent.",
-      "FFmpeg 9.0.2 LGPL-only profile, read-only/non-root smoke, SBOM and runtime license inventory passed.",
-      "Social audio model baseline is provider-neutral with Qwen, Chatterbox and Whisper-family runtimes absent."
+      "Social audio model baseline is provider-neutral with Qwen, Chatterbox and Whisper-family runtimes absent.",
+      "7 of 13 required Social runtime artifacts are materialized on stacked PR #302.",
+      "2 of 2 deterministic renderer source artifacts are materialized on stacked PR #302.",
+      "Social Core uses current CAPITAL-AI target branding tokens and publishReady=false."
     ]
   },
   "passDefinition": [
