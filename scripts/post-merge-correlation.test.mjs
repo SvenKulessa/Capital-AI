@@ -166,6 +166,12 @@ test('merge milestone PR creation requires dedicated repo-scoped GitHub App', ()
   const workflow = readFileSync(new URL('../.github/workflows/merge-milestones.yml', import.meta.url), 'utf8');
   assert.match(workflow, /permissions:\n  contents: read\n  pull-requests: read/);
   assert.match(workflow, /actions\/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1/);
+  // Missing either App credential must skip minting and retain the draft artifact.
+  assert.match(workflow, /id: app_credentials/);
+  assert.ok(workflow.includes('APP_CLIENT_ID: ${{ vars.CAPITAL_AI_MILESTONE_APP_CLIENT_ID }}'));
+  assert.ok(workflow.includes('APP_PRIVATE_KEY: ${{ secrets.CAPITAL_AI_MILESTONE_APP_PRIVATE_KEY }}'));
+  assert.ok(workflow.includes("if: ${{ steps.app_credentials.outputs.ready == 'true' }}"));
+  assert.ok(workflow.includes('echo "ready=false" >> "$GITHUB_OUTPUT"'));
   assert.match(workflow, /permission-contents: write/);
   assert.match(workflow, /permission-pull-requests: write/);
   assert.match(workflow, /repositories: Capital-AI/);
