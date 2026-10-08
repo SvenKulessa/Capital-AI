@@ -71,7 +71,7 @@ remains behind `FINANCE_RESEARCH_TRANSPORT_ENABLED=true` and must only be wired 
 trusted, server-side orchestrator through an approved build/runtime boundary. No browser
 imports or frontend connection are allowed.
 
-Supabase: apply `20261008173500_finance_research_value_replay_fingerprint.sql` using
+Supabase: apply `20261008181502_finance_research_value_replay_fingerprint.sql` using
 the reviewed migration flow. Previous migration `20261008161645` was already applied
 on 2026-10-08; verify the new column and check grants/RLS after the new merge.
 
