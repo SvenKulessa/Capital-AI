@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocale } from '../i18n/LocaleProvider';
 import { BrandLogo } from './BrandLogo';
 import { ExternalLink } from 'lucide-react';
 import { socialLinks } from '../data/socialLinks';
@@ -11,6 +12,7 @@ interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
+  const { t } = useLocale();
   const handleNavClick = (e: React.MouseEvent, path: string, label: string) => {
     if (onNavigate) e.preventDefault();
     trackEvent('footer_nav_click', {
@@ -42,7 +44,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         {socialLinks.map((link) => (
           <a key={link.id} href={link.href} target="_blank" rel="noopener noreferrer"
             className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-amber-500/20 bg-slate-950/60 px-4 py-2 text-xs font-medium text-slate-300 transition-colors hover:border-amber-400/60 hover:text-amber-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400"
-            aria-label={`${link.label} – öffnet in einem neuen Tab`}>
+            aria-label={`${link.label} – ${t('external')}`}>
             <span className="flex h-5 w-5 items-center justify-center rounded bg-white p-0.5" aria-hidden="true">
               <img src={socialIconPath(link.id)} alt="" className="h-4 w-4 object-contain" />
             </span>
@@ -62,7 +64,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           className="hover:text-amber-400 transition-colors cursor-pointer text-slate-400 font-medium hover:underline underline-offset-4"
           data-analytics="footer-impressum"
         >
-          Impressum
+          {t('imprint')}
         </a>
         <span className="text-slate-600">•</span>
         <a
@@ -72,7 +74,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           className="hover:text-pink-400 transition-colors cursor-pointer text-slate-400 font-medium hover:underline underline-offset-4"
           data-analytics="footer-agb"
         >
-          AGB
+          {t('terms')}
         </a>
         <span className="text-slate-600">•</span>
         <a
@@ -82,7 +84,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           className="hover:text-emerald-400 transition-colors cursor-pointer text-slate-400 font-medium hover:underline underline-offset-4"
           data-analytics="footer-datenschutz"
         >
-          Datenschutz
+          {t('privacy')}
         </a>
         <span className="text-slate-600">•</span>
         <a
@@ -102,7 +104,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           className="hover:text-amber-300 transition-colors cursor-pointer text-amber-300 font-bold hover:underline underline-offset-4 flex items-center gap-1"
           data-analytics="footer-pricing"
         >
-          Preiskatalog
+          {t('pricing')}
         </a>
         <span className="text-slate-600">•</span>
         <a
@@ -112,7 +114,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           className="hover:text-cyan-300 transition-colors cursor-pointer text-cyan-300 font-semibold hover:underline underline-offset-4"
           data-analytics="footer-documentation"
         >
-          Dokumentation &amp; Lizenzen
+          {t('docs')}
         </a>
       </div>
 

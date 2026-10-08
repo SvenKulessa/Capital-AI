@@ -18,6 +18,7 @@ import { serveMtaSts } from './mta-sts.mjs';
 import { serveWellKnown } from './well-known.mjs';
 import { researchMetadata } from '../shared/research-metadata.mjs';
 import { seoMetadataForPath } from '../shared/seo-metadata.mjs';
+import { resolveLocale } from '../shared/locale-policy.mjs';
 import {
   isSeoIndexable,
   robotsDirectiveFor,
@@ -428,6 +429,13 @@ export function createApp(root = defaultRoot, options = {}) {
     if (path.extname(file) === '.html') {
       body = Buffer.from(injectSeoMetadata(body.toString('utf8'), publicPath));
       body = Buffer.from(applySeoIndexingPolicy(body.toString('utf8'), publicPath));
+      // Optional CDN country signal. No third-party lookup; no IP persistence.
+      const {locale, source} = resolveLocale({
+        cookieHeader: req.headers.cookie,
+        countryHeader: req.headers['cf-ipcountry'],
+        acceptLanguage: req.headers['accept-language'],
+      });
+      body = Buffer.from(body.toString('utf8').replace(/<html lang="[^"]*"/, `<html lang="${locale}" data-locale-source="${source}"`));
     }
     res.writeHead(200, { ...headers, 'Cache-Control': path.extname(file) === '.html' ? 'no-store' : 'public, max-age=3600', 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(body);
   } catch { res.writeHead(404, headers); res.end(); }

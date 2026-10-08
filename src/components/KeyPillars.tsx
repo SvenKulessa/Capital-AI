@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useLocale } from '../i18n/LocaleProvider';
 import { KEY_PILLARS } from '../data/mockData';
 
 export const KeyPillars: React.FC = () => {
+  const { t } = useLocale();
   const [activePillar, setActivePillar] = useState<string | null>(null);
 
   const renderIcon = (type: string) => {
@@ -85,7 +87,7 @@ export const KeyPillars: React.FC = () => {
 
               {/* Label */}
               <span className="text-[11.5px] sm:text-xs text-slate-200 font-medium leading-[1.25] line-clamp-2 max-w-[85px]">
-                {pillar.title}
+                {t(({realtime:'pillarRealtime','transparent-ai':'pillarAi',audience:'pillarAudience','global-markets':'pillarGlobal'} as const)[pillar.id as 'realtime'|'transparent-ai'|'audience'|'global-markets'])}
               </span>
             </motion.div>
           );

@@ -43,6 +43,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BrandLogo } from './BrandLogo';
+import { LanguageSwitcher } from './LanguageSwitcher';
+import { useLocale } from '../i18n/LocaleProvider';
 import { ASSET_CLASSES } from '../data/mockData';
 import { MainCategory, AssetSubclass } from '../types';
 import { trackLoginClick } from '../utils/analytics';
@@ -97,6 +99,7 @@ export const Header: React.FC<HeaderProps> = ({
   onNavigate,
 }) => {
 
+  const { t } = useLocale();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeSidebarHub, setActiveSidebarHub] = useState<MainHubId>('marketscreener');
@@ -211,7 +214,7 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           id="mobile-menu-btn"
           type="button"
-          aria-label="Navigation öffnen"
+          aria-label={t('navOpen')}
           aria-expanded={isMenuOpen}
           aria-controls="capital-ai-mobile-navigation"
           aria-haspopup="dialog"
@@ -316,7 +319,7 @@ export const Header: React.FC<HeaderProps> = ({
           type="button"
           onClick={onOpenPriceAlerts}
           className="relative p-2 rounded-xl bg-white/5 hover:bg-white/10 active:bg-white/15 text-amber-300 border border-amber-500/20 hover:border-amber-500/40 transition-all cursor-pointer shadow-[0_0_12px_rgba(249,191,33,0.12)] shrink-0 group"
-          aria-label="Preisalarme öffnen"
+          aria-label={t('navAlerts')}
           title="PriceAlerts & Schwellenwerte"
         >
           <Bell className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
@@ -341,6 +344,8 @@ export const Header: React.FC<HeaderProps> = ({
           <span>Studio Hub</span>
         </button>
 
+        {/* Language selector stays next to Login and Account. */}
+        <LanguageSwitcher />
         {/* SESSION-AWARE ACCOUNT / LOGIN */}
         {authSession?.authenticated ? (
           <div className="relative shrink-0">
@@ -351,7 +356,7 @@ export const Header: React.FC<HeaderProps> = ({
               className="flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-400/30 hover:border-emerald-300 text-emerald-100 text-xs font-bold transition-all"
               aria-haspopup="menu"
               aria-expanded={isAccountOpen}
-              aria-label="Kontomenü öffnen"
+              aria-label={t('navAccount')}
               title="Kontomenü"
             >
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
@@ -424,7 +429,7 @@ export const Header: React.FC<HeaderProps> = ({
             title="Terminal Anmeldung (/login)"
           >
             <LogIn className="w-3.5 h-3.5 text-amber-400 group-hover:text-amber-200 group-hover:scale-110 transition-all" />
-            <span>Login</span>
+            <span>{t('login')}</span>
           </a>
         )}
       </div>
