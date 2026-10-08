@@ -150,6 +150,32 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
         }
       }
     }
+    // SEO-03: an actual first HTTP response must contain indexable content
+    // for humans and crawlers that do not execute JavaScript.
+    for (const route of ['/', '/faq', '/impressum', '/datenschutz', '/agb']) {
+      const response = await fetch(origin + route);
+      assert.equal(response.status, 200, route);
+      const html = await response.text();
+      const metadataTitle = route === '/' ? 'Capital-AI' : null;
+      assert.match(html, /id="capital-ai-public-snapshot" lang="de"/, route);
+      assert.match(html, /<nav aria-label="Öffentliche Seiten">/, route);
+      assert.match(html, /<h1>[^<]+<\/h1>/, route);
+      if (metadataTitle) assert.match(html, /<h1>Capital-AI/, route);
+      assert.doesNotMatch(html, /\/profile\/key-vault|\/control-center|\/api\/billing/, route);
+      assert.doesNotMatch(html, /"@type":"Offer"|<script[^>]*src="https:\/\//, route);
+      if (route === '/') {
+        assert.match(html, /href="\/pricing">Tarife und Leistungen ansehen<\/a>/);
+        assert.match(html, /href="\/login">Anmelden<\/a>/);
+      }
+    }
+    for (const route of ['/pricing', '/login', '/profile', '/control-center', '/en', '/not-inventory']) {
+      const response = await fetch(origin + route);
+      const html = await response.text();
+      assert.doesNotMatch(html, /capital-ai-public-snapshot/, route);
+    }
+    const richVocabulary = await (await fetch(origin + '/vocabulary')).text();
+    assert.match(richVocabulary, /<main><article><h1>Capital-AI Vocabulary<\/h1>/);
+    assert.doesNotMatch(richVocabulary, /capital-ai-public-snapshot/);
   } finally {
     server.closeAllConnections();
     await new Promise(resolve => server.close(resolve));

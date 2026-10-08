@@ -174,6 +174,39 @@ function applySeoIndexingPolicy(html, pathname) {
   }
   return body;
 }
+// This is real public HTML for all clients, not a bot-specific response.
+// React createRoot replaces the snapshot when the interactive app mounts.
+const PUBLIC_SNAPSHOT_LINKS = Object.freeze([
+  ['/', 'Startseite'],
+  ['/learning', 'Learning'],
+  ['/vocabulary', 'Vocabulary'],
+  ['/faq', 'FAQ'],
+  ['/datenprovider-lizenzen', 'Datenrechte'],
+  ['/opensource-lizenzen', 'Open-Source-Lizenzen'],
+  ['/impressum', 'Impressum'],
+  ['/datenschutz', 'Datenschutz'],
+  ['/agb', 'AGB'],
+]);
+
+function injectPublicSeoSnapshot(html, pathname) {
+  // Only the explicit static INDEX allowlist; account and billing pages remain NOINDEX.
+  if (!seoIndexableStaticPaths().includes(pathname) || !html.includes('<div id="root"></div>')) return html;
+  const metadata = seoMetadataForPath(pathname);
+  if (!metadata) return html;
+  const links = PUBLIC_SNAPSHOT_LINKS
+    .filter(([route]) => route !== pathname && isSeoIndexable(route))
+    .map(([route, label]) => `<li><a href="${escapeHtml(route)}">${escapeHtml(label)}</a></li>`)
+    .join('');
+  const conversionLinks = pathname === '/'
+    ? '<p><a href="/pricing">Tarife und Leistungen ansehen</a> · <a href="/login">Anmelden</a></p>'
+    : '';
+  const snapshot =
+    `<main id="capital-ai-public-snapshot" lang="de"><article>` +
+    `<h1>${escapeHtml(metadata.title)}</h1><p>${escapeHtml(metadata.description)}</p>` +
+    `${conversionLinks}<nav aria-label="Öffentliche Seiten"><ul>${links}</ul></nav>` +
+    '</article></main>';
+  return html.replace('<div id="root"></div>', `<div id="root">${snapshot}</div>`);
+}
 function vocabularyFallback(entry) {
   const thesaurus = entry.thesaurus.map(item => `<li>${escapeHtml(item)}</li>`).join('');
   return `<main><article><p><a href="/vocabulary">Capital-AI Vocabulary</a></p><h1>${escapeHtml(entry.term)}</h1><p>${escapeHtml(entry.description)}</p><p>Kategorie: ${escapeHtml(entry.category)}</p><h2>Thesaurus</h2><ul>${thesaurus}</ul></article></main>`;
@@ -517,6 +550,7 @@ export function createApp(root = defaultRoot, options = {}) {
     if (path.extname(file) === '.html') {
       body = Buffer.from(injectSeoMetadata(body.toString('utf8'), publicPath));
       body = Buffer.from(applySeoIndexingPolicy(body.toString('utf8'), publicPath));
+      body = Buffer.from(injectPublicSeoSnapshot(body.toString('utf8'), publicPath));
       const pathLocale = localeFromLandingPath(publicPath);
       if (pathLocale && publicPath !== '/') {
         body = Buffer.from(localizeNonIndexableLandingHtml(body.toString('utf8'), pathLocale));
