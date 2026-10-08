@@ -1,7 +1,10 @@
 import React from 'react';
 import { PROJECT_OWNERS, ROADMAP_STAGES, WORK_PACKAGES } from '../data/roadmapData';
 import type { ProjectOwner, RoadmapEvidenceState } from '../data/roadmapData';
-import mergeAudit from '../data/roadmapMergeReconciliation.json';
+import mergeAuditData from '../data/roadmapMergeReconciliation.json';
+const mergeAudit = mergeAuditData as unknown as {
+  state: string; lastReconciledPr: number | null; unproven?: number;
+};
 
 const STATES: Record<RoadmapEvidenceState, { label: string; style: string }> = {
   VERIFIED: { label: 'VERIFIED · Repo umgesetzt', style: 'border-emerald-400/40 text-emerald-300' },

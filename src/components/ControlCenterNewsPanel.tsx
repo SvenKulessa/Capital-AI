@@ -1,5 +1,9 @@
 import React from 'react';
-import news from '../data/controlCenterNews.json';
+import newsData from '../data/controlCenterNews.json';
+const news = newsData as unknown as {
+  state: string; title?: string; lastBatchPr: number | null;
+  article?: string | null; sourceSha?: string | null;
+};
 
 /** Owner-only container is enforced by ControlCenterPage; content is draft-only. */
 export function ControlCenterNewsPanel() {
