@@ -50,3 +50,21 @@ Only the 20 ECB daily currency reference records have full production evidence (
 ## Commercial and infrastructure cost notice
 
 No fee is incurred by the dormant adapters alone beyond normal CI. Production of 250 streams may require additional Render CPU/memory, NATS JetStream disk, outbound internet traffic and provider exchange redistribution licenses. Current applicable quotas and paid tier amounts are NOT_PROVEN; no new paid service is provisioned by this PR. Existing NATS, Redis/Valkey, web and Rust worker are not redeployed just because Git HEAD changed.
+
+## Private user-Vault BYOK — architectural decision (user confirmed 2026-10-08)
+
+**All provider API keys used by CAPITAL-AI are owned by individual users and stored exclusively in their private user Vault connections.** API credentials are never configured as global public-market data keys and never sent to the browser, PR logs, public Redis quote channels or shared NATS quote subjects.
+
+Separate **data scopes**:
+
+1. **`USER_PRIVATE_MARKET_DATA`**: authenticated `POST /api/profile/provider-query` with `market.spot_trade` and a mandatory allowlisted symbol. Existing same-origin session verifies the actual user; signed, expiring NATS private query envelope binds `userRef`, provider, operation, request ID and parameters; Supabase durable claim imposes replay protection, rate and cost limits; Vault retrieves only this `userRef`'s credential and verifies provider read/withdrawal permissions before an outbound market read. The source response is projected to a bounded price + observed timestamp without secrets, with no-store and explicit `publicDisplayAllowed=false`, `sharedCacheAllowed=false`, `redistributionAllowed=false`, `jetStreamPublicationAllowed=false`, `executionEnabled=false`. No global source admission is inherited.
+2. **`USER_PRIVATE_ACCOUNT_DATA`**: existing private account/balance/orders operations through the same Vault and private NATS query bus, still non-public.
+3. **`OPEN_SOURCE_OPEN_DATA_ADMITTED` public catalog**: independent ECB reference data, with separately reviewed original source rights and `CAPITAL_FACTS` replay proof. The user's BYOK access NEVER makes vendor-restricted private or public Spot data eligible for this global/shared lane.
+
+`market.spot_trade` currently supports a single Binance BTCUSDT trade and a single Kraken BTC/USD trade as private REST snapshots, **only when `PRIVATE_PROVIDER_BRIDGE_ENABLED=true` and the user's own Vault connection and runtime are configured**. This PR does not set that flag or touch any live secret, so private production roundtrip is NOT_PROVEN. Both underlying public Spot market endpoints require no key on the HTTP trade request; the user's Vault key is nevertheless checked server-side to authorize the user's private provider connection. Do not claim the public market HTTP request is API-key-authenticated.
+
+Private WebSocket session support will require the same user-bound identity + tenant-scoped lifecycle and rate/cost limits with no public broker/cache fanout. In this PR vendor WebSocket parsers and fixed endpoint subscriptions are available but **no per-user WebSocket session is enabled**.
+
+**Important:** BYOK ownership and private display avoid CAPITAL-AI publicly distributing a pooled market-data feed, but do not automatically grant a hosted commercial service unlimited rights to use, cache, derive, display, relay or serve proprietary vendor data. Actual subscription/terms/IP rights still apply per provider and use case. Public 50-per-class coverage cannot count any private per-user BYOK session or account data.
+
+The private path can be tested and improved without demanding a global public-market redistributor contract. Rate limits, user isolation and quotas are real technical constraints; no new abstract human admission or extra Required Check is introduced.
