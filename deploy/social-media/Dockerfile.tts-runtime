@@ -1,5 +1,5 @@
 ARG PYTHON_BASE
-FROM ${PYTHON_BASE} AS runtime
+FROM ${PYTHON_BASE} AS deps-build
 
 ARG RUNTIME
 ARG CHATTERBOX_REVISION=5de7a54aa4e5e2baadb0182dde554908b48b85c2
@@ -7,10 +7,9 @@ ARG PERTH_REVISION=ff1c8ac55a976971245cdd53c18d6131ca00d993
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
+      build-essential \
       ca-certificates \
       git \
-      libsndfile1 \
-      sox \
     && rm -rf /var/lib/apt/lists/*
 
 COPY deploy/social-media/tts/qwen-runtime.lock.json /locks/qwen-runtime.lock.json
@@ -20,8 +19,7 @@ RUN test "${RUNTIME}" = "qwen" -o "${RUNTIME}" = "chatterbox" \
     && python - "${RUNTIME}" <<'PY'
 import json, pathlib, sys
 runtime=sys.argv[1]
-p=pathlib.Path(f"/locks/{runtime}-runtime.lock.json")
-data=json.loads(p.read_text())
+data=json.loads(pathlib.Path(f"/locks/{runtime}-runtime.lock.json").read_text())
 assert data["runtime"] == runtime
 lines=[]
 for item in data["packages"]:
@@ -36,16 +34,33 @@ PY
 RUN python -m pip install \
       --disable-pip-version-check \
       --no-cache-dir \
+      --no-build-isolation \
       --require-hashes \
-      --only-binary=:all: \
+      --target /opt/python \
       --requirement /tmp/runtime-requirements.txt \
     && if [ "${RUNTIME}" = "chatterbox" ]; then \
-         python -m pip install --disable-pip-version-check --no-cache-dir --no-deps \
-           "git+https://github.com/resemble-ai/Perth.git@${PERTH_REVISION}"; \
-         python -m pip install --disable-pip-version-check --no-cache-dir --no-deps \
-           "git+https://github.com/resemble-ai/chatterbox.git@${CHATTERBOX_REVISION}"; \
-       fi \
-    && rm /tmp/runtime-requirements.txt
+         git clone --filter=blob:none https://github.com/resemble-ai/Perth.git /tmp/perth \
+         && git -C /tmp/perth checkout --detach "${PERTH_REVISION}" \
+         && test "$(git -C /tmp/perth rev-parse HEAD)" = "${PERTH_REVISION}" \
+         && python -m pip install --disable-pip-version-check --no-cache-dir --no-build-isolation --no-deps --target /opt/python /tmp/perth; \
+         git clone --filter=blob:none https://github.com/resemble-ai/chatterbox.git /tmp/chatterbox \
+         && git -C /tmp/chatterbox checkout --detach "${CHATTERBOX_REVISION}" \
+         && test "$(git -C /tmp/chatterbox rev-parse HEAD)" = "${CHATTERBOX_REVISION}" \
+         && python -m pip install --disable-pip-version-check --no-cache-dir --no-build-isolation --no-deps --target /opt/python /tmp/chatterbox; \
+       fi
+
+ARG PYTHON_BASE
+FROM ${PYTHON_BASE} AS runtime
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+      libsndfile1 \
+      sox \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=deps-build /opt/python /opt/python
+
+ENV PYTHONPATH="/opt/python"
 
 RUN groupadd --gid 10001 tts \
     && useradd --uid 10001 --gid 10001 --no-create-home --shell /usr/sbin/nologin tts
