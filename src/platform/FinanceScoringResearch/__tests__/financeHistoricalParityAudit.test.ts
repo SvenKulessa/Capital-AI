@@ -45,7 +45,7 @@ function sample(score=80):FinanceHistoricalParityCandidateInput {
         horizon:'1d',regime:'baseline',isDemo:false,
         asset:{assetId:'stock:AAPL',symbol:'AAPL',name:'Apple',
           assetClass:'equity_us',venue:'XNAS',currency:'USD',status:'active'},
-        features:[],rights,
+        features:[],rights:[rights],
         rawInputReferences:[archiveRef,sourceRef,identityRef,featureRef,normRef]},
       sourceModel:{sourceCommit:FINANCE_PINNED_SOURCE_SHA,
         sourceAsset:{contractVersion:'uai/1.0.0',assetId:'stock:AAPL',
