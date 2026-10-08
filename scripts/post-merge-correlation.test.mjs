@@ -188,3 +188,22 @@ test('merge milestone PR creation requires dedicated repo-scoped GitHub App', ()
   assert.ok(workflow.includes('if [[ ! "$date_suffix" =~ ^[0-9]{8}$ ]]'));
   assert.doesNotMatch(workflow, /gh pr merge|--auto|enable-auto-merge/);
 });
+
+test('manual milestone App validation mints a scoped token but never writes to GitHub', () => {
+  const workflow = readFileSync(new URL('../.github/workflows/merge-milestones.yml', import.meta.url), 'utf8');
+  assert.match(workflow, /  workflow_dispatch:/);
+  assert.match(workflow, /validate_app:\n    if: github.event_name == 'workflow_dispatch'/);
+  assert.match(workflow, /audit:\n    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true/);
+  const [validateSection] = workflow.split(/\n  audit:\n/);
+  assert.match(validateSection, /uses: actions\/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1/);
+  assert.match(validateSection, /permission-contents: write/);
+  assert.match(validateSection, /permission-pull-requests: write/);
+  assert.match(validateSection, /owner: \$\{\{ github.repository_owner \}\}/);
+  assert.match(validateSection, /repositories: Capital-AI/);
+  assert.match(validateSection, /GH_TOKEN: \$\{\{ steps.validation_token.outputs.token \}\}/);
+  assert.match(validateSection, /gh api "repos\/\$REPOSITORY"/);
+  assert.match(validateSection, /gh api "repos\/\$REPOSITORY\/pulls\?state=open&per_page=1"/);
+  assert.doesNotMatch(validateSection, /\bgh\s+pr\s+(create|merge)\b|\bgit\s+push\b|\bgh\s+api\s+-X\s+(POST|PATCH|DELETE)\b/);
+  assert.match(workflow, /APP_CONFIG_BLOCKED/);
+  assert.match(workflow, /APP_TOKEN_VERIFIED/);
+});
