@@ -47,7 +47,7 @@ export function projectFinanceResearchReceipt(evaluation, context, now = Date.no
       !MODEL.test(evaluation.modelId || '') ||
       !/^[0-9]+(?:\.[0-9]+){1,3}$/.test(evaluation.sourceModelVersion || '') ||
       !Number.isSafeInteger(context.evaluatedAt) || context.evaluatedAt <= 0 ||
-      context.evaluatedAt > now + 3000) {
+      context.evaluatedAt > now) {
     throw new Error('RESEARCH_PROVENANCE_INVALID');
   }
   // Exact positive admission, not inferred from BYOK, provider connectivity, or a source PASS.

@@ -57,6 +57,7 @@ COPY supabase/proposals/provider_query_guard.sql ./supabase/proposals/provider_q
 COPY scripts/documentation-drift.mjs scripts/documentation-drift.test.mjs ./scripts/
 COPY scripts/domain-skills.test.mjs ./scripts/domain-skills.test.mjs
 COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/social-tool-license-evidence.test.mjs scripts/validate-social-tool-license-evidence.mjs scripts/frontend-security.test.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
+COPY scripts/media ./scripts/media
 COPY shared ./shared
 COPY contracts/private-provider-query-operations.json ./contracts/private-provider-query-operations.json
 COPY CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json CAPITAL-AI-GROWTH/social-engine-completion-gate.json CAPITAL-AI-GROWTH/social-media-tool-admission.yaml CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.yaml ./CAPITAL-AI-GROWTH/

@@ -70,7 +70,11 @@ test('demo and future data cannot reach receipt sink',async()=>{
    ...fixture(), snapshot:{...fixture().snapshot,isDemo:true},
  },sink,at);
  const b=await evaluateFinanceResearchForReceipt(fixture(),sink,at-10000);
+ const oneMillisecond=await evaluateFinanceResearchForReceipt(fixture(),sink,at-1);
  assert.equal(a.state,'BLOCKED');
  assert.equal(b.state,'BLOCKED');
+ assert.equal(oneMillisecond.state,'BLOCKED');
+ if (oneMillisecond.state === 'BLOCKED')
+   assert.ok(oneMillisecond.reasonCodes.includes('DEMO_OR_FUTURE_DATA_BLOCKED'));
  assert.equal(writes,0);
 });
