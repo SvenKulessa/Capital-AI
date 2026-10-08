@@ -1,10 +1,10 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "ba6fc7183c3d017e116a88e247af6054d7690fa4",
-  "mergedPr": 287,
-  "targetPr": 288,
-  "targetBranch": "capital-ai-trust/personal-byok-scoring-workspace-20261008",
-  "targetHeadSha": "e47b2c452c4e8f18039f59ec69f8ed0a76b9f2c3",
+  "mainSha": "5b6b8b79ec0f29d3da99b55eed6920a7bd9c8cbf",
+  "mergedPr": 297,
+  "targetPr": 298,
+  "targetBranch": "capital-ai-product/enterprise-analysis-ui-20261008",
+  "targetHeadSha": "6f7df1863655bd626965cef9d65a92c7a8999982",
   "exactOverlap": [
     "package.json"
   ],
