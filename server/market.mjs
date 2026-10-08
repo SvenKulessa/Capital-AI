@@ -2,6 +2,7 @@ import { instrumentCatalog, MarketAssetCatalogSchema, QuoteFactSchema, isFresh, 
 import { infrastructure, payloadHash } from './infrastructure.mjs';
 import { MARKET_SOURCE_POLICY, admittedMarketSourcesFor, isAdmittedMarketSource } from './open-source-market-policy.mjs';
 import { ECB_REFERENCE_RATE_SYMBOLS, fetchEcbReferenceRates } from './ecb-reference-rates.mjs';
+import { marketAssetCoverage, evaluateSpotIngestion } from './market-spot-ingestion.mjs';
 
 const defaultSymbols = ['BTCUSDT','BTCUSD','AAPL', ...ECB_REFERENCE_RATE_SYMBOLS];
 const allowed = new Set(
@@ -240,5 +241,8 @@ export function health() {
     scoreDisplayEnabled:false,
     scoringGate:'FEATURE_DQ_SCORING_GATES_OPEN',
     referenceDataState:ecbAdapterState.status,
+    assetCoverage:marketAssetCoverage(),
+    spotIngestion: { enabled:process.env.MARKET_SPOT_INGESTION_ENABLED === 'true',
+      exampleKrakenSpotAllowed:evaluateSpotIngestion({provider:'kraken',symbol:'BTCUSD',transport:'websocket'}).allowed },
   };
 }
