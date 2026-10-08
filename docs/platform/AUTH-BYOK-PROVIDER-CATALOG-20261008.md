@@ -59,3 +59,18 @@ This change deliberately does not alter Supabase Auth settings, database constra
 - Following the verified Google callback, the server writes `terms`, `privacy` and `marketing` evidence to the existing `user_consents` table via a service-role-only PostgREST call with ignore-duplicates semantics. A persistence error returns 503 before an application session is issued.
 - Read-only Supabase schema verification confirmed `user_consents_subject_document_uq` on `(user_id, consent_type, document_version)`. No SQL migration is required.
 - **Residual limitation:** the original Google **login** URL remains backward compatible; on a Google account created via login-first flow, Supabase may auto-create an account without explicit registration consent. A future controlled onboarding/consent interstitial is required if all login-first registrations must be prevented. Do not mistake explicit-signup parity for universal signup-policy enforcement.
+
+
+## Live Auth troubleshooting – 2026-10-08 (read-only)
+
+**Observed:** Supabase Auth logged `POST /factors → 200`; a metadata-only SQL readback showed one unverified TOTP factor. This supports successful factor creation, **not** successful QR rendering or completion of enrollment. No OTP secret was retrieved from the database or log streams. Existing QR/manual-key UI is offered only after the enrollment response contains usable setup material. The hardening derives a missing standalone TOTP secret from a valid `otpauth://totp` URI, or returns `502 totp_setup_material_unavailable` without issuing a false success.
+
+**Google:** The database contains existing Google identities and older verified OAuth callbacks, so Google is not demonstrably disabled globally. The current affected-user browser roundtrip remains `NOT_PROVEN`. The web PKCE callback is now static: `https://capital-ai.online/api/auth/callback`. The OAuth flow verifier, nonce and permitted return path remain in signed, HttpOnly, Secure, SameSite=Lax, short-lived cookie state. Existing mobile callbacks with a `flow` parameter retain strict equality validation. Provider denial and token exchange failures redirect to bounded `/login?oauth_error=...` values without reflecting upstream descriptions.
+
+**Owner-side configuration readback (do not paste credentials into issues):**
+- Supabase project `ryzywoktpmyhwzxmstyu`: **Authentication → Providers → Google** enabled; Google Client ID/secret configured in Supabase, Google audience/test-user policy and scopes checked.
+- Google Cloud OAuth **Authorized redirect URI**: `https://ryzywoktpmyhwzxmstyu.supabase.co/auth/v1/callback` (this is the Supabase provider callback).
+- Supabase Auth **Site URL**: `https://capital-ai.online`; **Additional Redirect URLs** include `https://capital-ai.online/api/auth/callback` (application PKCE exchange endpoint). These are **different callbacks** with distinct roles.
+- TOTP `mfa_totp_enroll_enabled` and `mfa_totp_verify_enabled` configuration readback remains `NOT_PROVEN` via management API, despite observed successful factor creation.
+
+**Production proof needed:** Browser start → Google account consent → static callback → app session and redirect; E2E new Google signup with Terms/Privacy evidence; user-device TOTP QR/manual secret → OTP challenge/verify → AAL2; fresh login requires MFA; no data leaks or external QR image requests. Test in the website origin, not via Preview/alternate Render host. Never publish API keys, OTP secrets, factor URIs or QR screenshots.
