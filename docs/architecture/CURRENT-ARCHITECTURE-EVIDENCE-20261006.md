@@ -186,7 +186,7 @@ Evidence:
 Aktuelle Runtime:
 - kein LangGraph-Runtime-Authority
 - Microsoft GraphRAG ist als isolierter Research-/Evidence-Layer geplant, nicht als privilegierter Executor
-- Qwen/Chatterbox bleiben nach Owner-Entscheidung HOLD; keine weitere Promotion ohne erneuten Benchmark auf stärkerer CPU/GPU und nur falls Google-Podcast-Lösung nicht genügt
+- Qwen/Qwen3-TTS, Chatterbox sowie Whisper/Faster-Whisper sind nach Owner-Entscheidung vom 2026-10-08 aus dem Social-Media-Engine-Pfad entfernt; es besteht dort kein aktives TTS-/ASR-Modell.
 
 Evidence:
 - `src/contracts/researchArchitecture.ts`
