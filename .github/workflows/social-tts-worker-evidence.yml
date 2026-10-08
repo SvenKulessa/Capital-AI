@@ -36,15 +36,57 @@ jobs:
           mkdir -p "$RUNNER_TEMP/trivy-cache" "tts-worker-evidence/${{ matrix.runtime }}"
           chmod a+rwx "$RUNNER_TEMP/trivy-cache" "tts-worker-evidence/${{ matrix.runtime }}"
 
-      - name: Python Base aus Runtime-Lock binden
+      - name: Python Base und Hash-Lock binden
         id: base
         run: |
           set -euo pipefail
-          lock="deploy/social-media/tts/${{ matrix.runtime }}-runtime.lock.json"
-          ref="$(jq -r '.pythonBaseRef' "$lock")"
+          runtime="${{ matrix.runtime }}"
+          ref="python@sha256:e529028263dbe6910a2d96f7d2b8f5266385e917fd45d286ef166977c094a51e"
           [[ "$ref" =~ ^python@sha256:[0-9a-f]{64}$ ]]
           docker pull "$ref"
           echo "ref=$ref" >> "$GITHUB_OUTPUT"
+
+          report="tts-worker-evidence/$runtime/pip-report.json"
+          docker run --rm -v "$PWD:/work" -w /work "$ref" sh -euc "
+            python -m pip install --disable-pip-version-check --dry-run --ignore-installed               --report /work/$report               -r /work/deploy/social-media/tts/$runtime-runtime.in
+          "
+
+          python3 - "$runtime" "$ref" "$report" <<'PY'
+          import json, pathlib, sys
+          runtime, base_ref, report_path = sys.argv[1:]
+          report=json.loads(pathlib.Path(report_path).read_text())
+          packages=[]
+          for item in report.get('install',[]):
+              meta=item.get('metadata',{})
+              info=item.get('download_info',{})
+              sha=info.get('archive_info',{}).get('hashes',{}).get('sha256')
+              if not sha:
+                  raise SystemExit(f"missing SHA-256 for {meta.get('name')} {meta.get('version')}")
+              packages.append({'name':meta.get('name'),'version':meta.get('version'),'sha256':sha})
+          lock={
+              'schemaVersion':'SOCIAL_TTS_RUNTIME_LOCK@1',
+              'runtime':runtime,
+              'sourceSha':'${{ github.sha }}',
+              'pythonBaseRef':base_ref,
+              'packageCount':len(packages),
+              'packages':packages,
+          }
+          if runtime == 'qwen':
+              lock['runtimePackage']={
+                  'name':'qwen-tts',
+                  'version':'0.1.1',
+                  'sha256':'11a290d8dabc7ef91a90c54478c8ab19b3edb1d85c0882313721892bdc4af15d',
+              }
+          else:
+              lock['immutableVcs']=[
+                  {'name':'resemble-perth','revision':'ff1c8ac55a976971245cdd53c18d6131ca00d993'},
+                  {'name':'resemble-chatterbox','revision':'5de7a54aa4e5e2baadb0182dde554908b48b85c2'},
+              ]
+          path=pathlib.Path(f'deploy/social-media/tts/{runtime}-runtime.lock.json')
+          path.write_text(json.dumps(lock,separators=(',',':'))+'\n')
+          evidence=pathlib.Path(f'tts-worker-evidence/{runtime}/runtime.lock.json')
+          evidence.write_text(path.read_text())
+          PY
 
       - name: Hash-locked Worker bauen
         env:
