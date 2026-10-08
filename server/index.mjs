@@ -16,7 +16,7 @@ import { createMobileScorer } from './mobile-scorer.mjs';
 import { createScorerProxy } from './scorer-proxy.mjs';
 import { serveMtaSts } from './mta-sts.mjs';
 import { serveWellKnown } from './well-known.mjs';
-import { researchMetadata } from '../shared/research-metadata.mjs';
+import { licenseMetadata } from '../shared/license-metadata.mjs';
 import { seoMetadataForPath } from '../shared/seo-metadata.mjs';
 import {
   isSeoIndexable,
@@ -414,16 +414,16 @@ export function createApp(root = defaultRoot, options = {}) {
     if (path.extname(file) === '.html') {
       body = Buffer.from(injectVocabularySeo(body.toString('utf8'), publicPath));
     }
-    // Research/legal titles are visible to crawlers before client hydration.
-    const researchPath = publicPath;
-    if (path.extname(file) === '.html' && Object.hasOwn(researchMetadata, researchPath)) {
-      const meta = researchMetadata[researchPath];
+    // License titles are visible to crawlers before client hydration.
+    const licensePath = publicPath;
+    if (path.extname(file) === '.html' && Object.hasOwn(licenseMetadata, licensePath)) {
+      const meta = licenseMetadata[licensePath];
       body = Buffer.from(body.toString('utf8')
         .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(meta.title)}</title>`)
         .replace(/(<meta name="description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(meta.description)}$2`)
         .replace(/(<meta property="og:title" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(meta.title)}$2`)
         .replace(/(<meta property="og:description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(meta.description)}$2`)
-        .replace(/(<link rel="canonical" href=")[^"]*("\s*\/?>)/, `$1https://capital-ai.online${researchPath}$2`));
+        .replace(/(<link rel="canonical" href=")[^"]*("\s*\/?>)/, `$1https://capital-ai.online${licensePath}$2`));
     }
     if (path.extname(file) === '.html') {
       body = Buffer.from(injectSeoMetadata(body.toString('utf8'), publicPath));

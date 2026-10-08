@@ -296,9 +296,9 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     alternatives: [
       { name: 'OpenBB', role: 'fallback', license: 'Apache-2.0' },
       { name: 'fdnpy', role: 'replacement', license: 'MIT SDK; provider terms separate' },
-      { name: 'yfinance', role: 'complement', license: 'Apache-2.0 software; research-only data gate' },
+      { name: 'yfinance', role: 'complement', license: 'Apache-2.0 software; not commercially admitted without provider license' },
     ],
-    evidence: ['server/market.mjs', 'PROVIDER_LICENSES_AND_ACADEMIC_TERMS.md'],
+    evidence: ['server/market.mjs', 'docs/security/LICENSE-RIGHTS.md'],
   },
   {
     id: 'massive-polygon', name: 'Massive / Polygon', domain: 'MARKET', kind: 'Market Data Provider',
@@ -312,7 +312,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
       { name: 'fdnpy', role: 'replacement', license: 'MIT SDK; provider terms separate' },
       { name: 'CCXT', role: 'complement', license: 'MIT; exchange data rights separate' },
     ],
-    evidence: ['server/market.mjs', 'PROVIDER_LICENSES_AND_ACADEMIC_TERMS.md'],
+    evidence: ['server/market.mjs', 'docs/security/LICENSE-RIGHTS.md'],
   },
   {
     id: 'github-actions-runner-ubuntu', name: 'GitHub Actions Ubuntu Runner', domain: 'PLATFORM', kind: 'CI Runner',

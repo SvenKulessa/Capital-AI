@@ -1,6 +1,6 @@
 # Agent Core
 
-Provider-neutral reusable primitives for classification, graph retrieval, research briefs and reversible traces.
+Provider-neutral reusable primitives for classification, graph retrieval and reversible traces.
 
 This directory is intentionally free of JaJa branding, seat/pricing rules, voice branding and provider credentials.
 
