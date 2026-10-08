@@ -32,18 +32,26 @@ jobs:
           mkdir -p "$RUNNER_TEMP/trivy-cache" asr-worker-evidence deploy/social-media/asr
           chmod a+rwx "$RUNNER_TEMP/trivy-cache" asr-worker-evidence
 
-      - name: Python Base binden
+      - name: Python Build Base und distroless Runtime Base binden
         id: base
         run: |
           set -euo pipefail
-          ref="python@sha256:e529028263dbe6910a2d96f7d2b8f5266385e917fd45d286ef166977c094a51e"
-          [[ "$ref" =~ ^python@sha256:[0-9a-f]{64}$ ]]
-          docker pull "$ref"
-          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+          build_tag="python:3.13-slim-trixie"
+          docker pull "$build_tag"
+          build_ref="$(docker image inspect --format '{{index .RepoDigests 0}}' "$build_tag")"
+          [[ "$build_ref" =~ ^python@sha256:[0-9a-f]{64}$ ]]
+
+          runtime_tag="gcr.io/distroless/python3-debian13:nonroot"
+          docker pull "$runtime_tag"
+          runtime_ref="$(docker image inspect --format '{{index .RepoDigests 0}}' "$runtime_tag")"
+          [[ "$runtime_ref" =~ ^gcr\.io/distroless/python3-debian13@sha256:[0-9a-f]{64}$ ]]
+
+          echo "build_ref=$build_ref" >> "$GITHUB_OUTPUT"
+          echo "runtime_ref=$runtime_ref" >> "$GITHUB_OUTPUT"
 
       - name: Whisper Dependency-Lock erzeugen
         env:
-          PYTHON_BASE: ${{ steps.base.outputs.ref }}
+          PYTHON_BASE: ${{ steps.base.outputs.build_ref }}
         run: |
           set -euo pipefail
           docker run --rm -v "$PWD:/work" -w /work "$PYTHON_BASE" sh -euc '
@@ -81,12 +89,13 @@ jobs:
 
       - name: Hash-locked ASR Worker bauen
         env:
-          PYTHON_BASE: ${{ steps.base.outputs.ref }}
+          PYTHON_BASE: ${{ steps.base.outputs.build_ref }}
         run: |
           set -euo pipefail
           docker build \
             --file deploy/social-media/Dockerfile.asr-runtime \
             --build-arg "PYTHON_BASE=$PYTHON_BASE" \
+            --build-arg "RUNTIME_BASE=${{ steps.base.outputs.runtime_ref }}" \
             --tag "capital-ai-social-asr:$GITHUB_SHA" \
             .
 
@@ -96,13 +105,14 @@ jobs:
           image="capital-ai-social-asr:$GITHUB_SHA"
           docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m \
             --cap-drop ALL --security-opt no-new-privileges \
-            --entrypoint sh "$image" -euc '
-              test "$(id -u)" = "10001"
-              python -c "import whisper, torch; print(torch.__version__)"
-              ffmpeg -hide_banner -version >/dev/null
-              ffprobe -hide_banner -version >/dev/null
-            '
-          docker run --rm --entrypoint ffmpeg "$image" -hide_banner -buildconf > asr-worker-evidence/ffmpeg-buildconf.txt
+            --entrypoint /usr/bin/python3 "$image" -c 'import os; assert os.getuid()==10001; import whisper, torch; print(torch.__version__)'
+          docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --entrypoint /opt/ffmpeg/bin/ffmpeg "$image" -hide_banner -version >/dev/null
+          docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --entrypoint /opt/ffmpeg/bin/ffprobe "$image" -hide_banner -version >/dev/null
+          docker run --rm --entrypoint /opt/ffmpeg/bin/ffmpeg "$image" -hide_banner -buildconf > asr-worker-evidence/ffmpeg-buildconf.txt
           ! grep -E -- '--enable-(gpl|nonfree|version3)([ =]|$)' asr-worker-evidence/ffmpeg-buildconf.txt
 
       - name: Image Identity, Scan, SBOM und Lizenzinventar
@@ -139,13 +149,15 @@ jobs:
           jq -n \
             --arg schemaVersion "SOCIAL_ASR_WORKER_EVIDENCE@1" \
             --arg sourceSha "$GITHUB_SHA" \
-            --arg baseImageRef "${{ steps.base.outputs.ref }}" \
+            --arg baseImageRef "${{ steps.base.outputs.build_ref }}" \
+            --arg runtimeBaseRef "${{ steps.base.outputs.runtime_ref }}" \
             --arg imageId "$(cat asr-worker-evidence/local-image-id.txt)" \
             --arg archiveSha256 "$(cut -d ' ' -f1 asr-worker-evidence/image-archive.sha256)" \
             '{
               schemaVersion:$schemaVersion,
               sourceSha:$sourceSha,
               baseImageRef:$baseImageRef,
+              runtimeBaseRef:$runtimeBaseRef,
               localImageId:$imageId,
               imageArchiveSha256:$archiveSha256,
               whisperPackage:"20250625",
