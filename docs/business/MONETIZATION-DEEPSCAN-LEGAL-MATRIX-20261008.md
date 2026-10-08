@@ -34,7 +34,7 @@
 
 Diese Einstufung ist eine qualitative Produkt-/Rechtsrisiko-Vorbewertung und **keine Rechtsberatung, Umsatzprognose, Lizenzbescheinigung oder Produktionsfreigabe**.
 
-## 24 verwertbare Monetarisierungsoptionen (Bestand + nahe Erweiterung)
+## 28 verwertbare Monetarisierungsoptionen (Bestand + nahe Erweiterung)
 
 | # | Monetarisierung | Bestandsanker | Verkaufsmodell | Klasse | Konkreter Entblocker |
 |---:|---|---|---|---|---|
@@ -62,6 +62,10 @@ Diese Einstufung ist eine qualitative Produkt-/Rechtsrisiko-Vorbewertung und **k
 | 22 | **Sponsoring/Forschungsförderung** | FUNDING, Sponsorship Evidence | freiwillige Unterstützung | B | Echtes Funding-Konto, transparente Mittelverwendung, Trennung von Sponsor und Score-/Research-Unabhängigkeit |
 | 23 | **Live Trading / Fee Share / Portfolio-Service** | Kraken validate-only dry-run, Uniswap | Provisionen / Brokerage | D | Erlaubnis-/CASP-/Wertpapierdienstleistungs-Analyse; Order-/Kundenschutz, Verwahrung/Execution, Verträge und E2E |
 | 24 | **$CPT Token, Staking oder Token-Zahlung** | Tokenomics UI, Registry | Token-/Zahlungsmodell | D | Erst wirtschaftliche Notwendigkeit, MiCA-/WpHG-/Prospekt-/Zahlungsrecht, Vertrags-/Smart-Contract-Prüfung; kein Launch jetzt |
+| 25 | **Mobile Scorer Terminal** | mobile scorer server, Mobile UX, auth | Mobile-App-Zusatzleistung / Abo | B/C | Mobile-Store-Billing-Regeln, reale E2E, Daten-/Scoring-Rechte, App-Review |
+| 26 | **GHCR-/Digest-Blueprint-Produkte** | immutable OCI/Render/Evidence-Pipeline | kommerzieller DevOps Blueprint / Lizenz | B | Eigentums-/OSS-Notices, eigenständiges verteilbares Paket, Kundentests, keine automatischen Sicherheitszertifikate |
+| 27 | **SEO-/Content-Audit-Service** | Docs, SEO metadata, Route Analytics, GROWTH Tools | B2B Analyse-/Redaktionspaket | B | Tatsächliche Datenquellen und Integrationen, Consent, korrekte Messung, Kunden-Datenrechte |
+| 28 | **HeroBuddy Support-Automation** | Portal-Widget, FAQ, Chat Buddy | B2B Support-SaaS / White Label | B | Mandantentrennung, geprüfte Antworten, DSGVO/KI-Hinweise, persistenter Kundenkontext, Support-SLA |
 
 **Zusatzpotenziale ohne eigene neue Produktlinie:** separater Support-SLA für Enterprise, institutionelle Methodikschulungen, kundenseitige On-Prem-/Private-Deployment-Lizenz für den *eigenen* Scoring-Kernel, unbezahlte Community-/Research-Distribution als Lead-Generator. Kein Fundraising- oder Security-Gütesiegel aus automatisierten Scans ableiten.
 
