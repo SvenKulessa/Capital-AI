@@ -1,13 +1,12 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "9fbee3b0e7460db33408e2bd0bb761f6bc8a044f",
-  "mergedPr": 251,
+  "mainSha": "aa61e39a855b26aa8d10effbfe9b30bf847621d6",
+  "mergedPr": 268,
   "targetPr": 246,
   "targetBranch": "capital-ai-platform/social-tts-workers-20261008",
-  "targetHeadSha": "7b522d7b070bbf155642d88fb175e8e376d6fe64",
+  "targetHeadSha": "259c3b4886c615b1bd44367a21fa63d378aa3604",
   "exactOverlap": [
-    ".dockerignore",
-    "Dockerfile"
+    "src/data/socialContentRoadmap.ts"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,
