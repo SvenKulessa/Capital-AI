@@ -6,14 +6,19 @@ import {
 } from './provider-readback.mjs';
 
 const key = 'campaign:content:asset:YOUTUBE';
+const accountChannelId = 'UCowner1234567890123456';
 const token = 'FAKE_MOCK_BEARER_NOT_VALID';
 const evidenceRef = 'evidence://verified/provider/readback';
 test('YouTube only marks publicly processed exact-ID video as complete', () => {
-  const args = { deliveryKey: key, providerId: 'video123', evidenceRef };
+  const args = { deliveryKey: key, providerId: 'video123', accountChannelId, evidenceRef };
   const good = normalizeYoutubeReadback({ ...args, payload: {
-    items: [{ id: 'video123', status: { privacyStatus: 'public', uploadStatus: 'processed' } }],
+    items: [{ id: 'video123', snippet: { channelId: accountChannelId }, status: { privacyStatus: 'public', uploadStatus: 'processed' } }],
   } });
   assert.equal(good.status, 'VERIFIED_PUBLISHED');
+  assert.equal(normalizeYoutubeReadback({ ...args, payload: {
+    items: [{ id: 'video123', snippet: { channelId: 'UCforeign12345678901234' },
+      status: { privacyStatus: 'public', uploadStatus: 'processed' } }],
+  } }).status, 'UNKNOWN');
   assert.equal(good.publishedUrl, 'https://www.youtube.com/watch?v=video123');
   for (const status of [
     { privacyStatus: 'private', uploadStatus: 'processed' },
@@ -23,11 +28,11 @@ test('YouTube only marks publicly processed exact-ID video as complete', () => {
       payload: { items: [{ id: 'video123', status }] } }).status, 'UNKNOWN');
   }
   assert.equal(normalizeYoutubeReadback({ ...args,
-    payload: { items: [{ id: 'other', status: {
+    payload: { items: [{ id: 'other', snippet: { channelId: accountChannelId }, status: {
       privacyStatus: 'public', uploadStatus: 'processed',
     } }] } }).status, 'UNKNOWN');
   assert.equal(normalizeYoutubeReadback({ ...args,
-    payload: { items: [{ id: 'video123', status: { uploadStatus: 'rejected' } }] },
+    payload: { items: [{ id: 'video123', snippet: { channelId: accountChannelId }, status: { uploadStatus: 'rejected' } }] },
   }).status, 'VERIFIED_FAILED');
 });
 
@@ -59,7 +64,7 @@ test('readback transport is disabled by default and never sends anything', async
     env: {}, fetchImpl: async () => { calls++; throw Error('should not fetch'); },
   });
   await assert.rejects(transport.youtube({
-    deliveryKey: key, providerId: 'video123', token, evidenceRef,
+    deliveryKey: key, providerId: 'video123', accountChannelId, token, evidenceRef,
   }), /SOCIAL_READBACK_DISABLED/);
   assert.equal(calls, 0);
 });
@@ -71,12 +76,12 @@ test('mock YouTube readback uses only official static URL with no redirects', as
     fetchImpl: async (url, req) => {
       calls.push({ url: String(url), req });
       return new Response(JSON.stringify({ items: [{
-        id: 'video123', status: { uploadStatus: 'processed', privacyStatus: 'public' },
+        id: 'video123', snippet: { channelId: accountChannelId }, status: { uploadStatus: 'processed', privacyStatus: 'public' },
       }] }), { status: 200 });
     },
   });
   const result = await transport.youtube({ deliveryKey: key, providerId: 'video123',
-    token, evidenceRef });
+    accountChannelId, token, evidenceRef });
   assert.equal(result.status, 'VERIFIED_PUBLISHED');
   assert.equal(calls.length, 1);
   assert.equal(new URL(calls[0].url).hostname, 'www.googleapis.com');
