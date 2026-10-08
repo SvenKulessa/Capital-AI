@@ -5,6 +5,7 @@ import {defineConfig, Plugin} from 'vite';
 import { thirdPartyNoticesPlugin } from './scripts/license-evidence.mjs';
 import { licenseEnginePlugin } from './scripts/license-engine.mjs';
 import { handleAdvisorRequest } from './server/advisor.ts';
+import { inspectChatBuddyKeys } from './server/chat-buddy-keys.mjs';
 import { PromptInjectionError } from './server/prompt-injection-guard.mjs';
 import { createLimiter } from './server/http-security.mjs';
 
@@ -85,9 +86,27 @@ function advisorApiPlugin(): Plugin {
   };
 }
 
+function chatBuddyKeyPlugin(): Plugin {
+  return {
+    name: 'chat-buddy-key-plugin',
+    configureServer(server) {
+      server.middlewares.use('/api/chat-buddy/keys', (req, res) => {
+        if (req.method !== 'GET') {
+          res.statusCode = 405;
+          res.end('Method Not Allowed');
+          return;
+        }
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Cache-Control', 'no-store');
+        res.end(JSON.stringify(inspectChatBuddyKeys(process.env)));
+      });
+    },
+  };
+}
+
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss(), advisorApiPlugin(), thirdPartyNoticesPlugin(), licenseEnginePlugin(), chunkCycleGuard()],
+    plugins: [react(), tailwindcss(), advisorApiPlugin(), chatBuddyKeyPlugin(), thirdPartyNoticesPlugin(), licenseEnginePlugin(), chunkCycleGuard()],
     // Let Rolldown preserve module evaluation order. Size-based forced groups
     // split Motion's mutually dependent modules into circular vendor chunks.
     resolve: {

@@ -72,3 +72,11 @@ services:
         value: https://capital-ai.online
       - key: CAPITAL_AI_SCORER_ALLOW_SAME_ORIGIN
         value: "true"
+      # Chat Buddy liest nur die Namen. Werte bleiben im Render-Dashboard.
+      # Kostenpflichtige oder abrechenbare Schlüssel werden nicht aufgerufen.
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: MISTRAL_API_KEY
+        sync: false
