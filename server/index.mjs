@@ -22,6 +22,7 @@ import { serveMtaSts } from './mta-sts.mjs';
 import { serveWellKnown } from './well-known.mjs';
 import { licenseMetadata } from '../shared/license-metadata.mjs';
 import { seoMetadataForPath } from '../shared/seo-metadata.mjs';
+import { agentDiscoveryDocument } from './seo-agent-discovery.mjs';
 import { resolveLocale, localeFromLandingPath } from '../shared/locale-policy.mjs';
 import {
   isSeoIndexable,
@@ -450,6 +451,16 @@ export function createApp(root = defaultRoot, options = {}) {
       res.end();
       return;
     }
+  }
+  const discovery = agentDiscoveryDocument(publicPath);
+  if (discovery) {
+    res.writeHead(200, {
+      ...headers,
+      'Content-Type': discovery.contentType,
+      'Cache-Control': 'public, max-age=3600',
+      'X-Robots-Tag': 'noindex, nofollow',
+    });
+    return res.end(discovery.body);
   }
   if (publicPath === '/robots.txt') {
     res.writeHead(200, { ...headers, 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
