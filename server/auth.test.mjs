@@ -583,6 +583,9 @@ test('Market API rate limiting remains independent of spoofed forwarding headers
       })).status, 400);
     }
     assert.equal((await h.request('/api/market/quote?symbol=INVALID')).status, 429);
+    // Exhausting the expensive quote bucket must not starve public batch reads.
+    assert.notEqual((await h.request('/api/market/assets')).status, 429);
+    assert.notEqual((await h.request('/api/market/values')).status, 429);
   } finally {
     await h.stop();
   }
