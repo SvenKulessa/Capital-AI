@@ -63,6 +63,16 @@ Neue interne Schutzregeln werden nur ergänzt, wenn:
 
 Normale Bugfixes, UI-/Produktänderungen, Refactorings, Dokumentation, Tests, bestehende Dependency-Updates, Scoring-Entwicklung und Analysewerkzeuge benötigen keine separate Admission.
 
+## Kostentransparenz für Tools und Integrationen
+
+Diese Transparenzregel gilt einheitlich für **PRODUCT, MARKET, PLATFORM, TRUST und GROWTH** sowie für domainübergreifende Arbeiten im Chat. Sie betrifft neue Integrationen und absehbar kostenwirksame Nutzung bereits vorhandener Tools, ChatGPT-Plugins, APIs, KI-Modelle, Provider, CI- und Cloud-Ressourcen.
+
+1. **Vor der Empfehlung oder Integration** eines Dienstes und **vor einer absehbar kostenwirksamen neuen Nutzung** eines bestehenden Tools im Chat kurz auf mögliche direkte und indirekte Kosten hinweisen. Soweit anwendbar: kostenloses Kontingent/Free Tier, Abo- oder Seat-Gebühren, nutzungsabhängige API-/Token-/Inference-Kosten, BYOK-Providerkosten, GPU/CPU, Speicher, Netzwerk/Egress, CI-Minuten sowie Limits und mögliche Überschreitungsgebühren.
+2. **Evidenz statt Vermutung:** Kostenmodell, relevanten Tarifstand und Nutzungsgrenzen anhand verfügbarer Anbieterinformationen prüfen. Unverifizierte Preise, Freikontingente und verbleibende Quotas als `NOT_PROVEN` kenntlich machen; „Open Source“, „Free Tier“ und „BYOK“ nicht mit grundsätzlich kostenfreiem Betrieb gleichsetzen. Keine Preis- oder Budgetfreigabe aus einem erfolgreichen technischen Test ableiten.
+3. **Alternativen:** Wenn funktional, lizenzrechtlich und sicherheitstechnisch geeignet, kostenlose/Open-Source- oder kostenärmere Lösungen einschließlich ihrer Betriebsfolgekosten benennen; Entscheidung und Trade-offs nicht allein vom Preis abhängig machen.
+4. **Kostenverursachende Aktionen:** Vor einem neuen kostenpflichtigen Tarif, einer abrechenbaren Ressourcenaktivierung oder einer nicht bereits freigegebenen Überschreitung von Kosten-/Nutzungslimits den erwartbaren Kostenrahmen und eine Alternative nennen und die ausdrückliche Zustimmung des Human Repository Owners einholen. Bereits freigegebene reguläre Nutzung innerhalb bekannter Limits benötigt keine erneute Einzelgenehmigung. Vertragsabschluss und Zahlungsfreigabe bleiben Owner-Handlungen.
+5. **Kein Entwicklungs-Gate:** Reine Information, kostenlose Tool-Nutzung, Implementierung, Tests und PR-Erstellung werden dadurch nicht blockiert. Diese Regel erzeugt keine neuen GitHub Required Checks, generellen Admissions, Handoffs oder zusätzlichen Pflichtreviews; bestehende Security-, Lizenz- und Production-Grenzen bleiben unverändert.
+
 ## Production
 
 - Production ausschließlich aus `main`.
