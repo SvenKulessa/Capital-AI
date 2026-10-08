@@ -193,5 +193,5 @@ test('documentation hub catalog links to the existing content instead of reopeni
   }
   assert.match(home, /window\.location\.assign\(subpage\.path\)/);
   assert.match(catalog, /window\.location\.assign\(subpage\.path\)/);
-  assert.ok(catalog.includes("badge: '13 Bereiche'"));
+  assert.ok(catalog.includes("badge: '12 Bereiche'"));
 });
