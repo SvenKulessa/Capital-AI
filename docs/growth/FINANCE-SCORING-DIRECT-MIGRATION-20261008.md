@@ -33,3 +33,9 @@ No paid service, external provider fetch, secrets, GPU worker or model download.
 2. Port source-wide backtest and model promotion comparisons with historical Finance fixtures; verify numerical equality, missing-feature behavior and effective fingerprints.
 3. Add confidence/calibration, asset-class/venue mapping and negative security/entitlement tests. Activate individual models only after evidence, no blanket champion promotion.
 4. Keep social/publishing entirely separate and Qwen/Chatterbox on hold.
+
+## Canonical scorer integration (same branch)
+
+`src/services/scoringEngine.ts#ScoringEngineService.inspectFinanceSourceForShadow` now validates Finance feature candidates with the merged Finance evidence bridge and invokes only the existing `computeShadowScore` when every input is mappable. Duplicate canonical feature/provider keys are blocked, and returned projections are strictly non-production, non-ranking and non-decision. Tests include missing rights and cross-asset source mutations.
+
+Imported original Finance `AnalysisConnectionRegistry`, `CommodityBacktestingContracts`, `CommodityModelValidation`, `CommodityHistoricalBacktestEngine` and `CommodityHistoricalVintage` provide the source semantics for capability inventory, walk-forward/OOS backtests and revision/vintage evidence. There is still no automatic provider fetch or model promotion.

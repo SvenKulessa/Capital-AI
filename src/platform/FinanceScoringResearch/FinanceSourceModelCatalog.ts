@@ -14,9 +14,9 @@ const SCORING_MODEL_REGISTRY_VERSION = 'scoring-model-registry/1.1.0' as const;
 const CANONICAL_SCORE_RESULT_CONTRACT_VERSION = 'scoring-integrity/1.1.0' as const;
 const LEGACY_CANONICAL_SCORE_RESULT_CONTRACT_VERSION = 'scoring-integrity/1.0.0' as const;
 const VERIFIED_CRYPTO_TECHNICAL_EXECUTOR_KEY = 'verifiedCryptoTechnicalScoring.evaluateVerifiedCryptoTechnicalScore' as const;
-const TRADITIONAL_SCORING_EXECUTOR_KEY = 'TraditionalAssetScoringService.scoreTraditionalAsset' as const;
-const COMMODITY_EVIDENCE_EXECUTOR_KEY = 'scoreCommodityMarketEvidence' as const;
-const SOVEREIGN_BENCHMARK_EXECUTOR_KEY = 'scoreSovereignBenchmarkEvidence' as const;
+const TRADITIONAL_SCORING_EXECUTOR_KEY = 'traditionalAssetScoring.TraditionalAssetScoringService' as const;
+const COMMODITY_EVIDENCE_EXECUTOR_KEY = 'commodityEvidenceScoring.scoreCommodityMarketEvidence' as const;
+const SOVEREIGN_BENCHMARK_EXECUTOR_KEY = 'sovereignBenchmarkEvidenceScoring.scoreSovereignBenchmarkEvidence' as const;
 const RESEARCH_ONLY_CHALLENGER_EXECUTOR_KEY = 'research-only:not-executable' as const;
 type FinanceSourceAssetClass = 'crypto' | 'stock' | 'forex' | 'index' | 'commodity' | 'bond';
 export interface ScoringModelDescriptor {
