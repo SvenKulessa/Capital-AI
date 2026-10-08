@@ -6,6 +6,7 @@ import { thirdPartyNoticesPlugin } from './scripts/license-evidence.mjs';
 import { licenseEnginePlugin } from './scripts/license-engine.mjs';
 import { handleAdvisorRequest } from './server/advisor.ts';
 import { inspectChatBuddyKeys } from './server/chat-buddy-keys.mjs';
+import { learnStatus } from './server/chat-buddy-learn.mjs';
 import { PromptInjectionError } from './server/prompt-injection-guard.mjs';
 import { createLimiter } from './server/http-security.mjs';
 
@@ -99,6 +100,22 @@ function chatBuddyKeyPlugin(): Plugin {
         res.setHeader('Content-Type', 'application/json');
         res.setHeader('Cache-Control', 'no-store');
         res.end(JSON.stringify(inspectChatBuddyKeys(process.env)));
+      });
+      server.middlewares.use('/api/chat-buddy/learn', (req, res) => {
+        if (req.method !== 'GET') {
+          res.statusCode = 405;
+          res.end('Method Not Allowed');
+          return;
+        }
+        const question = new URL(req.originalUrl || req.url || '/', 'http://127.0.0.1').searchParams.get('q') || '';
+        learnStatus(process.cwd(), question).then((body) => {
+          res.setHeader('Content-Type', 'application/json');
+          res.setHeader('Cache-Control', 'no-store');
+          res.end(JSON.stringify(body));
+        }).catch(() => {
+          res.statusCode = 503;
+          res.end(JSON.stringify({ error: 'learn_unavailable' }));
+        });
       });
     },
   };

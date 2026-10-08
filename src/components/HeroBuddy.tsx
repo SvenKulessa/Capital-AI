@@ -37,6 +37,17 @@ type BuddyKeyRow = {
   detail: string;
 };
 type BuddyKeyReport = { schema: string; active: string; keys: BuddyKeyRow[] };
+type LearnHit = { path: string; title: string; snippet: string; score: number };
+type LearnTool = { id: string; name: string; license: string; note: string; connected: boolean };
+type LearnStatus = { files: number; chunks: number; hits: LearnHit[]; tools: LearnTool[] };
+
+function weaveLearned(answer: string, hits: LearnHit[]) {
+  if (!hits.length) return answer;
+  const lead = hits[0];
+  const line = `Aus dem lokalen Bestand ${lead.path}: ${lead.snippet}`;
+  if (/keinen Knoten|no node|pas de nœud|no tengo nodo|non ho un nodo/i.test(answer)) return `Ja ja! ${line}`;
+  return `${answer}\n${line}`;
+}
 
 function answerFor(input: string) {
   return answerLocally(input, 'de', false, 2).answer;
@@ -67,6 +78,7 @@ export function HeroBuddy(props: HeroBuddyProps) {
   const [sessionGreetingApplied, setSessionGreetingApplied] = useState(false);
   const [settingsOn, setSettingsOn] = useState(false);
   const [keyReport, setKeyReport] = useState<BuddyKeyReport | null>(null);
+  const [learnReport, setLearnReport] = useState<LearnStatus | null>(null);
   const [keyNote, setKeyNote] = useState('');
   const lastAssist = useRef(0);
   useEffect(() => {
@@ -111,6 +123,12 @@ export function HeroBuddy(props: HeroBuddyProps) {
       .catch(() => {
         if (!controller.signal.aborted) setKeyNote('Schlüsselstatus gerade nicht erreichbar.');
       });
+    fetch('/api/chat-buddy/learn', { cache: 'no-store', headers: { Accept: 'application/json' }, signal: controller.signal })
+      .then((response) => (response.ok ? response.json() : Promise.reject()))
+      .then((report: LearnStatus) => {
+        if (!controller.signal.aborted) setLearnReport(report);
+      })
+      .catch(() => undefined);
     return () => controller.abort();
   }, [settingsOn]);
 
@@ -144,14 +162,24 @@ export function HeroBuddy(props: HeroBuddyProps) {
   const send = (text: string) => {
     const clean = text.trim();
     if (!clean) return;
+    const buddyId = `b-${Date.now()}`;
+    const local = answerFor(clean);
     setMessages((current) => [
       ...current,
-      { id: `u-${current.length}`, role: 'user', text: clean },
-      { id: `b-${current.length}`, role: 'buddy', text: answerFor(clean) },
+      { id: `u-${buddyId}`, role: 'user', text: clean },
+      { id: buddyId, role: 'buddy', text: local },
     ]);
     setDraft('');
     setOpen(true);
     setSpeech(null);
+    fetch(`/api/chat-buddy/learn?q=${encodeURIComponent(clean)}`, { cache: 'no-store', headers: { Accept: 'application/json' } })
+      .then((response) => (response.ok ? response.json() : Promise.reject()))
+      .then((report: LearnStatus) => {
+        const next = weaveLearned(local, report.hits ?? []);
+        if (next === local) return;
+        setMessages((current) => current.map((message) => (message.id === buddyId ? { ...message, text: next } : message)));
+      })
+      .catch(() => undefined);
   };
 
   const cyclePosition = () => {
@@ -210,6 +238,19 @@ export function HeroBuddy(props: HeroBuddyProps) {
                         <span className="font-medium text-slate-100">{item.env}</span>
                         <span className="text-slate-400"> · {item.state === 'missing' ? 'fehlt' : item.state === 'blocked' ? 'gesetzt, nicht genutzt' : item.state}</span>
                         <span className="block text-[10px] text-slate-500">{item.detail}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-2 text-[11px] text-slate-300">
+                    Gelernt aus Doku und Code
+                    {learnReport ? ` · ${learnReport.files} Dateien · ${learnReport.chunks} Abschnitte` : ''}.
+                  </p>
+                  <ul className="mt-1 space-y-1">
+                    {(learnReport?.tools ?? []).map((tool) => (
+                      <li key={tool.id}>
+                        <span className="font-medium text-slate-100">{tool.name}</span>
+                        <span className="text-slate-400"> · {tool.license} · {tool.connected ? 'verbunden' : 'nicht verbunden'}</span>
+                        <span className="block text-[10px] text-slate-500">{tool.note}</span>
                       </li>
                     ))}
                   </ul>
