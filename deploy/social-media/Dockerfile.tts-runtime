@@ -1,0 +1,56 @@
+ARG PYTHON_BASE
+FROM ${PYTHON_BASE} AS runtime
+
+ARG RUNTIME
+ARG CHATTERBOX_REVISION=5de7a54aa4e5e2baadb0182dde554908b48b85c2
+ARG PERTH_REVISION=ff1c8ac55a976971245cdd53c18d6131ca00d993
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+      ca-certificates \
+      git \
+      libsndfile1 \
+      sox \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY deploy/social-media/tts/qwen-runtime.lock.json /locks/qwen-runtime.lock.json
+COPY deploy/social-media/tts/chatterbox-runtime.lock.json /locks/chatterbox-runtime.lock.json
+
+RUN test "${RUNTIME}" = "qwen" -o "${RUNTIME}" = "chatterbox" \
+    && python - "${RUNTIME}" <<'PY'
+import json, pathlib, sys
+runtime=sys.argv[1]
+p=pathlib.Path(f"/locks/{runtime}-runtime.lock.json")
+data=json.loads(p.read_text())
+assert data["runtime"] == runtime
+lines=[]
+for item in data["packages"]:
+    name=item["name"]
+    version=item["version"]
+    sha=item["sha256"]
+    assert name and version and sha and len(sha)==64
+    lines.append(f"{name}=={version} --hash=sha256:{sha}")
+pathlib.Path("/tmp/runtime-requirements.txt").write_text("\n".join(lines)+"\n")
+PY
+
+RUN python -m pip install \
+      --disable-pip-version-check \
+      --no-cache-dir \
+      --require-hashes \
+      --only-binary=:all: \
+      --requirement /tmp/runtime-requirements.txt \
+    && if [ "${RUNTIME}" = "chatterbox" ]; then \
+         python -m pip install --disable-pip-version-check --no-cache-dir --no-deps \
+           "git+https://github.com/resemble-ai/Perth.git@${PERTH_REVISION}"; \
+         python -m pip install --disable-pip-version-check --no-cache-dir --no-deps \
+           "git+https://github.com/resemble-ai/chatterbox.git@${CHATTERBOX_REVISION}"; \
+       fi \
+    && rm /tmp/runtime-requirements.txt
+
+RUN groupadd --gid 10001 tts \
+    && useradd --uid 10001 --gid 10001 --no-create-home --shell /usr/sbin/nologin tts
+
+USER 10001:10001
+WORKDIR /work
+
+CMD ["python","-c","import torch; print(torch.__version__)"]
