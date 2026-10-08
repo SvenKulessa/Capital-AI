@@ -19,6 +19,7 @@ import React from 'react';
 import { ArrowRight, Play } from 'lucide-react';
 import { openHeroBuddy } from './HeroBuddy';
 import { motion } from 'motion/react';
+import { useLocale } from '../i18n/LocaleProvider';
 import heroEarthImage from '../assets/images/glowing_earth_nodes_1789997454893.jpg';
 
 interface HeroProps {
@@ -27,6 +28,7 @@ interface HeroProps {
 }
 
 export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct }) => {
+  const { t } = useLocale();
   return (
     <section className="relative px-5 pt-4 pb-7 overflow-hidden">
       {/* Golden neural light trails mirroring the logo's lateral filaments */}
@@ -119,10 +121,10 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
           transition={{ duration: 0.6, delay: 0.1 }}
           className="text-[34px] sm:text-[40px] font-extrabold tracking-tight leading-[1.08] mb-4 text-left"
         >
-          <span className="text-[#F5B014] block">Marktdaten</span>
-          <span className="text-[#F5B014] block">verstehen.</span>
-          <span className="text-white block">Chancen besser</span>
-          <span className="text-white block">erkennen.</span>
+          <span className="text-[#F5B014] block">{t('hero1')}</span>
+          <span className="text-[#F5B014] block">{t('hero2')}</span>
+          <span className="text-white block">{t('hero3')}</span>
+          <span className="text-white block">{t('hero4')}</span>
         </motion.h1>
 
         {/* Body Description */}
@@ -132,7 +134,7 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
           transition={{ duration: 0.6, delay: 0.2 }}
           className="text-slate-300 text-[13px] sm:text-[14px] leading-relaxed max-w-[320px] sm:max-w-md mb-6 font-normal"
         >
-          <strong className="text-slate-100 font-semibold">CAPITAL-AI</strong> vereint Echtzeit-Marktdaten, KI-gestütztes Scoring und fundierte Analysen – für transparentere Entscheidungen an den globalen Märkten.
+          <strong className="text-slate-100 font-semibold">CAPITAL-AI</strong> {t('heroDescription')}
         </motion.p>
 
         {/* Action Buttons */}
@@ -156,7 +158,7 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
                 <span className="w-[3px] h-5 bg-black rounded-full" />
                 <span className="w-[3px] h-4 bg-black rounded-full" />
               </div>
-              <span className="text-[15.5px] font-bold tracking-tight">Analyse starten</span>
+              <span className="text-[15.5px] font-bold tracking-tight">{t('analyze')}</span>
             </div>
             <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1 stroke-[2.4]" />
           </button>
@@ -168,7 +170,7 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
             onClick={openHeroBuddy}
             className="w-full h-[44px] px-5 bg-transparent hover:bg-white/5 active:scale-[0.98] border border-amber-400/40 rounded-2xl text-amber-200 text-[13.5px] font-semibold"
           >
-            Hero Buddy fragen
+            {t('assistant')}
           </button>
           <button
             id="hero-explore-product-btn"
@@ -180,7 +182,7 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
             <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shrink-0">
               <Play className="w-3 h-3 text-black fill-black ml-0.5" />
             </div>
-            <span className="text-[14.5px] font-medium text-slate-100">Produkt entdecken</span>
+            <span className="text-[14.5px] font-medium text-slate-100">{t('discover')}</span>
           </button>
         </motion.div>
       </div>

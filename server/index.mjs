@@ -18,6 +18,7 @@ import { serveMtaSts } from './mta-sts.mjs';
 import { serveWellKnown } from './well-known.mjs';
 import { licenseMetadata } from '../shared/license-metadata.mjs';
 import { seoMetadataForPath } from '../shared/seo-metadata.mjs';
+import { resolveLocale } from '../shared/locale-policy.mjs';
 import {
   isSeoIndexable,
   robotsDirectiveFor,
@@ -421,6 +422,7 @@ export function createApp(root = defaultRoot, options = {}) {
     const resolved = await realpath(file);
     if (!resolved.startsWith(root + path.sep) || (await stat(resolved)).size > 20 * 1024 * 1024) return json(res, 404, { error: 'not_found' });
     let body = await readFile(resolved);
+    let documentLocale = null;
     const publicPath = normalizedPublicPath(url.pathname);
     if (path.extname(file) === '.html') {
       body = Buffer.from(injectVocabularySeo(body.toString('utf8'), publicPath));
@@ -439,8 +441,15 @@ export function createApp(root = defaultRoot, options = {}) {
     if (path.extname(file) === '.html') {
       body = Buffer.from(injectSeoMetadata(body.toString('utf8'), publicPath));
       body = Buffer.from(applySeoIndexingPolicy(body.toString('utf8'), publicPath));
+      const { locale, source } = resolveLocale({
+        cookieHeader: req.headers.cookie,
+        countryHeader: req.headers['cf-ipcountry'],
+        acceptLanguage: req.headers['accept-language'],
+      });
+      body = Buffer.from(body.toString('utf8').replace(/<html lang="[^"]*"/, `<html lang="${locale}" data-locale-source="${source}"`));
+      documentLocale = locale;
     }
-    res.writeHead(200, { ...headers, 'Cache-Control': path.extname(file) === '.html' ? 'no-store' : 'public, max-age=3600', 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(body);
+    res.writeHead(200, { ...headers, ...(documentLocale ? { 'Content-Language': documentLocale, 'Vary': 'CF-IPCountry, Accept-Language, Cookie' } : {}), 'Cache-Control': path.extname(file) === '.html' ? 'no-store' : 'public, max-age=3600', 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(body);
   } catch { res.writeHead(404, headers); res.end(); }
 });
   server.maxConnections = 256;

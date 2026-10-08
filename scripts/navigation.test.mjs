@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { APP_NAVIGATION_EVENT, navigateAppLocation, readHubTab, resolveNavigationTarget, resolveAppRoute } from '../src/utils/appNavigation.ts';
+import { messages } from '../src/i18n/messages.ts';
 
 test('all current sideboard tab links retain their hub and tab', () => {
   const sidebar = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
@@ -19,7 +20,8 @@ test('all current sideboard tab links retain their hub and tab', () => {
 test('footer consolidates public license navigation into documentation', () => {
   const footer = readFileSync(new URL('../src/components/Footer.tsx', import.meta.url), 'utf8');
   assert.match(footer, /href="\/dokumentation"/);
-  assert.match(footer, /Dokumentation &amp; Lizenzen/);
+  assert.match(footer, /t\('docs'\)/);
+  assert.equal(messages.de.docs, 'Dokumentation & Lizenzen');
   assert.doesNotMatch(footer, /href="\/control-center\?tab=licenses"/);
   assert.doesNotMatch(footer, /id="footer-nav-lizenz"/);
 });
@@ -162,7 +164,8 @@ test('production navigation uses Preiskatalog and clickable canonical breadcrumb
   const sideboard = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
 
   assert.match(header, /Preiskatalog/);
-  assert.match(footer, /Preiskatalog/);
+  assert.match(footer, /t\('pricing'\)/);
+  assert.equal(messages.de.pricing, 'Preiskatalog');
   assert.doesNotMatch(header, /Preise & SaaS Tarife/);
   assert.doesNotMatch(sideboard, /Aufklappbare Sidebar|Sideliste aufklappen/);
   assert.match(sideboard, /role="tree"/);
