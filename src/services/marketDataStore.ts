@@ -77,28 +77,50 @@ async function refresh() {
     if (!catalogResponse.ok) throw new Error('ASSET_CATALOG_UNAVAILABLE');
     const catalog = MarketAssetCatalogSchema.parse(await catalogResponse.json());
 
-    const runtimeSymbols = catalog.assets
-      .filter(asset => asset.runtimeEnabled)
-      .map(asset => asset.symbol);
-
-    const results = catalog.quotesEnabled
-      ? await Promise.allSettled(runtimeSymbols.map(async symbol => {
-          const response = await fetch(`/api/market/quote?symbol=${encodeURIComponent(symbol)}`, {
-            cache: 'no-store',
-            signal: AbortSignal.any([signal, AbortSignal.timeout(6000)]),
-          });
-          if (!response.ok) throw new Error('QUOTE_UNAVAILABLE');
-          const value = QuoteDeliverySchema.parse(await response.json());
-          if (value.symbol !== symbol) throw new Error('SYMBOL_MISMATCH');
-          return toMarketAsset(value);
-        }))
-      : [];
-
+    const runtimeAssets = catalog.assets.filter(asset => asset.runtimeEnabled);
+    // Catalog identity must survive a failed data-read. Never request an unadmitted instrument.
+    let verified: MarketAsset[] = [];
+    if (catalog.quotesEnabled && runtimeAssets.length) {
+      try {
+        const valuesResponse = await fetch('/api/market/values', {
+          cache: 'no-store',
+          signal: AbortSignal.any([signal, AbortSignal.timeout(8000)]),
+        });
+        if (!valuesResponse.ok) throw new Error('MARKET_VALUES_UNAVAILABLE');
+        const body: unknown = await valuesResponse.json();
+        if (!body || typeof body !== 'object' ||
+            !('schema' in body) || body.schema !== 'CAPITAL_AI_ASSET_VALUES@1' ||
+            !('status' in body) || body.status !== 'READY' ||
+            !('values' in body) || !Array.isArray(body.values) ||
+            body.values.length > runtimeAssets.length) {
+          throw new Error('MARKET_VALUES_INVALID');
+        }
+        // Keep the initial bundle below its strict 500 kB cap; load quote projection on demand.
+        const { projectCanonicalAssetValue } = await import('./marketValuesProjection');
+        const eligible = new Map(runtimeAssets.map(asset => [asset.symbol, asset]));
+        verified = body.values.map(raw => {
+          const item = projectCanonicalAssetValue(raw);
+          const catalogItem = eligible.get(item.symbol);
+          if (!catalogItem || item.id !== catalogItem.instrumentId ||
+              item.provider !== catalogItem.provider) {
+            throw new Error('MARKET_VALUE_NOT_IN_RUNTIME_CATALOG');
+          }
+          return item;
+        });
+        if (new Set(verified.map(item => item.symbol)).size !== verified.length) {
+          throw new Error('MARKET_VALUES_DUPLICATED');
+        }
+      } catch {
+        if (signal.aborted || !users) return;
+        // No partial promotion: every displayed value must be valid and backed by evidence.
+        verified = [];
+      }
+    }
     if (signal.aborted || !users) return;
     MARKET_ASSET_CATALOG = catalog;
-    MARKET_ASSETS = results.flatMap(result => result.status === 'fulfilled' ? [result.value] : []);
+    MARKET_ASSETS = verified;
     emit();
-    scheduleRefresh(catalog.quotesEnabled ? 5000 : 15000);
+    scheduleRefresh(catalog.quotesEnabled ? 60_000 : 15_000);
   } catch {
     if (signal.aborted || !users) return;
     MARKET_ASSET_CATALOG = {

@@ -216,6 +216,19 @@ jobs:
             --entrypoint node capital-ai:${{ github.sha }} --run test:seo:runtime
       - name: Server-Regressionstests
         run: docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m --cap-drop ALL --security-opt no-new-privileges -v "$PWD/server:/app/server:ro" -v "$PWD/supabase/migrations:/app/supabase/migrations:ro" --entrypoint node capital-ai:${{ github.sha }} --test /app/server/ecb-reference-rates.test.mjs /app/server/uniswap-trading.test.mjs /app/server/market.test.mjs /app/server/market-contracts.test.mjs /app/server/scorer-proxy.test.mjs /app/server/security.test.mjs /app/server/auth.test.mjs /app/server/user-provider-vault.test.mjs /app/server/infrastructure-security.test.mjs /app/server/seo-indexing-policy.test.mjs /app/server/well-known.test.mjs
+      - name: MARKET-E2E-Contract und npm test:market im isolierten Build-Image
+        run: |
+          # The build image already contains dev dependencies; do not install another toolchain.
+          # Read-only bind mounts supply all market test files omitted from the minimized image context.
+          docker run --rm --network none --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m \
+            --cap-drop ALL --security-opt no-new-privileges \
+            -v "$PWD/server:/app/server:ro" \
+            -v "$PWD/scripts:/app/scripts:ro" \
+            -v "$PWD/src:/app/src:ro" \
+            -v "$PWD/supabase:/app/supabase:ro" \
+            -v "$PWD/render.yaml:/app/render.yaml:ro" \
+            -v "$PWD/deploy/render-image-profile.json:/app/deploy/render-image-profile.json:ro" \
+            --entrypoint node capital-ai-build:${{ github.sha }} --run test:market
       - name: 600-Asset-Scoring-Kapazitätsevidence übernehmen
         run: |
           mkdir -p security-reports
