@@ -5,6 +5,7 @@ import { PipelineSnapshotSchema, ShadowPipelineConfigSchema, SCORE_FAMILIES, RIS
   type ShadowPipelineConfig, type PipelineSnapshot, type ShadowScoreResult } from '../contracts/pipelineExecution';
 import { MarketDataRightsEvidenceSchema, evaluateMarketDataRights } from '../contracts/marketDataRightsEligibility';
 import { inspectFinanceFeatureMapping, type FinanceSourceFeature } from '../contracts/financeResearchFeatureBridge.ts';
+import { composeFinanceAdmittedResearchFactors, type FinanceFactorEvaluationInput } from '../platform/FinanceScoringResearch/FinanceAdmittedFactorMapping.ts';
 
 export interface AssetClassWeightProfile {
   weightMomentum: number; weightTechnical: number; weightFundamental: number;
@@ -24,6 +25,11 @@ const REQUIRED_COMPONENTS = ['market_integrity_gate', 'data_quality_scorer', 'li
 /** Foundation admission: no inference from quotes or ranking without a validated universe. */
 export class ScoringEngineService {
   public static readonly SHADOW_MODEL_VERSION = '1.0.0';
+  /** Typed Finance source-weight evaluation after source/provider admission, not a public score. */
+  public static inspectFinanceResearchFactors(input: FinanceFactorEvaluationInput) {
+    return composeFinanceAdmittedResearchFactors(input);
+  }
+
   /**
    * Finance source features enter ONLY through the canonical Capital-AI shadow-scoring boundary.
    * Never creates a second Finance dispatcher/registry or authorizes a public score.
