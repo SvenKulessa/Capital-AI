@@ -192,6 +192,35 @@ export async function fetchAdmittedSpotRest({
   return ingestSpotWireFrame({provider,symbol,transport:'rest',payload},{env,store});
 }
 
+// User-scoped BYOK lane. CALLER MUST be the authenticated Vault executor after
+// loading and validating this user's own credential and provider permissions.
+// Public Spot Trades endpoints themselves do not use an API key. User ownership does
+// not grant redistribution rights; this one-shot result is never persisted or published.
+export async function fetchPrivateUserSpotTrade({
+  provider,symbol,fetchImpl=globalThis.fetch,now=Date.now,
+}={}) {
+  const req=spotWireRequest({provider,symbol,transport:'rest'});
+  if(typeof fetchImpl!=='function') throw new Error('SPOT_FETCH_UNAVAILABLE');
+  const response=await fetchImpl(req.url,{
+    method:'GET',redirect:'error',cache:'no-store',credentials:'omit',
+    headers:{accept:'application/json'},signal:AbortSignal.timeout(5000),
+  });
+  if(!response?.ok) throw new Error('PRIVATE_SPOT_HTTP_UNAVAILABLE');
+  const payload=await readBoundedJson(response);
+  const item=parseSpotWireFrame({provider,symbol,transport:'rest',payload});
+  const age=now()-item.observedAt;
+  if(!Number.isSafeInteger(age)||age < -5000||age > 30000) throw new Error('PRIVATE_SPOT_QUOTE_STALE');
+  return Object.freeze({
+    provider:item.provider,symbol:item.symbol,quote:item.quote,
+    price:item.price,observedAt:item.observedAt,
+    mode:'rest',timeSemantics:'realtime',
+    dataScope:'USER_PRIVATE_MARKET_DATA',
+    publicDisplayAllowed:false,redistributionAllowed:false,
+    sharedCacheAllowed:false,jetStreamPublicationAllowed:false,
+    actionable:false,executionEnabled:false,
+  });
+}
+
 export function startAdmittedSpotWebSocket({
   provider,symbol,env=process.env,store=infrastructure,
   SocketClass=globalThis.WebSocket,
