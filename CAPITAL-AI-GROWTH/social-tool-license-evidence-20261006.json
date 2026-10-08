@@ -3,7 +3,7 @@
   "id": "CAPITAL-AI-SOCIAL-TOOL-LICENSE-EVIDENCE-20261006",
   "status": "POINT_4_AUDIO_MODELS_REMOVED_FAIL_CLOSED",
   "correlatedAt": "2026-10-08",
-  "targetMain": "07b34ab4cbbd4df9624f49fe072b3173e72446af",
+  "targetMain": "c881081e1d6a08e1babd98c15371f6a8615d645b",
   "financeSource": "dcef421fe6e350a3a2ade61d0299aad9ecca213c",
   "scope": "Social-Media-Engine implementation dependencies only; Finance MARKET/scoring migration remains deferred until Social cutover PASS.",
   "policy": {
