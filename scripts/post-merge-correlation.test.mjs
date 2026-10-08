@@ -161,3 +161,18 @@ test('merge milestone workflow keeps GitHub expressions unescaped', () => {
   assert.match(workflow, /SOURCE_SHA: \$\{\{ github\.event\.pull_request\.merge_commit_sha \}\}/);
   assert.match(workflow, /persist-credentials: false/);
 });
+
+test('merge milestone PR creation requires dedicated repo-scoped GitHub App', () => {
+  const workflow = readFileSync(new URL('../.github/workflows/merge-milestones.yml', import.meta.url), 'utf8');
+  assert.match(workflow, /permissions:\n  contents: read\n  pull-requests: read/);
+  assert.match(workflow, /actions\/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1/);
+  assert.match(workflow, /permission-contents: write/);
+  assert.match(workflow, /permission-pull-requests: write/);
+  assert.match(workflow, /repositories: Capital-AI/);
+  assert.match(workflow, /GH_TOKEN: \$\{\{ steps\.milestone_app\.outputs\.token \}\}/);
+  assert.doesNotMatch(workflow, /GH_TOKEN: \$\{\{ github\.token \}\}\n          REPOSITORY/);
+  assert.match(workflow, /Report missing app authority without creating a PR/);
+  assert.match(workflow, /milestone-drafts-/);
+  assert.match(workflow, /Milestone branch \$branch already exists without a PR/);
+  assert.doesNotMatch(workflow, /gh pr merge|--auto|enable-auto-merge/);
+});
