@@ -1,7 +1,8 @@
 import React from 'react';
+import { AnalysisComponentExplorer } from '../features/analysis/AnalysisComponentExplorer';
+import { PipelineConfiguratorConsole } from '../features/analysis/PipelineConfiguratorConsole';
+import { analysisUiEnabled } from '../features/analysis/analysisUiFlags';
 import { RoadmapPanel } from './RoadmapPanel';
-import { CANONICAL_50_COMPONENTS } from '../contracts/analysisComponentRegistry';
-import { validateAnalysisComponentRegistry } from '../contracts/analysisComponentRegistryValidator';
 import { ProviderStatusDashboard } from './ProviderStatusDashboard';
 import { DataUnavailable } from './DataUnavailable';
 import { LicenseEnginePanel } from './LicenseEnginePanel';
@@ -23,74 +24,6 @@ function readSection(fallback: ControlCenterTab): ControlCenterTab {
   const section = pathname.startsWith(prefix) ? pathname.slice(prefix.length) : '';
   return CONTROL_CENTER_SECTION_IDS.find((id) => id === section)
     ?? readHubTab(window.location.search, CONTROL_CENTER_SECTION_IDS, fallback);
-}
-
-/** Read-only canonical component inventory, shown only in the relevant operational sections. */
-function AnalysisRegistryStatus() {
-  const [search, setSearch] = React.useState('');
-  const report = validateAnalysisComponentRegistry();
-  const components = CANONICAL_50_COMPONENTS.filter((component) =>
-    (component.componentId + ' ' + component.displayName).toLowerCase().includes(search.toLowerCase()),
-  );
-
-  return (
-    <section className="mt-6 min-w-0" aria-labelledby="control-analysis-heading">
-      <h3 id="control-analysis-heading" className="text-lg font-semibold text-white">Analyse-Komponenten</h3>
-      <p className="my-3 text-sm leading-relaxed text-slate-300">
-        {CANONICAL_50_COMPONENTS.filter((component) => component.status === 'planned').length} geplant ·{' '}
-        {CANONICAL_50_COMPONENTS.filter((component) => component.status === 'blocked').length} gesperrt ·{' '}
-        {report.issues.length} offene Referenz- und Aktivierungsprüfungen. Es gibt derzeit keinen produktiv freigegebenen Score.
-      </p>
-      <label htmlFor="control-analysis-search" className="block text-sm font-medium text-slate-200">
-        Analyse-Komponente suchen
-      </label>
-      <input
-        id="control-analysis-search"
-        type="search"
-        className="my-2 min-h-11 w-full rounded-md border border-slate-600 bg-slate-900 p-3 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
-        value={search}
-        onChange={(event) => setSearch(event.target.value)}
-        placeholder="Name oder Komponenten-ID"
-      />
-      <div className="max-w-full overflow-x-auto">
-        <table className="w-full min-w-[32rem] text-left text-sm">
-          <caption className="sr-only">Status und Provenienz der Analyse-Komponenten</caption>
-          <thead>
-            <tr className="border-b border-slate-600 text-slate-200">
-              <th scope="col" className="px-2 py-3">Komponente</th>
-              <th scope="col" className="px-2 py-3">Zustand</th>
-              <th scope="col" className="px-2 py-3">Daten</th>
-            </tr>
-          </thead>
-          <tbody>
-            {components.map((component) => (
-              <tr key={component.componentId} className="border-b border-slate-800">
-                <th scope="row" className="px-2 py-3 align-top font-medium">
-                  <details>
-                    <summary className="cursor-pointer text-left text-slate-100 focus-visible:outline-2 focus-visible:outline-amber-400">
-                      {component.displayName}
-                    </summary>
-                    <dl className="mt-3 space-y-1 break-words text-xs font-normal text-slate-300">
-                      <dt className="font-semibold">Inputs</dt><dd>{component.inputContracts.join(', ')}</dd>
-                      <dt className="font-semibold">Output</dt><dd>{component.outputContract}</dd>
-                      <dt className="font-semibold">Features</dt><dd>{component.featureDependencies.join(', ')}</dd>
-                      <dt className="font-semibold">Provider</dt><dd>{component.providerDependencies.join(', ')}</dd>
-                      <dt className="font-semibold">Version</dt><dd>{component.calculationVersion}</dd>
-                      <dt className="font-semibold">Owner</dt><dd>{component.owner}</dd>
-                      <dt className="font-semibold">Letzte Validierung</dt><dd>{component.lastValidatedAt ?? 'ausstehend'}</dd>
-                    </dl>
-                  </details>
-                </th>
-                <td className="px-2 py-3 align-top">{component.status}</td>
-                <td className="px-2 py-3 align-top">{component.provenanceMode}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      {components.length === 0 && <p role="status" className="mt-3 text-sm text-slate-300">Keine Komponenten gefunden.</p>}
-    </section>
-  );
 }
 
 interface ControlCenterPageProps {
@@ -236,18 +169,13 @@ export const ControlCenterPage: React.FC<ControlCenterPageProps> = ({
           </div>
 
           {activeTab === 'roadmap' && <RoadmapPanel />}
-          {activeTab === 'components' && <ComponentInventoryDashboard />}
+          {activeTab === 'components' && <><ComponentInventoryDashboard />{analysisUiEnabled('components') && <AnalysisComponentExplorer compact />}</>}
           {activeTab === 'tools' && <RepositoryToolCatalogDashboard />}
           {activeTab === 'observability' && <ObservabilityDashboard />}
           {activeTab === 'news' && <ControlCenterNewsPanel />}
           {activeTab === 'licenses' && <LicenseEnginePanel />}
 
-          {activeTab === 'console' && (
-            <>
-              <ProviderStatusDashboard onBackToHome={onBackToHome} />
-              <AnalysisRegistryStatus />
-            </>
-          )}
+          {activeTab === 'console' && <PipelineConfiguratorConsole />}
           {activeTab === 'cockpit' && (
             <>
               <ProviderStatusDashboard onBackToHome={onBackToHome} />
@@ -263,7 +191,7 @@ export const ControlCenterPage: React.FC<ControlCenterPageProps> = ({
           {activeTab === 'system' && (
             <>
               <ProviderStatusDashboard onBackToHome={onBackToHome} />
-              <AnalysisRegistryStatus />
+              {analysisUiEnabled('components') && <AnalysisComponentExplorer compact />}
               <DataUnavailable title="Systemoptionen" required="verifizierte Systemkonfiguration und Runtime-Evidence" />
             </>
           )}
