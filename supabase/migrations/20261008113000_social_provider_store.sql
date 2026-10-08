@@ -144,6 +144,39 @@ revoke all on function public.capital_social_consume_oauth_state(text,uuid,text,
 grant execute on function public.capital_social_consume_oauth_state(text,uuid,text,text)
   to service_role;
 
+-- Mark an uncertain dispatch without a blind retry or publish-log mutation.
+-- Provider receipt IDs are useful for later status readbacks, not proof of publication.
+create or replace function public.capital_social_note_unknown(
+  p_user_id uuid, p_job_id uuid, p_provider_delivery_id text, p_evidence_ref text
+) returns public.social_media_delivery_jobs
+language plpgsql security invoker set search_path = ''
+as $
+declare v_job public.social_media_delivery_jobs%rowtype;
+begin
+  if nullif(p_evidence_ref, '') is null
+    or (p_provider_delivery_id is not null
+      and length(p_provider_delivery_id) not between 1 and 200) then
+    raise exception 'SOCIAL_RECEIPT_EVIDENCE_REQUIRED';
+  end if;
+  update public.social_media_delivery_jobs
+    set status = 'UNKNOWN',
+      provider_delivery_id = coalesce(p_provider_delivery_id, provider_delivery_id),
+      evidence_ref = p_evidence_ref, updated_at = now()
+    where id = p_job_id and user_id = p_user_id
+      and status in ('CLAIMED','PROCESSING','UNKNOWN')
+      and publish_log_id is null
+      and (provider_delivery_id is null or p_provider_delivery_id is null
+        or provider_delivery_id = p_provider_delivery_id)
+  returning * into v_job;
+  if not found then raise exception 'SOCIAL_DELIVERY_UNKNOWN_UPDATE_DENIED'; end if;
+  return v_job;
+end;
+$;
+revoke all on function public.capital_social_note_unknown(uuid,uuid,text,text)
+  from public, anon, authenticated;
+grant execute on function public.capital_social_note_unknown(uuid,uuid,text,text)
+  to service_role;
+
 -- Log only verified terminal completion. The server must have independently
 -- confirmed provider status, ID, target URL and evidence BEFORE calling.
 -- Unknown/timeout outcomes stay in the delivery job, no blind re-send.
