@@ -101,6 +101,16 @@ Security-/Dependency-/Runtime-Monitoring darf weiterlaufen und Findings melden. 
 
 PRODUCT, MARKET, PLATFORM, TRUST und GROWTH sind Fachperspektiven, keine organisatorischen Grenzen. Ein einzelner Chat/Agent darf domainübergreifend arbeiten.
 
+## Domain Skills und beratende Fähigkeiten im Chat
+
+Die fünf Domain-Perspektiven erhalten **zwei funktionale Skills pro Domain**: `<domain>-engineering` (Analyse, Umsetzung, Tests, Evidence) und `<domain>-advisory` (Architekturberatung, Optionen, Trade-offs, fundierte Best-Practice-Empfehlungen). Der maschinenlesbare Katalog steht in `.agents/skills/registry.json`; ausführliche `SKILL.md`-Dateien in `.agents/skills/`, optionale Chat-Agent-Profile in `.github/agents/`. `.github/copilot-instructions.md` bindet Repository-Copilot an diese Richtlinie.
+
+1. **Automatisch nach Aufgabeninhalt routen, soweit die Chat-/Agent-Laufzeit Skills unterstützt:** PRODUCT (Frontend/UX/Auth-Client), MARKET (Daten/Provider/Scoring), PLATFORM (Infrastruktur/Runtime/CI), TRUST (Security/Compliance/QA/Evidence), GROWTH (Docs/SEO/Social/Branding). Bei Implementierung Engineering-Skill, bei Beratung Advisory-Skill, bei gemischten Aufgaben beide anwenden. Bei domainübergreifender Arbeit weitere relevante Skills im **selben Chat** verwenden; kein organisatorischer Handoff.
+2. **Beratungsqualität:** aktuelle Ausgangsevidence, mindestens eine tragfähige Alternative, Trade-offs (Security, Datenschutz, Lizenz, Kosten, Wartbarkeit, Performance), begründete Empfehlung und prüfbare Kriterien. Externe Quellen mit Datum/Version priorisiert aus offizieller Dokumentation, Standards und Primärquellen; normative Pflichten von optionalen Best Practices trennen.
+3. **Aktualität und Grenzen:** „State of the Art“ bedeutet bei einer konkreten Entscheidung **erneute Verifikation**, nicht autonome Dauerrecherche. Wenn Live-Quellen, Skills oder Tools in der jeweiligen Chat-Laufzeit nicht verfügbar sind, dies kenntlich machen statt tatsächliche Ausführung oder Frische zu behaupten. Skill-Anleitungen verleihen keinerlei Credentials oder Rechte.
+4. **Governance:** Skills und Chat-Profile sind **nicht autorisierende Arbeitsanleitungen** unter dieser `AGENTS.md`. Sie erzeugen keine neuen Pflichtchecks, Admissions, Reviews, Handovers, Write-Permissions oder Production-Freigaben. Für Branch/PR gilt allein die Primary Domain; Merge-Regel und reale technische Trust Boundaries bleiben unverändert.
+5. **Validierung:** `npm run test:domain-skills` kontrolliert Skill-Dateien, Registry und Chat-Profil-Verweise. Ein bestandener Strukturtest belegt keine Live-Skill-Ausführung in externen ChatGPT-Sitzungen.
+
 ## Status in ChatGPT
 
 Status-, Review-, Implementierungs- und Abschlussmeldungen enden mit zwei getrennten Code-Snippets:
