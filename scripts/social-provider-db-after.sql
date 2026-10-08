@@ -14,6 +14,20 @@ begin
   select * into v_job from public.social_media_delivery_jobs
     where delivery_key='campaign:content:asset:YOUTUBE';
   if v_job.status <> 'CLAIMED' then raise exception 'FAIL: claim state'; end if;
+  v_job := public.capital_social_note_unknown(
+    'd0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101',
+    v_job.id, 'video123', 'test://provider-accepted-not-published');
+  if v_job.status <> 'UNKNOWN' or v_job.publish_log_id is not null then
+    raise exception 'FAIL: UNKNOWN receipt created terminal log';
+  end if;
+  begin
+    perform public.capital_social_note_unknown(
+      'd0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101',
+      v_job.id, 'foreignProviderId', 'test://tampered');
+    raise exception 'FAIL: foreign provider receipt overwrote existing id';
+  exception when others then
+    if sqlerrm <> 'SOCIAL_DELIVERY_UNKNOWN_UPDATE_DENIED' then raise; end if;
+  end;
   v_job := public.capital_social_complete_delivery(
     'd0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101',
     v_job.id,'PUBLISHED','video123',
