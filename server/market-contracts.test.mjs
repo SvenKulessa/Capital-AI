@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { QuoteFactSchema, QuoteDeliverySchema, cacheTtlMs, isFresh } from '../shared/market-contracts.mjs';
+import { MarketAssetCatalogSchema, QuoteFactSchema, QuoteDeliverySchema, cacheTtlMs, isFresh } from '../shared/market-contracts.mjs';
 import { observation } from './market.mjs';
 import { MarketInfrastructure, payloadHash } from './infrastructure.mjs';
 const raw = { testHarness: true };
@@ -74,4 +74,38 @@ test('ECB reference-rate facts are date-precise, replay-safe and never actionabl
   assert.equal(isFresh(fact, publishedAt + 9 * 24 * 60 * 60 * 1000), false);
   assert.equal(QuoteFactSchema.safeParse({ ...fact, timeSemantics:'realtime' }).success, false);
   assert.equal(QuoteFactSchema.safeParse({ ...fact, bid:1.1 }).success, false);
+});
+
+
+test('asset catalog contract cannot promote catalog identity into an actionable score', () => {
+  const catalog = {
+    schema:'CAPITAL_AI_MARKET_ASSET_CATALOG@1',
+    sourcePolicy:'OPEN_SOURCE_AND_OPEN_DATA_ONLY',
+    quotesEnabled:false,
+    assets:[{
+      instrumentId:'fx:EUR-USD:ecb-reference',
+      symbol:'EUR/USD',
+      name:'Euro / USD',
+      category:'FOREX',
+      venue:'ECB reference rates',
+      quoteCurrency:'USD',
+      provider:'ecb-reference-rates',
+      timeSemantics:'reference',
+      sourceAdmission:'OPEN_SOURCE_OPEN_DATA_ADMITTED',
+      marketQuotesEligible:true,
+      runtimeEnabled:false,
+      scoreEligible:false,
+      decisionEligible:false,
+      actionable:false,
+    }],
+  };
+  assert.equal(MarketAssetCatalogSchema.safeParse(catalog).success, true);
+  assert.equal(MarketAssetCatalogSchema.safeParse({
+    ...catalog,
+    assets:[{...catalog.assets[0], scoreEligible:true}],
+  }).success, false);
+  assert.equal(MarketAssetCatalogSchema.safeParse({
+    ...catalog,
+    assets:[{...catalog.assets[0], actionable:true}],
+  }).success, false);
 });

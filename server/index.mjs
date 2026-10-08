@@ -2,7 +2,7 @@ import http from 'node:http';
 import { readFile, stat, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { assetValues, quote, health, startStreams } from './market.mjs';
+import { assetCatalog, assetValues, quote, health, startStreams } from './market.mjs';
 import { createAuth } from './auth.mjs';
 import { createUserProviderVault } from './user-provider-vault.mjs';
 import { createPrivateProviderQuery } from './private-provider-query.mjs';
@@ -342,6 +342,10 @@ export function createApp(root = defaultRoot, options = {}) {
       cads: cadsSnapshot(),
     });
   }
+  if (url.pathname === '/api/market/assets') {
+    if (!marketLimit()) return json(res, 429, { error: 'rate_limited' });
+    return json(res, 200, assetCatalog());
+  }
   if (url.pathname === '/api/market/quote') {
     if (!marketLimit()) { res.setHeader('Retry-After', '60'); return json(res, 429, { error: 'rate_limited' }); }
     if (inflight >= 8) { res.setHeader('Retry-After', '5'); return json(res, 429, { error: 'busy' }); }
@@ -378,7 +382,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (url.pathname.startsWith('/api/')) return json(res, 404, { error: 'not_found' });
 
   const publicPath = normalizedPublicPath(url.pathname);
-  if (OWNER_ONLY_UI_PATHS.has(publicPath)) {
+  if (OWNER_ONLY_UI_PATHS.has(publicPath) || publicPath.startsWith('/control-center/')) {
     const ownerAllowed = await auth.authorizeIamRole(req, res, 'owner');
     if (!ownerAllowed) {
       res.writeHead(404, { ...headers, 'Cache-Control': 'no-store' });

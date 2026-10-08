@@ -1,4 +1,4 @@
-import { instrumentCatalog, QuoteFactSchema, isFresh, toCanonicalAssetValue } from '../shared/market-contracts.mjs';
+import { instrumentCatalog, MarketAssetCatalogSchema, QuoteFactSchema, isFresh, toCanonicalAssetValue } from '../shared/market-contracts.mjs';
 import { infrastructure, payloadHash } from './infrastructure.mjs';
 import { MARKET_SOURCE_POLICY, admittedMarketSourcesFor, isAdmittedMarketSource } from './open-source-market-policy.mjs';
 import { ECB_REFERENCE_RATE_SYMBOLS, fetchEcbReferenceRates } from './ecb-reference-rates.mjs';
@@ -161,6 +161,38 @@ export async function quote(symbol) {
     symbol,
     sourcePolicy:MARKET_SOURCE_POLICY.mode,
   }];
+}
+
+export function assetCatalog() {
+  const assets = Object.values(instrumentCatalog).flatMap(instrument => {
+    const provider = instrument.providers.find(candidate =>
+      isAdmittedMarketSource(candidate, 'marketQuotes'));
+    if (!provider) return [];
+    const runtimeEnabled = quotesEnabled &&
+      (provider !== 'ecb-reference-rates' || ecbConfigured);
+    return [{
+      instrumentId:instrument.instrumentId,
+      symbol:instrument.symbol,
+      name:instrument.name,
+      category:instrument.category,
+      venue:instrument.venue,
+      quoteCurrency:instrument.quote,
+      provider,
+      timeSemantics:instrument.timeSemantics,
+      sourceAdmission:'OPEN_SOURCE_OPEN_DATA_ADMITTED',
+      marketQuotesEligible:true,
+      runtimeEnabled,
+      scoreEligible:false,
+      decisionEligible:false,
+      actionable:false,
+    }];
+  });
+  return MarketAssetCatalogSchema.parse({
+    schema:'CAPITAL_AI_MARKET_ASSET_CATALOG@1',
+    sourcePolicy:MARKET_SOURCE_POLICY.mode,
+    quotesEnabled,
+    assets,
+  });
 }
 
 export async function assetValues() {
