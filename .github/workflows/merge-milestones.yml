@@ -39,12 +39,27 @@ jobs:
           news_number=$(sed -n 's/^MILESTONE_READY_//p' /tmp/news-milestone.txt | tail -1)
           echo "roadmap=$roadmap_number" >> "$GITHUB_OUTPUT"
           echo "news=$news_number" >> "$GITHUB_OUTPUT"
+      # Check both credentials before token minting; never print or persist private-key material.
+      # An incomplete Owner setup must not turn a draft-only milestone into an authentication failure.
+      - name: Check dedicated GitHub App configuration
+        id: app_credentials
+        if: ${{ steps.milestones.outputs.roadmap != '' || steps.milestones.outputs.news != '' }}
+        env:
+          APP_CLIENT_ID: ${{ vars.CAPITAL_AI_MILESTONE_APP_CLIENT_ID }}
+          APP_PRIVATE_KEY: ${{ secrets.CAPITAL_AI_MILESTONE_APP_PRIVATE_KEY }}
+        shell: bash
+        run: |
+          if [[ -n "$APP_CLIENT_ID" && -n "$APP_PRIVATE_KEY" ]]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
       # Only a separately installed App can mint an installation token to open PRs.
       # The default GITHUB_TOKEN is intentionally never used for draft PR writes.
       - name: Repository-scoped GitHub App token (optional)
         id: milestone_app
-        if: ${{ vars.CAPITAL_AI_MILESTONE_APP_CLIENT_ID != '' && (steps.milestones.outputs.roadmap != '' || steps.milestones.outputs.news != '') }}
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3 (immutable)
+        if: ${{ steps.app_credentials.outputs.ready == 'true' }}
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0 (immutable)
         with:
           client-id: ${{ vars.CAPITAL_AI_MILESTONE_APP_CLIENT_ID }}
           private-key: ${{ secrets.CAPITAL_AI_MILESTONE_APP_PRIVATE_KEY }}
@@ -67,7 +82,7 @@ jobs:
         if: ${{ always() && (steps.milestones.outputs.roadmap != '' || steps.milestones.outputs.news != '') && steps.milestone_app.outputs.token == '' }}
         shell: bash
         run: |
-          echo 'Milestone proposals generated, but no dedicated GitHub App token is configured. Drafts are available as an artifact; PR creation NOT_PROVEN / OWNER_SETUP_REQUIRED.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Milestone proposals generated, but no usable dedicated GitHub App token is available (missing credentials or token-minting failure). Drafts are available as an artifact; PR creation NOT_PROVEN / OWNER_SETUP_REQUIRED.' >> "$GITHUB_STEP_SUMMARY"
           echo 'No branch was pushed and no PR was created by the default GITHUB_TOKEN.' >> "$GITHUB_STEP_SUMMARY"
       - name: Open milestone PRs (never merge or publish)
         if: ${{ steps.milestone_app.outputs.token != '' }}
