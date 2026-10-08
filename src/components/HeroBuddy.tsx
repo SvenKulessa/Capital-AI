@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { EyeOff, Move, Settings, X } from 'lucide-react';
-import { answerLocally } from '../../Chat Buddy/src/index';
 
 type HeroBuddyProps = {
   onNavigate?: (path: string) => void;
@@ -49,7 +48,8 @@ function weaveLearned(answer: string, hits: LearnHit[]) {
   return `${answer}\n${line}`;
 }
 
-function answerFor(input: string) {
+async function answerFor(input: string): Promise<string> {
+  const { answerLocally } = await import('../../Chat Buddy/src/index');
   return answerLocally(input, 'de', false, 2).answer;
 }
 
@@ -163,23 +163,31 @@ export function HeroBuddy(props: HeroBuddyProps) {
     const clean = text.trim();
     if (!clean) return;
     const buddyId = `b-${Date.now()}`;
-    const local = answerFor(clean);
     setMessages((current) => [
       ...current,
       { id: `u-${buddyId}`, role: 'user', text: clean },
-      { id: buddyId, role: 'buddy', text: local },
+      { id: buddyId, role: 'buddy', text: 'JaJa verarbeitet deine Frage lokal …' },
     ]);
     setDraft('');
     setOpen(true);
     setSpeech(null);
-    fetch(`/api/chat-buddy/learn?q=${encodeURIComponent(clean)}`, { cache: 'no-store', headers: { Accept: 'application/json' } })
-      .then((response) => (response.ok ? response.json() : Promise.reject()))
-      .then((report: LearnStatus) => {
+    void answerFor(clean).then(async (local) => {
+      setMessages((current) => current.map((message) =>
+        message.id === buddyId ? { ...message, text: local } : message));
+      try {
+        const response = await fetch(`/api/chat-buddy/learn?q=${encodeURIComponent(clean)}`,
+          { cache: 'no-store', headers: { Accept: 'application/json' } });
+        if (!response.ok) return;
+        const report = await response.json() as LearnStatus;
         const next = weaveLearned(local, report.hits ?? []);
         if (next === local) return;
-        setMessages((current) => current.map((message) => (message.id === buddyId ? { ...message, text: next } : message)));
-      })
-      .catch(() => undefined);
+        setMessages((current) => current.map((message) =>
+          message.id === buddyId ? { ...message, text: next } : message));
+      } catch { /* Optional read-only retrieval. Local answer remains available. */ }
+    }).catch(() => {
+      setMessages((current) => current.map((message) =>
+        message.id === buddyId ? { ...message, text: 'Lokale Antwort aktuell nicht verfügbar.' } : message));
+    });
   };
 
   const cyclePosition = () => {
