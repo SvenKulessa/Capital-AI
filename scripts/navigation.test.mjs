@@ -183,3 +183,14 @@ test('homepage hub directory shares the canonical catalog and excludes protected
   assert.doesNotMatch(learning, /SubpageSidebarNav/);
   assert.doesNotMatch(studio, /SubpageSidebarNav/);
 });
+
+test('documentation hub catalog links to the existing content instead of reopening the overview', () => {
+  const catalog = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
+  const home = readFileSync(new URL('../src/components/HomeHubDirectory.tsx', import.meta.url), 'utf8');
+  for (const route of ['/documentation/byok.html', '/documentation/pipeline-architectures.html', '/documentation/pricing-models.html', '/documentation/domains.html']) {
+    assert.ok(catalog.includes("path: '" + route + "'"));
+  }
+  assert.match(home, /window\.location\.assign\(subpage\.path\)/);
+  assert.match(catalog, /window\.location\.assign\(subpage\.path\)/);
+  assert.ok(catalog.includes("badge: '13 Bereiche'"));
+});

@@ -64,6 +64,10 @@ export function HomeHubDirectory({
           return;
       }
     }
+    if (/^\/(?:documentation\/.*\.html|downloads\/.*\.html|fonts\/.*\.txt)$/.test(subpage.path)) {
+      window.location.assign(subpage.path);
+      return;
+    }
     onNavigate(subpage.path);
   };
 

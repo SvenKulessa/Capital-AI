@@ -288,55 +288,36 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
     glowColor: 'rgba(139, 92, 246, 0.45)',
     accentBg: 'bg-violet-500/15 border-violet-400/50 text-violet-300',
     icon: <BookOpen className="w-5 h-5 text-violet-300" />,
-    badge: '5 Bereiche',
-    description: 'Blueprints, BYOK, Pipeline-Architekturen, Preismodelle und Domain-Aufbau.',
+    badge: '13 Bereiche',
+    description: 'Blueprints, BYOK, Architektur, Forschung, Lizenzen, Preise und Domain-Aufbau.',
     mainPath: '/dokumentation',
     subpages: [
-      {
-        id: 'hub',
-        name: 'Dokumentations-Hub',
-        icon: <BookOpen className="w-4 h-4 text-violet-300" />,
-        badge: 'Übersicht',
-        shortDesc: 'Zentraler Einstieg in alle Dokumentationen und HTML/CSS-Präsentationen.',
-        tags: ['Docs', 'Presentation'],
-        path: '/dokumentation',
-      },
-      {
-        id: 'blueprints',
-        name: 'Blueprint-Dokumentation',
-        icon: <FileCode className="w-4 h-4 text-cyan-400" />,
-        badge: '7 Blueprints',
-        shortDesc: 'Kanonische Datenkonzept-Blueprints mit Architektur-Grafiken und BYOK-Kontext.',
-        tags: ['Blueprints', 'Datenkonzepte'],
-        path: '/marketscreener/dokumentation',
-      },
-      {
-        id: 'byok',
-        name: 'BYOK Präsentation',
-        icon: <ShieldCheck className="w-4 h-4 text-emerald-400" />,
-        badge: 'Vault',
-        shortDesc: 'Private API-Keys, Vault-Boundary, Provider-Adapter und Scoring-Anbindung.',
-        tags: ['BYOK', 'Vault'],
-        path: '/dokumentation',
-      },
-      {
-        id: 'pipelines',
-        name: 'Pipeline-Architekturen',
-        icon: <Layers className="w-4 h-4 text-cyan-400" />,
-        badge: 'Layer',
-        shortDesc: 'Ingestion, NATS JetStream, Valkey, Evidence und Scoring als Systempfad.',
-        tags: ['NATS', 'Valkey', 'Replay'],
-        path: '/dokumentation',
-      },
-      {
-        id: 'pricing',
-        name: 'Preiskatalog & Domains',
-        icon: <DollarSign className="w-4 h-4 text-amber-400" />,
-        badge: 'Pricing',
-        shortDesc: 'Starter, Pro, Enterprise, Market Vocabulary und weitere freigegebene Produktpakete.',
-        tags: ['Stripe', 'Vocabulary', 'Domains'],
-        path: '/dokumentation',
-      },
+      { id: 'hub', name: 'Dokumentations-Hub', icon: <BookOpen className="w-4 h-4 text-violet-300" />,
+        shortDesc: 'Alle Präsentationen und Architekturressourcen', path: '/dokumentation' },
+      { id: 'blueprints', name: 'Blueprint-Dokumentation', icon: <FileCode className="w-4 h-4 text-cyan-400" />,
+        shortDesc: 'Datenkonzept-Blueprints mit BYOK-Kontext', path: '/marketscreener/dokumentation' },
+      { id: 'byok', name: 'BYOK – Bring Your Own Key', icon: <ShieldCheck className="w-4 h-4 text-emerald-400" />,
+        shortDesc: 'Vault-Boundary und private Provider-Credentials', path: '/documentation/byok.html' },
+      { id: 'pipelines', name: 'Pipeline-Architekturen', icon: <Layers className="w-4 h-4 text-cyan-400" />,
+        shortDesc: 'Ingestion, NATS, Valkey, Evidence und Scoring', path: '/documentation/pipeline-architectures.html' },
+      { id: 'pricing', name: 'Preiskatalog & Produktpakete', icon: <DollarSign className="w-4 h-4 text-amber-400" />,
+        shortDesc: 'Preismodell-Präsentation der Produktpakete', path: '/documentation/pricing-models.html' },
+      { id: 'architecture', name: 'FinTech Architektur', icon: <Layers className="w-4 h-4 text-cyan-400" />,
+        shortDesc: 'Architekturansicht und Systemgrenzen', path: '/architecture' },
+      { id: 'research', name: 'FinTech Forschungsprojekt', icon: <Gauge className="w-4 h-4 text-violet-400" />,
+        shortDesc: 'Forschung und Lizenzkontext', path: '/forschung' },
+      { id: 'oss-market', name: 'OSS Market Architektur', icon: <Server className="w-4 h-4 text-emerald-400" />,
+        shortDesc: 'Statische Open-Source-Market-Architektur', path: '/downloads/market-screener-hub-open-source.html' },
+      { id: 'licenses', name: 'Lizenzen & Nachweise', icon: <FileCode className="w-4 h-4 text-violet-400" />,
+        shortDesc: 'Design-, Bild- und Lizenznachweise', path: '/lizenz' },
+      { id: 'provider-licenses', name: 'Datenprovider-Lizenzen', icon: <Radio className="w-4 h-4 text-cyan-400" />,
+        shortDesc: 'Providerrechte und Nutzungsgrenzen', path: '/datenprovider-lizenzen' },
+      { id: 'oss-licenses', name: 'Open-Source-Lizenzen', icon: <ShieldCheck className="w-4 h-4 text-emerald-400" />,
+        shortDesc: 'OSS-Lizenztexte und Notices', path: '/opensource-lizenzen' },
+      { id: 'font-license', name: 'Schriftlizenz', icon: <FileCode className="w-4 h-4 text-amber-400" />,
+        shortDesc: 'Lokaler OFL-Lizenztext', path: '/fonts/OFL.txt' },
+      { id: 'domains', name: 'CAPITAL-AI Domains', icon: <Building2 className="w-4 h-4 text-violet-400" />,
+        shortDesc: 'Domain-Struktur und Verantwortungsbereiche', path: '/documentation/domains.html' },
     ],
   },
   'control-center': {
@@ -519,6 +500,10 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
         else onNavigate?.('/marketscreener');
         return;
       }
+    }
+    if (/^\/(?:documentation\/.*\.html|downloads\/.*\.html|fonts\/.*\.txt)$/.test(subpage.path)) {
+      window.location.assign(subpage.path);
+      return;
     }
     onNavigate?.(subpage.path);
   };
