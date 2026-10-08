@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   SOCIAL_PLATFORMS, socialPlatformForChannel, socialChannelForPlatform,
+  providerPublicationUrlAllowed,
   assertSocialManifestHandoff, publicSocialAccountProjection,
   prepareSocialProviderDelivery, classifySocialProviderReadback,
   buildLegacySocialPublishLogRow, createSocialOAuthState,
@@ -64,6 +65,9 @@ test('all five provider channels map to legacy OAuth/account/log platform keys',
   }
   assert.throws(() => socialPlatformForChannel('LINKEDIN'), /CHANNEL_UNSUPPORTED/);
   assert.throws(() => socialPlatformForChannel('toString'), /CHANNEL_UNSUPPORTED/);
+  assert.equal(providerPublicationUrlAllowed('YOUTUBE', 'https://www.youtube.com/watch?v=video'), true);
+  assert.equal(providerPublicationUrlAllowed('YOUTUBE', 'https://www.youtube.com.evil.invalid/watch?v=video'), false);
+  assert.equal(providerPublicationUrlAllowed('YOUTUBE', 'https://x.com/i/status/123'), false);
 });
 
 test('manifest and handoff must match immutable asset and approval exactly', () => {
@@ -137,6 +141,11 @@ test('provider acknowledgement, processing and timeout never imply PUBLISHED', (
     assert.throws(() => buildLegacySocialPublishLogRow(plan, completion),
       /LOG_REQUIRES_TERMINAL_READBACK/);
   }
+  assert.throws(() => classifySocialProviderReadback(plan, {
+    channel: CHANNEL, deliveryKey: KEY, status: 'VERIFIED_PUBLISHED',
+    providerDeliveryId: 'video-123', publishedUrl: 'https://attacker.invalid/watch?v=video-123',
+    evidenceRef: 'evidence://provider', verifiedBy: 'PROVIDER_READBACK',
+  }), /COMPLETION_EVIDENCE_REQUIRED/);
   assert.throws(() => classifySocialProviderReadback(plan, {
     channel: CHANNEL, deliveryKey: KEY, status: 'VERIFIED_PUBLISHED',
     providerDeliveryId: 'video-123', publishedUrl: 'https://youtube.com/watch?v=video-123',
