@@ -94,7 +94,7 @@ export function resolveSeoIndexingPolicy(pathname) {
 
   if (normalized.startsWith('/api/')) return API_PRIVATE_POLICY;
   if (normalized.startsWith('/control-center/')) return exactRoutes.get('/control-center');
-  if (normalized === '/healthz' || normalized === '/metrics' || normalized === '/robots.txt' || normalized === '/sitemap.xml') {
+  if (normalized === '/healthz' || normalized === '/metrics' || normalized === '/robots.txt' || normalized === '/sitemap.xml' || normalized === '/llms.txt' || normalized === '/sitemap.md') {
     return OPERATIONAL_NOINDEX_POLICY;
   }
   if (/^\/vocabulary\/[a-z0-9][a-z0-9_-]*$/.test(normalized)) {
