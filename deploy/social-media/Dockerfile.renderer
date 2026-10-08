@@ -63,17 +63,20 @@ RUN python -m pip install \
       /usr/local/bin/pip*
 
 COPY --from=ffmpeg-build /opt/ffmpeg /opt/ffmpeg
+COPY scripts/media /opt/capital-ai-media/scripts/media
+COPY public/branding/asset-pack/meta/social-render-tokens.json /opt/capital-ai-media/public/branding/asset-pack/meta/social-render-tokens.json
 
-ENV PATH="/opt/ffmpeg/bin:${PATH}" \
+ENV PYTHONPATH="/opt/capital-ai-media/scripts/media" \
+    PATH="/opt/ffmpeg/bin:${PATH}" \
     LD_LIBRARY_PATH="/opt/ffmpeg/lib"
 
 RUN addgroup -S -g 10001 renderer \
     && adduser -S -D -H -u 10001 -G renderer renderer \
-    && python -c "from PIL import Image; print(Image.__version__)" \
+    && python -c "from PIL import Image; import capital_ai_media; palette=capital_ai_media.load_brand_palette(); assert palette.gold == \"#F9BF21\"; print(Image.__version__)" \
     && ffmpeg -hide_banner -version \
     && ffprobe -hide_banner -version
 
 WORKDIR /work
 USER 10001:10001
 
-CMD ["python", "-c", "from PIL import Image; print('capital-ai-social-renderer-ready', Image.__version__)"]
+CMD ["python", "-c", "from PIL import Image; import capital_ai_media; print('capital-ai-social-renderer-ready', Image.__version__, capital_ai_media.DEFAULT_TOKEN_PATH)"]

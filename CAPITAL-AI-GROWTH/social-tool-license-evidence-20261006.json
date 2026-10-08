@@ -3,7 +3,7 @@
   "id": "CAPITAL-AI-SOCIAL-TOOL-LICENSE-EVIDENCE-20261006",
   "status": "POINT_4_AUDIO_MODELS_REMOVED_FAIL_CLOSED",
   "correlatedAt": "2026-10-08",
-  "targetMain": "5b6b8b79ec0f29d3da99b55eed6920a7bd9c8cbf",
+  "targetMain": "c881081e1d6a08e1babd98c15371f6a8615d645b",
   "financeSource": "dcef421fe6e350a3a2ade61d0299aad9ecca213c",
   "scope": "Social-Media-Engine implementation dependencies only; Finance MARKET/scoring migration remains deferred until Social cutover PASS.",
   "policy": {
@@ -25,26 +25,29 @@
   },
   "items": [
     {
-      "id": "d3",
+      "id": "d3-scale",
       "role": "deterministic planning visual layout",
       "sourceEvidence": {
         "financePackageJson": "d3:^7.9.0",
         "financePackageLockVersion": "7.9.0",
-        "registryArtifact": "d3-7.9.0.tgz",
-        "integrity": "sha512-e1U46jVP+w7Iut8Jt8ri1YsPOvFpg46k+K8TpCb0P+zjCkjkPnV7WzfDJzMHy1LnA+wj5pLT1wjO901gLXeEhA=="
+        "financeRegistryIntegrity": "sha512-e1U46jVP+w7Iut8Jt8ri1YsPOvFpg46k+K8TpCb0P+zjCkjkPnV7WzfDJzMHy1LnA+wj5pLT1wjO901gLXeEhA==",
+        "targetPackageJson": "d3-scale:4.0.2",
+        "targetPackageLockVersion": "4.0.2",
+        "registryArtifact": "d3-scale-4.0.2.tgz",
+        "integrity": "sha512-GZW464g1SH7ag3Y7hXjf8RoUuAFIqklOAq3MRl4OaWabTFJY9PN/E1YklhXLh+OQ3fM9yS2nOkCoS+WLZ6kvxQ=="
       },
       "upstream": {
-        "package": "d3",
-        "version": "7.9.0",
+        "package": "d3-scale",
+        "version": "4.0.2",
         "license": "ISC",
-        "officialEvidence": "https://www.npmjs.com/package/d3"
+        "officialEvidence": "https://www.npmjs.com/package/d3-scale"
       },
       "decision": {
         "mode": "COMMERCIAL_PRODUCT_BUNDLE",
         "implementationEligible": true,
         "productionEligible": true,
         "noticeRequired": true,
-        "reason": "Exact npm version and integrity are bound; permissive ISC license is compatible with commercial redistribution subject to notice retention."
+        "reason": "Target imports only scalePoint from exact d3-scale 4.0.2 already present in the Capital-AI lock; the narrower ISC-licensed package avoids the unused D3 umbrella dependency."
       }
     },
     {
@@ -150,7 +153,6 @@
   ],
   "deferredCandidates": [
     "f5-tts",
-    "faster-whisper",
     "comfyui",
     "moneyprinterturbo",
     "musetalk",
@@ -159,7 +161,7 @@
   ],
   "summary": {
     "fullyProductionEligible": [
-      "d3"
+      "d3-scale"
     ],
     "exactArtifactLockedButRuntimeImagePending": [],
     "requiredRuntimeBlockers": [

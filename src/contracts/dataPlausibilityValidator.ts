@@ -17,12 +17,11 @@ export class DataPlausibilityValidator {
   /**
    * Validates a FinalRankResult against all 11 enterprise plausibility rules.
    */
-  public static validateFinalRankResult(result: FinalRankResult): PlausibilityViolation[] {
+  public static validateFinalRankResult(result: FinalRankResult, now = Date.now()): PlausibilityViolation[] {
     const violations: PlausibilityViolation[] = [];
-    const now = Date.now();
 
-    // 1. NO FUTURE TIMESTAMPS (allowing max 3000ms clock skew)
-    if (result.computedAt > now + 3000) {
+    // 1. NO FUTURE TIMESTAMPS: clock uncertainty never grants publication.
+    if (result.computedAt > now) {
       violations.push({
         ruleId: 'PLAU-001-FUTURE-TIMESTAMP',
         ruleDescription: 'Berechnungs-Zeitstempel liegt unzulässig in der Zukunft',
@@ -125,8 +124,18 @@ export class DataPlausibilityValidator {
   /**
    * Validates DataProvenance records to prevent unverified dark-pool or pseudo-live claims.
    */
-  public static validateProvenance(provenance: DataProvenance): PlausibilityViolation[] {
+  public static validateProvenance(provenance: DataProvenance, now = Date.now()): PlausibilityViolation[] {
     const violations: PlausibilityViolation[] = [];
+
+    const times = [provenance.observedAt, provenance.receivedAt, provenance.publishedAt];
+    if (times.some(t => !Number.isSafeInteger(t) || t <= 0 || t > now) ||
+        provenance.receivedAt < provenance.observedAt || provenance.publishedAt < provenance.receivedAt ||
+        provenance.latencyMs !== provenance.receivedAt - provenance.observedAt) {
+      violations.push({ ruleId: 'PLAU-PROVENANCE-TIMESTAMP-INVALID',
+        ruleDescription: 'Quellenzeit, Reihenfolge oder gemessene Latenz ist ungültig',
+        severity: 'CRITICAL_BLOCKER', entityId: provenance.providerId,
+        details: 'Future timestamps and inconsistent observation/receipt/publication times are blocked' });
+    }
 
     // Telemetry latency must be non-negative
     if (provenance.latencyMs < 0) {

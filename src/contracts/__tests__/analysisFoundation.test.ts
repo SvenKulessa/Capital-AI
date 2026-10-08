@@ -3,6 +3,7 @@ import './shadowPipeline.test';
 import './rawFeatureCalculation.test';
 import './marketIntelligenceReadiness.test';
 import './marketTaxonomyResearchGates.test';
+import './marketContractBoundaries.test';
 import assert from 'node:assert/strict';
 import { CANONICAL_50_COMPONENTS } from '../analysisComponentRegistry';
 import { validateAnalysisComponentRegistry } from '../analysisComponentRegistryValidator';

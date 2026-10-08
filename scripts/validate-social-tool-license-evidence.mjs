@@ -18,7 +18,7 @@ export function validateSocialToolLicenseEvidence(raw) {
       if (!['COMMERCIAL_PRODUCT_BUNDLE','COMMERCIAL_INTERNAL_SERVICE'].includes(item.decision.mode)) {
         fail(`production eligible item has invalid commercial mode: ${item.id}`);
       }
-      if (item.id === 'd3' && !item.sourceEvidence?.integrity?.startsWith('sha512-')) fail('d3 integrity missing');
+      if (item.id === 'd3-scale' && !item.sourceEvidence?.integrity?.startsWith('sha512-')) fail('d3-scale integrity missing');
     }
     if (item.id.includes('weights') && item.decision.productionEligible === true && !item.upstream?.modelFileSha256) {
       fail(`production weight artifact missing sha256: ${item.id}`);
@@ -32,7 +32,7 @@ export function validateSocialToolLicenseEvidence(raw) {
     const item = raw.items.find(candidate => candidate.id === id);
     if (!item || item.decision.productionEligible !== true) fail(`summary production eligible drift: ${id}`);
   }
-  if (!ids.has('d3') || !ids.has('pillow') || !ids.has('ffmpeg')) {
+  if (!ids.has('d3-scale') || !ids.has('pillow') || !ids.has('ffmpeg')) {
     fail('required point-4 baseline item missing');
   }
   for (const removed of ['qwen3-tts-code','qwen3-tts-weights','chatterbox-code','chatterbox-multilingual-v3-weights','openai-whisper-code']) {
