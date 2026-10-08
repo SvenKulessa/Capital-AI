@@ -40,7 +40,7 @@ function chrome(url,viewport){
   try{
     const flags=['--headless=new','--disable-gpu','--disable-dev-shm-usage','--no-first-run',
       '--disable-extensions','--disable-background-networking',`--user-data-dir=${dir}`,
-      `--window-size=${viewport.width},${viewport.height}`,'--virtual-time-budget=16000','--dump-dom'];
+      `--window-size=${viewport.width},${viewport.height}`,'--virtual-time-budget=9000','--dump-dom'];
     if(viewport.mobile)flags.push('--user-agent=Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131 Mobile Safari/537.36');
     const result=spawnSync(process.env.CHROME_BIN,[...flags,url],{encoding:'utf8',timeout:65000,maxBuffer:8*1024*1024});
     if(result.error)throw result.error;
@@ -51,11 +51,15 @@ function chrome(url,viewport){
 function browserTests(){
   for(const [lang,word] of Object.entries(languages)){
     for(const viewport of [{width:1440,height:900,mobile:false},{width:390,height:844,mobile:true}]){
+      console.log('CHROME_READBACK_START',lang,viewport.mobile?'mobile-emulated':'desktop');
       const html=chrome(origin+'/'+lang+'/',viewport);
       assert.match(html,new RegExp(`<html[^>]+lang="${lang}"`));
       assert.ok(html.includes('id="header-language-switcher"'),lang+' language selector absent');
       assert.ok(html.includes(word),lang+' translated hero absent, hydration may have failed');
-      assert.ok(!html.includes('Die Anwendung konnte nicht gestartet werden.'),lang+' bootstrap error');
+      // The source HTML intentionally contains a hidden fallback even after successful React hydration.
+      // A visible fallback, not the mere presence of its text, signals bootstrap failure.
+      const fallback = html.match(/<main\\b[^>]*\\bid="capital-ai-bootstrap-fallback"[^>]*>/i)?.[0];
+      if (fallback) assert.match(fallback, /\\bhidden(?:\\s|=|>)/i, lang+' bootstrap fallback became visible');
       console.log('BROWSER_DOM_PASS',lang,viewport.mobile?'mobile-emulated':'desktop');
     }
   }
