@@ -6,6 +6,12 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createApp } from './index.mjs';
 
+function callbackRequestPath(value) {
+  const url = new URL(value);
+  url.searchParams.set('code', 'test-code');
+  return url.pathname + url.search;
+}
+
 function sessionCookieHeader(response) {
   return response.headers.getSetCookie()
     .filter(value => value.startsWith('__Host-capital_session_'))
@@ -171,6 +177,7 @@ async function harness(envOverrides = {}) {
     assert.equal(target.searchParams.get('code_challenge_method'), 's256');
     state.challenge = target.searchParams.get('code_challenge');
     const callback = new URL(target.searchParams.get('redirect_to'));
+    if (route.startsWith('/api/auth/login/google')) assert.equal(callback.search, '', 'web PKCE callback must have a stable allowlisted URL');
     const pkceCookie = response.headers.getSetCookie()
       .find(value => value.startsWith('__Host-capital_pkce='))
       .split(';')[0];
@@ -180,7 +187,7 @@ async function harness(envOverrides = {}) {
   const completeGoogle = async () => {
     const start = await beginGoogle();
     const response = await request(
-      `/api/auth/callback?flow=${encodeURIComponent(start.callback.searchParams.get('flow'))}&code=test-code`,
+      callbackRequestPath(start.callback),
       { headers: { cookie: start.pkceCookie } },
     );
     assert.equal(response.status, 303);
@@ -355,7 +362,7 @@ test('Supabase Google PKCE binds callback to HttpOnly flow state and ends at lan
   const h = await harness();
   try {
     const start = await h.beginGoogle();
-    const callbackUrl = `/api/auth/callback?flow=${encodeURIComponent(start.callback.searchParams.get('flow'))}&code=test-code`;
+    const callbackUrl = callbackRequestPath(start.callback);
     assert.equal((await h.request(callbackUrl)).status, 400);
 
     const completed = await h.request(callbackUrl, { headers: { cookie: start.pkceCookie } });
@@ -396,7 +403,7 @@ test('Google signup rejects unconsented or cross-origin requests and records sig
     assert.equal(h.state.consentWrites.length, 0);
 
     const start = await h.beginGoogle(route, options);
-    const callback = '/api/auth/callback?flow=' + encodeURIComponent(start.callback.searchParams.get('flow')) + '&code=test-code';
+    const callback = callbackRequestPath(start.callback);
     const completed = await h.request(callback, { headers: { cookie: start.pkceCookie } });
     assert.equal(completed.status, 303);
     assert.match(sessionCookieHeader(completed), /__Host-capital_session_count=/);
@@ -417,7 +424,7 @@ test('Google signup stays fail-closed if consent storage is unavailable', async 
   try {
     const start = await h.beginGoogle('/api/auth/login/google', { method: 'POST', headers: { Origin: 'https://capital.example', 'Content-Type': 'application/x-www-form-urlencoded' }, body: data.toString() });
     h.state.rejectConsentWrites = true;
-    const callback = '/api/auth/callback?flow=' + encodeURIComponent(start.callback.searchParams.get('flow')) + '&code=test-code';
+    const callback = callbackRequestPath(start.callback);
     const completed = await h.request(callback, { headers: { cookie: start.pkceCookie } });
     assert.equal(completed.status, 503);
     assert.equal((await completed.json()).error, 'registration_consent_persistence_failed');
@@ -534,7 +541,7 @@ test('mobile login keeps one-time verifier-bound transfer while using Supabase O
     const transferChallenge = createHash('sha256').update(verifier).digest('base64url');
     const start = await h.beginGoogle('/api/auth/mobile-login?challenge=' + encodeURIComponent(transferChallenge));
     const callback = await h.request(
-      `/api/auth/callback?flow=${encodeURIComponent(start.callback.searchParams.get('flow'))}&code=test-code`,
+      callbackRequestPath(start.callback),
       { headers: { cookie: start.pkceCookie } },
     );
     assert.equal(callback.status, 303);
@@ -586,7 +593,7 @@ test('web Google login ignores caller-controlled next targets and returns to lan
   try {
     const start = await h.beginGoogle('/api/auth/login/google?next=%2Fcontrol-center');
     const response = await h.request(
-      `/api/auth/callback?flow=${encodeURIComponent(start.callback.searchParams.get('flow'))}&code=test-code`,
+      callbackRequestPath(start.callback),
       { headers: { cookie: start.pkceCookie } },
     );
     assert.equal(response.status, 303);
@@ -624,9 +631,9 @@ test('Google login preserves only the allowlisted CADS Marketplace setup return 
   try {
     const safeNext = '/api/cads/marketplace/setup?installation_id=77';
     const safe = await h.beginGoogle('/api/auth/login/google?next=' + encodeURIComponent(safeNext));
-    assert.equal(safe.callback.searchParams.get('next'), safeNext);
+    assert.equal(safe.callback.search, '');
     const safeResponse = await h.request(
-      '/api/auth/callback?flow=' + encodeURIComponent(safe.callback.searchParams.get('flow')) + '&code=test-code',
+      callbackRequestPath(safe.callback),
       { headers: { cookie: safe.pkceCookie } },
     );
     assert.equal(safeResponse.status, 303);
