@@ -1,9 +1,10 @@
-# CAPITAL-AI Qwen3-TTS inference-only runtime resolution input (Python 3.11)
-# qwen-tts itself is installed separately --no-deps with its immutable wheel hash.
-# Demo/web UI dependencies such as Gradio are intentionally excluded from the worker image.
+# CAPITAL-AI Qwen3-TTS inference-only runtime resolution input (Python 3.13)
+# qwen-tts source is installed separately --no-deps from upstream PR #360 commit
+# 00969daa8064e23adc9e5f52cdf20cf247f94159 (Apache-2.0).
+# Demo/web UI dependencies such as Gradio are intentionally excluded.
 torch==2.14.1
 torchaudio==2.11.0
-transformers==5.19.0
+transformers==5.15.1
 accelerate==1.12.0
 librosa==0.11.0
 soundfile==0.13.1
