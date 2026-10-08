@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "CAPITAL_AI_BRAND_TOKENS@1",
+  "source": {
+    "asset": "public/branding/capital-ai-logo.jpg",
+    "sha256": "6244629091073823b4cff86908adb0403a217779219bfb44883bd956548243e3",
+    "provenance": "docs/licenses/Capital-AI-BRANDING.md"
+  },
+  "color": {
+    "background": {
+      "$value": "#02050e"
+    },
+    "foreground": {
+      "$value": "#f8fafc"
+    },
+    "brand": {
+      "primary": {
+        "$value": "#F5B014"
+      },
+      "cyan": {
+        "$value": "#22D3EE"
+      },
+      "accent": {
+        "$value": "#8D26FF"
+      },
+      "emerald": {
+        "$value": "#10B981"
+      }
+    },
+    "print": {
+      "textPrimary": {
+        "$value": "#111827"
+      },
+      "textSecondary": {
+        "$value": "#475569"
+      },
+      "surfaceLight": {
+        "$value": "#F8FAFC"
+      },
+      "borderLight": {
+        "$value": "#CBD5E1"
+      }
+    }
+  }
+}
