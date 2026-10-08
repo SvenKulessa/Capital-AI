@@ -1,13 +1,11 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "5412f9bcbddc64acb97e88c2f19b34ffbb7a9482",
-  "mergedPr": 232,
-  "targetPr": 236,
-  "targetBranch": "capital-ai-product/live-repository-tool-catalog-20261007",
-  "targetHeadSha": "d60786cdbbbc6dbff9d76de1f670fe4685301f13",
+  "mainSha": "4d353d21e6191ce2335f7b1cfebf630f31cb25a1",
+  "mergedPr": 265,
+  "targetPr": 267,
+  "targetBranch": "capital-ai-market/website-assets-20261008",
+  "targetHeadSha": "18ba3553b14bf1af18590e16fa469ba104ad3ab7",
   "exactOverlap": [
-    ".dockerignore",
-    "Dockerfile",
     "server/index.mjs"
   ],
   "authority": "EVIDENCE_ONLY",
