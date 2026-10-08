@@ -7,8 +7,8 @@
   "target": {
     "repository": "SvenKulessa/Capital-AI",
     "stackedOnPr": null,
-    "baseHead": "07b34ab4cbbd4df9624f49fe072b3173e72446af",
-    "currentMain": "07b34ab4cbbd4df9624f49fe072b3173e72446af",
+    "baseHead": "c881081e1d6a08e1babd98c15371f6a8615d645b",
+    "currentMain": "c881081e1d6a08e1babd98c15371f6a8615d645b",
     "removalMerge": "22ffb122592260b2d4a8f181963403fc917b88ce"
   },
   "status": "IMPLEMENTED_BRANCH_CURRENT_MAIN_PENDING_CI",
