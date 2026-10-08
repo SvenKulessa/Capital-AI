@@ -1,0 +1,460 @@
+{
+  "schema": "CAPITAL_AI_PUBLIC_PRODUCTION_READBACK@1",
+  "observedAt": "2026-10-08T23:36:32.892Z",
+  "origin": "https://capital-ai.online",
+  "scope": "STATIC_AND_TWO_VOCABULARY_SAMPLES",
+  "fetchedIndexRoutes": 12,
+  "seoStatus": "PASS",
+  "runtimeIdentity": {
+    "status": "NOT_PROVEN",
+    "sourceSha": null
+  },
+  "commerce": {
+    "checkoutConfigured": true,
+    "purchaseEvidence": "NOT_PROVEN",
+    "marketplaceReady": false
+  },
+  "productionReady": false,
+  "checks": [
+    {
+      "path": "/",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/learning",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/learning",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/learning",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/learning",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/learning",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/learning",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/faq",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/faq",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/faq",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/faq",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/faq",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/faq",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/lizenz",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/lizenz",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/lizenz",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/lizenz",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/lizenz",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/lizenz",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/datenprovider-lizenzen",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/datenprovider-lizenzen",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/datenprovider-lizenzen",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/datenprovider-lizenzen",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/datenprovider-lizenzen",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/datenprovider-lizenzen",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/opensource-lizenzen",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/opensource-lizenzen",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/opensource-lizenzen",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/opensource-lizenzen",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/opensource-lizenzen",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/opensource-lizenzen",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/impressum",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/impressum",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/impressum",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/impressum",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/impressum",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/impressum",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/datenschutz",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/datenschutz",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/datenschutz",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/datenschutz",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/datenschutz",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/datenschutz",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/agb",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/agb",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/agb",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/agb",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/agb",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/agb",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/orderbuch",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/orderbuch",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/orderbuch",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/orderbuch",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/orderbuch",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/orderbuch",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-final_rank_confidence_evidence_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-final_rank_confidence_evidence_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-final_rank_confidence_evidence_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-final_rank_confidence_evidence_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-final_rank_confidence_evidence_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-final_rank_confidence_evidence_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/robots.txt",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/robots.txt",
+      "check": "CANONICAL_SITEMAP",
+      "status": "PASS"
+    },
+    {
+      "path": "/sitemap.xml",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/sitemap.xml",
+      "check": "EXACT_INDEX_ALLOWLIST",
+      "status": "PASS"
+    },
+    {
+      "path": "/llms.txt",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/llms.txt",
+      "check": "PUBLIC_DISCOVERY",
+      "status": "PASS"
+    },
+    {
+      "path": "/sitemap.md",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/sitemap.md",
+      "check": "PUBLIC_DISCOVERY",
+      "status": "PASS"
+    },
+    {
+      "path": "/login",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/login",
+      "check": "NOINDEX",
+      "status": "PASS"
+    },
+    {
+      "path": "/healthz",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/healthz",
+      "check": "HEALTH_OK",
+      "status": "PASS"
+    },
+    {
+      "path": "/api/billing/subscriptions/readiness",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/api/billing/subscriptions/readiness",
+      "check": "SUBSCRIPTION_CONTRACT",
+      "status": "PASS"
+    },
+    {
+      "path": "/api/cads/commerce/readiness",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/api/cads/commerce/readiness",
+      "check": "CADS_CONTRACT",
+      "status": "PASS"
+    }
+  ]
+}
