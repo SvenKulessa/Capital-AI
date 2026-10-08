@@ -1,7 +1,7 @@
 {
   "schemaVersion": "SOCIAL_TTS_SNAPSHOT_LOCK@1",
   "id": "CAPITAL-AI-SOCIAL-TTS-SNAPSHOT-LOCK-20261006",
-  "correlatedMain": "4fa3e3f92547cd6356f46490a38e9b7515f69a6d",
+  "correlatedMain": "d8b5d471b34fcfaf061a7d8a8b62eac7406c8864",
   "financeSource": "dcef421fe6e350a3a2ade61d0299aad9ecca213c",
   "policy": {
     "immutableRevisionRequired": true,
@@ -31,7 +31,7 @@
           "einops"
         ]
       },
-      "transitiveLockStatus": "OPEN"
+      "transitiveLockStatus": "DEPENDENCY_RESOLUTION_PENDING"
     },
     "model": {
       "repo": "Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign",
@@ -111,11 +111,19 @@
           "pyloudnorm",
           "omegaconf"
         ],
-        "mutableVcs": [
-          "resemble-perth @ git+https://github.com/resemble-ai/Perth.git@master"
+        "mutableVcs": [],
+        "targetImmutableVcs": [
+          "resemble-perth @ git+https://github.com/resemble-ai/Perth.git@ff1c8ac55a976971245cdd53c18d6131ca00d993"
         ]
       },
-      "transitiveLockStatus": "BLOCKED_MUTABLE_PERTH_AND_UNPINNED_DEPENDENCIES"
+      "transitiveLockStatus": "TARGET_PERTH_IMMUTABLE_DEPENDENCY_RESOLUTION_PENDING",
+      "targetPerth": {
+        "repository": "resemble-ai/Perth",
+        "immutableRevision": "ff1c8ac55a976971245cdd53c18d6131ca00d993",
+        "selection": "current immutable target lock; not asserted as historical Finance master resolution",
+        "license": "MIT",
+        "compatibilityStatus": "PENDING_DEPENDENCY_RESOLUTION_AND_WORKER_TEST"
+      }
     },
     "model": {
       "repo": "ResembleAI/chatterbox",
@@ -173,12 +181,29 @@
     "Immutable worker images pass vulnerability/license/SBOM gates.",
     "German runtime benchmark and Human/Owner listening acceptance pass."
   ],
-  "status": "PARTIAL_FAIL_CLOSED",
+  "status": "SNAPSHOT_COMPLETE_DEPENDENCY_AND_RUNTIME_GATES_OPEN",
   "evidenceArtifact": {
-    "workflowRunId": 37519027971,
-    "artifactId": 11439055707,
-    "artifactDigest": "sha256:32bc24c69ae1112d4ead76d1532d5c5bbefef6fc1117a2a7408fe5d36336b5a2",
-    "sourceSha": "1d246d0f6398a8c9d45c459b0170a3599b7a3670",
+    "workflowRunId": 37700333054,
+    "artifactId": 11517002602,
+    "artifactDigest": "sha256:812768c05a67274cc791698e99d626ad7bf067c3583dec75f23604ca8d2d2c4a",
+    "sourceSha": "3e9ae4a3769b899d37ac507548144dc07e38f9c6",
     "result": "PASS"
+  },
+  "summary": {
+    "qwenSnapshot": "COMPLETE_FOR_DECLARED_RUNTIME_FILES",
+    "chatterboxSnapshot": "COMPLETE_FOR_PINNED_FINANCE_MTL_LOADER_FILES",
+    "qwenTransitiveLock": "OPEN",
+    "chatterboxTransitiveLock": "BLOCKED_MUTABLE_PERTH_AND_UNPINNED_DEPENDENCIES",
+    "immutableTtsWorkerImages": "OPEN",
+    "germanRuntimeBenchmark": "OPEN",
+    "humanOwnerListeningAcceptance": "OPEN"
+  },
+  "currentVerification": {
+    "verifiedAt": "2026-10-08",
+    "qwenSmallArtifactCount": 9,
+    "chatterboxSmallArtifactCount": 2,
+    "qwenRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+    "chatterboxRevision": "5bb1f6ee58e50c3b8d408bc82a6d3740c2db6e18",
+    "allDeclaredHashesMatched": true
   }
 }

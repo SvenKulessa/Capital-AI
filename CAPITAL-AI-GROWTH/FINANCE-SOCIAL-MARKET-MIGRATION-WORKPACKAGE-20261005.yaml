@@ -18,9 +18,9 @@ baseline:
     repository: "SvenKulessa/Capital-AI"
     sha: "9c5fc40318cf538308724c2efb18441185e8cbae"
   currentMainCorrelation:
-    sha: "051ec288b518e7184e7082420b89410935752269"
+    sha: "d8b5d471b34fcfaf061a7d8a8b62eac7406c8864"
     rootPolicy: "AGENTS.md@currentmain"
-    correlationState: "POINT_4_ARTIFACT_LOCK_ADVANCED_ON_CURRENT_MAIN"
+    correlationState: "POINT_4_RENDERER_REAL_BUILD_HARDENING_ON_CURRENT_MAIN"
   policy: "target-current-main-contracts-win"
 
 objectives:
@@ -189,6 +189,8 @@ artifacts:
   socialEngineCompletionGate: "CAPITAL-AI-GROWTH/social-engine-completion-gate.json"
   socialEngineCompletionGateValidator: "scripts/validate-social-engine-completion-gate.mjs"
   socialEngineCompletionGateTest: "scripts/social-engine-completion-gate.test.mjs"
+  socialRendererWorkerEvidence: "CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json"
+  socialTtsSnapshotLock: "CAPITAL-AI-GROWTH/social-tts-snapshot-lock-20261006.json"
 
 validation:
   status:

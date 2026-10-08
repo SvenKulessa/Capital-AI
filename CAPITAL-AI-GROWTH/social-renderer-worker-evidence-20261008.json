@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "SOCIAL_RENDERER_WORKER_EVIDENCE@1",
+  "sourceSha": "9d7ba810b8b0ef103696d1ec0dc55c76e251744c",
+  "workflowRunId": 37520859593,
+  "artifactId": 11440093035,
+  "artifactDigest": "sha256:1a96945746ccbf0573c86a2beafce391eed3d1b475a3b5a5ca7e2ce752e95c89",
+  "baseImageRef": "python@sha256:a4fc589b32e824f3f02ed9d7e7be19518aa47e105b80416336af9f202275a489",
+  "localImageId": "sha256:047d04161283c74c7c69ccd53a163ec5b9dc25a3e6c5fad847c85f0d02c776d8",
+  "imageArchiveSha256": "e1d3b77b05732727812e850422d67144f38609205526c95e33edded9021d6646",
+  "ffmpeg": {
+    "version": "9.0.2",
+    "sourceSha256": "8c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e",
+    "binarySha256": "5dc8afa27e566af954bc9184f6eaf7c3e0a1ff1574b5a250d57f8af4c4b5ef86"
+  },
+  "ffprobe": {
+    "binarySha256": "872f0b0c21296186a22297a038c5d892ae2191f7f33799636242f2d9204faefe"
+  },
+  "runtime": {
+    "uid": 10001,
+    "readOnlySmoke": true,
+    "capDropAll": true,
+    "noNewPrivileges": true
+  },
+  "licenseProfile": {
+    "intended": "LGPL-2.1-or-later",
+    "gplEnabled": false,
+    "nonfreeEnabled": false,
+    "version3Enabled": false
+  },
+  "scan": {
+    "blockingFindings": 0,
+    "nonBlockingFindings": [
+      {
+        "id": "CVE-2026-34743",
+        "severity": "MEDIUM",
+        "package": "xz-libs",
+        "installed": "5.8.1-r0",
+        "fixed": "5.8.3-r0"
+      }
+    ]
+  },
+  "sbomGenerated": true,
+  "licenseInventoryGenerated": true,
+  "status": "SUPERSEDED_PENDING_HARDENED_REBUILD",
+  "productionEligible": false,
+  "productionBlockers": [
+    "Hardened rebuild with xz-libs >= 5.8.3-r0 has not yet produced terminal evidence.",
+    "OCI registry digest/release handoff intentionally absent from PR validation."
+  ]
+}
