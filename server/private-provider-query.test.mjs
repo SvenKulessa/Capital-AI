@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import {
   assertNotReplayed,
   executeGuardedProviderQuery,
+  createPrivateProviderQuery,
   createProviderBridgeProbeEnvelope,
   createProviderQueryEnvelope,
   executorNatsConnectionAuth,
