@@ -717,7 +717,7 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
                       {subpage.shortDesc}
                     </p>
 
-                    {/* Tags & Path Footer */}
+                    {/* Tags & navigation indicator (route stays internal) */}
                     <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-slate-800/60 pl-9">
                       <div className="flex items-center gap-1 flex-wrap">
                         {subpage.tags?.map((tag) => (
@@ -731,8 +731,7 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
                       </div>
 
                       <span className="text-[10px] font-mono text-slate-500 group-hover:text-amber-400 flex items-center gap-1 shrink-0 ml-2">
-                        <span>{subpage.path}</span>
-                        <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                        <ChevronRight aria-hidden="true" className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                       </span>
                     </div>
                   </motion.div>
