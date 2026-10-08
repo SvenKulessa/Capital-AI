@@ -92,12 +92,12 @@ test('shared visual-chat skill is discoverable from every domain agent without i
 
 test('monetization assessment keeps license and runtime evidence separate', () => {
   const report = read('docs/business/MONETIZATION-DEEPSCAN-LEGAL-MATRIX-20261008.md');
-  assert.match(report, /main@ba6fc7183c3d017e116a88e247af6054d7690fa4/);
+  assert.match(report, /main@ed5c47611208ae4b145d110e03fb88657f51912c/);
   assert.match(report, /Massive/);
   assert.match(report, /MiCA/);
   assert.match(report, /GitHub Marketplace/);
   assert.match(report, /NOT_PROVEN/);
-  assert.match(report, /PR #288/);
+  assert.match(report, /Merge #288/);
   assert.match(report, /kein Live/);
   const ids = [...report.matchAll(/^\| (\d+) \|/gm)].map(row => Number(row[1]));
   assert.deepEqual(ids, Array.from({ length: 28 }, (_, i) => i + 1));
