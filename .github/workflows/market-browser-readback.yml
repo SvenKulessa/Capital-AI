@@ -1,0 +1,50 @@
+name: MARKET Browser Readback (read-only)
+on:
+  pull_request:
+    paths:
+      - .github/workflows/market-browser-readback.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  market-browser:
+    name: MARKET Overview and Screener Chrome smoke
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - name: Resolve installed Chromium-family browser
+        shell: bash
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          if [ -z "$chrome" ]; then
+            echo "BROWSER_BINARY_UNAVAILABLE: Chrome/Chromium is not preinstalled on this runner."
+            exit 1
+          fi
+          echo "CHROME_BIN=$chrome" >> "$GITHUB_ENV"
+          "$chrome" --version
+      - name: Render production React DOM – Overview
+        shell: bash
+        run: |
+          set -euo pipefail
+          timeout 70s "$CHROME_BIN" --headless=new --disable-gpu --disable-dev-shm-usage \
+            --window-size=1440,900 --virtual-time-budget=16000 \
+            --dump-dom 'https://capital-ai-uvsl.onrender.com/' \
+            > /tmp/market-overview-dom.html 2> /tmp/market-overview-browser.log
+          grep -Fq 'Globale Märkte im Überblick' /tmp/market-overview-dom.html
+          grep -Fq 'EUR/USD' /tmp/market-overview-dom.html
+          echo 'BROWSER_MARKET_OVERVIEW_PASS'
+      - name: Render production React DOM – Screener
+        shell: bash
+        run: |
+          set -euo pipefail
+          timeout 70s "$CHROME_BIN" --headless=new --disable-gpu --disable-dev-shm-usage \
+            --window-size=1440,900 --virtual-time-budget=16000 \
+            --dump-dom 'https://capital-ai-uvsl.onrender.com/marketscreener' \
+            > /tmp/market-screener-dom.html 2> /tmp/market-screener-browser.log
+          grep -Fq 'Verifizierte Forex-Referenzkurse' /tmp/market-screener-dom.html
+          grep -Fq 'EUR/USD' /tmp/market-screener-dom.html
+          grep -Fq 'Referenzdatum' /tmp/market-screener-dom.html
+          echo 'BROWSER_MARKET_SCREENER_PASS'

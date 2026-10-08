@@ -163,6 +163,30 @@ export function cacheTtlMs(fact, now = Date.now()) {
   return 30000 - (now - fact.observedAt);
 }
 
+export const MarketAssetCatalogItemSchema = z.object({
+  instrumentId: z.string().min(1),
+  symbol: z.string().min(1),
+  name: z.string().min(1),
+  category: z.enum(['KRYPTO','AKTIEN','INDIZIES','FOREX','ROHSTOFFE']),
+  venue: z.string().min(1),
+  quoteCurrency: z.string().min(1),
+  provider: z.string().min(1),
+  timeSemantics: z.enum(['realtime','reference']),
+  sourceAdmission: z.literal('OPEN_SOURCE_OPEN_DATA_ADMITTED'),
+  marketQuotesEligible: z.literal(true),
+  runtimeEnabled: z.boolean(),
+  scoreEligible: z.literal(false),
+  decisionEligible: z.literal(false),
+  actionable: z.literal(false),
+});
+
+export const MarketAssetCatalogSchema = z.object({
+  schema: z.literal('CAPITAL_AI_MARKET_ASSET_CATALOG@1'),
+  sourcePolicy: z.literal('OPEN_SOURCE_AND_OPEN_DATA_ONLY'),
+  quotesEnabled: z.boolean(),
+  assets: z.array(MarketAssetCatalogItemSchema),
+});
+
 export const MarketStatusSchema = z.object({
   status:z.literal('ok'),
   ingress:z.literal('fail_closed'),

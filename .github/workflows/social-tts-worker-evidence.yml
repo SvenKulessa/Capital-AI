@@ -17,6 +17,9 @@ concurrency:
 
 jobs:
   build:
+    # Owner HOLD: never build Qwen/Chatterbox automatically from a PR.
+    # Manual evidence requires a separately enabled repository variable.
+    if: ${{ github.event_name == 'workflow_dispatch' && vars.CAPITAL_AI_TTS_EVIDENCE_ENABLED == 'true' }}
     strategy:
       fail-fast: false
       matrix:
