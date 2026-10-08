@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "SOCIAL_P1_RUNTIME_PORT_PROVENANCE@1",
+  "sourceRepository": "SvenKulessa/Finance",
+  "sourceCommit": "dcef421fe6e350a3a2ade61d0299aad9ecca213c",
+  "files": [
+    {
+      "path": "docs/social-media/CAPITAL-AI-SOCIAL/reports/SOCIAL_P1_TTS_SAMPLE_MANIFEST_2026-09-11.json",
+      "sourceBlobSha": "f15500c1131b25487f3cdad7113bebefdfaf8f69"
+    },
+    {
+      "path": "scripts/operations/socialP1TtsRuntime.py",
+      "sourceBlobSha": "1724b464892b63daa22f0ca7fc3e5c50bd013588"
+    }
+  ],
+  "targetPurpose": "German Qwen/Chatterbox 4x2 runtime benchmark with immutable WAV/runtime evidence",
+  "providerCredentialMigration": false,
+  "modalBindingMigrated": false,
+  "humanListeningStillRequired": true,
+  "point4Pass": false
+}
