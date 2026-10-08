@@ -569,3 +569,39 @@ test('Google login preserves only the allowlisted CADS Marketplace setup return 
     await h.stop();
   }
 });
+
+
+test('all eleven Control Center subpages enforce owner identity on direct document requests', async () => {
+  const h = await harness();
+  const paths = [
+    '/control-center/roadmap',
+    '/control-center/components',
+    '/control-center/tools',
+    '/control-center/observability',
+    '/control-center/news',
+    '/control-center/console',
+    '/control-center/cockpit',
+    '/control-center/team',
+    '/control-center/cost_center',
+    '/control-center/system',
+    '/control-center/licenses',
+  ];
+  try {
+    for (const page of paths) {
+      assert.equal((await h.request(page)).status, 404, page + ' anonymous');
+    }
+
+    const ownerCookie = await h.completeEmail();
+    for (const page of paths) {
+      assert.equal((await h.request(page, { headers: { cookie: ownerCookie } })).status, 200, page + ' owner');
+    }
+
+    h.state.subject = 'user-subject';
+    const userCookie = await h.completeEmail();
+    for (const page of paths) {
+      assert.equal((await h.request(page, { headers: { cookie: userCookie } })).status, 404, page + ' non-owner');
+    }
+  } finally {
+    await h.stop();
+  }
+});

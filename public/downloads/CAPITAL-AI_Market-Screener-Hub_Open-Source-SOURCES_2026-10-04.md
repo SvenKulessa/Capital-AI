@@ -7,7 +7,6 @@
 
 - `AGENTS.md@currentmain`
 - `docs/market-data/open-source-market-policy.json` - Branch `capital-ai-market/open-source-only-20261004`
-- `docs/market-data/evidence/open-data-candidate-research-20261004.json`
 - `docs/market-data/evidence/source-rights-matrix-20261004.json`
 - `src/data/openSourceStack.ts`
 - `server/open-source-market-policy.mjs`

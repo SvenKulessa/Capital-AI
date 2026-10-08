@@ -8,10 +8,24 @@
 !index.html
 !vite.config.ts
 !tsconfig.json
+!AGENTS.md
+!.agents/
+!.agents/skills/
+!.agents/skills/**
+!.github/
+!.github/agents/
+!.github/agents/**
+!.github/copilot-instructions.md
 !src/
 !src/**
+!Chat Buddy/
+!Chat Buddy/README.md
+!Chat Buddy/src/
+!Chat Buddy/src/**
 !server/
 !server/index.mjs
+!server/chat-buddy-keys.mjs
+!server/chat-buddy-learn.mjs
 !server/repository-tool-catalog.mjs
 !server/repository-tool-catalog.test.mjs
 !server/market.mjs
@@ -62,6 +76,7 @@
 !server/mta-sts.test.mjs
 !server/well-known.mjs
 !server/well-known.test.mjs
+!server/locale-html.test.mjs
 !server/shadow-evidence-store.mjs
 !server/infrastructure.mjs
 !server/scorer-bus.mjs
@@ -73,13 +88,17 @@
 !shared/market-contracts.mjs
 !shared/legal-identity.mjs
 !shared/license-engine.mjs
-!shared/research-metadata.mjs
+!shared/license-metadata.mjs
+!src/components/LicenseInformationPages.tsx
+!src/data/providerLicenseReview.ts
+!server/license-pages.test.mjs
 !shared/vocabulary-metadata.mjs
 !shared/vocabulary-access-policy.mjs
 !shared/seo-indexing-policy.mjs
 !shared/seo-content-manifest.mjs
 !shared/seo-source-provenance.mjs
 !shared/seo-metadata.mjs
+!shared/locale-policy.mjs
 !deploy/
 !deploy/runtime/
 !deploy/runtime/package.json
@@ -94,6 +113,7 @@
 !deploy/nats-server.conf
 !deploy/nats-entrypoint.sh
 !scripts/
+!scripts/domain-skills.test.mjs
 !scripts/harden-npm-toolchain.mjs
 !scripts/benchmark-scoring-capacity.mjs
 !scripts/verify-private-brokers.mjs
@@ -123,9 +143,12 @@
 !scripts/supabase-auth-config.mjs
 !scripts/supabase-auth-config.test.mjs
 !scripts/seo-content-manifest.test.mjs
+!scripts/merge-milestone.mjs
+!scripts/merge-milestone.test.mjs
 !scripts/seo-source-provenance-drift.test.mjs
 !scripts/refresh-seo-source-provenance.mjs
 !scripts/seo-metadata.test.mjs
+!scripts/locale-policy.test.mjs
 !scripts/validate-finance-source-target-manifest.mjs
 !scripts/finance-source-target-manifest.test.mjs
 !scripts/ecb-reference-admission.test.mjs

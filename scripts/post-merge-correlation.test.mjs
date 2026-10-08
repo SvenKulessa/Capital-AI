@@ -139,19 +139,71 @@ test("summary classifies all open PR actions deterministically", () => {
 });
 
 
-test("post-merge correlation workflow cannot mutate repository contents", () => {
+test("post-merge correlation stays within the single evidence commit boundary", () => {
   const workflow = readFileSync(new URL('../.github/workflows/post-merge-correlation.yml', import.meta.url), 'utf8');
-
-  assert.match(workflow, /permissions:\n  contents: read\n  pull-requests: write/);
-  assert.match(workflow, /permissions:\n      contents: read\n      pull-requests: write/);
-
-  assert.doesNotMatch(workflow, /contents: write/);
-  assert.doesNotMatch(workflow, /propose_documentation_repair:/);
-  assert.doesNotMatch(workflow, /\bgit\s+push\b/);
-  assert.doesNotMatch(workflow, /\bgit\s+commit\b/);
-  assert.doesNotMatch(workflow, /\bgh\s+pr\s+create\b/);
-  assert.doesNotMatch(workflow, /\bgh\s+pr\s+merge\b|--auto\b|enable-auto-merge/);
-
-  assert.match(workflow, /gh pr comment/);
+  assert.match(workflow, /permissions:\n  contents: write\n  pull-requests: read\n  checks: read/);
+  assert.match(workflow, /git add docs\/evidence\/linear-post-merge-correlation\.json/);
+  assert.match(workflow, /git commit -m/);
+  assert.match(workflow, /refs\/heads\/\$TARGET_BRANCH/);
+  assert.doesNotMatch(workflow, /\bgh\s+pr\s+create\b|\bgh\s+pr\s+merge\b|enable-auto-merge/);
+  assert.doesNotMatch(workflow, /git add -A|git add \./);
+  assert.doesNotMatch(workflow, /select\(\.draft == true\)/);
+  assert.match(workflow, /node scripts\/post-merge-followup\.mjs/);
+  assert.match(workflow, /node --test scripts\/post-merge-followup\.test\.mjs/);
   assert.match(workflow, /actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/);
+});
+
+test('merge milestone workflow keeps GitHub expressions unescaped', () => {
+  const workflow = readFileSync(new URL('../.github/workflows/merge-milestones.yml', import.meta.url), 'utf8');
+  assert.ok(!workflow.includes('\\' + '${{'), 'Escaped expressions break checkout and tokens');
+  assert.match(workflow, /ref: \$\{\{ github\.event\.pull_request\.merge_commit_sha \}\}/);
+  assert.match(workflow, /GH_TOKEN: \$\{\{ github\.token \}\}/);
+  assert.match(workflow, /SOURCE_SHA: \$\{\{ github\.event\.pull_request\.merge_commit_sha \}\}/);
+  assert.match(workflow, /persist-credentials: false/);
+});
+
+test('merge milestone PR creation requires dedicated repo-scoped GitHub App', () => {
+  const workflow = readFileSync(new URL('../.github/workflows/merge-milestones.yml', import.meta.url), 'utf8');
+  assert.match(workflow, /permissions:\n  contents: read\n  pull-requests: read/);
+  assert.match(workflow, /actions\/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1/);
+  // Missing either App credential must skip minting and retain the draft artifact.
+  assert.match(workflow, /id: app_credentials/);
+  assert.ok(workflow.includes('APP_CLIENT_ID: ${{ vars.CAPITAL_AI_MILESTONE_APP_CLIENT_ID }}'));
+  assert.ok(workflow.includes('APP_PRIVATE_KEY: ${{ secrets.CAPITAL_AI_MILESTONE_APP_PRIVATE_KEY }}'));
+  assert.ok(workflow.includes("if: ${{ steps.app_credentials.outputs.ready == 'true' }}"));
+  assert.ok(workflow.includes('echo "ready=false" >> "$GITHUB_OUTPUT"'));
+  assert.match(workflow, /permission-contents: write/);
+  assert.match(workflow, /permission-pull-requests: write/);
+  assert.match(workflow, /repositories: Capital-AI/);
+  assert.match(workflow, /GH_TOKEN: \$\{\{ steps\.milestone_app\.outputs\.token \}\}/);
+  assert.doesNotMatch(workflow, /GH_TOKEN: \$\{\{ github\.token \}\}\n          REPOSITORY/);
+  assert.match(workflow, /Report missing app authority without creating a PR/);
+  assert.match(workflow, /milestone-drafts-/);
+  assert.match(workflow, /Milestone branch \$branch already exists without a PR/);
+  // Generated branches must comply with Domain Governance (stable YYYYMMDD suffix).
+  assert.ok(workflow.includes('branch="capital-ai-product/roadmap-merge-pr-$number-$date_suffix"'));
+  assert.ok(workflow.includes('branch="capital-ai-growth/news-batch-pr-$number-$date_suffix"'));
+  assert.ok(workflow.includes('ROADMAP_DATE: ${{ steps.milestones.outputs.roadmap_date }}'));
+  assert.ok(workflow.includes('NEWS_DATE: ${{ steps.milestones.outputs.news_date }}'));
+  assert.ok(workflow.includes('if [[ ! "$date_suffix" =~ ^[0-9]{8}$ ]]'));
+  assert.doesNotMatch(workflow, /gh pr merge|--auto|enable-auto-merge/);
+});
+
+test('manual milestone App validation mints a scoped token but never writes to GitHub', () => {
+  const workflow = readFileSync(new URL('../.github/workflows/merge-milestones.yml', import.meta.url), 'utf8');
+  assert.match(workflow, /  workflow_dispatch:/);
+  assert.match(workflow, /validate_app:\n    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs\/heads\/main'/);
+  assert.match(workflow, /audit:\n    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true/);
+  const [validateSection] = workflow.split(/\n  audit:\n/);
+  assert.match(validateSection, /uses: actions\/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1/);
+  assert.match(validateSection, /permission-contents: write/);
+  assert.match(validateSection, /permission-pull-requests: write/);
+  assert.match(validateSection, /owner: \$\{\{ github.repository_owner \}\}/);
+  assert.match(validateSection, /repositories: Capital-AI/);
+  assert.match(validateSection, /GH_TOKEN: \$\{\{ steps.validation_token.outputs.token \}\}/);
+  assert.match(validateSection, /gh api "repos\/\$REPOSITORY"/);
+  assert.match(validateSection, /gh api "repos\/\$REPOSITORY\/pulls\?state=open&per_page=1"/);
+  assert.doesNotMatch(validateSection, /^\s*(?:gh\s+pr\s+(?:create|merge)|git\s+push|gh\s+api\s+-X\s+(?:POST|PATCH|DELETE))\b/m);
+  assert.match(workflow, /APP_CONFIG_BLOCKED/);
+  assert.match(workflow, /APP_TOKEN_VERIFIED/);
 });

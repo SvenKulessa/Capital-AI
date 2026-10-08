@@ -1,9 +1,15 @@
+/** Canonical protected Control Center subpages (kept in sync with the Hub catalog). */
+export const CONTROL_CENTER_SECTION_IDS = [
+  'roadmap', 'components', 'tools', 'observability', 'news',
+  'console', 'cockpit', 'team', 'cost_center', 'system', 'licenses',
+] as const;
+
 /** Case-insensitive pathname normalization with existing German/English aliases. */
 export function resolveAppRoute(rawPath: string): string {
   if (!rawPath) return '/';
   const clean = rawPath.trim().toLowerCase().replace(/\/+$/, '') || '/';
 
-  const researchAliases: Record<string, string> = {
+  const licenseAliases: Record<string, string> = {
     '/lizenz': '/lizenz', '/license': '/lizenz', '/licenses': '/lizenz', '/design-lizenz': '/lizenz',
     '/datenprovider-lizenzen': '/datenprovider-lizenzen', '/provider-licenses': '/datenprovider-lizenzen',
     '/provider-license': '/datenprovider-lizenzen', '/daten-lizenzen': '/datenprovider-lizenzen',
@@ -11,9 +17,8 @@ export function resolveAppRoute(rawPath: string): string {
     '/research-licenses': '/datenprovider-lizenzen', '/forschungslizenzen': '/datenprovider-lizenzen',
     '/opensource-lizenzen': '/opensource-lizenzen', '/os-licenses': '/opensource-lizenzen',
     '/oss-licenses': '/opensource-lizenzen', '/open-source': '/opensource-lizenzen', '/oss': '/opensource-lizenzen',
-    '/forschung': '/forschung', '/research': '/forschung',
   };
-  if (Object.hasOwn(researchAliases, clean)) return researchAliases[clean];
+  if (Object.hasOwn(licenseAliases, clean)) return licenseAliases[clean];
 
   if (clean === '/login' || clean === '/anmelden' || clean === '/signin') {
     return '/login';
@@ -85,6 +90,10 @@ export function resolveAppRoute(rawPath: string): string {
   }
   if (/^\/vocabulary\/[a-z0-9][a-z0-9_-]*$/.test(clean)) {
     return clean;
+  }
+  if (clean.startsWith('/control-center/')) {
+    const section = clean.slice('/control-center/'.length);
+    return CONTROL_CENTER_SECTION_IDS.some((id) => id === section) ? clean : '/';
   }
   if (
     clean === '/control-center' ||

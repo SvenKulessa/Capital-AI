@@ -2,7 +2,7 @@ import http from 'node:http';
 import { readFile, stat, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { assetValues, quote, health, startStreams } from './market.mjs';
+import { assetCatalog, assetValues, quote, health, startStreams } from './market.mjs';
 import { createAuth } from './auth.mjs';
 import { createUserProviderVault } from './user-provider-vault.mjs';
 import { createPrivateProviderQuery } from './private-provider-query.mjs';
@@ -16,8 +16,9 @@ import { createMobileScorer } from './mobile-scorer.mjs';
 import { createScorerProxy } from './scorer-proxy.mjs';
 import { serveMtaSts } from './mta-sts.mjs';
 import { serveWellKnown } from './well-known.mjs';
-import { researchMetadata } from '../shared/research-metadata.mjs';
+import { licenseMetadata } from '../shared/license-metadata.mjs';
 import { seoMetadataForPath } from '../shared/seo-metadata.mjs';
+import { resolveLocale } from '../shared/locale-policy.mjs';
 import {
   isSeoIndexable,
   robotsDirectiveFor,
@@ -41,6 +42,8 @@ import {
 import { beginRequest, finishRequest, metricsAuthorized, operationalSnapshot, renderPrometheusMetrics, writeAuditEvent } from './observability.mjs';
 import { cadsSnapshot } from './cads-observability.mjs';
 import { createRepositoryToolCatalog } from './repository-tool-catalog.mjs';
+import { inspectChatBuddyKeys } from './chat-buddy-keys.mjs';
+import { learnStatus } from './chat-buddy-learn.mjs';
 
 const moduleRoot = path.dirname(fileURLToPath(import.meta.url));
 const defaultRoot = path.resolve(moduleRoot, '../dist');
@@ -339,6 +342,10 @@ export function createApp(root = defaultRoot, options = {}) {
       cads: cadsSnapshot(),
     });
   }
+  if (url.pathname === '/api/market/assets') {
+    if (!marketLimit()) return json(res, 429, { error: 'rate_limited' });
+    return json(res, 200, assetCatalog());
+  }
   if (url.pathname === '/api/market/quote') {
     if (!marketLimit()) { res.setHeader('Retry-After', '60'); return json(res, 429, { error: 'rate_limited' }); }
     if (inflight >= 8) { res.setHeader('Retry-After', '5'); return json(res, 429, { error: 'busy' }); }
@@ -353,6 +360,15 @@ export function createApp(root = defaultRoot, options = {}) {
     return json(res, status, body);
   }
   if (url.pathname === '/api/market/status') return json(res, 200, health());
+  if (url.pathname === '/api/chat-buddy/keys') {
+    if (req.method !== 'GET') return json(res, 405, { error: 'method_not_allowed' });
+    return json(res, 200, inspectChatBuddyKeys(runtimeEnv));
+  }
+  if (url.pathname === '/api/chat-buddy/learn') {
+    if (req.method !== 'GET') return json(res, 405, { error: 'method_not_allowed' });
+    try { return json(res, 200, await learnStatus(process.cwd(), url.searchParams.get('q') || '')); }
+    catch { return json(res, 503, { error: 'learn_unavailable' }); }
+  }
   if (url.pathname === '/api/billing/catalog') return json(res, 200, BILLING_CATALOG);
   if (url.pathname === '/api/market/evidence') {
     if (!marketLimit()) return json(res, 429, { error: 'rate_limited' });
@@ -366,7 +382,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (url.pathname.startsWith('/api/')) return json(res, 404, { error: 'not_found' });
 
   const publicPath = normalizedPublicPath(url.pathname);
-  if (OWNER_ONLY_UI_PATHS.has(publicPath)) {
+  if (OWNER_ONLY_UI_PATHS.has(publicPath) || publicPath.startsWith('/control-center/')) {
     const ownerAllowed = await auth.authorizeIamRole(req, res, 'owner');
     if (!ownerAllowed) {
       res.writeHead(404, { ...headers, 'Cache-Control': 'no-store' });
@@ -410,26 +426,34 @@ export function createApp(root = defaultRoot, options = {}) {
     const resolved = await realpath(file);
     if (!resolved.startsWith(root + path.sep) || (await stat(resolved)).size > 20 * 1024 * 1024) return json(res, 404, { error: 'not_found' });
     let body = await readFile(resolved);
+    let documentLocale = null;
     const publicPath = normalizedPublicPath(url.pathname);
     if (path.extname(file) === '.html') {
       body = Buffer.from(injectVocabularySeo(body.toString('utf8'), publicPath));
     }
-    // Research/legal titles are visible to crawlers before client hydration.
-    const researchPath = publicPath;
-    if (path.extname(file) === '.html' && Object.hasOwn(researchMetadata, researchPath)) {
-      const meta = researchMetadata[researchPath];
+    // License titles are visible to crawlers before client hydration.
+    const licensePath = publicPath;
+    if (path.extname(file) === '.html' && Object.hasOwn(licenseMetadata, licensePath)) {
+      const meta = licenseMetadata[licensePath];
       body = Buffer.from(body.toString('utf8')
         .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(meta.title)}</title>`)
         .replace(/(<meta name="description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(meta.description)}$2`)
         .replace(/(<meta property="og:title" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(meta.title)}$2`)
         .replace(/(<meta property="og:description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(meta.description)}$2`)
-        .replace(/(<link rel="canonical" href=")[^"]*("\s*\/?>)/, `$1https://capital-ai.online${researchPath}$2`));
+        .replace(/(<link rel="canonical" href=")[^"]*("\s*\/?>)/, `$1https://capital-ai.online${licensePath}$2`));
     }
     if (path.extname(file) === '.html') {
       body = Buffer.from(injectSeoMetadata(body.toString('utf8'), publicPath));
       body = Buffer.from(applySeoIndexingPolicy(body.toString('utf8'), publicPath));
+      const { locale, source } = resolveLocale({
+        cookieHeader: req.headers.cookie,
+        countryHeader: req.headers['cf-ipcountry'],
+        acceptLanguage: req.headers['accept-language'],
+      });
+      body = Buffer.from(body.toString('utf8').replace(/<html lang="[^"]*"/, `<html lang="${locale}" data-locale-source="${source}"`));
+      documentLocale = locale;
     }
-    res.writeHead(200, { ...headers, 'Cache-Control': path.extname(file) === '.html' ? 'no-store' : 'public, max-age=3600', 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(body);
+    res.writeHead(200, { ...headers, ...(documentLocale ? { 'Content-Language': documentLocale, 'Vary': 'CF-IPCountry, Accept-Language, Cookie' } : {}), 'Cache-Control': path.extname(file) === '.html' ? 'no-store' : 'public, max-age=3600', 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(body);
   } catch { res.writeHead(404, headers); res.end(); }
 });
   server.maxConnections = 256;

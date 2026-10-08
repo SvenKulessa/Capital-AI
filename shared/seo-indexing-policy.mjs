@@ -12,7 +12,6 @@ const routes = [
   { path: '/vocabulary', classification: 'INDEX', contentType: 'vocabulary', reason: 'Kanonische Vocabulary-Landingpage mit serverseitiger SEO-Ausgabe.' },
   { path: '/vocabulary/:term', classification: 'INDEX', contentType: 'vocabulary-term', dynamic: true, reason: 'Nur tatsächlich vorhandene öffentliche Vocabulary-Terme; unbekannte Terme bleiben 404.' },
   { path: '/faq', classification: 'INDEX', contentType: 'trust', reason: 'Öffentliche FAQ-/Hilfeseite.' },
-  { path: '/forschung', classification: 'INDEX', contentType: 'research', reason: 'Öffentliche Forschungsdarstellung mit serverseitiger Metadata.' },
   { path: '/lizenz', classification: 'INDEX', contentType: 'trust', reason: 'Öffentliche Asset-/Design-Lizenzinformation.' },
   { path: '/datenprovider-lizenzen', classification: 'INDEX', contentType: 'trust', reason: 'Öffentliche Datenrechte-/Provider-Lizenzinformation.' },
   { path: '/opensource-lizenzen', classification: 'INDEX', contentType: 'trust', reason: 'Öffentliches Open-Source-Lizenzinventar.' },
@@ -85,6 +84,7 @@ export function resolveSeoIndexingPolicy(pathname) {
   const normalized = normalize(pathname);
 
   if (normalized.startsWith('/api/')) return API_PRIVATE_POLICY;
+  if (normalized.startsWith('/control-center/')) return exactRoutes.get('/control-center');
   if (normalized === '/healthz' || normalized === '/metrics' || normalized === '/robots.txt' || normalized === '/sitemap.xml') {
     return OPERATIONAL_NOINDEX_POLICY;
   }

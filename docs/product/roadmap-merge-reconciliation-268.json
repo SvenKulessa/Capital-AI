@@ -1,0 +1,1381 @@
+{
+  "schema": "CAPITAL_AI_ROADMAP_MERGE_AUDIT@1",
+  "state": "RECONCILED_CODE_AND_DOCUMENTS",
+  "lastReconciledPr": 268,
+  "mergeCount": 240,
+  "fromPr": 259,
+  "toPr": 268,
+  "sourceSha": "aa61e39a855b26aa8d10effbfe9b30bf847621d6",
+  "reconciledAt": "2026-10-08T09:17:45.137Z",
+  "sourceDigests": [
+    {
+      "path": "src/data/roadmapData.ts",
+      "sha256": "daee883d5604a9745b01b4de9325c64b516ebe3cccdcc387dadb08127ccca21a"
+    },
+    {
+      "path": "src/data/roadmapCurrentMainState.ts",
+      "sha256": "6e27c82a878cd6fe5ae827649e5b32245a6ea68ac1d323bb0d65bdea1a53aeed"
+    },
+    {
+      "path": "src/data/productionWebsiteWorkPackage.ts",
+      "sha256": "4909861a5cb6ce4980261d479f62346f0a8ce3ed7fea88be80a081e92b7b1a24"
+    },
+    {
+      "path": "src/data/socialContentRoadmap.ts",
+      "sha256": "4901e04ce34de9cccbc6500c4250ffc26efadc69ddec2177d207f4db01e204e8"
+    },
+    {
+      "path": "src/data/trustArchitectureAWorkPackages.ts",
+      "sha256": "099a0013fade084887382a470930dd012a2417330497574f639da70a77dc45a9"
+    },
+    {
+      "path": "src/components/RoadmapPanel.tsx",
+      "sha256": "5bf3589bd9ecbed0a4b707ea7d4f1f43bf4c8adbcf599665e411acdf492ead84"
+    }
+  ],
+  "packages": [
+    {
+      "id": "CA-TRUST-APP-READ-DESIGN",
+      "owner": "TRUST",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-PLATFORM-APP-READ-CONSUME",
+      "owner": "PLATFORM",
+      "recordedState": "GEHALTEN",
+      "evidencePathsPresent": [
+        "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "GEHALTEN"
+    },
+    {
+      "id": "CA-TRUST-SIGNED-COMMITS",
+      "owner": "TRUST",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-TRUST-GITGUARDIAN",
+      "owner": "TRUST",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-TRUST-GITHUB-FREE",
+      "owner": "TRUST",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-TRUST-LINEAR-HISTORY",
+      "owner": "TRUST",
+      "recordedState": "VERIFIED",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/compliance/ROADMAP-RECONCILIATION-20261001.md",
+        "https://github.com/SvenKulessa/Capital-AI/rules/24259174"
+      ],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "CA-PLATFORM-GITHUB-COSTS",
+      "owner": "PLATFORM",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-GROWTH-FINANCE-SPONSORS-OFF",
+      "owner": "GROWTH",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-PLATFORM-IONOS-SMTP",
+      "owner": "PLATFORM",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-PLATFORM-ENTERPRISE-PUBLIC",
+      "owner": "PLATFORM",
+      "recordedState": "GEHALTEN",
+      "evidencePathsPresent": [
+        "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/security/ORG-MIGRATION-PLAN-20261001.md"
+      ],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "CA-GROWTH-CAPITAL-SPONSORS",
+      "owner": "GROWTH",
+      "recordedState": "GEHALTEN",
+      "evidencePathsPresent": [
+        "docs/security/GITHUB-PUBLIC-SETTINGS-20261001.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "GEHALTEN"
+    },
+    {
+      "id": "CA-PLATFORM-VERSIONING",
+      "owner": "PLATFORM",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "VERSION",
+        "CHANGELOG.md",
+        "docs/governance/DOMAIN-RELEASE-GOVERNANCE.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-TRUST-DAILY-SUPPLY-CHAIN",
+      "owner": "TRUST",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        ".github/dependabot.yml",
+        ".github/workflows/daily-dependency-security-watch.yml",
+        ".github/workflows/build-security.yml"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-PLATFORM-COMPONENT-DEPLOY",
+      "owner": "PLATFORM",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "deploy/Dockerfile.nats",
+        "docs/security/PRODUCTION-HANDOFF.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-PLATFORM-SELF-HEAL",
+      "owner": "PLATFORM",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "docs/governance/DOMAIN-RELEASE-GOVERNANCE.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-GROWTH-DOMAIN-BRANDING",
+      "owner": "GROWTH",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "CAPITAL-AI-PRODUCT/PROJECT.md",
+        "CAPITAL-AI-PRODUCT/produkt.LICENSE.md",
+        "CAPITAL-AI-MARKET/PROJECT.md",
+        "CAPITAL-AI-MARKET/market.LICENSE.md",
+        "CAPITAL-AI-PLATFORM/PROJECT.md",
+        "CAPITAL-AI-PLATFORM/plattform.LICENSE.md",
+        "CAPITAL-AI-TRUST/PROJECT.md",
+        "CAPITAL-AI-TRUST/trust.LICENSE.md",
+        "CAPITAL-AI-GROWTH/PROJECT.md",
+        "CAPITAL-AI-GROWTH/growth.LICENSE.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "AP-CMP-LEGAL",
+      "owner": "TRUST",
+      "recordedState": "VERIFIED",
+      "evidencePathsPresent": [
+        "src/components/LegalAndFaqPages.tsx",
+        "src/privacy/privacyPolicy.ts",
+        "src/content/legalDocumentVersions.ts"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "VERIFIED"
+    },
+    {
+      "id": "AP-CMP-PRIVACY",
+      "owner": "TRUST",
+      "recordedState": "VERIFIED",
+      "evidencePathsPresent": [
+        "server/privacy.mjs",
+        "server/auth.test.mjs"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "VERIFIED"
+    },
+    {
+      "id": "AP-CMP-ANALYTICS",
+      "owner": "TRUST",
+      "recordedState": "VERIFIED",
+      "evidencePathsPresent": [
+        "src/utils/analytics.ts",
+        "scripts/privacy-analytics.test.mjs"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "VERIFIED"
+    },
+    {
+      "id": "AP-FE-NAV",
+      "owner": "PRODUCT",
+      "recordedState": "VERIFIED",
+      "evidencePathsPresent": [
+        "src/hooks/useHubTab.ts",
+        "scripts/navigation.test.mjs"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "VERIFIED"
+    },
+    {
+      "id": "AP-FE-BRAND",
+      "owner": "PRODUCT",
+      "recordedState": "VERIFIED",
+      "evidencePathsPresent": [
+        "docs/branding/LOGO-20260930.md",
+        "docs/licenses/Capital-AI-BRANDING.md",
+        "public/branding/capital-ai-logo.jpg"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "VERIFIED"
+    },
+    {
+      "id": "AP-SEC-OIDC",
+      "owner": "TRUST",
+      "recordedState": "VERIFIED",
+      "evidencePathsPresent": [
+        "server/auth.mjs",
+        "server/auth.test.mjs"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/compliance/ROADMAP-RECONCILIATION-20261001.md"
+      ],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "AP-FIN-BOUNDARY",
+      "owner": "MARKET",
+      "recordedState": "VERIFIED",
+      "evidencePathsPresent": [
+        "docs/architecture/ANALYSIS-FOUNDATION.md",
+        "src/contracts/analysisComponentRegistry.ts"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "VERIFIED"
+    },
+    {
+      "id": "AP-FIN-TRANSPORT",
+      "owner": "MARKET",
+      "recordedState": "VERIFIED",
+      "evidencePathsPresent": [
+        "server/infrastructure.mjs",
+        "docs/architecture/REAL-DATA-VALIDATION.md",
+        "deploy/VALKEY-PUBSUB-NATS-HANDOFF.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "VERIFIED"
+    },
+    {
+      "id": "AP-OPS-CURRENT",
+      "owner": "PLATFORM",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [
+        "https://dashboard.render.com/web/srv-dau1rp893c1s73cdhm1g",
+        "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/compliance/ROADMAP-RECONCILIATION-20261001.md"
+      ],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "AP-SEC-IMAGE",
+      "owner": "TRUST",
+      "recordedState": "GEHALTEN",
+      "evidencePathsPresent": [
+        "docs/security/DIGEST-LIVE-READBACK-20261001.md",
+        "docs/security/AP-SEC-IMAGE-ABNAHME-20261001.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [
+        "https://github.com/SvenKulessa/Capital-AI/actions/runs/36765644507",
+        "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/compliance/ROADMAP-RECONCILIATION-20261001.md"
+      ],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "AP-CMP-RIGHTS",
+      "owner": "TRUST",
+      "recordedState": "GEHALTEN",
+      "evidencePathsPresent": [
+        "docs/security/LICENSE-RIGHTS.md",
+        "docs/security/evidence/license-rights-review.json"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "GEHALTEN"
+    },
+    {
+      "id": "AP-CMP-PROVIDERS",
+      "owner": "TRUST",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "src/privacy/privacyPolicy.ts",
+        "docs/security/BYOK-USER-PRIVATE-DATA.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "AP-OPS-NATS-LIVE",
+      "owner": "PLATFORM",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "deploy/VALKEY-PUBSUB-NATS-HANDOFF.md",
+        "deploy/render-nats.yaml",
+        "docs/architecture/PART1-RUNTIME-CLOSEOUT-20260930.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/compliance/ROADMAP-RECONCILIATION-20261001.md"
+      ],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "AP-OPS-DOMAIN",
+      "owner": "PLATFORM",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "deploy/DNS-CUTOVER.md",
+        "docs/security/DOMAIN-MIGRATION.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/compliance/ROADMAP-RECONCILIATION-20261001.md"
+      ],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "AP-CMP-OLD-DATA",
+      "owner": "TRUST",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "server/privacy.mjs",
+        "deploy/DNS-CUTOVER.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "AP-OPS-FINANCE-OFF",
+      "owner": "PLATFORM",
+      "recordedState": "GEHALTEN",
+      "evidencePathsPresent": [
+        "deploy/DNS-CUTOVER.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "GEHALTEN"
+    },
+    {
+      "id": "AP-SEC-AUTH-LIVE",
+      "owner": "TRUST",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "scripts/diagnose-supabase-auth.mjs",
+        "server/auth.test.mjs",
+        "docs/security/BYOK-USER-PRIVATE-DATA.md",
+        "deploy/DNS-CUTOVER.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/compliance/ROADMAP-RECONCILIATION-20261001.md"
+      ],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "CA-TRUST-LICENSE-TOOLS",
+      "owner": "TRUST",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/compliance/OSS-EVIDENCE-TOOLS-20261001.md"
+      ],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "CA-TRUST-SUPABASE-AUTH",
+      "owner": "TRUST",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "scripts/diagnose-supabase-auth.mjs",
+        ".github/workflows/render-cli-readonly.yml"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/compliance/ROADMAP-RECONCILIATION-20261001.md"
+      ],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "CA-PLATFORM-COMPONENT-INVENTORY",
+      "owner": "PLATFORM",
+      "recordedState": "VERIFIED",
+      "evidencePathsPresent": [
+        "src/data/externalComponentInventory.ts",
+        "src/components/ComponentInventoryDashboard.tsx",
+        "docs/governance/COMPONENT-LIFECYCLE-VERSIONING.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "VERIFIED"
+    },
+    {
+      "id": "CA-PLATFORM-OBSERVABILITY-BASELINE",
+      "owner": "PLATFORM",
+      "recordedState": "VERIFIED",
+      "evidencePathsPresent": [
+        "server/observability.mjs",
+        "docs/security/SECRET-IP-DATA-PROTECTION-BASELINE.md",
+        "server/cads-observability.mjs",
+        "server/observability.test.mjs",
+        "server/cads-observability.test.mjs"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "VERIFIED"
+    },
+    {
+      "id": "CA-PLATFORM-OTEL-COLLECTOR",
+      "owner": "PLATFORM",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [
+        "src/data/openSourceStack.ts",
+        "docs/governance/COMPONENT-LIFECYCLE-VERSIONING.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "CA-PLATFORM-MARKET-INFRA-BENCH",
+      "owner": "PLATFORM",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "docs/architecture/MARKET-EVENT-FANOUT-AND-CACHE.md",
+        "server/infrastructure.mjs",
+        "packages/benchmark-core/index.mjs",
+        "server/benchmark-runs.mjs",
+        "server/benchmark-store.mjs",
+        "CAPITAL-AI-PRODUCT/BENCHMARK-ENGINE-PRODUCT.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-TRUST-WORK-VERIFICATION",
+      "owner": "TRUST",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "docs/governance/WORK-VERIFICATION.md",
+        "docs/security/PRODUCTION-HANDOFF.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-PLATFORM-DR-RECOVERY",
+      "owner": "PLATFORM",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "docs/architecture/INFRASTRUCTURE-BACKUP-RECOVERY.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-PLATFORM-EDGE-CACHE",
+      "owner": "PLATFORM",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "server/index.mjs"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-MARKET-GHCR-BLUEPRINT-APP",
+      "owner": "MARKET",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "docs/product/MONETIZABLE-PRODUCT-REGISTRY.md",
+        "docs/governance/WORK-VERIFICATION.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-PLATFORM-TS-APP-BOUNDARY",
+      "owner": "PLATFORM",
+      "recordedState": "GEHALTEN",
+      "evidencePathsPresent": [
+        "docs/architecture/TYPESCRIPT-APP-BOUNDARY-DECISION.md",
+        "scripts/verify-browser-boundary.mjs",
+        "scripts/benchmark-browser-boundary.mjs"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "GEHALTEN"
+    },
+    {
+      "id": "PRODUCTION-WEB-01-PRODUCT",
+      "owner": "PRODUCT",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "src/data/pricingCatalog.ts",
+        "docs/architecture/KRAKEN-CREDENTIAL-FAMILY-DECISION-20261006.md",
+        "server/user-provider-vault.test.mjs",
+        "src/components/KeyVaultPage.tsx",
+        "server/auth-security.test.mjs",
+        "src/features/auth/AuthSecuritySettings.tsx",
+        "docs/licenses/SOCIAL-BRAND-ICONS-SIMPLE-ICONS-16.33.0.md",
+        "src/components/Footer.tsx",
+        "src/features/documentation/DocumentationHub.tsx",
+        "src/features/learning/LearningPortalPage.tsx",
+        "docs/licenses/CAPITAL-AI-VOCABULARY-FLASHCARD-DESIGN.md",
+        "src/components/VocabularyFlashcards.tsx",
+        "server/subscription-checkout.mjs",
+        "server/subscription-checkout.test.mjs",
+        "docs/product/SUBSCRIPTION-COMMERCE-CONTRACT-20261005.md",
+        "src/data/blueprintEvidenceContracts.ts",
+        "scripts/billing-catalog.test.mjs",
+        "docs/product/PRODUCTION-PRICING-CORRELATION-20261005.md",
+        "src/data/additionalProductsCatalog.ts",
+        "docs/licenses/CAPITAL-AI-VOCABULARY-BADGE-CUSTOMER-LICENSE-1.0.md",
+        "scripts/navigation.test.mjs",
+        "docs/product/PRODUCTION-WEB-CLAIM-CORRELATION-20261005.md",
+        "docs/market-data/PRODUCTION-WEB-01-MARKET-20261005.yaml",
+        "src/platform/analytics/useRouteAnalytics.ts",
+        "src/components/RouteBreadcrumbs.tsx",
+        "src/data/blueprintDeliveryPolicy.ts",
+        "docs/licenses/CAPITAL-AI-DATA-PIPELINE-BLUEPRINT-BADGE.md",
+        "public/branding/badges/data-pipeline-blueprint.svg",
+        "src/features/pricing/MonetizationModal.tsx",
+        "server/cads-commerce.mjs"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "PRODUCTION-WEB-01-GROWTH",
+      "owner": "GROWTH",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "src/data/pricingCatalog.ts",
+        "shared/seo-content-manifest.mjs",
+        "shared/seo-metadata.mjs",
+        "scripts/seo-content-manifest.test.mjs"
+      ],
+      "evidencePathsMissing": [
+        "docs/",
+        "public/documentation/"
+      ],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "PRODUCTION-WEB-01-TRUST",
+      "owner": "TRUST",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "AGENTS.md",
+        "supabase/migrations/20260711031101_assign_owner_iam_role.sql",
+        "server/auth-security.mjs",
+        "server/public-artifact-policy.mjs",
+        ".github/workflows/build-security.yml"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "PRODUCTION-WEB-01-PLATFORM",
+      "owner": "PLATFORM",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "server/index.mjs",
+        "scripts/navigation.test.mjs",
+        "src/platform/analytics/useRouteAnalytics.ts",
+        "public/bootstrap-failure.js",
+        "vite.config.ts"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "PRODUCTION-WEB-01-MARKET",
+      "owner": "MARKET",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "docs/market-data/PRODUCTION-WEB-01-MARKET-20261005.yaml",
+        "docs/market-data/open-source-market-policy.json",
+        "docs/market-data/evidence/instrument-manifest-20261005.json",
+        "docs/market-data/evidence/score-display-source-admission-20261004.json",
+        "docs/market-data/evidence/source-rights-admission-ecb-reference-rates-20261005.json",
+        "docs/market-data/evidence/source-admission-ecb-reference-rates-20261006.json",
+        "server/ecb-reference-rates.mjs",
+        "server/ecb-reference-rates.LICENSE.txt",
+        "scripts/ecb-reference-admission.test.mjs",
+        "server/open-source-market-policy.mjs",
+        "shared/market-contracts.mjs",
+        "src/services/scoringEngine.ts",
+        "src/contracts/marketClaimEligibility.ts",
+        "docs/security/BYOK-USER-PRIVATE-DATA.md",
+        "server/private-provider-query.mjs",
+        "contracts/private-provider-query-operations.json",
+        "server/user-provider-vault.mjs",
+        "services/provider-bridge-rs/src/main.rs",
+        "supabase/migrations/20261006131500_enable_binance_user_provider_vault.sql"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-GROWTH-CONTENT-ENGINE",
+      "owner": "GROWTH",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "src/contracts/contentEngine.ts",
+        "src/data/contentCampaigns.ts",
+        "docs/growth/CAPITAL-AI-CONTENT-ENGINE-20261007.md",
+        "server/growth-ai-gateway.ts",
+        "src/contracts/growthAttribution.ts",
+        "src/features/home/ContentEngineConcept.tsx"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-GROWTH-CONTENT-SOCIAL-PACKAGE",
+      "owner": "GROWTH",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "src/contracts/contentEngine.ts",
+        "src/features/home/ContentEngineConcept.tsx",
+        "docs/growth/CAPITAL-AI-CONTENT-ENGINE-20261007.md",
+        "docs/growth/CAPITAL-AI-GROWTH-SOCIAL-PACKAGE-20261007.md",
+        "CAPITAL-AI-GROWTH/CONTENT-SOCIAL-PACKAGE-WORKPACKAGE-20261007.yaml",
+        "src/contracts/contentSocialPackage.ts",
+        "src/contracts/socialPublisherAdapter.ts",
+        "src/contracts/contentSocialAttribution.ts",
+        "src/features/studio/ContentStudioPanel.tsx",
+        "CAPITAL-AI-GROWTH/SOCIAL-ENGINE-MIGRATION.md",
+        "src/data/socialContentRoadmap.ts"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-GROWTH-FIN-SOC-MARKET-MIGRATION",
+      "owner": "GROWTH",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json",
+        "CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json",
+        "CAPITAL-AI-GROWTH/social-engine-completion-gate.json",
+        "docs/licenses/SOCIAL-MEDIA-ENGINE-THIRD-PARTY-NOTICES.md",
+        "CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.yaml"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/8a08f938a519fbf3379749fd9ac59e182851e655/CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.md"
+      ],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "CA-MARKET-FINANCE-SCORING-DATA-FOLLOWUP",
+      "owner": "MARKET",
+      "recordedState": "GEHALTEN",
+      "evidencePathsPresent": [
+        "CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json",
+        "CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.yaml",
+        "CAPITAL-AI-GROWTH/social-engine-completion-gate.json"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "GEHALTEN"
+    },
+    {
+      "id": "CA-GROWTH-SOC-MIGRATION",
+      "owner": "GROWTH",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "CAPITAL-AI-GROWTH/social-engine-completion-gate.json",
+        "scripts/social-engine-completion-gate.test.mjs"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/867406f3aa9a478c14913ac731749fb33daeb9ac/CAPITAL-AI-GROWTH/SOCIAL-ENGINE-MIGRATION.md"
+      ],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "CA-TRUST-SOC-RIGHTS",
+      "owner": "TRUST",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json",
+        "scripts/social-tool-license-evidence.test.mjs"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/867406f3aa9a478c14913ac731749fb33daeb9ac/CAPITAL-AI-GROWTH/SOCIAL-ENGINE-MIGRATION.md"
+      ],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "CA-PLATFORM-SOC-FOUNDATION",
+      "owner": "PLATFORM",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "CAPITAL-AI-GROWTH/social-engine-completion-gate.json"
+      ],
+      "evidencePathsMissing": [
+        "public/branding/social"
+      ],
+      "externalEvidenceNotVerified": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/867406f3aa9a478c14913ac731749fb33daeb9ac/CAPITAL-AI-GROWTH/SOCIAL-ENGINE-MIGRATION.md"
+      ],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "CA-GROWTH-SOC-COPY",
+      "owner": "GROWTH",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/867406f3aa9a478c14913ac731749fb33daeb9ac/CAPITAL-AI-GROWTH/SOCIAL-ENGINE-MIGRATION.md"
+      ],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "CA-PLATFORM-SOC-MEDIA",
+      "owner": "PLATFORM",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/867406f3aa9a478c14913ac731749fb33daeb9ac/CAPITAL-AI-GROWTH/SOCIAL-ENGINE-MIGRATION.md"
+      ],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "CA-GROWTH-SOC-TTS",
+      "owner": "GROWTH",
+      "recordedState": "GEHALTEN",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/867406f3aa9a478c14913ac731749fb33daeb9ac/CAPITAL-AI-GROWTH/SOCIAL-ENGINE-MIGRATION.md"
+      ],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "CA-PLATFORM-SOC-GENVIDEO",
+      "owner": "PLATFORM",
+      "recordedState": "GEHALTEN",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/867406f3aa9a478c14913ac731749fb33daeb9ac/CAPITAL-AI-GROWTH/SOCIAL-ENGINE-MIGRATION.md"
+      ],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "CA-PRODUCT-SOC-STUDIO",
+      "owner": "PRODUCT",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/867406f3aa9a478c14913ac731749fb33daeb9ac/CAPITAL-AI-GROWTH/SOCIAL-ENGINE-MIGRATION.md"
+      ],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "CA-GROWTH-SOC-UGC",
+      "owner": "GROWTH",
+      "recordedState": "GEHALTEN",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/867406f3aa9a478c14913ac731749fb33daeb9ac/CAPITAL-AI-GROWTH/SOCIAL-ENGINE-MIGRATION.md"
+      ],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "CA-PLATFORM-SOC-DISTRIBUTION",
+      "owner": "PLATFORM",
+      "recordedState": "GEHALTEN",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/867406f3aa9a478c14913ac731749fb33daeb9ac/CAPITAL-AI-GROWTH/SOCIAL-ENGINE-MIGRATION.md"
+      ],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "CA-GROWTH-SOC-PILOT",
+      "owner": "GROWTH",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/867406f3aa9a478c14913ac731749fb33daeb9ac/CAPITAL-AI-GROWTH/SOCIAL-ENGINE-MIGRATION.md"
+      ],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "CA-TRUST-ZERO-COST-THRESHOLDS",
+      "owner": "TRUST",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "src/contracts/zeroCostApiThresholds.ts"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-TRUST-PUBLIC-AUTHORITY-GATE",
+      "owner": "TRUST",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "src/contracts/truthAuthorityGate.ts",
+        "src/components/TokenomicsPage.tsx"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-GROWTH-CONSENT-OUTREACH",
+      "owner": "GROWTH",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "src/contracts/marketingOutreachPolicy.ts",
+        "src/contracts/growthDiscovery.ts"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-GROWTH-CREATOR-REVENUE",
+      "owner": "GROWTH",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "src/contracts/zeroCostApiThresholds.ts",
+        "src/contracts/truthAuthorityGate.ts",
+        "src/contracts/growthProviderRuntime.ts",
+        "src/contracts/growthMediaApproval.ts",
+        "src/contracts/growthAttribution.ts"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-PRODUCT-CADS-GITHUB-MARKETPLACE",
+      "owner": "PRODUCT",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "server/cads-marketplace.mjs",
+        "server/cads-marketplace.test.mjs",
+        "supabase/migrations/20261006210500_cads_marketplace_paid_entitlements.sql",
+        "apps/cads-github-app/marketplace-plans.production.json",
+        "apps/cads-github-app/github-app-registration.production.example.json",
+        "src/data/cadsCommercialReadiness.ts",
+        "src/data/cadsMarketplaceCapabilities.ts",
+        "docs/product/CADS-GITHUB-MARKETPLACE-READINESS-20261006.md",
+        "src/contracts/truthAuthorityGate.ts",
+        "server/cads-commerce.mjs"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-PRODUCT-BLUEPRINT-COMMERCE-EVIDENCE",
+      "owner": "PRODUCT",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "src/data/blueprintDeliveryPolicy.ts",
+        "src/features/documentation/BlueprintDocumentationPage.tsx",
+        "public/branding/badges/data-pipeline-blueprint.svg",
+        "docs/licenses/CAPITAL-AI-DATA-PIPELINE-BLUEPRINT-BADGE.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-PRODUCT-VOCABULARY-NFT-MINTING",
+      "owner": "PRODUCT",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "src/data/additionalProductsCatalog.ts",
+        "docs/licenses/CAPITAL-AI-VOCABULARY-BADGE-CUSTOMER-LICENSE-1.0.md",
+        "src/data/monetizationRegistry.ts"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-PRODUCT-BENCHMARK-MARKETPLACE",
+      "owner": "PRODUCT",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "CAPITAL-AI-PRODUCT/BENCHMARK-ENGINE-PRODUCT.md",
+        "contracts/benchmark/CAPITAL_AI_BENCHMARK_EVIDENCE@1.schema.json",
+        "packages/benchmark-core/index.mjs",
+        "server/benchmark-runs.mjs",
+        "server/benchmark-store.mjs",
+        "server/cads-commerce.mjs"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "AP-GOV-01",
+      "owner": "TRUST",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "AP-GOV-02",
+      "owner": "TRUST",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "AP-GOV-03",
+      "owner": "TRUST",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "AP-OPS-01",
+      "owner": "PLATFORM",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "Dockerfile",
+        ".github/workflows/build-security.yml",
+        "scripts/verify-release-readiness.mjs"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "AP-OPS-02",
+      "owner": "PLATFORM",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "server/observability.mjs",
+        "server/cads-observability.mjs",
+        "server/index.mjs"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "AP-OPS-03",
+      "owner": "PLATFORM",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "AP-FE-01",
+      "owner": "PRODUCT",
+      "recordedState": "VERIFIED",
+      "evidencePathsPresent": [
+        "src/app/routing/AppRoutes.tsx",
+        "src/app/AppShell.tsx",
+        "scripts/navigation.test.mjs"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "VERIFIED"
+    },
+    {
+      "id": "AP-FE-02",
+      "owner": "PRODUCT",
+      "recordedState": "VERIFIED",
+      "evidencePathsPresent": [
+        "src/components/LearningPortalPage.tsx",
+        "src/data/vocabularyData.ts"
+      ],
+      "evidencePathsMissing": [
+        "src/data/vocabularyPresentation.ts"
+      ],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "AP-FE-03",
+      "owner": "PRODUCT",
+      "recordedState": "VERIFIED",
+      "evidencePathsPresent": [
+        "src/components/ControlCenterPage.tsx",
+        "src/components/RoadmapPanel.tsx",
+        "src/data/roadmapData.ts"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "VERIFIED"
+    },
+    {
+      "id": "AP-FE-04",
+      "owner": "PRODUCT",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "AP-DOC-01",
+      "owner": "GROWTH",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "AP-DOC-02",
+      "owner": "GROWTH",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "AP-DOC-03",
+      "owner": "GROWTH",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "CA-GROWTH-SEO-ARCHITECTURE",
+      "owner": "GROWTH",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "server/index.mjs",
+        "index.html",
+        "docs/growth/GSC-GA4-AUTHORITY.md",
+        "CAPITAL-AI-GROWTH/SOCIAL-ENGINE-MIGRATION.md",
+        "supabase/migrations/20260815010000_seo_engine.sql",
+        "docs/growth/SEO-00-INDEXING-POLICY-20261005.md",
+        "shared/seo-indexing-policy.mjs",
+        "server/seo-indexing-policy.test.mjs",
+        "docs/growth/SEO-01-CONTENT-MANIFEST-20261005.md",
+        "shared/seo-content-manifest.mjs",
+        "scripts/seo-content-manifest.test.mjs",
+        "server/well-known.mjs",
+        "shared/seo-metadata.mjs",
+        "scripts/seo-metadata.test.mjs",
+        "docs/growth/SEO-02-METADATA-AS-CODE-20261005.md",
+        "docs/security/BUILD-DOMEXCEPTION-REVIEW-20261005.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/main/docs/growth/SEO-ARCHITECTURE-WORK-PACKAGE-20261005.md"
+      ],
+      "effectiveState": "NOT_PROVEN"
+    },
+    {
+      "id": "AP-SOC-01",
+      "owner": "GROWTH",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "server/telegram.mjs",
+        "src/components/WhaleRadarModal.tsx"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "AP-SOC-02",
+      "owner": "GROWTH",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "AP-SOC-03",
+      "owner": "GROWTH",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "AP-SEC-01",
+      "owner": "TRUST",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "AP-SEC-02",
+      "owner": "TRUST",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "server/auth.mjs",
+        "server/auth-security.mjs",
+        "src/components/ControlCenterPage.tsx"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "AP-SEC-03",
+      "owner": "TRUST",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "AP-SEC-04",
+      "owner": "TRUST",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "AP-CMP-01",
+      "owner": "TRUST",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "AP-CMP-02",
+      "owner": "TRUST",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "AP-CMP-03",
+      "owner": "TRUST",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "AP-FIN-01",
+      "owner": "MARKET",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "src/contracts/analysisComponentRegistry.ts",
+        "server/scorer-proxy.mjs",
+        "docs/architecture/ANALYSIS-FOUNDATION.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "AP-FIN-02",
+      "owner": "MARKET",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "AP-FIN-03",
+      "owner": "MARKET",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "server/kraken-order-dry-run.mjs",
+        "server/uniswap-trading.mjs",
+        "docs/architecture/KRAKEN-CREDENTIAL-FAMILY-DECISION-20261006.md"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "AP-AGT-01",
+      "owner": "PRODUCT",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "AP-AGT-02",
+      "owner": "PRODUCT",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "src/data/externalComponentInventory.ts",
+        "src/data/monetizationRegistry.ts",
+        "src/contracts/zeroCostApiThresholds.ts"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "AP-AGT-03",
+      "owner": "PRODUCT",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "AP-QA-01",
+      "owner": "TRUST",
+      "recordedState": "VERIFIED",
+      "evidencePathsPresent": [
+        "scripts/validate-contract-suites.mjs",
+        ".github/workflows/build-security.yml"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "VERIFIED"
+    },
+    {
+      "id": "AP-QA-02",
+      "owner": "TRUST",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    },
+    {
+      "id": "AP-QA-03",
+      "owner": "TRUST",
+      "recordedState": "UNGEKLÄRT",
+      "evidencePathsPresent": [],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "UNGEKLÄRT"
+    }
+  ],
+  "examined": 105,
+  "unproven": 25,
+  "authority": "SOURCE_AND_DOCUMENT_PRESENCE_ONLY",
+  "noAutomaticCompletionPromotion": true
+}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
+import { useLocale } from '../../i18n/LocaleProvider';
 import {
   ArrowRight,
   BarChart3,
@@ -90,6 +91,7 @@ type ContentEngineConceptProps = {
 export const ContentEngineConcept: React.FC<ContentEngineConceptProps> = ({
   onNavigate,
 }) => {
+  const { t, locale, tSection } = useLocale();
   return (
     <section
       id="content-engine-concept"
@@ -112,14 +114,12 @@ export const ContentEngineConcept: React.FC<ContentEngineConceptProps> = ({
               id="content-engine-heading"
               className="text-2xl sm:text-3xl lg:text-[38px] font-extrabold tracking-tight text-white leading-tight"
             >
-              Aus belegten Produktfakten wird
-              <span className="text-[#F5B014]"> modularer Content.</span>
+              {t('contentTitle')}
+              <span className="text-[#F5B014]">{t('contentHighlight')}</span>
             </h2>
 
             <p className="mt-3 max-w-2xl text-sm sm:text-base leading-relaxed text-slate-300">
-              Die Content Engine verbindet die bestehenden Growth-Tools zu einer
-              nachvollziehbaren Pipeline für Text, Bild, Audio, Video und Attribution.
-              Publishing bleibt bewusst ein separater Adapter zur späteren Social Media Engine.
+              {t('contentDescription')}
             </p>
           </div>
 
@@ -133,25 +133,25 @@ export const ContentEngineConcept: React.FC<ContentEngineConceptProps> = ({
             >
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
                 <Database className="h-4 w-4 text-amber-300" />
-                Quellenebene
+                {t('contentSources')}
               </div>
 
               <div className="mt-4 space-y-2.5">
-                {[
-                  ['Produkt & Roadmap', 'Repository-gebundene Fakten'],
-                  ['Canonical URL', 'Öffentliche CAPITAL-AI Quelle'],
-                  ['Claims & Evidence', 'Belegbare Aussagen statt Blackbox'],
-                  ['Campaign Brief', 'Ziel, Zielgruppe, Kanäle, Outputs'],
-                ].map(([title, detail]) => (
+                {([
+                  ['sourceProduct', 'sourceProductDetail'],
+                  ['sourceCanonical', 'sourceCanonicalDetail'],
+                  ['sourceEvidence', 'sourceEvidenceDetail'],
+                  ['sourceBrief', 'sourceBriefDetail'],
+                ] as const).map(([title, detail]) => (
                   <div
                     key={title}
                     className="flex items-start gap-3 rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-2.5"
                   >
                     <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />
                     <div>
-                      <p className="text-xs font-semibold text-slate-100">{title}</p>
+                      <p className="text-xs font-semibold text-slate-100">{tSection(title)}</p>
                       <p className="mt-0.5 text-[11px] leading-relaxed text-slate-500">
-                        {detail}
+                        {tSection(detail)}
                       </p>
                     </div>
                   </div>
@@ -160,7 +160,7 @@ export const ContentEngineConcept: React.FC<ContentEngineConceptProps> = ({
 
               <div className="mt-4 rounded-xl border border-violet-400/20 bg-violet-400/[0.06] p-3">
                 <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-violet-200">
-                  Kampagne 01
+                  {t('contentCampaign')}
                 </p>
                 <p className="mt-1 text-sm font-bold text-white">{campaign.name}</p>
                 <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
@@ -184,7 +184,7 @@ export const ContentEngineConcept: React.FC<ContentEngineConceptProps> = ({
                   </p>
                 </div>
                 <span className="inline-flex w-fit items-center rounded-full border border-rose-400/25 bg-rose-400/[0.08] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-rose-200">
-                  Public Publish: aus
+                  {t('contentPublish')}
                 </span>
               </div>
 
@@ -212,13 +212,13 @@ export const ContentEngineConcept: React.FC<ContentEngineConceptProps> = ({
                         <span
                           className={`rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em] ${meta.className}`}
                         >
-                          {meta.label}
+                          {tSection(({READY_FOR_DRAFT:'statusReady', RESTRICTED:'statusRestricted', BLOCKED:'statusBlocked', INTEGRATION_PENDING:'statusPending'} as const)[modulePlan.state])}
                         </span>
                       </div>
                       <p className="mt-2 line-clamp-2 text-[10.5px] leading-relaxed text-slate-500">
                         {modulePlan.module === 'PUBLISHER'
-                          ? 'Übergabe an die Social Media Engine nach deren Cutover.'
-                          : modulePlan.reason}
+                          ? tSection('publisherReason')
+                          : <span lang="de" title={locale === 'de' ? undefined : tSection('contractOriginal')}>{modulePlan.reason}</span>}
                       </p>
                     </motion.div>
                   );
@@ -228,9 +228,7 @@ export const ContentEngineConcept: React.FC<ContentEngineConceptProps> = ({
               <div className="mt-4 flex items-center gap-2 rounded-xl border border-amber-400/15 bg-amber-400/[0.045] px-3 py-2.5">
                 <ArrowRight className="h-4 w-4 shrink-0 text-amber-300" />
                 <p className="text-[11px] leading-relaxed text-slate-300">
-                  Ein Campaign Brief wählt nur die Module aus, die für den gewünschten Output
-                  nötig sind. Provider-, Rechte- und Publication-Regeln bleiben in den
-                  bestehenden Contracts.
+                  {tSection('campaignRule')}
                 </p>
               </div>
             </motion.div>
@@ -240,7 +238,7 @@ export const ContentEngineConcept: React.FC<ContentEngineConceptProps> = ({
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
-                  Kampagnen-Ausgabe
+                  {tSection('campaignOutput')}
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {campaign.brief.channels.map((channel) => (
@@ -252,7 +250,7 @@ export const ContentEngineConcept: React.FC<ContentEngineConceptProps> = ({
                     </span>
                   ))}
                   <span className="rounded-full border border-violet-400/30 bg-violet-400/10 px-3 py-1.5 text-[10px] font-semibold tracking-wide text-violet-200">
-                    Social Media Engine → später
+                    {tSection('socialLater')}
                   </span>
                 </div>
               </div>
@@ -260,15 +258,15 @@ export const ContentEngineConcept: React.FC<ContentEngineConceptProps> = ({
               <div className="grid grid-cols-3 gap-2 sm:min-w-[320px]">
                 <div className="rounded-xl border border-white/[0.08] bg-white/[0.025] px-3 py-2.5 text-center">
                   <p className="text-lg font-black text-white">{plan.modules.length}</p>
-                  <p className="text-[9px] uppercase tracking-[0.12em] text-slate-500">Module</p>
+                  <p className="text-[9px] uppercase tracking-[0.12em] text-slate-500">{tSection('modules')}</p>
                 </div>
                 <div className="rounded-xl border border-white/[0.08] bg-white/[0.025] px-3 py-2.5 text-center">
                   <p className="text-lg font-black text-white">{campaign.brief.channels.length}</p>
-                  <p className="text-[9px] uppercase tracking-[0.12em] text-slate-500">Kanäle</p>
+                  <p className="text-[9px] uppercase tracking-[0.12em] text-slate-500">{tSection('channels')}</p>
                 </div>
                 <div className="rounded-xl border border-white/[0.08] bg-white/[0.025] px-3 py-2.5 text-center">
                   <p className="text-lg font-black text-amber-300">DRAFT</p>
-                  <p className="text-[9px] uppercase tracking-[0.12em] text-slate-500">Status</p>
+                  <p className="text-[9px] uppercase tracking-[0.12em] text-slate-500">{tSection('status')}</p>
                 </div>
               </div>
             </div>
@@ -280,7 +278,7 @@ export const ContentEngineConcept: React.FC<ContentEngineConceptProps> = ({
               onClick={() => onNavigate('/architecture')}
               className="group inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#F5B014] px-4 py-2.5 text-xs font-bold text-black transition hover:bg-[#ffbe26] active:scale-[0.98]"
             >
-              Architektur ansehen
+              {tSection('architectureCta')}
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </button>
             <button
@@ -289,7 +287,7 @@ export const ContentEngineConcept: React.FC<ContentEngineConceptProps> = ({
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.035] px-4 py-2.5 text-xs font-bold text-slate-200 transition hover:bg-white/[0.07] active:scale-[0.98]"
             >
               <Workflow className="h-4 w-4 text-violet-300" />
-              Pipeline Builder öffnen
+              {tSection('builderCta')}
             </button>
           </div>
         </div>

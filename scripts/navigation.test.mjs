@@ -1,24 +1,24 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { APP_NAVIGATION_EVENT, navigateAppLocation, readHubTab, resolveNavigationTarget, resolveAppRoute } from '../src/utils/appNavigation.ts';
+import { APP_NAVIGATION_EVENT, navigateAppLocation, readHubTab, resolveNavigationTarget, resolveAppRoute, CONTROL_CENTER_SECTION_IDS } from '../src/utils/appNavigation.ts';
+import { messages } from '../src/i18n/messages.ts';
 
 test('all current sideboard tab links retain their hub and tab', () => {
   const sidebar = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
   const links = [...sidebar.matchAll(/path: '([^']+\?tab=[^']+)'/g)].map(match => match[1]);
-  assert.equal(links.length, 24);
+  assert.equal(links.length, 13);
   assert.ok(links.includes('/studio?tab=console'));
   assert.ok(links.includes('/learning?tab=flashcards'));
   assert.ok(links.includes('/learning?tab=videos'));
-  assert.ok(links.includes('/control-center?tab=tools'));
-  assert.ok(links.includes('/control-center?tab=licenses'));
   for (const link of links) assert.equal(resolveNavigationTarget(link), link);
 });
 
 test('footer consolidates public license navigation into documentation', () => {
   const footer = readFileSync(new URL('../src/components/Footer.tsx', import.meta.url), 'utf8');
   assert.match(footer, /href="\/dokumentation"/);
-  assert.match(footer, /Dokumentation &amp; Lizenzen/);
+  assert.match(footer, /t\('docs'\)/);
+  assert.equal(messages.de.docs, 'Dokumentation & Lizenzen');
   assert.doesNotMatch(footer, /href="\/control-center\?tab=licenses"/);
   assert.doesNotMatch(footer, /id="footer-nav-lizenz"/);
 });
@@ -73,14 +73,15 @@ test('same-hub transitions notify subscribers and avoid duplicate history', () =
   }
 });
 
-test('legal and research deep links retain their destination and query state', () => {
-  for (const route of ['/lizenz', '/datenprovider-lizenzen', '/opensource-lizenzen', '/forschung', '/impressum', '/datenschutz', '/agb']) {
+test('license and legal deep links retain their destination and query state', () => {
+  for (const route of ['/lizenz', '/datenprovider-lizenzen', '/opensource-lizenzen', '/impressum', '/datenschutz', '/agb']) {
     assert.equal(resolveAppRoute(route), route);
     assert.equal(resolveNavigationTarget(route.toUpperCase() + '/?ref=footer#details'), route + '?ref=footer#details');
   }
   assert.equal(resolveNavigationTarget('/academic-terms?provider=binance'), '/datenprovider-lizenzen?provider=binance');
   assert.equal(resolveAppRoute('/oss'), '/opensource-lizenzen');
-  assert.equal(resolveAppRoute('/research'), '/forschung');
+  assert.equal(resolveAppRoute('/research'), '/');
+  assert.equal(resolveAppRoute('/forschung'), '/');
   assert.equal(resolveAppRoute('/__proto__'), '/');
 });
 
@@ -160,13 +161,25 @@ test('production navigation uses Preiskatalog and clickable canonical breadcrumb
   const sideboard = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
 
   assert.match(header, /Preiskatalog/);
-  assert.match(footer, /Preiskatalog/);
+  assert.match(footer, /t\('pricing'\)/);
+  assert.equal(messages.de.pricing, 'Preiskatalog');
   assert.doesNotMatch(header, /Preise & SaaS Tarife/);
   assert.doesNotMatch(sideboard, /Aufklappbare Sidebar|Sideliste aufklappen/);
   assert.match(sideboard, /role="tree"/);
   assert.match(sideboard, /role="treeitem"/);
   assert.match(breadcrumbs, /onClick=\{\(\) => onNavigate\(item\.path\)\}/);
   assert.match(breadcrumbs, /aria-current="page"/);
+});
+
+test('hub sideboard hides raw URL paths in subpage cards while keeping navigation', () => {
+  const sideboard = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
+  // A URL in an accessible anchor href is a navigation target, not rendered path text.
+  // Reject only literal JSX text children displaying a raw internal route.
+  assert.doesNotMatch(sideboard, />\s*\{\s*subpage\.path\s*\}\s*</);
+  assert.match(sideboard, /href=\{subpage\.path\}/);
+  assert.match(sideboard, /onNavigate\?\.\(subpage\.path\)/);
+  assert.match(sideboard, /window\.location\.assign\(subpage\.path\)/);
+  assert.match(sideboard, /subpage\.tags\?\.map/);
 });
 
 test('homepage hub directory shares the canonical catalog and excludes protected routes by default', () => {
@@ -192,5 +205,53 @@ test('documentation hub catalog links to the existing content instead of reopeni
   }
   assert.match(home, /window\.location\.assign\(subpage\.path\)/);
   assert.match(catalog, /window\.location\.assign\(subpage\.path\)/);
-  assert.ok(catalog.includes("badge: '13 Bereiche'"));
+  assert.ok(catalog.includes("badge: '12 Bereiche'"));
+});
+
+
+test('Control Center offers eleven dedicated, keyboard-accessible routes and legacy query links', () => {
+  const sidebar = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
+  const page = readFileSync(new URL('../src/components/ControlCenterPage.tsx', import.meta.url), 'utf8');
+  const appRoutes = readFileSync(new URL('../src/app/routing/AppRoutes.tsx', import.meta.url), 'utf8');
+  const destinations = [...sidebar.matchAll(/path: '(\/control-center\/[a-z_]+)'/g)].map((match) => match[1]);
+  assert.equal(destinations.length, CONTROL_CENTER_SECTION_IDS.length);
+  for (const id of CONTROL_CENTER_SECTION_IDS) {
+    const canonical = '/control-center/' + id;
+    assert.ok(destinations.includes(canonical), canonical);
+    assert.equal(resolveAppRoute(canonical.toUpperCase() + '/'), canonical);
+    assert.equal(resolveNavigationTarget('/control-center?tab=' + id), '/control-center?tab=' + id);
+  }
+  assert.equal(resolveAppRoute('/control-center/unknown'), '/');
+  assert.match(appRoutes, /currentRoute\.startsWith\('\/control-center\/'\)/);
+  assert.match(page, /aria-current=\{isActive \? 'page' : undefined\}/);
+  assert.match(page, /<select/);
+  assert.match(page, /focus-visible:outline/);
+  assert.match(page, /APP_NAVIGATION_EVENT/);
+  assert.doesNotMatch(page, /role="tablist"/);
+});
+
+test('all dedicated Control Center documents retain owner-only server gating and private SEO', async () => {
+  const server = readFileSync(new URL('../server/index.mjs', import.meta.url), 'utf8');
+  const { resolveSeoIndexingPolicy } = await import('../shared/seo-indexing-policy.mjs');
+  assert.match(server, /OWNER_ONLY_UI_PATHS\.has\(publicPath\) \|\| publicPath\.startsWith\('\/control-center\/'\)/);
+  for (const id of CONTROL_CENTER_SECTION_IDS) {
+    assert.equal(resolveSeoIndexingPolicy('/control-center/' + id).classification, 'PRIVATE');
+  }
+});
+
+
+test('Hub navigation entries use native focusable anchors for keyboard and modified clicks', () => {
+  const sidebar = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
+  assert.match(sidebar, /<motion\.a[\s\S]*?href=\{subpage\.path\}/);
+  assert.match(sidebar, /role="treeitem"/);
+  assert.match(sidebar, /event\.metaKey \|\| event\.ctrlKey/);
+  assert.doesNotMatch(sidebar, /onKeyDown=\{\(event\) => \{[\s\S]*?event\.key === 'Enter'/);
+});
+
+
+test('optional route breadcrumbs do not inflate the synchronous bootstrap chunk', () => {
+  const shell = readFileSync(new URL('../src/app/AppShell.tsx', import.meta.url), 'utf8');
+  assert.match(shell, /const RouteBreadcrumbs = lazy\(\(\) =>/);
+  assert.match(shell, /import\('\.\.\/components\/RouteBreadcrumbs'\)/);
+  assert.match(shell, /<Suspense fallback=\{null\}>[\s\S]*?<RouteBreadcrumbs/);
 });

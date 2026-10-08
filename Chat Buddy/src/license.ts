@@ -21,7 +21,7 @@ export const LEGAL_NOTICE = [
   "JaJa erklärt Zusammenhänge. Das ist keine Anlageberatung und keine Aufforderung zum Kauf oder Verkauf.",
 ].join(" ");
 
-export type Sku = "owner" | "seat-desk" | "seat-universe" | "pack-research";
+export type Sku = "owner" | "seat-desk" | "seat-universe";
 
 export type PriceRow = {
   sku: Exclude<Sku, "owner">;
@@ -34,7 +34,6 @@ export type PriceRow = {
 export const PRICE_BOOK: readonly PriceRow[] = [
   { sku: "seat-desk", name: "Desk-Sitz", eur: 19, interval: "month", credits: 80 },
   { sku: "seat-universe", name: "Universe-Sitz", eur: 49, interval: "month", credits: 400 },
-  { sku: "pack-research", name: "Research-Paket", eur: 9, interval: "once", credits: 100 },
 ];
 
 export type Seat = {
@@ -90,7 +89,6 @@ export function creditCost(input: {
   remoteGraph: boolean;
 }): number {
   const live = input.provider === "local" ? 0 : 2;
-  const research = input.research ? 1 : 0;
   const graph = input.remoteGraph ? 1 : 0;
-  return live + research + graph;
+  return live + graph;
 }

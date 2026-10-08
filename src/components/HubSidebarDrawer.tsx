@@ -288,8 +288,8 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
     glowColor: 'rgba(139, 92, 246, 0.45)',
     accentBg: 'bg-violet-500/15 border-violet-400/50 text-violet-300',
     icon: <BookOpen className="w-5 h-5 text-violet-300" />,
-    badge: '13 Bereiche',
-    description: 'Blueprints, BYOK, Architektur, Forschung, Lizenzen, Preise und Domain-Aufbau.',
+    badge: '12 Bereiche',
+    description: 'Blueprints, BYOK, Architektur, Lizenzen, Preise und Domain-Aufbau.',
     mainPath: '/dokumentation',
     subpages: [
       { id: 'hub', name: 'Dokumentations-Hub', icon: <BookOpen className="w-4 h-4 text-violet-300" />,
@@ -304,8 +304,6 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         shortDesc: 'Preismodell-Präsentation der Produktpakete', path: '/documentation/pricing-models.html' },
       { id: 'architecture', name: 'FinTech Architektur', icon: <Layers className="w-4 h-4 text-cyan-400" />,
         shortDesc: 'Architekturansicht und Systemgrenzen', path: '/architecture' },
-      { id: 'research', name: 'FinTech Forschungsprojekt', icon: <Gauge className="w-4 h-4 text-violet-400" />,
-        shortDesc: 'Forschung und Lizenzkontext', path: '/forschung' },
       { id: 'oss-market', name: 'OSS Market Architektur', icon: <Server className="w-4 h-4 text-emerald-400" />,
         shortDesc: 'Statische Open-Source-Market-Architektur', path: '/downloads/market-screener-hub-open-source.html' },
       { id: 'licenses', name: 'Lizenzen & Nachweise', icon: <FileCode className="w-4 h-4 text-violet-400" />,
@@ -339,7 +337,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         badge: '11 Owner',
         shortDesc: 'Navigationsfreundliche Roadmap filterbar nach 11 Projektownern & 5 Phasen',
         tags: ['11 Owner', '5 Phasen', 'AP-001..011'],
-        path: '/control-center?tab=roadmap',
+        path: '/control-center/roadmap',
       },
       {
         id: 'components',
@@ -347,7 +345,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         icon: <Layers className="w-4 h-4 text-rose-400" />,
         badge: 'Analyse',
         shortDesc: 'Komponenteninventar und Analyse-Verträge',
-        path: '/control-center?tab=components',
+        path: '/control-center/components',
       },
       {
         id: 'tools',
@@ -355,7 +353,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         icon: <FileCode className="w-4 h-4 text-cyan-400" />,
         badge: 'Repository',
         shortDesc: 'Repository-Katalog mit read-only Live-Anbindung',
-        path: '/control-center?tab=tools',
+        path: '/control-center/tools',
       },
       {
         id: 'observability',
@@ -363,15 +361,15 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         icon: <Activity className="w-4 h-4 text-emerald-400" />,
         badge: 'Monitoring',
         shortDesc: 'Betriebs-, Trace- und Runtime-Evidence',
-        path: '/control-center?tab=observability',
+        path: '/control-center/observability',
       },
       {
-        id: 'research',
-        name: 'Research & Tokenomics',
-        icon: <Gauge className="w-4 h-4 text-purple-400" />,
-        badge: 'Research',
-        shortDesc: 'Forschungs- und Tokenomics-Übersicht',
-        path: '/control-center?tab=research',
+        id: 'news',
+        name: 'News & Repository-Updates',
+        icon: <FileCode className="w-4 h-4 text-cyan-400" />,
+        badge: 'Blog',
+        shortDesc: 'Quellgebundene Blogentwürfe nach jeweils 20 gemergten PRs',
+        path: '/control-center/news',
       },
       {
         id: 'console',
@@ -380,7 +378,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         badge: 'Admin & Audit',
         shortDesc: 'Shadow-Run Orchestrierung, 50-Komponenten Health & BaFin Revisionskontrolle',
         tags: ['Shadow Run', 'Audit Trail', 'Governance'],
-        path: '/control-center?tab=console',
+        path: '/control-center/console',
       },
       {
         id: 'cockpit',
@@ -389,7 +387,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         badge: 'GF & Founder',
         shortDesc: 'SLA-Monitoring, MaRisk Compliance-Score & Schnell-Aktionen für Geschäftsführung',
         tags: ['GF / Founder', 'MaRisk', 'KPIs'],
-        path: '/control-center?tab=cockpit',
+        path: '/control-center/cockpit',
       },
       {
         id: 'team',
@@ -398,7 +396,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         badge: '11 Leads',
         shortDesc: 'Verantwortlichkeits- und Berechtigungsmatrix aller 11 Projektverantwortlichen',
         tags: ['Rollenmatrix', 'Leads'],
-        path: '/control-center?tab=team',
+        path: '/control-center/team',
       },
       {
         id: 'cost_center',
@@ -407,7 +405,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         badge: '40 € Cap',
         shortDesc: 'AP-006 Budget-Governance & monatliche Kostenkontrolle unter 40 €',
         tags: ['Finanzen', 'AP-006', 'Budget-Cap'],
-        path: '/control-center?tab=cost_center',
+        path: '/control-center/cost_center',
       },
       {
         id: 'licenses',
@@ -416,7 +414,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         badge: 'Evidence',
         shortDesc: 'SPDX, Scannerberichte, Original-Lizenztexte und offene Provider-Rechte ohne automatische Freigabe',
         tags: ['SPDX', 'Scanner', 'Provider-Rechte'],
-        path: '/control-center?tab=licenses',
+        path: '/control-center/licenses',
       },
       {
         id: 'system',
@@ -425,7 +423,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         badge: 'Optionen',
         shortDesc: 'Feature Flags, Auto-Healing & WORM-Archivierungsstatus für Administratoren',
         tags: ['Feature Flags', 'System-Optionen'],
-        path: '/control-center?tab=system',
+        path: '/control-center/system',
       },
     ],
   },
@@ -644,17 +642,22 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
               {activeHub.subpages.map((subpage, idx) => {
                 const isActive =
                   activeLocation === subpage.path ||
+                  (effectiveHubId === 'control-center' && activeLocation === '/control-center?tab=' + subpage.id) ||
                   (activeLocation.startsWith(subpage.path + '#') && subpage.path !== '/');
 
                 return (
-                  <motion.div
+                  <motion.a
                     key={subpage.id}
+                    href={subpage.path}
                     aria-current={isActive ? 'page' : undefined}
                     role="treeitem"
                     aria-level={2}
-                    whileHover={{ x: 3 }}
-                    onClick={() => handleSubpageClick(subpage)}
-                    className={`p-3.5 rounded-xl border transition-all cursor-pointer group relative overflow-hidden ${
+                    onClick={(event) => {
+                      if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                      event.preventDefault();
+                      handleSubpageClick(subpage);
+                    }}
+                    className={`block p-3.5 rounded-xl border transition-all cursor-pointer group relative overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 ${
                       isActive
                         ? 'bg-slate-800/90 border-slate-600 shadow-md'
                         : 'bg-[#0b142e]/70 hover:bg-[#0f1b3e] border-slate-800/90 hover:border-slate-700'
@@ -667,11 +670,6 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
                       aria-hidden="true"
                       className="absolute left-0 top-0 h-full w-1"
                       style={{ backgroundColor: isActive ? activeHub.color : `${activeHub.color}35` }}
-                    />
-                    <span
-                      aria-hidden="true"
-                      className="absolute left-3 top-1/2 h-px w-4"
-                      style={{ backgroundColor: `${activeHub.color}55` }}
                     />
                     {/* Folder-tree row: Hub → Bereich */}
                     <div className="flex items-center justify-between gap-2 mb-1.5 pl-3">
@@ -709,7 +707,7 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
                       {subpage.shortDesc}
                     </p>
 
-                    {/* Tags & Path Footer */}
+                    {/* Tags & navigation indicator (route stays internal) */}
                     <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-slate-800/60 pl-9">
                       <div className="flex items-center gap-1 flex-wrap">
                         {subpage.tags?.map((tag) => (
@@ -723,11 +721,10 @@ export const HubSidebarDrawer: React.FC<HubSidebarDrawerProps> = ({
                       </div>
 
                       <span className="text-[10px] font-mono text-slate-500 group-hover:text-amber-400 flex items-center gap-1 shrink-0 ml-2">
-                        <span>{subpage.path}</span>
-                        <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                        <ChevronRight aria-hidden="true" className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                       </span>
                     </div>
-                  </motion.div>
+                  </motion.a>
                 );
               })}
             </div>
