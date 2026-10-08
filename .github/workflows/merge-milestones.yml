@@ -4,8 +4,8 @@ on:
     types: [closed]
     branches: [main]
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
+  pull-requests: read
 concurrency:
   group: capital-ai-merge-milestones
   cancel-in-progress: false
@@ -39,9 +39,40 @@ jobs:
           news_number=$(sed -n 's/^MILESTONE_READY_//p' /tmp/news-milestone.txt | tail -1)
           echo "roadmap=$roadmap_number" >> "$GITHUB_OUTPUT"
           echo "news=$news_number" >> "$GITHUB_OUTPUT"
+      # Only a separately installed App can mint an installation token to open PRs.
+      # The default GITHUB_TOKEN is intentionally never used for draft PR writes.
+      - name: Repository-scoped GitHub App token (optional)
+        id: milestone_app
+        if: ${{ vars.CAPITAL_AI_MILESTONE_APP_CLIENT_ID != '' && (steps.milestones.outputs.roadmap != '' || steps.milestones.outputs.news != '') }}
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3 (immutable)
+        with:
+          client-id: ${{ vars.CAPITAL_AI_MILESTONE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.CAPITAL_AI_MILESTONE_APP_PRIVATE_KEY }}
+          repositories: Capital-AI
+          permission-contents: write
+          permission-pull-requests: write
+      - name: Preserve deterministic milestone drafts for review
+        if: ${{ steps.milestones.outputs.roadmap != '' || steps.milestones.outputs.news != '' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.4.3
+        with:
+          name: milestone-drafts-${{ github.event.pull_request.number }}
+          path: |
+            src/data/roadmapMergeReconciliation.json
+            src/data/controlCenterNews.json
+            docs/product/roadmap-merge-reconciliation-*.json
+            docs/growth/news-release-pr-*.md
+          if-no-files-found: error
+          retention-days: 14
+      - name: Report missing app authority without creating a PR
+        if: ${{ (steps.milestones.outputs.roadmap != '' || steps.milestones.outputs.news != '') && steps.milestone_app.outputs.token == '' }}
+        shell: bash
+        run: |
+          echo 'Milestone proposals generated, but no dedicated GitHub App token is configured. Drafts are available as an artifact; PR creation NOT_PROVEN / OWNER_SETUP_REQUIRED.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'No branch was pushed and no PR was created by the default GITHUB_TOKEN.' >> "$GITHUB_STEP_SUMMARY"
       - name: Open milestone PRs (never merge or publish)
+        if: ${{ steps.milestone_app.outputs.token != '' }}
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.milestone_app.outputs.token }}
           REPOSITORY: ${{ github.repository }}
           SOURCE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
           ROADMAP_NUMBER: ${{ steps.milestones.outputs.roadmap }}
@@ -75,6 +106,12 @@ jobs:
             mkdir -p "/tmp/capital-milestone-$category/$(dirname "$doc")"
             cp "$target" "/tmp/capital-milestone-$category/$target"
             cp "$doc" "/tmp/capital-milestone-$category/$doc"
+            # Fail closed if a previous partial run left a proposal branch without a PR.
+            if gh api "repos/$REPOSITORY/git/ref/heads/$branch" >/dev/null 2>&1; then
+              echo "::error::Milestone branch $branch already exists without a PR. Refuse to overwrite it."
+              echo "Existing branch requires owner-reviewed recovery: $branch" >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+            fi
             git worktree add -b "$branch" "/tmp/capital-milestone-worktree-$category" "$SOURCE_SHA"
             cp "/tmp/capital-milestone-$category/$target" "/tmp/capital-milestone-worktree-$category/$target"
             mkdir -p "/tmp/capital-milestone-worktree-$category/$(dirname "$doc")"
