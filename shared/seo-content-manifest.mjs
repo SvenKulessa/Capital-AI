@@ -134,8 +134,8 @@ const staticEntries = [
   contentEntry({
     path: '/datenprovider-lizenzen',
     slug: 'datenprovider-lizenzen',
-    title: 'Capital-AI | Datenlizenzen & Forschung',
-    description: 'Provider-Bedingungen, Forschungsprogramme und offene Nutzungsrechte für interne Analyse, Anzeige und Weitergabe.',
+    title: 'Capital-AI | Datenprovider-Lizenzen',
+    description: 'Provider-Bedingungen und BYOK-Rechte und offene Nutzungsrechte für interne Analyse, Anzeige und Weitergabe.',
     contentType: 'trust',
     domain: 'TRUST',
     structuredDataType: 'WebPage',
