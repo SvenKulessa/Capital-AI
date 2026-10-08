@@ -288,8 +288,8 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
     glowColor: 'rgba(139, 92, 246, 0.45)',
     accentBg: 'bg-violet-500/15 border-violet-400/50 text-violet-300',
     icon: <BookOpen className="w-5 h-5 text-violet-300" />,
-    badge: '13 Bereiche',
-    description: 'Blueprints, BYOK, Architektur, Forschung, Lizenzen, Preise und Domain-Aufbau.',
+    badge: '12 Bereiche',
+    description: 'Blueprints, BYOK, Architektur, Lizenzen, Preise und Domain-Aufbau.',
     mainPath: '/dokumentation',
     subpages: [
       { id: 'hub', name: 'Dokumentations-Hub', icon: <BookOpen className="w-4 h-4 text-violet-300" />,
@@ -304,8 +304,6 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         shortDesc: 'Preismodell-Präsentation der Produktpakete', path: '/documentation/pricing-models.html' },
       { id: 'architecture', name: 'FinTech Architektur', icon: <Layers className="w-4 h-4 text-cyan-400" />,
         shortDesc: 'Architekturansicht und Systemgrenzen', path: '/architecture' },
-      { id: 'research', name: 'FinTech Forschungsprojekt', icon: <Gauge className="w-4 h-4 text-violet-400" />,
-        shortDesc: 'Forschung und Lizenzkontext', path: '/forschung' },
       { id: 'oss-market', name: 'OSS Market Architektur', icon: <Server className="w-4 h-4 text-emerald-400" />,
         shortDesc: 'Statische Open-Source-Market-Architektur', path: '/downloads/market-screener-hub-open-source.html' },
       { id: 'licenses', name: 'Lizenzen & Nachweise', icon: <FileCode className="w-4 h-4 text-violet-400" />,
@@ -328,7 +326,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
     glowColor: 'rgba(244, 63, 94, 0.45)',
     accentBg: 'bg-rose-500/15 border-rose-500/50 text-rose-300',
     icon: <ShieldCheck className="w-5 h-5 text-rose-400" />,
-    badge: '11 Reiter',
+    badge: '10 Reiter',
     description: 'v1.0 Go-Live Roadmap mit 11 Ownern, Executive Cockpit, Console, Team-Rollen & Cost Center.',
     mainPath: '/control-center',
     subpages: [
@@ -364,14 +362,6 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         badge: 'Monitoring',
         shortDesc: 'Betriebs-, Trace- und Runtime-Evidence',
         path: '/control-center?tab=observability',
-      },
-      {
-        id: 'research',
-        name: 'Research & Tokenomics',
-        icon: <Gauge className="w-4 h-4 text-purple-400" />,
-        badge: 'Research',
-        shortDesc: 'Forschungs- und Tokenomics-Übersicht',
-        path: '/control-center?tab=research',
       },
       {
         id: 'console',
