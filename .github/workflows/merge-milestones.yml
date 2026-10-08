@@ -3,6 +3,8 @@ on:
   pull_request:
     types: [closed]
     branches: [main]
+  # Manual post-merge verification. This mode never creates or updates a branch/PR.
+  workflow_dispatch:
 permissions:
   contents: read
   pull-requests: read
@@ -10,8 +12,50 @@ concurrency:
   group: capital-ai-merge-milestones
   cancel-in-progress: false
 jobs:
+  validate_app:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - name: Validate milestone App credentials are configured
+        env:
+          APP_CLIENT_ID: ${{ vars.CAPITAL_AI_MILESTONE_APP_CLIENT_ID }}
+          APP_PRIVATE_KEY: ${{ secrets.CAPITAL_AI_MILESTONE_APP_PRIVATE_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$APP_CLIENT_ID" || -z "$APP_PRIVATE_KEY" ]]; then
+            echo '::error::Milestone App Client ID or private-key Secret is missing.'
+            echo 'APP_CONFIG_BLOCKED: missing Client ID or private-key Secret.' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+      - name: Mint Capital-AI-scoped App token (no repository writes)
+        id: validation_token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0 (immutable)
+        with:
+          client-id: ${{ vars.CAPITAL_AI_MILESTONE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.CAPITAL_AI_MILESTONE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: Capital-AI
+          permission-contents: write
+          permission-pull-requests: write
+      - name: Verify App installation with read-only repository API requests
+        env:
+          GH_TOKEN: ${{ steps.validation_token.outputs.token }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual_repo="$(gh api "repos/$REPOSITORY" --jq '.full_name')"
+          if [[ "$actual_repo" != "$REPOSITORY" ]]; then
+            echo '::error::App token does not resolve the intended repository.'
+            exit 1
+          fi
+          gh api "repos/$REPOSITORY/pulls?state=open&per_page=1" --jq 'length' >/dev/null
+          echo 'APP_TOKEN_VERIFIED: repository-scoped token issued with requested Contents/Pull requests write permissions; read-only repository and PR API requests succeeded.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'No git push, PR creation, merge or deployment was attempted in this validation job.' >> "$GITHUB_STEP_SUMMARY"
   audit:
-    if: github.event.pull_request.merged == true
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
     runs-on: ubuntu-26.04
     timeout-minutes: 18
     steps:
@@ -67,6 +111,7 @@ jobs:
         with:
           client-id: ${{ vars.CAPITAL_AI_MILESTONE_APP_CLIENT_ID }}
           private-key: ${{ secrets.CAPITAL_AI_MILESTONE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
           repositories: Capital-AI
           permission-contents: write
           permission-pull-requests: write
