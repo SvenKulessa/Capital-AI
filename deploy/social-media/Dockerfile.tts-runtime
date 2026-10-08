@@ -58,11 +58,12 @@ RUN python -m pip install \
 ARG PYTHON_BASE
 FROM ${PYTHON_BASE} AS runtime
 
+ARG RUNTIME
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-      libsndfile1 \
-      sox \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get install -y --no-install-recommends libsndfile1 \
+    && if [ "${RUNTIME}" = "qwen" ]; then apt-get install -y --no-install-recommends sox; fi \
+    && rm -rf /var/lib/apt/lists/* \
+    && python -m pip uninstall -y pip setuptools wheel
 
 COPY --from=deps-build /opt/python /opt/python
 
