@@ -5,6 +5,7 @@
  * This is not the legacy ScoringDispatcher. No public score, rank, trading decision or
  * independent provider/API activation. Research-only inputs may be examined and replayed.
  */
+import { createHash } from 'node:crypto';
 import type { PipelineSnapshot } from '../../contracts/pipelineExecution.ts';
 import {
   resolveFinanceSourceAssetModel, type FinanceSourceAssetModelRequest,
@@ -38,9 +39,70 @@ function blocked(reasons: readonly string[], modelId: string) {
     reasons: Object.freeze([...new Set(reasons)].sort()),
     research: null, sourceIdentityFingerprint: null,
     featureFingerprint: null, effectiveWeightFingerprint: null,
+    researchReplayFingerprint: null,
     scoreEligible: false as const, rankEligible: false as const,
     decisionEligible: false as const, productionEligible: false as const,
   });
+}
+
+
+/**
+ * Content replay ID for an admitted research evaluation. The existing feature/weight
+ * fingerprints attest factor presence and nominal weights, NOT observed values.
+ * Hash validated input values plus evidence lineage to detect changed observations
+ * that would otherwise keep those two fingerprints unchanged.
+ *
+ * This is neither proof of source-Finance numerical parity nor provider/licence
+ * permission. Rights are evaluated separately for the current analysis request.
+ */
+function fingerprintFinanceResearchReplay(
+  input: FinanceResearchModelEvaluationRequest,
+  sourceIdentityFingerprint: string,
+  effectiveWeightFingerprint: string,
+  researchCompositeValue: number,
+): string {
+  const observations = input.validatedData.observations.map(obs => ({
+    sourceField: obs.sourceField,
+    featureId: obs.featureId,
+    status: obs.status,
+    value: obs.value,
+    unit: obs.unit,
+    normalizedValue: obs.normalizedValue,
+    normalizationVersion: obs.normalizationVersion,
+    normalizationEvidenceRef: obs.normalizationEvidenceRef,
+    qualityScore: obs.qualityScore,
+    observedAt: obs.observedAt,
+    retrievedAt: obs.retrievedAt,
+    providerId: obs.provenance.providerId,
+    providerDataset: obs.provenance.providerDataset,
+    provenanceObservedAt: obs.provenance.observedAt,
+    receivedAt: obs.provenance.receivedAt,
+    publishedAt: obs.provenance.publishedAt,
+    sourceReference: obs.provenance.sourceReference,
+    licenseScope: obs.provenance.licenseScope,
+    isDelayed: obs.provenance.isDelayed,
+    isDemo: obs.provenance.isDemo,
+  })).sort((a,b) => a.sourceField.localeCompare(b.sourceField));
+  const bindings = input.bindings.map(b => ({
+    factor: b.factor, sourceField: b.sourceField,
+  })).sort((a,b) => a.factor.localeCompare(b.factor));
+  return createHash('sha256').update(JSON.stringify({
+    contractVersion: FINANCE_MODEL_EVALUATION_VERSION,
+    sourceCommit: input.sourceModel.sourceCommit,
+    modelId: input.sourceModel.modelId,
+    modelVersion: input.sourceModel.modelVersion,
+    sourceIdentityFingerprint,
+    assetId: input.snapshot.asset.assetId,
+    runId: input.snapshot.runId,
+    evaluatedAt: input.snapshot.evaluatedAt,
+    horizon: input.snapshot.horizon,
+    regime: input.snapshot.regime,
+    factorModel: input.factorModel,
+    effectiveWeightFingerprint,
+    researchCompositeValue,
+    bindings,
+    observations,
+  })).digest('hex');
 }
 
 export function evaluateFinanceModelResearch(input: FinanceResearchModelEvaluationRequest) {
@@ -71,6 +133,10 @@ export function evaluateFinanceModelResearch(input: FinanceResearchModelEvaluati
     sourceIdentityFingerprint: source.fingerprint,
     featureFingerprint: evaluated.research.featureFingerprint,
     effectiveWeightFingerprint: evaluated.research.effectiveWeightFingerprint,
+    researchReplayFingerprint: fingerprintFinanceResearchReplay(
+      input, source.fingerprint, evaluated.research.effectiveWeightFingerprint,
+      evaluated.research.researchCompositeValue,
+    ),
     research: evaluated.research,
     reasons: Object.freeze([] as string[]),
     scoreEligible: false as const, rankEligible: false as const,

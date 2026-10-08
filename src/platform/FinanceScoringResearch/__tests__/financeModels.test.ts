@@ -56,3 +56,69 @@ test('invalid factor data, missing evidence and non-pinned source are rejected',
  assert.throws(()=>composeFinanceResearchFactors({...raw,values:{invented:50}} as never),/FINANCE_UNKNOWN_FACTOR_KEYS/);
  assert.throws(()=>composeFinanceResearchFactors({...raw,sourceSha:'a'.repeat(40)} as never));
 });
+
+
+test('Finance source factor golden vectors preserve original absolute weights and full-input normalization', () => {
+  // Synthetic, independently hand-calculated arithmetic vectors; not a historical
+  // provider backtest or evidence of production model/source parity.
+  const cases = [
+    { model:'stock', values: {
+      trend:100,momentum:0,breakout_quality:80,volatility_quality:40,
+      relative_strength:60,value:70,dividend:50,quality:90,
+    }, expected:63.1, weights: {
+      trend:0.18,momentum:0.14,breakout_quality:0.10,volatility_quality:0.10,
+      relative_strength:0.13,value:0.15,dividend:0.08,quality:0.12,
+    }},
+    { model:'forex', values: {
+      trend:100,momentum:0,breakout_quality:80,volatility_quality:40,relative_strength:60,
+    }, expected:57, weights: {
+      trend:0.30,momentum:0.25,breakout_quality:0.15,volatility_quality:0.15,
+      relative_strength:0.15,
+    }},
+    { model:'commodity', values: {
+      trend:80,momentum:60,breakout_quality:50,volatility_quality:90,
+    }, expected:71.5, weights: {
+      trend:0.30,momentum:0.25,breakout_quality:0.20,volatility_quality:0.25,
+    }},
+    { model:'sovereign', values: {
+      yield_level_percentile:80,yield_trend:60,yield_stability:40,
+    }, expected:64, weights: {
+      yield_level_percentile:0.45,yield_trend:0.30,yield_stability:0.25,
+    }},
+  ] as const;
+  for (const c of cases) {
+    const actual = composeFinanceResearchFactors({
+      assetId:'fixture:'+c.model,
+      model:c.model,
+      values:{...c.values},
+      evidenceRefs:['synthetic://finance/replay-golden'],
+      sourceSha:sha,
+    });
+    assert.deepEqual(actual.nominalWeights,c.weights,c.model);
+    assert.equal(actual.status,'RESEARCH_READY',c.model);
+    assert.ok(actual.researchCompositeValue !== null && Math.abs(actual.researchCompositeValue-c.expected)<1e-10,
+      c.model+' expected '+c.expected+' got '+actual.researchCompositeValue);
+    assert.deepEqual(actual.missingFactors,[],c.model);
+    assert.equal(actual.scoreEligible,false,c.model);
+    assert.equal(actual.rankEligible,false,c.model);
+    assert.equal(actual.decisionEligible,false,c.model);
+    assert.equal(actual.productionEligible,false,c.model);
+  }
+});
+test('missing source factors renormalize only available weight and preserve distinct fingerprints', () => {
+  const base={assetId:'stock:AAPL',model:'stock' as const,sourceSha:sha as typeof sha,
+    evidenceRefs:['synthetic://finance/replay-partial']};
+  const first=composeFinanceResearchFactors({...base,values:{trend:100,momentum:null,value:0}});
+  const reordered=composeFinanceResearchFactors({...base,values:{value:0,trend:100,momentum:null}});
+  const whole=composeFinanceResearchFactors({...base,values:{
+    trend:100,momentum:0,breakout_quality:0,volatility_quality:0,
+    relative_strength:0,value:0,dividend:0,quality:0,
+  }});
+  assert.equal(first.status,'RESEARCH_PARTIAL');
+  assert.ok(first.researchCompositeValue!==null
+    && Math.abs(first.researchCompositeValue-(100*0.18/(0.18+0.15)))<1e-10);
+  assert.equal(first.effectiveWeightFingerprint,reordered.effectiveWeightFingerprint);
+  assert.equal(first.featureFingerprint,reordered.featureFingerprint);
+  assert.notEqual(first.effectiveWeightFingerprint,whole.effectiveWeightFingerprint);
+  assert.equal(first.scoreEligible,false);
+});
