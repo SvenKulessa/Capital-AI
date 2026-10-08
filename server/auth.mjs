@@ -66,6 +66,19 @@ function normalizeMarketplaceAuthNext(value) {
   }
 }
 
+function googleSignupAdminKey(env) {
+  const key = String(env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY || '');
+  if (/^sb_secret_[A-Za-z0-9_-]{24,}$/.test(key)) return key;
+  const parts = key.split('.');
+  if (parts.length !== 3) return null;
+  try {
+    const jwt = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
+    return jwt.role === 'service_role' ? key : null;
+  } catch {
+    return null;
+  }
+}
+
 function configured(env) {
   try {
     const url = secureUrl(env.SUPABASE_URL || env.VITE_SUPABASE_URL);
@@ -271,6 +284,36 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       }
     }
     return { response, data };
+  }
+
+  async function storeGoogleSignupConsent(config, userId, consent) {
+    const adminKey = googleSignupAdminKey(env);
+    if (!adminKey || !consent?.termsAccepted || !consent?.privacyAcknowledged) return false;
+    const version = '2026-10-05';
+    const entries = [
+      { user_id: userId, consent_type: 'terms', document_version: version, granted: true, evidence_kind: 'contract_acceptance' },
+      { user_id: userId, consent_type: 'privacy', document_version: version, granted: true, evidence_kind: 'acknowledgement' },
+      { user_id: userId, consent_type: 'marketing', document_version: version, granted: consent.marketingConsent === true, evidence_kind: 'consent' },
+    ];
+    const target = new URL('/rest/v1/user_consents', config.url);
+    target.searchParams.set('on_conflict', 'user_id,consent_type,document_version');
+    try {
+      const response = await fetchImpl(target, {
+        method: 'POST',
+        headers: {
+          apikey: adminKey,
+          Authorization: `Bearer ${adminKey}`,
+          'Content-Type': 'application/json',
+          Prefer: 'resolution=ignore-duplicates,return=minimal',
+        },
+        body: JSON.stringify(entries),
+        redirect: 'error',
+        signal: AbortSignal.timeout(7000),
+      });
+      return response.ok;
+    } catch {
+      return false;
+    }
   }
 
   async function accountProjection(config, stored) {
@@ -579,10 +622,39 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     }
 
     if (action === 'login/google') {
-      if (req.method !== 'GET') {
-        res.setHeader('Allow', 'GET');
+      if (!['GET', 'POST'].includes(req.method)) {
+        res.setHeader('Allow', 'GET, POST');
         json(res, 405, { error: 'method_not_allowed' });
         return true;
+      }
+      let googleRegistrationConsent = null;
+      if (req.method === 'POST') {
+        if (!sameOrigin(req)) {
+          json(res, 403, { error: 'forbidden_origin' });
+          return true;
+        }
+        let form;
+        try {
+          form = await readRequestForm(req);
+        } catch {
+          json(res, 400, { error: 'invalid_request' });
+          return true;
+        }
+        if (form.get('registration') !== 'true' ||
+            form.get('termsAccepted') !== 'true' ||
+            form.get('privacyAcknowledged') !== 'true') {
+          json(res, 400, { error: 'registration_consents_required' });
+          return true;
+        }
+        if (!googleSignupAdminKey(env)) {
+          json(res, 503, { error: 'registration_consent_store_unavailable' });
+          return true;
+        }
+        googleRegistrationConsent = {
+          termsAccepted: true,
+          privacyAcknowledged: true,
+          marketingConsent: form.get('marketingConsent') === 'true',
+        };
       }
       const verifier = randomBytes(64).toString('base64url');
       const challenge = createHash('sha256').update(verifier).digest('base64url');
@@ -593,7 +665,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       callback.searchParams.set('next', next);
       appendCookie(
         res,
-        cookie(PKCE_COOKIE, signEnvelope(config, { version: 1, flow, verifier, next, expires: now() + PKCE_MAX_AGE_SECONDS * 1000 }), PKCE_MAX_AGE_SECONDS),
+        cookie(PKCE_COOKIE, signEnvelope(config, { version: 1, flow, verifier, next, googleRegistrationConsent, expires: now() + PKCE_MAX_AGE_SECONDS * 1000 }), PKCE_MAX_AGE_SECONDS),
       );
       const target = new URL('/auth/v1/authorize', config.url);
       target.searchParams.set('provider', 'google');
@@ -676,6 +748,13 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
         return true;
       }
       exchanged.data.user = googleUser.data;
+      if (flowCookie.googleRegistrationConsent) {
+        const recorded = await storeGoogleSignupConsent(config, googleUser.data.id, flowCookie.googleRegistrationConsent);
+        if (!recorded) {
+          json(res, 503, { error: 'registration_consent_persistence_failed' });
+          return true;
+        }
+      }
       writeSessionCookies(req, res, config, exchanged.data);
       const googleNext = normalizeMarketplaceAuthNext(flowCookie.next);
       const googleMfaRequired = tokenAal(exchanged.data.access_token) !== 'aal2' && hasVerifiedTotpFactor(googleUser.data);

@@ -51,3 +51,11 @@ Every adapter must specify a fixed provider host, authentication mode, read-only
 ## Production
 
 This change deliberately does not alter Supabase Auth settings, database constraints, Render secrets, NATS, OCI images or production services. Required GitHub Checks and owner merge/normal main deployment precede live activation. No extra governance gates are created by this document.
+
+## Google OAuth registration consent hardening
+
+- The explicit **Google registration** button uses a same-origin POST only after required Terms and Privacy checkboxes are selected; marketing is optional and defaults to `false`.
+- The server validates checkbox intent, validates the existence of a server-only Supabase admin credential, and carries consent **only within signed, HttpOnly, short-lived PKCE state**.
+- Following the verified Google callback, the server writes `terms`, `privacy` and `marketing` evidence to the existing `user_consents` table via a service-role-only PostgREST call with ignore-duplicates semantics. A persistence error returns 503 before an application session is issued.
+- Read-only Supabase schema verification confirmed `user_consents_subject_document_uq` on `(user_id, consent_type, document_version)`. No SQL migration is required.
+- **Residual limitation:** the original Google **login** URL remains backward compatible; on a Google account created via login-first flow, Supabase may auto-create an account without explicit registration consent. A future controlled onboarding/consent interstitial is required if all login-first registrations must be prevented. Do not mistake explicit-signup parity for universal signup-policy enforcement.

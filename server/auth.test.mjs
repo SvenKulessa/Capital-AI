@@ -33,6 +33,8 @@ async function harness(envOverrides = {}) {
     challenge: '',
     deliveries: [],
     authAudit: [],
+    consentWrites: [],
+    rejectConsentWrites: false,
   };
 
   const user = () => ({
@@ -100,6 +102,15 @@ async function harness(envOverrides = {}) {
       return Response.json({ ok: true });
     }
 
+    if (target.origin === 'https://project.supabase.co' && target.pathname === '/rest/v1/user_consents') {
+      assert.equal(options.method, 'POST');
+      assert.match(String(options.headers.Authorization || ''), /^Bearer sb_secret_/);
+      assert.equal(options.headers.Prefer, 'resolution=ignore-duplicates,return=minimal');
+      assert.equal(target.searchParams.get('on_conflict'), 'user_id,consent_type,document_version');
+      state.consentWrites.push(JSON.parse(String(options.body)));
+      return new Response(null, { status: state.rejectConsentWrites ? 503 : 201 });
+    }
+
     if (target.origin === 'https://project.supabase.co' && target.pathname === '/rest/v1/profiles') {
       assert.match(String(options.headers.Authorization || ''), /^Bearer access-/);
       assert.equal(options.headers.apikey, 'sb_publishable_test');
@@ -150,8 +161,8 @@ async function harness(envOverrides = {}) {
     return cookie;
   };
 
-  const beginGoogle = async (route = '/api/auth/login/google?next=%2F') => {
-    const response = await request(route);
+  const beginGoogle = async (route = '/api/auth/login/google?next=%2F', options = {}) => {
+    const response = await request(route, options);
     assert.equal(response.status, 303);
     const target = new URL(response.headers.get('location'));
     assert.equal(target.origin, 'https://project.supabase.co');
@@ -353,6 +364,48 @@ test('Supabase Google PKCE binds callback to HttpOnly flow state and ends at lan
     const cookie = sessionCookieHeader(completed);
     assert.match(cookie, /__Host-capital_session_count=/);
     assert.deepEqual(h.state.authAudit, ['Supabase authentication verified at oauth_callback']);
+  } finally {
+    await h.stop();
+  }
+});
+
+test('Google signup rejects unconsented or cross-origin requests and records signed consent after verified PKCE', async () => {
+  const h = await harness();
+  const route = '/api/auth/login/google?next=%2F';
+  const data = new URLSearchParams({ registration: 'true', termsAccepted: 'true', privacyAcknowledged: 'true', marketingConsent: 'false' });
+  const options = { method: 'POST', headers: { Origin: 'https://capital.example', 'Content-Type': 'application/x-www-form-urlencoded' }, body: data.toString() };
+  try {
+    assert.equal((await h.request(route, { ...options, headers: { ...options.headers, Origin: 'https://attacker.example' } })).status, 403);
+    assert.equal((await h.request(route, { ...options, body: new URLSearchParams({ registration: 'true', termsAccepted: 'false', privacyAcknowledged: 'true' }).toString() })).status, 400);
+    assert.equal(h.state.consentWrites.length, 0);
+
+    const start = await h.beginGoogle(route, options);
+    const callback = '/api/auth/callback?flow=' + encodeURIComponent(start.callback.searchParams.get('flow')) + '&code=test-code';
+    const completed = await h.request(callback, { headers: { cookie: start.pkceCookie } });
+    assert.equal(completed.status, 303);
+    assert.match(sessionCookieHeader(completed), /__Host-capital_session_count=/);
+    assert.deepEqual(h.state.consentWrites[0].map(row => [row.consent_type, row.granted, row.evidence_kind]), [
+      ['terms', true, 'contract_acceptance'],
+      ['privacy', true, 'acknowledgement'],
+      ['marketing', false, 'consent'],
+    ]);
+    assert.equal(h.state.consentWrites[0].every(row => row.user_id === h.state.subject), true);
+  } finally {
+    await h.stop();
+  }
+});
+
+test('Google signup stays fail-closed if consent storage is unavailable', async () => {
+  const h = await harness();
+  const data = new URLSearchParams({ registration: 'true', termsAccepted: 'true', privacyAcknowledged: 'true' });
+  try {
+    const start = await h.beginGoogle('/api/auth/login/google', { method: 'POST', headers: { Origin: 'https://capital.example', 'Content-Type': 'application/x-www-form-urlencoded' }, body: data.toString() });
+    h.state.rejectConsentWrites = true;
+    const callback = '/api/auth/callback?flow=' + encodeURIComponent(start.callback.searchParams.get('flow')) + '&code=test-code';
+    const completed = await h.request(callback, { headers: { cookie: start.pkceCookie } });
+    assert.equal(completed.status, 503);
+    assert.equal((await completed.json()).error, 'registration_consent_persistence_failed');
+    assert.equal(sessionCookieHeader(completed), '');
   } finally {
     await h.stop();
   }
