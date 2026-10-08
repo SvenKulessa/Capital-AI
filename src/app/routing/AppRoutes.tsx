@@ -43,6 +43,11 @@ const KeyVaultPage = lazy(() =>
     default: module.KeyVaultPage,
   })),
 );
+const RenderOwnerDashboardPage = lazy(() =>
+  import('../../components/RenderOwnerDashboardPage').then((module) => ({
+    default: module.RenderOwnerDashboardPage,
+  })),
+);
 const PersonalWorkspacePage = lazy(() =>
   import('../../components/PersonalWorkspacePage').then((module) => ({
     default: module.PersonalWorkspacePage,
@@ -150,6 +155,9 @@ export function AppRoutes({
   }
   if (currentRoute === '/profile/workspace') {
     return <PersonalWorkspacePage onNavigate={navigateTo} />;
+  }
+  if (currentRoute === '/profile/render-dashboard') {
+    return <RenderOwnerDashboardPage onNavigate={navigateTo} />;
   }
 
   if (currentRoute === '/pipeline-builder') {

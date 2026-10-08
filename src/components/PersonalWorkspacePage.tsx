@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { CheckCircle2, KeyRound, Loader2, ShieldCheck, Trash2 } from 'lucide-react';
 import { AccountPageShell } from '../features/account/AccountPageShell';
+import { useLocale } from '../i18n/LocaleProvider';
+import { accountCopy } from '../i18n/accountWorkspaceCopy';
 
 const MODULES = [
   { id: 'enterprise_scorer', label: 'Enterprise Scorer', detail: 'Quantitative Asset-Bewertung' },
@@ -48,6 +50,8 @@ async function parseResponse(response: Response) {
 }
 
 export function PersonalWorkspacePage({ onNavigate }: { onNavigate: (path: string) => void }) {
+  const {locale} = useLocale();
+  const tr = accountCopy[locale];
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [saved, setSaved] = useState<Record<string, StoredBinding>>({});
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -82,7 +86,7 @@ export function PersonalWorkspacePage({ onNavigate }: { onNavigate: (path: strin
       setDrafts(nextDrafts);
       setConnections(Array.isArray(vault?.connections) ? vault.connections : []);
     }).catch(() => {
-      if (!controller.signal.aborted) setError('Der private Workspace ist nicht erreichbar. Es wurden keine Einstellungen lokal gespeichert.');
+      if (!controller.signal.aborted) setError(tr.wsUnavailable);
     }).finally(() => {
       if (!controller.signal.aborted) setLoading(false);
     });
@@ -99,13 +103,13 @@ export function PersonalWorkspacePage({ onNavigate }: { onNavigate: (path: strin
   async function save(id: ModuleId) {
     const draft = drafts[id] || defaultDraft();
     if (!draft.provider && !draft.modelProvider) {
-      setError('Bitte mindestens eine eigene Datenquelle oder eine Modellpräferenz wählen.'); return;
+      setError(tr.wsProviderRequired); return;
     }
     if (draft.provider && !connections.some(item => item.provider === draft.provider && item.status === 'VERIFIED')) {
-      setError('Die gewählte Datenquelle muss zunächst im persönlichen Key Vault verifiziert werden.'); return;
+      setError(tr.wsProviderVerify); return;
     }
     if (draft.modelProvider && !draft.modelId.trim()) {
-      setError('Für die Modellpräferenz wird eine Modellkennung benötigt.'); return;
+      setError(tr.wsModelRequired); return;
     }
     setPending(id); setError(''); setMessage('');
     try {
@@ -124,9 +128,9 @@ export function PersonalWorkspacePage({ onNavigate }: { onNavigate: (path: strin
         bindingEnabled: draft.bindingEnabled, executionEnabled: false,
         providerStatus: draft.provider ? 'VERIFIED_PRIVATE' : 'NOT_CONFIGURED',
       } }));
-      setMessage('Zuordnung privat gespeichert. Keine Daten- oder Modellverarbeitung wurde aktiviert.');
+      setMessage(tr.wsSaved);
     } catch {
-      setError('Zuordnung nicht gespeichert. Vault-Verbindung, Berechtigung und Datenbankmigration prüfen.');
+      setError(tr.wsSaveFailed);
     } finally { setPending(null); }
   }
 
@@ -138,16 +142,16 @@ export function PersonalWorkspacePage({ onNavigate }: { onNavigate: (path: strin
       }));
       setSaved(current => { const copy = { ...current }; delete copy[id]; return copy; });
       setDrafts(current => ({ ...current, [id]: defaultDraft() }));
-      setMessage('Modulzuordnung gelöscht.');
-    } catch { setError('Modulzuordnung konnte nicht gelöscht werden.'); }
+      setMessage(tr.wsRemoved);
+    } catch { setError(tr.wsRemoveFailed); }
     finally { setPending(null); }
   }
 
   return (
     <AccountPageShell
       active="/profile/workspace"
-      title="Mein Intelligence Workspace"
-      description="Eigene Datenprovider und Modellpräferenzen pro Analysewerkzeug konfigurieren."
+      title={tr.wsTitle}
+      description={tr.wsDescription}
       onNavigate={onNavigate}
     >
       {() => (
@@ -157,21 +161,19 @@ export function PersonalWorkspacePage({ onNavigate }: { onNavigate: (path: strin
               <ShieldCheck className="h-5 w-5" aria-hidden="true" /> Bring Your Own Key &amp; Model
             </div>
             <p className="mt-2 text-sm leading-relaxed text-slate-300">
-              CAPITAL AI liefert die Mathematik und Analysewerkzeuge. Die Daten und Zugänge bleiben nutzergebunden.
-              Diese Seite speichert nur Modulzuordnungen und Modellkennungen – keine KI-Zugangsschlüssel.
-              Modellaufrufe, Token-Abrechnung und die Weiterleitung privater Daten sind noch nicht freigeschaltet.
+              {tr.wsModuleIntro}
             </p>
             <button type="button" onClick={() => onNavigate('/profile/key-vault')}
               className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl border border-amber-400/30 px-4 text-sm font-semibold text-amber-200 hover:bg-amber-400/10">
-              <KeyRound className="h-4 w-4" aria-hidden="true" /> Eigene API-Keys verwalten
+              <KeyRound className="h-4 w-4" aria-hidden="true" /> {tr.wsManageKeys}
             </button>
           </section>
           {error && <p role="alert" className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-200">{error}</p>}
           {message && <p role="status" className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-200">{message}</p>}
           {loading ? (
-            <p role="status" className="flex items-center gap-2 text-slate-300"><Loader2 className="h-4 w-4 animate-spin" /> Private Konfiguration wird geladen …</p>
+            <p role="status" className="flex items-center gap-2 text-slate-300"><Loader2 className="h-4 w-4 animate-spin" /> {tr.wsLoading}</p>
           ) : (
-            <section aria-label="Modulkonfigurationen" className="space-y-4">
+            <section aria-label={tr.wsSection} className="space-y-4">
               {MODULES.map(module => {
                 const draft = drafts[module.id] || defaultDraft();
                 const stored = saved[module.id];
@@ -180,34 +182,34 @@ export function PersonalWorkspacePage({ onNavigate }: { onNavigate: (path: strin
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div>
                         <h2 className="font-bold text-white">{module.label}</h2>
-                        <p className="mt-1 text-xs text-slate-400">{module.detail}</p>
+                        <p className="mt-1 text-xs text-slate-400">{tr[({enterprise_scorer:'modEnterprise',buffett_value_check:'modBuffett',market_screener:'modMarket',market_sentiment:'modSentiment',sector_rotation:'modSector',whale_radar:'modWhale',ai_newsfeed:'modNews'} as const)[module.id]]}</p>
                       </div>
                       <span className="rounded-full border border-white/15 px-2 py-1 text-xs text-slate-300">
-                        {stored ? 'Privat konfiguriert' : 'Nicht konfiguriert'}
+                        {stored ? tr.wsConfigured : tr.wsUnconfigured}
                       </span>
                     </div>
                     <div className="mt-4 grid gap-4 sm:grid-cols-3">
                       <label className="space-y-2 text-xs font-semibold text-slate-300">
-                        <span>Datenprovider</span>
+                        <span>{tr.wsDataProvider}</span>
                         <select aria-label={module.label + ': Datenprovider'} className={controlStyle}
                           value={draft.provider} onChange={event => change(module.id, { provider: event.target.value })}>
                           {sources.map(source => <option key={source.value} value={source.value}
                             disabled={source.value !== '' && !connections.some(item => item.provider === source.value && item.status === 'VERIFIED')}>
-                            {source.label}{source.value && !connections.some(item => item.provider === source.value && item.status === 'VERIFIED') ? ' · Vault benötigt' : ''}
+                            {source.value ? source.label : tr.wsSourceNone}{source.value && !connections.some(item => item.provider === source.value && item.status === 'VERIFIED') ? ` · ${tr.wsVaultRequired}` : ''}
                           </option>)}
                         </select>
                       </label>
                       <label className="space-y-2 text-xs font-semibold text-slate-300">
-                        <span>KI-Modell-Anbieter (Vormerkung)</span>
+                        <span>{tr.wsModelProvider}</span>
                         <select aria-label={module.label + ': Modellanbieter'} className={controlStyle}
                           value={draft.modelProvider} onChange={event => change(module.id, { modelProvider: event.target.value, modelId: '' })}>
-                          {models.map(model => <option key={model.value} value={model.value}>{model.label}</option>)}
+                          {models.map(model => <option key={model.value} value={model.value}>{model.value ? (model.value === 'custom' ? tr.wsModelOther : model.label) : tr.wsModelNone}</option>)}
                         </select>
                       </label>
                       <label className="space-y-2 text-xs font-semibold text-slate-300">
-                        <span>Modellkennung (ohne API-Key)</span>
+                        <span>{tr.wsModelIdentifier}</span>
                         <input aria-label={module.label + ': Modellkennung'} className={controlStyle}
-                          value={draft.modelId} placeholder="z. B. eigenes-modell-v1" maxLength={101}
+                          value={draft.modelId} placeholder={tr.wsModelPlaceholder} maxLength={101}
                           disabled={!draft.modelProvider}
                           onChange={event => change(module.id, { modelId: event.target.value })} />
                       </label>
@@ -217,21 +219,21 @@ export function PersonalWorkspacePage({ onNavigate }: { onNavigate: (path: strin
                         <input type="checkbox" className="h-4 w-4 accent-amber-400"
                           checked={draft.bindingEnabled}
                           onChange={event => change(module.id, { bindingEnabled: event.target.checked })} />
-                        Zuordnung vormerken
+                        {tr.wsReserveBinding}
                       </label>
                       <button type="button" disabled={pending !== null}
                         onClick={() => void save(module.id)}
                         className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-amber-400 px-4 text-xs font-bold text-black disabled:opacity-50">
-                        {pending === module.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} Speichern
+                        {pending === module.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} {tr.wsSave}
                       </button>
                       {stored && <button type="button" disabled={pending !== null}
                         onClick={() => void remove(module.id)}
                         className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-rose-500/30 px-4 text-xs font-bold text-rose-200 disabled:opacity-50">
-                        <Trash2 className="h-4 w-4" /> Entfernen
+                        <Trash2 className="h-4 w-4" /> {tr.wsRemove}
                       </button>}
                     </div>
                     <p className="mt-3 text-xs text-slate-400">
-                      Runtime: gesperrt · Kein Datenversand an KI-Anbieter · Keine Token-Belastung
+                      {tr.wsRuntime}
                     </p>
                   </article>
                 );

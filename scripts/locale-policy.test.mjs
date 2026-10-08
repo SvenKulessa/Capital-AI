@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { localeFromCountry, localeFromAcceptLanguage, resolveLocale, SUPPORTED_LOCALES } from '../shared/locale-policy.mjs';
+import { localeFromCountry, localeFromAcceptLanguage, resolveLocale, localeFromLandingPath, SUPPORTED_LOCALES } from '../shared/locale-policy.mjs';
 test('six locales', () => assert.deepEqual(SUPPORTED_LOCALES, ['de','en','it','fr','pt','es']));
 test('native country mapping', () => {
   for (const [country, expected] of Object.entries({DE:'de',AT:'de',IT:'it',FR:'fr',PT:'pt',BR:'pt',ES:'es',MX:'es'})) {
@@ -21,4 +21,14 @@ test('browser language is fallback only without country', () => {
   assert.equal(localeFromAcceptLanguage('ja;q=1,it;q=0.8'),'it');
   assert.equal(localeFromAcceptLanguage('ja,ko'),'en');
   assert.equal(localeFromAcceptLanguage('de;q=0,pt;q=0.8'),'pt');
+});
+
+test('localized landing URL overrides country and cookie only for six exact roots', () => {
+  for (const code of SUPPORTED_LOCALES) {
+    assert.equal(localeFromLandingPath(`/${code}/`), code);
+    assert.equal(localeFromLandingPath(`/${code}`), code);
+  }
+  for (const route of ['/en/login','/es/faq','/fr/profile','/pl/','/en/../api']) {
+    assert.equal(localeFromLandingPath(route), null, route);
+  }
 });

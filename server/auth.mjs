@@ -278,7 +278,16 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     let data = null;
     if (response.status !== 204) {
       try {
-        data = await boundedJson(response, maxResponseBytes);
+        if (response.ok) {
+          data = await boundedJson(response, maxResponseBytes);
+        } else {
+          // Keep only a bounded machine code: previously boundedJson discarded
+          // every non-2xx body, hiding MFA configuration and enrollment errors.
+          const failure = await boundedJson({ ok: true, body: response.body }, 8192);
+          const code = failure?.error_code || failure?.code;
+          data = typeof code === 'string' && /^[a-z][a-z0-9_]{0,119}$/i.test(code)
+            ? { error_code: code } : null;
+        }
       } catch {
         data = null;
       }
@@ -983,6 +992,9 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
         issuer: config.issuer,
         name: stored.user.name,
         email: stored.user.email,
+        // Never authorize owner-only Render secrets from an unconfirmed or stale email.
+        emailVerified: Boolean(stored._authUser?.email_confirmed_at &&
+          String(stored._authUser?.email || '').toLowerCase() === String(stored.user.email || '').toLowerCase()),
         expires: stored.expiresAt * 1000,
         aal: currentLevel,
       };

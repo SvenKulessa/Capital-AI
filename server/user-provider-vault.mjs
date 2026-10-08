@@ -196,7 +196,7 @@ function krakenSpotCapabilities(info) {
   };
 }
 
-async function krakenKeyInfo(fetchImpl, credentials, timeoutMs = 7000) {
+export async function krakenKeyInfo(fetchImpl, credentials, timeoutMs = 7000) {
   const result = await krakenPrivatePost(fetchImpl, KRAKEN_API_KEY_INFO_PATH, credentials, {}, timeoutMs);
   return { info: result, capabilities: krakenSpotCapabilities(result) };
 }
