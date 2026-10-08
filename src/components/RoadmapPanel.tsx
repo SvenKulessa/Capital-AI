@@ -1,5 +1,5 @@
 import React from 'react';
-import { PROJECT_OWNERS, ROADMAP_STAGES, WORK_PACKAGES } from '../data/roadmapData';
+import { PROJECT_OWNERS, ROADMAP_SNAPSHOT, ROADMAP_STAGES, WORK_PACKAGES } from '../data/roadmapData';
 import type { ProjectOwner, RoadmapEvidenceState } from '../data/roadmapData';
 import mergeAuditData from '../data/roadmapMergeReconciliation.json';
 const mergeAudit = mergeAuditData as unknown as {
@@ -226,7 +226,7 @@ export const RoadmapPanel: React.FC = () => {
               </ol>
             </>}
             {item.evidenceRefs.length > 0 ? <ul className="mt-3 space-y-1">{item.evidenceRefs.map(ref => <li key={ref}>
-              <a className="text-emerald-300 underline break-all" href={ref.startsWith('https://') ? ref : `https://github.com/${ROADMAP_SNAPSHOT.repository}/blob/${ROADMAP_SNAPSHOT.sourceSha}/${ref}`}>{ref}</a>
+              <a className="text-emerald-300 underline break-all" href={ref.startsWith('https://') ? ref : `https://github.com/${ROADMAP_SNAPSHOT.repository}/blob/${repositoryStatus?.sourceSha ?? ROADMAP_SNAPSHOT.sourceSha}/${ref}`}>{ref}</a>
             </li>)}</ul> : <p className="text-slate-400 mt-2">Für den vollständigen Zielumfang wurde in diesem Abgleich kein Abschlussnachweis zugeordnet.</p>}
             {item.dependencies && <p className="text-slate-400 mt-2">Abhängigkeiten: {item.dependencies.join(', ')}</p>}
           </details>
