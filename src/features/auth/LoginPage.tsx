@@ -113,7 +113,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
 
   useEffect(() => {
     const recoveryError = new URLSearchParams(window.location.search).get('recovery_error');
-    if (recoveryError === 'invalid_link') {
+    const oauthError = new URLSearchParams(window.location.search).get('oauth_error');
+    if (oauthError === 'provider_rejected') {
+      setError('Google hat die Anmeldung nicht abgeschlossen. Bitte erneut versuchen und die Google-Kontofreigabe prüfen.');
+    } else if (oauthError === 'token_exchange_failed') {
+      setError('Die Google-Anmeldung konnte nicht in eine CAPITAL-AI-Sitzung umgewandelt werden. Bitte erneut versuchen.');
+    } else if (recoveryError === 'invalid_link') {
       setError('Der Passwort-Reset-Link ist ungültig oder unvollständig. Fordere bitte eine neue Reset-Mail an.');
     } else if (recoveryError === 'verification_failed') {
       setError('Der Passwort-Reset-Link ist abgelaufen oder wurde bereits verwendet. Fordere bitte eine neue Reset-Mail an.');

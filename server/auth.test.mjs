@@ -369,6 +369,22 @@ test('Supabase Google PKCE binds callback to HttpOnly flow state and ends at lan
   }
 });
 
+test('Google OAuth provider denial returns to a safe login error without leaking provider params', async () => {
+  const h = await harness();
+  try {
+    const start = await h.beginGoogle();
+    const response = await h.request(
+      '/api/auth/callback?error=access_denied&error_description=' + encodeURIComponent('private upstream detail'),
+      { headers: { cookie: start.pkceCookie } },
+    );
+    assert.equal(response.status, 303);
+    assert.equal(response.headers.get('location'), '/login?oauth_error=provider_rejected');
+    assert.equal(sessionCookieHeader(response), '');
+  } finally {
+    await h.stop();
+  }
+});
+
 test('Google signup rejects unconsented or cross-origin requests and records signed consent after verified PKCE', async () => {
   const h = await harness();
   const route = '/api/auth/login/google?next=%2F';

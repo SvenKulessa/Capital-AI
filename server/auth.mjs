@@ -690,6 +690,17 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       const cookies = cookieValues(req);
       const flowCookie = verifyEnvelope(config, cookies[PKCE_COOKIE]);
       clearCookie(res, PKCE_COOKIE);
+      // OAuth providers can return a callback error instead of a PKCE code.
+      // Keep provider details and arbitrary redirect targets out of the URL.
+      if (url.searchParams.has('error')) {
+        res.writeHead(303, {
+          Location: '/login?oauth_error=provider_rejected',
+          'Cache-Control': 'no-store',
+          'Referrer-Policy': 'no-referrer',
+        });
+        res.end();
+        return true;
+      }
       const code = url.searchParams.get('code') || '';
       const flow = url.searchParams.get('flow') || '';
       if (
@@ -708,7 +719,12 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
         body: { auth_code: code, code_verifier: flowCookie.verifier },
       });
       if (!exchanged.response.ok || !exchanged.data?.access_token || !exchanged.data?.user?.id) {
-        json(res, 400, { error: 'authentication_failed' });
+        res.writeHead(303, {
+          Location: '/login?oauth_error=token_exchange_failed',
+          'Cache-Control': 'no-store',
+          'Referrer-Policy': 'no-referrer',
+        });
+        res.end();
         return true;
       }
       audit('Supabase authentication verified at oauth_callback');
