@@ -51,7 +51,10 @@ services:
         sync: false
       - key: PRIVATE_PROVIDER_QUERY_SIGNING_SECRET
         sync: false
-      # Enable only after the dedicated Rust worker is live and its healthcheck passes.
+      # Probe-only transport may be enabled independently; customer provider queries remain closed.
+      - key: PRIVATE_PROVIDER_BRIDGE_PROBE_ENABLED
+        value: "false"
+      # Full provider-query surface stays disabled until the complete State/Vault/provider chain is admitted.
       - key: PRIVATE_PROVIDER_BRIDGE_ENABLED
         value: "false"
       # Legacy migration fallback only; remove after three validated scoped-auth cycles.

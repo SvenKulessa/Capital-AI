@@ -192,7 +192,10 @@ export function createApp(root = defaultRoot, options = {}) {
   const auth = createAuth(options);
   const userProviderVault = createUserProviderVault({ ...options, auth });
   const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault });
-  if ((options.env || process.env).PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true') {
+  if (
+    (options.env || process.env).PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true' ||
+    (options.env || process.env).PRIVATE_PROVIDER_BRIDGE_PROBE_ENABLED === 'true'
+  ) {
     const probeRequestId = 'startup:' + String((options.env || process.env).RENDER_GIT_COMMIT || 'runtime').slice(0, 40);
     void privateProviderQuery.start()
       .then(() => privateProviderQuery.probe(probeRequestId))
@@ -309,7 +312,7 @@ export function createApp(root = defaultRoot, options = {}) {
       return json(res, 404, { error: 'not_found' });
     }
     let status = privateProviderQuery.status();
-    if (status.enabled && status.readiness.status !== 'PROVEN') {
+    if (status.probeEnabled && status.readiness.status !== 'PROVEN') {
       try {
         await privateProviderQuery.probe('owner:' + requestContext.requestId);
       } catch {

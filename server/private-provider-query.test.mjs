@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import {
   assertNotReplayed,
   executeGuardedProviderQuery,
+  createPrivateProviderQuery,
   createProviderBridgeProbeEnvelope,
   createProviderQueryEnvelope,
   executorNatsConnectionAuth,
@@ -69,6 +70,35 @@ test('runtime bridge probe is signed and performs no state, vault or provider I/
   });
   assert.equal(stateCalls, 0);
   assert.equal(vaultCalls, 0);
+});
+
+test('probe-only mode never enables the customer provider-query surface', () => {
+  const providerQuery = createPrivateProviderQuery({
+    env: {
+      ...env,
+      PRIVATE_PROVIDER_BRIDGE_ENABLED: 'false',
+      PRIVATE_PROVIDER_BRIDGE_PROBE_ENABLED: 'true',
+    },
+    auth: {},
+    vault: {},
+    state: {},
+  });
+  assert.deepEqual(providerQuery.status(), {
+    enabled: false,
+    probeEnabled: true,
+    requestConnection: 'DISCONNECTED',
+    executorConnection: 'DISCONNECTED',
+    readiness: {
+      status: 'NOT_PROVEN',
+      observedAt: null,
+      latencyMs: null,
+      error: null,
+    },
+    proofScope: 'APP_NATS_RUST_BRIDGE_EXECUTOR_ONLY',
+    stateIoProven: false,
+    vaultIoProven: false,
+    providerIoProven: false,
+  });
 });
 
 test('provider result refuses credential-shaped fields', () => {
