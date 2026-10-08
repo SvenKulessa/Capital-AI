@@ -1,10 +1,10 @@
 {
   "schemaVersion": "SOCIAL_PUBLISHING_CUTOVER@1",
-  "correlatedMain": "07b34ab4cbbd4df9624f49fe072b3173e72446af",
+  "correlatedMain": "c881081e1d6a08e1babd98c15371f6a8615d645b",
   "stackedOn": {
     "removalMerge": "22ffb122592260b2d4a8f181963403fc917b88ce",
     "corePr": 302,
-    "coreHead": "1ba8decaac12f096c70e06af588b8ba6a65a1fc7"
+    "coreHead": "f5da31b07ab06ba879b07b4689527527fd47d24b"
   },
   "status": "CODE_CUTOVER_IMPLEMENTED_DISABLED_PENDING_CI",
   "policy": {
