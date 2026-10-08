@@ -1,0 +1,39 @@
+name: GROWTH I18N Production Browser Readback (read-only)
+on:
+  pull_request:
+    paths:
+      - .github/workflows/growth-i18n-browser-readback.yml
+      - scripts/growth-i18n-production-readback.mjs
+      - src/features/auth/LoginPage.tsx
+      - src/features/account/AccountPageShell.tsx
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  i18n-readback:
+    name: Six locales, HTTP and Chromium desktop/mobile
+    runs-on: ubuntu-26.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Public health, language priority and noindex
+        run: node scripts/growth-i18n-production-readback.mjs --http
+        env:
+          CAPITAL_I18N_ORIGIN: https://capital-ai-uvsl.onrender.com
+      - name: Locate existing Chromium-family browser
+        shell: bash
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          if [ -z "$chrome" ]; then
+            echo 'BROWSER_BINARY_UNAVAILABLE'
+            exit 1
+          fi
+          echo "CHROME_BIN=$chrome" >> "$GITHUB_ENV"
+          "$chrome" --version
+      - name: Production DOM readback (6 locales x 2 viewport sizes)
+        run: node scripts/growth-i18n-production-readback.mjs --browser
+        env:
+          CAPITAL_I18N_ORIGIN: https://capital-ai-uvsl.onrender.com
