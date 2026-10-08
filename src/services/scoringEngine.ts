@@ -6,6 +6,7 @@ import { PipelineSnapshotSchema, ShadowPipelineConfigSchema, SCORE_FAMILIES, RIS
 import { MarketDataRightsEvidenceSchema, evaluateMarketDataRights } from '../contracts/marketDataRightsEligibility';
 import { inspectFinanceFeatureMapping, type FinanceSourceFeature } from '../contracts/financeResearchFeatureBridge.ts';
 import { composeFinanceAdmittedResearchFactors, type FinanceFactorEvaluationInput } from '../platform/FinanceScoringResearch/FinanceAdmittedFactorMapping.ts';
+import { projectFinanceValidatedDataToResearch, type FinanceValidatedDataInput } from '../platform/FinanceScoringResearch/FinanceValidatedDataHandoff.ts';
 
 export interface AssetClassWeightProfile {
   weightMomentum: number; weightTechnical: number; weightFundamental: number;
@@ -25,6 +26,34 @@ const REQUIRED_COMPONENTS = ['market_integrity_gate', 'data_quality_scorer', 'li
 /** Foundation admission: no inference from quotes or ranking without a validated universe. */
 export class ScoringEngineService {
   public static readonly SHADOW_MODEL_VERSION = '1.0.0';
+  /**
+   * FIN-12 translated handoff: source DATA status + exact normalizer evidence
+   * -> Capital-AI rights -> original Finance factor research. Single scoring authority.
+   */
+  public static inspectValidatedFinanceResearchFactors(input: {
+    snapshot: PipelineSnapshot;
+    source: FinanceValidatedDataInput;
+    model: FinanceFactorEvaluationInput['model'];
+    bindings: FinanceFactorEvaluationInput['bindings'];
+  }) {
+    const projected = projectFinanceValidatedDataToResearch({
+      snapshot: input.snapshot, source: input.source,
+    });
+    if (projected.state === 'BLOCKED') {
+      return Object.freeze({
+        state: 'BLOCKED' as const,
+        reasons: projected.reasons,
+        research: null,
+        scoreEligible: false as const, rankEligible: false as const,
+        decisionEligible: false as const, productionEligible: false as const,
+      });
+    }
+    return this.inspectFinanceResearchFactors({
+      snapshot: input.snapshot, candidates: projected.candidates,
+      model: input.model, bindings: input.bindings,
+    });
+  }
+
   /** Typed Finance source-weight evaluation after source/provider admission, not a public score. */
   public static inspectFinanceResearchFactors(input: FinanceFactorEvaluationInput) {
     return composeFinanceAdmittedResearchFactors(input);

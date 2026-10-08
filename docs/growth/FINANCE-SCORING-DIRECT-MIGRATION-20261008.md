@@ -64,3 +64,12 @@ The new `FinanceAdmittedFactorMapping.ts` and `ScoringEngineService.inspectFinan
 ## Finance UAI and SLA data concepts
 
 Finance source Universal Asset Interface identity shape and the exact `UniverseSla` evaluator are now local to the FinanceResearch source module (not a second target asset registry). No missing instruments are invented: underfilled categories remain `INSUFFICIENT_REAL_UNIVERSE`, and provider/evidence problems are signaled. Original Finance 24-real-asset top-level/category targets remain informational (`hardMinimum:false`). Capital-AI target classes use a different taxonomy, so production identity mapping still requires explicit correlation.
+
+
+## Finance FIN-12 validated DATA → Capital-AI source-to-target bridge
+
+New \`FinanceValidatedDataHandoff.ts\` adapts source \`validated-data-input/1.0.0\` and Finance \`ValidatedFinancialFeatureContract\` **semantics** (not the legacy provider gateway): source PASS/PARTIAL, complete correlation/asset/provenance, strict one-to-one source fields, explicit normalized 0–100 values with separate normalizer evidence, exact timestamp lineage, and the current \`inspectFinanceFeatureMapping\` rights/quality checks. \`ScoringEngineService.inspectValidatedFinanceResearchFactors\` routes these accepted candidates through Capital-AI admitted factors only. A source PASS does not imply a score or model promotion.
+
+New \`FinancePointInTimeAdmission.ts\` composes Finance's immutable archived-vintage policy with Capital-AI rights for a specific provider/feed/venue, plus historical decision-time availability and analysis-time retrieval constraints. Older observation timestamps do **not** establish historical release availability; currently fetched history and missing release/revision evidence are blocked. PIT source declarations and fingerprints require independent archival authenticity checks before production model-promotion use. No data acquisition, provider billing, cache write or migration of provider keys.
+
+\`financeValidatedHandoff.test.ts\` exercises provenance/normalization/rights/staleness/factor weights and PIT lookahead/current-history/license denial. The new work is research only and does not alter the live score dispatcher, UI, rank/alert or trading contract.
