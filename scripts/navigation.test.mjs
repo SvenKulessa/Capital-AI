@@ -173,7 +173,10 @@ test('production navigation uses Preiskatalog and clickable canonical breadcrumb
 
 test('hub sideboard hides raw URL paths in subpage cards while keeping navigation', () => {
   const sideboard = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
-  assert.doesNotMatch(sideboard, /\{\s*subpage\.path\s*\}/);
+  // A URL in an accessible anchor href is a navigation target, not rendered path text.
+  // Reject only literal JSX text children displaying a raw internal route.
+  assert.doesNotMatch(sideboard, />\s*\{\s*subpage\.path\s*\}\s*</);
+  assert.match(sideboard, /href=\{subpage\.path\}/);
   assert.match(sideboard, /onNavigate\?\.\(subpage\.path\)/);
   assert.match(sideboard, /window\.location\.assign\(subpage\.path\)/);
   assert.match(sideboard, /subpage\.tags\?\.map/);
