@@ -41,6 +41,8 @@ import {
 import { beginRequest, finishRequest, metricsAuthorized, operationalSnapshot, renderPrometheusMetrics, writeAuditEvent } from './observability.mjs';
 import { cadsSnapshot } from './cads-observability.mjs';
 import { createRepositoryToolCatalog } from './repository-tool-catalog.mjs';
+import { inspectChatBuddyKeys } from './chat-buddy-keys.mjs';
+import { learnStatus } from './chat-buddy-learn.mjs';
 
 const moduleRoot = path.dirname(fileURLToPath(import.meta.url));
 const defaultRoot = path.resolve(moduleRoot, '../dist');
@@ -353,6 +355,15 @@ export function createApp(root = defaultRoot, options = {}) {
     return json(res, status, body);
   }
   if (url.pathname === '/api/market/status') return json(res, 200, health());
+  if (url.pathname === '/api/chat-buddy/keys') {
+    if (req.method !== 'GET') return json(res, 405, { error: 'method_not_allowed' });
+    return json(res, 200, inspectChatBuddyKeys(runtimeEnv));
+  }
+  if (url.pathname === '/api/chat-buddy/learn') {
+    if (req.method !== 'GET') return json(res, 405, { error: 'method_not_allowed' });
+    try { return json(res, 200, await learnStatus(process.cwd(), url.searchParams.get('q') || '')); }
+    catch { return json(res, 503, { error: 'learn_unavailable' }); }
+  }
   if (url.pathname === '/api/billing/catalog') return json(res, 200, BILLING_CATALOG);
   if (url.pathname === '/api/market/evidence') {
     if (!marketLimit()) return json(res, 429, { error: 'rate_limited' });

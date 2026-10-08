@@ -18,8 +18,14 @@
 !.github/copilot-instructions.md
 !src/
 !src/**
+!Chat Buddy/
+!Chat Buddy/README.md
+!Chat Buddy/src/
+!Chat Buddy/src/**
 !server/
 !server/index.mjs
+!server/chat-buddy-keys.mjs
+!server/chat-buddy-learn.mjs
 !server/repository-tool-catalog.mjs
 !server/repository-tool-catalog.test.mjs
 !server/market.mjs

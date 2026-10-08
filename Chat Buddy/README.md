@@ -12,7 +12,8 @@ JaJa ist ein originaler kleiner Finanzheld mit der Erde in der Hand. Keine Filmf
 - Research-Skill: Hypothese, Befund, Unsicherheit
 - Reversible Engine: Spur hören → NLU → Graph → denken → sagen, vor und zurück
 - Graph-RAG: lokaler Finanzgraph, plus `GraphRagAdapter` für ein öffentliches https-Endpoint
-- Modelle: lokales Gehirn, DeepSeek, Gemini Flash, Mistral Large (eigene Schlüssel, nicht im Repo)
+- Modelle: nur das lokale Gehirn. DeepSeek, Gemini und Mistral werden nicht aufgerufen, weil sie kosten können.
+- Lernen: Doku und Code unter `Chat Buddy/`, `docs/` und `README.md`. `GET /api/chat-buddy/learn` gibt Treffer und den Werkzeugstatus zurück, nie Schlüssel.
 - Lizenz: Eigentümersitz `CAI-JAJA-OWNER-0001`, Preisliste, keine Übertragung der Prägung
 
 ## Einbindung
@@ -25,6 +26,6 @@ const rewound = stepBack(local.trace);
 visibleAnswer(rewound, "Ja ja, ich spule die Spur zurück.");
 ```
 
-Live-Aufrufe an DeepSeek, Gemini Flash und Mistral laufen serverseitig mit dem Schlüssel des Sitzes. Schlüssel nicht committen.
+Live-Aufrufe an kostenpflichtige Modelle finden nicht statt. Ein lokales Ollama auf Loopback zählt nur, wenn ein Apache-2.0- oder MIT-Modell geladen ist. Schlüssel nicht committen.
 
 Keine Anlageberatung. Keine Live-Kurse.
