@@ -52,3 +52,7 @@ Exact source-matched crypto source modules now cover contract-code identity/audi
 - `CryptoContractAssuranceHardGateProjection.ts` Finance git-blob `4cd1c93b2d646bad2849bfdec1905f629162c296`
 - `CryptoOracleHardGateProjection.ts` Finance git-blob `24c5b99867d75941bc70f8f0c3df981049b7a296`
 - `CryptoExploitHardGateProjection.ts` Finance git-blob `0a4ca40a8724c1525accb8d050a8f1e8a9f7605f`
+
+## Commodity promotion and P2 evidence (further migration)
+
+Finance source-matched `CommodityModelPromotion` and `CommodityP2EvidencePipeline` now provide immutable model descriptors, historical OOS/correlation/weight stability, provider-resilience/stress scenario evaluation, explicit human decision evidence and computed review-package checks. Their source-only Finance registry query has been redirected to `FINANCE_SOURCE_MODEL_CATALOG`, not a live Capital-AI dispatcher. `assessCommodityOwnerPromotionDecision` only assesses supplied evidence: it does **not** approve a model, mutate a registry or grant production authority. `SentimentNewsFeatureEvidenceAdapter` computes only reproducible news novelty and mention saturation; no invented polarity, news feeds, or rights admission. New negative tests preserve non-mutating boundaries.
