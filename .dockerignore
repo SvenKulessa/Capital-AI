@@ -242,3 +242,16 @@
 !supabase/proposals/
 !supabase/proposals/provider_query_guard.sql
 !supabase/migrations/20261007214554_provider_query_guard.sql
+!server/social-media/
+!server/social-media/provider-adapter.mjs
+!server/social-media/provider-adapter.test.mjs
+!server/social-media/provider-store.mjs
+!server/social-media/provider-store.test.mjs
+!server/social-media/provider-readback.mjs
+!server/social-media/provider-readback.test.mjs
+!server/social-media/oauth-callback.mjs
+!server/social-media/oauth-callback.test.mjs
+!server/social-media/asset-readback.mjs
+!server/social-media/asset-readback.test.mjs
+!server/social-media/provider-external-readback.mjs
+!server/social-media/provider-external-readback.test.mjs

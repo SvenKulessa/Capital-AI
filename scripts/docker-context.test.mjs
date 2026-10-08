@@ -101,8 +101,10 @@ test('runtime entrypoint local server imports are copied and reachable', () => {
   for (const imported of localImports) {
     const source = 'server/' + imported;
     assert.equal(reachable(source), true, 'Docker context excludes runtime entrypoint dependency: ' + source);
+    const subfolder = imported.includes('/') ? imported.slice(0, imported.lastIndexOf('/') + 1) : '';
+    const destination = './server/' + subfolder;
     assert.ok(
-      dockerfile.split(/\r?\n/).some(line => line.startsWith('COPY ') && line.includes(source) && line.trim().endsWith('./server/')),
+      dockerfile.split(/\r?\n/).some(line => line.startsWith('COPY ') && line.includes(source) && line.trim().endsWith(destination)),
       'Runtime Docker stage must copy local entrypoint dependency: ' + source,
     );
   }

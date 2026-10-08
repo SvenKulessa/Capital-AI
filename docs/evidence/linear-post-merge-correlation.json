@@ -1,12 +1,12 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "4d353d21e6191ce2335f7b1cfebf630f31cb25a1",
-  "mergedPr": 265,
-  "targetPr": 267,
-  "targetBranch": "capital-ai-market/website-assets-20261008",
-  "targetHeadSha": "18ba3553b14bf1af18590e16fa469ba104ad3ab7",
+  "mainSha": "c126564782c9e54540a8b94043c2475f1e486b85",
+  "mergedPr": 274,
+  "targetPr": 269,
+  "targetBranch": "capital-ai-platform/social-provider-manifest-20261008",
+  "targetHeadSha": "8808b96ff9fb167bb476103e63e7349b4f51e64d",
   "exactOverlap": [
-    "server/index.mjs"
+    "package.json"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,
