@@ -95,6 +95,8 @@ Sie darf ausschließlich:
 - genau **einen Korrelations-Commit** auf diesem bereits existierenden PR-Branch erzeugen,
 - darin ausschließlich maschinenlesbare Korrelations-Evidence zum letzten Main-Merge aktualisieren.
 
+Ergänzend darf derselbe Post-Merge-Lauf **read-only** den live beobachteten `main`-SHA, den Synchronisationsbedarf des ausgewählten PR, den Status der bestehenden Required Checks sowie Security- und Lizenz-Evidence-Hinweise aus Dateipfaden dokumentieren. Ergebnisse sind nur Status-Snapshots (`VERIFIED`, `BLOCKED`, `PENDING`, `NOT_PROVEN` oder `REVIEW_REQUIRED`, jeweils bezogen auf den geprüften Scope); sie sind weder ein CI-Neustart noch ein License-/Security-Approval oder eine Merge-Ermächtigung. Ein fachlicher Branch-Sync oder CI-Rerun ist nicht automatisch durch diesen Bericht autorisiert. Es entstehen keine neuen Required Checks oder Freigabeschichten.
+
 Sie darf **keine neuen Branches, keine neuen PRs, keine Repair-Commits außerhalb dieser Evidence-Datei, keinen Merge und keinen Deploy** erzeugen.
 
 Ein Korrelations-Commit ist keine Admission, keine Merge-Freigabe und keine Anweisung, fachlichen Code automatisch umzuschreiben. Er dokumentiert nur, welche Überschneidung mit dem neuen `main` besteht.
