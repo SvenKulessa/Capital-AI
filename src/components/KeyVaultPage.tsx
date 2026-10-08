@@ -11,6 +11,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { AccountPageShell } from '../features/account/AccountPageShell';
+import { PRIVATE_BYOK_PROVIDERS, isPrivateByokEnabled } from '../config/providers/privateByokCatalog';
 
 interface ProviderConnection {
   provider: string;
@@ -42,13 +43,7 @@ interface Holding {
   balance: string;
 }
 
-const PROVIDERS = [
-  {
-    id: 'kraken',
-    label: 'Kraken',
-    description: 'Kraken Spot sowie Futures/Perps: getrennte Credential-Familien im serverseitigen Vault. Trading-Rechte sind explizit opt-in; Funding und Withdrawals bleiben verboten.',
-  },
-] as const;
+const PROVIDERS = PRIVATE_BYOK_PROVIDERS;
 
 type ProviderId = (typeof PROVIDERS)[number]['id'];
 
@@ -70,6 +65,9 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
   const [testing, setTesting] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [error, setError] = useState('');
+
+  const providerEnabled = isPrivateByokEnabled(provider);
+  const currentProvider = PROVIDERS.find(item => item.id === provider) || PROVIDERS[0];
 
   const connection = useMemo(
     () => connections.find(item => item.provider === provider) || null,
@@ -107,6 +105,10 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
 
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!providerEnabled) {
+      setError('Dieser Provider hat noch keinen sicher verifizierten Serveradapter. Es wurden keine Zugangsdaten übermittelt.');
+      return;
+    }
     setSaving(true);
     setError('');
     setFeedback('');
@@ -132,7 +134,7 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
       const websocket = body?.capabilities?.websocketToken === true ? ' · WebSocket-Token erlaubt' : '';
       const trading = body?.capabilities?.trading === true ? ' · Orderrechte erkannt' : '';
       const family = credentialFamily === 'futures' ? 'Futures/Perps' : 'Spot';
-      setFeedback(`${family}-Credential wurde erfolgreich verifiziert und sicher gespeichert${portfolio}${websocket}${trading}. Live-Ausführung bleibt gesperrt.`);
+      setFeedback(`${currentProvider.label}: ${family}-Credential wurde erfolgreich verifiziert und sicher gespeichert${portfolio}${websocket}${trading}. Live-Ausführung bleibt gesperrt.`);
       await loadConnections();
     } catch (reason) {
       const message = reason instanceof Error ? reason.message : 'PROVIDER_SAVE_FAILED';
@@ -239,7 +241,7 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
 
               <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold ${statusClasses}`}>
                 {connection?.status === 'VERIFIED' && <CheckCircle2 className="h-4 w-4" />}
-                {loadingVault ? 'WIRD GELADEN' : connection?.status || 'NICHT VERBUNDEN'}
+                {loadingVault ? 'WIRD GELADEN' : !providerEnabled ? 'ADAPTER AUSSTEHEND' : connection?.status || 'NICHT VERBUNDEN'}
               </div>
             </div>
 
@@ -248,18 +250,35 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
                 Provider
                 <select
                   value={provider}
-                  onChange={event => setProvider(event.target.value as ProviderId)}
+                  onChange={event => {
+                    setProvider(event.target.value as ProviderId);
+                    setApiKey('');
+                    setApiSecret('');
+                    setShowSecret(false);
+                    setAllowTrading(false);
+                    setCredentialFamily('spot');
+                    setHoldings([]);
+                    setFeedback('');
+                    setError('');
+                  }}
                   className="mt-1 w-full rounded-xl border border-white/15 bg-black/50 px-3 py-3 text-sm text-white"
                 >
                   {PROVIDERS.map(item => (
-                    <option key={item.id} value={item.id}>{item.label}</option>
+                    <option key={item.id} value={item.id}>{item.label}{item.availability !== 'active' ? ' · Adapter ausstehend' : ''}</option>
                   ))}
                 </select>
                 <span className="mt-1 block text-[10px] font-normal text-slate-500">
-                  {PROVIDERS.find(item => item.id === provider)?.description}
+                  {currentProvider.category} · {currentProvider.description}
                 </span>
               </label>
 
+              {!providerEnabled && (
+                <p role="status" className="rounded-xl border border-amber-500/25 bg-amber-500/10 p-3 text-xs text-amber-200">
+                  Diese Schnittstelle ist im Katalog vorgemerkt. Der Server nimmt dafür noch keine API-Schlüssel an. Provideradapter, Berechtigungsprüfung, Kosten- und Lizenzbedingungen müssen zuerst technisch nachgewiesen werden.
+                </p>
+              )}
+
+              <fieldset disabled={!providerEnabled} className="grid min-w-0 gap-4 disabled:opacity-50">
               <label className="text-xs font-bold text-slate-300">
                 Credential-Familie
                 <select
@@ -334,12 +353,13 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
 
               <button
                 type="submit"
-                disabled={saving}
+                disabled={saving || !providerEnabled}
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-amber-400 px-4 text-sm font-black text-black disabled:opacity-50"
               >
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <LockKeyhole className="h-4 w-4" />}
                 {credentialFamily === 'futures' ? 'Futures/Perps-Key' : 'Spot API-Key'} speichern & verifizieren
               </button>
+              </fieldset>
             </form>
 
             {connection && (
@@ -352,8 +372,10 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
                 </div>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                   <div className="rounded-xl border border-white/10 bg-black/20 p-2.5">
-                    <div className="text-[9px] font-mono uppercase text-slate-500">Spot REST Auth</div>
-                    <div className="mt-1 text-[11px] font-bold text-emerald-200">VERIFIZIERT</div>
+                    <div className="text-[9px] font-mono uppercase text-slate-500">Provider REST Auth</div>
+                    <div className={`mt-1 text-[11px] font-bold ${connection.status === 'VERIFIED' ? 'text-emerald-200' : 'text-amber-200'}`}>
+                      {connection.status === 'VERIFIED' ? 'VERIFIZIERT' : 'NICHT VERIFIZIERT'}
+                    </div>
                   </div>
                   <div className="rounded-xl border border-white/10 bg-black/20 p-2.5">
                     <div className="text-[9px] font-mono uppercase text-slate-500">Portfolio / Query Funds</div>
@@ -409,7 +431,7 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
                 </dl>
 
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <button
+                  {provider === 'kraken' && <button
                     type="button"
                     disabled={testing}
                     onClick={() => void refresh()}
@@ -417,7 +439,7 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
                   >
                     {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                     Spot Funds prüfen
-                  </button>
+                  </button>}
                   <button
                     type="button"
                     disabled={saving}
@@ -449,10 +471,10 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
           <section className="rounded-2xl border border-slate-800 bg-[#070b19]/70 p-4 text-[11px] leading-relaxed text-slate-400">
             <h2 className="font-black text-white">Credential-Grenze</h2>
             <p className="mt-2">
-              Der Kraken-Vault-Slot enthält getrennte Spot- und Futures/Perps-Credential-Familien. API-Key und Secret werden gemeinsam als versionierter Payload im serverseitigen Supabase Vault gespeichert. Die Website liest ausschließlich Metadaten/Fingerprint zurück; ein Futures-Key wird nicht als Spot-Key umgedeutet.
+              Die aktiven Kraken- und Binance-Vault-Slots enthalten getrennte Spot- und Futures/Perps-Credential-Familien. API-Key und Secret werden gemeinsam als versionierter Payload im serverseitigen Supabase Vault gespeichert. Die Website liest ausschließlich Metadaten/Fingerprint zurück; ein Futures-Key wird nicht als Spot-Key umgedeutet.
             </p>
             <p className="mt-2 text-amber-200">
-              Trading-Rechte können explizit zugelassen werden. Funding, Transfers und Withdrawals bleiben abgewiesen. Die erkannte Order-Capability bereitet den späteren MarketScreener für Market-/Limit-Orders vor; Live-Execution ist bis zu separaten Risk-, Confirmation- und Production-Gates deaktiviert.
+              Nur Kraken und Binance sind heute als private Konto-Adapter verifiziert implementiert. Die weiteren 18 Katalogeinträge nehmen noch keine Credentials an. Trading-Rechte können für aktive Provider explizit zugelassen werden. Funding, Transfers und Withdrawals bleiben abgewiesen. Die erkannte Order-Capability bereitet den späteren MarketScreener für Market-/Limit-Orders vor; Live-Execution ist bis zu separaten Risk-, Confirmation- und Production-Gates deaktiviert.
             </p>
           </section>
         </div>
