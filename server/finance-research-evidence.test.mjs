@@ -48,6 +48,11 @@ function fixtures({ack = {stream: FINANCE_RESEARCH_STREAM, seq: 7}, dbStatus = 2
     async start() { return true; },
     manager: { streams: {
       async info(name) { managers.push(name); return {config: expectedConfig}; },
+      async getMessage(name, {seq}) {
+        assert.equal(name,FINANCE_RESEARCH_STREAM);
+        assert.equal(seq,7);
+        return {data: new TextEncoder().encode(published[0].payload)};
+      },
     } },
     js: { async publish(subject, payload, opts) {
       published.push({subject,payload,opts}); return ack;
@@ -159,4 +164,17 @@ test('missing service role secret cannot send any research facts', async () => {
     /RESEARCH_SUPABASE_CONFIG_UNAVAILABLE/,
   );
   assert.equal(f.published.length,0);
+});
+
+test('replay content tampering rejects DB and Valkey writes', async () => {
+  const f=fixtures();
+  f.bus.manager.streams.getMessage=async()=>({data:new TextEncoder().encode('tampered')});
+  await assert.rejects(
+    persistFinanceResearchReceipt(result(),context(),{
+      env:env(),bus:f.bus,fetchImpl:f.fetchImpl,
+    }),
+    /RESEARCH_JETSTREAM_REPLAY_MISMATCH/,
+  );
+  assert.equal(f.writes.length,0);
+  assert.equal(f.cache.length,0);
 });
