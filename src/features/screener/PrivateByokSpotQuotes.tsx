@@ -65,6 +65,33 @@ export const PrivateByokSpotQuotes: React.FC = () => {
     };
   }, []);
 
+  // Delete displayed private quotes after their strict 30-second freshness window.
+  // Client memory is never a durable per-user data store or a shared cache.
+  React.useEffect(() => {
+    const rows = Object.values(quotes).filter((item): item is PrivateQuote => item != null);
+    if (!rows.length) return;
+    const nextExpiry = Math.min(...rows.map(item => item.observedAt + 30_000));
+    const timer = window.setTimeout(() => {
+      setQuotes(current => Object.fromEntries(
+        Object.entries(current).filter(([, value]) => value != null &&
+          value.observedAt + 30_000 > Date.now()),
+      ) as Partial<Record<Provider, PrivateQuote>>);
+    }, Math.max(0, nextExpiry - Date.now()));
+    return () => window.clearTimeout(timer);
+  }, [quotes]);
+
+  React.useEffect(() => {
+    const conceal = () => {
+      if (document.visibilityState !== 'visible') {
+        activeRequest.current?.abort();
+        setPending(null);
+        setQuotes({});
+      }
+    };
+    document.addEventListener('visibilitychange', conceal);
+    return () => document.removeEventListener('visibilitychange', conceal);
+  }, []);
+
   async function requestQuote(provider: Provider, symbol: string, mode: 'rest' | 'websocket') {
     if (pending || !connected.includes(provider)) return;
     activeRequest.current?.abort();
