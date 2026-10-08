@@ -1,6 +1,6 @@
 import { createHash, createHmac } from 'node:crypto';
 import { boundedJson, secureUrl } from './http-security.mjs';
-import { fetchPrivateUserSpotTrade } from './spot-provider-wire.mjs';
+
 
 const MAX_BODY_BYTES = 16 * 1024;
 const KRAKEN_BALANCE_PATH = '/0/private/Balance';
@@ -580,6 +580,7 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
         };
       }
       if (operation === 'market.spot_trade') {
+        const { fetchPrivateUserSpotTrade } = await import('./spot-provider-wire.mjs');
         return fetchPrivateUserSpotTrade({provider:'kraken',symbol:cleanParams.symbol,fetchImpl});
       }
       const path = KRAKEN_SPOT_QUERY_PATHS[operation];
@@ -615,6 +616,7 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
       throw error;
     }
     if (operation === 'market.spot_trade') {
+      const { fetchPrivateUserSpotTrade } = await import('./spot-provider-wire.mjs');
       return fetchPrivateUserSpotTrade({provider:'binance',symbol:cleanParams.symbol,fetchImpl});
     }
     const target = BINANCE_QUERY_PATHS[operation];
