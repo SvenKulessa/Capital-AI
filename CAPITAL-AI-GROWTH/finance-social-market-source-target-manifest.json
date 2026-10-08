@@ -58,11 +58,11 @@
     {
       "id": "TA-SCORING",
       "path": "src/services/scoringEngine.ts",
-      "blobSha": "325280e023db21c53a8252553b5bb2ba0dfe589f",
+      "blobSha": "9b8c58a5d09aefe1dfcf66c5e0abc4309f403ecd",
       "role": "Current scoring execution boundary",
       "recorrelatedAt": "2026-10-08",
       "recorrelationBaseMain": "4c7dbb9e22e6ac4725998c1845b38bc8d9686235",
-      "recorrelationReason": "PR #284 FIN-12 source validated DATA handoff via Capital-AI ScoringEngineService and PIT research checks. No second dispatcher, runtime score, rank, trade or provider authority granted."
+      "recorrelationReason": "PR #284 FIN-12 validated DATA plus source UAI/model/weight correlation on Capital-AI ScoringEngineService. Exact branch-head authority blob; research only; no second dispatcher, runtime score, rank, trade or provider authority granted."
     },
     {
       "id": "TA-FEATURE-STORE",
