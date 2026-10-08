@@ -10,7 +10,8 @@ const rules = readFileSync(resolve(root, '.dockerignore'), 'utf8')
 
 // This repository deliberately uses a small, ordered Docker allowlist.
 // Reject unsupported syntax rather than treating a permissive approximation as proof.
-assert.ok(rules.every(r => /^!?[a-zA-Z0-9_./*\-]+$/.test(r)));
+assert.ok(rules.every(r => /^!?[a-zA-Z0-9_./*\-]+$/.test(r) ||
+  ['!Chat Buddy/', '!Chat Buddy/README.md', '!Chat Buddy/src/', '!Chat Buddy/src/**'].includes(r)));
 assert.equal(rules[0], '**');
 
 function included(path) {
@@ -40,8 +41,10 @@ test('all local Docker COPY sources and their files survive the allowlist', () =
   assert.ok(lines.length > 0);
   for (const line of lines) {
     if (/^COPY\s+--from=/.test(line)) continue;
-    const args = line.trim().split(/\s+/).slice(1, -1);
-    assert.ok(args.length > 0 && args.every(p => !p.startsWith('--') && !/[\[\]*?]/.test(p)),
+    const args = line.trim().match(/"[^"]+"|\S+/g).slice(1, -1)
+      .map(part => part.startsWith('"') && part.endsWith('"') ? part.slice(1, -1) : part);
+    assert.ok(args.length > 0 && args.every(p => (p === 'Chat Buddy/src' || p === 'Chat Buddy/README.md' || !/\s/.test(p)) &&
+      !p.startsWith('--') && !/[\[\]*?]/.test(p)),
       'Review unsupported COPY syntax: ' + line);
     for (const source of args) {
       const path = resolve(root, source);

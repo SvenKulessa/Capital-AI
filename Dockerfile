@@ -24,7 +24,8 @@ COPY .agents/skills ./.agents/skills
 COPY .github/agents ./.github/agents
 COPY .github/copilot-instructions.md ./.github/copilot-instructions.md
 COPY src ./src
-COPY "Chat Buddy" "./Chat Buddy"
+COPY "Chat Buddy/src" "./Chat Buddy/src"
+COPY "Chat Buddy/README.md" "./Chat Buddy/README.md"
 COPY CAPITAL-AI-PRODUCT/badge.svg ./CAPITAL-AI-PRODUCT/badge.svg
 COPY CAPITAL-AI-TRUST/badge.svg ./CAPITAL-AI-TRUST/badge.svg
 COPY CAPITAL-AI-MARKET/badge.svg ./CAPITAL-AI-MARKET/badge.svg
