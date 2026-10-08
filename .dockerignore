@@ -65,6 +65,8 @@
 !server/subscription-entitlements.mjs
 !server/subscription-entitlements.test.mjs
 !server/user-provider-vault.mjs
+!server/user-analysis-bindings.mjs
+!server/user-analysis-bindings.test.mjs
 !server/user-provider-vault.test.mjs
 !server/nats-auth.mjs
 !server/private-provider-query.mjs
@@ -242,6 +244,7 @@
 !supabase/proposals/
 !supabase/proposals/provider_query_guard.sql
 !supabase/migrations/20261007214554_provider_query_guard.sql
+!supabase/migrations/20261008181500_private_user_analysis_bindings.sql
 !server/social-media/
 !server/social-media/provider-adapter.mjs
 !server/social-media/provider-adapter.test.mjs

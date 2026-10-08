@@ -133,7 +133,7 @@ export const Header: React.FC<HeaderProps> = ({
     : null;
   const isOwner = authSession?.authenticated === true && authSession.account?.iamRole === 'owner';
 
-  const navigateAccount = (path: '/profile' | '/profile/security' | '/profile/key-vault') => {
+  const navigateAccount = (path: '/profile' | '/profile/security' | '/profile/key-vault' | '/profile/workspace') => {
     setIsAccountOpen(false);
     setIsMenuOpen(false);
     if (onNavigate) onNavigate(path);
@@ -398,6 +398,14 @@ export const Header: React.FC<HeaderProps> = ({
                   className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-slate-100 hover:bg-white/10"
                 >
                   <KeyRound className="h-4 w-4 text-violet-300" /> Key Vault
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => navigateAccount('/profile/workspace')}
+                  className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-slate-100 hover:bg-white/10"
+                >
+                  <LineChart className="h-4 w-4 text-amber-300" /> Mein Workspace
                 </button>
                 <div className="my-1 border-t border-white/10" />
                 <button

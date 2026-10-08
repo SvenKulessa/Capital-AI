@@ -1,5 +1,5 @@
 import React, { useEffect, useState, type ReactNode } from 'react';
-import { ArrowLeft, KeyRound, Loader2, LogOut, ShieldCheck, User } from 'lucide-react';
+import { ArrowLeft, KeyRound, LayoutDashboard, Loader2, LogOut, ShieldCheck, User } from 'lucide-react';
 
 export interface AccountBadge {
   id: string;
@@ -31,7 +31,7 @@ export interface AccountSession {
 }
 
 type AccountPageShellProps = {
-  active: '/profile' | '/profile/security' | '/profile/key-vault';
+  active: '/profile' | '/profile/security' | '/profile/key-vault' | '/profile/workspace';
   title: string;
   description: string;
   onNavigate: (path: string) => void;
@@ -125,6 +125,7 @@ export function AccountPageShell({
     { path: '/profile' as const, label: 'Profil', icon: User },
     { path: '/profile/security' as const, label: 'Sicherheit', icon: ShieldCheck },
     { path: '/profile/key-vault' as const, label: 'Key Vault', icon: KeyRound },
+    { path: '/profile/workspace' as const, label: 'Workspace', icon: LayoutDashboard },
   ];
 
   return (
@@ -165,7 +166,7 @@ export function AccountPageShell({
             </div>
           </div>
 
-          <nav aria-label="Kontobereiche" className="mt-5 grid gap-2 sm:grid-cols-3">
+          <nav aria-label="Kontobereiche" className="mt-5 grid gap-2 sm:grid-cols-4">
             {items.map(item => {
               const Icon = item.icon;
               const selected = active === item.path;

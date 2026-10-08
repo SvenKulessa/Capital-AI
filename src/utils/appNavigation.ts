@@ -43,6 +43,7 @@ export function resolveAppRoute(rawPath: string): string {
   ) {
     return '/profile/key-vault';
   }
+  if (clean === '/profile/workspace' || clean === '/profil/workspace' || clean === '/mein-workspace') return '/profile/workspace';
   if (clean === '/faq' || clean === '/hilfe' || clean === '/questions') {
     return '/faq';
   }

@@ -122,3 +122,62 @@ test('missing source factors renormalize only available weight and preserve dist
   assert.notEqual(first.effectiveWeightFingerprint,whole.effectiveWeightFingerprint);
   assert.equal(first.scoreEligible,false);
 });
+
+
+test('pinned Finance scoring-golden/1.1.0 stock and forex synthetic reference cases replay in research mode', () => {
+  // Source: Finance@dcef421, tests/fixtures/scoringGoldenV1.ts;
+  // Git blob cda86ad11bb065813ec56d361e0fc7050dac85b2; synthetic fixtures only.
+  const cases: {model:'stock' | 'forex';expected:number;values:Record<string,number|null>}[] = [
+    {model:'stock' as const,expected:50,values:{
+      trend:50,momentum:50,breakout_quality:50,volatility_quality:50,
+      relative_strength:50,value:50,dividend:50,quality:50,
+    }},
+    {model:'forex' as const,expected:50,values:{
+      trend:50,momentum:50,breakout_quality:50,
+      volatility_quality:50,relative_strength:50,
+    }},
+  ];
+  for(const entry of cases) {
+    const result=composeFinanceResearchFactors({
+      assetId:'synthetic:'+entry.model,model:entry.model,values:entry.values,
+      evidenceRefs:['synthetic://finance/source-golden'],sourceSha:sha,
+    });
+    assert.equal(result.status,'RESEARCH_READY');
+    assert.equal(Number(result.researchCompositeValue!.toFixed(1)),entry.expected);
+    assert.deepEqual(result.missingFactors,[]);
+    assert.equal(result.scoreEligible,false);
+    assert.equal(result.productionEligible,false);
+  }
+});
+test('Finance source technical-only and no-factor reference semantics remain distinguishable', () => {
+  // Source: tests/unit/traditionalAssetScoring.test.ts at
+  // blob 8d1469a66097e1af3922515fce94f34c4a095f05.
+  // The source returns 0 with NO used factors; target returns null, not evidence of zero.
+  const meta={assetId:'synthetic:AAPL',model:'stock' as const,
+    sourceSha:sha as typeof sha,evidenceRefs:['synthetic://finance/traditional']};
+  const available=composeFinanceResearchFactors({...meta,values:{
+    trend:100,momentum:100,breakout_quality:100,
+    volatility_quality:100,relative_strength:100,
+  }});
+  assert.equal(available.status,'RESEARCH_PARTIAL');
+  assert.equal(available.researchCompositeValue,100);
+  assert.deepEqual(available.missingFactors,['value','dividend','quality']);
+  assert.equal(available.scoreEligible,false);
+  const absent=composeFinanceResearchFactors({...meta,values:{}});
+  assert.equal(absent.status,'RESEARCH_PARTIAL');
+  assert.equal(absent.researchCompositeValue,null);
+  assert.equal(absent.missingFactors.length,8);
+  assert.equal(absent.productionEligible,false);
+});
+test('source one-decimal score precision is a comparison projection, not a production score', () => {
+  // Finance traditionalAssetScoring.ts applies Number(score.toFixed(1)).
+  // The target retains more precision only as research context.
+  const out=composeFinanceResearchFactors({
+    assetId:'synthetic:AAPL',model:'stock',sourceSha:sha,
+    evidenceRefs:['synthetic://finance/rounding'],values:{trend:55.555},
+  });
+  assert.ok(out.researchCompositeValue!==null && Math.abs(out.researchCompositeValue-55.555)<1e-10);
+  assert.equal(Number(out.researchCompositeValue!.toFixed(1)),55.6);
+  assert.equal(out.status,'RESEARCH_PARTIAL');
+  assert.equal(out.productionEligible,false);
+});
