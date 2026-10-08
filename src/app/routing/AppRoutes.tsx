@@ -278,7 +278,7 @@ export function AppRoutes({
     );
   }
 
-  if (currentRoute === '/control-center') {
+  if (currentRoute === '/control-center' || currentRoute.startsWith('/control-center/')) {
     return (
       <ControlCenterPage
         onBackToHome={() => navigateTo('/')}

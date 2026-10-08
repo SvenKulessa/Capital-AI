@@ -1,4 +1,5 @@
 import { ChevronRight, Home } from 'lucide-react';
+import { MAIN_HUBS_CONFIG } from './HubSidebarDrawer';
 
 type RouteBreadcrumbsProps = {
   currentRoute: string;
@@ -27,7 +28,11 @@ export function RouteBreadcrumbs({ currentRoute, onNavigate }: RouteBreadcrumbsP
 
   const segments = path.split('/').filter(Boolean);
   const items = segments.map((segment, index) => ({
-    label: LABELS[segment] || segment.replaceAll('-', ' '),
+    label: (
+      segments[0] === 'control-center'
+        ? MAIN_HUBS_CONFIG['control-center'].subpages.find((item) => item.id === segment)?.name
+        : undefined
+    ) || LABELS[segment] || segment.replaceAll('-', ' '),
     path: '/' + segments.slice(0, index + 1).join('/'),
   }));
 
