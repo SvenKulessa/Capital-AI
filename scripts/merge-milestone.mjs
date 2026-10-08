@@ -23,6 +23,16 @@ export function milestone(mergedPRs, interval) {
   return count === 0 ? null : { count, last: ordered[count - 1], batch: ordered.slice(count - interval, count) };
 }
 
+/** Stable UTC day of the merged PR ending a milestone batch; independent of a retry date. */
+export function milestoneDay(mergedAt) {
+  if (typeof mergedAt !== 'string' ||
+      !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(mergedAt) ||
+      !Number.isFinite(Date.parse(mergedAt))) {
+    throw new Error('INVALID_MILESTONE_MERGED_AT');
+  }
+  return new Date(mergedAt).toISOString().slice(0, 10).replaceAll('-', '');
+}
+
 export function sanitizedTitle(value) {
   return String(value ?? '').replace(/[\u0000-\u001f\u007f<>]/g, ' ')
     .replace(/[\\\`*_{}\[\]#|]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160) || 'Repository-Änderung';
@@ -194,6 +204,7 @@ async function main() {
   const currentLast = mode === 'roadmap' ? prior.lastReconciledPr : prior.lastBatchPr;
   if (currentLast === info.last.number) { process.stdout.write('MILESTONE_ALREADY_RECONCILED\n'); return; }
 
+  const stableDay = milestoneDay(info.last.merged_at);
   const record = mode === 'roadmap'
     ? await buildRoadmapRecord(info, sourceSha)
     : await buildNewsRecord(info, sourceSha);
@@ -203,6 +214,7 @@ async function main() {
     : 'docs/growth/news-release-pr-' + info.last.number + '.md';
   await mkdir(path.dirname(doc), { recursive: true });
   await writeFile(doc, mode === 'roadmap' ? JSON.stringify(record, null, 2) + '\n' : record.article);
+  process.stdout.write('MILESTONE_DATE_' + stableDay + '\n');
   process.stdout.write('MILESTONE_READY_' + info.last.number + '\n');
 }
 

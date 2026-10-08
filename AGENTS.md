@@ -63,6 +63,16 @@ Neue interne Schutzregeln werden nur ergänzt, wenn:
 
 Normale Bugfixes, UI-/Produktänderungen, Refactorings, Dokumentation, Tests, bestehende Dependency-Updates, Scoring-Entwicklung und Analysewerkzeuge benötigen keine separate Admission.
 
+## Kostentransparenz für Tools und Integrationen
+
+Diese Transparenzregel gilt einheitlich für **PRODUCT, MARKET, PLATFORM, TRUST und GROWTH** sowie für domainübergreifende Arbeiten im Chat. Sie betrifft neue Integrationen und absehbar kostenwirksame Nutzung bereits vorhandener Tools, ChatGPT-Plugins, APIs, KI-Modelle, Provider, CI- und Cloud-Ressourcen.
+
+1. **Vor der Empfehlung oder Integration** eines Dienstes und **vor einer absehbar kostenwirksamen neuen Nutzung** eines bestehenden Tools im Chat kurz auf mögliche direkte und indirekte Kosten hinweisen. Soweit anwendbar: kostenloses Kontingent/Free Tier, Abo- oder Seat-Gebühren, nutzungsabhängige API-/Token-/Inference-Kosten, BYOK-Providerkosten, GPU/CPU, Speicher, Netzwerk/Egress, CI-Minuten sowie Limits und mögliche Überschreitungsgebühren.
+2. **Evidenz statt Vermutung:** Kostenmodell, relevanten Tarifstand und Nutzungsgrenzen anhand verfügbarer Anbieterinformationen prüfen. Unverifizierte Preise, Freikontingente und verbleibende Quotas als `NOT_PROVEN` kenntlich machen; „Open Source“, „Free Tier“ und „BYOK“ nicht mit grundsätzlich kostenfreiem Betrieb gleichsetzen. Keine Preis- oder Budgetfreigabe aus einem erfolgreichen technischen Test ableiten.
+3. **Alternativen:** Wenn funktional, lizenzrechtlich und sicherheitstechnisch geeignet, kostenlose/Open-Source- oder kostenärmere Lösungen einschließlich ihrer Betriebsfolgekosten benennen; Entscheidung und Trade-offs nicht allein vom Preis abhängig machen.
+4. **Kostenverursachende Aktionen:** Vor einem neuen kostenpflichtigen Tarif, einer abrechenbaren Ressourcenaktivierung oder einer nicht bereits freigegebenen Überschreitung von Kosten-/Nutzungslimits den erwartbaren Kostenrahmen und eine Alternative nennen und die ausdrückliche Zustimmung des Human Repository Owners einholen. Bereits freigegebene reguläre Nutzung innerhalb bekannter Limits benötigt keine erneute Einzelgenehmigung. Vertragsabschluss und Zahlungsfreigabe bleiben Owner-Handlungen.
+5. **Kein Entwicklungs-Gate:** Reine Information, kostenlose Tool-Nutzung, Implementierung, Tests und PR-Erstellung werden dadurch nicht blockiert. Diese Regel erzeugt keine neuen GitHub Required Checks, generellen Admissions, Handoffs oder zusätzlichen Pflichtreviews; bestehende Security-, Lizenz- und Production-Grenzen bleiben unverändert.
+
 ## Production
 
 - Production ausschließlich aus `main`.
@@ -84,6 +94,8 @@ Sie darf ausschließlich:
 - nur PRs berücksichtigen, deren Head-Branch im selben Repository liegt,
 - genau **einen Korrelations-Commit** auf diesem bereits existierenden PR-Branch erzeugen,
 - darin ausschließlich maschinenlesbare Korrelations-Evidence zum letzten Main-Merge aktualisieren.
+
+Ergänzend darf derselbe Post-Merge-Lauf **read-only** den live beobachteten `main`-SHA, den Synchronisationsbedarf des ausgewählten PR, den Status der bestehenden Required Checks sowie Security- und Lizenz-Evidence-Hinweise aus Dateipfaden dokumentieren. Ergebnisse sind nur Status-Snapshots (`VERIFIED`, `BLOCKED`, `PENDING`, `NOT_PROVEN` oder `REVIEW_REQUIRED`, jeweils bezogen auf den geprüften Scope); sie sind weder ein CI-Neustart noch ein License-/Security-Approval oder eine Merge-Ermächtigung. Ein fachlicher Branch-Sync oder CI-Rerun ist nicht automatisch durch diesen Bericht autorisiert. Es entstehen keine neuen Required Checks oder Freigabeschichten.
 
 Sie darf **keine neuen Branches, keine neuen PRs, keine Repair-Commits außerhalb dieser Evidence-Datei, keinen Merge und keinen Deploy** erzeugen.
 

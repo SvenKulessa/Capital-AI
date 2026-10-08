@@ -3,22 +3,66 @@ on:
   pull_request:
     types: [closed]
     branches: [main]
+  # Manual post-merge verification. This mode never creates or updates a branch/PR.
+  workflow_dispatch:
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
+  pull-requests: read
 concurrency:
   group: capital-ai-merge-milestones
   cancel-in-progress: false
 jobs:
+  validate_app:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - name: Validate milestone App credentials are configured
+        env:
+          APP_CLIENT_ID: ${{ vars.CAPITAL_AI_MILESTONE_APP_CLIENT_ID }}
+          APP_PRIVATE_KEY: ${{ secrets.CAPITAL_AI_MILESTONE_APP_PRIVATE_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$APP_CLIENT_ID" || -z "$APP_PRIVATE_KEY" ]]; then
+            echo '::error::Milestone App Client ID or private-key Secret is missing.'
+            echo 'APP_CONFIG_BLOCKED: missing Client ID or private-key Secret.' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+      - name: Mint Capital-AI-scoped App token (no repository writes)
+        id: validation_token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0 (immutable)
+        with:
+          client-id: ${{ vars.CAPITAL_AI_MILESTONE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.CAPITAL_AI_MILESTONE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: Capital-AI
+          permission-contents: write
+          permission-pull-requests: write
+      - name: Verify App installation with read-only repository API requests
+        env:
+          GH_TOKEN: ${{ steps.validation_token.outputs.token }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual_repo="$(gh api "repos/$REPOSITORY" --jq '.full_name')"
+          if [[ "$actual_repo" != "$REPOSITORY" ]]; then
+            echo '::error::App token does not resolve the intended repository.'
+            exit 1
+          fi
+          gh api "repos/$REPOSITORY/pulls?state=open&per_page=1" --jq 'length' >/dev/null
+          echo 'APP_TOKEN_VERIFIED: repository-scoped token issued with requested Contents/Pull requests write permissions; read-only repository and PR API requests succeeded.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'No git push, PR creation, merge or deployment was attempted in this validation job.' >> "$GITHUB_STEP_SUMMARY"
   audit:
-    if: github.event.pull_request.merged == true
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
     runs-on: ubuntu-26.04
     timeout-minutes: 18
     steps:
       - name: Checkout exact merged main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: \${{ github.event.pull_request.merge_commit_sha }}
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
           fetch-depth: 0
           persist-credentials: false
       - name: Node dependencies for existing Content Engine contract
@@ -28,7 +72,7 @@ jobs:
       - name: Milestone scheduler (read-only merge count)
         id: milestones
         env:
-          GH_TOKEN: \${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
@@ -37,15 +81,68 @@ jobs:
           node --import tsx scripts/merge-milestone.mjs news | tee /tmp/news-milestone.txt
           roadmap_number=$(sed -n 's/^MILESTONE_READY_//p' /tmp/roadmap-milestone.txt | tail -1)
           news_number=$(sed -n 's/^MILESTONE_READY_//p' /tmp/news-milestone.txt | tail -1)
+          roadmap_date=$(sed -n 's/^MILESTONE_DATE_//p' /tmp/roadmap-milestone.txt | tail -1)
+          news_date=$(sed -n 's/^MILESTONE_DATE_//p' /tmp/news-milestone.txt | tail -1)
           echo "roadmap=$roadmap_number" >> "$GITHUB_OUTPUT"
           echo "news=$news_number" >> "$GITHUB_OUTPUT"
-      - name: Open milestone PRs (never merge or publish)
+          echo "roadmap_date=$roadmap_date" >> "$GITHUB_OUTPUT"
+          echo "news_date=$news_date" >> "$GITHUB_OUTPUT"
+      # Check both credentials before token minting; never print or persist private-key material.
+      # An incomplete Owner setup must not turn a draft-only milestone into an authentication failure.
+      - name: Check dedicated GitHub App configuration
+        id: app_credentials
+        if: ${{ steps.milestones.outputs.roadmap != '' || steps.milestones.outputs.news != '' }}
         env:
-          GH_TOKEN: \${{ github.token }}
-          REPOSITORY: \${{ github.repository }}
-          SOURCE_SHA: \${{ github.event.pull_request.merge_commit_sha }}
-          ROADMAP_NUMBER: \${{ steps.milestones.outputs.roadmap }}
-          NEWS_NUMBER: \${{ steps.milestones.outputs.news }}
+          APP_CLIENT_ID: ${{ vars.CAPITAL_AI_MILESTONE_APP_CLIENT_ID }}
+          APP_PRIVATE_KEY: ${{ secrets.CAPITAL_AI_MILESTONE_APP_PRIVATE_KEY }}
+        shell: bash
+        run: |
+          if [[ -n "$APP_CLIENT_ID" && -n "$APP_PRIVATE_KEY" ]]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+      # Only a separately installed App can mint an installation token to open PRs.
+      # The default GITHUB_TOKEN is intentionally never used for draft PR writes.
+      - name: Repository-scoped GitHub App token (optional)
+        id: milestone_app
+        if: ${{ steps.app_credentials.outputs.ready == 'true' }}
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0 (immutable)
+        with:
+          client-id: ${{ vars.CAPITAL_AI_MILESTONE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.CAPITAL_AI_MILESTONE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: Capital-AI
+          permission-contents: write
+          permission-pull-requests: write
+      - name: Preserve deterministic milestone drafts for review
+        if: ${{ always() && (steps.milestones.outputs.roadmap != '' || steps.milestones.outputs.news != '') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.4.3
+        with:
+          name: milestone-drafts-${{ github.event.pull_request.number }}
+          path: |
+            src/data/roadmapMergeReconciliation.json
+            src/data/controlCenterNews.json
+            docs/product/roadmap-merge-reconciliation-*.json
+            docs/growth/news-release-pr-*.md
+          if-no-files-found: error
+          retention-days: 14
+      - name: Report missing app authority without creating a PR
+        if: ${{ always() && (steps.milestones.outputs.roadmap != '' || steps.milestones.outputs.news != '') && steps.milestone_app.outputs.token == '' }}
+        shell: bash
+        run: |
+          echo 'Milestone proposals generated, but no usable dedicated GitHub App token is available (missing credentials or token-minting failure). Drafts are available as an artifact; PR creation NOT_PROVEN / OWNER_SETUP_REQUIRED.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'No branch was pushed and no PR was created by the default GITHUB_TOKEN.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Open milestone PRs (never merge or publish)
+        if: ${{ steps.milestone_app.outputs.token != '' }}
+        env:
+          GH_TOKEN: ${{ steps.milestone_app.outputs.token }}
+          REPOSITORY: ${{ github.repository }}
+          SOURCE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+          ROADMAP_NUMBER: ${{ steps.milestones.outputs.roadmap }}
+          NEWS_NUMBER: ${{ steps.milestones.outputs.news }}
+          ROADMAP_DATE: ${{ steps.milestones.outputs.roadmap_date }}
+          NEWS_DATE: ${{ steps.milestones.outputs.news_date }}
         shell: bash
         run: |
           set -euo pipefail
@@ -55,18 +152,25 @@ jobs:
               number="$ROADMAP_NUMBER"
               target="src/data/roadmapMergeReconciliation.json"
               doc="docs/product/roadmap-merge-reconciliation-$number.json"
-              branch="capital-ai-product/roadmap-merge-pr-$number"
+              date_suffix="$ROADMAP_DATE"
+              branch="capital-ai-product/roadmap-merge-pr-$number-$date_suffix"
               title="[CAPITAL-AI-PRODUCT] Roadmap code- und dokumentbasiert bis PR #$number abgleichen"
               description="Deterministischer 10-PR-Abgleich mit Pfadexistenz, SHA-256 und fehlenden Nachweisen. Keine automatischen VERIFIED-Beförderungen."
             else
               number="$NEWS_NUMBER"
               target="src/data/controlCenterNews.json"
               doc="docs/growth/news-release-pr-$number.md"
-              branch="capital-ai-growth/news-batch-pr-$number"
+              date_suffix="$NEWS_DATE"
+              branch="capital-ai-growth/news-batch-pr-$number-$date_suffix"
               title="[CAPITAL-AI-GROWTH] News-Blogentwurf zu 20 PR-Merges bis #$number"
               description="Quellgebundener Blogentwurf und Content-Engine-Plan. Social Media Engine publisher INTEGRATION_PENDING; keine Veröffentlichung."
             fi
             if [ -z "$number" ]; then continue; fi
+            # Enforce the Domain Governance YYYYMMDD branch suffix before any write.
+            if [[ ! "$date_suffix" =~ ^[0-9]{8}$ ]]; then
+              echo "::error::Missing or invalid milestone date for $category; refusing branch creation."
+              exit 1
+            fi
             if gh pr list --repo "$REPOSITORY" --state all --head "$branch" --json number --jq 'length' | grep -qx '[1-9][0-9]*'; then
               echo "A milestone PR already exists for $branch."
               continue
@@ -75,6 +179,12 @@ jobs:
             mkdir -p "/tmp/capital-milestone-$category/$(dirname "$doc")"
             cp "$target" "/tmp/capital-milestone-$category/$target"
             cp "$doc" "/tmp/capital-milestone-$category/$doc"
+            # Fail closed if a previous partial run left a proposal branch without a PR.
+            if gh api "repos/$REPOSITORY/git/ref/heads/$branch" >/dev/null 2>&1; then
+              echo "::error::Milestone branch $branch already exists without a PR. Refuse to overwrite it."
+              echo "Existing branch requires owner-reviewed recovery: $branch" >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+            fi
             git worktree add -b "$branch" "/tmp/capital-milestone-worktree-$category" "$SOURCE_SHA"
             cp "/tmp/capital-milestone-$category/$target" "/tmp/capital-milestone-worktree-$category/$target"
             mkdir -p "/tmp/capital-milestone-worktree-$category/$(dirname "$doc")"

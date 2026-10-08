@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
+import { useLocale } from '../../i18n/LocaleProvider';
 import {
   ArrowRight,
   BarChart3,
@@ -90,6 +91,7 @@ type ContentEngineConceptProps = {
 export const ContentEngineConcept: React.FC<ContentEngineConceptProps> = ({
   onNavigate,
 }) => {
+  const { t } = useLocale();
   return (
     <section
       id="content-engine-concept"
@@ -112,14 +114,12 @@ export const ContentEngineConcept: React.FC<ContentEngineConceptProps> = ({
               id="content-engine-heading"
               className="text-2xl sm:text-3xl lg:text-[38px] font-extrabold tracking-tight text-white leading-tight"
             >
-              Aus belegten Produktfakten wird
-              <span className="text-[#F5B014]"> modularer Content.</span>
+              {t('contentTitle')}
+              <span className="text-[#F5B014]">{t('contentHighlight')}</span>
             </h2>
 
             <p className="mt-3 max-w-2xl text-sm sm:text-base leading-relaxed text-slate-300">
-              Die Content Engine verbindet die bestehenden Growth-Tools zu einer
-              nachvollziehbaren Pipeline für Text, Bild, Audio, Video und Attribution.
-              Publishing bleibt bewusst ein separater Adapter zur späteren Social Media Engine.
+              {t('contentDescription')}
             </p>
           </div>
 
@@ -133,7 +133,7 @@ export const ContentEngineConcept: React.FC<ContentEngineConceptProps> = ({
             >
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
                 <Database className="h-4 w-4 text-amber-300" />
-                Quellenebene
+                {t('contentSources')}
               </div>
 
               <div className="mt-4 space-y-2.5">
@@ -160,7 +160,7 @@ export const ContentEngineConcept: React.FC<ContentEngineConceptProps> = ({
 
               <div className="mt-4 rounded-xl border border-violet-400/20 bg-violet-400/[0.06] p-3">
                 <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-violet-200">
-                  Kampagne 01
+                  {t('contentCampaign')}
                 </p>
                 <p className="mt-1 text-sm font-bold text-white">{campaign.name}</p>
                 <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
@@ -184,7 +184,7 @@ export const ContentEngineConcept: React.FC<ContentEngineConceptProps> = ({
                   </p>
                 </div>
                 <span className="inline-flex w-fit items-center rounded-full border border-rose-400/25 bg-rose-400/[0.08] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-rose-200">
-                  Public Publish: aus
+                  {t('contentPublish')}
                 </span>
               </div>
 

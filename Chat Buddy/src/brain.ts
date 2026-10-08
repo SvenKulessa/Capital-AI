@@ -1,9 +1,8 @@
 import { copy } from "./i18n";
 import { graphContext, retrieve, scenarioLines } from "./core/graph";
 import { classify } from "./core/nlu";
-import { buildResearch, formatResearch } from "./core/research";
 import { createTrace } from "./core/reversible";
-import type { GraphHit, Lang, ResearchBrief, Trace, TraceStep } from "./core/types";
+import type { GraphHit, Lang, Trace, TraceStep } from "./core/types";
 
 const STEP: Record<Lang, Record<TraceStep["kind"], string>> = {
   de: { hear: "Hören", classify: "NLU", retrieve: "Graph", reason: "Denken", speak: "Sagen" },
@@ -24,7 +23,6 @@ const ADVICE: Record<Lang, string> = {
 export type LocalAnswer = {
   answer: string;
   trace: Trace;
-  brief?: ResearchBrief;
   hits: GraphHit[];
   intent: string;
   confidence: number;
@@ -35,9 +33,9 @@ export function answerLocally(question: string, lang: Lang, research: boolean, h
   const text = question.trim();
   const judged = classify(text);
   const hits = retrieve(text, hops, lang, judged.intent);
-  const useResearch = research || judged.intent === "research";
-  const brief = useResearch ? buildResearch(text, hits, judged.confidence, lang) : undefined;
-  const answer = compose(lang, judged.intent, hits, brief);
+  // Legacy boolean argument retained until the Chat Buddy host drops it.
+  void research;
+  const answer = compose(lang, judged.intent, hits);
   const labels = STEP[lang];
   const steps: TraceStep[] = [
     { id: "hear", kind: "hear", title: labels.hear, detail: text },
@@ -57,14 +55,13 @@ export function answerLocally(question: string, lang: Lang, research: boolean, h
       id: "reason",
       kind: "reason",
       title: labels.reason,
-      detail: brief ? brief.method : reasonLine(lang, judged.intent),
+      detail: reasonLine(lang, judged.intent),
     },
     { id: "speak", kind: "speak", title: labels.speak, detail: answer },
   ];
   return {
     answer,
     trace: createTrace(text, steps, answer),
-    brief,
     hits,
     intent: judged.intent,
     confidence: judged.confidence,
@@ -84,7 +81,6 @@ function compose(
   lang: Lang,
   intent: string,
   hits: GraphHit[],
-  brief?: ResearchBrief,
 ): string {
   const ui = copy(lang);
   let body: string;
@@ -100,7 +96,6 @@ function compose(
   } else {
     body = explain(lang, hits);
   }
-  if (brief) body = `${body}\n\n${formatResearch(brief, lang)}`;
   if (!body.includes(ADVICE[lang])) body = `${body} ${ADVICE[lang]}`;
   if (intent === "greet") return body;
   return body;
@@ -171,7 +166,7 @@ export function systemPrompt(lang: Lang, context: string): string {
     `Reply only in ${name}.`,
     "You explain. You never tell the user to buy or sell. No live prices.",
     "Use the graph context when it fits. If it is thin, say what you do not know.",
-    "Under 140 words unless the user asked for research. Research uses three labels: Hypothesis, Finding, Uncertainty — translated into the reply language.",
+    "Respond concisely and ground explanations in available data.",
     "End with one short line that this is not investment advice.",
     "Graph context:",
     context,
