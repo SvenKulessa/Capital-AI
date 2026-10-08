@@ -152,3 +152,12 @@ test("post-merge correlation stays within the single evidence commit boundary", 
   assert.match(workflow, /node --test scripts\/post-merge-followup\.test\.mjs/);
   assert.match(workflow, /actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/);
 });
+
+test('merge milestone workflow keeps GitHub expressions unescaped', () => {
+  const workflow = readFileSync(new URL('../.github/workflows/merge-milestones.yml', import.meta.url), 'utf8');
+  assert.ok(!workflow.includes('\\' + '${{'), 'Escaped expressions break checkout and tokens');
+  assert.match(workflow, /ref: \$\{\{ github\.event\.pull_request\.merge_commit_sha \}\}/);
+  assert.match(workflow, /GH_TOKEN: \$\{\{ github\.token \}\}/);
+  assert.match(workflow, /SOURCE_SHA: \$\{\{ github\.event\.pull_request\.merge_commit_sha \}\}/);
+  assert.match(workflow, /persist-credentials: false/);
+});

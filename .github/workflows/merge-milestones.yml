@@ -18,7 +18,7 @@ jobs:
       - name: Checkout exact merged main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: \${{ github.event.pull_request.merge_commit_sha }}
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
           fetch-depth: 0
           persist-credentials: false
       - name: Node dependencies for existing Content Engine contract
@@ -28,7 +28,7 @@ jobs:
       - name: Milestone scheduler (read-only merge count)
         id: milestones
         env:
-          GH_TOKEN: \${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
@@ -41,11 +41,11 @@ jobs:
           echo "news=$news_number" >> "$GITHUB_OUTPUT"
       - name: Open milestone PRs (never merge or publish)
         env:
-          GH_TOKEN: \${{ github.token }}
-          REPOSITORY: \${{ github.repository }}
-          SOURCE_SHA: \${{ github.event.pull_request.merge_commit_sha }}
-          ROADMAP_NUMBER: \${{ steps.milestones.outputs.roadmap }}
-          NEWS_NUMBER: \${{ steps.milestones.outputs.news }}
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          SOURCE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+          ROADMAP_NUMBER: ${{ steps.milestones.outputs.roadmap }}
+          NEWS_NUMBER: ${{ steps.milestones.outputs.news }}
         shell: bash
         run: |
           set -euo pipefail
