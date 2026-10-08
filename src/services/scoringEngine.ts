@@ -4,6 +4,7 @@ import { componentActivationReasons } from '../contracts/analysisComponentRegist
 import { PipelineSnapshotSchema, ShadowPipelineConfigSchema, SCORE_FAMILIES, RISK_FAMILIES,
   type ShadowPipelineConfig, type PipelineSnapshot, type ShadowScoreResult } from '../contracts/pipelineExecution';
 import { MarketDataRightsEvidenceSchema, evaluateMarketDataRights } from '../contracts/marketDataRightsEligibility';
+import { inspectFinanceFeatureMapping, type FinanceSourceFeature } from '../contracts/financeResearchFeatureBridge.ts';
 
 export interface AssetClassWeightProfile {
   weightMomentum: number; weightTechnical: number; weightFundamental: number;
@@ -23,6 +24,54 @@ const REQUIRED_COMPONENTS = ['market_integrity_gate', 'data_quality_scorer', 'li
 /** Foundation admission: no inference from quotes or ranking without a validated universe. */
 export class ScoringEngineService {
   public static readonly SHADOW_MODEL_VERSION = '1.0.0';
+  /**
+   * Finance source features enter ONLY through the canonical Capital-AI shadow-scoring boundary.
+   * Never creates a second Finance dispatcher/registry or authorizes a public score.
+   */
+  public static inspectFinanceSourceForShadow(input: {
+    snapshot: PipelineSnapshot;
+    candidates: readonly FinanceSourceFeature[];
+    config: ShadowPipelineConfig;
+  }): {
+    state: 'SOURCE_EVIDENCE_BLOCKED' | 'SHADOW_EVALUATED';
+    reasonCodes: readonly string[];
+    shadow: ShadowScoreResult | null;
+    scoreEligible: false;
+    rankEligible: false;
+    decisionEligible: false;
+    productionEligible: false;
+  } {
+    const mapping = inspectFinanceFeatureMapping({
+      snapshot: input.snapshot, candidates: input.candidates,
+    });
+    if (mapping.state !== 'RESEARCH_MAPPABLE') {
+      return {
+        state: 'SOURCE_EVIDENCE_BLOCKED', reasonCodes: mapping.reasons,
+        shadow: null, scoreEligible: false, rankEligible: false,
+        decisionEligible: false, productionEligible: false,
+      };
+    }
+    const snapshot = PipelineSnapshotSchema.parse(input.snapshot);
+    const existingKeys = new Set(snapshot.features.map(f => f.featureId + ':' + f.provenance.providerId));
+    if (mapping.features.some(f => existingKeys.has(f.featureId + ':' + f.provenance.providerId))) {
+      return {
+        state: 'SOURCE_EVIDENCE_BLOCKED',
+        reasonCodes: ['FINANCE_DUPLICATE_CANONICAL_FEATURE_SOURCE'],
+        shadow: null, scoreEligible: false, rankEligible: false,
+        decisionEligible: false, productionEligible: false,
+      };
+    }
+    const shadow = this.computeShadowScore({
+      ...snapshot,
+      features: [...snapshot.features, ...mapping.features],
+    }, input.config);
+    return {
+      state: 'SHADOW_EVALUATED', reasonCodes: [],
+      shadow, scoreEligible: false, rankEligible: false,
+      decisionEligible: false, productionEligible: false,
+    };
+  }
+
   /** Offline shadow calculation uses the recorded evaluation time, never the wall clock. */
   public static computeShadowScore(input: PipelineSnapshot, policy: ShadowPipelineConfig): ShadowScoreResult {
     const snapshot = PipelineSnapshotSchema.parse(input), config = ShadowPipelineConfigSchema.parse(policy);
