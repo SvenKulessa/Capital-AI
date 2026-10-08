@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { FinalRankResult, AssetIdentity } from '../../contracts/canonicalContracts';
 import { ScoreExplainabilityDrawer } from './ScoreExplainabilityDrawer';
+import { useMarketAssets } from '../../services/marketDataStore';
 
 export interface ScreenerRowItem {
   assetId: string;
@@ -51,6 +52,7 @@ const INITIAL_SCREENER_ITEMS: ScreenerRowItem[] = [];
 
 export const ScreenerTable: React.FC = () => {
   const [items] = useState<ScreenerRowItem[]>(INITIAL_SCREENER_ITEMS);
+  const referenceRates = useMarketAssets().filter(asset => asset.timeSemantics === 'reference' && asset.dataAvailability === 'reference');
   const [search, setSearch] = useState('');
   const [assetClassFilter, setAssetClassFilter] = useState<string>('ALL');
   const [minConfidence, setMinConfidence] = useState<number>(0);
@@ -84,6 +86,35 @@ export const ScreenerTable: React.FC = () => {
 
   return (
     <div className="space-y-4">
+      <section aria-labelledby="reference-market-rates" className="rounded-2xl bg-[#090e21] border border-slate-800 p-4 text-white">
+        <h2 id="reference-market-rates" className="font-bold text-base text-amber-300">Verifizierte Forex-Referenzkurse</h2>
+        <p className="text-xs text-slate-400 mt-1">
+          Quelle: Europäische Zentralbank. Tägliche EUR-Referenzkurse, keine Echtzeit- oder Ausführungskurse.
+          Die Werte sind nicht für Ranking, Scoring oder Handelsentscheidungen freigegeben.
+        </p>
+        {referenceRates.length === 0 ? (
+          <p role="status" className="mt-3 text-sm text-slate-400">Noch keine replay-verifizierten Referenzkurse verfügbar.</p>
+        ) : (
+          <ul className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {referenceRates.map(asset => (
+              <li key={asset.id} className="flex items-center justify-between gap-3 border border-slate-700 rounded-lg p-3 text-sm">
+                <div>
+                  <strong className="font-mono">{asset.symbol}</strong>
+                  <p className="text-xs text-slate-400">Referenzdatum: {asset.referenceDate ?? 'Nicht verfügbar'}</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-mono text-amber-200">{asset.value}</p>
+                  {asset.evidenceId && (
+                    <a href={`/api/market/evidence?id=${encodeURIComponent(asset.evidenceId)}`}
+                      target="_blank" rel="noreferrer"
+                      className="text-xs text-cyan-300 underline">Evidence</a>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
       {/* Filters Bar */}
       <div className="p-4 rounded-2xl bg-[#090e21] border border-slate-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
         <div className="flex items-center gap-2 flex-1">
@@ -108,6 +139,7 @@ export const ScreenerTable: React.FC = () => {
             <option value="equity_us">US Aktien</option>
             <option value="equity_eu">EU Aktien</option>
             <option value="crypto">Krypto</option>
+            <option value="forex">Forex</option>
           </select>
 
           {/* Status Filter */}
@@ -167,6 +199,12 @@ export const ScreenerTable: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
+              {filteredRows.length === 0 && (
+                <tr><td colSpan={12} className="px-4 py-8 text-center text-slate-400">
+                  Keine für Score-Rankings zugelassenen Datensätze. Fehlende Fundamentaldaten und
+                  Scoring-Evidence werden nicht durch Referenzkurse ersetzt.
+                </td></tr>
+              )}
               {filteredRows.map((row, idx) => (
                 <tr
                   key={row.assetId}
