@@ -84,6 +84,7 @@ export function resolveSeoIndexingPolicy(pathname) {
   const normalized = normalize(pathname);
 
   if (normalized.startsWith('/api/')) return API_PRIVATE_POLICY;
+  if (normalized.startsWith('/control-center/')) return exactRoutes.get('/control-center');
   if (normalized === '/healthz' || normalized === '/metrics' || normalized === '/robots.txt' || normalized === '/sitemap.xml') {
     return OPERATIONAL_NOINDEX_POLICY;
   }

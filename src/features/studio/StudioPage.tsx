@@ -55,9 +55,11 @@ import { PipelineConfigState } from '../../utils/pipelineToolCatalog';
 import { ScoringEngineService } from '../../services/scoringEngine';
 import { PipelineConfiguratorService } from '../../services/pipelineConfigurator';
 import { useHubTab } from '../../hooks/useHubTab';
+import { ContentStudioPanel } from './ContentStudioPanel';
 
 export type StudioTabKey =
   | 'architecture'
+  | 'content'
   | 'blueprints'
   | 'builder'
   | 'advisor'
@@ -74,7 +76,7 @@ export interface StudioPageProps {
   initialTab?: StudioTabKey;
 }
 
-const STUDIO_TABS: readonly StudioTabKey[] = ['architecture', 'blueprints', 'builder', 'advisor', 'providers', 'analytics', 'benchmark', 'console'];
+const STUDIO_TABS: readonly StudioTabKey[] = ['architecture', 'content', 'blueprints', 'builder', 'advisor', 'providers', 'analytics', 'benchmark', 'console'];
 
 export const StudioPage: React.FC<StudioPageProps> = ({
   onBackToHome,
@@ -211,6 +213,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
             </span>
             <span className="text-amber-400 font-medium">
               {activeTab === 'architecture' && 'Pipeline Architektur'}
+              {activeTab === 'content' && 'Content Studio'}
               {activeTab === 'blueprints' && 'Blueprints'}
               {activeTab === 'builder' && 'Pipeline Builder'}
               {activeTab === 'advisor' && 'AI Kauf-Berater'}
@@ -270,6 +273,19 @@ export const StudioPage: React.FC<StudioPageProps> = ({
         >
           <Layers className="w-3.5 h-3.5" />
           <span>Pipeline Architektur</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('content')}
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
+            activeTab === 'content'
+              ? 'bg-violet-500 text-white font-bold shadow-sm'
+              : 'text-slate-300 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Content Studio</span>
         </button>
 
         {/* TAB 2: Blueprints */}
@@ -357,6 +373,8 @@ export const StudioPage: React.FC<StudioPageProps> = ({
           <span>Benchmark Lab</span>
         </button>
       </div>
+
+      {activeTab === 'content' && <ContentStudioPanel />}
 
       {/* ========================================================================= */}
       {/* TAB CONTENT 1: PIPELINE ARCHITEKTUR (All 16 Data Concepts)                */}

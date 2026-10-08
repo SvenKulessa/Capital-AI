@@ -141,7 +141,9 @@ export function useRouteAnalytics(currentRoute: string) {
       return;
     }
 
-    const meta = STATIC_ROUTE_METADATA[currentRoute] ?? DEFAULT_METADATA;
+    const meta = currentRoute.startsWith('/control-center/')
+      ? STATIC_ROUTE_METADATA['/control-center']
+      : STATIC_ROUTE_METADATA[currentRoute] ?? DEFAULT_METADATA;
     updatePageSEO({
       title: meta.title,
       description: meta.description,

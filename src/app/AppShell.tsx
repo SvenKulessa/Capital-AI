@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { HeroBuddy } from '../components/HeroBuddy';
-import { RouteBreadcrumbs } from '../components/RouteBreadcrumbs';
+
 import { useRouteAnalytics } from '../platform/analytics/useRouteAnalytics';
 import { useMarketAssets } from '../services/marketDataStore';
 import { usePriceAlerts } from '../context/PriceAlertsContext';
@@ -9,6 +9,13 @@ import { ApplicationViewport } from './layout/ApplicationViewport';
 import { useAppOverlayController } from './overlays/useAppOverlayController';
 import { AppRoutes } from './routing/AppRoutes';
 import { useBrowserRoute } from './routing/useBrowserRoute';
+
+// Breadcrumbs are a non-blocking navigation enhancement; keep the bootstrap chunk lean.
+const RouteBreadcrumbs = lazy(() =>
+  import('../components/RouteBreadcrumbs').then((module) => ({
+    default: module.RouteBreadcrumbs,
+  })),
+);
 
 const AppOverlays = lazy(() =>
   import('./AppOverlays').then((module) => ({ default: module.AppOverlays })),
@@ -34,7 +41,9 @@ export function AppShell() {
   return (
     <>
       <ApplicationViewport currentRoute={currentRoute}>
-        <RouteBreadcrumbs currentRoute={currentRoute} onNavigate={navigateTo} />
+        <Suspense fallback={null}>
+          <RouteBreadcrumbs currentRoute={currentRoute} onNavigate={navigateTo} />
+        </Suspense>
         <Suspense fallback={<RouteLoadingFallback />}>
           <AppRoutes
             currentRoute={currentRoute}
