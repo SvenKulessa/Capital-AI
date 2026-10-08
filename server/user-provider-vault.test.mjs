@@ -452,3 +452,47 @@ test('Binance safety gate rejects each transfer-capable permission independently
     });
   }
 });
+
+test('Massive stores a verified user-owned key only after explicit private market/cache consent', async () => {
+  const calls = []; let output;
+  const cache = { consumeBudget: async identity => { assert.equal(identity.userId, '11111111-1111-1111-1111-111111111111'); } };
+  const vault = createUserProviderVault({ env, auth, privateMarketCache: cache,
+    fetchImpl: async (url, init) => {
+      calls.push({ url: String(url), body: init.body });
+      if (new URL(url).hostname === 'api.massive.com') {
+        assert.equal(init.headers.Authorization, 'Bearer fixture-massive-key');
+        return new Response(JSON.stringify({ status: 'OK', results: [] }));
+      }
+      return new Response('{}');
+    } });
+  await vault.handle(request('PUT', { apiKey: 'fixture-massive-key' }), responseHarness(),
+    new URL('https://capital.example/api/profile/provider-connections/massive'), (_res, status) => { assert.equal(status, 400); });
+  assert.equal(calls.length, 0, 'missing consent performs no provider/Vault I/O');
+  await vault.handle(request('PUT', { apiKey: 'fixture-massive-key', marketAccessApproved: true }), responseHarness(),
+    new URL('https://capital.example/api/profile/provider-connections/massive'), (_res, status, body) => { assert.equal(status, 200); output = body; });
+  assert.equal(output.status, 'VERIFIED');
+  assert.equal(output.capabilities.snapshotEntitlements, 'NOT_PROVEN');
+  assert.ok(!JSON.stringify(output).includes('fixture-massive-key'));
+  const stored = JSON.parse(calls.find(x => x.url.endsWith('/capital_ai_upsert_user_provider_secret')).body);
+  assert.equal(stored._user_id, '11111111-1111-1111-1111-111111111111');
+  assert.equal(stored._provider, 'massive'); assert.equal(JSON.parse(stored._secret_payload).version, 3);
+  assert.equal(stored._permissions.publicMarketDataAdmission, false);
+});
+
+test('Massive cache hits still require the current user Vault connection, verified status and consent', async () => {
+  const users = []; let revoked = false, reads = 0;
+  const vault = createUserProviderVault({ env, auth,
+    privateMarketCache: { read: async identity => { reads++; return { user: identity.userId }; } },
+    fetchImpl: async (_url, init) => {
+      const args = JSON.parse(init.body); users.push(args._user_id);
+      return new Response(JSON.stringify({ secretPayload: JSON.stringify({ version: 3, apiKey: 'fixture-massive-key' }),
+        status: revoked ? 'REVOKED' : 'VERIFIED', credentialFingerprint: 'a'.repeat(24),
+        permissions: { marketAccessApproved: true } }));
+    } });
+  const A = '11111111-1111-1111-1111-111111111111', B = '22222222-2222-2222-2222-222222222222';
+  assert.equal((await vault.executePrivateQuery(A, 'massive', 'market.asset_class_snapshot', { category: 'AKTIEN' })).user, A);
+  assert.equal((await vault.executePrivateQuery(B, 'massive', 'market.asset_class_snapshot', { category: 'AKTIEN' })).user, B);
+  revoked = true;
+  await assert.rejects(vault.executePrivateQuery(A, 'massive', 'market.asset_class_snapshot', { category: 'AKTIEN' }), /PRIVATE_ACCESS_REQUIRED/);
+  assert.equal(reads, 2); assert.deepEqual(users, [A, B, A]);
+});

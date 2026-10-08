@@ -58,6 +58,8 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
   const [connections, setConnections] = useState<ProviderConnection[]>([]);
   const [credentialFamily, setCredentialFamily] = useState<'spot' | 'futures'>('spot');
   const [allowTrading, setAllowTrading] = useState(false);
+  const [marketAccessApproved, setMarketAccessApproved] = useState(false);
+  const isMassive = provider === 'massive';
   const [apiKey, setApiKey] = useState('');
   const [apiSecret, setApiSecret] = useState('');
   const [showSecret, setShowSecret] = useState(false);
@@ -123,7 +125,7 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
           Accept: 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ apiKey, apiSecret, credentialFamily, allowTrading }),
+        body: JSON.stringify(isMassive ? { apiKey, marketAccessApproved } : { apiKey, apiSecret, credentialFamily, allowTrading }),
       });
       const body = await readJson(response);
       if (!response.ok) throw new Error(body?.code || body?.error || 'PROVIDER_SAVE_FAILED');
@@ -136,6 +138,10 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
       const websocket = body?.capabilities?.websocketToken === true ? ' · WebSocket-Token erlaubt' : '';
       const trading = body?.capabilities?.trading === true ? ' · Orderrechte erkannt' : '';
       const family = credentialFamily === 'futures' ? 'Futures/Perps' : 'Spot';
+      if (isMassive) {
+        setFeedback('Massive-Key im persönlichen Vault gespeichert. Referenzzugang geprüft; Snapshot-Rechte werden beim Abruf geprüft.');
+        await loadConnections(); return;
+      }
       setFeedback(`${currentProvider.label}: ${family}-Credential wurde erfolgreich verifiziert und sicher gespeichert${portfolio}${websocket}${trading}. Live-Ausführung bleibt gesperrt.`);
       await loadConnections();
     } catch (reason) {
@@ -157,6 +163,7 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
     setError('');
     setFeedback('');
     try {
+      if (isMassive) { await loadConnections(); setFeedback('Vault-Status aktualisiert. Snapshot-Berechtigungen werden beim jeweiligen Abruf geprüft.'); return; }
       const response = await fetch(`/api/profile/provider-connections/${provider}/balance`, {
         credentials: 'same-origin',
         cache: 'no-store',
@@ -258,6 +265,7 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
                     setApiSecret('');
                     setShowSecret(false);
                     setAllowTrading(false);
+                    setMarketAccessApproved(false);
                     setCredentialFamily('spot');
                     setHoldings([]);
                     setFeedback('');
@@ -281,7 +289,7 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
               )}
 
               <fieldset disabled={!providerEnabled} className="grid min-w-0 gap-4 disabled:opacity-50">
-              <label className="text-xs font-bold text-slate-300">
+              {!isMassive && <label className="text-xs font-bold text-slate-300">
                 Credential-Familie
                 <select
                   value={credentialFamily}
@@ -294,7 +302,7 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
                   <option value="spot">Spot REST / WebSocket</option>
                   <option value="futures">Futures / Perpetuals</option>
                 </select>
-              </label>
+              </label>}
 
               <label className="text-xs font-bold text-slate-300">
                 API Key
@@ -312,7 +320,7 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
                 />
               </label>
 
-              <label className="text-xs font-bold text-slate-300">
+              {!isMassive && <label className="text-xs font-bold text-slate-300">
                 Private API Secret
                 <div className="relative mt-1">
                   <input
@@ -336,9 +344,9 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
                     {showSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-              </label>
+              </label>}
 
-              <label className="flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-xs text-slate-300">
+              {!isMassive && <label className="flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-xs text-slate-300">
                 <input
                   type="checkbox"
                   checked={allowTrading}
@@ -351,7 +359,14 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
                   CAPITAL-AI speichert die Capability, führt in diesem PR aber noch keine Live-Order aus.
                   Funding-, Transfer- und Withdrawal-Rechte bleiben unzulässig.
                 </span>
-              </label>
+              </label>}
+              {isMassive && <label className="flex items-start gap-3 text-xs text-slate-300">
+                <input type="checkbox" required checked={marketAccessApproved}
+                  onChange={event => setMarketAccessApproved(event.target.checked)} />
+                <span>Ich nutze meinen eigenen Datenvertrag für private Abfragen und stimme einem verschlüsselten,
+                  nur mir zugänglichen Cache für höchstens 30 Sekunden zu. API-Limits und Kosten meines Tarifs gelten.
+                  Der kostenlose Aktien-Tarif umfasst keine Snapshots; fehlende Rechte werden beim Abruf angezeigt.</span>
+              </label>}
 
               <button
                 type="submit"
@@ -359,7 +374,7 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-amber-400 px-4 text-sm font-black text-black disabled:opacity-50"
               >
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <LockKeyhole className="h-4 w-4" />}
-                {credentialFamily === 'futures' ? 'Futures/Perps-Key' : 'Spot API-Key'} speichern & verifizieren
+                {isMassive ? 'Massive API-Key' : credentialFamily === 'futures' ? 'Futures/Perps-Key' : 'Spot API-Key'} speichern & verifizieren
               </button>
               </fieldset>
             </form>

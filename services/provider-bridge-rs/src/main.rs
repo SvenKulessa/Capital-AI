@@ -241,6 +241,21 @@ mod tests {
     }
 
     #[test]
+    fn accepts_private_market_batches_without_secret_parameters() {
+        for (provider, category) in [("kraken", "KRYPTO"), ("massive", "AKTIEN"),
+            ("massive", "INDIZIES"), ("massive", "FOREX"), ("massive", "ROHSTOFFE")] {
+            let mut body = valid();
+            body["provider"] = json!(provider);
+            body["operation"] = json!("market.asset_class_snapshot");
+            body["params"] = json!({"category": category});
+            assert!(validate(&serde_json::to_vec(&body).unwrap()).is_ok());
+            body["params"]["apiKey"] = json!("forbidden-fixture-key");
+            assert_eq!(validate(&serde_json::to_vec(&body).unwrap()).unwrap_err(),
+                "SECRET_MATERIAL_FORBIDDEN");
+        }
+    }
+
+    #[test]
     fn rejects_unknown_parameter() {
         let mut body = valid();
         body["params"] = json!({"unexpected": "x"});

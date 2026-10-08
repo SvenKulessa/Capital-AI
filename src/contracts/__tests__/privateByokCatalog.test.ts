@@ -12,7 +12,7 @@ test('Private BYOK provider catalog contains 20 unique stable IDs', () => {
 });
 
 test('only implemented & database-allowlisted server adapters can take credentials', () => {
-  assert.deepEqual(PRIVATE_BYOK_PROVIDERS.filter(item => item.availability === 'active').map(item => item.id), ['kraken', 'binance']);
+  assert.deepEqual(PRIVATE_BYOK_PROVIDERS.filter(item => item.availability === 'active').map(item => item.id), ['kraken', 'binance', 'massive']);
   for (const candidate of PRIVATE_BYOK_PROVIDERS) {
     assert.equal(isPrivateByokEnabled(candidate.id), candidate.availability === 'active');
   }

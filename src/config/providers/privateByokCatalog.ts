@@ -78,8 +78,8 @@ export const PRIVATE_BYOK_PROVIDERS = [
     "id": "massive",
     "label": "Massive (Polygon.io)",
     "category": "Aktien & Marktdaten",
-    "description": "BYOK-Marktfeeds. API-Tarif und Anzeige-/Weitergaberechte ausstehend.",
-    "availability": "planned"
+    "description": "Privater Polygon/Massive-REST-Adapter für bis zu 50 Werte je Klasse. Tarifrechte werden beim Abruf geprüft; keine öffentliche Weitergabe.",
+    "availability": "active"
   },
   {
     "id": "tiingo",

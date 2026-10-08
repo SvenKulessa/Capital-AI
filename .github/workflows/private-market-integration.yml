@@ -1,0 +1,47 @@
+name: Private Market PostgreSQL Contract
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/*user_provider_vault*.sql'
+      - 'supabase/migrations/*massive_private_asset_batches.sql'
+      - 'scripts/private-market-db-*.sql'
+      - '.github/workflows/private-market-integration.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/*massive_private_asset_batches.sql'
+      - 'scripts/private-market-db-*.sql'
+      - '.github/workflows/private-market-integration.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  private-market-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:17.11-alpine
+        env:
+          POSTGRES_PASSWORD: disposable_private_market_test_only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Test actual migrations in disposable PostgreSQL
+        env:
+          PGPASSWORD: disposable_private_market_test_only
+        run: |
+          set -euo pipefail
+          for file in scripts/private-market-db-fixture.sql \
+            supabase/migrations/20261004022309_capital_ai_user_provider_vault_20261004.sql \
+            supabase/migrations/20261006131500_enable_binance_user_provider_vault.sql \
+            supabase/migrations/20261008123915_massive_private_asset_batches.sql \
+            scripts/private-market-db-assertions.sql; do
+            docker run --rm --network host -e PGPASSWORD -v "$PWD:/work:ro" postgres:17.11-alpine \
+              psql -h 127.0.0.1 -U postgres -d postgres -v ON_ERROR_STOP=1 -f "/work/$file"
+          done

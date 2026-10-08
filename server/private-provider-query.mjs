@@ -421,9 +421,10 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault, sta
       );
       if (response.data.length > MAX_RESPONSE_BYTES) throw new Error('PROVIDER_RESULT_TOO_LARGE');
       const result = JSON.parse(new TextDecoder().decode(response.data));
-      if (result?.schema !== CONTRACT.resultSchema || result?.requestId !== requestId || result?.ok !== true) {
+      if (result?.schema !== CONTRACT.resultSchema || result?.requestId !== requestId || result?.provider !== input.provider
+        || result?.operation !== input.operation || result?.ok !== true) {
         const code = String(result?.error || 'INVALID_RESULT').slice(0, 120);
-        const throttled = ['PROVIDER_QUERY_RATE_LIMITED', 'PROVIDER_QUERY_COST_THROTTLED'].includes(code);
+        const throttled = ['PROVIDER_QUERY_RATE_LIMITED', 'PROVIDER_QUERY_COST_THROTTLED', 'PRIVATE_MARKET_PROVIDER_RATE_LIMITED'].includes(code);
         if (throttled) res.setHeader('Retry-After', String(Number.isSafeInteger(result.retryAfterSeconds) && result.retryAfterSeconds > 0 ? Math.min(result.retryAfterSeconds, 3600) : 60));
         json(res, throttled ? 429 : 503, { error: 'private_provider_query_failed', code });
         return true;
