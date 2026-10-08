@@ -300,3 +300,52 @@ test('private WebSocket snapshot cannot open unsupported provider, cross-mapped 
   }),/SPOT_PROVIDER_UNSUPPORTED/);
   assert.equal(created,0);
 });
+
+test('Vault-authorized private WS roundtrip requires own user key before opening the socket',async()=>{
+  const userId='11111111-1111-1111-1111-111111111111',time=Date.now();
+  let connections=0,providerAuth=0,opened=0;
+  const original=globalThis.WebSocket;
+  class MockSocket {
+    readyState=0;handlers={};
+    constructor(url){connections++;assert.equal(url,'wss://ws.kraken.com/v2');
+      queueMicrotask(()=>{this.readyState=1;this.handlers.open?.({});});}
+    addEventListener(event,fn){this.handlers[event]=fn;}
+    send(){
+      queueMicrotask(()=>this.handlers.message?.({data:JSON.stringify({
+        channel:'ticker',type:'snapshot',data:[{symbol:'BTC/USD',last:80001,timestamp:new Date(time).toISOString()}],
+      })}));
+    }
+    close(){this.readyState=3;this.handlers.close?.({});}
+  }
+  globalThis.WebSocket=MockSocket;
+  const fetchImpl=async(url,options={})=>{
+    const parsed=new URL(String(url));
+    if(parsed.pathname.endsWith('/capital_ai_get_user_provider_secret')){
+      const args=JSON.parse(String(options.body));
+      assert.equal(args._user_id,userId);
+      assert.equal(args._provider,'kraken');
+      return Response.json({secretPayload:JSON.stringify({version:2,
+        spot:{apiKey:'user-verified-api-key',apiSecret:'private-secret-0123456789abcdef'},futures:null})});
+    }
+    if(parsed.pathname==='/0/private/GetApiKeyInfo'){
+      providerAuth++;
+      return Response.json({error:[],result:{permissions:['query-funds']}});
+    }
+    opened++;
+    throw Error('unexpected upstream');
+  };
+  try{
+    const vault=createUserProviderVault({env,auth,fetchImpl});
+    const row=await vault.executePrivateQuery(userId,'kraken','market.spot_ws_snapshot',{symbol:'BTCUSD'});
+    assert.equal(row.dataScope,'USER_PRIVATE_MARKET_DATA');
+    assert.equal(row.mode,'websocket');
+    assert.equal(row.price,80001);
+    assert.equal(row.sharedCacheAllowed,false);
+    assert.equal(row.publicDisplayAllowed,false);
+    assert.equal(row.jetStreamPublicationAllowed,false);
+    assert.equal(connections,1);
+    assert.equal(providerAuth,1);
+    assert.equal(opened,0);
+    assert.doesNotMatch(JSON.stringify(row),/private-secret|verified-api-key/);
+  }finally{globalThis.WebSocket=original;}
+});
