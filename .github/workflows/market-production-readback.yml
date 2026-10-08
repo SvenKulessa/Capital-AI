@@ -1,0 +1,22 @@
+name: MARKET Production Readback (read-only)
+on:
+  pull_request:
+    paths:
+      - scripts/market-production-readback.mjs
+      - .github/workflows/market-production-readback.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  market-public-readback:
+    name: MARKET 20/20 API and Replay Readback
+    runs-on: ubuntu-26.04
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Read-only public MARKET status, catalog, 20 values and 20 evidence IDs
+        run: node scripts/market-production-readback.mjs
