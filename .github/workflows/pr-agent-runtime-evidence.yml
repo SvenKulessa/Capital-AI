@@ -65,6 +65,7 @@ jobs:
               config = json.loads(config_blob)['config']
               assert config['User'] == '10001:10001'
               assert config['WorkingDir'] == '/bench'
+              tar.extractall('reviewer-evidence/runtime.oci', filter='data')
           pathlib.Path('reviewer-evidence/runtime-identity.json').write_text(json.dumps({
               'testedRepositorySha': '${{ github.sha }}',
               'reviewerSourceSha': '8e5a9295973b24af4b70cafd0b660a230811ef9e',
@@ -75,9 +76,9 @@ jobs:
           PY
       - name: Scan candidate and record SBOM
         run: |
-          docker run --rm -v "$PWD/reviewer-evidence:/reports" aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa image --input /reports/runtime.oci.tar --scanners vuln,secret --ignorefile /dev/null --format json --output /reports/runtime-scan.json --exit-code 0
+          docker run --rm -v "$PWD/reviewer-evidence:/reports" aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa image --input /reports/runtime.oci --scanners vuln,secret --ignorefile /dev/null --format json --output /reports/runtime-scan.json --exit-code 0
           node scripts/summarize-trivy.mjs reviewer-evidence/runtime-scan.json > reviewer-evidence/runtime-scan.public.json
-          docker run --rm -v "$PWD/reviewer-evidence:/reports" aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa image --input /reports/runtime.oci.tar --scanners vuln --format cyclonedx --output /reports/runtime.sbom.cdx.json
+          docker run --rm -v "$PWD/reviewer-evidence:/reports" aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa image --input /reports/runtime.oci --scanners vuln --format cyclonedx --output /reports/runtime.sbom.cdx.json
           node scripts/summarize-trivy.mjs reviewer-evidence/runtime-scan.json --gate
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
