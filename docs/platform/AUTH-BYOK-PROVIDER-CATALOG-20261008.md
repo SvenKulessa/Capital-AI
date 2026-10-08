@@ -8,6 +8,7 @@ Basis: `main@4d76280bbace820aa9463452148f88b0cb614ae9`. Owner PRODUCT (UI), MARK
 - **VERIFIED IN DB (read-only):** `private.user_provider_connections.provider` erlaubt ausschließlich `kraken` und `binance`; die RPCs sind nur per `service_role` ausführbar, nicht per `authenticated`.
 - **IMPLEMENTED / NOT LIVE-PROVEN:** UI-Auswahl für 20 namentlich benannte APIs. `kraken` / `binance` nutzen bestehende serverseitige Konto- und Auth-Readbacks. Ein echter Live-Key-Test mit einem Nutzer-Secret erfolgte nicht.
 - **NOT PROVEN:** Supabase-Google-Provider-Settings, MFA-Settings, Redirect-Allowlist, Benutzer-E2E, Provider-Tarife, Datenrechte und Kosten der 18 Kandidaten.
+- **TRUST FOLLOW-UP:** E-Mail-Registrierung persistiert die Terms-/Privacy-Akzeptanz über `handle_new_user()`; der vorhandene Google-OAuth-PKCE-Callback setzt dagegen keine entsprechenden Metadaten/Consent-Evidence für ein neu erstelltes Konto. Consent-Parität für Google-Erstregistrierung muss vor einer vollständigen rechtlichen Freigabe separat belegt bzw. konservativ nachgerüstet werden. Die UI-Beschriftung allein ist keine E2E-Abnahme.
 
 ## Fail-closed-Lifecycle
 
