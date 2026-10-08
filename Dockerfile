@@ -24,8 +24,8 @@ COPY .agents/skills ./.agents/skills
 COPY .github/agents ./.github/agents
 COPY .github/copilot-instructions.md ./.github/copilot-instructions.md
 COPY src ./src
-COPY "Chat Buddy/src" "./Chat Buddy/src"
-COPY "Chat Buddy/README.md" "./Chat Buddy/README.md"
+COPY ["Chat Buddy/src", "./Chat Buddy/src"]
+COPY ["Chat Buddy/README.md", "./Chat Buddy/README.md"]
 COPY CAPITAL-AI-PRODUCT/badge.svg ./CAPITAL-AI-PRODUCT/badge.svg
 COPY CAPITAL-AI-TRUST/badge.svg ./CAPITAL-AI-TRUST/badge.svg
 COPY CAPITAL-AI-MARKET/badge.svg ./CAPITAL-AI-MARKET/badge.svg
@@ -93,7 +93,7 @@ RUN npm ci --omit=dev --ignore-scripts --no-audit --no-fund && rm -rf /root/.npm
 FROM crypto-base AS runtime
 ENV NODE_ENV=production PORT=10000
 WORKDIR /app
-COPY "Chat Buddy/README.md" "./Chat Buddy/README.md"
+COPY ["Chat Buddy/README.md", "./Chat Buddy/README.md"]
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/CAPITAL-AI-PRODUCT/badge.svg ./CAPITAL-AI-PRODUCT/badge.svg
 COPY docs/licenses/CAPITAL-AI-VOCABULARY-BADGE-CUSTOMER-LICENSE-1.0.md ./docs/licenses/CAPITAL-AI-VOCABULARY-BADGE-CUSTOMER-LICENSE-1.0.md

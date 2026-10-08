@@ -41,8 +41,11 @@ test('all local Docker COPY sources and their files survive the allowlist', () =
   assert.ok(lines.length > 0);
   for (const line of lines) {
     if (/^COPY\s+--from=/.test(line)) continue;
-    const args = line.trim().match(/"[^"]+"|\S+/g).slice(1, -1)
-      .map(part => part.startsWith('"') && part.endsWith('"') ? part.slice(1, -1) : part);
+    // JSON-array COPY is required for paths containing spaces (Dockerfile syntax).
+    const sourcePart = line.trim().slice(5).trim();
+    const args = sourcePart.startsWith('[')
+      ? JSON.parse(sourcePart).slice(0, -1)
+      : sourcePart.split(/\s+/).slice(0, -1);
     assert.ok(args.length > 0 && args.every(p => (p === 'Chat Buddy/src' || p === 'Chat Buddy/README.md' || !/\s/.test(p)) &&
       !p.startsWith('--') && !/[\[\]*?]/.test(p)),
       'Review unsupported COPY syntax: ' + line);
