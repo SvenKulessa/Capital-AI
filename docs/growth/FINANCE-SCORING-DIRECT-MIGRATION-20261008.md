@@ -83,3 +83,27 @@ New \`FinancePointInTimeAdmission.ts\` composes Finance's immutable archived-vin
 ## Correlated model + identity + validated DATA + source factor weights
 
 \`FinanceResearchModelEvaluation.ts\` composes the target-owned model resolver with FIN-12/PVC-12-style validated DATA and existing admitted factor mapping. \`ScoringEngineService.inspectFinanceModelResearch\` is the single public TypeScript service boundary. Stock and Forex require Finance \`traditional-scoring\`, Commodity requires \`commodity-evidence-scoring\`, and Sovereign requires \`sovereign-benchmark-yield-scoring\`. Generic benchmark champion weights are never silently reused for challenger-specific factor hypotheses. Source UAI identity and source model version are independently verified before any factor composition. The result includes source identity, feature, and effective-weight fingerprints for replay, but it is **RESEARCH_EVALUATED only**, not a canonical score/rank or decision.
+
+
+## Deterministic research replay integrity following PR #284
+
+FinanceResearchModelEvaluation returns a SHA-256 `researchReplayFingerprint` only
+when the source model identity, normalized validated DATA, Capital-AI provider rights
+and admitted factor composition all succeed. It binds source/target model identity,
+admitted source observations, their normalized numeric values and evidence lineage,
+factor bindings, the research composite, and the effective weight fingerprint.
+Observation and binding order is canonicalized for deterministic replay.
+
+The pre-existing `featureFingerprint` and `effectiveWeightFingerprint` describe
+feature presence and effective weight allocation, **not the numeric values**.
+Therefore a changed observation can legitimately preserve those earlier fingerprints,
+but it must change `researchReplayFingerprint`. Blocked inputs return null.
+
+Independent synthetic golden arithmetic vectors cover stock, forex, commodity
+and sovereign weights (63.1, 57, 71.5 and 64, respectively), alongside a full
+eight-factor stock service replay, input reordering, changed-value detection
+and a provider-rights denial. These are **synthetic regression fixtures**, not
+authenticated real-world Finance historical outputs, actual source-vs-target parity,
+point-in-time market backtests, provider licence evidence or model promotion.
+No productive score, public ranking, model executor, credential or paid provider
+was enabled by this patch.
