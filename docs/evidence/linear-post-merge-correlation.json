@@ -1,12 +1,12 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "aa61e39a855b26aa8d10effbfe9b30bf847621d6",
-  "mergedPr": 268,
+  "mainSha": "1a5f631675172e6b0243f63e70eeea5f8621206f",
+  "mergedPr": 267,
   "targetPr": 246,
   "targetBranch": "capital-ai-platform/social-tts-workers-20261008",
-  "targetHeadSha": "259c3b4886c615b1bd44367a21fa63d378aa3604",
+  "targetHeadSha": "ff41b768f40a67a7ec6d0bd7954394983f5f405f",
   "exactOverlap": [
-    "src/data/socialContentRoadmap.ts"
+    "docs/evidence/linear-post-merge-correlation.json"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,
