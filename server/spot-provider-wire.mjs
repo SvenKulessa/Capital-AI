@@ -221,6 +221,63 @@ export async function fetchPrivateUserSpotTrade({
   });
 }
 
+// Short-lived, server-side, user-authorized WS snapshot. The caller is the authenticated
+// private Vault executor, AFTER its replay/cost/rate claim and per-user key verification.
+// No browser websocket endpoint, topic fanout, shared cache or ongoing background feed.
+export async function fetchPrivateUserSpotWsSnapshot({
+  provider,symbol,SocketClass=globalThis.WebSocket,now=Date.now,
+}={}) {
+  const request=spotWireRequest({provider,symbol,transport:'websocket'});
+  if(typeof SocketClass!=='function') throw new Error('PRIVATE_SPOT_WS_UNAVAILABLE');
+  return new Promise((resolve,reject)=>{
+    let socket,timer,closed=false,frames=0;
+    const stop=(error,result)=>{
+      if(closed) return;
+      closed=true;
+      clearTimeout(timer);
+      try {
+        if(socket && (socket.readyState===0 || socket.readyState===1)) socket.close(1000,'private_snapshot_complete');
+      } catch { /* Socket may already have entered closing state. */ }
+      if(error) reject(error);
+      else resolve(result);
+    };
+    try { socket=new SocketClass(request.url); }
+    catch { reject(new Error('PRIVATE_SPOT_WS_UNAVAILABLE'));return; }
+    timer=setTimeout(()=>stop(new Error('PRIVATE_SPOT_WS_TIMEOUT')),6000);
+    socket.addEventListener('open',()=>{
+      if(closed) return;
+      try {socket.send(request.subscribe);} catch { stop(new Error('PRIVATE_SPOT_WS_SEND_FAILED')); }
+    });
+    socket.addEventListener('message',event=>{
+      if(closed) return;
+      frames++;
+      if(frames>16) {stop(new Error('PRIVATE_SPOT_WS_FRAME_LIMIT'));return;}
+      try {
+        if(typeof event.data!=='string' || Buffer.byteLength(event.data,'utf8')>MAX_FRAME_BYTES) throw new Error('SPOT_FRAME_SIZE_INVALID');
+        let data;
+        try {data=JSON.parse(event.data);}catch{throw new Error('SPOT_FRAME_JSON_INVALID');}
+        // Explicitly ignore acknowledged subscription and heartbeat control frames only.
+        if(provider==='binance' && object(data) && data.id===1 && data.result===null) return;
+        if(provider==='kraken' && object(data) &&
+            (data.channel==='heartbeat' || (data.method==='subscribe' && data.success===true))) return;
+        const row=parseSpotWireFrame({provider,symbol,transport:'websocket',payload:event.data});
+        const age=now()-row.observedAt;
+        if(!Number.isSafeInteger(age) || age < -5000 || age > 30000) throw new Error('PRIVATE_SPOT_QUOTE_STALE');
+        stop(null,Object.freeze({
+          provider:row.provider,symbol:row.symbol,quote:row.quote,
+          price:row.price,observedAt:row.observedAt,
+          mode:'websocket',timeSemantics:'realtime',dataScope:'USER_PRIVATE_MARKET_DATA',
+          publicDisplayAllowed:false,redistributionAllowed:false,
+          sharedCacheAllowed:false,jetStreamPublicationAllowed:false,
+          actionable:false,executionEnabled:false,
+        }));
+      }catch {stop(new Error('PRIVATE_SPOT_WS_FRAME_REJECTED'));}
+    });
+    socket.addEventListener('error',()=>stop(new Error('PRIVATE_SPOT_WS_UNAVAILABLE')));
+    socket.addEventListener('close',()=>stop(new Error('PRIVATE_SPOT_WS_CLOSED')));
+  });
+}
+
 export function startAdmittedSpotWebSocket({
   provider,symbol,env=process.env,store=infrastructure,
   SocketClass=globalThis.WebSocket,
