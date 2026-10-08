@@ -7,13 +7,13 @@
 | Boundary | Implementation | Evidence and limitation |
 | --- | --- | --- |
 | Manifest binding | `server/social-media/provider-adapter.mjs` | Exact campaign/content/source SHA, asset byte SHA-256, channel, approval and delivery identity |
-| Account / OAuth | Existing `social_media_accounts` and `social_media_oauth_states`; `server/social-media/provider-store.mjs` | User ID and platform required; OAuth SHA-256 state, PKCE for X, atomic RPC consumes once before code exchange |
+| Account / OAuth | Existing `social_media_accounts` and `social_media_oauth_states`; `server/social-media/provider-store.mjs` | User ID and platform required; context-bound scrypt OAuth state, PKCE for X, atomic RPC consumes once before code exchange |
 | HTTP callback | `server/social-media/oauth-callback.mjs`, registered in `server/index.mjs` | Session verified using existing Supabase Auth; HTTPS exact callback URL; no tokens in response; **disabled** without `SOCIAL_OAUTH_CALLBACK_ENABLED=true` AND server-injected provider token exchanger |
 | Approval and job | `supabase/migrations/20261008113000_social_provider_store.sql` | Versioned additive migration **committed, not applied to production**; old approvals default no public authority, unique user/delivery key, RLS and service-role-only RPCs |
 | DB state machine | `claim_delivery`, `note_unknown`, `complete_delivery` RPCs | Claimed `→ UNKNOWN → PUBLISHED/FAILED` only after trusted provider status; reservations never automatically reclaimed, no blind re-send, one publish-log entry |
 | Media / rights | `server/social-media/asset-readback.mjs` | Real server-fetched bytes are SHA-256 checked; rights reference required; injection boundary awaits a private storage backend, no external URLs accepted |
 | YouTube / TikTok | `server/social-media/provider-readback.mjs` | Read-only, owner-channel check for YouTube, privacy status and processing checked; TikTok `publish_id` status separate from publish-complete; requests disabled unless explicit server setting |
-| Instagram / Facebook / X | `server/social-media/provider-external-readback.mjs` | Pure provider-output normalization with exact account owner and HTTPS host checks. X read-only lookup also requires `SOCIAL_X_PAID_READBACK_APPROVED=true` plus general readback flag; Meta live Graph calls are **not** implemented |
+| Instagram / Facebook / X | `server/social-media/provider-external-readback.mjs` | Graph readback for Instagram professional media and Facebook Page posts with exact account owner and HTTPS host checks; explicit Meta API version required. X read-only lookup also requires `SOCIAL_X_PAID_READBACK_APPROVED=true` plus general readback flag |
 
 ### Fail-closed contract and runtime integration
 

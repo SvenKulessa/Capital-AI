@@ -9,7 +9,7 @@ Observed source head: `9a51c92beffa680c495cfdb82c6106edbaaa2e0b`; synchronized m
 
 ## Evidence and reasoning
 
-`createSocialOAuthState` generates 32 random bytes with Node `randomBytes`, encoded as base64url. The persisted value is its SHA-256 digest. The secret input therefore has 256 bits of generated entropy; it is not a human-selected password requiring a slow password derivation function. Callback validation binds the record to user, channel and redirect, rejects used or expired records, enforces a ten-minute lifetime, and compares equal-length digests with `timingSafeEqual`. The store uses `capital_social_consume_oauth_state` for atomic consume-before-exchange; a failed consume cannot exchange a code.
+`createSocialOAuthState` generates 32 random bytes with Node `randomBytes`, encoded as base64url. At the historical observed head, the persisted value was its SHA-256 digest. See remediation below for the current derivation. The secret input therefore has 256 bits of generated entropy; it is not a human-selected password requiring a slow password derivation function. Callback validation binds the record to user, channel and redirect, rejects used or expired records, enforces a ten-minute lifetime, and compares equal-length digests with `timingSafeEqual`. The store uses `capital_social_consume_oauth_state` for atomic consume-before-exchange; a failed consume cannot exchange a code.
 
 The regression tests exercise user/channel/redirect mismatch, expiry and replay rejection and confirm hash-only persistence. The database RPC contract remains required evidence for concurrency and authorization; mocks alone do not prove deployed behavior.
 
@@ -31,3 +31,6 @@ The persistence regression independently computes the scrypt expected result.
 Additional tests reject rewritten user/provider/redirect context and malformed digests.
 No query suppression, ignored path, removed test or threshold change was introduced.
 Fresh GitHub CodeQL completion is required before claiming alerts 13/14 resolved.
+
+Local verification after remediation: `npm test`, `npm run test:security`,
+`npm run test:social-provider` (36 tests) and Docker-context tests (5) pass.
