@@ -1,5 +1,11 @@
 [
   {
+    "name": "HeyGen API v3",
+    "domain": "GROWTH",
+    "path": "server/heygen-owner.mjs",
+    "application": "Owner-Marketingvideos / Avatar-Entwürfe; standardmäßig deaktiviert; kein Live-Nachweis"
+  },
+  {
     "name": "GitHub + GHCR",
     "domain": "TRUST",
     "path": ".github/workflows/build-security.yml",
@@ -252,3 +258,4 @@
     "application": "Node Runtime Dependencies · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
   }
 ]
+

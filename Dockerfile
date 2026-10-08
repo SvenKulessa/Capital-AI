@@ -39,6 +39,7 @@ COPY public/bootstrap-failure.js ./public/bootstrap-failure.js
 COPY server/index.mjs server/advisor.ts server/http-security.mjs server/mta-sts.mjs server/mta-sts.test.mjs server/well-known.mjs server/well-known.test.mjs server/shadow-evidence-store.mjs server/auth-security.mjs server/auth-security.test.mjs ./server/
 COPY server/prompt-injection-guard.mjs server/prompt-injection-guard.test.mjs server/billing-catalog.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/vocabulary-checkout.test.mjs server/subscription-checkout.mjs server/subscription-checkout.test.mjs server/cads-marketplace.mjs server/cads-marketplace.test.mjs server/cads-commerce.mjs server/cads-commerce.test.mjs server/benchmark-runs.mjs server/benchmark-runs.test.mjs server/benchmark-store.mjs server/benchmark-store.test.mjs server/public-artifact-policy.mjs server/public-artifact-policy.test.mjs ./server/
 COPY server/repository-tool-catalog.mjs server/repository-tool-catalog.test.mjs ./server/
+COPY server/heygen-owner.mjs server/heygen-owner.test.mjs ./server/
 COPY server/advisor-security.test.mjs ./server/
 COPY server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/private-provider-query.test.mjs server/provider-query-state.test.mjs ./server/
 COPY server/growth-ai-gateway.ts server/growth-ai-gateway.test.ts ./server/
@@ -65,6 +66,7 @@ COPY docs/market-data/evidence/source-admission-ecb-reference-rates-20261006.jso
 COPY scripts/ecb-reference-admission.test.mjs ./scripts/ecb-reference-admission.test.mjs
 COPY scripts/license-engine.mjs ./scripts/license-engine.mjs
 RUN --network=none node --test server/repository-tool-catalog.test.mjs \
+    && node --test server/heygen-owner.test.mjs \
     && node --test server/mta-sts.test.mjs server/well-known.test.mjs server/auth-security.test.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-source-provenance-drift.test.mjs \
     && node --test server/prompt-injection-guard.test.mjs server/vocabulary-checkout.test.mjs server/subscription-checkout.test.mjs server/cads-marketplace.test.mjs server/cads-commerce.test.mjs server/benchmark-runs.test.mjs server/benchmark-store.test.mjs server/public-artifact-policy.test.mjs scripts/cads-marketplace-migration.test.mjs scripts/cads-marketplace-production-manifest.test.mjs scripts/provider-query-guard-migration.test.mjs scripts/billing-catalog.test.mjs \
     && node --test server/user-provider-vault.test.mjs server/private-provider-query.test.mjs server/provider-query-state.test.mjs server/kraken-order-dry-run.test.mjs server/uniswap-trading.test.mjs scripts/stripe-catalog-readback.test.mjs scripts/stripe-three-purchase-e2e.test.mjs scripts/benchmark-ledger-migration.test.mjs scripts/benchmark-cost-calibration.test.mjs \
@@ -94,6 +96,7 @@ COPY --from=build /app/contracts/private-provider-query-operations.json ./contra
 COPY server/index.mjs server/market.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/auth.mjs server/auth-security.mjs server/subscription-entitlements.mjs server/user-provider-vault.mjs server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/kraken-order-dry-run.mjs server/uniswap-trading.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/mta-sts.mjs server/well-known.mjs server/mobile-scorer.mjs server/scorer-proxy.mjs server/scorer-bus.mjs server/observability.mjs server/cads-observability.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/subscription-checkout.mjs server/cads-marketplace.mjs server/cads-commerce.mjs server/benchmark-runs.mjs server/benchmark-store.mjs server/public-artifact-policy.mjs ./server/
 COPY --from=production-deps /runtime/node_modules ./node_modules
 COPY server/repository-tool-catalog.mjs ./server/
+COPY server/heygen-owner.mjs ./server/
 COPY server/infrastructure.mjs ./server/
 COPY server/billing-catalog.mjs ./server/
 COPY scripts/verify-private-brokers.mjs ./scripts/
@@ -106,3 +109,4 @@ USER 1000:1000
 EXPOSE 10000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 CMD ["node", "-e", "fetch('http://127.0.0.1:'+process.env.PORT+'/healthz',{signal:AbortSignal.timeout(3000)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
 CMD ["node", "server/index.mjs"]
+

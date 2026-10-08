@@ -4,6 +4,7 @@
   "version": "0.8.0-alpha.1",
   "type": "module",
   "scripts": {
+    "test:heygen": "node --test server/heygen-owner.test.mjs",
     "benchmark:oss-market": "node --experimental-strip-types scripts/benchmark-oss-market-pipelines.mjs",
     "test:benchmark": "node --test packages/benchmark-core/index.test.mjs server/benchmark-runs.test.mjs server/benchmark-store.test.mjs server/cads-marketplace.test.mjs server/cads-commerce.test.mjs",
     "dev": "vite --port=3000 --host=127.0.0.1",
@@ -85,3 +86,4 @@
     "source-map-js": "1.2.2"
   }
 }
+
