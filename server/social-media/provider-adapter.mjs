@@ -39,6 +39,20 @@ function validHttpsUrl(value) {
     return false;
   }
 }
+const PUBLICATION_HOSTS = Object.freeze({
+  YOUTUBE: ['youtube.com', 'www.youtube.com', 'youtu.be'],
+  TIKTOK: ['tiktok.com', 'www.tiktok.com'],
+  INSTAGRAM: ['instagram.com', 'www.instagram.com'],
+  X: ['x.com', 'www.x.com', 'twitter.com', 'www.twitter.com'],
+  FACEBOOK: ['facebook.com', 'www.facebook.com', 'm.facebook.com'],
+});
+export function providerPublicationUrlAllowed(channel, value) {
+  if (!validHttpsUrl(value)) return false;
+  const hosts = Object.hasOwn(PUBLICATION_HOSTS, channel) ? PUBLICATION_HOSTS[channel] : [];
+  const url = new URL(value);
+  return hosts.includes(url.hostname.toLowerCase()) && url.pathname !== '/';
+}
+
 export function socialPlatformForChannel(channel) {
   assert(typeof channel === 'string' && Object.hasOwn(SOCIAL_PLATFORMS, channel),
     'SOCIAL_PROVIDER_CHANNEL_UNSUPPORTED');
@@ -200,7 +214,7 @@ export function classifySocialProviderReadback(plan, readback) {
   const id = readback.providerDeliveryId;
   const hasId = typeof id === 'string' && id.length > 0 && id.length <= 500;
   if (readback.status === 'VERIFIED_PUBLISHED') {
-    assert(hasId && validHttpsUrl(readback.publishedUrl)
+    assert(hasId && providerPublicationUrlAllowed(plan.channel, readback.publishedUrl)
       && typeof readback.evidenceRef === 'string' && readback.evidenceRef.length > 0
       && readback.verifiedBy === 'PROVIDER_READBACK',
       'SOCIAL_PROVIDER_COMPLETION_EVIDENCE_REQUIRED');
@@ -236,8 +250,9 @@ export function buildLegacySocialPublishLogRow(plan, completion, now = new Date(
     'SOCIAL_PROVIDER_LOG_REQUIRES_TERMINAL_READBACK');
   assert(Number.isFinite(safeTime(now)), 'SOCIAL_PROVIDER_LOG_TIME_INVALID');
   if (completion.deliveryState === 'PUBLISHED') {
-    assert(completion.providerDeliveryId && completion.publishedUrl && completion.evidenceRef,
-      'SOCIAL_PROVIDER_LOG_PUBLISHED_EVIDENCE_REQUIRED');
+    assert(completion.providerDeliveryId
+      && providerPublicationUrlAllowed(plan.channel, completion.publishedUrl)
+      && completion.evidenceRef, 'SOCIAL_PROVIDER_LOG_PUBLISHED_EVIDENCE_REQUIRED');
   } else {
     assert(completion.evidenceRef, 'SOCIAL_PROVIDER_LOG_FAILURE_EVIDENCE_REQUIRED');
   }
