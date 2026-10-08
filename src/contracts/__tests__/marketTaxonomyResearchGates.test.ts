@@ -44,7 +44,8 @@ function researchFixture() {
   return {
     asset: { assetId: 'test-asset', symbol: 'TEST', name: 'Fixture', assetClass: 'crypto',
       venue: 'TEST', currency: 'USD', status: 'active' },
-    symbol: 'TEST', venue: 'TEST', timeSemantics: 'realtime',
+    symbol: 'TEST', venue: 'TEST', quoteCurrency: 'USD', liquidityCurrency: 'USD',
+    timeSemantics: 'realtime',
     provenance: { providerId, providerDataset: 'l1_book', observedAt,
       receivedAt: observedAt + 25, publishedAt: observedAt + 50, latencyMs: 25,
       sourceReference: 'TEST_ONLY_NOT_PROVIDER_EVIDENCE', isDemo: false, isDelayed: false,
@@ -86,6 +87,8 @@ test('invalid time, missing rights, stale data, demo and reference rates fail cl
     ['demo', x => { x.mode = 'demo'; x.provenance.isDemo = true; }, 'DEMO_NOT_ACTIONABLE'],
     ['reference', x => { x.timeSemantics = 'reference'; }, 'NON_REALTIME_REFERENCE_NOT_A_SPOT_OBSERVATION'],
     ['delayed', x => { x.provenance.isDelayed = true; }, 'DELAYED_OBSERVATION_NOT_REALTIME'],
+    ['delayed rights', x => { x.provenance.licenseScope = 'delayed_15m'; }, 'DELAYED_DATASET_SCOPE_NOT_REALTIME'],
+    ['wrong currency', x => { x.liquidityCurrency = 'EUR'; }, 'OBSERVATION_CURRENCY_UNIT_MISMATCH'],
     ['wrong feed', x => { x.rights.feedsSymbolsAndVenues = ['OTHER:TEST:TEST']; }, 'PROVIDER_DATASET_INSTRUMENT_RIGHTS_MISMATCH'],
   ];
   for (const [label, mutate, expected] of scenarios) {
