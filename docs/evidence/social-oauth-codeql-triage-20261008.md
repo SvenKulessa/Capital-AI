@@ -1,0 +1,20 @@
+# PR #269: individual OAuth-state CodeQL triage
+
+Observed source head: `9a51c92beffa680c495cfdb82c6106edbaaa2e0b`; synchronized main: `36013eb57238b7b2f65081d4a9e03246e006ecc7`.
+
+| Alert | Location at observed head | Assessment | GitHub disposition |
+| --- | --- | --- | --- |
+| 13 | `server/social-media/provider-adapter.mjs:315` | False positive for insufficient password hashing: this hashes a cryptographically generated OAuth CSRF state, not a user password. | OPEN; dismissal not performed |
+| 14 | `server/social-media/provider-store.test.mjs:70` | False positive: the regression test verifies the digest of that generated OAuth state and that raw state is absent from persisted request payloads. | OPEN; dismissal not performed |
+
+## Evidence and reasoning
+
+`createSocialOAuthState` generates 32 random bytes with Node `randomBytes`, encoded as base64url. The persisted value is its SHA-256 digest. The secret input therefore has 256 bits of generated entropy; it is not a human-selected password requiring a slow password derivation function. Callback validation binds the record to user, channel and redirect, rejects used or expired records, enforces a ten-minute lifetime, and compares equal-length digests with `timingSafeEqual`. The store uses `capital_social_consume_oauth_state` for atomic consume-before-exchange; a failed consume cannot exchange a code.
+
+The regression tests exercise user/channel/redirect mismatch, expiry and replay rejection and confirm hash-only persistence. The database RPC contract remains required evidence for concurrency and authorization; mocks alone do not prove deployed behavior.
+
+Rule reference: https://codeql.github.com/codeql-query-help/javascript/js-insufficient-password-hash/ (password-storage rule; checked 2026-10-08).
+
+## Completion boundary
+
+The source assessment is complete for these two locations. This document is neither a scanner waiver nor risk acceptance. No hash call was concealed, no test removed and no CodeQL threshold weakened. Actual GitHub alert dismissal, fresh CodeQL result and review-thread resolution remain unverified. The available GitHub connector does not expose the code-scanning disposition operation. Do not describe this PR as security-cleared until those live states have been checked.
