@@ -58,11 +58,11 @@
     {
       "id": "TA-SCORING",
       "path": "src/services/scoringEngine.ts",
-      "blobSha": "d132e266166b5cd87d39ad3711c628acefe4b9ec",
+      "blobSha": "325280e023db21c53a8252553b5bb2ba0dfe589f",
       "role": "Current scoring execution boundary",
       "recorrelatedAt": "2026-10-08",
-      "recorrelationBaseMain": "6f2b0be57ccf472d609bbf078d0fd8236690ea4e",
-      "recorrelationReason": "PR #283 Finance rights-admitted factor mapping and research-only shadow scorer methods; target ScoringEngineService remains sole execution authority, no score/rank/decision eligibility or source dispatcher promotion."
+      "recorrelationBaseMain": "4c7dbb9e22e6ac4725998c1845b38bc8d9686235",
+      "recorrelationReason": "PR #284 FIN-12 source validated DATA handoff via Capital-AI ScoringEngineService and PIT research checks. No second dispatcher, runtime score, rank, trade or provider authority granted."
     },
     {
       "id": "TA-FEATURE-STORE",
