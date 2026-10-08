@@ -110,7 +110,7 @@ export function parseSpotWireFrame({provider,symbol,transport,payload}) {
     if (!object(frame) || !Array.isArray(frame.error) || frame.error.length ||
         !object(frame.result)) throw new Error('KRAKEN_TRADES_INVALID');
     const tradeKeys=Object.keys(frame.result).filter(key=>key!=='last');
-    if (tradeKeys.length !== 1 || !/^[A-Za-z0-9/]{2,32}$/.test(tradeKeys[0]) ||
+    if (tradeKeys.length !== 1 || !new Set(['XXBTZUSD','XBTUSD','BTCUSD','BTC/USD','XBT/USD']).has(tradeKeys[0]) ||
         !Array.isArray(frame.result[tradeKeys[0]]) ||
         frame.result[tradeKeys[0]].length > 1000 || !frame.result[tradeKeys[0]].length) {
       throw new Error('KRAKEN_TRADES_INVALID');
