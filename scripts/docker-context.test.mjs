@@ -68,6 +68,24 @@ test('secrets, git metadata, reports and unrelated server files remain excluded'
 });
 
 
+
+test('Social completion gate evidence is present in the Docker build-stage context', () => {
+  const dockerfile = readFileSync(resolve(root, 'Dockerfile'), 'utf8');
+  const gate = JSON.parse(readFileSync(resolve(root, 'CAPITAL-AI-GROWTH/social-engine-completion-gate.json'), 'utf8'));
+  const copySources = dockerfile
+    .split(/\r?\n/)
+    .filter(line => /^COPY\s/i.test(line) && !/^COPY\s+--from=/.test(line))
+    .flatMap(line => line.trim().split(/\s+/).slice(1, -1));
+
+  for (const required of gate.requiredEvidenceArtifacts || []) {
+    assert.equal(reachable(required), true, 'Docker context excludes Social completion evidence: ' + required);
+    assert.ok(
+      copySources.some(source => required === source || required.startsWith(source.replace(/\/$/, '') + '/')),
+      'Docker build stage must copy Social completion evidence: ' + required,
+    );
+  }
+});
+
 test('runtime market module dependencies are present in the final image and build context', () => {
   const market = readFileSync(resolve(root, 'server/market.mjs'), 'utf8');
   const dockerfile = readFileSync(resolve(root, 'Dockerfile'), 'utf8');
