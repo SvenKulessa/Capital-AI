@@ -70,9 +70,9 @@ test('only canonical Capital-AI service evaluates source model identity with val
  assert.equal(result.sourceIdentityFingerprint,replay.sourceIdentityFingerprint);
 });
 test('weight model mismatch and unverified source model identity cannot route',()=>{
- const mismatch=ScoringEngineService.inspectFinanceModelResearch({...input,factorModel:'forex'});
+ const mismatch=ScoringEngineService.inspectFinanceModelResearch({...input,factorModel:'commodity'});
  assert.equal(mismatch.state,'BLOCKED');
- assert.ok(mismatch.reasons.includes('FINANCE_FACTOR_WEIGHT_PROFILE_MODEL_MISMATCH')===false || mismatch.reasons.length>0);
+ assert.ok(mismatch.reasons.includes('FINANCE_FACTOR_WEIGHT_PROFILE_MODEL_MISMATCH'));
  const wrongModel=ScoringEngineService.inspectFinanceModelResearch({
   ...input,sourceModel:{...sourceModel,modelId:'crypto-meme-integrity',modelVersion:'0.3.0'},
  });
