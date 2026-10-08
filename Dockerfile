@@ -73,6 +73,7 @@ COPY scripts/ecb-reference-admission.test.mjs ./scripts/ecb-reference-admission.
 COPY scripts/license-engine.mjs ./scripts/license-engine.mjs
 # Offline createApp integration tests require the same runtime module closure.
 COPY server/index.mjs server/market.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/auth.mjs server/auth-security.mjs server/subscription-entitlements.mjs server/user-provider-vault.mjs server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/kraken-order-dry-run.mjs server/uniswap-trading.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/mta-sts.mjs server/well-known.mjs server/mobile-scorer.mjs server/scorer-proxy.mjs server/scorer-bus.mjs server/observability.mjs server/cads-observability.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/subscription-checkout.mjs server/cads-marketplace.mjs server/cads-commerce.mjs server/benchmark-runs.mjs server/benchmark-store.mjs server/public-artifact-policy.mjs server/chat-buddy-keys.mjs server/chat-buddy-learn.mjs ./server/
+COPY server/infrastructure.mjs server/scorer-bus.mjs ./server/
 RUN --network=none node --test server/repository-tool-catalog.test.mjs \
     && node --test server/mta-sts.test.mjs server/well-known.test.mjs server/auth-security.test.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-source-provenance-drift.test.mjs \
     && node --test scripts/locale-policy.test.mjs server/locale-html.test.mjs \
