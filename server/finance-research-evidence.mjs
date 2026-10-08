@@ -19,7 +19,7 @@ const CONTEXT_FIELDS = new Set([
 const EVALUATION_FIELDS = new Set([
   'contractVersion', 'state', 'modelId', 'sourceModelVersion',
   'sourceIdentityFingerprint', 'featureFingerprint', 'effectiveWeightFingerprint',
-  'research', 'reasons', 'scoreEligible', 'rankEligible', 'decisionEligible', 'productionEligible',
+  'research', 'researchReplayFingerprint', 'reasons', 'scoreEligible', 'rankEligible', 'decisionEligible', 'productionEligible',
 ]);
 const digest = value => createHash('sha256').update(value).digest('hex');
 const hasOnly = (input, allowed) => Object.keys(input).every(field => allowed.has(field));
@@ -43,6 +43,7 @@ export function projectFinanceResearchReceipt(evaluation, context, now = Date.no
       !HEX.test(evaluation.sourceIdentityFingerprint || '') ||
       !HEX.test(evaluation.featureFingerprint || '') ||
       !HEX.test(evaluation.effectiveWeightFingerprint || '') ||
+      !HEX.test(evaluation.researchReplayFingerprint || '') ||
       !MODEL.test(evaluation.modelId || '') ||
       !/^[0-9]+(?:\.[0-9]+){1,3}$/.test(evaluation.sourceModelVersion || '') ||
       !Number.isSafeInteger(context.evaluatedAt) || context.evaluatedAt <= 0 ||
@@ -65,6 +66,7 @@ export function projectFinanceResearchReceipt(evaluation, context, now = Date.no
     sourceIdentityFingerprint: evaluation.sourceIdentityFingerprint,
     featureFingerprint: evaluation.featureFingerprint,
     effectiveWeightFingerprint: evaluation.effectiveWeightFingerprint,
+    researchReplayFingerprint: evaluation.researchReplayFingerprint,
     sourceScope: 'NON_PRIVATE_OPEN_DATA',
     state: 'RESEARCH_EVALUATED',
     scoreEligible: false,
@@ -117,6 +119,7 @@ async function saveReceipt(fetchImpl, config, projected, seq) {
     source_identity_fingerprint: projected.record.sourceIdentityFingerprint,
     feature_fingerprint: projected.record.featureFingerprint,
     effective_weight_fingerprint: projected.record.effectiveWeightFingerprint,
+    research_replay_fingerprint: projected.record.researchReplayFingerprint,
     state: 'RESEARCH_EVALUATED',
   };
   const url = new URL('/rest/v1/finance_research_receipts', config.origin);
@@ -208,6 +211,7 @@ export async function persistFinanceResearchReceipt(evaluation, context, {
     assetClass: projected.record.assetClass,
     instrumentFingerprint: projected.record.instrumentFingerprint,
     modelId: projected.record.modelId,
+    researchReplayFingerprint: projected.record.researchReplayFingerprint,
     state: 'RESEARCH_EVALUATED',
     scoreEligible: false,
     rankEligible: false,
