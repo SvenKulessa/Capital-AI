@@ -134,3 +134,27 @@ test('unknown provider state is not logged; verified published is completed once
   assert.equal(finished.publishLogId, LOG);
   assert.equal(calls[1].body.p_terminal_state, 'PUBLISHED');
 });
+
+test('uncertain provider receipt persists UNKNOWN, not a terminal publish log', async () => {
+  let posts = 0;
+  const store = createSocialProviderStore({ env, fetchImpl: async (url, init) => {
+    posts++;
+    assert.equal(new URL(url).pathname, '/rest/v1/rpc/capital_social_note_unknown');
+    const sent = JSON.parse(init.body);
+    assert.equal(sent.p_provider_delivery_id, 'receipt123');
+    return response({ id: JOB, user_id: USER,
+      status: 'UNKNOWN', provider_delivery_id: 'receipt123', publish_log_id: null });
+  } });
+  const result = await store.noteUnknownDelivery({
+    plan: { jobId: JOB, userId: USER }, providerDeliveryId: 'receipt123',
+    evidenceRef: 'trusted://provider/receipt',
+  });
+  assert.equal(result.deliveryState, 'UNKNOWN');
+  assert.equal(result.providerDeliveryId, 'receipt123');
+  assert.equal(posts, 1);
+  await assert.rejects(store.noteUnknownDelivery({
+    plan: { jobId: JOB, userId: USER }, providerDeliveryId: 'receipt123',
+    evidenceRef: '',
+  }), /SOCIAL_STORE_RECEIPT_REQUIRED/);
+  assert.equal(posts, 1);
+});
