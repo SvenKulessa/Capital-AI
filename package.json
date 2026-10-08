@@ -36,7 +36,7 @@
     "test:webauthn": "node --import tsx --test src/features/auth/webauthn.test.ts",
     "seo:provenance:check": "node scripts/refresh-seo-source-provenance.mjs --check",
     "seo:provenance:refresh": "node scripts/refresh-seo-source-provenance.mjs --write",
-    "test:i18n": "node --test scripts/locale-policy.test.mjs && node --import tsx --test src/i18n/messages.test.ts src/i18n/landingSectionCopy.test.ts src/i18n/legalAvailability.test.ts && node --test server/locale-html.test.mjs",
+    "test:i18n": "node --test scripts/locale-policy.test.mjs && node --import tsx --test src/i18n/messages.test.ts src/i18n/landingSectionCopy.test.ts src/i18n/legalAvailability.test.ts src/i18n/accountWorkspaceCopy.test.ts && node --test server/locale-html.test.mjs",
     "test:seo": "node --test server/well-known.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-metadata.test.mjs server/seo-indexing-policy.test.mjs server/license-pages.test.mjs && node --test scripts/seo-source-provenance-drift.test.mjs",
     "test:migration-manifest": "node --test scripts/finance-source-target-manifest.test.mjs",
     "test:social-tool-admission": "node --test scripts/social-tool-license-evidence.test.mjs",
