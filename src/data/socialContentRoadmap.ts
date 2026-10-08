@@ -97,7 +97,7 @@ export const SOCIAL_CONTENT_WORK_PACKAGES: WorkPackage[] = [
     "priority": "Kritisch",
     "leadName": "Owner + GROWTH/MARKET/PLATFORM/TRUST/PRODUCT",
     "targetSprint": "Sequenziell nach Lizenz-, Datenrechte- und Security-Gates",
-    "description": "Source-to-Target-Manifest, Third-Party-Notices und erweiterte immutable Social-Tool-Artefakt-Locks sind materialisiert; Punkt 4 bleibt ARTIFACT_LOCK_ADVANCED_FAIL_CLOSED und Punkt 6 bewertet die noch nicht migrierte Social-Runtime als BLOCKED. Finance-Scoring/Weighting/Data bleibt bis zum Social-Cutover ausdrücklich gesperrt. Kommerzieller Kundenpfad und Owner-private Tool-Runtime bleiben strikt getrennt.",
+    "description": "Source-to-Target-Manifest und Renderer-/Lizenz-Evidence sind materialisiert; Qwen, Chatterbox und Whisper/Faster-Whisper sind aus der Social Media Engine entfernt. Punkt 4 bleibt AUDIO_MODELS_REMOVED_FAIL_CLOSED und Punkt 6 bewertet die noch nicht migrierte Social-Runtime als BLOCKED. Finance-Scoring/Weighting/Data bleibt bis zum Social-Cutover ausdrücklich gesperrt. Kommerzieller Kundenpfad und Owner-private Tool-Runtime bleiben strikt getrennt.",
     "deliverables": [
       "SocialMediaEngine Contracts, Editing, deterministischen Media- und Publishing-Pfad zielkonform migrieren.",
       "Maschinenlesbare Tool-/Lizenz-Zulassung mit Commercial-, Owner-private-, Research- und BLOCKED-Modi durchsetzen.",
