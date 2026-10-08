@@ -15,6 +15,8 @@ export const ResearchGateObservationSchema = z.strictObject({
   asset: AssetIdentitySchema,
   symbol: z.string().min(1),
   venue: z.string().min(1),
+  quoteCurrency: z.string().regex(/^[A-Z]{3}$/),
+  liquidityCurrency: z.string().regex(/^[A-Z]{3}$/),
   provenance: DataProvenanceSchema,
   timeSemantics: z.enum(['realtime', 'reference', 'daily', 'provider_snapshot']),
   bid: z.number().finite().positive().nullable(),
@@ -80,11 +82,14 @@ function inspectGlobalBoundary(input: ResearchGateObservation): string[] {
   const p = input.provenance, a = input.asset, reasons: string[] = [];
   if (a.status !== 'active') reasons.push('ASSET_NOT_ACTIVE');
   if (a.symbol !== input.symbol || a.venue !== input.venue) reasons.push('ASSET_VENUE_SYMBOL_MISMATCH');
+  if (a.currency !== input.quoteCurrency || a.currency !== input.liquidityCurrency)
+    reasons.push('OBSERVATION_CURRENCY_UNIT_MISMATCH');
   if (p.isDemo || input.mode === 'demo') reasons.push('DEMO_NOT_ACTIONABLE');
   if (p.isDemo !== (input.mode === 'demo')) reasons.push('DEMO_PROVENANCE_MISMATCH');
   if (p.licenseScope === 'unverified' || p.licenseScope === 'sandbox_demo') reasons.push('SOURCE_LICENSE_SCOPE_UNVERIFIED');
   if (input.timeSemantics !== 'realtime') reasons.push('NON_REALTIME_REFERENCE_NOT_A_SPOT_OBSERVATION');
   if (p.isDelayed) reasons.push('DELAYED_OBSERVATION_NOT_REALTIME');
+  if (p.licenseScope === 'delayed_15m') reasons.push('DELAYED_DATASET_SCOPE_NOT_REALTIME');
   if ([p.observedAt, p.receivedAt, p.publishedAt].some(t => t > input.evaluatedAt) ||
       p.receivedAt < p.observedAt || p.publishedAt < p.receivedAt ||
       p.latencyMs !== p.receivedAt - p.observedAt) reasons.push('PROVENANCE_TIMESTAMP_INVALID');
