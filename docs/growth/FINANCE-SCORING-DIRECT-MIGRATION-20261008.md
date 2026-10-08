@@ -60,3 +60,7 @@ Finance source-matched `CommodityModelPromotion` and `CommodityP2EvidencePipelin
 ## Rights-bound source factor composition
 
 The new `FinanceAdmittedFactorMapping.ts` and `ScoringEngineService.inspectFinanceResearchFactors` map admitted Finance observations to original Finance model weights. They enforce exact factor/source bindings, asset-class target taxonomy, special sovereign benchmark subclass, provider permissions, vintage/freshness, evidence/source pin and missing-factor fingerprint replay. Outputs are RESEARCH_FACTORS_EVALUATED/RESEARCH_PARTIAL or BLOCKED, **never** publishable score/portfolio/alert/order authority. `index` is deliberately blocked because Capital-AI currently has no equivalent canonical index asset class. The test suite now includes positive rights-admitted factor weight replay and rights/asset-class/unknown-factor/duplicate negative cases.
+
+## Finance UAI and SLA data concepts
+
+Finance source Universal Asset Interface identity shape and the exact `UniverseSla` evaluator are now local to the FinanceResearch source module (not a second target asset registry). No missing instruments are invented: underfilled categories remain `INSUFFICIENT_REAL_UNIVERSE`, and provider/evidence problems are signaled. Original Finance 24-real-asset top-level/category targets remain informational (`hardMinimum:false`). Capital-AI target classes use a different taxonomy, so production identity mapping still requires explicit correlation.
