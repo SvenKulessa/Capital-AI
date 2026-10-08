@@ -660,9 +660,9 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       const challenge = createHash('sha256').update(verifier).digest('base64url');
       const flow = random();
       const next = normalizeMarketplaceAuthNext(url.searchParams.get('next'));
+      // A static redirect URI avoids requiring wildcard OAuth redirect allowlists.
+      // The signed, HttpOnly PKCE cookie carries flow identity and the safe next path.
       const callback = new URL('/api/auth/callback', config.origin);
-      callback.searchParams.set('flow', flow);
-      callback.searchParams.set('next', next);
       appendCookie(
         res,
         cookie(PKCE_COOKIE, signEnvelope(config, { version: 1, flow, verifier, next, googleRegistrationConsent, expires: now() + PKCE_MAX_AGE_SECONDS * 1000 }), PKCE_MAX_AGE_SECONDS),
@@ -702,11 +702,12 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
         return true;
       }
       const code = url.searchParams.get('code') || '';
-      const flow = url.searchParams.get('flow') || '';
+      const flow = url.searchParams.get('flow');
       if (
         flowCookie?.version !== 1 ||
         flowCookie.expires <= now() ||
-        flowCookie.flow !== flow ||
+        !/^[A-Za-z0-9_-]{43}$/.test(String(flowCookie.flow || '')) ||
+        (flow !== null && flowCookie.flow !== flow) ||
         !/^[A-Za-z0-9._~-]{43,128}$/.test(flowCookie.verifier || '') ||
         !code ||
         code.length > 2048
