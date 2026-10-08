@@ -99,6 +99,15 @@ export function AuthSecuritySettings() {
     void refresh().catch(() => setError('Sicherheitsmethoden konnten nicht geladen werden.'));
   }, []);
 
+  const qrImage = useMemo(() => {
+    const raw = enrollment?.qrCode?.trim() || '';
+    if (raw.startsWith('data:image/svg+xml') || raw.startsWith('data:image/png')) return raw;
+    if (raw.startsWith('<svg') && raw.endsWith('</svg>')) {
+      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(raw);
+    }
+    return '';
+  }, [enrollment?.qrCode]);
+
   const verifiedFactors = factors.filter(item => item.status === 'verified');
   const passkeyLimitReached = passkeys.length >= 2;
   const totpLimitReached = verifiedFactors.length >= 2;
@@ -183,7 +192,7 @@ export function AuthSecuritySettings() {
     try {
       const result = await postJson('/api/auth/mfa/totp/enroll', { friendlyName: factorName });
       if (!result.response.ok || !result.body?.factorId || !result.body?.secret) {
-        throw new Error(result.body?.code || result.body?.error || 'totp_enrollment_failed');
+        throw new Error(result.body?.code || result.body?.error || 'totp_setup_material_unavailable');
       }
       setEnrollment(result.body as TotpEnrollment);
       setTotpCode('');
@@ -195,6 +204,8 @@ export function AuthSecuritySettings() {
         setError('Eine unvollständige Authenticator-Einrichtung mit diesem Namen existiert bereits. Entferne sie unten oder starte die Einrichtung erneut.');
       } else if (message === 'totp_pending_cleanup_failed') {
         setError('Die unvollständige Authenticator-Einrichtung konnte nicht sicher bereinigt werden.');
+      } else if (message === 'totp_setup_material_unavailable') {
+        setError('Supabase hat zwar einen TOTP-Faktor erzeugt, aber keinen verwendbaren Einrichtungs-Schlüssel geliefert. Es wurde nichts aktiviert. Bitte Einrichtung erneut starten.');
       } else {
         setError(`Authenticator konnte nicht vorbereitet werden: ${message}`);
       }
@@ -367,14 +378,16 @@ export function AuthSecuritySettings() {
           {enrollment && (
             <div className="mt-4 rounded-xl border border-amber-400/25 bg-amber-400/5 p-3">
               <p className="text-xs font-bold text-amber-200">QR-Code scannen oder Secret manuell eintragen</p>
-              {enrollment.qrCode && (
+              {qrImage ? (
                 <img
-                  src={enrollment.qrCode.startsWith('data:')
-                    ? enrollment.qrCode
-                    : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(enrollment.qrCode)}`}
+                  src={qrImage}
                   alt="QR-Code zur Einrichtung des CAPITAL-AI Authenticators"
                   className="mx-auto mt-3 h-44 w-44 rounded-xl bg-white p-2"
                 />
+              ) : (
+                <p role="status" className="mt-3 text-xs text-amber-200">
+                  QR-Code konnte nicht dargestellt werden. Verwende den Einrichtungs-Schlüssel unten.
+                </p>
               )}
               <div className="mt-3 flex items-center gap-2 rounded-lg border border-white/10 bg-black/40 p-2">
                 <code className="min-w-0 flex-1 break-all text-[10px] text-cyan-200">{enrollment.secret}</code>
