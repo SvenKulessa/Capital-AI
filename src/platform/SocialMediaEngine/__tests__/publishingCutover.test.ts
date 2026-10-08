@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { buildDraftContentSocialPackage, withContentSocialApproval } from '../../../contracts/contentSocialPackage.ts';
 import {
   CURRENT_SOCIAL_PUBLISHER_ADAPTERS,
+  type SocialPublisherAdapterState,
   type SocialPublisherChannel,
 } from '../../../contracts/socialPublisherAdapter.ts';
 import { createCapitalAiMediaStudioProject } from '../Editing/MediaStudioTemplates';
@@ -74,7 +75,7 @@ test('MediaProject render identity converges into the current ContentSocialPacka
     /CONTENT_SOCIAL_PUBLISHER_NOT_READY/,
   );
 
-  const readyStates: Record<SocialPublisherChannel, 'IMPLEMENTED_DISABLED' | 'READY'> = {
+  const readyStates: Record<SocialPublisherChannel, SocialPublisherAdapterState> = {
     ...CURRENT_SOCIAL_PUBLISHER_ADAPTERS,
     YOUTUBE: 'READY',
   };
