@@ -374,7 +374,7 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
                 </div>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                   <div className="rounded-xl border border-white/10 bg-black/20 p-2.5">
-                    <div className="text-[9px] font-mono uppercase text-slate-500">Provider REST Auth</div>
+                    <div className="text-[9px] font-mono uppercase text-slate-500">{provider === 'binance' ? 'Binance REST Auth' : 'Spot REST Auth'}</div>
                     <div className={`mt-1 text-[11px] font-bold ${connection.status === 'VERIFIED' ? 'text-emerald-200' : 'text-amber-200'}`}>
                       {connection.status === 'VERIFIED' ? 'VERIFIZIERT' : 'NICHT VERIFIZIERT'}
                     </div>
