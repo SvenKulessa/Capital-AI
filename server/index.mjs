@@ -2,7 +2,7 @@ import http from 'node:http';
 import { readFile, stat, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { assetValues, quote, health, startStreams } from './market.mjs';
+import { assetCatalog, assetValues, quote, health, startStreams } from './market.mjs';
 import { createAuth } from './auth.mjs';
 import { createUserProviderVault } from './user-provider-vault.mjs';
 import { createPrivateProviderQuery } from './private-provider-query.mjs';
@@ -341,6 +341,10 @@ export function createApp(root = defaultRoot, options = {}) {
       infrastructure: infrastructure.status(),
       cads: cadsSnapshot(),
     });
+  }
+  if (url.pathname === '/api/market/assets') {
+    if (!marketLimit()) return json(res, 429, { error: 'rate_limited' });
+    return json(res, 200, assetCatalog());
   }
   if (url.pathname === '/api/market/quote') {
     if (!marketLimit()) { res.setHeader('Retry-After', '60'); return json(res, 429, { error: 'rate_limited' }); }
