@@ -10,7 +10,7 @@
   "instances": 1,
   "healthCheckPath": "/healthz",
   "port": 10000,
-  "marketSymbols": "BTCUSDT,BTCUSD,AAPL",
+  "marketSymbols": "EUR/USD,EUR/JPY,EUR/CZK,EUR/DKK,EUR/GBP,EUR/HUF,EUR/PLN,EUR/RON,EUR/SEK,EUR/CHF,EUR/ISK,EUR/NOK,EUR/TRY,EUR/AUD,EUR/BRL,EUR/CAD,EUR/CNY,EUR/HKD,EUR/IDR,EUR/ILS",
   "requiredRuntimeSecrets": [
     "REDIS_URL",
     "NATS_URL",
