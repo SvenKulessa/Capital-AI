@@ -15,10 +15,14 @@ async function json(res) {
 }
 
 /** No publication promotion based on transport status or request acceptance. */
-export function normalizeYoutubeReadback({ deliveryKey, providerId, payload, evidenceRef }) {
+export function normalizeYoutubeReadback({ deliveryKey, providerId, accountChannelId, payload, evidenceRef }) {
   assert(SHA.test(providerId) && typeof deliveryKey === 'string' && deliveryKey.length > 0,
     'SOCIAL_READBACK_INVALID_ID');
-  const item = Array.isArray(payload?.items) ? payload.items.find(x => x?.id === providerId) : null;
+  assert(typeof accountChannelId === 'string' && accountChannelId.length >= 8
+    && accountChannelId.length <= 200, 'SOCIAL_READBACK_ACCOUNT_ID_REQUIRED');
+  const item = Array.isArray(payload?.items)
+    ? payload.items.find(x => x?.id === providerId && x?.snippet?.channelId === accountChannelId)
+    : null;
   const state = item?.status;
   const publishedUrl = 'https://www.youtube.com/watch?v=' + encodeURIComponent(providerId);
   if (state?.privacyStatus === 'public' && state?.uploadStatus === 'processed'
@@ -90,12 +94,14 @@ export function createSocialProviderReadbackTransport({
     catch { throw new Error('SOCIAL_READBACK_NETWORK_UNKNOWN'); }
     return json(res);
   }
-  async function youtube({ deliveryKey, providerId, token, evidenceRef }) {
+  async function youtube({ deliveryKey, providerId, accountChannelId, token, evidenceRef }) {
     assert(SHA.test(providerId), 'SOCIAL_READBACK_INVALID_ID');
+    assert(typeof accountChannelId === 'string' && accountChannelId.length >= 8
+      && accountChannelId.length <= 200, 'SOCIAL_READBACK_ACCOUNT_ID_REQUIRED');
     const endpoint = new URL('https://www.googleapis.com/youtube/v3/videos');
-    endpoint.search = new URLSearchParams({ part: 'status', id: providerId }).toString();
+    endpoint.search = new URLSearchParams({ part: 'snippet,status', id: providerId }).toString();
     const payload = await request(endpoint, { method: 'GET', token });
-    return normalizeYoutubeReadback({ deliveryKey, providerId, payload, evidenceRef });
+    return normalizeYoutubeReadback({ deliveryKey, providerId, accountChannelId, payload, evidenceRef });
   }
   async function tiktok({ deliveryKey, publishId, accountHandle, token, evidenceRef }) {
     assert(typeof publishId === 'string' && publishId.length > 0 && publishId.length <= 200,
