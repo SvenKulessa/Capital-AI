@@ -3,7 +3,7 @@
   "id": "CAPITAL-AI-SOCIAL-TOOL-LICENSE-EVIDENCE-20261006",
   "status": "POINT_4_ARTIFACT_LOCK_ADVANCED_FAIL_CLOSED",
   "correlatedAt": "2026-10-08",
-  "targetMain": "19673cf50bf6948ef563126f23bd1d64d9ae6398",
+  "targetMain": "a445b454916eb31ced500f89bafab2e9aae4db7b",
   "financeSource": "dcef421fe6e350a3a2ade61d0299aad9ecca213c",
   "scope": "Social-Media-Engine implementation dependencies only; Finance MARKET/scoring migration remains deferred until Social cutover PASS.",
   "policy": {
@@ -63,10 +63,10 @@
         "implementationEligible": true,
         "productionEligible": false,
         "noticeRequired": true,
-        "reason": "Exact Pillow 12.3.0 wheel is hash-bound and a real renderer worker was built successfully with SBOM/license/Trivy evidence. The historical worker had one non-blocking MEDIUM xz-libs finding; a hardened rebuild with xz-libs >= 5.8.3-r0 is now required before this worker evidence is accepted as current."
+        "reason": "Exact Pillow 12.3.0 wheel is hash-bound and the hardened renderer worker was rebuilt successfully with SBOM, license inventory and a clean Trivy summary. xz-libs is 5.8.4-r0 and zlib is 1.3.2-r1; CVE-2026-34743 and CVE-2026-85091 are absent. Production release remains blocked on immutable OCI registry digest/release handoff."
       },
       "unblock": [
-        "Complete hardened renderer-worker rebuild with xz-libs >= 5.8.3-r0 and bind its new image/binary/SBOM evidence."
+        "Bind immutable OCI registry digest and release handoff for the accepted renderer image before production release."
       ]
     },
     {
@@ -90,24 +90,29 @@
         "mode": "COMMERCIAL_INTERNAL_SERVICE",
         "implementationEligible": true,
         "productionEligible": false,
-        "reason": "FFmpeg 9.0.2 was really compiled in CI under the LGPL-only profile; ffmpeg/ffprobe hashes, buildconf, SBOM, license inventory and Trivy evidence exist. The historical worker image is superseded pending a rebuild that raises xz-libs to the fixed floor."
+        "reason": "FFmpeg 9.0.2 was rebuilt in CI under the LGPL-only profile; ffmpeg/ffprobe hashes, buildconf, SBOM, license inventory and clean Trivy evidence are bound to the hardened renderer image. GPL, nonfree and version3 remain disabled. Production release remains blocked on immutable OCI registry digest/release handoff."
       },
       "unblock": [
-        "Complete hardened rebuild with xz-libs >= 5.8.3-r0.",
-        "Bind new ffmpeg/ffprobe/image/SBOM evidence from that exact rebuild.",
-        "OCI registry digest remains release-time evidence, not PR validation evidence."
+        "Bind immutable OCI registry digest and release handoff for the accepted renderer image before production release."
       ],
       "runtimeEvidence": {
-        "historicalWorkflowRunId": 37520859593,
+        "workflowRunId": 37713808050,
+        "artifactId": 11522834736,
+        "artifactDigest": "sha256:2f8a3b08024b38f35226a75b25fe0740a10b8094a4423e07f1f576f42fc01683",
+        "sourceSha": "f9110394680b3d0df5ef5afc5e8aacd576262ce9",
+        "pullRequestHeadSha": "8b66b4ea0c9fa9693dfdb41d1d7c5bd82bb94d06",
+        "mergedMainSha": "a445b454916eb31ced500f89bafab2e9aae4db7b",
         "ffmpegBinarySha256": "5dc8afa27e566af954bc9184f6eaf7c3e0a1ff1574b5a250d57f8af4c4b5ef86",
         "ffprobeBinarySha256": "872f0b0c21296186a22297a038c5d892ae2191f7f33799636242f2d9204faefe",
-        "localImageId": "sha256:047d04161283c74c7c69ccd53a163ec5b9dc25a3e6c5fad847c85f0d02c776d8",
-        "imageArchiveSha256": "e1d3b77b05732727812e850422d67144f38609205526c95e33edded9021d6646",
+        "localImageId": "sha256:37ef4c256cf51342adf7dc659495221933e948b5f6d75e621d7a704c0b6aa8bb",
+        "imageArchiveSha256": "8f0c143cbc6bb00d9993f23fc608fe61010a07f63b0dc0acbd562a869cbe0c6c",
+        "xzLibs": "5.8.4-r0",
+        "zlib": "1.3.2-r1",
         "gplEnabled": false,
         "nonfreeEnabled": false,
         "version3Enabled": false,
-        "blockingFindings": 0,
-        "supersededPendingHardenedRebuild": true
+        "vulnerabilities": 0,
+        "blockingFindings": 0
       }
     },
     {
@@ -303,7 +308,6 @@
       "d3"
     ],
     "exactArtifactLockedButRuntimeImagePending": [
-      "pillow",
       "qwen3-tts-code",
       "qwen3-tts-weights",
       "chatterbox-code",
@@ -311,32 +315,46 @@
       "openai-whisper-code"
     ],
     "requiredRuntimeBlockers": [
-      "ffmpeg-binary-and-worker-image-evidence"
+      "renderer-oci-registry-digest-release-handoff",
+      "tts-asr-worker-evidence",
+      "german-runtime-benchmark",
+      "human-owner-listening-acceptance",
+      "social-engine-target-cutover"
     ],
     "excludedFromCustomerRuntime": [
       "poppler"
     ],
-    "deferredCandidatesRemainNonBaseline": true
+    "deferredCandidatesRemainNonBaseline": true,
+    "rendererReleaseHandoffPending": [
+      "pillow",
+      "ffmpeg"
+    ]
   },
   "point4Remaining": [
-    "Build the pinned FFmpeg 9.0.2 LGPL-only profile and bind resulting ffmpeg/ffprobe SHA-256, buildconf, OCI digest and SBOM.",
-    "Complete Pillow renderer-worker SBOM/image digest evidence.",
-    "Complete Qwen/Chatterbox companion artifact and transitive dependency locks.",
-    "Run fresh Qwen/Chatterbox runtime + Human/Owner listening acceptance.",
-    "Build and scan immutable TTS/ASR worker images.",
+    "Bind immutable OCI registry digest/release handoff for the accepted hardened renderer image if production release is requested.",
+    "Durably merge and validate complete Qwen/Chatterbox transitive dependency and companion-artifact locks.",
+    "Build and scan immutable Qwen, Chatterbox and Whisper worker images with terminal PASS evidence.",
+    "Run fresh German Qwen/Chatterbox runtime benchmark.",
+    "Record Human/Owner listening PASS for accepted German voice profiles.",
+    "Complete SocialMediaEngine runtime and deterministic renderer target cutover.",
     "Only then promote status to POINT_4_PASS."
   ],
   "rendererWorkerEvidence": {
     "path": "CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json",
-    "latestTerminalWorkflowRunId": 37708563881,
-    "latestArtifactDigest": "sha256:0f0d6a6ee04d5d9acfc82e214ec55f4851036cf64e4484ab773d658262af8445",
-    "xzCveResolved": true,
-    "zlibCvePendingRebuild": "CVE-2026-85091"
-  },
-  "ttsDependencyLocks": {
-    "path": "CAPITAL-AI-GROWTH/social-tts-dependency-lock-evidence-20261008.json",
-    "qwen": "COMPLETE_102_PACKAGES_SHA256_BOUND",
-    "chatterbox": "COMPLETE_123_PACKAGES_PLUS_IMMUTABLE_PERTH",
-    "workerImages": "IN_PROGRESS_PR_246"
+    "currentRunStatus": "HARDENED_REBUILD_VERIFIED",
+    "workflowRunId": 37713808050,
+    "artifactId": 11522834736,
+    "artifactDigest": "sha256:2f8a3b08024b38f35226a75b25fe0740a10b8094a4423e07f1f576f42fc01683",
+    "localImageId": "sha256:37ef4c256cf51342adf7dc659495221933e948b5f6d75e621d7a704c0b6aa8bb",
+    "imageArchiveSha256": "8f0c143cbc6bb00d9993f23fc608fe61010a07f63b0dc0acbd562a869cbe0c6c",
+    "xzLibs": "5.8.4-r0",
+    "zlib": "1.3.2-r1",
+    "vulnerabilities": 0,
+    "blockingFindings": 0,
+    "historicalSupersededRun": {
+      "workflowRunId": 37520859593,
+      "artifactDigest": "sha256:1a96945746ccbf0573c86a2beafce391eed3d1b475a3b5a5ca7e2ce752e95c89",
+      "nonBlockingFinding": "CVE-2026-34743 xz-libs 5.8.1-r0"
+    }
   }
 }

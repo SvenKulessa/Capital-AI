@@ -1,12 +1,14 @@
 {
   "schemaVersion": "SOCIAL_RENDERER_WORKER_EVIDENCE@1",
-  "sourceSha": "ef71fde2d8721798a4460f1963eef800b6ab22c4",
-  "workflowRunId": 37708563881,
-  "artifactId": 11521052007,
-  "artifactDigest": "sha256:0f0d6a6ee04d5d9acfc82e214ec55f4851036cf64e4484ab773d658262af8445",
+  "sourceSha": "f9110394680b3d0df5ef5afc5e8aacd576262ce9",
+  "pullRequestHeadSha": "8b66b4ea0c9fa9693dfdb41d1d7c5bd82bb94d06",
+  "mergedMainSha": "a445b454916eb31ced500f89bafab2e9aae4db7b",
+  "workflowRunId": 37713808050,
+  "artifactId": 11522834736,
+  "artifactDigest": "sha256:2f8a3b08024b38f35226a75b25fe0740a10b8094a4423e07f1f576f42fc01683",
   "baseImageRef": "python@sha256:a4fc589b32e824f3f02ed9d7e7be19518aa47e105b80416336af9f202275a489",
-  "localImageId": "sha256:4818f23420314aaf81db14b649dbb18131ffdae2d8a3fa241d37fec484ef6f71",
-  "imageArchiveSha256": "870acaba64730824952c8eefad4f3385d4da6daf48760a70443722a355c30b50",
+  "localImageId": "sha256:37ef4c256cf51342adf7dc659495221933e948b5f6d75e621d7a704c0b6aa8bb",
+  "imageArchiveSha256": "8f0c143cbc6bb00d9993f23fc608fe61010a07f63b0dc0acbd562a869cbe0c6c",
   "ffmpeg": {
     "version": "9.0.2",
     "sourceSha256": "8c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e",
@@ -19,7 +21,14 @@
     "uid": 10001,
     "readOnlySmoke": true,
     "capDropAll": true,
-    "noNewPrivileges": true
+    "noNewPrivileges": true,
+    "packages": {
+      "libcrypto3": "3.5.9-r0",
+      "libssl3": "3.5.9-r0",
+      "libuuid": "2.41.6-r1",
+      "xzLibs": "5.8.4-r0",
+      "zlib": "1.3.2-r1"
+    }
   },
   "licenseProfile": {
     "intended": "LGPL-2.1-or-later",
@@ -28,26 +37,20 @@
     "version3Enabled": false
   },
   "scan": {
+    "vulnerabilities": 0,
+    "misconfigurations": 0,
+    "secrets": 0,
     "blockingFindings": 0,
-    "resolvedFindings": [
-      "CVE-2026-34743"
-    ],
-    "nonBlockingFindings": [
-      {
-        "id": "CVE-2026-85091",
-        "severity": "MEDIUM",
-        "package": "zlib",
-        "installed": "1.3.2-r0",
-        "fixed": "1.3.2-r1"
-      }
+    "explicitlyAbsent": [
+      "CVE-2026-34743",
+      "CVE-2026-85091"
     ]
   },
   "sbomGenerated": true,
   "licenseInventoryGenerated": true,
-  "status": "SUPERSEDED_PENDING_ZLIB_HARDENED_REBUILD",
+  "status": "HARDENED_REBUILD_VERIFIED",
   "productionEligible": false,
   "productionBlockers": [
-    "Rebuild with zlib >= 1.3.2-r1 has not yet produced terminal evidence.",
     "OCI registry digest/release handoff intentionally absent from PR validation."
   ]
 }
