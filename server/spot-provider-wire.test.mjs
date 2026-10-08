@@ -50,7 +50,7 @@ test('REST request URLs and WebSocket subscription formats use immutable vendor 
   const b=spotWireRequest({provider:'binance',symbol:'BTCUSDT',transport:'rest'});
   const k=spotWireRequest({provider:'kraken',symbol:'BTCUSD',transport:'rest'});
   assert.equal(b.url,'https://api.binance.com/api/v3/trades?symbol=BTCUSDT&limit=1');
-  assert.equal(k.url,'https://api.kraken.com/0/public/Trades?pair=BTC%2FUSD');
+  assert.equal(k.url,'https://api.kraken.com/0/public/Trades?pair=BTC%2FUSD&count=1&assetVersion=1');
   assert.equal(b.redirect,'error');assert.equal(k.credentials,'omit');
   assert.deepEqual(JSON.parse(spotWireRequest({provider:'kraken',symbol:'BTCUSD',transport:'websocket'}).subscribe),
     {method:'subscribe',params:{channel:'ticker',symbol:['BTC/USD'],snapshot:true}});
