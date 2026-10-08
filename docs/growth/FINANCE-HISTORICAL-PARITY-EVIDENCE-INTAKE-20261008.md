@@ -46,3 +46,11 @@ Check, keine Score-, Ranking-, Trade- oder Publish-Autorität. Unit-Test-Daten s
 ausdrücklich synthetisch und keine Marktevidence. Ein neuer PR löst reguläre
 GitHub-Actions-Minuten aus; Restquota und Gebühren sind NOT_PROVEN.
 Owner-only Merge gemäß root AGENTS.md.
+
+## Main-Korrelation / Konfliktauflösung am 2026-10-08
+
+- Synchronisiert gegen main@4134865ca8b4577512c86ffec38957f3fbcd692d mit Zweiparenten-Merge im PR-Branch. Kein Agent-Merge nach main.
+- `package.json`: aktuelles main als Grundlage; FinanceHistoricalParityAudit-Test zusätzlich in bestehendes `npm test` aufgenommen. Bereits gemergte i18n- und Render-Owner-Dashboard-Tests sowie alle übrigen Skripte, Dependencies und Versionsstände bleiben exakt aus main erhalten.
+- Finance Research Receipt Orchestrator und Finance Research Evidence Transport auf main bleiben von diesem Slice unberührt. Deren Rechte-/Non-Private-Grenzen und ausgeschalteter Runtime-Transport werden nicht umgangen; der neue Paritätsprüfer nimmt keine Receipt-Veröffentlichung vor.
+- Quelle bleibt Finance@dcef421fe6e350a3a2ade61d0299aad9ecca213c; `empiricalHistoricalParityProven=false`. Byte-Hash einer vom Caller gelieferten Envelope beweist keinen authentischen Finance-Original-Run.
+- MARKT-Quellrechte, PIT-Vintage-Herkunft und echte historische Source-Ergebnisse bleiben `NOT_PROVEN`; bestehender ScoringEngineService ist die einzige Evaluation Authority.

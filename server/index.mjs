@@ -9,6 +9,7 @@ import { createPrivateMarketCache } from './private-market-cache.mjs';
 import { createUserProviderVault } from './user-provider-vault.mjs';
 import { createUserAnalysisBindings } from './user-analysis-bindings.mjs';
 import { createPrivateProviderQuery } from './private-provider-query.mjs';
+import { createRenderOwnerDashboard } from './render-owner-dashboard.mjs';
 import { createUniswapTrading } from './uniswap-trading.mjs';
 import { createKrakenOrderDryRun } from './kraken-order-dry-run.mjs';
 import { createTelegram } from './telegram.mjs';
@@ -21,7 +22,7 @@ import { serveMtaSts } from './mta-sts.mjs';
 import { serveWellKnown } from './well-known.mjs';
 import { licenseMetadata } from '../shared/license-metadata.mjs';
 import { seoMetadataForPath } from '../shared/seo-metadata.mjs';
-import { resolveLocale } from '../shared/locale-policy.mjs';
+import { resolveLocale, localeFromLandingPath } from '../shared/locale-policy.mjs';
 import {
   isSeoIndexable,
   robotsDirectiveFor,
@@ -135,6 +136,28 @@ function injectSeoMetadata(html, pathname) {
   return body;
 }
 
+// Non-indexable until complete locale-specific body content, legal review and crawl acceptance.
+const LOCALE_LANDING_PREVIEWS = Object.freeze({
+  de: ['CAPITAL-AI | Marktanalyse und BYOK', 'Marktanalyse, transparente Modelle und persönliche Datenprovider-Einstellungen.'],
+  en: ['CAPITAL-AI | Market Intelligence and BYOK', 'Explore market analysis, transparent scoring tools and personal data-provider settings.'],
+  it: ['CAPITAL-AI | Analisi dei mercati e BYOK', 'Esplora analisi dei mercati, strumenti di scoring trasparenti e impostazioni dei tuoi dati.'],
+  fr: ['CAPITAL-AI | Analyse de marché et BYOK', 'Découvrez les analyses de marché, des outils de notation transparents et vos fournisseurs de données.'],
+  pt: ['CAPITAL-AI | Análise de mercados e BYOK', 'Explore análises de mercado, ferramentas transparentes de scoring e preferências de fontes de dados.'],
+  es: ['CAPITAL-AI | Análisis de mercados y BYOK', 'Explora análisis de mercados, herramientas de puntuación transparentes y ajustes de proveedores de datos.'],
+});
+function localizeNonIndexableLandingHtml(html, locale) {
+  const [title, description] = LOCALE_LANDING_PREVIEWS[locale];
+  const ogLocale = ({de:'de_DE',en:'en_US',it:'it_IT',fr:'fr_FR',pt:'pt_PT',es:'es_ES'})[locale];
+  return html
+    .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(title)}</title>`)
+    .replace(/(<meta name="description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(description)}$2`)
+    .replace(/(<meta property="og:title" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(title)}$2`)
+    .replace(/(<meta property="og:description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(description)}$2`)
+    .replace(/(<meta property="og:locale" content=")[^"]*("\s*\/?>)/, `$1${ogLocale}$2`)
+    .replace(/(<meta name="twitter:title" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(title)}$2`)
+    .replace(/(<meta name="twitter:description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(description)}$2`);
+}
+
 function applySeoIndexingPolicy(html, pathname) {
   const directive = robotsDirectiveFor(pathname);
   let body = html.replace(
@@ -209,6 +232,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const userProviderVault = createUserProviderVault({ ...options, auth, privateMarketCache });
   const userAnalysisBindings = createUserAnalysisBindings({ ...options, auth });
   const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault });
+  const renderOwnerDashboard = createRenderOwnerDashboard({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   if (
     (options.env || process.env).PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true' ||
     (options.env || process.env).PRIVATE_PROVIDER_BRIDGE_PROBE_ENABLED === 'true'
@@ -280,6 +304,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await userProviderVault.handle(req, res, url, json)) return;
   if (await userAnalysisBindings.handle(req, res, url, json)) return;
   if (await privateProviderQuery.handle(req, res, url, json, requestContext.requestId)) return;
+  if (await renderOwnerDashboard.handle(req, res, url, json)) return;
   if (await krakenOrderDryRun.handle(req, res, url, json, requestContext.requestId)) return;
   if (await uniswapTrading.handle(req, res, url, json)) return;
   if (await privacy(req, res, url, json)) return;
@@ -413,6 +438,11 @@ export function createApp(root = defaultRoot, options = {}) {
   if (url.pathname.startsWith('/api/')) return json(res, 404, { error: 'not_found' });
 
   const publicPath = normalizedPublicPath(url.pathname);
+  if (publicPath === '/profile/render-dashboard' && !await renderOwnerDashboard.authorized(req, res)) {
+    res.writeHead(404, { ...headers, 'Cache-Control': 'no-store' });
+    res.end();
+    return;
+  }
   if (OWNER_ONLY_UI_PATHS.has(publicPath) || publicPath.startsWith('/control-center/')) {
     const ownerAllowed = await auth.authorizeIamRole(req, res, 'owner');
     if (!ownerAllowed) {
@@ -476,7 +506,13 @@ export function createApp(root = defaultRoot, options = {}) {
     if (path.extname(file) === '.html') {
       body = Buffer.from(injectSeoMetadata(body.toString('utf8'), publicPath));
       body = Buffer.from(applySeoIndexingPolicy(body.toString('utf8'), publicPath));
-      const { locale, source } = resolveLocale({
+      const pathLocale = localeFromLandingPath(publicPath);
+      if (pathLocale && publicPath !== '/') {
+        body = Buffer.from(localizeNonIndexableLandingHtml(body.toString('utf8'), pathLocale));
+      }
+      const { locale, source } = pathLocale
+        ? {locale:pathLocale,source:'path'}
+        : resolveLocale({
         cookieHeader: req.headers.cookie,
         countryHeader: req.headers['cf-ipcountry'],
         acceptLanguage: req.headers['accept-language'],
@@ -484,7 +520,7 @@ export function createApp(root = defaultRoot, options = {}) {
       body = Buffer.from(body.toString('utf8').replace(/<html lang="[^"]*"/, `<html lang="${locale}" data-locale-source="${source}"`));
       documentLocale = locale;
     }
-    res.writeHead(200, { ...headers, ...(documentLocale ? { 'Content-Language': documentLocale, 'Vary': 'CF-IPCountry, Accept-Language, Cookie' } : {}), 'Cache-Control': path.extname(file) === '.html' ? 'no-store' : 'public, max-age=3600', 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(body);
+    res.writeHead(200, { ...headers, ...(documentLocale ? { 'Content-Language': documentLocale, 'Vary': 'CF-IPCountry, Accept-Language, Cookie' } : {}), ...(localeFromLandingPath(publicPath) ? { 'X-Robots-Tag': 'noindex, nofollow' } : {}), 'Cache-Control': path.extname(file) === '.html' ? 'no-store' : 'public, max-age=3600', 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(body);
   } catch { res.writeHead(404, headers); res.end(); }
 });
   server.maxConnections = 256;

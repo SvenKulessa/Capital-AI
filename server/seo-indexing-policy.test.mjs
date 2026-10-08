@@ -55,6 +55,10 @@ test('SEO-00 is fail-closed for private, claim-sensitive, alias and unknown rout
   assert.equal(resolveSeoIndexingPolicy('/tokenomics').classification, 'BLOCKED');
   assert.equal(resolveSeoIndexingPolicy('/whale-radar').classification, 'BLOCKED');
   assert.equal(resolveSeoIndexingPolicy('/login').classification, 'NOINDEX');
+  for (const locale of ['de','en','it','fr','pt','es']) {
+    assert.equal(resolveSeoIndexingPolicy(`/${locale}/`).classification, 'NOINDEX');
+    assert.equal(isSeoIndexable(`/${locale}/`), false);
+  }
   assert.equal(resolveSeoIndexingPolicy('/dokumentation').classification, 'NOINDEX');
   assert.equal(resolveSeoIndexingPolicy('/documentation/byok.html').classification, 'NOINDEX');
   assert.equal(resolveSeoIndexingPolicy('/research').classification, 'BLOCKED');

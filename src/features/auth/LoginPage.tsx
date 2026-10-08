@@ -12,6 +12,9 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { BrandLogo } from '../../components/BrandLogo';
+import { useLocale } from '../../i18n/LocaleProvider';
+import { authCopy } from '../../i18n/authCopy';
+import { legalAvailabilityNotice } from '../../i18n/legalAvailability';
 import {
   prepareAuthenticationOptions,
   serializeAuthenticationCredential,
@@ -94,6 +97,8 @@ function newPasswordMeetsObservedPolicy(value: string) {
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFaq, onNavigateLegal }) => {
+  const {locale} = useLocale();
+  const tr = authCopy[locale];
   const [session, setSession] = useState<SessionState | null>(null);
   const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState('');
@@ -388,7 +393,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
     <main className="min-h-screen bg-[#02050e] px-4 py-8 text-slate-100 flex justify-center">
       <section className="w-full max-w-lg">
         <button onClick={onBackToHome} className="flex min-h-11 items-center gap-2 text-amber-300">
-          <ArrowLeft size={18} /> Zur Übersicht
+          <ArrowLeft size={18} /> {tr.back}
         </button>
 
         <div className="mt-6 rounded-3xl border border-amber-500/20 bg-slate-900/80 p-5 sm:p-8">
@@ -396,10 +401,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
           <div className="mt-6 flex items-center justify-between gap-3">
             <div>
               <h1 className="text-2xl font-bold">
-                {mode === 'forgot' ? 'Passwort vergessen' : mode === 'reset' ? 'Neues Passwort setzen' : mode === 'mfa' ? 'Authenticator bestätigen' : 'CAPITAL-AI Anmeldung'}
+                {mode === 'forgot' ? tr.forgot : mode === 'reset' ? tr.resetTitle : mode === 'mfa' ? tr.mfaTitle : tr.loginTitle}
               </h1>
               <p className="mt-2 text-sm text-slate-300">
-                Passkey, Google, E-Mail/Passwort und optionaler TOTP-Authenticator über eine serverseitige Supabase-Session.
+                {tr.intro}
               </p>
             </div>
             <span className="rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1 font-mono text-[10px] text-emerald-300">
@@ -407,8 +412,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
             </span>
           </div>
 
-          {error && <p role="alert" className="mt-4 rounded-xl bg-rose-500/10 p-3 text-sm text-rose-200">{error}</p>}
-          {notice && <p role="status" className="mt-4 rounded-xl bg-emerald-500/10 p-3 text-sm text-emerald-200">{notice}</p>}
+          {error && <p lang="de" role="alert" className="mt-4 rounded-xl bg-rose-500/10 p-3 text-sm text-rose-200">{error}</p>}
+          {notice && <p lang="de" role="status" className="mt-4 rounded-xl bg-emerald-500/10 p-3 text-sm text-emerald-200">{notice}</p>}
           {!session && !error && <p role="status" className="mt-4 text-sm text-slate-400">Supabase Session wird geprüft …</p>}
           {session && !session.configured && (
             <p role="status" className="mt-4 rounded-xl bg-amber-500/10 p-3 text-sm text-amber-200">
@@ -416,11 +421,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
             </p>
           )}
 
+          {mode === 'register' && locale !== 'de' && (
+            <p role="note" className="mt-4 rounded-xl border border-amber-400/25 bg-amber-400/10 p-3 text-xs text-amber-200">{legalAvailabilityNotice[locale]}</p>
+          )}
+
           {mode === 'mfa' && (
             <form onSubmit={verifyMfa} className="mt-5 space-y-3">
               <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-100">
                 <ShieldCheck className="mb-2 h-4 w-4" />
-                Dieses Konto verlangt einen zweiten Faktor. Öffne deine Authenticator-App und gib den aktuellen Code ein.
+                {tr.mfaPrompt}
               </div>
               {mfaFactors.length > 1 && (
                 <label className="block text-xs font-bold text-slate-300">
@@ -435,7 +444,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                 </label>
               )}
               <label className="block text-xs font-bold text-slate-300">
-                Einmalcode
+                {tr.oneTimeCode}
                 <input
                   inputMode="numeric"
                   autoComplete="one-time-code"
@@ -447,7 +456,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                 />
               </label>
               <button type="submit" disabled={busy || totpCode.length < 6} className="min-h-12 w-full rounded-xl bg-amber-400 font-black text-black disabled:opacity-40">
-                {busy ? 'Wird geprüft …' : 'Authenticator bestätigen'}
+                {busy ? 'Wird geprüft …' : tr.mfaConfirm}
               </button>
               <button
                 type="button"
@@ -455,7 +464,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                 disabled={busy}
                 className="min-h-11 w-full rounded-xl border border-cyan-400/30 bg-cyan-400/10 text-xs font-bold text-cyan-100 disabled:opacity-40"
               >
-                Andere Anmeldemethode wählen
+                {tr.otherMethod}
               </button>
               <p className="text-[11px] leading-relaxed text-slate-500">
                 Die Auswahl beendet die angefangene Sitzung und zeigt E-Mail, Google und Passkey erneut an. Ein aktivierter TOTP-Faktor wird dadurch nicht umgangen.
@@ -466,16 +475,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
           {mode === 'reset' && (
             <form onSubmit={submitReset} className="mt-5 space-y-3">
               <label className="block text-xs font-bold text-slate-300">
-                Neues Passwort
+                {tr.newPassword}
                 <input type="password" value={password} onChange={event => setPassword(event.target.value)} required minLength={14} maxLength={256} autoComplete="new-password" className="mt-1 w-full rounded-xl border border-white/15 bg-black/40 px-3 py-3 text-sm text-white" />
               </label>
               <label className="block text-xs font-bold text-slate-300">
-                Neues Passwort wiederholen
+                {tr.repeatNewPassword}
                 <input type="password" value={passwordConfirm} onChange={event => setPasswordConfirm(event.target.value)} required minLength={14} maxLength={256} autoComplete="new-password" className="mt-1 w-full rounded-xl border border-white/15 bg-black/40 px-3 py-3 text-sm text-white" />
               </label>
-              <p className="text-[11px] text-slate-500">Mindestens 14 Zeichen. Nach dem Reset werden alle Sitzungen beendet.</p>
+              <p className="text-[11px] text-slate-500">{tr.resetRules}</p>
               <button type="submit" disabled={busy} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-amber-400 font-black text-black disabled:opacity-40">
-                <RotateCcw size={18} /> {busy ? 'Wird geändert …' : 'Passwort neu setzen'}
+                <RotateCcw size={18} /> {busy ? 'Wird geändert …' : tr.resetButton}
               </button>
             </form>
           )}
@@ -490,10 +499,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                 </div>
               </label>
               <button type="submit" disabled={busy || !session?.configured} className="min-h-12 w-full rounded-xl bg-amber-400 font-black text-black disabled:opacity-40">
-                {busy ? 'Wird versendet …' : 'Passwort-Reset-Mail senden'}
+                {busy ? 'Wird versendet …' : tr.resetMail}
               </button>
               <button type="button" onClick={() => setMode('login')} className="min-h-11 w-full text-xs font-bold text-slate-400 hover:text-white">
-                Zurück zur Anmeldung
+                {tr.returnLogin}
               </button>
             </form>
           )}
@@ -517,17 +526,17 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
             <>
               <div className="mt-5 grid grid-cols-2 gap-1 rounded-xl border border-white/10 bg-black/30 p-1">
                 <button type="button" onClick={() => setMode('login')} className={`rounded-lg px-3 py-2 text-xs font-bold ${mode === 'login' ? 'bg-amber-400 text-black' : 'text-slate-400'}`}>
-                  Anmelden
+                  {tr.signIn}
                 </button>
                 <button type="button" onClick={() => setMode('register')} className={`rounded-lg px-3 py-2 text-xs font-bold ${mode === 'register' ? 'bg-[#8D26FF] text-white' : 'text-slate-400'}`}>
-                  Registrieren
+                  {tr.register}
                 </button>
               </div>
 
               <form onSubmit={submitEmail} className="mt-4 space-y-3">
                 {mode === 'register' && (
                   <label className="block text-xs font-bold text-slate-300">
-                    Name
+                    {tr.name}
                     <input value={name} onChange={event => setName(event.target.value)} required maxLength={120} className="mt-1 w-full rounded-xl border border-white/15 bg-black/40 px-3 py-3 text-sm text-white" />
                   </label>
                 )}
@@ -539,7 +548,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                   </div>
                 </label>
                 <label className="block text-xs font-bold text-slate-300">
-                  Passwort
+                  {tr.password}
                   <div className="relative mt-1">
                     <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
                     <input
@@ -557,7 +566,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                 {mode === 'register' && (
                   <>
                     <label className="block text-xs font-bold text-slate-300">
-                      Passwort wiederholen
+                      {tr.repeatPassword}
                       <div className="relative mt-1">
                         <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
                         <input
@@ -573,8 +582,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                       </div>
                     </label>
                     <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-[11px] leading-relaxed text-slate-400">
-                      <p>Mindestens 14 Zeichen. Eine lange, einzigartige Passphrase oder ein Passwortmanager wird empfohlen.</p>
-                      <p className="mt-1">CAPITAL-AI erzwingt keine künstlichen Groß-/Kleinbuchstaben- oder Sonderzeichenregeln.</p>
+                      <p>{tr.passwordHint}</p>
+                      <p className="mt-1">{tr.passwordRules}</p>
                     </div>
                     <label className="flex items-start gap-2 text-[11px] leading-relaxed text-slate-300">
                       <input
@@ -584,7 +593,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                         required
                         className="mt-0.5 h-4 w-4 accent-amber-400"
                       />
-                      <span>
+                      <span lang="de">
                         Ich akzeptiere die Nutzungsbedingungen.
                         {onNavigateLegal && (
                           <button type="button" onClick={() => onNavigateLegal('/agb')} className="ml-1 text-amber-300 underline">
@@ -601,7 +610,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                         required
                         className="mt-0.5 h-4 w-4 accent-amber-400"
                       />
-                      <span>
+                      <span lang="de">
                         Ich habe den Datenschutzhinweis gelesen.
                         {onNavigateLegal && (
                           <button type="button" onClick={() => onNavigateLegal('/datenschutz')} className="ml-1 text-amber-300 underline">
@@ -623,7 +632,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                 )}
                 {mode === 'login' && (
                   <button type="button" onClick={() => { setMode('forgot'); setError(''); setNotice(''); }} className="min-h-8 text-xs font-bold text-amber-300 hover:text-amber-200">
-                    Passwort vergessen?
+                    {tr.forgot}
                   </button>
                 )}
                 <button
@@ -636,7 +645,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                   className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-amber-400 font-black text-black disabled:opacity-40"
                 >
                   {mode === 'login' ? <LogIn size={18} /> : <UserPlus size={18} />}
-                  {busy ? 'Bitte warten …' : mode === 'login' ? 'Mit E-Mail anmelden' : 'Konto registrieren'}
+                  {busy ? 'Bitte warten …' : mode === 'login' ? tr.emailLogin : tr.createAccount}
                 </button>
               </form>
 
@@ -653,7 +662,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                   <button
                     type="submit"
                     disabled={!session?.configured || !termsAccepted || !privacyAcknowledged || busy}
-                    aria-label="Mit Google registrieren"
+                    aria-label={tr.googleRegister}
                     className="flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border border-white/15 bg-white text-sm font-bold text-slate-900 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                   <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 shrink-0">
@@ -662,14 +671,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                                     <path fill="#FBBC05" d="M6.39 13.93A6.02 6.02 0 0 1 6.08 12c0-.67.11-1.32.31-1.93V7.45H3.04A10 10 0 0 0 2 12c0 1.61.39 3.14 1.04 4.55l3.35-2.62Z" />
                                     <path fill="#EA4335" d="M12 5.94c1.47 0 2.79.5 3.82 1.5l2.87-2.87A9.64 9.64 0 0 0 12 2a10 10 0 0 0-8.96 5.45l3.35 2.62C7.18 7.7 9.39 5.94 12 5.94Z" />
                                   </svg>
-                    Mit Google registrieren
+                    {tr.googleRegister}
                   </button>
                 </form>
               ) : (
                 <a
                 href={`/api/auth/login/google?next=${encodeURIComponent(postAuthPath)}`}
                 className="flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border border-white/15 bg-white text-sm font-bold text-slate-900 transition hover:bg-slate-100"
-                aria-label="Mit Google anmelden"
+                aria-label={tr.googleLogin}
               >
                 <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 shrink-0">
                   <path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.54h3.24c1.9-1.75 2.98-4.32 2.98-7.41Z" />
@@ -677,7 +686,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                   <path fill="#FBBC05" d="M6.39 13.93A6.02 6.02 0 0 1 6.08 12c0-.67.11-1.32.31-1.93V7.45H3.04A10 10 0 0 0 2 12c0 1.61.39 3.14 1.04 4.55l3.35-2.62Z" />
                   <path fill="#EA4335" d="M12 5.94c1.47 0 2.79.5 3.82 1.5l2.87-2.87A9.64 9.64 0 0 0 12 2a10 10 0 0 0-8.96 5.45l3.35 2.62C7.18 7.7 9.39 5.94 12 5.94Z" />
                 </svg>
-                Mit Google anmelden
+                {tr.googleLogin}
               </a>
               )}
 
@@ -688,7 +697,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                 className="mt-3 flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border border-cyan-400/30 bg-cyan-400/10 text-sm font-black text-cyan-100 transition hover:bg-cyan-400/15 disabled:opacity-40"
               >
                 <Fingerprint className="h-5 w-5" />
-                Mit Passkey anmelden
+                {tr.passkeyLogin}
               </button>
             </>
           ) : null}
@@ -701,8 +710,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
           </p>
 
           <nav className="mt-6 flex flex-wrap gap-4 text-sm text-amber-300">
-            {onNavigateFaq && <button onClick={onNavigateFaq} className="min-h-11">Hilfe</button>}
-            {onNavigateLegal && <button onClick={() => onNavigateLegal('/datenschutz')} className="min-h-11">Datenschutz</button>}
+            {onNavigateFaq && <button onClick={onNavigateFaq} className="min-h-11">{tr.help}</button>}
+            {onNavigateLegal && <button onClick={() => onNavigateLegal('/datenschutz')} className="min-h-11">{tr.privacy}</button>}
           </nav>
         </div>
       </section>

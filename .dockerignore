@@ -71,6 +71,8 @@
 !server/nats-auth.mjs
 !server/private-provider-query.mjs
 !server/private-provider-query.test.mjs
+!server/render-owner-dashboard.mjs
+!server/render-owner-dashboard.test.mjs
 !server/kraken-order-dry-run.mjs
 !server/kraken-order-dry-run.test.mjs
 !server/uniswap-trading.mjs
@@ -181,6 +183,8 @@
 !generated/documentary/
 !generated/documentary/**
 !docs/
+!docs/business/
+!docs/business/MONETIZATION-DEEPSCAN-LEGAL-MATRIX-20261008.md
 !docs/licenses/
 !docs/licenses/**
 !docs/licenses/CAPITAL-AI-VOCABULARY-BADGE-CUSTOMER-LICENSE-1.0.md

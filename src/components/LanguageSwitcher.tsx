@@ -14,7 +14,15 @@ export function LanguageSwitcher() {
         value={locale}
         title={t('language')}
         aria-label={t('language')}
-        onChange={event => setLocale(event.target.value as Locale)}
+        onChange={event => {
+          const next = event.target.value as Locale;
+          setLocale(next);
+          // Keep language-specific homepage URLs truthful when users share them.
+          if (window.location.pathname === '/' || /^\/(?:de|en|it|fr|pt|es)\/?$/.test(window.location.pathname)) {
+            const path = next === 'de' ? '/' : `/${next}/`;
+            window.history.replaceState(window.history.state, '', path + window.location.search + window.location.hash);
+          }
+        }}
         className="w-[46px] sm:w-[100px] cursor-pointer appearance-none bg-transparent py-1 text-[11px] font-semibold text-slate-100 outline-none"
       >
         {LANGUAGES.map(({code,name}) => (

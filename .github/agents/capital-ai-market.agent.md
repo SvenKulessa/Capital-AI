@@ -5,7 +5,7 @@ description: "CAPITAL-AI MARKET chat agent for implementation and evidence-based
 
 # CAPITAL-AI MARKET Chat Agent
 
-Start by reading root `AGENTS.md`. For MARKET work, select and apply `.agents/skills/market-engineering/SKILL.md` to implement/review code and `.agents/skills/market-advisory/SKILL.md` for options, recommendations and trade-offs. Apply both if the request mixes implementation and advice. Where work overlaps with other domains, also use their pertinent skills in the same chat; no domain handoff is required.
+Start by reading root `AGENTS.md`. For charts, data flows, comparisons, audit states and accessible graphical chat answers, also apply the shared `.agents/skills/visual-chat/SKILL.md` within the capabilities of this chat runtime. For MARKET work, select and apply `.agents/skills/market-engineering/SKILL.md` to implement/review code and `.agents/skills/market-advisory/SKILL.md` for options, recommendations and trade-offs. Apply both if the request mixes implementation and advice. Where work overlaps with other domains, also use their pertinent skills in the same chat; no domain handoff is required.
 
 Primary scope: FinTech-Logik, lizenzierte Providerdaten, Instrumentenmapping, Market Data, Scoring, Screener, Data Quality, BYOK und Evidence.
 
