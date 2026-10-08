@@ -73,6 +73,18 @@ Diese Transparenzregel gilt einheitlich für **PRODUCT, MARKET, PLATFORM, TRUST 
 4. **Kostenverursachende Aktionen:** Vor einem neuen kostenpflichtigen Tarif, einer abrechenbaren Ressourcenaktivierung oder einer nicht bereits freigegebenen Überschreitung von Kosten-/Nutzungslimits den erwartbaren Kostenrahmen und eine Alternative nennen und die ausdrückliche Zustimmung des Human Repository Owners einholen. Bereits freigegebene reguläre Nutzung innerhalb bekannter Limits benötigt keine erneute Einzelgenehmigung. Vertragsabschluss und Zahlungsfreigabe bleiben Owner-Handlungen.
 5. **Kein Entwicklungs-Gate:** Reine Information, kostenlose Tool-Nutzung, Implementierung, Tests und PR-Erstellung werden dadurch nicht blockiert. Diese Regel erzeugt keine neuen GitHub Required Checks, generellen Admissions, Handoffs oder zusätzlichen Pflichtreviews; bestehende Security-, Lizenz- und Production-Grenzen bleiben unverändert.
 
+## Nutzergebundene Provider Keys / Private BYOK
+
+Fachliche Provider-API-Keys in CAPITAL-AI sind **nutzereigene Secrets**, die ausschließlich über die private Vault-Verbindung des jeweils authentifizierten Nutzers verwaltet und verwendet werden. Diese Anforderung gilt domainübergreifend für PRODUCT, MARKET, PLATFORM, TRUST und GROWTH und ersetzt keine tatsächliche Providerberechtigung.
+
+- **Identität und Mandantenisolation:** Provider-Key-Zugriffe ausschließlich serverseitig nach Authentifizierung des konkreten Nutzers, mit dessen User-ID als durch Signatur, Berechtigungen und Zustand verifizierte Vertrauensgrenze. Kein anderer Nutzer, öffentlicher Endpoint oder geteilter Worker darf diesen Key oder dessen private Ergebnisse abrufen.
+- **Nutzung und Verarbeitung:** Least Privilege, serverseitige Secret-Entschlüsselung, Provider-/Scope- und Quota-/Kostenlimits; niemals API-Keys oder Provider-Credentials an Browser, Frontend-Bundles, Repository, CI-Logs, Prompts, Chat-Antworten, öffentliche Marktdaten-Events oder gemeinsame Cache-Keys weitergeben.
+- **Private Daten bleiben privat:** Nutzer- und Provider-gebundene API-Ergebnisse dürfen nicht allein durch ihre technische Verfügbarkeit als öffentliche Marktwerte, gemeinsam abonnierbare WebSockets, JetStream-`CAPITAL_FACTS`-Nachrichten oder öffentliche Screener-Daten verteilt werden. Getrennte private Request-/Response-Kanäle ohne geteilte Kurs-Cache-Publikation verwenden. Data-Retention nur soweit tatsächlich berechtigt und technisch erforderlich.
+- **Öffentliche Daten separat:** Für anonyme / öffentliche Kursanzeige bestehen eigene Datenquellen- und Nutzungsrechte. Ein Nutzer-BYOK-Key verleiht CAPITAL-AI keine globale kommerzielle Redistribitionslizenz. Öffentliche Marktdatenendpunkte ohne API-Key sind nicht als authentifizierte private Providerendpunkte darzustellen.
+- **Technische Dienst-Secrets:** Infrastrukturzugangsdaten wie Render-Service- oder Supabase-Service-Role-, NATS- und SMTP-Schlüssel sind keine nutzereigenen Provider-BYOK-Keys; sie bleiben in separaten serverseitigen Secrets mit eigenem Berechtigungsumfang.
+
+Diese konkrete Trust Boundary erzeugt **keine** zusätzlichen GitHub Required Checks, allgemeinen Vorabfreigaben, Domain-Handoffs oder Entwicklungssperren. Ein späteres Production-Enablement, Providerkosten, Datenweitergabe oder eine rechtsverbindliche Lizenzentscheidung benötigen jeweils ihre tatsächlich anwendbare Berechtigung.
+
 ## Production
 
 - Production ausschließlich aus `main`.

@@ -432,7 +432,7 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault, sta
       json(res, 200, {
         provider: input.provider,
         operation: input.operation,
-        dataScope: CONTRACT.dataPolicy.scope,
+        dataScope: CONTRACT.providers[input.provider].operations[input.operation].dataScope || CONTRACT.dataPolicy.scope,
         redistributionAllowed: false,
         publicDisplayAllowed: false,
         sharedCacheAllowed: false,

@@ -218,3 +218,53 @@ test('proof that expires during durable claim is rejected before provider I/O', 
     assert.equal(providerCalls, 0);
   } finally { Date.now = original; }
 });
+
+test('private BYOK market snapshots require exact provider and symbol without public privileges',async()=>{
+  for (const [provider,symbol] of [['binance','BTCUSDT'],['kraken','BTCUSD']]){
+    assert.deepEqual(validateProviderQueryRequest({provider,operation:'market.spot_trade',params:{symbol}}),
+      {provider,operation:'market.spot_trade',params:{symbol}});
+    assert.throws(()=>validateProviderQueryRequest({provider,operation:'market.spot_trade',params:{symbol:'ETHUSD'}}),
+      /INVALID_PARAM_VALUE/);
+    assert.throws(()=>validateProviderQueryRequest({provider,operation:'market.spot_trade',params:{symbol,apiKey:'leak'}}),
+      /PARAM_NOT_ADMITTED/);
+    assert.throws(()=>validateProviderQueryRequest({provider,operation:'market.spot_trade',params:{}}),
+      /REQUIRED_PARAM_MISSING/);
+  }
+  const userRef='11111111-1111-4111-8111-111111111111';
+  const envelope=createProviderQueryEnvelope({
+    userRef,requestId:'private-market-test-1',provider:'kraken',
+    operation:'market.spot_trade',params:{symbol:'BTCUSD'},
+  },env);
+  let claims=0,seenUser=null;
+  const state={claimProviderQuery:async claim=>{claims++;assert.equal(claim.envelope.userRef,userRef);}};
+  const vault={executePrivateQuery:async(u,p,o,params)=>{
+    seenUser=u;assert.equal(p,'kraken');assert.equal(o,'market.spot_trade');
+    assert.deepEqual(params,{symbol:'BTCUSD'});
+    return {price:84000,dataScope:'USER_PRIVATE_MARKET_DATA',publicDisplayAllowed:false};
+  }};
+  const row=await executeGuardedProviderQuery({envelope,env,state,vault});
+  assert.equal(row.price,84000);
+  assert.equal(claims,1);
+  assert.equal(seenUser,userRef);
+  await assert.rejects(executeGuardedProviderQuery({
+    envelope:{...envelope,userRef:'22222222-2222-4222-8222-222222222222'},env,state,vault,
+  }),/INVALID_QUERY_PROOF/);
+  assert.equal(claims,1);
+});
+
+test('user-scoped WebSocket snapshot request requires fixed symbol and separately signed operation',()=>{
+  for (const [provider,symbol] of [['kraken','BTCUSD'],['binance','BTCUSDT']]) {
+    const valid={provider,operation:'market.spot_ws_snapshot',params:{symbol}};
+    assert.deepEqual(validateProviderQueryRequest(valid),valid);
+    assert.throws(()=>validateProviderQueryRequest({...valid,params:{symbol:'XBTGBP'}}),/INVALID_PARAM_VALUE/);
+    assert.throws(()=>validateProviderQueryRequest({...valid,params:{symbol,apiSecret:'forbidden'}}),/PARAM_NOT_ADMITTED/);
+    assert.throws(()=>validateProviderQueryRequest({...valid,params:{}}),/REQUIRED_PARAM_MISSING/);
+    const envelope=createProviderQueryEnvelope({
+      userRef:'11111111-1111-4111-8111-111111111111',requestId:'ws-private-1',
+      ...valid,
+    },env);
+    assert.equal(verifyProviderQueryEnvelope(envelope,env),true);
+    assert.equal(verifyProviderQueryEnvelope({...envelope,operation:'market.spot_trade'},env),false);
+    assert.equal(verifyProviderQueryEnvelope({...envelope,userRef:'22222222-2222-4222-8222-222222222222'},env),false);
+  }
+});
