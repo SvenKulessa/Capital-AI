@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "CAPITAL_AI_DOMAIN_SKILLS@1",
+  "authority": "AGENTS.md",
+  "contract": "SOLO_MAINTAINER_FLOW@1",
+  "discoveryRoot": ".agents/skills",
+  "domains": {
+    "PRODUCT": {
+      "scope": "Frontend, React/TypeScript, UX, Accessibility, Navigation, Nutzerkonten, Client-Auth und sichere Produktflows",
+      "engineering": "product-engineering",
+      "advisory": "product-advisory",
+      "chatAgent": ".github/agents/capital-ai-product.agent.md"
+    },
+    "MARKET": {
+      "scope": "FinTech-Logik, lizenzierte Providerdaten, Instrumentenmapping, Market Data, Scoring, Screener, Data Quality, BYOK und Evidence",
+      "engineering": "market-engineering",
+      "advisory": "market-advisory",
+      "chatAgent": ".github/agents/capital-ai-market.agent.md"
+    },
+    "PLATFORM": {
+      "scope": "Render, Docker/OCI, GHCR, Rust/Node, NATS JetStream, Valkey, Supabase-Infrastruktur, CI/CD, Observability und Releases",
+      "engineering": "platform-engineering",
+      "advisory": "platform-advisory",
+      "chatAgent": ".github/agents/capital-ai-platform.agent.md"
+    },
+    "TRUST": {
+      "scope": "AppSec, Threat Modeling, Auth-Grenzen, Datenschutz, Compliance, Supply Chain, SBOM, QA, Risiko- und Evidence-Bewertung",
+      "engineering": "trust-engineering",
+      "advisory": "trust-advisory",
+      "chatAgent": ".github/agents/capital-ai-trust.agent.md"
+    },
+    "GROWTH": {
+      "scope": "Dokumentation, SEO, Content Engine, Social, Podcast/Video, Public Claims, Branding, Analytics und Release-Kommunikation",
+      "engineering": "growth-engineering",
+      "advisory": "growth-advisory",
+      "chatAgent": ".github/agents/capital-ai-growth.agent.md"
+    }
+  }
+}

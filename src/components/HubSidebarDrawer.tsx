@@ -328,7 +328,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
     glowColor: 'rgba(244, 63, 94, 0.45)',
     accentBg: 'bg-rose-500/15 border-rose-500/50 text-rose-300',
     icon: <ShieldCheck className="w-5 h-5 text-rose-400" />,
-    badge: '11 Reiter',
+    badge: '12 Reiter',
     description: 'v1.0 Go-Live Roadmap mit 11 Ownern, Executive Cockpit, Console, Team-Rollen & Cost Center.',
     mainPath: '/control-center',
     subpages: [
@@ -372,6 +372,14 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         badge: 'Research',
         shortDesc: 'Forschungs- und Tokenomics-Übersicht',
         path: '/control-center?tab=research',
+      },
+      {
+        id: 'news',
+        name: 'News & Repository-Updates',
+        icon: <FileCode className="w-4 h-4 text-cyan-400" />,
+        badge: 'Blog',
+        shortDesc: 'Quellgebundene Blogentwürfe nach jeweils 20 gemergten PRs',
+        path: '/control-center?tab=news',
       },
       {
         id: 'console',
