@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { QuoteDeliverySchema, instrumentCatalog, isFresh } from '../../shared/market-contracts.mjs';
 import type { MarketAsset } from '../types';
+import { projectCanonicalAssetValue } from './marketValuesProjection';
 
 export let MARKET_ASSETS: MarketAsset[] = [];
 const listeners = new Set<() => void>();
@@ -30,17 +31,36 @@ export function toMarketAsset(value: unknown): MarketAsset {
 async function refresh() {
   controller = new AbortController();
   const signal = controller.signal;
-  const results = await Promise.allSettled(Object.keys(instrumentCatalog).map(async symbol => {
-    const response = await fetch(`/api/market/quote?symbol=${encodeURIComponent(symbol)}`, { cache: 'no-store', signal: AbortSignal.any([signal, AbortSignal.timeout(6000)]) });
-    if (!response.ok) throw new Error('QUOTE_UNAVAILABLE');
-    const value = QuoteDeliverySchema.parse(await response.json());
-    if (value.symbol !== symbol) throw new Error('SYMBOL_MISMATCH');
-    return toMarketAsset(value);
-  }));
-  if (signal.aborted || !users) return;
-  MARKET_ASSETS = results.flatMap(result => result.status === 'fulfilled' ? [result.value] : []);
-  emit();
-  timer = setTimeout(() => void refresh(), 5000);
+  try {
+    // One bounded batch replaces a request per instrument every five seconds.
+    const response = await fetch('/api/market/values', {
+      cache: 'no-store',
+      signal: AbortSignal.any([signal, AbortSignal.timeout(8000)]),
+    });
+    if (!response.ok) throw new Error('MARKET_VALUES_UNAVAILABLE');
+    const body: unknown = await response.json();
+    if (!body || typeof body !== 'object' || !('schema' in body) ||
+        body.schema !== 'CAPITAL_AI_ASSET_VALUES@1' ||
+        !('status' in body) || body.status !== 'READY' ||
+        !('values' in body) || !Array.isArray(body.values) ||
+        body.values.length > Object.keys(instrumentCatalog).length) {
+      throw new Error('MARKET_VALUES_INVALID');
+    }
+    const next = body.values.map(value => projectCanonicalAssetValue(value));
+    if (new Set(next.map(value => value.symbol)).size !== next.length) {
+      throw new Error('MARKET_VALUES_DUPLICATED');
+    }
+    if (signal.aborted || !users) return;
+    MARKET_ASSETS = next;
+    emit();
+  } catch {
+    if (signal.aborted || !users) return;
+    // Stale or unverifiable market values must never remain visible.
+    MARKET_ASSETS = [];
+    emit();
+  } finally {
+    if (!signal.aborted && users > 0) timer = setTimeout(() => void refresh(), 60_000);
+  }
 }
 function subscribe(listener: () => void) {
   listeners.add(listener); users++;
