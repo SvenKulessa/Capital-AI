@@ -51,3 +51,15 @@ test('SEO-02 returns no metadata for routes that are not admitted by SEO-01', ()
     assert.equal(seoJsonLdForPath(route), null, route);
   }
 });
+
+test('public license deep links agree with the canonical license metadata', async () => {
+  const { licenseMetadata } = await import('../shared/license-metadata.mjs');
+  for (const [path, license] of Object.entries(licenseMetadata)) {
+    const seo = seoMetadataForPath(path);
+    assert.ok(seo, path);
+    assert.equal(seo.title, license.title, path);
+    assert.equal(seo.description, license.description, path);
+    assert.equal(seo.canonical, `https://capital-ai.online${path}`, path);
+    assert.doesNotMatch(JSON.stringify(seo.jsonLd), /FinTech-Forschung|Forschungsprojekt/);
+  }
+});

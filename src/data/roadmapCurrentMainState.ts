@@ -10,7 +10,7 @@ export const ROADMAP_RECONCILIATION = Object.freeze({
   schema: 'CAPITAL_AI_ROADMAP_RECONCILIATION@1',
   baseMainSha: '0bf052cbc8f7774db29cc77493f6f24bb28bd93b',
   reviewedAt: '2026-10-06',
-  packageCount: 109,
+  packageCount: 104,
   packageSources: [
   {
     "id": "AP-AGT-01",
@@ -273,18 +273,6 @@ export const ROADMAP_RECONCILIATION = Object.freeze({
     "source": "src/data/roadmapData.ts"
   },
   {
-    "id": "CA-MARKET-PRIVACY-UTILITY-TOKENOMICS",
-    "source": "src/data/trustArchitectureAWorkPackages.ts"
-  },
-  {
-    "id": "CA-MARKET-SCIENTIFIC-MODEL-REGISTRY",
-    "source": "src/data/trustArchitectureAWorkPackages.ts"
-  },
-  {
-    "id": "CA-MARKET-TOKENOMICS-BLOCKCHAIN-BENCH",
-    "source": "src/data/trustArchitectureAWorkPackages.ts"
-  },
-  {
     "id": "CA-PLATFORM-APP-READ-CONSUME",
     "source": "src/data/roadmapData.ts"
   },
@@ -311,10 +299,6 @@ export const ROADMAP_RECONCILIATION = Object.freeze({
   {
     "id": "CA-PLATFORM-GITHUB-COSTS",
     "source": "src/data/roadmapData.ts"
-  },
-  {
-    "id": "CA-PLATFORM-GRAPHRAG-RESEARCH-FABRIC",
-    "source": "src/data/trustArchitectureAWorkPackages.ts"
   },
   {
     "id": "CA-PLATFORM-IONOS-SMTP",
@@ -383,10 +367,6 @@ export const ROADMAP_RECONCILIATION = Object.freeze({
   {
     "id": "CA-TRUST-APP-READ-DESIGN",
     "source": "src/data/roadmapData.ts"
-  },
-  {
-    "id": "CA-TRUST-AUTONOMOUS-RESEARCH-GOVERNANCE",
-    "source": "src/data/trustArchitectureAWorkPackages.ts"
   },
   {
     "id": "CA-TRUST-DAILY-SUPPLY-CHAIN",

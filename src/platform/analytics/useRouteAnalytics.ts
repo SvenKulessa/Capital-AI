@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import {
-  RESEARCH_ROUTES,
-  researchMetadata,
-  type ResearchRoute,
-} from '../../data/researchLicenses';
+  LICENSE_ROUTES,
+  licenseMetadata,
+  type LicenseRoute,
+} from '../../data/providerLicenseReview';
 import {
   initGoogleAnalytics,
   trackPageView,
@@ -18,9 +18,9 @@ type StaticRouteMetadata = {
 };
 
 const DEFAULT_METADATA: StaticRouteMetadata = {
-  title: 'Capital-AI | FinTech-Forschung & Market Intelligence',
+  title: 'Capital-AI | Market Intelligence & BYOK',
   description:
-    'Capital-AI erforscht günstige gehostete Infrastruktur, Datenintegrität und nachvollziehbares Multi-Asset-Scoring. Forschungsbedingungen und Datenrechte transparent prüfen.',
+    'Capital-AI verbindet eigene Providerzugänge mit nachvollziehbarer Marktanalyse, BYOK und überprüfbaren Datenrechten.',
   canonicalPath: '/',
 };
 
@@ -134,8 +134,8 @@ export function useRouteAnalytics(currentRoute: string) {
       return;
     }
 
-    if (RESEARCH_ROUTES.includes(currentRoute as ResearchRoute)) {
-      const meta = researchMetadata[currentRoute as ResearchRoute];
+    if (LICENSE_ROUTES.includes(currentRoute as LicenseRoute)) {
+      const meta = licenseMetadata[currentRoute as LicenseRoute];
       updatePageSEO({ ...meta, canonicalPath: currentRoute });
       trackPageView(currentRoute, meta.title);
       return;

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { milestone, sanitizedTitle, sourcePath, draftBlog } from './merge-milestone.mjs';
+import { milestone, milestoneDay, sanitizedTitle, sourcePath, draftBlog } from './merge-milestone.mjs';
 
 const make = number => ({
   number, merged_at: new Date(Date.UTC(2026, 9, 1, 0, number)).toISOString(),
@@ -30,4 +30,11 @@ test('file evidence cannot escape the repository root', () => {
   assert.equal(sourcePath('../secrets'), null);
   assert.equal(sourcePath('/dev/null'), null);
   assert.equal(sourcePath('src/data/roadmapData.ts'), 'src/data/roadmapData.ts');
+});
+
+test('milestone date is stable across retries and rejects invalid merge timestamps', () => {
+  assert.equal(milestoneDay('2026-10-08T05:48:16Z'), '20261008');
+  assert.equal(milestoneDay('2026-10-08T23:59:59.500Z'), '20261008');
+  assert.throws(() => milestoneDay('20261008'), /INVALID_MILESTONE_MERGED_AT/);
+  assert.throws(() => milestoneDay('2026-13-08T05:48:16Z'), /INVALID_MILESTONE_MERGED_AT/);
 });

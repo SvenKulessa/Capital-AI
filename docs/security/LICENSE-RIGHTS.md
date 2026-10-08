@@ -7,7 +7,7 @@
 im ChatGPT-Projekt CAPITAL-AI-SOCIAL und die anschließende Weiterentwicklung
 in Google AI Studio / FRONTEND mit Gemini präzisiert. Siehe
 [neue Herkunftsangabe](evidence/hero-owner-statement-20261001.json) und
-[Forschungs-/Importprüfung](FRONTEND-RESEARCH-HANDOFF-20261001.md).
+[Lizenzrechte-Prüfstand](evidence/license-rights-review.json).
 Die historische Prüfung unten bleibt nachvollziehbar; fehlende Original-Laufdaten
 oder zeitlich passende Dienstbedingungen werden nicht als vorhanden behauptet.
 

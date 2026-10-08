@@ -6,7 +6,6 @@ export type Intent =
   | "explain"
   | "compare"
   | "risk"
-  | "research"
   | "scenario"
   | "market"
   | "smalltalk";
@@ -20,15 +19,6 @@ export type GraphHit = {
   score: number;
   hop: number;
   relation?: string;
-};
-
-export type ResearchBrief = {
-  question: string;
-  hypotheses: string[];
-  hits: GraphHit[];
-  method: string;
-  confidence: number;
-  caveat: string;
 };
 
 export type TraceKind = "hear" | "classify" | "retrieve" | "reason" | "speak";
