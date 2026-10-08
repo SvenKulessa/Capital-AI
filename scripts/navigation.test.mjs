@@ -6,9 +6,8 @@ import { APP_NAVIGATION_EVENT, navigateAppLocation, readHubTab, resolveNavigatio
 test('all current sideboard tab links retain their hub and tab', () => {
   const sidebar = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
   const links = [...sidebar.matchAll(/path: '([^']+\?tab=[^']+)'/g)].map(match => match[1]);
-  assert.equal(links.length, 25);
+  assert.equal(links.length, 24);
   assert.ok(links.includes('/control-center?tab=news'));
-  assert.ok(links.includes('/control-center?tab=research'));
   assert.ok(links.includes('/studio?tab=console'));
   assert.ok(links.includes('/learning?tab=flashcards'));
   assert.ok(links.includes('/learning?tab=videos'));
@@ -75,14 +74,15 @@ test('same-hub transitions notify subscribers and avoid duplicate history', () =
   }
 });
 
-test('legal and research deep links retain their destination and query state', () => {
-  for (const route of ['/lizenz', '/datenprovider-lizenzen', '/opensource-lizenzen', '/forschung', '/impressum', '/datenschutz', '/agb']) {
+test('license and legal deep links retain their destination and query state', () => {
+  for (const route of ['/lizenz', '/datenprovider-lizenzen', '/opensource-lizenzen', '/impressum', '/datenschutz', '/agb']) {
     assert.equal(resolveAppRoute(route), route);
     assert.equal(resolveNavigationTarget(route.toUpperCase() + '/?ref=footer#details'), route + '?ref=footer#details');
   }
   assert.equal(resolveNavigationTarget('/academic-terms?provider=binance'), '/datenprovider-lizenzen?provider=binance');
   assert.equal(resolveAppRoute('/oss'), '/opensource-lizenzen');
-  assert.equal(resolveAppRoute('/research'), '/forschung');
+  assert.equal(resolveAppRoute('/research'), '/');
+  assert.equal(resolveAppRoute('/forschung'), '/');
   assert.equal(resolveAppRoute('/__proto__'), '/');
 });
 
@@ -202,5 +202,5 @@ test('documentation hub catalog links to the existing content instead of reopeni
   }
   assert.match(home, /window\.location\.assign\(subpage\.path\)/);
   assert.match(catalog, /window\.location\.assign\(subpage\.path\)/);
-  assert.ok(catalog.includes("badge: '13 Bereiche'"));
+  assert.ok(catalog.includes("badge: '12 Bereiche'"));
 });

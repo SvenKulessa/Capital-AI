@@ -22,8 +22,8 @@ function projectSchema() {
   return {
     '@type': 'Project',
     '@id': `${SEO_SITE_ORIGIN}/#project`,
-    name: 'Capital-AI FinTech-Forschungsprojekt',
-    description: 'Forschungs- und Entwicklungsprojekt zu Datenintegrität, gehosteter Infrastruktur und nachvollziehbarem Multi-Asset-Scoring.',
+    name: 'Capital-AI',
+    description: 'Software-Plattform für Market Intelligence, BYOK-Providerzugänge und dokumentierte Daten- und Nutzungsrechte.',
     url: `${SEO_SITE_ORIGIN}/`,
     logo: `${SEO_SITE_ORIGIN}/branding/asset-pack/avatars/capital-ai-avatar-512x512.png`,
   };

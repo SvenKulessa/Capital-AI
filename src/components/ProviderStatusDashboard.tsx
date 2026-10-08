@@ -1,7 +1,7 @@
 import React from 'react';
 import { MarketStatusSchema } from '../../shared/market-contracts.mjs';
 import { useMarketAssets } from '../services/marketDataStore';
-import { researchProviders } from '../data/researchLicenses';
+import { providerLicenseReviews } from '../data/providerLicenseReview';
 export interface ProviderStatusDashboardProps { onBackToHome?: () => void; onNavigateArchitecture?: () => void; onNavigateLogin?: () => void; isStandaloneView?: boolean; }
 export const ProviderStatusDashboard: React.FC<ProviderStatusDashboardProps> = ({ onBackToHome }) => {
  const assets = useMarketAssets();
@@ -17,9 +17,9 @@ export const ProviderStatusDashboard: React.FC<ProviderStatusDashboardProps> = (
  <dl className="grid grid-cols-2 gap-3 my-4"><dt>Redis</dt><dd>{status?.infrastructure?.redis ?? 'unavailable'}</dd><dt>NATS JetStream</dt><dd>{status?.infrastructure?.nats ?? 'unavailable'}</dd><dt>Gesamtzustand</dt><dd>{status?.infrastructure?.status ?? 'unavailable'}</dd><dt>Belegte Quotes</dt><dd>{assets.length}</dd></dl>
  <p className="text-sm text-slate-400">Status wird vom Backend abgefragt. Ohne bestätigte Provider-Facts werden keine Preise oder gemessenen Latenzen angezeigt.</p>
  <section aria-labelledby="provider-license-heading" className="mt-5 rounded-2xl border border-amber-500/30 bg-[#090e21] p-4">
-   <h3 id="provider-license-heading" className="font-bold text-amber-300">Datenlizenzen & Forschungsbedingungen</h3>
+   <h3 id="provider-license-heading" className="font-bold text-amber-300">Datenlizenzen & kommerzielle Nutzungsrechte</h3>
    <p className="mt-2 text-xs text-slate-400">Verfügbarkeit und Nutzungsrechte werden getrennt geprüft. Dieser Dokumentationsstand aktiviert keine Datenfeeds.</p>
-   <ul className="my-3 text-sm space-y-2">{researchProviders.map(provider => <li key={provider.id}>{provider.name} · <span className="text-amber-200">{provider.status}</span></li>)}</ul>
+   <ul className="my-3 text-sm space-y-2">{providerLicenseReviews.map(provider => <li key={provider.id}>{provider.name} · <span className="text-amber-200">{provider.status}</span></li>)}</ul>
    <a href="/datenprovider-lizenzen" className="text-cyan-300 underline">Quellen, Bedingungen und druckbaren Prüfbericht ansehen</a>
  </section>
  <ul className="mt-4 space-y-3">{assets.map(asset => <li key={asset.id} className="border-t border-slate-700 pt-3"><strong>{asset.symbol}: {asset.value}</strong><p className="text-xs text-slate-400">{asset.provider} · {asset.dataAvailability} · {asset.observedAt === undefined ? 'Zeitpunkt nicht verfügbar' : new Date(asset.observedAt).toLocaleString('de-DE')}</p>{asset.evidenceId && <a className="text-xs text-cyan-300 break-all" href={`/api/market/evidence?id=${encodeURIComponent(asset.evidenceId)}`} target="_blank" rel="noreferrer">Evidence prüfen</a>}</li>)}</ul>
