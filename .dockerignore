@@ -47,6 +47,8 @@
 !server/social-media/oauth-callback.test.mjs
 !server/social-media/asset-readback.mjs
 !server/social-media/asset-readback.test.mjs
+!server/social-media/provider-external-readback.mjs
+!server/social-media/provider-external-readback.test.mjs
 !server/prompt-injection-guard.mjs
 !server/prompt-injection-guard.test.mjs
 !server/advisor-security.test.mjs
