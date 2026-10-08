@@ -106,11 +106,11 @@
     {
       "id": "TA-MARKET-RUNTIME",
       "path": "server/market.mjs",
-      "blobSha": "44811a06fc1ccb315aaea32ccbaf9a6290b68430",
+      "blobSha": "cd20902e953c6f2fa0412d8bd4429be9527492c2",
       "role": "Current fail-closed market runtime",
       "recorrelatedAt": "2026-10-08",
       "recorrelationBaseMain": "4d353d21e6191ce2335f7b1cfebf630f31cb25a1",
-      "recorrelationReason": "MARKET website assets adapter changes server/market.mjs; branch-head Git blob bound, not a production admission or license grant"
+      "recorrelationReason": "TRUST spot readiness adds read-only asset coverage to market runtime; branch-head Git blob bound, not production provider admission, commercial data rights or a trading license"
     },
     {
       "id": "TA-MARKET-WP",

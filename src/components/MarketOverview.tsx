@@ -148,7 +148,7 @@ export const MarketOverview: React.FC<MarketOverviewProps> = ({ onSelectAsset, o
             Globale Märkte im Überblick
           </h2>
           <p className="text-[11px] text-slate-400">
-            Komplettes Asset Universum: Krypto, Aktien, Indizies, Forex & Rohstoffe
+            Verifizierte Kurse aus zugelassenen Datenquellen · weitere Klassen nach Anbindung
           </p>
         </div>
         <button
@@ -269,15 +269,13 @@ export const MarketOverview: React.FC<MarketOverviewProps> = ({ onSelectAsset, o
                   <div className="text-[15px] font-bold text-white tracking-tight leading-snug font-mono mt-1">
                     {asset.value}
                   </div>
-                  <div
-                    className={`text-[11px] font-bold leading-tight mt-0.5 flex items-center gap-0.5 ${
-                      asset.isPositive ? 'text-[#44DE88]' : 'text-[#F87171]'
-                    }`}
-                  >
-                    {asset.change !== 'Nicht verfügbar' && asset.isPositive ? (
-                      <TrendingUp className="w-3 h-3" />
-                    ) : (
-                      <TrendingDown className="w-3 h-3" />
+                  <div className={`text-[11px] font-bold leading-tight mt-0.5 flex items-center gap-0.5 ${
+                    asset.change === 'Nicht verfügbar'
+                      ? 'text-slate-400'
+                      : asset.isPositive ? 'text-[#44DE88]' : 'text-[#F87171]'
+                  }`}>
+                    {asset.change !== 'Nicht verfügbar' && (
+                      asset.isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />
                     )}
                     <span>{asset.change}</span>
                   </div>
@@ -285,6 +283,7 @@ export const MarketOverview: React.FC<MarketOverviewProps> = ({ onSelectAsset, o
 
                 {/* Sparkline Neon Graph & Subtle bottom neon border */}
                 <div className="relative h-9 w-full mt-2.5 overflow-hidden flex items-end">
+                  {asset.sparklinePath ? (
                   <svg
                     viewBox="0 0 200 45"
                     className="w-full h-8 overflow-visible"
@@ -317,6 +316,9 @@ export const MarketOverview: React.FC<MarketOverviewProps> = ({ onSelectAsset, o
                       filter={`url(#glow-${asset.id})`}
                     />
                   </svg>
+                  ) : (
+                    <p className="w-full text-center text-[10px] text-slate-500">Keine verifizierte Kurshistorie</p>
+                  )}
                 </div>
 
                 {/* Bottom glowing accent edge */}
