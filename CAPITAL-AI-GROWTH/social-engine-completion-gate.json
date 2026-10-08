@@ -3,7 +3,7 @@
   "id": "CAPITAL-AI-SOCIAL-ENGINE-COMPLETION-20261006",
   "workPackage": "CAPITAL-AI-FINANCE-SOCIAL-MARKET-MIGRATION-01",
   "point": "06_SOCIAL_ENGINE_MIGRATION_COMPLETION_GATE",
-  "correlatedMain": "c881081e1d6a08e1babd98c15371f6a8615d645b",
+  "correlatedMain": "07b34ab4cbbd4df9624f49fe072b3173e72446af",
   "declaredState": "BLOCKED",
   "blockingFollowUp": "CAPITAL-AI-FINANCE-SCORING-DATA-FOLLOWUP-01",
   "policy": {
@@ -22,12 +22,20 @@
     "src/platform/SocialMediaEngine/Visualization/PlanningVisual.ts",
     "src/platform/SocialMediaEngine/Visualization/D3PlanningVisualAdapter.ts",
     "src/platform/SocialMediaEngine/Visualization/PlanningVisualMediaProjectAdapter.ts",
-    "src/platform/SocialMediaEngine/SocialMediaGeneratorService.ts",
-    "server/socialMedia/textContentGeneration.ts",
-    "server/socialMedia/contentApproval.ts",
-    "server/socialMedia/voiceContract.ts",
-    "server/socialMedia/platformPublishers.ts",
-    "server/socialMedia/publicationAnalyticsEvidence.ts"
+    "src/platform/SocialMediaEngine/Publishing/MediaProjectPublisherBridge.ts",
+    "src/contracts/contentEngine.ts",
+    "server/growth-ai-gateway.ts",
+    "src/contracts/contentSocialPackage.ts",
+    "src/contracts/socialPublisherAdapter.ts",
+    "src/contracts/contentSocialAttribution.ts",
+    "server/social-media/provider-adapter.mjs",
+    "server/social-media/provider-store.mjs",
+    "server/social-media/provider-publish.mjs",
+    "server/social-media/provider-execution.mjs",
+    "server/social-media/provider-readback.mjs",
+    "server/social-media/provider-external-readback.mjs",
+    "server/social-media/asset-readback.mjs",
+    "server/social-media/oauth-callback.mjs"
   ],
   "requiredRendererArtifacts": [
     "scripts/media/capital_ai_media.py",
@@ -40,7 +48,12 @@
     "CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json",
     "docs/licenses/SOCIAL-MEDIA-ENGINE-THIRD-PARTY-NOTICES.md",
     "deploy/social-media/ffmpeg-build-profile.json",
-    "CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json"
+    "CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json",
+    "CAPITAL-AI-GROWTH/social-core-port-provenance-20261008.json",
+    "CAPITAL-AI-GROWTH/social-publishing-cutover-provenance-20261008.json",
+    "public/branding/asset-pack/meta/social-render-tokens.json",
+    "supabase/migrations/20261008113000_social_provider_store.sql",
+    "scripts/social-provider-db-smoke.sh"
   ],
   "forbiddenFinanceScoringRuntimeBeforePass": [
     "src/platform/Scoring/ScoringModelRegistry.ts",
@@ -53,40 +66,38 @@
     "src/platform/FinTechCore/Modules/Crypto/Pattern/PatternSignalResolver.ts"
   ],
   "currentEvaluation": {
-    "runtimeArtifactsPresent": 7,
-    "runtimeArtifactsRequired": 13,
+    "runtimeArtifactsPresent": 21,
+    "runtimeArtifactsRequired": 21,
     "rendererArtifactsPresent": 2,
     "rendererArtifactsRequired": 2,
-    "evidenceArtifactsPresent": 7,
-    "evidenceArtifactsRequired": 7,
+    "evidenceArtifactsPresent": 12,
+    "evidenceArtifactsRequired": 12,
     "result": "BLOCKED",
     "blockers": [
-      "Point 4 remains fail-closed by explicit owner instruction.",
-      "MediaProjectV2, validation, editing, templates and PlanningVisual runtime are implemented on stacked PR #302 but CI is not yet terminal.",
-      "Deterministic Pillow/FFmpeg renderer source is implemented and wired into the hardened renderer worker; new end-to-end worker evidence is pending.",
-      "SocialMediaGeneratorService, text-content boundary, durable approval, provider publisher and publication analytics cutover are still missing.",
-      "No active TTS/ASR model is configured; Qwen, Chatterbox and Whisper-family implementations remain absent.",
-      "Finance scoring/data follow-up remains blocked until Social completion."
+      "Point 4 remains fail-closed by explicit owner instruction; social-tool license evidence is not POINT_4_PASS.",
+      "Social Core and deterministic renderer are implemented on stacked PR #302; latest terminal Docker/renderer CI remains to be evaluated.",
+      "Publishing/distribution code cutover is implemented on the current stacked branch by converging Finance semantics into existing Capital-AI authorities; provider defaults remain IMPLEMENTED_DISABLED.",
+      "No provider has been enabled or externally published by this work.",
+      "Finance scoring/data follow-up remains blocked until Social completion PASS."
     ],
     "socialToolLicenseEvidenceStatus": "POINT_4_AUDIO_MODELS_REMOVED_FAIL_CLOSED",
     "socialToolLicenseEvidencePass": false,
     "rendererEvidenceStatus": "HARDENED_REBUILD_VERIFIED",
     "verified": [
-      "Hardened renderer real-build evidence is VERIFIED on workflow run 37713808050.",
-      "Renderer scan contains 0 vulnerabilities, 0 secrets and 0 blocking findings.",
-      "xz-libs 5.8.4-r0 and zlib 1.3.2-r1 are bound in the renderer SBOM.",
-      "CVE-2026-34743 and CVE-2026-85091 are absent.",
-      "Social audio model baseline is provider-neutral with Qwen, Chatterbox and Whisper-family runtimes absent.",
-      "7 of 13 required Social runtime artifacts are materialized on stacked PR #302.",
-      "2 of 2 deterministic renderer source artifacts are materialized on stacked PR #302.",
-      "Social Core uses current CAPITAL-AI target branding tokens and publishReady=false."
+      "Required Social runtime paths now reference current Capital-AI target authorities rather than obsolete Finance filenames.",
+      "All required Social runtime source paths are present on the publishing-cutover branch.",
+      "2 of 2 deterministic renderer source artifacts are present.",
+      "Durable provider-store migration binds hash approval, delivery key, UNKNOWN and terminal provider readback semantics.",
+      "All five provider adapter defaults remain IMPLEMENTED_DISABLED.",
+      "Qwen, Chatterbox and Whisper-family implementations remain absent from the active Social runtime."
     ]
   },
   "passDefinition": [
-    "All required SocialMediaEngine runtime artifacts exist in target repository.",
+    "All required Social runtime artifacts exist in the target architecture.",
     "All deterministic renderer artifacts exist and their license/build gates are admitted.",
-    "Required license/provenance evidence artifacts exist.",
+    "Required license/provenance/cutover evidence artifacts exist.",
     "Social tool license evidence status is explicitly POINT_4_PASS.",
+    "Provider activation, when requested, is backed by current scope/API/rights and completion-readback evidence.",
     "Work package no longer declares the Finance scoring/data follow-up BLOCKED.",
     "No missing, failed or partial evidence is represented as PASS."
   ],
