@@ -96,3 +96,70 @@ test('missing data rights and old data block every research result',()=>{
  assert.equal(b.state,'BLOCKED');
  assert.ok(b.reasons.includes('FINANCE_DATA_STATUS_NOT_ADMISSIBLE'));
 });
+
+
+test('full Finance stock weights replay numerically through the canonical service with value-sensitive evidence', () => {
+  // Synthetic input: verifies target numerical composition, NOT upstream real-data parity.
+  const samples=[
+    ['trend',100],['momentum',0],['breakout_quality',80],['volatility_quality',40],
+    ['relative_strength',60],['value',70],['dividend',50],['quality',90],
+  ] as const;
+  const observations=samples.map(([factor,score])=>({
+    ...validatedData.observations[0],
+    sourceField:'finance.traditional.'+factor,
+    featureId:'finance.stock.'+factor,
+    value:score/100,
+    normalizedValue:score,
+    normalizationEvidenceRef:'normalizer://finance/stock/'+factor,
+    provenance:{...provenance,sourceReference:'evidence://finance/stock/'+factor},
+  }));
+  const bindings=samples.map(([factor])=>({
+    factor,sourceField:'finance.traditional.'+factor,
+  }));
+  const fullInput={
+    ...input,
+    snapshot:{...snapshot,rawInputReferences:[
+      identityRef,
+      ...observations.flatMap(obs=>[obs.normalizationEvidenceRef,obs.provenance.sourceReference]),
+    ]},
+    validatedData:{...validatedData,observations},
+    bindings,
+  };
+  const evaluated=ScoringEngineService.inspectFinanceModelResearch(fullInput);
+  assert.equal(evaluated.state,'RESEARCH_EVALUATED',evaluated.reasons.join(','));
+  assert.equal(evaluated.research?.status,'RESEARCH_READY');
+  assert.ok(evaluated.research?.researchCompositeValue!==null
+    && Math.abs(evaluated.research!.researchCompositeValue!-63.1)<1e-10);
+  assert.equal(evaluated.researchReplayFingerprint?.length,64);
+  assert.equal(evaluated.productionEligible,false);
+  assert.equal(evaluated.scoreEligible,false);
+
+  const reordered=ScoringEngineService.inspectFinanceModelResearch({
+    ...fullInput,
+    bindings:[...bindings].reverse(),
+    validatedData:{...fullInput.validatedData,observations:[...observations].reverse()},
+  });
+  assert.equal(reordered.state,'RESEARCH_EVALUATED',reordered.reasons.join(','));
+  assert.equal(evaluated.researchReplayFingerprint,reordered.researchReplayFingerprint);
+  assert.equal(evaluated.effectiveWeightFingerprint,reordered.effectiveWeightFingerprint);
+
+  const changed=ScoringEngineService.inspectFinanceModelResearch({
+    ...fullInput,
+    validatedData:{...fullInput.validatedData,observations:observations.map(obs=>
+      obs.sourceField==='finance.traditional.trend'
+        ? {...obs,value:0.9,normalizedValue:90} : obs,
+    )},
+  });
+  assert.equal(changed.state,'RESEARCH_EVALUATED',changed.reasons.join(','));
+  assert.ok(changed.research?.researchCompositeValue!==null
+    && Math.abs(changed.research!.researchCompositeValue!-61.3)<1e-10);
+  assert.equal(evaluated.featureFingerprint,changed.featureFingerprint);
+  assert.equal(evaluated.effectiveWeightFingerprint,changed.effectiveWeightFingerprint);
+  assert.notEqual(evaluated.researchReplayFingerprint,changed.researchReplayFingerprint);
+
+  const denied=ScoringEngineService.inspectFinanceModelResearch({
+    ...fullInput,snapshot:{...fullInput.snapshot,rights:[]},
+  });
+  assert.equal(denied.state,'BLOCKED');
+  assert.equal(denied.researchReplayFingerprint,null);
+});
