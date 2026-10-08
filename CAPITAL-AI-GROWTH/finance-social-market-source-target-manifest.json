@@ -124,7 +124,7 @@
     {
       "id": "TA-AUTH",
       "path": "server/auth.mjs",
-      "blobSha": "36792f1bd9233bd51546b67d3ff2dae548c31846",
+      "blobSha": "54d878e8c5f4f7be95139a394bae2ca6f7f1d157",
       "role": "Current session/auth composition"
     },
     {
