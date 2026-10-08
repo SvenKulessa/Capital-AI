@@ -211,3 +211,23 @@ test('OAuth state binds user/platform/redirect/expiry with PKCE for X', () => {
     allowedRedirectUris: [redirectUri], now: NOW,
   }), /REDIRECT_DENIED/);
 });
+
+test('OAuth state entropy cannot be substituted by caller-provided random function', () => {
+  const callback = 'https://capital-ai.online/api/social-media/auth/callback';
+  let callerRngInvoked = false;
+  const overrides = {
+    userId: USER, channel: 'YOUTUBE', redirectUri: callback,
+    allowedRedirectUris: [callback], now: NOW,
+    random: () => { callerRngInvoked = true; return Buffer.alloc(32); },
+  };
+  const first = createSocialOAuthState(overrides);
+  const second = createSocialOAuthState(overrides);
+  assert.equal(callerRngInvoked, false, 'OAuth state generation must use Node CSPRNG');
+  for (const issued of [first, second]) {
+    assert.match(issued.state, /^[A-Za-z0-9_-]{43}$/);
+    assert.match(issued.row.state_token, /^[a-f0-9]{64}$/);
+    assert.notEqual(issued.row.state_token, issued.state);
+  }
+  assert.notEqual(first.state, second.state);
+  assert.notEqual(first.row.state_token, second.row.state_token);
+});
