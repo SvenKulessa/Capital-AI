@@ -23,7 +23,7 @@ Approved, non-private market source + verified rights
        ├─ no prices, scores, signals, feature values, API secrets, user IDs or raw payload
        └─ model/source/feature/weight/rights SHA-256 fingerprints only
    → NATS CAPITAL_FINANCE_RESEARCH / capital.research.score.<assetClass>
-   → JetStream PubAck + event SHA-256
+   → JetStream PubAck + exact server-side replay verification + event SHA-256
    → Supabase public.finance_research_receipts (service role only, RLS)
    → Valkey ephemeral receipt cache (60s) + Pub/Sub notification
 ```
@@ -44,6 +44,6 @@ Approved, non-private market source + verified rights
 
 - The adapter rejects tenant identifiers, any extra context properties, private data scope, missing explicit admission, unsafe/partial research results and missing service-role configuration before publishing.
 - NATS ACL is narrowed to the new subject + four stream management operations. No wildcard bridge publication, stream purge or stream delete grant.
-- On NATS failure or absent Supabase confirmation, the Valkey cache and Pub/Sub do not update. Postgres retry conflict is accepted only on matching event ID/hash/JetStream sequence.
+- On NATS PubAck/replay failure or absent Supabase confirmation, the Valkey cache and Pub/Sub do not update. Postgres retry conflict is accepted only on matching event ID/hash/JetStream sequence.
 - New stream consumes up to 64 MiB of the existing NATS file budget; one transient 60-second Valkey metadata key per unique event; Postgres metadata rows accrue indefinitely until an explicit retention policy is approved. Costs, quotas, budget and disk headroom: NOT_PROVEN. No new paid plan automatically activated.
 - No live end-to-end evidence, new commercial redistribution grant, approved production score, model promotion or provider execution is claimed.
