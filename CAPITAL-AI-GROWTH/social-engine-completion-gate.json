@@ -3,7 +3,7 @@
   "id": "CAPITAL-AI-SOCIAL-ENGINE-COMPLETION-20261006",
   "workPackage": "CAPITAL-AI-FINANCE-SOCIAL-MARKET-MIGRATION-01",
   "point": "06_SOCIAL_ENGINE_MIGRATION_COMPLETION_GATE",
-  "correlatedMain": "c881081e1d6a08e1babd98c15371f6a8615d645b",
+  "correlatedMain": "03325f00412290bb457823de347e7f3171904d12",
   "declaredState": "BLOCKED",
   "blockingFollowUp": "CAPITAL-AI-FINANCE-SCORING-DATA-FOLLOWUP-01",
   "policy": {
@@ -78,7 +78,8 @@
       "Social Core and deterministic renderer are implemented on stacked PR #302; latest terminal Docker/renderer CI remains to be evaluated.",
       "Publishing/distribution code cutover is implemented on the current stacked branch by converging Finance semantics into existing Capital-AI authorities; provider defaults remain IMPLEMENTED_DISABLED.",
       "No provider has been enabled or externally published by this work.",
-      "Finance scoring/data follow-up remains blocked until Social completion PASS."
+      "Finance scoring/data follow-up remains blocked until Social completion PASS.",
+      "Social publisher adapters remain IMPLEMENTED_DISABLED and POINT_4 remains BLOCKED."
     ],
     "socialToolLicenseEvidenceStatus": "POINT_4_AUDIO_MODELS_REMOVED_FAIL_CLOSED",
     "socialToolLicenseEvidencePass": false,
@@ -89,7 +90,8 @@
       "2 of 2 deterministic renderer source artifacts are present.",
       "Durable provider-store migration binds hash approval, delivery key, UNKNOWN and terminal provider readback semantics.",
       "All five provider adapter defaults remain IMPLEMENTED_DISABLED.",
-      "Qwen, Chatterbox and Whisper-family implementations remain absent from the active Social runtime."
+      "Qwen, Chatterbox and Whisper-family implementations remain absent from the active Social runtime.",
+      "PR #302 merged on main; renderer and MediaProject core sources are present."
     ]
   },
   "passDefinition": [

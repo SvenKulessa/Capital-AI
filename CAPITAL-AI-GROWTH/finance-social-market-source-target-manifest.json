@@ -12,7 +12,7 @@
   },
   "target": {
     "repository": "SvenKulessa/Capital-AI",
-    "currentMain": "c881081e1d6a08e1babd98c15371f6a8615d645b",
+    "currentMain": "8244a411b3b5b691adbb78ffdc5880aadd267113",
     "policy": "TARGET_CURRENT_MAIN_CONTRACTS_WIN",
     "branch": "capital-ai-growth/finance-source-target-manifest-20261005"
   },

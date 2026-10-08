@@ -66,6 +66,8 @@ test('SEO-00 is fail-closed for private, claim-sensitive, alias and unknown rout
   assert.equal(resolveSeoIndexingPolicy('/not-inventory').classification, 'BLOCKED');
   assert.equal(resolveSeoIndexingPolicy('/api/auth/session').classification, 'PRIVATE');
   assert.equal(resolveSeoIndexingPolicy('/healthz').classification, 'NOINDEX');
+  assert.equal(resolveSeoIndexingPolicy('/llms.txt').classification, 'NOINDEX');
+  assert.equal(resolveSeoIndexingPolicy('/sitemap.md').classification, 'NOINDEX');
   assert.equal(resolveSeoIndexingPolicy('/.well-known/security.txt').classification, 'NOINDEX');
   assert.equal(resolveSeoIndexingPolicy('/.well-known/change-password').classification, 'NOINDEX');
   assert.equal(isSeoIndexable('/vocabulary/orderbuch'), true);
@@ -130,6 +132,23 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
     }
     for (const route of ['/login', '/profile', '/control-center', '/tokenomics', '/dokumentation', '/architecture']) {
       assert.ok(!sitemap.includes(`<loc>https://capital-ai.online${route}</loc>`), route);
+    }
+
+    for (const discoveryPath of ['/llms.txt', '/sitemap.md']) {
+      const response = await fetch(origin + discoveryPath);
+      assert.equal(response.status, 200, discoveryPath);
+      assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow');
+      assert.match(response.headers.get('content-type') || '', discoveryPath === '/llms.txt' ? /^text\/plain/ : /^text\/markdown/);
+      const body = await response.text();
+      assert.match(body, /^# CAPITAL-AI/m);
+      assert.match(body, /https:\/\/capital-ai\.online\/learning/);
+      assert.doesNotMatch(body, /\/(?:profile|control-center|pricing|api\/)/);
+      if (discoveryPath === '/llms.txt') {
+        for (const match of body.matchAll(/\]\((https:\/\/capital-ai\.online\/[^)]*)\)/g)) {
+          const linkedPath = new URL(match[1]).pathname;
+          assert.equal(resolveSeoIndexingPolicy(linkedPath).classification, 'INDEX', linkedPath);
+        }
+      }
     }
   } finally {
     server.closeAllConnections();
