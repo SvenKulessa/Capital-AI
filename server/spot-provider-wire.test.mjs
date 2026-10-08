@@ -161,12 +161,12 @@ const env = {
 };
 const auth = {verify:async()=>({userId:'11111111-1111-1111-1111-111111111111'}),sameOrigin:()=>true};
 test('private Spot trade from each user\'s Vault connection never exposes a key or enters public quote cache',async()=>{
-  const userId='11111111-1111-1111-1111-111111111111';
   const timestamp=Date.now();
+  for(const userId of ['11111111-1111-1111-1111-111111111111','22222222-2222-2222-2222-222222222222']){
   for(const [provider,symbol] of [['kraken','BTCUSD'],['binance','BTCUSDT']]){
     const events=[];
-    const key='only-this-user-'+provider+'-secret-key';
-    const pair={apiKey:'this-user-'+provider+'-key',apiSecret:key};
+    const key='only-this-user-'+userId+'-'+provider+'-secret-key';
+    const pair={apiKey:'this-user-'+userId+'-'+provider+'-key',apiSecret:key};
     const fetchImpl=async(input,opts={})=>{
       const url=new URL(String(input));
       if(url.origin==='https://project.supabase.co'){
@@ -214,6 +214,7 @@ test('private Spot trade from each user\'s Vault connection never exposes a key 
     assert.equal(response.jetStreamPublicationAllowed,false);
     assert.equal(response.actionable,false);
     assert.doesNotMatch(JSON.stringify(response),/this-user-|only-this-user/);
+  }
   }
 });
 test('missing private Vault connection stops user market snapshots before public provider I/O',async()=>{
@@ -302,7 +303,8 @@ test('private WebSocket snapshot cannot open unsupported provider, cross-mapped 
 });
 
 test('Vault-authorized private WS roundtrip requires own user key before opening the socket',async()=>{
-  const userId='11111111-1111-1111-1111-111111111111',time=Date.now();
+  for (const userId of ['11111111-1111-1111-1111-111111111111','22222222-2222-2222-2222-222222222222']) {
+  const time=Date.now();
   let connections=0,providerAuth=0,opened=0;
   const original=globalThis.WebSocket;
   class MockSocket {
@@ -325,9 +327,10 @@ test('Vault-authorized private WS roundtrip requires own user key before opening
       assert.equal(args._user_id,userId);
       assert.equal(args._provider,'kraken');
       return Response.json({secretPayload:JSON.stringify({version:2,
-        spot:{apiKey:'user-verified-api-key',apiSecret:'private-secret-0123456789abcdef'},futures:null})});
+        spot:{apiKey:'user-verified-api-key-'+userId,apiSecret:'private-secret-'+userId},futures:null})});
     }
     if(parsed.pathname==='/0/private/GetApiKeyInfo'){
+      assert.equal(options.headers['API-Key'],'user-verified-api-key-'+userId);
       providerAuth++;
       return Response.json({error:[],result:{permissions:['query-funds']}});
     }
@@ -351,4 +354,5 @@ test('Vault-authorized private WS roundtrip requires own user key before opening
     assert.equal(opened,0);
     assert.doesNotMatch(JSON.stringify(row),/private-secret|verified-api-key/);
   }finally{globalThis.WebSocket=original;}
+  }
 });

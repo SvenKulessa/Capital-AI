@@ -268,3 +268,30 @@ test('user-scoped WebSocket snapshot request requires fixed symbol and separatel
     assert.equal(verifyProviderQueryEnvelope({...envelope,userRef:'22222222-2222-4222-8222-222222222222'},env),false);
   }
 });
+
+test('two signed users keep REST and WS query claims and results isolated', async () => {
+  const users = ['11111111-1111-4111-8111-111111111111', '22222222-2222-4222-8222-222222222222'];
+  const claims = [];
+  const executions = [];
+  const state = { claimProviderQuery: async ({ envelope }) => { claims.push(envelope.userRef); } };
+  const vault = { executePrivateQuery: async (userRef, provider, operation) => {
+    executions.push({ userRef, operation });
+    assert.equal(provider, 'kraken');
+    return { owner: userRef, price: users.indexOf(userRef) + 80000 };
+  } };
+  for (const operation of ['market.spot_trade', 'market.spot_ws_snapshot']) {
+    const envelopes = users.map((userRef, index) => createProviderQueryEnvelope({
+      userRef, requestId: `tenant-${operation}-${index}`, provider: 'kraken', operation, params: { symbol: 'BTCUSD' },
+    }, env));
+    const rows = await Promise.all(envelopes.map(envelope => executeGuardedProviderQuery({ envelope, env, state, vault })));
+    assert.deepEqual(rows.map(row => row.owner), users);
+    assert.deepEqual(rows.map(row => row.price), [80000, 80001]);
+    const before = executions.length;
+    await assert.rejects(executeGuardedProviderQuery({
+      envelope: { ...envelopes[0], userRef: users[1] }, env, state, vault,
+    }), /INVALID_QUERY_PROOF/);
+    assert.equal(executions.length, before);
+    assert.equal(claims.length, before);
+  }
+  assert.deepEqual(claims, [...users, ...users]);
+});

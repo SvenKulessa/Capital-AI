@@ -71,10 +71,13 @@ test('index loads the app directly and exposes the fail-closed shell only on a b
   assert.doesNotMatch(bootstrap, /setTimeout|setInterval|unhandledrejection/);
 });
 
-test('TOTP QR rendering preserves already encoded data URLs', async () => {
+test('TOTP QR rendering allows image data URLs and encodes raw SVG', async () => {
   const source = await readFile(new URL('../src/features/auth/AuthSecuritySettings.tsx', import.meta.url), 'utf8');
-  assert.match(source, /enrollment\.qrCode\.startsWith\('data:'\)/);
-  assert.match(source, /\? enrollment\.qrCode/);
+  assert.match(source, /raw\.startsWith\('data:image\/svg\+xml'\)/);
+  assert.match(source, /raw\.startsWith\('data:image\/png'\)/);
+  assert.match(source, /encodeURIComponent\(raw\)/);
+  assert.match(source, /src=\{qrImage\}/);
+  assert.doesNotMatch(source, /dangerouslySetInnerHTML/);
   assert.match(source, /data:image\/svg\+xml;charset=utf-8/);
 });
 

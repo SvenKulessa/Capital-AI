@@ -124,13 +124,13 @@
     {
       "id": "TA-AUTH",
       "path": "server/auth.mjs",
-      "blobSha": "575086deda2dac5abce833369e238e602f547e38",
+      "blobSha": "54d878e8c5f4f7be95139a394bae2ca6f7f1d157",
       "role": "Current session/auth composition"
     },
     {
       "id": "TA-AUTH-SECURITY",
       "path": "server/auth-security.mjs",
-      "blobSha": "4dab5c83c5b38cadae624fa06335c4cddeb83c20",
+      "blobSha": "713f132dcd1a19a5680b9118597be5629dc4ee94",
       "role": "Current auth security boundary",
       "recorrelatedAt": "2026-10-06",
       "recorrelationReason": "PR #203 Auth-/BYOK-/Trading-Capability-Härtung"
