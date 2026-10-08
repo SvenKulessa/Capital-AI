@@ -14,6 +14,7 @@ const result = () => ({
   sourceIdentityFingerprint: fingerprint('a'),
   featureFingerprint: fingerprint('b'),
   effectiveWeightFingerprint: fingerprint('c'),
+  researchReplayFingerprint: fingerprint('f'),
   research: { researchCompositeValue: 99.25, input: { apiKey: 'DO_NOT_LEAK' } },
   reasons: [], scoreEligible: false, rankEligible: false,
   decisionEligible: false, productionEligible: false,
@@ -80,6 +81,20 @@ test('Finance metadata projection is deterministic, excludes score values and se
   assert.equal(JSON.stringify(a.record).includes('99.25'), false);
   assert.equal(a.raw.includes('DO_NOT_LEAK'), false);
   assert.equal(a.raw.includes('researchCompositeValue'), false);
+});
+
+test('value-sensitive replay lineage produces distinct receipt identity and rejects missing lineage', () => {
+  const one = projectFinanceResearchReceipt(result(), context());
+  const changed = projectFinanceResearchReceipt({
+    ...result(), researchReplayFingerprint: fingerprint('0'),
+    research: { researchCompositeValue: 97.1 },
+  }, context());
+  assert.notEqual(one.eventId, changed.eventId);
+  assert.equal(one.record.researchReplayFingerprint, fingerprint('f'));
+  assert.ok(!one.raw.includes('99.25'));
+  assert.throws(() => projectFinanceResearchReceipt({
+    ...result(), researchReplayFingerprint: null,
+  }, context()), /RESEARCH_PROVENANCE_INVALID/);
 });
 
 test('private BYOK, extra tenant context, score promotion and unknown rights fail closed', () => {

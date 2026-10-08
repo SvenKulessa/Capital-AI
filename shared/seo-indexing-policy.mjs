@@ -49,6 +49,7 @@ const routes = [
   { path: '/profile/security', classification: 'PRIVATE', contentType: 'account-security', reason: 'Personenbezogene Sicherheits-, MFA- und Recovery-Einstellungen.' },
   { path: '/profile/key-vault', classification: 'PRIVATE', contentType: 'credential-vault', reason: 'Personenbezogener Provider-Credential-Vault; niemals Search-Inhalt.' },
   { path: '/profile/workspace', classification: 'PRIVATE', contentType: 'analysis-workspace', reason: 'Nutzereigene API-/Modellzuordnungen und Analyse-Einstellungen.' },
+  { path: '/profile/render-dashboard', classification: 'PRIVATE', contentType: 'owner-private-dashboard', reason: 'Render-Provider-Verbindungen nur für serverseitig verifizierten Owner.' },
   { path: '/control-center', classification: 'PRIVATE', contentType: 'management', reason: 'Management-, Evidence- und Control-Center-Inhalte sind nicht für Search bestimmt.' },
 
   { path: '/tokenomics', classification: 'BLOCKED', contentType: 'financial-claim', reason: 'Token-/Finanzclaims bleiben bis expliziter rechtlicher und Evidence-Prüfung von Search ausgeschlossen.' },
