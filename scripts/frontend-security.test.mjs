@@ -183,7 +183,7 @@ test('architecture is removed from drawer footer and remains reachable from docu
 test('learning portal exposes architecture video previews without claiming completed renderer evidence', async () => {
   const learning = await readFile(new URL('../src/features/learning/LearningPortalPage.tsx', import.meta.url), 'utf8');
 
-  assert.match(learning, /'glossar' \| 'guides' \| 'videos' \| 'quiz'/);
+  assert.match(learning, /'glossar' \| 'flashcards' \| 'guides' \| 'videos' \| 'quiz'/);
   assert.match(learning, /Architektur Videos/);
   assert.match(learning, /PREVIEW · VIDEO NOCH NICHT GERENDERT/);
   assert.match(learning, /BLOCKED_RUNTIME_NOT_MIGRATED/);
