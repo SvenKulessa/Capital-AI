@@ -1,7 +1,7 @@
 {
   "schemaVersion": "SOCIAL_TTS_SNAPSHOT_LOCK@1",
   "id": "CAPITAL-AI-SOCIAL-TTS-SNAPSHOT-LOCK-20261006",
-  "correlatedMain": "d8b5d471b34fcfaf061a7d8a8b62eac7406c8864",
+  "correlatedMain": "19673cf50bf6948ef563126f23bd1d64d9ae6398",
   "financeSource": "dcef421fe6e350a3a2ade61d0299aad9ecca213c",
   "policy": {
     "immutableRevisionRequired": true,
@@ -31,7 +31,7 @@
           "einops"
         ]
       },
-      "transitiveLockStatus": "DEPENDENCY_RESOLUTION_PENDING"
+      "transitiveLockStatus": "COMPLETE_102_PACKAGES_SHA256_BOUND"
     },
     "model": {
       "repo": "Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign",
@@ -116,13 +116,13 @@
           "resemble-perth @ git+https://github.com/resemble-ai/Perth.git@ff1c8ac55a976971245cdd53c18d6131ca00d993"
         ]
       },
-      "transitiveLockStatus": "TARGET_PERTH_IMMUTABLE_DEPENDENCY_RESOLUTION_PENDING",
+      "transitiveLockStatus": "COMPLETE_123_PACKAGES_PLUS_IMMUTABLE_PERTH",
       "targetPerth": {
         "repository": "resemble-ai/Perth",
         "immutableRevision": "ff1c8ac55a976971245cdd53c18d6131ca00d993",
         "selection": "current immutable target lock; not asserted as historical Finance master resolution",
         "license": "MIT",
-        "compatibilityStatus": "PENDING_DEPENDENCY_RESOLUTION_AND_WORKER_TEST"
+        "compatibilityStatus": "DEPENDENCY_RESOLUTION_PASS_WORKER_TEST_PENDING"
       }
     },
     "model": {
@@ -181,7 +181,7 @@
     "Immutable worker images pass vulnerability/license/SBOM gates.",
     "German runtime benchmark and Human/Owner listening acceptance pass."
   ],
-  "status": "SNAPSHOT_COMPLETE_DEPENDENCY_AND_RUNTIME_GATES_OPEN",
+  "status": "DEPENDENCY_LOCKS_COMPLETE_WORKER_AND_LISTENING_GATES_OPEN",
   "evidenceArtifact": {
     "workflowRunId": 37700333054,
     "artifactId": 11517002602,
@@ -192,9 +192,9 @@
   "summary": {
     "qwenSnapshot": "COMPLETE_FOR_DECLARED_RUNTIME_FILES",
     "chatterboxSnapshot": "COMPLETE_FOR_PINNED_FINANCE_MTL_LOADER_FILES",
-    "qwenTransitiveLock": "OPEN",
-    "chatterboxTransitiveLock": "BLOCKED_MUTABLE_PERTH_AND_UNPINNED_DEPENDENCIES",
-    "immutableTtsWorkerImages": "OPEN",
+    "qwenTransitiveLock": "COMPLETE",
+    "chatterboxTransitiveLock": "COMPLETE",
+    "immutableTtsWorkerImages": "IN_PROGRESS_PR_246",
     "germanRuntimeBenchmark": "OPEN",
     "humanOwnerListeningAcceptance": "OPEN"
   },
@@ -205,5 +205,19 @@
     "qwenRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
     "chatterboxRevision": "5bb1f6ee58e50c3b8d408bc82a6d3740c2db6e18",
     "allDeclaredHashesMatched": true
+  },
+  "dependencyLockEvidence": {
+    "workflowRunId": 37708563864,
+    "artifactId": 11520483754,
+    "artifactDigest": "sha256:0cf11260b4f583c7c3ce72c0b0ccd1676d2bfd38bb6a9f9e9304c6e7d17da75b",
+    "sourceSha": "ef71fde2d8721798a4460f1963eef800b6ab22c4",
+    "pythonBaseRef": "python@sha256:0a310eeecf4e1f5a0743f9a6520c90c88d089c903ca5fd283f501e3a805f5f89",
+    "qwenPackageCount": 102,
+    "chatterboxPackageCount": 123,
+    "missingArchiveHashes": 0,
+    "repoLocks": [
+      "deploy/social-media/tts/qwen-runtime.lock.json",
+      "deploy/social-media/tts/chatterbox-runtime.lock.json"
+    ]
   }
 }
