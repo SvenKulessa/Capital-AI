@@ -8,6 +8,8 @@ export const CONTROL_CENTER_SECTION_IDS = [
 export function resolveAppRoute(rawPath: string): string {
   if (!rawPath) return '/';
   const clean = rawPath.trim().toLowerCase().replace(/\/+$/, '') || '/';
+  // Public landing language URLs resolve to the same SPA home component.
+  if (/^\/(?:de|en|it|fr|pt|es)$/.test(clean)) return '/';
 
   const licenseAliases: Record<string, string> = {
     '/lizenz': '/lizenz', '/license': '/lizenz', '/licenses': '/lizenz', '/design-lizenz': '/lizenz',

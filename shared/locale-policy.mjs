@@ -11,6 +11,11 @@ export function normalizeLocale(value) {
   const code = typeof value === 'string' ? value.toLowerCase().trim().split(/[-_]/)[0] : '';
   return SUPPORTED_LOCALES.includes(code) ? code : null;
 }
+/** Only localized landing roots. Legal/auth/private routes are never language-prefixed. */
+export function localeFromLandingPath(pathname) {
+  const found = /^\/(de|en|it|fr|pt|es)\/?$/.exec(String(pathname || '').toLowerCase());
+  return found ? found[1] : null;
+}
 export function localeFromCountry(country) {
   const code = typeof country === 'string' ? country.trim().toUpperCase() : '';
   return COUNTRY_LANGUAGES[code] || 'en';
