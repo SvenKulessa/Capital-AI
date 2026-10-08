@@ -251,3 +251,20 @@ test('private BYOK market snapshots require exact provider and symbol without pu
   }),/INVALID_QUERY_PROOF/);
   assert.equal(claims,1);
 });
+
+test('user-scoped WebSocket snapshot request requires fixed symbol and separately signed operation',()=>{
+  for (const [provider,symbol] of [['kraken','BTCUSD'],['binance','BTCUSDT']]) {
+    const valid={provider,operation:'market.spot_ws_snapshot',params:{symbol}};
+    assert.deepEqual(validateProviderQueryRequest(valid),valid);
+    assert.throws(()=>validateProviderQueryRequest({...valid,params:{symbol:'XBTGBP'}}),/INVALID_PARAM_VALUE/);
+    assert.throws(()=>validateProviderQueryRequest({...valid,params:{symbol,apiSecret:'forbidden'}}),/PARAM_NOT_ADMITTED/);
+    assert.throws(()=>validateProviderQueryRequest({...valid,params:{}}),/REQUIRED_PARAM_MISSING/);
+    const envelope=createProviderQueryEnvelope({
+      userRef:'11111111-1111-4111-8111-111111111111',requestId:'ws-private-1',
+      ...valid,
+    },env);
+    assert.equal(verifyProviderQueryEnvelope(envelope,env),true);
+    assert.equal(verifyProviderQueryEnvelope({...envelope,operation:'market.spot_trade'},env),false);
+    assert.equal(verifyProviderQueryEnvelope({...envelope,userRef:'22222222-2222-4222-8222-222222222222'},env),false);
+  }
+});
