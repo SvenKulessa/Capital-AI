@@ -100,6 +100,8 @@ test('account routes keep profile, security and key vault as separate pages', ()
   assert.equal(resolveAppRoute('/profil/sicherheit'), '/profile/security');
   assert.equal(resolveAppRoute('/key-vault'), '/profile/key-vault');
   assert.equal(resolveAppRoute('/vault'), '/profile/key-vault');
+  assert.equal(resolveAppRoute('/profil/workspace'), '/profile/workspace');
+  assert.equal(resolveAppRoute('/mein-workspace'), '/profile/workspace');
   assert.equal(resolveNavigationTarget('/profile/security?ref=account'), '/profile/security?ref=account');
 });
 
