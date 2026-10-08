@@ -58,7 +58,7 @@
     {
       "id": "TA-SCORING",
       "path": "src/services/scoringEngine.ts",
-      "blobSha": "ce0f52bc95b75eb236197b395b822e6e21ab712b",
+      "blobSha": "efeefe4c81d0a54f033b5461eaf633419edaa708",
       "role": "Current scoring execution boundary"
     },
     {
@@ -1002,7 +1002,7 @@
     ]
   },
   "correlation": {
-    "recorrelationReason": "CADS Marketplace buyer OAuth/setup integration changed server/auth.mjs on PR #220; exact branch blob rebound after review.",
-    "recorrelationDate": "2026-10-06"
+    "recorrelationReason": "Finance-to-Capital-AI canonical ScoringEngineService inspection bridge added by PR #283; exact immutable target blob rebound after source-contract review.",
+    "recorrelationDate": "2026-10-08"
   }
 }
