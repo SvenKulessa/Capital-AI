@@ -52,7 +52,7 @@ jobs:
           permission-contents: write
           permission-pull-requests: write
       - name: Preserve deterministic milestone drafts for review
-        if: ${{ steps.milestones.outputs.roadmap != '' || steps.milestones.outputs.news != '' }}
+        if: ${{ always() && (steps.milestones.outputs.roadmap != '' || steps.milestones.outputs.news != '') }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.4.3
         with:
           name: milestone-drafts-${{ github.event.pull_request.number }}
@@ -64,7 +64,7 @@ jobs:
           if-no-files-found: error
           retention-days: 14
       - name: Report missing app authority without creating a PR
-        if: ${{ (steps.milestones.outputs.roadmap != '' || steps.milestones.outputs.news != '') && steps.milestone_app.outputs.token == '' }}
+        if: ${{ always() && (steps.milestones.outputs.roadmap != '' || steps.milestones.outputs.news != '') && steps.milestone_app.outputs.token == '' }}
         shell: bash
         run: |
           echo 'Milestone proposals generated, but no dedicated GitHub App token is configured. Drafts are available as an artifact; PR creation NOT_PROVEN / OWNER_SETUP_REQUIRED.' >> "$GITHUB_STEP_SUMMARY"
