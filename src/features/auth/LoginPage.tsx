@@ -404,7 +404,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                 {mode === 'forgot' ? tr.forgot : mode === 'reset' ? tr.resetTitle : mode === 'mfa' ? tr.mfaTitle : tr.loginTitle}
               </h1>
               <p className="mt-2 text-sm text-slate-300">
-                Passkey, Google, E-Mail/Passwort und optionaler TOTP-Authenticator über eine serverseitige Supabase-Session.
+                {tr.intro}
               </p>
             </div>
             <span className="rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1 font-mono text-[10px] text-emerald-300">
@@ -482,7 +482,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                 {tr.repeatNewPassword}
                 <input type="password" value={passwordConfirm} onChange={event => setPasswordConfirm(event.target.value)} required minLength={14} maxLength={256} autoComplete="new-password" className="mt-1 w-full rounded-xl border border-white/15 bg-black/40 px-3 py-3 text-sm text-white" />
               </label>
-              <p className="text-[11px] text-slate-500">Mindestens 14 Zeichen. Nach dem Reset werden alle Sitzungen beendet.</p>
+              <p className="text-[11px] text-slate-500">{tr.resetRules}</p>
               <button type="submit" disabled={busy} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-amber-400 font-black text-black disabled:opacity-40">
                 <RotateCcw size={18} /> {busy ? 'Wird geändert …' : tr.resetButton}
               </button>
@@ -582,8 +582,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                       </div>
                     </label>
                     <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-[11px] leading-relaxed text-slate-400">
-                      <p>Mindestens 14 Zeichen. Eine lange, einzigartige Passphrase oder ein Passwortmanager wird empfohlen.</p>
-                      <p className="mt-1">CAPITAL-AI erzwingt keine künstlichen Groß-/Kleinbuchstaben- oder Sonderzeichenregeln.</p>
+                      <p>{tr.passwordHint}</p>
+                      <p className="mt-1">{tr.passwordRules}</p>
                     </div>
                     <label className="flex items-start gap-2 text-[11px] leading-relaxed text-slate-300">
                       <input

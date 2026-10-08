@@ -277,3 +277,13 @@ test('language switcher has a keyboard-accessible native select and shareable ho
   assert.match(switcher, /setLocale\(next\)/);
   assert.match(switcher, /window\.history\.replaceState/);
 });
+
+test('sign-in password guidance matches current client-side strength policy', () => {
+  const source = readFileSync(new URL('../src/features/auth/LoginPage.tsx', import.meta.url), 'utf8');
+  const dictionary = readFileSync(new URL('../src/i18n/authCopy.ts', import.meta.url), 'utf8');
+  assert.match(source, /newPasswordMeetsObservedPolicy/);
+  assert.match(source, /tr\.passwordRules/);
+  assert.match(source, /tr\.resetRules/);
+  assert.doesNotMatch(source, /erzwingt keine künstlichen/);
+  assert.match(dictionary, /special character/);
+});

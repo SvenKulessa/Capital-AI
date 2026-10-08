@@ -24,3 +24,6 @@ Owner: CAPITAL-AI-GROWTH; PRODUCT for UI, PLATFORM for runtime, TRUST for legal/
 - GET /en/ with conflicting DE country + ES cookie must remain EN; unknown /pl/ must not gain SEO INDEX.
 - Check body and navigation in six languages at 375px and 1440px; legal texts remain marked as German.
 - Production verification only after owner merger and deploy of resulting main commit.
+
+## TRUST finding: password strength UI mismatch (corrected in I18N-03)
+Previous German registration copy denied uppercase/lowercase/special-character constraints, but `newPasswordMeetsObservedPolicy` on the client enforced those plus 14 characters and digits. We align the user-facing registration/reset copy across six languages with the existing client validation. **No auth policy, password requirement, server validation, or credential handling was changed.** This is a correctness fix, not a legal approval.
