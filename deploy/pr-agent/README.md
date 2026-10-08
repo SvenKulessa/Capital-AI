@@ -42,14 +42,17 @@ The workflow `Optional PR-Agent Runtime Evidence` runs only for changes in this
 context/workflow, or by manual dispatch. It checks out the exact upstream source
 SHA, verifies vendored hashes and builds with an isolated allowlist context.
 Python, uv and BuildKit are digest-pinned. It does not use the upstream mutable
-`pragent/pr-agent:github_action` image and performs no apt install.
+`pragent/pr-agent:github_action` image. A shared Python stage upgrades the four
+packages with available PCRE2/OpenSSL fixes and asserts minimum security versions.
+Resolved package versions are recorded in each run's SBOM. The final runtime removes
+pip and ensurepip, including their vendored packages; uv remains in the build stage.
 
 Dependencies are installed with `uv sync --locked --no-dev --no-install-project`.
 The runtime contains only those dependencies, the pinned reviewer source and local
 benchmark scripts. It runs as numeric user `10001:10001` from `/bench`, outside any
 repository. An offline build-time smoke checks plain-diff parsing and imports;
-this specifically tests the oauthlib major-version update with the assembled
-runtime, without claiming to test unused hosting-provider OAuth paths.
+the full CLI is imported offline as well. This checks imports with the assembled
+runtime, without claiming to exercise OAuth authentication or model calls.
 
 The build exports a single-platform OCI archive. Evidence records its platform
 manifest digest, config digest and archive checksum separately, and verifies the
@@ -58,10 +61,16 @@ and secrets; HIGH/CRITICAL findings or any secret count fail this optional workf
 Raw scanner messages/matches are not uploaded. A CycloneDX SBOM and public finding
 summary are retained for seven days. No registry publish or deployment occurs.
 
-Build, smoke, image scan and SBOM outcomes are NOT_PROVEN until the workflow finishes
-on the exact proposed commit. A dependency-only clean scan does not clear those
-remaining checks. The local execution environment has neither Docker/Podman nor
-model credentials or a local model endpoint.
+The initial completed scan on head `0c63da5c...` (tested merge `f31da522...`,
+run `37713592967`) produced 211 findings, 55 HIGH and zero secrets; build and
+plain-diff smoke passed. Forty-four HIGH findings had no fix version in the scanner.
+The dependency-only PyPI audit missed pip's vendored msgpack, setuptools and urllib3.
+The public finding inventory and identity are retained in
+`docs/benchmarks/code-review-pilot/runtime-scan-20261008.json`.
+The subsequent removal of the unused installer and available OS upgrades must pass
+a new scan; previous evidence does not clear the revised runtime. No ignore rules
+or severity exceptions are added. The local execution environment has neither
+Docker/Podman nor model credentials or a local model endpoint.
 
 ## Future model benchmark
 
