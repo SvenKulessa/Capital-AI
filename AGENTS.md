@@ -135,6 +135,16 @@ Die fünf Domain-Perspektiven erhalten **zwei funktionale Skills pro Domain**: `
 4. **Governance:** Skills und Chat-Profile sind **nicht autorisierende Arbeitsanleitungen** unter dieser `AGENTS.md`. Sie erzeugen keine neuen Pflichtchecks, Admissions, Reviews, Handovers, Write-Permissions oder Production-Freigaben. Für Branch/PR gilt allein die Primary Domain; Merge-Regel und reale technische Trust Boundaries bleiben unverändert.
 5. **Validierung:** `npm run test:domain-skills` kontrolliert Skill-Dateien, Registry und Chat-Profil-Verweise. Ein bestandener Strukturtest belegt keine Live-Skill-Ausführung in externen ChatGPT-Sitzungen.
 
+## Einheitliche grafische Chat-Darstellung aller Domains
+
+Das gemeinsame, **nicht autorisierende** Presentation-Skill `.agents/skills/visual-chat/SKILL.md` gilt für **PRODUCT, MARKET, PLATFORM, TRUST und GROWTH**. Die Zuordnung erfolgt zusätzlich zu den bestehenden Engineering- und Advisory-Skills über `.agents/skills/registry.json` mit `presentation: "visual-chat"`.
+
+1. **Nach Bedarf statt Dekoration:** Für technische Flüsse Mermaid/Diagramme, für Prioritäten und geprüfte Alternativen kompakte Tabellen, für tatsächlich gemessene Werte beschriftete Charts, für Status VERIFIED/BLOCKED/NOT_PROVEN klare Textkennzeichnung. Einfache Fragen bleiben als verständlicher Fließtext beantwortbar.
+2. **Aktuelle Chat-Laufzeit entscheidet:** Native visuelle Chat-Komponenten, interaktive Widgets, Diagramm-Renderer oder Charts nur verwenden, wenn sie im konkreten Chat tatsächlich angeboten werden. Als universeller Fallback Markdown-Tabellen und Mermaid-Code plus textuelle Erläuterung. **AGENTS.md installiert oder überträgt keine ChatGPT-UI-Engine** in andere Chats oder Agent-Systeme.
+3. **Evidence, Accessibility, Datenschutz:** Keine unbelegten Live-/Kosten-/Messwerte illustrieren, keine geheimen Nutzerdaten/Secrets im UI ausgeben, Diagramme mit nachvollziehbarem Text ergänzen, mobile und Screenreader-Lesbarkeit beachten, Quellen/Stand und Aussagegrenzen nennen.
+4. **Statusformat erhalten:** Die beiden vorgeschriebenen Abschluss-Code-Snippets und das Kennzeichen `👋⚙️` für persönliche Owner-Schritte bleiben erhalten. Der Presentation-Skill ändert weder Permissions noch Domainzuständigkeiten, Required Checks, rechtliche Pflichten, Kostenfreigaben oder die Owner-Merge-Regel.
+5. **Verifikation:** `npm run test:domain-skills` kontrolliert die fünf Chat-Agent- und Registry-Verweise; tatsächliche native Visualisierung in jeder Chat-Laufzeit ist dadurch **nicht** nachgewiesen.
+
 ## ChatGPT-Plugin-Discovery und Tool-Nutzung
 
 Für **PRODUCT, MARKET, PLATFORM, TRUST und GROWTH** gilt bei konkreten Chat-Aufträgen folgende **bedarfsbezogene** Vorgehensweise, soweit die jeweilige ChatGPT-/Agent-Laufzeit Plugin-, Connector- oder Tool-Funktionen tatsächlich bereitstellt:

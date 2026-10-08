@@ -63,6 +63,7 @@ COPY CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json CAPITAL
 COPY CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json ./CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json
 COPY CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json ./CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json
 COPY server/market.mjs server/market-spot-ingestion.mjs server/spot-provider-wire.mjs server/private-market-batch.mjs server/private-market-cache.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/ecb-reference-rates.LICENSE.txt server/ecb-reference-rates.test.mjs server/auth.mjs server/user-provider-vault.mjs server/user-analysis-bindings.mjs server/user-provider-vault.test.mjs server/user-analysis-bindings.test.mjs server/kraken-order-dry-run.mjs server/kraken-order-dry-run.test.mjs server/uniswap-trading.mjs server/uniswap-trading.test.mjs ./server/
+COPY docs/business/MONETIZATION-DEEPSCAN-LEGAL-MATRIX-20261008.md ./docs/business/MONETIZATION-DEEPSCAN-LEGAL-MATRIX-20261008.md
 COPY docs/security/BYOK-USER-PRIVATE-DATA.md ./docs/security/BYOK-USER-PRIVATE-DATA.md
 COPY docs/licenses ./docs/licenses
 COPY docs/security/evidence/license-rights-review.json ./docs/security/evidence/license-rights-review.json

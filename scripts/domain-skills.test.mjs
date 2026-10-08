@@ -67,3 +67,38 @@ test('ChatGPT plugin discovery is contextual, least-privileged and non-blocking'
   assert.match(policy, /keine neuen CI-Checks/);
   for (const domain of expected) assert.match(policy, new RegExp(domain));
 });
+
+test('shared visual-chat skill is discoverable from every domain agent without inventing UI capabilities', () => {
+  assert.equal(registry.sharedSkills.visualChat, 'visual-chat');
+  const visual = read('.agents/skills/visual-chat/SKILL.md');
+  const metadata = frontmatter(visual);
+  assert.equal(metadata.name, 'visual-chat');
+  assert.match(visual, /no gates/i);
+  assert.match(visual, /Markdown/);
+  assert.match(visual, /Mermaid/);
+  assert.match(visual, /NOT_PROVEN/);
+  assert.match(visual, /AGENTS\.md/);
+  const root = read('AGENTS.md');
+  const copilot = read('.github/copilot-instructions.md');
+  assert.match(root, /## Einheitliche grafische Chat-Darstellung aller Domains/);
+  assert.match(root, /keine ChatGPT-UI-Engine/);
+  assert.match(copilot, /\.agents\/skills\/visual-chat\/SKILL\.md/);
+  for (const domain of expected) {
+    assert.equal(registry.domains[domain].presentation, registry.sharedSkills.visualChat);
+    const agent = read(registry.domains[domain].chatAgent);
+    assert.match(agent, /\.agents\/skills\/visual-chat\/SKILL\.md/);
+  }
+});
+
+test('monetization assessment keeps license and runtime evidence separate', () => {
+  const report = read('docs/business/MONETIZATION-DEEPSCAN-LEGAL-MATRIX-20261008.md');
+  assert.match(report, /main@ed5c47611208ae4b145d110e03fb88657f51912c/);
+  assert.match(report, /Massive/);
+  assert.match(report, /MiCA/);
+  assert.match(report, /GitHub Marketplace/);
+  assert.match(report, /NOT_PROVEN/);
+  assert.match(report, /Merge #288/);
+  assert.match(report, /kein Live/);
+  const ids = [...report.matchAll(/^\| (\d+) \|/gm)].map(row => Number(row[1]));
+  assert.deepEqual(ids, Array.from({ length: 28 }, (_, i) => i + 1));
+});

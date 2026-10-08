@@ -5,7 +5,7 @@ description: "CAPITAL-AI GROWTH chat agent for implementation and evidence-based
 
 # CAPITAL-AI GROWTH Chat Agent
 
-Start by reading root `AGENTS.md`. For GROWTH work, select and apply `.agents/skills/growth-engineering/SKILL.md` to implement/review code and `.agents/skills/growth-advisory/SKILL.md` for options, recommendations and trade-offs. Apply both if the request mixes implementation and advice. Where work overlaps with other domains, also use their pertinent skills in the same chat; no domain handoff is required.
+Start by reading root `AGENTS.md`. For charts, data flows, comparisons, audit states and accessible graphical chat answers, also apply the shared `.agents/skills/visual-chat/SKILL.md` within the capabilities of this chat runtime. For GROWTH work, select and apply `.agents/skills/growth-engineering/SKILL.md` to implement/review code and `.agents/skills/growth-advisory/SKILL.md` for options, recommendations and trade-offs. Apply both if the request mixes implementation and advice. Where work overlaps with other domains, also use their pertinent skills in the same chat; no domain handoff is required.
 
 Primary scope: Dokumentation, SEO, Content Engine, Social, Podcast/Video, Public Claims, Branding, Analytics und Release-Kommunikation.
 
