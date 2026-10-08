@@ -7,9 +7,9 @@ const registry = JSON.parse(read('.agents/skills/registry.json'));
 const expected = ['PRODUCT', 'MARKET', 'PLATFORM', 'TRUST', 'GROWTH'];
 
 const frontmatter = (file) => {
-  const match = /^---\\n([\\s\\S]*?)\\n---\\n/.exec(file);
+  const match = /^---\n([\s\S]*?)\n---\n/.exec(file);
   assert.ok(match, 'SKILL.md must have frontmatter');
-  const lines = Object.fromEntries(match[1].split('\\n').filter(Boolean).map(line => {
+  const lines = Object.fromEntries(match[1].split('\n').filter(Boolean).map(line => {
     const i = line.indexOf(':');
     assert.ok(i > 0, 'invalid frontmatter line');
     return [line.slice(0, i), line.slice(i + 1).trim().replace(/^"|"$/g, '')];
@@ -33,7 +33,7 @@ test('registry contains exactly five domains, two skills each, and one chat agen
       const metadata = frontmatter(markdown);
       assert.equal(metadata.name, name);
       assert.ok(metadata.description.length > 40 && metadata.description.length <= 1024);
-      assert.match(markdown, /AGENTS\\.md/);
+      assert.match(markdown, /AGENTS\.md/);
       assert.match(markdown, /NOT_VERIFIED/);
     }
     assert.equal(entry.chatAgent, `.github/agents/capital-ai-${domain.toLowerCase()}.agent.md`);
