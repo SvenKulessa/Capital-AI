@@ -58,7 +58,7 @@ type Blocked = {
 type Ready = {
   readonly version: typeof FINANCE_VALIDATED_DATA_HANDOFF_VERSION;
   readonly state: 'RESEARCH_MAPPABLE';
-  readonly reasons: readonly [];
+  readonly reasons: readonly string[];
   readonly candidates: readonly FinanceSourceFeature[];
   readonly scoreEligible: false;
   readonly productionEligible: false;
@@ -146,7 +146,7 @@ export function projectFinanceValidatedDataToResearch(input: {
   return Object.freeze({
     version: FINANCE_VALIDATED_DATA_HANDOFF_VERSION,
     state: 'RESEARCH_MAPPABLE' as const,
-    reasons: Object.freeze([]) as readonly [],
+    reasons: Object.freeze([] as string[]),
     candidates: Object.freeze(candidates),
     scoreEligible: false as const, productionEligible: false as const,
   });
