@@ -8,6 +8,7 @@ type PrivateQuote = {
   quote: string;
   observedAt: number;
   dataScope: 'USER_PRIVATE_MARKET_DATA';
+  mode: 'rest' | 'websocket';
 };
 
 const PROVIDERS: ReadonlyArray<{ provider: Provider; symbol: string; label: string }> = [
@@ -18,10 +19,10 @@ const QUERY_ENDPOINT = '/api/profile/provider-query';
 
 // A user-private snapshot is deliberately NOT combined with useMarketAssets(), global cache,
 // public screeners, scores or executable signals. No user API key ever enters this component.
-function isPrivateQuote(value: unknown, provider: Provider, symbol: string): value is PrivateQuote {
+function isPrivateQuote(value: unknown, provider: Provider, symbol: string, mode: 'rest' | 'websocket'): value is PrivateQuote {
   if (!value || typeof value !== 'object') return false;
   const row = value as Record<string, unknown>;
-  return row.provider === provider && row.symbol === symbol &&
+  return row.provider === provider && row.symbol === symbol && row.mode === mode &&
     row.dataScope === 'USER_PRIVATE_MARKET_DATA' &&
     typeof row.price === 'number' && Number.isFinite(row.price) && row.price > 0 &&
     typeof row.quote === 'string' && /^[A-Z0-9]{3,6}$/.test(row.quote) &&
@@ -64,7 +65,7 @@ export const PrivateByokSpotQuotes: React.FC = () => {
     };
   }, []);
 
-  async function requestQuote(provider: Provider, symbol: string) {
+  async function requestQuote(provider: Provider, symbol: string, mode: 'rest' | 'websocket') {
     if (pending || !connected.includes(provider)) return;
     activeRequest.current?.abort();
     const controller = new AbortController();
@@ -77,7 +78,7 @@ export const PrivateByokSpotQuotes: React.FC = () => {
       const response = await fetch(QUERY_ENDPOINT, {
         method: 'POST', credentials: 'same-origin', cache: 'no-store',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ provider, operation: 'market.spot_trade', params: { symbol } }),
+        body: JSON.stringify({ provider, operation: mode === 'rest' ? 'market.spot_trade' : 'market.spot_ws_snapshot', params: { symbol } }),
         signal: AbortSignal.any([controller.signal, AbortSignal.timeout(12_000)]),
       });
       if (response.status === 429) throw new Error('PROVIDER_QUOTA');
@@ -91,7 +92,7 @@ export const PrivateByokSpotQuotes: React.FC = () => {
           envelope.sharedCacheAllowed !== false ||
           envelope.jetStreamPublicationAllowed !== false ||
           envelope.executionEnabled !== false ||
-          !isPrivateQuote(envelope.data, provider, symbol)) {
+          !isPrivateQuote(envelope.data, provider, symbol, mode)) {
         throw new Error('PRIVATE_RESPONSE_INVALID');
       }
       if (alive.current && !controller.signal.aborted) setQuotes(prev => ({ ...prev, [provider]: envelope.data as PrivateQuote }));
@@ -132,15 +133,22 @@ export const PrivateByokSpotQuotes: React.FC = () => {
                   <div className="mt-2" aria-live="polite">
                     <p className="font-mono text-amber-200">{quote.price.toLocaleString('de-DE', { maximumFractionDigits: 8 })} {quote.quote}</p>
                     <p className="text-xs text-slate-400">
-                      Börsenzeit: {new Date(quote.observedAt).toLocaleTimeString('de-DE')}
+                      {quote.mode === 'websocket' ? 'WebSocket' : 'REST'} · Börsenzeit: {new Date(quote.observedAt).toLocaleTimeString('de-DE')}
                     </p>
                   </div>
                 )}
-                <button type="button" disabled={pending !== null}
-                  onClick={() => void requestQuote(spec.provider,spec.symbol)}
-                  className="mt-3 px-3 py-2 rounded-md border border-cyan-500/50 text-xs text-cyan-200 hover:bg-cyan-500/10 disabled:opacity-50 disabled:cursor-not-allowed">
-                  {pending === spec.provider ? 'Abfrage läuft …' : 'Privaten Kurs abfragen'}
-                </button>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button type="button" disabled={pending !== null}
+                    onClick={() => void requestQuote(spec.provider,spec.symbol,'rest')}
+                    className="px-3 py-2 rounded-md border border-cyan-500/50 text-xs text-cyan-200 hover:bg-cyan-500/10 disabled:opacity-50 disabled:cursor-not-allowed">
+                    {pending === spec.provider ? 'Abfrage läuft …' : 'REST-Kurs abrufen'}
+                  </button>
+                  <button type="button" disabled={pending !== null}
+                    onClick={() => void requestQuote(spec.provider,spec.symbol,'websocket')}
+                    className="px-3 py-2 rounded-md border border-slate-500 text-xs text-slate-200 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed">
+                    WS-Momentaufnahme
+                  </button>
+                </div>
               </li>
             );
           })}
