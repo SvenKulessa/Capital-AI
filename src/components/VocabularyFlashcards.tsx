@@ -8,8 +8,8 @@ export function VocabularyFlashcards({ onNavigate }: { onNavigate: (path: string
 
   return (
     <section
-      aria-labelledby="landing-vocabulary-title"
-      className="mx-5 my-6 rounded-3xl border border-amber-400/20 bg-[radial-gradient(circle_at_top_left,rgba(245,176,20,0.08),transparent_42%),#050b18] p-4 sm:p-6"
+      aria-labelledby="learning-vocabulary-title"
+      className="my-6 rounded-3xl border border-amber-400/20 bg-[radial-gradient(circle_at_top_left,rgba(245,176,20,0.08),transparent_42%),#050b18] p-4 sm:p-6"
       data-design-profile="CAPITAL_AI_VOCABULARY_FLASHCARD@1"
       data-social-engine-generated="false"
     >
@@ -19,7 +19,7 @@ export function VocabularyFlashcards({ onNavigate }: { onNavigate: (path: string
             <BookOpen className="h-3.5 w-3.5" />
             Vocabulary Flashcards
           </div>
-          <h2 id="landing-vocabulary-title" className="mt-2 text-xl font-black text-white sm:text-2xl">
+          <h2 id="learning-vocabulary-title" className="mt-2 text-xl font-black text-white sm:text-2xl">
             Drei Begriffe. Eine Karte pro Konzept.
           </h2>
           <p className="mt-1 max-w-2xl text-xs leading-relaxed text-slate-400 sm:text-sm">
@@ -28,7 +28,7 @@ export function VocabularyFlashcards({ onNavigate }: { onNavigate: (path: string
         </div>
         <button
           type="button"
-          onClick={() => onNavigate('/learning')}
+          onClick={() => onNavigate('/learning?tab=glossar')}
           className="min-h-10 rounded-xl border border-amber-400/30 bg-amber-400/10 px-3 text-xs font-bold text-amber-200 hover:bg-amber-400/15"
         >
           Vocabulary öffnen

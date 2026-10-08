@@ -41,13 +41,18 @@ import {
   VocabularyLevel,
   VocabularyTerm,
 } from '../../data/vocabularyData';
-import { SubpageSidebarNav, SubpageNavItem } from '../../components/SubpageSidebarNav';
 import { useHubTab } from '../../hooks/useHubTab';
 import { updatePageSEO } from '../../utils/analytics';
 import { VOCABULARY_GRANT_KEY, formatVocabularyPrice } from '../../data/vocabularyOffer';
 
-export type LearningPortalTab = 'glossar' | 'guides' | 'videos' | 'quiz';
-const LEARNING_TABS: readonly LearningPortalTab[] = ['glossar', 'guides', 'videos', 'quiz'];
+const VocabularyFlashcards = React.lazy(() =>
+  import('../../components/VocabularyFlashcards').then(module => ({
+    default: module.VocabularyFlashcards,
+  })),
+);
+
+export type LearningPortalTab = 'glossar' | 'flashcards' | 'guides' | 'videos' | 'quiz';
+const LEARNING_TABS: readonly LearningPortalTab[] = ['glossar', 'flashcards', 'guides', 'videos', 'quiz'];
 
 interface LearningPortalPageProps {
   onBackToHome?: () => void;
@@ -66,37 +71,6 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useHubTab(LEARNING_TABS, initialTab);
 
-
-  const subpageItems: SubpageNavItem[] = [
-    {
-      id: 'glossar',
-      label: 'Market Vocabulary & Glossar',
-      icon: <BookOpen className="w-4 h-4 text-amber-400" />,
-      badge: `${VOCABULARY_TERMS.length}`,
-      desc: 'Finanzbegriffe & Formeln',
-    },
-    {
-      id: 'guides',
-      label: 'Analyse-Module & Methodik',
-      icon: <Layers className="w-4 h-4 text-cyan-400" />,
-      badge: '4 Module',
-      desc: 'Werkzeuge, Datenpfade & Modulaufbau',
-    },
-    {
-      id: 'videos',
-      label: 'Architektur Videos',
-      icon: <Video className="w-4 h-4 text-emerald-400" />,
-      badge: 'Vorschau',
-      desc: 'Pipeline, BYOK & Evidence',
-    },
-    {
-      id: 'quiz',
-      label: 'Quant & Trader Skill-Check',
-      icon: <Award className="w-4 h-4 text-purple-400" />,
-      badge: 'Skill-Quiz',
-      desc: 'Interaktiver Wissenstest',
-    },
-  ];
 
   // Vocabulary Filter States
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -359,6 +333,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
             </span>
             <span className="text-cyan-300 font-medium">
               {activeTab === 'glossar' && 'Finanz-Vocabulary & Glossar'}
+              {activeTab === 'flashcards' && 'Vocabulary Flashcards'}
               {activeTab === 'guides' && 'Analyse-Module & Methodik'}
               {activeTab === 'videos' && 'Architektur Videos'}
               {activeTab === 'quiz' && 'Quant & Trader Skill-Check'}
@@ -405,15 +380,6 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
         </div>
       </div>
 
-      {/* 2. SUBPAGE SIDEBOARD NAVIGATION */}
-      <SubpageSidebarNav
-        hubTitle="Learning Portal"
-        items={subpageItems}
-        activeId={activeTab}
-        onSelect={(id) => setActiveTab(id as LearningPortalTab)}
-        accentColor="amber"
-      />
-
       {/* 3. LEARNING PORTAL TABS */}
       <div className="flex items-center gap-1 p-1 rounded-xl bg-[#090e21] border border-slate-800/90 mb-6 overflow-x-auto scrollbar-none">
         {/* TAB 1: GLOSSAR / VOCABULARY */}
@@ -431,6 +397,20 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
           <span className="text-[10px] px-1.5 py-0.2 rounded bg-black/30 font-mono">
             {VOCABULARY_TERMS.length}
           </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('flashcards')}
+          aria-current={activeTab === 'flashcards' ? 'page' : undefined}
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
+            activeTab === 'flashcards'
+              ? 'bg-amber-400 text-black font-bold shadow-sm'
+              : 'text-slate-300 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <BookOpen className="w-3.5 h-3.5" />
+          <span>Vocabulary Flashcards</span>
         </button>
 
         {/* TAB 2: CHEAT-SHEETS & GUIDES */}
@@ -480,6 +460,12 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       {/* ========================================================================= */}
       {/* TAB CONTENT 1: MARKET VOCABULARY & GLOSSAR                                */}
       {/* ========================================================================= */}
+      {activeTab === 'flashcards' && (
+        <React.Suspense fallback={<p role="status" className="p-4 text-sm text-slate-400">Karteikarten werden geladen …</p>}>
+          <VocabularyFlashcards onNavigate={(path) => onNavigateTab?.(path)} />
+        </React.Suspense>
+      )}
+
       {activeTab === 'glossar' && (
         <div className="space-y-6">
           {/* Header Banner */}
