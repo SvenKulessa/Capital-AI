@@ -20,7 +20,8 @@ RUN uv sync --locked --no-dev --no-install-project --no-editable
 
 FROM patched-python AS runtime
 LABEL org.opencontainers.image.source="https://github.com/The-PR-Agent/pr-agent" \
-      org.opencontainers.image.revision="8e5a9295973b24af4b70cafd0b660a230811ef9e"
+      org.opencontainers.image.revision="8e5a9295973b24af4b70cafd0b660a230811ef9e" \
+      capital-ai.candidate="debian-13-comparison"
 ENV PYTHONPATH=/app PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
     LITELLM_LOCAL_MODEL_COST_MAP=True GIT_PYTHON_REFRESH=quiet \
     HOME=/tmp/reviewer
