@@ -1,7 +1,19 @@
 # Separate private infrastructure image; does not build or deploy Capital-AI.
+FROM nats:2.15.0-alpine@sha256:ac8f88a6494bffc2c2a5289a0ca61cb28a9145c11ba5677cf24265d07f46d8d4 AS release-binary
+ARG TARGETARCH
+ARG TARGETVARIANT
+COPY deploy/fetch-nats-release.sh /tmp/fetch-nats-release.sh
+# Official 2.15.1 release binaries use Go 1.27.2; each archive is hash-pinned.
+RUN sh /tmp/fetch-nats-release.sh
+
 FROM nats:2.15.0-alpine@sha256:ac8f88a6494bffc2c2a5289a0ca61cb28a9145c11ba5677cf24265d07f46d8d4
+ENV NATS_SERVER=2.15.1
+LABEL org.opencontainers.image.version="2.15.1"
+COPY --from=release-binary /out/nats-server /usr/local/bin/nats-server
+COPY --from=release-binary /out/LICENSE /usr/share/licenses/nats-server/LICENSE
 RUN apk add --no-cache su-exec=0.2-r3 'zlib>=1.3.2-r1' \
     && addgroup -g 1000 nats && adduser -D -u 1000 -G nats nats
+RUN nats-server --version | grep -Fx 'nats-server: v2.15.1'
 COPY deploy/nats-server.conf /etc/nats/nats-server.conf
 COPY --chmod=0555 deploy/nats-entrypoint.sh /usr/local/bin/capital-nats-entrypoint
 # Root is used only to prepare the mounted disk; the server runs as UID/GID 1000.
