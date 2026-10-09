@@ -47,8 +47,8 @@ test('Google OAuth privacy disclosure has distinct purpose, data, transfer and r
   assert.match(html, /<section data-processing-id="google-oauth">/);
   for (const value of [
     'Google-Konto-Kennung', 'E-Mail-Adresse', 'Art. 6', 'Supabase Auth', 'Render',
-    'Gmail-', 'Google-Drive', 'Verkauf', 'Werbung', 'Training allgemeiner KI-Modelle',
+    'Gmail-', 'Google-Drive', 'verkauft', 'Werbung', 'Training allgemeiner KI-Modelle',
     'Google-Kontoeinstellungen', 'Providerprotokolle',
   ]) assert.ok(html.includes(value), `Missing Google OAuth disclosure: ${value}`);
-  assert.doesNotMatch(html, /Google-Konto-Passwort wird gespeichert|<script\\b/i);
+  assert.doesNotMatch(html, /Google-Konto-Passwort wird gespeichert|<script\b/i);
 });
