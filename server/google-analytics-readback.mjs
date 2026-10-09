@@ -23,8 +23,21 @@ function requiredPropertyNumber(env) {
 }
 
 function containsProperty(value, propertyNumber) {
-  try { return JSON.stringify(value).includes(`properties/${propertyNumber}`); }
-  catch { return false; }
+  const expected = `properties/${propertyNumber}`;
+  const pending = [value];
+  const seen = new WeakSet();
+
+  while (pending.length > 0) {
+    const item = pending.pop();
+    if (typeof item === 'string') {
+      if (item === expected) return true;
+      continue;
+    }
+    if (!item || typeof item !== 'object' || seen.has(item)) continue;
+    seen.add(item);
+    pending.push(...Object.values(item));
+  }
+  return false;
 }
 
 function findRows(value, depth = 0) {
