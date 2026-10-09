@@ -67,6 +67,8 @@ test('crypto instrument quote asset equals its currency and stays non-production
   assert.equal(InstrumentMasterSchema.safeParse({ ...instrument, currency: 'USDT!' }).success, false);
   assert.equal(InstrumentMasterSchema.safeParse({ ...instrument, productAssetClass: 'forex',
     baseCurrency: 'BTC', quoteCurrency: 'USD', currency: 'USDT' }).success, false);
+  assert.equal(InstrumentMasterSchema.safeParse({ ...instrument, productAssetClass: 'forex',
+    baseCurrency: 'USDT', quoteCurrency: 'USD', currency: 'USD' }).success, false);
 });
 
 test('quote-unit-aware DQ diagnostics still fail closed for demo and absent provider rights', () => {
