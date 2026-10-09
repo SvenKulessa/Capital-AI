@@ -12,13 +12,23 @@ import {
 } from '../shared/vocabulary-metadata.mjs';
 import { QUANT_PRO_IDS } from '../shared/vocabulary-access-policy.mjs';
 
+async function readLegalTemplate(route) {
+  try {
+    return await readFile(new URL(`../public/${route}/index.html`, import.meta.url));
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
+    // Production image retains built dist/, not source public/.
+    return readFile(new URL(`../dist/${route}/index.html`, import.meta.url));
+  }
+}
+
 test('license deep links expose crawlable metadata without changing API boundaries', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'capital-license-'));
   await writeFile(path.join(root, 'index.html'), await readFile(new URL('../index.html', import.meta.url)));
   // The production handler serves these routes from static HTML, not SPA fallback.
   for (const route of ['datenschutz', 'agb']) {
     await mkdir(path.join(root, route), { recursive: true });
-    await writeFile(path.join(root, route, 'index.html'), await readFile(new URL(`../public/${route}/index.html`, import.meta.url)));
+    await writeFile(path.join(root, route, 'index.html'), await readLegalTemplate(route));
   }
   const server = createApp(root);
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
