@@ -105,3 +105,16 @@ quota and overage charges are NOT_PROVEN.
 
 **Branch:** `capital-ai-trust/screener-blueprint-preview-20261009`  
 **PR:** `[CAPITAL-AI-TRUST] Screener Blueprint Preview, Badge und sichere Lizenzgrenzen`
+
+
+## Owner brief V2 — target groups and editorial product surface (2026-10-09)
+
+New private Drive file ID: `1TajuS81rWoAfDakv255b9DL9gu8rxpw7` (not distributed publicly). The file expands audience segmentation, product messaging, website CTAs, data/source concepts, a pattern intraday layer and tool playbooks. Its proposed independent products remain **future options**. Approved A remains the combined product with YAML-only preview and later optional visual Studio upgrade.
+
+- Target audiences: FinTech/Quant builders, Research teams, Screener developers, and agencies/Legacy integrators.
+- Product marketing preview: `src/features/documentation/ScreenerBlueprintAudienceSection.tsx`.
+- Brand badges: `screener-data-blueprint.svg`, `screener-scoring-blueprint.svg`, `screener-bundle-blueprint.svg`; reproducible manifest and SocialMediaEngine offline source in `docs/licenses/screener-blueprint-badges.manifest.json`.
+- Social/channel drafts: `src/data/contentCampaigns.ts` and `docs/growth/SCREENER-BUNDLE-CAMPAIGN-V2-20261009.md`.
+- Product feedback and official industry-update evidence: `src/platform/SocialMediaEngine/Learning/FeedbackLearningLoop.mjs` provides **CANDIDATE_ONLY** classifications. Input feeds and user analytics are NOT_PROVEN; it neither trains a model nor publishes content.
+- Security correction: V2 example's `min_confidence=0.65` cannot relax the existing CAPITAL-AI canonical shadow `minimumConfidence>=0.90` contract. Other source provider names and endpoints are conceptual, not license grants.
+- No paid SKU, tenant entitlement, customer download, production score or automatic publishing is activated.
