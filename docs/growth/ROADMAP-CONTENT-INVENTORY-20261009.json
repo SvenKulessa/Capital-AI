@@ -1,0 +1,549 @@
+{
+  "schemaVersion": "CAPITAL_AI_ROADMAP_CONTENT_INVENTORY@1",
+  "baseMainSha": "75b0bae05a5c862e87274adf28a5e4d079c5a87a",
+  "scope": "READ_ONLY_INVENTORY_WITH_CHART_LEARNING_PATCHES",
+  "total": 105,
+  "open": 90,
+  "packages": [
+    {
+      "id": "CA-TRUST-APP-READ-DESIGN",
+      "owner": "TRUST",
+      "evidenceState": "OFFEN",
+      "nextStep": "Endpunkt-/Leserechte-Matrix, geerbte Rulesets, IAM, Actions, CodeQL, Secret Protection, Dependabot und GitGuardian erfassen; Schlüsselrotation und begrenzte Installation planen."
+    },
+    {
+      "id": "CA-PLATFORM-APP-READ-CONSUME",
+      "owner": "PLATFORM",
+      "evidenceState": "GEHALTEN",
+      "nextStep": "Berechtigungen konkret freigeben, App installieren und Source-/Owner-/Zeit-/Hash-gebundene Lesebelege samt Soll-/Ist-Abweichungen konsumieren."
+    },
+    {
+      "id": "CA-TRUST-SIGNED-COMMITS",
+      "owner": "TRUST",
+      "evidenceState": "OFFEN",
+      "nextStep": "Verified-Signaturen inventarisieren, fehlende Arbeitsbranch-Signierung beheben und einen regulären signierten PR vor Ruleset-Aktivierung abnehmen."
+    },
+    {
+      "id": "CA-TRUST-GITGUARDIAN",
+      "owner": "TRUST",
+      "evidenceState": "OFFEN",
+      "nextStep": "Installation und Findings lesen, Kosten prüfen; exakten Checknamen/App-Herkunft nach erfolgreicher Scanabdeckung als Required Check anbinden und nach Transfer wiederprüfen."
+    },
+    {
+      "id": "CA-TRUST-GITHUB-FREE",
+      "owner": "TRUST",
+      "evidenceState": "OFFEN",
+      "nextStep": "Kostenfreie Optionen einschließlich CodeQL einzeln lesen und aktivieren; Standard-Runner und Storage-Budget prüfen; kostenpflichtige Zusatzprodukte ausschließen."
+    },
+    {
+      "id": "CA-PLATFORM-GITHUB-COSTS",
+      "owner": "PLATFORM",
+      "evidenceState": "OFFEN",
+      "nextStep": "Read-only Default, SHA-Pinning, Actions-Allow-List, Fork-Freigaben, Artifact-Retention, Cache-Limits und Budget-Stop prüfen."
+    },
+    {
+      "id": "CA-GROWTH-FINANCE-SPONSORS-OFF",
+      "owner": "GROWTH",
+      "evidenceState": "OFFEN",
+      "nextStep": "Finance Settings / General / Features: Sponsorships deaktivieren und fehlenden Sponsorbutton öffentlich prüfen."
+    },
+    {
+      "id": "CA-PLATFORM-IONOS-SMTP",
+      "owner": "PLATFORM",
+      "evidenceState": "OFFEN",
+      "nextStep": "Registrierungs-/Bestätigungs- und Passwort-Reset-Mail mit IONOS-Absender, TLS und tatsächlicher Zustellung prüfen."
+    },
+    {
+      "id": "CA-PLATFORM-ENTERPRISE-PUBLIC",
+      "owner": "PLATFORM",
+      "evidenceState": "GEHALTEN",
+      "nextStep": "Migrationsmatrix in docs/security/ORG-MIGRATION-PLAN-20261001.md prüfen; danach capital-ai-online und Capital-AI-Enterprise-Zuordnung/Typ/Kosten prüfen, mit Sichtbarkeit public transferieren und CodeQL, Rulesets, GHCR, Render, OIDC, Apps sowie Secrets-Zugriffe erneut abnehmen."
+    },
+    {
+      "id": "CA-GROWTH-CAPITAL-SPONSORS",
+      "owner": "GROWTH",
+      "evidenceState": "GEHALTEN",
+      "nextStep": "Nach Transfer verifizierten Sponsors-Empfänger in FUNDING.yml eintragen, Sponsorships aktivieren und Button/Ziel prüfen."
+    },
+    {
+      "id": "CA-PLATFORM-VERSIONING",
+      "owner": "PLATFORM",
+      "evidenceState": "OFFEN",
+      "nextStep": "Release-Manifest und automatischen Release-PR-Controller ergänzen und gegen Branch Rules validieren."
+    },
+    {
+      "id": "CA-TRUST-DAILY-SUPPLY-CHAIN",
+      "owner": "TRUST",
+      "evidenceState": "OFFEN",
+      "nextStep": "Die offenen Dependency-PRs gegen Main (Dependabot-Governance #72 und Attestation-Konsolidierung #73 bereits gemerged) gegen den jeweiligen Head prüfen; Major-Upgrades nicht allein durch Dependabot-Erfolg freigeben."
+    },
+    {
+      "id": "CA-PLATFORM-COMPONENT-DEPLOY",
+      "owner": "PLATFORM",
+      "evidenceState": "OFFEN",
+      "nextStep": "Deterministische Pfad-/Komponentenmatrix implementieren: App, NATS, Docs-only und Security-triggered; Render REST nur für betroffene Komponenten auslösen."
+    },
+    {
+      "id": "CA-PLATFORM-SELF-HEAL",
+      "owner": "PLATFORM",
+      "evidenceState": "OFFEN",
+      "nextStep": "DETECT → CORRELATE → CLASSIFY → REMEDIATE → VERIFY als fail-closed Controller mit Retry-Budget und Escalation implementieren."
+    },
+    {
+      "id": "CA-GROWTH-DOMAIN-BRANDING",
+      "owner": "GROWTH",
+      "evidenceState": "OFFEN",
+      "nextStep": "Quadratische Domain-Badges sind in der Roadmap eingebunden; bei künftigen Asset-Änderungen SVG, SHA-256 und Lizenz-Evidence gemeinsam synchron halten."
+    },
+    {
+      "id": "AP-OPS-CURRENT",
+      "owner": "PLATFORM",
+      "evidenceState": "OFFEN",
+      "nextStep": "Nach Lizenz-/Security-Abnahme neuen Kandidaten an finalen Main binden und Runtime-Source, Builder, Index und Plattform-Manifest gemeinsam abnehmen."
+    },
+    {
+      "id": "AP-SEC-IMAGE",
+      "owner": "TRUST",
+      "evidenceState": "GEHALTEN",
+      "nextStep": "Lizenzscope, aktuelle CodeQL-/Code-Quality-Policy-Ergebnisse und finalen Main schließen; neuen Kandidaten einmal veröffentlichen und denselben Digest mit frischem Runtime-/Deploy-Readback abnehmen."
+    },
+    {
+      "id": "AP-CMP-RIGHTS",
+      "owner": "TRUST",
+      "evidenceState": "GEHALTEN",
+      "nextStep": "Offene Nachweise und Berechtigungen belegen; Freigabe an die tatsächlich ausgelieferte Identität binden."
+    },
+    {
+      "id": "AP-CMP-PROVIDERS",
+      "owner": "TRUST",
+      "evidenceState": "OFFEN",
+      "nextStep": "Render, Supabase Auth, externe Schriftarten und gegebenenfalls Telegram mit tatsächlich aktiven Datenflüssen abgleichen."
+    },
+    {
+      "id": "AP-OPS-NATS-LIVE",
+      "owner": "PLATFORM",
+      "evidenceState": "OFFEN",
+      "nextStep": "Neuen App-Kandidaten nach Handoff deployen; subscriber=connected und verifiedDeliveries > 0 sowie Zustellung nach Reconnect und Evidence-Replay dokumentieren. Externen Backup-Restore separat abnehmen."
+    },
+    {
+      "id": "AP-OPS-DOMAIN",
+      "owner": "PLATFORM",
+      "evidenceState": "OFFEN",
+      "nextStep": "Read-only Bestandsaufnahme und Cutover-/Rollback-Plan vorbereiten. Umschaltung erst nach AP-SEC-IMAGE, Lizenz-, Domain-/Auth-/Mail-Abnahme; Finance erhalten."
+    },
+    {
+      "id": "AP-CMP-OLD-DATA",
+      "owner": "TRUST",
+      "evidenceState": "OFFEN",
+      "nextStep": "Zugriff und Bearbeitung der Altdaten sichern; keine Identitäten allein über gleiche E-Mail-Adressen verbinden."
+    },
+    {
+      "id": "AP-OPS-FINANCE-OFF",
+      "owner": "PLATFORM",
+      "evidenceState": "GEHALTEN",
+      "nextStep": "Nach dokumentierter Abnahme nur den vorgesehenen Finance-Service suspendieren; Rückweg prüfen."
+    },
+    {
+      "id": "AP-SEC-AUTH-LIVE",
+      "owner": "TRUST",
+      "evidenceState": "OFFEN",
+      "nextStep": "Supabase-Konfiguration, Provider-Reachability und echten E-Mail- oder Google-Login mit Callback/Session nachweisen; eigenen Export, Session-Refresh, Logout und anschließendes 401 auf capital-ai.online zusätzlich prüfen."
+    },
+    {
+      "id": "CA-TRUST-LICENSE-TOOLS",
+      "owner": "TRUST",
+      "evidenceState": "OFFEN",
+      "nextStep": "Kleinen ORT-/ScanCode-Pilot mit festgelegter Toolversion und Hash an vorhandenem Lizenzinventar ausführen; Ergebnisse und Source-/Notice-Lieferung reviewen. Documenso nur bei tatsächlichem Signaturbedarf evaluieren."
+    },
+    {
+      "id": "CA-TRUST-SUPABASE-AUTH",
+      "owner": "TRUST",
+      "evidenceState": "OFFEN",
+      "nextStep": "Vorhandenen Secret-Zugriff im berechtigten Laufzeit-/CI-Kontext nutzen; Credential-Typ und begrenzte Leserechte feststellen, danach App-Callbacks, Login-/MFA-/Passkey-Policies, Branding und SMTP ohne Secret-/Benutzerdatenexport lesen."
+    },
+    {
+      "id": "CA-PLATFORM-OTEL-COLLECTOR",
+      "owner": "PLATFORM",
+      "evidenceState": "UNGEKLÄRT",
+      "nextStep": "OTel Collector gegen Grafana Alloy, Vector und Fluent Bit mit CADS_PROFILE@2 benchmarken; keine Collector-Runtime vor positivem Kosten-/Security-Gate."
+    },
+    {
+      "id": "CA-PLATFORM-MARKET-INFRA-BENCH",
+      "owner": "PLATFORM",
+      "evidenceState": "OFFEN",
+      "nextStep": "CAPITAL_AI_EVENT_BACKBONE@1 als reale NATS/Kafka × Node/Rust 4er-Matrix ausführen und jeden Run an Image-/SBOM-Digests sowie Git-SHA binden."
+    },
+    {
+      "id": "CA-TRUST-WORK-VERIFICATION",
+      "owner": "TRUST",
+      "evidenceState": "OFFEN",
+      "nextStep": "Domain-Labels/Project-Views providerseitig anlegen, dann PR→Checks→SBOM→Attestation→GHCR→Render→Runtime-Readback als ein Evidence-Objekt korrelieren."
+    },
+    {
+      "id": "CA-PLATFORM-DR-RECOVERY",
+      "owner": "PLATFORM",
+      "evidenceState": "OFFEN",
+      "nextStep": "Datenbankexport, kritische Storage-Objekte, JetStream File Store und einen attestierten GHCR-Digest in isolierter Recovery-Umgebung wiederherstellen und RTO/RPO messen."
+    },
+    {
+      "id": "CA-PLATFORM-EDGE-CACHE",
+      "owner": "PLATFORM",
+      "evidenceState": "OFFEN",
+      "nextStep": "Render-Profil 'Common static files' gegen no-cache messen; HTML/Auth/API/Session weiterhin no-store halten. Provideränderung erst nach Owner-Freigabe und Readback."
+    },
+    {
+      "id": "CA-MARKET-GHCR-BLUEPRINT-APP",
+      "owner": "MARKET",
+      "evidenceState": "OFFEN",
+      "nextStep": "Repository→Build→SBOM→Scan→Attestation→Digest→Blueprint→Runtime→Source SHA→Release Evidence als App-Contract und Marketplace-fähige API spezifizieren."
+    },
+    {
+      "id": "CA-PLATFORM-TS-APP-BOUNDARY",
+      "owner": "PLATFORM",
+      "evidenceState": "GEHALTEN",
+      "nextStep": "Neue TS7-Version/native Artefakte erneut auf Provenance, Binary Reachability und Security prüfen; danach Typecheck-Performance und Oxc-Boundary gegen dieselben Fixtures benchmarken."
+    },
+    {
+      "id": "PRODUCTION-WEB-01-PRODUCT",
+      "owner": "PRODUCT",
+      "evidenceState": "OFFEN",
+      "nextStep": "Aktuelle Pricing-, CADS-, Account- und Responsive-Slices auf dem nächsten deploybaren Kandidaten als gemeinsame PRODUCT-Runtime-Evidence abnehmen."
+    },
+    {
+      "id": "PRODUCTION-WEB-01-GROWTH",
+      "owner": "GROWTH",
+      "evidenceState": "OFFEN",
+      "nextStep": "Kanonische Inhalte, strukturierte Metadaten und Social-/Search-Handoffs weiter gegen veröffentlichte Production-Oberflächen korrelieren."
+    },
+    {
+      "id": "PRODUCTION-WEB-01-TRUST",
+      "owner": "TRUST",
+      "evidenceState": "OFFEN",
+      "nextStep": "Security-, Public-Artifact-, Auth- und Supply-Chain-Gates auf dem nächsten exakten Release-Kandidaten terminal korrelieren; keine Freigabe aus Einzeltests ableiten."
+    },
+    {
+      "id": "PRODUCTION-WEB-01-PLATFORM",
+      "owner": "PLATFORM",
+      "evidenceState": "OFFEN",
+      "nextStep": "Ladezustände, Bundle-Budget, Routing und Runtime-Identität auf dem deploybaren Kandidaten gemeinsam messen und Production-Handoff separat schließen."
+    },
+    {
+      "id": "PRODUCTION-WEB-01-MARKET",
+      "owner": "MARKET",
+      "evidenceState": "OFFEN",
+      "nextStep": "MARKET-05 Instrumentmanifest fortführen; parallel den in Main integrierten Kraken/Binance Read-only Private-Provider-Pfad über NATS/Rust-Bridge mit echter Runtime-Evidence abnehmen. Mutierende Orders, Shared/Public-Rechte und Score-Promotion bleiben separate Gates."
+    },
+    {
+      "id": "CA-GROWTH-CONTENT-ENGINE",
+      "owner": "GROWTH",
+      "evidenceState": "OFFEN",
+      "nextStep": "Gemergte Landingpage-Darstellung gegen den Live-Render-Deploy visuell abnehmen; danach Kampagnenassets über die bestehenden Draft-Tools erzeugen und den gemeinsamen Growth/Social-Package-Vertrag vorbereiten."
+    },
+    {
+      "id": "CA-GROWTH-CONTENT-SOCIAL-PACKAGE",
+      "owner": "GROWTH",
+      "evidenceState": "OFFEN",
+      "nextStep": "Package Manifest, Studio-Binding und Social-Attribution sind implementiert; als nächstes die realen Provider-Publisher aus der Finance-Evidence kontrolliert nach CAPITAL-AI portieren, OAuth-/Delivery-State an das neue Manifest binden und erst danach den Draft → Review → Schedule → Publish → Measure Pilot ausführen."
+    },
+    {
+      "id": "CA-GROWTH-FIN-SOC-MARKET-MIGRATION",
+      "owner": "GROWTH",
+      "evidenceState": "OFFEN",
+      "nextStep": "Social-Migration anhand des Completion-Gates fortsetzen und MARKET-Scoring-/Daten-Folgepaket erst nach sauberer Rechte-/Runtime-Trennung übernehmen."
+    },
+    {
+      "id": "CA-MARKET-FINANCE-SCORING-DATA-FOLLOWUP",
+      "owner": "MARKET",
+      "evidenceState": "GEHALTEN",
+      "nextStep": "Erst nach abgeschlossenem Social-Media-Engine-Cutover CURRENT_MAIN frisch korrelieren und daraus ein separates MARKET-Arbeitspaket für Finance-Scoring-, Gewichtungs- und Datenkonzepte materialisieren."
+    },
+    {
+      "id": "CA-GROWTH-SOC-MIGRATION",
+      "owner": "GROWTH",
+      "evidenceState": "OFFEN",
+      "nextStep": "Noch offene Social-Engine-Gates code- und evidence-basiert schließen; kein Kanal-Publishing allein aus vorhandenen Adaptern ableiten."
+    },
+    {
+      "id": "CA-TRUST-SOC-RIGHTS",
+      "owner": "TRUST",
+      "evidenceState": "OFFEN",
+      "nextStep": "Tool-/Modell-/Persona-/Musik-/Distributionsrechte pro tatsächlich ausgeliefertem Asset und Providerpfad abschließen."
+    },
+    {
+      "id": "CA-PLATFORM-SOC-FOUNDATION",
+      "owner": "PLATFORM",
+      "evidenceState": "OFFEN",
+      "nextStep": "Persistente Content-Jobs, Freigabe-Bindung und Provider-Readbacks vervollständigen; Secrets und Kanal-Credentials bleiben außerhalb öffentlicher Artefakte."
+    },
+    {
+      "id": "CA-GROWTH-SOC-COPY",
+      "owner": "GROWTH",
+      "evidenceState": "OFFEN",
+      "nextStep": "Zwölf Chart-Lernbriefs und Beitragsentwürfe mit eigener synthetischer Grafik sind implementiert. Kanalvarianten, konkrete Veröffentlichungsfreigaben und echte Provider-Endzustände bleiben offen."
+    },
+    {
+      "id": "CA-PLATFORM-SOC-MEDIA",
+      "owner": "PLATFORM",
+      "evidenceState": "OFFEN",
+      "nextStep": "Zwölf lokale SVG-/PNG-Lerncharts mit Hashmanifest sind gerendert. MediaProjectV2-Exporte sind validierte Entwürfe; Video-/Codec-/Kanalabnahme bleibt offen."
+    },
+    {
+      "id": "CA-GROWTH-SOC-TTS",
+      "owner": "GROWTH",
+      "evidenceState": "GEHALTEN",
+      "nextStep": "Kein aktives TTS-/ASR-Modell konfigurieren. Ein späterer Voice-over-Provider darf nur nach neuer expliziter Owner-Entscheidung als separater Kandidat aufgenommen werden."
+    },
+    {
+      "id": "CA-PLATFORM-SOC-GENVIDEO",
+      "owner": "PLATFORM",
+      "evidenceState": "GEHALTEN",
+      "nextStep": "Ressource und Budget festlegen; gepinnte Adapter/Gewichte/OCI-Digests mit echten Bild-/Videobenchmarks vergleichen."
+    },
+    {
+      "id": "CA-PRODUCT-SOC-STUDIO",
+      "owner": "PRODUCT",
+      "evidenceState": "OFFEN",
+      "nextStep": "Lernatlas, Beitragsvorschau und Grafik-/MediaProject-Downloads sind implementiert. Persistente Redaktion, hashgebundene Freigaben und authentifizierte Studio-Runtime noch abnehmen."
+    },
+    {
+      "id": "CA-GROWTH-SOC-UGC",
+      "owner": "GROWTH",
+      "evidenceState": "GEHALTEN",
+      "nextStep": "Drei Produktclips mit Persona-/Voice-Rechten, sichtbarer KI-Herkunft, Lip-sync-, Audio- und Claim-Abnahme erzeugen."
+    },
+    {
+      "id": "CA-PLATFORM-SOC-DISTRIBUTION",
+      "owner": "PLATFORM",
+      "evidenceState": "GEHALTEN",
+      "nextStep": "YouTube/TikTok/Meta-Adapter korrigieren/neu prüfen; Tokenablauf, Teilfehler, UNKNOWN-Uploads, Redelivery und Doppelpost-Vermeidung testen."
+    },
+    {
+      "id": "CA-GROWTH-SOC-PILOT",
+      "owner": "GROWTH",
+      "evidenceState": "OFFEN",
+      "nextStep": "Freigegebenen Kanalpilot samt Provider-Endzustand, Wiederanlauf und Rückweg abnehmen; drei positive Validierungszyklen vor dauerhafter Self-Healing-Invariante."
+    },
+    {
+      "id": "CA-TRUST-ZERO-COST-THRESHOLDS",
+      "owner": "TRUST",
+      "evidenceState": "OFFEN",
+      "nextStep": "Provider-Quoten live zurücklesen, Usage-Ledger anbinden und billable-overage Pfade vor kostenlosen Limits hart stoppen."
+    },
+    {
+      "id": "CA-TRUST-PUBLIC-AUTHORITY-GATE",
+      "owner": "TRUST",
+      "evidenceState": "OFFEN",
+      "nextStep": "Public surfaces auf unbelegte Compliance-, Performance-, Tokenomics- und Wirtschaftsclaims scannen."
+    },
+    {
+      "id": "CA-GROWTH-CONSENT-OUTREACH",
+      "owner": "GROWTH",
+      "evidenceState": "OFFEN",
+      "nextStep": "Persistenten Consent-/Suppression-/Audit-Store, Bounce-/Complaint-Ingestion, Sender-Auth-Readback und sendeseitigen Policy-Enforcer implementieren; bis dahin kein autonomer Versand."
+    },
+    {
+      "id": "CA-GROWTH-CREATOR-REVENUE",
+      "owner": "GROWTH",
+      "evidenceState": "OFFEN",
+      "nextStep": "Social-Engine Completion Gate zuerst auf PASS bringen; danach Image/TTS-Drafts an immutable Assets binden und Publisher private/unlisted-first integrieren. Veo bleibt hinter separater Admission."
+    },
+    {
+      "id": "CA-PRODUCT-CADS-GITHUB-MARKETPLACE",
+      "owner": "PRODUCT",
+      "evidenceState": "OFFEN",
+      "nextStep": "Paid Billing/Entitlement Runtime ist implementiert. Der initiale Standalone-Handoff nach capital-ai-online/CADS ist gemergt. Nächstes Ziel: den accepted PR-#220-Delta source-bound ins Org-Repo synchronisieren und danach Organization-App, Verified Publisher, Financial Onboarding, aktuelle GitHub-Paid-Listing-Voraussetzungen, reale USD-Preise/Plan-IDs sowie Install/OAuth/Purchase/Changed/Cancelled/Delete-Smokes schließen."
+    },
+    {
+      "id": "CA-PRODUCT-BLUEPRINT-COMMERCE-EVIDENCE",
+      "owner": "PRODUCT",
+      "evidenceState": "OFFEN",
+      "nextStep": "Je Blueprint reproduzierbare private Test-/Key-Vault-Evidence definieren, danach SKU, Entitlement und serverseitige Artefakt-Auslieferung implementieren; öffentliche Vollartefakte bleiben bis dahin gesperrt."
+    },
+    {
+      "id": "CA-PRODUCT-VOCABULARY-NFT-MINTING",
+      "owner": "PRODUCT",
+      "evidenceState": "OFFEN",
+      "nextStep": "Zuerst Token-/Tokenomics-Rechte-, Wallet-, Chain-, Minting-, Metadata- und Transfer-Contract definieren; bis dahin kein NFT minten und keinen handelbaren Token-/Eigentumsclaim darstellen."
+    },
+    {
+      "id": "CA-PRODUCT-BENCHMARK-MARKETPLACE",
+      "owner": "PRODUCT",
+      "evidenceState": "OFFEN",
+      "nextStep": "CADS-Web-SaaS-Entitlements gegen reale Starter/Pro/Enterprise-Subscriptions abnehmen und danach GitHub-Marketplace-Plan-/marketplace_purchase-Lifecycle separat implementieren."
+    },
+    {
+      "id": "AP-GOV-01",
+      "owner": "TRUST",
+      "evidenceState": "UNGEKLÄRT",
+      "nextStep": "Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen."
+    },
+    {
+      "id": "AP-GOV-02",
+      "owner": "TRUST",
+      "evidenceState": "UNGEKLÄRT",
+      "nextStep": "Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen."
+    },
+    {
+      "id": "AP-GOV-03",
+      "owner": "TRUST",
+      "evidenceState": "UNGEKLÄRT",
+      "nextStep": "Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen."
+    },
+    {
+      "id": "AP-OPS-01",
+      "owner": "PLATFORM",
+      "evidenceState": "OFFEN",
+      "nextStep": "Image-backed Runtime, Release-Evidence und bounded Self-Healing gegen einen attestierten Kandidaten end-to-end abnehmen; ein grüner Build allein bleibt keine Production-Freigabe."
+    },
+    {
+      "id": "AP-OPS-02",
+      "owner": "PLATFORM",
+      "evidenceState": "OFFEN",
+      "nextStep": "CADS-/HTTP-Telemetrie um persistente, providerübergreifende Fleet-Evidence ergänzen und p95-/Fehler-Schwellen mit realer Runtime-Evidence kalibrieren."
+    },
+    {
+      "id": "AP-OPS-03",
+      "owner": "PLATFORM",
+      "evidenceState": "UNGEKLÄRT",
+      "nextStep": "Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen."
+    },
+    {
+      "id": "AP-FE-04",
+      "owner": "PRODUCT",
+      "evidenceState": "UNGEKLÄRT",
+      "nextStep": "Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen."
+    },
+    {
+      "id": "AP-DOC-01",
+      "owner": "GROWTH",
+      "evidenceState": "UNGEKLÄRT",
+      "nextStep": "Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen."
+    },
+    {
+      "id": "AP-DOC-02",
+      "owner": "GROWTH",
+      "evidenceState": "UNGEKLÄRT",
+      "nextStep": "Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen."
+    },
+    {
+      "id": "AP-DOC-03",
+      "owner": "GROWTH",
+      "evidenceState": "UNGEKLÄRT",
+      "nextStep": "Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen."
+    },
+    {
+      "id": "CA-GROWTH-SEO-ARCHITECTURE",
+      "owner": "GROWTH",
+      "evidenceState": "OFFEN",
+      "nextStep": "SEO-03: reproduzierbaren anonymen HTTP-Readback für Manifest-Routen, Canonicals, JSON-LD, Sitemap, robots, Discovery und Commerce ausführen. Danach vollständige Crawl-/Link-Abdeckung und SEO-04 Content-Cluster ergänzen; Build-Identität und echte Käufe bleiben separat nachzuweisen."
+    },
+    {
+      "id": "AP-SOC-01",
+      "owner": "GROWTH",
+      "evidenceState": "OFFEN",
+      "nextStep": "Telegram-Transport und Whale-Radar-Signalquelle nur nach Datenrechten, Nutzer-Opt-in, Rate-Limits und echter Zustell-Evidence zusammenführen."
+    },
+    {
+      "id": "AP-SOC-02",
+      "owner": "GROWTH",
+      "evidenceState": "UNGEKLÄRT",
+      "nextStep": "Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen."
+    },
+    {
+      "id": "AP-SOC-03",
+      "owner": "GROWTH",
+      "evidenceState": "UNGEKLÄRT",
+      "nextStep": "Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen."
+    },
+    {
+      "id": "AP-SEC-01",
+      "owner": "TRUST",
+      "evidenceState": "UNGEKLÄRT",
+      "nextStep": "Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen."
+    },
+    {
+      "id": "AP-SEC-02",
+      "owner": "TRUST",
+      "evidenceState": "OFFEN",
+      "nextStep": "Implementierte Session-, AAL2- und Owner-IAM-Grenzen auf dem Zielhost mit echten Login-/Role-Readbacks abnehmen; keine Rolle aus Client-Metadaten ableiten."
+    },
+    {
+      "id": "AP-SEC-03",
+      "owner": "TRUST",
+      "evidenceState": "UNGEKLÄRT",
+      "nextStep": "Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen."
+    },
+    {
+      "id": "AP-SEC-04",
+      "owner": "TRUST",
+      "evidenceState": "UNGEKLÄRT",
+      "nextStep": "Providerfähigkeit, OAuth/OIDC-Vertrag, Redirect-URIs, Account-Linking, AAL/MFA-Verhalten, Datenschutz und Branding getrennt für Kraken und Apple prüfen; erst danach produktiv aktivieren."
+    },
+    {
+      "id": "AP-CMP-01",
+      "owner": "TRUST",
+      "evidenceState": "UNGEKLÄRT",
+      "nextStep": "Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen."
+    },
+    {
+      "id": "AP-CMP-02",
+      "owner": "TRUST",
+      "evidenceState": "UNGEKLÄRT",
+      "nextStep": "Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen."
+    },
+    {
+      "id": "AP-CMP-03",
+      "owner": "TRUST",
+      "evidenceState": "UNGEKLÄRT",
+      "nextStep": "Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen."
+    },
+    {
+      "id": "AP-FIN-01",
+      "owner": "MARKET",
+      "evidenceState": "OFFEN",
+      "nextStep": "50-Komponenten-Registry schrittweise mit realen point-in-time Features, Datenrechten, DQ- und Scoring-Evidence aktivieren; produktive Rankings bleiben bis dahin fail-closed."
+    },
+    {
+      "id": "AP-FIN-02",
+      "owner": "MARKET",
+      "evidenceState": "UNGEKLÄRT",
+      "nextStep": "Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen."
+    },
+    {
+      "id": "AP-FIN-03",
+      "owner": "MARKET",
+      "evidenceState": "OFFEN",
+      "nextStep": "Dry-Run/Quote-Risk um persistente Idempotency, append-only Audit, frische Preis-Evidence und separates Futures/Perps-Risk-Gate erweitern; Live-Execution bleibt blockiert."
+    },
+    {
+      "id": "AP-AGT-01",
+      "owner": "PRODUCT",
+      "evidenceState": "UNGEKLÄRT",
+      "nextStep": "Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen."
+    },
+    {
+      "id": "AP-AGT-02",
+      "owner": "PRODUCT",
+      "evidenceState": "OFFEN",
+      "nextStep": "Tool-/Komponenten-Inventar mit tatsächlichen Usage-/Kosten-Ledgern verbinden und AP-006-Circuit-Breaker für externe Kosten messbar schließen."
+    },
+    {
+      "id": "AP-AGT-03",
+      "owner": "PRODUCT",
+      "evidenceState": "UNGEKLÄRT",
+      "nextStep": "Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen."
+    },
+    {
+      "id": "AP-QA-02",
+      "owner": "TRUST",
+      "evidenceState": "UNGEKLÄRT",
+      "nextStep": "Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen."
+    },
+    {
+      "id": "AP-QA-03",
+      "owner": "TRUST",
+      "evidenceState": "UNGEKLÄRT",
+      "nextStep": "Zielumfang und Nachweise gegen den aktuellen Main prüfen; danach einen begrenzten Umsetzungsschritt festlegen."
+    }
+  ]
+}

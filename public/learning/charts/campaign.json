@@ -1,0 +1,27 @@
+{
+  "campaignId": "chart-learning-20261009",
+  "productId": "capital-ai-learning",
+  "sourceSha": "75b0bae05a5c862e87274adf28a5e4d079c5a87a",
+  "canonicalUrl": "https://capital-ai.online/learning?tab=patterns",
+  "locale": "de-DE",
+  "objective": "Chartmuster, Flags und Indikatoren mit selbst erstellten synthetischen Lerncharts erklären.",
+  "audience": [
+    "Lernende Anleger",
+    "FinTech-Builder"
+  ],
+  "channels": [
+    "WEBSITE",
+    "LINKEDIN",
+    "YOUTUBE"
+  ],
+  "outputs": [
+    "TEXT",
+    "IMAGE"
+  ],
+  "sourceUrls": [
+    "https://www.fidelity.com/learning-center/trading-investing/technical-analysis/technical-indicator-guide/RSI",
+    "https://www.fidelity.com/learning-center/trading-investing/technical-analysis/technical-indicator-guide/macd",
+    "https://www.fidelity.com/learning-center/trading-investing/technical-analysis/technical-indicator-guide/overview",
+    "https://www.schwab.com/learn/story/how-to-read-stock-charts-and-trading-patterns"
+  ]
+}

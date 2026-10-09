@@ -1,0 +1,772 @@
+{
+  "schemaVersion": "CAPITAL_AI_CHART_LEARNING@1",
+  "sourceSha": "75b0bae05a5c862e87274adf28a5e4d079c5a87a",
+  "contentSource": "src/data/chartLearning.ts",
+  "renderer": "src/features/learning/ChartLessonGraphic.tsx",
+  "dataProvenance": "SELF_AUTHORED_SYNTHETIC",
+  "publishReady": false,
+  "networkAccess": false,
+  "assets": [
+    {
+      "id": "bull-flag",
+      "path": "bull-flag.svg",
+      "sha256": "c1d0810e1a0a1f5f3166edea6f45bf8b8e71a587456d3e77cac5634df2f76cb5",
+      "mimeType": "image/svg+xml",
+      "width": 1200,
+      "height": 675,
+      "projectPath": "bull-flag.media-project.json",
+      "projectSha256": "dc46756a5d16b041cb039ef7d29c8ad2dc3ea1a87dccb280d77660b3ab7fc771",
+      "post": "Bull Flag: Impuls, Pause, Ausbruch: drei Teile einer Flagge.\n\nErkennen: Nach einem steilen Anstieg folgt ein kurzer, leicht abwärts gerichteter Parallelkanal.\nBestätigung: Ein Schlusskurs oberhalb des Kanals kann die Fortsetzungsthese stützen; Volumen und Zeitebene mitprüfen.\nFehlersignal: Ein Bruch unter die Konsolidierung oder ein Rückfall nach dem Ausbruch widerspricht der Fortsetzung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=bull-flag\n#CapitalAI #Chartmuster #Finanzbildung",
+      "state": "DRAFT",
+      "graphic": {
+        "title": "Bull Flag",
+        "axis": "Relative Preisposition",
+        "domain": [
+          0,
+          100
+        ],
+        "series": [
+          {
+            "label": "Preis",
+            "values": [
+              12,
+              20,
+              42,
+              70,
+              66,
+              57,
+              63,
+              52,
+              58,
+              47,
+              55,
+              74,
+              86
+            ]
+          }
+        ],
+        "guides": [
+          {
+            "label": "Kanal oben",
+            "from": [
+              3,
+              70
+            ],
+            "to": [
+              10,
+              55
+            ]
+          },
+          {
+            "label": "Kanal unten",
+            "from": [
+              3,
+              56
+            ],
+            "to": [
+              10,
+              41
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "bear-flag",
+      "path": "bear-flag.svg",
+      "sha256": "f1cb6fc24871f602548ceb039ca1e0efbb0e2b74f1c0791803aa2eefc5aface6",
+      "mimeType": "image/svg+xml",
+      "width": 1200,
+      "height": 675,
+      "projectPath": "bear-flag.media-project.json",
+      "projectSha256": "7758b0f2ec0f5dd9278b9e5857323ce9fc96eb2915d0e6d4cb1a62e6328bfe79",
+      "post": "Bear Flag: Eine Erholung kann nur eine Pause im Abwärtstrend sein.\n\nErkennen: Auf einen starken Rückgang folgt ein kurzer, leicht aufwärts gerichteter Parallelkanal.\nBestätigung: Ein Schlusskurs unter dem Kanal kann die Abwärtsthese stützen. Ein einzelner Docht reicht nicht.\nFehlersignal: Ein nachhaltiger Bruch nach oben oder schnelle Rückkehr in den Kanal schwächt die These.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=bear-flag\n#CapitalAI #Chartmuster #Finanzbildung",
+      "state": "DRAFT",
+      "graphic": {
+        "title": "Bear Flag",
+        "axis": "Relative Preisposition",
+        "domain": [
+          0,
+          100
+        ],
+        "series": [
+          {
+            "label": "Preis",
+            "values": [
+              88,
+              80,
+              58,
+              30,
+              34,
+              43,
+              37,
+              48,
+              42,
+              53,
+              45,
+              26,
+              14
+            ]
+          }
+        ],
+        "guides": [
+          {
+            "label": "Kanal oben",
+            "from": [
+              3,
+              44
+            ],
+            "to": [
+              10,
+              59
+            ]
+          },
+          {
+            "label": "Kanal unten",
+            "from": [
+              3,
+              30
+            ],
+            "to": [
+              10,
+              45
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "pennant",
+      "path": "pennant.svg",
+      "sha256": "450eb61f88f9a021102824c969416b3741f0a9cf5be098e116d7ec56d07492d7",
+      "mimeType": "image/svg+xml",
+      "width": 1200,
+      "height": 675,
+      "projectPath": "pennant.media-project.json",
+      "projectSha256": "c77ad0635e3279c0620c9f5da5337fbfddcf990bda7cc460b31b546dfe7ccfad",
+      "post": "Wimpel / Pennant: Die Schwankungen werden enger – die Richtung bleibt offen.\n\nErkennen: Nach einem Impuls laufen obere und untere Begrenzung der kurzen Konsolidierung zusammen.\nBestätigung: Erst der Ausbruch und dessen Fortbestand zeigen eine mögliche Auflösung; beide Richtungen beobachten.\nFehlersignal: Ein Fehlausbruch oder eine lange, unscharfe Seitwärtsphase passt nicht zum kurzen Wimpel.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=pennant\n#CapitalAI #Chartmuster #Finanzbildung",
+      "state": "DRAFT",
+      "graphic": {
+        "title": "Wimpel / Pennant",
+        "axis": "Relative Preisposition",
+        "domain": [
+          0,
+          100
+        ],
+        "series": [
+          {
+            "label": "Preis",
+            "values": [
+              10,
+              24,
+              48,
+              80,
+              45,
+              74,
+              51,
+              68,
+              56,
+              62,
+              59,
+              77,
+              89
+            ]
+          }
+        ],
+        "guides": [
+          {
+            "label": "Fallende Hochs",
+            "from": [
+              3,
+              80
+            ],
+            "to": [
+              10,
+              60
+            ]
+          },
+          {
+            "label": "Steigende Tiefs",
+            "from": [
+              4,
+              45
+            ],
+            "to": [
+              10,
+              59
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ascending-triangle",
+      "path": "ascending-triangle.svg",
+      "sha256": "075358eaa7c33077ffdd159c913db914ec36be35daef21253dc4df74921c8706",
+      "mimeType": "image/svg+xml",
+      "width": 1200,
+      "height": 675,
+      "projectPath": "ascending-triangle.media-project.json",
+      "projectSha256": "cb2d9f5ef12e82afb0c832e7c9ae7aab6c2502541acf87d29b21cddccb301d67",
+      "post": "Aufsteigendes Dreieck: Gleicher Widerstand, höhere Tiefs.\n\nErkennen: Mehrere Hochs liegen auf ähnlicher Höhe, während die Tiefs ansteigen.\nBestätigung: Ein Schlusskurs über dem Widerstand und ein möglicher Retest stützen die Ausbruchsthese.\nFehlersignal: Ein Bruch der steigenden Unterstützung oder Rückfall unter den Widerstand kann das Muster entkräften.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=ascending-triangle\n#CapitalAI #Chartmuster #Finanzbildung",
+      "state": "DRAFT",
+      "graphic": {
+        "title": "Aufsteigendes Dreieck",
+        "axis": "Relative Preisposition",
+        "domain": [
+          0,
+          100
+        ],
+        "series": [
+          {
+            "label": "Preis",
+            "values": [
+              25,
+              68,
+              32,
+              68,
+              40,
+              68,
+              48,
+              68,
+              56,
+              68,
+              64,
+              80,
+              89
+            ]
+          }
+        ],
+        "guides": [
+          {
+            "label": "Widerstand",
+            "from": [
+              1,
+              68
+            ],
+            "to": [
+              10,
+              68
+            ]
+          },
+          {
+            "label": "Höhere Tiefs",
+            "from": [
+              0,
+              25
+            ],
+            "to": [
+              10,
+              64
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "double-top",
+      "path": "double-top.svg",
+      "sha256": "3c231fdc3de1bdc54e7adac6ff5ae7102d28ff48c5e1383544d721408e616fc3",
+      "mimeType": "image/svg+xml",
+      "width": 1200,
+      "height": 675,
+      "projectPath": "double-top.media-project.json",
+      "projectSha256": "e863bb8dcf50af4e5cc7927e748f62890e5990c7e1b7aafd4677d415b7e202f1",
+      "post": "Doppeltop: Zwei Hochs sind erst der Anfang der Beobachtung.\n\nErkennen: Zwei ähnliche Hochs werden durch ein Zwischentief getrennt. Dessen Niveau bildet die Nackenlinie.\nBestätigung: Ein Schlusskurs unter der Nackenlinie kann eine Umkehrthese stützen.\nFehlersignal: Neue Hochs oder Rückeroberung der Nackenlinie widersprechen der erwarteten Abwärtsauflösung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=double-top\n#CapitalAI #Chartmuster #Finanzbildung",
+      "state": "DRAFT",
+      "graphic": {
+        "title": "Doppeltop",
+        "axis": "Relative Preisposition",
+        "domain": [
+          0,
+          100
+        ],
+        "series": [
+          {
+            "label": "Preis",
+            "values": [
+              20,
+              42,
+              64,
+              82,
+              66,
+              46,
+              60,
+              80,
+              67,
+              46,
+              37,
+              24,
+              18
+            ]
+          }
+        ],
+        "guides": [
+          {
+            "label": "Nackenlinie",
+            "from": [
+              2,
+              46
+            ],
+            "to": [
+              11,
+              46
+            ]
+          },
+          {
+            "label": "Ähnliche Hochs",
+            "from": [
+              3,
+              82
+            ],
+            "to": [
+              7,
+              80
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "double-bottom",
+      "path": "double-bottom.svg",
+      "sha256": "343c0640ff6538e7d287d329d0cb6453569921f5f5187e3acbc28d19d8f3851a",
+      "mimeType": "image/svg+xml",
+      "width": 1200,
+      "height": 675,
+      "projectPath": "double-bottom.media-project.json",
+      "projectSha256": "73c02b857984ead3e88303b21f7afa7478444ace304644e004d6a620eb861d91",
+      "post": "Doppelboden: Zwei Tiefs, ein dazwischenliegender Widerstand.\n\nErkennen: Zwei ähnliche Tiefs werden durch ein Zwischenhoch getrennt. Dieses bildet die Nackenlinie.\nBestätigung: Ein Schlusskurs oberhalb der Nackenlinie kann die Aufwärtsthese stützen.\nFehlersignal: Neue Tiefs oder Rückfall unter die Nackenlinie schwächen die Umkehrthese.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=double-bottom\n#CapitalAI #Chartmuster #Finanzbildung",
+      "state": "DRAFT",
+      "graphic": {
+        "title": "Doppelboden",
+        "axis": "Relative Preisposition",
+        "domain": [
+          0,
+          100
+        ],
+        "series": [
+          {
+            "label": "Preis",
+            "values": [
+              80,
+              58,
+              36,
+              18,
+              34,
+              54,
+              40,
+              20,
+              33,
+              54,
+              63,
+              76,
+              82
+            ]
+          }
+        ],
+        "guides": [
+          {
+            "label": "Nackenlinie",
+            "from": [
+              2,
+              54
+            ],
+            "to": [
+              11,
+              54
+            ]
+          },
+          {
+            "label": "Ähnliche Tiefs",
+            "from": [
+              3,
+              18
+            ],
+            "to": [
+              7,
+              20
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "head-shoulders",
+      "path": "head-shoulders.svg",
+      "sha256": "19f1efc123011e4a14eb8a494aa71523026221b35f06d5a25ca75c77335c5bb6",
+      "mimeType": "image/svg+xml",
+      "width": 1200,
+      "height": 675,
+      "projectPath": "head-shoulders.media-project.json",
+      "projectSha256": "f3408fd08ea2ed50527f8e7fd4a1588fc7506f3353c2f08a57464662d742a67c",
+      "post": "Schulter–Kopf–Schulter: Drei Hochs, das mittlere am höchsten.\n\nErkennen: Linke Schulter, höherer Kopf und rechte Schulter. Die beiden Zwischentiefs definieren die Nackenlinie.\nBestätigung: Ein Schlusskurs unter der Nackenlinie kann die Umkehrthese stützen.\nFehlersignal: Ein neues Hoch oder nachhaltige Rückeroberung der Nackenlinie schwächt die These.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=head-shoulders\n#CapitalAI #Chartmuster #Finanzbildung",
+      "state": "DRAFT",
+      "graphic": {
+        "title": "Schulter–Kopf–Schulter",
+        "axis": "Relative Preisposition",
+        "domain": [
+          0,
+          100
+        ],
+        "series": [
+          {
+            "label": "Preis",
+            "values": [
+              20,
+              45,
+              65,
+              45,
+              58,
+              88,
+              60,
+              45,
+              65,
+              52,
+              45,
+              30,
+              18
+            ]
+          }
+        ],
+        "guides": [
+          {
+            "label": "Nackenlinie",
+            "from": [
+              3,
+              45
+            ],
+            "to": [
+              11,
+              45
+            ]
+          },
+          {
+            "label": "Schultern",
+            "from": [
+              2,
+              65
+            ],
+            "to": [
+              8,
+              65
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "support-resistance",
+      "path": "support-resistance.svg",
+      "sha256": "be7a72d528bb5a2f49045c651d43366a8db1b1fc344974f5091015826c719708",
+      "mimeType": "image/svg+xml",
+      "width": 1200,
+      "height": 675,
+      "projectPath": "support-resistance.media-project.json",
+      "projectSha256": "6d5712004ac968a5e59d6b3ceb3e5cc06155b88e72e1ac3a87c652717db3fc23",
+      "post": "Unterstützung & Widerstand: Zonen erklären Reaktionen besser als millimetergenaue Linien.\n\nErkennen: Wiederholte Reaktionen an ähnlichen Tiefs und Hochs bilden beobachtbare Unterstützungs- und Widerstandszonen.\nBestätigung: Wiederholte Reaktion oder Ausbruch mit anschließendem Retest beobachten.\nFehlersignal: Ein nachhaltiger Bruch zeigt, dass die bisherige Zone nicht mehr hält.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=support-resistance\n#CapitalAI #Chartmuster #Finanzbildung",
+      "state": "DRAFT",
+      "graphic": {
+        "title": "Unterstützung & Widerstand",
+        "axis": "Relative Preisposition",
+        "domain": [
+          0,
+          100
+        ],
+        "series": [
+          {
+            "label": "Preis",
+            "values": [
+              40,
+              65,
+              72,
+              50,
+              28,
+              45,
+              70,
+              52,
+              29,
+              47,
+              71,
+              53,
+              31
+            ]
+          }
+        ],
+        "guides": [
+          {
+            "label": "Widerstandszone",
+            "from": [
+              0,
+              71
+            ],
+            "to": [
+              12,
+              71
+            ]
+          },
+          {
+            "label": "Unterstützungszone",
+            "from": [
+              0,
+              29
+            ],
+            "to": [
+              12,
+              29
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "rsi",
+      "path": "rsi.svg",
+      "sha256": "1f8940c9c6e56962c6cc22878dae4f46ce0e57b343db1426aa8000de1b1cd6c8",
+      "mimeType": "image/svg+xml",
+      "width": 1200,
+      "height": 675,
+      "projectPath": "rsi.media-project.json",
+      "projectSha256": "f7b3b92fea93ed141053284eef8e76480015afccdc6f0baa73d57119e44dca4c",
+      "post": "RSI: Momentum lesen: Überkauft bedeutet nicht: Der Kurs muss sofort fallen.\n\nErkennen: Der RSI bewegt sich zwischen 0 und 100. 70 und 30 sind verbreitete Beobachtungsmarken, keine universellen Handelsregeln.\nBestätigung: Rückkehr aus Extrembereichen und den Preis-/Trendkontext gemeinsam betrachten.\nFehlersignal: In starken Trends kann RSI lange extrem bleiben. Ein Extremwert allein bestätigt keine Umkehr.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=rsi\n#CapitalAI #Chartmuster #Finanzbildung",
+      "state": "DRAFT",
+      "graphic": {
+        "title": "RSI: Momentum lesen",
+        "axis": "RSI · schematisch (0–100)",
+        "domain": [
+          0,
+          100
+        ],
+        "series": [
+          {
+            "label": "RSI",
+            "values": [
+              42,
+              49,
+              57,
+              66,
+              75,
+              81,
+              76,
+              68,
+              54,
+              38,
+              26,
+              32,
+              44
+            ]
+          }
+        ],
+        "guides": [
+          {
+            "label": "70",
+            "from": [
+              0,
+              70
+            ],
+            "to": [
+              12,
+              70
+            ]
+          },
+          {
+            "label": "30",
+            "from": [
+              0,
+              30
+            ],
+            "to": [
+              12,
+              30
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "macd",
+      "path": "macd.svg",
+      "sha256": "af2c6e536e95bef5f0ff9721ba57f04cf4207895e92e0bef79cc52cdf8d0d517",
+      "mimeType": "image/svg+xml",
+      "width": 1200,
+      "height": 675,
+      "projectPath": "macd.media-project.json",
+      "projectSha256": "50825e8e8ff8adc53353750255029738846909601c943e9e123647aff4460d51",
+      "post": "MACD & Signallinie: Kreuzung und Nulllinie erzählen unterschiedliche Dinge.\n\nErkennen: Die MACD-Linie ist die Differenz zweier EMAs; die Signallinie glättet sie. Üblich sind 12/26/9 Perioden.\nBestätigung: Kreuzungen im Trendkontext beobachten. Die Nulllinie kennzeichnet die relative Lage der beiden Preis-EMAs.\nFehlersignal: Seitwärtsmärkte können viele wechselnde Kreuzungen erzeugen. Verzögerung und Fehlsignale mitbewerten.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=macd\n#CapitalAI #Chartmuster #Finanzbildung",
+      "state": "DRAFT",
+      "graphic": {
+        "title": "MACD & Signallinie",
+        "axis": "MACD · schematische Einheiten",
+        "domain": [
+          -6,
+          6
+        ],
+        "series": [
+          {
+            "label": "MACD",
+            "values": [
+              -4,
+              -3,
+              -2,
+              0,
+              2,
+              4,
+              3,
+              2,
+              0,
+              -2,
+              -3,
+              -2,
+              0
+            ]
+          },
+          {
+            "label": "Signal",
+            "dashed": true,
+            "values": [
+              -3,
+              -3,
+              -2.8,
+              -2,
+              -0.8,
+              0.8,
+              1.7,
+              1.8,
+              1.2,
+              0,
+              -1.2,
+              -1.5,
+              -1
+            ]
+          }
+        ],
+        "guides": [
+          {
+            "label": "Nulllinie",
+            "from": [
+              0,
+              0
+            ],
+            "to": [
+              12,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "moving-averages",
+      "path": "moving-averages.svg",
+      "sha256": "45fd15c60a6b3a2a706d0d6616cb3aafe1e6370a664a0d847fd7e5095189bc48",
+      "mimeType": "image/svg+xml",
+      "width": 1200,
+      "height": 675,
+      "projectPath": "moving-averages.media-project.json",
+      "projectSha256": "692f012dddabcdbd82fdc2d5112cc0dc3112f8cd3f3603674bfbd640aead254f",
+      "post": "Gleitende Durchschnitte: Glättung schafft Übersicht, aber auch Verzögerung.\n\nErkennen: Ein kurzer Durchschnitt reagiert schneller als ein langer. Kreuzungen illustrieren mögliche Trendwechsel.\nBestätigung: Die Steigung und der übergeordnete Trend liefern Kontext; Perioden und SMA/EMA-Auswahl offenlegen.\nFehlersignal: In Seitwärtsphasen wechseln Kreuzungen häufig. Ein Durchschnitt erkennt keinen zukünftigen Kurs.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=moving-averages\n#CapitalAI #Chartmuster #Finanzbildung",
+      "state": "DRAFT",
+      "graphic": {
+        "title": "Gleitende Durchschnitte",
+        "axis": "Relative Preisposition · schematisch",
+        "domain": [
+          0,
+          100
+        ],
+        "series": [
+          {
+            "label": "Kurz",
+            "values": [
+              30,
+              32,
+              37,
+              44,
+              52,
+              61,
+              67,
+              70,
+              66,
+              57,
+              47,
+              40,
+              38
+            ]
+          },
+          {
+            "label": "Lang",
+            "dashed": true,
+            "values": [
+              47,
+              46,
+              45,
+              45,
+              46,
+              49,
+              53,
+              57,
+              59,
+              59,
+              57,
+              53,
+              49
+            ]
+          }
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "volume-breakout",
+      "path": "volume-breakout.svg",
+      "sha256": "8affac076fffbd92a96907654c12bc4a9a5491b491d41e430288ed94cd6099c6",
+      "mimeType": "image/svg+xml",
+      "width": 1200,
+      "height": 675,
+      "projectPath": "volume-breakout.media-project.json",
+      "projectSha256": "0f09b1fce2a42694da0093ce3a67fc70115a4cfbb86da23232b7c8f9c9112d3c",
+      "post": "Volumen & Ausbruch: Mehr Aktivität kann einen Ausbruch stützen – nicht garantieren.\n\nErkennen: Die Aktivität am Ausbruch mit vorherigen Perioden desselben Markts, derselben Quelle und Zeitebene vergleichen.\nBestätigung: Erhöhtes Volumen und Fortbestand des Preisausbruchs können sich ergänzen; dieses Bild zeigt nur das Volumenkonzept.\nFehlersignal: Hohes Volumen kann auch am Ende einer Bewegung auftreten. Lücken und venue-spezifische Abdeckung prüfen.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=volume-breakout\n#CapitalAI #Chartmuster #Finanzbildung",
+      "state": "DRAFT",
+      "graphic": {
+        "title": "Volumen & Ausbruch",
+        "axis": "Relatives Volumen · schematisch",
+        "domain": [
+          0,
+          100
+        ],
+        "series": [
+          {
+            "label": "Volumen",
+            "values": [
+              25,
+              28,
+              24,
+              31,
+              29,
+              26,
+              32,
+              28,
+              35,
+              78,
+              88,
+              64,
+              52
+            ]
+          }
+        ],
+        "guides": [
+          {
+            "label": "Vergleichsniveau",
+            "from": [
+              0,
+              30
+            ],
+            "to": [
+              12,
+              30
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
