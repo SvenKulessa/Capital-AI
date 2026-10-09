@@ -189,7 +189,7 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
       if (route === '/datenschutz' || route === '/agb') {
         assert.match(html, /<html lang="de"/, route);
         assert.match(html, /<nav aria-label="Rechtliche Informationen">/, route);
-        assert.doesNotMatch(html, /<script\\b|capital-ai-bootstrap-fallback/, route);
+        assert.doesNotMatch(html.replace(/<script\b[^>]*type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, ''), /<script\b|capital-ai-bootstrap-fallback/, route);
       } else {
         assert.match(html, /id="capital-ai-public-snapshot" lang="de"/, route);
         assert.match(html, /<nav aria-label="Öffentliche Seiten">/, route);
