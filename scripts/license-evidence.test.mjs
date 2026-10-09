@@ -81,12 +81,12 @@ test('README fallback is version bounded and includes the actual license text', 
 });
 
 test('Nodemailer review requires the exact registry artifact and unchanged license text', t => {
-  const f = fixture(t, 'MIT-0', '10.0.14', 'nodemailer');
+  const f = fixture(t, 'MIT-0', '10.0.15', 'nodemailer');
   const currentLock = JSON.parse(readFileSync(new URL('../package-lock.json', import.meta.url)));
   const reviewed = currentLock.packages['node_modules/nodemailer'];
-  const license = readFileSync(new URL('../docs/licenses/nodemailer-10.0.14-MIT-0.txt', import.meta.url));
+  const license = readFileSync(new URL('../docs/licenses/nodemailer-10.0.15-MIT-0.txt', import.meta.url));
   mkdirSync(join(f.root, 'docs/licenses'), { recursive: true });
-  writeFileSync(join(f.root, 'docs/licenses/nodemailer-10.0.14-MIT-0.txt'), license);
+  writeFileSync(join(f.root, 'docs/licenses/nodemailer-10.0.15-MIT-0.txt'), license);
   const writeLock = entry => writeFileSync(join(f.root, 'package-lock.json'), JSON.stringify({
     lockfileVersion: 3, packages: { '': {}, 'node_modules/nodemailer': entry },
   }));
@@ -94,14 +94,14 @@ test('Nodemailer review requires the exact registry artifact and unchanged licen
   assert.equal(lockInventory(f.root).packages[0].metadataStatus, 'DEPENDENCY_DISTRIBUTION_REVIEW');
   assert.equal(lockInventory(f.root).deployEligible, false);
   for (const change of [
-    { version: '10.0.15' }, { integrity: 'changed' },
+    { version: '10.0.16' }, { integrity: 'changed' },
     { resolved: 'https://untrusted.example/nodemailer.tgz' }, { license: 'AGPL-3.0-only' },
   ]) {
     writeLock({ ...reviewed, ...change });
     assert.equal(lockInventory(f.root).packages[0].metadataStatus, 'UNREVIEWED');
   }
   writeLock(reviewed);
-  writeFileSync(join(f.root, 'docs/licenses/nodemailer-10.0.14-MIT-0.txt'), 'altered license');
+  writeFileSync(join(f.root, 'docs/licenses/nodemailer-10.0.15-MIT-0.txt'), 'altered license');
   assert.equal(lockInventory(f.root).packages[0].metadataStatus, 'UNREVIEWED');
 });
 
