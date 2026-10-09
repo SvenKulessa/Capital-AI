@@ -47,7 +47,10 @@ export const InstrumentMasterSchema = z.discriminatedUnion('productAssetClass', 
        !/^[A-Z0-9]{3,8}$/.test(instrument.quoteAsset)))
     reject('INSTRUMENT_CRYPTO_QUOTE_UNIT_MISMATCH');
   if (instrument.productAssetClass === 'forex' &&
-      (instrument.baseCurrency === instrument.quoteCurrency || instrument.currency !== instrument.quoteCurrency))
+      (!/^[A-Z]{3}$/.test(instrument.baseCurrency) ||
+       !/^[A-Z]{3}$/.test(instrument.quoteCurrency) ||
+       instrument.baseCurrency === instrument.quoteCurrency ||
+       instrument.currency !== instrument.quoteCurrency))
     reject('INSTRUMENT_FX_CURRENCY_MISMATCH');
   if (instrument.productAssetClass === 'crypto' && instrument.baseAsset === instrument.quoteAsset)
     reject('INSTRUMENT_CRYPTO_PAIR_INVALID');
