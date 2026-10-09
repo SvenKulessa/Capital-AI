@@ -536,7 +536,7 @@ export function createApp(root = defaultRoot, options = {}) {
     if (!resolved.startsWith(root + path.sep) || (await stat(resolved)).size > 20 * 1024 * 1024) return json(res, 404, { error: 'not_found' });
     let body = await readFile(resolved);
     let documentLocale = null;
-    const publicPath = normalizedPublicPath(url.pathname);
+    // Reuse the outer canonical publicPath; redeclaring here would cause a TDZ in static route resolution.
     if (path.extname(file) === '.html') {
       body = Buffer.from(injectVocabularySeo(body.toString('utf8'), publicPath));
     }
