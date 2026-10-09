@@ -5,6 +5,7 @@ import './marketIntelligenceReadiness.test';
 import './marketTaxonomyResearchGates.test';
 import './marketContractBoundaries.test';
 import './binanceRetiredTicker.test';
+import './cryptoQuoteUnits.test';
 import assert from 'node:assert/strict';
 import { CANONICAL_50_COMPONENTS } from '../analysisComponentRegistry';
 import { validateAnalysisComponentRegistry } from '../analysisComponentRegistryValidator';
