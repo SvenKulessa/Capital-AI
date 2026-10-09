@@ -1,0 +1,65 @@
+name: CI Efficiency Evidence
+
+on:
+  schedule:
+    - cron: "0 8 * * 5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: ci-efficiency-evidence
+  cancel-in-progress: true
+
+jobs:
+  report:
+    name: Weekly CI Efficiency Evidence
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24.19.0"
+
+      - name: Regression test reporting semantics
+        run: node --test scripts/ci-efficiency-report.test.mjs
+
+      - name: Collect read-only Actions evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CI_LOOKBACK_HOURS: "168"
+          CI_MAX_RUNS: "300"
+          CI_EFFICIENCY_OUTPUT: ci-efficiency/weekly.json
+        run: |
+          set -euo pipefail
+          node scripts/ci-efficiency-report.mjs
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs';
+          const report = JSON.parse(fs.readFileSync('ci-efficiency/weekly.json', 'utf8'));
+          const total = report.workflows.reduce((sum, row) => sum + (row.observedRunnerMinutes || 0), 0);
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,
+            [
+              '# CAPITAL-AI CI Efficiency Evidence',
+              '',
+              '- Workflows observed: ' + report.workflows.length,
+              '- Observed job wall-minutes: ' + total.toFixed(2) + ' (not billing minutes)',
+              '- Cache hit rate: NOT_PROVEN',
+              '- Billed Actions minutes/cost: NOT_PROVEN',
+              '- Truncated: ' + report.truncated,
+              '',
+            ].join('\n'));
+          NODE
+
+      - name: Upload weekly evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ci-efficiency-evidence-${{ github.run_id }}
+          path: ci-efficiency/weekly.json
+          if-no-files-found: error
+          retention-days: 14
