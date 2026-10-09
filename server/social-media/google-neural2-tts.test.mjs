@@ -30,7 +30,7 @@ function env(externalUsed = '0') {
   };
 }
 const token = 'a'.repeat(32);
-const wav = Buffer.alloc(60);
+const wav = Buffer.alloc(180);
 wav.write('RIFF', 0); wav.write('WAVE', 8);
 function fakeResponse() {
   return { ok: true, headers: { get: () => null },
