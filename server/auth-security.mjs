@@ -39,7 +39,7 @@ function totpEnrollmentProjection(totp) {
     }
   }
   if (!/^[A-Z2-7]{16,128}$/.test(secret)) return null;
-  const qrCode = typeof totp.qr_code === 'string' && totp.qr_code.length <= 220000 ? totp.qr_code : '';
+  const qrCode = typeof totp.qr_code === 'string' && totp.qr_code.length <= 900_000 ? totp.qr_code : '';
   return { secret, qrCode, uri };
 }
 
@@ -119,6 +119,7 @@ export function createAuthSecurity({
     }
     const handled =
       action === 'email/verify' ||
+      action === 'email/confirm' ||
       action === 'password/reset' ||
       action === 'passkey/options' ||
       action === 'passkey/verify' ||
@@ -138,14 +139,18 @@ export function createAuthSecurity({
       return true;
     }
 
-    if (action === 'email/verify') {
+    if (action === 'email/verify' || action === 'email/confirm') {
       if (req.method !== 'GET') {
         res.setHeader('Allow', 'GET');
         json(res, 405, { error: 'method_not_allowed' });
         return true;
       }
       const tokenHash = String(url.searchParams.get('token_hash') || '');
-      const type = String(url.searchParams.get('type') || '');
+      const requestedType = String(url.searchParams.get('type') || '');
+      // Previously issued confirmation emails use /confirm and type=email.
+      // Keep their signed hashes usable through the same Supabase verification
+      // and fresh identity/MFA checks as the canonical /verify signup route.
+      const type = action === 'email/confirm' && requestedType === 'email' ? 'signup' : requestedType;
       if (!TOKEN_HASH_RE.test(tokenHash) || !EMAIL_VERIFY_TYPES.has(type)) {
         if (type === 'recovery') {
           res.writeHead(303, {
@@ -552,7 +557,7 @@ export function createAuthSecurity({
         method: 'POST',
         accessToken: stored.accessToken,
         body: { factor_type: 'totp', friendly_name: name, issuer: 'CAPITAL-AI' },
-        maxResponseBytes: 262_144,
+        maxResponseBytes: 1_048_576,
       });
       if (!enrolled.response.ok || !FACTOR_ID_RE.test(String(enrolled.data?.id || '')) || !enrolled.data?.totp) {
         audit(`Supabase TOTP enrollment rejected: status=${enrolled.response.status}; code=${upstreamCode(enrolled.data, 'totp_enrollment_failed')}`);

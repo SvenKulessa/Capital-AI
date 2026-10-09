@@ -288,8 +288,12 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
           data = typeof code === 'string' && /^[a-z][a-z0-9_]{0,119}$/i.test(code)
             ? { error_code: code } : null;
         }
-      } catch {
-        data = null;
+      } catch (error) {
+        // The provider's cell-by-cell QR SVG can exceed the old 256 KiB
+        // enrollment limit. Retain a safe diagnostic if the bounded TOTP
+        // response still exceeds its limit; never retain the setup payload.
+        data = path === '/factors' && response.ok && error?.message === 'upstream_too_large'
+          ? { error_code: 'mfa_setup_response_too_large' } : null;
       }
     }
     return { response, data };
@@ -889,14 +893,19 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
           },
         },
       });
-      if (!signedUp.response.ok || !signedUp.data?.user?.id) {
+      // GoTrue returns a bare User while email confirmation is pending,
+      // and an AccessTokenResponse (with user) for immediate sign-in.
+      const signupSession = typeof signedUp.data?.access_token === 'string' && signedUp.data.access_token.length > 0 &&
+        typeof signedUp.data?.refresh_token === 'string' && signedUp.data.refresh_token.length > 0;
+      const signupUser = signupSession ? signedUp.data?.user : (signedUp.data?.user ?? signedUp.data);
+      if (!signedUp.response.ok || typeof signupUser?.id !== 'string' || !signupUser.id) {
         const registrationError = signedUp.data?.error_code === 'weak_password'
           ? 'weak_password'
           : 'registration_failed';
         json(res, signedUp.response.status === 429 ? 429 : 422, { error: registrationError });
         return true;
       }
-      if (signedUp.data.access_token && signedUp.data.refresh_token) {
+      if (signupSession) {
         writeSessionCookies(req, res, config, signedUp.data);
         json(res, 200, { authenticated: true, next: '/' });
       } else {

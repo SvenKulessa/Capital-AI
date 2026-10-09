@@ -1,6 +1,6 @@
 /** QR rendering uses image URLs, never HTML injection or an external QR service. */
 export function totpQrImage(value: unknown): string {
-  if (typeof value !== 'string' || value.length > 220000) return '';
+  if (typeof value !== 'string' || value.length > 900_000) return '';
   const raw = value.trim();
   if (/^data:image\/(svg\+xml|png)[;,]/i.test(raw)) return raw;
   const svg = raw.replace(/^<\?xml[^?]*\?>\s*/i, '').trim();
