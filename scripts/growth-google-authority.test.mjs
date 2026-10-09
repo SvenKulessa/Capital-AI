@@ -42,11 +42,31 @@ test('submit_sitemap is excluded from the default MCP surface', async () => {
   assert.match(guard, /GSC access is read-only/);
 });
 
-test('GA4 is explicitly separate and not claimed as LukeRenton capability', async () => {
+test('GA4 is a separately pinned read-only Render authority and not a LukeRenton capability', async () => {
   const config = JSON.parse(await read('config/growth-google-authority.json'));
   const evidence = JSON.parse(await read('docs/security/evidence/growth-gsc-oss-admission-20261004.json'));
+  const client = await read('server/google-analytics-mcp.mjs');
+  const readback = await read('server/google-analytics-readback.mjs');
 
-  assert.equal(config.ga4.status, 'PLANNED_SEPARATE_ADAPTER');
+  assert.equal(config.ga4.provider, 'googleanalytics/google-analytics-mcp');
+  assert.equal(config.ga4.package, 'analytics-mcp');
+  assert.equal(config.ga4.version, '0.7.0');
+  assert.equal(config.ga4.upstreamReleaseCommit, '10ba60a');
+  assert.equal(config.ga4.license, 'Apache-2.0');
+  assert.equal(config.ga4.status, 'RENDER_READ_ADAPTER_IMPLEMENTED');
+  assert.equal(config.ga4.mode, 'READ_ONLY');
+  assert.equal(config.ga4.executionHost, 'RENDER_CAPITAL_AI_WEB');
+  assert.equal(config.ga4.browserMeasurement, 'DISABLED_PENDING_CONSENT');
+  assert.deepEqual(config.ga4.capabilities, [
+    'get_account_summaries',
+    'get_property_details',
+    'run_realtime_report',
+    'run_report',
+  ]);
+  assert.match(client, /analytics-mcp/);
+  assert.match(client, /rawMcpEndpoint: false/);
+  assert.match(readback, /GOOGLE_ANALYTICS_PROPERTY_NUMBER/);
+  assert.match(readback, /browserMeasurementAuthority: 'SEPARATE'/);
   assert.equal(evidence.ga4.providedByThisComponent, false);
   assert.equal(evidence.component.license, 'MIT');
   assert.equal(evidence.component.upstreamCommit, EXPECTED_SHA);

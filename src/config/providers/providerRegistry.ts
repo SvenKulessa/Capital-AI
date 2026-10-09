@@ -135,9 +135,10 @@ export const PROVIDER_REGISTRY: Record<string, ProviderContract> = {
     tier: 'tier1',
     productionAdmission: 'BLOCKED',
     websiteUrl: 'https://binance.com',
-    description: 'High-Throughput WebSocket Feed mit L2 Orderbuch-Streaming und Trade-Tick Tickers.',
+    description: 'Binance Spot Market-Data-Konfiguration: MiniTicker-Snapshots. L2-Orderbuch und Trades benötigen getrennte validierte Streams; öffentliche Nutzung bleibt lizenzgesperrt.',
     endpoints: {
-      websocketUrl: 'wss://stream.binance.com:9443/ws/!ticker@arr',
+      // Binance retired !ticker@arr on 2026-03-26. MiniTicker is snapshot data, not ticks or L2 depth.
+      websocketUrl: 'wss://stream.binance.com:9443/ws/!miniTicker@arr',
       restBaseUrl: 'https://api.binance.com/api/v3',
       documentationUrl: 'https://binance-docs.github.io/apidocs/spot/en/',
     },

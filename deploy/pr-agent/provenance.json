@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-08T01:26:32.639384+00:00",
+  "sourceRepository": "The-PR-Agent/pr-agent",
+  "release": "v0.47.0",
+  "sourceSha": "8e5a9295973b24af4b70cafd0b660a230811ef9e",
+  "correlatedMainSha": "19673cf50bf6948ef563126f23bd1d64d9ae6398",
+  "lockGenerator": "uv==0.12.10",
+  "patchedVersions": {
+    "fsspec": [
+      "2026.9.0"
+    ],
+    "multidict": [
+      "6.9.1"
+    ],
+    "oauthlib": [
+      "4.0.0"
+    ],
+    "langgraph-sdk": [
+      "0.4.6"
+    ]
+  },
+  "sha256": {
+    "uv.lock": "81bb5c69a4d39221fdf3010898a840624956244d58c125197e18aa37ccfc47c9",
+    "pyproject.toml": "4b07218079d2893b735e913ec3b4271466a949204bd6142681584dc5cc2d8f22",
+    "UPSTREAM-LICENSE.txt": "ea19f3b6bfd70ce0bf8d60fc5b15cdb789fcf86a63c0d6542977f888519f5788"
+  },
+  "audit": {
+    "tool": "pip-audit==2.10.1",
+    "service": "PyPI",
+    "registryNameVersionsAudited": 184,
+    "knownVulnerabilities": 0,
+    "skipped": [],
+    "scope": "All registry entries in patched uv.lock, including optional/dev and Python alternatives; no project execution"
+  },
+  "pythonImage": "python:3.14.7-slim@sha256:51dafde81dbdb6ebde285137a295cf18a47ca95234fe388a343719cb97305b3d",
+  "uvImage": "ghcr.io/astral-sh/uv:0.12.10@sha256:2bb3ebca0a796a155094a27773d290c4b074572e6107f171d88d086682fd2500",
+  "runtimeImageBuild": "NOT_RUN",
+  "runtimeImageScan": "NOT_RUN",
+  "runtimeCompatibility": "NOT_PROVEN",
+  "modelBenchmark": "BLOCKED_NO_MODEL_RUNTIME_OR_CREDENTIALS",
+  "buildkitImage": "moby/buildkit:v0.34.0@sha256:b059f8d7226d0b326bc871af489a5dddf65e36af4d20d14251b072974d9ee87c",
+  "runtimeSelection": {
+    "selectedAt": "2026-10-09",
+    "primaryCandidate": "alpine-3.24",
+    "primaryDockerfile": "deploy/pr-agent/Dockerfile.alpine",
+    "primaryWorkflow": ".github/workflows/pr-agent-runtime-evidence.yml",
+    "comparisonCandidate": "debian-13",
+    "comparisonDockerfile": "deploy/pr-agent/Dockerfile",
+    "comparisonWorkflow": ".github/workflows/pr-agent-debian-runtime-comparison.yml",
+    "rationale": "Current same-source/same-lock evidence passed the Alpine Trivy gate with zero vulnerabilities and zero secrets while the Debian 13.7 comparison retained 44 HIGH OS findings.",
+    "mergeAuthority": false,
+    "deployAuthority": false
+  }
+}
