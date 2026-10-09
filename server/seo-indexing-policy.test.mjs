@@ -76,6 +76,11 @@ test('SEO-00 is fail-closed for private, claim-sensitive, alias and unknown rout
 test('server enforces INDEX versus noindex and derives sitemap from SEO-00 policy', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'capital-seo00-'));
   await writeFile(path.join(root, 'index.html'), await readIndexTemplate());
+  // Model the actual dist layout for bootstrap-independent legal pages.
+  for (const route of ['datenschutz', 'agb']) {
+    await mkdir(path.join(root, route), { recursive: true });
+    await writeFile(path.join(root, route, 'index.html'), await readFile(new URL(`../public/${route}/index.html`, import.meta.url)));
+  }
   await mkdir(path.join(root, 'documentation'), { recursive: true });
   await writeFile(
     path.join(root, 'documentation', 'byok.html'),
@@ -168,8 +173,14 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
       assert.equal(response.status, 200, route);
       const html = await response.text();
       const metadataTitle = route === '/' ? 'Capital-AI' : null;
-      assert.match(html, /id="capital-ai-public-snapshot" lang="de"/, route);
-      assert.match(html, /<nav aria-label="Öffentliche Seiten">/, route);
+      if (route === '/datenschutz' || route === '/agb') {
+        assert.match(html, /<html lang="de"/, route);
+        assert.match(html, /<nav aria-label="Rechtliche Informationen">/, route);
+        assert.doesNotMatch(html, /<script\\b|capital-ai-bootstrap-fallback/, route);
+      } else {
+        assert.match(html, /id="capital-ai-public-snapshot" lang="de"/, route);
+        assert.match(html, /<nav aria-label="Öffentliche Seiten">/, route);
+      }
       assert.match(html, /<h1>[^<]+<\/h1>/, route);
       if (metadataTitle) assert.match(html, /<h1>Capital-AI/, route);
       assert.doesNotMatch(html, /\/profile\/key-vault|\/control-center|\/api\/billing/, route);
