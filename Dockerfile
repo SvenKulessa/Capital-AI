@@ -43,6 +43,8 @@ COPY public/branding/social ./public/branding/social
 COPY public/fonts ./public/fonts
 COPY public/learning/charts ./public/learning/charts
 COPY public/bootstrap-failure.js ./public/bootstrap-failure.js
+COPY public/datenschutz ./public/datenschutz
+COPY public/agb ./public/agb
 COPY server/index.mjs server/seo-agent-discovery.mjs server/advisor.ts server/http-security.mjs server/mta-sts.mjs server/mta-sts.test.mjs server/well-known.mjs server/well-known.test.mjs server/locale-html.test.mjs server/shadow-evidence-store.mjs server/auth-security.mjs server/auth-security.test.mjs ./server/
 COPY server/prompt-injection-guard.mjs server/prompt-injection-guard.test.mjs server/billing-catalog.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/vocabulary-checkout.test.mjs server/subscription-checkout.mjs server/subscription-checkout.test.mjs server/cads-marketplace.mjs server/cads-marketplace.test.mjs server/cads-commerce.mjs server/cads-commerce.test.mjs server/benchmark-runs.mjs server/benchmark-runs.test.mjs server/benchmark-store.mjs server/benchmark-store.test.mjs server/public-artifact-policy.mjs server/public-artifact-policy.test.mjs ./server/
 COPY server/repository-tool-catalog.mjs server/repository-tool-catalog.test.mjs server/chat-buddy-keys.mjs server/chat-buddy-learn.mjs ./server/
