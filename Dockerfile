@@ -18,13 +18,14 @@ RUN npm ci --ignore-scripts --no-audit --no-fund \
     && rm -rf /root/.npm /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 # GA4 provider plane: build the pinned official MCP into an isolated venv.
 # Transitive pins keep known remediated versions inside the scanned image.
-RUN apk add --no-cache python3 py3-pip \
+RUN apk add --no-cache 'python3>=3.14.8-r0' 'py3-pip>=26.1.2-r0' \
     && python3 -m venv /opt/ga4-mcp \
     && /opt/ga4-mcp/bin/pip install --no-cache-dir analytics-mcp==0.7.0 msgpack==1.2.1 setuptools==78.1.1 \
     && test -x /opt/ga4-mcp/bin/analytics-mcp \
     && /opt/ga4-mcp/bin/python -c "import analytics_mcp; import google.analytics.admin_v1beta; import google.analytics.data_v1beta" \
     && rm -rf /root/.cache \
-    && rm -f /opt/ga4-mcp/bin/pip /opt/ga4-mcp/bin/pip3 /opt/ga4-mcp/bin/pip3.*
+    && rm -f /opt/ga4-mcp/bin/pip /opt/ga4-mcp/bin/pip3 /opt/ga4-mcp/bin/pip3.* \
+    && apk del py3-pip
 
 # All subsequent validation is offline. Node's script runner needs no npm/cache transport.
 # Remove the installer itself, including vulnerable bundled http-cache-semantics, before validation.
@@ -121,7 +122,7 @@ RUN npm ci --omit=dev --ignore-scripts --no-audit --no-fund && rm -rf /root/.npm
 FROM crypto-base AS runtime
 ENV NODE_ENV=production PORT=10000
 WORKDIR /app
-RUN apk add --no-cache python3
+RUN apk add --no-cache 'python3>=3.14.8-r0'
 COPY ["Chat Buddy/README.md", "./Chat Buddy/README.md"]
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/CAPITAL-AI-PRODUCT/badge.svg ./CAPITAL-AI-PRODUCT/badge.svg
