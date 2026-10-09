@@ -62,6 +62,8 @@ function lineFor(reason: AssistReason) {
 
 export function HeroBuddy(props: HeroBuddyProps) {
   const [open, setOpen] = useState(false);
+  const [avatarLoaded, setAvatarLoaded] = useState(false);
+  const [avatarFailed, setAvatarFailed] = useState(false);
   const chatPanelId = 'capital-ai-hero-buddy-panel';
   const [speech, setSpeech] = useState<AssistReason | null>(null);
   const [draft, setDraft] = useState('');
@@ -292,8 +294,22 @@ export function HeroBuddy(props: HeroBuddyProps) {
           )}
         </div>
       )}
-      <button type="button" aria-expanded={open} aria-controls={open ? chatPanelId : undefined} aria-label={open ? "JaJa Chat schließen" : "JaJa Chat öffnen"} onClick={() => { setOpen((value) => !value); setSpeech(null); }} className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-amber-300/50 bg-[#10182e] shadow-[0_8px_24px_rgba(245,176,20,0.28)]">
-        <BuddyMark pulse={!reducedMotion && !open} speaking={Boolean(speech) && !open} />
+      <button type="button" aria-expanded={open} aria-controls={open ? chatPanelId : undefined} aria-label={open ? "JaJa Chat schließen" : "JaJa Chat öffnen"} onClick={() => { setOpen((value) => !value); setSpeech(null); }} className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-amber-300/50 bg-[#10182e] shadow-[0_8px_24px_rgba(245,176,20,0.28)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
+        {!avatarFailed && (
+          <img
+            src="/assets/jaja-avatar-transparent.webp"
+            alt=""
+            aria-hidden="true"
+            width={64}
+            height={64}
+            loading="eager"
+            decoding="async"
+            onLoad={() => setAvatarLoaded(true)}
+            onError={() => setAvatarFailed(true)}
+            className={`absolute inset-0 h-full w-full object-contain transition-transform duration-300 ${avatarLoaded ? "opacity-100" : "opacity-0"} ${reducedMotion ? "" : "motion-safe:hover:scale-105"}`}
+          />
+        )}
+        {!avatarLoaded && <BuddyMark pulse={!reducedMotion && !open} speaking={Boolean(speech) && !open} />}
       </button>
     </div>
   );
