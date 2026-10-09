@@ -1,6 +1,6 @@
 {
   "schemaVersion": "CAPITAL_AI_CHART_LEARNING@1",
-  "sourceSha": "4fbcce0b801ccfd6db214f6f93fb838999ca8928",
+  "sourceSha": "6620033b6ea1b5a9c379a937fbc21455102ae6fa",
   "contentSource": "src/data/chartLearning.ts",
   "renderer": "src/features/learning/ChartLessonGraphic.tsx",
   "dataProvenance": "SELF_AUTHORED_SYNTHETIC",
@@ -15,7 +15,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "bull-flag.media-project.json",
-      "projectSha256": "542068cc1da9c034329e519171447d39f8e0587aede6325601f80834b3d9a50f",
+      "projectSha256": "8ebe37bdfcfffafa0fa15d73a8b6f4b759733b2ea2a7ba0bc439feddc5313765",
       "post": "Bull Flag: Impuls, Pause, Ausbruch: drei Teile einer Flagge.\n\nErkennen: Nach einem steilen Anstieg folgt ein kurzer, leicht abwärts gerichteter Parallelkanal.\nBestätigung: Ein Schlusskurs oberhalb des Kanals kann die Fortsetzungsthese stützen; Volumen und Zeitebene mitprüfen.\nFehlersignal: Ein Bruch unter die Konsolidierung oder ein Rückfall nach dem Ausbruch widerspricht der Fortsetzung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=bull-flag\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -79,7 +79,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "bear-flag.media-project.json",
-      "projectSha256": "645f3b451c695c16b24fcbc362a8ed657014b569620e449716308988cfc0149c",
+      "projectSha256": "e14660b71b3f03653db4d6bbccbe77bbd7a23daded9d7f225835997a036421b7",
       "post": "Bear Flag: Eine Erholung kann nur eine Pause im Abwärtstrend sein.\n\nErkennen: Auf einen starken Rückgang folgt ein kurzer, leicht aufwärts gerichteter Parallelkanal.\nBestätigung: Ein Schlusskurs unter dem Kanal kann die Abwärtsthese stützen. Ein einzelner Docht reicht nicht.\nFehlersignal: Ein nachhaltiger Bruch nach oben oder schnelle Rückkehr in den Kanal schwächt die These.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=bear-flag\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -143,7 +143,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "pennant.media-project.json",
-      "projectSha256": "d5ffbe41379f5390749ecfbe2f62e3306f351aca7c3eac666ccec6dfe0ec5e68",
+      "projectSha256": "0feb1fbcdb7c68d35b5dfca2e4dbc14f297052a3a8a7d709f6ca4972081ebe68",
       "post": "Wimpel / Pennant: Die Schwankungen werden enger – die Richtung bleibt offen.\n\nErkennen: Nach einem Impuls laufen obere und untere Begrenzung der kurzen Konsolidierung zusammen.\nBestätigung: Erst der Ausbruch und dessen Fortbestand zeigen eine mögliche Auflösung; beide Richtungen beobachten.\nFehlersignal: Ein Fehlausbruch oder eine lange, unscharfe Seitwärtsphase passt nicht zum kurzen Wimpel.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=pennant\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -207,7 +207,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "ascending-triangle.media-project.json",
-      "projectSha256": "c7f973621538203b15848010a08498bc548028f0fbb1b539650bc4ac18cdabcf",
+      "projectSha256": "2ce2f3e6cc7c32096c0a2069c03111616611a4f3c9feae39b2b1a0c81fdcda0d",
       "post": "Aufsteigendes Dreieck: Gleicher Widerstand, höhere Tiefs.\n\nErkennen: Mehrere Hochs liegen auf ähnlicher Höhe, während die Tiefs ansteigen.\nBestätigung: Ein Schlusskurs über dem Widerstand und ein möglicher Retest stützen die Ausbruchsthese.\nFehlersignal: Ein Bruch der steigenden Unterstützung oder Rückfall unter den Widerstand kann das Muster entkräften.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=ascending-triangle\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -271,7 +271,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "double-top.media-project.json",
-      "projectSha256": "77e3dabb2c73fc64f3ce4154382270fc7c35b363a3f56ea169ea9dee53151b4c",
+      "projectSha256": "275f12b4f224291e539c417f1b23457fc8b41a6bffd7d5001e46663c85346966",
       "post": "Doppeltop: Zwei Hochs sind erst der Anfang der Beobachtung.\n\nErkennen: Zwei ähnliche Hochs werden durch ein Zwischentief getrennt. Dessen Niveau bildet die Nackenlinie.\nBestätigung: Ein Schlusskurs unter der Nackenlinie kann eine Umkehrthese stützen.\nFehlersignal: Neue Hochs oder Rückeroberung der Nackenlinie widersprechen der erwarteten Abwärtsauflösung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=double-top\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -335,7 +335,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "double-bottom.media-project.json",
-      "projectSha256": "dd16c6da4a1a9afdbaa8193f602816d33a5ad12ad04d204edfe83300fae3e225",
+      "projectSha256": "792d04984e8480f9bbe6087d1c1ec1b69b11718eece8ff13a6c926b8206fbe2d",
       "post": "Doppelboden: Zwei Tiefs, ein dazwischenliegender Widerstand.\n\nErkennen: Zwei ähnliche Tiefs werden durch ein Zwischenhoch getrennt. Dieses bildet die Nackenlinie.\nBestätigung: Ein Schlusskurs oberhalb der Nackenlinie kann die Aufwärtsthese stützen.\nFehlersignal: Neue Tiefs oder Rückfall unter die Nackenlinie schwächen die Umkehrthese.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=double-bottom\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -399,7 +399,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "head-shoulders.media-project.json",
-      "projectSha256": "a599d4d4acbe482981c7481b30ed96b05b56df0cc496248a3c76d919cb4c25a6",
+      "projectSha256": "776e435331f6f965d4c86733999be37e1f412aee3579508633f560d724812640",
       "post": "Schulter–Kopf–Schulter: Drei Hochs, das mittlere am höchsten.\n\nErkennen: Linke Schulter, höherer Kopf und rechte Schulter. Die beiden Zwischentiefs definieren die Nackenlinie.\nBestätigung: Ein Schlusskurs unter der Nackenlinie kann die Umkehrthese stützen.\nFehlersignal: Ein neues Hoch oder nachhaltige Rückeroberung der Nackenlinie schwächt die These.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=head-shoulders\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -463,7 +463,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "support-resistance.media-project.json",
-      "projectSha256": "e42e64b8aa44188adea28ee0f8acccaf9867cbd4dcbaab25068e24caa930f6b9",
+      "projectSha256": "33789a363a022fa27fe0d3b604e27f0d32122e078258b1c4a60b876b595eeeff",
       "post": "Unterstützung & Widerstand: Zonen erklären Reaktionen besser als millimetergenaue Linien.\n\nErkennen: Wiederholte Reaktionen an ähnlichen Tiefs und Hochs bilden beobachtbare Unterstützungs- und Widerstandszonen.\nBestätigung: Wiederholte Reaktion oder Ausbruch mit anschließendem Retest beobachten.\nFehlersignal: Ein nachhaltiger Bruch zeigt, dass die bisherige Zone nicht mehr hält.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=support-resistance\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -527,7 +527,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "rsi.media-project.json",
-      "projectSha256": "afa174fd29d51a08f2f6a2a9bade79d2a2915adc8758fe7fea11f724d00a3a56",
+      "projectSha256": "ac4eee4ddfbc6d0f5ded4a303b169773c1a653daef590bced8c32096ed1b9704",
       "post": "RSI: Momentum lesen: Überkauft bedeutet nicht: Der Kurs muss sofort fallen.\n\nErkennen: Der RSI bewegt sich zwischen 0 und 100. 70 und 30 sind verbreitete Beobachtungsmarken, keine universellen Handelsregeln.\nBestätigung: Rückkehr aus Extrembereichen und den Preis-/Trendkontext gemeinsam betrachten.\nFehlersignal: In starken Trends kann RSI lange extrem bleiben. Ein Extremwert allein bestätigt keine Umkehr.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=rsi\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -591,7 +591,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "macd.media-project.json",
-      "projectSha256": "ddfdbe662cc7c9152f4fca8f45f453758339627f7144bdc688e2904dc2c537a5",
+      "projectSha256": "709dc23108c5fd5e0782f232ef2422f7e1747d976ffa7bc450a35d4dba77c72a",
       "post": "MACD & Signallinie: Kreuzung und Nulllinie erzählen unterschiedliche Dinge.\n\nErkennen: Die MACD-Linie ist die Differenz zweier EMAs; die Signallinie glättet sie. Üblich sind 12/26/9 Perioden.\nBestätigung: Kreuzungen im Trendkontext beobachten. Die Nulllinie kennzeichnet die relative Lage der beiden Preis-EMAs.\nFehlersignal: Seitwärtsmärkte können viele wechselnde Kreuzungen erzeugen. Verzögerung und Fehlsignale mitbewerten.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=macd\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -663,7 +663,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "moving-averages.media-project.json",
-      "projectSha256": "346152947dd2ba88f8594eab9b2e6ae2b443ed5e9c9467dc98806a34db2ad385",
+      "projectSha256": "ff7e8b601d7db102ce74d02e1a6a8aa120219cd28cef8da45135db62192ef6fd",
       "post": "Gleitende Durchschnitte: Glättung schafft Übersicht, aber auch Verzögerung.\n\nErkennen: Ein kurzer Durchschnitt reagiert schneller als ein langer. Kreuzungen illustrieren mögliche Trendwechsel.\nBestätigung: Die Steigung und der übergeordnete Trend liefern Kontext; Perioden und SMA/EMA-Auswahl offenlegen.\nFehlersignal: In Seitwärtsphasen wechseln Kreuzungen häufig. Ein Durchschnitt erkennt keinen zukünftigen Kurs.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=moving-averages\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -723,7 +723,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "volume-breakout.media-project.json",
-      "projectSha256": "9a4adab49a9ee39b220e3f96d1234e145aea12d5e23af379221601441fcaaa13",
+      "projectSha256": "e3846e137225d99d30f4c7b6408ed2e00e9aa6cccd1b721ae0e60eb64fd4681a",
       "post": "Volumen & Ausbruch: Mehr Aktivität kann einen Ausbruch stützen – nicht garantieren.\n\nErkennen: Die Aktivität am Ausbruch mit vorherigen Perioden desselben Markts, derselben Quelle und Zeitebene vergleichen.\nBestätigung: Erhöhtes Volumen und Fortbestand des Preisausbruchs können sich ergänzen; dieses Bild zeigt nur das Volumenkonzept.\nFehlersignal: Hohes Volumen kann auch am Ende einer Bewegung auftreten. Lücken und venue-spezifische Abdeckung prüfen.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=volume-breakout\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -776,7 +776,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "inverse-head-shoulders.media-project.json",
-      "projectSha256": "b125df21c5e160b8dc7249dabbaf53009e914f217ea843a9a12585979fd1b45f",
+      "projectSha256": "c3b3c7465c67132400d88aefc68941beab2d3f25cdea2c604d4dcc6aa1675083",
       "post": "Inverse Schulter–Kopf–Schulter: Drei Tiefs; das mittlere ist tiefer als die beiden Schultern.\n\nErkennen: Drei Tiefs; das mittlere ist tiefer als die beiden Schultern. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=inverse-head-shoulders\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -817,7 +817,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "triple-top.media-project.json",
-      "projectSha256": "db47037f3e0eea115325b94cd51ad9fbe415ff63f1fcb4972a44fd22cc97c962",
+      "projectSha256": "dc8b54e7fce47da40e60bce27647e5665dcf935802ac51961560b11066e1d491",
       "post": "Dreifachtop: Drei ähnlich hohe Gipfel werden durch zwei Rückgänge getrennt.\n\nErkennen: Drei ähnlich hohe Gipfel werden durch zwei Rückgänge getrennt. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=triple-top\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -858,7 +858,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "triple-bottom.media-project.json",
-      "projectSha256": "5041762fbaf89318cf9ff72e9a03c1d5b89b8f1c3fefd3f22399e65f5358c036",
+      "projectSha256": "1aab0cf7dd4ffea9e1d9daa7f0edceb978186f66669f0dd20d23f30560c4e2ad",
       "post": "Dreifachboden: Drei ähnliche Tiefpunkte wechseln sich mit zwei Erholungen ab.\n\nErkennen: Drei ähnliche Tiefpunkte wechseln sich mit zwei Erholungen ab. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=triple-bottom\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -899,7 +899,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "descending-triangle.media-project.json",
-      "projectSha256": "520b74dcc19cea7a7c7fd58e7aa22673a605b00b97228ae7ba4746cba2636780",
+      "projectSha256": "9e9c2dc7e5d4555619ef33a0c9688e991703f7674f922af6ea47927d6922cc2c",
       "post": "Absteigendes Dreieck: Ähnliche Tiefs treffen auf schrittweise niedrigere Hochs.\n\nErkennen: Ähnliche Tiefs treffen auf schrittweise niedrigere Hochs. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=descending-triangle\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -940,7 +940,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "symmetric-triangle.media-project.json",
-      "projectSha256": "fde6f13aeb0c9339d41061e11f66242ed67e3e4ee10d597e2d329a2cc22ed6c1",
+      "projectSha256": "2044d439987265faa4822abc68712b9ea9391a4f3e285d443ac29096840d35a0",
       "post": "Symmetrisches Dreieck: Fallende Hochs und steigende Tiefs nähern sich einander an.\n\nErkennen: Fallende Hochs und steigende Tiefs nähern sich einander an. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=symmetric-triangle\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -981,7 +981,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "rising-wedge.media-project.json",
-      "projectSha256": "30849563b235d2c882171de461c9670a53b6490a9a93f1aeac2a9e286f93f166",
+      "projectSha256": "5bd69a031786770006a75ba80da3fc7375b8926146937c4069c242e1456c40d3",
       "post": "Steigender Keil: Beide Grenzen steigen; die untere Grenze steigt schneller und verengt die Spanne.\n\nErkennen: Beide Grenzen steigen; die untere Grenze steigt schneller und verengt die Spanne. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=rising-wedge\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1022,7 +1022,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "falling-wedge.media-project.json",
-      "projectSha256": "4eb99a31e20bbe8d86b72df207ebcbdaab087feb3d606c556dc2458cc4169357",
+      "projectSha256": "9297a38a9e2c5f99b705071d5390c6cec7a772ebbfe24dfc0c91453c53a7995c",
       "post": "Fallender Keil: Beide Grenzen fallen; die obere Grenze fällt schneller und verengt die Spanne.\n\nErkennen: Beide Grenzen fallen; die obere Grenze fällt schneller und verengt die Spanne. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=falling-wedge\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1063,7 +1063,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "bull-pennant.media-project.json",
-      "projectSha256": "a54d239da6bd6d6a60d4d632dab55188d16c3090e3ff50018491356ee7a5524b",
+      "projectSha256": "53537c8b1120fb820f78d3739ab0b3f6da75af1183ad9ea09cbf8d71b8bc5461",
       "post": "Bullischer Wimpel: Ein Aufwärtsimpuls geht in eine kurze konvergierende Konsolidierung über.\n\nErkennen: Ein Aufwärtsimpuls geht in eine kurze konvergierende Konsolidierung über. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=bull-pennant\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1104,7 +1104,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "bear-pennant.media-project.json",
-      "projectSha256": "278fe702ff751a6d2fda9328ef3792100694a9002d7d599377b920c8d30f4468",
+      "projectSha256": "6c33f5d1d0b428a6ed6a05c23674f0327853a73e292477f9dcbe7e5e8f6dc052",
       "post": "Bärischer Wimpel: Ein Abwärtsimpuls geht in eine kurze konvergierende Konsolidierung über.\n\nErkennen: Ein Abwärtsimpuls geht in eine kurze konvergierende Konsolidierung über. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=bear-pennant\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1145,7 +1145,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "bull-rectangle.media-project.json",
-      "projectSha256": "b014f0eba0ee3aaa685ef3caedc1909242e855237ebca4f515bfa7e328cf67b4",
+      "projectSha256": "2184896b480d9047381af98841a68d09b9d18b19bff9ef5cdfea39ce73b31953",
       "post": "Bullisches Rechteck: Nach einem Anstieg pendelt der Kurs zwischen annähernd horizontalen Grenzen.\n\nErkennen: Nach einem Anstieg pendelt der Kurs zwischen annähernd horizontalen Grenzen. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=bull-rectangle\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1186,7 +1186,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "bear-rectangle.media-project.json",
-      "projectSha256": "5708ff9e86567d9888d6221164eb8731c32417ebb93ef50bc9fa2eee8a05c9b4",
+      "projectSha256": "3ab42151ca19e97ed67db10aa7211b15e6e83e43711c7c11498a8027650e18c1",
       "post": "Bärisches Rechteck: Nach einem Rückgang folgt eine seitwärts verlaufende Handelsspanne.\n\nErkennen: Nach einem Rückgang folgt eine seitwärts verlaufende Handelsspanne. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=bear-rectangle\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1227,7 +1227,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "ascending-channel.media-project.json",
-      "projectSha256": "cfa39c14a90f1f0e68e69c2cfc6b1fb8e3d1d51f2f56fc8f88fbdd58675f29cd",
+      "projectSha256": "15c775bffc2211491f2c5b90fc6bf699ce43db59bc76d07c9e502ba0094a0a0c",
       "post": "Aufwärtskanal: Höhere Hochs und höhere Tiefs verlaufen in ungefähr parallelen Grenzen.\n\nErkennen: Höhere Hochs und höhere Tiefs verlaufen in ungefähr parallelen Grenzen. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=ascending-channel\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1268,7 +1268,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "descending-channel.media-project.json",
-      "projectSha256": "e9d0ed51b710e4d97c7cccb6adc83db7535da5bd7694ba217730fd62a5affc16",
+      "projectSha256": "1ac61acc0dbdd229b418915da6194ce463cdd277a7c56cd5ad063866facf22d2",
       "post": "Abwärtskanal: Tiefere Hochs und tiefere Tiefs verlaufen in ungefähr parallelen Grenzen.\n\nErkennen: Tiefere Hochs und tiefere Tiefs verlaufen in ungefähr parallelen Grenzen. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=descending-channel\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1309,7 +1309,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "horizontal-channel.media-project.json",
-      "projectSha256": "ea7b546226ed07069ba2c3f5a1f4baa10230db45dbf1f591ad313c7b5988cae7",
+      "projectSha256": "a508e25e85c75493f8ae664e114633d41387fd6422750da0725204c83ea3cf7f",
       "post": "Seitwärtskanal: Wiederholte Richtungswechsel bleiben innerhalb einer waagerechten Spanne.\n\nErkennen: Wiederholte Richtungswechsel bleiben innerhalb einer waagerechten Spanne. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=horizontal-channel\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1350,7 +1350,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "broadening-top.media-project.json",
-      "projectSha256": "59756b93825cad746aeef7ad8a7ede8ed1a2dd37d8527f2ee94e1ece29176642",
+      "projectSha256": "15a5acba4510002441e294d47b01624c973e4d400c75d65b05e69e673df8a71d",
       "post": "Sich ausweitende Formation: Höhere Hochs und tiefere Tiefs vergrößern die Schwankungsbreite.\n\nErkennen: Höhere Hochs und tiefere Tiefs vergrößern die Schwankungsbreite. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=broadening-top\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1391,7 +1391,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "diamond-top.media-project.json",
-      "projectSha256": "0942840bc0851f04489eb906a9b7f83936db88378537d7199d4e3a5016c1f345",
+      "projectSha256": "e84e70be2026cfef6a3333160af34dfcb0e69ef467ec1390bf465c92ad14bf2f",
       "post": "Diamant am Hoch: Nach einem Anstieg weitet sich die Spanne zunächst aus und zieht sich anschließend zusammen.\n\nErkennen: Nach einem Anstieg weitet sich die Spanne zunächst aus und zieht sich anschließend zusammen. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=diamond-top\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1432,7 +1432,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "diamond-bottom.media-project.json",
-      "projectSha256": "39175ab04963ad4a8f6b42146cc0e43486c2ab3bf16c595bd93ef706117eee6c",
+      "projectSha256": "674bb00cd9d2a4b094e321e090b130cddd14b9cd6673dc5561a88dcf7e55270f",
       "post": "Diamant am Tief: Nach einem Rückgang weitet sich die Spanne zunächst aus und wird danach enger.\n\nErkennen: Nach einem Rückgang weitet sich die Spanne zunächst aus und wird danach enger. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=diamond-bottom\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1473,7 +1473,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "rounding-bottom.media-project.json",
-      "projectSha256": "025cedd8ce7ef0c5709fa9de5cb8450c02a62d51cd6037ce79033517b76d8ded",
+      "projectSha256": "8cbf160baa26fcc0c519d141ff0bdaf677b1bfeab157051128750979725b2723",
       "post": "Runder Boden: Ein länger werdender Rückgang verliert Steigung und geht in eine gerundete Erholung über.\n\nErkennen: Ein länger werdender Rückgang verliert Steigung und geht in eine gerundete Erholung über. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=rounding-bottom\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1514,7 +1514,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "rounding-top.media-project.json",
-      "projectSha256": "bbd28cea9c7efa52f7ce0d9881676f13879ed3060e6e630085b4d79a57b6f0a2",
+      "projectSha256": "71400ca47769148649965680a5f37155bcc7cec441989312f8d574cca61e1e15",
       "post": "Rundes Top: Ein Anstieg verliert Steigung und geht in einen gerundeten Rückgang über.\n\nErkennen: Ein Anstieg verliert Steigung und geht in einen gerundeten Rückgang über. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=rounding-top\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1555,7 +1555,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "cup-handle.media-project.json",
-      "projectSha256": "e8a227529db4b0a864df688d599a99be9debb69a907dd90006ccbcc106bdbb88",
+      "projectSha256": "907938c6a872bcbadbfa6f4792603ba32f2773b5eaa43d84b2016b3bd36a248d",
       "post": "Tasse mit Henkel: Auf eine gerundete Erholung zum alten Hoch folgt eine kleinere Konsolidierung.\n\nErkennen: Auf eine gerundete Erholung zum alten Hoch folgt eine kleinere Konsolidierung. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=cup-handle\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1596,7 +1596,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "inverse-cup-handle.media-project.json",
-      "projectSha256": "329954ae35c4b5b4b87314aedfb21f2fb82b272b0cf105bd2694583add724928",
+      "projectSha256": "18688e08608a2eb15515eaf5f47ff38c691df62fdf9b032671ac50740b18888b",
       "post": "Inverse Tasse mit Henkel: Auf einen gerundeten Rückgang zum alten Tief folgt eine kleinere Erholung.\n\nErkennen: Auf einen gerundeten Rückgang zum alten Tief folgt eine kleinere Erholung. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=inverse-cup-handle\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1637,7 +1637,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "v-bottom.media-project.json",
-      "projectSha256": "b98d7dfed93009d6d4b4adc013cd058da688e8ab5948d5280be1a1ffc1b65ba0",
+      "projectSha256": "39f4154a22a6cccbae3877eb14d465685a73762a814a2630ac4a30561c0f6d7c",
       "post": "V-Boden: Ein steiler Abverkauf wird unmittelbar von einer schnellen Erholung gefolgt.\n\nErkennen: Ein steiler Abverkauf wird unmittelbar von einer schnellen Erholung gefolgt. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=v-bottom\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1678,7 +1678,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "v-top.media-project.json",
-      "projectSha256": "eb6601c3baf603a703f53576bb5c7e10186afe0ace09efabcac6875b7d59e175",
+      "projectSha256": "7e129fa73e0c92d801d58aed074f635944993b3bc2a0e9ce0559018f4e1c945b",
       "post": "V-Top: Ein steiler Anstieg geht unmittelbar in einen schnellen Rückgang über.\n\nErkennen: Ein steiler Anstieg geht unmittelbar in einen schnellen Rückgang über. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=v-top\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1719,7 +1719,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "failed-breakout.media-project.json",
-      "projectSha256": "f32d8290a9c7ac98e28f327aa2fc5cca522f3ea45c8507c43ca77f50e436978b",
+      "projectSha256": "c18d0a0bb8a77b141e17845aa847174a75fdd689e7f9b61f62d271c2abe2a443",
       "post": "Fehlausbruch nach oben: Der Kurs überschreitet eine Spanne kurz und fällt dann unter die Ausbruchszone zurück.\n\nErkennen: Der Kurs überschreitet eine Spanne kurz und fällt dann unter die Ausbruchszone zurück. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=failed-breakout\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1760,7 +1760,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "failed-breakdown.media-project.json",
-      "projectSha256": "088670bd056e83b230a4e2fb762545159a4c6faaa1392ab4854519fd6c316da2",
+      "projectSha256": "305c0750b53939e83269c01a922ed9627c47761bf0f75acecbda16c0f55a6fdd",
       "post": "Fehlausbruch nach unten: Der Kurs unterschreitet eine Spanne kurz und kehrt dann oberhalb der Ausbruchszone zurück.\n\nErkennen: Der Kurs unterschreitet eine Spanne kurz und kehrt dann oberhalb der Ausbruchszone zurück. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=failed-breakdown\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1801,7 +1801,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "breakout-retest.media-project.json",
-      "projectSha256": "939164d5efa8070f74d198738afb3a3ae20fd89f14b605de37df9010284980a6",
+      "projectSha256": "4d08f9934108da8e81890f8694962222dcb0044a08e4748a5c543a9ed37d33c5",
       "post": "Ausbruch mit Retest: Ein Ausbruch wird durch eine Rückkehr zur bisherigen Begrenzung und erneute Bewegung ergänzt.\n\nErkennen: Ein Ausbruch wird durch eine Rückkehr zur bisherigen Begrenzung und erneute Bewegung ergänzt. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=breakout-retest\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1842,7 +1842,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "high-tight-flag.media-project.json",
-      "projectSha256": "132e002479bdc462ef926bc77c715990910e0097e6747355d24945bfea40065a",
+      "projectSha256": "725188482d28b4e9dfa0a60a5316379c26d485b6af87b8b6ece488737431526b",
       "post": "High-Tight-Flag: Auf einen außergewöhnlich steilen Anstieg folgt eine enge, kurze Konsolidierung nahe dem Hoch.\n\nErkennen: Auf einen außergewöhnlich steilen Anstieg folgt eine enge, kurze Konsolidierung nahe dem Hoch. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=high-tight-flag\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1883,7 +1883,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "flat-bull-flag.media-project.json",
-      "projectSha256": "5693d9185f7c574eb1e694bca47cdaa88e495d601fd00e4e4a8531c5396fe99e",
+      "projectSha256": "e9d9b133ed0411f7375cb63142699e39919c70c27eadada35a8c89033ad50f41",
       "post": "Flache bullische Flagge: Nach einem Aufwärtsimpuls verläuft die kurze Pause nahezu waagerecht.\n\nErkennen: Nach einem Aufwärtsimpuls verläuft die kurze Pause nahezu waagerecht. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=flat-bull-flag\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1924,7 +1924,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "flat-bear-flag.media-project.json",
-      "projectSha256": "59ac76167a1158f6617a4f1cbf1799e651c570f642d04534b0e14ef1cca3eb78",
+      "projectSha256": "783bf3c612c2e329abd68a29fa4b9a20ec3cc224e556572c64a1b187f1019b33",
       "post": "Flache bärische Flagge: Nach einem Abwärtsimpuls verläuft die kurze Pause nahezu waagerecht.\n\nErkennen: Nach einem Abwärtsimpuls verläuft die kurze Pause nahezu waagerecht. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=flat-bear-flag\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -1965,7 +1965,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "bull-flag-retest.media-project.json",
-      "projectSha256": "4baa3824680a2fafe24f60ac1c4443d70daa9ccbd36fea116d76fa9aa5e999ae",
+      "projectSha256": "0d11260033bd967d6022c5789b662496f09147e0658cecc51e0e36d0b512dc12",
       "post": "Bull Flag mit Retest: Die Flagge löst sich nach oben auf; anschließend wird die Ausbruchszone erneut getestet.\n\nErkennen: Die Flagge löst sich nach oben auf; anschließend wird die Ausbruchszone erneut getestet. Das Schema vereinfacht Verlauf und Zeitebene.\nBestätigung: Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.\nFehlersignal: Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=bull-flag-retest\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -2006,7 +2006,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "atr.media-project.json",
-      "projectSha256": "8e5e164262b7f7b629415257efb184fe51c0bae1f67a421d216585767c822f85",
+      "projectSha256": "159d8689e9296a1499c480dec910faa4d05ca710a37c3559874eae0a99193a92",
       "post": "ATR · Schwankungsbreite: Berechnung und Interpretation getrennt betrachten.\n\nErkennen: Average True Range glättet True Ranges und misst Schwankungsbreite, keine Richtung. True Range berücksichtigt auch die Distanz zum vorigen Schlusskurs.\nBestätigung: Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.\nFehlersignal: Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=atr\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -2047,7 +2047,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "adx.media-project.json",
-      "projectSha256": "f69b75be1925d085058d6f3508d88e079632944a2916a099849cef6c8454027d",
+      "projectSha256": "9a540cc2c72f5b68699ed3d4041cdf337b9f883d106c0cc399d8a47a5dade60d",
       "post": "ADX · Trendstärke: Berechnung und Interpretation getrennt betrachten.\n\nErkennen: Average Directional Index glättet die relative Differenz der Richtungsindikatoren. Ein höherer Wert beschreibt Trendstärke, nicht die Richtung des Trends.\nBestätigung: Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.\nFehlersignal: Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=adx\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -2088,7 +2088,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "stochastic.media-project.json",
-      "projectSha256": "c96613d72910675004529bae097e603a8e027ed1c56b2ef4bab17115e706cbf9",
+      "projectSha256": "2ca88f8f695c1f4c69c6969e1be7f0acff3716bcfb3e2ddd33a0f21803906762",
       "post": "Stochastik · Lage in der Handelsspanne: Berechnung und Interpretation getrennt betrachten.\n\nErkennen: Die Stochastik vergleicht den Schlusskurs mit Hoch und Tief des betrachteten Fensters. Marken bei 80 und 20 kennzeichnen relative Extrembereiche.\nBestätigung: Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.\nFehlersignal: Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=stochastic\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -2129,7 +2129,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "williams-r.media-project.json",
-      "projectSha256": "17e6a80e5c8249038363958cdc4d685721c18d2431dedf446c654dca7f48e346",
+      "projectSha256": "86b55ba1691fb7543e3532859f0e5846d87b076d32dbf7474359053e171c969a",
       "post": "Williams %R: Berechnung und Interpretation getrennt betrachten.\n\nErkennen: Williams %R setzt den Abstand zum Periodenhoch ins Verhältnis zur Hoch-Tief-Spanne. Die Skala reicht von minus 100 bis null.\nBestätigung: Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.\nFehlersignal: Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=williams-r\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -2170,7 +2170,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "cci.media-project.json",
-      "projectSha256": "af66d8df4dc31729f653c051e70eacc3c3f4dbf4cef912c7ce901173e29067bb",
+      "projectSha256": "412e39a9a34f668d18e6fc6933111cda1b7b674eef64f20a0855440af3c724a8",
       "post": "CCI · Abweichung vom Durchschnitt: Berechnung und Interpretation getrennt betrachten.\n\nErkennen: Commodity Channel Index normiert die Abweichung des typischen Preises vom gleitenden Mittel mit dessen mittlerer absoluter Abweichung.\nBestätigung: Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.\nFehlersignal: Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=cci\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -2211,7 +2211,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "roc.media-project.json",
-      "projectSha256": "9fc3b068abd0452ee66e33da63607ee5cba62825f2337c59db06a1470f612e69",
+      "projectSha256": "54cf573892c717a786fc9a5055ca99060f79bfae0a558e179a50a9aab7509212",
       "post": "Rate of Change: Berechnung und Interpretation getrennt betrachten.\n\nErkennen: Rate of Change beschreibt die prozentuale Preisänderung gegenüber einer festgelegten Anzahl vergangener Perioden. Die Fensterlänge beeinflusst die Interpretation.\nBestätigung: Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.\nFehlersignal: Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=roc\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -2252,7 +2252,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "obv.media-project.json",
-      "projectSha256": "efec9880b00cdd0133cc454593d403de1dbee94b6b19af272dec8232423f104a",
+      "projectSha256": "4063f7720bf2e6fa9137d41700bafc2cf0bb455925463f5dfe3eb9c16e1b7064",
       "post": "On-Balance Volume: Berechnung und Interpretation getrennt betrachten.\n\nErkennen: On-Balance Volume addiert Volumen bei steigenden Schlusskursen und subtrahiert es bei fallenden Schlusskursen. Divergenzen sind Beobachtungen, keine Beweise.\nBestätigung: Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.\nFehlersignal: Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=obv\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -2293,7 +2293,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "bollinger.media-project.json",
-      "projectSha256": "fdb3933cf8d04aa2a0c774852253400abbe5a22cf38ec0a553c99e1a2b7350df",
+      "projectSha256": "2354c55ac3295a1e1569cbe16aacda8dbd7b2f0a73fbe75e82046ba5915f77d4",
       "post": "Bollinger-Bänder: Berechnung und Interpretation getrennt betrachten.\n\nErkennen: Bollinger-Bänder liegen in einem festgelegten Standardabweichungsabstand um einen gleitenden Durchschnitt. Engere Bänder zeigen geringere beobachtete Streuung.\nBestätigung: Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.\nFehlersignal: Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=bollinger\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -2353,7 +2353,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "keltner.media-project.json",
-      "projectSha256": "e6de2cbd96665a8d45561dfa9a2d49a7e938dc35735293cc63f40dba4897b95b",
+      "projectSha256": "301a671248240583526c8d70720c0623f12b1aa52b9f9c537ea77942bb1694b5",
       "post": "Keltner-Kanal: Berechnung und Interpretation getrennt betrachten.\n\nErkennen: Ein Keltner-Kanal verwendet typischerweise einen EMA als Mitte und einen ATR-basierten Abstand. Perioden und Multiplikator müssen angegeben werden.\nBestätigung: Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.\nFehlersignal: Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=keltner\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {
@@ -2413,7 +2413,7 @@
       "width": 1200,
       "height": 675,
       "projectPath": "donchian.media-project.json",
-      "projectSha256": "6df9ce6e667946a24fa370d22a01f9e0c08c7905adbaaaa8ed60f277d98a356e",
+      "projectSha256": "a6d5729ac37642aca4a55e6a524a27fd2a42b8b0516a9e7c4a136719860c97d7",
       "post": "Donchian-Kanal: Berechnung und Interpretation getrennt betrachten.\n\nErkennen: Ein Donchian-Kanal zeigt das höchste Hoch und das tiefste Tief eines Fensters. Ob die aktuelle Periode ausgeschlossen wird, bestimmt die Ausbruchsinterpretation.\nBestätigung: Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.\nFehlersignal: Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.\n\nSynthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung\nIm Lernatlas vergleichen: https://capital-ai.online/learning?tab=patterns&lesson=donchian\n#CapitalAI #Chartmuster #Finanzbildung",
       "state": "DRAFT",
       "graphic": {

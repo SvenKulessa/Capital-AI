@@ -1,7 +1,7 @@
 import type { ContentCampaignBrief } from '../contracts/contentEngine.ts';
 
 export const CHART_LEARNING_DISCLOSURE = 'Synthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung';
-export const CHART_LEARNING_SOURCE_SHA = '4fbcce0b801ccfd6db214f6f93fb838999ca8928';
+export const CHART_LEARNING_SOURCE_SHA = '6620033b6ea1b5a9c379a937fbc21455102ae6fa';
 export const CHART_LEARNING_SOURCES = [
   { title: 'Fidelity: RSI', url: 'https://www.fidelity.com/learning-center/trading-investing/technical-analysis/technical-indicator-guide/RSI' },
   { title: 'Fidelity: MACD', url: 'https://www.fidelity.com/learning-center/trading-investing/technical-analysis/technical-indicator-guide/macd' },
