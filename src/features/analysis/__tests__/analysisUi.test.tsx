@@ -202,6 +202,20 @@ test('unavailable, stale, future, demo, degraded and missing evidence never publ
   assert.equal(presented.score, null);
   assert.equal(presented.ranked, false);
 });
+test('invalid publication clocks and freshness budgets never expose an eligible score or rank', () => {
+  for (const clock of [NaN, Infinity, -Infinity, -1, now + 0.5, Number.MAX_SAFE_INTEGER + 1]) {
+    const presented = safeScorePresentation(admittedTestResult(), clock);
+    assert.equal(presented.score, null);
+    assert.equal(presented.ranked, false);
+    assert.equal(presented.data, 'unavailable');
+  }
+  for (const budget of [NaN, Infinity, -Infinity, -1, 0, 0.5, Number.MAX_SAFE_INTEGER + 1]) {
+    const presented = safeScorePresentation(admittedTestResult(), now + 30001, budget);
+    assert.equal(presented.score, null);
+    assert.equal(presented.ranked, false);
+  }
+  assert.equal(safeScorePresentation(admittedTestResult(), now, 1).score, 50);
+});
 test('filtering and sorting operate on admitted results, retain original rank and reject mismatched identity', () => {
   const valid = row(),
     blocked = {
