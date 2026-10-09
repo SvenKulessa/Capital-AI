@@ -22,7 +22,7 @@ RUN uv lock --check \
 FROM patched-python AS runtime
 LABEL org.opencontainers.image.source="https://github.com/The-PR-Agent/pr-agent" \
       org.opencontainers.image.revision="8e5a9295973b24af4b70cafd0b660a230811ef9e" \
-      capital-ai.candidate="alpine-3.24-isolated"
+      capital-ai.candidate="alpine-3.24-primary"
 ENV PYTHONPATH=/app PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
     LITELLM_LOCAL_MODEL_COST_MAP=True GIT_PYTHON_REFRESH=quiet \
     HOME=/tmp/reviewer
