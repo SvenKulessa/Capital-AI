@@ -15,6 +15,8 @@ test('Binance registry does not refer to retired March 2026 all-market ticker', 
 test('source-bound BTCUSDT trade adapter remains independent from generic snapshot registry', () => {
   const request = spotWireRequest({ provider: 'binance', symbol: 'BTCUSDT', transport: 'websocket' });
   assert.equal(request.url, 'wss://stream.binance.com:9443/ws');
+  assert.ok('subscribe' in request, 'only WebSocket transports expose subscribe');
+  if (!('subscribe' in request)) throw new Error('WEBSOCKET_REQUEST_CONTRACT_INVALID');
   const subscription = JSON.parse(request.subscribe);
   assert.deepEqual(subscription.params, ['btcusdt@trade']);
   assert.equal(subscription.method, 'SUBSCRIBE');
