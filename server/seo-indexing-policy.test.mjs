@@ -123,9 +123,20 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
     assert.equal(api.status, 404);
     assert.equal(api.headers.get('x-robots-tag'), 'noindex, nofollow');
 
+    // SEO discovery contract: compare raw HTTP semantics, not crawler markdown rendering.
+    const robotsResponse = await fetch(origin + '/robots.txt');
+    assert.equal(robotsResponse.status, 200);
+    assert.match(robotsResponse.headers.get('content-type') || '', /^text\/plain/i);
+    const robots = await robotsResponse.text();
+    assert.equal(robots, 'User-agent: *\\nAllow: /\\nSitemap: https://capital-ai.online/sitemap.xml\\n'.replaceAll('\\n', '\n'));
+    assert.doesNotMatch(robots, /(?:\/profile|\/control-center|\/api\/)/);
+
     const sitemapResponse = await fetch(origin + '/sitemap.xml');
     assert.equal(sitemapResponse.status, 200);
+    assert.match(sitemapResponse.headers.get('content-type') || '', /^application\/xml/i);
     const sitemap = await sitemapResponse.text();
+    assert.match(sitemap, /^<\?xml version="1\.0" encoding="UTF-8"\?>/);
+    assert.doesNotMatch(sitemap, /<lastmod>/, 'No invented timestamp: introduce lastmod only from evidence-backed per-route dates');
     for (const route of EXPECTED_INDEX_PATHS) {
       const url = route === '/' ? 'https://capital-ai.online/' : `https://capital-ai.online${route}`;
       assert.ok(sitemap.includes(`<loc>${url}</loc>`), route);
