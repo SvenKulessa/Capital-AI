@@ -8,4 +8,6 @@ Der Browser auf `/pricing` zeigte im darunterliegenden Hero die pauschale Aussag
 
 Die Tarifoberfläche wurde im öffentlichen Browser geprüft: Starter/Pro/Enterprise 7/29/109 EUR monatlich bzw. 75,60/248/1.280 EUR jährlich; Zusatzangebot Vocabulary 19 EUR einmalig. Das ist Oberflächen-Evidence, keine Käufer-/Entitlement-E2E.
 
+Auch die öffentliche Produkttour (`ProductTourModal.tsx`) beschrieb aktives Scoring und automatische Portfolio-Schutzsignale ohne Runtime-Nachweis. Schritt 2 und 3 beschreiben jetzt Methoden und Risikokontext mit dem tatsächlichen Aktivierungs-/Nachweisstatus. Tour-Navigation und Analyse-CTA bleiben unverändert.
+
 Validierung: bestehende vollständige Sprachabdeckung, i18n-/HTTP- und SEO-Regressionen sowie TypeScript/Frontend-Grenzen. Production-Auslieferung der neuen Texte ist erst nach erfolgreicher PR-/Main-CI und Render-Deploy nachgewiesen. Rollback: Textfix-Commit revertieren. Keine neue Ressource oder kostenpflichtige Integration.
