@@ -71,7 +71,7 @@ function validReadback(env, now) {
 
 function validLedger(raw, project) {
   assert(raw && raw.version === PRIVATE_NEURAL2_CONTRACT &&
-    raw.project === project && raw.months && typeof raw.months === 'object',
+    raw.project === project && raw.months && typeof raw.months === 'object' && !Array.isArray(raw.months),
   'SOCIAL_NEURAL2_LEDGER_INVALID');
   return raw;
 }
@@ -134,7 +134,9 @@ export async function synthesizePrivateNeural2({
   });
   try {
     const ledger = await loadLedger(ledgerPath, project);
-    const current = Array.isArray(ledger.months[month]) ? ledger.months[month] : [];
+    assert(ledger.months[month] === undefined || Array.isArray(ledger.months[month]),
+      'SOCIAL_NEURAL2_LEDGER_INVALID');
+    const current = ledger.months[month] ?? [];
     assert(current.every(entry => entry && Number.isSafeInteger(entry.characters) &&
       entry.characters >= 0 && typeof entry.requestHash === 'string'),
     'SOCIAL_NEURAL2_LEDGER_INVALID');
