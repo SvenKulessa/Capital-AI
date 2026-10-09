@@ -479,7 +479,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
             >
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                 <img
-                  src="/branding/badges/screener-blueprint.svg"
+                  src="/branding/badges/screener-bundle-blueprint.svg"
                   alt="Screener Blueprint Produktmotiv: verbundene Datenknoten und eine Summe"
                   className="h-20 w-20 rounded-2xl border border-cyan-300/30 bg-black/30 p-1"
                 />
