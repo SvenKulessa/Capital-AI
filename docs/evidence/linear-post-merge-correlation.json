@@ -1,12 +1,15 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "e656cde06a3a58761893987ae1b5e7a009072311",
-  "mergedPr": 328,
-  "targetPr": 334,
-  "targetBranch": "capital-ai-market/crypto-quote-units-20261009",
-  "targetHeadSha": "d5b819657fd97b616fdd7fccb049f0ccf82d2fcd",
+  "mainSha": "104719e758d57fb0de06b311fc6d86179e81f05d",
+  "mergedPr": 340,
+  "targetPr": 344,
+  "targetBranch": "capital-ai-product/learning-portal-access-20261009",
+  "targetHeadSha": "1bdf95315208c1a3e34daa956c84cb5a9af408b7",
   "exactOverlap": [
-    "docs/evidence/linear-post-merge-correlation.json"
+    ".dockerignore",
+    "Dockerfile",
+    "package.json",
+    "src/features/pricing/MonetizationModal.tsx"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,
