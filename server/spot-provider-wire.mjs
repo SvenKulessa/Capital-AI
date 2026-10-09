@@ -4,6 +4,7 @@
 import { instrumentCatalog } from '../shared/market-contracts.mjs';
 import { evaluateSpotIngestion, ingestAdmittedSpotQuote } from './market-spot-ingestion.mjs';
 import { infrastructure } from './infrastructure.mjs';
+import { createReconnectingSpotFeed } from './spot-feed-lifecycle.mjs';
 
 const MAX_FRAME_BYTES = 64 * 1024;
 const SPOT_WIRE_PROVIDERS = Object.freeze(['binance', 'kraken']);
@@ -281,6 +282,7 @@ export async function fetchPrivateUserSpotWsSnapshot({
 export function startAdmittedSpotWebSocket({
   provider,symbol,env=process.env,store=infrastructure,
   SocketClass=globalThis.WebSocket,
+  now=Date.now,
 }={}) {
   const admission=requireSpotPermission(provider,symbol,'websocket',env);
   if(!admission.allowed) return Object.freeze({status:'BLOCKED',reason:admission.reason});
@@ -289,12 +291,18 @@ export function startAdmittedSpotWebSocket({
   const request=spotWireRequest({provider,symbol,transport:'websocket'});
   const socket=new SocketClass(request.url);
   let stopped=false,processing=false,accepted=0,rejected=0,dropped=0;
+  let lastFrameAt=now();
+  let lastAcceptedAt=0;
   const close=()=>{
-    stopped=true;clearTimeout(timer);
+    if(stopped) return;
+    stopped=true;clearTimeout(timer);clearInterval(watchdog);
     if(socket.readyState===0||socket.readyState===1) socket.close(1000,'session_end');
   };
   const timer=setTimeout(close,30*60_000);
   timer.unref?.();
+  // Detect hung connect/idle sockets without fabricating a market timestamp.
+  const watchdog=setInterval(()=>{if(now()-lastFrameAt>=30_000) close();},5_000);
+  watchdog.unref?.();
   socket.addEventListener('open',()=>{
     if(stopped) return;
     try{socket.send(request.subscribe);}catch{close();}
@@ -302,23 +310,35 @@ export function startAdmittedSpotWebSocket({
   socket.addEventListener('message',event=>{
     if(stopped) return;
     // Bound memory and pressure on JetStream; drop rather than buffering unbounded frames.
-    if(processing){dropped++;return;}
+    if(processing || now()-lastAcceptedAt<1_000){dropped++;return;}
     processing=true;
     void (async()=>{
       try {
         const raw=event.data;
         if(typeof raw!=='string' || Buffer.byteLength(raw,'utf8')>MAX_FRAME_BYTES) throw new Error('SPOT_FRAME_SIZE_INVALID');
+        const frame=JSON.parse(raw);
+        if(provider==='binance' && object(frame) && frame.id===1 && frame.result===null) return;
+        if(provider==='kraken' && object(frame) &&
+            (frame.channel==='heartbeat' || (frame.method==='subscribe' && frame.success===true))) return;
+        const event=object(frame?.data)?frame.data:frame;
+        if(provider==='binance' && event?.e==='serverShutdown') {close();return;}
+        // Only a valid price frame advances the idle watchdog.
+        parseSpotWireFrame({provider,symbol,transport:'websocket',payload:raw});
         const result=await ingestSpotWireFrame({provider,symbol,transport:'websocket',payload:raw},{env,store});
-        if(result.status==='READY') accepted++; else rejected++;
+        if(result.status==='READY') {accepted++;lastFrameAt=now();lastAcceptedAt=lastFrameAt;} else {rejected++;close();}
       }catch{rejected++;}
       finally{processing=false;}
     })();
   });
-  socket.addEventListener('close',()=>{stopped=true;clearTimeout(timer);});
+  socket.addEventListener('close',()=>{stopped=true;clearTimeout(timer);clearInterval(watchdog);});
   socket.addEventListener('error',()=>{close();});
   return Object.freeze({
     status:'CONNECTING',provider,symbol,
     stop:close,
     metrics:()=>Object.freeze({accepted,rejected,dropped,stopped}),
   });
+}
+
+export function startAdmittedSpotFeed(options={}) {
+  return createReconnectingSpotFeed({openSession:()=>startAdmittedSpotWebSocket(options)});
 }

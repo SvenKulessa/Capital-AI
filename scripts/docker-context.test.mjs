@@ -92,6 +92,22 @@ test('runtime market module dependencies are present in the final image and buil
   );
 });
 
+test('Spot feed lifecycle and its regression test are shipped in the stages that execute them', () => {
+  const dockerfile = readFileSync(resolve(root, 'Dockerfile'), 'utf8');
+  const runtime = dockerfile.slice(dockerfile.lastIndexOf('\nFROM '));
+  const build = dockerfile.slice(dockerfile.indexOf(' AS build\n'), dockerfile.lastIndexOf('\nFROM '));
+  for (const stage of [build, runtime]) {
+    assert.ok(stage.split(/\r?\n/).some(line => line.startsWith('COPY ') &&
+      line.includes('server/spot-feed-lifecycle.mjs') && line.trim().endsWith('./server/')),
+    'Every application stage must ship the lifecycle dependency of spot-provider-wire');
+  }
+  assert.ok(build.split(/\r?\n/).some(line => line.startsWith('COPY ') &&
+    line.includes('server/spot-feed-lifecycle.test.mjs') && line.trim().endsWith('./server/')),
+  'npm test in the isolated build must have the lifecycle regression test');
+  assert.equal(reachable('server/spot-feed-lifecycle.mjs'), true);
+  assert.equal(reachable('server/spot-feed-lifecycle.test.mjs'), true);
+});
+
 
 test('runtime entrypoint local server imports are copied and reachable', () => {
   const entrypoint = readFileSync(resolve(root, 'server/index.mjs'), 'utf8');

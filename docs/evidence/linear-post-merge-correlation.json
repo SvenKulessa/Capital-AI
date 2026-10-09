@@ -1,12 +1,12 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "03325f00412290bb457823de347e7f3171904d12",
-  "mergedPr": 306,
-  "targetPr": 305,
-  "targetBranch": "capital-ai-growth/social-publishing-cutover-20261008",
-  "targetHeadSha": "43672f303b1ef7b85e5e2bbb192e84c00ef6c6b5",
+  "mainSha": "9d540fc54c2548b8ba64dc8973bb130d8da01484",
+  "mergedPr": 312,
+  "targetPr": 313,
+  "targetBranch": "capital-ai-market/binance-websocket-visualization-20261009",
+  "targetHeadSha": "ecab199ed05e0c1f7d25f2b88f94965a0c3fd777",
   "exactOverlap": [
-    ".dockerignore"
+    "package.json"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,
