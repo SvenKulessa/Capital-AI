@@ -30,4 +30,4 @@ Status: IN_PROGRESS. This is an implementation scope record, not a production-re
 
 ## Known blocker
 
-The referenced video is present in an earlier conversation, not yet available as a byte-addressable file in this GitHub connector workflow. **Do not fabricate or substitute a character image.** The existing 2D mark remains until the user-supplied asset can be processed and tested.
+Google Drive source verified: `grok_video_2026-10-09-02-23-31.mp4`, file ID `1xldW6ddKVawf7BcGw4Wv0iWqjvSCHxqz`, 13,968,033 bytes, 1280×720 H.264 24 FPS, 15.04 s. Connector download succeeded. A preliminary alpha PNG was generated locally (`jaja-avatar-transparent.png`, 233×512) using GrabCut. **Asset quality is not production-ready**: residual jungle/background fragments remain near the lower legs. The generated binary is not yet committed to this GitHub branch; current connector writes only text files. Do not replace the UI before an approved production-quality asset is tracked in the repository. Keep the original video private by default.
