@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Header } from '../../components/Header';
 import { Hero } from '../../components/Hero';
 import { ContentEngineConcept } from './ContentEngineConcept';
+import { CommerceEntrySection } from './CommerceEntrySection';
 import { KeyPillars } from '../../components/KeyPillars';
 import { Footer } from '../../components/Footer';
 import { MarketSentiment } from '../market/MarketSentiment';
@@ -90,6 +91,8 @@ export function HomePage({
         onStartAnalysis={onOpenAnalysis}
         onExploreProduct={onStartProductTour}
       />
+
+      <CommerceEntrySection onNavigate={onNavigate} />
 
       <Suspense fallback={null}>
         <HomeHubDirectory
