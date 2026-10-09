@@ -1,7 +1,7 @@
 import type { ContentCampaignBrief } from '../contracts/contentEngine.ts';
 
 export const CHART_LEARNING_DISCLOSURE = 'Synthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung';
-export const CHART_LEARNING_SOURCE_SHA = '75b0bae05a5c862e87274adf28a5e4d079c5a87a';
+export const CHART_LEARNING_SOURCE_SHA = '4fbcce0b801ccfd6db214f6f93fb838999ca8928';
 export const CHART_LEARNING_SOURCES = [
   { title: 'Fidelity: RSI', url: 'https://www.fidelity.com/learning-center/trading-investing/technical-analysis/technical-indicator-guide/RSI' },
   { title: 'Fidelity: MACD', url: 'https://www.fidelity.com/learning-center/trading-investing/technical-analysis/technical-indicator-guide/macd' },
@@ -20,7 +20,7 @@ export type ChartLesson = {
 
 // Authored schematic geometry. Indicator lines illustrate concepts, they are NOT
 // computed from a hidden price feed or presented as calibrated model output.
-export const CHART_LESSONS: readonly ChartLesson[] = [
+const BASE_CHART_LESSONS: readonly ChartLesson[] = [
   { id: 'bull-flag', title: 'Bull Flag', category: 'Flags', hook: 'Impuls, Pause, Ausbruch: drei Teile einer Flagge.',
     recognition: 'Nach einem steilen Anstieg folgt ein kurzer, leicht abwärts gerichteter Parallelkanal.',
     confirmation: 'Ein Schlusskurs oberhalb des Kanals kann die Fortsetzungsthese stützen; Volumen und Zeitebene mitprüfen.',
@@ -105,6 +105,1548 @@ export const CHART_LESSONS: readonly ChartLesson[] = [
     guides:[{label:'Vergleichsniveau',from:[0,30],to:[12,30]}],
     checkpoint:'Beweist hohes Volumen die Ausbruchsrichtung?',answer:'Nein. Volumen beschreibt Aktivität; die Preisstruktur muss separat geprüft werden.' },
 ];
+
+// Additional original educational lessons: 30 patterns/flags and 10 indicators.
+const EXTENDED_CHART_LESSONS: readonly ChartLesson[] = [
+  {
+    "id": "inverse-head-shoulders",
+    "title": "Inverse Schulter–Kopf–Schulter",
+    "category": "Patterns",
+    "hook": "Drei Tiefs; das mittlere ist tiefer als die beiden Schultern.",
+    "recognition": "Drei Tiefs; das mittlere ist tiefer als die beiden Schultern. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          80,
+          55,
+          35,
+          55,
+          42,
+          12,
+          40,
+          55,
+          35,
+          48,
+          55,
+          70,
+          82
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Drei Tiefs; das mittlere ist tiefer als die beiden Schultern. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "triple-top",
+    "title": "Dreifachtop",
+    "category": "Patterns",
+    "hook": "Drei ähnlich hohe Gipfel werden durch zwei Rückgänge getrennt.",
+    "recognition": "Drei ähnlich hohe Gipfel werden durch zwei Rückgänge getrennt. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          30,
+          60,
+          80,
+          50,
+          35,
+          60,
+          80,
+          50,
+          35,
+          60,
+          80,
+          35,
+          20
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Drei ähnlich hohe Gipfel werden durch zwei Rückgänge getrennt. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "triple-bottom",
+    "title": "Dreifachboden",
+    "category": "Patterns",
+    "hook": "Drei ähnliche Tiefpunkte wechseln sich mit zwei Erholungen ab.",
+    "recognition": "Drei ähnliche Tiefpunkte wechseln sich mit zwei Erholungen ab. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          70,
+          40,
+          20,
+          50,
+          65,
+          40,
+          20,
+          50,
+          65,
+          40,
+          20,
+          65,
+          80
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Drei ähnliche Tiefpunkte wechseln sich mit zwei Erholungen ab. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "descending-triangle",
+    "title": "Absteigendes Dreieck",
+    "category": "Patterns",
+    "hook": "Ähnliche Tiefs treffen auf schrittweise niedrigere Hochs.",
+    "recognition": "Ähnliche Tiefs treffen auf schrittweise niedrigere Hochs. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          80,
+          30,
+          70,
+          30,
+          60,
+          30,
+          50,
+          30,
+          40,
+          30,
+          35,
+          20,
+          10
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Ähnliche Tiefs treffen auf schrittweise niedrigere Hochs. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "symmetric-triangle",
+    "title": "Symmetrisches Dreieck",
+    "category": "Patterns",
+    "hook": "Fallende Hochs und steigende Tiefs nähern sich einander an.",
+    "recognition": "Fallende Hochs und steigende Tiefs nähern sich einander an. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          80,
+          20,
+          72,
+          28,
+          66,
+          34,
+          60,
+          40,
+          55,
+          45,
+          52,
+          65,
+          75
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Fallende Hochs und steigende Tiefs nähern sich einander an. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "rising-wedge",
+    "title": "Steigender Keil",
+    "category": "Patterns",
+    "hook": "Beide Grenzen steigen; die untere Grenze steigt schneller und verengt die Spanne.",
+    "recognition": "Beide Grenzen steigen; die untere Grenze steigt schneller und verengt die Spanne. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          20,
+          50,
+          30,
+          56,
+          40,
+          62,
+          50,
+          68,
+          60,
+          74,
+          68,
+          52,
+          38
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Beide Grenzen steigen; die untere Grenze steigt schneller und verengt die Spanne. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "falling-wedge",
+    "title": "Fallender Keil",
+    "category": "Patterns",
+    "hook": "Beide Grenzen fallen; die obere Grenze fällt schneller und verengt die Spanne.",
+    "recognition": "Beide Grenzen fallen; die obere Grenze fällt schneller und verengt die Spanne. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          80,
+          50,
+          70,
+          44,
+          60,
+          38,
+          50,
+          32,
+          40,
+          26,
+          32,
+          48,
+          62
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Beide Grenzen fallen; die obere Grenze fällt schneller und verengt die Spanne. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "bull-pennant",
+    "title": "Bullischer Wimpel",
+    "category": "Patterns",
+    "hook": "Ein Aufwärtsimpuls geht in eine kurze konvergierende Konsolidierung über.",
+    "recognition": "Ein Aufwärtsimpuls geht in eine kurze konvergierende Konsolidierung über. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          10,
+          25,
+          50,
+          85,
+          45,
+          78,
+          52,
+          70,
+          58,
+          65,
+          62,
+          82,
+          92
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Ein Aufwärtsimpuls geht in eine kurze konvergierende Konsolidierung über. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "bear-pennant",
+    "title": "Bärischer Wimpel",
+    "category": "Patterns",
+    "hook": "Ein Abwärtsimpuls geht in eine kurze konvergierende Konsolidierung über.",
+    "recognition": "Ein Abwärtsimpuls geht in eine kurze konvergierende Konsolidierung über. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          90,
+          75,
+          50,
+          15,
+          55,
+          22,
+          48,
+          30,
+          42,
+          35,
+          38,
+          18,
+          8
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Ein Abwärtsimpuls geht in eine kurze konvergierende Konsolidierung über. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "bull-rectangle",
+    "title": "Bullisches Rechteck",
+    "category": "Patterns",
+    "hook": "Nach einem Anstieg pendelt der Kurs zwischen annähernd horizontalen Grenzen.",
+    "recognition": "Nach einem Anstieg pendelt der Kurs zwischen annähernd horizontalen Grenzen. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          10,
+          25,
+          50,
+          75,
+          50,
+          75,
+          50,
+          75,
+          50,
+          75,
+          50,
+          82,
+          92
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Nach einem Anstieg pendelt der Kurs zwischen annähernd horizontalen Grenzen. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "bear-rectangle",
+    "title": "Bärisches Rechteck",
+    "category": "Patterns",
+    "hook": "Nach einem Rückgang folgt eine seitwärts verlaufende Handelsspanne.",
+    "recognition": "Nach einem Rückgang folgt eine seitwärts verlaufende Handelsspanne. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          90,
+          75,
+          50,
+          25,
+          50,
+          25,
+          50,
+          25,
+          50,
+          25,
+          50,
+          18,
+          8
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Nach einem Rückgang folgt eine seitwärts verlaufende Handelsspanne. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "ascending-channel",
+    "title": "Aufwärtskanal",
+    "category": "Patterns",
+    "hook": "Höhere Hochs und höhere Tiefs verlaufen in ungefähr parallelen Grenzen.",
+    "recognition": "Höhere Hochs und höhere Tiefs verlaufen in ungefähr parallelen Grenzen. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          15,
+          35,
+          25,
+          45,
+          35,
+          55,
+          45,
+          65,
+          55,
+          75,
+          65,
+          85,
+          75
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Höhere Hochs und höhere Tiefs verlaufen in ungefähr parallelen Grenzen. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "descending-channel",
+    "title": "Abwärtskanal",
+    "category": "Patterns",
+    "hook": "Tiefere Hochs und tiefere Tiefs verlaufen in ungefähr parallelen Grenzen.",
+    "recognition": "Tiefere Hochs und tiefere Tiefs verlaufen in ungefähr parallelen Grenzen. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          85,
+          65,
+          75,
+          55,
+          65,
+          45,
+          55,
+          35,
+          45,
+          25,
+          35,
+          15,
+          25
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Tiefere Hochs und tiefere Tiefs verlaufen in ungefähr parallelen Grenzen. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "horizontal-channel",
+    "title": "Seitwärtskanal",
+    "category": "Patterns",
+    "hook": "Wiederholte Richtungswechsel bleiben innerhalb einer waagerechten Spanne.",
+    "recognition": "Wiederholte Richtungswechsel bleiben innerhalb einer waagerechten Spanne. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          30,
+          65,
+          35,
+          70,
+          30,
+          65,
+          35,
+          70,
+          30,
+          65,
+          35,
+          70,
+          30
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Wiederholte Richtungswechsel bleiben innerhalb einer waagerechten Spanne. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "broadening-top",
+    "title": "Sich ausweitende Formation",
+    "category": "Patterns",
+    "hook": "Höhere Hochs und tiefere Tiefs vergrößern die Schwankungsbreite.",
+    "recognition": "Höhere Hochs und tiefere Tiefs vergrößern die Schwankungsbreite. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          50,
+          55,
+          45,
+          60,
+          40,
+          65,
+          35,
+          70,
+          30,
+          75,
+          25,
+          80,
+          20
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Höhere Hochs und tiefere Tiefs vergrößern die Schwankungsbreite. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "diamond-top",
+    "title": "Diamant am Hoch",
+    "category": "Patterns",
+    "hook": "Nach einem Anstieg weitet sich die Spanne zunächst aus und zieht sich anschließend zusammen.",
+    "recognition": "Nach einem Anstieg weitet sich die Spanne zunächst aus und zieht sich anschließend zusammen. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          15,
+          35,
+          60,
+          70,
+          45,
+          85,
+          30,
+          80,
+          40,
+          70,
+          50,
+          38,
+          20
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Nach einem Anstieg weitet sich die Spanne zunächst aus und zieht sich anschließend zusammen. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "diamond-bottom",
+    "title": "Diamant am Tief",
+    "category": "Patterns",
+    "hook": "Nach einem Rückgang weitet sich die Spanne zunächst aus und wird danach enger.",
+    "recognition": "Nach einem Rückgang weitet sich die Spanne zunächst aus und wird danach enger. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          85,
+          65,
+          40,
+          30,
+          55,
+          15,
+          70,
+          20,
+          60,
+          30,
+          50,
+          62,
+          80
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Nach einem Rückgang weitet sich die Spanne zunächst aus und wird danach enger. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "rounding-bottom",
+    "title": "Runder Boden",
+    "category": "Patterns",
+    "hook": "Ein länger werdender Rückgang verliert Steigung und geht in eine gerundete Erholung über.",
+    "recognition": "Ein länger werdender Rückgang verliert Steigung und geht in eine gerundete Erholung über. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          85,
+          65,
+          48,
+          35,
+          26,
+          21,
+          20,
+          21,
+          26,
+          35,
+          48,
+          65,
+          85
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Ein länger werdender Rückgang verliert Steigung und geht in eine gerundete Erholung über. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "rounding-top",
+    "title": "Rundes Top",
+    "category": "Patterns",
+    "hook": "Ein Anstieg verliert Steigung und geht in einen gerundeten Rückgang über.",
+    "recognition": "Ein Anstieg verliert Steigung und geht in einen gerundeten Rückgang über. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          15,
+          35,
+          52,
+          65,
+          74,
+          79,
+          80,
+          79,
+          74,
+          65,
+          52,
+          35,
+          15
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Ein Anstieg verliert Steigung und geht in einen gerundeten Rückgang über. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "cup-handle",
+    "title": "Tasse mit Henkel",
+    "category": "Patterns",
+    "hook": "Auf eine gerundete Erholung zum alten Hoch folgt eine kleinere Konsolidierung.",
+    "recognition": "Auf eine gerundete Erholung zum alten Hoch folgt eine kleinere Konsolidierung. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          75,
+          50,
+          30,
+          20,
+          30,
+          50,
+          75,
+          65,
+          58,
+          62,
+          70,
+          82,
+          92
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Auf eine gerundete Erholung zum alten Hoch folgt eine kleinere Konsolidierung. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "inverse-cup-handle",
+    "title": "Inverse Tasse mit Henkel",
+    "category": "Patterns",
+    "hook": "Auf einen gerundeten Rückgang zum alten Tief folgt eine kleinere Erholung.",
+    "recognition": "Auf einen gerundeten Rückgang zum alten Tief folgt eine kleinere Erholung. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          25,
+          50,
+          70,
+          80,
+          70,
+          50,
+          25,
+          35,
+          42,
+          38,
+          30,
+          18,
+          8
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Auf einen gerundeten Rückgang zum alten Tief folgt eine kleinere Erholung. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "v-bottom",
+    "title": "V-Boden",
+    "category": "Patterns",
+    "hook": "Ein steiler Abverkauf wird unmittelbar von einer schnellen Erholung gefolgt.",
+    "recognition": "Ein steiler Abverkauf wird unmittelbar von einer schnellen Erholung gefolgt. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          90,
+          77,
+          64,
+          51,
+          38,
+          25,
+          12,
+          25,
+          38,
+          51,
+          64,
+          77,
+          90
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Ein steiler Abverkauf wird unmittelbar von einer schnellen Erholung gefolgt. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "v-top",
+    "title": "V-Top",
+    "category": "Patterns",
+    "hook": "Ein steiler Anstieg geht unmittelbar in einen schnellen Rückgang über.",
+    "recognition": "Ein steiler Anstieg geht unmittelbar in einen schnellen Rückgang über. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          10,
+          23,
+          36,
+          49,
+          62,
+          75,
+          88,
+          75,
+          62,
+          49,
+          36,
+          23,
+          10
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Ein steiler Anstieg geht unmittelbar in einen schnellen Rückgang über. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "failed-breakout",
+    "title": "Fehlausbruch nach oben",
+    "category": "Patterns",
+    "hook": "Der Kurs überschreitet eine Spanne kurz und fällt dann unter die Ausbruchszone zurück.",
+    "recognition": "Der Kurs überschreitet eine Spanne kurz und fällt dann unter die Ausbruchszone zurück. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          35,
+          60,
+          35,
+          60,
+          35,
+          60,
+          35,
+          60,
+          80,
+          65,
+          50,
+          35,
+          20
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Der Kurs überschreitet eine Spanne kurz und fällt dann unter die Ausbruchszone zurück. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "failed-breakdown",
+    "title": "Fehlausbruch nach unten",
+    "category": "Patterns",
+    "hook": "Der Kurs unterschreitet eine Spanne kurz und kehrt dann oberhalb der Ausbruchszone zurück.",
+    "recognition": "Der Kurs unterschreitet eine Spanne kurz und kehrt dann oberhalb der Ausbruchszone zurück. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          65,
+          40,
+          65,
+          40,
+          65,
+          40,
+          65,
+          40,
+          20,
+          35,
+          50,
+          65,
+          80
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Der Kurs unterschreitet eine Spanne kurz und kehrt dann oberhalb der Ausbruchszone zurück. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "breakout-retest",
+    "title": "Ausbruch mit Retest",
+    "category": "Patterns",
+    "hook": "Ein Ausbruch wird durch eine Rückkehr zur bisherigen Begrenzung und erneute Bewegung ergänzt.",
+    "recognition": "Ein Ausbruch wird durch eine Rückkehr zur bisherigen Begrenzung und erneute Bewegung ergänzt. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          30,
+          60,
+          35,
+          60,
+          40,
+          60,
+          75,
+          85,
+          70,
+          60,
+          68,
+          80,
+          92
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Ein Ausbruch wird durch eine Rückkehr zur bisherigen Begrenzung und erneute Bewegung ergänzt. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "high-tight-flag",
+    "title": "High-Tight-Flag",
+    "category": "Flags",
+    "hook": "Auf einen außergewöhnlich steilen Anstieg folgt eine enge, kurze Konsolidierung nahe dem Hoch.",
+    "recognition": "Auf einen außergewöhnlich steilen Anstieg folgt eine enge, kurze Konsolidierung nahe dem Hoch. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          5,
+          10,
+          20,
+          40,
+          65,
+          88,
+          82,
+          86,
+          80,
+          85,
+          81,
+          90,
+          97
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Auf einen außergewöhnlich steilen Anstieg folgt eine enge, kurze Konsolidierung nahe dem Hoch. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "flat-bull-flag",
+    "title": "Flache bullische Flagge",
+    "category": "Flags",
+    "hook": "Nach einem Aufwärtsimpuls verläuft die kurze Pause nahezu waagerecht.",
+    "recognition": "Nach einem Aufwärtsimpuls verläuft die kurze Pause nahezu waagerecht. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          10,
+          20,
+          40,
+          70,
+          65,
+          70,
+          65,
+          70,
+          65,
+          70,
+          65,
+          82,
+          92
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Nach einem Aufwärtsimpuls verläuft die kurze Pause nahezu waagerecht. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "flat-bear-flag",
+    "title": "Flache bärische Flagge",
+    "category": "Flags",
+    "hook": "Nach einem Abwärtsimpuls verläuft die kurze Pause nahezu waagerecht.",
+    "recognition": "Nach einem Abwärtsimpuls verläuft die kurze Pause nahezu waagerecht. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          90,
+          80,
+          60,
+          30,
+          35,
+          30,
+          35,
+          30,
+          35,
+          30,
+          35,
+          18,
+          8
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Nach einem Abwärtsimpuls verläuft die kurze Pause nahezu waagerecht. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "bull-flag-retest",
+    "title": "Bull Flag mit Retest",
+    "category": "Flags",
+    "hook": "Die Flagge löst sich nach oben auf; anschließend wird die Ausbruchszone erneut getestet.",
+    "recognition": "Die Flagge löst sich nach oben auf; anschließend wird die Ausbruchszone erneut getestet. Das Schema vereinfacht Verlauf und Zeitebene.",
+    "confirmation": "Schlusskurse außerhalb der erkennbaren Begrenzung und einen möglichen Retest im übergeordneten Kontext beobachten.",
+    "invalidation": "Rückkehr in die Formation oder Bruch der Gegenbegrenzung schwächt die These; Geometrie allein garantiert keine Richtung.",
+    "axis": "Relative Preisposition · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Preis",
+        "values": [
+          10,
+          25,
+          50,
+          80,
+          70,
+          60,
+          65,
+          55,
+          75,
+          85,
+          68,
+          80,
+          92
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Welche Struktur unterscheidet dieses Muster von einer zufälligen Bewegung?",
+    "answer": "Die Flagge löst sich nach oben auf; anschließend wird die Ausbruchszone erneut getestet. Bestätigung und Widerlegung sind zusätzlich zu prüfen."
+  },
+  {
+    "id": "atr",
+    "title": "ATR · Schwankungsbreite",
+    "category": "Indikatoren",
+    "hook": "Berechnung und Interpretation getrennt betrachten.",
+    "recognition": "Average True Range glättet True Ranges und misst Schwankungsbreite, keine Richtung. True Range berücksichtigt auch die Distanz zum vorigen Schlusskurs.",
+    "confirmation": "Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.",
+    "invalidation": "Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.",
+    "axis": "ATR · Schwankungsbreite · schematisch",
+    "domain": [
+      0,
+      15
+    ],
+    "series": [
+      {
+        "label": "ATR · Schwankungsbreite",
+        "values": [
+          4,
+          5,
+          7,
+          9,
+          8,
+          10,
+          12,
+          9,
+          7,
+          6,
+          5,
+          4,
+          6
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Ist die gezeigte Indikatorlinie aus realen Kursdaten berechnet?",
+    "answer": "Nein. Diese selbst erstellte Geometrie erläutert das Konzept. Berechnete Werte brauchen einen nachvollziehbaren Daten- und Parametervertrag."
+  },
+  {
+    "id": "adx",
+    "title": "ADX · Trendstärke",
+    "category": "Indikatoren",
+    "hook": "Berechnung und Interpretation getrennt betrachten.",
+    "recognition": "Average Directional Index glättet die relative Differenz der Richtungsindikatoren. Ein höherer Wert beschreibt Trendstärke, nicht die Richtung des Trends.",
+    "confirmation": "Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.",
+    "invalidation": "Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.",
+    "axis": "ADX · Trendstärke · schematisch",
+    "domain": [
+      0,
+      60
+    ],
+    "series": [
+      {
+        "label": "ADX · Trendstärke",
+        "values": [
+          12,
+          16,
+          22,
+          28,
+          35,
+          40,
+          43,
+          39,
+          33,
+          27,
+          21,
+          17,
+          15
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Ist die gezeigte Indikatorlinie aus realen Kursdaten berechnet?",
+    "answer": "Nein. Diese selbst erstellte Geometrie erläutert das Konzept. Berechnete Werte brauchen einen nachvollziehbaren Daten- und Parametervertrag."
+  },
+  {
+    "id": "stochastic",
+    "title": "Stochastik · Lage in der Handelsspanne",
+    "category": "Indikatoren",
+    "hook": "Berechnung und Interpretation getrennt betrachten.",
+    "recognition": "Die Stochastik vergleicht den Schlusskurs mit Hoch und Tief des betrachteten Fensters. Marken bei 80 und 20 kennzeichnen relative Extrembereiche.",
+    "confirmation": "Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.",
+    "invalidation": "Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.",
+    "axis": "Stochastik · Lage in der Handelsspanne · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Stochastik · Lage in der Handelsspanne",
+        "values": [
+          30,
+          44,
+          61,
+          79,
+          90,
+          84,
+          69,
+          48,
+          28,
+          14,
+          23,
+          38,
+          55
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Ist die gezeigte Indikatorlinie aus realen Kursdaten berechnet?",
+    "answer": "Nein. Diese selbst erstellte Geometrie erläutert das Konzept. Berechnete Werte brauchen einen nachvollziehbaren Daten- und Parametervertrag."
+  },
+  {
+    "id": "williams-r",
+    "title": "Williams %R",
+    "category": "Indikatoren",
+    "hook": "Berechnung und Interpretation getrennt betrachten.",
+    "recognition": "Williams %R setzt den Abstand zum Periodenhoch ins Verhältnis zur Hoch-Tief-Spanne. Die Skala reicht von minus 100 bis null.",
+    "confirmation": "Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.",
+    "invalidation": "Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.",
+    "axis": "Williams %R · schematisch",
+    "domain": [
+      -100,
+      0
+    ],
+    "series": [
+      {
+        "label": "Williams %R",
+        "values": [
+          -70,
+          -56,
+          -39,
+          -21,
+          -10,
+          -16,
+          -31,
+          -52,
+          -72,
+          -86,
+          -77,
+          -62,
+          -45
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Ist die gezeigte Indikatorlinie aus realen Kursdaten berechnet?",
+    "answer": "Nein. Diese selbst erstellte Geometrie erläutert das Konzept. Berechnete Werte brauchen einen nachvollziehbaren Daten- und Parametervertrag."
+  },
+  {
+    "id": "cci",
+    "title": "CCI · Abweichung vom Durchschnitt",
+    "category": "Indikatoren",
+    "hook": "Berechnung und Interpretation getrennt betrachten.",
+    "recognition": "Commodity Channel Index normiert die Abweichung des typischen Preises vom gleitenden Mittel mit dessen mittlerer absoluter Abweichung.",
+    "confirmation": "Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.",
+    "invalidation": "Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.",
+    "axis": "CCI · Abweichung vom Durchschnitt · schematisch",
+    "domain": [
+      -200,
+      200
+    ],
+    "series": [
+      {
+        "label": "CCI · Abweichung vom Durchschnitt",
+        "values": [
+          -120,
+          -80,
+          -30,
+          40,
+          100,
+          150,
+          110,
+          60,
+          0,
+          -60,
+          -130,
+          -70,
+          20
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Ist die gezeigte Indikatorlinie aus realen Kursdaten berechnet?",
+    "answer": "Nein. Diese selbst erstellte Geometrie erläutert das Konzept. Berechnete Werte brauchen einen nachvollziehbaren Daten- und Parametervertrag."
+  },
+  {
+    "id": "roc",
+    "title": "Rate of Change",
+    "category": "Indikatoren",
+    "hook": "Berechnung und Interpretation getrennt betrachten.",
+    "recognition": "Rate of Change beschreibt die prozentuale Preisänderung gegenüber einer festgelegten Anzahl vergangener Perioden. Die Fensterlänge beeinflusst die Interpretation.",
+    "confirmation": "Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.",
+    "invalidation": "Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.",
+    "axis": "Rate of Change · schematisch",
+    "domain": [
+      -10,
+      10
+    ],
+    "series": [
+      {
+        "label": "Rate of Change",
+        "values": [
+          -4,
+          -2,
+          0,
+          2,
+          4,
+          6,
+          4,
+          2,
+          0,
+          -3,
+          -5,
+          -2,
+          1
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Ist die gezeigte Indikatorlinie aus realen Kursdaten berechnet?",
+    "answer": "Nein. Diese selbst erstellte Geometrie erläutert das Konzept. Berechnete Werte brauchen einen nachvollziehbaren Daten- und Parametervertrag."
+  },
+  {
+    "id": "obv",
+    "title": "On-Balance Volume",
+    "category": "Indikatoren",
+    "hook": "Berechnung und Interpretation getrennt betrachten.",
+    "recognition": "On-Balance Volume addiert Volumen bei steigenden Schlusskursen und subtrahiert es bei fallenden Schlusskursen. Divergenzen sind Beobachtungen, keine Beweise.",
+    "confirmation": "Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.",
+    "invalidation": "Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.",
+    "axis": "On-Balance Volume · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "On-Balance Volume",
+        "values": [
+          20,
+          28,
+          36,
+          30,
+          40,
+          52,
+          60,
+          48,
+          55,
+          68,
+          75,
+          65,
+          80
+        ]
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Ist die gezeigte Indikatorlinie aus realen Kursdaten berechnet?",
+    "answer": "Nein. Diese selbst erstellte Geometrie erläutert das Konzept. Berechnete Werte brauchen einen nachvollziehbaren Daten- und Parametervertrag."
+  },
+  {
+    "id": "bollinger",
+    "title": "Bollinger-Bänder",
+    "category": "Indikatoren",
+    "hook": "Berechnung und Interpretation getrennt betrachten.",
+    "recognition": "Bollinger-Bänder liegen in einem festgelegten Standardabweichungsabstand um einen gleitenden Durchschnitt. Engere Bänder zeigen geringere beobachtete Streuung.",
+    "confirmation": "Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.",
+    "invalidation": "Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.",
+    "axis": "Bollinger-Bänder · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Oberes Band",
+        "values": [
+          70,
+          72,
+          76,
+          80,
+          82,
+          75,
+          68,
+          64,
+          66,
+          72,
+          82,
+          88,
+          85
+        ]
+      },
+      {
+        "label": "Unteres Band",
+        "values": [
+          30,
+          32,
+          36,
+          40,
+          42,
+          35,
+          28,
+          24,
+          26,
+          32,
+          42,
+          48,
+          45
+        ],
+        "dashed": true
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Ist die gezeigte Indikatorlinie aus realen Kursdaten berechnet?",
+    "answer": "Nein. Diese selbst erstellte Geometrie erläutert das Konzept. Berechnete Werte brauchen einen nachvollziehbaren Daten- und Parametervertrag."
+  },
+  {
+    "id": "keltner",
+    "title": "Keltner-Kanal",
+    "category": "Indikatoren",
+    "hook": "Berechnung und Interpretation getrennt betrachten.",
+    "recognition": "Ein Keltner-Kanal verwendet typischerweise einen EMA als Mitte und einen ATR-basierten Abstand. Perioden und Multiplikator müssen angegeben werden.",
+    "confirmation": "Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.",
+    "invalidation": "Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.",
+    "axis": "Keltner-Kanal · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Oberes Band",
+        "values": [
+          65,
+          66,
+          68,
+          72,
+          78,
+          82,
+          84,
+          81,
+          76,
+          73,
+          75,
+          78,
+          82
+        ]
+      },
+      {
+        "label": "Unteres Band",
+        "values": [
+          25,
+          26,
+          28,
+          32,
+          38,
+          42,
+          44,
+          41,
+          36,
+          33,
+          35,
+          38,
+          42
+        ],
+        "dashed": true
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Ist die gezeigte Indikatorlinie aus realen Kursdaten berechnet?",
+    "answer": "Nein. Diese selbst erstellte Geometrie erläutert das Konzept. Berechnete Werte brauchen einen nachvollziehbaren Daten- und Parametervertrag."
+  },
+  {
+    "id": "donchian",
+    "title": "Donchian-Kanal",
+    "category": "Indikatoren",
+    "hook": "Berechnung und Interpretation getrennt betrachten.",
+    "recognition": "Ein Donchian-Kanal zeigt das höchste Hoch und das tiefste Tief eines Fensters. Ob die aktuelle Periode ausgeschlossen wird, bestimmt die Ausbruchsinterpretation.",
+    "confirmation": "Die Indikatorbeobachtung mit Preisstruktur, Fensterlänge, Markt und Datenabdeckung vergleichen.",
+    "invalidation": "Fehlsignale, Datenlücken und veränderte Marktphasen können die Interpretation schwächen; aus dieser Illustration folgt keine Prognose.",
+    "axis": "Donchian-Kanal · schematisch",
+    "domain": [
+      0,
+      100
+    ],
+    "series": [
+      {
+        "label": "Oberes Band",
+        "values": [
+          60,
+          60,
+          65,
+          65,
+          75,
+          75,
+          75,
+          80,
+          80,
+          80,
+          85,
+          85,
+          85
+        ]
+      },
+      {
+        "label": "Unteres Band",
+        "values": [
+          20,
+          20,
+          25,
+          25,
+          35,
+          35,
+          35,
+          40,
+          40,
+          40,
+          45,
+          45,
+          45
+        ],
+        "dashed": true
+      }
+    ],
+    "guides": [],
+    "checkpoint": "Ist die gezeigte Indikatorlinie aus realen Kursdaten berechnet?",
+    "answer": "Nein. Diese selbst erstellte Geometrie erläutert das Konzept. Berechnete Werte brauchen einen nachvollziehbaren Daten- und Parametervertrag."
+  }
+];
+export const CHART_LESSONS: readonly ChartLesson[] = [...BASE_CHART_LESSONS, ...EXTENDED_CHART_LESSONS];
 
 export const CHART_LEARNING_CAMPAIGN: ContentCampaignBrief = {
   campaignId:'chart-learning-20261009',productId:'capital-ai-learning',sourceSha:CHART_LEARNING_SOURCE_SHA,

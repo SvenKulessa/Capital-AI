@@ -1,0 +1,74 @@
+{
+  "schemaVersion": "2.0.0",
+  "projectId": "chart-descending-triangle",
+  "slug": "descending-triangle",
+  "title": "Absteigendes Dreieck",
+  "contentPackageId": "chart-learning-20261009",
+  "timebase": {
+    "numerator": 30,
+    "denominator": 1
+  },
+  "canvas": {
+    "width": 1200,
+    "height": 675,
+    "aspectRatio": "16:9"
+  },
+  "durationFrames": 360,
+  "tracks": [
+    {
+      "id": "graphic",
+      "kind": "graphics",
+      "enabled": true,
+      "layers": [
+        {
+          "id": "chart",
+          "kind": "image",
+          "enabled": true,
+          "range": {
+            "startFrame": 0,
+            "durationFrames": 360
+          },
+          "assetRefId": "chart-svg",
+          "fit": "contain"
+        }
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "id": "chart-svg",
+      "kind": "image",
+      "sourceType": "local-file",
+      "reference": "public/learning/charts/descending-triangle.svg",
+      "sha256": "4859304d320c61e87a84e3679bb67b76c24bbbf764f8de1a51f7188e48112ee7",
+      "mimeType": "image/svg+xml",
+      "width": 1200,
+      "height": 675
+    }
+  ],
+  "transitions": [],
+  "renderRecipe": {
+    "templateId": "chart-learning-svg",
+    "templateVersion": "1.0.0",
+    "rendererProfile": "chart-learning-svg-v1",
+    "brandTokenSource": "public/branding/asset-pack/meta/social-render-tokens.json",
+    "brandTextMode": "deterministic",
+    "networkPolicy": "offline",
+    "publishReady": false
+  },
+  "source": {
+    "type": "content-package",
+    "reference": "src/data/chartLearning.ts"
+  },
+  "disclosure": {
+    "defaultDisclaimer": "Synthetisches Lernbeispiel · keine Live-Kurse · keine Anlageberatung",
+    "requireAtProjectEdges": true
+  },
+  "metadata": {
+    "draftOnly": true,
+    "synthetic": true,
+    "sourceSha": "4fbcce0b801ccfd6db214f6f93fb838999ca8928",
+    "outputStatus": "SVG_RENDERED_MEDIA_PROJECT_DRAFT",
+    "videoRendered": false
+  }
+}

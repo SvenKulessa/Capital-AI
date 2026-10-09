@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "2.0.0",
+  "projectId": "learning-video-fintech-deepdive",
+  "slug": "learning-video-fintech-deepdive",
+  "title": "Fintech Deepdive · Coming soon",
+  "contentPackageId": "learning-videos-coming-soon-20261009",
+  "timebase": {
+    "numerator": 30,
+    "denominator": 1
+  },
+  "canvas": {
+    "width": 640,
+    "height": 360,
+    "aspectRatio": "16:9"
+  },
+  "durationFrames": 90,
+  "tracks": [
+    {
+      "id": "graphic",
+      "kind": "graphics",
+      "enabled": true,
+      "layers": [
+        {
+          "id": "coming-soon",
+          "kind": "image",
+          "enabled": true,
+          "range": {
+            "startFrame": 0,
+            "durationFrames": 90
+          },
+          "assetRefId": "art",
+          "fit": "contain"
+        }
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "id": "art",
+      "kind": "image",
+      "sourceType": "local-file",
+      "reference": "public/learning/videos/fintech-deepdive.svg",
+      "sha256": "a8239cc7597798110f9f59ef4017aec182da402555975b1679ba500020c01c2d",
+      "mimeType": "image/svg+xml",
+      "width": 640,
+      "height": 360
+    }
+  ],
+  "transitions": [],
+  "renderRecipe": {
+    "templateId": "learning-coming-soon",
+    "templateVersion": "1.0.0",
+    "rendererProfile": "original-svg",
+    "brandTokenSource": "public/branding/asset-pack/meta/social-render-tokens.json",
+    "brandTextMode": "deterministic",
+    "networkPolicy": "offline",
+    "publishReady": false
+  },
+  "source": {
+    "type": "content-package",
+    "reference": "src/features/learning/LearningComingSoonGraphic.tsx"
+  },
+  "disclosure": {
+    "defaultDisclaimer": "Coming soon · noch kein Lernvideo veröffentlicht",
+    "requireAtProjectEdges": true
+  },
+  "metadata": {
+    "draftOnly": true,
+    "videoRendered": false,
+    "rights": "SELF_AUTHORED_ORIGINAL",
+    "sourceSha": "4fbcce0b801ccfd6db214f6f93fb838999ca8928"
+  }
+}

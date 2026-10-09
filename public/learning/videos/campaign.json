@@ -1,0 +1,23 @@
+{
+  "campaignId": "learning-videos-coming-soon-20261009",
+  "productId": "capital-ai-learning",
+  "sourceSha": "4fbcce0b801ccfd6db214f6f93fb838999ca8928",
+  "canonicalUrl": "https://capital-ai.online/learning?tab=videos",
+  "locale": "de-DE",
+  "objective": "Eigene Coming-soon-Grafiken mit Rakete und Sternschnuppe für drei öffentliche Lernvideo-Kategorien.",
+  "audience": [
+    "Finanzlernende",
+    "Fintech-Entwickler"
+  ],
+  "channels": [
+    "WEBSITE",
+    "YOUTUBE"
+  ],
+  "outputs": [
+    "TEXT",
+    "IMAGE"
+  ],
+  "sourceUrls": [
+    "https://capital-ai.online/learning?tab=videos"
+  ]
+}

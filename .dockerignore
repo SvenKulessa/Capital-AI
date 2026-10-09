@@ -54,6 +54,8 @@
 !server/public-artifact-policy.mjs
 !server/subscription-checkout.test.mjs
 !server/subscription-checkout.mjs
+!server/enterprise-trial.mjs
+!server/enterprise-trial.test.mjs
 !server/cads-marketplace.mjs
 !server/cads-marketplace.test.mjs
 !server/cads-commerce.mjs
@@ -134,6 +136,9 @@
 !public/learning/
 !public/learning/charts/
 !public/learning/charts/**
+!public/learning/videos/
+!public/learning/videos/**
+!scripts/generate-learning-coming-soon.tsx
 !scripts/domain-skills.test.mjs
 !scripts/static-legal-routes.test.mjs
 !scripts/harden-npm-toolchain.mjs
