@@ -13,6 +13,16 @@ import {
   seoIndexableStaticPaths,
 } from '../shared/seo-indexing-policy.mjs';
 
+async function readLegalTemplate(route) {
+  try {
+    return await readFile(new URL(`../public/${route}/index.html`, import.meta.url));
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
+    // Production image retains built dist/, not source public/.
+    return readFile(new URL(`../dist/${route}/index.html`, import.meta.url));
+  }
+}
+
 async function readIndexTemplate() {
   try {
     return await readFile(new URL('../index.html', import.meta.url));
@@ -79,7 +89,7 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
   // Model the actual dist layout for bootstrap-independent legal pages.
   for (const route of ['datenschutz', 'agb']) {
     await mkdir(path.join(root, route), { recursive: true });
-    await writeFile(path.join(root, route, 'index.html'), await readFile(new URL(`../public/${route}/index.html`, import.meta.url)));
+    await writeFile(path.join(root, route, 'index.html'), await readLegalTemplate(route));
   }
   await mkdir(path.join(root, 'documentation'), { recursive: true });
   await writeFile(
