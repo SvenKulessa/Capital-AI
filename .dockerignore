@@ -136,6 +136,7 @@
 !public/learning/charts/**
 !scripts/domain-skills.test.mjs
 !scripts/screener-blueprint-preview.test.mjs
+!scripts/cads-growth-quality.test.mjs
 !scripts/static-legal-routes.test.mjs
 !scripts/harden-npm-toolchain.mjs
 !scripts/benchmark-scoring-capacity.mjs
