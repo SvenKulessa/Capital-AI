@@ -1,0 +1,136 @@
+{
+  "schemaVersion": "CAPITAL_AI_GROWTH_EDITORIAL_DRAFT@1",
+  "date": "2026-10-10",
+  "campaignId": "capital-ai-secure-content-20261010",
+  "contentId": "secure-content-pipeline-20261010",
+  "usageMode": "COMMERCIAL",
+  "publicationState": "DRAFT",
+  "publishReady": false,
+  "sourceCommit": "0a56ee064f634de70c4ce0f8e8c652966e936d78",
+  "article": "docs/growth/drafts/2026-10-10-sicherer-content-autopilot.md",
+  "asset": {
+    "path": "public/branding/content/content-autopilot-security-1200x630.svg",
+    "mime": "image/svg+xml",
+    "dimensions": {
+      "width": 1200,
+      "height": 630
+    },
+    "sha256": "67a73a49e8cfa89f5caa1ce58415f7f62b4978e5a3edc38f9d7421521a3d84ce",
+    "gitBlobSha1": "6a6ac91fd4b943364abf8400f4d2ec2bf9d0d369",
+    "source": "original first-party deterministic editorial SVG created for this draft",
+    "generator": "hand-authored deterministic SVG markup",
+    "rendererForVisualQa": "CairoSVG 2.8.2",
+    "externalAssets": [],
+    "externalFonts": [],
+    "fontFamily": "Arial,sans-serif (system fallback; no font bundled)",
+    "brandColorSource": "public/branding/asset-pack/meta/social-render-tokens.json",
+    "accessibility": {
+      "title": true,
+      "desc": true,
+      "textLabels": true,
+      "colorNotSoleSignal": true,
+      "alt": "Vier Stufen: Quellen, Redaktion, Legal und QA, Publishing erst nach Freigabe."
+    },
+    "rights": {
+      "sourceCode": "FIRST_PARTY_EDITORIAL",
+      "thirdPartyAssets": "NONE",
+      "commercialOutputDecision": "LEGAL_ENGINE_NOT_EVALUATED",
+      "approvalRef": null
+    },
+    "qa": {
+      "svgRendered": true,
+      "visualPreviewInspected": true,
+      "browserMobileA11y": "NOT_RUN",
+      "legalEngine": "NOT_RUN"
+    }
+  },
+  "officialSources": [
+    {
+      "id": "owasp-llm-2026",
+      "url": "https://genai.owasp.org/2026/09/01/owasp-genai-security-project-unveils-2026-top-10-for-llm-applications-new-agent-control-standard-and-sponsors-as-community-tops-30000-members/",
+      "published": "2026-09-01",
+      "rights": "LINK_ONLY",
+      "topic": "security"
+    },
+    {
+      "id": "google-multimodal-2026",
+      "url": "https://developers.google.com/search/blog/2026/09/web-multimodal-in-sc",
+      "published": "2026-09-24",
+      "rights": "LINK_ONLY",
+      "topic": "content_quality"
+    },
+    {
+      "id": "w3c-wcag-2026",
+      "url": "https://www.w3.org/WAI/standards-guidelines/wcag/changelog/",
+      "updated": "2026-09-17",
+      "rights": "LINK_ONLY",
+      "topic": "accessibility"
+    }
+  ],
+  "hypotheses": [
+    {
+      "id": "candidate-security-20261010",
+      "status": "CANDIDATE_ONLY",
+      "evidenceIds": [
+        "owasp-llm-2026"
+      ],
+      "hypothesis": "Untrusted external content never grants tool, publishing or secret access.",
+      "comparison": "Existing PR340 FeedbackLearningLoop is draft; main has no verified active ingestion.",
+      "regression": "Attempt prompt-injection and tool-action strings in external summaries; assert zero commands, zero publication.",
+      "testState": "NOT_RUN",
+      "modelWeightsChanged": false
+    },
+    {
+      "id": "candidate-multimodal-seo-20261010",
+      "status": "CANDIDATE_ONLY",
+      "evidenceIds": [
+        "google-multimodal-2026"
+      ],
+      "hypothesis": "Accessible original diagrams with stable asset identity improve search discoverability without fabricated traffic claims.",
+      "comparison": "Search Console property-level multimodal performance data not accessed.",
+      "regression": "Verify canonical metadata, alt text, robots indexing, actual Search Console reports only with authorized property and consent.",
+      "testState": "NOT_RUN"
+    },
+    {
+      "id": "candidate-a11y-20261010",
+      "status": "CANDIDATE_ONLY",
+      "evidenceIds": [
+        "w3c-wcag-2026"
+      ],
+      "hypothesis": "Textual SVG labels and meaningful descriptions make graphics more usable.",
+      "comparison": "SVG title/desc and color-independent numbering verified visually, screen-reader tests not run.",
+      "regression": "Test at 320px/375px and with screen readers; check contrast and meaningful alternatives.",
+      "testState": "NOT_RUN"
+    }
+  ],
+  "captions": {
+    "LINKEDIN": "Ein guter KI-Content-Autopilot veröffentlicht nicht einfach alles. Für CAPITAL AI trennen wir belegte Quellen, professionelle Gestaltung, Lizenzprüfung und echte Provider-Freigaben. OWASP 2026, Googles multimodale Suche und WCAG 2.2 liefern dafür aktuelle Impulse. Die Pipeline bleibt bis zum Rechte- und OAuth-Nachweis DRAFT. #FinTech #AgenticAI #ContentGovernance",
+    "X": "KI-Content braucht Grenzen: Quelle → Redaktion + Grafik → Rechte/QA → autorisierte Veröffentlichung. Bei CAPITAL AI gilt DRAFT ≠ PUBLISHED. Kein Posting ohne Rechte, OAuth und Provider-Readback. #FinTech #AgenticAI",
+    "INSTAGRAM": "📌 Vier Schritte statt Autoposting: ① Quelle prüfen ② Text & Grafik gestalten ③ Lizenz & Accessibility nachweisen ④ erst mit Freigabe veröffentlichen. Unsere CAPITAL-AI-Infografik ist ein Entwurf. #ContentQuality #FinTech #Accessibility",
+    "FACEBOOK": "Wie wird aus KI-generiertem Text ein verantwortbar veröffentlichter Fachbeitrag? CAPITAL AI setzt auf überprüfte Quellen, verständliche Grafiken und nachgewiesene Nutzungsrechte. Die Automatisierung ist noch im Entwurfsstadium – ein echtes Publishing-Readback fehlt.",
+    "YOUTUBE": "Titelvorschlag: KI-Content im FinTech: Vier Kontrollen vor dem Post | CAPITAL AI. Beschreibung: Quellen, professionelle Grafiken, Lizenzprüfung und OAuth-/Provider-Freigaben. Ein Architekturentwurf, keine fertige Live-Publishing-Funktion. Videodatei nicht vorhanden: UPLOAD_BLOCKED.",
+    "TIKTOK": "Hook: Warum darf ein KI-Agent nicht einfach posten? Vier Stufen: Belege, Gestaltung, Lizenzprüfung, Freigabe. CAPITAL AI entwickelt diese Pipeline – derzeit DRAFT. Videodatei nicht vorhanden: UPLOAD_BLOCKED."
+  },
+  "dataBoundaries": {
+    "financeRuntimeBridge": "NOT_PROVEN_ABSENT_TRANSITIVELY",
+    "financeUse": "HISTORICAL_READ_ONLY_ONLY",
+    "privatePersonalInputsUsed": false,
+    "byokDataUsed": false,
+    "customerFeedbackUsed": false,
+    "consentEvidenceForAnalytics": "NOT_PROVEN",
+    "amplitudeAccessibleProject": "default (not confirmed CAPITAL AI)",
+    "socialProviderWrites": "NONE",
+    "externalPostIds": [],
+    "terminalProviderReadback": "NOT_AVAILABLE",
+    "pr340Badges": "THREE_DRAFT_ASSETS_ONLY; NO_REUSE_OR_PUBLICATION"
+  },
+  "checks": {
+    "mainGitSha": "0a56ee064f634de70c4ce0f8e8c652966e936d78",
+    "liveRenderGitSha": "3c2bf8f733c501e7fce00ffc30cd94189ab43149",
+    "liveMatchesCurrentMain": false,
+    "pr340DockerSecurity": "FAIL (previous 429 Trivy source image)",
+    "pr341ChecksForNewHead": "PENDING",
+    "fullStandaloneRuntimeTest": "NOT_RUN",
+    "commercialLegalAdmission": "BLOCKED"
+  }
+}
