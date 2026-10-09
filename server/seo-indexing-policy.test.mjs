@@ -13,6 +13,16 @@ import {
   seoIndexableStaticPaths,
 } from '../shared/seo-indexing-policy.mjs';
 
+async function readLegalTemplate(route) {
+  try {
+    return await readFile(new URL(`../public/${route}/index.html`, import.meta.url));
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
+    // Production image retains built dist/, not source public/.
+    return readFile(new URL(`../dist/${route}/index.html`, import.meta.url));
+  }
+}
+
 async function readIndexTemplate() {
   try {
     return await readFile(new URL('../index.html', import.meta.url));
@@ -76,6 +86,11 @@ test('SEO-00 is fail-closed for private, claim-sensitive, alias and unknown rout
 test('server enforces INDEX versus noindex and derives sitemap from SEO-00 policy', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'capital-seo00-'));
   await writeFile(path.join(root, 'index.html'), await readIndexTemplate());
+  // Model the actual dist layout for bootstrap-independent legal pages.
+  for (const route of ['datenschutz', 'agb']) {
+    await mkdir(path.join(root, route), { recursive: true });
+    await writeFile(path.join(root, route, 'index.html'), await readLegalTemplate(route));
+  }
   await mkdir(path.join(root, 'documentation'), { recursive: true });
   await writeFile(
     path.join(root, 'documentation', 'byok.html'),
@@ -166,10 +181,25 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
     for (const route of ['/', '/faq', '/impressum', '/datenschutz', '/agb']) {
       const response = await fetch(origin + route);
       assert.equal(response.status, 200, route);
+      if (route === '/datenschutz' || route === '/agb') {
+        assert.equal(response.headers.get('content-language'), 'de', route);
+      }
       const html = await response.text();
       const metadataTitle = route === '/' ? 'Capital-AI' : null;
-      assert.match(html, /id="capital-ai-public-snapshot" lang="de"/, route);
-      assert.match(html, /<nav aria-label="Öffentliche Seiten">/, route);
+      if (route === '/datenschutz' || route === '/agb') {
+        assert.match(html, /<html lang="de"/, route);
+        assert.match(html, /<nav aria-label="Rechtliche Informationen">/, route);
+        // SEO may inject exactly one inert JSON-LD block, but no executable script.
+        // Validate the original response rather than stripping tags with a sanitizer regex.
+        const scriptOpenTags = [...html.matchAll(/<script\b[^>]*>/gi)].map(match => match[0]);
+        assert.deepEqual(scriptOpenTags, ['<script id="capital-ai-seo-jsonld" type="application/ld+json">'], route);
+        assert.equal([...html.matchAll(/<script\b/gi)].length, 1, route);
+        assert.equal([...html.matchAll(/<\/script\s*>/gi)].length, 1, route);
+        assert.doesNotMatch(html, /capital-ai-bootstrap-fallback/, route);
+      } else {
+        assert.match(html, /id="capital-ai-public-snapshot" lang="de"/, route);
+        assert.match(html, /<nav aria-label="Öffentliche Seiten">/, route);
+      }
       assert.match(html, /<h1>[^<]+<\/h1>/, route);
       if (metadataTitle) assert.match(html, /<h1>Capital-AI/, route);
       assert.doesNotMatch(html, /\/profile\/key-vault|\/control-center|\/api\/billing/, route);
