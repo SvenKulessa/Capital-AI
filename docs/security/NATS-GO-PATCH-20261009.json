@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "baseMainSha": "0f459641646a3d82a3238d7a41fdc715e6df9d94",
+  "scope": "NATS_PATCH_RELEASE_BINARY_ONLY",
+  "observedAt": "2026-10-09",
+  "blockingFindings": [
+    "CVE-2026-78667",
+    "CVE-2026-97031"
+  ],
+  "installedGo": "1.27.1",
+  "fixedGo": "1.27.2",
+  "release": "v2.15.1",
+  "source": "https://github.com/nats-io/nats-server/releases/tag/v2.15.1",
+  "upstreamDockerfile": "https://github.com/nats-io/nats-docker/blob/main/2.15.x/alpine3.22/Dockerfile",
+  "registryImage": "2.15.1-alpine not yet published at review time; retained digest-pinned Alpine base and official checksummed release binary",
+  "verifiedArchive": {
+    "architecture": "amd64",
+    "sha256": "bf5edc7b1ce98e885c368cb43a886eb148dc5d0551d99f3cf6141fb5e1954c70",
+    "independentDownloadHashMatch": true
+  },
+  "runtimeConfiguration": "UNCHANGED",
+  "redeployment": "NOT_PERFORMED",
+  "securityGate": "FULL_IMAGE_AND_SOURCE_SCAN_REQUIRED_NO_SUPPRESSIONS",
+  "license": "Apache-2.0 release LICENSE retained in image",
+  "ciStatus": "NOT_PROVEN"
+}
