@@ -509,6 +509,11 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                   <p className="mt-2 text-[11px] text-slate-400">
                     Badge: CAPITAL-AI Vorschauasset. Marktdaten-, Provider- und Modellrechte sind nicht enthalten.
                   </p>
+                  <a href="/marketscreener/dokumentation#screener-blueprint-bundle"
+                    onClick={event => { event.preventDefault(); onClose(); onNavigate?.('/marketscreener/dokumentation#screener-blueprint-bundle'); }}
+                    className="mt-3 inline-flex min-h-11 items-center rounded-xl border border-cyan-400/40 px-4 py-2 text-xs font-bold text-cyan-100 hover:bg-cyan-400/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300">
+                    YAML-Editor &amp; Diagrammvorschau ansehen
+                  </a>
                 </div>
               </div>
             </section>
