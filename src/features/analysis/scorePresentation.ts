@@ -10,6 +10,14 @@ export function safeScorePresentation(
   now: number,
   maxAgeMs = 30_000,
 ) {
+  if (!Number.isSafeInteger(now) || now < 0 || !Number.isSafeInteger(maxAgeMs) || maxAgeMs <= 0)
+    return {
+      result: null,
+      data: 'unavailable' as DataProvenanceMode,
+      score: null,
+      ranked: false,
+      reason: 'Zeitbasis für die Frischeprüfung ungültig.',
+    };
   const parsed = FinalRankResultSchema.safeParse(input);
   if (!parsed.success)
     return {
