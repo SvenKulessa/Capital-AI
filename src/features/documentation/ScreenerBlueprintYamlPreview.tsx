@@ -29,7 +29,7 @@ export function ScreenerBlueprintYamlPreview() {
     <section id="screener-blueprint-bundle" aria-labelledby="screener-bundle-title"
       className="rounded-3xl border border-cyan-400/30 bg-[linear-gradient(125deg,#081a34,#09112b_60%,#160e32)] p-4 text-slate-100 sm:p-6">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <img src="/branding/badges/screener-blueprint.svg" width="72" height="72"
+        <img src="/branding/badges/screener-bundle-blueprint.svg" width="72" height="72"
           className="h-[72px] w-[72px] rounded-2xl border border-white/10"
           alt="Screener Blueprint Motiv: Datenknoten und Summensymbol" />
         <div className="min-w-0 flex-1">
