@@ -137,7 +137,7 @@ test('Learning Portal owns three Vocabulary flashcards without a project page', 
   assert.doesNotMatch(home, /VocabularyFlashcards/);
   assert.match(learning, /const VocabularyFlashcards = React\.lazy\(\(\) =>/);
   assert.match(learning, /import\('\.\.\/\.\.\/components\/VocabularyFlashcards'\)/);
-  assert.match(learning, /'glossar' \| 'flashcards' \| 'guides' \| 'videos' \| 'quiz'/);
+  assert.match(learning, /'glossar' \| 'flashcards' \| 'guides' \| 'patterns' \| 'videos' \| 'quiz'/);
   assert.match(learning, /activeTab === 'flashcards'/);
   assert.doesNotMatch(learning, /SubpageSidebarNav/);
   assert.match(cards, /VOCABULARY_TERMS\.slice\(0, 3\)/);
@@ -186,7 +186,7 @@ test('architecture is removed from drawer footer and remains reachable from docu
 test('learning portal exposes architecture video previews without claiming completed renderer evidence', async () => {
   const learning = await readFile(new URL('../src/features/learning/LearningPortalPage.tsx', import.meta.url), 'utf8');
 
-  assert.match(learning, /'glossar' \| 'flashcards' \| 'guides' \| 'videos' \| 'quiz'/);
+  assert.match(learning, /'glossar' \| 'flashcards' \| 'guides' \| 'patterns' \| 'videos' \| 'quiz'/);
   assert.match(learning, /Architektur Videos/);
   assert.match(learning, /PREVIEW · VIDEO NOCH NICHT GERENDERT/);
   assert.match(learning, /BLOCKED_RUNTIME_NOT_MIGRATED/);

@@ -1,4 +1,5 @@
 import React from 'react';
+import { ChartLearningAtlas } from '../learning/ChartLearningAtlas';
 import {
   BarChart3,
   CheckCircle2,
@@ -34,6 +35,7 @@ const stateLabel = {
 export const ContentStudioPanel: React.FC = () => {
   return (
     <div className="space-y-5">
+      <ChartLearningAtlas studio />
       <section className="rounded-2xl border border-violet-400/20 bg-gradient-to-br from-violet-500/10 via-[#0b1020] to-amber-500/5 p-5 sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl">

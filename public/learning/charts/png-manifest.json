@@ -1,0 +1,116 @@
+{
+  "schemaVersion": "CAPITAL_AI_CHART_PNG@1",
+  "sourceManifestSha256": "fa5255baf628f4e308d9a15c9df675c1207bf20dad5ecc0c149d7f646924b386",
+  "publishReady": false,
+  "renderer": "Pillow/offline",
+  "assets": [
+    {
+      "id": "bull-flag",
+      "path": "bull-flag.png",
+      "sha256": "756661120e23658842620715518989d7253a89d839aa76c9670562d816b3b4b8",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "bear-flag",
+      "path": "bear-flag.png",
+      "sha256": "0b0ff60a69ba4c6ce6355ab719f09c8f722582b3216e8fd1068e62618b62e8aa",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "pennant",
+      "path": "pennant.png",
+      "sha256": "a0dc89eb08724632aecc2d1cc6bccd6b3421fff589b5c56b1f36aaccc9571a60",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "ascending-triangle",
+      "path": "ascending-triangle.png",
+      "sha256": "c4c5aaf91f517d68fdbe6a68c444a98ba5c79d8d0f6b58bc8d6d61e0a32650b8",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "double-top",
+      "path": "double-top.png",
+      "sha256": "8a6f26ce17753c5126aed76e1fffa7c993f19f2470ad564effbd840b4830e296",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "double-bottom",
+      "path": "double-bottom.png",
+      "sha256": "34376418373f40ab941cf7957d1533616d8f45fa3a858d5eecfc5f403a9d95da",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "head-shoulders",
+      "path": "head-shoulders.png",
+      "sha256": "f208b83b1e30df2190a167b732ec8189cb35d137a0f4d87ece145083d61fd94e",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "support-resistance",
+      "path": "support-resistance.png",
+      "sha256": "fb9f5bee0bbab1dc410c60ba1dc28c1ecdf085e575e1407d76b6db7348e0d56f",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "rsi",
+      "path": "rsi.png",
+      "sha256": "151a80ffbdbb87b6e80995f1d65cfa911b73b76539c8b4851c1c1609be3208ed",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "macd",
+      "path": "macd.png",
+      "sha256": "d9804ea88c6bc985272292b1d95f158eb1e5c759e70d70b1154cdd89b1ced196",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "moving-averages",
+      "path": "moving-averages.png",
+      "sha256": "5ae3855dfd83f71e40e9e2827ff99751a2009bd4bc6c24228811ba675daea733",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "volume-breakout",
+      "path": "volume-breakout.png",
+      "sha256": "389bd97ea96ea3907afe0ac52d5c0b2b63dcc24d9e92bf856ab6e670175d9f97",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    }
+  ]
+}

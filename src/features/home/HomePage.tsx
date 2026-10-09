@@ -1,7 +1,8 @@
 import { lazy, Suspense } from 'react';
 import { Header } from '../../components/Header';
 import { Hero } from '../../components/Hero';
-import { ContentEngineConcept } from './ContentEngineConcept';
+const LearningCadsShowcase = lazy(() => import('./LearningCadsShowcase').then(module => ({ default: module.LearningCadsShowcase })));
+const ContentEngineConcept = lazy(() => import('./ContentEngineConcept').then(module => ({ default: module.ContentEngineConcept })));
 import { CommerceEntrySection } from './CommerceEntrySection';
 import { KeyPillars } from '../../components/KeyPillars';
 import { Footer } from '../../components/Footer';
@@ -103,7 +104,12 @@ export function HomePage({
         />
       </Suspense>
       <KeyPillars />
-      <ContentEngineConcept onNavigate={onNavigate} />
+      <Suspense fallback={null}>
+        <LearningCadsShowcase onNavigate={onNavigate} onPricing={onOpenMonetization} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <ContentEngineConcept onNavigate={onNavigate} />
+      </Suspense>
 
       <SectorAnalysis
         onSelectAsset={onSelectAsset}

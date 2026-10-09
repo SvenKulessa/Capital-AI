@@ -704,6 +704,21 @@ export const ROADMAP_CURRENT_STATE_OVERRIDES: Readonly<Record<string, RoadmapRec
     ],
     "nextStep": "Persistente Content-Jobs, Freigabe-Bindung und Provider-Readbacks vervollständigen; Secrets und Kanal-Credentials bleiben außerhalb öffentlicher Artefakte."
   },
+  "CA-GROWTH-SOC-COPY": {
+    "status": "aktiv", "evidenceState": "OFFEN", "progressPercent": null,
+    "evidenceRefs": ["src/data/chartLearning.ts", "public/learning/charts/manifest.json", "docs/growth/CHART-LEARNING-CADS-20261009.md"],
+    "nextStep": "Zwölf Chart-Lernbriefs und Beitragsentwürfe mit eigener synthetischer Grafik sind implementiert. Kanalvarianten, konkrete Veröffentlichungsfreigaben und echte Provider-Endzustände bleiben offen."
+  },
+  "CA-PLATFORM-SOC-MEDIA": {
+    "status": "aktiv", "evidenceState": "OFFEN", "progressPercent": null,
+    "evidenceRefs": ["scripts/generate-chart-learning.tsx", "scripts/media/render_chart_learning.py", "public/learning/charts/png-manifest.json"],
+    "nextStep": "Zwölf lokale SVG-/PNG-Lerncharts mit Hashmanifest sind gerendert. MediaProjectV2-Exporte sind validierte Entwürfe; Video-/Codec-/Kanalabnahme bleibt offen."
+  },
+  "CA-PRODUCT-SOC-STUDIO": {
+    "status": "aktiv", "evidenceState": "OFFEN", "progressPercent": null,
+    "evidenceRefs": ["src/features/learning/ChartLearningAtlas.tsx", "src/features/studio/ContentStudioPanel.tsx"],
+    "nextStep": "Lernatlas, Beitragsvorschau und Grafik-/MediaProject-Downloads sind implementiert. Persistente Redaktion, hashgebundene Freigaben und authentifizierte Studio-Runtime noch abnehmen."
+  },
   "PRODUCTION-WEB-01-MARKET": {
     "status": "aktiv",
     "evidenceState": "OFFEN",
