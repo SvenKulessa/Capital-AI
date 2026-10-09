@@ -160,8 +160,11 @@ test('owner-only route is hidden from other identities and never calls GA4 when 
 
 test('owner-only route is GET-only, rejects query-driven reports and caches reads for five minutes', async () => {
   const calls = [];
+  let closes = 0;
   let nowMs = 1_800_000_000_000;
-  const h = harness({ client: fakeClient(calls), now: () => nowMs });
+  const client = fakeClient(calls);
+  client.close = () => { closes++; };
+  const h = harness({ client, now: () => nowMs });
 
   assert.equal((await h.request('POST')).status, 405);
   assert.equal((await h.request('GET', '/api/profile/google-analytics-readback?metric=users')).status, 400);
@@ -170,14 +173,17 @@ test('owner-only route is GET-only, rejects query-driven reports and caches read
   assert.equal(first.status, 200);
   assert.equal(first.headers['cache-control'], 'private, no-store, max-age=0');
   assert.equal(calls.length, 4);
+  assert.equal(closes, 1);
 
   nowMs += 299_999;
   assert.equal((await h.request()).status, 200);
   assert.equal(calls.length, 4);
+  assert.equal(closes, 1);
 
   nowMs += 2;
   assert.equal((await h.request()).status, 200);
   assert.equal(calls.length, 8);
+  assert.equal(closes, 2);
 });
 
 test('configured property mismatch fails closed before event reports', async () => {

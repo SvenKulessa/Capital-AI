@@ -243,7 +243,11 @@ export function createGoogleAnalyticsMcpClient({
     return normalizeToolResult(await request('tools/call', { name: tool, arguments: args }));
   }
 
-  return Object.freeze({ boundary, listTools, callTool });
+  function close() {
+    failSession(new Error('GA4_MCP_CLIENT_CLOSED'));
+  }
+
+  return Object.freeze({ boundary, listTools, callTool, close });
 }
 
 export function resetGoogleAnalyticsMcpCredentialCacheForTests() {

@@ -4,7 +4,7 @@
 **Primary domain:** GROWTH  
 **Cross-cutting:** PLATFORM, TRUST  
 **Target runtime:** existing Render web service `Capital-AI`  
-**Source baseline:** `main@74db8de95f0f8b2f3ac0dee2471ba3e86df1cc1f`
+**Source baseline:** `main@9e11e812984695a2e28e7ad7f82cfc13431569d4`
 
 ## Goal
 
@@ -57,9 +57,9 @@ Therefore:
 
 ## Cost / quota boundary
 
-No additional Render service is introduced. The existing web service gains Python plus the MCP runtime, which increases image size and may increase build/runtime resource use.
+No additional Render service is introduced. The existing web service gains Python plus the MCP runtime, which increases image size and may increase build/runtime resource use. No additional Render service or paid plan is activated by this change.
 
-Google Analytics Admin/Data APIs are quota-limited. The readback uses a five-minute cache, a fixed property and at most 25 aggregated event rows per report. No write APIs are called.
+Google Analytics Admin/Data APIs are quota-limited. The readback uses a five-minute cache, a fixed property and at most 25 aggregated event rows per report. A fresh provider snapshot is bounded to eight seconds and the internal MCP child process is closed after the refresh. No write APIs are called.
 
 ## Acceptance
 

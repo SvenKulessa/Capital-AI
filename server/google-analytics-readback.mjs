@@ -4,6 +4,7 @@ import { createGoogleAnalyticsMcpClient, GA4_MCP_ALLOWED_TOOLS } from './google-
 
 const PATH = '/api/profile/google-analytics-readback';
 const CACHE_MS = 5 * 60 * 1000;
+const READBACK_TIMEOUT_MS = 8_000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const PROPERTY_NUMBER = /^[1-9][0-9]{0,19}$/;
 
@@ -171,14 +172,25 @@ export function createGoogleAnalyticsReadback({
     if (cache && timestamp - cache.at < CACHE_MS) return cache.value;
     if (inflight) return inflight;
 
-    inflight = buildGoogleAnalyticsReadback({
+    let timeout;
+    const providerRead = buildGoogleAnalyticsReadback({
       client,
       propertyNumber: requiredPropertyNumber(env),
       now: () => timestamp,
-    }).then(value => {
+    });
+    const deadline = new Promise((_, reject) => {
+      timeout = setTimeout(() => reject(new Error('GA4_READBACK_TIMEOUT')), READBACK_TIMEOUT_MS);
+      timeout.unref?.();
+    });
+
+    inflight = Promise.race([providerRead, deadline]).then(value => {
       cache = { at: timestamp, value };
       return value;
-    }).finally(() => { inflight = null; });
+    }).finally(() => {
+      clearTimeout(timeout);
+      client.close?.();
+      inflight = null;
+    });
     return inflight;
   }
 
