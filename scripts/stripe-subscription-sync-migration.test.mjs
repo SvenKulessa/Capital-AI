@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { BILLING_CATALOG } from '../server/billing-catalog.mjs';
 
 const sql = readFileSync(
-  new URL('../supabase/migrations/20261006072600_sync_stripe_subscription_catalog_v2.sql', import.meta.url),
+  new URL('../supabase/migrations/20261009104641_enforce_subscription_price_authority.sql', import.meta.url),
   'utf8',
 );
 
@@ -29,13 +29,12 @@ test('legacy Stripe Price IDs are no longer accepted by subscription sync', () =
   ]) assert.equal(sql.includes(legacy), false);
 });
 
-test('database tier resolution is fail closed and metadata remains primary', () => {
-  assert.match(sql, /v_metadata_tier := case upper\(btrim\(coalesce\(NEW\.metadata->>'plan_id', ''\)\)\)/);
-  assert.match(sql, /v_metadata_tier <> v_price_tier then\s+v_tier := 'Free'/);
-  assert.match(sql, /elsif v_metadata_tier is not null then\s+v_tier := v_metadata_tier/);
-  assert.match(sql, /elsif v_price_tier is not null then\s+v_tier := v_price_tier/);
-  assert.match(sql, /NEW\.status not in \('active', 'trialing'\) then\s+v_tier := 'Free'/);
-  assert.match(sql, /else\s+v_tier := 'Free'/);
+test('database tier resolution requires a known single live price', () => {
+  assert.match(sql, /NEW.livemode is distinct from true/);
+  assert.match(sql, /jsonb_array_length\(NEW.items->'data'\) <> 1/);
+  assert.match(sql, /v_price_tier is null/);
+  assert.match(sql, /v_tier := v_price_tier/);
+  assert.doesNotMatch(sql, /v_tier := v_metadata_tier/);
 });
 
 test('trigger-only security boundary stays explicit', () => {

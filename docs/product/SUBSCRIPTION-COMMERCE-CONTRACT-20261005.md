@@ -54,51 +54,57 @@ Dadurch kann der vorhandene serverseitige Stripe→Supabase-Sync das Abo einem N
 - nur `https://checkout.stripe.com/` wird als Redirect akzeptiert
 - Server-/Netzwerkfehler → Hinweis, keine Zahlung
 
-## Nicht enthalten
+## Sechs-Varianten-Abnahme (2026-10-09)
 
-Dieser Contract aktiviert keine Render-Variable und führt keinen Production-Kauf aus. Reale Production-Evidence benötigt weiterhin:
+Die frühere Drei-Testkäufe-Policy ist für neue Abnahmen ersetzt: alle drei Tiers
+jeweils monthly und annual. Historische Readbacks vom 06.10. bleiben historische
+Evidence; ihre requiredCount=3-Angabe ist keine aktuelle Abnahme-Anforderung.
 
-- **genau 3 Stripe-Testmode-Käufe**: je einer für Starter, Pro und Enterprise; Monats-/Jahres-Mapping bleibt deterministisch unit-getestet
-- Stripe-managed Subscription Readback
-- `public.subscriptions` Tier-/Status-Projektion
-- Upgrade/Downgrade/Cancel/Reactivation
-- Webhook-/Sync-Reconciliation
-- Entitlement-Abnahme
+- `npm run stripe:test-purchases:create`: erstellt ausschließlich sechs Sandbox/Testmode-Sessions;
+  jeder Preis wird vorher live beim Provider als aktiv, EUR, testmode und korrektes Intervall geprüft.
+- `npm run stripe:test-purchases:verify`: **nur lesender** Verifier; erwartet abgeschlossene
+  bezahlte Session, passende Subscription, Subscription-created-Event, verarbeitete
+  Zustellungsquittung, genau eine DB-Projektion, passende Session-Identität und
+  CADS-Tier/Capabilities sowie anonymen HTTP-401-Nachweis.
+- Sechs getrennte existierende Testnutzer verhindern Überschreiben der einzigen
+  Subscription-Projektion je User. Keine Nutzer werden vom Runner angelegt.
+- Je Variante `STRIPE_TEST_<TIER>_<MONTHLY|ANNUAL>_PRICE_ID`, `_USER_ID`,
+  für Verify zusätzlich `_SESSION_ID`, `_EVENT_ID`, `_COOKIE`.
+- `STRIPE_TEST_SECRET_KEY=sk_test_...`; sechs Live-IDs sind verboten.
+- `STRIPE_TEST_RETURN_BASE_URL`, `STRIPE_TEST_SUPABASE_URL` und
+  `STRIPE_TEST_SUPABASE_READ_KEY` zeigen ausschließlich auf eine isolierte Testumgebung.
+  Die bekannten Produktionsorigins werden abgewiesen. Cookies/Keys niemals versionieren.
 
+Der Test-Sync muss die Sandbox-Price-IDs in seiner isolierten Umgebung korrekt
+abbilden. Die produktive Migration akzeptiert ausschließlich die sechs Live-IDs
+und `livemode=true`; Test-Subscriptions dürfen niemals produktive Entitlements erzeugen.
+Der Runner richtet weder Test-Sync noch Preise, Webhooks, Nutzer oder Billing ein.
 
-## Drei-Testkäufe-Policy
+Der aktuelle Managed Sync schreibt nicht nachweislich in `public.stripe_event_inbox`.
+Ohne eine korrelierte processed-Receipt aus diesem bestehenden Ledger schlägt der
+Verifier mit NOT_PROVEN fehl; ein vorhandenes Stripe-Event allein beweist keine Zustellung.
+Keine parallele produktive Webhook-Implementierung wird eingeführt.
 
-Die aktuell über Supabase synchronisierten sechs Subscription-Prices sind `livemode=true`.
-Sie dürfen deshalb **nicht** für die drei Testkäufe verwendet werden.
+Der tatsächliche Zugriffspfad ist `auth.resolvePaidTier()` und
+`GET /api/cads/commerce/entitlement`, kein neu erfundener Subscription-Access-RPC.
+Testmode-Abnahme ist keine Production-Evidence. Upgrade/Downgrade/Cancel/Reactivation
+und tatsächliche Provider-Duplicate-/Retry-Zustellung bleiben getrennte Nachweise.
 
-Der produktive Checkout-Test verwendet deshalb keine vorgetäuschte Testmode-Kombination mehr.
-Die reale Testmatrix besitzt einen separaten Runner:
+## Strikte produktive Preisbindung
 
-- `npm run stripe:test-purchases:create`
-- `npm run stripe:test-purchases:verify`
+Die neue Migration `20261009104641_enforce_subscription_price_authority.sql`
+weist unbekannte/fehlende Preise, mehrere Items, Testmode, inaktive Zustände,
+ungültige oder widersprüchliche plan_id ab. Ein einzelner bekannter Live-Preis
+bleibt auch ohne plan_id als Fallback gültig. Kein Backfill, kein Event-Replay.
+Produktiv noch nicht angewendet. Vor Anwendung bestehende Legacy-/Multi-Item-Abos
+auf mögliche Herabstufung beim nächsten Sync prüfen.
 
-Dafür sind ausschließlich `STRIPE_TEST_SECRET_KEY=sk_test_...` sowie drei getrennte
-Test-Price-IDs zulässig: `STRIPE_TEST_STARTER_PRICE_ID`,
-`STRIPE_TEST_PRO_PRICE_ID`, `STRIPE_TEST_ENTERPRISE_PRICE_ID`.
-Der Runner verweigert jede der sechs Live-Price-IDs fail-closed.
+## Isolierte SQL-Evidence
 
-Pro Tier wird genau ein Kauf ausgeführt:
-
-1. Starter
-2. Pro
-3. Enterprise
-
-Der Test muss Checkout-Session, Stripe-Subscription-Readback und die resultierende
-`public.subscriptions`-Projektion prüfen. Ein erfolgreicher Testkauf ist keine
-Production-Freigabe.
-
-## Supabase Stripe Security Gate
-
-Der Wrapper besitzt 29 Tabellen im `stripe`-Schema ohne RLS. Der anschließende
-Rechte-Readback zeigt jedoch für `anon` und `authenticated` weder Schema-`USAGE`
-noch `SELECT` auf `stripe.products`, `stripe.prices` oder `stripe.subscriptions`.
-Auch der aktuelle Supabase-Security-Advisor meldet keinen Stripe-RLS-Finding.
-
-Daher gilt für diese Evidence `PASS_NO_CLIENT_PRIVILEGES_OBSERVED`. Es wurde bewusst
-keine pauschale RLS-Mutation vorgenommen. Diese Aussage ersetzt keine spätere
-Production-/Data-API-Konfigurationsprüfung.
+`npm run test:stripe:postgres` benötigt eine extern installierte PGlite-Laufzeit
+über `STRIPE_ISOLATED_PG_MODULE` (absoluter Pfad zu dist/index.js).
+Keine neue App-Dependency, kein Netzwerk im Test, kein Produktionsanschluss.
+Die alte Migration reproduziert den Metadaten-only-Fehler; die neue wird als echte
+PL/pgSQL-Triggerfunktion ausgeführt. Sechs Preise, Fallbacks, Denials, wiederholte
+Zustellung/Update und Cancellation/Reactivation sind als DB-Verhalten geprüft.
+Das ersetzt keinen Parallelitäts-/Provider-Replay-Test und keine PostgreSQL-17-Abnahme.
