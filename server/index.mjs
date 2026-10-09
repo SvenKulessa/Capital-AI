@@ -10,6 +10,7 @@ import { createUserProviderVault } from './user-provider-vault.mjs';
 import { createUserAnalysisBindings } from './user-analysis-bindings.mjs';
 import { createPrivateProviderQuery } from './private-provider-query.mjs';
 import { createRenderOwnerDashboard } from './render-owner-dashboard.mjs';
+import { createGoogleAnalyticsReadback } from './google-analytics-readback.mjs';
 import { createUniswapTrading } from './uniswap-trading.mjs';
 import { createKrakenOrderDryRun } from './kraken-order-dry-run.mjs';
 import { createTelegram } from './telegram.mjs';
@@ -272,6 +273,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const userAnalysisBindings = createUserAnalysisBindings({ ...options, auth });
   const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault });
   const renderOwnerDashboard = createRenderOwnerDashboard({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
+  const googleAnalyticsReadback = createGoogleAnalyticsReadback({ env: options.env || process.env, auth });
   if (
     (options.env || process.env).PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true' ||
     (options.env || process.env).PRIVATE_PROVIDER_BRIDGE_PROBE_ENABLED === 'true'
@@ -344,6 +346,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await userAnalysisBindings.handle(req, res, url, json)) return;
   if (await privateProviderQuery.handle(req, res, url, json, requestContext.requestId)) return;
   if (await renderOwnerDashboard.handle(req, res, url, json)) return;
+  if (await googleAnalyticsReadback.handle(req, res, url, json)) return;
   if (await krakenOrderDryRun.handle(req, res, url, json, requestContext.requestId)) return;
   if (await uniswapTrading.handle(req, res, url, json)) return;
   if (await privacy(req, res, url, json)) return;
@@ -526,18 +529,22 @@ export function createApp(root = defaultRoot, options = {}) {
     }
   }
 
+  // Serve canonical legal pages as standalone HTML, independently of React hydration.
+  const staticLegalRoute = new Set(['/datenschutz', '/agb']);
+  const staticLegalPath = staticLegalRoute.has(publicPath) ? `/${publicPath.slice(1)}/index.html` : url.pathname;
   let asset;
-  try { asset = path.resolve(root, '.' + decodeURIComponent(url.pathname)); } catch { return json(res, 400, { error: 'bad_request' }); }
+  try { asset = path.resolve(root, '.' + decodeURIComponent(staticLegalPath)); } catch { return json(res, 400, { error: 'bad_request' }); }
   if (!asset.startsWith(root + path.sep) && asset !== root) return json(res, 400, { error: 'bad_path' });
   if (path.relative(root, asset).split(path.sep).some(part => part.startsWith('.'))) return json(res, 404, { error: 'not_found' });
   try {
-    const file = await stat(asset).then(s => s.isFile() ? asset : path.join(root, 'index.html')).catch(() =>
+    // Missing legal documents must return 404 rather than silently expose the SPA bootstrap.
+    const file = staticLegalRoute.has(publicPath) ? asset : await stat(asset).then(s => s.isFile() ? asset : path.join(root, 'index.html')).catch(() =>
       path.extname(asset) || url.pathname.startsWith('/api/') ? asset : path.join(root, 'index.html'));
     const resolved = await realpath(file);
     if (!resolved.startsWith(root + path.sep) || (await stat(resolved)).size > 20 * 1024 * 1024) return json(res, 404, { error: 'not_found' });
     let body = await readFile(resolved);
     let documentLocale = null;
-    const publicPath = normalizedPublicPath(url.pathname);
+    // Reuse the outer canonical publicPath; redeclaring here would cause a TDZ in static route resolution.
     if (path.extname(file) === '.html') {
       body = Buffer.from(injectVocabularySeo(body.toString('utf8'), publicPath));
     }
@@ -560,9 +567,11 @@ export function createApp(root = defaultRoot, options = {}) {
       if (pathLocale && publicPath !== '/') {
         body = Buffer.from(localizeNonIndexableLandingHtml(body.toString('utf8'), pathLocale));
       }
-      const { locale, source } = pathLocale
-        ? {locale:pathLocale,source:'path'}
-        : resolveLocale({
+      const { locale, source } = staticLegalRoute.has(publicPath)
+        ? {locale:'de',source:'document'} // These legal documents currently contain German text only.
+        : pathLocale
+          ? {locale:pathLocale,source:'path'}
+          : resolveLocale({
         cookieHeader: req.headers.cookie,
         countryHeader: req.headers['cf-ipcountry'],
         acceptLanguage: req.headers['accept-language'],

@@ -136,7 +136,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
       anchor.href = url; anchor.download = 'capital-ai-datenauszug.json';
       document.body.appendChild(anchor); anchor.click(); anchor.remove();
       window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-      setPrivacyMessage('Datenauszug erstellt: Identitäts- und Sitzungsdaten dieses Dienstes. ZITADEL-Kontodaten, Finance-Altdaten und E-Mail-Anfragen sind nicht enthalten.');
+      setPrivacyMessage('Datenauszug erstellt: Identitäts- und Sitzungsdaten dieses Dienstes. Supabase Auth-Kontodaten, Finance-Altdaten und E-Mail-Anfragen sind nicht enthalten.');
     } catch { setPrivacyMessage('Der Datenauszug ist nicht verfügbar. Bitte melden Sie sich erneut an oder kontaktieren Sie den Datenschutzkontakt.'); }
     finally { setPrivacyBusy(false); }
   }
@@ -443,7 +443,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
                   <Database className="w-4 h-4" /> Verarbeitungstätigkeiten
                 </h2>
                 <p className=" text-xs text-slate-400">
-                  Diese Hinweise beschreiben den Dienst mit ZITADEL-Anmeldung. Eine automatische Übernahme alter Finance-Konten oder ihrer Daten erfolgt nicht. Optionales Analytics und Werbung sind in diesem Dienst deaktiviert.
+                  Diese Hinweise beschreiben den Dienst mit Supabase Auth-Anmeldung. Eine automatische Übernahme alter Finance-Konten oder ihrer Daten erfolgt nicht. Optionales Analytics und Werbung sind in diesem Dienst deaktiviert.
                 </p>
               </div>
               {PROCESSING_ACTIVITIES.map((activity) => (
@@ -520,14 +520,14 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
               </button>
               <p className="text-xs text-slate-400">
                 Der Datenauszug enthält ausschließlich Identitäts- und Sitzungsdaten dieses Dienstes. Er ist kein vollständiger Auskunftsbescheid.
-                {!authenticated && <> Für den Download bitte <button type="button" onClick={() => navigate('/login')} className="underline text-emerald-300">mit ZITADEL anmelden</button>.</>}
+                {!authenticated && <> Für den Download bitte <button type="button" onClick={() => navigate('/login')} className="underline text-emerald-300">mit Supabase Auth anmelden</button>.</>}
               </p>
             </section>
 
             <section className="space-y-2">
               <h2 className="text-base font-bold text-white text-emerald-300">Drittanbieter, Drittländer & Beschwerderecht</h2>
               <p>
-                Bei Render, ZITADEL, Google Fonts und bei angefordertem Telegram-Versand können internationale Datenflüsse
+                Bei Render, Supabase Auth, Google Fonts und bei angefordertem Telegram-Versand können internationale Datenflüsse
                 oder Subprozessoren relevant sein. Ein bestimmter AVV-, SCC-, Angemessenheits- oder Hostingstatus wird
                 ohne aktuellen Vertragsnachweis nicht behauptet.
               </p>
