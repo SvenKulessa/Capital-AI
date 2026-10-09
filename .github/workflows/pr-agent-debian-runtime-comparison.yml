@@ -74,6 +74,7 @@ jobs:
               config = json.loads(config_blob)['config']
               assert config['User'] == '10001:10001'
               assert config['WorkingDir'] == '/bench'
+              tar.extractall('reviewer-debian-evidence/runtime-debian.oci', filter='data')
           pathlib.Path('reviewer-debian-evidence/runtime-identity.json').write_text(json.dumps({
               'testedRepositorySha': '${{ github.sha }}',
               'reviewerSourceSha': '8e5a9295973b24af4b70cafd0b660a230811ef9e',
@@ -92,9 +93,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          docker run --rm -v "$PWD/reviewer-debian-evidence:/reports" aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa image --input /reports/runtime-debian.oci.tar --scanners vuln,secret --ignorefile /dev/null --format json --output /reports/runtime-debian-scan.json --exit-code 0
+          docker run --rm -v "$PWD/reviewer-debian-evidence:/reports" aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa image --input /reports/runtime-debian.oci --scanners vuln,secret --ignorefile /dev/null --format json --output /reports/runtime-debian-scan.json --exit-code 0
           node scripts/summarize-trivy.mjs reviewer-debian-evidence/runtime-debian-scan.json > reviewer-debian-evidence/runtime-debian-scan.public.json
-          docker run --rm -v "$PWD/reviewer-debian-evidence:/reports" aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa image --input /reports/runtime-debian.oci.tar --scanners vuln --format cyclonedx --output /reports/runtime-debian.sbom.cdx.json
+          docker run --rm -v "$PWD/reviewer-debian-evidence:/reports" aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa image --input /reports/runtime-debian.oci --scanners vuln --format cyclonedx --output /reports/runtime-debian.sbom.cdx.json
 
           if node scripts/summarize-trivy.mjs reviewer-debian-evidence/runtime-debian-scan.json --gate; then
             comparison_gate=PASS
