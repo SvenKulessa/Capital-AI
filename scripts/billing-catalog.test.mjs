@@ -43,7 +43,7 @@ test('production pricing surface only renders catalog-backed products and standa
   assert.match(pricing, /PRICING_CATALOG\.pro\.label/);
   assert.match(pricing, /PRICING_CATALOG\.enterprise\.label/);
   assert.match(pricing, /Zusatzprodukte/);
-  assert.match(pricing, /Separates Entitlement/);
+  assert.match(pricing, /Separater Lernzugang/);
   assert.match(pricing, /nicht Bestandteil von Starter,[\s\S]*Pro oder Enterprise/);
 
   assert.doesNotMatch(pricing, /In Pro &amp; Enterprise inklusive/);
@@ -99,7 +99,8 @@ test('pricing uses licensed badges and server-authorized subscription checkout s
   assert.match(pricing, /geschützten Quant-\/Pro-Begriffen/);
   assert.match(pricing, /serverseitig berechtigte Lernzugang/);
   assert.match(pricing, /if \(authenticated === false\)/);
-  assert.match(pricing, /\/api\/billing\/subscriptions\/readiness/);
+  const commerceState = readFileSync(new URL('../src/features/pricing/commerceState.ts', import.meta.url), 'utf8');
+  assert.match(commerceState, /\/api\/billing\/subscriptions\/readiness/);
   assert.match(pricing, /\/api\/billing\/subscriptions\/checkout/);
   assert.match(pricing, /if \(!subscriptionCheckoutEnabled\)/);
   assert.match(pricing, /Es wurde keine Zahlung gestartet/);

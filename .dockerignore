@@ -34,6 +34,8 @@
 !server/market-spot-ingestion.test.mjs
 !server/spot-provider-wire.mjs
 !server/spot-provider-wire.test.mjs
+!server/spot-feed-lifecycle.mjs
+!server/spot-feed-lifecycle.test.mjs
 !server/ecb-reference-rates.mjs
 !server/ecb-reference-rates.test.mjs
 !server/ecb-reference-rates.LICENSE.txt
