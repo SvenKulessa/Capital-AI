@@ -1,0 +1,4360 @@
+{
+  "schema": "CAPITAL_AI_PUBLIC_PRODUCTION_READBACK@1",
+  "observedAt": "2026-10-08T23:38:34.257Z",
+  "origin": "https://capital-ai.online",
+  "scope": "ALL_INDEX_ROUTES",
+  "fetchedIndexRoutes": 142,
+  "seoStatus": "PASS",
+  "runtimeIdentity": {
+    "status": "NOT_PROVEN",
+    "sourceSha": null
+  },
+  "commerce": {
+    "checkoutConfigured": true,
+    "purchaseEvidence": "NOT_PROVEN",
+    "marketplaceReady": false
+  },
+  "productionReady": false,
+  "checks": [
+    {
+      "path": "/",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/learning",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/learning",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/learning",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/learning",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/learning",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/learning",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/faq",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/faq",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/faq",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/faq",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/faq",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/faq",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/lizenz",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/lizenz",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/lizenz",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/lizenz",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/lizenz",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/lizenz",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/datenprovider-lizenzen",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/datenprovider-lizenzen",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/datenprovider-lizenzen",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/datenprovider-lizenzen",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/datenprovider-lizenzen",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/datenprovider-lizenzen",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/opensource-lizenzen",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/opensource-lizenzen",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/opensource-lizenzen",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/opensource-lizenzen",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/opensource-lizenzen",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/opensource-lizenzen",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/impressum",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/impressum",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/impressum",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/impressum",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/impressum",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/impressum",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/datenschutz",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/datenschutz",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/datenschutz",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/datenschutz",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/datenschutz",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/datenschutz",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/agb",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/agb",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/agb",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/agb",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/agb",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/agb",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/orderbuch",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/orderbuch",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/orderbuch",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/orderbuch",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/orderbuch",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/orderbuch",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/bid-ask-spread",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/bid-ask-spread",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/bid-ask-spread",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/bid-ask-spread",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/bid-ask-spread",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/bid-ask-spread",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/slippage",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/slippage",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/slippage",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/slippage",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/slippage",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/slippage",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/arbitrage",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/arbitrage",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/arbitrage",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/arbitrage",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/arbitrage",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/arbitrage",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/buffett-value-check",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/buffett-value-check",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/buffett-value-check",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/buffett-value-check",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/buffett-value-check",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/buffett-value-check",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/sentiment-analyse",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/sentiment-analyse",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/sentiment-analyse",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/sentiment-analyse",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/sentiment-analyse",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/sentiment-analyse",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/backtesting",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/backtesting",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/backtesting",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/backtesting",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/backtesting",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/backtesting",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/layer-1",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/layer-1",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/layer-1",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/layer-1",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/layer-1",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/layer-1",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/tokenomics",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/tokenomics",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/tokenomics",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/tokenomics",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/tokenomics",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/tokenomics",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/defi",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/defi",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/defi",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/defi",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/defi",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/defi",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/margin-of-safety",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/margin-of-safety",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/margin-of-safety",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/margin-of-safety",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/margin-of-safety",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/margin-of-safety",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/kgv-pe-ratio",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/kgv-pe-ratio",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/kgv-pe-ratio",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/kgv-pe-ratio",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/kgv-pe-ratio",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/kgv-pe-ratio",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/free-cash-flow",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/free-cash-flow",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/free-cash-flow",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/free-cash-flow",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/free-cash-flow",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/free-cash-flow",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/burggraben-moat",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/burggraben-moat",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/burggraben-moat",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/burggraben-moat",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/burggraben-moat",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/burggraben-moat",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/leitzins",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/leitzins",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/leitzins",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/leitzins",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/leitzins",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/leitzins",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/pip",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/pip",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/pip",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/pip",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/pip",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/pip",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/vix",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/vix",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/vix",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/vix",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/vix",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/vix",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-market-fanout",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-market-fanout",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-market-fanout",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-market-fanout",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-market-fanout",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-market-fanout",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-canonical-snapshot",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-canonical-snapshot",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-canonical-snapshot",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-canonical-snapshot",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-canonical-snapshot",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-canonical-snapshot",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-real-data-ingress",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-real-data-ingress",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-real-data-ingress",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-real-data-ingress",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-real-data-ingress",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-real-data-ingress",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-data-plausibility",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-data-plausibility",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-data-plausibility",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-data-plausibility",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-data-plausibility",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-data-plausibility",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-shadow-replay",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-shadow-replay",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-shadow-replay",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-shadow-replay",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-shadow-replay",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/capital-shadow-replay",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0101",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0101",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0101",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0101",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0101",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0101",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-asset-0101",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-asset-0101",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-asset-0101",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-asset-0101",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-asset-0101",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-asset-0101",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0104",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0104",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0104",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0104",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0104",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0104",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0105",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0105",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0105",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0105",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0105",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0105",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0106",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0106",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0106",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0106",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0106",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0106",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0107",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0107",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0107",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0107",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0107",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0107",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0108",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0108",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0108",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0108",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0108",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0108",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0109",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0109",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0109",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0109",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0109",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0109",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0110",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0110",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0110",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0110",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0110",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0110",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0111",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0111",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0111",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0111",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0111",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0111",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0001",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0001",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0001",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0001",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0001",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0001",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0002",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0002",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0002",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0002",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0002",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0002",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0003",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0003",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0003",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0003",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0003",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0003",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0004",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0004",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0004",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0004",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0004",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-billing-0004",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0001",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0001",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0001",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0001",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0001",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0001",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0002",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0002",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0002",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0002",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0002",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0002",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0003",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0003",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0003",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0003",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0003",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-analytics-0003",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0001",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0001",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0001",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0001",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0001",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0001",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0002",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0002",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0002",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0002",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0002",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0002",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0003",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0003",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0003",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0003",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0003",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0003",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0004",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0004",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0004",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0004",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0004",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0004",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0005",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0005",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0005",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0005",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0005",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0005",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0006",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0006",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0006",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0006",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0006",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0006",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0007",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0007",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0007",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0007",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0007",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0007",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0008",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0008",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0008",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0008",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0008",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0008",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0009",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0009",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0009",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0009",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0009",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0009",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0010",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0010",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0010",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0010",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0010",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0010",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0011",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0011",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0011",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0011",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0011",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0011",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0012",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0012",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0012",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0012",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0012",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0012",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0013",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0013",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0013",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0013",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0013",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0013",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0014",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0014",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0014",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0014",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0014",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0014",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0015",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0015",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0015",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0015",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0015",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0015",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0016",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0016",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0016",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0016",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0016",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0016",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0017",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0017",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0017",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0017",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0017",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0017",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0018",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0018",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0018",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0018",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0018",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0018",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0019",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0019",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0019",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0019",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0019",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0019",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0020",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0020",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0020",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0020",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0020",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0020",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0021",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0021",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0021",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0021",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0021",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0021",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0022",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0022",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0022",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0022",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0022",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0022",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0023",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0023",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0023",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0023",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0023",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0023",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0024",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0024",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0024",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0024",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0024",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0024",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0025",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0025",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0025",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0025",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0025",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0025",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0026",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0026",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0026",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0026",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0026",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0026",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0027",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0027",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0027",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0027",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0027",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0027",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0028",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0028",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0028",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0028",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0028",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0028",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0029",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0029",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0029",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0029",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0029",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0029",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0030",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0030",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0030",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0030",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0030",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0030",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0031",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0031",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0031",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0031",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0031",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0031",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0032",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0032",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0032",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0032",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0032",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0032",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0033",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0033",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0033",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0033",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0033",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0033",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0034",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0034",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0034",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0034",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0034",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0034",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0035",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0035",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0035",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0035",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0035",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0035",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0036",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0036",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0036",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0036",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0036",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0036",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0037",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0037",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0037",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0037",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0037",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0037",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0038",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0038",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0038",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0038",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0038",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0038",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0039",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0039",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0039",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0039",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0039",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0039",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0040",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0040",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0040",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0040",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0040",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0040",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0041",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0041",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0041",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0041",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0041",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0041",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0042",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0042",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0042",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0042",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0042",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0042",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0043",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0043",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0043",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0043",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0043",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/finance-voc-frontend-0043",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-market_integrity_gate",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-market_integrity_gate",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-market_integrity_gate",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-market_integrity_gate",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-market_integrity_gate",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-market_integrity_gate",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-data_quality_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-data_quality_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-data_quality_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-data_quality_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-data_quality_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-data_quality_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-liquidity_eligibility_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-liquidity_eligibility_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-liquidity_eligibility_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-liquidity_eligibility_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-liquidity_eligibility_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-liquidity_eligibility_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-spread_slippage_risk_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-spread_slippage_risk_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-spread_slippage_risk_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-spread_slippage_risk_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-spread_slippage_risk_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-spread_slippage_risk_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-tradability_gate",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-tradability_gate",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-tradability_gate",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-tradability_gate",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-tradability_gate",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-tradability_gate",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-multi_timeframe_trend_regime_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-multi_timeframe_trend_regime_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-multi_timeframe_trend_regime_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-multi_timeframe_trend_regime_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-multi_timeframe_trend_regime_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-multi_timeframe_trend_regime_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-relative_strength_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-relative_strength_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-relative_strength_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-relative_strength_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-relative_strength_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-relative_strength_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-momentum_persistence_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-momentum_persistence_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-momentum_persistence_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-momentum_persistence_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-momentum_persistence_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-momentum_persistence_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-breakout_quality_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-breakout_quality_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-breakout_quality_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-breakout_quality_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-breakout_quality_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-breakout_quality_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-mean_reversion_opportunity_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-mean_reversion_opportunity_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-mean_reversion_opportunity_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-mean_reversion_opportunity_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-mean_reversion_opportunity_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-mean_reversion_opportunity_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-volume_confirmation_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-volume_confirmation_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-volume_confirmation_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-volume_confirmation_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-volume_confirmation_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-volume_confirmation_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-volatility_regime_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-volatility_regime_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-volatility_regime_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-volatility_regime_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-volatility_regime_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-volatility_regime_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-support_resistance_proximity_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-support_resistance_proximity_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-support_resistance_proximity_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-support_resistance_proximity_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-support_resistance_proximity_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-support_resistance_proximity_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-pattern_confidence_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-pattern_confidence_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-pattern_confidence_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-pattern_confidence_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-pattern_confidence_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-pattern_confidence_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-vwap_location_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-vwap_location_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-vwap_location_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-vwap_location_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-vwap_location_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-vwap_location_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-market_breadth_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-market_breadth_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-market_breadth_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-market_breadth_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-market_breadth_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-market_breadth_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-sector_rotation_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-sector_rotation_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-sector_rotation_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-sector_rotation_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-sector_rotation_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-sector_rotation_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-correlation_diversification_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-correlation_diversification_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-correlation_diversification_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-correlation_diversification_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-correlation_diversification_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-correlation_diversification_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-cross_asset_regime_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-cross_asset_regime_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-cross_asset_regime_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-cross_asset_regime_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-cross_asset_regime_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-cross_asset_regime_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-macro_surprise_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-macro_surprise_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-macro_surprise_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-macro_surprise_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-macro_surprise_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-macro_surprise_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-economic_calendar_risk_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-economic_calendar_risk_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-economic_calendar_risk_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-economic_calendar_risk_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-economic_calendar_risk_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-economic_calendar_risk_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-entity_resolution_engine",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-entity_resolution_engine",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-entity_resolution_engine",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-entity_resolution_engine",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-entity_resolution_engine",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-entity_resolution_engine",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-news_relevance_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-news_relevance_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-news_relevance_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-news_relevance_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-news_relevance_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-news_relevance_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-financial_sentiment_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-financial_sentiment_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-financial_sentiment_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-financial_sentiment_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-financial_sentiment_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-financial_sentiment_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-sentiment_velocity_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-sentiment_velocity_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-sentiment_velocity_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-sentiment_velocity_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-sentiment_velocity_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-sentiment_velocity_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-sentiment_dispersion_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-sentiment_dispersion_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-sentiment_dispersion_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-sentiment_dispersion_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-sentiment_dispersion_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-sentiment_dispersion_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-news_novelty_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-news_novelty_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-news_novelty_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-news_novelty_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-news_novelty_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-news_novelty_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-source_authority_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-source_authority_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-source_authority_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-source_authority_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-source_authority_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-source_authority_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-event_detection_classification_engine",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-event_detection_classification_engine",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-event_detection_classification_engine",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-event_detection_classification_engine",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-event_detection_classification_engine",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-event_detection_classification_engine",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-event_impact_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-event_impact_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-event_impact_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-event_impact_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-event_impact_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-event_impact_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-catalyst_strength_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-catalyst_strength_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-catalyst_strength_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-catalyst_strength_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-catalyst_strength_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-catalyst_strength_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-market_reaction_validator",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-market_reaction_validator",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-market_reaction_validator",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-market_reaction_validator",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-market_reaction_validator",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-market_reaction_validator",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-narrative_emergence_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-narrative_emergence_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-narrative_emergence_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-narrative_emergence_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-narrative_emergence_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-narrative_emergence_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-narrative_saturation_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-narrative_saturation_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-narrative_saturation_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-narrative_saturation_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-narrative_saturation_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-narrative_saturation_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-social_attention_velocity_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-social_attention_velocity_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-social_attention_velocity_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-social_attention_velocity_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-social_attention_velocity_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-social_attention_velocity_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-social_engagement_quality_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-social_engagement_quality_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-social_engagement_quality_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-social_engagement_quality_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-social_engagement_quality_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-social_engagement_quality_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-bot_manipulation_risk_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-bot_manipulation_risk_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-bot_manipulation_risk_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-bot_manipulation_risk_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-bot_manipulation_risk_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-bot_manipulation_risk_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-fundamental_quality_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-fundamental_quality_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-fundamental_quality_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-fundamental_quality_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-fundamental_quality_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-fundamental_quality_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-growth_acceleration_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-growth_acceleration_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-growth_acceleration_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-growth_acceleration_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-growth_acceleration_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-growth_acceleration_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-valuation_peer_comparison_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-valuation_peer_comparison_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-valuation_peer_comparison_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-valuation_peer_comparison_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-valuation_peer_comparison_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-valuation_peer_comparison_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-earnings_revision_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-earnings_revision_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-earnings_revision_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-earnings_revision_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-earnings_revision_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-earnings_revision_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-earnings_surprise_guidance_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-earnings_surprise_guidance_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-earnings_surprise_guidance_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-earnings_surprise_guidance_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-earnings_surprise_guidance_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-earnings_surprise_guidance_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-financial_distress_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-financial_distress_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-financial_distress_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-financial_distress_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-financial_distress_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-financial_distress_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-insider_institutional_flow_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-insider_institutional_flow_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-insider_institutional_flow_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-insider_institutional_flow_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-insider_institutional_flow_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-insider_institutional_flow_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-options_positioning_gamma_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-options_positioning_gamma_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-options_positioning_gamma_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-options_positioning_gamma_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-options_positioning_gamma_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-options_positioning_gamma_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-open_interest_funding_regime_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-open_interest_funding_regime_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-open_interest_funding_regime_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-open_interest_funding_regime_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-open_interest_funding_regime_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-open_interest_funding_regime_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-orderflow_liquidity_imbalance_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-orderflow_liquidity_imbalance_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-orderflow_liquidity_imbalance_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-orderflow_liquidity_imbalance_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-orderflow_liquidity_imbalance_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-orderflow_liquidity_imbalance_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-onchain_flow_holder_behavior_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-onchain_flow_holder_behavior_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-onchain_flow_holder_behavior_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-onchain_flow_holder_behavior_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-onchain_flow_holder_behavior_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-onchain_flow_holder_behavior_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-protocol_fundamentals_tokenomics_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-protocol_fundamentals_tokenomics_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-protocol_fundamentals_tokenomics_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-protocol_fundamentals_tokenomics_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-protocol_fundamentals_tokenomics_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-protocol_fundamentals_tokenomics_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-final_rank_confidence_evidence_scorer",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-final_rank_confidence_evidence_scorer",
+      "check": "HTML_CONTENT_TYPE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-final_rank_confidence_evidence_scorer",
+      "check": "CANONICAL",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-final_rank_confidence_evidence_scorer",
+      "check": "INDEXABLE",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-final_rank_confidence_evidence_scorer",
+      "check": "CRAWLABLE_CONTENT",
+      "status": "PASS"
+    },
+    {
+      "path": "/vocabulary/frontend-final_rank_confidence_evidence_scorer",
+      "check": "JSON_LD_VALID",
+      "status": "PASS"
+    },
+    {
+      "path": "/robots.txt",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/robots.txt",
+      "check": "CANONICAL_SITEMAP",
+      "status": "PASS"
+    },
+    {
+      "path": "/sitemap.xml",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/sitemap.xml",
+      "check": "EXACT_INDEX_ALLOWLIST",
+      "status": "PASS"
+    },
+    {
+      "path": "/llms.txt",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/llms.txt",
+      "check": "PUBLIC_DISCOVERY",
+      "status": "PASS"
+    },
+    {
+      "path": "/sitemap.md",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/sitemap.md",
+      "check": "PUBLIC_DISCOVERY",
+      "status": "PASS"
+    },
+    {
+      "path": "/login",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/login",
+      "check": "NOINDEX",
+      "status": "PASS"
+    },
+    {
+      "path": "/healthz",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/healthz",
+      "check": "HEALTH_OK",
+      "status": "PASS"
+    },
+    {
+      "path": "/api/billing/subscriptions/readiness",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/api/billing/subscriptions/readiness",
+      "check": "SUBSCRIPTION_CONTRACT",
+      "status": "PASS"
+    },
+    {
+      "path": "/api/cads/commerce/readiness",
+      "check": "HTTP_200_NO_REDIRECT",
+      "status": "PASS"
+    },
+    {
+      "path": "/api/cads/commerce/readiness",
+      "check": "CADS_CONTRACT",
+      "status": "PASS"
+    }
+  ]
+}
