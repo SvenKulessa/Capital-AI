@@ -39,5 +39,17 @@
   "runtimeImageScan": "NOT_RUN",
   "runtimeCompatibility": "NOT_PROVEN",
   "modelBenchmark": "BLOCKED_NO_MODEL_RUNTIME_OR_CREDENTIALS",
-  "buildkitImage": "moby/buildkit:v0.34.0@sha256:b059f8d7226d0b326bc871af489a5dddf65e36af4d20d14251b072974d9ee87c"
+  "buildkitImage": "moby/buildkit:v0.34.0@sha256:b059f8d7226d0b326bc871af489a5dddf65e36af4d20d14251b072974d9ee87c",
+  "runtimeSelection": {
+    "selectedAt": "2026-10-09",
+    "primaryCandidate": "alpine-3.24",
+    "primaryDockerfile": "deploy/pr-agent/Dockerfile.alpine",
+    "primaryWorkflow": ".github/workflows/pr-agent-runtime-evidence.yml",
+    "comparisonCandidate": "debian-13",
+    "comparisonDockerfile": "deploy/pr-agent/Dockerfile",
+    "comparisonWorkflow": ".github/workflows/pr-agent-debian-runtime-comparison.yml",
+    "rationale": "Current same-source/same-lock evidence passed the Alpine Trivy gate with zero vulnerabilities and zero secrets while the Debian 13.7 comparison retained 44 HIGH OS findings.",
+    "mergeAuthority": false,
+    "deployAuthority": false
+  }
 }
