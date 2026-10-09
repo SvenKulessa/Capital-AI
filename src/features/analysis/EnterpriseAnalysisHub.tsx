@@ -9,10 +9,12 @@ import {
 } from './MarketIntelligencePanels';
 import { analysisUiEnabled } from './analysisUiFlags';
 import { buttonClass } from './AnalysisUi';
+import { BinanceMarketPanel } from './BinanceMarketPanel';
 const TABS = [
   'overview',
   'scorer',
   'terminal',
+  'binance',
   'components',
   'sentiment',
   'whales',
@@ -21,6 +23,7 @@ const LABELS = {
   overview: 'Übersicht',
   scorer: 'Enterprise Scorer',
   terminal: 'Screener',
+  binance: 'Krypto-Kursverlauf',
   components: '50 Analysekomponenten',
   sentiment: 'Sentiment',
   whales: 'Whale Radar',
@@ -64,6 +67,7 @@ export function EnterpriseAnalysisHub({
         <EnterpriseScorerDashboard onSelectAsset={onSelectAsset} />
       )}
       {['overview', 'terminal'].includes(active) && <ScreenerTable />}
+      {active === 'binance' && <BinanceMarketPanel />}
       {active === 'components' && <AnalysisComponentExplorer />}
       {active === 'sentiment' && <SentimentIntelligencePanel />}
       {active === 'whales' && <WhaleIntelligencePanel />}

@@ -3,6 +3,7 @@ import { infrastructure, payloadHash } from './infrastructure.mjs';
 import { MARKET_SOURCE_POLICY, admittedMarketSourcesFor, isAdmittedMarketSource } from './open-source-market-policy.mjs';
 import { ECB_REFERENCE_RATE_SYMBOLS, fetchEcbReferenceRates } from './ecb-reference-rates.mjs';
 import { marketAssetCoverage } from './market-spot-ingestion.mjs';
+import { startAdmittedSpotFeed } from './spot-provider-wire.mjs';
 
 const defaultSymbols = ['BTCUSDT','BTCUSD','AAPL', ...ECB_REFERENCE_RATE_SYMBOLS];
 const allowed = new Set(
@@ -117,7 +118,10 @@ export async function ingestEcbReferenceRates(fetchImpl = globalThis.fetch) {
 }
 
 export function startStreams() {
-  if (!ecbRuntimeEnabled) return () => {};
+  // Each session rechecks rights and runtime flags BEFORE opening an upstream socket.
+  const spotFeeds = [...allowed].filter(symbol => instrumentCatalog[symbol]?.providers.includes('binance'))
+    .map(symbol => startAdmittedSpotFeed({provider:'binance',symbol}));
+  if (!ecbRuntimeEnabled) return () => spotFeeds.forEach(feed => feed.stop());
   let stopped = false;
   let running = false;
   const tick = async () => {
@@ -137,6 +141,7 @@ export function startStreams() {
   return () => {
     stopped = true;
     clearInterval(timer);
+    spotFeeds.forEach(feed => feed.stop());
   };
 }
 
