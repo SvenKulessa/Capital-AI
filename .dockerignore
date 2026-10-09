@@ -251,6 +251,7 @@
 !supabase/migrations/20261005010039_legal_policy_evidence_store_isolated.sql
 !supabase/migrations/20261005155500_fix_registration_consent_null.sql
 !supabase/migrations/20261006072600_sync_stripe_subscription_catalog_v2.sql
+!supabase/migrations/20261009104641_enforce_subscription_price_authority.sql
 !supabase/migrations/20261006080124_benchmark_run_usage_ledger.sql
 !supabase/migrations/20261006131500_enable_binance_user_provider_vault.sql
 

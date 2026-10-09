@@ -29,7 +29,7 @@ test('Supabase Stripe wrapper readback matches the authoritative three-tier cata
   }
 });
 
-test('test-purchase policy requires exactly three Stripe test-mode purchases and forbids live Price IDs',()=>{
+test('historical 2026-10-06 evidence records the superseded three-purchase policy and forbids live Price IDs',()=>{
   assert.deepEqual(evidence.testPurchasePolicy.tiers,['starter','pro','enterprise']);
   assert.equal(evidence.testPurchasePolicy.requiredCount,3);
   assert.equal(evidence.testPurchasePolicy.stripeMode,'test');

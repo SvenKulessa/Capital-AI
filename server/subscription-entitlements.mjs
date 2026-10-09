@@ -42,19 +42,15 @@ export function normalizeStripeSubscriptionTier(subscription) {
   const status = String(subscription?.status || subscription?.attrs?.status || '').trim().toLowerCase();
   if (!ACTIVE_SUBSCRIPTION_STATUSES.has(status)) return null;
 
-  const metadataTier = canonicalTier(stripeMetadata(subscription).plan_id);
-  const priceTiers = [...new Set(
-    stripeItems(subscription)
-      .map(itemPriceId)
-      .map(paidTierForPriceId)
-      .filter(Boolean),
-  )];
-
-  if (priceTiers.length > 1) return null;
-  const priceTier = priceTiers[0] || null;
-
-  if (metadataTier && priceTier && metadataTier !== priceTier) return null;
-  return metadataTier || priceTier || null;
+  if ((subscription?.livemode ?? subscription?.attrs?.livemode) !== true) return null;
+  const metadataPlan = String(stripeMetadata(subscription).plan_id || '').trim();
+  const metadataTier = canonicalTier(metadataPlan);
+  if (metadataPlan && !metadataTier) return null;
+  const items = stripeItems(subscription);
+  if (items.length !== 1) return null;
+  const priceTier = paidTierForPriceId(itemPriceId(items[0]));
+  if (!priceTier || (metadataTier && metadataTier !== priceTier)) return null;
+  return priceTier;
 }
 
 export function normalizeStoredPaidTier(subscription) {
