@@ -1,6 +1,6 @@
 # Learning Portal: implementation and rollout
 
-Date: 2026-10-09. Development branch: `capital-ai-product/learning-portal-access`.
+Date: 2026-10-09. Development branch: `capital-ai-product/learning-portal-access-20261009`.
 Main correlation: `0a56ee0` merged into branch; production is unchanged by this document.
 
 ## Product contract
