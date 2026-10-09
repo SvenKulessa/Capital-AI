@@ -1,3 +1,4 @@
+import { assessCadsMediaProject, assessCadsAssetIdentity } from '../../../../packages/benchmark-core/growth-quality.mjs';
 import {
   type MediaProjectV2,
 } from '../Contracts/MediaProject';
@@ -48,6 +49,11 @@ export function buildContentSocialAssetFromMediaProject(input: {
   if (input.project.renderRecipe.publishReady !== false) {
     throw new Error('SOCIAL_MEDIA_PROJECT_PUBLISH_AUTHORITY_FORBIDDEN');
   }
+  const quality = assessCadsMediaProject(input.project);
+  if (quality.technicalStatus !== 'PASS') {
+    throw new Error('CADS_SOCIAL_MEDIA_DRAFT_QUALITY_FAILED');
+  }
+
 
   const contentId = requiredText(input.contentId, 'SOCIAL_MEDIA_CONTENT_ID_REQUIRED', 200);
   if (input.project.contentPackageId && input.project.contentPackageId !== contentId) {
@@ -66,7 +72,7 @@ export function buildContentSocialAssetFromMediaProject(input: {
     120,
   ).toLowerCase();
 
-  return ContentSocialAssetSchema.parse({
+  const asset = ContentSocialAssetSchema.parse({
     assetId: requiredText(input.renderedAsset.assetId, 'SOCIAL_MEDIA_ASSET_ID_REQUIRED', 200),
     contentId,
     kind: socialKindForMime(mimeType),
@@ -79,6 +85,11 @@ export function buildContentSocialAssetFromMediaProject(input: {
     ),
     sourceSha,
   });
+  const assetQuality = assessCadsAssetIdentity(asset, { sourceSha, contentId });
+  if (assetQuality.technicalStatus !== 'PASS') {
+    throw new Error('CADS_SOCIAL_MEDIA_ASSET_IDENTITY_FAILED');
+  }
+  return asset;
 }
 
 export function buildMediaProjectPublisherHandoff(input: {
@@ -92,6 +103,9 @@ export function buildMediaProjectPublisherHandoff(input: {
   if (!validation.ok) throw new Error('SOCIAL_MEDIA_PROJECT_INVALID');
   if (input.project.renderRecipe.publishReady !== false) {
     throw new Error('SOCIAL_MEDIA_PROJECT_PUBLISH_AUTHORITY_FORBIDDEN');
+  }
+  if (assessCadsMediaProject(input.project).technicalStatus !== 'PASS') {
+    throw new Error('CADS_SOCIAL_MEDIA_DRAFT_QUALITY_FAILED');
   }
   if (input.project.contentPackageId && input.project.contentPackageId !== input.manifest.contentId) {
     throw new Error('SOCIAL_MEDIA_PROJECT_MANIFEST_IDENTITY_MISMATCH');
