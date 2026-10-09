@@ -14,7 +14,7 @@ function result(profile, checks) {
     benchmarkEvidenceSchema: BENCHMARK_SCHEMA_VERSION,
     profile,
     technicalStatus: failures.length ? 'FAIL' : 'PASS',
-    checks: checks.map(check => Object.freeze(check)),
+    checks: Object.freeze(checks.map(check => Object.freeze({ ...check }))),
     editorialReview: 'REVIEW_REQUIRED',
     actualAssetBytes: 'NOT_PROVEN',
     providerRights: 'NOT_PROVEN',
