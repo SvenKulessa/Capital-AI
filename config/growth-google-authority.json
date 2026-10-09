@@ -9,17 +9,47 @@
     "license": "MIT",
     "mode": "READ_ONLY",
     "oauthScope": "https://www.googleapis.com/auth/webmasters.readonly",
-    "blockedTools": ["submit_sitemap"],
-    "capabilities": ["list_properties", "query_search_analytics", "inspect_url", "list_sitemaps"]
+    "blockedTools": [
+      "submit_sitemap"
+    ],
+    "capabilities": [
+      "list_properties",
+      "query_search_analytics",
+      "inspect_url",
+      "list_sitemaps"
+    ]
   },
   "seo": {
     "authority": "GSC",
     "status": "FOUNDATION_READY",
-    "plannedReadbacks": ["crawl/index status", "Google-selected canonical", "last crawl", "sitemap membership", "clicks", "impressions", "CTR", "position"]
+    "plannedReadbacks": [
+      "crawl/index status",
+      "Google-selected canonical",
+      "last crawl",
+      "sitemap membership",
+      "clicks",
+      "impressions",
+      "CTR",
+      "position"
+    ]
   },
   "ga4": {
-    "provider": null,
-    "status": "PLANNED_SEPARATE_ADAPTER",
-    "note": "LukeRenton/google-search-console-mcp does not expose GA4. GA4 must use a separate Google Analytics Data API/MCP adapter behind this Growth authority boundary."
+    "provider": "googleanalytics/google-analytics-mcp",
+    "package": "analytics-mcp",
+    "version": "0.7.0",
+    "upstreamReleaseCommit": "10ba60a",
+    "license": "Apache-2.0",
+    "status": "RENDER_READ_ADAPTER_IMPLEMENTED",
+    "mode": "READ_ONLY",
+    "executionHost": "RENDER_CAPITAL_AI_WEB",
+    "route": "/api/profile/google-analytics-readback",
+    "capabilities": [
+      "get_account_summaries",
+      "get_property_details",
+      "run_realtime_report",
+      "run_report"
+    ],
+    "browserMeasurement": "DISABLED_PENDING_CONSENT",
+    "note": "GA4 remains a separate authority from GSC. Source implementation exists in the Capital-AI Render runtime; live provider readback remains NOT_PROVEN until Render credentials/property are configured and a production read succeeds."
   }
 }

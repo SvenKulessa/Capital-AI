@@ -10,6 +10,7 @@ import { createUserProviderVault } from './user-provider-vault.mjs';
 import { createUserAnalysisBindings } from './user-analysis-bindings.mjs';
 import { createPrivateProviderQuery } from './private-provider-query.mjs';
 import { createRenderOwnerDashboard } from './render-owner-dashboard.mjs';
+import { createGoogleAnalyticsReadback } from './google-analytics-readback.mjs';
 import { createUniswapTrading } from './uniswap-trading.mjs';
 import { createKrakenOrderDryRun } from './kraken-order-dry-run.mjs';
 import { createTelegram } from './telegram.mjs';
@@ -251,6 +252,11 @@ function injectVocabularySeo(html, pathname) {
 function json(res, status, body) { res.writeHead(status, { ...headers, 'X-Robots-Tag': 'noindex, nofollow', 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(body)); }
 
 export function createApp(root = defaultRoot, options = {}) {
+  // Render's deployment metadata identifies the source revision, not an OCI attestation.
+  const deploymentSha = (options.env || process.env).RENDER_GIT_COMMIT;
+  const runtimeIdentity = /^[0-9a-f]{40}$/.test(deploymentSha || '')
+    ? { sourceSha: deploymentSha, evidence: 'RENDER_DEPLOYMENT_ENVIRONMENT' }
+    : { sourceSha: null, evidence: 'NOT_PROVEN' };
   let inflight = 0;
   const auth = createAuth(options);
   const socialOAuthCallback = createSocialOAuthCallback({
@@ -267,6 +273,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const userAnalysisBindings = createUserAnalysisBindings({ ...options, auth });
   const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault });
   const renderOwnerDashboard = createRenderOwnerDashboard({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
+  const googleAnalyticsReadback = createGoogleAnalyticsReadback({ env: options.env || process.env, auth });
   if (
     (options.env || process.env).PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true' ||
     (options.env || process.env).PRIVATE_PROVIDER_BRIDGE_PROBE_ENABLED === 'true'
@@ -339,6 +346,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await userAnalysisBindings.handle(req, res, url, json)) return;
   if (await privateProviderQuery.handle(req, res, url, json, requestContext.requestId)) return;
   if (await renderOwnerDashboard.handle(req, res, url, json)) return;
+  if (await googleAnalyticsReadback.handle(req, res, url, json)) return;
   if (await krakenOrderDryRun.handle(req, res, url, json, requestContext.requestId)) return;
   if (await uniswapTrading.handle(req, res, url, json)) return;
   if (await privacy(req, res, url, json)) return;
@@ -355,7 +363,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await scorerProxy.handle(req, res, url, json, requestContext.requestId)) return;
   if (await mobileScorer.handle(req, res, url, json, headers)) return;
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return json(res, 405, { error: 'method_not_allowed' }); }
-  if (url.pathname === '/healthz') return json(res, 200, { ...health(), buildIdentity });
+  if (url.pathname === '/healthz') return json(res, 200, { ...health(), buildIdentity, runtimeIdentity });
   if (url.pathname === '/metrics') {
     if (!metricsAuthorized(req)) {
       writeAuditEvent({ eventType: 'observability.metrics.denied', requestId: requestContext.requestId, result: 'DENIED' });
