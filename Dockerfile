@@ -16,6 +16,16 @@ RUN npm ci --prefix /opt/npm-security-patches --ignore-scripts --no-audit --no-f
 COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts --no-audit --no-fund \
     && rm -rf /root/.npm /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
+# GA4 provider plane: build the pinned official MCP into an isolated venv.
+# Transitive pins keep known remediated versions inside the scanned image.
+RUN apk add --no-cache python3 py3-pip \
+    && python3 -m venv /opt/ga4-mcp \
+    && /opt/ga4-mcp/bin/pip install --no-cache-dir analytics-mcp==0.7.0 msgpack==1.2.1 setuptools==78.1.1 \
+    && test -x /opt/ga4-mcp/bin/analytics-mcp \
+    && /opt/ga4-mcp/bin/python -c "import analytics_mcp; import google.analytics.admin_v1beta; import google.analytics.data_v1beta" \
+    && rm -rf /root/.cache \
+    && rm -f /opt/ga4-mcp/bin/pip /opt/ga4-mcp/bin/pip3 /opt/ga4-mcp/bin/pip3.*
+
 # All subsequent validation is offline. Node's script runner needs no npm/cache transport.
 # Remove the installer itself, including vulnerable bundled http-cache-semantics, before validation.
 COPY index.html vite.config.ts tsconfig.json OPEN_SOURCE_LICENSES.md ./
@@ -49,6 +59,7 @@ COPY server/repository-tool-catalog.mjs server/repository-tool-catalog.test.mjs 
 COPY server/advisor-security.test.mjs ./server/
 COPY server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/private-provider-query.test.mjs server/provider-query-state.test.mjs ./server/
 COPY server/render-owner-dashboard.mjs server/render-owner-dashboard.test.mjs ./server/
+COPY server/google-analytics-mcp.mjs server/google-analytics-readback.mjs server/google-analytics-readback.test.mjs ./server/
 COPY server/growth-ai-gateway.ts server/growth-ai-gateway.test.ts ./server/
 COPY server/social-media/provider-adapter.mjs server/social-media/provider-adapter.test.mjs server/social-media/provider-store.mjs server/social-media/provider-store.test.mjs server/social-media/provider-readback.mjs server/social-media/provider-readback.test.mjs server/social-media/oauth-callback.mjs server/social-media/oauth-callback.test.mjs server/social-media/asset-readback.mjs server/social-media/asset-readback.test.mjs server/social-media/provider-external-readback.mjs server/social-media/provider-external-readback.test.mjs server/social-media/provider-publish.mjs server/social-media/provider-publish.test.mjs server/social-media/provider-execution.mjs ./server/social-media/
 COPY scripts/cads-marketplace-migration.test.mjs scripts/cads-marketplace-production-manifest.test.mjs scripts/provider-query-guard-migration.test.mjs scripts/billing-catalog.test.mjs scripts/stripe-catalog-readback.test.mjs scripts/stripe-three-purchase-e2e.mjs scripts/stripe-three-purchase-e2e.test.mjs scripts/stripe-subscription-sync-migration.test.mjs scripts/benchmark-ledger-migration.test.mjs scripts/benchmark-cost-calibration.test.mjs scripts/blueprint-evidence-contract.test.mjs scripts/supabase-auth-config.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-source-provenance-drift.test.mjs scripts/refresh-seo-source-provenance.mjs scripts/merge-milestone.mjs scripts/merge-milestone.test.mjs scripts/seo-metadata.test.mjs scripts/seo-production-readback.mjs scripts/seo-production-readback.test.mjs scripts/locale-policy.test.mjs scripts/finance-source-target-manifest.test.mjs scripts/validate-finance-source-target-manifest.mjs scripts/social-engine-completion-gate.test.mjs scripts/validate-social-engine-completion-gate.mjs ./scripts/
@@ -85,7 +96,7 @@ COPY server/index.mjs server/seo-agent-discovery.mjs server/market.mjs server/ma
 COPY server/infrastructure.mjs server/scorer-bus.mjs ./server/
 COPY server/market-spot-ingestion.test.mjs ./server/
 COPY server/spot-provider-wire.test.mjs server/spot-feed-lifecycle.test.mjs server/private-market-batch.test.mjs server/private-market-cache.test.mjs ./server/
-RUN --network=none node --test server/repository-tool-catalog.test.mjs \
+RUN --network=none node --test server/google-analytics-readback.test.mjs server/repository-tool-catalog.test.mjs \
     && node --test server/mta-sts.test.mjs server/well-known.test.mjs server/auth-security.test.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-source-provenance-drift.test.mjs \
     && node --test scripts/seo-production-readback.test.mjs \
     && node --test scripts/locale-policy.test.mjs server/locale-html.test.mjs \
@@ -110,6 +121,7 @@ RUN npm ci --omit=dev --ignore-scripts --no-audit --no-fund && rm -rf /root/.npm
 FROM crypto-base AS runtime
 ENV NODE_ENV=production PORT=10000
 WORKDIR /app
+RUN apk add --no-cache python3
 COPY ["Chat Buddy/README.md", "./Chat Buddy/README.md"]
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/CAPITAL-AI-PRODUCT/badge.svg ./CAPITAL-AI-PRODUCT/badge.svg
@@ -119,6 +131,9 @@ COPY --from=build /app/packages/benchmark-core ./packages/benchmark-core
 COPY --from=build /app/contracts/private-provider-query-operations.json ./contracts/private-provider-query-operations.json
 COPY server/index.mjs server/seo-agent-discovery.mjs server/market.mjs server/market-spot-ingestion.mjs server/spot-provider-wire.mjs server/spot-feed-lifecycle.mjs server/private-market-batch.mjs server/private-market-cache.mjs server/open-source-market-policy.mjs server/ecb-reference-rates.mjs server/auth.mjs server/auth-security.mjs server/subscription-entitlements.mjs server/user-provider-vault.mjs server/user-analysis-bindings.mjs server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/kraken-order-dry-run.mjs server/uniswap-trading.mjs server/telegram.mjs server/privacy.mjs server/http-security.mjs server/mta-sts.mjs server/well-known.mjs server/mobile-scorer.mjs server/scorer-proxy.mjs server/scorer-bus.mjs server/observability.mjs server/cads-observability.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/subscription-checkout.mjs server/cads-marketplace.mjs server/cads-commerce.mjs server/benchmark-runs.mjs server/benchmark-store.mjs server/public-artifact-policy.mjs server/chat-buddy-keys.mjs server/chat-buddy-learn.mjs ./server/
 COPY server/render-owner-dashboard.mjs ./server/
+COPY server/google-analytics-mcp.mjs server/google-analytics-readback.mjs ./server/
+COPY --from=build /opt/ga4-mcp /opt/ga4-mcp
+COPY docs/licenses/googleanalytics-google-analytics-mcp-Apache-2.0.txt ./licenses/Google-Analytics-MCP-Apache-2.0.txt
 COPY server/social-media/provider-adapter.mjs server/social-media/provider-store.mjs server/social-media/oauth-callback.mjs server/social-media/provider-readback.mjs server/social-media/provider-external-readback.mjs server/social-media/provider-publish.mjs server/social-media/provider-execution.mjs ./server/social-media/
 COPY --from=production-deps /runtime/node_modules ./node_modules
 COPY server/repository-tool-catalog.mjs ./server/
@@ -129,7 +144,7 @@ COPY shared ./shared
 COPY docs/licenses/node-v26.10.0-LICENSE.txt ./licenses/Node-LICENSE.txt
 COPY server/ecb-reference-rates.LICENSE.txt ./licenses/ECB-Reference-Rate-Adapter-MIT.txt
 RUN rm -rf /usr/local/lib/node_modules/corepack /usr/local/bin/corepack /usr/local/bin/pnpm* /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx /opt/yarn* /usr/local/bin/yarn* \
-    && chmod -R a-w /app
+    && chmod -R a-w /app /opt/ga4-mcp
 USER 1000:1000
 EXPOSE 10000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 CMD ["node", "-e", "fetch('http://127.0.0.1:'+process.env.PORT+'/healthz',{signal:AbortSignal.timeout(3000)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
