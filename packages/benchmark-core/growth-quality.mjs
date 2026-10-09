@@ -63,7 +63,7 @@ export function assessCadsAssetIdentity(asset, campaign) {
     check('SOCIAL_ASSET_SHA256', SHA256.test(asset?.sha256 ?? '')),
     check('SOCIAL_SOURCE_SHA_MATCH', SHA.test(asset?.sourceSha ?? '') && asset?.sourceSha === campaign?.sourceSha),
     check('SOCIAL_CONTENT_ID_MATCH', typeof asset?.contentId === 'string' && asset.contentId === campaign?.contentId),
-    check('SOCIAL_MIME_ALLOWED', ['image/png','image/svg+xml','image/webp','video/mp4'].includes(asset?.mimeType)),
+    check('SOCIAL_MIME_ALLOWED', ['image/png','image/jpeg','image/webp','image/avif','image/svg+xml','video/mp4','video/webm'].includes(asset?.mimeType)),
   ];
   return result('SOCIAL_RENDERED_ASSET_IDENTITY', checks);
 }
