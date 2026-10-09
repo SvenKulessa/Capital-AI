@@ -41,6 +41,7 @@
     "test:migration-manifest": "node --test scripts/finance-source-target-manifest.test.mjs",
     "test:social-tool-admission": "node --test scripts/social-tool-license-evidence.test.mjs",
     "test:social-engine-gate": "node --test scripts/social-engine-completion-gate.test.mjs",
+    "test:stripe:postgres": "node scripts/stripe-subscription-postgres.mjs",
     "stripe:test-purchases:create": "node scripts/stripe-three-purchase-e2e.mjs --create",
     "stripe:test-purchases:verify": "node scripts/stripe-three-purchase-e2e.mjs --verify",
     "test:seo:runtime": "node --test server/well-known.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-metadata.test.mjs server/seo-indexing-policy.test.mjs server/license-pages.test.mjs",

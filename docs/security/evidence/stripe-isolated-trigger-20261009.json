@@ -1,0 +1,20 @@
+{
+  "schema": "CAPITAL_AI_STRIPE_ISOLATED_TRIGGER_EVIDENCE@1",
+  "postgres": "PostgreSQL 18.3 (PGlite 0.5.8) on wasm32-unknown-emscripten, compiled by emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 3.1.74 (1092ec30a3fb1d46b1782ff1b4db5094d3d06ae5), 32-bit",
+  "baselineUnknownPrice": "PAID_REPRODUCED",
+  "newUnknownPrice": "DENIED",
+  "variants": 6,
+  "assertions": 67,
+  "duplicateProjection": "ONE_ROW",
+  "cancellationRetry": "FREE",
+  "productionEvidence": "NOT_PROVEN",
+  "providerWebhookRetry": "NOT_PROVEN",
+  "observedAt": "2026-10-09T10:53:12.278373+00:00",
+  "baseMainSha": "557cf51be5a44aeec15306afcbefda7c06824ee5",
+  "runtimeVersion": "@electric-sql/pglite@0.5.8",
+  "sourceHashes": {
+    "scripts/stripe-subscription-postgres.mjs": "023fd3d58ae92eeab3d58c21e3b10caaa5790b4bab844976fe92cbb5f94a487d",
+    "supabase/migrations/20261009104641_enforce_subscription_price_authority.sql": "0a254e1d42fb21ec8af86be250b3a7d73453c3e1cb8fff2176e9ea181d2a5a13"
+  },
+  "scope": "Isolated sequential projection retries; PostgreSQL 18.3/WASM. No provider delivery replay, no concurrency/production PostgreSQL 17 claim."
+}
