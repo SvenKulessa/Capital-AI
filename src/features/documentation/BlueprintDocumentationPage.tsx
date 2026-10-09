@@ -16,6 +16,7 @@ import { BLUEPRINT_EVIDENCE_CONTRACTS } from '../../data/blueprintEvidenceContra
 
 import { BLUEPRINT_DETAILS, VERIFIED_COMMERCE_STATE } from './blueprintDocumentationData';
 import { ByokArchitectureDiagram, SocialMediaArchitectureDiagram } from './ArchitectureGraphics';
+import { ScreenerBlueprintYamlPreview } from './ScreenerBlueprintYamlPreview';
 
 type BlueprintDocumentationPageProps = {
   onNavigate?: (path: string) => void;
@@ -111,6 +112,8 @@ export const BlueprintDocumentationPage: React.FC<BlueprintDocumentationPageProp
             </div>
           </div>
         </header>
+
+        <ScreenerBlueprintYamlPreview />
 
         <section className="rounded-2xl border border-amber-400/25 bg-amber-400/5 p-4">
           <div className="flex gap-3">
