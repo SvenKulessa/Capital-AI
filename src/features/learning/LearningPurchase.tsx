@@ -24,7 +24,7 @@ export function LearningPurchase({ onLogin }: { onLogin?: () => void }) {
     finally { setPending(false); }
   }
   return <section aria-label="Learning Portal kaufen" className="space-y-3 rounded-xl border border-amber-400/30 bg-amber-400/5 p-4">
-    <p className="text-sm text-slate-200">Learning Portal · {formatVocabularyPrice()} einmalig. Vollständiges Vocabulary, Lernvideos und tägliche Quizzes. Chart-Lernatlas und Modul-Erklärungen benötigen zusätzlich mindestens Starter; Chart-Training zusätzlich Pro.</p>
+    <p className="text-sm text-slate-200">Learning Portal · {formatVocabularyPrice()} einmalig. Vollständiges Vocabulary und tägliche Quizzes. Lernvideos folgen demnächst (Coming soon). Chart-Lernatlas und Modul-Erklärungen benötigen zusätzlich mindestens Starter; Chart-Training zusätzlich Pro.</p>
     <label className="flex gap-3 text-xs text-slate-300"><input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} />
       Ich stimme der sofortigen Bereitstellung zu und bestätige den Verlust des Widerrufsrechts mit Beginn der Bereitstellung.</label>
     <button type="button" disabled={!consent || pending} aria-busy={pending} onClick={() => void checkout()} className="min-h-11 rounded-lg bg-amber-400 px-4 text-sm font-bold text-black disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-amber-200">

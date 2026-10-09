@@ -171,6 +171,14 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
         setPurchaseMessage('Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.');
         return;
       }
+      if (payload?.error === 'trial_already_claimed') {
+        setPurchaseMessage('Die Enterprise-Testphase ist für dieses Konto bereits reserviert oder wurde schon genutzt.');
+        return;
+      }
+      if (response.status === 400 && tier === 'enterprise' && trialCode.trim()) {
+        setPurchaseMessage('Dieser Trial-Code ist ungültig. Verwende ENTERPRISE3 oder entferne den Code.');
+        return;
+      }
       if (!response.ok || typeof payload?.url !== 'string') {
         setPurchaseMessage('Der Checkout konnte nicht gestartet werden. Es wurde keine Zahlung ausgelöst.');
         return;
