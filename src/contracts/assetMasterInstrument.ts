@@ -3,7 +3,7 @@ import { DataProvenanceSchema } from './canonicalContracts';
 import { resolveProductAssetMapping } from './marketAssetTaxonomy';
 
 const id = z.string().trim().min(1).max(256);
-const currency = z.string().regex(/^[A-Z]{3}$/);
+const currency = z.string().regex(/^[A-Z0-9]{3,8}$/);
 const instant = z.number().int().positive().max(Number.MAX_SAFE_INTEGER);
 const positive = z.number().finite().positive();
 // Format validation only, never issuer/source verification or an ISIN checksum claim.
@@ -40,8 +40,17 @@ export const InstrumentMasterSchema = z.discriminatedUnion('productAssetClass', 
   if ([p.observedAt, p.receivedAt, p.publishedAt].some(t => t > instrument.evaluatedAt) ||
       p.observedAt > p.receivedAt || p.receivedAt > p.publishedAt || p.latencyMs !== p.receivedAt - p.observedAt)
     reject('INSTRUMENT_IDENTITY_TIMESTAMP_INVALID');
+  if (instrument.productAssetClass !== 'crypto' && !/^[A-Z]{3}$/.test(instrument.currency))
+    reject('INSTRUMENT_FIAT_CURRENCY_INVALID');
+  if (instrument.productAssetClass === 'crypto' &&
+      (instrument.currency !== instrument.quoteAsset ||
+       !/^[A-Z0-9]{3,8}$/.test(instrument.quoteAsset)))
+    reject('INSTRUMENT_CRYPTO_QUOTE_UNIT_MISMATCH');
   if (instrument.productAssetClass === 'forex' &&
-      (instrument.baseCurrency === instrument.quoteCurrency || instrument.currency !== instrument.quoteCurrency))
+      (!/^[A-Z]{3}$/.test(instrument.baseCurrency) ||
+       !/^[A-Z]{3}$/.test(instrument.quoteCurrency) ||
+       instrument.baseCurrency === instrument.quoteCurrency ||
+       instrument.currency !== instrument.quoteCurrency))
     reject('INSTRUMENT_FX_CURRENCY_MISMATCH');
   if (instrument.productAssetClass === 'crypto' && instrument.baseAsset === instrument.quoteAsset)
     reject('INSTRUMENT_CRYPTO_PAIR_INVALID');
