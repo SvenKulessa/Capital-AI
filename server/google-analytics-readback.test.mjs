@@ -202,3 +202,39 @@ test('configured property mismatch fails closed before event reports', async () 
   );
   assert.deepEqual(calls.map(entry => entry.tool), ['get_account_summaries']);
 });
+
+test('GA4 property checks reject prefix collisions in account summaries', async () => {
+  const calls = [];
+  const client = fakeClient(calls);
+  const original = client.callTool;
+  client.callTool = async (tool, args) => {
+    if (tool === 'get_account_summaries') {
+      calls.push({ tool, args });
+      return { account_summaries: [{ property_summaries: [{ property: 'properties/1234567890' }] }] };
+    }
+    return original(tool, args);
+  };
+  await assert.rejects(
+    () => buildGoogleAnalyticsReadback({ client, propertyNumber: '123456789' }),
+    /PROPERTY_NOT_ACCESSIBLE/,
+  );
+  assert.deepEqual(calls.map(entry => entry.tool), ['get_account_summaries']);
+});
+
+test('GA4 property detail checks reject a longer numeric property identifier', async () => {
+  const calls = [];
+  const client = fakeClient(calls);
+  const original = client.callTool;
+  client.callTool = async (tool, args) => {
+    if (tool === 'get_property_details') {
+      calls.push({ tool, args });
+      return { name: 'properties/1234567890' };
+    }
+    return original(tool, args);
+  };
+  await assert.rejects(
+    () => buildGoogleAnalyticsReadback({ client, propertyNumber: '123456789' }),
+    /PROPERTY_DETAILS_NOT_BOUND/,
+  );
+  assert.deepEqual(calls.map(entry => entry.tool), ['get_account_summaries', 'get_property_details']);
+});
