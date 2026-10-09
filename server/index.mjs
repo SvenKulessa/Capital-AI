@@ -559,9 +559,11 @@ export function createApp(root = defaultRoot, options = {}) {
       if (pathLocale && publicPath !== '/') {
         body = Buffer.from(localizeNonIndexableLandingHtml(body.toString('utf8'), pathLocale));
       }
-      const { locale, source } = pathLocale
-        ? {locale:pathLocale,source:'path'}
-        : resolveLocale({
+      const { locale, source } = staticLegalRoute.has(publicPath)
+        ? {locale:'de',source:'document'} // These legal documents currently contain German text only.
+        : pathLocale
+          ? {locale:pathLocale,source:'path'}
+          : resolveLocale({
         cookieHeader: req.headers.cookie,
         countryHeader: req.headers['cf-ipcountry'],
         acceptLanguage: req.headers['accept-language'],
