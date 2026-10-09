@@ -62,6 +62,7 @@ function lineFor(reason: AssistReason) {
 
 export function HeroBuddy(props: HeroBuddyProps) {
   const [open, setOpen] = useState(false);
+  const chatPanelId = 'capital-ai-hero-buddy-panel';
   const [speech, setSpeech] = useState<AssistReason | null>(null);
   const [draft, setDraft] = useState('');
   const [hidden, setHidden] = useState(() =>
@@ -215,7 +216,7 @@ export function HeroBuddy(props: HeroBuddyProps) {
   return (
     <div className={`fixed ${positionClass} z-[45] flex items-end gap-2`} data-hero-buddy="agent">
       {(speech || open) && (
-        <div className="relative w-[min(88vw,320px)] rounded-2xl border border-amber-300/40 bg-[#10182e] px-3 py-2 text-xs text-slate-100 shadow-lg">
+        <div id={chatPanelId} role={open ? 'dialog' : 'status'} aria-label={open ? 'JaJa Chat Buddy' : 'JaJa Hilfe'} className="relative w-[min(88vw,320px)] rounded-2xl border border-amber-300/40 bg-[#10182e] px-3 py-2 text-xs text-slate-100 shadow-lg">
           <span className="absolute -right-1.5 bottom-5 h-3 w-3 rotate-45 border-b border-r border-amber-300/40 bg-[#10182e]" aria-hidden="true" />
           {open ? (
             <div>
@@ -264,7 +265,7 @@ export function HeroBuddy(props: HeroBuddyProps) {
                   </ul>
                 </div>
               ) : null}
-              <div className="max-h-52 space-y-2 overflow-y-auto">
+              <div role="log" aria-label="Chatverlauf" aria-live="polite" aria-relevant="additions text" className="max-h-52 space-y-2 overflow-y-auto">
                 {messages.map((message) => (
                   <p key={message.id} className={`rounded-xl px-2 py-1.5 ${message.role === 'user' ? 'ml-6 bg-amber-400 text-black' : 'mr-4 bg-slate-900'}`}>{message.text}</p>
                 ))}
@@ -275,7 +276,7 @@ export function HeroBuddy(props: HeroBuddyProps) {
                 ))}
               </div>
               <form className="mt-2 flex gap-2" onSubmit={(event) => { event.preventDefault(); send(draft); }}>
-                <input value={draft} onChange={(event) => setDraft(event.target.value)} maxLength={400} placeholder="Frage zur Plattform" className="min-w-0 flex-1 rounded-xl border border-slate-700 bg-[#030716] px-2 py-1.5 text-xs text-white outline-none" />
+                <input aria-label="Frage an JaJa" value={draft} onChange={(event) => setDraft(event.target.value)} maxLength={400} placeholder="Frage zur Plattform" className="min-w-0 flex-1 rounded-xl border border-slate-700 bg-[#030716] px-2 py-1.5 text-xs text-white outline-none" />
                 <button type="submit" className="rounded-xl bg-amber-400 px-2 text-xs font-bold text-black">Senden</button>
               </form>
               <p className="mt-2 text-[10px] text-slate-500">{DISCLAIMER}</p>
@@ -291,7 +292,7 @@ export function HeroBuddy(props: HeroBuddyProps) {
           )}
         </div>
       )}
-      <button type="button" aria-expanded={open} aria-label="Hero Buddy Support öffnen" onClick={() => { setOpen((value) => !value); setSpeech(null); }} className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-amber-300/50 bg-[#10182e] shadow-[0_8px_24px_rgba(245,176,20,0.28)]">
+      <button type="button" aria-expanded={open} aria-controls={open ? chatPanelId : undefined} aria-label={open ? "JaJa Chat schließen" : "JaJa Chat öffnen"} onClick={() => { setOpen((value) => !value); setSpeech(null); }} className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-amber-300/50 bg-[#10182e] shadow-[0_8px_24px_rgba(245,176,20,0.28)]">
         <BuddyMark pulse={!reducedMotion && !open} speaking={Boolean(speech) && !open} />
       </button>
     </div>
@@ -306,7 +307,8 @@ function useAssistanceSignal(onAssist: (reason: AssistReason) => void) {
     const clicks: { x: number; y: number; t: number }[] = [];
     let scrollDir = 0;
     let scrollFlips = 0;
-    let lastScroll = 0;
+    let lastScroll = window.scrollY;
+    let lastScrollTime = 0;
     let dwellTimer = 0;
     const remember = (x: number, y: number) => {
       const now = Date.now();
@@ -333,7 +335,9 @@ function useAssistanceSignal(onAssist: (reason: AssistReason) => void) {
       if (next && scrollDir && next !== scrollDir) scrollFlips += 1;
       scrollDir = next || scrollDir;
       lastScroll = window.scrollY;
-      if (scrollFlips >= 4 && now - lastScroll < 3000) {
+      if (now - lastScrollTime > 3000) scrollFlips = 0;
+      lastScrollTime = now;
+      if (scrollFlips >= 4) {
         scrollFlips = 0;
         onAssistRef.current('oscillation');
       }
