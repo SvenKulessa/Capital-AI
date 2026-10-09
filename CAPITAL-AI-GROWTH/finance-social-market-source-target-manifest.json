@@ -46,7 +46,7 @@
     {
       "id": "TA-ASSET-FEATURE",
       "path": "src/contracts/canonicalContracts.ts",
-      "blobSha": "27d4973608f47218800736cb8877485d01124173",
+      "blobSha": "5effb393d2a09a5aa4c0049fb414b9d46ef50ba1",
       "role": "AssetIdentity/DataProvenance/FeatureValue/ScoreResult authority",
       "recorrelatedAt": "2026-10-08",
       "recorrelationBaseMain": "e94d47cddde8ae32da749d08bc161daad323b914",

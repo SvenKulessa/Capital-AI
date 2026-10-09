@@ -22,12 +22,15 @@ export const AssetIdentitySchema = z.object({
   assetClass: AssetClassSchema,
   subclass: z.string().optional(),
   venue: z.string().min(1), // e.g. "BINANCE", "NASDAQ", "XETRA", "CME"
-  currency: z.string().length(3), // ISO 4217, e.g. "EUR", "USD"
+  currency: z.string().regex(/^[A-Z0-9]{3,8}$/), // 3-letter fiat or explicit crypto quote unit such as USDT
   status: z.enum(['active', 'halted', 'delisted', 'unverified']).default('active'),
   isin: z.string().optional(),
   figi: z.string().optional(),
   baseAsset: z.string().optional(),
   quoteAsset: z.string().optional(),
+}).superRefine((asset, ctx) => {
+  if (asset.assetClass !== 'crypto' && !/^[A-Z]{3}$/.test(asset.currency))
+    ctx.addIssue({ code: 'custom', message: 'FIAT_ASSET_CURRENCY_INVALID' });
 });
 export type AssetIdentity = z.infer<typeof AssetIdentitySchema>;
 

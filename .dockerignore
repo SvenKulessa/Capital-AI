@@ -135,6 +135,8 @@
 !public/learning/charts/
 !public/learning/charts/**
 !scripts/domain-skills.test.mjs
+!scripts/screener-blueprint-preview.test.mjs
+!scripts/static-legal-routes.test.mjs
 !scripts/harden-npm-toolchain.mjs
 !scripts/benchmark-scoring-capacity.mjs
 !scripts/verify-private-brokers.mjs
@@ -218,6 +220,10 @@
 !docs/market-data/evidence/instrument-manifest-20261005.json
 !public/
 !public/bootstrap-failure.js
+!public/datenschutz/
+!public/datenschutz/index.html
+!public/agb/
+!public/agb/index.html
 !public/fonts/
 !public/fonts/**
 !public/branding/

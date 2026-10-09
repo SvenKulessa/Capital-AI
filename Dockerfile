@@ -56,6 +56,8 @@ COPY public/branding/social ./public/branding/social
 COPY public/fonts ./public/fonts
 COPY public/learning/charts ./public/learning/charts
 COPY public/bootstrap-failure.js ./public/bootstrap-failure.js
+COPY public/datenschutz ./public/datenschutz
+COPY public/agb ./public/agb
 COPY server/index.mjs server/seo-agent-discovery.mjs server/advisor.ts server/http-security.mjs server/mta-sts.mjs server/mta-sts.test.mjs server/well-known.mjs server/well-known.test.mjs server/locale-html.test.mjs server/shadow-evidence-store.mjs server/auth-security.mjs server/auth-security.test.mjs ./server/
 COPY server/prompt-injection-guard.mjs server/prompt-injection-guard.test.mjs server/billing-catalog.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/vocabulary-checkout.test.mjs server/subscription-checkout.mjs server/subscription-checkout.test.mjs server/cads-marketplace.mjs server/cads-marketplace.test.mjs server/cads-commerce.mjs server/cads-commerce.test.mjs server/benchmark-runs.mjs server/benchmark-runs.test.mjs server/benchmark-store.mjs server/benchmark-store.test.mjs server/public-artifact-policy.mjs server/public-artifact-policy.test.mjs ./server/
 COPY server/repository-tool-catalog.mjs server/repository-tool-catalog.test.mjs server/chat-buddy-keys.mjs server/chat-buddy-learn.mjs ./server/
@@ -71,6 +73,8 @@ COPY supabase/migrations/20261005010039_legal_policy_evidence_store_isolated.sql
 COPY supabase/proposals/provider_query_guard.sql ./supabase/proposals/provider_query_guard.sql
 COPY scripts/documentation-drift.mjs scripts/documentation-drift.test.mjs ./scripts/
 COPY scripts/domain-skills.test.mjs ./scripts/domain-skills.test.mjs
+COPY scripts/screener-blueprint-preview.test.mjs ./scripts/screener-blueprint-preview.test.mjs
+COPY scripts/static-legal-routes.test.mjs ./scripts/static-legal-routes.test.mjs
 COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/social-tool-license-evidence.test.mjs scripts/validate-social-tool-license-evidence.mjs scripts/frontend-security.test.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
 COPY scripts/media ./scripts/media
 COPY scripts/generate-chart-learning.tsx ./scripts/generate-chart-learning.tsx
@@ -99,7 +103,7 @@ COPY server/index.mjs server/seo-agent-discovery.mjs server/market.mjs server/ma
 COPY server/infrastructure.mjs server/scorer-bus.mjs ./server/
 COPY server/market-spot-ingestion.test.mjs ./server/
 COPY server/spot-provider-wire.test.mjs server/spot-feed-lifecycle.test.mjs server/private-market-batch.test.mjs server/private-market-cache.test.mjs ./server/
-RUN --network=none node --test server/google-analytics-readback.test.mjs server/repository-tool-catalog.test.mjs \
+RUN --network=none node --test scripts/static-legal-routes.test.mjs server/google-analytics-readback.test.mjs server/repository-tool-catalog.test.mjs \
     && node --test server/mta-sts.test.mjs server/well-known.test.mjs server/auth-security.test.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-source-provenance-drift.test.mjs \
     && node --test scripts/seo-production-readback.test.mjs \
     && node --test scripts/locale-policy.test.mjs server/locale-html.test.mjs \
