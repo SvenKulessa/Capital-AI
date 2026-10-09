@@ -3,6 +3,7 @@ FROM ${PYTHON_BASE} AS ffmpeg-build
 
 ARG FFMPEG_VERSION
 ARG FFMPEG_SHA256
+ARG FFMPEG_BUILD_JOBS=4
 
 RUN apk add --no-cache \
       build-base \
@@ -32,7 +33,7 @@ RUN test -n "${FFMPEG_VERSION}" \
       --disable-network \
       --enable-shared \
       --disable-static \
-    && make -j2 \
+    && make -j"${FFMPEG_BUILD_JOBS}" \
     && make install \
     && LD_LIBRARY_PATH=/opt/ffmpeg/lib /opt/ffmpeg/bin/ffmpeg -hide_banner -version \
     && LD_LIBRARY_PATH=/opt/ffmpeg/lib /opt/ffmpeg/bin/ffmpeg -hide_banner -buildconf \
