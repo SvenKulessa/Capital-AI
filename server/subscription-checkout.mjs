@@ -55,7 +55,7 @@ export function createSubscriptionCheckout({ env = process.env, fetchImpl = fetc
       signal: AbortSignal.timeout(7000),
     });
     const payload = await boundedJson(response);
-    if (!response.ok || typeof payload?.url !== 'string' || !payload.url.startsWith('https://checkout.stripe.com/')) {
+    if (!response.ok || payload?.livemode !== secret.startsWith('sk_live_') || typeof payload?.url !== 'string' || !payload.url.startsWith('https://checkout.stripe.com/')) {
       throw new Error('stripe_checkout_rejected');
     }
     return payload;
@@ -74,8 +74,9 @@ export function createSubscriptionCheckout({ env = process.env, fetchImpl = fetc
           catalogVersion: BILLING_CATALOG.version,
           catalogEvidence: 'docs/security/evidence/stripe-catalog-readback-20261006.json',
           testPurchaseRequirement: {
-            count: 3,
+            count: 6,
             tiers: ['starter', 'pro', 'enterprise'],
+            cycles: ['monthly', 'annual'],
             stripeMode: 'test',
             livePriceIdsAllowed: false,
           },

@@ -42,7 +42,7 @@ test('subscription checkout uses only server catalog price and binds user and pl
   const fetchImpl = async (url, options) => {
     assert.equal(url, 'https://api.stripe.com/v1/checkout/sessions');
     stripeForm = new URLSearchParams(String(options.body));
-    return Response.json({ id: 'cs_test_1', url: 'https://checkout.stripe.com/c/pay/test' });
+    return Response.json({ livemode: true, id: 'cs_test_1', url: 'https://checkout.stripe.com/c/pay/test' });
   };
   const handler = createSubscriptionCheckout({ env, fetchImpl, auth });
   const response = res();
@@ -59,7 +59,7 @@ test('subscription checkout ignores caller-supplied priceId and uses server auth
   let stripeForm;
   const fetchImpl = async (_url, options) => {
     stripeForm = new URLSearchParams(String(options.body));
-    return Response.json({ id: 'cs_test_2', url: 'https://checkout.stripe.com/c/pay/test2' });
+    return Response.json({ livemode: true, id: 'cs_test_2', url: 'https://checkout.stripe.com/c/pay/test2' });
   };
   const handler = createSubscriptionCheckout({ env, fetchImpl, auth });
   const response = res();
@@ -151,7 +151,7 @@ test('three-tier live catalog resolves exactly one server-authorized monthly Pri
       priceId: form.get('line_items[0][price]'),
       planId: form.get('metadata[plan_id]'),
     });
-    return Response.json({ id: `cs_test_${seen.length}`, url: `https://checkout.stripe.com/c/pay/test-${seen.length}` });
+    return Response.json({ livemode: true, id: `cs_test_${seen.length}`, url: `https://checkout.stripe.com/c/pay/test-${seen.length}` });
   };
   const handler = createSubscriptionCheckout({ env, fetchImpl, auth });
   for (const tier of ['starter', 'pro', 'enterprise']) {
@@ -173,16 +173,25 @@ test('three-tier live catalog resolves exactly one server-authorized monthly Pri
   ]);
 });
 
-test('readiness publishes the three-purchase test contract without enabling live test purchases', async () => {
+test('readiness publishes the six-purchase test contract without enabling live test purchases', async () => {
   const handler = createSubscriptionCheckout({ env, auth });
   const response = res();
   const request = req();
   request.method = 'GET';
   await handler.handle(request, response, new URL('https://capital-ai.online/api/billing/subscriptions/readiness'), json);
   assert.equal(response.status, 200);
-  assert.equal(response.payload.testPurchaseRequirement.count, 3);
+  assert.equal(response.payload.testPurchaseRequirement.count, 6);
   assert.deepEqual(response.payload.testPurchaseRequirement.tiers, ['starter', 'pro', 'enterprise']);
   assert.equal(response.payload.testPurchaseRequirement.stripeMode, 'test');
   assert.equal(response.payload.testPurchaseRequirement.livePriceIdsAllowed, false);
   assert.equal(response.payload.catalogVersion, '2026-10-04-vocabulary');
+});
+
+test('checkout rejects a Stripe response from the wrong mode', async () => {
+  const handler = createSubscriptionCheckout({ env, auth, fetchImpl: async () =>
+    Response.json({ id: 'cs_test_wrong', livemode: false, url: 'https://checkout.stripe.com/c/pay/wrong' }) });
+  const response = res();
+  await handler.handle(req({ tier: 'pro', cycle: 'monthly' }), response,
+    new URL('https://capital-ai.online/api/billing/subscriptions/checkout'), json);
+  assert.equal(response.status, 502);
 });
