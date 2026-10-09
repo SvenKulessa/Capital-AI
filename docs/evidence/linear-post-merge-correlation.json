@@ -1,12 +1,14 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "09a483e5f20ea70c3b48229397a1fa8ae1fc5007",
-  "mergedPr": 330,
+  "mainSha": "fb9fbc41232f1815fc6682d275e1511e9d3ce434",
+  "mergedPr": 326,
   "targetPr": 328,
   "targetBranch": "capital-ai-growth/static-legal-oauth-branding-20261009",
-  "targetHeadSha": "84c109a83d61aede0fa8dbb9fdc8d6ce57a9d83f",
+  "targetHeadSha": "81c3227d3432b7da7343a85d68d7479da6041146",
   "exactOverlap": [
-    "server/index.mjs"
+    ".dockerignore",
+    "Dockerfile",
+    "docs/evidence/linear-post-merge-correlation.json"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,
