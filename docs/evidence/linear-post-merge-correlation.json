@@ -1,14 +1,12 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "92a51e53fa360ca75a55f11c617588c8024524db",
-  "mergedPr": 329,
-  "targetPr": 328,
-  "targetBranch": "capital-ai-growth/static-legal-oauth-branding-20261009",
-  "targetHeadSha": "d07336ec46131450d7185a38accdd5e2c575fe71",
+  "mainSha": "e656cde06a3a58761893987ae1b5e7a009072311",
+  "mergedPr": 328,
+  "targetPr": 334,
+  "targetBranch": "capital-ai-market/crypto-quote-units-20261009",
+  "targetHeadSha": "d5b819657fd97b616fdd7fccb049f0ccf82d2fcd",
   "exactOverlap": [
-    ".dockerignore",
-    "Dockerfile",
-    "server/index.mjs"
+    "docs/evidence/linear-post-merge-correlation.json"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,
