@@ -59,6 +59,7 @@ COPY supabase/migrations/20261005010039_legal_policy_evidence_store_isolated.sql
 COPY supabase/proposals/provider_query_guard.sql ./supabase/proposals/provider_query_guard.sql
 COPY scripts/documentation-drift.mjs scripts/documentation-drift.test.mjs ./scripts/
 COPY scripts/domain-skills.test.mjs ./scripts/domain-skills.test.mjs
+COPY scripts/static-legal-routes.test.mjs ./scripts/static-legal-routes.test.mjs
 COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/social-tool-license-evidence.test.mjs scripts/validate-social-tool-license-evidence.mjs scripts/frontend-security.test.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
 COPY scripts/media ./scripts/media
 COPY scripts/generate-chart-learning.tsx ./scripts/generate-chart-learning.tsx
@@ -87,7 +88,7 @@ COPY server/index.mjs server/seo-agent-discovery.mjs server/market.mjs server/ma
 COPY server/infrastructure.mjs server/scorer-bus.mjs ./server/
 COPY server/market-spot-ingestion.test.mjs ./server/
 COPY server/spot-provider-wire.test.mjs server/spot-feed-lifecycle.test.mjs server/private-market-batch.test.mjs server/private-market-cache.test.mjs ./server/
-RUN --network=none node --test server/repository-tool-catalog.test.mjs \
+RUN --network=none node --test scripts/static-legal-routes.test.mjs server/repository-tool-catalog.test.mjs \
     && node --test server/mta-sts.test.mjs server/well-known.test.mjs server/auth-security.test.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-source-provenance-drift.test.mjs \
     && node --test scripts/seo-production-readback.test.mjs \
     && node --test scripts/locale-policy.test.mjs server/locale-html.test.mjs \
