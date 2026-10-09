@@ -148,5 +148,15 @@ test('ledger prevents use beyond locally bounded free-budget and mismatched proj
       fetchImpl: async () => { called = true; return fakeResponse(); }, now,
     }), /LEDGER_INVALID/);
     assert.equal(called, false);
+    await writeFile(ledgerPath, JSON.stringify({
+      version: 'CAPITAL_AI_SOCIAL_NEURAL2_PRIVATE@1',
+      project: env().SOCIAL_NEURAL2_PROJECT_ID,
+      months: { '2026-10': 'corrupted-month-state' },
+    }));
+    await assert.rejects(synthesizePrivateNeural2({
+      rawRequest: request, env: env(), ledgerPath, accessToken: token,
+      fetchImpl: async () => { called = true; return fakeResponse(); }, now,
+    }), /LEDGER_INVALID/);
+    assert.equal(called, false);
   });
 });
