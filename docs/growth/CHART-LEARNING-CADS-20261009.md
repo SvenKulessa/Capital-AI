@@ -25,6 +25,8 @@ Illustrationen unterliegen der bestehenden Repository-/Produktlizenz. Fachliche 
 
 ## Evidence und Grenzen
 
+Erster Docker-CI-Lauf auf Head `a582b4c`: Build scheiterte an veralteten SEO-Quellhashes für HomePage und LearningPortalPage. Beide Fingerprints und die daraus abgeleiteten Source-Set-Digests wurden mit dem bestehenden Refresh-Tool aktualisiert. Die explizite Docker-Allowlist und COPY-Closure erhalten zusätzlich den Chart-Generator und die öffentlichen synthetischen Chartdateien, damit Exportdrift-Tests im isolierten Image dieselben Artefakte sehen. Keine Abschwächung der SEO-/Security-Prüfungen.
+
 Die Kampagne erfüllt den ContentCampaignBrief-Contract. Zwölf MediaProjectV2-Dateien sind validiert und an die konkreten SVG-Hashes gebunden. Manifestdateien enthalten Source-Identität, Formate, Abmessungen, Hashes und Beitragsentwürfe. Öffentliche Dateien enthalten ausschließlich eigene synthetische Beispiele und öffentliche Produkttexte. Keine API-Keys, private Providerantworten, Benutzeridentitäten oder Marktdatenfeeds werden verarbeitet.
 
 Drei neue Tests prüfen Geometrie/Achsen, Textalternativen/SVG-Angriffsfläche, Exportdrift, PNG-Header/Dimensionen/Hashes, MediaProject-Contract, Offline-/Draft-Grenze und CADS-Aussagegrenzen. Sie laufen im bestehenden `npm test`. `npm test`, `npm run lint`, `npm run build`, `npm run test:roadmap` und `npm run verify:browser` bestanden vor der finalen Main-Synchronisierung. Das anfänglich überschrittene 500-kB-Bundle-Limit wurde durch Lazy-Loading der neuen Startseitensektion eingehalten. Das Gate bleibt unverändert.

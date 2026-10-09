@@ -6,12 +6,12 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
     contentSha256: '5b8c980c69c1158341577deaf54ae7f164f85d5be469ccc6aff5c9181bd9ce5c',
   }),
   'src/features/home/HomePage.tsx': Object.freeze({
-    sourceBlobSha: 'c7c21d0a0f97454ecf01a7482db0b724a1b39d56',
-    contentSha256: '0bb88cfdc6cf7b3ee886e24fd0d165509ea77b44ea231b6c88005ecfe2d98437',
+    sourceBlobSha: '1931240fe63a983c17302309c497d0ec83d944b8',
+    contentSha256: 'ca4ac73f4dd996346dc45e3e563dbc1cba4e17fd594cce88f2eb01198732bbb2',
   }),
   'src/features/learning/LearningPortalPage.tsx': Object.freeze({
-    sourceBlobSha: '1b34a2e8ca6164bd201085c76d652bb241403280',
-    contentSha256: 'ffa35393dfe8409fc535f80792bf6f5e54d0b580ab0f6891bd99e96b901cfbfb',
+    sourceBlobSha: '1ba4adf3deb9e5998c82b05f676ce100a94b9ba5',
+    contentSha256: '4669c3c69a9f00341e8f0841c7bca6a3d4f153a779d8617ec0b4b95b9d0785c8',
   }),
   'shared/vocabulary-metadata.mjs': Object.freeze({
     sourceBlobSha: '5ebed53fc03776879bbc7ff8997bc2e513a122e4',
@@ -56,8 +56,8 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
 });
 
 const SEO_SOURCE_SET_DIGESTS = Object.freeze({
-  'index.html|src/features/home/HomePage.tsx': '88d2c297004331c229be0d2adaaaa512a0878598fdb19b643b80c73ca1de4afb',
-  'shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': 'c9ea28de6afc8e62e67fa303c5f0930d3f102b123cc751c6116b85dc08867041',
+  'index.html|src/features/home/HomePage.tsx': '4c89ce8d59426f04695e0c13c2d29329f894b2e2f04d6bd399a36080ad896a3a',
+  'shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': '7ad56816530a295aa27959c96a3eef9502e8271ecf308f803b934c61952a18f4',
   'src/components/LegalAndFaqPages.tsx|src/content/publicLegalContent.ts': 'c6d89a7abc5a41b4a635bf39bb21aa153ca64060cced8341b1f9a235f670d2d7',
   'shared/license-metadata.mjs|src/components/LicenseInformationPages.tsx': 'a32e0df5d6e5bc57e3a23283f7e1c91aa1a584f7f70ccc8208796322172210bb',
   'shared/license-metadata.mjs|src/data/providerLicenseReview.ts': '98d2b1c966c071230d8b5554f132c198bf95c7df07e5b559fa82e2aa53f1c768',

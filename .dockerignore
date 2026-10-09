@@ -126,6 +126,11 @@
 !scripts/
 !scripts/media/
 !scripts/media/**
+!scripts/generate-chart-learning.tsx
+
+!public/learning/
+!public/learning/charts/
+!public/learning/charts/**
 !scripts/domain-skills.test.mjs
 !scripts/harden-npm-toolchain.mjs
 !scripts/benchmark-scoring-capacity.mjs
