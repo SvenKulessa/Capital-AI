@@ -91,6 +91,40 @@ werden weder Tarife abgeschlossen noch kostenpflichtige Ressourcen aktiviert.
 
 ## Validierung
 
+### Fortsetzung: Score-Frische und Runtime-Revision
+
+Read-only-Prüfung am 09.10.2026, 16:01 UTC, gegen main
+`9e11e812984695a2e28e7ad7f82cfc13431569d4`: `/healthz` und
+`/api/market/status` auf `https://capital-ai.online` antworteten mit HTTP 200;
+NATS und Valkey waren verbunden, 20 ECB-Instrumente verfügbar. Spot war nicht
+konfiguriert, `scoreDisplayEnabled` war false. Die ausgelieferte Build-Identität
+war ungebunden (`sourceSha: null`); diese Beobachtung belegt keinen Main-SHA.
+
+`/healthz.runtimeIdentity` gibt künftig ausschließlich einen validierten
+40-stelligen `RENDER_GIT_COMMIT` und den Evidence-Typ
+`RENDER_DEPLOYMENT_ENVIRONMENT` aus. Fehlender oder ungültiger Wert bleibt
+`NOT_PROVEN`. Laut [Render-Dokumentation](https://render.com/docs/environment-variables)
+ist dies die Revision des Service/Deployments. Deployment-Umgebungsmetadaten
+sind keine signierte OCI-Attestation; `buildIdentity` bleibt separat und
+unverändert. Nach Deployment muss der öffentlich gelesene SHA gegen die
+beabsichtigte Main-Revision korreliert werden.
+
+Die Score-Präsentation verlangt jetzt eine nichtnegative, sichere ganzzahlige
+Zeitbasis und ein positives, sicheres ganzzahliges Frischebudget. NaN und
+Infinity können damit die Altersprüfung nicht mehr umgehen. Regressionen
+prüfen sowohl Score- als auch Rangunterdrückung. Dies ergänzt die
+Veröffentlichungsprüfung, implementiert aber weder neue Features noch ein
+validiertes Produktionsmodell.
+
+Für einen Rechtebeleg müssen mindestens Spot-Quelle, Binance-Vertragsentität,
+Gebiet, Kundengruppe, öffentliche Anzeige, Derived Analytics/Scoring,
+NATS-/Cache-Verteilung, Replay-/Retentionsdauer, Attribution, Quotas, Preis und
+Widerruf ausdrücklich abgedeckt sein. Die erneut geprüfte offizielle
+Spot-Dokumentation verweist weiterhin auf die Produktbedingungen; ein
+projektspezifischer kommerzieller Vertrag liegt im Repository nicht vor.
+Alternative bleibt ein Provider mit expliziten Display-/Derived-Data-Rechten.
+Keine Vertragsnachricht wurde versendet und keine Datenfreigabe vorgenommen.
+
 `npm run test:binance` prüft verweigerte Verbindungen ohne I/O, Lifecycle-Reconnect,
 Backoff, Widerruf, Shutdown-Cleanup, Provider-Protokolle und private Isolation
 sowie UI-Vertrag, Kursfrische, Zeitachsen, Verlaufslimits und leere Scoreausgabe.
