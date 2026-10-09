@@ -238,3 +238,23 @@ test('GA4 property detail checks reject a longer numeric property identifier', a
   );
   assert.deepEqual(calls.map(entry => entry.tool), ['get_account_summaries', 'get_property_details']);
 });
+
+test('GA4 readback does not invent event counts from malformed numeric values', async () => {
+  const client = fakeClient();
+  const original = client.callTool;
+  client.callTool = async (tool, args) => {
+    if (tool === 'run_report' || tool === 'run_realtime_report') {
+      return {
+        rows: [{
+          dimension_values: [{ value: 'page_view' }],
+          metric_values: [{ value: '2invalid' }],
+        }],
+      };
+    }
+    return original(tool, args);
+  };
+  const snapshot = await buildGoogleAnalyticsReadback({ client, propertyNumber: '123456789' });
+  assert.equal(snapshot.realtime.events[0].eventCount, 0);
+  assert.equal(snapshot.sevenDay.events[0].eventCount, 0);
+  assert.equal(snapshot.eventEvidence.status, 'NO_PAGE_VIEW_OBSERVED');
+});
