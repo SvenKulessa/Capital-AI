@@ -122,6 +122,40 @@ test('magic-link verification with verified TOTP cannot bypass AAL2 challenge', 
   assert.deepEqual(h.calls.map(call => call.path), ['/verify', '/user']);
 });
 
+test('previously issued signup mail links verify the hash and preserve MFA', async () => {
+  for (const factor of [false, true]) {
+    const h = securityHarness({ factor });
+    const res = responseHarness();
+    await h.security.handle(
+      { method: 'GET', headers: {} }, res,
+      new URL(`https://capital-ai.online/api/auth/email/confirm?token_hash=${tokenHash}&type=email&redirect_to=https://example.test`), json,
+    );
+    assert.equal(res.status, 303);
+    assert.equal(res.getHeader('location'), factor ? '/login?mfa=1' : '/');
+    assert.equal(res.getHeader('cache-control'), 'no-store');
+    assert.equal(res.getHeader('referrer-policy'), 'no-referrer');
+    assert.deepEqual(h.calls.map(call => call.path), ['/verify', '/user']);
+    assert.deepEqual(h.calls[0].options.body, { token_hash: tokenHash, type: 'signup' });
+    assert.equal(h.writes.length, 1);
+  }
+});
+
+test('legacy mail route rejects invalid hashes, unsupported types and POST without creating a session', async () => {
+  for (const [method, query, status] of [
+    ['GET', 'token_hash=short&type=email', 400],
+    ['GET', `token_hash=${tokenHash}&type=admin`, 400],
+    ['POST', `token_hash=${tokenHash}&type=email`, 405],
+  ]) {
+    const h = securityHarness();
+    const res = responseHarness();
+    await h.security.handle({ method, headers: {} }, res,
+      new URL(`https://capital-ai.online/api/auth/email/confirm?${query}`), json);
+    assert.equal(res.status, status);
+    assert.equal(h.calls.length, 0);
+    assert.equal(h.writes.length, 0);
+  }
+});
+
 test('recovery token creates bounded reset session without forcing profile navigation', async () => {
   const h = securityHarness({ factor: true });
   const res = responseHarness();
