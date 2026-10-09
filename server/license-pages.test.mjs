@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createApp } from './index.mjs';
@@ -15,6 +15,11 @@ import { QUANT_PRO_IDS } from '../shared/vocabulary-access-policy.mjs';
 test('license deep links expose crawlable metadata without changing API boundaries', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'capital-license-'));
   await writeFile(path.join(root, 'index.html'), await readFile(new URL('../index.html', import.meta.url)));
+  // The production handler serves these routes from static HTML, not SPA fallback.
+  for (const route of ['datenschutz', 'agb']) {
+    await mkdir(path.join(root, route), { recursive: true });
+    await writeFile(path.join(root, route, 'index.html'), await readFile(new URL(`../public/${route}/index.html`, import.meta.url)));
+  }
   const server = createApp(root);
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const origin = `http://127.0.0.1:${server.address().port}`;
