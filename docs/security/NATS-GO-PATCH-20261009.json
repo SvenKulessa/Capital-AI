@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "baseMainSha": "0f459641646a3d82a3238d7a41fdc715e6df9d94",
   "scope": "NATS_PATCH_RELEASE_BINARY_ONLY",
-  "observedAt": "2026-10-09T10:16:00Z",
+  "observedAt": "2026-10-09",
   "blockingFindings": [
     "CVE-2026-78667",
     "CVE-2026-97031"

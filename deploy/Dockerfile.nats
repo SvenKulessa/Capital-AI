@@ -13,7 +13,7 @@ COPY --from=release-binary /out/nats-server /usr/local/bin/nats-server
 COPY --from=release-binary /out/LICENSE /usr/share/licenses/nats-server/LICENSE
 RUN apk add --no-cache su-exec=0.2-r3 'zlib>=1.3.2-r1' \
     && addgroup -g 1000 nats && adduser -D -u 1000 -G nats nats
-RUN nats-server --version | grep -Fx 'nats-server: v2.15.1'
+RUN test "$(nats-server --version)" = 'nats-server: v2.15.1'
 COPY deploy/nats-server.conf /etc/nats/nats-server.conf
 COPY --chmod=0555 deploy/nats-entrypoint.sh /usr/local/bin/capital-nats-entrypoint
 # Root is used only to prepare the mounted disk; the server runs as UID/GID 1000.
