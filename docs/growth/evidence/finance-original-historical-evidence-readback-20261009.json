@@ -1,0 +1,132 @@
+{
+  "schema": "CAPITAL_AI_GROWTH_FINANCE_HISTORICAL_ORIGINAL_EVIDENCE_READBACK@1",
+  "assessmentDate": "2026-10-09",
+  "repository": "SvenKulessa/Capital-AI",
+  "baseCommit": "2dd9ed78f34d88044925208d9f0d5d33f05a405e",
+  "source": {
+    "repository": "SvenKulessa/Finance",
+    "mainCommit": "dcef421fe6e350a3a2ade61d0299aad9ecca213c",
+    "treeSha": "ec97a7af0e2a3ae7c63f4b7583f4feea0338cce9",
+    "inspectedTreeEntries": 4252,
+    "treeTruncated": false,
+    "identifiedRawMarketFileCount": 0,
+    "marketFileExtensionsChecked": [
+      "csv",
+      "parquet",
+      "ndjson",
+      "jsonl",
+      "arrow",
+      "feather",
+      "zip",
+      "xlsx",
+      "gz",
+      "db",
+      "sqlite",
+      "h5"
+    ],
+    "githubReleasesReturned": 0,
+    "sourceProducedHistoricalOriginalOutputsIdentified": false
+  },
+  "sourceAlternativesExamined": {
+    "googleDrive": {
+      "method": "keyword metadata search and selected document text fetch",
+      "originalFinanceScoreExportsLocated": false
+    },
+    "chatgptLibrary": {
+      "method": "semantic document lookup",
+      "originalFinanceScoreExportsLocated": false
+    }
+  },
+  "targetReadback": {
+    "surface": "connected Capital-AI Supabase public schema, aggregated read-only",
+    "scoreSnapshots": {
+      "count": 9496,
+      "earliestSnapshotDate": "2026-08-04",
+      "latestSnapshotDate": "2026-10-02",
+      "scoreBasisValues": [
+        "heuristic",
+        "market-data",
+        "canonical-dispatcher",
+        null
+      ],
+      "hasOriginalFinanceSourceCommitColumn": false,
+      "hasModelVersionColumn": false,
+      "hasProviderRevisionColumn": false,
+      "hasInputFingerprintColumn": false,
+      "originalFinanceParityEligible": false
+    },
+    "financeResearchReceipts": {
+      "count": 0
+    },
+    "note": "Existing target legacy snapshots must not be reclassified as authenticated Finance source runs."
+  },
+  "externalSources": [
+    {
+      "provider": "CFTC",
+      "reference": "https://www.cftc.gov/MarketReports/CommitmentsofTraders/HistoricalSpecialAnnouncements/index.htm",
+      "reportDate": "2025-09-30",
+      "originalIntendedPublishDate": "2025-10-03",
+      "documentedActualPublishDate": "2025-11-19",
+      "releaseDayProven": true,
+      "originalReleaseBytesRetrieved": false,
+      "exactReleaseRevisionProven": false,
+      "licenseScopeReviewed": false,
+      "parityEligible": false
+    },
+    {
+      "provider": "EIA",
+      "reference": "https://www.eia.gov/petroleum/weekly/archive/2025/250924/includes/hometables_print.php",
+      "reportDate": "2025-09-24",
+      "archivedReportLocatorVerified": true,
+      "originalReleaseBytesRetrieved": false,
+      "asOfRevisionProven": false,
+      "parityEligible": false
+    },
+    {
+      "provider": "EIA",
+      "reference": "https://www.eia.gov/petroleum/supply/monthly/releasenote.php",
+      "revisionNotice": "2025 monthly petroleum supply exports revisions after government shutdown",
+      "providerRevisionEvidenceLocatorVerified": true,
+      "originalRevisedDataBytesRetrieved": false,
+      "parityEligible": false
+    }
+  ],
+  "rights": {
+    "eia": "U.S. government EIA content reuse generally described as public domain, with attribution and third-party-content/trademark exceptions; specific dataset scope not independently signed off for this application",
+    "eiaReference": "https://www.eia.gov/about/copyrights_reuse.php",
+    "cftc": "REVIEW_REQUIRED",
+    "overall": "REVIEW_REQUIRED"
+  },
+  "capture": {
+    "originalHistoricalArchiveBytesSaved": false,
+    "providerRawRetrievedInCurrentSession": false,
+    "localNetworkAttempt": "FAILED_DNS",
+    "noHistoricalByteHashClaimed": true
+  },
+  "securityObservation": {
+    "dockerSecurityGate": "SUCCESS",
+    "commit": "2dd9ed78f34d88044925208d9f0d5d33f05a405e",
+    "dependencyCveWatch": "FAILURE",
+    "reason": "SUPPRESSION_REVIEW_DUE",
+    "reviewedVersion": "typescript@7.0.2",
+    "reviewDate": "2026-10-09",
+    "resolution": "TRUST_REVIEW_REQUIRED; do not postpone blindly"
+  },
+  "comparison": {
+    "verifiedOriginalPairs": 0,
+    "empiricalHistoricalParity": "NOT_PROVEN",
+    "rowByRowComparison": "BLOCKED_NO_ORIGINAL_SOURCE_OUTPUT_AND_PIT_CAPTURE",
+    "sourceScoreCandidateTests": "SYNTHETIC_ONLY"
+  },
+  "cost": {
+    "newPaidProviderActivated": false,
+    "newProviderKeyUsed": false,
+    "ciMinutes": "POSSIBLE",
+    "quotaAndFees": "NOT_PROVEN"
+  },
+  "privacy": {
+    "databaseRowValuesExported": false,
+    "privateKeysAccessed": false
+  },
+  "status": "REVIEW_REQUIRED"
+}
