@@ -9,8 +9,8 @@ Scope: `public/assets/jaja-avatar-transparent.webp` and the original owner-suppl
 | Artifact | Provenance | Distribution |
 | --- | --- | --- |
 | `public/assets/jaja-avatar-transparent.webp` | Transparent derivative of owner-approved `grok_image_1791573379472.jpg`; 407×920 WebP | Shipped as a proprietary CAPITAL-AI website asset |
-| `grok_image_1791573379472.jpg` | Owner-supplied Grok-generated JPG, [private Drive record](https://drive.google.com/file/d/1vcwzYA33PYslKbmDrslsxgUgLAbDHDKx/view) | Source reference; do not copy original into public bundle |
-| `grok_video_2026-10-09-21-13-44.mp4` | Owner-supplied Grok-generated 15-second video, [private Drive record](https://drive.google.com/file/d/1HnLvpf9Wfq8X94W_cUqJxuLAEQ0exQPZ/view) | Source reference; not published; no audio/speech integration |
+| `grok_image_1791573379472.jpg` | Owner-supplied output of **Grok Image Generator**, [private Drive record](https://drive.google.com/file/d/1vcwzYA33PYslKbmDrslsxgUgLAbDHDKx/view) | Source reference; do not copy original into public bundle |
+| `grok_video_2026-10-09-21-13-44.mp4` | Owner-supplied output of **Grok Video Generator** (15 seconds), [private Drive record](https://drive.google.com/file/d/1HnLvpf9Wfq8X94W_cUqJxuLAEQ0exQPZ/view) | Source reference; not published; no audio/speech integration |
 
 WebP SHA-256 (recorded during asset production): `8c0f501c814ef39f380479d185a7221b1cc4c7e469ec7ea3798a762346a77844`.
 WebP Git blob SHA (read back on PR): `7e336efd34b1da58557962628abc9b228ceddf85`.
@@ -24,7 +24,7 @@ The released avatar and JaJa brand layer are designated **proprietary / all righ
 
 ## Generator and third-party rights
 
-Generation tool indicated by file naming and owner: Grok (SpaceXAI/xAI); precise product/account tier and accepted account-specific terms are **NOT_PROVEN**.
+**Generation provenance confirmed by the owner:** the still image was made with **Grok Image Generator**, and the video with **Grok Video Generator** (provider: SpaceXAI/xAI, Grok). The exact underlying model version, product/account tier, prompts, and accepted account-specific terms remain **NOT_PROVEN**. Avoid claiming a specific Imagine model ID from the filename alone.
 
 Official references checked 2026-10-09:
 - [SpaceXAI Consumer Terms](https://x.ai/legal/terms-of-service) (last updated 2026-09-11): user-content clauses, input permissions, AI-generated disclosures and attribution/brand-policy obligations.
