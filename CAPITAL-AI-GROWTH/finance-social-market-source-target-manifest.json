@@ -112,11 +112,11 @@
     {
       "id": "TA-MARKET-RUNTIME",
       "path": "server/market.mjs",
-      "blobSha": "cd20902e953c6f2fa0412d8bd4429be9527492c2",
+      "blobSha": "f92f9259e7ef27be670002349d3820a7a5c30250",
       "role": "Current fail-closed market runtime",
-      "recorrelatedAt": "2026-10-08",
-      "recorrelationBaseMain": "4d353d21e6191ce2335f7b1cfebf630f31cb25a1",
-      "recorrelationReason": "TRUST spot readiness adds read-only asset coverage to market runtime; branch-head Git blob bound, not production provider admission, commercial data rights or a trading license"
+      "recorrelatedAt": "2026-10-09",
+      "recorrelationBaseMain": "3a763958ecb6730930ffba66bfa5491c0c19f93a",
+      "recorrelationReason": "MARKET binds rights-gated Binance Spot feed lifecycle to stream startup; no provider rights, production activation or score publication is granted"
     },
     {
       "id": "TA-MARKET-WP",
