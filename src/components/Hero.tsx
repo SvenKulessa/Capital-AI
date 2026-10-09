@@ -110,7 +110,7 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
           className="inline-flex items-center gap-1.5 mb-3"
         >
           <span className="text-[10.5px] font-bold tracking-[0.22em] text-[#F5B014] uppercase">
-            LIVE MARKETS. REAL INSIGHTS.
+            MARKET KNOWLEDGE. CLEAR CONTEXT.
           </span>
         </motion.div>
 

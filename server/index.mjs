@@ -4,8 +4,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assetCatalog, assetValues, quote, health, startStreams } from './market.mjs';
 import { createAuth } from './auth.mjs';
+import { createSocialOAuthCallback } from './social-media/oauth-callback.mjs';
+import { createPrivateMarketCache } from './private-market-cache.mjs';
 import { createUserProviderVault } from './user-provider-vault.mjs';
+import { createUserAnalysisBindings } from './user-analysis-bindings.mjs';
 import { createPrivateProviderQuery } from './private-provider-query.mjs';
+import { createRenderOwnerDashboard } from './render-owner-dashboard.mjs';
 import { createUniswapTrading } from './uniswap-trading.mjs';
 import { createKrakenOrderDryRun } from './kraken-order-dry-run.mjs';
 import { createTelegram } from './telegram.mjs';
@@ -18,7 +22,8 @@ import { serveMtaSts } from './mta-sts.mjs';
 import { serveWellKnown } from './well-known.mjs';
 import { licenseMetadata } from '../shared/license-metadata.mjs';
 import { seoMetadataForPath } from '../shared/seo-metadata.mjs';
-import { resolveLocale } from '../shared/locale-policy.mjs';
+import { agentDiscoveryDocument } from './seo-agent-discovery.mjs';
+import { resolveLocale, localeFromLandingPath } from '../shared/locale-policy.mjs';
 import {
   isSeoIndexable,
   robotsDirectiveFor,
@@ -132,6 +137,28 @@ function injectSeoMetadata(html, pathname) {
   return body;
 }
 
+// Non-indexable until complete locale-specific body content, legal review and crawl acceptance.
+const LOCALE_LANDING_PREVIEWS = Object.freeze({
+  de: ['CAPITAL-AI | Marktanalyse und BYOK', 'Marktanalyse, transparente Modelle und persönliche Datenprovider-Einstellungen.'],
+  en: ['CAPITAL-AI | Market Intelligence and BYOK', 'Explore market analysis, transparent scoring tools and personal data-provider settings.'],
+  it: ['CAPITAL-AI | Analisi dei mercati e BYOK', 'Esplora analisi dei mercati, strumenti di scoring trasparenti e impostazioni dei tuoi dati.'],
+  fr: ['CAPITAL-AI | Analyse de marché et BYOK', 'Découvrez les analyses de marché, des outils de notation transparents et vos fournisseurs de données.'],
+  pt: ['CAPITAL-AI | Análise de mercados e BYOK', 'Explore análises de mercado, ferramentas transparentes de scoring e preferências de fontes de dados.'],
+  es: ['CAPITAL-AI | Análisis de mercados y BYOK', 'Explora análisis de mercados, herramientas de puntuación transparentes y ajustes de proveedores de datos.'],
+});
+function localizeNonIndexableLandingHtml(html, locale) {
+  const [title, description] = LOCALE_LANDING_PREVIEWS[locale];
+  const ogLocale = ({de:'de_DE',en:'en_US',it:'it_IT',fr:'fr_FR',pt:'pt_PT',es:'es_ES'})[locale];
+  return html
+    .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(title)}</title>`)
+    .replace(/(<meta name="description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(description)}$2`)
+    .replace(/(<meta property="og:title" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(title)}$2`)
+    .replace(/(<meta property="og:description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(description)}$2`)
+    .replace(/(<meta property="og:locale" content=")[^"]*("\s*\/?>)/, `$1${ogLocale}$2`)
+    .replace(/(<meta name="twitter:title" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(title)}$2`)
+    .replace(/(<meta name="twitter:description" content=")[^"]*("\s*\/?>)/, `$1${escapeHtml(description)}$2`);
+}
+
 function applySeoIndexingPolicy(html, pathname) {
   const directive = robotsDirectiveFor(pathname);
   let body = html.replace(
@@ -146,6 +173,39 @@ function applySeoIndexingPolicy(html, pathname) {
     body = removeSeoJsonLd(body);
   }
   return body;
+}
+// This is real public HTML for all clients, not a bot-specific response.
+// React createRoot replaces the snapshot when the interactive app mounts.
+const PUBLIC_SNAPSHOT_LINKS = Object.freeze([
+  ['/', 'Startseite'],
+  ['/learning', 'Learning'],
+  ['/vocabulary', 'Vocabulary'],
+  ['/faq', 'FAQ'],
+  ['/datenprovider-lizenzen', 'Datenrechte'],
+  ['/opensource-lizenzen', 'Open-Source-Lizenzen'],
+  ['/impressum', 'Impressum'],
+  ['/datenschutz', 'Datenschutz'],
+  ['/agb', 'AGB'],
+]);
+
+function injectPublicSeoSnapshot(html, pathname) {
+  // Only the explicit static INDEX allowlist; account and billing pages remain NOINDEX.
+  if (!seoIndexableStaticPaths().includes(pathname) || !html.includes('<div id="root"></div>')) return html;
+  const metadata = seoMetadataForPath(pathname);
+  if (!metadata) return html;
+  const links = PUBLIC_SNAPSHOT_LINKS
+    .filter(([route]) => route !== pathname && isSeoIndexable(route))
+    .map(([route, label]) => `<li><a href="${escapeHtml(route)}">${escapeHtml(label)}</a></li>`)
+    .join('');
+  const conversionLinks = pathname === '/'
+    ? '<p><a href="/pricing">Tarife und Leistungen ansehen</a> · <a href="/login">Anmelden</a></p>'
+    : '';
+  const snapshot =
+    `<main id="capital-ai-public-snapshot" lang="de"><article>` +
+    `<h1>${escapeHtml(metadata.title)}</h1><p>${escapeHtml(metadata.description)}</p>` +
+    `${conversionLinks}<nav aria-label="Öffentliche Seiten"><ul>${links}</ul></nav>` +
+    '</article></main>';
+  return html.replace('<div id="root"></div>', `<div id="root">${snapshot}</div>`);
 }
 function vocabularyFallback(entry) {
   const thesaurus = entry.thesaurus.map(item => `<li>${escapeHtml(item)}</li>`).join('');
@@ -191,10 +251,27 @@ function injectVocabularySeo(html, pathname) {
 function json(res, status, body) { res.writeHead(status, { ...headers, 'X-Robots-Tag': 'noindex, nofollow', 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(body)); }
 
 export function createApp(root = defaultRoot, options = {}) {
+  // Render's deployment metadata identifies the source revision, not an OCI attestation.
+  const deploymentSha = (options.env || process.env).RENDER_GIT_COMMIT;
+  const runtimeIdentity = /^[0-9a-f]{40}$/.test(deploymentSha || '')
+    ? { sourceSha: deploymentSha, evidence: 'RENDER_DEPLOYMENT_ENVIRONMENT' }
+    : { sourceSha: null, evidence: 'NOT_PROVEN' };
   let inflight = 0;
   const auth = createAuth(options);
-  const userProviderVault = createUserProviderVault({ ...options, auth });
+  const socialOAuthCallback = createSocialOAuthCallback({
+    env: options.env || process.env,
+    auth,
+    fetchImpl: options.fetchImpl || fetch,
+    store: options.socialOAuthStore || null,
+    exchangeCode: options.socialOAuthCodeExchange || null,
+  });
+  const privateMarketCache = options.privateMarketCache || createPrivateMarketCache({
+    env: options.env || process.env, getRedis: () => infrastructure.requireProviderState(),
+  });
+  const userProviderVault = createUserProviderVault({ ...options, auth, privateMarketCache });
+  const userAnalysisBindings = createUserAnalysisBindings({ ...options, auth });
   const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault });
+  const renderOwnerDashboard = createRenderOwnerDashboard({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   if (
     (options.env || process.env).PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true' ||
     (options.env || process.env).PRIVATE_PROVIDER_BRIDGE_PROBE_ENABLED === 'true'
@@ -225,7 +302,12 @@ export function createApp(root = defaultRoot, options = {}) {
   const uniswapTrading = createUniswapTrading({ env: options.env || process.env, fetchImpl: options.fetchImpl || fetch, auth });
   const telegram = createTelegram({ ...options, auth });
   const privacy = createPrivacy({ ...options, auth });
-  const marketLimit = createLimiter(120);
+  // Public batch reads and expensive per-item reads must not starve each other.
+  // These remain process-local abuse bounds, not user identity/rate entitlements.
+  const marketCatalogLimit = createLimiter(240);
+  const marketValuesLimit = createLimiter(240);
+  const marketQuoteLimit = createLimiter(120);
+  const marketEvidenceLimit = createLimiter(60);
   const runtimeEnv = options.env || process.env;
   const repositoryToolCatalog = createRepositoryToolCatalog({ fetchImpl: options.fetchImpl || fetch, env: runtimeEnv });
   const mobileScorer = createMobileScorer(runtimeEnv);
@@ -257,8 +339,11 @@ export function createApp(root = defaultRoot, options = {}) {
   if (serveMtaSts(req, res, url)) return;
   if (serveWellKnown(req, res, url)) return;
   if (await auth.handle(req, res, url, json)) return;
+  if (await socialOAuthCallback.handle(req, res, url, json)) return;
   if (await userProviderVault.handle(req, res, url, json)) return;
+  if (await userAnalysisBindings.handle(req, res, url, json)) return;
   if (await privateProviderQuery.handle(req, res, url, json, requestContext.requestId)) return;
+  if (await renderOwnerDashboard.handle(req, res, url, json)) return;
   if (await krakenOrderDryRun.handle(req, res, url, json, requestContext.requestId)) return;
   if (await uniswapTrading.handle(req, res, url, json)) return;
   if (await privacy(req, res, url, json)) return;
@@ -275,7 +360,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await scorerProxy.handle(req, res, url, json, requestContext.requestId)) return;
   if (await mobileScorer.handle(req, res, url, json, headers)) return;
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return json(res, 405, { error: 'method_not_allowed' }); }
-  if (url.pathname === '/healthz') return json(res, 200, { ...health(), buildIdentity });
+  if (url.pathname === '/healthz') return json(res, 200, { ...health(), buildIdentity, runtimeIdentity });
   if (url.pathname === '/metrics') {
     if (!metricsAuthorized(req)) {
       writeAuditEvent({ eventType: 'observability.metrics.denied', requestId: requestContext.requestId, result: 'DENIED' });
@@ -343,11 +428,14 @@ export function createApp(root = defaultRoot, options = {}) {
     });
   }
   if (url.pathname === '/api/market/assets') {
-    if (!marketLimit()) return json(res, 429, { error: 'rate_limited' });
+    if (!marketCatalogLimit()) {
+      res.setHeader('Retry-After', '60');
+      return json(res, 429, { error: 'rate_limited' });
+    }
     return json(res, 200, assetCatalog());
   }
   if (url.pathname === '/api/market/quote') {
-    if (!marketLimit()) { res.setHeader('Retry-After', '60'); return json(res, 429, { error: 'rate_limited' }); }
+    if (!marketQuoteLimit()) { res.setHeader('Retry-After', '60'); return json(res, 429, { error: 'rate_limited' }); }
     if (inflight >= 8) { res.setHeader('Retry-After', '5'); return json(res, 429, { error: 'busy' }); }
     inflight++;
     try { const [status, body] = await quote(url.searchParams.get('symbol') || ''); return json(res, status, body); }
@@ -355,8 +443,12 @@ export function createApp(root = defaultRoot, options = {}) {
     finally { inflight--; }
   }
   if (url.pathname === '/api/market/values') {
-    if (!marketLimit()) return json(res, 429, { error: 'rate_limited' });
+    if (!marketValuesLimit()) {
+      res.setHeader('Retry-After', '60');
+      return json(res, 429, { error: 'rate_limited' });
+    }
     const [status, body] = await assetValues();
+    if (status === 503) res.setHeader('Retry-After', '300');
     return json(res, status, body);
   }
   if (url.pathname === '/api/market/status') return json(res, 200, health());
@@ -371,7 +463,10 @@ export function createApp(root = defaultRoot, options = {}) {
   }
   if (url.pathname === '/api/billing/catalog') return json(res, 200, BILLING_CATALOG);
   if (url.pathname === '/api/market/evidence') {
-    if (!marketLimit()) return json(res, 429, { error: 'rate_limited' });
+    if (!marketEvidenceLimit()) {
+      res.setHeader('Retry-After', '60');
+      return json(res, 429, { error: 'rate_limited' });
+    }
     if (inflight >= 8) return json(res, 429, { error: 'busy' });
     inflight++;
     try { const record = await infrastructure.replay(url.searchParams.get('id') || '');
@@ -382,6 +477,11 @@ export function createApp(root = defaultRoot, options = {}) {
   if (url.pathname.startsWith('/api/')) return json(res, 404, { error: 'not_found' });
 
   const publicPath = normalizedPublicPath(url.pathname);
+  if (publicPath === '/profile/render-dashboard' && !await renderOwnerDashboard.authorized(req, res)) {
+    res.writeHead(404, { ...headers, 'Cache-Control': 'no-store' });
+    res.end();
+    return;
+  }
   if (OWNER_ONLY_UI_PATHS.has(publicPath) || publicPath.startsWith('/control-center/')) {
     const ownerAllowed = await auth.authorizeIamRole(req, res, 'owner');
     if (!ownerAllowed) {
@@ -389,6 +489,16 @@ export function createApp(root = defaultRoot, options = {}) {
       res.end();
       return;
     }
+  }
+  const discovery = agentDiscoveryDocument(publicPath);
+  if (discovery) {
+    res.writeHead(200, {
+      ...headers,
+      'Content-Type': discovery.contentType,
+      'Cache-Control': 'public, max-age=3600',
+      'X-Robots-Tag': 'noindex, nofollow',
+    });
+    return res.end(discovery.body);
   }
   if (publicPath === '/robots.txt') {
     res.writeHead(200, { ...headers, 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
@@ -445,7 +555,14 @@ export function createApp(root = defaultRoot, options = {}) {
     if (path.extname(file) === '.html') {
       body = Buffer.from(injectSeoMetadata(body.toString('utf8'), publicPath));
       body = Buffer.from(applySeoIndexingPolicy(body.toString('utf8'), publicPath));
-      const { locale, source } = resolveLocale({
+      body = Buffer.from(injectPublicSeoSnapshot(body.toString('utf8'), publicPath));
+      const pathLocale = localeFromLandingPath(publicPath);
+      if (pathLocale && publicPath !== '/') {
+        body = Buffer.from(localizeNonIndexableLandingHtml(body.toString('utf8'), pathLocale));
+      }
+      const { locale, source } = pathLocale
+        ? {locale:pathLocale,source:'path'}
+        : resolveLocale({
         cookieHeader: req.headers.cookie,
         countryHeader: req.headers['cf-ipcountry'],
         acceptLanguage: req.headers['accept-language'],
@@ -453,7 +570,7 @@ export function createApp(root = defaultRoot, options = {}) {
       body = Buffer.from(body.toString('utf8').replace(/<html lang="[^"]*"/, `<html lang="${locale}" data-locale-source="${source}"`));
       documentLocale = locale;
     }
-    res.writeHead(200, { ...headers, ...(documentLocale ? { 'Content-Language': documentLocale, 'Vary': 'CF-IPCountry, Accept-Language, Cookie' } : {}), 'Cache-Control': path.extname(file) === '.html' ? 'no-store' : 'public, max-age=3600', 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(body);
+    res.writeHead(200, { ...headers, ...(documentLocale ? { 'Content-Language': documentLocale, 'Vary': 'CF-IPCountry, Accept-Language, Cookie' } : {}), ...(localeFromLandingPath(publicPath) ? { 'X-Robots-Tag': 'noindex, nofollow' } : {}), 'Cache-Control': path.extname(file) === '.html' ? 'no-store' : 'public, max-age=3600', 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(body);
   } catch { res.writeHead(404, headers); res.end(); }
 });
   server.maxConnections = 256;

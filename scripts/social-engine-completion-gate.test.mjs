@@ -6,13 +6,13 @@ test('Punkt 6 hält Finance-Scoring bis zu Lizenz-PASS und Social-Engine-Cutover
   const result = evaluateSocialEngineCompletionGate();
 
   assert.equal(result.status, 'BLOCKED');
-  assert.equal(result.runtime.present, 0);
-  assert.equal(result.runtime.required, 13);
-  assert.equal(result.renderer.present, 0);
+  assert.equal(result.runtime.present, 21);
+  assert.equal(result.runtime.required, 21);
+  assert.equal(result.renderer.present, 2);
   assert.equal(result.renderer.required, 2);
-  assert.equal(result.evidence.present, 7);
-  assert.equal(result.evidence.required, 7);
-  assert.equal(result.licenseEvidence.status, 'POINT_4_ARTIFACT_LOCK_ADVANCED_FAIL_CLOSED');
+  assert.equal(result.evidence.present, 12);
+  assert.equal(result.evidence.required, 12);
+  assert.equal(result.licenseEvidence.status, 'POINT_4_AUDIO_MODELS_REMOVED_FAIL_CLOSED');
   assert.equal(result.licenseEvidence.requiredStatus, 'POINT_4_PASS');
   assert.equal(result.licenseEvidence.pass, false);
   assert.deepEqual(result.financeScoringRuntimePresentBeforePass, []);

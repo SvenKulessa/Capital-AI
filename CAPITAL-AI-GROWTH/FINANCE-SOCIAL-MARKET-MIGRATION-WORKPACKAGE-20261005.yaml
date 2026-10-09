@@ -18,9 +18,9 @@ baseline:
     repository: "SvenKulessa/Capital-AI"
     sha: "9c5fc40318cf538308724c2efb18441185e8cbae"
   currentMainCorrelation:
-    sha: "d8b5d471b34fcfaf061a7d8a8b62eac7406c8864"
+    sha: "03325f00412290bb457823de347e7f3171904d12"
     rootPolicy: "AGENTS.md@currentmain"
-    correlationState: "POINT_4_RENDERER_REAL_BUILD_HARDENING_ON_CURRENT_MAIN"
+    correlationState: "SOCIAL_CORE_AND_PUBLISHING_CODE_CUTOVER_IMPLEMENTED_DISABLED_POINT4_BLOCKED"
   policy: "target-current-main-contracts-win"
 
 objectives:
@@ -98,9 +98,6 @@ migrationMatrix:
     - source: "server/socialMedia/voiceContract.ts"
       action: "PORT"
       targetRole: "voice-evidence-contract"
-    - source: "server/socialMedia/p1Benchmark.ts"
-      action: "PORT"
-      targetRole: "tts-quality-evidence-harness"
     - source: "server/socialMedia/platformPublishers.ts"
       action: "REWRITE"
       targetRole: "current-auth-current-provider-contract-publishers"
@@ -167,7 +164,7 @@ sequence:
   - "01_TOOL_LICENSE_ADMISSION"
   - "02_SOCIAL_CORE"
   - "03_DETERMINISTIC_MEDIA_RENDERER"
-  - "04_VOICE_ASR_PRIVATE_PARTITION"
+  - "04_AUDIO_PROVIDER_NEUTRAL_NO_ACTIVE_MODEL"
   - "05_PUBLISHING_DISTRIBUTION"
   - "06_SOCIAL_ENGINE_MIGRATION_COMPLETION_GATE"
   - "07_SOCIAL_MARKET_CONTENT_FACT"
@@ -190,14 +187,17 @@ artifacts:
   socialEngineCompletionGateValidator: "scripts/validate-social-engine-completion-gate.mjs"
   socialEngineCompletionGateTest: "scripts/social-engine-completion-gate.test.mjs"
   socialRendererWorkerEvidence: "CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json"
-  socialTtsSnapshotLock: "CAPITAL-AI-GROWTH/social-tts-snapshot-lock-20261006.json"
+  socialCorePortProvenance: "CAPITAL-AI-GROWTH/social-core-port-provenance-20261008.json"
+  socialRenderBrandTokens: "public/branding/asset-pack/meta/social-render-tokens.json"
+  socialPublishingCutoverProvenance: "CAPITAL-AI-GROWTH/social-publishing-cutover-provenance-20261008.json"
 
 validation:
   status:
     source-to-target-file-manifest: "MATERIALIZED_WITH_GIT_BLOB_SHA_GUARD"
-    license-and-rights-matrix: "POINT_4_ARTIFACT_LOCK_ADVANCED_FAIL_CLOSED"
+    license-and-rights-matrix: "POINT_4_AUDIO_MODELS_REMOVED_FAIL_CLOSED"
     third-party-notices: "MATERIALIZED"
-    social-engine-completion-gate: "BLOCKED_RUNTIME_NOT_MIGRATED"
+    social-engine-completion-gate: "BLOCKED_POINT4_PROVIDER_DISABLED"
+    publishing-distribution-code-cutover: "IMPLEMENTED_DISABLED_PENDING_CI"
     finance-scoring-follow-up: "BLOCKED_BY_SOCIAL_MEDIA_ENGINE_MIGRATION"
     remainingGates: "OPEN"
   required:

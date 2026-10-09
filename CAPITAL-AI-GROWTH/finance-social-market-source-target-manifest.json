@@ -46,8 +46,11 @@
     {
       "id": "TA-ASSET-FEATURE",
       "path": "src/contracts/canonicalContracts.ts",
-      "blobSha": "161104baf8413fb3a9a6389e32027ecd4bde4768",
-      "role": "AssetIdentity/DataProvenance/FeatureValue/ScoreResult authority"
+      "blobSha": "27d4973608f47218800736cb8877485d01124173",
+      "role": "AssetIdentity/DataProvenance/FeatureValue/ScoreResult authority",
+      "recorrelatedAt": "2026-10-08",
+      "recorrelationBaseMain": "e94d47cddde8ae32da749d08bc161daad323b914",
+      "recorrelationReason": "MARKET instrument-contract boundaries: required ScoreResult modelVersion and strict future timestamp rejection. No live scoring or provider admission granted."
     },
     {
       "id": "TA-PIPELINE",
@@ -58,8 +61,11 @@
     {
       "id": "TA-SCORING",
       "path": "src/services/scoringEngine.ts",
-      "blobSha": "ce0f52bc95b75eb236197b395b822e6e21ab712b",
-      "role": "Current scoring execution boundary"
+      "blobSha": "fdeb58f4a35103b1818463166f87afca20b9347f",
+      "role": "Current scoring execution boundary",
+      "recorrelatedAt": "2026-10-08",
+      "recorrelationBaseMain": "e94d47cddde8ae32da749d08bc161daad323b914",
+      "recorrelationReason": "MARKET instrument-contract boundaries: required ScoreResult modelVersion and strict future timestamp rejection. No live scoring or provider admission granted."
     },
     {
       "id": "TA-FEATURE-STORE",
@@ -106,11 +112,11 @@
     {
       "id": "TA-MARKET-RUNTIME",
       "path": "server/market.mjs",
-      "blobSha": "cd20902e953c6f2fa0412d8bd4429be9527492c2",
+      "blobSha": "f92f9259e7ef27be670002349d3820a7a5c30250",
       "role": "Current fail-closed market runtime",
-      "recorrelatedAt": "2026-10-08",
-      "recorrelationBaseMain": "4d353d21e6191ce2335f7b1cfebf630f31cb25a1",
-      "recorrelationReason": "TRUST spot readiness adds read-only asset coverage to market runtime; branch-head Git blob bound, not production provider admission, commercial data rights or a trading license"
+      "recorrelatedAt": "2026-10-09",
+      "recorrelationBaseMain": "3a763958ecb6730930ffba66bfa5491c0c19f93a",
+      "recorrelationReason": "MARKET binds rights-gated Binance Spot feed lifecycle to stream startup; no provider rights, production activation or score publication is granted"
     },
     {
       "id": "TA-MARKET-WP",
@@ -124,13 +130,13 @@
     {
       "id": "TA-AUTH",
       "path": "server/auth.mjs",
-      "blobSha": "54d878e8c5f4f7be95139a394bae2ca6f7f1d157",
+      "blobSha": "5d399bb2b06de626950d10ac2147ebea171d7b91",
       "role": "Current session/auth composition"
     },
     {
       "id": "TA-AUTH-SECURITY",
       "path": "server/auth-security.mjs",
-      "blobSha": "713f132dcd1a19a5680b9118597be5629dc4ee94",
+      "blobSha": "fd3e198bc2df6391e2bc53c9e3a87bf93637757e",
       "role": "Current auth security boundary",
       "recorrelatedAt": "2026-10-06",
       "recorrelationReason": "PR #203 Auth-/BYOK-/Trading-Capability-Härtung"
@@ -138,11 +144,13 @@
     {
       "id": "TA-USER-VAULT",
       "path": "server/user-provider-vault.mjs",
-      "blobSha": "9358a562beeaa58e108c2b109084a4d97fc73009",
+      "blobSha": "44d66c06cf9170f7ee973d48f13a984b5595b51a",
       "role": "Current server-side user provider secret boundary",
       "recorrelatedAt": "2026-10-06",
       "recorrelationReason": "PR #212 read-only Kraken/Binance Provider-Vault-Härtung; Finance-Cutover bleibt BLOCKED",
-      "recorrelationBaseMain": "824d42913bbeccb68366c2ae70714ccb960717e5"
+      "recorrelationBaseMain": "824d42913bbeccb68366c2ae70714ccb960717e5",
+      "correlatedAt": "2026-10-08",
+      "correlationReason": "Private Massive/Polygon 50-asset REST batches; user-bound Vault access and connection-scoped encrypted Valkey cache; account and trading contracts retained."
     },
     {
       "id": "TA-BYOK-BOUNDARY",
@@ -1000,7 +1008,7 @@
     ]
   },
   "correlation": {
-    "recorrelationReason": "CADS Marketplace buyer OAuth/setup integration changed server/auth.mjs on PR #220; exact branch blob rebound after review.",
-    "recorrelationDate": "2026-10-06"
+    "recorrelationReason": "Finance-to-Capital-AI canonical ScoringEngineService inspection bridge added by PR #283; exact immutable target blob rebound after source-contract review.",
+    "recorrelationDate": "2026-10-08"
   }
 }

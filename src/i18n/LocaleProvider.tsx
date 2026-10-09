@@ -6,6 +6,9 @@ import { sectionMessages, type SectionKey } from './landingSectionCopy';
 type LocaleValue = { locale: Locale; setLocale: (locale: Locale) => void; t: (key: MessageKey) => string; tSection: (key: SectionKey) => string };
 const Context = createContext<LocaleValue | null>(null);
 function initialLocale(): Locale {
+  // URL wins over a previously stored preference for a shareable language link.
+  const route = /^\/(de|en|it|fr|pt|es)\/?$/.exec(window.location.pathname.toLowerCase());
+  if (route && isLocale(route[1])) return route[1];
   try {
     const persisted = localStorage.getItem('capital_ai_locale');
     if (persisted && isLocale(persisted)) return persisted;

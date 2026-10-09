@@ -24,6 +24,7 @@
 !Chat Buddy/src/**
 !server/
 !server/index.mjs
+!server/seo-agent-discovery.mjs
 !server/chat-buddy-keys.mjs
 !server/chat-buddy-learn.mjs
 !server/repository-tool-catalog.mjs
@@ -33,6 +34,8 @@
 !server/market-spot-ingestion.test.mjs
 !server/spot-provider-wire.mjs
 !server/spot-provider-wire.test.mjs
+!server/spot-feed-lifecycle.mjs
+!server/spot-feed-lifecycle.test.mjs
 !server/ecb-reference-rates.mjs
 !server/ecb-reference-rates.test.mjs
 !server/ecb-reference-rates.LICENSE.txt
@@ -65,10 +68,14 @@
 !server/subscription-entitlements.mjs
 !server/subscription-entitlements.test.mjs
 !server/user-provider-vault.mjs
+!server/user-analysis-bindings.mjs
+!server/user-analysis-bindings.test.mjs
 !server/user-provider-vault.test.mjs
 !server/nats-auth.mjs
 !server/private-provider-query.mjs
 !server/private-provider-query.test.mjs
+!server/render-owner-dashboard.mjs
+!server/render-owner-dashboard.test.mjs
 !server/kraken-order-dry-run.mjs
 !server/kraken-order-dry-run.test.mjs
 !server/uniswap-trading.mjs
@@ -117,6 +124,13 @@
 !deploy/nats-server.conf
 !deploy/nats-entrypoint.sh
 !scripts/
+!scripts/media/
+!scripts/media/**
+!scripts/generate-chart-learning.tsx
+
+!public/learning/
+!public/learning/charts/
+!public/learning/charts/**
 !scripts/domain-skills.test.mjs
 !scripts/harden-npm-toolchain.mjs
 !scripts/benchmark-scoring-capacity.mjs
@@ -152,6 +166,8 @@
 !scripts/seo-source-provenance-drift.test.mjs
 !scripts/refresh-seo-source-provenance.mjs
 !scripts/seo-metadata.test.mjs
+!scripts/seo-production-readback.mjs
+!scripts/seo-production-readback.test.mjs
 !scripts/locale-policy.test.mjs
 !scripts/validate-finance-source-target-manifest.mjs
 !scripts/finance-source-target-manifest.test.mjs
@@ -160,6 +176,7 @@
 !scripts/validate-social-tool-license-evidence.mjs
 !scripts/validate-social-engine-completion-gate.mjs
 !scripts/social-engine-completion-gate.test.mjs
+!scripts/social-provider-db-smoke.sh
 !contracts/
 !contracts/**
 !packages/
@@ -179,6 +196,8 @@
 !generated/documentary/
 !generated/documentary/**
 !docs/
+!docs/business/
+!docs/business/MONETIZATION-DEEPSCAN-LEGAL-MATRIX-20261008.md
 !docs/licenses/
 !docs/licenses/**
 !docs/licenses/CAPITAL-AI-VOCABULARY-BADGE-CUSTOMER-LICENSE-1.0.md
@@ -216,6 +235,8 @@
 !CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json
 !CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json
 !CAPITAL-AI-GROWTH/social-renderer-worker-evidence-20261008.json
+!CAPITAL-AI-GROWTH/social-core-port-provenance-20261008.json
+!CAPITAL-AI-GROWTH/social-publishing-cutover-provenance-20261008.json
 !CAPITAL-AI-GROWTH/social-engine-completion-gate.json
 !CAPITAL-AI-GROWTH/social-media-tool-admission.yaml
 !CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.yaml
@@ -230,6 +251,7 @@
 !supabase/migrations/20261005010039_legal_policy_evidence_store_isolated.sql
 !supabase/migrations/20261005155500_fix_registration_consent_null.sql
 !supabase/migrations/20261006072600_sync_stripe_subscription_catalog_v2.sql
+!supabase/migrations/20261009104641_enforce_subscription_price_authority.sql
 !supabase/migrations/20261006080124_benchmark_run_usage_ledger.sql
 !supabase/migrations/20261006131500_enable_binance_user_provider_vault.sql
 
@@ -242,3 +264,26 @@
 !supabase/proposals/
 !supabase/proposals/provider_query_guard.sql
 !supabase/migrations/20261007214554_provider_query_guard.sql
+!supabase/migrations/20261008181500_private_user_analysis_bindings.sql
+!supabase/migrations/20261008113000_social_provider_store.sql
+!server/social-media/
+!server/social-media/provider-adapter.mjs
+!server/social-media/provider-adapter.test.mjs
+!server/social-media/provider-store.mjs
+!server/social-media/provider-store.test.mjs
+!server/social-media/provider-readback.mjs
+!server/social-media/provider-readback.test.mjs
+!server/social-media/oauth-callback.mjs
+!server/social-media/oauth-callback.test.mjs
+!server/social-media/asset-readback.mjs
+!server/social-media/asset-readback.test.mjs
+!server/social-media/provider-external-readback.mjs
+!server/social-media/provider-external-readback.test.mjs
+!server/social-media/provider-publish.mjs
+!server/social-media/provider-publish.test.mjs
+!server/social-media/provider-execution.mjs
+
+!server/private-market-batch.mjs
+!server/private-market-cache.mjs
+!server/private-market-batch.test.mjs
+!server/private-market-cache.test.mjs

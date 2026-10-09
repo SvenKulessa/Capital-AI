@@ -9,6 +9,9 @@ on:
       - deploy/render-nats.yaml
       - render.yaml
       - .github/workflows/provider-bridge-security.yml
+      - scripts/private-market-broker-*
+      - server/private-market-*
+      - server/user-provider-vault.mjs
   push:
     branches:
       - main
@@ -21,6 +24,9 @@ on:
       - deploy/render-nats.yaml
       - render.yaml
       - .github/workflows/provider-bridge-security.yml
+      - scripts/private-market-broker-*
+      - server/private-market-*
+      - server/user-provider-vault.mjs
   workflow_dispatch:
 
 permissions:
@@ -97,6 +103,14 @@ jobs:
           test "$status" -ne 0
           test ! -s provider-bridge-evidence/runtime-smoke.stdout
           ! grep -Eqi '(password=|secret=|token=|authorization:)' provider-bridge-evidence/runtime-smoke.stderr
+
+      - name: Private Kraken/Massive NATS and Valkey roundtrips through Rust
+        env:
+          PRIVATE_MARKET_BRIDGE_IMAGE: capital-ai-provider-bridge:${{ github.sha }}
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts
+          bash scripts/private-market-broker-ci.sh | tee provider-bridge-evidence/private-market-roundtrips.txt
 
       - name: OCI Scan und SBOM
         run: |

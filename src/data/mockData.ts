@@ -20,13 +20,13 @@ import { MarketAsset, CoreModule, KeyPillar, AssetClassInfo } from '../types';
 export const KEY_PILLARS: KeyPillar[] = [
   {
     id: 'realtime',
-    title: 'Echtzeit-Marktdaten',
+    title: 'Datenquellen & Datenstatus',
     iconType: 'coins',
     color: '#F9BF21', // AIF Gold (Primary)
   },
   {
     id: 'transparent-ai',
-    title: 'Transparente KI-Modelle',
+    title: 'Transparente Analysemethoden',
     iconType: 'ai-brain',
     color: '#8D26FF', // Purple (Accent)
   },
@@ -50,7 +50,7 @@ const MODULE_CATALOG: CoreModule[] = [
   {
     id: 'market-screener',
     title: 'Multi Asset Market Screener',
-    description: 'Echtzeit-Screener über Aktien, Krypto, Forex & Rohstoffe.',
+    description: 'Marktübersicht mit Quellenstatus; weitere Anlageklassen nach Datenanbindung.',
     iconType: 'screener',
     tagline: 'Cross-Sectional Multi-Asset Ranking in Sub-45ms',
     brandColor: '#06B6D4', // Cyan
@@ -119,7 +119,7 @@ const MODULE_CATALOG: CoreModule[] = [
   {
     id: 'enterprise-scorer',
     title: 'Enterprise Scorer',
-    description: 'KI-gestützte Analyse mit transparenter Methodik.',
+    description: 'Scoring-Methodik; verifiziertes Live-Scoring derzeit nicht aktiviert.',
     iconType: 'brain',
     tagline: 'Multi-Faktor Scoring in Echtzeit',
     brandColor: '#8D26FF', // Purple (Accent)
@@ -142,7 +142,7 @@ const MODULE_CATALOG: CoreModule[] = [
   {
     id: 'buffett-value',
     title: 'Buffett Value Check',
-    description: 'Bewertet Aktien nach Value-Prinzipien.',
+    description: 'Value-Prinzipien verstehen; Datenversorgung und Bewertung separat prüfen.',
     iconType: 'leaf',
     tagline: 'Diszipliniertes Investieren nach Warren Buffett',
     brandColor: '#44DE88', // Emerald (Success)
@@ -165,7 +165,7 @@ const MODULE_CATALOG: CoreModule[] = [
   {
     id: 'ai-newsfeed',
     title: 'AI Newsfeed',
-    description: 'Echtzeit-Sentiment & kuratierte Marktnachrichten.',
+    description: 'News- und Sentiment-Methodik; validierte Live-Auswertung noch ausstehend.',
     iconType: 'news',
     tagline: 'KI-kuratierte Marktsignale in Millisekunden',
     brandColor: '#F87171', // Rose (Breaking News / Market Pulse)

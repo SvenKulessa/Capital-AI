@@ -23,6 +23,13 @@ const routes = [
   { path: '/.well-known/change-password', classification: 'NOINDEX', contentType: 'account-security', reason: 'Temporärer Discovery-Redirect für Passwortmanager zur kanonischen Sicherheitsseite; keine Search-Landingpage.' },
   { path: '/.well-known/mta-sts.txt', classification: 'NOINDEX', contentType: 'mail-security', reason: 'MTA-STS Policy-Endpunkt; operativer Standardpfad, keine Search-Landingpage.' },
 
+  { path: '/de', classification: 'NOINDEX', contentType: 'localized-landing-preview', reason: 'Sprachvorschau nicht vollständig serverseitig übersetzt; hreflang und Indexierung bis Content-/TRUST-Abnahme deaktiviert.' },
+  { path: '/en', classification: 'NOINDEX', contentType: 'localized-landing-preview', reason: 'Sprachvorschau nicht vollständig serverseitig übersetzt; hreflang und Indexierung bis Content-/TRUST-Abnahme deaktiviert.' },
+  { path: '/it', classification: 'NOINDEX', contentType: 'localized-landing-preview', reason: 'Sprachvorschau nicht vollständig serverseitig übersetzt; hreflang und Indexierung bis Content-/TRUST-Abnahme deaktiviert.' },
+  { path: '/fr', classification: 'NOINDEX', contentType: 'localized-landing-preview', reason: 'Sprachvorschau nicht vollständig serverseitig übersetzt; hreflang und Indexierung bis Content-/TRUST-Abnahme deaktiviert.' },
+  { path: '/pt', classification: 'NOINDEX', contentType: 'localized-landing-preview', reason: 'Sprachvorschau nicht vollständig serverseitig übersetzt; hreflang und Indexierung bis Content-/TRUST-Abnahme deaktiviert.' },
+  { path: '/es', classification: 'NOINDEX', contentType: 'localized-landing-preview', reason: 'Sprachvorschau nicht vollständig serverseitig übersetzt; hreflang und Indexierung bis Content-/TRUST-Abnahme deaktiviert.' },
+
   { path: '/login', classification: 'NOINDEX', contentType: 'auth', reason: 'Öffentlicher Auth-Einstieg ohne eigenständigen Suchwert.' },
   { path: '/architecture', classification: 'NOINDEX', contentType: 'product-doc', reason: 'Öffentlich erreichbar, aber noch nicht gegen SEO-Manifest/Claim-Evidence gehärtet.' },
   { path: '/provider-status', classification: 'NOINDEX', contentType: 'operations', reason: 'Operative Statusansicht; keine Search-Landingpage.' },
@@ -41,6 +48,8 @@ const routes = [
   { path: '/profile', classification: 'PRIVATE', contentType: 'account', reason: 'Personenbezogener Kontobereich.' },
   { path: '/profile/security', classification: 'PRIVATE', contentType: 'account-security', reason: 'Personenbezogene Sicherheits-, MFA- und Recovery-Einstellungen.' },
   { path: '/profile/key-vault', classification: 'PRIVATE', contentType: 'credential-vault', reason: 'Personenbezogener Provider-Credential-Vault; niemals Search-Inhalt.' },
+  { path: '/profile/workspace', classification: 'PRIVATE', contentType: 'analysis-workspace', reason: 'Nutzereigene API-/Modellzuordnungen und Analyse-Einstellungen.' },
+  { path: '/profile/render-dashboard', classification: 'PRIVATE', contentType: 'owner-private-dashboard', reason: 'Render-Provider-Verbindungen nur für serverseitig verifizierten Owner.' },
   { path: '/control-center', classification: 'PRIVATE', contentType: 'management', reason: 'Management-, Evidence- und Control-Center-Inhalte sind nicht für Search bestimmt.' },
 
   { path: '/tokenomics', classification: 'BLOCKED', contentType: 'financial-claim', reason: 'Token-/Finanzclaims bleiben bis expliziter rechtlicher und Evidence-Prüfung von Search ausgeschlossen.' },
@@ -85,7 +94,7 @@ export function resolveSeoIndexingPolicy(pathname) {
 
   if (normalized.startsWith('/api/')) return API_PRIVATE_POLICY;
   if (normalized.startsWith('/control-center/')) return exactRoutes.get('/control-center');
-  if (normalized === '/healthz' || normalized === '/metrics' || normalized === '/robots.txt' || normalized === '/sitemap.xml') {
+  if (normalized === '/healthz' || normalized === '/metrics' || normalized === '/robots.txt' || normalized === '/sitemap.xml' || normalized === '/llms.txt' || normalized === '/sitemap.md') {
     return OPERATIONAL_NOINDEX_POLICY;
   }
   if (/^\/vocabulary\/[a-z0-9][a-z0-9_-]*$/.test(normalized)) {

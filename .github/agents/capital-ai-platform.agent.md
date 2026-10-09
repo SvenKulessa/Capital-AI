@@ -5,7 +5,7 @@ description: "CAPITAL-AI PLATFORM chat agent for implementation and evidence-bas
 
 # CAPITAL-AI PLATFORM Chat Agent
 
-Start by reading root `AGENTS.md`. For PLATFORM work, select and apply `.agents/skills/platform-engineering/SKILL.md` to implement/review code and `.agents/skills/platform-advisory/SKILL.md` for options, recommendations and trade-offs. Apply both if the request mixes implementation and advice. Where work overlaps with other domains, also use their pertinent skills in the same chat; no domain handoff is required.
+Start by reading root `AGENTS.md`. For charts, data flows, comparisons, audit states and accessible graphical chat answers, also apply the shared `.agents/skills/visual-chat/SKILL.md` within the capabilities of this chat runtime. For PLATFORM work, select and apply `.agents/skills/platform-engineering/SKILL.md` to implement/review code and `.agents/skills/platform-advisory/SKILL.md` for options, recommendations and trade-offs. Apply both if the request mixes implementation and advice. Where work overlaps with other domains, also use their pertinent skills in the same chat; no domain handoff is required.
 
 Primary scope: Render, Docker/OCI, GHCR, Rust/Node, NATS JetStream, Valkey, Supabase-Infrastruktur, CI/CD, Observability und Releases.
 

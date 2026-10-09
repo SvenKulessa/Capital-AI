@@ -29,6 +29,8 @@ import { ScoringEngineService } from '../../services/scoringEngine';
 import { FeatureStoreService } from '../../services/featureStore';
 import { ProviderAdapterRegistry } from '../../services/providerAdapters';
 import { ScoreExplainabilityDrawer } from './ScoreExplainabilityDrawer';
+import { createUnavailableResult, safeScorePresentation } from '../analysis/scorePresentation';
+import { DataStatusBadge } from '../analysis/AnalysisUi';
 
 export interface EnterpriseScorerDashboardProps {
   onSelectAsset?: (symbol: string) => void;
@@ -47,8 +49,8 @@ interface PrivatePortfolioContext {
 
 const PRESET_ASSETS: AssetIdentity[] = [
   { assetId: 'ast_aapl', symbol: 'AAPL', name: 'Apple Inc.', assetClass: 'equity_us', venue: 'NASDAQ', currency: 'USD', status: 'active' },
-  { assetId: 'ast_btc', symbol: 'BTCUSDT', name: 'Bitcoin / Tether', assetClass: 'crypto', venue: 'BINANCE', currency: 'USDT', status: 'active' },
-  { assetId: 'ast_eth', symbol: 'ETH', name: 'Ethereum', assetClass: 'crypto', venue: 'BINANCE', currency: 'USDT', status: 'active' },
+  { assetId: 'ast_btc', symbol: 'BTCUSD', name: 'Bitcoin / US-Dollar', assetClass: 'crypto', venue: 'KRAKEN', currency: 'USD', status: 'active' },
+  { assetId: 'ast_eth', symbol: 'ETHUSD', name: 'Ethereum / US-Dollar', assetClass: 'crypto', venue: 'KRAKEN', currency: 'USD', status: 'active' },
   { assetId: 'ast_sap', symbol: 'SAP', name: 'SAP SE', assetClass: 'equity_eu', venue: 'XETRA', currency: 'EUR', status: 'active' },
   { assetId: 'ast_nvda', symbol: 'NVDA', name: 'NVIDIA Corp.', assetClass: 'equity_us', venue: 'NASDAQ', currency: 'USD', status: 'active' },
   { assetId: 'ast_gold', symbol: 'GOLD', name: 'Gold Spot', assetClass: 'commodities', venue: 'LBMA', currency: 'USD', status: 'active' },
@@ -60,12 +62,15 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const requestId = React.useRef(0);
+  const [clock, setClock] = useState(Date.now);
+  useEffect(() => { const timer = setInterval(() => setClock(Date.now()), 1000); return () => clearInterval(timer); }, []);
+  const displayed = activeResult ? safeScorePresentation(activeResult, clock) : null;
   const [scoreError, setScoreError] = useState<string | null>(null);
   const [privatePortfolioContext, setPrivatePortfolioContext] = useState<PrivatePortfolioContext | null>(null);
   const [privateContextStatus, setPrivateContextStatus] = useState<'LOADING' | 'VERIFIED' | 'UNAVAILABLE'>('LOADING');
   const dataMode: 'LIVE' | 'DEMO' = 'LIVE';
 
-  const featureStore = new FeatureStoreService();
+  const featureStore = React.useMemo(() => new FeatureStoreService(), []);
   const providerRegistry = React.useMemo(() => new ProviderAdapterRegistry(), []);
 
   const computeAssetScore = async (asset: AssetIdentity, isDemo: boolean) => {
@@ -79,9 +84,15 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
       const rawObs = await adapter.fetchObservation(asset);
       const features = featureStore.extractFeatures({ asset, observation: rawObs });
       const res = await ScoringEngineService.computeFinalScore(asset, features, isDemo);
-      if (currentRequest === requestId.current) setActiveResult(res);
+      if (currentRequest === requestId.current) { setActiveResult(res); setClock(Date.now()); }
     } catch (e) {
-      if (currentRequest === requestId.current) setScoreError('Keine zugelassene Open-Data-Quelle. Kein verifizierter Score.');
+      if (currentRequest === requestId.current) {
+        setScoreError('Keine öffentliche Analysequelle verbunden. Score und Marktregime sind nicht verfügbar.');
+        const unavailable = createUnavailableResult(asset, ScoringEngineService.MODEL_VERSION, Date.now());
+        unavailable.weightsApplied = ScoringEngineService.getWeightProfile(asset.assetClass);
+        setActiveResult(unavailable);
+        setClock(Date.now());
+      }
     } finally {
       if (currentRequest === requestId.current) setIsLoading(false);
     }
@@ -146,7 +157,7 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
           <div>
             <div className="flex items-center gap-2 text-xs font-mono text-amber-400 mb-1">
               <Cpu className="w-4 h-4" />
-              <span>ENTERPRISE MULTI-FAKTOR SCORING ENGINE • 50 KOMPONENTEN</span>
+              <span>ENTERPRISE SCORER • 50 REGISTRIERTE KOMPONENTEN</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
               Enterprise Scorer &amp; Explainability Hub
@@ -160,7 +171,7 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
           <div className="flex items-center gap-2 shrink-0">
             {/* Live / Demo Mode Switcher */}
             <div className="p-1 rounded-xl bg-black/60 border border-slate-800 flex items-center">
-<span className="px-3 py-1.5 text-xs text-slate-400">Open Data · Source Admission erforderlich</span>
+<span className="px-3 py-1.5 text-xs text-slate-400">Datenstatus · nicht verfügbar</span>
             </div>
           </div>
         </div>
@@ -220,7 +231,8 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
         </div>
       </div>
 
-      {scoreError && <p role="alert" className="text-sm text-amber-300">{scoreError}</p>}
+      {isLoading && <p role="status" className="text-sm text-slate-300">Analyseverfügbarkeit wird geprüft …</p>}
+      {scoreError && <p role="status" className="text-sm text-amber-300">{scoreError}</p>}
       {/* Main Score & Driver Card */}
       {activeResult && activeResult.assetId === selectedAsset.assetId && activeResult.isDemo === (false) && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -230,8 +242,8 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
               <div className="flex items-center gap-4">
                 <div className="text-center p-4 rounded-2xl bg-gradient-to-br from-[#0d1633] to-black border border-amber-500/40 min-w-[110px] shadow-lg">
                   <div className="text-[10px] font-mono uppercase text-slate-400">Final Rank Score</div>
-                  <div className={`${activeResult.finalScore === null ? 'text-base' : 'text-4xl'} font-extrabold font-mono text-amber-400 mt-1`}>
-                    {activeResult.finalScore ?? 'Nicht verfügbar'}
+                  <div className={`${displayed?.score === null ? 'text-base' : 'text-4xl'} font-extrabold font-mono text-amber-400 mt-1`}>
+                    {displayed?.score ?? 'Nicht verfügbar'}
                   </div>
                   <div className="text-[10px] text-slate-500 font-mono mt-0.5">Skala 0-100</div>
                 </div>
@@ -241,32 +253,24 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
                     <h3 className="text-lg font-bold text-white">
                       {selectedAsset.name} ({selectedAsset.symbol})
                     </h3>
-                    <span
-                      className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${
-                        activeResult.isDemo
-                          ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                          : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                      }`}
-                    >
-                      {activeResult.dataAvailability.toUpperCase()}
-                    </span>
+                    <DataStatusBadge mode={displayed?.data ?? 'unavailable'} />
                   </div>
 
                   <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                     <span
                       className={`text-[11px] font-mono px-2.5 py-0.5 rounded-full font-bold border ${
-                        activeResult.eligibility
+                        (activeResult.eligibility && displayed?.score !== null)
                           ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
                           : 'bg-rose-500/15 border-rose-500/40 text-rose-300'
                       }`}
                     >
-                      {activeResult.eligibility ? '✓ ELIGIBLE (Gate Bestanden)' : '🚫 INELIGIBLE (Hard Veto)'}
+                      {activeResult.eligibility && displayed?.score !== null ? 'Zugelassen · Gates erfüllt' : 'Nicht zugelassen · Pflichtdaten oder Gates fehlen'}
                     </span>
                     <span className="text-xs text-slate-400 font-mono">
-                      Konfidenz: <span className="text-cyan-400 font-bold">{Math.round(activeResult.confidence * 100)}%</span>
+                      Konfidenz: <span className="text-cyan-400 font-bold">{displayed?.score === null ? 'Nicht verfügbar' : `${Math.round(activeResult.confidence * 100)}%`}</span>
                     </span>
                     <span className="text-xs text-slate-400 font-mono">
-                      Risiko-Abzug: <span className="text-rose-400 font-bold">{activeResult.finalScore === null ? 'Nicht verfügbar' : `-${activeResult.riskPenalty} Pkt.`}</span>
+                      Risiko-Abzug: <span className="text-rose-400 font-bold">{displayed?.score === null ? 'Nicht verfügbar' : `-${activeResult.riskPenalty} Pkt.`}</span>
                     </span>
                   </div>
                 </div>
@@ -340,7 +344,7 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
               ].map((s) => (
                 <div key={s.label} className="p-2 rounded-lg bg-black/30 text-center">
                   <div className="text-[10px] font-mono text-slate-400">{s.label}</div>
-                  <div className="text-sm font-bold font-mono text-white mt-0.5">{s.val}</div>
+                  <div className="text-sm font-bold font-mono text-white mt-0.5">{s.val ?? '—'}</div>
                 </div>
               ))}
             </div>

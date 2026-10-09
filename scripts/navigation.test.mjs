@@ -7,7 +7,8 @@ import { messages } from '../src/i18n/messages.ts';
 test('all current sideboard tab links retain their hub and tab', () => {
   const sidebar = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
   const links = [...sidebar.matchAll(/path: '([^']+\?tab=[^']+)'/g)].map(match => match[1]);
-  assert.equal(links.length, 13);
+  assert.equal(links.length, 14);
+  assert.ok(links.includes('/marketscreener?tab=components'));
   assert.ok(links.includes('/studio?tab=console'));
   assert.ok(links.includes('/learning?tab=flashcards'));
   assert.ok(links.includes('/learning?tab=videos'));
@@ -100,6 +101,8 @@ test('account routes keep profile, security and key vault as separate pages', ()
   assert.equal(resolveAppRoute('/profil/sicherheit'), '/profile/security');
   assert.equal(resolveAppRoute('/key-vault'), '/profile/key-vault');
   assert.equal(resolveAppRoute('/vault'), '/profile/key-vault');
+  assert.equal(resolveAppRoute('/profil/workspace'), '/profile/workspace');
+  assert.equal(resolveAppRoute('/mein-workspace'), '/profile/workspace');
   assert.equal(resolveNavigationTarget('/profile/security?ref=account'), '/profile/security?ref=account');
 });
 
@@ -254,4 +257,34 @@ test('optional route breadcrumbs do not inflate the synchronous bootstrap chunk'
   assert.match(shell, /const RouteBreadcrumbs = lazy\(\(\) =>/);
   assert.match(shell, /import\('\.\.\/components\/RouteBreadcrumbs'\)/);
   assert.match(shell, /<Suspense fallback=\{null\}>[\s\S]*?<RouteBreadcrumbs/);
+});
+
+test('six non-indexed language roots resolve to the public homepage without exposing private routes', () => {
+  for (const code of ['de','en','it','fr','pt','es']) {
+    assert.equal(resolveAppRoute('/' + code + '/'), '/');
+    assert.equal(resolveAppRoute('/' + code), '/');
+    // Internal actions remain canonical (language choice is a client preference).
+    assert.equal(resolveNavigationTarget('/' + code + '/'), '/');
+  }
+  for (const path of ['/en/profile','/fr/login','/it/agb','/pt/control-center']) {
+    assert.equal(resolveAppRoute(path), '/');
+  }
+});
+
+test('language switcher has a keyboard-accessible native select and shareable homepage URL', () => {
+  const switcher = readFileSync(new URL('../src/components/LanguageSwitcher.tsx', import.meta.url), 'utf8');
+  assert.match(switcher, /<select/);
+  assert.match(switcher, /aria-label=\{t\('language'\)\}/);
+  assert.match(switcher, /setLocale\(next\)/);
+  assert.match(switcher, /window\.history\.replaceState/);
+});
+
+test('sign-in password guidance matches current client-side strength policy', () => {
+  const source = readFileSync(new URL('../src/features/auth/LoginPage.tsx', import.meta.url), 'utf8');
+  const dictionary = readFileSync(new URL('../src/i18n/authCopy.ts', import.meta.url), 'utf8');
+  assert.match(source, /newPasswordMeetsObservedPolicy/);
+  assert.match(source, /tr\.passwordRules/);
+  assert.match(source, /tr\.resetRules/);
+  assert.doesNotMatch(source, /erzwingt keine künstlichen/);
+  assert.match(dictionary, /special character/);
 });

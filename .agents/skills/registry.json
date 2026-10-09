@@ -8,31 +8,39 @@
       "scope": "Frontend, React/TypeScript, UX, Accessibility, Navigation, Nutzerkonten, Client-Auth und sichere Produktflows",
       "engineering": "product-engineering",
       "advisory": "product-advisory",
-      "chatAgent": ".github/agents/capital-ai-product.agent.md"
+      "chatAgent": ".github/agents/capital-ai-product.agent.md",
+      "presentation": "visual-chat"
     },
     "MARKET": {
       "scope": "FinTech-Logik, lizenzierte Providerdaten, Instrumentenmapping, Market Data, Scoring, Screener, Data Quality, BYOK und Evidence",
       "engineering": "market-engineering",
       "advisory": "market-advisory",
-      "chatAgent": ".github/agents/capital-ai-market.agent.md"
+      "chatAgent": ".github/agents/capital-ai-market.agent.md",
+      "presentation": "visual-chat"
     },
     "PLATFORM": {
       "scope": "Render, Docker/OCI, GHCR, Rust/Node, NATS JetStream, Valkey, Supabase-Infrastruktur, CI/CD, Observability und Releases",
       "engineering": "platform-engineering",
       "advisory": "platform-advisory",
-      "chatAgent": ".github/agents/capital-ai-platform.agent.md"
+      "chatAgent": ".github/agents/capital-ai-platform.agent.md",
+      "presentation": "visual-chat"
     },
     "TRUST": {
       "scope": "AppSec, Threat Modeling, Auth-Grenzen, Datenschutz, Compliance, Supply Chain, SBOM, QA, Risiko- und Evidence-Bewertung",
       "engineering": "trust-engineering",
       "advisory": "trust-advisory",
-      "chatAgent": ".github/agents/capital-ai-trust.agent.md"
+      "chatAgent": ".github/agents/capital-ai-trust.agent.md",
+      "presentation": "visual-chat"
     },
     "GROWTH": {
       "scope": "Dokumentation, SEO, Content Engine, Social, Podcast/Video, Public Claims, Branding, Analytics und Release-Kommunikation",
       "engineering": "growth-engineering",
       "advisory": "growth-advisory",
-      "chatAgent": ".github/agents/capital-ai-growth.agent.md"
+      "chatAgent": ".github/agents/capital-ai-growth.agent.md",
+      "presentation": "visual-chat"
     }
+  },
+  "sharedSkills": {
+    "visualChat": "visual-chat"
   }
 }

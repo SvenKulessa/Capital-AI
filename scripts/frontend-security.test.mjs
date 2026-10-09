@@ -73,12 +73,14 @@ test('index loads the app directly and exposes the fail-closed shell only on a b
 
 test('TOTP QR rendering allows image data URLs and encodes raw SVG', async () => {
   const source = await readFile(new URL('../src/features/auth/AuthSecuritySettings.tsx', import.meta.url), 'utf8');
-  assert.match(source, /raw\.startsWith\('data:image\/svg\+xml'\)/);
-  assert.match(source, /raw\.startsWith\('data:image\/png'\)/);
-  assert.match(source, /encodeURIComponent\(raw\)/);
+  const { totpQrImage } = await import('../src/features/auth/totpEnrollment.ts');
+  assert.equal(totpQrImage('data:image/png;base64,aA=='), 'data:image/png;base64,aA==');
+  const raw = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
+  assert.equal(totpQrImage(raw), 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(raw));
+  assert.equal(totpQrImage('https://example.test/qr'), '');
   assert.match(source, /src=\{qrImage\}/);
+  assert.match(source, /totpQrImage\(enrollment\?\.qrCode\)/);
   assert.doesNotMatch(source, /dangerouslySetInnerHTML/);
-  assert.match(source, /data:image\/svg\+xml;charset=utf-8/);
 });
 
 test('provider license pages expose rights sources without granting entitlements', () => {
@@ -135,7 +137,7 @@ test('Learning Portal owns three Vocabulary flashcards without a project page', 
   assert.doesNotMatch(home, /VocabularyFlashcards/);
   assert.match(learning, /const VocabularyFlashcards = React\.lazy\(\(\) =>/);
   assert.match(learning, /import\('\.\.\/\.\.\/components\/VocabularyFlashcards'\)/);
-  assert.match(learning, /'glossar' \| 'flashcards' \| 'guides' \| 'videos' \| 'quiz'/);
+  assert.match(learning, /'glossar' \| 'flashcards' \| 'guides' \| 'patterns' \| 'videos' \| 'quiz'/);
   assert.match(learning, /activeTab === 'flashcards'/);
   assert.doesNotMatch(learning, /SubpageSidebarNav/);
   assert.match(cards, /VOCABULARY_TERMS\.slice\(0, 3\)/);
@@ -184,7 +186,7 @@ test('architecture is removed from drawer footer and remains reachable from docu
 test('learning portal exposes architecture video previews without claiming completed renderer evidence', async () => {
   const learning = await readFile(new URL('../src/features/learning/LearningPortalPage.tsx', import.meta.url), 'utf8');
 
-  assert.match(learning, /'glossar' \| 'flashcards' \| 'guides' \| 'videos' \| 'quiz'/);
+  assert.match(learning, /'glossar' \| 'flashcards' \| 'guides' \| 'patterns' \| 'videos' \| 'quiz'/);
   assert.match(learning, /Architektur Videos/);
   assert.match(learning, /PREVIEW · VIDEO NOCH NICHT GERENDERT/);
   assert.match(learning, /BLOCKED_RUNTIME_NOT_MIGRATED/);

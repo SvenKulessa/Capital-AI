@@ -56,6 +56,9 @@ import { ScoringEngineService } from '../../services/scoringEngine';
 import { PipelineConfiguratorService } from '../../services/pipelineConfigurator';
 import { useHubTab } from '../../hooks/useHubTab';
 import { ContentStudioPanel } from './ContentStudioPanel';
+import { AnalysisComponentExplorer } from '../analysis/AnalysisComponentExplorer';
+import { PipelineConfiguratorConsole } from '../analysis/PipelineConfiguratorConsole';
+import { analysisUiEnabled } from '../analysis/analysisUiFlags';
 
 export type StudioTabKey =
   | 'architecture'
@@ -1014,7 +1017,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
       {/* ========================================================================= */}
       {/* TAB CONTENT 6: ANALYTICS & SCORING (Math, Evidence & Audit Engine)        */}
       {/* ========================================================================= */}
-      {activeTab === 'analytics' && <DataUnavailable title="analytics" required="produktive Messungen und validierte Pipeline-Ausführungen" />}
+      {activeTab === 'analytics' && (analysisUiEnabled('components') ? <AnalysisComponentExplorer /> : <DataUnavailable title="Analytics" required="validierte Pipeline-Ausführungen" />)}
       {false && activeTab === 'analytics' && (
         <div className="space-y-6">
           <div className="p-6 rounded-2xl bg-gradient-to-r from-amber-500/10 via-[#0d1530] to-emerald-500/10 border border-amber-500/30">
@@ -1566,7 +1569,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
       {/* ========================================================================= */}
       {/* TAB CONTENT: PIPELINE CONFIGURATOR CONSOLE (MOVED TO CONTROL CENTER)       */}
       {/* ========================================================================= */}
-      {activeTab === 'console' && <DataUnavailable title="console" required="produktive Messungen und validierte Pipeline-Ausführungen" />}
+      {activeTab === 'console' && <PipelineConfiguratorConsole />}
       {false && activeTab === 'console' && (
         <div className="p-8 sm:p-12 rounded-2xl bg-[#090e21] border border-rose-500/40 text-center max-w-2xl mx-auto space-y-4 my-8 shadow-2xl">
           <div className="w-14 h-14 rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/40 flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(244,63,94,0.3)]">

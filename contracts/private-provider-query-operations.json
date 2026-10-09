@@ -151,6 +151,26 @@
           "globalMinIntervalMs": 1000,
           "dataScope": "USER_PRIVATE_MARKET_DATA",
           "notes": "One bounded server-side user-owned WebSocket snapshot. 6s max, 16 frames, then stop. Requires authenticated private Vault read-only permission; no browser WS and no public shared redistribution."
+        },
+        "market.asset_class_snapshot": {
+          "params": [
+            "category"
+          ],
+          "requiredParams": [
+            "category"
+          ],
+          "paramRules": {
+            "category": {
+              "enum": [
+                "KRYPTO"
+              ]
+            }
+          },
+          "costUnits": 3,
+          "minIntervalMs": 5000,
+          "globalMinIntervalMs": 1000,
+          "dataScope": "USER_PRIVATE_MARKET_DATA",
+          "notes": "Up to 50 private assets per class. Core NATS request/reply, encrypted user/connection cache <=30s; no shared publication."
         }
       }
     },
@@ -313,6 +333,33 @@
           "globalMinIntervalMs": 1000,
           "dataScope": "USER_PRIVATE_MARKET_DATA",
           "notes": "One bounded server-side user-owned WebSocket snapshot. 6s max, 16 frames, then stop. Requires authenticated private Vault read-only permission; no browser WS and no public shared redistribution."
+        }
+      }
+    },
+    "massive": {
+      "operations": {
+        "market.asset_class_snapshot": {
+          "params": [
+            "category"
+          ],
+          "requiredParams": [
+            "category"
+          ],
+          "paramRules": {
+            "category": {
+              "enum": [
+                "AKTIEN",
+                "INDIZIES",
+                "FOREX",
+                "ROHSTOFFE"
+              ]
+            }
+          },
+          "costUnits": 3,
+          "minIntervalMs": 5000,
+          "globalMinIntervalMs": 1000,
+          "dataScope": "USER_PRIVATE_MARKET_DATA",
+          "notes": "Up to 50 private assets per class. Core NATS request/reply, encrypted user/connection cache <=30s; no shared publication."
         }
       }
     }

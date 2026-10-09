@@ -1,0 +1,182 @@
+{
+  "schemaVersion": "CAPITAL_AI_PATTERN_SHORTS_CAMPAIGN_DRAFT@1",
+  "status": "DRAFT",
+  "referenceMainSha": "0c22321c7ef1309b6039debaf5cd0e0d5d05a7dc",
+  "packageContract": "CAPITAL_AI_CONTENT_SOCIAL_PACKAGE@1",
+  "contentEngineContract": "CAPITAL_AI_CONTENT_ENGINE@1",
+  "branding": {
+    "originalLogoPath": "public/branding/capital-ai-logo.jpg",
+    "iconDerivativePath": "public/branding/asset-pack/favicon/favicon-32x32.png",
+    "brand": "CAPITAL-AI",
+    "colors": {
+      "background": "#02050E",
+      "gold": "#F9BF21",
+      "purple": "#8D26FF"
+    }
+  },
+  "frame": {
+    "ratio": "9:16",
+    "width": 1080,
+    "height": 1920,
+    "durationSeconds": 55,
+    "codec": "H.264",
+    "audio": "AAC",
+    "sourceData": "SYNTHETIC"
+  },
+  "affiliate": {
+    "status": "REVIEW_REQUIRED",
+    "code": "yc4ggk3f",
+    "url": "https://proinvite.kraken.com/9f1e/8nfzp3u7",
+    "disclosure": "WERBUNG · REFERRAL",
+    "programTermsVerified": "GENERAL_ONLY",
+    "specificInviteEligibility": "NOT_PROVEN",
+    "tiktokPromoEligibility": "NOT_PROVEN",
+    "claim": "Nur bei Erfüllung der jeweiligen Bedingungen kann eine Prämie entstehen; keine Garantie."
+  },
+  "publisher": {
+    "tiktokState": "IMPLEMENTED_DISABLED",
+    "accountConnected": "NOT_PROVEN",
+    "publicPublishing": false,
+    "approvalRefs": [],
+    "providerDeliveryIds": [],
+    "postIds": []
+  },
+  "packages": [
+    {
+      "contractVersion": "CAPITAL_AI_CONTENT_SOCIAL_PACKAGE@1",
+      "campaignId": "CA-GROWTH-PATTERN-SHORTS-20261009",
+      "contentId": "pattern-cup-and-handle-20261009",
+      "sourceSha": "0c22321c7ef1309b6039debaf5cd0e0d5d05a7dc",
+      "canonicalUrl": "https://capital-ai.online/",
+      "locale": "de-DE",
+      "publicationAuthority": "SOCIAL_MEDIA_ENGINE_ONLY",
+      "campaign": {
+        "campaignId": "CA-GROWTH-PATTERN-SHORTS-20261009",
+        "productId": "CAPITAL-AI-CHART-PATTERN-ACADEMY",
+        "sourceSha": "0c22321c7ef1309b6039debaf5cd0e0d5d05a7dc",
+        "canonicalUrl": "https://capital-ai.online/",
+        "locale": "de-DE",
+        "objective": "Bildungsorientierte, quellennachvollziehbare Kurzvideos zu technischen Chartmustern für Website, YouTube Shorts und TikTok vorbereiten; keine Renditeversprechen.",
+        "audience": [
+          "Deutschsprachige Erwachsene mit Interesse an technischer Chartanalyse",
+          "Anfänger und Fortgeschrittene, die Chartmuster und Grenzen verstehen möchten"
+        ],
+        "channels": [
+          "YOUTUBE"
+        ],
+        "outputs": [
+          "TEXT",
+          "VIDEO"
+        ],
+        "sourceUrls": [
+          "https://support.kraken.com/de/articles/kraken-pro-app-referrals",
+          "https://www.kraken.com/de/legal/referrals",
+          "https://www.tiktok.com/community-guidelines/en"
+        ]
+      },
+      "assets": [
+        {
+          "assetId": "cup-and-handle-educational-55s",
+          "contentId": "pattern-cup-and-handle-20261009",
+          "kind": "VIDEO",
+          "sha256": "e380aa08e46917e76b282ef763d60f571828fd769f28b22df2e8065923839e96",
+          "mimeType": "video/mp4",
+          "evidenceRef": "LOCAL_EXPORT_NOT_INGESTED:cup-and-handle-educational-55s.mp4",
+          "sourceSha": "0c22321c7ef1309b6039debaf5cd0e0d5d05a7dc"
+        },
+        {
+          "assetId": "cup-and-handle-referral-55s",
+          "contentId": "pattern-cup-and-handle-20261009",
+          "kind": "VIDEO",
+          "sha256": "793f9fe32d8b65d1893b867174eda1e464791da910c29dcc1ad931fe96a62d34",
+          "mimeType": "video/mp4",
+          "evidenceRef": "LOCAL_EXPORT_NOT_INGESTED:cup-and-handle-referral-55s.mp4",
+          "sourceSha": "0c22321c7ef1309b6039debaf5cd0e0d5d05a7dc"
+        }
+      ],
+      "approvals": [],
+      "deliveries": [
+        {
+          "channel": "TIKTOK",
+          "assetId": "cup-and-handle-educational-55s",
+          "adapterState": "INTEGRATION_PENDING",
+          "deliveryState": "DRAFT"
+        },
+        {
+          "channel": "TIKTOK",
+          "assetId": "cup-and-handle-referral-55s",
+          "adapterState": "INTEGRATION_PENDING",
+          "deliveryState": "DRAFT"
+        }
+      ]
+    },
+    {
+      "contractVersion": "CAPITAL_AI_CONTENT_SOCIAL_PACKAGE@1",
+      "campaignId": "CA-GROWTH-PATTERN-SHORTS-20261009",
+      "contentId": "pattern-double-bottom-20261009",
+      "sourceSha": "0c22321c7ef1309b6039debaf5cd0e0d5d05a7dc",
+      "canonicalUrl": "https://capital-ai.online/",
+      "locale": "de-DE",
+      "publicationAuthority": "SOCIAL_MEDIA_ENGINE_ONLY",
+      "campaign": {
+        "campaignId": "CA-GROWTH-PATTERN-SHORTS-20261009",
+        "productId": "CAPITAL-AI-CHART-PATTERN-ACADEMY",
+        "sourceSha": "0c22321c7ef1309b6039debaf5cd0e0d5d05a7dc",
+        "canonicalUrl": "https://capital-ai.online/",
+        "locale": "de-DE",
+        "objective": "Bildungsorientierte, quellennachvollziehbare Kurzvideos zu technischen Chartmustern für Website, YouTube Shorts und TikTok vorbereiten; keine Renditeversprechen.",
+        "audience": [
+          "Deutschsprachige Erwachsene mit Interesse an technischer Chartanalyse",
+          "Anfänger und Fortgeschrittene, die Chartmuster und Grenzen verstehen möchten"
+        ],
+        "channels": [
+          "YOUTUBE"
+        ],
+        "outputs": [
+          "TEXT",
+          "VIDEO"
+        ],
+        "sourceUrls": [
+          "https://support.kraken.com/de/articles/kraken-pro-app-referrals",
+          "https://www.kraken.com/de/legal/referrals",
+          "https://www.tiktok.com/community-guidelines/en"
+        ]
+      },
+      "assets": [
+        {
+          "assetId": "double-bottom-educational-55s",
+          "contentId": "pattern-double-bottom-20261009",
+          "kind": "VIDEO",
+          "sha256": "e36d1b938bb739d63b651a4a939033212882f8a880bde2b4f38108e6824666ea",
+          "mimeType": "video/mp4",
+          "evidenceRef": "LOCAL_EXPORT_NOT_INGESTED:double-bottom-educational-55s.mp4",
+          "sourceSha": "0c22321c7ef1309b6039debaf5cd0e0d5d05a7dc"
+        },
+        {
+          "assetId": "double-bottom-referral-55s",
+          "contentId": "pattern-double-bottom-20261009",
+          "kind": "VIDEO",
+          "sha256": "efa295ea03d69fd835bdc4d5ae6ee399139d9b402f38645d9ec884cf0baf51bd",
+          "mimeType": "video/mp4",
+          "evidenceRef": "LOCAL_EXPORT_NOT_INGESTED:double-bottom-referral-55s.mp4",
+          "sourceSha": "0c22321c7ef1309b6039debaf5cd0e0d5d05a7dc"
+        }
+      ],
+      "approvals": [],
+      "deliveries": [
+        {
+          "channel": "TIKTOK",
+          "assetId": "double-bottom-educational-55s",
+          "adapterState": "INTEGRATION_PENDING",
+          "deliveryState": "DRAFT"
+        },
+        {
+          "channel": "TIKTOK",
+          "assetId": "double-bottom-referral-55s",
+          "adapterState": "INTEGRATION_PENDING",
+          "deliveryState": "DRAFT"
+        }
+      ]
+    }
+  ]
+}

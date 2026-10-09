@@ -151,7 +151,7 @@ export function nextKrakenNonce() {
   return String(lastKrakenNonce);
 }
 
-async function krakenPrivatePost(fetchImpl, path, { apiKey, apiSecret }, params = {}) {
+async function krakenPrivatePost(fetchImpl, path, { apiKey, apiSecret }, params = {}, timeoutMs = 7000) {
   const nonce = nextKrakenNonce();
   const form = { nonce, ...params };
   const body = new URLSearchParams(form).toString();
@@ -166,7 +166,7 @@ async function krakenPrivatePost(fetchImpl, path, { apiKey, apiSecret }, params 
     },
     body,
     redirect: 'error',
-    signal: AbortSignal.timeout(7000),
+    signal: AbortSignal.timeout(timeoutMs),
   });
   const payload = await boundedJson(response);
   if (!response.ok || !Array.isArray(payload?.error) || payload.error.length > 0 || typeof payload?.result !== 'object') {
@@ -196,8 +196,8 @@ function krakenSpotCapabilities(info) {
   };
 }
 
-async function krakenKeyInfo(fetchImpl, credentials) {
-  const result = await krakenPrivatePost(fetchImpl, KRAKEN_API_KEY_INFO_PATH, credentials);
+export async function krakenKeyInfo(fetchImpl, credentials, timeoutMs = 7000) {
+  const result = await krakenPrivatePost(fetchImpl, KRAKEN_API_KEY_INFO_PATH, credentials, {}, timeoutMs);
   return { info: result, capabilities: krakenSpotCapabilities(result) };
 }
 
@@ -422,7 +422,7 @@ function fingerprintForPayload(config, payload) {
     .slice(0, 24);
 }
 
-export function createUserProviderVault({ env = process.env, fetchImpl = fetch, auth } = {}) {
+export function createUserProviderVault({ env = process.env, fetchImpl = fetch, auth, privateMarketCache = null } = {}) {
   const config = adminConfig(env);
 
   async function requireUser(req, res, json) {
@@ -512,7 +512,7 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
       error.code = 'PROVIDER_VAULT_NOT_CONFIGURED';
       throw error;
     }
-    if (!['kraken', 'binance'].includes(provider)) {
+    if (!['kraken', 'binance', 'massive'].includes(provider)) {
       const error = new Error('UNSUPPORTED_PROVIDER');
       error.code = 'UNSUPPORTED_PROVIDER';
       throw error;
@@ -522,6 +522,22 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
       const error = new Error('PROVIDER_CONNECTION_NOT_FOUND');
       error.code = 'PROVIDER_CONNECTION_NOT_FOUND';
       throw error;
+    }
+    if (provider === 'massive') {
+      if (stored.status !== 'VERIFIED' || stored.permissions?.marketAccessApproved !== true
+        || !privateMarketCache) throw new Error('MASSIVE_PRIVATE_ACCESS_REQUIRED');
+      let payload;
+      try { payload = JSON.parse(stored.secretPayload); } catch { throw new Error('VAULT_SECRET_INVALID'); }
+      if (payload?.version !== 3 || typeof payload.apiKey !== 'string') throw new Error('VAULT_SECRET_INVALID');
+      const identity = { userId, provider, fingerprint: stored.credentialFingerprint, category: params.category };
+      if (operation !== 'market.asset_class_snapshot') throw new Error('OPERATION_NOT_ADMITTED');
+      const cached = await privateMarketCache.read(identity);
+      if (cached) return cached;
+      const { fetchMassiveClass } = await import('./private-market-batch.mjs');
+      const data = await fetchMassiveClass({ category: params.category, token: payload.apiKey, fetchImpl,
+        consume: () => privateMarketCache.consumeBudget(identity) });
+      await privateMarketCache.write(identity, data);
+      return data;
     }
     const payload = parseStoredVaultPayload(stored.secretPayload);
     const cleanParams = normalizeProviderParams(params);
@@ -558,7 +574,13 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
         error.code = 'KRAKEN_SPOT_CONNECTION_NOT_FOUND';
         throw error;
       }
-      const verification = await krakenKeyInfo(fetchImpl, payload.spot);
+      const batchIdentity = operation === 'market.asset_class_snapshot'
+        ? { userId, provider, fingerprint: stored.credentialFingerprint, category: cleanParams.category } : null;
+      if (batchIdentity) {
+        if (stored.status !== 'VERIFIED' || !privateMarketCache) throw new Error('PRIVATE_MARKET_ACCESS_REQUIRED');
+        await privateMarketCache.consumeBudget(batchIdentity);
+      }
+      const verification = await krakenKeyInfo(fetchImpl, payload.spot, batchIdentity ? 2500 : 7000);
       if (verification.capabilities.forbiddenPermissions.length > 0) {
         const error = new Error('KRAKEN_FUNDING_OR_WITHDRAWAL_PERMISSIONS_FORBIDDEN');
         error.code = 'KRAKEN_FUNDING_OR_WITHDRAWAL_PERMISSIONS_FORBIDDEN';
@@ -578,6 +600,15 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
           },
           capabilities: verification.capabilities,
         };
+      }
+      if (operation === 'market.asset_class_snapshot') {
+        const cached = await privateMarketCache.read(batchIdentity);
+        if (cached) return cached;
+        const { fetchKrakenClass } = await import('./private-market-batch.mjs');
+        const data = await fetchKrakenClass({ category: cleanParams.category, fetchImpl,
+          consume: () => privateMarketCache.consumeBudget(batchIdentity) });
+        await privateMarketCache.write(batchIdentity, data);
+        return data;
       }
       if (operation === 'market.spot_trade') {
         const { fetchPrivateUserSpotTrade } = await import('./spot-provider-wire.mjs');
@@ -667,6 +698,45 @@ export function createUserProviderVault({ env = process.env, fetchImpl = fetch, 
             : 'provider_vault_unavailable',
         });
       }
+      return true;
+    }
+
+    if (url.pathname === '/api/profile/provider-connections/massive') {
+      if (!['PUT', 'DELETE'].includes(req.method)) {
+        res.setHeader('Allow', 'PUT, DELETE'); json(res, 405, { error: 'method_not_allowed' }); return true;
+      }
+      if (!auth.sameOrigin(req)) { json(res, 403, { error: 'forbidden_origin' }); return true; }
+      try {
+        if (req.method === 'DELETE') {
+          await rpc(fetchImpl, config, 'capital_ai_delete_user_provider_secret', {
+            _user_id: user.userId, _provider: 'massive' });
+          json(res, 200, { deleted: true, provider: 'massive' }); return true;
+        }
+        const body = await readJson(req);
+        const token = normalizeCredential(body.apiKey, 8, 512);
+        if (!/^[A-Za-z0-9_-]{8,512}$/.test(token) || body.marketAccessApproved !== true
+          || body.allowTrading === true || body.apiSecret) {
+          json(res, 400, { error: 'massive_private_market_consent_required' }); return true;
+        }
+        if (!privateMarketCache) throw new Error('PRIVATE_MARKET_CACHE_UNAVAILABLE');
+        const fingerprint = createHmac('sha256', config.fingerprintKey)
+          .update('capital-ai/massive-key/v1\0').update(token).digest('hex').slice(0, 24);
+        const { verifyMassiveKey } = await import('./private-market-batch.mjs');
+        const capabilities = await verifyMassiveKey({ token, fetchImpl,
+          consume: () => privateMarketCache.consumeBudget({ userId: user.userId,
+            provider: 'massive', fingerprint, category: 'AKTIEN' }) });
+        await rpc(fetchImpl, config, 'capital_ai_upsert_user_provider_secret', {
+          _user_id: user.userId, _provider: 'massive',
+          _secret_payload: JSON.stringify({ version: 3, apiKey: token }),
+          _credential_fingerprint: fingerprint,
+          _permissions: { ...capabilities, marketAccessApproved: true,
+            privateCacheTtlMs: 30000, executionEnabled: false, publicMarketDataAdmission: false },
+        });
+        await markProviderStatus(user.userId, 'massive', 'VERIFIED');
+        json(res, 200, { provider: 'massive', status: 'VERIFIED', credentialFingerprint: fingerprint,
+          dataScope: 'USER_PRIVATE_MARKET_DATA', capabilities, portfolioAvailable: false,
+          publicDisplayAllowed: false, redistributionAllowed: false });
+      } catch { json(res, 503, { error: 'massive_connection_unavailable' }); }
       return true;
     }
 

@@ -587,7 +587,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
       'docs/growth/SEO-02-METADATA-AS-CODE-20261005.md',
       'docs/security/BUILD-DOMEXCEPTION-REVIEW-20261005.md',
     ],
-    nextStep: 'SEO-02 über npm run test:seo, Docker Security Gate und Required Checks validieren. Danach SEO-03 mit HTTP-/Redirect-Semantik, Broken Links, Rendering und Crawlability starten.',
+    nextStep: 'SEO-03: reproduzierbaren anonymen HTTP-Readback für Manifest-Routen, Canonicals, JSON-LD, Sitemap, robots, Discovery und Commerce ausführen. Danach vollständige Crawl-/Link-Abdeckung und SEO-04 Content-Cluster ergänzen; Build-Identität und echte Käufe bleiben separat nachzuweisen.',
     priority: 'Hoch',
     leadName: 'Owner + GROWTH',
     targetSprint: 'SEO-00 → SEO-11 in technischer Reihenfolge; SEO-02 rekonstruiert auf CURRENT_MAIN 96178b3',

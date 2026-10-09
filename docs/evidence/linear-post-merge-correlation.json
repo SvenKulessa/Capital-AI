@@ -1,12 +1,12 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "4d353d21e6191ce2335f7b1cfebf630f31cb25a1",
-  "mergedPr": 265,
-  "targetPr": 267,
-  "targetBranch": "capital-ai-market/website-assets-20261008",
-  "targetHeadSha": "18ba3553b14bf1af18590e16fa469ba104ad3ab7",
+  "mainSha": "9d540fc54c2548b8ba64dc8973bb130d8da01484",
+  "mergedPr": 312,
+  "targetPr": 313,
+  "targetBranch": "capital-ai-market/binance-websocket-visualization-20261009",
+  "targetHeadSha": "ecab199ed05e0c1f7d25f2b88f94965a0c3fd777",
   "exactOverlap": [
-    "server/index.mjs"
+    "package.json"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,

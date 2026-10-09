@@ -9,6 +9,7 @@
  * 4. Quant- & Trader Skill-Check (Interaktives Quiz)
  */
 
+import { ChartLearningAtlas } from './ChartLearningAtlas';
 import React, { useEffect, useState, useMemo } from 'react';
 import {
   BookOpen,
@@ -51,8 +52,8 @@ const VocabularyFlashcards = React.lazy(() =>
   })),
 );
 
-export type LearningPortalTab = 'glossar' | 'flashcards' | 'guides' | 'videos' | 'quiz';
-const LEARNING_TABS: readonly LearningPortalTab[] = ['glossar', 'flashcards', 'guides', 'videos', 'quiz'];
+export type LearningPortalTab = 'glossar' | 'flashcards' | 'guides' | 'patterns' | 'videos' | 'quiz';
+const LEARNING_TABS: readonly LearningPortalTab[] = ['glossar', 'flashcards', 'guides', 'patterns', 'videos', 'quiz'];
 
 interface LearningPortalPageProps {
   onBackToHome?: () => void;
@@ -335,6 +336,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
               {activeTab === 'glossar' && 'Finanz-Vocabulary & Glossar'}
               {activeTab === 'flashcards' && 'Vocabulary Flashcards'}
               {activeTab === 'guides' && 'Analyse-Module & Methodik'}
+              {activeTab === 'patterns' && 'Chart-Lernatlas'}
               {activeTab === 'videos' && 'Architektur Videos'}
               {activeTab === 'quiz' && 'Quant & Trader Skill-Check'}
             </span>
@@ -427,6 +429,10 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
           <span>Analyse-Module &amp; Methodik</span>
         </button>
 
+        <button type="button" onClick={() => setActiveTab('patterns')} aria-current={activeTab === 'patterns' ? 'page' : undefined}
+          className={`rounded-lg px-3.5 py-2 text-xs font-medium whitespace-nowrap ${activeTab === 'patterns' ? 'bg-cyan-300 text-black' : 'text-slate-200 hover:bg-white/5'}`}>
+          Chart-Lernatlas
+        </button>
         {/* TAB 3: ARCHITEKTUR VIDEOS */}
         <button
           type="button"
@@ -739,6 +745,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       {/* ========================================================================= */}
       {/* TAB CONTENT 2: CHEAT-SHEETS & PIPELINE GUIDES                             */}
       {/* ========================================================================= */}
+      {activeTab === 'patterns' && <ChartLearningAtlas />}
       {activeTab === 'guides' && (
         <div className="space-y-6">
           <div className="p-6 rounded-2xl bg-gradient-to-r from-cyan-500/15 via-[#0d1530] to-purple-500/15 border border-cyan-500/40">

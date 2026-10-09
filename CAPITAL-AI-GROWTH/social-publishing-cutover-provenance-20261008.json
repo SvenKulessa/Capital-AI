@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "SOCIAL_PUBLISHING_CUTOVER@1",
+  "correlatedMain": "03325f00412290bb457823de347e7f3171904d12",
+  "stackedOn": {
+    "removalMerge": "22ffb122592260b2d4a8f181963403fc917b88ce",
+    "corePr": 302,
+    "coreHead": "f5da31b07ab06ba879b07b4689527527fd47d24b"
+  },
+  "status": "CODE_CUTOVER_IMPLEMENTED_DISABLED_PENDING_CI",
+  "policy": {
+    "singlePublishingAuthority": true,
+    "financePublisherCodeCopied": false,
+    "providerActivationPerformed": false,
+    "productionDeployPerformed": false,
+    "activeTtsModel": null,
+    "activeAsrModel": null
+  },
+  "bridge": {
+    "path": "src/platform/SocialMediaEngine/Publishing/MediaProjectPublisherBridge.ts",
+    "role": "MediaProject/render hash identity -> existing ContentSocialPackage + SocialPublisherHandoff",
+    "audioPublicationAllowed": false
+  },
+  "targetAuthorities": [
+    {
+      "path": "src/contracts/contentSocialPackage.ts",
+      "blobSha": "c6369b191e9deeff4f40e578b2a8715d570b784a"
+    },
+    {
+      "path": "src/contracts/socialPublisherAdapter.ts",
+      "blobSha": "9f1229c6474c914f7d2754bdf177d7192402fb77"
+    },
+    {
+      "path": "src/contracts/contentSocialAttribution.ts",
+      "blobSha": "fbe35a953897a79d11b01ad01f4809b514388477"
+    },
+    {
+      "path": "server/social-media/provider-adapter.mjs",
+      "blobSha": "4c3331cde537db4ecee2e632759134e842300169"
+    },
+    {
+      "path": "server/social-media/provider-store.mjs",
+      "blobSha": "9301f55a6491fc8feb5982c054189d09b8155050"
+    },
+    {
+      "path": "server/social-media/provider-publish.mjs",
+      "blobSha": "ac2eaf25d4ac1f53a62e936dcc7add53b4b31071"
+    },
+    {
+      "path": "server/social-media/provider-execution.mjs",
+      "blobSha": "e43a6befaf03eb0cd79c430b91f443488aaca591"
+    },
+    {
+      "path": "server/social-media/provider-readback.mjs",
+      "blobSha": "06be79735c4c3072aac8cd442b8507e5614e33c8"
+    },
+    {
+      "path": "server/social-media/provider-external-readback.mjs",
+      "blobSha": "1954438b7bb8d019d5101606b8253915065318f7"
+    },
+    {
+      "path": "server/social-media/asset-readback.mjs",
+      "blobSha": "3bbe75fe3cb2122209ffe8a64e7b2c590b0d21b0"
+    },
+    {
+      "path": "server/social-media/oauth-callback.mjs",
+      "blobSha": "deffbae4f17f2dc9368383c4482cfc7a427c0fb6"
+    }
+  ],
+  "durableState": {
+    "migration": "supabase/migrations/20261008113000_social_provider_store.sql",
+    "migrationBlobSha": "e3ed81d80bcc73f35a261a7165068213ab4b2153",
+    "databaseSmoke": "scripts/social-provider-db-smoke.sh",
+    "databaseSmokeBlobSha": "ea0f631943851d8691df7aa88e7c62b441d78096",
+    "states": [
+      "CLAIMED",
+      "UNKNOWN",
+      "PUBLISHED",
+      "FAILED"
+    ],
+    "blindRetryAllowed": false
+  },
+  "providerDefaults": {
+    "YOUTUBE": "IMPLEMENTED_DISABLED",
+    "TIKTOK": "IMPLEMENTED_DISABLED",
+    "INSTAGRAM": "IMPLEMENTED_DISABLED",
+    "X": "IMPLEMENTED_DISABLED",
+    "FACEBOOK": "IMPLEMENTED_DISABLED"
+  },
+  "remainingBeforeLiveProviderPublish": [
+    "explicit per-provider server-side enablement",
+    "current provider scope/API/rights evidence",
+    "connected account and token readback",
+    "successful provider completion readback",
+    "owner merge and normal production deployment"
+  ]
+}

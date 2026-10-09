@@ -57,3 +57,25 @@ test('HTTP security boundaries and static-file isolation', async () => {
     await rm(root, {recursive: true, force: true});
   }
 });
+
+test('health exposes only validated deployment revision, separately from build attestation', async () => {
+  for (const revision of [undefined, 'main', 'a'.repeat(40) + '\n', '<secret>', 'a'.repeat(40)]) {
+    const server = createApp(undefined, { env: { RENDER_GIT_COMMIT: revision, SECRET: 'must-not-leak' } });
+    await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+    try {
+      const response = await fetch(`http://127.0.0.1:${server.address().port}/healthz`);
+      const text = await response.text();
+      const body = JSON.parse(text);
+      assert.equal(response.status, 200);
+      assert.equal(response.headers.get('cache-control'), 'no-store');
+      assert.deepEqual(body.runtimeIdentity, revision === 'a'.repeat(40)
+        ? { sourceSha: revision, evidence: 'RENDER_DEPLOYMENT_ENVIRONMENT' }
+        : { sourceSha: null, evidence: 'NOT_PROVEN' });
+      assert.doesNotMatch(text, /must-not-leak|<secret>/);
+      assert.equal(typeof body.buildIdentity.bound, 'boolean');
+    } finally {
+      server.closeAllConnections();
+      await new Promise(resolve => server.close(resolve));
+    }
+  }
+});

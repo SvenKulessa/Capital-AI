@@ -1,9 +1,9 @@
 {
   "schemaVersion": "SOCIAL_TOOL_LICENSE_EVIDENCE@1",
   "id": "CAPITAL-AI-SOCIAL-TOOL-LICENSE-EVIDENCE-20261006",
-  "status": "POINT_4_ARTIFACT_LOCK_ADVANCED_FAIL_CLOSED",
+  "status": "POINT_4_AUDIO_MODELS_REMOVED_FAIL_CLOSED",
   "correlatedAt": "2026-10-08",
-  "targetMain": "a445b454916eb31ced500f89bafab2e9aae4db7b",
+  "targetMain": "c881081e1d6a08e1babd98c15371f6a8615d645b",
   "financeSource": "dcef421fe6e350a3a2ade61d0299aad9ecca213c",
   "scope": "Social-Media-Engine implementation dependencies only; Finance MARKET/scoring migration remains deferred until Social cutover PASS.",
   "policy": {
@@ -13,30 +13,41 @@
     "systemPackageVersionWithoutArtifactDigestProductionEligible": false,
     "dynamicLatestModelRevisionProductionEligible": false,
     "popplerExcludedFromCustomerRuntime": true,
-    "modelDownloadsPerformed": false
+    "modelDownloadsPerformed": false,
+    "activeSocialAudioModel": "NONE",
+    "removedByOwnerDecision": [
+      "qwen3-tts-code",
+      "qwen3-tts-weights",
+      "chatterbox-code",
+      "chatterbox-multilingual-v3-weights",
+      "openai-whisper-code"
+    ]
   },
   "items": [
     {
-      "id": "d3",
+      "id": "d3-scale",
       "role": "deterministic planning visual layout",
       "sourceEvidence": {
         "financePackageJson": "d3:^7.9.0",
         "financePackageLockVersion": "7.9.0",
-        "registryArtifact": "d3-7.9.0.tgz",
-        "integrity": "sha512-e1U46jVP+w7Iut8Jt8ri1YsPOvFpg46k+K8TpCb0P+zjCkjkPnV7WzfDJzMHy1LnA+wj5pLT1wjO901gLXeEhA=="
+        "financeRegistryIntegrity": "sha512-e1U46jVP+w7Iut8Jt8ri1YsPOvFpg46k+K8TpCb0P+zjCkjkPnV7WzfDJzMHy1LnA+wj5pLT1wjO901gLXeEhA==",
+        "targetPackageJson": "d3-scale:4.0.2",
+        "targetPackageLockVersion": "4.0.2",
+        "registryArtifact": "d3-scale-4.0.2.tgz",
+        "integrity": "sha512-GZW464g1SH7ag3Y7hXjf8RoUuAFIqklOAq3MRl4OaWabTFJY9PN/E1YklhXLh+OQ3fM9yS2nOkCoS+WLZ6kvxQ=="
       },
       "upstream": {
-        "package": "d3",
-        "version": "7.9.0",
+        "package": "d3-scale",
+        "version": "4.0.2",
         "license": "ISC",
-        "officialEvidence": "https://www.npmjs.com/package/d3"
+        "officialEvidence": "https://www.npmjs.com/package/d3-scale"
       },
       "decision": {
         "mode": "COMMERCIAL_PRODUCT_BUNDLE",
         "implementationEligible": true,
         "productionEligible": true,
         "noticeRequired": true,
-        "reason": "Exact npm version and integrity are bound; permissive ISC license is compatible with commercial redistribution subject to notice retention."
+        "reason": "Target imports only scalePoint from exact d3-scale 4.0.2 already present in the Capital-AI lock; the narrower ISC-licensed package avoids the unused D3 umbrella dependency."
       }
     },
     {
@@ -138,165 +149,10 @@
         "No unblock required for Social Core/renderer cutover because Poppler is not a required customer-runtime dependency.",
         "If later bundled, open a separate GPL packaging/redistribution review."
       ]
-    },
-    {
-      "id": "qwen3-tts-code",
-      "role": "primary TTS code/runtime candidate",
-      "sourceEvidence": {
-        "financeRuntimePackage": "qwen-tts==0.1.1",
-        "python": "3.11",
-        "torch": "2.6.0",
-        "torchaudio": "2.6.0",
-        "flashAttn": "2.7.4.post1",
-        "soundfile": "0.13.1",
-        "huggingfaceHub": "0.36.0"
-      },
-      "upstream": {
-        "repository": "https://github.com/QwenLM/Qwen3-TTS",
-        "license": "Apache-2.0",
-        "package": "qwen-tts",
-        "version": "0.1.1",
-        "wheel": "qwen_tts-0.1.1-py3-none-any.whl",
-        "wheelSha256": "11a290d8dabc7ef91a90c54478c8ab19b3edb1d85c0882313721892bdc4af15d",
-        "sdistSha256": "afba5fa235806a6883f46a389e67540b46f8a55da457216bf1d7342903814780",
-        "trustedPublishing": false,
-        "officialEvidence": "https://pypi.org/project/qwen-tts/"
-      },
-      "decision": {
-        "mode": "COMMERCIAL_INTERNAL_SERVICE",
-        "implementationEligible": true,
-        "productionEligible": false,
-        "reason": "qwen-tts 0.1.1 wheel and sdist are now exact-hash bound; production remains blocked on the complete transitive GPU/runtime lock, advisory review, and the model-weight/runtime acceptance gate."
-      },
-      "unblock": [
-        "Capture complete transitive runtime lock/license inventory for the selected GPU worker.",
-        "Re-run security/advisory review for the immutable worker image."
-      ]
-    },
-    {
-      "id": "qwen3-tts-weights",
-      "role": "Qwen3-TTS VoiceDesign weights",
-      "sourceEvidence": {
-        "financeModelRepo": "Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign",
-        "financeRuntimeRevisionPolicy": "dynamic HfApi model_info(repo).sha at execution time",
-        "benchmarkArtifactDigest": "sha256:6b67f244ae765bcdb97d3da6ef00e42cf9bc30057eddcd5028e9de350e5bfdab",
-        "benchmarkArtifactExpired": true
-      },
-      "upstream": {
-        "currentMainShortRevision": "5ecdb67",
-        "modelFile": "model.safetensors",
-        "currentModelFileSha256": "391e8db219f292c515297cdceeb43e4eae67cdde35fa57e79a6a8a532fca0522",
-        "license": "Apache-2.0",
-        "officialEvidence": "https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign",
-        "selectedRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
-        "modelFileSha256": "391e8db219f292c515297cdceeb43e4eae67cdde35fa57e79a6a8a532fca0522",
-        "speechTokenizerModelSha256": "836b7b357f5ea43e889936a3709af68dfe3751881acefe4ecf0dbd30ba571258"
-      },
-      "decision": {
-        "mode": "COMMERCIAL_INTERNAL_SERVICE",
-        "implementationEligible": true,
-        "productionEligible": false,
-        "reason": "A new Capital-AI immutable Hugging Face revision is selected and the two large safetensors weight artifacts are SHA-256 bound under Apache-2.0. This is a new target lock, not a retroactive claim about the historical Finance benchmark. Production remains blocked until the complete snapshot inventory and new runtime/listening evidence pass."
-      },
-      "unblock": [
-        "Hash-bind all remaining tokenizer/config artifacts at revision 5ecdb67327fd37bb2e042aab12ff7391903235d3.",
-        "Run new immutable runtime benchmark.",
-        "Record Human/Owner listening PASS for accepted German profiles."
-      ]
-    },
-    {
-      "id": "chatterbox-code",
-      "role": "TTS fallback and current usable German prosody reference",
-      "sourceEvidence": {
-        "financeGitCommit": "5de7a54aa4e5e2baadb0182dde554908b48b85c2",
-        "financeRuntimeLogConfirmedCommit": true,
-        "soundfile": "0.13.1"
-      },
-      "upstream": {
-        "repository": "https://github.com/resemble-ai/chatterbox",
-        "license": "MIT"
-      },
-      "decision": {
-        "mode": "COMMERCIAL_INTERNAL_SERVICE",
-        "implementationEligible": true,
-        "productionEligible": false,
-        "reason": "Source code commit is immutable and repository license is MIT; production remains blocked until the complete dependency and model-weight artifact set is pinned."
-      },
-      "unblock": [
-        "Bind full transitive Python dependency lock/license inventory.",
-        "Bind checkpoint revision and all required artifact hashes.",
-        "Repeat security/advisory review for the exact commit/dependency set."
-      ]
-    },
-    {
-      "id": "chatterbox-multilingual-v3-weights",
-      "role": "Multilingual V3 checkpoint",
-      "sourceEvidence": {
-        "financeModelRepo": "ResembleAI/chatterbox",
-        "financeExpectedFile": "t3_mtl23ls_v3.safetensors",
-        "acceptedReferenceAudioSha256": "fa0f6a312095f35607bf470325e643ad3f625c01bd3f3a55e98b0b118afd37b0",
-        "remediatedFinanceAudioSha256": "78b1dac9f55bb7cda41b8c57d6fafa6447fe5b9d852c8dec1ad152b2b3ef5303"
-      },
-      "upstream": {
-        "modelRevisionShort": "e2d6902",
-        "modelFile": "t3_mtl23ls_v3.safetensors",
-        "modelFileSha256": "5abca8321ede76f8e61f1cc0d19aea6c946b28871017ce8726f8a69203f05953",
-        "license": "MIT",
-        "officialEvidence": "https://huggingface.co/ResembleAI/chatterbox/blob/main/t3_mtl23ls_v3.safetensors",
-        "selectedRevision": "5bb1f6ee58e50c3b8d408bc82a6d3740c2db6e18",
-        "t3MultilingualV3Sha256": "5abca8321ede76f8e61f1cc0d19aea6c946b28871017ce8726f8a69203f05953",
-        "s3genV3SafetensorsSha256": "4a46190f3dccc2230fbb3488a930bccc925862ee68f2662433dfcfe93ce6c2cb",
-        "s3genV3PtSha256": "f7abce4b196dae2d08d9296cbebc6521b046079577643b42a19a03499d08721e",
-        "voiceEncoderSafetensorsSha256": "f0921cab452fa278bc25cd23ffd59d36f816d7dc5181dd1bef9751a7fb61f63c"
-      },
-      "decision": {
-        "mode": "COMMERCIAL_INTERNAL_SERVICE",
-        "implementationEligible": true,
-        "productionEligible": false,
-        "reason": "A full immutable model-repository revision is selected and the principal V3 T3, S3Gen V3 and voice-encoder artifacts are SHA-256 bound. Production remains blocked until tokenizer/condition companion artifacts, dependency lock and new listening acceptance are complete."
-      },
-      "unblock": [
-        "Hash-bind tokenizer/condition companion artifacts actually loaded by the pinned code commit.",
-        "Bind complete Python dependency/license lock.",
-        "Run fresh Capital-AI German listening benchmark and record PASS candidates."
-      ]
-    },
-    {
-      "id": "openai-whisper-code",
-      "role": "ASR evidence runtime",
-      "sourceEvidence": {
-        "financePackage": "openai-whisper==20250625",
-        "modelsUsed": [
-          "small",
-          "large-v3"
-        ]
-      },
-      "upstream": {
-        "package": "openai-whisper",
-        "version": "20250625",
-        "sourceArtifact": "openai_whisper-20250625.tar.gz",
-        "sourceSha256": "37a91a3921809d9f44748ffc73c0a55c9f366c85a3ef5c2ae0cc09540432eb96",
-        "license": "MIT",
-        "officialEvidence": "https://pypi.org/project/openai-whisper/",
-        "smallModelSha256": "9ecf779972d90ba49c06d968637d720dd632c55bbf19d441fb42bf17a411e794",
-        "largeV3ModelSha256": "e5b1a55b89c1367dacf97e3e19bfd829a01529dbfdeefa8caeb59b3f1b81dadb",
-        "modelHashAuthority": "openai/whisper whisper/__init__.py _MODELS"
-      },
-      "decision": {
-        "mode": "COMMERCIAL_INTERNAL_SERVICE",
-        "implementationEligible": true,
-        "productionEligible": false,
-        "reason": "Code package and the exact upstream small/large-v3 model SHA-256 identifiers are now bound. Production use remains blocked on the selected worker FFmpeg preprocessing build and worker image/SBOM evidence."
-      },
-      "unblock": [
-        "Bind the FFmpeg preprocessing build used by the ASR worker.",
-        "Build and scan immutable ASR worker image."
-      ]
     }
   ],
   "deferredCandidates": [
     "f5-tts",
-    "faster-whisper",
     "comfyui",
     "moneyprinterturbo",
     "musetalk",
@@ -305,20 +161,11 @@
   ],
   "summary": {
     "fullyProductionEligible": [
-      "d3"
+      "d3-scale"
     ],
-    "exactArtifactLockedButRuntimeImagePending": [
-      "qwen3-tts-code",
-      "qwen3-tts-weights",
-      "chatterbox-code",
-      "chatterbox-multilingual-v3-weights",
-      "openai-whisper-code"
-    ],
+    "exactArtifactLockedButRuntimeImagePending": [],
     "requiredRuntimeBlockers": [
       "renderer-oci-registry-digest-release-handoff",
-      "tts-asr-worker-evidence",
-      "german-runtime-benchmark",
-      "human-owner-listening-acceptance",
       "social-engine-target-cutover"
     ],
     "excludedFromCustomerRuntime": [
@@ -332,10 +179,7 @@
   },
   "point4Remaining": [
     "Bind immutable OCI registry digest/release handoff for the accepted hardened renderer image if production release is requested.",
-    "Durably merge and validate complete Qwen/Chatterbox transitive dependency and companion-artifact locks.",
-    "Build and scan immutable Qwen, Chatterbox and Whisper worker images with terminal PASS evidence.",
-    "Run fresh German Qwen/Chatterbox runtime benchmark.",
-    "Record Human/Owner listening PASS for accepted German voice profiles.",
+    "Keep Qwen, Chatterbox and Whisper-family runtimes absent from the Social Media Engine.",
     "Complete SocialMediaEngine runtime and deterministic renderer target cutover.",
     "Only then promote status to POINT_4_PASS."
   ],

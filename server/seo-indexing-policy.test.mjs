@@ -55,6 +55,10 @@ test('SEO-00 is fail-closed for private, claim-sensitive, alias and unknown rout
   assert.equal(resolveSeoIndexingPolicy('/tokenomics').classification, 'BLOCKED');
   assert.equal(resolveSeoIndexingPolicy('/whale-radar').classification, 'BLOCKED');
   assert.equal(resolveSeoIndexingPolicy('/login').classification, 'NOINDEX');
+  for (const locale of ['de','en','it','fr','pt','es']) {
+    assert.equal(resolveSeoIndexingPolicy(`/${locale}/`).classification, 'NOINDEX');
+    assert.equal(isSeoIndexable(`/${locale}/`), false);
+  }
   assert.equal(resolveSeoIndexingPolicy('/dokumentation').classification, 'NOINDEX');
   assert.equal(resolveSeoIndexingPolicy('/documentation/byok.html').classification, 'NOINDEX');
   assert.equal(resolveSeoIndexingPolicy('/research').classification, 'BLOCKED');
@@ -62,6 +66,8 @@ test('SEO-00 is fail-closed for private, claim-sensitive, alias and unknown rout
   assert.equal(resolveSeoIndexingPolicy('/not-inventory').classification, 'BLOCKED');
   assert.equal(resolveSeoIndexingPolicy('/api/auth/session').classification, 'PRIVATE');
   assert.equal(resolveSeoIndexingPolicy('/healthz').classification, 'NOINDEX');
+  assert.equal(resolveSeoIndexingPolicy('/llms.txt').classification, 'NOINDEX');
+  assert.equal(resolveSeoIndexingPolicy('/sitemap.md').classification, 'NOINDEX');
   assert.equal(resolveSeoIndexingPolicy('/.well-known/security.txt').classification, 'NOINDEX');
   assert.equal(resolveSeoIndexingPolicy('/.well-known/change-password').classification, 'NOINDEX');
   assert.equal(isSeoIndexable('/vocabulary/orderbuch'), true);
@@ -117,9 +123,20 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
     assert.equal(api.status, 404);
     assert.equal(api.headers.get('x-robots-tag'), 'noindex, nofollow');
 
+    // SEO discovery contract: compare raw HTTP semantics, not crawler markdown rendering.
+    const robotsResponse = await fetch(origin + '/robots.txt');
+    assert.equal(robotsResponse.status, 200);
+    assert.match(robotsResponse.headers.get('content-type') || '', /^text\/plain/i);
+    const robots = await robotsResponse.text();
+    assert.equal(robots, 'User-agent: *\\nAllow: /\\nSitemap: https://capital-ai.online/sitemap.xml\\n'.replaceAll('\\n', '\n'));
+    assert.doesNotMatch(robots, /(?:\/profile|\/control-center|\/api\/)/);
+
     const sitemapResponse = await fetch(origin + '/sitemap.xml');
     assert.equal(sitemapResponse.status, 200);
+    assert.match(sitemapResponse.headers.get('content-type') || '', /^application\/xml/i);
     const sitemap = await sitemapResponse.text();
+    assert.match(sitemap, /^<\?xml version="1\.0" encoding="UTF-8"\?>/);
+    assert.doesNotMatch(sitemap, /<lastmod>/, 'No invented timestamp: introduce lastmod only from evidence-backed per-route dates');
     for (const route of EXPECTED_INDEX_PATHS) {
       const url = route === '/' ? 'https://capital-ai.online/' : `https://capital-ai.online${route}`;
       assert.ok(sitemap.includes(`<loc>${url}</loc>`), route);
@@ -127,6 +144,49 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
     for (const route of ['/login', '/profile', '/control-center', '/tokenomics', '/dokumentation', '/architecture']) {
       assert.ok(!sitemap.includes(`<loc>https://capital-ai.online${route}</loc>`), route);
     }
+
+    for (const discoveryPath of ['/llms.txt', '/sitemap.md']) {
+      const response = await fetch(origin + discoveryPath);
+      assert.equal(response.status, 200, discoveryPath);
+      assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow');
+      assert.match(response.headers.get('content-type') || '', discoveryPath === '/llms.txt' ? /^text\/plain/ : /^text\/markdown/);
+      const body = await response.text();
+      assert.match(body, /^# CAPITAL-AI/m);
+      assert.match(body, /https:\/\/capital-ai\.online\/learning/);
+      assert.doesNotMatch(body, /\/(?:profile|control-center|pricing|api\/)/);
+      if (discoveryPath === '/llms.txt') {
+        for (const match of body.matchAll(/\]\((https:\/\/capital-ai\.online\/[^)]*)\)/g)) {
+          const linkedPath = new URL(match[1]).pathname;
+          assert.equal(resolveSeoIndexingPolicy(linkedPath).classification, 'INDEX', linkedPath);
+        }
+      }
+    }
+    // SEO-03: an actual first HTTP response must contain indexable content
+    // for humans and crawlers that do not execute JavaScript.
+    for (const route of ['/', '/faq', '/impressum', '/datenschutz', '/agb']) {
+      const response = await fetch(origin + route);
+      assert.equal(response.status, 200, route);
+      const html = await response.text();
+      const metadataTitle = route === '/' ? 'Capital-AI' : null;
+      assert.match(html, /id="capital-ai-public-snapshot" lang="de"/, route);
+      assert.match(html, /<nav aria-label="Öffentliche Seiten">/, route);
+      assert.match(html, /<h1>[^<]+<\/h1>/, route);
+      if (metadataTitle) assert.match(html, /<h1>Capital-AI/, route);
+      assert.doesNotMatch(html, /\/profile\/key-vault|\/control-center|\/api\/billing/, route);
+      assert.doesNotMatch(html, /"@type":"Offer"|<script[^>]*src="https:\/\//, route);
+      if (route === '/') {
+        assert.match(html, /href="\/pricing">Tarife und Leistungen ansehen<\/a>/);
+        assert.match(html, /href="\/login">Anmelden<\/a>/);
+      }
+    }
+    for (const route of ['/pricing', '/login', '/profile', '/control-center', '/en', '/not-inventory']) {
+      const response = await fetch(origin + route);
+      const html = await response.text();
+      assert.doesNotMatch(html, /capital-ai-public-snapshot/, route);
+    }
+    const richVocabulary = await (await fetch(origin + '/vocabulary')).text();
+    assert.match(richVocabulary, /<main><article><h1>Capital-AI Vocabulary<\/h1>/);
+    assert.doesNotMatch(richVocabulary, /capital-ai-public-snapshot/);
   } finally {
     server.closeAllConnections();
     await new Promise(resolve => server.close(resolve));

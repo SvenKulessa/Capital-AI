@@ -122,6 +122,40 @@ test('magic-link verification with verified TOTP cannot bypass AAL2 challenge', 
   assert.deepEqual(h.calls.map(call => call.path), ['/verify', '/user']);
 });
 
+test('previously issued signup mail links verify the hash and preserve MFA', async () => {
+  for (const factor of [false, true]) {
+    const h = securityHarness({ factor });
+    const res = responseHarness();
+    await h.security.handle(
+      { method: 'GET', headers: {} }, res,
+      new URL(`https://capital-ai.online/api/auth/email/confirm?token_hash=${tokenHash}&type=email&redirect_to=https://example.test`), json,
+    );
+    assert.equal(res.status, 303);
+    assert.equal(res.getHeader('location'), factor ? '/login?mfa=1' : '/');
+    assert.equal(res.getHeader('cache-control'), 'no-store');
+    assert.equal(res.getHeader('referrer-policy'), 'no-referrer');
+    assert.deepEqual(h.calls.map(call => call.path), ['/verify', '/user']);
+    assert.deepEqual(h.calls[0].options.body, { token_hash: tokenHash, type: 'signup' });
+    assert.equal(h.writes.length, 1);
+  }
+});
+
+test('legacy mail route rejects invalid hashes, unsupported types and POST without creating a session', async () => {
+  for (const [method, query, status] of [
+    ['GET', 'token_hash=short&type=email', 400],
+    ['GET', `token_hash=${tokenHash}&type=admin`, 400],
+    ['POST', `token_hash=${tokenHash}&type=email`, 405],
+  ]) {
+    const h = securityHarness();
+    const res = responseHarness();
+    await h.security.handle({ method, headers: {} }, res,
+      new URL(`https://capital-ai.online/api/auth/email/confirm?${query}`), json);
+    assert.equal(res.status, status);
+    assert.equal(h.calls.length, 0);
+    assert.equal(h.writes.length, 0);
+  }
+});
+
 test('recovery token creates bounded reset session without forcing profile navigation', async () => {
   const h = securityHarness({ factor: true });
   const res = responseHarness();
@@ -236,7 +270,7 @@ test('TOTP reenrollment removes a stale pending factor before creating replaceme
   );
   assert.equal(res.payload.secret, 'JBSWY3DPEHPK3PXP');
   const enrollCall = h.calls.find(call => call.path === '/factors' && call.options.method === 'POST');
-  assert.equal(enrollCall.options.maxResponseBytes, 262_144);
+  assert.equal(enrollCall.options.maxResponseBytes, 1_048_576);
   assert.equal(enrollCall.options.body.issuer, 'CAPITAL-AI');
 });
 
@@ -368,4 +402,28 @@ test('recovery accepts a bounded 16-character token hash and redirects invalid r
   assert.equal(invalidRes.status, 303);
   assert.equal(invalidRes.getHeader('location'), '/login?mode=forgot&recovery_error=invalid_link');
   assert.equal(invalid.calls.length, 0);
+});
+
+test('retired Finance TOTP and step-up endpoints never read providers or sessions', async () => {
+  const h = securityHarness();
+  for (const action of ['totp/setup', 'totp/verify-setup', 'step-up/verify', 'break-glass/redeem']) {
+    const res = responseHarness();
+    assert.equal(await h.security.handle({ method: 'POST', headers: {}, body: {} }, res,
+      new URL('https://capital-ai.online/api/auth/' + action), json), true);
+    assert.equal(res.status, 410);
+    assert.equal(res.payload.error, 'legacy_totp_retired');
+  }
+  assert.equal(h.calls.length, 0);
+});
+
+test('TOTP enrollment accepts valid padded and grouped Base32 provider secrets', async () => {
+  const h = securityHarness({ factor: false, enrollmentTotp: {
+    qr_code: '', secret: 'jbsw y3dp ehpk 3pxp====', uri: '',
+  } });
+  const res = responseHarness();
+  await h.security.handle({ method: 'POST', headers: { origin: 'https://capital-ai.online' }, body: {} }, res,
+    new URL('https://capital-ai.online/api/auth/mfa/totp/enroll'), json);
+  assert.equal(res.status, 200);
+  assert.equal(res.payload.secret, 'JBSWY3DPEHPK3PXP');
+  assert.equal(res.payload.qrCode, ''); // Manual setup remains possible without QR material.
 });

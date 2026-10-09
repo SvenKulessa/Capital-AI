@@ -35,6 +35,7 @@ async function harness(envOverrides = {}) {
     subject: 'owner-subject',
     tokenCalls: 0,
     signupCalls: 0,
+    signupReply: undefined,
     refreshCalls: 0,
     challenge: '',
     deliveries: [],
@@ -91,12 +92,20 @@ async function harness(envOverrides = {}) {
       if (body.password === 'rejected-password') {
         return Response.json({ error: 'signup_rejected' }, { status: 422 });
       }
-      return Response.json(tokenPayload());
+      return Response.json(state.signupReply === undefined ? tokenPayload() : state.signupReply);
     }
 
     if (target.origin === 'https://project.supabase.co' && target.pathname === '/auth/v1/user') {
       assert.match(String(options.headers.Authorization || ''), /^Bearer access-/);
       return Response.json(user());
+    }
+
+    if (target.origin === 'https://project.supabase.co' && target.pathname === '/auth/v1/factors') {
+      if (state.rejectMfaEnrollment) return Response.json({ error_code: 'mfa_totp_enroll_disabled', message: 'DO_NOT_EXPOSE_PROVIDER_PAYLOAD' }, { status: 422 });
+      return Response.json({ id: '11111111-1111-4111-8111-111111111111', totp: {
+        secret: 'JBSWY3DPEHPK3PXP', uri: 'otpauth://totp/test?secret=JBSWY3DPEHPK3PXP',
+        qr_code: state.mfaQrCode ?? '<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg"></svg>',
+      } });
     }
 
     if (target.origin === 'https://project.supabase.co' && target.pathname === '/auth/v1/logout') {
@@ -358,6 +367,46 @@ test('Supabase registration validates new passwords and creates a backend-owned 
   }
 });
 
+test('registration accepts GoTrue confirmation-only User responses without creating a session or exposing user data', async () => {
+  const h = await harness();
+  try {
+    for (const reply of [
+      { id: 'pending-user', email: 'PRIVATE_EMAIL', confirmation_sent_at: '2026-10-09T01:00:01Z' },
+      { user: { id: 'pending-user', email: 'PRIVATE_EMAIL' } },
+      // GoTrue also returns a sanitized bare User for repeated signup: same public result.
+      { id: 'sanitized-user', identities: [] },
+    ]) {
+      h.state.signupReply = reply;
+      const response = await h.request('/api/auth/register', {
+        method: 'POST',
+        headers: { Origin: 'https://capital.example', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Test Owner', email: 'owner-subject@example.test',
+          password: 'valid-password', passwordConfirm: 'valid-password',
+          termsAccepted: true, privacyAcknowledged: true }),
+      });
+      assert.equal(response.status, 202);
+      assert.deepEqual(await response.json(), { authenticated: false, confirmationRequired: true });
+      assert.equal(response.headers.get('set-cookie'), null);
+    }
+    for (const reply of [null, {}, { id: 123 }, { user: {} },
+      { id: 'bare-user', access_token: 'unexpected-access', refresh_token: 'unexpected-refresh' }]) {
+      h.state.signupReply = reply;
+      const response = await h.request('/api/auth/register', {
+        method: 'POST',
+        headers: { Origin: 'https://capital.example', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Test Owner', email: 'owner-subject@example.test',
+          password: 'valid-password', passwordConfirm: 'valid-password',
+          termsAccepted: true, privacyAcknowledged: true }),
+      });
+      assert.equal(response.status, 422);
+      assert.deepEqual(await response.json(), { error: 'registration_failed' });
+      assert.equal(response.headers.get('set-cookie'), null);
+    }
+  } finally {
+    await h.stop();
+  }
+});
+
 test('Supabase Google PKCE binds callback to HttpOnly flow state and ends at landing page', async () => {
   const h = await harness();
   try {
@@ -583,6 +632,9 @@ test('Market API rate limiting remains independent of spoofed forwarding headers
       })).status, 400);
     }
     assert.equal((await h.request('/api/market/quote?symbol=INVALID')).status, 429);
+    // Exhausting the expensive quote bucket must not starve public batch reads.
+    assert.notEqual((await h.request('/api/market/assets')).status, 429);
+    assert.notEqual((await h.request('/api/market/values')).status, 429);
   } finally {
     await h.stop();
   }
@@ -686,4 +738,50 @@ test('all eleven Control Center subpages enforce owner identity on direct docume
   } finally {
     await h.stop();
   }
+});
+
+
+test('native TOTP accepts large provider SVGs while keeping a bounded response and secrets out of audit logs', async () => {
+  const h = await harness();
+  try {
+    const cookie = await h.completeEmail();
+    const enroll = () => h.request('/api/auth/mfa/totp/enroll', {
+      method: 'POST', headers: { cookie, Origin: 'https://capital.example', 'Content-Type': 'application/json' }, body: '{}',
+    });
+    // Supabase's QR writer emits one rect for every black AND white cell.
+    const cell = '<rect x="3" y="3" width="3" height="3" style="fill:black;stroke:none" />';
+    h.state.mfaQrCode = '<svg xmlns="http://www.w3.org/2000/svg">' + cell.repeat(5000) + '</svg>';
+    assert.ok(Buffer.byteLength(h.state.mfaQrCode) > 262_144);
+    const enrolled = await enroll();
+    assert.equal(enrolled.status, 200);
+    assert.equal((await enrolled.json()).qrCode, h.state.mfaQrCode);
+    h.state.mfaQrCode = '<svg>' + cell.repeat(17000) + '</svg>';
+    const rejected = await enroll();
+    assert.equal(rejected.status, 422);
+    assert.deepEqual(await rejected.json(), { error: 'totp_enrollment_failed', code: 'mfa_setup_response_too_large' });
+    assert.equal(JSON.stringify(h.state.authAudit).includes('<rect'), false);
+    assert.equal(JSON.stringify(h.state.authAudit).includes('JBSWY3DPEHPK3PXP'), false);
+  } finally { await h.stop(); }
+});
+
+test('signed session can enroll native TOTP and configuration failures retain only safe error codes', async () => {
+  const h = await harness();
+  try {
+    const cookie = await h.completeEmail();
+    const enroll = () => h.request('/api/auth/mfa/totp/enroll', {
+      method: 'POST', headers: { cookie, Origin: 'https://capital.example', 'Content-Type': 'application/json' }, body: '{}',
+    });
+    const enrolled = await enroll();
+    assert.equal(enrolled.status, 200);
+    const setup = await enrolled.json();
+    assert.equal(setup.secret, 'JBSWY3DPEHPK3PXP');
+    assert.match(setup.qrCode, /<svg/);
+    assert.match(enrolled.headers.get('cache-control'), /no-store/);
+    h.state.rejectMfaEnrollment = true;
+    const failed = await enroll();
+    assert.equal(failed.status, 422);
+    assert.deepEqual(await failed.json(), { error: 'totp_enrollment_failed', code: 'mfa_totp_enroll_disabled' });
+    assert.equal(JSON.stringify(h.state.authAudit).includes('DO_NOT_EXPOSE_PROVIDER_PAYLOAD'), false);
+    assert.equal(JSON.stringify(h.state.authAudit).includes('JBSWY3DPEHPK3PXP'), false);
+  } finally { await h.stop(); }
 });

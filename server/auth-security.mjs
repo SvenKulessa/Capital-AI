@@ -12,7 +12,7 @@ function upstreamCode(data, fallback) {
     : typeof data?.code === 'string'
       ? data.code
       : '';
-  return code.slice(0, 120) || fallback;
+  return /^[a-z][a-z0-9_]{0,119}$/i.test(code) ? code : fallback;
 }
 
 function friendlyName(value, fallback) {
@@ -24,21 +24,22 @@ function friendlyName(value, fallback) {
 function totpEnrollmentProjection(totp) {
   if (!totp || typeof totp !== 'object') return null;
   const uri = typeof totp.uri === 'string' && totp.uri.length <= 2048 ? totp.uri : '';
-  let secret = typeof totp.secret === 'string' ? totp.secret.trim().toUpperCase() : '';
+  const normalizeSecret = value => String(value || '').replace(/\s/g, '').replace(/=+$/, '').toUpperCase();
+  let secret = typeof totp.secret === 'string' ? normalizeSecret(totp.secret) : '';
   // GoTrue versions can omit the separate secret while still returning the
   // otpauth URI. Extract it only server-side; never expose it in diagnostics.
   if (!secret && uri) {
     try {
       const parsed = new URL(uri);
       if (parsed.protocol === 'otpauth:' && parsed.hostname === 'totp') {
-        secret = String(parsed.searchParams.get('secret') || '').toUpperCase();
+        secret = normalizeSecret(parsed.searchParams.get('secret'));
       }
     } catch {
       return null;
     }
   }
   if (!/^[A-Z2-7]{16,128}$/.test(secret)) return null;
-  const qrCode = typeof totp.qr_code === 'string' && totp.qr_code.length <= 220000 ? totp.qr_code : '';
+  const qrCode = typeof totp.qr_code === 'string' && totp.qr_code.length <= 900_000 ? totp.qr_code : '';
   return { secret, qrCode, uri };
 }
 
@@ -111,8 +112,14 @@ export function createAuthSecurity({
   async function handle(req, res, url, json) {
     if (!url.pathname.startsWith('/api/auth/')) return false;
     const action = url.pathname.slice('/api/auth/'.length);
+    // Retired Finance endpoints must never revive the profile-based TOTP lane.
+    if (action.startsWith('totp/') || action.startsWith('step-up/') || action.startsWith('break-glass/')) {
+      json(res, 410, { error: 'legacy_totp_retired', provider: 'supabase' });
+      return true;
+    }
     const handled =
       action === 'email/verify' ||
+      action === 'email/confirm' ||
       action === 'password/reset' ||
       action === 'passkey/options' ||
       action === 'passkey/verify' ||
@@ -132,14 +139,18 @@ export function createAuthSecurity({
       return true;
     }
 
-    if (action === 'email/verify') {
+    if (action === 'email/verify' || action === 'email/confirm') {
       if (req.method !== 'GET') {
         res.setHeader('Allow', 'GET');
         json(res, 405, { error: 'method_not_allowed' });
         return true;
       }
       const tokenHash = String(url.searchParams.get('token_hash') || '');
-      const type = String(url.searchParams.get('type') || '');
+      const requestedType = String(url.searchParams.get('type') || '');
+      // Previously issued confirmation emails use /confirm and type=email.
+      // Keep their signed hashes usable through the same Supabase verification
+      // and fresh identity/MFA checks as the canonical /verify signup route.
+      const type = action === 'email/confirm' && requestedType === 'email' ? 'signup' : requestedType;
       if (!TOKEN_HASH_RE.test(tokenHash) || !EMAIL_VERIFY_TYPES.has(type)) {
         if (type === 'recovery') {
           res.writeHead(303, {
@@ -546,9 +557,10 @@ export function createAuthSecurity({
         method: 'POST',
         accessToken: stored.accessToken,
         body: { factor_type: 'totp', friendly_name: name, issuer: 'CAPITAL-AI' },
-        maxResponseBytes: 262_144,
+        maxResponseBytes: 1_048_576,
       });
       if (!enrolled.response.ok || !FACTOR_ID_RE.test(String(enrolled.data?.id || '')) || !enrolled.data?.totp) {
+        audit(`Supabase TOTP enrollment rejected: status=${enrolled.response.status}; code=${upstreamCode(enrolled.data, 'totp_enrollment_failed')}`);
         json(res, enrolled.response.status === 429 ? 429 : 422, {
           error: 'totp_enrollment_failed',
           code: upstreamCode(enrolled.data, 'totp_enrollment_failed'),
@@ -557,6 +569,7 @@ export function createAuthSecurity({
       }
       const setup = totpEnrollmentProjection(enrolled.data.totp);
       if (!setup) {
+        audit('Supabase TOTP enrollment rejected: usable setup material missing');
         // Do not claim enrollment success if there is no usable OTP secret.
         // Pending factors remain identifiable through the existing factor-list
         // endpoint so the user can retry without disclosing a secret.

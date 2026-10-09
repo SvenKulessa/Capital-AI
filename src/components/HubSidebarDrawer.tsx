@@ -78,7 +78,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
     glowColor: 'rgba(245, 176, 20, 0.45)',
     accentBg: 'bg-amber-500/15 border-amber-400/50 text-amber-300',
     icon: <LineChart className="w-5 h-5 text-amber-400" />,
-    badge: '6 Module',
+    badge: '7 Module',
     description: 'Cross-Sectional Ranking, Buffett Value Investing, Enterprise Scorer und AI Newsfeed.',
     mainPath: '/marketscreener',
     subpages: [
@@ -90,6 +90,12 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         shortDesc: 'Cross-Sectional Ranking über alle 5 Haupt-Assetklassen mit 50 Quant-Dimensionen',
         tags: ['Aktien', 'Krypto', 'Forex', 'Rohstoffe'],
         path: '/marketscreener',
+      },
+      {
+        id: 'components', name: '50 Analysekomponenten',
+        icon: <Layers className="w-4 h-4 text-cyan-400" />,
+        badge: 'Methodik', shortDesc: 'Inputs, Risiko-Policies, Datenstatus und Explainability aller 50 Komponenten',
+        tags: ['Methodik', 'Evidence'], path: '/marketscreener?tab=components',
       },
       {
         id: 'buffett',

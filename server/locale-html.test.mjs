@@ -28,6 +28,20 @@ test('country and manual locale bootstrap is privacy-safe and consistent', async
       assert.equal(response.headers.get('Cache-Control'),'no-store');
       assert.match(await response.text(),new RegExp(`<html lang="${expected}" data-locale-source="country"`),country);
     }
+    for (const code of ['de','en','it','fr','pt','es']) {
+      const response = await fetch(origin + `/${code}/`, {headers:{
+        'CF-IPCountry':'DE', Cookie:'capital_ai_locale=es',
+      }});
+      assert.equal(response.status, 200, code);
+      assert.equal(response.headers.get('Content-Language'), code);
+      assert.equal(response.headers.get('X-Robots-Tag'), 'noindex, nofollow', code);
+      const html = await response.text();
+      assert.match(html, new RegExp(`<html lang="${code}" data-locale-source="path"`));
+      assert.match(html, /<meta name="robots" content="noindex, nofollow"/);
+      assert.doesNotMatch(html, /rel="alternate"[^>]*hreflang=/);
+      assert.doesNotMatch(html, /rel="canonical"/);
+      if (code === 'en') assert.match(html, /Market Intelligence and BYOK/);
+    }
     const manual = await fetch(origin,{headers:{'CF-IPCountry':'DE','Cookie':'capital_ai_locale=es'}});
     assert.equal(manual.headers.get('Content-Language'),'es');
     assert.match(await manual.text(),/<html lang="es" data-locale-source="manual"/);

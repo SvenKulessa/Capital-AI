@@ -1,0 +1,46 @@
+name: Social Provider PostgreSQL Contract
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/social-provider-postgres.yml'
+      - 'supabase/migrations/20261008113000_social_provider_store.sql'
+      - 'scripts/social-provider-db-*.sql'
+      - 'scripts/social-provider-db-smoke.sh'
+      - 'server/social-media/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: social-provider-postgres-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  social-provider-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17.11-alpine
+        env:
+          POSTGRES_PASSWORD: disposable_social_test_only
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      PGPASSWORD: disposable_social_test_only
+      PGUSER: postgres
+      PGHOST: 127.0.0.1
+      SOCIAL_DB_TEST_MODE: DISPOSABLE_CI_ONLY
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Run isolated SQL migration and concurrency tests
+        shell: bash
+        run: bash scripts/social-provider-db-smoke.sh

@@ -25,10 +25,10 @@ A successful build, test or UI is not a production release. Provider rights and 
 | [CAPITAL-AI-MARKET]REVENUE-SIMULATOR | INTEGRATED | 40% | 60% | Interner Rechner integriert, nicht als Kundenprodukt paketiert. |
 | [CAPITAL-AI-MARKET]SPONSORSHIP | PLANNED | 16% | 84% | FUNDING-Ziel nicht verifiziert aktiv. |
 | [CAPITAL-AI-MARKET]SEO-GROWTH-ENGINE | PARTIAL | 28% | 72% | Route-Analytics und Docs vorhanden, kein vermarktbares SEO-Produkt. |
-| [CAPITAL-AI-MARKET]SOCIAL-MEDIA-ENGINE | PLANNED | 14% | 86% | Kein Publishing-, Approval- oder Measurement-Workflow. |
+| [CAPITAL-AI-MARKET]SOCIAL-MEDIA-ENGINE | PUBLISHING_CODE_PRESENT | — | — | Publishing-/Distribution-Cutover aus PR #305 und Approval-/Readback-Code vorhanden; reale Kanalzustellung, Nutzungsrechte und Kundenprodukt-Paketierung bleiben offen. |
 | [CAPITAL-AI-MARKET]ENTERPRISE-SCORER | PARTIAL | 42% | 58% | Dashboard vorhanden, Scoring nicht decisionEligible und nicht entitlement-gated. |
 | [CAPITAL-AI-MARKET]WHALE-RADAR | PARTIAL | 39% | 61% | Modal und Section vorhanden, Live-Feed-Rechte und Paid-Gate offen. |
-| [CAPITAL-AI-PRODUCT]MARKET-VOCABULARY | MONETIZED | 100% | 0% | Live-SKU prod_VNTsrtlf2ZL8ja, Price price_1UMiuIPKr4joNbEclpn8AwFW, 19,00 EUR inkl., Checkout, Entitlement, Widerrufsverzicht. |
+| [CAPITAL-AI-PRODUCT]MARKET-VOCABULARY | LIVE_CATALOG_VERIFIED | — | — | Aktive Live-SKU und Preis von 19,00 EUR am 09.10.2026 in Stripe verifiziert; Checkout-/Entitlement-Code vorhanden. Echter Käufer-, Download- und Widerrufs-Roundtrip bleibt NOT_PROVEN. |
 | [CAPITAL-AI-PRODUCT]PRICE-ALERTS | PARTIAL | 36% | 64% | Alert-UI vorhanden, Zustellung und Tariflimit nicht serverseitig erzwungen. |
 | [CAPITAL-AI-PRODUCT]LEARNING-PORTAL | PARTIAL | 32% | 68% | Seite vorhanden, kein Curriculum-Commerce. |
 | [CAPITAL-AI-MARKET]MOBILE-SCORER-TERMINAL | PARTIAL | 31% | 69% | Server-Scorer und Mobile-Repo vorhanden, Store-Release und Billing fehlen. |
@@ -105,3 +105,7 @@ GitHub Marketplace purchase
 ```
 
 A setup URL `installation_id` is treated as untrusted input until GitHub OAuth verifies that the user is authorized for that installation. Stripe and Marketplace remain independent billing authorities; application access selects the highest valid CADS tier without converting one billing system into the other.
+
+## Production-/Katalog-Readback — 2026-10-09
+
+Die sieben kanonischen Live-Preise und vier Produkte sind in Stripe aktiv und stimmen mit dem Website-Katalog überein. Beleg: `docs/growth/evidence/stripe-catalog-readback-20261009.json`. Das belegt weder Käufe noch Webhook-/Entitlement-Auslieferung oder vollständige Steuerkonfiguration. Die historischen Prozentwerte für Vocabulary und Social sind deshalb aufgehoben. Der vollständige öffentliche HTTP-Readback umfasst 142 Manifest-Seiten und 868 erfolgreiche Einzelprüfungen; Beleg: `docs/growth/evidence/public-readback-20261009.json`.
