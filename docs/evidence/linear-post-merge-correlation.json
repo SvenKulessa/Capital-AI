@@ -1,12 +1,12 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "85c534b9969113c371571e3d775a24e5b40ec95b",
-  "mergedPr": 325,
-  "targetPr": 326,
-  "targetBranch": "capital-ai-growth/private-google-neural2-tts-20261009",
-  "targetHeadSha": "270d35591fe56302508661f07a7a44429f3ad300",
+  "mainSha": "92c1758558418629548fce8181e192de886aade4",
+  "mergedPr": 333,
+  "targetPr": 334,
+  "targetBranch": "capital-ai-market/crypto-quote-units-20261009",
+  "targetHeadSha": "497c47ee8bf2a4e5db7cda3c5061cc3e7954e172",
   "exactOverlap": [
-    "package.json"
+    "src/contracts/__tests__/analysisFoundation.test.ts"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,
