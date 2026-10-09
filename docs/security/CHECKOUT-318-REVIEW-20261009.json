@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-10-09",
+  "scope": ".github/workflows/social-provider-postgres.yml checkout action only",
+  "action": "actions/checkout",
+  "old": "v4.2.2",
+  "next": "v7.0.1",
+  "newSha": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+  "compatibilityEvidence": "Same exact checkout SHA already used by current main workflows on ubuntu-26.04; PostgreSQL provider smoke succeeded on original PR head.",
+  "checks": "All five CodeQL analyses and complete Docker gate must finish on current reviewed head before merge",
+  "authority": "Existing user merge authorization; no security gate bypass",
+  "billing": "No new service or paid resource"
+}

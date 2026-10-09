@@ -5,8 +5,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import assert from 'node:assert/strict';
 
-const origin = process.env.CAPITAL_LEARNING_ORIGIN || 'https://capital-ai.online';
-assert.ok(['https://capital-ai.online', 'https://capital-ai-uvsl.onrender.com'].includes(origin), 'Unapproved public origin');
+const requestedOrigin = process.env.CAPITAL_LEARNING_ORIGIN || 'https://capital-ai.online';
+assert.ok(requestedOrigin === 'https://capital-ai.online' || requestedOrigin === 'https://capital-ai-uvsl.onrender.com', 'Unapproved public origin');
+// Construct every navigation from a trusted literal, never a substring match.
+const origin = requestedOrigin === 'https://capital-ai-uvsl.onrender.com'
+  ? 'https://capital-ai-uvsl.onrender.com' : 'https://capital-ai.online';
 assert.ok(process.env.CHROME_BIN, 'CHROME_BIN is required');
 const output = 'browser-readback';
 await mkdir(output, { recursive: true });
