@@ -38,14 +38,35 @@ complete license compatibility or a vulnerability-free image.
 
 ## Runtime candidate
 
-The workflow `Optional PR-Agent Runtime Evidence` runs only for changes in this
-context/workflow, or by manual dispatch. It checks out the exact upstream source
-SHA, verifies vendored hashes and builds with an isolated allowlist context.
-Python, uv and BuildKit are digest-pinned. It does not use the upstream mutable
-`pragent/pr-agent:github_action` image. A shared Python stage upgrades the four
-packages with available PCRE2/OpenSSL fixes and asserts minimum security versions.
-Resolved package versions are recorded in each run's SBOM. The final runtime removes
-pip and ensurepip, including their vendored packages; uv remains in the build stage.
+### Selected candidate architecture
+
+As of 2026-10-09, Alpine 3.24 is the **primary reviewer runtime candidate**.
+The authoritative candidate workflow is `.github/workflows/pr-agent-runtime-evidence.yml`
+and it builds `deploy/pr-agent/Dockerfile.alpine`. The workflow keeps the existing
+check name `Reviewer candidate build and scan`, verifies the exact upstream SHA and
+vendored lock identity, executes imports and the plain-diff smoke offline, and fails
+closed on Trivy HIGH/CRITICAL findings or secrets.
+
+Debian 13 remains available only as a **comparison candidate** through
+`.github/workflows/pr-agent-debian-runtime-comparison.yml` and
+`deploy/pr-agent/Dockerfile`. Its Trivy gate result is recorded as evidence but is
+not authoritative for the selected Alpine candidate. This separation does not grant
+merge, publish, deployment, OAuth or model-call authority.
+
+Current same-source/same-lock A/B evidence on 2026-10-09:
+
+| Candidate | Runtime | Imports / offline smoke | Trivy | Role |
+| --- | --- | --- | --- | --- |
+| Alpine | Python 3.14.7 / Alpine 3.24.2 | PASS | 0 vulnerabilities, 0 secrets, 0 blocking | PRIMARY |
+| Debian | Python 3.14.7 / Debian 13.7 | PASS | 44 HIGH, 0 secrets | COMPARISON |
+
+The Alpine primary pass was observed on run `37958151189`, artifact
+`11631040466`, artifact digest
+`sha256:d15d476f6c3f9353f4be53f85f56bb0d1406006f443bc7ca624a1d0cc0951cbc`.
+The resolved Python base was
+`python@sha256:9e9fde4d32eedce0b661d9ab91e826b62dddf28e928c230ec55f1866cac66b01`.
+
+The primary workflow runs only for candidate-input changes or by manual dispatch. It checks out the exact upstream source SHA, verifies vendored hashes and builds with an isolated context. The Python base is resolved to an immutable digest at run time; uv and BuildKit are digest-pinned. It does not use the upstream mutable `pragent/pr-agent:github_action` image. Alpine applies currently available package upgrades with `apk upgrade --no-cache`; the final runtime removes pip and ensurepip, while uv remains build-stage only.
 
 Dependencies are installed with `uv sync --locked --no-dev --no-install-project`.
 The runtime contains only those dependencies, the pinned reviewer source and local
