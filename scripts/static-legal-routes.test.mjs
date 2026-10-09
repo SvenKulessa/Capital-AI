@@ -38,3 +38,17 @@ test('Standalone privacy page retains every canonical processing disclosure', as
   }
   assert.doesNotMatch(html, /ZITADEL/i);
 });
+
+test('Google OAuth privacy disclosure has distinct purpose, data, transfer and retention details', async () => {
+  const html = await readFile(new URL('../public/datenschutz/index.html', import.meta.url), 'utf8');
+  const activity = PROCESSING_ACTIVITIES.find(item => item.id === 'google-oauth');
+  assert.ok(activity, 'Google OAuth must be in canonical processing registry');
+  assert.equal(activity.lifecycle, 'conditional');
+  assert.match(html, /<section data-processing-id="google-oauth">/);
+  for (const value of [
+    'Google-Konto-Kennung', 'E-Mail-Adresse', 'Art. 6', 'Supabase Auth', 'Render',
+    'Gmail-', 'Google-Drive', 'Verkauf', 'Werbung', 'Training allgemeiner KI-Modelle',
+    'Google-Kontoeinstellungen', 'Providerprotokolle',
+  ]) assert.ok(html.includes(value), `Missing Google OAuth disclosure: ${value}`);
+  assert.doesNotMatch(html, /Google-Konto-Passwort wird gespeichert|<script\\b/i);
+});
