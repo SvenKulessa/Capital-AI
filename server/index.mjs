@@ -521,8 +521,11 @@ export function createApp(root = defaultRoot, options = {}) {
     }
   }
 
+  // Serve canonical legal pages as standalone HTML, independently of React hydration.
+  const staticLegalRoute = new Set(['/datenschutz', '/agb']);
+  const staticLegalPath = staticLegalRoute.has(publicPath) ? `/${publicPath.slice(1)}/index.html` : url.pathname;
   let asset;
-  try { asset = path.resolve(root, '.' + decodeURIComponent(url.pathname)); } catch { return json(res, 400, { error: 'bad_request' }); }
+  try { asset = path.resolve(root, '.' + decodeURIComponent(staticLegalPath)); } catch { return json(res, 400, { error: 'bad_request' }); }
   if (!asset.startsWith(root + path.sep) && asset !== root) return json(res, 400, { error: 'bad_path' });
   if (path.relative(root, asset).split(path.sep).some(part => part.startsWith('.'))) return json(res, 404, { error: 'not_found' });
   try {
