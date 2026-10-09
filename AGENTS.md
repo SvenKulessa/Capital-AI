@@ -18,10 +18,21 @@ Bei einem Widerspruch gilt ausschließlich diese Datei. Zusätzliche Regeln dür
 2. Pull Request jederzeit erstellen oder aktualisieren.
 3. GitHub Required Checks laufen automatisch.
 4. Fehlende oder fehlgeschlagene Required Checks blockieren den Merge, aber nicht Entwicklung oder PR-Erstellung.
-5. Merge regulär ausschließlich durch den Human Repository Owner.
-6. Ein Agent darf nur nach ausdrücklicher Chat-Freigabe für den konkret bezeichneten PR mergen.
+5. Merge durch den Human Repository Owner oder durch einen Agenten mit ausdrücklich erteilter, noch gültiger Chat-Arbeitsfreigabe für den betroffenen Aufgabenbereich nach den untenstehenden Bedingungen.
+6. Eine Chat-Freigabe kann einzelne benannte PRs **oder einen ausdrücklich bezeichneten autonomen Aufgabenbereich** abdecken. Bei Geltung für einen Aufgabenbereich ist keine erneute Freigabe pro zugehörigem PR erforderlich; unklare oder nicht erfasste Bereiche bleiben Owner-gebunden.
 7. Nur ein Merge nach `main` darf den normalen Production-Pfad auslösen.
 8. Production darf automatisch deployen, wenn die für `main` definierten technischen Checks erfolgreich sind.
+
+## Autonome Chat-Arbeitsfreigabe und konservative Merge-Automatisierung
+
+Der Human Repository Owner darf in einem Chat einen **klar abgegrenzten autonomen Aufgabenbereich** freigeben (z. B. offene Repository-Wartungsaufgaben, betroffene Domains, Google-/SEO-Integrationsentwicklung). Die Freigabe gilt für die konkrete benannte Arbeit einschließlich der erforderlichen fachlichen Korrekturen, Tests, Branch-Synchronisation und zugehörigen PR-Merges; nicht für andere Projekte oder unbeschränkte künftige Vorhaben. Die Freigabe ist mit Chat-Kontext, Scope und Entscheidung als Evidence im jeweiligen PR nachvollziehbar zu referenzieren; keine Credentials oder personenbezogenen Chat-Inhalte ablegen.
+
+- **Autonome Umsetzung:** Geeignete `*-engineering`- und `*-advisory`-Skills aus allen betroffenen Domains im selben Arbeitskontext nutzen. Bestehende offene PRs und Issues nach Relevanz, `main`-Korrelation und Konfliktrisiko priorisieren. PRs dürfen auch bei noch laufenden oder zunächst fehlgeschlagenen Checks vorbereitet und konservativ korrigiert werden.
+- **Merge-Voraussetzungen:** Der PR liegt im freigegebenen Aufgabenbereich, ist kein Draft und kein `[HOLD]`, ist fachlich geprüft und mit aktuellem `main` konfliktfrei korreliert. `Docker Security Gate` und `Domain Governance` müssen **für den aktuellen PR-Head und erforderlichenfalls die aktuelle Merge-Queue-/Merge-Group-Identität** erfolgreich abgeschlossen sein. Fehlende, laufende, veraltete, übersprungene oder fehlgeschlagene Required Checks sind **kein PASS**. Die geltenden GitHub-Branch-/Ruleset-Schutzregeln dürfen nicht umgangen werden.
+- **Fehlerpfad:** Bei Check- oder Merge-Konflikten nur die minimale ursachenspezifische, konservative Änderung durchführen; danach die betroffenen Tests und Required Checks auf dem neuen Head erneut ausführen. Keine Tests abschalten, keine Scanner-Ausnahmen zur Umgehung von Findings, keine künstlichen Erfolgsmeldungen. Ungeklärte Security-, Lizenz-, Datenrechte- oder fachliche Risiken bleiben `BLOCKED` beziehungsweise `REVIEW_REQUIRED`.
+- **Autonomiegrenze:** Eine Chat-Freigabe überträgt keine Google-Cloud-IAM- oder OAuth-Adminrolle, keine Provider-Datenrechte, keine externen Veröffentlichungsrechte und kein unbegrenztes Kostenbudget. Änderungen an Abrechnung, kostenpflichtigen Ressourcen, produktiven Berechtigungsgrenzen, Secrets, regulatorisch relevanten Claims oder Vertrags-/Providerrechten benötigen die jeweils tatsächlich erforderliche spezifische Berechtigung. Produktion folgt weiterhin ausschließlich geprüften `main`-Merges.
+- **Ausführung statt Behauptung:** Automatisches Mergen setzt einen tatsächlich laufenden Agenten oder einen ausdrücklich eingerichteten GitHub-Auto-Merge-Mechanismus mit passender Berechtigung voraus. Eine Repo-Richtlinie allein erzeugt weder einen Hintergrund-Agenten noch Workflows, Credentials oder eine dauerhaft laufende Überwachung.
+- **Aufhebung:** Der Owner kann die delegierte Freigabe jederzeit widerrufen oder einschränken; ab dann keine neuen Agent-Merges außerhalb noch ausdrücklich geltender Freigaben.
 
 ## Required Checks
 
