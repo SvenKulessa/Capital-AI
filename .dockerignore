@@ -76,6 +76,9 @@
 !server/private-provider-query.test.mjs
 !server/render-owner-dashboard.mjs
 !server/render-owner-dashboard.test.mjs
+!server/google-analytics-mcp.mjs
+!server/google-analytics-readback.mjs
+!server/google-analytics-readback.test.mjs
 !server/kraken-order-dry-run.mjs
 !server/kraken-order-dry-run.test.mjs
 !server/uniswap-trading.mjs

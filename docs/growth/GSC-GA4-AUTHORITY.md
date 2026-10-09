@@ -21,12 +21,20 @@ GROWTH / SEO evidence
 
 Google Analytics 4
         |
-        | future Google Analytics Data API / MCP adapter
+        | Admin API + Data API
+        v
+googleanalytics/google-analytics-mcp 0.7.0
+        |
+        | internal stdio only
+        v
+Capital-AI Render web service
+        |
+        | owner-only sanitized readback
         v
 GROWTH / analytics evidence
 ```
 
-GSC and GA4 share a Growth analytics boundary but remain separate upstream authorities. The LukeRenton component currently exposes Search Console only; GA4 must not be represented as implemented by it.
+GSC and GA4 share a Growth analytics boundary but remain separate upstream authorities. The LukeRenton component exposes Search Console only. GA4 uses the separately reviewed official Google Analytics MCP package `analytics-mcp==0.7.0` inside the existing Capital-AI Render web service. Source implementation is present; live provider readback remains `NOT_PROVEN` until the Render credentials/property are configured and Production returns a successful read.
 
 ## Security model
 
@@ -67,16 +75,32 @@ npm run growth:gsc:mcp
 
 Authentication is only considered verified after `list_properties` succeeds and returns the expected Capital-AI property.
 
-## GA4 next slice
+## GA4 Render readback
 
-GA4 is intentionally not bundled into this component. The follow-up adapter should:
+The GA4 read plane is implemented separately from GSC:
 
-- use the official Google Analytics Data API or a separately reviewed OSS MCP;
-- remain read-only initially;
-- keep GA4 credentials server/operator-side;
-- normalize GA4 landing-page/session metrics and GSC query/page metrics into a common Growth evidence schema;
-- correlate by canonical URL without treating GA4 traffic as Search Console index evidence;
-- receive its own license/provenance and runtime review before activation.
+- provider: `googleanalytics/google-analytics-mcp`;
+- package: `analytics-mcp==0.7.0`;
+- license: Apache-2.0;
+- transport: internal stdio child process only;
+- execution host: existing Capital-AI Render web service;
+- HTTP projection: `GET /api/profile/google-analytics-readback`;
+- authorization: existing verified owner identity plus IAM `owner` role;
+- cache: five minutes;
+- raw MCP endpoint: none;
+- provider writes: none.
+
+Only `get_account_summaries`, `get_property_details`, `run_realtime_report` and `run_report` are admitted. Account inventories and credentials are not projected. Realtime and seven-day reports are bounded to aggregated `eventName/eventCount` rows.
+
+The server-side read plane is independent of browser measurement. `src/utils/analytics.ts` remains fail-closed, so this change does not load `gtag.js`, set a Measurement ID or emit browser events. Browser GA4 activation requires its own accepted consent implementation and production verification.
+
+Render-only configuration:
+
+- `GOOGLE_ANALYTICS_SERVICE_ACCOUNT_JSON`;
+- `GOOGLE_ANALYTICS_CLOUD_PROJECT`;
+- `GOOGLE_ANALYTICS_PROPERTY_NUMBER`.
+
+Production status stays `NOT_PROVEN` until an authenticated read confirms the configured property and Data API reports. `PAGE_VIEW_OBSERVED` is only emitted when a real provider response contains a positive `page_view` count.
 
 ## Write operations
 
