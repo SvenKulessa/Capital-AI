@@ -86,7 +86,7 @@ test('quote-unit-aware DQ diagnostics still fail closed for demo and absent prov
     d.metric === null && d.scoreEligible === false));
   assert.ok(report.diagnostics.every(d => d.reasonCodes.includes('SOURCE_RIGHTS_NOT_PROVEN')));
   assert.ok(report.diagnostics.every(d => d.reasonCodes.includes('DEMO_NOT_ACTIONABLE')));
-  assert.throws(() => inspectResearchGateCohort({
+  const mismatch = inspectResearchGateCohort({
     asset, symbol: asset.symbol, venue: asset.venue,
     quoteCurrency: 'USD', liquidityCurrency: 'USDT',
     provenance, timeSemantics: 'realtime',
@@ -95,5 +95,7 @@ test('quote-unit-aware DQ diagnostics still fail closed for demo and absent prov
     evaluatedAt: at, maxAgeMs: 3000, maxJitterMs: 5,
     minimumTurnover: 100000, minimumDepth2Pct: 50000,
     mode: 'demo', rights: null,
-  }), undefined);
+  });
+  assert.ok(mismatch.diagnostics.every(d => d.status === 'blocked' &&
+    d.reasonCodes.includes('OBSERVATION_CURRENCY_UNIT_MISMATCH')));
 });
