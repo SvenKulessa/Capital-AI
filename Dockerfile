@@ -20,12 +20,14 @@ RUN npm ci --ignore-scripts --no-audit --no-fund \
 # Transitive pins keep known remediated versions inside the scanned image.
 RUN apk add --no-cache 'python3>=3.14.8-r0' 'py3-pip>=26.1.2-r0' \
     && python3 -m venv /opt/ga4-mcp \
-    && /opt/ga4-mcp/bin/pip install --no-cache-dir analytics-mcp==0.7.0 msgpack==1.2.1 setuptools==78.1.1 \
+    && /opt/ga4-mcp/bin/pip install --no-cache-dir analytics-mcp==0.7.0 msgpack==1.2.1 urllib3==2.8.0 \
     && test -x /opt/ga4-mcp/bin/analytics-mcp \
-    && /opt/ga4-mcp/bin/python -c "import analytics_mcp; import google.analytics.admin_v1beta; import google.analytics.data_v1beta" \
+    && /opt/ga4-mcp/bin/python -c "import pathlib,shutil,site; patterns=('pip','pip-*.dist-info','setuptools','setuptools-*.dist-info','_distutils_hack','pkg_resources','wheel','wheel-*.dist-info'); [shutil.rmtree(target, ignore_errors=True) for root in map(pathlib.Path, site.getsitepackages()) for pattern in patterns for target in root.glob(pattern)]" \
     && rm -rf /root/.cache \
     && rm -f /opt/ga4-mcp/bin/pip /opt/ga4-mcp/bin/pip3 /opt/ga4-mcp/bin/pip3.* \
-    && apk del py3-pip
+    && apk del py3-pip \
+    && /opt/ga4-mcp/bin/python -c "import analytics_mcp,msgpack,urllib3; import google.analytics.admin_v1beta; import google.analytics.data_v1beta; assert msgpack.version == (1, 2, 1); assert urllib3.__version__ == '2.8.0'" \
+    && test -x /opt/ga4-mcp/bin/analytics-mcp
 
 # All subsequent validation is offline. Node's script runner needs no npm/cache transport.
 # Remove the installer itself, including vulnerable bundled http-cache-semantics, before validation.
