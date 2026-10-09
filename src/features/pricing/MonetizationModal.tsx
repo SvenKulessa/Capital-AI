@@ -473,6 +473,45 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                 </div>
               </section>
             ))}
+            <section
+              aria-labelledby="screener-blueprint-preview"
+              className="rounded-2xl border border-cyan-400/40 bg-gradient-to-br from-cyan-400/10 via-[#071a36] to-purple-500/10 p-4 sm:p-5"
+            >
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                <img
+                  src="/branding/badges/screener-blueprint.svg"
+                  alt="Screener Blueprint Produktmotiv: verbundene Datenknoten und eine Summe"
+                  className="h-20 w-20 rounded-2xl border border-cyan-300/30 bg-black/30 p-1"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 id="screener-blueprint-preview" className="text-sm font-black text-cyan-100">
+                      Screener Blueprint · Datenkonzept &amp; Scoring-Playbooks
+                    </h3>
+                    <span className="rounded-full border border-amber-400/40 bg-amber-400/10 px-2 py-0.5 text-[10px] font-mono text-amber-200">
+                      Vorschau · noch nicht kaufbar
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs leading-relaxed text-slate-200">
+                    Modulare Datenarchitektur mit grafischen Datenströmen, Anbindungsbeispielen in TypeScript
+                    und YAML, Assetklassen-Playbooks sowie separater Gewichtung bestätigter Chartmuster.
+                  </p>
+                  <div className="mt-3 grid gap-2 text-xs text-slate-300 sm:grid-cols-2">
+                    <span>✓ Provider- und Tenant-Grenzen</span>
+                    <span>✓ Versionierte Analyse-Modelle</span>
+                    <span>✓ Pattern-Analyse ohne Double Counting</span>
+                    <span>✓ Score-Aufschlüsselung und Audit-Konzept</span>
+                  </div>
+                  <p className="mt-3 text-xs text-amber-100">
+                    Beispielrechnung: 76,85/100 (synthetische Faktoren; kein Live-Marktwert oder Anlageergebnis).
+                    Preis, Produktlizenz, Checkout und vollständiger Download sind noch nicht freigegeben.
+                  </p>
+                  <p className="mt-2 text-[11px] text-slate-400">
+                    Badge: CAPITAL-AI Vorschauasset. Marktdaten-, Provider- und Modellrechte sind nicht enthalten.
+                  </p>
+                </div>
+              </div>
+            </section>
             <section aria-disabled="true" className="pointer-events-none select-none opacity-45 rounded-2xl border border-cyan-400/30 bg-cyan-500/10 p-4">
               <div className="flex items-center gap-3">
                 <img
