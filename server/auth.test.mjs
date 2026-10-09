@@ -35,6 +35,7 @@ async function harness(envOverrides = {}) {
     subject: 'owner-subject',
     tokenCalls: 0,
     signupCalls: 0,
+    signupReply: undefined,
     refreshCalls: 0,
     challenge: '',
     deliveries: [],
@@ -91,7 +92,7 @@ async function harness(envOverrides = {}) {
       if (body.password === 'rejected-password') {
         return Response.json({ error: 'signup_rejected' }, { status: 422 });
       }
-      return Response.json(tokenPayload());
+      return Response.json(state.signupReply === undefined ? tokenPayload() : state.signupReply);
     }
 
     if (target.origin === 'https://project.supabase.co' && target.pathname === '/auth/v1/user') {
@@ -361,6 +362,46 @@ test('Supabase registration validates new passwords and creates a backend-owned 
     assert.equal(body.authenticated, true);
     assert.equal(h.state.signupCalls, 1);
     assert.match(sessionCookieHeader(registered), /__Host-capital_session_count=/);
+  } finally {
+    await h.stop();
+  }
+});
+
+test('registration accepts GoTrue confirmation-only User responses without creating a session or exposing user data', async () => {
+  const h = await harness();
+  try {
+    for (const reply of [
+      { id: 'pending-user', email: 'PRIVATE_EMAIL', confirmation_sent_at: '2026-10-09T01:00:01Z' },
+      { user: { id: 'pending-user', email: 'PRIVATE_EMAIL' } },
+      // GoTrue also returns a sanitized bare User for repeated signup: same public result.
+      { id: 'sanitized-user', identities: [] },
+    ]) {
+      h.state.signupReply = reply;
+      const response = await h.request('/api/auth/register', {
+        method: 'POST',
+        headers: { Origin: 'https://capital.example', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Test Owner', email: 'owner-subject@example.test',
+          password: 'valid-password', passwordConfirm: 'valid-password',
+          termsAccepted: true, privacyAcknowledged: true }),
+      });
+      assert.equal(response.status, 202);
+      assert.deepEqual(await response.json(), { authenticated: false, confirmationRequired: true });
+      assert.equal(response.headers.get('set-cookie'), null);
+    }
+    for (const reply of [null, {}, { id: 123 }, { user: {} },
+      { id: 'bare-user', access_token: 'unexpected-access', refresh_token: 'unexpected-refresh' }]) {
+      h.state.signupReply = reply;
+      const response = await h.request('/api/auth/register', {
+        method: 'POST',
+        headers: { Origin: 'https://capital.example', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Test Owner', email: 'owner-subject@example.test',
+          password: 'valid-password', passwordConfirm: 'valid-password',
+          termsAccepted: true, privacyAcknowledged: true }),
+      });
+      assert.equal(response.status, 422);
+      assert.deepEqual(await response.json(), { error: 'registration_failed' });
+      assert.equal(response.headers.get('set-cookie'), null);
+    }
   } finally {
     await h.stop();
   }
