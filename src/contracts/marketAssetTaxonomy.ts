@@ -18,10 +18,13 @@ export const ProductAssetMappingInputSchema = z.strictObject({
   name: z.string().min(1),
   productAssetClass: ProductAssetClassSchema,
   venue: z.string().min(1),
-  currency: z.string().regex(/^[A-Z]{3}$/),
+  currency: z.string().regex(/^[A-Z0-9]{3,8}$/),
   region: z.enum(['US', 'EU']).nullable().default(null),
   subclass: z.string().min(1).nullable().default(null),
   status: z.enum(['active', 'halted', 'delisted', 'unverified']),
+}).superRefine((value, ctx) => {
+  if (value.productAssetClass !== 'crypto' && !/^[A-Z]{3}$/.test(value.currency))
+    ctx.addIssue({ code: 'custom', message: 'FIAT_PRODUCT_CURRENCY_INVALID' });
 });
 export type ProductAssetMappingInput = z.infer<typeof ProductAssetMappingInputSchema>;
 

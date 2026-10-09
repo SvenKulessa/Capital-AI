@@ -18,8 +18,8 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
     contentSha256: '2d9dcda3e6446e7adfdd20faf93de28cc6171f72ee3cf5e80daf7fec34feac90',
   }),
   'src/components/LegalAndFaqPages.tsx': Object.freeze({
-    sourceBlobSha: 'fb3c96584e9cef1aba930b3695fabd36175c5258',
-    contentSha256: '64bd5aa28ef7c94416f760e06219de00c85f5afb1d1d96c164985f4570c7898e',
+    sourceBlobSha: '53e926c6dcdc846b672b7c52ae05b0e90c0f499c',
+    contentSha256: '1aa65b395eeb8b143e0b36d58ce3d6a38681ccde2dea5bff067fb2dc1a25361d',
   }),
   'src/content/publicLegalContent.ts': Object.freeze({
     sourceBlobSha: 'e16b221845706f2b65efe634e183b53ae451ca34',
@@ -46,8 +46,8 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
     contentSha256: '227e39ea276d4506a1526208d534e21c775a933f84f33f24a62e2b35889d36ab',
   }),
   'src/privacy/privacyPolicy.ts': Object.freeze({
-    sourceBlobSha: 'd44054672138460eb04a3b0e8e785de4e60b236a',
-    contentSha256: 'c952396f4d94a5a867e4fcc637f9214ce6f23572b46278bcdba2d14c7601b559',
+    sourceBlobSha: '687cf4e0c0ee173194847f5d02303134bd6390ef',
+    contentSha256: '9896cf566ca90a62082dc987b3f3c27146741f303f7180bd508dc421db306bad',
   }),
   'src/content/legalDocumentVersions.ts': Object.freeze({
     sourceBlobSha: '1712f9487283d0c0305691f65ec74da55eb59c2d',
@@ -58,13 +58,13 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
 const SEO_SOURCE_SET_DIGESTS = Object.freeze({
   'index.html|src/features/home/HomePage.tsx': '4c89ce8d59426f04695e0c13c2d29329f894b2e2f04d6bd399a36080ad896a3a',
   'shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': '7ad56816530a295aa27959c96a3eef9502e8271ecf308f803b934c61952a18f4',
-  'src/components/LegalAndFaqPages.tsx|src/content/publicLegalContent.ts': 'c6d89a7abc5a41b4a635bf39bb21aa153ca64060cced8341b1f9a235f670d2d7',
+  'src/components/LegalAndFaqPages.tsx|src/content/publicLegalContent.ts': '99df92ec156bdae2b63757b87dfd818df491e3e826136d539cb8f74d4e1e9c66',
   'shared/license-metadata.mjs|src/components/LicenseInformationPages.tsx': 'a32e0df5d6e5bc57e3a23283f7e1c91aa1a584f7f70ccc8208796322172210bb',
   'shared/license-metadata.mjs|src/data/providerLicenseReview.ts': '98d2b1c966c071230d8b5554f132c198bf95c7df07e5b559fa82e2aa53f1c768',
   'OPEN_SOURCE_LICENSES.md|shared/license-metadata.mjs': 'db2cb5f53bcfb48b0fdd17adbeeefc2e69c38da81c11e4eac5ce736aa7654031',
-  'shared/legal-identity.mjs|src/components/LegalAndFaqPages.tsx': '79425d9a4d725e774365b72661f19601942c948660f22c8790c56a1d01192338',
-  'src/components/LegalAndFaqPages.tsx|src/privacy/privacyPolicy.ts': '9f8acf814d23b91808494f6158baabb80c7acf9375e8bf8054fb97fa7c746034',
-  'src/components/LegalAndFaqPages.tsx|src/content/legalDocumentVersions.ts': 'f010c5cca4b19ed0cdd66ab138101595fc25fb69f7cc1b598e6c957f6c36c4a6',
+  'shared/legal-identity.mjs|src/components/LegalAndFaqPages.tsx': 'e38968424df307d96cf737857004b750f2426c59035d067f182274027540682c',
+  'src/components/LegalAndFaqPages.tsx|src/privacy/privacyPolicy.ts': '109736ca8c533732ddea0417736296a861a6ead24c5165bce0a52c7655f0f286',
+  'src/components/LegalAndFaqPages.tsx|src/content/legalDocumentVersions.ts': '46f7ec730ba615799fbab2e0d55e2f2b174622875336201f9bea8a75c1bad579',
   'shared/vocabulary-metadata.mjs': '8b9fb4e36e8b841d6c367dd50db4038b694e5ca23ef73e71ebf6215f36ea7928',
 });
 
