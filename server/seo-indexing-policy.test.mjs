@@ -171,6 +171,9 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
     for (const route of ['/', '/faq', '/impressum', '/datenschutz', '/agb']) {
       const response = await fetch(origin + route);
       assert.equal(response.status, 200, route);
+      if (route === '/datenschutz' || route === '/agb') {
+        assert.equal(response.headers.get('content-language'), 'de', route);
+      }
       const html = await response.text();
       const metadataTitle = route === '/' ? 'Capital-AI' : null;
       if (route === '/datenschutz' || route === '/agb') {
