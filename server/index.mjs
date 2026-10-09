@@ -529,7 +529,8 @@ export function createApp(root = defaultRoot, options = {}) {
   if (!asset.startsWith(root + path.sep) && asset !== root) return json(res, 400, { error: 'bad_path' });
   if (path.relative(root, asset).split(path.sep).some(part => part.startsWith('.'))) return json(res, 404, { error: 'not_found' });
   try {
-    const file = await stat(asset).then(s => s.isFile() ? asset : path.join(root, 'index.html')).catch(() =>
+    // Missing legal documents must return 404 rather than silently expose the SPA bootstrap.
+    const file = staticLegalRoute.has(publicPath) ? asset : await stat(asset).then(s => s.isFile() ? asset : path.join(root, 'index.html')).catch(() =>
       path.extname(asset) || url.pathname.startsWith('/api/') ? asset : path.join(root, 'index.html'));
     const resolved = await realpath(file);
     if (!resolved.startsWith(root + path.sep) || (await stat(resolved)).size > 20 * 1024 * 1024) return json(res, 404, { error: 'not_found' });
