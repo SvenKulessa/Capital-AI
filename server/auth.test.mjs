@@ -104,7 +104,7 @@ async function harness(envOverrides = {}) {
       if (state.rejectMfaEnrollment) return Response.json({ error_code: 'mfa_totp_enroll_disabled', message: 'DO_NOT_EXPOSE_PROVIDER_PAYLOAD' }, { status: 422 });
       return Response.json({ id: '11111111-1111-4111-8111-111111111111', totp: {
         secret: 'JBSWY3DPEHPK3PXP', uri: 'otpauth://totp/test?secret=JBSWY3DPEHPK3PXP',
-        qr_code: '<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg"></svg>',
+        qr_code: state.mfaQrCode ?? '<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg"></svg>',
       } });
     }
 
@@ -740,6 +740,29 @@ test('all eleven Control Center subpages enforce owner identity on direct docume
   }
 });
 
+
+test('native TOTP accepts large provider SVGs while keeping a bounded response and secrets out of audit logs', async () => {
+  const h = await harness();
+  try {
+    const cookie = await h.completeEmail();
+    const enroll = () => h.request('/api/auth/mfa/totp/enroll', {
+      method: 'POST', headers: { cookie, Origin: 'https://capital.example', 'Content-Type': 'application/json' }, body: '{}',
+    });
+    // Supabase's QR writer emits one rect for every black AND white cell.
+    const cell = '<rect x="3" y="3" width="3" height="3" style="fill:black;stroke:none" />';
+    h.state.mfaQrCode = '<svg xmlns="http://www.w3.org/2000/svg">' + cell.repeat(5000) + '</svg>';
+    assert.ok(Buffer.byteLength(h.state.mfaQrCode) > 262_144);
+    const enrolled = await enroll();
+    assert.equal(enrolled.status, 200);
+    assert.equal((await enrolled.json()).qrCode, h.state.mfaQrCode);
+    h.state.mfaQrCode = '<svg>' + cell.repeat(17000) + '</svg>';
+    const rejected = await enroll();
+    assert.equal(rejected.status, 422);
+    assert.deepEqual(await rejected.json(), { error: 'totp_enrollment_failed', code: 'mfa_setup_response_too_large' });
+    assert.equal(JSON.stringify(h.state.authAudit).includes('<rect'), false);
+    assert.equal(JSON.stringify(h.state.authAudit).includes('JBSWY3DPEHPK3PXP'), false);
+  } finally { await h.stop(); }
+});
 
 test('signed session can enroll native TOTP and configuration failures retain only safe error codes', async () => {
   const h = await harness();

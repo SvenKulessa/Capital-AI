@@ -39,7 +39,7 @@ function totpEnrollmentProjection(totp) {
     }
   }
   if (!/^[A-Z2-7]{16,128}$/.test(secret)) return null;
-  const qrCode = typeof totp.qr_code === 'string' && totp.qr_code.length <= 220000 ? totp.qr_code : '';
+  const qrCode = typeof totp.qr_code === 'string' && totp.qr_code.length <= 900_000 ? totp.qr_code : '';
   return { secret, qrCode, uri };
 }
 
@@ -557,7 +557,7 @@ export function createAuthSecurity({
         method: 'POST',
         accessToken: stored.accessToken,
         body: { factor_type: 'totp', friendly_name: name, issuer: 'CAPITAL-AI' },
-        maxResponseBytes: 262_144,
+        maxResponseBytes: 1_048_576,
       });
       if (!enrolled.response.ok || !FACTOR_ID_RE.test(String(enrolled.data?.id || '')) || !enrolled.data?.totp) {
         audit(`Supabase TOTP enrollment rejected: status=${enrolled.response.status}; code=${upstreamCode(enrolled.data, 'totp_enrollment_failed')}`);

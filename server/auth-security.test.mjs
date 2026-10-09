@@ -270,7 +270,7 @@ test('TOTP reenrollment removes a stale pending factor before creating replaceme
   );
   assert.equal(res.payload.secret, 'JBSWY3DPEHPK3PXP');
   const enrollCall = h.calls.find(call => call.path === '/factors' && call.options.method === 'POST');
-  assert.equal(enrollCall.options.maxResponseBytes, 262_144);
+  assert.equal(enrollCall.options.maxResponseBytes, 1_048_576);
   assert.equal(enrollCall.options.body.issuer, 'CAPITAL-AI');
 });
 

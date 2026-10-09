@@ -288,8 +288,12 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
           data = typeof code === 'string' && /^[a-z][a-z0-9_]{0,119}$/i.test(code)
             ? { error_code: code } : null;
         }
-      } catch {
-        data = null;
+      } catch (error) {
+        // The provider's cell-by-cell QR SVG can exceed the old 256 KiB
+        // enrollment limit. Retain a safe diagnostic if the bounded TOTP
+        // response still exceeds its limit; never retain the setup payload.
+        data = path === '/factors' && response.ok && error?.message === 'upstream_too_large'
+          ? { error_code: 'mfa_setup_response_too_large' } : null;
       }
     }
     return { response, data };
