@@ -48,7 +48,7 @@ test('noncrypto identities, product mappings and instrument masters still reject
       assetId: asset.assetId, symbol: asset.symbol, name: asset.name, venue: asset.venue,
       productAssetClass, currency: 'USDT', region: productAssetClass === 'stocks' ? 'US' : null,
       subclass: null, status: 'active',
-    }), undefined, productAssetClass);
+    }));
   }
   assert.equal(AssetIdentitySchema.safeParse({ ...asset, currency: 'usdT' }).success, false);
   assert.equal(AssetIdentitySchema.safeParse({ ...asset, currency: 'USD/EUR' }).success, false);
@@ -57,6 +57,8 @@ test('noncrypto identities, product mappings and instrument masters still reject
 
 test('crypto instrument quote asset equals its currency and stays non-production', () => {
   const inspected = inspectInstrumentMaster(instrument);
+  assert.equal(inspected.instrument.productAssetClass, 'crypto');
+  if (inspected.instrument.productAssetClass !== 'crypto') throw new Error('CRYPTO_MASTER_EXPECTED');
   assert.equal(inspected.instrument.quoteAsset, 'USDT');
   assert.equal(inspected.mapping.asset?.currency, 'USDT');
   assert.equal(inspected.identityVerified, false);
