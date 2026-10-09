@@ -129,6 +129,8 @@
 !scripts/
 !scripts/media/
 !scripts/media/**
+!scripts/growth/
+!scripts/growth/screener-learning-loop.test.mjs
 !scripts/generate-chart-learning.tsx
 
 !public/learning/
