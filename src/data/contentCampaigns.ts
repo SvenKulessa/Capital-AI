@@ -125,3 +125,72 @@ export const CAPITAL_AI_SCORE_BUILDER_CAMPAIGN_20261007: SocialCampaign = {
     'Content: Asset-ID, Campaign-ID und Canonical URL über GrowthAttribution korrelieren.',
   ],
 };
+
+
+/**
+ * Product copy / channel concepts from the newer private Drive owner brief.
+ * The complete customer PDF is never shipped from this public marketing contract.
+ */
+export const CAPITAL_AI_SCREENER_BUNDLE_CAMPAIGN_20261009: SocialCampaign = {
+  name: 'Screener Architecture Bundle · Evidence-first Preview',
+  positioning: 'Datenquellen, Faktor-Tools, Chartmuster und Versionierung zu einem nachvollziehbaren Screener-Konzept verbinden.',
+  brief: {
+    campaignId: 'capital-ai-screener-bundle-20261009',
+    productId: 'capital-ai-screener-blueprint-bundle',
+    sourceSha: '3c2bf8f733c501e7fce00ffc30cd94189ab43149',
+    canonicalUrl: 'https://capital-ai.online/marketscreener/dokumentation',
+    locale: 'de-DE',
+    objective: 'Erkläre das kombinierte Blueprint-Paket und seine Grenzen; keine nicht vorhandene kommerzielle Lieferung oder Live-Scoring behaupten.',
+    audience: [
+      'FinTech- und Quant-Builder',
+      'Research- und Analyse-Teams',
+      'Screener- und Trading-Dashboard-Entwickler',
+      'Agenturen und Legacy-System-Integratoren',
+    ],
+    channels: ['WEBSITE','LINKEDIN','YOUTUBE','REDDIT'],
+    outputs: ['TEXT','IMAGE','ANALYTICS'],
+    sourceUrls: ['https://capital-ai.online/marketscreener/dokumentation'],
+  },
+  pillars: [
+    'Data Blueprint: Datenverträge, Normalisierung, Rights und Quality Gates.',
+    'Scoring Blueprint: Faktoren, Chartmuster und Explainability mit reproduzierbaren Demo-Formeln.',
+    'Shadow-first: Kein zweiter produktiver Scorer, keine Garantie für Trading-Ergebnisse.',
+    'Studio als geplantes Upgrade: YAML-Editor und Diagramm sind gegenwärtig nur ein Demo-Konzept.',
+  ],
+  assets: [
+    {
+      id: 'screener-bundle-public-preview', channel: 'WEBSITE',
+      format: 'Produktvorschau / Zielgruppen und YAML-Demo',
+      hook: 'Baue einen Screener, der seine Bewertung erklären kann.',
+      message: 'Ein kombiniertes Daten- und Scoring-Konzept mit Muster-Evidenz, Datenflüssen und einer lokalen YAML-Demovorschau. Kein verifiziertes Live-Scoring.',
+      cta: 'YAML-Demo und Datenfluss ansehen.', modules: ['COPY','IMAGE','ATTRIBUTION'], state: 'DRAFT',
+    },
+    {
+      id: 'screener-bundle-research-linkedin', channel: 'LINKEDIN',
+      format: 'Fachbeitrag / Architekturkarte',
+      hook: 'Ein Score ohne Quellenherkunft ist schwer zu prüfen.',
+      message: 'Datenverträge, Quality Gates und versionierte Gewichte bringen nachvollziehbare Schritte in die Screener-Konzeption. Screenshot zeigt synthetische Faktoren.',
+      cta: 'Technische Vorschau ansehen.', modules: ['COPY','IMAGE','ATTRIBUTION'], state: 'DRAFT',
+    },
+    {
+      id: 'screener-bundle-pattern-short', channel: 'YOUTUBE',
+      format: '30–45s Erklärvideo / ohne generierte Tonspur',
+      hook: 'Von Datenströmen zu erklärbaren Scores – mit Chartmustern als eigener Faktorgruppe.',
+      message: 'Storyboard: Ingestion, Data Quality, Factor Tools, Pattern Review und synthetischer Beispiel-Score 76,85/100; niemals als Live-Anlagesignal.',
+      cta: 'YAML-Vorschau besuchen.', modules: ['COPY','IMAGE','VIDEO','ATTRIBUTION'], state: 'DRAFT',
+    },
+    {
+      id: 'screener-bundle-builders-feedback', channel: 'REDDIT',
+      format: 'Technischer Diskussionsentwurf (keine automatische Promotion)',
+      hook: 'Welche Prüfungen fehlen euch bei YAML-konfigurierbaren Scoring-Pipelines?',
+      message: 'Diskussion zu PIT-Replay, Dubletten, Pattern-Korrelation, Datenrechten und Shadow-Mode-Validierung; keine ungefragten Promotions.',
+      cta: 'Technisches Feedback zur Architektur geben.', modules: ['COPY','ATTRIBUTION'], state: 'DRAFT',
+    },
+  ],
+  measurement: [
+    'Website: CTA-Klicks nur nach rechtskonformer Consent-/Analytics-Evidence aggregiert.',
+    'Social: nur tatsächlich verfügbare Provider-Saves und Klicks nach Plattformrechten auswerten.',
+    'Feedback: nur opt-in, anonymisierte inhaltliche Hinweise in der Learning Candidate Pipeline.',
+    'News: offizielle Quellen nur als Links / Citation, keine ungeprüften Texte als Anweisungen.',
+  ],
+};
