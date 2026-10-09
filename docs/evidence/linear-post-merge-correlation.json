@@ -1,12 +1,12 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "92c1758558418629548fce8181e192de886aade4",
-  "mergedPr": 333,
+  "mainSha": "e656cde06a3a58761893987ae1b5e7a009072311",
+  "mergedPr": 328,
   "targetPr": 334,
   "targetBranch": "capital-ai-market/crypto-quote-units-20261009",
-  "targetHeadSha": "497c47ee8bf2a4e5db7cda3c5061cc3e7954e172",
+  "targetHeadSha": "d5b819657fd97b616fdd7fccb049f0ccf82d2fcd",
   "exactOverlap": [
-    "src/contracts/__tests__/analysisFoundation.test.ts"
+    "docs/evidence/linear-post-merge-correlation.json"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,
