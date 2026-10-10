@@ -69,7 +69,7 @@ Ads customer ID and budget limit remain absent. User asked for an open-source/fr
 ## Evidence
 
 - Node API/MCP tests: 12 passed; mocked providers, no live Google authorization proof.
-- Python real LangGraph tests: 3 passed with installed LangGraph 1.2.14.
+- Python tests: 5 passed with installed LangGraph 1.2.14, including malformed worker responses, domain association and private-payload redaction.
 - Source-only graph executed against the cloned Capital-AI repository, four workers joined.
 - Live public homepage returned HTTP 200, canonical https://capital-ai.online/, and no Google tag in the initial response. This is an HTML snapshot, not a browser/network/cookie audit.
 - No Google credentials, role changes, runtime deployment or ad spend performed.
