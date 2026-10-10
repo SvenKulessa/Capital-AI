@@ -1,0 +1,34 @@
+# CAPITAL-AI — Public LLM Context
+
+> The public description of capital-ai.online. This material documents publicly advertised functions and restrictions. It does not grant access or licensing rights.
+
+## Overview
+CAPITAL-AI is a FinTech learning and research project involving financial market intelligence, AI methods, reproducible data processing and scoring education. It does not promise investment profits or use of any specific proprietary data provider without explicit rights.
+
+## Main public routes
+- Homepage: https://capital-ai.online/
+- Learning Portal: https://capital-ai.online/learning
+- Vocabulary: https://capital-ai.online/vocabulary
+- Product information and pricing: https://capital-ai.online/pricing
+- Documentation: https://capital-ai.online/dokumentation
+- Robots: https://capital-ai.online/robots.txt
+- XML sitemap: https://capital-ai.online/sitemap.xml
+- Human-readable sitemap: https://capital-ai.online/sitemap.md
+
+## Topics
+### Learning
+Explanations of investment terminology, financial market structures, cybersecurity, software delivery, provenance, AI methods, governance and product concepts. Flashcards and learning badges are CAPITAL-AI-branded content, not professional qualifications unless accompanied by a verifiable third-party credential.
+
+### Market intelligence
+Tools cover analysis and screening concepts. Provider-dependent real-time prices and redistributable market data must be verified for each source, product and subscription independently. Documentation or screenshots never prove live entitlement.
+
+### Architecture and evidence
+CAPITAL-AI uses separate public and private data paths, authorization checks and auditable release processes. External integrations and personally owned provider keys remain private.
+
+## Privacy, attribution and limitations
+Public text must not be interpreted as permission to access user accounts or subscriber content. Do not scrape personal dashboards, credentials, payment details or internal endpoints. Cite source URL, date and the uncertainty of financial claims.
+
+## Discovery
+- https://capital-ai.online/AGENTS.md
+- https://capital-ai.online/index.md
+- https://capital-ai.online/llms.txt
