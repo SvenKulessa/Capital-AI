@@ -1,5 +1,6 @@
 import React from 'react';
 import { LearningFavoritesPanel } from '../features/learning/LearningFavorites';
+import { LearningEntitlementBadge } from '../features/learning/LearningEntitlementBadge';
 import { ShieldCheck, User } from 'lucide-react';
 import { AccountPageShell } from '../features/account/AccountPageShell';
 import { openHeroBuddy } from './HeroBuddy';
@@ -162,6 +163,7 @@ export function ProfilePage({ onNavigate }: { onNavigate: (path: string) => void
                 </div>
 
                 <CadsEntitlementPanel />
+                <LearningEntitlementBadge />
 
                 {session.account.badges?.length ? (
                   <div className="mt-4 flex flex-wrap gap-3" aria-label="Kontobadges">

@@ -50,6 +50,7 @@ import {
   VocabularyCategory,
   VocabularyLevel,
   VocabularyTerm,
+  vocabularySkillLevel,
 } from '../../data/vocabularyData';
 import { useHubTab } from '../../hooks/useHubTab';
 import { updatePageSEO } from '../../utils/analytics';
@@ -211,7 +212,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
         return false;
       }
       // Level filter
-      if (selectedLevel !== 'ALL' && term.level !== selectedLevel) {
+      if (selectedLevel !== 'ALL' && vocabularySkillLevel(term) !== selectedLevel) {
         return false;
       }
       // Search query
@@ -314,7 +315,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
               WISSENS-TERMINAL
             </span>
             <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-mono text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 px-2.5 py-0.5 rounded-full">
-              {VOCABULARY_TERMS.length} Fachbegriffe &amp; Formeln
+              {fullVocabularyTerms.length} Fachbegriffe &amp; Formeln
             </span>
           </div>
         </div>
@@ -344,8 +345,8 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
           )}
         </div>
       </div>
-
       <LearningInquiry />
+
       <label className="mb-4 block text-sm text-amber-200 sm:hidden">Lernbereich auswählen
         <select value={activeTab} onChange={event=>setActiveTab(event.target.value as LearningPortalTab)} className="mt-2 min-h-11 w-full rounded-lg border border-amber-400/30 bg-slate-950 p-3 text-white">
           {LEARNING_TABS.map(tab=><option key={tab} value={tab}>{{glossar:'Vocabulary & Glossar',flashcards:'Karteikasten',guides:'Modul-Erklärungen',patterns:'Chart-Lernatlas',videos:'Lernvideos',quiz:'Tagesquiz',news:'Öffentliche Lernimpulse'}[tab]}</option>)}
@@ -368,7 +369,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
           <BookOpen className="w-3.5 h-3.5" />
           <span>Market Vocabulary &amp; Glossar</span>
           <span className="text-[10px] px-1.5 py-0.2 rounded bg-black/30 font-mono">
-            {VOCABULARY_TERMS.length}
+            {fullVocabularyTerms.length}
           </span>
         </button>
 
@@ -458,14 +459,14 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
                   Capital-AI Vocabulary &amp; Thesaurus
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-                  Durchsuchen Sie {VOCABULARY_TERMS.length} konsolidierte Fachbegriffe aus Marktanalyse, Scoring,
+                  Durchsuchen Sie {fullVocabularyTerms.length} konsolidierte Fachbegriffe aus Marktanalyse, Scoring,
                   Daten &amp; Evidence, Plattformarchitektur, Security, Produkt, Governance und Mobile Runtime.
                 </p>
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
                 <span className="text-xs font-mono font-bold px-3 py-1.5 rounded-xl bg-black/40 border border-amber-400/30 text-amber-300">
-                  {filteredTerms.length} von {VOCABULARY_TERMS.length} Begriffen
+                  {filteredTerms.length} von {fullVocabularyTerms.length} Begriffen
                 </span>
               </div>
             </div>
@@ -480,7 +481,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
                 href="/vocabulary"
                 className="text-xs font-bold text-amber-300 hover:text-amber-200 underline underline-offset-4"
               >
-                Alle {VOCABULARY_TERMS.length} Begriffe anzeigen
+                Alle {fullVocabularyTerms.length} Begriffe anzeigen
               </a>
             </div>
           )}
@@ -522,26 +523,27 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
               </select>
             </label>
 
-            {/* Skill Level Filter Buttons */}
-            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-800/80 text-xs">
-              <span className="text-slate-400 font-mono text-[11px]">Level:</span>
-              {['ALL', 'Einsteiger', 'Fortgeschritten', 'Quant / Pro'].map((lvl) => (
-                <button
-                  key={lvl}
-                  type="button"
-                  onClick={() => {
-                    setFocusedTermId(null);
-                    setSelectedLevel(lvl);
-                  }}
-                  className={`px-2.5 py-0.5 rounded text-xs font-medium cursor-pointer transition-colors ${
-                    selectedLevel === lvl
-                      ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40 font-bold'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  {lvl === 'ALL' ? 'Alle Level' : lvl}
+            {/* Four clear public skill tiers; buttons remain on one row on narrow devices. */}
+            <div className="space-y-2 border-t border-slate-800/80 pt-3">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-semibold text-slate-200">Skill-Level</span>
+                <button type="button" onClick={() => { setFocusedTermId(null); setSelectedLevel('ALL'); }}
+                  aria-pressed={selectedLevel === 'ALL'}
+                  className="min-h-11 rounded-lg px-3 text-xs font-semibold text-amber-200 hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-amber-300">
+                  Alle anzeigen
                 </button>
-              ))}
+              </div>
+              <div className="grid grid-cols-4 gap-1.5" role="group" aria-label="Skill-Level auswählen">
+                {(['Starter', 'Elite', 'Enterprise', 'Quant'] as const).map(lvl => (
+                  <button key={lvl} type="button" aria-pressed={selectedLevel === lvl}
+                    onClick={() => { setFocusedTermId(null); setSelectedLevel(lvl); }}
+                    className={`min-h-11 rounded-lg border px-1 py-2 text-[11px] font-semibold sm:text-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 ${
+                      selectedLevel === lvl ? 'border-amber-400/60 bg-amber-400/20 text-amber-200' : 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10'
+                    }`}>
+                    {lvl}
+                  </button>
+                ))}
+              </div>
             </div>
             {!entitled && (
               <div className="pt-2 text-[11px] text-purple-200">

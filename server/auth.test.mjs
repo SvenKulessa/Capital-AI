@@ -42,6 +42,8 @@ async function harness(envOverrides = {}) {
     authAudit: [],
     consentWrites: [],
     rejectConsentWrites: false,
+    privacyRequests: [],
+    rejectPrivacyWrites: false,
   };
 
   const user = () => ({
@@ -124,6 +126,32 @@ async function harness(envOverrides = {}) {
       assert.equal(target.searchParams.get('on_conflict'), 'user_id,consent_type,document_version');
       state.consentWrites.push(JSON.parse(String(options.body)));
       return new Response(null, { status: state.rejectConsentWrites ? 503 : 201 });
+    }
+
+
+    if (target.origin === 'https://project.supabase.co' && target.pathname === '/rest/v1/privacy_requests') {
+      assert.match(String(options.headers.Authorization || ''), /^Bearer sb_secret_/);
+      assert.match(String(options.headers.apikey || ''), /^sb_secret_/);
+      if (options.method === 'POST') {
+        if (state.rejectPrivacyWrites) return Response.json({ error: 'upstream_unavailable' }, { status: 503 });
+        const body = JSON.parse(String(options.body));
+        assert.equal(body.user_id, state.subject);
+        assert.ok(['access', 'rectification', 'erasure', 'restriction', 'objection', 'portability'].includes(body.request_type));
+        const row = {
+          id: '11111111-2222-4333-8444-' + String(state.privacyRequests.length + 1).padStart(12, '0'),
+          ...body,
+          status: 'received', created_at: '2026-10-10T06:00:00Z', due_at: '2026-11-10T06:00:00Z',
+        };
+        state.privacyRequests.push(row);
+        return Response.json([row], { status: 201 });
+      }
+      assert.equal(options.method || 'GET', 'GET');
+      const userFilter = target.searchParams.get('user_id');
+      let rows = state.privacyRequests.filter(row => userFilter === 'eq.' + row.user_id);
+      const typeFilter = target.searchParams.get('request_type');
+      if (typeFilter) rows = rows.filter(row => typeFilter === 'eq.' + row.request_type);
+      if (target.searchParams.get('status')) rows = rows.filter(row => ['received', 'identity_verified', 'in_progress'].includes(row.status));
+      return Response.json(rows.slice(0, Number(target.searchParams.get('limit') || 20)));
     }
 
     if (target.origin === 'https://project.supabase.co' && target.pathname === '/rest/v1/profiles') {
@@ -572,12 +600,45 @@ test('privacy request remains bounded and same-origin after Supabase migration',
     });
     assert.equal((await send({ requestType: 'erasure' }, 'https://attacker.example')).status, 403);
     assert.equal((await send({ requestType: 'access', details: 'a'.repeat(2001) })).status, 400);
+    assert.equal((await send({ requestType: 'erasure', user_id: 'another-account' })).status, 400);
     const response = await send({ requestType: 'erasure', details: 'Keine Geheimnisse' });
-    assert.equal(response.status, 200);
+    assert.equal(response.status, 202);
     const body = await response.json();
-    assert.equal(body.status, 'email_draft');
-    assert.equal(body.persisted, false);
-    assert.equal(body.sent, false);
+    assert.equal(body.status, 'received');
+    assert.equal(body.persisted, true);
+    assert.equal(body.processing, 'managed_review');
+    assert.match(body.request.id, /^[0-9a-f-]{36}$/);
+    assert.equal(body.request.requestType, 'erasure');
+    assert.equal(h.state.privacyRequests.length, 1);
+    assert.equal(h.state.privacyRequests[0].user_id, 'owner-subject');
+    const replay = await send({ requestType: 'erasure' });
+    assert.equal(replay.status, 200);
+    assert.equal((await replay.json()).alreadyExists, true);
+    assert.equal(h.state.privacyRequests.length, 1);
+    const listing = await h.request('/api/privacy/requests', { headers: { cookie } });
+    assert.equal(listing.status, 200);
+    const listBody = await listing.json();
+    assert.equal(listBody.requests.length, 1);
+    assert.equal(listBody.requests[0].id, body.request.id);
+    assert.doesNotMatch(JSON.stringify(listBody), /Keine Geheimnisse|secret|details/);
+    h.state.rejectPrivacyWrites = true;
+    const failed = await send({ requestType: 'access' });
+    assert.equal(failed.status, 503);
+    assert.deepEqual(await failed.json(), { error: 'privacy_register_unavailable' });
+    assert.equal(h.state.privacyRequests.length, 1);
+    h.state.rejectPrivacyWrites = false;
+    h.state.subject = 'second-subject';
+    const secondCookie = await h.completeEmail();
+    const secondHistory = await h.request('/api/privacy/requests', { headers: { cookie: secondCookie } });
+    assert.equal(secondHistory.status, 200);
+    assert.deepEqual((await secondHistory.json()).requests, [], 'cross-user history is always isolated');
+    const secondRequest = await h.request('/api/privacy/requests', {
+      method: 'POST',
+      headers: { cookie: secondCookie, Origin: 'https://capital.example', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requestType: 'erasure' }),
+    });
+    assert.equal(secondRequest.status, 202);
+    assert.equal(h.state.privacyRequests[1].user_id, 'second-subject');
   } finally {
     await h.stop();
   }

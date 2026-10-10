@@ -15,6 +15,7 @@ export type VocabularyCategory =
   | 'MOBILE_RUNTIME';
 
 export type VocabularyLevel = 'Einsteiger' | 'Fortgeschritten' | 'Quant / Pro';
+export type VocabularySkillLevel = 'Starter' | 'Elite' | 'Enterprise' | 'Quant';
 
 export interface VocabularyTerm {
   id: string;
@@ -31,6 +32,14 @@ export interface VocabularyTerm {
   keyTakeaway: string;
   searchTags: string[];
   thesaurus: [string, string, string];
+}
+
+/** Public-facing skill labels are independent of billing tiers and server-side access checks. */
+export function vocabularySkillLevel(term: VocabularyTerm): VocabularySkillLevel {
+  if (term.level === 'Einsteiger') return 'Starter';
+  if (term.level === 'Quant / Pro') return 'Quant';
+  if (['PLATFORM_ARCHITECTURE', 'SECURITY_COMPLIANCE', 'DELIVERY_GOVERNANCE', 'PRODUCT_UX', 'MOBILE_RUNTIME'].includes(term.category)) return 'Enterprise';
+  return 'Elite';
 }
 
 export const VOCABULARY_CATEGORIES: { id: VocabularyCategory; label: string; count?: number }[] = [
