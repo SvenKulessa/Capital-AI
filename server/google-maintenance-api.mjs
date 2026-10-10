@@ -13,6 +13,7 @@ const CLOUD_ORIGIN = 'https://cloudresourcemanager.googleapis.com';
 const SERVICE_ORIGIN = 'https://serviceusage.googleapis.com';
 const GSC_ORIGIN = 'https://www.googleapis.com';
 const GSC_PROPERTY = 'sc-domain:capital-ai.online';
+const SITEMAP_URL = 'https://capital-ai.online/sitemap.xml';
 const MAX_RESPONSE_BYTES = 1024 * 1024;
 const PLAN_TTL_MS = 5 * 60 * 1000;
 const run = promisify(execFile);
@@ -75,7 +76,9 @@ export function createGoogleMaintenance({ env = process.env, fetchImpl = fetch, 
       if (bytes > MAX_RESPONSE_BYTES) throw new Error('GOOGLE_RESPONSE_TOO_LARGE');
       chunks.push(chunk);
     }
-    try { return JSON.parse(Buffer.concat(chunks).toString('utf8')); }
+    const text = Buffer.concat(chunks).toString('utf8');
+    if (method === 'PUT' && origin === GSC_ORIGIN && !text.trim()) return {};
+    try { return JSON.parse(text); }
     catch { throw new Error('GOOGLE_RESPONSE_INVALID'); }
   }
   async function property() {
@@ -91,12 +94,97 @@ export function createGoogleMaintenance({ env = process.env, fetchImpl = fetch, 
     if (value.projectId !== GOOGLE_PROJECT_ID || !/^projects\/\d+$/.test(value.name || '')) throw new Error('CLOUD_PROJECT_MISMATCH');
     return { name: value.name, projectId: value.projectId, displayName: value.displayName ?? null, state: value.state ?? null };
   }
+  async function learningStream() {
+    const { streams, truncated } = await call('ga4_list_data_streams');
+    const matching = streams.filter(item => item.associatedDomainVerified);
+    if (truncated || matching.length !== 1) throw new Error('GA4_WEB_STREAM_AMBIGUOUS_OR_MISSING');
+    if (!/^properties\/548187678\/dataStreams\/[0-9]+$/.test(matching[0].name)) throw new Error('GA4_STREAM_MISMATCH');
+    return matching[0];
+  }
+  async function keyEvents() {
+    const events = [];
+    let pageToken;
+    for (let page = 0; page < 5; page++) {
+      const result = await request(ADMIN_ORIGIN, '/v1beta/' + PROPERTY + '/keyEvents', { query: { pageSize: '100', ...(pageToken ? { pageToken } : {}) } });
+      for (const item of result.keyEvents || []) {
+        if (!String(item.name || '').startsWith(PROPERTY + '/keyEvents/')) throw new Error('GA4_KEY_EVENT_MISMATCH');
+        events.push({ name: item.name, eventName: item.eventName, countingMethod: item.countingMethod });
+      }
+      pageToken = result.nextPageToken;
+      if (!pageToken) return events;
+    }
+    throw new Error('GA4_KEY_EVENTS_TRUNCATED');
+  }
+  async function settings(stream, suffix) {
+    const name = stream.name + '/' + suffix;
+    const value = await request(ADMIN_ORIGIN, '/v1alpha/' + name);
+    if (value.name !== name) throw new Error('GA4_SETTINGS_MISMATCH');
+    return value;
+  }
+  async function patchSettings(stream, suffix, patch, mask) {
+    const name = stream.name + '/' + suffix;
+    const before = await settings(stream, suffix);
+    const matches = value => Object.keys(patch).every(key => JSON.stringify(typeof patch[key] === 'boolean' ? value[key] === true : value[key]) === JSON.stringify(patch[key]));
+    if (matches(before)) return 'ALREADY_CONFIGURED';
+    await request(ADMIN_ORIGIN, '/v1alpha/' + name, { method: 'PATCH', query: { updateMask: mask }, body: { name, ...patch } });
+    const after = await settings(stream, suffix);
+    if (!matches(after)) throw new Error('GA4_UPDATE_NOT_VERIFIED');
+    return 'UPDATE_VERIFIED';
+  }
   async function call(name, input = {}) {
+    if (name === 'ga4_learning_configuration') {
+      exact(input, []);
+      const boundProperty = await property();
+      const stream = await learningStream();
+      const events = await keyEvents();
+      const redaction = await settings(stream, 'dataRedactionSettings');
+      const enhanced = await settings(stream, 'enhancedMeasurementSettings');
+      return { property: boundProperty, stream,
+        leadEventConfigured: events.some(item => item.eventName === 'generate_lead'),
+        leadDefinition: 'Only a successfully received learning/course enquiry; never a link click, scroll or form start.',
+        emailRedactionEnabled: redaction.emailRedactionEnabled === true,
+        queryParameterRedactionEnabled: redaction.queryParameterRedactionEnabled === true,
+        formInteractionsEnabled: enhanced.formInteractionsEnabled === true,
+        browserCollectionVerified: false };
+    }
+    if (name === 'ga4_configure_learning') {
+      exact(input, []);
+      if (!writesEnabled) throw new Error('GA4_WRITES_DISABLED');
+      await property();
+      const stream = await learningStream();
+      const events = await keyEvents();
+      let leadEvent = 'ALREADY_CONFIGURED';
+      if (!events.some(item => item.eventName === 'generate_lead')) {
+        const created = await request(ADMIN_ORIGIN, '/v1beta/' + PROPERTY + '/keyEvents', { method: 'POST', body: { eventName: 'generate_lead', countingMethod: 'ONCE_PER_EVENT' } });
+        if (!String(created.name || '').startsWith(PROPERTY + '/keyEvents/') || created.eventName !== 'generate_lead') throw new Error('GA4_KEY_EVENT_MISMATCH');
+        if (!(await keyEvents()).some(item => item.eventName === 'generate_lead')) throw new Error('GA4_UPDATE_NOT_VERIFIED');
+        leadEvent = 'UPDATE_VERIFIED';
+      }
+      const beforeRedaction = await settings(stream, 'dataRedactionSettings');
+      const queryParameterKeys = [...new Set([...(beforeRedaction.queryParameterKeys || []), 'email', 'name', 'phone', 'user_id', 'token', 'access_token', 'refresh_token', 'code', 'session_id', 'vocabulary_session', 'enterprise_trial_session'])].sort();
+      const redaction = await patchSettings(stream, 'dataRedactionSettings', { emailRedactionEnabled: true, queryParameterRedactionEnabled: true, queryParameterKeys }, 'email_redaction_enabled,query_parameter_redaction_enabled,query_parameter_keys');
+      const formAutocapture = await patchSettings(stream, 'enhancedMeasurementSettings', { formInteractionsEnabled: false }, 'form_interactions_enabled');
+      return { property: PROPERTY, leadEvent, redaction, formAutocapture,
+        browserTrackingActivated: false, actualLeadsVerified: false,
+        note: 'Configuration only. Real enquiries require a confirmed receipt and consented measurement; this tool never invents events.' };
+    }
+    if (name === 'gsc_submit_canonical_sitemap') {
+      exact(input, []);
+      if (env.GOOGLE_MAINTENANCE_GSC_WRITES_ENABLED !== 'true') throw new Error('GSC_WRITES_DISABLED');
+      const current = await call('gsc_list_sitemaps');
+      if (!current.sitemaps.some(item => item.path === SITEMAP_URL)) {
+        await request(GSC_ORIGIN, '/webmasters/v3/sites/' + encodeURIComponent(GSC_PROPERTY) + '/sitemaps/' + encodeURIComponent(SITEMAP_URL), { method: 'PUT' });
+      }
+      const after = await call('gsc_list_sitemaps');
+      if (!after.sitemaps.some(item => item.path === SITEMAP_URL)) throw new Error('GSC_SITEMAP_NOT_VERIFIED');
+      return { property: GSC_PROPERTY, sitemap: SITEMAP_URL, status: 'SITEMAP_SUBMISSION_VERIFIED', indexingGuaranteed: false };
+    }
     if (name === 'google_maintenance_status') {
       exact(input, []);
       return {
         projectId: GOOGLE_PROJECT_ID, ga4Property: PROPERTY,
         ga4WritesEnabled: writesEnabled,
+        gscWritesEnabled: env.GOOGLE_MAINTENANCE_GSC_WRITES_ENABLED === 'true',
         identityConfigured: !!env.GOOGLE_MAINTENANCE_ACCESS_TOKEN || env.GOOGLE_MAINTENANCE_USE_ADC === 'true',
         identityVerified: false, transport: 'Google REST from trusted MCP worker',
         cloudWritesEnabled: false, adsEnabled: false, workspaceAdminEnabled: false,
@@ -144,6 +232,19 @@ export function createGoogleMaintenance({ env = process.env, fetchImpl = fetch, 
           limit: '5', returnPropertyQuota: true,
         },
       });
+    }
+    if (name === 'ga4_learning_report') {
+      exact(input, []);
+      return request(DATA_ORIGIN, '/v1beta/' + PROPERTY + ':runReport', { method: 'POST', body: {
+        dateRanges: [{ startDate: '28daysAgo', endDate: 'yesterday', name: 'current' }, { startDate: '56daysAgo', endDate: '29daysAgo', name: 'previous' }],
+        dimensions: [{ name: 'country' }, { name: 'landingPage' }],
+        metrics: [{ name: 'sessions' }, { name: 'engagedSessions' }, { name: 'keyEvents' }],
+        dimensionFilter: { andGroup: { expressions: [
+          { filter: { fieldName: 'sessionDefaultChannelGroup', stringFilter: { matchType: 'EXACT', value: 'Organic Search' } } },
+          { filter: { fieldName: 'country', inListFilter: { values: ['Germany', 'Italy', 'Spain', 'Portugal', 'United Kingdom'] } } },
+          { filter: { fieldName: 'landingPage', stringFilter: { matchType: 'FULL_REGEXP', value: '/(learning|vocabulary)(/.*)?' } } },
+        ] } }, limit: '100', returnPropertyQuota: true,
+      } });
     }
     if (name === 'gsc_list_sitemaps') {
       exact(input, []);
