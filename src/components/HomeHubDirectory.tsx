@@ -48,7 +48,9 @@ export function HomeHubDirectory({
     learning:'hubLearningDescription', documentation:'hubDocsDescription',
     'control-center':'hubControlDescription'
   };
-  const hubs = (Object.keys(MAIN_HUBS_CONFIG) as MainHubId[])
+  // Three focused public hub entries on the landing page. All others stay in the main menu.
+  const homepageHubIds: MainHubId[] = ['marketscreener', 'learning', 'studio'];
+  const hubs = homepageHubIds
     .filter(hubId => hubId !== 'control-center' || isOwner);
 
   const openSubpage = (hubId: MainHubId, subpage: HubSubpageConfig) => {
