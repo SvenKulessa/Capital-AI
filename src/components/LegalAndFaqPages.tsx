@@ -101,15 +101,22 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
       .then(async body => {
         if (!body || body.authenticated !== true || abort.signal.aborted) return;
         setAuthenticated(true);
-        const requestsResponse = await fetch('/api/privacy/requests', {
-          credentials: 'same-origin', cache: 'no-store', signal: abort.signal,
-          headers: { Accept: 'application/json' },
-        });
-        if (requestsResponse.ok) {
-          const result = await requestsResponse.json();
-          if (!abort.signal.aborted && Array.isArray(result.requests)) {
-            setPrivacyRequests(result.requests.slice(0, 20));
+        // A temporary request-history outage must not log out an otherwise valid session.
+        try {
+          const requestsResponse = await fetch('/api/privacy/requests', {
+            credentials: 'same-origin', cache: 'no-store', signal: abort.signal,
+            headers: { Accept: 'application/json' },
+          });
+          if (requestsResponse.ok) {
+            const result = await requestsResponse.json();
+            if (!abort.signal.aborted && Array.isArray(result.requests)) {
+              setPrivacyRequests(result.requests.slice(0, 20));
+            }
+          } else if (!abort.signal.aborted) {
+            setPrivacyMessage('Die Vorgangshistorie ist vorübergehend nicht verfügbar.');
           }
+        } catch {
+          if (!abort.signal.aborted) setPrivacyMessage('Die Vorgangshistorie ist vorübergehend nicht verfügbar.');
         }
       })
       .catch(() => { if (!abort.signal.aborted) setAuthenticated(false); });
