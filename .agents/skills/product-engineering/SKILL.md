@@ -16,6 +16,10 @@ description: "Use for PRODUCT implementation, debugging, tests and code-level ch
 
 **Praktische Evidence:** Betroffene Pfade und aktuellen Commit nennen, Änderungen klein und rückrollbar halten, nur wirklich ausgeführte Tests als PASS bezeichnen.
 
+## Frontend-Qualität
+
+Die Vorgaben „Frontend: Verständlichkeit, Accessibility und Appearance“ in `AGENTS.md` auf betroffene Ansichten anwenden: Produktzweck und nächste Aktion verständlich zeigen, zentralisierte Universe-Farben nutzen und Lesbarkeit, Kontrast, Tastaturfokus, mobile Darstellung, Zoom und Reduced Motion prüfen. Modell-/Skillwissen in konkrete Verbesserungen und angemessene Tests überführen; keine vollständige Accessibility oder Live-Wirkung ohne Nachweis behaupten.
+
 ## Gemeinsamer Arbeitsmodus
 
 - **Autorität:** `AGENTS.md` (`SOLO_MAINTAINER_FLOW@1`) bleibt alleinige repositoryweite Engineering-/Governance-Richtlinie. Dieser Skill ist eine Arbeitsanleitung und erzeugt keine neue Approval-, Admission-, Review- oder Deployment-Pflicht.

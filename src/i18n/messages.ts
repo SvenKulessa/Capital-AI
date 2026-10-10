@@ -7,7 +7,7 @@ export const LANGUAGES = [
 export type Locale = typeof LANGUAGES[number]['code'];
 const keys = [
   'language','navOpen','navAlerts','navAccount','login',
-  'hero1','hero2','hero3','hero4','heroDescription','analyze','assistant','discover',
+  'heroEyebrow','hero1','hero2','hero3','hero4','heroDescription','analyze','assistant','discover',
   'pillarRealtime','pillarAi','pillarAudience','pillarGlobal',
   'imprint','terms','privacy','pricing','docs','external',
   'contentTitle','contentHighlight','contentDescription','contentSources','contentCampaign','contentPublish',
@@ -16,8 +16,8 @@ export type MessageKey = typeof keys[number];
 const localized: Record<Locale, readonly string[]> = {
   de: [
     'Sprache auswählen','Navigation öffnen','Preisalarme öffnen','Kontomenü öffnen','Login',
-    'Marktdaten','verstehen.','Chancen besser','erkennen.',
-    'verbindet Lerninhalte, nachvollziehbare Analysemethoden und einen privaten Workspace für eigene Providerzugänge. Datenstatus und Verfügbarkeit werden separat ausgewiesen.',
+    'Finanzwissen und Analysewerkzeuge','Marktdaten','verstehen.','Chancen besser','erkennen.',
+    'hilft dir, Finanzbegriffe zu lernen und Märkte zu analysieren. Entdecke Lerninhalte und Analysewerkzeuge oder verbinde deine eigenen Datenanbieter im privaten Bereich. Welche Daten und Funktionen verfügbar sind, zeigen wir direkt an.',
     'Analyse starten','Hero Buddy fragen','Produkt entdecken',
     'Quellen und Datenstatus','Nachvollziehbare Modelle','Für Privatanleger und Professionals','Weltweite Märkte auf einer Plattform',
     'Impressum','AGB','Datenschutz','Preiskatalog','Dokumentation & Lizenzen','öffnet in einem neuen Tab',
@@ -27,8 +27,8 @@ const localized: Record<Locale, readonly string[]> = {
   ],
   en: [
     'Select language','Open navigation','Open price alerts','Open account menu','Log in',
-    'Understand','market data.','Spot opportunities','with confidence.',
-    'connects learning resources, transparent analysis methods and a private workspace for your own provider access. Data status and availability are shown separately.',
+    'Financial learning and analysis tools','Understand','market data.','Spot opportunities','with confidence.',
+    'helps you learn financial terms and analyse markets. Explore learning resources and analysis tools, or connect your own data providers in your private area. Available data and features are clearly labelled.',
     'Start analysis','Ask Hero Buddy','Explore product',
     'Sources and data status','Transparent models','For retail and professional investors','Global markets, one platform',
     'Legal notice','Terms','Privacy','Pricing','Documentation & licenses','opens in a new tab',
@@ -38,8 +38,8 @@ const localized: Record<Locale, readonly string[]> = {
   ],
   it: [
     'Seleziona lingua','Apri navigazione','Apri avvisi sui prezzi','Apri menu account','Accedi',
-    'Comprendere','i dati di mercato.','Riconoscere meglio','le opportunità.',
-    'collega risorse formative, metodi di analisi trasparenti e uno spazio privato per i tuoi accessi ai provider. Lo stato dei dati e la disponibilità sono indicati separatamente.',
+    'Formazione finanziaria e strumenti di analisi','Comprendere','i dati di mercato.','Riconoscere meglio','le opportunità.',
+    'ti aiuta a conoscere i termini finanziari e ad analizzare i mercati. Scopri risorse formative e strumenti di analisi oppure collega i tuoi fornitori di dati nell’area privata. Dati e funzioni disponibili sono indicati chiaramente.',
     'Avvia analisi','Chiedi a Hero Buddy','Scopri il prodotto',
     'Fonti e stato dei dati','Modelli trasparenti','Per investitori privati e professionisti','Mercati globali in un’unica piattaforma',
     'Note legali','Termini e condizioni','Privacy','Prezzi','Documentazione e licenze','si apre in una nuova scheda',
@@ -49,8 +49,8 @@ const localized: Record<Locale, readonly string[]> = {
   ],
   fr: [
     'Choisir la langue','Ouvrir la navigation','Ouvrir les alertes de prix','Ouvrir le menu du compte','Connexion',
-    'Comprendre','les marchés.','Mieux repérer','les opportunités.',
-    'relie des ressources pédagogiques, des méthodes d’analyse transparentes et un espace privé pour vos accès aux fournisseurs. Le statut des données et leur disponibilité sont indiqués séparément.',
+    'Apprentissage financier et outils d’analyse','Comprendre','les marchés.','Mieux repérer','les opportunités.',
+    'vous aide à comprendre les termes financiers et à analyser les marchés. Découvrez les ressources pédagogiques et les outils d’analyse, ou connectez vos fournisseurs de données dans votre espace privé. Les données et fonctions disponibles sont clairement indiquées.',
     'Lancer une analyse','Demander à Hero Buddy','Découvrir le produit',
     'Sources et statut des données','Modèles transparents','Pour particuliers et professionnels','Marchés mondiaux sur une plateforme',
     'Mentions légales','Conditions générales','Confidentialité','Tarifs','Documentation et licences','s’ouvre dans un nouvel onglet',
@@ -60,8 +60,8 @@ const localized: Record<Locale, readonly string[]> = {
   ],
   pt: [
     'Selecionar idioma','Abrir navegação','Abrir alertas de preços','Abrir menu da conta','Entrar',
-    'Compreenda','os mercados.','Identifique melhor','as oportunidades.',
-    'liga recursos educativos, métodos de análise transparentes e um espaço privado para os seus acessos a fornecedores. O estado dos dados e a disponibilidade são indicados separadamente.',
+    'Educação financeira e ferramentas de análise','Compreenda','os mercados.','Identifique melhor','as oportunidades.',
+    'ajuda a compreender termos financeiros e a analisar os mercados. Explore recursos educativos e ferramentas de análise, ou ligue os seus fornecedores de dados na área privada. Os dados e as funções disponíveis são claramente indicados.',
     'Iniciar análise','Perguntar ao Hero Buddy','Explorar produto',
     'Fontes e estado dos dados','Modelos transparentes','Para investidores individuais e profissionais','Mercados globais numa só plataforma',
     'Aviso legal','Termos e condições','Privacidade','Preços','Documentação e licenças','abre num novo separador',
@@ -71,8 +71,8 @@ const localized: Record<Locale, readonly string[]> = {
   ],
   es: [
     'Seleccionar idioma','Abrir navegación','Abrir alertas de precios','Abrir menú de cuenta','Iniciar sesión',
-    'Comprende','los mercados.','Detecta mejor','las oportunidades.',
-    'conecta recursos educativos, métodos de análisis transparentes y un espacio privado para tus accesos a proveedores. El estado de los datos y la disponibilidad se indican por separado.',
+    'Educación financiera y herramientas de análisis','Comprende','los mercados.','Detecta mejor','las oportunidades.',
+    'te ayuda a aprender términos financieros y analizar los mercados. Descubre recursos educativos y herramientas de análisis, o conecta tus proveedores de datos en tu espacio privado. Los datos y funciones disponibles se indican claramente.',
     'Iniciar análisis','Preguntar a Hero Buddy','Explorar el producto',
     'Fuentes y estado de los datos','Modelos transparentes','Para inversores particulares y profesionales','Mercados globales en una sola plataforma',
     'Aviso legal','Términos y condiciones','Privacidad','Precios','Documentación y licencias','se abre en una pestaña nueva',
