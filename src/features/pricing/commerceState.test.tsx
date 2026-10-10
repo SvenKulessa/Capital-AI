@@ -72,12 +72,20 @@ test('pricing initially exposes loading instead of active purchase controls', ()
   assert.equal(renderToStaticMarkup(<MonetizationModal isOpen={false} onClose={() => {}} />), '');
 });
 
-test('all landing locales expose real learning, pricing and Vocabulary routes with catalog prices', () => {
+test('all landing locales expose learning and pricing routes with the current offer', () => {
   for (const { code } of LANGUAGES) {
     const html = renderToStaticMarkup(<CommerceEntryContent locale={code} onNavigate={() => {}} />);
-    for (const path of ['/learning', '/pricing', '/vocabulary']) assert.ok(html.includes(`href="${path}"`));
+    for (const path of ['/learning', '/pricing']) assert.ok(html.includes(`href="${path}"`));
     assert.match(html, /7,00/);
-    assert.match(html, /19,00/);
+    assert.match(html, /25,00/);
     assert.match(html, /aria-labelledby="commerce-entry-title"/);
   }
+});
+
+
+test('home learning price uses the current 25 EUR offer, preserving legacy receipt catalog separately', () => {
+  const html = renderToStaticMarkup(<CommerceEntryContent locale="de" onNavigate={() => {}} />);
+  assert.match(html, /Learning Portal/);
+  assert.match(html, /25,00/);
+  assert.doesNotMatch(html, /19,00/);
 });

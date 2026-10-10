@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { createJaJaGlb } from './generate-jaja-3d.mjs';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
@@ -86,4 +87,61 @@ test('social brand icons are local and provenance-bound', () => {
   assert.match(provenance, /Marken/);
   assert.match(upstreamLicense, /CC0 1\.0 Universal/);
   assert.match(upstreamLicense, /No trademark or patent rights/);
+});
+
+test('JaJa avatar is available to Vite inside the production Docker build', () => {
+  const relativeAsset = 'public/assets/jaja-avatar-transparent.webp';
+  const avatarPath = resolve(root, relativeAsset);
+  assert.ok(existsSync(avatarPath), 'approved JaJa avatar is missing');
+  const avatar = readFileSync(avatarPath);
+  assert.equal(avatar.toString('ascii', 0, 4), 'RIFF');
+  assert.equal(avatar.toString('ascii', 8, 12), 'WEBP');
+
+  const dockerignore = readFileSync(resolve(root, '.dockerignore'), 'utf8');
+  const dockerfile = readFileSync(resolve(root, 'Dockerfile'), 'utf8');
+  const buddy = readFileSync(resolve(root, 'src/components/HeroBuddy.tsx'), 'utf8');
+  assert.ok(dockerignore.includes('!public/assets/'));
+  assert.ok(dockerignore.includes('!public/assets/jaja-avatar-transparent.webp'));
+  assert.ok(dockerfile.includes('COPY public/assets/jaja-avatar-transparent.webp ./public/assets/jaja-avatar-transparent.webp'));
+  assert.ok(buddy.includes('/assets/jaja-avatar-transparent.webp'));
+});
+
+test('first-party JaJa GLB has valid bounded glTF scene, limbs and materials', () => {
+  const glb = createJaJaGlb();
+  assert.equal(glb.toString('ascii', 0, 4), 'glTF');
+  assert.equal(glb.readUInt32LE(4), 2);
+  assert.equal(glb.readUInt32LE(8), glb.byteLength);
+  const jsonLength = glb.readUInt32LE(12);
+  assert.equal(glb.readUInt32LE(16), 0x4E4F534A);
+  const payload = JSON.parse(glb.toString('utf8', 20, 20 + jsonLength));
+  assert.equal(payload.asset.version, '2.0');
+  assert.ok(payload.nodes.some(node => node.name === 'JaJaHeadPivot'));
+  assert.ok(payload.nodes.some(node => node.name === 'JaJaArmRightPivot'));
+  assert.ok(payload.nodes.some(node => node.name === 'JaJaEarLeft'));
+  assert.ok(payload.meshes.length >= 8);
+  assert.ok(glb.byteLength < 100_000, '3D model must remain mobile-friendly');
+  assert.equal(glb.readUInt32LE(20 + jsonLength + 4), 0x004E4942);
+});
+
+test('3D avatar is lazy, accessible, and included in Docker production build', () => {
+  const hero = readFileSync(resolve(root, 'src/components/HeroBuddy.tsx'), 'utf8');
+  const viewer = readFileSync(resolve(root, 'src/components/JaJa3DAvatar.tsx'), 'utf8');
+  const dockerfile = readFileSync(resolve(root, 'Dockerfile'), 'utf8');
+  const ignore = readFileSync(resolve(root, '.dockerignore'), 'utf8');
+  const pkg = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8'));
+  assert.match(hero, /lazy\(\(\) => import\('\.\/JaJa3DAvatar'\)\)/);
+  assert.match(hero, /aria-describedby="jaja-3d-hint"/);
+  assert.match(hero, /ArrowLeft/);
+  assert.match(viewer, /webglcontextlost/);
+  assert.match(viewer, /visibilitychange/);
+  const boundedLoader = readFileSync(resolve(root, 'src/components/loadJaJaGLB.ts'), 'utf8');
+  assert.match(boundedLoader, /jaja-figure\.glb/);
+  assert.ok(viewer.includes('loadJaJaGLB(abort.signal)'), '3D renderer must load its model with abort support');
+  assert.ok(boundedLoader.includes('const MAX_GLB_BYTES = 256_000'), 'Bound GLB network inputs');
+  assert.ok(boundedLoader.includes("credentials: 'same-origin'"), 'Never fetch an external model');
+  assert.ok(!viewer.includes('GLTFLoader'), 'Do not bundle the oversized generic GLTF loader');
+  assert.ok(!boundedLoader.includes('GLTFLoader'), 'Use only the verified first-party GLB subset');
+  assert.ok(dockerfile.includes('COPY scripts/generate-jaja-3d.mjs'));
+  assert.ok(ignore.includes('!scripts/generate-jaja-3d.mjs'));
+  assert.ok(pkg.scripts.build.startsWith('node scripts/generate-jaja-3d.mjs'));
 });
