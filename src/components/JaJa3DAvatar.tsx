@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { loadJaJaGLB } from './loadJaJaGLB';
 import {
   Clock, Color, DirectionalLight, Group, HemisphereLight,
   PerspectiveCamera, Scene, SRGBColorSpace, WebGLRenderer,
@@ -6,7 +7,6 @@ import {
 
 type JaJa3DAvatarProps = { azimuth: number };
 type RenderState = 'loading' | 'ready' | 'failed';
-const MODEL_URL = '/assets/jaja-figure.glb';
 
 /**
  * Read-only, first-party WebGL avatar. Lazy loaded by HeroBuddy.
@@ -28,6 +28,8 @@ export default function JaJa3DAvatar({ azimuth }: JaJa3DAvatarProps) {
     let visible = true;
     let model: Group | null = null;
     let renderer: WebGLRenderer;
+    const abort = new AbortController();
+    let contextLost = false;
     const clock = new Clock();
     const scene = new Scene();
     const camera = new PerspectiveCamera(36, 1, .1, 30);
@@ -67,13 +69,14 @@ export default function JaJa3DAvatar({ azimuth }: JaJa3DAvatarProps) {
       frameId = requestAnimationFrame(animate);
     };
     const start = () => {
-      if (!disposed && visible && !document.hidden && model && frameId === null) {
+      if (!disposed && !contextLost && visible && !document.hidden && model && frameId === null) {
         frameId = requestAnimationFrame(animate);
       }
     };
     const onVisibilityChange = () => { if (document.hidden) stop(); else start(); };
     const onContextLost = (event: Event) => {
       event.preventDefault();
+      contextLost = true;
       stop();
       if (!disposed) setState('failed');
     };
@@ -106,13 +109,11 @@ export default function JaJa3DAvatar({ azimuth }: JaJa3DAvatarProps) {
     visibility?.observe(canvas);
     document.addEventListener('visibilitychange', onVisibilityChange);
 
-    // Keep the optional general-purpose GLTF loader out of the Three.js core chunk.
-    // The existing Vite 500 kB budget applies to each emitted JS chunk.
-    void import('three/addons/loaders/GLTFLoader.js')
-      .then(({ GLTFLoader }) => new GLTFLoader().loadAsync(MODEL_URL))
-      .then(gltf => {
+    // Decode only CAPITAL-AI's bounded, first-party, texture-free GLB.
+    // Avoid general-purpose loader dependencies in the initial 3D chunk.
+    void loadJaJaGLB(abort.signal).then(loaded => {
       if (disposed) return;
-      model = gltf.scene;
+      model = loaded;
       scene.add(model);
       resize();
       setState('ready');
@@ -121,6 +122,7 @@ export default function JaJa3DAvatar({ azimuth }: JaJa3DAvatarProps) {
 
     return () => {
       disposed = true;
+      abort.abort();
       stop();
       visibility?.disconnect();
       observer?.disconnect();
