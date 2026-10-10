@@ -74,9 +74,12 @@ COPY supabase/migrations/20261005010039_legal_policy_evidence_store_isolated.sql
 COPY supabase/proposals/provider_query_guard.sql ./supabase/proposals/provider_query_guard.sql
 COPY scripts/documentation-drift.mjs scripts/documentation-drift.test.mjs ./scripts/
 COPY scripts/domain-skills.test.mjs ./scripts/domain-skills.test.mjs
+COPY scripts/screener-blueprint-preview.test.mjs ./scripts/screener-blueprint-preview.test.mjs
+COPY scripts/cads-growth-quality.test.mjs ./scripts/cads-growth-quality.test.mjs
 COPY scripts/static-legal-routes.test.mjs ./scripts/static-legal-routes.test.mjs
 COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/social-tool-license-evidence.test.mjs scripts/validate-social-tool-license-evidence.mjs scripts/frontend-security.test.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
 COPY scripts/media ./scripts/media
+COPY scripts/growth/screener-learning-loop.test.mjs ./scripts/growth/screener-learning-loop.test.mjs
 COPY scripts/generate-chart-learning.tsx ./scripts/generate-chart-learning.tsx
 COPY scripts/social-provider-db-smoke.sh ./scripts/social-provider-db-smoke.sh
 COPY supabase/migrations/20261008113000_social_provider_store.sql ./supabase/migrations/20261008113000_social_provider_store.sql

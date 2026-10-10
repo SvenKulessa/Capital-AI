@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "SCREENER_BADGE_ASSET_SET@1",
+  "brandTokens": "public/branding/asset-pack/meta/social-render-tokens.json",
+  "renderAuthority": "src/platform/SocialMediaEngine/Branding/ScreenerBlueprintBadgeRenderer.mjs",
+  "generator": "scripts/media/render-screener-blueprint-badges.mjs",
+  "publicationAuthority": false,
+  "assets": [
+    {
+      "variant": "data",
+      "path": "public/branding/badges/screener-data-blueprint.svg",
+      "sha256": "8f301a30b57b24300cf4eed1da0e50c0a3898d77353dfb2f2e6e1d6eaf1fb1c6",
+      "width": 256,
+      "height": 256,
+      "license": "LicenseRef-CAPITAL-AI-SCREENER-BLUEPRINT-BADGE-PREVIEW-1.0",
+      "publishReady": false
+    },
+    {
+      "variant": "scoring",
+      "path": "public/branding/badges/screener-scoring-blueprint.svg",
+      "sha256": "902db5b5e4ef7ef5452710a6806ef8e7ce4f0c2429adff83050e455291edf536",
+      "width": 256,
+      "height": 256,
+      "license": "LicenseRef-CAPITAL-AI-SCREENER-BLUEPRINT-BADGE-PREVIEW-1.0",
+      "publishReady": false
+    },
+    {
+      "variant": "bundle",
+      "path": "public/branding/badges/screener-bundle-blueprint.svg",
+      "sha256": "858904ad1d55dd90d647b329f75700b32a383bdf61c45c856d3c038de9d6a385",
+      "width": 256,
+      "height": 256,
+      "license": "LicenseRef-CAPITAL-AI-SCREENER-BLUEPRINT-BADGE-PREVIEW-1.0",
+      "publishReady": false
+    }
+  ]
+}

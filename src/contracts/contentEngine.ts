@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { assessCadsContentCampaign } from '../../packages/benchmark-core/growth-quality.mjs';
 import {
   getGrowthCapabilityPolicy,
   type GrowthCapability,
@@ -70,6 +71,25 @@ export const ContentEnginePlanSchema = z.object({
   contractVersion: z.literal(CONTENT_ENGINE_CONTRACT_VERSION),
   campaign: ContentCampaignBriefSchema,
   modules: z.array(ContentEngineModulePlanSchema),
+  cadsQuality: z.object({
+    schemaVersion: z.literal('CAPITAL_AI_CADS_GROWTH_QUALITY@1'),
+    benchmarkEvidenceSchema: z.literal('CAPITAL_AI_BENCHMARK_EVIDENCE@1'),
+    profile: z.literal('CONTENT_ENGINE_DRAFT'),
+    technicalStatus: z.enum(['PASS','FAIL']),
+    checks: z.array(z.object({
+      code: z.string(),
+      status: z.enum(['PASS','FAIL']),
+    }).strict()),
+    editorialReview: z.literal('REVIEW_REQUIRED'),
+    actualAssetBytes: z.literal('NOT_PROVEN'),
+    providerRights: z.literal('NOT_PROVEN'),
+    productionApproval: z.literal(false),
+    securityApproval: z.literal(false),
+    licenseApproval: z.literal(false),
+    publicationApproval: z.literal(false),
+    customerPurchaseApproval: z.literal(false),
+  }).strict(),
+
   publication: z.object({
     adapter: z.literal('SOCIAL_MEDIA_ENGINE'),
     state: z.literal('INTEGRATION_PENDING'),
@@ -119,6 +139,11 @@ function moduleState(module: ContentEngineModuleId): ContentEngineModulePlan {
 
 export function planContentCampaign(rawBrief: unknown): ContentEnginePlan {
   const campaign = ContentCampaignBriefSchema.parse(rawBrief);
+  const cadsQuality = assessCadsContentCampaign(campaign);
+  if (cadsQuality.technicalStatus !== 'PASS') {
+    throw new Error('CADS_CONTENT_IDENTITY_REJECTED');
+  }
+
   const modules = new Set<ContentEngineModuleId>(['COPY']);
 
   if (campaign.sourceUrls.length > 0) modules.add('URL_CONTEXT');
@@ -137,6 +162,7 @@ export function planContentCampaign(rawBrief: unknown): ContentEnginePlan {
     contractVersion: CONTENT_ENGINE_CONTRACT_VERSION,
     campaign,
     modules: [...modules].map(moduleState),
+    cadsQuality,
     publication: {
       adapter: 'SOCIAL_MEDIA_ENGINE',
       state: 'INTEGRATION_PENDING',

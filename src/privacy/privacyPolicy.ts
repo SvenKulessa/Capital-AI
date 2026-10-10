@@ -26,6 +26,16 @@ export const PROCESSING_ACTIVITIES: ProcessingActivity[] = [
     technicalControls: ['HTTPS', 'Content Security Policy', 'kein Browserzugriff auf Server-Secrets', 'begrenzte HTTP-Anfragen'],
   },
   {
+    id: 'google-oauth', title: 'Optionale Google-Anmeldung über Supabase Auth', lifecycle: 'conditional',
+    purpose: 'Wenn ein Nutzer Google-Anmeldung auswählt: Identität prüfen, ein CAPITAL-AI-Konto zuordnen und eine Anwendungssitzung bereitstellen. Die Anmeldung verlangt im dokumentierten Flow keinen Zugriff auf Gmail- oder Google-Drive-Inhalte.',
+    dataCategories: ['Google-Konto-Kennung (Provider-Identität)', 'E-Mail-Adresse', 'Profilname und gegebenenfalls Profilbild, soweit von Google für die Anmeldung übermittelt', 'Anmelde- und Sitzungstoken während des Authentifizierungsvorgangs'],
+    legalBasis: 'Art. 6 Abs. 1 lit. b DSGVO für die vom Nutzer gewählte Anmeldung; Art. 6 Abs. 1 lit. f DSGVO für die Absicherung gegen unbefugte Kontozugriffe.',
+    recipients: ['Google als Identitätsanbieter', 'Supabase Auth als Identitäts- und Sitzungsdienst', 'Render als Anwendungsserver'],
+    transfer: 'Google, Supabase und Render können abhängig von ihren tatsächlichen Vertrags-, Hosting- und Subprozessor-Konfigurationen Daten außerhalb des EWR verarbeiten; Transfermechanismen sind gesondert zu prüfen.',
+    retention: 'Die Anwendungssitzung ist auf höchstens sieben Tage begrenzt. Zuordnungs- und Profildaten verbleiben grundsätzlich für die Dauer des CAPITAL-AI-Kontos und werden auf berechtigte Löschanfrage entfernt, soweit keine gesetzlichen Pflichten entgegenstehen. Providerprotokolle haben gesonderte, noch zu verifizierende Fristen.',
+    technicalControls: ['Google OAuth via Supabase Auth und PKCE S256', 'serverseitige Identitätsprüfung', 'HttpOnly-/Secure-/SameSite-Sitzungscookies', 'keine Ausgabe von Google- oder Supabase-Provider-Tokens im Browser'],
+  },
+  {
     id: 'supabase-account', title: 'Supabase-Anmeldung und Anwendungssitzung', lifecycle: 'active',
     purpose: 'Verifikation der Identität und Zugriff auf authentifizierte Funktionen.',
     dataCategories: ['Supabase-Benutzerkennung (auth.users.id)', 'E-Mail-Adresse und Profilname', 'Ausstellerkennung (issuer)', 'Sitzungsablauf und technisch notwendige Sitzungscookies', 'Anmeldeidentitäten bei Supabase Auth'],
