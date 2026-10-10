@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { LearningPurchase } from '../learning/LearningPurchase';
+import { CheckoutPaymentHelp } from './CheckoutPaymentHelp';
 import { BrandLogo } from '../../components/BrandLogo';
 import {
   PRICING_CATALOG,
@@ -535,6 +536,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
           </div>
         )}
 
+        <div className="mt-5"><CheckoutPaymentHelp /></div>
         <section aria-labelledby="commerce-questions" className="mt-5 rounded-2xl border border-slate-800 p-4 text-xs">
           <h3 id="commerce-questions" className="font-bold text-white">Vor deiner Auswahl</h3>
           <div className="mt-3 space-y-3 text-slate-300">

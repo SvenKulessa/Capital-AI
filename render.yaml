@@ -14,6 +14,11 @@ services:
     previews:
       generation: off
     envVars:
+      # Owner-approved persistent Learning Portal price; provider validates EUR 25 once.
+      - key: STRIPE_LEARNING_PORTAL_PRODUCT_ID
+        value: prod_VNTsrtlf2ZL8ja
+      - key: STRIPE_LEARNING_PORTAL_PRICE_ID
+        value: price_1UOqkoPKr4joNbEcRaagaZT4
       - key: NODE_ENV
         value: production
       - key: PORT

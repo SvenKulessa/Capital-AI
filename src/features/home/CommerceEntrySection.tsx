@@ -1,6 +1,7 @@
 import { useLocale } from '../../i18n/LocaleProvider';
 import type { Locale } from '../../i18n/messages';
-import { PRICING_CATALOG, VOCABULARY_PRICE, displayPriceEur } from '../../data/pricingCatalog';
+import { PRICING_CATALOG, displayPriceEur } from '../../data/pricingCatalog';
+import { VOCABULARY_OFFER } from '../../data/vocabularyOffer';
 
 export const COMMERCE_ENTRY_COPY: Record<Locale, readonly [string, string, string, string, string, string, string, string]> = {
   de: ['Wissen aufbauen. Werkzeuge vergleichen.', 'Entdecke die Lerninhalte und wähle anschließend den passenden Umfang deiner Analysewerkzeuge.', 'Lerninhalte entdecken', 'Finanzbegriffe, Methoden und Guides kennenlernen.', 'Lernportal öffnen', 'Analysewerkzeuge vergleichen', 'CADS-Prüffunktionen nach Tarif vergleichen. Providerdaten und KI-Modelle werden separat abgerechnet.', 'Tarife ansehen'],
@@ -37,7 +38,7 @@ export function CommerceEntryContent({ locale, onNavigate }: { locale: Locale; o
       </div>
       <p className="mt-4 text-sm text-slate-300">
         Starter · {displayPriceEur(PRICING_CATALOG.starter.monthly.amountCents)} € / {locale === 'de' ? 'Monat' : locale === 'en' ? 'month' : locale === 'fr' ? 'mois' : locale === 'it' ? 'mese' : locale === 'pt' ? 'mês' : 'mes'}
-        {' · '}<a href="/vocabulary" onClick={event => follow(event, '/vocabulary')} className="text-amber-200 underline underline-offset-4">Market Vocabulary · {displayPriceEur(VOCABULARY_PRICE.amountCents)} €</a>
+        {' · '}<a href="/learning" onClick={event => follow(event, '/learning')} className="text-amber-200 underline underline-offset-4">{VOCABULARY_OFFER.name} · {displayPriceEur(VOCABULARY_OFFER.amountCents)} €</a>
       </p>
     </section>
   );
