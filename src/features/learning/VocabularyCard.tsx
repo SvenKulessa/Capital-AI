@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Copy, Star, Check, BookOpen } from 'lucide-react';
-import type { VocabularyCategory, VocabularyTerm } from '../../data/vocabularyData';
+import { Copy, Star, Check, BookOpen, X } from 'lucide-react';
+import { vocabularySkillLevel, type VocabularyCategory, type VocabularyTerm } from '../../data/vocabularyData';
 
 // Category remains a written label; color reinforces rather than replaces it.
 export const VOCABULARY_CATEGORY_COLORS: Record<VocabularyCategory, { accent: string; background: string }> = {
@@ -17,8 +17,8 @@ export const VOCABULARY_CATEGORY_COLORS: Record<VocabularyCategory, { accent: st
   DELIVERY_GOVERNANCE: {accent:'#fdba74',background:'#2c1d11'},
   MOBILE_RUNTIME: {accent:'#bef264',background:'#1c2510'},
 };
-export function VocabularyCard({term,flashcard=false,initialExpanded=false,saved=false,pending=false,onFavorite,onSelectAssetSymbol}: {
- term:VocabularyTerm;flashcard?:boolean;initialExpanded?:boolean;saved?:boolean;pending?:boolean;onFavorite?:(id:string)=>void;onSelectAssetSymbol?:(symbol:string)=>void;
+export function VocabularyCard({term,flashcard=false,initialExpanded=false,saved=false,pending=false,onFavorite,onMissed,onSelectAssetSymbol}: {
+ term:VocabularyTerm;flashcard?:boolean;initialExpanded?:boolean;saved?:boolean;pending?:boolean;onFavorite?:(id:string)=>void;onMissed?:()=>void;onSelectAssetSymbol?:(symbol:string)=>void;
 }) {
  const [expanded,setExpanded]=useState(initialExpanded);
  const [copied,setCopied]=useState(false);
@@ -32,10 +32,15 @@ export function VocabularyCard({term,flashcard=false,initialExpanded=false,saved
    <div className="absolute inset-x-0 top-0 h-1" style={{backgroundColor:palette.accent}} aria-hidden="true" />
    <div className="flex items-start justify-between gap-3">
      <div className="min-w-0 space-y-2"><p className="text-xs font-semibold leading-5" style={{color:palette.accent}}>{term.categoryLabel}</p>
-       <span className="inline-block rounded-md border border-white/20 bg-black/20 px-2 py-1 text-xs text-slate-100">{term.level}</span></div>
-     {onFavorite&&<button type="button" disabled={pending} aria-pressed={saved} aria-label={`${term.term}: ${saved?'Favorit entfernen':'im Profil speichern'}`}
-       onClick={()=>onFavorite(term.id)} className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-white/20 text-amber-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200 disabled:opacity-50">
-       <Star className="h-5 w-5" fill={saved?'currentColor':'none'} /></button>}
+       <span className="inline-block rounded-md border border-white/20 bg-black/20 px-2 py-1 text-xs text-slate-100">{vocabularySkillLevel(term)}</span></div>
+     <div className="flex shrink-0 items-center gap-2">
+       {onFavorite&&<button type="button" disabled={pending} aria-pressed={saved} aria-label={`${term.term}: ${saved?'Favorit entfernen':'im Profil speichern'}`}
+         onClick={()=>onFavorite(term.id)} className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-white/20 text-amber-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200 disabled:opacity-50">
+         <Star className="h-5 w-5" fill={saved?'currentColor':'none'} /></button>}
+       {flashcard && onMissed && <button type="button" aria-label={`${term.term}: Noch üben und bald wiederholen`} title="Noch üben"
+         onClick={onMissed} className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-rose-400/50 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-300">
+         <X className="h-5 w-5" /></button>}
+     </div>
    </div>
    <h3 className="mt-4 break-words text-xl font-bold leading-7 text-white">{term.term}</h3>
    {term.abbreviation&&<p className="mt-1 break-words text-sm leading-6" style={{color:palette.accent}}>{term.abbreviation}</p>}
