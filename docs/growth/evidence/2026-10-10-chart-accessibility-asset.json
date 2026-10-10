@@ -10,7 +10,26 @@
     "marketData": "NONE",
     "sha256": "86da0e9a582ad6d10a86e34aedf0caca076136b1b79d5a0708f4a83aa36e196a",
     "legalEngineReceipt": null,
-    "visualQa": "NOT_PROVEN_ON_GITHUB"
+    "visualQa": "LOCAL_RENDER_INSPECTED_NOT_PRODUCTION_APPROVED",
+    "renderEvidence": {
+      "date": "2026-10-10",
+      "sourceSvgSha256": "86da0e9a582ad6d10a86e34aedf0caca076136b1b79d5a0708f4a83aa36e196a",
+      "pngSha256": "de726afe098e5e363d4ce6e9d2c2445ca05322e44516e6081ff505b39e2cd220",
+      "dimensions": {
+        "width": 1200,
+        "height": 630
+      },
+      "renderer": "CairoSVG 2.8.2",
+      "pngCommitted": false,
+      "visualInspection": "PASS_LOCAL_LEGIBILITY_AND_SAFE_AREA",
+      "contrastRatios": {
+        "titleOnPanel": 14.32,
+        "bodyOnCard": 7.6
+      },
+      "a11yScreenreader": "NOT_PROVEN",
+      "commercialFontRights": "NOT_PROVEN",
+      "legalEngineReceipt": null
+    }
   },
   "publisher": {
     "publishReady": false,
