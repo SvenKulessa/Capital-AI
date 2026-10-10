@@ -23,18 +23,18 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
-      - name: Checkout audited PR code at exact SHA
+      - name: Checkout current PR commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: 5f7fc38942968d39231063ba5774c9c445f00445
+          ref: ${{ github.sha }}
           persist-credentials: false
 
-      - name: Verify audited commit
+      - name: Verify checked-out commit
         shell: bash
         run: |
           set -euo pipefail
           actual="$(git rev-parse HEAD)"
-          expected="5f7fc38942968d39231063ba5774c9c445f00445"
+          expected="$GITHUB_SHA"
           echo "Tested SHA: $actual"
           test "$actual" = "$expected"
 
@@ -76,7 +76,7 @@ jobs:
           {
             echo '## PR #365 — manually triggered checks'
             echo ''
-            echo '- Tested source SHA: `5f7fc38942968d39231063ba5774c9c445f00445`'
+            echo '- Tested source SHA: $GITHUB_SHA'
             echo "- npm ci: $INSTALL"
             echo "- npm run lint: $LINT"
             echo "- npm run test:learning-portal: $LEARNING"
