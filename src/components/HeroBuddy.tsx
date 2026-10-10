@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { EyeOff, Move, Settings, X } from 'lucide-react';
 
 type HeroBuddyProps = {
@@ -217,7 +217,7 @@ export function HeroBuddy(props: HeroBuddyProps) {
     window.localStorage.setItem(HERO_BUDDY_POSITION_KEY, next);
   };
 
-  const beginFloatingDrag = (event: PointerEvent<HTMLButtonElement>) => {
+  const beginFloatingDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
     if (event.button !== 0) return;
     const bounds = floatingRoot.current?.getBoundingClientRect();
     if (!bounds) return;
@@ -226,7 +226,7 @@ export function HeroBuddy(props: HeroBuddyProps) {
     setFloatingXY(latestFloatingXY.current);
     event.currentTarget.setPointerCapture(event.pointerId);
   };
-  const moveFloatingDrag = (event: PointerEvent<HTMLButtonElement>) => {
+  const moveFloatingDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
     const state = floatingDrag.current;
     if (!state) return;
     const dx = event.clientX-state.startX, dy=event.clientY-state.startY;
@@ -237,7 +237,7 @@ export function HeroBuddy(props: HeroBuddyProps) {
     latestFloatingXY.current={x,y};
     setFloatingXY(latestFloatingXY.current);
   };
-  const endFloatingDrag = (event: PointerEvent<HTMLButtonElement>) => {
+  const endFloatingDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
     if (!floatingDrag.current) return;
     draggedOnRelease.current = floatingDrag.current.moved;
     if (floatingDrag.current.moved && latestFloatingXY.current) {
