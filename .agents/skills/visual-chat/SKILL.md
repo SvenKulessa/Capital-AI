@@ -20,6 +20,14 @@ description: "Use for clear, evidence-based visual communication in chat across 
 9. Retain `AGENTS.md` status format: two separate `text` code snippets for completed / next steps, and `👋⚙️` on manual Owner actions.
 10. Ask only when a decisive input is missing or a critical irreversible design choice requires authorization; present a safe default otherwise.
 
+## Embedded CAPITAL-AI design previews and verified UI QA
+
+- For new or modified UI designs, **show a directly rendered preview in the chat** whenever the current runtime supports it: inline SVG, embedded PNG, or rendered HTML/CSS/React preview. Include source files/code for implementation, but avoid substituting only code snippets or download links when inline rendering is available.
+- Use genuinely interactive previews for navigation or UI states only when supported by the chat environment. Otherwise explicitly label screenshots, static mockups or diagrams as non-interactive; never claim an HTML snippet was executed if it was not.
+- Keep previews responsive and accessible where possible: meaningful text alternatives, sufficient contrast, clear labeling, and layouts that remain legible on mobile. Never disclose credentials, private records or restricted provider data in previews.
+- **Separately prove implementation QA:** when frontend code is changed, record the exact commit/PR, browser or testing tool, tested mobile/tablet/desktop viewport(s), keyboard/accessible navigation scope, and actual pass/fail observations. If live browser, responsive or screen-reader QA was not run, mark it `NOT_PROVEN`. A generated or chat-rendered mockup is not production/browser evidence.
+- These are non-authorizing presentation and evidence guidelines under `AGENTS.md`: no extra required CI checks, admissions, mandatory reviews, merge rights or promises of renderer availability.
+
 ## Domain usage
 
 | Domain | High-value visual patterns |

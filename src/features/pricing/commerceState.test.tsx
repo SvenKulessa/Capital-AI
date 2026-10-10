@@ -68,7 +68,7 @@ test('pricing initially exposes loading instead of active purchase controls', ()
   assert.match(html, /Gebühren sind nicht im Abo enthalten/);
   assert.match(html, /aria-pressed="true"/);
   assert.doesNotMatch(html, /Multi-Pillar Strategy|Business Model/);
-  assert.equal((html.match(/disabled="" aria-busy="false"/g) || []).length, 3);
+  assert.equal((html.match(/disabled="" aria-busy="false"/g) || []).length, 4);
   assert.equal(renderToStaticMarkup(<MonetizationModal isOpen={false} onClose={() => {}} />), '');
 });
 
@@ -82,6 +82,13 @@ test('all landing locales expose learning and pricing routes with the current of
   }
 });
 
+test('trial advertises monthly billing with a direct Stripe action and no code input',()=>{
+ const html=renderToStaticMarkup(<MonetizationModal isOpen onClose={()=>{}} />);
+ assert.match(html,/ausschließlich im Monatsabo/);
+ assert.match(html,/3 Tage testen · weiter zu Stripe/);
+ assert.match(html,/Kein Coupon-Code erforderlich/);
+ assert.doesNotMatch(html,/Enterprise-Trial-Code|Trial-Code einsetzen/);
+});
 
 test('home learning price uses the current 25 EUR offer, preserving legacy receipt catalog separately', () => {
   const html = renderToStaticMarkup(<CommerceEntryContent locale="de" onNavigate={() => {}} />);

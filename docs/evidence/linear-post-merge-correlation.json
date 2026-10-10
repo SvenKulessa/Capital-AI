@@ -1,15 +1,14 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "104719e758d57fb0de06b311fc6d86179e81f05d",
-  "mergedPr": 340,
-  "targetPr": 344,
-  "targetBranch": "capital-ai-product/learning-portal-access-20261009",
-  "targetHeadSha": "1bdf95315208c1a3e34daa956c84cb5a9af408b7",
+  "mainSha": "d80355f296b429317ff65d7a1cdb9a0e0ca82ae7",
+  "mergedPr": 351,
+  "targetPr": 352,
+  "targetBranch": "product/monthly-enterprise-trial-checkout",
+  "targetHeadSha": "181b50e61323873baf3798303161e3be5ea87c04",
   "exactOverlap": [
-    ".dockerignore",
-    "Dockerfile",
-    "package.json",
-    "src/features/pricing/MonetizationModal.tsx"
+    "server/enterprise-trial.test.mjs",
+    "src/features/pricing/MonetizationModal.tsx",
+    "src/features/pricing/commerceState.test.tsx"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,

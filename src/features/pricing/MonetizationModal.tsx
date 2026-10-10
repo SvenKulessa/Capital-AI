@@ -75,7 +75,6 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
   const checkoutRequest = useRef<AbortController | null>(null);
   const authenticated = commerce.authenticated;
   const subscriptionCheckoutEnabled = commerce.checkout === 'ready';
-  const [trialCode,setTrialCode] = useState('');
   const [purchaseMessage, setPurchaseMessage] = useState('');
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -135,7 +134,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
     };
   }, [isOpen, statusAttempt]);
 
-  const startSubscriptionCheckout = async (tier: 'starter' | 'pro' | 'enterprise') => {
+  const startSubscriptionCheckout = async (tier: 'starter' | 'pro' | 'enterprise', trial = false) => {
     if (checkoutRequest.current) return;
     setPurchaseMessage('');
     if (authenticated === false) {
@@ -162,7 +161,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
           Accept: 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ tier, cycle: billingCycle, ...(tier === 'enterprise' && trialCode.trim() ? { promotion: trialCode.trim() } : {}) }),
+        body: JSON.stringify({ tier, cycle: trial ? 'monthly' : billingCycle, ...(trial ? { promotion: 'ENTERPRISE3' } : {}) }),
         signal: AbortSignal.any([controller.signal, AbortSignal.timeout(12000)]),
       });
       const payload = await response.json();
@@ -173,11 +172,11 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
         return;
       }
       if (payload?.error === 'trial_already_claimed') {
-        setPurchaseMessage('Die Enterprise-Testphase ist für dieses Konto bereits reserviert oder wurde schon genutzt.');
+        setPurchaseMessage('Die Testphase wurde bereits genutzt oder der reservierte Checkout kann nicht fortgesetzt werden. Bitte kontaktiere den Support; es wurde kein neues Abo erstellt.');
         return;
       }
-      if (response.status === 400 && tier === 'enterprise' && trialCode.trim()) {
-        setPurchaseMessage('Dieser Trial-Code ist ungültig. Verwende ENTERPRISE3 oder entferne den Code.');
+      if (response.status === 400 && trial) {
+        setPurchaseMessage('Die Testphase ist ausschließlich für Enterprise mit monatlicher Abrechnung verfügbar.');
         return;
       }
       if (!response.ok || typeof payload?.url !== 'string') {
@@ -560,12 +559,9 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
 
         <section className="mt-4 space-y-3 rounded-2xl border border-amber-400/30 bg-amber-400/5 p-5" aria-label="Enterprise Trial">
           <h3 className="text-lg font-bold text-amber-200">Drei Tage vorausdenken. Enterprise und Learning Portal kostenlos entdecken.</h3>
-          <p className="text-sm text-slate-300">Trial-Code ENTERPRISE3 · einmal pro Konto. Danach {billingCycle === 'monthly' ? '109,00 € monatlich' : '1.280,00 € jährlich'}. Vor Ablauf kündigen, um Folgekosten zu vermeiden. Learning Portal ist während der drei Tage inklusive; danach separat für 25,00 € einmalig erhältlich.</p>
-          <label className="block text-sm text-slate-200">Enterprise-Trial-Code
-            <input value={trialCode} onChange={event=>setTrialCode(event.target.value)} placeholder="ENTERPRISE3" maxLength={32} className="mt-2 block min-h-11 w-full rounded-lg border border-amber-400/30 bg-slate-950 p-3" />
-          </label>
-          <button type="button" disabled={pendingTier!==null} onClick={()=>{setTrialCode('ENTERPRISE3');}} className="min-h-11 rounded-lg border border-amber-400 px-4 text-sm text-amber-200">Trial-Code einsetzen · danach Enterprise auswählen</button>
-          <p className="text-xs text-slate-400">Weitere gültige Rabattcodes können im regulären Stripe-Checkout eingegeben werden. Kein zusätzlicher Rechnungsrabatt während der Trial.</p>
+          <p className="text-sm text-slate-300">Einmal pro Konto, ausschließlich im Monatsabo. Danach 109,00 € monatlich. Vor Ablauf kündigen, um Folgekosten zu vermeiden. Learning Portal ist während der drei Tage inklusive; danach separat für 25,00 € einmalig erhältlich.</p>
+          <button type="button" disabled={pendingTier!==null || authenticated===null || !subscriptionCheckoutEnabled} aria-busy={pendingTier==='enterprise'} onClick={()=>{setBillingCycle('monthly');void startSubscriptionCheckout('enterprise',true);}} className="min-h-11 rounded-lg border border-amber-400 px-4 text-sm text-amber-200">{pendingTier==='enterprise' ? 'Stripe-Checkout wird geöffnet …' : '3 Tage testen · weiter zu Stripe'}</button>
+          <p className="text-xs text-slate-400">Kein Coupon-Code erforderlich. Die drei kostenlosen Tage werden im Stripe-Checkout hinterlegt. Gültige Rabattcodes können bei regulären Käufen im Stripe-Checkout eingegeben werden; während der Testphase ist kein zusätzlicher Rechnungsrabatt vorgesehen.</p>
         </section>
         {purchaseMessage && (
           <div role="status" className="mt-4 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-xs text-amber-100">
