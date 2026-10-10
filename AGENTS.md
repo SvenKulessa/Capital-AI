@@ -15,13 +15,24 @@ Bei einem Widerspruch gilt ausschließlich diese Datei. Zusätzliche Regeln dür
 ## Entwicklungsfluss
 
 1. Auf einem Feature-Branch entwickeln.
-2. Pull Request jederzeit erstellen oder aktualisieren.
+2. Pull Request erst mit einer vollständigen, konkret wirksamen Änderung gemäß „PRs nur für umsetzbare Änderungen“ erstellen; bestehende PRs im selben Scope fertigstellen.
 3. GitHub Required Checks laufen automatisch.
 4. Fehlende oder fehlgeschlagene Required Checks blockieren den Merge, aber nicht Entwicklung oder PR-Erstellung.
 5. Merge regulär ausschließlich durch den Human Repository Owner.
 6. Ein Agent darf nur nach ausdrücklicher Chat-Freigabe für den konkret bezeichneten PR mergen.
 7. Nur ein Merge nach `main` darf den normalen Production-Pfad auslösen.
 8. Production darf automatisch deployen, wenn die für `main` definierten technischen Checks erfolgreich sind.
+
+## PRs nur für umsetzbare Änderungen
+
+Für alle Domains gilt: Ein neuer PR muss eine tatsächliche, vollständige Änderung enthalten, die nach erfolgreichen Checks und autorisiertem Merge über den bestehenden Main-/Deployment-Pfad wirksam werden kann.
+
+- **Vor dem PR umsetzen:** Den beauftragten Scope fertig implementieren und angemessen prüfen. Zielverhalten, konkrete Änderung und Weg zur Aktivierung müssen klar sein. Ein Konzept, Platzhalter, deaktivierter Adapter oder Status-/Evidence-Bericht allein erfüllt keinen Implementierungsauftrag.
+- **Bei Voraussetzungen keinen PR eröffnen:** Fehlen notwendige Zugänge, Providerrechte, Konfigurationen, externe Änderungen, fachliche Vorgaben oder Owner-Entscheidungen für die beauftragte Wirkung, zunächst diese Voraussetzungen klären. Autorisierte Vorarbeiten auf dem Branch fortführen und den konkreten Blocker sowie den kleinsten nächsten Schritt im Chat nennen. Keine Draft-/Vorbereitungs-PRs als Ersatz für eine blockierte Umsetzung.
+- **Kein versteckter Folgeauftrag:** Kein PR, dessen angekündigte Wirkung erst durch einen weiteren Implementierungs-PR, späteres Enablement oder noch ungeklärte externe Maßnahmen entsteht. Einen kleineren, unabhängig wirksamen Teilumfang nur dann als PR ausliefern, wenn der Owner diesen Teilumfang ausdrücklich beauftragt hat.
+- **Direkt wirksame Repository-Änderungen:** Ausdrücklich beauftragte Richtlinien-, Dokumentations-, Test- oder CI-Korrekturen sind zulässig, wenn ihre eigene Wirkung vollständig durch den Merge entsteht. Sie dürfen nicht als Nachweis einer noch fehlenden Produktfunktion dargestellt werden.
+- **CI bleibt im PR:** Ausstehende automatische PR-Checks und die reguläre Merge-Entscheidung sind keine fehlenden Umsetzungsvoraussetzungen. GitHub Actions weiterhin auf dem PR ausführen; keine neuen lokalen Preflight-Gates oder Required Checks einführen. Fehlgeschlagene Checks im bestehenden PR konservativ beheben.
+- **Bis zum Ergebnis fortführen:** Einen bestehenden PR im autorisierten Scope fertigstellen statt zusätzliche Planungs- oder Evidence-PRs anzulegen. PR-Erstellung, grüne Tests und Merge sind getrennte Zustände. Eine Live-Umsetzung erst nach geprüftem Deployment und nachvollziehbarem Runtime-/Funktionsnachweis als erledigt melden; bei reinen Repository-Anweisungen deren Wirksamkeit ab Merge angeben. Diese Regel erteilt keine neue Merge-, Deploy-, Kosten- oder Secret-Berechtigung.
 
 ## Required Checks
 
@@ -39,7 +50,7 @@ Ein erfolgreicher Check ist Evidence für seinen technischen Scope. Er erzeugt k
 
 Es gibt keinen vorgelagerten Preflight und keinen separaten Branch-Precheck.
 
-Alle autoritativen Prüfungen laufen kostenlos in GitHub Actions auf dem Pull Request. Entwicklung und PR-Erstellung werden nicht durch lokale oder vorgelagerte Preflight-Schichten blockiert.
+Alle autoritativen Prüfungen laufen kostenlos in GitHub Actions auf dem Pull Request. Entwicklung wird nicht durch lokale oder vorgelagerte Preflight-Schichten blockiert; für den inhaltlichen Zeitpunkt der PR-Erstellung gilt „PRs nur für umsetzbare Änderungen“.
 
 ## Gesetzliche und regulatorische Grundlage
 
