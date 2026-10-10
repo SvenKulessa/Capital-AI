@@ -26,6 +26,23 @@ Die ersten zwei Werte sind deklarierte Ziel-Ressourcen; ihre Existenz muss durch
 
 **Keine Keys erstellen, keine Tokens über Chat/Issue/PR senden.**
 
+## Schneller Owner-Bootstrap ohne Google-Schlüssel
+
+Der neue Repository-Helper ist standardmäßig lesend und legt niemals Schlüssel an. Er prüft Provider-Issuer, exact repository/main condition, Service Account und eingeschaltete Google-APIs:
+
+```bash
+gcloud config set project aifinancial-500208
+bash scripts/ga4-keyless-github-setup.sh audit
+```
+
+Zum einmaligen Eintragen der drei **nicht geheimen** GitHub Actions Variables: (nur bei installiertem, authentifiziertem `gh` CLI und passenden GitHub-Repository-Adminrechten)
+
+```bash
+bash scripts/ga4-keyless-github-setup.sh configure
+```
+
+`configure` fragt eine numerische GA4-Property-ID und eine genaue Freigabephrase ab; es ändert nur die drei Repository-Variablen, nie Google-IAM und nie Render-Environment. Falls `gh` in Cloud Shell fehlt, dieselben Werte manuell unter GitHub Repository Settings eintragen. Die Provider-Bindung und GA4-Property-Viewer-Zuweisung müssen weiterhin live durch Google bestätigt werden.
+
 ## Read-only Cloud-Shell-Vorprüfung
 
 ```bash
