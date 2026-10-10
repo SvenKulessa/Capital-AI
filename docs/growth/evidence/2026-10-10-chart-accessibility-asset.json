@@ -3,7 +3,7 @@
   "usageMode": "COMMERCIAL",
   "status": "DRAFT",
   "asset": {
-    "path": "docs/growth/drafts/assets/chart-accessibility-20261010.svg",
+    "path": "public/learning/editorial/chart-accessibility-20261010.svg",
     "generator": "original deterministic SVG",
     "externalMedia": [],
     "embeddedFonts": [],
@@ -30,7 +30,9 @@
       "commercialFontRights": "NOT_PROVEN",
       "legalEngineReceipt": null
     },
-    "visibility": "PRIVATE_DRAFT_NOT_PUBLIC_RUNTIME"
+    "visibility": "PUBLIC_PATH_PRESENT_ON_BRANCH_REMOVAL_BLOCKED",
+    "draftCopyPath": "docs/growth/drafts/assets/chart-accessibility-20261010.svg",
+    "publicExposurePendingRemoval": true
   },
   "publisher": {
     "publishReady": false,
