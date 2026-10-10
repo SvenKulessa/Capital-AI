@@ -135,7 +135,12 @@ test('3D avatar is lazy, accessible, and included in Docker production build', (
   assert.match(viewer, /webglcontextlost/);
   assert.match(viewer, /visibilitychange/);
   assert.match(viewer, /jaja-figure\.glb/);
-  assert.ok(viewer.includes("import('three/addons/loaders/GLTFLoader.js')"), 'Keep GLTFLoader in a separate lazy chunk');
+  const boundedLoader = readFileSync(resolve(root, 'src/components/loadJaJaGLB.ts'), 'utf8');
+  assert.ok(viewer.includes('loadJaJaGLB(abort.signal)'), '3D renderer must load its model with abort support');
+  assert.ok(boundedLoader.includes('const MAX_GLB_BYTES = 256_000'), 'Bound GLB network inputs');
+  assert.ok(boundedLoader.includes("credentials: 'same-origin'"), 'Never fetch an external model');
+  assert.ok(!viewer.includes('GLTFLoader'), 'Do not bundle the oversized generic GLTF loader');
+  assert.ok(!boundedLoader.includes('GLTFLoader'), 'Use only the verified first-party GLB subset');
   assert.ok(dockerfile.includes('COPY scripts/generate-jaja-3d.mjs'));
   assert.ok(ignore.includes('!scripts/generate-jaja-3d.mjs'));
   assert.ok(pkg.scripts.build.startsWith('node scripts/generate-jaja-3d.mjs'));
