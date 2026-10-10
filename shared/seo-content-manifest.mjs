@@ -71,6 +71,8 @@ function contentEntry({
 }
 
 const staticEntries = [
+  contentEntry({ path: '/blog', slug: 'blog', title: 'Wissen & Lernen | CAPITAL AI', description: 'Öffentliche redaktionelle Beiträge zu Finanzwissen, Datenqualität und zugänglicher Marktanalyse.', contentType: 'blog', domain: 'GROWTH', structuredDataType: 'WebPage', socialEligible: false, aiSearchEligible: true, sourceRefs: ['shared/blog-articles.mjs'] }),
+  contentEntry({ path: '/blog/barrierefreie-finanzcharts', slug: 'barrierefreie-finanzcharts', title: 'Barrierefreie Finanzcharts: Vier Informationswege | CAPITAL AI', description: 'Wie Textalternativen, nachvollziehbare Datenherkunft und Tastaturbedienung Finanzcharts verständlicher machen.', contentType: 'article', domain: 'GROWTH', structuredDataType: 'BlogPosting', socialEligible: false, aiSearchEligible: true, sourceRefs: ['shared/blog-articles.mjs'] }),
   contentEntry({
     path: '/',
     slug: 'home',
