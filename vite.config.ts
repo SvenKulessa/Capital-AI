@@ -130,7 +130,13 @@ export default defineConfig(() => {
       rolldownOptions: {
         output: {
           codeSplitting: {
-            groups: [{ name: 'i18n-landing-copy', test: /[/\\]src[/\\]i18n[/\\]landingSectionCopy\.ts$/ }],
+            groups: [
+              { name: 'i18n-landing-copy', test: /[/\\]src[/\\]i18n[/\\]landingSectionCopy\.ts$/ },
+              // Three.js is a large but self-contained, lazy 3D dependency.
+              // Keep it apart from the JaJa UI/GLB parser; the 500 kB budget
+              // and emitted import-cycle guard still apply to every chunk.
+              { name: 'jaja-three-vendor', test: /[/\\]node_modules[/\\]three[/\\]/ },
+            ],
           },
         },
       },
