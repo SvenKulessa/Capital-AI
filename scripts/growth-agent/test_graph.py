@@ -4,6 +4,8 @@ from pathlib import Path
 import tempfile
 import sys
 import unittest
+from unittest.mock import patch
+from types import SimpleNamespace
 
 spec = importlib.util.spec_from_file_location("capital_growth_graph", Path(__file__).with_name("graph.py"))
 graph = importlib.util.module_from_spec(spec)
@@ -34,6 +36,25 @@ class GrowthGraphTests(unittest.TestCase):
     def test_missing_sources_fail_to_not_proven(self):
         with tempfile.TemporaryDirectory() as root:
             self.assertTrue(all(f["status"] == "NOT_PROVEN" for f in graph.seo_agent({"repo_root": root})["findings"]))
+
+    def test_google_reads_reject_malformed_or_failed_worker_results(self):
+        for output in ["null", "[]", '{"result":null}', "bad json",
+                       '{"result":{"isError":true,"secret":"sentinel-private"}}',
+                       '{"result":{"isError":false,"structuredContent":null}}']:
+            with self.subTest(output=output), patch.object(graph.subprocess, "run", return_value=SimpleNamespace(returncode=0, stdout=output)):
+                findings = graph.google_agent({"repo_root": "/tmp", "google_reads": True})["findings"]
+                self.assertEqual(len(findings), 5)
+                self.assertNotIn("sentinel-private", json.dumps(findings))
+                self.assertEqual(findings[1]["status"], "NOT_PROVEN")
+
+    def test_google_reads_require_verified_stream_domain_and_redact_payloads(self):
+        for bound in [False, True]:
+            payload = {"result": {"isError": False, "structuredContent": {"streams": [{"associatedDomainVerified": bound}], "secret": "sentinel-private"}}}
+            with self.subTest(bound=bound), patch.object(graph.subprocess, "run", return_value=SimpleNamespace(returncode=0, stdout=json.dumps(payload))):
+                findings = graph.google_agent({"repo_root": "/tmp", "google_reads": True})["findings"]
+                self.assertEqual(findings[1]["status"], "VERIFIED" if bound else "NOT_PROVEN")
+                self.assertTrue(all(item["status"] == "VERIFIED" for index, item in enumerate(findings) if index != 1))
+                self.assertNotIn("sentinel-private", json.dumps(findings))
 
 if __name__ == "__main__":
     unittest.main()

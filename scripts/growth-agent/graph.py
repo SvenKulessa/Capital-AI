@@ -69,10 +69,18 @@ def google_agent(state: GrowthState) -> dict:
             if result.returncode != 0 or len(result.stdout) > 1_100_000:
                 raise ValueError("worker unavailable")
             response = json.loads(result.stdout.strip())
-            success = response.get("result", {}).get("isError") is False
+            if not isinstance(response, dict) or not isinstance(response.get("result"), dict):
+                raise ValueError("invalid worker response")
+            payload = response["result"]
+            success = payload.get("isError") is False
             detail = tool + ": provider read succeeded." if success else tool + ": provider read unavailable; inspect trusted-worker identity and permissions."
             if success and tool == "ga4_list_data_streams":
-                streams = response["result"]["structuredContent"].get("streams", [])
+                structured = payload.get("structuredContent")
+                if not isinstance(structured, dict) or not isinstance(structured.get("streams"), list):
+                    raise ValueError("invalid stream response")
+                streams = structured["streams"]
+                if not all(isinstance(item, dict) for item in streams):
+                    raise ValueError("invalid stream entries")
                 bound = any(item.get("associatedDomainVerified") is True for item in streams)
                 detail = "GA4 HTTPS capital-ai.online stream association " + ("verified." if bound else "NOT_PROVEN.")
                 success = bound
