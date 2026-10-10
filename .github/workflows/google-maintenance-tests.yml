@@ -1,0 +1,28 @@
+name: Google Maintenance and Local Growth Graph
+on:
+  pull_request:
+    paths:
+      - '.mcp.json'
+      - 'server/google-maintenance-api*'
+      - 'scripts/google-maintenance-mcp.mjs'
+      - 'scripts/growth-agent/**'
+      - '.github/workflows/google-maintenance-tests.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      LANGSMITH_TRACING: 'false'
+      LANGCHAIN_TRACING_V2: 'false'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Test Google REST and MCP boundaries without provider credentials
+        run: node --test server/google-maintenance-api.test.mjs
+      - name: Install pinned local graph dependencies
+        run: python3 -m pip install --disable-pip-version-check -r scripts/growth-agent/requirements.lock
+      - name: Test real LangGraph join and zero-paid-provider mode
+        run: python3 scripts/growth-agent/test_graph.py
+      - name: Run source-only graph without Google or model calls
+        run: python3 scripts/growth-agent/graph.py

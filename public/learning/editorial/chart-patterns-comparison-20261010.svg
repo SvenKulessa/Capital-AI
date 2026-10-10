@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+<title id="title">Chartmuster verstehen: Bull Flag und aufsteigendes Dreieck</title>
+<desc id="desc">Zwei synthetische Kursverläufe. Links folgt auf einen starken Anstieg eine leicht fallende Konsolidierung. Rechts treffen höhere Tiefs auf einen horizontalen Widerstand. Beide Grafiken sind Lernschemata ohne reale Kurse oder Handelssignale.</desc>
+<rect width="1200" height="630" fill="#0B1220"/>
+<rect x="30" y="28" width="1140" height="574" rx="24" fill="#111F34" stroke="#28415B" stroke-width="2"/>
+<text x="62" y="78" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#6DE3D1" font-weight="700">CAPITAL AI  /  LEARNING PORTAL</text>
+<text x="62" y="126" font-family="DejaVu Sans, sans-serif" font-size="35" fill="#F2F7FF" font-weight="700">Chartmuster richtig einordnen</text>
+<text x="62" y="158" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#B9C8DA">Geometrie erkennen · Bestätigung abwarten · Fehlsignale prüfen</text>
+<rect x="62" y="189" width="519" height="307" rx="18" fill="#152940" stroke="#35516C"/>
+<rect x="619" y="189" width="519" height="307" rx="18" fill="#152940" stroke="#35516C"/>
+<text x="85" y="227" font-family="DejaVu Sans, sans-serif" font-size="24" fill="#F2F7FF" font-weight="700">01  Bull Flag</text>
+<text x="642" y="227" font-family="DejaVu Sans, sans-serif" font-size="24" fill="#F2F7FF" font-weight="700">02  Aufsteigendes Dreieck</text>
+<g stroke="#30455C" stroke-width="1"><path d="M88 270H553M88 325H553M88 380H553M88 435H553M645 270H1110M645 325H1110M645 380H1110M645 435H1110"/></g>
+<path d="M100 446L133 430L167 395L200 325L234 265L262 282L292 297L324 280L353 305L383 292L414 318L443 306L474 328L510 263L547 239" fill="none" stroke="#6DE3D1" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M242 253L477 313M242 310L477 370" fill="none" stroke="#F8BD63" stroke-width="3" stroke-dasharray="9 7"/>
+<text x="114" y="287" font-family="DejaVu Sans, sans-serif" font-size="16" fill="#B9C8DA">Impuls</text>
+<text x="310" y="399" font-family="DejaVu Sans, sans-serif" font-size="16" fill="#F8BD63">Pause im Kanal</text>
+<path d="M654 435L689 408L720 417L751 390L781 401L812 367L844 376L876 343L908 352L940 316L973 328L1004 295L1037 305L1071 262" fill="none" stroke="#6DE3D1" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M659 278H1084" stroke="#F8BD63" stroke-width="3" stroke-dasharray="9 7"/>
+<path d="M659 442L1055 305" stroke="#F8BD63" stroke-width="3" stroke-dasharray="9 7"/>
+<text x="678" y="267" font-family="DejaVu Sans, sans-serif" font-size="16" fill="#F8BD63">Widerstandszone</text>
+<text x="806" y="452" font-family="DejaVu Sans, sans-serif" font-size="16" fill="#F8BD63">Höhere Tiefs</text>
+<rect x="62" y="518" width="1076" height="53" rx="12" fill="#203850"/>
+<text x="83" y="550" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#F2F7FF">Nur Lernschema · synthetische Linien · keine Live-Daten · keine Anlageberatung</text>
+</svg>
