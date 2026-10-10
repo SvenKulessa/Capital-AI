@@ -65,3 +65,7 @@ Keep the database comfortably below its separate 500 MB limit: metadata-size war
 - https://supabase.com/docs/guides/database/postgres/data-deletion
 
 No production database deletion, catalog-price mutation, logging reduction, Play Billing setup, merge or deploy was performed.
+
+## Owner-approved implementation in PR #351
+
+On 2026-10-10 the Owner approved Option A and requested all implementation changes directly in this PR before merge. The persistent live Price is `price_1UOqkoPKr4joNbEcRaagaZT4` (EUR 25, one-time, inclusive), on `prod_VNTsrtlf2ZL8ja`; Stripe now reports it as the Learning Portal default Price. Legacy EUR 19 receipts remain supported. `render.yaml` contains both non-secret runtime bindings. The retention definition and named daily schedule are included as `supabase/migrations/20261010032000_stripe_cron_history_retention.sql`, with the same bounded SQL tested in isolated PostgreSQL. Earlier sections describe the pre-approval investigation snapshot; rollout readback follows separately. No Play Billing is introduced.
