@@ -1,7 +1,10 @@
-import {
-  BufferAttribute, BufferGeometry, Color, DoubleSide, Group, Mesh,
-  MeshLambertMaterial, SRGBColorSpace,
-} from 'three';
+import { BufferAttribute } from 'three/src/core/BufferAttribute.js';
+import { BufferGeometry } from 'three/src/core/BufferGeometry.js';
+import { Color } from 'three/src/math/Color.js';
+import { DoubleSide, SRGBColorSpace } from 'three/src/constants.js';
+import { Group } from 'three/src/objects/Group.js';
+import { Mesh } from 'three/src/objects/Mesh.js';
+import { MeshLambertMaterial } from 'three/src/materials/MeshLambertMaterial.js';
 
 const MODEL_URL = '/assets/jaja-figure.glb';
 const MAX_GLB_BYTES = 256_000;
