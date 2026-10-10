@@ -1,4 +1,5 @@
 import http from 'node:http';
+import { BLOG_ARTICLES, blogArticleForPath } from '../shared/blog-articles.mjs';
 import { readFile, stat, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -180,6 +181,7 @@ function applySeoIndexingPolicy(html, pathname) {
 const PUBLIC_SNAPSHOT_LINKS = Object.freeze([
   ['/', 'Startseite'],
   ['/learning', 'Learning'],
+  ['/blog', 'Blog · Wissen & Lernen'],
   ['/vocabulary', 'Vocabulary'],
   ['/faq', 'FAQ'],
   ['/datenprovider-lizenzen', 'Datenrechte'],
@@ -201,10 +203,14 @@ function injectPublicSeoSnapshot(html, pathname) {
   const conversionLinks = pathname === '/'
     ? '<p><a href="/pricing">Tarife und Leistungen ansehen</a> · <a href="/login">Anmelden</a></p>'
     : '';
+  const article = blogArticleForPath(pathname);
+  const editorial = article
+    ? `<p>${escapeHtml(article.intro)}</p><figure><img src="${escapeHtml(article.image)}" alt="${escapeHtml(article.imageAlt)}" width="1200" height="630" style="max-width:100%;height:auto"><figcaption>Eigene Illustration; keine realen Kursdaten.</figcaption></figure>` + article.sections.map(section => `<section><h2>${escapeHtml(section.title)}</h2><p>${escapeHtml(section.body)}</p></section>`).join('') + `<p>Technische und didaktische Information; keine Anlageberatung.</p><h2>Quellen</h2><ul>` + article.sources.map(source => `<li><a href="${escapeHtml(source.url)}">${escapeHtml(source.label)}</a></li>`).join('') + '</ul>'
+    : pathname === '/blog' ? BLOG_ARTICLES.map(item => `<section><h2><a href="${escapeHtml(item.path)}">${escapeHtml(item.title)}</a></h2><p>${escapeHtml(item.description)}</p></section>`).join('') : '';
   const snapshot =
     `<main id="capital-ai-public-snapshot" lang="de"><article>` +
     `<h1>${escapeHtml(metadata.title)}</h1><p>${escapeHtml(metadata.description)}</p>` +
-    `${conversionLinks}<nav aria-label="Öffentliche Seiten"><ul>${links}</ul></nav>` +
+    `${editorial}${conversionLinks}<nav aria-label="Öffentliche Seiten"><ul>${links}</ul></nav>` +
     '</article></main>';
   return html.replace('<div id="root"></div>', `<div id="root">${snapshot}</div>`);
 }
@@ -521,6 +527,10 @@ export function createApp(root = defaultRoot, options = {}) {
     res.end();
     return;
   }
+  if (publicPath.startsWith('/blog/') && !blogArticleForPath(publicPath)) {
+    res.writeHead(404, { ...headers, 'X-Robots-Tag': 'noindex, nofollow', 'Cache-Control': 'no-store' });
+    return res.end('Beitrag nicht gefunden');
+  }
   if (publicPath.startsWith('/vocabulary/')) {
     const vocabularyEntry = vocabularyMetadataByPath.get(publicPath);
     if (!vocabularyEntry || QUANT_PRO_IDS.has(vocabularyEntry.id)) {
@@ -567,7 +577,7 @@ export function createApp(root = defaultRoot, options = {}) {
       if (pathLocale && publicPath !== '/') {
         body = Buffer.from(localizeNonIndexableLandingHtml(body.toString('utf8'), pathLocale));
       }
-      const { locale, source } = staticLegalRoute.has(publicPath)
+      const { locale, source } = (staticLegalRoute.has(publicPath) || publicPath === '/blog' || Boolean(blogArticleForPath(publicPath)))
         ? {locale:'de',source:'document'} // These legal documents currently contain German text only.
         : pathLocale
           ? {locale:pathLocale,source:'path'}

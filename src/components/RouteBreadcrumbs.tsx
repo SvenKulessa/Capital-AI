@@ -12,6 +12,8 @@ const LABELS: Record<string, string> = {
   architecture: 'Architektur',
   'pipeline-builder': 'Pipeline Builder',
   learning: 'Learning Portal',
+  blog: 'Wissen & Lernen',
+  'barrierefreie-finanzcharts': 'Barrierefreie Finanzcharts',
   vocabulary: 'Vocabulary',
   dokumentation: 'Dokumentation',
   pricing: 'Preiskatalog',
