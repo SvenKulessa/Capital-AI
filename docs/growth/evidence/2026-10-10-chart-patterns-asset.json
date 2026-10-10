@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "CAPITAL_AI_EDITORIAL_ASSET_EVIDENCE@1",
+  "campaignId": "capital-ai-learning-patterns-20261010",
+  "contentId": "learning-patterns-comparison-20261010",
+  "sourceCommit": "29d51c6bd6d309ddb51680127177f467bf84f596",
+  "usageMode": "COMMERCIAL",
+  "asset": {
+    "path": "public/learning/editorial/chart-patterns-comparison-20261010.svg",
+    "mimeType": "image/svg+xml",
+    "width": 1200,
+    "height": 630,
+    "sha256": "a35161ae18239e1854bac856256beb7bd3ae5f6258eeefcda845541bfed20e9a",
+    "origin": "New, original synthetic SVG paths and copy; no market feed, embedded images, external links, or embedded fonts",
+    "generator": {
+      "tool": "deterministic SVG markup",
+      "version": "1",
+      "renderer": "CairoSVG 2.8.2 for local PNG preview"
+    },
+    "licensing": {
+      "commercialUse": "REVIEW_PENDING",
+      "legalEngineReceipt": null,
+      "externalMedia": [],
+      "fonts": "CSS fallback DejaVu Sans, sans-serif; no font files distributed"
+    },
+    "qa": {
+      "xmlWellFormed": true,
+      "noExternalReferences": true,
+      "svgTitleDesc": true,
+      "localPngRendered": true,
+      "localVisualInspection": "PASS",
+      "mobileAndScreenReader": "NOT_PROVEN"
+    },
+    "pngLocalPreviewSha256": "daffcd04afb94344e21fb472c9a3fcf9e4634e3425263b28d4ef5addd3563c20"
+  },
+  "rightsEvidence": "ORIGINAL_AUTHORING_ASSERTED_NOT_LEGAL_ENGINE_APPROVED",
+  "publisher": {
+    "publishReady": false,
+    "state": "DRAFT",
+    "ownerChannelOAuth": "NOT_PROVEN",
+    "approvalRef": null,
+    "providerPostId": null,
+    "terminalReadback": "NOT_PROVEN"
+  },
+  "sources": [
+    {
+      "path": "src/data/chartLearning.ts",
+      "commit": "29d51c6bd6d309ddb51680127177f467bf84f596",
+      "purpose": "Bull Flag and triangle education definitions"
+    },
+    {
+      "path": "docs/product/LEARNING-PORTAL-ROLLOUT-20261009.md",
+      "commit": "29d51c6bd6d309ddb51680127177f467bf84f596",
+      "purpose": "52 synthetic chart lessons and rollout boundaries"
+    },
+    {
+      "url": "https://www.w3.org/WAI/standards-guidelines/wcag/changelog/",
+      "date": "2026-09-17",
+      "purpose": "Accessibility standards context"
+    }
+  ],
+  "candidates": [
+    {
+      "id": "A11Y-CHART-ALT-20261010",
+      "state": "CANDIDATE_ONLY",
+      "test": "Automated SVG title/desc check plus human screenreader and mobile review"
+    },
+    {
+      "id": "SEO-LEARNING-HTML-20261010",
+      "state": "CANDIDATE_ONLY",
+      "test": "Compare server HTML headings and text with rendered DOM; verify Googlebot-visible content, canonical and sitemap"
+    }
+  ]
+}
