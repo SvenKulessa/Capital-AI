@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "CAPITAL_AI_EDITORIAL_ASSET_EVIDENCE@1",
+  "usageMode": "COMMERCIAL",
+  "status": "DRAFT",
+  "asset": {
+    "path": "public/learning/editorial/chart-accessibility-20261010.svg",
+    "generator": "original deterministic SVG",
+    "externalMedia": [],
+    "embeddedFonts": [],
+    "marketData": "NONE",
+    "sha256": "PENDING_READBACK",
+    "legalEngineReceipt": null,
+    "visualQa": "NOT_PROVEN_ON_GITHUB"
+  },
+  "publisher": {
+    "publishReady": false,
+    "oauthReadback": "YOUTUBE_AND_TIKTOK_CONNECTED_BUT_UPLOAD_NOT_TESTED",
+    "approvalRef": null,
+    "providerPostId": null
+  }
+}
