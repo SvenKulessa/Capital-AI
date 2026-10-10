@@ -53,6 +53,8 @@ COPY public/branding/capital-ai-logo.jpg ./public/branding/capital-ai-logo.jpg
 COPY public/branding/asset-pack ./public/branding/asset-pack
 COPY public/branding/badges ./public/branding/badges
 COPY public/branding/social ./public/branding/social
+# Ship the approved JaJa avatar used by src/components/HeroBuddy.tsx.
+COPY public/assets/jaja-avatar-transparent.webp ./public/assets/jaja-avatar-transparent.webp
 COPY public/fonts ./public/fonts
 COPY public/learning/charts ./public/learning/charts
 COPY public/learning/videos ./public/learning/videos
