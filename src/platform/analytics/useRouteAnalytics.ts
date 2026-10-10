@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { blogArticleForPath } from '../../../shared/blog-articles.mjs';
 import {
   LICENSE_ROUTES,
   licenseMetadata,
@@ -56,9 +57,9 @@ const STATIC_ROUTE_METADATA: Record<string, StaticRouteMetadata> = {
     canonicalPath: '/impressum',
   },
   '/learning': {
-    title: 'Capital-AI | Learning Portal & Fachbegriffe',
+    title: 'Finanzwissen lernen: Glossar, Chartmuster & Quiz | Capital-AI',
     description:
-      'Learning Portal von Capital-AI mit 294 konsolidierten Fachbegriffen aus Marktanalyse, Scoring, Daten, Plattform, Security, Produkt, Governance und Mobile Runtime.',
+      'Finanzbegriffe und Marktanalyse verständlich lernen: Fachbegriffe, Chartbeispiele und Quizzes. Lerninhalte entdecken und Learning-/Kursanfrage stellen.',
     canonicalPath: '/learning',
   },
   '/vocabulary': {
@@ -130,6 +131,13 @@ export function useRouteAnalytics(currentRoute: string) {
   }, []);
 
   useEffect(() => {
+    if (currentRoute === '/blog' || currentRoute.startsWith('/blog/')) {
+      const article = blogArticleForPath(currentRoute);
+      const title = article ? `${article.title} | CAPITAL AI` : currentRoute === '/blog' ? 'Wissen & Lernen | CAPITAL AI' : 'Beitrag nicht gefunden | CAPITAL AI';
+      updatePageSEO({ title, description: article?.description ?? 'Öffentliche Lernbeiträge von CAPITAL AI.', canonicalPath: currentRoute });
+      trackPageView(currentRoute, title);
+      return;
+    }
     if (currentRoute.startsWith('/vocabulary/')) {
       return;
     }

@@ -1,6 +1,6 @@
 # Barrierefreie Finanzcharts: Vier Informationswege statt nur einer Kurve
 
-**Status:** DRAFT · **Datum:** 2026-10-10 · **Sprache:** de-DE  
+**Status:** WEBSITE_IMPLEMENTED · SOCIAL_DRAFT · **Datum:** 2026-10-10 · **Sprache:** de-DE
 **SEO-Titel:** Finanzcharts barrierefrei verstehen | CAPITAL AI  
 **Meta-Description:** Wie CAPITAL AI Finanzcharts mit Textalternativen, nachvollziehbarer Datenherkunft und Tastaturbedienung verständlicher gestalten kann.  
 **Kampagne:** `capital-ai-chart-accessibility-20261010`
@@ -50,4 +50,6 @@ Dies sind überprüfbare Entwicklungsziele, keine Behauptung einer abgeschlossen
 - Eigene synthetische Lerncharts: `src/data/chartLearning.ts` (Repository-Quelle; Produktverfügbarkeit gesondert prüfen)
 - Bildkonzept: eigens angefertigte, deterministische Vektorillustration, keine externen Bilder, Fonts oder Marktdaten.
 
-**PUBLISH_READY: false · LEGAL_ENGINE_RECEIPT: null · PROVIDER_READBACK: NOT_PROVEN.**
+**Website:** `/blog/barrierefreie-finanzcharts`, umgesetzt über `shared/blog-articles.mjs` und `BlogPage.tsx`; Aktivierung durch autorisierten Merge und Main-Deployment. Live-Nachweis: NOT_PROVEN.
+
+**Social-Publisher:** PUBLISH_READY: false · PROVIDER_READBACK: NOT_PROVEN. Ein Legal-Engine-Receipt ist für diesen eigenen Website-Artikel keine zusätzliche pauschale Freigabevoraussetzung nach aktueller AGENTS.md.

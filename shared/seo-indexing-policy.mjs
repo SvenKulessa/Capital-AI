@@ -8,6 +8,8 @@ export const SEO_INDEXING_STATES = Object.freeze({
 
 const routes = [
   { path: '/', classification: 'INDEX', contentType: 'landing', reason: 'Öffentliche Startseite und kanonischer Marken-/Produkteinstieg.' },
+  { path: '/blog', classification: 'INDEX', contentType: 'blog', reason: 'Öffentliche redaktionelle Lernbeiträge mit vollständigem HTTP-Fallback.' },
+  { path: '/blog/barrierefreie-finanzcharts', classification: 'INDEX', contentType: 'article', reason: 'Originaler Bildungsartikel mit eigener Illustration und Primärquellen.' },
   { path: '/learning', classification: 'INDEX', contentType: 'learning', reason: 'Öffentliches Learning Portal mit crawlbarer Fallback-Ausgabe.' },
   { path: '/vocabulary', classification: 'INDEX', contentType: 'vocabulary', reason: 'Kanonische Vocabulary-Landingpage mit serverseitiger SEO-Ausgabe.' },
   { path: '/vocabulary/:term', classification: 'INDEX', contentType: 'vocabulary-term', dynamic: true, reason: 'Nur tatsächlich vorhandene öffentliche Vocabulary-Terme; unbekannte Terme bleiben 404.' },

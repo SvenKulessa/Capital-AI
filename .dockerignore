@@ -101,6 +101,7 @@
 !server/mobile-scorer.mjs
 !server/scorer-proxy.mjs
 !shared/
+!shared/blog-articles.mjs
 !shared/market-contracts.mjs
 !shared/legal-identity.mjs
 !shared/license-engine.mjs
@@ -137,6 +138,8 @@
 !scripts/generate-chart-learning.tsx
 
 !public/learning/
+!public/learning/editorial/
+!public/learning/editorial/**
 !public/learning/charts/
 !public/learning/charts/**
 !public/learning/videos/

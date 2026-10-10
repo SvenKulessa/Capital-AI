@@ -11,6 +11,7 @@
 
 import { VocabularyCard } from './VocabularyCard';
 import { LearningArticles } from './LearningArticles';
+import { LearningInquiry } from './LearningInquiry';
 import { LearningPurchase } from './LearningPurchase';
 import { LearningVideos } from './LearningVideos';
 import { ChartRecognitionQuiz } from './ChartRecognitionQuiz';
@@ -344,6 +345,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
         </div>
       </div>
 
+      <LearningInquiry />
       <label className="mb-4 block text-sm text-amber-200 sm:hidden">Lernbereich auswählen
         <select value={activeTab} onChange={event=>setActiveTab(event.target.value as LearningPortalTab)} className="mt-2 min-h-11 w-full rounded-lg border border-amber-400/30 bg-slate-950 p-3 text-white">
           {LEARNING_TABS.map(tab=><option key={tab} value={tab}>{{glossar:'Vocabulary & Glossar',flashcards:'Karteikasten',guides:'Modul-Erklärungen',patterns:'Chart-Lernatlas',videos:'Lernvideos',quiz:'Tagesquiz',news:'Öffentliche Lernimpulse'}[tab]}</option>)}

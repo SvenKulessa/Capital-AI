@@ -11,7 +11,7 @@ export function trackLoginClick(_source: string = 'header') {}
 export function updatePageSEO({
   title,
   description,
-  canonicalPath = window.location.pathname,
+  canonicalPath,
 }: {
   title: string;
   description: string;
@@ -39,8 +39,16 @@ export function updatePageSEO({
   if (ogDesc) ogDesc.setAttribute('content', description);
 
   // Canonical URL
-  const origin = window.location.origin || '';
-  const fullCanonicalUrl = `${origin}${canonicalPath}`;
+  // Keep browser navigation aligned with the server's production canonical.
+  // Preview hosts, campaigns and fragments must not create alternate identities.
+  const canonicalOrigin = 'https://capital-ai.online';
+  let pathname = '/';
+  try {
+    pathname = new URL(canonicalPath ?? window.location.pathname, canonicalOrigin).pathname;
+  } catch {
+    // Invalid route input safely falls back to the site's canonical home.
+  }
+  const fullCanonicalUrl = `${canonicalOrigin}${pathname}`;
   let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
   if (!canonicalLink) {
     canonicalLink = document.createElement('link');
@@ -48,4 +56,16 @@ export function updatePageSEO({
     document.head.appendChild(canonicalLink);
   }
   canonicalLink.setAttribute('href', fullCanonicalUrl);
+
+  let ogUrl = document.querySelector('meta[property="og:url"]');
+  if (!ogUrl) {
+    ogUrl = document.createElement('meta');
+    ogUrl.setAttribute('property', 'og:url');
+    document.head.appendChild(ogUrl);
+  }
+  ogUrl.setAttribute('content', fullCanonicalUrl);
+
+  // Social previews must describe the current page after SPA navigation.
+  document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', title);
+  document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', description);
 }

@@ -1,7 +1,7 @@
 {
   "schemaVersion": "CAPITAL_AI_EDITORIAL_ASSET_EVIDENCE@1",
   "usageMode": "COMMERCIAL",
-  "status": "DRAFT",
+  "status": "WEBSITE_IMPLEMENTED_SOCIAL_DRAFT",
   "asset": {
     "path": "public/learning/editorial/chart-accessibility-20261010.svg",
     "generator": "original deterministic SVG",
@@ -10,7 +10,7 @@
     "marketData": "NONE",
     "sha256": "86da0e9a582ad6d10a86e34aedf0caca076136b1b79d5a0708f4a83aa36e196a",
     "legalEngineReceipt": null,
-    "visualQa": "LOCAL_RENDER_INSPECTED_NOT_PRODUCTION_APPROVED",
+    "visualQa": "PASS_LOCAL_BUILT_APP_CHROMIUM_153",
     "renderEvidence": {
       "date": "2026-10-10",
       "sourceSvgSha256": "86da0e9a582ad6d10a86e34aedf0caca076136b1b79d5a0708f4a83aa36e196a",
@@ -21,23 +21,32 @@
       },
       "renderer": "CairoSVG 2.8.2",
       "pngCommitted": false,
-      "visualInspection": "PASS_LOCAL_LEGIBILITY_AND_SAFE_AREA",
+      "visualInspection": "PASS_CURRENT_SVG_IN_BUILT_BROWSER",
       "contrastRatios": {
         "titleOnPanel": 14.32,
         "bodyOnCard": 7.6
       },
-      "a11yScreenreader": "NOT_PROVEN",
-      "commercialFontRights": "NOT_PROVEN",
+      "a11yScreenreader": "ACCESSIBILITY_TREE_PASS_REAL_SCREENREADER_NOT_PROVEN",
+      "commercialFontRights": "NO_FONT_FILES_EMBEDDED_OR_DISTRIBUTED_BY_ASSET",
       "legalEngineReceipt": null
     },
-    "visibility": "PUBLIC_PATH_PRESENT_ON_BRANCH_REMOVAL_BLOCKED",
+    "visibility": "PUBLIC_WEBSITE_ASSET_AFTER_MAIN_DEPLOYMENT",
     "draftCopyPath": "docs/growth/drafts/assets/chart-accessibility-20261010.svg",
-    "publicExposurePendingRemoval": true
+    "publicExposurePendingRemoval": false
   },
   "publisher": {
     "publishReady": false,
     "oauthReadback": "YOUTUBE_AND_TIKTOK_CONNECTED_BUT_UPLOAD_NOT_TESTED",
     "approvalRef": null,
     "providerPostId": null
+  },
+  "website": {
+    "path": "/blog/barrierefreie-finanzcharts",
+    "publishReady": true,
+    "activation": "EXISTING_MAIN_DEPLOYMENT_AFTER_AUTHORIZED_MERGE",
+    "liveStatus": "NOT_PROVEN",
+    "rightsBasis": "Original editorial text and deterministic SVG; no external media, embedded fonts or market data. W3C sources linked, not reproduced.",
+    "legalEngineReceiptRequired": false,
+    "browserEvidence": "docs/growth/evidence/2026-10-10-blog-publication.json"
   }
 }
