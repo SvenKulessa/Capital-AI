@@ -1,6 +1,6 @@
 # CAPITAL-AI Solo Maintainer Policy
 
-Stand: 2026-10-07
+Stand: 2026-10-10
 Contract: `SOLO_MAINTAINER_FLOW@1`
 Geltungsbereich: gesamtes Repository.
 
@@ -15,13 +15,35 @@ Bei einem Widerspruch gilt ausschließlich diese Datei. Zusätzliche Regeln dür
 ## Entwicklungsfluss
 
 1. Auf einem Feature-Branch entwickeln.
-2. Pull Request jederzeit erstellen oder aktualisieren.
+2. Pull Request erst mit einer vollständigen, konkret wirksamen Änderung gemäß „PRs nur für umsetzbare Änderungen“ erstellen; bestehende PRs im selben Scope fertigstellen.
 3. GitHub Required Checks laufen automatisch.
 4. Fehlende oder fehlgeschlagene Required Checks blockieren den Merge, aber nicht Entwicklung oder PR-Erstellung.
 5. Merge regulär ausschließlich durch den Human Repository Owner.
 6. Ein Agent darf nur nach ausdrücklicher Chat-Freigabe für den konkret bezeichneten PR mergen.
 7. Nur ein Merge nach `main` darf den normalen Production-Pfad auslösen.
 8. Production darf automatisch deployen, wenn die für `main` definierten technischen Checks erfolgreich sind.
+
+## PRs nur für umsetzbare Änderungen
+
+Für alle Domains gilt: Ein neuer PR muss eine tatsächliche, vollständige Änderung enthalten, die nach erfolgreichen Checks und autorisiertem Merge über den bestehenden Main-/Deployment-Pfad wirksam werden kann.
+
+- **Vor dem PR umsetzen:** Den beauftragten Scope fertig implementieren und angemessen prüfen. Zielverhalten, konkrete Änderung und Weg zur Aktivierung müssen klar sein. Ein Konzept, Platzhalter, deaktivierter Adapter oder Status-/Evidence-Bericht allein erfüllt keinen Implementierungsauftrag.
+- **Bei Voraussetzungen keinen PR eröffnen:** Fehlen notwendige Zugänge, Providerrechte, Konfigurationen, externe Änderungen, fachliche Vorgaben oder Owner-Entscheidungen für die beauftragte Wirkung, zunächst diese Voraussetzungen nach „Blocker autonom lösen“ aktiv beheben oder klären. Autorisierte Vorarbeiten auf dem Branch fortführen und den konkreten Blocker sowie den kleinsten nächsten Schritt im Chat nennen. Keine Draft-/Vorbereitungs-PRs als Ersatz für eine blockierte Umsetzung.
+- **Kein versteckter Folgeauftrag:** Kein PR, dessen angekündigte Wirkung erst durch einen weiteren Implementierungs-PR, späteres Enablement oder noch ungeklärte externe Maßnahmen entsteht. Einen kleineren, unabhängig wirksamen Teilumfang nur dann als PR ausliefern, wenn der Owner diesen Teilumfang ausdrücklich beauftragt hat.
+- **Direkt wirksame Repository-Änderungen:** Ausdrücklich beauftragte Richtlinien-, Dokumentations-, Test- oder CI-Korrekturen sind zulässig, wenn ihre eigene Wirkung vollständig durch den Merge entsteht. Sie dürfen nicht als Nachweis einer noch fehlenden Produktfunktion dargestellt werden.
+- **CI bleibt im PR:** Ausstehende automatische PR-Checks und die reguläre Merge-Entscheidung sind keine fehlenden Umsetzungsvoraussetzungen. GitHub Actions weiterhin auf dem PR ausführen; keine neuen lokalen Preflight-Gates oder Required Checks einführen. Fehlgeschlagene Checks im bestehenden PR konservativ beheben.
+- **Bis zum Ergebnis fortführen:** Einen bestehenden PR im autorisierten Scope fertigstellen statt zusätzliche Planungs- oder Evidence-PRs anzulegen. PR-Erstellung, grüne Tests und Merge sind getrennte Zustände. Eine Live-Umsetzung erst nach geprüftem Deployment und nachvollziehbarem Runtime-/Funktionsnachweis als erledigt melden; bei reinen Repository-Anweisungen deren Wirksamkeit ab Merge angeben. Diese Regel erteilt keine neue Merge-, Deploy-, Kosten- oder Secret-Berechtigung.
+
+## Blocker autonom lösen
+
+Ein Blocker ist ein konkretes Problem zur Lösung, kein Grund für einen bloßen Statusbericht oder einen Vorbereitungs-PR. Diese Arbeitsweise gilt für alle Domains innerhalb des erteilten Auftrags und der tatsächlichen Berechtigungen.
+
+- **Ursache eingrenzen:** Relevanten Code, Fehler, Checks und vorhandene Evidence prüfen; technische Fehler, fehlende Informationen und fehlende Berechtigungen unterscheiden.
+- **Skills und Modellwissen nutzen:** Passende Engineering-/Advisory-Skills und das Wissen des Modells für Lösungsansätze verwenden. Vorschläge anhand der eingesetzten Version, des Codes und geeigneter Tests prüfen; Modellwissen allein belegt keine aktuellen Providerrechte, Preise oder Live-Zustände. Bei einer konkreten Lücke gezielt Primärquellen oder verfügbare Tools nutzen.
+- **Alternativen aktiv umsetzen:** Die kleinste geeignete, wartbare und reversible Lösung im autorisierten Scope auswählen, implementieren und prüfen. Bei einem gescheiterten Ansatz die Ursache auswerten und einen sachlich anderen Ansatz verfolgen. Nicht unverändert denselben fehlgeschlagenen Aufruf wiederholen oder die Aufgabe allein wegen des ersten Fehlers zurückgeben.
+- **Bis zur Wirkung weiterarbeiten:** Konservative Code-/Konfigurationskorrekturen, zulässige vorhandene Integrationen und gleichwertige Alternativen autonom nutzen. Sicherheitsprüfungen, Auth-/Tenant-Grenzen, Rechte und Kostenlimits nicht umgehen; den beauftragten Scope nicht stillschweigend reduzieren. Für PRs gilt weiterhin „PRs nur für umsetzbare Änderungen“.
+- **Gezielt eskalieren:** Nur wenn die verbleibende Voraussetzung tatsächlich eine persönliche Owner-Aktion, fehlende Berechtigung oder kritische Mutation/Architekturentscheidung erfordert, die kleinste notwendige Frage mit Befund, Empfehlung und kurzen Auswahlmöglichkeiten stellen. Bereits erteilte Autorisierung wiederverwenden. Unabhängige autorisierte Arbeit währenddessen fortsetzen.
+- **Ehrlich abschließen:** Einen nicht autonom lösbaren Blocker mit geprüften Ansätzen, konkreter Ursache und kleinstem nächsten Schritt berichten. Keine Lösung, Freigabe oder Live-Wirkung behaupten, die nicht nachgewiesen ist. Es entstehen keine zusätzlichen administrativen Gates.
 
 ## Required Checks
 
@@ -39,7 +61,7 @@ Ein erfolgreicher Check ist Evidence für seinen technischen Scope. Er erzeugt k
 
 Es gibt keinen vorgelagerten Preflight und keinen separaten Branch-Precheck.
 
-Alle autoritativen Prüfungen laufen kostenlos in GitHub Actions auf dem Pull Request. Entwicklung und PR-Erstellung werden nicht durch lokale oder vorgelagerte Preflight-Schichten blockiert.
+Alle autoritativen Prüfungen laufen kostenlos in GitHub Actions auf dem Pull Request. Entwicklung wird nicht durch lokale oder vorgelagerte Preflight-Schichten blockiert; für den inhaltlichen Zeitpunkt der PR-Erstellung gilt „PRs nur für umsetzbare Änderungen“.
 
 ## Gesetzliche und regulatorische Grundlage
 
@@ -131,9 +153,32 @@ Die fünf Domain-Perspektiven erhalten **zwei funktionale Skills pro Domain**: `
 
 1. **Automatisch nach Aufgabeninhalt routen, soweit die Chat-/Agent-Laufzeit Skills unterstützt:** PRODUCT (Frontend/UX/Auth-Client), MARKET (Daten/Provider/Scoring), PLATFORM (Infrastruktur/Runtime/CI), TRUST (Security/Compliance/QA/Evidence), GROWTH (Docs/SEO/Social/Branding). Bei Implementierung Engineering-Skill, bei Beratung Advisory-Skill, bei gemischten Aufgaben beide anwenden. Bei domainübergreifender Arbeit weitere relevante Skills im **selben Chat** verwenden; kein organisatorischer Handoff.
 2. **Beratungsqualität:** aktuelle Ausgangsevidence, mindestens eine tragfähige Alternative, Trade-offs (Security, Datenschutz, Lizenz, Kosten, Wartbarkeit, Performance), begründete Empfehlung und prüfbare Kriterien. Externe Quellen mit Datum/Version priorisiert aus offizieller Dokumentation, Standards und Primärquellen; normative Pflichten von optionalen Best Practices trennen.
-3. **Aktualität und Grenzen:** „State of the Art“ bedeutet bei einer konkreten Entscheidung **erneute Verifikation**, nicht autonome Dauerrecherche. Wenn Live-Quellen, Skills oder Tools in der jeweiligen Chat-Laufzeit nicht verfügbar sind, dies kenntlich machen statt tatsächliche Ausführung oder Frische zu behaupten. Skill-Anleitungen verleihen keinerlei Credentials oder Rechte.
+3. **Aktualität und Grenzen:** Bestehende Repository-Evidence und für die eingesetzte Version passende Dokumentation zuerst nutzen. Externe Recherche nur zur Klärung einer konkreten entscheidungsrelevanten Unsicherheit oder einer erforderlichen Aktualitätsprüfung; keine pauschale erneute Verifikation jeder Entscheidung. Es gilt der folgende Arbeitsmodus. Fehlende Live-Quellen, Skills oder Tools kenntlich machen statt Ausführung oder Frische zu behaupten. Skill-Anleitungen verleihen keinerlei Credentials oder Rechte.
 4. **Governance:** Skills und Chat-Profile sind **nicht autorisierende Arbeitsanleitungen** unter dieser `AGENTS.md`. Sie erzeugen keine neuen Pflichtchecks, Admissions, Reviews, Handovers, Write-Permissions oder Production-Freigaben. Für Branch/PR gilt allein die Primary Domain; Merge-Regel und reale technische Trust Boundaries bleiben unverändert.
 5. **Validierung:** `npm run test:domain-skills` kontrolliert Skill-Dateien, Registry und Chat-Profil-Verweise. Ein bestandener Strukturtest belegt keine Live-Skill-Ausführung in externen ChatGPT-Sitzungen.
+
+## Aufgabenbezogene Recherche statt Selbststudium
+
+Diese Regel gilt für alle Domains, Skills und Chat-Agenten. Allgemeines Selbststudium, autonome Dauerrecherche und selbst veranlasste Wissens-, Regel- oder Architekturupdates sind kein Bestandteil normaler Aufträge.
+
+- **Direkt umsetzen:** Relevanten Code, vorhandene Evidence und Dokumentation zur eingesetzten Version zuerst verwenden. Routine-Bugfixes, UI-, Test- und Dokumentationsänderungen benötigen keine allgemeine Best-Practice-, Tool- oder Framework-Recherche.
+- **Gezielt prüfen:** Nur bei einer konkreten Wissenslücke, widersprüchlicher/veralteter Evidence, ausdrücklich verlangter Recherche oder entscheidungsrelevanten veränderlichen Fakten externe Primärquellen prüfen. Tatsächlich relevante Security-, Rechts-, Lizenz-, Preis- und API-Fragen weiterhin verifizieren.
+- **Recherche beenden:** Die offene Frage vor der Suche benennen; nach einer belastbaren Antwort umsetzen. Bereits geprüfte Quellen im selben Auftrag wiederverwenden, solange Version, Scope und maßgeblicher Stand passen. Nur bei neuen Widersprüchen, geänderten Fakten oder fehlender Evidence erneut suchen; keine rekursiven Recherche- oder Korrelationsschleifen.
+- **Auftrag abschließen:** Keine ungefragten Frameworkwechsel, Dependency-Upgrades oder Regeländerungen aus Recherche ableiten. Erkenntnisse nur verwenden, soweit sie das konkrete Problem lösen. Fehlende Evidence präzise kennzeichnen und unabhängige autorisierte Arbeit fortsetzen.
+- **Reale Grenzen erhalten:** Diese Vereinfachung ersetzt keine notwendigen Tests, Required Checks, Auth-/Tenant-/Secret-Grenzen oder tatsächlich anwendbaren gesetzlichen und vertraglichen Anforderungen. Es entstehen keine neuen Gates oder Pflichtberichte.
+
+## Frontend: Verständlichkeit, Accessibility und Appearance
+
+Bei jeder Frontend-Änderung die betroffenen Ansichten nutzerfreundlich, lesbar, konsistent und zugänglich gestalten. PRODUCT-Skills situativ nutzen; „State of the Art“ nach dem aufgabenbezogenen Recherchemodus anwenden.
+
+- **Sofort verständlich:** Im sichtbaren Einstieg klar erklären, was CAPITAL-AI anbietet, für wen und welcher nächste Schritt möglich ist. Finanzwissen, Analysewerkzeuge und private Nutzerbereiche verständlich benennen; CADS und andere Abkürzungen beim ersten Gebrauch erklären. Keine internen Engine-/Evidence-/Governance-Begriffe als Ersatz für Produktnutzen. Keine unbewiesenen Live-Daten-, Anlage- oder Leistungsversprechen.
+- **Lesbare Gestaltung:** Klare Überschriftenhierarchie, verständliche Navigation, kurze Absätze, ausreichende Abstände und eine erkennbare Hauptaktion. Fließtext bevorzugt ab 16px mit circa 1,5 Zeilenhöhe; Schriftgröße und Layout bleiben zoomfähig. Universe-Atmosphäre unterstützt den Inhalt, ohne Text zu überlagern oder durch Neon, Bewegung und Glass-Effekte schwer lesbar zu machen.
+- **Accessibility-Ziel:** WCAG 2.2 AA für betroffene Flows anstreben: normale Texte mindestens 4,5:1, große Texte mindestens 3:1; relevante Bedienelemente/Fokus gut erkennbar. Semantisches HTML, zugängliche Namen, Tastaturbedienbarkeit, sichtbarer nicht verdeckter Fokus, sinnvolle Alt-Texte, verständliche Formularfehler und reduzierte Bewegung berücksichtigen. Status nie allein über Farbe vermitteln.
+- **Mobil und Zoom:** Inhalte bei 320 CSS-Pixeln Breite und 200% Textvergrößerung lesbar und bedienbar halten; horizontalen Scroll nur für tatsächlich zweidimensionale Inhalte einsetzen. Wichtige Touch-Ziele vorzugsweise mindestens 44×44px; dies ist ein Projekt-Usability-Ziel, keine pauschale gesetzliche Mindestgröße.
+- **Branding:** Bestehende Dark-/Gold-Hierarchie erhalten. Die zwei ergänzenden sekundären Akzente stammen aus dem Finance-Landingpage-Kit: AI Purple `#8D26FF` und Marketing Magenta `#FF2E93`. Purple/Magenta sparsam für Orientierung und Atmosphäre einsetzen; lesbare Texttönungen und Kontrastpaare prüfen. Finanzielle BUY/SELL-/Risiko-/Live-Semantik separat halten. Neue Web-Komponenten konsumieren zentrale Rollen aus `src/index.css`, keine unabhängigen lokalen Paletten.
+- **Prüfen statt behaupten:** Für den betroffenen Scope Kontrastpaare sowie Mobile-/Desktop-Darstellung, Tastaturfokus, Zoom und Reduced Motion angemessen prüfen; vorhandene Tests nutzen. Automatische Tests allein belegen keine vollständige WCAG-Konformität oder Verständlichkeit für jeden Menschen. Fehlende Browser-/Nutzerprüfung ehrlich benennen; keine neuen Required Checks oder administrativen Freigabeschichten.
+
+Referenzen: [WCAG 2.2](https://www.w3.org/TR/WCAG22/), Finance `docs/frontend/design-tokens.json#color.landingPage` und `docs/frontend/PHASE0_DESIGN_TOKENS.md` (gelesen an `dcef421fe6e350a3a2ade61d0299aad9ecca213c`). Diese Quelle ist Designreferenz; die frühere Finance-Governance wird nicht übernommen.
 
 ## Einheitliche grafische Chat-Darstellung aller Domains
 
