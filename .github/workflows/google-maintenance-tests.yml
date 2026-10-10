@@ -6,6 +6,11 @@ on:
       - 'server/google-maintenance-api*'
       - 'scripts/google-maintenance-mcp.mjs'
       - 'scripts/growth-agent/**'
+      - 'scripts/privacy-analytics.test.mjs'
+      - 'scripts/seo-content-manifest.test.mjs'
+      - 'scripts/seo-metadata.test.mjs'
+      - 'src/utils/analytics.ts'
+      - 'shared/seo-*.mjs'
       - '.github/workflows/google-maintenance-tests.yml'
 permissions:
   contents: read
@@ -18,8 +23,13 @@ jobs:
       LANGCHAIN_TRACING_V2: 'false'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24.19.0'
       - name: Test Google REST and MCP boundaries without provider credentials
         run: node --test server/google-maintenance-api.test.mjs
+      - name: Test disabled analytics and local SEO contracts
+        run: node --test scripts/privacy-analytics.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-metadata.test.mjs
       - name: Install pinned local graph dependencies
         run: python3 -m pip install --disable-pip-version-check -r scripts/growth-agent/requirements.lock
       - name: Test real LangGraph join and zero-paid-provider mode

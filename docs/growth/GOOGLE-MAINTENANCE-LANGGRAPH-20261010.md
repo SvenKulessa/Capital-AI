@@ -43,8 +43,8 @@ To enable the settings tools in an authorized MCP client, change its worker conf
 
 LangGraph 1.2.14 (MIT; upstream release published 2026-10-06) coordinates four parallel deterministic domain workers and joins their findings into an actionable plan:
 
-1. SEO worker inspects canonical/indexing source.
-2. Privacy worker checks disabled tracking source and identifies required consent/tag tests.
+1. SEO worker inspects canonical/indexing source and executes existing local content-manifest and metadata tests.
+2. Privacy worker checks disabled tracking source, executes the disabled-analytics contract and explicitly leaves browser accept/reject/withdrawal NOT_PROVEN. It does not implement a consent dialog.
 3. Google worker optionally invokes only the new readonly MCP tools.
 4. Marketing worker plans separate B2B fintech, trader and learner/community content for DE/IT/ES/PT/GB.
 
@@ -69,11 +69,13 @@ Ads customer ID and budget limit remain absent. User asked for an open-source/fr
 ## Evidence
 
 - Node API/MCP tests: 12 passed; mocked providers, no live Google authorization proof.
-- Python tests: 5 passed with installed LangGraph 1.2.14, including malformed worker responses, domain association and private-payload redaction.
+- Python tests: 8 passed with installed LangGraph 1.2.14, including malformed worker responses, domain association, local-check failure reporting and private-payload redaction.
 - Source-only graph executed against the cloned Capital-AI repository, four workers joined.
 - Live public homepage returned HTTP 200, canonical https://capital-ai.online/, and no Google tag in the initial response. This is an HTML snapshot, not a browser/network/cookie audit.
 - No Google credentials, role changes, runtime deployment or ad spend performed.
 - Owner merge to main remains required under AGENTS.md.
+
+Live GitHub OIDC readback was attempted in run 38022607668. GA4_PROPERTY_ID, service-account and identity-provider variables are present; the provider value has an extra leading space, so exact validation stopped before token exchange. The repository variable API returned HTTP 403 for this integration. No live GA4/GSC access was established and this does not authenticate the Codex runtime. No interactive Cloud browser capability is available in this session.
 
 ## Official references checked / implementation contracts
 
