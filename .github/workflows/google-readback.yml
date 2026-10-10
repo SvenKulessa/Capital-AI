@@ -66,7 +66,8 @@ jobs:
           jq -e '[.siteEntry[]? | select(.siteUrl=="sc-domain:capital-ai.online" and (.permissionLevel|IN("siteOwner","siteFullUser","siteRestrictedUser")))] | length==1' "$tmp/gsc.json" >/dev/null || { echo 'GSC exact property/permission not verified'; exit 1; }
           echo 'GSC exact property and permission VERIFIED'
           get 'GSC sitemaps.list' 'https://www.googleapis.com/webmasters/v3/sites/sc-domain%3Acapital-ai.online/sitemaps' "$tmp/sitemaps.json"
-          jq -c '{sitemapCount: ((.sitemap // [])|length)}' "$tmp/sitemaps.json"
+          jq -e '(.sitemap == null or (.sitemap|type=="array"))' "$tmp/sitemaps.json" >/dev/null || exit 1
+          echo 'GSC sitemap endpoint accessible (counts omitted from public workflow logs)'
           get 'GA4 property' "https://analyticsadmin.googleapis.com/v1beta/properties/$GA4_ID" "$tmp/property.json"
           jq -e --arg p "properties/$GA4_ID" '.name==$p' "$tmp/property.json" >/dev/null || { echo 'GA4 property mismatch'; exit 1; }
           echo 'GA4 numeric property identity VERIFIED'
@@ -76,5 +77,5 @@ jobs:
             jq -c '{code:.error.code,status:.error.status}' "$tmp/realtime.json" || true
             exit 1
           fi
-          jq -c '{rowCount:(.rowCount//0),pageViewEvents:([.rows[]?|select(.dimensionValues[0].value=="page_view")|.metricValues[0].value]|first//"0")}' "$tmp/realtime.json"
+          echo 'GA4 realtime endpoint accessible (event counts omitted from public workflow logs)'
           echo 'LIVE_PROVIDER_READ_VERIFIED for the workflow identity only; not YouTube or OAuth verification'
