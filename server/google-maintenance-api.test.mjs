@@ -106,7 +106,7 @@ test('provider identities and HTTP failures fail closed without response-body di
 test('MCP exposes only named maintenance tools and handles initialization and notifications', async () => {
   const { api, calls } = harness();
   const response = await handleGoogleMaintenanceMessage({ jsonrpc: '2.0', id: 1, method: 'tools/list' }, api);
-  assert.equal(response.result.tools.length, 10);
+  assert.equal(response.result.tools.length, 14);
   assert.equal(response.result.tools.some(tool => /delete|iam|shell|browser/.test(tool.name)), false);
   const init = await handleGoogleMaintenanceMessage({ jsonrpc: '2.0', id: 2, method: 'initialize' }, api);
   assert.equal(init.result.serverInfo.name, 'capital-ai-google-maintenance');

@@ -1,0 +1,59 @@
+name: Google Learning SEO Setup
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'audit reads settings; apply configures lead definition/privacy settings and canonical sitemap'
+        required: true
+        default: audit
+        type: choice
+        options: [audit, apply]
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: google-learning-setup
+  cancel-in-progress: false
+jobs:
+  setup:
+    if: github.repository == 'SvenKulessa/Capital-AI' && github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24.19.0'
+      - name: Bind exact targets and intended mode
+        env:
+          PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          SERVICE_ACCOUNT: ${{ vars.GCP_GOOGLE_READER_SERVICE_ACCOUNT }}
+          PROPERTY: ${{ vars.GA4_PROPERTY_ID }}
+          MODE: ${{ inputs.mode }}
+        run: |
+          set -euo pipefail
+          [[ "$PROVIDER" == projects/542877602707/locations/global/workloadIdentityPools/capital-ai-github-read/providers/capital-ai-dispatch ]]
+          [[ "$SERVICE_ACCOUNT" == capital-ai-google-audit@aifinancial-500208.iam.gserviceaccount.com ]]
+          [[ "$PROPERTY" == 548187678 ]]
+          [[ "$MODE" == audit || "$MODE" == apply ]]
+      - id: google_auth
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093
+        with:
+          project_id: aifinancial-500208
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_GOOGLE_READER_SERVICE_ACCOUNT }}
+          token_format: access_token
+          access_token_lifetime: 900s
+          access_token_scopes: |
+            ${{ inputs.mode == 'apply' && 'https://www.googleapis.com/auth/analytics.edit' || 'https://www.googleapis.com/auth/analytics.readonly' }}
+            https://www.googleapis.com/auth/analytics.readonly
+            ${{ inputs.mode == 'apply' && 'https://www.googleapis.com/auth/webmasters' || 'https://www.googleapis.com/auth/webmasters.readonly' }}
+          create_credentials_file: false
+          export_environment_variables: false
+      - name: Run bounded setup with provider readback
+        env:
+          GOOGLE_MAINTENANCE_ACCESS_TOKEN: ${{ steps.google_auth.outputs.access_token }}
+          MODE: ${{ inputs.mode }}
+        run: node scripts/google-learning-setup.mjs "$MODE"
