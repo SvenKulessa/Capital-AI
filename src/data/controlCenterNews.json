@@ -1,13 +1,13 @@
 {
   "schema": "CAPITAL_AI_CONTROL_CENTER_NEWS@1",
   "state": "DRAFT_NOT_PUBLISHED",
-  "lastBatchPr": 351,
-  "mergeCount": 320,
+  "lastBatchPr": 353,
+  "mergeCount": 325,
   "fromPr": 329,
-  "sourceSha": "d80355f296b429317ff65d7a1cdb9a0e0ca82ae7",
+  "sourceSha": "78698701e0f0b06ef12960d64401590b0e37df79",
   "generatedAt": "2026-10-10T03:23:00.879Z",
-  "title": "CAPITAL-AI: Repository-Updates bis PR #351",
-  "article": "# CAPITAL-AI: Repository-Updates bis PR #351\n\n> **Entwurf – nicht veröffentlicht.** Die Zusammenfassung basiert auf gemergten Pull Requests.\n> Eine erfolgreiche technische Zusammenführung beweist noch keinen produktiven Rollout.\n\n## Die Änderungen im Überblick\n\nIm aktuellen Entwicklungsabschnitt wurden 20 Pull Requests zusammengeführt. Die folgenden Änderungen sind anhand der zugehörigen GitHub-Diffs nachvollziehbar.\n\n- [PR #329](https://github.com/SvenKulessa/Capital-AI/pull/329): CAPITAL-AI-GROWTH GA4 MCP Readback in Capital-AI Render übertragen\n- [PR #331](https://github.com/SvenKulessa/Capital-AI/pull/331): CAPITAL-AI-PLATFORM CI-Effizienz-Evidence und Runner-Drift korrigieren\n- [PR #332](https://github.com/SvenKulessa/Capital-AI/pull/332): CAPITAL-AI-MARKET Offline Shadow-Admin-Audit persistent und fail-closed absichern\n- [PR #333](https://github.com/SvenKulessa/Capital-AI/pull/333): CAPITAL-AI-MARKET Ausgelaufenen Binance Spot All-Ticker Stream ersetzen\n- [PR #335](https://github.com/SvenKulessa/Capital-AI/pull/335): CAPITAL-AI-TRUST Free-Tier-Sicherheitslage, Lizenz-Delta und Runtime-Evidence\n- [PR #328](https://github.com/SvenKulessa/Capital-AI/pull/328): CAPITAL-AI-GROWTH Serve standalone legal HTML for Google OAuth branding\n- [PR #334](https://github.com/SvenKulessa/Capital-AI/pull/334): CAPITAL-AI-MARKET BTCUSDT Quote-Units in kanonischen Contracts korrekt abbilden\n- [PR #339](https://github.com/SvenKulessa/Capital-AI/pull/339): CAPITAL-AI-GROWTH GSC Service-Account Readback sicher verifizieren\n- [PR #336](https://github.com/SvenKulessa/Capital-AI/pull/336): CAPITAL-AI-PRODUCT Roadmap code- und dokumentbasiert bis PR 247 abgleichen\n- [PR #337](https://github.com/SvenKulessa/Capital-AI/pull/337): CAPITAL-AI-GROWTH News-Blogentwurf zu 20 PR-Merges bis 247\n- [PR #338](https://github.com/SvenKulessa/Capital-AI/pull/338): CAPITAL-AI-PRODUCT JaJa Buddy Accessibility und Assistenzsignal korrigieren\n- [PR #342](https://github.com/SvenKulessa/Capital-AI/pull/342): CAPITAL-AI-GROWTH Google-OAuth-Datenschutz für Branding vollständig und crawlbar erläutern\n- [PR #340](https://github.com/SvenKulessa/Capital-AI/pull/340): CAPITAL-AI-TRUST Screener Bundle, Social Badges und CADS Growth Quality\n- [PR #341](https://github.com/SvenKulessa/Capital-AI/pull/341): CAPITAL-AI-GROWTH Erster lizenzgeprüfter Blog- und Social-Draft\n- [PR #347](https://github.com/SvenKulessa/Capital-AI/pull/347): CAPITAL-AI-GROWTH Keyless GitHub OIDC Readback für GSC und GA4\n- [PR #344](https://github.com/SvenKulessa/Capital-AI/pull/344): CAPITAL-AI-PRODUCT Learning Portal: vocabulary access, checkout and Enterprise trial\n- [PR #345](https://github.com/SvenKulessa/Capital-AI/pull/345): CAPITAL-AI-PRODUCT Roadmap code- und dokumentbasiert bis PR 337 abgleichen\n- [PR #346](https://github.com/SvenKulessa/Capital-AI/pull/346): CAPITAL-AI-MARKET MetricDuck operator MCP und Graph-RAG-Entwurf\n- [PR #349](https://github.com/SvenKulessa/Capital-AI/pull/349): CAPITAL-AI-GROWTH GA4 schlüssellos mit OIDC unabhängig von GSC prüfen\n- [PR #351](https://github.com/SvenKulessa/Capital-AI/pull/351): CAPITAL-AI-PRODUCT Fix Learning Portal price and promo checkout; diagnose Supabase logs\n\n## Was sich daraus für die Plattform ergibt\n\nDie aufgeführten Änderungen werden anhand der verlinkten Pull Requests dokumentiert. Ob Funktionen bereits auf dem Webservice bereitstehen, ergibt sich ausschließlich aus separaten Deployment- und Runtime-Nachweisen.\n\n## Transparenz und nächste Schritte\n\nDie Veröffentlichung ist ein vorbereiteter Blogentwurf für die CONTENT Engine. Social-Media-Ausspielung, visuelle Medien und redaktionelle Freigabe sind nicht automatisch aktiviert.\n\nQuelle: [d80355f296b4](https://github.com/SvenKulessa/Capital-AI/commit/d80355f296b429317ff65d7a1cdb9a0e0ca82ae7)\n",
+  "title": "CAPITAL-AI: Repository-Updates bis PR #353",
+  "article": "# CAPITAL-AI: Repository-Updates bis PR #353\n\n> **Entwurf – nicht veröffentlicht.** Die Zusammenfassung basiert auf gemergten Pull Requests.\n> Eine erfolgreiche technische Zusammenführung beweist noch keinen produktiven Rollout.\n\n## Die Änderungen im Überblick\n\nIm hier dokumentierten Entwicklungsabschnitt wurden 25 Pull Requests zusammengeführt. Die folgenden Änderungen sind anhand der zugehörigen GitHub-Diffs nachvollziehbar.\n\n- [PR #329](https://github.com/SvenKulessa/Capital-AI/pull/329): CAPITAL-AI-GROWTH GA4 MCP Readback in Capital-AI Render übertragen\n- [PR #331](https://github.com/SvenKulessa/Capital-AI/pull/331): CAPITAL-AI-PLATFORM CI-Effizienz-Evidence und Runner-Drift korrigieren\n- [PR #332](https://github.com/SvenKulessa/Capital-AI/pull/332): CAPITAL-AI-MARKET Offline Shadow-Admin-Audit persistent und fail-closed absichern\n- [PR #333](https://github.com/SvenKulessa/Capital-AI/pull/333): CAPITAL-AI-MARKET Ausgelaufenen Binance Spot All-Ticker Stream ersetzen\n- [PR #335](https://github.com/SvenKulessa/Capital-AI/pull/335): CAPITAL-AI-TRUST Free-Tier-Sicherheitslage, Lizenz-Delta und Runtime-Evidence\n- [PR #328](https://github.com/SvenKulessa/Capital-AI/pull/328): CAPITAL-AI-GROWTH Serve standalone legal HTML for Google OAuth branding\n- [PR #334](https://github.com/SvenKulessa/Capital-AI/pull/334): CAPITAL-AI-MARKET BTCUSDT Quote-Units in kanonischen Contracts korrekt abbilden\n- [PR #339](https://github.com/SvenKulessa/Capital-AI/pull/339): CAPITAL-AI-GROWTH GSC Service-Account Readback sicher verifizieren\n- [PR #336](https://github.com/SvenKulessa/Capital-AI/pull/336): CAPITAL-AI-PRODUCT Roadmap code- und dokumentbasiert bis PR 247 abgleichen\n- [PR #337](https://github.com/SvenKulessa/Capital-AI/pull/337): CAPITAL-AI-GROWTH News-Blogentwurf zu 20 PR-Merges bis 247\n- [PR #338](https://github.com/SvenKulessa/Capital-AI/pull/338): CAPITAL-AI-PRODUCT JaJa Buddy Accessibility und Assistenzsignal korrigieren\n- [PR #342](https://github.com/SvenKulessa/Capital-AI/pull/342): CAPITAL-AI-GROWTH Google-OAuth-Datenschutz für Branding vollständig und crawlbar erläutern\n- [PR #340](https://github.com/SvenKulessa/Capital-AI/pull/340): CAPITAL-AI-TRUST Screener Bundle, Social Badges und CADS Growth Quality\n- [PR #341](https://github.com/SvenKulessa/Capital-AI/pull/341): CAPITAL-AI-GROWTH Erster lizenzgeprüfter Blog- und Social-Draft\n- [PR #347](https://github.com/SvenKulessa/Capital-AI/pull/347): CAPITAL-AI-GROWTH Keyless GitHub OIDC Readback für GSC und GA4\n- [PR #344](https://github.com/SvenKulessa/Capital-AI/pull/344): CAPITAL-AI-PRODUCT Learning Portal: vocabulary access, checkout and Enterprise trial\n- [PR #345](https://github.com/SvenKulessa/Capital-AI/pull/345): CAPITAL-AI-PRODUCT Roadmap code- und dokumentbasiert bis PR 337 abgleichen\n- [PR #346](https://github.com/SvenKulessa/Capital-AI/pull/346): CAPITAL-AI-MARKET MetricDuck operator MCP und Graph-RAG-Entwurf\n- [PR #349](https://github.com/SvenKulessa/Capital-AI/pull/349): CAPITAL-AI-GROWTH GA4 schlüssellos mit OIDC unabhängig von GSC prüfen\n- [PR #351](https://github.com/SvenKulessa/Capital-AI/pull/351): CAPITAL-AI-PRODUCT Fix Learning Portal price and promo checkout; diagnose Supabase logs\n\n- [PR #354](https://github.com/SvenKulessa/Capital-AI/pull/354): Roadmap-Abgleich bis PR #351\n- [PR #348](https://github.com/SvenKulessa/Capital-AI/pull/348): JaJa 3D mit GLB und Docker-Asset-Fix\n- [PR #356](https://github.com/SvenKulessa/Capital-AI/pull/356): Enterprise-Testphase mit direktem monatlichem Stripe-Checkout\n- [PR #358](https://github.com/SvenKulessa/Capital-AI/pull/358): Canonical- und Social-URLs bei Navigation stabil halten\n- [PR #353](https://github.com/SvenKulessa/Capital-AI/pull/353): Agentenregeln verschlanken und verständliches Universe-Frontend stärken\n\n## Was sich daraus für die Plattform ergibt\n\nDie aufgeführten Änderungen werden anhand der verlinkten Pull Requests dokumentiert. Ob Funktionen bereits auf dem Webservice bereitstehen, ergibt sich ausschließlich aus separaten Deployment- und Runtime-Nachweisen.\n\nDerzeit ist in Render nur der ältere Source-Commit a613aff57f26 als LIVE nachgewiesen. Die neueren Merges sind dadurch keine belegten produktiven Features.\n\n## Transparenz und nächste Schritte\n\nDie Veröffentlichung ist ein vorbereiteter Blogentwurf für die CONTENT Engine. Social-Media-Ausspielung, visuelle Medien und redaktionelle Freigabe sind nicht automatisch aktiviert.\n\nQuellenstand: [78698701e0f0](https://github.com/SvenKulessa/Capital-AI/commit/78698701e0f0b06ef12960d64401590b0e37df79) · früherer Basisstand: [d80355f296b4](https://github.com/SvenKulessa/Capital-AI/commit/d80355f296b429317ff65d7a1cdb9a0e0ca82ae7)\n",
   "sourcePrs": [
     {
       "number": 329,
@@ -88,17 +88,37 @@
     {
       "number": 351,
       "url": "https://github.com/SvenKulessa/Capital-AI/pull/351"
+    },
+    {
+      "number": 354,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/354"
+    },
+    {
+      "number": 348,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/348"
+    },
+    {
+      "number": 356,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/356"
+    },
+    {
+      "number": 358,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/358"
+    },
+    {
+      "number": 353,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/353"
     }
   ],
   "contentEnginePlan": {
     "contractVersion": "CAPITAL_AI_CONTENT_ENGINE@1",
     "campaign": {
-      "campaignId": "capital-ai-repository-pr-351",
+      "campaignId": "capital-ai-repository-pr-353",
       "productId": "capital-ai-web",
-      "sourceSha": "d80355f296b429317ff65d7a1cdb9a0e0ca82ae7",
+      "sourceSha": "78698701e0f0b06ef12960d64401590b0e37df79",
       "canonicalUrl": "https://capital-ai.online/",
       "locale": "de-DE",
-      "objective": "Belegte Zusammenfassung der letzten 20 gemergten PRs als Blogentwurf.",
+      "objective": "Belegte Zusammenfassung von 25 gemergten PRs als nicht veröffentlichter Blogentwurf.",
       "audience": [
         "CAPITAL-AI Nutzer",
         "Technische Interessierte"
@@ -122,7 +142,12 @@
         "https://github.com/SvenKulessa/Capital-AI/pull/336",
         "https://github.com/SvenKulessa/Capital-AI/pull/337",
         "https://github.com/SvenKulessa/Capital-AI/pull/338",
-        "https://github.com/SvenKulessa/Capital-AI/pull/342"
+        "https://github.com/SvenKulessa/Capital-AI/pull/342",
+        "https://github.com/SvenKulessa/Capital-AI/pull/354",
+        "https://github.com/SvenKulessa/Capital-AI/pull/348",
+        "https://github.com/SvenKulessa/Capital-AI/pull/356",
+        "https://github.com/SvenKulessa/Capital-AI/pull/358",
+        "https://github.com/SvenKulessa/Capital-AI/pull/353"
       ]
     },
     "modules": [
