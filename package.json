@@ -11,7 +11,7 @@
     "benchmark:oss-market": "node --experimental-strip-types scripts/benchmark-oss-market-pipelines.mjs",
     "test:benchmark": "node --test packages/benchmark-core/index.test.mjs server/benchmark-runs.test.mjs server/benchmark-store.test.mjs server/cads-marketplace.test.mjs server/cads-commerce.test.mjs",
     "dev": "vite --port=3000 --host=127.0.0.1",
-    "build": "vite build",
+    "build": "node scripts/generate-jaja-3d.mjs && vite build",
     "preview": "vite preview --host=127.0.0.1",
     "growth:gsc:auth": "node scripts/gsc-auth-readonly.mjs",
     "growth:gsc:mcp": "node scripts/gsc-mcp-guard.mjs",
@@ -101,7 +101,8 @@
     "spdx-license-ids": "3.0.24",
     "vite": "^8.3.2",
     "zod": "^4.6.5",
-    "d3-scale": "4.0.2"
+    "d3-scale": "4.0.2",
+    "three": "0.184.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
@@ -112,7 +113,8 @@
     "tailwindcss": "^4.3.3",
     "tsx": "^4.21.0",
     "typescript": "6.0.3",
-    "@types/d3-scale": "4.0.9"
+    "@types/d3-scale": "4.0.9",
+    "@types/three": "0.184.1"
   },
   "overrides": {
     "source-map-js": "1.2.2"
