@@ -101,10 +101,16 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
   async function validateAndGrant(userId, sessionId) {
     if (!secret || !supabase || !sessionId.startsWith('cs_')) return null;
     const session = await stripe(`/checkout/sessions/${encodeURIComponent(sessionId)}`);
+    const total = session.amount_total;
+    const discount = session.total_details?.amount_discount ?? 0;
+    const learningPaid = session.metadata?.sku === SKU && session.mode === 'payment' && session.status === 'complete' &&
+      session.amount_subtotal === 2500 && Number.isInteger(total) && Number.isInteger(discount) &&
+      discount >= 0 && discount <= 2500 && total === 2500 - discount &&
+      (session.payment_status === 'paid' || (total === 0 && session.payment_status === 'no_payment_required'));
+    const legacyPaid = session.metadata?.sku === LEGACY_SKU && session.payment_status === 'paid' &&
+      Number(session.amount_total) === 1900 && session.mode !== 'subscription';
     const valid =
-      session.payment_status === 'paid' &&
-      ((session.metadata?.sku === SKU && Number(session.amount_total) === 2500) ||
-       (session.metadata?.sku === LEGACY_SKU && Number(session.amount_total) === 1900)) &&
+      (learningPaid || legacyPaid) &&
       session.client_reference_id === userId &&
       session.metadata?.user_id === userId &&
       session.currency === 'eur' && session.mode !== 'subscription';
@@ -313,6 +319,7 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
         if (!withdrawalWaived) return json(res, 400, { error: 'withdrawal_waiver_required' }), true;
         const form = new URLSearchParams({
           mode: 'payment',
+          allow_promotion_codes: 'true',
           'line_items[0][quantity]': '1',
           success_url: `${baseUrl}/learning?vocabulary_session={CHECKOUT_SESSION_ID}`,
           cancel_url: `${baseUrl}/learning?vocabulary=cancelled`,

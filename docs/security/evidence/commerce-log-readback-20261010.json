@@ -1,0 +1,61 @@
+{
+  "observedAt": "2026-10-10T02:51:28.795Z",
+  "mainBase": "a8731c2",
+  "project": "Capital-AI",
+  "productionWritesPerformed": false,
+  "googlePlayBilling": "EXCLUDED_BY_OWNER",
+  "learningCheckout": {
+    "amountCents": 2500,
+    "currency": "eur",
+    "mode": "payment",
+    "allowPromotionCodes": false,
+    "configurationId": "pmc_1TbfHpPKr4joNbEcWel594JS"
+  },
+  "subscriptionCheckout": {
+    "allowPromotionCodes": true,
+    "configurationId": "pmc_1TbfHpPKr4joNbEcWel594JS"
+  },
+  "stripeCatalog": {
+    "productId": "prod_VNTsrtlf2ZL8ja",
+    "defaultPriceId": "price_1UMiuIPKr4joNbEclpn8AwFW",
+    "amountCents": 1900
+  },
+  "walletConfig": {
+    "google_pay": {
+      "available": true,
+      "value": "on"
+    },
+    "paypal": {
+      "available": true,
+      "value": "on"
+    },
+    "amazon_pay": {
+      "available": true,
+      "value": "on"
+    },
+    "link": {
+      "available": true,
+      "value": "on"
+    },
+    "card": {
+      "available": true,
+      "value": "on"
+    }
+  },
+  "buyerDeviceVisibility": "NOT_PROVEN",
+  "database": {
+    "observedBytes": 108877491,
+    "cronHistoryBytes": 71811072,
+    "stripeSyncHistoryBytes": 7815168,
+    "syncRunsLastDay": 1440,
+    "syncFailuresLastDay": 0,
+    "successfulSyncRunsObserved": 103023
+  },
+  "logsQuery": {
+    "screenshotUsageGB": 107.2,
+    "screenshotAllowanceGB": 100,
+    "hostedLogQueriesExecutedDuringInvestigation": 0,
+    "exactCallerAttribution": "NOT_PROVEN",
+    "repositoryAutomatedLogPolling": "NOT_FOUND"
+  }
+}
