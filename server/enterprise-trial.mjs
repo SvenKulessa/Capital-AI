@@ -17,6 +17,21 @@ export function createEnterpriseTrial({env=process.env,fetchImpl=fetch}={}) {
     if(!response.ok) throw new Error('trial_readback_rejected');return boundedJson(response);
   }
   return { state,
+    async resume(userId) {
+      const saved = await state(userId,'resume');
+      if (!/^cs_[A-Za-z0-9_]{1,250}$/.test(saved?.sessionId||'')) return null;
+      const session = await stripe(`/checkout/sessions/${encodeURIComponent(saved.sessionId)}?expand[]=line_items`);
+      const items = session.line_items?.data;
+      let target;
+      try { target = new URL(session.url); } catch { return null; }
+      if (session.id!==saved.sessionId || session.status!=='open' || session.mode!=='subscription' ||
+          session.livemode!==(env.STRIPE_SECRET_KEY||'').startsWith('sk_live_') ||
+          session.client_reference_id!==userId || session.metadata?.user_id!==userId ||
+          session.metadata?.campaign!==ENTERPRISE_TRIAL_CAMPAIGN || session.metadata?.billing_cycle!=='monthly' ||
+          !Array.isArray(items) || items.length!==1 || items[0]?.price?.id!==BILLING_CATALOG.tiers.enterprise.monthlyPriceId ||
+          target.protocol!=='https:' || target.hostname!=='checkout.stripe.com' || target.port || target.username || target.password) return null;
+      return session;
+    },
     async activate(userId,sessionId) {
       if(!/^cs_[A-Za-z0-9_]{1,250}$/.test(sessionId||'')) return false;
       const session=await stripe(`/checkout/sessions/${encodeURIComponent(sessionId)}`);
@@ -24,7 +39,7 @@ export function createEnterpriseTrial({env=process.env,fetchImpl=fetch}={}) {
       const subscription=await stripe(`/subscriptions/${session.subscription}`);
       const items=subscription.items?.data;
       const enterprise=BILLING_CATALOG.tiers.enterprise;
-      if(!Array.isArray(items)||items.length!==1||![enterprise.monthlyPriceId,enterprise.annualPriceId].includes(items[0]?.price?.id)) return false;
+      if(!Array.isArray(items)||items.length!==1||items[0]?.price?.id!==enterprise.monthlyPriceId) return false;
       const start=Number(subscription.trial_start),end=Number(subscription.trial_end);
       if(subscription.status!=='trialing'||subscription.metadata?.user_id!==userId||subscription.metadata?.campaign!==ENTERPRISE_TRIAL_CAMPAIGN||!Number.isFinite(start)||!Number.isFinite(end)||end<=start||end-start!==3*86400||end*1000<=Date.now()) return false;
       return (await state(userId,'activate',sessionId,new Date(end*1000).toISOString()))?.activated===true;
