@@ -3,7 +3,6 @@ import {
   Clock, Color, DirectionalLight, Group, HemisphereLight,
   PerspectiveCamera, Scene, SRGBColorSpace, WebGLRenderer,
 } from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 type JaJa3DAvatarProps = { azimuth: number };
 type RenderState = 'loading' | 'ready' | 'failed';
@@ -107,8 +106,11 @@ export default function JaJa3DAvatar({ azimuth }: JaJa3DAvatarProps) {
     visibility?.observe(canvas);
     document.addEventListener('visibilitychange', onVisibilityChange);
 
-    const loader = new GLTFLoader();
-    void loader.loadAsync(MODEL_URL).then(gltf => {
+    // Keep the optional general-purpose GLTF loader out of the Three.js core chunk.
+    // The existing Vite 500 kB budget applies to each emitted JS chunk.
+    void import('three/addons/loaders/GLTFLoader.js')
+      .then(({ GLTFLoader }) => new GLTFLoader().loadAsync(MODEL_URL))
+      .then(gltf => {
       if (disposed) return;
       model = gltf.scene;
       scene.add(model);
