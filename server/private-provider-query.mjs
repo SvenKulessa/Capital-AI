@@ -249,11 +249,11 @@ export function createPrivateProviderQuery({ env = process.env, auth, vault, sta
   });
 
   function queryEnabled() {
-    return env.PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true';
+    return env.MARKET_BROKER_PAUSED !== 'true' && env.PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true';
   }
 
   function probeEnabled() {
-    return queryEnabled() || env.PRIVATE_PROVIDER_BRIDGE_PROBE_ENABLED === 'true';
+    return env.MARKET_BROKER_PAUSED !== 'true' && (queryEnabled() || env.PRIVATE_PROVIDER_BRIDGE_PROBE_ENABLED === 'true');
   }
 
   async function respond(message, payload) {
