@@ -134,7 +134,7 @@ test('3D avatar is lazy, accessible, and included in Docker production build', (
   assert.match(hero, /ArrowLeft/);
   assert.match(viewer, /webglcontextlost/);
   assert.match(viewer, /visibilitychange/);
-  assert.match(viewer, /jaja-figure\.glb/);
+  assert.match(boundedLoader, /jaja-figure\.glb/);
   const boundedLoader = readFileSync(resolve(root, 'src/components/loadJaJaGLB.ts'), 'utf8');
   assert.ok(viewer.includes('loadJaJaGLB(abort.signal)'), '3D renderer must load its model with abort support');
   assert.ok(boundedLoader.includes('const MAX_GLB_BYTES = 256_000'), 'Bound GLB network inputs');
