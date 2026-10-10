@@ -242,6 +242,8 @@
 !public/branding/badges/**
 !public/branding/social/
 !public/branding/social/**
+!public/assets/
+!public/assets/jaja-avatar-transparent.webp
 !CAPITAL-AI-PRODUCT/
 !CAPITAL-AI-PRODUCT/badge.svg
 !CAPITAL-AI-TRUST/
