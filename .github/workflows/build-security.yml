@@ -19,6 +19,7 @@ on:
         default: false
 permissions:
   contents: read
+  pull-requests: read # read PR filenames for fail-closed scope selection
 concurrency:
   group: docker-security-${{ github.ref }}-${{ github.event_name == 'workflow_dispatch' && 'release' || 'validation' }}
   cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
