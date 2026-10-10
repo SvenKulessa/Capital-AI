@@ -39,9 +39,12 @@ def seo_agent(state: GrowthState) -> dict:
     policy = source(state["repo_root"], "shared/seo-indexing-policy.mjs")
     noindex = re.findall(r"path: '([^']+)', classification: 'NOINDEX'", policy)
     metadata = source(state["repo_root"], "shared/seo-metadata.mjs")
+    # Match the entire source declaration; a substring could also occur in an
+    # unrelated comment, URL path, or an attacker-controlled hostname.
+    canonical_origin_defined = "export const SEO_SITE_ORIGIN = 'https://capital-ai.online';" in metadata.splitlines()
     return {"findings": [
         finding("seo", "SOURCE_OBSERVED" if policy else "NOT_PROVEN", "Public product routes awaiting crawlable landing content: " + ", ".join(path for path in noindex if path in {"/marketscreener", "/pricing", "/dokumentation"})),
-        finding("seo", "SOURCE_OBSERVED" if "https://capital-ai.online" in metadata else "NOT_PROVEN", "Production canonical origin source inspected; live canonical/indexing and ranking require independent readback."),
+        finding("seo", "SOURCE_OBSERVED" if canonical_origin_defined else "NOT_PROVEN", "Production canonical origin source inspected; live canonical/indexing and ranking require independent readback."),
     ]}
 
 
