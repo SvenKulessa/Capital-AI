@@ -7,7 +7,8 @@ export function freeVocabularySelection(terms: readonly VocabularyTerm[]): Vocab
   // Pick the first entry of each category before filling remaining slots. Filtering never expands access.
   const levels = [...new Set(terms.map(term => term.level))];
   return levels.flatMap(level => {
-    const pool = terms.filter(term => term.level === level);
+    const pool = terms.filter(term => term.level === level)
+      .sort((a,b) => Number(b.category === 'MOBILE_RUNTIME') - Number(a.category === 'MOBILE_RUNTIME'));
     const selected: VocabularyTerm[] = [];
     const seenCategories = new Set<string>();
     for (const term of pool) {
