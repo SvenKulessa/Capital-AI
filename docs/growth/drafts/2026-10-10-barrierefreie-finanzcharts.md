@@ -1,8 +1,8 @@
 # Barrierefreie Finanzcharts: Vier Informationswege statt nur einer Kurve
 
 **Status:** WEBSITE_IMPLEMENTED · SOCIAL_DRAFT · **Datum:** 2026-10-10 · **Sprache:** de-DE
-**SEO-Titel:** Finanzcharts barrierefrei verstehen | CAPITAL AI  
-**Meta-Description:** Wie CAPITAL AI Finanzcharts mit Textalternativen, nachvollziehbarer Datenherkunft und Tastaturbedienung verständlicher gestalten kann.  
+**SEO-Titel:** Finanzcharts barrierefrei verstehen | CAPITAL AI
+**Meta-Description:** Wie CAPITAL AI Finanzcharts mit Textalternativen, nachvollziehbarer Datenherkunft und Tastaturbedienung verständlicher gestalten kann.
 **Kampagne:** `capital-ai-chart-accessibility-20261010`
 
 Ein Chart lässt sich schnell überfliegen – solange man die Linien sehen kann und versteht, welche Daten hinter ihnen stehen. Für barrierefreie Finanzanalyse reichen Farben und Kurven jedoch nicht. Menschen, die Screenreader, Tastatur, hohe Vergrößerung oder kleine Displays verwenden, brauchen gleichwertige Informationen.

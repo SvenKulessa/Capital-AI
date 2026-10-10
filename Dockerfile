@@ -59,7 +59,7 @@ COPY public/branding/social ./public/branding/social
 # Ship the approved JaJa avatar used by src/components/HeroBuddy.tsx.
 COPY public/assets/jaja-avatar-transparent.webp ./public/assets/jaja-avatar-transparent.webp
 COPY public/fonts ./public/fonts
-COPY public/learning/editorial ./public/learning/editorial
+COPY public/learning/editorial/chart-accessibility-20261010.svg ./public/learning/editorial/chart-accessibility-20261010.svg
 COPY public/learning/charts ./public/learning/charts
 COPY public/learning/videos ./public/learning/videos
 COPY public/bootstrap-failure.js ./public/bootstrap-failure.js
