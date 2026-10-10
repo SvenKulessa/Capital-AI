@@ -18,6 +18,7 @@ export default function JaJa3DAvatar({ azimuth }: JaJa3DAvatarProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const angleRef = useRef(azimuth);
   const [state, setState] = useState<RenderState>('loading');
+  const [imageFailed, setImageFailed] = useState(false);
   angleRef.current = azimuth;
 
   useEffect(() => {
@@ -142,9 +143,15 @@ export default function JaJa3DAvatar({ azimuth }: JaJa3DAvatarProps) {
         src="/assets/jaja-avatar-transparent.webp"
         alt=""
         draggable={false}
+        onError={() => setImageFailed(true)}
         className={'absolute inset-0 h-full w-full object-contain transition-opacity ' +
           (state === 'ready' ? 'opacity-0' : 'opacity-100')}
       />
+      {imageFailed && state !== 'ready' && (
+        <span className="absolute inset-0 flex items-center justify-center rounded-xl bg-amber-300/10 text-2xl font-bold text-amber-300">
+          JaJa
+        </span>
+      )}
       <canvas
         ref={canvasRef}
         role="presentation"
