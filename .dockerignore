@@ -131,6 +131,7 @@
 !scripts/
 !scripts/media/
 !scripts/media/**
+!scripts/generate-jaja-3d.mjs
 !scripts/growth/
 !scripts/growth/screener-learning-loop.test.mjs
 !scripts/generate-chart-learning.tsx
