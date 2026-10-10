@@ -34,6 +34,8 @@ async function readIndexTemplate() {
 
 const EXPECTED_INDEX_PATHS = [
   '/',
+  '/blog',
+  '/blog/barrierefreie-finanzcharts',
   '/learning',
   '/vocabulary',
   '/faq',

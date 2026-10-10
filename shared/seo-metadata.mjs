@@ -1,3 +1,4 @@
+import { blogArticleForPath } from './blog-articles.mjs';
 import { seoContentForPath } from './seo-content-manifest.mjs';
 import {
   VOCABULARY_PUBLIC_COUNT,
@@ -37,6 +38,11 @@ function primarySchema(entry) {
     description: entry.description,
     inLanguage: entry.language,
   };
+
+  if (entry.structuredDataType === 'BlogPosting') {
+    const article = blogArticleForPath(entry.path);
+    return { ...common, '@type': 'BlogPosting', headline: article.title, datePublished: article.date, dateModified: article.date, author: { '@type': 'Organization', name: 'CAPITAL AI' }, isPartOf: { '@id': `${SEO_SITE_ORIGIN}/#website` } };
+  }
 
   if (entry.structuredDataType === 'WebApplication') {
     return {
@@ -103,7 +109,7 @@ export function seoMetadataForPath(pathname) {
     canonical: entry.canonical,
     robots: entry.robots,
     language: entry.language,
-    ogType: entry.contentType === 'research' ? 'article' : 'website',
+    ogType: ['research', 'article'].includes(entry.contentType) ? 'article' : 'website',
     ogSiteName: 'Capital-AI',
     ogLocale: 'de_DE',
     ogImage: SEO_SOCIAL_IMAGE,

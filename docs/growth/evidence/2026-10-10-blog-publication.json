@@ -1,0 +1,132 @@
+{
+  "browser": "153.0.8010.0",
+  "scope": "LOCAL_BUILT_APP_NOT_PRODUCTION",
+  "results": [
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "width": 1440,
+      "scrollWidth": 1440,
+      "articleWidth": 720,
+      "mainCount": 1,
+      "h1Count": 1,
+      "imageLoaded": true,
+      "paragraphSize": "16px",
+      "keyboardFocus": {
+        "text": "Alle Beiträge",
+        "outline": "2px"
+      },
+      "accessibleTree": "HEADINGS_IMAGE_SOURCES_PASS"
+    },
+    {
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "width": 768,
+      "scrollWidth": 768,
+      "articleWidth": 720,
+      "mainCount": 1,
+      "h1Count": 1,
+      "imageLoaded": true,
+      "paragraphSize": "16px",
+      "keyboardFocus": {
+        "text": "Alle Beiträge",
+        "outline": "2px"
+      },
+      "accessibleTree": "HEADINGS_IMAGE_SOURCES_PASS"
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "width": 390,
+      "scrollWidth": 390,
+      "articleWidth": 358,
+      "mainCount": 1,
+      "h1Count": 1,
+      "imageLoaded": true,
+      "paragraphSize": "16px",
+      "keyboardFocus": {
+        "text": "Alle Beiträge",
+        "outline": "2px"
+      },
+      "accessibleTree": "HEADINGS_IMAGE_SOURCES_PASS"
+    },
+    {
+      "viewport": {
+        "width": 320,
+        "height": 800
+      },
+      "width": 320,
+      "scrollWidth": 320,
+      "articleWidth": 288,
+      "mainCount": 1,
+      "h1Count": 1,
+      "imageLoaded": true,
+      "paragraphSize": "16px",
+      "keyboardFocus": {
+        "text": "Alle Beiträge",
+        "outline": "2px"
+      },
+      "accessibleTree": "HEADINGS_IMAGE_SOURCES_PASS"
+    },
+    {
+      "textZoom": "200%",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      },
+      "scrollWidth": 320,
+      "width": 320,
+      "paragraphSize": "32px"
+    },
+    {
+      "navigation": "BLOG_INDEX_TO_ARTICLE_PASS"
+    },
+    {
+      "navigation": "LEARNING_TO_ARTICLE_PASS"
+    }
+  ],
+  "pageErrors": [],
+  "screenreader": "ACCESSIBILITY_TREE_CHECKED_REAL_NVDA_VOICEOVER_NOT_PROVEN",
+  "webgl": "GPU_DISABLED_FOR_BROWSER_RUN_EXISTING_AVATAR_USES_FALLBACK",
+  "sourceMain": "59efd0ada3a51047ab939c59c5f11367b204d97d",
+  "pr": 360,
+  "testedAt": "2026-10-10T10:09:19Z",
+  "screenshots": [
+    {
+      "path": "docs/growth/evidence/screenshots/blog-360-390.png",
+      "sha256": "30f431f8d8aa3439e8298771e3be8083f3d47e8d51df91608eaf105fbbf9ff16"
+    },
+    {
+      "path": "docs/growth/evidence/screenshots/blog-360-1440.png",
+      "sha256": "4aac9a088ea3c3dddec9def0d3bcf0cf1507bf2e348fbb49d1065261b3960b7e"
+    }
+  ],
+  "checks": {
+    "lint": "PASS",
+    "build": "PASS",
+    "npmTest": "PASS",
+    "dockerContext": "PASS",
+    "seoIndexing": "PASS",
+    "learningArticleHttp": "PASS",
+    "navigation": "PASS",
+    "browserBoundary": "PASS",
+    "requiredGithubChecks": "PENDING_ON_FINAL_HEAD",
+    "productionDeployment": "NOT_PROVEN"
+  },
+  "rightsReview": {
+    "scope": "REPOSITORY_CONTENT_AND_SVG",
+    "externalMedia": [],
+    "embeddedFontFiles": [],
+    "marketData": "NONE",
+    "text": "Original editorial explanation; source links only, no quoted W3C passages.",
+    "svg": "Original deterministic illustration with generic font family; no external references or script.",
+    "legalEngineReceiptRequired": "NO_ADDITIONAL_GATE_PER_CURRENT_AGENTS",
+    "claims": "Educational recommendations, no completed WCAG certification or live financial data claim."
+  }
+}
