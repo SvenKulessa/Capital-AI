@@ -28,7 +28,7 @@ function sphere() {
   }
   for (let row = 0; row < stacks; row++) for (let col = 0; col < slices; col++) {
     const a = row * (slices + 1) + col, b = a + slices + 1;
-    indices.push(a, b, a + 1, b, b + 1, a + 1);
+    indices.push(a, a + 1, b, b, a + 1, b + 1);
   }
   return { positions, normals, indices };
 }
