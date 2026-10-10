@@ -66,8 +66,8 @@ const publicVocabularyEntries = vocabularyMetadata.filter(entry => !QUANT_PRO_ID
 const publicVocabularyCount = publicVocabularyEntries.length;
 const publicVocabularyMetadata = {
   '/learning': {
-    title: 'Capital-AI | Learning Portal & Fachbegriffe',
-    description: `Learning Portal von Capital-AI mit ${publicVocabularyCount} konsolidierten Fachbegriffen aus Marktanalyse, Scoring, Daten, Plattform, Security, Produkt, Governance und Mobile Runtime.`,
+    title: 'Finanzwissen lernen: Glossar, Chartmuster & Quiz | Capital-AI',
+    description: `Finanzbegriffe und Marktanalyse verständlich lernen: ${publicVocabularyCount} Fachbegriffe, Chartbeispiele und Quizzes. Lerninhalte entdecken und Learning-/Kursanfrage stellen.`,
   },
   '/vocabulary': {
     title: `Capital-AI Vocabulary | ${publicVocabularyCount} Fachbegriffe & Thesaurus`,
@@ -242,7 +242,7 @@ function injectVocabularySeo(html, pathname) {
     ? vocabularyFallback(entry)
     : pathname === '/vocabulary'
       ? vocabularyLandingFallback()
-      : `<main><article><h1>Capital-AI Learning Portal</h1><p>${escapeHtml(description)}</p><p><a href="/vocabulary">Zum Vocabulary mit ${publicVocabularyCount} Fachbegriffen</a></p></article></main>`;
+      : `<main><article><h1>Finanzwissen lernen mit Capital-AI</h1><p>${escapeHtml(description)}</p><h2>Finanzbegriffe verstehen</h2><p>Das öffentliche Glossar erklärt Begriffe aus Marktanalyse, Daten und Sicherheit. Definitionen und verwandte Begriffe helfen beim Einstieg.</p><p><a href="/vocabulary">Zum Finanzglossar mit ${publicVocabularyCount} Fachbegriffen</a></p><h2>Chartmuster und Analyse kritisch einordnen</h2><p>Chartbeispiele und Lernfragen erklären Zusammenhänge und Grenzen einer Interpretation. Bildungsinhalte sind keine Anlageberatung oder Renditezusage. Zusätzliche Lernmodule können einen kostenpflichtigen Zugang benötigen; noch unveröffentlichte Videos sind als Vorschau gekennzeichnet.</p><h2>Learning-/Kursanfrage stellen</h2><p>Fragen zu Lerninhalten oder zum Zugang? Beschreibe dein Lernziel per E-Mail. Eine Anfrage wird erst beim Absenden der E-Mail übermittelt.</p><p><a href="mailto:support@capital-ai.online?subject=Capital-AI%20Learning-%2FKursanfrage">Learning-/Kursanfrage per E-Mail stellen</a></p><p><a href="/datenschutz">Datenschutzhinweise</a></p></article></main>`;
   body = body.replace(
     '<div id="root"></div>',
     `<div id="root">${fallback}</div>`,
