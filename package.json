@@ -79,7 +79,7 @@
     "test:chart-learning": "node --import tsx --test src/features/learning/chartLearning.test.tsx",
     "charts:generate": "node --import tsx scripts/generate-chart-learning.tsx && python scripts/media/render_chart_learning.py",
     "test:social-neural2": "node --test server/social-media/google-neural2-tts.test.mjs",
-    "test:learning-portal": "node --test server/enterprise-trial.test.mjs && node --import tsx --test src/features/learning/learningPolicy.test.tsx",
+    "test:learning-portal": "node --test server/enterprise-trial.test.mjs && node --import tsx --test src/features/learning/learningPolicy.test.tsx src/features/learning/blogPublishing.test.tsx",
     "growth:google:mcp": "node scripts/google-maintenance-mcp.mjs",
     "test:google-maintenance": "node --test server/google-maintenance-api.test.mjs server/google-learning-setup.test.mjs",
     "growth:agents": "python3 scripts/growth-agent/graph.py"
