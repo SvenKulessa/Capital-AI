@@ -1,10 +1,10 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "4ada26bf3f1e392fd96280d32a2306e0b06fd11e",
-  "mergedPr": 365,
-  "targetPr": 368,
-  "targetBranch": "capital-ai-platform/homepage-ux-and-content-hubs-20261010",
-  "targetHeadSha": "7e77d73a378c3d70530fca5fab1f731d486e9939",
+  "mainSha": "c5aa739ee1d736967773c0bcd792cad77be6d231",
+  "mergedPr": 364,
+  "targetPr": 365,
+  "targetBranch": "capital-ai-platform/learning-vocabulary-ux-20261010",
+  "targetHeadSha": "2f9bd770cc32df7d1db66c711d6e8fde07b2fcb1",
   "exactOverlap": [
     "shared/seo-source-provenance.mjs"
   ],
