@@ -145,7 +145,7 @@ async function harness(envOverrides = {}) {
         state.privacyRequests.push(row);
         return Response.json([row], { status: 201 });
       }
-      assert.equal(options.method, 'GET');
+      assert.equal(options.method || 'GET', 'GET');
       const userFilter = target.searchParams.get('user_id');
       let rows = state.privacyRequests.filter(row => userFilter === 'eq.' + row.user_id);
       const typeFilter = target.searchParams.get('request_type');
