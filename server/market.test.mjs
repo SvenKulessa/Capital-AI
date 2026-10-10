@@ -220,3 +220,27 @@ test('asset catalog exposes only admitted market-quote instruments without inven
   assert.equal(catalog.assets.some(asset => asset.symbol === 'BTCUSD'), false);
   assert.equal(catalog.assets.some(asset => asset.symbol === 'AAPL'), false);
 });
+
+test('broker pause blocks admitted quote flags without making provider requests', async () => {
+  const keys = ['MARKET_BROKER_PAUSED', 'MARKET_QUOTES_ENABLED', 'MARKET_ECB_REFERENCE_RATES_ENABLED'];
+  const previous = Object.fromEntries(keys.map(key => [key, process.env[key]]));
+  const oldFetch = globalThis.fetch;
+  let fetchCalls = 0;
+  try {
+    process.env.MARKET_BROKER_PAUSED = 'true';
+    process.env.MARKET_QUOTES_ENABLED = 'true';
+    process.env.MARKET_ECB_REFERENCE_RATES_ENABLED = 'true';
+    globalThis.fetch = async () => { fetchCalls++; throw new Error('unexpected provider call'); };
+    const { assetValues, ingestEcbReferenceRates } = await isolated();
+    const [status, body] = await assetValues();
+    assert.equal(status, 503);
+    assert.equal(body.status, 'BLOCKED');
+    assert.equal((await ingestEcbReferenceRates()).status, 'BLOCKED');
+    assert.equal(fetchCalls, 0);
+  } finally {
+    globalThis.fetch = oldFetch;
+    for (const key of keys) {
+      if (previous[key] === undefined) delete process.env[key]; else process.env[key] = previous[key];
+    }
+  }
+});
