@@ -70,6 +70,16 @@
       "rightsHolder": "Sven Michael Kulessa"
     },
     {
+      "id": "capital-ai-badge-learning-mastermind",
+      "label": "LEARNING MASTERMIND",
+      "path": "public/branding/badges/learning-mastermind.svg",
+      "sha256": "505f577e208be3d0660561166f7dbe98a4d7834c91d3f2a6b849cd4e77a58323",
+      "width": 256,
+      "height": 256,
+      "licenseRef": "LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0",
+      "rightsHolder": "Sven Michael Kulessa"
+    },
+    {
       "id": "capital-ai-badge-free-user",
       "label": "FREE USER",
       "path": "public/branding/badges/free-user.svg",
