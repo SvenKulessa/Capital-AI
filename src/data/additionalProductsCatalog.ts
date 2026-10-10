@@ -1,4 +1,4 @@
-import { VOCABULARY_PRICE } from './pricingCatalog';
+import { VOCABULARY_OFFER } from './vocabularyOffer';
 
 export type AdditionalProductCatalogItem = {
   id: string;
@@ -15,13 +15,13 @@ export type AdditionalProductCatalogItem = {
 export const ADDITIONAL_PRODUCTS_CATALOG = [
   {
     id: 'market-vocabulary',
-    label: VOCABULARY_PRICE.label,
+    label: VOCABULARY_OFFER.name,
     state: 'available',
     billing: 'one_time',
-    amountCents: VOCABULARY_PRICE.amountCents,
+    amountCents: VOCABULARY_OFFER.amountCents,
     badgeAsset: new URL('../../CAPITAL-AI-PRODUCT/badge.svg', import.meta.url).href,
     badgeLicense: 'LicenseRef-CAPITAL-AI-VOCABULARY-BADGE-CUSTOMER-1.0',
     entitlement: 'capital-ai-vocabulary',
-    productPath: '/vocabulary',
+    productPath: '/learning',
   },
 ] as const satisfies readonly AdditionalProductCatalogItem[];

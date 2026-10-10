@@ -60,6 +60,8 @@ export const ContentStudioPanel: React.FC = () => {
               ['Package', CONTENT_SOCIAL_PACKAGE_VERSION],
               ['Publisher', CONTENT_SOCIAL_PUBLISHER_ADAPTER_VERSION],
               ['Publish', 'FAIL-CLOSED'],
+              ['CADS', plan.cadsQuality.technicalStatus === 'PASS' ? 'TECHNICAL_DRAFT_PASS' : 'BLOCKED'],
+
             ].map(([label, value]) => (
               <div key={label} className="rounded-xl border border-white/10 bg-black/20 p-3">
                 <div className="uppercase tracking-[0.12em] text-slate-500">{label}</div>
@@ -68,6 +70,26 @@ export const ContentStudioPanel: React.FC = () => {
             ))}
           </div>
         </div>
+      </section>
+
+      <section aria-labelledby="cads-growth-status" className="rounded-2xl border border-cyan-400/25 bg-cyan-400/5 p-4">
+        <h3 id="cads-growth-status" className="text-sm font-bold text-cyan-100">CADS · Content-/Social-Qualitätsprüfung</h3>
+        <p className="mt-2 text-xs text-slate-300">
+          Die Content Engine erzeugt einen nicht autorisierenden CADS-Nachweis. Medienprojekte und
+          Asset-Identitäten werden zusätzlich in der SocialMediaEngine-Bridge geprüft.
+          Externe Rechte, echte Asset-Bytes, redaktionelle Qualität und Live-Publishing bleiben separat offen.
+        </p>
+        <ul className="mt-3 grid gap-2 text-xs sm:grid-cols-2" aria-label="CADS-Prüfungen">
+          {plan.cadsQuality.checks.map(check => (
+            <li key={check.code} className="flex items-center justify-between gap-3 rounded-lg border border-slate-700 px-3 py-2">
+              <span className="break-all text-slate-200">{check.code.replaceAll('_', ' ')}</span>
+              <span className={check.status === 'PASS' ? 'text-emerald-200' : 'text-rose-200'}>{check.status}</span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 text-xs font-semibold text-amber-200">
+          CONTENT_DRAFT_ONLY · PUBLISH_APPROVAL: FALSE · RIGHTS: NOT_PROVEN
+        </p>
       </section>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_1.25fr]">

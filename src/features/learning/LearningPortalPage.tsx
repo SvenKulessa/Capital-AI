@@ -9,9 +9,17 @@
  * 4. Quant- & Trader Skill-Check (Interaktives Quiz)
  */
 
+import { VocabularyCard } from './VocabularyCard';
+import { LearningArticles } from './LearningArticles';
+import { LearningPurchase } from './LearningPurchase';
+import { LearningVideos } from './LearningVideos';
+import { ChartRecognitionQuiz } from './ChartRecognitionQuiz';
+import { useLearningFavorites } from './LearningFavorites';
+import { dailyLearningQuestions, freeVocabularySelection } from './learningPolicy';
 import { ChartLearningAtlas } from './ChartLearningAtlas';
 import React, { useEffect, useState, useMemo } from 'react';
 import {
+  Star,
   BookOpen,
   Search,
   Filter,
@@ -52,8 +60,8 @@ const VocabularyFlashcards = React.lazy(() =>
   })),
 );
 
-export type LearningPortalTab = 'glossar' | 'flashcards' | 'guides' | 'patterns' | 'videos' | 'quiz';
-const LEARNING_TABS: readonly LearningPortalTab[] = ['glossar', 'flashcards', 'guides', 'patterns', 'videos', 'quiz'];
+export type LearningPortalTab = 'glossar' | 'flashcards' | 'guides' | 'patterns' | 'videos' | 'quiz' | 'news';
+const LEARNING_TABS: readonly LearningPortalTab[] = ['glossar', 'flashcards', 'guides', 'patterns', 'videos', 'quiz', 'news'];
 
 interface LearningPortalPageProps {
   onBackToHome?: () => void;
@@ -70,6 +78,10 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
   initialTab = 'glossar',
   initialVocabularyTermId,
 }) => {
+  const termFromLink = initialVocabularyTermId ?? (typeof window === 'undefined' ? undefined : new URLSearchParams(window.location.search).get('term') ?? undefined);
+  const favorites = useLearningFavorites();
+  const [atlasEntitled, setAtlasEntitled] = useState(false);
+  const [chartQuizEntitled, setChartQuizEntitled] = useState(false);
   const [activeTab, setActiveTab] = useHubTab(LEARNING_TABS, initialTab);
 
 
@@ -77,22 +89,33 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<VocabularyCategory>('ALL');
   const [selectedLevel, setSelectedLevel] = useState<string>('ALL');
-  const [expandedTermId, setExpandedTermId] = useState<string | null>(initialVocabularyTermId ?? null);
-  const [focusedTermId, setFocusedTermId] = useState<string | null>(initialVocabularyTermId ?? null);
+  const [expandedTermId, setExpandedTermId] = useState<string | null>(termFromLink ?? null);
+  const [focusedTermId, setFocusedTermId] = useState<string | null>(termFromLink ?? null);
   const [copiedTermId, setCopiedTermId] = useState<string | null>(null);
   const [protectedTerms, setProtectedTerms] = useState<VocabularyTerm[]>([]);
-  const allVocabularyTerms = useMemo(
-    () => [...VOCABULARY_TERMS, ...protectedTerms],
-    [protectedTerms],
-  );
+  const fullVocabularyTerms = useMemo(() => [...VOCABULARY_TERMS, ...protectedTerms], [protectedTerms]);
+
+  // Quiz States
+  const [currentQuizIndex, setCurrentQuizIndex] = useState<number>(0);
+  const [selectedQuizAnswer, setSelectedQuizAnswer] = useState<number | null>(null);
+  const [quizDate, setQuizDate] = useState(() => new Date());
+  const [quizScore, setQuizScore] = useState<number>(0);
+  const [quizFinished, setQuizFinished] = useState<boolean>(false);
+  const [entitled, setEntitled] = useState<boolean>(false);
+  const [quizPreviouslyUsed, setQuizPreviouslyUsed] = useState<boolean>(false);
+  const [quizStarted, setQuizStarted] = useState<boolean>(false);
+  const [authenticated, setAuthenticated] = useState<boolean>(false);
+  const [accessLoaded, setAccessLoaded] = useState<boolean>(false);
+  const [quizAccessError, setQuizAccessError] = useState<string>('');
+  const allVocabularyTerms = useMemo(() => entitled ? fullVocabularyTerms : freeVocabularySelection(fullVocabularyTerms), [entitled, fullVocabularyTerms]);
 
   useEffect(() => {
-    if (!initialVocabularyTermId) {
+    if (!termFromLink) {
       setFocusedTermId(null);
       return;
     }
 
-    const term = allVocabularyTerms.find((candidate) => candidate.id === initialVocabularyTermId);
+    const term = allVocabularyTerms.find((candidate) => candidate.id === termFromLink);
     if (!term) return;
 
     setActiveTab('glossar');
@@ -107,25 +130,18 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       description: `${term.shortDefinition} Kategorie: ${term.categoryLabel}. Drei Thesaurus-Begriffe im Capital-AI Vocabulary.`,
       canonicalPath: `/vocabulary/${term.id}`,
     });
-  }, [initialVocabularyTermId, setActiveTab, allVocabularyTerms]);
+  }, [termFromLink, setActiveTab, allVocabularyTerms]);
 
-  // Quiz States
-  const [currentQuizIndex, setCurrentQuizIndex] = useState<number>(0);
-  const [selectedQuizAnswer, setSelectedQuizAnswer] = useState<number | null>(null);
-  const [quizScore, setQuizScore] = useState<number>(0);
-  const [quizFinished, setQuizFinished] = useState<boolean>(false);
-  const [entitled, setEntitled] = useState<boolean>(false);
-  const [quizPreviouslyUsed, setQuizPreviouslyUsed] = useState<boolean>(false);
-  const [quizStarted, setQuizStarted] = useState<boolean>(false);
-  const [authenticated, setAuthenticated] = useState<boolean>(false);
-  const [accessLoaded, setAccessLoaded] = useState<boolean>(false);
-  const [quizAccessError, setQuizAccessError] = useState<string>('');
 
   useEffect(() => {
     let cancelled = false;
 
     async function syncVocabularyAccess() {
+      const preview = await fetch('/api/learning/vocabulary/preview').then(r => r.ok ? r.json() : null).catch(() => null);
+      if (!cancelled && Array.isArray(preview?.terms)) setProtectedTerms(preview.terms);
       const params = new URLSearchParams(window.location.search);
+      const trialSession=params.get('enterprise_trial_session');
+      if(trialSession) await fetch(`/api/billing/enterprise/trial?session_id=${encodeURIComponent(trialSession)}`,{method:'POST'}).catch(()=>null);
       const sessionId = params.get('vocabulary_session') || window.localStorage.getItem(VOCABULARY_GRANT_KEY) || '';
 
       try {
@@ -156,6 +172,8 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
         if (cancelled) return;
         setAuthenticated(true);
         setEntitled(Boolean(access?.quantProEntitled));
+        setAtlasEntitled(access?.atlasEntitled === true);
+        setChartQuizEntitled(access?.chartQuizEntitled === true);
         setQuizPreviouslyUsed(Boolean(access?.quizUsed));
 
         if (access?.quantProEntitled) {
@@ -240,71 +258,14 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
         );
       case 'Quant / Pro':
         return (
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30">
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-200 border border-cyan-400/30">
             Quant / Pro
           </span>
         );
     }
   };
 
-  // Interactive Quiz Questions
-  const QUIZ_QUESTIONS = [
-    {
-      question: 'Welche Bedingung muss für den Warren Buffett Value Check primär erfüllt sein?',
-      options: [
-        'Kurs liegt unter dem 200-Tage-Durchschnitt',
-        'Eigenkapitalrendite (ROE) dauerhaft > 15% mit intaktem Moat und Sicherheitsmarge',
-        'Latenz des Datenfeeds liegt unter 10ms',
-        'Handelsvolumen übersteigt 100 Mio. $ täglich',
-      ],
-      correct: 1,
-      explanation:
-        'Warren Buffett investiert nur in Unternehmen mit dauerhaft hoher Kapitalrendite (ROE > 15%), verständlichem Burggraben (Economic Moat) und einer Sicherheitsmarge (Margin of Safety) zum fairen inneren Wert.',
-    },
-    {
-      question: 'Wozu dient die WORM-Archivierung nach BaFin WpHG § 83 im Capital-AI System?',
-      options: [
-        'Zur Beschleunigung von WebSocket-Datenströmen',
-        'Zur unveränderbaren und revisionssicheren 5-Jahres-Aufbewahrung aller Scores und Algorithmen-Signale',
-        'Zum automatischen Ankauf von $CPT Token',
-        'Zur Komprimierung von Grafikdateien',
-      ],
-      correct: 1,
-      explanation:
-        'Write-Once-Read-Many (WORM) stellt sicher, dass generierte Finanzempfehlungen und Marktdatenschnitte nach WpHG § 83 nachträglich nicht manipuliert werden können.',
-    },
-    {
-      question: 'Was ist der Hauptvorteil eines In-Memory Ringpuffers gegenüber direkten Provider-API Abfragen?',
-      options: [
-        'Er eliminiert externe Lizenzgebühren vollständig',
-        'Er entkoppelt Tausende Frontend-Nutzer von externen Rate-Limits und garantiert Sub-45ms Latenz',
-        'Er ersetzt die Notwendigkeit einer Datenbank',
-        'Er berechnet automatisch Steuern für Kryptowährungen',
-      ],
-      correct: 1,
-      explanation:
-        'Der Ringpuffer hält die neuesten Ticks im Arbeitsspeicher. Anstatt jede Nutzeranfrage an TwelveData oder Binance weiterzuleiten, liefert der Cache Daten in Mikrosekunden und schützt vor dem 40 € Monatsbudget-Deckel (AP-006).',
-    },
-    {
-      question: 'Wie definiert sich das Sortino Ratio im Vergleich zum traditionellen Sharpe Ratio?',
-      options: [
-        'Es berücksichtigt nur die Abwärtsvolatilität (Downside Deviation) statt der Gesamtvolatilität',
-        'Es wird ausschließlich in der Chartanalyse verwendet',
-        'Es multipliziert den Gewinn mit der Dividendenrendite',
-        'Es misst nur den Bitcoin-Preis im Verhältnis zu Gold',
-      ],
-      correct: 0,
-      explanation:
-        'Das Sortino Ratio bestraft nur die nach unten gerichtete Volatilität, da Kursschwankungen nach oben für den Anleger positiv sind.',
-    },
-    {
-      question: 'Welche europäische Verordnung regelt ab 2024/2025 die Standards für Krypto-Assets und Stablecoins?',
-      options: ['GDPR', 'MiCA (Markets in Crypto-Assets)', 'MiFID II', 'PSD2'],
-      correct: 1,
-      explanation:
-        'Die EU MiCA-Verordnung 2023/1114 vereinheitlicht den Rechtsrahmen für Krypto-Vermögenswerte, Whitepaper-Pflichten und Reserveanforderungen in der gesamten Europäischen Union.',
-    },
-  ];
+  const QUIZ_QUESTIONS = dailyLearningQuestions(quizDate, entitled);
 
   return (
     <div className="w-full text-slate-100 min-h-screen py-4 sm:py-6 px-2 sm:px-6 relative">
@@ -333,11 +294,12 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
               /
             </span>
             <span className="text-cyan-300 font-medium">
-              {activeTab === 'glossar' && 'Finanz-Vocabulary & Glossar'}
+              {activeTab === 'news' && 'Öffentliche Lernimpulse'}
+          {activeTab === 'glossar' && 'Finanz-Vocabulary & Glossar'}
               {activeTab === 'flashcards' && 'Vocabulary Flashcards'}
               {activeTab === 'guides' && 'Analyse-Module & Methodik'}
               {activeTab === 'patterns' && 'Chart-Lernatlas'}
-              {activeTab === 'videos' && 'Architektur Videos'}
+              {activeTab === 'videos' && 'Lernvideos'}
               {activeTab === 'quiz' && 'Quant & Trader Skill-Check'}
             </span>
           </div>
@@ -382,8 +344,15 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
         </div>
       </div>
 
+      <label className="mb-4 block text-sm text-amber-200 sm:hidden">Lernbereich auswählen
+        <select value={activeTab} onChange={event=>setActiveTab(event.target.value as LearningPortalTab)} className="mt-2 min-h-11 w-full rounded-lg border border-amber-400/30 bg-slate-950 p-3 text-white">
+          {LEARNING_TABS.map(tab=><option key={tab} value={tab}>{{glossar:'Vocabulary & Glossar',flashcards:'Karteikasten',guides:'Modul-Erklärungen',patterns:'Chart-Lernatlas',videos:'Lernvideos',quiz:'Tagesquiz',news:'Öffentliche Lernimpulse'}[tab]}</option>)}
+        </select>
+      </label>
       {/* 3. LEARNING PORTAL TABS */}
       <div className="flex items-center gap-1 p-1 rounded-xl bg-[#090e21] border border-slate-800/90 mb-6 overflow-x-auto scrollbar-none">
+        <button type="button" onClick={() => setActiveTab('news')} aria-current={activeTab === 'news' ? 'page' : undefined}
+          className={`min-h-11 rounded-lg px-3.5 text-xs whitespace-nowrap ${activeTab === 'news' ? 'bg-amber-400 text-black' : 'text-slate-200 hover:bg-white/5'}`}>Lernimpulse · News</button>
         {/* TAB 1: GLOSSAR / VOCABULARY */}
         <button
           type="button"
@@ -433,7 +402,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
           className={`rounded-lg px-3.5 py-2 text-xs font-medium whitespace-nowrap ${activeTab === 'patterns' ? 'bg-cyan-300 text-black' : 'text-slate-200 hover:bg-white/5'}`}>
           Chart-Lernatlas
         </button>
-        {/* TAB 3: ARCHITEKTUR VIDEOS */}
+        {/* TAB 3: LERNVIDEOS */}
         <button
           type="button"
           onClick={() => setActiveTab('videos')}
@@ -444,7 +413,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
           }`}
         >
           <PlayCircle className="w-3.5 h-3.5" />
-          <span>Architektur Videos</span>
+          <span>Lernvideos</span>
           <span className="text-[10px] px-1.5 py-0.2 rounded bg-black/20 font-mono">Vorschau</span>
         </button>
 
@@ -454,7 +423,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
           onClick={() => setActiveTab('quiz')}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
             activeTab === 'quiz'
-              ? 'bg-purple-500 text-white font-bold shadow-sm'
+              ? 'bg-amber-400 text-black font-bold shadow-sm'
               : 'text-slate-300 hover:text-white hover:bg-white/5'
           }`}
         >
@@ -466,9 +435,10 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       {/* ========================================================================= */}
       {/* TAB CONTENT 1: MARKET VOCABULARY & GLOSSAR                                */}
       {/* ========================================================================= */}
+      {activeTab === 'news' && <LearningArticles />}
       {activeTab === 'flashcards' && (
         <React.Suspense fallback={<p role="status" className="p-4 text-sm text-slate-400">Karteikarten werden geladen …</p>}>
-          <VocabularyFlashcards onNavigate={(path) => onNavigateTab?.(path)} />
+          <VocabularyFlashcards entitled={entitled} terms={allVocabularyTerms} onNavigate={(path) => onNavigateTab?.(path)} />
         </React.Suspense>
       )}
 
@@ -525,6 +495,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
                   setFocusedTermId(null);
                   setSearchQuery(e.target.value);
                 }}
+                aria-label="Vocabulary durchsuchen"
                 placeholder="Begriff, Abkürzung oder Thesaurus suchen (z.B. VWAP, OIDC, Gate, Scorer)..."
                 className="w-full pl-9 pr-4 py-2 rounded-lg bg-black/40 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400/80"
               />
@@ -542,43 +513,17 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
               )}
             </div>
 
-            {/* Category Filter Buttons */}
-            <div>
-              <div className="text-[11px] font-mono text-slate-400 mb-1.5">Kategorie:</div>
-              <div className="flex flex-wrap items-center gap-1.5">
-                {VOCABULARY_CATEGORIES.map((cat) => {
-                  const count =
-                    cat.id === 'ALL'
-                      ? allVocabularyTerms.length
-                      : allVocabularyTerms.filter((t) => t.category === cat.id).length;
-                  const isSelected = selectedCategory === cat.id;
-
-                  return (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => {
-                        setFocusedTermId(null);
-                        setSelectedCategory(cat.id);
-                      }}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-amber-400 text-black font-bold shadow-sm'
-                          : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10'
-                      }`}
-                    >
-                      {cat.label}
-                      <span className="ml-1 text-[10px] opacity-70 font-mono">({count})</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            <label className="block text-xs text-amber-200">Kategorie
+              <select value={selectedCategory} onChange={event => { setFocusedTermId(null); setSelectedCategory(event.target.value as VocabularyCategory); }}
+                className="mt-2 min-h-11 w-full rounded-lg border border-amber-400/30 bg-[#090e21] p-3 text-slate-100 focus-visible:outline-2 focus-visible:outline-amber-300">
+                {VOCABULARY_CATEGORIES.map(cat => <option key={cat.id} value={cat.id}>{cat.label}</option>)}
+              </select>
+            </label>
 
             {/* Skill Level Filter Buttons */}
-            <div className="flex items-center gap-2 pt-2 border-t border-slate-800/80 text-xs">
+            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-800/80 text-xs">
               <span className="text-slate-400 font-mono text-[11px]">Level:</span>
-              {['ALL', 'Einsteiger', 'Fortgeschritten', ...(entitled ? ['Quant / Pro'] : [])].map((lvl) => (
+              {['ALL', 'Einsteiger', 'Fortgeschritten', 'Quant / Pro'].map((lvl) => (
                 <button
                   key={lvl}
                   type="button"
@@ -598,15 +543,17 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
             </div>
             {!entitled && (
               <div className="pt-2 text-[11px] text-purple-200">
-                Quant / Pro wird mit dem Market-Vocabulary-Paket für {formatVocabularyPrice()} freigeschaltet.
+                Kostenlos: sieben feste Einträge je Skill-Level. Learning Portal schaltet alle Begriffe für {formatVocabularyPrice()} einmalig frei.
               </div>
             )}
           </div>
 
+          {favorites.error && <p role="alert" className="text-sm text-rose-300">{favorites.error}</p>}
+          {!entitled && <LearningPurchase onLogin={onNavigateLogin} />}
           {/* Vocabulary Terms Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredTerms.length === 0 ? (
-              <div className="col-span-2 p-8 rounded-xl bg-black/20 border border-slate-800 text-center space-y-2">
+              <div className="md:col-span-2 p-8 rounded-xl bg-black/20 border border-slate-800 text-center space-y-2">
                 <BookOpen className="w-8 h-8 text-slate-500 mx-auto" />
                 <p className="text-sm text-slate-400 font-medium">Keine passenden Begriffe gefunden.</p>
                 <button
@@ -623,120 +570,8 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
                 </button>
               </div>
             ) : (
-              filteredTerms.map((term) => {
-                const isExpanded = expandedTermId === term.id;
-                const isCopied = copiedTermId === term.id;
-
-                return (
-                  <div
-                    key={term.id}
-                    className={`p-4 rounded-xl border transition-all cursor-pointer ${
-                      isExpanded
-                        ? 'bg-[#0b122b] border-amber-400/50 shadow-[0_0_15px_rgba(245,176,20,0.12)]'
-                        : 'bg-[#090e21] border-slate-800/90 hover:border-slate-700'
-                    }`}
-                    onClick={() => setExpandedTermId(isExpanded ? null : term.id)}
-                  >
-                    {/* Header */}
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-300 border border-white/10">
-                            {term.categoryLabel}
-                          </span>
-                          {getLevelBadge(term.level)}
-                          {term.abbreviation && (
-                            <span className="text-xs font-mono font-bold text-amber-400">
-                              [{term.abbreviation}]
-                            </span>
-                          )}
-                        </div>
-                        <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
-                          <a
-                            href={`/vocabulary/${term.id}`}
-                            onClick={(event) => event.stopPropagation()}
-                            className="hover:text-amber-300 underline-offset-4 hover:underline"
-                            title={`${term.term} als eigene Vocabulary-Seite öffnen`}
-                          >
-                            {term.term}
-                          </a>
-                        </h3>
-                        <div className="flex flex-wrap gap-1.5 mt-1.5" aria-label={`Thesaurus zu ${term.term}`}>
-                          {term.thesaurus.map((synonym) => (
-                            <span
-                              key={synonym}
-                              className="px-2 py-0.5 rounded-full bg-cyan-400/5 border border-cyan-400/15 text-[10px] font-medium text-cyan-200/80"
-                            >
-                              {synonym}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Copy Action */}
-                      <button
-                        type="button"
-                        onClick={(e) => handleCopyDefinition(term, e)}
-                        className={`p-1.5 rounded-lg border transition-colors cursor-pointer shrink-0 ${
-                          isCopied
-                            ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
-                            : 'bg-white/5 hover:bg-white/10 border-white/10 text-slate-400 hover:text-white'
-                        }`}
-                        title="Definition kopieren"
-                      >
-                        {isCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                      </button>
-                    </div>
-
-                    {/* Short Definition */}
-                    <p className="text-xs text-slate-300 mt-2 leading-relaxed">
-                      {term.shortDefinition}
-                    </p>
-
-                    {/* Formula or Rule of Thumb Preview */}
-                    {term.formulaOrRule && (
-                      <div className="mt-2.5 p-2 rounded-lg bg-black/40 border border-slate-800 text-[11px] font-mono text-amber-300/90 flex items-center gap-2">
-                        <Calculator className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                        <span className="truncate">{term.formulaOrRule}</span>
-                      </div>
-                    )}
-
-                    {/* Expandable Details */}
-                    {isExpanded && (
-                      <div className="mt-3 pt-3 border-t border-slate-800 space-y-2.5 text-xs animate-in fade-in">
-                        <div>
-                          <div className="text-[10px] font-mono uppercase text-slate-400">Ausführliche Erklärung:</div>
-                          <p className="text-slate-300 mt-0.5 leading-relaxed">{term.detailedExplanation}</p>
-                        </div>
-
-                        <div>
-                          <div className="text-[10px] font-mono uppercase text-slate-400">Praxisbeispiel:</div>
-                          <div className="p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-500/20 text-emerald-200 leading-relaxed mt-0.5">
-                            {term.practicalExample}
-                          </div>
-                        </div>
-
-                        {term.keyTakeaway && (
-                          <div className="flex items-center gap-1.5 text-[10.5px] text-purple-300 font-mono">
-                            <ShieldCheck className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-                            <span>Fazit &amp; Praxistipp: {term.keyTakeaway}</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Accordion indicator */}
-                    <div className="mt-3 flex items-center justify-between text-[10px] font-mono text-slate-400 pt-2 border-t border-slate-800/60">
-                      <span>{isExpanded ? 'Details einklappen' : 'Klicken für Details & Praxisbeispiel'}</span>
-                      <ChevronDown
-                        className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                          isExpanded ? 'rotate-180 text-amber-400' : ''
-                        }`}
-                      />
-                    </div>
-                  </div>
-                );
-              })
+              filteredTerms.map(term => <VocabularyCard key={term.id} term={term} initialExpanded={expandedTermId === term.id}
+                saved={favorites.ids.includes(term.id)} pending={favorites.pending} onFavorite={id => void favorites.toggle(id)} />)
             )}
           </div>
         </div>
@@ -745,8 +580,9 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       {/* ========================================================================= */}
       {/* TAB CONTENT 2: CHEAT-SHEETS & PIPELINE GUIDES                             */}
       {/* ========================================================================= */}
-      {activeTab === 'patterns' && <ChartLearningAtlas />}
-      {activeTab === 'guides' && (
+      {activeTab === 'patterns' && (atlasEntitled ? <><ChartLearningAtlas /><ChartRecognitionQuiz allowed={chartQuizEntitled} /></> : <p className="rounded-xl border border-amber-400/30 p-5 text-slate-200">Chart-Lernatlas: mit Learning Portal und aktivem Starter-, Pro- oder Enterprise-Abonnement nutzbar.</p>)}
+      {activeTab === 'guides' && !atlasEntitled && <p className="rounded-xl border border-amber-400/30 p-5 text-slate-200">Modul-Erklärungen benötigen Learning Portal und ein aktives Starter-, Pro- oder Enterprise-Abonnement.</p>}
+      {activeTab === 'guides' && atlasEntitled && (
         <div className="space-y-6">
           <div className="p-6 rounded-2xl bg-gradient-to-r from-cyan-500/15 via-[#0d1530] to-purple-500/15 border border-cyan-500/40">
             <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
@@ -776,7 +612,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
             </section>
 
             <section className="p-5 rounded-xl bg-[#090e21] border border-slate-800 space-y-3">
-              <div className="flex items-center gap-2 text-purple-400">
+              <div className="flex items-center gap-2 text-amber-300">
                 <ShieldCheck className="w-5 h-5" />
                 <h3 className="text-sm font-bold text-white">Risk- &amp; Evidence-Modul</h3>
               </div>
@@ -825,87 +661,20 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       {/* ========================================================================= */}
       {/* TAB CONTENT 3: ARCHITEKTUR-VIDEO-VORSCHAU                                */}
       {/* ========================================================================= */}
-      {activeTab === 'videos' && (
-        <div className="space-y-6">
-          <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 via-[#0d1530] to-cyan-500/10 p-6">
-            <div className="flex items-center gap-2 text-xs font-mono text-emerald-300">
-              <Video className="h-4 w-4" />
-              ARCHITEKTUR VIDEO LIBRARY · PREVIEW
-            </div>
-            <h2 className="mt-2 text-xl font-bold text-white sm:text-2xl">Architektur verständlich in Sequenzen</h2>
-            <p className="mt-2 max-w-3xl text-xs leading-relaxed text-slate-300 sm:text-sm">
-              Die Vorschau strukturiert die vorhandene CAPITAL-AI Architektur in kurze Lernsequenzen.
-              Video-Renderings werden erst nach erfolgreichem Social-Media-Engine-Completion-Gate als erzeugte Medien veröffentlicht.
-            </p>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-3">
-            {[
-              {
-                title: 'BYOK · Key → Vault → Provider',
-                note: 'Private Credentials, same-origin BFF, Vault-Grenze und read-only Provider-Kontext.',
-                href: '/dokumentation',
-                tag: 'SECURITY ARCHITECTURE',
-              },
-              {
-                title: 'MARKET · Provider → CAPITAL_FACTS → Replay',
-                note: 'Von Provider-Observation über immutable Evidence und PubAck bis zum deterministischen Replay.',
-                href: '/marketscreener/dokumentation',
-                tag: 'MARKET DATA',
-              },
-              {
-                title: 'Scoring · Features → Snapshot → Shadow',
-                note: 'Feature-Berechnung, PipelineSnapshot, Score-Eligibility und die Trennung von Shadow und Production.',
-                href: '/architecture',
-                tag: 'SCORING CONTRACT',
-              },
-            ].map((video) => (
-              <article key={video.title} className="overflow-hidden rounded-2xl border border-slate-800 bg-[#071022]">
-                <div className="relative flex aspect-video items-center justify-center bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.18),transparent_55%),#030712]">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full border border-emerald-400/40 bg-emerald-400/10 text-emerald-300">
-                    <PlayCircle className="h-7 w-7" />
-                  </div>
-                  <span className="absolute left-3 top-3 rounded-full border border-white/10 bg-black/50 px-2 py-1 font-mono text-[9px] text-slate-300">
-                    {video.tag}
-                  </span>
-                  <span className="absolute bottom-3 right-3 rounded bg-black/60 px-2 py-1 font-mono text-[9px] text-amber-300">
-                    PREVIEW · VIDEO NOCH NICHT GERENDERT
-                  </span>
-                </div>
-                <div className="p-4">
-                  <h3 className="text-sm font-black text-white">{video.title}</h3>
-                  <p className="mt-2 text-xs leading-relaxed text-slate-400">{video.note}</p>
-                  <button
-                    type="button"
-                    onClick={() => onNavigateTab?.(video.href)}
-                    className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-xl border border-cyan-400/25 bg-cyan-400/10 px-3 text-xs font-bold text-cyan-200"
-                  >
-                    Architektur-Dokumentation öffnen <ArrowRight className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          <p className="rounded-xl border border-amber-400/20 bg-amber-400/5 p-3 text-[11px] leading-relaxed text-amber-100">
-            Social-Media-Engine Status: BLOCKED_RUNTIME_NOT_MIGRATED. Diese Karten sind deshalb eine UI-Vorschau und keine behauptete Video-/Renderer-Evidence.
-          </p>
-        </div>
-      )}
+      {activeTab === 'videos' && <LearningVideos entitled={entitled} />}
 
       {/* ========================================================================= */}
       {/* TAB CONTENT 4: INTERACTIVE QUIZ & SKILL-CHECK                             */}
       {/* ========================================================================= */}
       {activeTab === 'quiz' && (
         <div className="space-y-6">
-          <div className="p-6 rounded-2xl bg-gradient-to-r from-purple-500/15 via-[#0d1530] to-emerald-500/15 border border-purple-500/40">
+          <div className="p-6 rounded-2xl bg-gradient-to-r from-purple-500/15 via-[#0d1530] to-emerald-500/15 border border-amber-400/30">
             <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-              <Award className="w-6 h-6 text-purple-400" />
+              <Award className="w-6 h-6 text-amber-300" />
               <span>Quant &amp; Trader Skill-Check</span>
             </h2>
-            <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-              Testen Sie Ihr Wissen über fundamentale Finanzkennzahlen, Latenzarchitektur und BaFin-Regularien.
-            </p>
+            <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">Täglich wechselnde Fragen zu Finanzbildung und Quellenbewertung.</p>
+            <p className="mt-2 text-xs text-amber-200">Referenzen: öffentlich zugängliche Lernimpulse aus diesem Portal. Die Fragen wechseln täglich; keine Repository-News.</p>
           </div>
 
           {!accessLoaded ? (
@@ -913,11 +682,11 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
               Lernzugang wird serverseitig geprüft…
             </div>
           ) : !authenticated ? (
-            <div className="p-8 rounded-xl bg-[#090e21] border border-purple-400/30 text-center space-y-4 max-w-md mx-auto">
-              <Award className="w-12 h-12 text-purple-400 mx-auto" />
+            <div className="p-8 rounded-xl bg-[#090e21] border border-amber-400/30 text-center space-y-4 max-w-md mx-auto">
+              <Award className="w-12 h-12 text-amber-300 mx-auto" />
               <h3 className="text-xl font-bold text-white">Anmeldung für den Skill-Check erforderlich</h3>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Der kostenlose Quiz-Versuch wird pro Benutzerkonto serverseitig genau einmal vergeben.
+                Eine kostenlose Frage pro Tag und Benutzerkonto. Tageswechsel: Europe/Berlin.
               </p>
               <button type="button" onClick={onNavigateLogin} className="px-4 py-2 rounded-xl bg-amber-400 text-black font-bold text-xs hover:bg-amber-300 cursor-pointer">
                 Anmelden
@@ -926,22 +695,22 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
           ) : !quizStarted && !entitled && quizPreviouslyUsed ? (
             <div className="p-8 rounded-xl bg-[#090e21] border border-amber-400/30 text-center space-y-4 max-w-md mx-auto">
               <Award className="w-12 h-12 text-amber-400 mx-auto" />
-              <h3 className="text-xl font-bold text-white">Kostenloser Skill-Check bereits verwendet</h3>
+              <h3 className="text-xl font-bold text-white">Tagesfrage bereits verwendet</h3>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Der kostenlose Quiz-Versuch kann einmal genutzt werden. Das Market-Vocabulary-Paket schaltet Quant / Pro und den erweiterten Lernzugang für {formatVocabularyPrice()} frei.
+                Die nächste kostenlose Frage steht morgen bereit. Learning Portal bietet vollständige Quizzes für {formatVocabularyPrice()} einmalig.
               </p>
               <button type="button" onClick={() => setActiveTab('glossar')} className="px-4 py-2 rounded-xl bg-amber-400 text-black font-bold text-xs hover:bg-amber-300 cursor-pointer">
-                Vocabulary-Paket ansehen
+                Learning Portal ansehen
               </button>
             </div>
           ) : !quizStarted ? (
-            <div className="p-8 rounded-xl bg-[#090e21] border border-purple-400/30 text-center space-y-4 max-w-md mx-auto">
-              <Award className="w-12 h-12 text-purple-400 mx-auto" />
-              <h3 className="text-xl font-bold text-white">{entitled ? 'Skill-Check starten' : 'Ein kostenloser Skill-Check'}</h3>
+            <div className="p-8 rounded-xl bg-[#090e21] border border-amber-400/30 text-center space-y-4 max-w-md mx-auto">
+              <Award className="w-12 h-12 text-amber-300 mx-auto" />
+              <h3 className="text-xl font-bold text-white">{entitled ? 'Skill-Check starten' : 'Eine kostenlose Tagesfrage'}</h3>
               <p className="text-xs text-slate-300 leading-relaxed">
                 {entitled
-                  ? 'Ihr Vocabulary-Entitlement ist aktiv. Der Skill-Check kann erneut gestartet werden.'
-                  : 'Mit Start wird Ihr einmaliger kostenloser Quiz-Versuch serverseitig für dieses Benutzerkonto verbraucht.'}
+                  ? 'Ihr Learning-Portal-Zugang ist aktiv. Der Skill-Check kann erneut gestartet werden.'
+                  : 'Mit Start wird Ihre heutige kostenlose Frage serverseitig verbraucht.'}
               </p>
               {quizAccessError && <p className="text-xs text-rose-300">{quizAccessError}</p>}
               <button
@@ -960,6 +729,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
                       }
                       if (!response.ok || !body?.allowed) throw new Error('QUIZ_ACCESS_DENIED');
                       setQuizPreviouslyUsed(Boolean(body?.quizUsed));
+                      setQuizDate(new Date());
                       setQuizStarted(true);
                     })
                     .catch((error) => {
@@ -1036,6 +806,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
                   <p className="text-slate-300 leading-relaxed">
                     {QUIZ_QUESTIONS[currentQuizIndex].explanation}
                   </p>
+                  <a className="text-cyan-200 underline" href={`/learning?tab=news#${QUIZ_QUESTIONS[currentQuizIndex].reference.id}`}>Referenz: {QUIZ_QUESTIONS[currentQuizIndex].reference.title}</a>
                   <div className="pt-2 flex justify-end">
                     <button
                       type="button"
@@ -1083,7 +854,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
                   onClick={() => setActiveTab('glossar')}
                   className="px-4 py-2 rounded-xl bg-amber-400 text-black font-bold text-xs hover:bg-amber-300 cursor-pointer"
                 >
-                  Vocabulary-Paket für {formatVocabularyPrice()} ansehen
+                  Learning Portal für {formatVocabularyPrice()} ansehen
                 </button>
               )}
             </div>

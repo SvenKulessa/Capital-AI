@@ -16,8 +16,8 @@ const read = (name:string) => readFileSync(new URL(name,directory));
 const digest = (value:Uint8Array) => createHash('sha256').update(value).digest('hex');
 
 test('every learning example has bounded geometry, explanations and no claimed live signal',()=>{
-  assert.equal(CHART_LESSONS.length,12);
-  assert.equal(new Set(CHART_LESSONS.map(item=>item.id)).size,12);
+  assert.equal(CHART_LESSONS.length,52);
+  assert.equal(new Set(CHART_LESSONS.map(item=>item.id)).size,52);
   for(const lesson of CHART_LESSONS){
     assert.match(lesson.id,/^[a-z0-9-]+$/);
     assert.ok(lesson.domain[0]<lesson.domain[1]);
@@ -47,7 +47,7 @@ test('static social exports match source, asset hashes and canonical non-publish
   const manifest=JSON.parse(read('manifest.json').toString());
   assert.equal(manifest.publishReady,false);
   assert.equal(manifest.dataProvenance,'SELF_AUTHORED_SYNTHETIC');
-  assert.equal(manifest.assets.length,12);
+  assert.equal(manifest.assets.length,52);
   for(const asset of manifest.assets){
     assert.equal(digest(read(asset.path)),asset.sha256);
     assert.equal(digest(read(asset.projectPath)),asset.projectSha256);
@@ -60,7 +60,7 @@ test('static social exports match source, asset hashes and canonical non-publish
   const pngs=JSON.parse(read('png-manifest.json').toString());
   assert.equal(pngs.publishReady,false);
   assert.equal(pngs.sourceManifestSha256,digest(read('manifest.json')));
-  assert.equal(pngs.assets.length,12);
+  assert.equal(pngs.assets.length,52);
   for(const asset of pngs.assets){
     const bytes=read(asset.path);
     assert.equal(digest(bytes),asset.sha256);

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "CAPITAL_AI_CHART_PNG@1",
-  "sourceManifestSha256": "fa5255baf628f4e308d9a15c9df675c1207bf20dad5ecc0c149d7f646924b386",
+  "sourceManifestSha256": "3c1c6d5384e1111a95632b9b1b0bd352af488858b4ac7bc193d84f03cb869b2e",
   "publishReady": false,
   "renderer": "Pillow/offline",
   "assets": [
@@ -107,6 +107,366 @@
       "id": "volume-breakout",
       "path": "volume-breakout.png",
       "sha256": "389bd97ea96ea3907afe0ac52d5c0b2b63dcc24d9e92bf856ab6e670175d9f97",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "inverse-head-shoulders",
+      "path": "inverse-head-shoulders.png",
+      "sha256": "ea6bfd7d63e0921ce8eed6b33441ef06035c9efdd8799d021db833b67c93da2d",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "triple-top",
+      "path": "triple-top.png",
+      "sha256": "f670ca43d0670d4dd890aa9981e586ccc93ccbcd36de716177ae1aeecf008545",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "triple-bottom",
+      "path": "triple-bottom.png",
+      "sha256": "28efb4ac84977d524f4b08967a082c6607e1c63b2bdb8986e54ed16ea4e84fe7",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "descending-triangle",
+      "path": "descending-triangle.png",
+      "sha256": "c7ec32590bd98a392687b323d4f0e7578a9e868ffa706f8e58b557ddccc1acb5",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "symmetric-triangle",
+      "path": "symmetric-triangle.png",
+      "sha256": "ae782e696c1fc4a82521690b83a936ed8d612f5b49de03efa1cfff91add2487f",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "rising-wedge",
+      "path": "rising-wedge.png",
+      "sha256": "f59f8ba54794784119ca9cd04a81715da8e60f4e5e7b30a85ff349f2cab54624",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "falling-wedge",
+      "path": "falling-wedge.png",
+      "sha256": "d6bbc1acbd54e086c00779260678098e0e828a199a2cf2d96dbd9bae46648e92",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "bull-pennant",
+      "path": "bull-pennant.png",
+      "sha256": "dcb61846ed9e5f1687df5d296d030a0acf1c802bf08aeb3d64a2fcdc1b47f9c4",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "bear-pennant",
+      "path": "bear-pennant.png",
+      "sha256": "69ce1f68ae1da111196e9e87b3c0ac1cabb8c17b3c4427b56dcb48cb4f32e4c3",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "bull-rectangle",
+      "path": "bull-rectangle.png",
+      "sha256": "54742632d56b1f9f95c26c013de3c694a8be46319ca3388b2dd8458a91ffd74c",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "bear-rectangle",
+      "path": "bear-rectangle.png",
+      "sha256": "e7d3e5875cb4cd0c3d2370303b7f53b77c8eadf3145edd29b950927d3a41977c",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "ascending-channel",
+      "path": "ascending-channel.png",
+      "sha256": "f3f36618be20199a517cd8bbf10431014f339aeeb5265f04f39d5da34f34d763",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "descending-channel",
+      "path": "descending-channel.png",
+      "sha256": "cca863996bb0b9af9c34017836e09e7025916b6df08387acf3ff2fe28b2651e1",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "horizontal-channel",
+      "path": "horizontal-channel.png",
+      "sha256": "1c7161b5e64aa0e18709f5137a01535e1fb0236d1dffa0cadc85782dc041e296",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "broadening-top",
+      "path": "broadening-top.png",
+      "sha256": "3e4217b34c916db5de1d434c106d22c566ee96638acfef6eeb714d3ab87fc4af",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "diamond-top",
+      "path": "diamond-top.png",
+      "sha256": "911549e5a8dc9079ed0180f89208d354588a89b3ae353ed042d5b76a62bfde0d",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "diamond-bottom",
+      "path": "diamond-bottom.png",
+      "sha256": "07792106843fdec139957e64624269205a3a52bc271eb4fa160bed9bdc1d5aba",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "rounding-bottom",
+      "path": "rounding-bottom.png",
+      "sha256": "7a9720fbf0b04dcb9d1f9721aabe3ce66146f2533a79e8f0eeea6955a8c82742",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "rounding-top",
+      "path": "rounding-top.png",
+      "sha256": "e9446417a7efe7b4dde3089767db06423eb7f089247360bc8a5548c1f8877072",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "cup-handle",
+      "path": "cup-handle.png",
+      "sha256": "d085f238a0cca4c32e5ba69b74321e71b1eccf90daeb7de3cb7d95be64a6a47f",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "inverse-cup-handle",
+      "path": "inverse-cup-handle.png",
+      "sha256": "a27632851f1c6acb13ca7a53403df7694eaa379ecf65a7c1ae8f889b1c8e6ca3",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "v-bottom",
+      "path": "v-bottom.png",
+      "sha256": "d149809b571d128ef83f09c24e0b2b9b333ba2e16494eaa62a114e9fa674e1d5",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "v-top",
+      "path": "v-top.png",
+      "sha256": "cb39bb8c4bdde0f0159a400d83375f3d96d2e041f9dc447c4748b9dbcd9cfabb",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "failed-breakout",
+      "path": "failed-breakout.png",
+      "sha256": "24e7877d576d86d7e18d1f844f680691e75a4748b482ccef46892ed1378dbd43",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "failed-breakdown",
+      "path": "failed-breakdown.png",
+      "sha256": "e4966322ff5e0f39aba331d7ae7cbdeb960e18cbae2bdbb289c240767db07cb5",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "breakout-retest",
+      "path": "breakout-retest.png",
+      "sha256": "6229bc35b7e6fa4e3c1fd0e23e65fd69f7d864f02c0732341765e5108bf022a1",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "high-tight-flag",
+      "path": "high-tight-flag.png",
+      "sha256": "d130a86d1c0dc87c87bae3a266d9e928510d15026620c5e8913fadb2e6a332c1",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "flat-bull-flag",
+      "path": "flat-bull-flag.png",
+      "sha256": "13a2284c1565e027e4203814047784e240fc5f660ae082ab348d36630e4f722a",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "flat-bear-flag",
+      "path": "flat-bear-flag.png",
+      "sha256": "51bb65c6ebee040ccebd3d2ddb5b498ed015bdd9205e2e33966580cb1f5d5742",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "bull-flag-retest",
+      "path": "bull-flag-retest.png",
+      "sha256": "d27a088a0a09d1c64113f6985c6b73bc28508f23ae9688109bd653bcfab4d68f",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "atr",
+      "path": "atr.png",
+      "sha256": "097f8da8b6038346c71aee0e4282b88c7d6b49adc7c215d08eafbefc399ea97d",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "adx",
+      "path": "adx.png",
+      "sha256": "72ed16c9f96b58fec309138994d9844fdd8c3b95bddba3f70bb0205585a1b441",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "stochastic",
+      "path": "stochastic.png",
+      "sha256": "feda1da80e7c098c38e1a07c79b4e8a94f3fdea1421ff359b611cf3a912a44b2",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "williams-r",
+      "path": "williams-r.png",
+      "sha256": "0640becf3f181529b3986359783aeb3e991a0d726cb034eb0fa8179a8f9e51df",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "cci",
+      "path": "cci.png",
+      "sha256": "a72e2c9dabab1e22efc340fe731263b8c4485918498e7b8695d80930ea0029fe",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "roc",
+      "path": "roc.png",
+      "sha256": "ef09c71f753da610c43ee3a42ce15551940802738db2553685c142e1e307a065",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "obv",
+      "path": "obv.png",
+      "sha256": "0bbc1ed8136b64649a0a6898b65fa51e3cda52f946e3c77af45fb949e8d21fb4",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "bollinger",
+      "path": "bollinger.png",
+      "sha256": "c74a88ed692abf18b878670fdbfb3f783cf8105dc3fec2f48a61af50113f0a96",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "keltner",
+      "path": "keltner.png",
+      "sha256": "03cf3f681eb36d8f67bf4ae16087723ce6e35cafddadd424ebb93943cf83b805",
+      "width": 1200,
+      "height": 675,
+      "mimeType": "image/png",
+      "state": "DRAFT"
+    },
+    {
+      "id": "donchian",
+      "path": "donchian.png",
+      "sha256": "12db17f008ba26c4a1bff32ae2bee1e9601845c8d51e4dfb71fa72322cbb04d9",
       "width": 1200,
       "height": 675,
       "mimeType": "image/png",

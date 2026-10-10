@@ -1,11 +1,9 @@
 export const VOCABULARY_OFFER = {
-  sku: 'market-vocabulary',
-  productId: 'prod_VNTsrtlf2ZL8ja',
-  priceId: 'price_1UMiuIPKr4joNbEclpn8AwFW',
-  amountCents: 1900,
+  sku: 'learning-portal',
+  amountCents: 2500,
   currency: 'eur',
   taxBehavior: 'inclusive',
-  name: 'Market Vocabulary',
+  name: 'Learning Portal',
 } as const;
 
 export const VOCABULARY_GRANT_KEY = 'capital-ai-vocabulary-grant';

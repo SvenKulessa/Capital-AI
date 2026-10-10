@@ -128,10 +128,11 @@ test('commercial Blueprint artifacts remain absent from public client surfaces',
 });
 
 
-test('Learning Portal owns three Vocabulary flashcards without a project page', async () => {
+test('Learning Portal keeps five free flashcards and accessible category-colored card details', async () => {
   const home = await readFile(new URL('../src/features/home/HomePage.tsx', import.meta.url), 'utf8');
   const learning = await readFile(new URL('../src/features/learning/LearningPortalPage.tsx', import.meta.url), 'utf8');
   const cards = await readFile(new URL('../src/components/VocabularyFlashcards.tsx', import.meta.url), 'utf8');
+  const cardComponent = await readFile(new URL('../src/features/learning/VocabularyCard.tsx', import.meta.url), 'utf8');
   const docs = await readFile(new URL('../src/features/documentation/DocumentationHub.tsx', import.meta.url), 'utf8');
 
   assert.doesNotMatch(home, /VocabularyFlashcards/);
@@ -140,10 +141,12 @@ test('Learning Portal owns three Vocabulary flashcards without a project page', 
   assert.match(learning, /'glossar' \| 'flashcards' \| 'guides' \| 'patterns' \| 'videos' \| 'quiz'/);
   assert.match(learning, /activeTab === 'flashcards'/);
   assert.doesNotMatch(learning, /SubpageSidebarNav/);
-  assert.match(cards, /VOCABULARY_TERMS\.slice\(0, 3\)/);
-  assert.match(cards, /term\.shortDefinition/);
-  assert.match(cards, /rotateY\(180deg\)/);
-  assert.match(cards, /data-social-engine-generated="false"/);
+  assert.match(cards, /\.slice\(0,entitled\?undefined:5\)/);
+  assert.match(cards, /Kostenlos: fünf feste Wörter/);
+  assert.match(cardComponent, /term\.shortDefinition/);
+  assert.match(cardComponent, /aria-expanded=\{expanded\}/);
+  assert.match(cardComponent, /data-vocabulary-category=\{term\.category\}/);
+  assert.match(cardComponent, /aria-pressed=\{saved\}/);
   assert.doesNotMatch(docs, /FinTech Forschungsprojekt/);
   assert.doesNotMatch(docs, /href: '\/forschung'/);
 });
@@ -183,13 +186,18 @@ test('architecture is removed from drawer footer and remains reachable from docu
   assert.match(docs, /href: '\/architecture'/);
 });
 
-test('learning portal exposes architecture video previews without claiming completed renderer evidence', async () => {
+test('learning portal delegates video previews and never claims unrendered videos are published', async () => {
   const learning = await readFile(new URL('../src/features/learning/LearningPortalPage.tsx', import.meta.url), 'utf8');
+  const videos = await readFile(new URL('../src/features/learning/LearningVideos.tsx', import.meta.url), 'utf8');
+  const graphic = await readFile(new URL('../src/features/learning/LearningComingSoonGraphic.tsx', import.meta.url), 'utf8');
 
   assert.match(learning, /'glossar' \| 'flashcards' \| 'guides' \| 'patterns' \| 'videos' \| 'quiz'/);
-  assert.match(learning, /Architektur Videos/);
-  assert.match(learning, /PREVIEW · VIDEO NOCH NICHT GERENDERT/);
-  assert.match(learning, /BLOCKED_RUNTIME_NOT_MIGRATED/);
+  assert.match(learning, /activeTab === 'videos' && <LearningVideos entitled=\{entitled\}/);
+  assert.match(videos, /LEARNING_VIDEOS: readonly LearningVideo\[\] = \[\]/);
+  assert.match(videos, /Noch kein Video veröffentlicht/);
+  assert.match(videos, /<LearningComingSoonGraphic category=\{value\}/);
+  assert.match(graphic, /COMING SOON/);
+  assert.doesNotMatch(videos, /VIDEO_RENDERED|PUBLISHED_VERIFIED/);
 });
 
 test('account security UI supports at most two Passkeys and two TOTP factors with numeric code sanitization', async () => {
