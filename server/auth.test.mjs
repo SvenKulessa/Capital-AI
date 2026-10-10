@@ -626,6 +626,19 @@ test('privacy request remains bounded and same-origin after Supabase migration',
     assert.equal(failed.status, 503);
     assert.deepEqual(await failed.json(), { error: 'privacy_register_unavailable' });
     assert.equal(h.state.privacyRequests.length, 1);
+    h.state.rejectPrivacyWrites = false;
+    h.state.subject = 'second-subject';
+    const secondCookie = await h.completeEmail();
+    const secondHistory = await h.request('/api/privacy/requests', { headers: { cookie: secondCookie } });
+    assert.equal(secondHistory.status, 200);
+    assert.deepEqual((await secondHistory.json()).requests, [], 'cross-user history is always isolated');
+    const secondRequest = await h.request('/api/privacy/requests', {
+      method: 'POST',
+      headers: { cookie: secondCookie, Origin: 'https://capital.example', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requestType: 'erasure' }),
+    });
+    assert.equal(secondRequest.status, 202);
+    assert.equal(h.state.privacyRequests[1].user_id, 'second-subject');
   } finally {
     await h.stop();
   }
