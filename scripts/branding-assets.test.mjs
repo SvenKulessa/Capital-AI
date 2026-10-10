@@ -135,6 +135,7 @@ test('3D avatar is lazy, accessible, and included in Docker production build', (
   assert.match(viewer, /webglcontextlost/);
   assert.match(viewer, /visibilitychange/);
   assert.match(viewer, /jaja-figure\.glb/);
+  assert.ok(viewer.includes("import('three/addons/loaders/GLTFLoader.js')"), 'Keep GLTFLoader in a separate lazy chunk');
   assert.ok(dockerfile.includes('COPY scripts/generate-jaja-3d.mjs'));
   assert.ok(ignore.includes('!scripts/generate-jaja-3d.mjs'));
   assert.ok(pkg.scripts.build.startsWith('node scripts/generate-jaja-3d.mjs'));
