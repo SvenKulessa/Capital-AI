@@ -12,7 +12,7 @@ const allowed = new Set(
 const quoteAdmittedSources = admittedMarketSourcesFor('marketQuotes');
 const scoringAdmittedSources = admittedMarketSourcesFor('scoringPriceInput');
 const sourceAdmissionAvailable = quoteAdmittedSources.length > 0;
-const quotesEnabled = sourceAdmissionAvailable && process.env.MARKET_QUOTES_ENABLED === 'true';
+const quotesEnabled = process.env.MARKET_BROKER_PAUSED !== 'true' && sourceAdmissionAvailable && process.env.MARKET_QUOTES_ENABLED === 'true';
 const ecbConfigured = process.env.MARKET_ECB_REFERENCE_RATES_ENABLED === 'true';
 const ecbRuntimeEnabled = quotesEnabled && ecbConfigured &&
   isAdmittedMarketSource('ecb-reference-rates', 'marketQuotes');

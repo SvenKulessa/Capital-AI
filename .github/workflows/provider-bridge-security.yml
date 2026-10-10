@@ -1,32 +1,7 @@
-name: PLATFORM Provider Bridge Security
+name: PLATFORM Provider Bridge Security (paused, manual only)
+# Rust bridge has no confirmed commercial need; no automatic CI until reactivation.
+# Existing security checks remain executable on explicit workflow_dispatch.
 on:
-  pull_request:
-    paths:
-      - services/provider-bridge-rs/**
-      - contracts/private-provider-query-operations.json
-      - deploy/Dockerfile.provider-bridge
-      - deploy/render-provider-bridge.yaml
-      - deploy/render-nats.yaml
-      - render.yaml
-      - .github/workflows/provider-bridge-security.yml
-      - scripts/private-market-broker-*
-      - server/private-market-*
-      - server/user-provider-vault.mjs
-  push:
-    branches:
-      - main
-      - 'capital-ai-platform/**'
-    paths:
-      - services/provider-bridge-rs/**
-      - contracts/private-provider-query-operations.json
-      - deploy/Dockerfile.provider-bridge
-      - deploy/render-provider-bridge.yaml
-      - deploy/render-nats.yaml
-      - render.yaml
-      - .github/workflows/provider-bridge-security.yml
-      - scripts/private-market-broker-*
-      - server/private-market-*
-      - server/user-provider-vault.mjs
   workflow_dispatch:
 
 permissions:

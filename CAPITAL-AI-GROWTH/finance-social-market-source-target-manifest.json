@@ -112,11 +112,11 @@
     {
       "id": "TA-MARKET-RUNTIME",
       "path": "server/market.mjs",
-      "blobSha": "f92f9259e7ef27be670002349d3820a7a5c30250",
+      "blobSha": "038479181a03a34c557cb89a36736ea339b4e612",
       "role": "Current fail-closed market runtime",
-      "recorrelatedAt": "2026-10-09",
-      "recorrelationBaseMain": "3a763958ecb6730930ffba66bfa5491c0c19f93a",
-      "recorrelationReason": "MARKET binds rights-gated Binance Spot feed lifecycle to stream startup; no provider rights, production activation or score publication is granted"
+      "recorrelatedAt": "2026-10-10",
+      "recorrelationBaseMain": "9bf37af7866a6f998d9e7c00ff52636f27248dfa",
+      "recorrelationReason": "Owner-authorized reversible Rust/NATS pause: MARKET_BROKER_PAUSED fail-closes market quote intake; no live market provider or commercial usage admission."
     },
     {
       "id": "TA-MARKET-WP",
