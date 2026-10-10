@@ -1,0 +1,80 @@
+# CAPITAL_AI_GITHUB_GOOGLE_OIDC_READBACK@1
+# Manual dispatch on protected main only. No SA key, no YouTube, no Google mutations.
+name: Google Readback (readonly)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: google-readback-readonly
+  cancel-in-progress: false
+jobs:
+  google-readback:
+    if: github.repository == 'SvenKulessa/Capital-AI' && github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Validate operator-configured non-secret variables
+        env:
+          PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          SERVICE_ACCOUNT: ${{ vars.GCP_GOOGLE_READER_SERVICE_ACCOUNT }}
+          GA4_ID: ${{ vars.GA4_PROPERTY_ID }}
+        run: |
+          set -euo pipefail
+          test -n "$PROVIDER" || { echo 'Missing GCP_WORKLOAD_IDENTITY_PROVIDER'; exit 1; }
+          [[ "$PROVIDER" =~ ^projects/[0-9]+/locations/global/workloadIdentityPools/[a-z0-9-]+/providers/[a-z0-9-]+$ ]] || exit 1
+          test -n "$SERVICE_ACCOUNT" || { echo 'Missing GCP_GOOGLE_READER_SERVICE_ACCOUNT'; exit 1; }
+          [[ "$SERVICE_ACCOUNT" =~ ^[a-zA-Z0-9._+-]+@aifinancial-500208\.iam\.gserviceaccount\.com$ ]] || exit 1
+          [[ "$GA4_ID" =~ ^[1-9][0-9]{0,19}$ ]] || { echo 'GA4_PROPERTY_ID must be numeric, not a G- Measurement ID'; exit 1; }
+      - id: google_auth
+        name: Google authentication through GitHub OIDC
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3 pinned
+        with:
+          project_id: aifinancial-500208
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_GOOGLE_READER_SERVICE_ACCOUNT }}
+          token_format: access_token
+          access_token_lifetime: 900s
+          access_token_scopes: |
+            https://www.googleapis.com/auth/analytics.readonly
+            https://www.googleapis.com/auth/webmasters.readonly
+          create_credentials_file: false
+          export_environment_variables: false
+      - name: Read the exact Google properties, without exposing credentials
+        env:
+          GOOGLE_TOKEN: ${{ steps.google_auth.outputs.access_token }}
+          GA4_ID: ${{ vars.GA4_PROPERTY_ID }}
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          set +x
+          umask 077
+          tmp="$(mktemp -d)"
+          trap 'rm -rf "$tmp"' EXIT
+          test -n "$GOOGLE_TOKEN"
+          get() {
+            local label="$1" url="$2" dest="$3" status
+            status="$(curl -sS --max-time 30 -H "Authorization: Bearer $GOOGLE_TOKEN" -o "$dest" -w '%{http_code}' "$url")"
+            echo "$label HTTP: $status"
+            if [[ "$status" != 200 ]]; then
+              jq -c '{code:.error.code,status:.error.status}' "$dest" || true
+              return 1
+            fi
+          }
+          get 'GSC sites.list' 'https://www.googleapis.com/webmasters/v3/sites' "$tmp/gsc.json"
+          jq -e '[.siteEntry[]? | select(.siteUrl=="sc-domain:capital-ai.online" and (.permissionLevel|IN("siteOwner","siteFullUser","siteRestrictedUser")))] | length==1' "$tmp/gsc.json" >/dev/null || { echo 'GSC exact property/permission not verified'; exit 1; }
+          echo 'GSC exact property and permission VERIFIED'
+          get 'GSC sitemaps.list' 'https://www.googleapis.com/webmasters/v3/sites/sc-domain%3Acapital-ai.online/sitemaps' "$tmp/sitemaps.json"
+          jq -c '{sitemapCount: ((.sitemap // [])|length)}' "$tmp/sitemaps.json"
+          get 'GA4 property' "https://analyticsadmin.googleapis.com/v1beta/properties/$GA4_ID" "$tmp/property.json"
+          jq -e --arg p "properties/$GA4_ID" '.name==$p' "$tmp/property.json" >/dev/null || { echo 'GA4 property mismatch'; exit 1; }
+          echo 'GA4 numeric property identity VERIFIED'
+          status="$(curl -sS --max-time 30 -X POST -H "Authorization: Bearer $GOOGLE_TOKEN" -H 'Content-Type: application/json' --data '{"dimensions":[{"name":"eventName"}],"metrics":[{"name":"eventCount"}],"limit":"10"}' -o "$tmp/realtime.json" -w '%{http_code}' "https://analyticsdata.googleapis.com/v1beta/properties/$GA4_ID:runRealtimeReport")"
+          echo "GA4 realtime HTTP: $status"
+          if [[ "$status" != 200 ]]; then
+            jq -c '{code:.error.code,status:.error.status}' "$tmp/realtime.json" || true
+            exit 1
+          fi
+          jq -c '{rowCount:(.rowCount//0),pageViewEvents:([.rows[]?|select(.dimensionValues[0].value=="page_view")|.metricValues[0].value]|first//"0")}' "$tmp/realtime.json"
+          echo 'LIVE_PROVIDER_READ_VERIFIED for the workflow identity only; not YouTube or OAuth verification'
