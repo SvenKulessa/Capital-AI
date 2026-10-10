@@ -1,14 +1,12 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "d80355f296b429317ff65d7a1cdb9a0e0ca82ae7",
-  "mergedPr": 351,
-  "targetPr": 352,
-  "targetBranch": "product/monthly-enterprise-trial-checkout",
-  "targetHeadSha": "181b50e61323873baf3798303161e3be5ea87c04",
+  "mainSha": "20e4d1ba91132ab8a730722f66bd12e69b19272b",
+  "mergedPr": 370,
+  "targetPr": 364,
+  "targetBranch": "capital-ai-platform/agent-ready-public-discovery-20261010",
+  "targetHeadSha": "2983f61bfe241a15bccf554ed4600262743371f5",
   "exactOverlap": [
-    "server/enterprise-trial.test.mjs",
-    "src/features/pricing/MonetizationModal.tsx",
-    "src/features/pricing/commerceState.test.tsx"
+    "shared/seo-source-provenance.mjs"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,
