@@ -33,6 +33,9 @@ RUN apk add --no-cache 'python3>=3.14.8-r0' 'py3-pip>=26.1.2-r0' \
 # Remove the installer itself, including vulnerable bundled http-cache-semantics, before validation.
 COPY index.html vite.config.ts tsconfig.json OPEN_SOURCE_LICENSES.md ./
 COPY AGENTS.md ./AGENTS.md
+# The offline branding/3D regression tests inspect these two non-secret build contracts.
+# Include them in build only; the final runtime image receives neither file.
+COPY Dockerfile .dockerignore ./
 COPY .agents/skills ./.agents/skills
 COPY .github/agents ./.github/agents
 COPY .github/copilot-instructions.md ./.github/copilot-instructions.md
