@@ -1,6 +1,6 @@
 # CAPITAL-AI Solo Maintainer Policy
 
-Stand: 2026-10-07
+Stand: 2026-10-10
 Contract: `SOLO_MAINTAINER_FLOW@1`
 Geltungsbereich: gesamtes Repository.
 
@@ -131,9 +131,19 @@ Die fünf Domain-Perspektiven erhalten **zwei funktionale Skills pro Domain**: `
 
 1. **Automatisch nach Aufgabeninhalt routen, soweit die Chat-/Agent-Laufzeit Skills unterstützt:** PRODUCT (Frontend/UX/Auth-Client), MARKET (Daten/Provider/Scoring), PLATFORM (Infrastruktur/Runtime/CI), TRUST (Security/Compliance/QA/Evidence), GROWTH (Docs/SEO/Social/Branding). Bei Implementierung Engineering-Skill, bei Beratung Advisory-Skill, bei gemischten Aufgaben beide anwenden. Bei domainübergreifender Arbeit weitere relevante Skills im **selben Chat** verwenden; kein organisatorischer Handoff.
 2. **Beratungsqualität:** aktuelle Ausgangsevidence, mindestens eine tragfähige Alternative, Trade-offs (Security, Datenschutz, Lizenz, Kosten, Wartbarkeit, Performance), begründete Empfehlung und prüfbare Kriterien. Externe Quellen mit Datum/Version priorisiert aus offizieller Dokumentation, Standards und Primärquellen; normative Pflichten von optionalen Best Practices trennen.
-3. **Aktualität und Grenzen:** „State of the Art“ bedeutet bei einer konkreten Entscheidung **erneute Verifikation**, nicht autonome Dauerrecherche. Wenn Live-Quellen, Skills oder Tools in der jeweiligen Chat-Laufzeit nicht verfügbar sind, dies kenntlich machen statt tatsächliche Ausführung oder Frische zu behaupten. Skill-Anleitungen verleihen keinerlei Credentials oder Rechte.
+3. **Aktualität und Grenzen:** Bestehende Repository-Evidence und für die eingesetzte Version passende Dokumentation zuerst nutzen. Externe Recherche nur zur Klärung einer konkreten entscheidungsrelevanten Unsicherheit oder einer erforderlichen Aktualitätsprüfung; keine pauschale erneute Verifikation jeder Entscheidung. Es gilt der folgende Arbeitsmodus. Fehlende Live-Quellen, Skills oder Tools kenntlich machen statt Ausführung oder Frische zu behaupten. Skill-Anleitungen verleihen keinerlei Credentials oder Rechte.
 4. **Governance:** Skills und Chat-Profile sind **nicht autorisierende Arbeitsanleitungen** unter dieser `AGENTS.md`. Sie erzeugen keine neuen Pflichtchecks, Admissions, Reviews, Handovers, Write-Permissions oder Production-Freigaben. Für Branch/PR gilt allein die Primary Domain; Merge-Regel und reale technische Trust Boundaries bleiben unverändert.
 5. **Validierung:** `npm run test:domain-skills` kontrolliert Skill-Dateien, Registry und Chat-Profil-Verweise. Ein bestandener Strukturtest belegt keine Live-Skill-Ausführung in externen ChatGPT-Sitzungen.
+
+## Aufgabenbezogene Recherche statt Selbststudium
+
+Diese Regel gilt für alle Domains, Skills und Chat-Agenten. Allgemeines Selbststudium, autonome Dauerrecherche und selbst veranlasste Wissens-, Regel- oder Architekturupdates sind kein Bestandteil normaler Aufträge.
+
+- **Direkt umsetzen:** Relevanten Code, vorhandene Evidence und Dokumentation zur eingesetzten Version zuerst verwenden. Routine-Bugfixes, UI-, Test- und Dokumentationsänderungen benötigen keine allgemeine Best-Practice-, Tool- oder Framework-Recherche.
+- **Gezielt prüfen:** Nur bei einer konkreten Wissenslücke, widersprüchlicher/veralteter Evidence, ausdrücklich verlangter Recherche oder entscheidungsrelevanten veränderlichen Fakten externe Primärquellen prüfen. Tatsächlich relevante Security-, Rechts-, Lizenz-, Preis- und API-Fragen weiterhin verifizieren.
+- **Recherche beenden:** Die offene Frage vor der Suche benennen; nach einer belastbaren Antwort umsetzen. Bereits geprüfte Quellen im selben Auftrag wiederverwenden, solange Version, Scope und maßgeblicher Stand passen. Nur bei neuen Widersprüchen, geänderten Fakten oder fehlender Evidence erneut suchen; keine rekursiven Recherche- oder Korrelationsschleifen.
+- **Auftrag abschließen:** Keine ungefragten Frameworkwechsel, Dependency-Upgrades oder Regeländerungen aus Recherche ableiten. Erkenntnisse nur verwenden, soweit sie das konkrete Problem lösen. Fehlende Evidence präzise kennzeichnen und unabhängige autorisierte Arbeit fortsetzen.
+- **Reale Grenzen erhalten:** Diese Vereinfachung ersetzt keine notwendigen Tests, Required Checks, Auth-/Tenant-/Secret-Grenzen oder tatsächlich anwendbaren gesetzlichen und vertraglichen Anforderungen. Es entstehen keine neuen Gates oder Pflichtberichte.
 
 ## Einheitliche grafische Chat-Darstellung aller Domains
 
