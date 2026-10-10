@@ -33,6 +33,23 @@ class GrowthGraphTests(unittest.TestCase):
             self.assertEqual(findings[0]["status"], "SOURCE_OBSERVED")
             self.assertIn("disabled", findings[0]["detail"])
 
+    def test_seo_origin_requires_exact_source_declaration(self):
+        with tempfile.TemporaryDirectory() as root:
+            path = Path(root) / "shared/seo-metadata.mjs"
+            path.parent.mkdir(parents=True)
+            variants = [
+                ("export const SEO_SITE_ORIGIN = 'https://capital-ai.online';\n", "SOURCE_OBSERVED"),
+                ("export const SEO_SITE_ORIGIN = 'https://capital-ai.online.evil.test';\n", "NOT_PROVEN"),
+                ("export const SEO_SITE_ORIGIN = 'https://evil.test/https://capital-ai.online';\n", "NOT_PROVEN"),
+                ("// export const SEO_SITE_ORIGIN = 'https://capital-ai.online';\n", "NOT_PROVEN"),
+                ("export const SEO_SITE_ORIGIN = 'https://capital-ai.online'; // unverified trailing code\n", "NOT_PROVEN"),
+            ]
+            for contents, expected in variants:
+                with self.subTest(contents=contents):
+                    path.write_text(contents, encoding="utf-8")
+                    findings = graph.seo_agent({"repo_root": root})["findings"]
+                    self.assertEqual(findings[1]["status"], expected)
+
     def test_missing_sources_fail_to_not_proven(self):
         with tempfile.TemporaryDirectory() as root:
             self.assertTrue(all(f["status"] == "NOT_PROVEN" for f in graph.seo_agent({"repo_root": root})["findings"]))
