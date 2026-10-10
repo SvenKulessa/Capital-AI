@@ -22,9 +22,13 @@ test('free glossary selection is fixed at seven per skill level before filtering
 });
 test('free flashcards contain five words; paid cards retain all supplied words',()=>{
  const free=renderToStaticMarkup(<VocabularyFlashcards onNavigate={()=>{}} terms={VOCABULARY_TERMS}/>);
- assert.equal((free.match(/data-vocabulary-category=/g)??[]).length,5);
+ assert.equal((free.match(/data-vocabulary-category=/g)??[]).length,1);assert.match(free,/Karte 1 von 5/);assert.match(free,/Noch üben und bald wiederholen/);
  const paid=renderToStaticMarkup(<VocabularyFlashcards onNavigate={()=>{}} terms={VOCABULARY_TERMS} entitled/>);
- assert.equal((paid.match(/data-vocabulary-category=/g)??[]).length,VOCABULARY_TERMS.length);
+ assert.equal((paid.match(/data-vocabulary-category=/g)??[]).length,1);assert.match(paid,new RegExp('Karte 1 von '+VOCABULARY_TERMS.length));
+});
+test('mobile vocabulary is discoverable in the category-diverse free learning sample',()=>{
+ assert.ok(VOCABULARY_TERMS.some(term=>term.category==='MOBILE_RUNTIME'));
+ assert.ok(freeVocabularySelection(VOCABULARY_TERMS).some(term=>term.category==='MOBILE_RUNTIME'));
 });
 test('category accents remain readable and card controls have accessible names',()=>{
  const luminance=(hex:string)=>{const channels=hex.slice(1).match(/../g)!.map(x=>parseInt(x,16)/255).map(x=>x<=.04045?x/12.92:((x+.055)/1.055)**2.4);return channels[0]*.2126+channels[1]*.7152+channels[2]*.0722;};

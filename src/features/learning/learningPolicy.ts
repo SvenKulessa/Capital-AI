@@ -3,8 +3,26 @@ import type { VocabularyTerm } from '../../data/vocabularyData';
 
 // Select before filtering: search/category/deep links cannot rotate the free sample.
 export function freeVocabularySelection(terms: readonly VocabularyTerm[]): VocabularyTerm[] {
-  const counts = new Map<string,number>();
-  return terms.filter(term => { const count=counts.get(term.level) ?? 0; counts.set(term.level,count+1); return count<7; });
+  // A predictable public sample of seven per original access level, diversified across categories.
+  // Pick the first entry of each category before filling remaining slots. Filtering never expands access.
+  const levels = [...new Set(terms.map(term => term.level))];
+  return levels.flatMap(level => {
+    const pool = terms.filter(term => term.level === level);
+    const selected: VocabularyTerm[] = [];
+    const seenCategories = new Set<string>();
+    for (const term of pool) {
+      if (seenCategories.has(term.category)) continue;
+      seenCategories.add(term.category);
+      selected.push(term);
+      if (selected.length === 7) return selected;
+    }
+    for (const term of pool) {
+      if (selected.some(item => item.id === term.id)) continue;
+      selected.push(term);
+      if (selected.length === 7) break;
+    }
+    return selected;
+  });
 }
 export function berlinDay(date: Date): string {
   return new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit'}).format(date);
