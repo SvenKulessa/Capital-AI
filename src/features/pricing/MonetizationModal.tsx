@@ -14,6 +14,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { LearningPurchase } from '../learning/LearningPurchase';
 import { BrandLogo } from '../../components/BrandLogo';
 import {
   PRICING_CATALOG,
@@ -73,6 +74,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
   const checkoutRequest = useRef<AbortController | null>(null);
   const authenticated = commerce.authenticated;
   const subscriptionCheckoutEnabled = commerce.checkout === 'ready';
+  const [trialCode,setTrialCode] = useState('');
   const [purchaseMessage, setPurchaseMessage] = useState('');
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -159,7 +161,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
           Accept: 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ tier, cycle: billingCycle }),
+        body: JSON.stringify({ tier, cycle: billingCycle, ...(tier === 'enterprise' && trialCode.trim() ? { promotion: trialCode.trim() } : {}) }),
         signal: AbortSignal.any([controller.signal, AbortSignal.timeout(12000)]),
       });
       const payload = await response.json();
@@ -167,6 +169,14 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
       if (response.status === 401) {
         setCommerce(state => ({ ...state, authenticated: false }));
         setPurchaseMessage('Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.');
+        return;
+      }
+      if (payload?.error === 'trial_already_claimed') {
+        setPurchaseMessage('Die Enterprise-Testphase ist für dieses Konto bereits reserviert oder wurde schon genutzt.');
+        return;
+      }
+      if (response.status === 400 && tier === 'enterprise' && trialCode.trim()) {
+        setPurchaseMessage('Dieser Trial-Code ist ungültig. Verwende ENTERPRISE3 oder entferne den Code.');
         return;
       }
       if (!response.ok || typeof payload?.url !== 'string') {
@@ -449,7 +459,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                       <span className="text-xs text-slate-400">einmalig</span>
                     </div>
                     <p className="mt-2 text-xs leading-relaxed text-slate-300">
-                      Enthalten sind das erweiterte Market Vocabulary mit geschützten Quant-/Pro-Begriffen,
+                      Enthalten sind das vollständige Vocabulary einschließlich Quant / Pro,
                       der serverseitig berechtigte Lernzugang, wiederholbare Skill-Checks für berechtigte Nutzer
                       sowie der lizenzierte Vocabulary-Badge als Download. Das Paket ist nicht Bestandteil von Starter,
                       Pro oder Enterprise.
@@ -458,21 +468,55 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                       <span className="rounded-lg border border-slate-700 bg-black/20 px-2 py-1">Separater Lernzugang</span>
                       <span className="rounded-lg border border-slate-700 bg-black/20 px-2 py-1">{product.badgeLicense}</span>
                     </div>
-                    <a
-                      href={product.productPath}
-                      onClick={(event) => {
-                        event.preventDefault();
-                        onClose();
-                        onNavigate?.(product.productPath);
-                      }}
-                      className="mt-4 inline-flex rounded-xl bg-violet-300 px-4 py-2 text-xs font-black text-black hover:bg-violet-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-200"
-                    >
-                      Vocabulary ansehen / erwerben
-                    </a>
+                    <LearningPurchase onLogin={onNavigateLogin} />
                   </div>
                 </div>
               </section>
             ))}
+            <section
+              aria-labelledby="screener-blueprint-preview"
+              className="rounded-2xl border border-cyan-400/40 bg-gradient-to-br from-cyan-400/10 via-[#071a36] to-purple-500/10 p-4 sm:p-5"
+            >
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                <img
+                  src="/branding/badges/screener-bundle-blueprint.svg"
+                  alt="Screener Blueprint Produktmotiv: verbundene Datenknoten und eine Summe"
+                  className="h-20 w-20 rounded-2xl border border-cyan-300/30 bg-black/30 p-1"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 id="screener-blueprint-preview" className="text-sm font-black text-cyan-100">
+                      Screener Blueprint · Datenkonzept &amp; Scoring-Playbooks
+                    </h3>
+                    <span className="rounded-full border border-amber-400/40 bg-amber-400/10 px-2 py-0.5 text-[10px] font-mono text-amber-200">
+                      Vorschau · noch nicht kaufbar
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs leading-relaxed text-slate-200">
+                    Modulare Datenarchitektur mit grafischen Datenströmen, Anbindungsbeispielen in TypeScript
+                    und YAML, Assetklassen-Playbooks sowie separater Gewichtung bestätigter Chartmuster.
+                  </p>
+                  <div className="mt-3 grid gap-2 text-xs text-slate-300 sm:grid-cols-2">
+                    <span>✓ Provider- und Tenant-Grenzen</span>
+                    <span>✓ Versionierte Analyse-Modelle</span>
+                    <span>✓ Pattern-Analyse ohne Double Counting</span>
+                    <span>✓ Score-Aufschlüsselung und Audit-Konzept</span>
+                  </div>
+                  <p className="mt-3 text-xs text-amber-100">
+                    Beispielrechnung: 76,85/100 (synthetische Faktoren; kein Live-Marktwert oder Anlageergebnis).
+                    Preis, Produktlizenz, Checkout und vollständiger Download sind noch nicht freigegeben.
+                  </p>
+                  <p className="mt-2 text-[11px] text-slate-400">
+                    Badge: CAPITAL-AI Vorschauasset. Marktdaten-, Provider- und Modellrechte sind nicht enthalten.
+                  </p>
+                  <a href="/marketscreener/dokumentation"
+                    onClick={event => { event.preventDefault(); onClose(); onNavigate?.('/marketscreener/dokumentation'); }}
+                    className="mt-3 inline-flex min-h-11 items-center rounded-xl border border-cyan-400/40 px-4 py-2 text-xs font-bold text-cyan-100 hover:bg-cyan-400/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300">
+                    YAML-Editor &amp; Diagrammvorschau ansehen
+                  </a>
+                </div>
+              </div>
+            </section>
             <section aria-disabled="true" className="pointer-events-none select-none opacity-45 rounded-2xl border border-cyan-400/30 bg-cyan-500/10 p-4">
               <div className="flex items-center gap-3">
                 <img
@@ -512,6 +556,15 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
           </nav>
         </section>
 
+        <section className="mt-4 space-y-3 rounded-2xl border border-amber-400/30 bg-amber-400/5 p-5" aria-label="Enterprise Trial">
+          <h3 className="text-lg font-bold text-amber-200">Drei Tage vorausdenken. Enterprise und Learning Portal kostenlos entdecken.</h3>
+          <p className="text-sm text-slate-300">Trial-Code ENTERPRISE3 · einmal pro Konto. Danach {billingCycle === 'monthly' ? '109,00 € monatlich' : '1.280,00 € jährlich'}. Vor Ablauf kündigen, um Folgekosten zu vermeiden. Learning Portal ist während der drei Tage inklusive; danach separat für 25,00 € einmalig erhältlich.</p>
+          <label className="block text-sm text-slate-200">Enterprise-Trial-Code
+            <input value={trialCode} onChange={event=>setTrialCode(event.target.value)} placeholder="ENTERPRISE3" maxLength={32} className="mt-2 block min-h-11 w-full rounded-lg border border-amber-400/30 bg-slate-950 p-3" />
+          </label>
+          <button type="button" disabled={pendingTier!==null} onClick={()=>{setTrialCode('ENTERPRISE3');}} className="min-h-11 rounded-lg border border-amber-400 px-4 text-sm text-amber-200">Trial-Code einsetzen · danach Enterprise auswählen</button>
+          <p className="text-xs text-slate-400">Weitere gültige Rabattcodes können im regulären Stripe-Checkout eingegeben werden. Kein zusätzlicher Rechnungsrabatt während der Trial.</p>
+        </section>
         {purchaseMessage && (
           <div role="status" className="mt-4 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-xs text-amber-100">
             {purchaseMessage}

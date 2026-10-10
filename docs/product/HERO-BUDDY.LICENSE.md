@@ -50,3 +50,7 @@ Diese Datei ersetzt keine Markenprüfung und keine Production-Freigabe. Der Agen
 - Entstehung: owner-directed, im Portal gezeichnet. Kein Stockcharakter, keine fremde Icon-Datei, keine eingebettete Schrift.
 - Werbevideo und generierte Rasterbilder sind nicht Teil dieses Assets und nicht von dieser Lizenz umfasst.
 - Kommerzielle Nutzung bleibt beim Rechteinhaber Sven Kulessa / capital-ai.online. Dritte erhalten keine Lizenz.
+
+## JaJa-Grok-Avatar (2026-10-09)
+
+Das neue WebP-Charakterasset `public/assets/jaja-avatar-transparent.webp` hat eine **separate** Lizenz- und Provenance-Dokumentation in [`JAJA-AVATAR-ASSET-LICENSE.md`](JAJA-AVATAR-ASSET-LICENSE.md). Die bisherige Beschreibung des handgezeichneten SVG-Faces gilt weiterhin für den Fallback, nicht für das KI-generierte WebP. Proprietäre Nutzung durch CAPITAL AI ist durch den Owner genehmigt; Rechte-/Attributionspflichten des Grok-Anbieters sind gesondert ausgewiesen.

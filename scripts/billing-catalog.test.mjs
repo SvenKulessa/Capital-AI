@@ -83,7 +83,7 @@ test('additional products catalog exposes only currently available add-ons', () 
   assert.match(pricing, /GitHub Check · enforced/);
   assert.match(pricing, /Benchmark-Evidence unterstützt Entscheidungen/);
   assert.match(pricing, /ADDITIONAL_PRODUCTS_CATALOG\.map/);
-  assert.match(pricing, /Vocabulary ansehen \/ erwerben/);
+  assert.match(pricing, /<LearningPurchase/);
   assert.doesNotMatch(catalog, /data-api|white-label|cpt-|token|nft/i);
 });
 
@@ -96,7 +96,7 @@ test('pricing uses licensed badges and server-authorized subscription checkout s
   assert.match(pricing, /\/branding\/badges\/enterprise\.svg/);
   assert.match(pricing, /\/branding\/badges\/vocabulary\.svg/);
   assert.match(pricing, /\/branding\/badges\/data-pipeline-blueprint\.svg/);
-  assert.match(pricing, /geschützten Quant-\/Pro-Begriffen/);
+  assert.match(pricing, /einschließlich Quant \/ Pro/);
   assert.match(pricing, /serverseitig berechtigte Lernzugang/);
   assert.match(pricing, /if \(authenticated === false\)/);
   const commerceState = readFileSync(new URL('../src/features/pricing/commerceState.ts', import.meta.url), 'utf8');

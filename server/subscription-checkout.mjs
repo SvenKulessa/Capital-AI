@@ -1,3 +1,4 @@
+import { createEnterpriseTrial, ENTERPRISE_TRIAL_CODE, ENTERPRISE_TRIAL_CAMPAIGN } from './enterprise-trial.mjs';
 import { boundedJson } from './http-security.mjs';
 import { BILLING_CATALOG } from './billing-catalog.mjs';
 
@@ -11,7 +12,9 @@ function normalizeRequest(payload) {
   const catalog = BILLING_CATALOG.tiers[tier];
   const priceId = cycle === 'annual' ? catalog?.annualPriceId : catalog?.monthlyPriceId;
   if (!priceId || !priceId.startsWith('price_')) return null;
-  return { tier, cycle, priceId };
+  const promotion=String(payload?.promotion||'').trim().toUpperCase();
+  if(promotion && (promotion!==ENTERPRISE_TRIAL_CODE || tier!=='enterprise')) return null;
+  return { tier, cycle, priceId, trial: promotion===ENTERPRISE_TRIAL_CODE };
 }
 
 function readBody(req) {
@@ -39,6 +42,7 @@ function readBody(req) {
 }
 
 export function createSubscriptionCheckout({ env = process.env, fetchImpl = fetch, auth } = {}) {
+  const trialCampaign=createEnterpriseTrial({env,fetchImpl});
   const secret = env.STRIPE_SECRET_KEY || '';
   const enabled = env.STRIPE_SUBSCRIPTION_CHECKOUT_ENABLED !== 'false';
   const baseUrl = String(env.PUBLIC_BASE_URL || 'https://capital-ai.online').replace(/\/$/, '');
@@ -117,9 +121,15 @@ export function createSubscriptionCheckout({ env = process.env, fetchImpl = fetc
         return true;
       }
 
+      if(request.trial) {
+        try {
+          if(!(await trialCampaign.state(user.userId,'reserve'))?.reserved) return json(res,409,{error:'trial_already_claimed'}),true;
+        } catch {return json(res,503,{error:'trial_unavailable'}),true;}
+      }
       const planId = request.tier.toUpperCase();
       const form = new URLSearchParams({
         mode: 'subscription',
+        allow_promotion_codes: 'true',
         'line_items[0][price]': request.priceId,
         'line_items[0][quantity]': '1',
         success_url: `${baseUrl}/profile?subscription=success&session_id={CHECKOUT_SESSION_ID}`,
@@ -133,10 +143,22 @@ export function createSubscriptionCheckout({ env = process.env, fetchImpl = fetc
         'subscription_data[metadata][billing_cycle]': request.cycle,
       });
 
+      if(request.trial) {
+        form.set('subscription_data[trial_period_days]','3');
+        form.set('payment_method_collection','always');
+        form.set('metadata[campaign]',ENTERPRISE_TRIAL_CAMPAIGN);
+        form.set('subscription_data[metadata][campaign]',ENTERPRISE_TRIAL_CAMPAIGN);
+        form.set('success_url',`${baseUrl}/learning?enterprise_trial_session={CHECKOUT_SESSION_ID}`);
+        // Trial campaign cannot stack invoice discounts; standard checkouts keep Stripe's promo field.
+        form.delete('allow_promotion_codes');
+      }
       try {
         const session = await stripeCreateSession(form);
+        if(request.trial && !(await trialCampaign.state(user.userId,'attach',session.id))?.attached) throw new Error('trial_attach_rejected');
         json(res, 200, { url: session.url, sessionId: session.id });
       } catch {
+        // A created (or timed-out) Stripe session may still be payable. Keep the
+        // reservation rather than allowing a second concurrent trial checkout.
         json(res, 502, { error: 'subscription_checkout_rejected' });
       }
       return true;
