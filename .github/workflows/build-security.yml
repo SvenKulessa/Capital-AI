@@ -19,6 +19,7 @@ on:
         default: false
 permissions:
   contents: read
+  pull-requests: read # read PR filenames for fail-closed scope selection
 concurrency:
   group: docker-security-${{ github.ref }}-${{ github.event_name == 'workflow_dispatch' && 'release' || 'validation' }}
   cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
@@ -94,7 +95,32 @@ jobs:
           docker run --rm --entrypoint hadolint -v "$PWD:/work:ro" capital-ai-security /work/Dockerfile
           # Disk bootstrap drops to UID 1000; its bounded exception remains source-scanned.
           docker run --rm --entrypoint hadolint -v "$PWD:/work:ro" capital-ai-security --ignore DL3002 /work/deploy/Dockerfile.nats
+      - name: NATS-Pruefumfang aus PR-Diff bestimmen
+        id: nats_scope
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPOSITORY: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number || '' }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" != "pull_request" ]; then
+            echo 'run=true' >> "$GITHUB_OUTPUT"
+            echo "NATS: full scan required on $EVENT_NAME" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          gh api --paginate "repos/$GH_REPOSITORY/pulls/$PR_NUMBER/files?per_page=100" --jq '.[].filename' > "$RUNNER_TEMP/pr-files.txt"
+          test -s "$RUNNER_TEMP/pr-files.txt"
+          if grep -Eq '^(deploy/(Dockerfile\.nats|nats-[^/]*|fetch-nats-release\.sh)|scripts/(verify-nats-runtime\.sh|verify-go-vuln-reachability(\.test)?\.mjs|summarize-trivy(\.test)?\.mjs|publish-security-summary(\.test)?\.mjs)|Dockerfile\.security|\.dockerignore|scripts/docker-context\.test\.mjs|scripts/container-evidence-identity(\.test)?\.mjs|\.github/workflows/build-security\.yml)$' "$RUNNER_TEMP/pr-files.txt"; then
+            echo 'run=true' >> "$GITHUB_OUTPUT"
+            echo 'NATS: relevant image or security logic changed; full scan required' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'run=false' >> "$GITHUB_OUTPUT"
+            echo 'NATS: independent image unchanged; image and binary checks not applicable to this PR; full scan required on main, schedule and dispatch' >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: NATS-Disk-Bootstrap und nicht-root Server verifizieren
+        if: steps.nats_scope.outputs.run == 'true'
         run: |
           mkdir -p security-reports
           docker build --file deploy/Dockerfile.nats --tag capital-nats:${{ github.sha }} .
@@ -125,21 +151,22 @@ jobs:
             '{schemaVersion:1,baseImageRef:$baseImageRef,localImageId:$localImageId,binaryPath:$binaryPath,binarySha256:$binarySha256}' \
             > security-reports/nats-reachability-image-identity.json
 
-          for reachability_run in 1 2; do
-            docker run --rm -e GOTOOLCHAIN=local -e GOVULNCHECK_VERSION=v1.8.0 -e REACHABILITY_RUN="$reachability_run" -v "$PWD/security-reports:/evidence" golang:1.26.8-alpine@sha256:6e5de3f5b9fb7e30b8bb2ffe8dcbcbdaa2990f0f31267456eabe83f870a623be sh -euc '
-              GOBIN=/tmp/gobin go install "golang.org/x/vuln/cmd/govulncheck@$GOVULNCHECK_VERSION"
+          # Install pinned govulncheck once; execute two independent binary analyses.
+          docker run --rm -e GOTOOLCHAIN=local -e GOVULNCHECK_VERSION=v1.8.0 -v "$PWD/security-reports:/evidence" golang:1.26.8-alpine@sha256:6e5de3f5b9fb7e30b8bb2ffe8dcbcbdaa2990f0f31267456eabe83f870a623be sh -euc '
+            GOBIN=/tmp/gobin go install "golang.org/x/vuln/cmd/govulncheck@$GOVULNCHECK_VERSION"
+            for REACHABILITY_RUN in 1 2; do
               go version -m /evidence/nats-server > "/evidence/nats-go-version-m-$REACHABILITY_RUN.txt"
               set +e
               go tool nm /evidence/nats-server > "/evidence/nats-nm-$REACHABILITY_RUN.txt" 2>"/evidence/nats-nm-$REACHABILITY_RUN.stderr.txt"
               printf "%s\n" "$?" > "/evidence/nats-nm-$REACHABILITY_RUN.status.txt"
-              set -e
-              set +e
               /tmp/gobin/govulncheck -mode binary -json /evidence/nats-server > "/evidence/nats-govulncheck-$REACHABILITY_RUN.raw.json"
               printf "%s\n" "$?" > "/evidence/nats-govulncheck-$REACHABILITY_RUN.status.txt"
               /tmp/gobin/govulncheck -mode binary -format openvex /evidence/nats-server > "/evidence/nats-govulncheck-$REACHABILITY_RUN.openvex.json"
               printf "%s\n" "$?" > "/evidence/nats-govulncheck-$REACHABILITY_RUN.openvex.status.txt"
               set -e
-            '
+            done
+          '
+          for reachability_run in 1 2; do
             jq -s '.' "security-reports/nats-govulncheck-$reachability_run.raw.json" > "security-reports/nats-govulncheck-$reachability_run.messages.json"
           done
 
@@ -273,6 +300,8 @@ jobs:
           docker exec capital-ai-smoke sh -c 'test ! -w /app/server/index.mjs && ! command -v npm'
       - name: Bereinigte Scan-Ergebnisse öffentlich zusammenfassen
         if: always()
+        env:
+          CAPITAL_NATS_SCOPE: ${{ steps.nats_scope.outputs.run }}
         run: |
           mkdir -p security-reports
           node scripts/publish-security-summary.mjs security-reports

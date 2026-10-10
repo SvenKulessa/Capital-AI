@@ -49,3 +49,51 @@ test('PR summaries expose merge, head and base identities without conflating the
   assert.equal(report.sourceIdentity.baseMainSha, base);
   assert.equal(report.sourceIdentity.sourceSha, head);
 }));
+
+test('NATS can be marked not applicable only for a fully identified PR with unaffected image', () => run(directory => {
+  for (const name of ['source', 'build-image', 'image']) {
+    writeFileSync(path.join(directory, name + '.json'), '{"Results":[]}');
+  }
+  const head = 'a'.repeat(40), merge = 'b'.repeat(40), base = 'c'.repeat(40);
+  writeContainerIdentity(path.join(directory, 'container-identity.json'), createContainerIdentity({
+    GITHUB_EVENT_NAME: 'pull_request',
+    GITHUB_SHA: merge,
+    CAPITAL_PR_HEAD_SHA: head,
+    CAPITAL_BASE_MAIN_SHA: base,
+  }));
+  const args = ['scripts/publish-security-summary.mjs', directory];
+  const env = { ...process.env, CAPITAL_NATS_SCOPE: 'false' };
+  const result = spawnSync(process.execPath, args, { env, encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  const nats = JSON.parse(readFileSync(path.join(directory, 'nats-image.public.json'), 'utf8'));
+  assert.equal(nats.status, 'SKIPPED_UNCHANGED_PR_SCOPE');
+  assert.equal(nats.reason, 'PR_DIFF_HAS_NO_NATS_RELATED_FILES');
+  assert.equal(nats.sourceIdentity.pullRequestHeadSha, head);
+  assert.equal(JSON.parse(readFileSync(path.join(directory, 'image.public.json'), 'utf8')).status, 'PASS');
+  // A requested skip never overrides a real invalid security scan.
+  writeFileSync(path.join(directory, 'nats-image.json'), '{invalid');
+  assert.equal(spawnSync(process.execPath, args, { env }).status, 1);
+}));
+
+test('non-PR runs, unverified scope and missing core image fail closed', () => run(directory => {
+  for (const name of ['source', 'build-image', 'image']) {
+    writeFileSync(path.join(directory, name + '.json'), '{"Results":[]}');
+  }
+  const args = ['scripts/publish-security-summary.mjs', directory];
+  const env = { ...process.env, CAPITAL_NATS_SCOPE: 'false' };
+  // Even with an explicit skip request, main requires a real NATS image report.
+  writeContainerIdentity(path.join(directory, 'container-identity.json'), createContainerIdentity({
+    GITHUB_EVENT_NAME: 'push', GITHUB_SHA: 'd'.repeat(40),
+  }));
+  assert.equal(spawnSync(process.execPath, args, { env }).status, 1);
+  const head = 'a'.repeat(40), merge = 'b'.repeat(40), base = 'c'.repeat(40);
+  writeContainerIdentity(path.join(directory, 'container-identity.json'), createContainerIdentity({
+    GITHUB_EVENT_NAME: 'pull_request',
+    GITHUB_SHA: merge,
+    CAPITAL_PR_HEAD_SHA: head,
+    CAPITAL_BASE_MAIN_SHA: base,
+  }));
+  assert.equal(spawnSync(process.execPath, args, { env: process.env }).status, 1);
+  rmSync(path.join(directory, 'image.json'));
+  assert.equal(spawnSync(process.execPath, args, { env }).status, 1);
+}));
