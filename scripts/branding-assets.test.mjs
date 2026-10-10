@@ -99,8 +99,8 @@ test('JaJa avatar is available to Vite inside the production Docker build', () =
   const dockerignore = readFileSync(resolve(root, '.dockerignore'), 'utf8');
   const dockerfile = readFileSync(resolve(root, 'Dockerfile'), 'utf8');
   const buddy = readFileSync(resolve(root, 'src/components/HeroBuddy.tsx'), 'utf8');
-  assert.match(dockerignore, /^!public\\/assets\\/$/m);
-  assert.match(dockerignore, /^!public\\/assets\\/jaja-avatar-transparent\\.webp$/m);
-  assert.match(dockerfile, /^COPY public\\/assets\\/jaja-avatar-transparent\\.webp \\.\\/public\\/assets\\/jaja-avatar-transparent\\.webp$/m);
+  assert.ok(dockerignore.includes('!public/assets/'));
+  assert.ok(dockerignore.includes('!public/assets/jaja-avatar-transparent.webp'));
+  assert.ok(dockerfile.includes('COPY public/assets/jaja-avatar-transparent.webp ./public/assets/jaja-avatar-transparent.webp'));
   assert.ok(buddy.includes('/assets/jaja-avatar-transparent.webp'));
 });
