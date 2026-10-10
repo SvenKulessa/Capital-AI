@@ -1,15 +1,12 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "104719e758d57fb0de06b311fc6d86179e81f05d",
-  "mergedPr": 340,
-  "targetPr": 344,
-  "targetBranch": "capital-ai-product/learning-portal-access-20261009",
-  "targetHeadSha": "1bdf95315208c1a3e34daa956c84cb5a9af408b7",
+  "mainSha": "78698701e0f0b06ef12960d64401590b0e37df79",
+  "mergedPr": 353,
+  "targetPr": 361,
+  "targetBranch": "capital-ai-product/chat-preview-qa-guideline-20261010",
+  "targetHeadSha": "461758211bb5298f40cb845723238f3f79e87ec9",
   "exactOverlap": [
-    ".dockerignore",
-    "Dockerfile",
-    "package.json",
-    "src/features/pricing/MonetizationModal.tsx"
+    "AGENTS.md"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,
