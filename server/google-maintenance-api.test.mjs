@@ -33,7 +33,11 @@ test('tools bind exact property/project and do not accept arbitrary resources', 
   assert.equal((await api.call('ga4_get_property')).name, property);
   assert.equal((await api.call('gcp_get_project')).projectId, 'aifinancial-500208');
   await api.call('gcp_list_enabled_services');
-  assert.match(calls.at(-1).url, /serviceusage.googleapis.com\/v1\/projects\/542877602707\/services/);
+  const servicesUrl = new URL(calls.at(-1).url);
+  assert.equal(servicesUrl.origin, 'https://serviceusage.googleapis.com');
+  assert.equal(servicesUrl.pathname, '/v1/projects/542877602707/services');
+  assert.equal(servicesUrl.searchParams.get('filter'), 'state:ENABLED');
+  assert.equal(servicesUrl.searchParams.get('pageSize'), '200');
   const count = calls.length;
   await assert.rejects(api.call('ga4_get_property', { propertyId: '999' }), /UNSUPPORTED_ARGUMENT/);
   await assert.rejects(api.call('arbitrary_http', { url: 'https://other.test' }), /TOOL_NOT_ALLOWED/);
