@@ -14,6 +14,8 @@
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
     <meta name="keywords" content="Capital-AI, KI Marktanalyse, Krypto, Aktien, Indizes, Forex, Rohstoffe, Trading Intelligence, Buffett Value Check, Enterprise Scorer" />
     <link rel="canonical" href="https://capital-ai.online/" />
+    <link rel="describedby" href="/llms.txt" />
+    <link rel="alternate" type="text/markdown" href="/index.md" />
 
     <!-- OpenGraph Social Cards -->
     <meta property="og:site_name" content="Capital-AI" />
@@ -78,14 +80,14 @@
   </head>
   <body class="bg-[#02050e] text-slate-100 antialiased selection:bg-amber-400 selection:text-black">
     <div id="root"></div>
-    <main
+    <div
       id="capital-ai-bootstrap-fallback"
       hidden
       class="min-h-screen bg-[#02050e] text-slate-100 flex items-center justify-center px-6"
     >
       <section class="w-full max-w-md rounded-3xl border border-amber-400/20 bg-slate-950/80 p-6 text-center">
         <img src="/branding/capital-ai-logo.jpg" alt="Capital-AI" width="640" height="360" class="mx-auto w-full max-w-xs rounded-xl" />
-        <h1 class="mt-4 text-2xl font-bold">Die Anwendung konnte nicht gestartet werden.</h1>
+        <h2 class="mt-4 text-2xl font-bold">Die Anwendung konnte nicht gestartet werden.</h2>
         <p class="mt-3 text-sm text-slate-400">
           Der Anwendungs-Bootstrap ist technisch fehlgeschlagen. Bitte lade die Seite neu.
         </p>
@@ -96,7 +98,7 @@
           <p class="mt-4 text-sm text-amber-200">Für die interaktive Anwendung muss JavaScript aktiviert sein.</p>
         </noscript>
       </section>
-    </main>
+    </div>
     <script src="/bootstrap-failure.js"></script>
     <script id="capital-ai-entry" type="module" src="/src/main.tsx"></script>
   </body>
