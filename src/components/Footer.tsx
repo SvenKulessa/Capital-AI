@@ -53,6 +53,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           </a>
         ))}
       </nav>
+      <nav aria-label="Öffentliche Lernbeiträge" className="mt-4"><a href="/blog" onClick={e => handleNavClick(e, '/blog', 'blog')} className="inline-flex min-h-11 items-center text-base text-amber-200 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-brand-gold">Blog · Wissen &amp; Lernen</a></nav>
       {/* Consolidated legal and documentation navigation */}
       <div className="mt-3 text-[11px] text-slate-400 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
         <span>© {new Date().getFullYear()} Capital-AI</span>

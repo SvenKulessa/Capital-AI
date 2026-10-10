@@ -12,6 +12,8 @@ import { HomePage } from '../../features/home/HomePage';
 import { DataUnavailable } from '../../shared/ui/DataUnavailable';
 import { LEGAL_ROUTES } from './routes';
 
+const BlogPage = lazy(() => import('../../features/learning/BlogPage').then(module => ({ default: module.BlogPage })));
+
 const LoginPage = lazy(() =>
   import('../../features/auth/LoginPage').then((module) => ({
     default: module.LoginPage,
@@ -132,6 +134,8 @@ export function AppRoutes({
   onSelectModule,
   onStartProductTour,
 }: AppRoutesProps) {
+  if (currentRoute === '/blog' || currentRoute.startsWith('/blog/')) return <BlogPage path={currentRoute} />;
+
   if (currentRoute === '/login') {
     return (
       <LoginPage
