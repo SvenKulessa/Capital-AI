@@ -266,7 +266,7 @@ export function HeroBuddy(props: HeroBuddyProps) {
   return (
     <div ref={floatingRoot} className={`fixed ${floatingXY ? '' : positionClass} z-[45] flex flex-col-reverse items-end gap-2 sm:flex-row`}
       style={floatingXY && typeof window !== 'undefined'
-        ? {left:Math.max(8,Math.min(floatingXY.x,window.innerWidth-(open ? Math.min(window.innerWidth*0.88,320)+128 : 128)-8)),top:Math.max(8,Math.min(floatingXY.y,window.innerHeight-(open ? 370 : 144)-8))}
+        ? {left:Math.max(8,Math.min(floatingXY.x,window.innerWidth-(open ? (window.innerWidth<640 ? Math.min(window.innerWidth*0.88,320) : Math.min(window.innerWidth*0.88,320)+128) : 128)-8)),top:Math.max(8,Math.min(floatingXY.y,window.innerHeight-(open ? 370 : 144)-8))}
         : undefined} data-hero-buddy="agent">
       {(speech || open) && (
         <div id={chatPanelId} role={open ? 'dialog' : 'status'} aria-label={open ? 'JaJa Chat Buddy' : 'JaJa Hilfe'} className="relative w-[min(88vw,320px)] rounded-2xl border border-amber-300/40 bg-[#10182e] px-3 py-2 text-xs text-slate-100 shadow-lg">
