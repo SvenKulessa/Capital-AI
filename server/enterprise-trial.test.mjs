@@ -32,8 +32,8 @@ test('Enterprise promotion is exactly three days, account bound, includes no inv
 });
 test('repeat trial and applying trial to Pro never create a Stripe session',async()=>{
  let calls=0;const handler=createSubscriptionCheckout({env,auth,fetchImpl:async(url)=>{assert.ok(new URL(url).pathname.endsWith('capital_ai_enterprise_trial'));calls++;return Response.json({reserved:false});}});
- const repeat=res();await handler.handle(request({tier:'enterprise',cycle:'annual',promotion:'ENTERPRISE3'}),repeat,endpoint('/api/billing/subscriptions/checkout'),json);assert.equal(repeat.status,409);
- const wrong=res();await handler.handle(request({tier:'pro',cycle:'monthly',promotion:'ENTERPRISE3'}),wrong,endpoint('/api/billing/subscriptions/checkout'),json);assert.equal(wrong.status,400);assert.equal(calls,1);
+ const repeat=res();await handler.handle(request({tier:'enterprise',cycle:'monthly',promotion:'ENTERPRISE3'}),repeat,endpoint('/api/billing/subscriptions/checkout'),json);assert.equal(repeat.status,409);
+ const wrong=res();await handler.handle(request({tier:'pro',cycle:'monthly',promotion:'ENTERPRISE3'}),wrong,endpoint('/api/billing/subscriptions/checkout'),json);assert.equal(wrong.status,400);assert.equal(calls,2);
 });
 test('uncertain session creation or failed attachment never releases a payable trial reservation',async()=>{
  for(const failAttach of [false,true]) {
@@ -76,6 +76,23 @@ test('signed paid webhook fulfills Learning Portal without a return-page visit; 
  const invalid=res();await handler.handle(request(body,{'stripe-signature':'t=0,v1=0000'}),invalid,endpoint('/api/billing/learning/webhook'),json);assert.equal(invalid.status,400);assert.equal(grants,1);
 });
 
+test('annual trial is rejected before reservation or Stripe',async()=>{
+ const handler=createSubscriptionCheckout({env,auth,fetchImpl:async()=>{throw new Error('must not call');}});
+ const response=res();await handler.handle(request({tier:'enterprise',cycle:'annual',promotion:'ENTERPRISE3'}),response,endpoint('/api/billing/subscriptions/checkout'),json);
+ assert.equal(response.status,400);
+});
+test('reserved trial resumes only the original open monthly checkout of the same user',async()=>{
+ for(const override of [{},{status:'complete'},{status:'expired'},{client_reference_id:'other'},{livemode:true},{url:'https://checkout.stripe.com.evil.test/pay'},{metadata:{user_id:userId,campaign:ENTERPRISE_TRIAL_CAMPAIGN,billing_cycle:'annual'}},{line_items:{data:[{price:{id:'price_other'}}]}}]) {
+  let creates=0;
+  const handler=createSubscriptionCheckout({env,auth,fetchImpl:async(url,options)=>{
+   if(new URL(url).pathname.endsWith('capital_ai_enterprise_trial'))return Response.json(JSON.parse(options.body)._action==='reserve'?{reserved:false}:{sessionId:'cs_trial_fixture'});
+   if(options.method==='POST') {creates++;throw new Error('must not create another session');}
+   return Response.json({id:'cs_trial_fixture',status:'open',mode:'subscription',livemode:false,url:'https://checkout.stripe.com/c/pay/fixture',client_reference_id:userId,metadata:{user_id:userId,campaign:ENTERPRISE_TRIAL_CAMPAIGN,billing_cycle:'monthly'},line_items:{data:[{price:{id:'price_1UMA51PKr4joNbEcbtWNCcCc'}}]},...override});
+  }});
+  const response=res();await handler.handle(request({tier:'enterprise',cycle:'monthly',promotion:'ENTERPRISE3'}),response,endpoint('/api/billing/subscriptions/checkout'),json);
+  assert.equal(response.status,Object.keys(override).length?409:200);assert.equal(creates,0);
+ }
+});
 test('discounted Learning Portal fulfillment verifies original price, discount arithmetic and completed payment',async()=>{
  for(const fixture of [
   {total:1500,discount:1000,payment:'paid',status:'complete',subtotal:2500,allowed:true},
