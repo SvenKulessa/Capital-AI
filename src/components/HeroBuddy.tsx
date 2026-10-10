@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { EyeOff, Move, Settings, X } from 'lucide-react';
 
 type HeroBuddyProps = {
@@ -13,6 +13,7 @@ type HeroBuddyProps = {
 type BuddyMessage = { id: string; role: 'buddy' | 'user'; text: string };
 type AssistReason = 'hesitation' | 'repeat' | 'oscillation' | 'dwell';
 
+const JaJa3DAvatar = lazy(() => import('./JaJa3DAvatar'));
 const DISCLAIMER = 'JaJa erklärt Zusammenhänge. Keine Anlageberatung.';
 export const HERO_BUDDY_EVENT = 'capital-ai:open-hero-buddy';
 export const HERO_BUDDY_HIDDEN_KEY = 'capital_ai_hero_buddy_hidden_v1';
@@ -84,6 +85,9 @@ export function HeroBuddy(props: HeroBuddyProps) {
   const [learnReport, setLearnReport] = useState<LearnStatus | null>(null);
   const [keyNote, setKeyNote] = useState('');
   const lastAssist = useRef(0);
+  const [avatarAzimuth, setAvatarAzimuth] = useState(0);
+  const rotatePointer = useRef<{ x: number; angle: number } | null>(null);
+  const wasDragged = useRef(false);
   useEffect(() => {
     const controller = new AbortController();
     fetch('/api/auth/session', {
@@ -294,22 +298,75 @@ export function HeroBuddy(props: HeroBuddyProps) {
           )}
         </div>
       )}
-      <button type="button" aria-expanded={open} aria-controls={open ? chatPanelId : undefined} aria-label={open ? "JaJa Chat schließen" : "JaJa Chat öffnen"} onClick={() => { setOpen((value) => !value); setSpeech(null); }} className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-amber-300/50 bg-[#10182e] shadow-[0_8px_24px_rgba(245,176,20,0.28)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
-        {!avatarFailed && (
-          <img
-            src="/assets/jaja-avatar-transparent.webp"
-            alt=""
-            aria-hidden="true"
-            width={64}
-            height={64}
-            loading="eager"
-            decoding="async"
-            onLoad={() => setAvatarLoaded(true)}
-            onError={() => setAvatarFailed(true)}
-            className={`absolute inset-0 h-full w-full object-contain transition-transform duration-300 ${avatarLoaded ? "opacity-100" : "opacity-0"} ${reducedMotion ? "" : "motion-safe:hover:scale-105"}`}
-          />
+      <span id="jaja-3d-hint" className="sr-only">
+        JaJa-Figur: Mit den Pfeiltasten links und rechts drehen oder mit dem Finger ziehen.
+        Eingabetaste öffnet den Chat.
+      </span>
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={open ? chatPanelId : undefined}
+        aria-describedby="jaja-3d-hint"
+        aria-label={open ? 'JaJa Chat schließen' : 'JaJa Chat öffnen'}
+        title="JaJa drehen: ziehen oder Pfeiltasten. Antippen: Chat öffnen."
+        onPointerDown={event => {
+          if (event.button !== 0) return;
+          rotatePointer.current = { x: event.clientX, angle: avatarAzimuth };
+          wasDragged.current = false;
+          event.currentTarget.setPointerCapture(event.pointerId);
+        }}
+        onPointerMove={event => {
+          if (!rotatePointer.current) return;
+          const delta = event.clientX - rotatePointer.current.x;
+          if (Math.abs(delta) > 7) {
+            wasDragged.current = true;
+            setAvatarAzimuth(rotatePointer.current.angle + delta * .9);
+          }
+        }}
+        onPointerUp={event => {
+          rotatePointer.current = null;
+          if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+            event.currentTarget.releasePointerCapture(event.pointerId);
+          }
+        }}
+        onPointerCancel={() => { rotatePointer.current = null; wasDragged.current = false; }}
+        onKeyDown={event => {
+          if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+            event.preventDefault();
+            setAvatarAzimuth(value => value + (event.key === 'ArrowRight' ? 20 : -20));
+          }
+        }}
+        onClick={() => {
+          if (wasDragged.current) { wasDragged.current = false; return; }
+          setOpen(value => !value);
+          setSpeech(null);
+        }}
+        className="relative flex h-28 w-24 shrink-0 touch-none items-center justify-center border-0 bg-transparent p-0 drop-shadow-lg sm:h-36 sm:w-32 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
+      >
+        {!reducedMotion && typeof window !== 'undefined' && 'WebGL2RenderingContext' in window ? (
+          <Suspense fallback={<BuddyMark pulse={false} speaking={false} />}>
+            <JaJa3DAvatar azimuth={avatarAzimuth} />
+          </Suspense>
+        ) : (
+          <>
+            {!avatarFailed && (
+              <img
+                src="/assets/jaja-avatar-transparent.webp"
+                alt=""
+                draggable={false}
+                aria-hidden="true"
+                width={128}
+                height={144}
+                loading="eager"
+                decoding="async"
+                onLoad={() => setAvatarLoaded(true)}
+                onError={() => setAvatarFailed(true)}
+                className={`h-full w-full object-contain ${avatarLoaded ? 'opacity-100' : 'opacity-0'}`}
+              />
+            )}
+            {!avatarLoaded && <BuddyMark pulse={false} speaking={false} />}
+          </>
         )}
-        {!avatarLoaded && <BuddyMark pulse={!reducedMotion && !open} speaking={Boolean(speech) && !open} />}
       </button>
     </div>
   );
