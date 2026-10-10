@@ -1,9 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { loadJaJaGLB } from './loadJaJaGLB';
-import {
-  Clock, Color, DirectionalLight, Group, HemisphereLight,
-  PerspectiveCamera, Scene, SRGBColorSpace, WebGLRenderer,
-} from 'three';
+import { Clock } from 'three/src/core/Clock.js';
+import { Color } from 'three/src/math/Color.js';
+import { DirectionalLight } from 'three/src/lights/DirectionalLight.js';
+import { Group } from 'three/src/objects/Group.js';
+import { HemisphereLight } from 'three/src/lights/HemisphereLight.js';
+import { PerspectiveCamera } from 'three/src/cameras/PerspectiveCamera.js';
+import { Scene } from 'three/src/scenes/Scene.js';
+import { SRGBColorSpace } from 'three/src/constants.js';
+import { WebGLRenderer } from 'three/src/renderers/WebGLRenderer.js';
 
 type JaJa3DAvatarProps = { azimuth: number };
 type RenderState = 'loading' | 'ready' | 'failed';
