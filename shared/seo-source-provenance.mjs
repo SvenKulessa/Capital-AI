@@ -18,8 +18,8 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
     contentSha256: '2d9dcda3e6446e7adfdd20faf93de28cc6171f72ee3cf5e80daf7fec34feac90',
   }),
   'src/components/LegalAndFaqPages.tsx': Object.freeze({
-    sourceBlobSha: '53e926c6dcdc846b672b7c52ae05b0e90c0f499c',
-    contentSha256: '1aa65b395eeb8b143e0b36d58ce3d6a38681ccde2dea5bff067fb2dc1a25361d',
+    sourceBlobSha: 'ad61fafaf477e412c5cc6ef69543c97871f5aaea',
+    contentSha256: 'af975aab4f9c82414775c9b744147e9e143f6af4aa5e34cdd6773e9f3c89ac77',
   }),
   'src/content/publicLegalContent.ts': Object.freeze({
     sourceBlobSha: 'e16b221845706f2b65efe634e183b53ae451ca34',
@@ -58,13 +58,13 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
 const SEO_SOURCE_SET_DIGESTS = Object.freeze({
   'index.html|src/features/home/HomePage.tsx': '4c89ce8d59426f04695e0c13c2d29329f894b2e2f04d6bd399a36080ad896a3a',
   'shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': '2a01f50901fb40519f80279dc7121a9eb0b40b8a53de1931390bf2a712222266',
-  'src/components/LegalAndFaqPages.tsx|src/content/publicLegalContent.ts': '99df92ec156bdae2b63757b87dfd818df491e3e826136d539cb8f74d4e1e9c66',
+  'src/components/LegalAndFaqPages.tsx|src/content/publicLegalContent.ts': 'c4c70044ca186dcb1ef02bff2fd86f7b35232a9439407a0892dba0193a88d329',
   'shared/license-metadata.mjs|src/components/LicenseInformationPages.tsx': 'a32e0df5d6e5bc57e3a23283f7e1c91aa1a584f7f70ccc8208796322172210bb',
   'shared/license-metadata.mjs|src/data/providerLicenseReview.ts': '98d2b1c966c071230d8b5554f132c198bf95c7df07e5b559fa82e2aa53f1c768',
   'OPEN_SOURCE_LICENSES.md|shared/license-metadata.mjs': 'db2cb5f53bcfb48b0fdd17adbeeefc2e69c38da81c11e4eac5ce736aa7654031',
-  'shared/legal-identity.mjs|src/components/LegalAndFaqPages.tsx': 'e38968424df307d96cf737857004b750f2426c59035d067f182274027540682c',
-  'src/components/LegalAndFaqPages.tsx|src/privacy/privacyPolicy.ts': '109736ca8c533732ddea0417736296a861a6ead24c5165bce0a52c7655f0f286',
-  'src/components/LegalAndFaqPages.tsx|src/content/legalDocumentVersions.ts': '46f7ec730ba615799fbab2e0d55e2f2b174622875336201f9bea8a75c1bad579',
+  'shared/legal-identity.mjs|src/components/LegalAndFaqPages.tsx': '82e7cc866ab304f14f4559eb7116f6a7205c06a89da5111591669c90df477685',
+  'src/components/LegalAndFaqPages.tsx|src/privacy/privacyPolicy.ts': '8aac45fa697f96d56f060e692a9631afefe61cdc4b8ecfc60d228c299bc4aa45',
+  'src/components/LegalAndFaqPages.tsx|src/content/legalDocumentVersions.ts': '9aee860b53b4ab42ffa9eca5a8f759ede2834c52edadb4a43a092bfd591ce71a',
   'shared/vocabulary-metadata.mjs': '8b9fb4e36e8b841d6c367dd50db4038b694e5ca23ef73e71ebf6215f36ea7928',
 });
 
