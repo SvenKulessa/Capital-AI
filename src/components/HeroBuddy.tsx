@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { EyeOff, Move, Settings, X } from 'lucide-react';
+import { clampHeroBuddyPoint } from './heroBuddyPosition';
 
 type HeroBuddyProps = {
   onNavigate?: (path: string) => void;
@@ -169,6 +170,35 @@ export function HeroBuddy(props: HeroBuddyProps) {
     setSpeech(reason);
   });
 
+  // A saved drag position must stay visible after window resizing or panel content changes.
+  // Measure the real component instead of estimating a fixed chat height.
+  const isFloating = floatingXY !== null;
+  useEffect(() => {
+    if (!isFloating || hidden) return;
+    const element = floatingRoot.current;
+    if (!element) return;
+    const reconcile = () => {
+      const bounds = element.getBoundingClientRect();
+      setFloatingXY(previous => {
+        if (!previous) return previous;
+        const next = clampHeroBuddyPoint(previous,
+          { width: window.innerWidth, height: window.innerHeight },
+          { width: bounds.width, height: bounds.height });
+        if (previous.x === next.x && previous.y === next.y) return previous;
+        window.localStorage.setItem(HERO_BUDDY_FLOATING_KEY, JSON.stringify(next));
+        return next;
+      });
+    };
+    reconcile();
+    window.addEventListener('resize', reconcile);
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(reconcile);
+    observer?.observe(element);
+    return () => {
+      window.removeEventListener('resize', reconcile);
+      observer?.disconnect();
+    };
+  }, [isFloating, hidden, open]);
+
   const actions = useMemo(() => [
     { label: 'Tarife', run: () => props.onOpenMonetization?.() },
     { label: 'Vocabulary', run: () => props.onOpenVocabulary?.() },
@@ -232,9 +262,10 @@ export function HeroBuddy(props: HeroBuddyProps) {
     const dx = event.clientX-state.startX, dy=event.clientY-state.startY;
     if (Math.abs(dx)+Math.abs(dy) < 6 && !state.moved) return;
     state.moved=true;
-    const x=Math.max(8,Math.min(window.innerWidth-state.width-8,state.x+dx));
-    const y=Math.max(8,Math.min(window.innerHeight-state.height-8,state.y+dy));
-    latestFloatingXY.current={x,y};
+    const bounded = clampHeroBuddyPoint({ x: state.x + dx, y: state.y + dy },
+      { width: window.innerWidth, height: window.innerHeight },
+      { width: state.width, height: state.height });
+    latestFloatingXY.current=bounded;
     setFloatingXY(latestFloatingXY.current);
   };
   const endFloatingDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
@@ -265,9 +296,7 @@ export function HeroBuddy(props: HeroBuddyProps) {
 
   return (
     <div ref={floatingRoot} className={`fixed ${floatingXY ? '' : positionClass} z-[45] flex flex-col-reverse items-end gap-2 sm:flex-row`}
-      style={floatingXY && typeof window !== 'undefined'
-        ? {left:Math.max(8,Math.min(floatingXY.x,window.innerWidth-(open ? (window.innerWidth<640 ? Math.min(window.innerWidth*0.88,320) : Math.min(window.innerWidth*0.88,320)+128) : 128)-8)),top:Math.max(8,Math.min(floatingXY.y,window.innerHeight-(open ? 370 : 144)-8))}
-        : undefined} data-hero-buddy="agent">
+      style={floatingXY ? { left: floatingXY.x, top: floatingXY.y } : undefined} data-hero-buddy="agent">
       {(speech || open) && (
         <div id={chatPanelId} role={open ? 'dialog' : 'status'} aria-label={open ? 'JaJa Chat Buddy' : 'JaJa Hilfe'} className="relative w-[min(88vw,320px)] rounded-2xl border border-amber-300/40 bg-[#10182e] px-3 py-2 text-xs text-slate-100 shadow-lg">
           <span className="absolute -right-1.5 bottom-5 h-3 w-3 rotate-45 border-b border-r border-amber-300/40 bg-[#10182e]" aria-hidden="true" />
