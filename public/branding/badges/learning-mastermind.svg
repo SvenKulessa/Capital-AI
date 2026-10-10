@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="mastermind-title mastermind-desc" shape-rendering="geometricPrecision">
+  <title id="mastermind-title">CAPITAL-AI LEARNING MASTERMIND</title>
+  <desc id="mastermind-desc">Offizielles CAPITAL-AI Learning-Portal-Badge, violett und golden, mit stilisiertem Mastermind-Kopf und vernetztem Wissen.</desc>
+  <metadata>Copyright © 2026 Sven Michael Kulessa. LicenseRef-CAPITAL-AI-PROPRIETARY-BADGE-1.0. CAPITAL-AI. No independent external certification.</metadata>
+  <defs>
+    <radialGradient id="master-bg" cx="50%" cy="37%" r="82%"><stop offset="0%" stop-color="#3B206B"/><stop offset="55%" stop-color="#100D25"/><stop offset="100%" stop-color="#03050D"/></radialGradient>
+    <linearGradient id="master-rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FDE68A"/><stop offset="48%" stop-color="#C084FC"/><stop offset="100%" stop-color="#6D28D9"/></linearGradient>
+    <linearGradient id="master-fill" x1="0" y1="0" x2="0.9" y2="1"><stop offset="0%" stop-color="#FDE68A"/><stop offset="55%" stop-color="#F5B014"/><stop offset="100%" stop-color="#A855F7"/></linearGradient>
+    <filter id="master-glow" x="-45%" y="-45%" width="190%" height="190%"><feGaussianBlur in="SourceGraphic" stdDeviation="3" result="halo"/><feMerge><feMergeNode in="halo"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect x="7" y="7" width="242" height="242" rx="34" fill="url(#master-bg)" stroke="url(#master-rim)" stroke-width="3"/>
+  <rect x="15" y="15" width="226" height="226" rx="28" fill="none" stroke="#FFFFFF" stroke-opacity=".12"/>
+  <path d="M54 55 L83 39 L128 32 L173 39 L202 55" fill="none" stroke="#FDE68A" stroke-opacity=".45" stroke-width="2"/>
+  <g stroke="#C084FC" stroke-width="3" stroke-linecap="round" fill="none" opacity=".9">
+    <path d="M65 105 L83 81 L107 73 M191 105 L173 81 L149 73 M83 81 L102 113 M173 81 L154 113 M107 73 L128 91 L149 73"/>
+  </g>
+  <g fill="#FDE68A"><circle cx="65" cy="105" r="5"/><circle cx="83" cy="81" r="5"/><circle cx="107" cy="73" r="5"/><circle cx="128" cy="91" r="5"/><circle cx="149" cy="73" r="5"/><circle cx="173" cy="81" r="5"/><circle cx="191" cy="105" r="5"/></g>
+  <g filter="url(#master-glow)">
+    <path d="M96 136 C91 121 93 108 100 101 C106 92 116 90 128 90 C140 90 150 92 156 101 C163 108 165 121 160 136 L149 149 L149 162 L107 162 L107 149 Z" fill="#170C2B" stroke="url(#master-fill)" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M112 116 C118 109 124 112 128 117 C132 112 138 109 144 116 M112 133 C118 128 123 130 128 136 C133 130 138 128 144 133 M128 101 V145" fill="none" stroke="#FDE68A" stroke-width="3.2" stroke-linecap="round"/>
+    <path d="M102 162 H154 M112 172 H144" fill="none" stroke="#C084FC" stroke-width="5" stroke-linecap="round"/>
+  </g>
+  <path d="M52 188 H204" stroke="url(#master-rim)" stroke-opacity=".5" stroke-width="1.5"/>
+  <text x="128" y="212" text-anchor="middle" fill="#FFF7DF" font-family="Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="1.5">MASTERMIND</text>
+  <text x="128" y="230" text-anchor="middle" fill="#C4B5FD" font-family="Arial,sans-serif" font-size="10" font-weight="700" letter-spacing="2.5">LEARNING PORTAL</text>
+</svg>

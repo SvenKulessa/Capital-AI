@@ -4,6 +4,7 @@ import { Hero } from '../../components/Hero';
 const LearningCadsShowcase = lazy(() => import('./LearningCadsShowcase').then(module => ({ default: module.LearningCadsShowcase })));
 const ContentEngineConcept = lazy(() => import('./ContentEngineConcept').then(module => ({ default: module.ContentEngineConcept })));
 import { CommerceEntrySection } from './CommerceEntrySection';
+import { HomeLatestLearning } from './HomeLatestLearning';
 import { KeyPillars } from '../../components/KeyPillars';
 import { Footer } from '../../components/Footer';
 import { MarketSentiment } from '../market/MarketSentiment';
@@ -92,6 +93,8 @@ export function HomePage({
         onStartAnalysis={onOpenAnalysis}
         onExploreProduct={onStartProductTour}
       />
+
+      <HomeLatestLearning onNavigate={onNavigate} />
 
       <CommerceEntrySection onNavigate={onNavigate} />
 
