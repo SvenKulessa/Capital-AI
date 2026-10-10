@@ -1,10 +1,10 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "20e4d1ba91132ab8a730722f66bd12e69b19272b",
-  "mergedPr": 370,
+  "mainSha": "59efd0ada3a51047ab939c59c5f11367b204d97d",
+  "mergedPr": 363,
   "targetPr": 364,
   "targetBranch": "capital-ai-platform/agent-ready-public-discovery-20261010",
-  "targetHeadSha": "2983f61bfe241a15bccf554ed4600262743371f5",
+  "targetHeadSha": "30f48d5510a0134fcc65e3c7eb5c2316955b7e45",
   "exactOverlap": [
     "shared/seo-source-provenance.mjs"
   ],
