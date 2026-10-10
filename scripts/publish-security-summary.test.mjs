@@ -81,7 +81,10 @@ test('non-PR runs, unverified scope and missing core image fail closed', () => r
   }
   const args = ['scripts/publish-security-summary.mjs', directory];
   const env = { ...process.env, CAPITAL_NATS_SCOPE: 'false' };
-  // Missing NATS report is never permitted for main or an unidentified event.
+  // Even with an explicit skip request, main requires a real NATS image report.
+  writeContainerIdentity(path.join(directory, 'container-identity.json'), createContainerIdentity({
+    GITHUB_EVENT_NAME: 'push', GITHUB_SHA: 'd'.repeat(40),
+  }));
   assert.equal(spawnSync(process.execPath, args, { env }).status, 1);
   const head = 'a'.repeat(40), merge = 'b'.repeat(40), base = 'c'.repeat(40);
   writeContainerIdentity(path.join(directory, 'container-identity.json'), createContainerIdentity({
