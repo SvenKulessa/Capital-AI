@@ -33,6 +33,9 @@ RUN apk add --no-cache 'python3>=3.14.8-r0' 'py3-pip>=26.1.2-r0' \
 # Remove the installer itself, including vulnerable bundled http-cache-semantics, before validation.
 COPY index.html vite.config.ts tsconfig.json OPEN_SOURCE_LICENSES.md ./
 COPY AGENTS.md ./AGENTS.md
+# The offline branding/3D regression tests inspect these two non-secret build contracts.
+# Include them in build only; the final runtime image receives neither file.
+COPY Dockerfile .dockerignore ./
 COPY .agents/skills ./.agents/skills
 COPY .github/agents ./.github/agents
 COPY .github/copilot-instructions.md ./.github/copilot-instructions.md
@@ -53,6 +56,8 @@ COPY public/branding/capital-ai-logo.jpg ./public/branding/capital-ai-logo.jpg
 COPY public/branding/asset-pack ./public/branding/asset-pack
 COPY public/branding/badges ./public/branding/badges
 COPY public/branding/social ./public/branding/social
+# Ship the approved JaJa avatar used by src/components/HeroBuddy.tsx.
+COPY public/assets/jaja-avatar-transparent.webp ./public/assets/jaja-avatar-transparent.webp
 COPY public/fonts ./public/fonts
 COPY public/learning/charts ./public/learning/charts
 COPY public/learning/videos ./public/learning/videos
@@ -77,6 +82,7 @@ COPY scripts/domain-skills.test.mjs ./scripts/domain-skills.test.mjs
 COPY scripts/screener-blueprint-preview.test.mjs ./scripts/screener-blueprint-preview.test.mjs
 COPY scripts/cads-growth-quality.test.mjs ./scripts/cads-growth-quality.test.mjs
 COPY scripts/static-legal-routes.test.mjs ./scripts/static-legal-routes.test.mjs
+COPY scripts/generate-jaja-3d.mjs ./scripts/generate-jaja-3d.mjs
 COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/social-tool-license-evidence.test.mjs scripts/validate-social-tool-license-evidence.mjs scripts/frontend-security.test.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
 COPY scripts/media ./scripts/media
 COPY scripts/growth/screener-learning-loop.test.mjs ./scripts/growth/screener-learning-loop.test.mjs

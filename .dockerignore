@@ -131,6 +131,7 @@
 !scripts/
 !scripts/media/
 !scripts/media/**
+!scripts/generate-jaja-3d.mjs
 !scripts/growth/
 !scripts/growth/screener-learning-loop.test.mjs
 !scripts/generate-chart-learning.tsx
@@ -242,6 +243,8 @@
 !public/branding/badges/**
 !public/branding/social/
 !public/branding/social/**
+!public/assets/
+!public/assets/jaja-avatar-transparent.webp
 !CAPITAL-AI-PRODUCT/
 !CAPITAL-AI-PRODUCT/badge.svg
 !CAPITAL-AI-TRUST/

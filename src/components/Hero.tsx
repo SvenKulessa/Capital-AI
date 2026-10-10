@@ -18,7 +18,7 @@
 import React from 'react';
 import { ArrowRight, Play } from 'lucide-react';
 import { openHeroBuddy } from './HeroBuddy';
-import { motion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import { useLocale } from '../i18n/LocaleProvider';
 import heroEarthImage from '../assets/images/glowing_earth_nodes_1789997454893.jpg';
 
@@ -29,10 +29,11 @@ interface HeroProps {
 
 export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct }) => {
   const { t } = useLocale();
+  const reduceMotion = useReducedMotion();
   return (
-    <section className="relative px-5 pt-4 pb-7 overflow-hidden">
+    <section className="capital-ai-hero relative px-[20px] pt-4 pb-7 overflow-hidden">
       {/* Golden neural light trails mirroring the logo's lateral filaments */}
-      <div className="absolute top-0 left-0 right-0 h-44 pointer-events-none -z-0 opacity-40 overflow-hidden">
+      <div aria-hidden="true" className="absolute top-0 left-0 right-0 h-44 pointer-events-none -z-0 opacity-40 overflow-hidden">
         <svg className="w-full h-full" viewBox="0 0 400 160" fill="none" preserveAspectRatio="none">
           <path
             d="M-20,20 C100,50 200,10 320,70 C370,95 410,60 450,40"
@@ -65,19 +66,19 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
               <stop offset="100%" stopColor="#F59E0B" stopOpacity="0" />
             </linearGradient>
             <linearGradient id="magentaWaveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#8D26FF" stopOpacity="0" />
-              <stop offset="40%" stopColor="#D946EF" stopOpacity="0.7" />
-              <stop offset="70%" stopColor="#8D26FF" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#8D26FF" stopOpacity="0" />
+              <stop offset="0%" stopColor="var(--color-brand-ai)" stopOpacity="0" />
+              <stop offset="40%" stopColor="var(--color-brand-marketing)" stopOpacity="0.7" />
+              <stop offset="70%" stopColor="var(--color-brand-ai)" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="var(--color-brand-ai)" stopOpacity="0" />
             </linearGradient>
           </defs>
         </svg>
       </div>
 
       {/* Luminous Earth & Network Constellation Background */}
-      <div className="absolute -top-12 -right-20 w-[340px] h-[340px] sm:w-[420px] sm:h-[420px] pointer-events-none select-none z-0">
+      <div aria-hidden="true" className="absolute -top-12 -right-20 w-[340px] h-[340px] sm:w-[420px] sm:h-[420px] pointer-events-none select-none z-0">
         <motion.div
-          initial={{ opacity: 0, scale: 0.92 }}
+          initial={reduceMotion ? false : { opacity: 0, scale: 0.92 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.2, ease: 'easeOut' }}
           className="relative w-full h-full"
@@ -85,7 +86,7 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
           {/* Earth image with radial fade masks */}
           <img
             src={heroEarthImage}
-            alt="Luminous Earth with Global AI Data Nodes"
+            alt=""
             referrerPolicy="no-referrer"
             className="w-full h-full object-cover rounded-full mix-blend-screen opacity-90 filter drop-shadow-[0_0_40px_rgba(245,176,20,0.35)]"
           />
@@ -96,50 +97,50 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
           
           {/* Ambient golden light bloom */}
           <div className="absolute top-1/4 right-1/4 w-32 h-32 bg-amber-500/20 rounded-full blur-2xl animate-pulse-slow" />
-          <div className="absolute top-1/2 right-1/3 w-28 h-28 bg-blue-600/15 rounded-full blur-xl" />
+          <div className="absolute top-1/2 right-1/3 w-28 h-28 bg-brand-ai/15 rounded-full blur-xl" />
         </motion.div>
       </div>
 
       {/* Hero Content */}
-      <div className="relative z-10 max-w-lg">
+      <div className="relative z-10 max-w-lg rounded-2xl bg-brand-canvas/90 p-[16px] sm:p-[20px]">
         {/* Eyebrow */}
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
+          initial={reduceMotion ? false : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="inline-flex items-center gap-1.5 mb-3"
         >
-          <span className="text-[10.5px] font-bold tracking-[0.22em] text-[#F5B014] uppercase">
-            MARKET KNOWLEDGE. CLEAR CONTEXT.
+          <span className="text-xs font-semibold tracking-wide text-brand-gold">
+            {t('heroEyebrow')}
           </span>
         </motion.div>
 
         {/* Main Title matching the exact mockup wording & colors */}
         <motion.h1
-          initial={{ opacity: 0, y: 14 }}
+          initial={reduceMotion ? false : { opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
           className="text-[34px] sm:text-[40px] font-extrabold tracking-tight leading-[1.08] mb-4 text-left"
         >
-          <span className="text-[#F5B014] block">{t('hero1')}</span>
-          <span className="text-[#F5B014] block">{t('hero2')}</span>
+          <span className="text-brand-gold block">{t('hero1')}</span>
+          <span className="text-brand-gold block">{t('hero2')}</span>
           <span className="text-white block">{t('hero3')}</span>
           <span className="text-white block">{t('hero4')}</span>
         </motion.h1>
 
         {/* Body Description */}
         <motion.p
-          initial={{ opacity: 0, y: 14 }}
+          initial={reduceMotion ? false : { opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-slate-300 text-[13px] sm:text-[14px] leading-relaxed max-w-[320px] sm:max-w-md mb-6 font-normal"
+          className="text-slate-200 text-base leading-relaxed max-w-[38ch] mb-6 font-normal"
         >
           <strong className="text-slate-100 font-semibold">CAPITAL-AI</strong> {t('heroDescription')}
         </motion.p>
 
         {/* Action Buttons */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={reduceMotion ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
           className="flex flex-col gap-3 w-full max-w-[280px]"
@@ -149,18 +150,18 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
             id="hero-start-analysis-btn"
             type="button"
             onClick={onStartAnalysis}
-            className="group relative w-full h-[50px] px-5 bg-[#F5B014] hover:bg-[#ffbe26] active:scale-[0.98] text-black font-bold rounded-2xl flex items-center justify-between shadow-[0_4px_24px_rgba(245,176,20,0.35)] transition-all duration-200"
+            className="group relative w-full min-h-[50px] py-3 px-5 bg-brand-gold hover:bg-[#ffbe26] active:scale-[0.98] text-black font-bold rounded-2xl flex items-center justify-between shadow-[0_4px_24px_rgba(245,176,20,0.35)] transition-all duration-200"
           >
             <div className="flex items-center gap-3">
               {/* Distinct 3-bar chart icon matching mockup */}
-              <div className="w-6 h-6 flex items-end justify-center gap-[3px] py-1">
+              <div aria-hidden="true" className="w-6 h-6 flex items-end justify-center gap-[3px] py-1">
                 <span className="w-[3px] h-3 bg-black rounded-full" />
                 <span className="w-[3px] h-5 bg-black rounded-full" />
                 <span className="w-[3px] h-4 bg-black rounded-full" />
               </div>
               <span className="text-[15.5px] font-bold tracking-tight">{t('analyze')}</span>
             </div>
-            <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1 stroke-[2.4]" />
+            <ArrowRight aria-hidden="true" className="w-5 h-5 transition-transform group-hover:translate-x-1 stroke-[2.4]" />
           </button>
 
           {/* Secondary Button: Dark Glass "Produkt entdecken" */}
@@ -168,7 +169,7 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
             id="hero-buddy-support-btn"
             type="button"
             onClick={openHeroBuddy}
-            className="w-full h-[44px] px-5 bg-transparent hover:bg-white/5 active:scale-[0.98] border border-amber-400/40 rounded-2xl text-amber-200 text-[13.5px] font-semibold"
+            className="w-full min-h-[44px] py-3 px-5 bg-transparent hover:bg-white/5 active:scale-[0.98] border border-brand-marketing/70 rounded-2xl text-pink-100 text-base font-semibold"
           >
             {t('assistant')}
           </button>
@@ -176,11 +177,11 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
             id="hero-explore-product-btn"
             type="button"
             onClick={onExploreProduct}
-            className="w-full h-[48px] px-5 bg-[#0a1128]/80 hover:bg-[#101b3d]/90 active:scale-[0.98] border border-slate-700/70 hover:border-slate-500/80 rounded-2xl text-white flex items-center justify-center gap-3 backdrop-blur-md transition-all duration-200"
+            className="w-full min-h-[48px] py-3 px-5 bg-[#0a1128]/80 hover:bg-[#101b3d]/90 active:scale-[0.98] border border-slate-700/70 hover:border-slate-500/80 rounded-2xl text-white flex items-center justify-center gap-3 backdrop-blur-md transition-all duration-200"
           >
             {/* Play Icon in Solid Circle */}
             <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shrink-0">
-              <Play className="w-3 h-3 text-black fill-black ml-0.5" />
+              <Play aria-hidden="true" className="w-3 h-3 text-black fill-black ml-0.5" />
             </div>
             <span className="text-[14.5px] font-medium text-slate-100">{t('discover')}</span>
           </button>
