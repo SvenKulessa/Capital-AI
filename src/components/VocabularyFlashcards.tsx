@@ -9,7 +9,7 @@ export function VocabularyFlashcards({ onNavigate, terms: suppliedTerms, entitle
 }) {
   const favorites = useLearningFavorites();
   const terms = React.useMemo(
-    () => (suppliedTerms ?? VOCABULARY_TERMS).slice(0, entitled ? undefined : 5),
+    () => (suppliedTerms ?? VOCABULARY_TERMS).slice(0,entitled?undefined:5),
     [suppliedTerms, entitled],
   );
   const [deck, setDeck] = React.useState<string[]>(() => terms.map(term => term.id));
