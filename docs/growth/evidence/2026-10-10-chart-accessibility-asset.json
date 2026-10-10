@@ -3,7 +3,7 @@
   "usageMode": "COMMERCIAL",
   "status": "DRAFT",
   "asset": {
-    "path": "public/learning/editorial/chart-accessibility-20261010.svg",
+    "path": "docs/growth/drafts/assets/chart-accessibility-20261010.svg",
     "generator": "original deterministic SVG",
     "externalMedia": [],
     "embeddedFonts": [],
@@ -29,7 +29,8 @@
       "a11yScreenreader": "NOT_PROVEN",
       "commercialFontRights": "NOT_PROVEN",
       "legalEngineReceipt": null
-    }
+    },
+    "visibility": "PRIVATE_DRAFT_NOT_PUBLIC_RUNTIME"
   },
   "publisher": {
     "publishReady": false,
