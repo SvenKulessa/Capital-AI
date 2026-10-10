@@ -87,3 +87,20 @@ test('social brand icons are local and provenance-bound', () => {
   assert.match(upstreamLicense, /CC0 1\.0 Universal/);
   assert.match(upstreamLicense, /No trademark or patent rights/);
 });
+
+test('JaJa avatar is available to Vite inside the production Docker build', () => {
+  const relativeAsset = 'public/assets/jaja-avatar-transparent.webp';
+  const avatarPath = resolve(root, relativeAsset);
+  assert.ok(existsSync(avatarPath), 'approved JaJa avatar is missing');
+  const avatar = readFileSync(avatarPath);
+  assert.equal(avatar.toString('ascii', 0, 4), 'RIFF');
+  assert.equal(avatar.toString('ascii', 8, 12), 'WEBP');
+
+  const dockerignore = readFileSync(resolve(root, '.dockerignore'), 'utf8');
+  const dockerfile = readFileSync(resolve(root, 'Dockerfile'), 'utf8');
+  const buddy = readFileSync(resolve(root, 'src/components/HeroBuddy.tsx'), 'utf8');
+  assert.match(dockerignore, /^!public\\/assets\\/$/m);
+  assert.match(dockerignore, /^!public\\/assets\\/jaja-avatar-transparent\\.webp$/m);
+  assert.match(dockerfile, /^COPY public\\/assets\\/jaja-avatar-transparent\\.webp \\.\\/public\\/assets\\/jaja-avatar-transparent\\.webp$/m);
+  assert.ok(buddy.includes('/assets/jaja-avatar-transparent.webp'));
+});
