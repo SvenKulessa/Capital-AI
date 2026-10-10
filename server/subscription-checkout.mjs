@@ -13,7 +13,7 @@ function normalizeRequest(payload) {
   const priceId = cycle === 'annual' ? catalog?.annualPriceId : catalog?.monthlyPriceId;
   if (!priceId || !priceId.startsWith('price_')) return null;
   const promotion=String(payload?.promotion||'').trim().toUpperCase();
-  if(promotion && (promotion!==ENTERPRISE_TRIAL_CODE || tier!=='enterprise')) return null;
+  if(promotion && (promotion!==ENTERPRISE_TRIAL_CODE || tier!=='enterprise' || cycle!=='monthly')) return null;
   return { tier, cycle, priceId, trial: promotion===ENTERPRISE_TRIAL_CODE };
 }
 
@@ -123,7 +123,11 @@ export function createSubscriptionCheckout({ env = process.env, fetchImpl = fetc
 
       if(request.trial) {
         try {
-          if(!(await trialCampaign.state(user.userId,'reserve'))?.reserved) return json(res,409,{error:'trial_already_claimed'}),true;
+          if(!(await trialCampaign.state(user.userId,'reserve'))?.reserved) {
+            const session = await trialCampaign.resume(user.userId);
+            if (session) return json(res,200,{url:session.url,sessionId:session.id}),true;
+            return json(res,409,{error:'trial_already_claimed'}),true;
+          }
         } catch {return json(res,503,{error:'trial_unavailable'}),true;}
       }
       const planId = request.tier.toUpperCase();

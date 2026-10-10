@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* Finance landingPage profile, read at dcef421fe6e350a3a2ade61d0299aad9ecca213c. */
+@theme {
+  --color-brand-canvas: #02050E;
+  --color-brand-gold: #F9BF21;
+  --color-brand-ai: #8D26FF;
+  --color-brand-marketing: #FF2E93;
+}
+
+
 @layer base {
   body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
@@ -35,4 +44,18 @@
   .license-report { position: absolute; top: 0; left: 0; width: 100%; }
   .license-report button, .license-report nav { display: none; }
   .license-report article { break-inside: avoid; border-color: #ccc; }
+}
+
+/* Keep hero content legible over decorative Universe artwork. */
+.capital-ai-hero { overflow-wrap: anywhere; }
+.capital-ai-hero button:focus-visible {
+  outline: 2px solid var(--color-brand-gold);
+  outline-offset: 4px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .capital-ai-hero .animate-pulse-slow { animation: none; }
+  .capital-ai-hero button, .capital-ai-hero button svg {
+    transition: none;
+    transform: none;
+  }
 }
