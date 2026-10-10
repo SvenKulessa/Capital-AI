@@ -135,6 +135,9 @@ export default defineConfig(() => {
               // Three.js is a large but self-contained, lazy 3D dependency.
               // Keep it apart from the JaJa UI/GLB parser; the 500 kB budget
               // and emitted import-cycle guard still apply to every chunk.
+              // Shader source/string modules are leaf dependencies of WebGL,
+              // and can be independently cached without any renderer -> shader -> renderer cycle.
+              { name: 'jaja-three-shaders', test: /[/\\]node_modules[/\\]three[/\\]src[/\\]renderers[/\\]shaders[/\\]/ },
               { name: 'jaja-three-renderer', test: /[/\\]node_modules[/\\]three[/\\]src[/\\]renderers[/\\]/ },
               { name: 'jaja-three-common', test: /[/\\]node_modules[/\\]three[/\\]src[/\\]/ },
             ],
