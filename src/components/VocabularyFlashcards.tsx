@@ -3,6 +3,16 @@ import { VOCABULARY_TERMS, type VocabularyTerm } from '../data/vocabularyData';
 import { VocabularyCard } from '../features/learning/VocabularyCard';
 import { useLearningFavorites } from '../features/learning/LearningFavorites';
 
+/** Rotate through the current session deck without growing it. */
+export function advanceVocabularyDeck(deck: readonly string[]): string[] {
+  return deck.length <= 1 ? [...deck] : [...deck.slice(1), deck[0]];
+}
+
+/** Put a missed term behind two other cards, including across the former end of the deck. */
+export function rescheduleMissedVocabulary(deck: readonly string[]): string[] {
+  return deck.length <= 1 ? [...deck] : [...deck.slice(1, 3), deck[0], ...deck.slice(3)];
+}
+
 /** A small, accessible flashcard deck. Incorrect terms reappear after two other cards. */
 export function VocabularyFlashcards({ onNavigate, terms: suppliedTerms, entitled = false }: {
   onNavigate: (path: string) => void; terms?: VocabularyTerm[]; entitled?: boolean;
@@ -13,25 +23,24 @@ export function VocabularyFlashcards({ onNavigate, terms: suppliedTerms, entitle
     [suppliedTerms, entitled],
   );
   const [deck, setDeck] = React.useState<string[]>(() => terms.map(term => term.id));
-  const [index, setIndex] = React.useState(0);
+  const [seen, setSeen] = React.useState(0);
   const pointerStart = React.useRef<{ x: number; y: number } | null>(null);
 
   React.useEffect(() => {
     setDeck(terms.map(term => term.id));
-    setIndex(0);
+    setSeen(0);
   }, [terms]);
 
-  const term = terms.find(candidate => candidate.id === deck[index]);
-  const next = () => setIndex(current => (current + 1) % Math.max(1, deck.length));
+  const term = terms.find(candidate => candidate.id === deck[0]);
+  const next = () => {
+    setDeck(current => advanceVocabularyDeck(current));
+    setSeen(current => current + 1);
+  };
   const missed = () => {
     if (!term) return;
-    // Misses are session-local learning signals, never persisted as a public/tenant-shared cache.
-    setDeck(current => {
-      const updated = [...current];
-      updated.splice(Math.min(index + 3, updated.length), 0, term.id);
-      return updated;
-    });
-    next();
+    // Session-only: no personal performance data or repeated card IDs are persisted.
+    setDeck(current => rescheduleMissedVocabulary(current));
+    setSeen(current => current + 1);
   };
 
   return <section aria-labelledby="learning-vocabulary-title" className="space-y-5" data-design-profile="CAPITAL_AI_VOCABULARY_FLASHCARD@3">
@@ -44,7 +53,7 @@ export function VocabularyFlashcards({ onNavigate, terms: suppliedTerms, entitle
     </div>
     {favorites.error && <p role="alert" className="text-sm text-rose-200">{favorites.error}</p>}
     {term ? <>
-      <p aria-live="polite" className="text-sm font-semibold text-amber-200">Karte {index + 1} von {deck.length} · {terms.length} unterschiedliche Begriffe</p>
+      <p aria-live="polite" className="text-sm font-semibold text-amber-200">Karte {deck.length ? (seen % deck.length) + 1 : 0} von {deck.length} · {terms.length} unterschiedliche Begriffe</p>
       <div onPointerDown={event => {
           if (event.target instanceof Element && event.target.closest('button')) return;
           pointerStart.current = { x: event.clientX, y: event.clientY };
