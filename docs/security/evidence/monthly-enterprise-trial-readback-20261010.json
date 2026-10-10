@@ -1,0 +1,43 @@
+{
+  "schema": "CAPITAL_AI_MONTHLY_ENTERPRISE_TRIAL_READBACK@1",
+  "date": "2026-10-10",
+  "mainBase": "d80355f296b429317ff65d7a1cdb9a0e0ca82ae7",
+  "supabase": {
+    "migration": "20261010033000_resume_enterprise_trial_checkout",
+    "applied": true,
+    "serviceRoleExecute": true,
+    "anonExecute": false,
+    "authenticatedExecute": false,
+    "ownerTrialReservationExists": false,
+    "ownerSubscriptionTier": "Free",
+    "reserveAttachResumeSmoke": "PASS_ROLLED_BACK",
+    "persistedTrialRowsAfterSmoke": 0
+  },
+  "stripe": {
+    "scope": "DIRECT_PROVIDER_CHECKOUT_NOT_FRONTEND_E2E",
+    "livemode": true,
+    "initialAmountCents": 0,
+    "trialDays": 3,
+    "postTrialPriceCents": 10900,
+    "postTrialCycle": "monthly",
+    "currency": "eur",
+    "couponRequired": false,
+    "browserCheckoutRendered": true,
+    "subscriptionCreated": false,
+    "paymentSubmitted": false,
+    "temporarySessionExpiresAutomatically": true
+  },
+  "validation": {
+    "npmTest": "PASS",
+    "lint": "PASS",
+    "build": "PASS",
+    "focusedServerTests": 21,
+    "focusedCommerceTests": 9
+  },
+  "productionFrontend": "OLD_TRIAL_FORM_OBSERVED",
+  "authenticatedFrontendE2e": "NOT_PROVEN",
+  "requiredChecks": "PENDING_NEW_HEAD",
+  "originalPr": 352,
+  "originalPrBlocker": "nonconforming head branch name",
+  "checkPolicyChanged": false
+}
