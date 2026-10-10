@@ -1,11 +1,11 @@
-# CAPITAL-AI: Repository-Updates bis PR #351
+# CAPITAL-AI: Repository-Updates bis PR #353
 
 > **Entwurf – nicht veröffentlicht.** Die Zusammenfassung basiert auf gemergten Pull Requests.
 > Eine erfolgreiche technische Zusammenführung beweist noch keinen produktiven Rollout.
 
 ## Die Änderungen im Überblick
 
-Im aktuellen Entwicklungsabschnitt wurden 20 Pull Requests zusammengeführt. Die folgenden Änderungen sind anhand der zugehörigen GitHub-Diffs nachvollziehbar.
+Im hier dokumentierten Entwicklungsabschnitt wurden 25 Pull Requests zusammengeführt. Die folgenden Änderungen sind anhand der zugehörigen GitHub-Diffs nachvollziehbar.
 
 - [PR #329](https://github.com/SvenKulessa/Capital-AI/pull/329): CAPITAL-AI-GROWTH GA4 MCP Readback in Capital-AI Render übertragen
 - [PR #331](https://github.com/SvenKulessa/Capital-AI/pull/331): CAPITAL-AI-PLATFORM CI-Effizienz-Evidence und Runner-Drift korrigieren
@@ -28,12 +28,20 @@ Im aktuellen Entwicklungsabschnitt wurden 20 Pull Requests zusammengeführt. Die
 - [PR #349](https://github.com/SvenKulessa/Capital-AI/pull/349): CAPITAL-AI-GROWTH GA4 schlüssellos mit OIDC unabhängig von GSC prüfen
 - [PR #351](https://github.com/SvenKulessa/Capital-AI/pull/351): CAPITAL-AI-PRODUCT Fix Learning Portal price and promo checkout; diagnose Supabase logs
 
+- [PR #354](https://github.com/SvenKulessa/Capital-AI/pull/354): Roadmap-Abgleich bis PR #351
+- [PR #348](https://github.com/SvenKulessa/Capital-AI/pull/348): JaJa 3D mit GLB und Docker-Asset-Fix
+- [PR #356](https://github.com/SvenKulessa/Capital-AI/pull/356): Enterprise-Testphase mit direktem monatlichem Stripe-Checkout
+- [PR #358](https://github.com/SvenKulessa/Capital-AI/pull/358): Canonical- und Social-URLs bei Navigation stabil halten
+- [PR #353](https://github.com/SvenKulessa/Capital-AI/pull/353): Agentenregeln verschlanken und verständliches Universe-Frontend stärken
+
 ## Was sich daraus für die Plattform ergibt
 
 Die aufgeführten Änderungen werden anhand der verlinkten Pull Requests dokumentiert. Ob Funktionen bereits auf dem Webservice bereitstehen, ergibt sich ausschließlich aus separaten Deployment- und Runtime-Nachweisen.
+
+Derzeit ist in Render nur der ältere Source-Commit a613aff57f26 als LIVE nachgewiesen. Die neueren Merges sind dadurch keine belegten produktiven Features.
 
 ## Transparenz und nächste Schritte
 
 Die Veröffentlichung ist ein vorbereiteter Blogentwurf für die CONTENT Engine. Social-Media-Ausspielung, visuelle Medien und redaktionelle Freigabe sind nicht automatisch aktiviert.
 
-Quelle: [d80355f296b4](https://github.com/SvenKulessa/Capital-AI/commit/d80355f296b429317ff65d7a1cdb9a0e0ca82ae7)
+Quellenstand: [78698701e0f0](https://github.com/SvenKulessa/Capital-AI/commit/78698701e0f0b06ef12960d64401590b0e37df79) · früherer Basisstand: [d80355f296b4](https://github.com/SvenKulessa/Capital-AI/commit/d80355f296b429317ff65d7a1cdb9a0e0ca82ae7)
