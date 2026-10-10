@@ -1867,7 +1867,7 @@ export const vocabularyMetadata = [
     "id": "finance-voc-frontend-0001",
     "path": "/vocabulary/finance-voc-frontend-0001",
     "term": "Anwendungsshell",
-    "category": "Produkt & UX",
+    "category": "Mobile & Runtime",
     "description": "Oberste fachneutrale Präsentationshülle, die globale Layout-, Navigations- und Inhaltsbereiche zusammensetzt.",
     "thesaurus": [
       "Application shell",
@@ -1891,7 +1891,7 @@ export const vocabularyMetadata = [
     "id": "finance-voc-frontend-0003",
     "path": "/vocabulary/finance-voc-frontend-0003",
     "term": "Geräte-Vorschaurahmen",
-    "category": "Produkt & UX",
+    "category": "Mobile & Runtime",
     "description": "Rein präsentative Rahmung zur Vorschau einer Oberfläche in einer definierten Gerätegeometrie; kein Bestandteil der produktiven Geräteerkennung.",
     "thesaurus": [
       "Device preview frame",

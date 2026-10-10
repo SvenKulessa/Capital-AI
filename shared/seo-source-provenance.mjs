@@ -11,12 +11,12 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
     contentSha256: 'ca4ac73f4dd996346dc45e3e563dbc1cba4e17fd594cce88f2eb01198732bbb2',
   }),
   'src/features/learning/LearningPortalPage.tsx': Object.freeze({
-    sourceBlobSha: 'd7b8b34b1f97e932a53f97a33f9af04ecc4e69dd',
-    contentSha256: 'c8c99bb569a51e23e2063cbda9e6230df0fba9475d01a5a0b3400cda81312b61',
+    sourceBlobSha: 'b1b01aee1172450515cb2dcf61faf92720e7f6ed',
+    contentSha256: '4dc9a325688f1a1aa6ea57cdd3b653a6b8e2dce861f4734ea3559c141bb11de3',
   }),
   'shared/vocabulary-metadata.mjs': Object.freeze({
-    sourceBlobSha: '5ebed53fc03776879bbc7ff8997bc2e513a122e4',
-    contentSha256: '2d9dcda3e6446e7adfdd20faf93de28cc6171f72ee3cf5e80daf7fec34feac90',
+    sourceBlobSha: 'e6c688cee57cf3cce92154e73ae4eb00cb76886b',
+    contentSha256: '584426d21f5d1415afad1829c398a4a68adfdb4fc103ee2d3c48f30233a772d8',
   }),
   'src/components/LegalAndFaqPages.tsx': Object.freeze({
     sourceBlobSha: 'ad61fafaf477e412c5cc6ef69543c97871f5aaea',
@@ -59,7 +59,7 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
 const SEO_SOURCE_SET_DIGESTS = Object.freeze({
   'shared/blog-articles.mjs': '9f2fd7096a150d0a402a1aeed775bc0151db3fddc1886c6b62a3ac207099f363',
   'index.html|src/features/home/HomePage.tsx': '489616e324d1f210a724680e65b15354d83c39d73b0da0a956c7fbc3a42627da',
-  'shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': '2a01f50901fb40519f80279dc7121a9eb0b40b8a53de1931390bf2a712222266',
+  'shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': 'a18437779a615f0f5960af805fda960a510ef278ff058a69e7564c149e1024ed',
   'src/components/LegalAndFaqPages.tsx|src/content/publicLegalContent.ts': 'c4c70044ca186dcb1ef02bff2fd86f7b35232a9439407a0892dba0193a88d329',
   'shared/license-metadata.mjs|src/components/LicenseInformationPages.tsx': 'a32e0df5d6e5bc57e3a23283f7e1c91aa1a584f7f70ccc8208796322172210bb',
   'shared/license-metadata.mjs|src/data/providerLicenseReview.ts': '98d2b1c966c071230d8b5554f132c198bf95c7df07e5b559fa82e2aa53f1c768',
@@ -67,7 +67,7 @@ const SEO_SOURCE_SET_DIGESTS = Object.freeze({
   'shared/legal-identity.mjs|src/components/LegalAndFaqPages.tsx': '82e7cc866ab304f14f4559eb7116f6a7205c06a89da5111591669c90df477685',
   'src/components/LegalAndFaqPages.tsx|src/privacy/privacyPolicy.ts': '8aac45fa697f96d56f060e692a9631afefe61cdc4b8ecfc60d228c299bc4aa45',
   'src/components/LegalAndFaqPages.tsx|src/content/legalDocumentVersions.ts': '9aee860b53b4ab42ffa9eca5a8f759ede2834c52edadb4a43a092bfd591ce71a',
-  'shared/vocabulary-metadata.mjs': '8b9fb4e36e8b841d6c367dd50db4038b694e5ca23ef73e71ebf6215f36ea7928',
+  'shared/vocabulary-metadata.mjs': '68d08a159722c203812e5fd0bbc75ada4711f05b1697f4d249168f44ce5e7c81',
 });
 
 export function seoSourceSetKey(sourceRefs) {
