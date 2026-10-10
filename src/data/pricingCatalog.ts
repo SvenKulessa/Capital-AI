@@ -24,6 +24,7 @@ export const PRICING_CATALOG = {
   },
 } as const;
 
+// Historical EUR 19 Stripe receipt catalog. Current purchase/display authority is VOCABULARY_OFFER.
 export const VOCABULARY_PRICE = {
   label: 'Market Vocabulary',
   productId: 'prod_VNTsrtlf2ZL8ja',

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { formatVocabularyPrice } from '../../data/vocabularyOffer';
+import { CheckoutPaymentHelp } from '../pricing/CheckoutPaymentHelp';
 
 export function LearningPurchase({ onLogin }: { onLogin?: () => void }) {
   const [consent, setConsent] = useState(false);
@@ -29,6 +30,8 @@ export function LearningPurchase({ onLogin }: { onLogin?: () => void }) {
       Ich stimme der sofortigen Bereitstellung zu und bestätige den Verlust des Widerrufsrechts mit Beginn der Bereitstellung.</label>
     <button type="button" disabled={!consent || pending} aria-busy={pending} onClick={() => void checkout()} className="min-h-11 rounded-lg bg-amber-400 px-4 text-sm font-bold text-black disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-amber-200">
       {pending ? 'Stripe wird geöffnet …' : `Learning Portal für ${formatVocabularyPrice()} kaufen`}</button>
+    <p className="text-xs text-slate-300">Einen gültigen Promo-Code kannst du im nächsten Schritt im Stripe-Checkout eingeben.</p>
+    <CheckoutPaymentHelp />
     {error && <p role="alert" className="text-sm text-rose-300">{error}</p>}
   </section>;
 }
