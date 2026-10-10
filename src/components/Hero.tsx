@@ -103,6 +103,10 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
 
       {/* Hero Content */}
       <div className="relative z-10 max-w-lg rounded-2xl bg-brand-canvas/90 p-[16px] sm:p-[20px]">
+        {/* An accessible brand anchor above the headline, without obscuring the primary CTA. */}
+        <img src="/branding/capital-ai-logo.jpg" alt="CAPITAL-AI – Market Intelligence"
+          width={320} height={180} loading="eager" decoding="async"
+          className="mb-3 block max-h-28 w-full max-w-[230px] rounded-xl border border-amber-300/20 object-contain object-left shadow-[0_0_32px_rgba(245,176,20,0.20)] sm:max-w-[270px]" />
         {/* Eyebrow */}
         <motion.div
           initial={reduceMotion ? false : { opacity: 0, y: 10 }}
@@ -150,7 +154,7 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
             id="hero-start-analysis-btn"
             type="button"
             onClick={onStartAnalysis}
-            className="group relative w-full min-h-[50px] py-3 px-5 bg-brand-gold hover:bg-[#ffbe26] active:scale-[0.98] text-black font-bold rounded-2xl flex items-center justify-between shadow-[0_4px_24px_rgba(245,176,20,0.35)] transition-all duration-200"
+            className="group relative w-full min-h-[50px] py-3 px-5 bg-brand-gold hover:bg-[#ffbe26] active:scale-[0.98] text-black font-bold rounded-2xl flex items-center justify-between shadow-[0_4px_24px_rgba(245,176,20,0.35)] hover:shadow-[0_0_38px_rgba(245,176,20,0.70)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 motion-safe:hover:scale-[1.02] motion-reduce:transition-none transition-all duration-200"
           >
             <div className="flex items-center gap-3">
               {/* Distinct 3-bar chart icon matching mockup */}
@@ -169,7 +173,7 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
             id="hero-buddy-support-btn"
             type="button"
             onClick={openHeroBuddy}
-            className="w-full min-h-[44px] py-3 px-5 bg-transparent hover:bg-white/5 active:scale-[0.98] border border-brand-marketing/70 rounded-2xl text-pink-100 text-base font-semibold"
+            className="w-full min-h-[44px] py-3 px-5 bg-transparent hover:bg-fuchsia-400/10 hover:shadow-[0_0_28px_rgba(192,132,252,0.35)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-300 active:scale-[0.98] border border-brand-marketing/70 rounded-2xl text-pink-100 text-base font-semibold"
           >
             {t('assistant')}
           </button>
@@ -177,7 +181,7 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
             id="hero-explore-product-btn"
             type="button"
             onClick={onExploreProduct}
-            className="w-full min-h-[48px] py-3 px-5 bg-[#0a1128]/80 hover:bg-[#101b3d]/90 active:scale-[0.98] border border-slate-700/70 hover:border-slate-500/80 rounded-2xl text-white flex items-center justify-center gap-3 backdrop-blur-md transition-all duration-200"
+            className="w-full min-h-[48px] py-3 px-5 bg-[#0a1128]/80 hover:bg-[#101b3d]/90 hover:shadow-[0_0_28px_rgba(34,211,238,0.30)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 active:scale-[0.98] border border-slate-700/70 hover:border-slate-500/80 rounded-2xl text-white flex items-center justify-center gap-3 backdrop-blur-md transition-all duration-200"
           >
             {/* Play Icon in Solid Circle */}
             <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shrink-0">

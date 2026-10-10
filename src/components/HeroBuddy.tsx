@@ -1,5 +1,6 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { EyeOff, Move, Settings, X } from 'lucide-react';
+import { clampHeroBuddyPoint } from './heroBuddyPosition';
 
 type HeroBuddyProps = {
   onNavigate?: (path: string) => void;
@@ -18,6 +19,7 @@ const DISCLAIMER = 'JaJa erklärt Zusammenhänge. Keine Anlageberatung.';
 export const HERO_BUDDY_EVENT = 'capital-ai:open-hero-buddy';
 export const HERO_BUDDY_HIDDEN_KEY = 'capital_ai_hero_buddy_hidden_v1';
 const HERO_BUDDY_POSITION_KEY = 'capital_ai_hero_buddy_position_v1';
+const HERO_BUDDY_FLOATING_KEY = 'capital_ai_hero_buddy_floating_v1';
 type BuddyPosition = 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
 const BUDDY_POSITIONS: BuddyPosition[] = ['bottom-right', 'bottom-left', 'top-right', 'top-left'];
 
@@ -76,6 +78,17 @@ export function HeroBuddy(props: HeroBuddyProps) {
     const stored = window.localStorage.getItem(HERO_BUDDY_POSITION_KEY) as BuddyPosition | null;
     return stored && BUDDY_POSITIONS.includes(stored) ? stored : 'bottom-right';
   });
+  const [floatingXY, setFloatingXY] = useState<{x:number;y:number}|null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const parsed = JSON.parse(window.localStorage.getItem(HERO_BUDDY_FLOATING_KEY) || 'null');
+      return parsed && Number.isFinite(parsed.x) && Number.isFinite(parsed.y) ? {x:parsed.x,y:parsed.y} : null;
+    } catch { return null; }
+  });
+  const floatingRoot = useRef<HTMLDivElement|null>(null);
+  const floatingDrag = useRef<{x:number;y:number;startX:number;startY:number;width:number;height:number;moved:boolean}|null>(null);
+  const draggedOnRelease = useRef(false);
+  const latestFloatingXY = useRef<{x:number;y:number}|null>(null);
   const [messages, setMessages] = useState<BuddyMessage[]>([
     { id: 'welcome', role: 'buddy', text: 'Ja ja. Ich bin JaJa, der Chat Buddy. Ich erkläre Zins, Bewertung und Risiko, ohne Kauf oder Verkauf.' },
   ]);
@@ -157,6 +170,35 @@ export function HeroBuddy(props: HeroBuddyProps) {
     setSpeech(reason);
   });
 
+  // A saved drag position must stay visible after window resizing or panel content changes.
+  // Measure the real component instead of estimating a fixed chat height.
+  const isFloating = floatingXY !== null;
+  useEffect(() => {
+    if (!isFloating || hidden) return;
+    const element = floatingRoot.current;
+    if (!element) return;
+    const reconcile = () => {
+      const bounds = element.getBoundingClientRect();
+      setFloatingXY(previous => {
+        if (!previous) return previous;
+        const next = clampHeroBuddyPoint(previous,
+          { width: window.innerWidth, height: window.innerHeight },
+          { width: bounds.width, height: bounds.height });
+        if (previous.x === next.x && previous.y === next.y) return previous;
+        window.localStorage.setItem(HERO_BUDDY_FLOATING_KEY, JSON.stringify(next));
+        return next;
+      });
+    };
+    reconcile();
+    window.addEventListener('resize', reconcile);
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(reconcile);
+    observer?.observe(element);
+    return () => {
+      window.removeEventListener('resize', reconcile);
+      observer?.disconnect();
+    };
+  }, [isFloating, hidden, open]);
+
   const actions = useMemo(() => [
     { label: 'Tarife', run: () => props.onOpenMonetization?.() },
     { label: 'Vocabulary', run: () => props.onOpenVocabulary?.() },
@@ -200,7 +242,40 @@ export function HeroBuddy(props: HeroBuddyProps) {
   const cyclePosition = () => {
     const next = BUDDY_POSITIONS[(BUDDY_POSITIONS.indexOf(position) + 1) % BUDDY_POSITIONS.length];
     setPosition(next);
+    setFloatingXY(null);
+    window.localStorage.removeItem(HERO_BUDDY_FLOATING_KEY);
     window.localStorage.setItem(HERO_BUDDY_POSITION_KEY, next);
+  };
+
+  const beginFloatingDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (event.button !== 0) return;
+    const bounds = floatingRoot.current?.getBoundingClientRect();
+    if (!bounds) return;
+    floatingDrag.current = {x:bounds.left,y:bounds.top,startX:event.clientX,startY:event.clientY,width:bounds.width,height:bounds.height,moved:false};
+    latestFloatingXY.current = {x:bounds.left,y:bounds.top};
+    setFloatingXY(latestFloatingXY.current);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+  const moveFloatingDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const state = floatingDrag.current;
+    if (!state) return;
+    const dx = event.clientX-state.startX, dy=event.clientY-state.startY;
+    if (Math.abs(dx)+Math.abs(dy) < 6 && !state.moved) return;
+    state.moved=true;
+    const bounded = clampHeroBuddyPoint({ x: state.x + dx, y: state.y + dy },
+      { width: window.innerWidth, height: window.innerHeight },
+      { width: state.width, height: state.height });
+    latestFloatingXY.current=bounded;
+    setFloatingXY(latestFloatingXY.current);
+  };
+  const endFloatingDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (!floatingDrag.current) return;
+    draggedOnRelease.current = floatingDrag.current.moved;
+    if (floatingDrag.current.moved && latestFloatingXY.current) {
+      window.localStorage.setItem(HERO_BUDDY_FLOATING_KEY,JSON.stringify(latestFloatingXY.current));
+    }
+    floatingDrag.current=null;
+    if(event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId);
   };
 
   const hideBuddy = () => {
@@ -220,7 +295,8 @@ export function HeroBuddy(props: HeroBuddyProps) {
   }[position];
 
   return (
-    <div className={`fixed ${positionClass} z-[45] flex items-end gap-2`} data-hero-buddy="agent">
+    <div ref={floatingRoot} className={`fixed ${floatingXY ? '' : positionClass} z-[45] flex flex-col-reverse items-end gap-2 sm:flex-row`}
+      style={floatingXY ? { left: floatingXY.x, top: floatingXY.y } : undefined} data-hero-buddy="agent">
       {(speech || open) && (
         <div id={chatPanelId} role={open ? 'dialog' : 'status'} aria-label={open ? 'JaJa Chat Buddy' : 'JaJa Hilfe'} className="relative w-[min(88vw,320px)] rounded-2xl border border-amber-300/40 bg-[#10182e] px-3 py-2 text-xs text-slate-100 shadow-lg">
           <span className="absolute -right-1.5 bottom-5 h-3 w-3 rotate-45 border-b border-r border-amber-300/40 bg-[#10182e]" aria-hidden="true" />
@@ -232,7 +308,11 @@ export function HeroBuddy(props: HeroBuddyProps) {
                   <button type="button" aria-expanded={settingsOn} aria-label="Einstellungen" title="Einstellungen" onClick={() => setSettingsOn((value) => !value)} className="rounded-md p-1 text-slate-400 hover:text-white">
                     <Settings className="h-4 w-4" />
                   </button>
-                  <button type="button" aria-label="Hero Buddy verschieben" title="Position ändern" onClick={cyclePosition} className="rounded-md p-1 text-slate-400 hover:text-white">
+                  <button type="button" aria-label="Hero Buddy verschieben: ziehen oder per Klick Ecke wechseln" title="Ziehen zum Verschieben; Klick wechselt die Ecke"
+                      onClick={() => {if(draggedOnRelease.current){draggedOnRelease.current=false;return;}cyclePosition();}}
+                      onPointerDown={beginFloatingDrag} onPointerMove={moveFloatingDrag} onPointerUp={endFloatingDrag}
+                      onPointerCancel={endFloatingDrag}
+                      className="touch-none cursor-move rounded-md p-2 text-slate-200 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-amber-300">
                     <Move className="h-4 w-4" />
                   </button>
                   <button type="button" aria-label="Hero Buddy ausblenden" title="Ausblenden" onClick={hideBuddy} className="rounded-md p-1 text-slate-400 hover:text-white">

@@ -23,6 +23,18 @@ Bei einem Widerspruch gilt ausschließlich diese Datei. Zusätzliche Regeln dür
 7. Nur ein Merge nach `main` darf den normalen Production-Pfad auslösen.
 8. Production darf automatisch deployen, wenn die für `main` definierten technischen Checks erfolgreich sind.
 
+## Direktpfad vom Chat-Auftrag zum Pull Request
+
+Bei einem konkreten umsetzbaren Chat-Auftrag ist die bestehende GitHub-PR-Pipeline der Standardweg, ohne zusätzliche Freigabe-, Vorabtest- oder manuelle CI-Ebene:
+
+1. Den aktuellen `main`-Stand, betroffene Codepfade und offene PRs im selben Scope gezielt abgleichen. Einen bereits offenen passenden PR fortführen; keine parallelen Vorbereitungs-PRs erzeugen.
+2. Die kleinste vollständige, überprüfbare Änderung direkt auf einem bestehenden Scope-Branch oder einem von aktuellem `main` abgeleiteten Feature-Branch umsetzen. Ein fehlender lokaler Checkout ist kein Grund, bei vorhandenem Repository-Zugriff nur einen Plan oder Testbefehl auszugeben.
+3. Den wirksamen Code committen und den PR mit tatsächlichen Änderungen, Risiken und vorhandener Evidence eröffnen. Die automatischen Required Checks gehören **nach** dem PR; einen PR nicht für einen zusätzlichen, manuell gestarteten Preflight verzögern.
+4. Vorhandene GitHub-Checks als Nachweis **ihres tatsächlichen Umfangs** verwenden. `PENDING`, `SKIPPED` und `NOT_PROVEN` nicht als `PASS` bezeichnen; fehlgeschlagene Checks gezielt im selben PR korrigieren. Keine duplizierten Einzelworkflows für Tests erstellen, die der bestehende `Docker Security Gate` bereits ausführt.
+5. Dem Owner den PR-Link, den geänderten Scope und die echten CI-Ergebnisse zusammenfassen. Der PR bleibt bis zur ausdrücklichen PR-spezifischen Owner-Freigabe ungemergt; Production wird dadurch nicht gestartet.
+
+Dieser Direktpfad schafft keine neuen Required Checks, Reviews, Testausnahmen, Merge-Berechtigungen oder Freigabestufen.
+
 ## PRs nur für umsetzbare Änderungen
 
 Für alle Domains gilt: Ein neuer PR muss eine tatsächliche, vollständige Änderung enthalten, die nach erfolgreichen Checks und autorisiertem Merge über den bestehenden Main-/Deployment-Pfad wirksam werden kann.
