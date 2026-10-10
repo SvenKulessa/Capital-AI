@@ -71,6 +71,8 @@ function contentEntry({
 }
 
 const staticEntries = [
+  contentEntry({ path: '/blog', slug: 'blog', title: 'Wissen & Lernen | CAPITAL AI', description: 'Öffentliche redaktionelle Beiträge zu Finanzwissen, Datenqualität und zugänglicher Marktanalyse.', contentType: 'blog', domain: 'GROWTH', structuredDataType: 'WebPage', socialEligible: false, aiSearchEligible: true, sourceRefs: ['shared/blog-articles.mjs'] }),
+  contentEntry({ path: '/blog/barrierefreie-finanzcharts', slug: 'barrierefreie-finanzcharts', title: 'Barrierefreie Finanzcharts: Vier Informationswege | CAPITAL AI', description: 'Wie Textalternativen, nachvollziehbare Datenherkunft und Tastaturbedienung Finanzcharts verständlicher machen.', contentType: 'article', domain: 'GROWTH', structuredDataType: 'BlogPosting', socialEligible: false, aiSearchEligible: true, sourceRefs: ['shared/blog-articles.mjs'] }),
   contentEntry({
     path: '/',
     slug: 'home',
@@ -86,8 +88,8 @@ const staticEntries = [
   contentEntry({
     path: '/learning',
     slug: 'learning',
-    title: 'Capital-AI | Learning Portal & Fachbegriffe',
-    description: `Learning Portal von Capital-AI mit ${VOCABULARY_PUBLIC_COUNT} konsolidierten Fachbegriffen aus Marktanalyse, Scoring, Daten, Plattform, Security, Produkt, Governance und Mobile Runtime.`,
+    title: 'Finanzwissen lernen: Glossar, Chartmuster & Quiz | Capital-AI',
+    description: `Finanzbegriffe und Marktanalyse verständlich lernen: ${VOCABULARY_PUBLIC_COUNT} Fachbegriffe, Chartbeispiele und Quizzes. Lerninhalte entdecken und Learning-/Kursanfrage stellen.`,
     contentType: 'learning',
     domain: 'GROWTH',
     structuredDataType: 'DefinedTermSet',
