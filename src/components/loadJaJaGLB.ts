@@ -1,6 +1,6 @@
 import {
   BufferAttribute, BufferGeometry, Color, DoubleSide, Group, Mesh,
-  MeshStandardMaterial, SRGBColorSpace,
+  MeshLambertMaterial, SRGBColorSpace,
 } from 'three';
 
 const MODEL_URL = '/assets/jaja-figure.glb';
@@ -97,11 +97,10 @@ function parseJaJaGLB(buffer: ArrayBuffer): Group {
     invariant(pbr && Array.isArray(pbr.baseColorFactor) &&
       pbr.baseColorFactor.length === 4 &&
       pbr.baseColorFactor.every(x => Number.isFinite(x) && x >= 0 && x <= 1));
-    return new MeshStandardMaterial({
+    // Low-poly, light-reactive material: omit full PBR shader dependency.
+    return new MeshLambertMaterial({
       color: new Color().setRGB(pbr.baseColorFactor[0], pbr.baseColorFactor[1],
         pbr.baseColorFactor[2], SRGBColorSpace),
-      roughness: pbr.roughnessFactor,
-      metalness: pbr.metallicFactor,
       side: DoubleSide,
     });
   });
