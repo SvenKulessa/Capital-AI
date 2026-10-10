@@ -1,104 +1,124 @@
 {
   "schema": "CAPITAL_AI_CONTROL_CENTER_NEWS@1",
   "state": "DRAFT_NOT_PUBLISHED",
-  "lastBatchPr": 247,
-  "mergeCount": 300,
-  "fromPr": 309,
-  "sourceSha": "807bb9dfa4bd27c90227e5ef7fd26ac45c286a48",
-  "generatedAt": "2026-10-09T17:23:28.857Z",
-  "title": "CAPITAL-AI: Repository-Updates bis PR #247",
-  "article": "# CAPITAL-AI: Repository-Updates bis PR #247\n\n> **Entwurf – nicht veröffentlicht.** Die Zusammenfassung basiert auf gemergten Pull Requests.\n> Eine erfolgreiche technische Zusammenführung beweist noch keinen produktiven Rollout.\n\n## Die Änderungen im Überblick\n\nIm aktuellen Entwicklungsabschnitt wurden 20 Pull Requests zusammengeführt. Die folgenden Änderungen sind anhand der zugehörigen GitHub-Diffs nachvollziehbar.\n\n- [PR #309](https://github.com/SvenKulessa/Capital-AI/pull/309): CAPITAL-AI-PRODUCT Roadmap code- und dokumentbasiert bis PR 308 abgleichen\n- [PR #310](https://github.com/SvenKulessa/Capital-AI/pull/310): CAPITAL-AI-GROWTH News-Blogentwurf zu 20 PR-Merges bis 308\n- [PR #311](https://github.com/SvenKulessa/Capital-AI/pull/311): CAPITAL-AI-PLATFORM Öffentliche Produkt-Claims mit Runtime korrelieren\n- [PR #312](https://github.com/SvenKulessa/Capital-AI/pull/312): CAPITAL-AI-PRODUCT Commerce-Einstiege und sichere Tarifauswahl\n- [PR #313](https://github.com/SvenKulessa/Capital-AI/pull/313): CAPITAL-AI-MARKET Binance Spot Feed und evidenzbasierte Kursdarstellung vorbereiten\n- [PR #314](https://github.com/SvenKulessa/Capital-AI/pull/314): CAPITAL-AI-PLATFORM Robots-/Sitemap-HTTP-Vertrag regressionssicher prüfen\n- [PR #315](https://github.com/SvenKulessa/Capital-AI/pull/315): CAPITAL-AI-TRUST Chart-Lernatlas und belegbare CADS-Produktvorstellung\n- [PR #316](https://github.com/SvenKulessa/Capital-AI/pull/316): CAPITAL-AI-TRUST Registrierung, Mail-Bestätigung und TOTP-Einrichtung reparieren\n- [PR #321](https://github.com/SvenKulessa/Capital-AI/pull/321): CAPITAL-AI-TRUST NATS: zwei Go-HIGH-Funde mit offizieller Patch-Version beheben\n- [PR #317](https://github.com/SvenKulessa/Capital-AI/pull/317): CAPITAL-AI-TRUST bump the routine-minor-patch group with 2 updates\n- [PR #318](https://github.com/SvenKulessa/Capital-AI/pull/318): CAPITAL-AI-TRUST bump actions/checkout from 4.2.2 to 7.0.1\n- [PR #320](https://github.com/SvenKulessa/Capital-AI/pull/320): CAPITAL-AI-TRUST Chart-Lernatlas und CADS: Desktop-/Mobil-Abnahme mit Screenshots\n- [PR #322](https://github.com/SvenKulessa/Capital-AI/pull/322): CAPITAL-AI-PRODUCT Roadmap code- und dokumentbasiert bis PR 317 abgleichen\n- [PR #325](https://github.com/SvenKulessa/Capital-AI/pull/325): CAPITAL-AI-TRUST Stripe-Preisbindung härten und sechs Tarif-Evidence-Ketten prüfen\n- [PR #323](https://github.com/SvenKulessa/Capital-AI/pull/323): CAPITAL-AI-PRODUCT JaJa Avatar Buddy – No-Voice-Integration vorbereiten\n- [PR #327](https://github.com/SvenKulessa/Capital-AI/pull/327): CAPITAL-AI-GROWTH Finance Original-Historie und PIT-Evidence nachvollziehbar abgrenzen\n- [PR #324](https://github.com/SvenKulessa/Capital-AI/pull/324): CAPITAL-AI-GROWTH Chart Pattern Academy Shorts – TikTok draft packages & referral disclosures\n- [PR #330](https://github.com/SvenKulessa/Capital-AI/pull/330): CAPITAL-AI-MARKET Score-Frische absichern und Deployment-Revision prüfbar machen\n- [PR #326](https://github.com/SvenKulessa/Capital-AI/pull/326): CAPITAL-AI-GROWTH Private Google Neural2 TTS für Social Media Engine\n- [PR #247](https://github.com/SvenKulessa/Capital-AI/pull/247): CAPITAL-AI-TRUST PR-Agent Lock und isolierten Reviewer-Runtime-Kandidaten härten\n\n## Was sich daraus für die Plattform ergibt\n\nDie aufgeführten Änderungen werden anhand der verlinkten Pull Requests dokumentiert. Ob Funktionen bereits auf dem Webservice bereitstehen, ergibt sich ausschließlich aus separaten Deployment- und Runtime-Nachweisen.\n\n## Transparenz und nächste Schritte\n\nDie Veröffentlichung ist ein vorbereiteter Blogentwurf für die CONTENT Engine. Social-Media-Ausspielung, visuelle Medien und redaktionelle Freigabe sind nicht automatisch aktiviert.\n\nQuelle: [807bb9dfa4bd](https://github.com/SvenKulessa/Capital-AI/commit/807bb9dfa4bd27c90227e5ef7fd26ac45c286a48)\n",
+  "lastBatchPr": 353,
+  "mergeCount": 325,
+  "fromPr": 329,
+  "sourceSha": "78698701e0f0b06ef12960d64401590b0e37df79",
+  "generatedAt": "2026-10-10T03:23:00.879Z",
+  "title": "CAPITAL-AI: Repository-Updates bis PR #353",
+  "article": "# CAPITAL-AI: Repository-Updates bis PR #353\n\n> **Entwurf – nicht veröffentlicht.** Die Zusammenfassung basiert auf gemergten Pull Requests.\n> Eine erfolgreiche technische Zusammenführung beweist noch keinen produktiven Rollout.\n\n## Die Änderungen im Überblick\n\nIm hier dokumentierten Entwicklungsabschnitt wurden 25 Pull Requests zusammengeführt. Die folgenden Änderungen sind anhand der zugehörigen GitHub-Diffs nachvollziehbar.\n\n- [PR #329](https://github.com/SvenKulessa/Capital-AI/pull/329): CAPITAL-AI-GROWTH GA4 MCP Readback in Capital-AI Render übertragen\n- [PR #331](https://github.com/SvenKulessa/Capital-AI/pull/331): CAPITAL-AI-PLATFORM CI-Effizienz-Evidence und Runner-Drift korrigieren\n- [PR #332](https://github.com/SvenKulessa/Capital-AI/pull/332): CAPITAL-AI-MARKET Offline Shadow-Admin-Audit persistent und fail-closed absichern\n- [PR #333](https://github.com/SvenKulessa/Capital-AI/pull/333): CAPITAL-AI-MARKET Ausgelaufenen Binance Spot All-Ticker Stream ersetzen\n- [PR #335](https://github.com/SvenKulessa/Capital-AI/pull/335): CAPITAL-AI-TRUST Free-Tier-Sicherheitslage, Lizenz-Delta und Runtime-Evidence\n- [PR #328](https://github.com/SvenKulessa/Capital-AI/pull/328): CAPITAL-AI-GROWTH Serve standalone legal HTML for Google OAuth branding\n- [PR #334](https://github.com/SvenKulessa/Capital-AI/pull/334): CAPITAL-AI-MARKET BTCUSDT Quote-Units in kanonischen Contracts korrekt abbilden\n- [PR #339](https://github.com/SvenKulessa/Capital-AI/pull/339): CAPITAL-AI-GROWTH GSC Service-Account Readback sicher verifizieren\n- [PR #336](https://github.com/SvenKulessa/Capital-AI/pull/336): CAPITAL-AI-PRODUCT Roadmap code- und dokumentbasiert bis PR 247 abgleichen\n- [PR #337](https://github.com/SvenKulessa/Capital-AI/pull/337): CAPITAL-AI-GROWTH News-Blogentwurf zu 20 PR-Merges bis 247\n- [PR #338](https://github.com/SvenKulessa/Capital-AI/pull/338): CAPITAL-AI-PRODUCT JaJa Buddy Accessibility und Assistenzsignal korrigieren\n- [PR #342](https://github.com/SvenKulessa/Capital-AI/pull/342): CAPITAL-AI-GROWTH Google-OAuth-Datenschutz für Branding vollständig und crawlbar erläutern\n- [PR #340](https://github.com/SvenKulessa/Capital-AI/pull/340): CAPITAL-AI-TRUST Screener Bundle, Social Badges und CADS Growth Quality\n- [PR #341](https://github.com/SvenKulessa/Capital-AI/pull/341): CAPITAL-AI-GROWTH Erster lizenzgeprüfter Blog- und Social-Draft\n- [PR #347](https://github.com/SvenKulessa/Capital-AI/pull/347): CAPITAL-AI-GROWTH Keyless GitHub OIDC Readback für GSC und GA4\n- [PR #344](https://github.com/SvenKulessa/Capital-AI/pull/344): CAPITAL-AI-PRODUCT Learning Portal: vocabulary access, checkout and Enterprise trial\n- [PR #345](https://github.com/SvenKulessa/Capital-AI/pull/345): CAPITAL-AI-PRODUCT Roadmap code- und dokumentbasiert bis PR 337 abgleichen\n- [PR #346](https://github.com/SvenKulessa/Capital-AI/pull/346): CAPITAL-AI-MARKET MetricDuck operator MCP und Graph-RAG-Entwurf\n- [PR #349](https://github.com/SvenKulessa/Capital-AI/pull/349): CAPITAL-AI-GROWTH GA4 schlüssellos mit OIDC unabhängig von GSC prüfen\n- [PR #351](https://github.com/SvenKulessa/Capital-AI/pull/351): CAPITAL-AI-PRODUCT Fix Learning Portal price and promo checkout; diagnose Supabase logs\n\n- [PR #354](https://github.com/SvenKulessa/Capital-AI/pull/354): Roadmap-Abgleich bis PR #351\n- [PR #348](https://github.com/SvenKulessa/Capital-AI/pull/348): JaJa 3D mit GLB und Docker-Asset-Fix\n- [PR #356](https://github.com/SvenKulessa/Capital-AI/pull/356): Enterprise-Testphase mit direktem monatlichem Stripe-Checkout\n- [PR #358](https://github.com/SvenKulessa/Capital-AI/pull/358): Canonical- und Social-URLs bei Navigation stabil halten\n- [PR #353](https://github.com/SvenKulessa/Capital-AI/pull/353): Agentenregeln verschlanken und verständliches Universe-Frontend stärken\n\n## Was sich daraus für die Plattform ergibt\n\nDie aufgeführten Änderungen werden anhand der verlinkten Pull Requests dokumentiert. Ob Funktionen bereits auf dem Webservice bereitstehen, ergibt sich ausschließlich aus separaten Deployment- und Runtime-Nachweisen.\n\nDerzeit ist in Render nur der ältere Source-Commit a613aff57f26 als LIVE nachgewiesen. Die neueren Merges sind dadurch keine belegten produktiven Features.\n\n## Transparenz und nächste Schritte\n\nDie Veröffentlichung ist ein vorbereiteter Blogentwurf für die CONTENT Engine. Social-Media-Ausspielung, visuelle Medien und redaktionelle Freigabe sind nicht automatisch aktiviert.\n\nQuellenstand: [78698701e0f0](https://github.com/SvenKulessa/Capital-AI/commit/78698701e0f0b06ef12960d64401590b0e37df79) · früherer Basisstand: [d80355f296b4](https://github.com/SvenKulessa/Capital-AI/commit/d80355f296b429317ff65d7a1cdb9a0e0ca82ae7)\n",
   "sourcePrs": [
     {
-      "number": 309,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/309"
+      "number": 329,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/329"
     },
     {
-      "number": 310,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/310"
+      "number": 331,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/331"
     },
     {
-      "number": 311,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/311"
+      "number": 332,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/332"
     },
     {
-      "number": 312,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/312"
+      "number": 333,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/333"
     },
     {
-      "number": 313,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/313"
+      "number": 335,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/335"
     },
     {
-      "number": 314,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/314"
+      "number": 328,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/328"
     },
     {
-      "number": 315,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/315"
+      "number": 334,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/334"
     },
     {
-      "number": 316,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/316"
+      "number": 339,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/339"
     },
     {
-      "number": 321,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/321"
+      "number": 336,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/336"
     },
     {
-      "number": 317,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/317"
+      "number": 337,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/337"
     },
     {
-      "number": 318,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/318"
+      "number": 338,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/338"
     },
     {
-      "number": 320,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/320"
+      "number": 342,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/342"
     },
     {
-      "number": 322,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/322"
+      "number": 340,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/340"
     },
     {
-      "number": 325,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/325"
+      "number": 341,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/341"
     },
     {
-      "number": 323,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/323"
+      "number": 347,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/347"
     },
     {
-      "number": 327,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/327"
+      "number": 344,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/344"
     },
     {
-      "number": 324,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/324"
+      "number": 345,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/345"
     },
     {
-      "number": 330,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/330"
+      "number": 346,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/346"
     },
     {
-      "number": 326,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/326"
+      "number": 349,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/349"
     },
     {
-      "number": 247,
-      "url": "https://github.com/SvenKulessa/Capital-AI/pull/247"
+      "number": 351,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/351"
+    },
+    {
+      "number": 354,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/354"
+    },
+    {
+      "number": 348,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/348"
+    },
+    {
+      "number": 356,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/356"
+    },
+    {
+      "number": 358,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/358"
+    },
+    {
+      "number": 353,
+      "url": "https://github.com/SvenKulessa/Capital-AI/pull/353"
     }
   ],
   "contentEnginePlan": {
     "contractVersion": "CAPITAL_AI_CONTENT_ENGINE@1",
     "campaign": {
-      "campaignId": "capital-ai-repository-pr-247",
+      "campaignId": "capital-ai-repository-pr-353",
       "productId": "capital-ai-web",
-      "sourceSha": "807bb9dfa4bd27c90227e5ef7fd26ac45c286a48",
+      "sourceSha": "78698701e0f0b06ef12960d64401590b0e37df79",
       "canonicalUrl": "https://capital-ai.online/",
       "locale": "de-DE",
-      "objective": "Belegte Zusammenfassung der letzten 20 gemergten PRs als Blogentwurf.",
+      "objective": "Belegte Zusammenfassung von 25 gemergten PRs als nicht veröffentlichter Blogentwurf.",
       "audience": [
         "CAPITAL-AI Nutzer",
         "Technische Interessierte"
@@ -111,18 +131,23 @@
         "TEXT"
       ],
       "sourceUrls": [
-        "https://github.com/SvenKulessa/Capital-AI/pull/309",
-        "https://github.com/SvenKulessa/Capital-AI/pull/310",
-        "https://github.com/SvenKulessa/Capital-AI/pull/311",
-        "https://github.com/SvenKulessa/Capital-AI/pull/312",
-        "https://github.com/SvenKulessa/Capital-AI/pull/313",
-        "https://github.com/SvenKulessa/Capital-AI/pull/314",
-        "https://github.com/SvenKulessa/Capital-AI/pull/315",
-        "https://github.com/SvenKulessa/Capital-AI/pull/316",
-        "https://github.com/SvenKulessa/Capital-AI/pull/321",
-        "https://github.com/SvenKulessa/Capital-AI/pull/317",
-        "https://github.com/SvenKulessa/Capital-AI/pull/318",
-        "https://github.com/SvenKulessa/Capital-AI/pull/320"
+        "https://github.com/SvenKulessa/Capital-AI/pull/329",
+        "https://github.com/SvenKulessa/Capital-AI/pull/331",
+        "https://github.com/SvenKulessa/Capital-AI/pull/332",
+        "https://github.com/SvenKulessa/Capital-AI/pull/333",
+        "https://github.com/SvenKulessa/Capital-AI/pull/335",
+        "https://github.com/SvenKulessa/Capital-AI/pull/328",
+        "https://github.com/SvenKulessa/Capital-AI/pull/334",
+        "https://github.com/SvenKulessa/Capital-AI/pull/339",
+        "https://github.com/SvenKulessa/Capital-AI/pull/336",
+        "https://github.com/SvenKulessa/Capital-AI/pull/337",
+        "https://github.com/SvenKulessa/Capital-AI/pull/338",
+        "https://github.com/SvenKulessa/Capital-AI/pull/342",
+        "https://github.com/SvenKulessa/Capital-AI/pull/354",
+        "https://github.com/SvenKulessa/Capital-AI/pull/348",
+        "https://github.com/SvenKulessa/Capital-AI/pull/356",
+        "https://github.com/SvenKulessa/Capital-AI/pull/358",
+        "https://github.com/SvenKulessa/Capital-AI/pull/353"
       ]
     },
     "modules": [
@@ -148,6 +173,42 @@
         "reason": "Social Media Engine publisher adapter is intentionally separate until the migration/cutover is complete."
       }
     ],
+    "cadsQuality": {
+      "schemaVersion": "CAPITAL_AI_CADS_GROWTH_QUALITY@1",
+      "benchmarkEvidenceSchema": "CAPITAL_AI_BENCHMARK_EVIDENCE@1",
+      "profile": "CONTENT_ENGINE_DRAFT",
+      "technicalStatus": "PASS",
+      "checks": [
+        {
+          "code": "CONTENT_SOURCE_COMMIT",
+          "status": "PASS"
+        },
+        {
+          "code": "CONTENT_CAMPAIGN_IDENTITY",
+          "status": "PASS"
+        },
+        {
+          "code": "CONTENT_CANONICAL_HTTPS",
+          "status": "PASS"
+        },
+        {
+          "code": "CONTENT_AUDIENCE_DEFINED",
+          "status": "PASS"
+        },
+        {
+          "code": "CONTENT_CHANNELS_DEFINED",
+          "status": "PASS"
+        }
+      ],
+      "editorialReview": "REVIEW_REQUIRED",
+      "actualAssetBytes": "NOT_PROVEN",
+      "providerRights": "NOT_PROVEN",
+      "productionApproval": false,
+      "securityApproval": false,
+      "licenseApproval": false,
+      "publicationApproval": false,
+      "customerPurchaseApproval": false
+    },
     "publication": {
       "adapter": "SOCIAL_MEDIA_ENGINE",
       "state": "INTEGRATION_PENDING",

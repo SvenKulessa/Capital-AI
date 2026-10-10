@@ -60,6 +60,22 @@ const REQUEST_LABELS: Record<PrivacyRequestType, string> = {
   portability: 'Datenübertragbarkeit',
 };
 
+type PrivacyRequestReceipt = {
+  id: string;
+  requestType: string;
+  status: string;
+  createdAt: string;
+  dueAt: string;
+};
+
+const PRIVACY_STATUS_LABELS: Record<string, string> = {
+  received: 'Eingegangen',
+  identity_verified: 'Identität bestätigt',
+  in_progress: 'In Bearbeitung',
+  completed: 'Abgeschlossen',
+  rejected: 'Abgelehnt',
+};
+
 export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPagesProps) {
   const { locale } = useLocale();
   const [searchQuery, setSearchQuery] = useState('');
@@ -72,16 +88,38 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
   const [authenticated, setAuthenticated] = useState(false);
   const [privacyBusy, setPrivacyBusy] = useState(false);
   const [privacyMessage, setPrivacyMessage] = useState('');
+  const [privacyRequests, setPrivacyRequests] = useState<PrivacyRequestReceipt[]>([]);
 
   useEffect(() => {
     setAuthenticated(false);
     setPrivacyMessage('');
+    setPrivacyRequests([]);
     if (route !== '/datenschutz') return;
     const abort = new AbortController();
     fetch('/api/auth/session', { credentials: 'same-origin', cache: 'no-store', signal: abort.signal })
       .then(response => response.ok ? response.json() : Promise.reject())
-      .then(body => setAuthenticated(body.authenticated === true))
-      .catch(() => setAuthenticated(false));
+      .then(async body => {
+        if (!body || body.authenticated !== true || abort.signal.aborted) return;
+        setAuthenticated(true);
+        // A temporary request-history outage must not log out an otherwise valid session.
+        try {
+          const requestsResponse = await fetch('/api/privacy/requests', {
+            credentials: 'same-origin', cache: 'no-store', signal: abort.signal,
+            headers: { Accept: 'application/json' },
+          });
+          if (requestsResponse.ok) {
+            const result = await requestsResponse.json();
+            if (!abort.signal.aborted && Array.isArray(result.requests)) {
+              setPrivacyRequests(result.requests.slice(0, 20));
+            }
+          } else if (!abort.signal.aborted) {
+            setPrivacyMessage('Die Vorgangshistorie ist vorübergehend nicht verfügbar.');
+          }
+        } catch {
+          if (!abort.signal.aborted) setPrivacyMessage('Die Vorgangshistorie ist vorübergehend nicht verfügbar.');
+        }
+      })
+      .catch(() => { if (!abort.signal.aborted) setAuthenticated(false); });
     return () => abort.abort();
   }, [route]);
   const categories = useMemo(() => ['Alle', ...PUBLIC_FAQ_CATEGORIES], []);
@@ -114,12 +152,16 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
       });
       const body = await response.json();
       if (response.status === 401) setAuthenticated(false);
-      if (!response.ok || body.status !== 'email_draft' || body.persisted !== false || body.sent !== false ||
-          typeof body.mailto !== 'string' || !body.mailto.startsWith(`mailto:${CONTROLLER.email}?`)) throw new Error();
-      setPrivacyMessage('E-Mail-Entwurf vorbereitet. Erst durch Ihren Versand wird die Anfrage übermittelt.');
-      window.location.href = body.mailto;
+      if (!response.ok || body.status !== 'received' || body.persisted !== true ||
+          typeof body.request?.id !== 'string') throw new Error();
+      const receipt = body.request as PrivacyRequestReceipt;
+      setPrivacyRequests(previous => [receipt, ...previous.filter(item => item.id !== receipt.id)].slice(0, 20));
+      setDetails('');
+      setPrivacyMessage(body.alreadyExists
+        ? 'Diese Anfrage ist bereits registriert. Die Bearbeitung läuft im bestehenden Vorgang.'
+        : 'Anfrage erfolgreich registriert. Die Bearbeitung erfolgt nach Identitäts-, Abo- und Aufbewahrungsprüfung. Ihr Konto wurde nicht gelöscht.');
     } catch {
-      setPrivacyMessage(`Der Entwurf konnte nicht vorbereitet werden. Sie können direkt an ${CONTROLLER.email} schreiben.`);
+      setPrivacyMessage(`Die Anfrage konnte nicht sicher registriert werden. Es wurde keine Löschung vorgenommen. Schreiben Sie bei Bedarf direkt an ${CONTROLLER.email} schreiben.`);
     } finally { setPrivacyBusy(false); }
   }
 
@@ -507,13 +549,30 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
                 className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-bold hover:bg-white/10"
               >
                 <Send className="w-4 h-4" />
-                {`${REQUEST_LABELS[requestType]} per E-Mail vorbereiten`}
+                {authenticated ? `${REQUEST_LABELS[requestType]} verbindlich anfragen` : `${REQUEST_LABELS[requestType]} per E-Mail vorbereiten`}
               </button>
               <p className="text-xs text-slate-400">
-                Öffnet Ihr E-Mail-Programm. Die Anfrage wird erst durch Ihren Versand übermittelt.
-                Auch einen Datenauszug können Sie über diesen Kontakt anfordern.
+                {authenticated
+                  ? 'Wir erfassen Ihre Anfrage mit Vorgangsnummer. Eine Kontolöschung erfolgt erst nach Prüfung bestehender Abonnements und gesetzlicher Aufbewahrungspflichten.'
+                  : 'Öffnet Ihr E-Mail-Programm; die Anfrage wird erst durch Ihren Versand übermittelt.'}
+                Auch einen vollständigen Datenauszug können Sie über diesen Kontakt anfordern.
               </p>
               {privacyMessage && <p role="status" className="text-xs text-amber-200">{privacyMessage}</p>}
+              {authenticated && privacyRequests.length > 0 && (
+                <div aria-label="Eigene Datenschutzanfragen" className="rounded-xl border border-emerald-400/25 bg-black/20 p-3">
+                  <h3 className="mb-2 text-xs font-bold text-emerald-200">Meine Datenschutzanfragen</h3>
+                  <ul className="space-y-2">
+                    {privacyRequests.map(item => (
+                      <li key={item.id} className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-300">
+                        <span>{REQUEST_LABELS[item.requestType as PrivacyRequestType] || item.requestType}
+                          <span className="block font-mono text-[10px] text-slate-500">Vorgang {item.id.slice(0, 8)}…</span>
+                        </span>
+                        <span>{PRIVACY_STATUS_LABELS[item.status] || 'Wird geprüft'}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <button type="button" onClick={downloadAccountData} disabled={!authenticated || privacyBusy}
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-emerald-500/30 text-emerald-300 text-xs font-bold disabled:opacity-50">
                 <Download className="w-4 h-4" /> Eigenen Datenauszug herunterladen

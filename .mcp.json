@@ -16,6 +16,15 @@
     "metricduck": {
       "type": "http",
       "url": "https://mcp.metricduck.com/mcp"
+    },
+    "capital-ai-google-maintenance": {
+      "command": "node",
+      "args": [
+        "scripts/google-maintenance-mcp.mjs"
+      ],
+      "env": {
+        "GOOGLE_MAINTENANCE_GA4_WRITES_ENABLED": "false"
+      }
     }
   }
 }

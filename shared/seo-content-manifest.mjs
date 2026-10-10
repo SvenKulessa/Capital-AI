@@ -86,8 +86,8 @@ const staticEntries = [
   contentEntry({
     path: '/learning',
     slug: 'learning',
-    title: 'Capital-AI | Learning Portal & Fachbegriffe',
-    description: `Learning Portal von Capital-AI mit ${VOCABULARY_PUBLIC_COUNT} konsolidierten Fachbegriffen aus Marktanalyse, Scoring, Daten, Plattform, Security, Produkt, Governance und Mobile Runtime.`,
+    title: 'Finanzwissen lernen: Glossar, Chartmuster & Quiz | Capital-AI',
+    description: `Finanzbegriffe und Marktanalyse verständlich lernen: ${VOCABULARY_PUBLIC_COUNT} Fachbegriffe, Chartbeispiele und Quizzes. Lerninhalte entdecken und Learning-/Kursanfrage stellen.`,
     contentType: 'learning',
     domain: 'GROWTH',
     structuredDataType: 'DefinedTermSet',
