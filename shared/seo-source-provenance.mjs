@@ -10,8 +10,8 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
     contentSha256: 'ca4ac73f4dd996346dc45e3e563dbc1cba4e17fd594cce88f2eb01198732bbb2',
   }),
   'src/features/learning/LearningPortalPage.tsx': Object.freeze({
-    sourceBlobSha: '1ba4adf3deb9e5998c82b05f676ce100a94b9ba5',
-    contentSha256: '4669c3c69a9f00341e8f0841c7bca6a3d4f153a779d8617ec0b4b95b9d0785c8',
+    sourceBlobSha: '5fedf8a5eff48ecf8c06e43a22aeae9c1c83a6d4',
+    contentSha256: '1654badc6cf6cdfa677f59cbda983603d1e92552944bf79cacb81cd50dba434b',
   }),
   'shared/vocabulary-metadata.mjs': Object.freeze({
     sourceBlobSha: '5ebed53fc03776879bbc7ff8997bc2e513a122e4',
@@ -57,7 +57,7 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
 
 const SEO_SOURCE_SET_DIGESTS = Object.freeze({
   'index.html|src/features/home/HomePage.tsx': '4c89ce8d59426f04695e0c13c2d29329f894b2e2f04d6bd399a36080ad896a3a',
-  'shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': '7ad56816530a295aa27959c96a3eef9502e8271ecf308f803b934c61952a18f4',
+  'shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': '1eb7a0ceebadecf4b3703940d60fc3c8483898babdcad8a6363cee384ca949dc',
   'src/components/LegalAndFaqPages.tsx|src/content/publicLegalContent.ts': '99df92ec156bdae2b63757b87dfd818df491e3e826136d539cb8f74d4e1e9c66',
   'shared/license-metadata.mjs|src/components/LicenseInformationPages.tsx': 'a32e0df5d6e5bc57e3a23283f7e1c91aa1a584f7f70ccc8208796322172210bb',
   'shared/license-metadata.mjs|src/data/providerLicenseReview.ts': '98d2b1c966c071230d8b5554f132c198bf95c7df07e5b559fa82e2aa53f1c768',

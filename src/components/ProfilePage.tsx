@@ -1,4 +1,5 @@
 import React from 'react';
+import { LearningFavoritesPanel } from '../features/learning/LearningFavorites';
 import { ShieldCheck, User } from 'lucide-react';
 import { AccountPageShell } from '../features/account/AccountPageShell';
 import { openHeroBuddy } from './HeroBuddy';
@@ -122,6 +123,7 @@ export function ProfilePage({ onNavigate }: { onNavigate: (path: string) => void
     >
       {session => (
         <section className="grid gap-4 md:grid-cols-3">
+          <LearningFavoritesPanel />
           <div className="rounded-2xl border border-white/10 bg-[#070b19]/80 p-5 md:col-span-1">
             <div className="flex items-center gap-2 text-amber-300">
               <User className="h-4 w-4" />
