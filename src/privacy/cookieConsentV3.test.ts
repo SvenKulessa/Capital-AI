@@ -74,6 +74,14 @@ test('v3 handles denied browser storage without manufacturing a consent receipt'
   assert.equal(saveCookieConsent({ analytics: 1 as never, marketing: false }, memoryStorage(), START), null);
 });
 
+test('v3 does not close consent UI on non-durable browser storage', () => {
+  const storage = {
+    getItem() { return null; },
+    setItem() { /* browser silently drops the attempted write */ },
+  };
+  assert.equal(saveCookieConsent({ analytics: true, marketing: true }, storage, START), null);
+});
+
 test('UI is mounted on every route and discloses inactive analytics and durable withdrawal', () => {
   const appShell = readFileSync(new URL('../app/AppShell.tsx', import.meta.url), 'utf8');
   const ui = readFileSync(new URL('./CookieConsentV3.tsx', import.meta.url), 'utf8');
