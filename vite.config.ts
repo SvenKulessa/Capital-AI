@@ -131,6 +131,7 @@ export default defineConfig(() => {
         output: {
           codeSplitting: {
             groups: [
+              { name: 'vocabulary-metadata', test: /[/\\]shared[/\\]vocabulary-metadata\.mjs$/ },
               { name: 'i18n-landing-copy', test: /[/\\]src[/\\]i18n[/\\]landingSectionCopy\.ts$/ },
               // Three.js is a large but self-contained, lazy 3D dependency.
               // Keep it apart from the JaJa UI/GLB parser; the 500 kB budget

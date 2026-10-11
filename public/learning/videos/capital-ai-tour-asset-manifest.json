@@ -1,0 +1,119 @@
+{
+  "schemaVersion": "1.0.0",
+  "brand": "CAPITAL-AI",
+  "publishReady": false,
+  "publishingBoundary": "Requires existing SocialMediaEngine asset validation + hash-bound human approval before publish.",
+  "source": {
+    "type": "content-render-manifest",
+    "path": "capital-ai-tour.json",
+    "inputs": {
+      "public/branding/asset-pack/vendor/vendor-app-icon-512x512.png": "3e5ca03b8770093c3750343bd78793d23739ec6ad4fd36e8a8c7674b69483a0e",
+      "public/assets/jaja-figure.glb": "73b0ec1a0a2b9efd8a1f15fe45ab8b9dca849a0cb78aa5e35c3c2490fa82ae4d",
+      "shared/video-learning-demo.json": "524b85ada65181c757f80ea0419d3231b9f991e1d2517af5aab91f1bcd3a6be5",
+      "shared/sentiment-learning-demo.json": "ec3e11397a74aa0b93dc819c141e9dcdde91ac1d431f01165d00c751b0b30246"
+    }
+  },
+  "renderer": {
+    "image": "Pillow + NumPy GLB rasterizer",
+    "video": {
+      "version": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+      "profile": "gpl-build-detected",
+      "enableGpl": true,
+      "enableNonfree": false,
+      "buildconfSha256": "f1e6bf8a39fc8b4d6a261a5b7233e2a96a0f854a472e98163365fc007d5bcead"
+    },
+    "videoCodec": "h264 (libx264, high profile, yuv420p, faststart)",
+    "networkAccess": false,
+    "brandTextMode": "deterministic",
+    "voiceover": null,
+    "buddy": "JaJaArmRightPivot animation, 30 unique frames"
+  },
+  "palette": {
+    "background": "#02050E",
+    "foreground": "#F8FAFC",
+    "gold_light": "#F9BF21",
+    "gold": "#F9BF21",
+    "gold_dark": "#F9BF21",
+    "gold_muted": "#F9BF21",
+    "cyan": "#22D3EE",
+    "purple": "#A855F7",
+    "text_primary": "#F8FAFC",
+    "text_secondary": "#94A3B8",
+    "surface_light": "#090E21",
+    "border_light": "#25304A"
+  },
+  "assets": [
+    {
+      "path": "capital-ai-tour-thumbnail-1280x720.png",
+      "sha256": "5bb2f2615efcb4a56a22797e98abac67b45fc75c2283e2e21b4d898445894754",
+      "mime_type": "image/png",
+      "width": 1280,
+      "height": 720,
+      "duration_seconds": null,
+      "kind": "image"
+    },
+    {
+      "path": "capital-ai-tour-square-1080x1080.png",
+      "sha256": "6327748f12d4c6800d8248c7071fdda89e0d17fb08849eb709dfa844e98eba00",
+      "mime_type": "image/png",
+      "width": 1080,
+      "height": 1080,
+      "duration_seconds": null,
+      "kind": "image"
+    },
+    {
+      "path": "capital-ai-tour-vertical-1080x1920.png",
+      "sha256": "5c3c38152a38f5b197477bd50fd4da9056a5fa8919daed00e43b78d5aaba8009",
+      "mime_type": "image/png",
+      "width": 1080,
+      "height": 1920,
+      "duration_seconds": null,
+      "kind": "image"
+    },
+    {
+      "path": "capital-ai-tour-scene-01.png",
+      "sha256": "337f37a4ee934df99997c1e4ec48e6ea9dbc7c3ef8a0eab2c2bb25b26674cb95",
+      "mime_type": "image/png",
+      "width": 1080,
+      "height": 1920,
+      "duration_seconds": null,
+      "kind": "short_video_frame"
+    },
+    {
+      "path": "capital-ai-tour-scene-02.png",
+      "sha256": "096b172cc3b220b5907c1ec0dd1212f49d791df25dc50585869136ad7da0e005",
+      "mime_type": "image/png",
+      "width": 1080,
+      "height": 1920,
+      "duration_seconds": null,
+      "kind": "short_video_frame"
+    },
+    {
+      "path": "capital-ai-tour-scene-03.png",
+      "sha256": "f05266c146b8551714cbbae5b56370608e3c990af3419ae697e082abcde67350",
+      "mime_type": "image/png",
+      "width": 1080,
+      "height": 1920,
+      "duration_seconds": null,
+      "kind": "short_video_frame"
+    },
+    {
+      "path": "capital-ai-tour-scene-04.png",
+      "sha256": "d8d88941214debec667fc783f9b4cde5791969b9704951f4439301bd21f18474",
+      "mime_type": "image/png",
+      "width": 1080,
+      "height": 1920,
+      "duration_seconds": null,
+      "kind": "short_video_frame"
+    },
+    {
+      "path": "capital-ai-tour-short-1080x1920.mp4",
+      "sha256": "0816a5c2c53c10d2b6044ccd6ae037d4b5e9c09ba151ed7767c4358f17c495d5",
+      "mime_type": "video/mp4",
+      "width": 1080,
+      "height": 1920,
+      "duration_seconds": 20.0,
+      "kind": "short_video"
+    }
+  ]
+}

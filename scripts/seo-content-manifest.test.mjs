@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { vocabularyMetadata } from '../shared/vocabulary-metadata.mjs';
-import { QUANT_PRO_IDS } from '../shared/vocabulary-access-policy.mjs';
 import { seoIndexableStaticPaths } from '../shared/seo-indexing-policy.mjs';
 import {
   SEO_CONTENT_MANIFEST,
@@ -16,7 +15,7 @@ import {
 } from '../shared/seo-source-provenance.mjs';
 
 test('SEO-01 manifest covers every INDEX route exactly once', () => {
-  const publicVocabulary = vocabularyMetadata.filter((entry) => !QUANT_PRO_IDS.has(entry.id));
+  const publicVocabulary = vocabularyMetadata;
   const expected = [...seoIndexableStaticPaths(), ...publicVocabulary.map((entry) => entry.path)].sort();
   const actual = SEO_CONTENT_MANIFEST.map((entry) => entry.path).sort();
 
@@ -56,9 +55,8 @@ test('SEO-01 has unique slugs, canonicals and titles', () => {
 test('SEO-01 returns only admitted content paths', () => {
   assert.equal(seoContentForPath('/').slug, 'home');
   assert.equal(seoContentForPath('/vocabulary/orderbuch').structuredDataType, 'DefinedTerm');
-  const ownerGatedEntry = vocabularyMetadata.find((entry) => QUANT_PRO_IDS.has(entry.id));
-  assert.ok(ownerGatedEntry);
-  assert.equal(seoContentForPath(ownerGatedEntry.path), null);
+  for (const entry of vocabularyMetadata) assert.equal(seoContentForPath(entry.path).structuredDataType, 'DefinedTerm');
+  assert.equal(seoContentForPath('/vocabulary/not-a-real-term'),null);
   assert.equal(seoContentForPath('/profile'), null);
   assert.equal(seoContentForPath('/tokenomics'), null);
   assert.equal(seoContentForPath('/not-inventory'), null);

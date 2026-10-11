@@ -252,3 +252,38 @@ test('private notes reject missing sessions, cross-origin writes, invalid input 
   assert.equal(calls,0);
   assert.equal(await call({}),503);
 });
+
+test('learning word storage is idempotent, removable and scoped to verified users',async()=>{
+ const stores=new Map();const calls=[];
+ const fetchImpl=async(url,options)=>{
+  assert.ok(new URL(url).pathname.endsWith('/capital_ai_learning_favorites'));
+  const body=JSON.parse(options.body);calls.push(body);
+  const ids=stores.get(body._user_id)??new Set();
+  if(body._action==='POST')ids.add(body._term_id);
+  if(body._action==='DELETE')ids.delete(body._term_id);
+  stores.set(body._user_id,ids);
+  return Response.json([...ids]);
+ };
+ async function call(user,method,id='frontend-sentiment_score'){
+  const checkout=createVocabularyCheckout({env,fetchImpl,auth:auth(user)}),res=response();
+  await checkout.handle(request({method}),res,new URL(`https://capital-ai.online/api/learning/favorites?id=${id}&userId=untrusted-caller`),json);
+  return res;
+ }
+ assert.equal((await call('alice','POST')).status,200);
+ assert.deepEqual((await call('alice','POST')).payload.favorites,['frontend-sentiment_score']);
+ assert.deepEqual((await call('bob','GET')).payload.favorites,[]);
+ assert.deepEqual((await call('alice','GET')).payload.favorites,['frontend-sentiment_score']);
+ assert.deepEqual((await call('alice','DELETE')).payload.favorites,[]);
+ assert.ok(calls.every(body=>['alice','bob'].includes(body._user_id)));
+ assert.equal((await call('alice','POST','bad%3Cscript%3E')).status,400);
+});
+
+test('learning mutations reject other origins and anonymous access before storage',async()=>{
+ let io=0;
+ for(const [boundary,expected] of [[{sameOrigin:()=>false,verify:async()=>({userId:'alice'})},403],[{sameOrigin:()=>true,verify:async()=>null},401]]){
+  const checkout=createVocabularyCheckout({env,auth:boundary,fetchImpl:async()=>{io++;throw Error('unexpected storage');}}),res=response();
+  await checkout.handle(request({method:'POST'}),res,new URL('https://capital-ai.online/api/learning/favorites?id=orderbuch'),json);
+  assert.equal(res.status,expected);
+ }
+ assert.equal(io,0);
+});

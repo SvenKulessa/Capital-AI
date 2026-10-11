@@ -216,7 +216,7 @@ test('key vault clears browser credential state and exposes encryption evidence 
   assert.match(vault, /setApiKey\(''\)/);
   assert.match(vault, /setApiSecret\(''\)/);
   assert.match(vault, /setShowSecret\(false\)/);
-  assert.match(vault, /Supabase Vault · verschlüsselt gespeichert/);
+  assert.match(vault, /privaten Schlüsselspeicher · verschlüsselt gespeichert/);
   assert.match(vault, /authentifiziert verschlüsselt \(AEAD\) at rest/);
   assert.match(vault, /weder Klartext noch Ciphertext zurück/);
   assert.match(vault, /Credential-Fingerprint/);

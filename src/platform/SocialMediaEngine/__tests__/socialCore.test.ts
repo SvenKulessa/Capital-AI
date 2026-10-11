@@ -6,6 +6,7 @@ import { resolve } from 'node:path';
 import {
   MEDIA_PROJECT_BRAND_TOKEN_SOURCE,
   MEDIA_PROJECT_SCHEMA_VERSION,
+  type MediaSceneLayer,
 } from '../Contracts/MediaProject';
 import { validateMediaProjectV2 } from '../Contracts/MediaProjectValidation';
 import {
@@ -153,4 +154,22 @@ test('active Social runtime paths contain none of the removed audio-model implem
     }
   }
   assert.deepEqual(violations, []);
+});
+
+test('silent Capital-AI tour has twenty seconds and YouTube referral disclosure', async () => {
+ const {createCapitalAiTourVideoProject,createYouTubeDescription} = await import('../Editing/MediaStudioTemplates');
+ const project = createCapitalAiTourVideoProject();
+ const manifest=JSON.parse(readFileSync(resolve('scripts/media/capital-ai-tour.json'),'utf8'));
+ const layers=(project.tracks.find(track=>track.kind==='graphics')?.layers ?? []).filter((layer): layer is MediaSceneLayer=>layer.kind==='scene');
+ assert.deepEqual(layers.map(layer=>({title:layer.title,body:layer.body})),manifest.scenes.map((scene:{title:string;body:string})=>({title:scene.title,body:scene.body})));
+ assert.doesNotMatch(layers.map(layer=>[layer.title,layer.body,layer.disclaimer].join(' ')).join(' '),/PR #|github|supabase|repo|npm |git |api[_ -]?key|secret/i);
+ assert.equal(project.durationFrames,600);
+ assert.equal(project.timebase.numerator,30);
+ assert.equal(project.tracks.some(track=>track.kind === 'audio'),false);
+ assert.equal(project.renderRecipe.publishReady,false);
+ const description=createYouTubeDescription({title:'Capital-AI Tour',summary:'Learning Portal und Analysekomponenten.'});
+ assert.match(description,/Werbung \/ Referral/);
+ assert.match(description,/https:\/\/proinvite.kraken.com\/9f1e\/8nfzp3u7/);
+ assert.match(description,/yc4ggk3f/);
+ assert.match(description,/Keine persönliche Anlageberatung/);
 });

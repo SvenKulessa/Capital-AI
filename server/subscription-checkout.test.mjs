@@ -195,3 +195,35 @@ test('checkout rejects a Stripe response from the wrong mode', async () => {
     new URL('https://capital-ai.online/api/billing/subscriptions/checkout'), json);
   assert.equal(response.status, 502);
 });
+
+const portalUrl = new URL('https://capital-ai.online/api/billing/subscriptions/portal');
+const portalEnv = {...env,SUPABASE_URL:'https://example.supabase.co',SUPABASE_SERVICE_ROLE_KEY:'test-service-role-key-with-at-least-32-characters'};
+function portalFetch({foreign=false,shared=false,badUrl=false}={}) {
+ return async (url,options={})=>{
+  const target = new URL(url);
+  if(target.hostname==='example.supabase.co') {
+   assert.equal(target.searchParams.get('user_id'),'eq.00000000-0000-4000-8000-000000000001');
+   return Response.json([{user_id:'00000000-0000-4000-8000-000000000001',stripe_subscription_id:'sub_verified'}]);
+  }
+  if(target.pathname==='/v1/subscriptions/sub_verified') return Response.json({id:'sub_verified',livemode:true,customer:'cus_verified',metadata:{user_id:foreign?'other':'00000000-0000-4000-8000-000000000001'}});
+  if(target.pathname==='/v1/subscriptions') return Response.json({has_more:false,data:[{metadata:{user_id:shared?'other':'00000000-0000-4000-8000-000000000001'}}]});
+  assert.equal(target.pathname,'/v1/billing_portal/sessions');
+  assert.equal(new URLSearchParams(options.body).get('customer'),'cus_verified');
+  assert.equal(new URLSearchParams(options.body).get('return_url'),'https://capital-ai.online/profile/subscription');
+  return Response.json({url:badUrl?'https://evil.example/':'https://billing.stripe.com/p/session'});
+ };
+}
+test('portal resolves account-bound customer and ignores injected customer ID',async()=>{
+ const handler=createSubscriptionCheckout({env:portalEnv,auth,fetchImpl:portalFetch()});
+ const response=res(); await handler.handle(req({customer:'cus_other'}),response,portalUrl,json);
+ assert.equal(response.status,200); assert.equal(response.payload.url,'https://billing.stripe.com/p/session');
+});
+for(const scenario of [{foreign:true},{shared:true},{badUrl:true}]) test(`portal fails closed for ${JSON.stringify(scenario)}`,async()=>{
+ const handler=createSubscriptionCheckout({env:portalEnv,auth,fetchImpl:portalFetch(scenario)});
+ const response=res(); await handler.handle(req(),response,portalUrl,json); assert.equal(response.status,502);
+});
+test('portal rejects anonymous and cross-origin callers without upstream requests',async()=>{
+ let calls=0;const handler=createSubscriptionCheckout({env:portalEnv,auth:{...auth,verify:async()=>null},fetchImpl:async()=>{calls++;throw Error();}});
+ const anonymous=res();await handler.handle(req(),anonymous,portalUrl,json);assert.equal(anonymous.status,401);
+ const foreign=res();await handler.handle(req({},'https://evil.example'),foreign,portalUrl,json);assert.equal(foreign.status,403);assert.equal(calls,0);
+});

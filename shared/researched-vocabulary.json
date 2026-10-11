@@ -1,0 +1,332 @@
+[
+  {
+    "id": "datenleckage",
+    "term": "Datenleckage",
+    "abbreviation": "Data Leakage",
+    "category": "DATA_EVIDENCE",
+    "categoryLabel": "Daten & Evidence",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Informationen aus Testdaten oder der Zukunft beeinflussen das Training und verfälschen dadurch die Bewertung eines Modells.",
+    "detailedExplanation": "Trainings- und Testdaten müssen vor der Anpassung von Skalierung, Merkmalsauswahl und Modellparametern getrennt werden. Eine Pipeline hilft, diese Schritte nur auf Trainingsdaten zu lernen.",
+    "formulaOrRule": "Fit nur auf Trainingsdaten; Transform auf Training und Test.",
+    "practicalExample": "Synthetische Demo: Der Mittelwert zur Skalierung wird aus Januar bis März gelernt. April bleibt ausschließlich Testzeitraum.",
+    "keyTakeaway": "Gute Testwerte sind nur belastbar, wenn der Test nicht indirekt in das Training einfließt.",
+    "searchTags": [
+      "datenleckage",
+      "Datenleckage",
+      "Data Leakage",
+      "Informationsleck",
+      "Leakage",
+      "Train-Test-Kontamination"
+    ],
+    "thesaurus": [
+      "Informationsleck",
+      "Leakage",
+      "Train-Test-Kontamination"
+    ],
+    "sources": [
+      {
+        "title": "scikit-learn: Common pitfalls",
+        "url": "https://scikit-learn.org/stable/common_pitfalls.html"
+      }
+    ],
+    "reviewedAt": "2026-10-11"
+  },
+  {
+    "id": "walk-forward-validierung",
+    "term": "Walk-forward-Validierung",
+    "abbreviation": "TimeSeriesSplit",
+    "category": "TRADING_QUANT",
+    "categoryLabel": "Trading & Quant",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Zeitlich geordnete Modellprüfung, bei der frühere Beobachtungen zum Training und spätere Beobachtungen zum Testen dienen.",
+    "detailedExplanation": "Bei einer expandierenden Aufteilung wächst das Trainingsfenster schrittweise. Ein Abstand zwischen Training und Test kann überlappende Informationen reduzieren; er ersetzt keine Prüfung der Datenverfügbarkeit.",
+    "formulaOrRule": "Trainingszeit < Testzeit; Testfenster chronologisch weiterschieben.",
+    "practicalExample": "Synthetische Demo: Januar bis März trainieren, April testen. Danach Januar bis April trainieren und Mai testen.",
+    "keyTakeaway": "Zeitreihen nicht zufällig so aufteilen, dass zukünftige Informationen frühere Entscheidungen beeinflussen.",
+    "searchTags": [
+      "walk-forward-validierung",
+      "Walk-forward-Validierung",
+      "TimeSeriesSplit",
+      "Vorwärtsvalidierung",
+      "Zeitreihen-Kreuzvalidierung",
+      "Chronologischer Modelltest"
+    ],
+    "thesaurus": [
+      "Vorwärtsvalidierung",
+      "Zeitreihen-Kreuzvalidierung",
+      "Chronologischer Modelltest"
+    ],
+    "sources": [
+      {
+        "title": "scikit-learn: TimeSeriesSplit",
+        "url": "https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.TimeSeriesSplit.html"
+      }
+    ],
+    "reviewedAt": "2026-10-11"
+  },
+  {
+    "id": "permutationswichtigkeit",
+    "term": "Permutationswichtigkeit",
+    "abbreviation": "Permutation Importance",
+    "category": "AI_MODELS",
+    "categoryLabel": "KI & Scoring-Modelle",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Einflussmaß eines Merkmals: Wie stark sinkt die Modellgüte, wenn seine Werte zufällig vertauscht werden?",
+    "detailedExplanation": "Der Vergleich wird wiederholt und kann auf unabhängigen Testdaten durchgeführt werden. Das Ergebnis hängt von Modell und Bewertungsmetrik ab; korrelierte Merkmale erschweren die Interpretation.",
+    "formulaOrRule": "Wichtigkeit = Güte vor Vertauschung − Güte nach Vertauschung.",
+    "practicalExample": "Synthetische Demo: Die Güte fällt nach dem Vertauschen des Volumenmerkmals von 0,76 auf 0,68. Die Differenz beträgt 0,08.",
+    "keyTakeaway": "Merkmalswichtigkeit beschreibt das geprüfte Modell und beweist keine Ursache-Wirkungs-Beziehung.",
+    "searchTags": [
+      "permutationswichtigkeit",
+      "Permutationswichtigkeit",
+      "Permutation Importance",
+      "Permutation Feature Importance",
+      "Merkmalsbeitrag",
+      "Vertauschungswichtigkeit"
+    ],
+    "thesaurus": [
+      "Permutation Feature Importance",
+      "Merkmalsbeitrag",
+      "Vertauschungswichtigkeit"
+    ],
+    "sources": [
+      {
+        "title": "scikit-learn: Permutation feature importance",
+        "url": "https://scikit-learn.org/stable/modules/permutation_importance.html"
+      }
+    ],
+    "reviewedAt": "2026-10-11"
+  },
+  {
+    "id": "wahrscheinlichkeitskalibrierung",
+    "term": "Wahrscheinlichkeitskalibrierung",
+    "abbreviation": "Probability Calibration",
+    "category": "AI_MODELS",
+    "categoryLabel": "KI & Scoring-Modelle",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Abgleich vorhergesagter Wahrscheinlichkeiten mit den tatsächlich beobachteten Ereignishäufigkeiten.",
+    "detailedExplanation": "Bei gut kalibrierten Vorhersagen sollten Ereignisse in Gruppen mit ähnlicher Wahrscheinlichkeit ungefähr entsprechend häufig eintreten. Ein Reliability-Diagramm macht Abweichungen sichtbar.",
+    "formulaOrRule": "Vorhersage 0,70 → langfristig etwa 70 % Ereignisse in vergleichbaren Gruppen.",
+    "practicalExample": "Synthetische Demo: Von 100 Fällen mit ungefähr 0,70 Vorhersage treten nur 45 ein. Die Gruppe zeigt eine deutliche Kalibrierungsabweichung.",
+    "keyTakeaway": "Ein hoher Score oder eine gute Rangfolge ist allein noch keine verlässliche Wahrscheinlichkeit.",
+    "searchTags": [
+      "wahrscheinlichkeitskalibrierung",
+      "Wahrscheinlichkeitskalibrierung",
+      "Probability Calibration",
+      "Probability Calibration",
+      "Kalibrierte Prognosen",
+      "Zuverlässigkeitsabgleich"
+    ],
+    "thesaurus": [
+      "Probability Calibration",
+      "Kalibrierte Prognosen",
+      "Zuverlässigkeitsabgleich"
+    ],
+    "sources": [
+      {
+        "title": "scikit-learn: Probability calibration",
+        "url": "https://scikit-learn.org/stable/modules/calibration.html"
+      }
+    ],
+    "reviewedAt": "2026-10-11"
+  },
+  {
+    "id": "brier-score",
+    "term": "Brier Score",
+    "abbreviation": "Brier Loss",
+    "category": "AI_MODELS",
+    "categoryLabel": "KI & Scoring-Modelle",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Mittlere quadratische Abweichung zwischen vorhergesagter Ereigniswahrscheinlichkeit und tatsächlichem Ergebnis.",
+    "detailedExplanation": "Für ein binäres Ereignis wird das Ergebnis als 0 oder 1 codiert. Kleinere Werte bedeuten geringeren Wahrscheinlichkeitsfehler. Der Score bewertet mehr als nur Kalibrierung.",
+    "formulaOrRule": "Binär: Brier = Mittelwert((p − y)²), Wertebereich 0 bis 1.",
+    "practicalExample": "Synthetische Demo: p = 0,80 und y = 1 ergeben (0,80 − 1)² = 0,04.",
+    "keyTakeaway": "Wahrscheinlichkeitsfehler getrennt von Handelsrenditen und Klassifikationsschwellen bewerten.",
+    "searchTags": [
+      "brier-score",
+      "Brier Score",
+      "Brier Loss",
+      "Wahrscheinlichkeitsfehler",
+      "Quadratischer Prognosefehler",
+      "Brier-Verlust"
+    ],
+    "thesaurus": [
+      "Wahrscheinlichkeitsfehler",
+      "Quadratischer Prognosefehler",
+      "Brier-Verlust"
+    ],
+    "sources": [
+      {
+        "title": "scikit-learn: brier_score_loss",
+        "url": "https://scikit-learn.org/stable/modules/generated/sklearn.metrics.brier_score_loss.html"
+      }
+    ],
+    "reviewedAt": "2026-10-11"
+  },
+  {
+    "id": "precision",
+    "term": "Precision",
+    "abbreviation": "Positive Predictive Value",
+    "category": "AI_MODELS",
+    "categoryLabel": "KI & Scoring-Modelle",
+    "level": "Einsteiger",
+    "shortDefinition": "Anteil der richtig positiven Fälle an allen Fällen, die ein Modell als positiv eingestuft hat.",
+    "detailedExplanation": "Precision beantwortet, wie zuverlässig positive Klassifikationen sind. Sie muss mit Recall und der gewählten Entscheidungsschwelle betrachtet werden. Ohne positive Vorhersagen ist der Quotient nicht definiert.",
+    "formulaOrRule": "Precision = TP / (TP + FP).",
+    "practicalExample": "Synthetische Demo: 20 Nachrichten werden positiv markiert, davon sind 15 richtig. Precision = 15/20 = 0,75.",
+    "keyTakeaway": "Wenige Fehlalarme bedeuten nicht automatisch, dass alle relevanten Fälle erkannt wurden.",
+    "searchTags": [
+      "precision",
+      "Precision",
+      "Positive Predictive Value",
+      "Positiver Vorhersagewert",
+      "Klassifikationspräzision",
+      "Treffergenauigkeit"
+    ],
+    "thesaurus": [
+      "Positiver Vorhersagewert",
+      "Klassifikationspräzision",
+      "Treffergenauigkeit"
+    ],
+    "sources": [
+      {
+        "title": "scikit-learn: precision_score",
+        "url": "https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_score.html"
+      }
+    ],
+    "reviewedAt": "2026-10-11"
+  },
+  {
+    "id": "recall",
+    "term": "Recall",
+    "abbreviation": "Sensitivity",
+    "category": "AI_MODELS",
+    "categoryLabel": "KI & Scoring-Modelle",
+    "level": "Einsteiger",
+    "shortDefinition": "Anteil der erkannten positiven Fälle an allen tatsächlich positiven Fällen.",
+    "detailedExplanation": "Recall beschreibt, wie vollständig ein Modell die gesuchte Klasse findet. Ein hoher Recall kann mit vielen Fehlalarmen einhergehen; deshalb zusätzlich Precision prüfen. Ohne tatsächlich positive Fälle ist der Quotient nicht definiert.",
+    "formulaOrRule": "Recall = TP / (TP + FN).",
+    "practicalExample": "Synthetische Demo: Von 30 tatsächlich positiven Nachrichten werden 24 erkannt. Recall = 24/30 = 0,80.",
+    "keyTakeaway": "Vollständigkeit und Zuverlässigkeit einer Klassifikation gemeinsam beurteilen.",
+    "searchTags": [
+      "recall",
+      "Recall",
+      "Sensitivity",
+      "Sensitivität",
+      "Erkennungsquote",
+      "Treffervollständigkeit"
+    ],
+    "thesaurus": [
+      "Sensitivität",
+      "Erkennungsquote",
+      "Treffervollständigkeit"
+    ],
+    "sources": [
+      {
+        "title": "scikit-learn: recall_score",
+        "url": "https://scikit-learn.org/stable/modules/generated/sklearn.metrics.recall_score.html"
+      }
+    ],
+    "reviewedAt": "2026-10-11"
+  },
+  {
+    "id": "roc-auc",
+    "term": "ROC-AUC",
+    "abbreviation": "Area Under ROC Curve",
+    "category": "AI_MODELS",
+    "categoryLabel": "KI & Scoring-Modelle",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Fläche unter der ROC-Kurve zur Bewertung der Trennfähigkeit eines Klassifikationsscores über verschiedene Schwellen.",
+    "detailedExplanation": "Die ROC-Kurve vergleicht richtig positive und falsch positive Raten. AUC bewertet die Rangordnung der Klassen und ersetzt keine Kalibrierungsprüfung oder wirtschaftliche Nutzenbewertung.",
+    "formulaOrRule": "ROC: True-Positive-Rate gegen False-Positive-Rate; AUC = Fläche darunter.",
+    "practicalExample": "Synthetische Demo: Ein Modell erreicht AUC 0,80 auf unabhängigen Testdaten. Daraus folgt keine Trefferquote von 80 % bei einer einzelnen Schwelle.",
+    "keyTakeaway": "AUC ist ein Trennmaß, keine Rendite, Trefferquote oder Ereigniswahrscheinlichkeit.",
+    "searchTags": [
+      "roc-auc",
+      "ROC-AUC",
+      "Area Under ROC Curve",
+      "ROC-Fläche",
+      "Trennfähigkeitsmaß",
+      "Receiver Operating Characteristic AUC"
+    ],
+    "thesaurus": [
+      "ROC-Fläche",
+      "Trennfähigkeitsmaß",
+      "Receiver Operating Characteristic AUC"
+    ],
+    "sources": [
+      {
+        "title": "scikit-learn: roc_auc_score",
+        "url": "https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html"
+      }
+    ],
+    "reviewedAt": "2026-10-11"
+  },
+  {
+    "id": "zinsstrukturkurve",
+    "term": "Zinsstrukturkurve",
+    "abbreviation": "Yield Curve",
+    "category": "MACRO_FOREX",
+    "categoryLabel": "Makro & Devisen",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Zusammenhang zwischen Anleiherenditen und Restlaufzeiten bei einer festgelegten Vergleichsbasis.",
+    "detailedExplanation": "Für eine sinnvolle Kurve müssen Währung, Kreditrisiko und Instrumenttyp vergleichbar sein. Form und Steigung spiegeln unter anderem Zins-, Inflations- und Risikoeinschätzungen wider; sie liefern keine sichere Prognose.",
+    "formulaOrRule": "Steigung als Beispiel: Rendite 10 Jahre − Rendite 2 Jahre.",
+    "practicalExample": "Synthetische Demo: 10 Jahre rentieren mit 3,0 %, 2 Jahre mit 3,4 %. Die Differenz ist −0,4 Prozentpunkte.",
+    "keyTakeaway": "Laufzeiten nur auf vergleichbarer Datenbasis gegenüberstellen.",
+    "searchTags": [
+      "zinsstrukturkurve",
+      "Zinsstrukturkurve",
+      "Yield Curve",
+      "Renditekurve",
+      "Yield Curve",
+      "Zinsterminkurve"
+    ],
+    "thesaurus": [
+      "Renditekurve",
+      "Yield Curve",
+      "Zinsterminkurve"
+    ],
+    "sources": [
+      {
+        "title": "EZB: Euro area yield curves",
+        "url": "https://www.ecb.europa.eu/stats/financial_markets_and_interest_rates/euro_area_yield_curves/html/index.en.html"
+      }
+    ],
+    "reviewedAt": "2026-10-11"
+  },
+  {
+    "id": "realzins",
+    "term": "Realzins",
+    "abbreviation": "Real Interest Rate",
+    "category": "MACRO_FOREX",
+    "categoryLabel": "Makro & Devisen",
+    "level": "Einsteiger",
+    "shortDefinition": "Zins nach Berücksichtigung der Inflation; er beschreibt die Veränderung der Kaufkraft näherungsweise.",
+    "detailedExplanation": "Der vereinbarte Nominalzins allein zeigt nicht, ob die Kaufkraft wächst. Zur Einordnung muss deutlich sein, ob beobachtete oder erwartete Inflation verwendet wird.",
+    "formulaOrRule": "Näherung: Realzins = Nominalzins − Inflationsrate.",
+    "practicalExample": "Synthetische Demo: 4 % Nominalzins und 2,5 % Inflation ergeben näherungsweise 1,5 % Realzins.",
+    "keyTakeaway": "Nominale Erträge und reale Kaufkraftentwicklung getrennt betrachten.",
+    "searchTags": [
+      "realzins",
+      "Realzins",
+      "Real Interest Rate",
+      "Inflationsbereinigter Zins",
+      "Real Interest Rate",
+      "Kaufkraftzins"
+    ],
+    "thesaurus": [
+      "Inflationsbereinigter Zins",
+      "Real Interest Rate",
+      "Kaufkraftzins"
+    ],
+    "sources": [
+      {
+        "title": "EZB: What are interest rates?",
+        "url": "https://data.ecb.europa.eu/methodology/what-are-interest-rates"
+      }
+    ],
+    "reviewedAt": "2026-10-11"
+  }
+]

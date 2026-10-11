@@ -1,5 +1,5 @@
 import React from 'react';
-import { EXTERNAL_COMPONENT_INVENTORY, CADS_PROFILE_V2, COMPONENT_LIFECYCLE } from '../data/externalComponentInventory';
+import { EXTERNAL_COMPONENT_INVENTORY, COMPONENT_LIFECYCLE } from '../data/externalComponentInventory';
 
 const domainClasses: Record<string, string> = {
   PRODUCT: 'border-pink-500/30 bg-pink-950/20',
@@ -17,7 +17,7 @@ export const ComponentInventoryDashboard: React.FC = () => {
     <div className="rounded-2xl border border-slate-700 bg-slate-950/70 p-4">
       <h2 id="component-inventory-title" className="text-xl font-bold">External Component & Dependency Dashboard</h2>
       <p className="mt-2 text-sm text-slate-400">
-        Public-safe Documentary projection. Secret values are prohibited. CADS values are provisional until a reproducible workload benchmark promotes them.
+        Public-safe Documentary projection. Secret values are prohibited.
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
         {['ALL','PRODUCT','MARKET','PLATFORM','TRUST','GROWTH'].map(value =>
@@ -26,14 +26,6 @@ export const ComponentInventoryDashboard: React.FC = () => {
             {value}
           </button>)}
       </div>
-    </div>
-
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="CADS profile">
-      {Object.entries(CADS_PROFILE_V2.normalizedWeights).map(([key, value]) =>
-        <div key={key} className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
-          <div className="flex justify-between text-xs"><span className="capitalize text-slate-300">{key}</span><span className="font-mono text-amber-300">{value}%</span></div>
-          <div className="mt-2 h-2 overflow-hidden rounded bg-slate-800"><div className="h-full bg-amber-300" style={{ width: `${value}%` }} /></div>
-        </div>)}
     </div>
 
     <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
@@ -54,13 +46,6 @@ export const ComponentInventoryDashboard: React.FC = () => {
             <h3 className="text-base font-bold">{item.name}</h3>
             <p className="mt-1 text-xs text-slate-400">{item.functionSummary}</p>
           </div>
-          <div className="min-w-24 text-right">
-            <div className="text-2xl font-black font-mono text-amber-300">{item.cadsScore.toFixed(1)}</div>
-            <div className="text-[10px] text-slate-500">CADS / 100</div>
-          </div>
-        </div>
-        <div className="mt-3 h-2 overflow-hidden rounded bg-slate-800" aria-label={`CADS ${item.cadsScore} von 100`}>
-          <div className="h-full bg-emerald-400" style={{ width: `${item.cadsScore}%` }} />
         </div>
         <dl className="mt-4 grid grid-cols-[9rem_1fr] gap-x-3 gap-y-2 text-xs">
           <dt className="text-slate-500">Lifecycle</dt><dd>{item.lifecycle} · {item.scoreState}</dd>

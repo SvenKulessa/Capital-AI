@@ -1,3 +1,4 @@
+import {createHash} from 'node:crypto';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
@@ -56,11 +57,11 @@ test('license deep links expose crawlable metadata without changing API boundari
 });
 
 
-test('public Vocabulary routes stay crawlable without exposing owner-gated Quant/Pro entries', async () => {
-  assert.equal(VOCABULARY_CANONICAL_COUNT, 294);
-  assert.equal(VOCABULARY_PUBLIC_COUNT, 132);
+test('all Vocabulary definitions are public and crawlable, including former Quant/Pro entries', async () => {
+  assert.equal(VOCABULARY_CANONICAL_COUNT, vocabularyMetadata.length);
+  assert.equal(VOCABULARY_PUBLIC_COUNT, vocabularyMetadata.length);
   assert.equal(vocabularyMetadata.length, VOCABULARY_CANONICAL_COUNT);
-  const publicEntries = vocabularyMetadata.filter((entry) => !QUANT_PRO_IDS.has(entry.id));
+  const publicEntries = vocabularyMetadata;
   assert.equal(publicEntries.length, VOCABULARY_PUBLIC_COUNT);
 
   const root = await mkdtemp(path.join(tmpdir(), 'capital-vocabulary-'));
@@ -73,10 +74,10 @@ test('public Vocabulary routes stay crawlable without exposing owner-gated Quant
     const landingResponse = await fetch(origin + '/vocabulary');
     assert.equal(landingResponse.status, 200);
     const landingHtml = await landingResponse.text();
-    assert.match(landingHtml, /<title>Capital-AI Vocabulary \| 132 Fachbegriffe &amp; Thesaurus<\/title>/);
+    assert.ok(landingHtml.includes(`<title>Capital-AI Vocabulary | ${VOCABULARY_PUBLIC_COUNT} Fachbegriffe &amp; Thesaurus</title>`));
     assert.match(landingHtml, /href="https:\/\/capital-ai\.online\/vocabulary"/);
     assert.match(landingHtml, /"@type":"DefinedTermSet"/);
-    assert.match(landingHtml, /132 konsolidierte Capital-AI Fachbegriffe/);
+    assert.ok(landingHtml.includes(`${VOCABULARY_PUBLIC_COUNT} konsolidierte Capital-AI Fachbegriffe`));
     assert.equal((landingHtml.match(/id="capital-ai-seo-jsonld"/g) || []).length, 1);
     assert.match(landingHtml, /href="\/vocabulary\/orderbuch"/);
 
@@ -102,10 +103,27 @@ test('public Vocabulary routes stay crawlable without exposing owner-gated Quant
     }
     const ownerGatedEntry = vocabularyMetadata.find((entry) => QUANT_PRO_IDS.has(entry.id));
     assert.ok(ownerGatedEntry);
-    assert.equal(sitemap.includes(`<loc>https://capital-ai.online${ownerGatedEntry.path}</loc>`), false);
+    assert.equal(sitemap.includes(`<loc>https://capital-ai.online${ownerGatedEntry.path}</loc>`), true);
     const ownerGatedResponse = await fetch(origin + ownerGatedEntry.path);
-    assert.equal(ownerGatedResponse.status, 404);
-    assert.equal(ownerGatedResponse.headers.get('x-robots-tag'), 'noindex, nofollow');
+    assert.equal(ownerGatedResponse.status, 200);
+    assert.doesNotMatch(ownerGatedResponse.headers.get('x-robots-tag') ?? '', /noindex/);
+    const formerlyRestrictedHtml = await ownerGatedResponse.text();
+    assert.match(formerlyRestrictedHtml, /name="robots" content="index, follow/);
+    assert.ok(formerlyRestrictedHtml.includes(ownerGatedEntry.description.replaceAll('&','&amp;')));
+    for (const entry of publicEntries) {
+      const response = await fetch(origin+entry.path);
+      assert.equal(response.status,200,entry.path);
+      assert.doesNotMatch(response.headers.get('x-robots-tag') ?? '',/noindex/,entry.path);
+      const html = await response.text();
+      assert.ok(html.includes(`href="https://capital-ai.online${entry.path}"`),entry.path);
+      assert.match(html,/name="robots" content="index, follow/,entry.path);
+    }
+
+    const newTermHtml = await (await fetch(origin+'/vocabulary/brier-score')).text();
+    assert.match(newTermHtml,/brier_score_loss/);
+    assert.match(newTermHtml,/Fachquellen/);
+    assert.match(newTermHtml,/Brier = Mittelwert/);
+    assert.match(newTermHtml,/Synthetische Demo:/);
 
     const robotsResponse = await fetch(origin + '/robots.txt');
     assert.equal(robotsResponse.status, 200);
@@ -163,4 +181,22 @@ test('hub paths and legacy documents redirect once and keep subpage metadata and
     server.closeAllConnections();await new Promise(resolve=>server.close(resolve));
     await rm(root,{recursive:true});
   }
+});
+
+
+test('product tour serves browser-compatible MP4 MIME and hash-bound bytes',async()=>{
+  const root=await mkdtemp(path.join(tmpdir(),'capital-tour-'));
+  const directory=path.join(root,'learning/videos');await mkdir(directory,{recursive:true});
+  const filename='capital-ai-tour-short-1080x1920.mp4';
+  const bytes=await readFile(new URL('../public/learning/videos/'+filename,import.meta.url));
+  const manifest=JSON.parse(await readFile(new URL('../public/learning/videos/capital-ai-tour-asset-manifest.json',import.meta.url)));
+  await writeFile(path.join(directory,filename),bytes);
+  const server=createApp(root);await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  try {
+    const response=await fetch(`http://127.0.0.1:${server.address().port}/learning/videos/${filename}`);
+    assert.equal(response.status,200);assert.equal(response.headers.get('content-type'),'video/mp4');
+    const downloaded=Buffer.from(await response.arrayBuffer());
+    assert.equal(createHash('sha256').update(downloaded).digest('hex'),manifest.assets.find(asset=>asset.path===filename).sha256);
+    assert.match(manifest.renderer.videoCodec,/h264/);
+  } finally {server.closeAllConnections();await new Promise(resolve=>server.close(resolve));await rm(root,{recursive:true});}
 });
