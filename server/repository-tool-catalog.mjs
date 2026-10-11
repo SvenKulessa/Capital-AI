@@ -327,7 +327,7 @@ export function createRepositoryToolCatalog({ fetchImpl = fetch, now = Date.now,
     const sources = await Promise.all(files.map((file, index) =>
       fromMain(file, file.endsWith('package-lock.json') ? 2_400_000 : 100_000, index >= 2)));
     const supplementary = Object.fromEntries(files.slice(6).map((p, i) => {
-      const value = sources[i + 8];
+      const value = sources[i + 6];
       return [p, p.endsWith('package.json') || p.endsWith('package-lock.json') ||
           p.endsWith('ffmpeg-build-profile.json') || p.endsWith('typescript-7.0.2.json')
         ? parseJson(value) : value];

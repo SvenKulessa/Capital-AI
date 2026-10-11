@@ -668,7 +668,7 @@ test('mobile login keeps one-time verifier-bound transfer while using Supabase O
       body: new URLSearchParams({ code, verifier }).toString(),
     });
     assert.equal(exchange.status, 303);
-    assert.equal(exchange.headers.get('location'), '/mobile-scorer');
+    assert.equal(exchange.headers.get('location'), '/');
     const cookie = sessionCookieHeader(exchange);
     assert.match(cookie, /__Host-capital_session_count=/);
 
