@@ -46,6 +46,8 @@ jobs:
       - name: Lizenz- und Regressionstests direkt in GitHub ausführen
         run: |
           node --test \
+            scripts/domain-skills.test.mjs \
+            scripts/skill-routing.test.mjs \
             scripts/docker-context.test.mjs \
             scripts/reviewdog-public-report.test.mjs \
             scripts/container-evidence-identity.test.mjs \
@@ -82,6 +84,8 @@ jobs:
             scripts/ci-efficiency-report.test.mjs \
             scripts/verify-go-vuln-reachability.test.mjs \
             scripts/docker-archive-config.test.mjs
+          npm run validate:all
+          git diff --exit-code -- generated/SKILL-INVENTORY.md generated/SKILL-READINESS.md generated/CAPITAL-AI-SKILL-EXPANSION-REPORT.md generated/ARCHITECTURE-GAP-ANALYSIS.md
           node scripts/license-evidence.mjs
       - name: Gepinnte Sicherheitswerkzeuge bauen
         run: |
