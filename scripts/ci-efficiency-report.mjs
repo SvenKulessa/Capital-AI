@@ -36,6 +36,8 @@ export function summarizeCiEfficiency({
 }) {
   const workflows = new Map();
   const expensiveRuns = [];
+  // Read-only step timings from existing jobs. These are wall times, never billed minutes.
+  const stepTimings = new Map();
 
   for (const run of runs) {
     const name = run.name || run.workflow_name || 'UNKNOWN_WORKFLOW';
@@ -71,6 +73,20 @@ export function summarizeCiEfficiency({
         jobWall += seconds;
         observedJobs += 1;
       }
+      for (const step of Array.isArray(job.steps) ? job.steps : []) {
+        if (step.status !== 'completed' || step.conclusion === 'skipped') continue;
+        const elapsed = secondsBetween(step.started_at, step.completed_at);
+        if (elapsed === null || elapsed <= 0) continue;
+        const jobName = job.name || 'UNKNOWN_JOB';
+        const stepName = step.name || 'UNKNOWN_STEP';
+        const key = JSON.stringify([name, jobName, stepName]);
+        const record = stepTimings.get(key) || {
+          workflow: name, job: jobName, step: stepName, seconds: [], failures: 0,
+        };
+        record.seconds.push(elapsed);
+        if (step.conclusion === 'failure') record.failures += 1;
+        stepTimings.set(key, record);
+      }
     }
     if (observedJobs > 0) entry.jobWallSeconds.push(jobWall);
 
@@ -92,6 +108,19 @@ export function summarizeCiEfficiency({
     workflows.set(name, entry);
   }
 
+  const stepRows = [...stepTimings.values()].map(entry => ({
+    workflow: entry.workflow,
+    job: entry.job,
+    step: entry.step,
+    observations: entry.seconds.length,
+    failures: entry.failures,
+    totalObservedSeconds: round(entry.seconds.reduce((sum, seconds) => sum + seconds, 0)),
+    medianSeconds: round(percentile(entry.seconds, 50)),
+    p95Seconds: round(percentile(entry.seconds, 95)),
+    maxSeconds: round(Math.max(...entry.seconds)),
+    evidence: 'OBSERVED_STEP_WALLTIME_NOT_BILLING',
+  })).sort((a, b) => b.totalObservedSeconds - a.totalObservedSeconds);
+
   const workflowRows = [...workflows.values()].map(entry => {
     const totalJobWall = entry.jobWallSeconds.reduce((sum, value) => sum + value, 0);
     return {
@@ -110,6 +139,7 @@ export function summarizeCiEfficiency({
       observedJobWallSeconds: round(totalJobWall),
       observedRunnerMinutes: round(totalJobWall / 60),
       runnerMinuteEvidence: entry.jobWallSeconds.length ? 'OBSERVED_JOB_WALLTIME_NOT_BILLING' : 'NOT_PROVEN',
+      slowestSteps: stepRows.filter(step => step.workflow === entry.workflow).slice(0, 5),
     };
   }).sort((a, b) => (b.observedRunnerMinutes || 0) - (a.observedRunnerMinutes || 0));
 
@@ -124,6 +154,7 @@ export function summarizeCiEfficiency({
       workflowRuntime: 'VERIFIED_FROM_GITHUB_ACTIONS_TIMESTAMPS',
       queueDelay: 'VERIFIED_WHEN_CREATED_AT_AND_RUN_STARTED_AT_ARE_PRESENT',
       runnerMinutes: 'OBSERVED_JOB_WALLTIME_NOT_BILLING',
+      stepWalltime: stepRows.length ? 'OBSERVED_STEP_WALLTIME_NOT_BILLING' : 'NOT_PROVEN',
       billedMinutes: 'NOT_PROVEN',
       cacheHitRate: 'NOT_PROVEN',
       cacheHitRateReason: 'GitHub Actions cache usage exposes active cache count/bytes but not a repository-wide hit/miss rate.',
@@ -138,6 +169,7 @@ export function summarizeCiEfficiency({
       evidenceState: 'NOT_PROVEN',
     },
     workflows: workflowRows,
+    topSlowSteps: stepRows.slice(0, 15),
     topExpensiveRuns: expensiveRuns.slice(0, 20),
   };
 }
