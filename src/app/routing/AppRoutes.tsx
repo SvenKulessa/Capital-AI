@@ -12,6 +12,8 @@ import { HomePage } from '../../features/home/HomePage';
 import { DataUnavailable } from '../../shared/ui/DataUnavailable';
 import { LEGAL_ROUTES } from './routes';
 
+const PrivateDashboardPage = lazy(() => import('../../features/account/PrivateDashboardPage').then(module => ({default:module.PrivateDashboardPage})));
+
 const BlogPage = lazy(() => import('../../features/learning/BlogPage').then(module => ({ default: module.BlogPage })));
 
 const LoginPage = lazy(() =>
@@ -146,6 +148,8 @@ export function AppRoutes({
     );
   }
 
+  if (currentRoute === '/profile/dashboard') return <PrivateDashboardPage onNavigate={navigateTo} />;
+
   if (currentRoute === '/profile') {
     return <ProfilePage onNavigate={navigateTo} />;
   }
@@ -158,7 +162,7 @@ export function AppRoutes({
     return <KeyVaultPage onNavigate={navigateTo} />;
   }
   if (currentRoute === '/profile/workspace') {
-    return <PersonalWorkspacePage onNavigate={navigateTo} />;
+    return <ProfilePage onNavigate={navigateTo} />;
   }
   if (currentRoute === '/profile/render-dashboard') {
     return <RenderOwnerDashboardPage onNavigate={navigateTo} />;

@@ -1,5 +1,5 @@
 import { ChevronRight, Home } from 'lucide-react';
-import { MAIN_HUBS_CONFIG } from './HubSidebarDrawer';
+import { MAIN_HUBS_CONFIG } from './HubCatalog';
 
 type RouteBreadcrumbsProps = {
   currentRoute: string;

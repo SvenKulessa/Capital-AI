@@ -26,7 +26,7 @@ test('license deep links expose crawlable metadata without changing API boundari
   const root = await mkdtemp(path.join(tmpdir(), 'capital-license-'));
   await writeFile(path.join(root, 'index.html'), await readFile(new URL('../index.html', import.meta.url)));
   // The production handler serves these routes from static HTML, not SPA fallback.
-  for (const route of ['datenschutz', 'agb']) {
+  for (const route of ['datenschutz', 'agb', 'impressum']) {
     await mkdir(path.join(root, route), { recursive: true });
     await writeFile(path.join(root, route, 'index.html'), await readLegalTemplate(route));
   }
@@ -118,5 +118,49 @@ test('public Vocabulary routes stay crawlable without exposing owner-gated Quant
     server.closeAllConnections();
     await new Promise(resolve => server.close(resolve));
     await rm(root, { recursive: true });
+  }
+});
+
+test('hub paths and legacy documents redirect once and keep subpage metadata and content separate', async () => {
+  const { HUB_ROUTES, DOCUMENT_ROUTES } = await import('../shared/hub-routes.mjs');
+  const root = await mkdtemp(path.join(tmpdir(),'capital-hub-routes-'));
+  await writeFile(path.join(root,'index.html'),await readFile(new URL('../index.html',import.meta.url)));
+  for (const [route,legacy] of Object.entries(DOCUMENT_ROUTES)) {
+    await mkdir(path.dirname(path.join(root,legacy)),{recursive:true});
+    const source = await readFile(new URL('../public'+legacy,import.meta.url)).catch(()=>readFile(new URL('../dist'+legacy,import.meta.url)));
+    await writeFile(path.join(root,legacy),source);
+  }
+  const server=createApp(root);
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  const origin=`http://127.0.0.1:${server.address().port}`;
+  try {
+    for (const route of HUB_ROUTES) {
+      const redirected=await fetch(origin+route.hub+'?tab='+route.tab+'&ref=nav',{redirect:'manual'});
+      assert.equal(redirected.status,301,route.path);
+      assert.equal(redirected.headers.get('location'),route.path+'?ref=nav');
+      const target=await fetch(origin+route.path);
+      assert.equal(target.status,200,route.path);
+      assert.equal(target.headers.get('x-robots-tag'),'noindex, nofollow');
+      assert.ok((await target.text()).includes(route.title.replaceAll('&','&amp;')),route.path);
+    }
+    for (const [route,legacy] of Object.entries(DOCUMENT_ROUTES)) {
+      const redirected=await fetch(origin+legacy,{redirect:'manual'});
+      assert.equal(redirected.status,301,legacy);
+      assert.equal(redirected.headers.get('location'),route);
+      const target=await fetch(origin+route);
+      assert.equal(target.status,200,route);
+      const html=await target.text();
+      assert.equal([...html.matchAll(/<footer\b/g)].length,1,route);
+      assert.match(html,/cookie-preferences=1/);
+      assert.doesNotMatch(html,/id="root"/);
+    }
+    for(const legacy of ['/downloads/capital-ai-byok-presentation.html','/documentation/byok.html']) {
+      const response=await fetch(origin+legacy,{redirect:'manual'});
+      assert.equal(response.status,301);
+      assert.equal(response.headers.get('location'),'/dokumentation/byok');
+    }
+  } finally {
+    server.closeAllConnections();await new Promise(resolve=>server.close(resolve));
+    await rm(root,{recursive:true});
   }
 });

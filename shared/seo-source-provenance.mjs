@@ -13,20 +13,20 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
     contentSha256: 'ef94c3a4ff4437a4298cc7952e543b79460df5e17830e620148e7cf02a10fe03',
   }),
   'src/features/home/HomePage.tsx': Object.freeze({
-    sourceBlobSha: '940481390a60574b7ad235978b2ad1e32f98cd37',
-    contentSha256: '749f962179ab197dcdf02783b49eb16160c9eab4240017db0fdb9ec0dc8fb2cd',
+    sourceBlobSha: '9441486186354f3b64c0c5a84d13aa5af34d66ca',
+    contentSha256: 'f8f82bdaa04ee6bb8925b631904adfe6c899229621d4b2c6ba124dfede562ae8',
   }),
   'src/features/learning/LearningPortalPage.tsx': Object.freeze({
-    sourceBlobSha: '89690cf5891a6582b7ee05420a8134f8ab201774',
-    contentSha256: '424b525286bed2a6a7159a4aa7b3daa611e3e03ca5aa1a34c642218c2027f66d',
+    sourceBlobSha: 'cc0bc9c7803828039a07d8d1f354cafd1512b39c',
+    contentSha256: '9620ed6b05e78fb314207b5e764d308876a5520c1837ad2ebc17d8bca8cca38e',
   }),
   'shared/vocabulary-metadata.mjs': Object.freeze({
     sourceBlobSha: 'e6c688cee57cf3cce92154e73ae4eb00cb76886b',
     contentSha256: '584426d21f5d1415afad1829c398a4a68adfdb4fc103ee2d3c48f30233a772d8',
   }),
   'src/components/LegalAndFaqPages.tsx': Object.freeze({
-    sourceBlobSha: 'd3eb62ae83ca9104a09234dc6864aa89f487302f',
-    contentSha256: '038fc9fb1d401e13800523524ca82b010d589a3f21a7199e1ad305e434d5c038',
+    sourceBlobSha: '119723ecbcdb0757ac76aa93fb7891ab7b675dc3',
+    contentSha256: 'bdd85ec55798297eb90701fe1e808077fb79719560083fd4827aac434b3c956d',
   }),
   'src/content/publicLegalContent.ts': Object.freeze({
     sourceBlobSha: 'e16b221845706f2b65efe634e183b53ae451ca34',
@@ -63,17 +63,17 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
 });
 
 const SEO_SOURCE_SET_DIGESTS = Object.freeze({
-  'shared/learning-journey.mjs|src/data/vocabularyOffer.ts|src/features/learning/LearningJourney.tsx|src/features/learning/LearningPortalPage.tsx|src/features/learning/LearningPurchase.tsx': '087bfb9c9112771f19cfb677db2f03db2e7bd610f840093f502c811b0db6123b',
+  'shared/learning-journey.mjs|src/data/vocabularyOffer.ts|src/features/learning/LearningJourney.tsx|src/features/learning/LearningPortalPage.tsx|src/features/learning/LearningPurchase.tsx': '08176f73ab8a685ed2328de662bdeb0b23d288a34a4fbd1919ec185bec0185f6',
   'shared/blog-articles.mjs': '9f2fd7096a150d0a402a1aeed775bc0151db3fddc1886c6b62a3ac207099f363',
-  'index.html|src/features/home/HomePage.tsx': '7c65a25c789a4805509bcb2f71fb0646f464dd3c2802faf59b6273ece6672d92',
-  'shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': '076d0beec573141e0367825f4a8d19c267be82468f2bad9324105b5114a2f13b',
-  'src/components/LegalAndFaqPages.tsx|src/content/publicLegalContent.ts': '1f1b52d0a3722d284374012703ecdf9deb0891b4ffd94790581536fe070ed65e',
+  'index.html|src/features/home/HomePage.tsx': 'b2ed98c639954f90ed1122671adc63f8a341a6ffd3bd9d91d74bdf84e0242839',
+  'shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': '0166096aa9dfbeb5027a3d39f9e4d04a0f81e0ff1d9058cef7d562d2093db7c0',
+  'src/components/LegalAndFaqPages.tsx|src/content/publicLegalContent.ts': '3a32b088d5f3c08508aa82b52fc7c39b8ec21209db64ad3c7450c5b0283962fd',
   'shared/license-metadata.mjs|src/components/LicenseInformationPages.tsx': 'a32e0df5d6e5bc57e3a23283f7e1c91aa1a584f7f70ccc8208796322172210bb',
   'shared/license-metadata.mjs|src/data/providerLicenseReview.ts': '98d2b1c966c071230d8b5554f132c198bf95c7df07e5b559fa82e2aa53f1c768',
   'OPEN_SOURCE_LICENSES.md|shared/license-metadata.mjs': 'db2cb5f53bcfb48b0fdd17adbeeefc2e69c38da81c11e4eac5ce736aa7654031',
-  'shared/legal-identity.mjs|src/components/LegalAndFaqPages.tsx': '620aa045bb3e1970ad77e972402c84d59a7a5dc2719a29646657d4a89ac58318',
-  'src/components/LegalAndFaqPages.tsx|src/privacy/privacyPolicy.ts': 'a3d22139e83a2304e687e2a29f37d496dc657f92719125336411c6ae32a34c12',
-  'src/components/LegalAndFaqPages.tsx|src/content/legalDocumentVersions.ts': 'b4fef4f22a46d0e725c2659c52ade7a502acb66fd5ca1448df5a7aeb14ed9756',
+  'shared/legal-identity.mjs|src/components/LegalAndFaqPages.tsx': '77408fa82bd34637a99dc6e220cfa00fc8314bc5b3e0fa6aca32009ed37dacbe',
+  'src/components/LegalAndFaqPages.tsx|src/privacy/privacyPolicy.ts': 'ff0a3e5b7d70e22d151c8f441a80975270c33e44cf896b6778e5b41069668823',
+  'src/components/LegalAndFaqPages.tsx|src/content/legalDocumentVersions.ts': '233d9432b30fe9267021400bc97a06a80c6fbc8b4558849b5bc707fdc252008d',
   'shared/vocabulary-metadata.mjs': '68d08a159722c203812e5fd0bbc75ada4711f05b1697f4d249168f44ce5e7c81',
 });
 

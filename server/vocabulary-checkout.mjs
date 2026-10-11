@@ -259,6 +259,23 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
         return true;
       }
 
+      if (url.pathname === '/api/profile/notes') {
+        if (!['GET','PUT'].includes(req.method)) return json(res, 405, { error:'method_not_allowed' }), true;
+        if (req.method === 'PUT' && !auth?.sameOrigin?.(req)) return json(res,403,{error:'forbidden_origin'}),true;
+        const user = await requireUser(req,res,json);
+        if (!user) return true;
+        if (!supabase) return json(res,503,{error:'notes_unavailable'}),true;
+        let notes = null;
+        if (req.method === 'PUT') {
+          try { const body=JSON.parse(await readBody(req,65536)); notes=body.notes; }
+          catch { return json(res,400,{error:'invalid_notes'}),true; }
+          if(typeof notes !== 'string' || notes.length>10000) return json(res,400,{error:'invalid_notes'}),true;
+        }
+        try { const result=await rpc(fetchImpl,supabase,'capital_ai_private_notes',{_user_id:user.userId,_notes:notes,_action:req.method}); if (typeof result !== 'string') throw new Error('invalid_notes_response'); json(res,200,{notes:result}); }
+        catch { json(res,503,{error:'notes_unavailable'}); }
+        return true;
+      }
+
       if (url.pathname === '/api/learning/favorites' && ['GET', 'POST', 'DELETE'].includes(req.method)) {
         if (req.method !== 'GET' && !auth?.sameOrigin?.(req)) return json(res, 403, { error: 'forbidden_origin' }), true;
         const user = await requireUser(req, res, json);

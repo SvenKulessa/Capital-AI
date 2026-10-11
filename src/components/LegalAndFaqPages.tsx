@@ -334,7 +334,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
                 <button key={item.path} type="button" onClick={() => navigate(item.path)} className="min-h-11 rounded-xl border border-slate-600/40 bg-white/5 p-4 text-left text-sm font-semibold text-slate-100 hover:border-[#F5C453]/60 focus-visible:outline-2 focus-visible:outline-[#F5C453]">{item.label} →</button>
               ))}
             </div>
-            <p className="text-slate-300 text-sm">Vollständige Rechtstexte: <a className="text-[#F5C453] underline" href="/datenschutz/">/datenschutz/</a> · <a className="text-[#F5C453] underline" href="/agb/">/agb/</a> · <a className="text-[#F5C453] underline" href="/impressum/">/impressum/</a></p>
+
           </div>
         )}
         {route === '/kontakt' && <ContactForm />}
@@ -459,7 +459,6 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6 bg-[#070b19]/90 border border-emerald-500/20 rounded-3xl p-6 sm:p-8"
           >
-            <a href="/datenschutz/" className="inline-flex min-h-11 items-center rounded-xl border border-[#F5C453]/35 bg-[#F5C453]/10 px-4 py-2 text-sm font-semibold text-[#F5C453] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-[#F5C453]">Ausführliche Datenschutzerklärung unter /datenschutz/ lesen ↗</a>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-[#44DE88] shrink-0">
@@ -622,6 +621,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
                 Zuständigkeit richtet sich nach den gesetzlichen Regeln.
               </p>
             </section>
+            <a href="/datenschutz/" className="inline-flex min-h-11 items-center rounded-xl border border-[#F5C453]/35 bg-[#F5C453]/10 px-4 py-2 text-sm font-semibold text-[#F5C453] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-[#F5C453]">Mehr lesen ↗</a>
           </motion.div>
         )}
 
@@ -631,7 +631,6 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6 bg-[#070b19]/90 border border-pink-500/20 rounded-3xl p-6 sm:p-8"
           >
-            <a href="/agb/" className="inline-flex min-h-11 items-center rounded-xl border border-[#F5C453]/35 bg-[#F5C453]/10 px-4 py-2 text-sm font-semibold text-[#F5C453] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-[#F5C453]">Ausführliche AGB unter /agb/ lesen ↗</a>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-2xl bg-pink-500/15 border border-pink-500/30 flex items-center justify-center text-[#FF2E93] shrink-0">
@@ -752,6 +751,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
                 </p>
               </section>
             </div>
+            <a href="/agb/" className="inline-flex min-h-11 items-center rounded-xl border border-[#F5C453]/35 bg-[#F5C453]/10 px-4 py-2 text-sm font-semibold text-[#F5C453] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-[#F5C453]">Mehr lesen ↗</a>
           </motion.div>
         )}
 
@@ -761,7 +761,6 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6 bg-[#070b19]/90 border border-purple-500/20 rounded-3xl p-6 sm:p-8"
           >
-            <a href="/impressum/" className="inline-flex min-h-11 items-center rounded-xl border border-[#F5C453]/35 bg-[#F5C453]/10 px-4 py-2 text-sm font-semibold text-[#F5C453] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-[#F5C453]">Ausführliche Impressum unter /impressum/ lesen ↗</a>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-2xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-[#8D26FF] shrink-0">
@@ -842,6 +841,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
                 </p>
               </section>
             </div>
+            <a href="/impressum/" className="inline-flex min-h-11 items-center rounded-xl border border-[#F5C453]/35 bg-[#F5C453]/10 px-4 py-2 text-sm font-semibold text-[#F5C453] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-[#F5C453]">Mehr lesen ↗</a>
           </motion.div>
         )}
       </div>
