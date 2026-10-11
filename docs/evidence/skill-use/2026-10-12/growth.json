@@ -1,0 +1,539 @@
+{
+  "schemaVersion": "CAPITAL_AI_SKILL_USE_EVIDENCE@1",
+  "domain": "GROWTH",
+  "asOf": "2026-10-12",
+  "auditReferenceSha": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+  "baseSha": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+  "resultHeadSha": null,
+  "resultHeadReadback": "PENDING_POST_COMMIT_GITHUB_READBACK",
+  "authoritativePolicy": {
+    "contract": "SOLO_MAINTAINER_FLOW@1",
+    "path": "AGENTS.md",
+    "blobSha": "594926cdf3c66ce94a0fc481307ed22497985a16",
+    "profilePath": ".github/agents/capital-ai-growth.agent.md",
+    "profileBlobSha": "6f6cd7fbf6d2a660d8be34521990aa6747ea64f5",
+    "requiredChecks": [
+      "Docker Security Gate",
+      "Domain Governance"
+    ],
+    "newGates": []
+  },
+  "taskResults": [
+    {
+      "id": "GROWTH_PUBLIC_PRODUCT_CLAIMS",
+      "status": "REVIEW_REQUIRED",
+      "testedAgainst": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/src/features/learning/LearningArticles.tsx",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/src/data/vocabularyOffer.ts",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/server/vocabulary-checkout.mjs",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/src/data/pricingCatalog.ts",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/src/contracts/socialPublisherAdapter.ts",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/docs/growth/SCREENER-BLUEPRINT-PREVIEW-20261009.md",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/docs/growth/LANDING-CLAIM-RUNTIME-CORRELATION-20261009.md"
+      ],
+      "observed": [
+        "Learning methodology and synthetic chart examples are implemented educational content, not live trading recommendations or empirical factor-performance validation.",
+        "Current Learning Portal offer is 2500 EUR cents (src/data/vocabularyOffer.ts; server/vocabulary-checkout.mjs public offer route); historical VOCABULARY_PRICE and prior Stripe live-catalog evidence are 1900 EUR cents. The source labels 1900 as legacy. No provider readback for the current 2500-cent product/price and completed purchase was performed in this audit.",
+        "Starter/Pro/Enterprise pricingCatalog lists monthly EUR 7/29/109, annual EUR 75.60/248/1280; 2026-10-08 Stripe catalog GET supports seven legacy catalog prices but not checkout, taxes, entitlements, refunds or buyer journey.",
+        "Screener blueprint is explicitly EDITORIAL_PREVIEW using a synthetic 76.85/100 weighted example; no dedicated SKU, live score, backtest superiority or redistributable third-party feed is proven.",
+        "2026-10-09 landing/readback evidence itself reports spot ingestion and score display disabled, not global realtime scores."
+      ],
+      "allowedPublicStatement": "Educational walkthroughs and explicitly labeled synthetic examples; source-backed catalog facts with clear no-purchase-evidence caveat. Do not market current 25-EUR offer as transaction-verified.",
+      "notProven": [
+        "25-EUR live provider price/configuration",
+        "completed buyer checkout and entitlement/refund",
+        "profitable or reliable market predictions",
+        "current production-scoring/runtime identity"
+      ]
+    },
+    {
+      "id": "GROWTH_SEO_ANALYTICS",
+      "status": "NOT_PROVEN",
+      "testedAgainst": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/docs/growth/evidence/public-readback-20261009.json",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/docs/growth/evidence/stripe-catalog-readback-20261009.json",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/docs/growth/GSC-SERVICE-ACCOUNT-READBACK-20261009.md",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/docs/growth/GA4-KEYLESS-READBACK-20261010.md",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/docs/growth/LEARNING-FIRST-SEO-20261011.md",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/src/utils/consentedAnalytics.ts",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/src/privacy/cookieConsentV3.ts",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/server/google-analytics-readback.mjs"
+      ],
+      "observed": [
+        "Historical public HTTP SEO readback observedAt 2026-10-08T23:38:34.257Z: 142 indexed-manifest routes with seoStatus PASS. It reports runtimeIdentity.sourceSha=null and productionReady=false; not proof of current October 12 deployment, actual Google indexing or SERP results.",
+        "2026-10-11 learning SEO tests and local Chromium evidence are source/preview evidence, not today's live index, Search Console reports or traffic.",
+        "GA4 Render MCP readback and manual GitHub OIDC readback are implemented read planes; provider HTTP 200, exact property visibility, report date range and live data responses were not independently obtained in this audit.",
+        "GSC service account and OAuth guard documentation do not prove live property membership or current GSC clicks/impressions.",
+        "On audited main, src/utils/consentedAnalytics.ts has a lazy GA4 tag path gated by saved analytics consent, expected G-0542DT2HCE and GET /api/public/learning-config; this supersedes historical documents claiming browser collection is always disabled, but neither configuration nor actual tag delivery is proven.",
+        "Learning reports distinguish current/prior 28-day organic sessions and generate_lead events; GSC report is limited to five countries and up to 20 pages per country. GSC clicks, GA4 sessions, inquiries and paid purchases must not be joined or presented as a single conversion rate."
+      ],
+      "allowedPublicStatement": "Implementation-level SEO/consent descriptions, historical dated crawl checks and bounded methodology only; no organic reach, CTR, conversion, sales or uplift without time-scoped authenticated provider results.",
+      "notProven": [
+        "current GA4 and GSC provider access",
+        "GA4 pixel/event deliveries",
+        "published-date cohort denominators",
+        "current indexing/rankings",
+        "customer acquisition metrics"
+      ],
+      "privacyBoundary": "No raw queries, contact identifiers, checkout PIIs, tenant data, authentication secrets or unconsented telemetry in public claims."
+    },
+    {
+      "id": "GROWTH_SOCIAL_OAUTH_PUBLISHING",
+      "status": "REVIEW_REQUIRED",
+      "testedAgainst": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/server/social-media/oauth-callback.mjs",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/server/social-media/provider-store.mjs",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/server/social-media/provider-adapter.mjs",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/server/social-media/provider-publish.mjs",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/server/social-media/provider-execution.mjs",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/server/social-media/provider-readback.mjs",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/src/contracts/socialPublisherAdapter.ts"
+      ],
+      "observed": [
+        "The OAuth callback explicitly has no authorization-start route and no built-in exchanger; without SOCIAL_OAUTH_CALLBACK_ENABLED=true and injected server-side exchangeCode it returns 503. A 204 callback is not a connected-account readback.",
+        "OAuth callback checks exact HTTPS origin/redirect, channel, signed-in identity, atomic expiring state consumption; token ciphertext persistence is an external injected obligation, not proved by callback existence.",
+        "Provider adapters for YOUTUBE/TIKTOK/INSTAGRAM/X/FACEBOOK are all IMPLEMENTED_DISABLED. Publication requires server global+channel switches, tenant-bound token, connected verified-scopes account, durable exact-asset SHA approval, persistent delivery reservation.",
+        "Transport submission returns UNKNOWN awaiting terminal external provider readback; uploaded or scheduled does not prove PUBLISHED. X/Meta readbacks use separate disabled-by-default switches.",
+        "Historical completion gate explicitly BLOCKED and Metricool provider connections not evidenced; no current provider-approved OAuth scopes, commercial publishing right, terminal provider post URL or test post verified."
+      ],
+      "allowedPublicStatement": "Publishing architecture and editorial drafts available; no linked channel, scheduled external distribution or successful live post claims.",
+      "notProven": [
+        "live OAuth linked account",
+        "provider token encryption and channel scopes verified end-to-end",
+        "owner/channel rights",
+        "external terminal publication receipt",
+        "successful live delivery"
+      ]
+    },
+    {
+      "id": "GROWTH_IP_LICENSE_MEDIA_MARKET",
+      "status": "REVIEW_REQUIRED",
+      "testedAgainst": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/CAPITAL-AI-GROWTH/growth.LICENSE.md",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/public/fonts/provenance.json",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/public/fonts/OFL.txt",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/docs/licenses/SOCIAL-MEDIA-ENGINE-THIRD-PARTY-NOTICES.md",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/OPEN_SOURCE_LICENSES.md",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/docs/security/LICENSE-RIGHTS.md",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/server/ecb-reference-rates.LICENSE.txt"
+      ],
+      "observed": [
+        "First-party CAPITAL-AI logo/diagrams/blueprints are owner-controlled project-IP by documented provenance, not blanket ownership of third-party assets, AI providers or logos.",
+        "Plus Jakarta Sans provenance specifies upstream Google Fonts SHA and OFL 1.1; embedding subject to exact license notices and reserved-name terms, not a license for unrelated media.",
+        "OS/dependency image rights inventory is explicitly incomplete for whole shipped container; historical LICENSE-RIGHTS is non-authorizing and remains review-open.",
+        "Social FFmpeg internal LGPL-only build has scoped binary/hash evidence but immutable OCI release and distributions rights pending; Qwen, Chatterbox, Whisper and F5-TTS etc excluded/not admitted for commercial Social outputs.",
+        "The MIT license on server/ecb-reference-rates.mjs governs adapter code, NOT the ECB/other market datasets; ECB public statistics reuse requires original source attribution, unmodified stats and third-party exclusions.",
+        "Third-party images, trademarks, market feeds, generated model weights, music, codecs and external provider output rights require asset/channel-specific documentary verification."
+      ],
+      "allowedPublicStatement": "First-party authored explanatory content and synthetic charts with provenance; use public, attributed, unmodified ECB statistics only when dataset applicability confirmed; no generic external data/media rights.",
+      "notProven": [
+        "all publisher channel image/music/brand licenses",
+        "commercial model-weight rights",
+        "all OCI/SBOM/NOTICE distribution obligations",
+        "trademark clearance",
+        "commercial redistribution of private BYOK feeds"
+      ]
+    },
+    {
+      "id": "COMBINED_ANALYTICS_CUSTOMER_SALES_CASE",
+      "status": "REVIEW_REQUIRED",
+      "selectedSkills": [
+        "growth-engineering",
+        "analytics-intelligence",
+        "customer-success",
+        "sales-enterprise",
+        "revenue-engineering",
+        "legal-compliance"
+      ],
+      "case": "Evaluate organic learning inquiry -> verified received lead -> activation -> Stripe payment and entitlement without crossing identity/consent boundaries",
+      "evidence": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/server/google-learning-setup.test.mjs",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/src/utils/consentedAnalytics.ts",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/server/vocabulary-checkout.mjs",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/docs/growth/LEARNING-FIRST-SEO-20261011.md"
+      ],
+      "findings": "Code defines consented generate_lead only for a valid received inquiry receipt; mock tests isolate generate_lead from generic keyEvents; Stripe webhook has an entitlement branch. No joined real session->lead->paid-customer dataset or verified live event delivery in scope. Do not compute conversion or churn without denominator, window, and consent."
+    },
+    {
+      "id": "NO_ADDITIONAL_SPECIALIST_CASE",
+      "status": "VERIFIED",
+      "selectedSkills": [
+        "growth-engineering"
+      ],
+      "rejectedUnnecessarySkills": [
+        "quant-research",
+        "ai-engineering",
+        "accessibility-audit",
+        "sales-enterprise",
+        "analytics-intelligence"
+      ],
+      "case": "Verify main SHA equals the supplied baseline and record authority of AGENTS.md",
+      "evidence": [
+        "https://api.github.com/repos/SvenKulessa/Capital-AI/git/ref/heads/main",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/AGENTS.md"
+      ],
+      "findings": "Read-only exact Git-ref equality and policy reading do not require extra enterprise specialists; loading quantitative/AI/sales specialists would be over-selection."
+    }
+  ],
+  "skillsUsed": [
+    {
+      "name": "growth-engineering",
+      "gitPath": ".agents/skills/growth-engineering/SKILL.md",
+      "blobSha": "8ba48dfaa76c842e84d959c0a9ca9cb87493dadb",
+      "toolReadReference": {
+        "tool": "mcp__GitHub__fetch_file",
+        "repository": "SvenKulessa/Capital-AI",
+        "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+        "path": ".agents/skills/growth-engineering/SKILL.md",
+        "returnedBlobSha": "8ba48dfaa76c842e84d959c0a9ca9cb87493dadb",
+        "readContent": true,
+        "immutableUrl": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/.agents/skills/growth-engineering/SKILL.md"
+      },
+      "influence": "claim-to-code comparison, publishing source and reversible audit evidence"
+    },
+    {
+      "name": "growth-advisory",
+      "gitPath": ".agents/skills/growth-advisory/SKILL.md",
+      "blobSha": "cc580e38eda67808f3c1982bf189d0efc88ec314",
+      "toolReadReference": {
+        "tool": "mcp__GitHub__fetch_file",
+        "repository": "SvenKulessa/Capital-AI",
+        "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+        "path": ".agents/skills/growth-advisory/SKILL.md",
+        "returnedBlobSha": "cc580e38eda67808f3c1982bf189d0efc88ec314",
+        "readContent": true,
+        "immutableUrl": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/.agents/skills/growth-advisory/SKILL.md"
+      },
+      "influence": "separate verified implementation, hypotheses, risk and external provider evidence"
+    },
+    {
+      "name": "visual-chat",
+      "gitPath": ".agents/skills/visual-chat/SKILL.md",
+      "blobSha": "2ded476ee7bbe97c40e0975936b9d3c87acaec25",
+      "toolReadReference": {
+        "tool": "mcp__GitHub__fetch_file",
+        "repository": "SvenKulessa/Capital-AI",
+        "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+        "path": ".agents/skills/visual-chat/SKILL.md",
+        "returnedBlobSha": "2ded476ee7bbe97c40e0975936b9d3c87acaec25",
+        "readContent": true,
+        "immutableUrl": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/.agents/skills/visual-chat/SKILL.md"
+      },
+      "influence": "compact rights/claim matrix and explicit state vocabulary"
+    },
+    {
+      "name": "seo-engineering",
+      "gitPath": ".agents/skills/seo-engineering/SKILL.md",
+      "blobSha": "b2240db766e5bc0581f7e1be2c49d1557962a806",
+      "toolReadReference": {
+        "tool": "mcp__GitHub__fetch_file",
+        "repository": "SvenKulessa/Capital-AI",
+        "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+        "path": ".agents/skills/seo-engineering/SKILL.md",
+        "returnedBlobSha": "b2240db766e5bc0581f7e1be2c49d1557962a806",
+        "readContent": true,
+        "immutableUrl": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/.agents/skills/seo-engineering/SKILL.md"
+      },
+      "influence": "canonical, robots, sitemap, metadata and scope of crawl readback"
+    },
+    {
+      "name": "analytics-intelligence",
+      "gitPath": ".agents/skills/analytics-intelligence/SKILL.md",
+      "blobSha": "f96d622683f4b1742e3613683542ba1e264018c0",
+      "toolReadReference": {
+        "tool": "mcp__GitHub__fetch_file",
+        "repository": "SvenKulessa/Capital-AI",
+        "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+        "path": ".agents/skills/analytics-intelligence/SKILL.md",
+        "returnedBlobSha": "f96d622683f4b1742e3613683542ba1e264018c0",
+        "readContent": true,
+        "immutableUrl": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/.agents/skills/analytics-intelligence/SKILL.md"
+      },
+      "influence": "metric formula, denominator, consent, join boundaries, provider time windows"
+    },
+    {
+      "name": "customer-success",
+      "gitPath": ".agents/skills/customer-success/SKILL.md",
+      "blobSha": "996ef5acbc2d67245c2c7fbcdb18eedfd5acfaa5",
+      "toolReadReference": {
+        "tool": "mcp__GitHub__fetch_file",
+        "repository": "SvenKulessa/Capital-AI",
+        "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+        "path": ".agents/skills/customer-success/SKILL.md",
+        "returnedBlobSha": "996ef5acbc2d67245c2c7fbcdb18eedfd5acfaa5",
+        "readContent": true,
+        "immutableUrl": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/.agents/skills/customer-success/SKILL.md"
+      },
+      "influence": "first-value, inquiry delivery, activation and churn evidence requirements"
+    },
+    {
+      "name": "sales-enterprise",
+      "gitPath": ".agents/skills/sales-enterprise/SKILL.md",
+      "blobSha": "782fda1e2db7b0783c2d9ae66bbf4c74c0f63782",
+      "toolReadReference": {
+        "tool": "mcp__GitHub__fetch_file",
+        "repository": "SvenKulessa/Capital-AI",
+        "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+        "path": ".agents/skills/sales-enterprise/SKILL.md",
+        "returnedBlobSha": "782fda1e2db7b0783c2d9ae66bbf4c74c0f63782",
+        "readContent": true,
+        "immutableUrl": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/.agents/skills/sales-enterprise/SKILL.md"
+      },
+      "influence": "B2B funnel, lead status, checkout and genuine payment vs interest"
+    },
+    {
+      "name": "revenue-engineering",
+      "gitPath": ".agents/skills/revenue-engineering/SKILL.md",
+      "blobSha": "342256ea1dfc74131fd161e82a2120e1ebaf67a4",
+      "toolReadReference": {
+        "tool": "mcp__GitHub__fetch_file",
+        "repository": "SvenKulessa/Capital-AI",
+        "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+        "path": ".agents/skills/revenue-engineering/SKILL.md",
+        "returnedBlobSha": "342256ea1dfc74131fd161e82a2120e1ebaf67a4",
+        "readContent": true,
+        "immutableUrl": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/.agents/skills/revenue-engineering/SKILL.md"
+      },
+      "influence": "25-EUR current offer vs legacy 19-EUR Stripe catalog and entitlement requirements"
+    },
+    {
+      "name": "trust-engineering",
+      "gitPath": ".agents/skills/trust-engineering/SKILL.md",
+      "blobSha": "59a93d403b5fb099b94ae4e28404de78544c5190",
+      "toolReadReference": {
+        "tool": "mcp__GitHub__fetch_file",
+        "repository": "SvenKulessa/Capital-AI",
+        "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+        "path": ".agents/skills/trust-engineering/SKILL.md",
+        "returnedBlobSha": "59a93d403b5fb099b94ae4e28404de78544c5190",
+        "readContent": true,
+        "immutableUrl": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/.agents/skills/trust-engineering/SKILL.md"
+      },
+      "influence": "OAuth callbacks, encrypted tokens, tenant-scoped durable approval and provider readback"
+    },
+    {
+      "name": "legal-compliance",
+      "gitPath": ".agents/skills/legal-compliance/SKILL.md",
+      "blobSha": "caaae8bd0c99d888d4656c990965eff71fe156fe",
+      "toolReadReference": {
+        "tool": "mcp__GitHub__fetch_file",
+        "repository": "SvenKulessa/Capital-AI",
+        "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+        "path": ".agents/skills/legal-compliance/SKILL.md",
+        "returnedBlobSha": "caaae8bd0c99d888d4656c990965eff71fe156fe",
+        "readContent": true,
+        "immutableUrl": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/.agents/skills/legal-compliance/SKILL.md"
+      },
+      "influence": "first-party IP vs fonts, media, code, models and market data redistribution"
+    },
+    {
+      "name": "market-advisory",
+      "gitPath": ".agents/skills/market-advisory/SKILL.md",
+      "blobSha": "3ffc1c80c7bb3d796872e60c718a0f786cc26962",
+      "toolReadReference": {
+        "tool": "mcp__GitHub__fetch_file",
+        "repository": "SvenKulessa/Capital-AI",
+        "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+        "path": ".agents/skills/market-advisory/SKILL.md",
+        "returnedBlobSha": "3ffc1c80c7bb3d796872e60c718a0f786cc26962",
+        "readContent": true,
+        "immutableUrl": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/.agents/skills/market-advisory/SKILL.md"
+      },
+      "influence": "ECB daily reference vs intraday and private BYOK redistribution bounds"
+    }
+  ],
+  "runtimeRoutingEvidence": {
+    "selectionMode": "Explicit task-specific selection by this chat via individual GitHub connector reads; NOT evidence of the repository agent runtime autonomously routing or invoking skills",
+    "selectionTraceStatus": "VERIFIED_FOR_THIS_AUDIT_TOOL_READS",
+    "autonomousRuntimeSelection": "NOT_PROVEN",
+    "actualTool": "mcp__GitHub__fetch_file",
+    "baselineRef": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+    "profileRead": {
+      "path": ".github/agents/capital-ai-growth.agent.md",
+      "sha": "6f6cd7fbf6d2a660d8be34521990aa6747ea64f5",
+      "tool": "mcp__GitHub__fetch_file"
+    },
+    "skillListSource": ".agents/skills/registry.json",
+    "noSpecialistScenario": "Baseline SHA and AGENTS policy audit; no specialist required",
+    "badRoutingInterpretations": [
+      "Readme/registry mention is NOT a skill invocation trace",
+      "Model self-report of autonomous routing without a tool trace is NOT_PROVEN",
+      "Social provider adapter code is NOT connected social provider evidence"
+    ]
+  },
+  "claimEvidence": [
+    {
+      "id": "SEO_NO_RICH_RESULT_GUARANTEE",
+      "claim": "Correct JSON-LD does not guarantee rich-result appearance",
+      "source": "https://developers.google.com/search/docs/appearance/structured-data/sd-policies",
+      "publisher": "Google Search Central",
+      "sourceDateOrVersion": "Google Search Central policy viewed 2026-10-12; no fixed page version asserted",
+      "rightsBasis": "Link and independently paraphrase official developer guidance; content republication rights not established",
+      "permittedPublicationScope": "Own short factual explanation and hyperlink only",
+      "status": "VERIFIED_SOURCE_NOT_TRAFFIC"
+    },
+    {
+      "id": "ECB_REUSE",
+      "claim": "Publicly available ESCB statistics can be reused with original-source attribution, unchanged data and no third-party data exemption",
+      "source": "https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.de.html",
+      "publisher": "European Central Bank",
+      "sourceDateOrVersion": "Policy consulted 2026-10-12; specific dataset/revision to be pinned for each public use",
+      "rightsBasis": "ECB policy conditional free reuse with attribution, intact statistics and metadata, no third-party/secret datasets",
+      "permittedPublicationScope": "Qualifying publicly available ESCB statistics in unmodified form, with attribution and matching terms; not universal trading-data entitlement",
+      "status": "CONDITIONAL_VERIFIED"
+    },
+    {
+      "id": "SIL_OFL_FONT",
+      "claim": "OFL 1.1 permits font use/embedding and certain redistribution under its conditions",
+      "source": "https://openfontlicense.org/open-font-license-official-text/",
+      "publisher": "SIL/Open Font License",
+      "sourceDateOrVersion": "OFL version 1.1, 2007-02-26; checked 2026-10-12",
+      "rightsBasis": "SIL OFL-1.1 license and repository public/fonts/OFL.txt plus provenance.json",
+      "permittedPublicationScope": "Embed/bundle font with relevant copyright, notice, reserved font name and no stand-alone font sale; no rights to unrelated brands",
+      "status": "CONDITIONAL_VERIFIED"
+    },
+    {
+      "id": "SOCIAL_EXTERNAL_PROVIDER_RIGHTS",
+      "claim": "No proof of current social provider permissions or posting scopes",
+      "source": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/CAPITAL-AI-GROWTH/social-publishing-cutover-provenance-20261008.json",
+      "publisher": "CAPITAL-AI repository",
+      "sourceDateOrVersion": "2026-10-08 cutover on archived code snapshot; checked source main c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "rightsBasis": "Implementation and workflow descriptions alone convey no third-party platform permission",
+      "permittedPublicationScope": "Describe status as IMPLEMENTED_DISABLED only, no external publishing",
+      "status": "NOT_PROVEN"
+    },
+    {
+      "id": "FFMPEG_COMMERCIAL_RUNTIME",
+      "claim": "Repository's declared LGPL-only FFmpeg build does not prove full final production shipment rights",
+      "source": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/docs/licenses/SOCIAL-MEDIA-ENGINE-THIRD-PARTY-NOTICES.md",
+      "publisher": "CAPITAL-AI repository",
+      "sourceDateOrVersion": "2026-10-06 notice / FFmpeg 9.0.2",
+      "rightsBasis": "Exact binary build, linked source/NOTICE, library and final OCI identity still need version-specific evidence",
+      "permittedPublicationScope": "Attribution/technical development description only; avoid commercial release-eligible assertion",
+      "status": "REVIEW_REQUIRED"
+    }
+  ],
+  "rightsAssessment": {
+    "firstPartyIP": {
+      "status": "REPOSITORY_PROVENANCE_ONLY",
+      "scope": "authored Learning texts, synthetic charts, brand SVG and first-party CADS source",
+      "sources": [
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/CAPITAL-AI-GROWTH/growth.LICENSE.md",
+        "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/docs/licenses/CADS-PRODUCT-LICENSE.md"
+      ]
+    },
+    "fonts": {
+      "status": "CONDITIONAL_VERIFIED",
+      "version": "Plus Jakarta Sans / OFL-1.1",
+      "source": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/public/fonts/provenance.json",
+      "conditions": [
+        "retain OFL notice/copyright",
+        "exact included font bytes and RFN obligations",
+        "no sale of font alone"
+      ]
+    },
+    "openSource": {
+      "status": "REVIEW_REQUIRED",
+      "source": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/OPEN_SOURCE_LICENSES.md",
+      "note": "OSS inventory not complete; transitive binaries and OS license distribution notices vary per final image"
+    },
+    "mediaAndModels": {
+      "status": "REVIEW_REQUIRED",
+      "source": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/docs/licenses/SOCIAL-MEDIA-ENGINE-THIRD-PARTY-NOTICES.md",
+      "note": "Unused/removal candidates are not licensed product assets; private vs commercial use must be reviewed separately per model/weight/audio/codec/image"
+    },
+    "marketData": {
+      "status": "REVIEW_REQUIRED",
+      "source": "https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.de.html",
+      "note": "ECB public stats can be reused conditionally; private BYOK provider feeds do not grant public/commercial redistribution"
+    },
+    "trademarks": {
+      "status": "NOT_PROVEN",
+      "note": "Project brand ownership claims in source are not an independent trademark registration or clearance for every region/channel"
+    },
+    "generalDecision": "No asset-specific license receipt and channel approval => DRAFT/REVIEW_REQUIRED; no asserted publish authority."
+  },
+  "tests": [
+    {
+      "id": "GITHUB_MAIN_REF_READBACK",
+      "status": "PASS",
+      "scope": "GitHub API git/ref/heads/main read twice",
+      "expected": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "observed": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "method": "mcp__GitHub__fetch",
+      "date": "2026-10-12"
+    },
+    {
+      "id": "GITHUB_MAIN_SECURITY_CHECK_SNAPSHOT",
+      "status": "PASS_SCOPED",
+      "method": "mcp__GitHub__fetch GET /commits/{sha}/check-runs",
+      "observed": [
+        {
+          "name": "Docker Security Gate",
+          "status": "success",
+          "checkRunId": 114587659663
+        },
+        {
+          "name": "Domain Governance",
+          "status": "NOT_IN_MAIN_CHECK_RUN_SNAPSHOT"
+        }
+      ],
+      "scope": "Historical main check run only; NOT head PR check or License PASS"
+    },
+    {
+      "id": "SOURCE_CODE_STATIC_REVIEW",
+      "status": "PASS_SCOPED",
+      "method": "mcp__GitHub__fetch_file on exact main SHA",
+      "assertions": [
+        "current 2500 vs legacy 1900 Vocabulary distinction",
+        "all five social adapter defaults disabled",
+        "OAuth callback 503 without exchanger",
+        "provider readback distinguishes UNKNOWN from VERIFIED_PUBLISHED",
+        "GA4 tag lazily requires receipt/config",
+        "test fixture contains generate_lead negative/positive report selection"
+      ],
+      "scope": "Manual read-only static/code and test-source inspection; not execution"
+    },
+    {
+      "id": "SEO_HISTORICAL_ARTIFACT",
+      "status": "PASS_SCOPED",
+      "source": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/docs/growth/evidence/public-readback-20261009.json",
+      "observationTime": "2026-10-08T23:38:34.257Z",
+      "observed": "142 public routes seoStatus PASS but sourceSHA null and productionReady=false",
+      "scope": "Dated artifact only, no October 12 live HTTP probe"
+    },
+    {
+      "id": "PROVIDER_LIVE_READS",
+      "status": "NOT_PROVEN",
+      "providers": [
+        "Google Analytics",
+        "Google Search Console",
+        "Stripe 25 EUR current checkout",
+        "Social OAuth/publish",
+        "Production runtime identity"
+      ],
+      "reason": "This read-only audit did not authenticate to external provider accounts or mutate them"
+    },
+    {
+      "id": "AUTOMATED_TESTS_ON_AUDIT_BRANCH",
+      "status": "NOT_RUN",
+      "reason": "Repository read-only code-review tools provide no local checked-out runnable project in this audit; existing PR CI must run after PR creation"
+    },
+    {
+      "id": "FULL_EXTERNAL_BROWSER",
+      "status": "NOT_PROVEN",
+      "reason": "Current production HTTP endpoints /healthz, /api/public/learning-config and /api/billing/vocabulary/offer were inaccessible through public browser fetch on audit date; do not promote archival browser data to current proof"
+    }
+  ],
+  "limitations": [
+    "All observations are scoped to main at baseSha; historical SEO/Stripe artifacts are dated 2026-10-08, not today's production/provider measurements.",
+    "The stored JSON cannot contain its own exact final Git commit SHA without altering its own Git blob and causing a new commit; resultHeadSha stays null by design and the resulting SHA must be supplied as separate GitHub readback/PR metadata.",
+    "A plugin skill file or registry is not runtime autonomous routing evidence; autonomous selection without an independently verifiable tool trace is NOT_PROVEN.",
+    "No private Cloud IAM, live GA4/GSC member permissions, token visibility, provider accounts, live posts, closed sales, external redistribution contracts or production build identity were assessed.",
+    "Found historical documentation drift: GA4 previously described always-disabled collection, whereas main contains conditional lazy gtag; repo claims are not automatically runtime facts.",
+    "The 1900-cent legacy Stripe catalog evidence cannot prove the current 2500-cent Learning Portal purchase path.",
+    "No provider mutation, publication, deployment, cost activation or required-check changes were performed; no CI suite executed by this audit."
+  ],
+  "status": "REVIEW_REQUIRED"
+}
