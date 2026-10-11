@@ -63,6 +63,8 @@ test('index loads the app directly and exposes the fail-closed shell only on a b
   const bootstrap = await readFile(new URL('../public/bootstrap-failure.js', import.meta.url), 'utf8');
   assert.match(html, /<div id="root"><\/div>/);
   assert.match(html, /id="capital-ai-bootstrap-fallback"[\s\S]*hidden/);
+  assert.doesNotMatch(html, /Die Anwendung konnte nicht gestartet werden|Der Anwendungs-Bootstrap ist technisch fehlgeschlagen/);
+  assert.match(html, /<noscript>/);
   assert.match(html, /id="capital-ai-entry"[\s\S]*src="\/src\/main\.tsx"/);
   assert.doesNotMatch(html, /10 seconds|10 Sekunden|capitalAiBootstrapFallback|animation:/);
   assert.match(bootstrap, /target instanceof HTMLScriptElement/);
