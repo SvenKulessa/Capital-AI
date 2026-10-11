@@ -95,27 +95,44 @@ export const Header: React.FC<HeaderProps> = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [expandedClass, setExpandedClass] = useState<MainCategory | null>('KRYPTO');
   const [authSession, setAuthSession] = useState<HeaderSession | null>(null);
+  const [authStatus, setAuthStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [sessionRetry, setSessionRetry] = useState(0);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
+    setAuthStatus('loading');
+    setAuthSession(null);
+    setIsAccountOpen(false);
     fetch('/api/auth/session', {
       credentials: 'same-origin',
       cache: 'no-store',
       headers: { Accept: 'application/json' },
       signal: controller.signal,
     })
-      .then(response => response.ok ? response.json() : Promise.reject())
+      .then(async response => {
+        if (!response.ok) throw new Error('SESSION_UNAVAILABLE');
+        const body: unknown = await response.json();
+        if (!body || typeof body !== 'object' ||
+            !('authenticated' in body) || typeof body.authenticated !== 'boolean') {
+          throw new Error('INVALID_SESSION');
+        }
+        return body as HeaderSession;
+      })
       .then(body => {
         if (!controller.signal.aborted) {
-          setAuthSession(body && typeof body.authenticated === 'boolean' ? body : null);
+          setAuthSession(body);
+          setAuthStatus('ready');
         }
       })
       .catch(() => {
-        if (!controller.signal.aborted) setAuthSession(null);
+        if (!controller.signal.aborted) {
+          setAuthSession(null);
+          setAuthStatus('error');
+        }
       });
     return () => controller.abort();
-  }, [currentRoute]);
+  }, [currentRoute, sessionRetry]);
 
   const accountTier = authSession?.authenticated
     ? authSession.account?.subscription?.tier || null
@@ -142,6 +159,7 @@ export const Header: React.FC<HeaderProps> = ({
       });
       if (!response.ok) throw new Error('LOGOUT_FAILED');
       setAuthSession(previous => previous ? { ...previous, authenticated: false, user: null } : previous);
+      setAuthStatus('ready');
       if (onNavigate) onNavigate('/');
       else window.location.assign('/');
     } catch {
@@ -317,15 +335,23 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Language selector stays next to Login and Account. */}
         <LanguageSwitcher />
-        {/* SESSION-AWARE ACCOUNT / LOGIN */}
-        {authSession?.authenticated ? (
+        {/* A failed session read is not a signed-out session. */}
+        {authStatus === 'loading' ? (
+          <span role="status" className="px-3 text-xs text-slate-300">Sitzung wird geprüft …</span>
+        ) : authStatus === 'error' ? (
+          <button type="button" onClick={() => setSessionRetry(value => value + 1)}
+            className="min-h-11 rounded-xl border border-amber-400/40 px-3 text-xs text-amber-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
+            aria-label="Sitzung nicht verfügbar. Anmeldung erneut prüfen">
+            Sitzung nicht verfügbar · Erneut prüfen
+          </button>
+        ) : authSession?.authenticated ? (
           <div className="relative shrink-0">
             <button
               id="header-profile-btn"
               type="button"
               onClick={() => setIsAccountOpen(value => !value)}
               className="flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-400/30 hover:border-emerald-300 text-emerald-100 text-xs font-bold transition-all"
-              aria-haspopup="menu"
+              aria-controls="header-account-navigation"
               aria-expanded={isAccountOpen}
               aria-label={t('navAccount')}
               title="Kontomenü"
@@ -342,13 +368,19 @@ export const Header: React.FC<HeaderProps> = ({
 
             {isAccountOpen && (
               <div
-                role="menu"
-                aria-label="Kontomenü"
+                id="header-account-navigation"
+                role="group"
+                aria-label="Kontonavigation"
+                onKeyDown={event => {
+                  if (event.key === 'Escape') {
+                    setIsAccountOpen(false);
+                    document.getElementById('header-profile-btn')?.focus();
+                  }
+                }}
                 className="absolute right-0 top-full z-[70] mt-2 w-52 overflow-hidden rounded-2xl border border-white/10 bg-[#080d1b]/98 p-2 shadow-2xl backdrop-blur-xl"
               >
                 <button
                   type="button"
-                  role="menuitem"
                   onClick={() => navigateAccount('/profile')}
                   className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-slate-100 hover:bg-white/10"
                 >
@@ -356,7 +388,6 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
                 <button
                   type="button"
-                  role="menuitem"
                   onClick={() => navigateAccount('/profile/security')}
                   className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-slate-100 hover:bg-white/10"
                 >
@@ -366,7 +397,6 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="my-1 border-t border-white/10" />
                 <button
                   type="button"
-                  role="menuitem"
                   onClick={() => void logout()}
                   className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-rose-200 hover:bg-rose-500/10"
                 >
@@ -441,7 +471,14 @@ export const Header: React.FC<HeaderProps> = ({
 
                 {/* Mobile Drawer Account / Login CTA */}
                 <div className="mt-4">
-                  {authSession?.authenticated ? (
+                  {authStatus === 'loading' ? (
+                    <p role="status" className="p-3 text-xs text-slate-300">Sitzung wird geprüft …</p>
+                  ) : authStatus === 'error' ? (
+                    <button type="button" onClick={() => setSessionRetry(value => value + 1)}
+                      className="min-h-11 w-full rounded-xl border border-amber-400/40 px-3 text-left text-xs text-amber-200 focus-visible:outline-2 focus-visible:outline-amber-300">
+                      Sitzung nicht verfügbar · Erneut prüfen
+                    </button>
+                  ) : authSession?.authenticated ? (
                     <div className="space-y-1 rounded-2xl border border-emerald-400/25 bg-emerald-500/5 p-2">
                       <div className="px-2 py-2">
                         <div className="flex items-center gap-2">
