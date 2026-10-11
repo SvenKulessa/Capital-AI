@@ -67,7 +67,7 @@ COPY public/datenschutz ./public/datenschutz
 COPY public/agb ./public/agb
 COPY server/learning-inquiry.mjs server/index.mjs server/seo-agent-discovery.mjs server/advisor.ts server/http-security.mjs server/mta-sts.mjs server/mta-sts.test.mjs server/well-known.mjs server/well-known.test.mjs server/locale-html.test.mjs server/shadow-evidence-store.mjs server/auth-security.mjs server/auth-security.test.mjs ./server/
 COPY server/prompt-injection-guard.mjs server/prompt-injection-guard.test.mjs server/billing-catalog.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/vocabulary-checkout.test.mjs server/enterprise-trial.test.mjs server/enterprise-trial.mjs server/subscription-checkout.mjs server/subscription-checkout.test.mjs server/cads-marketplace.mjs server/cads-marketplace.test.mjs server/cads-commerce.mjs server/cads-commerce.test.mjs server/benchmark-runs.mjs server/benchmark-runs.test.mjs server/benchmark-store.mjs server/benchmark-store.test.mjs server/public-artifact-policy.mjs server/public-artifact-policy.test.mjs ./server/
-COPY server/repository-tool-catalog.mjs server/repository-tool-catalog.test.mjs server/chat-buddy-keys.mjs server/chat-buddy-learn.mjs ./server/
+COPY server/repository-tool-catalog.mjs server/repository-tool-catalog.test.mjs server/tool-update-discovery.mjs server/tool-update-discovery.test.mjs server/chat-buddy-keys.mjs server/chat-buddy-learn.mjs ./server/
 COPY server/advisor-security.test.mjs ./server/
 COPY server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/private-provider-query.test.mjs server/provider-query-state.test.mjs ./server/
 COPY server/render-owner-dashboard.mjs server/render-owner-dashboard.test.mjs ./server/
@@ -117,7 +117,7 @@ COPY server/learning-inquiry.mjs server/index.mjs server/seo-agent-discovery.mjs
 COPY server/infrastructure.mjs server/scorer-bus.mjs ./server/
 COPY server/market-spot-ingestion.test.mjs ./server/
 COPY server/spot-provider-wire.test.mjs server/spot-feed-lifecycle.test.mjs server/private-market-batch.test.mjs server/private-market-cache.test.mjs ./server/
-RUN --network=none node --test scripts/static-legal-routes.test.mjs server/google-analytics-readback.test.mjs server/repository-tool-catalog.test.mjs \
+RUN --network=none node --test scripts/static-legal-routes.test.mjs server/google-analytics-readback.test.mjs server/repository-tool-catalog.test.mjs server/tool-update-discovery.test.mjs \
     && node --test server/mta-sts.test.mjs server/well-known.test.mjs server/auth-security.test.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-source-provenance-drift.test.mjs \
     && node --test scripts/seo-production-readback.test.mjs \
     && node --test scripts/locale-policy.test.mjs server/locale-html.test.mjs \
@@ -157,7 +157,7 @@ COPY --from=build /opt/ga4-mcp /opt/ga4-mcp
 COPY docs/licenses/googleanalytics-google-analytics-mcp-Apache-2.0.txt ./licenses/Google-Analytics-MCP-Apache-2.0.txt
 COPY server/social-media/provider-adapter.mjs server/social-media/provider-store.mjs server/social-media/oauth-callback.mjs server/social-media/provider-readback.mjs server/social-media/provider-external-readback.mjs server/social-media/provider-publish.mjs server/social-media/provider-execution.mjs ./server/social-media/
 COPY --from=production-deps /runtime/node_modules ./node_modules
-COPY server/repository-tool-catalog.mjs ./server/
+COPY server/repository-tool-catalog.mjs server/tool-update-discovery.mjs ./server/
 COPY server/infrastructure.mjs ./server/
 COPY server/billing-catalog.mjs ./server/
 COPY scripts/verify-private-brokers.mjs ./scripts/
