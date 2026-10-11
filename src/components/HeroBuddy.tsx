@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { EyeOff, Move, Settings, X } from 'lucide-react';
 import { clampHeroBuddyPoint } from './heroBuddyPosition';
+import { PRICE_ALERTS_ENABLED } from '../features/alerts/featureFlags';
 
 type HeroBuddyProps = {
   onNavigate?: (path: string) => void;
@@ -204,7 +205,7 @@ export function HeroBuddy(props: HeroBuddyProps) {
     { label: 'Vocabulary', run: () => props.onOpenVocabulary?.() },
     { label: 'Analyse', run: () => props.onOpenAnalysis?.() },
     { label: 'Whale Radar', run: () => props.onOpenWhaleRadar?.() },
-    { label: 'Alerts', run: () => props.onOpenAlerts?.() },
+    ...(PRICE_ALERTS_ENABLED ? [{ label: 'Alerts', run: () => props.onOpenAlerts?.() }] : []),
     { label: 'Login', run: () => props.onNavigate?.('/login') },
   ], [props]);
 
