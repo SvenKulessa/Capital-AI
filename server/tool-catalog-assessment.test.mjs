@@ -38,7 +38,7 @@ test('direct locked npm license remains declaration and daily measured use is un
   assert.equal(entries[0].commercialServiceRights, 'NOT_PROVEN');
   assert.equal(entries[0].use.actualCallsPerDay, null);
   assert.equal(entries[1].license.declared, 'Apache-2.0 core');
-  assert.equal(entries[1].license.commercial, 'NOT_PROVEN');
+  assert.equal(entries[1].license.commercial, 'GENERALLY_ALLOWED_WITH_CONDITIONS');
   assert.equal(entries[1].use.state, 'DECLARED_ACTIVE_NOT_RUNTIME_VERIFIED');
   assert.ok(entries[1].alternatives.length >= 2);
   assert.equal(entries[1].priceModel, 'PROVIDER_TARIFF_NOT_PROVEN');
