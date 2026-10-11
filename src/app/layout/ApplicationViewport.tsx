@@ -1,16 +1,19 @@
 import type { ReactNode } from 'react';
+import { Footer } from '../../components/Footer';
 
 type ApplicationViewportProps = {
   currentRoute: string;
   children: ReactNode;
+  onNavigate: (path: string) => void;
 };
 
 export function ApplicationViewport({
   currentRoute: _currentRoute,
   children,
+  onNavigate,
 }: ApplicationViewportProps) {
   return (
-    <div className="min-h-screen bg-[#02050e] text-slate-100 flex flex-col items-center justify-start relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#071126] text-slate-100 flex flex-col items-center justify-start relative overflow-x-hidden">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-amber-400 focus:text-black focus:font-bold focus:rounded-xl focus:shadow-2xl focus:outline-none focus:ring-4 focus:ring-amber-500"
@@ -41,10 +44,11 @@ export function ApplicationViewport({
       <main
         id="main-content"
         tabIndex={-1}
-        className="w-full max-w-[1440px] relative z-10 bg-[#02050e] outline-none"
+        className="w-full max-w-[1440px] flex-1 relative z-10 bg-[#071126] outline-none"
       >
         {children}
       </main>
+      <div className="w-full max-w-[1440px] relative z-10"><Footer onNavigate={onNavigate} /></div>
     </div>
   );
 }

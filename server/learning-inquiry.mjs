@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 import { createLimiter, readJson } from './http-security.mjs';
 import { CONTROLLER } from '../shared/legal-identity.mjs';
-import { renderLearningInquiryMail } from '../shared/mail-templates.mjs';
+import { renderLearningInquiryMail, renderContactMail } from '../shared/mail-templates.mjs';
 
 export function learningMeasurementId(env) {
   const id = env.GA4_MEASUREMENT_ID || env.GA4_NEASUREMENT_ID || '';
@@ -26,7 +26,7 @@ export function createLearningInquiry({ env = process.env, auth, sendMail, now =
       res.setHeader('Cache-Control', 'no-store');
       json(res, 200, { measurementId: learningMeasurementId(env), inquiryAvailable: configured }); return true;
     }
-    if (url.pathname !== '/api/public/learning-inquiry') return false;
+    if (url.pathname !== '/api/public/learning-inquiry' && url.pathname !== '/api/public/contact') return false;
     res.setHeader('Cache-Control', 'no-store');
     if (req.method !== 'POST') { json(res, 405, { error: 'method_not_allowed' }); return true; }
     if (req.headers.origin !== 'https://capital-ai.online') { json(res, 403, { error: 'forbidden_origin' }); return true; }
@@ -47,7 +47,7 @@ export function createLearningInquiry({ env = process.env, auth, sendMail, now =
         res.setHeader('Retry-After', '900'); json(res, 429, { error: 'rate_limited' }); return true;
       }
       record = { until: now() + 15 * 60_000, promise: null };
-      record.promise = deliver({ ...renderLearningInquiryMail(body.message), from: `Capital-AI <${CONTROLLER.supportEmail}>`, to: CONTROLLER.supportEmail,
+      record.promise = deliver({ ...(url.pathname === '/api/public/contact' ? renderContactMail(body.message) : renderLearningInquiryMail(body.message)), from: `Capital-AI <${CONTROLLER.supportEmail}>`, to: CONTROLLER.supportEmail,
         replyTo: body.email }).then(result => {
           if (!result.accepted?.some(address => String(address).toLowerCase() === CONTROLLER.supportEmail) || result.rejected?.length) throw new Error('not_accepted');
           return { received: true, receipt: body.requestId, status: 'MAIL_SERVER_ACCEPTED' };
