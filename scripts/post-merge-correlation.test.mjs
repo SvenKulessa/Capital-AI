@@ -181,11 +181,36 @@ test('merge milestone PR creation requires dedicated repo-scoped GitHub App', ()
   assert.match(workflow, /milestone-drafts-/);
   assert.match(workflow, /Milestone branch \$branch already exists without a PR/);
   // Generated branches must comply with Domain Governance (stable YYYYMMDD suffix).
-  assert.ok(workflow.includes('branch="capital-ai-product/roadmap-merge-pr-$number-$date_suffix"'));
-  assert.ok(workflow.includes('branch="capital-ai-growth/news-batch-pr-$number-$date_suffix"'));
+  assert.ok(workflow.includes('branch="capital-ai-trust/milestone-merge-pr-$number-$date_suffix"'));
+  assert.equal((workflow.match(/gh pr create --repo/g) ?? []).length, 1,
+    'Roadmap and news milestone artifacts must share a single PR');
+  assert.match(workflow, /targets\\+=\\\("src\\/data\\/roadmapMergeReconciliation\\.json"/);
+  assert.match(workflow, /targets\\+=\\\("src\\/data\\/controlCenterNews\\.json"/);
   assert.ok(workflow.includes('ROADMAP_DATE: ${{ steps.milestones.outputs.roadmap_date }}'));
   assert.ok(workflow.includes('NEWS_DATE: ${{ steps.milestones.outputs.news_date }}'));
-  assert.ok(workflow.includes('if [[ ! "$date_suffix" =~ ^[0-9]{8}$ ]]'));
+  assert.ok(workflow.includes('! "$date_suffix" =~ ^[0-9]{8}
+  assert.doesNotMatch(workflow, /gh pr merge|--auto|enable-auto-merge/);
+});
+
+test('manual milestone App validation mints a scoped token but never writes to GitHub', () => {
+  const workflow = readFileSync(new URL('../.github/workflows/merge-milestones.yml', import.meta.url), 'utf8');
+  assert.match(workflow, /  workflow_dispatch:/);
+  assert.match(workflow, /validate_app:\n    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs\/heads\/main'/);
+  assert.match(workflow, /audit:\n    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true/);
+  const [validateSection] = workflow.split(/\n  audit:\n/);
+  assert.match(validateSection, /uses: actions\/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1/);
+  assert.match(validateSection, /permission-contents: write/);
+  assert.match(validateSection, /permission-pull-requests: write/);
+  assert.match(validateSection, /owner: \$\{\{ github.repository_owner \}\}/);
+  assert.match(validateSection, /repositories: Capital-AI/);
+  assert.match(validateSection, /GH_TOKEN: \$\{\{ steps.validation_token.outputs.token \}\}/);
+  assert.match(validateSection, /gh api "repos\/\$REPOSITORY"/);
+  assert.match(validateSection, /gh api "repos\/\$REPOSITORY\/pulls\?state=open&per_page=1"/);
+  assert.doesNotMatch(validateSection, /^\s*(?:gh\s+pr\s+(?:create|merge)|git\s+push|gh\s+api\s+-X\s+(?:POST|PATCH|DELETE))\b/m);
+  assert.match(workflow, /APP_CONFIG_BLOCKED/);
+  assert.match(workflow, /APP_TOKEN_VERIFIED/);
+});
+));
   assert.doesNotMatch(workflow, /gh pr merge|--auto|enable-auto-merge/);
 });
 
