@@ -12,7 +12,7 @@ import {
   moveMediaLayerByFrames,
   setMediaLayerText,
 } from '../Editing/MediaProjectEditing';
-import { createCapitalAiMediaStudioProject } from '../Editing/MediaStudioTemplates';
+import { createCapitalAiLandingBlueprintVideoProject, CAPITAL_AI_LANDING_VOICEOVER_DE, createCapitalAiMediaStudioProject } from '../Editing/MediaStudioTemplates';
 import {
   PLANNING_VISUAL_SCHEMA_VERSION,
   type PlanningVisualSpec,
@@ -74,6 +74,18 @@ test('MediaProjectV2 uses the current CAPITAL-AI branding authority and stays dr
   for (const removed of ['qwen', 'chatterbox', 'whisper']) {
     assert.equal(serialized.includes(removed), false);
   }
+});
+
+test('homepage Blueprint promo is editable, demo-labeled and does not invent Gemini audio', () => {
+  const project = createCapitalAiLandingBlueprintVideoProject();
+  assert.deepEqual(validateMediaProjectV2(project), { ok: true, errors: [] });
+  assert.equal(project.durationFrames, 30 * 30);
+  assert.equal(project.tracks.filter(track => track.kind === 'graphics')[0].layers.length, 5);
+  assert.equal(project.metadata?.audioProviderRequested, 'GEMINI');
+  assert.equal(project.metadata?.narrationAttached, false);
+  assert.equal(project.assets.some(asset => asset.kind === 'audio'), false);
+  assert.match(CAPITAL_AI_LANDING_VOICEOVER_DE, /Keine Live-Signale und keine Anlageberatung/);
+  assert.equal(project.renderRecipe.publishReady, false);
 });
 
 test('validated editing is immutable and fails closed outside the timeline', () => {
