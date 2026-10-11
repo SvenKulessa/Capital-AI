@@ -111,10 +111,18 @@ test('inventory must match lockfiles and immutable build identities', () => {
   assert.ok(pin && node.includes("activeVersion: '" + pin[1] + "'") && node.includes(pin[2]));
 });
 
-test('dependabot covers isolated update scopes but blocks TypeScript 7.0.2 and AGP major', () => {
+test('dependabot keeps isolated backend scopes and leaves Android builds to the Mobile repository', () => {
   const policy = readFileSync(new URL('../.github/dependabot.yml', import.meta.url), 'utf8');
   assert.match(policy, /package-ecosystem: npm\n    directory: \/deploy\/runtime/);
-  assert.match(policy, /package-ecosystem: gradle\n    directory: \/mobile\/android-private/);
   assert.match(policy, /dependency-name: "typescript"[\s\S]*?versions:[\s\S]*?- "7\.0\.2"/);
-  assert.match(policy, /dependency-name: "com\.android\.tools\.build:gradle"[\s\S]*?version-update:semver-major/);
+  assert.doesNotMatch(policy, /directory: \/mobile\//);
+  assert.doesNotMatch(policy, /package-ecosystem: gradle/);
+  const index = readFileSync(new URL('../server/index.mjs', import.meta.url), 'utf8');
+  assert.doesNotMatch(index, /createMobileScorer|\/api\/mobile\/enterprise-score/);
+  const docker = readFileSync(new URL('../Dockerfile', import.meta.url), 'utf8');
+  assert.doesNotMatch(docker, /server\/mobile-scorer\.mjs/);
+  const catalog = readFileSync(new URL('../server/repository-tool-catalog.mjs', import.meta.url), 'utf8');
+  assert.doesNotMatch(catalog, /mobile\/android-private/);
+  const readme = readFileSync(new URL('../README.md', import.meta.url), 'utf8');
+  assert.match(readme, /SvenKulessa\/Capital-AI-Mobile/);
 });
