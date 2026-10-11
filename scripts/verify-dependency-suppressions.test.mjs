@@ -31,6 +31,8 @@ test('daily CVE watch uploads real suppression failures without relaxing fail-cl
   assert.ok(workflow.includes('node --test scripts/capture-dependency-candidate.test.mjs'));
   assert.ok(workflow.includes('| tee security-reports/dependency-policy-tests.log'));
   assert.ok(workflow.includes('node scripts/verify-dependency-suppressions.mjs'));
+  assert.ok(workflow.indexOf('name: Fail on high or critical npm advisories') < workflow.indexOf('name: Validate dependency retry and suppression policy'), 'CVE audit must run before a known suppression review can fail');
+  assert.ok(workflow.includes('name: Validate dependency retry and suppression policy\n        if: always()'));
   assert.ok(workflow.includes('| tee security-reports/dependency-suppressions.json'));
   assert.ok(workflow.includes('if: always()'));
   assert.ok(workflow.includes('if-no-files-found: error'));
