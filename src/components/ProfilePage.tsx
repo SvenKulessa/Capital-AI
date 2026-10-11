@@ -165,9 +165,9 @@ export function ProfilePage({ onNavigate }: { onNavigate: (path: string) => void
                 <CadsEntitlementPanel />
                 <LearningEntitlementBadge />
 
-                {session.account.badges?.length ? (
+                {session.account.badges?.filter(badge => !/vault/i.test(badge.id) && !/vault/i.test(badge.label)).length ? (
                   <div className="mt-4 flex flex-wrap gap-3" aria-label="Kontobadges">
-                    {session.account.badges.map(badge => (
+                    {session.account.badges.filter(badge => !/vault/i.test(badge.id) && !/vault/i.test(badge.label)).map(badge => (
                       <figure key={badge.id} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-3">
                         <img
                           src={badge.asset}
