@@ -43,6 +43,10 @@ jobs:
           import fs from 'node:fs';
           const report = JSON.parse(fs.readFileSync('ci-efficiency/weekly.json', 'utf8'));
           const total = report.workflows.reduce((sum, row) => sum + (row.observedRunnerMinutes || 0), 0);
+          const safe = value => String(value ?? '').replace(/[\r\n`|]/g, ' ').slice(0, 90);
+          const slowSteps = (report.topSlowSteps || []).slice(0, 5).map((step, index) =>
+            '- ' + (index + 1) + '. ' + safe(step.workflow) + ' / ' + safe(step.step) +
+            ': ' + step.totalObservedSeconds + ' s observed over ' + step.observations + ' runs');
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,
             [
               '# CAPITAL-AI CI Efficiency Evidence',
@@ -52,6 +56,9 @@ jobs:
               '- Cache hit rate: NOT_PROVEN',
               '- Billed Actions minutes/cost: NOT_PROVEN',
               '- Truncated: ' + report.truncated,
+              '',
+              '## Slowest measured CI steps (accumulated walltime, not billing)',
+              ...(slowSteps.length ? slowSteps : ['- NOT_PROVEN: no timestamped steps']),
               '',
             ].join('\n'));
           NODE
