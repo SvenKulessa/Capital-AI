@@ -26,6 +26,16 @@ test('aliases and trailing slash normalize without losing query or hash', () => 
   assert.equal(resolveNavigationTarget('/roadmap?tab=console'), '/control-center?tab=console');
 });
 
+test('Architecture Intelligence has a dedicated public route and deep-link tabs', () => {
+  assert.equal(resolveAppRoute('/architecture-hub'), '/architecture-hub');
+  assert.equal(resolveAppRoute('/financial-intelligence'), '/architecture-hub');
+  assert.equal(resolveNavigationTarget('/architecture-hub?tab=explainability'), '/architecture-hub?tab=explainability');
+  const routes = readFileSync(new URL('../src/app/routing/AppRoutes.tsx', import.meta.url), 'utf8');
+  const catalog = readFileSync(new URL('../src/components/HubCatalog.tsx', import.meta.url), 'utf8');
+  assert.match(routes, /IntelligenceArchitectureHub/);
+  assert.match(catalog, /path: '\/architecture-hub'/);
+});
+
 test('Market Screener documentation aliases keep the dedicated blueprint documentation hub', () => {
   assert.equal(resolveAppRoute('/marketscreener/dokumentation'), '/marketscreener/dokumentation');
   assert.equal(resolveAppRoute('/MARKET-SCREENER/DOKUMENTATION/'), '/marketscreener/dokumentation');
