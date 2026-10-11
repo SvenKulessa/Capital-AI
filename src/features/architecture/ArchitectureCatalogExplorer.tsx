@@ -65,12 +65,12 @@ export function ArchitectureCatalogExplorer({ onNavigate }: Props) {
       </p>
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         {ARCHITECTURE_PRODUCT_PATHS.map((path) => <article key={path.id} className="flex flex-col rounded-xl border border-slate-700 bg-slate-950 p-4">
-          <p className="text-xs font-semibold text-amber-200">{path.state === 'PUBLIC_EDUCATION' ? 'KOSTENLOS' : path.state === 'DELIVERY_BLOCKED' ? 'KONZEPT · NICHT KAUFBAR' : 'BESTEHENDES ANGEBOT · ZUGANGSPRÜFUNG'}</p>
+          <p className="text-xs font-semibold text-amber-200">{path.state === 'PUBLIC_EDUCATION' ? 'KOSTENLOS' : path.state === 'DELIVERY_BLOCKED' ? 'KONZEPT · NICHT KAUFBAR' : path.state === 'INQUIRY_ONLY' ? 'ANFRAGE · KEIN KAUF' : 'BESTEHENDES ANGEBOT · ZUGANGSPRÜFUNG'}</p>
           <h3 className="mt-2 font-semibold text-white">{path.title}</h3>
           <p className="mt-2 flex-1 text-sm leading-6 text-slate-200">{path.detail}</p>
           <a href={path.path} onClick={(event) => internalNavigation(event, path.path)}
             className={`mt-4 inline-flex min-h-11 items-center gap-2 self-start rounded-lg border border-slate-500 px-3 py-2 text-sm font-semibold text-white hover:border-amber-300 ${focus}`}>
-            {path.state === 'DELIVERY_BLOCKED' ? 'Konzept ansehen' : 'Angebot prüfen'} <ArrowRight size={16} aria-hidden="true" />
+            {path.state === 'INQUIRY_ONLY' ? 'Unverbindlich anfragen' : path.state === 'DELIVERY_BLOCKED' ? 'Konzept ansehen' : 'Angebot prüfen'} <ArrowRight size={16} aria-hidden="true" />
           </a>
         </article>)}
       </div>
