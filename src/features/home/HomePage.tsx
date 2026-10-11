@@ -7,7 +7,6 @@ const ContentEngineConcept = lazy(() => import('./ContentEngineConcept').then(mo
 import { CommerceEntrySection } from './CommerceEntrySection';
 import { HomeLatestLearning } from './HomeLatestLearning';
 import { KeyPillars } from '../../components/KeyPillars';
-import { Footer } from '../../components/Footer';
 // Secondary, below-the-fold market widgets should not inflate the initial landing bundle.
 const MarketSentiment = lazy(() => import('../market/MarketSentiment').then(module => ({ default: module.MarketSentiment })));
 const SectorAnalysis = lazy(() => import('../market/SectorAnalysis').then(module => ({ default: module.SectorAnalysis })));
@@ -164,7 +163,6 @@ export function HomePage({
         />
       </Suspense>
 
-      <Footer onNavigate={onNavigate} />
     </>
   );
 }
