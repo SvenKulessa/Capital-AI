@@ -1,12 +1,12 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "667f1abb3b7c08e663c9423e25a81a7a1cc1188e",
-  "mergedPr": 425,
+  "mainSha": "f15e48969776935dd7290af4bffc3b27d4158883",
+  "mergedPr": 429,
   "targetPr": 428,
   "targetBranch": "capital-ai-product/customer-tour-subscriptions-20261011",
-  "targetHeadSha": "c5c15abbce39bb78f299b73b3c01a2a6cf15e487",
+  "targetHeadSha": "f1860291c0c8151bac83140156db2377c5e6db66",
   "exactOverlap": [
-    "package.json"
+    "src/components/HubCatalog.tsx"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,
