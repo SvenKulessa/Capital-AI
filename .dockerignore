@@ -146,6 +146,7 @@
 !public/learning/videos/**
 !scripts/generate-learning-coming-soon.tsx
 !scripts/domain-skills.test.mjs
+!scripts/market-blueprint-demo.test.mjs
 !scripts/screener-blueprint-preview.test.mjs
 !scripts/cads-growth-quality.test.mjs
 !scripts/static-legal-routes.test.mjs

@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Header } from '../../components/Header';
 import { Hero } from '../../components/Hero';
+const MarketBlueprintShowcase = lazy(() => import('./MarketBlueprintShowcase').then(module => ({ default: module.MarketBlueprintShowcase })));
 const LearningCadsShowcase = lazy(() => import('./LearningCadsShowcase').then(module => ({ default: module.LearningCadsShowcase })));
 const ContentEngineConcept = lazy(() => import('./ContentEngineConcept').then(module => ({ default: module.ContentEngineConcept })));
 import { CommerceEntrySection } from './CommerceEntrySection';
@@ -97,6 +98,10 @@ export function HomePage({
       <HomeLatestLearning onNavigate={onNavigate} />
 
       <CommerceEntrySection onNavigate={onNavigate} />
+
+      <Suspense fallback={null}>
+        <MarketBlueprintShowcase onNavigate={onNavigate} />
+      </Suspense>
 
       <Suspense fallback={null}>
         <HomeHubDirectory
