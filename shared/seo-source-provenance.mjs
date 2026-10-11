@@ -24,7 +24,7 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
     sourceBlobSha: 'e6c688cee57cf3cce92154e73ae4eb00cb76886b',
     contentSha256: '584426d21f5d1415afad1829c398a4a68adfdb4fc103ee2d3c48f30233a772d8',
   }),
-  'src/components/LegalAndFaqPages.tsx': Object.freeze({
+  'src/components/LegalAndFaqPages.tsx|src/privacy/privacyPolicy.ts': 'a3d22139e83a2304e687e2a29f37d496dc657f92719125336411c6ae32a34c12'': Object.freeze({
     sourceBlobSha: 'd3eb62ae83ca9104a09234dc6864aa89f487302f',
     contentSha256: '038fc9fb1d401e13800523524ca82b010d589a3f21a7199e1ad305e434d5c038',
   }),
@@ -53,8 +53,8 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
     contentSha256: '2fd092c91d0d6e67d0478c7dfcfb79937143cf974bd353797b9d72603dd461f2',
   }),
   'src/privacy/privacyPolicy.ts': Object.freeze({
-    sourceBlobSha: '08317574291978ebbcc4120703b4eea9d0ff070f',
-    contentSha256: 'e869caea1a64b2987370d689f0953fa33aa4b69c0d89baabd1c812ca1af1825f',
+    sourceBlobSha: 'a63ea87288275acb6239d7d51f01db17bf25dbf3',
+    contentSha256: '21d9812447e0efe0aa7d7c3b511544d197cfbcfce975de01ae7d98283773769b',
   }),
   'src/content/legalDocumentVersions.ts': Object.freeze({
     sourceBlobSha: '1712f9487283d0c0305691f65ec74da55eb59c2d',
