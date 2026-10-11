@@ -27,10 +27,12 @@ test('missing exact version is rejected', () => {
 // its JSON and regression-test transcript must survive as Actions artifacts.
 test('daily CVE watch uploads real suppression failures without relaxing fail-closed policy', () => {
   const workflow = fs.readFileSync('.github/workflows/daily-dependency-security-watch.yml', 'utf8');
-  assert.match(workflow, /set -euo pipefail/);
-  assert.match(workflow, /node --test scripts\\/capture-dependency-candidate\\.test\\.mjs[\\s\\S]*?\\| tee security-reports\\/dependency-policy-tests\\.log/);
-  assert.match(workflow, /node scripts\\/verify-dependency-suppressions\\.mjs[\\s\\S]*?\\| tee security-reports\\/dependency-suppressions\\.json/);
-  assert.match(workflow, /if: always\\(\\)/);
-  assert.match(workflow, /if-no-files-found: error/);
-  assert.doesNotMatch(workflow, /continue-on-error:\\s*true/);
+  assert.ok(workflow.includes('set -euo pipefail'));
+  assert.ok(workflow.includes('node --test scripts/capture-dependency-candidate.test.mjs'));
+  assert.ok(workflow.includes('| tee security-reports/dependency-policy-tests.log'));
+  assert.ok(workflow.includes('node scripts/verify-dependency-suppressions.mjs'));
+  assert.ok(workflow.includes('| tee security-reports/dependency-suppressions.json'));
+  assert.ok(workflow.includes('if: always()'));
+  assert.ok(workflow.includes('if-no-files-found: error'));
+  assert.ok(!workflow.includes('continue-on-error: true'));
 });
