@@ -130,7 +130,7 @@
     {
       "id": "TA-AUTH",
       "path": "server/auth.mjs",
-      "blobSha": "82e96f658f1860b1f76bfd4d141de8573aeefe0b",
+      "blobSha": "7717e15d3c2c4a7d5d927d368512eff1a16a270a",
       "recorrelation": "2026-10-11: Removed duplicated embedded mobile scorer in favor of the separate Capital-AI-Mobile repository; mobile PKCE exchange retains 303 session semantics and now redirects to the existing root path. Existing server/auth.test.mjs and auth-security checks remain authoritative.",
       "role": "Current session/auth composition"
     },
