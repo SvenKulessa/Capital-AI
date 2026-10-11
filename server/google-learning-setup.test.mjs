@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createGoogleMaintenance } from './google-maintenance-api.mjs';
-import { runLearningSetup } from '../scripts/google-learning-setup.mjs';
+import { runLearningSetup, summarizeLearningReports } from '../scripts/google-learning-setup.mjs';
 
 function fixture({ writes = true, gscWrites = true, streamCount = 1, readbackFailure = false, omitFalse = false } = {}) {
   const calls = [];
@@ -104,4 +104,30 @@ test('organic learning report excludes query strings and compares bounded period
   assert.deepEqual(body.dimensions, [{ name: 'country' }, { name: 'landingPage' }]);
   assert.equal(body.limit, '100');
   assert.equal(body.dimensionFilter.andGroup.expressions[0].filter.stringFilter.value, 'Organic Search');
+});
+
+test('lead counts explicitly filter generate_lead and never relabel all keyEvents', async () => {
+  const f = fixture();
+  await f.api.call('ga4_learning_lead_report');
+  assert.deepEqual(f.calls[0].body.metrics, [{ name: 'eventCount' }]);
+  const filters = f.calls[0].body.dimensionFilter.andGroup.expressions;
+  assert.ok(filters.some(item => item.filter.fieldName === 'eventName' && item.filter.stringFilter.value === 'generate_lead'));
+  assert.ok(filters.some(item => item.filter.fieldName === 'sessionDefaultChannelGroup' && item.filter.stringFilter.value === 'Organic Search'));
+});
+
+test('country analysis separates clicks, sessions, lead events and unproven purchases without raw URLs', () => {
+  const report = (metrics, values) => ({ dimensionHeaders: [{ name: 'country' }, { name: 'landingPage' }, { name: 'dateRange' }], metricHeaders: metrics.map(name => ({ name })),
+    rows: [{ dimensionValues: [{ value: 'Germany' }, { value: '/learning' }, { value: 'current' }], metricValues: values.map(value => ({ value: String(value) })) }] });
+  const result = summarizeLearningReports(report(['sessions', 'keyEvents'], [7, 99]), report(['eventCount'], [2]),
+    { reports: [{ country: 'deu', rows: [{ keys: ['https://capital-ai.online/learning'], clicks: 4, impressions: 100 }] }] });
+  assert.equal(result.countries[0].organicLearning.currentSessions, 7);
+  assert.equal(result.countries[0].organicLearning.currentGenerateLeadEvents, 2);
+  assert.equal(result.countries[0].organicLearning.paidPurchases, 'NOT_PROVEN');
+  assert.equal(result.countries[0].searchTopPages.clicks, 4);
+  assert.equal(result.countries[0].searchTopPages.completeSiteTotals, false);
+  assert.doesNotMatch(JSON.stringify(result), /https:|\/learning|99/);
+  const unavailable = summarizeLearningReports({}, {}, { reports: [{ country: 'deu', rows: [{ keys: ['https://capital-ai.online/learning?email=private'], clicks: 1, impressions: 1 }] }] });
+  assert.equal(unavailable.countries[0].organicLearning.currentSessions, null);
+  assert.equal(unavailable.countries[0].searchTopPages.clicks, null);
+  assert.doesNotMatch(JSON.stringify(unavailable), /private|email=/);
 });
