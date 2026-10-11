@@ -34,6 +34,16 @@ async function readIndexTemplate() {
   }
 }
 
+async function readBootstrapFailureScript() {
+  try {
+    return await readFile(new URL('../public/bootstrap-failure.js', import.meta.url), 'utf8');
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
+    // Security Gate executes regression tests inside the minimal runtime image.
+    return readFile(new URL('../dist/bootstrap-failure.js', import.meta.url), 'utf8');
+  }
+}
+
 const EXPECTED_INDEX_PATHS = [
   '/',
   '/blog',
@@ -111,7 +121,7 @@ test('bootstrap diagnostics do not pollute initial HTML and display on entry loa
     addEventListener: (name, listener) => listeners.set(name, listener),
     location: { reload: () => { reloads += 1; } },
   };
-  const script = await readFile(new URL('../public/bootstrap-failure.js', import.meta.url), 'utf8');
+  const script = await readBootstrapFailureScript();
   runInNewContext(script, { document, window, HTMLScriptElement: FakeScript });
   assert.equal(fallback.hidden, true);
   listeners.get('error')({ target: new FakeScript('other-script') });
