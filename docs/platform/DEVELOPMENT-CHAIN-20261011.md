@@ -46,7 +46,7 @@ Es bleiben exakt zwei Required Checks: `Docker Security Gate` und `Domain Govern
 
 ## Pipeline-Effizienz: messen, dann optimieren
 
-`scripts/ci-efficiency-report.mjs` erhebt read-only vorhandene Workflow-/Job-Zeitstempel. Erweiterung: je CI-Schritt Anzahl, aufsummierte gemessene Sekunden, Median, p95, Maximum und gemessene Fehlversuche. Fehlende oder übersprungene Schrittdaten werden nicht erfunden. Die wöchentliche Evidence unter `.github/workflows/ci-efficiency-report.yml` zeigt die teuersten beobachteten Schritte; Output liegt im bestehenden Actions-Artefakt.
+`scripts/ci-efficiency-report.mjs` erhebt read-only vorhandene Workflow-/Job-Zeitstempel. Erweiterung: je Workflow, Ereignistyp (`pull_request`, `push` usw.) und CI-Schritt Anzahl, aufsummierte gemessene Sekunden, Median, p95, Maximum und gemessene Fehlversuche. PR- und Main-Push-Laufzeiten bleiben getrennte Vergleichskohorten. Fehlende oder übersprungene Schrittdaten werden nicht erfunden. Die wöchentliche Evidence unter `.github/workflows/ci-efficiency-report.yml` zeigt die teuersten beobachteten Schritte; Output liegt im bestehenden Actions-Artefakt.
 
 ```bash
 # Im Repository ausführen: reine Unit-Tests, kein Provisioning.
@@ -65,6 +65,10 @@ Die Report-Quellen können auf 300 Runs begrenzt sein (`truncated` beachten). Jo
 2. **Produktversion:** `VERSION` enthält die aktuelle semantische Produktversion; `CHANGELOG.md` dokumentiert veröffentlichungsrelevante Änderungen. Versionsbump nur zusammen mit tatsächlich geänderter Release-Wirkung; nicht pro Chat-Nachricht und nicht bei jedem CI-Run. Tags oder GitHub Releases sind erst nach belegter Release-Entscheidung zu erzeugen.
 3. **Production:** `render.yaml` definiert den normalen Main-basierten Render-Pfad mit `autoDeployTrigger: checksPass`. Der optionale OCI-Candidate-/Production-Handoff in `.github/workflows/build-security.yml` ist davon zu unterscheiden. Keine Release-Evidence behaupten, ohne dass Source-SHA, Runtime-SHA und ggf. OCI-Digest tatsächlich korreliert wurden.
 4. **Dokumentation:** Living Docs per bestehenden `scripts/documentation-drift.mjs` und `scripts/generate-documentary.mjs` gegen Quellcode prüfen; historische Evidence bleibt unverändert. Automatische Korrekturen von Vertrags-, Lizenz-, Rechtstexten, Preisangaben oder Produktversprechen nicht aus einer Versionsnummer ableiten.
+
+## Chat- und Release-Evidence (ohne zusätzliche Freigabestufe)
+
+Bei einem umsetzbaren Chat-Auftrag sind Ziel, kleinster wirksamer Scope, konkrete Abnahme und Rücknahmeoption die Ausgangspunkte. Ein Reviewer kann diese direkt auf die PR-Felder abbilden. Für Versionierung und Release gilt: Auto-Updates von Dependabot sind Kandidaten; automatische Dokumentprojektionen sind nur für maschinenlesbare, aus Source abgeleitete Inhalte zulässig. Preis-/Lizenz-/Rechtsaussagen werden nie ohne aktuelle Quelle automatisch geändert. Freigegebene Releases brauchen zugeordneten Main-SHA, erfolgreich verifizierte technische Checks, unveränderliche Artefaktidentität, nachvollziehbares Changelog und verifizierte Produktionsidentität. Fehlt ein Element, bleibt es NOT_PROVEN.
 
 ## Website-Plausibilität und Monetarisierung
 
