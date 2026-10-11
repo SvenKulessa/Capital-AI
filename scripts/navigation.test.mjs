@@ -288,3 +288,30 @@ test('sign-in password guidance matches current client-side strength policy', ()
   assert.doesNotMatch(source, /erzwingt keine künstlichen/);
   assert.match(dictionary, /special character/);
 });
+
+test('paused price alerts cannot render navigation or run background price checks', () => {
+  const flag = readFileSync(new URL('../src/features/alerts/featureFlags.ts', import.meta.url), 'utf8');
+  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  const sidebar = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
+  const context = readFileSync(new URL('../src/context/PriceAlertsContext.tsx', import.meta.url), 'utf8');
+  const overlays = readFileSync(new URL('../src/app/AppOverlays.tsx', import.meta.url), 'utf8');
+  const buddy = readFileSync(new URL('../src/components/HeroBuddy.tsx', import.meta.url), 'utf8');
+
+  assert.match(flag, /export const PRICE_ALERTS_ENABLED = false;/);
+  assert.doesNotMatch(header, /PRICE ALERTS BELL BUTTON|title="PriceAlerts & Schwellenwerte"/);
+  assert.match(sidebar, /\.\.\.\(PRICE_ALERTS_ENABLED \? \[\{/);
+  assert.match(overlays, /\{PRICE_ALERTS_ENABLED && \(\s*<PriceAlertsModal/);
+  assert.match(buddy, /\.\.\.\(PRICE_ALERTS_ENABLED \? \[\{ label: 'Alerts'/);
+  assert.match(context, /if \(!PRICE_ALERTS_ENABLED\) return \[\];/);
+  assert.match(context, /if \(!PRICE_ALERTS_ENABLED\) throw new Error\('PRICE_ALERTS_PAUSED'\)/);
+  assert.match(context, /if \(!PRICE_ALERTS_ENABLED\) return;\s*const intervalSec/);
+  assert.match(context, /if \(!PRICE_ALERTS_ENABLED\) return;\s*try \{\s*localStorage\.setItem\(STORAGE_ALERTS_KEY/);
+});
+
+test('hero earth is prominent without covering the primary call to action', () => {
+  const hero = readFileSync(new URL('../src/components/Hero.tsx', import.meta.url), 'utf8');
+  assert.match(hero, /w-\[min\(54vw,690px\)\]/);
+  assert.match(hero, /opacity-100 drop-shadow/);
+  assert.match(hero, /relative z-10 mx-auto max-w-lg/);
+  assert.match(hero, /id="hero-start-analysis-btn"/);
+});

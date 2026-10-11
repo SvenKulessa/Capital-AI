@@ -90,3 +90,14 @@ test('provider request rate and cost gates use atomic Valkey scripts and fail cl
     },
   );
 });
+
+test('broker pause makes startup a no-op despite configured transport endpoints', async () => {
+  const service = new MarketInfrastructure({
+    MARKET_BROKER_PAUSED: 'true', REDIS_URL: 'redis://127.0.0.1:1',
+    NATS_URL: 'nats://127.0.0.1:1', NATS_APP_USER: 'fixture', NATS_APP_PASSWORD: 'fixture-password',
+  });
+  assert.equal(await service.start(), false);
+  assert.equal(service.redis, null);
+  assert.equal(service.nc, null);
+  assert.equal(service.status().status, 'unavailable');
+});

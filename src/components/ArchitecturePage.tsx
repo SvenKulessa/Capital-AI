@@ -696,7 +696,7 @@ export const ArchitecturePage: React.FC<ArchitecturePageProps> = ({
                   </div>
                   <div className="flex items-center justify-between p-1.5 rounded bg-black/40 border border-white/5">
                     <span>PriceAlert Watcher</span>
-                    <span className="text-emerald-300">Sub-5ms Check</span>
+                    <span className="text-amber-300">Pausiert</span>
                   </div>
                 </div>
               </div>

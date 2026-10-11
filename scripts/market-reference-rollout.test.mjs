@@ -18,10 +18,12 @@ test('existing Web blueprint and immutable image profile agree on the admitted E
   assert.equal(new Set(symbols).size, 20);
 });
 
-test('quote ingress is limited to admitted daily data and private provider queries remain disabled', () => {
-  assert.equal(renderValue('MARKET_QUOTES_ENABLED'), 'true');
+test('owner-paused broker blocks quotes and pubsub without admitting private provider queries', () => {
+  assert.equal(renderValue('MARKET_BROKER_PAUSED'), 'true');
+  assert.equal(renderValue('MARKET_QUOTES_ENABLED'), 'false');
+  assert.equal(renderValue('MARKET_PUBSUB_ENABLED'), 'false');
+  // ECB remains an admitted reference-rate format, not an active quote-ingress feed.
   assert.equal(renderValue('MARKET_ECB_REFERENCE_RATES_ENABLED'), 'true');
   assert.equal(renderValue('PRIVATE_PROVIDER_BRIDGE_ENABLED'), 'false');
   assert.equal(renderValue('PRIVATE_PROVIDER_BRIDGE_PROBE_ENABLED'), 'false');
-  assert.equal(renderValue('MARKET_PUBSUB_ENABLED'), 'true');
 });
