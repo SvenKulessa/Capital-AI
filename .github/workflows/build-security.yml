@@ -315,7 +315,7 @@ jobs:
           node scripts/publish-security-summary.mjs security-reports
       - name: Prüfnachweise sichern
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: docker-security-${{ github.sha }}
           path: |
@@ -349,7 +349,7 @@ jobs:
       - name: Dasselbe geprüfte Image zur Veröffentlichung übergeben
         id: candidate_archive
         if: success() && github.event_name == 'workflow_dispatch' && inputs.publish_candidate && github.ref == 'refs/heads/main' && github.repository == 'SvenKulessa/Capital-AI'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: candidate-image-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -477,7 +477,7 @@ jobs:
           jq -n --slurpfile identity security-reports/container-identity.json --arg sha "$SOURCE_SHA" --arg image "$IMAGE_REF" --arg imageId "$EXPECTED_IMAGE_ID" --arg run "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT" '{schemaVersion:2,status:"ATTESTED_CANDIDATE",deployEligible:false,sourceSha:$sha,imageRef:$image,localImageId:$imageId,containerIdentity:$identity[0],workflowRun:$run,remainingGates:["LICENSE_REDISTRIBUTION_REVIEW","MAIN_PROTECTION","CONTAINER_IDENTITY_CHAIN","RENDER_IMAGE_SOURCE","RUNTIME_DIGEST","RUNTIME_IDENTITY"]}' > security-reports/candidate.json
       - name: Kandidaten-Nachweise sichern
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ghcr-candidate-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -567,7 +567,7 @@ jobs:
             candidate/registry-platform-manifest.json
       - name: Production-Handoff-Nachweise sichern
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: production-handoff-${{ github.run_id }}-${{ github.run_attempt }}
           path: security-reports/*.json
