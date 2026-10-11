@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { blogArticleForPath } from '../../../shared/blog-articles.mjs';
-import { VOCABULARY_PUBLIC_COUNT } from '../../../shared/vocabulary-metadata.mjs';
+// Browser-light projection; checked against the canonical server catalog by the SEO regression test.
+// Importing the full metadata corpus here would exceed the production JS chunk budget.
+const VOCABULARY_PUBLIC_COUNT = 132;
 import {
   LICENSE_ROUTES,
   licenseMetadata,
