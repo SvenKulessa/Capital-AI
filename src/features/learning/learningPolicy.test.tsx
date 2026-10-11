@@ -5,6 +5,7 @@ import {renderToStaticMarkup} from 'react-dom/server';
 import {VOCABULARY_TERMS} from '../../data/vocabularyData';
 import {LEARNING_ARTICLES} from '../../data/learningArticles';
 import { LearningJourney } from './LearningJourney';
+import { LearningPurchase } from './LearningPurchase';
 import { LEARNING_JOURNEY, LEARNING_NEXT_STEPS } from '../../../shared/learning-journey.mjs';
 import {freeVocabularySelection,berlinDay,dailyLearningQuestions} from './learningPolicy';
 import {VocabularyFlashcards, advanceVocabularyDeck, rescheduleMissedVocabulary} from '../../components/VocabularyFlashcards';
@@ -12,6 +13,17 @@ import {VocabularyCard,VOCABULARY_CATEGORY_COLORS} from './VocabularyCard';
 import {chartQuestion} from './ChartRecognitionQuiz';
 import {ChartLessonGraphic} from './ChartLessonGraphic';
 import {visibleLearningVideos, type LearningVideo} from './LearningVideos';
+
+test('offer explains login and entitlements without preselecting purchase consent', () => {
+  const html = renderToStaticMarkup(<LearningPurchase />);
+  assert.match(html, /id="learning-offer"/);
+  assert.match(html, /angemeldet sein/);
+  assert.match(html, /25,00/);
+  assert.match(html, /zusätzlich mindestens Starter/);
+  assert.match(html, /zusätzlich Pro/);
+  assert.match(html, /<button[^>]*disabled=""/);
+  assert.doesNotMatch(html, /<input[^>]*checked=""/);
+});
 
 test('public lesson content is rendered with exact server-source text and real conversion targets', () => {
   const html = renderToStaticMarkup(<LearningJourney />);

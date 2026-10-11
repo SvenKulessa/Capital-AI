@@ -30,7 +30,8 @@
         "right": 312,
         "checkbox": false,
         "disabled": true,
-        "text": true
+        "text": true,
+        "login": true
       }
     },
     {
@@ -62,7 +63,8 @@
         "right": 382,
         "checkbox": false,
         "disabled": true,
-        "text": true
+        "text": true,
+        "login": true
       }
     },
     {
@@ -94,7 +96,8 @@
         "right": 1401,
         "checkbox": false,
         "disabled": true,
-        "text": true
+        "text": true,
+        "login": true
       }
     }
   ],
