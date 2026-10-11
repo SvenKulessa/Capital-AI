@@ -105,6 +105,10 @@ try {
       await until(() => evaluate(`!!document.querySelector('[aria-controls="capital-ai-mobile-navigation"]')`), 'Mobile menu toggle');
       await evaluate(`document.querySelector('[aria-controls="capital-ai-mobile-navigation"]').click()`);
       await until(() => evaluate(`!!document.querySelector('#capital-ai-mobile-navigation[role="dialog"]')`), 'Mobile navigation opens');
+      // Framer Motion starts with x:-100%; measure only the settled drawer.
+      await until(() => evaluate(`(() => {const d=document.querySelector('#capital-ai-mobile-navigation');
+        if(!d) return false; const r=d.getBoundingClientRect();
+        return r.left >= -1 && r.right <= innerWidth + 1;})()`), 'Mobile drawer finished sliding in');
       const drawer = await evaluate(`(() => { const d=document.querySelector('#capital-ai-mobile-navigation'),r=d.getBoundingClientRect();
         return {left:r.left,right:r.right,client:d.clientWidth,scroll:d.scrollWidth}; })()`);
       assert.ok(drawer.left >= -1 && drawer.right <= viewport.width + 1 &&
