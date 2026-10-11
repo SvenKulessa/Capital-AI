@@ -1,5 +1,8 @@
 import { useEffect } from 'react';
 import { blogArticleForPath } from '../../../shared/blog-articles.mjs';
+// Browser-light projection; checked against the canonical server catalog by the SEO regression test.
+// Importing the full metadata corpus here would exceed the production JS chunk budget.
+const VOCABULARY_PUBLIC_COUNT = 132;
 import {
   LICENSE_ROUTES,
   licenseMetadata,
@@ -59,13 +62,13 @@ const STATIC_ROUTE_METADATA: Record<string, StaticRouteMetadata> = {
   '/learning': {
     title: 'Finanzwissen lernen: Glossar, Chartmuster & Quiz | Capital-AI',
     description:
-      'Finanzbegriffe und Marktanalyse verständlich lernen: Fachbegriffe, Chartbeispiele und Quizzes. Lerninhalte entdecken und Learning-/Kursanfrage stellen.',
+      `Finanzbegriffe und Marktanalyse verständlich lernen: ${VOCABULARY_PUBLIC_COUNT} Fachbegriffe, Chartbeispiele und Quizzes. Lerninhalte entdecken und Learning-/Kursanfrage stellen.`,
     canonicalPath: '/learning',
   },
   '/vocabulary': {
-    title: 'Capital-AI Vocabulary | 294 Fachbegriffe & Thesaurus',
+    title: `Capital-AI Vocabulary | ${VOCABULARY_PUBLIC_COUNT} Fachbegriffe & Thesaurus`,
     description:
-      '294 konsolidierte Capital-AI Fachbegriffe mit Definitionen und jeweils drei Thesaurus-Begriffen aus Marktanalyse, Scoring, Daten, Plattform, Security, Produkt, Governance und Mobile Runtime.',
+      `${VOCABULARY_PUBLIC_COUNT} konsolidierte Capital-AI Fachbegriffe mit Definitionen und jeweils drei Thesaurus-Begriffen aus Marktanalyse, Scoring, Daten, Plattform, Security, Produkt, Governance und Mobile Runtime.`,
     canonicalPath: '/vocabulary',
   },
   '/control-center': {

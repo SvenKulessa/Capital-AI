@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 import { createApp } from './index.mjs';
+import { QUANT_PRO_IDS } from '../shared/vocabulary-access-policy.mjs';
 import {
   SEO_INDEXING_STATES,
   SEO_ROUTE_POLICY,
@@ -216,6 +217,20 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
       const html = await response.text();
       assert.doesNotMatch(html, /capital-ai-public-snapshot/, route);
     }
+    const learningResponse = await fetch(origin + '/learning');
+    assert.equal(learningResponse.status, 200);
+    assert.equal(learningResponse.headers.get('x-robots-tag'), null);
+    const learningHtml = await learningResponse.text();
+    for (const target of ['/vocabulary/orderbuch', '/vocabulary/bid-ask-spread', '/vocabulary/slippage', '/vocabulary/vix', '/vocabulary/backtesting', '/blog/barrierefreie-finanzcharts']) {
+      assert.ok(learningHtml.includes(`href="${target}"`), target);
+      assert.equal(resolveSeoIndexingPolicy(target).classification, 'INDEX', target);
+      assert.equal(QUANT_PRO_IDS.has(target.split('/').at(-1)), false, target);
+    }
+    assert.match(learningHtml, /0,50 × 0,80 \+ 0,30 × 0,40 \+ 0,20 × 0,60 = 0,64/);
+    assert.match(learningHtml, /Checkout ist erst nach Anmeldung/);
+    assert.doesNotMatch(learningHtml, /Blueprint[^<]*kaufen|garantierte Rendite/);
+    assert.match(learningHtml, /href="https:\/\/capital-ai\.online\/learning"/);
+
     const richVocabulary = await (await fetch(origin + '/vocabulary')).text();
     assert.match(richVocabulary, /<main><article><h1>Capital-AI Vocabulary<\/h1>/);
     assert.doesNotMatch(richVocabulary, /capital-ai-public-snapshot/);
