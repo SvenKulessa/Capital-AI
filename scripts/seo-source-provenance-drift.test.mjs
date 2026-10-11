@@ -17,9 +17,9 @@ test('learning HTTP content remains provenance-bound independently of CI runtime
   assert.ok(entry.sourceRefs.includes('src/features/learning/LearningPurchase.tsx'));
   assert.ok(entry.sourceRefs.includes('src/data/vocabularyOffer.ts'));
   assert.equal(Object.hasOwn(SEO_SOURCE_ARTIFACTS, 'server/index.mjs'), false);
-  const html = renderLearningLandingFallback('<script>alert("untrusted")</script>');
-  assert.doesNotMatch(html, /<script>/);
-  assert.match(html, /&lt;script&gt;/);
+  const html = renderLearningLandingFallback('<ScRiPt>alert("untrusted")</ScRiPt>');
+  assert.doesNotMatch(html, /<script\b/i);
+  assert.match(html, /&lt;script&gt;/i);
   assert.match(html, /id="gewichtung"/);
   assert.match(html, /learning-offer/);
 });
