@@ -1,0 +1,330 @@
+{
+  "schemaVersion": "CAPITAL_AI_SKILL_EVALUATION@1",
+  "description": "Curated synthetic tasks; not evidence of hosted ChatGPT routing.",
+  "cases": [
+    {
+      "id": "ai-rag",
+      "domain": "PRODUCT",
+      "task": "Prüfe Prompt Injection in unserem RAG Chatbot.",
+      "expectedSpecialists": [
+        "ai-engineering"
+      ]
+    },
+    {
+      "id": "ai-llm",
+      "domain": "TRUST",
+      "task": "Welche Halluzinationen verursachen unsere LLM-Antworten?",
+      "expectedSpecialists": [
+        "ai-engineering"
+      ]
+    },
+    {
+      "id": "ai-tools",
+      "domain": "PLATFORM",
+      "task": "Die Tool Calling Rechte der KI-Agenten sollen evaluiert werden.",
+      "expectedSpecialists": [
+        "ai-engineering"
+      ]
+    },
+    {
+      "id": "data-nats",
+      "domain": "MARKET",
+      "task": "NATS JetStream liefert doppelte Market Events.",
+      "expectedSpecialists": [
+        "data-engineering"
+      ]
+    },
+    {
+      "id": "data-kafka",
+      "domain": "PLATFORM",
+      "task": "Analysiere Kafka Schema Drift mit Event Replay.",
+      "expectedSpecialists": [
+        "data-engineering"
+      ]
+    },
+    {
+      "id": "data-etl",
+      "domain": "TRUST",
+      "task": "Prüfe Datenqualität nach unserem ETL-Lauf.",
+      "expectedSpecialists": [
+        "data-engineering"
+      ]
+    },
+    {
+      "id": "quant-backtest",
+      "domain": "MARKET",
+      "task": "Führe einen Backtest mit Transaktionskosten durch.",
+      "expectedSpecialists": [
+        "quant-research"
+      ]
+    },
+    {
+      "id": "quant-bias",
+      "domain": "TRUST",
+      "task": "Bewerte Look-ahead Bias im Portfolio-Modell.",
+      "expectedSpecialists": [
+        "quant-research"
+      ]
+    },
+    {
+      "id": "quant-factor",
+      "domain": "MARKET",
+      "task": "Validiere Faktormodell und Slippage.",
+      "expectedSpecialists": [
+        "quant-research"
+      ]
+    },
+    {
+      "id": "success-churn",
+      "domain": "GROWTH",
+      "task": "Wir möchten Churn bei zahlenden Kunden senken.",
+      "expectedSpecialists": [
+        "customer-success"
+      ]
+    },
+    {
+      "id": "success-feedback",
+      "domain": "PRODUCT",
+      "task": "Analysiere Kundenfeedback zum neuen Onboarding.",
+      "expectedSpecialists": [
+        "customer-success"
+      ]
+    },
+    {
+      "id": "success-support",
+      "domain": "TRUST",
+      "task": "Wie wird die Time to Value nach Support Tickets verbessert?",
+      "expectedSpecialists": [
+        "customer-success"
+      ]
+    },
+    {
+      "id": "sales-crm",
+      "domain": "GROWTH",
+      "task": "Unser CRM soll B2B-Leads qualifizieren.",
+      "expectedSpecialists": [
+        "sales-enterprise"
+      ]
+    },
+    {
+      "id": "sales-procurement",
+      "domain": "TRUST",
+      "task": "Erarbeite einen Procurement Ablauf für Enterprise Deals.",
+      "expectedSpecialists": [
+        "sales-enterprise"
+      ]
+    },
+    {
+      "id": "sales-lead",
+      "domain": "PRODUCT",
+      "task": "Baue eine Lead Qualification für den Vertrieb.",
+      "expectedSpecialists": [
+        "sales-enterprise"
+      ]
+    },
+    {
+      "id": "legal-gdpr",
+      "domain": "TRUST",
+      "task": "Prüfe die DSGVO Anforderungen für Kundendaten.",
+      "expectedSpecialists": [
+        "legal-compliance"
+      ]
+    },
+    {
+      "id": "legal-mifid",
+      "domain": "MARKET",
+      "task": "Ist der neue Dienst nach MiFID reguliert?",
+      "expectedSpecialists": [
+        "legal-compliance"
+      ]
+    },
+    {
+      "id": "legal-rights",
+      "domain": "PRODUCT",
+      "task": "Welche Lizenzrechte gelten für kommerzielle Weitergabe?",
+      "expectedSpecialists": [
+        "legal-compliance"
+      ]
+    },
+    {
+      "id": "incident-breach",
+      "domain": "TRUST",
+      "task": "Ein Sicherheitsvorfall hat den Vault betroffen.",
+      "expectedSpecialists": [
+        "incident-response"
+      ]
+    },
+    {
+      "id": "incident-restore",
+      "domain": "PLATFORM",
+      "task": "Plane einen Disaster Recovery Restore Test.",
+      "expectedSpecialists": [
+        "incident-response"
+      ]
+    },
+    {
+      "id": "incident-secrets",
+      "domain": "GROWTH",
+      "task": "Nach Secret Leak: Forensik und Containment.",
+      "expectedSpecialists": [
+        "incident-response"
+      ]
+    },
+    {
+      "id": "analytics-ga",
+      "domain": "GROWTH",
+      "task": "Vergleiche GA4 Conversion Rate über 28 Tage.",
+      "expectedSpecialists": [
+        "analytics-intelligence"
+      ]
+    },
+    {
+      "id": "analytics-cohort",
+      "domain": "PRODUCT",
+      "task": "Analysiere die Kohorten Analyse der bezahlten Nutzer.",
+      "expectedSpecialists": [
+        "analytics-intelligence"
+      ]
+    },
+    {
+      "id": "analytics-kpi",
+      "domain": "TRUST",
+      "task": "Definiere North Star Produkt KPI mit Consent.",
+      "expectedSpecialists": [
+        "analytics-intelligence"
+      ]
+    },
+    {
+      "id": "mobile-android",
+      "domain": "PRODUCT",
+      "task": "Prüfe Android OIDC und das signierte APK.",
+      "expectedSpecialists": [
+        "mobile-engineering"
+      ]
+    },
+    {
+      "id": "mobile-sdk",
+      "domain": "PLATFORM",
+      "task": "Welche Gradle-Version benötigt die Mobile App?",
+      "expectedSpecialists": [
+        "mobile-engineering"
+      ]
+    },
+    {
+      "id": "mobile-swift",
+      "domain": "TRUST",
+      "task": "Schütze die SwiftUI Anmeldung.",
+      "expectedSpecialists": [
+        "mobile-engineering"
+      ]
+    },
+    {
+      "id": "a11y-wcag",
+      "domain": "PRODUCT",
+      "task": "Führe einen WCAG Audit für die Formulare durch.",
+      "expectedSpecialists": [
+        "accessibility-audit"
+      ]
+    },
+    {
+      "id": "a11y-screenreader",
+      "domain": "GROWTH",
+      "task": "Der Screenreader liest die Charts nicht.",
+      "expectedSpecialists": [
+        "accessibility-audit"
+      ]
+    },
+    {
+      "id": "a11y-keyboard",
+      "domain": "TRUST",
+      "task": "Kontrolliere die Tastaturnavigation und den Kontrast.",
+      "expectedSpecialists": [
+        "accessibility-audit"
+      ]
+    },
+    {
+      "id": "cross-rag-gdpr",
+      "domain": "TRUST",
+      "task": "RAG Prompt Injection und DSGVO-Auswirkungen bewerten.",
+      "expectedSpecialists": [
+        "ai-engineering",
+        "legal-compliance"
+      ]
+    },
+    {
+      "id": "cross-stream-backtest",
+      "domain": "MARKET",
+      "task": "NATS Ingestion und Backtesting zusammen verifizieren.",
+      "expectedSpecialists": [
+        "data-engineering",
+        "quant-research"
+      ]
+    },
+    {
+      "id": "cross-churn-ga4",
+      "domain": "GROWTH",
+      "task": "Churn der Abonnenten mit GA4 Conversion Rate vergleichen.",
+      "expectedSpecialists": [
+        "customer-success",
+        "analytics-intelligence"
+      ]
+    },
+    {
+      "id": "cross-android-wcag",
+      "domain": "PRODUCT",
+      "task": "Android App auf WCAG Barrierefreiheit prüfen.",
+      "expectedSpecialists": [
+        "mobile-engineering",
+        "accessibility-audit"
+      ]
+    },
+    {
+      "id": "cross-incident-data",
+      "domain": "PLATFORM",
+      "task": "Sicherheitsvorfall bei Kafka: Secret Rotation und Event Replay prüfen.",
+      "expectedSpecialists": [
+        "incident-response",
+        "data-engineering"
+      ]
+    },
+    {
+      "id": "cross-b2b-dsgvo",
+      "domain": "GROWTH",
+      "task": "CRM Lead Qualification nach DSGVO bewerten.",
+      "expectedSpecialists": [
+        "sales-enterprise",
+        "legal-compliance"
+      ]
+    },
+    {
+      "id": "neutral-color",
+      "domain": "PRODUCT",
+      "task": "Ändere die primäre Farbe des Footer-Buttons.",
+      "expectedSpecialists": []
+    },
+    {
+      "id": "neutral-readme",
+      "domain": "PLATFORM",
+      "task": "Korrigiere einen Schreibfehler in README.md.",
+      "expectedSpecialists": []
+    },
+    {
+      "id": "neutral-price",
+      "domain": "GROWTH",
+      "task": "Wie teuer ist unser kostenloser Tarif?",
+      "expectedSpecialists": []
+    },
+    {
+      "id": "neutral-domain",
+      "domain": "MARKET",
+      "task": "Ist die Domain capital-ai.online erreichbar?",
+      "expectedSpecialists": []
+    },
+    {
+      "id": "neutral-ambiguous",
+      "domain": "TRUST",
+      "task": "Bitte bewerte das Risiko dieser Änderung.",
+      "expectedSpecialists": []
+    }
+  ]
+}

@@ -46,6 +46,8 @@ jobs:
       - name: Lizenz- und Regressionstests direkt in GitHub ausführen
         run: |
           node --test \
+            scripts/domain-skills.test.mjs \
+            scripts/skill-routing.test.mjs \
             scripts/docker-context.test.mjs \
             scripts/reviewdog-public-report.test.mjs \
             scripts/container-evidence-identity.test.mjs \
