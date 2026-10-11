@@ -1,12 +1,12 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "c5aa739ee1d736967773c0bcd792cad77be6d231",
-  "mergedPr": 364,
-  "targetPr": 365,
-  "targetBranch": "capital-ai-platform/learning-vocabulary-ux-20261010",
-  "targetHeadSha": "2f9bd770cc32df7d1db66c711d6e8fde07b2fcb1",
+  "mainSha": "3e30f0c537463f9c365b4b9b6b0b22c314f37292",
+  "mergedPr": 387,
+  "targetPr": 389,
+  "targetBranch": "capital-ai-trust/production-mobile-commerce-readback-20261011",
+  "targetHeadSha": "e18c2a8b58e1f3a80600c1f44fec17ab200820da",
   "exactOverlap": [
-    "shared/seo-source-provenance.mjs"
+    "scripts/learning-commerce-browser-readback.mjs"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,
