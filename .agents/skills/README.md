@@ -32,3 +32,7 @@ node scripts/skill-routing.mjs --domain TRUST "RAG Prompt Injection und DSGVO pr
 ```
 
 Die bestehenden Domain-Skill-Tests sowie das reguläre `npm test` führen diese Evaluation aus. Es gibt keine neue CI-Pipeline, keine Dependency, keinen Provideraufruf, keine Secrets oder zusätzliche Required Checks. `MATCHED` bedeutet ausschließlich ein reproduzierbares Signal-Match, **nicht** einen tatsächlichen Aufruf eines Skills in ChatGPT, keine semantische LLM-Evaluation und keine Security-/Rechts-/Production-Freigabe. Eine echte ChatGPT-Evaluation setzt kontrollierte Chat-Agent-Traces und verfügbare Connector-Berechtigungen voraus und bleibt `NOT_PROVEN`. Indirekte, negierte oder mehrdeutige Aufgaben müssen vom Agenten geprüft werden; `REVIEW_REQUIRED` ist kein Fehler und erfindet keine Zuständigkeit. Chat-/Plugin-Rechte werden durch Routing nicht verändert.
+
+## Additives Ownership-Modell
+
+Die bisherige Liste der zehn gemeinsamen Spezialisten und ihre Routing-Evaluation bleiben für bestehende Chat-Agenten unverändert. Weitere fünf Fach-Skills werden über `registry.json#domains.*.ownedSkills` auffindbar. Die eindeutige, verantwortliche Domain für **alle** Skills liegt in `registry.json#skillGovernance`; andere `leadDomains` bleiben nicht-autorisierende fachliche Nutzung. Die Dokumenttrilogie ist für alle Skills vorgeschrieben. Mit `npm run validate:all` werden Struktur, Ownership, Referenzen und Readiness fail-closed geprüft, ohne weitere GitHub Required Checks.

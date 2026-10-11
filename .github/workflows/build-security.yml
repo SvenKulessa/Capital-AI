@@ -84,6 +84,8 @@ jobs:
             scripts/ci-efficiency-report.test.mjs \
             scripts/verify-go-vuln-reachability.test.mjs \
             scripts/docker-archive-config.test.mjs
+          npm run validate:all
+          git diff --exit-code -- generated/SKILL-INVENTORY.md generated/SKILL-READINESS.md generated/CAPITAL-AI-SKILL-EXPANSION-REPORT.md generated/ARCHITECTURE-GAP-ANALYSIS.md
           node scripts/license-evidence.mjs
       - name: Gepinnte Sicherheitswerkzeuge bauen
         run: |
