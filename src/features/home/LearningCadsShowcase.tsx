@@ -1,7 +1,5 @@
 import React from 'react';
 import { CADS_COMMERCIAL_READINESS } from '../../data/cadsCommercialReadiness.ts';
-import { CHART_LESSONS } from '../../data/chartLearning.ts';
-import { ChartLessonGraphic } from '../learning/ChartLessonGraphic.tsx';
 
 export function LearningCadsShowcase({ onNavigate, onPricing }: { onNavigate: (path: string)=>void; onPricing:()=>void }) {
   const verified = CADS_COMMERCIAL_READINESS.websiteCommerce.runtimeEvidenceVerified;
@@ -9,9 +7,9 @@ export function LearningCadsShowcase({ onNavigate, onPricing }: { onNavigate: (p
     <article className="rounded-2xl border border-cyan-400/20 bg-[#0b1020] p-5 sm:p-7">
       <p className="text-xs font-semibold uppercase tracking-widest text-cyan-200">Chartwissen zum Ausprobieren</p>
       <h2 className="mt-3 text-2xl font-bold text-white">Muster erkennen. Signale hinterfragen.</h2>
-      <div className="mt-4"><ChartLessonGraphic lesson={CHART_LESSONS[0]} /></div>
-      <p className="mt-4 text-sm leading-relaxed text-slate-200">Flags, Umkehrmuster, RSI und MACD: zwölf Beispiele erklären, was du siehst – und wann eine Interpretation scheitert.</p>
-      <button type="button" onClick={()=>onNavigate('/learning?tab=patterns')} className="mt-5 rounded-lg bg-cyan-300 px-5 py-3 font-semibold text-slate-950">Chart-Lernatlas öffnen</button>
+      
+      <p className="mt-4 text-sm leading-relaxed text-slate-200">Den interaktiven Chart-Lernatlas mit Beispielen, Bestätigungen und Widerlegungen findest du ausschließlich im Learning Portal.</p>
+      <button type="button" onClick={()=>onNavigate('/learning/chart-lernatlas')} className="mt-5 rounded-lg bg-cyan-300 px-5 py-3 font-semibold text-slate-950">Chart-Lernatlas öffnen</button>
     </article>
     <article className="rounded-2xl border border-amber-400/20 bg-[#0b1020] p-5 sm:p-7">
       <p className="text-xs font-semibold uppercase tracking-widest text-amber-200">CADS Benchmark Engine</p>
