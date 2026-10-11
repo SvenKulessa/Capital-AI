@@ -83,6 +83,23 @@ try {
   };
   report.checks.push({ name: 'production-healthz-runtime-sha', status: 'PASS' });
 
+  // Check customer-domain HTML directly, not a cached external text extractor.
+  for (const path of ['/pricing', '/marketscreener/dokumentation']) {
+    const page = await fetch(origin + path, {
+      redirect: 'manual', signal: AbortSignal.timeout(15000),
+      headers: { 'User-Agent': 'CAPITAL-AI-production-mobile-qa/1.0', Accept: 'text/html' },
+    });
+    assert.equal(page.status, 200, path + ': HTTP 200 required');
+    const html = await page.text();
+    assert.match(html, /<meta name="robots" content="noindex, nofollow"/, path + ': expected NOINDEX');
+    assert.doesNotMatch(html, /<link rel="canonical"/, path + ': unapproved canonical');
+    if (path === '/pricing') {
+      assert.match(html, /id="capital-ai-pricing-fallback"/, 'Pricing HTML fallback absent');
+      assert.match(html, /Tarife und Leistungen/, 'Pricing fallback content absent');
+    }
+    report.checks.push({ name: path + '-html-noindex-readback', status: 'PASS', httpStatus: page.status });
+  }
+
   for (const viewport of [
     { name: 'narrow-mobile', width: 320, height: 720, mobile: true },
     { name: 'mobile', width: 390, height: 844, mobile: true },
