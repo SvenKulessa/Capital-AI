@@ -4,8 +4,8 @@ import { readFileSync } from 'node:fs';
 import {
   MARKET_BLUEPRINTS,
   computeBlueprintDemoIndex,
-  demoAlertWouldCross,
 } from '../src/features/home/marketBlueprintDemo.ts';
+import { didSyntheticThresholdCross } from '../src/features/home/marketBlueprintRules.ts';
 
 test('public blueprint portfolio retains four distinct, explicitly non-live products', () => {
   assert.deepEqual(MARKET_BLUEPRINTS.map(item => item.id), ['ingestion', 'evidence', 'scoring', 'alerts']);
@@ -30,12 +30,12 @@ test('demo index is deterministic, normalized and rejects malformed input', () =
 
 test('synthetic threshold visualization is a pure calculation, not an operational alert', () => {
   const series = MARKET_BLUEPRINTS.find(item => item.id === 'alerts').series;
-  assert.equal(demoAlertWouldCross(series, 70), true);
-  assert.equal(demoAlertWouldCross(series, 95), false);
-  assert.equal(demoAlertWouldCross([80, 85, 92], 70), false, 'already-above is not a crossing');
-  assert.equal(demoAlertWouldCross([80, 68, 71], 70), true, 'a below-to-above transition crosses');
-  assert.equal(demoAlertWouldCross([70], 70), false, 'one observation is not enough');
-  assert.throws(() => demoAlertWouldCross(series, Number.NaN), /DEMO_THRESHOLD_INVALID/);
+  assert.equal(didSyntheticThresholdCross(series, 70), true);
+  assert.equal(didSyntheticThresholdCross(series, 95), false);
+  assert.equal(didSyntheticThresholdCross([80, 85, 92], 70), false, 'already-above is not a crossing');
+  assert.equal(didSyntheticThresholdCross([80, 68, 71], 70), true, 'a below-to-above transition crosses');
+  assert.equal(didSyntheticThresholdCross([70], 70), false, 'one observation is not enough');
+  assert.throws(() => didSyntheticThresholdCross(series, Number.NaN), /DEMO_THRESHOLD_INVALID/);
 });
 
 test('public blueprint UI is linked from Home and documentation without provider execution', () => {
