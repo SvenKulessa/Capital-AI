@@ -14,7 +14,7 @@ for (const activity of PROCESSING_ACTIVITIES.filter(a => ['learning-inquiry','co
 const inventory = '<!-- cookie-storage:start --><section id="cookie-storage"><h2>Cookies und lokaler Speicher</h2>'+Object.entries(cookieCopy).map(([locale,copy]) =>
  `<details lang="${locale}"${locale==='de'?' open':''}><summary>${escape(copy.inventory)} (${locale.toUpperCase()})</summary><p>${escape(copy.analyticsOff)}</p>`+
  cookieStorageRows(copy).map(([name,storage,purpose,retention])=>`<article><h3 style="overflow-wrap:anywhere">${escape(name)}</h3><p>${escape(storage)}</p><p><strong>${escape(copy.purpose)}:</strong> ${escape(purpose)}</p><p><strong>${escape(copy.retention)}:</strong> ${escape(retention)}</p></article>`).join('')+
- `<p><a href="/learning#cookie-preferences">${escape(copy.settings)}</a></p></details>`).join('')+'</section><!-- cookie-storage:end -->';
+ `</details>`).join('')+'</section><!-- cookie-storage:end -->';
 if(html.includes('<!-- cookie-storage:start -->')) html=html.replace(/<!-- cookie-storage:start -->[\s\S]*?<!-- cookie-storage:end -->/,inventory);
 else html=html.replace('<section><h2>8. Betroffenenrechte', inventory+'\n<section><h2>8. Betroffenenrechte');
 html=html.replace(/<p>Stand der zugrunde liegenden Datenschutzinformation:[\s\S]*?<\/p>/,`<p>Datenschutzinformation Version ${PRIVACY_NOTICE_VERSION}. Diese Seite wird als eigenständiges HTML-Dokument ohne JavaScript und ohne Anmeldung ausgeliefert.</p>`);

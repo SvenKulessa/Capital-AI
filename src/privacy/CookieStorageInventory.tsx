@@ -1,7 +1,6 @@
 import { cookieStorageRows } from './cookieStorageInventory';
 import { useLocale } from '../i18n/LocaleProvider';
 import { cookieCopy } from '../i18n/cookieCopy';
-import { OPEN_COOKIE_PREFERENCES_EVENT } from './cookieConsentEvents';
 
 /** Public inventory includes local storage, not just HTTP cookies. No values or identifiers are displayed. */
 export function CookieStorageInventory() {
@@ -21,7 +20,5 @@ export function CookieStorageInventory() {
         </dl>
       </article>)}
     </div>
-    <button type="button" onClick={() => window.dispatchEvent(new Event(OPEN_COOKIE_PREFERENCES_EVENT))}
-      className="min-h-11 rounded-xl border border-amber-300 px-4 py-2 text-base font-semibold text-amber-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-200">{copy.customize}</button>
   </section>;
 }

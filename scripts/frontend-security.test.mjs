@@ -153,14 +153,11 @@ test('Learning Portal keeps five free flashcards and accessible category-colored
   assert.doesNotMatch(docs, /href: '\/forschung'/);
 });
 
-test('large optional navigation stays outside the initial landing bundle', async () => {
+test('global header stays lazy and deprecated hub drawer is inactive', async () => {
+  const shell = await readFile(new URL('../src/app/AppShell.tsx', import.meta.url), 'utf8');
   const header = await readFile(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
-
-  assert.match(header, /const HubSidebarDrawer = lazy\(\(\) =>/);
-  assert.match(header, /import\('\.\/HubSidebarDrawer'\)/);
-  assert.match(header, /import type \{ MainHubId \} from '\.\/HubSidebarDrawer'/);
-  assert.doesNotMatch(header, /import \{ HubSidebarDrawer,/);
-  assert.match(header, /\{isSidebarOpen && \(/);
+  assert.match(shell, /const Header = lazy/);
+  assert.doesNotMatch(header, /<HubSidebarDrawer/);
 });
 
 test('footer uses locally bundled provider logos and consolidates license navigation into documentation', async () => {
@@ -170,11 +167,11 @@ test('footer uses locally bundled provider logos and consolidates license naviga
   assert.match(footer, /\/branding\/social\/\$\{id\}\.svg/);
   // Localized footer retains the German legally meaningful destination label.
   const dictionary = await readFile(new URL('../src/i18n/messages.ts', import.meta.url), 'utf8');
-  assert.match(footer, /t\('docs'\)/);
+  assert.doesNotMatch(footer, /t\('docs'\)|href="\/blog"/);
   assert.match(dictionary, /'Dokumentation & Lizenzen'/);
   assert.doesNotMatch(footer, /footer-nav-forschung|footer-nav-oss-market-architecture|Schriftlizenz/);
   assert.match(docs, /OSS Market Architektur/);
-  assert.match(docs, /market-screener-hub-open-source\.html/);
+  assert.match(docs, /dokumentation\/oss-market/);
   assert.match(docs, /Datenprovider-Lizenzen/);
   assert.match(docs, /Open-Source-Lizenzen/);
 });

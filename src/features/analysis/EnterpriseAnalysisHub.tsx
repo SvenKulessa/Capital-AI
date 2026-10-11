@@ -1,3 +1,5 @@
+import { HubNavigationPanel } from '../../components/HubNavigationPanel';
+import { navigateAppLocation } from '../../utils/appNavigation';
 import React from 'react';
 import { Mail } from 'lucide-react';
 import { ContactForm } from '../../components/ContactForm';
@@ -46,28 +48,7 @@ export function EnterpriseAnalysisHub({
   const active = enabledTabs.includes(tab) ? tab : 'overview';
   return (
     <div className="space-y-6">
-      <nav
-        aria-label="Market Intelligence Unterseiten"
-        className="flex flex-wrap gap-2"
-      >
-        {enabledTabs.map((id) => (
-          <button
-            type="button"
-            key={id}
-            aria-pressed={active === id}
-            onClick={() => setTab(id)}
-            className={
-              buttonClass +
-              (active === id
-                ? (id === 'kontakt' ? ' border-[#F5C453] bg-[#F5C453]/15 text-[#F5C453]' : ' border-amber-400 bg-amber-400/10 text-amber-200')
-                : '')
-            }
-          >
-            {id === 'kontakt' && <Mail className="mr-1 inline-block h-4 w-4" aria-hidden="true" />}
-            {LABELS[id]}
-          </button>
-        ))}
-      </nav>
+      <HubNavigationPanel hubId="marketscreener" onNavigate={navigateAppLocation} />
       {['overview', 'scorer'].includes(active) && (
         <EnterpriseScorerDashboard onSelectAsset={onSelectAsset} />
       )}

@@ -53,6 +53,6 @@ export function ContactForm() {
       </div>
     </form>
     <a href={`mailto:${CONTROLLER.supportEmail}?subject=${subject}`} className="mt-4 inline-flex min-h-11 items-center text-base text-amber-200 underline underline-offset-4">{CONTROLLER.supportEmail}</a>
-    <a href="/datenschutz#cookie-storage" className="mt-2 flex min-h-11 items-center text-base text-amber-200 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-amber-200">{copy.privacy}</a>
+    <a href="/datenschutz/" className="mt-2 flex min-h-11 items-center text-base text-amber-200 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-amber-200">{copy.privacy}</a>
   </section>;
 }

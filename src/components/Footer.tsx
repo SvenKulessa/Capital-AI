@@ -55,7 +55,6 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           </a>
         ))}
       </nav>
-      <nav aria-label="Öffentliche Lernbeiträge" className="mt-4"><a href="/blog" onClick={e => handleNavClick(e, '/blog', 'blog')} className="inline-flex min-h-11 items-center text-base text-amber-200 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-brand-gold">Blog · Wissen &amp; Lernen</a></nav>
       {/* Consolidated legal and documentation navigation */}
       <div className="mt-3 text-[11px] text-slate-400 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
         <span>© {new Date().getFullYear()} Capital-AI</span>
@@ -110,20 +109,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           id="footer-nav-pricing"
           href="/pricing"
           onClick={(e) => handleNavClick(e, '/pricing', 'pricing')}
-          className="hover:text-amber-300 transition-colors cursor-pointer text-amber-300 font-bold hover:underline underline-offset-4 flex items-center gap-1"
+          className="hover:text-white transition-colors cursor-pointer text-slate-100 font-medium hover:underline underline-offset-4 flex items-center gap-1"
           data-analytics="footer-pricing"
         >
           {t('pricing')}
-        </a>
-        <span className="text-slate-600">•</span>
-        <a
-          id="footer-nav-documentation"
-          href="/dokumentation"
-          onClick={(e) => handleNavClick(e, '/dokumentation', 'documentation')}
-          className="hover:text-cyan-300 transition-colors cursor-pointer text-cyan-300 font-semibold hover:underline underline-offset-4"
-          data-analytics="footer-documentation"
-        >
-          {t('docs')}
         </a>
       </div>
 

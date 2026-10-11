@@ -1,4 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { hubRouteForPath } from '../../../shared/hub-routes.mjs';
+import { APP_NAVIGATION_EVENT } from '../../utils/appNavigation';
 import { blogArticleForPath } from '../../../shared/blog-articles.mjs';
 // Browser-light projection; checked against the canonical server catalog by the SEO regression test.
 // Importing the full metadata corpus here would exceed the production JS chunk budget.
@@ -129,11 +131,26 @@ const STATIC_ROUTE_METADATA: Record<string, StaticRouteMetadata> = {
 };
 
 export function useRouteAnalytics(currentRoute: string) {
+  const [pathname, setPathname] = useState(() => typeof window === 'undefined' ? currentRoute : window.location.pathname);
+  useEffect(() => {
+    const sync = () => setPathname(window.location.pathname);
+    sync();
+    window.addEventListener(APP_NAVIGATION_EVENT, sync);
+    window.addEventListener('popstate', sync);
+    return () => { window.removeEventListener(APP_NAVIGATION_EVENT, sync); window.removeEventListener('popstate', sync); };
+  }, [currentRoute]);
   useEffect(() => {
     initGoogleAnalytics();
   }, []);
 
   useEffect(() => {
+    const hubRoute = hubRouteForPath(pathname);
+    if (hubRoute) {
+      const title = `${hubRoute.title} | CAPITAL-AI`;
+      updatePageSEO({title, description:`${hubRoute.title} im CAPITAL-AI Hub.`,canonicalPath:hubRoute.path});
+      trackPageView(hubRoute.path,title);
+      return;
+    }
     if (currentRoute === '/blog' || currentRoute.startsWith('/blog/')) {
       const article = blogArticleForPath(currentRoute);
       const title = article ? `${article.title} | CAPITAL AI` : currentRoute === '/blog' ? 'Wissen & Lernen | CAPITAL AI' : 'Beitrag nicht gefunden | CAPITAL AI';
@@ -163,5 +180,5 @@ export function useRouteAnalytics(currentRoute: string) {
       canonicalPath: meta.canonicalPath,
     });
     trackPageView(meta.trackPath ?? meta.canonicalPath, meta.title);
-  }, [currentRoute]);
+  }, [currentRoute, pathname]);
 }

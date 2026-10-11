@@ -105,12 +105,8 @@ export const BlueprintDocumentationPage: React.FC<BlueprintDocumentationPageProp
               </div>
             </div>
             <div className="grid gap-2 sm:grid-cols-2 lg:w-[430px]">
-              <a href="/downloads/CAPITAL-AI_BYOK_2026-10-05.md" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-4 text-sm font-bold text-cyan-200 hover:bg-cyan-400/15">
-                <KeyRound className="h-4 w-4" /> BYOK Dokumentation
-              </a>
-              <a href="/downloads/capital-ai-byok-presentation.html" target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-purple-400/30 bg-purple-400/10 px-4 text-sm font-bold text-purple-200 hover:bg-purple-400/15">
-                <Presentation className="h-4 w-4" /> BYOK Presentation
-              </a>
+              <span className="inline-flex min-h-11 items-center gap-2 rounded-full border border-cyan-400/30 px-4 py-2 text-sm text-cyan-200"><KeyRound className="h-4 w-4" /> BYOK <strong className="rounded-full border border-amber-400/40 px-2 py-1 text-xs text-amber-200">PENDING</strong></span>
+              <span className="inline-flex min-h-11 items-center gap-2 rounded-full border border-cyan-400/30 px-4 py-2 text-sm text-cyan-200"><KeyRound className="h-4 w-4" /> BYOK <strong className="rounded-full border border-amber-400/40 px-2 py-1 text-xs text-amber-200">PENDING</strong></span>
             </div>
           </div>
         </header>
@@ -260,8 +256,8 @@ export const BlueprintDocumentationPage: React.FC<BlueprintDocumentationPageProp
               <h2 className="mt-2 text-xl font-black text-white">Private Provider-Credentials bleiben außerhalb des öffentlichen Market-Data-Pfads.</h2>
               <p className="mt-3 text-sm leading-relaxed text-slate-300">Der aktuelle Kraken-Prototyp verwendet authentifizierte same-origin Requests, serverseitige Signaturerzeugung und Supabase Vault. Er erlaubt private Kontoabfragen, erweitert aber weder Public-Display-, Cache-, JetStream-, Scoring- noch Redistribution-Rechte.</p>
               <div className="mt-4 flex flex-wrap gap-2">
-                <a href="/downloads/CAPITAL-AI_BYOK_2026-10-05.md" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-4 text-sm font-bold text-cyan-200"><ShieldCheck className="h-4 w-4" /> Dokumentation öffnen</a>
-                <a href="/downloads/capital-ai-byok-presentation.html" target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-purple-400/30 bg-purple-400/10 px-4 text-sm font-bold text-purple-200"><ExternalLink className="h-4 w-4" /> Presentation öffnen</a>
+                <span className="inline-flex min-h-11 items-center gap-2 rounded-full border border-cyan-400/30 px-4 py-2 text-sm text-cyan-200"><KeyRound className="h-4 w-4" /> BYOK <strong className="rounded-full border border-amber-400/40 px-2 py-1 text-xs text-amber-200">PENDING</strong></span>
+                <span className="inline-flex min-h-11 items-center gap-2 rounded-full border border-cyan-400/30 px-4 py-2 text-sm text-cyan-200"><KeyRound className="h-4 w-4" /> BYOK <strong className="rounded-full border border-amber-400/40 px-2 py-1 text-xs text-amber-200">PENDING</strong></span>
               </div>
             </div>
             <ByokArchitectureDiagram />

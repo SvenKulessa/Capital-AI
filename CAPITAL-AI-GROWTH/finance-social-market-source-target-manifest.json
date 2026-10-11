@@ -130,7 +130,8 @@
     {
       "id": "TA-AUTH",
       "path": "server/auth.mjs",
-      "blobSha": "5d399bb2b06de626950d10ac2147ebea171d7b91",
+      "blobSha": "459a921154343962213cb3206dd54bab795089c5",
+      "recorrelation": "2026-10-11: Owner-badge projection omits the subscription badge; session verification, IAM authority and tenant boundaries remain unchanged. Verified by server/auth.test.mjs and server/auth-security.test.mjs.",
       "role": "Current session/auth composition"
     },
     {

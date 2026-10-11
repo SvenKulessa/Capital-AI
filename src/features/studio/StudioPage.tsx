@@ -1,3 +1,4 @@
+import { HubNavigationPanel } from '../../components/HubNavigationPanel';
 import { DataUnavailable } from '../../shared/ui/DataUnavailable';
 /**
  * CAPITAL AI — STUDIO HUB (/studio)
@@ -267,123 +268,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
       {/* ========================================================================= */}
       {/* 3. STUDIO HUB TABS (Die 7 Studio-Tabs im Überblick)                      */}
       {/* ========================================================================= */}
-      <div className="flex items-center gap-1 p-1 rounded-xl bg-[#090e21] border border-slate-800/90 mb-6 overflow-x-auto scrollbar-none">
-        <button type="button" onClick={() => setActiveTab('kontakt')} aria-current={activeTab === 'kontakt' ? 'page' : undefined}
-          className={`flex min-h-11 items-center gap-2 rounded-lg px-3.5 text-xs font-semibold whitespace-nowrap transition-colors ${activeTab === 'kontakt' ? 'bg-[#F5C453] text-slate-950' : 'text-[#F5C453] hover:bg-[#F5C453]/10'}`}>
-          <Mail className="h-4 w-4" aria-hidden="true" />Kontakt
-        </button>
-        {/* TAB 1: Pipeline Architektur */}
-        <button
-          type="button"
-          onClick={() => setActiveTab('architecture')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'architecture'
-              ? 'bg-amber-400 text-black font-bold shadow-sm'
-              : 'text-slate-300 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <Layers className="w-3.5 h-3.5" />
-          <span>Pipeline Architektur</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('content')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'content'
-              ? 'bg-violet-500 text-white font-bold shadow-sm'
-              : 'text-slate-300 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Content Studio</span>
-        </button>
-
-        {/* TAB 2: Blueprints */}
-        <button
-          type="button"
-          onClick={() => setActiveTab('blueprints')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'blueprints'
-              ? 'bg-cyan-500 text-black font-bold shadow-sm'
-              : 'text-slate-300 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <FileCode className="w-3.5 h-3.5" />
-          <span>Blueprints</span>
-          <span className="text-[10px] px-1.5 py-0.2 rounded bg-black/30 font-mono">7</span>
-        </button>
-
-        {/* TAB 3: Pipeline Builder */}
-        <button
-          type="button"
-          onClick={() => setActiveTab('builder')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'builder'
-              ? 'bg-amber-400 text-black font-bold shadow-sm'
-              : 'text-slate-300 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <SlidersHorizontal className="w-3.5 h-3.5" />
-          <span>Pipeline Builder</span>
-        </button>
-
-        {/* TAB 4: AI Kauf-Berater */}
-        <button
-          type="button"
-          onClick={() => setActiveTab('advisor')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'advisor'
-              ? 'bg-purple-500 text-white font-bold shadow-sm'
-              : 'text-slate-300 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <Bot className="w-3.5 h-3.5" />
-          <span>AI Kauf-Berater</span>
-        </button>
-
-        {/* TAB 5: Data & Providers */}
-        <button
-          type="button"
-          onClick={() => setActiveTab('providers')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'providers'
-              ? 'bg-emerald-500 text-black font-bold shadow-sm'
-              : 'text-slate-300 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <Radio className="w-3.5 h-3.5" />
-          <span>Data &amp; Providers</span>
-        </button>
-
-        {/* TAB 6: Analytics & Scoring */}
-        <button
-          type="button"
-          onClick={() => setActiveTab('analytics')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'analytics'
-              ? 'bg-amber-400 text-black font-bold shadow-sm'
-              : 'text-slate-300 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <BarChart3 className="w-3.5 h-3.5" />
-          <span>Analytics &amp; Scoring</span>
-        </button>
-
-        {/* TAB 7: Benchmark Lab */}
-        <button
-          type="button"
-          onClick={() => setActiveTab('benchmark')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'benchmark'
-              ? 'bg-cyan-500 text-black font-bold shadow-sm'
-              : 'text-slate-300 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <Gauge className="w-3.5 h-3.5" />
-          <span>Benchmark Lab</span>
-        </button>
-      </div>
+      <HubNavigationPanel hubId="studio" onNavigate={path => { if (onNavigate) onNavigate(path); else window.location.assign(path); }} />
 
       {activeTab === 'content' && <ContentStudioPanel />}
       {activeTab === 'kontakt' && <ContactForm />}

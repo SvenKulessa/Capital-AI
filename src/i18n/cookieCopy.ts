@@ -39,7 +39,7 @@ export const cookieCopy = {
     "emailSent": "E-Mail gesendet",
     "received": "Deine Anfrage wurde vom Mailserver angenommen.",
     "sendError": "Senden fehlgeschlagen. Bitte erneut versuchen oder den E-Mail-Link nutzen.",
-    "contactPrivacy": "Wir verwenden deine Angaben zur Beantwortung. E-Mail-Adresse und Nachricht werden nicht an GA4 gesendet.",
+    "contactPrivacy": "Wir verwenden deine Angaben zur Beantwortung.",
     "sending": "Wird gesendet …"
   },
   "en": {
@@ -81,7 +81,7 @@ export const cookieCopy = {
     "emailSent": "Email sent",
     "received": "Your enquiry was accepted by the mail server.",
     "sendError": "Sending failed. Please retry or use the email link.",
-    "contactPrivacy": "We use your details to reply. Your email address and message are never sent to GA4.",
+    "contactPrivacy": "We use your details to reply.",
     "sending": "Sending …"
   },
   "it": {
@@ -123,7 +123,7 @@ export const cookieCopy = {
     "emailSent": "Email inviata",
     "received": "La richiesta è stata accettata dal server di posta.",
     "sendError": "Invio non riuscito. Riprova o usa il link email.",
-    "contactPrivacy": "Usiamo i dati per rispondere. Email e messaggio non vengono inviati a GA4.",
+    "contactPrivacy": "Usiamo i dati per rispondere.",
     "sending": "Invio …"
   },
   "es": {
@@ -165,7 +165,7 @@ export const cookieCopy = {
     "emailSent": "Correo enviado",
     "received": "El servidor de correo ha aceptado tu consulta.",
     "sendError": "El envío falló. Reintenta o usa el enlace de correo.",
-    "contactPrivacy": "Usamos tus datos para responder. El correo y el mensaje no se envían a GA4.",
+    "contactPrivacy": "Usamos tus datos para responder.",
     "sending": "Enviando …"
   },
   "pt": {
@@ -207,7 +207,7 @@ export const cookieCopy = {
     "emailSent": "Email enviado",
     "received": "O servidor de email aceitou o pedido.",
     "sendError": "O envio falhou. Tente novamente ou use a ligação de email.",
-    "contactPrivacy": "Usamos os dados para responder. O email e a mensagem não são enviados ao GA4.",
+    "contactPrivacy": "Usamos os dados para responder.",
     "sending": "A enviar …"
   },
   "fr": {
@@ -249,7 +249,7 @@ export const cookieCopy = {
     "emailSent": "E-mail envoyé",
     "received": "Le serveur de messagerie a accepté votre demande.",
     "sendError": "Échec de l’envoi. Réessayez ou utilisez le lien email.",
-    "contactPrivacy": "Nous utilisons vos données pour répondre. Email et message ne sont pas envoyés à GA4.",
+    "contactPrivacy": "Nous utilisons vos données pour répondre.",
     "sending": "Envoi …"
   }
 } as const satisfies Record<Locale, Record<string, string>>;
