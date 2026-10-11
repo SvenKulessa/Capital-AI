@@ -15,7 +15,7 @@ export function LearningArticles() {
         <ul className="mt-3 grid gap-3 text-sm text-slate-300 md:grid-cols-2">
           <li><strong className="text-white">Finanzwissen:</strong> <a className="text-cyan-200 underline underline-offset-4" href="/vocabulary/orderbuch">Orderbuch verstehen</a> und <a className="text-cyan-200 underline underline-offset-4" href="/vocabulary/bid-ask-spread">Geld-Brief-Spanne einordnen</a>.</li>
           <li><strong className="text-white">Datenqualität:</strong> Momentaufnahmen und Ausführung unterscheiden – <a className="text-cyan-200 underline underline-offset-4" href="/vocabulary/slippage">Slippage erklärt</a>.</li>
-          <li><strong className="text-white">Mathematik:</strong> Gewichtete Faktoren als Lernbeispiel berechnen; <a className="text-cyan-200 underline underline-offset-4" href="/vocabulary/vwap">VWAP als eigenen Kennzahlentyp kennenlernen</a>.</li>
+          <li><strong className="text-white">Mathematik:</strong> Gewichtete Faktoren als Lernbeispiel berechnen; <a className="text-cyan-200 underline underline-offset-4" href="/vocabulary/vix">VIX als Volatilitätsindikator einordnen</a>.</li>
           <li><strong className="text-white">Research-Architektur:</strong> Quellen, Annahmen und historische Prüfung trennen – <a className="text-cyan-200 underline underline-offset-4" href="/vocabulary/backtesting">Backtesting erklärt</a>.</li>
         </ul>
       </nav>

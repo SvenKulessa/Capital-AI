@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 import { createApp } from './index.mjs';
+import { QUANT_PRO_IDS } from '../shared/vocabulary-access-policy.mjs';
 import {
   SEO_INDEXING_STATES,
   SEO_ROUTE_POLICY,
@@ -220,9 +221,10 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
     assert.equal(learningResponse.status, 200);
     assert.equal(learningResponse.headers.get('x-robots-tag'), null);
     const learningHtml = await learningResponse.text();
-    for (const target of ['/vocabulary/orderbuch', '/vocabulary/bid-ask-spread', '/vocabulary/slippage', '/vocabulary/vwap', '/vocabulary/backtesting', '/blog/barrierefreie-finanzcharts']) {
+    for (const target of ['/vocabulary/orderbuch', '/vocabulary/bid-ask-spread', '/vocabulary/slippage', '/vocabulary/vix', '/vocabulary/backtesting', '/blog/barrierefreie-finanzcharts']) {
       assert.ok(learningHtml.includes(`href="${target}"`), target);
       assert.equal(resolveSeoIndexingPolicy(target).classification, 'INDEX', target);
+      assert.equal(QUANT_PRO_IDS.has(target.split('/').at(-1)), false, target);
     }
     assert.match(learningHtml, /0,50 × 0,80 \+ 0,30 × 0,40 \+ 0,20 × 0,60 = 0,64/);
     assert.match(learningHtml, /Checkout ist erst nach Anmeldung/);

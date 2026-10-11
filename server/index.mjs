@@ -236,7 +236,7 @@ function learningLandingFallback(description) {
       <p><a href="/vocabulary/slippage">Slippage verstehen</a> · <a href="/blog/barrierefreie-finanzcharts">Finanzcharts mit Datenherkunft und Textalternativen</a></p></section>
     <section><h2>3. Gewichtung und Scoring nachvollziehen</h2>
       <p>Didaktisches Beispiel mit drei fiktiven Faktoren: 0,50 × 0,80 + 0,30 × 0,40 + 0,20 × 0,60 = 0,64. Die Gewichte summieren sich zu 1. Weder Live-Score noch Kurs-, Risiko- oder Renditeprognose.</p>
-      <p><a href="/vocabulary/vwap">VWAP als andere Kennzahl kennenlernen</a></p></section>
+      <p><a href="/vocabulary/vix">VIX als eigenständigen Volatilitätsindikator einordnen</a></p></section>
     <section><h2>4. Technische Research-Architektur</h2>
       <p>Nachvollziehbare Analysen unterscheiden Datenquelle, Qualitätsprüfung, Berechnungsregel und historische Validierung. Ein technisches Konzept ist keine produktive Datenpipeline.</p>
       <p><a href="/vocabulary/backtesting">Historische Prüfung verstehen</a></p></section>
