@@ -16,6 +16,7 @@
 !.github/agents/
 !.github/workflows/
 !.github/workflows/daily-dependency-security-watch.yml
+!.github/workflows/merge-milestones.yml
 !.github/agents/**
 !.github/copilot-instructions.md
 !src/
