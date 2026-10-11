@@ -160,3 +160,30 @@ test('API never fabricates success when repository unavailable without cache', a
   const catalog = createRepositoryToolCatalog({ fetchImpl: async () => { throw new Error('upstream'); } });
   await assert.rejects(catalog.snapshot(), /REPOSITORY_UPSTREAM_UNAVAILABLE/);
 });
+
+test('all pinned GitHub actions use real workflow paths and keep full SHA evidence', () => {
+  const workflow = '.github/workflows/build-security.yml';
+  const pin = 'c'.repeat(40);
+  const entries = buildRepositoryToolCatalog({
+    sourceSha: SHA,
+    tree: [...TREE, { type: 'blob', path: workflow, sha: 'd'.repeat(40) }],
+    pkg, lock, cargo,
+    supplementary: { [workflow]: '  - uses: actions/checkout@' + pin + ' # v7.0.1\n' },
+  });
+  const action = entries.find(row => row.id === 'action:actions/checkout');
+  assert.equal(action.revisionSha, pin);
+  assert.equal(action.actionRepository, 'actions/checkout');
+  assert.equal(action.version, 'v7.0.1');
+  assert.equal(action.sourceBlobSha, 'd'.repeat(40));
+});
+
+test('update endpoint never reads arbitrary origins or exposes unverified versions', async () => {
+  const catalog = createRepositoryToolCatalog({ fetchImpl: fetchStub({ urls: [] }) });
+  const result = await catalog.updates();
+  assert.equal(result.schema, 'CAPITAL_AI_TOOL_UPDATES@1');
+  assert.equal(result.sourceSha, SHA);
+  assert.equal(result.autoApply, false);
+  assert.equal(result.candidates, 0);
+  assert.ok(result.findings.every(row => row.state === 'NOT_PROVEN'));
+  assert.equal((await catalog.updates()).freshness, 'CACHED');
+});

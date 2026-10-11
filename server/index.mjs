@@ -417,14 +417,15 @@ export function createApp(root = defaultRoot, options = {}) {
       operations: cadsSnapshot(),
     });
   }
-  if (url.pathname === '/api/internal/repository-tools') {
+  if (url.pathname === '/api/internal/repository-tools' || url.pathname === '/api/internal/repository-tool-updates') {
     const ownerAllowed = await auth.authorizeIamRole(req, res, 'owner');
     if (!ownerAllowed) {
       writeAuditEvent({ eventType: 'catalog.owner_access.denied', requestId: requestContext.requestId, result: 'DENIED' });
       return json(res, 404, { error: 'not_found' });
     }
     try {
-      return json(res, 200, await repositoryToolCatalog.snapshot());
+      return json(res, 200, await (url.pathname.endsWith('-updates')
+        ? repositoryToolCatalog.updates() : repositoryToolCatalog.snapshot()));
     } catch {
       return json(res, 503, { error: 'repository_catalog_unavailable' });
     }

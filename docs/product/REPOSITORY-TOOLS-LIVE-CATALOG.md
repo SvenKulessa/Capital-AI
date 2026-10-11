@@ -37,10 +37,25 @@ The existing **Komponenten & CADS** panel remains a separate curated assessment.
 
 Transitive dependencies are **not** marketed as individually deployed applications: their exhaustive dependency closure belongs in package locks, Cargo.lock and SBOM. Versions of managed services cannot be verified from repository manifests alone. A live Render/Supabase/NATS/Valkey version requires provider/runtime readback with timestamp and immutable identity evidence. A current GitHub main SHA must not be mistaken for the currently deployed web SHA.
 
+## Kontinuierlicher Update-Abgleich (ab diesem PR)
+
+Der bestehende geschützte Repository-Katalog liest GitHub-main weiterhin als zusammenhängenden, unveränderlichen Commit-Snapshot; 5-Minuten-Backend-TTL. Die geöffnete Control-Center-Seite fordert nun alle **10 Minuten** und bei erneuter Sichtbarkeit aktuelle Daten an. Der Katalog enthält auch tatsächlich in Workflows verwendete **full-length GitHub-Action-Commit-SHAs**, soweit die Workflow-Quellen lesbar sind, außerdem Git-Blob-SHAs aus dem Repository-Tree und npm-Lockfile-SHA-512-Integrities. Diese Belege sind **verschiedene Dinge** (Commit-Pin vs. Datei-Blob vs. Paketarchiv) und ersetzen keinen Review.
+
+`GET /api/internal/repository-tool-updates` ist ausschließlich für authentifizierte Owner erreichbar. Sein read-only Backend gleicht den aktuellen Katalog gegen offizielle npm-Registry-/GitHub-Releases-Schnittstellen ab:
+
+- **npm:** fest kodierter Registry-Host; `/latest` pro direkter Runtime-/Dev-/isolierter npm-Dependency. Ein Update wird nur als Kandidat ausgewiesen, wenn **Paketname**, semantisch neuere stabile Version und die veröffentlichten Felder **SHA-1 (`dist.shasum`) plus SHA-512 (`dist.integrity`)** übereinstimmen. Diese sind zunächst **Metadaten**, keine lokal heruntergeladenen und verifizierten Tarballs.
+- **GitHub Actions:** Ermittlung der SHA-Pins aus den tatsächlichen Workflow-Dateien; Releases nur im jeweiligen Originalrepository lesen; Tag-Ref bei annotated tags bis zum Commit auflösen und denselben Commit über GitHub verifizieren. Ein abweichender oder unklarer Tag ist `REVIEW_REQUIRED`, niemals blind einsetzbar.
+- **Grenzen und Quota:** höchstens **48** nach Runtime-Priorität ausgewählte npm-Direktabhängigkeiten und **8** Actions pro Abgleich, begrenzte parallele HTTP-Reads, einstündige Server-Caches und explizite `checked/total`-Abdeckung. Diese Stichprobe **ersetzt nicht** den bestehenden täglichen vollständigen `npm outdated`- und CVE-Watch. Ungelesene, nicht auflösbare, nicht stabile oder fehlerhafte Quellen bleiben `NOT_PROVEN`.
+- **Keine automatische Mutation:** Weder Frontend noch Backend installieren Packages, aktualisieren Locks, schreiben GitHub Actions, erstellen PRs oder erteilen Security-, Lizenz- oder Produktionsfreigaben. Kandidaten bedürfen einer separaten überprüfbaren Umsetzung mit CI, Kompatibilitäts- und CVE-Prüfung.
+- **Kosten:** ausschließlich existierende Render-Ausführungszeit, öffentliche GitHub-/npm-Metadatenabrufe, Netzwerktraffic und GitHub-Actions-Kontingente. Rate-Limits/Provider-Quoten bleiben `NOT_PROVEN`; keine kostenpflichtige Ressource aktiviert.
+
+Owner-Zugriffe auf beide API-Routen nutzen denselben serverseitigen `authorizeIamRole(..., 'owner')`-Pfad. Bei fehlendem GitHub-/npm-Zugriff wird kein Erfolg erfunden; eine nicht verfügbare Kandidatensuche liefert `NOT_PROVEN` bzw. einen klaren 503-Fehler. Die bereits gelockte Version wird niemals eigenmächtig verändert.
+
 ## Source files
 
 - server/repository-tool-catalog.mjs: server-side bounded GitHub reader, version/provenance projection and cache.
 - server/repository-tool-catalog.test.mjs: parsing, lock resolution, stale/fail-closed behavior and immutable SHA tests.
+- server/tool-update-discovery.mjs und .test.mjs: begrenzte, SHA-gebundene Registry-/Release-Kandidatenprüfung.
 - src/components/RepositoryToolCatalogDashboard.tsx: owner dashboard with search, domain/type filter, pagination, SHA and repo links.
 - src/components/ControlCenterPage.tsx: new tab only; existing CADS catalog unchanged.
 - server/index.mjs: owner-only API route.

@@ -1,3 +1,5 @@
+import { discoverRepositoryUpdates } from './tool-update-discovery.mjs';
+
 // Read-only owner catalog. GitHub is the source of truth for repository state, not runtime deployment state.
 const REPO = 'SvenKulessa/Capital-AI';
 const API = 'https://api.github.com/repos/' + REPO;
@@ -67,7 +69,7 @@ function displayName(path) {
 }
 
 function entry(id, name, kind, path, application, version, versionBasis, domain = domainForPath(path), digest = null) {
-  return { id, name, kind, path, application, version, versionBasis, domain, digest };
+  return { id, name, kind, path, application, version, versionBasis, domain, digest, revisionSha: null, actionRepository: null, sourceBlobSha: null, integrity: null };
 }
 
 function cargoDependencies(text) {
@@ -240,6 +242,30 @@ export function buildRepositoryToolCatalog({ sourceSha, tree, pkg, lock, cargo, 
     }
   }
 
+  // Action SHA pins are first-class catalog tools, not proof of audit or approval.
+  for (const path of [...paths].filter(p => /^\.github\/workflows\/[^/]+\.ya?ml$/.test(p)).sort()) {
+    const source = supplementary[path];
+    if (typeof source !== 'string') continue;
+    for (const hit of source.matchAll(/^\s*(?:-\s*)?uses:\s*([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.\/-]+)?)@([a-f0-9]{40})(?:\s*#\s*(v[0-9][^\s]*))?/gm)) {
+      const repository = hit[1].split('/').slice(0, 2).join('/');
+      const key = 'action:' + hit[1];
+      const existing = rows.get(key);
+      if (existing) {
+        if (existing.revisionSha !== hit[2]) {
+          existing.revisionSha = null;
+          existing.versionBasis = 'Widerspruechliche SHA-Pins in Workflows; Review erforderlich';
+        }
+        continue;
+      }
+      const row = entry(key, hit[1], 'GITHUB_ACTION_PIN', path,
+        'CI/CD Action (GitHub SHA-Pin, keine Update-Freigabe)', hit[3] || null,
+        'Workflow SHA-Pin (Tag nur Annotation)', 'TRUST');
+      row.revisionSha = hit[2];
+      row.actionRepository = repository;
+      add(row);
+    }
+  }
+
   for (const path of [...paths].sort()) {
     const isWeb = /^src\/features\/[^/]+\/[^/]+\.tsx$/.test(path) ||
       /^src\/components\/[^/]+\.tsx$/.test(path);
@@ -269,6 +295,19 @@ export function buildRepositoryToolCatalog({ sourceSha, tree, pkg, lock, cargo, 
       String(item.application || 'Externer Dienst').slice(0, 160), null, 'Managed Service: keine Repo-Versionsaussage', item.domain));
   }
 
+  const blobs = new Map(tree.filter(item => item?.type === 'blob' && SHA.test(item.sha || ''))
+    .map(item => [item.path, item.sha]));
+  for (const row of rows.values()) {
+    row.sourceBlobSha = blobs.get(row.path.split(' → ')[0]) || null;
+    if (row.id.startsWith('npm:')) {
+      const parts = row.id.split(':');
+      const dep = parts.at(-1);
+      const targetLock = parts.length === 2 ? lock : supplementary[parts.slice(1, -1).join(':') + '/package-lock.json'];
+      const exact = targetLock?.packages?.['node_modules/' + dep];
+      row.integrity = typeof exact?.integrity === 'string' && /^sha512-[A-Za-z0-9+/]{86}==$/.test(exact.integrity)
+        ? exact.integrity : null;
+    }
+  }
   return [...rows.values()].sort((a, b) => a.name.localeCompare(b.name, 'de') || a.path.localeCompare(b.path));
 }
 
@@ -276,6 +315,9 @@ export function createRepositoryToolCatalog({ fetchImpl = fetch, now = Date.now,
   let cached = null;
   let cachedAt = 0;
   let running = null;
+  let updateCache = null;
+  let updateAt = 0;
+  let updateRunning = null;
   async function load() {
     const branch = parseJson(await readText(fetchImpl, API + '/branches/main', 35_000));
     const sha = branch?.commit?.sha;
@@ -298,6 +340,14 @@ export function createRepositoryToolCatalog({ fetchImpl = fetch, now = Date.now,
       return [p, p.endsWith('package.json') || p.endsWith('package-lock.json') || p.endsWith('ffmpeg-build-profile.json')
         ? parseJson(value) : value];
     }));
+    const workflowPaths = treeResult.tree.filter(item => item?.type === 'blob' &&
+      /^\.github\/workflows\/[^/]+\.ya?ml$/.test(item.path || '')).map(item => item.path).sort().slice(0, 80);
+    const workflowSources = [];
+    for (let start = 0; start < workflowPaths.length; start += 10) {
+      workflowSources.push(...await Promise.all(workflowPaths.slice(start, start + 10)
+        .map(file => fromMain(file, 120_000, true))));
+    }
+    for (let i = 0; i < workflowPaths.length; i++) supplementary[workflowPaths[i]] = workflowSources[i];
     const entries = buildRepositoryToolCatalog({
       sourceSha: sha, tree: treeResult.tree, pkg: parseJson(sources[0]), lock: parseJson(sources[1]),
       cargo: sources[2], dockerfiles: Object.fromEntries(files.slice(3, 7).map((p, i) => [p, sources[i + 3]])),
@@ -325,6 +375,19 @@ export function createRepositoryToolCatalog({ fetchImpl = fetch, now = Date.now,
         if (cached) return { ...cached, freshness: 'STALE', error: 'REPOSITORY_UPSTREAM_UNAVAILABLE' };
         throw new Error('REPOSITORY_UPSTREAM_UNAVAILABLE');
       }
+    },
+    async updates() {
+      const current = await this.snapshot();
+      if (current.freshness === 'STALE') throw new Error('UPDATE_SOURCE_STALE');
+      if (updateCache && updateCache.sourceSha === current.sourceSha && now() - updateAt < 3_600_000) {
+        return { ...updateCache, freshness: 'CACHED' };
+      }
+      if (!updateRunning) {
+        updateRunning = discoverRepositoryUpdates({ entries: current.entries, sourceSha: current.sourceSha, fetchImpl, now })
+          .then(value => { updateCache = value; updateAt = now(); return value; })
+          .finally(() => { updateRunning = null; });
+      }
+      return { ...(await updateRunning), freshness: 'LIVE' };
     },
   };
 }
