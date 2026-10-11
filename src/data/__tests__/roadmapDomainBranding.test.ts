@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
-import { PROJECT_OWNERS, WORK_PACKAGES } from '../roadmapData';
+import { PROJECT_OWNERS, ROADMAP_STRATEGIC_PRIORITIES, WORK_PACKAGES } from '../roadmapData';
 
 const EXPECTED = ['PRODUCT', 'MARKET', 'PLATFORM', 'TRUST', 'GROWTH'] as const;
 
@@ -42,6 +42,57 @@ test('roadmap panel renders domain badges on filter and work-package cards respo
   assert.match(panel, /sm:flex-row sm:items-start sm:justify-between/);
   assert.match(panel, /h-8 w-8/);
   assert.match(panel, /h-20 w-20 shrink-0 sm:h-24 sm:w-24/);
+});
+
+test('owner strategy places learning commerce marketing truthful website search SEO and social pipeline first', () => {
+  const focus = ROADMAP_STRATEGIC_PRIORITIES;
+  assert.deepEqual(focus.map(item => item.id), [
+    'COMMERCE-LEARNING',
+    'MARKETING-DISTRIBUTION',
+    'WEBSITE-CORRECTNESS',
+    'SEARCH-SEO',
+    'CONTENT-SOCIAL-PIPELINE',
+  ]);
+  assert.deepEqual(focus.map(item => item.rank), [1, 2, 3, 4, 5]);
+  assert.ok(focus.every(item => item.level === 'TOP' && item.evidenceState === 'OFFEN'));
+  const packages = new Map(WORK_PACKAGES.map(item => [item.id, item]));
+  for (const item of focus) {
+    assert.ok(item.objective && item.nextAction, item.id);
+    assert.ok(item.domains.length > 0 && item.workPackageIds.length > 0, item.id);
+    for (const id of item.workPackageIds) {
+      assert.ok(packages.has(id), item.id + ': missing roadmap package ' + id);
+    }
+  }
+  for (const id of [
+    'CA-GROWTH-SEO-ARCHITECTURE',
+    'CA-GROWTH-CONTENT-ENGINE',
+    'CA-GROWTH-CONTENT-SOCIAL-PACKAGE',
+    'PRODUCTION-WEB-01-PRODUCT',
+    'PRODUCTION-WEB-01-GROWTH',
+  ]) {
+    assert.equal(packages.get(id)?.priority, 'Kritisch', id);
+  }
+});
+
+test('roadmap UI makes strategic priorities visible before filtered work packages', () => {
+  const panel = readFileSync(new URL('../../components/RoadmapPanel.tsx', import.meta.url), 'utf8');
+  assert.match(panel, /ROADMAP_STRATEGIC_PRIORITIES\.map/);
+  assert.match(panel, /aria-labelledby="roadmap-strategy-heading"/);
+  assert.match(panel, /Oberste Priorität · Umsatz, Reichweite und belastbare Website/);
+  assert.match(panel, /STRATEGIC_PACKAGE_RANK\.get\(a\.id\)/);
+  assert.ok(panel.indexOf('roadmap-strategy-heading') < panel.indexOf('Roadmap Statusfilter'));
+});
+
+test('AGENTS.md mandates 1–3 evidence-based next-chat suggestions in every domain without new gates', () => {
+  const agents = readFileSync(new URL('../../../AGENTS.md', import.meta.url), 'utf8');
+  assert.match(agents, /## Verbindliche nächste Schritte im Domain-Chat \(1–3 Vorschläge\)/);
+  assert.match(agents, /PRODUCT, MARKET, PLATFORM, TRUST und GROWTH/);
+  assert.match(agents, /am Ende 1 bis 3 konkrete/);
+  assert.match(agents, /🔧 OFFEN \/ NÄCHSTE SCHRITTE/);
+  assert.match(agents, /keine.*zusätzliche technische, rechtliche oder organisatorische Freigabeschicht/);
+  assert.match(agents, /👋⚙️/);
+  assert.match(agents, /Docker Security Gate/);
+  assert.match(agents, /Domain Governance/);
 });
 
 test('SEO roadmap is consolidated into one chronological GROWTH work package', () => {

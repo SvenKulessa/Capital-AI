@@ -19,11 +19,11 @@ export const SOCIAL_CONTENT_WORK_PACKAGES: WorkPackage[] = [
       "src/contracts/growthAttribution.ts",
       "src/features/home/ContentEngineConcept.tsx"
     ],
-    "nextStep": "Gemergte Landingpage-Darstellung gegen den Live-Render-Deploy visuell abnehmen; danach Kampagnenassets über die bestehenden Draft-Tools erzeugen und den gemeinsamen Growth/Social-Package-Vertrag vorbereiten.",
-    "priority": "Hoch",
+    "nextStep": "Learning-First-Kampagne für Learn Portal, Scoring-Mathematik und Datenkonzept-Blueprints mit zielgerichteten Landingpage-CTAs planen; Drafts, SEO-Suchintention und Attribution mit nachgewiesenen Kaufpfaden verbinden. Runtime- und Kanalveröffentlichung gesondert prüfen.",
+    "priority": "Kritisch",
     "leadName": "Owner + GROWTH/PRODUCT/PLATFORM",
     "targetSprint": "Vor Social-Media-Engine-Cutover",
-    "description": "Komponiert Copy, URL Context, Bild, TTS, Video, Discovery und Attribution hinter einem kleinen Content-Engine-Vertrag. Publishing bleibt bis zur Social-Media-Engine-Integration ein separater Adapter. Erste Kampagne positioniert CAPITAL-AI als BYOK Scoring- und Screener-Baukasten.",
+    "description": "Orchestriert Copy, Kontext, Bild, TTS, Video, Discovery und Attribution als providerneutrale Content Engine. Die erste kommerzielle Kampagne vermittelt Learn Portal, Scoring-Methoden und nachvollziehbare Datenkonzepte; Live-Provider- und Market-Performance-Claims sind nicht Bestandteil dieser Vermarktung. Publishing bleibt ein separater, berechtigungsgebundener Adapter.",
     "deliverables": [
       "CAPITAL_AI_CONTENT_ENGINE@1 als provider-neutrale Modul-Orchestrierung",
       "Scoring-First-Kampagne mit kanalbezogenen DRAFT-Assets",
@@ -56,8 +56,8 @@ export const SOCIAL_CONTENT_WORK_PACKAGES: WorkPackage[] = [
       "CAPITAL-AI-GROWTH/SOCIAL-ENGINE-MIGRATION.md",
       "src/data/socialContentRoadmap.ts"
     ],
-    "nextStep": "Package Manifest, Studio-Binding und Social-Attribution sind implementiert; als nächstes die realen Provider-Publisher aus der Finance-Evidence kontrolliert nach CAPITAL-AI portieren, OAuth-/Delivery-State an das neue Manifest binden und erst danach den Draft → Review → Schedule → Publish → Measure Pilot ausführen.",
-    "priority": "Hoch",
+    "nextStep": "Learn-Portal- und Analyse-Methodik-Inhalte durch die bestehende Draft → Review → Render → Schedule → Publish → Measure-Pipeline mit SEO-Metadaten, Search-Discovery und Kampagnen-Attribution verbinden; Provider-Publisher nur bei geklärten OAuth-, Kanal- und Inhaltsrechten aktivieren.",
+    "priority": "Kritisch",
     "leadName": "Owner + GROWTH/PRODUCT/PLATFORM",
     "targetSprint": "Nach Social-Media-Engine-Cutover; vor dauerhaftem Social-Pilot",
     "description": "Führt die implementierte Content Engine mit Content Studio und Social Media Engine zu einem modularen Growth-/Social-Paket zusammen. Package Manifest, Studio-Contract-Binding und Social-Attribution sind im aktuellen Slice materialisiert; Provider-Execution bleibt bis zum kontrollierten Publisher-Cutover fail-closed. Die Schichten behalten klare Zuständigkeiten: Content Engine orchestriert, Studio reviewt/autorisiert, Social Engine plant und verteilt, Attribution misst. Keine zweite Provider-, Rechte- oder Publication-Authority.",
