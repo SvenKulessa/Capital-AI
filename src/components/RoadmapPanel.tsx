@@ -1,5 +1,5 @@
 import React from 'react';
-import { PROJECT_OWNERS, ROADMAP_SNAPSHOT, ROADMAP_STAGES, WORK_PACKAGES } from '../data/roadmapData';
+import { PROJECT_OWNERS, ROADMAP_SNAPSHOT, ROADMAP_STAGES, ROADMAP_STRATEGIC_PRIORITIES, WORK_PACKAGES } from '../data/roadmapData';
 import type { ProjectOwner, RoadmapEvidenceState } from '../data/roadmapData';
 import mergeAuditData from '../data/roadmapMergeReconciliation.json';
 const mergeAudit = mergeAuditData as unknown as {
@@ -12,6 +12,14 @@ const STATES: Record<RoadmapEvidenceState, { label: string; style: string }> = {
   GEHALTEN: { label: 'GEHALTEN · Freigabe ausstehend', style: 'border-rose-400/40 text-rose-300' },
   UNGEKLÄRT: { label: 'UNGEKLÄRT · Backlog-Ziel', style: 'border-slate-600 text-slate-300' },
 };
+
+/** Ranked commercial priorities affect display order, never release/permission gates. */
+const STRATEGIC_PACKAGE_RANK = new Map<string, number>();
+for (const focus of ROADMAP_STRATEGIC_PRIORITIES) {
+  for (const id of focus.workPackageIds) {
+    STRATEGIC_PACKAGE_RANK.set(id, Math.min(focus.rank, STRATEGIC_PACKAGE_RANK.get(id) ?? Infinity));
+  }
+}
 
 const PROJECT_OWNER_BY_ID = new Map<ProjectOwner, (typeof PROJECT_OWNERS)[number]>(
   PROJECT_OWNERS.map(project => [project.id, project]),
@@ -109,9 +117,37 @@ export const RoadmapPanel: React.FC = () => {
     selectedOwners.includes(item.owner) &&
     selectedStates.includes(item.evidenceState) &&
     `${item.id} ${item.title} ${item.description}`.toLocaleLowerCase('de').includes(search.toLocaleLowerCase('de'))
+  ).sort((a, b) =>
+    (STRATEGIC_PACKAGE_RANK.get(a.id) ?? Infinity) - (STRATEGIC_PACKAGE_RANK.get(b.id) ?? Infinity)
   );
   return <section aria-labelledby="roadmap-heading" className="my-6">
     <h2 id="roadmap-heading" className="text-xl font-bold">Roadmap · belegter Repo-Stand</h2>
+    <section aria-labelledby="roadmap-strategy-heading" className="mt-4 rounded-2xl border border-amber-400/30 bg-slate-950/80 p-4 sm:p-5">
+      <h3 id="roadmap-strategy-heading" className="text-lg font-bold text-white">Oberste Priorität · Umsatz, Reichweite und belastbare Website</h3>
+      <p className="mt-2 max-w-4xl text-sm leading-relaxed text-slate-300">
+        Owner-Strategie: zuerst Learn Portal, Datenkonzepte und nachvollziehbare Analysemathematik monetarisieren;
+        parallel Marketing, Commerce, Website-Qualität sowie Search-, Content- und Social-Pipelines mit SEO-Management optimieren.
+        Alle Ziele sind Planung, keine bestätigten Umsätze, Runtime-Freigaben oder zusätzlichen CI-Gates.
+      </p>
+      <ol className="mt-4 grid gap-3 lg:grid-cols-2">
+        {ROADMAP_STRATEGIC_PRIORITIES.map(focus => (
+          <li key={focus.id} className="min-w-0 rounded-xl border border-slate-700 bg-slate-900/90 p-4">
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <span className="rounded-md border border-amber-400/40 px-2 py-1 text-xs font-bold text-amber-200">
+                TOP · {focus.rank}
+              </span>
+              <span className="text-xs text-slate-300">OFFEN · Umsetzung und Nachweise</span>
+            </div>
+            <h4 className="font-semibold text-white">{focus.title}</h4>
+            <p className="mt-2 text-sm leading-relaxed text-slate-300">{focus.objective}</p>
+            <p className="mt-3 text-sm leading-relaxed text-slate-200">
+              <span className="font-semibold text-amber-200">Als Nächstes: </span>{focus.nextAction}
+            </p>
+            <p className="mt-2 text-xs text-slate-400">Domains: {focus.domains.join(' · ')}</p>
+          </li>
+        ))}
+      </ol>
+    </section>
     <div className="mt-3 space-y-2 rounded-xl border border-slate-700 bg-slate-950/70 p-3 text-sm text-slate-300" aria-live="polite">
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-semibold text-white">Repository main:</span>
