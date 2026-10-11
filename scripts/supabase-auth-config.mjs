@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import process from 'node:process';
+import { renderBrandedMail } from '../shared/mail-templates.mjs';
 
 const EXPECTED_PROJECT_REF = 'ryzywoktpmyhwzxmstyu';
 const EXPECTED_SITE_ORIGIN = 'https://capital-ai.online';
@@ -62,13 +63,14 @@ function detailMarkup(entry) {
 }
 
 function render(shell, entry) {
-  const rendered = shell
-    .replaceAll('%%TITLE%%', entry.title)
-    .replace('%%BODY%%', entry.body)
-    .replace('%%ACTION%%', actionMarkup(entry))
-    .replace('%%DETAIL%%', detailMarkup(entry));
-  if (/%%[A-Z_]+%%/.test(rendered)) fail('MAIL_TEMPLATE_PLACEHOLDER_UNRESOLVED');
-  return rendered;
+  return renderBrandedMail({
+    shell,
+    title: entry.title,
+    bodyHtml: entry.body,
+    actionHtml: actionMarkup(entry),
+    detailHtml: detailMarkup(entry),
+    kind: 'auth',
+  });
 }
 
 function validateAbsoluteOrigins(html, name) {
