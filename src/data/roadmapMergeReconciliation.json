@@ -1,16 +1,16 @@
 {
   "schema": "CAPITAL_AI_ROADMAP_MERGE_AUDIT@1",
   "state": "RECONCILED_CODE_AND_DOCUMENTS",
-  "lastReconciledPr": 371,
-  "mergeCount": 340,
-  "fromPr": 363,
-  "toPr": 371,
-  "sourceSha": "7aee0180a4ecc2756f68b746036cdd1412075b1d",
-  "reconciledAt": "2026-10-11T06:17:43.999Z",
+  "lastReconciledPr": 384,
+  "mergeCount": 350,
+  "fromPr": 374,
+  "toPr": 384,
+  "sourceSha": "1bf86e6d96fcffa84207f3173d9beca99c25f346",
+  "reconciledAt": "2026-10-11T09:02:13.956Z",
   "sourceDigests": [
     {
       "path": "src/data/roadmapData.ts",
-      "sha256": "eca027efe1de19f2222f117880c027ffdf8f09e2b312f316084e94b85a8488dd"
+      "sha256": "a363bbbe61b4830b742206622c10846e8950c2e4a3821eef788f45e45d8c5fdf"
     },
     {
       "path": "src/data/roadmapCurrentMainState.ts",
@@ -18,11 +18,11 @@
     },
     {
       "path": "src/data/productionWebsiteWorkPackage.ts",
-      "sha256": "4909861a5cb6ce4980261d479f62346f0a8ce3ed7fea88be80a081e92b7b1a24"
+      "sha256": "ea063badf8b20d739344425fb9576858e9ad2c11e4603582aa6c8b23460022bc"
     },
     {
       "path": "src/data/socialContentRoadmap.ts",
-      "sha256": "98c09745cd98c4450aa9141ccc15767e16b99e21e310c56dbb3b153dcd7ffdcc"
+      "sha256": "bfa6856218715b1a3444629b20fc9f8e59c5cae2ce02cf29746e5a343361627d"
     },
     {
       "path": "src/data/trustArchitectureAWorkPackages.ts",
@@ -30,7 +30,7 @@
     },
     {
       "path": "src/components/RoadmapPanel.tsx",
-      "sha256": "5bf3589bd9ecbed0a4b707ea7d4f1f43bf4c8adbcf599665e411acdf492ead84"
+      "sha256": "55fbe04906bbbdfa43442e7b32a323cfa6ed4302614ba8d58c509cf17bd2bb46"
     }
   ],
   "packages": [
