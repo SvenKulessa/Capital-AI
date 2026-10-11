@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { runInNewContext } from 'node:vm';
 
 import { createApp } from './index.mjs';
 import { QUANT_PRO_IDS } from '../shared/vocabulary-access-policy.mjs';
@@ -30,6 +31,16 @@ async function readIndexTemplate() {
   } catch (error) {
     if (error?.code !== 'ENOENT') throw error;
     return readFile(new URL('../dist/index.html', import.meta.url));
+  }
+}
+
+async function readBootstrapFailureScript() {
+  try {
+    return await readFile(new URL('../public/bootstrap-failure.js', import.meta.url), 'utf8');
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
+    // Security Gate executes regression tests inside the minimal runtime image.
+    return readFile(new URL('../dist/bootstrap-failure.js', import.meta.url), 'utf8');
   }
 }
 
@@ -84,6 +95,43 @@ test('SEO-00 is fail-closed for private, claim-sensitive, alias and unknown rout
   assert.equal(resolveSeoIndexingPolicy('/.well-known/security.txt').classification, 'NOINDEX');
   assert.equal(resolveSeoIndexingPolicy('/.well-known/change-password').classification, 'NOINDEX');
   assert.equal(isSeoIndexable('/vocabulary/orderbuch'), true);
+});
+
+test('bootstrap diagnostics do not pollute initial HTML and display on entry load failure only', async () => {
+  const html = (await readIndexTemplate()).toString('utf8');
+  assert.doesNotMatch(html, /Die Anwendung konnte nicht gestartet werden/);
+  assert.match(html, /id="capital-ai-bootstrap-fallback" hidden class="hidden/);
+  const listeners = new Map();
+  let reloads = 0;
+  let reloadListener = null;
+  const reload = { addEventListener: (event, listener) => {
+    if (event === 'click') reloadListener = listener;
+  } };
+  const fallback = { hidden: true, innerHTML: '', classList: {
+    remove: () => {}, add: () => {},
+  } };
+  const root = { childElementCount: 0 };
+  class FakeScript { constructor(id) { this.id = id; } }
+  const document = { getElementById: id => ({
+    'capital-ai-bootstrap-fallback': fallback,
+    root,
+    'capital-ai-bootstrap-reload': reload,
+  })[id] || null };
+  const window = {
+    addEventListener: (name, listener) => listeners.set(name, listener),
+    location: { reload: () => { reloads += 1; } },
+  };
+  const script = await readBootstrapFailureScript();
+  runInNewContext(script, { document, window, HTMLScriptElement: FakeScript });
+  assert.equal(fallback.hidden, true);
+  listeners.get('error')({ target: new FakeScript('other-script') });
+  assert.equal(fallback.hidden, true);
+  listeners.get('error')({ target: new FakeScript('capital-ai-entry') });
+  assert.equal(fallback.hidden, false);
+  assert.match(fallback.innerHTML, /Die Anwendung konnte nicht gestartet werden/);
+  assert.equal(typeof reloadListener, 'function');
+  reloadListener();
+  assert.equal(reloads, 1);
 });
 
 test('server enforces INDEX versus noindex and derives sitemap from SEO-00 policy', async () => {
@@ -217,6 +265,17 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
       const html = await response.text();
       assert.doesNotMatch(html, /capital-ai-public-snapshot/, route);
     }
+    const pricingResponse = await fetch(origin + '/pricing');
+    assert.equal(pricingResponse.status, 200);
+    assert.equal(pricingResponse.headers.get('x-robots-tag'), 'noindex, nofollow');
+    const pricingHtml = await pricingResponse.text();
+    assert.match(pricingHtml, /<title>Tarife und Leistungen \| Capital-AI<\/title>/);
+    assert.match(pricingHtml, /id="capital-ai-pricing-fallback"/);
+    assert.match(pricingHtml, /href="\/learning"/);
+    assert.match(pricingHtml, /href="\/login"/);
+    assert.doesNotMatch(pricingHtml, /Die Anwendung konnte nicht gestartet werden/);
+    assert.doesNotMatch(pricingHtml, /rel="canonical"/);
+
     const learningResponse = await fetch(origin + '/learning');
     assert.equal(learningResponse.status, 200);
     assert.equal(learningResponse.headers.get('x-robots-tag'), null);
@@ -228,6 +287,7 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
     }
     assert.match(learningHtml, /0,50 × 0,80 \+ 0,30 × 0,40 \+ 0,20 × 0,60 = 0,64/);
     assert.match(learningHtml, /Checkout ist erst nach Anmeldung/);
+    assert.doesNotMatch(learningHtml, /Die Anwendung konnte nicht gestartet werden/);
     assert.doesNotMatch(learningHtml, /Blueprint[^<]*kaufen|garantierte Rendite/);
     assert.match(learningHtml, /href="https:\/\/capital-ai\.online\/learning"/);
 
