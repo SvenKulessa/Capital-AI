@@ -17,6 +17,10 @@ const RouteBreadcrumbs = lazy(() =>
   })),
 );
 
+const CookieConsentV3 = lazy(() =>
+  import('../privacy/CookieConsentV3').then((module) => ({ default: module.CookieConsentV3 })),
+);
+
 const AppOverlays = lazy(() =>
   import('./AppOverlays').then((module) => ({ default: module.AppOverlays })),
 );
@@ -79,6 +83,10 @@ export function AppShell() {
           />
         </Suspense>
       )}
+
+      <Suspense fallback={null}>
+        <CookieConsentV3 />
+      </Suspense>
 
       <HeroBuddy
         onNavigate={navigateTo}

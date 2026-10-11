@@ -46,14 +46,33 @@
   .license-report article { break-inside: avoid; border-color: #ccc; }
 }
 
-/* Keep hero content legible over decorative Universe artwork. */
+/* Keep the right-aligned Earth visible behind, not on top of, the hero copy. */
 .capital-ai-hero { overflow-wrap: anywhere; }
+.capital-ai-hero .hero-copy h1,
+.capital-ai-hero .hero-copy p {
+  text-shadow: 0 2px 14px rgb(2 5 14 / 90%);
+}
 .capital-ai-hero button:focus-visible {
   outline: 2px solid var(--color-brand-gold);
   outline-offset: 4px;
 }
+
+@keyframes capitalAiHeroBeaconPulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.7); }
+  50% { opacity: 1; transform: scale(1.65); }
+}
+
+/* The 3D globe rotates on its real Y axis in HeroEarth3D.tsx. */
+.capital-ai-hero .hero-earth-beacon {
+  animation: capitalAiHeroBeaconPulse 3.6s ease-in-out infinite;
+  box-shadow: 0 0 9px 3px rgb(249 191 33 / 70%), 0 0 22px 7px rgb(249 191 33 / 25%);
+}
+.capital-ai-hero .hero-earth-beacon--cyan {
+  box-shadow: 0 0 9px 3px rgb(34 211 238 / 65%), 0 0 20px 7px rgb(34 211 238 / 25%);
+}
 @media (prefers-reduced-motion: reduce) {
-  .capital-ai-hero .animate-pulse-slow { animation: none; }
+  .capital-ai-hero .animate-pulse-slow,
+  .capital-ai-hero .hero-earth-beacon { animation: none; }
   .capital-ai-hero button, .capital-ai-hero button svg {
     transition: none;
     transform: none;
