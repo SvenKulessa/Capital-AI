@@ -1,4 +1,4 @@
-import { readCookieConsent, COOKIE_CONSENT_STORAGE_KEY } from '../privacy/cookieConsentV3.ts';
+import { readCookieConsent, COOKIE_CONSENT_STORAGE_KEY, browserConsentPersistenceFailed } from '../privacy/cookieConsentV3.ts';
 import { isSeoIndexable } from '../../shared/seo-indexing-policy.mjs';
 
 export const CONSENT_CHANGED_EVENT = 'capital-ai:consent-changed';
@@ -38,7 +38,7 @@ function disable() {
   script?.remove(); script = null;
   clearTimeout(expiryTimer); clearCookies(); lastPath = '';
   // A new document removes Google's in-memory listeners as well as its script element.
-  const reload = active; active = false;
+  const reload = active && !browserConsentPersistenceFailed(); active = false;
   if (reload) window.location.reload();
 }
 async function synchronize() {

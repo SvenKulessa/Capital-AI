@@ -7,7 +7,7 @@ const env = { SMTP_HOST: 'smtp.example.test', SMTP_USER: 'private-user', SMTP_PA
 const payload = () => ({ requestId: randomUUID(), email: 'learner@example.test', message: 'Please explain the course learning goals.', website: '' });
 function fixture(sendMail = async () => ({ accepted: ['support@capital-ai.online'], rejected: [] }), suppliedEnv = env) {
   const mails = [];
-  const handler = createLearningInquiry({ env: suppliedEnv, auth: { sameOrigin: req => req.headers.origin === 'https://capital-ai.online' }, sendMail: async mail => { mails.push(mail); return sendMail(mail); } });
+  const handler = createLearningInquiry({ env: suppliedEnv, auth: { sameOrigin() { throw Error('Course enquiries must not require Supabase auth'); } }, sendMail: async mail => { mails.push(mail); return sendMail(mail); } });
   return { mails, async run(body = payload(), headers = {}, method = 'POST', path = '/api/public/learning-inquiry') {
     const req = Readable.from([Buffer.from(JSON.stringify(body))]);req.method = method;
     req.headers = { 'content-type': 'application/json', origin: 'https://capital-ai.online', ...headers };req.socket = { remoteAddress: '192.0.2.1' };

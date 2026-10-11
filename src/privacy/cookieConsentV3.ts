@@ -11,6 +11,7 @@ export const COOKIE_CONSENT_RETENTION_DAYS = 180;
 const MAX_AGE_MS = COOKIE_CONSENT_RETENTION_DAYS * 24 * 60 * 60 * 1000;
 const CLOCK_SKEW_MS = 60 * 1000;
 let browserStorageDenied = false;
+export function browserConsentPersistenceFailed() { return browserStorageDenied; }
 
 export type OptionalCookiePurpose = 'analytics' | 'marketing';
 export type CookieChoices = Readonly<Record<OptionalCookiePurpose, boolean>>;

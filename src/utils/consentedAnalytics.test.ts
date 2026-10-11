@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { saveCookieConsent } from '../privacy/cookieConsentV3';
 import { PRIVACY_NOTICE_VERSION } from '../../shared/legal-identity.mjs';
 import { startConsentedAnalytics, sendPageView, trackReceivedLearningInquiry, CONSENT_CHANGED_EVENT } from './consentedAnalytics';
 
@@ -36,5 +37,18 @@ test('basic consent mode loads only after opt-in, sanitizes public events and re
     sendPageView('/learning');trackReceivedLearningInquiry('b4f044bc-1103-467d-9810-ea98f93fdca3');
     assert.equal(commands().length, count);assert.equal(reloads, 1);assert.equal(removed, 1);
     assert.ok(writes.some(value => value.includes('Max-Age=0')));assert.equal(w['ga-disable-G-0542DT2HCE'], true);
+    // A failed persistent revocation must not reload and immediately restore the old saved grant.
+    stored = JSON.stringify({ version: 'COOKIE_CONSENT_V3', privacyNoticeVersion: PRIVACY_NOTICE_VERSION, savedAt: Date.now(), analytics: true, marketing: false });
+    listeners.get(CONSENT_CHANGED_EVENT)!();await settle();assert.equal(scripts, 2);
+    w.localStorage.setItem = () => { throw Error('write-denied'); };
+    w.localStorage.removeItem = () => { throw Error('remove-denied'); };
+    w.dispatchEvent = (event: Event) => { listeners.get(event.type)?.(event); return true; };
+    assert.equal(saveCookieConsent({ analytics: false, marketing: false }), null);await settle();
+    assert.equal(reloads, 1);assert.equal(w['ga-disable-G-0542DT2HCE'], true);
+    const blockedCount = commands().length;sendPageView('/learning');assert.equal(commands().length, blockedCount);
+    w.localStorage.setItem = (_key: string, value: string) => { stored = value; };
+    w.localStorage.removeItem = () => { stored = null; };
+    saveCookieConsent({ analytics: false, marketing: false });
+
   } finally { globalThis.window = oldWindow;globalThis.document = oldDocument;globalThis.fetch = oldFetch; }
 });

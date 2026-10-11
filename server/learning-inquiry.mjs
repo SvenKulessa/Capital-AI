@@ -28,7 +28,7 @@ export function createLearningInquiry({ env = process.env, auth, sendMail, now =
     if (url.pathname !== '/api/public/learning-inquiry') return false;
     res.setHeader('Cache-Control', 'no-store');
     if (req.method !== 'POST') { json(res, 405, { error: 'method_not_allowed' }); return true; }
-    if (!auth.sameOrigin(req)) { json(res, 403, { error: 'forbidden_origin' }); return true; }
+    if (req.headers.origin !== 'https://capital-ai.online') { json(res, 403, { error: 'forbidden_origin' }); return true; }
     if (!configured) { json(res, 503, { error: 'inquiry_unavailable' }); return true; }
     let body;
     try { body = await readJson(req, 8192); } catch { json(res, 400, { error: 'invalid_request' }); return true; }
