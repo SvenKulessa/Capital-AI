@@ -308,10 +308,12 @@ test('paused price alerts cannot render navigation or run background price check
   assert.match(context, /if \(!PRICE_ALERTS_ENABLED\) return;\s*try \{\s*localStorage\.setItem\(STORAGE_ALERTS_KEY/);
 });
 
-test('hero earth is prominent without covering the primary call to action', () => {
+test('hero globe retains original right-of-headline placement without covering the primary action', () => {
   const hero = readFileSync(new URL('../src/components/Hero.tsx', import.meta.url), 'utf8');
-  assert.match(hero, /w-\[min\(54vw,690px\)\]/);
-  assert.match(hero, /opacity-100 drop-shadow/);
-  assert.match(hero, /relative z-10 mx-auto max-w-lg/);
+  assert.match(hero, /absolute -top-12 -right-20 w-\[340px\] h-\[340px\]/);
+  assert.match(hero, /sm:w-\[420px\] sm:h-\[420px\]/);
+  assert.match(hero, /mix-blend-screen opacity-90 filter drop-shadow/);
+  assert.match(hero, /relative z-10 max-w-lg rounded-2xl bg-brand-canvas\/90/);
+  assert.doesNotMatch(hero, /mx-auto -mt-3 mb-\[-1\.75rem\] aspect-square/);
   assert.match(hero, /id="hero-start-analysis-btn"/);
 });
