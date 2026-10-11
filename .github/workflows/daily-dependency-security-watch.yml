@@ -93,7 +93,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p security-reports
-          node --test scripts/capture-dependency-candidate.test.mjs scripts/evaluate-dependency-retry.test.mjs scripts/verify-dependency-suppressions.test.mjs 2>&1 |
+          node --test scripts/daily-dependency-watch.test.mjs scripts/capture-dependency-candidate.test.mjs scripts/evaluate-dependency-retry.test.mjs scripts/verify-dependency-suppressions.test.mjs 2>&1 |
             tee security-reports/dependency-policy-tests.log
 
       - name: Enforce due dependency suppression review
