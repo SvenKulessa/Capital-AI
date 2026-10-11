@@ -4,6 +4,7 @@ import { BrandLogo } from './BrandLogo';
 import { ExternalLink } from 'lucide-react';
 import { socialLinks } from '../data/socialLinks';
 import { trackEvent } from '../utils/analytics';
+import { OPEN_COOKIE_PREFERENCES_EVENT } from '../privacy/cookieConsentV3';
 
 const socialIconPath = (id: (typeof socialLinks)[number]['id']) => `/branding/social/${id}.svg`;
 
@@ -119,6 +120,13 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         </a>
       </div>
 
+
+      <button type="button"
+        onClick={() => window.dispatchEvent(new Event(OPEN_COOKIE_PREFERENCES_EVENT))}
+        className="mt-4 min-h-11 rounded-lg px-3 py-2 text-xs font-semibold text-slate-300 underline underline-offset-4 hover:text-amber-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
+      >
+        Cookie-Einstellungen ändern oder Einwilligung widerrufen
+      </button>
 
       {/* Mobile iOS Home Indicator Bar */}
       <div className="w-28 h-1 bg-white/40 rounded-full mx-auto mt-6" />
