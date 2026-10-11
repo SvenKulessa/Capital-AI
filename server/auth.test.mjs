@@ -44,6 +44,8 @@ async function harness(envOverrides = {}) {
     rejectConsentWrites: false,
     privacyRequests: [],
     rejectPrivacyWrites: false,
+    profileOverride: null,
+    subscriptionOverride: null,
   };
 
   const user = () => ({
@@ -158,14 +160,14 @@ async function harness(envOverrides = {}) {
       assert.match(String(options.headers.Authorization || ''), /^Bearer access-/);
       assert.equal(options.headers.apikey, 'sb_publishable_test');
       assert.equal(target.searchParams.get('id'), `eq.${state.subject}`);
-      return Response.json([{ id: state.subject, iam_role: state.subject === 'owner-subject' ? 'owner' : 'user' }]);
+      return Response.json([state.profileOverride ?? { id: state.subject, iam_role: state.subject === 'owner-subject' ? 'owner' : 'user' }]);
     }
 
     if (target.origin === 'https://project.supabase.co' && target.pathname === '/rest/v1/subscriptions') {
       assert.match(String(options.headers.Authorization || ''), /^Bearer access-/);
       assert.equal(options.headers.apikey, 'sb_publishable_test');
       assert.equal(target.searchParams.get('user_id'), `eq.${state.subject}`);
-      return Response.json([{
+      return Response.json([state.subscriptionOverride ?? {
         user_id: state.subject,
         tier: state.subject === 'owner-subject' ? 'Enterprise' : 'Free',
         status: state.subject === 'owner-subject' ? 'active' : 'free',
@@ -281,6 +283,37 @@ test('Supabase email login is same-origin, backend-owned and returns a landing-p
     assert.equal(JSON.stringify(session).includes('access-'), false);
     assert.equal(JSON.stringify(session).includes('refresh-'), false);
     assert.deepEqual(h.state.authAudit, ['Supabase authentication verified at password_login']);
+  } finally {
+    await h.stop();
+  }
+});
+
+test('account projection denies inactive tiers and cross-user upstream rows', async () => {
+  const h = await harness();
+  try {
+    h.state.subject = 'user-subject';
+    const cookie = await h.completeEmail();
+    const read = async () => (await (await h.request('/api/auth/session', { headers: { cookie } })).json()).account;
+
+    h.state.subscriptionOverride = { user_id: 'user-subject', tier: 'Pro', status: 'past_due' };
+    assert.equal((await read()).subscription, null);
+    assert.deepEqual((await read()).badges, []);
+
+    h.state.subscriptionOverride = { user_id: 'user-subject', tier: 'Pro', status: 'trialing' };
+    assert.equal((await read()).subscription.tier, 'Pro');
+    assert.equal((await read()).badges[0].id, 'pro');
+
+    h.state.subscriptionOverride = { user_id: 'foreign-subject', tier: 'Pro', status: 'active' };
+    let account = await read();
+    assert.equal(account.available, false);
+    assert.equal(account.iamRole, null);
+    assert.deepEqual(account.badges, []);
+
+    h.state.subscriptionOverride = { user_id: 'user-subject', tier: 'Pro', status: 'active' };
+    h.state.profileOverride = { id: 'foreign-subject', iam_role: 'owner' };
+    account = await read();
+    assert.equal(account.available, false);
+    assert.equal(account.iamRole, null);
   } finally {
     await h.stop();
   }
