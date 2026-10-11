@@ -7,10 +7,9 @@
  *    - Schnellzugriff-Buttons (Analyse, Sektoren, Whale Radar, Tarife, Login)
  *    - Vollintegriertes Hamburger-Drawer-Menü mit Assetklassen-Hierarchie
  * 2. SCORING-LOGIK        : 
- *    - Indiziert Alert-Zähler (`activeAlertsCount`, `triggeredAlertsCount`)
- *    - Visuelle Notification-Badges bei Schwellenwert-Auslösung
+ *    - Price-Alert-Schnellzugriff während Produktpause ausgeblendet
  * 3. DATENANBINDUNG       : 
- *    - `usePriceAlerts()` Context Hook für Alert-Zähler
+ *    - Sessionstatus und Navigation
  *    - Google Analytics Event Tracking (`trackLoginClick`, `header-analysis-btn`)
  * 4. DATENQUELLEN / FEEDS : 
  *    - Asset-Klassen-Katalog (ASSET_CLASSES)
