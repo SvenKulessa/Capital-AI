@@ -41,6 +41,7 @@ export function summarizeCiEfficiency({
 
   for (const run of runs) {
     const name = run.name || run.workflow_name || 'UNKNOWN_WORKFLOW';
+    const event = run.event || 'UNKNOWN_EVENT';
     const entry = workflows.get(name) || {
       workflow: name,
       runs: 0,
@@ -79,9 +80,9 @@ export function summarizeCiEfficiency({
         if (elapsed === null || elapsed <= 0) continue;
         const jobName = job.name || 'UNKNOWN_JOB';
         const stepName = step.name || 'UNKNOWN_STEP';
-        const key = JSON.stringify([name, jobName, stepName]);
+        const key = JSON.stringify([name, event, jobName, stepName]);
         const record = stepTimings.get(key) || {
-          workflow: name, job: jobName, step: stepName, seconds: [], failures: 0,
+          workflow: name, event, job: jobName, step: stepName, seconds: [], failures: 0,
         };
         record.seconds.push(elapsed);
         if (step.conclusion === 'failure') record.failures += 1;
@@ -110,6 +111,7 @@ export function summarizeCiEfficiency({
 
   const stepRows = [...stepTimings.values()].map(entry => ({
     workflow: entry.workflow,
+    event: entry.event,
     job: entry.job,
     step: entry.step,
     observations: entry.seconds.length,
