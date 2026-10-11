@@ -31,7 +31,7 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
   const { t } = useLocale();
   const reduceMotion = useReducedMotion();
   return (
-    <section className="capital-ai-hero relative px-[20px] pt-4 pb-7 overflow-hidden">
+    <section className="capital-ai-hero relative isolate overflow-hidden px-[20px] pt-4 pb-7">
       {/* Golden neural light trails mirroring the logo's lateral filaments */}
       <div aria-hidden="true" className="absolute top-0 left-0 right-0 h-44 pointer-events-none -z-0 opacity-40 overflow-hidden">
         <svg className="w-full h-full" viewBox="0 0 400 160" fill="none" preserveAspectRatio="none">
@@ -75,34 +75,42 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
         </svg>
       </div>
 
-      {/* Luminous Earth & Network Constellation Background */}
-      <div aria-hidden="true" className="absolute -top-12 -right-20 w-[340px] h-[340px] sm:w-[420px] sm:h-[420px] pointer-events-none select-none z-0">
+      {/* Decorative Earth: anchored to the right, behind the translucent heading panel. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-8 right-0 z-0 aspect-square w-[min(88vw,340px)] select-none sm:-top-12 sm:w-[min(52vw,520px)]"
+      >
         <motion.div
           initial={reduceMotion ? false : { opacity: 0, scale: 0.92 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.2, ease: 'easeOut' }}
-          className="relative w-full h-full"
+          className="relative h-full w-full"
         >
-          {/* Earth image with radial fade masks */}
-          <img
-            src={heroEarthImage}
-            alt=""
-            referrerPolicy="no-referrer"
-            className="w-full h-full object-cover rounded-full mix-blend-screen opacity-90 filter drop-shadow-[0_0_40px_rgba(245,176,20,0.35)]"
-          />
-          {/* Radial atmosphere glow */}
-          <div className="absolute inset-0 rounded-full bg-radial from-transparent via-transparent to-[#02050e] opacity-80" />
-          <div className="absolute -inset-4 bg-gradient-to-l from-transparent via-transparent to-[#02050e] opacity-90" />
-          <div className="absolute -inset-4 bg-gradient-to-t from-[#02050e] via-transparent to-transparent opacity-90" />
-          
-          {/* Ambient golden light bloom */}
-          <div className="absolute top-1/4 right-1/4 w-32 h-32 bg-amber-500/20 rounded-full blur-2xl animate-pulse-slow" />
-          <div className="absolute top-1/2 right-1/3 w-28 h-28 bg-brand-ai/15 rounded-full blur-xl" />
+          {/* The rotation is isolated from Framer Motion's entrance transform. */}
+          <div className="hero-earth-rotation relative h-full w-full">
+            <img
+              src={heroEarthImage}
+              alt=""
+              referrerPolicy="no-referrer"
+              className="h-full w-full rounded-full object-cover mix-blend-screen opacity-95 drop-shadow-[0_0_40px_rgba(245,176,20,0.45)]"
+            />
+            {/* Beacons follow the globe and pulse independently. */}
+            <span className="hero-earth-beacon absolute left-[31%] top-[27%] h-2 w-2 rounded-full bg-amber-100" />
+            <span className="hero-earth-beacon absolute left-[58%] top-[40%] h-1.5 w-1.5 rounded-full bg-amber-100 [animation-delay:-1.1s]" />
+            <span className="hero-earth-beacon hero-earth-beacon--cyan absolute left-[69%] top-[62%] h-2 w-2 rounded-full bg-cyan-200 [animation-delay:-2.2s]" />
+            <span className="hero-earth-beacon absolute left-[38%] top-[71%] h-1.5 w-1.5 rounded-full bg-amber-100 [animation-delay:-.6s]" />
+          </div>
+          {/* Atmospheric falloff stays stationary while the Earth turns beneath it. */}
+          <div className="absolute inset-0 rounded-full bg-radial from-transparent via-transparent to-[#02050e] opacity-40" />
+          <div className="absolute -inset-4 bg-gradient-to-l from-transparent via-transparent to-[#02050e] opacity-40" />
+          <div className="absolute -inset-4 bg-gradient-to-t from-[#02050e] via-transparent to-transparent opacity-45" />
+          <div className="absolute top-1/4 right-1/4 h-32 w-32 rounded-full bg-amber-500/20 blur-2xl animate-pulse-slow" />
+          <div className="absolute top-1/2 right-1/3 h-28 w-28 rounded-full bg-brand-ai/15 blur-xl" />
         </motion.div>
       </div>
 
       {/* Hero Content */}
-      <div className="relative z-10 max-w-lg rounded-2xl bg-brand-canvas/90 p-[16px] sm:p-[20px]">
+      <div className="hero-copy relative z-10 max-w-lg rounded-2xl bg-gradient-to-r from-brand-canvas/80 via-brand-canvas/40 to-brand-canvas/15 p-[16px] sm:p-[20px]">
         {/* An accessible brand anchor above the headline, without obscuring the primary CTA. */}
         <img src="/branding/capital-ai-logo.jpg" alt="CAPITAL-AI – Market Intelligence"
           width={320} height={180} loading="eager" decoding="async"
