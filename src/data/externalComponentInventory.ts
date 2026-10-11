@@ -193,7 +193,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'google-genai', name: 'Google Gemini / GenAI SDK', domain: 'PRODUCT', kind: 'AI Provider',
-    installedAt: null, activeVersion: '2.27.0 (package-lock.json)', pipelineVersion: 'server SDK lockfile-managed; provider runtime NOT_PROVEN', lifecycle: 'ACTIVE',
+    installedAt: null, activeVersion: '2.28.0 (package-lock.json)', pipelineVersion: 'server SDK lockfile-managed; provider runtime NOT_PROVEN', lifecycle: 'ACTIVE',
     functionSummary: 'Server-side AI advisor plus governed GROWTH draft capability with request/month budget, provider/model kill-switch, model routing and public-source URL Context gate; Search Grounding remains excluded from autonomous lead discovery.',
     webAppBinding: 'server/advisor.ts + server/growth-ai-gateway.ts', license: 'Google service terms + Apache-2.0 SDK metadata', cadsScore: 77.0, scoreState: 'PROVISIONAL',
     domainAssignments: ["server-side provider endpoint; PRODUCT advisor + GROWTH draft generation; no browser domain binding"],
@@ -406,7 +406,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'web-build-stack', name: 'Web Build Stack', domain: 'PRODUCT', kind: 'Frontend Build Toolchain',
-    installedAt: null, activeVersion: 'Vite 8.3.2 / TypeScript 6.0.3 / Tailwind 4.3.3 / React 19.3.0 / Lucide 1.52.0 / Motion 14.0.0 / Three.js 0.184.0', pipelineVersion: 'resolved in package-lock.json; TypeScript 7.0.2 BLOCKED; production runtime NOT_PROVEN', lifecycle: 'ACTIVE',
+    installedAt: null, activeVersion: 'Vite 8.3.4 / TypeScript 6.0.3 / Tailwind 4.3.3 / React 19.3.0 / Lucide 1.53.0 / Motion 14.0.0 / Three.js 0.186.1', pipelineVersion: 'resolved in package-lock.json; TypeScript 7.0.2 BLOCKED; production runtime NOT_PROVEN', lifecycle: 'ACTIVE',
     functionSummary: 'Frontend-Kompilierung, Typprüfung, React-Runtime und CSS-Toolchain.',
     webAppBinding: 'package.json + package-lock.json + vite.config.ts + tsconfig.json', license: 'MIT / Apache-2.0', cadsScore: 88.0, scoreState: 'PROVISIONAL',
     domainAssignments: ['web build', 'browser runtime'],
@@ -416,7 +416,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'web-runtime-dependencies', name: 'Web Runtime Dependency Closure', domain: 'PLATFORM', kind: 'Node Runtime Dependencies',
-    installedAt: null, activeVersion: 'NATS JS 3.4.0 / redis 6.3.0 / zod 4.6.5 / nodemailer 10.0.15', pipelineVersion: 'deploy/runtime/package-lock.json resolved; live deployment NOT_PROVEN', lifecycle: 'ACTIVE',
+    installedAt: null, activeVersion: 'NATS JS 3.4.0 / redis 6.3.0 / zod 4.6.5 / nodemailer 10.0.16', pipelineVersion: 'deploy/runtime/package-lock.json resolved; live deployment NOT_PROVEN', lifecycle: 'ACTIVE',
     functionSummary: 'Minimale Production-Dependency-Closure für NATS, Valkey/Redis und Runtime-Validierung.',
     webAppBinding: 'deploy/runtime/package.json + deploy/runtime/package-lock.json', license: 'Apache-2.0 / MIT', cadsScore: 90.0, scoreState: 'VERIFIED',
     domainAssignments: ['production runtime'],
