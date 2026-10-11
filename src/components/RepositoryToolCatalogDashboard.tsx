@@ -15,10 +15,25 @@ type CatalogEntry = {
   revisionSha?: string | null;
   sourceBlobSha?: string | null;
   integrity?: string | null;
+  inventoryVersion?: string | null;
+  inventoryVersionBasis?: string | null;
+  license?: { declared: string | null; source: string | null; commercial: string; redistribution: string; approval: string };
+  commercialServiceRights?: string;
+  priceModel?: string;
+  freeTier?: string;
+  paidTier?: string;
+  dailyQuota?: number | null;
+  use?: {
+    state: string; actualCallsPerDay: number | null; actualCallsEvidence: string;
+    scheduledRunsPerDay: number | null; scheduledCrons: string[]; measurementWindow: string | null;
+  };
+  alternatives?: { name: string; role: string; licenseDeclared: string }[];
+  alternativesBasis?: string;
 };
 type UpdateFinding = {
   id: string; name: string; kind: string; installed: string | null; state: string;
-  version?: string; sha?: string; integrity?: string; source?: string; reason?: string;
+  version?: string; latestVersion?: string | null; latestLicenseDeclared?: string | null;
+  checkedVersion?: string; sha?: string; integrity?: string; source?: string; reason?: string; evidencePath?: string;
   verification?: string;
 };
 type Updates = {
@@ -38,10 +53,42 @@ type CatalogSnapshot = {
   total: number;
   entries: CatalogEntry[];
   error?: string;
+  counts?: { byKind: Record<string, number>; byDomain: Record<string, number>; declaredExternal: number;
+    runtimeConsumptionVerified: number; dailyUsageMeasurements: number; unresolvedCommercialRights: number };
 };
 
 const DOMAINS = ['ALL', 'PRODUCT', 'MARKET', 'PLATFORM', 'TRUST', 'GROWTH'] as const;
 const PAGE_SIZE = 40;
+const CATALOG_KINDS_NPM = new Set(['NPM_RUNTIME', 'NPM_DEVTOOL', 'NPM_PRODUCTION_BOUNDARY', 'NPM_SECURITY_PATCH']);
+function updateReason(item: CatalogEntry, finding: UpdateFinding | undefined, updates: Updates | null): string {
+  if (!updates) return 'NOT_PROVEN: Update-Quelle nicht bestätigt';
+  if (!finding) {
+    if (CATALOG_KINDS_NPM.has(item.kind) || item.kind === 'GITHUB_ACTION_PIN')
+      return 'NOT_PROVEN: Nicht in der begrenzten Registry-/Release-Stichprobe';
+    if (item.kind === 'EXTERNER_DIENST')
+      return 'NOT_PROVEN: Kein verifizierter Provider-Versionsendpunkt';
+    return 'Keine separat prüfbare externe Release-Version im Repository belegt';
+  }
+  if (finding.state === 'BLOCKED') return 'BLOCKED: ' + (finding.reason || 'Sicherheits-Evidence');
+  if (finding.state === 'UPDATE_CANDIDATE') return 'Nicht installiert: Binär-/CVE-/Kompatibilitäts- und Lizenzprüfung offen';
+  if (finding.state === 'CURRENT_OR_NEWER') return 'Kein neuer stabiler, SHA-belegter Kandidat';
+  if (finding.state === 'REVIEW_REQUIRED') return 'REVIEW_REQUIRED: ' + (finding.reason || 'Version/Fingerprint unklar');
+  return 'NOT_PROVEN: ' + (finding.reason || 'Registry-/Commit-Nachweis fehlt');
+}
+function commercialLabel(item: CatalogEntry): string {
+  switch (item.license?.commercial) {
+    case 'GENERALLY_ALLOWED_WITH_CONDITIONS': return 'Software: kommerziell grundsätzlich zulässig; Hinweise/Pflichten';
+    case 'CONDITIONAL_COPYLEFT': return 'Copyleft: kommerziell bedingt möglich; Redistribution prüfen';
+    default: return 'NOT_PROVEN: kommerzielle Rechte nicht abschließend belegt';
+  }
+}
+function priceLabel(item: CatalogEntry): string {
+  if (item.priceModel === 'OSS_PACKAGE_NO_LICENSE_FEE_ASSUMED')
+    return 'Paket: OSS / Lizenzgebühr nicht ausgewiesen; Betriebs-/Servicekosten offen';
+  if (item.priceModel === 'PROVIDER_TARIFF_NOT_PROVEN')
+    return 'Provider: Free/Freemium/Bezahlmodell NOT_PROVEN';
+  return 'Internes Repo-Modul; kein separater Tarif belegt';
+}
 function formatDate(value: string) {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? 'unbekannt' : date.toLocaleString('de-DE');
@@ -127,6 +174,40 @@ export function RepositoryToolCatalogDashboard() {
   const currentUpdates = updates?.sourceSha === snapshot?.sourceSha ? updates : null;
   const updateById = React.useMemo(() =>
     new Map(currentUpdates?.findings.map(item => [item.id, item]) || []), [currentUpdates]);
+  const downloadReport = () => {
+    if (!snapshot) return;
+    const header = ['Name', 'Domain', 'Typ', 'Anwendung', 'Repo-Pfad', 'Version_Repo',
+      'Version_kuratiert_nicht_live', 'Version_latest_geprueft', 'Update_Status', 'Update_Grund',
+      'Lizenz_deklariert', 'Commercial_Use', 'Weiterverbreitung', 'Provider_Rechte',
+      'Preismodell', 'Freikontingent', 'Bezahlmodell', 'Ist_Aufrufe_pro_Tag', 'Ist_Evidence',
+      'Cron_Laeufe_pro_Tag_nur_plan', 'Alternativen', 'Main_SHA'];
+    const safe = (v: unknown) => {
+      const raw = String(v ?? 'NOT_PROVEN').replace(/[\r\n\t]/g, ' ').trim();
+      // Prevent spreadsheet formula execution from registry/inventory-origin strings.
+      const escaped = /^[=+@-]/.test(raw) ? "'" + raw : raw;
+      return '"' + escaped.replace(/"/g, '""') + '"';
+    };
+    const lines = [header.map(safe).join(';')];
+    for (const item of filtered) {
+      const finding = updateById.get(item.id);
+      const values = [item.name, item.domain, item.kind, item.application, item.path, item.version,
+        item.inventoryVersion, finding?.latestVersion || finding?.checkedVersion,
+        finding?.state, updateReason(item, finding, currentUpdates), item.license?.declared,
+        item.license?.commercial, item.license?.redistribution, item.commercialServiceRights,
+        item.priceModel, item.freeTier, item.paidTier, item.use?.actualCallsPerDay,
+        item.use?.actualCallsEvidence, item.use?.scheduledRunsPerDay,
+        item.alternatives?.map(a => a.name + ' (' + a.role + ')').join(', '), snapshot.sourceSha];
+      lines.push(values.map(safe).join(';'));
+    }
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(new Blob(['\uFEFF' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }));
+    link.href = url;
+    link.download = 'capital-ai-tool-katalog-' + snapshot.sourceSha.slice(0, 12) + '.csv';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
   const kinds = React.useMemo(() => Array.from(new Set(snapshot?.entries.map(item => item.kind) || [])).sort(), [snapshot]);
   const filtered = React.useMemo(() => {
     const query = search.trim().toLocaleLowerCase('de');
@@ -147,7 +228,9 @@ export function RepositoryToolCatalogDashboard() {
             Automatisch aus dem aktuellen GitHub-main: npm-/Rust-Direktabhängigkeiten,
             OCI-Basisimages, interne Anwendungen, API-/UI-Module, Skripte, Workflows und
             deklarierte externe Dienste und GitHub Actions mit SHA-Pins. Verfügbare Updates werden
-            getrennt nach Registry-Hash bzw. Repository-Commit-SHA nachgewiesen.
+            getrennt nach Registry-Hash bzw. Repository-Commit-SHA nachgewiesen. Neue Spalten
+            trennen Lizenzdeklarationen, kommerzielle Service-Rechte, Kosten, Nutzungsnachweis,
+            Update-Gründe und Alternativen.
           </p>
         </div>
         <button type="button" disabled={loading} onClick={() => { void refresh(); void refreshUpdates(); }}
@@ -196,6 +279,17 @@ export function RepositoryToolCatalogDashboard() {
           sicheren Upgrade-Pfad. Versionen werden nur nach Code-Review und CI verändert.
         </p>
       </div>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-xs text-slate-400">
+          {snapshot.counts?.declaredExternal ?? snapshot.entries.filter(item => item.kind === 'EXTERNER_DIENST').length} deklarierte externe Integrationen
+          {' · '}tatsächlich gemessene Tagesverbräuche: {snapshot.counts?.dailyUsageMeasurements ?? 0}
+          {' · '}kommerziell freigegebene Provider-Rechte: NOT_PROVEN
+        </p>
+        <button type="button" onClick={downloadReport}
+          className="min-h-11 rounded-xl border border-cyan-300/40 px-4 py-2 text-xs font-semibold text-cyan-200 hover:bg-slate-800">
+          Vollständige gefilterte Liste als CSV
+        </button>
+      </div>
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-slate-700 bg-slate-950/60 p-4"><p className="text-xs text-slate-400">Katalogeinträge</p><p className="mt-1 text-2xl font-bold">{snapshot.total}</p></div>
         <div className="rounded-xl border border-slate-700 bg-slate-950/60 p-4"><p className="text-xs text-slate-400">Mit Versionsnachweis</p><p className="mt-1 text-2xl font-bold">{snapshot.entries.filter(item => item.version !== null).length}</p></div>
@@ -223,11 +317,15 @@ export function RepositoryToolCatalogDashboard() {
       </div>
       <p className="text-xs text-slate-400" aria-live="polite">{filtered.length} Treffer · {Math.min(limit, filtered.length)} sichtbar</p>
       <div className="overflow-x-auto rounded-2xl border border-slate-700 bg-slate-950/70">
-        <table className="w-full min-w-[1080px] text-left text-xs">
+        <table className="w-full min-w-[1900px] text-left text-xs">
           <thead className="bg-slate-900/80 text-slate-300"><tr>
             <th scope="col" className="p-3">Tool / Anwendung</th>
             <th scope="col" className="p-3">Version & Quelle</th>
             <th scope="col" className="p-3">Update / SHA-Prüfung</th>
+            <th scope="col" className="p-3">Einsatz / Verbrauch pro Tag</th>
+            <th scope="col" className="p-3">Lizenz / kommerzielle Weitergabe</th>
+            <th scope="col" className="p-3">Kosten / Freemium / Bezahlung</th>
+            <th scope="col" className="p-3">Alternativen</th>
             <th scope="col" className="p-3">Repository-Pfad</th>
             <th scope="col" className="p-3">Anwendungsbereich</th>
             <th scope="col" className="p-3">Domäne / Typ</th>
@@ -243,6 +341,9 @@ export function RepositoryToolCatalogDashboard() {
                 {item.revisionSha && <p className="mt-1 font-mono text-[10px] text-cyan-300" title={item.revisionSha}>Commit {item.revisionSha.slice(0, 12)}…</p>}
                 {item.integrity && <p className="mt-1 font-mono text-[10px] text-slate-500" title={item.integrity}>Lock SHA-512 vorhanden</p>}
                 {item.sourceBlobSha && <p className="mt-1 font-mono text-[10px] text-slate-500" title={item.sourceBlobSha}>Source-Blob {item.sourceBlobSha.slice(0, 12)}…</p>}
+                {item.inventoryVersion && <p className="mt-1 text-[10px] text-slate-400" title={item.inventoryVersionBasis || ''}>
+                  Historisches Komponentenregister: {item.inventoryVersion} (nicht live bestätigt)
+                </p>}
               </td>
               <td className="p-3">
                 {finding?.state === 'UPDATE_CANDIDATE' ? <div className="text-amber-200">
@@ -251,6 +352,31 @@ export function RepositoryToolCatalogDashboard() {
                   <p className="mt-1 text-[10px] text-slate-400">{finding.verification}</p>
                 </div> : finding?.state === 'CURRENT_OR_NEWER' ? <span className="text-emerald-300">Kein neuer stabiler Kandidat</span> :
                   <span className="text-slate-400">{finding?.state || 'NOT_PROVEN'}</span>}
+                <p className="mt-1 text-[10px] text-slate-300">
+                  Neueste geprüfte Version: {finding?.latestVersion || finding?.checkedVersion || 'NOT_PROVEN'}
+                </p>
+                <p className="mt-1 text-[10px] text-slate-400">{updateReason(item, finding, currentUpdates)}</p>
+              </td>
+              <td className="p-3 text-slate-300">
+                <p>{item.use?.state || 'NOT_PROVEN'}</p>
+                <p className="mt-1">Ist-Aufrufe/Tag: {item.use?.actualCallsPerDay ?? 'NOT_PROVEN'}</p>
+                <p className="mt-1 text-slate-400">Cron-Plan/Tag: {item.use?.scheduledRunsPerDay ?? 'NOT_PROVEN'}</p>
+                {!!item.use?.scheduledCrons?.length && <p className="mt-1 font-mono text-[10px]">{item.use.scheduledCrons.join(', ')}</p>}
+              </td>
+              <td className="p-3 text-slate-300">
+                <p>{item.license?.declared || 'NOT_PROVEN'}</p>
+                <p className="mt-1 text-[10px]">{commercialLabel(item)}</p>
+                <p className="mt-1 text-[10px]">Verbreitung: {item.license?.redistribution || 'NOT_PROVEN'}</p>
+                <p className="mt-1 text-[10px] text-amber-200">Service-/Datenrechte: {item.commercialServiceRights || 'NOT_PROVEN'}</p>
+              </td>
+              <td className="p-3 text-slate-300">
+                {priceLabel(item)}
+                <p className="mt-1 text-[10px]">Free-Tier: {item.freeTier || 'NOT_PROVEN'}</p>
+                <p className="mt-1 text-[10px]">Paid: {item.paidTier || 'NOT_PROVEN'}</p>
+              </td>
+              <td className="p-3 text-slate-300">
+                {item.alternatives?.length ? item.alternatives.map(a => a.name).join(' · ') : 'NOT_PROVEN'}
+                <p className="mt-1 text-[10px] text-slate-400">Alternativen sind Kandidaten, keine geprüften Ersatzprodukte</p>
               </td>
               <td className="p-3 font-mono break-all">
                 {link ? <a href={link} target="_blank" rel="noopener noreferrer" className="text-cyan-300 underline underline-offset-2">{item.path}</a> : item.path}

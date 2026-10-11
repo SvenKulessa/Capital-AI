@@ -1,4 +1,5 @@
 import { discoverRepositoryUpdates } from './tool-update-discovery.mjs';
+import { assessCatalogEntries, summarizeCatalog } from './tool-catalog-assessment.mjs';
 
 // Read-only owner catalog. GitHub is the source of truth for repository state, not runtime deployment state.
 const REPO = 'SvenKulessa/Capital-AI';
@@ -332,12 +333,15 @@ export function createRepositoryToolCatalog({ fetchImpl = fetch, now = Date.now,
       'deploy/social-media/renderer-requirements.txt', 'mobile/android-private/app/build.gradle',
       'mobile/android-private/build.gradle', 'services/provider-bridge-rs/rust-toolchain.toml',
       'deploy/social-media/ffmpeg-build-profile.json',
-      'src/contracts/analysisComponentRegistry.ts', 'src/utils/pipelineToolCatalog.ts'];
+      'src/contracts/analysisComponentRegistry.ts', 'src/utils/pipelineToolCatalog.ts',
+      'src/data/externalComponentInventory.ts',
+      'docs/security/evidence/dependency-decisions/typescript-7.0.2.json'];
     const sources = await Promise.all(files.map((file, index) =>
       fromMain(file, file.endsWith('package-lock.json') ? 2_400_000 : 100_000, index >= 2)));
     const supplementary = Object.fromEntries(files.slice(8).map((p, i) => {
       const value = sources[i + 8];
-      return [p, p.endsWith('package.json') || p.endsWith('package-lock.json') || p.endsWith('ffmpeg-build-profile.json')
+      return [p, p.endsWith('package.json') || p.endsWith('package-lock.json') ||
+          p.endsWith('ffmpeg-build-profile.json') || p.endsWith('typescript-7.0.2.json')
         ? parseJson(value) : value];
     }));
     const workflowPaths = treeResult.tree.filter(item => item?.type === 'blob' &&
@@ -348,18 +352,29 @@ export function createRepositoryToolCatalog({ fetchImpl = fetch, now = Date.now,
         .map(file => fromMain(file, 120_000, true))));
     }
     for (let i = 0; i < workflowPaths.length; i++) supplementary[workflowPaths[i]] = workflowSources[i];
-    const entries = buildRepositoryToolCatalog({
+    const sourceEntries = buildRepositoryToolCatalog({
       sourceSha: sha, tree: treeResult.tree, pkg: parseJson(sources[0]), lock: parseJson(sources[1]),
       cargo: sources[2], dockerfiles: Object.fromEntries(files.slice(3, 7).map((p, i) => [p, sources[i + 3]])),
       integrations: parseJson(sources[7], []) || [], supplementary,
     });
-    if (!entries.length) throw new Error('CATALOG_EMPTY');
+    if (!sourceEntries.length) throw new Error('CATALOG_EMPTY');
+    const ts7Evidence = supplementary['docs/security/evidence/dependency-decisions/typescript-7.0.2.json'];
+    const blockedUpdates = ts7Evidence?.decision?.state === 'BLOCKED' &&
+      ts7Evidence?.dependency?.name && ts7Evidence?.dependency?.candidateVersion ?
+      [{ name: ts7Evidence.dependency.name, version: ts7Evidence.dependency.candidateVersion,
+        state: 'BLOCKED', reasonCode: ts7Evidence.decision.reasonCode || 'SECURITY_REVIEW_BLOCKED',
+        evidencePath: 'docs/security/evidence/dependency-decisions/typescript-7.0.2.json' }] : [];
+    const entries = assessCatalogEntries(sourceEntries, {
+      lock: parseJson(sources[1]), supplementary,
+      inventorySource: supplementary['src/data/externalComponentInventory.ts'],
+    });
     return {
       schema: 'CAPITAL_AI_REPOSITORY_TOOL_CATALOG@1',
       repository: REPO, branch: 'main', sourceSha: sha,
       deployedSha: SHA.test(env.RENDER_GIT_COMMIT || '') ? env.RENDER_GIT_COMMIT : null,
       observedAt: new Date(now()).toISOString(),
       freshness: 'LIVE', entries, total: entries.length,
+      counts: summarizeCatalog(entries), blockedUpdates,
     };
   }
   return {
@@ -383,7 +398,8 @@ export function createRepositoryToolCatalog({ fetchImpl = fetch, now = Date.now,
         return { ...updateCache, freshness: 'CACHED' };
       }
       if (!updateRunning) {
-        updateRunning = discoverRepositoryUpdates({ entries: current.entries, sourceSha: current.sourceSha, fetchImpl, now })
+        updateRunning = discoverRepositoryUpdates({ entries: current.entries, sourceSha: current.sourceSha,
+          blockedUpdates: current.blockedUpdates, fetchImpl, now })
           .then(value => { updateCache = value; updateAt = now(); return value; })
           .finally(() => { updateRunning = null; });
       }
