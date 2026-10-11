@@ -11,7 +11,7 @@ export function createSocialProviderExecution({ store, transport, tokenResolver 
 
   async function submit({ plan, mediaBytes = null, providerMediaUrl = null, metadata = {} } = {}) {
     assert(plan?.contractVersion === 'CAPITAL_AI_CONTENT_SOCIAL_PROVIDER_BRIDGE@1'
-      && plan?.jobId && plan?.userId && plan?.accountId && plan?.channel,
+      && plan?.jobId && plan?.userId && plan?.accountId && plan?.channel && plan?.platform,
       'SOCIAL_PROVIDER_EXECUTION_PLAN_REQUIRED');
 
     const secret = await tokenResolver({
@@ -22,6 +22,11 @@ export function createSocialProviderExecution({ store, transport, tokenResolver 
     });
     assert(secret && typeof secret.accessToken === 'string' && secret.accessToken.length > 0,
       'SOCIAL_PROVIDER_TOKEN_RESOLUTION_FAILED');
+    // The resolver is a separate trust boundary. Never dispatch with a token
+    // unless its verified owner, account and channel match the claimed job.
+    assert(secret.userId === plan.userId && secret.accountId === plan.accountId
+      && secret.channel === plan.channel && secret.platform === plan.platform,
+      'SOCIAL_PROVIDER_TOKEN_TENANT_BINDING_MISMATCH');
 
     try {
       const receipt = await transport.submit({

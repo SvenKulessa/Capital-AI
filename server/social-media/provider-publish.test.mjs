@@ -113,7 +113,7 @@ test('execution stores every provider receipt as UNKNOWN until trusted readback 
           evidenceRef: 'provider-submit://youtube/video-123' };
       },
     },
-    tokenResolver: async () => ({ accessToken: 'server-only-token' }),
+    tokenResolver: async ({ userId, accountId, channel, platform }) => ({ accessToken: 'server-only-token', userId, accountId, channel, platform }),
   });
   const result = await execution.submit({
     plan: {
@@ -142,7 +142,7 @@ test('ambiguous provider failure is persisted as UNKNOWN without blind retry', a
         throw error;
       },
     },
-    tokenResolver: async () => ({ accessToken: 'server-only-token' }),
+    tokenResolver: async ({ userId, accountId, channel, platform }) => ({ accessToken: 'server-only-token', userId, accountId, channel, platform }),
   });
   const result = await execution.submit({
     plan: {
@@ -154,4 +154,44 @@ test('ambiguous provider failure is persisted as UNKNOWN without blind retry', a
   assert.equal(result.deliveryState, 'UNKNOWN');
   assert.equal(result.ambiguous, true);
   assert.equal(notes.length, 1);
+});
+
+
+test('social execution rejects cross-tenant, wrong-account and wrong-channel token resolution before provider dispatch', async () => {
+  const plan = { contractVersion: 'CAPITAL_AI_CONTENT_SOCIAL_PROVIDER_BRIDGE@1',
+    jobId: 'job-tenant', userId: 'user-a', accountId: 'account-a',
+    channel: 'YOUTUBE', platform: 'youtube' };
+  for (const override of [
+    { userId: 'user-b' }, { accountId: 'account-b' },
+    { channel: 'TIKTOK' }, { platform: 'tiktok' },
+    { userId: undefined }, { platform: undefined },
+  ]) {
+    let dispatches = 0;
+    const execution = createSocialProviderExecution({
+      store: { async noteUnknownDelivery() { throw new Error('unexpected persistence'); } },
+      transport: { async submit() { dispatches++; throw new Error('unexpected provider call'); } },
+      tokenResolver: async () => ({ accessToken: 'server-only-token',
+        userId: plan.userId, accountId: plan.accountId,
+        channel: plan.channel, platform: plan.platform, ...override }),
+    });
+    await assert.rejects(() => execution.submit({ plan }), /SOCIAL_PROVIDER_TOKEN_TENANT_BINDING_MISMATCH/);
+    assert.equal(dispatches, 0);
+  }
+});
+
+test('social execution rejects a plan with missing platform before token resolution or provider dispatch', async () => {
+  const plan = { contractVersion: 'CAPITAL_AI_CONTENT_SOCIAL_PROVIDER_BRIDGE@1',
+    jobId: 'job-without-platform', userId: 'operator-a', accountId: 'owned-account-a',
+    channel: 'YOUTUBE' };
+  let tokenResolutions = 0;
+  let dispatches = 0;
+  const execution = createSocialProviderExecution({
+    store: { async noteUnknownDelivery() { throw new Error('unexpected persistence'); } },
+    transport: { async submit() { dispatches++; throw new Error('unexpected provider call'); } },
+    tokenResolver: async () => { tokenResolutions++; return { accessToken: 'server-only-token',
+      userId: plan.userId, accountId: plan.accountId, channel: plan.channel, platform: undefined }; },
+  });
+  await assert.rejects(() => execution.submit({ plan }), /SOCIAL_PROVIDER_EXECUTION_PLAN_REQUIRED/);
+  assert.equal(tokenResolutions, 0);
+  assert.equal(dispatches, 0);
 });
