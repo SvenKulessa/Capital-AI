@@ -86,6 +86,15 @@ test('UI is mounted on every route and discloses inactive analytics and durable 
   assert.match(ui, /addEventListener\('storage', synchronize\)/);
   assert.match(ui, /Datenschutzhinweise lesen/);
   assert.match(ui, /derzeit nicht aktiviert/);
+  // Saved preferences leave no floating dialog/button but remain editable.
+  assert.match(ui, /if \(!open && decision\) return null;/);
+  assert.match(ui, /OPEN_COOKIE_PREFERENCES_EVENT/);
+  assert.doesNotMatch(ui, /fixed bottom-3 left-3/);
+  const footer = readFileSync(new URL('../components/Footer.tsx', import.meta.url), 'utf8');
+  const account = readFileSync(new URL('../features/account/AccountPageShell.tsx', import.meta.url), 'utf8');
+  assert.match(footer, /Cookie-Einstellungen ändern oder Einwilligung widerrufen/);
+  assert.match(account, /Cookie-Einstellungen/);
+  assert.doesNotMatch(account, /path: '\/profile\/key-vault' as const/);
   assert.match(analytics, /export function initGoogleAnalytics\([^)]*\) \{\}/);
   assert.match(analytics, /export function trackPageView\([^)]*\) \{\}/);
 });
