@@ -77,7 +77,12 @@ export function saveCookieConsent(
     const target = availableStorage(storage);
     if (!target) return null;
     target.setItem(COOKIE_CONSENT_STORAGE_KEY, JSON.stringify(receipt));
-    return receipt;
+    // Verify the exact durable receipt before removing the consent UI.
+    // Some restricted browsers can appear to accept writes without persistence.
+    const stored = readCookieConsent(target, now);
+    return stored && stored.savedAt === receipt.savedAt &&
+      stored.analytics === receipt.analytics &&
+      stored.marketing === receipt.marketing ? stored : null;
   } catch {
     return null;
   }
