@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { inspectSyntheticPitUniverse, PIT_UNIVERSE_CONTROL_VERSION } from './market-pit-survivorship-control.mjs';
 
 const fixture = JSON.parse(readFileSync(new URL(
-  '../docs/evidence/skill-use/2026-10-12/synthetic-pit-universe-v1.json', import.meta.url,
+  './fixtures/synthetic-pit-universe-v1.json', import.meta.url,
 ), 'utf8'));
 const fresh = () => structuredClone(fixture);
 const inspect = x => inspectSyntheticPitUniverse(x.manifest, x.dataset);
