@@ -4,9 +4,9 @@
 
 ## Produkt- und Reifegrenzen
 
-**Sieben** Blueprint-Evidence-Verträge aus [`src/data/blueprintEvidenceContracts.ts`](../../src/data/blueprintEvidenceContracts.ts); alle `state=BLOCKED`. Die öffentlichen `public/downloads/blueprints/*.md` sind **Architekturinformationen**, keine produktiv verfügbaren Downloads oder Rights-/Deployment-Evidence. Das Produkt [Screener Blueprint Bundle v0.1](../docs/product/SCREENER-BLUEPRINT-BUNDLE-V0.1.md) ist zusätzlich ein eigenes **synthetisches Marketing-/YAML-Preview**, kein achter aktiver Runtime-Blueprint.
+**Sieben** Blueprint-Evidence-Verträge aus [`src/data/blueprintEvidenceContracts.ts`](../src/data/blueprintEvidenceContracts.ts); alle `state=BLOCKED`. Die öffentlichen `public/downloads/blueprints/*.md` sind **Architekturinformationen**, keine produktiv verfügbaren Downloads oder Rights-/Deployment-Evidence. Das Produkt [Screener Blueprint Bundle v0.1](../docs/product/SCREENER-BLUEPRINT-BUNDLE-V0.1.md) ist zusätzlich ein eigenes **synthetisches Marketing-/YAML-Preview**, kein achter aktiver Runtime-Blueprint.
 
-Die aktuelle [Delivery Policy](../../src/data/blueprintDeliveryPolicy.ts) setzt `publicFullSource=false`, `publicStaticDownloads=false`, `currentCommerceAdmission=false`. Eine Käufer-Auslieferung ist derzeit **BLOCKED**. Ein sichtbares Badge, Diagramm, Pricing-Schema oder Checkout-Test entsperrt sie nicht.
+Die aktuelle [Delivery Policy](../src/data/blueprintDeliveryPolicy.ts) setzt `publicFullSource=false`, `publicStaticDownloads=false`, `currentCommerceAdmission=false`. Eine Käufer-Auslieferung ist derzeit **BLOCKED**. Ein sichtbares Badge, Diagramm, Pricing-Schema oder Checkout-Test entsperrt sie nicht.
 
 ## Blueprint-Katalog (abgeleitet, keine zweite Produktregistry)
 
@@ -20,7 +20,7 @@ Die aktuelle [Delivery Policy](../../src/data/blueprintDeliveryPolicy.ts) setzt 
 | [`PARALLEL_MIXED`](../public/downloads/blueprints/PARALLEL_MIXED.md) | Preis + News + Fundamental + AI | multimodale Inputs + PIT + Lizenzen → Feature/Evidence-Kontext für Scorer | nur deklarierte Family Weights aus ScoringConfig / Gewicht `NOT_PROVEN` | News-PIT, Prompt Boundary, No Double Count, Replay | `BLOCKED` |
 | [`INDIVIDUAL_PACKAGE`](../public/downloads/blueprints/INDIVIDUAL_PACKAGE.md) | Individuelle Analysebausteine | purpose-spezifische historische/fundamentale Daten → versioniertes kundenspezifisches Research-Modul | kundenspezifisch `NOT_PROVEN`, nur lehrhafte Formeln / Gewicht `NOT_PROVEN` | PIT, Lookahead, Feldvertrag, Rights | `BLOCKED` |
 
-Die konzeptionellen Rollen, Vorbedingungen, Failure Modes und Acceptance Criteria sind in [`blueprintDocumentationData.ts`](../../src/features/documentation/blueprintDocumentationData.ts) beschrieben; die **verbindlich vorhandenen** Blueprint-Evidence-Felder verbleiben in [`blueprintEvidenceContracts.ts`](../../src/data/blueprintEvidenceContracts.ts). Kein Blueprint erhält ohne explizites Modell eine eigene Scoring-Gewichtung.
+Die konzeptionellen Rollen, Vorbedingungen, Failure Modes und Acceptance Criteria sind in [`blueprintDocumentationData.ts`](../src/features/documentation/blueprintDocumentationData.ts) beschrieben; die **verbindlich vorhandenen** Blueprint-Evidence-Felder verbleiben in [`blueprintEvidenceContracts.ts`](../src/data/blueprintEvidenceContracts.ts). Kein Blueprint erhält ohne explizites Modell eine eigene Scoring-Gewichtung.
 
 ## Architekturdiagramm — auslieferbare Schichten, kein produktiver Claim
 
