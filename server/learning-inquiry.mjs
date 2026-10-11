@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import { createLimiter, readJson } from './http-security.mjs';
 import { CONTROLLER } from '../shared/legal-identity.mjs';
+import { renderLearningInquiryMail } from '../shared/mail-templates.mjs';
 
 export function learningMeasurementId(env) {
   const id = env.GA4_MEASUREMENT_ID || env.GA4_NEASUREMENT_ID || '';
@@ -46,9 +47,8 @@ export function createLearningInquiry({ env = process.env, auth, sendMail, now =
         res.setHeader('Retry-After', '900'); json(res, 429, { error: 'rate_limited' }); return true;
       }
       record = { until: now() + 15 * 60_000, promise: null };
-      record.promise = deliver({ from: `Capital-AI <${CONTROLLER.supportEmail}>`, to: CONTROLLER.supportEmail,
-        replyTo: body.email, subject: 'Capital-AI Learning-/Kursanfrage',
-        text: `Learning-/Kursanfrage\n\n${body.message.trim()}` }).then(result => {
+      record.promise = deliver({ ...renderLearningInquiryMail(body.message), from: `Capital-AI <${CONTROLLER.supportEmail}>`, to: CONTROLLER.supportEmail,
+        replyTo: body.email }).then(result => {
           if (!result.accepted?.some(address => String(address).toLowerCase() === CONTROLLER.supportEmail) || result.rejected?.length) throw new Error('not_accepted');
           return { received: true, receipt: body.requestId, status: 'MAIL_SERVER_ACCEPTED' };
         });

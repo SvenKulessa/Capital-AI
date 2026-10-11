@@ -21,7 +21,9 @@ test('only accepted SMTP delivery confirms a learning request; retries do not se
   const result = await f.run(body);
   assert.equal(result.status, 200);assert.equal(result.data.status, 'MAIL_SERVER_ACCEPTED');
   assert.equal(result.data.receipt, body.requestId);assert.equal(f.mails[0].to, 'support@capital-ai.online');
-  assert.equal(f.mails[0].replyTo, body.email);assert.doesNotMatch(JSON.stringify(result), /learner|learning goals|private-password/);
+  assert.equal(f.mails[0].replyTo, body.email);
+  assert.match(f.mails[0].html, /capital-ai-avatar-120x120\.png/);
+  assert.match(f.mails[0].text, /Learning-\/Kursanfrage/);assert.doesNotMatch(JSON.stringify(result), /learner|learning goals|private-password/);
   await Promise.all([f.run(body), f.run(body)]);assert.equal(f.mails.length, 1);
 });
 test('rejection, unavailable SMTP and forged origins cannot generate successful receipts', async () => {

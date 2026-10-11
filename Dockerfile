@@ -86,6 +86,7 @@ COPY scripts/screener-blueprint-preview.test.mjs ./scripts/screener-blueprint-pr
 COPY scripts/cads-growth-quality.test.mjs ./scripts/cads-growth-quality.test.mjs
 COPY scripts/static-legal-routes.test.mjs ./scripts/static-legal-routes.test.mjs
 COPY scripts/generate-jaja-3d.mjs ./scripts/generate-jaja-3d.mjs
+COPY scripts/export-mail-templates.mjs scripts/mail-templates.test.mjs ./scripts/
 COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/social-tool-license-evidence.test.mjs scripts/validate-social-tool-license-evidence.mjs scripts/frontend-security.test.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
 COPY scripts/media ./scripts/media
 COPY scripts/growth/screener-learning-loop.test.mjs scripts/growth/learning-content-draft.mjs ./scripts/growth/
@@ -118,7 +119,7 @@ COPY server/infrastructure.mjs server/scorer-bus.mjs ./server/
 COPY server/market-spot-ingestion.test.mjs ./server/
 COPY server/spot-provider-wire.test.mjs server/spot-feed-lifecycle.test.mjs server/private-market-batch.test.mjs server/private-market-cache.test.mjs ./server/
 RUN --network=none node --test scripts/static-legal-routes.test.mjs server/google-analytics-readback.test.mjs server/repository-tool-catalog.test.mjs server/tool-update-discovery.test.mjs \
-    && node --test server/mta-sts.test.mjs server/well-known.test.mjs server/auth-security.test.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-source-provenance-drift.test.mjs \
+    && node --test scripts/mail-templates.test.mjs server/mta-sts.test.mjs server/well-known.test.mjs server/auth-security.test.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-source-provenance-drift.test.mjs \
     && node --test scripts/seo-production-readback.test.mjs \
     && node --test scripts/locale-policy.test.mjs server/locale-html.test.mjs \
     && node --import tsx --test src/i18n/messages.test.ts src/i18n/landingSectionCopy.test.ts src/i18n/legalAvailability.test.ts src/i18n/accountWorkspaceCopy.test.ts src/i18n/authCopy.test.ts \
@@ -161,6 +162,7 @@ COPY server/repository-tool-catalog.mjs server/tool-update-discovery.mjs ./serve
 COPY server/infrastructure.mjs ./server/
 COPY server/billing-catalog.mjs ./server/
 COPY scripts/verify-private-brokers.mjs ./scripts/
+COPY --from=build /app/supabase/email-templates/capital-ai-auth-email-shell.html ./supabase/email-templates/capital-ai-auth-email-shell.html
 COPY shared ./shared
 COPY docs/licenses/node-v26.10.0-LICENSE.txt ./licenses/Node-LICENSE.txt
 COPY server/ecb-reference-rates.LICENSE.txt ./licenses/ECB-Reference-Rate-Adapter-MIT.txt
