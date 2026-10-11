@@ -8,8 +8,9 @@ import { CommerceEntrySection } from './CommerceEntrySection';
 import { HomeLatestLearning } from './HomeLatestLearning';
 import { KeyPillars } from '../../components/KeyPillars';
 import { Footer } from '../../components/Footer';
-import { MarketSentiment } from '../market/MarketSentiment';
-import { SectorAnalysis } from '../market/SectorAnalysis';
+// Secondary, below-the-fold market widgets should not inflate the initial landing bundle.
+const MarketSentiment = lazy(() => import('../market/MarketSentiment').then(module => ({ default: module.MarketSentiment })));
+const SectorAnalysis = lazy(() => import('../market/SectorAnalysis').then(module => ({ default: module.SectorAnalysis })));
 import type {
   AssetSubclass,
   MainCategory,
@@ -123,16 +124,20 @@ export function HomePage({
         <ContentEngineConcept onNavigate={onNavigate} />
       </Suspense>
 
-      <SectorAnalysis
-        onSelectAsset={onSelectAsset}
-        onOpenPriceAlerts={onOpenPriceAlerts}
-        onExploreMarkets={onExploreMarkets}
-      />
+      <Suspense fallback={<section role="status" className="px-5 py-8 text-sm text-slate-300">Marktsektoren werden geladen …</section>}>
+        <SectorAnalysis
+          onSelectAsset={onSelectAsset}
+          onOpenPriceAlerts={onOpenPriceAlerts}
+          onExploreMarkets={onExploreMarkets}
+        />
+      </Suspense>
 
-      <MarketSentiment
-        onStartAnalysis={onOpenAnalysis}
-        onExploreMarkets={() => onExploreMarkets()}
-      />
+      <Suspense fallback={<section role="status" className="px-5 py-8 text-sm text-slate-300">Marktstimmung wird geladen …</section>}>
+        <MarketSentiment
+          onStartAnalysis={onOpenAnalysis}
+          onExploreMarkets={() => onExploreMarkets()}
+        />
+      </Suspense>
 
       <Suspense fallback={null}>
         <MarketOverview
