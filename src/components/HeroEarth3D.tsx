@@ -1,5 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { CanvasTexture } from 'three/src/textures/CanvasTexture.js';
+import { BufferGeometry } from 'three/src/core/BufferGeometry.js';
+import { LineBasicMaterial } from 'three/src/materials/LineBasicMaterial.js';
+import { LineLoop } from 'three/src/objects/LineLoop.js';
+import { LineSegments } from 'three/src/objects/LineSegments.js';
+import { Vector3 } from 'three/src/math/Vector3.js';
 import { Color } from 'three/src/math/Color.js';
 import { DirectionalLight } from 'three/src/lights/DirectionalLight.js';
 import { Group } from 'three/src/objects/Group.js';
@@ -17,6 +22,7 @@ type GeoPoint = readonly [longitude: number, latitude: number];
 type HeroEarth3DProps = { onReadyChange: (ready: boolean) => void };
 
 const REVOLUTION_SECONDS = 90;
+const BRAND_ORBIT_COLORS = [0xF9BF21, 0x44DE88, 0xFF2E93, 0x8D26FF] as const;
 const TEXTURE_WIDTH = 1024;
 const TEXTURE_HEIGHT = 512;
 
@@ -147,12 +153,19 @@ export default function HeroEarth3D({ onReadyChange }: HeroEarth3DProps) {
     let previousTime: number | null = null;
     const scene = new Scene();
     const camera = new PerspectiveCamera(39, 1, .1, 30);
-    camera.position.set(0, 0, 3.25);
+    camera.position.set(0, 0, 4.1); // Frame planet plus surrounding colored orbit network.
     camera.lookAt(0, 0, 0);
     const earth = new Group();
     earth.rotation.z = -23.4 * Math.PI / 180;
     earth.rotation.y = -Math.PI / 2;
     const beaconMaterials: MeshBasicMaterial[] = [];
+    const orbit = new Group();
+    const orbitRingGeometries: BufferGeometry[] = [];
+    const orbitLineMaterials: LineBasicMaterial[] = [];
+    const orbitNodeMaterials: MeshBasicMaterial[] = [];
+    let orbitNodeGeometry: SphereGeometry | null = null;
+    let orbitConnections: BufferGeometry | null = null;
+    let orbitConnectionMaterial: LineBasicMaterial | null = null;
     let texture: CanvasTexture | null = null;
     let surface: SphereGeometry | null = null;
     let surfaceMaterial: MeshLambertMaterial | null = null;
@@ -170,6 +183,13 @@ export default function HeroEarth3D({ onReadyChange }: HeroEarth3DProps) {
       previousTime = time;
       elapsed += delta;
       earth.rotation.y += delta * (Math.PI * 2 / REVOLUTION_SECONDS);
+      orbit.rotation.y -= delta * .16;
+      orbitLineMaterials.forEach((material, index) => {
+        material.opacity = .32 + .24 * (.5 + .5 * Math.sin(elapsed * 1.65 + index * 1.3));
+      });
+      orbitNodeMaterials.forEach((material, index) => {
+        material.opacity = .65 + .30 * (.5 + .5 * Math.sin(elapsed * 2.2 + index * .85));
+      });
       beaconMaterials.forEach((material, index) => {
         material.opacity = .52 + .44 * (.5 + .5 * Math.sin(elapsed * 2.3 + index * 1.1));
       });
@@ -226,6 +246,52 @@ export default function HeroEarth3D({ onReadyChange }: HeroEarth3DProps) {
         beacon.position.set(position.x, position.y, position.z);
         earth.add(beacon);
       });
+      // Four brand-color orbital trajectories and linked, glowing "atomic" nodes.
+      // All geometry is original, deterministic and entirely local (no map/data API).
+      orbit.rotation.x = .16;
+      orbitNodeGeometry = new SphereGeometry(.034, 12, 10);
+      const nodePositions: Vector3[][] = [];
+      BRAND_ORBIT_COLORS.forEach((color, ring) => {
+        const axis = new Vector3(0, 0, 1);
+        const tiltAxis = new Vector3(1, 0, 0);
+        const pointAt = (phase: number): Vector3 =>
+          new Vector3(1.33 * Math.cos(phase), .66 * Math.sin(phase), .16 * Math.sin(phase * 2))
+            .applyAxisAngle(axis, (ring - 1.5) * .36)
+            .applyAxisAngle(tiltAxis, .20 + ring * .23);
+        const ringPoints = Array.from({ length: 96 }, (_, index) => pointAt(index / 96 * Math.PI * 2));
+        const geometry = new BufferGeometry().setFromPoints(ringPoints);
+        const material = new LineBasicMaterial({
+          color, transparent: true, opacity: .46, depthWrite: false,
+        });
+        orbitRingGeometries.push(geometry);
+        orbitLineMaterials.push(material);
+        orbit.add(new LineLoop(geometry, material));
+        const nodes: Vector3[] = [];
+        for (let satellite = 0; satellite < 4; satellite++) {
+          const position = pointAt((satellite / 4 + ring * .11) * Math.PI * 2);
+          nodes.push(position);
+          const atomMaterial = new MeshBasicMaterial({
+            color, transparent: true, opacity: .9, depthWrite: false,
+          });
+          orbitNodeMaterials.push(atomMaterial);
+          const atom = new Mesh(orbitNodeGeometry, atomMaterial);
+          atom.position.copy(position);
+          orbit.add(atom);
+        }
+        nodePositions.push(nodes);
+      });
+      const links: Vector3[] = [];
+      for (let ring = 0; ring < nodePositions.length; ring++) {
+        for (let satellite = 0; satellite < 4; satellite++) {
+          links.push(nodePositions[ring][satellite], nodePositions[(ring + 1) % 4][satellite]);
+        }
+      }
+      orbitConnections = new BufferGeometry().setFromPoints(links);
+      orbitConnectionMaterial = new LineBasicMaterial({
+        color: 0xc3b8ff, transparent: true, opacity: .20, depthWrite: false,
+      });
+      orbit.add(new LineSegments(orbitConnections, orbitConnectionMaterial));
+      scene.add(orbit);
       scene.add(earth);
       scene.add(new HemisphereLight(0x9ddaff, 0x020715, 1.3));
       const sunlight = new DirectionalLight(0xffdcb0, 2.4);
@@ -240,6 +306,12 @@ export default function HeroEarth3D({ onReadyChange }: HeroEarth3DProps) {
       surfaceMaterial?.dispose();
       beaconGeometry?.dispose();
       beaconMaterials.forEach(material => material.dispose());
+      orbitRingGeometries.forEach(geometry => geometry.dispose());
+      orbitLineMaterials.forEach(material => material.dispose());
+      orbitNodeMaterials.forEach(material => material.dispose());
+      orbitNodeGeometry?.dispose();
+      orbitConnections?.dispose();
+      orbitConnectionMaterial?.dispose();
       onReadyChange(false);
       return;
     }
@@ -271,6 +343,12 @@ export default function HeroEarth3D({ onReadyChange }: HeroEarth3DProps) {
       surfaceMaterial?.dispose();
       beaconGeometry?.dispose();
       beaconMaterials.forEach(material => material.dispose());
+      orbitRingGeometries.forEach(geometry => geometry.dispose());
+      orbitLineMaterials.forEach(material => material.dispose());
+      orbitNodeMaterials.forEach(material => material.dispose());
+      orbitNodeGeometry?.dispose();
+      orbitConnections?.dispose();
+      orbitConnectionMaterial?.dispose();
       renderer?.dispose();
       onReadyChange(false);
     };
