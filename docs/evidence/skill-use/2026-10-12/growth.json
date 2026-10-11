@@ -360,7 +360,36 @@
       "Readme/registry mention is NOT a skill invocation trace",
       "Model self-report of autonomous routing without a tool trace is NOT_PROVEN",
       "Social provider adapter code is NOT connected social provider evidence"
-    ]
+    ],
+    "registryReadback": {
+      "path": ".agents/skills/registry.json",
+      "blobSha": "ce0b75950cb5be17f30e38fbe7949d4edccbce79",
+      "tool": "mcp__GitHub__fetch_file",
+      "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "sourceUrl": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/.agents/skills/registry.json",
+      "crossDomainSelectionAllowed": true,
+      "ownershipVerified": {
+        "GROWTH": [
+          "growth-engineering",
+          "growth-advisory",
+          "seo-engineering",
+          "revenue-engineering",
+          "sales-enterprise"
+        ],
+        "MARKET": [
+          "market-advisory",
+          "analytics-intelligence"
+        ],
+        "PRODUCT": [
+          "visual-chat",
+          "customer-success"
+        ],
+        "TRUST": [
+          "legal-compliance",
+          "trust-engineering"
+        ]
+      }
+    }
   },
   "claimEvidence": [
     {
@@ -524,6 +553,14 @@
       "id": "FULL_EXTERNAL_BROWSER",
       "status": "NOT_PROVEN",
       "reason": "Current production HTTP endpoints /healthz, /api/public/learning-config and /api/billing/vocabulary/offer were inaccessible through public browser fetch on audit date; do not promote archival browser data to current proof"
+    },
+    {
+      "id": "SKILL_REGISTRY_OWNER_CROSS_DOMAIN_READBACK",
+      "status": "PASS_SCOPED",
+      "method": "mcp__GitHub__fetch_file",
+      "path": ".agents/skills/registry.json",
+      "sourceBlobSha": "ce0b75950cb5be17f30e38fbe7949d4edccbce79",
+      "observed": "11 selected files are registered across GROWTH, MARKET, PRODUCT and TRUST; cross-domain selection allowed; docs labels DOCUMENTED are not runtime routing success."
     }
   ],
   "limitations": [
