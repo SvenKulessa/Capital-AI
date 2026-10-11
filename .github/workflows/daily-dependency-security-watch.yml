@@ -25,30 +25,99 @@ jobs:
         with:
           node-version: "24.19.0"
           cache: npm
-      - name: Validate dependency retry and suppression policy
-        run: |
-          node --test scripts/capture-dependency-candidate.test.mjs scripts/evaluate-dependency-retry.test.mjs scripts/verify-dependency-suppressions.test.mjs
-          node scripts/verify-dependency-suppressions.mjs
+      - name: Prepare audit artifacts
+        if: always()
+        run: mkdir -p security-reports
+
       - name: Install locked dependencies
+        id: locked_install
         run: npm ci --ignore-scripts --no-audit --no-fund
+
       - name: Capture available npm updates
-        shell: bash
-        run: |
-          set -o pipefail
-          mkdir -p security-reports
-          npm outdated --json > security-reports/npm-outdated.json || test $? -eq 1
-      - name: Fail on high or critical npm advisories
-        run: npm audit --audit-level=high --json > security-reports/npm-audit.json
-      - name: Record pinned runtime identities
+        id: npm_outdated
+        if: always()
         shell: bash
         run: |
           set -euo pipefail
+          mkdir -p security-reports
+          set +e
+          npm outdated --json > security-reports/npm-outdated.json 2> security-reports/npm-outdated.stderr
+          status=$?
+          set -e
+          printf '{"exitCode":%s}\n' "$status" > security-reports/npm-outdated-status.json
+          # npm outdated: exit 1 means available updates, not an execution failure.
+          # Network, registry or CLI errors must never be mistaken for success.
+          if [ "$status" -gt 1 ]; then exit "$status"; fi
+
+      - name: Fail on high or critical npm advisories
+        id: npm_audit
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p security-reports
+          set +e
+          npm audit --audit-level=high --json > security-reports/npm-audit.json 2> security-reports/npm-audit.stderr
+          status=$?
+          set -e
+          printf '{"exitCode":%s}\n' "$status" > security-reports/npm-audit-status.json
+          # Retain npm's high/critical failure and its complete machine-readable report.
+          exit "$status"
+
+      - name: Record pinned runtime identities
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p security-reports
           {
             echo "# Runtime pins"
             grep -E '^FROM ' Dockerfile || true
             grep -E '^FROM ' deploy/Dockerfile.nats || true
             grep -E '"(@nats-io/|redis|vite|react|express)' package.json || true
           } > security-reports/runtime-pins.txt
+
+      - name: Validate dependency retry regression tests
+        id: policy_tests
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p security-reports
+          node --test scripts/capture-dependency-candidate.test.mjs scripts/evaluate-dependency-retry.test.mjs scripts/verify-dependency-suppressions.test.mjs 2>&1 |
+            tee security-reports/dependency-policy-tests.log
+
+      - name: Enforce due dependency suppression review
+        id: suppression_policy
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p security-reports
+          # A review-due suppression MUST keep failing the daily job.
+          node scripts/verify-dependency-suppressions.mjs |
+            tee security-reports/dependency-suppressions.json
+
+      - name: Summarize audit outcomes
+        if: always()
+        shell: bash
+        env:
+          INSTALL_RESULT: ${{ steps.locked_install.outcome }}
+          OUTDATED_RESULT: ${{ steps.npm_outdated.outcome }}
+          AUDIT_RESULT: ${{ steps.npm_audit.outcome }}
+          TEST_RESULT: ${{ steps.policy_tests.outcome }}
+          SUPPRESSION_RESULT: ${{ steps.suppression_policy.outcome }}
+        run: |
+          set -euo pipefail
+          mkdir -p security-reports
+          jq -n --arg sha "$GITHUB_SHA" --arg install "$INSTALL_RESULT" \
+            --arg outdated "$OUTDATED_RESULT" --arg audit "$AUDIT_RESULT" \
+            --arg tests "$TEST_RESULT" --arg suppression "$SUPPRESSION_RESULT" \
+            '{schema:"CAPITAL_AI_DAILY_DEPENDENCY_EVIDENCE@1",sourceSha:$sha,
+              lockedInstall:$install,npmOutdated:$outdated,npmAudit:$audit,
+              policyTests:$tests,suppressionPolicy:$suppression,
+              rightsApproved:false,securityApproved:false}' > security-reports/daily-dependency-summary.json
+
       - name: Upload daily evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
