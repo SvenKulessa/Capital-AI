@@ -31,7 +31,7 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
   const { t } = useLocale();
   const reduceMotion = useReducedMotion();
   return (
-    <section className="capital-ai-hero relative isolate overflow-hidden px-5 pt-6 pb-10 lg:min-h-[620px] lg:py-14">
+    <section className="capital-ai-hero relative px-[20px] pt-4 pb-7 overflow-hidden">
       {/* Golden neural light trails mirroring the logo's lateral filaments */}
       <div aria-hidden="true" className="absolute top-0 left-0 right-0 h-44 pointer-events-none -z-0 opacity-40 overflow-hidden">
         <svg className="w-full h-full" viewBox="0 0 400 160" fill="none" preserveAspectRatio="none">
@@ -76,7 +76,7 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
       </div>
 
       {/* Luminous Earth & Network Constellation Background */}
-      <div aria-hidden="true" className="pointer-events-none relative z-0 mx-auto -mt-3 mb-[-1.75rem] aspect-square w-[min(88vw,390px)] select-none sm:absolute sm:-right-14 sm:top-0 sm:mb-0 sm:w-[min(64vw,510px)] lg:-right-6 lg:top-1/2 lg:w-[min(54vw,690px)] lg:-translate-y-1/2">
+      <div aria-hidden="true" className="absolute -top-12 -right-20 w-[340px] h-[340px] sm:w-[420px] sm:h-[420px] pointer-events-none select-none z-0">
         <motion.div
           initial={reduceMotion ? false : { opacity: 0, scale: 0.92 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -88,12 +88,12 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
             src={heroEarthImage}
             alt=""
             referrerPolicy="no-referrer"
-            className="h-full w-full rounded-full object-cover opacity-100 drop-shadow-[0_0_60px_rgba(245,176,20,0.55)]"
+            className="w-full h-full object-cover rounded-full mix-blend-screen opacity-90 filter drop-shadow-[0_0_40px_rgba(245,176,20,0.35)]"
           />
           {/* Radial atmosphere glow */}
-          <div className="absolute inset-0 rounded-full bg-radial from-transparent via-transparent to-[#02050e] opacity-35" />
-          <div className="absolute -inset-4 bg-gradient-to-l from-transparent via-transparent to-[#02050e] opacity-35" />
-          <div className="absolute -inset-4 bg-gradient-to-t from-[#02050e] via-transparent to-transparent opacity-45" />
+          <div className="absolute inset-0 rounded-full bg-radial from-transparent via-transparent to-[#02050e] opacity-80" />
+          <div className="absolute -inset-4 bg-gradient-to-l from-transparent via-transparent to-[#02050e] opacity-90" />
+          <div className="absolute -inset-4 bg-gradient-to-t from-[#02050e] via-transparent to-transparent opacity-90" />
           
           {/* Ambient golden light bloom */}
           <div className="absolute top-1/4 right-1/4 w-32 h-32 bg-amber-500/20 rounded-full blur-2xl animate-pulse-slow" />
@@ -102,7 +102,7 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
       </div>
 
       {/* Hero Content */}
-      <div className="relative z-10 mx-auto max-w-lg rounded-2xl bg-brand-canvas/85 p-4 sm:mx-0 sm:bg-brand-canvas/80 sm:p-5 lg:bg-brand-canvas/70">
+      <div className="relative z-10 max-w-lg rounded-2xl bg-brand-canvas/90 p-[16px] sm:p-[20px]">
         {/* An accessible brand anchor above the headline, without obscuring the primary CTA. */}
         <img src="/branding/capital-ai-logo.jpg" alt="CAPITAL-AI – Market Intelligence"
           width={320} height={180} loading="eager" decoding="async"
