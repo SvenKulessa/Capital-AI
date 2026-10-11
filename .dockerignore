@@ -106,6 +106,7 @@
 !server/mobile-scorer.mjs
 !server/scorer-proxy.mjs
 !shared/
+!shared/hub-routes.mjs
 !shared/blog-articles.mjs
 !shared/learning-journey.mjs
 !shared/market-contracts.mjs
