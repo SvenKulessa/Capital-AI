@@ -14,6 +14,9 @@
 !.agents/skills/**
 !.github/
 !.github/agents/
+!.github/workflows/
+!.github/workflows/daily-dependency-security-watch.yml
+!.github/workflows/merge-milestones.yml
 !.github/agents/**
 !.github/copilot-instructions.md
 !src/
@@ -150,6 +153,7 @@
 !public/learning/videos/
 !public/learning/videos/**
 !scripts/generate-learning-coming-soon.tsx
+!scripts/daily-dependency-watch.test.mjs
 !scripts/domain-skills.test.mjs
 !scripts/market-blueprint-demo.test.mjs
 !scripts/screener-blueprint-preview.test.mjs

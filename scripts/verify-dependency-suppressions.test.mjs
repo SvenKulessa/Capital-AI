@@ -22,3 +22,14 @@ test('missing exact version is rejected', () => {
   assert.equal(r.passed, false);
   assert.ok(r.failures.includes('DEPENDABOT_EXACT_VERSION_MISSING'));
 });
+
+test('overdue TypeScript review remains blocking on the observation day', () => {
+  const r = verifySuppression({
+    evidence, dependabotText, today: new Date('2026-10-11T12:00:00Z'),
+  });
+  assert.equal(r.passed, false);
+  assert.ok(r.failures.includes('SUPPRESSION_REVIEW_DUE'));
+  assert.equal(evidence.decision.state, 'BLOCKED');
+  assert.equal(evidence.decision.classification, 'BINARY_AFFECTED');
+  assert.equal(evidence.fingerprint.nativeArtifact.binarySha256, null);
+});
