@@ -257,8 +257,8 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
         </div>
       </div>
 
-      <div className="w-full max-w-4xl z-10 mt-4 flex items-center justify-between gap-2 overflow-x-auto p-1.5 bg-black/50 border border-slate-800/90 rounded-2xl">
-        <div className="flex items-center gap-1.5 min-w-max">
+      <div className="w-full max-w-4xl z-10 mt-4 flex flex-wrap items-center justify-center gap-2 p-1.5 bg-black/50 border border-slate-800/90 rounded-2xl">
+        <div className="flex flex-wrap items-center justify-center gap-1.5">
           <button type="button" onClick={() => navigate('/legal')} aria-current={route === '/legal' ? 'page' : undefined}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${route === '/legal' ? 'bg-slate-700/60 text-white border border-slate-400/40' : 'text-slate-300 hover:text-white hover:bg-white/5'}`}>
             <Compass className="w-3.5 h-3.5" aria-hidden="true" />Übersicht
