@@ -7,6 +7,10 @@ The first editor is a **YAML preview with an architecture diagram**; drag-and-dr
 `EnterpriseScorer_Blueprint_v1.pdf` / ARCH-SCREEN-0002. This public
 document **does not reproduce the private source or licensed buyer files**.
 
+## Gemeinsamer Leistungsumfang aller 50 Component Blueprints
+
+Verbindliche gemeinsame Produktbeschreibung: [Screener Component Blueprint Product Contract v1](./SCREENER-COMPONENT-BLUEPRINT-PRODUCT-CONTRACT-V1.md). Der eigenständige Komponenten-Blueprint `CAP-BP-001` bezeichnet den `market_integrity_gate` und ist ausschließlich ein fachliches Soll-Konzept (nicht der Nachweis einer implementierten, datenangebundenen oder validierten Engine). Verkaufsgegenstand ist Konzept, Pipeline-Design, Analytik, vorgeschlagene Gewichtung, Gates und interaktive Darstellung; nicht enthalten sind Daten-/Providerlizenzen, Runtime, Handelsfunktion oder empirisch belegte Modellleistung. Diese Produktabgrenzung aktiviert keine Lieferung und keinen Checkout.
+
 ## Product boundary
 
 - **Public:** non-purchasable marketing preview, original branded badge, bounded synthetic YAML snippet,
