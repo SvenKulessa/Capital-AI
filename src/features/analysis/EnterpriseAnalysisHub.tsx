@@ -1,4 +1,6 @@
 import React from 'react';
+import { Mail } from 'lucide-react';
+import { ContactForm } from '../../components/ContactForm';
 import { useHubTab } from '../../hooks/useHubTab';
 import { EnterpriseScorerDashboard } from '../screener/EnterpriseScorerDashboard';
 import { ScreenerTable } from '../screener/ScreenerTable';
@@ -18,6 +20,7 @@ const TABS = [
   'components',
   'sentiment',
   'whales',
+  'kontakt',
 ] as const;
 const LABELS = {
   overview: 'Übersicht',
@@ -27,6 +30,7 @@ const LABELS = {
   components: '50 Analysekomponenten',
   sentiment: 'Sentiment',
   whales: 'Whale Radar',
+  kontakt: 'Kontakt',
 };
 export function EnterpriseAnalysisHub({
   onSelectAsset,
@@ -55,10 +59,11 @@ export function EnterpriseAnalysisHub({
             className={
               buttonClass +
               (active === id
-                ? ' border-amber-400 bg-amber-400/10 text-amber-200'
+                ? (id === 'kontakt' ? ' border-[#F5C453] bg-[#F5C453]/15 text-[#F5C453]' : ' border-amber-400 bg-amber-400/10 text-amber-200')
                 : '')
             }
           >
+            {id === 'kontakt' && <Mail className="mr-1 inline-block h-4 w-4" aria-hidden="true" />}
             {LABELS[id]}
           </button>
         ))}
@@ -71,6 +76,7 @@ export function EnterpriseAnalysisHub({
       {active === 'components' && <AnalysisComponentExplorer />}
       {active === 'sentiment' && <SentimentIntelligencePanel />}
       {active === 'whales' && <WhaleIntelligencePanel />}
+      {active === 'kontakt' && <ContactForm />}
     </div>
   );
 }

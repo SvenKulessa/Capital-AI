@@ -21,7 +21,9 @@ test('only accepted SMTP delivery confirms a learning request; retries do not se
   const result = await f.run(body);
   assert.equal(result.status, 200);assert.equal(result.data.status, 'MAIL_SERVER_ACCEPTED');
   assert.equal(result.data.receipt, body.requestId);assert.equal(f.mails[0].to, 'support@capital-ai.online');
-  assert.equal(f.mails[0].replyTo, body.email);assert.doesNotMatch(JSON.stringify(result), /learner|learning goals|private-password/);
+  assert.equal(f.mails[0].replyTo, body.email);
+  assert.match(f.mails[0].html, /capital-ai-avatar-120x120\.png/);
+  assert.match(f.mails[0].text, /Learning-\/Kursanfrage/);assert.doesNotMatch(JSON.stringify(result), /learner|learning goals|private-password/);
   await Promise.all([f.run(body), f.run(body)]);assert.equal(f.mails.length, 1);
 });
 test('rejection, unavailable SMTP and forged origins cannot generate successful receipts', async () => {
@@ -48,4 +50,24 @@ test('public configuration discloses only the bound stream and availability afte
   const result = await fixture().run({}, {}, 'GET', '/api/public/learning-config');
   assert.deepEqual(result.data, { measurementId: 'G-0542DT2HCE', inquiryAvailable: true });
   assert.doesNotMatch(JSON.stringify(result), /private-user|private-password|SMTP/);
+});
+
+test('generic contact route retains server-side SMTP, reply-to, validation and branded receipt', async () => {
+  const f = fixture();
+  const input = { ...payload(), message: 'General question with <untrusted> input.' };
+  const response = await f.run(input, {}, 'POST', '/api/public/contact');
+  assert.equal(response.status, 200);
+  assert.equal(response.data.receipt, input.requestId);
+  assert.equal(response.data.status, 'MAIL_SERVER_ACCEPTED');
+  assert.equal(f.mails.length, 1);
+  assert.equal(f.mails[0].subject, 'CAPITAL-AI Kontaktanfrage');
+  assert.equal(f.mails[0].replyTo, input.email);
+  assert.match(f.mails[0].html, /&lt;untrusted&gt;/);
+  assert.doesNotMatch(JSON.stringify(response), /untrusted|example.test/);
+  const tampered = await f.run({ ...payload(), website: 'spam.test' }, {}, 'POST', '/api/public/contact');
+  assert.equal(tampered.status, 400);
+  assert.equal(f.mails.length, 1);
+  const forged = await f.run(payload(), { origin: 'https://attacker.test' }, 'POST', '/api/public/contact');
+  assert.equal(forged.status, 403);
+  assert.equal(f.mails.length, 1);
 });

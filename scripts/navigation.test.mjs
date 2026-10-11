@@ -361,3 +361,33 @@ test('hero Earth uses true 3D axial rotation behind translucent text with a stat
   const routes = readFileSync(new URL('../src/app/routing/AppRoutes.tsx', import.meta.url), 'utf8');
   assert.match(routes, /\/profile\/key-vault/);
 });
+
+test('legal overview, contact, mobile hub tabs and global footer use one contact entry', () => {
+  for (const route of ['/legal', '/kontakt', '/faq', '/datenschutz', '/agb', '/impressum']) {
+    assert.equal(resolveAppRoute(route.toUpperCase() + '/'), route);
+  }
+  assert.equal(resolveAppRoute('/contact'), '/kontakt');
+  assert.equal(resolveAppRoute('/rechtliches'), '/legal');
+  assert.equal(resolveNavigationTarget('/legal?ref=footer'), '/legal?ref=footer');
+  const viewport = readFileSync(new URL('../src/app/layout/ApplicationViewport.tsx', import.meta.url), 'utf8');
+  const home = readFileSync(new URL('../src/features/home/HomePage.tsx', import.meta.url), 'utf8');
+  const footer = readFileSync(new URL('../src/components/Footer.tsx', import.meta.url), 'utf8');
+  const legal = readFileSync(new URL('../src/components/LegalAndFaqPages.tsx', import.meta.url), 'utf8');
+  const learning = readFileSync(new URL('../src/features/learning/LearningPortalPage.tsx', import.meta.url), 'utf8');
+  const studio = readFileSync(new URL('../src/features/studio/StudioPage.tsx', import.meta.url), 'utf8');
+  const market = readFileSync(new URL('../src/features/analysis/EnterpriseAnalysisHub.tsx', import.meta.url), 'utf8');
+  const form = readFileSync(new URL('../src/components/ContactForm.tsx', import.meta.url), 'utf8');
+  assert.match(viewport, /<Footer onNavigate=\{onNavigate\}/);
+  assert.doesNotMatch(home, /<Footer /);
+  for (const label of ['footer-nav-legal', 'footer-nav-kontakt', 'footer-nav-faq', 'footer-nav-datenschutz', 'footer-nav-agb', 'footer-nav-impressum']) {
+    assert.ok(footer.includes(label), label);
+  }
+  assert.match(legal, /route === '\/kontakt' && <ContactForm \/>/);
+  for (const target of ['/datenschutz/', '/agb/', '/impressum/']) assert.ok(legal.includes(`href="${target}"`), target);
+  assert.match(learning, /activeTab === 'kontakt' && <ContactForm \/>/);
+  assert.match(studio, /activeTab === 'kontakt' && <ContactForm \/>/);
+  assert.match(market, /active === 'kontakt' && <ContactForm \/>/);
+  assert.doesNotMatch(learning, /<LearningInquiry \/>/);
+  assert.match(form, /\/api\/public\/contact/);
+  for (const source of [learning, studio, market, legal]) assert.match(source, /#F5C453/);
+});
