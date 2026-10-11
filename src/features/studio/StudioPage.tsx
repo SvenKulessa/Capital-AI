@@ -45,6 +45,7 @@ import {
   TrendingUp,
   PieChart,
   Lock,
+  Mail,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { DATA_CONCEPTS, STUDIO_BLUEPRINTS, DataConcept, StudioBlueprint } from '../../data/studioData';
@@ -56,6 +57,7 @@ import { ScoringEngineService } from '../../services/scoringEngine';
 import { PipelineConfiguratorService } from '../../services/pipelineConfigurator';
 import { useHubTab } from '../../hooks/useHubTab';
 import { ContentStudioPanel } from './ContentStudioPanel';
+import { ContactForm } from '../../components/ContactForm';
 import { AnalysisComponentExplorer } from '../analysis/AnalysisComponentExplorer';
 import { PipelineConfiguratorConsole } from '../analysis/PipelineConfiguratorConsole';
 import { analysisUiEnabled } from '../analysis/analysisUiFlags';
@@ -69,7 +71,8 @@ export type StudioTabKey =
   | 'providers'
   | 'analytics'
   | 'benchmark'
-  | 'console';
+  | 'console'
+  | 'kontakt';
 
 export interface StudioPageProps {
   onBackToHome?: () => void;
@@ -79,7 +82,7 @@ export interface StudioPageProps {
   initialTab?: StudioTabKey;
 }
 
-const STUDIO_TABS: readonly StudioTabKey[] = ['architecture', 'content', 'blueprints', 'builder', 'advisor', 'providers', 'analytics', 'benchmark', 'console'];
+const STUDIO_TABS: readonly StudioTabKey[] = ['architecture', 'content', 'blueprints', 'builder', 'advisor', 'providers', 'analytics', 'benchmark', 'console', 'kontakt'];
 
 export const StudioPage: React.FC<StudioPageProps> = ({
   onBackToHome,
@@ -187,7 +190,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
   const runStressTest = () => {}; // Requires real benchmark worker before activation.
 
   return (
-    <div className="w-full text-slate-100 min-h-screen py-4 sm:py-6 px-2 sm:px-6 relative">
+    <div className="hub-universe hub-universe--studio w-full text-slate-100 min-h-screen py-4 sm:py-6 px-2 sm:px-6 relative">
       {/* ========================================================================= */}
       {/* 1. TOP HEADER CONTRACT (Breadcrumb + Controls)                            */}
       {/* ========================================================================= */}
@@ -224,6 +227,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
               {activeTab === 'analytics' && 'Analytics & Scoring'}
               {activeTab === 'benchmark' && 'Benchmark Lab'}
               {activeTab === 'console' && 'Configurator Console'}
+              {activeTab === 'kontakt' && 'Kontakt'}
             </span>
           </div>
 
@@ -375,9 +379,14 @@ export const StudioPage: React.FC<StudioPageProps> = ({
           <Gauge className="w-3.5 h-3.5" />
           <span>Benchmark Lab</span>
         </button>
+        <button type="button" onClick={() => setActiveTab('kontakt')} aria-current={activeTab === 'kontakt' ? 'page' : undefined}
+          className={`flex min-h-11 items-center gap-2 rounded-lg px-3.5 text-xs font-semibold whitespace-nowrap transition-colors ${activeTab === 'kontakt' ? 'bg-[#F5C453] text-slate-950' : 'text-[#F5C453] hover:bg-[#F5C453]/10'}`}>
+          <Mail className="h-4 w-4" aria-hidden="true" />Kontakt
+        </button>
       </div>
 
       {activeTab === 'content' && <ContentStudioPanel />}
+      {activeTab === 'kontakt' && <ContactForm />}
 
       {/* ========================================================================= */}
       {/* TAB CONTENT 1: PIPELINE ARCHITEKTUR (All 16 Data Concepts)                */}
