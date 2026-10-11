@@ -45,7 +45,7 @@ jobs:
           const total = report.workflows.reduce((sum, row) => sum + (row.observedRunnerMinutes || 0), 0);
           const safe = value => String(value ?? '').replace(/[\r\n`|]/g, ' ').slice(0, 90);
           const slowSteps = (report.topSlowSteps || []).slice(0, 5).map((step, index) =>
-            '- ' + (index + 1) + '. ' + safe(step.workflow) + ' / ' + safe(step.step) +
+            '- ' + (index + 1) + '. ' + safe(step.workflow) + ' [' + safe(step.event) + '] / ' + safe(step.step) +
             ': ' + step.totalObservedSeconds + ' s observed over ' + step.observations + ' runs');
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,
             [
