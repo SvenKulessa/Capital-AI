@@ -504,7 +504,12 @@
     "eventReplayRuntime": "NOT_PROVEN",
     "backtestDatasetExecution": "NOT_PROVEN",
     "browserAndProductionRuntime": "NOT_PROVEN",
-    "limitation": "Github-verbundene Repository-Inhalte waren lesbar; Container hatte keinen github.com-DNS-Zugang und keinen aktiven lokalen Repo-Checkout. Quellcode-Matches sind KEINE ausgeführten Repository-Unit-Tests."
+    "limitation": "Github-verbundene Repository-Inhalte waren lesbar; Container hatte keinen github.com-DNS-Zugang und keinen aktiven lokalen Repo-Checkout. Quellcode-Matches sind KEINE ausgeführten Repository-Unit-Tests.",
+    "observedGitHubCiExecutedLater": true,
+    "observedGitHubCiHeadSha": "ab3a3f9d0aa0f1bd25e86adabf7a5089044761b7",
+    "observedGitHubCiRunId": 38182470704,
+    "observedGitHubCiScope": "CI tests from Docker Security Gate, not local execution",
+    "currentNewPITTestExecutionStatus": "NOT_PROVEN"
   },
   "findings": [
     {
@@ -577,5 +582,87 @@
     "No protected datasets, customer portfolios or credentials included.",
     "Review of public provider terms is not a contract or legal certification.",
     "Commit SHA cannot be reliably self-referenced inside the same committed JSON blob; GitHub post-write readback is the authoritative head/commit identity."
-  ]
+  ],
+  "continuation": {
+    "version": "CAPITAL_AI_MARKET_SKILL_EVIDENCE_CONTINUATION@1",
+    "executionScope": "PR #425; market-integrity audit evidence + synthetic versioned PIT/survivorship regression",
+    "baselineCiHeadSha": "ab3a3f9d0aa0f1bd25e86adabf7a5089044761b7",
+    "baselineCiEvidence": {
+      "status": "VERIFIED",
+      "runId": 38182470704,
+      "jobId": 114597750550,
+      "runUrl": "https://github.com/SvenKulessa/Capital-AI/actions/runs/38182470704",
+      "conclusion": "success",
+      "source": "GitHub Actions job logs actually read; these are CI-executed fixtures/mocks, not production runtime tests",
+      "observedPassingTests": [
+        "query proof binds user, operation, expiry and params",
+        "replay window rejects duplicate request IDs until expiry",
+        "executor claims all durable guards before any provider I/O",
+        "proof that expires during durable claim is rejected before provider I/O",
+        "two signed users keep REST and WS query claims and results isolated",
+        "tampering, ciphertext copied between tenants, and stale entries fail closed",
+        "market coverage reports actual admitted instruments, not invented 50-per-class quotes",
+        "private market snapshot rejects stale data, other symbols and oversized responses",
+        "provider request rate and cost gates use atomic Valkey scripts and fail closed without Valkey"
+      ],
+      "requiredChecks": [
+        "Docker Security Gate: success",
+        "Domain Governance: success"
+      ],
+      "boundary": "DISPOSABLE_OR_MOCKED_TESTS_ONLY; no currently verified deployed broker-to-Vault end-to-end or paid rights"
+    },
+    "quantitativePIT": {
+      "status": "REVIEW_REQUIRED",
+      "datasetStatus": "SYNTHETIC_FIXTURE_ONLY",
+      "fixtureVersion": "fixture-v1.0.0",
+      "fixturePath": "docs/evidence/skill-use/2026-10-12/synthetic-pit-universe-v1.json",
+      "fixtureBlobSha": "7d4d7627d781f72b51ad418706762e64a6b65dae",
+      "validatorPath": "scripts/market-pit-survivorship-control.mjs",
+      "validatorBlobSha": "e85f9b89bdca08bdc3d5af8bb36a9d1a280b336f",
+      "unitTestsPath": "scripts/market-pit-survivorship-control.test.mjs",
+      "unitTestsBlobSha": "4543d971ee6d5784ca96d822ff5f9a18ec215885",
+      "unitCommand": "node --test scripts/market-pit-survivorship-control.test.mjs",
+      "existingMarketSuiteCommand": "npm run test:market",
+      "modelIntegration": "OFFLINE_RESEARCH_VALIDATION_ONLY; existing CommodityHistoricalBacktestEngine not modified, no production promotion",
+      "fixtures": {
+        "assetCount": 3,
+        "decisionTimestampCount": 2,
+        "observationCount": 4,
+        "includesFutureDelistedAsset": true,
+        "containsRealMarketData": false
+      },
+      "regressionCases": [
+        "complete PIT universe including later-delisted asset",
+        "survivorship omission from membership snapshot",
+        "survivorship omission from observations",
+        "future capture timestamp",
+        "future feature availability",
+        "future membership evidence",
+        "membership ID forgery",
+        "unknown asset identity",
+        "duplicate observation",
+        "version mismatch",
+        "non-synthetic scope rejection",
+        "production authority rejection",
+        "invalid outcome timestamp",
+        "delisted instrument improperly included at later decision",
+        "newly listed instrument prematurely included",
+        "replay-stable fingerprint"
+      ],
+      "requiredCiHeadShaAtAuthoring": "936c81b516850757fd821e11178fd633508bd7cc",
+      "ciRunIdAtAuthoring": 38183184968,
+      "ciExecutionResultAtAuthoring": "NOT_PROVEN",
+      "hasMeasuredReturns": false,
+      "hasLicenseGrant": false,
+      "canPromoteLiveScore": false,
+      "limitations": "Fixture consistency is not independent historical-vintage authenticity or survivorship-free production evidence."
+    },
+    "repositoryEnvironment": {
+      "currentMainAtAudit": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "localFullCheckoutAvailable": false,
+      "localTestExecution": "BLOCKED",
+      "reason": "Network isolation prevented git clone; GitHub-hosted PR CI is the actual execution environment."
+    },
+    "mergeDecision": "BLOCKED pending current HEAD checks and demonstration of quantified scope"
+  }
 }
