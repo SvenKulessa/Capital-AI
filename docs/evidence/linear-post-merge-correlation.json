@@ -1,12 +1,12 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "215d0e1d93003310f9ce4c68997b6dbfe34eb7d7",
-  "mergedPr": 414,
-  "targetPr": 410,
-  "targetBranch": "dependabot/npm_and_yarn/deploy/runtime/runtime-minor-patch-d26d09fbc5",
-  "targetHeadSha": "55e73c8ae43040a2e1984c167fa763aa504f8f0d",
+  "mainSha": "667f1abb3b7c08e663c9423e25a81a7a1cc1188e",
+  "mergedPr": 425,
+  "targetPr": 428,
+  "targetBranch": "capital-ai-product/customer-tour-subscriptions-20261011",
+  "targetHeadSha": "c5c15abbce39bb78f299b73b3c01a2a6cf15e487",
   "exactOverlap": [
-    "src/data/externalComponentInventory.ts"
+    "package.json"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,
