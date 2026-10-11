@@ -26,9 +26,16 @@ jobs:
           node-version: "24.19.0"
           cache: npm
       - name: Validate dependency retry and suppression policy
+        shell: bash
         run: |
-          node --test scripts/capture-dependency-candidate.test.mjs scripts/evaluate-dependency-retry.test.mjs scripts/verify-dependency-suppressions.test.mjs
-          node scripts/verify-dependency-suppressions.mjs
+          # Keep a review-due / vulnerable-artifact failure blocking. Persist its
+          # actual stdout as evidence instead of producing a secondary missing-artifact error.
+          set -euo pipefail
+          mkdir -p security-reports
+          node --test scripts/capture-dependency-candidate.test.mjs scripts/evaluate-dependency-retry.test.mjs scripts/verify-dependency-suppressions.test.mjs 2>&1 \
+            | tee security-reports/dependency-policy-tests.log
+          node scripts/verify-dependency-suppressions.mjs \
+            | tee security-reports/dependency-suppressions.json
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Capture available npm updates

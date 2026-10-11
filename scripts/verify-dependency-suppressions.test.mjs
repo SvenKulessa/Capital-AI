@@ -22,3 +22,15 @@ test('missing exact version is rejected', () => {
   assert.equal(r.passed, false);
   assert.ok(r.failures.includes('DEPENDABOT_EXACT_VERSION_MISSING'));
 });
+
+// Supply-chain observability: a due suppression must still fail the job, but
+// its JSON and regression-test transcript must survive as Actions artifacts.
+test('daily CVE watch uploads real suppression failures without relaxing fail-closed policy', () => {
+  const workflow = fs.readFileSync('.github/workflows/daily-dependency-security-watch.yml', 'utf8');
+  assert.match(workflow, /set -euo pipefail/);
+  assert.match(workflow, /node --test scripts\\/capture-dependency-candidate\\.test\\.mjs[\\s\\S]*?\\| tee security-reports\\/dependency-policy-tests\\.log/);
+  assert.match(workflow, /node scripts\\/verify-dependency-suppressions\\.mjs[\\s\\S]*?\\| tee security-reports\\/dependency-suppressions\\.json/);
+  assert.match(workflow, /if: always\\(\\)/);
+  assert.match(workflow, /if-no-files-found: error/);
+  assert.doesNotMatch(workflow, /continue-on-error:\\s*true/);
+});
