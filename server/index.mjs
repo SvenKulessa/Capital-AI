@@ -224,6 +224,29 @@ function vocabularyLandingFallback() {
     .join('');
   return `<main><article><h1>Capital-AI Vocabulary</h1><p>${publicVocabularyCount} konsolidierte Fachbegriffe mit Definitionen und jeweils drei Thesaurus-Begriffen.</p><ul>${links}</ul></article></main>`;
 }
+function learningLandingFallback(description) {
+  return `<main><article>
+    <h1>Finanzwissen lernen mit Capital-AI</h1>
+    <p>${escapeHtml(description)}</p>
+    <section><h2>1. Finanzwissen und Begriffe</h2>
+      <p>Das öffentliche Glossar erklärt Märkte und Begriffe ohne Handelssignale. Beispielsweise beschreibt das Orderbuch Kauf- und Verkaufsaufträge; die Geld-Brief-Spanne beschreibt die Differenz zwischen Kauf- und Verkaufspreisen.</p>
+      <p><a href="/vocabulary/orderbuch">Orderbuch verstehen</a> · <a href="/vocabulary/bid-ask-spread">Bid-Ask-Spread erklären</a> · <a href="/vocabulary">Alle ${publicVocabularyCount} öffentlichen Begriffe</a></p></section>
+    <section><h2>2. Datenqualität und Herkunft</h2>
+      <p>Eine Momentaufnahme des Marktes ist keine garantierte Ausführung. Datenquelle, Zeitbezug und mögliche Abweichungen gehören zur Interpretation.</p>
+      <p><a href="/vocabulary/slippage">Slippage verstehen</a> · <a href="/blog/barrierefreie-finanzcharts">Finanzcharts mit Datenherkunft und Textalternativen</a></p></section>
+    <section><h2>3. Gewichtung und Scoring nachvollziehen</h2>
+      <p>Didaktisches Beispiel mit drei fiktiven Faktoren: 0,50 × 0,80 + 0,30 × 0,40 + 0,20 × 0,60 = 0,64. Die Gewichte summieren sich zu 1. Weder Live-Score noch Kurs-, Risiko- oder Renditeprognose.</p>
+      <p><a href="/vocabulary/vix">VIX als eigenständigen Volatilitätsindikator einordnen</a></p></section>
+    <section><h2>4. Technische Research-Architektur</h2>
+      <p>Nachvollziehbare Analysen unterscheiden Datenquelle, Qualitätsprüfung, Berechnungsregel und historische Validierung. Ein technisches Konzept ist keine produktive Datenpipeline.</p>
+      <p><a href="/vocabulary/backtesting">Historische Prüfung verstehen</a></p></section>
+    <section><h2>Lernen und Zugang</h2>
+      <p>Im interaktiven Learning Portal können Sie kostenlose Inhalte, Einmalkauf-Angebot und Zugangsvoraussetzungen prüfen. Ein Checkout ist erst nach Anmeldung und nur bei verfügbarer Zahlungsabwicklung möglich; Chart-Module benötigen gegebenenfalls ein zusätzliches Abo. Hier wird kein Kauf bestätigt.</p>
+      <p><a href="/login">Für Lernzugang anmelden</a> · <a href="mailto:support@capital-ai.online?subject=Capital-AI%20Learning-%2FKursanfrage">Learning-/Kursanfrage stellen</a> · <a href="/datenschutz">Datenschutzhinweise</a></p>
+    </section>
+  </article></main>`;
+}
+
 function injectVocabularySeo(html, pathname) {
   const candidateEntry = vocabularyMetadataByPath.get(pathname);
   const entry = candidateEntry && !QUANT_PRO_IDS.has(candidateEntry.id) ? candidateEntry : null;
@@ -248,7 +271,7 @@ function injectVocabularySeo(html, pathname) {
     ? vocabularyFallback(entry)
     : pathname === '/vocabulary'
       ? vocabularyLandingFallback()
-      : `<main><article><h1>Finanzwissen lernen mit Capital-AI</h1><p>${escapeHtml(description)}</p><h2>Finanzbegriffe verstehen</h2><p>Das öffentliche Glossar erklärt Begriffe aus Marktanalyse, Daten und Sicherheit. Definitionen und verwandte Begriffe helfen beim Einstieg.</p><p><a href="/vocabulary">Zum Finanzglossar mit ${publicVocabularyCount} Fachbegriffen</a></p><h2>Chartmuster und Analyse kritisch einordnen</h2><p>Chartbeispiele und Lernfragen erklären Zusammenhänge und Grenzen einer Interpretation. Bildungsinhalte sind keine Anlageberatung oder Renditezusage. Zusätzliche Lernmodule können einen kostenpflichtigen Zugang benötigen; noch unveröffentlichte Videos sind als Vorschau gekennzeichnet.</p><h2>Learning-/Kursanfrage stellen</h2><p>Fragen zu Lerninhalten oder zum Zugang? Beschreibe dein Lernziel per E-Mail. Eine Anfrage wird erst beim Absenden der E-Mail übermittelt.</p><p><a href="mailto:support@capital-ai.online?subject=Capital-AI%20Learning-%2FKursanfrage">Learning-/Kursanfrage per E-Mail stellen</a></p><p><a href="/datenschutz">Datenschutzhinweise</a></p></article></main>`;
+      : learningLandingFallback(description);
   body = body.replace(
     '<div id="root"></div>',
     `<div id="root">${fallback}</div>`,

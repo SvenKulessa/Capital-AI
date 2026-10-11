@@ -1,3 +1,5 @@
+import { isSeoIndexable, robotsDirectiveFor } from '../../shared/seo-indexing-policy.mjs';
+
 /** Optional analytics is disabled until an accepted consent implementation exists. */
 export const GA_MEASUREMENT_ID = '';
 export function initGoogleAnalytics(_measurementId: string = GA_MEASUREMENT_ID) {}
@@ -48,6 +50,25 @@ export function updatePageSEO({
   } catch {
     // Invalid route input safely falls back to the site's canonical home.
   }
+  // SPA transitions must not undo the server's fail-closed INDEX allowlist.
+  // Never publish canonicals or URL-specific schema on private/NOINDEX routes.
+  let robotsTag = document.querySelector('meta[name="robots"]');
+  if (!robotsTag) {
+    robotsTag = document.createElement('meta');
+    robotsTag.setAttribute('name', 'robots');
+    document.head.appendChild(robotsTag);
+  }
+  robotsTag.setAttribute('content', robotsDirectiveFor(pathname));
+
+  if (!isSeoIndexable(pathname)) {
+    document.querySelector('link[rel="canonical"]')?.remove();
+    document.querySelector('meta[property="og:url"]')?.remove();
+    document.getElementById('capital-ai-seo-jsonld')?.remove();
+    document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', title);
+    document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', description);
+    return;
+  }
+
   const fullCanonicalUrl = `${canonicalOrigin}${pathname}`;
   let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
   if (!canonicalLink) {
