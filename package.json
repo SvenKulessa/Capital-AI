@@ -96,27 +96,27 @@
     "validate:all": "npm run validate:registry && npm run validate:skills && npm run validate:ownership && npm run validate:agents && node --test .agents/validation/validators.test.js && node .agents/validation/generate-skill-report.js && npm run validate:readiness"
   },
   "dependencies": {
-    "@google/genai": "^2.27.0",
+    "@google/genai": "^2.28.0",
     "@nats-io/jetstream": "3.4.0",
     "@nats-io/transport-node": "3.4.0",
     "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-react": "^6.1.2",
-    "dotenv": "^18.0.5",
+    "dotenv": "^18.0.6",
     "express": "^5.2.1",
     "jspdf": "^4.2.1",
-    "lucide-react": "1.52.0",
+    "lucide-react": "1.53.0",
     "motion": "^14.0.0",
-    "nodemailer": "10.0.15",
+    "nodemailer": "10.0.16",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "recharts": "^3.10.1",
     "redis": "6.3.0",
     "spdx-expression-parse": "5.0.0",
     "spdx-license-ids": "3.0.24",
-    "vite": "^8.3.2",
+    "vite": "^8.3.4",
     "zod": "^4.6.5",
     "d3-scale": "4.0.2",
-    "three": "0.184.0"
+    "three": "0.186.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
@@ -128,7 +128,7 @@
     "tsx": "^4.21.0",
     "typescript": "6.0.3",
     "@types/d3-scale": "4.0.9",
-    "@types/three": "0.184.1"
+    "@types/three": "0.186.0"
   },
   "overrides": {
     "source-map-js": "1.2.2"
