@@ -1,12 +1,13 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "6c199a21b2ea537c9409574b37fb40081aa0386e",
-  "mergedPr": 412,
+  "mainSha": "93a5033df122f92dd20c3f559b0df2fb5f39c73d",
+  "mergedPr": 420,
   "targetPr": 419,
   "targetBranch": "capital-ai-trust/skill-routing-evaluation-20261011",
-  "targetHeadSha": "554c7efc48a97d654efb57c4cf5b756a32e2b7bd",
+  "targetHeadSha": "39739c8a9ade67372d0d64810000525a560476bc",
   "exactOverlap": [
-    "package.json"
+    "scripts/skill-routing-evaluation.mjs",
+    "scripts/skill-routing.test.mjs"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,
