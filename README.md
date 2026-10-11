@@ -159,3 +159,17 @@ Die Oberfläche und Architektur befinden sich in aktiver Entwicklung. Insbesonde
 ---
 
 **CAPITAL-AI** · Security-, Evidence- und Release-Entscheidungen bleiben nachvollziehbar, versioniert und fail-closed.
+
+## Mobile-Repository-Grenze
+
+Die eigenständige Android-Anwendung, ihr lokaler Scoring-Kern und ihre Build-/Release-Pipeline
+werden ausschließlich im separaten Repository
+[Capital-AI-Mobile](https://github.com/SvenKulessa/Capital-AI-Mobile) gepflegt.
+Dieses Repository enthält **keinen Android-App-Quellcode, keinen APK-/AAB-Build
+und keinen separaten Mobile-Scorer-Webserver**.
+
+Die zentrale, abgesicherte Authentifizierungs-API bleibt aus Kompatibilitätsgründen
+im Hauptsystem: `/api/auth/mobile-login` und `/api/auth/mobile-exchange`
+sind serverseitige PKCE-/Einmalcode-Schnittstellen der ausgelagerten App.
+Der gemeinsame Finance-Evidence-/Scorer-Bus bleibt ein Backend-Bestandteil
+und ist weder eine mobile Anwendung noch ein APK-Release.

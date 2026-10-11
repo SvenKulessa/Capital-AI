@@ -41,7 +41,6 @@ export const MONETIZABLE_PRODUCTS = [
   { id: 'vocabulary', name: '[CAPITAL-AI-PRODUCT]LEARNING-PORTAL-VOCABULARY', domain: 'PRODUCT', state: 'INTEGRATED', readinessPct: null, gapPct: null, blocker: 'Learning Portal: 25,00 EUR einmalig im Live-Checkout am 10.10.2026 verifiziert. Historischer 19-EUR-Katalog bleibt für bestehende Belege erhalten; Stripe-Katalogumstellung und echter Käufer-Roundtrip sind noch offen.' },
   { id: 'price-alerts', name: '[CAPITAL-AI-PRODUCT]PRICE-ALERTS', domain: 'PRODUCT', state: 'PARTIAL', readinessPct: 36, gapPct: 64, blocker: 'Alert-UI vorhanden, Zustellung und Tariflimit nicht serverseitig erzwungen.' },
   { id: 'learning-portal', name: '[CAPITAL-AI-PRODUCT]LEARNING-PORTAL', domain: 'PRODUCT', state: 'PARTIAL', readinessPct: 32, gapPct: 68, blocker: 'Seite vorhanden, kein Curriculum-Commerce.' },
-  { id: 'mobile-scorer', name: '[CAPITAL-AI-MARKET]MOBILE-SCORER-TERMINAL', domain: 'MARKET', state: 'PARTIAL', readinessPct: 31, gapPct: 69, blocker: 'Server-Scorer und Mobile-Repo vorhanden, Store-Release und Billing fehlen.' },
   { id: 'hero-buddy', name: '[CAPITAL-AI-PRODUCT]HERO-BUDDY-SUPPORT', domain: 'PRODUCT', state: 'INTEGRATED', readinessPct: 46, gapPct: 54, blocker: 'Portal-Widget mit FAQ und Disclaimer, ohne Live-Handoff und Production-Freigabe.' },
 ] as const satisfies readonly MonetizableProduct[];
 
