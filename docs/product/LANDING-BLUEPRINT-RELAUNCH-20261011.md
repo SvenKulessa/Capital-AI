@@ -29,7 +29,7 @@ Stand: 2026-10-11 · Scope: PRODUCT / GROWTH / TRUST · Status: CODE_PRESENT; Ru
 
 ## Gemini audio dependency and cost
 
-Actual Gemini TTS synthesis requires an authenticated server-side Gemini connection, confirmed model and voice availability, commercial-output rights, Social Engine completion state, content/brand approval, consumption quota and billing readback. None is invented. Paid inference, storage and export require confirmed budget/Owner authorization. The locally rendered MP4 concept video delivered in chat is **silent** and separate from the repo's provider-isolated, editable engine draft.
+The existing gateway `server/growth-ai-gateway.ts:createGeminiTtsDraft` handles server-only Gemini TTS with `GrowthTtsDraftRequestSchema`, budget and media approval checks; `createCapitalAiLandingGeminiTtsRequest` supplies its plain client-safe request (no provider call or API key). Actual Gemini TTS synthesis requires an authenticated server-side Gemini connection, confirmed model and voice availability, commercial-output rights, Social Engine completion state, content/brand approval, consumption quota and billing readback. None is invented. Paid inference, storage and export require confirmed budget/Owner authorization. The locally rendered MP4 concept video delivered in chat is **silent** and separate from the repo's provider-isolated, editable engine draft.
 
 ## Acceptance / evidence
 
