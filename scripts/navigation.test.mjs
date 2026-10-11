@@ -308,12 +308,31 @@ test('paused price alerts cannot render navigation or run background price check
   assert.match(context, /if \(!PRICE_ALERTS_ENABLED\) return;\s*try \{\s*localStorage\.setItem\(STORAGE_ALERTS_KEY/);
 });
 
-test('hero globe retains original right-of-headline placement without covering the primary action', () => {
+test('hero Earth stays right behind translucent heading with accessible rotation and beacons', () => {
   const hero = readFileSync(new URL('../src/components/Hero.tsx', import.meta.url), 'utf8');
-  assert.match(hero, /absolute -top-12 -right-20 w-\[340px\] h-\[340px\]/);
-  assert.match(hero, /sm:w-\[420px\] sm:h-\[420px\]/);
-  assert.match(hero, /mix-blend-screen opacity-90 filter drop-shadow/);
-  assert.match(hero, /relative z-10 max-w-lg rounded-2xl bg-brand-canvas\/90/);
+  const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
+
+  // The Earth is decorative, right-aligned, and behind the foreground content.
+  assert.match(hero, /aria-hidden="true"[\s\S]*?pointer-events-none absolute -top-8 right-0 z-0 aspect-square/);
+  assert.match(hero, /hero-earth-rotation relative h-full w-full/);
+  assert.match(hero, /className="hero-copy relative z-10 max-w-lg rounded-2xl/);
+  assert.match(hero, /bg-gradient-to-r from-brand-canvas\/80 via-brand-canvas\/40 to-brand-canvas\/15/);
   assert.doesNotMatch(hero, /mx-auto -mt-3 mb-\[-1\.75rem\] aspect-square/);
+
+  // Rotation and four staggered, luminous points are CSS-only (no timers/JS work).
+  assert.equal((hero.match(/className="hero-earth-beacon/g) ?? []).length, 4);
+  assert.match(hero, /hero-earth-beacon--cyan/);
+  assert.match(css, /@keyframes capitalAiHeroEarthSpin/);
+  assert.match(css, /animation: capitalAiHeroEarthSpin 90s linear infinite/);
+  assert.match(css, /@keyframes capitalAiHeroBeaconPulse/);
+  assert.match(css, /animation: capitalAiHeroBeaconPulse 3\.6s ease-in-out infinite/);
+
+  // Reduced-motion users keep the graphic but without endless animation.
+  assert.match(hero, /initial=\{reduceMotion \? false/);
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.capital-ai-hero \.hero-earth-rotation,[\s\S]*?\.capital-ai-hero \.hero-earth-beacon \{ animation: none; \}/);
+
+  // Decorative layers cannot intercept the three unchanged actions.
   assert.match(hero, /id="hero-start-analysis-btn"/);
+  assert.match(hero, /id="hero-buddy-support-btn"/);
+  assert.match(hero, /id="hero-explore-product-btn"/);
 });
