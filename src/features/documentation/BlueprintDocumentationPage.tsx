@@ -18,6 +18,7 @@ import { BLUEPRINT_DETAILS, VERIFIED_COMMERCE_STATE } from './blueprintDocumenta
 import { ByokArchitectureDiagram, SocialMediaArchitectureDiagram } from './ArchitectureGraphics';
 import { ScreenerBlueprintYamlPreview } from './ScreenerBlueprintYamlPreview';
 import { ScreenerBlueprintAudienceSection } from './ScreenerBlueprintAudienceSection';
+import { MarketBlueprintShowcase } from '../home/MarketBlueprintShowcase';
 
 type BlueprintDocumentationPageProps = {
   onNavigate?: (path: string) => void;
@@ -116,6 +117,7 @@ export const BlueprintDocumentationPage: React.FC<BlueprintDocumentationPageProp
 
         <ScreenerBlueprintAudienceSection />
         <ScreenerBlueprintYamlPreview />
+        <MarketBlueprintShowcase variant="documentation" onNavigate={onNavigate} />
 
         <section className="rounded-2xl border border-amber-400/25 bg-amber-400/5 p-4">
           <div className="flex gap-3">
