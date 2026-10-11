@@ -133,3 +133,18 @@ test('every supported locale offers rejection, withdrawal and honest disabled tr
     assert.match(copy.body, /GA4/);
   }
 });
+
+ test('a failed browser withdrawal cannot preserve an older optional grant in this document', () => {
+  const previousWindow = globalThis.window;
+  let stored = JSON.stringify({ version: COOKIE_CONSENT_V3, privacyNoticeVersion: PRIVACY_NOTICE_VERSION, savedAt: START, analytics: true, marketing: true });
+  let broken = true, notifications = 0;
+  globalThis.window = { localStorage: { getItem: () => stored, setItem(_key: string, value: string) { if (broken) throw Error('write-denied'); stored = value; }, removeItem() { throw Error('remove-denied'); } }, dispatchEvent() { notifications++; return true; } } as never;
+  try {
+    assert.equal(saveCookieConsent({ analytics: false, marketing: false }, undefined, START), null);
+    assert.equal(optionalCookiePurposeAllowed('analytics', undefined, START), false);
+    assert.equal(notifications, 1);
+    broken = false;
+    assert.ok(saveCookieConsent({ analytics: false, marketing: false }, undefined, START));
+    assert.equal(readCookieConsent(undefined, START)?.analytics, false);
+  } finally { globalThis.window = previousWindow; }
+});
