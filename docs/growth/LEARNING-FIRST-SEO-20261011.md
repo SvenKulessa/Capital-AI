@@ -13,7 +13,7 @@ Stand 11.10.2026; Ausgangs-Main `3e30f0c537463f9c365b4b9b6b0b22c314f37292`, abge
 | Bereich | Ergebnis im betroffenen Scope |
 |---|---|
 | SEO-00 Indexierung | /learning und öffentliche Vocabulary-Terme INDEX; /pricing, /marketscreener/dokumentation, private und Sprachvorschau-Routen bleiben ausgeschlossen. Policy-Gründe aktualisiert, keine Klassifikation gelockert. |
-| SEO-01 Manifest | Learning-Source-Refs enthalten gemeinsame Inhalte, React-Renderer und HTTP-Renderer. Bestehendes SHA-/Digest-Verfahren aktualisiert und Drift geprüft. Historischer Generierungsanker wird nicht als aktueller Commit ausgegeben. |
+| SEO-01 Manifest | Learning-Source-Refs enthalten gemeinsame Inhalte samt HTTP-Projektion, React-Renderer und Preisquelle. Bestehendes SHA-/Digest-Verfahren aktualisiert und Drift geprüft. Historischer Generierungsanker wird nicht als aktueller Commit ausgegeben. |
 | SEO-02 Metadaten | Learning als CollectionPage für Lerninhalte statt DefinedTermSet; Glossar bleibt DefinedTermSet. Keine erfundenen Offers, Preise oder Ratings im Schema. Kanonisches /learning auch bei Tab-/Anchor-Navigation. |
 | SEO-03 Crawlability | HTTP-Fallback mit allen sechs Lernschritten, realen internen Links und Angebots-/Anfrageankern; 404-/NOINDEX-/Sitemap-Regressionen unverändert geprüft. |
 | SEO-04 Themencluster | Finanzbegriffe, Datenqualität/-vertrag, Normalisierung, Gewichtung, Volatilität, Validierung jeweils mit eigenem Lernziel und erklärten Grenzen. |
@@ -37,7 +37,7 @@ Trust Boundary: ausschließlich öffentliche Bildungsinhalte und aggregierte, fe
 
 ## Reproduktion und tatsächliche Prüfung
 
-- `node --test scripts/seo-metadata.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-source-provenance-drift.test.mjs scripts/docker-context.test.mjs`: 18 Tests erfolgreich.
+- `node --test scripts/seo-metadata.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-source-provenance-drift.test.mjs scripts/docker-context.test.mjs`: 19 Tests erfolgreich.
 - `node --test server/seo-indexing-policy.test.mjs`: 4 Tests erfolgreich, einschließlich echten HTTP-Fallbacks, Canonicals und NOINDEX.
 - `node --import tsx src/features/learning/learningPolicy.test.tsx`: 10 Tests erfolgreich.
 - `node --import tsx src/contracts/__tests__/contentSocialPackage.test.ts`: 6 Tests erfolgreich, inklusive echter Textprüfsummen und fehlender Publish-Authority.
@@ -51,3 +51,5 @@ Browser-Evidence: `docs/growth/evidence/learning-seo-browser-20261011.json`; sic
 GitHub-Checks gelten für den späteren PR-Head und werden im PR separat dokumentiert; diese lokalen Ergebnisse sind keine erfundene CI-/Production-Freigabe.
 
 Gemessene Text-/Hintergrundpaare im neuen Abschnitt (Chromium-Canvas-Ausgabe in sRGB): Fließtext 13.71:1, Summary 16.37:1. Dies belegt diese Paare, keine vollständige WCAG-Konformität.
+
+CI-Korrektur: Die Laufzeitidentität wird vor dem Docker-Build absichtlich in server/index.mjs eingebunden. Diese mutierende Build-Datei ist daher kein unveränderliches Inhaltsartefakt. Der gesamte öffentliche Learning-HTML-Renderer liegt jetzt im Shared-Inhaltsmodul; Provenienzprüfung und Runtime-SHA-Bindung bleiben unverändert streng.

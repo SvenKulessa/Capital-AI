@@ -9,6 +9,20 @@ import {
   SEO_SOURCE_ARTIFACTS,
   seoSourceSetKey,
 } from '../shared/seo-source-provenance.mjs';
+import { renderLearningLandingFallback } from '../shared/learning-journey.mjs';
+
+test('learning HTTP content remains provenance-bound independently of CI runtime identity', () => {
+  const entry = SEO_CONTENT_MANIFEST.find(item => item.path === '/learning');
+  assert.ok(entry.sourceRefs.includes('shared/learning-journey.mjs'));
+  assert.ok(entry.sourceRefs.includes('src/features/learning/LearningPurchase.tsx'));
+  assert.ok(entry.sourceRefs.includes('src/data/vocabularyOffer.ts'));
+  assert.equal(Object.hasOwn(SEO_SOURCE_ARTIFACTS, 'server/index.mjs'), false);
+  const html = renderLearningLandingFallback('<script>alert("untrusted")</script>');
+  assert.doesNotMatch(html, /<script>/);
+  assert.match(html, /&lt;script&gt;/);
+  assert.match(html, /id="gewichtung"/);
+  assert.match(html, /learning-offer/);
+});
 
 test('SEO-01 source blob and SHA-256 provenance fails closed on source drift', async () => {
   for (const [sourcePath, expected] of Object.entries(SEO_SOURCE_ARTIFACTS)) {

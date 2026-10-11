@@ -1,4 +1,4 @@
-import { LEARNING_JOURNEY, LEARNING_NEXT_STEPS } from '../shared/learning-journey.mjs';
+import { renderLearningLandingFallback as learningLandingFallback } from '../shared/learning-journey.mjs';
 import http from 'node:http';
 import { BLOG_ARTICLES, blogArticleForPath } from '../shared/blog-articles.mjs';
 import { readFile, stat, realpath } from 'node:fs/promises';
@@ -247,15 +247,7 @@ function vocabularyLandingFallback() {
     .join('');
   return `<main><article><h1>Capital-AI Vocabulary</h1><p>${publicVocabularyCount} konsolidierte Fachbegriffe mit Definitionen und jeweils drei Thesaurus-Begriffen.</p><ul>${links}</ul></article></main>`;
 }
-function learningLandingFallback(description) {
-  const lessons = LEARNING_JOURNEY.map(lesson => `<details id="${lesson.id}"><summary>${escapeHtml(lesson.title)}</summary><p>Lernziel: ${escapeHtml(lesson.goal)}</p>${lesson.paragraphs.map(text => `<p>${escapeHtml(text)}</p>`).join('')}<p>${escapeHtml(lesson.example)}</p><nav>${lesson.links.map(link => `<a href="${escapeHtml(link.href)}">${escapeHtml(link.label)}</a>`).join(' · ')}</nav></details>`).join('');
-  const steps = LEARNING_NEXT_STEPS.map(step => `<p><a href="${escapeHtml(step.href)}">${escapeHtml(step.label)}</a> — ${escapeHtml(step.note)}</p>`).join('');
-  return `<main><article><h1>Finanzwissen lernen mit Capital-AI</h1><p>${escapeHtml(description)}</p>
-    <section id="learning-methodology"><h2>Marktanalyse verstehen: sechs kostenlose Lernschritte</h2><p>Für Lernende, Studierende und Fintech-Teams. Alle Rechenwerte sind synthetisch. Keine Handelssignale, Renditeprognosen oder Anlageberatung.</p>${lessons}<nav aria-label="Vom Lernbeispiel zum Angebot">${steps}</nav></section>
-    <section id="learning-offer"><h2>Learning-Angebot und Zugang</h2><p>Das öffentliche Glossar und die sechs Lernschritte sind kostenlos. Ein Checkout ist erst nach Anmeldung und nur bei verfügbarer Zahlungsabwicklung möglich. Im interaktiven Glossar sind der aktuelle Einmalkauf-Preis und die Widerrufserklärung zu prüfen. Chart-Module benötigen zusätzlich mindestens Starter; Chart-Training Pro. Videos sind noch nicht verfügbar. Einzelne Blueprint-Demos sind keine kaufbaren Blueprint-Produkte.</p><p><a href="/login">Für Lernzugang anmelden</a> · <a href="/vocabulary">Öffentliche Begriffe lesen</a> · <a href="/pricing">Abonnement-Voraussetzungen prüfen</a></p></section>
-    <section id="learning-inquiry"><h2>Learning-/Kursanfrage</h2><p>Das interaktive Kursformular übermittelt Anfragen an unseren Support. Ohne JavaScript erreichen Sie uns per <a href="mailto:support@capital-ai.online?subject=Capital-AI%20Learning-%2FKursanfrage">E-Mail</a>. Eine Anfrage bestätigt keinen Kauf.</p><a href="/datenschutz">Datenschutzhinweise</a></section>
-  </article></main>`;
-}
+
 
 function injectVocabularySeo(html, pathname) {
   const candidateEntry = vocabularyMetadataByPath.get(pathname);

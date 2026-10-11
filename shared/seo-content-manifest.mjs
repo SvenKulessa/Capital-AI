@@ -95,7 +95,7 @@ const staticEntries = [
     structuredDataType: 'CollectionPage',
     socialEligible: true,
     aiSearchEligible: true,
-    sourceRefs: ['shared/learning-journey.mjs', 'src/features/learning/LearningJourney.tsx', 'src/features/learning/LearningPortalPage.tsx', 'src/features/learning/LearningPurchase.tsx', 'src/data/vocabularyOffer.ts', 'server/index.mjs'],
+    sourceRefs: ['shared/learning-journey.mjs', 'src/features/learning/LearningJourney.tsx', 'src/features/learning/LearningPortalPage.tsx', 'src/features/learning/LearningPurchase.tsx', 'src/data/vocabularyOffer.ts'],
   }),
   contentEntry({
     path: '/vocabulary',
