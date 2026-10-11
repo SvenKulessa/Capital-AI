@@ -49,6 +49,13 @@ test('basic consent mode loads only after opt-in, sanitizes public events and re
     w.localStorage.setItem = (_key: string, value: string) => { stored = value; };
     w.localStorage.removeItem = () => { stored = null; };
     saveCookieConsent({ analytics: false, marketing: false });
+    stored = JSON.stringify({ version: 'COOKIE_CONSENT_V3', privacyNoticeVersion: PRIVACY_NOTICE_VERSION, savedAt: Date.now(), analytics: true, marketing: false });
+    let resolveConfig: (response: Response) => void;
+    globalThis.fetch = () => new Promise<Response>(resolve => { resolveConfig = resolve; });
+    listeners.get(CONSENT_CHANGED_EVENT)!();await settle();
+    w.location.pathname = '/profile';
+    resolveConfig!(Response.json({ measurementId: 'G-0542DT2HCE' }));await settle();
+    assert.equal(scripts, 2, 'late configuration must not load tracking after entering a private route');
 
   } finally { globalThis.window = oldWindow;globalThis.document = oldDocument;globalThis.fetch = oldFetch; }
 });

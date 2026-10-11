@@ -50,7 +50,7 @@ async function synchronize() {
       const response = await fetch('/api/public/learning-config', { credentials: 'same-origin', cache: 'no-store' });
       if (!response.ok) return;
       const config = await response.json();
-      if (config.measurementId !== EXPECTED_ID || !permitted()) return;
+      if (config.measurementId !== EXPECTED_ID || !permitted() || !cleanPath(window.location.pathname)) return;
       const w = window as TagWindow;
       w[`ga-disable-${EXPECTED_ID}`] = false;
       w.dataLayer = [];
