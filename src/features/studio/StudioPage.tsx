@@ -268,6 +268,10 @@ export const StudioPage: React.FC<StudioPageProps> = ({
       {/* 3. STUDIO HUB TABS (Die 7 Studio-Tabs im Überblick)                      */}
       {/* ========================================================================= */}
       <div className="flex items-center gap-1 p-1 rounded-xl bg-[#090e21] border border-slate-800/90 mb-6 overflow-x-auto scrollbar-none">
+        <button type="button" onClick={() => setActiveTab('kontakt')} aria-current={activeTab === 'kontakt' ? 'page' : undefined}
+          className={`flex min-h-11 items-center gap-2 rounded-lg px-3.5 text-xs font-semibold whitespace-nowrap transition-colors ${activeTab === 'kontakt' ? 'bg-[#F5C453] text-slate-950' : 'text-[#F5C453] hover:bg-[#F5C453]/10'}`}>
+          <Mail className="h-4 w-4" aria-hidden="true" />Kontakt
+        </button>
         {/* TAB 1: Pipeline Architektur */}
         <button
           type="button"
@@ -378,10 +382,6 @@ export const StudioPage: React.FC<StudioPageProps> = ({
         >
           <Gauge className="w-3.5 h-3.5" />
           <span>Benchmark Lab</span>
-        </button>
-        <button type="button" onClick={() => setActiveTab('kontakt')} aria-current={activeTab === 'kontakt' ? 'page' : undefined}
-          className={`flex min-h-11 items-center gap-2 rounded-lg px-3.5 text-xs font-semibold whitespace-nowrap transition-colors ${activeTab === 'kontakt' ? 'bg-[#F5C453] text-slate-950' : 'text-[#F5C453] hover:bg-[#F5C453]/10'}`}>
-          <Mail className="h-4 w-4" aria-hidden="true" />Kontakt
         </button>
       </div>
 
