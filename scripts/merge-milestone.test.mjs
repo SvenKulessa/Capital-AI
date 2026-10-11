@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { milestone, milestoneDay, sanitizedTitle, sourcePath, draftBlog } from './merge-milestone.mjs';
 
@@ -37,4 +38,16 @@ test('milestone date is stable across retries and rejects invalid merge timestam
   assert.equal(milestoneDay('2026-10-08T23:59:59.500Z'), '20261008');
   assert.throws(() => milestoneDay('20261008'), /INVALID_MILESTONE_MERGED_AT/);
   assert.throws(() => milestoneDay('2026-13-08T05:48:16Z'), /INVALID_MILESTONE_MERGED_AT/);
+});
+
+test('merged roadmap and news milestones produce exactly one scoped PR', () => {
+  const workflow = readFileSync('.github/workflows/merge-milestones.yml', 'utf8');
+  assert.match(workflow, /Open one consolidated milestone PR/);
+  assert.match(workflow, /capital-ai-trust\/milestone-merge-pr-/);
+  assert.match(workflow, /Roadmap and news milestones have different source PRs/);
+  assert.match(workflow, /Roadmap and news milestones have different merge dates/);
+  assert.match(workflow, /targets\+=\("src\/data\/roadmapMergeReconciliation\.json"/);
+  assert.match(workflow, /targets\+=\("src\/data\/controlCenterNews\.json"/);
+  assert.equal((workflow.match(/gh pr create --repo/g) ?? []).length, 1);
+  assert.doesNotMatch(workflow, /for category in roadmap news/);
 });

@@ -44,7 +44,7 @@ export function AppShell() {
 
   return (
     <>
-      <ApplicationViewport currentRoute={currentRoute}>
+      <ApplicationViewport currentRoute={currentRoute} onNavigate={navigateTo}>
         <Suspense fallback={null}>
           <RouteBreadcrumbs currentRoute={currentRoute} onNavigate={navigateTo} />
         </Suspense>

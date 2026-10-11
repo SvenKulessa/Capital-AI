@@ -230,7 +230,7 @@ export function AppRoutes({
 
   if (currentRoute === '/screener' || currentRoute === '/marketscreener') {
     return (
-      <div className="w-full text-slate-100 min-h-screen py-6 px-3 sm:px-6 space-y-6">
+      <div className="hub-universe hub-universe--marketscreener w-full text-slate-100 min-h-screen py-6 px-3 sm:px-6 space-y-6">
         <div className="flex flex-col gap-3 border-b border-slate-800 pb-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2 text-xs text-slate-400 font-mono">
             <span>Capital-AI</span>
