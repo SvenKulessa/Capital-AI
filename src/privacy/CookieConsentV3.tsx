@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   COOKIE_CONSENT_STORAGE_KEY,
+  OPEN_COOKIE_PREFERENCES_EVENT,
   readCookieConsent,
   saveCookieConsent,
   type CookieConsentReceipt,
@@ -28,8 +29,21 @@ export function CookieConsentV3() {
       setOpen(next === null);
       setError('');
     };
+    const reopen = () => {
+      const stored = readCookieConsent();
+      setDecision(stored);
+      setAnalytics(stored?.analytics ?? false);
+      setMarketing(stored?.marketing ?? false);
+      setDetails(true);
+      setError('');
+      setOpen(true);
+    };
     window.addEventListener('storage', synchronize);
-    return () => window.removeEventListener('storage', synchronize);
+    window.addEventListener(OPEN_COOKIE_PREFERENCES_EVENT, reopen);
+    return () => {
+      window.removeEventListener('storage', synchronize);
+      window.removeEventListener(OPEN_COOKIE_PREFERENCES_EVENT, reopen);
+    };
   }, []);
 
   const store = (nextAnalytics: boolean, nextMarketing: boolean) => {
@@ -46,18 +60,8 @@ export function CookieConsentV3() {
     setOpen(false);
   };
 
-  if (!open && decision) {
-    return (
-      <button
-        type="button"
-        onClick={() => { setDetails(true); setOpen(true); }}
-        className="fixed bottom-3 left-3 z-[70] min-h-11 rounded-xl border border-slate-600 bg-slate-950/95 px-4 py-2 text-xs font-semibold text-slate-100 shadow-lg hover:border-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
-        aria-label="Cookie-Einstellungen erneut öffnen und Einwilligung widerrufen"
-      >
-        Cookie-Einstellungen
-      </button>
-    );
-  }
+  // No floating cookie panel after a verified saved decision. Footer/account links reopen it.
+  if (!open && decision) return null;
 
   return (
     <section
