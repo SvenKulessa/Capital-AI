@@ -405,16 +405,6 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
     evidence: ['docs/security/evidence/toolchain-update-20261004/TOOLCHAIN-INVENTORY-AND-UPDATE.md'],
   },
   {
-    id: 'android-gradle-plugin', name: 'Android Gradle Plugin', domain: 'PLATFORM', kind: 'Android Build Toolchain',
-    installedAt: null, activeVersion: '8.13.2', pipelineVersion: '8.13.2; major candidate 9.4.1 requires migration', lifecycle: 'ACTIVE',
-    functionSummary: 'Android Private-Bundle Build-Plugin; Major-Upgrade wird nicht als Routine-Update übernommen.',
-    webAppBinding: 'mobile/android-private/build.gradle', license: 'Android SDK/Google terms', cadsScore: 78.0, scoreState: 'PROVISIONAL',
-    domainAssignments: ['private Android build only'],
-    dependencies: ['github-actions-pinned-toolchain'],
-    alternatives: [{ name: 'Android Gradle Plugin 9.4.1', role: 'optimization', license: 'Android SDK/Google terms' }],
-    evidence: ['mobile/android-private/build.gradle', 'Android Developers AGP API reference 2026-10-04'],
-  },
-  {
     id: 'web-build-stack', name: 'Web Build Stack', domain: 'PRODUCT', kind: 'Frontend Build Toolchain',
     installedAt: null, activeVersion: 'Vite 8.3.2 / TypeScript 6.0.3 / Tailwind 4.3.3 / React 19.3.0 / Lucide 1.52.0 / Motion 14.0.0 / Three.js 0.184.0', pipelineVersion: 'resolved in package-lock.json; TypeScript 7.0.2 BLOCKED; production runtime NOT_PROVEN', lifecycle: 'ACTIVE',
     functionSummary: 'Frontend-Kompilierung, Typprüfung, React-Runtime und CSS-Toolchain.',
