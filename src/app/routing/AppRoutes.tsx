@@ -57,6 +57,11 @@ const PersonalWorkspacePage = lazy(() =>
     default: module.PersonalWorkspacePage,
   })),
 );
+const IntelligenceArchitectureHub = lazy(() =>
+  import('../../features/architecture/IntelligenceArchitectureHub').then((module) => ({
+    default: module.IntelligenceArchitectureHub,
+  })),
+);
 const ArchitecturePage = lazy(() =>
   import('../../components/ArchitecturePage').then((module) => ({
     default: module.ArchitecturePage,
@@ -187,6 +192,10 @@ export function AppRoutes({
         onNavigate={navigateTo}
       />
     );
+  }
+
+  if (currentRoute === '/architecture-hub') {
+    return <IntelligenceArchitectureHub onNavigate={navigateTo} />;
   }
 
   if (currentRoute === '/architecture') {
