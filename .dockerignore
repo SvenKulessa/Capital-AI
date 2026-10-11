@@ -318,3 +318,4 @@
 !server/learning-inquiry.test.mjs
 !scripts/activate-learning-measurement.mjs
 !scripts/activate-learning-measurement.test.mjs
+!scripts/generate-cookie-storage-notice.mjs

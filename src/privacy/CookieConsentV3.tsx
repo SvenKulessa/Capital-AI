@@ -42,6 +42,7 @@ export function CookieConsentV3() {
       setError('');
       setOpen(true);
     };
+    if (window.location.hash === '#cookie-preferences') reopen();
     window.addEventListener('storage', synchronize);
     window.addEventListener(OPEN_COOKIE_PREFERENCES_EVENT, reopen);
     return () => {

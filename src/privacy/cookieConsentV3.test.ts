@@ -84,7 +84,7 @@ test('v3 does not close consent UI on non-durable browser storage', () => {
   assert.equal(saveCookieConsent({ analytics: true, marketing: true }, storage, START), null);
 });
 
-test('UI is mounted on every route and discloses inactive analytics and durable withdrawal', () => {
+test('UI is mounted on app routes and discloses conditional analytics and durable withdrawal', () => {
   const appShell = readFileSync(new URL('../app/AppShell.tsx', import.meta.url), 'utf8');
   const ui = readFileSync(new URL('./CookieConsentV3.tsx', import.meta.url), 'utf8');
   const analytics = readFileSync(new URL('../utils/analytics.ts', import.meta.url), 'utf8');

@@ -91,7 +91,7 @@ COPY scripts/media ./scripts/media
 COPY scripts/growth/screener-learning-loop.test.mjs ./scripts/growth/screener-learning-loop.test.mjs
 COPY scripts/generate-chart-learning.tsx ./scripts/generate-chart-learning.tsx
 COPY server/learning-inquiry.test.mjs ./server/learning-inquiry.test.mjs
-COPY scripts/activate-learning-measurement.mjs scripts/activate-learning-measurement.test.mjs ./scripts/
+COPY scripts/activate-learning-measurement.mjs scripts/activate-learning-measurement.test.mjs scripts/generate-cookie-storage-notice.mjs ./scripts/
 COPY scripts/social-provider-db-smoke.sh ./scripts/social-provider-db-smoke.sh
 COPY supabase/migrations/20261008113000_social_provider_store.sql ./supabase/migrations/20261008113000_social_provider_store.sql
 COPY shared ./shared
