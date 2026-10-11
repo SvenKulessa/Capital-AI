@@ -25,6 +25,7 @@ import {
   Zap,
   Layers,
   Newspaper,
+  Bell,
   FileCode,
   SlidersHorizontal,
   Bot,
@@ -136,7 +137,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
       ...(PRICE_ALERTS_ENABLED ? [{
         id: 'alerts',
         name: 'PriceAlerts & Schwellenwerte',
-        icon: <span aria-hidden="true">🔔</span>,
+        icon: <Bell className="w-4 h-4 text-amber-400" />,
         badge: 'Preisalarme',
         shortDesc: 'Konfiguration von Preisalarmen und Schwellenwerten',
         tags: ['Alarme', 'Benachrichtigungen'],
