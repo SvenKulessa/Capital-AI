@@ -4,10 +4,10 @@
 
 ## Entscheidend: Vier unabhängige Provider-Sichten
 
-1. [`server/open-source-market-policy.mjs`](../../server/open-source-market-policy.mjs) ist der **verbindliche Source-Admission-Pfad** für öffentliche Marktdaten. Code-Admission ≠ überprüfte Production-Antwort.
-2. [`src/config/providers/providerRegistry.ts`](../../src/config/providers/providerRegistry.ts) enthält **fünf konfigurative Providerverträge** für Fähigkeiten/Health/Budget; ein `healthy`-Default ist kein gemessener Health-Status.
-3. [`src/config/providers/privateByokCatalog.ts`](../../src/config/providers/privateByokCatalog.ts) führt **20 Private-BYOK-Kandidaten** (`active` bedeutet Credential-Adapter-Katalogstatus; **nicht** Produktfreigabe). **Aktueller beauftragter Produktscope: BYOK deaktiviert; keine Kunden-Provideraktivierung.**
-4. [`server/oss-provider-adapters.mjs`](../../server/oss-provider-adapters.mjs) führt **vier Software-Sidecars**; deren Open-Source-Lizenz ersetzt **keine** Marktdatenlizenz.
+1. [`server/open-source-market-policy.mjs`](../server/open-source-market-policy.mjs) ist der **verbindliche Source-Admission-Pfad** für öffentliche Marktdaten. Code-Admission ≠ überprüfte Production-Antwort.
+2. [`src/config/providers/providerRegistry.ts`](../src/config/providers/providerRegistry.ts) enthält **fünf konfigurative Providerverträge** für Fähigkeiten/Health/Budget; ein `healthy`-Default ist kein gemessener Health-Status.
+3. [`src/config/providers/privateByokCatalog.ts`](../src/config/providers/privateByokCatalog.ts) führt **20 Private-BYOK-Kandidaten** (`active` bedeutet Credential-Adapter-Katalogstatus; **nicht** Produktfreigabe). **Aktueller beauftragter Produktscope: BYOK deaktiviert; keine Kunden-Provideraktivierung.**
+4. [`server/oss-provider-adapters.mjs`](../server/oss-provider-adapters.mjs) führt **vier Software-Sidecars**; deren Open-Source-Lizenz ersetzt **keine** Marktdatenlizenz.
 
 ## Rechte- und Laufzeitmatrix (Source-Prüfung, keine externe Vertragsbescheinigung)
 
@@ -71,13 +71,13 @@
 | Cryptofeed | WebSocket | AGPL-3.0-or-later | `NOT_PROVEN`, Packaging-/Copyleft-Prüfung |
 | OpenBB | REST | Apache-2.0 | `NOT_PROVEN`, Quelldataset-Lizenzen separat |
 
-Quelle: [`server/oss-provider-adapters.mjs`](../../server/oss-provider-adapters.mjs).
+Quelle: [`server/oss-provider-adapters.mjs`](../server/oss-provider-adapters.mjs).
 
 ## Vollständige referenzierte Abhängigkeitsnamen aus den 50 Komponenten
 
 `alphavantage`, `binance`, `coinbase`, `financialmodelingprep`, `fred`, `gemini`, `internal_consensus_engine`, `internal_master_data`, `kraken`, `sec_edgar`, `twelvedata`.
 
-Diese 11 Namen sind **Abhängigkeiten, keine aktiven oder lizenzierten Feeds**. Beispiele ohne korrespondierenden öffentlichen admitted Provider: Gemini-News/Sentiment, SEC/EDGAR, FRED, FMP, internal_master_data, internal_consensus_engine. Die tatsächlichen Rechte gelten immer **pro Dataset, Instrument, Venue, Zweck, Egress und Vertrag**; eine API-Erreichbarkeit ist dafür kein Ersatz. Finance-Research-Quellen erscheinen ergänzend in [`src/platform/FinanceScoringResearch/FinanceSourceModelCatalog.ts`](../../src/platform/FinanceScoringResearch/FinanceSourceModelCatalog.ts); das ist **eine Modellliste, keine Provider-Lizenzliste**.
+Diese 11 Namen sind **Abhängigkeiten, keine aktiven oder lizenzierten Feeds**. Beispiele ohne korrespondierenden öffentlichen admitted Provider: Gemini-News/Sentiment, SEC/EDGAR, FRED, FMP, internal_master_data, internal_consensus_engine. Die tatsächlichen Rechte gelten immer **pro Dataset, Instrument, Venue, Zweck, Egress und Vertrag**; eine API-Erreichbarkeit ist dafür kein Ersatz. Finance-Research-Quellen erscheinen ergänzend in [`src/platform/FinanceScoringResearch/FinanceSourceModelCatalog.ts`](../src/platform/FinanceScoringResearch/FinanceSourceModelCatalog.ts); das ist **eine Modellliste, keine Provider-Lizenzliste**.
 
 ## Provider → Canonical Data → Scores
 
