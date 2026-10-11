@@ -4,6 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { normalizeSkillText, selectSpecialists } from './skill-routing.mjs';
+import { evaluateSkillRouting } from './skill-routing-evaluation.mjs';
 
 const readJson = path => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
 const registry = readJson('../.agents/skills/registry.json');
@@ -80,4 +81,69 @@ test('standalone CLI returns inspectable JSON and does not call providers', () =
   assert.deepEqual(sorted(actual.skills), ['ai-engineering', 'legal-compliance']);
   assert.equal(actual.primaryDomain, 'TRUST');
   assert.equal(actual.scope, 'DETERMINISTIC_TEXT_SIGNALS_ONLY');
+});
+
+
+test('offline evaluation reports reproducible set-precision, recall, F1 and domain portability', () => {
+  const report = evaluateSkillRouting({ registry, corpus });
+  assert.equal(report.status, 'PASS');
+  assert.equal(report.scope, 'OFFLINE_DETERMINISTIC_ROUTING_ONLY');
+  assert.equal(report.chatAgentBehaviorVerified, false);
+  assert.equal(report.modelCalls, 0);
+  assert.equal(report.cases, 41);
+  assert.equal(report.domains, 5);
+  assert.equal(report.specialists, 10);
+  assert.equal(report.exactMatches, 41);
+  assert.equal(report.exactMatchPercent, 100);
+  assert.equal(report.precisionPercent, 100);
+  assert.equal(report.recallPercent, 100);
+  assert.equal(report.f1Percent, 100);
+  assert.equal(report.abstentionCases, 5);
+  assert.equal(report.correctAbstentions, 5);
+  assert.equal(report.domainSweep.comparisons, 205);
+  assert.equal(report.domainSweep.failures, 0);
+  assert.deepEqual(report.mismatches, []);
+  for (const skill of ids) {
+    assert.ok(report.perSkill[skill].truePositive >= 3, skill);
+    assert.equal(report.perSkill[skill].falsePositive, 0);
+    assert.equal(report.perSkill[skill].falseNegative, 0);
+  }
+});
+
+test('offline evaluation detects fabricated wrong choices and domain-bound regressions', () => {
+  const incorrect = evaluateSkillRouting({
+    registry,
+    corpus,
+    selector: (task, options) => {
+      const answer = selectSpecialists(task, options);
+      return task.includes('RAG Chatbot') ? { ...answer, skills: ['legal-compliance'] } : answer;
+    },
+  });
+  assert.equal(incorrect.status, 'FAIL');
+  assert.equal(incorrect.falsePositive, 1);
+  assert.equal(incorrect.falseNegative, 1);
+  assert.ok(incorrect.f1Percent < 100);
+  assert.ok(incorrect.mismatches.some(row => row.id === 'ai-rag'));
+  const restricted = evaluateSkillRouting({
+    registry,
+    corpus,
+    selector: (task, options) => {
+      const answer = selectSpecialists(task, options);
+      return options.domain === 'MARKET' ? { ...answer, skills: [] } : answer;
+    },
+  });
+  assert.equal(restricted.status, 'FAIL');
+  assert.ok(restricted.domainSweep.failures > 0);
+  const malformed = structuredClone(corpus);
+  malformed.cases[0].expectedSpecialists = ['unregistered-skill'];
+  assert.throws(() => evaluateSkillRouting({ registry, corpus: malformed }), /invalid or duplicate evaluation case/);
+});
+
+test('evaluation CLI emits structured offline evidence without provider access', () => {
+  const file = fileURLToPath(new URL('./skill-routing-evaluation.mjs', import.meta.url));
+  const report = JSON.parse(execFileSync(process.execPath, [file, '--json'], { encoding: 'utf8' }));
+  assert.equal(report.schemaVersion, 'CAPITAL_AI_SKILL_EVALUATION_REPORT@1');
+  assert.equal(report.status, 'PASS');
+  assert.equal(report.domainSweep.comparisons, 205);
+  assert.equal(report.modelCalls, 0);
 });
