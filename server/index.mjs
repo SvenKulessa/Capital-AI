@@ -214,6 +214,27 @@ function injectPublicSeoSnapshot(html, pathname) {
     '</article></main>';
   return html.replace('<div id="root"></div>', `<div id="root">${snapshot}</div>`);
 }
+// Keep pricing NOINDEX until actual price/checkout/entitlement evidence is accepted.
+// Provide an honest HTML-only route for visitors without a working client bundle.
+function injectPricingFallback(html, pathname) {
+  if (pathname !== '/pricing' || !html.includes('<div id="root"></div>')) return html;
+  const fallback = '<main id="capital-ai-pricing-fallback" lang="de"><article>' +
+    '<h1>Tarife und Leistungen</h1>' +
+    '<p>CAPITAL-AI bietet einen öffentlichen Lernbereich sowie Tarifoptionen für Analysewerkzeuge. ' +
+    'Verfügbarkeit, aktuelle Preise und Leistungsumfang werden in der interaktiven Tarifansicht geprüft.</p>' +
+    '<p>Ohne JavaScript kann hier kein Kauf abgeschlossen werden. ' +
+    'Der Checkout verlangt eine Anmeldung und verfügbare Zahlungsabwicklung; ' +
+    'ein Besuch dieser Seite ist noch keine Bestellung.</p>' +
+    '<nav aria-label="Weiterführende Angebote"><a href="/learning">Learning Portal und Finanzwissen</a>' +
+    ' · <a href="/login">Anmelden</a> · <a href="/agb">Nutzungsbedingungen</a></nav>' +
+    '</article></main>';
+  return html
+    .replace('<div id="root"></div>', `<div id="root">${fallback}</div>`)
+    .replace(/<title>[^<]*<\/title>/, '<title>Tarife und Leistungen | Capital-AI</title>')
+    .replace(/(<meta name="description" content=")[^"]*("\s*\/?>)/,
+      '$1Tarifinformationen und Learning-Zugang: Verfügbarkeit, Preise und Checkout-Voraussetzungen prüfen.$2');
+}
+
 function vocabularyFallback(entry) {
   const thesaurus = entry.thesaurus.map(item => `<li>${escapeHtml(item)}</li>`).join('');
   return `<main><article><p><a href="/vocabulary">Capital-AI Vocabulary</a></p><h1>${escapeHtml(entry.term)}</h1><p>${escapeHtml(entry.description)}</p><p>Kategorie: ${escapeHtml(entry.category)}</p><h2>Thesaurus</h2><ul>${thesaurus}</ul></article></main>`;
@@ -596,6 +617,7 @@ export function createApp(root = defaultRoot, options = {}) {
       body = Buffer.from(injectSeoMetadata(body.toString('utf8'), publicPath));
       body = Buffer.from(applySeoIndexingPolicy(body.toString('utf8'), publicPath));
       body = Buffer.from(injectPublicSeoSnapshot(body.toString('utf8'), publicPath));
+       body = Buffer.from(injectPricingFallback(body.toString('utf8'), publicPath));
       const pathLocale = localeFromLandingPath(publicPath);
       if (pathLocale && publicPath !== '/') {
         body = Buffer.from(localizeNonIndexableLandingHtml(body.toString('utf8'), pathLocale));
