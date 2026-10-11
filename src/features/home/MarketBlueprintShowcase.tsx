@@ -4,9 +4,9 @@ import { useLocale } from '../../i18n/LocaleProvider';
 import {
   MARKET_BLUEPRINTS,
   computeBlueprintDemoIndex,
-  demoAlertWouldCross,
   type MarketBlueprintDefinition,
 } from './marketBlueprintDemo';
+import { didSyntheticThresholdCross } from './marketBlueprintRules';
 
 type Language = 'de' | 'en';
 type Props = { variant?: 'home' | 'documentation'; onNavigate?: (path: string) => void };
@@ -80,8 +80,8 @@ function BlueprintCard({ blueprint, language }: { blueprint: MarketBlueprintDefi
         {blueprint.id === 'alerts' && (
           <p className="mt-2 text-xs font-medium text-pink-200">
             {language === 'de'
-              ? 'Beispielregel: ' + (demoAlertWouldCross(blueprint.series, 70) ? 'Modellschwelle überschritten' : 'Schwelle nicht erreicht') + ' · keine Benachrichtigung'
-              : 'Example rule: ' + (demoAlertWouldCross(blueprint.series, 70) ? 'model threshold crossed' : 'threshold not crossed') + ' · no notification'}
+              ? 'Beispielregel: ' + (didSyntheticThresholdCross(blueprint.series, 70) ? 'Modellschwelle überschritten' : 'Schwelle nicht erreicht') + ' · keine Benachrichtigung'
+              : 'Example rule: ' + (didSyntheticThresholdCross(blueprint.series, 70) ? 'model threshold crossed' : 'threshold not crossed') + ' · no notification'}
           </p>
         )}
       </div>
