@@ -51,11 +51,47 @@ Der bestehende geschützte Repository-Katalog liest GitHub-main weiterhin als zu
 
 Owner-Zugriffe auf beide API-Routen nutzen denselben serverseitigen `authorizeIamRole(..., 'owner')`-Pfad. Bei fehlendem GitHub-/npm-Zugriff wird kein Erfolg erfunden; eine nicht verfügbare Kandidatensuche liefert `NOT_PROVEN` bzw. einen klaren 503-Fehler. Die bereits gelockte Version wird niemals eigenmächtig verändert.
 
+## Lizenz-, Kosten-, Nutzung- und Alternativenmatrix (TRUST-Erweiterung 2026-10-11)
+
+Die neue Owner-Ansicht zeigt für **jede** vom bestehenden Katalog inventarisierte Zeile die Kategorien `Stand (main)`, `verifizierte Latest-Metadaten`, `Update-Grund`, `Einsatz/Evidence`, `Ist-Aufrufe pro Tag`, `deklarierte Lizenz`, `kommerzielle Weitergabe`, `Preis-/Free-Tier/Bezahlmodell` sowie `Alternativen`. Eine vollständig gefilterte CSV ist direkt aus der Owner-Ansicht exportierbar; der Export neutralisiert Spreadsheet-Formeln aus untrusted Registry-/Inventartext.
+
+### Echte Abdeckung und Herkunft
+
+- `config/tool-catalog-integrations.json`: 42 **deklarierte** externe Integrationen (14 PLATFORM / 10 TRUST / 7 MARKET / 6 GROWTH / 5 PRODUCT). Ein deklarierter Dienst bedeutet **nicht** 42 aktiv genutzte Runtime-Provider.
+- `src/data/externalComponentInventory.ts`: 32 kuratierte, teilweise historische Komponenten-Einträge mit `license`, `lifecycle`, `activeVersion` und `alternatives`. Die Versionen werden ausschließlich als *historische Inventaraussage, nicht aktueller Runtime-Readback* angezeigt. Tool-Aliase führen auf diese Quelle, erfinden aber keine Lizenz-/Deploy-Evidence.
+- `package.json`, `package-lock.json`, isolierte `deploy/runtime`- und `deploy/npm-security-patches`-Manifeste sowie die Workflows liefern feste Versionen, Paketlizenzdeklarationen und geprüfte Source-/Commit-Hashes. **Lockfile-SPDX-Metadaten sind nicht der vollständige Lizenztext und kein kommerzielles Freigabe-Attest**.
+- `server/tool-catalog-assessment.mjs`: rein deterministische, bounded Projektion auf Basis der bereits zu einem einzigen `main@SHA` geladenen Quellen. Keine Credential-Freigabe, keine neuen Drittanbieter-SDKs, keine Lizenz- oder Kostenentscheidungen und kein Secret-Zugriff.
+- `server/tool-update-discovery.mjs`: offizieller npm-/GitHub-Release-Abgleich **nur im bisherigen limitierten Umfang**. `latestVersion` wird bei belegter Version ausgegeben; SHA-1/SHA-512 bzw. Commit-Pins bleiben separate Metadaten (Tarball/Binary-Codeprüfung `NOT_PROVEN`). Für die vom selben `main@SHA` geladene TypeScript-7.0.2-Evidence wird der Kandidat **BLOCKED** mit einem eindeutigen Grund, nicht als freigegebene Installation angezeigt.
+
+### Rechtliche und kommerzielle Semantik
+
+Die Felder `commercial`, `redistribution`, `commercialServiceRights`, `freeTier` und `paidTier` sind getrennt. Exakt deklarierte MIT/Apache-2.0/BSD/ISC- oder ähnliche permissive **Softwarelizenzen** sprechen grundsätzlich für kommerziell zulässige Nutzung unter Notice-/Lizenzbedingungen, **keinesfalls** automatisch für eine kommerzielle SaaS-, API-, Marktdaten-Redistributions- oder Markenlizenz. `Apache-2.0 core` betrifft nur den OSS-Kern eines Providers; Cloud-Angebote können eigene Verträge haben. Copyleft-/schwierig lesbare Lizenzen erhalten `REVIEW_REQUIRED`. Unklare, nicht verfügbare oder nur vom Provider vertraglich festgelegte Preise, kostenlose Kontingente, Mindestumsätze und Quotas bleiben `NOT_PROVEN`. Die Registry-/Inventarlizenz ist lediglich eine Deklaration.
+
+### Bedeutung der täglichen Nutzung
+
+- `actualCallsPerDay=null` = **NOT_PROVEN**, nicht null Aufrufe. Es besteht keine pauschale Quelle für tenant- und providerübergreifende tägliche Request-Anzahlen. Mit reinem Source-Scan lassen sich keine produktiven API-Aufrufe ermitteln; das wäre eine erfundene Zahl.
+- `scheduledRunsPerDay`: Nur bei einfachen GitHub-Workflow-Cron-Schedules (täglich oder stündlich) deterministisch ermittelte **geplante** Läufe. Workflow-Dispatch, Wochenregeln, ausgefallene GitHub-Runs und reale Ausführung bleiben separat. Cron zählt **keine** API-Aufrufe oder erfolgreiche Ausführungen.
+- Ein externes Tool mit einer Repo-Binding-Quelle wird als `REPO_BINDING_ONLY` oder `DECLARED_ACTIVE_NOT_RUNTIME_VERIFIED` gekennzeichnet. NPM-Entwicklungswerkzeuge sind zunächst Build-/CI-Abhängigkeiten. Der `sourceSha`-Beleg ist keine Zusicherung der aktuell aktiven Render-, Supabase- oder Provider-Runtime.
+- Eine nachträgliche belastbare Nutzungszählung erfordert vorhandene **autorisierte, datensparsame** Owner-Metriken mit Aggregation pro UTC-Tag, Provider, Anwendung, Beweiszeit und ggf. Denominator; eine neue Telemetrieintegration mit Tenant-IDs oder Preisdaten wird durch diesen PR **nicht** aktiviert.
+
+### Update-Entscheidungen
+
+- `BLOCKED`: explizite nachweisbare Sicherheits- oder Fingerprint-Sperre (z.B. `typescript@7.0.2`); keine stille Fristverlängerung.
+- `UPDATE_CANDIDATE`: neuer Hash-/Commit-belegter Release **nicht installiert**, bis überprüfter Binary-/CVE-/Kompatibilitäts-/Lizenz-Nachweis vorliegt.
+- `CURRENT_OR_NEWER`: keine neuere stabile Version in der geprüften Quelle zum angegebenen Abrufzeitpunkt.
+- `REVIEW_REQUIRED`: Versionssortierung, Fingerprint oder Releaseregel nicht hinreichend geklärt.
+- `NOT_PROVEN`: Quelle ausgefallen, kein providerfähiger Latest-Endpunkt, Scan-/Quota-Limit erreicht oder Lizenz-/Runtime-/Verbrauchsevidence fehlt. Nicht als `UP_TO_DATE`, `FREE` oder `0 calls` deuten.
+
+### Alternative und Kosten
+
+Bestehende Alternativen werden direkt aus dem kuratierten Komponentenregister übernommen. Eine Alternative ist nur ein fachlicher Kandidat; die Eignung für kommerzielle Weiterverbreitung, Pricing, RLS/Tenant Isolation und Betreiberbedingungen muss für die tatsächliche Funktion separat qualifiziert werden. Eine nicht belegte Alternative bleibt `NOT_PROVEN` statt frei erfunden. Kosten der Implementierung: bestehender Render-CPU-/Speicherverbrauch und der bereits eingesetzten GitHub-/npm-Metadaten-Abfragen; kein neuer Kauf oder weiterer Required Check. Anbieterquoten und Tarifpreise sind ohne Live-Contract-Readback `NOT_PROVEN`.
+
 ## Source files
 
 - server/repository-tool-catalog.mjs: server-side bounded GitHub reader, version/provenance projection and cache.
 - server/repository-tool-catalog.test.mjs: parsing, lock resolution, stale/fail-closed behavior and immutable SHA tests.
 - server/tool-update-discovery.mjs und .test.mjs: begrenzte, SHA-gebundene Registry-/Release-Kandidatenprüfung.
+- server/tool-catalog-assessment.mjs und .test.mjs: Commercial-/Lizenz-/Preis-/Nutzungs-/Alternativen-Evidence mit bewusst offener Runtime-Provenance.
 - src/components/RepositoryToolCatalogDashboard.tsx: owner dashboard with search, domain/type filter, pagination, SHA and repo links.
 - src/components/ControlCenterPage.tsx: new tab only; existing CADS catalog unchanged.
 - server/index.mjs: owner-only API route.
