@@ -32,6 +32,9 @@ test('synthetic threshold visualization is a pure calculation, not an operationa
   const series = MARKET_BLUEPRINTS.find(item => item.id === 'alerts').series;
   assert.equal(demoAlertWouldCross(series, 70), true);
   assert.equal(demoAlertWouldCross(series, 95), false);
+  assert.equal(demoAlertWouldCross([80, 85, 92], 70), false, 'already-above is not a crossing');
+  assert.equal(demoAlertWouldCross([80, 68, 71], 70), true, 'a below-to-above transition crosses');
+  assert.equal(demoAlertWouldCross([70], 70), false, 'one observation is not enough');
   assert.throws(() => demoAlertWouldCross(series, Number.NaN), /DEMO_THRESHOLD_INVALID/);
 });
 
