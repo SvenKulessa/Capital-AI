@@ -11,6 +11,9 @@ import { didSyntheticThresholdCross } from './marketBlueprintRules';
 type Language = 'de' | 'en';
 type Props = { variant?: 'home' | 'documentation'; onNavigate?: (path: string) => void };
 
+// Present the mathematical method before its supporting transport architecture.
+const LEARNING_ORDER = ['scoring', 'ingestion', 'evidence', 'alerts'] as const;
+
 /** Fictional, unitless SVG series. No network, provider, timer or scoring-runtime access. */
 function DemoChart({ blueprint, language }: { blueprint: MarketBlueprintDefinition; language: Language }) {
   const points = blueprint.series.map((value, index) =>
@@ -102,16 +105,21 @@ function BlueprintCard({ blueprint, language }: { blueprint: MarketBlueprintDefi
           </div>
           <div>
             <h4 className="mb-1 text-xs font-bold uppercase tracking-wide text-amber-200">
-              {language === 'de' ? 'Demo-Logik' : 'Demo logic'}
+              {language === 'de' ? 'Mathematische Zusammensetzung' : 'Mathematical composition'}
             </h4>
             <p className="text-sm leading-relaxed text-slate-200">{blueprint.formula}</p>
+            <p className="mt-2 text-xs leading-relaxed text-slate-300">
+              {language === 'de'
+                ? 'Rechenweg: Jeder fiktive Faktorwert wird mit seinem Gewicht multipliziert. Die Summe ergibt den Demo-Index, keinen verifizierten Markt-Score.'
+                : 'Multiply each fictional factor by its weight and add the contributions. This demo index is not a verified market score.'}
+            </p>
           </div>
           <div className="space-y-2">
             {blueprint.factors.map((factor) => (
               <div key={factor.id}>
                 <div className="flex justify-between gap-3 text-xs text-slate-200">
                   <span>{factor.label} · {Math.round(factor.weight * 100)} %</span>
-                  <span className="tabular-nums">{factor.value} / 100</span>
+                  <span className="tabular-nums">{factor.value} × {factor.weight.toFixed(2)} = {(factor.value * factor.weight).toFixed(2)}</span>
                 </div>
                 <div className="mt-1 h-1.5 rounded-full bg-slate-700" aria-hidden="true">
                   <div className="h-full rounded-full bg-brand-ai" style={{ width: String(factor.value) + '%' }} />
@@ -119,6 +127,9 @@ function BlueprintCard({ blueprint, language }: { blueprint: MarketBlueprintDefi
               </div>
             ))}
           </div>
+          <p className="border-t border-slate-700/70 pt-2 text-sm font-semibold tabular-nums text-amber-200">
+            Σ (Faktor × Gewicht) = {example.toFixed(1)} / 100 · DEMO
+          </p>
           <div>
             <h4 className="mb-1 text-xs font-bold uppercase tracking-wide text-amber-200">
               {language === 'de' ? 'Ausgabevertrag / Sicherheitsgrenze' : 'Output contract / security boundary'}
@@ -149,37 +160,48 @@ export function MarketBlueprintShowcase({ variant = 'home', onNavigate }: Props)
           <Database className="h-4 w-4" aria-hidden="true" /> CAPITAL-AI / BLUEPRINT PRODUCTS
         </p>
         <h2 id="market-blueprint-heading" className="mt-2 text-2xl font-extrabold text-white sm:text-3xl">
-          {language === 'de' ? 'Marktmodelle erleben – ohne Live-Daten' : 'Explore market models – without live data'}
+          {language === 'de' ? 'Analysen verstehen: Datenkonzepte & Mathematik' : 'Understand analysis: data concepts & mathematics'}
         </h2>
         <p className="mt-3 max-w-4xl text-base leading-relaxed text-slate-200">
           {language === 'de'
-            ? 'Vier demonstrierbare Produkt-Blueprints zeigen Datenkonzept, Regelwerk und gewichtete Berechnung. Alle Kurven und Zahlen sind synthetisch. Keine echten Kurse, Handelssignale, Benchmarks oder historischen Resultate.'
-            : 'Four product blueprints explain data contracts, rules and weighted calculations. All curves and numbers are synthetic: no prices, signals, benchmarks or historical results.'}
+            ? 'Entdecke die Methoden hinter Analysekomponenten. Vier Demo-Blueprints zeigen Datenmodelle, gewichtete Faktoren, Rechenwege und Evidenzgrenzen. Alle Zahlen sind synthetisch, keine echten Kurse, Signale oder historischen Ergebnisse.'
+            : 'Four public demo blueprints explain data contracts, weighted factors, calculations and evidence boundaries. All curves and numbers are synthetic, not prices, signals or historical results.'}
         </p>
         <div className="mt-4 flex items-start gap-2 rounded-xl border border-purple-400/30 bg-brand-ai/10 p-3 text-sm leading-relaxed text-slate-100">
           <LockKeyhole className="mt-0.5 h-5 w-5 shrink-0 text-purple-200" aria-hidden="true" />
           <p>{language === 'de'
-            ? 'Rust-Bridge, NATS und Price Alerts bleiben pausiert. Kraken ist als erste spätere kommerzielle Ingestion geplant – erst nach Portfoliofinanzierung und vertraglich nachgewiesenen Nutzungsrechten. Kein API-Key oder Live-Feed wird hier verwendet.'
-            : 'Rust bridge, NATS and price alerts remain paused. Kraken is the first planned commercial ingestion source, contingent on financing and verified contractual rights. No API key or live feed is used here.'}</p>
+            ? 'Priorität: Mit Learn Portal und erklärbaren Daten- und Analysekonzepten erste Umsätze erzielen. Rust, NATS und Price Alerts bleiben pausiert. Kein API-Key oder Live-Feed wird verwendet.'
+            : 'Priority: generate initial revenue through Learn Portal and explainable analysis/data concepts. Rust, NATS and price alerts stay paused. No API key or live feed is used.'}</p>
         </div>
-        {variant === 'home' && (
-          <a href="/marketscreener/dokumentation#market-blueprint-catalog"
-            onClick={(event) => follow(event, '/marketscreener/dokumentation#market-blueprint-catalog')}
-            className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl border border-amber-400/40 bg-amber-400/10 px-4 py-2 text-sm font-bold text-amber-200 hover:bg-amber-400/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
-            {language === 'de' ? 'Blueprint-Dokumentation öffnen' : 'Open blueprint documentation'}
+        <nav aria-label={language === 'de' ? 'Lerninhalte und Angebote' : 'Learning and existing offers'}
+          className="mt-4 flex flex-wrap gap-3">
+          <a href="/learning" onClick={(event) => follow(event, '/learning')}
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-amber-300 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-amber-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
+            {language === 'de' ? 'Learn Portal entdecken' : 'Explore Learn Portal'}
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </a>
-        )}
+          <a href="/pricing" onClick={(event) => follow(event, '/pricing')}
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-500 px-4 py-2 text-sm font-bold text-slate-100 hover:border-amber-300 hover:text-amber-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
+            {language === 'de' ? 'Bestehende Angebote vergleichen' : 'Compare existing offers'}
+          </a>
+          {variant === 'home' && (
+            <a href="/marketscreener/dokumentation"
+              onClick={(event) => follow(event, '/marketscreener/dokumentation')}
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-600 px-4 py-2 text-sm font-bold text-slate-200 hover:border-amber-300 hover:text-amber-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
+              {language === 'de' ? 'Datenkonzepte vertiefen' : 'Explore data concepts'}
+            </a>
+          )}
+        </nav>
       </header>
       <div className="grid gap-4 md:grid-cols-2">
-        {MARKET_BLUEPRINTS.map((blueprint) => (
+        {[...MARKET_BLUEPRINTS].sort((a, b) => LEARNING_ORDER.indexOf(a.id) - LEARNING_ORDER.indexOf(b.id)).map((blueprint) => (
           <BlueprintCard key={blueprint.id} blueprint={blueprint} language={language} />
         ))}
       </div>
       <p className="mt-5 max-w-4xl text-xs leading-relaxed text-slate-400">
         {language === 'de'
-          ? 'Die Indizes sind ausschließlich didaktische Beispielrechnungen. Es existiert keine Freigabe für produktives Scoring, Live-Preise oder kommerzielle Weiterverbreitung von Providerdaten. Kein Kauf von Kraken-Datenrechten ist erfolgt.'
-          : 'All indices are educational calculations only. No live scoring, price data or commercial provider redistribution is approved. No Kraken data rights have been purchased.'}
+          ? 'Die Indizes sind ausschließlich didaktische Beispielrechnungen. Es existiert keine Freigabe für produktives Scoring, Live-Preise oder kommerzielle Weiterverbreitung von Providerdaten. Providerdatenrechte werden hier weder benötigt noch eingeräumt.'
+          : 'All indices are educational calculations only. No live scoring, price data or commercial provider redistribution is approved. Provider data rights are neither required nor granted here.'}
       </p>
     </section>
   );
