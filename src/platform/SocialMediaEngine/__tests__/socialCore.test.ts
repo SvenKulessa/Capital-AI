@@ -12,7 +12,7 @@ import {
   moveMediaLayerByFrames,
   setMediaLayerText,
 } from '../Editing/MediaProjectEditing';
-import { createCapitalAiLandingBlueprintVideoProject, CAPITAL_AI_LANDING_VOICEOVER_DE, createCapitalAiMediaStudioProject } from '../Editing/MediaStudioTemplates';
+import { createCapitalAiLandingBlueprintVideoProject, createCapitalAiLandingGeminiTtsRequest, CAPITAL_AI_LANDING_VOICEOVER_DE, createCapitalAiMediaStudioProject } from '../Editing/MediaStudioTemplates';
 import {
   PLANNING_VISUAL_SCHEMA_VERSION,
   type PlanningVisualSpec,
@@ -83,6 +83,11 @@ test('homepage Blueprint promo is editable, demo-labeled and does not invent Gem
   assert.equal(project.tracks.find(track => track.kind === 'graphics')?.layers.length, 5);
   assert.equal(project.metadata?.audioProviderRequested, 'GEMINI');
   assert.equal(project.metadata?.narrationAttached, false);
+  const tts = createCapitalAiLandingGeminiTtsRequest();
+  assert.equal(tts.text, CAPITAL_AI_LANDING_VOICEOVER_DE);
+  assert.equal(tts.voice, 'Kore');
+  assert.equal(tts.maxAudioSeconds, 30);
+  assert.equal(project.metadata?.geminiTtsGateway, 'server/growth-ai-gateway.ts:createGeminiTtsDraft');
   assert.equal(project.assets.some(asset => asset.kind === 'audio'), false);
   assert.match(CAPITAL_AI_LANDING_VOICEOVER_DE, /Keine Live-Signale und keine Anlageberatung/);
   assert.equal(project.renderRecipe.publishReady, false);
