@@ -32,7 +32,6 @@ import {
   DollarSign,
   Flame,
   LogIn,
-  Bell,
   CreditCard,
   Building2,
   LineChart,
@@ -48,7 +47,6 @@ import { useLocale } from '../i18n/LocaleProvider';
 import { ASSET_CLASSES } from '../data/mockData';
 import { MainCategory, AssetSubclass } from '../types';
 import { trackLoginClick } from '../utils/analytics';
-import { usePriceAlerts } from '../context/PriceAlertsContext';
 import type { MainHubId } from './HubSidebarDrawer';
 
 const HubSidebarDrawer = lazy(() =>
@@ -106,7 +104,6 @@ export const Header: React.FC<HeaderProps> = ({
   const [expandedClass, setExpandedClass] = useState<MainCategory | null>('KRYPTO');
   const [authSession, setAuthSession] = useState<HeaderSession | null>(null);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
-  const { activeAlertsCount, triggeredAlertsCount } = usePriceAlerts();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -314,25 +311,6 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* RIGHT SIDE: Live Status Chip & Login Button */}
       <div className="flex items-center space-x-2">
-        {/* PRICE ALERTS BELL BUTTON */}
-        <button
-          type="button"
-          onClick={onOpenPriceAlerts}
-          className="relative p-2 rounded-xl bg-white/5 hover:bg-white/10 active:bg-white/15 text-amber-300 border border-amber-500/20 hover:border-amber-500/40 transition-all cursor-pointer shadow-[0_0_12px_rgba(249,191,33,0.12)] shrink-0 group"
-          aria-label={t('navAlerts')}
-          title="PriceAlerts & Schwellenwerte"
-        >
-          <Bell className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
-          {activeAlertsCount > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-amber-400 text-black text-[9.5px] font-mono font-black flex items-center justify-center shadow-[0_0_8px_rgba(249,191,33,0.8)] border border-[#02050e]">
-              {activeAlertsCount}
-            </span>
-          )}
-          {triggeredAlertsCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#FF2E93] animate-ping" />
-          )}
-        </button>
-
         {/* STUDIO HUB BUTTON */}
         <button
           type="button"
