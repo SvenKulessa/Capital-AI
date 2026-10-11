@@ -170,11 +170,17 @@ try {
   delete report.viewport;
   report.status = 'PASS';
   console.log(JSON.stringify(report));
+} catch (error) {
+  // Preserve the actual browser assertion; teardown must not replace it.
+  report.error = error instanceof Error ? error.message : String(error);
+  console.error('LEARNING_COMMERCE_BROWSER_READBACK_FAILED', report.error);
+  process.exitCode = 1;
 } finally {
   await writeFile(join(output, 'report.json'), JSON.stringify(report, null, 2) + '\n');
   socket?.close();
   for (const task of pending.values()) clearTimeout(task.timer);
   chrome.kill('SIGTERM');
   await new Promise(resolve => { if (chrome.exitCode !== null || chrome.signalCode) resolve(); else { chrome.once('exit', resolve); setTimeout(() => { chrome.kill('SIGKILL'); resolve(); }, 3000).unref(); } });
-  await rm(profile, { recursive: true, force: true });
+  await rm(profile, { recursive: true, force: true, maxRetries: 12, retryDelay: 250 })
+    .catch(error => console.error('CHROME_PROFILE_CLEANUP_WARNING', String(error?.code || error?.message)));
 }
