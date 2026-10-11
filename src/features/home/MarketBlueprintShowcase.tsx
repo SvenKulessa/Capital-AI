@@ -160,7 +160,7 @@ export function MarketBlueprintShowcase({ variant = 'home', onNavigate }: Props)
           <Database className="h-4 w-4" aria-hidden="true" /> CAPITAL-AI / BLUEPRINT PRODUCTS
         </p>
         <h2 id="market-blueprint-heading" className="mt-2 text-2xl font-extrabold text-white sm:text-3xl">
-          {language === 'de' ? 'Analysen verstehen: Datenkonzepte & Mathematik' : 'Understand analysis: data concepts & mathematics'}
+          {language === 'de' ? 'Blueprint-Bundles: Datenkonzepte & Scoring-Methoden' : 'Blueprint Bundles: data concepts & scoring methods'}
         </h2>
         <p className="mt-3 max-w-4xl text-base leading-relaxed text-slate-200">
           {language === 'de'
@@ -200,8 +200,8 @@ export function MarketBlueprintShowcase({ variant = 'home', onNavigate }: Props)
       </div>
       <p className="mt-5 max-w-4xl text-xs leading-relaxed text-slate-400">
         {language === 'de'
-          ? 'Die Indizes sind ausschließlich didaktische Beispielrechnungen. Es existiert keine Freigabe für produktives Scoring, Live-Preise oder kommerzielle Weiterverbreitung von Providerdaten. Providerdatenrechte werden hier weder benötigt noch eingeräumt.'
-          : 'All indices are educational calculations only. No live scoring, price data or commercial provider redistribution is approved. Provider data rights are neither required nor granted here.'}
+          ? 'DEMO-DATEN · Die Scorings und Indizes sind ausschließlich synthetische, didaktische Beispielrechnungen. Keine Anlageberatung, keine Empfehlung, keine Live-Preise, keine nachgewiesene Performance. Die Bundles sind Produktvorschauen; Liefer- und Kaufrechte entstehen nur durch tatsächlich freigegebene Angebote. Keine kommerziellen Provider-Datenrechte.'
+          : 'DEMO DATA · All scores and indices are synthetic examples for education and product marketing only, not investment advice, recommendations, live prices or verified performance. Bundles are previews; no implied product delivery, checkout, or provider redistribution rights.'}
       </p>
     </section>
   );
