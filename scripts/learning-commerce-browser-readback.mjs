@@ -160,11 +160,20 @@ try {
     assert.equal(purchase.consent, false, 'Consent must initially be unchecked');
     assert.equal(purchase.disabled, true, 'Purchase cannot begin without consent');
     assert.match(purchase.text, /Learning Portal/, 'Learning purchase CTA missing');
-    if (viewport.mobile) {
+    // Native anchor panel replaces the mobile select. During a rolling deploy,
+    // validate the legacy select by its values rather than a stale option count.
+    const panel = await evaluate(`!!document.querySelector('nav[aria-label="Learning Portal Unterseiten"] a[href="/learning/quiz"]')`);
+    if (panel) {
+      await evaluate(`document.querySelector('nav[aria-label="Learning Portal Unterseiten"] a[href="/learning/quiz"]').click()`);
+      await until(() => evaluate(`location.pathname === '/learning/quiz' && !!document.querySelector('a[aria-current="page"][href="/learning/quiz"]')`), 'Learning panel quiz navigation');
+      await capture(viewport.name + '-learning-navigation-panel');
+      await evaluate(`document.querySelector('nav[aria-label="Learning Portal Unterseiten"] a[href="/learning/glossar"]').click()`);
+      await until(() => evaluate(`location.pathname === '/learning/glossar' && !!document.querySelector('[aria-label="Learning Portal kaufen"]')`), 'Glossary restored');
+    } else if (viewport.mobile) {
       const tabSelect = `Array.from(document.querySelectorAll('select')).find(s =>
-        s.options.length === 7 && Array.from(s.options).some(o => o.value === 'quiz'))`;
+        Array.from(s.options).some(o => o.value === 'quiz') && Array.from(s.options).some(o => o.value === 'glossar'))`;
       assert.equal(await evaluate(`(() => {const s=${tabSelect}; return !!s && s.getBoundingClientRect().width > 0;})()`),
-        true, 'Mobile learning tab selector not visible');
+        true, 'Mobile learning navigation not visible');
       await evaluate(`(() => {const s=${tabSelect}; s.value='quiz';
         s.dispatchEvent(new Event('change',{bubbles:true}));})()`);
       await until(() => evaluate(`(${tabSelect})?.value === 'quiz'`), 'Learning tab change');
