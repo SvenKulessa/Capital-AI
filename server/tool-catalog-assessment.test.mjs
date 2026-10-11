@@ -53,9 +53,9 @@ test('cron proves scheduled frequency but not production execution or API consum
     { id: 'file:.github/workflows/weekly.yml', kind: 'GITHUB_ACTION',
       path: '.github/workflows/weekly.yml', name: 'Weekly', domain: 'TRUST' },
   ], { supplementary: {
-    '.github/workflows/daily-dependency-security-watch.yml': 'on:\\n  schedule:\\n    - cron: "15 4 * * *"\\n',
-    '.github/workflows/manual.yml': 'on: workflow_dispatch\\n',
-    '.github/workflows/weekly.yml': '  - cron: "0 6 * * 1"\\n',
+    '.github/workflows/daily-dependency-security-watch.yml': 'on:\n  schedule:\n    - cron: "15 4 * * *"\n',
+    '.github/workflows/manual.yml': 'on: workflow_dispatch\n',
+    '.github/workflows/weekly.yml': '  - cron: "0 6 * * 1"\n',
   } });
   assert.equal(rows[0].use.scheduledRunsPerDay, 1);
   assert.deepEqual(rows[0].use.scheduledCrons, ['15 4 * * *']);
