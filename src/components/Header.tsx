@@ -36,7 +36,6 @@ import {
   LineChart,
   LibraryBig,
   User,
-  KeyRound,
   LogOut,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -129,7 +128,7 @@ export const Header: React.FC<HeaderProps> = ({
     : null;
   const isOwner = authSession?.authenticated === true && authSession.account?.iamRole === 'owner';
 
-  const navigateAccount = (path: '/profile' | '/profile/security' | '/profile/key-vault' | '/profile/workspace') => {
+  const navigateAccount = (path: '/profile' | '/profile/security' | '/profile/workspace') => {
     setIsAccountOpen(false);
     setIsMenuOpen(false);
     if (onNavigate) onNavigate(path);
@@ -371,14 +370,6 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   type="button"
                   role="menuitem"
-                  onClick={() => navigateAccount('/profile/key-vault')}
-                  className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-slate-100 hover:bg-white/10"
-                >
-                  <KeyRound className="h-4 w-4 text-violet-300" /> Key Vault
-                </button>
-                <button
-                  type="button"
-                  role="menuitem"
                   onClick={() => navigateAccount('/profile/workspace')}
                   className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-slate-100 hover:bg-white/10"
                 >
@@ -474,7 +465,6 @@ export const Header: React.FC<HeaderProps> = ({
                       {[
                         { path: '/profile' as const, label: 'Profil', icon: User },
                         { path: '/profile/security' as const, label: 'Sicherheit', icon: ShieldCheck },
-                        { path: '/profile/key-vault' as const, label: 'Key Vault', icon: KeyRound },
                       ].map(item => {
                         const Icon = item.icon;
                         return (
