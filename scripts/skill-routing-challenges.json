@@ -1,0 +1,277 @@
+{
+  "schemaVersion": "CAPITAL_AI_SKILL_CHALLENGES@1",
+  "description": "Independent synthetic paraphrases, compound specialist tasks, and abstention controls; not production ChatGPT or semantic-model evidence.",
+  "cases": [
+    {
+      "id": "h-ai-search",
+      "domain": "PRODUCT",
+      "task": "Vektorsuche mit Embeddings für unsere Wissensbasis zuverlässiger machen.",
+      "expectedSpecialists": [
+        "ai-engineering"
+      ]
+    },
+    {
+      "id": "h-ai-jailbreak",
+      "domain": "TRUST",
+      "task": "Manipulierte Kontextpassagen ermöglichen Jailbreaks im Assistenten.",
+      "expectedSpecialists": [
+        "ai-engineering"
+      ]
+    },
+    {
+      "id": "h-data-cdc",
+      "domain": "MARKET",
+      "task": "Ein CDC-Stream verliert Änderungen bei Lastspitzen.",
+      "expectedSpecialists": [
+        "data-engineering"
+      ]
+    },
+    {
+      "id": "h-data-consumer",
+      "domain": "PLATFORM",
+      "task": "Wie erkennen wir Consumer Lag beim kontinuierlichen Import?",
+      "expectedSpecialists": [
+        "data-engineering"
+      ]
+    },
+    {
+      "id": "h-quant-overfit",
+      "domain": "MARKET",
+      "task": "Wie verhindern wir Overfitting bei Handelssignalen im Portfolio?",
+      "expectedSpecialists": [
+        "quant-research"
+      ]
+    },
+    {
+      "id": "h-quant-market",
+      "domain": "TRUST",
+      "task": "Berücksichtige Marktimpact in der Strategie-Simulation.",
+      "expectedSpecialists": [
+        "quant-research"
+      ]
+    },
+    {
+      "id": "h-success-attrition",
+      "domain": "GROWTH",
+      "task": "Wir möchten Nutzerabwanderung nach der Trial-Phase senken.",
+      "expectedSpecialists": [
+        "customer-success"
+      ]
+    },
+    {
+      "id": "h-success-value",
+      "domain": "PRODUCT",
+      "task": "Verbessere den ersten Kundennutzen nach der Registrierung.",
+      "expectedSpecialists": [
+        "customer-success"
+      ]
+    },
+    {
+      "id": "h-sales-account",
+      "domain": "GROWTH",
+      "task": "Erstelle ein passendes Angebot für Unternehmenskunden.",
+      "expectedSpecialists": [
+        "sales-enterprise"
+      ]
+    },
+    {
+      "id": "h-sales-cycle",
+      "domain": "TRUST",
+      "task": "Verkürze den Verkaufszyklus vom Erstkontakt bis zur Unterschrift.",
+      "expectedSpecialists": [
+        "sales-enterprise"
+      ]
+    },
+    {
+      "id": "h-legal-dpia",
+      "domain": "TRUST",
+      "task": "Müssen wir eine DPIA für Profiling durchführen?",
+      "expectedSpecialists": [
+        "legal-compliance"
+      ]
+    },
+    {
+      "id": "h-legal-data-rights",
+      "domain": "MARKET",
+      "task": "Prüfe die Marktdatenweitergabe an externe Kunden.",
+      "expectedSpecialists": [
+        "legal-compliance"
+      ]
+    },
+    {
+      "id": "h-incident-credential",
+      "domain": "TRUST",
+      "task": "Ein Credential-Diebstahl wurde im Audit entdeckt.",
+      "expectedSpecialists": [
+        "incident-response"
+      ]
+    },
+    {
+      "id": "h-incident-forensics",
+      "domain": "PLATFORM",
+      "task": "Nach dem Angriff benötigen wir eine forensische Analyse.",
+      "expectedSpecialists": [
+        "incident-response"
+      ]
+    },
+    {
+      "id": "h-analytics-activation",
+      "domain": "PRODUCT",
+      "task": "Berichte die Aktivierungsrate neuer Testkonten.",
+      "expectedSpecialists": [
+        "analytics-intelligence"
+      ]
+    },
+    {
+      "id": "h-analytics-acquisition",
+      "domain": "GROWTH",
+      "task": "Vergleiche unsere Akquisitionskanäle anhand von Funnel-Zielen.",
+      "expectedSpecialists": [
+        "analytics-intelligence"
+      ]
+    },
+    {
+      "id": "h-mobile-deeplink",
+      "domain": "PRODUCT",
+      "task": "Prüfe den Deep-Link-Callback in der iPhone-App.",
+      "expectedSpecialists": [
+        "mobile-engineering"
+      ]
+    },
+    {
+      "id": "h-mobile-biometry",
+      "domain": "PLATFORM",
+      "task": "Sichere die biometrische Anmeldung auf dem Gerät.",
+      "expectedSpecialists": [
+        "mobile-engineering"
+      ]
+    },
+    {
+      "id": "h-a11y-keys",
+      "domain": "PRODUCT",
+      "task": "Die Tab-und-Enter-Navigation funktioniert im Dialog nicht.",
+      "expectedSpecialists": [
+        "accessibility-audit"
+      ]
+    },
+    {
+      "id": "h-a11y-focus",
+      "domain": "GROWTH",
+      "task": "Verbessere die Fokusreihenfolge im modalen Dialog.",
+      "expectedSpecialists": [
+        "accessibility-audit"
+      ]
+    },
+    {
+      "id": "h-cross-ai-legal",
+      "domain": "TRUST",
+      "task": "Für Embeddings mit Profiling benötigen wir eine DPIA.",
+      "expectedSpecialists": [
+        "ai-engineering",
+        "legal-compliance"
+      ]
+    },
+    {
+      "id": "h-cross-data-quant",
+      "domain": "MARKET",
+      "task": "Ein CDC-Stream versorgt das Handelssignal-Backtesting.",
+      "expectedSpecialists": [
+        "data-engineering",
+        "quant-research"
+      ]
+    },
+    {
+      "id": "h-cross-success-analytics",
+      "domain": "GROWTH",
+      "task": "Nutzerabwanderung und Aktivierungsrate nach Tarifwechsel analysieren.",
+      "expectedSpecialists": [
+        "customer-success",
+        "analytics-intelligence"
+      ]
+    },
+    {
+      "id": "h-cross-mobile-incident",
+      "domain": "PLATFORM",
+      "task": "Beim iPhone-App-Login gab es Credential-Diebstahl.",
+      "expectedSpecialists": [
+        "mobile-engineering",
+        "incident-response"
+      ]
+    },
+    {
+      "id": "h-cross-sales-legal",
+      "domain": "GROWTH",
+      "task": "Unternehmenskunden-Angebote auf Marktdatenweitergabe prüfen.",
+      "expectedSpecialists": [
+        "sales-enterprise",
+        "legal-compliance"
+      ]
+    },
+    {
+      "id": "h-cross-analytics-a11y",
+      "domain": "PRODUCT",
+      "task": "Das KPI-Dashboard braucht eine bessere Fokusreihenfolge.",
+      "expectedSpecialists": [
+        "analytics-intelligence",
+        "accessibility-audit"
+      ]
+    },
+    {
+      "id": "h-cross-ai-data",
+      "domain": "TRUST",
+      "task": "Wie senken wir Halluzinationen bei der Auswertung von Kundendaten aus dem ETL?",
+      "expectedSpecialists": [
+        "ai-engineering",
+        "data-engineering"
+      ]
+    },
+    {
+      "id": "h-neutral-logo",
+      "domain": "PRODUCT",
+      "task": "Verkleinere den Abstand zwischen Logo und Navigationsleiste.",
+      "expectedSpecialists": []
+    },
+    {
+      "id": "h-neutral-imprint",
+      "domain": "TRUST",
+      "task": "Korrigiere Tippfehler im Impressum.",
+      "expectedSpecialists": []
+    },
+    {
+      "id": "h-neutral-version",
+      "domain": "PLATFORM",
+      "task": "Wie lautet die Versionsnummer im Footer?",
+      "expectedSpecialists": []
+    },
+    {
+      "id": "h-neutral-price",
+      "domain": "GROWTH",
+      "task": "Warum flackert die Preis-Kachel?",
+      "expectedSpecialists": []
+    },
+    {
+      "id": "h-neutral-i18n",
+      "domain": "PRODUCT",
+      "task": "Bitte sortiere die Sprachdateien alphabetisch.",
+      "expectedSpecialists": []
+    },
+    {
+      "id": "h-neutral-status",
+      "domain": "MARKET",
+      "task": "Gib den Status des Repositories aus.",
+      "expectedSpecialists": []
+    },
+    {
+      "id": "h-neutral-readme",
+      "domain": "TRUST",
+      "task": "Eine Wortliste im README aktualisieren.",
+      "expectedSpecialists": []
+    },
+    {
+      "id": "h-neutral-changelog",
+      "domain": "PLATFORM",
+      "task": "Füge einen Tag zum Änderungsprotokoll hinzu.",
+      "expectedSpecialists": []
+    }
+  ]
+}
