@@ -15,12 +15,14 @@
  * ============================================================================
  */
 
-import React from 'react';
+import React, { lazy, Suspense, useState } from 'react';
 import { ArrowRight, Play } from 'lucide-react';
 import { openHeroBuddy } from './HeroBuddy';
 import { motion, useReducedMotion } from 'motion/react';
 import { useLocale } from '../i18n/LocaleProvider';
 import heroEarthImage from '../assets/images/glowing_earth_nodes_1789997454893.jpg';
+
+const HeroEarth3D = lazy(() => import('./HeroEarth3D'));
 
 interface HeroProps {
   onStartAnalysis: () => void;
@@ -30,6 +32,8 @@ interface HeroProps {
 export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct }) => {
   const { t } = useLocale();
   const reduceMotion = useReducedMotion();
+  const [earth3DReady, setEarth3DReady] = useState(false);
+  const enableWebGL = !reduceMotion && typeof window !== 'undefined' && 'WebGL2RenderingContext' in window;
   return (
     <section className="capital-ai-hero relative isolate overflow-hidden px-[20px] pt-4 pb-7">
       {/* Golden neural light trails mirroring the logo's lateral filaments */}
@@ -86,19 +90,29 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
           transition={{ duration: 1.2, ease: 'easeOut' }}
           className="relative h-full w-full"
         >
-          {/* The rotation is isolated from Framer Motion's entrance transform. */}
-          <div className="hero-earth-rotation relative h-full w-full">
+
+          {/* Original Earth stays visible until the lazy 3D scene successfully renders. */}
+          <div className="relative h-full w-full">
             <img
               src={heroEarthImage}
               alt=""
               referrerPolicy="no-referrer"
-              className="h-full w-full rounded-full object-cover mix-blend-screen opacity-95 drop-shadow-[0_0_40px_rgba(245,176,20,0.45)]"
+              className={'absolute inset-0 h-full w-full rounded-full object-cover mix-blend-screen drop-shadow-[0_0_40px_rgba(245,176,20,0.45)] transition-opacity duration-500 ' +
+                (enableWebGL && earth3DReady ? 'opacity-0' : 'opacity-95')}
             />
-            {/* Beacons follow the globe and pulse independently. */}
-            <span className="hero-earth-beacon absolute left-[31%] top-[27%] h-2 w-2 rounded-full bg-amber-100" />
-            <span className="hero-earth-beacon absolute left-[58%] top-[40%] h-1.5 w-1.5 rounded-full bg-amber-100 [animation-delay:-1.1s]" />
-            <span className="hero-earth-beacon hero-earth-beacon--cyan absolute left-[69%] top-[62%] h-2 w-2 rounded-full bg-cyan-200 [animation-delay:-2.2s]" />
-            <span className="hero-earth-beacon absolute left-[38%] top-[71%] h-1.5 w-1.5 rounded-full bg-amber-100 [animation-delay:-.6s]" />
+            {(!enableWebGL || !earth3DReady) && (
+              <div className="absolute inset-0">
+                <span className="hero-earth-beacon absolute left-[31%] top-[27%] h-2 w-2 rounded-full bg-amber-100" />
+                <span className="hero-earth-beacon absolute left-[58%] top-[40%] h-1.5 w-1.5 rounded-full bg-amber-100 [animation-delay:-1.1s]" />
+                <span className="hero-earth-beacon hero-earth-beacon--cyan absolute left-[69%] top-[62%] h-2 w-2 rounded-full bg-cyan-200 [animation-delay:-2.2s]" />
+                <span className="hero-earth-beacon absolute left-[38%] top-[71%] h-1.5 w-1.5 rounded-full bg-amber-100 [animation-delay:-.6s]" />
+              </div>
+            )}
+            {enableWebGL && (
+              <Suspense fallback={null}>
+                <HeroEarth3D onReadyChange={setEarth3DReady} />
+              </Suspense>
+            )}
           </div>
           {/* Atmospheric falloff stays stationary while the Earth turns beneath it. */}
           <div className="absolute inset-0 rounded-full bg-radial from-transparent via-transparent to-[#02050e] opacity-40" />
