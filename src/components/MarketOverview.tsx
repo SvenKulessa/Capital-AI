@@ -224,7 +224,7 @@ export const MarketOverview: React.FC<MarketOverviewProps> = ({ onSelectAsset, o
                   boxShadow: `0 8px 20px -8px ${asset.glowColor}`,
                 }}
               >
-                {/* Category & AI Score Bar */}
+                {/* Demo-only asset score from the mock catalog; never imply a live provider model. */}
                 <div className="flex items-center justify-between mb-2">
                   <span
                     className="text-[9.5px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded border font-mono"
@@ -246,7 +246,7 @@ export const MarketOverview: React.FC<MarketOverviewProps> = ({ onSelectAsset, o
                       </span>
                     )}
                     <span className="text-[9.5px] font-mono text-slate-400 bg-slate-800/60 px-1 py-0.5 rounded">
-                      KI <span className="text-white font-bold">{asset.aiScore ?? '—'}</span>
+                      Demo-Score <span className="text-white font-bold">{asset.aiScore ?? '—'}</span>
                     </span>
                   </div>
                 </div>
