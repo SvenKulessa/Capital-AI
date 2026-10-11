@@ -182,7 +182,7 @@ export function RepositoryToolCatalogDashboard() {
       'Preismodell', 'Freikontingent', 'Bezahlmodell', 'Ist_Aufrufe_pro_Tag', 'Ist_Evidence',
       'Cron_Laeufe_pro_Tag_nur_plan', 'Alternativen', 'Main_SHA'];
     const safe = (v: unknown) => {
-      const raw = String(v ?? 'NOT_PROVEN').replace(/[\\r\\n\\t]/g, ' ').trim();
+      const raw = String(v ?? 'NOT_PROVEN').replace(/[\r\n\t]/g, ' ').trim();
       // Prevent spreadsheet formula execution from registry/inventory-origin strings.
       const escaped = /^[=+@-]/.test(raw) ? "'" + raw : raw;
       return '"' + escaped.replace(/"/g, '""') + '"';
@@ -200,7 +200,7 @@ export function RepositoryToolCatalogDashboard() {
       lines.push(values.map(safe).join(';'));
     }
     const link = document.createElement('a');
-    const url = URL.createObjectURL(new Blob(['\\uFEFF' + lines.join('\\r\\n')], { type: 'text/csv;charset=utf-8' }));
+    const url = URL.createObjectURL(new Blob(['\uFEFF' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }));
     link.href = url;
     link.download = 'capital-ai-tool-katalog-' + snapshot.sourceSha.slice(0, 12) + '.csv';
     document.body.appendChild(link);
