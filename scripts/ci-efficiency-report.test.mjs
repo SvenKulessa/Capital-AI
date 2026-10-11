@@ -110,3 +110,26 @@ test('ranks measured CI bottleneck steps without treating skipped steps as runti
   assert.equal(report.workflows[0].slowestSteps[0].step, 'Build-Stufe scannen');
   assert.equal(report.topSlowSteps.some(s => s.step === 'NATS voll scannen'), false);
 });
+
+test('keeps pull-request and main-push step timings in separate cohorts', () => {
+  const runs = [
+    { id: 21, name: 'Docker Build Sicherheit', event: 'pull_request', conclusion: 'success' },
+    { id: 22, name: 'Docker Build Sicherheit', event: 'push', conclusion: 'success' },
+  ];
+  const job = (start, duration) => {
+    const end = new Date(Date.parse(start) + duration * 1000).toISOString();
+    return [{ name: 'Docker Security Gate', started_at: start, completed_at: end,
+      steps: [{ name: 'Build-Stufe scannen', status: 'completed', conclusion: 'success',
+        started_at: start, completed_at: end }] }];
+  };
+  const jobsByRun = new Map([
+    [21, job('2026-10-11T01:00:00Z', 40)],
+    [22, job('2026-10-11T02:00:00Z', 120)],
+  ]);
+  const report = summarizeCiEfficiency({ runs, jobsByRun });
+  assert.equal(report.topSlowSteps.length, 2);
+  const push = report.topSlowSteps.find(s => s.event === 'push');
+  const pr = report.topSlowSteps.find(s => s.event === 'pull_request');
+  assert.equal(push?.totalObservedSeconds, 120);
+  assert.equal(pr?.totalObservedSeconds, 40);
+});
