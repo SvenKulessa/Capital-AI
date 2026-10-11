@@ -33,6 +33,7 @@ export const ARCHITECTURE_PRODUCT_PATHS = [
   { id: 'free', title: 'Finanzmethodik kostenlos lernen', path: '/learning', state: 'PUBLIC_EDUCATION', detail: 'Sechs kostenlose Grundlagen; alle Übungszahlen synthetisch.' },
   { id: 'learning', title: 'Bestehendes Learning-Angebot', path: '/learning?tab=glossar#learning-offer', state: 'SERVER_ENTITLEMENT_REQUIRED', detail: 'Zugang, Preis und Kaufbedingungen im Learning Portal prüfen; keine automatische Freischaltung.' },
   { id: 'blueprint', title: 'Blueprint-Konzept entdecken', path: '/marketscreener/dokumentation', state: 'DELIVERY_BLOCKED', detail: 'Öffentliche Konzeptvorschau. Kein bezahlbarer Download und keine enthaltenen Marktdatenrechte.' },
+  { id: 'inquiry', title: 'Individuelle Blueprint-Anfrage', path: '/kontakt', state: 'INQUIRY_ONLY', detail: 'Anforderungen unverbindlich besprechen; Anfrage ist kein Kauf oder Liefervertrag.' },
 ] as const;
 export type EvidenceLabel = 'BLOCKED' | 'NOT_PROVEN';
 
