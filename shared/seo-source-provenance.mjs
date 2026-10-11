@@ -3,8 +3,8 @@ export const SEO_PROVENANCE_GENERATED_AT_MAIN_SHA = '6add02eac321c8b4dfc40fca8f9
 export const SEO_SOURCE_ARTIFACTS = Object.freeze({
   'shared/blog-articles.mjs': Object.freeze({ sourceBlobSha: '5a42051bf33041dd849ad8434143bd6bf3b3b72d', contentSha256: '25ea2b7867df02e280666e8dc8bde9d7585823ba75fd311ad3985fca0cbf80fa' }),
   'index.html': Object.freeze({
-    sourceBlobSha: '046b089fd43c760c5e20212625d89be187aaddb4',
-    contentSha256: 'b9d6e99f920e289dbc89e73982ff029079c1b99fed213f1476807330c04c2d04',
+    sourceBlobSha: '63ed0b011fd4ce8b5feffe1e37db8a236a815d1b',
+    contentSha256: 'ef94c3a4ff4437a4298cc7952e543b79460df5e17830e620148e7cf02a10fe03',
   }),
   'src/features/home/HomePage.tsx': Object.freeze({
     sourceBlobSha: '0b077c3ec9ff1652847af6f06fb1df2c291e11a1',
@@ -58,7 +58,7 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
 
 const SEO_SOURCE_SET_DIGESTS = Object.freeze({
   'shared/blog-articles.mjs': '9f2fd7096a150d0a402a1aeed775bc0151db3fddc1886c6b62a3ac207099f363',
-  'index.html|src/features/home/HomePage.tsx': 'ead4fa93238893119bf739c5ace38fcd98ab3c12c101a1f103839d651353ca14',
+  'index.html|src/features/home/HomePage.tsx': '8b440e82e4e1a3db1def37e5e16b51987815fcfde9bfc0e2ab230c160bc9ec00',
   'shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': 'a18437779a615f0f5960af805fda960a510ef278ff058a69e7564c149e1024ed',
   'src/components/LegalAndFaqPages.tsx|src/content/publicLegalContent.ts': 'c4c70044ca186dcb1ef02bff2fd86f7b35232a9439407a0892dba0193a88d329',
   'shared/license-metadata.mjs|src/components/LicenseInformationPages.tsx': 'a32e0df5d6e5bc57e3a23283f7e1c91aa1a584f7f70ccc8208796322172210bb',
