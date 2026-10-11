@@ -320,3 +320,10 @@ test('legal overview, contact, mobile hub tabs and global footer use one contact
   assert.match(form, /\/api\/public\/contact/);
   for (const source of [learning, studio, market]) assert.match(source, /HubNavigationPanel/);
 });
+
+
+test('Chart atlas is not embedded or explicitly advertised on the public homepage', () => {
+  const home = readFileSync(new URL('../src/features/home/LearningCadsShowcase.tsx', import.meta.url), 'utf8');
+  assert.doesNotMatch(home, /ChartLessonGraphic|CHART_LESSONS|Chart-Lernatlas|\/learning\/chart-lernatlas/);
+  assert.match(home, /onNavigate\('\/learning'\)/);
+});
