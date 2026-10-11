@@ -24,7 +24,7 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
     sourceBlobSha: 'e6c688cee57cf3cce92154e73ae4eb00cb76886b',
     contentSha256: '584426d21f5d1415afad1829c398a4a68adfdb4fc103ee2d3c48f30233a772d8',
   }),
-  'src/components/LegalAndFaqPages.tsx|src/privacy/privacyPolicy.ts': 'a3d22139e83a2304e687e2a29f37d496dc657f92719125336411c6ae32a34c12'': Object.freeze({
+  'src/components/LegalAndFaqPages.tsx': Object.freeze({
     sourceBlobSha: 'd3eb62ae83ca9104a09234dc6864aa89f487302f',
     contentSha256: '038fc9fb1d401e13800523524ca82b010d589a3f21a7199e1ad305e434d5c038',
   }),
@@ -72,7 +72,7 @@ const SEO_SOURCE_SET_DIGESTS = Object.freeze({
   'shared/license-metadata.mjs|src/data/providerLicenseReview.ts': '98d2b1c966c071230d8b5554f132c198bf95c7df07e5b559fa82e2aa53f1c768',
   'OPEN_SOURCE_LICENSES.md|shared/license-metadata.mjs': 'db2cb5f53bcfb48b0fdd17adbeeefc2e69c38da81c11e4eac5ce736aa7654031',
   'shared/legal-identity.mjs|src/components/LegalAndFaqPages.tsx': '620aa045bb3e1970ad77e972402c84d59a7a5dc2719a29646657d4a89ac58318',
-  'src/components/LegalAndFaqPages.tsx|src/privacy/privacyPolicy.ts': '3f4ec67432f25097108ae81238b50cff6b38caa106f71c6a312aba8457b2b686',
+  'src/components/LegalAndFaqPages.tsx|src/privacy/privacyPolicy.ts': 'a3d22139e83a2304e687e2a29f37d496dc657f92719125336411c6ae32a34c12',
   'src/components/LegalAndFaqPages.tsx|src/content/legalDocumentVersions.ts': 'b4fef4f22a46d0e725c2659c52ade7a502acb66fd5ca1448df5a7aeb14ed9756',
   'shared/vocabulary-metadata.mjs': '68d08a159722c203812e5fd0bbc75ada4711f05b1697f4d249168f44ce5e7c81',
 });
