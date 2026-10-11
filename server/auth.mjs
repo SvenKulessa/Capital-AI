@@ -369,12 +369,20 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     const profile = Array.isArray(profileRows) ? profileRows[0] : null;
     const subscription = Array.isArray(subscriptionRows) ? subscriptionRows[0] : null;
 
+    // The upstream filter alone cannot authorize a role or subscription.
+    if ((profile && profile.id !== stored.user.id) ||
+        (subscription && subscription.user_id !== stored.user.id)) {
+      return { available: false, iamRole: null, subscription: null, badges: [] };
+    }
+
     const iamRole = ['owner', 'admin', 'supervisor', 'user'].includes(String(profile?.iam_role || ''))
       ? String(profile.iam_role)
       : null;
-    const tier = ['Free', 'Starter', 'Pro', 'Enterprise'].includes(String(subscription?.tier || ''))
-      ? String(subscription.tier)
-      : null;
+    const rawTier = String(subscription?.tier || '');
+    const paidTier = normalizeStoredPaidTier(subscription);
+    // The visible paid badge obeys the same active/trialing gate as access checks.
+    const tier = rawTier === 'Free' ? 'Free'
+      : paidTier && ['Starter', 'Pro', 'Enterprise'].includes(rawTier) ? rawTier : null;
     const status = typeof subscription?.status === 'string'
       ? subscription.status.slice(0, 64)
       : null;
