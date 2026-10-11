@@ -15,12 +15,14 @@
  * ============================================================================
  */
 
-import React from 'react';
+import React, { lazy, Suspense, useState } from 'react';
 import { ArrowRight, Play } from 'lucide-react';
 import { openHeroBuddy } from './HeroBuddy';
 import { motion, useReducedMotion } from 'motion/react';
 import { useLocale } from '../i18n/LocaleProvider';
 import heroEarthImage from '../assets/images/glowing_earth_nodes_1789997454893.jpg';
+
+const HeroEarth3D = lazy(() => import('./HeroEarth3D'));
 
 interface HeroProps {
   onStartAnalysis: () => void;
@@ -30,8 +32,10 @@ interface HeroProps {
 export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct }) => {
   const { t } = useLocale();
   const reduceMotion = useReducedMotion();
+  const [earth3DReady, setEarth3DReady] = useState(false);
+  const enableWebGL = !reduceMotion && typeof window !== 'undefined' && 'WebGL2RenderingContext' in window;
   return (
-    <section className="capital-ai-hero relative isolate overflow-hidden px-5 pt-6 pb-10 lg:min-h-[620px] lg:py-14">
+    <section className="capital-ai-hero relative isolate overflow-hidden px-[20px] pt-4 pb-7">
       {/* Golden neural light trails mirroring the logo's lateral filaments */}
       <div aria-hidden="true" className="absolute top-0 left-0 right-0 h-44 pointer-events-none -z-0 opacity-40 overflow-hidden">
         <svg className="w-full h-full" viewBox="0 0 400 160" fill="none" preserveAspectRatio="none">
@@ -75,34 +79,52 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
         </svg>
       </div>
 
-      {/* Luminous Earth & Network Constellation Background */}
-      <div aria-hidden="true" className="pointer-events-none relative z-0 mx-auto -mt-3 mb-[-1.75rem] aspect-square w-[min(88vw,390px)] select-none sm:absolute sm:-right-14 sm:top-0 sm:mb-0 sm:w-[min(64vw,510px)] lg:-right-6 lg:top-1/2 lg:w-[min(54vw,690px)] lg:-translate-y-1/2">
+      {/* Decorative Earth: anchored to the right, behind the translucent heading panel. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-8 right-0 z-0 aspect-square w-[min(88vw,340px)] select-none sm:-top-12 sm:w-[min(52vw,520px)]"
+      >
         <motion.div
           initial={reduceMotion ? false : { opacity: 0, scale: 0.92 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.2, ease: 'easeOut' }}
-          className="relative w-full h-full"
+          className="relative h-full w-full"
         >
-          {/* Earth image with radial fade masks */}
-          <img
-            src={heroEarthImage}
-            alt=""
-            referrerPolicy="no-referrer"
-            className="h-full w-full rounded-full object-cover opacity-100 drop-shadow-[0_0_60px_rgba(245,176,20,0.55)]"
-          />
-          {/* Radial atmosphere glow */}
-          <div className="absolute inset-0 rounded-full bg-radial from-transparent via-transparent to-[#02050e] opacity-35" />
-          <div className="absolute -inset-4 bg-gradient-to-l from-transparent via-transparent to-[#02050e] opacity-35" />
+
+          {/* Original Earth stays visible until the lazy 3D scene successfully renders. */}
+          <div className="relative h-full w-full">
+            <img
+              src={heroEarthImage}
+              alt=""
+              referrerPolicy="no-referrer"
+              className={'absolute inset-0 h-full w-full rounded-full object-cover mix-blend-screen drop-shadow-[0_0_40px_rgba(245,176,20,0.45)] transition-opacity duration-500 ' +
+                (enableWebGL && earth3DReady ? 'opacity-0' : 'opacity-95')}
+            />
+            {(!enableWebGL || !earth3DReady) && (
+              <div className="absolute inset-0">
+                <span className="hero-earth-beacon absolute left-[31%] top-[27%] h-2 w-2 rounded-full bg-amber-100" />
+                <span className="hero-earth-beacon absolute left-[58%] top-[40%] h-1.5 w-1.5 rounded-full bg-amber-100 [animation-delay:-1.1s]" />
+                <span className="hero-earth-beacon hero-earth-beacon--cyan absolute left-[69%] top-[62%] h-2 w-2 rounded-full bg-cyan-200 [animation-delay:-2.2s]" />
+                <span className="hero-earth-beacon absolute left-[38%] top-[71%] h-1.5 w-1.5 rounded-full bg-amber-100 [animation-delay:-.6s]" />
+              </div>
+            )}
+            {enableWebGL && (
+              <Suspense fallback={null}>
+                <HeroEarth3D onReadyChange={setEarth3DReady} />
+              </Suspense>
+            )}
+          </div>
+          {/* Atmospheric falloff stays stationary while the Earth turns beneath it. */}
+          <div className="absolute inset-0 rounded-full bg-radial from-transparent via-transparent to-[#02050e] opacity-40" />
+          <div className="absolute -inset-4 bg-gradient-to-l from-transparent via-transparent to-[#02050e] opacity-40" />
           <div className="absolute -inset-4 bg-gradient-to-t from-[#02050e] via-transparent to-transparent opacity-45" />
-          
-          {/* Ambient golden light bloom */}
-          <div className="absolute top-1/4 right-1/4 w-32 h-32 bg-amber-500/20 rounded-full blur-2xl animate-pulse-slow" />
-          <div className="absolute top-1/2 right-1/3 w-28 h-28 bg-brand-ai/15 rounded-full blur-xl" />
+          <div className="absolute top-1/4 right-1/4 h-32 w-32 rounded-full bg-amber-500/20 blur-2xl animate-pulse-slow" />
+          <div className="absolute top-1/2 right-1/3 h-28 w-28 rounded-full bg-brand-ai/15 blur-xl" />
         </motion.div>
       </div>
 
       {/* Hero Content */}
-      <div className="relative z-10 mx-auto max-w-lg rounded-2xl bg-brand-canvas/85 p-4 sm:mx-0 sm:bg-brand-canvas/80 sm:p-5 lg:bg-brand-canvas/70">
+      <div className="hero-copy relative z-10 max-w-lg rounded-2xl bg-gradient-to-r from-brand-canvas/80 via-brand-canvas/40 to-brand-canvas/15 p-[16px] sm:p-[20px]">
         {/* An accessible brand anchor above the headline, without obscuring the primary CTA. */}
         <img src="/branding/capital-ai-logo.jpg" alt="CAPITAL-AI – Market Intelligence"
           width={320} height={180} loading="eager" decoding="async"

@@ -65,3 +65,71 @@ test('summarizes workflow runtime, queue delay and observed job walltime without
   assert.equal(report.topExpensiveRuns[0].workflow, 'Social Renderer Worker Evidence');
   assert.equal(report.topExpensiveRuns[0].observedRunnerMinutes, 8);
 });
+
+test('ranks measured CI bottleneck steps without treating skipped steps as runtime', () => {
+  const runs = [
+    { id: 11, name: 'Docker Build Sicherheit', conclusion: 'success',
+      created_at: '2026-10-11T07:00:00Z', run_started_at: '2026-10-11T07:00:05Z',
+      updated_at: '2026-10-11T07:03:00Z' },
+    { id: 12, name: 'Docker Build Sicherheit', conclusion: 'failure',
+      created_at: '2026-10-11T08:00:00Z', run_started_at: '2026-10-11T08:00:05Z',
+      updated_at: '2026-10-11T08:03:00Z' },
+  ];
+  const job = (start, buildSeconds, conclusion) => {
+    const timestamp = seconds => new Date(Date.parse(start) + seconds * 1000).toISOString();
+    return [{
+      name: 'Docker Security Gate',
+      started_at: timestamp(0),
+      completed_at: timestamp(180),
+      steps: [
+        { name: 'Build-Stufe scannen', status: 'completed', conclusion,
+          started_at: timestamp(10), completed_at: timestamp(10 + buildSeconds) },
+        { name: 'Lizenzinventar', status: 'completed', conclusion: 'success',
+          started_at: timestamp(165), completed_at: timestamp(180) },
+        { name: 'NATS voll scannen', status: 'completed', conclusion: 'skipped',
+          started_at: timestamp(0), completed_at: timestamp(0) },
+        { name: 'No timestamps', status: 'completed', conclusion: 'success' },
+      ],
+    }];
+  };
+  const jobsByRun = new Map([
+    [11, job('2026-10-11T07:00:05Z', 100, 'success')],
+    [12, job('2026-10-11T08:00:05Z', 150, 'failure')],
+  ]);
+  const report = summarizeCiEfficiency({ runs, jobsByRun });
+  assert.equal(report.measurements.stepWalltime, 'OBSERVED_STEP_WALLTIME_NOT_BILLING');
+  assert.equal(report.measurements.billedMinutes, 'NOT_PROVEN');
+  assert.equal(report.topSlowSteps.length, 2);
+  assert.equal(report.topSlowSteps[0].step, 'Build-Stufe scannen');
+  assert.equal(report.topSlowSteps[0].observations, 2);
+  assert.equal(report.topSlowSteps[0].totalObservedSeconds, 250);
+  assert.equal(report.topSlowSteps[0].medianSeconds, 100);
+  assert.equal(report.topSlowSteps[0].p95Seconds, 150);
+  assert.equal(report.topSlowSteps[0].failures, 1);
+  assert.equal(report.topSlowSteps[0].evidence, 'OBSERVED_STEP_WALLTIME_NOT_BILLING');
+  assert.equal(report.workflows[0].slowestSteps[0].step, 'Build-Stufe scannen');
+  assert.equal(report.topSlowSteps.some(s => s.step === 'NATS voll scannen'), false);
+});
+
+test('keeps pull-request and main-push step timings in separate cohorts', () => {
+  const runs = [
+    { id: 21, name: 'Docker Build Sicherheit', event: 'pull_request', conclusion: 'success' },
+    { id: 22, name: 'Docker Build Sicherheit', event: 'push', conclusion: 'success' },
+  ];
+  const job = (start, duration) => {
+    const end = new Date(Date.parse(start) + duration * 1000).toISOString();
+    return [{ name: 'Docker Security Gate', started_at: start, completed_at: end,
+      steps: [{ name: 'Build-Stufe scannen', status: 'completed', conclusion: 'success',
+        started_at: start, completed_at: end }] }];
+  };
+  const jobsByRun = new Map([
+    [21, job('2026-10-11T01:00:00Z', 40)],
+    [22, job('2026-10-11T02:00:00Z', 120)],
+  ]);
+  const report = summarizeCiEfficiency({ runs, jobsByRun });
+  assert.equal(report.topSlowSteps.length, 2);
+  const push = report.topSlowSteps.find(s => s.event === 'push');
+  const pr = report.topSlowSteps.find(s => s.event === 'pull_request');
+  assert.equal(push?.totalObservedSeconds, 120);
+  assert.equal(pr?.totalObservedSeconds, 40);
+});
