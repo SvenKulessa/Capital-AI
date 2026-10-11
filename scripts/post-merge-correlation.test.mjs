@@ -150,7 +150,7 @@ test("post-merge correlation stays within the single evidence commit boundary", 
   assert.doesNotMatch(workflow, /select\(\.draft == true\)/);
   assert.match(workflow, /node scripts\/post-merge-followup\.mjs/);
   assert.match(workflow, /node --test scripts\/post-merge-followup\.test\.mjs/);
-  assert.match(workflow, /actions\/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9/);
+  assert.match(workflow, /actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/);
 });
 
 test('merge milestone workflow keeps GitHub expressions unescaped', () => {
