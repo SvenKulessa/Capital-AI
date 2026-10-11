@@ -48,7 +48,7 @@ jobs:
           CAPITAL_I18N_ORIGIN: https://capital-ai-uvsl.onrender.com
           CAPITAL_I18N_REQUIRE_AUTH_SWITCHER: ${{ github.event_name == 'push' && '1' || '0' }}
   learning-commerce-readback:
-    name: Chart learning and CADS desktop/mobile
+    name: Learning access gate and CADS desktop/mobile
     runs-on: ubuntu-26.04
     timeout-minutes: 8
     steps:

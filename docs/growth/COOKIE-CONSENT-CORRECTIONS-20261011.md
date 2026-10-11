@@ -29,3 +29,5 @@ Gezielte Consent-, Analytics-/SEO-, SMTP-, Aktivierungs- und Google-Setup-Tests;
 Lokaler Chromium-Readback: mobile Dialoggrenzen/Scrollen bei 320 × 568, vergrößerte Root-Schrift, italienische Auswahl und Speicherverzeichnis, Desktop 1440 × 1000 sowie sichtbarer Tastaturfokus. Integration von Formularbestätigung und GA4 wird mit simuliertem SMTP-ACK und abgefangenem Google-Tag geprüft; diese Simulation ist kein echter Lead, kein Live-Mailversand und kein Google-Empfangsnachweis. GitHub-Checks und Production werden getrennt berichtet.
 
 Quellen: vorhandene Runtime-/SMTP- und Lizenznachweise; Google EnhancedMeasurementSettings, https://developers.google.com/analytics/devguides/config/admin/v1/rest/v1alpha/EnhancedMeasurementSettings (11.10.2026).
+
+Der vorhandene anonyme Live-Charttest erwartete fälschlich bezahlten Atlaszugriff. Das aktuelle Main-Produkt verlangt Learning Portal plus aktives Abonnement. Der Readback prüft nun die echte Zugriffssperre und weiterhin das CADS-Preisdialog-Verhalten; bezahlte Chart-Interaktionen werden ausdrücklich nicht als geprüft gemeldet. Keine Entitlement- oder Auth-Grenze wurde gelockert.
