@@ -180,12 +180,15 @@ test('merge milestone PR creation requires dedicated repo-scoped GitHub App', ()
   assert.match(workflow, /Report missing app authority without creating a PR/);
   assert.match(workflow, /milestone-drafts-/);
   assert.match(workflow, /Milestone branch \$branch already exists without a PR/);
-  // Generated branches must comply with Domain Governance (stable YYYYMMDD suffix).
-  assert.ok(workflow.includes('branch="capital-ai-product/roadmap-merge-pr-$number-$date_suffix"'));
-  assert.ok(workflow.includes('branch="capital-ai-growth/news-batch-pr-$number-$date_suffix"'));
+  // The dedicated App is the only authority that opens ONE combined draft.
+  assert.ok(workflow.includes('branch="capital-ai-trust/milestone-merge-pr-$number-$date_suffix"'));
+  assert.equal((workflow.match(/gh pr create --repo/g) ?? []).length, 1,
+    'Milestone roadmap and news output must share a single PR');
+  assert.ok(workflow.includes('targets+=("src/data/roadmapMergeReconciliation.json"'));
+  assert.ok(workflow.includes('targets+=("src/data/controlCenterNews.json"'));
   assert.ok(workflow.includes('ROADMAP_DATE: ${{ steps.milestones.outputs.roadmap_date }}'));
   assert.ok(workflow.includes('NEWS_DATE: ${{ steps.milestones.outputs.news_date }}'));
-  assert.ok(workflow.includes('if [[ ! "$date_suffix" =~ ^[0-9]{8}$ ]]'));
+  assert.ok(workflow.includes('! "$date_suffix" =~ ^[0-9]{8}$'));
   assert.doesNotMatch(workflow, /gh pr merge|--auto|enable-auto-merge/);
 });
 
