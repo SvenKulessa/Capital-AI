@@ -18,6 +18,16 @@
         "analytics-intelligence",
         "mobile-engineering",
         "accessibility-audit"
+      ],
+      "ownedSkills": [
+        "product-engineering",
+        "product-advisory",
+        "mobile-engineering",
+        "customer-success",
+        "accessibility-audit",
+        "accessibility-advisory",
+        "accessibility-engineering",
+        "visual-chat"
       ]
     },
     "MARKET": {
@@ -32,6 +42,13 @@
         "ai-engineering",
         "quant-research",
         "legal-compliance",
+        "analytics-intelligence"
+      ],
+      "ownedSkills": [
+        "market-engineering",
+        "market-advisory",
+        "quant-research",
+        "data-engineering",
         "analytics-intelligence"
       ]
     },
@@ -48,6 +65,12 @@
         "incident-response",
         "mobile-engineering",
         "analytics-intelligence"
+      ],
+      "ownedSkills": [
+        "platform-engineering",
+        "platform-advisory",
+        "ai-engineering",
+        "platform-observability"
       ]
     },
     "TRUST": {
@@ -63,6 +86,12 @@
         "ai-engineering",
         "data-engineering",
         "accessibility-audit"
+      ],
+      "ownedSkills": [
+        "trust-engineering",
+        "trust-advisory",
+        "legal-compliance",
+        "incident-response"
       ]
     },
     "GROWTH": {
@@ -79,6 +108,13 @@
         "accessibility-audit",
         "ai-engineering",
         "legal-compliance"
+      ],
+      "ownedSkills": [
+        "growth-engineering",
+        "growth-advisory",
+        "sales-enterprise",
+        "seo-engineering",
+        "revenue-engineering"
       ]
     }
   },
@@ -333,6 +369,448 @@
         "kontrastpruefung",
         "contrast ratio",
         "zoom reflow"
+      ]
+    }
+  },
+  "skillGovernanceVersion": "CAPITAL_AI_SKILL_GOVERNANCE@1",
+  "skillGovernance": {
+    "product-engineering": {
+      "domainOwner": "PRODUCT",
+      "escalationOwner": "CAPITAL-AI-PRODUCT",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "UI-Regressionen",
+        "nachgewiesene kritische Flow-Tests"
+      ],
+      "frameworks": [
+        "DDD",
+        "Team Topologies",
+        "DevSecOps",
+        "Evidence-First"
+      ]
+    },
+    "product-advisory": {
+      "domainOwner": "PRODUCT",
+      "escalationOwner": "CAPITAL-AI-PRODUCT",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "entscheidungsfähige UX-Alternativen",
+        "reproduzierbare Usability-Befunde"
+      ],
+      "frameworks": [
+        "DDD",
+        "Team Topologies",
+        "DevSecOps",
+        "Evidence-First"
+      ]
+    },
+    "mobile-engineering": {
+      "domainOwner": "PRODUCT",
+      "escalationOwner": "CAPITAL-AI-PRODUCT",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "Mobile-Regressionen",
+        "nachgewiesene Mobile-Performance-Budgets"
+      ],
+      "frameworks": [
+        "DDD",
+        "Team Topologies",
+        "DevSecOps",
+        "Evidence-First"
+      ]
+    },
+    "customer-success": {
+      "domainOwner": "PRODUCT",
+      "escalationOwner": "CAPITAL-AI-PRODUCT",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "verifizierte Onboarding-Completion",
+        "Retention-Kohorten mit Quellen"
+      ],
+      "frameworks": [
+        "DDD",
+        "Team Topologies",
+        "DevSecOps",
+        "Evidence-First"
+      ]
+    },
+    "accessibility-audit": {
+      "domainOwner": "PRODUCT",
+      "escalationOwner": "CAPITAL-AI-PRODUCT",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "kritische A11y-Findings",
+        "manuell verifizierte Prüfpfade"
+      ],
+      "frameworks": [
+        "DDD",
+        "Team Topologies",
+        "DevSecOps",
+        "Evidence-First"
+      ]
+    },
+    "accessibility-advisory": {
+      "domainOwner": "PRODUCT",
+      "escalationOwner": "CAPITAL-AI-PRODUCT",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "kritische WCAG-Findings pro Journey",
+        "Anteil nachvollziehbar priorisierter A11y-Befunde"
+      ],
+      "frameworks": [
+        "WCAG 2.2",
+        "OWASP ASVS",
+        "GDPR"
+      ]
+    },
+    "accessibility-engineering": {
+      "domainOwner": "PRODUCT",
+      "escalationOwner": "CAPITAL-AI-PRODUCT",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "nachgewiesene A11y-Regressionen",
+        "Anteil geprüfter kritischer UI-Flows"
+      ],
+      "frameworks": [
+        "WCAG 2.2",
+        "OWASP ASVS",
+        "GDPR"
+      ]
+    },
+    "visual-chat": {
+      "domainOwner": "PRODUCT",
+      "escalationOwner": "CAPITAL-AI-PRODUCT",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "belegte Darstellungen",
+        "zugängliche Textalternativen"
+      ],
+      "frameworks": [
+        "DDD",
+        "Team Topologies",
+        "DevSecOps",
+        "Evidence-First"
+      ]
+    },
+    "market-engineering": {
+      "domainOwner": "MARKET",
+      "escalationOwner": "CAPITAL-AI-MARKET",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "Scoring-Contract-Regressionen",
+        "Daten-Provenance-Quote"
+      ],
+      "frameworks": [
+        "DDD",
+        "Team Topologies",
+        "DevSecOps",
+        "Evidence-First"
+      ]
+    },
+    "market-advisory": {
+      "domainOwner": "MARKET",
+      "escalationOwner": "CAPITAL-AI-MARKET",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "validierte FinTech-Annahmen",
+        "bewertete Provider-Lizenzrisiken"
+      ],
+      "frameworks": [
+        "DDD",
+        "Team Topologies",
+        "DevSecOps",
+        "Evidence-First"
+      ]
+    },
+    "quant-research": {
+      "domainOwner": "MARKET",
+      "escalationOwner": "CAPITAL-AI-MARKET",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "Out-of-sample-Qualität",
+        "Backtest-Bias-Findings"
+      ],
+      "frameworks": [
+        "DDD",
+        "Team Topologies",
+        "DevSecOps",
+        "Evidence-First"
+      ]
+    },
+    "data-engineering": {
+      "domainOwner": "MARKET",
+      "escalationOwner": "CAPITAL-AI-MARKET",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "Datenqualitätsfehler",
+        "Lineage-Abdeckung"
+      ],
+      "frameworks": [
+        "DDD",
+        "Team Topologies",
+        "DevSecOps",
+        "Evidence-First"
+      ]
+    },
+    "analytics-intelligence": {
+      "domainOwner": "MARKET",
+      "escalationOwner": "CAPITAL-AI-MARKET",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "metrische Definitionsabdeckung",
+        "nachgewiesene Datenqualität"
+      ],
+      "frameworks": [
+        "DDD",
+        "Team Topologies",
+        "DevSecOps",
+        "Evidence-First"
+      ]
+    },
+    "platform-engineering": {
+      "domainOwner": "PLATFORM",
+      "escalationOwner": "CAPITAL-AI-PLATFORM",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "reproduzierbare Builds",
+        "SLO-/Deployment-Fehler"
+      ],
+      "frameworks": [
+        "DDD",
+        "Team Topologies",
+        "DevSecOps",
+        "Evidence-First"
+      ]
+    },
+    "platform-advisory": {
+      "domainOwner": "PLATFORM",
+      "escalationOwner": "CAPITAL-AI-PLATFORM",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "bewertete Architekturtrade-offs",
+        "nicht gedeckte SLO-Risiken"
+      ],
+      "frameworks": [
+        "DDD",
+        "Team Topologies",
+        "DevSecOps",
+        "Evidence-First"
+      ]
+    },
+    "ai-engineering": {
+      "domainOwner": "PLATFORM",
+      "escalationOwner": "CAPITAL-AI-PLATFORM",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "adversariale Evaluations-Findings",
+        "Modell-/Retrieval-Provenance"
+      ],
+      "frameworks": [
+        "DDD",
+        "Team Topologies",
+        "DevSecOps",
+        "Evidence-First"
+      ]
+    },
+    "platform-observability": {
+      "domainOwner": "PLATFORM",
+      "escalationOwner": "CAPITAL-AI-PLATFORM",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "SLO-Burn-Rate",
+        "MTTD und MTTR je nach tatsächlicher Incident-Datenlage"
+      ],
+      "frameworks": [
+        "SRE",
+        "NIST CSF",
+        "ISO 27001",
+        "FinOps"
+      ]
+    },
+    "trust-engineering": {
+      "domainOwner": "TRUST",
+      "escalationOwner": "CAPITAL-AI-TRUST",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "kritische Security-Findings",
+        "Tenant-Boundary-Tests"
+      ],
+      "frameworks": [
+        "DDD",
+        "Team Topologies",
+        "DevSecOps",
+        "Evidence-First"
+      ]
+    },
+    "trust-advisory": {
+      "domainOwner": "TRUST",
+      "escalationOwner": "CAPITAL-AI-TRUST",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "nachgewiesene Risiko-Entscheidungen",
+        "unbehandelte High-Risks"
+      ],
+      "frameworks": [
+        "DDD",
+        "Team Topologies",
+        "DevSecOps",
+        "Evidence-First"
+      ]
+    },
+    "legal-compliance": {
+      "domainOwner": "TRUST",
+      "escalationOwner": "CAPITAL-AI-TRUST",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "verifizierte regulatorische Scope-Entscheidungen",
+        "offene Datenlizenz-Gaps"
+      ],
+      "frameworks": [
+        "DDD",
+        "Team Topologies",
+        "DevSecOps",
+        "Evidence-First"
+      ]
+    },
+    "incident-response": {
+      "domainOwner": "TRUST",
+      "escalationOwner": "CAPITAL-AI-TRUST",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "MTTD/MTTR soweit beobachtet",
+        "getestete Restore-Prozeduren"
+      ],
+      "frameworks": [
+        "DDD",
+        "Team Topologies",
+        "DevSecOps",
+        "Evidence-First"
+      ]
+    },
+    "growth-engineering": {
+      "domainOwner": "GROWTH",
+      "escalationOwner": "CAPITAL-AI-GROWTH",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "SEO-/Publishing-Regressionen",
+        "verifizierte Conversion-Events"
+      ],
+      "frameworks": [
+        "DDD",
+        "Team Topologies",
+        "DevSecOps",
+        "Evidence-First"
+      ]
+    },
+    "growth-advisory": {
+      "domainOwner": "GROWTH",
+      "escalationOwner": "CAPITAL-AI-GROWTH",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "validierte Growth-Experimente",
+        "lizenzsichere Content-Claims"
+      ],
+      "frameworks": [
+        "DDD",
+        "Team Topologies",
+        "DevSecOps",
+        "Evidence-First"
+      ]
+    },
+    "sales-enterprise": {
+      "domainOwner": "GROWTH",
+      "escalationOwner": "CAPITAL-AI-GROWTH",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "qualifizierte Leads mit Evidenz",
+        "nachgewiesene Angebot-zu-Auftrag-Konversion"
+      ],
+      "frameworks": [
+        "DDD",
+        "Team Topologies",
+        "DevSecOps",
+        "Evidence-First"
+      ]
+    },
+    "seo-engineering": {
+      "domainOwner": "GROWTH",
+      "escalationOwner": "CAPITAL-AI-GROWTH",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "gültige indexierbare kanonische Seiten",
+        "organische Klicks nur bei verifizierter Datenquelle"
+      ],
+      "frameworks": [
+        "GDPR",
+        "OWASP ASVS",
+        "FinOps"
+      ]
+    },
+    "revenue-engineering": {
+      "domainOwner": "GROWTH",
+      "escalationOwner": "CAPITAL-AI-GROWTH",
+      "governanceOwner": "CAPITAL-AI-TRUST",
+      "governanceLevel": "G2",
+      "status": "DOCUMENTED",
+      "kpis": [
+        "verifizierte Checkout-Conversion",
+        "Nettoerlös nach Refunds und Providerkosten"
+      ],
+      "frameworks": [
+        "FinOps",
+        "GDPR",
+        "OWASP ASVS",
+        "FinTech Governance"
       ]
     }
   }
