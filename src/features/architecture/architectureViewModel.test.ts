@@ -70,7 +70,7 @@ test('catalog navigation exposes exactly the five public markdown deliverables w
 test('offer funnel never becomes an entitlement, blueprint delivery or checkout authorization', () => {
   assert.equal(BLUEPRINT_DELIVERY_POLICY.currentCommerceAdmission, false);
   assert.deepEqual(ARCHITECTURE_PRODUCT_PATHS.map(item => item.state), [
-    'PUBLIC_EDUCATION', 'SERVER_ENTITLEMENT_REQUIRED', 'DELIVERY_BLOCKED',
+    'PUBLIC_EDUCATION', 'SERVER_ENTITLEMENT_REQUIRED', 'DELIVERY_BLOCKED', 'INQUIRY_ONLY',
   ]);
   assert.ok(ARCHITECTURE_PRODUCT_PATHS.every(item => item.path.startsWith('/')));
   assert.ok(ARCHITECTURE_PRODUCT_PATHS.every(item => !item.path.includes('/api/')));
