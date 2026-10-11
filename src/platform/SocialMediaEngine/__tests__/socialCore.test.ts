@@ -80,7 +80,7 @@ test('homepage Blueprint promo is editable, demo-labeled and does not invent Gem
   const project = createCapitalAiLandingBlueprintVideoProject();
   assert.deepEqual(validateMediaProjectV2(project), { ok: true, errors: [] });
   assert.equal(project.durationFrames, 30 * 30);
-  assert.equal(project.tracks.filter(track => track.kind === 'graphics')[0].layers.length, 5);
+  assert.equal(project.tracks.find(track => track.kind === 'graphics')?.layers.length, 5);
   assert.equal(project.metadata?.audioProviderRequested, 'GEMINI');
   assert.equal(project.metadata?.narrationAttached, false);
   assert.equal(project.assets.some(asset => asset.kind === 'audio'), false);
