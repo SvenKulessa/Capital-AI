@@ -1,12 +1,12 @@
 {
   "schema": "CAPITAL_AI_ROADMAP_MERGE_AUDIT@1",
   "state": "RECONCILED_CODE_AND_DOCUMENTS",
-  "lastReconciledPr": 399,
-  "mergeCount": 360,
-  "fromPr": 385,
-  "toPr": 399,
-  "sourceSha": "150a14294df01075e5f9a435da9ad2c946ad2bba",
-  "reconciledAt": "2026-10-11T14:35:20.512Z",
+  "lastReconciledPr": 415,
+  "mergeCount": 370,
+  "fromPr": 398,
+  "toPr": 415,
+  "sourceSha": "6b13ed9c0c54c1497ce20e2fa0e0a8a3378d89b9",
+  "reconciledAt": "2026-10-11T20:18:44.925Z",
   "sourceDigests": [
     {
       "path": "src/data/roadmapData.ts",
