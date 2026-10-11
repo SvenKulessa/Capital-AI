@@ -96,7 +96,8 @@ export function assessCatalogEntries(entries, { lock, supplementary = {}, invent
     const schedule = entry.kind === 'GITHUB_ACTION'
       ? dailyCronCount(supplementary[primaryPath]) : { perDay: null, declaredCron: [] };
     const priceModel = isNpm
-      ? 'OSS_PACKAGE_NO_LICENSE_FEE_ASSUMED'
+      ? (license.declared && license.commercial !== 'NOT_PROVEN'
+        ? 'OSS_SOFTWARE_LICENSE_DECLARED_COSTS_NOT_PROVEN' : 'PACKAGE_PRICE_NOT_PROVEN')
       : isExternal ? 'PROVIDER_TARIFF_NOT_PROVEN'
       : 'REPOSITORY_COMPONENT_NO_SEPARATE_TARIFF';
     const consumption = isExternal ? (matching?.lifecycle === 'ACTIVE'
