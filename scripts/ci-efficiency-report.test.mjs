@@ -65,3 +65,48 @@ test('summarizes workflow runtime, queue delay and observed job walltime without
   assert.equal(report.topExpensiveRuns[0].workflow, 'Social Renderer Worker Evidence');
   assert.equal(report.topExpensiveRuns[0].observedRunnerMinutes, 8);
 });
+
+test('ranks measured CI bottleneck steps without treating skipped steps as runtime', () => {
+  const runs = [
+    { id: 11, name: 'Docker Build Sicherheit', conclusion: 'success',
+      created_at: '2026-10-11T07:00:00Z', run_started_at: '2026-10-11T07:00:05Z',
+      updated_at: '2026-10-11T07:03:00Z' },
+    { id: 12, name: 'Docker Build Sicherheit', conclusion: 'failure',
+      created_at: '2026-10-11T08:00:00Z', run_started_at: '2026-10-11T08:00:05Z',
+      updated_at: '2026-10-11T08:03:00Z' },
+  ];
+  const job = (start, buildSeconds, conclusion) => {
+    const timestamp = seconds => new Date(Date.parse(start) + seconds * 1000).toISOString();
+    return [{
+      name: 'Docker Security Gate',
+      started_at: timestamp(0),
+      completed_at: timestamp(180),
+      steps: [
+        { name: 'Build-Stufe scannen', status: 'completed', conclusion,
+          started_at: timestamp(10), completed_at: timestamp(10 + buildSeconds) },
+        { name: 'Lizenzinventar', status: 'completed', conclusion: 'success',
+          started_at: timestamp(165), completed_at: timestamp(180) },
+        { name: 'NATS voll scannen', status: 'completed', conclusion: 'skipped',
+          started_at: timestamp(0), completed_at: timestamp(0) },
+        { name: 'No timestamps', status: 'completed', conclusion: 'success' },
+      ],
+    }];
+  };
+  const jobsByRun = new Map([
+    [11, job('2026-10-11T07:00:05Z', 100, 'success')],
+    [12, job('2026-10-11T08:00:05Z', 150, 'failure')],
+  ]);
+  const report = summarizeCiEfficiency({ runs, jobsByRun });
+  assert.equal(report.measurements.stepWalltime, 'OBSERVED_STEP_WALLTIME_NOT_BILLING');
+  assert.equal(report.measurements.billedMinutes, 'NOT_PROVEN');
+  assert.equal(report.topSlowSteps.length, 2);
+  assert.equal(report.topSlowSteps[0].step, 'Build-Stufe scannen');
+  assert.equal(report.topSlowSteps[0].observations, 2);
+  assert.equal(report.topSlowSteps[0].totalObservedSeconds, 250);
+  assert.equal(report.topSlowSteps[0].medianSeconds, 100);
+  assert.equal(report.topSlowSteps[0].p95Seconds, 150);
+  assert.equal(report.topSlowSteps[0].failures, 1);
+  assert.equal(report.topSlowSteps[0].evidence, 'OBSERVED_STEP_WALLTIME_NOT_BILLING');
+  assert.equal(report.workflows[0].slowestSteps[0].step, 'Build-Stufe scannen');
+  assert.equal(report.topSlowSteps.some(s => s.step === 'NATS voll scannen'), false);
+});
