@@ -79,6 +79,7 @@ jobs:
             scripts/ecb-reference-admission.test.mjs \
             scripts/validate-oss-multi-asset-plan.test.mjs \
             scripts/verify-release-readiness.test.mjs \
+            scripts/ci-efficiency-report.test.mjs \
             scripts/verify-go-vuln-reachability.test.mjs \
             scripts/docker-archive-config.test.mjs
           node scripts/license-evidence.mjs
