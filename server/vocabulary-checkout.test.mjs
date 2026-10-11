@@ -229,26 +229,31 @@ test('private notes persist per verified identity and ignore client-selected use
   }
   const first='11111111-1111-4111-8111-111111111111';
   const second='22222222-2222-4222-8222-222222222222';
-  assert.equal((await call(first,'PUT',{notes:'Meine Notiz',user_id:second})).status,200);
-  assert.equal((await call(first)).payload.notes,'Meine Notiz');
+  assert.equal((await call(first,'PUT',{notes:'Meine Notiz',user_id:second,expectedUserId:first})).status,200);
+  assert.deepEqual((await call(first)).payload,{notes:'Meine Notiz',userId:first});
+  assert.deepEqual((await call(second)).payload,{notes:'',userId:second});
+  assert.equal((await call(first,'PUT',{notes:'',expectedUserId:first})).payload.notes,'');
   assert.equal((await call(second)).payload.notes,'');
-  assert.equal((await call(first,'PUT',{notes:''})).payload.notes,'');
 });
 
 test('private notes reject missing sessions, cross-origin writes, invalid input and backend failure', async () => {
   let calls=0;
   const fetchImpl=async()=>{calls++;return new Response('{}',{status:503});};
-  async function call(overrides,method='PUT',notes='test') {
+  async function call(overrides,method='PUT',notes='test',expectedUserId='11111111-1111-4111-8111-111111111111') {
     const checkout=createVocabularyCheckout({env,fetchImpl,auth:{...auth(),...overrides}});
     const res=response();
-    await checkout.handle(request({method,body:JSON.stringify({notes})}),res,new URL('https://capital-ai.online/api/profile/notes'),json);
-    return res.status;
+    await checkout.handle(request({method,body:JSON.stringify({notes,expectedUserId})}),res,new URL('https://capital-ai.online/api/profile/notes'),json);
+    return res;
   }
-  assert.equal(await call({verify:async()=>null},'GET'),401);
-  assert.equal(await call({sameOrigin:()=>false}),403);
-  assert.equal(await call({},'POST'),405);
-  assert.equal(await call({},'PUT',123),400);
-  assert.equal(await call({},'PUT','x'.repeat(10001)),400);
-  assert.equal(calls,0);
-  assert.equal(await call({}),503);
+  assert.equal((await call({verify:async()=>null},'GET')).status,401);
+  assert.equal((await call({sameOrigin:()=>false})).status,403);
+  assert.equal((await call({},'POST')).status,405);
+  assert.equal((await call({},'PUT',123)).status,400);
+  assert.equal((await call({},'PUT','x'.repeat(10001))).status,400);
+  const stale = await call({},'PUT','draft-from-A','22222222-2222-4222-8222-222222222222');
+  assert.equal(stale.status,409);
+  assert.equal(stale.payload.error,'session_changed');
+  assert.equal((await call({},'PUT','draft-from-A',null)).status,409);
+  assert.equal(calls,0, 'mismatched identity must not invoke the private notes RPC');
+  assert.equal((await call({})).status,503);
 });
