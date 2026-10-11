@@ -276,3 +276,25 @@ test('registration mirrors the observed Supabase password classes before submit'
   assert.match(login, /mindestens 14 Zeichen sowie Kleinbuchstaben, Großbuchstaben, Zahl und Sonderzeichen/);
   assert.match(login, /throw new Error\('weak_password'\)/);
 });
+
+
+test('header distinguishes session failures from anonymous state and uses accessible disclosure', async () => {
+  const header = await readFile(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  assert.match(header, /authStatus === 'error'/);
+  assert.match(header, /setAuthStatus\('error'\)/);
+  assert.match(header, /Sitzung nicht verfügbar · Erneut prüfen/);
+  assert.match(header, /aria-controls="header-account-navigation"/);
+  assert.match(header, /event\.key === 'Escape'/);
+  assert.doesNotMatch(header, /role="menuitem"/);
+});
+
+test('private dashboard notes are bound to identity and give accessible errors', async () => {
+  const ui = await readFile(new URL('../src/features/account/PrivateDashboardPage.tsx', import.meta.url), 'utf8');
+  const server = await readFile(new URL('../server/vocabulary-checkout.mjs', import.meta.url), 'utf8');
+  assert.match(ui, /expectedUserId: userId/);
+  assert.match(ui, /body\.userId === userId/);
+  assert.match(ui, /window\.addEventListener\('focus', checkIdentity\)/);
+  assert.match(ui, /role="alert"/);
+  assert.match(server, /body\.expectedUserId !== user\.userId/);
+  assert.match(server, /error:'session_changed'/);
+});
