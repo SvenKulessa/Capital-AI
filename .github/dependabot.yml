@@ -80,3 +80,38 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "[CAPITAL-AI-TRUST] "
+
+  # Distinct production dependency lockfile (not covered by /).
+  - package-ecosystem: npm
+    directory: /deploy/runtime
+    schedule:
+      interval: daily
+      time: "05:30"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 5
+    groups:
+      runtime-minor-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+    commit-message:
+      prefix: "[CAPITAL-AI-PLATFORM] "
+
+  # Only candidate PRs; Gradle/AGP 9 remains a distinct migration.
+  - package-ecosystem: gradle
+    directory: /mobile/android-private
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:05"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 3
+    ignore:
+      - dependency-name: "com.android.tools.build:gradle"
+        update-types:
+          - "version-update:semver-major"
+    commit-message:
+      prefix: "[CAPITAL-AI-PLATFORM] "

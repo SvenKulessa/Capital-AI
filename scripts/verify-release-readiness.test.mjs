@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { verifyReleaseReadiness, REQUIRED_ASSET_CLASSES } from './verify-release-readiness.mjs';
 
 const digest='ghcr.io/svenkulessa/capital-ai@sha256:'+'a'.repeat(64);
@@ -69,4 +70,51 @@ test('counts must be finite nonnegative integers with consistent totals',()=>{
     const rows=base.assetClasses.map((row,i)=>i===0?{...row,...change}:row);
     assert.equal(verifyReleaseReadiness({...base,assetClasses:rows}).assetClasses[0].pass,false);
   }
+});
+
+
+// Source-version projection only. Never infer live service status from a lockfile.
+test('inventory must match lockfiles and immutable build identities', () => {
+  const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
+  const inventory = read('src/data/externalComponentInventory.ts');
+  const root = JSON.parse(read('package-lock.json'));
+  const runtime = JSON.parse(read('deploy/runtime/package-lock.json'));
+  const block = id => {
+    const row = inventory.split("id: '" + id + "'")[1]?.split('\n  },')[0];
+    assert.ok(row, 'Missing inventory component: ' + id);
+    return row;
+  };
+  const version = name => root.packages['node_modules/' + name]?.version;
+  const web = block('web-build-stack');
+  for (const [label, name] of [['Vite', 'vite'], ['TypeScript', 'typescript'], ['Tailwind', 'tailwindcss'],
+    ['React', 'react'], ['Lucide', 'lucide-react'], ['Motion', 'motion'], ['Three.js', 'three']]) {
+    assert.ok(web.includes(label + ' ' + version(name)), 'Outdated web inventory: ' + name);
+  }
+  assert.match(web, /TypeScript 7\.0\.2 BLOCKED/);
+  const ai = block('google-genai');
+  assert.ok(ai.includes(version('@google/genai') + ' (package-lock.json)'));
+  const runtimeRow = block('web-runtime-dependencies');
+  for (const [label, name] of [['NATS JS', '@nats-io/jetstream'], ['redis', 'redis'],
+    ['zod', 'zod'], ['nodemailer', 'nodemailer']]) {
+    assert.ok(runtimeRow.includes(label + ' ' + runtime.packages['node_modules/' + name]?.version),
+      'Outdated runtime inventory: ' + name);
+  }
+  const natsDockerfile = read('deploy/Dockerfile.nats');
+  const nats = block('nats-jetstream');
+  const binaryVersion = natsDockerfile.match(/^ENV NATS_SERVER=([0-9.]+)/m)?.[1];
+  assert.ok(binaryVersion && nats.includes('nats-server ' + binaryVersion));
+  assert.match(nats, /activeVersion: null/);
+  assert.match(nats, /deployed runtime NOT_PROVEN/);
+  const docker = read('Dockerfile');
+  const node = block('node-runtime');
+  const pin = docker.match(/^FROM node:([0-9.]+)-alpine@(sha256:[a-f0-9]{64})/m);
+  assert.ok(pin && node.includes("activeVersion: '" + pin[1] + "'") && node.includes(pin[2]));
+});
+
+test('dependabot covers isolated update scopes but blocks TypeScript 7.0.2 and AGP major', () => {
+  const policy = readFileSync(new URL('../.github/dependabot.yml', import.meta.url), 'utf8');
+  assert.match(policy, /package-ecosystem: npm\n    directory: \/deploy\/runtime/);
+  assert.match(policy, /package-ecosystem: gradle\n    directory: \/mobile\/android-private/);
+  assert.match(policy, /dependency-name: "typescript"[\s\S]*?versions:[\s\S]*?- "7\.0\.2"/);
+  assert.match(policy, /dependency-name: "com\.android\.tools\.build:gradle"[\s\S]*?version-update:semver-major/);
 });
