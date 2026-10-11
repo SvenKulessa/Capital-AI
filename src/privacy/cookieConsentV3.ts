@@ -6,9 +6,12 @@ import { PRIVACY_NOTICE_VERSION } from '../../shared/legal-identity.mjs';
  */
 export const COOKIE_CONSENT_V3 = 'COOKIE_CONSENT_V3' as const;
 export const COOKIE_CONSENT_STORAGE_KEY = 'capital-ai-cookie-consent-v3';
+export { OPEN_COOKIE_PREFERENCES_EVENT } from './cookieConsentEvents';
 export const COOKIE_CONSENT_RETENTION_DAYS = 180;
 const MAX_AGE_MS = COOKIE_CONSENT_RETENTION_DAYS * 24 * 60 * 60 * 1000;
 const CLOCK_SKEW_MS = 60 * 1000;
+let browserStorageDenied = false;
+export function browserConsentPersistenceFailed() { return browserStorageDenied; }
 
 export type OptionalCookiePurpose = 'analytics' | 'marketing';
 export type CookieChoices = Readonly<Record<OptionalCookiePurpose, boolean>>;
@@ -19,7 +22,7 @@ export type CookieConsentReceipt = CookieChoices & Readonly<{
   savedAt: number;
 }>;
 
-type CookieStorage = Pick<Storage, 'getItem' | 'setItem'>;
+type CookieStorage = Pick<Storage, 'getItem' | 'setItem'> & Partial<Pick<Storage, 'removeItem'>>;
 
 function availableStorage(storage: CookieStorage | null | undefined): CookieStorage | null {
   try {
@@ -49,9 +52,17 @@ export function parseCookieConsent(value: unknown, now: number = Date.now()): Co
 }
 
 export function readCookieConsent(storage?: CookieStorage | null, now: number = Date.now()): CookieConsentReceipt | null {
+  if (storage === undefined && browserStorageDenied) return null;
   try {
-    const value = availableStorage(storage)?.getItem(COOKIE_CONSENT_STORAGE_KEY);
-    return value ? parseCookieConsent(JSON.parse(value), now) : null;
+    const target = availableStorage(storage);
+    const value = target?.getItem(COOKIE_CONSENT_STORAGE_KEY);
+    if (!value) return null;
+    let receipt: CookieConsentReceipt | null = null;
+    try { receipt = parseCookieConsent(JSON.parse(value), now); } catch { /* Invalid JSON is not consent. */ }
+    if (!receipt) {
+      try { target?.removeItem?.(COOKIE_CONSENT_STORAGE_KEY); } catch { /* Removal failure never authorizes optional services. */ }
+    }
+    return receipt;
   } catch {
     // Blocked storage, malformed JSON or denied access cannot turn into consent.
     return null;
@@ -63,7 +74,15 @@ export function saveCookieConsent(
   storage?: CookieStorage | null,
   now: number = Date.now(),
 ): CookieConsentReceipt | null {
-  if (typeof choice?.analytics !== 'boolean' || typeof choice?.marketing !== 'boolean') return null;
+  const failClosed = () => {
+    if (storage === undefined && typeof window !== 'undefined') {
+      browserStorageDenied = true;
+      try { availableStorage(storage)?.removeItem?.(COOKIE_CONSENT_STORAGE_KEY); } catch { /* Deny even if the old grant cannot be removed. */ }
+      window.dispatchEvent(new Event('capital-ai:consent-changed'));
+    }
+    return null;
+  };
+  if (typeof choice?.analytics !== 'boolean' || typeof choice?.marketing !== 'boolean') return failClosed();
   const receipt = parseCookieConsent({
     version: COOKIE_CONSENT_V3,
     privacyNoticeVersion: PRIVACY_NOTICE_VERSION,
@@ -71,14 +90,23 @@ export function saveCookieConsent(
     analytics: choice.analytics,
     marketing: choice.marketing,
   }, now);
-  if (!receipt) return null;
+  if (!receipt) return failClosed();
   try {
     const target = availableStorage(storage);
-    if (!target) return null;
+    if (!target) return failClosed();
     target.setItem(COOKIE_CONSENT_STORAGE_KEY, JSON.stringify(receipt));
-    return receipt;
+    if (storage === undefined) browserStorageDenied = false;
+    // Verify the exact durable receipt before removing the consent UI.
+    // Some restricted browsers can appear to accept writes without persistence.
+    const stored = readCookieConsent(target, now);
+    return stored && stored.savedAt === receipt.savedAt &&
+      stored.analytics === receipt.analytics &&
+      stored.marketing === receipt.marketing ? (() => {
+        if (storage === undefined && typeof window !== 'undefined') window.dispatchEvent(new Event('capital-ai:consent-changed'));
+        return stored;
+      })() : failClosed();
   } catch {
-    return null;
+    return failClosed();
   }
 }
 

@@ -343,4 +343,21 @@ test('hero Earth uses true 3D axial rotation behind translucent text with a stat
   assert.match(globe, /onReadyChange\(false\)/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.capital-ai-hero \.hero-earth-beacon \{ animation: none; \}/);
   assert.match(css, /@keyframes capitalAiHeroBeaconPulse/);
+  // Product positioning + orbital brand nodes reuse the existing source Earth.
+  assert.match(hero, /hero-blueprint-bundles-link/);
+  assert.match(hero, /Blueprint-Bundles entdecken/);
+  assert.match(hero, /keine Anlageberatung/);
+  assert.match(globe, /BRAND_ORBIT_COLORS = \[0xF9BF21, 0x44DE88, 0xFF2E93, 0x8D26FF\]/);
+  assert.match(globe, /new LineLoop\(geometry, material\)/);
+  assert.match(globe, /new LineSegments\(orbitConnections, orbitConnectionMaterial\)/);
+  assert.match(globe, /orbitNodeMaterials\.forEach\(material => material\.dispose\(\)\)/);
+  const overview = readFileSync(new URL('../src/components/MarketOverview.tsx', import.meta.url), 'utf8');
+  assert.match(overview, /Demo-Score/);
+  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  const account = readFileSync(new URL('../src/features/account/AccountPageShell.tsx', import.meta.url), 'utf8');
+  assert.doesNotMatch(header, /Key Vault/);
+  assert.doesNotMatch(account, /label: 'Key Vault'/);
+  // The legacy server-guarded Vault route stays intact for authenticated users.
+  const routes = readFileSync(new URL('../src/app/routing/AppRoutes.tsx', import.meta.url), 'utf8');
+  assert.match(routes, /\/profile\/key-vault/);
 });

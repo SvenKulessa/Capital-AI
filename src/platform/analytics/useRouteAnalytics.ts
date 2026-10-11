@@ -142,6 +142,8 @@ export function useRouteAnalytics(currentRoute: string) {
       return;
     }
     if (currentRoute.startsWith('/vocabulary/')) {
+      // The term component owns its SEO title; measurement still uses the safe canonical path.
+      trackPageView(currentRoute, currentRoute);
       return;
     }
 

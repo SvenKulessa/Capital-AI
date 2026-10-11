@@ -110,6 +110,16 @@ try {
       width: viewport.width, height: viewport.height, mobile: viewport.mobile, deviceScaleFactor: 1,
     });
 
+    // Preserve the authoritative main access boundary after PR #387: anonymous
+    // accounts must never see subscription-gated charts or their interactions.
+    await navigate('/learning?tab=patterns',
+      `document.body.textContent.includes('Chart-Lernatlas: mit Learning Portal und aktivem Starter-, Pro- oder Enterprise-Abonnement nutzbar.')`);
+    assert.equal(await evaluate(`!!document.querySelector('[aria-label="Chart-Lernatlas"]')`),
+      false, 'Paid chart content exposed to an anonymous visitor');
+    await capture(viewport.name + '-chart-access-gate');
+    report.checks.at(-1).chartAccess = 'ANONYMOUS_ACCESS_GATED';
+    report.checks.at(-1).paidChartInteractions = 'NOT_PROVEN';
+
     // Real production DOM: every anonymous viewport must render the same four
     // rights-neutral blueprint demos and lead to real learning/commerce routes.
     await navigate('/', `document.querySelectorAll('#market-blueprint-catalog article').length === 4`);

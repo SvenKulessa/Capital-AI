@@ -8,6 +8,7 @@ export async function runLearningSetup(mode, maintenance) {
   const before = await maintenance.call('ga4_learning_configuration');
   const result = { mode, property: before.property.name,
     websiteStreamVerified: before.stream.associatedDomainVerified,
+    measurementId: before.stream.measurementId,
     leadDefinition: before.leadDefinition,
     browserCollectionVerified: false, actualLeadsVerified: false,
     writes: null };
@@ -19,7 +20,8 @@ export async function runLearningSetup(mode, maintenance) {
   result.configuration = { leadEventConfigured: after.leadEventConfigured,
     emailRedactionEnabled: after.emailRedactionEnabled,
     queryParameterRedactionEnabled: after.queryParameterRedactionEnabled,
-    formInteractionsEnabled: after.formInteractionsEnabled };
+    formInteractionsEnabled: after.formInteractionsEnabled,
+    enhancedMeasurementDisabled: after.enhancedMeasurementDisabled };
   // Reports stay inside the trusted runner and are never written to artifacts.
   const ga4 = await maintenance.call('ga4_learning_report');
   const gsc = await maintenance.call('gsc_country_report', { days: 28 });

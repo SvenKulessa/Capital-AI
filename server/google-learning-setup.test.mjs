@@ -9,7 +9,7 @@ function fixture({ writes = true, gscWrites = true, streamCount = 1, readbackFai
   const stream = property + '/dataStreams/12345';
   let events = [];
   let redaction = { name: stream + '/dataRedactionSettings', queryParameterKeys: ['existing_private'], emailRedactionEnabled: false };
-  let enhanced = { name: stream + '/enhancedMeasurementSettings', formInteractionsEnabled: true, pageChangesEnabled: true };
+  let enhanced = { name: stream + '/enhancedMeasurementSettings', streamEnabled: true, formInteractionsEnabled: true, pageChangesEnabled: true };
   let sitemaps = [];
   const api = createGoogleMaintenance({ env: { GOOGLE_MAINTENANCE_GA4_WRITES_ENABLED: String(writes), GOOGLE_MAINTENANCE_GSC_WRITES_ENABLED: String(gscWrites) },
     tokenProvider: async () => 'sentinel-private-token',
@@ -17,7 +17,7 @@ function fixture({ writes = true, gscWrites = true, streamCount = 1, readbackFai
       calls.push({ path: url.pathname, query: url.search, method: options.method, body: options.body ? JSON.parse(options.body) : null });
       const path = url.pathname;
       if (path === '/v1beta/' + property) return Response.json({ name: property, displayName: 'Capital-AI' });
-      if (path.endsWith('/dataStreams')) return Response.json({ dataStreams: Array.from({ length: streamCount }, (_, i) => ({ name: property + '/dataStreams/' + (12345 + i), type: 'WEB_DATA_STREAM', webStreamData: { defaultUri: 'https://capital-ai.online/' } })) });
+      if (path.endsWith('/dataStreams')) return Response.json({ dataStreams: Array.from({ length: streamCount }, (_, i) => ({ name: property + '/dataStreams/' + (12345 + i), type: 'WEB_DATA_STREAM', webStreamData: { defaultUri: 'https://capital-ai.online/', measurementId: 'G-0542DT2HCE' } })) });
       if (path.endsWith('/keyEvents')) {
         if (options.method === 'POST') events.push({ name: property + '/keyEvents/1', ...JSON.parse(options.body) });
         return Response.json(options.method === 'POST' ? events.at(-1) : { keyEvents: events });
@@ -50,6 +50,7 @@ test('learning setup is idempotent, exact-bound and preserves existing redaction
   assert.equal(result.configuration.leadEventConfigured, true);
   assert.equal(result.configuration.emailRedactionEnabled, true);
   assert.equal(result.configuration.formInteractionsEnabled, false);
+  assert.equal(result.configuration.enhancedMeasurementDisabled, true);
   assert.equal(result.actualLeadsVerified, false);
   assert.equal(result.browserCollectionVerified, false);
   const redaction = f.calls.find(c => c.method === 'PATCH' && c.path.endsWith('dataRedactionSettings'));
@@ -57,7 +58,7 @@ test('learning setup is idempotent, exact-bound and preserves existing redaction
   assert.ok(redaction.body.queryParameterKeys.includes('access_token'));
   assert.equal(redaction.query, '?updateMask=email_redaction_enabled%2Cquery_parameter_redaction_enabled%2Cquery_parameter_keys');
   const enhanced = f.calls.find(c => c.method === 'PATCH' && c.path.endsWith('enhancedMeasurementSettings'));
-  assert.deepEqual(Object.keys(enhanced.body).sort(), ['formInteractionsEnabled', 'name']);
+  assert.deepEqual(Object.keys(enhanced.body).sort(), ['formInteractionsEnabled', 'name', 'pageChangesEnabled', 'streamEnabled']);
   const created = f.calls.find(c => c.method === 'POST' && c.path.endsWith('/keyEvents'));
   assert.deepEqual(created.body, { eventName: 'generate_lead', countingMethod: 'ONCE_PER_EVENT' });
   const submit = f.calls.find(c => c.method === 'PUT');
