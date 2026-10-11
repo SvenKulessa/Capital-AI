@@ -11,7 +11,7 @@ import {
 
 /**
  * First-party v3 consent UI. Neither accepting nor configuring a preference
- * activates scripts: GA4 and ads remain disabled in src/utils/analytics.ts.
+ * grants analytics only through the consented runtime; advertising remains disabled.
  */
 export function CookieConsentV3() {
   const { locale } = useLocale();

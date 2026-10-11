@@ -56,4 +56,11 @@ jobs:
         env:
           GOOGLE_MAINTENANCE_ACCESS_TOKEN: ${{ steps.google_auth.outputs.access_token }}
           MODE: ${{ inputs.mode }}
-        run: node scripts/google-learning-setup.mjs "$MODE"
+        run: |
+          node scripts/google-learning-setup.mjs "$MODE" > "$RUNNER_TEMP/learning-setup.json"
+          cat "$RUNNER_TEMP/learning-setup.json"
+      - name: Bind verified privacy settings to the existing Render service
+        if: inputs.mode == 'apply'
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY_TEST }}
+        run: node scripts/activate-learning-measurement.mjs "$RUNNER_TEMP/learning-setup.json"

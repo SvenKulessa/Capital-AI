@@ -144,6 +144,7 @@ export function createGoogleMaintenance({ env = process.env, fetchImpl = fetch, 
         leadDefinition: 'Only a successfully received learning/course enquiry; never a link click, scroll or form start.',
         emailRedactionEnabled: redaction.emailRedactionEnabled === true,
         queryParameterRedactionEnabled: redaction.queryParameterRedactionEnabled === true,
+        enhancedMeasurementDisabled: enhanced.streamEnabled !== true,
         formInteractionsEnabled: enhanced.formInteractionsEnabled === true,
         browserCollectionVerified: false };
     }
@@ -163,7 +164,7 @@ export function createGoogleMaintenance({ env = process.env, fetchImpl = fetch, 
       const beforeRedaction = await settings(stream, 'dataRedactionSettings');
       const queryParameterKeys = [...new Set([...(beforeRedaction.queryParameterKeys || []), 'email', 'name', 'phone', 'user_id', 'token', 'access_token', 'refresh_token', 'code', 'session_id', 'vocabulary_session', 'enterprise_trial_session'])].sort();
       const redaction = await patchSettings(stream, 'dataRedactionSettings', { emailRedactionEnabled: true, queryParameterRedactionEnabled: true, queryParameterKeys }, 'email_redaction_enabled,query_parameter_redaction_enabled,query_parameter_keys');
-      const formAutocapture = await patchSettings(stream, 'enhancedMeasurementSettings', { formInteractionsEnabled: false }, 'form_interactions_enabled');
+      const formAutocapture = await patchSettings(stream, 'enhancedMeasurementSettings', { streamEnabled: false, formInteractionsEnabled: false, pageChangesEnabled: false }, 'stream_enabled,form_interactions_enabled,page_changes_enabled');
       return { property: PROPERTY, leadEvent, redaction, formAutocapture,
         browserTrackingActivated: false, actualLeadsVerified: false,
         note: 'Configuration only. Real enquiries require a confirmed receipt and consented measurement; this tool never invents events.' };

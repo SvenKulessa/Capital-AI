@@ -95,18 +95,18 @@ test('UI is mounted on every route and discloses inactive analytics and durable 
   assert.match(ui, /onClick=\{\(\) => store\(false, false\)\}/);
   assert.match(ui, /addEventListener\('storage', synchronize\)/);
   assert.equal(cookieCopy.de.privacy, 'Datenschutzhinweise lesen');
-  assert.match(cookieCopy.de.body, /derzeit deaktiviert/);
+  assert.match(cookieCopy.de.body, /nur nach gültiger Zustimmung/);
   // Saved preferences leave no floating dialog/button but remain editable.
   assert.match(ui, /if \(!open && decision\) return null;/);
   assert.match(ui, /OPEN_COOKIE_PREFERENCES_EVENT/);
   assert.doesNotMatch(ui, /fixed bottom-3 left-3/);
   const footer = readFileSync(new URL('../components/Footer.tsx', import.meta.url), 'utf8');
   const account = readFileSync(new URL('../features/account/AccountPageShell.tsx', import.meta.url), 'utf8');
-  assert.match(footer, /copy.settings/);
+  assert.match(footer, /cookieSettingsLabel\[locale\]/);
   assert.match(account, /cookieCopy\[locale\].settings/);
   assert.doesNotMatch(account, /path: '\/profile\/key-vault' as const/);
-  assert.match(analytics, /export function initGoogleAnalytics\([^)]*\) \{\}/);
-  assert.match(analytics, /export function trackPageView\([^)]*\) \{\}/);
+  assert.match(analytics, /startConsentedAnalytics\(\)/);
+  assert.match(analytics, /sendPageView\(_pagePath\)/);
 });
 
  test('expired and notice-version-invalid choices are physically removed on next access', () => {

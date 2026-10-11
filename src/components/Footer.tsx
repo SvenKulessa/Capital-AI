@@ -1,5 +1,5 @@
 import React from 'react';
-import { cookieCopy } from '../i18n/cookieCopy';
+import { cookieSettingsLabel } from '../i18n/cookieSettingsLabel';
 import { useLocale } from '../i18n/LocaleProvider';
 import { BrandLogo } from './BrandLogo';
 import { ExternalLink } from 'lucide-react';
@@ -15,7 +15,6 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   const { t, locale } = useLocale();
-  const copy = cookieCopy[locale];
   const handleNavClick = (e: React.MouseEvent, path: string, label: string) => {
     if (onNavigate) e.preventDefault();
     trackEvent('footer_nav_click', {
@@ -127,7 +126,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         onClick={() => window.dispatchEvent(new Event(OPEN_COOKIE_PREFERENCES_EVENT))}
         className="mt-4 min-h-11 rounded-lg px-3 py-2 text-xs font-semibold text-slate-300 underline underline-offset-4 hover:text-amber-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
       >
-        {copy.settings}
+        {cookieSettingsLabel[locale]}
       </button>
 
       {/* Mobile iOS Home Indicator Bar */}

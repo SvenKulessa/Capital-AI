@@ -15,6 +15,7 @@ import { createGoogleAnalyticsReadback } from './google-analytics-readback.mjs';
 import { createUniswapTrading } from './uniswap-trading.mjs';
 import { createKrakenOrderDryRun } from './kraken-order-dry-run.mjs';
 import { createTelegram } from './telegram.mjs';
+import { createLearningInquiry } from './learning-inquiry.mjs';
 import { createPrivacy } from './privacy.mjs';
 import { createLimiter } from './http-security.mjs';
 import { infrastructure } from './infrastructure.mjs';
@@ -62,7 +63,7 @@ const buildIdentity =
     ? { bound: true, sourceSha: embeddedSourceSha, builder: embeddedBuilder }
     : { bound: false, sourceSha: null };
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.txt': 'text/plain; charset=utf-8', '.json': 'application/json; charset=utf-8' };
-const headers = { 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'strict-origin-when-cross-origin', 'X-Frame-Options': 'DENY', 'Permissions-Policy': 'camera=(), microphone=(), geolocation=()', 'Strict-Transport-Security': 'max-age=31536000', 'Content-Security-Policy': "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self'; connect-src 'self'; frame-src 'self' https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" };
+const headers = { 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'strict-origin-when-cross-origin', 'X-Frame-Options': 'DENY', 'Permissions-Policy': 'camera=(), microphone=(), geolocation=()', 'Strict-Transport-Security': 'max-age=31536000', 'Content-Security-Policy': "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self' https://www.googletagmanager.com; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com; frame-src 'self' https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" };
 const publicVocabularyEntries = vocabularyMetadata.filter(entry => !QUANT_PRO_IDS.has(entry.id));
 const publicVocabularyCount = publicVocabularyEntries.length;
 const publicVocabularyMetadata = {
@@ -309,6 +310,7 @@ export function createApp(root = defaultRoot, options = {}) {
     : { sourceSha: null, evidence: 'NOT_PROVEN' };
   let inflight = 0;
   const auth = createAuth(options);
+  const learningInquiry = createLearningInquiry({ ...options, auth });
   const socialOAuthCallback = createSocialOAuthCallback({
     env: options.env || process.env,
     auth,
@@ -390,6 +392,7 @@ export function createApp(root = defaultRoot, options = {}) {
   for (const [key, value] of Object.entries(headers)) res.setHeader(key, value);
   if (serveMtaSts(req, res, url)) return;
   if (serveWellKnown(req, res, url)) return;
+  if (await learningInquiry.handle(req, res, url, json)) return;
   if (await auth.handle(req, res, url, json)) return;
   if (await socialOAuthCallback.handle(req, res, url, json)) return;
   if (await userProviderVault.handle(req, res, url, json)) return;

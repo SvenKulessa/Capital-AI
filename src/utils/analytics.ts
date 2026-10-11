@@ -1,10 +1,24 @@
 import { isSeoIndexable, robotsDirectiveFor } from '../../shared/seo-indexing-policy.mjs';
 
-/** Optional analytics is disabled until an accepted consent implementation exists. */
+type AnalyticsModule = typeof import('./consentedAnalytics.ts');
+let modulePromise: Promise<AnalyticsModule> | null = null;
+const analyticsModule = () => modulePromise ||= import('./consentedAnalytics.ts');
 export const GA_MEASUREMENT_ID = '';
-export function initGoogleAnalytics(_measurementId: string = GA_MEASUREMENT_ID) {}
+export function initGoogleAnalytics(_measurementId: string = GA_MEASUREMENT_ID) {
+  if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+    void analyticsModule().then(module => module.startConsentedAnalytics());
+  }
+}
+// Generic UI clicks and arbitrary event payloads are never forwarded.
 export function trackEvent(_action: string, _params: Record<string, unknown> = {}) {}
-export function trackPageView(_pagePath: string, _pageTitle: string) {}
+export function trackPageView(_pagePath: string, _pageTitle: string) {
+  if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+    void analyticsModule().then(module => module.sendPageView(_pagePath));
+  }
+}
+export function trackReceivedLearningInquiry(receipt: string) {
+  if (typeof window !== 'undefined') void analyticsModule().then(module => module.trackReceivedLearningInquiry(receipt));
+}
 export function trackLoginClick(_source: string = 'header') {}
 
 /**

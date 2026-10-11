@@ -89,7 +89,10 @@ export function saveCookieConsent(
     const stored = readCookieConsent(target, now);
     return stored && stored.savedAt === receipt.savedAt &&
       stored.analytics === receipt.analytics &&
-      stored.marketing === receipt.marketing ? stored : null;
+      stored.marketing === receipt.marketing ? (() => {
+        if (storage === undefined && typeof window !== 'undefined') window.dispatchEvent(new Event('capital-ai:consent-changed'));
+        return stored;
+      })() : null;
   } catch {
     return null;
   }

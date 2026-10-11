@@ -486,7 +486,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
                   <Database className="w-4 h-4" /> Verarbeitungstätigkeiten
                 </h2>
                 <p className=" text-xs text-slate-400">
-                  Diese Hinweise beschreiben den Dienst mit Supabase Auth-Anmeldung. Eine automatische Übernahme alter Finance-Konten oder ihrer Daten erfolgt nicht. Optionales Analytics und Werbung sind in diesem Dienst deaktiviert.
+                  Diese Hinweise beschreiben den Dienst mit Supabase Auth-Anmeldung. Eine automatische Übernahme alter Finance-Konten oder ihrer Daten erfolgt nicht. GA4 wird nur mit gültiger Einwilligung zur Reichweitenmessung geladen; Werbung bleibt deaktiviert.
                 </p>
               </div>
               <CookieStorageInventory />

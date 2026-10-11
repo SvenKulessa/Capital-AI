@@ -7,6 +7,7 @@ export function CookieStorageInventory() {
   const { locale } = useLocale();
   const copy = cookieCopy[locale];
   const rows = [
+    ['_ga / _ga_0542DT2HCE', 'Cookie · Secure · SameSite=Lax', copy.analytics, copy.validity],
     ['capital-ai-cookie-consent-v3', 'Local Storage', copy.preference, copy.validity],
     ['__Host-capital_session_count / __Host-capital_session_*', 'Cookie · HttpOnly · Secure · SameSite=Lax', copy.session, `7 ${copy.days}`],
     ['__Host-capital_pkce', 'Cookie · HttpOnly · Secure · SameSite=Lax', copy.login, `10 ${copy.minutes}`],
