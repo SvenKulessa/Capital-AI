@@ -234,16 +234,17 @@ export function createGoogleMaintenance({ env = process.env, fetchImpl = fetch, 
         },
       });
     }
-    if (name === 'ga4_learning_report') {
+    if (name === 'ga4_learning_report' || name === 'ga4_learning_lead_report') {
       exact(input, []);
       return request(DATA_ORIGIN, '/v1beta/' + PROPERTY + ':runReport', { method: 'POST', body: {
         dateRanges: [{ startDate: '28daysAgo', endDate: 'yesterday', name: 'current' }, { startDate: '56daysAgo', endDate: '29daysAgo', name: 'previous' }],
         dimensions: [{ name: 'country' }, { name: 'landingPage' }],
-        metrics: [{ name: 'sessions' }, { name: 'engagedSessions' }, { name: 'keyEvents' }],
+        metrics: name === 'ga4_learning_lead_report' ? [{ name: 'eventCount' }] : [{ name: 'sessions' }, { name: 'engagedSessions' }, { name: 'keyEvents' }],
         dimensionFilter: { andGroup: { expressions: [
           { filter: { fieldName: 'sessionDefaultChannelGroup', stringFilter: { matchType: 'EXACT', value: 'Organic Search' } } },
           { filter: { fieldName: 'country', inListFilter: { values: ['Germany', 'Italy', 'Spain', 'Portugal', 'United Kingdom'] } } },
           { filter: { fieldName: 'landingPage', stringFilter: { matchType: 'FULL_REGEXP', value: '/(learning|vocabulary)(/.*)?' } } },
+          ...(name === 'ga4_learning_lead_report' ? [{ filter: { fieldName: 'eventName', stringFilter: { matchType: 'EXACT', value: 'generate_lead' } } }] : []),
         ] } }, limit: '100', returnPropertyQuota: true,
       } });
     }

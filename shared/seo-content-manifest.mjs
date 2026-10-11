@@ -88,14 +88,14 @@ const staticEntries = [
   contentEntry({
     path: '/learning',
     slug: 'learning',
-    title: 'Finanzwissen lernen: Glossar, Chartmuster & Quiz | Capital-AI',
-    description: `Finanzbegriffe und Marktanalyse verständlich lernen: ${VOCABULARY_PUBLIC_COUNT} Fachbegriffe, Chartbeispiele und Quizzes. Lerninhalte entdecken und Learning-/Kursanfrage stellen.`,
+    title: 'Finanzwissen & Scoring lernen: Beispiele und Lernangebot | Capital-AI',
+    description: `Finanzwissen und Marktanalyse lernen: Spread, Normalisierung, gewichtete Scores, Volatilität und Backtesting mit synthetischen Beispielen. Kostenlose Inhalte und Lernangebote unterscheiden.`,
     contentType: 'learning',
     domain: 'GROWTH',
-    structuredDataType: 'DefinedTermSet',
+    structuredDataType: 'CollectionPage',
     socialEligible: true,
     aiSearchEligible: true,
-    sourceRefs: ['src/features/learning/LearningPortalPage.tsx', 'shared/vocabulary-metadata.mjs'],
+    sourceRefs: ['shared/learning-journey.mjs', 'src/features/learning/LearningJourney.tsx', 'src/features/learning/LearningPortalPage.tsx', 'src/features/learning/LearningPurchase.tsx', 'src/data/vocabularyOffer.ts'],
   }),
   contentEntry({
     path: '/vocabulary',

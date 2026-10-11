@@ -38,9 +38,9 @@ const routes = [
   { path: '/pipeline-builder', classification: 'NOINDEX', contentType: 'product-tool', reason: 'Interaktives Tool; erst nach SEO-/Claim-/State-Prüfung indexierbar.' },
   { path: '/studio', classification: 'NOINDEX', contentType: 'product-tool', reason: 'Interaktiver Studio-Hub; kein freigegebener SEO-Landingpage-Contract.' },
   { path: '/marketscreener', classification: 'NOINDEX', contentType: 'product-tool', reason: 'Interaktiver Screener; Datenrechte, Crawl-Fallback und Metadata werden separat gehärtet.' },
-  { path: '/marketscreener/dokumentation', classification: 'NOINDEX', contentType: 'documentation', reason: 'Öffentliche Blueprint-Dokumentation; Promotion erst nach SEO-02/03 und Claim-/License-Review.' },
+  { path: '/marketscreener/dokumentation', classification: 'NOINDEX', contentType: 'documentation', reason: 'Öffentliche synthetische Blueprint-Demos; eigenständige crawlbare Produkt-/Methodik-Landingpage mit belastbaren Angebotsangaben und Canonical noch nicht vollständig.' },
   { path: '/dokumentation', classification: 'NOINDEX', contentType: 'documentation', reason: 'Öffentlicher Dokumentations-Hub; Promotion erst nach eigenständiger crawlbarer Metadata/Canonical-Abnahme.' },
-  { path: '/pricing', classification: 'NOINDEX', contentType: 'product-state', reason: 'Der Pfad ist derzeit Produkt-/UI-State, keine eigenständige serverseitige Landingpage.' },
+  { path: '/pricing', classification: 'NOINDEX', contentType: 'product-state', reason: 'Öffentlicher Tarif-Fallback vorhanden; vollständige Preis-, Checkout- und Entitlement-Belege für eine eigenständige Commerce-Landingpage fehlen noch.' },
 
   { path: '/documentation/byok.html', classification: 'NOINDEX', contentType: 'documentation-static', reason: 'Öffentliche statische Präsentation; noch nicht in den kanonischen SEO-Contract aufgenommen.' },
   { path: '/documentation/pipeline-architectures.html', classification: 'NOINDEX', contentType: 'documentation-static', reason: 'Öffentliche statische Präsentation; noch nicht in den kanonischen SEO-Contract aufgenommen.' },

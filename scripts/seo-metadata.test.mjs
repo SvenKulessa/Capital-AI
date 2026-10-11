@@ -52,6 +52,15 @@ test('SEO-02 returns no metadata for routes that are not admitted by SEO-01', ()
   }
 });
 
+test('learning schema describes a public collection, while the glossary remains a term set', () => {
+  const learning = seoJsonLdForPath('/learning')['@graph'].find(item => item['@id'].endsWith('#primary'));
+  assert.equal(learning['@type'], 'CollectionPage');
+  assert.equal(learning.hasPart['@id'], 'https://capital-ai.online/learning#learning-methodology');
+  assert.equal(learning.numberOfItems, undefined);
+  assert.equal(seoJsonLdForPath('/vocabulary')['@graph'].at(-1)['@type'], 'DefinedTermSet');
+  for (const route of ['/pricing', '/marketscreener/dokumentation']) assert.equal(seoMetadataForPath(route), null);
+});
+
 test('public license deep links agree with the canonical license metadata', async () => {
   const { licenseMetadata } = await import('../shared/license-metadata.mjs');
   for (const [path, license] of Object.entries(licenseMetadata)) {
