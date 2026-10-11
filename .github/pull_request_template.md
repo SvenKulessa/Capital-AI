@@ -49,4 +49,4 @@ Welche anderen Domains werden berührt? Jeder Domain-Chat darf die gesamte Ände
 - Rollback: betroffene Komponente und sichere Rücknahme ohne andere Services:
 - Sicherheits-/Secrets-/Kostenfolgen und ggf. Owner-Handlung:
 
-<!-- Merge nur durch den Owner oder nach PR-spezifischer ausdrücklicher Freigabe. Kein Zusatzreview, kein neues Required Check, keine automatische Veröffentlichung. -->
+<!-- Jeder berechtigte Agent darf erst nach vollständiger reproduzierbarer fachlicher Evidence, konfliktfreiem aktuellem Head, allen erfolgreichen anwendbaren Checks und GitHub-Ruleset-Konformität selbst mergen. Keine zusätzliche Owner-Einzelfreigabe und keine neuen Gates. Live-Wirkung separat nachweisen. -->
