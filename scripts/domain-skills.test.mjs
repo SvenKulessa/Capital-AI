@@ -102,3 +102,36 @@ test('monetization assessment keeps license and runtime evidence separate', () =
   const ids = [...report.matchAll(/^\| (\d+) \|/gm)].map(row => Number(row[1]));
   assert.deepEqual(ids, Array.from({ length: 28 }, (_, i) => i + 1));
 });
+
+
+test('ten enterprise specialist skills are shared, discoverable and have bounded authority', () => {
+  const specialists = ['ai-engineering', 'data-engineering', 'quant-research', 'customer-success',
+    'sales-enterprise', 'legal-compliance', 'incident-response', 'analytics-intelligence',
+    'mobile-engineering', 'accessibility-audit'];
+  assert.deepEqual(registry.sharedSkills.specialists, specialists);
+  assert.deepEqual(Object.keys(registry.specialistSkillMetadata), specialists);
+  for (const id of specialists) {
+    const meta = registry.specialistSkillMetadata[id];
+    assert.ok(['high', 'medium'].includes(meta.priority));
+    assert.ok(meta.leadDomains.length > 0 && meta.leadDomains.every(x => expected.includes(x)));
+    const file = read(`.agents/skills/${id}/SKILL.md`);
+    assert.equal(frontmatter(file).name, id);
+    assert.ok(frontmatter(file).description.length > 40);
+    assert.match(file, /AGENTS\.md/);
+    assert.match(file, /SOLO_MAINTAINER_FLOW@1/);
+    assert.match(file, /NOT_PROVEN/);
+    assert.match(file, /keine zusätzlichen Required Checks/);
+  }
+  for (const domain of expected) {
+    const entry = registry.domains[domain];
+    assert.equal(entry.specialistAccess, 'shared');
+    assert.ok(entry.recommendedSpecialists.length >= 3);
+    assert.ok(entry.recommendedSpecialists.every(id => specialists.includes(id)));
+    const agent = read(entry.chatAgent);
+    assert.match(agent, /sharedSkills\.specialists/);
+    assert.match(agent, /alle zehn Fach-Skills/);
+    assert.match(agent, /Repository-Zugriff/);
+  }
+  assert.match(read('.github/copilot-instructions.md'), /sharedSkills\.specialists/);
+  assert.match(read('AGENTS.md'), /Shared Enterprise Specialist Skills/);
+});

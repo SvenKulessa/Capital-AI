@@ -25,13 +25,18 @@ export function evaluateNpmCandidate(row, metadata) {
   if (!row || !PACKAGE.test(row.name) || metadata?.name !== row.name ||
       typeof latest !== 'string' || !SHA.test(dist?.shasum || '') ||
       !INTEGRITY.test(dist?.integrity || '')) {
-    return { state: 'NOT_PROVEN', reason: 'MISSING_REGISTRY_SHA_AND_SHA512' };
+    return { state: 'NOT_PROVEN', reason: 'MISSING_REGISTRY_SHA_AND_SHA512',
+      latestVersion: typeof latest === 'string' ? latest : null };
   }
   const newer = newerStableVersion(row.version, latest);
-  if (newer === null) return { state: 'REVIEW_REQUIRED', reason: 'NON_STABLE_OR_UNRESOLVED_VERSION' };
-  if (!newer) return { state: 'CURRENT_OR_NEWER', checkedVersion: latest };
+  if (newer === null) return { state: 'REVIEW_REQUIRED', reason: 'NON_STABLE_OR_UNRESOLVED_VERSION',
+    latestVersion: latest, latestLicenseDeclared: typeof metadata.license === 'string' ? metadata.license : null };
+  if (!newer) return { state: 'CURRENT_OR_NEWER', checkedVersion: latest, latestVersion: latest,
+    latestLicenseDeclared: typeof metadata.license === 'string' ? metadata.license : null };
   return {
-    state: 'UPDATE_CANDIDATE', version: latest, sha: dist.shasum,
+    state: 'UPDATE_CANDIDATE', version: latest, latestVersion: latest,
+    latestLicenseDeclared: typeof metadata.license === 'string' ? metadata.license : null,
+    sha: dist.shasum,
     integrity: dist.integrity, source: 'NPM_REGISTRY_METADATA',
     verification: 'HASH_DECLARED_NOT_TARBALL_VERIFIED',
   };
@@ -41,11 +46,13 @@ export function evaluateActionCandidate(row, releaseTag, commitSha) {
       !RELEASE_TAG.test(releaseTag || '') || !SHA.test(commitSha || '')) {
     return { state: 'NOT_PROVEN', reason: 'INVALID_RELEASE_OR_COMMIT_SHA' };
   }
-  if (commitSha === row.revisionSha) return { state: 'CURRENT_OR_NEWER', checkedVersion: releaseTag };
+  if (commitSha === row.revisionSha) return { state: 'CURRENT_OR_NEWER', checkedVersion: releaseTag,
+    latestVersion: releaseTag };
   const newer = newerStableVersion(String(row.version || '').replace(/^v/, ''), releaseTag.replace(/^v/, ''));
-  if (newer !== true) return { state: 'REVIEW_REQUIRED', version: releaseTag, sha: commitSha, reason: 'UNORDERED_OR_CHANGED_PIN' };
+  if (newer !== true) return { state: 'REVIEW_REQUIRED', version: releaseTag, latestVersion: releaseTag,
+    sha: commitSha, reason: 'UNORDERED_OR_CHANGED_PIN' };
   return {
-    state: 'UPDATE_CANDIDATE', version: releaseTag, sha: commitSha,
+    state: 'UPDATE_CANDIDATE', version: releaseTag, latestVersion: releaseTag, sha: commitSha,
     source: 'GITHUB_RELEASE_REF_AND_COMMIT',
     verification: 'REPO_COMMIT_EXISTS_CODE_REVIEW_REQUIRED',
   };
@@ -99,7 +106,7 @@ async function actionCommitSha(fetchImpl, repo, tag) {
   return obj.sha;
 }
 
-export async function discoverRepositoryUpdates({ entries, sourceSha, fetchImpl = fetch, now = Date.now } = {}) {
+export async function discoverRepositoryUpdates({ entries, sourceSha, blockedUpdates = [], fetchImpl = fetch, now = Date.now } = {}) {
   if (!SHA.test(sourceSha || '') || !Array.isArray(entries)) throw new Error('UPDATE_INVALID_SNAPSHOT');
   const npm = entries.filter(row => row.id?.startsWith('npm:') &&
     ['NPM_RUNTIME', 'NPM_DEVTOOL', 'NPM_PRODUCTION_BOUNDARY', 'NPM_SECURITY_PATCH'].includes(row.kind) &&
@@ -124,8 +131,18 @@ export async function discoverRepositoryUpdates({ entries, sourceSha, fetchImpl 
     if (!RELEASE_TAG.test(tag || '')) return { state: 'NOT_PROVEN', reason: 'NO_STABLE_RELEASE_TAG' };
     return evaluateActionCandidate(row, tag, await actionCommitSha(fetchImpl, row.actionRepository, tag));
   });
+  const holds = new Map((Array.isArray(blockedUpdates) ? blockedUpdates : [])
+    .filter(hold => hold?.name && hold?.version && hold?.state === 'BLOCKED')
+    .map(hold => [hold.name + '@' + hold.version, hold]));
+  const blockCandidate = (row, value) => {
+    const hold = holds.get(row.name + '@' + (value?.latestVersion || value?.version));
+    if (!hold || value.state !== 'UPDATE_CANDIDATE') return value;
+    return { ...value, state: 'BLOCKED', reason: hold.reasonCode || 'SECURITY_REVIEW_BLOCKED',
+      evidencePath: hold.evidencePath, latestVersion: value.latestVersion,
+      verification: 'METADATA_ONLY_BINARY_SECURITY_REVIEW_REQUIRED' };
+  };
   const findings = [
-    ...npmSelected.map((row, i) => ({ id: row.id, name: row.name, kind: row.kind, installed: row.version, ...npmResult[i] })),
+    ...npmSelected.map((row, i) => ({ id: row.id, name: row.name, kind: row.kind, installed: row.version, ...blockCandidate(row, npmResult[i]) })),
     ...actionSelected.map((row, i) => ({ id: row.id, name: row.name, kind: row.kind, installed: row.version, installedSha: row.revisionSha, ...actionResult[i] })),
   ];
   return {

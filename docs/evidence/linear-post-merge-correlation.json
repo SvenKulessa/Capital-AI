@@ -1,14 +1,13 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "687c43649ac53b8bfae8b215ddaa37de9b359a88",
-  "mergedPr": 392,
-  "targetPr": 393,
-  "targetBranch": "capital-ai-trust/catalog-sha-verified-updates-20261011",
-  "targetHeadSha": "d4465a2abd2884afe761a4b72c9e80bd889c3c10",
+  "mainSha": "d34c9307c24ee192dc4a3599d81116cc3074638c",
+  "mergedPr": 402,
+  "targetPr": 404,
+  "targetBranch": "capital-ai-trust/catalog-usage-license-versions-20261011",
+  "targetHeadSha": "39332f6e3faf172c2e58df5f2826f06e58e56aec",
   "exactOverlap": [
     ".dockerignore",
-    "Dockerfile",
-    "server/index.mjs"
+    "Dockerfile"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,
