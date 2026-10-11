@@ -92,6 +92,13 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
     mainPath: '/studio',
     subpages: [
       {
+        id: 'intelligence',
+        name: 'Financial Intelligence Architecture',
+        icon: <Layers className="h-4 w-4 text-cyan-300" />,
+        shortDesc: 'Architecture Hub, Blueprint Explorer, Komponenten, Lernreise und Score-Erklärungen',
+        path: '/architecture-hub',
+      },
+      {
         id: 'architecture',
         name: 'Pipeline Architektur',
         icon: <Layers className="w-4 h-4 text-amber-400" />,
