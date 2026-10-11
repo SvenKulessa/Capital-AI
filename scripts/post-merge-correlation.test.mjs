@@ -184,8 +184,8 @@ test('merge milestone PR creation requires dedicated repo-scoped GitHub App', ()
   assert.ok(workflow.includes('branch="capital-ai-trust/milestone-merge-pr-$number-$date_suffix"'));
   assert.equal((workflow.match(/gh pr create --repo/g) ?? []).length, 1,
     'Roadmap and news milestone artifacts must share a single PR');
-  assert.match(workflow, /targets\\+=\\\("src\\/data\\/roadmapMergeReconciliation\\.json"/);
-  assert.match(workflow, /targets\\+=\\\("src\\/data\\/controlCenterNews\\.json"/);
+  assert.ok(workflow.includes('targets+=("src/data/roadmapMergeReconciliation.json"'));
+  assert.ok(workflow.includes('targets+=("src/data/controlCenterNews.json"'));
   assert.ok(workflow.includes('ROADMAP_DATE: ${{ steps.milestones.outputs.roadmap_date }}'));
   assert.ok(workflow.includes('NEWS_DATE: ${{ steps.milestones.outputs.news_date }}'));
   assert.ok(workflow.includes('! "$date_suffix" =~ ^[0-9]{8}
