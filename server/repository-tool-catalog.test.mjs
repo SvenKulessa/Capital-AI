@@ -50,7 +50,6 @@ test('isolated package boundaries and nonproduction tooling retain precise prove
     'deploy/runtime/package.json', 'deploy/runtime/package-lock.json',
     'deploy/npm-security-patches/package.json', 'deploy/npm-security-patches/package-lock.json',
     'deploy/social-media/renderer-requirements.txt', 'deploy/social-media/ffmpeg-build-profile.json',
-    'mobile/android-private/build.gradle', 'mobile/android-private/app/build.gradle',
     'services/provider-bridge-rs/rust-toolchain.toml', 'Dockerfile',
   ].map(path => ({ type: 'blob', path }));
   const entries = buildRepositoryToolCatalog({
@@ -63,8 +62,6 @@ test('isolated package boundaries and nonproduction tooling retain precise prove
       'deploy/npm-security-patches/package-lock.json': { packages: { 'node_modules/undici': { version: '6.29.0' } } },
       'deploy/social-media/renderer-requirements.txt': 'Pillow==12.3.0 --hash=sha256:abc',
       'deploy/social-media/ffmpeg-build-profile.json': { source: { version: '9.0.2' }, productionEligible: false },
-      'mobile/android-private/build.gradle': "id 'com.android.application' version '8.13.2' apply false",
-      'mobile/android-private/app/build.gradle': 'versionName "0.1.0-private"',
       'services/provider-bridge-rs/rust-toolchain.toml': 'channel = "1.99.0"',
     },
   });
@@ -73,8 +70,8 @@ test('isolated package boundaries and nonproduction tooling retain precise prove
   assert.equal(get('npm:deploy/npm-security-patches:undici').version, '6.29.0');
   assert.equal(get('python:Pillow').version, '12.3.0');
   assert.match(get('tool:ffmpeg').versionBasis, /NICHT productionEligible/);
-  assert.equal(get('app:android-private').version, '0.1.0-private');
-  assert.equal(get('tool:android-gradle-plugin').version, '8.13.2');
+  assert.equal(get('app:android-private'), undefined);
+  assert.equal(get('tool:android-gradle-plugin'), undefined);
   assert.equal(get('tool:rust').version, '1.99.0');
   assert.equal(get('tool:npm-cli').version, '12.2.0');
 });

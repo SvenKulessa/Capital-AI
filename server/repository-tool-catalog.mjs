@@ -173,18 +173,6 @@ export function buildRepositoryToolCatalog({ sourceSha, tree, pkg, lock, cargo, 
         'Social Media Renderer (Build-Requirement)', match[2], 'Requirements mit Hash-Pin; keine Worker-Deployment-Evidence', 'GROWTH'));
     }
   }
-  const androidPath = 'mobile/android-private/app/build.gradle';
-  if (paths.has(androidPath)) {
-    const name = String(supplementary[androidPath] || '').match(/versionName\s+"([^"]+)"/)?.[1] || null;
-    add(entry('app:android-private', 'Capital AI Android Private', 'ANWENDUNG', androidPath,
-      'Private Android-App (separate Distribution)', name, 'Gradle versionName; nicht installiert bestätigt', 'PRODUCT'));
-  }
-  const gradlePath = 'mobile/android-private/build.gradle';
-  if (paths.has(gradlePath)) {
-    const gradleVersion = String(supplementary[gradlePath] || '').match(/com\.android\.application['"]\s+version\s+['"]([^'"]+)/)?.[1] || null;
-    add(entry('tool:android-gradle-plugin', 'Android Gradle Plugin', 'BUILD_TOOL', gradlePath,
-      'Android Build Toolchain', gradleVersion, 'Gradle Plugin-Pin', 'PLATFORM'));
-  }
   const toolchainPath = 'services/provider-bridge-rs/rust-toolchain.toml';
   if (paths.has(toolchainPath)) {
     const rustVersion = String(supplementary[toolchainPath] || '').match(/channel\s*=\s*"([^"]+)"/)?.[1] || null;
@@ -330,16 +318,16 @@ export function createRepositoryToolCatalog({ fetchImpl = fetch, now = Date.now,
       'Dockerfile', 'deploy/Dockerfile.nats', 'deploy/Dockerfile.provider-bridge', 'deploy/social-media/Dockerfile.renderer',
       'config/tool-catalog-integrations.json', 'deploy/runtime/package.json', 'deploy/runtime/package-lock.json',
       'deploy/npm-security-patches/package.json', 'deploy/npm-security-patches/package-lock.json',
-      'deploy/social-media/renderer-requirements.txt', 'mobile/android-private/app/build.gradle',
-      'mobile/android-private/build.gradle', 'services/provider-bridge-rs/rust-toolchain.toml',
+      'deploy/social-media/renderer-requirements.txt',
+      'services/provider-bridge-rs/rust-toolchain.toml',
       'deploy/social-media/ffmpeg-build-profile.json',
       'src/contracts/analysisComponentRegistry.ts', 'src/utils/pipelineToolCatalog.ts',
       'src/data/externalComponentInventory.ts',
       'docs/security/evidence/dependency-decisions/typescript-7.0.2.json'];
     const sources = await Promise.all(files.map((file, index) =>
       fromMain(file, file.endsWith('package-lock.json') ? 2_400_000 : 100_000, index >= 2)));
-    const supplementary = Object.fromEntries(files.slice(8).map((p, i) => {
-      const value = sources[i + 8];
+    const supplementary = Object.fromEntries(files.slice(6).map((p, i) => {
+      const value = sources[i + 6];
       return [p, p.endsWith('package.json') || p.endsWith('package-lock.json') ||
           p.endsWith('ffmpeg-build-profile.json') || p.endsWith('typescript-7.0.2.json')
         ? parseJson(value) : value];

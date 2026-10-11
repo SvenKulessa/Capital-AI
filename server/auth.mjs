@@ -576,7 +576,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
             version: 1,
             flow,
             verifier,
-            next: '/mobile-scorer',
+            next: '/',
             mobileChallenge: challenge,
             expires: now() + PKCE_MAX_AGE_SECONDS * 1000,
           }),
@@ -626,7 +626,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       mobileTransfers.delete(code);
       writeSessionCookies(req, res, config, transfer.token);
       res.writeHead(303, {
-        Location: '/mobile-scorer',
+        Location: '/',
         'Cache-Control': 'no-store',
         'Referrer-Policy': 'no-referrer',
       });

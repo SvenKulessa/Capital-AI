@@ -105,7 +105,6 @@
 !server/scorer-bus.mjs
 !server/observability.mjs
 !server/cads-observability.mjs
-!server/mobile-scorer.mjs
 !server/scorer-proxy.mjs
 !shared/
 !shared/hub-routes.mjs
