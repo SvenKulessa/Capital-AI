@@ -86,3 +86,14 @@ export function renderLearningInquiryMail(message) {
     html: renderBrandedMail({ title: 'Learning-/Kursanfrage', kind: 'transaction', bodyHtml: `<p>Eine neue Learning-/Kursanfrage wurde über das öffentliche Formular übermittelt.</p><p style="white-space:pre-wrap;overflow-wrap:anywhere;">${escapeMailHtml(trimmed)}</p>` }),
   };
 }
+
+/** General-purpose contact mail shares the existing branded transactional shell. */
+export function renderContactMail(message) {
+  if (typeof message !== 'string' || message.trim().length < 10 || message.length > 2000) throw new Error('MAIL_CONTACT_INVALID');
+  const trimmed = message.trim();
+  return {
+    subject: 'CAPITAL-AI Kontaktanfrage',
+    text: `Kontaktanfrage\n\n${trimmed}`,
+    html: renderBrandedMail({ title: 'Kontaktanfrage', kind: 'transaction', bodyHtml: `<p>Eine neue Kontaktanfrage wurde über das öffentliche Formular übermittelt.</p><p style="white-space:pre-wrap;overflow-wrap:anywhere;">${escapeMailHtml(trimmed)}</p>` }),
+  };
+}
