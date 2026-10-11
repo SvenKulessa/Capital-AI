@@ -65,28 +65,86 @@ try {
     if (response.error) task.reject(new Error(response.error.message)); else task.resolve(response.result);
   });
   await command('Page.enable'); await command('Runtime.enable');
-  for (const viewport of [{ name: 'desktop', width: 1440, height: 900, mobile: false }, { name: 'mobile', width: 390, height: 844, mobile: true }]) {
+  for (const viewport of [
+    { name: 'narrow-mobile', width: 320, height: 720, mobile: true },
+    { name: 'mobile', width: 390, height: 844, mobile: true },
+    { name: 'desktop', width: 1440, height: 900, mobile: false },
+  ]) {
     report.viewport = viewport;
-    await command('Emulation.setDeviceMetricsOverride', { width: viewport.width, height: viewport.height, mobile: viewport.mobile, deviceScaleFactor: 1 });
-    await navigate('/learning?tab=patterns', `document.querySelector('[aria-label="Chart-Lernatlas"] select')?.options.length === 12`);
-    assert.equal(await evaluate(`!!document.querySelector('[aria-label="Chart-Lernatlas"] [role="img"]')`), true, 'Accessible chart missing');
-    await evaluate(`document.querySelector('[aria-label="Kategorie filtern"] button:nth-child(2)').click()`);
-    await until(() => evaluate(`document.querySelector('[aria-label="Chart-Lernatlas"] select')?.options.length === 2`), 'Flags filter');
-    await evaluate(`(() => { const s=document.querySelector('[aria-label="Chart-Lernatlas"] select'); s.value=s.options[1].value; s.dispatchEvent(new Event('change',{bubbles:true})); })()`);
-    await until(() => evaluate(`document.querySelector('[aria-label="Chart-Lernatlas"] select')?.value === 'bear-flag'`), 'Bear Flag selection');
-    await evaluate(`Array.from(document.querySelectorAll('[aria-label="Chart-Lernatlas"] button')).find(b=>b.textContent==='Erklärung anzeigen').click()`);
-    await until(() => evaluate(`!!document.querySelector('[aria-label="Chart-Lernatlas"] button[aria-expanded="true"]')`), 'Self check');
-    await capture(viewport.name + '-chart-atlas');
-    await navigate('/', `Array.from(document.querySelectorAll('button')).some(b=>b.textContent==='Tarife & Leistungsumfang ansehen')`);
-    await evaluate(`Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Tarife & Leistungsumfang ansehen').click()`);
+    await command('Emulation.setDeviceMetricsOverride', {
+      width: viewport.width, height: viewport.height, mobile: viewport.mobile, deviceScaleFactor: 1,
+    });
+
+    // Real production DOM: every anonymous viewport must render the same four
+    // rights-neutral blueprint demos and lead to real learning/commerce routes.
+    await navigate('/', `document.querySelectorAll('#market-blueprint-catalog article').length === 4`);
+    assert.equal(await evaluate(`['/learning','/pricing','/marketscreener/dokumentation'].every(path =>
+      !!document.querySelector('#market-blueprint-catalog a[href="'+path+'"]'))`), true, 'Blueprint navigation missing');
+    assert.equal(await evaluate(`!document.querySelector('#capital-ai-bootstrap-fallback:not([hidden])')`), true, 'Visible bootstrap failure');
+    await capture(viewport.name + '-blueprints-home');
+
+    if (viewport.mobile) {
+      await until(() => evaluate(`!!document.querySelector('[aria-controls="capital-ai-mobile-navigation"]')`), 'Mobile menu toggle');
+      await evaluate(`document.querySelector('[aria-controls="capital-ai-mobile-navigation"]').click()`);
+      await until(() => evaluate(`!!document.querySelector('#capital-ai-mobile-navigation[role="dialog"]')`), 'Mobile navigation opens');
+      const drawer = await evaluate(`(() => { const d=document.querySelector('#capital-ai-mobile-navigation'),r=d.getBoundingClientRect();
+        return {left:r.left,right:r.right,client:d.clientWidth,scroll:d.scrollWidth}; })()`);
+      assert.ok(drawer.left >= -1 && drawer.right <= viewport.width + 1 &&
+        drawer.scroll <= drawer.client + 1, 'Mobile navigation overflow');
+      await capture(viewport.name + '-menu');
+      await evaluate(`document.querySelector('[aria-label="Navigation schließen"]').click()`);
+      await until(() => evaluate(`!document.querySelector('#capital-ai-mobile-navigation')`), 'Mobile navigation closes');
+    }
+
+    await navigate('/marketscreener/dokumentation',
+      `document.querySelectorAll('#market-blueprint-catalog article').length === 4`);
+    await capture(viewport.name + '-blueprints-documentation');
+
+    // The public glossary and its offer must work without subscription access.
+    // Never submit a checkout request: only test the local consent/disabled state.
+    await navigate('/learning?tab=glossar',
+      `!!document.querySelector('[aria-label="Learning Portal kaufen"] input[type="checkbox"]')`);
+    const purchase = await evaluate(`(() => {const section=document.querySelector('[aria-label="Learning Portal kaufen"]');
+      const consent=section.querySelector('input[type="checkbox"]');
+      const button=section.querySelector('button');
+      return {consent:consent.checked,disabled:button.disabled,text:button.textContent};})()`);
+    assert.equal(purchase.consent, false, 'Consent must initially be unchecked');
+    assert.equal(purchase.disabled, true, 'Purchase cannot begin without consent');
+    assert.match(purchase.text, /Learning Portal/, 'Learning purchase CTA missing');
+    if (viewport.mobile) {
+      const tabSelect = `Array.from(document.querySelectorAll('select')).find(s =>
+        s.options.length === 7 && Array.from(s.options).some(o => o.value === 'quiz'))`;
+      assert.equal(await evaluate(`(() => {const s=${tabSelect}; return !!s && s.getBoundingClientRect().width > 0;})()`),
+        true, 'Mobile learning tab selector not visible');
+      await evaluate(`(() => {const s=${tabSelect}; s.value='quiz';
+        s.dispatchEvent(new Event('change',{bubbles:true}));})()`);
+      await until(() => evaluate(`(${tabSelect})?.value === 'quiz'`), 'Learning tab change');
+      await evaluate(`(() => {const s=${tabSelect}; s.value='glossar';
+        s.dispatchEvent(new Event('change',{bubbles:true}));})()`);
+      await until(() => evaluate(`!!document.querySelector('[aria-label="Learning Portal kaufen"]')`), 'Glossary restored');
+    }
+    await capture(viewport.name + '-learning-commerce');
+
+    await navigate('/pricing', `!!document.querySelector('#pricing-dialog-title')`);
+    assert.equal(await evaluate(`['Starter','Pro','Enterprise'].every(
+      t => document.querySelector('[role="dialog"]').textContent.includes(t))`), true, 'Pricing tiers missing');
+    const pricing = await evaluate(`(() => {const d=document.querySelector('[role="dialog"]'),
+      r=d.getBoundingClientRect();return {left:r.left,right:r.right,client:d.clientWidth,scroll:d.scrollWidth};})()`);
+    assert.ok(pricing.left >= -1 && pricing.right <= viewport.width + 1 &&
+      pricing.scroll <= pricing.client + 1, 'Pricing dialog horizontal overflow');
+    await capture(viewport.name + '-pricing-route');
+    report.checks.at(-1).dialog = pricing;
+
+    // Retain the existing CADS pricing entrypoint and monthly/annual switch.
+    await navigate('/', `Array.from(document.querySelectorAll('button')).some(
+      b=>b.textContent==='Tarife & Leistungsumfang ansehen')`);
+    await evaluate(`Array.from(document.querySelectorAll('button')).find(
+      b=>b.textContent==='Tarife & Leistungsumfang ansehen').click()`);
     await until(() => evaluate(`!!document.querySelector('[role="dialog"] [role="switch"]')`), 'CADS pricing dialog');
-    await evaluate(`(() => {const s=document.querySelector('[role="dialog"] [role="switch"]'); if(s.getAttribute('aria-checked')==='true') s.click();})()`);
+    await evaluate(`(() => {const t=document.querySelector('[role="dialog"] [role="switch"]');
+      if(t.getAttribute('aria-checked')==='true') t.click();})()`);
     await until(() => evaluate(`document.querySelector('[role="dialog"] [role="switch"]')?.getAttribute('aria-checked')==='false'`), 'Monthly pricing');
-    assert.equal(await evaluate(`['Starter','Pro','Enterprise'].every(t=>document.querySelector('[role="dialog"]').textContent.includes(t))`), true, 'Pricing tiers missing');
-    const dialog = await evaluate(`(() => {const d=document.querySelector('[role="dialog"]'), r=d.getBoundingClientRect(); return {left:r.left,right:r.right,client:d.clientWidth,scroll:d.scrollWidth};})()`);
-    assert.ok(dialog.left >= -1 && dialog.right <= viewport.width + 1 && dialog.scroll <= dialog.client + 1, 'Dialog horizontal overflow');
     await capture(viewport.name + '-cads-pricing');
-    report.checks.at(-1).dialog = dialog;
     await evaluate(`document.querySelector('[aria-label="Preisliste schließen"]').click()`);
   }
   delete report.viewport;
