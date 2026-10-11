@@ -2,6 +2,7 @@ import React, { useEffect, useState, type ReactNode } from 'react';
 import { ArrowLeft, LayoutDashboard, Loader2, LogOut, ShieldCheck, User } from 'lucide-react';
 import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 import { useLocale } from '../../i18n/LocaleProvider';
+import { cookieCopy } from '../../i18n/cookieCopy';
 import { accountCopy } from '../../i18n/accountWorkspaceCopy';
 import { OPEN_COOKIE_PREFERENCES_EVENT } from '../../privacy/cookieConsentV3';
 
@@ -166,7 +167,7 @@ export function AccountPageShell({
               <LanguageSwitcher />
               <button type="button" onClick={() => window.dispatchEvent(new Event(OPEN_COOKIE_PREFERENCES_EVENT))}
                 className="min-h-11 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-slate-200 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
-                Cookie-Einstellungen
+                {cookieCopy[locale].settings}
               </button>
               <button
                 type="button"

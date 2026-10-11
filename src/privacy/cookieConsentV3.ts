@@ -20,7 +20,7 @@ export type CookieConsentReceipt = CookieChoices & Readonly<{
   savedAt: number;
 }>;
 
-type CookieStorage = Pick<Storage, 'getItem' | 'setItem'>;
+type CookieStorage = Pick<Storage, 'getItem' | 'setItem'> & Partial<Pick<Storage, 'removeItem'>>;
 
 function availableStorage(storage: CookieStorage | null | undefined): CookieStorage | null {
   try {
@@ -51,8 +51,15 @@ export function parseCookieConsent(value: unknown, now: number = Date.now()): Co
 
 export function readCookieConsent(storage?: CookieStorage | null, now: number = Date.now()): CookieConsentReceipt | null {
   try {
-    const value = availableStorage(storage)?.getItem(COOKIE_CONSENT_STORAGE_KEY);
-    return value ? parseCookieConsent(JSON.parse(value), now) : null;
+    const target = availableStorage(storage);
+    const value = target?.getItem(COOKIE_CONSENT_STORAGE_KEY);
+    if (!value) return null;
+    let receipt: CookieConsentReceipt | null = null;
+    try { receipt = parseCookieConsent(JSON.parse(value), now); } catch { /* Invalid JSON is not consent. */ }
+    if (!receipt) {
+      try { target?.removeItem?.(COOKIE_CONSENT_STORAGE_KEY); } catch { /* Removal failure never authorizes optional services. */ }
+    }
+    return receipt;
   } catch {
     // Blocked storage, malformed JSON or denied access cannot turn into consent.
     return null;

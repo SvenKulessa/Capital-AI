@@ -42,6 +42,7 @@ import {
 } from '../content/publicLegalContent';
 import { BrandLogo } from './BrandLogo';
 import { useLocale } from '../i18n/LocaleProvider';
+import { CookieStorageInventory } from '../privacy/CookieStorageInventory';
 import { legalAvailabilityNotice } from '../i18n/legalAvailability';
 
 export type LegalRoute = '/faq' | '/datenschutz' | '/agb' | '/impressum';
@@ -488,6 +489,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
                   Diese Hinweise beschreiben den Dienst mit Supabase Auth-Anmeldung. Eine automatische Übernahme alter Finance-Konten oder ihrer Daten erfolgt nicht. Optionales Analytics und Werbung sind in diesem Dienst deaktiviert.
                 </p>
               </div>
+              <CookieStorageInventory />
               {PROCESSING_ACTIVITIES.map((activity) => (
                 <details key={activity.id} className="rounded-2xl bg-black/40 border border-slate-800/80 overflow-hidden">
                   <summary className="cursor-pointer px-4 py-2.5 font-bold text-white flex items-center justify-between">
