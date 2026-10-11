@@ -2,9 +2,7 @@ import React, { useEffect, useState, type ReactNode } from 'react';
 import { ArrowLeft, LayoutDashboard, Loader2, LogOut, ShieldCheck, User } from 'lucide-react';
 import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 import { useLocale } from '../../i18n/LocaleProvider';
-import { cookieCopy } from '../../i18n/cookieCopy';
 import { accountCopy } from '../../i18n/accountWorkspaceCopy';
-import { OPEN_COOKIE_PREFERENCES_EVENT } from '../../privacy/cookieConsentEvents';
 
 export interface AccountBadge {
   id: string;
@@ -36,7 +34,7 @@ export interface AccountSession {
 }
 
 type AccountPageShellProps = {
-  active: '/profile' | '/profile/security' | '/profile/key-vault' | '/profile/workspace' | '/profile/render-dashboard';
+  active: '/profile' | '/profile/security' | '/profile/key-vault' | '/profile/workspace' | '/profile/render-dashboard' | '/profile/dashboard';
   title: string;
   description: string;
   onNavigate: (path: string) => void;
@@ -68,7 +66,6 @@ export function AccountPageShell({
   const tr = accountCopy[locale];
   const [session, setSession] = useState<AccountSession | null>(null);
   const [error, setError] = useState('');
-  const [renderOwnerAllowed, setRenderOwnerAllowed] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -84,13 +81,6 @@ export function AccountPageShell({
           return;
         }
         setSession(value);
-        // The server, not the email in the browser, decides whether this tab exists.
-        void fetch('/api/profile/render-owner-dashboard', {
-          credentials: 'same-origin', cache: 'no-store', signal: controller.signal,
-          headers: { Accept: 'application/json' },
-        }).then(response => {
-          if (!controller.signal.aborted && response.ok) setRenderOwnerAllowed(true);
-        }).catch(() => {});
       })
       .catch(() => {
         if (!controller.signal.aborted) setError(tr.accountSessionError);
@@ -139,8 +129,7 @@ export function AccountPageShell({
   const items = [
     { path: '/profile' as const, label: tr.accountProfile, icon: User },
     { path: '/profile/security' as const, label: tr.accountSecurity, icon: ShieldCheck },
-    { path: '/profile/workspace' as const, label: 'Workspace', icon: LayoutDashboard },
-    ...(renderOwnerAllowed ? [{ path: '/profile/render-dashboard' as const, label: 'Privates Dashboard', icon: LayoutDashboard }] : []),
+    { path: '/profile/dashboard' as const, label: 'Privates Dashboard', icon: LayoutDashboard },
   ];
 
   return (
@@ -156,7 +145,7 @@ export function AccountPageShell({
               <p className="mt-1 max-w-2xl text-sm text-slate-400">{description}</p>
               <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                 <span className="font-bold text-white">{session.user?.name || tr.accountUser}</span>
-                {session.account?.subscription?.tier && (
+                {session.account?.iamRole !== 'owner' && session.account?.subscription?.tier && (
                   <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-1 font-mono text-amber-200">
                     {session.account.subscription.tier}
                   </span>
@@ -165,10 +154,7 @@ export function AccountPageShell({
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <LanguageSwitcher />
-              <button type="button" onClick={() => window.dispatchEvent(new Event(OPEN_COOKIE_PREFERENCES_EVENT))}
-                className="min-h-11 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-slate-200 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
-                {cookieCopy[locale].settings}
-              </button>
+
               <button
                 type="button"
                 onClick={() => onNavigate('/')}

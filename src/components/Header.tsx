@@ -45,13 +45,9 @@ import { useLocale } from '../i18n/LocaleProvider';
 import { ASSET_CLASSES } from '../data/mockData';
 import { MainCategory, AssetSubclass } from '../types';
 import { trackLoginClick } from '../utils/analytics';
-import type { MainHubId } from './HubSidebarDrawer';
+import { MAIN_HUBS_CONFIG, type MainHubId } from './HubCatalog';
 
-const HubSidebarDrawer = lazy(() =>
-  import('./HubSidebarDrawer').then((module) => ({
-    default: module.HubSidebarDrawer,
-  })),
-);
+
 
 interface HeaderSession {
   authenticated: boolean;
@@ -97,8 +93,6 @@ export const Header: React.FC<HeaderProps> = ({
 
   const { t } = useLocale();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [activeSidebarHub, setActiveSidebarHub] = useState<MainHubId>('marketscreener');
   const [expandedClass, setExpandedClass] = useState<MainCategory | null>('KRYPTO');
   const [authSession, setAuthSession] = useState<HeaderSession | null>(null);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
@@ -156,8 +150,9 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   const openHubSidebar = (hubId: MainHubId) => {
-    setActiveSidebarHub(hubId);
-    setIsSidebarOpen(true);
+    setIsMenuOpen(false);
+    const path = MAIN_HUBS_CONFIG[hubId].mainPath;
+    if (onNavigate) onNavigate(path); else window.location.assign(path);
   };
 
   // Active Hub Calculation
@@ -367,14 +362,7 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                   <ShieldCheck className="h-4 w-4 text-cyan-300" /> Sicherheit
                 </button>
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => navigateAccount('/profile/workspace')}
-                  className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-slate-100 hover:bg-white/10"
-                >
-                  <LineChart className="h-4 w-4 text-amber-300" /> Mein Workspace
-                </button>
+
                 <div className="my-1 border-t border-white/10" />
                 <button
                   type="button"
@@ -829,22 +817,7 @@ export const Header: React.FC<HeaderProps> = ({
         )}
       </AnimatePresence>
 
-      {isSidebarOpen && (
-        <Suspense fallback={null}>
-          <HubSidebarDrawer
-            isOpen
-            onClose={() => setIsSidebarOpen(false)}
-            activeHubId={activeSidebarHub}
-            onSelectHub={(hub) => setActiveSidebarHub(hub)}
-            onNavigate={onNavigate}
-            currentPath={currentRoute}
-            onOpenSectorAnalysis={onOpenSectorAnalysis}
-            onOpenModule={onOpenModule}
-            onOpenPriceAlerts={onOpenPriceAlerts}
-            allowControlCenter={isOwner}
-          />
-        </Suspense>
-      )}
+
     </header>
   );
 };

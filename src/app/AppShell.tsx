@@ -10,6 +10,8 @@ import { useAppOverlayController } from './overlays/useAppOverlayController';
 import { AppRoutes } from './routing/AppRoutes';
 import { useBrowserRoute } from './routing/useBrowserRoute';
 
+const Header = lazy(() => import('../components/Header').then(module => ({default:module.Header})));
+
 // Breadcrumbs are a non-blocking navigation enhancement; keep the bootstrap chunk lean.
 const RouteBreadcrumbs = lazy(() =>
   import('../components/RouteBreadcrumbs').then((module) => ({
@@ -45,6 +47,12 @@ export function AppShell() {
   return (
     <>
       <ApplicationViewport currentRoute={currentRoute} onNavigate={navigateTo}>
+        <Suspense fallback={null}><Header currentRoute={currentRoute} onNavigate={navigateTo} onNavigateLogin={()=>navigateTo('/login')}
+          onOpenMarketscreener={()=>navigateTo('/marketscreener')} onOpenAnalysis={()=>ui.setIsAnalysisOpen(true)}
+          onOpenSectorAnalysis={ui.handleOpenSectorAnalysis} onOpenModule={ui.handleOpenModuleById}
+          onOpenVocabulary={()=>navigateTo('/learning')} onOpenPriceAlerts={()=>ui.setIsAlertModalOpen(true)}
+          onOpenMonetization={()=>ui.setIsMonetizationOpen(true)} onOpenWhaleRadar={()=>ui.setIsWhaleRadarOpen(true)}
+          onSelectSubclass={(subclass,category)=>ui.setSelectedSubclass({subclass,category})} onViewAllMarkets={()=>ui.handleExploreMarkets()}/></Suspense>
         <Suspense fallback={null}>
           <RouteBreadcrumbs currentRoute={currentRoute} onNavigate={navigateTo} />
         </Suspense>

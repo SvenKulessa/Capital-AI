@@ -1,3 +1,4 @@
+import { hubRouteForPath, DOCUMENT_ROUTES } from './hub-routes.mjs';
 import { blogArticleForPath } from './blog-articles.mjs';
 import { seoContentForPath } from './seo-content-manifest.mjs';
 import {
@@ -90,6 +91,9 @@ function primarySchema(entry) {
 }
 
 export function seoJsonLdForPath(pathname) {
+  const documentRoute = DOCUMENT_ROUTES[pathname.replace(/\/+$/, '')];
+  const hubRoute = hubRouteForPath(pathname) ?? (documentRoute ? {title: ({'/dokumentation/pipeline-architekturen':'Pipeline-Architekturen','/dokumentation/preiskatalog':'Preiskatalog','/dokumentation/domains':'Domains','/dokumentation/oss-market':'OSS Market Architektur'})[pathname],path:pathname} : null);
+  if (hubRoute) return Object.freeze({title:`${hubRoute.title} | CAPITAL-AI`,description:`${hubRoute.title} im CAPITAL-AI Hub.`,canonical:SEO_SITE_ORIGIN+hubRoute.path,robots:'noindex, follow',language:'de',ogType:'website',ogSiteName:'Capital-AI',ogLocale:'de_DE',ogImage:SEO_SOCIAL_IMAGE,ogImageAlt:'Capital-AI',twitterCard:'summary_large_image',twitterSite:'@CapitalAIOnline',jsonLd:{'@context':'https://schema.org','@type':'WebPage',url:SEO_SITE_ORIGIN+hubRoute.path,name:hubRoute.title}});
   const entry = seoContentForPath(pathname);
   if (!entry) return null;
 
@@ -104,6 +108,9 @@ export function seoJsonLdForPath(pathname) {
 }
 
 export function seoMetadataForPath(pathname) {
+  const documentRoute = DOCUMENT_ROUTES[pathname.replace(/\/+$/, '')];
+  const hubRoute = hubRouteForPath(pathname) ?? (documentRoute ? {title: ({'/dokumentation/pipeline-architekturen':'Pipeline-Architekturen','/dokumentation/preiskatalog':'Preiskatalog','/dokumentation/domains':'Domains','/dokumentation/oss-market':'OSS Market Architektur'})[pathname],path:pathname} : null);
+  if (hubRoute) return Object.freeze({title:`${hubRoute.title} | CAPITAL-AI`,description:`${hubRoute.title} im CAPITAL-AI Hub.`,canonical:SEO_SITE_ORIGIN+hubRoute.path,robots:'noindex, follow',language:'de',ogType:'website',ogSiteName:'Capital-AI',ogLocale:'de_DE',ogImage:SEO_SOCIAL_IMAGE,ogImageAlt:'Capital-AI',twitterCard:'summary_large_image',twitterSite:'@CapitalAIOnline',jsonLd:{'@context':'https://schema.org','@type':'WebPage',url:SEO_SITE_ORIGIN+hubRoute.path,name:hubRoute.title}});
   const entry = seoContentForPath(pathname);
   if (!entry) return null;
 

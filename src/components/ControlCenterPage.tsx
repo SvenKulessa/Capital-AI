@@ -1,3 +1,4 @@
+import { HubNavigationPanel } from './HubNavigationPanel';
 import React from 'react';
 import { AnalysisComponentExplorer } from '../features/analysis/AnalysisComponentExplorer';
 import { PipelineConfiguratorConsole } from '../features/analysis/PipelineConfiguratorConsole';
@@ -10,7 +11,7 @@ import { ComponentInventoryDashboard } from './ComponentInventoryDashboard';
 import { RepositoryToolCatalogDashboard } from './RepositoryToolCatalogDashboard';
 import { ControlCenterNewsPanel } from './ControlCenterNewsPanel';
 import { ObservabilityDashboard } from './ObservabilityDashboard';
-import { MAIN_HUBS_CONFIG } from './HubSidebarDrawer';
+import { MAIN_HUBS_CONFIG } from './HubCatalog';
 import { APP_NAVIGATION_EVENT, CONTROL_CENTER_SECTION_IDS, navigateAppLocation, readHubTab } from '../utils/appNavigation';
 
 export type ControlCenterTab = (typeof CONTROL_CENTER_SECTION_IDS)[number];
@@ -109,52 +110,8 @@ export const ControlCenterPage: React.FC<ControlCenterPageProps> = ({
         </p>
       </header>
 
-      <div className="mb-5 lg:hidden">
-        <label htmlFor="control-center-section" className="mb-2 block text-sm font-semibold text-slate-100">
-          Unterseite auswählen
-        </label>
-        <select
-          id="control-center-section"
-          value={activeTab}
-          onChange={(event) => navigateSection(event.target.value)}
-          className="min-h-12 w-full rounded-md border border-slate-500 bg-slate-900 px-3 py-2 text-base text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
-        >
-          {SECTIONS.map((section) => (
-            <option key={section.id} value={section.id}>{section.name}</option>
-          ))}
-        </select>
-      </div>
-
-      <div className="grid min-w-0 gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
-        <nav aria-label="Control Center Unterseiten" className="hidden self-start border-l border-slate-700 lg:sticky lg:top-5 lg:block">
-          <ul className="space-y-0.5">
-            {SECTIONS.map((section) => {
-              const isActive = activeTab === section.id;
-              return (
-                <li key={section.id}>
-                  <a
-                    href={section.path}
-                    aria-current={isActive ? 'page' : undefined}
-                    onClick={(event) => {
-                      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-                      event.preventDefault();
-                      navigateSection(section.id);
-                    }}
-                    className={
-                      isActive
-                        ? 'flex min-h-11 items-center gap-2 border-l-4 border-amber-400 bg-amber-400/15 px-3 py-2 text-sm font-semibold text-amber-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400'
-                        : 'flex min-h-11 items-center gap-2 border-l-4 border-transparent px-3 py-2 text-sm text-slate-200 transition-colors hover:border-slate-500 hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400'
-                    }
-                  >
-                    <span aria-hidden="true" className="shrink-0">{section.icon}</span>
-                    <span className="min-w-0">{section.name}</span>
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-
+      <HubNavigationPanel hubId="control-center" onNavigate={path => onNavigateTab ? onNavigateTab(path) : navigateAppLocation(path)} />
+      <div className="min-w-0">
         <section id="control-center-content" aria-labelledby="control-center-section-title" className="min-w-0">
           <div className="mb-5 border-b border-slate-700 pb-4">
             <h2

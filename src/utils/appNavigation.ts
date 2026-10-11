@@ -1,3 +1,4 @@
+import { canonicalHubTarget, hubRouteForPath, DOCUMENT_ROUTES } from '../../shared/hub-routes.mjs';
 /** Canonical protected Control Center subpages (kept in sync with the Hub catalog). */
 export const CONTROL_CENTER_SECTION_IDS = [
   'roadmap', 'components', 'tools', 'observability', 'news',
@@ -8,6 +9,8 @@ export const CONTROL_CENTER_SECTION_IDS = [
 export function resolveAppRoute(rawPath: string): string {
   if (!rawPath) return '/';
   const clean = rawPath.trim().toLowerCase().replace(/\/+$/, '') || '/';
+  const hubRoute = hubRouteForPath(clean);
+  if (hubRoute) return hubRoute.hub;
   // Public landing language URLs resolve to the same SPA home component.
   if (/^\/(?:de|en|it|fr|pt|es)$/.test(clean)) return '/';
 
@@ -45,7 +48,8 @@ export function resolveAppRoute(rawPath: string): string {
   ) {
     return '/profile/key-vault';
   }
-  if (clean === '/profile/workspace' || clean === '/profil/workspace' || clean === '/mein-workspace') return '/profile/workspace';
+  if (clean === '/profile/workspace' || clean === '/profil/workspace' || clean === '/mein-workspace') return '/profile';
+  if (clean === '/profile/dashboard') return '/profile/dashboard';
   if (clean === '/profile/render-dashboard' || clean === '/profil/privates-dashboard') return '/profile/render-dashboard';
   if (clean === '/legal' || clean === '/rechtliches') return '/legal';
   if (clean === '/kontakt' || clean === '/contact') return '/kontakt';
@@ -214,8 +218,10 @@ export function readHubTab<T extends string>(search: string, tabs: readonly T[],
 
 /** Normalize only the pathname; preserve query values and hash exactly. */
 export function resolveNavigationTarget(target: string): string {
-  const url = new URL(target, 'https://capital-ai.local');
-  return resolveAppRoute(url.pathname) + url.search + url.hash;
+  const url = new URL(canonicalHubTarget(target), 'https://capital-ai.local');
+  const hubRoute = hubRouteForPath(url.pathname);
+  if (Object.hasOwn(DOCUMENT_ROUTES,url.pathname)) return url.pathname + url.search + url.hash;
+  return (hubRoute ? hubRoute.path : resolveAppRoute(url.pathname)) + url.search + url.hash;
 }
 
 /** pushState does not emit popstate, so notify SPA subscribers explicitly. */

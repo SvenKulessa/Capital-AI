@@ -103,7 +103,7 @@ test('UI is mounted on app routes and discloses conditional analytics and durabl
   const footer = readFileSync(new URL('../components/Footer.tsx', import.meta.url), 'utf8');
   const account = readFileSync(new URL('../features/account/AccountPageShell.tsx', import.meta.url), 'utf8');
   assert.match(footer, /cookieSettingsLabel\[locale\]/);
-  assert.match(account, /cookieCopy\[locale\].settings/);
+  assert.doesNotMatch(account, /cookieCopy\[locale\].settings|OPEN_COOKIE_PREFERENCES_EVENT/);
   assert.doesNotMatch(account, /path: '\/profile\/key-vault' as const/);
   assert.match(analytics, /startConsentedAnalytics\(\)/);
   assert.match(analytics, /sendPageView\(_pagePath\)/);

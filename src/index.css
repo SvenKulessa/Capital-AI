@@ -89,3 +89,9 @@
 .hub-universe--learning { --hub-rgb: 245 196 83; }
 .hub-universe--studio { --hub-rgb: 34 211 238; }
 .hub-universe--marketscreener { --hub-rgb: 141 38 255; }
+
+/* Shared editorial presentation for Content Engine website articles. */
+.blog-screen { position: relative; background-image: linear-gradient(135deg, rgb(6 182 212 / .06), transparent 45%), linear-gradient(0deg, rgb(139 92 246 / .05), transparent); }
+.blog-screen::before { content: ''; display: block; height: 3px; width: 5rem; margin-bottom: 1.5rem; border-radius: 999px; background: linear-gradient(90deg, #22d3ee, #a78bfa); box-shadow: 0 0 18px rgb(34 211 238 / .35); }
+.blog-letter { font-style: italic; }
+.blog-letter h1, .blog-letter h2, .blog-letter nav { font-style: normal; }

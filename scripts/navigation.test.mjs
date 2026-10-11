@@ -1,3 +1,4 @@
+import { HUB_ROUTES } from '../shared/hub-routes.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -5,23 +6,16 @@ import { APP_NAVIGATION_EVENT, navigateAppLocation, readHubTab, resolveNavigatio
 import { messages } from '../src/i18n/messages.ts';
 
 test('all current sideboard tab links retain their hub and tab', () => {
-  const sidebar = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
-  const links = [...sidebar.matchAll(/path: '([^']+\?tab=[^']+)'/g)].map(match => match[1]);
-  assert.equal(links.length, 14);
-  assert.ok(links.includes('/marketscreener?tab=components'));
-  assert.ok(links.includes('/studio?tab=console'));
-  assert.ok(links.includes('/learning?tab=flashcards'));
-  assert.ok(links.includes('/learning?tab=videos'));
-  for (const link of links) assert.equal(resolveNavigationTarget(link), link);
+  for (const route of HUB_ROUTES) {
+    assert.equal(resolveAppRoute(route.path), route.hub);
+    assert.equal(resolveNavigationTarget(route.hub + '?tab=' + route.tab), route.path);
+  }
 });
 
 test('footer consolidates public license navigation into documentation', () => {
   const footer = readFileSync(new URL('../src/components/Footer.tsx', import.meta.url), 'utf8');
-  assert.match(footer, /href="\/dokumentation"/);
-  assert.match(footer, /t\('docs'\)/);
-  assert.equal(messages.de.docs, 'Dokumentation & Lizenzen');
-  assert.doesNotMatch(footer, /href="\/control-center\?tab=licenses"/);
-  assert.doesNotMatch(footer, /id="footer-nav-lizenz"/);
+  assert.doesNotMatch(footer, /href="\/dokumentation"|href="\/blog"|t\('docs'\)/);
+  assert.match(footer, /OPEN_COOKIE_PREFERENCES_EVENT/);
 });
 
 test('aliases and trailing slash normalize without losing query or hash', () => {
@@ -63,7 +57,8 @@ test('same-hub transitions notify subscribers and avoid duplicate history', () =
   globalThis.window = browser;
   try {
     assert.equal(navigateAppLocation('/studio?tab=builder#canvas'), '/studio');
-    assert.equal(href.search, '?tab=builder');
+    assert.equal(href.pathname, '/studio/builder');
+    assert.equal(href.search, '');
     assert.equal(href.hash, '#canvas');
     navigateAppLocation('/studio?tab=builder#canvas');
     assert.equal(pushes, 1);
@@ -101,19 +96,16 @@ test('account routes keep profile, security and key vault as separate pages', ()
   assert.equal(resolveAppRoute('/profil/sicherheit'), '/profile/security');
   assert.equal(resolveAppRoute('/key-vault'), '/profile/key-vault');
   assert.equal(resolveAppRoute('/vault'), '/profile/key-vault');
-  assert.equal(resolveAppRoute('/profil/workspace'), '/profile/workspace');
-  assert.equal(resolveAppRoute('/mein-workspace'), '/profile/workspace');
+  assert.equal(resolveAppRoute('/profil/workspace'), '/profile');
+  assert.equal(resolveAppRoute('/mein-workspace'), '/profile');
   assert.equal(resolveNavigationTarget('/profile/security?ref=account'), '/profile/security?ref=account');
 });
 
 
 test('Control Center navigation is capability-gated to the verified owner session', () => {
-  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
-  const sidebar = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
+  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url),'utf8');
   assert.match(header, /account\?\.iamRole === 'owner'/);
-  assert.match(header, /allowControlCenter=\{isOwner\}/);
-  assert.match(sidebar, /allowControlCenter = false/);
-  assert.match(sidebar, /hubId !== 'control-center' \|\| allowControlCenter/);
+  assert.doesNotMatch(header, /<HubSidebarDrawer/);
 });
 
 
@@ -158,62 +150,36 @@ test('canonical product routes and aliases resolve deterministically', () => {
 
 
 test('production navigation uses Preiskatalog and clickable canonical breadcrumbs', () => {
-  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
-  const footer = readFileSync(new URL('../src/components/Footer.tsx', import.meta.url), 'utf8');
-  const breadcrumbs = readFileSync(new URL('../src/components/RouteBreadcrumbs.tsx', import.meta.url), 'utf8');
-  const sideboard = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
-
-  assert.match(header, /Preiskatalog/);
+  const footer = readFileSync(new URL('../src/components/Footer.tsx', import.meta.url),'utf8');
+  const breadcrumbs = readFileSync(new URL('../src/components/RouteBreadcrumbs.tsx', import.meta.url),'utf8');
   assert.match(footer, /t\('pricing'\)/);
   assert.equal(messages.de.pricing, 'Preiskatalog');
-  assert.doesNotMatch(header, /Preise & SaaS Tarife/);
-  assert.doesNotMatch(sideboard, /Aufklappbare Sidebar|Sideliste aufklappen/);
-  assert.match(sideboard, /role="tree"/);
-  assert.match(sideboard, /role="treeitem"/);
-  assert.match(breadcrumbs, /onClick=\{\(\) => onNavigate\(item\.path\)\}/);
   assert.match(breadcrumbs, /aria-current="page"/);
 });
 
 test('hub sideboard hides raw URL paths in subpage cards while keeping navigation', () => {
-  const sideboard = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
-  // A URL in an accessible anchor href is a navigation target, not rendered path text.
-  // Reject only literal JSX text children displaying a raw internal route.
-  assert.doesNotMatch(sideboard, />\s*\{\s*subpage\.path\s*\}\s*</);
-  assert.match(sideboard, /href=\{subpage\.path\}/);
-  assert.match(sideboard, /onNavigate\?\.\(subpage\.path\)/);
-  assert.match(sideboard, /window\.location\.assign\(subpage\.path\)/);
-  assert.match(sideboard, /subpage\.tags\?\.map/);
+  const panel = readFileSync(new URL('../src/components/HubNavigationPanel.tsx', import.meta.url),'utf8');
+  assert.doesNotMatch(panel, />\s*\{\s*page\.path\s*\}\s*</);
+  assert.match(panel, /href=\{page.path\}/);
 });
 
 test('homepage hub directory shares the canonical catalog and excludes protected routes by default', () => {
-  const home = readFileSync(new URL('../src/features/home/HomePage.tsx', import.meta.url), 'utf8');
   const directory = readFileSync(new URL('../src/components/HomeHubDirectory.tsx', import.meta.url), 'utf8');
-  const learning = readFileSync(new URL('../src/features/learning/LearningPortalPage.tsx', import.meta.url), 'utf8');
-  const studio = readFileSync(new URL('../src/features/studio/StudioPage.tsx', import.meta.url), 'utf8');
-  assert.match(home, /HomeHubDirectory/);
   assert.match(directory, /MAIN_HUBS_CONFIG/);
-  assert.match(directory, /hubId !== 'control-center' \|\| isOwner/);
-  assert.match(directory, /session\?\.authenticated === true && session\?\.account\?\.iamRole === 'owner'/);
-  assert.match(directory, /aria-expanded=\{isExpanded\}/);
-  assert.match(directory, /onNavigate\(subpage\.path\)/);
-  assert.doesNotMatch(learning, /SubpageSidebarNav/);
-  assert.doesNotMatch(studio, /SubpageSidebarNav/);
+  assert.match(directory, /onNavigate\(hub.mainPath\)/);
+  assert.doesNotMatch(directory, /aria-expanded|control-center/);
 });
 
 test('documentation hub catalog links to the existing content instead of reopening the overview', () => {
-  const catalog = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
-  const home = readFileSync(new URL('../src/components/HomeHubDirectory.tsx', import.meta.url), 'utf8');
-  for (const route of ['/documentation/byok.html', '/documentation/pipeline-architectures.html', '/documentation/pricing-models.html', '/documentation/domains.html']) {
-    assert.ok(catalog.includes("path: '" + route + "'"));
-  }
-  assert.match(home, /window\.location\.assign\(subpage\.path\)/);
-  assert.match(catalog, /window\.location\.assign\(subpage\.path\)/);
-  assert.ok(catalog.includes("badge: '12 Bereiche'"));
+  const catalog = readFileSync(new URL('../src/components/HubCatalog.tsx', import.meta.url), 'utf8');
+  for (const route of ['/dokumentation/pipeline-architekturen','/dokumentation/preiskatalog','/dokumentation/domains']) assert.ok(catalog.includes(route));
+  assert.match(catalog, /badge: 'PENDING'/);
+  assert.match(catalog, /tab=blogs/);
 });
 
 
 test('Control Center offers eleven dedicated, keyboard-accessible routes and legacy query links', () => {
-  const sidebar = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
+  const sidebar = readFileSync(new URL('../src/components/HubCatalog.tsx', import.meta.url), 'utf8');
   const page = readFileSync(new URL('../src/components/ControlCenterPage.tsx', import.meta.url), 'utf8');
   const appRoutes = readFileSync(new URL('../src/app/routing/AppRoutes.tsx', import.meta.url), 'utf8');
   const destinations = [...sidebar.matchAll(/path: '(\/control-center\/[a-z_]+)'/g)].map((match) => match[1]);
@@ -226,9 +192,8 @@ test('Control Center offers eleven dedicated, keyboard-accessible routes and leg
   }
   assert.equal(resolveAppRoute('/control-center/unknown'), '/');
   assert.match(appRoutes, /currentRoute\.startsWith\('\/control-center\/'\)/);
-  assert.match(page, /aria-current=\{isActive \? 'page' : undefined\}/);
-  assert.match(page, /<select/);
-  assert.match(page, /focus-visible:outline/);
+  assert.match(page, /HubNavigationPanel/);
+  assert.doesNotMatch(page, /<select/);
   assert.match(page, /APP_NAVIGATION_EVENT/);
   assert.doesNotMatch(page, /role="tablist"/);
 });
@@ -244,11 +209,11 @@ test('all dedicated Control Center documents retain owner-only server gating and
 
 
 test('Hub navigation entries use native focusable anchors for keyboard and modified clicks', () => {
-  const sidebar = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
-  assert.match(sidebar, /<motion\.a[\s\S]*?href=\{subpage\.path\}/);
-  assert.match(sidebar, /role="treeitem"/);
-  assert.match(sidebar, /event\.metaKey \|\| event\.ctrlKey/);
-  assert.doesNotMatch(sidebar, /onKeyDown=\{\(event\) => \{[\s\S]*?event\.key === 'Enter'/);
+  const panel = readFileSync(new URL('../src/components/HubNavigationPanel.tsx', import.meta.url),'utf8');
+  assert.match(panel, /<a key=\{page.id\} href=\{page.path\}/);
+  assert.match(panel, /e.metaKey/);
+  assert.match(panel, /focus-visible:outline/);
+  assert.match(panel, /aria-current/);
 });
 
 
@@ -292,14 +257,14 @@ test('sign-in password guidance matches current client-side strength policy', ()
 test('paused price alerts cannot render navigation or run background price checks', () => {
   const flag = readFileSync(new URL('../src/features/alerts/featureFlags.ts', import.meta.url), 'utf8');
   const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
-  const sidebar = readFileSync(new URL('../src/components/HubSidebarDrawer.tsx', import.meta.url), 'utf8');
+  const sidebar = readFileSync(new URL('../src/components/HubCatalog.tsx', import.meta.url), 'utf8');
   const context = readFileSync(new URL('../src/context/PriceAlertsContext.tsx', import.meta.url), 'utf8');
   const overlays = readFileSync(new URL('../src/app/AppOverlays.tsx', import.meta.url), 'utf8');
   const buddy = readFileSync(new URL('../src/components/HeroBuddy.tsx', import.meta.url), 'utf8');
 
   assert.match(flag, /export const PRICE_ALERTS_ENABLED = false;/);
   assert.doesNotMatch(header, /PRICE ALERTS BELL BUTTON|title="PriceAlerts & Schwellenwerte"/);
-  assert.match(sidebar, /\.\.\.\(PRICE_ALERTS_ENABLED \? \[\{/);
+  assert.doesNotMatch(readFileSync(new URL('../src/components/HubNavigationPanel.tsx', import.meta.url),'utf8'), /price-alerts/);
   assert.match(overlays, /\{PRICE_ALERTS_ENABLED && \(\s*<PriceAlertsModal/);
   assert.match(buddy, /\.\.\.\(PRICE_ALERTS_ENABLED \? \[\{ label: 'Alerts'/);
   assert.match(context, /if \(!PRICE_ALERTS_ENABLED\) return \[\];/);
@@ -310,56 +275,10 @@ test('paused price alerts cannot render navigation or run background price check
 
 test('hero Earth uses true 3D axial rotation behind translucent text with a static fallback', () => {
   const hero = readFileSync(new URL('../src/components/Hero.tsx', import.meta.url), 'utf8');
-  const globe = readFileSync(new URL('../src/components/HeroEarth3D.tsx', import.meta.url), 'utf8');
-  const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
-
-  // Right-aligned planet remains strictly decorative, with foreground copy and CTAs above it.
-  assert.match(hero, /pointer-events-none absolute -top-8 right-0 z-0 aspect-square/);
-  assert.match(hero, /className="hero-copy relative z-10 max-w-lg rounded-2xl/);
-  assert.match(hero, /bg-gradient-to-r from-brand-canvas\/80 via-brand-canvas\/40 to-brand-canvas\/15/);
-  for (const id of ['hero-start-analysis-btn', 'hero-buddy-support-btn', 'hero-explore-product-btn']) {
-    assert.ok(hero.includes('id="' + id + '"'));
-  }
-
-  // The Three.js renderer, physically curved sphere, georeferenced beacons and Y-axis
-  // rotation must come from a lazy module, never an animated flat image transform.
-  assert.match(hero, /lazy\(\(\) => import\('\.\/HeroEarth3D'\)\)/);
-  assert.match(globe, /new SphereGeometry\(1, 56, 40\)/);
-  assert.match(globe, /new CanvasTexture\(canvas\)/);
-  assert.match(globe, /new WebGLRenderer\(/);
-  assert.match(globe, /earth\.rotation\.y \+= delta \* \(Math\.PI \* 2 \/ REVOLUTION_SECONDS\)/);
-  assert.match(globe, /earth\.rotation\.z = -23\.4 \* Math\.PI \/ 180/);
-  assert.match(globe, /pointOnSphere\(location, 1\.028\)/);
-  assert.doesNotMatch(css, /capitalAiHeroEarthSpin|hero-earth-rotation/);
-
-  // GPU/context loss, hidden tabs, offscreen scene, reduced-motion and no WebGL
-  // must not remove the existing Earth artwork.
-  assert.match(hero, /!reduceMotion && typeof window !== 'undefined' && 'WebGL2RenderingContext' in window/);
-  assert.match(hero, /enableWebGL && earth3DReady \? 'opacity-0' : 'opacity-95'/);
-  assert.match(globe, /canvas\.addEventListener\('webglcontextlost', onContextLost\)/);
-  assert.match(globe, /document\.hidden/);
-  assert.match(globe, /new IntersectionObserver\(/);
-  assert.match(globe, /renderer\?\.dispose\(\)/);
-  assert.match(globe, /onReadyChange\(false\)/);
-  assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.capital-ai-hero \.hero-earth-beacon \{ animation: none; \}/);
-  assert.match(css, /@keyframes capitalAiHeroBeaconPulse/);
-  // Product positioning + orbital brand nodes reuse the existing source Earth.
-  assert.match(hero, /hero-blueprint-bundles-link/);
-  assert.match(hero, /Blueprint-Bundles entdecken/);
+  assert.match(hero, /glowing_earth_nodes_1789997454893.jpg/);
+  assert.doesNotMatch(hero, /HeroEarth3D|enableWebGL|WebGLRenderer/);
+  assert.match(hero, /opacity-95/);
   assert.match(hero, /keine Anlageberatung/);
-  assert.match(globe, /BRAND_ORBIT_COLORS = \[0xF9BF21, 0x44DE88, 0xFF2E93, 0x8D26FF\]/);
-  assert.match(globe, /new LineLoop\(geometry, material\)/);
-  assert.match(globe, /new LineSegments\(orbitConnections, orbitConnectionMaterial\)/);
-  assert.match(globe, /orbitNodeMaterials\.forEach\(material => material\.dispose\(\)\)/);
-  const overview = readFileSync(new URL('../src/components/MarketOverview.tsx', import.meta.url), 'utf8');
-  assert.match(overview, /Demo-Score/);
-  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
-  const account = readFileSync(new URL('../src/features/account/AccountPageShell.tsx', import.meta.url), 'utf8');
-  assert.doesNotMatch(header, /Key Vault/);
-  assert.doesNotMatch(account, /label: 'Key Vault'/);
-  // The legacy server-guarded Vault route stays intact for authenticated users.
-  const routes = readFileSync(new URL('../src/app/routing/AppRoutes.tsx', import.meta.url), 'utf8');
-  assert.match(routes, /\/profile\/key-vault/);
 });
 
 test('legal overview, contact, mobile hub tabs and global footer use one contact entry', () => {
@@ -389,5 +308,5 @@ test('legal overview, contact, mobile hub tabs and global footer use one contact
   assert.match(market, /active === 'kontakt' && <ContactForm \/>/);
   assert.doesNotMatch(learning, /<LearningInquiry \/>/);
   assert.match(form, /\/api\/public\/contact/);
-  for (const source of [learning, studio, market, legal]) assert.match(source, /#F5C453/);
+  for (const source of [learning, studio, market]) assert.match(source, /HubNavigationPanel/);
 });

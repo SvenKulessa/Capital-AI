@@ -7,6 +7,7 @@ function request({ method='GET', headers={}, body=null }={}) {
     method,
     headers,
     on(event, handler) {
+      if (event === 'data' && body != null) queueMicrotask(() => handler(Buffer.from(body)));
       if (event === 'end') queueMicrotask(handler);
       return this;
     },
@@ -210,4 +211,44 @@ test('badge download is denied without Vocabulary entitlement', async () => {
   await checkout.handle(request(), res, new URL('https://capital-ai.online/api/billing/vocabulary/badge'), json);
   assert.equal(res.status,403);
   assert.equal(res.payload.error,'vocabulary_entitlement_required');
+});
+
+test('private notes persist per verified identity and ignore client-selected user IDs', async () => {
+  const saved = new Map();
+  const fetchImpl = async (url, options) => {
+    assert.ok(String(url).endsWith('/rpc/capital_ai_private_notes'));
+    const args = JSON.parse(options.body);
+    if (args._action === 'PUT') saved.set(args._user_id,args._notes);
+    return new Response(JSON.stringify(saved.get(args._user_id) ?? ''), {status:200});
+  };
+  async function call(userId,method='GET',body) {
+    const checkout=createVocabularyCheckout({env,fetchImpl,auth:auth(userId)});
+    const res=response();
+    await checkout.handle(request({method,body:body&&JSON.stringify(body)}),res,new URL('https://capital-ai.online/api/profile/notes'),json);
+    return res;
+  }
+  const first='11111111-1111-4111-8111-111111111111';
+  const second='22222222-2222-4222-8222-222222222222';
+  assert.equal((await call(first,'PUT',{notes:'Meine Notiz',user_id:second})).status,200);
+  assert.equal((await call(first)).payload.notes,'Meine Notiz');
+  assert.equal((await call(second)).payload.notes,'');
+  assert.equal((await call(first,'PUT',{notes:''})).payload.notes,'');
+});
+
+test('private notes reject missing sessions, cross-origin writes, invalid input and backend failure', async () => {
+  let calls=0;
+  const fetchImpl=async()=>{calls++;return new Response('{}',{status:503});};
+  async function call(overrides,method='PUT',notes='test') {
+    const checkout=createVocabularyCheckout({env,fetchImpl,auth:{...auth(),...overrides}});
+    const res=response();
+    await checkout.handle(request({method,body:JSON.stringify({notes})}),res,new URL('https://capital-ai.online/api/profile/notes'),json);
+    return res.status;
+  }
+  assert.equal(await call({verify:async()=>null},'GET'),401);
+  assert.equal(await call({sameOrigin:()=>false}),403);
+  assert.equal(await call({},'POST'),405);
+  assert.equal(await call({},'PUT',123),400);
+  assert.equal(await call({},'PUT','x'.repeat(10001)),400);
+  assert.equal(calls,0);
+  assert.equal(await call({}),503);
 });

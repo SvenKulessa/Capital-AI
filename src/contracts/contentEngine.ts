@@ -174,3 +174,8 @@ export function planContentCampaign(rawBrief: unknown): ContentEnginePlan {
 export function channelsForCampaign(plan: ContentEnginePlan): readonly GrowthMarketingChannel[] {
   return plan.campaign.channels;
 }
+
+/** Read-only website projection of approved editorial source; grants no publish authority. */
+export function presentBlogArticle<T extends { title: string; intro: string; sections: readonly { title: string; body: string }[] }>(source: T) {
+  return { ...source, presentation: { layout: 'SCI_FI_LETTER' as const, greeting: '✉️ CAPITAL AI · Wissen & Lernen', sectionMark: '✦', illustrationFormat: 'SVG' as const } };
+}
