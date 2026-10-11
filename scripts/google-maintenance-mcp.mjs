@@ -12,6 +12,7 @@ export const GOOGLE_MAINTENANCE_TOOLS = Object.freeze([
   { name: 'ga4_get_property', description: 'Read exact GA4 property 548187678 settings.', inputSchema: empty },
   { name: 'ga4_learning_configuration', description: 'Read the exact website stream, lead-event and privacy configuration; no claim of consented collection.', inputSchema: empty },
   { name: 'ga4_learning_report', description: 'Compare two 28-day windows of organic learning/vocabulary traffic in the five target countries; keyEvents are not automatically verified leads.', inputSchema: empty },
+  { name: 'ga4_learning_lead_report', description: 'Read generate_lead event counts separately for organic learning/vocabulary sessions in two 28-day windows and five countries. Counts alone do not prove SMTP delivery or paid purchases.', inputSchema: empty },
   { name: 'ga4_configure_learning', description: 'Configure generate_lead plus email/URL redaction and disable form autocapture on the single exact website stream. Requires worker write enablement; never sends events.', inputSchema: empty },
   { name: 'gsc_submit_canonical_sitemap', description: 'Register only https://capital-ai.online/sitemap.xml on the exact domain property and verify readback. Requires GSC worker write enablement.', inputSchema: empty },
   { name: 'ga4_list_data_streams', description: 'Read property streams and verify capital-ai.online web-stream association.', inputSchema: empty },

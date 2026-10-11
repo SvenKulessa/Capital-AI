@@ -10,6 +10,7 @@
  */
 
 import { VocabularyCard } from './VocabularyCard';
+import { LearningJourney } from './LearningJourney';
 import { LearningArticles } from './LearningArticles';
 import { LearningInquiry } from './LearningInquiry';
 import { LearningPurchase } from './LearningPurchase';
@@ -110,6 +111,11 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
   const [accessLoaded, setAccessLoaded] = useState<boolean>(false);
   const [quizAccessError, setQuizAccessError] = useState<string>('');
   const allVocabularyTerms = useMemo(() => entitled ? fullVocabularyTerms : freeVocabularySelection(fullVocabularyTerms), [entitled, fullVocabularyTerms]);
+
+  useEffect(() => {
+    const id = window.location.hash.slice(1);
+    if (id === 'learning-offer' || id === 'learning-inquiry') document.getElementById(id)?.scrollIntoView();
+  }, [activeTab, entitled]);
 
   useEffect(() => {
     if (!termFromLink) {
@@ -438,6 +444,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       {/* ========================================================================= */}
       {/* TAB CONTENT 1: MARKET VOCABULARY & GLOSSAR                                */}
       {/* ========================================================================= */}
+      {typeof window !== 'undefined' && window.location.pathname === '/learning' && <LearningJourney />}
       {activeTab === 'news' && <LearningArticles />}
       {activeTab === 'flashcards' && (
         <React.Suspense fallback={<p role="status" className="p-4 text-sm text-slate-400">Karteikarten werden geladen …</p>}>
@@ -554,6 +561,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
 
           {favorites.error && <p role="alert" className="text-sm text-rose-300">{favorites.error}</p>}
           {!entitled && <LearningPurchase onLogin={onNavigateLogin} />}
+          {entitled && <p id="learning-offer" className="rounded-xl border border-amber-400/30 p-4 text-base leading-7 text-slate-200">Dein Learning-Portal-Zugang ist aktiv. Für Chart-Module ist zusätzlich mindestens Starter erforderlich; Chart-Training benötigt Pro.</p>}
           {/* Vocabulary Terms Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredTerms.length === 0 ? (

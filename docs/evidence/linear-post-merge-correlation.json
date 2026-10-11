@@ -1,12 +1,14 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "3e30f0c537463f9c365b4b9b6b0b22c314f37292",
-  "mergedPr": 387,
-  "targetPr": 389,
-  "targetBranch": "capital-ai-trust/production-mobile-commerce-readback-20261011",
-  "targetHeadSha": "e18c2a8b58e1f3a80600c1f44fec17ab200820da",
+  "mainSha": "687c43649ac53b8bfae8b215ddaa37de9b359a88",
+  "mergedPr": 392,
+  "targetPr": 393,
+  "targetBranch": "capital-ai-trust/catalog-sha-verified-updates-20261011",
+  "targetHeadSha": "d4465a2abd2884afe761a4b72c9e80bd889c3c10",
   "exactOverlap": [
-    "scripts/learning-commerce-browser-readback.mjs"
+    ".dockerignore",
+    "Dockerfile",
+    "server/index.mjs"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,

@@ -287,6 +287,15 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
     }
     assert.match(learningHtml, /0,50 × 0,80 \+ 0,30 × 0,40 \+ 0,20 × 0,60 = 0,64/);
     assert.match(learningHtml, /Checkout ist erst nach Anmeldung/);
+    const { LEARNING_JOURNEY, LEARNING_NEXT_STEPS } = await import('../shared/learning-journey.mjs');
+    for (const lesson of LEARNING_JOURNEY) {
+      assert.ok(learningHtml.includes(`<details id="${lesson.id}">`));
+      assert.ok(learningHtml.includes(lesson.title));
+      for (const paragraph of lesson.paragraphs) assert.ok(learningHtml.includes(paragraph));
+    }
+    for (const step of LEARNING_NEXT_STEPS) assert.ok(learningHtml.includes(`href="${step.href}"`));
+    assert.match(learningHtml, /id="learning-offer"/);
+    assert.match(learningHtml, /id="learning-inquiry"/);
     assert.doesNotMatch(learningHtml, /Die Anwendung konnte nicht gestartet werden/);
     assert.doesNotMatch(learningHtml, /Blueprint[^<]*kaufen|garantierte Rendite/);
     assert.match(learningHtml, /href="https:\/\/capital-ai\.online\/learning"/);

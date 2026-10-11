@@ -4,12 +4,46 @@ import assert from 'node:assert/strict';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {VOCABULARY_TERMS} from '../../data/vocabularyData';
 import {LEARNING_ARTICLES} from '../../data/learningArticles';
+import { LearningJourney } from './LearningJourney';
+import { LearningPurchase } from './LearningPurchase';
+import { LEARNING_JOURNEY, LEARNING_NEXT_STEPS } from '../../../shared/learning-journey.mjs';
 import {freeVocabularySelection,berlinDay,dailyLearningQuestions} from './learningPolicy';
 import {VocabularyFlashcards, advanceVocabularyDeck, rescheduleMissedVocabulary} from '../../components/VocabularyFlashcards';
 import {VocabularyCard,VOCABULARY_CATEGORY_COLORS} from './VocabularyCard';
 import {chartQuestion} from './ChartRecognitionQuiz';
 import {ChartLessonGraphic} from './ChartLessonGraphic';
 import {visibleLearningVideos, type LearningVideo} from './LearningVideos';
+
+test('offer explains login and entitlements without preselecting purchase consent', () => {
+  const html = renderToStaticMarkup(<LearningPurchase />);
+  assert.match(html, /id="learning-offer"/);
+  assert.match(html, /angemeldet sein/);
+  assert.match(html, /25,00/);
+  assert.match(html, /zusätzlich mindestens Starter/);
+  assert.match(html, /zusätzlich Pro/);
+  assert.match(html, /<button[^>]*disabled=""/);
+  assert.doesNotMatch(html, /<input[^>]*checked=""/);
+});
+
+test('public lesson content is rendered with exact server-source text and real conversion targets', () => {
+  const html = renderToStaticMarkup(<LearningJourney />);
+  assert.equal(LEARNING_JOURNEY.length, 6);
+  for (const lesson of LEARNING_JOURNEY) {
+    assert.ok(html.includes(`id="${lesson.id}"`));
+    assert.ok(html.includes(lesson.title));
+    assert.ok(html.includes(lesson.example));
+    for (const paragraph of lesson.paragraphs) assert.ok(html.includes(paragraph));
+    assert.ok(lesson.intent && lesson.goal);
+  }
+  for (const step of LEARNING_NEXT_STEPS) assert.ok(html.includes(`href="${step.href}"`));
+  assert.match(html, /synthetisch/);
+  assert.match(html, /Videos sind noch nicht verfügbar/);
+  assert.match(html, /kein einzelnes Blueprint-Kaufangebot/);
+  assert.equal((101 - 99) / ((101 + 99) / 2) * 100, 2);
+  assert.equal((30 - 10) / (50 - 10), 0.5);
+  assert.equal(0.5 * 0.8 + 0.3 * 0.4 + 0.2 * 0.6, 0.64);
+  assert.equal(Math.sqrt((1 + 0 + 1) / (3 - 1)), 1);
+});
 test('free video previews remain fixed per category before category filtering',()=>{
  const videos: LearningVideo[] = ['Architektur','Fintech Deepdive','Social'].flatMap(category => [1,2].map(n => ({id:`${category}-${n}`,category:category as LearningVideo['category'],title:`Video ${n}`,youtubeId:'abcdefghijk'})));
  assert.deepEqual(visibleLearningVideos(videos,false).map(video=>video.id),['Architektur-1','Fintech Deepdive-1','Social-1']);

@@ -55,6 +55,10 @@ function primarySchema(entry) {
     };
   }
 
+  if (entry.structuredDataType === 'CollectionPage') {
+    return { ...common, '@type': 'CollectionPage', isPartOf: { '@id': `${SEO_SITE_ORIGIN}/#website` }, hasPart: { '@type': 'WebPage', '@id': `${entry.canonical}#learning-methodology`, name: 'Sechs kostenlose Lernschritte zur Marktanalyse' } };
+  }
+
   if (entry.structuredDataType === 'DefinedTermSet') {
     return {
       ...common,
