@@ -12,7 +12,7 @@
 import { VocabularyCard } from './VocabularyCard';
 import { LearningJourney } from './LearningJourney';
 import { LearningArticles } from './LearningArticles';
-import { LearningInquiry } from './LearningInquiry';
+import { ContactForm } from '../../components/ContactForm';
 import { LearningPurchase } from './LearningPurchase';
 import { LearningVideos } from './LearningVideos';
 import { ChartRecognitionQuiz } from './ChartRecognitionQuiz';
@@ -44,6 +44,7 @@ import {
   Code2,
   PlayCircle,
   Video,
+  Mail,
 } from 'lucide-react';
 import {
   VOCABULARY_CATEGORIES,
@@ -63,8 +64,8 @@ const VocabularyFlashcards = React.lazy(() =>
   })),
 );
 
-export type LearningPortalTab = 'glossar' | 'flashcards' | 'guides' | 'patterns' | 'videos' | 'quiz' | 'news';
-const LEARNING_TABS: readonly LearningPortalTab[] = ['glossar', 'flashcards', 'guides', 'patterns', 'videos', 'quiz', 'news'];
+export type LearningPortalTab = 'glossar' | 'flashcards' | 'guides' | 'patterns' | 'videos' | 'quiz' | 'news' | 'kontakt';
+const LEARNING_TABS: readonly LearningPortalTab[] = ['glossar', 'flashcards', 'guides', 'patterns', 'videos', 'quiz', 'news', 'kontakt'];
 
 interface LearningPortalPageProps {
   onBackToHome?: () => void;
@@ -276,7 +277,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
   const QUIZ_QUESTIONS = dailyLearningQuestions(quizDate, entitled);
 
   return (
-    <div className="w-full text-slate-100 min-h-screen py-4 sm:py-6 px-2 sm:px-6 relative">
+    <div className="hub-universe hub-universe--learning w-full text-slate-100 min-h-screen py-4 sm:py-6 px-2 sm:px-6 relative">
       {/* 1. TOP HEADER CONTRACT (Breadcrumb + Controls) */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pb-5 border-b border-slate-800/80 mb-6">
         <div>
@@ -309,6 +310,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
               {activeTab === 'patterns' && 'Chart-Lernatlas'}
               {activeTab === 'videos' && 'Lernvideos'}
               {activeTab === 'quiz' && 'Quant & Trader Skill-Check'}
+              {activeTab === 'kontakt' && 'Kontakt'}
             </span>
           </div>
 
@@ -351,11 +353,10 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
           )}
         </div>
       </div>
-      <LearningInquiry />
 
       <label className="mb-4 block text-sm text-amber-200 sm:hidden">Lernbereich auswählen
         <select value={activeTab} onChange={event=>setActiveTab(event.target.value as LearningPortalTab)} className="mt-2 min-h-11 w-full rounded-lg border border-amber-400/30 bg-slate-950 p-3 text-white">
-          {LEARNING_TABS.map(tab=><option key={tab} value={tab}>{{glossar:'Vocabulary & Glossar',flashcards:'Karteikasten',guides:'Modul-Erklärungen',patterns:'Chart-Lernatlas',videos:'Lernvideos',quiz:'Tagesquiz',news:'Öffentliche Lernimpulse'}[tab]}</option>)}
+          {LEARNING_TABS.map(tab=><option key={tab} value={tab}>{{glossar:'Vocabulary & Glossar',flashcards:'Karteikasten',guides:'Modul-Erklärungen',patterns:'Chart-Lernatlas',videos:'Lernvideos',quiz:'Tagesquiz',news:'Öffentliche Lernimpulse',kontakt:'Kontakt'}[tab]}</option>)}
         </select>
       </label>
       {/* 3. LEARNING PORTAL TABS */}
@@ -439,7 +440,12 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
           <Award className="w-3.5 h-3.5" />
           <span>Quant &amp; Trader Skill-Check</span>
         </button>
+        <button type="button" onClick={() => setActiveTab('kontakt')} aria-current={activeTab === 'kontakt' ? 'page' : undefined}
+          className={`flex min-h-11 items-center gap-2 rounded-lg px-3.5 text-xs font-semibold whitespace-nowrap transition-colors ${activeTab === 'kontakt' ? 'bg-[#F5C453] text-slate-950' : 'text-[#F5C453] hover:bg-[#F5C453]/10'}`}>
+          <Mail className="h-4 w-4" aria-hidden="true" /><span>Kontakt</span>
+        </button>
       </div>
+      {activeTab === 'kontakt' && <ContactForm />}
 
       {/* ========================================================================= */}
       {/* TAB CONTENT 1: MARKET VOCABULARY & GLOSSAR                                */}
