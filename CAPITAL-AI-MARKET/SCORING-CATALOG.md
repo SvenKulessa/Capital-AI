@@ -4,9 +4,9 @@
 
 ## Scoring Authority und Taxonomie
 
-- **Kanonische Score-Authority:** [`src/services/scoringEngine.ts`](../../src/services/scoringEngine.ts); `ScoringEngineService.MODEL_VERSION = 4.0.0`, Shadow-Modell `1.0.0`. Quelle und Ausgabe müssen über Contracts/Policy laufen. Ein zweiter produktiver Scoring-Dispatcher wird nicht geschaffen.
+- **Kanonische Score-Authority:** [`src/services/scoringEngine.ts`](../src/services/scoringEngine.ts); `ScoringEngineService.MODEL_VERSION = 4.0.0`, Shadow-Modell `1.0.0`. Quelle und Ausgabe müssen über Contracts/Policy laufen. Ein zweiter produktiver Scoring-Dispatcher wird nicht geschaffen.
 - **50 Registry-Komponenten:** siehe [COMPONENT-CATALOG](COMPONENT-CATALOG.md). 45 `planned`, 5 `blocked`; kein live validierter Lifecycle; ihre `defaultWeight`-Metadaten sind **nicht** die hier ausgewiesenen Kompositgewichte. Einzelne Registry-Featureformeln sind `NOT_PROVEN`.
-- **Zehn Finance-Source-Modelle:** [`FinanceSourceModelCatalog.ts`](../../src/platform/FinanceScoringResearch/FinanceSourceModelCatalog.ts) enthält Source-Champions/Challengers. **Alle** Einträge werden mit `capitalProductionEligible=false`, `capitalScoreEligible=false` exportiert.
+- **Zehn Finance-Source-Modelle:** [`FinanceSourceModelCatalog.ts`](../src/platform/FinanceScoringResearch/FinanceSourceModelCatalog.ts) enthält Source-Champions/Challengers. **Alle** Einträge werden mit `capitalProductionEligible=false`, `capitalScoreEligible=false` exportiert.
 - Zusätzlich vorhanden: Commodity- und Sovereign-Research-Evidence-Scorer, DeFi-/Meme-Research, deterministic `realMarketSignals`, Sentiment-Evidence-Projection, Feature-Fingerprint und Scoring-Integrity. Modellcode ist weder eingehendes Live-Dataset noch Modellkalibrierung.
 - Ergebnisstatus in Public-UI: Demo/Unavailable und ggf. modellinterne Research-Outputs; **keine verifizierte, actionable Cross-Sectional-Rangliste**.
 
@@ -28,7 +28,7 @@ Textalternative: Provider → Data → Analysis → Rights-/DQ-/Risk-Gates → S
 
 ## 1. Shadow-Score v1 (Baseline, nicht kalibriert)
 
-Quelle: [`src/config/shadowScoreConfig.ts`](../../src/config/shadowScoreConfig.ts) und `computeShadowScore` in [`src/services/scoringEngine.ts`](../../src/services/scoringEngine.ts).
+Quelle: [`src/config/shadowScoreConfig.ts`](../src/config/shadowScoreConfig.ts) und `computeShadowScore` in [`src/services/scoringEngine.ts`](../src/services/scoringEngine.ts).
 
 | Assetklasse, 1d, baseline | Momentum | Technical | Fundamental | Sentiment | Event | Positioning | Σ |
 |---|---:|---:|---:|---:|---:|---:|---:|
@@ -68,7 +68,7 @@ Risikogewichte: Liquidity 0.20, Spread 0.20, Volatility 0.15, Event 0.15, Integr
 
 ## 2. FinalRank-Projektion v4 (kein produktiver Rank)
 
-Quelle [`ScoringEngineService.getWeightProfile`](../../src/services/scoringEngine.ts).
+Quelle [`ScoringEngineService.getWeightProfile`](../src/services/scoringEngine.ts).
 
 | Assetklasse | Momentum | Technical | Fundamental | Sentiment | Event | Positioning |
 |---|---:|---:|---:|---:|---:|---:|
@@ -103,11 +103,11 @@ Der Code setzt bei Non-Demo `EVIDENCE_REPLAY_UNAVAILABLE` und prüft nicht aktiv
 | `commodity-agriculture-hybrid` | 0.1.0 | commodity | challenger | `false` im *Source*-Modell | `false` |
 | `sovereign-benchmark-yield-scoring` | 1.0.0 | bond | champion | `true` im *Source*-Modell | `false` |
 
-Die vier Commodity-Kategorie-Challenger, Meme und DeFi bleiben **Research-only**. Die Source-Kennzeichnung `champion` ist eine modellinterne Aliasrolle und erteilt weder eine Capital-AI-Publishing-Freigabe noch Providerrechte. Ein ausführbarer Source-Champion kann zugleich in CAPITAL-AI blockiert sein. Die explizite negative Produktionsprojektion ist auf [`FINANCE_SOURCE_MODEL_CATALOG`](../../src/platform/FinanceScoringResearch/FinanceSourceModelCatalog.ts) zurückzuführen.
+Die vier Commodity-Kategorie-Challenger, Meme und DeFi bleiben **Research-only**. Die Source-Kennzeichnung `champion` ist eine modellinterne Aliasrolle und erteilt weder eine Capital-AI-Publishing-Freigabe noch Providerrechte. Ein ausführbarer Source-Champion kann zugleich in CAPITAL-AI blockiert sein. Die explizite negative Produktionsprojektion ist auf [`FINANCE_SOURCE_MODEL_CATALOG`](../src/platform/FinanceScoringResearch/FinanceSourceModelCatalog.ts) zurückzuführen.
 
 ## 4. Traditional Research-Faktoren und tatsächlich deklarierte Gewichte
 
-Quelle: [`src/platform/FinanceScoringResearch/FinanceFactorWeights.ts`](../../src/platform/FinanceScoringResearch/FinanceFactorWeights.ts), `composeFinanceResearchFactors` mit strikter Faktorliste und EvidenceRefs.
+Quelle: [`src/platform/FinanceScoringResearch/FinanceFactorWeights.ts`](../src/platform/FinanceScoringResearch/FinanceFactorWeights.ts), `composeFinanceResearchFactors` mit strikter Faktorliste und EvidenceRefs.
 
 | Profil | Faktoren und Nominalgewicht | Ergebnisstatus |
 |---|---|---|
@@ -127,7 +127,7 @@ Fehlende Faktoren werden in `missingFactors`, Faktor-/Gewichts-Fingerprints und 
 
 ## 5. Bereits implementierte deterministische Primitive
 
-Quelle [`realMarketSignals.ts`](../../src/platform/FinanceScoringResearch/realMarketSignals.ts). Diese Funktionen können bei echten, korrekt zugelassenen Daten Werte berechnen, **aktivieren aber keine Registry-Komponente automatisch**.
+Quelle [`realMarketSignals.ts`](../src/platform/FinanceScoringResearch/realMarketSignals.ts). Diese Funktionen können bei echten, korrekt zugelassenen Daten Werte berechnen, **aktivieren aber keine Registry-Komponente automatisch**.
 
 | Signal | Input | Mathematische Formelbasis | DQ / Grenze |
 |---|---|---|---|
@@ -142,7 +142,7 @@ Quelle [`realMarketSignals.ts`](../../src/platform/FinanceScoringResearch/realMa
 | RSI | Kursdifferenzen | `100-100/(1+avgGain/avgLoss)` | min. drei Kurse; Nullverlust-Fall = 100 |
 | Weighted Subscore | belegte Faktorwerte/-gewichte | `Σ(value_i×w_i) / Σ(w_i verfügbar)` | fehlende Werte ausgeschlossen; fehlende volle Evidence = keine Produktion |
 
-**Commodity** verwendet einen konkreten technischen 4-Faktor-Market-Evidence-Scorer mit mindestens 20 History-Punkten und max. 7 Tagen Evidence-Alter: [`commodityEvidenceScoring.ts`](../../src/platform/FinanceScoringResearch/commodityEvidenceScoring.ts). **Sovereign** bewertet Yield-Level-Perzentil (.45), Yield-Trend (.30) und Yield-Stability (.25) nach gleichem History-/Age-Gate: [`sovereignBenchmarkEvidenceScoring.ts`](../../src/platform/FinanceScoringResearch/sovereignBenchmarkEvidenceScoring.ts). Diese historischen Source-Contracts enthalten `scoringEnabled=true`; das überschreibt **nicht** Capital-AI-Capability- und Publication-Gates.
+**Commodity** verwendet einen konkreten technischen 4-Faktor-Market-Evidence-Scorer mit mindestens 20 History-Punkten und max. 7 Tagen Evidence-Alter: [`commodityEvidenceScoring.ts`](../src/platform/FinanceScoringResearch/commodityEvidenceScoring.ts). **Sovereign** bewertet Yield-Level-Perzentil (.45), Yield-Trend (.30) und Yield-Stability (.25) nach gleichem History-/Age-Gate: [`sovereignBenchmarkEvidenceScoring.ts`](../src/platform/FinanceScoringResearch/sovereignBenchmarkEvidenceScoring.ts). Diese historischen Source-Contracts enthalten `scoringEnabled=true`; das überschreibt **nicht** Capital-AI-Capability- und Publication-Gates.
 
 ## 6. Quantität, Data Quality, Reproduzierbarkeit
 
