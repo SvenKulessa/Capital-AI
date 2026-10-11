@@ -11,7 +11,7 @@ export function createSocialProviderExecution({ store, transport, tokenResolver 
 
   async function submit({ plan, mediaBytes = null, providerMediaUrl = null, metadata = {} } = {}) {
     assert(plan?.contractVersion === 'CAPITAL_AI_CONTENT_SOCIAL_PROVIDER_BRIDGE@1'
-      && plan?.jobId && plan?.userId && plan?.accountId && plan?.channel,
+      && plan?.jobId && plan?.userId && plan?.accountId && plan?.channel && plan?.platform,
       'SOCIAL_PROVIDER_EXECUTION_PLAN_REQUIRED');
 
     const secret = await tokenResolver({
