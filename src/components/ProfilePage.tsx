@@ -1,5 +1,4 @@
 import React from 'react';
-import { LearningFavoritesPanel } from '../features/learning/LearningFavorites';
 import { LearningEntitlementBadge } from '../features/learning/LearningEntitlementBadge';
 import { ShieldCheck, User } from 'lucide-react';
 import { AccountPageShell } from '../features/account/AccountPageShell';
@@ -124,7 +123,6 @@ export function ProfilePage({ onNavigate }: { onNavigate: (path: string) => void
     >
       {session => (
         <section className="grid gap-4 md:grid-cols-3">
-          <LearningFavoritesPanel />
           <div className="rounded-2xl border border-white/10 bg-[#070b19]/80 p-5 md:col-span-1">
             <div className="flex items-center gap-2 text-amber-300">
               <User className="h-4 w-4" />
@@ -151,7 +149,7 @@ export function ProfilePage({ onNavigate }: { onNavigate: (path: string) => void
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-300">Abo & Berechtigungen</p>
             {session.account?.available ? (
               <>
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                {session.account.iamRole !== 'owner' && <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                   <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-1 font-bold text-amber-100">
                     {session.account.subscription?.tier || 'Kein Tarif'}
                   </span>
@@ -160,10 +158,9 @@ export function ProfilePage({ onNavigate }: { onNavigate: (path: string) => void
                       {session.account.subscription.status}
                     </span>
                   )}
-                </div>
+                </div>}
 
-                <CadsEntitlementPanel />
-                <LearningEntitlementBadge />
+                {session.account.iamRole !== 'owner' && <><CadsEntitlementPanel /><LearningEntitlementBadge /></>}
 
                 {session.account.badges?.filter(badge => !/vault/i.test(badge.id) && !/vault/i.test(badge.label)).length ? (
                   <div className="mt-4 flex flex-wrap gap-3" aria-label="Kontobadges">

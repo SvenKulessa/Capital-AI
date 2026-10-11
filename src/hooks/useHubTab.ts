@@ -1,3 +1,4 @@
+import { hubRouteForPath, canonicalHubTarget } from '../../shared/hub-routes.mjs';
 import { useCallback, useEffect, useState } from 'react';
 import { APP_NAVIGATION_EVENT, navigateAppLocation, readHubTab } from '../utils/appNavigation';
 
@@ -5,7 +6,7 @@ import { APP_NAVIGATION_EVENT, navigateAppLocation, readHubTab } from '../utils/
 export function useHubTab<T extends string>(tabs: readonly T[], initialTab: T) {
   const read = useCallback(() => typeof window === 'undefined'
     ? initialTab
-    : readHubTab(window.location.search, tabs, initialTab), [tabs, initialTab]);
+    : readHubTab(window.location.search, tabs, (tabs.includes(hubRouteForPath(window.location.pathname)?.tab as T) ? hubRouteForPath(window.location.pathname)?.tab as T : initialTab)), [tabs, initialTab]);
   const [activeTab, setActiveTab] = useState<T>(read);
 
   useEffect(() => {
@@ -23,7 +24,8 @@ export function useHubTab<T extends string>(tabs: readonly T[], initialTab: T) {
     if (!tabs.includes(tab)) return;
     const params = new URLSearchParams(window.location.search);
     params.set('tab', tab);
-    navigateAppLocation(window.location.pathname + '?' + params.toString() + window.location.hash);
+    const hub = hubRouteForPath(window.location.pathname)?.hub ?? window.location.pathname;
+    navigateAppLocation(canonicalHubTarget(hub + '?' + params.toString() + window.location.hash));
   }, [tabs]);
 
   return [activeTab, selectTab] as const;

@@ -389,7 +389,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       Pro: '/branding/badges/pro.svg',
       Enterprise: '/branding/badges/enterprise.svg',
     }[tier];
-    if (tier && tierAsset) badges.push({ id: tier.toLowerCase(), label: tier.toUpperCase(), asset: tierAsset });
+    if (iamRole !== 'owner' && tier && tierAsset) badges.push({ id: tier.toLowerCase(), label: tier.toUpperCase(), asset: tierAsset });
     if (iamRole === 'owner') badges.push({ id: 'owner', label: 'OWNER', asset: '/branding/badges/owner.svg' });
 
     return {

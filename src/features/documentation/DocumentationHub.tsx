@@ -1,4 +1,7 @@
 import React from 'react';
+import { HubNavigationPanel } from '../../components/HubNavigationPanel';
+import { BlogPage } from '../learning/BlogPage';
+import { useHubTab } from '../../hooks/useHubTab';
 import {
   ArrowLeft,
   ArrowRight,
@@ -42,7 +45,7 @@ const presentations = [
     title: 'Pipeline-Architekturen',
     description:
       'Provider-Auswahl, Ingestion, NATS JetStream, Valkey Hot State, Evidence, Scoring und Client-Verteilung.',
-    href: '/documentation/pipeline-architectures.html',
+    href: '/dokumentation/pipeline-architekturen',
     internal: false,
     icon: <Layers3 className="h-5 w-5" />,
     meta: 'Ingestion • Eventing • Replay',
@@ -51,7 +54,7 @@ const presentations = [
     title: 'Preiskatalog & Produktpakete',
     description:
       'Starter, Pro, Enterprise und Market Vocabulary mit Stripe-v2 als Preisautorität.',
-    href: '/documentation/pricing-models.html',
+    href: '/dokumentation/preiskatalog',
     internal: false,
     icon: <BadgeEuro className="h-5 w-5" />,
     meta: 'Abonnements • Zusatzprodukte • Stripe',
@@ -69,7 +72,7 @@ const presentations = [
     title: 'OSS Market Architektur',
     description:
       'Statische Open-Source-Market-Architektur mit den dokumentierten Komponenten, Grenzen und Lizenzbezügen.',
-    href: '/downloads/market-screener-hub-open-source.html',
+    href: '/dokumentation/oss-market',
     internal: false,
     icon: <Layers3 className="h-5 w-5" />,
     meta: 'OSS • Market • Architektur',
@@ -114,7 +117,7 @@ const presentations = [
     title: 'CAPITAL-AI Domains',
     description:
       'PRODUCT, MARKET, PLATFORM, TRUST und GROWTH mit den bestehenden Domain-Badges und technischen Systemgrenzen.',
-    href: '/documentation/domains.html',
+    href: '/dokumentation/domains',
     internal: false,
     icon: <Boxes className="h-5 w-5" />,
     meta: 'Domain Map • Ownership • Handoffs',
@@ -129,7 +132,11 @@ const domains = [
   ['GROWTH', '/documentation/badges/growth.svg', 'Dokumentation, SEO, Social, Branding und veröffentlichungsbezogene Qualität.'],
 ] as const;
 
-export const DocumentationHub: React.FC<DocumentationHubProps> = ({ onBackToHome, onNavigate }) => (
+const TABS = ['overview','blogs','byok'] as const;
+export const DocumentationHub: React.FC<DocumentationHubProps> = ({ onBackToHome, onNavigate }) => {
+ const [tab] = useHubTab(TABS, 'overview');
+ const navigate = (path:string) => onNavigate ? onNavigate(path) : window.location.assign(path);
+ return (
   <main className="min-h-screen w-full px-3 py-6 text-slate-100 sm:px-6">
     <div className="mx-auto max-w-6xl space-y-8">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-6">
@@ -143,10 +150,14 @@ export const DocumentationHub: React.FC<DocumentationHubProps> = ({ onBackToHome
         </button>
         <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-500/10 px-3 py-1 text-[11px] font-mono text-emerald-300">
           <ShieldCheck className="h-3.5 w-3.5" />
-          HTML/CSS-Präsentationen • bestehende Repository-Assets
+          Dokumentation • Architektur • Blogs
         </div>
       </header>
 
+      <HubNavigationPanel hubId="documentation" onNavigate={navigate} />
+      {tab === 'blogs' && <BlogPage path="/blog" />}
+      {tab === 'byok' && <section aria-labelledby="byok-pending" className="rounded-3xl border border-brand-gold/30 bg-brand-canvas p-8 text-center"><h1 id="byok-pending" className="text-2xl font-bold">BYOK Dokumentation</h1><strong className="mx-auto my-6 flex h-28 w-28 items-center justify-center rounded-full border border-brand-gold text-brand-gold">PENDING</strong><p>Die Lizenz- und Realdatenstrategie ist pausiert.</p></section>}
+      {tab === 'overview' && <>
       <section className="space-y-3">
         <div className="inline-flex items-center gap-2 rounded-full border border-violet-400/25 bg-violet-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-violet-300">
           <BookOpen className="h-4 w-4" />
@@ -162,7 +173,7 @@ export const DocumentationHub: React.FC<DocumentationHubProps> = ({ onBackToHome
       </section>
 
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        {presentations.map((item) => {
+        {presentations.filter(item => !item.href.includes('byok')).map((item) => {
           const commonClass =
             'group rounded-2xl border border-slate-800 bg-[#071022]/90 p-5 transition-all hover:border-violet-400/40 hover:bg-[#0a142b]';
           const body = (
@@ -222,6 +233,8 @@ export const DocumentationHub: React.FC<DocumentationHubProps> = ({ onBackToHome
           ))}
         </div>
       </section>
+      </>}
     </div>
   </main>
-);
+ );
+};

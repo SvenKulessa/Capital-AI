@@ -1,3 +1,4 @@
+import { HUB_ROUTES, DOCUMENT_ROUTES } from './hub-routes.mjs';
 export const SEO_INDEXING_STATES = Object.freeze({
   INDEX: 'INDEX',
   NOINDEX: 'NOINDEX',
@@ -7,6 +8,8 @@ export const SEO_INDEXING_STATES = Object.freeze({
 });
 
 const routes = [
+  ...HUB_ROUTES.map(route => ({path:route.path,classification:'NOINDEX',contentType:'hub-subpage',reason:'Eigenständiger Hub-Abschnitt ohne Search-Promotion.'})),
+  ...Object.keys(DOCUMENT_ROUTES).map(path => ({path,classification:'NOINDEX',contentType:'documentation-static',reason:'Technische Dokumentation ohne Search-Promotion.'})),
   { path: '/', classification: 'INDEX', contentType: 'landing', reason: 'Öffentliche Startseite und kanonischer Marken-/Produkteinstieg.' },
   { path: '/blog', classification: 'INDEX', contentType: 'blog', reason: 'Öffentliche redaktionelle Lernbeiträge mit vollständigem HTTP-Fallback.' },
   { path: '/blog/barrierefreie-finanzcharts', classification: 'INDEX', contentType: 'article', reason: 'Originaler Bildungsartikel mit eigener Illustration und Primärquellen.' },
@@ -47,6 +50,7 @@ const routes = [
   { path: '/documentation/pricing-models.html', classification: 'NOINDEX', contentType: 'documentation-static', reason: 'Preis-/Produktdarstellung benötigt Claim-/Preisautoritäts- und Drift-Prüfung vor Indexierung.' },
   { path: '/documentation/domains.html', classification: 'NOINDEX', contentType: 'documentation-static', reason: 'Öffentliche statische Präsentation; noch nicht in den kanonischen SEO-Contract aufgenommen.' },
 
+  { path: '/profile/dashboard', classification:'PRIVATE',contentType:'private-dashboard',reason:'Private Lernbegriffe und Notizen.' },
   { path: '/profile', classification: 'PRIVATE', contentType: 'account', reason: 'Personenbezogener Kontobereich.' },
   { path: '/profile/security', classification: 'PRIVATE', contentType: 'account-security', reason: 'Personenbezogene Sicherheits-, MFA- und Recovery-Einstellungen.' },
   { path: '/profile/key-vault', classification: 'PRIVATE', contentType: 'credential-vault', reason: 'Personenbezogener Provider-Credential-Vault; niemals Search-Inhalt.' },

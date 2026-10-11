@@ -108,6 +108,7 @@
 !server/mobile-scorer.mjs
 !server/scorer-proxy.mjs
 !shared/
+!shared/hub-routes.mjs
 !shared/blog-articles.mjs
 !shared/learning-journey.mjs
 !shared/market-contracts.mjs
@@ -250,6 +251,14 @@
 !public/datenschutz/index.html
 !public/agb/
 !public/agb/index.html
+!public/impressum/
+!public/impressum/index.html
+!public/documentation/
+!public/documentation/pipeline-architectures.html
+!public/documentation/pricing-models.html
+!public/documentation/domains.html
+!public/downloads/
+!public/downloads/market-screener-hub-open-source.html
 !public/fonts/
 !public/fonts/**
 !public/branding/

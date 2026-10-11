@@ -1,3 +1,4 @@
+import { canonicalHubTarget, DOCUMENT_ROUTES } from '../shared/hub-routes.mjs';
 import { renderLearningLandingFallback as learningLandingFallback } from '../shared/learning-journey.mjs';
 import http from 'node:http';
 import { BLOG_ARTICLES, blogArticleForPath } from '../shared/blog-articles.mjs';
@@ -514,6 +515,18 @@ export function createApp(root = defaultRoot, options = {}) {
   if (url.pathname.startsWith('/api/')) return json(res, 404, { error: 'not_found' });
 
   const publicPath = normalizedPublicPath(url.pathname);
+  const documentRedirect = Object.entries(DOCUMENT_ROUTES).find(([, legacy]) => legacy === publicPath);
+  if (documentRedirect) { res.writeHead(301, { Location: documentRedirect[0] + url.search }); res.end(); return; }
+  const hubTarget = canonicalHubTarget(url.pathname + url.search);
+  if (hubTarget !== url.pathname + url.search) {
+    res.writeHead(301,{...headers,Location:hubTarget,'Cache-Control':'no-store'});return res.end();
+  }
+  if (['/profile/workspace','/profil/workspace','/mein-workspace'].includes(publicPath)) {
+    res.writeHead(301,{...headers,Location:'/profile','Cache-Control':'no-store'});return res.end();
+  }
+  if (['/downloads/capital-ai-byok-presentation.html','/documentation/byok.html'].includes(publicPath)) {
+    res.writeHead(301,{...headers,Location:'/dokumentation/byok','Cache-Control':'no-store'});return res.end();
+  }
   if (publicPath === '/profile/render-dashboard' && !await renderOwnerDashboard.authorized(req, res)) {
     res.writeHead(404, { ...headers, 'Cache-Control': 'no-store' });
     res.end();
@@ -568,8 +581,8 @@ export function createApp(root = defaultRoot, options = {}) {
   }
 
   // Serve canonical legal pages as standalone HTML, independently of React hydration.
-  const staticLegalRoute = new Set(['/datenschutz', '/agb']);
-  const staticLegalPath = staticLegalRoute.has(publicPath) ? `/${publicPath.slice(1)}/index.html` : url.pathname;
+  const staticLegalRoute = new Set(['/datenschutz', '/agb', '/impressum']);
+  const staticLegalPath = staticLegalRoute.has(publicPath) ? `/${publicPath.slice(1)}/index.html` : (DOCUMENT_ROUTES[publicPath] ?? url.pathname);
   let asset;
   try { asset = path.resolve(root, '.' + decodeURIComponent(staticLegalPath)); } catch { return json(res, 400, { error: 'bad_request' }); }
   if (!asset.startsWith(root + path.sep) && asset !== root) return json(res, 400, { error: 'bad_path' });
@@ -598,6 +611,11 @@ export function createApp(root = defaultRoot, options = {}) {
         .replace(/(<link rel="canonical" href=")[^"]*("\s*\/?>)/, `$1https://capital-ai.online${licensePath}$2`));
     }
     if (path.extname(file) === '.html') {
+      if (Object.hasOwn(DOCUMENT_ROUTES, publicPath)) {
+        const navigation = '<nav aria-label="Hauptnavigation" style="display:flex;flex-wrap:wrap;gap:1rem;padding:1rem"><a href="/">Capital-AI</a><a href="/dokumentation">Dokumentation</a><a href="/dokumentation/blogs">Blogs</a><a href="/legal">Legal</a></nav>';
+        const footer = '<footer style="padding:2rem;text-align:center"><a href="/impressum/">Impressum</a> · <a href="/agb/">AGB</a> · <a href="/datenschutz/">Datenschutz</a> · <a href="/pricing">Preiskatalog</a><p><a href="/?cookie-preferences=1">Cookie-Einstellungen ändern oder Einwilligung widerrufen</a></p></footer>';
+        body = Buffer.from(body.toString('utf8').replace(/<footer\b[^>]*>[\s\S]*?<\/footer>/gi, '').replace(/(<body[^>]*>)/i, '$1' + navigation).replace('</body>', footer + '</body>'));
+      }
       body = Buffer.from(injectSeoMetadata(body.toString('utf8'), publicPath));
       body = Buffer.from(applySeoIndexingPolicy(body.toString('utf8'), publicPath));
       body = Buffer.from(injectPublicSeoSnapshot(body.toString('utf8'), publicPath));

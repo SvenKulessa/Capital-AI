@@ -138,7 +138,7 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
   const root = await mkdtemp(path.join(tmpdir(), 'capital-seo00-'));
   await writeFile(path.join(root, 'index.html'), await readIndexTemplate());
   // Model the actual dist layout for bootstrap-independent legal pages.
-  for (const route of ['datenschutz', 'agb']) {
+  for (const route of ['datenschutz', 'agb', 'impressum']) {
     await mkdir(path.join(root, route), { recursive: true });
     await writeFile(path.join(root, route, 'index.html'), await readLegalTemplate(route));
   }
@@ -232,12 +232,12 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
     for (const route of ['/', '/faq', '/impressum', '/datenschutz', '/agb']) {
       const response = await fetch(origin + route);
       assert.equal(response.status, 200, route);
-      if (route === '/datenschutz' || route === '/agb') {
+      if (route === '/datenschutz' || route === '/agb' || route === '/impressum') {
         assert.equal(response.headers.get('content-language'), 'de', route);
       }
       const html = await response.text();
       const metadataTitle = route === '/' ? 'Capital-AI' : null;
-      if (route === '/datenschutz' || route === '/agb') {
+      if (route === '/datenschutz' || route === '/agb' || route === '/impressum') {
         assert.match(html, /<html lang="de"/, route);
         assert.match(html, /<nav aria-label="Rechtliche Informationen">/, route);
         // SEO may inject exactly one inert JSON-LD block, but no executable script.

@@ -1,5 +1,4 @@
 import { lazy, Suspense } from 'react';
-import { Header } from '../../components/Header';
 import { Hero } from '../../components/Hero';
 const MarketBlueprintShowcase = lazy(() => import('./MarketBlueprintShowcase').then(module => ({ default: module.MarketBlueprintShowcase })));
 const LearningCadsShowcase = lazy(() => import('./LearningCadsShowcase').then(module => ({ default: module.LearningCadsShowcase })));
@@ -74,21 +73,6 @@ export function HomePage({
 }: HomePageProps) {
   return (
     <>
-      <Header
-        currentRoute={currentRoute}
-        onOpenMarketscreener={onOpenMarketscreener}
-        onOpenAnalysis={onOpenAnalysis}
-        onOpenSectorAnalysis={onOpenSectorAnalysis}
-        onOpenModule={onOpenModule}
-        onOpenVocabulary={onOpenVocabulary}
-        onOpenPriceAlerts={onOpenPriceAlerts}
-        onOpenMonetization={onOpenMonetization}
-        onOpenWhaleRadar={onOpenWhaleRadar}
-        onNavigateLogin={onNavigateLogin}
-        onNavigate={onNavigate}
-        onSelectSubclass={onSelectSubclass}
-        onViewAllMarkets={() => onExploreMarkets()}
-      />
 
       <Hero
         onStartAnalysis={onOpenAnalysis}

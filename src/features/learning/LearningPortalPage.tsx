@@ -1,3 +1,4 @@
+import { HubNavigationPanel } from '../../components/HubNavigationPanel';
 /**
  * CAPITAL AI — LEARNING PORTAL & FINANZ-VOKABULAR TERMINAL
  * 
@@ -354,97 +355,8 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
         </div>
       </div>
 
-      <label className="mb-4 block text-sm text-amber-200 sm:hidden">Lernbereich auswählen
-        <select value={activeTab} onChange={event=>setActiveTab(event.target.value as LearningPortalTab)} className="mt-2 min-h-11 w-full rounded-lg border border-amber-400/30 bg-slate-950 p-3 text-white">
-          {LEARNING_TABS.map(tab=><option key={tab} value={tab}>{{glossar:'Vocabulary & Glossar',flashcards:'Karteikasten',guides:'Modul-Erklärungen',patterns:'Chart-Lernatlas',videos:'Lernvideos',quiz:'Tagesquiz',news:'Öffentliche Lernimpulse',kontakt:'Kontakt'}[tab]}</option>)}
-        </select>
-      </label>
-      {/* 3. LEARNING PORTAL TABS */}
-      <div className="flex items-center gap-1 p-1 rounded-xl bg-[#090e21] border border-slate-800/90 mb-6 overflow-x-auto scrollbar-none">
-        <button type="button" onClick={() => setActiveTab('kontakt')} aria-current={activeTab === 'kontakt' ? 'page' : undefined}
-          className={`flex min-h-11 items-center gap-2 rounded-lg px-3.5 text-xs font-semibold whitespace-nowrap transition-colors ${activeTab === 'kontakt' ? 'bg-[#F5C453] text-slate-950' : 'text-[#F5C453] hover:bg-[#F5C453]/10'}`}>
-          <Mail className="h-4 w-4" aria-hidden="true" /><span>Kontakt</span>
-        </button>
-        <button type="button" onClick={() => setActiveTab('news')} aria-current={activeTab === 'news' ? 'page' : undefined}
-          className={`min-h-11 rounded-lg px-3.5 text-xs whitespace-nowrap ${activeTab === 'news' ? 'bg-amber-400 text-black' : 'text-slate-200 hover:bg-white/5'}`}>Lernimpulse · News</button>
-        {/* TAB 1: GLOSSAR / VOCABULARY */}
-        <button
-          type="button"
-          onClick={() => setActiveTab('glossar')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'glossar'
-              ? 'bg-amber-400 text-black font-bold shadow-sm'
-              : 'text-slate-300 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <BookOpen className="w-3.5 h-3.5" />
-          <span>Market Vocabulary &amp; Glossar</span>
-          <span className="text-[10px] px-1.5 py-0.2 rounded bg-black/30 font-mono">
-            {fullVocabularyTerms.length}
-          </span>
-        </button>
+      <HubNavigationPanel hubId="learning" onNavigate={path => { if (onNavigateTab) onNavigateTab(path); else window.location.assign(path); }} />
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('flashcards')}
-          aria-current={activeTab === 'flashcards' ? 'page' : undefined}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'flashcards'
-              ? 'bg-amber-400 text-black font-bold shadow-sm'
-              : 'text-slate-300 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <BookOpen className="w-3.5 h-3.5" />
-          <span>Vocabulary Flashcards</span>
-        </button>
-
-        {/* TAB 2: CHEAT-SHEETS & GUIDES */}
-        <button
-          type="button"
-          onClick={() => setActiveTab('guides')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'guides'
-              ? 'bg-cyan-500 text-black font-bold shadow-sm'
-              : 'text-slate-300 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <Layers className="w-3.5 h-3.5" />
-          <span>Analyse-Module &amp; Methodik</span>
-        </button>
-
-        <button type="button" onClick={() => setActiveTab('patterns')} aria-current={activeTab === 'patterns' ? 'page' : undefined}
-          className={`rounded-lg px-3.5 py-2 text-xs font-medium whitespace-nowrap ${activeTab === 'patterns' ? 'bg-cyan-300 text-black' : 'text-slate-200 hover:bg-white/5'}`}>
-          Chart-Lernatlas
-        </button>
-        {/* TAB 3: LERNVIDEOS */}
-        <button
-          type="button"
-          onClick={() => setActiveTab('videos')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'videos'
-              ? 'bg-emerald-500 text-black font-bold shadow-sm'
-              : 'text-slate-300 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <PlayCircle className="w-3.5 h-3.5" />
-          <span>Lernvideos</span>
-          <span className="text-[10px] px-1.5 py-0.2 rounded bg-black/20 font-mono">Vorschau</span>
-        </button>
-
-        {/* TAB 4: QUIZ & SKILL-CHECK */}
-        <button
-          type="button"
-          onClick={() => setActiveTab('quiz')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'quiz'
-              ? 'bg-amber-400 text-black font-bold shadow-sm'
-              : 'text-slate-300 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <Award className="w-3.5 h-3.5" />
-          <span>Quant &amp; Trader Skill-Check</span>
-        </button>
-      </div>
       {activeTab === 'kontakt' && <ContactForm />}
 
       {/* ========================================================================= */}

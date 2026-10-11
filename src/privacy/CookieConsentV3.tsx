@@ -17,7 +17,7 @@ export function CookieConsentV3() {
   const { locale } = useLocale();
   const copy = cookieCopy[locale];
   const [decision, setDecision] = useState<CookieConsentReceipt | null>(() => readCookieConsent());
-  const [open, setOpen] = useState(() => readCookieConsent() === null);
+  const [open, setOpen] = useState(() => readCookieConsent() === null || (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('cookie-preferences') === '1'));
   const [details, setDetails] = useState(false);
   const [analytics, setAnalytics] = useState(() => readCookieConsent()?.analytics ?? false);
   const [marketing, setMarketing] = useState(() => readCookieConsent()?.marketing ?? false);
@@ -42,6 +42,12 @@ export function CookieConsentV3() {
       setError('');
       setOpen(true);
     };
+    const preferenceUrl = new URL(window.location.href);
+    if (preferenceUrl.searchParams.get('cookie-preferences') === '1') {
+      reopen();
+      preferenceUrl.searchParams.delete('cookie-preferences');
+      window.history.replaceState(window.history.state, '', preferenceUrl.pathname + preferenceUrl.search + preferenceUrl.hash);
+    }
     if (window.location.hash === '#cookie-preferences') reopen();
     window.addEventListener('storage', synchronize);
     window.addEventListener(OPEN_COOKIE_PREFERENCES_EVENT, reopen);
@@ -65,7 +71,7 @@ export function CookieConsentV3() {
     setOpen(false);
   };
 
-  // No floating cookie panel after a verified saved decision. Footer/account links reopen it.
+  // No floating cookie panel after a verified saved decision. The footer link reopens it.
   if (!open && decision) return null;
 
   return (

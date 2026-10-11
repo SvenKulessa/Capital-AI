@@ -276,7 +276,6 @@ test('Supabase email login is same-origin, backend-owned and returns a landing-p
     assert.equal(session.account.subscription.tier, 'Enterprise');
     assert.equal(session.account.subscription.status, 'active');
     assert.deepEqual(session.account.badges, [
-      { id: 'enterprise', label: 'ENTERPRISE', asset: '/branding/badges/enterprise.svg' },
       { id: 'owner', label: 'OWNER', asset: '/branding/badges/owner.svg' },
     ]);
     assert.equal(JSON.stringify(session).includes('access-'), false);
