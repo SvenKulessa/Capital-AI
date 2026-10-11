@@ -1,27 +1,26 @@
 {
   "schemaVersion": 1,
   "package": "nodemailer",
-  "version": "10.0.15",
+  "version": "10.0.16",
   "declaredLicense": "MIT-0",
-  "licenseFile": "docs/licenses/nodemailer-10.0.15-MIT-0.txt",
+  "licenseFile": "docs/licenses/nodemailer-10.0.16-MIT-0.txt",
   "licenseTextSha256": "4f814dcacd2da618d62829ea1f6238701cf421f18a6b36c91c5d8212245e2c78",
   "registry": "https://registry.npmjs.org",
-  "tarball": "https://registry.npmjs.org/nodemailer/-/nodemailer-10.0.15.tgz",
-  "integrity": "sha512-EUqp5PhtcsYXs9Fq/lS7s/8zlTrnBqmzZWzFFROrNikMiz+om/YRKMwqN907t+0A1KKyT8jd39CBUbFZmaZmcA==",
+  "tarball": "https://registry.npmjs.org/nodemailer/-/nodemailer-10.0.16.tgz",
+  "integrity": "sha512-VL9xKErxN+el77o8eBOuYKUPMyEx7F9hfnDCuiUKJRp9v3wnWMOudYgP/SWbwSHy8rUL4cylobuXtki1LpQS7A==",
   "upstream": "https://github.com/nodemailer/nodemailer",
   "licenseDocumentation": "https://nodemailer.com/license",
-  "status": "REGISTRY_ARTIFACT_AND_UPSTREAM_LICENSE_VERIFIED_INSTALLED_CI_CHECK_REQUIRED",
+  "status": "UPSTREAM_LICENSE_AND_NPM_LOCK_INTEGRITY_VERIFIED_INSTALLED_ARTIFACT_CI_REQUIRED",
   "scope": "Exact npm dependency only; no provider data rights or whole-image approval",
   "deployEligible": false,
   "notes": [
-    "Official registry tarball retrieved without lifecycle execution; its SHA-512 matches the lockfile. Package metadata and complete LICENSE bytes match the versioned upstream source. CI additionally verifies the installed artifact after npm ci.",
-    "MIT-0 permits use, modification and redistribution, including commercial use, without an attribution requirement. The complete upstream license text is retained anyway.",
-    "Runtime retains node_modules/nodemailer/LICENSE and a separate /app/licenses copy.",
-    "No additional runtime dependencies in this published package.",
-    "Other container, provider, font and asset reviews remain independent."
+    "Official v10.0.16 LICENSE bytes are identical to the previously verified v10.0.15 MIT-0 license (same Git blob SHA and recorded SHA-256).",
+    "npm package-lock pins the v10.0.16 registry archive URL and SHA-512 integrity. Independent tarball SHA-256 not yet captured; installed artifact verification remains required in Docker CI.",
+    "MIT-0 upstream metadata permits commercial use and redistribution under the license conditions; complete license text is retained.",
+    "This review covers this exact version and dependency only. Other images, provider data, software packages and commercial rights remain independently assessed."
   ],
-  "upstreamLicense": "https://github.com/nodemailer/nodemailer/blob/v10.0.15/LICENSE",
+  "upstreamLicense": "https://github.com/nodemailer/nodemailer/blob/v10.0.16/LICENSE",
   "upstreamLicenseGitBlobSha": "fdfc9676bf9f4363b1292847d61f94a17a47618e",
-  "observedAt": "2026-10-09",
-  "tarballSha256": "e1b7313880500728f5295087dd6fb03c500b866682ce394e429d1912c12fda3e"
+  "observedAt": "2026-10-11",
+  "tarballSha256": null
 }
