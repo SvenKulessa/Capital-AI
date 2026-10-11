@@ -77,3 +77,28 @@ test('bounded discovery leaves unavailable providers unproven without invented S
   assert.equal(DISCOVERY_LIMITS.npm <= 48, true);
   assert.equal(DISCOVERY_LIMITS.actions <= 8, true);
 });
+
+test('same-SHA TypeScript security decision blocks even a SHA-declared latest release', async () => {
+  const row = { id: 'npm:typescript', name: 'typescript', kind: 'NPM_DEVTOOL', version: '6.0.3' };
+  const manifest = { name: 'typescript', version: '7.0.2', license: 'Apache-2.0',
+    dist: { shasum: digest, integrity } };
+  const report = await discoverRepositoryUpdates({
+    entries: [row], sourceSha: sha, blockedUpdates: [{
+      name: 'typescript', version: '7.0.2', state: 'BLOCKED',
+      reasonCode: 'NATIVE_BUILD_TOOL_BINARY_VULNERABILITY',
+      evidencePath: 'docs/security/evidence/dependency-decisions/typescript-7.0.2.json',
+    }],
+    fetchImpl: async url => {
+      assert.equal(url, 'https://registry.npmjs.org/typescript/latest');
+      return new Response(JSON.stringify(manifest), { status: 200 });
+    },
+  });
+  assert.equal(report.findings.length, 1);
+  assert.equal(report.findings[0].state, 'BLOCKED');
+  assert.equal(report.findings[0].latestVersion, '7.0.2');
+  assert.equal(report.findings[0].latestLicenseDeclared, 'Apache-2.0');
+  assert.equal(report.findings[0].reason, 'NATIVE_BUILD_TOOL_BINARY_VULNERABILITY');
+  assert.equal(report.candidates, 0);
+  assert.equal(report.autoApply, false);
+  assert.equal(report.autoMerge, false);
+});

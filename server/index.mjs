@@ -21,7 +21,6 @@ import { createLearningInquiry } from './learning-inquiry.mjs';
 import { createPrivacy } from './privacy.mjs';
 import { createLimiter } from './http-security.mjs';
 import { infrastructure } from './infrastructure.mjs';
-import { createMobileScorer } from './mobile-scorer.mjs';
 import { createScorerProxy } from './scorer-proxy.mjs';
 import { serveMtaSts } from './mta-sts.mjs';
 import { serveWellKnown } from './well-known.mjs';
@@ -345,7 +344,6 @@ export function createApp(root = defaultRoot, options = {}) {
   const marketEvidenceLimit = createLimiter(60);
   const runtimeEnv = options.env || process.env;
   const repositoryToolCatalog = createRepositoryToolCatalog({ fetchImpl: options.fetchImpl || fetch, env: runtimeEnv });
-  const mobileScorer = createMobileScorer(runtimeEnv);
   const scorerProxy = createScorerProxy({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, sourcePolicy: options.sourcePolicy });
   const vocabularyCheckout = createVocabularyCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
   const subscriptionCheckout = createSubscriptionCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
@@ -390,12 +388,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await benchmarkRuns.handle(req, res, url, json)) return;
   if (await cadsMarketplace.handle(req, res, url, json)) return;
   if (await cadsCommerce.handle(req, res, url, json)) return;
-  if (url.pathname === '/api/mobile/enterprise-score' || url.pathname === '/api/mobile/scorer/events') {
-    const mobileIdentity = await auth.verify(req, res);
-    if (!mobileIdentity) return json(res, 401, { error: 'authentication_required' });
-  }
   if (await scorerProxy.handle(req, res, url, json, requestContext.requestId)) return;
-  if (await mobileScorer.handle(req, res, url, json, headers)) return;
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return json(res, 405, { error: 'method_not_allowed' }); }
   if (url.pathname === '/healthz') return json(res, 200, { ...health(), buildIdentity, runtimeIdentity });
   if (url.pathname === '/metrics') {

@@ -311,7 +311,7 @@ jobs:
           node scripts/publish-security-summary.mjs security-reports
       - name: Prüfnachweise sichern
         if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.1
         with:
           name: docker-security-${{ github.sha }}
           path: |
@@ -345,7 +345,7 @@ jobs:
       - name: Dasselbe geprüfte Image zur Veröffentlichung übergeben
         id: candidate_archive
         if: success() && github.event_name == 'workflow_dispatch' && inputs.publish_candidate && github.ref == 'refs/heads/main' && github.repository == 'SvenKulessa/Capital-AI'
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.1
         with:
           name: candidate-image-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -382,7 +382,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$(gh api repos/SvenKulessa/Capital-AI/branches/main --jq .commit.sha)" = "$SOURCE_SHA"
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: candidate-image-${{ github.run_id }}-${{ github.run_attempt }}
           path: candidate
@@ -473,7 +473,7 @@ jobs:
           jq -n --slurpfile identity security-reports/container-identity.json --arg sha "$SOURCE_SHA" --arg image "$IMAGE_REF" --arg imageId "$EXPECTED_IMAGE_ID" --arg run "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT" '{schemaVersion:2,status:"ATTESTED_CANDIDATE",deployEligible:false,sourceSha:$sha,imageRef:$image,localImageId:$imageId,containerIdentity:$identity[0],workflowRun:$run,remainingGates:["LICENSE_REDISTRIBUTION_REVIEW","MAIN_PROTECTION","CONTAINER_IDENTITY_CHAIN","RENDER_IMAGE_SOURCE","RUNTIME_DIGEST","RUNTIME_IDENTITY"]}' > security-reports/candidate.json
       - name: Kandidaten-Nachweise sichern
         if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.1
         with:
           name: ghcr-candidate-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -503,7 +503,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: ghcr-candidate-${{ github.run_id }}-${{ github.run_attempt }}
           path: candidate
@@ -563,7 +563,7 @@ jobs:
             candidate/registry-platform-manifest.json
       - name: Production-Handoff-Nachweise sichern
         if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.1
         with:
           name: production-handoff-${{ github.run_id }}-${{ github.run_attempt }}
           path: security-reports/*.json

@@ -172,6 +172,10 @@ PRODUCT, MARKET, PLATFORM, TRUST und GROWTH sind Fachperspektiven, keine organis
 
 ## Domain Skills und beratende Fähigkeiten im Chat
 
+### Shared Enterprise Specialist Skills (alle Domains)
+
+Die zehn Fach-Skills `ai-engineering`, `data-engineering`, `quant-research`, `customer-success`, `sales-enterprise`, `legal-compliance`, `incident-response`, `analytics-intelligence`, `mobile-engineering`, `accessibility-audit` liegen unter `.agents/skills/<skill>/SKILL.md`. Sie sind in `.agents/skills/registry.json` unter `sharedSkills.specialists` **allen fünf Domains** zugänglich; `recommendedSpecialists` sind nicht-exklusive Routing-Vorschläge, keine Rechte-, Zuständigkeits- oder Freigabegrenzen. Alle Domain-Chat-Agenten lesen bei passender Aufgabe die betreffende Skill-Datei und verwenden weitere Spezial-/Domain-Skills im selben Chat. Repository-Skills werden nur von Chat-/Agent-Laufzeiten mit tatsächlichem Repository-Zugriff gelesen, installieren nicht selbst ChatGPT-Plugins und gewähren keine zusätzlichen Berechtigungen oder Required Checks.
+
 Die fünf Domain-Perspektiven erhalten **zwei funktionale Skills pro Domain**: `<domain>-engineering` (Analyse, Umsetzung, Tests, Evidence) und `<domain>-advisory` (Architekturberatung, Optionen, Trade-offs, fundierte Best-Practice-Empfehlungen). Der maschinenlesbare Katalog steht in `.agents/skills/registry.json`; ausführliche `SKILL.md`-Dateien in `.agents/skills/`, optionale Chat-Agent-Profile in `.github/agents/`. `.github/copilot-instructions.md` bindet Repository-Copilot an diese Richtlinie.
 
 1. **Automatisch nach Aufgabeninhalt routen, soweit die Chat-/Agent-Laufzeit Skills unterstützt:** PRODUCT (Frontend/UX/Auth-Client), MARKET (Daten/Provider/Scoring), PLATFORM (Infrastruktur/Runtime/CI), TRUST (Security/Compliance/QA/Evidence), GROWTH (Docs/SEO/Social/Branding). Bei Implementierung Engineering-Skill, bei Beratung Advisory-Skill, bei gemischten Aufgaben beide anwenden. Bei domainübergreifender Arbeit weitere relevante Skills im **selben Chat** verwenden; kein organisatorischer Handoff.

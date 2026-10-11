@@ -130,8 +130,8 @@
     {
       "id": "TA-AUTH",
       "path": "server/auth.mjs",
-      "blobSha": "459a921154343962213cb3206dd54bab795089c5",
-      "recorrelation": "2026-10-11: Owner-badge projection omits the subscription badge; session verification, IAM authority and tenant boundaries remain unchanged. Verified by server/auth.test.mjs and server/auth-security.test.mjs.",
+      "blobSha": "82e96f658f1860b1f76bfd4d141de8573aeefe0b",
+      "recorrelation": "2026-10-11: Removed duplicated embedded mobile scorer in favor of the separate Capital-AI-Mobile repository; mobile PKCE exchange retains 303 session semantics and now redirects to the existing root path. Existing server/auth.test.mjs and auth-security checks remain authoritative.",
       "role": "Current session/auth composition"
     },
     {
