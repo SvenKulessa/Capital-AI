@@ -22,7 +22,8 @@ test('one Supabase layout shared by auth, support and learning inquiry', () => {
 
 test('untrusted input is escaped before it becomes email HTML', () => {
   const payload = '<img src=x onerror="alert(1)">& goodbye';
-  const answer = renderSupportMail('reply', { name: payload, answer: payload, nextSteps: payload });
+  const answer = renderSupportMail('reply', { name: payload, answer: payload, nextSteps: payload, subject: 'One\r\nBcc:foo' });
+  assert.doesNotMatch(answer.subject, /[\r\n]/);
   assert.doesNotMatch(answer.html, /<img src=x/);
   assert.match(answer.html, /&lt;img src=x onerror=&quot;alert\(1\)&quot;&gt;&amp;/);
   const course = renderLearningInquiryMail(payload + ' lorem ipsum');
