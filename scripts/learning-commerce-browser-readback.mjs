@@ -134,6 +134,8 @@ try {
       pricing.scroll <= pricing.client + 1, 'Pricing dialog horizontal overflow');
     await capture(viewport.name + '-pricing-route');
     report.checks.at(-1).dialog = pricing;
+    await evaluate(`document.querySelector('[aria-label="Preisliste schließen"]').click()`);
+    await until(() => evaluate(`!document.querySelector('#pricing-dialog-title')`), 'Pricing dialog closes');
 
     // Retain the existing CADS pricing entrypoint and monthly/annual switch.
     await navigate('/', `Array.from(document.querySelectorAll('button')).some(
