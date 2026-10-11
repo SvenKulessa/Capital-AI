@@ -5,6 +5,7 @@ import {
   type SetStateAction,
 } from 'react';
 import { MARKET_ASSETS } from '../data/mockData';
+import { PRICE_ALERTS_ENABLED } from '../features/alerts/featureFlags';
 import type {
   AssetSubclass,
   MainCategory,
@@ -256,6 +257,7 @@ export function AppOverlays({
         }}
       />
 
+      {PRICE_ALERTS_ENABLED && (
       <PriceAlertsModal
         isOpen={isAlertModalOpen}
         onClose={() => setIsAlertModalOpen(false)}
@@ -264,6 +266,7 @@ export function AppOverlays({
           setSelectedAsset(asset);
         }}
       />
+      )}
 
       <MonetizationModal
         isOpen={isMonetizationOpen}
