@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import {
-  ArrowLeft, ArrowRight, BookOpen, Boxes, Compass, Database, FileCheck2,
-  GitBranch, Info, Layers3, Search, ShieldAlert, SlidersHorizontal,
+  ArrowLeft, ArrowRight, BookOpen, Boxes, Compass, FileCheck2,
+  GitBranch, Info, Layers3, Search, ShieldAlert,
 } from 'lucide-react';
 import { BLUEPRINT_EVIDENCE_CONTRACTS } from '../../data/blueprintEvidenceContracts';
 import { BLUEPRINT_DETAILS } from '../documentation/blueprintDocumentationData';
@@ -59,7 +59,7 @@ function BlueprintExplorer({ onNavigate }: Props) {
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState(ARCHITECTURE_BLUEPRINTS[0]?.id ?? '');
   const results = useMemo(() => filterArchitectureBlueprints(query), [query]);
-  const selected = ARCHITECTURE_BLUEPRINTS.find((entry) => entry.id === selectedId);
+  const selected = results.find((entry) => entry.id === selectedId) ?? results[0];
   const contract = selected ? BLUEPRINT_EVIDENCE_CONTRACTS[selected.id] : undefined;
   const detail = selected ? BLUEPRINT_DETAILS[selected.id] : undefined;
   return <section aria-label="Blueprint Explorer" className="grid min-w-0 gap-4 lg:grid-cols-[minmax(240px,0.75fr)_minmax(0,1.5fr)]">
@@ -71,9 +71,9 @@ function BlueprintExplorer({ onNavigate }: Props) {
       </div>
       <p role="status" className="mt-3 text-xs text-slate-300">{results.length} von {ARCHITECTURE_BLUEPRINTS.length} Architektur-Blueprints</p>
       <div className="mt-3 space-y-2">
-        {results.map((entry) => <button key={entry.id} type="button" aria-pressed={selectedId === entry.id}
+        {results.map((entry) => <button key={entry.id} type="button" aria-pressed={selected?.id === entry.id}
           onClick={() => setSelectedId(entry.id)}
-          className={`w-full rounded-xl border p-3 text-left ${focus} ${selectedId === entry.id ? 'border-amber-300 bg-amber-400/10' : 'border-slate-700 bg-slate-900 hover:border-cyan-300'}`}>
+          className={`w-full rounded-xl border p-3 text-left ${focus} ${selected?.id === entry.id ? 'border-amber-300 bg-amber-400/10' : 'border-slate-700 bg-slate-900 hover:border-cyan-300'}`}>
           <span className="block text-xs text-cyan-200">{entry.category}</span>
           <span className="mt-1 block text-sm font-semibold text-white">{entry.name}</span>
         </button>)}
@@ -111,7 +111,7 @@ function ComponentLibrary({ onExplain }: { onExplain: (id: string) => void }) {
   const [selectedId, setSelectedId] = useState(ARCHITECTURE_COMPONENTS[0]?.componentId ?? '');
   const domains = useMemo(() => [...new Set(ARCHITECTURE_COMPONENTS.map((item) => item.domain))].sort(), []);
   const results = useMemo(() => filterArchitectureComponents(query, domain), [query, domain]);
-  const current = ARCHITECTURE_COMPONENTS.find((entry) => entry.componentId === selectedId);
+  const current = results.find((entry) => entry.componentId === selectedId) ?? results[0];
   return <section aria-label="Komponentenbibliothek" className="space-y-4">
     <div className={surface}>
       <h2 className="text-xl font-bold">Kanonische Analysekomponenten</h2>
@@ -133,8 +133,8 @@ function ComponentLibrary({ onExplain }: { onExplain: (id: string) => void }) {
     <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(250px,0.85fr)_minmax(0,1.5fr)]">
       <div className={`${surface} max-h-[36rem] overflow-y-auto`} aria-label="Komponenten auswählen">
         {results.map((entry) => <button key={entry.componentId} type="button" onClick={() => setSelectedId(entry.componentId)}
-          aria-pressed={selectedId === entry.componentId}
-          className={`mb-2 w-full rounded-lg border px-3 py-3 text-left text-sm ${focus} ${selectedId === entry.componentId ? 'border-cyan-300 bg-cyan-300/10' : 'border-slate-700 bg-slate-950 hover:border-amber-300'}`}>
+          aria-pressed={current?.componentId === entry.componentId}
+          className={`mb-2 w-full rounded-lg border px-3 py-3 text-left text-sm ${focus} ${current?.componentId === entry.componentId ? 'border-cyan-300 bg-cyan-300/10' : 'border-slate-700 bg-slate-950 hover:border-amber-300'}`}>
           <span className="block font-semibold">{entry.displayName}</span>
           <span className="mt-1 block text-xs text-slate-300">{entry.domain} · {entry.status}</span>
         </button>)}
