@@ -45,8 +45,12 @@ jobs:
           status=$?
           set -e
           printf '{"exitCode":%s}\n' "$status" > security-reports/npm-outdated-status.json
-          # npm outdated: exit 1 means available updates, not an execution failure.
-          # Network, registry or CLI errors must never be mistaken for success.
+          # Exit 1 is a normal outdated result ONLY with valid registry JSON.
+          # A network/registry error may also exit 1: fail closed on invalid data.
+          if ! jq -e 'type == "object" and (has("error") | not)' security-reports/npm-outdated.json > /dev/null; then
+            echo "npm outdated did not return a valid dependency report" >&2
+            exit 2
+          fi
           if [ "$status" -gt 1 ]; then exit "$status"; fi
 
       - name: Fail on high or critical npm advisories
@@ -61,7 +65,12 @@ jobs:
           status=$?
           set -e
           printf '{"exitCode":%s}\n' "$status" > security-reports/npm-audit-status.json
-          # Retain npm's high/critical failure and its complete machine-readable report.
+          # A successful CLI exit without valid audit JSON is not audit evidence.
+          if ! jq -e 'type == "object" and (has("metadata") and (has("error") | not))' security-reports/npm-audit.json > /dev/null; then
+            echo "npm audit did not return a valid advisory report" >&2
+            exit 2
+          fi
+          # Keep npm's high/critical advisory failure authoritative.
           exit "$status"
 
       - name: Record pinned runtime identities
