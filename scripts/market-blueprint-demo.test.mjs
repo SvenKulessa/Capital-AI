@@ -44,6 +44,7 @@ test('public blueprint UI is linked from Home and documentation without provider
   const documentation = readFileSync(new URL('features/documentation/BlueprintDocumentationPage.tsx', root), 'utf8');
   const card = readFileSync(new URL('features/home/MarketBlueprintShowcase.tsx', root), 'utf8');
   const fixtures = readFileSync(new URL('features/home/marketBlueprintDemo.ts', root), 'utf8');
+  const rules = readFileSync(new URL('features/home/marketBlueprintRules.ts', root), 'utf8');
 
   assert.match(home, /<MarketBlueprintShowcase onNavigate=\{onNavigate\}/);
   assert.match(documentation, /<MarketBlueprintShowcase variant="documentation"/);
@@ -52,7 +53,7 @@ test('public blueprint UI is linked from Home and documentation without provider
   assert.match(card, /Kraken/);
   assert.match(card, /verifizierter Markt-Score/);
   assert.match(card, /kein.*Live-Feed/i);
-  for (const source of [card, fixtures]) {
+  for (const source of [card, fixtures, rules]) {
     assert.doesNotMatch(source, /\b(?:fetch|WebSocket|setInterval|EventSource)\s*\(/);
     assert.doesNotMatch(source, /\b(?:ScoringEngineService|PriceAlertsProvider|usePriceAlerts|dispatchTelegramPush)\b/);
   }
