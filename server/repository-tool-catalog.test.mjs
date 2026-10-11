@@ -168,7 +168,7 @@ test('all pinned GitHub actions use real workflow paths and keep full SHA eviden
     sourceSha: SHA,
     tree: [...TREE, { type: 'blob', path: workflow, sha: 'd'.repeat(40) }],
     pkg, lock, cargo,
-    supplementary: { [workflow]: '  - uses: actions/checkout@' + pin + ' # v7.0.1\\n' },
+    supplementary: { [workflow]: '  - uses: actions/checkout@' + pin + ' # v7.0.1\n' },
   });
   const action = entries.find(row => row.id === 'action:actions/checkout');
   assert.equal(action.revisionSha, pin);
