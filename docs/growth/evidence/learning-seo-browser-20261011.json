@@ -1,0 +1,132 @@
+{
+  "scope": "LOCAL_REAL_SERVER_AND_CHROMIUM_NO_PAYMENTS_OR_MAIL",
+  "viewports": [
+    {
+      "width": 320,
+      "viewport": 320,
+      "scroll": 320,
+      "lessons": 6,
+      "hasNormalisation": true,
+      "hasScore": true,
+      "canonical": "https://capital-ai.online/learning",
+      "links": [
+        "/vocabulary/orderbuch",
+        "/vocabulary/bid-ask-spread",
+        "/vocabulary/slippage",
+        "/datenprovider-lizenzen",
+        "/blog/barrierefreie-finanzcharts",
+        "/vocabulary/backtesting",
+        "/marketscreener/dokumentation",
+        "/vocabulary/vix",
+        "/vocabulary/backtesting",
+        "/marketscreener/dokumentation",
+        "/marketscreener/dokumentation",
+        "/learning?tab=glossar#learning-offer",
+        "/learning#learning-inquiry"
+      ],
+      "offer": {
+        "present": true,
+        "top": 0,
+        "right": 312,
+        "checkbox": false,
+        "disabled": true,
+        "text": true
+      }
+    },
+    {
+      "width": 390,
+      "viewport": 390,
+      "scroll": 390,
+      "lessons": 6,
+      "hasNormalisation": true,
+      "hasScore": true,
+      "canonical": "https://capital-ai.online/learning",
+      "links": [
+        "/vocabulary/orderbuch",
+        "/vocabulary/bid-ask-spread",
+        "/vocabulary/slippage",
+        "/datenprovider-lizenzen",
+        "/blog/barrierefreie-finanzcharts",
+        "/vocabulary/backtesting",
+        "/marketscreener/dokumentation",
+        "/vocabulary/vix",
+        "/vocabulary/backtesting",
+        "/marketscreener/dokumentation",
+        "/marketscreener/dokumentation",
+        "/learning?tab=glossar#learning-offer",
+        "/learning#learning-inquiry"
+      ],
+      "offer": {
+        "present": true,
+        "top": 0,
+        "right": 382,
+        "checkbox": false,
+        "disabled": true,
+        "text": true
+      }
+    },
+    {
+      "width": 1440,
+      "viewport": 1440,
+      "scroll": 1425,
+      "lessons": 6,
+      "hasNormalisation": true,
+      "hasScore": true,
+      "canonical": "https://capital-ai.online/learning",
+      "links": [
+        "/vocabulary/orderbuch",
+        "/vocabulary/bid-ask-spread",
+        "/vocabulary/slippage",
+        "/datenprovider-lizenzen",
+        "/blog/barrierefreie-finanzcharts",
+        "/vocabulary/backtesting",
+        "/marketscreener/dokumentation",
+        "/vocabulary/vix",
+        "/vocabulary/backtesting",
+        "/marketscreener/dokumentation",
+        "/marketscreener/dokumentation",
+        "/learning?tab=glossar#learning-offer",
+        "/learning#learning-inquiry"
+      ],
+      "offer": {
+        "present": true,
+        "top": 0,
+        "right": 1401,
+        "checkbox": false,
+        "disabled": true,
+        "text": true
+      }
+    }
+  ],
+  "enlargedText": {
+    "left": 16,
+    "right": 374,
+    "viewport": 390
+  },
+  "keyboard": {
+    "tag": "SUMMARY",
+    "visible": true
+  },
+  "colors": {
+    "background": [
+      2,
+      5,
+      14
+    ],
+    "body": [
+      202,
+      213,
+      226
+    ],
+    "summary": [
+      254,
+      230,
+      133
+    ]
+  },
+  "googleRequests": 0,
+  "contrastRatios": {
+    "body": 13.71,
+    "summary": 16.37
+  }
+}

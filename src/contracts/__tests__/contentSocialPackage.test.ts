@@ -8,6 +8,24 @@ import {
 } from '../contentSocialPackage.ts';
 import { buildSocialDeliveryAttribution } from '../contentSocialAttribution.ts';
 import { buildSocialPublisherHandoff } from '../socialPublisherAdapter.ts';
+import { buildLearningContentCampaign } from '../learningContentCampaign.ts';
+import { createHash } from 'node:crypto';
+
+test('learning source creates actual hashed drafts through existing contracts without publishing', async () => {
+  const result = await buildLearningContentCampaign();
+  assert.equal(result.drafts.length, 6);
+  assert.equal(result.publicPublishAllowed, false);
+  assert.equal(result.externalCalls, 0);
+  assert.deepEqual(result.socialPackage.approvals, []);
+  assert.deepEqual(result.socialPackage.deliveries, []);
+  assert.equal(result.plan.publication.publicPublishAllowed, false);
+  for (const [index, draft] of result.drafts.entries()) {
+    assert.equal(draft.review, 'REVIEW_REQUIRED');
+    assert.equal(result.socialPackage.assets[index].sha256, createHash('sha256').update(draft.text).digest('hex'));
+    assert.match(draft.text, /synthetisch; keine Prognose/);
+    assert.equal(draft.canonicalUrl, 'https://capital-ai.online/learning');
+  }
+});
 
 const sha = 'a'.repeat(64);
 const sourceSha = CAPITAL_AI_SCORE_BUILDER_CAMPAIGN_20261007.brief.sourceSha;

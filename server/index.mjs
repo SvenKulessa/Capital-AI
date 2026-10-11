@@ -1,3 +1,4 @@
+import { LEARNING_JOURNEY, LEARNING_NEXT_STEPS } from '../shared/learning-journey.mjs';
 import http from 'node:http';
 import { BLOG_ARTICLES, blogArticleForPath } from '../shared/blog-articles.mjs';
 import { readFile, stat, realpath } from 'node:fs/promises';
@@ -238,7 +239,7 @@ function injectPricingFallback(html, pathname) {
 
 function vocabularyFallback(entry) {
   const thesaurus = entry.thesaurus.map(item => `<li>${escapeHtml(item)}</li>`).join('');
-  return `<main><article><p><a href="/vocabulary">Capital-AI Vocabulary</a></p><h1>${escapeHtml(entry.term)}</h1><p>${escapeHtml(entry.description)}</p><p>Kategorie: ${escapeHtml(entry.category)}</p><h2>Thesaurus</h2><ul>${thesaurus}</ul></article></main>`;
+  return `<main><article><p><a href="/vocabulary">Capital-AI Vocabulary</a></p><h1>${escapeHtml(entry.term)}</h1><p>${escapeHtml(entry.description)}</p><p>Kategorie: ${escapeHtml(entry.category)}</p><h2>Thesaurus</h2><ul>${thesaurus}</ul><nav aria-label="Weiterlernen"><a href="/learning#learning-methodology">Mathematische Lernbeispiele kostenlos lesen</a> · <a href="/learning?tab=glossar#learning-offer">Learning-Angebot und Voraussetzungen</a></nav></article></main>`;
 }
 function vocabularyLandingFallback() {
   const links = publicVocabularyEntries
@@ -247,25 +248,12 @@ function vocabularyLandingFallback() {
   return `<main><article><h1>Capital-AI Vocabulary</h1><p>${publicVocabularyCount} konsolidierte Fachbegriffe mit Definitionen und jeweils drei Thesaurus-Begriffen.</p><ul>${links}</ul></article></main>`;
 }
 function learningLandingFallback(description) {
-  return `<main><article>
-    <h1>Finanzwissen lernen mit Capital-AI</h1>
-    <p>${escapeHtml(description)}</p>
-    <section><h2>1. Finanzwissen und Begriffe</h2>
-      <p>Das öffentliche Glossar erklärt Märkte und Begriffe ohne Handelssignale. Beispielsweise beschreibt das Orderbuch Kauf- und Verkaufsaufträge; die Geld-Brief-Spanne beschreibt die Differenz zwischen Kauf- und Verkaufspreisen.</p>
-      <p><a href="/vocabulary/orderbuch">Orderbuch verstehen</a> · <a href="/vocabulary/bid-ask-spread">Bid-Ask-Spread erklären</a> · <a href="/vocabulary">Alle ${publicVocabularyCount} öffentlichen Begriffe</a></p></section>
-    <section><h2>2. Datenqualität und Herkunft</h2>
-      <p>Eine Momentaufnahme des Marktes ist keine garantierte Ausführung. Datenquelle, Zeitbezug und mögliche Abweichungen gehören zur Interpretation.</p>
-      <p><a href="/vocabulary/slippage">Slippage verstehen</a> · <a href="/blog/barrierefreie-finanzcharts">Finanzcharts mit Datenherkunft und Textalternativen</a></p></section>
-    <section><h2>3. Gewichtung und Scoring nachvollziehen</h2>
-      <p>Didaktisches Beispiel mit drei fiktiven Faktoren: 0,50 × 0,80 + 0,30 × 0,40 + 0,20 × 0,60 = 0,64. Die Gewichte summieren sich zu 1. Weder Live-Score noch Kurs-, Risiko- oder Renditeprognose.</p>
-      <p><a href="/vocabulary/vix">VIX als eigenständigen Volatilitätsindikator einordnen</a></p></section>
-    <section><h2>4. Technische Research-Architektur</h2>
-      <p>Nachvollziehbare Analysen unterscheiden Datenquelle, Qualitätsprüfung, Berechnungsregel und historische Validierung. Ein technisches Konzept ist keine produktive Datenpipeline.</p>
-      <p><a href="/vocabulary/backtesting">Historische Prüfung verstehen</a></p></section>
-    <section><h2>Lernen und Zugang</h2>
-      <p>Im interaktiven Learning Portal können Sie kostenlose Inhalte, Einmalkauf-Angebot und Zugangsvoraussetzungen prüfen. Ein Checkout ist erst nach Anmeldung und nur bei verfügbarer Zahlungsabwicklung möglich; Chart-Module benötigen gegebenenfalls ein zusätzliches Abo. Hier wird kein Kauf bestätigt.</p>
-      <p><a href="/login">Für Lernzugang anmelden</a> · <a href="mailto:support@capital-ai.online?subject=Capital-AI%20Learning-%2FKursanfrage">Learning-/Kursanfrage stellen</a> · <a href="/datenschutz">Datenschutzhinweise</a></p>
-    </section>
+  const lessons = LEARNING_JOURNEY.map(lesson => `<details id="${lesson.id}"><summary>${escapeHtml(lesson.title)}</summary><p>Lernziel: ${escapeHtml(lesson.goal)}</p>${lesson.paragraphs.map(text => `<p>${escapeHtml(text)}</p>`).join('')}<p>${escapeHtml(lesson.example)}</p><nav>${lesson.links.map(link => `<a href="${escapeHtml(link.href)}">${escapeHtml(link.label)}</a>`).join(' · ')}</nav></details>`).join('');
+  const steps = LEARNING_NEXT_STEPS.map(step => `<p><a href="${escapeHtml(step.href)}">${escapeHtml(step.label)}</a> — ${escapeHtml(step.note)}</p>`).join('');
+  return `<main><article><h1>Finanzwissen lernen mit Capital-AI</h1><p>${escapeHtml(description)}</p>
+    <section id="learning-methodology"><h2>Marktanalyse verstehen: sechs kostenlose Lernschritte</h2><p>Für Lernende, Studierende und Fintech-Teams. Alle Rechenwerte sind synthetisch. Keine Handelssignale, Renditeprognosen oder Anlageberatung.</p>${lessons}<nav aria-label="Vom Lernbeispiel zum Angebot">${steps}</nav></section>
+    <section id="learning-offer"><h2>Learning-Angebot und Zugang</h2><p>Das öffentliche Glossar und die sechs Lernschritte sind kostenlos. Ein Checkout ist erst nach Anmeldung und nur bei verfügbarer Zahlungsabwicklung möglich. Im interaktiven Glossar sind der aktuelle Einmalkauf-Preis und die Widerrufserklärung zu prüfen. Chart-Module benötigen zusätzlich mindestens Starter; Chart-Training Pro. Videos sind noch nicht verfügbar. Einzelne Blueprint-Demos sind keine kaufbaren Blueprint-Produkte.</p><p><a href="/login">Für Lernzugang anmelden</a> · <a href="/vocabulary">Öffentliche Begriffe lesen</a> · <a href="/pricing">Abonnement-Voraussetzungen prüfen</a></p></section>
+    <section id="learning-inquiry"><h2>Learning-/Kursanfrage</h2><p>Das interaktive Kursformular übermittelt Anfragen an unseren Support. Ohne JavaScript erreichen Sie uns per <a href="mailto:support@capital-ai.online?subject=Capital-AI%20Learning-%2FKursanfrage">E-Mail</a>. Eine Anfrage bestätigt keinen Kauf.</p><a href="/datenschutz">Datenschutzhinweise</a></section>
   </article></main>`;
 }
 
