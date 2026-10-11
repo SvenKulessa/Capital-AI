@@ -12,9 +12,6 @@ export function LearningJourney() {
   return <section id="learning-methodology" aria-labelledby="learning-methodology-title" className="my-6 space-y-4">
     <h2 id="learning-methodology-title" className="text-2xl font-bold text-amber-200">Marktanalyse verstehen: sechs kostenlose Lernschritte</h2>
     <p className="text-base leading-7 text-slate-300">Für Lernende, Studierende und Fintech-Teams. Alle Rechenwerte sind synthetisch. Keine Handelssignale, Renditeprognosen oder Anlageberatung.</p>
-    <a href="/architecture-hub?tab=catalogs" className="inline-flex min-h-11 items-center rounded-xl border border-amber-400/40 px-4 py-2 text-sm font-semibold text-amber-200 underline underline-offset-4 hover:bg-amber-300/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
-      Formeln, Providerrechte und Blueprint-Evidence in fünf Architektur-Katalogen nachlesen
-    </a>
     <div className="grid min-w-0 gap-3 md:grid-cols-2">
       {LEARNING_JOURNEY.map(lesson => <details id={lesson.id} key={lesson.id} className="min-w-0 rounded-xl border border-amber-400/20 bg-brand-canvas p-4">
         <summary className="min-h-11 cursor-pointer text-lg font-semibold text-amber-200 focus-visible:outline-2 focus-visible:outline-brand-gold">{lesson.title}</summary>
