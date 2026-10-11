@@ -6,7 +6,7 @@ import { PRIVACY_NOTICE_VERSION } from '../../shared/legal-identity.mjs';
  */
 export const COOKIE_CONSENT_V3 = 'COOKIE_CONSENT_V3' as const;
 export const COOKIE_CONSENT_STORAGE_KEY = 'capital-ai-cookie-consent-v3';
-export const OPEN_COOKIE_PREFERENCES_EVENT = 'capital-ai:open-cookie-preferences';
+export { OPEN_COOKIE_PREFERENCES_EVENT } from './cookieConsentEvents';
 export const COOKIE_CONSENT_RETENTION_DAYS = 180;
 const MAX_AGE_MS = COOKIE_CONSENT_RETENTION_DAYS * 24 * 60 * 60 * 1000;
 const CLOCK_SKEW_MS = 60 * 1000;

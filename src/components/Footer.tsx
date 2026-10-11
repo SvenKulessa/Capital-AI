@@ -5,7 +5,7 @@ import { BrandLogo } from './BrandLogo';
 import { ExternalLink } from 'lucide-react';
 import { socialLinks } from '../data/socialLinks';
 import { trackEvent } from '../utils/analytics';
-import { OPEN_COOKIE_PREFERENCES_EVENT } from '../privacy/cookieConsentV3';
+import { OPEN_COOKIE_PREFERENCES_EVENT } from '../privacy/cookieConsentEvents';
 
 const socialIconPath = (id: (typeof socialLinks)[number]['id']) => `/branding/social/${id}.svg`;
 

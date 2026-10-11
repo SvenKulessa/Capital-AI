@@ -4,7 +4,7 @@ import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 import { useLocale } from '../../i18n/LocaleProvider';
 import { cookieCopy } from '../../i18n/cookieCopy';
 import { accountCopy } from '../../i18n/accountWorkspaceCopy';
-import { OPEN_COOKIE_PREFERENCES_EVENT } from '../../privacy/cookieConsentV3';
+import { OPEN_COOKIE_PREFERENCES_EVENT } from '../../privacy/cookieConsentEvents';
 
 export interface AccountBadge {
   id: string;

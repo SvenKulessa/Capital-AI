@@ -96,5 +96,5 @@ try {
   for (const task of pending.values()) clearTimeout(task.timer);
   chrome.kill('SIGTERM');
   await new Promise(resolve => { if (chrome.exitCode !== null || chrome.signalCode) resolve(); else { chrome.once('exit', resolve); setTimeout(() => { chrome.kill('SIGKILL'); resolve(); }, 3000).unref(); } });
-  await rm(profile, { recursive: true, force: true });
+  await rm(profile, { recursive: true, force: true, maxRetries: 6, retryDelay: 200 });
 }

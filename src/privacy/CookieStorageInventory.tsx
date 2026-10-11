@@ -1,7 +1,7 @@
 import { cookieStorageRows } from './cookieStorageInventory';
 import { useLocale } from '../i18n/LocaleProvider';
 import { cookieCopy } from '../i18n/cookieCopy';
-import { OPEN_COOKIE_PREFERENCES_EVENT } from './cookieConsentV3';
+import { OPEN_COOKIE_PREFERENCES_EVENT } from './cookieConsentEvents';
 
 /** Public inventory includes local storage, not just HTTP cookies. No values or identifiers are displayed. */
 export function CookieStorageInventory() {
