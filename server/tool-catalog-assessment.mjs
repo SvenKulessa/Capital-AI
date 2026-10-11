@@ -2,6 +2,15 @@
 const PERMISSIVE = new Set(['MIT', 'Apache-2.0', 'BSD-2-Clause', 'BSD-3-Clause', 'ISC', '0BSD', 'Unlicense']);
 const COPYLEFT = /^(?:AGPL|GPL|LGPL|MPL|EPL)-/;
 const NON_RELEASE = /^(?:managed(?:-cloud)?|unknown|unbekannt|not installed|null)$/i;
+const INVENTORY_ALIASES = new Map([
+  ['NATS JetStream', 'NATS + JetStream'],
+  ['Google Gemini', 'Google Gemini / GenAI SDK'],
+  ['Telegram', 'Telegram Bot API'],
+  ['Metricool', 'Metricool MCP'],
+  ['Binance', 'Binance Market Data'],
+  ['Kraken', 'Kraken Market Data'],
+  ['npm CLI', 'npm CLI'],
+]);
 function matchField(block, field) {
   const safe = field.replace(/[^a-zA-Z]/g, '');
   const found = block.match(new RegExp('(?:^|[\\s,{])' + safe + ":\\s*'([^'\\n]*)'", 'm'));
@@ -33,7 +42,7 @@ export function classifyDeclaredLicense(value, source) {
     declared: null, source: null, commercial: 'NOT_PROVEN', redistribution: 'NOT_PROVEN',
     approval: 'NOT_PROVEN',
   };
-  if (PERMISSIVE.has(declared)) return {
+  if (PERMISSIVE.has(declared.replace(/ core$/i, ''))) return {
     declared, source, commercial: 'GENERALLY_ALLOWED_WITH_CONDITIONS',
     redistribution: 'LICENSE_NOTICE_AND_OBLIGATIONS', approval: 'REVIEW_REQUIRED',
   };
@@ -72,7 +81,7 @@ export function assessCatalogEntries(entries, { lock, supplementary = {}, invent
   const inventory = parseDeclaredComponentInventory(inventorySource);
   return entries.map(entry => {
     const matching = inventory.get(entry.name.toLocaleLowerCase('en')) ||
-      inventory.get(entry.name.replace('NATS JetStream', 'NATS + JetStream').toLocaleLowerCase('en'));
+      inventory.get((INVENTORY_ALIASES.get(entry.name) || '').toLocaleLowerCase('en'));
     const isNpm = entry.id.startsWith('npm:');
     const isExternal = entry.kind === 'EXTERNER_DIENST';
     const primaryPath = entry.path.split(' → ')[0];
