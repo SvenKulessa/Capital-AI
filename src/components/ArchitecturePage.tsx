@@ -385,13 +385,14 @@ export const ArchitecturePage: React.FC<ArchitecturePageProps> = ({
           <div className="h-4 w-px bg-slate-800" />
 
           <BrandLogo variant="inline" size="sm" />
+          <a href="/architecture-hub" className="min-h-11 inline-flex items-center rounded-lg border border-cyan-400/50 px-3 text-sm font-semibold text-cyan-200 hover:bg-cyan-400/10 focus-visible:outline-2 focus-visible:outline-amber-300">Architecture Hub →</a>
         </div>
 
         {/* Live System Health Badge */}
         <div className="flex items-center gap-2 text-xs font-mono">
           <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <span>Pipeline Status: LIVE</span>
+            <span className="w-2 h-2 rounded-full bg-amber-400" />
+            <span>Pipeline: Konzept · Runtime NOT_PROVEN</span>
           </div>
           <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300">
             <Radio className="w-3 h-3 text-amber-400" />

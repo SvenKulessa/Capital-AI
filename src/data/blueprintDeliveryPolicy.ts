@@ -1,6 +1,9 @@
 export const BLUEPRINT_DELIVERY_POLICY = {
   schemaVersion: 'CAPITAL_AI_BLUEPRINT_DELIVERY_POLICY@1',
   publicArchitectureDocumentation: true,
+  commercialProductType: 'TECHNICAL_COMPONENT_BLUEPRINT',
+  sharedProductContract: 'docs/product/SCREENER-COMPONENT-BLUEPRINT-PRODUCT-CONTRACT-V1.md',
+  excludes: ['provider_access', 'market_data', 'data_licenses', 'production_deployment', 'validated_model_performance', 'trading_execution'],
   publicFullSource: false,
   publicStaticDownloads: false,
   currentCommerceAdmission: false,

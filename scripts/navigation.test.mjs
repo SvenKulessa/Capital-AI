@@ -26,6 +26,16 @@ test('aliases and trailing slash normalize without losing query or hash', () => 
   assert.equal(resolveNavigationTarget('/roadmap?tab=console'), '/control-center?tab=console');
 });
 
+test('Architecture Intelligence has a dedicated public route and deep-link tabs', () => {
+  assert.equal(resolveAppRoute('/architecture-hub'), '/architecture-hub');
+  assert.equal(resolveAppRoute('/financial-intelligence'), '/architecture-hub');
+  assert.equal(resolveNavigationTarget('/architecture-hub?tab=explainability'), '/architecture-hub?tab=explainability');
+  const routes = readFileSync(new URL('../src/app/routing/AppRoutes.tsx', import.meta.url), 'utf8');
+  const catalog = readFileSync(new URL('../src/components/HubCatalog.tsx', import.meta.url), 'utf8');
+  assert.match(routes, /IntelligenceArchitectureHub/);
+  assert.match(catalog, /path: '\/architecture-hub'/);
+});
+
 test('Market Screener documentation aliases keep the dedicated blueprint documentation hub', () => {
   assert.equal(resolveAppRoute('/marketscreener/dokumentation'), '/marketscreener/dokumentation');
   assert.equal(resolveAppRoute('/MARKET-SCREENER/DOKUMENTATION/'), '/marketscreener/dokumentation');
@@ -309,4 +319,11 @@ test('legal overview, contact, mobile hub tabs and global footer use one contact
   assert.doesNotMatch(learning, /<LearningInquiry \/>/);
   assert.match(form, /\/api\/public\/contact/);
   for (const source of [learning, studio, market]) assert.match(source, /HubNavigationPanel/);
+});
+
+
+test('Chart atlas is not embedded or explicitly advertised on the public homepage', () => {
+  const home = readFileSync(new URL('../src/features/home/LearningCadsShowcase.tsx', import.meta.url), 'utf8');
+  assert.doesNotMatch(home, /ChartLessonGraphic|CHART_LESSONS|Chart-Lernatlas|\/learning\/chart-lernatlas/);
+  assert.match(home, /onNavigate\('\/learning'\)/);
 });

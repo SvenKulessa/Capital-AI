@@ -11,6 +11,7 @@ export function resolveAppRoute(rawPath: string): string {
   const clean = rawPath.trim().toLowerCase().replace(/\/+$/, '') || '/';
   const hubRoute = hubRouteForPath(clean);
   if (hubRoute) return hubRoute.hub;
+  if (clean === '/architecture-hub' || clean === '/financial-intelligence') return '/architecture-hub';
   // Public landing language URLs resolve to the same SPA home component.
   if (/^\/(?:de|en|it|fr|pt|es)$/.test(clean)) return '/';
 

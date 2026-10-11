@@ -5,7 +5,7 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
   'src/data/vocabularyOffer.ts': Object.freeze({ sourceBlobSha: 'ef2ef444280b56dcf9fa5182e09f3ac8d03fbf25', contentSha256: 'adc8faec932b2dcc29ff2fb4c836a1044c474d83dd405a025efae386d894b274' }),
 
   'shared/learning-journey.mjs': Object.freeze({ sourceBlobSha: '8d04b8d49e17baff17d9295ae10c6c70ed9f9b63', contentSha256: '8548eb4810ba4ed5cf4b0890299d1a1f80fee94d9de6707a34628bb879c1fee3' }),
-  'src/features/learning/LearningJourney.tsx': Object.freeze({ sourceBlobSha: '92af19a7ac60dd6928251e5572e9cec430beb1a9', contentSha256: '68632c5d4ea54a342d756e35b064072d3339d062e242b81fec775f590928377f' }),
+  'src/features/learning/LearningJourney.tsx': Object.freeze({ sourceBlobSha: '44f168ea9633362ca7dac5f27d1d8a1b77bace7e', contentSha256: '0143dc2072b6ba9623361febec722300f9d727a4c4d8327fe943fed47b71a78b' }),
 
   'shared/blog-articles.mjs': Object.freeze({ sourceBlobSha: '5a42051bf33041dd849ad8434143bd6bf3b3b72d', contentSha256: '25ea2b7867df02e280666e8dc8bde9d7585823ba75fd311ad3985fca0cbf80fa' }),
   'index.html': Object.freeze({
@@ -63,7 +63,7 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
 });
 
 const SEO_SOURCE_SET_DIGESTS = Object.freeze({
-  'shared/learning-journey.mjs|src/data/vocabularyOffer.ts|src/features/learning/LearningJourney.tsx|src/features/learning/LearningPortalPage.tsx|src/features/learning/LearningPurchase.tsx': '08176f73ab8a685ed2328de662bdeb0b23d288a34a4fbd1919ec185bec0185f6',
+  'shared/learning-journey.mjs|src/data/vocabularyOffer.ts|src/features/learning/LearningJourney.tsx|src/features/learning/LearningPortalPage.tsx|src/features/learning/LearningPurchase.tsx': '17c997bbd05d47750b5e4ad68695a3d05892f14c8ff3a223c6fde68140a8444a',
   'shared/blog-articles.mjs': '9f2fd7096a150d0a402a1aeed775bc0151db3fddc1886c6b62a3ac207099f363',
   'index.html|src/features/home/HomePage.tsx': 'b2ed98c639954f90ed1122671adc63f8a341a6ffd3bd9d91d74bdf84e0242839',
   'shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': '0166096aa9dfbeb5027a3d39f9e4d04a0f81e0ff1d9058cef7d562d2093db7c0',
