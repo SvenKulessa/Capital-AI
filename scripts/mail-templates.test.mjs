@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { MAIL_BRAND, MAIL_SHELL, renderBrandedMail, renderSupportMail, renderLearningInquiryMail } from '../shared/mail-templates.mjs';
+import { MAIL_BRAND, MAIL_SHELL, renderBrandedMail, renderSupportMail, renderLearningInquiryMail, renderContactMail } from '../shared/mail-templates.mjs';
 
 test('one Supabase layout shared by auth, support and learning inquiry', () => {
   assert.match(MAIL_SHELL, /%%NOTICE%%/);
@@ -51,4 +51,13 @@ test('offline export writes three HTML/text pairs without sending mail', async (
     }
     assert.equal(JSON.parse(proc.stdout).sendsMail, false);
   } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
+test('generic contact mail is branded and does not expose HTML from user content', () => {
+  const mail = renderContactMail('Question with <b>untrusted</b> text');
+  assert.equal(mail.subject, 'CAPITAL-AI Kontaktanfrage');
+  assert.match(mail.text, /Kontaktanfrage/);
+  assert.match(mail.html, /capital-ai-avatar-120x120\.png/);
+  assert.match(mail.html, /&lt;b&gt;untrusted&lt;\/b&gt;/);
+  assert.doesNotMatch(mail.html, /<b>untrusted<\/b>/);
 });
