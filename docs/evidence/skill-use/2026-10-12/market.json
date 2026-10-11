@@ -615,12 +615,12 @@
       "status": "REVIEW_REQUIRED",
       "datasetStatus": "SYNTHETIC_FIXTURE_ONLY",
       "fixtureVersion": "fixture-v1.0.0",
-      "fixturePath": "docs/evidence/skill-use/2026-10-12/synthetic-pit-universe-v1.json",
+      "fixturePath": "scripts/fixtures/synthetic-pit-universe-v1.json",
       "fixtureBlobSha": "7d4d7627d781f72b51ad418706762e64a6b65dae",
       "validatorPath": "scripts/market-pit-survivorship-control.mjs",
       "validatorBlobSha": "e85f9b89bdca08bdc3d5af8bb36a9d1a280b336f",
       "unitTestsPath": "scripts/market-pit-survivorship-control.test.mjs",
-      "unitTestsBlobSha": "4543d971ee6d5784ca96d822ff5f9a18ec215885",
+      "unitTestsBlobSha": "6532fc046d295d35fb3a3ab50976fe653bbe2a37",
       "unitCommand": "node --test scripts/market-pit-survivorship-control.test.mjs",
       "existingMarketSuiteCommand": "npm run test:market",
       "modelIntegration": "OFFLINE_RESEARCH_VALIDATION_ONLY; existing CommodityHistoricalBacktestEngine not modified, no production promotion",
@@ -655,7 +655,9 @@
       "hasMeasuredReturns": false,
       "hasLicenseGrant": false,
       "canPromoteLiveScore": false,
-      "limitations": "Fixture consistency is not independent historical-vintage authenticity or survivorship-free production evidence."
+      "limitations": "Fixture consistency is not independent historical-vintage authenticity or survivorship-free production evidence.",
+      "ciMountScope": "Docker Security Gate test:market bind-mounts scripts/ read-only; fixture colocated under scripts/fixtures/; no Docker mount expansion",
+      "extraneousFixtureDuplicateRemoved": true
     },
     "repositoryEnvironment": {
       "currentMainAtAudit": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
@@ -663,6 +665,6 @@
       "localTestExecution": "BLOCKED",
       "reason": "Network isolation prevented git clone; GitHub-hosted PR CI is the actual execution environment."
     },
-    "mergeDecision": "BLOCKED pending current HEAD checks and demonstration of quantified scope"
+    "mergeDecision": "BLOCKED pending current head CI and evidence readback"
   }
 }
