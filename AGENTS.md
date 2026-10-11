@@ -1,6 +1,6 @@
 # CAPITAL-AI Solo Maintainer Policy
 
-Stand: 2026-10-10
+Stand: 2026-10-11
 Contract: `SOLO_MAINTAINER_FLOW@1`
 Geltungsbereich: gesamtes Repository.
 
@@ -14,37 +14,48 @@ Bei einem Widerspruch gilt ausschließlich diese Datei. Zusätzliche Regeln dür
 
 ## Entwicklungsfluss
 
-1. Auf einem Feature-Branch entwickeln.
-2. Pull Request erst mit einer vollständigen, konkret wirksamen Änderung gemäß „PRs nur für umsetzbare Änderungen“ erstellen; bestehende PRs im selben Scope fertigstellen.
-3. GitHub Required Checks laufen automatisch.
-4. Fehlende oder fehlgeschlagene Required Checks blockieren den Merge, aber nicht Entwicklung oder PR-Erstellung.
-5. Merge regulär ausschließlich durch den Human Repository Owner.
-6. Ein Agent darf nur nach ausdrücklicher Chat-Freigabe für den konkret bezeichneten PR mergen.
-7. Nur ein Merge nach `main` darf den normalen Production-Pfad auslösen.
-8. Production darf automatisch deployen, wenn die für `main` definierten technischen Checks erfolgreich sind.
+1. Einen bestehenden Scope-PR fortführen oder auf einem Feature-Branch vom aktuellen `main` entwickeln.
+2. Einen neuen PR erst eröffnen, wenn die beauftragte Wirkung vollständig implementiert und angemessen überprüft ist; lösbare technische Blocker, relevante bestehende Konzeptfehler und Architekturursachen **vorher** im betroffenen Wirkpfad beheben.
+3. Die vorhandenen GitHub-Pipeline-Checks laufen wie bisher **nach** PR-Erstellung; keine neuen manuellen Preflight-Gates einführen.
+4. **Jeder berechtigte Agent aus PRODUCT, MARKET, PLATFORM, TRUST oder GROWTH darf einen PR ohne zusätzliche Human-Owner-Einzelfreigabe selbst mergen**, sobald alle nachstehenden Bedingungen nachgewiesen sind. Die Zustimmung des Owners zu dieser Regel ist die ausdrückliche generelle Delegation.
+5. Ausstehende, fehlgeschlagene oder nicht nachgewiesene anwendbare Tests, nicht reproduzierbare Ergebnisse, Konflikte und konkrete Security-/Rechte-Blocker verhindern den Merge; im selben Scope eigenständig korrigieren und erneut prüfen.
+6. GitHub-Rulesets, Branch Protection, Tool-Rechte und Least Privilege niemals umgehen.
+7. Nur der normale Merge nach `main` löst den vorhandenen Production-Pfad aus; Production darf bei erfolgreichen Main-Checks automatisiert deployen. Die Live-Wirkung anschließend separat überprüfen.
+
+## Delegierte Agenten-Merge-Regel
+
+Die frühere Pflicht zur persönlichen bzw. PR-spezifischen Owner-Merge-Freigabe entfällt. **Freigabe bedeutet nicht Blind-Merge:** Vor jeder Merge-Aktion müssen zum **aktuellen** Head-SHA und Main-Stand folgende Tatsachen dokumentiert und geprüft werden:
+
+1. **Fachlich korrekt und reproduzierbar:** Diff, betroffene Funktion und Akzeptanzkriterien tatsächlich prüfen. Zu jedem überprüften Verhalten einen nachvollziehbaren Test- oder Reproduktionsweg und Commit-SHA nennen; keine bekannten relevanten offenen Konzept- oder Funktionsfehler. `NOT_PROVEN` ist kein `PASS`.
+2. **Pipeline grün:** Alle anwendbaren CI-/Pipeline-Tests und Security-Jobs müssen erfolgreich abgeschlossen sein, insbesondere die Required Checks `Docker Security Gate` und `Domain Governance`. `PENDING`, `FAILED`, `CANCELLED`, fehlende oder ungeklärt `SKIPPED`-Checks sind **nicht** grün; nur nachweislich nicht anwendbare optionale Jobs ausnehmen.
+3. **Konfliktfrei und aktuell:** GitHub meldet Mergefähigkeit, keine Merge-Konflikte oder ungeklärten verbindlichen Review-Threads, Branch auf der für die Ruleset erforderlichen aktuellen Main-Basis. Nach einem Branch-Sync die dadurch erforderlichen Checks neu auswerten. Race Conditions durch `expected_head_sha` oder gleichwertige Prüfung vermeiden.
+4. **Trust Boundaries:** Keine konkret bekannten, im betroffenen Scope ungeklärten kritischen Auth-/Tenant-/Vault-/Secret-, Supply-Chain-, Lizenz-, Providerrechte-, Datenschutz- oder Kostenrisiken. Tests ersetzen keine fehlende rechtliche, vertragliche oder kostenbezogene Berechtigung; kein globales Rechts-Attest verlangen.
+5. **Evidence:** Im PR oder Abschlussbericht die verifizierten Checks/Run-IDs, genaue Tests, Reproduktionsschritte, relevante Restrisiken, Rücknahmeoption und bei Production-Änderungen den erforderlichen Runtime-Readback dokumentieren.
+
+Wenn etwas nicht nachweisbar ist, **nicht mergen**, sondern autonom Ursachen beheben; nur echte persönliche Owner-Handlungen (z. B. Vertrag, Zahlung, Eingabe von Zugangsdaten oder Erteilung fehlender Rechte) eskalieren. Die Delegation erlaubt proaktive, risikoorientierte Best-Practice-, Architektur- und Supply-Chain-Verbesserungen im autorisierten Wirkpfad, keine beliebige Scope-Ausweitung, Schutzumgehung oder kostenpflichtige Aktivierung.
 
 ## Direktpfad vom Chat-Auftrag zum Pull Request
 
-Bei einem konkreten umsetzbaren Chat-Auftrag ist die bestehende GitHub-PR-Pipeline der Standardweg, ohne zusätzliche Freigabe-, Vorabtest- oder manuelle CI-Ebene:
+Bei konkreten Chat-Aufträgen bleibt die vorhandene PR-Pipeline Standard, ohne zusätzliche Freigaben oder manuell gestartete CI-Gates:
 
-1. Den aktuellen `main`-Stand, betroffene Codepfade und offene PRs im selben Scope gezielt abgleichen. Einen bereits offenen passenden PR fortführen; keine parallelen Vorbereitungs-PRs erzeugen.
-2. Die kleinste vollständige, überprüfbare Änderung direkt auf einem bestehenden Scope-Branch oder einem von aktuellem `main` abgeleiteten Feature-Branch umsetzen. Ein fehlender lokaler Checkout ist kein Grund, bei vorhandenem Repository-Zugriff nur einen Plan oder Testbefehl auszugeben.
-3. Den wirksamen Code committen und den PR mit tatsächlichen Änderungen, Risiken und vorhandener Evidence eröffnen. Die automatischen Required Checks gehören **nach** dem PR; einen PR nicht für einen zusätzlichen, manuell gestarteten Preflight verzögern.
-4. Vorhandene GitHub-Checks als Nachweis **ihres tatsächlichen Umfangs** verwenden. `PENDING`, `SKIPPED` und `NOT_PROVEN` nicht als `PASS` bezeichnen; fehlgeschlagene Checks gezielt im selben PR korrigieren. Keine duplizierten Einzelworkflows für Tests erstellen, die der bestehende `Docker Security Gate` bereits ausführt.
-5. Dem Owner den PR-Link, den geänderten Scope und die echten CI-Ergebnisse zusammenfassen. Der PR bleibt bis zur ausdrücklichen PR-spezifischen Owner-Freigabe ungemergt; Production wird dadurch nicht gestartet.
+1. Aktuellen `main`-Stand, Codepfade, angrenzende Architektur und passende offene PRs vergleichen. Bestehende Scope-PRs fertigstellen statt Doppel-PRs.
+2. Die kleinste vollständige, wartbare Änderung umsetzen. Relevante alte Konzeptfehler und Ursachen im betroffenen Wirkpfad anhand der installierten Version und vorhandener Tests beheben; selbstständig sachlich andere Alternativen ausprobieren. Keine unbegrenzte Generalüberholung des gesamten Repositories.
+3. Vor einem neuen PR fachlich/blockierende Voraussetzungen beheben und vorhandene angemessene Prüfungen ausführen. Danach Änderung committen und PR mit tatsächlich wirksamem Code, Tests, reproduzierbaren Kriterien und Risiken eröffnen. Die automatischen GitHub Required Checks laufen **im PR**, nicht in einem zusätzlichen Preflight.
+4. Bestehende Checks als Evidence ihres tatsächlichen Scopes auswerten; Fehler im selben PR beheben und GitHub erneut prüfen lassen. Keine duplizierten Tests neben dem bestehenden `Docker Security Gate`.
+5. Nach erfüllter delegierter Merge-Regel **ohne erneute Owner-Einzelfreigabe** mit gültigem Head-SHA mergen; Post-Merge und Production separat prüfen. Dem Owner PR-/Commit-Link, Checks und überprüftes Ergebnis berichten.
 
-Dieser Direktpfad schafft keine neuen Required Checks, Reviews, Testausnahmen, Merge-Berechtigungen oder Freigabestufen.
+Es entstehen keine zusätzlichen Required Checks, Pflichtreviews, Admissions, Kosten- oder Production-Freigaben.
 
 ## PRs nur für umsetzbare Änderungen
 
 Für alle Domains gilt: Ein neuer PR muss eine tatsächliche, vollständige Änderung enthalten, die nach erfolgreichen Checks und autorisiertem Merge über den bestehenden Main-/Deployment-Pfad wirksam werden kann.
 
-- **Vor dem PR umsetzen:** Den beauftragten Scope fertig implementieren und angemessen prüfen. Zielverhalten, konkrete Änderung und Weg zur Aktivierung müssen klar sein. Ein Konzept, Platzhalter, deaktivierter Adapter oder Status-/Evidence-Bericht allein erfüllt keinen Implementierungsauftrag.
+- **Vor dem PR umsetzen:** Den beauftragten Scope fertig implementieren, die konkreten alten Architektur-/Konzeptfehler im betroffenen Wirkpfad und selbstständig lösbare Blocker beheben sowie anhand versionspassender Best Practices angemessen prüfen. Zielverhalten, konkrete Änderung und Weg zur Aktivierung müssen klar sein. Ein Konzept, Platzhalter, deaktivierter Adapter oder Status-/Evidence-Bericht allein erfüllt keinen Implementierungsauftrag.
 - **Bei Voraussetzungen keinen PR eröffnen:** Fehlen notwendige Zugänge, Providerrechte, Konfigurationen, externe Änderungen, fachliche Vorgaben oder Owner-Entscheidungen für die beauftragte Wirkung, zunächst diese Voraussetzungen nach „Blocker autonom lösen“ aktiv beheben oder klären. Autorisierte Vorarbeiten auf dem Branch fortführen und den konkreten Blocker sowie den kleinsten nächsten Schritt im Chat nennen. Keine Draft-/Vorbereitungs-PRs als Ersatz für eine blockierte Umsetzung.
 - **Kein versteckter Folgeauftrag:** Kein PR, dessen angekündigte Wirkung erst durch einen weiteren Implementierungs-PR, späteres Enablement oder noch ungeklärte externe Maßnahmen entsteht. Einen kleineren, unabhängig wirksamen Teilumfang nur dann als PR ausliefern, wenn der Owner diesen Teilumfang ausdrücklich beauftragt hat.
 - **Direkt wirksame Repository-Änderungen:** Ausdrücklich beauftragte Richtlinien-, Dokumentations-, Test- oder CI-Korrekturen sind zulässig, wenn ihre eigene Wirkung vollständig durch den Merge entsteht. Sie dürfen nicht als Nachweis einer noch fehlenden Produktfunktion dargestellt werden.
 - **CI bleibt im PR:** Ausstehende automatische PR-Checks und die reguläre Merge-Entscheidung sind keine fehlenden Umsetzungsvoraussetzungen. GitHub Actions weiterhin auf dem PR ausführen; keine neuen lokalen Preflight-Gates oder Required Checks einführen. Fehlgeschlagene Checks im bestehenden PR konservativ beheben.
-- **Bis zum Ergebnis fortführen:** Einen bestehenden PR im autorisierten Scope fertigstellen statt zusätzliche Planungs- oder Evidence-PRs anzulegen. PR-Erstellung, grüne Tests und Merge sind getrennte Zustände. Eine Live-Umsetzung erst nach geprüftem Deployment und nachvollziehbarem Runtime-/Funktionsnachweis als erledigt melden; bei reinen Repository-Anweisungen deren Wirksamkeit ab Merge angeben. Diese Regel erteilt keine neue Merge-, Deploy-, Kosten- oder Secret-Berechtigung.
+- **Bis zum Ergebnis fortführen:** Einen bestehenden PR im autorisierten Scope fertigstellen statt zusätzliche Planungs- oder Evidence-PRs anzulegen. PR-Erstellung, grüne Tests und Merge sind getrennte Zustände. Eine Live-Umsetzung erst nach geprüftem Deployment und nachvollziehbarem Runtime-/Funktionsnachweis als erledigt melden; bei reinen Repository-Anweisungen deren Wirksamkeit ab Merge angeben. Die Merge-Berechtigung ergibt sich ausschließlich aus der hier ausdrücklich delegierten Agenten-Merge-Regel; Deploy-, Kosten- und Secret-Berechtigungen bleiben separat.
 
 ## Blocker autonom lösen
 
@@ -67,7 +78,7 @@ Aktuell autoritativ:
 
 Weitere Required Checks werden nur bei einem real nachgewiesenen, nicht bereits abgedeckten Risiko eingeführt.
 
-Ein erfolgreicher Check ist Evidence für seinen technischen Scope. Er erzeugt keine Merge Authority und keine pauschalen Lizenz-/Providerrechte.
+Ein erfolgreicher Check ist Evidence für seinen technischen Scope. Die Merge-Autorisierung folgt ausschließlich aus der ausdrücklichen Owner-Delegation **und** dem vollständigen Nachweis sämtlicher Merge-Bedingungen; grüne Tests erzeugen keine pauschalen Lizenz-/Providerrechte.
 
 ## GitHub Checks
 
@@ -141,7 +152,7 @@ Sie darf ausschließlich:
 - genau **einen Korrelations-Commit** auf diesem bereits existierenden PR-Branch erzeugen,
 - darin ausschließlich maschinenlesbare Korrelations-Evidence zum letzten Main-Merge aktualisieren.
 
-Ergänzend darf derselbe Post-Merge-Lauf **read-only** den live beobachteten `main`-SHA, den Synchronisationsbedarf des ausgewählten PR, den Status der bestehenden Required Checks sowie Security- und Lizenz-Evidence-Hinweise aus Dateipfaden dokumentieren. Ergebnisse sind nur Status-Snapshots (`VERIFIED`, `BLOCKED`, `PENDING`, `NOT_PROVEN` oder `REVIEW_REQUIRED`, jeweils bezogen auf den geprüften Scope); sie sind weder ein CI-Neustart noch ein License-/Security-Approval oder eine Merge-Ermächtigung. Ein fachlicher Branch-Sync oder CI-Rerun ist nicht automatisch durch diesen Bericht autorisiert. Es entstehen keine neuen Required Checks oder Freigabeschichten.
+Ergänzend darf derselbe Post-Merge-Lauf **read-only** den live beobachteten `main`-SHA, den Synchronisationsbedarf des ausgewählten PR, den Status der bestehenden Required Checks sowie Security- und Lizenz-Evidence-Hinweise aus Dateipfaden dokumentieren. Ergebnisse sind nur Status-Snapshots (`VERIFIED`, `BLOCKED`, `PENDING`, `NOT_PROVEN` oder `REVIEW_REQUIRED`, jeweils bezogen auf den geprüften Scope); sie sind weder ein CI-Neustart noch ein License-/Security-Approval oder eine Merge-Ermächtigung. Ein fachlicher Branch-Sync oder CI-Rerun wird nicht durch diesen reinen Korrelationsbericht ausgeführt; berechtigte Agenten können solche Schritte im normalen Entwicklungsauftrag durchführen. Es entstehen keine neuen Required Checks oder Freigabeschichten.
 
 Sie darf **keine neuen Branches, keine neuen PRs, keine Repair-Commits außerhalb dieser Evidence-Datei, keinen Merge und keinen Deploy** erzeugen.
 
@@ -166,7 +177,7 @@ Die fünf Domain-Perspektiven erhalten **zwei funktionale Skills pro Domain**: `
 1. **Automatisch nach Aufgabeninhalt routen, soweit die Chat-/Agent-Laufzeit Skills unterstützt:** PRODUCT (Frontend/UX/Auth-Client), MARKET (Daten/Provider/Scoring), PLATFORM (Infrastruktur/Runtime/CI), TRUST (Security/Compliance/QA/Evidence), GROWTH (Docs/SEO/Social/Branding). Bei Implementierung Engineering-Skill, bei Beratung Advisory-Skill, bei gemischten Aufgaben beide anwenden. Bei domainübergreifender Arbeit weitere relevante Skills im **selben Chat** verwenden; kein organisatorischer Handoff.
 2. **Beratungsqualität:** aktuelle Ausgangsevidence, mindestens eine tragfähige Alternative, Trade-offs (Security, Datenschutz, Lizenz, Kosten, Wartbarkeit, Performance), begründete Empfehlung und prüfbare Kriterien. Externe Quellen mit Datum/Version priorisiert aus offizieller Dokumentation, Standards und Primärquellen; normative Pflichten von optionalen Best Practices trennen.
 3. **Aktualität und Grenzen:** Bestehende Repository-Evidence und für die eingesetzte Version passende Dokumentation zuerst nutzen. Externe Recherche nur zur Klärung einer konkreten entscheidungsrelevanten Unsicherheit oder einer erforderlichen Aktualitätsprüfung; keine pauschale erneute Verifikation jeder Entscheidung. Es gilt der folgende Arbeitsmodus. Fehlende Live-Quellen, Skills oder Tools kenntlich machen statt Ausführung oder Frische zu behaupten. Skill-Anleitungen verleihen keinerlei Credentials oder Rechte.
-4. **Governance:** Skills und Chat-Profile sind **nicht autorisierende Arbeitsanleitungen** unter dieser `AGENTS.md`. Sie erzeugen keine neuen Pflichtchecks, Admissions, Reviews, Handovers, Write-Permissions oder Production-Freigaben. Für Branch/PR gilt allein die Primary Domain; Merge-Regel und reale technische Trust Boundaries bleiben unverändert.
+4. **Governance:** Skills und Chat-Profile sind **nicht autorisierende Arbeitsanleitungen** unter dieser `AGENTS.md`. Sie erzeugen keine neuen Pflichtchecks, Admissions, Reviews, Handovers, Write-Permissions oder Production-Freigaben. Für Branch/PR gilt allein die Primary Domain; die hier delegierte Merge-Regel und reale technische Trust Boundaries bleiben verbindlich.
 5. **Validierung:** `npm run test:domain-skills` kontrolliert Skill-Dateien, Registry und Chat-Profil-Verweise. Ein bestandener Strukturtest belegt keine Live-Skill-Ausführung in externen ChatGPT-Sitzungen.
 
 ## Aufgabenbezogene Recherche statt Selbststudium
@@ -199,7 +210,7 @@ Das gemeinsame, **nicht autorisierende** Presentation-Skill `.agents/skills/visu
 1. **Nach Bedarf statt Dekoration:** Für technische Flüsse Mermaid/Diagramme, für Prioritäten und geprüfte Alternativen kompakte Tabellen, für tatsächlich gemessene Werte beschriftete Charts, für Status VERIFIED/BLOCKED/NOT_PROVEN klare Textkennzeichnung. Einfache Fragen bleiben als verständlicher Fließtext beantwortbar.
 2. **Aktuelle Chat-Laufzeit entscheidet:** Native visuelle Chat-Komponenten, interaktive Widgets, Diagramm-Renderer oder Charts nur verwenden, wenn sie im konkreten Chat tatsächlich angeboten werden. Als universeller Fallback Markdown-Tabellen und Mermaid-Code plus textuelle Erläuterung. **AGENTS.md installiert oder überträgt keine ChatGPT-UI-Engine** in andere Chats oder Agent-Systeme.
 3. **Evidence, Accessibility, Datenschutz:** Keine unbelegten Live-/Kosten-/Messwerte illustrieren, keine geheimen Nutzerdaten/Secrets im UI ausgeben, Diagramme mit nachvollziehbarem Text ergänzen, mobile und Screenreader-Lesbarkeit beachten, Quellen/Stand und Aussagegrenzen nennen.
-4. **Statusformat erhalten:** Die beiden vorgeschriebenen Abschluss-Code-Snippets und das Kennzeichen `👋⚙️` für persönliche Owner-Schritte bleiben erhalten. Der Presentation-Skill ändert weder Permissions noch Domainzuständigkeiten, Required Checks, rechtliche Pflichten, Kostenfreigaben oder die Owner-Merge-Regel.
+4. **Statusformat erhalten:** Die beiden vorgeschriebenen Abschluss-Code-Snippets und das Kennzeichen `👋⚙️` für persönliche Owner-Schritte bleiben erhalten. Der Presentation-Skill ändert weder Permissions noch Domainzuständigkeiten, Required Checks, rechtliche Pflichten, Kostenfreigaben oder die delegierte Agenten-Merge-Regel.
 5. **Verifikation:** `npm run test:domain-skills` kontrolliert die fünf Chat-Agent- und Registry-Verweise; tatsächliche native Visualisierung in jeder Chat-Laufzeit ist dadurch **nicht** nachgewiesen.
 6. **Design-Vorschauen direkt einbetten:** Bei neuen oder geänderten CAPITAL-AI-Designs nach Möglichkeit eine **sichtbare, direkt im Chat gerenderte Vorschau** zeigen, bevor ausschließlich Quelltext oder Dateilinks angeboten werden: SVG als eingebettete Grafik, PNG als eingebettetes Bild und HTML/CSS bzw. React-Ansichten als tatsächlich unterstützte visuelle Vorschau. Interaktive Vorschauen für Navigation, Zustände und Komponenten anbieten, **sofern die konkrete Chat-Laufzeit Interaktion unterstützt**. Quellcode/Dateien zusätzlich für die Übernahme ins Repository liefern; nur bei fehlender Renderfunktion verständlich auf Code, Screenshot, Mermaid oder Markdown ausweichen. Niemals eine bloße Code-Ausgabe als getestete oder gerenderte Vorschau bezeichnen.
 7. **Vorschau ist kein Browser-Test:** Für implementierte Frontend-Änderungen Browser-, Mobile-/Tablet-/Desktop-Responsive- und grundlegende Accessibility-Prüfungen **separat** mit tatsächlich ausgeführten Testschritten, konkreten Viewports/Browsern, Befund und zugehörigem Commit/PR dokumentieren. Bei fehlender Testausführung `NOT_PROVEN` ausweisen; ein visuelles Chat-Mockup, Bild oder HTML-Preview ist kein Nachweis einer funktionierenden Live-Website. Keine erfundenen Screenshots, Interaktionsresultate oder Qualitätsfreigaben.
@@ -220,9 +231,9 @@ Für **PRODUCT, MARKET, PLATFORM, TRUST und GROWTH** gilt bei konkreten Chat-Auf
 Für **PRODUCT, MARKET, PLATFORM, TRUST und GROWTH** sowie domainübergreifende Chats gilt: Jede inhaltliche Beratungs-, Implementierungs-, Review- oder Statusantwort enthält **am Ende 1 bis 3 konkrete, anhand des tatsächlichen Chat-Inhalts priorisierte Vorschläge**, wie die Arbeit im selben Chat sinnvoll fortgesetzt werden kann. Dies ist eine Kommunikationsvorgabe des Human Repository Owners, **keine** zusätzliche technische, rechtliche oder organisatorische Freigabeschicht.
 
 1. **Auftrags- und Evidenzbezug:** Die Vorschläge leiten sich aus Nutzerziel, bereits umgesetztem Scope, aktuellen Befunden, Risiken, Kosten und offenen Abhängigkeiten ab; keine generischen Floskeln oder erfundenen nächsten Aufgaben. Jeder Vorschlag nennt eine ausführbare Aktion oder eine präzise Entscheidungsoption sowie ihren Zweck. Wenn mehrere Wege sinnvoll sind, eine bevorzugte Option zuerst nennen und insgesamt maximal drei Optionen anbieten.
-2. **Weiterarbeit statt Handoff:** Geeignete, bereits autorisierte Arbeit eigenständig erledigen, bevor nächste Schritte vorgeschlagen werden. Domainübergreifende Aufgaben im **gleichen Chat** fortführen; keine künstlichen Domain-Handoffs, unnötigen Rückfragen oder Aufforderungen zur wiederholten Zustimmung. Persönliche Owner-Schritte wie Merge, Vertrag oder kostenpflichtige Aktivierung mit `👋⚙️` kennzeichnen.
+2. **Weiterarbeit statt Handoff:** Geeignete, bereits autorisierte Arbeit eigenständig erledigen, bevor nächste Schritte vorgeschlagen werden. Domainübergreifende Aufgaben im **gleichen Chat** fortführen; keine künstlichen Domain-Handoffs, unnötigen Rückfragen oder Aufforderungen zur wiederholten Zustimmung. Persönliche Owner-Schritte wie Vertrag, Credential-Eingabe oder kostenpflichtige Aktivierung mit `👋⚙️` kennzeichnen.
 3. **Platzierung und Länge:** Die 1–3 Vorschläge in Status-/Abschlussantworten unter `🔧 OFFEN / NÄCHSTE SCHRITTE` aufführen; andere inhaltliche Antworten erhalten am Ende eine knappe Passage mit 1–3 passenden nächsten Chat-Aktionen. Nicht denselben Vorschlag zusätzlich in einer separaten Liste wiederholen. Bei vollständig abgeschlossenen Aufträgen sinnvolle optionale Folgeaktionen statt fiktiver Blocker nennen.
-4. **Grenzen:** Nur Optionen vorschlagen, die zum Thema und zu vorhandenen Berechtigungen passen. Keine Ausführung, Kosten, Provider-/Lizenzrechte, Security-Freigabe, Merge- oder Production-Fähigkeit behaupten, die nicht belegt sind. Die bisherigen zwei Status-Codeblöcke, Required Checks `Docker Security Gate` und `Domain Governance`, der `SOLO_MAINTAINER_FLOW@1` und die Owner-Merge-Regel bleiben unverändert.
+4. **Grenzen:** Nur Optionen vorschlagen, die zum Thema und zu vorhandenen Berechtigungen passen. Keine Ausführung, Kosten, Provider-/Lizenzrechte, Security-Freigabe, Merge- oder Production-Fähigkeit behaupten, die nicht belegt sind. Die bisherigen zwei Status-Codeblöcke, Required Checks `Docker Security Gate` und `Domain Governance`, der `SOLO_MAINTAINER_FLOW@1` und die delegierte Agenten-Merge-Regel gelten verbindlich.
 
 ## Status in ChatGPT
 
@@ -242,7 +253,7 @@ Status-, Review-, Implementierungs- und Abschlussmeldungen enden mit zwei getren
 
 - Jeder konkrete Schritt, den der Human Repository Owner **persönlich** erledigen muss, erhält in Chat-Antworten das sichtbare Präfix `👋⚙️`. Das gilt insbesondere für `🔧 OFFEN / NÄCHSTE SCHRITTE` sowie für Status-, Review-, Implementierungs- und Abschlussmeldungen.
 - Das Präfix steht **direkt vor der betreffenden Aktion** (nach einer eventuell vorhandenen Listenmarkierung oder Nummer). Bei gemischten Listen wird jeder Owner-Schritt einzeln markiert, nicht die gesamte Liste.
-- Typische Owner-Schritte sind ein nicht ausdrücklich delegierter PR-Merge, interaktive OAuth-/Provider-Freigaben, persönliche Eingaben von Secrets oder Credentials und rechtsverbindliche Vertrags- bzw. Zahlungsfreigaben.
+- Typische Owner-Schritte sind interaktive OAuth-/Provider-Freigaben, persönliche Eingaben von Secrets oder Credentials und rechtsverbindliche Vertrags- bzw. Zahlungsfreigaben.
 - Agentenseitig ausführbare Aufgaben, rein informative Hinweise und bereits erledigte Schritte werden **nicht** als offene Owner-Aktionen gekennzeichnet. Aufgaben sollen nicht unnötig auf den Owner verschoben werden.
-- Beispiel für einen offenen Eintrag: `- 👋⚙️ PR nach erfolgreichen Required Checks im GitHub-UI mergen.`
+- Beispiel für einen offenen Eintrag: `- 👋⚙️ Ein kostenpflichtiges Provider-Abo nach Kostenprüfung persönlich freigeben.`
 - Die Kennzeichnung ist ausschließlich eine **Darstellungsregel**: Sie schafft keine zusätzliche Approval-, Handoff-, Review- oder Admission-Pflicht und verändert keine bestehenden Zuständigkeiten oder Merge-Berechtigungen.
