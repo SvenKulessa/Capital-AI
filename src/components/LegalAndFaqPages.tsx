@@ -11,6 +11,8 @@ import {
   Database,
   FileText,
   HelpCircle,
+  Mail,
+  Compass,
   Info,
   Lock,
   Printer,
@@ -41,11 +43,12 @@ import {
   PUBLIC_FAQ_ITEMS,
 } from '../content/publicLegalContent';
 import { BrandLogo } from './BrandLogo';
+import { ContactForm } from './ContactForm';
 import { useLocale } from '../i18n/LocaleProvider';
 import { CookieStorageInventory } from '../privacy/CookieStorageInventory';
 import { legalAvailabilityNotice } from '../i18n/legalAvailability';
 
-export type LegalRoute = '/faq' | '/datenschutz' | '/agb' | '/impressum';
+export type LegalRoute = '/legal' | '/faq' | '/datenschutz' | '/agb' | '/impressum' | '/kontakt';
 
 interface LegalAndFaqPagesProps {
   route: LegalRoute;
@@ -199,12 +202,12 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
   };
 
   return (
-    <main
-      id="main-content"
+    <section
+      id="legal-content"
       data-design-source="SvenKulessa/FRONTEND"
       data-design-source-commit="f2a101330d74420c373f0ec56fa58caac53d741d"
       data-content-owner="CAPITAL-AI-COMP"
-      className="w-full min-h-screen bg-[#02050e] text-slate-100 flex flex-col items-center justify-start p-4 sm:p-6 sm:pb-16 relative overflow-hidden"
+      className="w-full min-h-screen bg-[#071126] text-slate-100 flex flex-col items-center justify-start p-4 sm:p-6 sm:pb-16 relative overflow-hidden"
     >
       <div aria-hidden="true" className="absolute top-10 left-1/2 -translate-x-1/2 w-[550px] h-[550px] bg-[#8D26FF]/10 rounded-full blur-3xl pointer-events-none" />
       <div aria-hidden="true" className="absolute top-60 -left-20 w-80 h-80 bg-[#F9BF21]/10 rounded-full blur-3xl pointer-events-none" />
@@ -256,16 +259,20 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
 
       <div className="w-full max-w-4xl z-10 mt-4 flex items-center justify-between gap-2 overflow-x-auto p-1.5 bg-black/50 border border-slate-800/90 rounded-2xl">
         <div className="flex items-center gap-1.5 min-w-max">
+          <button type="button" onClick={() => navigate('/legal')} aria-current={route === '/legal' ? 'page' : undefined}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${route === '/legal' ? 'bg-slate-700/60 text-white border border-slate-400/40' : 'text-slate-300 hover:text-white hover:bg-white/5'}`}>
+            <Compass className="w-3.5 h-3.5" aria-hidden="true" />Übersicht
+          </button>
           <button
             type="button"
             onClick={() => navigate('/faq')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
               route === '/faq'
-                ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40 shadow-[0_0_12px_rgba(249,191,33,0.2)]'
-                : 'text-slate-400 hover:text-white hover:bg-white/5'
+                ? 'bg-[#0DDDDD]/15 text-[#0DDDDD] border border-[#0DDDDD]/40 shadow-[0_0_12px_rgba(13,221,221,0.12)]'
+                : 'text-[#0DDDDD] hover:text-white hover:bg-[#0DDDDD]/10'
             }`}
           >
-            <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
+            <HelpCircle className="w-3.5 h-3.5 text-[#0DDDDD]" />
             <span>FAQ</span>
           </button>
           <button
@@ -304,6 +311,10 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
             <Building2 className="w-3.5 h-3.5 text-[#8D26FF]" />
             <span>Impressum</span>
           </button>
+          <button type="button" onClick={() => navigate('/kontakt')} aria-current={route === '/kontakt' ? 'page' : undefined}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${route === '/kontakt' ? 'bg-[#F5C453]/15 text-[#F5C453] border border-[#F5C453]/40 shadow-[0_0_12px_rgba(245,196,83,0.15)]' : 'text-[#F5C453] hover:text-white hover:bg-[#F5C453]/10'}`}>
+            <Mail className="w-3.5 h-3.5" aria-hidden="true" /><span>Kontakt</span>
+          </button>
         </div>
 
       </div>
@@ -314,10 +325,23 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
             {legalAvailabilityNotice[locale]}
           </div>
         )}
+        {route === '/legal' && (
+          <div lang="de" className="rounded-3xl border border-[#F5C453]/25 bg-[#0d1930]/85 p-6 sm:p-8 space-y-5">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Legal &amp; FAQ</h1>
+            <p className="text-slate-300 text-sm leading-6">Zentrale Übersicht zu rechtlichen Informationen, häufigen Fragen und Kontaktmöglichkeiten. Die ausführlichen Rechtstexte sind über ihre eigenständigen URLs erreichbar.</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {([{ path: '/faq', label: 'FAQ · Häufige Fragen' }, { path: '/datenschutz', label: 'Datenschutz' }, { path: '/agb', label: 'AGB' }, { path: '/impressum', label: 'Impressum' }, { path: '/kontakt', label: 'Kontakt Formular' }] as const).map(item => (
+                <button key={item.path} type="button" onClick={() => navigate(item.path)} className="min-h-11 rounded-xl border border-slate-600/40 bg-white/5 p-4 text-left text-sm font-semibold text-slate-100 hover:border-[#F5C453]/60 focus-visible:outline-2 focus-visible:outline-[#F5C453]">{item.label} →</button>
+              ))}
+            </div>
+            <p className="text-slate-300 text-sm">Vollständige Rechtstexte: <a className="text-[#F5C453] underline" href="/datenschutz/">/datenschutz/</a> · <a className="text-[#F5C453] underline" href="/agb/">/agb/</a> · <a className="text-[#F5C453] underline" href="/impressum/">/impressum/</a></p>
+          </div>
+        )}
+        {route === '/kontakt' && <ContactForm />}
         {route === '/faq' && (
           <motion.div lang="de" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <div className="text-center max-w-2xl mx-auto space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-bold tracking-wider uppercase">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0DDDDD]/10 border border-[#0DDDDD]/30 text-[#0DDDDD] text-xs font-bold tracking-wider uppercase">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Häufig gestellte Fragen</span>
               </div>
@@ -435,6 +459,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6 bg-[#070b19]/90 border border-emerald-500/20 rounded-3xl p-6 sm:p-8"
           >
+            <a href="/datenschutz/" className="inline-flex min-h-11 items-center rounded-xl border border-[#F5C453]/35 bg-[#F5C453]/10 px-4 py-2 text-sm font-semibold text-[#F5C453] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-[#F5C453]">Ausführliche Datenschutzerklärung unter /datenschutz/ lesen ↗</a>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-[#44DE88] shrink-0">
@@ -606,6 +631,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6 bg-[#070b19]/90 border border-pink-500/20 rounded-3xl p-6 sm:p-8"
           >
+            <a href="/agb/" className="inline-flex min-h-11 items-center rounded-xl border border-[#F5C453]/35 bg-[#F5C453]/10 px-4 py-2 text-sm font-semibold text-[#F5C453] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-[#F5C453]">Ausführliche AGB unter /agb/ lesen ↗</a>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-2xl bg-pink-500/15 border border-pink-500/30 flex items-center justify-center text-[#FF2E93] shrink-0">
@@ -735,6 +761,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6 bg-[#070b19]/90 border border-purple-500/20 rounded-3xl p-6 sm:p-8"
           >
+            <a href="/impressum/" className="inline-flex min-h-11 items-center rounded-xl border border-[#F5C453]/35 bg-[#F5C453]/10 px-4 py-2 text-sm font-semibold text-[#F5C453] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-[#F5C453]">Ausführliche Impressum unter /impressum/ lesen ↗</a>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-2xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-[#8D26FF] shrink-0">
@@ -819,18 +846,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
         )}
       </div>
 
-      <div className="w-full max-w-4xl text-center text-xs text-slate-500 py-6 border-t border-slate-900 0 flex flex-col sm:flex-row items-center justify-between gap-2">
-        <span>© {new Date().getFullYear()} CAPITAL-AI · {CONTROLLER.name}</span>
-        <div className="flex items-center gap-3">
-          <button type="button" onClick={() => navigate('/impressum')} className="hover:text-slate-300 cursor-pointer">Impressum</button>
-          <span>•</span>
-          <button type="button" onClick={() => navigate('/agb')} className="hover:text-slate-300 cursor-pointer">AGB</button>
-          <span>•</span>
-          <button type="button" onClick={() => navigate('/datenschutz')} className="hover:text-slate-300 cursor-pointer">Datenschutz</button>
-          <span>•</span>
-          <button type="button" onClick={() => navigate('/faq')} className="hover:text-amber-400 cursor-pointer text-amber-300 font-semibold">FAQ</button>
-        </div>
-      </div>
-    </main>
+
+    </section>
   );
 }
