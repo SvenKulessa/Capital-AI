@@ -53,6 +53,81 @@ export interface WorkPackage {
   dependencies?: string[];
 }
 
+/**
+ * Owner strategy 2026-10-11: revenue-first, independently of historical release phases.
+ * These are planning priorities, NOT implemented features, purchase entitlements,
+ * runtime verification or additional release gates.
+ */
+export interface RoadmapStrategicPriority {
+  id: string;
+  rank: number;
+  level: 'TOP';
+  title: string;
+  objective: string;
+  nextAction: string;
+  evidenceState: 'OFFEN';
+  domains: ProjectOwner[];
+  workPackageIds: string[];
+}
+
+export const ROADMAP_STRATEGIC_PRIORITIES: readonly RoadmapStrategicPriority[] = [
+  {
+    id: 'COMMERCE-LEARNING',
+    rank: 1,
+    level: 'TOP',
+    title: 'Commerce & Learn Portal zuerst monetarisieren',
+    objective: 'Vorhandene Lernangebote, Vokabular und erklärbare mathematische Analyse-/Datenkonzepte nutzerverständlich präsentieren und reguläre Kaufpfade nachweisbar verbessern; keine erfundenen Blueprint-SKUs.',
+    nextAction: 'Lerninhalte → Demo-Formeln/Blueprints → bestehende Angebote/Checkout als nachvollziehbare Journey prüfen, Conversion-Ereignisse und reale Kauf-Evidence getrennt messen.',
+    evidenceState: 'OFFEN',
+    domains: ['PRODUCT', 'GROWTH', 'TRUST'],
+    workPackageIds: ['CA-PRODUCT-BLUEPRINT-COMMERCE-EVIDENCE', 'PRODUCTION-WEB-01-PRODUCT'],
+  },
+  {
+    id: 'MARKETING-DISTRIBUTION',
+    rank: 2,
+    level: 'TOP',
+    title: 'Marketing & organische Reichweite',
+    objective: 'Seriöse Lern-/Methodik-Kampagnen mit überprüfbaren Botschaften, klaren Angeboten und zuordenbaren Leads/Käufen statt unbelegter Performance- oder Finanzversprechen.',
+    nextAction: 'Themencluster, Landingpage-Nutzenversprechen, organische Kampagnen und kanal-/kampagnengebundene Attribution vom Content bis zur Commerce-Zielseite verbinden.',
+    evidenceState: 'OFFEN',
+    domains: ['GROWTH', 'PRODUCT', 'TRUST'],
+    workPackageIds: ['CA-GROWTH-CONTENT-ENGINE', 'CA-GROWTH-SEO-ARCHITECTURE'],
+  },
+  {
+    id: 'WEBSITE-CORRECTNESS',
+    rank: 3,
+    level: 'TOP',
+    title: 'Website: strategische und sachliche Korrektheit',
+    objective: 'Widerspruchsfreie Positionierung, plausible Produktnutzen-/Preis-/Statuskommunikation, zugängliche UX und verifizierbare Links; Demo konsequent von Live und Kaufbarkeit trennen.',
+    nextAction: 'Website-Claims und CTA-/Checkout-Pfade gegen Code, Katalog und Runtime-Evidence prüfen, irreführende Angaben korrigieren und Mobil-/Accessibility-Tests dokumentieren.',
+    evidenceState: 'OFFEN',
+    domains: ['PRODUCT', 'GROWTH', 'TRUST'],
+    workPackageIds: ['PRODUCTION-WEB-01-GROWTH', 'PRODUCTION-WEB-01-PRODUCT'],
+  },
+  {
+    id: 'SEARCH-SEO',
+    rank: 4,
+    level: 'TOP',
+    title: 'Search Engine, Auffindbarkeit & SEO-Management',
+    objective: 'Suche, Content Discovery, thematische Verlinkung, Metadaten, technische Indexierbarkeit und AI-Search-Readiness als überprüfbaren organischen Akquisitionspfad entwickeln.',
+    nextAction: 'Bestehende SEO-00–SEO-11-Reihenfolge beibehalten; Search Intent, Crawl-/Index-Readback, interne Suche/Discovery und GSC-Evidence mit Landingpages und Commerce-Zielen korrelieren.',
+    evidenceState: 'OFFEN',
+    domains: ['GROWTH', 'PRODUCT', 'PLATFORM'],
+    workPackageIds: ['CA-GROWTH-SEO-ARCHITECTURE'],
+  },
+  {
+    id: 'CONTENT-SOCIAL-PIPELINE',
+    rank: 5,
+    level: 'TOP',
+    title: 'Content Engine & Social Media Engine samt Pipeline ausbauen',
+    objective: 'Wiederverwendbare Lern-/Analyse-Inhalte von Quelle und Scoring-Erklärung bis Draft, Review, Render, Schedule, Publish, Measure mit SEO und Attribution verbinden.',
+    nextAction: 'Bestehende Content-/Social-Verträge und Providergrenzen konsolidieren; Draft→Review→Render→Schedule→Publish→Measure nur mit echten Delivery-/Rechte-Nachweisen weiterentwickeln.',
+    evidenceState: 'OFFEN',
+    domains: ['GROWTH', 'PRODUCT', 'PLATFORM', 'TRUST'],
+    workPackageIds: ['CA-GROWTH-CONTENT-ENGINE', 'CA-GROWTH-CONTENT-SOCIAL-PACKAGE'],
+  },
+] as const;
+
 export const ROADMAP_STAGES: StagePhaseInfo[] = [
   {
     phase: 1,
@@ -588,7 +663,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
       'docs/security/BUILD-DOMEXCEPTION-REVIEW-20261005.md',
     ],
     nextStep: 'SEO-03: reproduzierbaren anonymen HTTP-Readback für Manifest-Routen, Canonicals, JSON-LD, Sitemap, robots, Discovery und Commerce ausführen. Danach vollständige Crawl-/Link-Abdeckung und SEO-04 Content-Cluster ergänzen; Build-Identität und echte Käufe bleiben separat nachzuweisen.',
-    priority: 'Hoch',
+    priority: 'Kritisch',
     leadName: 'Owner + GROWTH',
     targetSprint: 'SEO-00 → SEO-11 in technischer Reihenfolge; SEO-02 rekonstruiert auf CURRENT_MAIN 96178b3',
     description: 'Kanonisches SEO-Arbeitspaket. SEO-00 und SEO-01 sind auf Main durch Docker Security Gate/CodeQL validiert. SEO-02 ist repositoryseitig umgesetzt: Manifest-basierte Metadata, claimsafe JSON-LD, private Konto-Routen, NOINDEX-Cleanup und /.well-known/change-password sind vorhanden; Branch-CI steht noch aus. Das Gesamtpaket bleibt OFFEN und führt danach mit SEO-03 weiter.',
