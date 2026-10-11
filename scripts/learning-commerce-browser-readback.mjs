@@ -68,15 +68,13 @@ try {
   for (const viewport of [{ name: 'desktop', width: 1440, height: 900, mobile: false }, { name: 'mobile', width: 390, height: 844, mobile: true }]) {
     report.viewport = viewport;
     await command('Emulation.setDeviceMetricsOverride', { width: viewport.width, height: viewport.height, mobile: viewport.mobile, deviceScaleFactor: 1 });
-    await navigate('/learning?tab=patterns', `document.querySelector('[aria-label="Chart-Lernatlas"] select')?.options.length === 12`);
-    assert.equal(await evaluate(`!!document.querySelector('[aria-label="Chart-Lernatlas"] [role="img"]')`), true, 'Accessible chart missing');
-    await evaluate(`document.querySelector('[aria-label="Kategorie filtern"] button:nth-child(2)').click()`);
-    await until(() => evaluate(`document.querySelector('[aria-label="Chart-Lernatlas"] select')?.options.length === 2`), 'Flags filter');
-    await evaluate(`(() => { const s=document.querySelector('[aria-label="Chart-Lernatlas"] select'); s.value=s.options[1].value; s.dispatchEvent(new Event('change',{bubbles:true})); })()`);
-    await until(() => evaluate(`document.querySelector('[aria-label="Chart-Lernatlas"] select')?.value === 'bear-flag'`), 'Bear Flag selection');
-    await evaluate(`Array.from(document.querySelectorAll('[aria-label="Chart-Lernatlas"] button')).find(b=>b.textContent==='Erklärung anzeigen').click()`);
-    await until(() => evaluate(`!!document.querySelector('[aria-label="Chart-Lernatlas"] button[aria-expanded="true"]')`), 'Self check');
-    await capture(viewport.name + '-chart-atlas');
+    // The current product contract requires Learning Portal + an active subscription.
+    // A fresh anonymous profile must see the gate, not paid chart content.
+    await navigate('/learning?tab=patterns', `document.body.textContent.includes('Chart-Lernatlas: mit Learning Portal und aktivem Starter-, Pro- oder Enterprise-Abonnement nutzbar.')`);
+    assert.equal(await evaluate(`!!document.querySelector('[aria-label="Chart-Lernatlas"]')`), false, 'Paid chart content exposed to an anonymous visitor');
+    await capture(viewport.name + '-chart-access-gate');
+    report.checks.at(-1).chartAccess = 'ANONYMOUS_ACCESS_GATED';
+    report.checks.at(-1).paidChartInteractions = 'NOT_PROVEN';
     await navigate('/', `Array.from(document.querySelectorAll('button')).some(b=>b.textContent==='Tarife & Leistungsumfang ansehen')`);
     await evaluate(`Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Tarife & Leistungsumfang ansehen').click()`);
     await until(() => evaluate(`!!document.querySelector('[role="dialog"] [role="switch"]')`), 'CADS pricing dialog');
@@ -98,5 +96,5 @@ try {
   for (const task of pending.values()) clearTimeout(task.timer);
   chrome.kill('SIGTERM');
   await new Promise(resolve => { if (chrome.exitCode !== null || chrome.signalCode) resolve(); else { chrome.once('exit', resolve); setTimeout(() => { chrome.kill('SIGKILL'); resolve(); }, 3000).unref(); } });
-  await rm(profile, { recursive: true, force: true });
+  await rm(profile, { recursive: true, force: true, maxRetries: 6, retryDelay: 200 });
 }

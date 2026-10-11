@@ -313,3 +313,9 @@
 !server/private-market-cache.mjs
 !server/private-market-batch.test.mjs
 !server/private-market-cache.test.mjs
+
+!server/learning-inquiry.mjs
+!server/learning-inquiry.test.mjs
+!scripts/activate-learning-measurement.mjs
+!scripts/activate-learning-measurement.test.mjs
+!scripts/generate-cookie-storage-notice.mjs

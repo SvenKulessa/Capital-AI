@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useLocale } from '../i18n/LocaleProvider';
+import { cookieCopy } from '../i18n/cookieCopy';
 import {
   COOKIE_CONSENT_STORAGE_KEY,
+  OPEN_COOKIE_PREFERENCES_EVENT,
   readCookieConsent,
   saveCookieConsent,
   type CookieConsentReceipt,
@@ -8,9 +11,11 @@ import {
 
 /**
  * First-party v3 consent UI. Neither accepting nor configuring a preference
- * activates scripts: GA4 and ads remain disabled in src/utils/analytics.ts.
+ * grants analytics only through the consented runtime; advertising remains disabled.
  */
 export function CookieConsentV3() {
+  const { locale } = useLocale();
+  const copy = cookieCopy[locale];
   const [decision, setDecision] = useState<CookieConsentReceipt | null>(() => readCookieConsent());
   const [open, setOpen] = useState(() => readCookieConsent() === null);
   const [details, setDetails] = useState(false);
@@ -28,14 +33,28 @@ export function CookieConsentV3() {
       setOpen(next === null);
       setError('');
     };
+    const reopen = () => {
+      const stored = readCookieConsent();
+      setDecision(stored);
+      setAnalytics(stored?.analytics ?? false);
+      setMarketing(stored?.marketing ?? false);
+      setDetails(true);
+      setError('');
+      setOpen(true);
+    };
+    if (window.location.hash === '#cookie-preferences') reopen();
     window.addEventListener('storage', synchronize);
-    return () => window.removeEventListener('storage', synchronize);
+    window.addEventListener(OPEN_COOKIE_PREFERENCES_EVENT, reopen);
+    return () => {
+      window.removeEventListener('storage', synchronize);
+      window.removeEventListener(OPEN_COOKIE_PREFERENCES_EVENT, reopen);
+    };
   }, []);
 
   const store = (nextAnalytics: boolean, nextMarketing: boolean) => {
     const saved = saveCookieConsent({ analytics: nextAnalytics, marketing: nextMarketing });
     if (!saved) {
-      setError('Die Auswahl konnte nicht gespeichert werden. Optionale Dienste bleiben deaktiviert; Sie können die Website weiterhin nutzen.');
+      setError(copy.error);
       return;
     }
     setDecision(saved);
@@ -46,49 +65,35 @@ export function CookieConsentV3() {
     setOpen(false);
   };
 
-  if (!open && decision) {
-    return (
-      <button
-        type="button"
-        onClick={() => { setDetails(true); setOpen(true); }}
-        className="fixed bottom-3 left-3 z-[70] min-h-11 rounded-xl border border-slate-600 bg-slate-950/95 px-4 py-2 text-xs font-semibold text-slate-100 shadow-lg hover:border-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
-        aria-label="Cookie-Einstellungen erneut öffnen und Einwilligung widerrufen"
-      >
-        Cookie-Einstellungen
-      </button>
-    );
-  }
+  // No floating cookie panel after a verified saved decision. Footer/account links reopen it.
+  if (!open && decision) return null;
 
   return (
     <section
       aria-labelledby="cookie-consent-v3-title"
-      className="fixed inset-x-3 bottom-3 z-[70] mx-auto max-w-3xl rounded-2xl border border-amber-400/50 bg-[#071426] p-4 text-slate-100 shadow-2xl sm:p-5"
+      className="fixed inset-x-3 bottom-3 z-[70] mx-auto max-w-3xl max-h-[calc(100dvh-1.5rem)] overflow-y-auto overscroll-contain rounded-2xl border border-amber-400/50 bg-[#071426] p-4 text-slate-100 shadow-2xl sm:p-5"
       role="region"
     >
       <h2 id="cookie-consent-v3-title" className="text-base font-bold text-white">
-        Cookies &amp; Datenschutz · Version 3
+        {copy.title}
       </h2>
       <p className="mt-2 text-sm leading-relaxed text-slate-200">
-        Notwendige Session-Cookies ermöglichen Anmeldung und Sicherheit. Die Auswahl für optionale
-        Reichweitenmessung und Marketing speichern wir für höchstens 180 Tage in Ihrem Browser
-        (lokaler Speicher, ohne personenbezogene Kennung). Derzeit sind weder GA4-Browsertracking
-        noch Marketing-Tags aktiv – auch eine Zustimmung schaltet diese Dienste nicht ein.
+        {copy.body}
       </p>
       <p className="mt-2 text-xs leading-relaxed text-slate-300">
-        Ablehnen beeinträchtigt die Website oder den Kaufweg nicht. Entscheidungen können jederzeit
-        geändert und Einwilligungen widerrufen werden. <a href="/datenschutz" className="text-amber-200 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-amber-200">Datenschutzhinweise lesen</a>
+        {copy.rights} <a href="/datenschutz#cookie-storage" className="text-amber-200 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-amber-200">{copy.privacy}</a>
       </p>
       {details && (
-        <fieldset className="mt-3 space-y-3 rounded-xl border border-slate-700 bg-slate-950/60 p-3">
-          <legend className="px-2 text-sm font-semibold text-white">Verwendungszwecke</legend>
-          <p className="text-xs text-slate-300">Notwendig: Anmeldung und Sicherheit (immer aktiv, keine Auswahl).</p>
+        <fieldset id="cookie-consent-v3-purposes" className="mt-3 space-y-3 rounded-xl border border-slate-700 bg-slate-950/60 p-3">
+          <legend className="px-2 text-sm font-semibold text-white">{copy.purposes}</legend>
+          <p className="text-xs text-slate-300">{copy.necessary}</p>
           <label className="flex min-h-11 items-center gap-3 text-sm text-slate-200">
             <input type="checkbox" className="h-5 w-5 accent-amber-400" checked={analytics} onChange={event => setAnalytics(event.target.checked)} />
-            Reichweitenmessung erlauben (derzeit nicht aktiviert)
+            {copy.analytics}
           </label>
           <label className="flex min-h-11 items-center gap-3 text-sm text-slate-200">
             <input type="checkbox" className="h-5 w-5 accent-amber-400" checked={marketing} onChange={event => setMarketing(event.target.checked)} />
-            Marketing-Dienste erlauben (derzeit nicht aktiviert)
+            {copy.marketing}
           </label>
         </fieldset>
       )}
@@ -96,25 +101,25 @@ export function CookieConsentV3() {
       <div className="mt-4 flex flex-wrap gap-2">
         <button type="button" onClick={() => store(false, false)}
           className="min-h-11 flex-1 rounded-xl border border-slate-500 px-4 py-2 text-sm font-semibold text-white hover:border-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
-          Nur notwendige
+          {copy.reject}
         </button>
         {details ? (
           <button type="button" onClick={() => store(analytics, marketing)}
             className="min-h-11 flex-1 rounded-xl border border-amber-400/60 px-4 py-2 text-sm font-semibold text-amber-200 hover:bg-amber-400/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
-            Auswahl speichern
+            {copy.save}
           </button>
         ) : (
-          <button type="button" aria-expanded={details} aria-controls="cookie-consent-v3-title" onClick={() => setDetails(true)}
+          <button type="button" aria-expanded={details} aria-controls="cookie-consent-v3-purposes" onClick={() => setDetails(true)}
             className="min-h-11 flex-1 rounded-xl border border-slate-500 px-4 py-2 text-sm font-semibold text-white hover:border-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
-            Anpassen
+            {copy.customize}
           </button>
         )}
         <button type="button" onClick={() => store(true, true)}
           className="min-h-11 flex-1 rounded-xl bg-amber-400 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-amber-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200">
-          Alle erlauben
+          {copy.accept}
         </button>
       </div>
-      {decision && <p className="mt-2 text-xs text-slate-400">Bisherige Entscheidung kann hier unmittelbar widerrufen werden: „Nur notwendige“ wählen.</p>}
+      {decision && <p className="mt-2 text-xs text-slate-400">{copy.withdraw}</p>}
     </section>
   );
 }

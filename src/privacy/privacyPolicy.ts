@@ -16,6 +16,26 @@ export interface ProcessingActivity {
 
 export const PROCESSING_ACTIVITIES: ProcessingActivity[] = [
   {
+    id: 'learning-inquiry', title: 'Learning- und Kursanfragen', lifecycle: 'active',
+    purpose: 'Auf ausdrücklich abgesendete Lern- oder Kursanfragen antworten. Ohne Analytics-Einwilligung unverändert nutzbar.',
+    dataCategories: ['E-Mail-Adresse als Antwortadresse', 'freiwillig eingegebene Anfrage'],
+    legalBasis: 'Art. 6 Abs. 1 lit. b DSGVO für vorvertragliche Kursanfragen; Art. 6 Abs. 1 lit. f DSGVO für allgemeine angeforderte Auskünfte.',
+    recipients: ['Verantwortlicher', 'Render als Anwendungsserver', 'konfigurierter SMTP-/Postfachanbieter'],
+    transfer: 'Regionen und mögliche Drittlandverarbeitung richten sich nach den tatsächlich eingesetzten Hosting- und Mailverträgen.',
+    retention: 'Keine dauerhafte Anfragekopie in Anwendungsdatenbank oder Logs. Zufälliger Wiederholungsschlüssel und Status maximal 15 Minuten im Serverspeicher. Nachricht im Supportpostfach bis Abschluss der Anfrage und Zweckfortfall, vorbehaltlich gesetzlicher Aufbewahrungspflichten.',
+    technicalControls: ['fester Empfänger', 'SMTP über TLS', 'Same-Origin-Prüfung', 'begrenzte Eingaben und Versandraten', 'keine Kontaktangaben oder Nachrichten an GA4'],
+  },
+  {
+    id: 'consented-ga4', title: 'Optionale Reichweiten- und Kursanfragemessung mit GA4', lifecycle: 'conditional',
+    purpose: 'Öffentliche Seitenaufrufe und vom Mailserver angenommene Kursanfragen nach gültiger Analytics-Einwilligung messen.',
+    dataCategories: ['pseudonyme GA4-Cookie-Kennung', 'öffentlicher Seitenpfad ohne Query und Fragment', 'Ereignistyp', 'beim Google-Abruf übermittelte Verbindungsdaten'],
+    legalBasis: 'Art. 6 Abs. 1 lit. a DSGVO sowie Einwilligung für optionalen Gerätezugriff nach § 25 Abs. 1 TDDDG.',
+    recipients: ['Google als GA4-Anbieter'],
+    transfer: 'Google-Verarbeitung kann außerhalb des EWR stattfinden; Verträge und Transfermechanismen richten sich nach der verwendeten Google-Konfiguration.',
+    retention: 'GA4-Cookies höchstens bis zum Ablauf der 180-Tage-Einwilligung; Entfernung beim Widerruf oder nächsten Zugriff nach Ablauf. Datenaufbewahrung der GA4-Property ist separat von Cookie-Fristen gemäß tatsächlicher Google-Admin-Konfiguration zu prüfen.',
+    technicalControls: ['Basic Consent Mode: kein Tag vor Zustimmung', 'Werbeeinwilligungen verweigert', 'keine privaten Kontoseiten', 'keine E-Mail-/Nachrichtendaten in Events', 'manuelle deduplizierte Seitenaufrufe und bestätigte Anfragen', 'Widerruf entfernt Cookies und lädt das Dokument ohne Tag neu'],
+  },
+  {
     id: 'hosting', title: 'Bereitstellung der Website und technischer Betrieb', lifecycle: 'active',
     purpose: 'Bereitstellung der Website, Übertragung von Inhalten und Absicherung des Betriebs.',
     dataCategories: ['IP-Adresse und Verbindungsdaten beim Hostinganbieter', 'angeforderte URLs', 'Browser-/Geräteinformationen'],

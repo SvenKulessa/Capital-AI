@@ -30,7 +30,7 @@ interface HeroProps {
 }
 
 export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct }) => {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const reduceMotion = useReducedMotion();
   const [earth3DReady, setEarth3DReady] = useState(false);
   const enableWebGL = !reduceMotion && typeof window !== 'undefined' && 'WebGL2RenderingContext' in window;
@@ -171,21 +171,30 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
           transition={{ duration: 0.6, delay: 0.3 }}
           className="flex flex-col gap-3 w-full max-w-[280px]"
         >
-          {/* Primary Button: Yellow/Gold "Analyse starten" */}
+          {/* Sales-first navigation to public bundle details; no fake checkout. */}
+          <a
+            id="hero-blueprint-bundles-link"
+            href="/marketscreener/dokumentation"
+            className="group inline-flex min-h-[50px] w-full items-center justify-between gap-3 rounded-2xl bg-brand-gold px-5 py-3 text-[15px] font-extrabold text-slate-950 shadow-[0_4px_24px_rgba(245,176,20,0.35)] transition-colors hover:bg-amber-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
+          >
+            {locale === 'de' ? 'Blueprint-Bundles entdecken' : 'Explore Blueprint Bundles'}
+            <ArrowRight aria-hidden="true" className="h-5 w-5 shrink-0" />
+          </a>
+          {/* Existing analysis remains accessible as a clearly labeled demo. */}
           <button
             id="hero-start-analysis-btn"
             type="button"
             onClick={onStartAnalysis}
-            className="group relative w-full min-h-[50px] py-3 px-5 bg-brand-gold hover:bg-[#ffbe26] active:scale-[0.98] text-black font-bold rounded-2xl flex items-center justify-between shadow-[0_4px_24px_rgba(245,176,20,0.35)] hover:shadow-[0_0_38px_rgba(245,176,20,0.70)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 motion-safe:hover:scale-[1.02] motion-reduce:transition-none transition-all duration-200"
+            className="group relative w-full min-h-[50px] py-3 px-5 bg-slate-900/85 hover:bg-slate-800 active:scale-[0.98] text-amber-100 font-bold border border-amber-400/45 rounded-2xl flex items-center justify-between shadow-[0_4px_24px_rgba(245,176,20,0.35)] hover:shadow-[0_0_38px_rgba(245,176,20,0.70)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 motion-safe:hover:scale-[1.02] motion-reduce:transition-none transition-all duration-200"
           >
             <div className="flex items-center gap-3">
               {/* Distinct 3-bar chart icon matching mockup */}
               <div aria-hidden="true" className="w-6 h-6 flex items-end justify-center gap-[3px] py-1">
-                <span className="w-[3px] h-3 bg-black rounded-full" />
-                <span className="w-[3px] h-5 bg-black rounded-full" />
-                <span className="w-[3px] h-4 bg-black rounded-full" />
+                <span className="w-[3px] h-3 bg-amber-300 rounded-full" />
+                <span className="w-[3px] h-5 bg-amber-300 rounded-full" />
+                <span className="w-[3px] h-4 bg-amber-300 rounded-full" />
               </div>
-              <span className="text-[15.5px] font-bold tracking-tight">{t('analyze')}</span>
+              <span className="text-[15.5px] font-bold tracking-tight">{locale === 'de' ? 'Analyse-Demo öffnen' : 'Open analysis demo'}</span>
             </div>
             <ArrowRight aria-hidden="true" className="w-5 h-5 transition-transform group-hover:translate-x-1 stroke-[2.4]" />
           </button>
@@ -212,6 +221,11 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
             <span className="text-[14.5px] font-medium text-slate-100">{t('discover')}</span>
           </button>
         </motion.div>
+        <p className="mt-4 max-w-[45ch] rounded-lg border border-slate-600/60 bg-slate-950/80 p-3 text-xs leading-relaxed text-slate-200">
+          {locale === 'de'
+            ? 'DEMO · Alle gezeigten Scorings und Kurven sind synthetische Beispieldaten, keine Live-Signale oder Performance-Nachweise. Nur Produktinformation und Bildung – keine Anlageberatung oder individuelle Empfehlung. Blueprint-Bundles sind Produktvorschauen; Kaufbarkeit nur, wenn im Checkout tatsächlich angeboten.'
+            : 'DEMO · Scores and charts use synthetic example data, not live signals or performance evidence. Education and product information only; no investment advice or personal recommendation. Blueprint bundles are previews, not a promise of checkout availability.'}
+        </p>
       </div>
     </section>
   );

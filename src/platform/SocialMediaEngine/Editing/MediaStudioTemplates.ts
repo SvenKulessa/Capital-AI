@@ -158,3 +158,142 @@ export function createCapitalAiProTrialCouponProject(
     },
   }, 'Pro Trial Coupon');
 }
+
+
+/**
+ * An editable, rights-safe homepage product-video story for the native Social
+ * Media Engine. Scenes are fully local and renderable without LLM calls.
+ * Gemini is the requested voice provider, NOT an attached/generated recording.
+ * An audio layer may only be added after a real authenticated synthesis readback,
+ * verified asset digest, quota evidence and the existing approval workflow.
+ */
+export const CAPITAL_AI_LANDING_VOICEOVER_DE = [
+  'CAPITAL-AI. Analysen verstehen, statt fremden Signalen blind zu folgen.',
+  'Eine vernetzte Welt der Daten, mit transparenten Methoden und nachvollziehbaren Modellen.',
+  'Entdecke Blueprint-Bundles für Scoring, Datenmodelle und dokumentierte Analyseabläufe.',
+  'Alle gezeigten Scores sind synthetische Demodaten. Keine Live-Signale und keine Anlageberatung.',
+  'Blueprint-Vorschau und Learning Portal auf capital-ai.online entdecken.',
+].join(' ');
+
+/**
+ * Client-safe TTS request that can be passed to the existing server-only
+ * createGeminiTtsDraft(request, verifiedApproval, runtimeEnv). Never calls
+ * the provider or places its key into browser bundles.
+ */
+export function createCapitalAiLandingGeminiTtsRequest() {
+  return {
+    text: CAPITAL_AI_LANDING_VOICEOVER_DE,
+    voice: 'Kore',
+    style: 'Professional, clear German narration. Calm, warm and factual, with deliberate pauses.',
+    maxAudioSeconds: 30,
+  } as const;
+}
+
+export function createCapitalAiLandingBlueprintVideoProject(): MediaProjectV2 {
+  const fps = 30;
+  const sceneSeconds = 6;
+  const chapters = [
+    {
+      kicker: 'CAPITAL-AI / HOMEPAGE',
+      title: 'MARKTDATEN VERSTEHEN',
+      body: 'Finanzanalyse und Methoden verständlich erleben.',
+    },
+    {
+      kicker: 'DESIGN / FOUR-COLOR ORBIT',
+      title: 'GLOBALE PERSPEKTIVEN',
+      body: 'Gold · Grün · Magenta · Violett / Pulsierendes 3D-Netz.',
+    },
+    {
+      kicker: 'CAPITAL-AI / BLUEPRINT BUNDLES',
+      title: 'MATHEMATIK ALS PRODUKT',
+      body: 'Scoring-Playbooks · Datenmodelle · Evidence · Lernpfade.',
+    },
+    {
+      kicker: 'DEMO / FINANCIAL DISCLOSURE',
+      title: 'SCORES SIND DEMODATEN',
+      body: 'Synthetische Beispielwerte. Keine Live-Signale oder Performanceversprechen.',
+    },
+    {
+      kicker: 'CAPITAL-AI / NEXT STEP',
+      title: 'BLUEPRINTS ENTDECKEN',
+      body: 'capital-ai.online/marketscreener/dokumentation · Produktvorschau',
+    },
+  ] as const;
+  const durationFrames = chapters.length * sceneSeconds * fps;
+  return assertValid({
+    schemaVersion: MEDIA_PROJECT_SCHEMA_VERSION,
+    projectId: 'capital-ai-landing-blueprint-video-20261011',
+    slug: 'capital-ai-landing-blueprint-video',
+    title: 'CAPITAL-AI · Homepage und Blueprint-Bundles',
+    description: 'Fünfteiliger, editierbarer 30s-Produktvideo-Entwurf mit originalem Earth-Asset und transparenten Demo-Claims.',
+    contentPackageId: 'capital-ai-homepage-blueprint-20261011',
+    timebase: { numerator: fps, denominator: 1 },
+    canvas: structuredClone(MEDIA_STUDIO_CANVAS_PRESETS['16:9']),
+    durationFrames,
+    tracks: [
+      {
+        id: 'landing-earth-artwork',
+        kind: 'video',
+        enabled: true,
+        layers: [{
+          id: 'landing-earth-image',
+          kind: 'image',
+          enabled: true,
+          assetRefId: 'landing-earth-reference',
+          fit: 'contain',
+          range: { startFrame: 0, durationFrames },
+        }],
+      },
+      {
+        id: 'landing-scenes',
+        kind: 'graphics',
+        name: 'Homepage Product Story',
+        enabled: true,
+        layers: chapters.map((chapter, index) => ({
+          id: 'landing-scene-' + String(index + 1).padStart(2, '0'),
+          kind: 'scene' as const,
+          enabled: true,
+          range: { startFrame: index * sceneSeconds * fps, durationFrames: sceneSeconds * fps },
+          ...chapter,
+          disclaimer: 'DEMO-DATEN · Keine Anlageberatung. Keine Live-Marktdaten oder Kaufzusage.',
+        })),
+      },
+    ],
+    assets: [{
+      id: 'landing-earth-reference',
+      kind: 'image',
+      sourceType: 'local-file',
+      reference: 'src/assets/images/glowing_earth_nodes_1789997454893.jpg',
+      mimeType: 'image/jpeg',
+    }],
+    transitions: [],
+    renderRecipe: {
+      templateId: 'capital-ai-landing-blueprint-promo',
+      templateVersion: '1.0.0',
+      rendererProfile: 'media-project-v2-preview',
+      brandTokenSource: MEDIA_PROJECT_BRAND_TOKEN_SOURCE,
+      brandTextMode: 'deterministic',
+      networkPolicy: 'offline',
+      publishReady: false,
+    },
+    source: { type: 'manual', reference: 'frontend/src/components/Hero.tsx' },
+    disclosure: {
+      defaultDisclaimer: 'DEMO-DATEN · Keine Anlageberatung. Keine Live-Marktdaten oder Kaufzusage.',
+      requireAtProjectEdges: true,
+    },
+    metadata: {
+      campaign: 'homepage-blueprint-bundles',
+      editor: 'capital-ai-media-studio-mvp',
+      audioProviderRequested: 'GEMINI',
+      audioStatus: 'NOT_PROVEN',
+      voiceoverLanguage: 'de-DE',
+      voiceoverText: CAPITAL_AI_LANDING_VOICEOVER_DE,
+      narrationAttached: false,
+      geminiTtsGateway: 'server/growth-ai-gateway.ts:createGeminiTtsDraft',
+      geminiTtsRequest: createCapitalAiLandingGeminiTtsRequest(),
+      humanApprovalRequired: true,
+      draftOnly: true,
+      sourceRepository: 'SvenKulessa/FRONTEND',
+    },
+  }, 'Homepage Blueprint Video');
+}

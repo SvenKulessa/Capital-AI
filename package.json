@@ -84,7 +84,7 @@
     "growth:google:mcp": "node scripts/google-maintenance-mcp.mjs",
     "test:google-maintenance": "node --test server/google-maintenance-api.test.mjs server/google-learning-setup.test.mjs",
     "growth:agents": "python3 scripts/growth-agent/graph.py",
-    "test:cookie-consent-v3": "node --import tsx --test src/privacy/cookieConsentV3.test.ts"
+    "test:cookie-consent-v3": "node --import tsx --test src/privacy/cookieConsentV3.test.ts src/utils/consentedAnalytics.test.ts && node --test server/learning-inquiry.test.mjs scripts/activate-learning-measurement.test.mjs && node --import tsx scripts/generate-cookie-storage-notice.mjs --check"
   },
   "dependencies": {
     "@google/genai": "^2.27.0",
