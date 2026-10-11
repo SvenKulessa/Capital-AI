@@ -11,7 +11,7 @@ test('basic consent mode loads only after opt-in, sanitizes public events and re
     addEventListener(name: string, callback: Function) { listeners.set(name, callback); },
     localStorage: { getItem: () => stored, removeItem() { stored = null; } } };
   globalThis.window = w;
-  globalThis.document = { get cookie() { return '_ga=test; _ga_0542DT2HCE=test'; }, set cookie(value: string) { writes.push(value); },
+  globalThis.document = { referrer: 'https://www.google.de/search?q=private-search', get cookie() { return '_ga=test; _ga_0542DT2HCE=test'; }, set cookie(value: string) { writes.push(value); },
     createElement() { scripts++;return { remove() { removed++; } }; }, head: { appendChild() {} } } as any;
   globalThis.fetch = async () => { fetches++;return Response.json({ measurementId: 'G-0542DT2HCE' }); };
   const settle = () => new Promise(resolve => setTimeout(resolve, 0));
@@ -29,7 +29,8 @@ test('basic consent mode loads only after opt-in, sanitizes public events and re
     const events = commands().filter((c: any[]) => c[0] === 'event');
     assert.equal(events.filter((c: any[]) => c[1] === 'generate_lead').length, 1);
     assert.equal(events.filter((c: any[]) => c[1] === 'page_view').length, 2);
-    assert.doesNotMatch(JSON.stringify(events), /private@example|private-token|5cf37f93|value|currency/);
+    assert.equal(events.find((c: any[]) => c[1] === 'page_view')[2].page_referrer, 'https://www.google.de/');
+    assert.doesNotMatch(JSON.stringify(events), /private@example|private-token|private-search|5cf37f93|value|currency/);
     stored = JSON.stringify({ version: 'COOKIE_CONSENT_V3', privacyNoticeVersion: PRIVACY_NOTICE_VERSION, savedAt: Date.now(), analytics: false, marketing: false });
     listeners.get(CONSENT_CHANGED_EVENT)!();await settle();const count = commands().length;
     sendPageView('/learning');trackReceivedLearningInquiry('b4f044bc-1103-467d-9810-ea98f93fdca3');

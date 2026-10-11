@@ -16,6 +16,13 @@ function cleanPath(path: string) {
     return u.origin === 'https://capital-ai.online' && isSeoIndexable(u.pathname) ? u.pathname : null;
   } catch { return null; }
 }
+function safeReferrer() {
+  try {
+    const referrer = new URL(document.referrer);
+    const known = new Set(['www.google.com', 'www.google.de', 'www.google.it', 'www.google.es', 'www.google.pt', 'www.google.co.uk', 'www.bing.com', 'duckduckgo.com', 'www.linkedin.com', 't.co']);
+    return referrer.protocol === 'https:' && known.has(referrer.hostname) ? referrer.origin + '/' : '';
+  } catch { return ''; }
+}
 function clearCookies() {
   for (const part of document.cookie.split(';')) {
     const name = part.trim().split('=')[0];
@@ -56,7 +63,7 @@ async function synchronize() {
       const remaining = Math.max(1, Math.floor((receipt.savedAt + 180 * 86_400_000 - Date.now()) / 1000));
       w.gtag('config', EXPECTED_ID, { send_page_view: false, allow_google_signals: false,
         allow_ad_personalization_signals: false, cookie_expires: remaining, cookie_update: false,
-        cookie_flags: 'SameSite=Lax;Secure', page_location: 'https://capital-ai.online' + (cleanPath(window.location.pathname) || '/'), page_referrer: '' });
+        cookie_flags: 'SameSite=Lax;Secure', page_location: 'https://capital-ai.online' + (cleanPath(window.location.pathname) || '/'), page_referrer: safeReferrer() });
       script = document.createElement('script');script.id = 'capital-ai-ga4';script.async = true;
       script.src = 'https://www.googletagmanager.com/gtag/js?id=' + EXPECTED_ID;
       document.head.appendChild(script);active = true;
@@ -84,9 +91,10 @@ export function sendPageView(path: string) {
   if (!safe) { if (active) disable(); return; }
   if (!active) { if (initialized) void synchronize(); return; }
   if (safe === lastPath) return;
+  const referrer = lastPath ? 'https://capital-ai.online' + lastPath : safeReferrer();
   lastPath = safe;
   (window as TagWindow).gtag?.('event', 'page_view', { send_to: EXPECTED_ID,
-    page_location: 'https://capital-ai.online' + safe, page_referrer: '', page_title: safe });
+    page_location: 'https://capital-ai.online' + safe, page_referrer: referrer, page_title: safe });
 }
 export function trackReceivedLearningInquiry(receipt: string) {
   if (!/^[0-9a-f-]{36}$/i.test(receipt) || leads.has(receipt) || !active || !permitted()) return;
