@@ -308,10 +308,39 @@ test('paused price alerts cannot render navigation or run background price check
   assert.match(context, /if \(!PRICE_ALERTS_ENABLED\) return;\s*try \{\s*localStorage\.setItem\(STORAGE_ALERTS_KEY/);
 });
 
-test('hero earth is prominent without covering the primary call to action', () => {
+test('hero Earth uses true 3D axial rotation behind translucent text with a static fallback', () => {
   const hero = readFileSync(new URL('../src/components/Hero.tsx', import.meta.url), 'utf8');
-  assert.match(hero, /w-\[min\(54vw,690px\)\]/);
-  assert.match(hero, /opacity-100 drop-shadow/);
-  assert.match(hero, /relative z-10 mx-auto max-w-lg/);
-  assert.match(hero, /id="hero-start-analysis-btn"/);
+  const globe = readFileSync(new URL('../src/components/HeroEarth3D.tsx', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
+
+  // Right-aligned planet remains strictly decorative, with foreground copy and CTAs above it.
+  assert.match(hero, /pointer-events-none absolute -top-8 right-0 z-0 aspect-square/);
+  assert.match(hero, /className="hero-copy relative z-10 max-w-lg rounded-2xl/);
+  assert.match(hero, /bg-gradient-to-r from-brand-canvas\/80 via-brand-canvas\/40 to-brand-canvas\/15/);
+  for (const id of ['hero-start-analysis-btn', 'hero-buddy-support-btn', 'hero-explore-product-btn']) {
+    assert.ok(hero.includes('id="' + id + '"'));
+  }
+
+  // The Three.js renderer, physically curved sphere, georeferenced beacons and Y-axis
+  // rotation must come from a lazy module, never an animated flat image transform.
+  assert.match(hero, /lazy\(\(\) => import\('\.\/HeroEarth3D'\)\)/);
+  assert.match(globe, /new SphereGeometry\(1, 56, 40\)/);
+  assert.match(globe, /new CanvasTexture\(canvas\)/);
+  assert.match(globe, /new WebGLRenderer\(/);
+  assert.match(globe, /earth\.rotation\.y \+= delta \* \(Math\.PI \* 2 \/ REVOLUTION_SECONDS\)/);
+  assert.match(globe, /earth\.rotation\.z = -23\.4 \* Math\.PI \/ 180/);
+  assert.match(globe, /pointOnSphere\(location, 1\.028\)/);
+  assert.doesNotMatch(css, /capitalAiHeroEarthSpin|hero-earth-rotation/);
+
+  // GPU/context loss, hidden tabs, offscreen scene, reduced-motion and no WebGL
+  // must not remove the existing Earth artwork.
+  assert.match(hero, /!reduceMotion && typeof window !== 'undefined' && 'WebGL2RenderingContext' in window/);
+  assert.match(hero, /enableWebGL && earth3DReady \? 'opacity-0' : 'opacity-95'/);
+  assert.match(globe, /canvas\.addEventListener\('webglcontextlost', onContextLost\)/);
+  assert.match(globe, /document\.hidden/);
+  assert.match(globe, /new IntersectionObserver\(/);
+  assert.match(globe, /renderer\?\.dispose\(\)/);
+  assert.match(globe, /onReadyChange\(false\)/);
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.capital-ai-hero \.hero-earth-beacon \{ animation: none; \}/);
+  assert.match(css, /@keyframes capitalAiHeroBeaconPulse/);
 });
