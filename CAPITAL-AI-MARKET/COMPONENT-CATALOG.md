@@ -4,8 +4,8 @@
 
 ## Scope und Status
 
-- **50 kanonische Registry-Komponenten, genau 5 blocked, 45 planned.** Quelle: [`src/contracts/analysisComponentRegistry.ts`](../../src/contracts/analysisComponentRegistry.ts). Alle 50 stehen im Registry-Provenance-Modus `unavailable` und haben `lastValidatedAt: null`; es gibt keine als `active` validierte Komponente.
-- Die **Registry ist Single Source of Truth für diese 50 IDs**; dieses Dokument ist eine **abgeleitete Ansicht**, keine zweite Activation Registry. Die Skill-Registry [`.agents/skills/registry.json`](../../.agents/skills/registry.json) bleibt davon unberührt.
+- **50 kanonische Registry-Komponenten, genau 5 blocked, 45 planned.** Quelle: [`src/contracts/analysisComponentRegistry.ts`](../src/contracts/analysisComponentRegistry.ts). Alle 50 stehen im Registry-Provenance-Modus `unavailable` und haben `lastValidatedAt: null`; es gibt keine als `active` validierte Komponente.
+- Die **Registry ist Single Source of Truth für diese 50 IDs**; dieses Dokument ist eine **abgeleitete Ansicht**, keine zweite Activation Registry. Die Skill-Registry [`.agents/skills/registry.json`](../.agents/skills/registry.json) bleibt davon unberührt.
 - Im Feld **Version / Defaultgewicht** steht die komponentenlokale deklarierte `calculationVersion` / `weightPolicy.defaultWeight`, **nicht** ein global normiertes oder validiertes Portfolio-/Scoring-Gewicht. Die Summe aller 50 Defaults ist ausdrücklich *kein* Scoring-Modell.
 - Das Feld **Qualität / Modus** enthält nur `confidencePolicy.minimumDataSufficiencyRatio` der Registry. Es bestätigt **keine** reale Datenabdeckung; Kalibrierung, Formelimplementierung und Reproduzierbarkeit pro Komponente: `NOT_PROVEN`.
 
@@ -26,7 +26,7 @@ flowchart LR
 
 Textalternative: Provider → Rights-/Asset-Gate → Canonical Facts → Quality/Features → bestehender ScoringEngineService → Evidence/Replay → nicht-actionable UI. Nutzergebundene BYOK-Daten bleiben privat; synthetische Demo-Daten können niemals durch diesen Pfad als geprüfte Live-Daten erscheinen.
 
-Verwandte Anker: [`server/market.mjs`](../../server/market.mjs), [`shared/market-contracts.mjs`](../../shared/market-contracts.mjs), [`src/services/scoringEngine.ts`](../../src/services/scoringEngine.ts), [`src/contracts/pipelineExecution.ts`](../../src/contracts/pipelineExecution.ts), [`src/contracts/analysisComponentRegistryValidator.ts`](../../src/contracts/analysisComponentRegistryValidator.ts).
+Verwandte Anker: [`server/market.mjs`](../server/market.mjs), [`shared/market-contracts.mjs`](../shared/market-contracts.mjs), [`src/services/scoringEngine.ts`](../src/services/scoringEngine.ts), [`src/contracts/pipelineExecution.ts`](../src/contracts/pipelineExecution.ts), [`src/contracts/analysisComponentRegistryValidator.ts`](../src/contracts/analysisComponentRegistryValidator.ts).
 
 ## Kanonischer Komponentenkatalog
 
@@ -89,20 +89,20 @@ Verwandte Anker: [`server/market.mjs`](../../server/market.mjs), [`shared/market
 
 | Modul / Codeanker | Input | Output | Mathematische Grundlage bzw. Gewicht | Qualitäts-/Sicherheitsstatus |
 |---|---|---|---|---|
-| [Public Source Policy](../../server/open-source-market-policy.mjs) | Rechtsevidence und Capability | admissible/blocked source | Boolesche Rechte-/Instrument-Gates, kein Score | ECB-Referenz und Wikidata-Metadaten im Code zugelassen; Live-Runtime `NOT_PROVEN` |
-| [Spot Protocol Wire](../../server/spot-provider-wire.mjs) | REST/WS-Tradeframes, Mapping | normalisierter Tick | endliche Preise, strikte Zeiten/Mapping | Fail-closed; öffentliche Binance-/Kraken-Datenrechte nicht zugelassen |
-| [Canonical Spot Ingress](../../server/market-spot-ingestion.mjs) | zugelassener Tick, Zeit, Provider | `QuoteFact`, `evidenceId` | `QuoteFactSchema`, `isFresh`, Persist/Replay | Quelle+Symbol+Transport+Runtime-Gates vor I/O |
-| [ECB Reference Ingress](../../server/market.mjs) | ECB-Tagesreferenzkurse | QuoteFact, Cache/Replay | Referenzzeit und Idempotenzprüfung, **kein Tick- oder Execution-Preis** | `MARKET_QUOTES_ENABLED` und ECB-Flag erforderlich |
-| [Provider Adapter Registry](../../src/services/providerAdapters.ts) | Adapter + Rights Admission | auswählbarer Adapter | Keine Scoreformel | Produktionsadapter-Map startet leer; explizite Admission |
-| [Feature Store](../../src/services/featureStore.ts) | qualifizierte Features | Snapshot/Lookup | Keine globale Faktorformel | Source-Pfad, Runtime `NOT_PROVEN` |
-| [Raw Feature Calculator](../../src/services/rawFeatureCalculator.ts) | Rohdaten und Feature-Verträge | abgeleitete Merkmale | Deterministischer Source-Pfad; einzelne Formeln siehe Code | Ausgabe ≠ automatisch live/admitted |
-| [Real Market Signals](../../src/platform/FinanceScoringResearch/realMarketSignals.ts) | Price/Volume/Supply/History | 0–100 Subscores + ReturnStats | `log10(cap)`, turnover, ROC, SMA, RSI und renormierter gewichteter Mittelwert | Eingabeprüfung; keine Berechtigung für publizierten Score |
-| [Source Research Factor Composer](../../src/platform/FinanceScoringResearch/FinanceFactorWeights.ts) | faktorbasierte `values` + EvidenceRefs | Research-Composite + Fingerprints | `sum(w_i x_i)/sum(w_i verfügbar)`; exakte Gewichte im [Scoring Catalog](SCORING-CATALOG.md) | `scoreEligible=false`, `productionEligible=false` |
-| [Canonical Scoring Engine](../../src/services/scoringEngine.ts) | PipelineSnapshot / FeatureValue / Rights | ShadowScore oder FinalRankResult | Sechs Scorefamilien, Confidence-Minimum, Risk-Penalty | Kein publishable Rank; `scoreEligible=false` |
-| [Evidence Engine](../../src/services/evidenceEngine.ts) | Input-/Output-/Config-Fingerprints | Evidence-Referenz | kryptographisches Hash-/Lineage-Prinzip | nicht automatisch durable Prod-Replay |
-| [Blueprint Evidence Contracts](../../src/data/blueprintEvidenceContracts.ts) | Blueprint + Source/Rechte/Test-Evidence | Blocked/Requirement Set | Konjunktion der Required Evidence, kein Score | Sieben Blueprint-Einträge `BLOCKED` |
-| [Screener & Explainability UI](../../src/features/screener/EnterpriseScorerDashboard.tsx) | freigegebene Score-/Unavailability-Modelle | Anzeige/Erklärung | reine UI-Projektion | Dashboard-Existenz ≠ Live-Scoring |
-| [Learning Modules](../../shared/learning-journey.mjs) | redaktionelle Lektionen / synthetische Werte | Lernpfade | dokumentierte Lehrformeln, ausdrücklich synthetisch | keine Anlageberatung, keine Live-Kurse |
+| [Public Source Policy](../server/open-source-market-policy.mjs) | Rechtsevidence und Capability | admissible/blocked source | Boolesche Rechte-/Instrument-Gates, kein Score | ECB-Referenz und Wikidata-Metadaten im Code zugelassen; Live-Runtime `NOT_PROVEN` |
+| [Spot Protocol Wire](../server/spot-provider-wire.mjs) | REST/WS-Tradeframes, Mapping | normalisierter Tick | endliche Preise, strikte Zeiten/Mapping | Fail-closed; öffentliche Binance-/Kraken-Datenrechte nicht zugelassen |
+| [Canonical Spot Ingress](../server/market-spot-ingestion.mjs) | zugelassener Tick, Zeit, Provider | `QuoteFact`, `evidenceId` | `QuoteFactSchema`, `isFresh`, Persist/Replay | Quelle+Symbol+Transport+Runtime-Gates vor I/O |
+| [ECB Reference Ingress](../server/market.mjs) | ECB-Tagesreferenzkurse | QuoteFact, Cache/Replay | Referenzzeit und Idempotenzprüfung, **kein Tick- oder Execution-Preis** | `MARKET_QUOTES_ENABLED` und ECB-Flag erforderlich |
+| [Provider Adapter Registry](../src/services/providerAdapters.ts) | Adapter + Rights Admission | auswählbarer Adapter | Keine Scoreformel | Produktionsadapter-Map startet leer; explizite Admission |
+| [Feature Store](../src/services/featureStore.ts) | qualifizierte Features | Snapshot/Lookup | Keine globale Faktorformel | Source-Pfad, Runtime `NOT_PROVEN` |
+| [Raw Feature Calculator](../src/services/rawFeatureCalculator.ts) | Rohdaten und Feature-Verträge | abgeleitete Merkmale | Deterministischer Source-Pfad; einzelne Formeln siehe Code | Ausgabe ≠ automatisch live/admitted |
+| [Real Market Signals](../src/platform/FinanceScoringResearch/realMarketSignals.ts) | Price/Volume/Supply/History | 0–100 Subscores + ReturnStats | `log10(cap)`, turnover, ROC, SMA, RSI und renormierter gewichteter Mittelwert | Eingabeprüfung; keine Berechtigung für publizierten Score |
+| [Source Research Factor Composer](../src/platform/FinanceScoringResearch/FinanceFactorWeights.ts) | faktorbasierte `values` + EvidenceRefs | Research-Composite + Fingerprints | `sum(w_i x_i)/sum(w_i verfügbar)`; exakte Gewichte im [Scoring Catalog](SCORING-CATALOG.md) | `scoreEligible=false`, `productionEligible=false` |
+| [Canonical Scoring Engine](../src/services/scoringEngine.ts) | PipelineSnapshot / FeatureValue / Rights | ShadowScore oder FinalRankResult | Sechs Scorefamilien, Confidence-Minimum, Risk-Penalty | Kein publishable Rank; `scoreEligible=false` |
+| [Evidence Engine](../src/services/evidenceEngine.ts) | Input-/Output-/Config-Fingerprints | Evidence-Referenz | kryptographisches Hash-/Lineage-Prinzip | nicht automatisch durable Prod-Replay |
+| [Blueprint Evidence Contracts](../src/data/blueprintEvidenceContracts.ts) | Blueprint + Source/Rechte/Test-Evidence | Blocked/Requirement Set | Konjunktion der Required Evidence, kein Score | Sieben Blueprint-Einträge `BLOCKED` |
+| [Screener & Explainability UI](../src/features/screener/EnterpriseScorerDashboard.tsx) | freigegebene Score-/Unavailability-Modelle | Anzeige/Erklärung | reine UI-Projektion | Dashboard-Existenz ≠ Live-Scoring |
+| [Learning Modules](../shared/learning-journey.mjs) | redaktionelle Lektionen / synthetische Werte | Lernpfade | dokumentierte Lehrformeln, ausdrücklich synthetisch | keine Anlageberatung, keine Live-Kurse |
 
 ## Durchgehender Komponentenvertrag für jede spätere Aktivierung
 
