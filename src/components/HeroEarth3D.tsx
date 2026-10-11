@@ -274,7 +274,7 @@ export default function HeroEarth3D({ onReadyChange }: HeroEarth3DProps) {
             color, transparent: true, opacity: .9, depthWrite: false,
           });
           orbitNodeMaterials.push(atomMaterial);
-          const atom = new Mesh(orbitNodeGeometry, atomMaterial);
+          const atom = new Mesh(orbitNodeGeometry!, atomMaterial);
           atom.position.copy(position);
           orbit.add(atom);
         }
