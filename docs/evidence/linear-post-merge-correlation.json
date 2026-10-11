@@ -1,12 +1,12 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "bfb96e97c0474f9fb61fd0c6da7adf633dc951cd",
-  "mergedPr": 417,
+  "mainSha": "e0f20d93673e593ce8efa6242734703f29bf2670",
+  "mergedPr": 410,
   "targetPr": 411,
   "targetBranch": "dependabot/github_actions/actions/upload-artifact-7.0.2",
-  "targetHeadSha": "f17295208908dd1878694cb682c6c62e95113dce",
+  "targetHeadSha": "b3a1ddea7986f6aec11e2f8683e827c04f182777",
   "exactOverlap": [
-    ".github/workflows/build-security.yml"
+    "docs/evidence/linear-post-merge-correlation.json"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,
