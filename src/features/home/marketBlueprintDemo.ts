@@ -100,5 +100,9 @@ export function demoAlertWouldCross(series: readonly number[], threshold: number
   if (!Number.isFinite(threshold) || series.some((v) => !Number.isFinite(v))) {
     throw new Error('DEMO_THRESHOLD_INVALID');
   }
-  return series.some((v) => v >= threshold);
+  // A crossing requires a previous observation below the threshold.
+  // One already-above value is not a newly triggered alert.
+  return series.some((value, index) =>
+    index > 0 && series[index - 1] < threshold && value >= threshold
+  );
 }
