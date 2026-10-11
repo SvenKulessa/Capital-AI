@@ -60,3 +60,9 @@ test('malformed registry JSON fails closed',()=>fixture(root=>{
  assert.ok(hasErrors(inspect(root).errors));
  assert.match(inspect(root).errors.registry.join('\n'),/invalid/);
 }));
+
+test('duplicate keys in JSON registry fail closed',()=>fixture(root=>{
+ const p=regpath(root);
+ writeFileSync(p,readFileSync(p,'utf8').replace('"ai-engineering": {','"ai-engineering": {}, "ai-engineering": {'));
+ assert.match(inspect(root).errors.registry.join('\\n'),/duplicate JSON key: ai-engineering/);
+}));

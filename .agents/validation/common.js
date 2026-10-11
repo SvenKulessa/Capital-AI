@@ -9,6 +9,37 @@ const read = (root, path) => { try { return readFileSync(join(root, path),'utf8'
 const uniq = xs => new Set(xs).size === xs.length;
 const validId = id => typeof id === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id);
 const heading = (doc,s) => doc.includes('## '+s+'\n');
+
+function duplicateJsonKeys(json) {
+ const stack=[], duplicates=[];
+ for(let i=0;i<json.length;i++) {
+  const c=json[i];
+  if(c==='"') {
+   let j=i+1;
+   while(j<json.length) {
+    if(json[j]==='\\') {j+=2;continue;}
+    if(json[j]==='"') break;
+    j++;
+   }
+   const frame=stack[stack.length-1];
+   if(frame?.object && frame.expectKey) {
+    let k=j+1;while(/\s/.test(json[k]??'')&&k<json.length)k++;
+    if(json[k]===':') {
+     const key=JSON.parse(json.slice(i,j+1));
+     if(frame.keys.has(key)) duplicates.push('duplicate JSON key: '+key);
+     frame.keys.add(key);frame.expectKey=false;
+    }
+   }
+   i=j;continue;
+  }
+  if(c==='{') stack.push({object:true,keys:new Set(),expectKey:true});
+  else if(c==='[') stack.push({object:false});
+  else if(c==='}'||c===']') stack.pop();
+  else if(c===',' && stack[stack.length-1]?.object) stack[stack.length-1].expectKey=true;
+ }
+ return duplicates;
+}
+
 export function inspect(root=ROOT) {
  const errors={registry:[],skills:[],agents:[],ownership:[]};
  let registry;
@@ -18,6 +49,7 @@ export function inspect(root=ROOT) {
    for(const key of Object.keys(errors)) errors[key].push('registry must be object');
    return {root,registry:null,errors,ids:[],records:[]};
  }
+ for(const issue of duplicateJsonKeys(read(root,'.agents/skills/registry.json'))) errors.registry.push(issue);
  if(registry.schemaVersion!=='CAPITAL_AI_DOMAIN_SKILLS@1' || registry.authority!=='AGENTS.md' ||
    registry.skillGovernanceVersion!=='CAPITAL_AI_SKILL_GOVERNANCE@1') errors.registry.push('schema/authority mismatch');
  if(!registry.domains || Object.keys(registry.domains).length!==5 ||
