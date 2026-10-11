@@ -1,3 +1,4 @@
+import { VOCABULARY_PUBLIC_COUNT } from '../../shared/vocabulary-metadata.mjs';
 // Optional browser QA; dependencies stay outside the production dependency tree.
 const {default:Chromium}=await import(process.env.CHROMIUM_HELPER_MODULE_PATH || '@sparticuz/chromium');
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE_PATH || 'playwright-core');
@@ -86,6 +87,7 @@ await glossaryPage.goto('http://127.0.0.1:4173/vocabulary/brier-score',{waitUnti
 await glossaryPage.getByRole('heading',{name:'Brier Score',exact:true}).scrollIntoViewIfNeeded();await glossaryPage.evaluate(()=>window.scrollBy(0,-100));
 await glossaryPage.screenshot({path:join(output,'public-brier-score-390.png')});
 await glossaryPage.goto('http://127.0.0.1:4173/vocabulary',{waitUntil:'networkidle'});
+assert.ok((await glossaryPage.locator('meta[name=\"description\"]').getAttribute('content')).includes(String(VOCABULARY_PUBLIC_COUNT)));result.cases.push({currentCanonicalCountInBrowserMetadata:'PASS',count:VOCABULARY_PUBLIC_COUNT});
 await glossaryPage.getByPlaceholder(/Begriff, Abkürzung oder Thesaurus/).fill('Realzins');await glossaryPage.getByRole('heading',{name:'Realzins',exact:true}).waitFor();result.cases.push({anonymousFormerQuantDeepLink:'PASS',anonymousResearchedDeepLink:'PASS',primarySourceLink:'PASS',publicGlossarySearch:'PASS',singleQuantDemo:'PASS'});await glossaryPage.close();
 for(const [options,label] of [[{anonymous:true},'anonymous'],[{failed:true},'storage unavailable']]){
  const page=await browser.newPage({viewport:{width:390,height:900}});await fixture(page,'alice',options);await page.goto('http://127.0.0.1:4173/learning?tab=flashcards',{waitUntil:'networkidle'});

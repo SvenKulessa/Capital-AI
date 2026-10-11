@@ -352,3 +352,17 @@
 
 !scripts/media/
 !scripts/media/capital-ai-tour.json
+
+# Exact new hub/owner dependencies and isolated build validation inputs.
+!shared/account-display.mjs
+!shared/analytics-demo.mjs
+!shared/hub-branding.mjs
+!server/historical-analytics-demo.mjs
+!server/historical-analytics-demo.test.mjs
+!server/auth.test.mjs
+!scripts/navigation.test.mjs
+!scripts/skill-routing.test.mjs
+!scripts/skill-routing.mjs
+!scripts/skill-routing-evaluation.mjs
+!scripts/skill-routing-cases.json
+!scripts/skill-routing-challenges.json

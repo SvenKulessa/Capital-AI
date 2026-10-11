@@ -54,6 +54,10 @@
       "fontZoom200percent320": "PASS"
     },
     {
+      "currentCanonicalCountInBrowserMetadata": "PASS",
+      "count": 305
+    },
+    {
       "anonymousFormerQuantDeepLink": "PASS",
       "anonymousResearchedDeepLink": "PASS",
       "primarySourceLink": "PASS",

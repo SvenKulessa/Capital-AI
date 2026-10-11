@@ -24,7 +24,7 @@ The public demo is deliberately synthetic and separate from the historical sourc
 - `npm test`: 680 tests passed (all component suites reported zero failures).
 - `npm run test:security`: 275 tests passed, including the five archive tests added to this existing script.
 - `node --test server/auth.test.mjs server/historical-analytics-demo.test.mjs`: 29 tests passed including independent billing outage, foreign profile identity, Pro subscriber, unauthorised archive access, MFA denial, corrupt samples and leakage prevention.
-- `npm run test:seo`: 31 tests passed. Source hashes refreshed against actual files; glossary remains 305 publicly indexable terms. Private account rights route explicitly excluded from indexing.
+- `npm run test:seo`: 31 tests passed. Browser metadata count is injected directly from the canonical vocabulary at every Vite build, without including the full corpus in the entry chunk. Source hashes refreshed against actual files; glossary remains 305 publicly indexable terms. Private account rights route explicitly excluded from indexing.
 - Build, TypeScript/frontend-boundary lint and whitespace check passed.
 - Chromium 153 + axe-core 4.10.3 audited 28 page/viewport combinations: 320/390/768/1440px × Analytics, Learning flashcards, Documentation, Profile, Account rights, Login, Legal. Zero reported WCAG 2 A/AA, 2.1 AA and 2.2 AA violations after fixing Footer targets and low-contrast account/login helper copy. See `evidence/hub-accessibility-20261012/accessibility-audit.json`.
 - Browser actions: owner/Pro/unknown status, search/sort, private archive switch using synthetic fixture, keyboard focus to last hub link, scroll buttons, reduced motion, no page overflow and 200% root-font enlargement at 320px.
@@ -39,3 +39,9 @@ The branch includes the current-logo video, simple Elite Backtesting card, synth
 ## Activation and rollback
 
 Normal PR checks and main-only deployment apply. Required Docker Security Gate and Domain Governance must complete successfully at the exact current PR head before any delegated merge. Verify production source identity and public navigation separately after deployment; local fixture evidence is not a live release. Rollback by reverting the product commits; no database migration or entitlement mutation needs reversal.
+
+## PR pipeline follow-up
+
+PR #428 exposed a hardcoded browser SEO count (132 instead of 305), missing Docker COPY/allowlist entries and obsolete assertions that required paused CADS advertising. The browser count now comes from the canonical corpus at build time; the build-only test inputs and new archive dependency are explicitly packaged. Secret/history exclusions remain. Existing billing tests verify current paid access and absence of paused promotions. Domain Governance uses the prescribed CAPITAL-AI-PRODUCT title prefix. All pipeline changes stay in the same PR; no checks are disabled or bypassed.
+
+Follow-up local verification: all 19 existing billing/privacy/Docker-context tests passed, the full 680-test suite passed again, and the built-browser learning run confirmed the current 305-term count in actual page metadata. Build and lint passed. Final GitHub checks are evaluated separately at the updated PR head.
