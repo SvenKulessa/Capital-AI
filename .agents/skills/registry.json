@@ -9,38 +9,175 @@
       "engineering": "product-engineering",
       "advisory": "product-advisory",
       "chatAgent": ".github/agents/capital-ai-product.agent.md",
-      "presentation": "visual-chat"
+      "presentation": "visual-chat",
+      "specialistAccess": "shared",
+      "recommendedSpecialists": [
+        "ai-engineering",
+        "customer-success",
+        "sales-enterprise",
+        "analytics-intelligence",
+        "mobile-engineering",
+        "accessibility-audit"
+      ]
     },
     "MARKET": {
       "scope": "FinTech-Logik, lizenzierte Providerdaten, Instrumentenmapping, Market Data, Scoring, Screener, Data Quality, BYOK und Evidence",
       "engineering": "market-engineering",
       "advisory": "market-advisory",
       "chatAgent": ".github/agents/capital-ai-market.agent.md",
-      "presentation": "visual-chat"
+      "presentation": "visual-chat",
+      "specialistAccess": "shared",
+      "recommendedSpecialists": [
+        "data-engineering",
+        "ai-engineering",
+        "quant-research",
+        "legal-compliance",
+        "analytics-intelligence"
+      ]
     },
     "PLATFORM": {
       "scope": "Render, Docker/OCI, GHCR, Rust/Node, NATS JetStream, Valkey, Supabase-Infrastruktur, CI/CD, Observability und Releases",
       "engineering": "platform-engineering",
       "advisory": "platform-advisory",
       "chatAgent": ".github/agents/capital-ai-platform.agent.md",
-      "presentation": "visual-chat"
+      "presentation": "visual-chat",
+      "specialistAccess": "shared",
+      "recommendedSpecialists": [
+        "data-engineering",
+        "ai-engineering",
+        "incident-response",
+        "mobile-engineering",
+        "analytics-intelligence"
+      ]
     },
     "TRUST": {
       "scope": "AppSec, Threat Modeling, Auth-Grenzen, Datenschutz, Compliance, Supply Chain, SBOM, QA, Risiko- und Evidence-Bewertung",
       "engineering": "trust-engineering",
       "advisory": "trust-advisory",
       "chatAgent": ".github/agents/capital-ai-trust.agent.md",
-      "presentation": "visual-chat"
+      "presentation": "visual-chat",
+      "specialistAccess": "shared",
+      "recommendedSpecialists": [
+        "legal-compliance",
+        "incident-response",
+        "ai-engineering",
+        "data-engineering",
+        "accessibility-audit"
+      ]
     },
     "GROWTH": {
       "scope": "Dokumentation, SEO, Content Engine, Social, Podcast/Video, Public Claims, Branding, Analytics und Release-Kommunikation",
       "engineering": "growth-engineering",
       "advisory": "growth-advisory",
       "chatAgent": ".github/agents/capital-ai-growth.agent.md",
-      "presentation": "visual-chat"
+      "presentation": "visual-chat",
+      "specialistAccess": "shared",
+      "recommendedSpecialists": [
+        "customer-success",
+        "sales-enterprise",
+        "analytics-intelligence",
+        "accessibility-audit",
+        "ai-engineering",
+        "legal-compliance"
+      ]
     }
   },
   "sharedSkills": {
-    "visualChat": "visual-chat"
+    "visualChat": "visual-chat",
+    "specialists": [
+      "ai-engineering",
+      "data-engineering",
+      "quant-research",
+      "customer-success",
+      "sales-enterprise",
+      "legal-compliance",
+      "incident-response",
+      "analytics-intelligence",
+      "mobile-engineering",
+      "accessibility-audit"
+    ]
+  },
+  "specialistSkillMetadata": {
+    "ai-engineering": {
+      "priority": "high",
+      "leadDomains": [
+        "PRODUCT",
+        "TRUST",
+        "PLATFORM"
+      ],
+      "summary": "LLM, RAG, Prompt Governance, Agent Safety und Modellrechte"
+    },
+    "data-engineering": {
+      "priority": "high",
+      "leadDomains": [
+        "MARKET",
+        "PLATFORM"
+      ],
+      "summary": "ETL/ELT, NATS/Kafka Governance, DQ, Event-Replay und Lineage"
+    },
+    "quant-research": {
+      "priority": "high",
+      "leadDomains": [
+        "MARKET"
+      ],
+      "summary": "Faktormodelle, Backtesting, Portfolio Science und quantitative Validierung"
+    },
+    "customer-success": {
+      "priority": "medium",
+      "leadDomains": [
+        "PRODUCT",
+        "GROWTH"
+      ],
+      "summary": "User Feedback, Aktivierung, Churn, Retention und Support-Erfolg"
+    },
+    "sales-enterprise": {
+      "priority": "medium",
+      "leadDomains": [
+        "GROWTH",
+        "PRODUCT"
+      ],
+      "summary": "B2B Deals, CRM, Lead Qualification, Procurement und Umsatzpfad"
+    },
+    "legal-compliance": {
+      "priority": "high",
+      "leadDomains": [
+        "TRUST",
+        "MARKET"
+      ],
+      "summary": "DSGVO, MiFID II, MiCA, deutsches Finanzrecht und IP-/Lizenzrechte"
+    },
+    "incident-response": {
+      "priority": "high",
+      "leadDomains": [
+        "TRUST",
+        "PLATFORM"
+      ],
+      "summary": "Security Incidents, Triage, Forensik, Containment und Disaster Recovery"
+    },
+    "analytics-intelligence": {
+      "priority": "medium",
+      "leadDomains": [
+        "GROWTH",
+        "PRODUCT",
+        "PLATFORM"
+      ],
+      "summary": "Produkt- und Business-KPIs, Analytics, Experimentierung und Attribution"
+    },
+    "mobile-engineering": {
+      "priority": "medium",
+      "leadDomains": [
+        "PRODUCT",
+        "PLATFORM"
+      ],
+      "summary": "Android App, Mobile OIDC, App Signing und sicherer Release-Prozess"
+    },
+    "accessibility-audit": {
+      "priority": "medium",
+      "leadDomains": [
+        "PRODUCT",
+        "GROWTH"
+      ],
+      "summary": "WCAG, barrierefreier UI-Audit, Keyboard, Screenreader und Charts"
+    }
   }
 }
