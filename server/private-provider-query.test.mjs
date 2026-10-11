@@ -309,3 +309,16 @@ test('five private class batches use the existing signed broker contract without
   assert.throws(() => validateProviderQueryRequest({ provider: 'kraken', operation: 'market.asset_class_snapshot',
     params: { category: 'AKTIEN' } }), /INVALID_PARAM_VALUE/);
 });
+
+test('broker pause overrides both customer and diagnostic bridge enablement', async () => {
+  const bridge = createPrivateProviderQuery({
+    env: { ...env, MARKET_BROKER_PAUSED: 'true', PRIVATE_PROVIDER_BRIDGE_ENABLED: 'true', PRIVATE_PROVIDER_BRIDGE_PROBE_ENABLED: 'true' },
+    auth: {}, vault: {}, state: {},
+  });
+  assert.equal(bridge.status().enabled, false);
+  assert.equal(bridge.status().probeEnabled, false);
+  assert.equal(await bridge.start(), false);
+  assert.equal((await bridge.probe('paused-bridge')).status, 'DISABLED');
+  assert.equal(bridge.status().requestConnection, 'DISCONNECTED');
+  assert.equal(bridge.status().executorConnection, 'DISCONNECTED');
+});

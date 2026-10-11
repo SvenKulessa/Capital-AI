@@ -54,6 +54,7 @@ import {
 } from '../utils/telegramService';
 import { useMarketAssets } from '../services/marketDataStore';
 import { MARKET_ASSETS } from '../data/mockData';
+import { PRICE_ALERTS_ENABLED } from '../features/alerts/featureFlags';
 
 export interface AddAlertPayload {
   assetId: string;
@@ -154,6 +155,7 @@ export const PriceAlertsProvider: React.FC<{ children: ReactNode }> = ({ childre
   useMarketAssets();
   // Load asset price alerts
   const [alerts, setAlerts] = useState<PriceAlert[]>(() => {
+    if (!PRICE_ALERTS_ENABLED) return [];
     try {
       const saved = localStorage.getItem(STORAGE_ALERTS_KEY);
       if (saved) {
@@ -198,7 +200,10 @@ export const PriceAlertsProvider: React.FC<{ children: ReactNode }> = ({ childre
   });
 
   const [activeToast, setActiveToast] = useState<AlertToastData | null>(null);
-  const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+  const [isAlertModalOpen, setIsAlertModalOpenState] = useState(false);
+  const setIsAlertModalOpen = useCallback((open: boolean) => {
+    if (PRICE_ALERTS_ENABLED) setIsAlertModalOpenState(open);
+  }, []);
   const [isWhaleRadarOpen, setIsWhaleRadarOpen] = useState(false);
   const [preselectedWhaleAsset, setPreselectedWhaleAsset] = useState<string | null>(null);
   const [preselectedAssetForNewAlert, setPreselectedAssetForNewAlert] = useState<MarketAsset | null>(null);
@@ -217,8 +222,9 @@ export const PriceAlertsProvider: React.FC<{ children: ReactNode }> = ({ childre
     }
   }, [whaleTransactions]);
 
-  // Sync alerts
+  // Do not overwrite persisted user alerts while this feature is paused.
   useEffect(() => {
+    if (!PRICE_ALERTS_ENABLED) return;
     try {
       localStorage.setItem(STORAGE_ALERTS_KEY, JSON.stringify(alerts));
     } catch {
@@ -270,7 +276,7 @@ export const PriceAlertsProvider: React.FC<{ children: ReactNode }> = ({ childre
     const tgConfig = preferences.telegram || DEFAULT_TELEGRAM_CONFIG;
     const title = '🤖 [TEST] Capital-AI Telegram Push aktiv';
     const body =
-      'Verbindung erfolgreich! Ihr Telegram-Bot empfängt nun Live-Warnungen für On-Chain Whale Transaktionen, Smart Money Flow & Preis-Schwellenwerte.';
+      'Verbindung erfolgreich! Ihr Telegram-Bot ist für konfigurierbare Benachrichtigungen eingerichtet. Preisalarme sind derzeit pausiert.';
     const html = `
 <b>🤖 CAPITAL-AI TELEGRAM PUSH</b>
 
@@ -278,7 +284,7 @@ export const PriceAlertsProvider: React.FC<{ children: ReactNode }> = ({ childre
 Ihr Telegram-Empfangskanal ist aktiv. Sie erhalten ab sofort:
 • 🐋 <b>On-Chain Whale Radar</b> (Großtransaktionen &gt; $5M)
 • 🌊 <b>Smart Money Flow</b> (Institutionelle Akkumulation)
-• 🔔 <b>Preis- &amp; Sentiment-Schwellenwerte</b>
+• 🔔 <b>Preisalarme derzeit pausiert</b>
 
 ⚡ <i>Capital-AI Multi-Market Intelligence Terminal</i>
 `.trim();
@@ -321,6 +327,7 @@ Ihr Telegram-Empfangskanal ist aktiv. Sie erhalten ab sofort:
   // Trigger asset alert notification
   const triggerNotification = useCallback(
     (alert: PriceAlert) => {
+      if (!PRICE_ALERTS_ENABLED) return;
       if (preferences.soundEnabled) {
         playAlertChime();
       }
@@ -371,6 +378,7 @@ Ihr Telegram-Empfangskanal ist aktiv. Sie erhalten ab sofort:
   // Add new asset price alert
   const addAlert = useCallback(
     (payload: AddAlertPayload): PriceAlert => {
+      if (!PRICE_ALERTS_ENABLED) throw new Error('PRICE_ALERTS_PAUSED');
       const assetFound = MARKET_ASSETS.find(
         (a) => a.id === payload.assetId || a.symbol === payload.assetSymbol
       );
@@ -552,7 +560,7 @@ Ihr Telegram-Empfangskanal ist aktiv. Sie erhalten ab sofort:
 
   // Reset all to defaults
   const resetToDefaults = useCallback(() => {
-    setAlerts(INITIAL_PRICE_ALERTS);
+    if (PRICE_ALERTS_ENABLED) setAlerts(INITIAL_PRICE_ALERTS);
     setSentimentAlerts(INITIAL_SENTIMENT_ALERTS);
     setPreferences(DEFAULT_ALERT_PREFERENCES);
   }, []);
@@ -568,11 +576,13 @@ Ihr Telegram-Empfangskanal ist aktiv. Sie erhalten ab sofort:
 
   // Navigation helpers
   const openAlertModalWithAsset = useCallback((asset: MarketAsset) => {
+    if (!PRICE_ALERTS_ENABLED) return;
     setPreselectedAssetForNewAlert(asset);
     setIsAlertModalOpen(true);
   }, []);
 
   const openAlertModalWithSentiment = useCallback((category: ('ALLE' | MainCategory) = 'ALLE') => {
+    if (!PRICE_ALERTS_ENABLED) return;
     setPreselectedCategoryForSentiment(category);
     setIsAlertModalOpen(true);
   }, []);
@@ -586,8 +596,9 @@ Ihr Telegram-Empfangskanal ist aktiv. Sie erhalten ab sofort:
   ).length;
   const triggeredSentimentAlertsCount = sentimentAlerts.filter((sa) => sa.isTriggered).length;
 
-  // Background price check engine simulating live market checks against thresholds
+  // Background price checks must never run during the feature pause.
   useEffect(() => {
+    if (!PRICE_ALERTS_ENABLED) return;
     const intervalSec = Math.max(preferences.autoCheckIntervalSec || 10, 5);
     const timer = setInterval(() => {
       setAlerts((prevAlerts) => {

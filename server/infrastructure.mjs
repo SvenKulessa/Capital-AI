@@ -26,6 +26,8 @@ export class MarketInfrastructure {
     return this.opening;
   }
   async open() {
+    // Do not reconnect to a paused broker even if old Render credentials remain set.
+    if (this.env.MARKET_BROKER_PAUSED === 'true') return false;
     if (!this.env.REDIS_URL) return false;
     // Never fall back to an anonymous connection when the configured broker is reachable.
     let natsAuth = null;
