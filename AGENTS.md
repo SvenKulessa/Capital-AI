@@ -261,3 +261,21 @@ Status-, Review-, Implementierungs- und Abschlussmeldungen enden mit zwei getren
 - Agentenseitig ausführbare Aufgaben, rein informative Hinweise und bereits erledigte Schritte werden **nicht** als offene Owner-Aktionen gekennzeichnet. Aufgaben sollen nicht unnötig auf den Owner verschoben werden.
 - Beispiel für einen offenen Eintrag: `- 👋⚙️ Ein kostenpflichtiges Provider-Abo nach Kostenprüfung persönlich freigeben.`
 - Die Kennzeichnung ist ausschließlich eine **Darstellungsregel**: Sie schafft keine zusätzliche Approval-, Handoff-, Review- oder Admission-Pflicht und verändert keine bestehenden Zuständigkeiten oder Merge-Berechtigungen.
+
+## Skill-Ownership- und Evidence-Inventar (additive Erweiterung)
+
+Das vorhandene Modell `CAPITAL_AI_DOMAIN_SKILLS@1` und alle fünf Domains bleiben erhalten. Die **einzige autoritative Skill-Registry** ist `.agents/skills/registry.json`; `skillGovernance` ordnet jeden Skill genau einem `domainOwner` zu. `escalationOwner` und `governanceOwner` sind benannte Rollen für Fälle im bestehenden Workflow, **keine weiteren Autoritäten oder Freigabestufen**. `leadDomains`, `sharedSkills.specialists` und `recommendedSpecialists` definieren weiterhin nicht-exklusive fachliche Nutzung, keine Ownership.
+
+| Zuständige Domain | Verantwortete Skills (einmalig) |
+|---|---|
+| PRODUCT | `product-engineering`, `product-advisory`, `mobile-engineering`, `customer-success`, `accessibility-audit`, `accessibility-advisory`, `accessibility-engineering`, `visual-chat` |
+| MARKET | `market-engineering`, `market-advisory`, `quant-research`, `data-engineering`, `analytics-intelligence` |
+| PLATFORM | `platform-engineering`, `platform-advisory`, `ai-engineering`, `platform-observability` |
+| TRUST | `trust-engineering`, `trust-advisory`, `legal-compliance`, `incident-response` |
+| GROWTH | `growth-engineering`, `growth-advisory`, `sales-enterprise`, `seo-engineering`, `revenue-engineering` |
+
+Pro Skill stehen `SKILL.md`, `RESPONSIBILITIES.md` und `INTERFACES.md` unter `.agents/skills/<skill>/`. Die drei Dokumente ergänzen einander; die fachliche Skill-Nutzung bleibt kompatibel zu bestehenden Agenten- und Routing-Verweisen. Insbesondere `accessibility-audit` und `sales-enterprise` bleiben bestehen; neue `accessibility-advisory`, `accessibility-engineering`, `platform-observability`, `seo-engineering` und `revenue-engineering` sind eigenständige Fähigkeiten in den vorhandenen Domains.
+
+`npm run validate:all` validiert Schema, physische Dateien, Eindeutigkeit, Referenzen, Grenzen und dokumentarische Readiness. Die Generatoren erzeugen `generated/SKILL-INVENTORY.md`, `generated/SKILL-READINESS.md`, `generated/CAPITAL-AI-SKILL-EXPANSION-REPORT.md` und `generated/ARCHITECTURE-GAP-ANALYSIS.md`. Ein struktureller Score bewertet **nur dokumentarische/automatisierte Skill-Governance**, keine Live-Security, rechtliche Konformität, Accessibility-Zertifizierung oder Providerrechte. Defekte/falsche Quellen und unvollständige Nachweise bleiben `BLOCKED` oder `NOT_PROVEN`.
+
+Die Prüfungen werden **innerhalb des vorhandenen `Docker Security Gate`** ausgeführt. Es entstehen weder ein neuer GitHub Required Check noch manuelle Admissions/Reviews/Handoffs. Die ebenfalls erforderliche `Domain Governance` bleibt unverändert; Kosten-, Datenschutz- und Owner-Delegationsregeln dieses Dokuments gelten unverändert. Gesetzliche Referenzrahmen (u. a. DSGVO, DORA und EU AI Act) gelten nur soweit sie für die jeweilige Tätigkeit tatsächlich anwendbar sind.

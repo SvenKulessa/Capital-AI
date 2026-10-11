@@ -173,3 +173,24 @@ im Hauptsystem: `/api/auth/mobile-login` und `/api/auth/mobile-exchange`
 sind serverseitige PKCE-/Einmalcode-Schnittstellen der ausgelagerten App.
 Der gemeinsame Finance-Evidence-/Scorer-Bus bleibt ein Backend-Bestandteil
 und ist weder eine mobile Anwendung noch ein APK-Release.
+
+## Skill-Architektur und Governance
+
+Die fünf bestehenden Domains bleiben unverändert. Die autoritative Zuordnung und die getrennten Rollen Domain Owner, Escalation Owner und Governance Owner sind ausschließlich in [der Skill-Registry](.agents/skills/registry.json) definiert. Geteilte Nutzung eines Spezialisten ändert dessen eindeutige Ownership nicht.
+
+| Domain | Eigenständig verantwortete Skills |
+|---|---|
+| PRODUCT | `product-engineering`, `product-advisory`, `mobile-engineering`, `customer-success`, `accessibility-audit`, `accessibility-advisory`, `accessibility-engineering`, `visual-chat` |
+| MARKET | `market-engineering`, `market-advisory`, `quant-research`, `data-engineering`, `analytics-intelligence` |
+| PLATFORM | `platform-engineering`, `platform-advisory`, `ai-engineering`, `platform-observability` |
+| TRUST | `trust-engineering`, `trust-advisory`, `legal-compliance`, `incident-response` |
+| GROWTH | `growth-engineering`, `growth-advisory`, `sales-enterprise`, `seo-engineering`, `revenue-engineering` |
+
+Pro Skill: `SKILL.md` (Arbeitsmodus), `RESPONSIBILITIES.md` (Pflichten, KPIs, Evidence und Security) und `INTERFACES.md` (Input-/Output- und Trust-Boundary-Vertrag). Einzelne Framework-Verweise wie DDD, Team Topologies, DevSecOps, DataOps, MLOps, FinOps, SRE, NIST CSF, ISO 27001, OWASP ASVS, WCAG 2.2, DSGVO, DORA und EU AI Act sind **methodische Referenzen** und keine pauschale Compliance-Zertifizierung. Die ausschließlich autorisierende Richtlinie bleibt [AGENTS.md](AGENTS.md).
+
+```sh
+npm run validate:all
+npm run test:domain-skills
+```
+
+Die Checks laufen im vorhandenen `Docker Security Gate`, ohne neuen Required Check. Berichte: [Skill Inventory](generated/SKILL-INVENTORY.md), [Readiness](generated/SKILL-READINESS.md), [Expansion Report](generated/CAPITAL-AI-SKILL-EXPANSION-REPORT.md), [Architecture Gap Analysis](generated/ARCHITECTURE-GAP-ANALYSIS.md). Readiness bewertet ausschließlich belegbare Dokumentations-/Governance-Merkmale, keine Runtime-Reife oder regulatorische Konformität.
