@@ -25,7 +25,6 @@ import {
   Zap,
   Layers,
   Newspaper,
-  Bell,
   FileCode,
   SlidersHorizontal,
   Bot,
@@ -42,6 +41,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { PRICE_ALERTS_ENABLED } from '../features/alerts/featureFlags';
 
 export type MainHubId = 'marketscreener' | 'studio' | 'learning' | 'documentation' | 'control-center';
 
@@ -133,15 +133,15 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         tags: ['NLP', 'Sentiment', 'Breaking News'],
         path: '/marketscreener?module=newsfeed',
       },
-      {
+      ...(PRICE_ALERTS_ENABLED ? [{
         id: 'alerts',
         name: 'PriceAlerts & Schwellenwerte',
-        icon: <Bell className="w-4 h-4 text-amber-400" />,
+        icon: <span aria-hidden="true">🔔</span>,
         badge: 'Preisalarme',
         shortDesc: 'Konfiguration von Preisalarmen und Schwellenwerten',
         tags: ['Alarme', 'Benachrichtigungen'],
         path: '/marketscreener?module=alerts',
-      },
+      }] : []),
     ],
   },
   studio: {
