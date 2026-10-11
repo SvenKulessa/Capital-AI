@@ -4,7 +4,7 @@ const COPYLEFT = /^(?:AGPL|GPL|LGPL|MPL|EPL)-/;
 const NON_RELEASE = /^(?:managed(?:-cloud)?|unknown|unbekannt|not installed|null)$/i;
 function matchField(block, field) {
   const safe = field.replace(/[^a-zA-Z]/g, '');
-  const found = block.match(new RegExp('(?:^|\\n)\\s*' + safe + ":\\s*'([^'\\n]*)'", 'm'));
+  const found = block.match(new RegExp('(?:^|[\\s,{])' + safe + ":\\s*'([^'\\n]*)'", 'm'));
   return found?.[1] || null;
 }
 export function parseDeclaredComponentInventory(source) {
