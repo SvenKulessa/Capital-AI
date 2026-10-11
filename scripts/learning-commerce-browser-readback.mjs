@@ -65,6 +65,24 @@ try {
     if (response.error) task.reject(new Error(response.error.message)); else task.resolve(response.result);
   });
   await command('Page.enable'); await command('Runtime.enable');
+
+  // Direct public HTTP response, not a Render dashboard or container health inference.
+  const healthResponse = await fetch(origin + '/healthz', {
+    redirect: 'manual', signal: AbortSignal.timeout(15000),
+    headers: { 'User-Agent': 'CAPITAL-AI-production-mobile-qa/1.0', Accept: 'application/json' },
+  });
+  assert.equal(healthResponse.status, 200, 'Production /healthz must return HTTP 200');
+  const health = await healthResponse.json();
+  assert.equal(health.status, 'ok', 'Production health payload must be ok');
+  assert.match(health.runtimeIdentity?.sourceSha ?? '', /^[a-f0-9]{40}$/, 'Runtime Source SHA not bound');
+  report.health = {
+    httpStatus: healthResponse.status,
+    sourceSha: health.runtimeIdentity.sourceSha,
+    identityEvidence: health.runtimeIdentity.evidence,
+    buildBound: health.buildIdentity?.bound === true,
+  };
+  report.checks.push({ name: 'production-healthz-runtime-sha', status: 'PASS' });
+
   for (const viewport of [
     { name: 'narrow-mobile', width: 320, height: 720, mobile: true },
     { name: 'mobile', width: 390, height: 844, mobile: true },
