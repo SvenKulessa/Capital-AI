@@ -57,20 +57,12 @@
   outline-offset: 4px;
 }
 
-@keyframes capitalAiHeroEarthSpin {
-  to { transform: rotate(360deg); }
-}
 @keyframes capitalAiHeroBeaconPulse {
   0%, 100% { opacity: 0.3; transform: scale(0.7); }
   50% { opacity: 1; transform: scale(1.65); }
 }
 
-/* Animate only the sphere content so the atmospheric fade remains stationary. */
-.capital-ai-hero .hero-earth-rotation {
-  animation: capitalAiHeroEarthSpin 90s linear infinite;
-  transform-origin: center;
-  will-change: transform;
-}
+/* The 3D globe rotates on its real Y axis in HeroEarth3D.tsx. */
 .capital-ai-hero .hero-earth-beacon {
   animation: capitalAiHeroBeaconPulse 3.6s ease-in-out infinite;
   box-shadow: 0 0 9px 3px rgb(249 191 33 / 70%), 0 0 22px 7px rgb(249 191 33 / 25%);
@@ -80,9 +72,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .capital-ai-hero .animate-pulse-slow,
-  .capital-ai-hero .hero-earth-rotation,
   .capital-ai-hero .hero-earth-beacon { animation: none; }
-  .capital-ai-hero .hero-earth-rotation { will-change: auto; }
   .capital-ai-hero button, .capital-ai-hero button svg {
     transition: none;
     transform: none;
