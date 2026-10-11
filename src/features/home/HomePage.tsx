@@ -95,13 +95,17 @@ export function HomePage({
         onExploreProduct={onStartProductTour}
       />
 
-      <HomeLatestLearning onNavigate={onNavigate} />
-
-      <CommerceEntrySection onNavigate={onNavigate} />
-
-      <Suspense fallback={null}>
+      {/* Sales-first: the featured, educational Blueprint catalog sits immediately below the Hero. */}
+      <Suspense fallback={
+        <section role="status" className="mx-auto w-full max-w-7xl px-5 py-8 text-sm text-slate-300">
+          Blueprint-Bundles werden geladen …
+        </section>
+      }>
         <MarketBlueprintShowcase onNavigate={onNavigate} />
       </Suspense>
+
+      <CommerceEntrySection onNavigate={onNavigate} />
+      <HomeLatestLearning onNavigate={onNavigate} />
 
       <Suspense fallback={null}>
         <HomeHubDirectory
