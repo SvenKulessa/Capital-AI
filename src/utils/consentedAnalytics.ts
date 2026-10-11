@@ -86,6 +86,7 @@ export function startConsentedAnalytics() {
 }
 export function sendPageView(path: string) {
   if (typeof window === 'undefined') return;
+  if (!cleanPath(window.location.pathname)) { if (active) disable(); return; }
   const safe = cleanPath(path);pendingPath = safe || '';
   if (!permitted()) { if (initialized) disable(); return; }
   if (!safe) { if (active) disable(); return; }
