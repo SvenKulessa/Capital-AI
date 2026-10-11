@@ -4,7 +4,7 @@
 
 ## Bestand: sechs bereits veröffentlichte methodische Lernschritte
 
-Diese sechs Einträge sind **aus [`LEARNING_JOURNEY`](../../shared/learning-journey.mjs) abgeleitet**, nicht eine weitere Curriculum-Quelle. Die React-Projektion ist [`src/features/learning/LearningJourney.tsx`](../../src/features/learning/LearningJourney.tsx), mit serverseitiger HTML-Fallback-Darstellung.
+Diese sechs Einträge sind **aus [`LEARNING_JOURNEY`](../shared/learning-journey.mjs) abgeleitet**, nicht eine weitere Curriculum-Quelle. Die React-Projektion ist [`src/features/learning/LearningJourney.tsx`](../src/features/learning/LearningJourney.tsx), mit serverseitiger HTML-Fallback-Darstellung.
 
 | Stufe | ID | Bestehendes Modul | Lernziel | Quellpfad | Datenstatus |
 |---:|---|---|---|---|---|
@@ -15,7 +15,7 @@ Diese sechs Einträge sind **aus [`LEARNING_JOURNEY`](../../shared/learning-jour
 | 5 | `volatilitaet` | Risiko und Volatilität: Streuung statt Vorhersage | Historische Streuung von Verlustwahrscheinlichkeit unterscheiden. | Redaktionelles Modul: `shared/learning-journey.mjs` | synthetisch / kostenlos |
 | 6 | `validierung` | Backtesting: Modelle ohne Zukunftswissen prüfen | Trainingsdaten, unabhängige Prüfung und Interpretationsgrenzen trennen. | Redaktionelles Modul: `shared/learning-journey.mjs` | synthetisch / kostenlos |
 
-**Bestehende Ergänzungen:** [`src/data/vocabularyData.ts`](../../src/data/vocabularyData.ts) (Begriffe/Definitionen/Formelregeln), [`src/data/chartLearning.ts`](../../src/data/chartLearning.ts) (Chartmuster/Indikatoren mit synthetischen Lernbeispielen), [`src/features/learning/ChartRecognitionQuiz.tsx`](../../src/features/learning/ChartRecognitionQuiz.tsx), [`src/data/learningArticles.ts`](../../src/data/learningArticles.ts), [`src/features/learning/LearningVideos.tsx`](../../src/features/learning/LearningVideos.tsx). Eine Komponente oder Video-Platzhalter ist **kein** Nachweis, dass kostenpflichtige Kurse/Streams freigeschaltet sind.
+**Bestehende Ergänzungen:** [`src/data/vocabularyData.ts`](../src/data/vocabularyData.ts) (Begriffe/Definitionen/Formelregeln), [`src/data/chartLearning.ts`](../src/data/chartLearning.ts) (Chartmuster/Indikatoren mit synthetischen Lernbeispielen), [`src/features/learning/ChartRecognitionQuiz.tsx`](../src/features/learning/ChartRecognitionQuiz.tsx), [`src/data/learningArticles.ts`](../src/data/learningArticles.ts), [`src/features/learning/LearningVideos.tsx`](../src/features/learning/LearningVideos.tsx). Eine Komponente oder Video-Platzhalter ist **kein** Nachweis, dass kostenpflichtige Kurse/Streams freigeschaltet sind.
 
 ## Lernpfad-Grafik
 
@@ -87,11 +87,11 @@ Ein Faktor wird um 10:00 bewertet, aber erst um 10:30 publiziert. Erwartung: **P
 | Welcher Teil wird berechnet? | [Component Catalog](COMPONENT-CATALOG.md) | Inputs, Outputs, Feature-Namen, Validierungsstatus |
 | Welches Gewicht zählt? | [Scoring Catalog](SCORING-CATALOG.md) | Nominal vs. effektive Gewichte, Risk-Penalty, Confidence |
 | Wie hängt die Plattform zusammen? | [Blueprint Catalog](BLUEPRINT-CATALOG.md) | Data/Analysis/Score/Evidence-Pipeline |
-| Kann ich es verkaufen oder downloaden? | [Blueprint Delivery Policy](../../src/data/blueprintDeliveryPolicy.ts) | License + SKU + authenticated entitlement (aktuell BLOCKED) |
+| Kann ich es verkaufen oder downloaden? | [Blueprint Delivery Policy](../src/data/blueprintDeliveryPolicy.ts) | License + SKU + authenticated entitlement (aktuell BLOCKED) |
 
 ## Zugriff, Monetarisierung, Qualität
 
-Der im Source-Stand dokumentierte öffentliche Lernpfad und das Glossar bilden die kostenlose Einstiegsstrecke. Produktseitige Vocabulary-/Quiz-Markierungen bleiben nutzergebunden. Die Freischaltung zusätzlicher Chart- oder Kursmodule folgt **den tatsächlich bestehenden** Access-/Entitlement-Regeln in [`src/features/learning/learningPolicy.ts`](../../src/features/learning/learningPolicy.ts), nicht diesem Dokument. Videos gelten bis zur nachgewiesenen Auslieferung als **`NOT_PROVEN`**.
+Der im Source-Stand dokumentierte öffentliche Lernpfad und das Glossar bilden die kostenlose Einstiegsstrecke. Produktseitige Vocabulary-/Quiz-Markierungen bleiben nutzergebunden. Die Freischaltung zusätzlicher Chart- oder Kursmodule folgt **den tatsächlich bestehenden** Access-/Entitlement-Regeln in [`src/features/learning/learningPolicy.ts`](../src/features/learning/learningPolicy.ts), nicht diesem Dokument. Videos gelten bis zur nachgewiesenen Auslieferung als **`NOT_PROVEN`**.
 
 **Monetarisierungsoption:** kostenloses Methodenlernen → bestehendes Vocabulary-Angebot → Blueprint-Demo → später getrennte, lizenz- und entitlement-geprüfte Curriculum-/Blueprint-Produkte. Keine automatische Umstellung auf Paid, keine zusätzlichen Stripe-SKUs und keine ungeprüften Renditeversprechen. Für Commercial Provider-, Storage-/Egress- und Learning-Video-Kosten fehlen belastbare aktuelle Quota-Belege: `NOT_PROVEN`.
 
