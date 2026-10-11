@@ -1,14 +1,16 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "687c43649ac53b8bfae8b215ddaa37de9b359a88",
-  "mergedPr": 392,
-  "targetPr": 393,
-  "targetBranch": "capital-ai-trust/catalog-sha-verified-updates-20261011",
-  "targetHeadSha": "d4465a2abd2884afe761a4b72c9e80bd889c3c10",
+  "mainSha": "ecd8e1b4db06045b3f4b27fe4493dbedd35c27eb",
+  "mergedPr": 407,
+  "targetPr": 411,
+  "targetBranch": "dependabot/github_actions/actions/upload-artifact-7.0.2",
+  "targetHeadSha": "c8b619fcd4dcb9134186315fad0d3d197ad318ab",
   "exactOverlap": [
-    ".dockerignore",
-    "Dockerfile",
-    "server/index.mjs"
+    ".github/workflows/cads-package-acceptance.yml",
+    ".github/workflows/ci-efficiency-report.yml",
+    ".github/workflows/daily-dependency-security-watch.yml",
+    ".github/workflows/mobile-hardening-validation.yml",
+    ".github/workflows/npm-update-capsule.yml"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,
