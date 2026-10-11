@@ -361,6 +361,10 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       </label>
       {/* 3. LEARNING PORTAL TABS */}
       <div className="flex items-center gap-1 p-1 rounded-xl bg-[#090e21] border border-slate-800/90 mb-6 overflow-x-auto scrollbar-none">
+        <button type="button" onClick={() => setActiveTab('kontakt')} aria-current={activeTab === 'kontakt' ? 'page' : undefined}
+          className={`flex min-h-11 items-center gap-2 rounded-lg px-3.5 text-xs font-semibold whitespace-nowrap transition-colors ${activeTab === 'kontakt' ? 'bg-[#F5C453] text-slate-950' : 'text-[#F5C453] hover:bg-[#F5C453]/10'}`}>
+          <Mail className="h-4 w-4" aria-hidden="true" /><span>Kontakt</span>
+        </button>
         <button type="button" onClick={() => setActiveTab('news')} aria-current={activeTab === 'news' ? 'page' : undefined}
           className={`min-h-11 rounded-lg px-3.5 text-xs whitespace-nowrap ${activeTab === 'news' ? 'bg-amber-400 text-black' : 'text-slate-200 hover:bg-white/5'}`}>Lernimpulse · News</button>
         {/* TAB 1: GLOSSAR / VOCABULARY */}
@@ -440,17 +444,13 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
           <Award className="w-3.5 h-3.5" />
           <span>Quant &amp; Trader Skill-Check</span>
         </button>
-        <button type="button" onClick={() => setActiveTab('kontakt')} aria-current={activeTab === 'kontakt' ? 'page' : undefined}
-          className={`flex min-h-11 items-center gap-2 rounded-lg px-3.5 text-xs font-semibold whitespace-nowrap transition-colors ${activeTab === 'kontakt' ? 'bg-[#F5C453] text-slate-950' : 'text-[#F5C453] hover:bg-[#F5C453]/10'}`}>
-          <Mail className="h-4 w-4" aria-hidden="true" /><span>Kontakt</span>
-        </button>
       </div>
       {activeTab === 'kontakt' && <ContactForm />}
 
       {/* ========================================================================= */}
       {/* TAB CONTENT 1: MARKET VOCABULARY & GLOSSAR                                */}
       {/* ========================================================================= */}
-      {typeof window !== 'undefined' && window.location.pathname === '/learning' && <LearningJourney />}
+      {activeTab !== 'kontakt' && typeof window !== 'undefined' && window.location.pathname === '/learning' && <LearningJourney />}
       {activeTab === 'news' && <LearningArticles />}
       {activeTab === 'flashcards' && (
         <React.Suspense fallback={<p role="status" className="p-4 text-sm text-slate-400">Karteikarten werden geladen …</p>}>
