@@ -4,6 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { normalizeSkillText, selectSpecialists } from './skill-routing.mjs';
+import { evaluateSpecialistRouting } from './skill-routing-evaluation.mjs';
 
 const readJson = path => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
 const registry = readJson('../.agents/skills/registry.json');
@@ -80,4 +81,50 @@ test('standalone CLI returns inspectable JSON and does not call providers', () =
   assert.deepEqual(sorted(actual.skills), ['ai-engineering', 'legal-compliance']);
   assert.equal(actual.primaryDomain, 'TRUST');
   assert.equal(actual.scope, 'DETERMINISTIC_TEXT_SIGNALS_ONLY');
+});
+
+const challenges = readJson('./skill-routing-challenges.json');
+
+test('challenge corpus covers ten skills, five domains, compound cases and abstention', () => {
+  assert.equal(challenges.schemaVersion, 'CAPITAL_AI_SKILL_CHALLENGES@1');
+  assert.equal(challenges.cases.length, 35);
+  assert.equal(new Set(challenges.cases.map(c => c.id)).size, 35);
+  assert.deepEqual(sorted(new Set(challenges.cases.map(c => c.domain))), sorted(domains));
+  for (const id of ids)
+    assert.equal(challenges.cases.filter(c => c.expectedSpecialists.length === 1 &&
+      c.expectedSpecialists[0] === id).length, 2, id);
+  assert.equal(challenges.cases.filter(c => c.expectedSpecialists.length >= 2).length, 7);
+  assert.equal(challenges.cases.filter(c => c.expectedSpecialists.length === 0).length, 8);
+});
+
+test('challenge tasks select exact specialist sets in every invoking domain', () => {
+  for (const c of challenges.cases) for (const domain of domains) {
+    const actual = selectSpecialists(c.task, {domain,registry});
+    assert.deepEqual(sorted(actual.skills), sorted(c.expectedSpecialists), c.id + '/' + domain);
+  }
+});
+
+test('76 curated tasks report exact match, micro precision/recall and per-skill results', () => {
+  const report = evaluateSpecialistRouting([...corpus.cases,...challenges.cases],registry);
+  assert.equal(report.corpusSize, 76);
+  assert.deepEqual(report.exactSet,{matched:76,total:76,accuracy:1});
+  assert.deepEqual([report.micro.precision,report.micro.recall,report.micro.f1],[1,1,1]);
+  assert.equal(report.failures.length,0);
+  assert.deepEqual(sorted(Object.keys(report.bySpecialist)),sorted(ids));
+  assert.deepEqual(sorted(Object.keys(report.byDomain)),sorted(domains));
+  for(const stats of Object.values(report.bySpecialist)) assert.ok(stats.tp>=5);
+});
+
+test('evaluator surfaces false positives, false negatives and malformed samples', () => {
+  const probe=[
+    {id:'probe-fp',domain:'TRUST',task:'RAG',expectedSpecialists:[]},
+    {id:'probe-fn',domain:'PRODUCT',task:'Unbekannter neutraler Satz',expectedSpecialists:['ai-engineering']},
+    {id:'probe-tp',domain:'MARKET',task:'Backtesting',expectedSpecialists:['quant-research']}
+  ];
+  const report=evaluateSpecialistRouting(probe,registry);
+  assert.equal(report.exactSet.matched,1);
+  assert.deepEqual([report.micro.tp,report.micro.fp,report.micro.fn],[1,1,1]);
+  assert.deepEqual(report.failures.map(x=>x.id),['probe-fp','probe-fn']);
+  assert.ok(report.micro.f1<1);
+  assert.throws(()=>evaluateSpecialistRouting([...probe,probe[0]],registry),/invalid or duplicate/);
 });

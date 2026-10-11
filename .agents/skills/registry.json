@@ -231,7 +231,10 @@
         "halluzinationen",
         "model inference",
         "modell inference",
-        "prompt engineering"
+        "prompt engineering",
+        "vektorsuche",
+        "embeddings",
+        "jailbreaks"
       ],
       "data-engineering": [
         "etl",
@@ -249,7 +252,9 @@
         "backpressure",
         "dead letter queue",
         "event replay",
-        "ingestion"
+        "ingestion",
+        "cdc stream",
+        "consumer lag"
       ],
       "quant-research": [
         "backtest",
@@ -265,7 +270,10 @@
         "portfolio optimization",
         "point in time",
         "out of sample",
-        "slippage"
+        "slippage",
+        "handelssignale",
+        "handelssignalen",
+        "marktimpact"
       ],
       "customer-success": [
         "customer success",
@@ -278,7 +286,10 @@
         "time to value",
         "support tickets",
         "support ticket",
-        "onboarding abbruch"
+        "onboarding abbruch",
+        "nutzerabwanderung",
+        "erster kundennutzen",
+        "ersten kundennutzen"
       ],
       "sales-enterprise": [
         "b2b",
@@ -291,7 +302,9 @@
         "enterprise deal",
         "sales pipeline",
         "lead scoring",
-        "vertriebsabschluss"
+        "vertriebsabschluss",
+        "unternehmenskunden",
+        "verkaufszyklus"
       ],
       "legal-compliance": [
         "dsgvo",
@@ -307,7 +320,9 @@
         "redistribution rights",
         "data processing agreement",
         "dpa vertrag",
-        "wp hg"
+        "wp hg",
+        "dpia",
+        "marktdatenweitergabe"
       ],
       "incident-response": [
         "incident response",
@@ -324,7 +339,9 @@
         "secret rotation",
         "schluesselrotation",
         "forensik",
-        "containment"
+        "containment",
+        "credential diebstahl",
+        "forensische analyse"
       ],
       "analytics-intelligence": [
         "ga4",
@@ -340,7 +357,10 @@
         "ab test",
         "attribution",
         "web analytics",
-        "experiment analyse"
+        "experiment analyse",
+        "aktivierungsrate",
+        "akquisitionskanaele",
+        "kpi dashboard"
       ],
       "mobile-engineering": [
         "android",
@@ -353,7 +373,10 @@
         "play store",
         "ios",
         "swiftui",
-        "mobile app"
+        "mobile app",
+        "iphone app",
+        "deep link callback",
+        "biometrische anmeldung"
       ],
       "accessibility-audit": [
         "wcag",
@@ -368,7 +391,9 @@
         "reduced motion",
         "kontrastpruefung",
         "contrast ratio",
-        "zoom reflow"
+        "zoom reflow",
+        "tab und enter",
+        "fokusreihenfolge"
       ]
     }
   },
