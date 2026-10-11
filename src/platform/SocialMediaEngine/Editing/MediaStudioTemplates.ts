@@ -175,6 +175,20 @@ export const CAPITAL_AI_LANDING_VOICEOVER_DE = [
   'Blueprint-Vorschau und Learning Portal auf capital-ai.online entdecken.',
 ].join(' ');
 
+/**
+ * Client-safe TTS request that can be passed to the existing server-only
+ * createGeminiTtsDraft(request, verifiedApproval, runtimeEnv). Never calls
+ * the provider or places its key into browser bundles.
+ */
+export function createCapitalAiLandingGeminiTtsRequest() {
+  return {
+    text: CAPITAL_AI_LANDING_VOICEOVER_DE,
+    voice: 'Kore',
+    style: 'Professional, clear German narration. Calm, warm and factual, with deliberate pauses.',
+    maxAudioSeconds: 30,
+  } as const;
+}
+
 export function createCapitalAiLandingBlueprintVideoProject(): MediaProjectV2 {
   const fps = 30;
   const sceneSeconds = 6;
@@ -275,6 +289,8 @@ export function createCapitalAiLandingBlueprintVideoProject(): MediaProjectV2 {
       voiceoverLanguage: 'de-DE',
       voiceoverText: CAPITAL_AI_LANDING_VOICEOVER_DE,
       narrationAttached: false,
+      geminiTtsGateway: 'server/growth-ai-gateway.ts:createGeminiTtsDraft',
+      geminiTtsRequest: createCapitalAiLandingGeminiTtsRequest(),
       humanApprovalRequired: true,
       draftOnly: true,
       sourceRepository: 'SvenKulessa/FRONTEND',
