@@ -54,6 +54,21 @@ class GrowthGraphTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root:
             self.assertTrue(all(f["status"] == "NOT_PROVEN" for f in graph.seo_agent({"repo_root": root})["findings"]))
 
+    def test_local_checks_report_failures_without_leaking_subprocess_output(self):
+        with tempfile.TemporaryDirectory() as root:
+            Path(root, "contract.mjs").write_text("")
+            for code in [0, 1]:
+                with patch.object(graph.subprocess, "run", return_value=SimpleNamespace(returncode=code, stdout="sentinel-private", stderr="sentinel-private")) as runner:
+                    result = graph.local_checks(root, "privacy", ["contract.mjs"])
+                    self.assertEqual(result["status"], "LOCAL_TEST_PASSED" if code == 0 else "LOCAL_TEST_FAILED")
+                    self.assertNotIn("sentinel-private", json.dumps(result))
+                    self.assertEqual(runner.call_args.kwargs["cwd"], root)
+
+    def test_source_observation_never_attests_to_browser_consent(self):
+        with tempfile.TemporaryDirectory() as root:
+            findings = graph.privacy_agent({"repo_root": root})["findings"]
+            self.assertTrue(any(f["status"] == "NOT_PROVEN" and "accept/reject/withdrawal" in f["detail"] for f in findings))
+
     def test_google_reads_reject_malformed_or_failed_worker_results(self):
         for output in ["null", "[]", '{"result":null}', "bad json",
                        '{"result":{"isError":true,"secret":"sentinel-private"}}',

@@ -35,6 +35,19 @@ def finding(agent: str, status: str, detail: str) -> dict:
     return {"agent": agent, "status": status, "detail": detail}
 
 
+def local_checks(root: str, agent: str, paths: list[str]) -> dict:
+    """Run only fixed local test files; never expose process output or secrets."""
+    if not all((Path(root) / path).is_file() for path in paths):
+        return finding(agent, "NOT_PROVEN", "Local contract tests unavailable in this checkout.")
+    try:
+        result = subprocess.run(["node", "--test", *paths], cwd=root,
+                                text=True, capture_output=True, timeout=60, check=False)
+        return finding(agent, "LOCAL_TEST_PASSED" if result.returncode == 0 else "LOCAL_TEST_FAILED",
+                       "Local contracts: " + ", ".join(paths) + "; no live browser or provider claim.")
+    except (OSError, subprocess.TimeoutExpired):
+        return finding(agent, "NOT_PROVEN", "Local contract test runner unavailable.")
+
+
 def seo_agent(state: GrowthState) -> dict:
     policy = source(state["repo_root"], "shared/seo-indexing-policy.mjs")
     noindex = re.findall(r"path: '([^']+)', classification: 'NOINDEX'", policy)
@@ -45,6 +58,7 @@ def seo_agent(state: GrowthState) -> dict:
     return {"findings": [
         finding("seo", "SOURCE_OBSERVED" if policy else "NOT_PROVEN", "Public product routes awaiting crawlable landing content: " + ", ".join(path for path in noindex if path in {"/marketscreener", "/pricing", "/dokumentation"})),
         finding("seo", "SOURCE_OBSERVED" if canonical_origin_defined else "NOT_PROVEN", "Production canonical origin source inspected; live canonical/indexing and ranking require independent readback."),
+        local_checks(state["repo_root"], "seo", ["scripts/seo-content-manifest.test.mjs", "scripts/seo-metadata.test.mjs"]),
     ]}
 
 
@@ -53,7 +67,9 @@ def privacy_agent(state: GrowthState) -> dict:
     disabled = "export const GA_MEASUREMENT_ID = ''" in analytics and bool(re.search(r"function initGoogleAnalytics[^\n]+\{\}", analytics))
     return {"findings": [finding("privacy", "SOURCE_OBSERVED" if analytics else "NOT_PROVEN",
         "Optional analytics implementation is disabled; do not invent GA4 demand metrics. Consent accept/reject/withdrawal and tag duplication need browser tests." if disabled else
-        "Tracking source changed: verify consent denial, withdrawal, data minimization and duplicate tag handling before activation.")]}
+        "Tracking source changed: verify consent denial, withdrawal, data minimization and duplicate tag handling before activation."),
+        local_checks(state["repo_root"], "privacy", ["scripts/privacy-analytics.test.mjs"]),
+        finding("privacy", "NOT_PROVEN", "Browser consent accept/reject/withdrawal is not implemented or verified by the disabled-analytics contract.")]}
 
 
 def google_agent(state: GrowthState) -> dict:
