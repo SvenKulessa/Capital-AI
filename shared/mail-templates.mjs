@@ -47,6 +47,7 @@ export function renderBrandedMail({ shell = MAIL_SHELL, title, bodyHtml, actionH
 
 const safe = (value, fallback = '') => escapeMailHtml(value == null || value === '' ? fallback : value);
 const safeText = (value, fallback = '') => String(value == null || value === '' ? fallback : value);
+const safeSubject = value => safeText(value).replace(/[\r\n\x00-\x1f\x7f]/g, ' ').slice(0, 200);
 
 export function renderSupportMail(type, data = {}) {
   if (!['signature', 'reply', 'absence'].includes(type)) throw new Error('MAIL_SUPPORT_TEMPLATE_UNSUPPORTED');
@@ -66,7 +67,7 @@ export function renderSupportMail(type, data = {}) {
     const answer = safe(data.answer, '[Antwort / Lösung / Bearbeitungsstand]').replaceAll('\n', '<br>');
     const next = safe(data.nextSteps, '[Nächste Schritte]').replaceAll('\n', '<br>');
     const html = renderBrandedMail({ title: 'Ihre Supportanfrage', bodyHtml: `<p>Guten Tag ${name},</p><p>vielen Dank für Ihre Nachricht an den CAPITAL-AI Support.</p><p><strong>Zu Ihrer Anfrage „${topic}“:</strong></p><p>${answer}</p><p><strong>Nächste Schritte:</strong></p><p>${next}</p><p>Sie können direkt auf diese E-Mail antworten.</p>`, detailHtml: `<div style="margin-top:18px;font-size:13px;"><a style="color:#f9bf21;" href="${MAIL_BRAND.origin}/faq">Hilfe &amp; FAQ</a> · <a style="color:#f9bf21;" href="${MAIL_BRAND.origin}/learning">Learning Portal</a></div>` });
-    return { subject: `Re: ${safeText(data.subject, '[Betreff der Anfrage]')}`, html, text: `Guten Tag ${safeText(data.name, '[Name]')},\n\nvielen Dank für Ihre Nachricht an den CAPITAL-AI Support.\n\nZu Ihrer Anfrage „${safeText(data.topic, '[Thema]')}“:\n${safeText(data.answer, '[Antwort / Lösung / Bearbeitungsstand]')}\n\nNächste Schritte:\n${safeText(data.nextSteps, '[Nächste Schritte]')}\n\nSie können direkt antworten.\n${MAIL_BRAND.supportEmail}\n${MAIL_BRAND.origin}/faq` };
+    return { subject: `Re: ${safeSubject(safeText(data.subject, '[Betreff der Anfrage]'))}`, html, text: `Guten Tag ${safeText(data.name, '[Name]')},\n\nvielen Dank für Ihre Nachricht an den CAPITAL-AI Support.\n\nZu Ihrer Anfrage „${safeText(data.topic, '[Thema]')}“:\n${safeText(data.answer, '[Antwort / Lösung / Bearbeitungsstand]')}\n\nNächste Schritte:\n${safeText(data.nextSteps, '[Nächste Schritte]')}\n\nSie können direkt antworten.\n${MAIL_BRAND.supportEmail}\n${MAIL_BRAND.origin}/faq` };
   }
   const start = safe(data.start, '[Startdatum]');
   const end = safe(data.end, '[Enddatum]');
