@@ -21,6 +21,7 @@ export function LearningJourney() {
         <nav aria-label={`Weiterlernen: ${lesson.title}`} className="mt-3 flex flex-wrap gap-3">{lesson.links.map(link => <a key={link.href} href={link.href} className="inline-flex min-h-11 items-center text-cyan-200 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-brand-gold">{link.label}</a>)}</nav>
       </details>)}
     </div>
+    <p className="text-sm text-slate-200"><a href="/architecture-hub?tab=learning" className="inline-flex min-h-11 items-center font-semibold text-cyan-200 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-amber-300">Interaktive Architecture Learning Journey öffnen →</a></p>
     <nav aria-label="Vom Lernbeispiel zum Angebot" className="grid gap-4 rounded-xl border border-amber-400/30 p-4 md:grid-cols-3">{LEARNING_NEXT_STEPS.map(step => <div key={step.href} className="min-w-0"><a href={step.href} className="inline-flex min-h-11 items-center text-base font-semibold text-amber-200 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-brand-gold">{step.label}</a><p className="mt-2 text-base leading-7 text-slate-300">{step.note}</p></div>)}</nav>
   </section>;
 }
