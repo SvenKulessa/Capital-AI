@@ -21,3 +21,18 @@ Skills are **instruction files**, not executables, connectors, approvals or capa
 ## Validate
 
 Run `npm run test:domain-skills` (also part of the normal `npm test` script). This checks registry/files/frontmatter/chat agent wiring, not skill runtime invocation or the externally hosted ChatGPT app. No new Required Check is introduced.
+
+## Skill-Routing-Evaluation (offline)
+
+Unter `scripts/skill-routing.mjs` steht ein deterministischer, read-only Textsignal-Selektor. Er nutzt `registry.json#specialistRouting` und wählt fachlich passende Shared-Skills unabhängig vom Ursprungschat. `scripts/skill-routing-cases.json` enthält 41 synthetische Aufgaben: 30 Einzelfälle (3 je Spezialist), 6 fachübergreifende Kombinationen und 5 negative/unklare Fälle mit `REVIEW_REQUIRED`.
+
+```sh
+npm run test:domain-skills
+node scripts/skill-routing.mjs --domain TRUST "RAG Prompt Injection und DSGVO prüfen"
+```
+
+Die bestehenden Domain-Skill-Tests sowie das reguläre `npm test` führen diese Evaluation aus. Es gibt keine neue CI-Pipeline, keine Dependency, keinen Provideraufruf, keine Secrets oder zusätzliche Required Checks. `MATCHED` bedeutet ausschließlich ein reproduzierbares Signal-Match, **nicht** einen tatsächlichen Aufruf eines Skills in ChatGPT, keine semantische LLM-Evaluation und keine Security-/Rechts-/Production-Freigabe. Eine echte ChatGPT-Evaluation setzt kontrollierte Chat-Agent-Traces und verfügbare Connector-Berechtigungen voraus und bleibt `NOT_PROVEN`. Indirekte, negierte oder mehrdeutige Aufgaben müssen vom Agenten geprüft werden; `REVIEW_REQUIRED` ist kein Fehler und erfindet keine Zuständigkeit. Chat-/Plugin-Rechte werden durch Routing nicht verändert.
+
+## Additives Ownership-Modell
+
+Die bisherige Liste der zehn gemeinsamen Spezialisten und ihre Routing-Evaluation bleiben für bestehende Chat-Agenten unverändert. Weitere fünf Fach-Skills werden über `registry.json#domains.*.ownedSkills` auffindbar. Die eindeutige, verantwortliche Domain für **alle** Skills liegt in `registry.json#skillGovernance`; andere `leadDomains` bleiben nicht-autorisierende fachliche Nutzung. Die Dokumenttrilogie ist für alle Skills vorgeschrieben. Mit `npm run validate:all` werden Struktur, Ownership, Referenzen und Readiness fail-closed geprüft, ohne weitere GitHub Required Checks.
