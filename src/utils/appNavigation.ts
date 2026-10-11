@@ -47,6 +47,8 @@ export function resolveAppRoute(rawPath: string): string {
   }
   if (clean === '/profile/workspace' || clean === '/profil/workspace' || clean === '/mein-workspace') return '/profile/workspace';
   if (clean === '/profile/render-dashboard' || clean === '/profil/privates-dashboard') return '/profile/render-dashboard';
+  if (clean === '/legal' || clean === '/rechtliches') return '/legal';
+  if (clean === '/kontakt' || clean === '/contact') return '/kontakt';
   if (clean === '/faq' || clean === '/hilfe' || clean === '/questions') {
     return '/faq';
   }
@@ -70,8 +72,7 @@ export function resolveAppRoute(rawPath: string): string {
   if (
     clean === '/impressum' ||
     clean === '/imprint' ||
-    clean === '/anbieterkennzeichnung' ||
-    clean === '/legal'
+    clean === '/anbieterkennzeichnung'
   ) {
     return '/impressum';
   }
