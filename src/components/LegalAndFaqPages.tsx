@@ -192,7 +192,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
   };
 
   const handleCopy = () => {
-    const text = document.getElementById('main-content')?.innerText;
+    const text = document.getElementById('legal-content')?.innerText;
     if (text && navigator.clipboard) {
       navigator.clipboard.writeText(text).then(() => {
         setCopied(true);
