@@ -50,9 +50,17 @@ test('public blueprint UI is linked from Home and documentation without provider
   assert.match(documentation, /<MarketBlueprintShowcase variant="documentation"/);
   assert.match(card, /DEMO · Illustrativer Verlauf/);
   assert.match(card, /Synthetischer Index ohne Einheit/);
-  assert.match(card, /Kraken/);
-  assert.match(card, /verifizierter Markt-Score/);
-  assert.match(card, /kein.*Live-Feed/i);
+  assert.match(card, /Learn Portal entdecken/);
+  assert.match(card, /href="\/learning"/);
+  assert.match(card, /href="\/pricing"/);
+  assert.match(card, /Bestehende Angebote vergleichen/);
+  assert.match(card, /Mathematische Zusammensetzung/);
+  assert.match(card, /factor.value \* factor.weight/);
+  assert.match(card, /Σ \(Faktor × Gewicht\)/);
+  assert.match(card, /LEARNING_ORDER = \['scoring', 'ingestion', 'evidence', 'alerts'\]/);
+  assert.doesNotMatch(card, /Kraken/);
+  assert.match(card, /verifizierten Markt-Score/);
+  assert.match(card, /kein API-Key oder Live-Feed/i);
   for (const source of [card, fixtures, rules]) {
     assert.doesNotMatch(source, /\b(?:fetch|WebSocket|setInterval|EventSource)\s*\(/);
     assert.doesNotMatch(source, /\b(?:ScoringEngineService|PriceAlertsProvider|usePriceAlerts|dispatchTelegramPush)\b/);
