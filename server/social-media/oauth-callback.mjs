@@ -1,6 +1,7 @@
 // CAPITAL_AI_SOCIAL_OAUTH_CALLBACK@1 — strict fail-closed HTTP boundary.
 // No authorization-start route and no built-in token exchanger are activated.
 import { createSocialProviderStore } from './provider-store.mjs';
+import { createSocialXEdgeClient, socialXEdgeMode } from './x-edge-client.mjs';
 import { socialPlatformForChannel } from './provider-adapter.mjs';
 
 export function createSocialOAuthCallback({ env = process.env, auth, store = null,
@@ -57,7 +58,10 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
     // accepted as a redirect destination or token endpoint.
     const redirectUri = new URL(path, origin).toString();
     try {
-      const activeStore = store ?? createSocialProviderStore({ env, fetchImpl });
+      const activeStore = store ?? (channel === 'X' && socialXEdgeMode(env)
+        ? createSocialXEdgeClient({ env, fetchImpl,
+          userAccessToken: await auth?.internalAccessToken?.(req, res) })
+        : createSocialProviderStore({ env, fetchImpl }));
       const result = await activeStore.consumeOAuthCallback({
         userId: identity.userId, channel, redirectUri,
         allowedRedirectUris: [redirectUri], state, code,
