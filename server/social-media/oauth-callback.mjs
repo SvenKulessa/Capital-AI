@@ -48,6 +48,11 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
       json(res, 401, { error: 'authentication_required' });
       return true;
     }
+    if (channel === 'X' && (identity.emailVerified !== true
+      || await auth?.authorizeIamRole?.(req, res, 'owner') !== true)) {
+      json(res, 403, { error: 'owner_authorization_required' });
+      return true;
+    }
     // Enforce the exact callback URI; the user-controlled query must never be
     // accepted as a redirect destination or token endpoint.
     const redirectUri = new URL(path, origin).toString();
