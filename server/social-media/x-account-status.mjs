@@ -1,7 +1,9 @@
 // CAPITAL_AI_SOCIAL_X_ACCOUNT_STATUS@1 — read-only owner-bound connection status.
 // Never select or return encrypted access/refresh tokens.
 import { createSocialXEdgeClient, socialXEdgeMode } from './x-edge-client.mjs';
+import { socialXOAuthConfigured } from './x-oauth-exchange.mjs';
 const PATH = '/api/social-media/x/account/status';
+const DIAGNOSTICS = '/api/social-media/x/account/diagnostics';
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const FIELDS = 'status,platform,external_account_id,handle,scopes,token_expires_at,connected_at';
 function jsonError(json, res, code, message) {
@@ -20,9 +22,61 @@ function config(env) {
     || !(key.startsWith('sb_secret_') || serviceRoleJwt(key))) throw Error();
   return { origin: origin.origin, key };
 }
+// No secret, key length, value, or token is ever returned. These checks reflect
+// the exact fail-closed prerequisites of X OAuth's providerConfig and Edge transport.
+function isHttpsOrigin(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && url.pathname === '/' && !url.search
+      && !url.hash && !url.username && !url.password;
+  } catch { return false; }
+}
+function isRandom256Bit(value) {
+  if (typeof value !== 'string') return false;
+  if (/^[a-fA-F0-9]{64}$/.test(value)) return true;
+  if (!/^[A-Za-z0-9+/]{43}=$/.test(value)) return false;
+  const bytes = Buffer.from(value, 'base64');
+  return bytes.length === 32 && bytes.toString('base64') === value;
+}
+function isAdminServiceKey(value) {
+  if (typeof value !== 'string') return false;
+  return value.startsWith('sb_secret_') || serviceRoleJwt(value);
+}
+function ownerOnlyDiagnostics(env) {
+  const edgeMode = socialXEdgeMode(env);
+  const pub = env?.SUPABASE_PUBLISHABLE_KEY || env?.VITE_SUPABASE_PUBLISHABLE_KEY
+    || env?.SUPABASE_ANON_KEY;
+  const clientId = env?.SOCIAL_X_OAUTH_CLIENT_ID;
+  const clientSecret = env?.SOCIAL_X_OAUTH_CLIENT_SECRET;
+  const checks = Object.freeze({
+    oauthConnectEnabled: env?.SOCIAL_X_OAUTH_CONNECT_ENABLED === 'true',
+    oauthCallbackEnabled: env?.SOCIAL_OAUTH_CALLBACK_ENABLED === 'true',
+    appOrigin: isHttpsOrigin(env?.PUBLIC_APP_ORIGIN),
+    xClientId: typeof clientId === 'string' && clientId.length >= 5
+      && clientId.length <= 256 && !/[\s:]/.test(clientId),
+    xClientSecret: typeof clientSecret === 'string' && clientSecret.length >= 8
+      && clientSecret.length <= 2048,
+    tokenEncryptionKey: isRandom256Bit(env?.SOCIAL_X_TOKEN_ENCRYPTION_KEY),
+    supabaseUrl: isHttpsOrigin(env?.SUPABASE_URL),
+    supabaseCredential: edgeMode
+      ? typeof pub === 'string' && pub.length > 12
+      : isAdminServiceKey(env?.SUPABASE_SECRET_KEY || env?.SUPABASE_SERVICE_ROLE_KEY),
+    edgeWorkloadKey: !edgeMode || isRandom256Bit(env?.SOCIAL_X_EDGE_WORKLOAD_SECRET),
+  });
+  // The actual OAuth validator remains authoritative; the workload check
+  // covers the subsequent Edge client prerequisite before any network call.
+  return Object.freeze({
+    schema: 'CAPITAL_SOCIAL_X_OWNER_DIAGNOSTICS@1',
+    mode: edgeMode ? 'EDGE' : 'LEGACY',
+    ready: socialXOAuthConfigured(env) && Object.values(checks).every(Boolean),
+    checks,
+  });
+}
+
 export function createSocialXAccountStatus({ env = process.env, auth, fetchImpl = fetch } = {}) {
   async function handle(req, res, url, json) {
-    if (url.pathname !== PATH) return false;
+    if (url.pathname !== PATH && url.pathname !== DIAGNOSTICS) return false;
+    const diagnostics = url.pathname === DIAGNOSTICS;
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
@@ -31,14 +85,21 @@ export function createSocialXAccountStatus({ env = process.env, auth, fetchImpl 
       jsonError(json, res, 405, 'method_not_allowed');
       return true;
     }
-    if (env.SOCIAL_X_OAUTH_CONNECT_ENABLED !== 'true') {
+    if (!diagnostics && env.SOCIAL_X_OAUTH_CONNECT_ENABLED !== 'true') {
       jsonError(json, res, 503, 'social_x_account_unavailable');
       return true;
     }
     const identity = await auth?.verify?.(req, res);
     if (!ID.test(identity?.userId || '') || identity.emailVerified !== true
       || await auth?.authorizeIamRole?.(req, res, 'owner') !== true) {
-      jsonError(json, res, 403, 'owner_authorization_required');
+      jsonError(json, res, diagnostics ? 404 : 403,
+        diagnostics ? 'not_found' : 'owner_authorization_required');
+      return true;
+    }
+    if (diagnostics) {
+      res.setHeader('Cache-Control', 'private, no-store, max-age=0');
+      res.setHeader('Vary', 'Cookie');
+      json(res, 200, ownerOnlyDiagnostics(env));
       return true;
     }
     try {

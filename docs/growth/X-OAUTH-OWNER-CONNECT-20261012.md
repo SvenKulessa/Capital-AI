@@ -28,6 +28,17 @@ Zur erstmaligen Aktivierung **erst nach bestandenen Checks und Live-Datenbank-/A
 Bestehende Veröffentlichungssperren bleiben unabhängig davon erhalten:
 `SOCIAL_PROVIDER_PUBLISH_ENABLED=false`, `SOCIAL_X_PUBLISH_ENABLED=false` und `SOCIAL_X_PAID_WRITE_APPROVED=false`, sofern nicht gesondert autorisiert und abgenommen.
 
+## Owner-Only-Konfigurationsdiagnose ohne Secrets
+
+Bei `{"error":"social_x_oauth_not_configured"}` wird die Anfrage **vor Authentifizierung und vor dem Edge-Call** abgelehnt. Die konfigurierte X-Supabase-Login-Provider-Option ist nicht die X-Content-Engine-OAuth-App.
+
+Der bestätigte CAPITAL-AI-Owner öffnet **im gleichen angemeldeten Browser**:
+`https://capital-ai.online/api/social-media/x/account/diagnostics`
+
+Die `GET`-Route ist ausschließlich für E-Mail-bestätigte IAM-Owner sichtbar; ansonsten antwortet sie mit `404 not_found`. Sie liefert `ready`, `mode` und **nur boolesche** Checks (`oauthConnectEnabled`, `oauthCallbackEnabled`, `appOrigin`, `xClientId`, `xClientSecret`, `tokenEncryptionKey`, `supabaseUrl`, `supabaseCredential`, `edgeWorkloadKey`). Es gibt **keine Werte, Längen, Key-Fragmente, JWTs, Header, Provider-API-Anfragen, Datenbankzugriffe oder öffentliche Konfigurationsdetails** zurück. Cache ist deaktiviert. Nur mit `ready: true` ist der nächste X-OAuth-Start zu versuchen; die tatsächliche Edge-Workload-Signatur/Owner-Sitzung wird erst im folgenden Flow getestet.
+
+Ein fehlgeschlagener Check darf ausschließlich an der betroffenen Render-Variablen behoben werden. Den X-Token-Verschlüsselungsschlüssel und den separaten Edge-Workload-Key nicht versehentlich verwechseln oder routinemäßig rotieren. Wird `tokenEncryptionKey: false` angezeigt, ist ausschließlich ein syntaktisch gültiger, zufälliger 32-Byte-Key in kanonischem Hex oder gepaddetem Base64 anzustreben; vor einer Änderung vorhandene verschlüsselte Tokens und Recovery-Plan prüfen. Keine Schlüssel in GitHub, Chat, Bilder oder Logausgaben kopieren.
+
 ## Abnahme
 
 1. `node --test server/social-media/x-oauth-start.test.mjs server/social-media/x-oauth-exchange.test.mjs server/social-media/oauth-callback.test.mjs server/social-media/x-account-status.test.mjs` lokal.
