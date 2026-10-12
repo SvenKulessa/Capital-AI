@@ -1,0 +1,310 @@
+{
+  "schemaVersion": "CAPITAL_AI_SKILL_USE_EVIDENCE@1",
+  "domain": "PRODUCT",
+  "auditDate": "2026-10-12",
+  "policy": "SOLO_MAINTAINER_FLOW@1",
+  "baseSha": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+  "resultHeadSha": null,
+  "repository": "SvenKulessa/Capital-AI",
+  "branch": "capital-ai-product/skill-evidence-product-20261012",
+  "primaryAgent": {
+    "path": ".github/agents/capital-ai-product.agent.md",
+    "blobSha": "9770bf8a93042a28ab455738e35bcce601b0a5c3",
+    "access": "mcp__GitHub__fetch_file at pinned baseSha"
+  },
+  "governance": {
+    "path": "AGENTS.md",
+    "blobSha": "594926cdf3c66ce94a0fc481307ed22497985a16",
+    "requiredChecks": [
+      "Docker Security Gate",
+      "Domain Governance"
+    ],
+    "mergeRule": "Delegated merge only with checked current head, successful applicable checks, verified trust boundaries, and mergeability"
+  },
+  "method": {
+    "scope": "Read-only source audit plus reproducible equivalent JavaScript routing evaluation; no runtime browser or screen reader",
+    "tool": "GitHub connector mcp__GitHub__fetch_file, mcp__GitHub__fetch, mcp__GitHub__search; V8 JavaScript calculation in functions.exec",
+    "snapshot": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+    "claimBoundary": "Direct repository file reads do not prove autonomous ChatGPT runtime skill activation"
+  },
+  "taskResults": [
+    {
+      "id": "PRODUCT-AUTH",
+      "status": "VERIFIED",
+      "scope": "Static client/server auth path and existing tests inspected, not end-to-end verified",
+      "sources": [
+        "server/auth.mjs",
+        "server/auth-security.mjs",
+        "server/auth.test.mjs",
+        "server/auth-security.test.mjs",
+        "src/features/auth/LoginPage.tsx",
+        "src/features/account/AccountPageShell.tsx",
+        "src/components/Header.tsx"
+      ],
+      "result": "__Host HttpOnly Secure SameSite=Lax HMAC session cookies; server verifies provider user and MFA before private verify. Header maps session-fetch errors to null and renders login; account shell uses explicit error."
+    },
+    {
+      "id": "PRODUCT-A11Y",
+      "status": "NOT_PROVEN",
+      "scope": "Static inspection completed; real keyboard, screen reader, contrast rendering and browser QA not executed",
+      "sources": [
+        "src/components/Header.tsx",
+        "src/features/auth/LoginPage.tsx",
+        "src/features/auth/AuthSecuritySettings.tsx",
+        "src/features/account/PrivateDashboardPage.tsx"
+      ],
+      "result": "Labels, role=alert/status and form states appear in source. Header ARIA menu lacks observed Escape/arrow-key management. WCAG conformance and rendered contrast are not established."
+    },
+    {
+      "id": "PRODUCT-TENANT",
+      "status": "NOT_PROVEN",
+      "scope": "Server ownership code and isolation tests reviewed; live cross-session switching not executed",
+      "sources": [
+        "server/vocabulary-checkout.mjs",
+        "server/vocabulary-checkout.test.mjs",
+        "server/subscription-entitlements.mjs",
+        "server/subscription-entitlements.test.mjs",
+        "server/auth.mjs",
+        "supabase/migrations/20261011162435_private_dashboard_notes.sql",
+        "src/features/account/PrivateDashboardPage.tsx"
+      ],
+      "result": "Private notes API derives _user_id from auth.verify, rejects cross-origin writes, and browser SQL privileges are revoked. UI only loads notes once and has no demonstrated cross-tab identity reset. Account tier display does not validate active status, unlike authorization."
+    },
+    {
+      "id": "PRODUCT-MOBILE",
+      "status": "VERIFIED",
+      "scope": "Complete non-truncated 2130-entry repository tree, not separate mobile repository",
+      "sources": [
+        "server/auth.mjs",
+        ".agents/skills/mobile-engineering/SKILL.md",
+        ".github/workflows/"
+      ],
+      "result": "No native Android/iOS application source, Gradle project or native-app workflow in web repository tree. Existing mobile OAuth handoff endpoints are server compatibility code. Skill references to mobile/android-private and android-private-bundle workflow are stale."
+    },
+    {
+      "id": "CONTROL-CROSS-DOMAIN",
+      "status": "VERIFIED",
+      "scope": "Independent deterministic routing-equivalent control in V8, not a native runtime skill invocation",
+      "input": "Prüfe Android Mobile OIDC und WCAG Tastaturnavigation gemeinsam, inklusive Auth-Client und serverseitiger Tenant-Isolation.",
+      "expectedSpecialists": [
+        "mobile-engineering",
+        "accessibility-audit"
+      ],
+      "actualSpecialists": [
+        "mobile-engineering",
+        "accessibility-audit"
+      ],
+      "additionalDomain": "TRUST",
+      "result": "Two specialist signals selected. Auth/Tenant checks additionally applied trust-engineering on code boundary; no separate specialist for generic Auth."
+    },
+    {
+      "id": "CONTROL-AMBIGUOUS",
+      "status": "VERIFIED",
+      "scope": "Independent deterministic routing-equivalent control in V8",
+      "input": "Bitte bewerte den allgemeinen Eindruck dieser Seite.",
+      "expectedSpecialists": [],
+      "actualSpecialists": [],
+      "result": "REVIEW_REQUIRED; no specialist justified without scope. General PRODUCT advice may be given without invented specialist activation."
+    }
+  ],
+  "skillsUsed": [
+    {
+      "id": "product-engineering",
+      "path": ".agents/skills/product-engineering/SKILL.md",
+      "blobSha": "ec07ff43724557cedf69ea317ced3ff31c217870",
+      "accessProof": "mcp__GitHub__fetch_file(repository_full_name=SvenKulessa/Capital-AI,path=.agents/skills/product-engineering/SKILL.md,ref=c1638194187c1c51cc86a87bbe3f6f47b6148fd1) returned sha and content",
+      "application": "Separated client/server auth; inspected loading, unauthenticated, error and note save states at named React/API paths; only static findings asserted."
+    },
+    {
+      "id": "product-advisory",
+      "path": ".agents/skills/product-advisory/SKILL.md",
+      "blobSha": "934bde34291eb474713d31a0e3d1ac927fb3fc38",
+      "accessProof": "mcp__GitHub__fetch_file with exact path and pinned base returned blob SHA/content",
+      "application": "Compared minimal UI status/error handling fix with fuller session-state machine; recommended least-disruptive fail-closed variant, retained test requirements and reversibility."
+    },
+    {
+      "id": "accessibility-audit",
+      "path": ".agents/skills/accessibility-audit/SKILL.md",
+      "blobSha": "6a6bfe835710ed08a284072b1714f8c151ce9cc5",
+      "accessProof": "mcp__GitHub__fetch_file with exact path and pinned base returned blob SHA/content",
+      "application": "Inspected form labels, ARIA menu, role alerts, keyboard behavior; separated static source review from absent device/AT/contrast browser evidence."
+    },
+    {
+      "id": "trust-engineering",
+      "path": ".agents/skills/trust-engineering/SKILL.md",
+      "blobSha": "59a93d403b5fb099b94ae4e28404de78544c5190",
+      "accessProof": "mcp__GitHub__fetch_file with exact path and pinned base returned blob SHA/content",
+      "application": "Traced verified server identity into notes RPC and entitlement tier checks; classified code protections separately from unproven session-switch risk."
+    },
+    {
+      "id": "mobile-engineering",
+      "path": ".agents/skills/mobile-engineering/SKILL.md",
+      "blobSha": "d3c7cd978bd364df7489fa49443c02bdc3fcd3cf",
+      "accessProof": "mcp__GitHub__fetch_file with exact path and pinned base returned blob SHA/content",
+      "application": "Differentiated private mobile implementation from web OAuth handoff; checked complete git tree and identified obsolete native-app anchors."
+    },
+    {
+      "id": "visual-chat",
+      "path": ".agents/skills/visual-chat/SKILL.md",
+      "blobSha": "2ded476ee7bbe97c40e0975936b9d3c87acaec25",
+      "accessProof": "mcp__GitHub__fetch_file with exact path and pinned base returned blob SHA/content",
+      "application": "Prepared concise severity/status matrix, text evidence, and no fake accessibility measurements or diagrams."
+    }
+  ],
+  "runtimeRoutingEvidence": {
+    "status": "NOT_PROVEN",
+    "observed": "Six named SKILL.md source files were directly read through the GitHub connector; their Git blob SHAs and applied rules are recorded. Matching signals were executed as a faithful manual port in V8.",
+    "baselineRoutingParity": {
+      "cases": 76,
+      "passed": 76,
+      "failed": 0,
+      "method": "V8 source-equivalent port of scripts/skill-routing.mjs on original 41 curated + 35 challenge JSON cases",
+      "notOriginalNodeExecution": true
+    },
+    "autonomousRuntimeSkillActivation": "NOT_PROVEN",
+    "runtimeTraceAvailable": false,
+    "reason": "No tool-accessible signed ChatGPT runtime skill activation/decision trace; file read and copied selection logic cannot establish autonomous activation."
+  },
+  "tests": [
+    {
+      "id": "ROUTING-MIRROR-76",
+      "status": "VERIFIED",
+      "executedHere": true,
+      "command": "functions.exec V8 source-equivalent routing evaluation of 41 curated + 35 challenge corpus cases",
+      "result": "76 passed; zero mismatches; original node module was NOT executed",
+      "snapshot": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1"
+    },
+    {
+      "id": "ROUTING-CONTROL-CROSS",
+      "status": "VERIFIED",
+      "executedHere": true,
+      "command": "functions.exec V8 routing-equivalent with cross-domain input",
+      "result": "mobile-engineering and accessibility-audit selected",
+      "snapshot": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1"
+    },
+    {
+      "id": "ROUTING-CONTROL-AMBIGUOUS",
+      "status": "VERIFIED",
+      "executedHere": true,
+      "command": "functions.exec V8 routing-equivalent with ambiguous input",
+      "result": "REVIEW_REQUIRED; zero specialists",
+      "snapshot": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1"
+    },
+    {
+      "id": "EXISTING-MAIN-CI",
+      "status": "VERIFIED",
+      "executedHere": false,
+      "workflowRunId": 38179103408,
+      "jobId": 114587659663,
+      "commitSha": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "source": "https://github.com/SvenKulessa/Capital-AI/actions/runs/38179103408",
+      "result": "Prior push on main Docker Security Gate completed successfully including server regression tests; not a PR-head run or independent rerun."
+    },
+    {
+      "id": "NATIVE-NODE-TESTS",
+      "status": "NOT_PROVEN",
+      "executedHere": false,
+      "commands": [
+        "npm run test:domain-skills",
+        "node --test server/auth.test.mjs server/auth-security.test.mjs server/subscription-entitlements.test.mjs server/vocabulary-checkout.test.mjs",
+        "npm run test:security"
+      ],
+      "reason": "Repository unavailable as a local checkout; GitHub connector exposes file/code data but no Node execution."
+    },
+    {
+      "id": "BROWSER-A11Y",
+      "status": "NOT_PROVEN",
+      "executedHere": false,
+      "commands": [
+        "keyboard Tab/Shift+Tab/Enter/Space/Escape and menu arrow keys",
+        "screen reader NVDA/VoiceOver/TalkBack",
+        "rendered contrast, 320px reflow, 200% zoom and reduced motion"
+      ],
+      "reason": "No browser/assistive technology execution or viewport screenshots."
+    }
+  ],
+  "findings": [
+    {
+      "id": "AUTH-01",
+      "status": "VERIFIED",
+      "severity": "MEDIUM",
+      "source": "src/components/Header.tsx",
+      "description": "Session fetch failure falls back to null and shows Login as if signed out, conflating outage with unauthenticated state.",
+      "risk": "Authentication availability and security-state errors can be visually hidden.",
+      "countermeasure": "Separate loading, guest, authenticated, and session-error states; keep privileged links fail-closed; add failure-injection component test."
+    },
+    {
+      "id": "AUTH-02",
+      "status": "VERIFIED",
+      "severity": "LOW",
+      "source": "src/features/auth/LoginPage.tsx",
+      "description": "Login UI prints provider brand/service state and sometimes raw server error code via showError; this is not demonstrated credential exposure.",
+      "risk": "Unnecessary implementation detail and misleading failure copy.",
+      "countermeasure": "Use generic user-safe CAPITAL-AI messages and mapped error codes with sanitized server-side diagnostics."
+    },
+    {
+      "id": "ENT-01",
+      "status": "VERIFIED",
+      "severity": "MEDIUM",
+      "source": "server/auth.mjs + src/components/Header.tsx",
+      "description": "Visual subscription tier comes from stored tier without requiring active/trialing status; authorization resolvePaidTier does require it.",
+      "risk": "Canceled/past-due plans can appear paid in the UI while entitlements deny paid service.",
+      "countermeasure": "Derive displayed current paid badge from same normalized status-aware tier projection and test canceled/past_due."
+    },
+    {
+      "id": "A11Y-01",
+      "status": "NOT_PROVEN",
+      "severity": "MEDIUM",
+      "source": "src/components/Header.tsx",
+      "description": "ARIA menu/menuitem used without explicit Escape, focus-return, and arrow-navigation handlers observed in file; actual keyboard failure untested.",
+      "risk": "Keyboard/screenreader expectations for menu pattern may be unmet.",
+      "countermeasure": "Either implement complete menu keyboard pattern and focus management or use disclosure with ordinary buttons/links; verify in browser/AT."
+    },
+    {
+      "id": "TENANT-01",
+      "status": "NOT_PROVEN",
+      "severity": "MEDIUM",
+      "source": "src/features/account/PrivateDashboardPage.tsx + src/features/account/AccountPageShell.tsx",
+      "description": "Notes and session are fetched once independently; no observed reset of client notes upon cookie/session identity change across tabs. No cross-user exploit was executed.",
+      "risk": "Stale first-account notes could be submitted after switching to another session in a separate tab.",
+      "countermeasure": "Bind notes state to a verified session identity, reset on identity mismatch, verify before save, add a two-account switching regression."
+    },
+    {
+      "id": "TENANT-02",
+      "status": "NOT_PROVEN",
+      "severity": "LOW",
+      "source": "server/auth.mjs",
+      "description": "Account profile/subscription projections select the first response row after id filter without independently validating returned id/user_id.",
+      "risk": "Upstream or fixture inconsistency could project wrong role/tier; actual cross-user behavior not observed.",
+      "countermeasure": "Require matching profile.id and subscription.user_id to verified subject and fail closed on mismatch."
+    },
+    {
+      "id": "TENANT-PROTECTION",
+      "status": "VERIFIED",
+      "severity": "INFO",
+      "source": "server/vocabulary-checkout.mjs + supabase/migrations/20261011162435_private_dashboard_notes.sql",
+      "description": "Notes RPC receives server-verified userId; SQL grants only service-role access; existing unit tests describe client-selected userId rejection.",
+      "risk": "Protection established by source inspection, not live tenant/DB RLS runtime test.",
+      "countermeasure": "Maintain negative tests and prove against a real test database with separate users."
+    },
+    {
+      "id": "MOBILE-01",
+      "status": "VERIFIED",
+      "severity": "LOW",
+      "source": ".agents/skills/mobile-engineering/SKILL.md",
+      "description": "Full web tree shows no independent Android/iOS app code or native workflow; skill still points to removed mobile/android-private and workflow paths.",
+      "risk": "Obsolete instructions can misroute future audits into nonexistent source paths.",
+      "countermeasure": "Update repository anchors to separate mobile repository boundary without modifying that repository."
+    }
+  ],
+  "status": "NOT_PROVEN",
+  "limitations": [
+    "resultHeadSha is null inside the committed JSON because embedding its own final commit SHA into Git blob content would change that commit SHA (self-reference). Verify the exact result commit through GitHub branch/PR/file readback and report it outside this self-referential file.",
+    "Skill read proofs establish observed repository content and use of its guidance, not autonomous runtime skill activation. No signed runtime routing trace available.",
+    "Static code inspection does not establish runtime exploitability, security certification, full WCAG 2.2 AA, deployed behavior or mobile-app health.",
+    "GitHub main push CI run is historical and cannot substitute for fresh PR head Required Checks.",
+    "Native Node test suite was not run here; local checkout cannot be reached from execution container. V8 parity test is explicitly an equivalent port, not the original Node command.",
+    "Separate mobile repository was not accessed or modified; statement of absence is restricted to this web repository snapshot.",
+    "Evidence contains paths/technical results only; no private user records, credential traces, tokens or personal messages."
+  ]
+}

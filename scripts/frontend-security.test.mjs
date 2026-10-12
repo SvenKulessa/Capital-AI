@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { sanitizeAlertPreferences } from '../src/utils/alertPreferences.ts';
@@ -275,4 +277,49 @@ test('registration mirrors the observed Supabase password classes before submit'
   assert.match(login, /\[0-9\]/);
   assert.match(login, /mindestens 14 Zeichen sowie Kleinbuchstaben, Großbuchstaben, Zahl und Sonderzeichen/);
   assert.match(login, /throw new Error\('weak_password'\)/);
+});
+
+test('header uses explicit session error/ready and accessible modal focus, preserving shared hub layout', async () => {
+  const header = await readFile(new URL('../src/components/Header.tsx', import.meta.url),'utf8');
+  assert.match(header, /setAuthStatus\('error'\)/);
+  assert.match(header, /nav\.retry/);
+  assert.match(header, /accountDisplay\(authSession\)/);
+  assert.match(header, /hubBrandForRoute/);
+  assert.match(header, /document.activeElement === last/);
+  assert.match(header, /event.key === 'Escape'/);
+  assert.doesNotMatch(header, /role="menuitem"/);
+});
+test('profile keeps owner role distinct from product access and gives legal access', async () => {
+  const profile = await readFile(new URL('../src/components/ProfilePage.tsx', import.meta.url),'utf8');
+  assert.match(profile, /Rolle: \{session.account.iamRole/);
+  assert.match(profile, /Tarif: \{session.account.subscription/);
+  assert.match(profile, /OWNER ist die Verwaltungsrolle/);
+  assert.match(profile, /<LearningEntitlementBadge \/>/);
+  assert.match(profile, /href="\/agb"/);
+  assert.doesNotMatch(profile, /Supabase Auth/);
+});
+test('private draft identity is checked both client- and server-side', async () => {
+  const ui = await readFile(new URL('../src/features/account/PrivateDashboardPage.tsx', import.meta.url),'utf8');
+  const backend = await readFile(new URL('../server/vocabulary-checkout.mjs', import.meta.url),'utf8');
+  assert.match(ui,/expectedUserId: userId/);
+  assert.match(ui,/visibilitychange/);
+  assert.match(ui,/role="tablist"/);
+  assert.match(backend,/body.expectedUserId !== user.userId/);
+  assert.match(backend,/error:'session_changed'/);
+  assert.match(backend,/userId:user.userId/);
+});
+test('customer login keeps provider errors and internal codes out of UI', async () => {
+  const page = await readFile(new URL('../src/features/auth/LoginPage.tsx', import.meta.url),'utf8');
+  assert.doesNotMatch(page,/SUPABASE AUTH|Supabase Session|Supabase-Projekt/);
+  assert.match(page,/message === 'invalid_credentials'/);
+  assert.match(page,/Sign-in failed. Please try again./);
+});
+test('optional real Chromium accessibility tree probe has valid Node syntax and honest result scope', async () => {
+  const path = new URL('./product-accessibility-browser.mjs',import.meta.url);
+  const result = spawnSync(process.execPath,['--check',fileURLToPath(path)],{encoding:'utf8',timeout:15000});
+  assert.equal(result.status,0,result.stderr);
+  const script = await readFile(path,'utf8');
+  assert.match(script,/Accessibility.getFullAXTree/);
+  assert.match(script,/actualScreenReader:'NOT_PROVEN'/);
+  assert.match(script,/liveTenantIsolation:'NOT_PROVEN'/);
 });

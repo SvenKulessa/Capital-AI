@@ -113,33 +113,55 @@ try {
     // Preserve the authoritative main access boundary after PR #387: anonymous
     // accounts must never see subscription-gated charts or their interactions.
     await navigate('/learning?tab=patterns',
-      `document.body.textContent.includes('Chart-Lernatlas: mit Learning Portal und aktivem Starter-, Pro- oder Enterprise-Abonnement nutzbar.')`);
+      `document.body.textContent.includes('Chart-Lernatlas: mit Learning ') && document.body.textContent.includes('Starter-, Pro- oder Enterprise-Abonnement nutzbar.')`);
     assert.equal(await evaluate(`!!document.querySelector('[aria-label="Chart-Lernatlas"]')`),
       false, 'Paid chart content exposed to an anonymous visitor');
     await capture(viewport.name + '-chart-access-gate');
     report.checks.at(-1).chartAccess = 'ANONYMOUS_ACCESS_GATED';
     report.checks.at(-1).paidChartInteractions = 'NOT_PROVEN';
 
-    // Real production DOM: every anonymous viewport must render the same four
-    // rights-neutral blueprint demos and lead to real learning/commerce routes.
-    await navigate('/', `document.querySelectorAll('#market-blueprint-catalog article').length === 4`);
-    assert.equal(await evaluate(`['/learning','/pricing','/marketscreener/dokumentation'].every(path =>
-      !!document.querySelector('#market-blueprint-catalog a[href="'+path+'"]'))`), true, 'Blueprint navigation missing');
+    // #428 moved four blueprint cards from home to documentation. During a
+    // rolling deployment both public home layouts are acceptable, but both
+    // MUST offer real learning and commerce navigation; documentation MUST
+    // still expose all four evidence-neutral demos (checked below).
+    await navigate('/', `!!document.querySelector('section[aria-label="Produkt entdecken"] button')
+      || document.querySelectorAll('#market-blueprint-catalog article').length === 4`);
+    const homepage = await evaluate(`(() => {
+      const legacy=document.querySelectorAll('#market-blueprint-catalog article').length===4;
+      if(legacy) return {mode:'blueprint-cards',links:['/learning','/pricing','/marketscreener/dokumentation'].every(
+        path=>!!document.querySelector('#market-blueprint-catalog a[href="'+path+'"]'))};
+      const cta=document.querySelector('section[aria-label="Produkt entdecken"] button');
+      return {mode:'product-discovery',links:!!cta && cta.textContent.includes('Produkt entdecken')
+        && ['/learning','/pricing'].every(path=>!!document.querySelector('a[href="'+path+'"]'))};
+    })()`);
+    assert.equal(homepage.links, true, 'Homepage learning/commerce entrypoints missing');
     assert.equal(await evaluate(`!document.querySelector('#capital-ai-bootstrap-fallback:not([hidden])')`), true, 'Visible bootstrap failure');
     await capture(viewport.name + '-blueprints-home');
+    report.checks.at(-1).homeMode=homepage.mode;
 
     if (viewport.mobile) {
       await until(() => evaluate(`!!document.querySelector('[aria-controls="capital-ai-mobile-navigation"]')`), 'Mobile menu toggle');
       await evaluate(`document.querySelector('[aria-controls="capital-ai-mobile-navigation"]').click()`);
       await until(() => evaluate(`!!document.querySelector('#capital-ai-mobile-navigation[role="dialog"]')`), 'Mobile navigation opens');
-      // Framer Motion starts with x:-100%; measure only the settled drawer.
-      await until(() => evaluate(`(() => {const d=document.querySelector('#capital-ai-mobile-navigation');
-        if(!d) return false; const r=d.getBoundingClientRect();
-        return r.left >= -1 && r.right <= innerWidth + 1;})()`), 'Mobile drawer finished sliding in');
+      // Framer Motion's spring can briefly overshoot 0px after the first valid frame.
+      // Require four consecutive settled samples, without relaxing overflow limits.
+      let settledSamples = 0;
+      await until(async () => {
+        const settled = await evaluate(`(() => {const d=document.querySelector('#capital-ai-mobile-navigation');
+          if(!d) return false; const r=d.getBoundingClientRect();
+          return Math.abs(r.left) <= 0.75 && Math.abs(r.right - innerWidth) <= 0.75;})()`);
+        settledSamples = settled ? settledSamples + 1 : 0;
+        return settledSamples >= 4;
+      }, 'Mobile drawer finished sliding in');
       const drawer = await evaluate(`(() => { const d=document.querySelector('#capital-ai-mobile-navigation'),r=d.getBoundingClientRect();
-        return {left:r.left,right:r.right,client:d.clientWidth,scroll:d.scrollWidth}; })()`);
+        const overflowNodes = Array.from(d.querySelectorAll('*')).filter(node => {
+          const rect = node.getBoundingClientRect();
+          return rect.width > 0 && (rect.right > r.right + 1 || rect.left < r.left - 1);
+        }).slice(0, 6).map(node => ({ tag: node.tagName, width: Math.round(node.getBoundingClientRect().width),
+          left: Math.round(node.getBoundingClientRect().left), right: Math.round(node.getBoundingClientRect().right) }));
+        return {left:r.left,right:r.right,client:d.clientWidth,scroll:d.scrollWidth,overflowNodes}; })()`);
       assert.ok(drawer.left >= -1 && drawer.right <= viewport.width + 1 &&
-        drawer.scroll <= drawer.client + 1, 'Mobile navigation overflow');
+        drawer.scroll <= drawer.client + 1, 'Mobile navigation overflow: ' + JSON.stringify(drawer));
       await capture(viewport.name + '-menu');
       await evaluate(`document.querySelector('[aria-label="Navigation schließen"]').click()`);
       await until(() => evaluate(`!document.querySelector('#capital-ai-mobile-navigation')`), 'Mobile navigation closes');
@@ -162,18 +184,30 @@ try {
     assert.match(purchase.text, /Learning Portal/, 'Learning purchase CTA missing');
     // Native anchor panel replaces the mobile select. During a rolling deploy,
     // validate the legacy select by its values rather than a stale option count.
-    const panel = await evaluate(`!!document.querySelector('nav[aria-label="Learning Portal Unterseiten"] a[href="/learning/quiz"]')`);
+    // Old canonical /learning/quiz links and the newer ?tab=quiz links both
+    // enforce the same route and focus contract during production rollout.
+    const quizLink = `nav a[href="/learning?tab=quiz"],nav a[href="/learning/quiz"]`;
+    const glossaryLink = `nav a[href="/learning?tab=glossar"],nav a[href="/learning/glossar"]`;
+    const panel = await evaluate(`!!document.querySelector(${JSON.stringify(quizLink)})`);
     if (panel) {
-      await evaluate(`document.querySelector('nav[aria-label="Learning Portal Unterseiten"] a[href="/learning/quiz"]').click()`);
-      await until(() => evaluate(`location.pathname === '/learning/quiz' && !!document.querySelector('a[aria-current="page"][href="/learning/quiz"]')`), 'Learning panel quiz navigation');
+      await evaluate(`document.querySelector(${JSON.stringify(quizLink)}).click()`);
+      await until(() => evaluate(`(() => {
+        const correctRoute = (location.pathname === '/learning' && new URLSearchParams(location.search).get('tab') === 'quiz')
+          || location.pathname === '/learning/quiz';
+        return correctRoute && !!document.querySelector('a[aria-current="page"]');
+      })()`), 'Learning panel quiz navigation');
       await capture(viewport.name + '-learning-navigation-panel');
-      await evaluate(`document.querySelector('nav[aria-label="Learning Portal Unterseiten"] a[href="/learning/glossar"]').click()`);
-      await until(() => evaluate(`location.pathname === '/learning/glossar' && !!document.querySelector('[aria-label="Learning Portal kaufen"]')`), 'Glossary restored');
+      await evaluate(`document.querySelector(${JSON.stringify(glossaryLink)}).click()`);
+      await until(() => evaluate(`(() => {
+        const correctRoute = (location.pathname === '/learning' && new URLSearchParams(location.search).get('tab') === 'glossar')
+          || location.pathname === '/learning/glossar';
+        return correctRoute && !!document.querySelector('[aria-label="Learning Portal kaufen"]');
+      })()`), 'Glossary restored');
     } else if (viewport.mobile) {
       const tabSelect = `Array.from(document.querySelectorAll('select')).find(s =>
         Array.from(s.options).some(o => o.value === 'quiz') && Array.from(s.options).some(o => o.value === 'glossar'))`;
       assert.equal(await evaluate(`(() => {const s=${tabSelect}; return !!s && s.getBoundingClientRect().width > 0;})()`),
-        true, 'Mobile learning navigation not visible');
+        true, `Mobile learning navigation not visible; public-nav=${JSON.stringify(await evaluate(`Array.from(document.querySelectorAll('nav')).map(n=>({label:n.getAttribute('aria-label'),hrefs:Array.from(n.querySelectorAll('a')).map(a=>a.getAttribute('href')).filter(Boolean).slice(0,12)}))`))}`);
       await evaluate(`(() => {const s=${tabSelect}; s.value='quiz';
         s.dispatchEvent(new Event('change',{bubbles:true}));})()`);
       await until(() => evaluate(`(${tabSelect})?.value === 'quiz'`), 'Learning tab change');
@@ -196,10 +230,10 @@ try {
     await until(() => evaluate(`!document.querySelector('#pricing-dialog-title')`), 'Pricing dialog closes');
 
     // Retain the existing CADS pricing entrypoint and monthly/annual switch.
-    await navigate('/', `Array.from(document.querySelectorAll('button')).some(
-      b=>b.textContent==='Tarife & Leistungsumfang ansehen')`);
-    await evaluate(`Array.from(document.querySelectorAll('button')).find(
-      b=>b.textContent==='Tarife & Leistungsumfang ansehen').click()`);
+    // The commerce entrypoint is a semantic /pricing link, not the retired CTA button.
+    // Keep this a real browser navigation and still assert the pricing switch below.
+    await navigate('/', `!!document.querySelector('section[aria-labelledby="commerce-entry-title"] a[href="/pricing"]')`);
+    await evaluate(`document.querySelector('section[aria-labelledby="commerce-entry-title"] a[href="/pricing"]').click()`);
     await until(() => evaluate(`!!document.querySelector('[role="dialog"] [role="switch"]')`), 'CADS pricing dialog');
     await evaluate(`(() => {const t=document.querySelector('[role="dialog"] [role="switch"]');
       if(t.getAttribute('aria-checked')==='true') t.click();})()`);

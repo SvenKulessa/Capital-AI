@@ -45,6 +45,7 @@ import { createPortal } from 'react-dom';
 import { BrandLogo } from './BrandLogo';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useLocale } from '../i18n/LocaleProvider';
+import { navigationCopy } from '../i18n/navigationCopy';
 import { ASSET_CLASSES } from '../data/mockData';
 import { MainCategory, AssetSubclass } from '../types';
 import { trackLoginClick } from '../utils/analytics';
@@ -95,29 +96,40 @@ export const Header: React.FC<HeaderProps> = ({
   onNavigate,
 }) => {
 
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const nav = navigationCopy[locale];
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [expandedClass, setExpandedClass] = useState<MainCategory | null>('KRYPTO');
   const [authSession, setAuthSession] = useState<HeaderSession | null>(null);
+  const [authStatus, setAuthStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [sessionRetry, setSessionRetry] = useState(0);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
+    setAuthStatus('loading');
+    setAuthSession(null);
+    setIsAccountOpen(false);
     fetch('/api/auth/session', {
-      credentials: 'same-origin',
-      cache: 'no-store',
-      headers: { Accept: 'application/json' },
-      signal: controller.signal,
-    })
-      .then(response => response.ok ? response.json() : Promise.reject())
-      .then(body => {
-        if (!controller.signal.aborted) {
-          setAuthSession(body && typeof body.authenticated === 'boolean' ? body : null);
-        }
-      })
-      .catch(() => {
-        if (!controller.signal.aborted) setAuthSession(null);
-      });
+      credentials: 'same-origin', cache: 'no-store',
+      headers: { Accept: 'application/json' }, signal: controller.signal,
+    }).then(async response => {
+      if (!response.ok) throw new Error('SESSION_UNAVAILABLE');
+      const body: unknown = await response.json();
+      if (!body || typeof body !== 'object' ||
+        !('authenticated' in body) || typeof body.authenticated !== 'boolean') {
+        throw new Error('INVALID_SESSION');
+      }
+      return body as HeaderSession;
+    }).then(body => {
+      if (controller.signal.aborted) return;
+      setAuthSession(body);
+      setAuthStatus('ready');
+    }).catch(() => {
+      if (controller.signal.aborted) return;
+      setAuthSession(null);
+      setAuthStatus('error');
+    });
     return () => controller.abort();
   }, [currentRoute]);
 
@@ -182,6 +194,7 @@ export const Header: React.FC<HeaderProps> = ({
       });
       if (!response.ok) throw new Error('LOGOUT_FAILED');
       setAuthSession(previous => previous ? { ...previous, authenticated: false, user: null } : previous);
+      setAuthStatus('ready');
       if (onNavigate) onNavigate('/');
       else window.location.assign('/');
     } catch {
@@ -238,7 +251,7 @@ export const Header: React.FC<HeaderProps> = ({
         />
       </div>
 
-      <nav aria-label="Hauptnavigation" className="hidden xl:flex items-center gap-1 rounded-xl border border-slate-700 bg-black/40 p-1">
+      <nav aria-label={nav.main} className="hidden xl:flex items-center gap-1 rounded-xl border border-slate-700 bg-black/40 p-1">
         {Object.values(MAIN_HUBS_CONFIG).filter(hub => hub.id !== 'control-center' || isOwner).map(hub => <button key={hub.id} type="button" data-hub={hub.id} aria-current={activeHub === hub.id ? 'page' : undefined} className="hub-tab hub-switch !px-3 !text-xs" onClick={() => openHubSidebar(hub.id)}><span aria-hidden="true">{hub.icon}</span>{hub.name}</button>)}
       </nav>
 
@@ -257,15 +270,23 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Language selector stays next to Login and Account. */}
         <LanguageSwitcher />
-        {/* SESSION-AWARE ACCOUNT / LOGIN */}
-        {authSession?.authenticated ? (
+        {/* Session errors are not evidence of a logout. */}
+        {authStatus === 'loading' ? (
+          <span role="status" className="px-3 text-xs text-slate-300">{nav.loading}</span>
+        ) : authStatus === 'error' ? (
+          <button type="button" onClick={() => setSessionRetry(value => value + 1)}
+            aria-label={nav.retryLabel}
+            className="min-h-11 rounded-xl border border-amber-400/40 px-3 text-xs text-amber-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
+            {nav.retry}
+          </button>
+        ) : authSession?.authenticated ? (
           <div className="relative shrink-0">
             <button
               id="header-profile-btn"
               type="button"
               onClick={() => setIsAccountOpen(value => !value)}
               className={`flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${isOwner ? "bg-red-500/10 hover:bg-red-500/15 border border-red-400/40 hover:border-red-300 text-red-100" : "bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-400/30 hover:border-emerald-300 text-emerald-100"}`}
-              aria-haspopup="menu"
+              aria-controls="header-account-navigation"
               aria-expanded={isAccountOpen}
               aria-label={t('navAccount')}
               title="Kontomenü"
@@ -282,35 +303,42 @@ export const Header: React.FC<HeaderProps> = ({
 
             {isAccountOpen && (
               <div
-                role="menu"
-                aria-label="Kontomenü"
+                id="header-account-navigation"
+                role="group"
+                aria-label="Kontonavigation"
+                onKeyDown={event => {
+                  if (event.key === 'Escape') {
+                    setIsAccountOpen(false);
+                    document.getElementById('header-profile-btn')?.focus();
+                  }
+                }}
                 className="absolute right-0 top-full z-[70] mt-2 w-52 overflow-hidden rounded-2xl border border-white/10 bg-[#080d1b]/98 p-2 shadow-2xl backdrop-blur-xl"
               >
                 <button
                   type="button"
-                  role="menuitem"
+                  
                   onClick={() => navigateAccount('/profile')}
                   className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-slate-100 hover:bg-white/10"
                 >
-                  <User className="h-4 w-4 text-amber-300" /> Profil
+                  <User className="h-4 w-4 text-amber-300" /> {nav.profile}
                 </button>
                 <button
                   type="button"
-                  role="menuitem"
+                  
                   onClick={() => navigateAccount('/profile/security')}
                   className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-slate-100 hover:bg-white/10"
                 >
-                  <ShieldCheck className="h-4 w-4 text-cyan-300" /> Sicherheit
+                  <ShieldCheck className="h-4 w-4 text-cyan-300" /> {nav.security}
                 </button>
 
                 <div className="my-1 border-t border-white/10" />
                 <button
                   type="button"
-                  role="menuitem"
+                  
                   onClick={() => void logout()}
                   className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-rose-200 hover:bg-rose-500/10"
                 >
-                  <LogOut className="h-4 w-4" /> Logout
+                  <LogOut className="h-4 w-4" /> {nav.logout}
                 </button>
               </div>
             )}
@@ -358,7 +386,7 @@ export const Header: React.FC<HeaderProps> = ({
               id="capital-ai-mobile-navigation"
               role="dialog"
               aria-modal="true"
-              aria-label="Hauptnavigation"
+              aria-label={nav.main}
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
@@ -372,7 +400,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <button
                     id="close-menu-btn"
                     type="button"
-                    aria-label="Navigation schließen"
+                    aria-label={nav.close}
                     onClick={() => setIsMenuOpen(false)}
                     className="w-11 h-11 rounded-xl flex items-center justify-center bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
                   >
@@ -382,7 +410,14 @@ export const Header: React.FC<HeaderProps> = ({
 
                 {/* Mobile Drawer Account / Login CTA */}
                 <div className="mt-4">
-                  {authSession?.authenticated ? (
+                  {authStatus === 'loading' ? (
+                    <p role="status" className="p-3 text-xs text-slate-300">{nav.loading}</p>
+                  ) : authStatus === 'error' ? (
+                    <button type="button" onClick={() => setSessionRetry(value => value + 1)}
+                      className="min-h-11 w-full rounded-xl border border-amber-400/40 px-3 text-left text-xs text-amber-200">
+                      {nav.retry}
+                    </button>
+                  ) : authSession?.authenticated ? (
                     <div className={`space-y-1 rounded-2xl border p-2 ${isOwner ? "border-red-400/35 bg-red-500/5" : "border-emerald-400/25 bg-emerald-500/5"}`}>
                       <div className="px-2 py-2">
                         <div className="flex items-center gap-2">
@@ -392,8 +427,8 @@ export const Header: React.FC<HeaderProps> = ({
                         {accountTier && <p className={`mt-1 pl-6 font-mono text-[9px] ${isOwner ? "text-red-300" : "text-amber-300"}`}>{accountTier}{!isOwner && authSession.account?.subscription?.status === 'active' && <span className="ml-2 text-emerald-300">● Aktiv</span>}</p>}
                       </div>
                       {[
-                        { path: '/profile' as const, label: 'Profil', icon: User },
-                        { path: '/profile/security' as const, label: 'Sicherheit', icon: ShieldCheck },
+                        { path: '/profile' as const, label: nav.profile, icon: User },
+                        { path: '/profile/security' as const, label: nav.security, icon: ShieldCheck },
                       ].map(item => {
                         const Icon = item.icon;
                         return (
@@ -413,7 +448,7 @@ export const Header: React.FC<HeaderProps> = ({
                         onClick={() => void logout()}
                         className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-xs font-bold text-rose-200 hover:bg-rose-500/10"
                       >
-                        <LogOut className="h-4 w-4" /> Logout
+                        <LogOut className="h-4 w-4" /> {nav.logout}
                       </button>
                     </div>
                   ) : (
@@ -434,7 +469,7 @@ export const Header: React.FC<HeaderProps> = ({
                     >
                       <span className="flex items-center gap-2">
                         <LogIn className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
-                        <span>Terminal Anmeldung (/Login)</span>
+                        <span>{nav.login}</span>
                       </span>
                       <ChevronRight className="w-3.5 h-3.5 text-amber-400" />
                     </a>
@@ -444,7 +479,7 @@ export const Header: React.FC<HeaderProps> = ({
                 {/* Navigation Sections: DIE 4 HAUPTHUBS (RUNDE LEUCHTENDE ACTION BUTTONS MIT AUFKLAPPBARER SIDEBAR) */}
                 <div className="mt-2.5 space-y-1.5">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-amber-400/90 px-1 mb-1">
-                    Plattform Hubs & Navigation
+                    {nav.hubs}
                   </div>
 
                   <div className="grid grid-cols-1 gap-1.25">
