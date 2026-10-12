@@ -1,12 +1,56 @@
-/** One stable role colour per hub. Financial gain/loss colours remain semantic. */
-export const HUB_BRANDING = Object.freeze({
-  marketscreener: { name: 'Analytics Hub', color: '#67E8F9' },
-  studio: { name: 'Studio Hub', color: '#C4B5FD' },
-  learning: { name: 'Learning Hub', color: '#F9BF21' },
-  documentation: { name: 'Dokumentation Hub', color: '#F9A8D4' },
-  'control-center': { name: 'Control Center', color: '#FDA4AF' },
-  legal: { name: 'Rechtliches', color: '#93C5FD' },
+/** Seven base colours for product orientation. Per-asset shades retain individual identities.
+ * These colours are decoration only: status and gains/losses require text and icons. */
+export const BRAND_COLORS = Object.freeze({
+  cyan: '#67E8F9',
+  violet: '#C4B5FD',
+  gold: '#F9BF21',
+  pink: '#F9A8D4',
+  rose: '#FDA4AF',
+  blue: '#93C5FD',
+  green: '#4ADE80',
 });
+
+export const HUB_BRANDING = Object.freeze({
+  marketscreener: { name: 'Analytics Hub', color: BRAND_COLORS.cyan },
+  studio: { name: 'Studio Hub', color: BRAND_COLORS.violet },
+  learning: { name: 'Learning Hub', color: BRAND_COLORS.gold },
+  documentation: { name: 'Dokumentation Hub', color: BRAND_COLORS.pink },
+  'control-center': { name: 'Control Center', color: BRAND_COLORS.rose },
+  legal: { name: 'Rechtliches', color: BRAND_COLORS.blue },
+});
+
+/** Unique asset hues derived from the seven base colour families. */
+export const ASSET_BRANDING = Object.freeze({
+  KRYPTO: '#FDE047',     // gold
+  AKTIEN: BRAND_COLORS.green,
+  INDIZIES: '#A78BFA',  // violet
+  FOREX: '#E879F9',     // pink
+  ROHSTOFFE: '#FDBA74', // warm rose
+});
+
+const COLOR_WHEEL = Object.freeze(Object.values(BRAND_COLORS));
+const HUB_WHEEL_OFFSET = Object.freeze({
+  marketscreener: 0, studio: 1, learning: 2, documentation: 3, 'control-center': 4, legal: 5,
+});
+/** Each tab keeps its compact dimensions but gets a stable, distinct accent. */
+export function hubTabAccent(hubId, index) {
+  return COLOR_WHEEL[((HUB_WHEEL_OFFSET[hubId] ?? 0) + index) % COLOR_WHEEL.length];
+}
+export const LEGAL_ROUTE_BRANDING = Object.freeze({
+  '/legal': BRAND_COLORS.blue,
+  '/faq': BRAND_COLORS.cyan,
+  '/datenschutz': BRAND_COLORS.green,
+  '/agb': BRAND_COLORS.pink,
+  '/impressum': BRAND_COLORS.gold,
+  '/kontakt': BRAND_COLORS.violet,
+  '/lizenz': BRAND_COLORS.pink,
+  '/datenprovider-lizenzen': BRAND_COLORS.cyan,
+  '/opensource-lizenzen': BRAND_COLORS.green,
+});
+export function legalPageAccent(path) {
+  return LEGAL_ROUTE_BRANDING[path] ?? BRAND_COLORS.blue;
+}
+
 export function hubBrandForRoute(route = '') {
   const path = route.split('?')[0];
   if (path === '/marketscreener/dokumentation') return 'documentation';
