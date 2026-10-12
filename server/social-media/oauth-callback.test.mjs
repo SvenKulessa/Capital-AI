@@ -93,6 +93,20 @@ test('X callback without channel parameter is bound to X via persisted state', a
   assert.deepEqual(calls, [{ userId: USER, channel: 'X' }, { channel: 'X' }]);
 });
 
+test('X OAuth callback denies non-owner before one-time state consumption', async () => {
+  let consumed = 0;
+  const handler = createSocialOAuthCallback({ env,
+    auth: { verify: async () => ({ userId: USER, emailVerified: true }),
+      authorizeIamRole: async () => false },
+    store: { consumeOAuthCallback: async () => { consumed++; } },
+    exchangeCode: async () => { consumed++; },
+  });
+  const r = res();
+  await handler.handle(req(), r, url('?state=' + STATE + '&code=synthetic'), json);
+  assert.equal(r.status, 403);
+  assert.equal(consumed, 0);
+});
+
 test('callback fail-closed on exchange/storage failures without reflecting code', async () => {
   const handler = createSocialOAuthCallback({ env,
     auth: { verify: async () => ({ userId: USER, emailVerified: true }),
