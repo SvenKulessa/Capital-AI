@@ -97,7 +97,8 @@ test('untrusted origin or failed state persistence never redirects', async () =>
     ENV,
   ]) {
     const handler = createSocialXOAuthStart({
-      env, auth: { verify: async () => ({ userId: USER }) },
+      env, auth: { verify: async () => ({ userId: USER, emailVerified: true }),
+        authorizeIamRole: async () => true },
       store: { beginOAuth: async () => { throw new Error('do not reflect secrets'); } },
     });
     const r = res();
@@ -106,6 +107,24 @@ test('untrusted origin or failed state persistence never redirects', async () =>
     assert.ok(!JSON.stringify(r.body).includes('secrets'));
     assert.equal(r.headers.Location, undefined);
   }
+});
+
+test('X OAuth start denies non-owner role or unverified email before state issuance', async () => {
+  let issued = 0;
+  for (const identity of [
+    { userId: USER, emailVerified: false },
+    { userId: USER, emailVerified: true },
+  ]) {
+    const handler = createSocialXOAuthStart({
+      env: ENV, auth: { verify: async () => identity,
+        authorizeIamRole: async () => false },
+      store: { beginOAuth: async () => { issued++; } },
+    });
+    const r = res();
+    await handler.handle(req(), r, url(), json);
+    assert.equal(r.status, 403);
+  }
+  assert.equal(issued, 0);
 });
 
 test('no route interception outside the explicit X OAuth start path', async () => {
