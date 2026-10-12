@@ -182,6 +182,7 @@ test('X OAuth Edge mode performs encrypted persistence without any Render admin 
   const edgeEnv = {
     ...ENV,
     SOCIAL_X_EDGE_STORE_ENABLED: 'true',
+    SOCIAL_X_EDGE_WORKLOAD_SECRET: 'ab'.repeat(32),
     SUPABASE_SECRET_KEY: undefined,
     SUPABASE_PUBLISHABLE_KEY: 'synthetic-publishable-key-for-testing',
   };
