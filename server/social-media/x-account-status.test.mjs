@@ -88,6 +88,23 @@ test('X status expired or disconnected accounts are not represented as active', 
     assert.equal(r.body.status, expected);
   }
 });
+test('X status requires all four explicit user OAuth scopes to report a connected account', async () => {
+  for (const scopes of [
+    ['tweet.read', 'users.read', 'offline.access'],
+    ['tweet.read', 'users.read', 'tweet.write'],
+    [],
+  ]) {
+    const handler = createSocialXAccountStatus({ env: ENV, auth,
+      fetchImpl: async () => ({ ok: true,
+        text: async () => JSON.stringify([fixture({ scopes })]) }) });
+    const r = res();
+    await handler.handle(req(), r, ROUTE, json);
+    assert.equal(r.status, 200);
+    assert.equal(r.body.connected, false);
+    assert.equal(r.body.status, 'permissions_missing');
+    assert.deepEqual(r.body.scopes, []);
+  }
+});
 test('X status fails closed for malformed DB result and unsafe methods', async () => {
   const handler = createSocialXAccountStatus({ env: ENV, auth,
     fetchImpl: async () => ({ ok: true, text: async () => JSON.stringify([
