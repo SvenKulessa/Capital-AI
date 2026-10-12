@@ -113,7 +113,7 @@ try {
     // Preserve the authoritative main access boundary after PR #387: anonymous
     // accounts must never see subscription-gated charts or their interactions.
     await navigate('/learning?tab=patterns',
-      `document.body.textContent.includes('Chart-Lernatlas: mit Learning Portal und aktivem Starter-, Pro- oder Enterprise-Abonnement nutzbar.')`);
+      `document.body.textContent.includes('Chart-Lernatlas: mit Learning ') && document.body.textContent.includes('Starter-, Pro- oder Enterprise-Abonnement nutzbar.')`);
     assert.equal(await evaluate(`!!document.querySelector('[aria-label="Chart-Lernatlas"]')`),
       false, 'Paid chart content exposed to an anonymous visitor');
     await capture(viewport.name + '-chart-access-gate');
@@ -162,13 +162,25 @@ try {
     assert.match(purchase.text, /Learning Portal/, 'Learning purchase CTA missing');
     // Native anchor panel replaces the mobile select. During a rolling deploy,
     // validate the legacy select by its values rather than a stale option count.
-    const panel = await evaluate(`!!document.querySelector('nav[aria-label="Learning Portal Unterseiten"] a[href="/learning/quiz"]')`);
+    // Old canonical /learning/quiz links and the newer ?tab=quiz links both
+    // enforce the same route and focus contract during production rollout.
+    const quizLink = `nav[aria-label="Learning Hub Unterseiten"] a[href="/learning?tab=quiz"],nav[aria-label="Learning Portal Unterseiten"] a[href="/learning/quiz"]`;
+    const glossaryLink = `nav[aria-label="Learning Hub Unterseiten"] a[href="/learning?tab=glossar"],nav[aria-label="Learning Portal Unterseiten"] a[href="/learning/glossar"]`;
+    const panel = await evaluate(`!!document.querySelector(${JSON.stringify(quizLink)})`);
     if (panel) {
-      await evaluate(`document.querySelector('nav[aria-label="Learning Portal Unterseiten"] a[href="/learning/quiz"]').click()`);
-      await until(() => evaluate(`location.pathname === '/learning/quiz' && !!document.querySelector('a[aria-current="page"][href="/learning/quiz"]')`), 'Learning panel quiz navigation');
+      await evaluate(`document.querySelector(${JSON.stringify(quizLink)}).click()`);
+      await until(() => evaluate(`(() => {
+        const correctRoute = (location.pathname === '/learning' && new URLSearchParams(location.search).get('tab') === 'quiz')
+          || location.pathname === '/learning/quiz';
+        return correctRoute && !!document.querySelector('a[aria-current="page"]');
+      })()`), 'Learning panel quiz navigation');
       await capture(viewport.name + '-learning-navigation-panel');
-      await evaluate(`document.querySelector('nav[aria-label="Learning Portal Unterseiten"] a[href="/learning/glossar"]').click()`);
-      await until(() => evaluate(`location.pathname === '/learning/glossar' && !!document.querySelector('[aria-label="Learning Portal kaufen"]')`), 'Glossary restored');
+      await evaluate(`document.querySelector(${JSON.stringify(glossaryLink)}).click()`);
+      await until(() => evaluate(`(() => {
+        const correctRoute = (location.pathname === '/learning' && new URLSearchParams(location.search).get('tab') === 'glossar')
+          || location.pathname === '/learning/glossar';
+        return correctRoute && !!document.querySelector('[aria-label="Learning Portal kaufen"]');
+      })()`), 'Glossary restored');
     } else if (viewport.mobile) {
       const tabSelect = `Array.from(document.querySelectorAll('select')).find(s =>
         Array.from(s.options).some(o => o.value === 'quiz') && Array.from(s.options).some(o => o.value === 'glossar'))`;
