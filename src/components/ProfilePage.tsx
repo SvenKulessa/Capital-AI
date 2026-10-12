@@ -134,7 +134,7 @@ export function ProfilePage({ onNavigate }: { onNavigate: (path: string) => void
             </div>
             <div className="mt-5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-200">
               <ShieldCheck className="mb-2 h-4 w-4" />
-              Identität wird serverseitig über Supabase Auth verifiziert.
+              Die Anmeldung und Identität werden serverseitig durch CAPITAL-AI geprüft.
             </div>
             <button
               type="button"
@@ -143,24 +143,38 @@ export function ProfilePage({ onNavigate }: { onNavigate: (path: string) => void
             >
               Hero Buddy anzeigen
             </button>
+            <nav aria-label="Rechtliche Informationen" className="mt-4 flex flex-wrap gap-3 border-t border-white/10 pt-3 text-xs text-slate-300">
+              <a href="/agb" className="underline underline-offset-4 hover:text-white focus-visible:outline-2 focus-visible:outline-amber-300">AGB</a>
+              <a href="/datenschutz" className="underline underline-offset-4 hover:text-white focus-visible:outline-2 focus-visible:outline-amber-300">Datenschutz</a>
+              <a href="/impressum" className="underline underline-offset-4 hover:text-white focus-visible:outline-2 focus-visible:outline-amber-300">Impressum</a>
+            </nav>
           </div>
 
           <div className="rounded-2xl border border-amber-500/25 bg-[#070b19]/90 p-5 md:col-span-2">
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-300">Abo & Berechtigungen</p>
             {session.account?.available ? (
               <>
-                {session.account.iamRole !== 'owner' && <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs" aria-label="Kontorolle und Abonnement">
+                  <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-1 font-bold text-emerald-100">
+                    Rolle: {session.account.iamRole ? session.account.iamRole.toUpperCase() : 'Nicht verfügbar'}
+                  </span>
                   <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-1 font-bold text-amber-100">
-                    {session.account.subscription?.tier || 'Kein Tarif'}
+                    Tarif: {session.account.subscription?.tier || 'Kein aktiver Tarif'}
                   </span>
                   {session.account.subscription?.status && (
                     <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-slate-300">
-                      {session.account.subscription.status}
+                      Status: {session.account.subscription.status}
                     </span>
                   )}
-                </div>}
-
-                {session.account.iamRole !== 'owner' && <><CadsEntitlementPanel /><LearningEntitlementBadge /></>}
+                </div>
+                {session.account.iamRole === 'owner' && (
+                  <p className="mt-2 text-xs text-slate-400">
+                    OWNER bezeichnet die Verwaltungsrolle und ist kein gebuchtes Pro-Abonnement.
+                    Produktzugriffe werden separat serverseitig geprüft.
+                  </p>
+                )}
+                <CadsEntitlementPanel />
+                <LearningEntitlementBadge />
 
                 {session.account.badges?.filter(badge => !/vault/i.test(badge.id) && !/vault/i.test(badge.label)).length ? (
                   <div className="mt-4 flex flex-wrap gap-3" aria-label="Kontobadges">
