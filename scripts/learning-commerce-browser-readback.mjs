@@ -148,9 +148,14 @@ try {
         if(!d) return false; const r=d.getBoundingClientRect();
         return r.left >= -1 && r.right <= innerWidth + 1;})()`), 'Mobile drawer finished sliding in');
       const drawer = await evaluate(`(() => { const d=document.querySelector('#capital-ai-mobile-navigation'),r=d.getBoundingClientRect();
-        return {left:r.left,right:r.right,client:d.clientWidth,scroll:d.scrollWidth}; })()`);
+        const overflowNodes = Array.from(d.querySelectorAll('*')).filter(node => {
+          const rect = node.getBoundingClientRect();
+          return rect.width > 0 && (rect.right > r.right + 1 || rect.left < r.left - 1);
+        }).slice(0, 6).map(node => ({ tag: node.tagName, width: Math.round(node.getBoundingClientRect().width),
+          left: Math.round(node.getBoundingClientRect().left), right: Math.round(node.getBoundingClientRect().right) }));
+        return {left:r.left,right:r.right,client:d.clientWidth,scroll:d.scrollWidth,overflowNodes}; })()`);
       assert.ok(drawer.left >= -1 && drawer.right <= viewport.width + 1 &&
-        drawer.scroll <= drawer.client + 1, 'Mobile navigation overflow');
+        drawer.scroll <= drawer.client + 1, 'Mobile navigation overflow: ' + JSON.stringify(drawer));
       await capture(viewport.name + '-menu');
       await evaluate(`document.querySelector('[aria-label="Navigation schließen"]').click()`);
       await until(() => evaluate(`!document.querySelector('#capital-ai-mobile-navigation')`), 'Mobile navigation closes');
