@@ -42,6 +42,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { BrandLogo } from './BrandLogo';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useLocale } from '../i18n/LocaleProvider';
+import { navigationCopy } from '../i18n/navigationCopy';
 import { ASSET_CLASSES } from '../data/mockData';
 import { MainCategory, AssetSubclass } from '../types';
 import { trackLoginClick } from '../utils/analytics';
@@ -91,7 +92,8 @@ export const Header: React.FC<HeaderProps> = ({
   onNavigate,
 }) => {
 
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const nav = navigationCopy[locale];
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [expandedClass, setExpandedClass] = useState<MainCategory | null>('KRYPTO');
   const [authSession, setAuthSession] = useState<HeaderSession | null>(null);
@@ -133,6 +135,39 @@ export const Header: React.FC<HeaderProps> = ({
       });
     return () => controller.abort();
   }, [currentRoute, sessionRetry]);
+
+  // aria-modal is backed by Escape/Tab focus containment and focus restoration.
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const drawer = document.getElementById('capital-ai-mobile-navigation');
+    drawer?.querySelector<HTMLElement>('#close-menu-btn')?.focus();
+    const focusable = () => Array.from(drawer?.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ) ?? []).filter(element => element.getClientRects().length > 0);
+    const onDrawerKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setIsMenuOpen(false);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const options = focusable();
+      if (!options.length) { event.preventDefault(); return; }
+      const first = options[0], last = options[options.length - 1];
+      if (event.shiftKey && (document.activeElement === first || !drawer?.contains(document.activeElement))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || !drawer?.contains(document.activeElement))) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onDrawerKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onDrawerKeyDown);
+      document.getElementById('mobile-menu-btn')?.focus();
+    };
+  }, [isMenuOpen]);
 
   const accountTier = authSession?.authenticated
     ? authSession.account?.subscription?.tier || null
@@ -241,7 +276,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* CENTER: DIE 4 HAUPTREITER (Marketscreener, Studio Hub, Learning Portal, Control Center) */}
-      <nav aria-label="Hauptnavigation" className="hidden lg:flex items-center gap-1 p-1 rounded-xl bg-black/40 border border-slate-800/80 shadow-inner">
+      <nav aria-label={nav.main} className="hidden lg:flex items-center gap-1 p-1 rounded-xl bg-black/40 border border-slate-800/80 shadow-inner">
         {/* Marketscreener */}
         <button
           type="button"
@@ -251,10 +286,10 @@ export const Header: React.FC<HeaderProps> = ({
               ? 'bg-amber-400 text-black font-extrabold shadow-sm'
               : 'text-slate-300 hover:text-white hover:bg-white/5 font-medium'
           }`}
-          title="Marketscreener (Analyse, Datenstatus & Scoring)"
+          title="Analytics Hub (Analyse, Datenstatus & Scoring)"
         >
           <LineChart className="w-3.5 h-3.5" />
-          <span>Marketscreener</span>
+          <span>Analytics Hub</span>
         </button>
 
         {/* Studio Hub */}
@@ -281,10 +316,10 @@ export const Header: React.FC<HeaderProps> = ({
               ? 'bg-amber-400 text-black font-extrabold shadow-sm'
               : 'text-slate-300 hover:text-white hover:bg-white/5 font-medium'
           }`}
-          title="Learning Portal (Vocabulary, Analyse-Module & Methodik)"
+          title="Learning Hub (Vocabulary, Analyse-Module & Methodik)"
         >
           <BookOpen className="w-3.5 h-3.5" />
-          <span>Learning Portal</span>
+          <span>Learning Hub</span>
         </button>
 
         {/* Dokumentation */}
@@ -296,10 +331,10 @@ export const Header: React.FC<HeaderProps> = ({
               ? 'bg-violet-500 text-white font-extrabold shadow-sm'
               : 'text-slate-300 hover:text-white hover:bg-white/5 font-medium'
           }`}
-          title="Dokumentation: Blueprints, BYOK, Pipeline-Architekturen, Preismodelle und Domains"
+          title="Dokumentation Hub: Blueprints, BYOK, Pipeline-Architekturen, Preismodelle und Domains"
         >
           <LibraryBig className="w-3.5 h-3.5" />
-          <span>Dokumentation</span>
+          <span>Dokumentation Hub</span>
         </button>
 
         {/* Control Center */}
@@ -337,12 +372,12 @@ export const Header: React.FC<HeaderProps> = ({
         <LanguageSwitcher />
         {/* A failed session read is not a signed-out session. */}
         {authStatus === 'loading' ? (
-          <span role="status" className="px-3 text-xs text-slate-300">Sitzung wird geprüft …</span>
+          <span role="status" className="px-3 text-xs text-slate-300">{nav.loading}</span>
         ) : authStatus === 'error' ? (
           <button type="button" onClick={() => setSessionRetry(value => value + 1)}
             className="min-h-11 rounded-xl border border-amber-400/40 px-3 text-xs text-amber-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
-            aria-label="Sitzung nicht verfügbar. Anmeldung erneut prüfen">
-            Sitzung nicht verfügbar · Erneut prüfen
+            aria-label={nav.retryLabel}>
+            {nav.retry}
           </button>
         ) : authSession?.authenticated ? (
           <div className="relative shrink-0">
@@ -359,8 +394,8 @@ export const Header: React.FC<HeaderProps> = ({
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
               <span className="flex min-w-0 flex-col items-start leading-tight">
                 <span className="max-w-28 truncate">{authSession.user?.name || 'Profil'}</span>
-                {accountTier && (
-                  <span className="font-mono text-[9px] text-amber-300">{accountTier}</span>
+                {(isOwner || accountTier) && (
+                  <span className="font-mono text-[9px] text-amber-300">{isOwner ? 'OWNER' : accountTier}</span>
                 )}
               </span>
               <ChevronDown className={`h-3.5 w-3.5 text-emerald-300 transition-transform ${isAccountOpen ? 'rotate-180' : ''}`} />
@@ -384,14 +419,14 @@ export const Header: React.FC<HeaderProps> = ({
                   onClick={() => navigateAccount('/profile')}
                   className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-slate-100 hover:bg-white/10"
                 >
-                  <User className="h-4 w-4 text-amber-300" /> Profil
+                  <User className="h-4 w-4 text-amber-300" /> {nav.profile}
                 </button>
                 <button
                   type="button"
                   onClick={() => navigateAccount('/profile/security')}
                   className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-slate-100 hover:bg-white/10"
                 >
-                  <ShieldCheck className="h-4 w-4 text-cyan-300" /> Sicherheit
+                  <ShieldCheck className="h-4 w-4 text-cyan-300" /> {nav.security}
                 </button>
 
                 <div className="my-1 border-t border-white/10" />
@@ -400,7 +435,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onClick={() => void logout()}
                   className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-rose-200 hover:bg-rose-500/10"
                 >
-                  <LogOut className="h-4 w-4" /> Logout
+                  <LogOut className="h-4 w-4" /> {nav.logout}
                 </button>
               </div>
             )}
@@ -447,7 +482,7 @@ export const Header: React.FC<HeaderProps> = ({
               id="capital-ai-mobile-navigation"
               role="dialog"
               aria-modal="true"
-              aria-label="Hauptnavigation"
+              aria-label={nav.main}
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
@@ -461,7 +496,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <button
                     id="close-menu-btn"
                     type="button"
-                    aria-label="Navigation schließen"
+                    aria-label={nav.close}
                     onClick={() => setIsMenuOpen(false)}
                     className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 transition-all cursor-pointer"
                   >
@@ -472,11 +507,11 @@ export const Header: React.FC<HeaderProps> = ({
                 {/* Mobile Drawer Account / Login CTA */}
                 <div className="mt-4">
                   {authStatus === 'loading' ? (
-                    <p role="status" className="p-3 text-xs text-slate-300">Sitzung wird geprüft …</p>
+                    <p role="status" className="p-3 text-xs text-slate-300">{nav.loading}</p>
                   ) : authStatus === 'error' ? (
                     <button type="button" onClick={() => setSessionRetry(value => value + 1)}
                       className="min-h-11 w-full rounded-xl border border-amber-400/40 px-3 text-left text-xs text-amber-200 focus-visible:outline-2 focus-visible:outline-amber-300">
-                      Sitzung nicht verfügbar · Erneut prüfen
+                      {nav.retry}
                     </button>
                   ) : authSession?.authenticated ? (
                     <div className="space-y-1 rounded-2xl border border-emerald-400/25 bg-emerald-500/5 p-2">
@@ -485,11 +520,11 @@ export const Header: React.FC<HeaderProps> = ({
                           <ShieldCheck className="h-4 w-4 text-emerald-300" />
                           <span className="truncate text-xs font-black text-emerald-100">{authSession.user?.name || 'Konto'}</span>
                         </div>
-                        {accountTier && <p className="mt-1 pl-6 font-mono text-[9px] text-amber-300">{accountTier}</p>}
+                        {(isOwner || accountTier) && <p className="mt-1 pl-6 font-mono text-[10px] text-amber-300">{isOwner ? 'OWNER' : accountTier}</p>}
                       </div>
                       {[
-                        { path: '/profile' as const, label: 'Profil', icon: User },
-                        { path: '/profile/security' as const, label: 'Sicherheit', icon: ShieldCheck },
+                        { path: '/profile' as const, label: nav.profile, icon: User },
+                        { path: '/profile/security' as const, label: nav.security, icon: ShieldCheck },
                       ].map(item => {
                         const Icon = item.icon;
                         return (
@@ -509,7 +544,7 @@ export const Header: React.FC<HeaderProps> = ({
                         onClick={() => void logout()}
                         className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-xs font-bold text-rose-200 hover:bg-rose-500/10"
                       >
-                        <LogOut className="h-4 w-4" /> Logout
+                        <LogOut className="h-4 w-4" /> {nav.logout}
                       </button>
                     </div>
                   ) : (
@@ -530,7 +565,7 @@ export const Header: React.FC<HeaderProps> = ({
                     >
                       <span className="flex items-center gap-2">
                         <LogIn className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
-                        <span>Terminal Anmeldung (/Login)</span>
+                        <span>{nav.login}</span>
                       </span>
                       <ChevronRight className="w-3.5 h-3.5 text-amber-400" />
                     </a>
@@ -540,14 +575,14 @@ export const Header: React.FC<HeaderProps> = ({
                 {/* Navigation Sections: DIE 4 HAUPTHUBS (RUNDE LEUCHTENDE ACTION BUTTONS MIT AUFKLAPPBARER SIDEBAR) */}
                 <div className="mt-5 space-y-3">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-amber-400/90 px-1 mb-1">
-                    Plattform Hubs & Navigation
+                    {nav.hubs}
                   </div>
 
                   <div className="grid grid-cols-1 gap-2.5">
                     {[
                       {
                         id: "marketscreener" as const,
-                        name: "Marketscreener Hub",
+                        name: "Analytics Hub",
                         color: "#F5B014",
                         glow: "rgba(245, 176, 20, 0.4)",
                         icon: <LineChart className="w-4 h-4 text-amber-300" />,
@@ -565,7 +600,7 @@ export const Header: React.FC<HeaderProps> = ({
                       },
                       {
                         id: "learning" as const,
-                        name: "Learning Portal",
+                        name: "Learning Hub",
                         color: "#F9BF21",
                         glow: "rgba(249, 191, 33, 0.4)",
                         icon: <BookOpen className="w-4 h-4 text-[#F9BF21]" />,
@@ -574,7 +609,7 @@ export const Header: React.FC<HeaderProps> = ({
                       },
                       {
                         id: "documentation" as const,
-                        name: "Dokumentation",
+                        name: "Dokumentation Hub",
                         color: "#8B5CF6",
                         glow: "rgba(139, 92, 246, 0.4)",
                         icon: <LibraryBig className="w-4 h-4 text-violet-300" />,
@@ -663,7 +698,7 @@ export const Header: React.FC<HeaderProps> = ({
                         >
                           <span className="flex items-center gap-2">
                             <CreditCard className="w-3.5 h-3.5 text-amber-400" />
-                            <span>Preiskatalog</span>
+                            <span>{nav.pricing}</span>
                           </span>
                           <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
                         </button>
@@ -676,7 +711,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <div className="pt-4 border-t border-slate-800/80 space-y-2">
                     <div className="flex items-center justify-between px-1">
                       <div className="text-[10px] font-bold uppercase tracking-widest text-amber-400/80">
-                        Assetklassen & Unterklassen
+                        {nav.assets}
                       </div>
                       <button
                         type="button"
@@ -686,7 +721,7 @@ export const Header: React.FC<HeaderProps> = ({
                         }}
                         className="text-[10px] font-semibold text-amber-300 hover:text-amber-200 cursor-pointer flex items-center gap-0.5"
                       >
-                        <span>Alle Märkte</span>
+                        <span>{nav.markets}</span>
                         <ChevronRight className="w-3 h-3" />
                       </button>
                     </div>
