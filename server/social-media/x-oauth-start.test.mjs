@@ -44,7 +44,8 @@ test('X OAuth remains disabled and never generates provider states by default', 
 test('OAuth start uses verified user, server-only PKCE and exact callback origin', async () => {
   const saved = [];
   const handler = createSocialXOAuthStart({
-    env: ENV, auth: { verify: async () => ({ userId: USER }) },
+    env: ENV, auth: { verify: async () => ({ userId: USER, emailVerified: true }),
+      authorizeIamRole: async () => true },
     store: { beginOAuth: async input => {
       saved.push(input);
       return { state: 'a'.repeat(43) };
