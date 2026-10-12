@@ -1,21 +1,31 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHmac } from 'node:crypto';
 import { createSocialXEdgeClient } from './x-edge-client.mjs';
+const WORKLOAD = 'ab'.repeat(32);
 
 test('Edge mode is opt-in and requires an authenticated request', () => {
   assert.throws(() => createSocialXEdgeClient({ env: {} }), /SOCIAL_X_EDGE_DISABLED/);
   assert.throws(() => createSocialXEdgeClient({ env: {
     SOCIAL_X_EDGE_STORE_ENABLED: 'true',
+    SOCIAL_X_EDGE_WORKLOAD_SECRET: WORKLOAD,
     PUBLIC_APP_ORIGIN: 'https://capital-ai.online/',
     SUPABASE_URL: 'https://example.supabase.co/',
     SUPABASE_PUBLISHABLE_KEY: 'synthetic-publishable-key-for-testing',
   } }), /SOCIAL_X_EDGE_AUTH_UNAVAILABLE/);
+  assert.throws(() => createSocialXEdgeClient({ env: {
+    SOCIAL_X_EDGE_STORE_ENABLED: 'true',
+    PUBLIC_APP_ORIGIN: 'https://capital-ai.online/',
+    SUPABASE_URL: 'https://example.supabase.co/',
+    SUPABASE_PUBLISHABLE_KEY: 'synthetic-publishable-key-for-testing',
+  }, userAccessToken: 'token'.repeat(18) }), /SOCIAL_X_EDGE_WORKLOAD_UNCONFIGURED/);
 });
 
 test('Edge begin sends only a hashed state and the user session token', async () => {
   const observed = [];
   const env = {
     SOCIAL_X_EDGE_STORE_ENABLED: 'true',
+    SOCIAL_X_EDGE_WORKLOAD_SECRET: WORKLOAD,
     PUBLIC_APP_ORIGIN: 'https://capital-ai.online/',
     SUPABASE_URL: 'https://example.supabase.co/',
     SUPABASE_PUBLISHABLE_KEY: 'synthetic-publishable-key-for-testing',
@@ -35,6 +45,12 @@ test('Edge begin sends only a hashed state and the user session token', async ()
   assert.equal(observed.length, 1);
   assert.equal(observed[0].options.headers.Authorization, 'Bearer ' + token);
   assert.equal(observed[0].options.headers.apikey, env.SUPABASE_PUBLISHABLE_KEY);
+  const ts = observed[0].options.headers['x-capital-edge-timestamp'];
+  assert.match(ts, /^\d{13}$/);
+  const signed = createHmac('sha256', Buffer.from(WORKLOAD, 'hex'))
+    .update(ts + '\n' + token + '\n' + observed[0].options.body).digest('hex');
+  assert.equal(observed[0].options.headers['x-capital-edge-signature'], signed);
+  assert.ok(!JSON.stringify(observed[0].options).includes(WORKLOAD));
   const body = JSON.parse(observed[0].options.body);
   assert.equal(body.operation, 'begin');
   assert.match(body.stateHash, /^[a-f0-9]{64}$/);
