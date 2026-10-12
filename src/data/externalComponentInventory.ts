@@ -336,7 +336,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'node-runtime', name: 'Node.js', domain: 'PLATFORM', kind: 'Runtime',
-    installedAt: null, activeVersion: '26.10.0', pipelineVersion: 'node:26.10.0-alpine@sha256:0b36e8c136b94cd4fcf02188228e76c31ad5872eef3fec8cbd2eee500cfd9e80', lifecycle: 'ACTIVE',
+    installedAt: null, activeVersion: '26.11.1', pipelineVersion: 'node:26.11.1-alpine@sha256:143494b1da2945f061539253adc65e4f1569ddf07da2d384c022c791a9d90a4a', lifecycle: 'ACTIVE',
     functionSummary: 'Build- und Production-JavaScript-Runtime; Container-Base ist version- und digest-gepinnt.',
     webAppBinding: 'Dockerfile', license: 'MIT', cadsScore: 91.0, scoreState: 'VERIFIED',
     domainAssignments: ['build image', 'production runtime'],
@@ -406,7 +406,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'web-build-stack', name: 'Web Build Stack', domain: 'PRODUCT', kind: 'Frontend Build Toolchain',
-    installedAt: null, activeVersion: 'Vite 8.3.4 / TypeScript 6.0.3 / Tailwind 4.3.3 / React 19.3.0 / Lucide 1.53.0 / Motion 14.0.0 / Three.js 0.186.1', pipelineVersion: 'resolved in package-lock.json; TypeScript 7.0.2 BLOCKED; production runtime NOT_PROVEN', lifecycle: 'ACTIVE',
+    installedAt: null, activeVersion: 'Vite 8.3.4 / TypeScript 6.0.3 / Tailwind 4.3.3 / React 19.3.0 / Lucide 1.54.0 / Motion 14.1.0 / Three.js 0.186.1', pipelineVersion: 'resolved in package-lock.json; TypeScript 7.0.2 BLOCKED; production runtime NOT_PROVEN', lifecycle: 'ACTIVE',
     functionSummary: 'Frontend-Kompilierung, Typprüfung, React-Runtime und CSS-Toolchain.',
     webAppBinding: 'package.json + package-lock.json + vite.config.ts + tsconfig.json', license: 'MIT / Apache-2.0', cadsScore: 88.0, scoreState: 'PROVISIONAL',
     domainAssignments: ['web build', 'browser runtime'],

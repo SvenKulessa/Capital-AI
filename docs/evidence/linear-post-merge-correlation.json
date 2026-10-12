@@ -1,12 +1,12 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "f7d1118ee34411d3d2a82b10de436a60ff147060",
-  "mergedPr": 444,
-  "targetPr": 434,
-  "targetBranch": "capital-ai-product/remove-quant-demo-card-20261012",
-  "targetHeadSha": "f72e996ffc63d198decff1ee25d64a60b3386937",
+  "mainSha": "afa9e89905ab17495ab926d3a83e6f94327edec0",
+  "mergedPr": 438,
+  "targetPr": 440,
+  "targetBranch": "dependabot/npm_and_yarn/routine-minor-patch-c703c65b2a",
+  "targetHeadSha": "0f6c29287d2d837e180ff0a37a13c7fa1d300475",
   "exactOverlap": [
-    "shared/seo-source-provenance.mjs"
+    "src/data/externalComponentInventory.ts"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,

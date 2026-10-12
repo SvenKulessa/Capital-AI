@@ -280,12 +280,12 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
   const QUIZ_QUESTIONS = dailyLearningQuestions(quizDate, entitled);
 
   return (
-    <div className="hub-universe hub-universe--learning w-full text-slate-100 min-h-screen py-4 sm:py-6 px-2 sm:px-6 relative">
+    <div className="hub-universe hub-universe--learning w-full max-w-full min-w-0 text-slate-100 min-h-screen py-4 sm:py-6 px-2 sm:px-6 relative">
       {/* 1. TOP HEADER CONTRACT (Breadcrumb + Controls) */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pb-5 border-b border-slate-800/80 mb-6">
         <div>
           {/* Breadcrumb Hierarchy */}
-          <div className="flex items-center gap-2 text-xs text-slate-400 mb-1.5 font-medium">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-400 mb-2 font-medium">
             <button type="button" onClick={onBackToHome} className="hover:text-amber-300 transition-colors">
               Capital-AI
             </button>
@@ -317,12 +317,12 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
+          <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
+            <h1 className="min-w-0 text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
               <BookOpen className="w-6 h-6 text-amber-400 shrink-0" />
               <span>Capital-AI Learning Hub</span>
             </h1>
-            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40">
+            <span className="max-w-full text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40">
               WISSENS-TERMINAL
             </span>
             <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-mono text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 px-2.5 py-0.5 rounded-full">

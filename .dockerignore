@@ -56,6 +56,8 @@
 !server/billing-catalog.mjs
 !server/vocabulary-checkout.mjs
 !server/vocabulary-checkout.test.mjs
+!server/blueprint-commerce.mjs
+!server/blueprint-commerce.test.mjs
 !server/vocabulary-quant-pro-index.mjs
 !server/public-artifact-policy.test.mjs
 !server/public-artifact-policy.mjs
@@ -312,6 +314,9 @@
 !supabase/migrations/20261008181500_private_user_analysis_bindings.sql
 !supabase/migrations/20261008113000_social_provider_store.sql
 !supabase/migrations/20261011231207_capital_ai_private_blueprint_bucket_fail_closed.sql
+!supabase/migrations/20261012194631_capital_ai_private_blueprint_commerce_tables_v1.sql
+!supabase/migrations/20261012194652_capital_ai_private_blueprint_rpc_shell_v1.sql
+!supabase/migrations/20261012194709_capital_ai_private_blueprint_rpc_full_v1.sql
 !server/social-media/
 !server/social-media/provider-adapter.mjs
 !server/social-media/provider-adapter.test.mjs
@@ -321,6 +326,12 @@
 !server/social-media/provider-readback.test.mjs
 !server/social-media/oauth-callback.mjs
 !server/social-media/oauth-callback.test.mjs
+!server/social-media/x-oauth-start.mjs
+!server/social-media/x-oauth-start.test.mjs
+!server/social-media/x-oauth-exchange.mjs
+!server/social-media/x-oauth-exchange.test.mjs
+!server/social-media/x-account-status.mjs
+!server/social-media/x-account-status.test.mjs
 !server/social-media/asset-readback.mjs
 !server/social-media/asset-readback.test.mjs
 !server/social-media/provider-external-readback.mjs
