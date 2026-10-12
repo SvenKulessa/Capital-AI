@@ -66,7 +66,7 @@ export function HubNavigationPanel({ hubId, onNavigate }: { hubId: MainHubId; on
                 <span aria-hidden="true">{page.icon}</span>{page.name}<strong className="text-xs">Pausiert</strong>
               </span>
             ) : (
-              <a key={page.id} data-page={page.id} href={page.path}
+              <a key={page.id} href={page.path} data-page={page.id}
                 aria-current={activePath === canonicalHubTarget(page.path) ? 'page' : undefined}
                 onClick={event => {
                   if (!Object.hasOwn(DOCUMENT_ROUTES, page.path) && !/\.(html|txt)$/.test(page.path) &&
