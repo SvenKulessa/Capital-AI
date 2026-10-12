@@ -321,6 +321,12 @@
 !server/social-media/provider-readback.test.mjs
 !server/social-media/oauth-callback.mjs
 !server/social-media/oauth-callback.test.mjs
+!server/social-media/x-oauth-start.mjs
+!server/social-media/x-oauth-start.test.mjs
+!server/social-media/x-oauth-exchange.mjs
+!server/social-media/x-oauth-exchange.test.mjs
+!server/social-media/x-account-status.mjs
+!server/social-media/x-account-status.test.mjs
 !server/social-media/asset-readback.mjs
 !server/social-media/asset-readback.test.mjs
 !server/social-media/provider-external-readback.mjs

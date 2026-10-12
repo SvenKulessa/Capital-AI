@@ -9,6 +9,9 @@ import { fileURLToPath } from 'node:url';
 import { assetCatalog, assetValues, quote, health, startStreams } from './market.mjs';
 import { createAuth } from './auth.mjs';
 import { createSocialOAuthCallback } from './social-media/oauth-callback.mjs';
+import { createSocialXOAuthStart } from './social-media/x-oauth-start.mjs';
+import { createSocialXOAuthExchange } from './social-media/x-oauth-exchange.mjs';
+import { createSocialXAccountStatus } from './social-media/x-account-status.mjs';
 import { createPrivateMarketCache } from './private-market-cache.mjs';
 import { createUserProviderVault } from './user-provider-vault.mjs';
 import { createUserAnalysisBindings } from './user-analysis-bindings.mjs';
@@ -294,12 +297,23 @@ export function createApp(root = defaultRoot, options = {}) {
   let inflight = 0;
   const auth = createAuth(options);
   const learningInquiry = createLearningInquiry({ ...options, auth });
+  const socialXOAuthStart = createSocialXOAuthStart({
+    env: options.env || process.env, auth,
+    fetchImpl: options.fetchImpl || fetch,
+    store: options.socialOAuthStore || null,
+  });
+  const socialXAccountStatus = createSocialXAccountStatus({
+    env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
+  });
   const socialOAuthCallback = createSocialOAuthCallback({
     env: options.env || process.env,
     auth,
     fetchImpl: options.fetchImpl || fetch,
     store: options.socialOAuthStore || null,
-    exchangeCode: options.socialOAuthCodeExchange || null,
+    exchangeCode: options.socialOAuthCodeExchange
+      || createSocialXOAuthExchange({
+        env: options.env || process.env, fetchImpl: options.fetchImpl || fetch,
+      }),
   });
   const privateMarketCache = options.privateMarketCache || createPrivateMarketCache({
     env: options.env || process.env, getRedis: () => infrastructure.requireProviderState(),
@@ -377,6 +391,8 @@ export function createApp(root = defaultRoot, options = {}) {
   if (serveWellKnown(req, res, url)) return;
   if (await learningInquiry.handle(req, res, url, json)) return;
   if (await auth.handle(req, res, url, json)) return;
+  if (await socialXOAuthStart.handle(req, res, url, json)) return;
+  if (await socialXAccountStatus.handle(req, res, url, json)) return;
   if (await socialOAuthCallback.handle(req, res, url, json)) return;
   if (await userProviderVault.handle(req, res, url, json)) return;
   if (await userAnalysisBindings.handle(req, res, url, json)) return;
