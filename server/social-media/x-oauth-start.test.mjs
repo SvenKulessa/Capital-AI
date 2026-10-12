@@ -75,7 +75,7 @@ test('cross-site request, missing login and unsafe method do not issue state', a
     store: { beginOAuth: async () => { stateCount++; } },
   });
   for (const [request, status] of [[req('cross-site'), 403], [req('same-origin', 'POST'), 405],
-    [req(), 401], [req(undefined), 403]]) {
+    [req(), 401], [req(null), 403]]) {
     const r = res();
     await handler.handle(request, r, url(), json);
     assert.equal(r.status, status);
