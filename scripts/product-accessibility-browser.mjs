@@ -1,0 +1,134 @@
+#!/usr/bin/env node
+/**
+ * Browser accessibility smoke test with real Chromium + CDP (no external npm
+ * dependencies). Not a screenreader test or a complete WCAG certification.
+ * node scripts/product-accessibility-browser.mjs https://staging.example
+ * Override browser path with CAPITAL_AI_CHROME_BIN.
+ */
+import { spawn } from 'node:child_process';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+let base;
+try {
+  base = new URL(process.argv[2]);
+  if (!['http:', 'https:'].includes(base.protocol) || base.username || base.password || base.search || base.hash) throw Error();
+} catch {
+  console.error('Usage: node scripts/product-accessibility-browser.mjs https://staging-host');
+  process.exit(2);
+}
+const startedAt = new Date().toISOString();
+const profile = await mkdtemp(join(tmpdir(), 'capital-ai-product-a11y-'));
+const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
+const failures = [], pages = [];
+let chrome, socket, sequence = 0;
+const pending = new Map();
+const send = (method, params = {}) => new Promise((resolve, reject) => {
+  const id = ++sequence;
+  const timeout = setTimeout(() => { pending.delete(id); reject(new Error('CDP_TIMEOUT_' + method)); }, 15000);
+  pending.set(id, { resolve, reject, timeout });
+  socket.send(JSON.stringify({ id, method, params }));
+});
+const evaluate = async expression => {
+  const result = await send('Runtime.evaluate', { expression, returnByValue:true, awaitPromise:true });
+  if (result.exceptionDetails) throw Error('EVALUATION_FAILED');
+  return result.result?.value;
+};
+async function navigate(path) {
+  const url = new URL(path, base);
+  if (url.origin !== base.origin) throw Error('ORIGIN_CHANGED');
+  await send('Page.navigate', { url: url.href });
+  for (let attempt = 0; attempt < 120; attempt++) {
+    try {
+      const ready = await evaluate("document.readyState === 'complete' && !!document.querySelector('main,nav,header')");
+      if (ready) { await pause(800); return; }
+    } catch { /* navigation in progress */ }
+    await pause(100);
+  }
+  throw Error('PAGE_TIMEOUT_' + path);
+}
+const domExpression = String.raw`(() => {
+  const visible = el => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden';
+  const name = el => (el.getAttribute('aria-label') || el.innerText || el.getAttribute('title') || '').trim();
+  return {
+    documentLanguage: document.documentElement.lang,
+    imagesWithoutAlt: [...document.querySelectorAll('img')].filter(el => !el.hasAttribute('alt')).length,
+    unlabeledFields: [...document.querySelectorAll('input:not([type="hidden"]),select,textarea')]
+      .filter(visible).filter(el => !el.labels?.length && !el.getAttribute('aria-label') && !el.getAttribute('aria-labelledby')).length,
+    unnamedButtons: [...document.querySelectorAll('button')].filter(visible)
+      .filter(el => !name(el) && !el.getAttribute('aria-labelledby')).length,
+    scrollNav: [...document.querySelectorAll('nav[data-hub-scroll-navigation]')].map(el => ({
+      hub: el.getAttribute('data-hub-scroll-navigation'),
+      wrap: getComputedStyle(el).flexWrap,
+      scroll: getComputedStyle(el).overflowX,
+      width: el.clientWidth, contentWidth: el.scrollWidth,
+      linkNames: [...el.querySelectorAll('a[href]')].map(name),
+    })),
+  };
+})()`;
+async function checkPage(path, viewport) {
+  await send('Emulation.setDeviceMetricsOverride', {
+    width:viewport.width, height:viewport.height, deviceScaleFactor:2, mobile:viewport.mobile,
+  });
+  await navigate(path);
+  const dom = await evaluate(domExpression);
+  const ax = await send('Accessibility.getFullAXTree');
+  const nodes = ax.nodes || [];
+  const nav = nodes.filter(node => node.role?.value === 'navigation');
+  const record = { path, viewport, dom, AX: { nodes:nodes.length, navigations:nav.map(n => n.name?.value || '') } };
+  pages.push(record);
+  if (!dom.documentLanguage) failures.push(path + ': document lang missing (WCAG 3.1.1)');
+  if (dom.imagesWithoutAlt) failures.push(path + ': ' + dom.imagesWithoutAlt + ' images without alt (WCAG 1.1.1 partial)');
+  if (dom.unlabeledFields) failures.push(path + ': ' + dom.unlabeledFields + ' unnamed form controls (WCAG 3.3.2 partial)');
+  if (dom.unnamedButtons) failures.push(path + ': ' + dom.unnamedButtons + ' unnamed buttons (WCAG 4.1.2 partial)');
+  if (!nodes.length || !nav.length) failures.push(path + ': accessible navigation tree missing');
+  if (path === '/learning' && !dom.scrollNav.some(item =>
+    item.hub === 'learning' && item.wrap === 'nowrap' && item.scroll === 'auto' && item.linkNames.length >= 4
+  )) failures.push(path + ': Learning Hub mobile scroll navigation missing');
+}
+try {
+  chrome = spawn(process.env.CAPITAL_AI_CHROME_BIN || 'chromium', [
+    '--headless=new', '--no-sandbox', '--disable-dev-shm-usage', '--no-first-run',
+    '--disable-extensions', '--remote-debugging-port=0', '--user-data-dir=' + profile, 'about:blank',
+  ], { stdio:'ignore' });
+  chrome.on('error', () => {});
+  let port;
+  for (let attempt = 0; attempt < 100; attempt++) {
+    try { port = Number((await readFile(join(profile,'DevToolsActivePort'),'utf8')).split('\n')[0]); if (port) break; }
+    catch { /* still starting */ }
+    if (chrome.exitCode !== null) throw Error('CHROMIUM_EXITED');
+    await pause(100);
+  }
+  if (!port) throw Error('CHROMIUM_NOT_READY');
+  const tabs = await (await fetch('http://127.0.0.1:' + port + '/json/list')).json();
+  const tab = tabs.find(t => t.type === 'page');
+  if (!tab?.webSocketDebuggerUrl) throw Error('CDP_PAGE_MISSING');
+  socket = new WebSocket(tab.webSocketDebuggerUrl);
+  await new Promise((resolve,reject) => { socket.onopen=resolve; socket.onerror=()=>reject(Error('CDP_CONNECTION')); });
+  socket.onmessage = event => {
+    const message = JSON.parse(event.data);
+    const entry = pending.get(message.id);
+    if (!entry) return;
+    pending.delete(message.id); clearTimeout(entry.timeout);
+    if (message.error) entry.reject(Error(message.error.message || 'CDP_ERROR'));
+    else entry.resolve(message.result);
+  };
+  await send('Page.enable');
+  await send('Runtime.enable');
+  await send('Accessibility.enable');
+  for (const viewport of [{width:390,height:844,mobile:true},{width:1280,height:800,mobile:false}]) {
+    for (const path of ['/', '/learning', '/login']) await checkPage(path,viewport);
+  }
+  console.log(JSON.stringify({schemaVersion:'CAPITAL_AI_PRODUCT_BROWSER_A11Y@1',target:base.origin,startedAt,
+    pages,failures,status:failures.length?'FAILED':'TARGETED_PASS',
+    actualScreenReader:'NOT_PROVEN',liveTenantIsolation:'NOT_PROVEN',fullWCAGConformance:'NOT_PROVEN'},null,2));
+  process.exitCode = failures.length ? 1 : 0;
+} catch (err) {
+  console.error('Browser audit NOT_PROVEN: ' + String(err?.message || err));
+  process.exitCode = 2;
+} finally {
+  try { socket?.close(); } catch {}
+  try { chrome?.kill(); } catch {}
+  await rm(profile,{recursive:true,force:true});
+}
