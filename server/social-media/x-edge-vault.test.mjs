@@ -241,3 +241,22 @@ test('Edge returns token-free account status, owner identity bound', async () =>
     userId: 'aae0e41d-9566-430a-b698-3cf50bbb4ec0' }));
   assert.equal(crossUser.status, 503);
 });
+
+test('Edge verifies canonical Render-generated Base64 workload keys', async () => {
+  const userId = 'd0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101';
+  const config = { get(name) {
+    if (name === 'SOCIAL_X_EDGE_WORKLOAD_SECRET') return Buffer.from(WORKLOAD, 'hex').toString('base64');
+    if (name === 'SUPABASE_SERVICE_ROLE_KEY') return 'sb_secret_synthetic_only_for_tests';
+    return env.get(name);
+  } };
+  const handler = createHandler({ env: config, fetchImpl: async (url) => {
+    const path = String(url);
+    const output = path.includes('/auth/v1/user')
+      ? { id: userId, email_confirmed_at: '2026-10-01T01:00:00Z' }
+      : path.includes('/profiles') ? [{ id: userId, iam_role: 'owner' }] : [];
+    return { ok: true, text: async () => JSON.stringify(output) };
+  } });
+  const response = await handler(signedRequest({ operation: 'status', userId }));
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).status, 'not_connected');
+});
