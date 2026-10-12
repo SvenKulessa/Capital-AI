@@ -1,12 +1,12 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "f15e48969776935dd7290af4bffc3b27d4158883",
-  "mergedPr": 429,
-  "targetPr": 428,
-  "targetBranch": "capital-ai-product/customer-tour-subscriptions-20261011",
-  "targetHeadSha": "f1860291c0c8151bac83140156db2377c5e6db66",
+  "mainSha": "f7d1118ee34411d3d2a82b10de436a60ff147060",
+  "mergedPr": 444,
+  "targetPr": 434,
+  "targetBranch": "capital-ai-product/remove-quant-demo-card-20261012",
+  "targetHeadSha": "f72e996ffc63d198decff1ee25d64a60b3386937",
   "exactOverlap": [
-    "src/components/HubCatalog.tsx"
+    "shared/seo-source-provenance.mjs"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,
