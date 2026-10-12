@@ -245,6 +245,9 @@
 .hub-sidebar-card .hub-card-symbol svg { width: 1rem; height: 1rem; }
 .hub-sidebar-card .hub-card-glow { box-shadow: 0 0 6px var(--hub-accent); }
 .hub-directory-card { min-height: 44px; }
+/* Legal overview retains the original two-row design at half the card padding.
+ * These selectors leave route text and the published legal document untouched. */
+[data-legal-route] button.legal-topic-card { padding: .5rem; }
 /* Full-bleed on narrow screens without reducing the viewport or shrinking body text. */
 @media (max-width: 639px) {
   .hub-navigation { margin-block: .5rem; }
