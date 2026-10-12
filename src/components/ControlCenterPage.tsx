@@ -104,7 +104,7 @@ export const ControlCenterPage: React.FC<ControlCenterPageProps> = ({
   return (
     <div className="min-h-screen w-full px-3 py-5 text-slate-100 sm:px-6">
       <header className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Control Center</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-red-300 sm:text-3xl">Control Center</h1>
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-300">
           Geschützter Verwaltungsbereich. Jeder Bereich besitzt eine direkt aufrufbare Unterseite.
         </p>
