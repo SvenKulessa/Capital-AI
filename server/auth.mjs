@@ -1021,5 +1021,14 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     }
   }
 
-  return { handle, session, verify, resolvePaidTier, authorizeIamRole, sameOrigin };
+  // Internal server-only bridge for the Supabase Edge X vault. Never expose
+  // this JWT on a public route, browser response, event, log or error.
+  async function internalAccessToken(req, res) {
+    const stored = await resolveSession(req, res);
+    if (!stored || typeof stored.accessToken !== 'string') return null;
+    return stored.accessToken;
+  }
+
+  return { handle, session, verify, resolvePaidTier, authorizeIamRole, sameOrigin,
+    internalAccessToken };
 }

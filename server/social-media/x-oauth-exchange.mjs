@@ -1,5 +1,6 @@
 // CAPITAL_AI_SOCIAL_X_OAUTH_EXCHANGE@1 — server-only user-bound X OAuth.
 import { createCipheriv, randomBytes } from 'node:crypto';
+import { createSocialXEdgeClient, socialXEdgeMode } from './x-edge-client.mjs';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const REQUIRED_SCOPES = ['tweet.read', 'tweet.write', 'users.read', 'offline.access'];
@@ -33,11 +34,15 @@ function providerConfig(env) {
     }
   }
   assert(encryptionKey?.length === 32, 'SOCIAL_X_OAUTH_KEY_UNCONFIGURED');
-  const serviceKey = env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY || '';
+  const edgeMode = socialXEdgeMode(env);
+  const serviceKey = edgeMode ? '' : (env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY || '');
   const supabase = new URL(env.SUPABASE_URL);
+  const publishable = env.SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_PUBLISHABLE_KEY
+    || env.SUPABASE_ANON_KEY;
   assert(supabase.protocol === 'https:' && supabase.pathname === '/'
     && !supabase.search && !supabase.hash && !supabase.username && !supabase.password
-    && (serviceKey.startsWith('sb_secret_') || isServiceRoleJwt(serviceKey)),
+    && (edgeMode ? typeof publishable === 'string' && publishable.length > 12
+      : (serviceKey.startsWith('sb_secret_') || isServiceRoleJwt(serviceKey))),
     'SOCIAL_X_STORE_UNCONFIGURED');
   return Object.freeze({
     redirectUri: new URL(CALLBACK, origin).toString(),
@@ -128,7 +133,7 @@ export function createSocialXOAuthExchange({ env = process.env, fetchImpl = fetc
       'SOCIAL_X_ACCOUNT_IDENTITY_INVALID');
     const record = {
       user_id: trusted.userId, platform: 'x', status: 'connected',
-      account_name: typeof account.name === 'string' ? account.name.slice(0, 140) : account.username,
+      account_name: typeof account.name === 'string' && account.name.trim() ? account.name.slice(0, 140) : account.username,
       handle: account.username, external_account_id: account.id,
       scopes: REQUIRED_SCOPES,
       access_token_encrypted: seal(tokens.access_token, cfg.key, { userId: trusted.userId, kind: 'access' }),
@@ -136,6 +141,17 @@ export function createSocialXOAuthExchange({ env = process.env, fetchImpl = fetc
       token_expires_at: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
       connected_at: new Date().toISOString(),
     };
+    // In Edge mode, the service-role secret remains inside Supabase, never in
+    // the Render X handler. Edge re-verifies the owner JWT and persists only
+    // ciphertext; the Supabase admin key is absent from this transport.
+    if (socialXEdgeMode(env)) {
+      const edge = createSocialXEdgeClient({ env, fetchImpl,
+        userAccessToken: trusted.userAccessToken });
+      const saved = await edge.persistAccount(trusted.userId, record);
+      assert(saved?.connected === true && saved.handle === account.username,
+        'SOCIAL_X_ACCOUNT_PERSIST_READBACK_FAILED');
+      return Object.freeze({ connected: true, channel: 'X', handle: account.username });
+    }
     // Explicit upsert keyed by (user_id,platform). Service key never reaches a browser.
     const endpoint = cfg.supabaseOrigin
       + '/rest/v1/social_media_accounts?on_conflict=user_id%2Cplatform';

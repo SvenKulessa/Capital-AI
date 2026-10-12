@@ -1,12 +1,14 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "afa9e89905ab17495ab926d3a83e6f94327edec0",
-  "mergedPr": 438,
-  "targetPr": 440,
-  "targetBranch": "dependabot/npm_and_yarn/routine-minor-patch-c703c65b2a",
-  "targetHeadSha": "0f6c29287d2d837e180ff0a37a13c7fa1d300475",
+  "mainSha": "f42da6e7b0f561474ef80bc257880ddf1b7ae3d2",
+  "mergedPr": 423,
+  "targetPr": 446,
+  "targetBranch": "capital-ai-growth/x-oauth-supabase-edge-20261013",
+  "targetHeadSha": "6d79d4f0e962fec2f79d90d5cc8243f2a8d010d6",
   "exactOverlap": [
-    "src/data/externalComponentInventory.ts"
+    ".dockerignore",
+    "Dockerfile",
+    "package.json"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,

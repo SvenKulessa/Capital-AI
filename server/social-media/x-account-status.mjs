@@ -1,5 +1,6 @@
 // CAPITAL_AI_SOCIAL_X_ACCOUNT_STATUS@1 — read-only owner-bound connection status.
 // Never select or return encrypted access/refresh tokens.
+import { createSocialXEdgeClient, socialXEdgeMode } from './x-edge-client.mjs';
 const PATH = '/api/social-media/x/account/status';
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const FIELDS = 'status,platform,external_account_id,handle,scopes,token_expires_at,connected_at';
@@ -41,6 +42,13 @@ export function createSocialXAccountStatus({ env = process.env, auth, fetchImpl 
       return true;
     }
     try {
+      if (socialXEdgeMode(env)) {
+        const edge = createSocialXEdgeClient({ env, fetchImpl,
+          userAccessToken: await auth?.internalAccessToken?.(req, res) });
+        const status = await edge.status(identity.userId);
+        json(res, 200, status);
+        return true;
+      }
       const cfg = config(env);
       const target = new URL('/rest/v1/social_media_accounts', cfg.origin);
       target.searchParams.set('user_id', 'eq.' + identity.userId);
