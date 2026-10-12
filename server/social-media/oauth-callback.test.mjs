@@ -72,6 +72,25 @@ test('verified callback enforces exact identity and endpoint; no token in reply'
   assert.deepEqual(records[0].allowedRedirectUris, [records[0].redirectUri]);
   assert.deepEqual(records[1], { exchanged: 'X' });
 });
+test('X callback without channel parameter is bound to X via persisted state', async () => {
+  const calls = [];
+  const handler = createSocialOAuthCallback({ env,
+    auth: { verify: async () => ({ userId: USER }) },
+    store: { consumeOAuthCallback: async input => {
+      calls.push({ userId: input.userId, channel: input.channel });
+      await input.exchangeCode({ userId: USER, channel: 'X',
+        redirectUri: input.redirectUri, code: 'synthetic',
+        codeVerifier: 'v'.repeat(43) });
+      return { consumed: true, platform: 'x' };
+    } },
+    exchangeCode: async trusted => { calls.push({ channel: trusted.channel }); },
+  });
+  const r = res();
+  await handler.handle(req(), r, url('?state=' + STATE + '&code=synthetic'), json);
+  assert.equal(r.status, 204);
+  assert.deepEqual(calls, [{ userId: USER, channel: 'X' }, { channel: 'X' }]);
+});
+
 test('callback fail-closed on exchange/storage failures without reflecting code', async () => {
   const handler = createSocialOAuthCallback({ env,
     auth: { verify: async () => ({ userId: USER }) },
