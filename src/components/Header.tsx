@@ -442,12 +442,12 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
 
                 {/* Navigation Sections: DIE 4 HAUPTHUBS (RUNDE LEUCHTENDE ACTION BUTTONS MIT AUFKLAPPBARER SIDEBAR) */}
-                <div className="mt-5 space-y-3">
+                <div className="mt-2.5 space-y-1.5">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-amber-400/90 px-1 mb-1">
                     Plattform Hubs & Navigation
                   </div>
 
-                  <div className="grid grid-cols-1 gap-2.5">
+                  <div className="grid grid-cols-1 gap-1.25">
                     {Object.values(MAIN_HUBS_CONFIG).map(hub => ({...hub, glow:hub.glowColor, tagline:hub.description})).filter(hub => hub.id !== 'control-center' || isOwner).map((hub) => (
                       <button
                         key={hub.id}
@@ -457,37 +457,37 @@ export const Header: React.FC<HeaderProps> = ({
                           setIsMenuOpen(false);
                           openHubSidebar(hub.id);
                         }}
-                        className="hub-switch w-full flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer group text-left shadow-md"
+                        className="hub-switch hub-sidebar-card min-h-11 w-full flex items-center justify-between gap-1.5 px-1.5 py-1.5 border transition-all cursor-pointer group text-left shadow-sm"
                         style={{
                           backgroundColor: `${hub.color}14`,
                           borderColor: `${hub.color}45`,
-                          boxShadow: `0 0 16px ${hub.glow}`,
+                          boxShadow: `0 0 8px ${hub.glow}`,
                         }}
                       >
-                        <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex items-center gap-1.5 min-w-0">
                           <div
-                            className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 border shadow-md group-hover:scale-105 transition-transform"
+                            className="hub-card-symbol w-6 h-6 rounded-full flex items-center justify-center shrink-0 border shadow-sm group-hover:scale-105 transition-transform"
                             style={{
                               backgroundColor: `${hub.color}25`,
                               borderColor: `${hub.color}60`,
-                              boxShadow: `0 0 12px ${hub.glow}`,
+                              boxShadow: `0 0 6px ${hub.glow}`,
                             }}
                           >
                             {hub.icon}
                           </div>
                           <div className="min-w-0">
-                            <span className="text-xs font-bold text-white block truncate group-hover:text-amber-300 transition-colors">
+                            <span className="text-[11px] font-bold text-white block truncate group-hover:text-amber-300 transition-colors">
                               {hub.name}
                             </span>
-                            <span className="text-[10px] text-slate-400 block truncate">
+                            <span className="text-[9px] text-slate-400 block truncate">
                               {hub.tagline}
                             </span>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-1.5 shrink-0 pl-2">
+                        <div className="flex items-center gap-1 shrink-0 pl-1">
                           <span
-                            className="text-[9.5px] font-mono font-bold px-1.5 py-0.5 rounded border"
+                            className="text-[9px] font-mono font-bold px-1 py-0.5 rounded border"
                             style={{
                               color: hub.color,
                               backgroundColor: `${hub.color}15`,
@@ -496,7 +496,7 @@ export const Header: React.FC<HeaderProps> = ({
                           >
                             {hub.badge}
                           </span>
-                          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                          <ChevronRight className="w-3 h-3 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
                         </div>
                       </button>
                     ))}
@@ -532,7 +532,7 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
 
                   {/* ASSETKLASSEN & UNTERKLASSEN (KRYPTO, AKTIEN, INDIZIES, FOREX, ROHSTOFFE) */}
-                  <div className="pt-4 border-t border-slate-800/80 space-y-2">
+                  <div className="pt-2 border-t border-slate-800/80 space-y-1">
                     <div className="flex items-center justify-between px-1">
                       <div className="text-[10px] font-bold uppercase tracking-widest text-amber-400/80">
                         Assetklassen & Unterklassen
@@ -550,7 +550,7 @@ export const Header: React.FC<HeaderProps> = ({
                       </button>
                     </div>
 
-                    <div className="space-y-1.5 pt-1">
+                    <div className="space-y-1 pt-0.5">
                       {ASSET_CLASSES.map((cls) => {
                         const isExpanded = expandedClass === cls.id;
                         return (
@@ -565,11 +565,11 @@ export const Header: React.FC<HeaderProps> = ({
                             <button
                               type="button"
                               onClick={() => setExpandedClass(isExpanded ? null : cls.id)}
-                              className="w-full flex items-center justify-between p-2.5 text-left hover:bg-white/5 transition-colors cursor-pointer"
+                              className="hub-asset-card min-h-11 w-full flex items-center justify-between px-1.5 py-1 text-left hover:bg-white/5 transition-colors cursor-pointer"
                             >
-                              <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="flex items-center gap-1.5 min-w-0">
                                 <div
-                                  className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 border"
+                                  className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 border"
                                   style={{
                                     backgroundColor: `${cls.color}18`,
                                     borderColor: `${cls.color}35`,
@@ -579,13 +579,13 @@ export const Header: React.FC<HeaderProps> = ({
                                   {renderClassIcon(cls.id)}
                                 </div>
                                 <div className="min-w-0">
-                                  <span className="text-[12.5px] font-bold text-white block truncate">
+                                  <span className="text-xs font-bold text-white block truncate">
                                     {cls.name}
                                   </span>
                                 </div>
                               </div>
 
-                              <div className="flex items-center gap-2 shrink-0">
+                              <div className="flex items-center gap-1 shrink-0">
                                 <span
                                   className="text-[9.5px] font-mono font-bold px-1.5 py-0.5 rounded border"
                                   style={{
@@ -623,7 +623,7 @@ export const Header: React.FC<HeaderProps> = ({
                                           setIsMenuOpen(false);
                                           onSelectSubclass?.(sub, cls.id);
                                         }}
-                                        className="w-full p-2 text-left rounded-lg bg-slate-900/70 hover:bg-slate-800/90 border border-slate-800/80 hover:border-slate-700 transition-all cursor-pointer group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
+                                        className="hub-subclass-card min-h-11 w-full p-1 text-left rounded-lg bg-slate-900/70 hover:bg-slate-800/90 border border-slate-800/80 hover:border-slate-700 transition-all cursor-pointer group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
                                       >
                                         <div className="flex items-center justify-between">
                                           <span className="text-[11.5px] font-bold text-slate-200 group-hover:text-amber-300 transition-colors">
