@@ -102,7 +102,7 @@
 /* All public hubs share one touch-scrollable navigation strip. */
 .hub-tab-strip {
   display: flex;
-  gap: .375rem;
+  gap: .1875rem;
   min-width: 0;
   width: 100%;
   overflow-x: auto;
@@ -112,8 +112,8 @@
   border: 1px solid var(--color-brand-ai);
   border-radius: 1rem;
   background: var(--color-brand-canvas);
-  padding: .5rem;
-  scroll-padding-inline: .5rem;
+  padding: .25rem;
+  scroll-padding-inline: .25rem;
   scrollbar-width: thin;
   scrollbar-color: var(--color-brand-gold) var(--color-brand-canvas);
 }
@@ -121,15 +121,15 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: .375rem;
+  gap: .1875rem;
   flex-shrink: 0;
   white-space: nowrap;
-  min-height: 44px;
+  min-height: 28px; /* WCAG 2.2 AA: >= 24px touch target */
   border: 1px solid transparent;
-  border-radius: .75rem;
-  padding: .375rem .625rem;
+  border-radius: .375rem;
+  padding: .1875rem .3125rem;
   color: #e2e8f0;
-  font-size: .8125rem;
+  font-size: .75rem;
   font-weight: 600;
 }
 .hub-tab:hover, .hub-tab:focus-visible {
@@ -171,7 +171,7 @@
 .hub-role-accent { color:var(--hub-accent); border-color:var(--hub-accent); background:color-mix(in srgb,var(--hub-accent) 12%,#071126); }
 
 
-/* Seven-brand navigation: compact visual chips with WCAG 2.2-friendly 44px touch targets. */
+/* Seven-brand navigation: 50% smaller chips and spacing; >= 24px targets for WCAG 2.2 AA. */
 .hub-tab-strip .hub-tab {
   --effective-tab-accent: var(--tab-accent, var(--hub-accent));
   border-color: color-mix(in srgb, var(--effective-tab-accent) 35%, transparent);
@@ -211,9 +211,9 @@
 /* Full-width, compact route navigation. No additional instruction row consumes mobile height. */
 .hub-navigation,
 .hub-tab-viewport { width: 100%; max-width: 100%; min-width: 0; }
-.hub-tab-strip .hub-tab { min-height: 44px; font-size: .8125rem; padding: .375rem .625rem; }
+.hub-tab-strip .hub-tab { min-height: 28px; font-size: .75rem; padding: .1875rem .3125rem; }
 .hub-tab-strip .hub-tab > span[aria-hidden="true"] { display: inline-flex; align-items: center; }
-.hub-tab-strip .hub-tab svg { width: 1rem; height: 1rem; flex-shrink: 0; }
+.hub-tab-strip .hub-tab svg { width: .75rem; height: .75rem; flex-shrink: 0; }
 .hub-tab-edge { position: absolute; inset-block: 1px; width: 2.25rem; pointer-events: none; z-index: 2; }
 .hub-tab-edge--right { right: 1px; border-radius: 0 1rem 1rem 0; background: linear-gradient(90deg, transparent, #071126 95%); }
 .hub-tab-edge--right::after { content: '›'; position:absolute; right:.15rem; top:50%; transform:translateY(-50%); color:var(--hub-accent); font-size:1.25rem; font-weight:700; }
@@ -225,15 +225,29 @@
 .license-report .hub-tab-strip {
   flex-wrap: wrap;
   justify-content: center;
-  gap: .375rem;
+  gap: .1875rem;
   overflow-x: visible;
 }
 @media (min-width: 640px) {
-  .hub-tab-strip .hub-tab { font-size: .875rem; padding: .375rem .75rem; }
+  .hub-tab-strip .hub-tab { font-size: .75rem; padding: .1875rem .375rem; }
 }
 @media (max-width: 639px) {
   .hub-navigation { margin-inline: 0; }
   .hub-universe { width: 100%; max-width: 100%; min-width: 0; }
   .hub-tab-strip { max-width: 100%; scrollbar-width: none; }
   .hub-tab-strip::-webkit-scrollbar { display: none; }
+}
+
+/* 50% compact navigation cards: decorative spacing halves, hit areas remain >= 44px. */
+.hub-sidebar-card, .hub-asset-card, .hub-subclass-card { min-height: 44px; }
+.hub-sidebar-card { border-radius: .625rem; }
+.hub-sidebar-card .hub-card-symbol { width: 1.5rem; height: 1.5rem; }
+.hub-sidebar-card .hub-card-symbol svg { width: 1rem; height: 1rem; }
+.hub-sidebar-card .hub-card-glow { box-shadow: 0 0 6px var(--hub-accent); }
+.hub-directory-card { min-height: 44px; }
+/* Full-bleed on narrow screens without reducing the viewport or shrinking body text. */
+@media (max-width: 639px) {
+  .hub-navigation { margin-block: .5rem; }
+  .hub-tab-strip { border-radius: .625rem; }
+  [data-legal-route] > nav.hub-tab-strip { margin-top: .5rem; }
 }
