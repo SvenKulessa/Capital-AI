@@ -20,7 +20,7 @@ export function LicenseInformationPages({ route, onNavigate }: { route: LicenseR
       <p className="text-sm">{licenseMetadata[route].description}</p>
       <p className="text-xs text-slate-400">Dokumentationsstand {LICENSE_REVIEW_DATE} · Kommerzielle Rechteprüfung offen</p>
     </header>
-    <nav aria-label="Lizenz- und Nachweisseiten" className="hub-tab-strip flex flex-wrap gap-2 text-sm">
+    <nav aria-label="Lizenz- und Nachweisseiten" className="hub-tab-strip flex flex-wrap gap-1 text-xs">
       {Object.entries(licenseMetadata).map(([path, meta]) => <a key={path} href={path} aria-current={route === path ? 'page' : undefined} className="hub-tab legal-topic-card" style={{ '--tab-accent': legalPageAccent(path) } as React.CSSProperties} onClick={e => { e.preventDefault(); onNavigate(path); }}>{meta.title.replace('Capital-AI | ', '')}</a>)}
     </nav>
     {route === '/datenprovider-lizenzen' && <>
