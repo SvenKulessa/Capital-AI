@@ -51,11 +51,12 @@ test('Edge accepts only verified owner and performs a scoped state insertion', a
       redirectUri: 'https://capital-ai.online/api/social-media/auth/callback' }),
   }));
   assert.equal(response.status, 200);
-  assert.deepEqual(await response.json(), { prepared: true });
+  const responseText = await response.text();
+  assert.deepEqual(JSON.parse(responseText), { prepared: true });
   assert.equal(accesses.length, 3);
   assert.equal(accesses[0].options.headers.apikey, config.get('SUPABASE_ANON_KEY'));
   assert.match(JSON.stringify(accesses[2]), /state_token/);
-  assert.ok(!JSON.stringify(await (async () => response.clone().text())()).includes('sb_secret_'));
+  assert.ok(!responseText.includes('sb_secret_'));
 });
 
 test('Edge denies a non-owner before any privileged database write', async () => {
