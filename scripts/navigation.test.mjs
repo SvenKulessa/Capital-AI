@@ -223,7 +223,7 @@ test('all dedicated Control Center documents retain owner-only server gating and
 test('Hub navigation entries use native focusable anchors for keyboard and modified clicks', () => {
   const panel = readFileSync(new URL('../src/components/HubNavigationPanel.tsx', import.meta.url),'utf8');
   assert.match(panel, /<a key=\{page.id\} href=\{page.path\}/);
-  assert.match(panel, /e.metaKey/);
+  assert.match(panel, /event.metaKey/);
   const css = readFileSync(new URL('../src/index.css', import.meta.url),'utf8');
   assert.match(css, /\.hub-tab:focus-visible/);
   assert.match(panel, /aria-current/);
@@ -371,7 +371,7 @@ test('per-subpage brand colouring keeps former hub tab dimensions and legal site
   const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
   const legal = readFileSync(new URL('../src/components/LegalAndFaqPages.tsx', import.meta.url), 'utf8');
   const licensing = readFileSync(new URL('../src/components/LicenseInformationPages.tsx', import.meta.url), 'utf8');
-  assert.match(strip, /hubTabAccent\(hubId, index\)/);
+  assert.match(strip, /hubTabAccent\(hubId, index, page.id\)/);
   assert.match(strip, /className="hub-tab-strip"/);
   assert.match(css, /min-height:\s*44px;/);
   assert.match(css, /font-size:\s*\.8125rem;/);
