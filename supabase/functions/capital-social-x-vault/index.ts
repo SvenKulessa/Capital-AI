@@ -49,6 +49,24 @@ function adminHeaders(key, options = {}) {
     ? { Authorization: 'Bearer ' + key } : {}), Accept: 'application/json',
     'Content-Type': 'application/json', ...options };
 }
+// A stolen owner JWT alone cannot create X accounts or consume OAuth state.
+// Require a separately provisioned 256-bit shared workload secret in both
+// Render and the Supabase Edge Function; authenticate exact bytes and user JWT.
+async function verifyWorkload(env, req, jwt, raw) {
+  const key = env.get('SOCIAL_X_EDGE_WORKLOAD_SECRET');
+  abortUnless(typeof key === 'string' && /^[a-fA-F0-9]{64}$/.test(key));
+  const timestamp = req.headers.get('x-capital-edge-timestamp') || '';
+  const signature = req.headers.get('x-capital-edge-signature') || '';
+  abortUnless(/^\d{13}$/.test(timestamp) && /^[a-f0-9]{64}$/.test(signature)
+    && Math.abs(Date.now() - Number(timestamp)) <= 60_000);
+  const bytes = new Uint8Array(key.match(/.{2}/g).map(x => parseInt(x, 16)));
+  const macKey = await crypto.subtle.importKey('raw', bytes,
+    { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']);
+  const mac = new Uint8Array(signature.match(/.{2}/g).map(x => parseInt(x, 16)));
+  const signed = new TextEncoder().encode(timestamp + '\n' + jwt + '\n' + raw);
+  abortUnless(await crypto.subtle.verify('HMAC', macKey, mac, signed));
+}
+
 async function verifyOwner(fetchImpl, keys, jwt) {
   abortUnless(typeof jwt === 'string' && jwt.length > 50 && jwt.length < 8192);
   const headers = { apikey: keys.pub, Authorization: 'Bearer ' + jwt,
@@ -175,10 +193,12 @@ export function createHandler({ env = typeof Deno === 'undefined' ? null : Deno.
     if (!jwt) return reply(401, { error: 'authentication_required' });
     try {
       abortUnless(env && typeof env.get === 'function');
-      const keys = serviceKeys(env);
-      const userId = await verifyOwner(fetchImpl, keys, jwt);
+      // Check the signed workload attestation before contacting Auth or DB.
       const raw = await req.text();
       abortUnless(raw.length > 0 && raw.length <= 32768);
+      await verifyWorkload(env, req, jwt, raw);
+      const keys = serviceKeys(env);
+      const userId = await verifyOwner(fetchImpl, keys, jwt);
       const input = JSON.parse(raw);
       const result = await execute(fetchImpl, keys, userId, input);
       return reply(200, result);
