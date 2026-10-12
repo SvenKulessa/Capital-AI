@@ -366,16 +366,16 @@ test('mobile drawer escapes header stacking context and retains modal keyboard b
   assert.match(header, /role="dialog"/);
 });
 
-test('per-subpage brand colouring keeps former hub tab dimensions and legal site variation', () => {
+test('per-subpage colours survive 50% compact hub and legal navigation', () => {
   const strip = readFileSync(new URL('../src/components/HubNavigationPanel.tsx', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
   const legal = readFileSync(new URL('../src/components/LegalAndFaqPages.tsx', import.meta.url), 'utf8');
   const licensing = readFileSync(new URL('../src/components/LicenseInformationPages.tsx', import.meta.url), 'utf8');
   assert.match(strip, /hubTabAccent\(hubId, index, page.id\)/);
   assert.match(strip, /className="hub-tab-strip"/);
-  assert.match(css, /min-height:\s*44px;/);
-  assert.match(css, /font-size:\s*\.8125rem;/);
-  assert.match(css, /padding:\s*\.375rem \.625rem;/);
+  assert.match(css, /min-height:\s*28px;/);
+  assert.match(css, /font-size:\s*\.75rem;/);
+  assert.match(css, /padding:\s*\.1875rem \.3125rem;/);
   assert.match(css, /--effective-tab-accent: var\(--tab-accent, var\(--hub-accent\)\)/);
   assert.match(legal, /data-legal-route=\{route\}/);
   assert.match(legal, /legalPageAccent\(item\.path\)/);
@@ -395,13 +395,13 @@ test('requested PRODUCT identities have stable colours and dark-navy documentati
   assert.match(catalog, /'glow' in brand \? brand.glow/);
 });
 
-test('mobile navigation consumes available width with compact 44px keyboard accessible chips', () => {
+test('mobile navigation consumes full width with compact, WCAG-sized keyboard accessible chips', () => {
   const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
   const hub = readFileSync(new URL('../src/components/HubNavigationPanel.tsx', import.meta.url), 'utf8');
   const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
   const learning = readFileSync(new URL('../src/features/learning/LearningPortalPage.tsx', import.meta.url), 'utf8');
   const legal = readFileSync(new URL('../src/components/LegalAndFaqPages.tsx', import.meta.url), 'utf8');
-  assert.match(css, /\.hub-tab-strip \.hub-tab \{ min-height: 44px; font-size: \.8125rem;/);
+  assert.match(css, /\.hub-tab-strip \.hub-tab \{ min-height: 28px; font-size: \.75rem;/);
   assert.match(css, /\.hub-navigation \{ margin-inline: 0; \}/);
   assert.match(css, /\.hub-tab-strip\[data-hub="legal"\]/);
   assert.match(css, /\.hub-tab-edge--right/);
@@ -428,4 +428,23 @@ test('all seven navigation accents retain WCAG AA normal-text contrast on dark c
     const contrast = (Math.max(foreground, background) + .05) / (Math.min(foreground, background) + .05);
     assert.ok(contrast >= 4.5, `${name} contrast ${contrast.toFixed(2)}:1 falls below WCAG AA normal text`);
   }
+});
+
+test('compact navigation halves chrome spacing but keeps readable typography and usable targets', () => {
+  const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
+  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  const home = readFileSync(new URL('../src/components/HomeHubDirectory.tsx', import.meta.url), 'utf8');
+  const legal = readFileSync(new URL('../src/components/LegalAndFaqPages.tsx', import.meta.url), 'utf8');
+  const license = readFileSync(new URL('../src/components/LicenseInformationPages.tsx', import.meta.url), 'utf8');
+  assert.match(css, /\.hub-tab-strip \{[\s\S]*?gap: \.1875rem;[\s\S]*?padding: \.25rem;/);
+  assert.match(css, /\.hub-tab \{[\s\S]*?min-height: 28px;[\s\S]*?font-size: \.75rem;/);
+  assert.match(css, /\.hub-tab-strip \.hub-tab svg \{ width: \.75rem; height: \.75rem;/);
+  assert.match(css, /\.hub-sidebar-card, \.hub-asset-card, \.hub-subclass-card \{ min-height: 44px; \}/);
+  assert.match(header, /hub-sidebar-card min-h-11/);
+  assert.match(header, /hub-asset-card min-h-11/);
+  assert.match(header, /hub-subclass-card min-h-11/);
+  assert.match(home, /hub-directory-card hub-switch flex min-h-11/);
+  assert.match(legal, /className="hub-tab-strip w-full max-w-4xl z-10 mt-2"/);
+  assert.match(license, /className="hub-tab-strip flex flex-wrap gap-1 text-xs"/);
+  assert.doesNotMatch(css, /\.hub-tab-strip \.hub-tab \{ min-height: 22px;/);
 });
