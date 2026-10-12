@@ -184,12 +184,22 @@ test('hub paths and legacy documents redirect once and keep subpage metadata and
 });
 
 
+/** Source checkout includes public/, while production Docker retains Vite-built dist/. */
+async function readProductTourAsset(filename) {
+  try {
+    return await readFile(new URL('../public/learning/videos/' + filename, import.meta.url));
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
+    return readFile(new URL('../dist/learning/videos/' + filename, import.meta.url));
+  }
+}
+
 test('product tour serves browser-compatible MP4 MIME and hash-bound bytes',async()=>{
   const root=await mkdtemp(path.join(tmpdir(),'capital-tour-'));
   const directory=path.join(root,'learning/videos');await mkdir(directory,{recursive:true});
   const filename='capital-ai-tour-short-1080x1920.mp4';
-  const bytes=await readFile(new URL('../public/learning/videos/'+filename,import.meta.url));
-  const manifest=JSON.parse(await readFile(new URL('../public/learning/videos/capital-ai-tour-asset-manifest.json',import.meta.url)));
+  const bytes=await readProductTourAsset(filename);
+  const manifest=JSON.parse(await readProductTourAsset('capital-ai-tour-asset-manifest.json'));
   await writeFile(path.join(directory,filename),bytes);
   const server=createApp(root);await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   try {
