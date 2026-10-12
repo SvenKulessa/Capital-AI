@@ -630,7 +630,7 @@ export const Header: React.FC<HeaderProps> = ({
                                           <span className="text-[11.5px] font-bold text-slate-200 group-hover:text-amber-300 transition-colors">
                                             {sub.name}
                                           </span>
-                                        </button>
+                                        </div>
                                         <p className="text-[10px] text-slate-400 mt-0.5 leading-snug line-clamp-2">
                                           {sub.shortDesc}
                                         </p>
@@ -644,7 +644,7 @@ export const Header: React.FC<HeaderProps> = ({
                                             </span>
                                           ))}
                                         </div>
-                                      </div>
+                                      </button>
                                     ))}
                                   </div>
                                 </motion.div>
