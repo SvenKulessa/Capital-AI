@@ -179,7 +179,10 @@ test('diagnostics precisely identify rejected X OAuth prerequisites without expo
     assert.equal(r.status, 200, name);
     assert.equal(r.body.ready, false, name);
     assert.equal(r.body.checks[check], false, name);
-    assert.ok(!JSON.stringify(r.body).includes(String(value)), name);
+    // The empty string is present in every string; boolean false is a valid response field.
+    if (value !== '' && value !== 'false') {
+      assert.ok(!JSON.stringify(r.body).includes(String(value)), name);
+    }
   }
 });
 
