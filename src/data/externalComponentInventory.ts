@@ -336,7 +336,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'node-runtime', name: 'Node.js', domain: 'PLATFORM', kind: 'Runtime',
-    installedAt: null, activeVersion: '26.10.0', pipelineVersion: 'node:26.10.0-alpine@sha256:0b36e8c136b94cd4fcf02188228e76c31ad5872eef3fec8cbd2eee500cfd9e80', lifecycle: 'ACTIVE',
+    installedAt: null, activeVersion: '26.11.1', pipelineVersion: 'node:26.11.1-alpine@sha256:143494b1da2945f061539253adc65e4f1569ddf07da2d384c022c791a9d90a4a', lifecycle: 'ACTIVE',
     functionSummary: 'Build- und Production-JavaScript-Runtime; Container-Base ist version- und digest-gepinnt.',
     webAppBinding: 'Dockerfile', license: 'MIT', cadsScore: 91.0, scoreState: 'VERIFIED',
     domainAssignments: ['build image', 'production runtime'],
