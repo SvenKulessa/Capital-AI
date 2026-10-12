@@ -54,12 +54,20 @@ function adminHeaders(key, options = {}) {
 // Render and the Supabase Edge Function; authenticate exact bytes and user JWT.
 async function verifyWorkload(env, req, jwt, raw) {
   const key = env.get('SOCIAL_X_EDGE_WORKLOAD_SECRET');
-  abortUnless(typeof key === 'string' && /^[a-fA-F0-9]{64}$/.test(key));
+  let bytes = null;
+  if (typeof key === 'string' && /^[a-fA-F0-9]{64}$/.test(key)) {
+    bytes = new Uint8Array(key.match(/.{2}/g).map(x => parseInt(x, 16)));
+  } else if (typeof key === 'string' && /^[A-Za-z0-9+/]{43}=$/.test(key)) {
+    const value = atob(key);
+    if (value.length === 32 && btoa(value) === key) {
+      bytes = Uint8Array.from(value, char => char.charCodeAt(0));
+    }
+  }
+  abortUnless(bytes?.length === 32);
   const timestamp = req.headers.get('x-capital-edge-timestamp') || '';
   const signature = req.headers.get('x-capital-edge-signature') || '';
   abortUnless(/^\d{13}$/.test(timestamp) && /^[a-f0-9]{64}$/.test(signature)
     && Math.abs(Date.now() - Number(timestamp)) <= 60_000);
-  const bytes = new Uint8Array(key.match(/.{2}/g).map(x => parseInt(x, 16)));
   const macKey = await crypto.subtle.importKey('raw', bytes,
     { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']);
   const mac = new Uint8Array(signature.match(/.{2}/g).map(x => parseInt(x, 16)));
