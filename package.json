@@ -16,6 +16,7 @@
     "growth:gsc:auth": "node scripts/gsc-auth-readonly.mjs",
     "growth:gsc:mcp": "node scripts/gsc-mcp-guard.mjs",
     "test:navigation": "node --import tsx --test scripts/navigation.test.mjs",
+    "test:product:browser-a11y": "node scripts/product-accessibility-browser.mjs",
     "test:blueprint-demo": "node --import tsx --test scripts/market-blueprint-demo.test.mjs",
     "test:merge-milestones": "node --import tsx --test scripts/merge-milestone.test.mjs",
     "test:roadmap": "node --import tsx --test src/data/__tests__/roadmapDomainBranding.test.ts src/data/__tests__/roadmapCurrentMainState.test.ts",
