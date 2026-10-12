@@ -1,12 +1,13 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "f15e48969776935dd7290af4bffc3b27d4158883",
-  "mergedPr": 429,
-  "targetPr": 428,
-  "targetBranch": "capital-ai-product/customer-tour-subscriptions-20261011",
-  "targetHeadSha": "f1860291c0c8151bac83140156db2377c5e6db66",
+  "mainSha": "f76a497a1c64672f2a77757ae020b7544ce0ae50",
+  "mergedPr": 433,
+  "targetPr": 423,
+  "targetBranch": "capital-ai-product/skill-evidence-product-20261012",
+  "targetHeadSha": "3d732317ba9d87b450b928d868f3ecf8c1a86c3d",
   "exactOverlap": [
-    "src/components/HubCatalog.tsx"
+    "scripts/navigation.test.mjs",
+    "src/components/Header.tsx"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,
