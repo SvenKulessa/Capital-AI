@@ -199,7 +199,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
         <div>
           {/* Breadcrumb Hierarchy */}
           <div className="flex items-center gap-2 text-xs text-slate-400 mb-1.5 font-medium">
-            <button type="button" onClick={onBackToHome} className="hover:text-cyan-300 transition-colors">
+            <button type="button" onClick={onBackToHome} className="hover:text-green-300 transition-colors">
               Capital-AI
             </button>
             <span aria-hidden="true" className="text-slate-600">
@@ -211,7 +211,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
                 setActiveTab('architecture');
                 onNavigate?.('/studio');
               }}
-              className="text-cyan-400 font-semibold hover:text-cyan-200 transition-colors"
+              className="text-green-300 font-semibold hover:text-green-200 transition-colors"
             >
               Studio Hub
             </button>
@@ -234,7 +234,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
 
           <div className="flex items-center gap-3">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
-              <Building2 className="w-6 h-6 text-cyan-400 shrink-0" />
+              <Building2 className="w-6 h-6 text-green-400 shrink-0" />
               <span>Capital-AI Studio Hub</span>
             </h1>
           </div>
@@ -257,7 +257,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
             <button
               type="button"
               onClick={onNavigateLogin}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 hover:text-white text-xs font-bold border border-cyan-500/30 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-500/15 hover:bg-green-500/25 text-green-300 hover:text-white text-xs font-bold border border-green-500/30 transition-colors cursor-pointer"
             >
               <span>Terminal Login</span>
             </button>
