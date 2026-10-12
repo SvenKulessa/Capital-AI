@@ -45,7 +45,7 @@ export function HubNavigationPanel({ hubId, onNavigate }: { hubId: MainHubId; on
   }
 
   return (
-    <div data-hub={hubId} className="hub-navigation mx-auto my-4 w-full min-w-0 max-w-5xl">
+    <div data-hub={hubId} className="hub-navigation mx-auto my-2 w-full min-w-0 max-w-5xl">
       <p id={hintId} className="sr-only">Weitere Bereiche sind horizontal scrollbar. Auf Touchgeräten wischen, mit der Tastatur zu den Links navigieren.</p>
       {scrollState.overflow && (
         <div className="mb-1 hidden items-center justify-end gap-1 sm:flex">
