@@ -22,15 +22,23 @@ function setup(env, userAccessToken) {
     || env.SUPABASE_ANON_KEY;
   // Prove that the owner request originated from the trusted Render workload.
   const workloadKey = env.SOCIAL_X_EDGE_WORKLOAD_SECRET;
-  must(typeof workloadKey === 'string' && /^[a-fA-F0-9]{64}$/.test(workloadKey),
-    'SOCIAL_X_EDGE_WORKLOAD_UNCONFIGURED');
+  let workloadBytes = null;
+  if (typeof workloadKey === 'string' && /^[a-fA-F0-9]{64}$/.test(workloadKey)) {
+    workloadBytes = Buffer.from(workloadKey, 'hex');
+  } else if (typeof workloadKey === 'string' && /^[A-Za-z0-9+/]{43}=$/.test(workloadKey)) {
+    const decoded = Buffer.from(workloadKey, 'base64');
+    if (decoded.length === 32 && decoded.toString('base64') === workloadKey) {
+      workloadBytes = decoded;
+    }
+  }
+  must(workloadBytes?.length === 32, 'SOCIAL_X_EDGE_WORKLOAD_UNCONFIGURED');
   must(typeof publishable === 'string' && publishable.length > 12
     && typeof userAccessToken === 'string' && userAccessToken.length > 50
     && userAccessToken.length < 8192, 'SOCIAL_X_EDGE_AUTH_UNAVAILABLE');
   return {
     target: new URL('/functions/v1/capital-social-x-vault', base).toString(),
     publishable, userAccessToken,
-    workloadKey: Buffer.from(workloadKey, 'hex'),
+    workloadKey: workloadBytes,
     redirectUri: new URL(CALLBACK, app).toString(),
   };
 }
