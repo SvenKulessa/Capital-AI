@@ -1,4 +1,5 @@
 import { VOCABULARY_CANONICAL_COUNT } from '../../shared/vocabulary-metadata.mjs';
+import { ASSET_BRANDING } from '../../shared/hub-branding.mjs';
 /**
  * ============================================================================
  * [ARCHITEKTUR-MAPPING: MARKET DATA & CORE MODULE REPOSITORY]
@@ -245,7 +246,7 @@ export const ASSET_CLASSES: AssetClassInfo[] = [
   {
     id: 'KRYPTO',
     name: 'Krypto',
-    color: '#F9BF21', // AIF Gold
+    color: ASSET_BRANDING.KRYPTO,
     description: 'Dezentrale Vermögenswerte, Smart Contracts & Web3-Ökosysteme',
     subclasses: [
       {
@@ -295,7 +296,7 @@ export const ASSET_CLASSES: AssetClassInfo[] = [
   {
     id: 'AKTIEN',
     name: 'Aktien',
-    color: '#44DE88', // Emerald
+    color: ASSET_BRANDING.AKTIEN,
     description: 'Globale Unternehmensanteile mit Dividenden, Wachstums- & Value-Profilen',
     subclasses: [
       {
@@ -338,7 +339,7 @@ export const ASSET_CLASSES: AssetClassInfo[] = [
   {
     id: 'INDIZIES',
     name: 'Indizies',
-    color: '#8D26FF', // Purple
+    color: ASSET_BRANDING.INDIZIES,
     description: 'Marktbreite Körbe, Benchmark-Indikatoren & Sektor-Barometer',
     subclasses: [
       {
@@ -374,7 +375,7 @@ export const ASSET_CLASSES: AssetClassInfo[] = [
   {
     id: 'FOREX',
     name: 'Forex',
-    color: '#E879F9', // Purple-Pink Accent
+    color: ASSET_BRANDING.FOREX,
     description: 'Weltweiter Devisenmarkt mit 24h-Liquidität und Zinsarbitrage',
     subclasses: [
       {
@@ -410,7 +411,7 @@ export const ASSET_CLASSES: AssetClassInfo[] = [
   {
     id: 'ROHSTOFFE',
     name: 'Rohstoffe',
-    color: '#F9BF21', // AIF Gold
+    color: ASSET_BRANDING.ROHSTOFFE,
     description: 'Physische Primärgüter: Energie, Metalle & Agrarressourcen',
     subclasses: [
       {

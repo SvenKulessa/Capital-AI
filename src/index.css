@@ -163,3 +163,41 @@
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
 
 .hub-role-accent { color:var(--hub-accent); border-color:var(--hub-accent); background:color-mix(in srgb,var(--hub-accent) 12%,#071126); }
+
+
+/* Seven-brand subnavigation: preserve the existing 44px tab height, 1rem text,
+ * 0.5rem gap and 0.5rem/1rem padding while restoring per-tab colours. */
+.hub-tab-strip .hub-tab {
+  --effective-tab-accent: var(--tab-accent, var(--hub-accent));
+  border-color: color-mix(in srgb, var(--effective-tab-accent) 35%, transparent);
+  background: color-mix(in srgb, var(--effective-tab-accent) 6%, #071126);
+}
+.hub-tab-strip .hub-tab svg { color: var(--effective-tab-accent); }
+.hub-tab-strip .hub-tab:hover,
+.hub-tab-strip .hub-tab:focus-visible,
+.hub-tab-strip .hub-tab[aria-current="page"],
+.hub-tab-strip .hub-tab[aria-selected="true"] {
+  color: var(--effective-tab-accent);
+  border-color: var(--effective-tab-accent);
+  background: color-mix(in srgb, var(--effective-tab-accent) 15%, #071126);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--effective-tab-accent) 30%, transparent);
+}
+.hub-tab-strip .hub-tab:focus-visible {
+  outline: 2px solid var(--effective-tab-accent);
+  outline-offset: 2px;
+}
+/* Public legal and license pages retain their own area identity as well. */
+[data-legal-route] .legal-topic-card,
+.license-report .legal-topic-card {
+  border-color: color-mix(in srgb, var(--tab-accent, var(--legal-accent)) 48%, #334155);
+  background: color-mix(in srgb, var(--tab-accent, var(--legal-accent)) 7%, #071126);
+}
+[data-legal-route] .legal-topic-card:hover,
+[data-legal-route] .legal-topic-card:focus-visible,
+.license-report .legal-topic-card:hover,
+.license-report .legal-topic-card:focus-visible {
+  outline-color: var(--tab-accent, var(--legal-accent));
+  border-color: var(--tab-accent, var(--legal-accent));
+}
+.legal-heading-accent { color: var(--legal-accent, #93C5FD); }
+.legal-border-accent { border-color: color-mix(in srgb, var(--legal-accent, #93C5FD) 45%, #334155); }

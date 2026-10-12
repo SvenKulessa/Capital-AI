@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { hubTabAccent } from '../../shared/hub-branding.mjs';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { canonicalHubTarget, DOCUMENT_ROUTES } from '../../shared/hub-routes.mjs';
 import { MAIN_HUBS_CONFIG, type MainHubId } from './HubCatalog';
@@ -25,7 +26,7 @@ export function HubNavigationPanel({hubId,onNavigate}:{hubId:MainHubId;onNavigat
   return <div data-hub={hubId} className="hub-navigation mx-auto my-5 w-full max-w-5xl min-w-0">
     {overflow && <div className="flex items-center justify-between gap-3 px-1 text-sm text-slate-300"><span>Weitere Bereiche durch Wischen oder Scrollen</span><div className="flex shrink-0 gap-1"><button type="button" className="hub-scroll-button" aria-label="Unterseiten nach links scrollen" onClick={() => scroll(-1)}><ChevronLeft aria-hidden="true" /></button><button type="button" className="hub-scroll-button" aria-label="Unterseiten nach rechts scrollen" onClick={() => scroll(1)}><ChevronRight aria-hidden="true" /></button></div></div>}
     <nav ref={strip} aria-label={`${hub.name} Unterseiten`} className="hub-tab-strip">
-      {hub.subpages.map(page => page.badge === 'PENDING' ? <span key={page.id} className="hub-tab text-slate-300"><span aria-hidden="true">{page.icon}</span>{page.name}<strong className="text-xs">Pausiert</strong></span> : <a key={page.id} href={page.path} aria-current={activePath === canonicalHubTarget(page.path)?'page':undefined} onClick={e => {if(!Object.hasOwn(DOCUMENT_ROUTES,page.path)&&!/\.(html|txt)$/.test(page.path)&&e.button===0&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey){e.preventDefault();onNavigate(page.path);}}} className="hub-tab"><span aria-hidden="true">{page.icon}</span>{page.name}</a>)}
+      {hub.subpages.map((page, index) => page.badge === 'PENDING' ? <span key={page.id} className="hub-tab text-slate-300" style={{ '--tab-accent': hubTabAccent(hubId, index) } as CSSProperties}><span aria-hidden="true">{page.icon}</span>{page.name}<strong className="text-xs">Pausiert</strong></span> : <a key={page.id} href={page.path} aria-current={activePath === canonicalHubTarget(page.path)?'page':undefined} onClick={e => {if(!Object.hasOwn(DOCUMENT_ROUTES,page.path)&&!/\.(html|txt)$/.test(page.path)&&e.button===0&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey){e.preventDefault();onNavigate(page.path);}}} className="hub-tab" style={{ '--tab-accent': hubTabAccent(hubId, index) } as CSSProperties}><span aria-hidden="true">{page.icon}</span>{page.name}</a>)}
     </nav>
   </div>;
 }

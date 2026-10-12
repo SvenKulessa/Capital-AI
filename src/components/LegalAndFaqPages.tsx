@@ -1,4 +1,5 @@
 import { ProductDisclaimer } from './ProductDisclaimer';
+import { legalPageAccent } from '../../shared/hub-branding.mjs';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   AlertTriangle,
@@ -205,6 +206,9 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
   return (
     <section
       id="legal-content"
+      data-hub="legal"
+      data-legal-route={route}
+      style={{ '--legal-accent': legalPageAccent(route) } as React.CSSProperties}
       data-design-source="SvenKulessa/FRONTEND"
       data-design-source-commit="f2a101330d74420c373f0ec56fa58caac53d741d"
       data-content-owner="CAPITAL-AI-COMP"
@@ -214,7 +218,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
       <div aria-hidden="true" className="absolute top-60 -left-20 w-80 h-80 bg-[#F9BF21]/10 rounded-full blur-3xl pointer-events-none" />
       <div aria-hidden="true" className="absolute bottom-20 -right-20 w-80 h-80 bg-[#44DE88]/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="w-full max-w-4xl flex flex-col sm:flex-row items-center justify-between gap-4 z-10 pt-2 pb-5 border-b border-slate-800/80">
+      <div className="w-full max-w-4xl flex flex-col sm:flex-row items-center justify-between gap-4 z-10 pt-2 pb-5 border-b legal-border-accent">
         <div className="flex items-center gap-3 self-start sm:self-auto">
           <button
             type="button"
@@ -259,7 +263,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
       </div>
 
       <nav aria-label="Rechtliche Informationen" data-hub="legal" className="hub-tab-strip w-full max-w-4xl z-10 mt-4">
-        {([{path:'/legal',label:'Übersicht'},{path:'/faq',label:'FAQ'},{path:'/datenschutz',label:'Datenschutz'},{path:'/agb',label:'AGB'},{path:'/impressum',label:'Impressum'},{path:'/kontakt',label:'Kontakt'}] as const).map(item => <a key={item.path} href={item.path} className="hub-tab" aria-current={route === item.path ? 'page' : undefined} onClick={event => {if(event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey){event.preventDefault();navigate(item.path);}}}>{item.label}</a>)}
+        {([{path:'/legal',label:'Übersicht'},{path:'/faq',label:'FAQ'},{path:'/datenschutz',label:'Datenschutz'},{path:'/agb',label:'AGB'},{path:'/impressum',label:'Impressum'},{path:'/kontakt',label:'Kontakt'}] as const).map(item => <a key={item.path} href={item.path} className="hub-tab" style={{ '--tab-accent': legalPageAccent(item.path) } as React.CSSProperties} aria-current={route === item.path ? 'page' : undefined} onClick={event => {if(event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey){event.preventDefault();navigate(item.path);}}}>{item.label}</a>)}
       </nav>
 
       <div className="w-full max-w-4xl z-10 mt-6">
@@ -270,14 +274,14 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
         )}
         {route === '/legal' && (
           <div lang="de" className="rounded-3xl border border-[#F5C453]/25 bg-[#0d1930]/85 p-6 sm:p-8 space-y-5">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Legal &amp; FAQ</h1>
+            <h1 className="text-2xl sm:text-3xl font-extrabold legal-heading-accent">Legal &amp; FAQ</h1>
             <p className="text-slate-300 text-sm leading-6">Zentrale Übersicht zu rechtlichen Informationen, häufigen Fragen und Kontaktmöglichkeiten. Die ausführlichen Rechtstexte sind über ihre eigenständigen URLs erreichbar.</p>
             <ProductDisclaimer full kind="marketing" />
             <ProductDisclaimer full kind="commerce" />
             <ProductDisclaimer full kind="scoring" />
             <div className="grid gap-3 sm:grid-cols-2">
               {([{ path: '/faq', label: 'FAQ · Häufige Fragen' }, { path: '/datenschutz', label: 'Datenschutz' }, { path: '/agb', label: 'AGB' }, { path: '/impressum', label: 'Impressum' }, { path: '/kontakt', label: 'Kontakt Formular' }] as const).map(item => (
-                <button key={item.path} type="button" onClick={() => navigate(item.path)} className="min-h-11 rounded-xl border border-slate-600/40 bg-white/5 p-4 text-left text-sm font-semibold text-slate-100 hover:border-[#F5C453]/60 focus-visible:outline-2 focus-visible:outline-[#F5C453]">{item.label} →</button>
+                <button key={item.path} type="button" onClick={() => navigate(item.path)} className="legal-topic-card min-h-11 rounded-xl border p-4 text-left text-sm font-semibold text-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2" style={{ '--tab-accent': legalPageAccent(item.path) } as React.CSSProperties}>{item.label} →</button>
               ))}
             </div>
 

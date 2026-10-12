@@ -1,4 +1,5 @@
 import { HUB_ROUTES } from '../shared/hub-routes.mjs';
+import { BRAND_COLORS, HUB_BRANDING, ASSET_BRANDING, hubTabAccent, legalPageAccent } from '../shared/hub-branding.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -329,4 +330,54 @@ test('Chart atlas is not embedded or explicitly advertised on the public homepag
   assert.doesNotMatch(home, /ChartLessonGraphic|CHART_LESSONS|Chart-Lernatlas|\/learning\/chart-lernatlas/);
   const directory = readFileSync(new URL('../src/components/HomeHubDirectory.tsx', import.meta.url),'utf8');
   assert.match(directory, /'learning'/);
+});
+
+
+test('seven-brand system assigns distinct hub and asset accents without changing semantic status', () => {
+  const foundations = Object.values(BRAND_COLORS);
+  assert.equal(foundations.length, 7);
+  assert.equal(new Set(foundations).size, 7);
+  for (const color of [...foundations, ...Object.values(ASSET_BRANDING)]) assert.match(color, /^#[0-9A-F]{6}$/i);
+  assert.equal(Object.keys(ASSET_BRANDING).length, 5);
+  assert.equal(new Set(Object.values(ASSET_BRANDING)).size, 5);
+  const hubAccents = Object.values(HUB_BRANDING).map(hub => hub.color);
+  assert.equal(new Set(hubAccents).size, hubAccents.length);
+  assert.equal(new Set([...hubAccents, ...Object.values(ASSET_BRANDING)]).size, hubAccents.length + 5);
+  for (const hubId of Object.keys(HUB_BRANDING)) {
+    assert.equal(hubTabAccent(hubId, 0), HUB_BRANDING[hubId].color);
+    assert.equal(new Set(Array.from({ length: 7 }, (_, index) => hubTabAccent(hubId, index))).size, 7);
+  }
+  const legalPaths = ['/legal', '/faq', '/datenschutz', '/agb', '/impressum', '/kontakt'];
+  assert.equal(new Set(legalPaths.map(legalPageAccent)).size, legalPaths.length);
+  assert.equal(legalPageAccent('/unknown'), BRAND_COLORS.blue);
+});
+
+test('mobile drawer escapes header stacking context and retains modal keyboard behaviour', () => {
+  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  assert.match(header, /createPortal\(/);
+  assert.match(header, /<\/AnimatePresence>, document\.body\)\}/);
+  assert.match(header, /z-\[100\]/);
+  assert.match(header, /z-\[110\]/);
+  assert.match(header, /document\.body\.style\.overflow = 'hidden'/);
+  assert.match(header, /event\.key === 'Escape'/);
+  assert.match(header, /event\.key !== 'Tab'/);
+  assert.match(header, /getElementById\('mobile-menu-btn'\)\?\.focus\(\)/);
+  assert.match(header, /id="capital-ai-mobile-navigation"/);
+  assert.match(header, /role="dialog"/);
+});
+
+test('per-subpage brand colouring keeps former hub tab dimensions and legal site variation', () => {
+  const strip = readFileSync(new URL('../src/components/HubNavigationPanel.tsx', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
+  const legal = readFileSync(new URL('../src/components/LegalAndFaqPages.tsx', import.meta.url), 'utf8');
+  const licensing = readFileSync(new URL('../src/components/LicenseInformationPages.tsx', import.meta.url), 'utf8');
+  assert.match(strip, /hubTabAccent\(hubId, index\)/);
+  assert.match(strip, /className="hub-tab-strip"/);
+  assert.match(css, /min-height:\s*44px;/);
+  assert.match(css, /font-size:\s*1rem;/);
+  assert.match(css, /padding:\s*\.5rem 1rem;/);
+  assert.match(css, /--effective-tab-accent: var\(--tab-accent, var\(--hub-accent\)\)/);
+  assert.match(legal, /data-legal-route=\{route\}/);
+  assert.match(legal, /legalPageAccent\(item\.path\)/);
+  assert.match(licensing, /legalPageAccent\(path\)/);
 });

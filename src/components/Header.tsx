@@ -41,6 +41,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { createPortal } from 'react-dom';
 import { BrandLogo } from './BrandLogo';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useLocale } from '../i18n/LocaleProvider';
@@ -119,6 +120,43 @@ export const Header: React.FC<HeaderProps> = ({
       });
     return () => controller.abort();
   }, [currentRoute]);
+
+  // Portaled drawer is outside the header's z-index stacking context.
+  // Keep background scrolling and keyboard focus from escaping the modal.
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const dialog = document.getElementById('capital-ai-mobile-navigation');
+    dialog?.querySelector<HTMLElement>('#close-menu-btn')?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setIsMenuOpen(false);
+        return;
+      }
+      if (event.key !== 'Tab' || !dialog) return;
+      const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      )).filter(element => element.getClientRects().length > 0);
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+      document.getElementById('mobile-menu-btn')?.focus();
+    };
+  }, [isMenuOpen]);
 
   const accountTier = accountDisplay(authSession);
   const isOwner = verifiedOwner(authSession);
@@ -300,7 +338,8 @@ export const Header: React.FC<HeaderProps> = ({
         )}
       </div>
 
-      {/* Slide-out Mobile Menu Drawer FROM THE LEFT ("links aufklappbar") */}
+      {/* Body portal ensures footer / hero imagery cannot cover the open navigation. */}
+      {typeof document !== 'undefined' && createPortal(
       <AnimatePresence>
         {isMenuOpen && (
           <>
@@ -311,7 +350,7 @@ export const Header: React.FC<HeaderProps> = ({
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={() => setIsMenuOpen(false)}
-              className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 cursor-pointer"
+              className="fixed inset-0 bg-black/75 backdrop-blur-sm z-[100] cursor-pointer"
             />
 
             {/* Left Slide-in Drawer */}
@@ -324,7 +363,7 @@ export const Header: React.FC<HeaderProps> = ({
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-              className="fixed top-0 bottom-0 left-0 w-[85%] max-w-[320px] bg-[#090D1C] border-r border-amber-500/25 shadow-[0_0_40px_rgba(0,0,0,0.8)] z-50 flex flex-col justify-between overflow-y-auto text-slate-200"
+              className="fixed inset-y-0 left-0 w-[85%] max-w-[320px] bg-[#090D1C] border-r border-amber-500/25 shadow-[0_0_40px_rgba(0,0,0,0.8)] z-[110] flex flex-col justify-between overflow-y-auto overscroll-contain text-slate-200"
             >
               {/* Drawer Top / Header */}
               <div className="p-5">
@@ -577,13 +616,14 @@ export const Header: React.FC<HeaderProps> = ({
                                 >
                                   <div className="p-2 space-y-1.5">
                                     {cls.subclasses.map((sub) => (
-                                      <div
+                                      <button
                                         key={sub.id}
+                                        type="button"
                                         onClick={() => {
                                           setIsMenuOpen(false);
                                           onSelectSubclass?.(sub, cls.id);
                                         }}
-                                        className="p-2 rounded-lg bg-slate-900/70 hover:bg-slate-800/90 border border-slate-800/80 hover:border-slate-700 transition-all cursor-pointer group"
+                                        className="w-full p-2 text-left rounded-lg bg-slate-900/70 hover:bg-slate-800/90 border border-slate-800/80 hover:border-slate-700 transition-all cursor-pointer group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
                                       >
                                         <div className="flex items-center justify-between">
                                           <span className="text-[11.5px] font-bold text-slate-200 group-hover:text-amber-300 transition-colors">
@@ -603,7 +643,7 @@ export const Header: React.FC<HeaderProps> = ({
                                             </span>
                                           ))}
                                         </div>
-                                      </div>
+                                      </button>
                                     ))}
                                   </div>
                                 </motion.div>
@@ -672,7 +712,7 @@ export const Header: React.FC<HeaderProps> = ({
             </motion.div>
           </>
         )}
-      </AnimatePresence>
+      </AnimatePresence>, document.body)}
 
 
     </header>
