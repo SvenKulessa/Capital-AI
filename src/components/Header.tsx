@@ -303,7 +303,7 @@ export const Header: React.FC<HeaderProps> = ({
                     setIsAccountOpen(false);
                     document.getElementById('header-profile-btn')?.focus();
                   }
-                }
+                }}
                 className="absolute right-0 top-full z-[70] mt-2 w-52 overflow-hidden rounded-2xl border border-white/10 bg-[#080d1b]/98 p-2 shadow-2xl backdrop-blur-xl"
               >
                 <button
