@@ -1,0 +1,670 @@
+{
+  "schemaVersion": "CAPITAL_AI_SKILL_USE_EVIDENCE@1",
+  "domain": "MARKET",
+  "auditDate": "2026-10-12",
+  "governance": "SOLO_MAINTAINER_FLOW@1",
+  "auditReferenceSha": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+  "mainSha": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+  "headShaAtAudit": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+  "headShaAfterEvidenceWrite": null,
+  "headShaReadbackRequired": true,
+  "branch": "capital-ai-market/skill-evidence-market-20261012",
+  "pullRequestTitle": "[CAPITAL-AI-MARKET] Market Integrity Skill-Evidence Audit",
+  "overallStatus": "NOT_PROVEN",
+  "runtimeEvidenceStatus": "NOT_PROVEN",
+  "summary": "Ein Audit der gelesenen Code- und Vertragsquellen; keine End-to-End-Runtime-Evidence oder automatische Skill-Routing-Evidence. Quelltext-Assertions beweisen keine Laufzeit- oder Lizenzberechtigung.",
+  "selection": {
+    "method": "task-content-based manual selection; read files after selection",
+    "automaticSelectionStatus": "NOT_PROVEN",
+    "routingTraceStatus": "NOT_PROVEN",
+    "routingTraceReason": "Kein instrumentierter Router-/Agent-Runtime-Trace verfügbar. Die Registry beschreibt Signalwörter, beweist aber kein tatsächliches dynamisches Routing.",
+    "manualSelectionStatus": "VERIFIED",
+    "cases": [
+      {
+        "caseId": "single",
+        "task": "Spot-Ingestion Admission",
+        "skills": [
+          "market-engineering"
+        ],
+        "status": "VERIFIED",
+        "scope": "statische Assertions, kein Node- oder Netzwerk-Runtime-Test"
+      },
+      {
+        "caseId": "combined",
+        "task": "Private Provider Trust Boundaries, Provenance, PIT/Backtest, Datenrechte",
+        "skills": [
+          "market-engineering",
+          "market-advisory",
+          "data-engineering",
+          "quant-research",
+          "legal-compliance",
+          "trust-engineering"
+        ],
+        "status": "REVIEW_REQUIRED",
+        "scope": "statische Assertions; reale Isolation/Rechte und quantitative Validierung NOT_PROVEN"
+      },
+      {
+        "caseId": "negative",
+        "task": "Wiedergabe der vorgeschriebenen Audit-Statusblöcke",
+        "skills": [],
+        "status": "VERIFIED",
+        "scope": "kein zusätzlicher Spezial-Skill, allgemeine AGENTS.md-Governance genügt"
+      }
+    ]
+  },
+  "skillsRead": [
+    {
+      "id": "market-engineering",
+      "path": ".agents/skills/market-engineering/SKILL.md",
+      "blobSha": "fcefffeb04470e1394f3a75b06fa247543c8e9bf",
+      "readEventId": "GITHUB_FETCH_FILE_SKILL_01",
+      "readEvent": {
+        "tool": "mcp__GitHub__fetch_file",
+        "repository": "SvenKulessa/Capital-AI",
+        "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+        "readStatus": "VERIFIED",
+        "contentActuallyRetrieved": true
+      },
+      "influence": "Single-skill Spot Admission: Pflichtrechte, Instrumentidentität und Fail-Closed-Realtime-Gate"
+    },
+    {
+      "id": "market-advisory",
+      "path": ".agents/skills/market-advisory/SKILL.md",
+      "blobSha": "3ffc1c80c7bb3d796872e60c718a0f786cc26962",
+      "readEventId": "GITHUB_FETCH_FILE_SKILL_02",
+      "readEvent": {
+        "tool": "mcp__GitHub__fetch_file",
+        "repository": "SvenKulessa/Capital-AI",
+        "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+        "readStatus": "VERIFIED",
+        "contentActuallyRetrieved": true
+      },
+      "influence": "Vergleich BYOK/Open-Data/Licensed-Lanes, Kommerzialisierungsgrenzen und Optionen"
+    },
+    {
+      "id": "data-engineering",
+      "path": ".agents/skills/data-engineering/SKILL.md",
+      "blobSha": "578f7319a81b32ba298b44749999388a05aef3fb",
+      "readEventId": "GITHUB_FETCH_FILE_SKILL_03",
+      "readEvent": {
+        "tool": "mcp__GitHub__fetch_file",
+        "repository": "SvenKulessa/Capital-AI",
+        "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+        "readStatus": "VERIFIED",
+        "contentActuallyRetrieved": true
+      },
+      "influence": "Provenienz, Replay, Zeitstempel, DQ und Cache-Isolation"
+    },
+    {
+      "id": "quant-research",
+      "path": ".agents/skills/quant-research/SKILL.md",
+      "blobSha": "e77b7c3c9afb4d02ea4ed89420a6edb10243d9dc",
+      "readEventId": "GITHUB_FETCH_FILE_SKILL_04",
+      "readEvent": {
+        "tool": "mcp__GitHub__fetch_file",
+        "repository": "SvenKulessa/Capital-AI",
+        "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+        "readStatus": "VERIFIED",
+        "contentActuallyRetrieved": true
+      },
+      "influence": "PIT-Leakage, survivorship, Kosten und OOS-Abnahmekriterien"
+    },
+    {
+      "id": "legal-compliance",
+      "path": ".agents/skills/legal-compliance/SKILL.md",
+      "blobSha": "caaae8bd0c99d888d4656c990965eff71fe156fe",
+      "readEventId": "GITHUB_FETCH_FILE_SKILL_05",
+      "readEvent": {
+        "tool": "mcp__GitHub__fetch_file",
+        "repository": "SvenKulessa/Capital-AI",
+        "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+        "readStatus": "VERIFIED",
+        "contentActuallyRetrieved": true
+      },
+      "influence": "Display-, Derived-Data-, Redistributions- und eigene-IP-Trennung"
+    },
+    {
+      "id": "trust-engineering",
+      "path": ".agents/skills/trust-engineering/SKILL.md",
+      "blobSha": "59a93d403b5fb099b94ae4e28404de78544c5190",
+      "readEventId": "GITHUB_FETCH_FILE_SKILL_06",
+      "readEvent": {
+        "tool": "mcp__GitHub__fetch_file",
+        "repository": "SvenKulessa/Capital-AI",
+        "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+        "readStatus": "VERIFIED",
+        "contentActuallyRetrieved": true
+      },
+      "influence": "HMAC, Vault-/Tenant-Grenze, Signatur, Replay, Quota, Fail-Closed"
+    },
+    {
+      "id": "visual-chat",
+      "path": ".agents/skills/visual-chat/SKILL.md",
+      "blobSha": "2ded476ee7bbe97c40e0975936b9d3c87acaec25",
+      "readEventId": "GITHUB_FETCH_FILE_SKILL_07",
+      "readEvent": {
+        "tool": "mcp__GitHub__fetch_file",
+        "repository": "SvenKulessa/Capital-AI",
+        "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+        "readStatus": "VERIFIED",
+        "contentActuallyRetrieved": true
+      },
+      "influence": "Belegbare Architekturfluss- und Datenrechtsmatrix ohne erfundene Kurse"
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": "AGENTS.md",
+      "blobSha": "read",
+      "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "readMethod": "mcp__GitHub__fetch_file",
+      "status": "VERIFIED"
+    },
+    {
+      "path": ".github/agents/capital-ai-market.agent.md",
+      "blobSha": "d36867d307c93fb2446c5ad23d32cda7bd006b8b",
+      "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "readMethod": "mcp__GitHub__fetch_file",
+      "status": "VERIFIED"
+    },
+    {
+      "path": ".agents/skills/registry.json",
+      "blobSha": "ce0b75950cb5be17f30e38fbe7949d4edccbce79",
+      "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "readMethod": "mcp__GitHub__fetch_file",
+      "status": "VERIFIED"
+    },
+    {
+      "path": "server/private-provider-query.mjs",
+      "blobSha": "81bbe4527b2d1a109eff658856d8b080cdcb351b",
+      "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "readMethod": "mcp__GitHub__fetch_file",
+      "status": "VERIFIED"
+    },
+    {
+      "path": "server/user-provider-vault.mjs",
+      "blobSha": "44d66c06cf9170f7ee973d48f13a984b5595b51a",
+      "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "readMethod": "mcp__GitHub__fetch_file",
+      "status": "VERIFIED"
+    },
+    {
+      "path": "server/market-spot-ingestion.mjs",
+      "blobSha": "17a8d2b1c4a8279152a2101cc44871af14d2c5a8",
+      "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "readMethod": "mcp__GitHub__fetch_file",
+      "status": "VERIFIED"
+    },
+    {
+      "path": "server/provider-query-state.mjs",
+      "blobSha": "39ac6f19b7ad94e91683403f77c894be02602e16",
+      "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "readMethod": "mcp__GitHub__fetch_file",
+      "status": "VERIFIED"
+    },
+    {
+      "path": "server/private-market-cache.mjs",
+      "blobSha": "e7a146a0deec0c6401d4ad3b42e1f09fb06e4a5a",
+      "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "readMethod": "mcp__GitHub__fetch_file",
+      "status": "VERIFIED"
+    },
+    {
+      "path": "server/open-source-market-policy.mjs",
+      "blobSha": "e2c6208e65d5327595ec672d2a273ceb3f7340b3",
+      "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "readMethod": "mcp__GitHub__fetch_file",
+      "status": "VERIFIED"
+    },
+    {
+      "path": "contracts/private-provider-query-operations.json",
+      "blobSha": "9d60716ca04c276a85c7d86db09a689263a67d84",
+      "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "readMethod": "mcp__GitHub__fetch_file",
+      "status": "VERIFIED"
+    },
+    {
+      "path": "shared/market-contracts.mjs",
+      "blobSha": "85fafd0953469d2c80ff60bdcad3462ed713491d",
+      "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "readMethod": "mcp__GitHub__fetch_file",
+      "status": "VERIFIED"
+    },
+    {
+      "path": "server/private-provider-query.test.mjs",
+      "blobSha": "2d036380efc773cfd8b8c69d3b156c07313e5a96",
+      "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "readMethod": "mcp__GitHub__fetch_file",
+      "status": "VERIFIED"
+    },
+    {
+      "path": "server/user-provider-vault.test.mjs",
+      "blobSha": "16f2f91888ba90e96936af10b0d53a31704acd54",
+      "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "readMethod": "mcp__GitHub__fetch_file",
+      "status": "VERIFIED"
+    },
+    {
+      "path": "server/market-spot-ingestion.test.mjs",
+      "blobSha": "1ca3592e7cbde2715c0330314c8b3babea119cf7",
+      "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "readMethod": "mcp__GitHub__fetch_file",
+      "status": "VERIFIED"
+    },
+    {
+      "path": "src/platform/FinanceScoringResearch/FinancePointInTimeAdmission.ts",
+      "blobSha": "ebb3ba6ac3a69cf51e811cfd9ce17a717453adc4",
+      "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "readMethod": "mcp__GitHub__fetch_file",
+      "status": "VERIFIED"
+    },
+    {
+      "path": "src/platform/FinanceScoringResearch/CommodityHistoricalBacktestEngine.ts",
+      "blobSha": "913cd7c69791fbc5c1b3670ca24f7fdc46c73706",
+      "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "readMethod": "mcp__GitHub__fetch_file",
+      "status": "VERIFIED"
+    },
+    {
+      "path": "src/platform/FinanceScoringResearch/FinanceResearchModelEvaluation.ts",
+      "blobSha": "3d3b5b51fc078333caffeed8e1bb86612bc5ccdb",
+      "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "readMethod": "mcp__GitHub__fetch_file",
+      "status": "VERIFIED"
+    },
+    {
+      "path": "src/contracts/analysisComponentRegistry.ts",
+      "blobSha": "70785bc79ae452f3849b916ac69d8a80e327020c",
+      "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "readMethod": "mcp__GitHub__fetch_file",
+      "status": "VERIFIED"
+    },
+    {
+      "path": "docs/product/CAP-BP-001-MARKET-INTEGRITY-GATE-PRODUCT-SCOPE.md",
+      "blobSha": "ce2002a101e6c6b84f059f2b1bbde0bb10a4a700",
+      "ref": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "readMethod": "mcp__GitHub__fetch_file",
+      "status": "VERIFIED"
+    }
+  ],
+  "dataFlow": [
+    "public: provider -> open-data/source-rights admission -> instrument catalog -> schema/freshness -> persisted fact -> hash replay -> eligible use only",
+    "private: authenticated user -> signed HMAC envelope -> durable replay/rate/cost claim -> user-specific Vault -> encrypted tenant-cache/private response only",
+    "research: dataset vintage -> PIT rights+availability -> immutable universe -> walk-forward OOS -> cost adjustment -> evidence -> research-only"
+  ],
+  "taskResults": [
+    {
+      "id": "T1",
+      "status": "REVIEW_REQUIRED",
+      "finding": "Quellcode: UserRef und Requestdaten HMAC-signiert; zeitlich begrenzt; Durable-Claim vor Vault; Secret-Output-Filter; Tenant-/DB-Runtime, Race und Schlüsselrotation NOT_PROVEN."
+    },
+    {
+      "id": "T2",
+      "status": "REVIEW_REQUIRED",
+      "finding": "Symbol/Venue/Quote/Provider im QuoteFact-Schema und Source-Policy kontrolliert. observedAt und receivedAt, Hash-Replay sind modelliert; veröffentlichter Originalzeitpunkt, externe Herkunftsauthentizität und gesamte Event-Lineage nicht vollständig nachgewiesen. Öffentlicher und privater Lane im Quellcode separat."
+    },
+    {
+      "id": "T3",
+      "status": "NOT_PROVEN",
+      "finding": "PIT availableAt<=decisionAt und realizedAt<=testAt im Trainingssplit geprüft; Research-Engine modelliert Commission, Spread, Slippage sowie Rebalancing. Universums-Mitgliedschafts-Evidence wird als ID verlangt, aber historisch korrekte vollständige Universe-Snapshots, Bias-Ausschluss und gemessene OOS-Performance nicht nachgewiesen.",
+      "quantControl": {
+        "pnlModel": "netReturn_t = grossReturn_t - turnover_t * (commissionBps + slippageBps + spreadBps)/10000",
+        "lookAhead": "REVIEW_REQUIRED",
+        "survivorship": "NOT_PROVEN",
+        "pointInTime": "REVIEW_REQUIRED",
+        "transactionCosts": "REVIEW_REQUIRED",
+        "reproducibility": "REVIEW_REQUIRED",
+        "measuredProfit": null,
+        "measuredModelQuality": null
+      }
+    },
+    {
+      "id": "T4",
+      "status": "VERIFIED",
+      "scope": "Blueprint- und Lizenz-Dokumentation auf Main",
+      "finding": "CAP-BP-001 ist CONCEPT / NOT_PROVEN, Registry blocked; konzeptionelle Produkt-IP von Rohmarkt-/Kundendaten und echter Lizenzierung getrennt. Kein Verkaufs-/Delivery- oder empirisches Score-Attest."
+    },
+    {
+      "id": "T5",
+      "status": "NOT_PROVEN",
+      "finding": "Technische Adapter sind keine Lizenz. Öffentlich dokumentierte Anbieterbedingungen wurden gegen Repo-Lanes abgeglichen; keine nutzerspezifischen Order Forms, Exchange-Entitlements oder schriftlichen Redistributionszusagen gelesen."
+    }
+  ],
+  "dataRightsMatrix": [
+    {
+      "provider": "ECB",
+      "adapterOrLane": "Daily FX reference",
+      "publicTermsEvidence": "https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.de.html",
+      "commercialDisplay": "VERIFIED",
+      "derivedScoring": "REVIEW_REQUIRED",
+      "redistribution": "REVIEW_REQUIRED",
+      "realtime": "BLOCKED",
+      "licenseStatus": "REVIEW_REQUIRED",
+      "notes": "Freie Wiederverwendung veröffentlichter ESCB-Statistiken mit Quellenangabe und unveränderten Originalstatistiken/Metadaten; keine Rechte an Drittquellendaten; Realtime/Execution verboten."
+    },
+    {
+      "provider": "Wikidata",
+      "adapterOrLane": "Reference metadata only",
+      "publicTermsEvidence": "https://www.wikidata.org/wiki/Wikidata:Licensing",
+      "commercialDisplay": "VERIFIED",
+      "derivedScoring": "BLOCKED",
+      "redistribution": "REVIEW_REQUIRED",
+      "realtime": "BLOCKED",
+      "licenseStatus": "REVIEW_REQUIRED",
+      "notes": "Repo-admitted as metadata, not quote feed; Drittquellen-/Attributionskontext separat."
+    },
+    {
+      "provider": "Kraken",
+      "adapterOrLane": "Private BYOK and blocked public spot",
+      "publicTermsEvidence": "https://docs-legacy.kraken.com/api/docs/guides/global-intro/",
+      "commercialDisplay": "NOT_PROVEN",
+      "derivedScoring": "NOT_PROVEN",
+      "redistribution": "BLOCKED",
+      "realtime": "BLOCKED",
+      "licenseStatus": "NOT_PROVEN",
+      "notes": "Nichtpersönliche kommerzielle API-Marktdatennutzung braucht vorherige Kraken-Erlaubnis; persönliche BYOK-Verwendung gewährt keine Plattform-Redistribution."
+    },
+    {
+      "provider": "Binance",
+      "adapterOrLane": "Private BYOK; Vision historical separate",
+      "publicTermsEvidence": "https://github.com/binance/binance-public-data/blob/master/TERMS_AND_CONDITIONS.md",
+      "commercialDisplay": "BLOCKED",
+      "derivedScoring": "NOT_PROVEN",
+      "redistribution": "BLOCKED",
+      "realtime": "BLOCKED",
+      "licenseStatus": "NOT_PROVEN",
+      "notes": "Vision-Dataset-Bedingungen (2026-08-26) nichtkommerziell; eigener Binance-API-Vertrag/Enterprise-Entitlement separat nachweisen."
+    },
+    {
+      "provider": "Coinbase",
+      "adapterOrLane": "Spot candidate only",
+      "publicTermsEvidence": "https://www.coinbase.com/legal/market_data",
+      "commercialDisplay": "BLOCKED",
+      "derivedScoring": "BLOCKED",
+      "redistribution": "BLOCKED",
+      "realtime": "BLOCKED",
+      "licenseStatus": "NOT_PROVEN",
+      "notes": "Standardbedingungen beschränken Dritt-Display, abgeleitete Werke und AI/ML-Nutzung ohne ausdrückliche Rechte."
+    },
+    {
+      "provider": "Twelve Data",
+      "adapterOrLane": "Commercial candidate, not admitted",
+      "publicTermsEvidence": "https://support.twelvedata.com/en/articles/5332349-commercial-and-personal-usage",
+      "commercialDisplay": "REVIEW_REQUIRED",
+      "derivedScoring": "REVIEW_REQUIRED",
+      "redistribution": "BLOCKED",
+      "realtime": "NOT_PROVEN",
+      "licenseStatus": "NOT_PROVEN",
+      "notes": "Venture/Enterprise-Display nur unter Tarif-/Exchange-Regeln, Redistribution erfordert Zusatzvereinbarung. Internes Dokument hält Bedingungsrechte, aber kein Reseller-/Pass-through-Recht fest."
+    },
+    {
+      "provider": "Massive",
+      "adapterOrLane": "Private BYOK market batch",
+      "publicTermsEvidence": "https://massive.com/legal/businesses-terms-of-service",
+      "commercialDisplay": "NOT_PROVEN",
+      "derivedScoring": "NOT_PROVEN",
+      "redistribution": "BLOCKED",
+      "realtime": "BLOCKED",
+      "licenseStatus": "NOT_PROVEN",
+      "notes": "Business-Bedingungen 2026-10-06 beschreiben begrenzte Edge-User-Display-/Derived-Data-Rechte je Order Form und Entitlement; persönliche Terms teils restriktiver; kein kundenspezifischer Vertrag geprüft."
+    },
+    {
+      "provider": "CCXT/Hummingbot/Cryptofeed/OpenBB",
+      "adapterOrLane": "Software/connector candidates",
+      "publicTermsEvidence": null,
+      "commercialDisplay": "NOT_PROVEN",
+      "derivedScoring": "NOT_PROVEN",
+      "redistribution": "BLOCKED",
+      "realtime": "BLOCKED",
+      "licenseStatus": "NOT_PROVEN",
+      "notes": "OSS-Adapterlizenz ist kein Recht an Upstream-Markt-/Exchange-Daten."
+    }
+  ],
+  "tests": {
+    "executionEnvironment": "GitHub connector fetch + JavaScript source/JSON assertions; NO local checkout or Node test runner",
+    "staticAssertions": [
+      {
+        "id": "S1",
+        "assertion": "MARKET-Engineering: Realtime-Ingestion verweigert nicht zugelassene Quellen",
+        "status": "VERIFIED",
+        "execution": "executed JS source-level condition in current audit session",
+        "scope": "source/contract shape only; cannot certify runtime",
+        "sourceMainSha": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1"
+      },
+      {
+        "id": "S2",
+        "assertion": "MARKET-Engineering: private Snapshot-Operationen haben exakte Symbol-Enums",
+        "status": "VERIFIED",
+        "execution": "executed JS source-level condition in current audit session",
+        "scope": "source/contract shape only; cannot certify runtime",
+        "sourceMainSha": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1"
+      },
+      {
+        "id": "C1",
+        "assertion": "MARKET + TRUST: Proof bindet Benutzer und Parameter; Recheck nach Durable Claim",
+        "status": "VERIFIED",
+        "execution": "executed JS source-level condition in current audit session",
+        "scope": "source/contract shape only; cannot certify runtime",
+        "sourceMainSha": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1"
+      },
+      {
+        "id": "C2",
+        "assertion": "TRUST + DATA: RPC zum Replay-/Quota-Claim geht dem Vault-Aufruf voran",
+        "status": "VERIFIED",
+        "execution": "executed JS source-level condition in current audit session",
+        "scope": "source/contract shape only; cannot certify runtime",
+        "sourceMainSha": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1"
+      },
+      {
+        "id": "C3",
+        "assertion": "DATA + QUANT: PIT-Verfügbarkeit und realisierte Trainingslabels geprüft",
+        "status": "VERIFIED",
+        "execution": "executed JS source-level condition in current audit session",
+        "scope": "source/contract shape only; cannot certify runtime",
+        "sourceMainSha": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1"
+      },
+      {
+        "id": "C4",
+        "assertion": "MARKET + LEGAL: Contract verbietet Public Display und Redistribution",
+        "status": "VERIFIED",
+        "execution": "executed JS source-level condition in current audit session",
+        "scope": "source/contract shape only; cannot certify runtime",
+        "sourceMainSha": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1"
+      },
+      {
+        "id": "C5",
+        "assertion": "MARKET + LEGAL: Market Integrity Gate als konzeptionell/blockiert ausgewiesen",
+        "status": "VERIFIED",
+        "execution": "executed JS source-level condition in current audit session",
+        "scope": "source/contract shape only; cannot certify runtime",
+        "sourceMainSha": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1"
+      },
+      {
+        "id": "N1",
+        "assertion": "Negativfall: reine Audit-Statusform benötigt keinen zusätzlichen Fach-Skill",
+        "status": "VERIFIED",
+        "execution": "executed JS source-level condition in current audit session",
+        "scope": "source/contract shape only; cannot certify runtime",
+        "sourceMainSha": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1"
+      }
+    ],
+    "staticAssertionsPassed": 8,
+    "staticAssertionsTotal": 8,
+    "repositoryTestSuitesInspected": [
+      "server/private-provider-query.test.mjs",
+      "server/user-provider-vault.test.mjs",
+      "server/market-spot-ingestion.test.mjs"
+    ],
+    "repositoryTestsExecuted": 0,
+    "repositoryTestExecutionStatus": "NOT_PROVEN",
+    "liveProviderCallsExecuted": 0,
+    "paidProviderCallsExecuted": 0,
+    "runtimeTenancyTest": "NOT_PROVEN",
+    "databaseRlsAndAtomicClaimRuntime": "NOT_PROVEN",
+    "eventReplayRuntime": "NOT_PROVEN",
+    "backtestDatasetExecution": "NOT_PROVEN",
+    "browserAndProductionRuntime": "NOT_PROVEN",
+    "limitation": "Github-verbundene Repository-Inhalte waren lesbar; Container hatte keinen github.com-DNS-Zugang und keinen aktiven lokalen Repo-Checkout. Quellcode-Matches sind KEINE ausgeführten Repository-Unit-Tests.",
+    "observedGitHubCiExecutedLater": true,
+    "observedGitHubCiHeadSha": "ab3a3f9d0aa0f1bd25e86adabf7a5089044761b7",
+    "observedGitHubCiRunId": 38182470704,
+    "observedGitHubCiScope": "CI tests from Docker Security Gate, not local execution",
+    "currentNewPITTestExecutionStatus": "NOT_PROVEN"
+  },
+  "findings": [
+    {
+      "id": "MI-01",
+      "severity": "HIGH",
+      "status": "REVIEW_REQUIRED",
+      "scope": "Trust boundary",
+      "details": "Durable RPC- und Signatur-Implementierung vorhanden; kein aktuell reproduzierter Cross-Tenant-/Replay-/Quota-Integrationstest gegen produktionsgleiches RLS/Broker-State.",
+      "next": "Externe isolierte Testumgebung ohne private Credentials; DB-Migrations-/Concurrent-Request-Tests verifizieren."
+    },
+    {
+      "id": "MI-02",
+      "severity": "HIGH",
+      "status": "BLOCKED",
+      "scope": "Provider rights",
+      "details": "Keine belegten pauschalen kommerziellen Display-/Derived-/Redistribution-Rechte für private BYOK- oder unadmitted Realtime-Feeds; keine Live-Quelle freischalten.",
+      "next": "👋⚙️ Owner: lizenzierte Order Forms/Exchange-Entitlements je Dataset, Venue, Symbol, Use Case und Derivative-Definition nachweisen."
+    },
+    {
+      "id": "MI-03",
+      "severity": "MEDIUM",
+      "status": "NOT_PROVEN",
+      "scope": "Source provenance",
+      "details": "ReceivedAt und observedAt sowie payloadHash/Replay vorhanden; keine unabhängige Authentizität des Upstream-Originalzeitpunkts oder lückenlose Historie belegt.",
+      "next": "Quelle/Feed/TimeSemantics/Vintage/IngestionId/transformVersion und Event-Replay-Metriken getrennt nachweisen."
+    },
+    {
+      "id": "MI-04",
+      "severity": "HIGH",
+      "status": "NOT_PROVEN",
+      "scope": "Quant integrity",
+      "details": "Keine reproduzierbare Survivorship-Bias-Freiheit und keine vollständigen PIT-Universe-Snapshots/OOS-Leistungszahlen demonstriert.",
+      "next": "Immutable universes, delistings, availability timestamps, slippage/liquidity cost and walk-forward OOS datasets+checksums."
+    },
+    {
+      "id": "MI-05",
+      "severity": "MEDIUM",
+      "status": "VERIFIED",
+      "scope": "Product packaging",
+      "details": "Market Integrity Gate als Konzept ohne falsche empirische Score- oder produktive API-Behauptungen; eigene Blueprint-IP separat dokumentiert.",
+      "next": "Nur source-free Blueprint mit Methode/Version/ReasonCodes/Beispielmetadaten verkaufen; keinen kundenspezifischen Marktinput bundlen."
+    }
+  ],
+  "commercialBoundary": {
+    "status": "REVIEW_REQUIRED",
+    "allowedConceptually": [
+      "eigene Kontrollmethodik, Formeln/Versionen, schematische Gate-DTOs, Gründe/Qualitätsdefinitionen, eigene UI/Diagramme"
+    ],
+    "doNotRedistributeWithoutRights": [
+      "rohe oder rekonstruierbare Quote-/Tick-/Orderbuchdaten",
+      "nutzereigene Portfolios und Provider-Credentials",
+      "Vendor-Datasets und redistributionsgeschützte Derived-Data",
+      "reproduzierbare kundenspezifische Provider-Antworten"
+    ],
+    "activation": "No provider, paid service, execution, trading or broker feature enabled"
+  },
+  "merger": {
+    "status": "BLOCKED",
+    "reason": "Nur statische Assertions, keine vollständige notwendige Runtime-Evidence, Rights-Entitlements oder noch ausstehende PR-Checks vorliegend.",
+    "requiredChecks": [
+      "Docker Security Gate",
+      "Domain Governance"
+    ],
+    "checksAtEvidenceWrite": "NOT_PROVEN",
+    "ownerMergeApprovalRequiredByAgents": false,
+    "releaseAndProductionReadback": "NOT_PROVEN"
+  },
+  "limits": [
+    "Main verification at snapshot is not eternal: recheck before merge.",
+    "No protected datasets, customer portfolios or credentials included.",
+    "Review of public provider terms is not a contract or legal certification.",
+    "Commit SHA cannot be reliably self-referenced inside the same committed JSON blob; GitHub post-write readback is the authoritative head/commit identity."
+  ],
+  "continuation": {
+    "version": "CAPITAL_AI_MARKET_SKILL_EVIDENCE_CONTINUATION@1",
+    "executionScope": "PR #425; market-integrity audit evidence + synthetic versioned PIT/survivorship regression",
+    "baselineCiHeadSha": "ab3a3f9d0aa0f1bd25e86adabf7a5089044761b7",
+    "baselineCiEvidence": {
+      "status": "VERIFIED",
+      "runId": 38182470704,
+      "jobId": 114597750550,
+      "runUrl": "https://github.com/SvenKulessa/Capital-AI/actions/runs/38182470704",
+      "conclusion": "success",
+      "source": "GitHub Actions job logs actually read; these are CI-executed fixtures/mocks, not production runtime tests",
+      "observedPassingTests": [
+        "query proof binds user, operation, expiry and params",
+        "replay window rejects duplicate request IDs until expiry",
+        "executor claims all durable guards before any provider I/O",
+        "proof that expires during durable claim is rejected before provider I/O",
+        "two signed users keep REST and WS query claims and results isolated",
+        "tampering, ciphertext copied between tenants, and stale entries fail closed",
+        "market coverage reports actual admitted instruments, not invented 50-per-class quotes",
+        "private market snapshot rejects stale data, other symbols and oversized responses",
+        "provider request rate and cost gates use atomic Valkey scripts and fail closed without Valkey"
+      ],
+      "requiredChecks": [
+        "Docker Security Gate: success",
+        "Domain Governance: success"
+      ],
+      "boundary": "DISPOSABLE_OR_MOCKED_TESTS_ONLY; no currently verified deployed broker-to-Vault end-to-end or paid rights"
+    },
+    "quantitativePIT": {
+      "status": "REVIEW_REQUIRED",
+      "datasetStatus": "SYNTHETIC_FIXTURE_ONLY",
+      "fixtureVersion": "fixture-v1.0.0",
+      "fixturePath": "scripts/fixtures/synthetic-pit-universe-v1.json",
+      "fixtureBlobSha": "7d4d7627d781f72b51ad418706762e64a6b65dae",
+      "validatorPath": "scripts/market-pit-survivorship-control.mjs",
+      "validatorBlobSha": "e85f9b89bdca08bdc3d5af8bb36a9d1a280b336f",
+      "unitTestsPath": "scripts/market-pit-survivorship-control.test.mjs",
+      "unitTestsBlobSha": "6532fc046d295d35fb3a3ab50976fe653bbe2a37",
+      "unitCommand": "node --test scripts/market-pit-survivorship-control.test.mjs",
+      "existingMarketSuiteCommand": "npm run test:market",
+      "modelIntegration": "OFFLINE_RESEARCH_VALIDATION_ONLY; existing CommodityHistoricalBacktestEngine not modified, no production promotion",
+      "fixtures": {
+        "assetCount": 3,
+        "decisionTimestampCount": 2,
+        "observationCount": 4,
+        "includesFutureDelistedAsset": true,
+        "containsRealMarketData": false
+      },
+      "regressionCases": [
+        "complete PIT universe including later-delisted asset",
+        "survivorship omission from membership snapshot",
+        "survivorship omission from observations",
+        "future capture timestamp",
+        "future feature availability",
+        "future membership evidence",
+        "membership ID forgery",
+        "unknown asset identity",
+        "duplicate observation",
+        "version mismatch",
+        "non-synthetic scope rejection",
+        "production authority rejection",
+        "invalid outcome timestamp",
+        "delisted instrument improperly included at later decision",
+        "newly listed instrument prematurely included",
+        "replay-stable fingerprint"
+      ],
+      "requiredCiHeadShaAtAuthoring": "936c81b516850757fd821e11178fd633508bd7cc",
+      "ciRunIdAtAuthoring": 38183184968,
+      "ciExecutionResultAtAuthoring": "NOT_PROVEN",
+      "hasMeasuredReturns": false,
+      "hasLicenseGrant": false,
+      "canPromoteLiveScore": false,
+      "limitations": "Fixture consistency is not independent historical-vintage authenticity or survivorship-free production evidence.",
+      "ciMountScope": "Docker Security Gate test:market bind-mounts scripts/ read-only; fixture colocated under scripts/fixtures/; no Docker mount expansion",
+      "extraneousFixtureDuplicateRemoved": true
+    },
+    "repositoryEnvironment": {
+      "currentMainAtAudit": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "localFullCheckoutAvailable": false,
+      "localTestExecution": "BLOCKED",
+      "reason": "Network isolation prevented git clone; GitHub-hosted PR CI is the actual execution environment."
+    },
+    "mergeDecision": "BLOCKED pending current head CI and evidence readback"
+  }
+}

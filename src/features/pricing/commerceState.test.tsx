@@ -65,10 +65,10 @@ test('pricing initially exposes loading instead of active purchase controls', ()
   assert.match(html, /Checkout-Verfügbarkeit werden geprüft/);
   assert.match(html, /Jahresbetrag berechnet/);
   assert.match(html, /1280,00|1\.280,00/);
-  assert.match(html, /Gebühren sind nicht im Abo enthalten/);
+  assert.match(html, /Externe Daten und Modelle sind nicht im Abo enthalten/);
   assert.match(html, /aria-pressed="true"/);
   assert.doesNotMatch(html, /Multi-Pillar Strategy|Business Model/);
-  assert.equal((html.match(/disabled="" aria-busy="false"/g) || []).length, 4);
+  assert.equal((html.match(/disabled="" aria-busy="false"/g) || []).length, 3);
   assert.equal(renderToStaticMarkup(<MonetizationModal isOpen={false} onClose={() => {}} />), '');
 });
 
@@ -82,11 +82,11 @@ test('all landing locales expose learning and pricing routes with the current of
   }
 });
 
-test('trial advertises monthly billing with a direct Stripe action and no code input',()=>{
+test('pricing hides postponed CADS and trial advertising',()=>{
  const html=renderToStaticMarkup(<MonetizationModal isOpen onClose={()=>{}} />);
- assert.match(html,/ausschließlich im Monatsabo/);
- assert.match(html,/3 Tage testen · weiter zu Stripe/);
- assert.match(html,/Kein Coupon-Code erforderlich/);
+ assert.doesNotMatch(html,/CADS|3 Tage testen|Drei Tage vorausdenken/);
+ assert.match(html,/aria-label="Vertragsinformationen"/);
+ assert.match(html,/href="\/agb"/);
  assert.doesNotMatch(html,/Enterprise-Trial-Code|Trial-Code einsetzen/);
 });
 

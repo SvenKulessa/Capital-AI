@@ -117,8 +117,10 @@ test('SPA navigation removes canonical, Open Graph URL and schema on NOINDEX/PRI
 
 test('SPA vocabulary messaging references the public, not restricted, catalog count', () => {
   const source = readFileSync(new URL('../src/platform/analytics/useRouteAnalytics.ts', import.meta.url), 'utf8');
-  const projected = source.match(/const VOCABULARY_PUBLIC_COUNT = (\d+);/);
-  assert.equal(Number(projected?.[1]), VOCABULARY_PUBLIC_COUNT, 'browser count drift from canonical public vocabulary');
+  assert.match(source, /const VOCABULARY_PUBLIC_COUNT = __VOCABULARY_PUBLIC_COUNT__;/);
+  const build = readFileSync(new URL('../vite.config.ts', import.meta.url), 'utf8');
+  assert.match(build, /import \{ VOCABULARY_PUBLIC_COUNT \} from '.\/shared\/vocabulary-metadata.mjs'/);
+  assert.match(build, /__VOCABULARY_PUBLIC_COUNT__: JSON.stringify\(VOCABULARY_PUBLIC_COUNT\)/);
   assert.doesNotMatch(source, /from ['"]\.\.\/\.\.\/\.\.\/shared\/vocabulary-metadata\.mjs['"]/, 'avoid full vocabulary corpus in SPA entry');
   assert.doesNotMatch(source, /294 Fachbegriffe|294 konsolidierte/);
 });

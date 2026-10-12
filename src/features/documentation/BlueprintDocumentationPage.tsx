@@ -1,3 +1,4 @@
+import { SentimentBlueprintDemo } from './SentimentBlueprintDemo';
 import React, { useMemo, useState } from 'react';
 import {
   ArrowLeft,
@@ -113,6 +114,7 @@ export const BlueprintDocumentationPage: React.FC<BlueprintDocumentationPageProp
 
         <ScreenerBlueprintAudienceSection />
         <ScreenerBlueprintYamlPreview />
+        <SentimentBlueprintDemo />
         <MarketBlueprintShowcase variant="documentation" onNavigate={onNavigate} />
 
         <section className="rounded-2xl border border-amber-400/25 bg-amber-400/5 p-4">
@@ -254,7 +256,7 @@ export const BlueprintDocumentationPage: React.FC<BlueprintDocumentationPageProp
             <div>
               <div className="flex items-center gap-2 text-xs font-mono text-cyan-300"><KeyRound className="h-4 w-4" /> BYOK · Bring Your Own Key</div>
               <h2 className="mt-2 text-xl font-black text-white">Private Provider-Credentials bleiben außerhalb des öffentlichen Market-Data-Pfads.</h2>
-              <p className="mt-3 text-sm leading-relaxed text-slate-300">Der aktuelle Kraken-Prototyp verwendet authentifizierte same-origin Requests, serverseitige Signaturerzeugung und Supabase Vault. Er erlaubt private Kontoabfragen, erweitert aber weder Public-Display-, Cache-, JetStream-, Scoring- noch Redistribution-Rechte.</p>
+              <p className="mt-3 text-sm leading-relaxed text-slate-300">Der aktuelle Kraken-Prototyp verwendet authentifizierte same-origin Requests, serverseitige Signaturerzeugung und einen privaten verschlüsselten Schlüsselspeicher. Er erlaubt private Kontoabfragen, erweitert aber weder Public-Display-, Cache-, JetStream-, Scoring- noch Redistribution-Rechte.</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 <span className="inline-flex min-h-11 items-center gap-2 rounded-full border border-cyan-400/30 px-4 py-2 text-sm text-cyan-200"><KeyRound className="h-4 w-4" /> BYOK <strong className="rounded-full border border-amber-400/40 px-2 py-1 text-xs text-amber-200">PENDING</strong></span>
                 <span className="inline-flex min-h-11 items-center gap-2 rounded-full border border-cyan-400/30 px-4 py-2 text-sm text-cyan-200"><KeyRound className="h-4 w-4" /> BYOK <strong className="rounded-full border border-amber-400/40 px-2 py-1 text-xs text-amber-200">PENDING</strong></span>

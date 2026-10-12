@@ -4,7 +4,6 @@ import {
   vocabularyMetadata,
   vocabularyTitle,
 } from './vocabulary-metadata.mjs';
-import { QUANT_PRO_IDS } from './vocabulary-access-policy.mjs';
 import {
   SEO_INDEXING_STATES,
   resolveSeoIndexingPolicy,
@@ -95,7 +94,7 @@ const staticEntries = [
     structuredDataType: 'CollectionPage',
     socialEligible: true,
     aiSearchEligible: true,
-    sourceRefs: ['shared/learning-journey.mjs', 'src/features/learning/LearningJourney.tsx', 'src/features/learning/LearningPortalPage.tsx', 'src/features/learning/LearningPurchase.tsx', 'src/data/vocabularyOffer.ts'],
+    sourceRefs: ['shared/quant-learning-demo.json', 'shared/researched-vocabulary.json', 'shared/vocabulary-metadata.mjs', 'shared/learning-journey.mjs', 'src/features/learning/LearningJourney.tsx', 'src/features/learning/LearningPortalPage.tsx', 'src/features/learning/LearningPurchase.tsx', 'src/data/vocabularyOffer.ts'],
   }),
   contentEntry({
     path: '/vocabulary',
@@ -107,7 +106,7 @@ const staticEntries = [
     structuredDataType: 'DefinedTermSet',
     socialEligible: true,
     aiSearchEligible: true,
-    sourceRefs: ['shared/vocabulary-metadata.mjs', 'src/features/learning/LearningPortalPage.tsx'],
+    sourceRefs: ['shared/quant-learning-demo.json', 'shared/researched-vocabulary.json', 'shared/vocabulary-metadata.mjs', 'src/features/learning/LearningPortalPage.tsx'],
   }),
   contentEntry({
     path: '/faq',
@@ -196,7 +195,7 @@ const staticEntries = [
 ];
 
 export const SEO_PUBLIC_VOCABULARY_ENTRIES = Object.freeze(
-  vocabularyMetadata.filter((entry) => !QUANT_PRO_IDS.has(entry.id)),
+  [...vocabularyMetadata],
 );
 
 const vocabularyEntries = SEO_PUBLIC_VOCABULARY_ENTRIES.map((entry) => contentEntry({
@@ -209,7 +208,7 @@ const vocabularyEntries = SEO_PUBLIC_VOCABULARY_ENTRIES.map((entry) => contentEn
   structuredDataType: 'DefinedTerm',
   socialEligible: false,
   aiSearchEligible: true,
-  sourceRefs: ['shared/vocabulary-metadata.mjs'],
+  sourceRefs: ['shared/quant-learning-demo.json', 'shared/researched-vocabulary.json', 'shared/vocabulary-metadata.mjs'],
 }));
 
 export const SEO_CONTENT_MANIFEST = Object.freeze([

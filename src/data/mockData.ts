@@ -1,3 +1,4 @@
+import { VOCABULARY_CANONICAL_COUNT } from '../../shared/vocabulary-metadata.mjs';
 /**
  * ============================================================================
  * [ARCHITEKTUR-MAPPING: MARKET DATA & CORE MODULE REPOSITORY]
@@ -81,12 +82,12 @@ const MODULE_CATALOG: CoreModule[] = [
     details: {
       useCase: 'Interaktives Wissensportal mit Finanz-Vokabular, mathematischen Berechnungsformeln (DCF, ROE, Sharpe), Cheat-Sheets und Quiz.',
       features: [
-        'Vollständiges Glossar mit praxiserprobten Faustformeln & Regeln',
+        'Öffentliches Glossar mit erklärten Faustformeln & Regeln',
         'Spickzettel für Buffett Value Investing & BaFin WORM Archivierung',
         'Interaktiver Quant & Trader Skill-Check mit Wissensbewertung',
       ],
       sampleMetrics: [
-        { label: 'Eingetragene Fachbegriffe', value: '294', score: 'Konsolidiert' },
+        { label: 'Eingetragene Fachbegriffe', value: String(VOCABULARY_CANONICAL_COUNT), score: 'Konsolidiert' },
         { label: 'Themenbereiche', value: '11 Kategorien', score: 'Strukturiert' },
         { label: 'Cheat-Sheets', value: '4 Kern-Guides', score: 'Praxisnah' },
         { label: 'Interaktiver Test', value: 'Skill-Check', score: 'Verfügbar' },
@@ -225,14 +226,14 @@ const MODULE_CATALOG: CoreModule[] = [
     brandColor: '#F9BF21', // AIF Gold (Primary)
     accentColor: '#FDE047',
     details: {
-      useCase: 'Interaktives Nachschlagewerk mit 294 konsolidierten Fachbegriffen aus Markt, Scoring, Daten, Plattform, Security, Produkt, Governance und Mobile Runtime.',
+      useCase: `Interaktives Nachschlagewerk mit ${VOCABULARY_CANONICAL_COUNT} konsolidierten Fachbegriffen aus Markt, Scoring, Daten, Plattform, Security, Produkt, Governance und Mobile Runtime.`,
       features: [
         'Prägnante Definitionen ohne unnötiges Fachchinesisch',
         'Visuelle Diagramme für komplexe Zusammenhänge',
         'Direkte Verknüpfung mit den aktuellen Marktdaten',
       ],
       sampleMetrics: [
-        { label: 'Eingetragene Fachbegriffe', value: '294', score: 'Konsolidiert' },
+        { label: 'Eingetragene Fachbegriffe', value: String(VOCABULARY_CANONICAL_COUNT), score: 'Konsolidiert' },
         { label: 'Kategorien', value: '12 Themen', score: 'Strukturiert' },
         { label: 'Durchschnittliche Lesezeit', value: '90 Sek.', score: 'Kompakt' },
       ],

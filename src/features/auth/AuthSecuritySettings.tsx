@@ -150,7 +150,7 @@ export function AuthSecuritySettings() {
         setError('Es können maximal zwei Passkeys gleichzeitig hinterlegt werden.');
       } else if (message === 'passkey_disabled' || message === 'passkey_unavailable') {
         setPasskeyAvailability('disabled');
-        setError('Passkeys sind im produktiven Supabase-Auth-Projekt derzeit noch nicht aktiviert.');
+        setError('Passkeys sind im produktiven Anmeldedienst derzeit noch nicht aktiviert.');
       } else {
         setError(`Passkey konnte nicht registriert werden: ${message}`);
       }
@@ -201,7 +201,7 @@ export function AuthSecuritySettings() {
       } else if (message === 'totp_pending_cleanup_failed') {
         setError('Die unvollständige Authenticator-Einrichtung konnte nicht sicher bereinigt werden.');
       } else if (message === 'totp_setup_material_unavailable') {
-        setError('Supabase hat zwar einen TOTP-Faktor erzeugt, aber keinen verwendbaren Einrichtungs-Schlüssel geliefert. Es wurde nichts aktiviert. Bitte Einrichtung erneut starten.');
+        setError('Der Anmeldedienst hat zwar einen TOTP-Faktor erzeugt, aber keinen verwendbaren Einrichtungs-Schlüssel geliefert. Es wurde nichts aktiviert. Bitte Einrichtung erneut starten.');
       } else {
         setError(`Authenticator konnte nicht vorbereitet werden: ${message}`);
       }
@@ -278,13 +278,13 @@ export function AuthSecuritySettings() {
             <Fingerprint className="h-4 w-4 text-cyan-300" />
             <h3 className="text-sm font-black text-white">Passkeys</h3>
           </div>
-          <p className="mt-1 text-[11px] text-slate-500">
+          <p className="mt-1 text-[11px] text-slate-300">
             Phishing-resistente Anmeldung über Gerätebiometrie, PIN oder Hardware-Sicherheitsschlüssel.
           </p>
 
           {passkeyAvailability === 'disabled' && (
             <div className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-[11px] leading-relaxed text-amber-100">
-              Passkeys sind im produktiven Supabase-Auth-Projekt noch deaktiviert. Der Button wird erst freigegeben, wenn die Remote-Passkey-/WebAuthn-Konfiguration aktiviert und erneut gelesen wurde.
+              Passkeys sind im produktiven Anmeldedienst noch deaktiviert. Der Button wird erst freigegeben, wenn die Remote-Passkey-/WebAuthn-Konfiguration aktiviert und erneut gelesen wurde.
             </div>
           )}
           {passkeyAvailability === 'unavailable' && (
@@ -311,14 +311,14 @@ export function AuthSecuritySettings() {
             {busy === 'passkey-add' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Fingerprint className="h-4 w-4" />}
             {passkeyLimitReached ? 'Maximum 2 Passkeys erreicht' : 'Passkey hinzufügen'}
           </button>
-          <p className="mt-2 text-[10px] font-mono text-slate-500">{passkeys.length}/2 Passkeys hinterlegt</p>
+          <p className="mt-2 text-[10px] font-mono text-slate-300">{passkeys.length}/2 Passkeys hinterlegt</p>
 
           <div className="mt-4 space-y-2">
             {passkeys.length ? passkeys.map(item => (
               <div key={item.id} className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/30 p-3">
                 <div className="min-w-0">
                   <p className="truncate text-xs font-bold text-slate-200">{item.friendlyName || 'Passkey'}</p>
-                  <p className="mt-1 font-mono text-[9px] text-slate-500">
+                  <p className="mt-1 font-mono text-[9px] text-slate-300">
                     {item.lastUsedAt ? 'Zuletzt genutzt: ' + item.lastUsedAt : 'Noch nicht genutzt'}
                   </p>
                 </div>
@@ -333,7 +333,7 @@ export function AuthSecuritySettings() {
                 </button>
               </div>
             )) : (
-              <p className="rounded-xl border border-white/10 bg-black/20 p-3 text-[11px] text-slate-500">Noch kein Passkey registriert.</p>
+              <p className="rounded-xl border border-white/10 bg-black/20 p-3 text-[11px] text-slate-300">Noch kein Passkey registriert.</p>
             )}
           </div>
         </div>
@@ -343,8 +343,8 @@ export function AuthSecuritySettings() {
             <KeyRound className="h-4 w-4 text-amber-300" />
             <h3 className="text-sm font-black text-white">Authenticator (TOTP)</h3>
           </div>
-          <p className="mt-1 text-[11px] text-slate-500">
-            Kompatibel mit Google Authenticator, 1Password, Authy und anderen TOTP-Apps. Alte Finance-TOTP-Einrichtungen sind deaktiviert; richte hier einen neuen Supabase-Authenticator ein.
+          <p className="mt-1 text-[11px] text-slate-300">
+            Kompatibel mit Google Authenticator, 1Password, Authy und anderen TOTP-Apps. Alte Finance-TOTP-Einrichtungen sind deaktiviert; richte hier einen neuen Authenticator ein.
           </p>
 
           {!enrollment && (
@@ -367,7 +367,7 @@ export function AuthSecuritySettings() {
                 {busy === 'totp-enroll' ? <Loader2 className="h-4 w-4 animate-spin" /> : <QrCode className="h-4 w-4" />}
                 {totpLimitReached ? 'Maximum 2 Authenticatoren erreicht' : 'Authenticator hinzufügen'}
               </button>
-              <p className="mt-2 text-[10px] font-mono text-slate-500">{verifiedFactors.length}/2 Authenticatoren aktiv</p>
+              <p className="mt-2 text-[10px] font-mono text-slate-300">{verifiedFactors.length}/2 Authenticatoren aktiv</p>
             </>
           )}
 
@@ -445,8 +445,8 @@ export function AuthSecuritySettings() {
         </div>
       </div>
 
-      <p className="mt-4 text-[10px] leading-relaxed text-slate-500">
-        Passkeys werden vom Gerät bzw. Passwortmanager verwaltet; CAPITAL-AI speichert nur die von Supabase verwaltete öffentliche WebAuthn-Credential. TOTP-Secrets werden nur während der Einrichtung angezeigt.
+      <p className="mt-4 text-[10px] leading-relaxed text-slate-300">
+        Passkeys werden vom Gerät bzw. Passwortmanager verwaltet; CAPITAL-AI speichert nur die sicher verwaltete öffentliche WebAuthn-Credential. TOTP-Secrets werden nur während der Einrichtung angezeigt.
       </p>
     </section>
   );

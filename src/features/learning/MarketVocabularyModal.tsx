@@ -3,7 +3,6 @@ import { X } from 'lucide-react';
 import { VOCABULARY_TERMS, VOCABULARY_CATEGORIES, type VocabularyCategory, type VocabularyTerm } from '../../data/vocabularyData';
 import { VocabularyCard } from './VocabularyCard';
 import { LearningPurchase } from './LearningPurchase';
-import { freeVocabularySelection } from './learningPolicy';
 import { useLearningFavorites } from './LearningFavorites';
 interface MarketVocabularyModalProps {isOpen:boolean;onClose:()=>void;onOpenAnalysis?:()=>void;onSelectAssetSymbol?:(symbol:string)=>void;}
 export function MarketVocabularyModal(props:MarketVocabularyModalProps) {
@@ -18,8 +17,6 @@ function VocabularyDialog({onClose,onOpenAnalysis,onSelectAssetSymbol}:MarketVoc
   const controller=new AbortController();
   async function access() {
     try {
-      const preview=await fetch('/api/learning/vocabulary/preview',{signal:controller.signal}).then(r=>r.ok?r.json():null);
-      if(Array.isArray(preview?.terms))setProtectedTerms(preview.terms);
       const response=await fetch('/api/billing/vocabulary/access',{signal:controller.signal,cache:'no-store'});
       if(response.status===401)return;if(!response.ok)throw new Error();
       const rights=await response.json();setEntitled(rights?.quantProEntitled===true);
@@ -41,12 +38,12 @@ function VocabularyDialog({onClose,onOpenAnalysis,onSelectAssetSymbol}:MarketVoc
   document.addEventListener('keydown',key);
   return ()=>{controller.abort();document.removeEventListener('keydown',key);if(previous instanceof HTMLElement&&previous.isConnected)previous.focus();};
  },[onClose]);
- const terms=useMemo(()=>{const full=[...VOCABULARY_TERMS,...protectedTerms];return entitled?full:freeVocabularySelection(full);},[entitled,protectedTerms]);
+ const terms=useMemo(()=>{const extended=new Map(protectedTerms.map(term=>[term.id,term]));return VOCABULARY_TERMS.map(term=>extended.get(term.id)??term);},[protectedTerms]);
  const visible=terms.filter(term=>(category==='ALL'||term.category===category)&&(level==='ALL'||term.level===level)&&[term.term,term.abbreviation,term.shortDefinition,...term.thesaurus].some(value=>value?.toLocaleLowerCase('de-DE').includes(query.toLocaleLowerCase('de-DE'))));
  return <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 p-2 sm:items-center sm:p-6">
   <div ref={dialog} role="dialog" aria-modal="true" aria-labelledby="vocabulary-dialog-title" className="max-h-[92dvh] w-full max-w-5xl overflow-y-auto rounded-2xl border border-amber-400/30 bg-[#090e21] p-4 sm:p-6">
    <header className="flex items-center justify-between gap-3"><h2 id="vocabulary-dialog-title" className="text-2xl font-bold text-amber-200">Learning Portal · Vocabulary</h2><button ref={close} type="button" aria-label="Vocabulary schließen" onClick={onClose} className="flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-white/20 text-white"><X className="h-5 w-5"/></button></header>
-   <p className="mt-3 text-sm leading-7 text-slate-300">{entitled?'Vollständiger Lernzugang aktiv.':'Sieben feste Begriffe je Skill-Level kostenlos. Alle Kategorien und Level bleiben auswählbar.'}</p>
+   <p className="mt-3 text-sm leading-7 text-slate-300">Alle {VOCABULARY_TERMS.length} Glossarbegriffe sind öffentlich und kostenlos. Kategorien und Skill-Level helfen beim Finden.</p>
    <div className="my-5 grid gap-3 sm:grid-cols-3">
     <label className="text-sm text-slate-200">Begriff suchen<input value={query} onChange={e=>setQuery(e.target.value)} className="mt-2 min-h-11 w-full rounded-lg border border-amber-400/30 bg-slate-950 p-3"/></label>
     <label className="text-sm text-slate-200">Kategorie<select value={category} onChange={e=>setCategory(e.target.value as VocabularyCategory)} className="mt-2 min-h-11 w-full rounded-lg border border-amber-400/30 bg-slate-950 p-3">{VOCABULARY_CATEGORIES.map(cat=><option key={cat.id} value={cat.id}>{cat.label}</option>)}</select></label>
@@ -54,7 +51,7 @@ function VocabularyDialog({onClose,onOpenAnalysis,onSelectAssetSymbol}:MarketVoc
    </div>
    {(error||favorites.error)&&<p role="alert" className="mb-4 text-sm text-rose-200">{error||favorites.error}</p>}
    <div className="grid gap-4 md:grid-cols-2">{visible.map(term=><VocabularyCard key={term.id} term={term} saved={favorites.ids.includes(term.id)} pending={favorites.pending} onFavorite={id=>void favorites.toggle(id)} onSelectAssetSymbol={onSelectAssetSymbol}/>)}</div>
-   {visible.length===0&&<p className="p-5 text-sm text-slate-300">Keine Begriffe in dieser Auswahl. Filter ändern oder den vollständigen Lernzugang erwerben.</p>}
+   {visible.length===0&&<p className="p-5 text-sm text-slate-300">Keine Begriffe in dieser Auswahl. Filter oder Suchbegriff ändern.</p>}
    <div className="mt-5">{!entitled?<LearningPurchase onLogin={()=>window.location.assign('/login')}/>:<a href="/api/billing/vocabulary/badge" download className="text-sm text-amber-200 underline">Lizenzierten Vocabulary-Badge herunterladen</a>}</div>
    {onOpenAnalysis&&<button type="button" onClick={()=>{onClose();onOpenAnalysis();}} className="mt-4 min-h-11 rounded-lg border border-amber-400/30 px-4 text-sm text-amber-200">Analyse öffnen</button>}
   </div>

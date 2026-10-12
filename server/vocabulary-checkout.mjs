@@ -283,7 +283,7 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
         if (!supabase) return json(res, 503, { error: 'learning_unavailable' }), true;
         try {
           const id = url.searchParams.get('id');
-          if (req.method !== 'GET' && (!id || !/^[a-z0-9-]{1,120}$/.test(id))) return json(res, 400, { error: 'invalid_term' }), true;
+          if (req.method !== 'GET' && (!id || !/^[a-z0-9_-]{1,120}$/.test(id))) return json(res, 400, { error: 'invalid_term' }), true;
           const favorites = await rpc(fetchImpl, supabase, 'capital_ai_learning_favorites', { _user_id: user.userId, _term_id: id, _action: req.method });
           json(res, 200, { favorites });
         } catch { json(res, 503, { error: 'favorites_unavailable' }); }

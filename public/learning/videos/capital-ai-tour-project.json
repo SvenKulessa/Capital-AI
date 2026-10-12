@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "2.0.0",
+  "projectId": "capital-ai-tour-20261011",
+  "slug": "capital-ai-tour",
+  "title": "Capital-AI Tour",
+  "description": "20 Sekunden, tonlos: Elite-Vokabelkarte, Sentiment-Tachometer mit Greed, persönliches Lernfeld und winkender Buddy.",
+  "contentPackageId": "capital-ai-homepage-blueprint-20261011",
+  "timebase": {
+    "numerator": 30,
+    "denominator": 1
+  },
+  "canvas": {
+    "width": 1080,
+    "height": 1920,
+    "aspectRatio": "9:16"
+  },
+  "durationFrames": 600,
+  "tracks": [
+    {
+      "id": "tour-scenes",
+      "kind": "graphics",
+      "enabled": true,
+      "layers": [
+        {
+          "id": "tour-1",
+          "kind": "scene",
+          "enabled": true,
+          "kicker": "CAPITAL-AI",
+          "title": "Learning Portal",
+          "body": "Eine Elite-Vokabelkarte. Finanzwissen verständlich erklärt.",
+          "range": {
+            "startFrame": 0,
+            "durationFrames": 150
+          },
+          "disclaimer": "Bildung und Produktvorschau. Keine Anlageberatung. Demo-Werte sind synthetisch."
+        },
+        {
+          "id": "tour-2",
+          "kind": "scene",
+          "enabled": true,
+          "kicker": "CAPITAL-AI",
+          "title": "Blueprints & Sentiment",
+          "body": "Sentiment als grafisches Beispiel. Alle Werte sind Demo.",
+          "range": {
+            "startFrame": 150,
+            "durationFrames": 150
+          },
+          "disclaimer": "Bildung und Produktvorschau. Keine Anlageberatung. Demo-Werte sind synthetisch."
+        },
+        {
+          "id": "tour-3",
+          "kind": "scene",
+          "enabled": true,
+          "kicker": "CAPITAL-AI",
+          "title": "Dein privates Lernfeld",
+          "body": "Deine Begriffe. Dein Lerntempo. Dein persönliches Lernfeld.",
+          "range": {
+            "startFrame": 300,
+            "durationFrames": 150
+          },
+          "disclaimer": "Bildung und Produktvorschau. Keine Anlageberatung. Demo-Werte sind synthetisch."
+        },
+        {
+          "id": "tour-4",
+          "kind": "scene",
+          "enabled": true,
+          "kicker": "CAPITAL-AI",
+          "title": "Hero Buddy",
+          "body": "Dein Buddy begleitet dich beim Entdecken.",
+          "range": {
+            "startFrame": 450,
+            "durationFrames": 150
+          },
+          "disclaimer": "Bildung und Produktvorschau. Keine Anlageberatung. Demo-Werte sind synthetisch."
+        }
+      ]
+    }
+  ],
+  "assets": [],
+  "transitions": [],
+  "renderRecipe": {
+    "templateId": "capital-ai-landing-blueprint-promo",
+    "templateVersion": "1.0.0",
+    "rendererProfile": "media-project-v2-preview",
+    "brandTokenSource": "public/branding/asset-pack/meta/social-render-tokens.json",
+    "brandTextMode": "deterministic",
+    "networkPolicy": "offline",
+    "publishReady": false
+  },
+  "source": {
+    "type": "manual",
+    "reference": "frontend/src/components/Hero.tsx"
+  },
+  "disclosure": {
+    "defaultDisclaimer": "DEMO-DATEN · Keine Anlageberatung. Keine Live-Marktdaten oder Kaufzusage.",
+    "requireAtProjectEdges": true
+  },
+  "metadata": {
+    "campaign": "capital-ai-tour",
+    "audioStatus": "SILENT",
+    "draftOnly": true
+  }
+}
