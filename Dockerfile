@@ -100,7 +100,7 @@ COPY scripts/activate-learning-measurement.mjs scripts/activate-learning-measure
 COPY scripts/social-provider-db-smoke.sh ./scripts/social-provider-db-smoke.sh
 COPY supabase/migrations/20261008113000_social_provider_store.sql ./supabase/migrations/20261008113000_social_provider_store.sql
 COPY supabase/migrations/20261011231207_capital_ai_private_blueprint_bucket_fail_closed.sql ./supabase/migrations/
-COPY supabase/migrations/20261012194631_capital_ai_private_blueprint_commerce_tables_v1.sql supabase/migrations/20261012194652_capital_ai_private_blueprint_rpc_shell_v1.sql supabase/migrations/20261012194709_capital_ai_private_blueprint_rpc_full_v1.sql ./supabase/migrations/20261011231207_capital_ai_private_blueprint_bucket_fail_closed.sql
+COPY supabase/migrations/20261012194631_capital_ai_private_blueprint_commerce_tables_v1.sql supabase/migrations/20261012194652_capital_ai_private_blueprint_rpc_shell_v1.sql supabase/migrations/20261012194709_capital_ai_private_blueprint_rpc_full_v1.sql ./supabase/migrations/
 COPY shared ./shared
 COPY contracts/private-provider-query-operations.json ./contracts/private-provider-query-operations.json
 COPY CAPITAL-AI-GROWTH/finance-social-market-source-target-manifest.json CAPITAL-AI-GROWTH/social-engine-completion-gate.json CAPITAL-AI-GROWTH/social-media-tool-admission.yaml CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.yaml ./CAPITAL-AI-GROWTH/
