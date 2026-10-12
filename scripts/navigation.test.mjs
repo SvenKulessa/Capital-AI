@@ -355,7 +355,7 @@ test('seven-brand system assigns distinct hub and asset accents without changing
 test('mobile drawer escapes header stacking context and retains modal keyboard behaviour', () => {
   const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
   assert.match(header, /createPortal\(/);
-  assert.match(header, /<\\/AnimatePresence>, document\\.body\\)\\}/);
+  assert.match(header, /<\/AnimatePresence>, document\.body\)\}/);
   assert.match(header, /z-\[100\]/);
   assert.match(header, /z-\[110\]/);
   assert.match(header, /document\.body\.style\.overflow = 'hidden'/);
