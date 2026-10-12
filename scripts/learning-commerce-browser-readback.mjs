@@ -143,10 +143,16 @@ try {
       await until(() => evaluate(`!!document.querySelector('[aria-controls="capital-ai-mobile-navigation"]')`), 'Mobile menu toggle');
       await evaluate(`document.querySelector('[aria-controls="capital-ai-mobile-navigation"]').click()`);
       await until(() => evaluate(`!!document.querySelector('#capital-ai-mobile-navigation[role="dialog"]')`), 'Mobile navigation opens');
-      // Framer Motion starts with x:-100%; measure only the settled drawer.
-      await until(() => evaluate(`(() => {const d=document.querySelector('#capital-ai-mobile-navigation');
-        if(!d) return false; const r=d.getBoundingClientRect();
-        return r.left >= -1 && r.right <= innerWidth + 1;})()`), 'Mobile drawer finished sliding in');
+      // Framer Motion's spring can briefly overshoot 0px after the first valid frame.
+      // Require four consecutive settled samples, without relaxing overflow limits.
+      let settledSamples = 0;
+      await until(async () => {
+        const settled = await evaluate(`(() => {const d=document.querySelector('#capital-ai-mobile-navigation');
+          if(!d) return false; const r=d.getBoundingClientRect();
+          return Math.abs(r.left) <= 0.75 && Math.abs(r.right - innerWidth) <= 0.75;})()`);
+        settledSamples = settled ? settledSamples + 1 : 0;
+        return settledSamples >= 4;
+      }, 'Mobile drawer finished sliding in');
       const drawer = await evaluate(`(() => { const d=document.querySelector('#capital-ai-mobile-navigation'),r=d.getBoundingClientRect();
         const overflowNodes = Array.from(d.querySelectorAll('*')).filter(node => {
           const rect = node.getBoundingClientRect();
