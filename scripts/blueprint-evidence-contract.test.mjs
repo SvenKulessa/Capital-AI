@@ -25,3 +25,15 @@ test('public Studio Blueprint data contains no executable source payload fields'
     assert.equal('codeSnippet' in blueprint, false);
   }
 });
+
+test('restored private blueprint bucket migration exactly matches recorded source and keeps delivery fail-closed', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const { createHash } = await import('node:crypto');
+  const sql = await readFile(new URL('../supabase/migrations/20261011231207_capital_ai_private_blueprint_bucket_fail_closed.sql', import.meta.url), 'utf8');
+  // Compared with the SQL text recorded in the already-applied Supabase migration,
+  // version 20261011231207. This test does not apply DDL or authorize delivery.
+  assert.equal(createHash('md5').update(sql).digest('hex'), 'f22b3c97867163f431c8b6d6fe155260');
+  assert.match(sql, /'capital-ai-proprietary-blueprints'/);
+  assert.match(sql, /\bfalse,\s*20971520,/);
+  assert.doesNotMatch(sql, /\b(?:CREATE\s+POLICY|GRANT\s+|ALTER\s+POLICY|UPDATE\s+|DELETE\s+FROM)\b/i);
+});
