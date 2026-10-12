@@ -63,12 +63,17 @@ export function createSocialXAccountStatus({ env = process.env, auth, fetchImpl 
         || !/^[0-9]{1,25}$/.test(row.external_account_id)
         || !/^[A-Za-z0-9_]{1,15}$/.test(row.handle || ''))) throw Error();
       const expiresAt = Date.parse(row?.token_expires_at || '');
-      const connected = row?.status === 'connected' && Number.isFinite(expiresAt)
-        && expiresAt > Date.now() + 60000;
+      const requiredScopes = ['tweet.read', 'tweet.write', 'users.read', 'offline.access'];
+      const permissionsComplete = Array.isArray(row?.scopes)
+        && requiredScopes.every(scope => row.scopes.includes(scope));
+      const tokenValid = Number.isFinite(expiresAt) && expiresAt > Date.now() + 60000;
+      const connected = row?.status === 'connected' && permissionsComplete && tokenValid;
       json(res, 200, {
         channel: 'X', connected,
-        status: connected ? 'connected' : (row?.status === 'connected' ? 'token_expired'
-          : (row?.status || 'not_connected')),
+        status: connected ? 'connected'
+          : (row?.status === 'connected'
+            ? (permissionsComplete ? 'token_expired' : 'permissions_missing')
+            : (row?.status || 'not_connected')),
         handle: row ? '@' + row.handle : null,
         accountId: row?.external_account_id || null,
         scopes: connected && Array.isArray(row.scopes)
