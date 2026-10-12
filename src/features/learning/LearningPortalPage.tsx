@@ -2,7 +2,7 @@ import { HubNavigationPanel } from '../../components/HubNavigationPanel';
 /**
  * CAPITAL AI — LEARNING PORTAL & FINANZ-VOKABULAR TERMINAL
  * 
- * Zentrales Learning Portal der Anwendung.
+ * Zentrales Learning Hub der Anwendung.
  * Beinhaltet:
  * 1. Vollständiges Market Vocabulary & Glossar (Filterbar nach Kategorien & Skill-Levels)
  * 2. Öffentliche Analyse-Module & Methodik (Werkzeuge, Datenpfade, Modulaufbau)
@@ -298,7 +298,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
               }}
               className="text-amber-400 font-semibold hover:text-amber-200 transition-colors"
             >
-              Learning Portal
+              Learning Hub
             </button>
             <span aria-hidden="true" className="text-slate-600">
               /
@@ -318,7 +318,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
           <div className="flex items-center gap-3">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
               <BookOpen className="w-6 h-6 text-amber-400 shrink-0" />
-              <span>Capital-AI Learning Portal</span>
+              <span>Capital-AI Learning Hub</span>
             </h1>
             <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40">
               WISSENS-TERMINAL
@@ -472,7 +472,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
             </div>
             {!entitled && (
               <div className="pt-2 text-[11px] text-purple-200">
-                Kostenlos: sieben feste Einträge je Skill-Level. Learning Portal schaltet alle Begriffe für {formatVocabularyPrice()} einmalig frei.
+                Kostenlos: sieben feste Einträge je Skill-Level. Learning Hub schaltet alle Begriffe für {formatVocabularyPrice()} einmalig frei.
               </div>
             )}
           </div>
@@ -510,8 +510,8 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       {/* ========================================================================= */}
       {/* TAB CONTENT 2: CHEAT-SHEETS & PIPELINE GUIDES                             */}
       {/* ========================================================================= */}
-      {activeTab === 'patterns' && (atlasEntitled ? <><ChartLearningAtlas /><ChartRecognitionQuiz allowed={chartQuizEntitled} /></> : <p className="rounded-xl border border-amber-400/30 p-5 text-slate-200">Chart-Lernatlas: mit Learning Portal und aktivem Starter-, Pro- oder Enterprise-Abonnement nutzbar.</p>)}
-      {activeTab === 'guides' && !atlasEntitled && <p className="rounded-xl border border-amber-400/30 p-5 text-slate-200">Modul-Erklärungen benötigen Learning Portal und ein aktives Starter-, Pro- oder Enterprise-Abonnement.</p>}
+      {activeTab === 'patterns' && (atlasEntitled ? <><ChartLearningAtlas /><ChartRecognitionQuiz allowed={chartQuizEntitled} /></> : <p className="rounded-xl border border-amber-400/30 p-5 text-slate-200">Chart-Lernatlas: mit Learning Hub und aktivem Starter-, Pro- oder Enterprise-Abonnement nutzbar.</p>)}
+      {activeTab === 'guides' && !atlasEntitled && <p className="rounded-xl border border-amber-400/30 p-5 text-slate-200">Modul-Erklärungen benötigen Learning Hub und ein aktives Starter-, Pro- oder Enterprise-Abonnement.</p>}
       {activeTab === 'guides' && atlasEntitled && (
         <div className="space-y-6">
           <div className="p-6 rounded-2xl bg-gradient-to-r from-cyan-500/15 via-[#0d1530] to-purple-500/15 border border-cyan-500/40">
@@ -627,10 +627,10 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
               <Award className="w-12 h-12 text-amber-400 mx-auto" />
               <h3 className="text-xl font-bold text-white">Tagesfrage bereits verwendet</h3>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Die nächste kostenlose Frage steht morgen bereit. Learning Portal bietet vollständige Quizzes für {formatVocabularyPrice()} einmalig.
+                Die nächste kostenlose Frage steht morgen bereit. Learning Hub bietet vollständige Quizzes für {formatVocabularyPrice()} einmalig.
               </p>
               <button type="button" onClick={() => setActiveTab('glossar')} className="px-4 py-2 rounded-xl bg-amber-400 text-black font-bold text-xs hover:bg-amber-300 cursor-pointer">
-                Learning Portal ansehen
+                Learning Hub ansehen
               </button>
             </div>
           ) : !quizStarted ? (
@@ -784,7 +784,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
                   onClick={() => setActiveTab('glossar')}
                   className="px-4 py-2 rounded-xl bg-amber-400 text-black font-bold text-xs hover:bg-amber-300 cursor-pointer"
                 >
-                  Learning Portal für {formatVocabularyPrice()} ansehen
+                  Learning Hub für {formatVocabularyPrice()} ansehen
                 </button>
               )}
             </div>

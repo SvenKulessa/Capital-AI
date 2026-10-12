@@ -59,8 +59,8 @@ export interface MainHubDefinition {
 export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
   marketscreener: {
     id: 'marketscreener',
-    name: 'Market Screener Hub',
-    shortTitle: 'Marketscreener',
+    name: 'Analytics Hub',
+    shortTitle: 'Analytics Hub',
     color: '#F5B014',
     glowColor: 'rgba(245, 176, 20, 0.45)',
     accentBg: 'bg-amber-500/15 border-amber-400/50 text-amber-300',
@@ -175,8 +175,8 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
   },
   learning: {
     id: 'learning',
-    name: 'Learning Portal',
-    shortTitle: 'Learning Portal',
+    name: 'Learning Hub',
+    shortTitle: 'Learning Hub',
     color: '#F9BF21',
     glowColor: 'rgba(249, 191, 33, 0.45)',
     accentBg: 'bg-amber-400/15 border-amber-400/50 text-amber-300',
@@ -239,8 +239,8 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
   },
   documentation: {
     id: 'documentation',
-    name: 'Dokumentation',
-    shortTitle: 'Dokumentation',
+    name: 'Dokumentation Hub',
+    shortTitle: 'Dokumentation Hub',
     color: '#8B5CF6',
     glowColor: 'rgba(139, 92, 246, 0.45)',
     accentBg: 'bg-violet-500/15 border-violet-400/50 text-violet-300',

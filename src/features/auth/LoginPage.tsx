@@ -196,7 +196,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
         }
       })
       .catch(() => {
-        if (!abort.signal.aborted) setError('Der Supabase-Anmeldedienst ist derzeit nicht erreichbar.');
+        if (!abort.signal.aborted) setError('Die CAPITAL-AI-Anmeldung ist derzeit nicht erreichbar.');
       });
     return () => abort.abort();
   }, []);
@@ -212,9 +212,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
     } else if (message === 'registration_failed') {
       setError('Registrierung konnte serverseitig nicht abgeschlossen werden. Das Passwort allein ist nicht automatisch die Ursache.');
     } else if (message === 'passkey_unavailable') {
-      setError('Passkey-Anmeldung ist im Supabase-Projekt noch nicht freigeschaltet.');
+      setError('Passkey-Anmeldung ist derzeit nicht verfügbar.');
     } else {
-      setError(message);
+      // Do not expose internal provider errors or raw machine codes to customers.
+      setError(message === 'invalid_credentials'
+        ? (locale === 'de' ? 'E-Mail oder Passwort ist ungültig.' : 'Invalid email or password.')
+        : (locale === 'de' ? 'Anmeldung fehlgeschlagen. Bitte versuche es erneut.' : 'Sign-in failed. Please try again.'));
     }
   };
 
@@ -412,16 +415,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
               </p>
             </div>
             <span className="rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1 font-mono text-[10px] text-emerald-300">
-              SUPABASE AUTH
+              {locale === 'de' ? 'SICHERE ANMELDUNG' : 'SECURE SIGN-IN'}
             </span>
           </div>
 
           {error && <p lang="de" role="alert" className="mt-4 rounded-xl bg-rose-500/10 p-3 text-sm text-rose-200">{error}</p>}
           {notice && <p lang="de" role="status" className="mt-4 rounded-xl bg-emerald-500/10 p-3 text-sm text-emerald-200">{notice}</p>}
-          {!session && !error && <p role="status" className="mt-4 text-sm text-slate-400">Supabase Session wird geprüft …</p>}
+          {!session && !error && <p role="status" className="mt-4 text-sm text-slate-400">Anmeldestatus wird geprüft …</p>}
           {session && !session.configured && (
             <p role="status" className="mt-4 rounded-xl bg-amber-500/10 p-3 text-sm text-amber-200">
-              Supabase Auth ist serverseitig noch nicht vollständig konfiguriert.
+              Anmeldung ist derzeit nicht verfügbar. Bitte später erneut versuchen.
             </p>
           )}
 
