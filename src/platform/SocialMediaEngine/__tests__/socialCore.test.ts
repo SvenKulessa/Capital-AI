@@ -169,7 +169,7 @@ test('silent Capital-AI tour has twenty seconds and YouTube referral disclosure'
  assert.equal(project.renderRecipe.publishReady,false);
  const description=createYouTubeDescription({title:'Capital-AI Tour',summary:'Learning Portal und Analysekomponenten.'});
  assert.match(description,/Werbung \/ Referral/);
- assert.match(description,/https:\/\/proinvite.kraken.com\/9f1e\/8nfzp3u7/);
+ assert.match(description,/https:\/\/proinvite\.kraken\.com\/9f1e\/8nfzp3u7/);
  assert.match(description,/yc4ggk3f/);
  assert.match(description,/Keine persönliche Anlageberatung/);
 });
