@@ -102,6 +102,9 @@ export function createSocialXOAuthExchange({ env = process.env, fetchImpl = fetc
       && tokens.expires_in <= 86400, 'SOCIAL_X_OAUTH_EXPIRY_INVALID');
     assert(typeof tokens.token_type === 'string' && tokens.token_type.toLowerCase() === 'bearer',
       'SOCIAL_X_OAUTH_TOKEN_TYPE_INVALID');
+    assert(typeof tokens.access_token === 'string' && tokens.access_token.length >= 10
+      && typeof tokens.refresh_token === 'string' && tokens.refresh_token.length >= 10,
+      'SOCIAL_X_OAUTH_TOKENS_MISSING');
     // Verify the actual authenticated X owner before persisting any credential.
     const meRes = await request(fetchImpl, 'https://api.x.com/2/users/me', {
       method: 'GET', headers: { Authorization: 'Bearer ' + tokens.access_token,
