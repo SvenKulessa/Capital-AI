@@ -140,7 +140,10 @@ test('primary mobile navigation exposes dialog semantics and state', () => {
   assert.match(header, /id="capital-ai-mobile-navigation"/);
   assert.match(header, /role="dialog"/);
   assert.match(header, /aria-modal="true"/);
-  assert.match(header, /aria-label="Hauptnavigation"/);
+  assert.match(header, /aria-label=\{nav\.main\}/);
+  const localized = readFileSync(new URL('../src/i18n/navigationCopy.ts', import.meta.url), 'utf8');
+  assert.match(localized, /main:'Hauptnavigation'/);
+  assert.match(localized, /main:'Main navigation'/);
 });
 
 test('canonical product routes and aliases resolve deterministically', () => {
