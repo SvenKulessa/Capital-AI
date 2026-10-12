@@ -120,13 +120,24 @@ try {
     report.checks.at(-1).chartAccess = 'ANONYMOUS_ACCESS_GATED';
     report.checks.at(-1).paidChartInteractions = 'NOT_PROVEN';
 
-    // Real production DOM: every anonymous viewport must render the same four
-    // rights-neutral blueprint demos and lead to real learning/commerce routes.
-    await navigate('/', `document.querySelectorAll('#market-blueprint-catalog article').length === 4`);
-    assert.equal(await evaluate(`['/learning','/pricing','/marketscreener/dokumentation'].every(path =>
-      !!document.querySelector('#market-blueprint-catalog a[href="'+path+'"]'))`), true, 'Blueprint navigation missing');
+    // #428 moved four blueprint cards from home to documentation. During a
+    // rolling deployment both public home layouts are acceptable, but both
+    // MUST offer real learning and commerce navigation; documentation MUST
+    // still expose all four evidence-neutral demos (checked below).
+    await navigate('/', `!!document.querySelector('section[aria-label="Produkt entdecken"] button')
+      || document.querySelectorAll('#market-blueprint-catalog article').length === 4`);
+    const homepage = await evaluate(`(() => {
+      const legacy=document.querySelectorAll('#market-blueprint-catalog article').length===4;
+      if(legacy) return {mode:'blueprint-cards',links:['/learning','/pricing','/marketscreener/dokumentation'].every(
+        path=>!!document.querySelector('#market-blueprint-catalog a[href="'+path+'"]'))};
+      const cta=document.querySelector('section[aria-label="Produkt entdecken"] button');
+      return {mode:'product-discovery',links:!!cta && cta.textContent.includes('Produkt entdecken')
+        && ['/learning','/pricing'].every(path=>!!document.querySelector('a[href="'+path+'"]'))};
+    })()`);
+    assert.equal(homepage.links, true, 'Homepage learning/commerce entrypoints missing');
     assert.equal(await evaluate(`!document.querySelector('#capital-ai-bootstrap-fallback:not([hidden])')`), true, 'Visible bootstrap failure');
     await capture(viewport.name + '-blueprints-home');
+    report.checks.at(-1).homeMode=homepage.mode;
 
     if (viewport.mobile) {
       await until(() => evaluate(`!!document.querySelector('[aria-controls="capital-ai-mobile-navigation"]')`), 'Mobile menu toggle');
