@@ -444,7 +444,9 @@ test('compact navigation halves chrome spacing but keeps readable typography and
   assert.match(header, /hub-asset-card min-h-11/);
   assert.match(header, /hub-subclass-card min-h-11/);
   assert.match(home, /hub-directory-card hub-switch flex min-h-11/);
-  assert.match(legal, /className="hub-tab-strip w-full max-w-4xl z-10 mt-2"/);
-  assert.match(license, /className="hub-tab-strip flex flex-wrap gap-1 text-xs"/);
+  assert.match(legal, /className="hub-tab-strip w-full max-w-4xl z-10 mt-4"/);
+  assert.match(css, /\[data-legal-route\] > nav\.hub-tab-strip \{ margin-top: \.5rem; \}/);
+  assert.match(css, /\[data-legal-route\] button\.legal-topic-card \{ padding: \.5rem; \}/);
+  assert.match(license, /className="hub-tab-strip flex flex-wrap gap-2 text-sm"/);
   assert.doesNotMatch(css, /\.hub-tab-strip \.hub-tab \{ min-height: 22px;/);
 });
