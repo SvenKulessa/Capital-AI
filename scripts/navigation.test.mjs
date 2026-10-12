@@ -139,7 +139,10 @@ test('primary mobile navigation exposes dialog semantics and state', () => {
   assert.match(header, /id="capital-ai-mobile-navigation"/);
   assert.match(header, /role="dialog"/);
   assert.match(header, /aria-modal="true"/);
-  assert.match(header, /aria-label="Hauptnavigation"/);
+  assert.match(header, /aria-label=\{nav\.main\}/);
+  const navigationCopy = readFileSync(new URL('../src/i18n/navigationCopy.ts', import.meta.url), 'utf8');
+  assert.match(navigationCopy, /main:'Hauptnavigation'/);
+  assert.match(navigationCopy, /main:'Main navigation'/);
 });
 
 test('canonical product routes and aliases resolve deterministically', () => {
@@ -326,4 +329,21 @@ test('Chart atlas is not embedded or explicitly advertised on the public homepag
   const home = readFileSync(new URL('../src/features/home/LearningCadsShowcase.tsx', import.meta.url), 'utf8');
   assert.doesNotMatch(home, /ChartLessonGraphic|CHART_LESSONS|Chart-Lernatlas|\/learning\/chart-lernatlas/);
   assert.match(home, /onNavigate\('\/learning'\)/);
+});
+
+test('all branded hub links remain native, keyboard-focusable, horizontally swipeable and color-bound', () => {
+  const panel = readFileSync(new URL('../src/components/HubNavigationPanel.tsx', import.meta.url), 'utf8');
+  const catalog = readFileSync(new URL('../src/components/HubCatalog.tsx', import.meta.url), 'utf8');
+  for (const label of ["name: 'Analytics Hub'","name: 'Learning Hub'","name: 'Dokumentation Hub'"]) {
+    assert.ok(catalog.includes(label), label);
+  }
+  assert.match(panel, /data-hub-scroll-navigation/);
+  assert.match(panel, /overflow-x-auto/);
+  assert.match(panel, /flex-nowrap/);
+  assert.match(panel, /shrink-0/);
+  assert.match(panel, /scrollIntoView/);
+  assert.match(panel, /focus-visible:outline-2/);
+  assert.match(panel, /outlineColor:hub.color/);
+  assert.match(panel, /aria-current/);
+  assert.doesNotMatch(panel, /role="tablist"/);
 });
