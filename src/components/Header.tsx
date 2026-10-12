@@ -154,7 +154,7 @@ export const Header: React.FC<HeaderProps> = ({
     return () => {
       document.removeEventListener('keydown', onKeyDown);
       document.body.style.overflow = previousOverflow;
-      document.getElementById('open-menu-btn')?.focus();
+      document.getElementById('mobile-menu-btn')?.focus();
     };
   }, [isMenuOpen]);
 
@@ -220,7 +220,6 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           id="mobile-menu-btn"
           type="button"
-          id="open-menu-btn"
           aria-label={t('navOpen')}
           aria-expanded={isMenuOpen}
           aria-controls="capital-ai-mobile-navigation"
