@@ -33,7 +33,8 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
       json(res, 503, { error: 'social_oauth_not_configured' });
       return true;
     }
-    const channel = url.searchParams.get('channel');
+    // X supplies only state and code; channel is verified against the DB-bound state.
+    const channel = url.searchParams.get('channel') ?? 'X';
     const state = url.searchParams.get('state');
     const code = url.searchParams.get('code');
     if (!allowed.includes(channel) || url.searchParams.has('error')
