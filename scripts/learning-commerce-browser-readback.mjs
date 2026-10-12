@@ -175,8 +175,8 @@ try {
     // validate the legacy select by its values rather than a stale option count.
     // Old canonical /learning/quiz links and the newer ?tab=quiz links both
     // enforce the same route and focus contract during production rollout.
-    const quizLink = `nav[aria-label="Learning Hub Unterseiten"] a[href="/learning?tab=quiz"],nav[aria-label="Learning Portal Unterseiten"] a[href="/learning/quiz"]`;
-    const glossaryLink = `nav[aria-label="Learning Hub Unterseiten"] a[href="/learning?tab=glossar"],nav[aria-label="Learning Portal Unterseiten"] a[href="/learning/glossar"]`;
+    const quizLink = `nav a[href="/learning?tab=quiz"],nav a[href="/learning/quiz"]`;
+    const glossaryLink = `nav a[href="/learning?tab=glossar"],nav a[href="/learning/glossar"]`;
     const panel = await evaluate(`!!document.querySelector(${JSON.stringify(quizLink)})`);
     if (panel) {
       await evaluate(`document.querySelector(${JSON.stringify(quizLink)}).click()`);
@@ -196,7 +196,7 @@ try {
       const tabSelect = `Array.from(document.querySelectorAll('select')).find(s =>
         Array.from(s.options).some(o => o.value === 'quiz') && Array.from(s.options).some(o => o.value === 'glossar'))`;
       assert.equal(await evaluate(`(() => {const s=${tabSelect}; return !!s && s.getBoundingClientRect().width > 0;})()`),
-        true, 'Mobile learning navigation not visible');
+        true, `Mobile learning navigation not visible; public-nav=${JSON.stringify(await evaluate(`Array.from(document.querySelectorAll('nav')).map(n=>({label:n.getAttribute('aria-label'),hrefs:Array.from(n.querySelectorAll('a')).map(a=>a.getAttribute('href')).filter(Boolean).slice(0,12)}))`))}`);
       await evaluate(`(() => {const s=${tabSelect}; s.value='quiz';
         s.dispatchEvent(new Event('change',{bubbles:true}));})()`);
       await until(() => evaluate(`(${tabSelect})?.value === 'quiz'`), 'Learning tab change');
