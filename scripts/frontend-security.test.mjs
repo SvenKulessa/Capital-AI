@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { sanitizeAlertPreferences } from '../src/utils/alertPreferences.ts';
@@ -340,4 +342,17 @@ test('Android chat overlay is scrollable without covering the full screen', asyn
   const buddy = await readFile(new URL('../src/components/HeroBuddy.tsx', import.meta.url), 'utf8');
   assert.match(buddy, /max-h-\[min\(55dvh,480px\)\]/);
   assert.match(buddy, /overflow-y-auto/);
+});
+
+test('optional Chromium accessibility probe is syntactically valid and cannot claim AT or full WCAG', async () => {
+  const script = new URL('./product-accessibility-browser.mjs', import.meta.url);
+  const source = await readFile(script, 'utf8');
+  const result = spawnSync(process.execPath, ['--check', fileURLToPath(script)], {encoding:'utf8',timeout:10000});
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(source, /Accessibility.getFullAXTree/);
+  assert.match(source, /390,height:844,mobile:true/);
+  assert.match(source, /1280,height:800,mobile:false/);
+  assert.match(source, /actualScreenReader:'NOT_PROVEN'/);
+  assert.match(source, /liveTenantIsolation:'NOT_PROVEN'/);
+  assert.match(source, /fullWCAGConformance:'NOT_PROVEN'/);
 });
