@@ -25,11 +25,11 @@ export function LearningEntitlementBadge() {
 
   if (!entitled) return null;
   return <figure className="mt-4 flex items-center gap-3 rounded-2xl border border-violet-400/40 bg-violet-500/10 p-3" data-learning-entitlement-badge="verified">
-    <img src="/branding/badges/learning-mastermind.svg" alt="CAPITAL-AI Learning Portal Mastermind Badge"
+    <img src="/branding/badges/learning-mastermind.svg" alt="CAPITAL-AI Learning Hub Mastermind Badge"
       width={64} height={64} className="h-16 w-16 shrink-0 rounded-xl object-contain" />
     <figcaption className="min-w-0">
       <strong className="block text-xs font-black tracking-wide text-violet-100">LEARNING MASTERMIND</strong>
-      <span className="mt-1 block text-[11px] leading-5 text-slate-300">Learning Portal · Berechtigung serverseitig verifiziert</span>
+      <span className="mt-1 block text-[11px] leading-5 text-slate-300">Learning Hub · Lernzugang aktiv</span>
     </figcaption>
   </figure>;
 }

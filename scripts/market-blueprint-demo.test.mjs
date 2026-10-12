@@ -38,7 +38,7 @@ test('synthetic threshold visualization is a pure calculation, not an operationa
   assert.throws(() => didSyntheticThresholdCross(series, Number.NaN), /DEMO_THRESHOLD_INVALID/);
 });
 
-test('public blueprint UI is linked from Home and documentation without provider execution', () => {
+test('public blueprint UI remains in documentation while home focuses on the tour', () => {
   const root = new URL('../src/', import.meta.url);
   const home = readFileSync(new URL('features/home/HomePage.tsx', root), 'utf8');
   const documentation = readFileSync(new URL('features/documentation/BlueprintDocumentationPage.tsx', root), 'utf8');
@@ -46,7 +46,8 @@ test('public blueprint UI is linked from Home and documentation without provider
   const fixtures = readFileSync(new URL('features/home/marketBlueprintDemo.ts', root), 'utf8');
   const rules = readFileSync(new URL('features/home/marketBlueprintRules.ts', root), 'utf8');
 
-  assert.match(home, /<MarketBlueprintShowcase onNavigate=\{onNavigate\}/);
+  assert.doesNotMatch(home, /<MarketBlueprintShowcase/);
+  assert.match(home, /Produkt entdecken/);
   assert.match(documentation, /<MarketBlueprintShowcase variant="documentation"/);
   assert.match(card, /DEMO · Illustrativer Verlauf/);
   assert.match(card, /Synthetischer Index ohne Einheit/);

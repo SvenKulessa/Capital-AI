@@ -1,9 +1,31 @@
-import { DOCUMENT_ROUTES } from '../../shared/hub-routes.mjs';
+import { useEffect, useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { canonicalHubTarget, DOCUMENT_ROUTES } from '../../shared/hub-routes.mjs';
 import { MAIN_HUBS_CONFIG, type MainHubId } from './HubCatalog';
 export function HubNavigationPanel({hubId,onNavigate}:{hubId:MainHubId;onNavigate:(path:string)=>void}) {
- const hub=MAIN_HUBS_CONFIG[hubId];
- const current=typeof window==='undefined'?'':window.location.pathname.replace(/\/+$/,'')+window.location.search;
- return <nav aria-label={`${hub.name} Unterseiten`} className="mx-auto my-5 flex w-full max-w-5xl flex-wrap justify-center gap-2 rounded-2xl border border-slate-800 bg-brand-canvas p-3">
- {hub.subpages.map(page=>page.badge==='PENDING'?<span key={page.id} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-slate-600 px-4 py-2 text-sm text-slate-300"><span aria-hidden="true">{page.icon}</span>{page.name}<strong className="rounded-full border border-brand-gold px-2 py-1 text-xs text-brand-gold">PENDING</strong></span>:<a key={page.id} href={page.path} aria-current={current===page.path?'page':undefined} onClick={e=>{if(!Object.hasOwn(DOCUMENT_ROUTES,page.path)&&!/\.(html|txt)$/.test(page.path)&&e.button===0&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey){e.preventDefault();onNavigate(page.path);}}} className={`inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-brand-gold ${current===page.path?'border-brand-gold bg-brand-gold/10 text-brand-gold':'border-transparent text-slate-200 hover:bg-white/5'}`}><span aria-hidden="true">{page.icon}</span>{page.name}</a>)}
- </nav>;
+  const hub = MAIN_HUBS_CONFIG[hubId];
+  const strip = useRef<HTMLElement>(null);
+  const [overflow, setOverflow] = useState(false);
+  const current = typeof window === 'undefined' ? '' : window.location.pathname.replace(/\/+$/, '') + window.location.search;
+  const canonicalCurrent = canonicalHubTarget(current);
+  const activePath = canonicalCurrent === hub.mainPath ? hub.subpages[0]?.path : canonicalCurrent;
+  useEffect(() => {
+    const element = strip.current;
+    if (!element) return;
+    const update = () => setOverflow(element.scrollWidth > element.clientWidth + 1);
+    const observer = new ResizeObserver(update);
+    observer.observe(element); update();
+    element.querySelector('[aria-current="page"]')?.scrollIntoView({block:'nearest',inline:'nearest'});
+    return () => observer.disconnect();
+  }, [canonicalCurrent]);
+  function scroll(direction:number) {
+    const element = strip.current;
+    if (element) element.scrollBy({left:direction * element.clientWidth * .75,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+  }
+  return <div data-hub={hubId} className="hub-navigation mx-auto my-5 w-full max-w-5xl min-w-0">
+    {overflow && <div className="flex items-center justify-between gap-3 px-1 text-sm text-slate-300"><span>Weitere Bereiche durch Wischen oder Scrollen</span><div className="flex shrink-0 gap-1"><button type="button" className="hub-scroll-button" aria-label="Unterseiten nach links scrollen" onClick={() => scroll(-1)}><ChevronLeft aria-hidden="true" /></button><button type="button" className="hub-scroll-button" aria-label="Unterseiten nach rechts scrollen" onClick={() => scroll(1)}><ChevronRight aria-hidden="true" /></button></div></div>}
+    <nav ref={strip} aria-label={`${hub.name} Unterseiten`} className="hub-tab-strip">
+      {hub.subpages.map(page => page.badge === 'PENDING' ? <span key={page.id} className="hub-tab text-slate-300"><span aria-hidden="true">{page.icon}</span>{page.name}<strong className="text-xs">Pausiert</strong></span> : <a key={page.id} href={page.path} aria-current={activePath === canonicalHubTarget(page.path)?'page':undefined} onClick={e => {if(!Object.hasOwn(DOCUMENT_ROUTES,page.path)&&!/\.(html|txt)$/.test(page.path)&&e.button===0&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey){e.preventDefault();onNavigate(page.path);}}} className="hub-tab"><span aria-hidden="true">{page.icon}</span>{page.name}</a>)}
+    </nav>
+  </div>;
 }

@@ -65,21 +65,21 @@ export const PUBLIC_FAQ_ITEMS: PublicFaqItem[] = [
     category: 'Sicherheit & Datenschutz',
     question: 'Welche Kontodaten können verarbeitet werden?',
     answer:
-      'Die Anmeldung erfolgt über Supabase Auth. Der Dienst verarbeitet die verifizierte Benutzerkennung, E-Mail-/Profilangaben und technisch notwendige Sitzungsdaten. Persönliche Provider-API-Secrets werden ausschließlich serverseitig über den eigenen Vault-Pfad gespeichert und dem Browser nach Speicherung nicht wieder ausgegeben. Details stehen in der Datenschutzerklärung.',
+      'Die Anmeldung erfolgt über einen geschützten Anmeldedienst. Der Dienst verarbeitet die verifizierte Benutzerkennung, E-Mail-/Profilangaben und technisch notwendige Sitzungsdaten. Persönliche Provider-API-Secrets werden ausschließlich serverseitig über den eigenen Vault-Pfad gespeichert und dem Browser nach Speicherung nicht wieder ausgegeben. Details stehen in der Datenschutzerklärung.',
   },
   {
     id: 'privacy-controls',
     category: 'Sicherheit & Datenschutz',
     question: 'Welche Sicherheitskontrollen sind dokumentiert?',
     answer:
-      'Die Anwendung verwendet Supabase Auth mit serverseitig verifizierten Sessions, PKCE für OAuth-Flows, signierte HttpOnly-/Secure-Cookies, Same-Origin-Schutz und begrenzte API-Anfragen. Persönliche Provider-Secrets liegen getrennt im Supabase Vault und sind nicht direkt für Browserrollen freigegeben. Daraus wird keine externe Zertifizierung oder behördliche Freigabe abgeleitet.',
+      'Die Anwendung verwendet serverseitig verifizierte Sitzungen, PKCE für OAuth-Flows, signierte HttpOnly-/Secure-Cookies, Same-Origin-Schutz und begrenzte API-Anfragen. Persönliche Provider-Secrets liegen getrennt im verschlüsselten Schlüsselspeicher und sind nicht direkt für Browserrollen freigegeben. Daraus wird keine externe Zertifizierung oder behördliche Freigabe abgeleitet.',
   },
   {
     id: 'privacy-rights',
     category: 'Sicherheit & Datenschutz',
     question: 'Wie kann ich Auskunft, Berichtigung oder Löschung meiner Daten anfragen?',
     answer:
-      `Über /datenschutz können Sie eine E-Mail für Auskunft, Berichtigung, Löschung, Einschränkung, Widerspruch oder Datenübertragbarkeit vorbereiten und selbst an ${CONTROLLER.email} senden. Nach einer Supabase-Anmeldung kann außerdem ein begrenzter Datenauszug der Identitäts- und Sitzungsdaten dieses Dienstes heruntergeladen werden. Vorbereitete Anfragen werden hier nicht dauerhaft gespeichert oder automatisch versendet.`,
+      `Über /datenschutz können Sie eine E-Mail für Auskunft, Berichtigung, Löschung, Einschränkung, Widerspruch oder Datenübertragbarkeit vorbereiten und selbst an ${CONTROLLER.email} senden. Nach einer Anmeldung kann außerdem ein begrenzter Datenauszug der Identitäts- und Sitzungsdaten dieses Dienstes heruntergeladen werden. Vorbereitete Anfragen werden hier nicht dauerhaft gespeichert oder automatisch versendet.`,
   },
   {
     id: 'privacy-cookies',

@@ -6,7 +6,35 @@ import { BLUEPRINT_EVIDENCE_CONTRACTS } from '../../data/blueprintEvidenceContra
 export const ARCHITECTURE_COMPONENTS = CANONICAL_50_COMPONENTS;
 export const ARCHITECTURE_BLUEPRINTS = STUDIO_BLUEPRINTS;
 
-export type ArchitectureView = 'overview' | 'blueprints' | 'components' | 'learning' | 'explainability';
+export type ArchitectureView = 'overview' | 'catalogs' | 'blueprints' | 'components' | 'learning' | 'explainability';
+
+/** Public documentation links only: the files on main are not private buyer artifacts. */
+export const ARCHITECTURE_CATALOGS = [
+  { id: 'components', title: 'Komponentenkatalog', file: 'COMPONENT-CATALOG.md', scope: '50 Analyseverträge: Input, Output, Features, Gewichte und Qualitätsgrenzen' },
+  { id: 'providers', title: 'Providerkatalog', file: 'PROVIDER-CATALOG.md', scope: 'Datenquellen, Rechte, Instrumente und getrennte private BYOK-Grenzen' },
+  { id: 'scoring', title: 'Scoringkatalog', file: 'SCORING-CATALOG.md', scope: 'Formeln, Gewichtungsprofile, Research- und Risiko-Gates' },
+  { id: 'blueprints', title: 'Blueprintkatalog', file: 'BLUEPRINT-CATALOG.md', scope: 'Sieben Architekturentwürfe, Evidenzverträge und Auslieferungsgrenzen' },
+  { id: 'learning', title: 'Learning-Pfade', file: 'LEARNING-PATHS.md', scope: 'Sechs bestehende Lernschritte und geplante Vertiefungen' },
+] as const;
+
+const CATALOG_REPOSITORY_ROOT = 'https://github.com/SvenKulessa/Capital-AI/blob/main/CAPITAL-AI-MARKET/';
+export function architectureCatalogUrl(file: string): string | null {
+  return ARCHITECTURE_CATALOGS.some((entry) => entry.file === file)
+    ? CATALOG_REPOSITORY_ROOT + file : null;
+}
+export function filterArchitectureCatalogs(query: string) {
+  const needle = query.trim().toLocaleLowerCase('de');
+  return ARCHITECTURE_CATALOGS.filter((item) =>
+    !needle || [item.title, item.file, item.scope].join(' ').toLocaleLowerCase('de').includes(needle));
+}
+
+/** Discovery links, not purchase grants. The server remains the entitlement authority. */
+export const ARCHITECTURE_PRODUCT_PATHS = [
+  { id: 'free', title: 'Finanzmethodik kostenlos lernen', path: '/learning', state: 'PUBLIC_EDUCATION', detail: 'Sechs kostenlose Grundlagen; alle Übungszahlen synthetisch.' },
+  { id: 'learning', title: 'Bestehendes Learning-Angebot', path: '/learning?tab=glossar#learning-offer', state: 'SERVER_ENTITLEMENT_REQUIRED', detail: 'Zugang, Preis und Kaufbedingungen im Learning Portal prüfen; keine automatische Freischaltung.' },
+  { id: 'blueprint', title: 'Blueprint-Konzept entdecken', path: '/marketscreener/dokumentation', state: 'DELIVERY_BLOCKED', detail: 'Öffentliche Konzeptvorschau. Kein bezahlbarer Download und keine enthaltenen Marktdatenrechte.' },
+  { id: 'inquiry', title: 'Individuelle Blueprint-Anfrage', path: '/kontakt', state: 'INQUIRY_ONLY', detail: 'Anforderungen unverbindlich besprechen; Anfrage ist kein Kauf oder Liefervertrag.' },
+] as const;
 export type EvidenceLabel = 'BLOCKED' | 'NOT_PROVEN';
 
 export const DATA_FLOW_STAGES = [

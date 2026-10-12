@@ -1,3 +1,4 @@
+import { ProductDisclaimer } from './ProductDisclaimer';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   AlertTriangle,
@@ -257,67 +258,9 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
         </div>
       </div>
 
-      <div className="w-full max-w-4xl z-10 mt-4 flex flex-wrap items-center justify-center gap-2 p-1.5 bg-black/50 border border-slate-800/90 rounded-2xl">
-        <div className="flex flex-wrap items-center justify-center gap-1.5">
-          <button type="button" onClick={() => navigate('/legal')} aria-current={route === '/legal' ? 'page' : undefined}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${route === '/legal' ? 'bg-slate-700/60 text-white border border-slate-400/40' : 'text-slate-300 hover:text-white hover:bg-white/5'}`}>
-            <Compass className="w-3.5 h-3.5" aria-hidden="true" />Übersicht
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/faq')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-              route === '/faq'
-                ? 'bg-[#0DDDDD]/15 text-[#0DDDDD] border border-[#0DDDDD]/40 shadow-[0_0_12px_rgba(13,221,221,0.12)]'
-                : 'text-[#0DDDDD] hover:text-white hover:bg-[#0DDDDD]/10'
-            }`}
-          >
-            <HelpCircle className="w-3.5 h-3.5 text-[#0DDDDD]" />
-            <span>FAQ</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/datenschutz')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-              route === '/datenschutz'
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-[0_0_12px_rgba(68,222,136,0.2)]'
-                : 'text-slate-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <Shield className="w-3.5 h-3.5 text-[#44DE88]" />
-            <span>Datenschutz</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/agb')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-              route === '/agb'
-                ? 'bg-pink-500/20 text-pink-300 border border-pink-500/40 shadow-[0_0_12px_rgba(255,46,147,0.2)]'
-                : 'text-slate-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <FileText className="w-3.5 h-3.5 text-[#FF2E93]" />
-            <span>AGB</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/impressum')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-              route === '/impressum'
-                ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-[0_0_12px_rgba(141,38,255,0.2)]'
-                : 'text-slate-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <Building2 className="w-3.5 h-3.5 text-[#8D26FF]" />
-            <span>Impressum</span>
-          </button>
-          <button type="button" onClick={() => navigate('/kontakt')} aria-current={route === '/kontakt' ? 'page' : undefined}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${route === '/kontakt' ? 'bg-[#F5C453]/15 text-[#F5C453] border border-[#F5C453]/40 shadow-[0_0_12px_rgba(245,196,83,0.15)]' : 'text-[#F5C453] hover:text-white hover:bg-[#F5C453]/10'}`}>
-            <Mail className="w-3.5 h-3.5" aria-hidden="true" /><span>Kontakt</span>
-          </button>
-        </div>
-
-      </div>
+      <nav aria-label="Rechtliche Informationen" data-hub="legal" className="hub-tab-strip w-full max-w-4xl z-10 mt-4">
+        {([{path:'/legal',label:'Übersicht'},{path:'/faq',label:'FAQ'},{path:'/datenschutz',label:'Datenschutz'},{path:'/agb',label:'AGB'},{path:'/impressum',label:'Impressum'},{path:'/kontakt',label:'Kontakt'}] as const).map(item => <a key={item.path} href={item.path} className="hub-tab" aria-current={route === item.path ? 'page' : undefined} onClick={event => {if(event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey){event.preventDefault();navigate(item.path);}}}>{item.label}</a>)}
+      </nav>
 
       <div className="w-full max-w-4xl z-10 mt-6">
         {locale !== 'de' && (
@@ -329,6 +272,9 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
           <div lang="de" className="rounded-3xl border border-[#F5C453]/25 bg-[#0d1930]/85 p-6 sm:p-8 space-y-5">
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Legal &amp; FAQ</h1>
             <p className="text-slate-300 text-sm leading-6">Zentrale Übersicht zu rechtlichen Informationen, häufigen Fragen und Kontaktmöglichkeiten. Die ausführlichen Rechtstexte sind über ihre eigenständigen URLs erreichbar.</p>
+            <ProductDisclaimer full kind="marketing" />
+            <ProductDisclaimer full kind="commerce" />
+            <ProductDisclaimer full kind="scoring" />
             <div className="grid gap-3 sm:grid-cols-2">
               {([{ path: '/faq', label: 'FAQ · Häufige Fragen' }, { path: '/datenschutz', label: 'Datenschutz' }, { path: '/agb', label: 'AGB' }, { path: '/impressum', label: 'Impressum' }, { path: '/kontakt', label: 'Kontakt Formular' }] as const).map(item => (
                 <button key={item.path} type="button" onClick={() => navigate(item.path)} className="min-h-11 rounded-xl border border-slate-600/40 bg-white/5 p-4 text-left text-sm font-semibold text-slate-100 hover:border-[#F5C453]/60 focus-visible:outline-2 focus-visible:outline-[#F5C453]">{item.label} →</button>
@@ -510,7 +456,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
                   <Database className="w-4 h-4" /> Verarbeitungstätigkeiten
                 </h2>
                 <p className=" text-xs text-slate-400">
-                  Diese Hinweise beschreiben den Dienst mit Supabase Auth-Anmeldung. Eine automatische Übernahme alter Finance-Konten oder ihrer Daten erfolgt nicht. GA4 wird nur mit gültiger Einwilligung zur Reichweitenmessung geladen; Werbung bleibt deaktiviert.
+                  Diese Hinweise beschreiben den Dienst mit sicherer Anmeldung. Eine automatische Übernahme alter Finance-Konten oder ihrer Daten erfolgt nicht. GA4 wird nur mit gültiger Einwilligung zur Reichweitenmessung geladen; Werbung bleibt deaktiviert.
                 </p>
               </div>
               <CookieStorageInventory />
@@ -605,7 +551,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
               </button>
               <p className="text-xs text-slate-400">
                 Der Datenauszug enthält ausschließlich Identitäts- und Sitzungsdaten dieses Dienstes. Er ist kein vollständiger Auskunftsbescheid.
-                {!authenticated && <> Für den Download bitte <button type="button" onClick={() => navigate('/login')} className="underline text-emerald-300">mit Supabase Auth anmelden</button>.</>}
+                {!authenticated && <> Für den Download bitte <button type="button" onClick={() => navigate('/login')} className="underline text-emerald-300">anmelden</button>.</>}
               </p>
             </section>
 
@@ -695,7 +641,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
                   vereinbarten Preise, Leistungsbedingungen und gesetzlichen Rechte maßgeblich. Die Verwaltung
                   bestehender Abonnements sowie Kündigungs-, Widerrufs- und sonstige Verbraucherrechte bleiben
                   unberührt. Für die Verwaltung bestehender Verträge steht der im Impressum genannte Kontakt zur Verfügung;
-                  ein Stripe-Kundenportal wird im neuen Dienst nicht als angebunden zugesagt.
+                  dein Abo kannst du unter Profil → Abo verwalten im Kundenportal verwalten.
                 </p>
                 <p className="text-[11px] text-slate-500">
                   Der frühere Preiskatalog bleibt ausschließlich als historische Vertrags- und Nachweisevidence erhalten.

@@ -466,7 +466,7 @@ export const CoreModules: React.FC<CoreModulesProps> = ({
                     {activeSidebarModule.id === 'market-screener'
                       ? 'Marktscreener Terminal jetzt öffnen'
                       : activeSidebarModule.id === 'learning-portal'
-                      ? 'Learning Portal & Glossar starten'
+                      ? 'Learning Hub & Glossar starten'
                       : activeSidebarModule.id === 'pipeline-builder'
                       ? 'Pipeline Builder Konfigurator starten'
                       : `${activeSidebarModule.title} öffnen`}

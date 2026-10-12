@@ -380,7 +380,7 @@ export function HeroBuddy(props: HeroBuddyProps) {
         </div>
       )}
       <span id="jaja-3d-hint" className="sr-only">
-        JaJa-Figur: Mit den Pfeiltasten links und rechts drehen oder mit dem Finger ziehen.
+        JaJa-Figur: Mit den Pfeiltasten links und rechts drehen. Ziehen verschiebt den Buddy.
         Eingabetaste öffnet den Chat.
       </span>
       <button
@@ -389,28 +389,31 @@ export function HeroBuddy(props: HeroBuddyProps) {
         aria-controls={open ? chatPanelId : undefined}
         aria-describedby="jaja-3d-hint"
         aria-label={open ? 'JaJa Chat schließen' : 'JaJa Chat öffnen'}
-        title="JaJa drehen: ziehen oder Pfeiltasten. Antippen: Chat öffnen."
+        title="Hero Buddy verschieben: ziehen. Drehen: Pfeiltasten. Antippen: Chat öffnen."
         onPointerDown={event => {
+          beginFloatingDrag(event);
           if (event.button !== 0) return;
           rotatePointer.current = { x: event.clientX, angle: avatarAzimuth };
           wasDragged.current = false;
           event.currentTarget.setPointerCapture(event.pointerId);
         }}
         onPointerMove={event => {
+          moveFloatingDrag(event);
           if (!rotatePointer.current) return;
           const delta = event.clientX - rotatePointer.current.x;
           if (Math.abs(delta) > 7) {
             wasDragged.current = true;
-            setAvatarAzimuth(rotatePointer.current.angle + delta * .9);
+            // Pointer movement repositions the buddy; arrow keys rotate the avatar.
           }
         }}
         onPointerUp={event => {
+          endFloatingDrag(event);
           rotatePointer.current = null;
           if (event.currentTarget.hasPointerCapture(event.pointerId)) {
             event.currentTarget.releasePointerCapture(event.pointerId);
           }
         }}
-        onPointerCancel={() => { rotatePointer.current = null; wasDragged.current = false; }}
+        onPointerCancel={event => { endFloatingDrag(event); rotatePointer.current = null; wasDragged.current = false; }}
         onKeyDown={event => {
           if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
             event.preventDefault();
@@ -418,7 +421,7 @@ export function HeroBuddy(props: HeroBuddyProps) {
           }
         }}
         onClick={() => {
-          if (wasDragged.current) { wasDragged.current = false; return; }
+          if (wasDragged.current || draggedOnRelease.current) { wasDragged.current = false; draggedOnRelease.current = false; return; }
           setOpen(value => !value);
           setSpeech(null);
         }}

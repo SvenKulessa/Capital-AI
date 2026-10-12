@@ -1,0 +1,9 @@
+{
+  "label": "Sentiment-Blueprint · synthetische Demo",
+  "positive": 72,
+  "neutral": 30,
+  "negative": 18,
+  "window": "Fiktives 24-Stunden-Fenster",
+  "formula": "(Positiv − Negativ) / Gesamt × 100",
+  "disclaimer": "Synthetische Bildungsdaten. Keine Live-Nachrichten, Prognose oder Anlageberatung."
+}

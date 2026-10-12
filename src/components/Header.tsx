@@ -1,3 +1,5 @@
+import { accountDisplay, verifiedOwner } from '../../shared/account-display.mjs';
+import { hubBrandForRoute } from '../../shared/hub-branding.mjs';
 /**
  * ============================================================================
  * [ARCHITEKTUR-MAPPING: GLOBAL NAVIGATION & TERMINAL HEADER]
@@ -53,6 +55,7 @@ interface HeaderSession {
   authenticated: boolean;
   user?: { name?: string; email?: string } | null;
   account?: {
+    available?: boolean;
     iamRole?: string | null;
     subscription?: { tier?: string; status?: string } | null;
     badges?: Array<{ id: string; label: string; asset: string }>;
@@ -117,10 +120,9 @@ export const Header: React.FC<HeaderProps> = ({
     return () => controller.abort();
   }, [currentRoute]);
 
-  const accountTier = authSession?.authenticated
-    ? authSession.account?.subscription?.tier || null
-    : null;
-  const isOwner = authSession?.authenticated === true && authSession.account?.iamRole === 'owner';
+  const accountTier = accountDisplay(authSession);
+  const isOwner = verifiedOwner(authSession);
+  const activeHub = hubBrandForRoute(currentRoute);
 
   const navigateAccount = (path: '/profile' | '/profile/security' | '/profile/workspace') => {
     setIsAccountOpen(false);
@@ -154,30 +156,6 @@ export const Header: React.FC<HeaderProps> = ({
     const path = MAIN_HUBS_CONFIG[hubId].mainPath;
     if (onNavigate) onNavigate(path); else window.location.assign(path);
   };
-
-  // Active Hub Calculation
-  const isMarketscreenerActive =
-    !currentRoute ||
-    currentRoute === '/' ||
-    currentRoute === '/marketscreener' ||
-    currentRoute === '/screener';
-  const isStudioActive =
-    currentRoute === '/studio' ||
-    currentRoute === '/architecture' ||
-    currentRoute === '/pipeline-builder';
-  const isLearningActive =
-    currentRoute === '/learning' ||
-    currentRoute === '/vocabulary' ||
-    currentRoute?.startsWith('/vocabulary/') ||
-    currentRoute === '/glossar';
-  const isControlActive =
-    currentRoute === '/control-center' ||
-    currentRoute === '/admin' ||
-    currentRoute === '/roadmap' ||
-    currentRoute === '/cost-center';
-  const isDocumentationActive =
-    currentRoute === '/dokumentation' ||
-    currentRoute === '/marketscreener/dokumentation';
 
   const renderClassIcon = (id: MainCategory) => {
     switch (id) {
@@ -222,84 +200,8 @@ export const Header: React.FC<HeaderProps> = ({
         />
       </div>
 
-      {/* CENTER: DIE 4 HAUPTREITER (Marketscreener, Studio Hub, Learning Portal, Control Center) */}
-      <nav aria-label="Hauptnavigation" className="hidden lg:flex items-center gap-1 p-1 rounded-xl bg-black/40 border border-slate-800/80 shadow-inner">
-        {/* Marketscreener */}
-        <button
-          type="button"
-          onClick={() => onNavigate?.('/')}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs transition-all cursor-pointer ${
-            isMarketscreenerActive
-              ? 'bg-amber-400 text-black font-extrabold shadow-sm'
-              : 'text-slate-300 hover:text-white hover:bg-white/5 font-medium'
-          }`}
-          title="Marketscreener (Analyse, Datenstatus & Scoring)"
-        >
-          <LineChart className="w-3.5 h-3.5" />
-          <span>Marketscreener</span>
-        </button>
-
-        {/* Studio Hub */}
-        <button
-          type="button"
-          onClick={() => onNavigate?.('/studio')}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs transition-all cursor-pointer ${
-            isStudioActive
-              ? 'bg-cyan-500 text-black font-extrabold shadow-sm'
-              : 'text-slate-300 hover:text-white hover:bg-white/5 font-medium'
-          }`}
-          title="Studio Hub (7 Module: Architektur, Builder, Blueprints, etc.)"
-        >
-          <Building2 className="w-3.5 h-3.5" />
-          <span>Studio Hub</span>
-        </button>
-
-        {/* Learning Portal */}
-        <button
-          type="button"
-          onClick={() => onNavigate?.('/learning')}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs transition-all cursor-pointer ${
-            isLearningActive
-              ? 'bg-amber-400 text-black font-extrabold shadow-sm'
-              : 'text-slate-300 hover:text-white hover:bg-white/5 font-medium'
-          }`}
-          title="Learning Portal (Vocabulary, Analyse-Module & Methodik)"
-        >
-          <BookOpen className="w-3.5 h-3.5" />
-          <span>Learning Portal</span>
-        </button>
-
-        {/* Dokumentation */}
-        <button
-          type="button"
-          onClick={() => onNavigate?.('/dokumentation')}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs transition-all cursor-pointer ${
-            isDocumentationActive
-              ? 'bg-violet-500 text-white font-extrabold shadow-sm'
-              : 'text-slate-300 hover:text-white hover:bg-white/5 font-medium'
-          }`}
-          title="Dokumentation: Blueprints, BYOK, Pipeline-Architekturen, Preismodelle und Domains"
-        >
-          <LibraryBig className="w-3.5 h-3.5" />
-          <span>Dokumentation</span>
-        </button>
-
-        {/* Control Center */}
-        {isOwner && (
-          <button
-            type="button"
-            onClick={() => onNavigate?.('/control-center')}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs transition-all cursor-pointer ${
-              isControlActive
-                ? 'bg-rose-500 text-white font-extrabold shadow-sm'
-                : 'text-slate-300 hover:text-white hover:bg-white/5 font-medium'
-            }`}
-            title="Control Center (v1.0 Roadmap, Cockpit, Console & Governance)"
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Control Center</span>
-          </button>
-        )}
+      <nav aria-label="Hauptnavigation" className="hidden xl:flex items-center gap-1 rounded-xl border border-slate-700 bg-black/40 p-1">
+        {Object.values(MAIN_HUBS_CONFIG).filter(hub => hub.id !== 'control-center' || isOwner).map(hub => <button key={hub.id} type="button" data-hub={hub.id} aria-current={activeHub === hub.id ? 'page' : undefined} className="hub-tab hub-switch !px-3 !text-xs" onClick={() => openHubSidebar(hub.id)}><span aria-hidden="true">{hub.icon}</span>{hub.name}</button>)}
       </nav>
 
       {/* RIGHT SIDE: Live Status Chip & Login Button */}
@@ -334,7 +236,7 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="flex min-w-0 flex-col items-start leading-tight">
                 <span className="max-w-28 truncate">{authSession.user?.name || 'Profil'}</span>
                 {accountTier && (
-                  <span className="font-mono text-[9px] text-amber-300">{accountTier}</span>
+                  <span className="font-mono text-[9px] text-amber-300">{accountTier}{!isOwner && authSession.account?.subscription?.status === 'active' && <span className="ml-2 text-emerald-300 drop-shadow-[0_0_4px_#34d399]">● Aktiv</span>}</span>
                 )}
               </span>
               <ChevronDown className={`h-3.5 w-3.5 text-emerald-300 transition-transform ${isAccountOpen ? 'rotate-180' : ''}`} />
@@ -448,7 +350,7 @@ export const Header: React.FC<HeaderProps> = ({
                           <ShieldCheck className="h-4 w-4 text-emerald-300" />
                           <span className="truncate text-xs font-black text-emerald-100">{authSession.user?.name || 'Konto'}</span>
                         </div>
-                        {accountTier && <p className="mt-1 pl-6 font-mono text-[9px] text-amber-300">{accountTier}</p>}
+                        {accountTier && <p className="mt-1 pl-6 font-mono text-[9px] text-amber-300">{accountTier}{!isOwner && authSession.account?.subscription?.status === 'active' && <span className="ml-2 text-emerald-300">● Aktiv</span>}</p>}
                       </div>
                       {[
                         { path: '/profile' as const, label: 'Profil', icon: User },
@@ -507,61 +409,16 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
 
                   <div className="grid grid-cols-1 gap-2.5">
-                    {[
-                      {
-                        id: "marketscreener" as const,
-                        name: "Marketscreener Hub",
-                        color: "#F5B014",
-                        glow: "rgba(245, 176, 20, 0.4)",
-                        icon: <LineChart className="w-4 h-4 text-amber-300" />,
-                        badge: "6 Module",
-                        tagline: "Screener, Buffett, Scorer & AI News",
-                      },
-                      {
-                        id: "studio" as const,
-                        name: "Studio Hub",
-                        color: "#06B6D4",
-                        glow: "rgba(6, 182, 212, 0.4)",
-                        icon: <Building2 className="w-4 h-4 text-cyan-300" />,
-                        badge: "7 Module",
-                        tagline: "Pipeline Architektur, Builder & Quants",
-                      },
-                      {
-                        id: "learning" as const,
-                        name: "Learning Portal",
-                        color: "#F9BF21",
-                        glow: "rgba(249, 191, 33, 0.4)",
-                        icon: <BookOpen className="w-4 h-4 text-[#F9BF21]" />,
-                        badge: "3 Bereiche",
-                        tagline: "294 Fachbegriffe, Thesaurus & Quiz",
-                      },
-                      {
-                        id: "documentation" as const,
-                        name: "Dokumentation",
-                        color: "#8B5CF6",
-                        glow: "rgba(139, 92, 246, 0.4)",
-                        icon: <LibraryBig className="w-4 h-4 text-violet-300" />,
-                        badge: "5 Bereiche",
-                        tagline: "Blueprints, BYOK, Pipelines, Preise & Domains",
-                      },
-                      {
-                        id: "control-center" as const,
-                        name: "Control Center",
-                        color: "#F43F5E",
-                        glow: "rgba(244, 63, 94, 0.4)",
-                        icon: <ShieldCheck className="w-4 h-4 text-rose-300" />,
-                        badge: "7 Module",
-                        tagline: "Roadmap, Cockpit, Console & Lizenzen",
-                      },
-                    ].filter(hub => hub.id !== 'control-center' || isOwner).map((hub) => (
+                    {Object.values(MAIN_HUBS_CONFIG).map(hub => ({...hub, glow:hub.glowColor, tagline:hub.description})).filter(hub => hub.id !== 'control-center' || isOwner).map((hub) => (
                       <button
                         key={hub.id}
+                        data-hub={hub.id}
                         type="button"
                         onClick={() => {
                           setIsMenuOpen(false);
                           openHubSidebar(hub.id);
                         }}
-                        className="w-full flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer group text-left shadow-md"
+                        className="hub-switch w-full flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer group text-left shadow-md"
                         style={{
                           backgroundColor: `${hub.color}14`,
                           borderColor: `${hub.color}45`,

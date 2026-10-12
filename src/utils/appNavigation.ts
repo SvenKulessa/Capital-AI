@@ -50,6 +50,8 @@ export function resolveAppRoute(rawPath: string): string {
     return '/profile/key-vault';
   }
   if (clean === '/profile/workspace' || clean === '/profil/workspace' || clean === '/mein-workspace') return '/profile';
+  if (clean === '/profile/subscription' || clean === '/profil/abo') return '/profile/subscription';
+  if (clean === '/profile/rights') return '/profile/rights';
   if (clean === '/profile/dashboard') return '/profile/dashboard';
   if (clean === '/profile/render-dashboard' || clean === '/profil/privates-dashboard') return '/profile/render-dashboard';
   if (clean === '/legal' || clean === '/rechtliches') return '/legal';
