@@ -177,3 +177,33 @@ test('X OAuth rejects provider token exchange error without disclosing provider 
   });
   assert.equal(calls, 1);
 });
+
+test('X OAuth Edge mode performs encrypted persistence without any Render admin key', async () => {
+  const edgeEnv = {
+    ...ENV,
+    SOCIAL_X_EDGE_STORE_ENABLED: 'true',
+    SUPABASE_SECRET_KEY: undefined,
+    SUPABASE_PUBLISHABLE_KEY: 'synthetic-publishable-key-for-testing',
+  };
+  assert.equal(socialXOAuthConfigured(edgeEnv), true);
+  const requests = [];
+  const fetchImpl = async (url, options) => {
+    requests.push({ url: String(url), options });
+    const body = requests.length === 1 ? TOKENS : requests.length === 2
+      ? XUSER : { connected: true, accountId: XUSER.data.id, handle: XUSER.data.username };
+    return response(200, body);
+  };
+  const outcome = await createSocialXOAuthExchange({ env: edgeEnv, fetchImpl })({
+    ...trusted, userAccessToken: 'synthetic-owner-access-' + 'a'.repeat(75),
+  });
+  assert.equal(outcome.connected, true);
+  assert.equal(requests.length, 3);
+  assert.ok(requests[2].url.endsWith('/functions/v1/capital-social-x-vault'));
+  const stored = JSON.parse(requests[2].options.body);
+  assert.equal(stored.operation, 'persist');
+  assert.equal(unseal(stored.account.access_token_encrypted, 'access'), TOKENS.access_token);
+  assert.equal(stored.userId, USER);
+  assert.equal(requests[2].options.headers.Authorization,
+    'Bearer ' + 'synthetic-owner-access-' + 'a'.repeat(75));
+  assert.ok(!JSON.stringify(requests[2].options.headers).includes('sb_secret_'));
+});
