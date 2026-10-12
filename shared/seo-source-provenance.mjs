@@ -6,7 +6,7 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
   'src/features/learning/LearningPurchase.tsx': Object.freeze({ sourceBlobSha: '859af1bc1564a21cbebe17a334222de8a958dcb3', contentSha256: '4bbc81135ade2fc7a2481e713b5ec3f85e7e5422b4b73abb62177672546792e2' }),
   'src/data/vocabularyOffer.ts': Object.freeze({ sourceBlobSha: 'ef2ef444280b56dcf9fa5182e09f3ac8d03fbf25', contentSha256: 'adc8faec932b2dcc29ff2fb4c836a1044c474d83dd405a025efae386d894b274' }),
 
-  'shared/learning-journey.mjs': Object.freeze({ sourceBlobSha: '06ce4839cc80450d159c5cf8e57991101337f3d1', contentSha256: '4473e3883da8852d873f4c6109f5bfe025decb161d296bcfea8e76d6fa6a8480' }),
+  'shared/learning-journey.mjs': Object.freeze({ sourceBlobSha: '069d1f246c0da1630b2b3fd0daf5d4f06877a2dc', contentSha256: '3879139360093764e803ade230feeba9ddf4cde8821e66c3dc8e04819b0b61a0' }),
   'src/features/learning/LearningJourney.tsx': Object.freeze({ sourceBlobSha: '44f168ea9633362ca7dac5f27d1d8a1b77bace7e', contentSha256: '0143dc2072b6ba9623361febec722300f9d727a4c4d8327fe943fed47b71a78b' }),
 
   'shared/blog-articles.mjs': Object.freeze({ sourceBlobSha: '5a42051bf33041dd849ad8434143bd6bf3b3b72d', contentSha256: '25ea2b7867df02e280666e8dc8bde9d7585823ba75fd311ad3985fca0cbf80fa' }),
@@ -19,8 +19,8 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
     contentSha256: '0c7ec657eac44941ec2008746d36e8424242dd7c224b13062ff290ad04696e4f',
   }),
   'src/features/learning/LearningPortalPage.tsx': Object.freeze({
-    sourceBlobSha: '14edd7b37b8bc6e5751770c095f4cffeb4ac1b57',
-    contentSha256: 'e9de575e6a3642ac94ae9c552bf66a38cf3741abe3e89532a6e782a76766d1b9',
+    sourceBlobSha: '799dc5d92355355562deb6296e22454f211d7321',
+    contentSha256: '8d89a7afbb15d7842940a543219c4c00ee0924ef0310bd061f7ffdb030e43eef',
   }),
   'shared/vocabulary-metadata.mjs': Object.freeze({
     sourceBlobSha: 'b972f4df5e66daf8bccd62535014c79ea73b943a',
@@ -65,10 +65,10 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
 });
 
 const SEO_SOURCE_SET_DIGESTS = Object.freeze({
-  'shared/learning-journey.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/data/vocabularyOffer.ts|src/features/learning/LearningJourney.tsx|src/features/learning/LearningPortalPage.tsx|src/features/learning/LearningPurchase.tsx': '20b3b7cb58b97d073a6275538332346f3b14b9644815cbcc4bdce65bc99d8c1b',
+  'shared/learning-journey.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/data/vocabularyOffer.ts|src/features/learning/LearningJourney.tsx|src/features/learning/LearningPortalPage.tsx|src/features/learning/LearningPurchase.tsx': 'f2421d4a4da1722442f5579601f08f1803c87bfd6c7e3ef33f965ff5c73a91d0',
   'shared/blog-articles.mjs': '9f2fd7096a150d0a402a1aeed775bc0151db3fddc1886c6b62a3ac207099f363',
   'index.html|src/features/home/HomePage.tsx': 'e3c8a5fb661a10ba2d092417e61d3ed4153f6dc748030227191d90c05f77e0df',
-  'shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': 'c63ab66a98de53a5b838023d38f176fe208f63293a369fe6dd530f776848ce2d',
+  'shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': 'b31a1db0f6525450165458c17c32dcd677208b6d1d0b3d9c203c0f08a05606d6',
   'src/components/LegalAndFaqPages.tsx|src/content/publicLegalContent.ts': 'db49d8153e28fa1fbdd3c379159d7157adf3bc92414accd1d7941beff91a8cfc',
   'shared/license-metadata.mjs|src/components/LicenseInformationPages.tsx': 'b3d4044f7173bf04767a6a56b7b0b22774aacb93bee08ef9b71ae1c4769a3b05',
   'shared/license-metadata.mjs|src/data/providerLicenseReview.ts': '98d2b1c966c071230d8b5554f132c198bf95c7df07e5b559fa82e2aa53f1c768',

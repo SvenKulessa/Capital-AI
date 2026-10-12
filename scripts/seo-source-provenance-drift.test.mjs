@@ -22,6 +22,7 @@ test('learning HTTP content remains provenance-bound independently of CI runtime
   assert.match(html, /&lt;script&gt;/i);
   assert.match(html, /id="gewichtung"/);
   assert.match(html, /learning-offer/);
+  assert.doesNotMatch(html, /id="quant-learning-demo"|Quant-Karteikarte · kostenlose Demo/);
 });
 
 test('SEO-01 source blob and SHA-256 provenance fails closed on source drift', async () => {
