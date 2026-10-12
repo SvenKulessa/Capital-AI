@@ -263,7 +263,7 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
       </div>
 
       <nav aria-label="Rechtliche Informationen" data-hub="legal" className="hub-tab-strip w-full max-w-4xl z-10 mt-4">
-        {([{path:'/legal',label:'Übersicht'},{path:'/faq',label:'FAQ'},{path:'/datenschutz',label:'Datenschutz'},{path:'/agb',label:'AGB'},{path:'/impressum',label:'Impressum'},{path:'/kontakt',label:'Kontakt'}] as const).map(item => <a key={item.path} href={item.path} className="hub-tab" style={{ '--tab-accent': legalPageAccent(item.path) } as React.CSSProperties} aria-current={route === item.path ? 'page' : undefined} onClick={event => {if(event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey){event.preventDefault();navigate(item.path);}}}>{item.label}</a>)}
+        {([{path:'/legal',label:'Übersicht',icon:Compass},{path:'/faq',label:'FAQ',icon:HelpCircle},{path:'/datenschutz',label:'Datenschutz',icon:Shield},{path:'/agb',label:'AGB',icon:FileText},{path:'/impressum',label:'Impressum',icon:Building2},{path:'/kontakt',label:'Kontakt',icon:Mail}] as const).map(item => <a key={item.path} href={item.path} className="hub-tab" style={{ '--tab-accent': legalPageAccent(item.path) } as React.CSSProperties} aria-current={route === item.path ? 'page' : undefined} onClick={event => {if(event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey){event.preventDefault();navigate(item.path);}}}><item.icon className="h-4 w-4" aria-hidden="true" />{item.label}</a>)}
       </nav>
 
       <div className="w-full max-w-4xl z-10 mt-6">
