@@ -414,3 +414,18 @@ test('mobile navigation consumes available width with compact 44px keyboard acce
   assert.match(learning, /flex min-w-0 flex-wrap items-center/);
   assert.match(legal, /<item\.icon className="h-4 w-4" aria-hidden="true" \/>/);
 });
+
+
+test('all seven navigation accents retain WCAG AA normal-text contrast on dark canvas', () => {
+  const luminance = hex => {
+    const channels = hex.slice(1).match(/../g).map(channel => parseInt(channel, 16) / 255);
+    const linear = channels.map(value => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4);
+    return .2126 * linear[0] + .7152 * linear[1] + .0722 * linear[2];
+  };
+  const background = luminance('#071126');
+  for (const [name, color] of Object.entries(BRAND_COLORS)) {
+    const foreground = luminance(color);
+    const contrast = (Math.max(foreground, background) + .05) / (Math.min(foreground, background) + .05);
+    assert.ok(contrast >= 4.5, `${name} contrast ${contrast.toFixed(2)}:1 falls below WCAG AA normal text`);
+  }
+});
