@@ -53,7 +53,7 @@ function ownerOnlyDiagnostics(env) {
     oauthCallbackEnabled: env?.SOCIAL_OAUTH_CALLBACK_ENABLED === 'true',
     appOrigin: isHttpsOrigin(env?.PUBLIC_APP_ORIGIN),
     xClientId: typeof clientId === 'string' && clientId.length >= 5
-      && clientId.length <= 256 && !/[\\s:]/.test(clientId),
+      && clientId.length <= 256 && !/[\s:]/.test(clientId),
     xClientSecret: typeof clientSecret === 'string' && clientSecret.length >= 8
       && clientSecret.length <= 2048,
     tokenEncryptionKey: isRandom256Bit(env?.SOCIAL_X_TOKEN_ENCRYPTION_KEY),
