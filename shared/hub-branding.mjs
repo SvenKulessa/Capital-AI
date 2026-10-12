@@ -2,27 +2,27 @@
  * These colours are decoration only: status and gains/losses require text and icons. */
 export const BRAND_COLORS = Object.freeze({
   cyan: '#67E8F9',
-  violet: '#C4B5FD',
+  violet: '#B794F4',
   gold: '#F9BF21',
   pink: '#F9A8D4',
-  rose: '#FDA4AF',
-  blue: '#93C5FD',
+  rose: '#F87171',
+  blue: '#60A5FA',
   green: '#4ADE80',
 });
 
 export const HUB_BRANDING = Object.freeze({
-  marketscreener: { name: 'Analytics Hub', color: BRAND_COLORS.cyan },
-  studio: { name: 'Studio Hub', color: BRAND_COLORS.violet },
+  marketscreener: { name: 'Analytics Hub', color: BRAND_COLORS.violet },
+  studio: { name: 'Studio Hub', color: BRAND_COLORS.green },
   learning: { name: 'Learning Hub', color: BRAND_COLORS.gold },
-  documentation: { name: 'Dokumentation Hub', color: BRAND_COLORS.pink },
+  documentation: { name: 'Dokumentation Hub', color: BRAND_COLORS.blue, glow: 'rgba(16, 51, 135, 0.75)' },
   'control-center': { name: 'Control Center', color: BRAND_COLORS.rose },
-  legal: { name: 'Rechtliches', color: BRAND_COLORS.blue },
+  legal: { name: 'Rechtliches', color: BRAND_COLORS.cyan },
 });
 
 /** Unique asset hues derived from the seven base colour families. */
 export const ASSET_BRANDING = Object.freeze({
   KRYPTO: '#FDE047',     // gold
-  AKTIEN: BRAND_COLORS.green,
+  AKTIEN: '#34D399',      // green shade, separate from Studio
   INDIZIES: '#A78BFA',  // violet
   FOREX: '#E879F9',     // pink
   ROHSTOFFE: '#FDBA74', // warm rose
@@ -30,10 +30,12 @@ export const ASSET_BRANDING = Object.freeze({
 
 const COLOR_WHEEL = Object.freeze(Object.values(BRAND_COLORS));
 const HUB_WHEEL_OFFSET = Object.freeze({
-  marketscreener: 0, studio: 1, learning: 2, documentation: 3, 'control-center': 4, legal: 5,
+  marketscreener: 1, studio: 6, learning: 2, documentation: 5, 'control-center': 4, legal: 0,
 });
 /** Each tab keeps its compact dimensions but gets a stable, distinct accent. */
-export function hubTabAccent(hubId, index) {
+export function hubTabAccent(hubId, index, pageId = '') {
+  // Owner Cost Center never changes hue when navigation order changes.
+  if (hubId === 'control-center' && pageId === 'cost_center') return BRAND_COLORS.rose;
   return COLOR_WHEEL[((HUB_WHEEL_OFFSET[hubId] ?? 0) + index) % COLOR_WHEEL.length];
 }
 export const LEGAL_ROUTE_BRANDING = Object.freeze({
@@ -48,7 +50,7 @@ export const LEGAL_ROUTE_BRANDING = Object.freeze({
   '/opensource-lizenzen': BRAND_COLORS.green,
 });
 export function legalPageAccent(path) {
-  return LEGAL_ROUTE_BRANDING[path] ?? BRAND_COLORS.blue;
+  return LEGAL_ROUTE_BRANDING[path] ?? BRAND_COLORS.cyan;
 }
 
 export function hubBrandForRoute(route = '') {
