@@ -55,7 +55,8 @@ test('OAuth requires verified user from existing Supabase auth, not query-string
 test('verified callback enforces exact identity and endpoint; no token in reply', async () => {
   const records = [];
   const handler = createSocialOAuthCallback({ env,
-    auth: { verify: async () => ({ userId: USER }) },
+    auth: { verify: async () => ({ userId: USER, emailVerified: true }),
+      authorizeIamRole: async () => true },
     store: { consumeOAuthCallback: async args => {
       records.push(args);
       await args.exchangeCode({ userId: USER, channel: 'X',
@@ -75,7 +76,8 @@ test('verified callback enforces exact identity and endpoint; no token in reply'
 test('X callback without channel parameter is bound to X via persisted state', async () => {
   const calls = [];
   const handler = createSocialOAuthCallback({ env,
-    auth: { verify: async () => ({ userId: USER }) },
+    auth: { verify: async () => ({ userId: USER, emailVerified: true }),
+      authorizeIamRole: async () => true },
     store: { consumeOAuthCallback: async input => {
       calls.push({ userId: input.userId, channel: input.channel });
       await input.exchangeCode({ userId: USER, channel: 'X',
@@ -93,7 +95,8 @@ test('X callback without channel parameter is bound to X via persisted state', a
 
 test('callback fail-closed on exchange/storage failures without reflecting code', async () => {
   const handler = createSocialOAuthCallback({ env,
-    auth: { verify: async () => ({ userId: USER }) },
+    auth: { verify: async () => ({ userId: USER, emailVerified: true }),
+      authorizeIamRole: async () => true },
     store: { consumeOAuthCallback: async () => { throw Error('confidential token'); } },
     exchangeCode: async () => {} });
   const r = res();
