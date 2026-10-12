@@ -361,7 +361,7 @@ test('mobile drawer escapes header stacking context and retains modal keyboard b
   assert.match(header, /document\.body\.style\.overflow = 'hidden'/);
   assert.match(header, /event\.key === 'Escape'/);
   assert.match(header, /event\.key !== 'Tab'/);
-  assert.match(header, /getElementById\('open-menu-btn'\)\?\.focus\(\)/);
+  assert.match(header, /getElementById\('mobile-menu-btn'\)\?\.focus\(\)/);
   assert.match(header, /id="capital-ai-mobile-navigation"/);
   assert.match(header, /role="dialog"/);
 });
