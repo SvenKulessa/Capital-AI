@@ -1,6 +1,7 @@
 // CAPITAL_AI_X_EDGE_CLIENT@1 — user-JWT-to-Supabase edge transport.
 // Render never sends a service-role/secret key on this path. Access tokens stay
 // server-side and are not reflected into HTML, responses, logs or redirects.
+import { createHmac } from 'node:crypto';
 import { createSocialOAuthState, socialOAuthStateDigest } from './provider-adapter.mjs';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -19,12 +20,17 @@ function setup(env, userAccessToken) {
     && !app.hash && !app.username && !app.password, 'SOCIAL_X_EDGE_ORIGIN_INVALID');
   const publishable = env.SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_PUBLISHABLE_KEY
     || env.SUPABASE_ANON_KEY;
+  // Prove that the owner request originated from the trusted Render workload.
+  const workloadKey = env.SOCIAL_X_EDGE_WORKLOAD_SECRET;
+  must(typeof workloadKey === 'string' && /^[a-fA-F0-9]{64}$/.test(workloadKey),
+    'SOCIAL_X_EDGE_WORKLOAD_UNCONFIGURED');
   must(typeof publishable === 'string' && publishable.length > 12
     && typeof userAccessToken === 'string' && userAccessToken.length > 50
     && userAccessToken.length < 8192, 'SOCIAL_X_EDGE_AUTH_UNAVAILABLE');
   return {
     target: new URL('/functions/v1/capital-social-x-vault', base).toString(),
     publishable, userAccessToken,
+    workloadKey: Buffer.from(workloadKey, 'hex'),
     redirectUri: new URL(CALLBACK, app).toString(),
   };
 }
@@ -32,13 +38,18 @@ export function createSocialXEdgeClient({ env = process.env, fetchImpl = fetch,
   userAccessToken } = {}) {
   const cfg = setup(env, userAccessToken);
   async function invoke(operation, body) {
+    const payload = JSON.stringify({ operation, ...body });
+    const timestamp = String(Date.now());
+    const signature = createHmac('sha256', cfg.workloadKey)
+      .update(timestamp + '\n' + cfg.userAccessToken + '\n' + payload).digest('hex');
     let response;
     try {
       response = await fetchImpl(cfg.target, {
         method: 'POST', redirect: 'error', signal: AbortSignal.timeout(9500),
         headers: { apikey: cfg.publishable, Authorization: 'Bearer ' + cfg.userAccessToken,
+          'x-capital-edge-timestamp': timestamp, 'x-capital-edge-signature': signature,
           'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ operation, ...body }),
+        body: payload,
       });
     } catch { throw Error('SOCIAL_X_EDGE_UNAVAILABLE'); }
     must(response.ok, 'SOCIAL_X_EDGE_REJECTED');
