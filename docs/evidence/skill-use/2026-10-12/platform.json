@@ -1,0 +1,495 @@
+{
+  "schemaVersion": "CAPITAL_AI_SKILL_USE_EVIDENCE@1",
+  "domain": "PLATFORM",
+  "auditDate": "2026-10-12",
+  "contract": "SOLO_MAINTAINER_FLOW@1",
+  "repository": "SvenKulessa/Capital-AI",
+  "baseSha": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+  "resultHeadSha": null,
+  "resultHeadShaNote": "Self-referential Git commit SHA cannot be encoded in its own content. GitHub branch/PR readback captures the evidence commit SHA after writing; do not treat this null as current-main equivalence.",
+  "governance": {
+    "authority": "AGENTS.md",
+    "authorityBlobSha": null,
+    "requiredChecks": [
+      "Docker Security Gate",
+      "Domain Governance"
+    ],
+    "ruleset": {
+      "id": 24259174,
+      "name": "main-production-protection",
+      "enforcement": "active",
+      "strictRequiredStatusChecks": true,
+      "requiredLinearHistory": true,
+      "requiredReviewThreadResolution": true,
+      "codeScanning": "CodeQL medium_or_higher and errors_and_warnings",
+      "codeQuality": "warnings"
+    },
+    "sourceUrl": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/AGENTS.md"
+  },
+  "taskResults": [
+    {
+      "id": "T1",
+      "title": "OCI, Supply Chain, GHCR, Secrets und CI",
+      "status": "PARTIALLY_VERIFIED",
+      "methods": [
+        "GitHub file read",
+        "GitHub ruleset GET",
+        "GitHub main run/job readback",
+        "GitHub artifact ZIP inspection"
+      ],
+      "findings": [
+        "App image uses pinned node:26.10.0-alpine digest; Dockerfile.security pins Trivy 0.75.0 and hadolint by digests; deploy/Dockerfile.nats pins the nats:2.15.0-alpine base digest and copies hash-verified 2.15.1 binary.",
+        "Actions checkout and upload-artifact use commit SHA pins; checkout persist-credentials:false; workflow default contents:read and pull-requests:read; GHCR publishing only workflow_dispatch on main with publish_candidate=true.",
+        "Main CI validated and scanned build, runtime, source, NATS image; GHCR publish and Production Handoff Gate were SKIPPED for this push. OCI registry digest and provenance verification for this commit NOT_PROVEN.",
+        "Main Run success != PR-Head success != actual production execution. Render web deploy SHA matched; NATS and Rust bridge services suspended. Secret injection actual values intentionally not retrieved."
+      ],
+      "sources": [
+        "Dockerfile",
+        "Dockerfile.security",
+        "deploy/Dockerfile.nats",
+        ".github/workflows/build-security.yml",
+        ".github/workflows/domain-governance.yml"
+      ]
+    },
+    {
+      "id": "T2",
+      "title": "Private Provider Bridge, JetStream, Credential Separation",
+      "status": "CODE_PRESENT_TEST_PASS_INTENTIONALLY_DISABLED_LICENSE_BLOCKED",
+      "methods": [
+        "Line-focused implementation audit",
+        "Negative unit test review",
+        "Main CI job log",
+        "Read-only Render service status"
+      ],
+      "findings": [
+        "PRIVATE_PROVIDER_BRIDGE_ENABLED must equal string true AND MARKET_BROKER_PAUSED must not equal true for customer queries; disabled route returns 503 before auth, state, NATS or provider I/O.",
+        "Probe-only permits a signed diagnostic request but has separate customer flag and no state/vault/provider I/O; MARKET_BROKER_PAUSED=true overrides both flags and start() returns false.",
+        "NATS_APP_USER/PASSWORD for requester, NATS_BRIDGE_USER/PASSWORD for relay and NATS_EXECUTOR_USER/PASSWORD for executor. Executor missing/short password fails closed; scoped subjects defined in nats-server.conf.",
+        "Private query request/response uses Core NATS, not CAPITAL_FACTS JetStream; HMAC envelope binds user/operation/expiry; signed-request checks, durable SQL claim, quotas and replay tests passed in main CI.",
+        "Bridge and NATS Render services are deliberately suspended (read-only observed) according to Owner due to unavailable provider licences. Live roundtrip is NOT_APPLICABLE_WHILE_SUSPENDED and remains NOT_PROVEN for future reactivation, not an active infrastructure incident.",
+        "No provider credentials, JetStream streams or private market flows are to be enabled or re-deployed to satisfy an audit or PR check. Technical availability does not establish data rights."
+      ],
+      "sources": [
+        "server/private-provider-query.mjs",
+        "server/private-provider-query.test.mjs",
+        "server/nats-auth.mjs",
+        "server/provider-query-state.mjs",
+        "deploy/nats-server.conf"
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "Trivy, SBOM, GO-2026-5932, DS-0013, DS-0026",
+      "status": "CI_BINARY_VERIFIED_PRODUCTION_NOT_PROVEN",
+      "methods": [
+        "Download and SHA-256 hash GitHub artifact ZIP",
+        "Parse public scan summaries, SBOMs and GO_VULN_REACHABILITY@2",
+        "Review exact image/binary hashes and upstream Go advisory"
+      ],
+      "findings": [
+        "Main CI Trivy v0.75.0: source vulnerability list empty, 0 secret findings, DS-0013 MEDIUM and DS-0026 LOW; build image and runtime app image: 0 listed vulnerabilities/misconfigurations/secrets.",
+        "NATS scan retains GO-2026-5932 UNKNOWN in golang.org/x/crypto v0.57.0; no fixed version recorded. Go advisory applies to unsafe unmaintained openpgp packages, not blanket usage of every x/crypto symbol.",
+        "govulncheck v1.8.0 binary symbol scan + nm: 0 affected OpenPGP symbol/stack frames, repeated run equivalent, upstream VEX not_affected; NOT_AFFECTED bounded exclusively to checked CI /usr/local/bin/nats-server SHA-256 baab2eec...; production binary digest not correlated.",
+        "DS-0013 means RUN cd should be replaced with WORKDIR for maintainability, not automatically exploitable code. DS-0026 means Docker HEALTHCHECK absent in at least one scanned Dockerfile; specific target path is not in redacted public artifact, so impact scoped as NOT_PROVEN; app/NATS/security/bridge Dockerfiles inspected have HEALTHCHECK.",
+        "Two CycloneDX 1.7 SBOMs evaluated: app 112 components, NATS 32 components; no claim of exact linked Rust static-binary coverage."
+      ]
+    },
+    {
+      "id": "T4",
+      "title": "Observability, Redaction, Least Privilege und Recovery",
+      "status": "PARTIALLY_VERIFIED",
+      "methods": [
+        "Static source and unit-test readback",
+        "Main CI log",
+        "Read-only Render service/deploy readback",
+        "Recovery runbook review"
+      ],
+      "findings": [
+        "server/observability.test.mjs asserts recursive key/value secret redaction, W3C traceparent validation and bounded Prometheus metrics; successfully run as part of main validation.",
+        "Render Capital-AI service main/autoDeployTrigger=checksPass and successful deploy linked to c1638194; public /healthz HTTP response could not be independently obtained.",
+        "Recovery runbook covers GHCR artifacts, Supabase identity/database, JetStream backup/replay, reconstructable Valkey, and health/source-SHA; isolated restore, measured RTO/RPO, Alerting/SLO NOT_PROVEN.",
+        "No production secret values, logs containing PII, tokens, privileged configuration or mutable infrastructure queried. No deploy, bridge enablement or credential change.",
+        "Recovery readiness is documented but no live broker restore/roundtrip should be used as a license workaround. Non-invasive tabletop or isolated synthetic test is the appropriate next evidence if necessary."
+      ]
+    },
+    {
+      "id": "T5",
+      "title": "Kombinierte Infrastruktur-/Incident-Aufgabe",
+      "status": "SCENARIO_AUDITED_NOT_A_REAL_INCIDENT",
+      "scenario": "Hypothetischer NATS-Reconnect-Ausfall mit möglicher Credential-Exposition",
+      "appliedSkills": [
+        "platform-engineering",
+        "incident-response",
+        "platform-observability",
+        "trust-engineering",
+        "data-engineering"
+      ],
+      "findings": [
+        "First inspect scoped Render events/log metadata and source/digest correlation; prohibit publishing or replay of private provider results into CAPITAL_FACTS; do not redeploy NATS for unrelated main HEAD.",
+        "Contain with existing suspend/deny mechanisms and credential rotation only on corroborated evidence; verify JetStream restore/replay and RTO/RPO in isolated environment before claiming recovery.",
+        "No incident detected or caused and no rotation, restore or failover executed.",
+        "OWNER CLARIFICATION: current NATS suspension is intentional due to unavailable data-provider licences; this theoretical outage/incident scenario must not be applied as a real current incident."
+      ]
+    },
+    {
+      "id": "T6",
+      "title": "Unklare Kontrollaufgabe / Overrouting",
+      "status": "ABSTAIN_VERIFIED_AS_MANUAL_CLASSIFICATION_ONLY",
+      "scenario": "Prüfe die Kontrolle.",
+      "appliedSkills": [],
+      "findings": [
+        "Insufficient domain/artifact/expected effect; no specialist is justified from the sentence alone.",
+        "Existing scripts/skill-routing.test.mjs includes abstention and negative routing cases, with main CI PASS, but this chat-specific automatic skill-selection trace is NOT_PROVEN."
+      ]
+    }
+  ],
+  "skillsUsed": [
+    {
+      "name": "platform-engineering",
+      "gitPath": ".agents/skills/platform-engineering/SKILL.md",
+      "blobSha": "b6b2e789d48b8d366dc1110496b3f566af235846",
+      "toolReference": "mcp__GitHub__fetch_file",
+      "sourceRef": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "sourceUrl": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/.agents/skills/platform-engineering/SKILL.md",
+      "loadEvidence": "REPOSITORY_FILE_READ_PROVEN",
+      "appliedMethod": "OCI-Digests, NATS-Runtime-Grenzen, CI und Fail-Closed"
+    },
+    {
+      "name": "platform-advisory",
+      "gitPath": ".agents/skills/platform-advisory/SKILL.md",
+      "blobSha": "20ca37635a03589aa089e4febee0615fe9490f45",
+      "toolReference": "mcp__GitHub__fetch_file",
+      "sourceRef": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "sourceUrl": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/.agents/skills/platform-advisory/SKILL.md",
+      "loadEvidence": "REPOSITORY_FILE_READ_PROVEN",
+      "appliedMethod": "Reversibilität, Recovery-/Kosten-Tradeoffs und SLO-Evidence"
+    },
+    {
+      "name": "visual-chat",
+      "gitPath": ".agents/skills/visual-chat/SKILL.md",
+      "blobSha": "2ded476ee7bbe97c40e0975936b9d3c87acaec25",
+      "toolReference": "mcp__GitHub__fetch_file",
+      "sourceRef": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "sourceUrl": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/.agents/skills/visual-chat/SKILL.md",
+      "loadEvidence": "REPOSITORY_FILE_READ_PROVEN",
+      "appliedMethod": "Status-, Trust- und CVE-Matrix ohne simulierte Messwerte"
+    },
+    {
+      "name": "trust-engineering",
+      "gitPath": ".agents/skills/trust-engineering/SKILL.md",
+      "blobSha": "59a93d403b5fb099b94ae4e28404de78544c5190",
+      "toolReference": "mcp__GitHub__fetch_file",
+      "sourceRef": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "sourceUrl": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/.agents/skills/trust-engineering/SKILL.md",
+      "loadEvidence": "REPOSITORY_FILE_READ_PROVEN",
+      "appliedMethod": "SBOM, CVE-Reachability, Credential-Scopes und Security-Tests"
+    },
+    {
+      "name": "trust-advisory",
+      "gitPath": ".agents/skills/trust-advisory/SKILL.md",
+      "blobSha": "4dfdf30e323608658faaff0b771763d1be3b09fe",
+      "toolReference": "mcp__GitHub__fetch_file",
+      "sourceRef": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "sourceUrl": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/.agents/skills/trust-advisory/SKILL.md",
+      "loadEvidence": "REPOSITORY_FILE_READ_PROVEN",
+      "appliedMethod": "Risikoabwägung ohne blanket CVE-PASS oder zusätzliche Gates"
+    },
+    {
+      "name": "incident-response",
+      "gitPath": ".agents/skills/incident-response/SKILL.md",
+      "blobSha": "7961647087d4a01d0f8d11e39b0bd44611e081a9",
+      "toolReference": "mcp__GitHub__fetch_file",
+      "sourceRef": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "sourceUrl": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/.agents/skills/incident-response/SKILL.md",
+      "loadEvidence": "REPOSITORY_FILE_READ_PROVEN",
+      "appliedMethod": "Szenario Broker-Ausfall + Verdacht auf Secret-Leak; Containment/Recovery-Abgrenzung"
+    },
+    {
+      "name": "data-engineering",
+      "gitPath": ".agents/skills/data-engineering/SKILL.md",
+      "blobSha": "578f7319a81b32ba298b44749999388a05aef3fb",
+      "toolReference": "mcp__GitHub__fetch_file",
+      "sourceRef": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "sourceUrl": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/.agents/skills/data-engineering/SKILL.md",
+      "loadEvidence": "REPOSITORY_FILE_READ_PROVEN",
+      "appliedMethod": "JetStream/Core-NATS, Replay und private-versus-public Datenflüsse"
+    },
+    {
+      "name": "platform-observability",
+      "gitPath": ".agents/skills/platform-observability/SKILL.md",
+      "blobSha": "0061c07544818fcf6cd0d26eecd90af271535204",
+      "toolReference": "mcp__GitHub__fetch_file",
+      "sourceRef": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "sourceUrl": "https://github.com/SvenKulessa/Capital-AI/blob/c1638194187c1c51cc86a87bbe3f6f47b6148fd1/.agents/skills/platform-observability/SKILL.md",
+      "loadEvidence": "REPOSITORY_FILE_READ_PROVEN",
+      "appliedMethod": "Redaction-Unit-Tests, Telemetriegrenzen, Runtime-SLOs nicht behauptet"
+    }
+  ],
+  "runtimeRoutingEvidence": {
+    "status": "NOT_PROVEN",
+    "automaticChatRuntimeSkillSelection": "NOT_PROVEN",
+    "independentLoadTraceAvailable": false,
+    "verifiedManualRepoReads": 8,
+    "method": "Repo connector fetch_file produced Git path and blob SHA for every selected SKILL.md; manual selection and applied analysis do not prove ChatGPT's internal automatic router.",
+    "repositoryRoutingTests": {
+      "source": "scripts/skill-routing.test.mjs",
+      "mainCISuccess": true,
+      "observed": [
+        "41 curated prompts exact specialist set",
+        "76 curated tasks scored",
+        "abstention test defined"
+      ],
+      "specificCurrentChatInvocationObserved": false
+    }
+  },
+  "ciEvidence": {
+    "verifiedMainSha": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+    "mainSecurityRun": {
+      "runId": 38179103408,
+      "url": "https://github.com/SvenKulessa/Capital-AI/actions/runs/38179103408",
+      "jobId": 114587659663,
+      "jobUrl": "https://github.com/SvenKulessa/Capital-AI/actions/runs/38179103408/job/114587659663",
+      "job": "Docker Security Gate",
+      "status": "success",
+      "event": "push",
+      "publishCandidate": "skipped",
+      "productionHandoff": "skipped"
+    },
+    "observedTests": [
+      "scripts/domain-skills.test.mjs",
+      "scripts/skill-routing.test.mjs",
+      "scripts/docker-context.test.mjs",
+      "scripts/verify-go-vuln-reachability.test.mjs",
+      "server/private-provider-query.test.mjs",
+      "server/observability.test.mjs",
+      "server/user-provider-vault.test.mjs",
+      "npm run validate:all",
+      "npm test:market",
+      "NATS disk bootstrap / nonroot smoke",
+      "Docker Hadolint",
+      "isolated app runtime smoke",
+      "Trivy source/build/app/NATS scans"
+    ],
+    "observedSecurityArtifact": {
+      "artifactId": 11716993649,
+      "name": "docker-security-c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "url": "https://github.com/SvenKulessa/Capital-AI/actions/runs/38179103408/artifacts/11716993649",
+      "archiveSha256": "bbe17cfc60d705fabf9a483077f3b39dcaf1710045a35db32bf7083af1dc8ec0",
+      "filesReviewed": [
+        "source.public.json",
+        "build-image.public.json",
+        "image.public.json",
+        "nats-image.public.json",
+        "nats-go-2026-5932-reachability.json",
+        "nats-go-2026-5932.openvex.json",
+        "nats-reachability-image-identity.json",
+        "nats-go-version-m-1.txt",
+        "capital-ai.sbom.cdx.json",
+        "nats.sbom.cdx.json",
+        "container-identity.json",
+        "smoke-health.json",
+        "trivy-version.txt"
+      ]
+    },
+    "scanResults": {
+      "source": {
+        "vulnerabilities": 0,
+        "secrets": 0,
+        "misconfigurations": [
+          {
+            "id": "DS-0013",
+            "severity": "MEDIUM"
+          },
+          {
+            "id": "DS-0026",
+            "severity": "LOW"
+          }
+        ]
+      },
+      "app": {
+        "vulnerabilities": 0,
+        "secrets": 0
+      },
+      "build": {
+        "vulnerabilities": 0,
+        "secrets": 0
+      },
+      "nats": {
+        "finding": "GO-2026-5932",
+        "severity": "UNKNOWN",
+        "secrets": 0
+      },
+      "trivyVersion": "0.75.0"
+    },
+    "sbom": {
+      "format": "CycloneDX",
+      "version": "1.7",
+      "appComponents": 112,
+      "natsComponents": 32
+    },
+    "mainChecks": {
+      "dockerSecurityGate": "success",
+      "domainGovernance": "NOT_APPLICABLE_ON_PUSH",
+      "codeQL": "success on main separate run 38179103011"
+    },
+    "prChecks": {
+      "status": "RECHECK_REQUIRED_AFTER_OWNER_CONTEXT_CORRECTION_AND_MAIN_SYNC",
+      "required": [
+        "Docker Security Gate",
+        "Domain Governance"
+      ]
+    },
+    "runScopeNote": "Tests and scans cited here ran on main SHA before evidence commit, not on the future PR result SHA.",
+    "previousPrChecks": {
+      "previouslyInspectedHeadSha": "5c035c3ba244ed0f5fe4a5a8e0f59a4bfd13bc05",
+      "headChangeInvalidatesForCurrentHead": true,
+      "dockerSecurityGate": {
+        "runId": 38182581979,
+        "jobId": 114598115125,
+        "conclusion": "success"
+      },
+      "domainGovernance": {
+        "runId": 38182581828,
+        "jobId": 114598114196,
+        "conclusion": "success"
+      },
+      "codeQlRunId": 38182580531,
+      "codeQlJobs": "success",
+      "note": "After report amendment and main sync these successes do NOT establish status for the NEW PR HEAD. Read back new CI."
+    }
+  },
+  "cveFindings": [
+    {
+      "id": "GO-2026-5932",
+      "component": "nats-server",
+      "installed": "golang.org/x/crypto v0.57.0",
+      "goRuntime": "go1.27.2",
+      "natsVersion": "2.15.1",
+      "imageBase": "nats:2.15.0-alpine@sha256:ac8f88a6494bffc2c2a5289a0ca61cb28a9145c11ba5677cf24265d07f46d8d4",
+      "localImageId": "sha256:1cd168e8723f39d619c6c1fc35b034b1c2e93549bfc70f97eee2367181e00d71",
+      "binaryPath": "/usr/local/bin/nats-server",
+      "binarySha256": "sha256:baab2eecb5a8ebdabf6edd3e22756f89805e3184468653ba67185adf5a3b57eb",
+      "affectedCode": "golang.org/x/crypto/openpgp/*",
+      "scannerFinding": "UNKNOWN",
+      "binaryReachability": "NOT_AFFECTED_FOR_EXACT_CI_BINARY",
+      "method": "govulncheck v1.8.0 binary symbol scan; Go buildinfo; nm exit 0, 0 OpenPGP symbols; 2 matching runs; consistent upstream VEX",
+      "productionDecision": "UNKNOWN",
+      "trivyFindingRetained": true,
+      "suppressed": false,
+      "advisoryUrl": "https://pkg.go.dev/vuln/GO-2026-5932",
+      "productionExposureContext": "NATS is deliberately suspended because live provider data licences are unavailable per Owner; defer live binary/digest review to authorized reactivation. No current NATS exploitability claim."
+    },
+    {
+      "id": "DS-0013",
+      "type": "misconfiguration",
+      "severity": "MEDIUM",
+      "configuration": "Dockerfile RUN cd instead of WORKDIR",
+      "observedIn": "Trivy source summary",
+      "impact": "maintainability/style; not direct exploitability proof",
+      "fileLocation": "NOT_PROVEN_IN_REDACTED_SUMMARY",
+      "decision": "REVIEW_REQUIRED",
+      "reference": "https://avd.aquasec.com/misconfig/dockerfile/general/ds-0013/"
+    },
+    {
+      "id": "DS-0026",
+      "type": "misconfiguration",
+      "severity": "LOW",
+      "configuration": "Missing Dockerfile HEALTHCHECK",
+      "observedIn": "Trivy source summary",
+      "impact": "may reduce image-native health monitoring; Render app /healthz and inspected relevant Dockerfiles have independent checks",
+      "fileLocation": "NOT_PROVEN_IN_REDACTED_SUMMARY",
+      "decision": "REVIEW_REQUIRED",
+      "reference": "https://avd.aquasec.com/misconfig/dockerfile/general/ds-0026/"
+    }
+  ],
+  "runtimeReadback": {
+    "provider": "Render",
+    "workspace": "AICapital",
+    "readOnly": true,
+    "app": {
+      "serviceId": "srv-dau1rp893c1s73cdhm1g",
+      "branch": "main",
+      "autoDeployTrigger": "checksPass",
+      "suspended": false,
+      "latestDeployId": "dep-db60jjrrjlhs73b8cm90",
+      "latestDeploySha": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+      "latestDeployStatus": "live",
+      "httpHealth": "NOT_PROVEN"
+    },
+    "nats": {
+      "serviceId": "srv-dauhcoojo6nc738eedjg",
+      "suspended": true,
+      "autoDeploy": "off",
+      "latestDeploySha": "72fbc048e94953069592e5950407ef7a2a0edc66",
+      "latestDeployStatus": "live_but_service_suspended",
+      "binaryDigestCorrelatedToMainCi": false,
+      "operationalInterpretation": "INTENTIONALLY_SUSPENDED_LICENSE_BLOCKED_OWNER_REPORTED"
+    },
+    "bridge": {
+      "serviceId": "srv-db3d8mui0phs739mfq20",
+      "suspended": true,
+      "autoDeploy": "off",
+      "latestDeploySha": "acb328b5dc4d0892335735f4467f6ff8717a3626",
+      "latestDeployStatus": "live_but_service_suspended",
+      "operationalInterpretation": "INTENTIONALLY_SUSPENDED_LICENSE_BLOCKED_OWNER_REPORTED"
+    },
+    "changedRuntime": false
+  },
+  "riskAssessment": {
+    "status": "REVIEW_REQUIRED",
+    "highPriority": [
+      "Provider-dependent features have no established licensable market-data source under owner's report; keep corresponding private/public data-feed operation and monetization blocked.",
+      "No evidence of supplier/grant redistributable rights or authority to resume provider-connected infrastructure; no implied commercial rights from working CI."
+    ],
+    "moderate": [
+      "GO-2026-5932 production NATS digest still not correlated with CI NOT_AFFECTED classification; operational impact deferred as service intentionally suspended.",
+      "Exact DS-0013/DS-0026 source path not present in public redacted archive.",
+      "No independently verified production HTTP health; JetStream backup/restore RTO/RPO not measured. Restore/live-check scope excludes intentional suspended broker."
+    ],
+    "mitigations": [
+      "Maintain NATS and Rust provider bridge suspended with autoDeploy disabled; no Live/Production roundtrips, paid provider traffic or licence-dependent release.",
+      "Keep Trivy GO-2026-5932 finding visible and production reachability UNKNOWN; no broad suppression.",
+      "A repository HEAD alone never authorizes a NATS redeploy.",
+      "Continue non-provider portions of the product only with their own demonstrable data/content rights.",
+      "Separate user's private provider keys from public JetStream, Valkey shared caches and infrastructure secrets."
+    ],
+    "costs": "No new resources, APIs, privileged secrets, CI workflow gates or deployments commissioned. Existing CI-minutes and Render subscription charges are not quantified in this audit.",
+    "deferredOnlyIfFutureReactivationIsAuthorized": [
+      "👋⚙️ Owner must establish documented licensable provider rights, scope, redistribution limits, and cost approval; a provider's apparent technical accessibility does not establish rights.",
+      "Bind exact future NATS production runtime binary/digest to GO-2026-5932 reachability evidence; evaluate patch version and vulnerability again.",
+      "Revalidate authentication, scoped NATS users, per-user Vault key isolation, quotas, replay, provider data rights, backup/recovery and runtime SLOs with authorized synthetic or licensed data."
+    ],
+    "currentProductionNatsExposure": "NO_ACTIVE_PROVIDER_BRIDGE_PATH_OBSERVED_SERVICE_SUSPENDED; residual dormant binary vulnerability status UNKNOWN.",
+    "auditPrMergeScope": "DOCS_ONLY; provider licence availability and suspended NATS are not blockers for merging this read-only evidence correction when GitHub Required Checks at current Head SHA satisfy AGENTS.md."
+  },
+  "limitations": [
+    "Automatic Chat Runtime routing has no independent load trace.",
+    "CI artifacts are public-safe projections; exact source scan file/line absent.",
+    "No live production provider roundtrip or secret check performed.",
+    "No restore/failover or RTO/RPO tests performed.",
+    "No separate independent cryptographic GHCR verification for this main run.",
+    "No new PR-Head CI had run when the evidence snapshot was authored.",
+    "After committing this file, GitHub PR branch readback is canonical for new result head SHA, as self-reference inside the commit cannot be exact.",
+    "NATS suspension reason is an Owner declaration and provider licence availability not independently confirmed through licence contracts/market documentation.",
+    "No provider, broker, service, data or production verification was activated or performed in response to the Owner licensing clarification.",
+    "PR checks prior to the evidence update cannot be treated as current-head evidence; all applicable checks must be re-read after the branch update."
+  ],
+  "status": "REVIEW_REQUIRED",
+  "licensingContext": {
+    "source": "OWNER_DECLARATION_IN_CHAT_2026-10-12",
+    "verification": "OWNER_REPORTED_NOT_INDEPENDENTLY_VERIFIED",
+    "scope": "Marktdatenprovider-Lizenzen für den beabsichtigten CAPITAL-AI-Use-Case",
+    "declaration": "NATS ist absichtlich deaktiviert, da erforderliche Lizenzen für Datenprovider derzeit nicht erwerbbar sind.",
+    "interpretation": "PLANNED_SHUTDOWN_DUE_TO_PROVIDER_RIGHTS; not a reliability incident or remediation failure.",
+    "runtimeCorroboration": "Read-only Render showed capital-ai-market-events and capital-ai-provider-bridge suspended, both autoDeploy off. Suspension cause is attributed to the owner's declaration; provider licence market and contracts have not been independently inspected.",
+    "policy": "Do not activate NATS, provider bridge, provider access, paid provider features or private data distribution as part of this audit. Unlicensed data access, public redistribution and monetization dependent on those rights remain blocked.",
+    "technicalCveBoundary": "GO-2026-5932 is NOT_AFFECTED only for exact CI binary; production NATS remains UNKNOWN. Production digest correlation is a prerequisite only before any explicitly authorized future reuse, not an audit-PR acceptance criterion while NATS is suspended.",
+    "productSeparation": "Existing learning, blueprint, documentation and demonstrably permitted demo/offline product paths are independent of an unlicensed live provider feed; this does not assert rights for other product data."
+  },
+  "mainCorrelation": {
+    "originalBaselineSha": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+    "mainObservedBeforeOwnerCorrection": "b5b0ccafebbc344fa8c52a213dce414738f9bc37",
+    "baselineScope": "Security findings and source/scan artifacts in this report retain their original SHA; 3 newer main commits have not been re-scanned by this static report.",
+    "branchUpdateMethod": "Non-forced fast-forward merge commit with both prior audit branch head and current main parents, tree based on current main plus updated platform.json."
+  }
+}
