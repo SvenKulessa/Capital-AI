@@ -2,6 +2,7 @@
 // Feature flag and verified IAM-owner access prevent account linkage by default.
 import { createHash, randomBytes } from 'node:crypto';
 import { createSocialProviderStore } from './provider-store.mjs';
+import { createSocialXEdgeClient, socialXEdgeMode } from './x-edge-client.mjs';
 import { socialXOAuthConfigured } from './x-oauth-exchange.mjs';
 
 const START_PATH = '/api/social-media/x/auth/start';
@@ -61,7 +62,10 @@ export function createSocialXOAuthStart({ env = process.env, auth,
     try {
       const verifier = randomBytes(32).toString('base64url');
       const challenge = createHash('sha256').update(verifier).digest('base64url');
-      const activeStore = store ?? createSocialProviderStore({ env, fetchImpl });
+      const activeStore = store ?? (socialXEdgeMode(env)
+        ? createSocialXEdgeClient({ env, fetchImpl,
+          userAccessToken: await auth?.internalAccessToken?.(req, res) })
+        : createSocialProviderStore({ env, fetchImpl }));
       const issued = await activeStore.beginOAuth({
         userId: identity.userId, channel: 'X', redirectUri,
         allowedRedirectUris: [redirectUri], codeVerifier: verifier,
