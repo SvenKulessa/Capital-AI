@@ -1,13 +1,12 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "bcab95f01500bd89244e569ff2d8dc4eb28bb083",
-  "mergedPr": 440,
-  "targetPr": 423,
-  "targetBranch": "capital-ai-product/skill-evidence-product-20261012",
-  "targetHeadSha": "79a3094c4305c80fef5651a260c4eb0473a2b17f",
+  "mainSha": "afa9e89905ab17495ab926d3a83e6f94327edec0",
+  "mergedPr": 438,
+  "targetPr": 440,
+  "targetBranch": "dependabot/npm_and_yarn/routine-minor-patch-c703c65b2a",
+  "targetHeadSha": "0f6c29287d2d837e180ff0a37a13c7fa1d300475",
   "exactOverlap": [
-    "docs/evidence/linear-post-merge-correlation.json",
-    "package.json"
+    "src/data/externalComponentInventory.ts"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,

@@ -87,8 +87,9 @@
     radial-gradient(ellipse 60% 38% at 5% 78%, rgb(var(--hub-rgb) / 0.045), transparent 82%);
 }
 .hub-universe--learning { --hub-rgb: 249 191 33; }
-.hub-universe--studio { --hub-rgb: 196 181 253; }
-.hub-universe--marketscreener { --hub-rgb: 103 232 249; }
+.hub-universe--studio { --hub-rgb: 74 222 128; }
+.hub-universe--marketscreener { --hub-rgb: 183 148 244; }
+.hub-universe--documentation { --hub-rgb: 18 48 111; background-image: radial-gradient(ellipse 72% 34% at 90% 5%, rgb(16 51 135 / .30), transparent 84%), radial-gradient(ellipse 65% 40% at 3% 85%, rgb(31 77 163 / .12), transparent 85%); }
 
 /* Shared editorial presentation for Content Engine website articles. */
 .blog-screen { position: relative; background-image: linear-gradient(135deg, rgb(6 182 212 / .06), transparent 45%), linear-gradient(0deg, rgb(139 92 246 / .05), transparent); }
@@ -101,14 +102,18 @@
 /* All public hubs share one touch-scrollable navigation strip. */
 .hub-tab-strip {
   display: flex;
-  gap: .5rem;
+  gap: .1875rem;
+  min-width: 0;
+  width: 100%;
   overflow-x: auto;
+  overflow-y: hidden;
   overscroll-behavior-x: contain;
   touch-action: pan-x pan-y;
   border: 1px solid var(--color-brand-ai);
   border-radius: 1rem;
   background: var(--color-brand-canvas);
-  padding: .75rem;
+  padding: .25rem;
+  scroll-padding-inline: .25rem;
   scrollbar-width: thin;
   scrollbar-color: var(--color-brand-gold) var(--color-brand-canvas);
 }
@@ -116,15 +121,15 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: .5rem;
+  gap: .1875rem;
   flex-shrink: 0;
   white-space: nowrap;
-  min-height: 44px;
+  min-height: 28px; /* WCAG 2.2 AA: >= 24px touch target */
   border: 1px solid transparent;
-  border-radius: .75rem;
-  padding: .5rem 1rem;
+  border-radius: .375rem;
+  padding: .1875rem .3125rem;
   color: #e2e8f0;
-  font-size: 1rem;
+  font-size: .75rem;
   font-weight: 600;
 }
 .hub-tab:hover, .hub-tab:focus-visible {
@@ -142,12 +147,12 @@
 
 /* Hub role colours: same identity in header, directory, page and subnavigation. */
 :root { --hub-accent: #F9BF21; }
-[data-hub="marketscreener"] { --hub-accent: #67E8F9; }
-[data-hub="studio"] { --hub-accent: #C4B5FD; }
+[data-hub="marketscreener"] { --hub-accent: #B794F4; }
+[data-hub="studio"] { --hub-accent: #4ADE80; }
 [data-hub="learning"] { --hub-accent: #F9BF21; }
-[data-hub="documentation"] { --hub-accent: #F9A8D4; }
-[data-hub="control-center"] { --hub-accent: #FDA4AF; }
-[data-hub="legal"] { --hub-accent: #93C5FD; }
+[data-hub="documentation"] { --hub-accent: #60A5FA; --hub-glow: #102E75; }
+[data-hub="control-center"] { --hub-accent: #F87171; }
+[data-hub="legal"] { --hub-accent: #67E8F9; }
 .hub-tab-strip { border-color: color-mix(in srgb, var(--hub-accent) 40%, #334155); scrollbar-color: var(--hub-accent) #071126; max-width:100%; }
 .hub-tab-strip svg, .hub-switch svg { color:var(--hub-accent); }
 .hub-tab:hover, .hub-tab:focus-visible, .hub-tab[aria-current="page"], .hub-tab[aria-selected="true"], .hub-directory-card:hover {
@@ -156,10 +161,96 @@
   box-shadow:0 0 14px color-mix(in srgb, var(--hub-accent) 28%, transparent);
 }
 .hub-tab:focus-visible, .hub-scroll-button:focus-visible, .hub-directory-card:focus-visible { outline:2px solid var(--hub-accent); outline-offset:3px; }
-.hub-scroll-button { min-width:44px; min-height:44px; display:grid; place-items:center; color:var(--hub-accent); border:1px solid #64748b; border-radius:.75rem; }
+.hub-scroll-button { width:44px; height:44px; display:grid; place-items:center; color:var(--hub-accent); border:1px solid #64748b; border-radius:.75rem; background:#090e21; }
+.hub-scroll-button:disabled { opacity:.4; cursor:not-allowed; }
 .hub-directory-card { border-color:color-mix(in srgb,var(--hub-accent) 40%,#334155); color:var(--hub-accent); }
 .hub-heading { color:var(--hub-accent); }
 .historical-demo input, .historical-demo select { min-height:44px; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
 
 .hub-role-accent { color:var(--hub-accent); border-color:var(--hub-accent); background:color-mix(in srgb,var(--hub-accent) 12%,#071126); }
+
+
+/* Seven-brand navigation: 50% smaller chips and spacing; >= 24px targets for WCAG 2.2 AA. */
+.hub-tab-strip .hub-tab {
+  --effective-tab-accent: var(--tab-accent, var(--hub-accent));
+  border-color: color-mix(in srgb, var(--effective-tab-accent) 35%, transparent);
+  background: color-mix(in srgb, var(--effective-tab-accent) 6%, #071126);
+}
+.hub-tab-strip .hub-tab svg { color: var(--effective-tab-accent); }
+.hub-tab-strip .hub-tab:hover,
+.hub-tab-strip .hub-tab:focus-visible,
+.hub-tab-strip .hub-tab[aria-current="page"],
+.hub-tab-strip .hub-tab[aria-selected="true"] {
+  color: var(--effective-tab-accent);
+  border-color: var(--effective-tab-accent);
+  background: color-mix(in srgb, var(--effective-tab-accent) 15%, #071126);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--effective-tab-accent) 30%, transparent);
+}
+.hub-tab-strip .hub-tab:focus-visible {
+  outline: 2px solid var(--effective-tab-accent);
+  outline-offset: 2px;
+}
+/* Public legal and license pages retain their own area identity as well. */
+[data-legal-route] .legal-topic-card,
+.license-report .legal-topic-card {
+  border-color: color-mix(in srgb, var(--tab-accent, var(--legal-accent)) 48%, #334155);
+  background: color-mix(in srgb, var(--tab-accent, var(--legal-accent)) 7%, #071126);
+}
+[data-legal-route] .legal-topic-card:hover,
+[data-legal-route] .legal-topic-card:focus-visible,
+.license-report .legal-topic-card:hover,
+.license-report .legal-topic-card:focus-visible {
+  outline-color: var(--tab-accent, var(--legal-accent));
+  border-color: var(--tab-accent, var(--legal-accent));
+}
+.legal-heading-accent { color: var(--legal-accent, #93C5FD); }
+.legal-border-accent { border-color: color-mix(in srgb, var(--legal-accent, #93C5FD) 45%, #334155); }
+
+
+/* Full-width, compact route navigation. No additional instruction row consumes mobile height. */
+.hub-navigation,
+.hub-tab-viewport { width: 100%; max-width: 100%; min-width: 0; }
+.hub-tab-strip .hub-tab { min-height: 28px; font-size: .75rem; padding: .1875rem .3125rem; }
+.hub-tab-strip .hub-tab > span[aria-hidden="true"] { display: inline-flex; align-items: center; }
+.hub-tab-strip .hub-tab svg { width: .75rem; height: .75rem; flex-shrink: 0; }
+.hub-tab-edge { position: absolute; inset-block: 1px; width: 2.25rem; pointer-events: none; z-index: 2; }
+.hub-tab-edge--right { right: 1px; border-radius: 0 1rem 1rem 0; background: linear-gradient(90deg, transparent, #071126 95%); }
+.hub-tab-edge--right::after { content: '›'; position:absolute; right:.15rem; top:50%; transform:translateY(-50%); color:var(--hub-accent); font-size:1.25rem; font-weight:700; }
+.hub-tab-edge--left { left: 1px; border-radius: 1rem 0 0 1rem; background: linear-gradient(270deg, transparent, #071126 95%); }
+.hub-tab-edge--left::after { content: '‹'; position:absolute; left:.15rem; top:50%; transform:translateY(-50%); color:var(--hub-accent); font-size:1.25rem; font-weight:700; }
+/* The legacy Legal screenshot used a compact two-row layout: preserve that
+ * appearance while retaining the shared nav component and link semantics. */
+.hub-tab-strip[data-hub="legal"],
+.license-report .hub-tab-strip {
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .1875rem;
+  overflow-x: visible;
+}
+@media (min-width: 640px) {
+  .hub-tab-strip .hub-tab { font-size: .75rem; padding: .1875rem .375rem; }
+}
+@media (max-width: 639px) {
+  .hub-navigation { margin-inline: 0; }
+  .hub-universe { width: 100%; max-width: 100%; min-width: 0; }
+  .hub-tab-strip { max-width: 100%; scrollbar-width: none; }
+  .hub-tab-strip::-webkit-scrollbar { display: none; }
+}
+
+/* 50% compact navigation cards: decorative spacing halves, hit areas remain >= 44px. */
+.hub-sidebar-card, .hub-asset-card, .hub-subclass-card { min-height: 44px; }
+.hub-sidebar-card { border-radius: .625rem; }
+.hub-sidebar-card .hub-card-symbol { width: 1.5rem; height: 1.5rem; }
+.hub-sidebar-card .hub-card-symbol svg { width: 1rem; height: 1rem; }
+.hub-sidebar-card .hub-card-glow { box-shadow: 0 0 6px var(--hub-accent); }
+.hub-directory-card { min-height: 44px; }
+/* Legal overview retains the original two-row design at half the card padding.
+ * These selectors leave route text and the published legal document untouched. */
+[data-legal-route] button.legal-topic-card { padding: .5rem; }
+/* Full-bleed on narrow screens without reducing the viewport or shrinking body text. */
+@media (max-width: 639px) {
+  .hub-navigation { margin-block: .5rem; }
+  .hub-tab-strip { border-radius: .625rem; }
+  [data-legal-route] > nav.hub-tab-strip { margin-top: .5rem; }
+}

@@ -9,6 +9,9 @@ import { fileURLToPath } from 'node:url';
 import { assetCatalog, assetValues, quote, health, startStreams } from './market.mjs';
 import { createAuth } from './auth.mjs';
 import { createSocialOAuthCallback } from './social-media/oauth-callback.mjs';
+import { createSocialXOAuthStart } from './social-media/x-oauth-start.mjs';
+import { createSocialXOAuthExchange } from './social-media/x-oauth-exchange.mjs';
+import { createSocialXAccountStatus } from './social-media/x-account-status.mjs';
 import { createPrivateMarketCache } from './private-market-cache.mjs';
 import { createUserProviderVault } from './user-provider-vault.mjs';
 import { createUserAnalysisBindings } from './user-analysis-bindings.mjs';
@@ -36,6 +39,7 @@ import {
 } from '../shared/seo-indexing-policy.mjs';
 import { BILLING_CATALOG } from './billing-catalog.mjs';
 import { createVocabularyCheckout } from './vocabulary-checkout.mjs';
+import { createBlueprintCommerce } from './blueprint-commerce.mjs';
 import { createSubscriptionCheckout } from './subscription-checkout.mjs';
 import { createBenchmarkRuns } from './benchmark-runs.mjs';
 import { createCadsCommerce } from './cads-commerce.mjs';
@@ -294,12 +298,23 @@ export function createApp(root = defaultRoot, options = {}) {
   let inflight = 0;
   const auth = createAuth(options);
   const learningInquiry = createLearningInquiry({ ...options, auth });
+  const socialXOAuthStart = createSocialXOAuthStart({
+    env: options.env || process.env, auth,
+    fetchImpl: options.fetchImpl || fetch,
+    store: options.socialOAuthStore || null,
+  });
+  const socialXAccountStatus = createSocialXAccountStatus({
+    env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
+  });
   const socialOAuthCallback = createSocialOAuthCallback({
     env: options.env || process.env,
     auth,
     fetchImpl: options.fetchImpl || fetch,
     store: options.socialOAuthStore || null,
-    exchangeCode: options.socialOAuthCodeExchange || null,
+    exchangeCode: options.socialOAuthCodeExchange
+      || createSocialXOAuthExchange({
+        env: options.env || process.env, fetchImpl: options.fetchImpl || fetch,
+      }),
   });
   const privateMarketCache = options.privateMarketCache || createPrivateMarketCache({
     env: options.env || process.env, getRedis: () => infrastructure.requireProviderState(),
@@ -350,6 +365,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const repositoryToolCatalog = createRepositoryToolCatalog({ fetchImpl: options.fetchImpl || fetch, env: runtimeEnv });
   const scorerProxy = createScorerProxy({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, sourcePolicy: options.sourcePolicy });
   const vocabularyCheckout = createVocabularyCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
+  const blueprintCommerce = createBlueprintCommerce({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
   const subscriptionCheckout = createSubscriptionCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
   const benchmarkStore = options.benchmarkStore ?? createBenchmarkStore({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch });
   const cadsMarketplace = createCadsMarketplace({
@@ -377,6 +393,8 @@ export function createApp(root = defaultRoot, options = {}) {
   if (serveWellKnown(req, res, url)) return;
   if (await learningInquiry.handle(req, res, url, json)) return;
   if (await auth.handle(req, res, url, json)) return;
+  if (await socialXOAuthStart.handle(req, res, url, json)) return;
+  if (await socialXAccountStatus.handle(req, res, url, json)) return;
   if (await socialOAuthCallback.handle(req, res, url, json)) return;
   if (await userProviderVault.handle(req, res, url, json)) return;
   if (await userAnalysisBindings.handle(req, res, url, json)) return;
@@ -389,6 +407,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await privacy(req, res, url, json)) return;
   if (await telegram(req, res, url, json)) return;
   if (await vocabularyCheckout.handle(req, res, url, json)) return;
+  if (await blueprintCommerce.handle(req, res, url, json)) return;
   if (await subscriptionCheckout.handle(req, res, url, json)) return;
   if (await benchmarkRuns.handle(req, res, url, json)) return;
   if (await cadsMarketplace.handle(req, res, url, json)) return;

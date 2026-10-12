@@ -393,7 +393,7 @@ for (const hub of Object.values(MAIN_HUBS_CONFIG)) {
   hub.name = hub.shortTitle = brand.name;
   hub.color = brand.color;
   hub.accentBg = "hub-role-accent";
-  hub.glowColor = `${brand.color}55`;
+  hub.glowColor = 'glow' in brand ? brand.glow : `${brand.color}55`;
   hub.icon = React.isValidElement(hub.icon) ? React.cloneElement(hub.icon as React.ReactElement<{className:string}>, {className:"h-5 w-5"}) : hub.icon;
   hub.subpages = hub.subpages.map(page => ({...page,path:canonicalHubTarget(page.path)}));
   hub.badge = `${hub.subpages.filter(page => page.badge !== 'PENDING').length} Bereiche`;

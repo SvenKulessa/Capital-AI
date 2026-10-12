@@ -41,6 +41,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { createPortal } from 'react-dom';
 import { BrandLogo } from './BrandLogo';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useLocale } from '../i18n/LocaleProvider';
@@ -130,34 +131,41 @@ export const Header: React.FC<HeaderProps> = ({
       setAuthStatus('error');
     });
     return () => controller.abort();
-  }, [currentRoute, sessionRetry]);
+  }, [currentRoute]);
 
+  // Portaled drawer is outside the header's z-index stacking context.
+  // Keep background scrolling and keyboard focus from escaping the modal.
   useEffect(() => {
     if (!isMenuOpen) return;
-    const drawer = document.getElementById('capital-ai-mobile-navigation');
-    drawer?.querySelector<HTMLElement>('#close-menu-btn')?.focus();
-    const focusable = () => Array.from(drawer?.querySelectorAll<HTMLElement>(
-      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
-    ) ?? []).filter(item => item.getClientRects().length > 0);
-    const onDrawerKeyDown = (event: KeyboardEvent) => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const dialog = document.getElementById('capital-ai-mobile-navigation');
+    dialog?.querySelector<HTMLElement>('#close-menu-btn')?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
         setIsMenuOpen(false);
         return;
       }
-      if (event.key !== 'Tab') return;
-      const options = focusable();
-      if (!options.length) { event.preventDefault(); return; }
-      const first = options[0], last = options[options.length - 1];
-      if (event.shiftKey && (document.activeElement === first || !drawer?.contains(document.activeElement))) {
-        event.preventDefault(); last.focus();
-      } else if (!event.shiftKey && (document.activeElement === last || !drawer?.contains(document.activeElement))) {
-        event.preventDefault(); first.focus();
+      if (event.key !== 'Tab' || !dialog) return;
+      const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      )).filter(element => element.getClientRects().length > 0);
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) {
+        event.preventDefault();
+        first.focus();
       }
     };
-    document.addEventListener('keydown', onDrawerKeyDown);
+    document.addEventListener('keydown', onKeyDown);
     return () => {
-      document.removeEventListener('keydown', onDrawerKeyDown);
+      document.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
       document.getElementById('mobile-menu-btn')?.focus();
     };
   }, [isMenuOpen]);
@@ -253,10 +261,10 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           type="button"
           onClick={() => onNavigate?.('/studio')}
-          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/40 text-cyan-300 text-xs font-semibold transition-all cursor-pointer shadow-[0_0_10px_rgba(6,182,212,0.15)] shrink-0"
+          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/15 hover:bg-green-500/25 border border-green-400/40 text-green-300 text-xs font-semibold transition-all cursor-pointer shadow-[0_0_10px_rgba(74,222,128,0.15)] shrink-0"
           title="Studio Hub: Pipeline Architektur, Blueprints, Pipeline Builder, AI Kauf-Berater, Data & Providers, Analytics & Scoring, Benchmark Lab, Configurator Console (/studio)"
         >
-          <Building2 className="w-3.5 h-3.5 text-cyan-400" />
+          <Building2 className="w-3.5 h-3.5 text-green-400" />
           <span>Studio Hub</span>
         </button>
 
@@ -277,20 +285,20 @@ export const Header: React.FC<HeaderProps> = ({
               id="header-profile-btn"
               type="button"
               onClick={() => setIsAccountOpen(value => !value)}
-              className="flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-400/30 hover:border-emerald-300 text-emerald-100 text-xs font-bold transition-all"
+              className={`flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${isOwner ? "bg-red-500/10 hover:bg-red-500/15 border border-red-400/40 hover:border-red-300 text-red-100" : "bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-400/30 hover:border-emerald-300 text-emerald-100"}`}
               aria-controls="header-account-navigation"
               aria-expanded={isAccountOpen}
               aria-label={t('navAccount')}
               title="Kontomenü"
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
+              <ShieldCheck className={`w-3.5 h-3.5 ${isOwner ? "text-red-300" : "text-emerald-300"}`} />
               <span className="flex min-w-0 flex-col items-start leading-tight">
                 <span className="max-w-28 truncate">{authSession.user?.name || 'Profil'}</span>
                 {accountTier && (
-                  <span className="font-mono text-[9px] text-amber-300">{accountTier}{!isOwner && authSession.account?.subscription?.status === 'active' && <span className="ml-2 text-emerald-300 drop-shadow-[0_0_4px_#34d399]">● Aktiv</span>}</span>
+                  <span className={`font-mono text-[9px] ${isOwner ? "text-red-300" : "text-amber-300"}`}>{accountTier}{!isOwner && authSession.account?.subscription?.status === 'active' && <span className="ml-2 text-emerald-300 drop-shadow-[0_0_4px_#34d399]">● Aktiv</span>}</span>
                 )}
               </span>
-              <ChevronDown className={`h-3.5 w-3.5 text-emerald-300 transition-transform ${isAccountOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isOwner ? "text-red-300" : "text-emerald-300"} ${isAccountOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isAccountOpen && (
@@ -358,7 +366,8 @@ export const Header: React.FC<HeaderProps> = ({
         )}
       </div>
 
-      {/* Slide-out Mobile Menu Drawer FROM THE LEFT ("links aufklappbar") */}
+      {/* Body portal ensures footer / hero imagery cannot cover the open navigation. */}
+      {typeof document !== 'undefined' && createPortal(
       <AnimatePresence>
         {isMenuOpen && (
           <>
@@ -369,7 +378,7 @@ export const Header: React.FC<HeaderProps> = ({
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={() => setIsMenuOpen(false)}
-              className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 cursor-pointer"
+              className="fixed inset-0 bg-black/75 backdrop-blur-sm z-[100] cursor-pointer"
             />
 
             {/* Left Slide-in Drawer */}
@@ -382,7 +391,7 @@ export const Header: React.FC<HeaderProps> = ({
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-              className="fixed top-0 bottom-0 left-0 w-[85%] max-w-[320px] bg-[#090D1C] border-r border-amber-500/25 shadow-[0_0_40px_rgba(0,0,0,0.8)] z-50 flex flex-col justify-between overflow-y-auto text-slate-200"
+              className="fixed inset-y-0 left-0 w-full max-w-none sm:w-[85%] sm:max-w-[320px] bg-[#090D1C] border-r border-amber-500/25 shadow-[0_0_40px_rgba(0,0,0,0.8)] z-[110] flex flex-col justify-between overflow-y-auto overscroll-contain text-slate-200"
             >
               {/* Drawer Top / Header */}
               <div className="p-5">
@@ -393,7 +402,7 @@ export const Header: React.FC<HeaderProps> = ({
                     type="button"
                     aria-label={nav.close}
                     onClick={() => setIsMenuOpen(false)}
-                    className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 transition-all cursor-pointer"
+                    className="w-11 h-11 rounded-xl flex items-center justify-center bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -409,13 +418,13 @@ export const Header: React.FC<HeaderProps> = ({
                       {nav.retry}
                     </button>
                   ) : authSession?.authenticated ? (
-                    <div className="space-y-1 rounded-2xl border border-emerald-400/25 bg-emerald-500/5 p-2">
+                    <div className={`space-y-1 rounded-2xl border p-2 ${isOwner ? "border-red-400/35 bg-red-500/5" : "border-emerald-400/25 bg-emerald-500/5"}`}>
                       <div className="px-2 py-2">
                         <div className="flex items-center gap-2">
-                          <ShieldCheck className="h-4 w-4 text-emerald-300" />
-                          <span className="truncate text-xs font-black text-emerald-100">{authSession.user?.name || 'Konto'}</span>
+                          <ShieldCheck className={`h-4 w-4 ${isOwner ? "text-red-300" : "text-emerald-300"}`} />
+                          <span className={`truncate text-xs font-black ${isOwner ? "text-red-100" : "text-emerald-100"}`}>{authSession.user?.name || 'Konto'}</span>
                         </div>
-                        {accountTier && <p className="mt-1 pl-6 font-mono text-[9px] text-amber-300">{accountTier}{!isOwner && authSession.account?.subscription?.status === 'active' && <span className="ml-2 text-emerald-300">● Aktiv</span>}</p>}
+                        {accountTier && <p className={`mt-1 pl-6 font-mono text-[9px] ${isOwner ? "text-red-300" : "text-amber-300"}`}>{accountTier}{!isOwner && authSession.account?.subscription?.status === 'active' && <span className="ml-2 text-emerald-300">● Aktiv</span>}</p>}
                       </div>
                       {[
                         { path: '/profile' as const, label: nav.profile, icon: User },
@@ -468,12 +477,12 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
 
                 {/* Navigation Sections: DIE 4 HAUPTHUBS (RUNDE LEUCHTENDE ACTION BUTTONS MIT AUFKLAPPBARER SIDEBAR) */}
-                <div className="mt-5 space-y-3">
+                <div className="mt-2.5 space-y-1.5">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-amber-400/90 px-1 mb-1">
                     {nav.hubs}
                   </div>
 
-                  <div className="grid grid-cols-1 gap-2.5">
+                  <div className="grid grid-cols-1 gap-1.25">
                     {Object.values(MAIN_HUBS_CONFIG).map(hub => ({...hub, glow:hub.glowColor, tagline:hub.description})).filter(hub => hub.id !== 'control-center' || isOwner).map((hub) => (
                       <button
                         key={hub.id}
@@ -483,37 +492,37 @@ export const Header: React.FC<HeaderProps> = ({
                           setIsMenuOpen(false);
                           openHubSidebar(hub.id);
                         }}
-                        className="hub-switch w-full flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer group text-left shadow-md"
+                        className="hub-switch hub-sidebar-card min-h-11 w-full flex items-center justify-between gap-1.5 px-1.5 py-1.5 border transition-all cursor-pointer group text-left shadow-sm"
                         style={{
                           backgroundColor: `${hub.color}14`,
                           borderColor: `${hub.color}45`,
-                          boxShadow: `0 0 16px ${hub.glow}`,
+                          boxShadow: `0 0 8px ${hub.glow}`,
                         }}
                       >
-                        <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex items-center gap-1.5 min-w-0">
                           <div
-                            className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 border shadow-md group-hover:scale-105 transition-transform"
+                            className="hub-card-symbol w-6 h-6 rounded-full flex items-center justify-center shrink-0 border shadow-sm group-hover:scale-105 transition-transform"
                             style={{
                               backgroundColor: `${hub.color}25`,
                               borderColor: `${hub.color}60`,
-                              boxShadow: `0 0 12px ${hub.glow}`,
+                              boxShadow: `0 0 6px ${hub.glow}`,
                             }}
                           >
                             {hub.icon}
                           </div>
                           <div className="min-w-0">
-                            <span className="text-xs font-bold text-white block truncate group-hover:text-amber-300 transition-colors">
+                            <span className="text-[11px] font-bold text-white block truncate group-hover:text-amber-300 transition-colors">
                               {hub.name}
                             </span>
-                            <span className="text-[10px] text-slate-400 block truncate">
+                            <span className="text-[9px] text-slate-400 block truncate">
                               {hub.tagline}
                             </span>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-1.5 shrink-0 pl-2">
+                        <div className="flex items-center gap-1 shrink-0 pl-1">
                           <span
-                            className="text-[9.5px] font-mono font-bold px-1.5 py-0.5 rounded border"
+                            className="text-[9px] font-mono font-bold px-1 py-0.5 rounded border"
                             style={{
                               color: hub.color,
                               backgroundColor: `${hub.color}15`,
@@ -522,7 +531,7 @@ export const Header: React.FC<HeaderProps> = ({
                           >
                             {hub.badge}
                           </span>
-                          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                          <ChevronRight className="w-3 h-3 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
                         </div>
                       </button>
                     ))}
@@ -558,7 +567,7 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
 
                   {/* ASSETKLASSEN & UNTERKLASSEN (KRYPTO, AKTIEN, INDIZIES, FOREX, ROHSTOFFE) */}
-                  <div className="pt-4 border-t border-slate-800/80 space-y-2">
+                  <div className="pt-2 border-t border-slate-800/80 space-y-1">
                     <div className="flex items-center justify-between px-1">
                       <div className="text-[10px] font-bold uppercase tracking-widest text-amber-400/80">
                         Assetklassen & Unterklassen
@@ -576,7 +585,7 @@ export const Header: React.FC<HeaderProps> = ({
                       </button>
                     </div>
 
-                    <div className="space-y-1.5 pt-1">
+                    <div className="space-y-1 pt-0.5">
                       {ASSET_CLASSES.map((cls) => {
                         const isExpanded = expandedClass === cls.id;
                         return (
@@ -591,11 +600,11 @@ export const Header: React.FC<HeaderProps> = ({
                             <button
                               type="button"
                               onClick={() => setExpandedClass(isExpanded ? null : cls.id)}
-                              className="w-full flex items-center justify-between p-2.5 text-left hover:bg-white/5 transition-colors cursor-pointer"
+                              className="hub-asset-card min-h-11 w-full flex items-center justify-between px-1.5 py-1 text-left hover:bg-white/5 transition-colors cursor-pointer"
                             >
-                              <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="flex items-center gap-1.5 min-w-0">
                                 <div
-                                  className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 border"
+                                  className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 border"
                                   style={{
                                     backgroundColor: `${cls.color}18`,
                                     borderColor: `${cls.color}35`,
@@ -605,13 +614,13 @@ export const Header: React.FC<HeaderProps> = ({
                                   {renderClassIcon(cls.id)}
                                 </div>
                                 <div className="min-w-0">
-                                  <span className="text-[12.5px] font-bold text-white block truncate">
+                                  <span className="text-xs font-bold text-white block truncate">
                                     {cls.name}
                                   </span>
                                 </div>
                               </div>
 
-                              <div className="flex items-center gap-2 shrink-0">
+                              <div className="flex items-center gap-1 shrink-0">
                                 <span
                                   className="text-[9.5px] font-mono font-bold px-1.5 py-0.5 rounded border"
                                   style={{
@@ -642,13 +651,14 @@ export const Header: React.FC<HeaderProps> = ({
                                 >
                                   <div className="p-2 space-y-1.5">
                                     {cls.subclasses.map((sub) => (
-                                      <div
+                                      <button
                                         key={sub.id}
+                                        type="button"
                                         onClick={() => {
                                           setIsMenuOpen(false);
                                           onSelectSubclass?.(sub, cls.id);
                                         }}
-                                        className="p-2 rounded-lg bg-slate-900/70 hover:bg-slate-800/90 border border-slate-800/80 hover:border-slate-700 transition-all cursor-pointer group"
+                                        className="hub-subclass-card min-h-11 w-full p-1 text-left rounded-lg bg-slate-900/70 hover:bg-slate-800/90 border border-slate-800/80 hover:border-slate-700 transition-all cursor-pointer group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
                                       >
                                         <div className="flex items-center justify-between">
                                           <span className="text-[11.5px] font-bold text-slate-200 group-hover:text-amber-300 transition-colors">
@@ -668,7 +678,7 @@ export const Header: React.FC<HeaderProps> = ({
                                             </span>
                                           ))}
                                         </div>
-                                      </div>
+                                      </button>
                                     ))}
                                   </div>
                                 </motion.div>
@@ -737,7 +747,7 @@ export const Header: React.FC<HeaderProps> = ({
             </motion.div>
           </>
         )}
-      </AnimatePresence>
+      </AnimatePresence>, document.body)}
 
 
     </header>
