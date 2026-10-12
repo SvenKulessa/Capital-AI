@@ -248,10 +248,10 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           type="button"
           onClick={() => onNavigate?.('/studio')}
-          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/40 text-cyan-300 text-xs font-semibold transition-all cursor-pointer shadow-[0_0_10px_rgba(6,182,212,0.15)] shrink-0"
+          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/15 hover:bg-green-500/25 border border-green-400/40 text-green-300 text-xs font-semibold transition-all cursor-pointer shadow-[0_0_10px_rgba(74,222,128,0.15)] shrink-0"
           title="Studio Hub: Pipeline Architektur, Blueprints, Pipeline Builder, AI Kauf-Berater, Data & Providers, Analytics & Scoring, Benchmark Lab, Configurator Console (/studio)"
         >
-          <Building2 className="w-3.5 h-3.5 text-cyan-400" />
+          <Building2 className="w-3.5 h-3.5 text-green-400" />
           <span>Studio Hub</span>
         </button>
 
@@ -264,20 +264,20 @@ export const Header: React.FC<HeaderProps> = ({
               id="header-profile-btn"
               type="button"
               onClick={() => setIsAccountOpen(value => !value)}
-              className="flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-400/30 hover:border-emerald-300 text-emerald-100 text-xs font-bold transition-all"
+              className={`flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${isOwner ? "bg-red-500/10 hover:bg-red-500/15 border border-red-400/40 hover:border-red-300 text-red-100" : "bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-400/30 hover:border-emerald-300 text-emerald-100"}`}
               aria-haspopup="menu"
               aria-expanded={isAccountOpen}
               aria-label={t('navAccount')}
               title="Kontomenü"
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
+              <ShieldCheck className={`w-3.5 h-3.5 ${isOwner ? "text-red-300" : "text-emerald-300"}`} />
               <span className="flex min-w-0 flex-col items-start leading-tight">
                 <span className="max-w-28 truncate">{authSession.user?.name || 'Profil'}</span>
                 {accountTier && (
-                  <span className="font-mono text-[9px] text-amber-300">{accountTier}{!isOwner && authSession.account?.subscription?.status === 'active' && <span className="ml-2 text-emerald-300 drop-shadow-[0_0_4px_#34d399]">● Aktiv</span>}</span>
+                  <span className={`font-mono text-[9px] ${isOwner ? "text-red-300" : "text-amber-300"}`}>{accountTier}{!isOwner && authSession.account?.subscription?.status === 'active' && <span className="ml-2 text-emerald-300 drop-shadow-[0_0_4px_#34d399]">● Aktiv</span>}</span>
                 )}
               </span>
-              <ChevronDown className={`h-3.5 w-3.5 text-emerald-300 transition-transform ${isAccountOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isOwner ? "text-red-300" : "text-emerald-300"} ${isAccountOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isAccountOpen && (
@@ -363,7 +363,7 @@ export const Header: React.FC<HeaderProps> = ({
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-              className="fixed inset-y-0 left-0 w-[85%] max-w-[320px] bg-[#090D1C] border-r border-amber-500/25 shadow-[0_0_40px_rgba(0,0,0,0.8)] z-[110] flex flex-col justify-between overflow-y-auto overscroll-contain text-slate-200"
+              className="fixed inset-y-0 left-0 w-full max-w-none sm:w-[85%] sm:max-w-[320px] bg-[#090D1C] border-r border-amber-500/25 shadow-[0_0_40px_rgba(0,0,0,0.8)] z-[110] flex flex-col justify-between overflow-y-auto overscroll-contain text-slate-200"
             >
               {/* Drawer Top / Header */}
               <div className="p-5">
@@ -374,7 +374,7 @@ export const Header: React.FC<HeaderProps> = ({
                     type="button"
                     aria-label="Navigation schließen"
                     onClick={() => setIsMenuOpen(false)}
-                    className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 transition-all cursor-pointer"
+                    className="w-11 h-11 rounded-xl flex items-center justify-center bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -383,13 +383,13 @@ export const Header: React.FC<HeaderProps> = ({
                 {/* Mobile Drawer Account / Login CTA */}
                 <div className="mt-4">
                   {authSession?.authenticated ? (
-                    <div className="space-y-1 rounded-2xl border border-emerald-400/25 bg-emerald-500/5 p-2">
+                    <div className={`space-y-1 rounded-2xl border p-2 ${isOwner ? "border-red-400/35 bg-red-500/5" : "border-emerald-400/25 bg-emerald-500/5"}`}>
                       <div className="px-2 py-2">
                         <div className="flex items-center gap-2">
-                          <ShieldCheck className="h-4 w-4 text-emerald-300" />
-                          <span className="truncate text-xs font-black text-emerald-100">{authSession.user?.name || 'Konto'}</span>
+                          <ShieldCheck className={`h-4 w-4 ${isOwner ? "text-red-300" : "text-emerald-300"}`} />
+                          <span className={`truncate text-xs font-black ${isOwner ? "text-red-100" : "text-emerald-100"}`}>{authSession.user?.name || 'Konto'}</span>
                         </div>
-                        {accountTier && <p className="mt-1 pl-6 font-mono text-[9px] text-amber-300">{accountTier}{!isOwner && authSession.account?.subscription?.status === 'active' && <span className="ml-2 text-emerald-300">● Aktiv</span>}</p>}
+                        {accountTier && <p className={`mt-1 pl-6 font-mono text-[9px] ${isOwner ? "text-red-300" : "text-amber-300"}`}>{accountTier}{!isOwner && authSession.account?.subscription?.status === 'active' && <span className="ml-2 text-emerald-300">● Aktiv</span>}</p>}
                       </div>
                       {[
                         { path: '/profile' as const, label: 'Profil', icon: User },
