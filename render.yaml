@@ -38,6 +38,10 @@ services:
       # X-only state/account storage may move to a JWT-authorized Supabase Edge
       # function. Opt in after Edge deploy; this does not remove other consumers
       # of SUPABASE_SECRET_KEY from the existing Render service.
+      # Independent 32-byte hex HMAC credential shared only with X Edge Vault.
+      # This is NOT a Supabase admin/service-role credential.
+      - key: SOCIAL_X_EDGE_WORKLOAD_SECRET
+        sync: false
       - key: SOCIAL_X_EDGE_STORE_ENABLED
         sync: false
       - key: AUTH_COOKIE_SIGNING_SECRET
