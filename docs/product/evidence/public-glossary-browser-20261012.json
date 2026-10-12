@@ -1,0 +1,102 @@
+{
+  "browser": "153.0.8010.0",
+  "scope": "Local built frontend, synthetic API fixtures; server authorization covered separately",
+  "viewports": [
+    {
+      "width": 320,
+      "mouseLeft": "PASS",
+      "mouseRight": "PASS",
+      "dashboardReloadAndRemove": "PASS",
+      "horizontalTabs": "PASS",
+      "overflow": "PASS",
+      "keyboard": "PASS"
+    },
+    {
+      "width": 390,
+      "mouseLeft": "PASS",
+      "mouseRight": "PASS",
+      "dashboardReloadAndRemove": "PASS",
+      "horizontalTabs": "PASS",
+      "overflow": "PASS",
+      "keyboard": "PASS"
+    },
+    {
+      "width": 768,
+      "mouseLeft": "PASS",
+      "mouseRight": "PASS",
+      "dashboardReloadAndRemove": "PASS",
+      "horizontalTabs": "PASS",
+      "overflow": "PASS",
+      "keyboard": "PASS"
+    },
+    {
+      "width": 1440,
+      "mouseLeft": "PASS",
+      "mouseRight": "PASS",
+      "dashboardReloadAndRemove": "PASS",
+      "horizontalTabs": "PASS",
+      "overflow": "PASS",
+      "keyboard": "PASS"
+    }
+  ],
+  "cases": [
+    {
+      "h264VideoPlayback": "PASS",
+      "decodedFrames": 19,
+      "duration": 20
+    },
+    {
+      "touchLeft": "PASS",
+      "touchRight": "PASS",
+      "touchTabScroll": "PASS"
+    },
+    {
+      "fontZoom200percent320": "PASS"
+    },
+    {
+      "anonymousFormerQuantDeepLink": "PASS",
+      "anonymousResearchedDeepLink": "PASS",
+      "primarySourceLink": "PASS",
+      "publicGlossarySearch": "PASS",
+      "singleQuantDemo": "PASS"
+    },
+    {
+      "label": "anonymous",
+      "errorAndRetainedCard": "PASS"
+    },
+    {
+      "label": "storage unavailable",
+      "errorAndRetainedCard": "PASS"
+    },
+    {
+      "userIsolationFixture": "PASS"
+    }
+  ],
+  "checkedAtUTC": "2026-10-11",
+  "checkedAtBerlin": "2026-10-12",
+  "baseCommit": "6d2232a",
+  "totalPublicGlossaryTerms": 305,
+  "applicationSuite": {
+    "passed": 670,
+    "failed": 0
+  },
+  "seoSuite": {
+    "passed": 31,
+    "failed": 0
+  },
+  "lint": "PASS",
+  "build": "PASS",
+  "liveDeployment": "NOT_PROVEN",
+  "checkedSourceSha256": {
+    "shared/researched-vocabulary.json": "d0ce4ed67580c65afd532bd972a27cca77ec8df6c1ffc8c797f4c55212c39f4b",
+    "shared/video-learning-demo.json": "524b85ada65181c757f80ea0419d3231b9f991e1d2517af5aab91f1bcd3a6be5",
+    "shared/vocabulary-metadata.mjs": "3f00e394989f780f39db8fbb2a02bd5a6f376ce1b20feaafe9d7901868946673",
+    "shared/seo-content-manifest.mjs": "3025264335e23dd414dbab3a88fdd69c2ef9814db581dbf816714acaefe88459",
+    "server/index.mjs": "c98042449ad98cb8816b8c4c3d1fb715f0e96b5022f9840706f27df4c9717cc5",
+    "src/data/vocabularyData.ts": "113ce3437e1679a71c031e367d290d5dab21cb1c6355cd19a16c4ccaaab734d7",
+    "src/features/learning/LearningPortalPage.tsx": "f3698512d91a1a98bf3f7cb60ac61741ba153d4325bddf9ee1cf395c9cc8b9c7",
+    "src/features/learning/MarketVocabularyModal.tsx": "d564f536b56bb9c99793e1ec7f9e304e602aa6e1aba90bff315ca8886f027607",
+    "scripts/qa/learning-swipe-browser.mjs": "8e36e27ec4e74100ec9f1bfea698ea603f338d107806d29f71878a204d44a9d3"
+  },
+  "videoSha256": "0816a5c2c53c10d2b6044ccd6ae037d4b5e9c09ba151ed7767c4358f17c495d5"
+}

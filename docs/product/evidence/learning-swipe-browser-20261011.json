@@ -1,0 +1,88 @@
+{
+  "browser": "153.0.8010.0",
+  "scope": "Local built frontend, synthetic API fixtures; server authorization covered separately",
+  "viewports": [
+    {
+      "width": 320,
+      "mouseLeft": "PASS",
+      "mouseRight": "PASS",
+      "dashboardReloadAndRemove": "PASS",
+      "horizontalTabs": "PASS",
+      "overflow": "PASS",
+      "keyboard": "PASS"
+    },
+    {
+      "width": 390,
+      "mouseLeft": "PASS",
+      "mouseRight": "PASS",
+      "dashboardReloadAndRemove": "PASS",
+      "horizontalTabs": "PASS",
+      "overflow": "PASS",
+      "keyboard": "PASS"
+    },
+    {
+      "width": 768,
+      "mouseLeft": "PASS",
+      "mouseRight": "PASS",
+      "dashboardReloadAndRemove": "PASS",
+      "horizontalTabs": "PASS",
+      "overflow": "PASS",
+      "keyboard": "PASS"
+    },
+    {
+      "width": 1440,
+      "mouseLeft": "PASS",
+      "mouseRight": "PASS",
+      "dashboardReloadAndRemove": "PASS",
+      "horizontalTabs": "PASS",
+      "overflow": "PASS",
+      "keyboard": "PASS"
+    }
+  ],
+  "cases": [
+    {
+      "touchLeft": "PASS",
+      "touchRight": "PASS",
+      "touchTabScroll": "PASS"
+    },
+    {
+      "fontZoom200percent320": "PASS"
+    },
+    {
+      "label": "anonymous",
+      "errorAndRetainedCard": "PASS"
+    },
+    {
+      "label": "storage unavailable",
+      "errorAndRetainedCard": "PASS"
+    },
+    {
+      "userIsolationFixture": "PASS"
+    }
+  ],
+  "checkedAt": "2026-10-11",
+  "implementationCommit": "88ddabd",
+  "mainSyncCommit": "0a2e9d3",
+  "mainBase": "93a5033",
+  "fullSuite": {
+    "passed": 668,
+    "failed": 0
+  },
+  "seoSuite": {
+    "passed": 30,
+    "failed": 0
+  },
+  "storageSuite": {
+    "passed": 10,
+    "failed": 0
+  },
+  "lint": "PASS",
+  "productionBuild": "PASS",
+  "liveSignedInReadback": "NOT_PROVEN",
+  "hubTextContrast": {
+    "method": "WCAG relative luminance; token colors and CSS sRGB mixtures",
+    "normal": 15.25,
+    "hover": 13.39,
+    "selected": 9.83
+  }
+}

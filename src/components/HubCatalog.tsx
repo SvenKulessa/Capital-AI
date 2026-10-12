@@ -1,3 +1,4 @@
+import { HUB_BRANDING } from '../../shared/hub-branding.mjs';
 import { canonicalHubTarget } from '../../shared/hub-routes.mjs';
 /** Shared public and owner-only hub navigation catalog. */
 
@@ -59,7 +60,7 @@ export interface MainHubDefinition {
 export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
   marketscreener: {
     id: 'marketscreener',
-    name: 'Market Screener Hub',
+    name: 'Analytics Hub',
     shortTitle: 'Marketscreener',
     color: '#F5B014',
     glowColor: 'rgba(245, 176, 20, 0.45)',
@@ -175,8 +176,8 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
   },
   learning: {
     id: 'learning',
-    name: 'Learning Portal',
-    shortTitle: 'Learning Portal',
+    name: 'Learning Hub',
+    shortTitle: 'Learning Hub',
     color: '#F9BF21',
     glowColor: 'rgba(249, 191, 33, 0.45)',
     accentBg: 'bg-amber-400/15 border-amber-400/50 text-amber-300',
@@ -299,7 +300,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
       },
       {
         id: 'components',
-        name: 'Komponenten & CADS',
+        name: 'Komponenten',
         icon: <Layers className="w-4 h-4 text-rose-400" />,
         badge: 'Analyse',
         shortDesc: 'Komponenteninventar und Analyse-Verträge',
@@ -388,6 +389,13 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
 };
 
 for (const hub of Object.values(MAIN_HUBS_CONFIG)) {
+  const brand = HUB_BRANDING[hub.id];
+  hub.name = hub.shortTitle = brand.name;
+  hub.color = brand.color;
+  hub.accentBg = "hub-role-accent";
+  hub.glowColor = `${brand.color}55`;
+  hub.icon = React.isValidElement(hub.icon) ? React.cloneElement(hub.icon as React.ReactElement<{className:string}>, {className:"h-5 w-5"}) : hub.icon;
   hub.subpages = hub.subpages.map(page => ({...page,path:canonicalHubTarget(page.path)}));
+  hub.badge = `${hub.subpages.filter(page => page.badge !== 'PENDING').length} Bereiche`;
 }
 

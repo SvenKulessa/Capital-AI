@@ -1,3 +1,4 @@
+const AccountRightsPage = lazy(() => import('../../features/account/AccountRightsPage').then(module => ({default:module.AccountRightsPage})));
 import { lazy } from 'react';
 import type { LegalRoute } from '../../components/LegalAndFaqPages';
 import { LICENSE_ROUTES, type LicenseRoute } from '../../data/providerLicenseReview';
@@ -11,6 +12,8 @@ import type { CoreModule } from '../../entities/module/model';
 import { HomePage } from '../../features/home/HomePage';
 import { DataUnavailable } from '../../shared/ui/DataUnavailable';
 import { LEGAL_ROUTES } from './routes';
+
+const SubscriptionPage = lazy(() => import('../../features/account/SubscriptionPage').then(module => ({default:module.SubscriptionPage})));
 
 const PrivateDashboardPage = lazy(() => import('../../features/account/PrivateDashboardPage').then(module => ({default:module.PrivateDashboardPage})));
 
@@ -153,6 +156,8 @@ export function AppRoutes({
     );
   }
 
+  if (currentRoute === '/profile/rights') return <AccountRightsPage onNavigate={navigateTo} />;
+  if (currentRoute === '/profile/subscription') return <SubscriptionPage onNavigate={navigateTo} />;
   if (currentRoute === '/profile/dashboard') return <PrivateDashboardPage onNavigate={navigateTo} />;
 
   if (currentRoute === '/profile') {
@@ -248,15 +253,15 @@ export function AppRoutes({
           <div className="flex items-center gap-2 text-xs text-slate-400 font-mono">
             <span>Capital-AI</span>
             <span>/</span>
-            <span className="text-amber-400 font-bold">
-              Enterprise Screener &amp; Scorer
+            <span className="hub-heading font-bold">
+              Analytics Hub
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => navigateTo('/marketscreener/dokumentation')}
-              className="px-3 py-1.5 rounded-xl border border-amber-400/30 bg-amber-400/10 hover:bg-amber-400/15 text-amber-200 text-xs font-bold transition-all cursor-pointer"
+              data-hub="documentation" className="hub-tab !text-xs"
             >
               Dokumentation
             </button>

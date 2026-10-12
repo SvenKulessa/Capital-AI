@@ -1,0 +1,25 @@
+{
+  "id": "quant-point-in-time-demo",
+  "term": "Point-in-Time-Validierung",
+  "abbreviation": "As-of / PIT",
+  "category": "TRADING_QUANT",
+  "categoryLabel": "Trading & Quant",
+  "level": "Fortgeschritten",
+  "shortDefinition": "Ein Backtest darf zu jedem simulierten Entscheidungszeitpunkt nur Informationen verwenden, die damals bereits verfügbar waren.",
+  "detailedExplanation": "Vergleiche Beobachtungszeit, Veröffentlichungszeit und Entscheidungszeit. Eine spätere Veröffentlichung darf nicht in eine frühere Entscheidung einfließen. Das verhindert Look-ahead-Bias; weitere Verzerrungen müssen separat geprüft werden.",
+  "formulaOrRule": "Veröffentlicht am ≤ Entscheidungszeitpunkt",
+  "practicalExample": "Synthetische Demo: Entscheidung um 10:00 Uhr. Meldung A erschien um 09:55 Uhr und ist zulässig. Meldung B erschien um 10:05 Uhr und wird ausgeschlossen.",
+  "keyTakeaway": "Nicht nur das Datum der Beobachtung zählt, sondern wann die Information wirklich verfügbar war.",
+  "searchTags": [
+    "quant",
+    "backtest",
+    "point-in-time",
+    "look-ahead",
+    "as-of"
+  ],
+  "thesaurus": [
+    "Point-in-Time",
+    "As-of-Validierung",
+    "Zeitgerechte Datenprüfung"
+  ]
+}

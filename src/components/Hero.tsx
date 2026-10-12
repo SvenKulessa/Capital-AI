@@ -15,6 +15,7 @@
  * ============================================================================
  */
 
+import { ProductDisclaimer } from './ProductDisclaimer';
 import React from 'react';
 import { ArrowRight, Play } from 'lucide-react';
 import { openHeroBuddy } from './HeroBuddy';
@@ -165,14 +166,6 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
           className="flex flex-col gap-3 w-full max-w-[280px]"
         >
           {/* Sales-first navigation to public bundle details; no fake checkout. */}
-          <a
-            id="hero-blueprint-bundles-link"
-            href="/marketscreener/dokumentation"
-            className="group inline-flex min-h-[50px] w-full items-center justify-between gap-3 rounded-2xl bg-brand-gold px-5 py-3 text-[15px] font-extrabold text-slate-950 shadow-[0_4px_24px_rgba(245,176,20,0.35)] transition-colors hover:bg-amber-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
-          >
-            {locale === 'de' ? 'Blueprint-Bundles entdecken' : 'Explore Blueprint Bundles'}
-            <ArrowRight aria-hidden="true" className="h-5 w-5 shrink-0" />
-          </a>
           {/* Existing analysis remains accessible as a clearly labeled demo. */}
           <button
             id="hero-start-analysis-btn"
@@ -192,33 +185,14 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
             <ArrowRight aria-hidden="true" className="w-5 h-5 transition-transform group-hover:translate-x-1 stroke-[2.4]" />
           </button>
 
-          {/* Secondary Button: Dark Glass "Produkt entdecken" */}
-          <button
-            id="hero-buddy-support-btn"
-            type="button"
-            onClick={openHeroBuddy}
-            className="w-full min-h-[44px] py-3 px-5 bg-transparent hover:bg-fuchsia-400/10 hover:shadow-[0_0_28px_rgba(192,132,252,0.35)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-300 active:scale-[0.98] border border-brand-marketing/70 rounded-2xl text-pink-100 text-base font-semibold"
-          >
-            {t('assistant')}
+          <button id="hero-explore-product-btn" type="button" onClick={onExploreProduct} className="flex min-h-12 items-center justify-between gap-3 rounded-2xl bg-brand-gold px-5 py-3 font-bold text-black">
+            <span className="flex items-center gap-2"><Play aria-hidden="true" className="h-5 w-5" /> Capital-AI Tour</span><ArrowRight aria-hidden="true" className="h-5 w-5" />
           </button>
-          <button
-            id="hero-explore-product-btn"
-            type="button"
-            onClick={onExploreProduct}
-            className="w-full min-h-[48px] py-3 px-5 bg-[#0a1128]/80 hover:bg-[#101b3d]/90 hover:shadow-[0_0_28px_rgba(34,211,238,0.30)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 active:scale-[0.98] border border-slate-700/70 hover:border-slate-500/80 rounded-2xl text-white flex items-center justify-center gap-3 backdrop-blur-md transition-all duration-200"
-          >
-            {/* Play Icon in Solid Circle */}
-            <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shrink-0">
-              <Play aria-hidden="true" className="w-3 h-3 text-black fill-black ml-0.5" />
-            </div>
-            <span className="text-[14.5px] font-medium text-slate-100">{t('discover')}</span>
+          <button id="hero-buddy-support-btn" type="button" onClick={openHeroBuddy} className="flex min-h-12 items-center justify-between rounded-2xl border border-brand-marketing/70 px-5 py-3 text-pink-100">
+            Hero Buddy <img src="/assets/jaja-avatar-transparent.webp" alt="" width={32} height={36} className="h-9 w-8 object-contain" />
           </button>
         </motion.div>
-        <p className="mt-4 max-w-[45ch] rounded-lg border border-slate-600/60 bg-slate-950/80 p-3 text-xs leading-relaxed text-slate-200">
-          {locale === 'de'
-            ? 'DEMO · Alle gezeigten Scorings und Kurven sind synthetische Beispieldaten, keine Live-Signale oder Performance-Nachweise. Nur Produktinformation und Bildung – keine Anlageberatung oder individuelle Empfehlung. Blueprint-Bundles sind Produktvorschauen; Kaufbarkeit nur, wenn im Checkout tatsächlich angeboten.'
-            : 'DEMO · Scores and charts use synthetic example data, not live signals or performance evidence. Education and product information only; no investment advice or personal recommendation. Blueprint bundles are previews, not a promise of checkout availability.'}
-        </p>
+<ProductDisclaimer />
       </div>
     </section>
   );

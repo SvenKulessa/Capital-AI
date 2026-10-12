@@ -1,3 +1,4 @@
+import { VOCABULARY_PUBLIC_COUNT } from './shared/vocabulary-metadata.mjs';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
@@ -123,6 +124,7 @@ function chatBuddyKeyPlugin(): Plugin {
 
 export default defineConfig(() => {
   return {
+    define: { __VOCABULARY_PUBLIC_COUNT__: JSON.stringify(VOCABULARY_PUBLIC_COUNT) },
     plugins: [react(), tailwindcss(), advisorApiPlugin(), chatBuddyKeyPlugin(), thirdPartyNoticesPlugin(), licenseEnginePlugin(), chunkCycleGuard()],
     // Separate only the leaf I18N data catalog, not React, Motion or shared runtime code.
     // Retain strict 500 kB chunk budget and acyclic module-graph validation.
@@ -131,6 +133,7 @@ export default defineConfig(() => {
         output: {
           codeSplitting: {
             groups: [
+              { name: 'vocabulary-metadata', test: /[/\\]shared[/\\]vocabulary-metadata\.mjs$/ },
               { name: 'i18n-landing-copy', test: /[/\\]src[/\\]i18n[/\\]landingSectionCopy\.ts$/ },
               // Three.js is a large but self-contained, lazy 3D dependency.
               // Keep it apart from the JaJa UI/GLB parser; the 500 kB budget

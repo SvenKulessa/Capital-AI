@@ -20,7 +20,7 @@ export function SocialMediaArchitectureDiagram({ title, nodes }: { title: string
 }
 
 export function ByokArchitectureDiagram() {
-  const boxes = [['Browser / Profil', 'authentifiziert · same-origin'], ['BYOK API / BFF', 'allowlist · validation'], ['Supabase Vault', 'service_role only'], ['Kraken Private API', 'Balance · read-only']] as const;
+  const boxes = [['Browser / Profil', 'authentifiziert · same-origin'], ['BYOK API / BFF', 'allowlist · validation'], ['Privater Schlüsselspeicher', 'service_role only'], ['Kraken Private API', 'Balance · read-only']] as const;
   return (
     <svg viewBox="0 0 1200 630" role="img" aria-label="BYOK Sicherheitsarchitektur" className="w-full rounded-2xl border border-slate-800 bg-[#040916]">
       <defs><marker id="byok-arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#22D3EE"/></marker></defs>

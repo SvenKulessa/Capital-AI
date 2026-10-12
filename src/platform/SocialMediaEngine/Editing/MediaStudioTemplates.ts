@@ -297,3 +297,18 @@ export function createCapitalAiLandingBlueprintVideoProject(): MediaProjectV2 {
     },
   }, 'Homepage Blueprint Video');
 }
+
+export { youtubeDescription as createYouTubeDescription } from '../../../../shared/product-disclaimers.mjs';
+
+/** Offline, silent tour. No publishing or provider authority is added. */
+export function createCapitalAiTourVideoProject(): MediaProjectV2 {
+ const project = createCapitalAiLandingBlueprintVideoProject();
+ const durationFrames = 20 * 30;
+ const chapters = [
+  {title:'Learning Portal',body:'Eine Elite-Vokabelkarte. Finanzwissen verständlich erklärt.'},
+  {title:'Blueprints & Sentiment',body:'Sentiment als grafisches Beispiel. Alle Werte sind Demo.'},
+  {title:'Dein privates Lernfeld',body:'Deine Begriffe. Dein Lerntempo. Dein persönliches Lernfeld.'},
+  {title:'Hero Buddy',body:'Dein Buddy begleitet dich beim Entdecken.'},
+ ];
+ return assertValid({...project,projectId:'capital-ai-tour-20261011',slug:'capital-ai-tour',title:'Capital-AI Tour',description:'20 Sekunden, tonlos: Elite-Vokabelkarte, Sentiment-Tachometer mit Greed, persönliches Lernfeld und winkender Buddy.',durationFrames,canvas:structuredClone(MEDIA_STUDIO_CANVAS_PRESETS['9:16']),assets:[],tracks:[{id:'tour-scenes',kind:'graphics',enabled:true,layers:chapters.map((chapter,index)=>({id:`tour-${index+1}`,kind:'scene' as const,enabled:true,kicker:'CAPITAL-AI',...chapter,range:{startFrame:index*150,durationFrames:150},disclaimer:'Bildung und Produktvorschau. Keine Anlageberatung.'}))}],metadata:{campaign:'capital-ai-tour',audioStatus:'SILENT',draftOnly:true}},'Capital-AI Tour');
+}

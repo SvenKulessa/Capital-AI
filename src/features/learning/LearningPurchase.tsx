@@ -25,7 +25,7 @@ export function LearningPurchase({ onLogin }: { onLogin?: () => void }) {
     finally { setPending(false); }
   }
   return <section id="learning-offer" aria-label="Learning Portal kaufen" className="space-y-3 rounded-xl border border-amber-400/30 bg-amber-400/5 p-4">
-    <p className="text-sm text-slate-200">Learning Portal · {formatVocabularyPrice()} einmalig. Vollständiges Vocabulary und tägliche Quizzes. Lernvideos folgen demnächst (Coming soon). Chart-Lernatlas und Modul-Erklärungen benötigen zusätzlich mindestens Starter; Chart-Training zusätzlich Pro.</p>
+    <p className="text-sm text-slate-200">Learning Portal · {formatVocabularyPrice()} einmalig. Vollständiger Übungskarteikasten und tägliche Quizzes. Alle Glossarbegriffe sind kostenlos öffentlich. Lernvideos folgen demnächst (Coming soon). Chart-Lernatlas und Modul-Erklärungen benötigen zusätzlich mindestens Starter; Chart-Training zusätzlich Pro.</p>
     <p className="text-base leading-7 text-slate-300">Für den Kauf musst du angemeldet sein. Der Lernzugang wird nach bestätigter Zahlung freigeschaltet.</p>
     <label className="flex min-h-11 items-start gap-3 text-base leading-7 text-slate-300"><input className="mt-1 h-5 w-5 shrink-0" type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} />
       Ich stimme der sofortigen Bereitstellung zu und bestätige den Verlust des Widerrufsrechts mit Beginn der Bereitstellung.</label>
