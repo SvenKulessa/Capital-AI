@@ -68,7 +68,7 @@ function readdirOrFile(path) {
 test('secrets, git metadata, reports and unrelated server files remain excluded', () => {
   for (const name of ['.env', '.env.production', '.git/config',
     'security-reports/image.json', 'docs/security/private-evidence.json',
-    'server/credentials.json', 'server/auth.test.mjs', 'README.md']) {
+    'server/credentials.json', 'server/unrelated-private-test.mjs', 'README.md']) {
     assert.equal(reachable(name), false, 'Unexpected build-context access: ' + name);
   }
 });

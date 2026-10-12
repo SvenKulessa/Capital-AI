@@ -1,0 +1,79 @@
+{
+  "browser": "153.0.8010.0",
+  "scope": "Local built frontend, synthetic API fixtures; server authorization covered separately",
+  "viewports": [
+    {
+      "width": 320,
+      "mouseLeft": "PASS",
+      "mouseRight": "PASS",
+      "dashboardReloadAndRemove": "PASS",
+      "horizontalTabs": "PASS",
+      "overflow": "PASS",
+      "keyboard": "PASS"
+    },
+    {
+      "width": 390,
+      "mouseLeft": "PASS",
+      "mouseRight": "PASS",
+      "dashboardReloadAndRemove": "PASS",
+      "horizontalTabs": "PASS",
+      "overflow": "PASS",
+      "keyboard": "PASS"
+    },
+    {
+      "width": 768,
+      "mouseLeft": "PASS",
+      "mouseRight": "PASS",
+      "dashboardReloadAndRemove": "PASS",
+      "horizontalTabs": "PASS",
+      "overflow": "PASS",
+      "keyboard": "PASS"
+    },
+    {
+      "width": 1440,
+      "mouseLeft": "PASS",
+      "mouseRight": "PASS",
+      "dashboardReloadAndRemove": "PASS",
+      "horizontalTabs": "PASS",
+      "overflow": "PASS",
+      "keyboard": "PASS"
+    }
+  ],
+  "cases": [
+    {
+      "h264VideoPlayback": "PASS",
+      "decodedFrames": 19,
+      "duration": 20
+    },
+    {
+      "touchLeft": "PASS",
+      "touchRight": "PASS",
+      "touchTabScroll": "PASS"
+    },
+    {
+      "fontZoom200percent320": "PASS"
+    },
+    {
+      "currentCanonicalCountInBrowserMetadata": "PASS",
+      "count": 305
+    },
+    {
+      "anonymousFormerQuantDeepLink": "PASS",
+      "anonymousResearchedDeepLink": "PASS",
+      "primarySourceLink": "PASS",
+      "publicGlossarySearch": "PASS",
+      "singleQuantDemo": "PASS"
+    },
+    {
+      "label": "anonymous",
+      "errorAndRetainedCard": "PASS"
+    },
+    {
+      "label": "storage unavailable",
+      "errorAndRetainedCard": "PASS"
+    },
+    {
+      "userIsolationFixture": "PASS"
+    }
+  ]
+}

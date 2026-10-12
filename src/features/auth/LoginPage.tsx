@@ -196,7 +196,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
         }
       })
       .catch(() => {
-        if (!abort.signal.aborted) setError('Der Supabase-Anmeldedienst ist derzeit nicht erreichbar.');
+        if (!abort.signal.aborted) setError('Der Anmeldedienst ist derzeit nicht erreichbar.');
       });
     return () => abort.abort();
   }, []);
@@ -212,7 +212,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
     } else if (message === 'registration_failed') {
       setError('Registrierung konnte serverseitig nicht abgeschlossen werden. Das Passwort allein ist nicht automatisch die Ursache.');
     } else if (message === 'passkey_unavailable') {
-      setError('Passkey-Anmeldung ist im Supabase-Projekt noch nicht freigeschaltet.');
+      setError('Passkey-Anmeldung ist im Anmeldedienst noch nicht freigeschaltet.');
     } else {
       setError(message);
     }
@@ -412,16 +412,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
               </p>
             </div>
             <span className="rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1 font-mono text-[10px] text-emerald-300">
-              SUPABASE AUTH
+              SICHERE ANMELDUNG
             </span>
           </div>
 
           {error && <p lang="de" role="alert" className="mt-4 rounded-xl bg-rose-500/10 p-3 text-sm text-rose-200">{error}</p>}
           {notice && <p lang="de" role="status" className="mt-4 rounded-xl bg-emerald-500/10 p-3 text-sm text-emerald-200">{notice}</p>}
-          {!session && !error && <p role="status" className="mt-4 text-sm text-slate-400">Supabase Session wird geprüft …</p>}
+          {!session && !error && <p role="status" className="mt-4 text-sm text-slate-400">Sitzung wird geprüft …</p>}
           {session && !session.configured && (
             <p role="status" className="mt-4 rounded-xl bg-amber-500/10 p-3 text-sm text-amber-200">
-              Supabase Auth ist serverseitig noch nicht vollständig konfiguriert.
+              Der Anmeldedienst ist serverseitig noch nicht vollständig konfiguriert.
             </p>
           )}
 
@@ -470,7 +470,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
               >
                 {tr.otherMethod}
               </button>
-              <p className="text-[11px] leading-relaxed text-slate-500">
+              <p className="text-[11px] leading-relaxed text-slate-300">
                 Die Auswahl beendet die angefangene Sitzung und zeigt E-Mail, Google und Passkey erneut an. Ein aktivierter TOTP-Faktor wird dadurch nicht umgangen.
               </p>
             </form>
@@ -486,7 +486,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                 {tr.repeatNewPassword}
                 <input type="password" value={passwordConfirm} onChange={event => setPasswordConfirm(event.target.value)} required minLength={14} maxLength={256} autoComplete="new-password" className="mt-1 w-full rounded-xl border border-white/15 bg-black/40 px-3 py-3 text-sm text-white" />
               </label>
-              <p className="text-[11px] text-slate-500">{tr.resetRules}</p>
+              <p className="text-[11px] text-slate-300">{tr.resetRules}</p>
               <button type="submit" disabled={busy} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-amber-400 font-black text-black disabled:opacity-40">
                 <RotateCcw size={18} /> {busy ? 'Wird geändert …' : tr.resetButton}
               </button>
@@ -498,7 +498,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
               <label className="block text-xs font-bold text-slate-300">
                 E-Mail
                 <div className="relative mt-1">
-                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-300" />
                   <input type="email" value={email} onChange={event => setEmail(event.target.value)} required autoComplete="email" className="w-full rounded-xl border border-white/15 bg-black/40 py-3 pl-10 pr-3 text-sm text-white" />
                 </div>
               </label>
@@ -547,14 +547,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                 <label className="block text-xs font-bold text-slate-300">
                   E-Mail
                   <div className="relative mt-1">
-                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-300" />
                     <input type="email" value={email} onChange={event => setEmail(event.target.value)} required autoComplete="email" className="w-full rounded-xl border border-white/15 bg-black/40 py-3 pl-10 pr-3 text-sm text-white" />
                   </div>
                 </label>
                 <label className="block text-xs font-bold text-slate-300">
                   {tr.password}
                   <div className="relative mt-1">
-                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-300" />
                     <input
                       type="password"
                       value={password}
@@ -572,7 +572,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                     <label className="block text-xs font-bold text-slate-300">
                       {tr.repeatPassword}
                       <div className="relative mt-1">
-                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-300" />
                         <input
                           type="password"
                           value={passwordConfirm}
@@ -709,7 +709,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
           <p className="mt-4 flex gap-2 text-xs text-slate-400">
             <Lock size={16} /> Access- und Refresh-Tokens verbleiben in signierten HttpOnly-Secure-Cookies.
           </p>
-          <p className="mt-2 flex gap-2 text-[11px] text-slate-500">
+          <p className="mt-2 flex gap-2 text-[11px] text-slate-300">
             <KeyRound size={15} /> Passkey ist passwortlos; TOTP wird bei aktivierter MFA als zweiter Faktor angefordert.
           </p>
 

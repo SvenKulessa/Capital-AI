@@ -4,6 +4,7 @@ import {
   GitBranch, Info, Layers3, Search, ShieldAlert,
 } from 'lucide-react';
 import { BLUEPRINT_EVIDENCE_CONTRACTS } from '../../data/blueprintEvidenceContracts';
+import { ArchitectureCatalogExplorer } from './ArchitectureCatalogExplorer';
 import { BLUEPRINT_DETAILS } from '../documentation/blueprintDocumentationData';
 import {
   ARCHITECTURE_BLUEPRINTS, ARCHITECTURE_COMPONENTS, ARCHITECTURE_LESSONS,
@@ -15,6 +16,7 @@ import {
 type Props = { onNavigate?: (path: string) => void };
 const SECTIONS: ReadonlyArray<{ id: ArchitectureView; label: string; description: string }> = [
   { id: 'overview', label: 'Architektur-Hub', description: 'Schichten und Vertrauensgrenzen' },
+  { id: 'catalogs', label: 'Kataloge & Angebote', description: 'Fünf technische Kataloge und sichere Produktwege' },
   { id: 'blueprints', label: 'Blueprint Explorer', description: 'Topologien und Nachweise' },
   { id: 'components', label: 'Komponentenbibliothek', description: '50 kanonische Verträge' },
   { id: 'learning', label: 'Learning Journey', description: 'Vier interaktive Lernstationen' },
@@ -149,6 +151,8 @@ function ComponentLibrary({ onExplain }: { onExplain: (id: string) => void }) {
           <div><dt className="text-cyan-200">Provider-Abhängigkeiten (nicht Live-Nutzung)</dt><dd className="mt-1 break-words text-slate-200">{current.providerDependencies.join(', ') || 'Nicht spezifiziert'}</dd></div>
           <div><dt className="text-cyan-200">Modellversion</dt><dd className="mt-1">{current.calculationVersion}</dd></div>
           <div><dt className="text-cyan-200">Default-Gewichtung (kein Echtzeit-Beitrag)</dt><dd className="mt-1">{(current.weightPolicy.defaultWeight * 100).toFixed(0)} %</dd></div>
+          <div><dt className="text-cyan-200">Mindest-Datensuffizienz (Regel)</dt><dd className="mt-1">{(current.confidencePolicy.minimumDataSufficiencyRatio * 100).toFixed(0)} % · nicht gemessen</dd></div>
+          <div><dt className="text-cyan-200">Maximales Datenalter (Regel)</dt><dd className="mt-1">{current.refreshPolicy.maxStalenessSeconds} Sekunden · keine Runtime-Messung</dd></div>
         </dl>
         <button type="button" onClick={() => onExplain(current.componentId)} className={`${action} mt-5 inline-flex items-center gap-2`}>Score-Einfluss erklären <ArrowRight size={16} aria-hidden="true" /></button>
       </> : <p role="status" className="text-sm text-slate-200">Keine Komponentendaten hinterlegt.</p>}</div>
@@ -267,6 +271,7 @@ export function IntelligenceArchitectureHub({ onNavigate }: Props) {
         </section>
         <p className="text-sm text-slate-300">Architektur-Kataloge sind kein Nachweis für Runtime-Aktivierung, Datenlizenzen, aktuelle Kosten oder regulatorische Zulassung.</p>
       </>}
+      {view === 'catalogs' && <ArchitectureCatalogExplorer onNavigate={onNavigate} />}
       {view === 'blueprints' && <BlueprintExplorer onNavigate={onNavigate} />}
       {view === 'components' && <ComponentLibrary onExplain={explain} />}
       {view === 'learning' && <InteractiveLearning onNavigate={onNavigate} />}

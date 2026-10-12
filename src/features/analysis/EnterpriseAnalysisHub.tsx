@@ -1,3 +1,5 @@
+import { HistoricalAnalyticsDemo } from './HistoricalAnalyticsDemo';
+import { ProductDisclaimer } from '../../components/ProductDisclaimer';
 import { HubNavigationPanel } from '../../components/HubNavigationPanel';
 import { navigateAppLocation } from '../../utils/appNavigation';
 import React from 'react';
@@ -49,10 +51,11 @@ export function EnterpriseAnalysisHub({
   return (
     <div className="space-y-6">
       <HubNavigationPanel hubId="marketscreener" onNavigate={navigateAppLocation} />
-      {['overview', 'scorer'].includes(active) && (
+      {['overview', 'scorer', 'terminal'].includes(active) && <HistoricalAnalyticsDemo />}
+      {active === 'scorer' && (
         <EnterpriseScorerDashboard onSelectAsset={onSelectAsset} />
       )}
-      {['overview', 'terminal'].includes(active) && <ScreenerTable />}
+      {active === 'terminal' && <ScreenerTable />}
       {active === 'binance' && <BinanceMarketPanel />}
       {active === 'components' && <AnalysisComponentExplorer />}
       {active === 'sentiment' && <SentimentIntelligencePanel />}

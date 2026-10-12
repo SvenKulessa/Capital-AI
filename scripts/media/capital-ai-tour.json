@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0.0",
+  "slug": "capital-ai-tour",
+  "title": "Capital-AI Tour",
+  "subtitle": "Finanzwissen lernen. Analysemethoden verstehen.",
+  "disclaimer": "Bildung und Produktvorschau. Keine Anlageberatung. Demo-Werte sind synthetisch.",
+  "scenes": [
+    {
+      "title": "Learning Portal",
+      "body": "Eine Elite-Vokabelkarte. Finanzwissen verständlich erklärt.",
+      "durationSeconds": 5,
+      "disclaimer": "Bildung und Produktvorschau. Keine Anlageberatung. Demo-Werte sind synthetisch."
+    },
+    {
+      "title": "Blueprints & Sentiment",
+      "body": "Sentiment als grafisches Beispiel. Alle Werte sind Demo.",
+      "durationSeconds": 5,
+      "disclaimer": "Bildung und Produktvorschau. Keine Anlageberatung. Demo-Werte sind synthetisch."
+    },
+    {
+      "title": "Dein privates Lernfeld",
+      "body": "Deine Begriffe. Dein Lerntempo. Dein persönliches Lernfeld.",
+      "durationSeconds": 5,
+      "disclaimer": "Bildung und Produktvorschau. Keine Anlageberatung. Demo-Werte sind synthetisch."
+    },
+    {
+      "title": "Hero Buddy",
+      "body": "Dein Buddy begleitet dich beim Entdecken.",
+      "durationSeconds": 5,
+      "disclaimer": "Bildung und Produktvorschau. Keine Anlageberatung. Demo-Werte sind synthetisch."
+    }
+  ]
+}

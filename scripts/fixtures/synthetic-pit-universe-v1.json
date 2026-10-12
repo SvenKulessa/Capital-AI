@@ -1,0 +1,136 @@
+{
+  "fixtureSchema": "CAPITAL_AI_PIT_TEST_FIXTURE@1",
+  "documentation": "All asset identities, dates and evidence URIs are fabricated for deterministic regression testing; not real market, license, returns or performance evidence.",
+  "manifest": {
+    "schemaVersion": "CAPITAL_AI_SYNTHETIC_PIT_UNIVERSE@1",
+    "dataClass": "SYNTHETIC_ONLY",
+    "datasetId": "synthetic-pit-universe-20261012",
+    "datasetVersion": "fixture-v1.0.0",
+    "universeId": "SYNTHETIC-COMMODITIES",
+    "assets": [
+      {
+        "assetId": "SYNTH:ALPHA",
+        "symbol": "TEST-ALPHA",
+        "listedAt": "2020-01-01T00:00:00.000Z",
+        "delistedAt": null,
+        "identityEvidenceId": "fixture://identity/alpha"
+      },
+      {
+        "assetId": "SYNTH:BETA-DELISTED",
+        "symbol": "TEST-BETA",
+        "listedAt": "2020-01-01T00:00:00.000Z",
+        "delistedAt": "2024-02-01T00:00:00.000Z",
+        "identityEvidenceId": "fixture://identity/beta"
+      },
+      {
+        "assetId": "SYNTH:GAMMA-NEW",
+        "symbol": "TEST-GAMMA",
+        "listedAt": "2024-02-02T00:00:00.000Z",
+        "delistedAt": null,
+        "identityEvidenceId": "fixture://identity/gamma"
+      }
+    ],
+    "snapshots": [
+      {
+        "decisionAt": "2024-01-05T12:00:00.000Z",
+        "publishedAt": "2024-01-04T08:00:00.000Z",
+        "capturedAt": "2024-01-04T09:00:00.000Z",
+        "members": [
+          {
+            "assetId": "SYNTH:ALPHA",
+            "membershipEvidenceId": "fixture://membership/alpha/2024-01",
+            "availableAt": "2024-01-04T08:00:00.000Z"
+          },
+          {
+            "assetId": "SYNTH:BETA-DELISTED",
+            "membershipEvidenceId": "fixture://membership/beta/2024-01",
+            "availableAt": "2024-01-04T08:00:00.000Z"
+          }
+        ]
+      },
+      {
+        "decisionAt": "2024-03-05T12:00:00.000Z",
+        "publishedAt": "2024-03-04T08:00:00.000Z",
+        "capturedAt": "2024-03-04T09:00:00.000Z",
+        "members": [
+          {
+            "assetId": "SYNTH:ALPHA",
+            "membershipEvidenceId": "fixture://membership/alpha/2024-03",
+            "availableAt": "2024-03-04T08:00:00.000Z"
+          },
+          {
+            "assetId": "SYNTH:GAMMA-NEW",
+            "membershipEvidenceId": "fixture://membership/gamma/2024-03",
+            "availableAt": "2024-03-04T08:00:00.000Z"
+          }
+        ]
+      }
+    ]
+  },
+  "dataset": {
+    "datasetId": "synthetic-pit-universe-20261012",
+    "datasetVersion": "fixture-v1.0.0",
+    "universeId": "SYNTHETIC-COMMODITIES",
+    "dataClass": "SYNTHETIC_ONLY",
+    "immutable": true,
+    "authority": "VALIDATION_ONLY",
+    "observations": [
+      {
+        "observationId": "SYNTH:1",
+        "assetId": "SYNTH:ALPHA",
+        "decisionAt": "2024-01-05T12:00:00.000Z",
+        "realizedAt": "2024-01-12T12:00:00.000Z",
+        "universeMembershipEvidenceId": "fixture://membership/alpha/2024-01",
+        "features": [
+          {
+            "featureKey": "synthetic-test-factor",
+            "availableAt": "2024-01-04T08:00:00.000Z",
+            "sourceVersion": "fixture-feature-v1"
+          }
+        ]
+      },
+      {
+        "observationId": "SYNTH:2",
+        "assetId": "SYNTH:BETA-DELISTED",
+        "decisionAt": "2024-01-05T12:00:00.000Z",
+        "realizedAt": "2024-01-12T12:00:00.000Z",
+        "universeMembershipEvidenceId": "fixture://membership/beta/2024-01",
+        "features": [
+          {
+            "featureKey": "synthetic-test-factor",
+            "availableAt": "2024-01-04T08:00:00.000Z",
+            "sourceVersion": "fixture-feature-v1"
+          }
+        ]
+      },
+      {
+        "observationId": "SYNTH:3",
+        "assetId": "SYNTH:ALPHA",
+        "decisionAt": "2024-03-05T12:00:00.000Z",
+        "realizedAt": "2024-03-12T12:00:00.000Z",
+        "universeMembershipEvidenceId": "fixture://membership/alpha/2024-03",
+        "features": [
+          {
+            "featureKey": "synthetic-test-factor",
+            "availableAt": "2024-03-04T08:00:00.000Z",
+            "sourceVersion": "fixture-feature-v1"
+          }
+        ]
+      },
+      {
+        "observationId": "SYNTH:4",
+        "assetId": "SYNTH:GAMMA-NEW",
+        "decisionAt": "2024-03-05T12:00:00.000Z",
+        "realizedAt": "2024-03-12T12:00:00.000Z",
+        "universeMembershipEvidenceId": "fixture://membership/gamma/2024-03",
+        "features": [
+          {
+            "featureKey": "synthetic-test-factor",
+            "availableAt": "2024-03-04T08:00:00.000Z",
+            "sourceVersion": "fixture-feature-v1"
+          }
+        ]
+      }
+    ]
+  }
+}

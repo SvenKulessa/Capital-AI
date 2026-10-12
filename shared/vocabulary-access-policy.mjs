@@ -1,4 +1,5 @@
-// Vocabulary access boundary. Quant/Pro terms may appear as ordinary words on the web, but their Vocabulary product entries stay owner-gated.
+// Legacy Quant/Pro learning payload classification. Public glossary/SEO access is
+// independent of this set; paid exercises and private account data remain gated.
 export const QUANT_PRO_IDS = Object.freeze(new Set([
   "capital-capability-drop",
   "capital-change-propagation",
@@ -163,4 +164,4 @@ export const QUANT_PRO_IDS = Object.freeze(new Set([
   "on-chain-metriken",
   "vwap"
 ]));
-export const QUANT_PRO_COUNT = 162;
+export const QUANT_PRO_COUNT = QUANT_PRO_IDS.size;

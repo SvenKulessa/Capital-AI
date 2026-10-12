@@ -99,9 +99,9 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
       const message = reason instanceof Error ? reason.message : 'provider_vault_unavailable';
       setError(
         message === 'provider_vault_not_configured'
-          ? 'Key Vault ist in der Web-Runtime noch nicht mit einer gültigen serverseitigen Supabase-Admin-Credential verbunden.'
+          ? 'Key Vault ist in der Web-Runtime noch nicht mit einer gültigen serverseitigen Infrastrukturzugangskennung verbunden.'
           : message === 'provider_vault_admin_credential_rejected'
-            ? 'Die serverseitige Supabase-Admin-Credential der Web-Runtime wurde vom Projekt abgewiesen. Sie muss in der Runtime ersetzt oder korrigiert werden.'
+            ? 'Die serverseitige Infrastrukturzugangskennung der Web-Runtime wurde vom Projekt abgewiesen. Sie muss in der Runtime ersetzt oder korrigiert werden.'
             : 'Key Vault konnte nicht sicher geladen werden.',
       );
     });
@@ -150,7 +150,7 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
         message === 'provider_vault_not_configured'
           ? 'Serverseitiger Key Vault ist noch nicht mit einer gültigen Admin-Credential konfiguriert.'
           : message === 'provider_vault_admin_credential_rejected'
-            ? 'Die serverseitige Supabase-Admin-Credential wurde abgewiesen. Der Provider-Key wurde nicht gespeichert.'
+            ? 'Die serverseitige Infrastrukturzugangskennung wurde abgewiesen. Der Provider-Key wurde nicht gespeichert.'
             : `Verbindung konnte nicht gespeichert oder verifiziert werden: ${message}`,
       );
     } finally {
@@ -429,10 +429,10 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
                 <div className="mt-3 rounded-xl border border-cyan-400/20 bg-cyan-400/5 p-3">
                   <div className="flex items-center gap-2 text-xs font-black text-cyan-100">
                     <LockKeyhole className="h-4 w-4" />
-                    Supabase Vault · verschlüsselt gespeichert
+                    privaten Schlüsselspeicher · verschlüsselt gespeichert
                   </div>
                   <p className="mt-1 text-[10px] leading-relaxed text-slate-300">
-                    API-Key und Secret liegen gemeinsam im serverseitigen Supabase Vault. Vault speichert Secret-Inhalte authentifiziert verschlüsselt (AEAD) at rest; die Website erhält weder Klartext noch Ciphertext zurück. Sichtbar bleibt nur der nicht reversible Credential-Fingerprint.
+                    API-Key und Secret liegen gemeinsam im serverseitigen privaten Schlüsselspeicher. Vault speichert Secret-Inhalte authentifiziert verschlüsselt (AEAD) at rest; die Website erhält weder Klartext noch Ciphertext zurück. Sichtbar bleibt nur der nicht reversible Credential-Fingerprint.
                   </p>
                 </div>
 
@@ -488,7 +488,7 @@ export function KeyVaultPage({ onNavigate }: { onNavigate: (path: string) => voi
           <section className="rounded-2xl border border-slate-800 bg-[#070b19]/70 p-4 text-[11px] leading-relaxed text-slate-400">
             <h2 className="font-black text-white">Credential-Grenze</h2>
             <p className="mt-2">
-              Die aktiven Kraken- und Binance-Vault-Slots enthalten getrennte Spot- und Futures/Perps-Credential-Familien. API-Key und Secret werden gemeinsam als versionierter Payload im serverseitigen Supabase Vault gespeichert. Die Website liest ausschließlich Metadaten/Fingerprint zurück; ein Futures-Key wird nicht als Spot-Key umgedeutet.
+              Die aktiven Kraken- und Binance-Vault-Slots enthalten getrennte Spot- und Futures/Perps-Credential-Familien. API-Key und Secret werden gemeinsam als versionierter Payload im serverseitigen privaten Schlüsselspeicher gespeichert. Die Website liest ausschließlich Metadaten/Fingerprint zurück; ein Futures-Key wird nicht als Spot-Key umgedeutet.
             </p>
             <p className="mt-2 text-amber-200">
               Nur Kraken und Binance sind heute als private Konto-Adapter verifiziert implementiert. Die weiteren 18 Katalogeinträge nehmen noch keine Credentials an. Trading-Rechte können für aktive Provider explizit zugelassen werden. Funding, Transfers und Withdrawals bleiben abgewiesen. Die erkannte Order-Capability bereitet den späteren MarketScreener für Market-/Limit-Orders vor; Live-Execution ist bis zu separaten Risk-, Confirmation- und Production-Gates deaktiviert.

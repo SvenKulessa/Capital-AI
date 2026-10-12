@@ -37,7 +37,7 @@ export function VocabularyCard({term,flashcard=false,initialExpanded=false,saved
        {onFavorite&&<button type="button" disabled={pending} aria-pressed={saved} aria-label={`${term.term}: ${saved?'Favorit entfernen':'im Profil speichern'}`}
          onClick={()=>onFavorite(term.id)} className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-white/20 text-amber-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200 disabled:opacity-50">
          <Star className="h-5 w-5" fill={saved?'currentColor':'none'} /></button>}
-       {flashcard && onMissed && <button type="button" aria-label={`${term.term}: Noch üben und bald wiederholen`} title="Noch üben"
+       {flashcard && onMissed && <button type="button" disabled={pending} aria-label={`${term.term}: Weiß ich nicht, im Lernfeld speichern und wiederholen`} title="Noch üben"
          onClick={onMissed} className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-rose-400/50 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-300">
          <X className="h-5 w-5" /></button>}
      </div>
@@ -49,9 +49,10 @@ export function VocabularyCard({term,flashcard=false,initialExpanded=false,saved
    {!flashcard&&expanded&&<div id={`term-details-${term.id}`} className="mt-4 space-y-4 border-t border-white/15 pt-4 text-sm leading-7 text-slate-100">
      <div><h4 className="font-bold" style={{color:palette.accent}}>Erklärung</h4><p>{term.detailedExplanation}</p></div>
      {term.formulaOrRule&&<div className="rounded-xl bg-black/20 p-3"><h4 className="font-bold" style={{color:palette.accent}}>Regel / Formel</h4><p className="break-words">{term.formulaOrRule}</p></div>}
-     <div><h4 className="font-bold" style={{color:palette.accent}}>Praxisbeispiel</h4><p>{term.practicalExample}</p></div>
+     {term.practicalExample&&<div><h4 className="font-bold" style={{color:palette.accent}}>Praxisbeispiel</h4><p>{term.practicalExample}</p></div>}
      <div><h4 className="font-bold" style={{color:palette.accent}}>Merksatz</h4><p>{term.keyTakeaway}</p></div>
    </div>}
+   {(!flashcard||expanded)&&term.sources?.length&&<ul aria-label="Fachquellen" className="mt-3 text-sm text-cyan-200">{term.sources.map(source=><li key={source.url}><a className="inline-flex min-h-11 items-center underline" href={source.url} target="_blank" rel="noreferrer">{source.title}</a></li>)}</ul>}
    <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-white/15 pt-4">
      <button type="button" aria-expanded={expanded} aria-controls={!flashcard&&expanded?`term-details-${term.id}`:undefined} onClick={()=>setExpanded(!expanded)} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-black/25 px-4 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200" style={{color:palette.accent}}>
        <BookOpen className="h-4 w-4" />{flashcard?(expanded?'Begriff anzeigen':'Definition aufdecken'):(expanded?'Details schließen':'Details & Beispiel')}</button>

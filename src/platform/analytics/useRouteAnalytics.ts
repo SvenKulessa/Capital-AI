@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { hubRouteForPath } from '../../../shared/hub-routes.mjs';
 import { APP_NAVIGATION_EVENT } from '../../utils/appNavigation';
 import { blogArticleForPath } from '../../../shared/blog-articles.mjs';
-// Browser-light projection; checked against the canonical server catalog by the SEO regression test.
-// Importing the full metadata corpus here would exceed the production JS chunk budget.
-const VOCABULARY_PUBLIC_COUNT = 132;
+// Vite injects the current canonical count at build time, without bundling the glossary corpus.
+declare const __VOCABULARY_PUBLIC_COUNT__: number;
+const VOCABULARY_PUBLIC_COUNT = __VOCABULARY_PUBLIC_COUNT__;
 import {
   LICENSE_ROUTES,
   licenseMetadata,

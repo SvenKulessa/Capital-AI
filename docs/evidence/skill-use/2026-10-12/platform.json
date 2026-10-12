@@ -54,7 +54,7 @@
     {
       "id": "T2",
       "title": "Private Provider Bridge, JetStream, Credential Separation",
-      "status": "CODE_PRESENT_TEST_PASS_RUNTIME_DISABLED",
+      "status": "CODE_PRESENT_TEST_PASS_INTENTIONALLY_DISABLED_LICENSE_BLOCKED",
       "methods": [
         "Line-focused implementation audit",
         "Negative unit test review",
@@ -66,7 +66,8 @@
         "Probe-only permits a signed diagnostic request but has separate customer flag and no state/vault/provider I/O; MARKET_BROKER_PAUSED=true overrides both flags and start() returns false.",
         "NATS_APP_USER/PASSWORD for requester, NATS_BRIDGE_USER/PASSWORD for relay and NATS_EXECUTOR_USER/PASSWORD for executor. Executor missing/short password fails closed; scoped subjects defined in nats-server.conf.",
         "Private query request/response uses Core NATS, not CAPITAL_FACTS JetStream; HMAC envelope binds user/operation/expiry; signed-request checks, durable SQL claim, quotas and replay tests passed in main CI.",
-        "Bridge and NATS Render services suspended at audit readback; runtime authenticated broker roundtrip NOT_PROVEN."
+        "Bridge and NATS Render services are deliberately suspended (read-only observed) according to Owner due to unavailable provider licences. Live roundtrip is NOT_APPLICABLE_WHILE_SUSPENDED and remains NOT_PROVEN for future reactivation, not an active infrastructure incident.",
+        "No provider credentials, JetStream streams or private market flows are to be enabled or re-deployed to satisfy an audit or PR check. Technical availability does not establish data rights."
       ],
       "sources": [
         "server/private-provider-query.mjs",
@@ -107,7 +108,8 @@
         "server/observability.test.mjs asserts recursive key/value secret redaction, W3C traceparent validation and bounded Prometheus metrics; successfully run as part of main validation.",
         "Render Capital-AI service main/autoDeployTrigger=checksPass and successful deploy linked to c1638194; public /healthz HTTP response could not be independently obtained.",
         "Recovery runbook covers GHCR artifacts, Supabase identity/database, JetStream backup/replay, reconstructable Valkey, and health/source-SHA; isolated restore, measured RTO/RPO, Alerting/SLO NOT_PROVEN.",
-        "No production secret values, logs containing PII, tokens, privileged configuration or mutable infrastructure queried. No deploy, bridge enablement or credential change."
+        "No production secret values, logs containing PII, tokens, privileged configuration or mutable infrastructure queried. No deploy, bridge enablement or credential change.",
+        "Recovery readiness is documented but no live broker restore/roundtrip should be used as a license workaround. Non-invasive tabletop or isolated synthetic test is the appropriate next evidence if necessary."
       ]
     },
     {
@@ -125,7 +127,8 @@
       "findings": [
         "First inspect scoped Render events/log metadata and source/digest correlation; prohibit publishing or replay of private provider results into CAPITAL_FACTS; do not redeploy NATS for unrelated main HEAD.",
         "Contain with existing suspend/deny mechanisms and credential rotation only on corroborated evidence; verify JetStream restore/replay and RTO/RPO in isolated environment before claiming recovery.",
-        "No incident detected or caused and no rotation, restore or failover executed."
+        "No incident detected or caused and no rotation, restore or failover executed.",
+        "OWNER CLARIFICATION: current NATS suspension is intentional due to unavailable data-provider licences; this theoretical outage/incident scenario must not be applied as a real current incident."
       ]
     },
     {
@@ -330,13 +333,30 @@
       "codeQL": "success on main separate run 38179103011"
     },
     "prChecks": {
-      "status": "NOT_YET_EXECUTED",
+      "status": "RECHECK_REQUIRED_AFTER_OWNER_CONTEXT_CORRECTION_AND_MAIN_SYNC",
       "required": [
         "Docker Security Gate",
         "Domain Governance"
       ]
     },
-    "runScopeNote": "Tests and scans cited here ran on main SHA before evidence commit, not on the future PR result SHA."
+    "runScopeNote": "Tests and scans cited here ran on main SHA before evidence commit, not on the future PR result SHA.",
+    "previousPrChecks": {
+      "previouslyInspectedHeadSha": "5c035c3ba244ed0f5fe4a5a8e0f59a4bfd13bc05",
+      "headChangeInvalidatesForCurrentHead": true,
+      "dockerSecurityGate": {
+        "runId": 38182581979,
+        "jobId": 114598115125,
+        "conclusion": "success"
+      },
+      "domainGovernance": {
+        "runId": 38182581828,
+        "jobId": 114598114196,
+        "conclusion": "success"
+      },
+      "codeQlRunId": 38182580531,
+      "codeQlJobs": "success",
+      "note": "After report amendment and main sync these successes do NOT establish status for the NEW PR HEAD. Read back new CI."
+    }
   },
   "cveFindings": [
     {
@@ -356,7 +376,8 @@
       "productionDecision": "UNKNOWN",
       "trivyFindingRetained": true,
       "suppressed": false,
-      "advisoryUrl": "https://pkg.go.dev/vuln/GO-2026-5932"
+      "advisoryUrl": "https://pkg.go.dev/vuln/GO-2026-5932",
+      "productionExposureContext": "NATS is deliberately suspended because live provider data licences are unavailable per Owner; defer live binary/digest review to authorized reactivation. No current NATS exploitability claim."
     },
     {
       "id": "DS-0013",
@@ -401,34 +422,45 @@
       "autoDeploy": "off",
       "latestDeploySha": "72fbc048e94953069592e5950407ef7a2a0edc66",
       "latestDeployStatus": "live_but_service_suspended",
-      "binaryDigestCorrelatedToMainCi": false
+      "binaryDigestCorrelatedToMainCi": false,
+      "operationalInterpretation": "INTENTIONALLY_SUSPENDED_LICENSE_BLOCKED_OWNER_REPORTED"
     },
     "bridge": {
       "serviceId": "srv-db3d8mui0phs739mfq20",
       "suspended": true,
       "autoDeploy": "off",
       "latestDeploySha": "acb328b5dc4d0892335735f4467f6ff8717a3626",
-      "latestDeployStatus": "live_but_service_suspended"
+      "latestDeployStatus": "live_but_service_suspended",
+      "operationalInterpretation": "INTENTIONALLY_SUSPENDED_LICENSE_BLOCKED_OWNER_REPORTED"
     },
     "changedRuntime": false
   },
   "riskAssessment": {
     "status": "REVIEW_REQUIRED",
     "highPriority": [
-      "Exact production NATS binary/digest not correlated to GO-2026-5932 CI NOT_AFFECTED evidence",
-      "Private provider runtime roundtrips unavailable while bridge and broker suspended"
+      "Provider-dependent features have no established licensable market-data source under owner's report; keep corresponding private/public data-feed operation and monetization blocked.",
+      "No evidence of supplier/grant redistributable rights or authority to resume provider-connected infrastructure; no implied commercial rights from working CI."
     ],
     "moderate": [
-      "Source DS-0013/DS-0026 exact origin not present in sanitized archive",
-      "No independently verified production HTTP health nor JetStream backup/restore RTO/RPO"
+      "GO-2026-5932 production NATS digest still not correlated with CI NOT_AFFECTED classification; operational impact deferred as service intentionally suspended.",
+      "Exact DS-0013/DS-0026 source path not present in public redacted archive.",
+      "No independently verified production HTTP health; JetStream backup/restore RTO/RPO not measured. Restore/live-check scope excludes intentional suspended broker."
     ],
     "mitigations": [
-      "Maintain bridge and NATS disabled",
-      "Keep Trivy finding visible, no broad suppression",
-      "No NATS redeploy solely for repository HEAD",
-      "Do not publish private BYOK data into shared caches/streams"
+      "Maintain NATS and Rust provider bridge suspended with autoDeploy disabled; no Live/Production roundtrips, paid provider traffic or licence-dependent release.",
+      "Keep Trivy GO-2026-5932 finding visible and production reachability UNKNOWN; no broad suppression.",
+      "A repository HEAD alone never authorizes a NATS redeploy.",
+      "Continue non-provider portions of the product only with their own demonstrable data/content rights.",
+      "Separate user's private provider keys from public JetStream, Valkey shared caches and infrastructure secrets."
     ],
-    "costs": "No new resources, APIs, privileged secrets, CI workflow gates or deployments commissioned. Existing CI-minutes and Render subscription charges are not quantified in this audit."
+    "costs": "No new resources, APIs, privileged secrets, CI workflow gates or deployments commissioned. Existing CI-minutes and Render subscription charges are not quantified in this audit.",
+    "deferredOnlyIfFutureReactivationIsAuthorized": [
+      "👋⚙️ Owner must establish documented licensable provider rights, scope, redistribution limits, and cost approval; a provider's apparent technical accessibility does not establish rights.",
+      "Bind exact future NATS production runtime binary/digest to GO-2026-5932 reachability evidence; evaluate patch version and vulnerability again.",
+      "Revalidate authentication, scoped NATS users, per-user Vault key isolation, quotas, replay, provider data rights, backup/recovery and runtime SLOs with authorized synthetic or licensed data."
+    ],
+    "currentProductionNatsExposure": "NO_ACTIVE_PROVIDER_BRIDGE_PATH_OBSERVED_SERVICE_SUSPENDED; residual dormant binary vulnerability status UNKNOWN.",
+    "auditPrMergeScope": "DOCS_ONLY; provider licence availability and suspended NATS are not blockers for merging this read-only evidence correction when GitHub Required Checks at current Head SHA satisfy AGENTS.md."
   },
   "limitations": [
     "Automatic Chat Runtime routing has no independent load trace.",
@@ -437,7 +469,27 @@
     "No restore/failover or RTO/RPO tests performed.",
     "No separate independent cryptographic GHCR verification for this main run.",
     "No new PR-Head CI had run when the evidence snapshot was authored.",
-    "After committing this file, GitHub PR branch readback is canonical for new result head SHA, as self-reference inside the commit cannot be exact."
+    "After committing this file, GitHub PR branch readback is canonical for new result head SHA, as self-reference inside the commit cannot be exact.",
+    "NATS suspension reason is an Owner declaration and provider licence availability not independently confirmed through licence contracts/market documentation.",
+    "No provider, broker, service, data or production verification was activated or performed in response to the Owner licensing clarification.",
+    "PR checks prior to the evidence update cannot be treated as current-head evidence; all applicable checks must be re-read after the branch update."
   ],
-  "status": "REVIEW_REQUIRED"
+  "status": "REVIEW_REQUIRED",
+  "licensingContext": {
+    "source": "OWNER_DECLARATION_IN_CHAT_2026-10-12",
+    "verification": "OWNER_REPORTED_NOT_INDEPENDENTLY_VERIFIED",
+    "scope": "Marktdatenprovider-Lizenzen für den beabsichtigten CAPITAL-AI-Use-Case",
+    "declaration": "NATS ist absichtlich deaktiviert, da erforderliche Lizenzen für Datenprovider derzeit nicht erwerbbar sind.",
+    "interpretation": "PLANNED_SHUTDOWN_DUE_TO_PROVIDER_RIGHTS; not a reliability incident or remediation failure.",
+    "runtimeCorroboration": "Read-only Render showed capital-ai-market-events and capital-ai-provider-bridge suspended, both autoDeploy off. Suspension cause is attributed to the owner's declaration; provider licence market and contracts have not been independently inspected.",
+    "policy": "Do not activate NATS, provider bridge, provider access, paid provider features or private data distribution as part of this audit. Unlicensed data access, public redistribution and monetization dependent on those rights remain blocked.",
+    "technicalCveBoundary": "GO-2026-5932 is NOT_AFFECTED only for exact CI binary; production NATS remains UNKNOWN. Production digest correlation is a prerequisite only before any explicitly authorized future reuse, not an audit-PR acceptance criterion while NATS is suspended.",
+    "productSeparation": "Existing learning, blueprint, documentation and demonstrably permitted demo/offline product paths are independent of an unlicensed live provider feed; this does not assert rights for other product data."
+  },
+  "mainCorrelation": {
+    "originalBaselineSha": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
+    "mainObservedBeforeOwnerCorrection": "b5b0ccafebbc344fa8c52a213dce414738f9bc37",
+    "baselineScope": "Security findings and source/scan artifacts in this report retain their original SHA; 3 newer main commits have not been re-scanned by this static report.",
+    "branchUpdateMethod": "Non-forced fast-forward merge commit with both prior audit branch head and current main parents, tree based on current main plus updated platform.json."
+  }
 }

@@ -164,7 +164,7 @@ export const DocumentationHub: React.FC<DocumentationHubProps> = ({ onBackToHome
           Dokumentation
         </div>
         <h1 className="text-3xl font-black tracking-tight text-white sm:text-5xl">
-          CAPITAL-AI Dokumentations-Hub
+          CAPITAL-AI Dokumentation Hub
         </h1>
         <p className="max-w-3xl text-sm leading-relaxed text-slate-400 sm:text-base">
           Zentraler Einstieg in Blueprints, FinTech- und OSS-Architektur, BYOK,

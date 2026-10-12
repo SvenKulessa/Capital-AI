@@ -17,7 +17,7 @@ const localized: Record<Locale, readonly string[]> = {
   de: [
     'Sprache auswählen','Navigation öffnen','Preisalarme öffnen','Kontomenü öffnen','Login',
     'Finanzwissen und Analysewerkzeuge','Marktdaten','verstehen.','Chancen besser','erkennen.',
-    'hilft dir, Finanzbegriffe zu lernen und Märkte zu analysieren. Entdecke Lerninhalte und Analysewerkzeuge oder verbinde deine eigenen Datenanbieter im privaten Bereich. Welche Daten und Funktionen verfügbar sind, zeigen wir direkt an.',
+    'hilft dir, Finanzbegriffe zu lernen und Märkte zu analysieren. Entdecke das Learning Hub und die 50 Komponenten der Finanzanalyse in der Capital-AI Tour. Welche Daten und Funktionen verfügbar sind, zeigen wir direkt an.',
     'Analyse starten','Hero Buddy fragen','Produkt entdecken',
     'Quellen und Datenstatus','Nachvollziehbare Modelle','Für Privatanleger und Professionals','Weltweite Märkte auf einer Plattform',
     'Impressum','AGB','Datenschutz','Preiskatalog','Dokumentation & Lizenzen','öffnet in einem neuen Tab',
@@ -28,7 +28,7 @@ const localized: Record<Locale, readonly string[]> = {
   en: [
     'Select language','Open navigation','Open price alerts','Open account menu','Log in',
     'Financial learning and analysis tools','Understand','market data.','Spot opportunities','with confidence.',
-    'helps you learn financial terms and analyse markets. Explore learning resources and analysis tools, or connect your own data providers in your private area. Available data and features are clearly labelled.',
+    'helps you learn financial terms and analyse markets. Discover the Learning Hub and the 50 financial analysis components in the Capital-AI Tour. Available data and features are clearly labelled.',
     'Start analysis','Ask Hero Buddy','Explore product',
     'Sources and data status','Transparent models','For retail and professional investors','Global markets, one platform',
     'Legal notice','Terms','Privacy','Pricing','Documentation & licenses','opens in a new tab',
@@ -39,7 +39,7 @@ const localized: Record<Locale, readonly string[]> = {
   it: [
     'Seleziona lingua','Apri navigazione','Apri avvisi sui prezzi','Apri menu account','Accedi',
     'Formazione finanziaria e strumenti di analisi','Comprendere','i dati di mercato.','Riconoscere meglio','le opportunità.',
-    'ti aiuta a conoscere i termini finanziari e ad analizzare i mercati. Scopri risorse formative e strumenti di analisi oppure collega i tuoi fornitori di dati nell’area privata. Dati e funzioni disponibili sono indicati chiaramente.',
+    'ti aiuta a conoscere i termini finanziari e ad analizzare i mercati. Scopri il Learning Hub e i 50 componenti di analisi finanziaria nel Capital-AI Tour. Dati e funzioni disponibili sono indicati chiaramente.',
     'Avvia analisi','Chiedi a Hero Buddy','Scopri il prodotto',
     'Fonti e stato dei dati','Modelli trasparenti','Per investitori privati e professionisti','Mercati globali in un’unica piattaforma',
     'Note legali','Termini e condizioni','Privacy','Prezzi','Documentazione e licenze','si apre in una nuova scheda',
@@ -50,7 +50,7 @@ const localized: Record<Locale, readonly string[]> = {
   fr: [
     'Choisir la langue','Ouvrir la navigation','Ouvrir les alertes de prix','Ouvrir le menu du compte','Connexion',
     'Apprentissage financier et outils d’analyse','Comprendre','les marchés.','Mieux repérer','les opportunités.',
-    'vous aide à comprendre les termes financiers et à analyser les marchés. Découvrez les ressources pédagogiques et les outils d’analyse, ou connectez vos fournisseurs de données dans votre espace privé. Les données et fonctions disponibles sont clairement indiquées.',
+    'vous aide à comprendre les termes financiers et à analyser les marchés. Découvrez le Learning Hub et les 50 composants d’analyse financière dans le Capital-AI Tour. Les données et fonctions disponibles sont clairement indiquées.',
     'Lancer une analyse','Demander à Hero Buddy','Découvrir le produit',
     'Sources et statut des données','Modèles transparents','Pour particuliers et professionnels','Marchés mondiaux sur une plateforme',
     'Mentions légales','Conditions générales','Confidentialité','Tarifs','Documentation et licences','s’ouvre dans un nouvel onglet',
@@ -61,7 +61,7 @@ const localized: Record<Locale, readonly string[]> = {
   pt: [
     'Selecionar idioma','Abrir navegação','Abrir alertas de preços','Abrir menu da conta','Entrar',
     'Educação financeira e ferramentas de análise','Compreenda','os mercados.','Identifique melhor','as oportunidades.',
-    'ajuda a compreender termos financeiros e a analisar os mercados. Explore recursos educativos e ferramentas de análise, ou ligue os seus fornecedores de dados na área privada. Os dados e as funções disponíveis são claramente indicados.',
+    'ajuda a compreender termos financeiros e a analisar os mercados. Descubra o Learning Hub e os 50 componentes de análise financeira no Capital-AI Tour. Os dados e as funções disponíveis são claramente indicados.',
     'Iniciar análise','Perguntar ao Hero Buddy','Explorar produto',
     'Fontes e estado dos dados','Modelos transparentes','Para investidores individuais e profissionais','Mercados globais numa só plataforma',
     'Aviso legal','Termos e condições','Privacidade','Preços','Documentação e licenças','abre num novo separador',
@@ -72,7 +72,7 @@ const localized: Record<Locale, readonly string[]> = {
   es: [
     'Seleccionar idioma','Abrir navegación','Abrir alertas de precios','Abrir menú de cuenta','Iniciar sesión',
     'Educación financiera y herramientas de análisis','Comprende','los mercados.','Detecta mejor','las oportunidades.',
-    'te ayuda a aprender términos financieros y analizar los mercados. Descubre recursos educativos y herramientas de análisis, o conecta tus proveedores de datos en tu espacio privado. Los datos y funciones disponibles se indican claramente.',
+    'te ayuda a aprender términos financieros y analizar los mercados. Descubre el Learning Hub y los 50 componentes de análisis financiero en el Capital-AI Tour. Los datos y funciones disponibles se indican claramente.',
     'Iniciar análisis','Preguntar a Hero Buddy','Explorar el producto',
     'Fuentes y estado de los datos','Modelos transparentes','Para inversores particulares y profesionales','Mercados globales en una sola plataforma',
     'Aviso legal','Términos y condiciones','Privacidad','Precios','Documentación y licencias','se abre en una pestaña nueva',
