@@ -55,7 +55,8 @@ test('OAuth requires verified user from existing Supabase auth, not query-string
 test('verified callback enforces exact identity and endpoint; no token in reply', async () => {
   const records = [];
   const handler = createSocialOAuthCallback({ env,
-    auth: { verify: async () => ({ userId: USER }) },
+    auth: { verify: async () => ({ userId: USER, emailVerified: true }),
+      authorizeIamRole: async () => true },
     store: { consumeOAuthCallback: async args => {
       records.push(args);
       await args.exchangeCode({ userId: USER, channel: 'X',
@@ -72,9 +73,44 @@ test('verified callback enforces exact identity and endpoint; no token in reply'
   assert.deepEqual(records[0].allowedRedirectUris, [records[0].redirectUri]);
   assert.deepEqual(records[1], { exchanged: 'X' });
 });
+test('X callback without channel parameter is bound to X via persisted state', async () => {
+  const calls = [];
+  const handler = createSocialOAuthCallback({ env,
+    auth: { verify: async () => ({ userId: USER, emailVerified: true }),
+      authorizeIamRole: async () => true },
+    store: { consumeOAuthCallback: async input => {
+      calls.push({ userId: input.userId, channel: input.channel });
+      await input.exchangeCode({ userId: USER, channel: 'X',
+        redirectUri: input.redirectUri, code: 'synthetic',
+        codeVerifier: 'v'.repeat(43) });
+      return { consumed: true, platform: 'x' };
+    } },
+    exchangeCode: async trusted => { calls.push({ channel: trusted.channel }); },
+  });
+  const r = res();
+  await handler.handle(req(), r, url('?state=' + STATE + '&code=synthetic'), json);
+  assert.equal(r.status, 204);
+  assert.deepEqual(calls, [{ userId: USER, channel: 'X' }, { channel: 'X' }]);
+});
+
+test('X OAuth callback denies non-owner before one-time state consumption', async () => {
+  let consumed = 0;
+  const handler = createSocialOAuthCallback({ env,
+    auth: { verify: async () => ({ userId: USER, emailVerified: true }),
+      authorizeIamRole: async () => false },
+    store: { consumeOAuthCallback: async () => { consumed++; } },
+    exchangeCode: async () => { consumed++; },
+  });
+  const r = res();
+  await handler.handle(req(), r, url('?state=' + STATE + '&code=synthetic'), json);
+  assert.equal(r.status, 403);
+  assert.equal(consumed, 0);
+});
+
 test('callback fail-closed on exchange/storage failures without reflecting code', async () => {
   const handler = createSocialOAuthCallback({ env,
-    auth: { verify: async () => ({ userId: USER }) },
+    auth: { verify: async () => ({ userId: USER, emailVerified: true }),
+      authorizeIamRole: async () => true },
     store: { consumeOAuthCallback: async () => { throw Error('confidential token'); } },
     exchangeCode: async () => {} });
   const r = res();

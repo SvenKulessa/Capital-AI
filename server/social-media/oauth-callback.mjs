@@ -33,7 +33,8 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
       json(res, 503, { error: 'social_oauth_not_configured' });
       return true;
     }
-    const channel = url.searchParams.get('channel');
+    // X supplies only state and code; channel is verified against the DB-bound state.
+    const channel = url.searchParams.get('channel') ?? 'X';
     const state = url.searchParams.get('state');
     const code = url.searchParams.get('code');
     if (!allowed.includes(channel) || url.searchParams.has('error')
@@ -45,6 +46,11 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
     const identity = await auth?.verify?.(req, res);
     if (!identity?.userId) {
       json(res, 401, { error: 'authentication_required' });
+      return true;
+    }
+    if (channel === 'X' && (identity.emailVerified !== true
+      || await auth?.authorizeIamRole?.(req, res, 'owner') !== true)) {
+      json(res, 403, { error: 'owner_authorization_required' });
       return true;
     }
     // Enforce the exact callback URI; the user-controlled query must never be

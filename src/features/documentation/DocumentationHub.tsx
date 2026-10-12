@@ -137,7 +137,7 @@ export const DocumentationHub: React.FC<DocumentationHubProps> = ({ onBackToHome
  const [tab] = useHubTab(TABS, 'overview');
  const navigate = (path:string) => onNavigate ? onNavigate(path) : window.location.assign(path);
  return (
-  <main className="min-h-screen w-full px-3 py-6 text-slate-100 sm:px-6">
+  <main className="hub-universe hub-universe--documentation min-h-screen w-full min-w-0 px-3 py-6 text-slate-100 sm:px-6">
     <div className="mx-auto max-w-6xl space-y-8">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-6">
         <button
@@ -148,7 +148,7 @@ export const DocumentationHub: React.FC<DocumentationHubProps> = ({ onBackToHome
           <ArrowLeft className="h-4 w-4 text-amber-400" />
           Zurück
         </button>
-        <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-500/10 px-3 py-1 text-[11px] font-mono text-emerald-300">
+        <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-900/20 px-3 py-1 text-[11px] font-mono text-blue-200">
           <ShieldCheck className="h-3.5 w-3.5" />
           Dokumentation • Architektur • Blogs
         </div>
@@ -159,12 +159,12 @@ export const DocumentationHub: React.FC<DocumentationHubProps> = ({ onBackToHome
       {tab === 'byok' && <section aria-labelledby="byok-pending" className="rounded-3xl border border-brand-gold/30 bg-brand-canvas p-8 text-center"><h1 id="byok-pending" className="text-2xl font-bold">BYOK Dokumentation</h1><strong className="mx-auto my-6 flex h-28 w-28 items-center justify-center rounded-full border border-brand-gold text-brand-gold">PENDING</strong><p>Die Lizenz- und Realdatenstrategie ist pausiert.</p></section>}
       {tab === 'overview' && <>
       <section className="space-y-3">
-        <div className="inline-flex items-center gap-2 rounded-full border border-violet-400/25 bg-violet-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-violet-300">
+        <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-950/40 px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-200">
           <BookOpen className="h-4 w-4" />
           Dokumentation
         </div>
         <h1 className="text-3xl font-black tracking-tight text-white sm:text-5xl">
-          CAPITAL-AI Dokumentations-Hub
+          CAPITAL-AI Dokumentation Hub
         </h1>
         <p className="max-w-3xl text-sm leading-relaxed text-slate-400 sm:text-base">
           Zentraler Einstieg in Blueprints, FinTech- und OSS-Architektur, BYOK,
@@ -175,14 +175,14 @@ export const DocumentationHub: React.FC<DocumentationHubProps> = ({ onBackToHome
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {presentations.filter(item => !item.href.includes('byok')).map((item) => {
           const commonClass =
-            'group rounded-2xl border border-slate-800 bg-[#071022]/90 p-5 transition-all hover:border-violet-400/40 hover:bg-[#0a142b]';
+            'group rounded-2xl border border-slate-800 bg-[#071022]/90 p-5 transition-all hover:border-blue-400/40 hover:bg-[#0a142b]';
           const body = (
             <>
               <div className="flex items-start justify-between gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-violet-400/25 bg-violet-500/10 text-violet-300">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-blue-400/25 bg-blue-950/40 text-blue-200">
                   {item.icon}
                 </div>
-                <ArrowRight className="h-4 w-4 text-slate-500 transition-all group-hover:translate-x-0.5 group-hover:text-violet-300" />
+                <ArrowRight className="h-4 w-4 text-slate-500 transition-all group-hover:translate-x-0.5 group-hover:text-blue-300" />
               </div>
               <div className="mt-4 text-[10px] font-mono uppercase tracking-widest text-cyan-300">
                 {item.meta}

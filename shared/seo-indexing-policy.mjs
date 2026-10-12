@@ -50,6 +50,7 @@ const routes = [
   { path: '/documentation/pricing-models.html', classification: 'NOINDEX', contentType: 'documentation-static', reason: 'Preis-/Produktdarstellung benötigt Claim-/Preisautoritäts- und Drift-Prüfung vor Indexierung.' },
   { path: '/documentation/domains.html', classification: 'NOINDEX', contentType: 'documentation-static', reason: 'Öffentliche statische Präsentation; noch nicht in den kanonischen SEO-Contract aufgenommen.' },
 
+  { path: '/profile/rights', classification:'PRIVATE',contentType:'account-rights',reason:'Persönliche Kontorechte; öffentliche Rechtstexte separat erreichbar.' },
   { path: '/profile/dashboard', classification:'PRIVATE',contentType:'private-dashboard',reason:'Private Lernbegriffe und Notizen.' },
   { path: '/profile', classification: 'PRIVATE', contentType: 'account', reason: 'Personenbezogener Kontobereich.' },
   { path: '/profile/security', classification: 'PRIVATE', contentType: 'account-security', reason: 'Personenbezogene Sicherheits-, MFA- und Recovery-Einstellungen.' },

@@ -1,4 +1,5 @@
 import { HUB_ROUTES } from '../shared/hub-routes.mjs';
+import { BRAND_COLORS, HUB_BRANDING, ASSET_BRANDING, hubTabAccent, legalPageAccent } from '../shared/hub-branding.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -114,7 +115,8 @@ test('account routes keep profile, security and key vault as separate pages', ()
 
 test('Control Center navigation is capability-gated to the verified owner session', () => {
   const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url),'utf8');
-  assert.match(header, /account\?\.iamRole === 'owner'/);
+  assert.match(header, /verifiedOwner\(authSession\)/);
+  assert.match(header, /hub.id !== 'control-center' \|\| isOwner/);
   assert.doesNotMatch(header, /<HubSidebarDrawer/);
 });
 
@@ -221,8 +223,9 @@ test('all dedicated Control Center documents retain owner-only server gating and
 test('Hub navigation entries use native focusable anchors for keyboard and modified clicks', () => {
   const panel = readFileSync(new URL('../src/components/HubNavigationPanel.tsx', import.meta.url),'utf8');
   assert.match(panel, /<a key=\{page.id\} href=\{page.path\}/);
-  assert.match(panel, /e.metaKey/);
-  assert.match(panel, /focus-visible:outline/);
+  assert.match(panel, /event.metaKey/);
+  const css = readFileSync(new URL('../src/index.css', import.meta.url),'utf8');
+  assert.match(css, /\.hub-tab:focus-visible/);
   assert.match(panel, /aria-current/);
 });
 
@@ -283,12 +286,12 @@ test('paused price alerts cannot render navigation or run background price check
   assert.match(context, /if \(!PRICE_ALERTS_ENABLED\) return;\s*try \{\s*localStorage\.setItem\(STORAGE_ALERTS_KEY/);
 });
 
-test('hero Earth uses true 3D axial rotation behind translucent text with a static fallback', () => {
+test('hero uses restored static artwork and shared product disclaimer', () => {
   const hero = readFileSync(new URL('../src/components/Hero.tsx', import.meta.url), 'utf8');
   assert.match(hero, /glowing_earth_nodes_1789997454893.jpg/);
   assert.doesNotMatch(hero, /HeroEarth3D|enableWebGL|WebGLRenderer/);
   assert.match(hero, /opacity-95/);
-  assert.match(hero, /keine Anlageberatung/);
+  assert.match(hero, /ProductDisclaimer/);
 });
 
 test('legal overview, contact, mobile hub tabs and global footer use one contact entry', () => {
@@ -325,5 +328,125 @@ test('legal overview, contact, mobile hub tabs and global footer use one contact
 test('Chart atlas is not embedded or explicitly advertised on the public homepage', () => {
   const home = readFileSync(new URL('../src/features/home/LearningCadsShowcase.tsx', import.meta.url), 'utf8');
   assert.doesNotMatch(home, /ChartLessonGraphic|CHART_LESSONS|Chart-Lernatlas|\/learning\/chart-lernatlas/);
-  assert.match(home, /onNavigate\('\/learning'\)/);
+  const directory = readFileSync(new URL('../src/components/HomeHubDirectory.tsx', import.meta.url),'utf8');
+  assert.match(directory, /'learning'/);
+});
+
+
+test('seven-brand system assigns distinct hub and asset accents without changing semantic status', () => {
+  const foundations = Object.values(BRAND_COLORS);
+  assert.equal(foundations.length, 7);
+  assert.equal(new Set(foundations).size, 7);
+  for (const color of [...foundations, ...Object.values(ASSET_BRANDING)]) assert.match(color, /^#[0-9A-F]{6}$/i);
+  assert.equal(Object.keys(ASSET_BRANDING).length, 5);
+  assert.equal(new Set(Object.values(ASSET_BRANDING)).size, 5);
+  const hubAccents = Object.values(HUB_BRANDING).map(hub => hub.color);
+  assert.equal(new Set(hubAccents).size, hubAccents.length);
+  assert.equal(new Set([...hubAccents, ...Object.values(ASSET_BRANDING)]).size, hubAccents.length + 5);
+  for (const hubId of Object.keys(HUB_BRANDING)) {
+    assert.equal(hubTabAccent(hubId, 0), HUB_BRANDING[hubId].color);
+    assert.equal(new Set(Array.from({ length: 7 }, (_, index) => hubTabAccent(hubId, index))).size, 7);
+  }
+  const legalPaths = ['/legal', '/faq', '/datenschutz', '/agb', '/impressum', '/kontakt'];
+  assert.equal(new Set(legalPaths.map(legalPageAccent)).size, legalPaths.length);
+  assert.equal(legalPageAccent('/unknown'), BRAND_COLORS.cyan);
+});
+
+test('mobile drawer escapes header stacking context and retains modal keyboard behaviour', () => {
+  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  assert.match(header, /createPortal\(/);
+  assert.match(header, /<\/AnimatePresence>, document\.body\)\}/);
+  assert.match(header, /z-\[100\]/);
+  assert.match(header, /z-\[110\]/);
+  assert.match(header, /document\.body\.style\.overflow = 'hidden'/);
+  assert.match(header, /event\.key === 'Escape'/);
+  assert.match(header, /event\.key !== 'Tab'/);
+  assert.match(header, /getElementById\('mobile-menu-btn'\)\?\.focus\(\)/);
+  assert.match(header, /id="capital-ai-mobile-navigation"/);
+  assert.match(header, /role="dialog"/);
+});
+
+test('per-subpage colours survive 50% compact hub and legal navigation', () => {
+  const strip = readFileSync(new URL('../src/components/HubNavigationPanel.tsx', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
+  const legal = readFileSync(new URL('../src/components/LegalAndFaqPages.tsx', import.meta.url), 'utf8');
+  const licensing = readFileSync(new URL('../src/components/LicenseInformationPages.tsx', import.meta.url), 'utf8');
+  assert.match(strip, /hubTabAccent\(hubId, index, page.id\)/);
+  assert.match(strip, /className="hub-tab-strip"/);
+  assert.match(css, /min-height:\s*28px;/);
+  assert.match(css, /font-size:\s*\.75rem;/);
+  assert.match(css, /padding:\s*\.1875rem \.3125rem;/);
+  assert.match(css, /--effective-tab-accent: var\(--tab-accent, var\(--hub-accent\)\)/);
+  assert.match(legal, /data-legal-route=\{route\}/);
+  assert.match(legal, /legalPageAccent\(item\.path\)/);
+  assert.match(licensing, /legalPageAccent\(path\)/);
+});
+
+
+test('requested PRODUCT identities have stable colours and dark-navy documentation glow', async () => {
+  assert.equal(HUB_BRANDING.marketscreener.color, BRAND_COLORS.violet);
+  assert.equal(HUB_BRANDING.studio.color, BRAND_COLORS.green);
+  assert.equal(HUB_BRANDING.learning.color, BRAND_COLORS.gold);
+  assert.equal(HUB_BRANDING.documentation.color, BRAND_COLORS.blue);
+  assert.equal(HUB_BRANDING['control-center'].color, BRAND_COLORS.rose);
+  assert.match(HUB_BRANDING.documentation.glow, /16, 51, 135/);
+  assert.equal(hubTabAccent('control-center', 8, 'cost_center'), BRAND_COLORS.rose);
+  const catalog = readFileSync(new URL('../src/components/HubCatalog.tsx', import.meta.url), 'utf8');
+  assert.match(catalog, /'glow' in brand \? brand.glow/);
+});
+
+test('mobile navigation consumes full width with compact, WCAG-sized keyboard accessible chips', () => {
+  const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
+  const hub = readFileSync(new URL('../src/components/HubNavigationPanel.tsx', import.meta.url), 'utf8');
+  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  const learning = readFileSync(new URL('../src/features/learning/LearningPortalPage.tsx', import.meta.url), 'utf8');
+  const legal = readFileSync(new URL('../src/components/LegalAndFaqPages.tsx', import.meta.url), 'utf8');
+  assert.match(css, /\.hub-tab-strip \.hub-tab \{ min-height: 28px; font-size: \.75rem;/);
+  assert.match(css, /\.hub-navigation \{ margin-inline: 0; \}/);
+  assert.match(css, /\.hub-tab-strip\[data-hub="legal"\]/);
+  assert.match(css, /\.hub-tab-edge--right/);
+  assert.match(css, /\.hub-tab-strip \{ max-width: 100%; scrollbar-width: none; \}/);
+  assert.match(header, /w-full max-w-none sm:w-\[85%\] sm:max-w-\[320px\]/);
+  assert.match(hub, /aria-describedby=\{hintId\}/);
+  assert.match(hub, /scrollState\.forward/);
+  assert.match(hub, /page\.id\)/);
+  assert.doesNotMatch(hub, /Weitere Bereiche durch Wischen oder Scrollen/);
+  assert.match(learning, /flex min-w-0 flex-wrap items-center/);
+  assert.match(legal, /<item\.icon className="h-4 w-4" aria-hidden="true" \/>/);
+});
+
+
+test('all seven navigation accents retain WCAG AA normal-text contrast on dark canvas', () => {
+  const luminance = hex => {
+    const channels = hex.slice(1).match(/../g).map(channel => parseInt(channel, 16) / 255);
+    const linear = channels.map(value => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4);
+    return .2126 * linear[0] + .7152 * linear[1] + .0722 * linear[2];
+  };
+  const background = luminance('#071126');
+  for (const [name, color] of Object.entries(BRAND_COLORS)) {
+    const foreground = luminance(color);
+    const contrast = (Math.max(foreground, background) + .05) / (Math.min(foreground, background) + .05);
+    assert.ok(contrast >= 4.5, `${name} contrast ${contrast.toFixed(2)}:1 falls below WCAG AA normal text`);
+  }
+});
+
+test('compact navigation halves chrome spacing but keeps readable typography and usable targets', () => {
+  const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
+  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  const home = readFileSync(new URL('../src/components/HomeHubDirectory.tsx', import.meta.url), 'utf8');
+  const legal = readFileSync(new URL('../src/components/LegalAndFaqPages.tsx', import.meta.url), 'utf8');
+  const license = readFileSync(new URL('../src/components/LicenseInformationPages.tsx', import.meta.url), 'utf8');
+  assert.match(css, /\.hub-tab-strip \{[\s\S]*?gap: \.1875rem;[\s\S]*?padding: \.25rem;/);
+  assert.match(css, /\.hub-tab \{[\s\S]*?min-height: 28px;[\s\S]*?font-size: \.75rem;/);
+  assert.match(css, /\.hub-tab-strip \.hub-tab svg \{ width: \.75rem; height: \.75rem;/);
+  assert.match(css, /\.hub-sidebar-card, \.hub-asset-card, \.hub-subclass-card \{ min-height: 44px; \}/);
+  assert.match(header, /hub-sidebar-card min-h-11/);
+  assert.match(header, /hub-asset-card min-h-11/);
+  assert.match(header, /hub-subclass-card min-h-11/);
+  assert.match(home, /hub-directory-card hub-switch flex min-h-11/);
+  assert.match(legal, /className="hub-tab-strip w-full max-w-4xl z-10 mt-4"/);
+  assert.match(css, /\[data-legal-route\] > nav\.hub-tab-strip \{ margin-top: \.5rem; \}/);
+  assert.match(css, /\[data-legal-route\] button\.legal-topic-card \{ padding: \.5rem; \}/);
+  assert.match(license, /className="hub-tab-strip flex flex-wrap gap-2 text-sm"/);
+  assert.doesNotMatch(css, /\.hub-tab-strip \.hub-tab \{ min-height: 22px;/);
 });

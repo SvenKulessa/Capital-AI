@@ -1,5 +1,5 @@
 import { createEnterpriseTrial, ENTERPRISE_TRIAL_CODE, ENTERPRISE_TRIAL_CAMPAIGN } from './enterprise-trial.mjs';
-import { boundedJson } from './http-security.mjs';
+import { boundedJson, secureUrl } from './http-security.mjs';
 import { BILLING_CATALOG } from './billing-catalog.mjs';
 
 const ALLOWED_TIERS = new Set(['starter', 'pro', 'enterprise']);
@@ -88,6 +88,40 @@ export function createSubscriptionCheckout({ env = process.env, fetchImpl = fetc
         return true;
       }
 
+      if (url.pathname === '/api/billing/subscriptions/portal') {
+        if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); json(res,405,{error:'method_not_allowed'}); return true; }
+        if (!secret || !auth) { json(res,503,{error:'billing_unavailable'}); return true; }
+        if (!auth.sameOrigin(req)) { json(res,403,{error:'forbidden_origin'}); return true; }
+        const user = await auth.verify(req,res);
+        if (!user?.userId) { json(res,401,{error:'authentication_required'}); return true; }
+        try {
+          // Never accept a customer ID from the browser. Resolve the user's persisted subscription.
+          const store = secureUrl(env.SUPABASE_URL || env.VITE_SUPABASE_URL);
+          if (store.pathname !== '/' || store.search) throw new Error('invalid_store');
+          const key = env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY || '';
+          if (key.length < 32) throw new Error('store_unavailable');
+          const target = new URL('/rest/v1/subscriptions',store);
+          target.searchParams.set('select','user_id,stripe_subscription_id');
+          target.searchParams.set('user_id',`eq.${user.userId}`);
+          target.searchParams.set('limit','2');
+          const headers = {Accept:'application/json',apikey:key,...(key.startsWith('eyJ') ? {Authorization:`Bearer ${key}`} : {})};
+          const rows = await boundedJson(await fetchImpl(target,{headers,redirect:'error',signal:AbortSignal.timeout(7000)}));
+          if (!Array.isArray(rows) || rows.length !== 1 || rows[0].user_id !== user.userId || !/^sub_[A-Za-z0-9]+$/.test(rows[0].stripe_subscription_id || '')) {
+            json(res,409,{error:'no_subscription'}); return true;
+          }
+          const stripeHeaders = {Authorization:`Bearer ${secret}`};
+          const subscription = await boundedJson(await fetchImpl(`https://api.stripe.com/v1/subscriptions/${encodeURIComponent(rows[0].stripe_subscription_id)}`,{headers:stripeHeaders,redirect:'error',signal:AbortSignal.timeout(7000)}));
+          if (subscription.id !== rows[0].stripe_subscription_id || subscription.metadata?.user_id !== user.userId || subscription.livemode !== secret.startsWith('sk_live_') || !/^cus_[A-Za-z0-9]+$/.test(subscription.customer || '')) throw new Error('identity_mismatch');
+          // A portal shows the whole customer. Reject customers shared with other account identities.
+          const peers = await boundedJson(await fetchImpl(`https://api.stripe.com/v1/subscriptions?customer=${encodeURIComponent(subscription.customer)}&status=all&limit=100`,{headers:stripeHeaders,redirect:'error',signal:AbortSignal.timeout(7000)}));
+          if (peers.has_more !== false || !Array.isArray(peers.data) || !peers.data.length || peers.data.some(row => row.metadata?.user_id !== user.userId)) throw new Error('customer_identity_mismatch');
+          const portal = await boundedJson(await fetchImpl('https://api.stripe.com/v1/billing_portal/sessions',{method:'POST',headers:{...stripeHeaders,'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({customer:subscription.customer,return_url:`${baseUrl}/profile/subscription`}),redirect:'error',signal:AbortSignal.timeout(7000)}));
+          const portalUrl = secureUrl(portal.url);
+          if (portalUrl.hostname !== 'billing.stripe.com') throw new Error('invalid_portal');
+          json(res,200,{url:portalUrl.href});
+        } catch { json(res,502,{error:'billing_portal_unavailable'}); }
+        return true;
+      }
       if (url.pathname !== '/api/billing/subscriptions/checkout') return false;
       if (req.method !== 'POST') {
         res.setHeader('Allow', 'POST');

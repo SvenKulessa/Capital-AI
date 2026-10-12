@@ -16,6 +16,7 @@ interface FooterProps {
 export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   const { t, locale } = useLocale();
   const handleNavClick = (e: React.MouseEvent, path: string, label: string) => {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     if (onNavigate) e.preventDefault();
     trackEvent('footer_nav_click', {
       category: 'navigation',
@@ -63,7 +64,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           id="footer-nav-impressum"
           href="/impressum"
           onClick={(e) => handleNavClick(e, '/impressum', 'impressum')}
-          className="hover:text-white transition-colors cursor-pointer text-slate-100 font-medium hover:underline underline-offset-4"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center hover:text-white transition-colors cursor-pointer text-slate-100 font-medium hover:underline underline-offset-4"
           data-analytics="footer-impressum"
         >
           {t('imprint')}
@@ -73,7 +74,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           id="footer-nav-agb"
           href="/agb"
           onClick={(e) => handleNavClick(e, '/agb', 'agb')}
-          className="hover:text-white transition-colors cursor-pointer text-slate-100 font-medium hover:underline underline-offset-4"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center hover:text-white transition-colors cursor-pointer text-slate-100 font-medium hover:underline underline-offset-4"
           data-analytics="footer-agb"
         >
           {t('terms')}
@@ -83,23 +84,23 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           id="footer-nav-datenschutz"
           href="/datenschutz"
           onClick={(e) => handleNavClick(e, '/datenschutz', 'datenschutz')}
-          className="hover:text-white transition-colors cursor-pointer text-slate-100 font-medium hover:underline underline-offset-4"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center hover:text-white transition-colors cursor-pointer text-slate-100 font-medium hover:underline underline-offset-4"
           data-analytics="footer-datenschutz"
         >
           {t('privacy')}
         </a>
         <span className="text-slate-600">•</span>
         <a id="footer-nav-legal" href="/legal" onClick={(e) => handleNavClick(e, '/legal', 'legal')}
-          className="hover:text-white transition-colors cursor-pointer text-slate-100 font-medium hover:underline underline-offset-4">Legal</a>
+          className="inline-flex min-h-11 min-w-11 items-center justify-center hover:text-white transition-colors cursor-pointer text-slate-100 font-medium hover:underline underline-offset-4">Legal</a>
         <span className="text-slate-600">•</span>
         <a id="footer-nav-kontakt" href="/kontakt" onClick={(e) => handleNavClick(e, '/kontakt', 'kontakt')}
-          className="hover:text-white transition-colors cursor-pointer text-slate-100 font-medium hover:underline underline-offset-4">Kontakt</a>
+          className="inline-flex min-h-11 min-w-11 items-center justify-center hover:text-white transition-colors cursor-pointer text-slate-100 font-medium hover:underline underline-offset-4">Kontakt</a>
         <span className="text-slate-600">•</span>
         <a
           id="footer-nav-faq"
           href="/faq"
           onClick={(e) => handleNavClick(e, '/faq', 'faq')}
-          className="hover:text-white transition-colors cursor-pointer text-slate-100 font-medium hover:underline underline-offset-4 flex items-center gap-1"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center hover:text-white transition-colors cursor-pointer text-slate-100 font-medium hover:underline underline-offset-4 flex items-center gap-1"
           data-analytics="footer-faq"
         >
           FAQ
@@ -109,7 +110,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           id="footer-nav-pricing"
           href="/pricing"
           onClick={(e) => handleNavClick(e, '/pricing', 'pricing')}
-          className="hover:text-white transition-colors cursor-pointer text-slate-100 font-medium hover:underline underline-offset-4 flex items-center gap-1"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center hover:text-white transition-colors cursor-pointer text-slate-100 font-medium hover:underline underline-offset-4 flex items-center gap-1"
           data-analytics="footer-pricing"
         >
           {t('pricing')}

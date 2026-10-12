@@ -1,8 +1,10 @@
+import { QuantLearningDemo } from './QuantLearningDemo';
+import { VOCABULARY_PUBLIC_COUNT, VOCABULARY_SOURCE_PRS } from '../../../shared/vocabulary-metadata.mjs';
 import { HubNavigationPanel } from '../../components/HubNavigationPanel';
 /**
  * CAPITAL AI — LEARNING PORTAL & FINANZ-VOKABULAR TERMINAL
  * 
- * Zentrales Learning Portal der Anwendung.
+ * Zentrales Learning Hub der Anwendung.
  * Beinhaltet:
  * 1. Vollständiges Market Vocabulary & Glossar (Filterbar nach Kategorien & Skill-Levels)
  * 2. Öffentliche Analyse-Module & Methodik (Werkzeuge, Datenpfade, Modulaufbau)
@@ -18,7 +20,7 @@ import { LearningPurchase } from './LearningPurchase';
 import { LearningVideos } from './LearningVideos';
 import { ChartRecognitionQuiz } from './ChartRecognitionQuiz';
 import { useLearningFavorites } from './LearningFavorites';
-import { dailyLearningQuestions, freeVocabularySelection } from './learningPolicy';
+import { dailyLearningQuestions } from './learningPolicy';
 import { ChartLearningAtlas } from './ChartLearningAtlas';
 import React, { useEffect, useState, useMemo } from 'react';
 import {
@@ -98,7 +100,10 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
   const [focusedTermId, setFocusedTermId] = useState<string | null>(termFromLink ?? null);
   const [copiedTermId, setCopiedTermId] = useState<string | null>(null);
   const [protectedTerms, setProtectedTerms] = useState<VocabularyTerm[]>([]);
-  const fullVocabularyTerms = useMemo(() => [...VOCABULARY_TERMS, ...protectedTerms], [protectedTerms]);
+  const fullVocabularyTerms = useMemo(() => {
+    const extendedById = new Map(protectedTerms.map(term=>[term.id,term]));
+    return VOCABULARY_TERMS.map(term=>extendedById.get(term.id) ?? term);
+  }, [protectedTerms]);
 
   // Quiz States
   const [currentQuizIndex, setCurrentQuizIndex] = useState<number>(0);
@@ -112,7 +117,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
   const [authenticated, setAuthenticated] = useState<boolean>(false);
   const [accessLoaded, setAccessLoaded] = useState<boolean>(false);
   const [quizAccessError, setQuizAccessError] = useState<string>('');
-  const allVocabularyTerms = useMemo(() => entitled ? fullVocabularyTerms : freeVocabularySelection(fullVocabularyTerms), [entitled, fullVocabularyTerms]);
+  const allVocabularyTerms = fullVocabularyTerms;
 
   useEffect(() => {
     const id = window.location.hash.slice(1);
@@ -147,8 +152,6 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
     let cancelled = false;
 
     async function syncVocabularyAccess() {
-      const preview = await fetch('/api/learning/vocabulary/preview').then(r => r.ok ? r.json() : null).catch(() => null);
-      if (!cancelled && Array.isArray(preview?.terms)) setProtectedTerms(preview.terms);
       const params = new URLSearchParams(window.location.search);
       const trialSession=params.get('enterprise_trial_session');
       if(trialSession) await fetch(`/api/billing/enterprise/trial?session_id=${encodeURIComponent(trialSession)}`,{method:'POST'}).catch(()=>null);
@@ -278,12 +281,12 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
   const QUIZ_QUESTIONS = dailyLearningQuestions(quizDate, entitled);
 
   return (
-    <div className="hub-universe hub-universe--learning w-full text-slate-100 min-h-screen py-4 sm:py-6 px-2 sm:px-6 relative">
+    <div className="hub-universe hub-universe--learning w-full max-w-full min-w-0 text-slate-100 min-h-screen py-4 sm:py-6 px-2 sm:px-6 relative">
       {/* 1. TOP HEADER CONTRACT (Breadcrumb + Controls) */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pb-5 border-b border-slate-800/80 mb-6">
         <div>
           {/* Breadcrumb Hierarchy */}
-          <div className="flex items-center gap-2 text-xs text-slate-400 mb-1.5 font-medium">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-400 mb-2 font-medium">
             <button type="button" onClick={onBackToHome} className="hover:text-amber-300 transition-colors">
               Capital-AI
             </button>
@@ -298,7 +301,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
               }}
               className="text-amber-400 font-semibold hover:text-amber-200 transition-colors"
             >
-              Learning Portal
+              Learning Hub
             </button>
             <span aria-hidden="true" className="text-slate-600">
               /
@@ -315,12 +318,12 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
+          <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
+            <h1 className="min-w-0 text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
               <BookOpen className="w-6 h-6 text-amber-400 shrink-0" />
-              <span>Capital-AI Learning Portal</span>
+              <span>Capital-AI Learning Hub</span>
             </h1>
-            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40">
+            <span className="max-w-full text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40">
               WISSENS-TERMINAL
             </span>
             <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-mono text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 px-2.5 py-0.5 rounded-full">
@@ -363,6 +366,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       {/* TAB CONTENT 1: MARKET VOCABULARY & GLOSSAR                                */}
       {/* ========================================================================= */}
       {activeTab !== 'kontakt' && typeof window !== 'undefined' && window.location.pathname === '/learning' && <LearningJourney />}
+      {(activeTab === 'glossar'||activeTab === 'flashcards') && <QuantLearningDemo />}
       {activeTab === 'news' && <LearningArticles />}
       {activeTab === 'flashcards' && (
         <React.Suspense fallback={<p role="status" className="p-4 text-sm text-slate-400">Karteikarten werden geladen …</p>}>
@@ -384,7 +388,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
                   Capital-AI Vocabulary &amp; Thesaurus
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-                  Durchsuchen Sie {fullVocabularyTerms.length} konsolidierte Fachbegriffe aus Marktanalyse, Scoring,
+                  Durchsuchen Sie {VOCABULARY_PUBLIC_COUNT} öffentlich zugängliche Fachbegriffe aus Marktanalyse, Scoring,
                   Daten &amp; Evidence, Plattformarchitektur, Security, Produkt, Governance und Mobile Runtime.
                 </p>
               </div>
@@ -397,6 +401,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
             </div>
           </div>
 
+          <details className="rounded-xl border border-slate-700 p-4 text-sm text-slate-300"><summary className="cursor-pointer min-h-11">Katalogstand und PR-Quellen</summary><p>Die Anzahl wird direkt aus dem aktuellen Katalog berechnet.</p><ul>{VOCABULARY_SOURCE_PRS.map(pr=><li key={pr.number}><a className="inline-flex min-h-11 items-center text-cyan-200 underline" href={`https://github.com/SvenKulessa/Capital-AI/pull/${pr.number}`} target="_blank" rel="noreferrer">PR #{pr.number} · {pr.title}</a></li>)}</ul></details>
           {focusedTermId && (
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-cyan-400/20 bg-cyan-400/5 px-4 py-3">
               <div className="text-xs text-cyan-100">
@@ -472,14 +477,14 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
             </div>
             {!entitled && (
               <div className="pt-2 text-[11px] text-purple-200">
-                Kostenlos: sieben feste Einträge je Skill-Level. Learning Portal schaltet alle Begriffe für {formatVocabularyPrice()} einmalig frei.
+                Alle Glossarbegriffe kostenlos lesen und durchsuchen. Learning Hub schaltet den vollständigen Übungskarteikasten für {formatVocabularyPrice()} einmalig frei.
               </div>
             )}
           </div>
 
           {favorites.error && <p role="alert" className="text-sm text-rose-300">{favorites.error}</p>}
           {!entitled && <LearningPurchase onLogin={onNavigateLogin} />}
-          {entitled && <p id="learning-offer" className="rounded-xl border border-amber-400/30 p-4 text-base leading-7 text-slate-200">Dein Learning-Portal-Zugang ist aktiv. Für Chart-Module ist zusätzlich mindestens Starter erforderlich; Chart-Training benötigt Pro.</p>}
+          {entitled && <p id="learning-offer" className="rounded-xl border border-amber-400/30 p-4 text-base leading-7 text-slate-200">Dein Lernzugang ist aktiv. <a href="/profile/rights" className="underline text-amber-200">Zugang und Rechte ansehen</a></p>}
           {/* Vocabulary Terms Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredTerms.length === 0 ? (
@@ -510,8 +515,8 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       {/* ========================================================================= */}
       {/* TAB CONTENT 2: CHEAT-SHEETS & PIPELINE GUIDES                             */}
       {/* ========================================================================= */}
-      {activeTab === 'patterns' && (atlasEntitled ? <><ChartLearningAtlas /><ChartRecognitionQuiz allowed={chartQuizEntitled} /></> : <p className="rounded-xl border border-amber-400/30 p-5 text-slate-200">Chart-Lernatlas: mit Learning Portal und aktivem Starter-, Pro- oder Enterprise-Abonnement nutzbar.</p>)}
-      {activeTab === 'guides' && !atlasEntitled && <p className="rounded-xl border border-amber-400/30 p-5 text-slate-200">Modul-Erklärungen benötigen Learning Portal und ein aktives Starter-, Pro- oder Enterprise-Abonnement.</p>}
+      {activeTab === 'patterns' && (atlasEntitled ? <><ChartLearningAtlas /><ChartRecognitionQuiz allowed={chartQuizEntitled} /></> : <p className="rounded-xl border border-amber-400/30 p-5 text-slate-200">Chart-Lernatlas: mit Learning Hub und aktivem Starter-, Pro- oder Enterprise-Abonnement nutzbar.</p>)}
+      {activeTab === 'guides' && !atlasEntitled && <p className="rounded-xl border border-amber-400/30 p-5 text-slate-200">Modul-Erklärungen benötigen Learning Hub und ein aktives Starter-, Pro- oder Enterprise-Abonnement.</p>}
       {activeTab === 'guides' && atlasEntitled && (
         <div className="space-y-6">
           <div className="p-6 rounded-2xl bg-gradient-to-r from-cyan-500/15 via-[#0d1530] to-purple-500/15 border border-cyan-500/40">
@@ -627,10 +632,10 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
               <Award className="w-12 h-12 text-amber-400 mx-auto" />
               <h3 className="text-xl font-bold text-white">Tagesfrage bereits verwendet</h3>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Die nächste kostenlose Frage steht morgen bereit. Learning Portal bietet vollständige Quizzes für {formatVocabularyPrice()} einmalig.
+                Die nächste kostenlose Frage steht morgen bereit. Learning Hub bietet vollständige Quizzes für {formatVocabularyPrice()} einmalig.
               </p>
               <button type="button" onClick={() => setActiveTab('glossar')} className="px-4 py-2 rounded-xl bg-amber-400 text-black font-bold text-xs hover:bg-amber-300 cursor-pointer">
-                Learning Portal ansehen
+                Learning Hub ansehen
               </button>
             </div>
           ) : !quizStarted ? (
@@ -639,7 +644,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
               <h3 className="text-xl font-bold text-white">{entitled ? 'Skill-Check starten' : 'Eine kostenlose Tagesfrage'}</h3>
               <p className="text-xs text-slate-300 leading-relaxed">
                 {entitled
-                  ? 'Ihr Learning-Portal-Zugang ist aktiv. Der Skill-Check kann erneut gestartet werden.'
+                  ? 'Ihr Learning-Hub-Zugang ist aktiv. Der Skill-Check kann erneut gestartet werden.'
                   : 'Mit Start wird Ihre heutige kostenlose Frage serverseitig verbraucht.'}
               </p>
               {quizAccessError && <p className="text-xs text-rose-300">{quizAccessError}</p>}
@@ -784,7 +789,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
                   onClick={() => setActiveTab('glossar')}
                   className="px-4 py-2 rounded-xl bg-amber-400 text-black font-bold text-xs hover:bg-amber-300 cursor-pointer"
                 >
-                  Learning Portal für {formatVocabularyPrice()} ansehen
+                  Learning Hub für {formatVocabularyPrice()} ansehen
                 </button>
               )}
             </div>

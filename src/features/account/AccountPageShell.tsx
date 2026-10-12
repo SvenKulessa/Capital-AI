@@ -1,5 +1,6 @@
+import { accountDisplay } from '../../../shared/account-display.mjs';
 import React, { useEffect, useState, type ReactNode } from 'react';
-import { ArrowLeft, LayoutDashboard, Loader2, LogOut, ShieldCheck, User } from 'lucide-react';
+import { CreditCard, ArrowLeft, LayoutDashboard, Loader2, LogOut, ShieldCheck, User } from 'lucide-react';
 import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 import { useLocale } from '../../i18n/LocaleProvider';
 import { accountCopy } from '../../i18n/accountWorkspaceCopy';
@@ -34,7 +35,7 @@ export interface AccountSession {
 }
 
 type AccountPageShellProps = {
-  active: '/profile' | '/profile/security' | '/profile/key-vault' | '/profile/workspace' | '/profile/render-dashboard' | '/profile/dashboard';
+  active: '/profile/rights' | '/profile/subscription' | '/profile' | '/profile/security' | '/profile/key-vault' | '/profile/workspace' | '/profile/render-dashboard' | '/profile/dashboard';
   title: string;
   description: string;
   onNavigate: (path: string) => void;
@@ -107,33 +108,35 @@ export function AccountPageShell({
 
   if (!session && !error) {
     return (
-      <main className="min-h-screen bg-[#02050e] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-[#02050e] text-white flex items-center justify-center">
         <div className="flex items-center gap-3 text-sm text-slate-300">
           <Loader2 className="h-5 w-5 animate-spin text-amber-400" />
           {tr.accountVerifying}
         </div>
-      </main>
+      </div>
     );
   }
 
   if (!session) {
     return (
-      <main className="min-h-screen bg-[#02050e] px-4 py-8 text-white">
+      <div className="min-h-screen bg-[#02050e] px-4 py-8 text-white">
         <div role="alert" className="mx-auto max-w-xl rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-200">
           {error}
         </div>
-      </main>
+      </div>
     );
   }
 
   const items = [
     { path: '/profile' as const, label: tr.accountProfile, icon: User },
     { path: '/profile/security' as const, label: tr.accountSecurity, icon: ShieldCheck },
+    { path: '/profile/rights' as const, label: 'Konto & Rechte', icon: ShieldCheck },
+    { path: '/profile/subscription' as const, label: 'Abo verwalten', icon: CreditCard },
     { path: '/profile/dashboard' as const, label: 'Privates Dashboard', icon: LayoutDashboard },
   ];
 
   return (
-    <main className="min-h-screen bg-[#02050e] px-4 py-6 text-white sm:px-6">
+    <div className="min-h-screen bg-[#02050e] px-4 py-6 text-white sm:px-6">
       <div className="mx-auto max-w-5xl space-y-5">
         <header className="rounded-2xl border border-white/10 bg-[#070b19]/90 p-4 shadow-2xl">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -145,9 +148,9 @@ export function AccountPageShell({
               <p className="mt-1 max-w-2xl text-sm text-slate-400">{description}</p>
               <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                 <span className="font-bold text-white">{session.user?.name || tr.accountUser}</span>
-                {session.account?.iamRole !== 'owner' && session.account?.subscription?.tier && (
+                {accountDisplay(session) && (
                   <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-1 font-mono text-amber-200">
-                    {session.account.subscription.tier}
+                    {accountDisplay(session)}
                   </span>
                 )}
               </div>
@@ -172,7 +175,7 @@ export function AccountPageShell({
             </div>
           </div>
 
-          <nav aria-label={tr.accountSections} className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          <nav aria-label={tr.accountSections} className="hub-tab-strip mt-5" data-hub="learning">
             {items.map(item => {
               const Icon = item.icon;
               const selected = active === item.path;
@@ -182,9 +185,9 @@ export function AccountPageShell({
                   type="button"
                   onClick={() => onNavigate(item.path)}
                   aria-current={selected ? 'page' : undefined}
-                  className={`flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 text-xs font-black transition ${
+                  className={`hub-tab !text-sm ${
                     selected
-                      ? 'border-amber-400/40 bg-amber-400 text-black'
+                      ? ''
                       : 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10'
                   }`}
                 >
@@ -203,6 +206,6 @@ export function AccountPageShell({
 
         {children(session)}
       </div>
-    </main>
+    </div>
   );
 }

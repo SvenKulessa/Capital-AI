@@ -1,3 +1,4 @@
+import { createYouTubeDescription as youtubeDescription } from '../../platform/SocialMediaEngine/Editing/MediaStudioTemplates';
 import React from 'react';
 import { ChartLearningAtlas } from '../learning/ChartLearningAtlas';
 import {
@@ -36,6 +37,12 @@ export const ContentStudioPanel: React.FC = () => {
   return (
     <div className="space-y-5">
       <ChartLearningAtlas studio />
+      <section className="rounded-2xl border border-cyan-400/30 p-5">
+        <h2 className="text-lg font-bold">YouTube-Beschreibung · Capital-AI Tour</h2>
+        <p className="mt-2 text-sm text-slate-300">Wiederverwendbares Template mit Referral-Kennzeichnung und rechtlichen Hinweisen.</p>
+        <label htmlFor="youtube-description" className="mt-3 block text-sm">Beschreibung zum Kopieren</label>
+        <textarea id="youtube-description" readOnly rows={12} value={youtubeDescription({title:'Capital-AI Tour',summary:'Learning Portal und 50 Komponenten der Finanzanalyse entdecken. Blueprint-Bundles in Vorbereitung. Demo-Werte sind synthetisch.',chapters:'00:00 Learning Portal\n00:05 Analysekomponenten\n00:10 Analyse-Demo\n00:15 Hero Buddy'})} className="mt-2 w-full rounded-xl border border-slate-500 bg-slate-950 p-3 text-sm text-white" />
+      </section>
       <section className="rounded-2xl border border-violet-400/20 bg-gradient-to-br from-violet-500/10 via-[#0b1020] to-amber-500/5 p-5 sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl">
@@ -60,7 +67,7 @@ export const ContentStudioPanel: React.FC = () => {
               ['Package', CONTENT_SOCIAL_PACKAGE_VERSION],
               ['Publisher', CONTENT_SOCIAL_PUBLISHER_ADAPTER_VERSION],
               ['Publish', 'FAIL-CLOSED'],
-              ['CADS', plan.cadsQuality.technicalStatus === 'PASS' ? 'TECHNICAL_DRAFT_PASS' : 'BLOCKED'],
+              ['Qualität', plan.cadsQuality.technicalStatus === 'PASS' ? 'TECHNICAL_DRAFT_PASS' : 'BLOCKED'],
 
             ].map(([label, value]) => (
               <div key={label} className="rounded-xl border border-white/10 bg-black/20 p-3">
@@ -73,13 +80,13 @@ export const ContentStudioPanel: React.FC = () => {
       </section>
 
       <section aria-labelledby="cads-growth-status" className="rounded-2xl border border-cyan-400/25 bg-cyan-400/5 p-4">
-        <h3 id="cads-growth-status" className="text-sm font-bold text-cyan-100">CADS · Content-/Social-Qualitätsprüfung</h3>
+        <h3 id="cads-growth-status" className="text-sm font-bold text-cyan-100">Content-/Social-Qualitätsprüfung</h3>
         <p className="mt-2 text-xs text-slate-300">
-          Die Content Engine erzeugt einen nicht autorisierenden CADS-Nachweis. Medienprojekte und
+          Die Content Engine erzeugt einen Qualitätsnachweis. Medienprojekte und
           Asset-Identitäten werden zusätzlich in der SocialMediaEngine-Bridge geprüft.
           Externe Rechte, echte Asset-Bytes, redaktionelle Qualität und Live-Publishing bleiben separat offen.
         </p>
-        <ul className="mt-3 grid gap-2 text-xs sm:grid-cols-2" aria-label="CADS-Prüfungen">
+        <ul className="mt-3 grid gap-2 text-xs sm:grid-cols-2" aria-label="Qualitätsprüfungen">
           {plan.cadsQuality.checks.map(check => (
             <li key={check.code} className="flex items-center justify-between gap-3 rounded-lg border border-slate-700 px-3 py-2">
               <span className="break-all text-slate-200">{check.code.replaceAll('_', ' ')}</span>

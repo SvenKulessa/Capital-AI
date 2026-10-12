@@ -412,6 +412,7 @@ def render_brand_card(
     palette: BrandPalette,
     source_image: Path | None = None,
     kicker: str = "CAPITAL-AI",
+    logo_path: Path | None = None,
 ) -> AssetRecord:
     title = normalize_text(title, field="title", max_chars=100)
     subtitle = normalize_text(subtitle, field="subtitle", max_chars=240)
@@ -422,7 +423,11 @@ def render_brand_card(
     draw = ImageDraw.Draw(image)
     pad = max(36, width // 24)
     emblem_size = max(82, min(width, height) // 8)
-    _draw_network_emblem(draw, pad, pad, emblem_size, palette)
+    if logo_path is not None:
+        logo = _fit_source_image(logo_path, (0, 0, emblem_size, emblem_size), palette)
+        image.paste(logo, (pad, pad))
+    else:
+        _draw_network_emblem(draw, pad, pad, emblem_size, palette)
 
     brand_font = _font(max(28, width // 28), bold=True)
     draw.text((pad + emblem_size + 18, pad + emblem_size * 0.18), kicker, fill=palette.gold, font=brand_font)
@@ -482,13 +487,18 @@ def render_scene_frame(
     palette: BrandPalette,
     scene_index: int,
     scene_count: int,
+    logo_path: Path | None = None,
     source_image: Path | None = None,
 ) -> AssetRecord:
     width, height = 1080, 1920
     image = _background(width, height, palette)
     draw = ImageDraw.Draw(image)
     pad = 72
-    _draw_network_emblem(draw, pad, 70, 132, palette)
+    if logo_path is not None:
+        logo = _fit_source_image(logo_path, (0, 0, 132, 132), palette)
+        image.paste(logo, (pad, 70))
+    else:
+        _draw_network_emblem(draw, pad, 70, 132, palette)
     draw.text((238, 105), scene.kicker, fill=palette.gold, font=_font(43, bold=True))
     draw.text((width - pad, 120), f"{scene_index:02d}/{scene_count:02d}", fill=palette.text_secondary, font=_font(28), anchor="ra")
     draw.line((pad, 235, width - pad, 235), fill=palette.gold, width=5)
@@ -539,8 +549,11 @@ def render_short_video(
     voiceover: VoiceoverBinding | None = None,
     ffmpeg_executable: str = "ffmpeg",
     ffprobe_executable: str = "ffprobe",
+    video_codec: str = "mpeg4",
 ) -> tuple[AssetRecord, FfmpegBuildInfo]:
-    if not frames:
+    if video_codec not in {"mpeg4", "libx264"}:
+        raise MediaRenderError("unsupported video codec")
+    if not frames or len(frames) > 1800:
         raise MediaRenderError("at least one video frame is required")
     total_duration = sum(duration for _, duration in frames)
     if total_duration < MIN_TOTAL_DURATION_SECONDS or total_duration > MAX_TOTAL_DURATION_SECONDS:
@@ -548,7 +561,7 @@ def render_short_video(
     for path, duration in frames:
         if not path.is_file():
             raise MediaRenderError(f"video frame not found: {path}")
-        if duration < 1 or duration > 20:
+        if not math.isfinite(duration) or duration < 1 / 30 or duration > 20:
             raise MediaRenderError(f"invalid frame duration: {duration}")
 
     ffmpeg_info = inspect_ffmpeg(ffmpeg_executable)
@@ -589,9 +602,9 @@ def render_short_video(
         command += [
             "-t", f"{total_duration:.3f}",
             "-vf", "fps=30,format=yuv420p",
-            "-c:v", "mpeg4",
-            "-q:v", "3",
+            "-c:v", video_codec,
         ]
+        command += ["-preset", "fast", "-crf", "20", "-profile:v", "high", "-level", "4.0"] if video_codec == "libx264" else ["-q:v", "3"]
         if voiceover is None:
             command += ["-an"]
         else:
@@ -627,7 +640,7 @@ def render_short_video(
     duration = float((info.get("format") or {}).get("duration") or 0)
     if (width, height) != (1080, 1920):
         raise MediaRenderError(f"rendered short has invalid dimensions: {width}x{height}")
-    if duration <= 0 or duration > MAX_TOTAL_DURATION_SECONDS + 0.5:
+    if duration <= 0 or duration > MAX_TOTAL_DURATION_SECONDS + 0.5 or abs(duration - total_duration) > 0.25:
         raise MediaRenderError(f"rendered short has invalid duration: {duration:.3f}s")
 
     return (

@@ -58,6 +58,7 @@ import { ScoringEngineService } from '../../services/scoringEngine';
 import { PipelineConfiguratorService } from '../../services/pipelineConfigurator';
 import { useHubTab } from '../../hooks/useHubTab';
 import { ContentStudioPanel } from './ContentStudioPanel';
+import { BlueprintCommercePanel } from './BlueprintCommercePanel';
 import { ContactForm } from '../../components/ContactForm';
 import { AnalysisComponentExplorer } from '../analysis/AnalysisComponentExplorer';
 import { PipelineConfiguratorConsole } from '../analysis/PipelineConfiguratorConsole';
@@ -199,7 +200,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
         <div>
           {/* Breadcrumb Hierarchy */}
           <div className="flex items-center gap-2 text-xs text-slate-400 mb-1.5 font-medium">
-            <button type="button" onClick={onBackToHome} className="hover:text-cyan-300 transition-colors">
+            <button type="button" onClick={onBackToHome} className="hover:text-green-300 transition-colors">
               Capital-AI
             </button>
             <span aria-hidden="true" className="text-slate-600">
@@ -211,7 +212,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
                 setActiveTab('architecture');
                 onNavigate?.('/studio');
               }}
-              className="text-cyan-400 font-semibold hover:text-cyan-200 transition-colors"
+              className="text-green-300 font-semibold hover:text-green-200 transition-colors"
             >
               Studio Hub
             </button>
@@ -234,7 +235,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
 
           <div className="flex items-center gap-3">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
-              <Building2 className="w-6 h-6 text-cyan-400 shrink-0" />
+              <Building2 className="w-6 h-6 text-green-400 shrink-0" />
               <span>Capital-AI Studio Hub</span>
             </h1>
           </div>
@@ -257,7 +258,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
             <button
               type="button"
               onClick={onNavigateLogin}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 hover:text-white text-xs font-bold border border-cyan-500/30 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-500/15 hover:bg-green-500/25 text-green-300 hover:text-white text-xs font-bold border border-green-500/30 transition-colors cursor-pointer"
             >
               <span>Terminal Login</span>
             </button>
@@ -596,10 +597,11 @@ export const StudioPage: React.FC<StudioPageProps> = ({
       {/* ========================================================================= */}
       {activeTab === 'blueprints' && (
         <div className="space-y-6">
+          <BlueprintCommercePanel onNavigateLogin={onNavigateLogin} />
           <section aria-label="Screener Component Blueprint Library" className="rounded-2xl border border-amber-400/30 bg-[#0d1530] p-5 space-y-3">
             <div className="text-xs font-mono uppercase tracking-wider text-amber-300">Screener Component Blueprints · Konzeptbibliothek</div>
             <h2 className="text-xl font-bold text-white">50 technische Analysekomponenten</h2>
-            <p className="text-sm leading-relaxed text-slate-300">Component Blueprints beschreiben Datenverträge, geplante Pipelines, Formeln, Gewichtungen, Risiko-Gates und UI-Konzepte. Keine produktiven Daten, Providerrechte, validierten Scores oder Handelsfunktionen. CAP-BP-001 Market Integrity Gate ist als Architekturkonzept spezifiziert; ein freigeschalteter Kauf oder privater Download ist nicht belegt.</p>
+            <p className="text-sm leading-relaxed text-slate-300">Component Blueprints beschreiben Datenverträge, geplante Pipelines, Formeln, Gewichtungen, Risiko-Gates und UI-Konzepte. Keine produktiven Daten, Providerrechte, validierten Scores oder Handelsfunktionen. CAP-BP-001 Market Integrity Gate und CAP-BP-002 Data Quality Scorer sind privat gesicherte Konzeptdokumente. Die Einmalkauf-Produkte sind als 50,00 € netto zuzüglich anfallender Steuer in Stripe vorbereitet; der Checkout bleibt bis zur vollständigen Auslieferungsprüfung gesperrt.</p>
             <p className="text-xs text-amber-200">CONCEPT / DESIGNED · DATA EVIDENCE NOT_PROVEN · Kein Checkout freigeschaltet</p>
             <div className="flex flex-wrap gap-3">
               <button type="button" onClick={() => onNavigate?.('/architecture-hub')} className="rounded-lg border border-cyan-400/40 px-4 py-2 text-sm font-semibold text-cyan-200 hover:bg-cyan-400/10">50 Komponenten &amp; Architektur erkunden</button>

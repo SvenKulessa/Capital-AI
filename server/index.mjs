@@ -1,3 +1,4 @@
+import { createHistoricalAnalyticsDemo } from './historical-analytics-demo.mjs';
 import { canonicalHubTarget, DOCUMENT_ROUTES } from '../shared/hub-routes.mjs';
 import { renderLearningLandingFallback as learningLandingFallback } from '../shared/learning-journey.mjs';
 import http from 'node:http';
@@ -8,6 +9,9 @@ import { fileURLToPath } from 'node:url';
 import { assetCatalog, assetValues, quote, health, startStreams } from './market.mjs';
 import { createAuth } from './auth.mjs';
 import { createSocialOAuthCallback } from './social-media/oauth-callback.mjs';
+import { createSocialXOAuthStart } from './social-media/x-oauth-start.mjs';
+import { createSocialXOAuthExchange } from './social-media/x-oauth-exchange.mjs';
+import { createSocialXAccountStatus } from './social-media/x-account-status.mjs';
 import { createPrivateMarketCache } from './private-market-cache.mjs';
 import { createUserProviderVault } from './user-provider-vault.mjs';
 import { createUserAnalysisBindings } from './user-analysis-bindings.mjs';
@@ -35,15 +39,16 @@ import {
 } from '../shared/seo-indexing-policy.mjs';
 import { BILLING_CATALOG } from './billing-catalog.mjs';
 import { createVocabularyCheckout } from './vocabulary-checkout.mjs';
+import { createBlueprintCommerce } from './blueprint-commerce.mjs';
 import { createSubscriptionCheckout } from './subscription-checkout.mjs';
 import { createBenchmarkRuns } from './benchmark-runs.mjs';
 import { createCadsCommerce } from './cads-commerce.mjs';
 import { createCadsMarketplace } from './cads-marketplace.mjs';
 import { createBenchmarkStore } from './benchmark-store.mjs';
 import { isBlockedPublicArtifactPath } from './public-artifact-policy.mjs';
-import { QUANT_PRO_IDS } from './vocabulary-quant-pro-index.mjs';
 import {
   vocabularyMetadata,
+  VOCABULARY_SOURCE_PRS,
   vocabularyMetadataByPath,
   vocabularyTitle,
   vocabularyDescription,
@@ -63,9 +68,9 @@ const buildIdentity =
   embeddedBuilder === 'SvenKulessa/Capital-AI/.github/workflows/build-security.yml'
     ? { bound: true, sourceSha: embeddedSourceSha, builder: embeddedBuilder }
     : { bound: false, sourceSha: null };
-const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.txt': 'text/plain; charset=utf-8', '.json': 'application/json; charset=utf-8' };
+const mime = { '.mp4': 'video/mp4', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.txt': 'text/plain; charset=utf-8', '.json': 'application/json; charset=utf-8' };
 const headers = { 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'strict-origin-when-cross-origin', 'X-Frame-Options': 'DENY', 'Permissions-Policy': 'camera=(), microphone=(), geolocation=()', 'Strict-Transport-Security': 'max-age=31536000', 'Content-Security-Policy': "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self' https://www.googletagmanager.com; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com; frame-src 'self' https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" };
-const publicVocabularyEntries = vocabularyMetadata.filter(entry => !QUANT_PRO_IDS.has(entry.id));
+const publicVocabularyEntries = vocabularyMetadata;
 const publicVocabularyCount = publicVocabularyEntries.length;
 const publicVocabularyMetadata = {
   '/learning': {
@@ -239,7 +244,9 @@ function injectPricingFallback(html, pathname) {
 
 function vocabularyFallback(entry) {
   const thesaurus = entry.thesaurus.map(item => `<li>${escapeHtml(item)}</li>`).join('');
-  return `<main><article><p><a href="/vocabulary">Capital-AI Vocabulary</a></p><h1>${escapeHtml(entry.term)}</h1><p>${escapeHtml(entry.description)}</p><p>Kategorie: ${escapeHtml(entry.category)}</p><h2>Thesaurus</h2><ul>${thesaurus}</ul><nav aria-label="Weiterlernen"><a href="/learning#learning-methodology">Mathematische Lernbeispiele kostenlos lesen</a> · <a href="/learning?tab=glossar#learning-offer">Learning-Angebot und Voraussetzungen</a></nav></article></main>`;
+  const lesson = [['Erklärung',entry.detailedExplanation],['Regel / Formel',entry.formulaOrRule],['Synthetisches Praxisbeispiel',entry.practicalExample],['Merksatz',entry.keyTakeaway]].filter(([,text])=>text).map(([title,text])=>`<section><h2>${escapeHtml(title)}</h2><p>${escapeHtml(text)}</p></section>`).join('');
+  const sources = entry.sources?.length ? `<section><h2>Fachquellen</h2><ul>${entry.sources.map(source=>`<li><a href="${escapeHtml(source.url)}" rel="noreferrer">${escapeHtml(source.title)}</a></li>`).join('')}</ul></section>` : '';
+  return `<main><article><p><a href="/vocabulary">Capital-AI Vocabulary</a></p><h1>${escapeHtml(entry.term)}</h1><p>${escapeHtml(entry.description)}</p><p>Kategorie: ${escapeHtml(entry.category)}</p><h2>Thesaurus</h2><ul>${thesaurus}</ul>${lesson}${sources}<details><summary>PR-Quellen des Katalogs</summary><ul>${VOCABULARY_SOURCE_PRS.map(pr=>`<li><a href="https://github.com/SvenKulessa/Capital-AI/pull/${pr.number}">PR #${pr.number} · ${escapeHtml(pr.title)}</a></li>`).join('')}</ul></details><nav aria-label="Weiterlernen"><a href="/learning#learning-methodology">Mathematische Lernbeispiele kostenlos lesen</a> · <a href="/learning?tab=glossar#learning-offer">Learning-Angebot und Voraussetzungen</a></nav></article></main>`;
 }
 function vocabularyLandingFallback() {
   const links = publicVocabularyEntries
@@ -251,7 +258,7 @@ function vocabularyLandingFallback() {
 
 function injectVocabularySeo(html, pathname) {
   const candidateEntry = vocabularyMetadataByPath.get(pathname);
-  const entry = candidateEntry && !QUANT_PRO_IDS.has(candidateEntry.id) ? candidateEntry : null;
+  const entry = candidateEntry ?? null;
   const landing = publicVocabularyMetadata[pathname];
   if (!entry && !landing) return html;
 
@@ -291,12 +298,23 @@ export function createApp(root = defaultRoot, options = {}) {
   let inflight = 0;
   const auth = createAuth(options);
   const learningInquiry = createLearningInquiry({ ...options, auth });
+  const socialXOAuthStart = createSocialXOAuthStart({
+    env: options.env || process.env, auth,
+    fetchImpl: options.fetchImpl || fetch,
+    store: options.socialOAuthStore || null,
+  });
+  const socialXAccountStatus = createSocialXAccountStatus({
+    env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
+  });
   const socialOAuthCallback = createSocialOAuthCallback({
     env: options.env || process.env,
     auth,
     fetchImpl: options.fetchImpl || fetch,
     store: options.socialOAuthStore || null,
-    exchangeCode: options.socialOAuthCodeExchange || null,
+    exchangeCode: options.socialOAuthCodeExchange
+      || createSocialXOAuthExchange({
+        env: options.env || process.env, fetchImpl: options.fetchImpl || fetch,
+      }),
   });
   const privateMarketCache = options.privateMarketCache || createPrivateMarketCache({
     env: options.env || process.env, getRedis: () => infrastructure.requireProviderState(),
@@ -305,6 +323,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const userAnalysisBindings = createUserAnalysisBindings({ ...options, auth });
   const privateProviderQuery = createPrivateProviderQuery({ env: options.env || process.env, auth, vault: userProviderVault });
   const renderOwnerDashboard = createRenderOwnerDashboard({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
+  const historicalAnalyticsDemo = createHistoricalAnalyticsDemo({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const googleAnalyticsReadback = createGoogleAnalyticsReadback({ env: options.env || process.env, auth });
   if (
     (options.env || process.env).PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true' ||
@@ -346,6 +365,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const repositoryToolCatalog = createRepositoryToolCatalog({ fetchImpl: options.fetchImpl || fetch, env: runtimeEnv });
   const scorerProxy = createScorerProxy({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, sourcePolicy: options.sourcePolicy });
   const vocabularyCheckout = createVocabularyCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
+  const blueprintCommerce = createBlueprintCommerce({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
   const subscriptionCheckout = createSubscriptionCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
   const benchmarkStore = options.benchmarkStore ?? createBenchmarkStore({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch });
   const cadsMarketplace = createCadsMarketplace({
@@ -373,17 +393,21 @@ export function createApp(root = defaultRoot, options = {}) {
   if (serveWellKnown(req, res, url)) return;
   if (await learningInquiry.handle(req, res, url, json)) return;
   if (await auth.handle(req, res, url, json)) return;
+  if (await socialXOAuthStart.handle(req, res, url, json)) return;
+  if (await socialXAccountStatus.handle(req, res, url, json)) return;
   if (await socialOAuthCallback.handle(req, res, url, json)) return;
   if (await userProviderVault.handle(req, res, url, json)) return;
   if (await userAnalysisBindings.handle(req, res, url, json)) return;
   if (await privateProviderQuery.handle(req, res, url, json, requestContext.requestId)) return;
   if (await renderOwnerDashboard.handle(req, res, url, json)) return;
+  if (await historicalAnalyticsDemo.handle(req, res, url, json)) return;
   if (await googleAnalyticsReadback.handle(req, res, url, json)) return;
   if (await krakenOrderDryRun.handle(req, res, url, json, requestContext.requestId)) return;
   if (await uniswapTrading.handle(req, res, url, json)) return;
   if (await privacy(req, res, url, json)) return;
   if (await telegram(req, res, url, json)) return;
   if (await vocabularyCheckout.handle(req, res, url, json)) return;
+  if (await blueprintCommerce.handle(req, res, url, json)) return;
   if (await subscriptionCheckout.handle(req, res, url, json)) return;
   if (await benchmarkRuns.handle(req, res, url, json)) return;
   if (await cadsMarketplace.handle(req, res, url, json)) return;
@@ -567,7 +591,7 @@ export function createApp(root = defaultRoot, options = {}) {
   }
   if (publicPath.startsWith('/vocabulary/')) {
     const vocabularyEntry = vocabularyMetadataByPath.get(publicPath);
-    if (!vocabularyEntry || QUANT_PRO_IDS.has(vocabularyEntry.id)) {
+    if (!vocabularyEntry) {
       res.writeHead(404, { ...headers, 'X-Robots-Tag': 'noindex, nofollow', 'Cache-Control': 'no-store' });
       return res.end();
     }

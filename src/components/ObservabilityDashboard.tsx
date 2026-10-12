@@ -156,30 +156,7 @@ export function ObservabilityDashboard() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-        <h3 className="text-sm font-black text-white">CADS Evidence</h3>
-        <p className="mt-1 text-[11px] text-slate-500">p50/p95/p99 der instrumentierten CADS-Operationen; keine Payload-Daten.</p>
-        <div className="mt-3 overflow-x-auto">
-          <table className="w-full min-w-[760px] text-left text-xs">
-            <thead className="text-slate-500"><tr><th>Layer</th><th>Service</th><th>Operation</th><th>Count</th><th>Errors</th><th>p50</th><th>p95</th><th>p99</th></tr></thead>
-            <tbody>
-              {(snapshot.cads || []).map(row => (
-                <tr key={row.layer + row.service + row.operation} className="border-t border-white/5">
-                  <td className="py-2">{row.layer}</td>
-                  <td>{row.service}</td>
-                  <td className="font-mono text-slate-300">{row.operation}</td>
-                  <td>{row.count}</td>
-                  <td>{row.errors}</td>
-                  <td>{row.p50Ms.toFixed(1)} ms</td>
-                  <td>{row.p95Ms.toFixed(1)} ms</td>
-                  <td>{row.p99Ms.toFixed(1)} ms</td>
-                </tr>
-              ))}
-              {!(snapshot.cads || []).length && <tr><td colSpan={8} className="py-3 text-slate-500">Noch keine CADS-Samples im aktuellen Prozess.</td></tr>}
-            </tbody>
-          </table>
-        </div>
-      </div>
+
     </section>
   );
 }

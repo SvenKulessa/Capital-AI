@@ -1,3 +1,5 @@
+import { VOCABULARY_CANONICAL_COUNT } from '../../shared/vocabulary-metadata.mjs';
+import { ASSET_BRANDING } from '../../shared/hub-branding.mjs';
 /**
  * ============================================================================
  * [ARCHITEKTUR-MAPPING: MARKET DATA & CORE MODULE REPOSITORY]
@@ -81,12 +83,12 @@ const MODULE_CATALOG: CoreModule[] = [
     details: {
       useCase: 'Interaktives Wissensportal mit Finanz-Vokabular, mathematischen Berechnungsformeln (DCF, ROE, Sharpe), Cheat-Sheets und Quiz.',
       features: [
-        'Vollständiges Glossar mit praxiserprobten Faustformeln & Regeln',
+        'Öffentliches Glossar mit erklärten Faustformeln & Regeln',
         'Spickzettel für Buffett Value Investing & BaFin WORM Archivierung',
         'Interaktiver Quant & Trader Skill-Check mit Wissensbewertung',
       ],
       sampleMetrics: [
-        { label: 'Eingetragene Fachbegriffe', value: '294', score: 'Konsolidiert' },
+        { label: 'Eingetragene Fachbegriffe', value: String(VOCABULARY_CANONICAL_COUNT), score: 'Konsolidiert' },
         { label: 'Themenbereiche', value: '11 Kategorien', score: 'Strukturiert' },
         { label: 'Cheat-Sheets', value: '4 Kern-Guides', score: 'Praxisnah' },
         { label: 'Interaktiver Test', value: 'Skill-Check', score: 'Verfügbar' },
@@ -225,14 +227,14 @@ const MODULE_CATALOG: CoreModule[] = [
     brandColor: '#F9BF21', // AIF Gold (Primary)
     accentColor: '#FDE047',
     details: {
-      useCase: 'Interaktives Nachschlagewerk mit 294 konsolidierten Fachbegriffen aus Markt, Scoring, Daten, Plattform, Security, Produkt, Governance und Mobile Runtime.',
+      useCase: `Interaktives Nachschlagewerk mit ${VOCABULARY_CANONICAL_COUNT} konsolidierten Fachbegriffen aus Markt, Scoring, Daten, Plattform, Security, Produkt, Governance und Mobile Runtime.`,
       features: [
         'Prägnante Definitionen ohne unnötiges Fachchinesisch',
         'Visuelle Diagramme für komplexe Zusammenhänge',
         'Direkte Verknüpfung mit den aktuellen Marktdaten',
       ],
       sampleMetrics: [
-        { label: 'Eingetragene Fachbegriffe', value: '294', score: 'Konsolidiert' },
+        { label: 'Eingetragene Fachbegriffe', value: String(VOCABULARY_CANONICAL_COUNT), score: 'Konsolidiert' },
         { label: 'Kategorien', value: '12 Themen', score: 'Strukturiert' },
         { label: 'Durchschnittliche Lesezeit', value: '90 Sek.', score: 'Kompakt' },
       ],
@@ -244,7 +246,7 @@ export const ASSET_CLASSES: AssetClassInfo[] = [
   {
     id: 'KRYPTO',
     name: 'Krypto',
-    color: '#F9BF21', // AIF Gold
+    color: ASSET_BRANDING.KRYPTO,
     description: 'Dezentrale Vermögenswerte, Smart Contracts & Web3-Ökosysteme',
     subclasses: [
       {
@@ -294,7 +296,7 @@ export const ASSET_CLASSES: AssetClassInfo[] = [
   {
     id: 'AKTIEN',
     name: 'Aktien',
-    color: '#44DE88', // Emerald
+    color: ASSET_BRANDING.AKTIEN,
     description: 'Globale Unternehmensanteile mit Dividenden, Wachstums- & Value-Profilen',
     subclasses: [
       {
@@ -337,7 +339,7 @@ export const ASSET_CLASSES: AssetClassInfo[] = [
   {
     id: 'INDIZIES',
     name: 'Indizies',
-    color: '#8D26FF', // Purple
+    color: ASSET_BRANDING.INDIZIES,
     description: 'Marktbreite Körbe, Benchmark-Indikatoren & Sektor-Barometer',
     subclasses: [
       {
@@ -373,7 +375,7 @@ export const ASSET_CLASSES: AssetClassInfo[] = [
   {
     id: 'FOREX',
     name: 'Forex',
-    color: '#E879F9', // Purple-Pink Accent
+    color: ASSET_BRANDING.FOREX,
     description: 'Weltweiter Devisenmarkt mit 24h-Liquidität und Zinsarbitrage',
     subclasses: [
       {
@@ -409,7 +411,7 @@ export const ASSET_CLASSES: AssetClassInfo[] = [
   {
     id: 'ROHSTOFFE',
     name: 'Rohstoffe',
-    color: '#F9BF21', // AIF Gold
+    color: ASSET_BRANDING.ROHSTOFFE,
     description: 'Physische Primärgüter: Energie, Metalle & Agrarressourcen',
     subclasses: [
       {
