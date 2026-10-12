@@ -219,10 +219,10 @@ try {
     await until(() => evaluate(`!document.querySelector('#pricing-dialog-title')`), 'Pricing dialog closes');
 
     // Retain the existing CADS pricing entrypoint and monthly/annual switch.
-    await navigate('/', `Array.from(document.querySelectorAll('button')).some(
-      b=>b.textContent==='Tarife & Leistungsumfang ansehen')`);
-    await evaluate(`Array.from(document.querySelectorAll('button')).find(
-      b=>b.textContent==='Tarife & Leistungsumfang ansehen').click()`);
+    // The commerce entrypoint is a semantic /pricing link, not the retired CTA button.
+    // Keep this a real browser navigation and still assert the pricing switch below.
+    await navigate('/', `!!document.querySelector('section[aria-labelledby="commerce-entry-title"] a[href="/pricing"]')`);
+    await evaluate(`document.querySelector('section[aria-labelledby="commerce-entry-title"] a[href="/pricing"]').click()`);
     await until(() => evaluate(`!!document.querySelector('[role="dialog"] [role="switch"]')`), 'CADS pricing dialog');
     await evaluate(`(() => {const t=document.querySelector('[role="dialog"] [role="switch"]');
       if(t.getAttribute('aria-checked')==='true') t.click();})()`);
