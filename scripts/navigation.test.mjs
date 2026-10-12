@@ -141,7 +141,10 @@ test('primary mobile navigation exposes dialog semantics and state', () => {
   assert.match(header, /id="capital-ai-mobile-navigation"/);
   assert.match(header, /role="dialog"/);
   assert.match(header, /aria-modal="true"/);
-  assert.match(header, /aria-label="Hauptnavigation"/);
+  assert.match(header, /aria-label=\{nav\.main\}/);
+  const localized = readFileSync(new URL('../src/i18n/navigationCopy.ts', import.meta.url), 'utf8');
+  assert.match(localized, /main:'Hauptnavigation'/);
+  assert.match(localized, /main:'Main navigation'/);
 });
 
 test('canonical product routes and aliases resolve deterministically', () => {
@@ -449,4 +452,16 @@ test('compact navigation halves chrome spacing but keeps readable typography and
   assert.match(css, /\[data-legal-route\] button\.legal-topic-card \{ padding: \.5rem; \}/);
   assert.match(license, /className="hub-tab-strip flex flex-wrap gap-2 text-sm"/);
   assert.doesNotMatch(css, /\.hub-tab-strip \.hub-tab \{ min-height: 22px;/);
+});
+
+test('brand catalog exposes agreed hub names and leaves native responsive keyboard scroll implementation intact', () => {
+  const catalog = readFileSync(new URL('../src/components/HubCatalog.tsx',import.meta.url),'utf8');
+  const nav = readFileSync(new URL('../src/components/HubNavigationPanel.tsx',import.meta.url),'utf8');
+  assert.match(catalog,/name: 'Analytics Hub'/);
+  assert.match(catalog,/name: 'Learning Hub'/);
+  assert.match(catalog,/name: 'Dokumentation Hub'/);
+  assert.match(nav,/ResizeObserver/);
+  assert.match(nav,/hub-tab-strip/);
+  assert.match(nav,/prefers-reduced-motion/);
+  assert.match(nav,/aria-current/);
 });

@@ -240,8 +240,8 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
   },
   documentation: {
     id: 'documentation',
-    name: 'Dokumentation',
-    shortTitle: 'Dokumentation',
+    name: 'Dokumentation Hub',
+    shortTitle: 'Dokumentation Hub',
     color: '#8B5CF6',
     glowColor: 'rgba(139, 92, 246, 0.45)',
     accentBg: 'bg-violet-500/15 border-violet-400/50 text-violet-300',

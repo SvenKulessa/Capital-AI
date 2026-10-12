@@ -214,7 +214,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
     } else if (message === 'passkey_unavailable') {
       setError('Passkey-Anmeldung ist im Anmeldedienst noch nicht freigeschaltet.');
     } else {
-      setError(message);
+      // Provider errors/codes are diagnostic only and never shown verbatim.
+      setError(message === 'invalid_credentials'
+        ? (locale === 'de' ? 'E-Mail oder Passwort ist ungültig.' : 'Invalid email or password.')
+        : (locale === 'de' ? 'Anmeldung fehlgeschlagen. Bitte versuche es erneut.' : 'Sign-in failed. Please try again.'));
     }
   };
 

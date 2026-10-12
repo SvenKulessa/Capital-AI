@@ -229,10 +229,13 @@ test('private notes persist per verified identity and ignore client-selected use
   }
   const first='11111111-1111-4111-8111-111111111111';
   const second='22222222-2222-4222-8222-222222222222';
-  assert.equal((await call(first,'PUT',{notes:'Meine Notiz',user_id:second})).status,200);
+  assert.equal((await call(first,'PUT',{notes:'Meine Notiz',user_id:second,expectedUserId:first})).status,200);
   assert.equal((await call(first)).payload.notes,'Meine Notiz');
+  assert.equal((await call(first)).payload.userId, first);
   assert.equal((await call(second)).payload.notes,'');
-  assert.equal((await call(first,'PUT',{notes:''})).payload.notes,'');
+  assert.equal((await call(second,'PUT',{notes:'stale draft',expectedUserId:first})).status,409);
+  assert.equal((await call(second)).payload.notes,'');
+  assert.equal((await call(first,'PUT',{notes:'',expectedUserId:first})).payload.notes,'');
 });
 
 test('private notes reject missing sessions, cross-origin writes, invalid input and backend failure', async () => {
@@ -241,7 +244,7 @@ test('private notes reject missing sessions, cross-origin writes, invalid input 
   async function call(overrides,method='PUT',notes='test') {
     const checkout=createVocabularyCheckout({env,fetchImpl,auth:{...auth(),...overrides}});
     const res=response();
-    await checkout.handle(request({method,body:JSON.stringify({notes})}),res,new URL('https://capital-ai.online/api/profile/notes'),json);
+    await checkout.handle(request({method,body:JSON.stringify({notes,expectedUserId:'11111111-1111-4111-8111-111111111111'})}),res,new URL('https://capital-ai.online/api/profile/notes'),json);
     return res.status;
   }
   assert.equal(await call({verify:async()=>null},'GET'),401);
