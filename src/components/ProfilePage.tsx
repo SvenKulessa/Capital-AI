@@ -34,24 +34,29 @@ export function ProfilePage({ onNavigate }: { onNavigate: (path: string) => void
             >
               Hero Buddy anzeigen
             </button>
+            <nav aria-label="Rechtliche Informationen" className="mt-4 flex flex-wrap gap-3 border-t border-white/10 pt-3 text-xs text-slate-300">
+              <a href="/agb" className="underline underline-offset-4 hover:text-white focus-visible:outline-2 focus-visible:outline-amber-300">AGB</a>
+              <a href="/datenschutz" className="underline underline-offset-4 hover:text-white focus-visible:outline-2 focus-visible:outline-amber-300">Datenschutz</a>
+              <a href="/impressum" className="underline underline-offset-4 hover:text-white focus-visible:outline-2 focus-visible:outline-amber-300">Impressum</a>
+            </nav>
           </div>
 
           <div className="rounded-2xl border border-amber-500/25 bg-[#070b19]/90 p-5 md:col-span-2">
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-300">Abo & Berechtigungen</p>
             {session.account?.available ? (
               <>
-                {session.account.iamRole !== 'owner' && <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                   <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-1 font-bold text-amber-100">
-                    {session.account.subscription?.tier || 'Kein Tarif'}
+                    <span className="mr-2 text-emerald-300">Rolle: {session.account.iamRole?.toUpperCase() || 'Unbekannt'}</span> Tarif: {session.account.subscription?.tier || 'Kein Tarif'}
                   </span>
                   {session.account.subscription?.status && (
                     <span className={session.account.subscription.status === 'active' ? "rounded-full border border-emerald-400/50 bg-emerald-500/15 px-2 py-1 text-emerald-300 shadow-[0_0_12px_rgba(52,211,153,0.3)]" : "rounded-full border border-white/10 px-2 py-1 text-slate-300"}>
                       {session.account.subscription.status === 'active' ? '● Aktiv' : session.account.subscription.status}
                     </span>
                   )}
-                </div>}
-
-                {session.account.iamRole !== 'owner' && <LearningEntitlementBadge />}
+                </div>
+                {session.account.iamRole === 'owner' && <p className="mt-2 text-xs text-slate-300">OWNER ist die Verwaltungsrolle, kein bezahlter Tarif. Produktrechte werden separat geprüft.</p>}
+                <LearningEntitlementBadge />
 
                 {session.account.badges?.filter(badge => !/vault/i.test(badge.id) && !/vault/i.test(badge.label)).length ? (
                   <div className="mt-4 flex flex-wrap gap-3" aria-label="Kontobadges">

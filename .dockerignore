@@ -183,6 +183,7 @@
 !scripts/documentation-drift.test.mjs
 !scripts/license-engine.mjs
 !scripts/frontend-security.test.mjs
+!scripts/product-accessibility-browser.mjs
 !scripts/verify-browser-boundary.mjs
 !scripts/validate-frontend-boundaries.mjs
 !scripts/validate-contract-suites.mjs

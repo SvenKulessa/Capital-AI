@@ -91,7 +91,7 @@ COPY scripts/cads-growth-quality.test.mjs ./scripts/cads-growth-quality.test.mjs
 COPY scripts/static-legal-routes.test.mjs ./scripts/static-legal-routes.test.mjs
 COPY scripts/generate-jaja-3d.mjs ./scripts/generate-jaja-3d.mjs
 COPY scripts/export-mail-templates.mjs scripts/mail-templates.test.mjs ./scripts/
-COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/social-tool-license-evidence.test.mjs scripts/validate-social-tool-license-evidence.mjs scripts/frontend-security.test.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
+COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/social-tool-license-evidence.test.mjs scripts/validate-social-tool-license-evidence.mjs scripts/frontend-security.test.mjs scripts/product-accessibility-browser.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
 COPY scripts/media ./scripts/media
 COPY scripts/growth/screener-learning-loop.test.mjs scripts/growth/learning-content-draft.mjs ./scripts/growth/
 COPY scripts/generate-chart-learning.tsx ./scripts/generate-chart-learning.tsx
@@ -99,7 +99,6 @@ COPY server/learning-inquiry.test.mjs ./server/learning-inquiry.test.mjs
 COPY scripts/activate-learning-measurement.mjs scripts/activate-learning-measurement.test.mjs scripts/generate-cookie-storage-notice.mjs ./scripts/
 COPY scripts/social-provider-db-smoke.sh ./scripts/social-provider-db-smoke.sh
 COPY supabase/migrations/20261008113000_social_provider_store.sql ./supabase/migrations/20261008113000_social_provider_store.sql
-# Synthetic-only tests of the Supabase X Edge trust boundary; not shipped in runtime.
 COPY supabase/functions/capital-social-x-vault/index.ts ./supabase/functions/capital-social-x-vault/index.ts
 COPY supabase/migrations/20261011231207_capital_ai_private_blueprint_bucket_fail_closed.sql ./supabase/migrations/
 COPY supabase/migrations/20261012194631_capital_ai_private_blueprint_commerce_tables_v1.sql supabase/migrations/20261012194652_capital_ai_private_blueprint_rpc_shell_v1.sql supabase/migrations/20261012194709_capital_ai_private_blueprint_rpc_full_v1.sql ./supabase/migrations/
