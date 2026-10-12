@@ -19,9 +19,20 @@ function providerConfig(env) {
     && !/[\s:]/.test(clientId)
     && typeof clientSecret === 'string' && clientSecret.length >= 8
     && clientSecret.length <= 2048, 'SOCIAL_X_OAUTH_CLIENT_UNCONFIGURED');
-  const keyHex = env.SOCIAL_X_TOKEN_ENCRYPTION_KEY;
-  assert(typeof keyHex === 'string' && /^[a-fA-F0-9]{64}$/.test(keyHex),
-    'SOCIAL_X_OAUTH_KEY_UNCONFIGURED');
+  // Render's generated 256-bit secrets are canonical padded base64. Keep the
+  // original 64-character hex format compatible with previously sealed tokens.
+  const encodedKey = env.SOCIAL_X_TOKEN_ENCRYPTION_KEY;
+  let encryptionKey = null;
+  if (typeof encodedKey === 'string' && /^[a-fA-F0-9]{64}$/.test(encodedKey)) {
+    encryptionKey = Buffer.from(encodedKey, 'hex');
+  } else if (typeof encodedKey === 'string'
+    && /^[A-Za-z0-9+/]{43}=$/.test(encodedKey)) {
+    const decoded = Buffer.from(encodedKey, 'base64');
+    if (decoded.length === 32 && decoded.toString('base64') === encodedKey) {
+      encryptionKey = decoded;
+    }
+  }
+  assert(encryptionKey?.length === 32, 'SOCIAL_X_OAUTH_KEY_UNCONFIGURED');
   const serviceKey = env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY || '';
   const supabase = new URL(env.SUPABASE_URL);
   assert(supabase.protocol === 'https:' && supabase.pathname === '/'
@@ -30,7 +41,7 @@ function providerConfig(env) {
     'SOCIAL_X_STORE_UNCONFIGURED');
   return Object.freeze({
     redirectUri: new URL(CALLBACK, origin).toString(),
-    clientId, clientSecret, key: Buffer.from(keyHex, 'hex'),
+    clientId, clientSecret, key: encryptionKey,
     supabaseOrigin: supabase.origin, serviceKey,
   });
 }
