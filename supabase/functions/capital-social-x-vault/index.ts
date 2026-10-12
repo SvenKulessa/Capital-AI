@@ -1,3 +1,5 @@
+// @ts-nocheck -- Deno Edge runtime is isolated from the Vite/browser TypeScript project.
+// Runtime authorisation is covered by dedicated Edge/owner security tests.
 // CAPITAL_AI_X_EDGE_VAULT@1
 // Owner-only JWT-authenticated bridge. The service-role credential never leaves
 // Supabase; public visitors and unprivileged users cannot execute any operation.
