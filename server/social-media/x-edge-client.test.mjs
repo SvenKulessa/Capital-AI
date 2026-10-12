@@ -57,3 +57,38 @@ test('Edge begin sends only a hashed state and the user session token', async ()
   assert.notEqual(body.stateHash, started.state);
   assert.ok(!JSON.stringify(body).includes(started.state));
 });
+
+test('Render-generated Base64 workload key has identical HMAC and rejects malformed format', async () => {
+  const token = 'synthetic-session-' + 't'.repeat(75);
+  const base = {
+    SOCIAL_X_EDGE_STORE_ENABLED: 'true',
+    PUBLIC_APP_ORIGIN: 'https://capital-ai.online/',
+    SUPABASE_URL: 'https://example.supabase.co/',
+    SUPABASE_PUBLISHABLE_KEY: 'synthetic-publishable-key-for-testing',
+  };
+  const valid = Buffer.from(WORKLOAD, 'hex').toString('base64');
+  assert.equal(valid.length, 44);
+  const sent = [];
+  const client = createSocialXEdgeClient({ env: {
+    ...base, SOCIAL_X_EDGE_WORKLOAD_SECRET: valid,
+  }, userAccessToken: token, fetchImpl: async (url, options) => {
+    sent.push(options);
+    return { ok: true, text: async () => JSON.stringify({
+      channel: 'X', connected: false, status: 'not_connected', handle: null,
+    }) };
+  } });
+  await client.status('d0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101');
+  const ts = sent[0].headers['x-capital-edge-timestamp'];
+  const expected = createHmac('sha256', Buffer.from(WORKLOAD, 'hex'))
+    .update(ts + '\n' + token + '\n' + sent[0].body).digest('hex');
+  assert.equal(sent[0].headers['x-capital-edge-signature'], expected);
+  for (const malformed of [valid.slice(0, -1), valid.slice(0, -2) + '==',
+    valid.slice(0, -2) + 'B=', 'x'.repeat(64), 'abc']) {
+    if (malformed === 'x'.repeat(64)) {
+      // Not hex, and not padded canonical Base64.
+    }
+    assert.throws(() => createSocialXEdgeClient({ env: {
+      ...base, SOCIAL_X_EDGE_WORKLOAD_SECRET: malformed,
+    }, userAccessToken: token }), /SOCIAL_X_EDGE_WORKLOAD_UNCONFIGURED/);
+  }
+});
