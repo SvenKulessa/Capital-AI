@@ -55,13 +55,15 @@ test('free video previews remain fixed per category before category filtering',(
 test('anonymous glossary surfaces render every canonical definition, including Quant level',()=>{
  const page=renderToStaticMarkup(<LearningPortalPage/>);
  const modal=renderToStaticMarkup(<MarketVocabularyModal isOpen onClose={()=>{}}/>);
- for(const [html,extraDemo] of [[page,1],[modal,0]] as const) {
-   assert.equal((html.match(/data-vocabulary-category=/g)??[]).length,VOCABULARY_TERMS.length+extraDemo);
+ for(const html of [page,modal]) {
+   assert.equal((html.match(/data-vocabulary-category=/g)??[]).length,VOCABULARY_TERMS.length);
    assert.match(html,/VWAP/);
    assert.match(html,/Brier Score/);
    assert.doesNotMatch(html,/Sieben feste Begriffe|sieben feste Einträge/);
  }
- assert.equal((page.match(/id="quant-demo-title"/g)??[]).length,1,'demo occurs once alongside its glossary entry');
+ assert.doesNotMatch(page,/id="quant-demo-title"|Quant-Karteikarte · kostenlose Demo/);
+ const flashcards=renderToStaticMarkup(<LearningPortalPage initialTab="flashcards"/>);
+ assert.doesNotMatch(flashcards,/id="quant-demo-title"|Quant-Karteikarte · kostenlose Demo/);
 });
 test('free flashcards contain five words; paid cards retain all supplied words',()=>{
  const free=renderToStaticMarkup(<VocabularyFlashcards onNavigate={()=>{}} terms={VOCABULARY_TERMS}/>);

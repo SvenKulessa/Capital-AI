@@ -1,4 +1,3 @@
-import { QuantLearningDemo } from './QuantLearningDemo';
 import { VOCABULARY_PUBLIC_COUNT, VOCABULARY_SOURCE_PRS } from '../../../shared/vocabulary-metadata.mjs';
 import { HubNavigationPanel } from '../../components/HubNavigationPanel';
 /**
@@ -366,7 +365,6 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       {/* TAB CONTENT 1: MARKET VOCABULARY & GLOSSAR                                */}
       {/* ========================================================================= */}
       {activeTab !== 'kontakt' && typeof window !== 'undefined' && window.location.pathname === '/learning' && <LearningJourney />}
-      {(activeTab === 'glossar'||activeTab === 'flashcards') && <QuantLearningDemo />}
       {activeTab === 'news' && <LearningArticles />}
       {activeTab === 'flashcards' && (
         <React.Suspense fallback={<p role="status" className="p-4 text-sm text-slate-400">Karteikarten werden geladen …</p>}>
