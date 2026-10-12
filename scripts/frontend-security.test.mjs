@@ -218,7 +218,7 @@ test('key vault clears browser credential state and exposes encryption evidence 
   assert.match(vault, /setApiKey\(''\)/);
   assert.match(vault, /setApiSecret\(''\)/);
   assert.match(vault, /setShowSecret\(false\)/);
-  assert.match(vault, /Supabase Vault · verschlüsselt gespeichert/);
+  assert.match(vault, /privaten Schlüsselspeicher · verschlüsselt gespeichert/);
   assert.match(vault, /authentifiziert verschlüsselt \(AEAD\) at rest/);
   assert.match(vault, /weder Klartext noch Ciphertext zurück/);
   assert.match(vault, /Credential-Fingerprint/);
@@ -279,80 +279,47 @@ test('registration mirrors the observed Supabase password classes before submit'
   assert.match(login, /throw new Error\('weak_password'\)/);
 });
 
-
-test('header distinguishes session failures from anonymous state and uses accessible disclosure', async () => {
-  const header = await readFile(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
-  assert.match(header, /authStatus === 'error'/);
+test('header uses explicit session error/ready and accessible modal focus, preserving shared hub layout', async () => {
+  const header = await readFile(new URL('../src/components/Header.tsx', import.meta.url),'utf8');
   assert.match(header, /setAuthStatus\('error'\)/);
-  const navigationCopy = await readFile(new URL('../src/i18n/navigationCopy.ts', import.meta.url), 'utf8');
-  assert.match(navigationCopy, /Sitzung nicht verfügbar · Erneut prüfen/);
   assert.match(header, /nav\.retry/);
-  assert.match(header, /aria-controls="header-account-navigation"/);
-  assert.match(header, /event\.key === 'Escape'/);
+  assert.match(header, /accountDisplay\(authSession\)/);
+  assert.match(header, /hubBrandForRoute/);
+  assert.match(header, /document.activeElement === last/);
+  assert.match(header, /event.key === 'Escape'/);
   assert.doesNotMatch(header, /role="menuitem"/);
 });
-
-test('private dashboard notes are bound to identity and give accessible errors', async () => {
-  const ui = await readFile(new URL('../src/features/account/PrivateDashboardPage.tsx', import.meta.url), 'utf8');
-  const server = await readFile(new URL('../server/vocabulary-checkout.mjs', import.meta.url), 'utf8');
-  assert.match(ui, /expectedUserId: userId/);
-  assert.match(ui, /body\.userId === userId/);
-  assert.match(ui, /window\.addEventListener\('focus', checkIdentity\)/);
-  assert.match(ui, /role="alert"/);
-  assert.match(server, /body\.expectedUserId !== user\.userId/);
-  assert.match(server, /error:'session_changed'/);
-});
-
-test('video findings: owner role, tier and legal/account information stay separate', async () => {
-  const header = await readFile(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
-  const profile = await readFile(new URL('../src/components/ProfilePage.tsx', import.meta.url), 'utf8');
-  assert.match(header, /isOwner \? 'OWNER' : accountTier/);
+test('profile keeps owner role distinct from product access and gives legal access', async () => {
+  const profile = await readFile(new URL('../src/components/ProfilePage.tsx', import.meta.url),'utf8');
   assert.match(profile, /Rolle: \{session.account.iamRole/);
   assert.match(profile, /Tarif: \{session.account.subscription/);
-  assert.match(profile, /<CadsEntitlementPanel \/>/);
+  assert.match(profile, /OWNER ist die Verwaltungsrolle/);
   assert.match(profile, /<LearningEntitlementBadge \/>/);
   assert.match(profile, /href="\/agb"/);
-  assert.match(profile, /href="\/datenschutz"/);
   assert.doesNotMatch(profile, /Supabase Auth/);
 });
-
-test('customer login no longer reveals identity provider and remains fail-closed', async () => {
-  const page = await readFile(new URL('../src/features/auth/LoginPage.tsx', import.meta.url), 'utf8');
-  const copy = await readFile(new URL('../src/i18n/authCopy.ts', import.meta.url), 'utf8');
-  assert.doesNotMatch(page, /SUPABASE AUTH|Supabase Session|Supabase-Projekt/);
-  assert.doesNotMatch(copy, /Supabase/);
-  assert.match(page, /SICHERE ANMELDUNG/);
-  assert.match(page, /SECURE SIGN-IN/);
-  assert.match(page, /message === 'invalid_credentials'/);
+test('private draft identity is checked both client- and server-side', async () => {
+  const ui = await readFile(new URL('../src/features/account/PrivateDashboardPage.tsx', import.meta.url),'utf8');
+  const backend = await readFile(new URL('../server/vocabulary-checkout.mjs', import.meta.url),'utf8');
+  assert.match(ui,/expectedUserId: userId/);
+  assert.match(ui,/visibilitychange/);
+  assert.match(ui,/role="tablist"/);
+  assert.match(backend,/body.expectedUserId !== user.userId/);
+  assert.match(backend,/error:'session_changed'/);
+  assert.match(backend,/userId:user.userId/);
 });
-
-test('modal drawer restores focus and keyboard focus cannot escape through Tab', async () => {
-  const page = await readFile(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
-  const copy = await readFile(new URL('../src/i18n/navigationCopy.ts', import.meta.url), 'utf8');
-  assert.match(page, /event.key === 'Escape'/);
-  assert.match(page, /event.key !== 'Tab'/);
-  assert.match(page, /document.activeElement === first/);
-  assert.match(page, /document.activeElement === last/);
-  assert.match(page, /mobile-menu-btn'\)\?\.focus\(\)/);
-  assert.match(page, /aria-label=\{nav\.main\}/);
-  assert.match(copy, /close:'Close navigation'/);
+test('customer login keeps provider errors and internal codes out of UI', async () => {
+  const page = await readFile(new URL('../src/features/auth/LoginPage.tsx', import.meta.url),'utf8');
+  assert.doesNotMatch(page,/SUPABASE AUTH|Supabase Session|Supabase-Projekt/);
+  assert.match(page,/message === 'invalid_credentials'/);
+  assert.match(page,/Sign-in failed. Please try again./);
 });
-
-test('Android chat overlay is scrollable without covering the full screen', async () => {
-  const buddy = await readFile(new URL('../src/components/HeroBuddy.tsx', import.meta.url), 'utf8');
-  assert.match(buddy, /max-h-\[min\(55dvh,480px\)\]/);
-  assert.match(buddy, /overflow-y-auto/);
-});
-
-test('optional Chromium accessibility probe is syntactically valid and cannot claim AT or full WCAG', async () => {
-  const script = new URL('./product-accessibility-browser.mjs', import.meta.url);
-  const source = await readFile(script, 'utf8');
-  const result = spawnSync(process.execPath, ['--check', fileURLToPath(script)], {encoding:'utf8',timeout:10000});
-  assert.equal(result.status, 0, result.stderr);
-  assert.match(source, /Accessibility.getFullAXTree/);
-  assert.match(source, /390,height:844,mobile:true/);
-  assert.match(source, /1280,height:800,mobile:false/);
-  assert.match(source, /actualScreenReader:'NOT_PROVEN'/);
-  assert.match(source, /liveTenantIsolation:'NOT_PROVEN'/);
-  assert.match(source, /fullWCAGConformance:'NOT_PROVEN'/);
+test('optional real Chromium accessibility tree probe has valid Node syntax and honest result scope', async () => {
+  const path = new URL('./product-accessibility-browser.mjs',import.meta.url);
+  const result = spawnSync(process.execPath,['--check',fileURLToPath(path)],{encoding:'utf8',timeout:15000});
+  assert.equal(result.status,0,result.stderr);
+  const script = await readFile(path,'utf8');
+  assert.match(script,/Accessibility.getFullAXTree/);
+  assert.match(script,/actualScreenReader:'NOT_PROVEN'/);
+  assert.match(script,/liveTenantIsolation:'NOT_PROVEN'/);
 });

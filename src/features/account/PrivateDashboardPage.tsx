@@ -141,14 +141,34 @@ function PrivateNotes({ userId }: { userId: string }) {
   );
 }
 
-export function PrivateDashboardPage({ onNavigate }: { onNavigate: (path: string) => void }) {
+export function PrivateDashboardPage({onNavigate}:{onNavigate:(path:string)=>void}) {
+  const [tab, setTab] = useState<'learning'|'notes'>('learning');
   return (
     <AccountPageShell active="/profile/dashboard" title="Privates Dashboard"
       description="Deine markierten Begriffe und persönlichen Notizen." onNavigate={onNavigate}>
       {session => (
         <div className="space-y-5">
-          <LearningFavoritesPanel />
-          <PrivateNotes key={session.user!.id} userId={session.user!.id} />
+          <div role="tablist" aria-label="Privates Dashboard" className="hub-tab-strip"
+            onKeyDown={event => {
+              if (!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
+              event.preventDefault();
+              const next = event.key === 'Home' ? 'learning' : event.key === 'End' ? 'notes' : tab === 'learning' ? 'notes' : 'learning';
+              setTab(next);
+              document.getElementById(`dashboard-${next}-tab`)?.focus();
+            }}>
+            <button type="button" id="dashboard-learning-tab" role="tab" tabIndex={tab === 'learning' ? 0 : -1}
+              aria-selected={tab === 'learning'} aria-controls="dashboard-learning" className="hub-tab"
+              onClick={() => setTab('learning')}>Lernfeld</button>
+            <button type="button" id="dashboard-notes-tab" role="tab" tabIndex={tab === 'notes' ? 0 : -1}
+              aria-selected={tab === 'notes'} aria-controls="dashboard-notes" className="hub-tab"
+              onClick={() => setTab('notes')}>Notizen</button>
+          </div>
+          <div hidden={tab !== 'learning'} id="dashboard-learning" role="tabpanel" aria-labelledby="dashboard-learning-tab">
+            <LearningFavoritesPanel />
+          </div>
+          <div hidden={tab !== 'notes'} id="dashboard-notes" role="tabpanel" aria-labelledby="dashboard-notes-tab">
+            <PrivateNotes key={session.user!.id} userId={session.user!.id} />
+          </div>
         </div>
       )}
     </AccountPageShell>

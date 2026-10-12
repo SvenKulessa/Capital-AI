@@ -1,3 +1,7 @@
+import { vocabularyMetadata } from '../../shared/vocabulary-metadata.mjs';
+import { QUANT_PRO_IDS } from '../../shared/vocabulary-access-policy.mjs';
+import researchedVocabulary from '../../shared/researched-vocabulary.json';
+import quantLearningDemo from '../../shared/quant-learning-demo.json';
 import { REPOSITORY_VOCABULARY_TERMS } from './repositoryVocabularyData';
 
 export type VocabularyCategory =
@@ -18,6 +22,7 @@ export type VocabularyLevel = 'Einsteiger' | 'Fortgeschritten' | 'Quant / Pro';
 export type VocabularySkillLevel = 'Starter' | 'Elite' | 'Enterprise' | 'Quant';
 
 export interface VocabularyTerm {
+  sources?: { title: string; url: string }[];
   id: string;
   term: string;
   abbreviation?: string;
@@ -396,9 +401,32 @@ const BASE_TERMS_WITH_THESAURUS: VocabularyTerm[] = BASE_VOCABULARY_TERMS.map((t
 
 const MERGED_VOCABULARY_TERMS = [
   ...BASE_TERMS_WITH_THESAURUS,
+  quantLearningDemo as VocabularyTerm,
+  ...researchedVocabulary.map((term): VocabularyTerm => {
+    const category=VOCABULARY_CATEGORIES.find(item=>item.id===term.category)?.id;
+    const level=term.level;
+    if (!category || (level!=='Einsteiger' && level!=='Fortgeschritten' && level!=='Quant / Pro') || term.thesaurus.length!==3) {
+      throw new Error('Invalid researched vocabulary: '+term.id);
+    }
+    return {...term,category,level,thesaurus:[term.thesaurus[0],term.thesaurus[1],term.thesaurus[2]]};
+  }),
   ...(REPOSITORY_VOCABULARY_TERMS as VocabularyTerm[]),
 ];
 
+// Missing extended exercises are not required to read a public glossary definition.
+// Use reviewed canonical metadata for the formerly restricted glossary entries.
+const knownIds = new Set(MERGED_VOCABULARY_TERMS.map(term=>term.id));
+for (const entry of vocabularyMetadata) {
+  if (knownIds.has(entry.id)) continue;
+  const category = VOCABULARY_CATEGORIES.find(item=>item.label===entry.category)?.id ?? 'DATA_EVIDENCE';
+  MERGED_VOCABULARY_TERMS.push({
+    id:entry.id,term:entry.term,category,categoryLabel:entry.category,
+    level:QUANT_PRO_IDS.has(entry.id)?'Quant / Pro':'Fortgeschritten',
+    shortDefinition:entry.description,detailedExplanation:entry.description,
+    practicalExample:'',keyTakeaway:entry.description,
+    searchTags:[entry.term,...entry.thesaurus],thesaurus:entry.thesaurus as [string,string,string],
+  });
+}
 export const VOCABULARY_TERMS: VocabularyTerm[] = MERGED_VOCABULARY_TERMS.filter(
   (term, index, terms) =>
     terms.findIndex((candidate) => normalizeVocabularyKey(candidate.term) === normalizeVocabularyKey(term.term)) === index,

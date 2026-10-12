@@ -230,30 +230,63 @@ test('private notes persist per verified identity and ignore client-selected use
   const first='11111111-1111-4111-8111-111111111111';
   const second='22222222-2222-4222-8222-222222222222';
   assert.equal((await call(first,'PUT',{notes:'Meine Notiz',user_id:second,expectedUserId:first})).status,200);
-  assert.deepEqual((await call(first)).payload,{notes:'Meine Notiz',userId:first});
-  assert.deepEqual((await call(second)).payload,{notes:'',userId:second});
-  assert.equal((await call(first,'PUT',{notes:'',expectedUserId:first})).payload.notes,'');
+  assert.equal((await call(first)).payload.notes,'Meine Notiz');
+  assert.equal((await call(first)).payload.userId, first);
   assert.equal((await call(second)).payload.notes,'');
+  assert.equal((await call(second,'PUT',{notes:'stale draft',expectedUserId:first})).status,409);
+  assert.equal((await call(second)).payload.notes,'');
+  assert.equal((await call(first,'PUT',{notes:'',expectedUserId:first})).payload.notes,'');
 });
 
 test('private notes reject missing sessions, cross-origin writes, invalid input and backend failure', async () => {
   let calls=0;
   const fetchImpl=async()=>{calls++;return new Response('{}',{status:503});};
-  async function call(overrides,method='PUT',notes='test',expectedUserId='11111111-1111-4111-8111-111111111111') {
+  async function call(overrides,method='PUT',notes='test') {
     const checkout=createVocabularyCheckout({env,fetchImpl,auth:{...auth(),...overrides}});
     const res=response();
-    await checkout.handle(request({method,body:JSON.stringify({notes,expectedUserId})}),res,new URL('https://capital-ai.online/api/profile/notes'),json);
-    return res;
+    await checkout.handle(request({method,body:JSON.stringify({notes,expectedUserId:'11111111-1111-4111-8111-111111111111'})}),res,new URL('https://capital-ai.online/api/profile/notes'),json);
+    return res.status;
   }
-  assert.equal((await call({verify:async()=>null},'GET')).status,401);
-  assert.equal((await call({sameOrigin:()=>false})).status,403);
-  assert.equal((await call({},'POST')).status,405);
-  assert.equal((await call({},'PUT',123)).status,400);
-  assert.equal((await call({},'PUT','x'.repeat(10001))).status,400);
-  const stale = await call({},'PUT','draft-from-A','22222222-2222-4222-8222-222222222222');
-  assert.equal(stale.status,409);
-  assert.equal(stale.payload.error,'session_changed');
-  assert.equal((await call({},'PUT','draft-from-A',null)).status,409);
-  assert.equal(calls,0, 'mismatched identity must not invoke the private notes RPC');
-  assert.equal((await call({})).status,503);
+  assert.equal(await call({verify:async()=>null},'GET'),401);
+  assert.equal(await call({sameOrigin:()=>false}),403);
+  assert.equal(await call({},'POST'),405);
+  assert.equal(await call({},'PUT',123),400);
+  assert.equal(await call({},'PUT','x'.repeat(10001)),400);
+  assert.equal(calls,0);
+  assert.equal(await call({}),503);
+});
+
+test('learning word storage is idempotent, removable and scoped to verified users',async()=>{
+ const stores=new Map();const calls=[];
+ const fetchImpl=async(url,options)=>{
+  assert.ok(new URL(url).pathname.endsWith('/capital_ai_learning_favorites'));
+  const body=JSON.parse(options.body);calls.push(body);
+  const ids=stores.get(body._user_id)??new Set();
+  if(body._action==='POST')ids.add(body._term_id);
+  if(body._action==='DELETE')ids.delete(body._term_id);
+  stores.set(body._user_id,ids);
+  return Response.json([...ids]);
+ };
+ async function call(user,method,id='frontend-sentiment_score'){
+  const checkout=createVocabularyCheckout({env,fetchImpl,auth:auth(user)}),res=response();
+  await checkout.handle(request({method}),res,new URL(`https://capital-ai.online/api/learning/favorites?id=${id}&userId=untrusted-caller`),json);
+  return res;
+ }
+ assert.equal((await call('alice','POST')).status,200);
+ assert.deepEqual((await call('alice','POST')).payload.favorites,['frontend-sentiment_score']);
+ assert.deepEqual((await call('bob','GET')).payload.favorites,[]);
+ assert.deepEqual((await call('alice','GET')).payload.favorites,['frontend-sentiment_score']);
+ assert.deepEqual((await call('alice','DELETE')).payload.favorites,[]);
+ assert.ok(calls.every(body=>['alice','bob'].includes(body._user_id)));
+ assert.equal((await call('alice','POST','bad%3Cscript%3E')).status,400);
+});
+
+test('learning mutations reject other origins and anonymous access before storage',async()=>{
+ let io=0;
+ for(const [boundary,expected] of [[{sameOrigin:()=>false,verify:async()=>({userId:'alice'})},403],[{sameOrigin:()=>true,verify:async()=>null},401]]){
+  const checkout=createVocabularyCheckout({env,auth:boundary,fetchImpl:async()=>{io++;throw Error('unexpected storage');}}),res=response();
+  await checkout.handle(request({method:'POST'}),res,new URL('https://capital-ai.online/api/learning/favorites?id=orderbuch'),json);
+  assert.equal(res.status,expected);
+ }
+ assert.equal(io,0);
 });

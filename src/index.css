@@ -86,12 +86,80 @@
   background-image: radial-gradient(ellipse 70% 28% at 85% 4%, rgb(var(--hub-rgb) / 0.13), transparent 85%),
     radial-gradient(ellipse 60% 38% at 5% 78%, rgb(var(--hub-rgb) / 0.045), transparent 82%);
 }
-.hub-universe--learning { --hub-rgb: 245 196 83; }
-.hub-universe--studio { --hub-rgb: 34 211 238; }
-.hub-universe--marketscreener { --hub-rgb: 141 38 255; }
+.hub-universe--learning { --hub-rgb: 249 191 33; }
+.hub-universe--studio { --hub-rgb: 196 181 253; }
+.hub-universe--marketscreener { --hub-rgb: 103 232 249; }
 
 /* Shared editorial presentation for Content Engine website articles. */
 .blog-screen { position: relative; background-image: linear-gradient(135deg, rgb(6 182 212 / .06), transparent 45%), linear-gradient(0deg, rgb(139 92 246 / .05), transparent); }
 .blog-screen::before { content: ''; display: block; height: 3px; width: 5rem; margin-bottom: 1.5rem; border-radius: 999px; background: linear-gradient(90deg, #22d3ee, #a78bfa); box-shadow: 0 0 18px rgb(34 211 238 / .35); }
 .blog-letter { font-style: italic; }
 .blog-letter h1, .blog-letter h2, .blog-letter nav { font-style: normal; }
+
+@keyframes capital-cloud-float { 0%, 100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-8px) rotate(1deg); } }
+
+/* All public hubs share one touch-scrollable navigation strip. */
+.hub-tab-strip {
+  display: flex;
+  gap: .5rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x pan-y;
+  border: 1px solid var(--color-brand-ai);
+  border-radius: 1rem;
+  background: var(--color-brand-canvas);
+  padding: .75rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-brand-gold) var(--color-brand-canvas);
+}
+.hub-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  flex-shrink: 0;
+  white-space: nowrap;
+  min-height: 44px;
+  border: 1px solid transparent;
+  border-radius: .75rem;
+  padding: .5rem 1rem;
+  color: #e2e8f0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.hub-tab:hover, .hub-tab:focus-visible {
+  border-color: var(--color-brand-marketing);
+  background: color-mix(in srgb, var(--color-brand-marketing) 15%, var(--color-brand-canvas));
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-brand-marketing) 35%, transparent);
+}
+.hub-tab[aria-current="page"], .hub-tab[aria-selected="true"] {
+  color: var(--color-brand-gold);
+  border-color: var(--color-brand-gold);
+  background: color-mix(in srgb, var(--color-brand-ai) 18%, var(--color-brand-canvas));
+  box-shadow: 0 0 14px color-mix(in srgb, var(--color-brand-ai) 35%, transparent);
+}
+.hub-tab:focus-visible {outline: 2px solid var(--color-brand-gold);outline-offset: 2px;}
+
+/* Hub role colours: same identity in header, directory, page and subnavigation. */
+:root { --hub-accent: #F9BF21; }
+[data-hub="marketscreener"] { --hub-accent: #67E8F9; }
+[data-hub="studio"] { --hub-accent: #C4B5FD; }
+[data-hub="learning"] { --hub-accent: #F9BF21; }
+[data-hub="documentation"] { --hub-accent: #F9A8D4; }
+[data-hub="control-center"] { --hub-accent: #FDA4AF; }
+[data-hub="legal"] { --hub-accent: #93C5FD; }
+.hub-tab-strip { border-color: color-mix(in srgb, var(--hub-accent) 40%, #334155); scrollbar-color: var(--hub-accent) #071126; max-width:100%; }
+.hub-tab-strip svg, .hub-switch svg { color:var(--hub-accent); }
+.hub-tab:hover, .hub-tab:focus-visible, .hub-tab[aria-current="page"], .hub-tab[aria-selected="true"], .hub-directory-card:hover {
+  color:var(--hub-accent); border-color:var(--hub-accent);
+  background:color-mix(in srgb, var(--hub-accent) 12%, #071126);
+  box-shadow:0 0 14px color-mix(in srgb, var(--hub-accent) 28%, transparent);
+}
+.hub-tab:focus-visible, .hub-scroll-button:focus-visible, .hub-directory-card:focus-visible { outline:2px solid var(--hub-accent); outline-offset:3px; }
+.hub-scroll-button { min-width:44px; min-height:44px; display:grid; place-items:center; color:var(--hub-accent); border:1px solid #64748b; border-radius:.75rem; }
+.hub-directory-card { border-color:color-mix(in srgb,var(--hub-accent) 40%,#334155); color:var(--hub-accent); }
+.hub-heading { color:var(--hub-accent); }
+.historical-demo input, .historical-demo select { min-height:44px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
+
+.hub-role-accent { color:var(--hub-accent); border-color:var(--hub-accent); background:color-mix(in srgb,var(--hub-accent) 12%,#071126); }

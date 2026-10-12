@@ -114,7 +114,8 @@ test('account routes keep profile, security and key vault as separate pages', ()
 
 test('Control Center navigation is capability-gated to the verified owner session', () => {
   const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url),'utf8');
-  assert.match(header, /account\?\.iamRole === 'owner'/);
+  assert.match(header, /verifiedOwner\(authSession\)/);
+  assert.match(header, /hub.id !== 'control-center' \|\| isOwner/);
   assert.doesNotMatch(header, /<HubSidebarDrawer/);
 });
 
@@ -139,10 +140,7 @@ test('primary mobile navigation exposes dialog semantics and state', () => {
   assert.match(header, /id="capital-ai-mobile-navigation"/);
   assert.match(header, /role="dialog"/);
   assert.match(header, /aria-modal="true"/);
-  assert.match(header, /aria-label=\{nav\.main\}/);
-  const navigationCopy = readFileSync(new URL('../src/i18n/navigationCopy.ts', import.meta.url), 'utf8');
-  assert.match(navigationCopy, /main:'Hauptnavigation'/);
-  assert.match(navigationCopy, /main:'Main navigation'/);
+  assert.match(header, /aria-label="Hauptnavigation"/);
 });
 
 test('canonical product routes and aliases resolve deterministically', () => {
@@ -225,7 +223,8 @@ test('Hub navigation entries use native focusable anchors for keyboard and modif
   const panel = readFileSync(new URL('../src/components/HubNavigationPanel.tsx', import.meta.url),'utf8');
   assert.match(panel, /<a key=\{page.id\} href=\{page.path\}/);
   assert.match(panel, /e.metaKey/);
-  assert.match(panel, /focus-visible:outline/);
+  const css = readFileSync(new URL('../src/index.css', import.meta.url),'utf8');
+  assert.match(css, /\.hub-tab:focus-visible/);
   assert.match(panel, /aria-current/);
 });
 
@@ -286,12 +285,12 @@ test('paused price alerts cannot render navigation or run background price check
   assert.match(context, /if \(!PRICE_ALERTS_ENABLED\) return;\s*try \{\s*localStorage\.setItem\(STORAGE_ALERTS_KEY/);
 });
 
-test('hero Earth uses true 3D axial rotation behind translucent text with a static fallback', () => {
+test('hero uses restored static artwork and shared product disclaimer', () => {
   const hero = readFileSync(new URL('../src/components/Hero.tsx', import.meta.url), 'utf8');
   assert.match(hero, /glowing_earth_nodes_1789997454893.jpg/);
   assert.doesNotMatch(hero, /HeroEarth3D|enableWebGL|WebGLRenderer/);
   assert.match(hero, /opacity-95/);
-  assert.match(hero, /keine Anlageberatung/);
+  assert.match(hero, /ProductDisclaimer/);
 });
 
 test('legal overview, contact, mobile hub tabs and global footer use one contact entry', () => {
@@ -328,22 +327,18 @@ test('legal overview, contact, mobile hub tabs and global footer use one contact
 test('Chart atlas is not embedded or explicitly advertised on the public homepage', () => {
   const home = readFileSync(new URL('../src/features/home/LearningCadsShowcase.tsx', import.meta.url), 'utf8');
   assert.doesNotMatch(home, /ChartLessonGraphic|CHART_LESSONS|Chart-Lernatlas|\/learning\/chart-lernatlas/);
-  assert.match(home, /onNavigate\('\/learning'\)/);
+  const directory = readFileSync(new URL('../src/components/HomeHubDirectory.tsx', import.meta.url),'utf8');
+  assert.match(directory, /'learning'/);
 });
 
-test('all branded hub links remain native, keyboard-focusable, horizontally swipeable and color-bound', () => {
-  const panel = readFileSync(new URL('../src/components/HubNavigationPanel.tsx', import.meta.url), 'utf8');
-  const catalog = readFileSync(new URL('../src/components/HubCatalog.tsx', import.meta.url), 'utf8');
-  for (const label of ["name: 'Analytics Hub'","name: 'Learning Hub'","name: 'Dokumentation Hub'"]) {
-    assert.ok(catalog.includes(label), label);
-  }
-  assert.match(panel, /data-hub-scroll-navigation/);
-  assert.match(panel, /overflow-x-auto/);
-  assert.match(panel, /flex-nowrap/);
-  assert.match(panel, /shrink-0/);
-  assert.match(panel, /scrollIntoView/);
-  assert.match(panel, /focus-visible:outline-2/);
-  assert.match(panel, /outlineColor:hub.color/);
-  assert.match(panel, /aria-current/);
-  assert.doesNotMatch(panel, /role="tablist"/);
+test('brand catalog exposes agreed hub names and leaves native responsive keyboard scroll implementation intact', () => {
+  const catalog = readFileSync(new URL('../src/components/HubCatalog.tsx',import.meta.url),'utf8');
+  const nav = readFileSync(new URL('../src/components/HubNavigationPanel.tsx',import.meta.url),'utf8');
+  assert.match(catalog,/name: 'Analytics Hub'/);
+  assert.match(catalog,/name: 'Learning Hub'/);
+  assert.match(catalog,/name: 'Dokumentation Hub'/);
+  assert.match(nav,/ResizeObserver/);
+  assert.match(nav,/hub-tab-strip/);
+  assert.match(nav,/prefers-reduced-motion/);
+  assert.match(nav,/aria-current/);
 });

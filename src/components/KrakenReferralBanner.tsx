@@ -1,3 +1,4 @@
+import { KRAKEN_REFERRAL } from '../../shared/product-disclaimers.mjs';
 import React, { useState } from 'react';
 import { ExternalLink, Copy, Check, Gift, Sparkles, ShieldCheck } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -12,8 +13,8 @@ export const KrakenReferralBanner: React.FC<KrakenReferralBannerProps> = ({
   className = '',
 }) => {
   const [copied, setCopied] = useState(false);
-  const referralCode = 'yc4ggk3f';
-  const referralUrl = 'https://proinvite.kraken.com/9f1e/8nfzp3u7';
+  const referralCode = KRAKEN_REFERRAL.code;
+  const referralUrl = KRAKEN_REFERRAL.url;
 
   const handleCopyCode = (e: React.MouseEvent) => {
     e.preventDefault();

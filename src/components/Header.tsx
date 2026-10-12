@@ -1,3 +1,5 @@
+import { accountDisplay, verifiedOwner } from '../../shared/account-display.mjs';
+import { hubBrandForRoute } from '../../shared/hub-branding.mjs';
 /**
  * ============================================================================
  * [ARCHITEKTUR-MAPPING: GLOBAL NAVIGATION & TERMINAL HEADER]
@@ -54,6 +56,7 @@ interface HeaderSession {
   authenticated: boolean;
   user?: { name?: string; email?: string } | null;
   account?: {
+    available?: boolean;
     iamRole?: string | null;
     subscription?: { tier?: string; status?: string } | null;
     badges?: Array<{ id: string; label: string; asset: string }>;
@@ -107,43 +110,35 @@ export const Header: React.FC<HeaderProps> = ({
     setAuthSession(null);
     setIsAccountOpen(false);
     fetch('/api/auth/session', {
-      credentials: 'same-origin',
-      cache: 'no-store',
-      headers: { Accept: 'application/json' },
-      signal: controller.signal,
-    })
-      .then(async response => {
-        if (!response.ok) throw new Error('SESSION_UNAVAILABLE');
-        const body: unknown = await response.json();
-        if (!body || typeof body !== 'object' ||
-            !('authenticated' in body) || typeof body.authenticated !== 'boolean') {
-          throw new Error('INVALID_SESSION');
-        }
-        return body as HeaderSession;
-      })
-      .then(body => {
-        if (!controller.signal.aborted) {
-          setAuthSession(body);
-          setAuthStatus('ready');
-        }
-      })
-      .catch(() => {
-        if (!controller.signal.aborted) {
-          setAuthSession(null);
-          setAuthStatus('error');
-        }
-      });
+      credentials: 'same-origin', cache: 'no-store',
+      headers: { Accept: 'application/json' }, signal: controller.signal,
+    }).then(async response => {
+      if (!response.ok) throw new Error('SESSION_UNAVAILABLE');
+      const body: unknown = await response.json();
+      if (!body || typeof body !== 'object' ||
+        !('authenticated' in body) || typeof body.authenticated !== 'boolean') {
+        throw new Error('INVALID_SESSION');
+      }
+      return body as HeaderSession;
+    }).then(body => {
+      if (controller.signal.aborted) return;
+      setAuthSession(body);
+      setAuthStatus('ready');
+    }).catch(() => {
+      if (controller.signal.aborted) return;
+      setAuthSession(null);
+      setAuthStatus('error');
+    });
     return () => controller.abort();
   }, [currentRoute, sessionRetry]);
 
-  // aria-modal is backed by Escape/Tab focus containment and focus restoration.
   useEffect(() => {
     if (!isMenuOpen) return;
     const drawer = document.getElementById('capital-ai-mobile-navigation');
     drawer?.querySelector<HTMLElement>('#close-menu-btn')?.focus();
     const focusable = () => Array.from(drawer?.querySelectorAll<HTMLElement>(
       'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
-    ) ?? []).filter(element => element.getClientRects().length > 0);
+    ) ?? []).filter(item => item.getClientRects().length > 0);
     const onDrawerKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
@@ -155,11 +150,9 @@ export const Header: React.FC<HeaderProps> = ({
       if (!options.length) { event.preventDefault(); return; }
       const first = options[0], last = options[options.length - 1];
       if (event.shiftKey && (document.activeElement === first || !drawer?.contains(document.activeElement))) {
-        event.preventDefault();
-        last.focus();
+        event.preventDefault(); last.focus();
       } else if (!event.shiftKey && (document.activeElement === last || !drawer?.contains(document.activeElement))) {
-        event.preventDefault();
-        first.focus();
+        event.preventDefault(); first.focus();
       }
     };
     document.addEventListener('keydown', onDrawerKeyDown);
@@ -169,10 +162,9 @@ export const Header: React.FC<HeaderProps> = ({
     };
   }, [isMenuOpen]);
 
-  const accountTier = authSession?.authenticated
-    ? authSession.account?.subscription?.tier || null
-    : null;
-  const isOwner = authSession?.authenticated === true && authSession.account?.iamRole === 'owner';
+  const accountTier = accountDisplay(authSession);
+  const isOwner = verifiedOwner(authSession);
+  const activeHub = hubBrandForRoute(currentRoute);
 
   const navigateAccount = (path: '/profile' | '/profile/security' | '/profile/workspace') => {
     setIsAccountOpen(false);
@@ -207,30 +199,6 @@ export const Header: React.FC<HeaderProps> = ({
     const path = MAIN_HUBS_CONFIG[hubId].mainPath;
     if (onNavigate) onNavigate(path); else window.location.assign(path);
   };
-
-  // Active Hub Calculation
-  const isMarketscreenerActive =
-    !currentRoute ||
-    currentRoute === '/' ||
-    currentRoute === '/marketscreener' ||
-    currentRoute === '/screener';
-  const isStudioActive =
-    currentRoute === '/studio' ||
-    currentRoute === '/architecture' ||
-    currentRoute === '/pipeline-builder';
-  const isLearningActive =
-    currentRoute === '/learning' ||
-    currentRoute === '/vocabulary' ||
-    currentRoute?.startsWith('/vocabulary/') ||
-    currentRoute === '/glossar';
-  const isControlActive =
-    currentRoute === '/control-center' ||
-    currentRoute === '/admin' ||
-    currentRoute === '/roadmap' ||
-    currentRoute === '/cost-center';
-  const isDocumentationActive =
-    currentRoute === '/dokumentation' ||
-    currentRoute === '/marketscreener/dokumentation';
 
   const renderClassIcon = (id: MainCategory) => {
     switch (id) {
@@ -275,84 +243,8 @@ export const Header: React.FC<HeaderProps> = ({
         />
       </div>
 
-      {/* CENTER: DIE 4 HAUPTREITER (Marketscreener, Studio Hub, Learning Portal, Control Center) */}
-      <nav aria-label={nav.main} className="hidden lg:flex items-center gap-1 p-1 rounded-xl bg-black/40 border border-slate-800/80 shadow-inner">
-        {/* Marketscreener */}
-        <button
-          type="button"
-          onClick={() => onNavigate?.('/')}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs transition-all cursor-pointer ${
-            isMarketscreenerActive
-              ? 'bg-amber-400 text-black font-extrabold shadow-sm'
-              : 'text-slate-300 hover:text-white hover:bg-white/5 font-medium'
-          }`}
-          title="Analytics Hub (Analyse, Datenstatus & Scoring)"
-        >
-          <LineChart className="w-3.5 h-3.5" />
-          <span>Analytics Hub</span>
-        </button>
-
-        {/* Studio Hub */}
-        <button
-          type="button"
-          onClick={() => onNavigate?.('/studio')}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs transition-all cursor-pointer ${
-            isStudioActive
-              ? 'bg-cyan-500 text-black font-extrabold shadow-sm'
-              : 'text-slate-300 hover:text-white hover:bg-white/5 font-medium'
-          }`}
-          title="Studio Hub (7 Module: Architektur, Builder, Blueprints, etc.)"
-        >
-          <Building2 className="w-3.5 h-3.5" />
-          <span>Studio Hub</span>
-        </button>
-
-        {/* Learning Portal */}
-        <button
-          type="button"
-          onClick={() => onNavigate?.('/learning')}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs transition-all cursor-pointer ${
-            isLearningActive
-              ? 'bg-amber-400 text-black font-extrabold shadow-sm'
-              : 'text-slate-300 hover:text-white hover:bg-white/5 font-medium'
-          }`}
-          title="Learning Hub (Vocabulary, Analyse-Module & Methodik)"
-        >
-          <BookOpen className="w-3.5 h-3.5" />
-          <span>Learning Hub</span>
-        </button>
-
-        {/* Dokumentation */}
-        <button
-          type="button"
-          onClick={() => onNavigate?.('/dokumentation')}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs transition-all cursor-pointer ${
-            isDocumentationActive
-              ? 'bg-violet-500 text-white font-extrabold shadow-sm'
-              : 'text-slate-300 hover:text-white hover:bg-white/5 font-medium'
-          }`}
-          title="Dokumentation Hub: Blueprints, BYOK, Pipeline-Architekturen, Preismodelle und Domains"
-        >
-          <LibraryBig className="w-3.5 h-3.5" />
-          <span>Dokumentation Hub</span>
-        </button>
-
-        {/* Control Center */}
-        {isOwner && (
-          <button
-            type="button"
-            onClick={() => onNavigate?.('/control-center')}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs transition-all cursor-pointer ${
-              isControlActive
-                ? 'bg-rose-500 text-white font-extrabold shadow-sm'
-                : 'text-slate-300 hover:text-white hover:bg-white/5 font-medium'
-            }`}
-            title="Control Center (v1.0 Roadmap, Cockpit, Console & Governance)"
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Control Center</span>
-          </button>
-        )}
+      <nav aria-label={nav.main} className="hidden xl:flex items-center gap-1 rounded-xl border border-slate-700 bg-black/40 p-1">
+        {Object.values(MAIN_HUBS_CONFIG).filter(hub => hub.id !== 'control-center' || isOwner).map(hub => <button key={hub.id} type="button" data-hub={hub.id} aria-current={activeHub === hub.id ? 'page' : undefined} className="hub-tab hub-switch !px-3 !text-xs" onClick={() => openHubSidebar(hub.id)}><span aria-hidden="true">{hub.icon}</span>{hub.name}</button>)}
       </nav>
 
       {/* RIGHT SIDE: Live Status Chip & Login Button */}
@@ -370,13 +262,13 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Language selector stays next to Login and Account. */}
         <LanguageSwitcher />
-        {/* A failed session read is not a signed-out session. */}
+        {/* Session errors are not evidence of a logout. */}
         {authStatus === 'loading' ? (
           <span role="status" className="px-3 text-xs text-slate-300">{nav.loading}</span>
         ) : authStatus === 'error' ? (
           <button type="button" onClick={() => setSessionRetry(value => value + 1)}
-            className="min-h-11 rounded-xl border border-amber-400/40 px-3 text-xs text-amber-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
-            aria-label={nav.retryLabel}>
+            aria-label={nav.retryLabel}
+            className="min-h-11 rounded-xl border border-amber-400/40 px-3 text-xs text-amber-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
             {nav.retry}
           </button>
         ) : authSession?.authenticated ? (
@@ -394,8 +286,8 @@ export const Header: React.FC<HeaderProps> = ({
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
               <span className="flex min-w-0 flex-col items-start leading-tight">
                 <span className="max-w-28 truncate">{authSession.user?.name || 'Profil'}</span>
-                {(isOwner || accountTier) && (
-                  <span className="font-mono text-[9px] text-amber-300">{isOwner ? 'OWNER' : accountTier}</span>
+                {accountTier && (
+                  <span className="font-mono text-[9px] text-amber-300">{accountTier}{!isOwner && authSession.account?.subscription?.status === 'active' && <span className="ml-2 text-emerald-300 drop-shadow-[0_0_4px_#34d399]">● Aktiv</span>}</span>
                 )}
               </span>
               <ChevronDown className={`h-3.5 w-3.5 text-emerald-300 transition-transform ${isAccountOpen ? 'rotate-180' : ''}`} />
@@ -411,11 +303,12 @@ export const Header: React.FC<HeaderProps> = ({
                     setIsAccountOpen(false);
                     document.getElementById('header-profile-btn')?.focus();
                   }
-                }}
+                }
                 className="absolute right-0 top-full z-[70] mt-2 w-52 overflow-hidden rounded-2xl border border-white/10 bg-[#080d1b]/98 p-2 shadow-2xl backdrop-blur-xl"
               >
                 <button
                   type="button"
+                  
                   onClick={() => navigateAccount('/profile')}
                   className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-slate-100 hover:bg-white/10"
                 >
@@ -423,6 +316,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
                 <button
                   type="button"
+                  
                   onClick={() => navigateAccount('/profile/security')}
                   className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-slate-100 hover:bg-white/10"
                 >
@@ -432,6 +326,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="my-1 border-t border-white/10" />
                 <button
                   type="button"
+                  
                   onClick={() => void logout()}
                   className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-xs font-bold text-rose-200 hover:bg-rose-500/10"
                 >
@@ -510,7 +405,7 @@ export const Header: React.FC<HeaderProps> = ({
                     <p role="status" className="p-3 text-xs text-slate-300">{nav.loading}</p>
                   ) : authStatus === 'error' ? (
                     <button type="button" onClick={() => setSessionRetry(value => value + 1)}
-                      className="min-h-11 w-full rounded-xl border border-amber-400/40 px-3 text-left text-xs text-amber-200 focus-visible:outline-2 focus-visible:outline-amber-300">
+                      className="min-h-11 w-full rounded-xl border border-amber-400/40 px-3 text-left text-xs text-amber-200">
                       {nav.retry}
                     </button>
                   ) : authSession?.authenticated ? (
@@ -520,7 +415,7 @@ export const Header: React.FC<HeaderProps> = ({
                           <ShieldCheck className="h-4 w-4 text-emerald-300" />
                           <span className="truncate text-xs font-black text-emerald-100">{authSession.user?.name || 'Konto'}</span>
                         </div>
-                        {(isOwner || accountTier) && <p className="mt-1 pl-6 font-mono text-[10px] text-amber-300">{isOwner ? 'OWNER' : accountTier}</p>}
+                        {accountTier && <p className="mt-1 pl-6 font-mono text-[9px] text-amber-300">{accountTier}{!isOwner && authSession.account?.subscription?.status === 'active' && <span className="ml-2 text-emerald-300">● Aktiv</span>}</p>}
                       </div>
                       {[
                         { path: '/profile' as const, label: nav.profile, icon: User },
@@ -579,61 +474,16 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
 
                   <div className="grid grid-cols-1 gap-2.5">
-                    {[
-                      {
-                        id: "marketscreener" as const,
-                        name: "Analytics Hub",
-                        color: "#F5B014",
-                        glow: "rgba(245, 176, 20, 0.4)",
-                        icon: <LineChart className="w-4 h-4 text-amber-300" />,
-                        badge: "6 Module",
-                        tagline: "Screener, Buffett, Scorer & AI News",
-                      },
-                      {
-                        id: "studio" as const,
-                        name: "Studio Hub",
-                        color: "#06B6D4",
-                        glow: "rgba(6, 182, 212, 0.4)",
-                        icon: <Building2 className="w-4 h-4 text-cyan-300" />,
-                        badge: "7 Module",
-                        tagline: "Pipeline Architektur, Builder & Quants",
-                      },
-                      {
-                        id: "learning" as const,
-                        name: "Learning Hub",
-                        color: "#F9BF21",
-                        glow: "rgba(249, 191, 33, 0.4)",
-                        icon: <BookOpen className="w-4 h-4 text-[#F9BF21]" />,
-                        badge: "3 Bereiche",
-                        tagline: "294 Fachbegriffe, Thesaurus & Quiz",
-                      },
-                      {
-                        id: "documentation" as const,
-                        name: "Dokumentation Hub",
-                        color: "#8B5CF6",
-                        glow: "rgba(139, 92, 246, 0.4)",
-                        icon: <LibraryBig className="w-4 h-4 text-violet-300" />,
-                        badge: "5 Bereiche",
-                        tagline: "Blueprints, BYOK, Pipelines, Preise & Domains",
-                      },
-                      {
-                        id: "control-center" as const,
-                        name: "Control Center",
-                        color: "#F43F5E",
-                        glow: "rgba(244, 63, 94, 0.4)",
-                        icon: <ShieldCheck className="w-4 h-4 text-rose-300" />,
-                        badge: "7 Module",
-                        tagline: "Roadmap, Cockpit, Console & Lizenzen",
-                      },
-                    ].filter(hub => hub.id !== 'control-center' || isOwner).map((hub) => (
+                    {Object.values(MAIN_HUBS_CONFIG).map(hub => ({...hub, glow:hub.glowColor, tagline:hub.description})).filter(hub => hub.id !== 'control-center' || isOwner).map((hub) => (
                       <button
                         key={hub.id}
+                        data-hub={hub.id}
                         type="button"
                         onClick={() => {
                           setIsMenuOpen(false);
                           openHubSidebar(hub.id);
                         }}
-                        className="w-full flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer group text-left shadow-md"
+                        className="hub-switch w-full flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer group text-left shadow-md"
                         style={{
                           backgroundColor: `${hub.color}14`,
                           borderColor: `${hub.color}45`,
@@ -698,7 +548,7 @@ export const Header: React.FC<HeaderProps> = ({
                         >
                           <span className="flex items-center gap-2">
                             <CreditCard className="w-3.5 h-3.5 text-amber-400" />
-                            <span>{nav.pricing}</span>
+                            <span>Preiskatalog</span>
                           </span>
                           <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
                         </button>
@@ -711,7 +561,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <div className="pt-4 border-t border-slate-800/80 space-y-2">
                     <div className="flex items-center justify-between px-1">
                       <div className="text-[10px] font-bold uppercase tracking-widest text-amber-400/80">
-                        {nav.assets}
+                        Assetklassen & Unterklassen
                       </div>
                       <button
                         type="button"
@@ -721,7 +571,7 @@ export const Header: React.FC<HeaderProps> = ({
                         }}
                         className="text-[10px] font-semibold text-amber-300 hover:text-amber-200 cursor-pointer flex items-center gap-0.5"
                       >
-                        <span>{nav.markets}</span>
+                        <span>Alle Märkte</span>
                         <ChevronRight className="w-3 h-3" />
                       </button>
                     </div>

@@ -268,13 +268,11 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
         let notes = null;
         if (req.method === 'PUT') {
           let body;
-          try { body = JSON.parse(await readBody(req,65536)); notes = body?.notes; }
+          try { body=JSON.parse(await readBody(req,65536)); notes=body?.notes; }
           catch { return json(res,400,{error:'invalid_notes'}),true; }
-          if (typeof notes !== 'string' || notes.length > 10000) return json(res,400,{error:'invalid_notes'}),true;
-          // Reject a draft created under another account after a session switch.
-          if (body.expectedUserId !== user.userId) {
-            return json(res,409,{error:'session_changed'}),true;
-          }
+          if (typeof notes !== 'string' || notes.length>10000) return json(res,400,{error:'invalid_notes'}),true;
+          // A draft from an old tab/session can never be written under a different user.
+          if (body.expectedUserId !== user.userId) return json(res,409,{error:'session_changed'}),true;
         }
         try { const result=await rpc(fetchImpl,supabase,'capital_ai_private_notes',{_user_id:user.userId,_notes:notes,_action:req.method}); if (typeof result !== 'string') throw new Error('invalid_notes_response'); json(res,200,{notes:result,userId:user.userId}); }
         catch { json(res,503,{error:'notes_unavailable'}); }
@@ -288,7 +286,7 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
         if (!supabase) return json(res, 503, { error: 'learning_unavailable' }), true;
         try {
           const id = url.searchParams.get('id');
-          if (req.method !== 'GET' && (!id || !/^[a-z0-9-]{1,120}$/.test(id))) return json(res, 400, { error: 'invalid_term' }), true;
+          if (req.method !== 'GET' && (!id || !/^[a-z0-9_-]{1,120}$/.test(id))) return json(res, 400, { error: 'invalid_term' }), true;
           const favorites = await rpc(fetchImpl, supabase, 'capital_ai_learning_favorites', { _user_id: user.userId, _term_id: id, _action: req.method });
           json(res, 200, { favorites });
         } catch { json(res, 503, { error: 'favorites_unavailable' }); }

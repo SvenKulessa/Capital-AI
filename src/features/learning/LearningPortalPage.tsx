@@ -1,3 +1,5 @@
+import { QuantLearningDemo } from './QuantLearningDemo';
+import { VOCABULARY_PUBLIC_COUNT, VOCABULARY_SOURCE_PRS } from '../../../shared/vocabulary-metadata.mjs';
 import { HubNavigationPanel } from '../../components/HubNavigationPanel';
 /**
  * CAPITAL AI — LEARNING PORTAL & FINANZ-VOKABULAR TERMINAL
@@ -18,7 +20,7 @@ import { LearningPurchase } from './LearningPurchase';
 import { LearningVideos } from './LearningVideos';
 import { ChartRecognitionQuiz } from './ChartRecognitionQuiz';
 import { useLearningFavorites } from './LearningFavorites';
-import { dailyLearningQuestions, freeVocabularySelection } from './learningPolicy';
+import { dailyLearningQuestions } from './learningPolicy';
 import { ChartLearningAtlas } from './ChartLearningAtlas';
 import React, { useEffect, useState, useMemo } from 'react';
 import {
@@ -98,7 +100,10 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
   const [focusedTermId, setFocusedTermId] = useState<string | null>(termFromLink ?? null);
   const [copiedTermId, setCopiedTermId] = useState<string | null>(null);
   const [protectedTerms, setProtectedTerms] = useState<VocabularyTerm[]>([]);
-  const fullVocabularyTerms = useMemo(() => [...VOCABULARY_TERMS, ...protectedTerms], [protectedTerms]);
+  const fullVocabularyTerms = useMemo(() => {
+    const extendedById = new Map(protectedTerms.map(term=>[term.id,term]));
+    return VOCABULARY_TERMS.map(term=>extendedById.get(term.id) ?? term);
+  }, [protectedTerms]);
 
   // Quiz States
   const [currentQuizIndex, setCurrentQuizIndex] = useState<number>(0);
@@ -112,7 +117,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
   const [authenticated, setAuthenticated] = useState<boolean>(false);
   const [accessLoaded, setAccessLoaded] = useState<boolean>(false);
   const [quizAccessError, setQuizAccessError] = useState<string>('');
-  const allVocabularyTerms = useMemo(() => entitled ? fullVocabularyTerms : freeVocabularySelection(fullVocabularyTerms), [entitled, fullVocabularyTerms]);
+  const allVocabularyTerms = fullVocabularyTerms;
 
   useEffect(() => {
     const id = window.location.hash.slice(1);
@@ -147,8 +152,6 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
     let cancelled = false;
 
     async function syncVocabularyAccess() {
-      const preview = await fetch('/api/learning/vocabulary/preview').then(r => r.ok ? r.json() : null).catch(() => null);
-      if (!cancelled && Array.isArray(preview?.terms)) setProtectedTerms(preview.terms);
       const params = new URLSearchParams(window.location.search);
       const trialSession=params.get('enterprise_trial_session');
       if(trialSession) await fetch(`/api/billing/enterprise/trial?session_id=${encodeURIComponent(trialSession)}`,{method:'POST'}).catch(()=>null);
@@ -363,6 +366,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       {/* TAB CONTENT 1: MARKET VOCABULARY & GLOSSAR                                */}
       {/* ========================================================================= */}
       {activeTab !== 'kontakt' && typeof window !== 'undefined' && window.location.pathname === '/learning' && <LearningJourney />}
+      {(activeTab === 'glossar'||activeTab === 'flashcards') && <QuantLearningDemo />}
       {activeTab === 'news' && <LearningArticles />}
       {activeTab === 'flashcards' && (
         <React.Suspense fallback={<p role="status" className="p-4 text-sm text-slate-400">Karteikarten werden geladen …</p>}>
@@ -384,7 +388,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
                   Capital-AI Vocabulary &amp; Thesaurus
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-                  Durchsuchen Sie {fullVocabularyTerms.length} konsolidierte Fachbegriffe aus Marktanalyse, Scoring,
+                  Durchsuchen Sie {VOCABULARY_PUBLIC_COUNT} öffentlich zugängliche Fachbegriffe aus Marktanalyse, Scoring,
                   Daten &amp; Evidence, Plattformarchitektur, Security, Produkt, Governance und Mobile Runtime.
                 </p>
               </div>
@@ -397,6 +401,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
             </div>
           </div>
 
+          <details className="rounded-xl border border-slate-700 p-4 text-sm text-slate-300"><summary className="cursor-pointer min-h-11">Katalogstand und PR-Quellen</summary><p>Die Anzahl wird direkt aus dem aktuellen Katalog berechnet.</p><ul>{VOCABULARY_SOURCE_PRS.map(pr=><li key={pr.number}><a className="inline-flex min-h-11 items-center text-cyan-200 underline" href={`https://github.com/SvenKulessa/Capital-AI/pull/${pr.number}`} target="_blank" rel="noreferrer">PR #{pr.number} · {pr.title}</a></li>)}</ul></details>
           {focusedTermId && (
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-cyan-400/20 bg-cyan-400/5 px-4 py-3">
               <div className="text-xs text-cyan-100">
@@ -472,14 +477,14 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
             </div>
             {!entitled && (
               <div className="pt-2 text-[11px] text-purple-200">
-                Kostenlos: sieben feste Einträge je Skill-Level. Learning Hub schaltet alle Begriffe für {formatVocabularyPrice()} einmalig frei.
+                Alle Glossarbegriffe kostenlos lesen und durchsuchen. Learning Hub schaltet den vollständigen Übungskarteikasten für {formatVocabularyPrice()} einmalig frei.
               </div>
             )}
           </div>
 
           {favorites.error && <p role="alert" className="text-sm text-rose-300">{favorites.error}</p>}
           {!entitled && <LearningPurchase onLogin={onNavigateLogin} />}
-          {entitled && <p id="learning-offer" className="rounded-xl border border-amber-400/30 p-4 text-base leading-7 text-slate-200">Dein Learning-Portal-Zugang ist aktiv. Für Chart-Module ist zusätzlich mindestens Starter erforderlich; Chart-Training benötigt Pro.</p>}
+          {entitled && <p id="learning-offer" className="rounded-xl border border-amber-400/30 p-4 text-base leading-7 text-slate-200">Dein Lernzugang ist aktiv. <a href="/profile/rights" className="underline text-amber-200">Zugang und Rechte ansehen</a></p>}
           {/* Vocabulary Terms Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredTerms.length === 0 ? (
@@ -639,7 +644,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
               <h3 className="text-xl font-bold text-white">{entitled ? 'Skill-Check starten' : 'Eine kostenlose Tagesfrage'}</h3>
               <p className="text-xs text-slate-300 leading-relaxed">
                 {entitled
-                  ? 'Ihr Learning-Portal-Zugang ist aktiv. Der Skill-Check kann erneut gestartet werden.'
+                  ? 'Ihr Learning-Hub-Zugang ist aktiv. Der Skill-Check kann erneut gestartet werden.'
                   : 'Mit Start wird Ihre heutige kostenlose Frage serverseitig verbraucht.'}
               </p>
               {quizAccessError && <p className="text-xs text-rose-300">{quizAccessError}</p>}

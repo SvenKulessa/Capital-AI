@@ -6,9 +6,11 @@ import {VOCABULARY_TERMS} from '../../data/vocabularyData';
 import {LEARNING_ARTICLES} from '../../data/learningArticles';
 import { LearningJourney } from './LearningJourney';
 import { LearningPurchase } from './LearningPurchase';
+import { LearningPortalPage } from './LearningPortalPage';
+import { MarketVocabularyModal } from './MarketVocabularyModal';
 import { LEARNING_JOURNEY, LEARNING_NEXT_STEPS } from '../../../shared/learning-journey.mjs';
-import {freeVocabularySelection,berlinDay,dailyLearningQuestions} from './learningPolicy';
-import {VocabularyFlashcards, advanceVocabularyDeck, rescheduleMissedVocabulary} from '../../components/VocabularyFlashcards';
+import {berlinDay,dailyLearningQuestions} from './learningPolicy';
+import {VocabularyFlashcards, advanceVocabularyDeck, rescheduleMissedVocabulary, vocabularySwipeDirection} from '../../components/VocabularyFlashcards';
 import {VocabularyCard,VOCABULARY_CATEGORY_COLORS} from './VocabularyCard';
 import {chartQuestion} from './ChartRecognitionQuiz';
 import {ChartLessonGraphic} from './ChartLessonGraphic';
@@ -50,13 +52,20 @@ test('free video previews remain fixed per category before category filtering',(
  assert.equal(visibleLearningVideos(videos,true).length,6);
  assert.equal(visibleLearningVideos([{...videos[0],youtubeId:'invalid'}],true).length,0);
 });
-test('free glossary selection is fixed at seven per skill level before filtering',()=>{
- const selected=freeVocabularySelection(VOCABULARY_TERMS);for(const level of ['Einsteiger','Fortgeschritten','Quant / Pro']) assert.ok(selected.filter(term=>term.level===level).length<=7);
- assert.deepEqual(freeVocabularySelection(VOCABULARY_TERMS).map(t=>t.id),selected.map(t=>t.id));
+test('anonymous glossary surfaces render every canonical definition, including Quant level',()=>{
+ const page=renderToStaticMarkup(<LearningPortalPage/>);
+ const modal=renderToStaticMarkup(<MarketVocabularyModal isOpen onClose={()=>{}}/>);
+ for(const [html,extraDemo] of [[page,1],[modal,0]] as const) {
+   assert.equal((html.match(/data-vocabulary-category=/g)??[]).length,VOCABULARY_TERMS.length+extraDemo);
+   assert.match(html,/VWAP/);
+   assert.match(html,/Brier Score/);
+   assert.doesNotMatch(html,/Sieben feste Begriffe|sieben feste Einträge/);
+ }
+ assert.equal((page.match(/id="quant-demo-title"/g)??[]).length,1,'demo occurs once alongside its glossary entry');
 });
 test('free flashcards contain five words; paid cards retain all supplied words',()=>{
  const free=renderToStaticMarkup(<VocabularyFlashcards onNavigate={()=>{}} terms={VOCABULARY_TERMS}/>);
- assert.equal((free.match(/data-vocabulary-category=/g)??[]).length,1);assert.match(free,/Karte 1 von 5/);assert.match(free,/Noch üben und bald wiederholen/);
+ assert.equal((free.match(/data-vocabulary-category=/g)??[]).length,1);assert.match(free,/Karte 1 von 5/);assert.match(free,/Weiß ich nicht, im Lernfeld speichern und wiederholen/);
  const paid=renderToStaticMarkup(<VocabularyFlashcards onNavigate={()=>{}} terms={VOCABULARY_TERMS} entitled/>);
  assert.equal((paid.match(/data-vocabulary-category=/g)??[]).length,1);assert.match(paid,new RegExp('Karte 1 von '+VOCABULARY_TERMS.length));
 });
@@ -75,9 +84,9 @@ test('a missed card reappears after two other cards even when the deck wraps',()
  assert.deepEqual(rescheduleMissedVocabulary(['only']),['only']);
  assert.deepEqual(rescheduleMissedVocabulary(['first','second']),['second','first']);
 });
-test('mobile vocabulary is discoverable in the category-diverse free learning sample',()=>{
+test('mobile vocabulary is part of the complete public glossary',()=>{
  assert.ok(VOCABULARY_TERMS.some(term=>term.category==='MOBILE_RUNTIME'));
- assert.ok(freeVocabularySelection(VOCABULARY_TERMS).some(term=>term.category==='MOBILE_RUNTIME'));
+
 });
 test('category accents remain readable and card controls have accessible names',()=>{
  const luminance=(hex:string)=>{const channels=hex.slice(1).match(/../g)!.map(x=>parseInt(x,16)/255).map(x=>x<=.04045?x/12.92:((x+.055)/1.055)**2.4);return channels[0]*.2126+channels[1]*.7152+channels[2]*.0722;};
@@ -92,4 +101,9 @@ test('daily question rotates using Berlin calendar dates and references only pub
 test('random chart recognition has four distinct answers and does not reveal title in graphic',()=>{
  const question=chartQuestion(()=>.25);assert.equal(question.options.length,4);assert.equal(new Set(question.options.map(item=>item.id)).size,4);assert.equal(question.options.filter(item=>item.id===question.lesson.id).length,1);
  const graphic=renderToStaticMarkup(<ChartLessonGraphic lesson={question.lesson} quiz/>);assert.ok(!graphic.includes(question.lesson.title));assert.match(graphic,/Chart-Erkennungstraining/);
+});
+
+test('horizontal swipes have an intentional threshold and ignore vertical page scroll',()=>{
+ assert.equal(vocabularySwipeDirection(-80,4),'left');assert.equal(vocabularySwipeDirection(80,-4),'right');
+ assert.equal(vocabularySwipeDirection(30,0),null);assert.equal(vocabularySwipeDirection(60,80),null);
 });

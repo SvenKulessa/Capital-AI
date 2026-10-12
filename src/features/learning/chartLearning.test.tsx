@@ -70,7 +70,7 @@ test('static social exports match source, asset hashes and canonical non-publish
   }
 });
 
-test('atlas is public learning content, studio export stays a draft, CADS copy exposes runtime limits',()=>{
+test('atlas is public learning content, studio export stays a draft, postponed engine promotion stays hidden',()=>{
   const publicAtlas=renderToStaticMarkup(<ChartLearningAtlas/>);
   assert.match(publicAtlas,/Selbstcheck/);
   assert.match(publicAtlas,/Kategorie filtern/);
@@ -80,7 +80,6 @@ test('atlas is public learning content, studio export stays a draft, CADS copy e
   assert.match(studio,/keine Social-Veröffentlichung/);
   assert.match(studio,/MediaProject herunterladen/);
   const showcase=renderToStaticMarkup(<LearningCadsShowcase onNavigate={()=>{}} onPricing={()=>{}}/>);
-  assert.match(showcase,/noch nicht vollständig live nachgewiesen/);
-  assert.match(showcase,/GitHub Marketplace: noch nicht veröffentlicht/);
+  assert.equal(showcase, '');
   assert.doesNotMatch(showcase,/Jetzt kaufen|Renditegarantie|control-center/);
 });

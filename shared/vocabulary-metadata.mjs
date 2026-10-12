@@ -1,6 +1,6 @@
-/** Canonical vocabulary metadata. Quant/Pro product entries are not public Vocabulary routes. */
-export const VOCABULARY_CANONICAL_COUNT = 294;
-export const VOCABULARY_PUBLIC_COUNT = 132;
+/** Public canonical glossary metadata; learning-product entitlements are separate. */
+import quantLearningDemo from './quant-learning-demo.json' with { type: 'json' };
+import researchedVocabulary from './researched-vocabulary.json' with { type: 'json' };
 
 export const vocabularyMetadata = [
   {
@@ -3532,6 +3532,19 @@ export const vocabularyMetadata = [
     ]
   }
 ];
+
+vocabularyMetadata.push({id:quantLearningDemo.id,path:`/vocabulary/${quantLearningDemo.id}`,term:quantLearningDemo.term,category:quantLearningDemo.categoryLabel,description:quantLearningDemo.shortDefinition,thesaurus:quantLearningDemo.thesaurus});
+vocabularyMetadata.push(...researchedVocabulary.map(term=>({id:term.id,path:`/vocabulary/${term.id}`,term:term.term,category:term.categoryLabel,description:term.shortDefinition,thesaurus:term.thesaurus,sources:term.sources,detailedExplanation:term.detailedExplanation,formulaOrRule:term.formulaOrRule,practicalExample:term.practicalExample,keyTakeaway:term.keyTakeaway})));
+export const VOCABULARY_CANONICAL_COUNT = vocabularyMetadata.length;
+export const VOCABULARY_PUBLIC_COUNT = vocabularyMetadata.length;
+
+// Curated from the actual merged PRs changing this catalogue; never ingest unreviewed PR text.
+export const VOCABULARY_SOURCE_PRS = Object.freeze([
+  {number:139,title:'Katalog aus vier Repositories'},
+  {number:142,title:'Vocabulary, Learning und SEO synchronisieren'},
+  {number:365,title:'Katalogzähler und Skill-Level'},
+  {number:406,title:'Quant-Research-Fach-Skill'},
+]);
 
 export const vocabularyMetadataByPath = new Map(vocabularyMetadata.map((entry) => [entry.path, entry]));
 export const vocabularyMetadataById = new Map(vocabularyMetadata.map((entry) => [entry.id, entry]));

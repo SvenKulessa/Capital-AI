@@ -7,15 +7,15 @@ type RouteBreadcrumbsProps = {
 };
 
 const LABELS: Record<string, string> = {
-  marketscreener: 'Marketscreener',
+  marketscreener: 'Analytics Hub',
   studio: 'Studio Hub',
   architecture: 'Architektur',
   'pipeline-builder': 'Pipeline Builder',
-  learning: 'Learning Portal',
+  learning: 'Learning Hub',
   blog: 'Wissen & Lernen',
   'barrierefreie-finanzcharts': 'Barrierefreie Finanzcharts',
   vocabulary: 'Vocabulary',
-  dokumentation: 'Dokumentation',
+  dokumentation: 'Dokumentation Hub',
   pricing: 'Preiskatalog',
   profile: 'Profil',
   security: 'Sicherheit',
@@ -50,7 +50,7 @@ export function RouteBreadcrumbs({ currentRoute, onNavigate }: RouteBreadcrumbsP
           <li key={item.path} className="flex items-center gap-1">
             <ChevronRight className="h-3 w-3 text-slate-600" aria-hidden="true" />
             {index === items.length - 1 ? (
-              <span aria-current="page" className="rounded-lg px-2 py-1 font-bold text-amber-300">{item.label}</span>
+              <span aria-current="page" className="rounded-lg px-2 py-1 font-bold hub-heading">{item.label}</span>
             ) : (
               <button type="button" onClick={() => onNavigate(item.path)} className="rounded-lg px-2 py-1 hover:bg-white/5 hover:text-amber-300">
                 {item.label}

@@ -8,6 +8,7 @@
  * ============================================================================
  */
 
+import { ProductDisclaimer } from '../../components/ProductDisclaimer';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   X,
@@ -24,7 +25,7 @@ import {
 } from '../../data/pricingCatalog';
 import { ADDITIONAL_PRODUCTS_CATALOG } from '../../data/additionalProductsCatalog';
 import { INITIAL_COMMERCE_STATE, readCommerceState } from './commerceState';
-import { BENCHMARK_TIERS } from '../../../packages/benchmark-core/index.mjs';
+
 
 interface MonetizationModalProps {
   isOpen: boolean;
@@ -36,30 +37,6 @@ interface MonetizationModalProps {
 
 type BillingCycle = 'monthly' | 'annual';
 type PricingTab = 'plans' | 'products';
-
-const CADS_CAPABILITY_LABELS: Record<string, string> = {
-  standardProfiles: 'CADS Standardprofile',
-  history: 'Historische Vergleiche',
-  regressionDetection: 'Regression Detection',
-  evidenceExport: 'Evidence Export',
-  customProfiles: 'Custom Profiles',
-  customThresholds: 'Custom Thresholds',
-  enforcedPrGate: 'Enforced PR Gate',
-  api: 'CADS API',
-  selfHostedRunner: 'Self-hosted Runner',
-};
-
-function cadsFeaturesForTier(tier: 'starter' | 'pro' | 'enterprise') {
-  const capabilities = BENCHMARK_TIERS[tier].capabilities as Record<string, boolean | string>;
-  const features = Object.entries(capabilities)
-    .filter(([key, value]) => key !== 'githubCheck' && value === true)
-    .map(([key]) => CADS_CAPABILITY_LABELS[key])
-    .filter(Boolean);
-  features.unshift(capabilities.githubCheck === 'enforced'
-    ? 'GitHub Check · enforced'
-    : 'GitHub Check · neutral');
-  return features;
-}
 
 export const MonetizationModal: React.FC<MonetizationModalProps> = ({
   isOpen,
@@ -275,8 +252,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
             <div className="rounded-2xl border border-slate-800 bg-[#030716] p-4">
               <h3 className="text-sm font-bold text-white">Wähle den Umfang deiner Analysewerkzeuge</h3>
               <p className="mt-2 text-xs leading-relaxed text-slate-300">
-                Vergleiche die enthaltenen CADS-Prüffunktionen und die Abrechnung. Eigene Datenprovider
-                und Modelle verbindest du separat im privaten Workspace; ihre Gebühren sind nicht im Abo enthalten.
+                Vergleiche Tarife und Abrechnung. Lerninhalte und Analyse-Demos zeigen wir mit ihrem jeweiligen Verfügbarkeitsstatus. Externe Daten und Modelle sind nicht im Abo enthalten.
               </p>
               <p role="status" aria-live="polite" className="mt-3 text-xs text-amber-100">
                 {commerce.sessionError ? 'Dein Kontostatus konnte nicht geladen werden. Bitte prüfe ihn erneut.'
@@ -345,8 +321,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                   label: PRICING_CATALOG.starter.label,
                   monthlyPrice: starterPrice,
                   annualCents: PRICING_CATALOG.starter.annual.amountCents,
-                  description: 'Für den Einstieg: Systeme mit CADS-Standardprofilen prüfen und Ergebnisse nachvollziehen.',
-                  cadsFeatures: cadsFeaturesForTier('starter'),
+                  description: 'Für den Einstieg in Finanzwissen und Analysewerkzeuge.',
                 },
                 {
                   id: 'pro',
@@ -354,8 +329,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                   label: PRICING_CATALOG.pro.label,
                   monthlyPrice: proPrice,
                   annualCents: PRICING_CATALOG.pro.annual.amountCents,
-                  description: 'Für regelmäßige Vergleiche: Veränderungen erkennen und Prüfergebnisse exportieren.',
-                  cadsFeatures: cadsFeaturesForTier('pro'),
+                  description: 'Für die regelmäßige Nutzung der verfügbaren Analysewerkzeuge.',
                 },
                 {
                   id: 'enterprise',
@@ -363,8 +337,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                   label: PRICING_CATALOG.enterprise.label,
                   monthlyPrice: enterprisePrice,
                   annualCents: PRICING_CATALOG.enterprise.annual.amountCents,
-                  description: 'Für individuelle Prüfabläufe: eigene Profile und Schwellenwerte sowie API und eigenen Runner nutzen.',
-                  cadsFeatures: cadsFeaturesForTier('enterprise'),
+                  description: 'Für einen erweiterten Analyseumfang. Maßgeblich sind die aktuell angebotenen Funktionen.',
                 },
               ] as const).map((tier) => (
                 <section
@@ -394,19 +367,6 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                     <p className="mt-2 border-t border-slate-800 pt-3 text-xs leading-relaxed text-slate-400">
                       {tier.description}
                     </p>
-                    <div className="mt-3 rounded-xl border border-cyan-400/20 bg-cyan-500/5 p-3">
-                      <div className="text-[10px] font-mono font-bold uppercase tracking-wide text-cyan-300">
-                        CADS Benchmark Engine enthalten
-                      </div>
-                      <ul className="mt-2 space-y-1 text-[11px] text-slate-300">
-                        {tier.cadsFeatures.map((feature) => (
-                          <li key={feature}>• {feature}</li>
-                        ))}
-                      </ul>
-                      <p className="mt-2 text-[10px] leading-relaxed text-slate-500">
-                        Benchmark-Evidence unterstützt Entscheidungen, erteilt aber keine Production-Freigabe.
-                      </p>
-                    </div>
                   </div>
                   <button
                     type="button"
@@ -459,7 +419,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
                       <span className="text-xs text-slate-400">einmalig</span>
                     </div>
                     <p className="mt-2 text-xs leading-relaxed text-slate-300">
-                      Enthalten sind das vollständige Vocabulary einschließlich Quant / Pro,
+                      Enthalten sind der vollständige Übungskarteikasten einschließlich Quant-Begriffen,
                       der serverseitig berechtigte Lernzugang, wiederholbare Skill-Checks für berechtigte Nutzer
                       sowie der lizenzierte Vocabulary-Badge als Download. Das Paket ist nicht Bestandteil von Starter,
                       Pro oder Enterprise.
@@ -557,18 +517,13 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
           </nav>
         </section>
 
-        <section className="mt-4 space-y-3 rounded-2xl border border-amber-400/30 bg-amber-400/5 p-5" aria-label="Enterprise Trial">
-          <h3 className="text-lg font-bold text-amber-200">Drei Tage vorausdenken. Enterprise und Learning Portal kostenlos entdecken.</h3>
-          <p className="text-sm text-slate-300">Einmal pro Konto, ausschließlich im Monatsabo. Danach 109,00 € monatlich. Vor Ablauf kündigen, um Folgekosten zu vermeiden. Learning Portal ist während der drei Tage inklusive; danach separat für 25,00 € einmalig erhältlich.</p>
-          <button type="button" disabled={pendingTier!==null || authenticated===null || !subscriptionCheckoutEnabled} aria-busy={pendingTier==='enterprise'} onClick={()=>{setBillingCycle('monthly');void startSubscriptionCheckout('enterprise',true);}} className="min-h-11 rounded-lg border border-amber-400 px-4 text-sm text-amber-200">{pendingTier==='enterprise' ? 'Stripe-Checkout wird geöffnet …' : '3 Tage testen · weiter zu Stripe'}</button>
-          <p className="text-xs text-slate-400">Kein Coupon-Code erforderlich. Die drei kostenlosen Tage werden im Stripe-Checkout hinterlegt. Gültige Rabattcodes können bei regulären Käufen im Stripe-Checkout eingegeben werden; während der Testphase ist kein zusätzlicher Rechnungsrabatt vorgesehen.</p>
-        </section>
         {purchaseMessage && (
           <div role="status" className="mt-4 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-xs text-amber-100">
             {purchaseMessage}
           </div>
         )}
 
+        <ProductDisclaimer kind="commerce" />
         {/* Modal Footer */}
         <div className="mt-5 pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="text-[11px] text-slate-400 flex items-center gap-1.5">

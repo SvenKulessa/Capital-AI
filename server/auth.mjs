@@ -353,36 +353,23 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       signal: AbortSignal.timeout(7000),
     });
 
-    const [profileResponse, subscriptionResponse] = await Promise.all([
-      read(profileUrl),
-      read(subscriptionUrl),
+    // IAM and billing are independent: a billing outage must not erase a verified owner.
+    const [profileRead, subscriptionRead] = await Promise.allSettled([
+      read(profileUrl).then(response => response.ok ? boundedJson(response) : Promise.reject(new Error('PROFILE_UNAVAILABLE'))),
+      read(subscriptionUrl).then(response => response.ok ? boundedJson(response) : Promise.reject(new Error('SUBSCRIPTION_UNAVAILABLE'))),
     ]);
-
-    if (!profileResponse.ok || !subscriptionResponse.ok) {
-      return { available: false, iamRole: null, subscription: null, badges: [] };
-    }
-
-    const [profileRows, subscriptionRows] = await Promise.all([
-      boundedJson(profileResponse),
-      boundedJson(subscriptionResponse),
-    ]);
-    const profile = Array.isArray(profileRows) ? profileRows[0] : null;
-    const subscription = Array.isArray(subscriptionRows) ? subscriptionRows[0] : null;
-
-    // The upstream filter alone cannot authorize a role or subscription.
-    if ((profile && profile.id !== stored.user.id) ||
-        (subscription && subscription.user_id !== stored.user.id)) {
-      return { available: false, iamRole: null, subscription: null, badges: [] };
-    }
+    const profileRows = profileRead.status === 'fulfilled' ? profileRead.value : null;
+    const subscriptionRows = subscriptionRead.status === 'fulfilled' ? subscriptionRead.value : null;
+    const profile = Array.isArray(profileRows) && profileRows.length === 1 && profileRows[0]?.id === stored.user.id ? profileRows[0] : null;
+    const subscription = Array.isArray(subscriptionRows) && subscriptionRows.length === 1 && subscriptionRows[0]?.user_id === stored.user.id ? subscriptionRows[0] : null;
+    if (!profile) return { available: false, iamRole: null, subscription: null, badges: [] };
 
     const iamRole = ['owner', 'admin', 'supervisor', 'user'].includes(String(profile?.iam_role || ''))
       ? String(profile.iam_role)
       : null;
-    const rawTier = String(subscription?.tier || '');
-    const paidTier = normalizeStoredPaidTier(subscription);
-    // The visible paid badge obeys the same active/trialing gate as access checks.
-    const tier = rawTier === 'Free' ? 'Free'
-      : paidTier && ['Starter', 'Pro', 'Enterprise'].includes(rawTier) ? rawTier : null;
+    const tier = ['Free', 'Starter', 'Pro', 'Enterprise'].includes(String(subscription?.tier || ''))
+      ? String(subscription.tier)
+      : null;
     const status = typeof subscription?.status === 'string'
       ? subscription.status.slice(0, 64)
       : null;

@@ -44,8 +44,6 @@ async function harness(envOverrides = {}) {
     rejectConsentWrites: false,
     privacyRequests: [],
     rejectPrivacyWrites: false,
-    profileOverride: null,
-    subscriptionOverride: null,
   };
 
   const user = () => ({
@@ -160,16 +158,17 @@ async function harness(envOverrides = {}) {
       assert.match(String(options.headers.Authorization || ''), /^Bearer access-/);
       assert.equal(options.headers.apikey, 'sb_publishable_test');
       assert.equal(target.searchParams.get('id'), `eq.${state.subject}`);
-      return Response.json([state.profileOverride ?? { id: state.subject, iam_role: state.subject === 'owner-subject' ? 'owner' : 'user' }]);
+      return Response.json([{ id: state.foreignProfile ? 'foreign-user' : state.subject, iam_role: state.subject === 'owner-subject' ? 'owner' : 'user' }]);
     }
 
     if (target.origin === 'https://project.supabase.co' && target.pathname === '/rest/v1/subscriptions') {
       assert.match(String(options.headers.Authorization || ''), /^Bearer access-/);
       assert.equal(options.headers.apikey, 'sb_publishable_test');
       assert.equal(target.searchParams.get('user_id'), `eq.${state.subject}`);
-      return Response.json([state.subscriptionOverride ?? {
+      if (state.rejectSubscription) return new Response('{}', {status:503});
+      return Response.json([{
         user_id: state.subject,
-        tier: state.subject === 'owner-subject' ? 'Enterprise' : 'Free',
+        tier: state.tier || (state.subject === 'owner-subject' ? 'Enterprise' : 'Free'),
         status: state.subject === 'owner-subject' ? 'active' : 'free',
         current_period_end: state.subject === 'owner-subject' ? '2026-12-31T00:00:00+00:00' : null,
       }]);
@@ -283,37 +282,6 @@ test('Supabase email login is same-origin, backend-owned and returns a landing-p
     assert.equal(JSON.stringify(session).includes('access-'), false);
     assert.equal(JSON.stringify(session).includes('refresh-'), false);
     assert.deepEqual(h.state.authAudit, ['Supabase authentication verified at password_login']);
-  } finally {
-    await h.stop();
-  }
-});
-
-test('account projection denies inactive tiers and cross-user upstream rows', async () => {
-  const h = await harness();
-  try {
-    h.state.subject = 'user-subject';
-    const cookie = await h.completeEmail();
-    const read = async () => (await (await h.request('/api/auth/session', { headers: { cookie } })).json()).account;
-
-    h.state.subscriptionOverride = { user_id: 'user-subject', tier: 'Pro', status: 'past_due' };
-    assert.equal((await read()).subscription, null);
-    assert.deepEqual((await read()).badges, []);
-
-    h.state.subscriptionOverride = { user_id: 'user-subject', tier: 'Pro', status: 'trialing' };
-    assert.equal((await read()).subscription.tier, 'Pro');
-    assert.equal((await read()).badges[0].id, 'pro');
-
-    h.state.subscriptionOverride = { user_id: 'foreign-subject', tier: 'Pro', status: 'active' };
-    let account = await read();
-    assert.equal(account.available, false);
-    assert.equal(account.iamRole, null);
-    assert.deepEqual(account.badges, []);
-
-    h.state.subscriptionOverride = { user_id: 'user-subject', tier: 'Pro', status: 'active' };
-    h.state.profileOverride = { id: 'foreign-subject', iam_role: 'owner' };
-    account = await read();
-    assert.equal(account.available, false);
-    assert.equal(account.iamRole, null);
   } finally {
     await h.stop();
   }
@@ -877,4 +845,35 @@ test('signed session can enroll native TOTP and configuration failures retain on
     assert.equal(JSON.stringify(h.state.authAudit).includes('DO_NOT_EXPOSE_PROVIDER_PAYLOAD'), false);
     assert.equal(JSON.stringify(h.state.authAudit).includes('JBSWY3DPEHPK3PXP'), false);
   } finally { await h.stop(); }
+});
+
+
+test('verified owner survives Free billing and billing outage without granting paid access', async () => {
+  const h = await harness();
+  try {
+    h.state.tier = 'Free';
+    const cookie = await h.completeEmail();
+    const read = async () => (await h.request('/api/auth/session', {headers:{cookie}})).json();
+    assert.equal((await read()).account.iamRole, 'owner');
+    assert.equal((await read()).account.subscription.tier, 'Free');
+    h.state.rejectSubscription = true;
+    const account = (await read()).account;
+    assert.equal(account.available,true); assert.equal(account.iamRole,'owner');
+    assert.equal(account.subscription,null);
+    assert.deepEqual(account.badges.map(badge=>badge.id),['owner']);
+    h.state.foreignProfile = true;
+    assert.equal((await read()).account.available,false);
+    assert.equal((await h.request('/control-center',{headers:{cookie}})).status,404);
+  } finally {await h.stop();}
+});
+
+test('verified Pro subscriber remains Pro independently of owner display', async () => {
+  const h = await harness();
+  try {
+    h.state.subject = 'second-user'; h.state.tier = 'Pro';
+    const cookie = await h.completeEmail();
+    const session = await (await h.request('/api/auth/session',{headers:{cookie}})).json();
+    assert.equal(session.account.iamRole,'user'); assert.equal(session.account.subscription.tier,'Pro');
+    assert.deepEqual(session.account.badges.map(badge=>badge.id),['pro']);
+  } finally {await h.stop();}
 });

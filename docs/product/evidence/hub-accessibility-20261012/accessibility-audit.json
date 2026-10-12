@@ -1,0 +1,584 @@
+{
+  "browser": "153.0.8010.0",
+  "axeVersion": "4.10.3",
+  "scope": "Built app, local mocked session and archive APIs; not a screen-reader or live-account certification",
+  "pages": [
+    {
+      "width": 320,
+      "route": "/marketscreener",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "count": 40
+        }
+      ]
+    },
+    {
+      "width": 320,
+      "route": "/learning?tab=flashcards",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "count": 2
+        },
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "count": 34
+        }
+      ]
+    },
+    {
+      "width": 320,
+      "route": "/dokumentation",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "width": 320,
+      "route": "/profile",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "duplicate-id-aria",
+          "count": 1
+        },
+        {
+          "id": "form-field-multiple-labels",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "width": 320,
+      "route": "/profile/rights",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "count": 3
+        },
+        {
+          "id": "duplicate-id-aria",
+          "count": 1
+        },
+        {
+          "id": "form-field-multiple-labels",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "width": 320,
+      "route": "/login",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "duplicate-id-aria",
+          "count": 1
+        },
+        {
+          "id": "form-field-multiple-labels",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "width": 320,
+      "route": "/legal",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "count": 8
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "route": "/marketscreener",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "count": 40
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "route": "/learning?tab=flashcards",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "count": 2
+        },
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "count": 34
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "route": "/dokumentation",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "route": "/profile",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "duplicate-id-aria",
+          "count": 1
+        },
+        {
+          "id": "form-field-multiple-labels",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "route": "/profile/rights",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "duplicate-id-aria",
+          "count": 1
+        },
+        {
+          "id": "form-field-multiple-labels",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "route": "/login",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "duplicate-id-aria",
+          "count": 1
+        },
+        {
+          "id": "form-field-multiple-labels",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "route": "/legal",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "count": 5
+        }
+      ]
+    },
+    {
+      "width": 768,
+      "route": "/marketscreener",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "count": 40
+        }
+      ]
+    },
+    {
+      "width": 768,
+      "route": "/learning?tab=flashcards",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "count": 2
+        },
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "count": 33
+        }
+      ]
+    },
+    {
+      "width": 768,
+      "route": "/dokumentation",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "count": 5
+        }
+      ]
+    },
+    {
+      "width": 768,
+      "route": "/profile",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "count": 1
+        },
+        {
+          "id": "duplicate-id-aria",
+          "count": 1
+        },
+        {
+          "id": "form-field-multiple-labels",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "width": 768,
+      "route": "/profile/rights",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "count": 2
+        },
+        {
+          "id": "duplicate-id-aria",
+          "count": 1
+        },
+        {
+          "id": "form-field-multiple-labels",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "width": 768,
+      "route": "/login",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "duplicate-id-aria",
+          "count": 1
+        },
+        {
+          "id": "form-field-multiple-labels",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "width": 768,
+      "route": "/legal",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "count": 10
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "route": "/marketscreener",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "count": 40
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "route": "/learning?tab=flashcards",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "count": 2
+        },
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "count": 33
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "route": "/dokumentation",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "route": "/profile",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "duplicate-id-aria",
+          "count": 1
+        },
+        {
+          "id": "form-field-multiple-labels",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "route": "/profile/rights",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "count": 1
+        },
+        {
+          "id": "duplicate-id-aria",
+          "count": 1
+        },
+        {
+          "id": "form-field-multiple-labels",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "route": "/login",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "count": 2
+        },
+        {
+          "id": "duplicate-id-aria",
+          "count": 1
+        },
+        {
+          "id": "form-field-multiple-labels",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "route": "/legal",
+      "noOverflow": true,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "count": 7
+        }
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "width": 320,
+      "search": "PASS",
+      "sort": "PASS",
+      "ownerArchiveAndReset": "PASS",
+      "keyboardLastTab": "PASS",
+      "scrollButton": "PASS"
+    },
+    {
+      "fontZoom200percent320": "PASS"
+    },
+    {
+      "width": 390,
+      "search": "PASS",
+      "sort": "PASS",
+      "ownerArchiveAndReset": "PASS",
+      "keyboardLastTab": "PASS",
+      "scrollButton": "PASS"
+    },
+    {
+      "width": 768,
+      "search": "PASS",
+      "sort": "PASS",
+      "ownerArchiveAndReset": "PASS",
+      "keyboardLastTab": "PASS",
+      "scrollButton": "PASS"
+    },
+    {
+      "width": 1440,
+      "search": "PASS",
+      "sort": "PASS",
+      "ownerArchiveAndReset": "PASS",
+      "keyboardLastTab": "PASS",
+      "scrollButton": "PASS"
+    },
+    {
+      "account": "Pro",
+      "display": "PASS"
+    },
+    {
+      "account": "Kontostatus offen",
+      "display": "PASS"
+    }
+  ]
+}

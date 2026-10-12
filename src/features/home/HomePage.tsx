@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Hero } from '../../components/Hero';
-const MarketBlueprintShowcase = lazy(() => import('./MarketBlueprintShowcase').then(module => ({ default: module.MarketBlueprintShowcase })));
-const LearningCadsShowcase = lazy(() => import('./LearningCadsShowcase').then(module => ({ default: module.LearningCadsShowcase })));
+
+
 const ContentEngineConcept = lazy(() => import('./ContentEngineConcept').then(module => ({ default: module.ContentEngineConcept })));
 import { CommerceEntrySection } from './CommerceEntrySection';
 import { HomeLatestLearning } from './HomeLatestLearning';
@@ -79,15 +79,12 @@ export function HomePage({
         onExploreProduct={onStartProductTour}
       />
 
-      {/* Sales-first: the featured, educational Blueprint catalog sits immediately below the Hero. */}
-      <Suspense fallback={
-        <section role="status" className="mx-auto w-full max-w-7xl px-5 py-8 text-sm text-slate-300">
-          Blueprint-Bundles werden geladen …
-        </section>
-      }>
-        <MarketBlueprintShowcase onNavigate={onNavigate} />
-      </Suspense>
-
+      <section aria-label="Produkt entdecken" className="mx-auto max-w-7xl px-5 py-6">
+        <button type="button" onClick={onStartProductTour} className="rounded-[3rem] border border-cyan-300/40 bg-cyan-950/60 px-8 py-5 text-left text-cyan-100 shadow-lg motion-safe:animate-[capital-cloud-float_8s_ease-in-out_infinite]">
+          <strong className="block text-lg">Produkt entdecken</strong>
+          <span className="text-sm">Finanzwissen lernen. Analysemethoden verstehen.</span>
+        </button>
+      </section>
       <CommerceEntrySection onNavigate={onNavigate} />
       <HomeLatestLearning onNavigate={onNavigate} />
 
@@ -100,9 +97,6 @@ export function HomePage({
         />
       </Suspense>
       <KeyPillars />
-      <Suspense fallback={null}>
-        <LearningCadsShowcase onNavigate={onNavigate} onPricing={onOpenMonetization} />
-      </Suspense>
       <Suspense fallback={null}>
         <ContentEngineConcept onNavigate={onNavigate} />
       </Suspense>
