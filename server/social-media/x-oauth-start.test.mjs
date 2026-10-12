@@ -9,6 +9,11 @@ const ENV = {
   SOCIAL_X_OAUTH_CONNECT_ENABLED: 'true',
   SOCIAL_X_OAUTH_CLIENT_ID: 'test-public-client-id',
   PUBLIC_APP_ORIGIN: 'https://capital-ai.online/',
+  SOCIAL_X_OAUTH_CLIENT_SECRET: 'test-confidential-secret',
+  SOCIAL_X_TOKEN_ENCRYPTION_KEY: 'aa'.repeat(32),
+  SOCIAL_OAUTH_CALLBACK_ENABLED: 'true',
+  SUPABASE_URL: 'https://fixture.supabase.co/',
+  SUPABASE_SECRET_KEY: 'sb_secret_synthetic_fixture_only',
 };
 const url = () => new URL(PATH, 'https://capital-ai.online');
 const req = (site = 'same-origin', method = 'GET') =>
