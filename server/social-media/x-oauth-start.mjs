@@ -3,6 +3,7 @@
 // and provider-account persistence are implemented and tested.
 import { createHash, randomBytes } from 'node:crypto';
 import { createSocialProviderStore } from './provider-store.mjs';
+import { socialXOAuthConfigured } from './x-oauth-exchange.mjs';
 
 const START_PATH = '/api/social-media/x/auth/start';
 const CALLBACK_PATH = '/api/social-media/auth/callback';
@@ -37,7 +38,7 @@ export function createSocialXOAuthStart({ env = process.env, auth,
     let origin;
     const clientId = env.SOCIAL_X_OAUTH_CLIENT_ID;
     try {
-      if (env.SOCIAL_X_OAUTH_CONNECT_ENABLED !== 'true'
+      if (!socialXOAuthConfigured(env)
         || typeof clientId !== 'string' || clientId.length < 5 || clientId.length > 256
         || /[\s]/.test(clientId)) throw Error();
       origin = originFromEnv(env);
