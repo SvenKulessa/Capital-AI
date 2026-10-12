@@ -1,13 +1,12 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "fbd0da3a8bda73ac85c036f351cadc2031b82abc",
-  "mergedPr": 436,
+  "mainSha": "fde95fc79f3cfe7999a5604e5c2f60c37a2f82a2",
+  "mergedPr": 439,
   "targetPr": 423,
   "targetBranch": "capital-ai-product/skill-evidence-product-20261012",
-  "targetHeadSha": "50250686b57ab0b9db188bbe135d9a4599cb0905",
+  "targetHeadSha": "2b31777a581490865a8754e9a7789158f3b620ed",
   "exactOverlap": [
-    "scripts/navigation.test.mjs",
-    "src/components/Header.tsx"
+    "package.json"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,
