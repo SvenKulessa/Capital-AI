@@ -1,6 +1,5 @@
 // CAPITAL_AI_SOCIAL_X_OAUTH_START@1 — isolated, disabled by default.
-// Do not mount this route until the paired X callback, encrypted token exchange
-// and provider-account persistence are implemented and tested.
+// Feature flag and verified IAM-owner access prevent account linkage by default.
 import { createHash, randomBytes } from 'node:crypto';
 import { createSocialProviderStore } from './provider-store.mjs';
 import { socialXOAuthConfigured } from './x-oauth-exchange.mjs';
@@ -49,6 +48,11 @@ export function createSocialXOAuthStart({ env = process.env, auth,
     const identity = await auth?.verify?.(req, res);
     if (!identity?.userId) {
       json(res, 401, { error: 'authentication_required' });
+      return true;
+    }
+    if (identity.emailVerified !== true
+      || await auth?.authorizeIamRole?.(req, res, 'owner') !== true) {
+      json(res, 403, { error: 'owner_authorization_required' });
       return true;
     }
     const redirectUri = new URL(CALLBACK_PATH, origin).toString();
