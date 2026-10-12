@@ -5,7 +5,7 @@
   "auditReferenceSha": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
   "baseSha": "c1638194187c1c51cc86a87bbe3f6f47b6148fd1",
   "resultHeadSha": null,
-  "resultHeadReadback": "PENDING_POST_COMMIT_GITHUB_READBACK",
+  "resultHeadReadback": "PENDING_POST_UPDATE_GITHUB_READBACK",
   "authoritativePolicy": {
     "contract": "SOLO_MAINTAINER_FLOW@1",
     "path": "AGENTS.md",
@@ -33,17 +33,17 @@
       ],
       "observed": [
         "Learning methodology and synthetic chart examples are implemented educational content, not live trading recommendations or empirical factor-performance validation.",
-        "Current Learning Portal offer is 2500 EUR cents (src/data/vocabularyOffer.ts; server/vocabulary-checkout.mjs public offer route); historical VOCABULARY_PRICE and prior Stripe live-catalog evidence are 1900 EUR cents. The source labels 1900 as legacy. No provider readback for the current 2500-cent product/price and completed purchase was performed in this audit.",
+        "Stripe live GET /v1/prices on 2026-10-12 confirms current 2500-cent one-time inclusive Learning product price price_1UOqkoPKr4joNbEcRaagaZT4 is active, alongside legacy active 1900-cent price. Price/catalog presence is not proof of payment, checkout deployment, coupon policy or entitlement.",
         "Starter/Pro/Enterprise pricingCatalog lists monthly EUR 7/29/109, annual EUR 75.60/248/1280; 2026-10-08 Stripe catalog GET supports seven legacy catalog prices but not checkout, taxes, entitlements, refunds or buyer journey.",
         "Screener blueprint is explicitly EDITORIAL_PREVIEW using a synthetic 76.85/100 weighted example; no dedicated SKU, live score, backtest superiority or redistributable third-party feed is proven.",
         "2026-10-09 landing/readback evidence itself reports spot ingestion and score display disabled, not global realtime scores."
       ],
-      "allowedPublicStatement": "Educational walkthroughs and explicitly labeled synthetic examples; source-backed catalog facts with clear no-purchase-evidence caveat. Do not market current 25-EUR offer as transaction-verified.",
+      "allowedPublicStatement": "Public Learning offer of EUR 25 is corroborated by application code and active Stripe live price at the 2026-10-12 readback; do not claim payment or successful fulfillment. Legacy EUR 19 remains active and channel-specific checkout mapping is not independently verified.",
       "notProven": [
-        "25-EUR live provider price/configuration",
         "completed buyer checkout and entitlement/refund",
         "profitable or reliable market predictions",
-        "current production-scoring/runtime identity"
+        "current production-scoring/runtime identity",
+        "buyer-paid 2500-cent settlement and Supabase entitlement binding"
       ]
     },
     {
@@ -94,15 +94,15 @@
         "OAuth callback checks exact HTTPS origin/redirect, channel, signed-in identity, atomic expiring state consumption; token ciphertext persistence is an external injected obligation, not proved by callback existence.",
         "Provider adapters for YOUTUBE/TIKTOK/INSTAGRAM/X/FACEBOOK are all IMPLEMENTED_DISABLED. Publication requires server global+channel switches, tenant-bound token, connected verified-scopes account, durable exact-asset SHA approval, persistent delivery reservation.",
         "Transport submission returns UNKNOWN awaiting terminal external provider readback; uploaded or scheduled does not prove PUBLISHED. X/Meta readbacks use separate disabled-by-default switches.",
-        "Historical completion gate explicitly BLOCKED and Metricool provider connections not evidenced; no current provider-approved OAuth scopes, commercial publishing right, terminal provider post URL or test post verified."
+        "Historical Social completion gate is BLOCKED. Separate Metricool operator-side brand settings on 2026-10-12 show TikTok and YouTube account identities connected, but this is not CAPITAL-AI backend OAuth, channel posting-scope, persistent hash approval or provider terminal completion evidence."
       ],
       "allowedPublicStatement": "Publishing architecture and editorial drafts available; no linked channel, scheduled external distribution or successful live post claims.",
       "notProven": [
-        "live OAuth linked account",
         "provider token encryption and channel scopes verified end-to-end",
         "owner/channel rights",
         "external terminal publication receipt",
-        "successful live delivery"
+        "successful live delivery",
+        "CAPITAL-AI backend OAuth/channel publishing rights; Metricool operator-side connection is distinct"
       ]
     },
     {
@@ -389,6 +389,14 @@
           "trust-engineering"
         ]
       }
+    },
+    "currentSessionReadbacks": {
+      "date": "2026-10-12",
+      "stripe": "ACCOUNT_LIVE_PRICE_VERIFIED_ONLY",
+      "metricool": "OPERATOR_BRAND_TIKTOK_YOUTUBE_CONNECTED_ONLY",
+      "GA4": "NOT_PROVEN",
+      "GSC": "NOT_PROVEN",
+      "socialProduction": "NOT_PROVEN"
     }
   },
   "claimEvidence": [
@@ -441,6 +449,16 @@
       "rightsBasis": "Exact binary build, linked source/NOTICE, library and final OCI identity still need version-specific evidence",
       "permittedPublicationScope": "Attribution/technical development description only; avoid commercial release-eligible assertion",
       "status": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "STRIPE_CURRENT_LEARNING_25EUR",
+      "claim": "EUR 25 one-time learning product price is active in Capital-AI Stripe livemode",
+      "source": "Stripe connected read-only GET /v1/prices (not a public link)",
+      "publisher": "Stripe / CAPITAL-AI owner account",
+      "sourceDateOrVersion": "2026-10-12; Stripe OpenAPI spec 2026-09-30.preview; price_1UOqkoPKr4joNbEcRaagaZT4",
+      "rightsBasis": "Authorized account-owned configuration data; no right to disclose customer/payment PII or Stripe proprietary reports",
+      "permittedPublicationScope": "State list-price and code-matched SKU with observation date; do not publish account/customer identifiers, checkout metrics, sales, entitlements or payment success",
+      "status": "VERIFIED_PRICE_ONLY"
     }
   ],
   "rightsAssessment": {
@@ -561,6 +579,38 @@
       "path": ".agents/skills/registry.json",
       "sourceBlobSha": "ce0b75950cb5be17f30e38fbe7949d4edccbce79",
       "observed": "11 selected files are registered across GROWTH, MARKET, PRODUCT and TRUST; cross-domain selection allowed; docs labels DOCUMENTED are not runtime routing success."
+    },
+    {
+      "id": "STRIPE_LIVE_PRICE_READBACK_20261012",
+      "status": "PASS_SCOPED",
+      "method": "mcp__Stripe__list_available_accounts_or_orgs + stripe_api_search + stripe_api_details + stripe_api_read; GET /v1/prices only",
+      "observed": "CAPITAL-AI livemode includes active 2500-cent one-time EUR inclusive learning price; legacy 1900-cent price still active",
+      "priceId": "price_1UOqkoPKr4joNbEcRaagaZT4",
+      "legacyPriceId": "price_1UMiuIPKr4joNbEclpn8AwFW",
+      "scope": "Live catalog listing; no Checkout Session completion, webhooks, entitlement, invoice, tax jurisdiction, refund or sale established by price readback"
+    },
+    {
+      "id": "STRIPE_CHECKOUT_SESSIONS_READ_20261012",
+      "status": "PASS_SCOPED",
+      "method": "mcp__Stripe__stripe_api_details + stripe_api_read GET /v1/checkout/sessions limit=100 (read-only)",
+      "observed": "67 total sessions across history returned, has_more=false. One status=complete, payment_status=paid, metadata.sku=learning-portal, amount_total=0; other observed 2500-cent learning-portal sessions expired/unpaid. A zero-amount completed discounted session is not EUR 25 revenue; entitlement and fulfillment NOT_PROVEN.",
+      "privacy": "Only non-identifying aggregate/status fields retained; no email, name, customer ID, client reference, checkout session ID or payment instrument",
+      "scope": "A bounded list snapshot; no end-to-end confirmation or full accounting ledger"
+    },
+    {
+      "id": "METRICOOL_OPERATOR_CONNECTION_READBACK_20261012",
+      "status": "PASS_SCOPED",
+      "method": "mcp__Metricool__getBrandSettings and getScheduledPosts (read-only)",
+      "observed": "Operator Metricool brand shows TikTok and YouTube identities; scheduled posts query returned zero over 2026-10-01 through 2026-11-12 Europe/Berlin.",
+      "privacy": "No account email/user ID/token projected",
+      "scope": "Metricool operator-side brand connection and date-limited scheduled-list read, not CAPITAL-AI Social OAuth/token capability, provider rights, crossposting, or posted URL"
+    },
+    {
+      "id": "GA4_GSC_LIVE_DIRECT_REPORTS_20261012",
+      "status": "NOT_PROVEN",
+      "method": "Repository read-only inspection of .github/workflows/google-readback.yml plus available connector catalog",
+      "observed": "Google provider readback workflow remains manual workflow_dispatch on main with OIDC and property-scoped permissions. Available connected Google Drive/Gmail/Calendar tools do not expose GA4 or Search Console API. No Google property-authorized readback was performed.",
+      "scope": "No GA4/GSC report rows; no CTR, session, lead, conversion or indexing totals claimed"
     }
   ],
   "limitations": [
@@ -569,8 +619,9 @@
     "A plugin skill file or registry is not runtime autonomous routing evidence; autonomous selection without an independently verifiable tool trace is NOT_PROVEN.",
     "No private Cloud IAM, live GA4/GSC member permissions, token visibility, provider accounts, live posts, closed sales, external redistribution contracts or production build identity were assessed.",
     "Found historical documentation drift: GA4 previously described always-disabled collection, whereas main contains conditional lazy gtag; repo claims are not automatically runtime facts.",
-    "The 1900-cent legacy Stripe catalog evidence cannot prove the current 2500-cent Learning Portal purchase path.",
-    "No provider mutation, publication, deployment, cost activation or required-check changes were performed; no CI suite executed by this audit."
+    "2026-10-12 Stripe authenticated readback now verifies that a 2500-cent Learning price exists and is active, alongside 1900-cent legacy; neither price listing nor zero-amount completed checkout proves 25-EUR paid fulfillment or customer entitlement.",
+    "No provider mutation, publication, deployment, cost activation or required-check changes were performed; no CI suite executed by this audit.",
+    "Metricool operator-side TikTok/YouTube brand connection is not the application Social Publisher's OAuth, token, provider scope or permitted live posting proof; no publication performed."
   ],
   "status": "REVIEW_REQUIRED"
 }
