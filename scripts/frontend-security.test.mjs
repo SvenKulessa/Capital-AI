@@ -282,7 +282,9 @@ test('header distinguishes session failures from anonymous state and uses access
   const header = await readFile(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
   assert.match(header, /authStatus === 'error'/);
   assert.match(header, /setAuthStatus\('error'\)/);
-  assert.match(header, /Sitzung nicht verfügbar · Erneut prüfen/);
+  const navigationCopy = await readFile(new URL('../src/i18n/navigationCopy.ts', import.meta.url), 'utf8');
+  assert.match(navigationCopy, /Sitzung nicht verfügbar · Erneut prüfen/);
+  assert.match(header, /nav\.retry/);
   assert.match(header, /aria-controls="header-account-navigation"/);
   assert.match(header, /event\.key === 'Escape'/);
   assert.doesNotMatch(header, /role="menuitem"/);
@@ -297,4 +299,45 @@ test('private dashboard notes are bound to identity and give accessible errors',
   assert.match(ui, /role="alert"/);
   assert.match(server, /body\.expectedUserId !== user\.userId/);
   assert.match(server, /error:'session_changed'/);
+});
+
+test('video findings: owner role, tier and legal/account information stay separate', async () => {
+  const header = await readFile(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  const profile = await readFile(new URL('../src/components/ProfilePage.tsx', import.meta.url), 'utf8');
+  assert.match(header, /isOwner \? 'OWNER' : accountTier/);
+  assert.match(profile, /Rolle: \{session.account.iamRole/);
+  assert.match(profile, /Tarif: \{session.account.subscription/);
+  assert.match(profile, /<CadsEntitlementPanel \/>/);
+  assert.match(profile, /<LearningEntitlementBadge \/>/);
+  assert.match(profile, /href="\/agb"/);
+  assert.match(profile, /href="\/datenschutz"/);
+  assert.doesNotMatch(profile, /Supabase Auth/);
+});
+
+test('customer login no longer reveals identity provider and remains fail-closed', async () => {
+  const page = await readFile(new URL('../src/features/auth/LoginPage.tsx', import.meta.url), 'utf8');
+  const copy = await readFile(new URL('../src/i18n/authCopy.ts', import.meta.url), 'utf8');
+  assert.doesNotMatch(page, /SUPABASE AUTH|Supabase Session|Supabase-Projekt/);
+  assert.doesNotMatch(copy, /Supabase/);
+  assert.match(page, /SICHERE ANMELDUNG/);
+  assert.match(page, /SECURE SIGN-IN/);
+  assert.match(page, /message === 'invalid_credentials'/);
+});
+
+test('modal drawer restores focus and keyboard focus cannot escape through Tab', async () => {
+  const page = await readFile(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  const copy = await readFile(new URL('../src/i18n/navigationCopy.ts', import.meta.url), 'utf8');
+  assert.match(page, /event.key === 'Escape'/);
+  assert.match(page, /event.key !== 'Tab'/);
+  assert.match(page, /document.activeElement === first/);
+  assert.match(page, /document.activeElement === last/);
+  assert.match(page, /mobile-menu-btn'\)\?\.focus\(\)/);
+  assert.match(page, /aria-label=\{nav\.main\}/);
+  assert.match(copy, /close:'Close navigation'/);
+});
+
+test('Android chat overlay is scrollable without covering the full screen', async () => {
+  const buddy = await readFile(new URL('../src/components/HeroBuddy.tsx', import.meta.url), 'utf8');
+  assert.match(buddy, /max-h-\[min\(55dvh,480px\)\]/);
+  assert.match(buddy, /overflow-y-auto/);
 });
