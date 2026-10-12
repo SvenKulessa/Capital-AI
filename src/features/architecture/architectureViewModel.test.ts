@@ -3,7 +3,10 @@ import assert from 'node:assert/strict';
 import { CANONICAL_50_COMPONENTS } from '../../contracts/analysisComponentRegistry';
 import { STUDIO_BLUEPRINTS } from '../../data/studioData';
 import { BLUEPRINT_EVIDENCE_CONTRACTS } from '../../data/blueprintEvidenceContracts';
+import { BLUEPRINT_DELIVERY_POLICY } from '../../data/blueprintDeliveryPolicy';
 import {
+  ARCHITECTURE_CATALOGS, ARCHITECTURE_PRODUCT_PATHS,
+  architectureCatalogUrl, filterArchitectureCatalogs,
   ARCHITECTURE_BLUEPRINTS, ARCHITECTURE_COMPONENTS,
   ARCHITECTURE_LESSONS, DATA_FLOW_STAGES, blueprintEvidenceLabel,
   componentEvidenceLabel, filterArchitectureBlueprints, filterArchitectureComponents,
@@ -45,4 +48,30 @@ test('data flow and educational journey explicitly separate provider, scores and
   assert.deepEqual(DATA_FLOW_STAGES.map(stage => stage.id), ['provider', 'data', 'analysis', 'scoring', 'evidence']);
   assert.equal(ARCHITECTURE_LESSONS.length, 4);
   assert.equal(new Set(ARCHITECTURE_LESSONS.map(lesson => lesson.id)).size, 4);
+});
+
+test('catalog navigation exposes exactly the five public markdown deliverables without arbitrary URLs', () => {
+  assert.deepEqual(ARCHITECTURE_CATALOGS.map(item => item.file), [
+    'COMPONENT-CATALOG.md', 'PROVIDER-CATALOG.md', 'SCORING-CATALOG.md',
+    'BLUEPRINT-CATALOG.md', 'LEARNING-PATHS.md',
+  ]);
+  assert.deepEqual(filterArchitectureCatalogs('not-in-catalog'), []);
+  assert.deepEqual(filterArchitectureCatalogs('rechte').map(item => item.id), ['providers']);
+  assert.equal(filterArchitectureCatalogs('').length, 5);
+  for (const entry of ARCHITECTURE_CATALOGS) {
+    assert.equal(
+      architectureCatalogUrl(entry.file),
+      `https://github.com/SvenKulessa/Capital-AI/blob/main/CAPITAL-AI-MARKET/${entry.file}`,
+    );
+  }
+  assert.equal(architectureCatalogUrl('../../private.env'), null);
+});
+
+test('offer funnel never becomes an entitlement, blueprint delivery or checkout authorization', () => {
+  assert.equal(BLUEPRINT_DELIVERY_POLICY.currentCommerceAdmission, false);
+  assert.deepEqual(ARCHITECTURE_PRODUCT_PATHS.map(item => item.state), [
+    'PUBLIC_EDUCATION', 'SERVER_ENTITLEMENT_REQUIRED', 'DELIVERY_BLOCKED', 'INQUIRY_ONLY',
+  ]);
+  assert.ok(ARCHITECTURE_PRODUCT_PATHS.every(item => item.path.startsWith('/')));
+  assert.ok(ARCHITECTURE_PRODUCT_PATHS.every(item => !item.path.includes('/api/')));
 });
