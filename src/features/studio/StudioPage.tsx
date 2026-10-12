@@ -58,6 +58,7 @@ import { ScoringEngineService } from '../../services/scoringEngine';
 import { PipelineConfiguratorService } from '../../services/pipelineConfigurator';
 import { useHubTab } from '../../hooks/useHubTab';
 import { ContentStudioPanel } from './ContentStudioPanel';
+import { BlueprintCommercePanel } from './BlueprintCommercePanel';
 import { ContactForm } from '../../components/ContactForm';
 import { AnalysisComponentExplorer } from '../analysis/AnalysisComponentExplorer';
 import { PipelineConfiguratorConsole } from '../analysis/PipelineConfiguratorConsole';
@@ -596,10 +597,11 @@ export const StudioPage: React.FC<StudioPageProps> = ({
       {/* ========================================================================= */}
       {activeTab === 'blueprints' && (
         <div className="space-y-6">
+          <BlueprintCommercePanel onNavigateLogin={onNavigateLogin} />
           <section aria-label="Screener Component Blueprint Library" className="rounded-2xl border border-amber-400/30 bg-[#0d1530] p-5 space-y-3">
             <div className="text-xs font-mono uppercase tracking-wider text-amber-300">Screener Component Blueprints · Konzeptbibliothek</div>
             <h2 className="text-xl font-bold text-white">50 technische Analysekomponenten</h2>
-            <p className="text-sm leading-relaxed text-slate-300">Component Blueprints beschreiben Datenverträge, geplante Pipelines, Formeln, Gewichtungen, Risiko-Gates und UI-Konzepte. Keine produktiven Daten, Providerrechte, validierten Scores oder Handelsfunktionen. CAP-BP-001 Market Integrity Gate ist als Architekturkonzept spezifiziert; ein freigeschalteter Kauf oder privater Download ist nicht belegt.</p>
+            <p className="text-sm leading-relaxed text-slate-300">Component Blueprints beschreiben Datenverträge, geplante Pipelines, Formeln, Gewichtungen, Risiko-Gates und UI-Konzepte. Keine produktiven Daten, Providerrechte, validierten Scores oder Handelsfunktionen. CAP-BP-001 Market Integrity Gate und CAP-BP-002 Data Quality Scorer sind privat gesicherte Konzeptdokumente. Die Einmalkauf-Produkte sind als 50,00 € netto zuzüglich anfallender Steuer in Stripe vorbereitet; der Checkout bleibt bis zur vollständigen Auslieferungsprüfung gesperrt.</p>
             <p className="text-xs text-amber-200">CONCEPT / DESIGNED · DATA EVIDENCE NOT_PROVEN · Kein Checkout freigeschaltet</p>
             <div className="flex flex-wrap gap-3">
               <button type="button" onClick={() => onNavigate?.('/architecture-hub')} className="rounded-lg border border-cyan-400/40 px-4 py-2 text-sm font-semibold text-cyan-200 hover:bg-cyan-400/10">50 Komponenten &amp; Architektur erkunden</button>
