@@ -19,7 +19,7 @@ Status: **DEVELOPMENT / NICHT LIVE**. Keine API-Credits, Nutzerfreigaben, Tokens
 
 - `SOCIAL_X_OAUTH_CLIENT_ID`: aus der X Developer Console.
 - `SOCIAL_X_OAUTH_CLIENT_SECRET`: aus der X Developer Console.
-- `SOCIAL_X_TOKEN_ENCRYPTION_KEY`: unabhängiger, zufälliger 32-Byte-Schlüssel in exakt **64 hexadezimalen Zeichen**, einmal auf dem eigenen Rechner z. B. mit `openssl rand -hex 32` generieren. Key-Rotation benötigt ein koordiniertes Re-Encryption-Verfahren; nicht still ändern.
+- `SOCIAL_X_TOKEN_ENCRYPTION_KEY`: unabhängiger, zufälliger 32-Byte-Schlüssel. Akzeptiert werden **64 Hexadezimalzeichen** (z. B. `openssl rand -hex 32`) oder **kanonisches, gepaddetes Base64 mit exakt 44 Zeichen** (Render `generateValue: true` erzeugt einen 256-Bit-Wert in Base64). Nur exakt 32 Byte dekodierte Schlüssellänge ist gültig; ungültige Formate bleiben fail-closed. Bestehenden Schlüssel nicht neu generieren oder rotieren: Eine Rotation benötigt ein koordiniertes Re-Encryption-Verfahren.
 - `PUBLIC_APP_ORIGIN=https://capital-ai.online`, gültige Supabase-Service-Role-Credentials und produktive Social-OAuth-Migration.
 
 Zur erstmaligen Aktivierung **erst nach bestandenen Checks und Live-Datenbank-/Auth-Readbacks**:

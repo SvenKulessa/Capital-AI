@@ -64,6 +64,39 @@ test('X OAuth config fails closed for missing key, client, callback or store', (
   assert.equal(socialXOAuthConfigured({ ...ENV, PUBLIC_APP_ORIGIN: 'http://capital-ai.online/' }), false);
 });
 
+
+test('Render-generated canonical base64 256-bit key encrypts identically to hex', async () => {
+  const base64 = Buffer.from(KEY, 'hex').toString('base64');
+  assert.equal(base64.length, 44);
+  const renderEnv = { ...ENV, SOCIAL_X_TOKEN_ENCRYPTION_KEY: base64 };
+  assert.equal(socialXOAuthConfigured(renderEnv), true);
+  const { fetchImpl, calls } = mockFlow();
+  await createSocialXOAuthExchange({ env: renderEnv, fetchImpl })(trusted);
+  assert.equal(calls.length, 3);
+  const saved = JSON.parse(calls[2].options.body);
+  assert.equal(unseal(saved.access_token_encrypted, 'access'), TOKENS.access_token);
+  assert.equal(unseal(saved.refresh_token_encrypted, 'refresh'), TOKENS.refresh_token);
+});
+
+test('X OAuth rejects malformed, noncanonical and underlength encryption keys', () => {
+  const base64 = Buffer.from(KEY, 'hex').toString('base64');
+  for (const value of [
+    '', 'ab'.repeat(31), 'ab'.repeat(33), 'short-secret',
+    Buffer.from('weak-secret').toString('base64'),
+    base64.slice(0, -1), base64.slice(0, -2) + '==',
+    base64.slice(0, -2) + '!a',
+    base64.replace(/.$/, 'A'),
+    // Noncanonical pad bits must not silently decode to the same 32 bytes.
+    base64.slice(0, -2) + 'B=',
+    Buffer.from(KEY, 'hex').toString('base64url'),
+  ]) {
+    if (value === base64) continue;
+    assert.equal(socialXOAuthConfigured({
+      ...ENV, SOCIAL_X_TOKEN_ENCRYPTION_KEY: value,
+    }), false, 'invalid key format accepted: ' + String(value).slice(0, 8));
+  }
+});
+
 test('X OAuth code, owner readback, AES-GCM tokens and owner-bound database upsert', async () => {
   const { fetchImpl, calls } = mockFlow();
   const result = await createSocialXOAuthExchange({ env: ENV, fetchImpl })(trusted);
