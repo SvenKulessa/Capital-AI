@@ -299,7 +299,7 @@ export function HeroBuddy(props: HeroBuddyProps) {
     <div ref={floatingRoot} className={`fixed ${floatingXY ? '' : positionClass} z-[45] flex flex-col-reverse items-end gap-2 sm:flex-row`}
       style={floatingXY ? { left: floatingXY.x, top: floatingXY.y } : undefined} data-hero-buddy="agent">
       {(speech || open) && (
-        <div id={chatPanelId} role={open ? 'dialog' : 'status'} aria-label={open ? 'JaJa Chat Buddy' : 'JaJa Hilfe'} className="relative w-[min(88vw,320px)] rounded-2xl border border-amber-300/40 bg-[#10182e] px-3 py-2 text-xs text-slate-100 shadow-lg">
+        <div id={chatPanelId} role={open ? 'dialog' : 'status'} aria-label={open ? 'JaJa Chat Buddy' : 'JaJa Hilfe'} className="relative max-h-[min(55dvh,480px)] w-[min(88vw,320px)] overflow-y-auto rounded-2xl border border-amber-300/40 bg-[#10182e] px-3 py-2 text-xs text-slate-100 shadow-lg sm:max-h-[min(70dvh,560px)]">
           <span className="absolute -right-1.5 bottom-5 h-3 w-3 rotate-45 border-b border-r border-amber-300/40 bg-[#10182e]" aria-hidden="true" />
           {open ? (
             <div>
