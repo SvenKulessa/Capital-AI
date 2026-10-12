@@ -1,4 +1,5 @@
 import React from 'react';
+import { legalPageAccent } from '../../shared/hub-branding.mjs';
 import { ArrowLeft, Download, FileText, Printer, Scale } from 'lucide-react';
 import { licenseMetadata, providerLicenseReviews, LICENSE_REVIEW_DATE, type LicenseRoute } from '../data/providerLicenseReview';
 import { OPEN_SOURCE_STACK } from '../data/openSourceStack';
@@ -11,16 +12,16 @@ export function LicenseInformationPages({ route, onNavigate }: { route: LicenseR
     const a = document.createElement('a'); a.href = url; a.download = 'capital-ai-provider-lizenzpruefung.json'; a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
-  return <section className="license-report p-5 sm:p-8 text-slate-200 space-y-6" aria-labelledby="license-page-title">
+  return <section data-hub="legal" data-legal-route={route} style={{ '--legal-accent': legalPageAccent(route) } as React.CSSProperties} className="license-report p-5 sm:p-8 text-slate-200 space-y-6" aria-labelledby="license-page-title">
     <button type="button" onClick={() => onNavigate('/')} className="inline-flex min-h-11 items-center gap-2 text-amber-300"><ArrowLeft size={18} />Zur Startseite</button>
-    <header className="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-cyan-500/10 to-purple-500/10 p-6 space-y-3">
-      <p className="text-xs uppercase tracking-wider text-amber-300">Capital-AI · Lizenztransparenz</p>
+    <header className="rounded-2xl border legal-border-accent bg-gradient-to-r from-amber-500/10 via-cyan-500/10 to-purple-500/10 p-6 space-y-3">
+      <p className="text-xs uppercase tracking-wider legal-heading-accent">Capital-AI · Lizenztransparenz</p>
       <h1 id="license-page-title" className="text-2xl font-bold text-white">{licenseMetadata[route].title.replace('Capital-AI | ', '')}</h1>
       <p className="text-sm">{licenseMetadata[route].description}</p>
       <p className="text-xs text-slate-400">Dokumentationsstand {LICENSE_REVIEW_DATE} · Kommerzielle Rechteprüfung offen</p>
     </header>
-    <nav aria-label="Lizenz- und Nachweisseiten" className="flex flex-wrap gap-4 text-sm">
-      {Object.entries(licenseMetadata).map(([path, meta]) => <a key={path} href={path} aria-current={route === path ? 'page' : undefined} className={linkStyle} onClick={e => { e.preventDefault(); onNavigate(path); }}>{meta.title.replace('Capital-AI | ', '')}</a>)}
+    <nav aria-label="Lizenz- und Nachweisseiten" className="hub-tab-strip flex flex-wrap gap-2 text-sm">
+      {Object.entries(licenseMetadata).map(([path, meta]) => <a key={path} href={path} aria-current={route === path ? 'page' : undefined} className="hub-tab legal-topic-card" style={{ '--tab-accent': legalPageAccent(path) } as React.CSSProperties} onClick={e => { e.preventDefault(); onNavigate(path); }}>{meta.title.replace('Capital-AI | ', '')}</a>)}
     </nav>
     {route === '/datenprovider-lizenzen' && <>
       <p className="text-sm text-amber-200">Die BYOK-Anbindung allein erteilt keine zusätzlichen Datenrechte. Hinweise erläutern Einschränkungen; sie ersetzen keine erforderliche Erlaubnis.</p>
