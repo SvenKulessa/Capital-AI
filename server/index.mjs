@@ -10,6 +10,7 @@ import { assetCatalog, assetValues, quote, health, startStreams } from './market
 import { createAuth } from './auth.mjs';
 import { createSocialOAuthCallback } from './social-media/oauth-callback.mjs';
 import { createSocialXOAuthStart } from './social-media/x-oauth-start.mjs';
+import { createYouTubePrivateUpload } from './social-media/youtube-private-upload.mjs';
 import { createSocialYouTubeOAuthStart } from './social-media/youtube-oauth-start.mjs';
 import { createSocialYouTubeOAuthExchange } from './social-media/youtube-oauth-exchange.mjs';
 import { createSocialYouTubeAccountStatus } from './social-media/youtube-account-status.mjs';
@@ -307,6 +308,7 @@ export function createApp(root = defaultRoot, options = {}) {
     fetchImpl: options.fetchImpl || fetch,
     store: options.socialOAuthStore || null,
   });
+  const youtubePrivateUpload = createYouTubePrivateUpload({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const socialYouTubeOAuthStart = createSocialYouTubeOAuthStart({
     env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
     store: options.socialOAuthStore || null,
@@ -408,6 +410,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await learningInquiry.handle(req, res, url, json)) return;
   if (await auth.handle(req, res, url, json)) return;
   if (await socialXOAuthStart.handle(req, res, url, json)) return;
+  if (await youtubePrivateUpload.handle(req, res, url, json)) return;
   if (await socialYouTubeOAuthStart.handle(req, res, url, json)) return;
   if (await socialYouTubeAccountStatus.handle(req, res, url, json)) return;
   if (await socialXAccountStatus.handle(req, res, url, json)) return;
