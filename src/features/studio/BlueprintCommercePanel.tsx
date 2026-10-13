@@ -84,7 +84,7 @@ export function BlueprintCommercePanel({ onNavigateLogin }: { onNavigateLogin?: 
           return <article key={item.sku} className="flex flex-col rounded-xl border border-slate-700 bg-slate-950/70 p-4">
             <p className="text-xs font-semibold tracking-wide text-cyan-200">{item.sku} · v{item.version}</p>
             <h4 className="mt-1 text-lg font-semibold">{item.name}</h4>
-            <p className="mt-2 text-xl font-bold tabular-nums">50,00 € <span className="text-xs font-normal text-slate-300">netto · Einmalkauf</span></p>
+            {offers?.checkoutEnabled ? <p className="mt-2 text-xl font-bold tabular-nums">50,00 € <span className="text-xs font-normal text-slate-300">netto · Einmalkauf</span></p> : <p className="mt-2 text-sm font-medium text-slate-300">Preis nach Freigabe verfügbar · derzeit kein Kauf möglich</p>}
             <p className="mt-2 flex-1 text-sm text-slate-300">Unbefristete interne Unternehmensnutzung und eigene Software-/Kundenprojekte. Keine Weitergabe oder Vermarktung der Blueprint-Originaldatei.</p>
             {entitled ? <a className={`mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-emerald-500/50 bg-emerald-950/30 px-3 py-2 font-semibold text-emerald-100 ${focus}`}
                 href={`/api/billing/blueprints/download/${item.sku}`}><FileDown size={18} aria-hidden="true" /> Gekauftes Dokument laden</a> :
