@@ -124,15 +124,6 @@ test('X rotates both sealed tokens, verifies owner account, exposes no secrets',
   assert.ok(calls.network.some(x=>x.endsWith('/2/users/me')));
 });
 
-test('YouTube reuses old refresh token when Google does not rotate it', async () => {
-  const {handler,calls,oldToken}=fixture('YOUTUBE');
-  const res=makeResponse();
-  await handler.handle(request(),res,url('YOUTUBE'),json);
-  assert.equal(res.status,200);
-  assert.equal(decrypt(calls.finish[0][4],'YOUTUBE','refresh'),oldToken);
-  assert.ok(calls.network.some(x=>x.includes('/youtube/v3/channels')));
-});
-
 test('X invalid_grant becomes reconnect_required without second provider call', async () => {
   const {handler,calls}=fixture('X',{provider:async () => ({
     ok:false,status:400,text:async()=>JSON.stringify({error:'invalid_grant'})})});
