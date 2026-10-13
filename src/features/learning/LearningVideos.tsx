@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { LearningComingSoonGraphic } from './LearningComingSoonGraphic';
-import { PUBLIC_LEARNING_VIDEO_INVENTORY } from '../../../shared/seo-video.mjs';
 export const VIDEO_CATEGORIES = ['Architektur','Fintech Deepdive','Social'] as const;
 export type LearningVideo = { id: string; category: typeof VIDEO_CATEGORIES[number]; title: string; youtubeId: string };
 // Publish only approved, licensed videos. The first item in each category is its fixed free preview.
-export const LEARNING_VIDEOS: readonly LearningVideo[] = PUBLIC_LEARNING_VIDEO_INVENTORY;
+export const LEARNING_VIDEOS: readonly LearningVideo[] = [];
 export function visibleLearningVideos(videos: readonly LearningVideo[], entitled: boolean) {
   const seen = new Set<string>();
   return videos.filter(video => {
