@@ -19,7 +19,7 @@ function sessionCookieHeader(response) {
     .join('; ');
 }
 
-async function harness(envOverrides = {}) {
+async function harness(envOverrides = {}, simulatorStore = new Map()) {
   const env = {
     SUPABASE_URL: 'https://project.supabase.co',
     SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test',
@@ -169,9 +169,33 @@ async function harness(envOverrides = {}) {
       return Response.json([{
         user_id: state.subject,
         tier: state.tier || (state.subject === 'owner-subject' ? 'Enterprise' : 'Free'),
-        status: state.subject === 'owner-subject' ? 'active' : 'free',
+        status: (state.tier && state.tier !== 'Free') || state.subject === 'owner-subject' ? 'active' : 'free',
         current_period_end: state.subject === 'owner-subject' ? '2026-12-31T00:00:00+00:00' : null,
       }]);
+    }
+
+    if (target.origin === 'https://project.supabase.co' &&
+        target.pathname === '/rest/v1/rpc/capital_ai_simulator_scenarios') {
+      // This is an offline replica of the already-applied service-role RPC contract.
+      assert.match(String(options.headers?.apikey), /^sb_secret_/);
+      const args = JSON.parse(String(options.body));
+      const rows = simulatorStore.get(args._user_id) || [];
+      if (args._action === 'list') return Response.json({
+        limit: 10, scenarios: rows.map(item => ({
+          id: item.id, createdAt: '2026-10-13T00:00:00Z', scenario: item.payload,
+        })),
+      });
+      if (args._action === 'create') {
+        if (rows.length >= 10) return Response.json({ error: 'limit_reached' });
+        rows.push({ id: args._id, payload: args._payload });
+        simulatorStore.set(args._user_id, rows);
+        return Response.json({ id: args._id, scenario: args._payload });
+      }
+      if (args._action === 'delete') {
+        simulatorStore.set(args._user_id, rows.filter(row => row.id !== args._id));
+        return Response.json({ deleted: rows.length > simulatorStore.get(args._user_id).length });
+      }
+      throw new Error('Unexpected simulator action');
     }
 
     throw new Error(`Unexpected network access: ${target.href}`);
@@ -876,4 +900,52 @@ test('verified Pro subscriber remains Pro independently of owner display', async
     assert.equal(session.account.iamRole,'user'); assert.equal(session.account.subscription.tier,'Pro');
     assert.deepEqual(session.account.badges.map(badge=>badge.id),['pro']);
   } finally {await h.stop();}
+});
+
+
+test('real HTTP BFF simulator enforces cookie identity, entitlement, CSRF and cross-tenant CRUD', async () => {
+  const store = new Map();
+  const a = await harness({}, store);
+  const b = await harness({}, store);
+  const scenario = () => ({
+    name: 'Synthetic portfolio',
+    weights: { equity: 0.5, bonds: 0.3, cash: 0.2 },
+    vols: { equity: 0.18, bonds: 0.06, cash: 0.005 },
+    corrs: {
+      equity: { equity: 1, bonds: 0.2, cash: 0.05 },
+      bonds: { equity: 0.2, bonds: 1, cash: 0.1 },
+      cash: { equity: 0.05, bonds: 0.1, cash: 1 },
+    },
+  });
+  const endpoint = '/api/learning/simulator/scenarios';
+  const req = (h, cookie, suffix = '', method = 'GET', body, origin = 'https://capital.example') =>
+    h.request(endpoint + suffix, {
+      method,
+      headers: { cookie, ...(method === 'GET' ? {} : { Origin: origin, 'Content-Type': 'application/json' }) },
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    });
+  try {
+    a.state.subject = 'owner-subject';
+    b.state.subject = 'second-user'; b.state.tier = 'Pro';
+    const ownerCookie = await a.completeEmail();
+    const secondCookie = await b.completeEmail();
+    assert.equal((await req(a, '')).status, 401);
+    assert.equal((await req(a, ownerCookie, '', 'POST', scenario(), 'https://evil.example')).status, 403);
+    assert.equal((await req(a, ownerCookie, '', 'POST', { ...scenario(), user_id: 'second-user' })).status, 400);
+    const create = await req(a, ownerCookie, '', 'POST', scenario());
+    assert.equal(create.status, 200);
+    const id = (await create.json()).result.id;
+    assert.match(id, /^[0-9a-f-]{36}$/);
+    assert.equal((await (await req(a, ownerCookie)).json()).scenarios.length, 1);
+    assert.equal((await (await req(b, secondCookie)).json()).scenarios.length, 0);
+    assert.equal((await (await req(b, secondCookie, '/' + id, 'DELETE')).json()).result.deleted, false);
+    assert.equal((await (await req(a, ownerCookie)).json()).scenarios.length, 1);
+    assert.equal((await req(a, ownerCookie, '/' + id, 'DELETE', undefined, 'https://evil.example')).status, 403);
+    assert.equal((await req(a, ownerCookie, '/' + id, 'DELETE')).status, 200);
+    assert.equal((await (await req(a, ownerCookie)).json()).scenarios.length, 0);
+    b.state.tier = 'Free';
+    assert.equal((await req(b, secondCookie)).status, 403);
+  } finally {
+    await a.stop(); await b.stop();
+  }
 });

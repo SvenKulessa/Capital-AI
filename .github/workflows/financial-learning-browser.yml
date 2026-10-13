@@ -1,0 +1,68 @@
+name: Financial Learning Simulator Browser QA
+on:
+  pull_request:
+    paths:
+      - 'src/features/learning/**'
+      - 'src/components/HubCatalog.tsx'
+      - 'server/learning-simulator.mjs'
+      - 'server/auth.test.mjs'
+      - 'shared/hub-routes.mjs'
+      - 'scripts/product-accessibility-browser.mjs'
+      - '.github/workflows/financial-learning-browser.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  simulator-browser:
+    name: Simulator Chromium Mobile Accessibility
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '26.10.0'
+          cache: npm
+      - name: Build exact pull request tree
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm run build
+      - name: Start isolated BFF without external services
+        env:
+          PORT: '17871'
+          MARKET_BROKER_PAUSED: 'true'
+          NODE_ENV: production
+        run: |
+          node server/index.mjs > simulator-server.log 2>&1 &
+          echo "$!" > simulator-server.pid
+          for i in $(seq 1 100); do
+            if curl -fsS -o /dev/null http://127.0.0.1:17871/learning/simulator; then exit 0; fi
+            sleep 0.2
+          done
+          cat simulator-server.log
+          exit 1
+      - name: Test Chromium mobile and desktop accessibility tree
+        env:
+          CAPITAL_AI_BROWSER_EVIDENCE_DIR: artifacts/simulator-browser
+        run: |
+          set -euo pipefail
+          CHROME_BIN=$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)
+          if [ -z "$CHROME_BIN" ]; then
+            echo 'Chromium unavailable: browser QA NOT_PROVEN'
+            exit 1
+          fi
+          "$CHROME_BIN" --version
+          CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/product-accessibility-browser.mjs http://127.0.0.1:17871 \
+            | tee artifacts-browser-result.json
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v4
+        if: always()
+        with:
+          name: financial-learning-browser-qa
+          path: |
+            artifacts/simulator-browser/*.png
+            artifacts-browser-result.json
+            simulator-server.log
+          if-no-files-found: warn
+          retention-days: 7
