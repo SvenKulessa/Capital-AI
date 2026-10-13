@@ -117,7 +117,8 @@ function priceMatches(price, sku, mode, livePrice = null) {
       price.tax_behavior === livePrice.tax_behavior));
 }
 function out(row, config) {
-  const state = normalize(row);
+  // GET paths already normalize persisted values; writes return raw PostgREST rows.
+  const state = Array.isArray(row?.selected) ? row : normalize(row);
   return {
     mode: state.mode, selected: state.selected,
     stripeTestConfigured: Boolean(config?.testKey), stripeLiveReadConfigured: Boolean(config?.liveKey),
