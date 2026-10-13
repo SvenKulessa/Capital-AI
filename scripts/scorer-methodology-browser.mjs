@@ -25,18 +25,23 @@ async function evaluate(expression) {
   const result = await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true });
   assert.ok(!result.exceptionDetails, 'DOM evaluation failed'); return result.result?.value;
 }
+async function callWithValues(functionDeclaration, ...values) {
+  const target = await send('Runtime.evaluate', { expression: 'globalThis' });
+  const result = await send('Runtime.callFunctionOn', { objectId: target.result.objectId, functionDeclaration, arguments: values.map(value => ({ value })), returnByValue: true, awaitPromise: true });
+  assert.ok(!result.exceptionDetails, 'DOM call failed'); return result.result?.value;
+}
 async function until(fn, label) {
   for (let i = 0; i < 150; i++) { if (await fn()) return; await pause(100); }
   throw Error('TIMEOUT_' + label);
 }
 async function navigate(path, selector) {
   await send('Page.navigate', { url: origin + path });
-  await until(() => evaluate(`document.readyState === 'complete' && !!document.querySelector(${JSON.stringify(selector)})`), path);
+  await until(() => callWithValues('function(selector) { return document.readyState === \'complete\' && !!document.querySelector(selector); }', selector), path);
   assert.equal(await evaluate('location.origin'), origin);
 }
 async function select(value, expected) {
-  await evaluate(`(() => {const s=document.querySelector('.scorer-methodology select');s.value=${JSON.stringify(value)};s.dispatchEvent(new Event('change',{bubbles:true}));})()`);
-  await until(() => evaluate(`document.querySelector('.scorer-methodology [role="status"]').textContent.includes(${JSON.stringify(expected)})`), value);
+  await callWithValues("function(value) {const s=document.querySelector('.scorer-methodology select');s.value=value;s.dispatchEvent(new Event('change',{bubbles:true}));}", value);
+  await until(() => callWithValues("function(expected) { return document.querySelector('.scorer-methodology [role=status]').textContent.includes(expected); }", expected), value);
   await pause(600);
 }
 try {

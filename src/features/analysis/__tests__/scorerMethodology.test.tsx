@@ -42,7 +42,7 @@ test('accessible educational profile and existing Learning offer without checkou
   assert.match(html, /aria-live="polite"/);
   assert.match(html, /<label[^>]+for=/);
   assert.match(html, /\/learning\?tab=glossar#learning-offer/);
-  assert.doesNotMatch(html, /checkout.stripe.com|BUY|SELL|A_setup/);
+  assert.doesNotMatch(html, /checkout\.stripe\.com|BUY|SELL|A_setup/);
   assert.equal((html.match(/<meter /g) ?? []).length, 10);
   assert.ok(renderToStaticMarkup(<HistoricalAnalyticsDemo />).includes('Methodik-Demo öffnen'));
   assert.ok(!renderToStaticMarkup(<HistoricalAnalyticsDemo showMethodology={false} />).includes('Methodik-Demo öffnen'));
