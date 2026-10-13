@@ -1,6 +1,9 @@
 import React from 'react';
 import { EXTERNAL_COMPONENT_INVENTORY, COMPONENT_LIFECYCLE } from '../data/externalComponentInventory';
 
+// Presentation-only classification. Private data-plane services are never website identities.
+const internalRenderInfrastructure = new Set(['nats-jetstream', 'valkey']);
+
 const domainClasses: Record<string, string> = {
   PRODUCT: 'border-pink-500/30 bg-pink-950/20',
   MARKET: 'border-teal-500/30 bg-teal-950/20',
@@ -17,7 +20,9 @@ export const ComponentInventoryDashboard: React.FC = () => {
     <div className="rounded-2xl border border-slate-700 bg-slate-950/70 p-4">
       <h2 id="component-inventory-title" className="text-xl font-bold">External Component & Dependency Dashboard</h2>
       <p className="mt-2 text-sm text-slate-400">
-        Public-safe Documentary projection. Secret values are prohibited.
+        Technische Bestandsaufnahme, keine öffentliche Liste von Website-Identitäten. Das einzige aktuelle
+        CAPITAL-AI-Webservice-Ziel auf Render heißt Capital-AI. NATS, Valkey 8 und die Rust Bridge
+        sind interne Infrastruktur, keine eigenständigen Websites. Secretwerte bleiben ausgeschlossen.
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
         {['ALL','PRODUCT','MARKET','PLATFORM','TRUST','GROWTH'].map(value =>
@@ -44,6 +49,8 @@ export const ComponentInventoryDashboard: React.FC = () => {
           <div>
             <p className="text-[10px] font-mono uppercase tracking-wider text-slate-400">{item.domain} · {item.kind}</p>
             <h3 className="text-base font-bold">{item.name}</h3>
+            {internalRenderInfrastructure.has(item.id) && <p className="mt-1 text-xs font-medium text-amber-200">Interne Infrastruktur · keine Website</p>}
+            {item.id === 'render' && <p className="mt-1 text-xs font-medium text-emerald-200">Website-Identität: Capital-AI · interne Services getrennt</p>}
             <p className="mt-1 text-xs text-slate-400">{item.functionSummary}</p>
           </div>
         </div>
@@ -52,8 +59,8 @@ export const ComponentInventoryDashboard: React.FC = () => {
           <dt className="text-slate-500">Installiert</dt><dd>{item.installedAt ?? 'nicht belegt'}</dd>
           <dt className="text-slate-500">Aktiv</dt><dd>{item.activeVersion ?? 'nicht aktiv'}</dd>
           <dt className="text-slate-500">Pipeline</dt><dd>{item.pipelineVersion ?? 'keine'}</dd>
-          <dt className="text-slate-500">Web-App</dt><dd>{item.webAppBinding}</dd>
-          <dt className="text-slate-500">Domains</dt><dd>{item.domainAssignments.join(' · ')}</dd>
+          <dt className="text-slate-500">Technische Anbindung</dt><dd>{item.webAppBinding}</dd>
+          <dt className="text-slate-500">Technischer Geltungsbereich</dt><dd>{item.domainAssignments.join(' · ')}</dd>
           <dt className="text-slate-500">Lizenz</dt><dd>{item.license}</dd>
           <dt className="text-slate-500">Abhängigkeiten</dt><dd>{item.dependencies.length ? item.dependencies.join(' → ') : 'keine'}</dd>
         </dl>
