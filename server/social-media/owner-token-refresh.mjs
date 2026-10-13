@@ -12,9 +12,10 @@ const SCOPES = Object.freeze({
   X: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'],
   YOUTUBE: ['https://www.googleapis.com/auth/youtube.readonly', 'https://www.googleapis.com/auth/youtube.upload'],
 });
+// YouTube already refreshes on demand through the existing token resolver.
+// Do not introduce a competing rotation path for the same Google grant.
 const ENDPOINTS = Object.freeze({
   X: '/api/social-media/x/account/refresh',
-  YOUTUBE: '/api/social-media/youtube/account/refresh',
 });
 const AAD = Object.freeze({ X: 'capital-social-x-v1', YOUTUBE: 'capital-social-youtube-v1' });
 function must(ok, code) { if (!ok) throw Error(code); }
