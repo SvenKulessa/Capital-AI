@@ -31,9 +31,11 @@ export function safeScorePresentation(
   const age = now - result.computedAt;
   const future = age < 0;
   const stale = age > maxAgeMs;
+  const unavailable = result.dataAvailability === 'unavailable';
   const degraded = result.dataAvailability === 'degraded';
   const hasEvidence = /^EVD-[a-f0-9]{64}$/.test(result.evidenceId);
   const blocked =
+    unavailable ||
     future ||
     stale ||
     degraded ||
@@ -44,22 +46,26 @@ export function safeScorePresentation(
     result,
     data: result.isDemo
       ? ('simulated' as const)
-      : future
+      : unavailable
         ? ('unavailable' as const)
-        : stale
-          ? ('degraded' as const)
-          : result.dataAvailability,
+        : future
+          ? ('unavailable' as const)
+          : stale
+            ? ('degraded' as const)
+            : result.dataAvailability,
     score: !blocked && !result.isDemo ? result.finalScore : null,
     ranked: !blocked && result.rankEligible && result.rank !== null,
-    reason: future
-      ? 'Zeitstempel liegt in der Zukunft.'
-      : stale
-        ? 'Berechnung veraltet.'
-        : !hasEvidence
-          ? 'Kein verifizierbarer Evidence-Verweis.'
-          : blocked
-            ? 'Bewertung nicht zur Veröffentlichung zugelassen.'
-            : null,
+    reason: unavailable
+      ? 'Pflichtdaten und Quellen fehlen.'
+      : future
+        ? 'Zeitstempel liegt in der Zukunft.'
+        : stale
+          ? 'Berechnung veraltet.'
+          : !hasEvidence
+            ? 'Kein verifizierbarer Evidence-Verweis.'
+            : blocked
+              ? 'Bewertung nicht zur Veröffentlichung zugelassen.'
+              : null,
   };
 }
 export function createUnavailableResult(
