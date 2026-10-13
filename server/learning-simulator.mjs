@@ -40,9 +40,9 @@ function serverConfig(env) {
 async function rpc(fetchImpl, config, action, userId, payload = null, id = null) {
   const headers = { Accept: 'application/json', 'Content-Type': 'application/json', apikey: config.key };
   if (config.key.startsWith('eyJ')) headers.Authorization = 'Bearer ' + config.key;
-  const response = await fetchImpl(new URL('/rest/v1/rpc/capital_ai_learning_simulator_scenarios', config.origin), {
+  const response = await fetchImpl(new URL('/rest/v1/rpc/capital_ai_simulator_scenarios', config.origin), {
     method: 'POST', headers, body: JSON.stringify({
-      _user_id: userId, _action: action, _scenario_id: id, _payload: payload,
+      _user_id: userId, _action: action, _id: id, _payload: payload,
     }), redirect: 'error', signal: AbortSignal.timeout(7000),
   });
   if (!response.ok) throw new Error('SIMULATOR_STORAGE_UNAVAILABLE');
@@ -86,17 +86,19 @@ export function createLearningSimulator({ auth, env = process.env, fetchImpl = f
     if (req.method === 'POST') {
       try { body = validateSimulatorScenario(await readJson(req, 4096)); } catch { /* Invalid JSON */ }
       if (!body) { json(res, 400, { error: 'invalid_scenario' }); return true; }
-      body.id = randomUUID();
+
     }
     try {
       const result = await rpc(fetchImpl, config,
-        req.method === 'GET' ? 'GET' : req.method === 'POST' ? 'POST' : 'DELETE',
-        user.userId, body, itemMatch?.[1] || null);
-      if (result?.error === 'LIMIT_REACHED') {
+        req.method === 'GET' ? 'list' : req.method === 'POST' ? 'create' : 'delete',
+        user.userId, body, req.method === 'POST' ? randomUUID() : itemMatch?.[1] || null);
+      if (result?.error === 'limit_reached') {
         json(res, 409, { error: 'scenario_limit_reached', limit: MAX_SCENARIOS }); return true;
       }
       json(res, 200, req.method === 'GET'
-        ? { scenarios: Array.isArray(result) ? result : [], limit: MAX_SCENARIOS }
+        ? { scenarios: Array.isArray(result?.scenarios) ? result.scenarios.map(s => ({
+          id: s.id, createdAt: s.createdAt, ...(s.scenario || {}),
+        })) : [], limit: MAX_SCENARIOS }
         : { result });
     } catch {
       json(res, 503, { error: 'simulator_storage_unavailable' });
