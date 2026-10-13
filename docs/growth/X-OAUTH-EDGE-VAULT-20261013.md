@@ -124,6 +124,14 @@ Supabase Edge Invocations und Datenbank-RPCs. Aktuelle X-Tarife, Google-Quotas,
 Supabase-Kontingente und Kostenobergrenzen **NOT_PROVEN**. Keine
 kostenpflichtige Providerfreigabe oder neue Server-Ressource impliziert.
 Insbesondere X-/YouTube-Readback wird nicht ungefragt produktiv ausgelöst.
+**X-Budgetgrenze:** Der Refresh-Endpunkt prüft vor Claim oder Provider-I/O
+`SOCIAL_X_PAID_READ_APPROVED=true`. Ohne ausdrücklich bewilligte
+X-Read-Kosten antwortet er mit 403 `social_x_paid_read_not_approved`.
+Dieser Schalter ist unabhängig von `SOCIAL_X_PAID_WRITE_APPROVED` und aktiviert
+niemals X-Publishing. Die aktuelle X-Developer-Plattform nennt für User-Reads
+einen kostenpflichtigen Pay-per-use-Preis; die tatsächliche Konto- und
+Kreditfreigabe ist `NOT_PROVEN`.
+Quellenstand 13.10.2026: https://developer.x.com/ (Preisliste).
 
 Technische Prüfung:
 \`\`\`bash
