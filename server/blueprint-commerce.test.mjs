@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Readable } from 'node:stream';
+import { readFileSync } from 'node:fs';
 import { createHash, createHmac } from 'node:crypto';
 import { createBlueprintCommerce, verifyBlueprintWebhookSignature } from './blueprint-commerce.mjs';
 
@@ -210,4 +211,13 @@ test('checkout denies unverified buyer mail and missing SMTP', async () => {
   assert.equal(unverified.payload.error, 'verified_email_required');
   const missingSmtp = await handle('offer','GET',undefined,{config:{...env, SMTP_HOST:''}});
   assert.equal(missingSmtp.payload.checkoutEnabled, false);
+});
+
+test('unreleased public offer hides unreviewed net price; license uses digital-content BGB §356(6)', () => {
+  const panel = readFileSync(new URL('../src/features/studio/BlueprintCommercePanel.tsx', import.meta.url), 'utf8');
+  const license = readFileSync(new URL('../docs/licenses/CAPITAL-AI-BLUEPRINT-COMPANY-LICENSE-1.0.md', import.meta.url), 'utf8');
+  assert.match(panel, /offers\?\.checkoutEnabled \? "50,00 €/);
+  assert.match(panel, /Preis nach Freigabe verfügbar/);
+  assert.match(license, /§ 356 Abs\. 6 BGB/);
+  assert.doesNotMatch(license, /§ 356 Abs\. 5 BGB/);
 });
