@@ -153,6 +153,8 @@ async function execute(fetchImpl, keys, userId, input) {
       access_token_encrypted: account.access_token_encrypted,
       refresh_token_encrypted: account.refresh_token_encrypted,
       token_expires_at: account.token_expires_at, connected_at: new Date().toISOString(),
+      refresh_lease_id: null, refresh_lease_until: null,
+      refresh_retry_after: null, refresh_reconnect_required: false,
     };
     const target = keys.origin
       + '/rest/v1/social_media_accounts?on_conflict=user_id%2Cplatform';
@@ -170,12 +172,67 @@ async function execute(fetchImpl, keys, userId, input) {
       && rows[0]?.refresh_token_encrypted === row.refresh_token_encrypted);
     return { connected: true, accountId: row.external_account_id, handle: row.handle };
   }
+  if (operation === 'refresh_claim') {
+    abortUnless(UUID.test(input.leaseId || ''));
+    const row = await jsonFetch(fetchImpl,
+      keys.origin + '/rest/v1/rpc/capital_social_claim_token_refresh',
+      { method: 'POST', headers: adminHeaders(keys.admin),
+        body: JSON.stringify({ p_user_id: userId, p_platform: platform,
+          p_lease_id: input.leaseId }) });
+    abortUnless(row?.user_id === userId && row?.platform === platform
+      && row?.refresh_lease_id === input.leaseId
+      && validId(row?.external_account_id) && validHandle(row?.handle)
+      && CIPHER.test(row?.refresh_token_encrypted || '')
+      && scopes.every(x => Array.isArray(row?.scopes) && row.scopes.includes(x)));
+    // Only signed owner workload can receive this sealed refresh credential.
+    // This response must never be forwarded by Render to a browser.
+    return { claimed: true, leaseId: input.leaseId,
+      refreshCipher: row.refresh_token_encrypted,
+      accountId: row.external_account_id, handle: row.handle, scopes };
+  }
+  if (operation === 'refresh_finish') {
+    abortUnless(UUID.test(input.leaseId || '')
+      && CIPHER.test(input.previousCipher || '')
+      && CIPHER.test(input.accessCipher || '')
+      && CIPHER.test(input.refreshCipher || '')
+      && typeof input.expiresAt === 'string'
+      && Date.parse(input.expiresAt) > Date.now() + 60000
+      && Date.parse(input.expiresAt) < Date.now() + 86400000);
+    const row = await jsonFetch(fetchImpl,
+      keys.origin + '/rest/v1/rpc/capital_social_finish_token_refresh',
+      { method: 'POST', headers: adminHeaders(keys.admin),
+        body: JSON.stringify({ p_user_id: userId, p_platform: platform,
+          p_lease_id: input.leaseId, p_previous_cipher: input.previousCipher,
+          p_access_cipher: input.accessCipher, p_refresh_cipher: input.refreshCipher,
+          p_expires_at: input.expiresAt }) });
+    abortUnless(row?.user_id === userId && row?.platform === platform
+      && row?.status === 'connected' && row?.refresh_lease_id === null
+      && row?.access_token_encrypted === input.accessCipher
+      && row?.refresh_token_encrypted === input.refreshCipher);
+    return { refreshed: true, channel, expiresAt: row.token_expires_at };
+  }
+  if (operation === 'refresh_end') {
+    abortUnless(UUID.test(input.leaseId || '')
+      && ['reconnect','rate_limited'].includes(input.outcome));
+    const row = await jsonFetch(fetchImpl,
+      keys.origin + '/rest/v1/rpc/capital_social_end_token_refresh',
+      { method: 'POST', headers: adminHeaders(keys.admin),
+        body: JSON.stringify({ p_user_id: userId, p_platform: platform,
+          p_lease_id: input.leaseId, p_outcome: input.outcome }) });
+    abortUnless(row?.user_id === userId && row?.platform === platform
+      && row?.refresh_lease_id === null
+      && (input.outcome === 'reconnect'
+        ? row.refresh_reconnect_required === true && row.status === 'token_expired'
+        : row.refresh_retry_after != null));
+    return { channel, status: input.outcome === 'reconnect'
+      ? 'reconnect_required' : 'retry_later' };
+  }
   if (operation === 'status') {
     const target = new URL('/rest/v1/social_media_accounts', keys.origin);
     target.searchParams.set('user_id', 'eq.' + userId);
     target.searchParams.set('platform', 'eq.' + platform);
     target.searchParams.set('select',
-      'status,platform,external_account_id,handle,scopes,token_expires_at,connected_at');
+      'status,platform,external_account_id,handle,scopes,token_expires_at,connected_at,refresh_reconnect_required,refresh_retry_after');
     target.searchParams.set('limit', '1');
     const rows = await jsonFetch(fetchImpl, target,
       { method: 'GET', headers: adminHeaders(keys.admin) }, 4096);
@@ -186,11 +243,14 @@ async function execute(fetchImpl, keys, userId, input) {
     const scopesOk = scopes.every(x => Array.isArray(row?.scopes) && row.scopes.includes(x));
     const valid = Number.isFinite(Date.parse(row?.token_expires_at || ''))
       && Date.parse(row?.token_expires_at || '') > Date.now() + 60000;
-    const connected = Boolean(row?.status === 'connected' && scopesOk && valid);
+    const reconnect = row?.refresh_reconnect_required === true;
+    const throttled = Date.parse(row?.refresh_retry_after || '') > Date.now();
+    const connected = Boolean(row?.status === 'connected' && scopesOk && valid && !reconnect);
     return { channel, connected,
-      status: connected ? 'connected' : row?.status === 'connected'
-        ? (scopesOk ? 'token_expired' : 'permissions_missing')
-        : (row?.status || 'not_connected'),
+      status: reconnect ? 'reconnect_required' : connected ? 'connected'
+        : throttled ? 'retry_later' : row?.status === 'connected'
+          ? (scopesOk ? 'token_expired' : 'permissions_missing')
+          : (row?.status || 'not_connected'),
       handle: row ? (channel === 'X' ? '@' + row.handle : row.handle) : null,
       accountId: row?.external_account_id || null,
       scopes: connected ? scopes : [],
