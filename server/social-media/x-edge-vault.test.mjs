@@ -284,3 +284,110 @@ test('Edge verifies canonical Render-generated Base64 workload keys', async () =
   assert.equal(response.status, 200);
   assert.equal((await response.json()).status, 'not_connected');
 });
+
+
+test('Edge refresh claim returns sealed credential only to signed owner workload', async () => {
+  const userId = 'd0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101';
+  const leaseId = '8f718548-44e9-44ee-8fbd-6595eecfb944';
+  const cipher = 'v1.' + 'A'.repeat(16) + '.' + 'B'.repeat(22) + '.' + 'C'.repeat(18);
+  const scopes = ['tweet.read','tweet.write','users.read','offline.access'];
+  const config = { get(name) { return name === 'SUPABASE_SERVICE_ROLE_KEY'
+    ? 'sb_secret_synthetic_only_for_tests' : env.get(name); } };
+  let claimCalls = 0;
+  const handler = createHandler({ env: config, fetchImpl: async (url, options) => {
+    const path = String(url);
+    const response = path.includes('/auth/v1/user')
+      ? { id: userId, email_confirmed_at: '2026-10-01' }
+      : path.includes('/profiles') ? [{ id: userId, iam_role: 'owner' }]
+      : (() => {
+        claimCalls++;
+        assert.ok(path.endsWith('capital_social_claim_token_refresh'));
+        assert.deepEqual(JSON.parse(options.body), {
+          p_user_id:userId,p_platform:'x',p_lease_id:leaseId,
+        });
+        return { user_id:userId,platform:'x',refresh_lease_id:leaseId,
+          refresh_token_encrypted:cipher,external_account_id:'12345',
+          handle:'capitalai',scopes };
+      })();
+    return {ok:true,text:async()=>JSON.stringify(response)};
+  } });
+  const accepted = await handler(signedRequest({
+    operation:'refresh_claim',userId,channel:'X',leaseId,
+  }));
+  assert.equal(accepted.status,200);
+  assert.equal((await accepted.json()).refreshCipher,cipher);
+  assert.equal(claimCalls,1);
+  const crossUser = await handler(signedRequest({
+    operation:'refresh_claim',userId:'aae0e41d-9566-430a-b698-3cf50bbb4ec0',
+    channel:'X',leaseId,
+  }));
+  assert.equal(crossUser.status,503);
+  assert.equal(claimCalls,1);
+});
+
+test('Edge refresh CAS rotation never reflects ciphertext or allows invalid lease', async () => {
+  const userId = 'd0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101';
+  const leaseId = '8f718548-44e9-44ee-8fbd-6595eecfb944';
+  const previous = 'v1.' + 'A'.repeat(16) + '.' + 'B'.repeat(22) + '.' + 'C'.repeat(18);
+  const access = 'v1.' + 'D'.repeat(16) + '.' + 'E'.repeat(22) + '.' + 'F'.repeat(18);
+  const refresh = 'v1.' + 'G'.repeat(16) + '.' + 'H'.repeat(22) + '.' + 'I'.repeat(18);
+  const expiresAt = new Date(Date.now()+3600000).toISOString();
+  const config = { get(name) { return name === 'SUPABASE_SERVICE_ROLE_KEY'
+    ? 'sb_secret_synthetic_only_for_tests' : env.get(name); } };
+  let calls=0;
+  const handler = createHandler({env:config,fetchImpl:async(uri,options)=>{
+    const path=String(uri);
+    const output=path.includes('/auth/v1/user')
+      ? {id:userId,email_confirmed_at:'2026-10-01'}
+      : path.includes('/profiles') ? [{id:userId,iam_role:'owner'}]
+      : (()=>{
+        calls++;
+        assert.ok(path.endsWith('capital_social_finish_token_refresh'));
+        const body=JSON.parse(options.body);
+        assert.equal(body.p_previous_cipher,previous);
+        assert.equal(body.p_lease_id,leaseId);
+        return {user_id:userId,platform:'x',status:'connected',
+          refresh_lease_id:null,access_token_encrypted:access,
+          refresh_token_encrypted:refresh,token_expires_at:expiresAt};
+      })();
+    return {ok:true,text:async()=>JSON.stringify(output)};
+  }});
+  const resp=await handler(signedRequest({operation:'refresh_finish',channel:'X',
+    userId,leaseId,previousCipher:previous,accessCipher:access,
+    refreshCipher:refresh,expiresAt}));
+  assert.equal(resp.status,200);
+  const body=await resp.json();
+  assert.equal(body.refreshed,true);
+  assert.ok(!JSON.stringify(body).includes('v1.'));
+  const bad=await handler(signedRequest({operation:'refresh_finish',channel:'X',
+    userId,leaseId:'invalid',previousCipher:previous,accessCipher:access,
+    refreshCipher:refresh,expiresAt}));
+  assert.equal(bad.status,503);
+  assert.equal(calls,1);
+});
+
+test('Edge refuses token-refresh reconnect mutation without matching signed owner and lease', async () => {
+  const userId='d0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101';
+  const leaseId='8f718548-44e9-44ee-8fbd-6595eecfb944';
+  const config={get(name){return name==='SUPABASE_SERVICE_ROLE_KEY'
+    ? 'sb_secret_synthetic_only_for_tests':env.get(name);}};
+  let changes=0;
+  const handler=createHandler({env:config,fetchImpl:async(uri,options)=>{
+    const path=String(uri);
+    const data=path.includes('/auth/v1/user')
+      ? {id:userId,email_confirmed_at:'2026-10-01'}
+      : path.includes('/profiles') ? [{id:userId,iam_role:'owner'}]
+      : (changes++,
+        {user_id:userId,platform:'x',refresh_lease_id:null,
+          refresh_reconnect_required:true,status:'token_expired'});
+    return {ok:true,text:async()=>JSON.stringify(data)};
+  }});
+  const good=await handler(signedRequest({operation:'refresh_end',
+    userId,channel:'X',leaseId,outcome:'reconnect'}));
+  assert.equal(good.status,200);
+  assert.equal((await good.json()).status,'reconnect_required');
+  const bad=await handler(signedRequest({operation:'refresh_end',
+    userId,channel:'X',leaseId,outcome:'publish'}));
+  assert.equal(bad.status,503);
+  assert.equal(changes,1);
+});
