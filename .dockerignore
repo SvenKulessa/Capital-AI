@@ -361,6 +361,8 @@
 !server/private-market-cache.test.mjs
 
 !server/learning-inquiry.mjs
+!server/learning-simulator.mjs
+!server/learning-simulator.test.mjs
 !server/learning-inquiry.test.mjs
 !scripts/activate-learning-measurement.mjs
 !scripts/activate-learning-measurement.test.mjs
