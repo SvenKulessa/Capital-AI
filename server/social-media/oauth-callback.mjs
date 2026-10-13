@@ -4,6 +4,32 @@ import { createSocialProviderStore } from './provider-store.mjs';
 import { createSocialXEdgeClient, socialXEdgeMode } from './x-edge-client.mjs';
 import { socialPlatformForChannel } from './provider-adapter.mjs';
 
+// Only the authenticated, email-confirmed IAM owner can receive these fixed
+// categories. Never reflect provider bodies, codes, state, tokens or exceptions.
+const OWNER_SAFE_CALLBACK_DIAGNOSTICS = Object.freeze({
+  SOCIAL_X_EDGE_REJECTED: 'edge_request_rejected',
+  SOCIAL_X_EDGE_UNAVAILABLE: 'edge_network_unavailable',
+  SOCIAL_X_EDGE_AUTH_UNAVAILABLE: 'edge_owner_session_token_unavailable',
+  SOCIAL_X_EDGE_CONSUMPTION_INVALID: 'edge_state_not_confirmed',
+  SOCIAL_X_EDGE_PERSIST_INVALID: 'vault_persistence_not_confirmed',
+  SOCIAL_X_TOKEN_EXCHANGE_REJECTED: 'provider_token_exchange_rejected',
+  SOCIAL_X_OAUTH_SCOPES_MISSING: 'provider_scopes_missing',
+  SOCIAL_X_ACCOUNT_READBACK_REJECTED: 'provider_identity_readback_rejected',
+  SOCIAL_X_ACCOUNT_PERSIST_FAILED: 'vault_persistence_not_confirmed',
+  SOCIAL_X_ACCOUNT_PERSIST_READBACK_FAILED: 'vault_persistence_not_confirmed',
+  SOCIAL_YOUTUBE_TOKEN_EXCHANGE_REJECTED: 'provider_token_exchange_rejected',
+  SOCIAL_YOUTUBE_OAUTH_SCOPES_MISSING: 'provider_scopes_missing',
+  SOCIAL_YOUTUBE_ACCOUNT_READBACK_REJECTED: 'provider_identity_readback_rejected',
+  SOCIAL_YOUTUBE_ACCOUNT_PERSIST_READBACK_FAILED: 'vault_persistence_not_confirmed',
+  SOCIAL_OAUTH_CONSUME_NOT_CONFIRMED: 'oauth_state_not_confirmed',
+  SOCIAL_OAUTH_PKCE_MISSING: 'oauth_pkce_invalid',
+  SOCIAL_OAUTH_CALLBACK_READBACK_MISMATCH: 'vault_persistence_not_confirmed',
+});
+function safeOwnerCallbackFailure(error) {
+  return Object.hasOwn(OWNER_SAFE_CALLBACK_DIAGNOSTICS, error?.message)
+    ? OWNER_SAFE_CALLBACK_DIAGNOSTICS[error.message] : 'internal_unclassified';
+}
+
 export function createSocialOAuthCallback({ env = process.env, auth, store = null,
   exchangeCode = null, fetchImpl = fetch } = {}) {
   const path = '/api/social-media/auth/callback';
@@ -92,11 +118,17 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
         res.end();
         return true;
       }
-      // 204 deliberately does not assert that a provider account is linked.
-      res.writeHead(204, { 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' });
+      // The exchanger has confirmed encrypted persistence/readback. Point the
+      // authenticated owner to the read-only status instead of a blank 204.
+      res.writeHead(303, {
+        Location: '/api/social-media/x/account/status',
+        'Cache-Control': 'private, no-store', 'Referrer-Policy': 'no-referrer',
+      });
       res.end();
-    } catch {
-      json(res, 503, { error: 'social_oauth_callback_unavailable' });
+    } catch (error) {
+      // Identity and IAM owner role have already been checked above.
+      json(res, 503, { error: 'social_oauth_callback_unavailable',
+        diagnostic: safeOwnerCallbackFailure(error) });
     }
     return true;
   }
