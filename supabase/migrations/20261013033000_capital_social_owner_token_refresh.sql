@@ -1,5 +1,5 @@
 -- CAPITAL_AI_SOCIAL_TOKEN_REFRESH@1
--- Additive owner-only credential lifecycle; no browser grants and no publishing authority.
+-- Additive X owner-only credential lifecycle; no browser grants and no publishing authority.
 begin;
 
 alter table public.social_media_accounts
@@ -17,7 +17,7 @@ language plpgsql security invoker set search_path = ''
 as $$
 declare v_account public.social_media_accounts%rowtype;
 begin
-  if p_platform not in ('x','youtube') or p_lease_id is null then
+  if p_platform <> 'x' or p_lease_id is null then
     raise exception 'SOCIAL_REFRESH_CONTEXT_INVALID';
   end if;
   update public.social_media_accounts
@@ -47,7 +47,7 @@ language plpgsql security invoker set search_path = ''
 as $$
 declare v_account public.social_media_accounts%rowtype;
 begin
-  if p_platform not in ('x','youtube') or p_lease_id is null
+  if p_platform <> 'x' or p_lease_id is null
      or p_previous_cipher not like 'v1.%'
      or p_access_cipher not like 'v1.%'
      or p_refresh_cipher not like 'v1.%'
@@ -82,7 +82,7 @@ language plpgsql security invoker set search_path = ''
 as $$
 declare v_account public.social_media_accounts%rowtype;
 begin
-  if p_platform not in ('x','youtube') or p_lease_id is null
+  if p_platform <> 'x' or p_lease_id is null
      or p_outcome not in ('reconnect','rate_limited') then
     raise exception 'SOCIAL_REFRESH_OUTCOME_INVALID';
   end if;
