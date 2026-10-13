@@ -69,6 +69,21 @@ jobs:
         run: |
           node --version
           npm ci --ignore-scripts --no-audit --no-fund
+      - name: Generate source-bound social content candidate (draft only)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test scripts/growth/social-release-candidate.test.mjs
+          node scripts/growth/social-release-candidate.mjs
+      - name: Preserve social release candidate (no publish)
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2 pinned
+        with:
+          name: social-release-draft-${{ github.event.pull_request.number }}
+          path: artifacts/social-content-candidates/*.json
+          if-no-files-found: error
+          retention-days: 14
       - name: Milestone scheduler (read-only merge count)
         id: milestones
         env:
