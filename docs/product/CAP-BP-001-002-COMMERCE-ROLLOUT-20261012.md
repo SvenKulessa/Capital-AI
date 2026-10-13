@@ -29,6 +29,11 @@ Die zwei Produkte bleiben im Stripe-Katalog inaktiv, bis Checkout und sichere Li
 - `GET /api/billing/blueprints/access` — kontogebundene, serverseitig geprüfte Kaufrechte.
 - `GET /api/billing/blueprints/download/CAP-BP-00X` — nur nach Session-Prüfung + bezahltem Entitlement + SHA-256-Check, no-store, kein öffentlicher Download-Link.
 
+- Nach verifizierter Zahlung: serverseitig an die bereits bestätigte Konto-E-Mail gebundene **Vertragsbestätigung** mit tatsächlichem Netto-/Steuer-/Gesamtbetrag, Vertrags-/Lizenznehmer, SKU, Release-Version und als Anhang eingefrorenem Lizenztext. Keine Blueprint-Datei als ungeschützter E-Mail-Anhang: der Käuferdownload bleibt an die Kontositzung gebunden.
+- Die Bestätigung wird über die bestehende SMTP-Infrastruktur mit TLS versandt. Ein atomarer service-role-only DB-Lease verhindert reguläre parallele Doppelzustellungen; bei SMTP-/DB-Fehlern gibt der Webhook 503 zurück, damit Stripe erneut zustellen kann. Deterministischer Mail-Message-ID reduziert (verhindert aber nicht unter allen Fehlerbedingungen) Doppelzustellungen nach unbekanntem Mail-Server-Acceptance-Status.
+- `confirmation_sent_at` bedeutet **SMTP-Server hat angenommen**, nicht Empfänger-Postfachzustellung. In der Tabelle werden keine zusätzlichen E-Mail-/Adressdaten oder Secrets gespeichert. Webhook-Fehlermeldungen enthalten keine personenbezogenen Daten. Für den Checkout muss die verifizierte Konto-E-Mail und funktionierende SMTP-Konfiguration vorhanden sein.
+
+
 `private.blueprint_purchase_entitlements` hält User, SKU, Release-Version, Stripe Checkout/PaymentIntent, juristischen Lizenznehmer, Status und Lizenzversion. Die service_role-only RPC `public.capital_ai_blueprint_commerce` ist für `anon`/`authenticated` nicht ausführbar und nutzt `SECURITY INVOKER`, keinerlei öffentliche RLS-Policies. Eine Unternehmenslizenz gestattet interne Nutzung, begründet aber keinen pauschalen Zugriff für alle beliebigen Tenant-IDs: primär ist der bezahlende Konto-User berechtigt; Erweiterung auf weitere Unternehmens-Accounts erst nach verifizierter Mitgliedschaft.
 
 ## Inbetriebnahme und Grenzen
@@ -37,11 +42,20 @@ Konfiguration (alle serverseitig, **keine Secretwerte im Repository**):
 
 - `STRIPE_BLUEPRINT_CHECKOUT_ENABLED=true` **erst wenn** vollständiger Launchpfad funktioniert; default disabled.
 - `STRIPE_BLUEPRINT_TAX_ENABLED=true` **erst nach** überprüfter passender Tax-/Registrierungs- und Checkout-Steuerbehandlung; default disabled.
+- Bestehende `SMTP_HOST`, `SMTP_USER` und `SMTP_PASSWORD` für die transaktionale Vertragsbestätigung; nur serverseitig, keine ungeprüfte E-Mail im Stripe-Session-Parameter. Test mit synthetischen Accounts, kein realer Kundentest ohne gesonderte Rechts-/Steuerbereitschaft.
 - `STRIPE_BLUEPRINT_WEBHOOK_SECRET` für den dedizierten Stripe-Endpoint `/api/billing/blueprints/webhook` mit Events `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `charge.refunded`, `charge.dispute.created` und separaten HMAC-Schlüsseln.
 - Bestehende `STRIPE_SECRET_KEY`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`/`SUPABASE_SERVICE_ROLE_KEY`, `PUBLIC_BASE_URL` auf dem Render-Webdienst werden wiederverwendet. Im Browser niemals Service-Role- oder Stripe-Keys.
 - Stripe Products müssen erst nach bestandenem Kauf-/Liefer-/Refund-/Tenant-Test von `active=false` auf `true` gesetzt werden. Bestehende Webhooks für Stripe Sync nicht ändern.
 - Verbraucherrecht: je nach tatsächlichem B2B/B2C-Angebot Widerrufsbelehrung/Musterformular, Preis einschließlich Steuern soweit berechenbar, ausdrückliche Bereitstellungszustimmung und Kenntnisbestätigung, Vertragsbestätigung auf dauerhaftem Datenträger; rechtliche Texte zur konkreten Produktauslieferung prüfen. Keine Rechtsfreigabe aus einem technischen Test ableiten.
 - Technische Tests: `node --test server/blueprint-commerce.test.mjs`; negativer Auth/CSRF/Webhook/Download/Refund/Replay-Test; Supabase SQL grants und Artefakt SHA. Docker Security Gate und Domain Governance bleiben die einzigen Required Checks gemäß `AGENTS.md`.
+- **Nicht nachgewiesen**: SMTP-Server-Annahme unter produktiver Last, Empfänger-Postfachzustellung, Käufer-Vertragsbestätigung auf dauerhaftem Datenträger nach deutschem Verbraucherrecht, Stripe-Sandbox-E2E, B2B-Lizenznehmerprüfung. Isolierte Mocks und CI ersetzen diese Nachweise nicht.
 - **Nicht nachgewiesen**: echter Sandbox-Kauf inkl. Stripe Webhook→Supabase→Download, tatsächlicher Checkout-Tax-Betrag, Vertragsbestätigung per E-Mail, unternehmensweite Seat-Authentifizierung, Runtime-/Browser-Readback. Solange diese Nachweise fehlen: `NOT_ENABLED`.
 
 Rollback: Produktaktivität und Checkout-Flag auf `false`; Server-PR revertieren; abgeschlossene Entitlements nicht blind löschen oder fremde Stripe-Sync-Metadaten verändern. Bereits bezahlte Rechte und gesetzliche Pflichten bleiben von einem Rollback unberührt.
+
+## TRUST-Umsetzung 2026-10-13 — Vertragsbestätigung
+
+- Branch `capital-ai-trust/blueprint-contract-confirmation-20261013` auf aktuellem Main-Snapshot; bestehendes Commerce-System erweitert, keine neue Applikation und kein neues Required Gate.
+- Repository-Arbeitsanleitungen tatsächlich gelesen: `AGENTS.md`, `.agents/skills/trust-engineering/SKILL.md`, `.agents/skills/trust-advisory/SKILL.md`, `.agents/skills/visual-chat/SKILL.md` und `.agents/skills/product-engineering/SKILL.md`. Angewandte Skill-Aspekte: Tenant-/Auth-Grenze, service-role-only Lease, gefahrlose E-Mail-Evidence, produktbezogener Lizenztext, nachvollziehbare Runtime-Readbacks.
+- Testvertrag: `node --test server/blueprint-commerce.test.mjs` inklusive Vertragsanhang, Steueraufschlüsselung, fehlender SMTP-Konfiguration, fehlender bestätigter Konto-E-Mail, Wiederholungs- und Retry-Verhalten. Docker Security Gate und Domain Governance bleiben Required Checks gemäß `AGENTS.md`.
+- Checkout bleibt `false`; Rechts- und Steuerberatung beziehungsweise ggf. B2B/B2C-Verifizierung bleibt separat `REVIEW_REQUIRED`. Keine pauschale Verbraucherrechts-Freigabe durch CI.
