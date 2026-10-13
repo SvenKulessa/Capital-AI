@@ -277,7 +277,7 @@ export function FinancialLearningSimulator() {
       <div className="flex flex-wrap gap-2">
         <button type="button" onClick={reset} className="min-h-11 rounded bg-slate-700 px-3 py-2 focus-visible:outline-2 focus-visible:outline-amber-200">Zurücksetzen</button>
         {[1, 2, 3].map(n => (
-          <button key={n} type="button" onClick={() => runTask(n)}
+          <button key={n} type="button" onClick={() => runTask(n)} disabled={!!modelError}
             className="min-h-11 rounded bg-amber-500 px-3 py-2 text-slate-950 focus-visible:outline-2 focus-visible:outline-white">
             {['', 'Aufgabe 1: Diversifikation', 'Aufgabe 2: Einzelrisiko', 'Aufgabe 3: Korrelationen'][n]}
           </button>
@@ -297,7 +297,7 @@ export function FinancialLearningSimulator() {
               onChange={event => setScenarioName(event.target.value)}
               className="min-h-11 min-w-0 flex-1 rounded border border-slate-500 bg-slate-900 p-2" />
             <button type="button" onClick={() => void persist('POST')}
-              disabled={isBusy || scenarios.length >= 10 || !!modelError || !!storageError}
+              disabled={isBusy || scenarios.length >= 10 || !!modelError}
               className="min-h-11 rounded bg-amber-500 px-3 py-2 text-slate-950 disabled:opacity-50">
               {isBusy ? 'Speichervorgang …' : `Privat speichern (${scenarios.length}/10)`}
             </button>
