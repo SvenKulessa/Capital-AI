@@ -27,6 +27,27 @@ const env = { get(name) { return ({
   SOCIAL_X_EDGE_WORKLOAD_SECRET: WORKLOAD,
 })[name] || null; } };
 
+test('YouTube credential reads remain signed, owner-bound and ciphertext-only', async () => {
+  const userId='d0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101';
+  const account={id:'835eabeb-8730-4d8f-9767-cea8297ae0e5',user_id:userId,platform:'youtube',status:'connected',
+    external_account_id:'UC'+'a'.repeat(22),scopes:['https://www.googleapis.com/auth/youtube.readonly','https://www.googleapis.com/auth/youtube.upload'],
+    access_token_encrypted:'v1.ciphertext_access',refresh_token_encrypted:'v1.ciphertext_refresh'};
+  let requests=0;
+  const config={get:name=>name==='SUPABASE_SERVICE_ROLE_KEY'?'sb_secret_synthetic_fixture':env.get(name)};
+  const handler=createHandler({env:config,fetchImpl:async(url)=>{
+    requests++;
+    const value=String(url).includes('/auth/v1/user')?{id:userId,email_confirmed_at:'2026-10-01'}:
+      String(url).includes('/profiles')?[{id:userId,iam_role:'owner'}]:[account];
+    return {ok:true,text:async()=>JSON.stringify(value)};
+  }});
+  const valid=await handler(signedRequest({operation:'credentials',channel:'YOUTUBE',userId}));
+  assert.equal(valid.status,200);assert.equal((await valid.json()).access_token_encrypted,account.access_token_encrypted);
+  const denied=await handler(signedRequest({operation:'credentials',channel:'YOUTUBE',userId:'forged'}));
+  assert.equal(denied.status,503);
+  const count=requests;assert.equal((await handler(signedRequest({operation:'credentials',channel:'YOUTUBE',userId},{omitSignature:true}))).status,503);
+  assert.equal(requests,count);
+});
+
 test('YouTube uses the same workload boundary but binds state to youtube, never x', async () => {
   const userId = 'd0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101';
   const writes = [];
@@ -284,7 +305,6 @@ test('Edge verifies canonical Render-generated Base64 workload keys', async () =
   assert.equal(response.status, 200);
   assert.equal((await response.json()).status, 'not_connected');
 });
-
 
 test('Edge refresh claim returns sealed credential only to signed owner workload', async () => {
   const userId = 'd0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101';
