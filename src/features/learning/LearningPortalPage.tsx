@@ -21,6 +21,7 @@ import { ChartRecognitionQuiz } from './ChartRecognitionQuiz';
 import { useLearningFavorites } from './LearningFavorites';
 import { dailyLearningQuestions } from './learningPolicy';
 import { ChartLearningAtlas } from './ChartLearningAtlas';
+import { FinancialLearningSimulator } from './FinancialLearningSimulator';
 import React, { useEffect, useState, useMemo } from 'react';
 import {
   Star,
@@ -66,8 +67,8 @@ const VocabularyFlashcards = React.lazy(() =>
   })),
 );
 
-export type LearningPortalTab = 'glossar' | 'flashcards' | 'guides' | 'patterns' | 'videos' | 'quiz' | 'news' | 'kontakt';
-const LEARNING_TABS: readonly LearningPortalTab[] = ['glossar', 'flashcards', 'guides', 'patterns', 'videos', 'quiz', 'news', 'kontakt'];
+export type LearningPortalTab = 'glossar' | 'flashcards' | 'guides' | 'patterns' | 'videos' | 'quiz' | 'news' | 'kontakt' | 'simulator';
+const LEARNING_TABS: readonly LearningPortalTab[] = ['glossar', 'flashcards', 'guides', 'patterns', 'videos', 'quiz', 'news', 'kontakt', 'simulator'];
 
 interface LearningPortalPageProps {
   onBackToHome?: () => void;
@@ -314,6 +315,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
               {activeTab === 'videos' && 'Lernvideos'}
               {activeTab === 'quiz' && 'Quant & Trader Skill-Check'}
               {activeTab === 'kontakt' && 'Kontakt'}
+              {activeTab === 'simulator' && 'Portfolio-Simulator'}
             </span>
           </div>
 
@@ -599,6 +601,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       {/* ========================================================================= */}
       {/* TAB CONTENT 4: INTERACTIVE QUIZ & SKILL-CHECK                             */}
       {/* ========================================================================= */}
+      {activeTab === 'simulator' && <FinancialLearningSimulator entitled={entitled} />}
       {activeTab === 'quiz' && (
         <div className="space-y-6">
           <div className="p-6 rounded-2xl bg-gradient-to-r from-purple-500/15 via-[#0d1530] to-emerald-500/15 border border-amber-400/30">
