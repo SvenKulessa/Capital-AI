@@ -12,6 +12,7 @@ const ENV = {
   SOCIAL_X_EDGE_STORE_ENABLED: 'true',
   SOCIAL_X_EDGE_WORKLOAD_SECRET: KEY,
   SOCIAL_X_OAUTH_CONNECT_ENABLED: 'true',
+  SOCIAL_X_PAID_READ_APPROVED: 'true',
   SOCIAL_YOUTUBE_OAUTH_CONNECT_ENABLED: 'true',
   SOCIAL_OAUTH_CALLBACK_ENABLED: 'true',
   PUBLIC_APP_ORIGIN: 'https://capital-ai.online/',
@@ -209,4 +210,19 @@ test('GET and absent edge mode fail closed without token activity', async () => 
   const get=makeResponse();
   await handler.handle({...request(),method:'GET'},get,url('X'),json);
   assert.equal(get.status,405);
+});
+
+test('X refresh never claims or contacts a paid provider when read-budget approval is absent', async () => {
+  let edgeCalls = 0, networkCalls = 0;
+  const handler = createSocialOwnerTokenRefresh({
+    env: {...ENV, SOCIAL_X_PAID_READ_APPROVED: 'false'},
+    auth, edgeFactory: () => { edgeCalls++; throw Error('should not be reached'); },
+    fetchImpl: async () => { networkCalls++; throw Error('should not be reached'); },
+  });
+  const res = makeResponse();
+  await handler.handle(request(), res, url('X'), json);
+  assert.equal(res.status,403);
+  assert.deepEqual(res.body,{error:'social_x_paid_read_not_approved'});
+  assert.equal(edgeCalls,0);
+  assert.equal(networkCalls,0);
 });
