@@ -17,7 +17,7 @@ const env = { PUBLIC_APP_ORIGIN: 'https://capital-ai.online/', SUPABASE_URL: 'ht
   SOCIAL_YOUTUBE_OAUTH_CLIENT_SECRET: 'synthetic_client_secret', SOCIAL_YOUTUBE_TOKEN_ENCRYPTION_KEY: key };
 const auth = { verify: async () => ({ userId, emailVerified: true }), authorizeIamRole: async () => true };
 const json = (r, status, body) => Object.assign(r, { status, body });
-const response = () => ({ headers: {}, setHeader(k,v) { this.headers[k]=v; },
+const response = () => ({ headers: {}, getHeader(k) { return this.headers[k]; }, setHeader(k,v) { this.headers[k]=v; },
   writeHead(status, headers) { this.status=status; Object.assign(this.headers,headers); }, end() {} });
 const req = { method: 'GET', headers: { 'sec-fetch-site': 'same-origin' } };
 const channel = { id: 'UC' + 'a'.repeat(22), snippet: { title: 'Capital AI', customUrl: '@capital-ai.online' } };
@@ -45,7 +45,7 @@ test('YouTube start uses owner session, PKCE, offline consent and routing cookie
   assert.equal(url.searchParams.get('access_type'),'offline');
   assert.equal(url.searchParams.get('code_challenge_method'),'S256');
   assert.equal(starts[0].channel,'YOUTUBE');
-  assert.match(r.headers['Set-Cookie'],/HttpOnly; Secure; SameSite=Lax/);
+  assert.match(r.headers['Set-Cookie'].at(-1),/HttpOnly; Secure; SameSite=Lax/);
   assert.ok(!r.headers.Location.includes(starts[0].codeVerifier));
 });
 test('YouTube denies non-owner and cross-site start before issuing state', async () => {
@@ -94,7 +94,7 @@ test('Google callback without channel is routed by matching state cookie and rej
   const url=new URL(redirectUri+'?state='+state+'&code=synthetic_code');
   const r=response(); await callback.handle(request,r,url,json);
   assert.equal(r.status,303); assert.equal(r.headers.Location,'/api/social-media/youtube/account/status'); assert.deepEqual(seen,['YOUTUBE','YOUTUBE']);
-  assert.match(r.headers['Set-Cookie'],/Max-Age=0/);
+  assert.match(r.headers['Set-Cookie'].at(-1),/Max-Age=0/);
   const repeat=response(); await callback.handle(request,repeat,url,json);
   assert.equal(repeat.status,503);
 });
@@ -106,4 +106,24 @@ test('owner diagnostics expose booleans, and non-owner cannot inspect configurat
   assert.ok(!JSON.stringify(r.body).includes(env.SOCIAL_YOUTUBE_OAUTH_CLIENT_SECRET));
   const deny=response(); await createSocialYouTubeAccountStatus({ env,auth:{ ...auth,authorizeIamRole:async()=>false } }).handle(req,deny,url,json);
   assert.equal(deny.status,404);
+});
+
+test('YouTube OAuth start and callback preserve session refresh cookies', async () => {
+  for (const cookie of ['capital_session=synthetic; HttpOnly', ['capital_session=synthetic; HttpOnly','capital_refresh=synthetic; HttpOnly']]) {
+    const refreshedAuth={ ...auth,verify:async (_req,res)=>{
+      res.setHeader('Set-Cookie',cookie);return { userId,emailVerified:true };
+    } };
+    const started=response();
+    await createSocialYouTubeOAuthStart({ env,auth:refreshedAuth,store:{ beginOAuth:async()=>({ state }) } })
+      .handle(req,started,new URL('/api/social-media/youtube/auth/start',env.PUBLIC_APP_ORIGIN),json);
+    assert.equal(started.status,303);
+    const expected=Array.isArray(cookie)?cookie:[cookie];
+    assert.deepEqual(started.headers['Set-Cookie'].slice(0,-1),expected);
+    const completed=response();
+    await createSocialOAuthCallback({ env,auth:refreshedAuth,store:{ consumeOAuthCallback:async()=>({ consumed:true,platform:'youtube' }) },exchangeCode:async()=>{} })
+      .handle({ ...req,headers:{ cookie:'capital_youtube_oauth_state='+state } },completed,new URL(redirectUri+'?state='+state+'&code=synthetic'),json);
+    assert.equal(completed.status,303);
+    assert.deepEqual(completed.headers['Set-Cookie'].slice(0,-1),expected);
+    assert.match(completed.headers['Set-Cookie'].at(-1),/Max-Age=0/);
+  }
 });
