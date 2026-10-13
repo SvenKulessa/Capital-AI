@@ -73,7 +73,7 @@
     "test:finance-validated-handoff": "node --import tsx --test src/platform/FinanceScoringResearch/__tests__/financeValidatedHandoff.test.ts",
     "test:finance-asset-models": "node --import tsx --test src/platform/FinanceScoringResearch/__tests__/financeAssetModelResolution.test.ts",
     "test:finance-research-model-evaluation": "node --import tsx --test src/platform/FinanceScoringResearch/__tests__/financeResearchModelEvaluation.test.ts",
-    "test:analysis-ui": "node --import tsx --test src/features/analysis/__tests__/analysisUi.test.tsx src/features/analysis/__tests__/binanceMarket.test.tsx",
+    "test:analysis-ui": "node --import tsx --test src/features/analysis/__tests__/analysisUi.test.tsx src/features/analysis/__tests__/scorerMethodology.test.tsx src/features/analysis/__tests__/binanceMarket.test.tsx",
     "test:totp": "node --test server/auth.test.mjs server/auth-security.test.mjs && node --import tsx --test src/features/auth/totpEnrollment.test.ts",
     "test:social-core": "node --import tsx --test src/platform/SocialMediaEngine/__tests__/socialCore.test.ts",
     "test:social-publishing-cutover": "node --import tsx --test src/platform/SocialMediaEngine/__tests__/publishingCutover.test.ts",
