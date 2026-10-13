@@ -601,7 +601,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       {/* ========================================================================= */}
       {/* TAB CONTENT 4: INTERACTIVE QUIZ & SKILL-CHECK                             */}
       {/* ========================================================================= */}
-      {activeTab === 'simulator' && <FinancialLearningSimulator entitled={entitled} />}
+      {activeTab === 'simulator' && <FinancialLearningSimulator />}
       {activeTab === 'quiz' && (
         <div className="space-y-6">
           <div className="p-6 rounded-2xl bg-gradient-to-r from-purple-500/15 via-[#0d1530] to-emerald-500/15 border border-amber-400/30">
