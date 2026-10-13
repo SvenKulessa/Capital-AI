@@ -51,8 +51,8 @@ export GITHUB_REPOSITORY='SvenKulessa/Capital-AI' GITHUB_REF='refs/heads/main'
 export SUPABASE_DB_URL='postgresql://test:synthetic@localhost/postgres'
 export CAPITAL_BACKUP_AGE_RECIPIENT='age1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq'
 export RCLONE_CONFIG_BACKUPDRIVE_TOKEN='synthetic-token-only'
-export RCLONE_CONFIG_BACKUPDRIVE_CLIENT_ID='synthetic-client-only'
-export RCLONE_CONFIG_BACKUPDRIVE_CLIENT_SECRET='synthetic-client-secret'
+# rclone's built-in OAuth client is valid with both optional fields absent.
+unset RCLONE_CONFIG_BACKUPDRIVE_CLIENT_ID RCLONE_CONFIG_BACKUPDRIVE_CLIENT_SECRET
 export RCLONE_CONFIG_BACKUPDRIVE_ROOT_FOLDER_ID='synthetic-folder-only'
 export RCLONE_CONFIG_BACKUPDRIVE_TYPE='drive' RCLONE_CONFIG_BACKUPDRIVE_SCOPE='drive'
 export RUNNER_TEMP="$work/run" FAKE_DRIVE_DIR="$work/drive" GITHUB_RUN_ID=42 GITHUB_RUN_ATTEMPT=1
