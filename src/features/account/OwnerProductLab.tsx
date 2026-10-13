@@ -159,6 +159,10 @@ export function OwnerProductLab() {
                         className="min-h-11 rounded-lg border border-amber-300/50 px-3 py-2 text-sm text-amber-100 disabled:opacity-50">Replik anlegen</button>}
                     {testing && selected && product.replicaAvailable &&
                       <button type="button" disabled={Boolean(busy) || !lab.stripeTestConfigured || !lab.stripeLiveReadConfigured}
+                        onClick={() => void createReplica(product.id)}
+                        className="min-h-11 rounded-lg border border-amber-300/40 px-3 py-2 text-xs text-amber-100 disabled:opacity-50">Replik prüfen</button>}
+                    {testing && selected && product.replicaAvailable &&
+                      <button type="button" disabled={Boolean(busy) || !lab.stripeTestConfigured || !lab.stripeLiveReadConfigured}
                         onClick={() => void checkout(product.id)}
                         className="min-h-11 rounded-lg bg-rose-300 px-3 py-2 text-sm font-bold text-black disabled:opacity-50">Testkauf</button>}
                   </div>

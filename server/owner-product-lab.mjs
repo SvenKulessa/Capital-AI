@@ -184,13 +184,18 @@ export function createOwnerProductLab({ auth, env = process.env, fetchImpl = fet
         if (!config.testKey || !config.liveKey) {
           json(res, 503, { error: 'stripe_test_keys_not_configured' }); return true;
         }
-        if (PRICE_ID.test(original.replicas[sku.id] || INITIAL_REPLICAS[sku.id] || '')) {
-          json(res, 200, out(original, config)); return true;
-        }
+        const existingPriceId = original.replicas[sku.id] || INITIAL_REPLICAS[sku.id] || '';
         const originalPrice = await stripe(fetchImpl, config.liveKey,
           'prices/' + encodeURIComponent(sku.livePriceId));
         if (originalPrice.id !== sku.livePriceId || !priceMatches(originalPrice, sku, true)) {
           json(res, 502, { error: 'live_catalog_mismatch' }); return true;
+        }
+        if (PRICE_ID.test(existingPriceId)) {
+          const existing = await stripe(fetchImpl, config.testKey,
+            'prices/' + encodeURIComponent(existingPriceId));
+          if (existing.id === existingPriceId && priceMatches(existing, sku, false, originalPrice)) {
+            json(res, 200, out(original, config)); return true;
+          }
         }
         const productForm = new URLSearchParams({
           name: 'CAPITAL-AI Test – ' + sku.label,
@@ -212,7 +217,7 @@ export function createOwnerProductLab({ auth, env = process.env, fetchImpl = fet
           priceForm.set('tax_behavior', originalPrice.tax_behavior);
         }
         const clone = await stripe(fetchImpl, config.testKey, 'prices', priceForm,
-          'capital-ai-ownerlab-price-v1-' + sku.id);
+          'capital-ai-ownerlab-price-v1-' + sku.id + '-' + sku.livePriceId);
         if (!priceMatches(clone, sku, false, originalPrice)) {
           json(res, 502, { error: 'stripe_test_price_mismatch' }); return true;
         }
