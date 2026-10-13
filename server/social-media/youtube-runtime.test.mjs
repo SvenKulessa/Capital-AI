@@ -57,7 +57,7 @@ function res(){return {headers:{},setHeader(k,v){this.headers[k]=v;},writeHead(s
 const json=(r,status,body)=>Object.assign(r,{status,body});
 const req={method:'POST',headers:{'sec-fetch-site':'same-origin','content-type':'video/mp4'}};
 const url=new URL('https://capital-ai.online/api/social-media/youtube/private-test/upload');
-function uploadFixture({privacy='private',submitError=false,owner=auth}={}){
+function uploadFixture({privacy='private',submitError=false,owner=auth,videoMissing=false}={}){
   let job=null,submits=0,receipts=[];
   const vault={invoke:async(op,body)=>{
     if(op==='private_status')return {job};
@@ -69,7 +69,7 @@ function uploadFixture({privacy='private',submitError=false,owner=auth}={}){
     vaultFactory:()=>vault,transport:{submit:async(input)=>{submits++;assert.equal(input.metadata.visibility,'private');assert.equal(input.metadata.syntheticMedia,true);
       if(submitError)throw Error('synthetic_ambiguous');return {providerDeliveryId:'abcdefghijk'};}},
     fetchImpl:async(target)=>response(String(target).includes('/channels?')?{items:[{id:TARGET_CHANNEL}]}:
-      {items:[{id:'abcdefghijk',snippet:{channelId:TARGET_CHANNEL},status:{privacyStatus:privacy}}]})});
+      {items:videoMissing?[]:[{id:'abcdefghijk',snippet:{channelId:TARGET_CHANNEL},status:{privacyStatus:privacy}}]})});
   return {handler,submits:()=>submits,receipts};
 }
 test('private upload is channel-bound, readback verified and durable duplicate requests never resubmit',async()=>{
@@ -82,6 +82,18 @@ test('ambiguous submission stays UNKNOWN with no second upload; public readback 
   const second=res();await f.handler.handle(req,second,url,json);assert.equal(second.status,409);assert.equal(second.body.status,'UNKNOWN');assert.equal(f.submits(),1);
   const wrong=uploadFixture({privacy:'public'});const r=res();await wrong.handler.handle(req,r,url,json);assert.equal(r.body.error,'private_readback_mismatch');
   assert.ok(!wrong.receipts.some(x=>x.verified===true));
+});
+test('owner-deleted private video returns mismatch without resubmission or erased receipt',async()=>{
+  const f=uploadFixture({videoMissing:true});
+  const first=res();await f.handler.handle(req,first,url,json);
+  assert.equal(first.status,503);
+  assert.deepEqual(first.body,{error:'private_readback_mismatch',retryUpload:false});
+  const second=res();await f.handler.handle(req,second,url,json);
+  assert.equal(second.status,503);
+  assert.equal(second.body.retryUpload,false);
+  assert.equal(f.submits(),1);
+  assert.ok(f.receipts.some(x=>x.verified===false));
+  assert.ok(!f.receipts.some(x=>x.verified===true));
 });
 test('non-owner and cross-site requests cannot trigger private provider calls',async()=>{
   for(const options of [{owner:{...auth,authorizeIamRole:async()=>false}},{}]){
