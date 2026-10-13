@@ -45,13 +45,17 @@ an invalid ZIP. No screenshot, Android recording or WCAG certification is
 claimed from these attempts.
 
 Existing Financial Learning Simulator Browser QA workflow is extended without
-adding a new required check or dependency. It builds the exact PR tree, starts
+adding a new required check or npm dependency. ffmpeg is installed from the
+runner Ubuntu package repository only when absent. It builds the exact PR tree, starts
 an isolated local server, then runs scorer-methodology-browser.mjs with its
 installed Chrome. Scope: 320/390/768/1440, three scenarios, native keyboard
 select, AX name, 44px controls, overflow, 200% text enlargement, reduced-motion
 preference, overview expansion, existing Learning offer and unselected consent.
 An MP4 is encoded from actual Chromium screencast frames with ffmpeg. This is
 a Chromium mobile viewport demonstration, not native Android or TalkBack.
+Run 38424976745 proved all four viewport/scenario/keyboard/text checks and
+the Learning transition; recording encoding failed because ffmpeg was absent.
+The workflow now installs that encoder; the corrected head must rerun all CI.
 The recording uses five frames/second playback; source frames are event driven,
 so playback does not measure interaction timing. Missing browser/ffmpeg or
 failed assertions fail the job. Artifacts retain screenshots, recording and

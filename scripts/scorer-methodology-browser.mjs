@@ -105,7 +105,8 @@ try {
   assert.ok(frames.length>0,'No screen recording frames');
   for (let i=0;i<frames.length;i++) await writeFile(join(output,`frame-${String(i).padStart(4,'0')}.png`),frames[i]);
   const encoding=spawnSync('ffmpeg',['-y','-framerate','5','-i',join(output,'frame-%04d.png'),'-c:v','libx264','-pix_fmt','yuv420p',join(output,'scorer-mobile.mp4')],{encoding:'utf8'});
-  assert.equal(encoding.status,0,'Screen recording encoding failed');
+  assert.equal(encoding.status,0,'Screen recording encoding failed: ' + (encoding.error?.code || encoding.stderr?.slice(-1000) || 'unknown'));
+  for (let i=0;i<frames.length;i++) await rm(join(output,`frame-${String(i).padStart(4,'0')}.png`));
   report.recording='CHROMIUM_MOBILE_VIEWPORT_CAPTURE_NOT_ANDROID';report.status='TARGETED_PASS';
 } catch(error) {report.error=String(error.message);report.status='FAILED';process.exitCode=1;}
 finally {
