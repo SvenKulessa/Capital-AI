@@ -1,6 +1,8 @@
-import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { boundedJson, readJson, secureUrl } from './http-security.mjs';
+import nodemailer from 'nodemailer';
+import { CONTROLLER } from '../shared/legal-identity.mjs';
 
 const LICENSE_PATH = new URL('../docs/licenses/CAPITAL-AI-BLUEPRINT-COMPANY-LICENSE-1.0.md', import.meta.url);
 const LICENSE_VERSION = '1.0.0';
@@ -19,6 +21,12 @@ const SKU_VALUES = Object.keys(PRODUCTS);
 const uuid = (value) => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 const stripeId = (value, prefix) => typeof value === 'string' && new RegExp(`^${prefix}[A-Za-z0-9_]{4,240}$`).test(value);
 const validLegalName = (value) => typeof value === 'string' && value.trim().length >= 2 && value.trim().length <= 160 && !/[\u0000-\u001f<>]/.test(value);
+const validBuyerEmail = (value) => typeof value === 'string' && value.length <= 254 &&
+  /^[^\s@<>\r\n]+@[^\s@<>\r\n]+\.[^\s@<>\r\n]+$/.test(value);
+const smtpConfigured = (env) => Boolean(env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASSWORD &&
+  !/[\s/\\]/.test(String(env.SMTP_HOST)));
+const euro = (cents) => new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(cents / 100);
+
 
 export function verifyBlueprintWebhookSignature(raw, header, secret, now = Date.now()) {
   if (!Buffer.isBuffer(raw) || typeof header !== 'string' || typeof secret !== 'string' || secret.length < 16) return false;
@@ -66,12 +74,12 @@ function safeCheckoutUrl(value) {
   } catch { return false; }
 }
 
-export function createBlueprintCommerce({ env = process.env, fetchImpl = fetch, auth } = {}) {
+export function createBlueprintCommerce({ env = process.env, fetchImpl = fetch, auth, sendMailImpl } = {}) {
   const stripeKey = String(env.STRIPE_SECRET_KEY || '');
   const webhookSecret = String(env.STRIPE_BLUEPRINT_WEBHOOK_SECRET || '');
   const db = adminConfig(env);
   const enabled = env.STRIPE_BLUEPRINT_CHECKOUT_ENABLED === 'true' &&
-    env.STRIPE_BLUEPRINT_TAX_ENABLED === 'true' && Boolean(db && auth && stripeKey && webhookSecret.length >= 16);
+    env.STRIPE_BLUEPRINT_TAX_ENABLED === 'true' && smtpConfigured(env) && Boolean(db && auth && stripeKey && webhookSecret.length >= 16);
   const base = String(env.PUBLIC_BASE_URL || 'https://capital-ai.online').replace(/\/$/, '');
 
   async function stripe(path, body) {
@@ -113,6 +121,68 @@ export function createBlueprintCommerce({ env = process.env, fetchImpl = fetch, 
       product.tax_code === 'txcd_10503000' && product.metadata?.license_version === LICENSE_VERSION);
   }
 
+  // A contract confirmation is not the Stripe receipt. The buyer receives the
+  // exact license snapshot and both tax and order totals on a durable email.
+  // The SMTP accept response is *not* proof of recipient inbox delivery.
+  async function sendContractConfirmation(session, sku) {
+    if (!smtpConfigured(env)) throw new Error('smtp_unavailable');
+    const email = session.metadata?.account_email;
+    const tax = session.total_details?.amount_tax;
+    if (!validBuyerEmail(email) || !Number.isInteger(tax) || tax < 0 ||
+        !Number.isInteger(session.amount_total) || tax > session.amount_total) {
+      throw new Error('contract_confirmation_invalid');
+    }
+    const license = await readFile(LICENSE_PATH, 'utf8');
+    const licensee = session.metadata.licensee_name;
+    if (!validLegalName(licensee)) throw new Error('licensee_invalid');
+    const paymentRef = createHash('sha256').update(session.id).digest('hex').slice(0, 32);
+    const message = {
+      from: `CAPITAL AI <${CONTROLLER.supportEmail}>`,
+      to: email,
+      subject: `CAPITAL AI · Kaufbestätigung ${sku}`,
+      messageId: `<capital-ai-bp-${paymentRef}@capital-ai.online>`,
+      text: [
+        `CAPITAL AI — Vertrags- und Kaufbestätigung für ${sku}`,
+        `Kauf-Referenz: ${session.id}`,
+        `Lizenznehmer: ${licensee}`,
+        `Blueprint: ${PRODUCTS[sku].name}, Version ${RELEASE_VERSION}`,
+        `Nettopreis: ${euro(session.amount_subtotal)}`,
+        `Berechnete Umsatzsteuer: ${euro(tax)}`,
+        `Gesamtpreis: ${euro(session.amount_total)}`,
+        'Lizenz: dauerhafte Unternehmensnutzung einschließlich eigener Software und Kundenprojekte.',
+        'Kein Weiterverkauf oder öffentliche Verbreitung der Blueprint-Originaldatei.',
+        'Die beim Erwerb bestätigte Unternehmenslizenz ist unverändert beigefügt.',
+        'Die gesonderte Einwilligung zum sofortigen digitalen Bereitstellen und',
+        'die Kenntnisbestätigung zur möglichen Widerrufsrechtsfolge wurden erfasst.',
+        'Zwingende gesetzliche Verbraucherrechte bleiben unberührt.',
+        'Die erworbene Datei ist nach Anmeldung im CAPITAL-AI Studio verfügbar:',
+        'https://capital-ai.online/studio?tab=blueprints',
+        `Vertragspartner: ${CONTROLLER.name}, ${CONTROLLER.street}, ${CONTROLLER.postalCode} ${CONTROLLER.city}, Deutschland`,
+      ].join('\n'),
+      attachments: [{
+        filename: 'CAPITAL-AI-BLUEPRINT-UNTERNEHMENSLIZENZ-v1.0.0.md',
+        content: license,
+        contentType: 'text/markdown; charset=utf-8',
+      }],
+    };
+    let receipt;
+    if (sendMailImpl) {
+      receipt = await sendMailImpl(message);
+    } else {
+      const transport = nodemailer.createTransport({
+        host: env.SMTP_HOST, port: 465, secure: true,
+        auth: { user: env.SMTP_USER, pass: env.SMTP_PASSWORD },
+        tls: { rejectUnauthorized: true },
+        connectionTimeout: 6000, greetingTimeout: 6000, socketTimeout: 6000,
+        disableFileAccess: true, disableUrlAccess: true, logger: false, debug: false,
+      });
+      try { receipt = await transport.sendMail(message); }
+      finally { transport.close(); }
+    }
+    if (!receipt?.accepted?.some(x => String(x).toLowerCase() === email.toLowerCase()) ||
+        (receipt.rejected?.length || 0) !== 0) throw new Error('smtp_not_accepted');
+  }
+
   async function fulfilledSession(sessionId) {
     if (!stripeId(sessionId, 'cs_')) return false;
     const session = await stripe(`/checkout/sessions/${encodeURIComponent(sessionId)}`);
@@ -122,6 +192,7 @@ export function createBlueprintCommerce({ env = process.env, fetchImpl = fetch, 
       session.metadata?.release_version !== RELEASE_VERSION || session.metadata?.license_version !== LICENSE_VERSION ||
       session.metadata?.license_accepted !== 'true' || session.metadata?.immediate_delivery_consent !== 'true' ||
       session.metadata?.withdrawal_loss_acknowledged !== 'true' || !validLegalName(session.metadata?.licensee_name) ||
+      !validBuyerEmail(session.metadata?.account_email) ||
       session.status !== 'complete' || session.mode !== 'payment' || session.payment_status !== 'paid' ||
       session.currency !== 'eur' || session.amount_subtotal !== 5000 ||
       !Number.isInteger(session.amount_total) || session.amount_total < 5000 ||
@@ -141,13 +212,14 @@ export function createBlueprintCommerce({ env = process.env, fetchImpl = fetch, 
     if (line.quantity !== 1 || line.price?.id !== item.priceId || line.price?.product !== item.productId ||
       line.price?.currency !== 'eur' || line.price?.unit_amount !== 5000 ||
       line.price?.tax_behavior !== 'exclusive') return false;
-    return rpc('fulfill', {
+    const granted = await rpc('fulfill', {
       _user_id: session.client_reference_id, _sku: sku, _version: RELEASE_VERSION,
       _session_id: session.id, _price_id: item.priceId,
       _payment_intent_id: session.payment_intent,
       _customer_id: stripeId(session.customer, 'cus_') ? session.customer : null,
       _licensee_name: session.metadata.licensee_name.trim(), _license_version: LICENSE_VERSION,
     });
+    return granted?.granted === true ? { session, sku } : false;
   }
 
   return {
@@ -188,6 +260,22 @@ export function createBlueprintCommerce({ env = process.env, fetchImpl = fetch, 
             if (!stripeId(sessionId, 'cs_')) { json(res, 400, { error: 'invalid_session' }); return true; }
             const granted = await fulfilledSession(sessionId);
             if (!granted) { json(res, 200, { received: true, ignored: true }); return true; }
+            // Two concurrent webhooks must not both send a confirmation.
+            // Failed delivery returns 503 so Stripe can retry the signed event.
+            const claimId = randomBytes(16).toString('hex');
+            const claim = await rpc('confirmation_claim', { _session_id: sessionId, _reason: claimId });
+            if (!claim?.alreadySent) {
+              if (!claim?.claimed) throw new Error('confirmation_claim_busy');
+              try {
+                await sendContractConfirmation(granted.session, granted.sku);
+                const marked = await rpc('confirmation_sent', { _session_id: sessionId, _reason: claimId });
+                if (!marked?.sent) throw new Error('confirmation_mark_failed');
+              } catch {
+                try { await rpc('confirmation_release', { _session_id: sessionId, _reason: claimId }); }
+                catch { /* The 120-second lease expires without granting new access. */ }
+                throw new Error('contract_confirmation_unavailable');
+              }
+            }
             json(res, 200, { received: true }); return true;
           }
           if (event.type === 'charge.refunded' || event.type === 'charge.dispute.created') {
@@ -254,6 +342,7 @@ export function createBlueprintCommerce({ env = process.env, fetchImpl = fetch, 
             input?.withdrawalLossAcknowledged !== true) {
           json(res, 400, { error: 'checkout_terms_required' }); return true;
         }
+        if (!user.emailVerified || !validBuyerEmail(user.email)) { json(res, 403, { error: 'verified_email_required' }); return true; }
         try {
           if (!(await priceReady(item))) throw new Error('price_mismatch');
           const released = await rpc('readiness', { _sku: input.sku });
@@ -273,6 +362,8 @@ export function createBlueprintCommerce({ env = process.env, fetchImpl = fetch, 
           success_url: `${base}/studio?tab=blueprints&blueprint_payment=success`,
           cancel_url: `${base}/studio?tab=blueprints&blueprint_payment=cancel`,
           client_reference_id: user.userId,
+          customer_email: user.email,
+          'metadata[account_email]': user.email,
           'metadata[sku]': input.sku,
           'metadata[user_id]': user.userId,
           'metadata[release_version]': RELEASE_VERSION,
