@@ -163,6 +163,15 @@ try {
   process.exitCode = 2;
 } finally {
   try { socket?.close(); } catch {}
-  try { chrome?.kill(); } catch {}
-  await rm(profile,{recursive:true,force:true});
+  if (chrome && chrome.exitCode === null && chrome.signalCode === null) {
+    await new Promise(resolve => {
+      let settled = false;
+      const finish = () => { if (settled) return; settled = true; resolve(); };
+      chrome.once('close', finish);
+      try { chrome.kill('SIGTERM'); } catch { finish(); }
+      const timer = setTimeout(() => { try { chrome.kill('SIGKILL'); } catch {} finish(); }, 3000);
+      timer.unref();
+    });
+  }
+  await rm(profile,{recursive:true,force:true,maxRetries:12,retryDelay:150});
 }
