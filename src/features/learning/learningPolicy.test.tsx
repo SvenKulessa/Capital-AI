@@ -14,7 +14,7 @@ import {VocabularyFlashcards, advanceVocabularyDeck, rescheduleMissedVocabulary,
 import {VocabularyCard,VOCABULARY_CATEGORY_COLORS} from './VocabularyCard';
 import {chartQuestion} from './ChartRecognitionQuiz';
 import {ChartLessonGraphic} from './ChartLessonGraphic';
-import {visibleLearningVideos, type LearningVideo} from './LearningVideos';
+import {LearningVideos, visibleLearningVideos, type LearningVideo} from './LearningVideos';
 
 test('offer explains login and entitlements without preselecting purchase consent', () => {
   const html = renderToStaticMarkup(<LearningPurchase />);
@@ -51,6 +51,14 @@ test('free video previews remain fixed per category before category filtering',(
  assert.deepEqual(visibleLearningVideos(videos,false).map(video=>video.id),['Architektur-1','Fintech Deepdive-1','Social-1']);
  assert.equal(visibleLearningVideos(videos,true).length,6);
  assert.equal(visibleLearningVideos([{...videos[0],youtubeId:'invalid'}],true).length,0);
+});
+test('no unlicensed videos are marketed as available and public learning CTA stays reachable', () => {
+  const html = renderToStaticMarkup(<LearningVideos entitled={false} />);
+  assert.match(html, /Noch keine veröffentlichten Lernvideos/);
+  assert.match(html, /href="\/learning#learning-offer"/);
+  assert.match(html, /href="https:\/\/youtube.com\/@capital-ai.online"/);
+  assert.match(html, /rel="noopener noreferrer"/);
+  assert.doesNotMatch(html, /iframe|VideoObject|Kostenlos: ein freigegebenes Video/);
 });
 test('anonymous glossary surfaces render every canonical definition, including Quant level',()=>{
  const page=renderToStaticMarkup(<LearningPortalPage/>);
