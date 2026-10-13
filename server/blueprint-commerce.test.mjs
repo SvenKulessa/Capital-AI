@@ -10,8 +10,8 @@ const sku = 'CAP-BP-001';
 const priceId = 'price_1UPoyMPKr4joNbEcbHllSBQ5';
 const productId = 'prod_VQPRXoyoJLA17V';
 const body = { sku, licenseeName: 'Beispiel GmbH', licenseVersion: '1.0.0', licenseAccepted: true, immediateDeliveryConsent: true, withdrawalLossAcknowledged: true };
-const env = { STRIPE_SECRET_KEY: 'sk_live_fixture', STRIPE_BLUEPRINT_WEBHOOK_SECRET: 'whsec_fixture_long_enough', STRIPE_BLUEPRINT_CHECKOUT_ENABLED: 'true', STRIPE_BLUEPRINT_TAX_ENABLED: 'true', SUPABASE_URL: 'https://fixture.supabase.co', SUPABASE_SECRET_KEY: 'sb_secret_fixture_long_enough_123456789', PUBLIC_BASE_URL: 'https://capital-ai.online' };
-const makeAuth = (id = userId, sameOrigin = true) => ({ verify: async () => id ? ({ userId: id }) : null, sameOrigin: () => sameOrigin });
+const env = { STRIPE_SECRET_KEY: 'sk_live_fixture', STRIPE_BLUEPRINT_WEBHOOK_SECRET: 'whsec_fixture_long_enough', STRIPE_BLUEPRINT_CHECKOUT_ENABLED: 'true', STRIPE_BLUEPRINT_TAX_ENABLED: 'true', SUPABASE_URL: 'https://fixture.supabase.co', SUPABASE_SECRET_KEY: 'sb_secret_fixture_long_enough_123456789', PUBLIC_BASE_URL: 'https://capital-ai.online', SMTP_HOST:'smtp.example.org', SMTP_USER:'billing@example.org', SMTP_PASSWORD:'fixture_not_a_real_password' };
+const makeAuth = (id = userId, sameOrigin = true) => ({ verify: async () => id ? ({ userId: id, email: 'buyer@example.org', emailVerified: true }) : null, sameOrigin: () => sameOrigin });
 const httpResponse = () => ({ statusCode: null, headers: {}, payload: null, data: null, setHeader(k, v) { this.headers[k] = v; }, writeHead(code, headers) { this.statusCode = code; Object.assign(this.headers, headers); }, end(data) { this.data = data; } });
 const json = (res, status, data) => { res.statusCode = status; res.payload = data; };
 const req = (method, data, headers = {}) => Object.assign(Readable.from(data === undefined ? [] : [Buffer.from(typeof data === 'string' ? data : JSON.stringify(data))]), { method, headers: { 'content-type': 'application/json', ...headers } });
@@ -20,10 +20,12 @@ const response = (value, status = 200) => new Response(JSON.stringify(value), { 
 const item = { id: productId, active: true, default_price: priceId, tax_code: 'txcd_10503000', metadata: { license_version: '1.0.0' } };
 const price = { id: priceId, active: true, currency: 'eur', unit_amount: 5000, product: productId, type: 'one_time', recurring: null, tax_behavior: 'exclusive' };
 const session = { id: 'cs_live_fixture_12345678', client_reference_id: userId, metadata: {
-  sku, user_id: userId, release_version: '1.0.0', license_version: '1.0.0', licensee_name: 'Beispiel GmbH', license_accepted: 'true', immediate_delivery_consent: 'true', withdrawal_loss_acknowledged: 'true',
-}, status: 'complete', mode: 'payment', payment_status: 'paid', currency: 'eur', amount_subtotal: 5000, amount_total: 5950, livemode: true, payment_intent: 'pi_live_fixture_12345', automatic_tax: { enabled: true, status: 'complete' } };
+  sku, user_id: userId, account_email: 'buyer@example.org', release_version: '1.0.0', license_version: '1.0.0', licensee_name: 'Beispiel GmbH', license_accepted: 'true', immediate_delivery_consent: 'true', withdrawal_loss_acknowledged: 'true',
+}, status: 'complete', mode: 'payment', payment_status: 'paid', currency: 'eur', amount_subtotal: 5000, amount_total: 5950, total_details: { amount_tax: 950 }, livemode: true, payment_intent: 'pi_live_fixture_12345', automatic_tax: { enabled: true, status: 'complete' } };
 const lineItems = { data: [{ quantity: 1, price }], has_more: false };
 const captured = [];
+const mailSent = [];
+async function fakeMailer(mail) { mailSent.push(mail); return { accepted: [mail.to], rejected: [] }; }
 function fixtureFetch(endpoint, options) {
   captured.push({ endpoint: String(endpoint), method: options?.method || 'GET', body: options?.body });
   if (String(endpoint).includes('/rest/v1/rpc/')) {
@@ -31,6 +33,9 @@ function fixtureFetch(endpoint, options) {
     if (input._action === 'readiness') return Promise.resolve(response({ ready: true, sha256: 'a'.repeat(64) }));
     if (input._action === 'access') return Promise.resolve(response([]));
     if (input._action === 'fulfill') return Promise.resolve(response({ granted: true, status: 'paid' }));
+    if (input._action === 'confirmation_claim') return Promise.resolve(response({ claimed: true, alreadySent: false }));
+    if (input._action === 'confirmation_sent') return Promise.resolve(response({ sent: true }));
+    if (input._action === 'confirmation_release') return Promise.resolve(response({ released: true }));
     if (input._action === 'download') return Promise.resolve(response({ entitled: false }));
     if (input._action === 'revoke') return Promise.resolve(response({ revoked: 1 }));
   }
@@ -43,8 +48,8 @@ function fixtureFetch(endpoint, options) {
   if (String(endpoint).includes('/charges/')) return Promise.resolve(response({ payment_intent: session.payment_intent, paid: true, refunded: false, amount_refunded: 0, amount: 5950, disputed: false }));
   throw new Error(`unexpected_fixture_route: ${endpoint}`);
 }
-async function handle(suffix, method = 'GET', input, { config = env, auth = makeAuth(), fetchImpl = fixtureFetch, headers = {} } = {}) {
-  const service = createBlueprintCommerce({ env: config, auth, fetchImpl });
+async function handle(suffix, method = 'GET', input, { config = env, auth = makeAuth(), fetchImpl = fixtureFetch, headers = {}, sendMailImpl = fakeMailer } = {}) {
+  const service = createBlueprintCommerce({ env: config, auth, fetchImpl, sendMailImpl });
   const res = httpResponse();
   const wasHandled = await service.handle(req(method, input, headers), res, url(suffix), json);
   assert.equal(wasHandled, true);
@@ -84,6 +89,7 @@ test('checkout uses pinned Stripe price, tax calculation, and signed-in user ide
   assert.equal(form.get('automatic_tax[enabled]'), 'true');
   assert.equal(form.get('billing_address_collection'), 'required');
   assert.equal(form.get('client_reference_id'), userId);
+  assert.equal(form.get('customer_email'), 'buyer@example.org');
   assert.equal(form.get('metadata[licensee_name]'), 'Beispiel GmbH');
 });
 test('checkout rejects stale inclusive/foreign/inactive Stripe prices before accepting money', async () => {
@@ -153,4 +159,55 @@ test('late payment webhook cannot restore refunded payment', async () => {
   assert.equal(r.statusCode, 200);
   assert.equal(r.payload.ignored, true);
   assert.equal(captured.filter(x => x.endpoint.includes('/rpc/') && JSON.parse(x.body)._action === 'fulfill').length, 0);
+});
+
+
+test('confirmation email attaches exact license, paid totals and account-bound reference', async () => {
+  const event = JSON.stringify({ id: 'evt_contract_123', type: 'checkout.session.completed', livemode: true, data: { object: { id: session.id } } });
+  captured.length = 0;
+  mailSent.length = 0;
+  const res = await handle('webhook', 'POST', event, { headers: { 'stripe-signature': sign(event) } });
+  assert.equal(res.statusCode, 200);
+  assert.equal(mailSent.length, 1);
+  assert.equal(mailSent[0].to, 'buyer@example.org');
+  assert.match(mailSent[0].text, /59,50/);
+  assert.match(mailSent[0].text, /9,50/);
+  assert.match(mailSent[0].text, /Beispiel GmbH/);
+  assert.ok(mailSent[0].attachments[0].content.includes('Unternehmenslizenz'));
+  const actions = captured.filter(x => x.endpoint.includes('/rest/v1/rpc/')).map(x => JSON.parse(x.body)._action);
+  assert.deepEqual(actions.slice(-3), ['fulfill', 'confirmation_claim', 'confirmation_sent']);
+});
+
+test('already sent confirmation never sends a duplicate email', async () => {
+  const event = JSON.stringify({ id: 'evt_contract_repeat', type: 'checkout.session.completed', livemode: true, data: { object: { id: session.id } } });
+  mailSent.length = 0;
+  const alreadySent = (endpoint, options) => {
+    if (String(endpoint).includes('/rest/v1/rpc/') && JSON.parse(options.body)._action === 'confirmation_claim') {
+      return Promise.resolve(response({ claimed: false, alreadySent: true }));
+    }
+    return fixtureFetch(endpoint, options);
+  };
+  const r = await handle('webhook', 'POST', event, { headers: { 'stripe-signature': sign(event) }, fetchImpl: alreadySent });
+  assert.equal(r.statusCode, 200);
+  assert.equal(mailSent.length, 0);
+});
+
+test('SMTP failure returns retryable 503 and releases receipt lease', async () => {
+  const event = JSON.stringify({ id: 'evt_contract_error', type: 'checkout.session.completed', livemode: true, data: { object: { id: session.id } } });
+  captured.length = 0;
+  const r = await handle('webhook', 'POST', event, {
+    headers: { 'stripe-signature': sign(event) },
+    sendMailImpl: async () => { throw new Error('smtp_down'); },
+  });
+  assert.equal(r.statusCode, 503);
+  assert.equal(r.payload.error, 'blueprint_fulfillment_unavailable');
+  assert.ok(captured.some(x => x.endpoint.includes('/rest/v1/rpc/') && JSON.parse(x.body)._action === 'confirmation_release'));
+});
+
+test('checkout denies unverified buyer mail and missing SMTP', async () => {
+  const unverified = await handle('checkout', 'POST', body, { auth: { sameOrigin:()=>true, verify:async()=>({userId,email:'buyer@example.org',emailVerified:false}) } });
+  assert.equal(unverified.statusCode, 403);
+  assert.equal(unverified.payload.error, 'verified_email_required');
+  const missingSmtp = await handle('offer','GET',undefined,{config:{...env, SMTP_HOST:''}});
+  assert.equal(missingSmtp.payload.checkoutEnabled, false);
 });
