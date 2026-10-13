@@ -75,24 +75,7 @@ begin
     end if;
     return pg_catalog.jsonb_build_object('granted',p.status='paid','status',p.status);
   elsif _action = 'confirmation_claim' then
-    if _session_id is null or _reason is null or _reason !~ '^[a-f0-9]{32}
-    if _payment_intent_id is null or _reason not in ('refunded','disputed','revoked') then
-      raise exception 'revoke_invalid'; end if;
-    update private.blueprint_purchase_entitlements set
-      status=_reason,updated_at=now() where stripe_payment_intent_id=_payment_intent_id
-      and status='paid';
-    get diagnostics affected = row_count;
-    return pg_catalog.jsonb_build_object('revoked',affected);
-  else
-    raise exception 'unknown_action';
-  end if;
-end;
-$$;
-revoke all on function public.capital_ai_blueprint_commerce(text,uuid,text,text,text,text,text,text,text,text,text)
-  from public,anon,authenticated;
-grant execute on function public.capital_ai_blueprint_commerce(text,uuid,text,text,text,text,text,text,text,text,text)
-  to service_role;
- then
+    if _session_id is null or _reason is null or _reason !~ '^[a-f0-9]{32}$' then
       raise exception 'confirmation_claim_invalid';
     end if;
     update private.blueprint_purchase_entitlements
