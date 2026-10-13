@@ -79,3 +79,70 @@ Verbindung, nicht zwingend das Verhalten jedes späteren OAuth-Versuchs.
 
 Tests: `node --test server/social-media/oauth-callback.test.mjs`;
 CI: normale PR-Security- und Domain-Governance-Checks.
+
+
+## Owner Token-Lifecycle (Refresh, Rotation, Reconnect)
+
+**Implementierung auf dem GROWTH-Branch, bis Merge + Edge-/DB-/Render-Readback: NOT_PROVEN.**
+Der bisherige Vault-Bridge-Vertrag wurde um einen vom verifizierten Owner
+ausgelösten Refresh erweitert. Zugriff ausschließlich als \`POST\` unter
+\`/api/social-media/x/account/refresh\` oder
+\`/api/social-media/youtube/account/refresh\`. Eine eingeloggte, bestätigte
+IAM-Owner-Sitzung, exakter Same-Origin-POST, aktiver Edge-Store, gültige
+Provider-Konfiguration, signierter Render→Supabase-Workload und die
+Supabase-JWT-Prüfung sind zwingend. Der Browser sieht nur
+\`{ channel, status, refreshed, expiresAt }\`, niemals Tokens,
+Vault-Ciphertext, Provider-Payloads oder Lease-IDs.
+
+Ablauf:
+1. Der Edge Vault erwirbt per service_role-only \`SECURITY INVOKER\` RPC
+   \`capital_social_claim_token_refresh\` eine einmalige 2-Minuten-Lease je
+   \`user_id + platform\`, nur 10 Minuten vor Ablauf. Die RPC arbeitet als
+   atomarer \`UPDATE ... RETURNING\` und verweigert weitere parallele Claims.
+2. Nach signierter Owner-/Workload-Prüfung wird **nur an den Render-Server**
+   der verschlüsselte Refresh-Token übertragen; Render entschlüsselt ihn mit
+   dem bestehenden kanal- und Owner-gebundenen AES-256-GCM-AAD. Kein
+   Supabase-Admin-Key verlässt die Edge Function.
+3. X nutzt \`grant_type=refresh_token\` mit Basic-Client-Authentifizierung
+   und **muss** einen neuen Refresh-Token liefern. YouTube nutzt Google OAuth
+   und bewahrt das bisherige Refresh-Token, wenn Google keines rotiert.
+   Vor Persistenz muss ein providerseitiger Account-Readback die gespeicherte
+   X-User-ID bzw. YouTube-Channel-ID bestätigen; Scopes dürfen nicht schrumpfen.
+4. \`capital_social_finish_token_refresh\` rotiert beide verschlüsselten
+   Tokenwerte **atomar** nur bei passendem Lease-ID, noch gültiger Lease und
+   identischem bisherigen Ciphertext (CAS). Der ursprüngliche OAuth-Connect
+   setzt Lease/Retry/Reconnect zurück, um stale Refresh zu verhindern.
+5. \`invalid_grant\`, andere unklare Providerantworten, Token-/Identitätsfehler
+   und ambige Transport-/Persistenzfälle verhindern blindes Retry.
+   \`reconnect_required\` wird gespeichert; ein neu autorisiertes OAuth-Connect
+   ist danach der sichere Rückweg. Bei explizitem HTTP 429 gilt eine
+   15-Minuten-Cooldown-Sperre; erneuter Owner-Aufruf danach ist möglich.
+   Es gibt **keinen** automatischen Scheduler und keinen Provider-Publish.
+
+Die Implementierung verursacht ggf. Provider-API-Read-Kosten, zusätzliche
+Supabase Edge Invocations und Datenbank-RPCs. Aktuelle X-Tarife, Google-Quotas,
+Supabase-Kontingente und Kostenobergrenzen **NOT_PROVEN**. Keine
+kostenpflichtige Providerfreigabe oder neue Server-Ressource impliziert.
+Insbesondere X-/YouTube-Readback wird nicht ungefragt produktiv ausgelöst.
+
+Technische Prüfung:
+\`\`\`bash
+npm run test:x-oauth
+npm run test:social-provider
+bash scripts/social-provider-db-smoke.sh  # ausschließlich Disposable CI mit erlaubten Variablen
+\`\`\`
+
+Migration: \`20261013033000_capital_social_owner_token_refresh.sql\`.
+Voraussetzungen in der Rollout-Reihenfolge: Docker Security Gate und Domain
+Governance PASS → Migration auf korrektem Supabase Projekt → Edge Function
+\`capital-social-x-vault\` mit \`verify_jwt=true\` bereitstellen → Render-Main
+Deployment mit dem Merge-Commit → Owner-Readback ohne Secrets. Die Abfolge
+wird gesondert nachgewiesen; bevor Migration/Edge bereit sind, bleibt der
+Refresh-Endpunkt **fail-closed**. Rücknahme: Endpoint deaktivieren/revertieren,
+Edge auf letzte geprüfte Version zurücksetzen; additive Lease-Felder bei
+vorhandenen Token-Daten niemals ungeprüft löschen.
+
+Externe technische Referenz:
+- https://developers.google.com/identity/protocols/oauth2/web-server
+- https://docs.x.com/
+- https://supabase.com/docs/guides/functions/auth
