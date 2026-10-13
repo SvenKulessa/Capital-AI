@@ -129,7 +129,7 @@ eine API-Quota-Einheit. Keine Posting-Freigabe, kein neuer bezahlter Tarif
 und kein unbeaufsichtigter Scheduler werden durch diese Implementierung
 aktiviert.
 
-Migration: `20261013033000_capital_social_owner_token_refresh.sql`.
+Migration: `20261013035202_capital_social_owner_token_refresh.sql`.
 Deploy-Reihenfolge: vollständige PR-Checks → Merge → Migration
 (aktuelles Supabase-Projekt) → Edge Function mit `verify_jwt=true` →
 Render-Main-Readback → datierter Owner-Live-Readback. Vor dem

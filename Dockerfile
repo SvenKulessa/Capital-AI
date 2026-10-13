@@ -100,7 +100,7 @@ COPY server/learning-inquiry.test.mjs ./server/learning-inquiry.test.mjs
 COPY scripts/activate-learning-measurement.mjs scripts/activate-learning-measurement.test.mjs scripts/generate-cookie-storage-notice.mjs ./scripts/
 COPY scripts/social-provider-db-smoke.sh ./scripts/social-provider-db-smoke.sh
 COPY supabase/migrations/20261008113000_social_provider_store.sql ./supabase/migrations/20261008113000_social_provider_store.sql
-COPY supabase/migrations/20261013033000_capital_social_owner_token_refresh.sql ./supabase/migrations/20261013033000_capital_social_owner_token_refresh.sql
+COPY supabase/migrations/20261013035202_capital_social_owner_token_refresh.sql ./supabase/migrations/20261013035202_capital_social_owner_token_refresh.sql
 COPY supabase/functions/capital-social-x-vault/index.ts ./supabase/functions/capital-social-x-vault/index.ts
 COPY supabase/migrations/20261011231207_capital_ai_private_blueprint_bucket_fail_closed.sql ./supabase/migrations/
 COPY supabase/migrations/20261012194631_capital_ai_private_blueprint_commerce_tables_v1.sql supabase/migrations/20261012194652_capital_ai_private_blueprint_rpc_shell_v1.sql supabase/migrations/20261012194709_capital_ai_private_blueprint_rpc_full_v1.sql supabase/migrations/20261013002248_blueprint_contract_confirmation_receipt_20261013.sql ./supabase/migrations/

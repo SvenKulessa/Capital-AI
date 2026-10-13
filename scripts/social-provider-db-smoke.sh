@@ -19,7 +19,7 @@ pg -f /work/scripts/social-provider-db-fixture.sql
 pg -f /work/supabase/migrations/20260801150000_social_media_publishing.sql
 pg -f /work/supabase/migrations/20260815140000_social_media_content_approvals.sql
 pg -f /work/supabase/migrations/20261008113000_social_provider_store.sql
-pg -f /work/supabase/migrations/20261013033000_capital_social_owner_token_refresh.sql
+pg -f /work/supabase/migrations/20261013035202_capital_social_owner_token_refresh.sql
 pg -f /work/scripts/social-provider-db-data.sql
 pg -f /work/scripts/social-provider-db-before.sql
 
