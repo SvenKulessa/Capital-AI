@@ -33,11 +33,15 @@ export function LearningVideos({ entitled }: { entitled: boolean }) {
       <select value={category} onChange={e=>setCategory(e.target.value)} className="mt-2 min-h-11 w-full rounded-lg border border-amber-400/30 bg-slate-950 p-3 text-white">
         {['Alle',...VIDEO_CATEGORIES].map(value=><option key={value}>{value}</option>)}
       </select></label>
-    <p className="text-sm text-slate-300">{entitled?'Vollständiger Videozugang mit Learning Portal.':'Kostenlos: ein Video je Kategorie. Weitere Videos benötigen Learning Portal.'}</p>
+    <p className="text-sm text-slate-300">{LEARNING_VIDEOS.length === 0 ? 'Noch keine veröffentlichten Lernvideos. Das verfügbare Lernangebot besteht unabhängig davon.' : entitled ? 'Dein freigegebener Videozugang.' : 'Kostenlos: ein freigegebenes Video je Kategorie. Weitere Videos nur mit entsprechender Berechtigung.'}</p>
     <div className="grid gap-4 md:grid-cols-3">{videos.map(video => <VideoPlayer key={video.id} video={video}/>)}{VIDEO_CATEGORIES.filter(value=>(category==='Alle'||category===value) && !LEARNING_VIDEOS.some(video => video.category === value)).map(value=><article key={value} className="overflow-hidden rounded-2xl border border-amber-400/25 bg-[#090e21]">
       <LearningComingSoonGraphic category={value}/><div className="space-y-2 p-4"><h3 className="font-bold text-amber-200">{value}</h3>
       <p className="text-sm text-slate-300">Das erste Lernvideo erscheint hier demnächst als YouTube-Einbettung.</p>
       <p className="text-xs text-slate-400">Noch kein Video veröffentlicht. Eigene Illustration · Content- und Social-Engine-Entwurf.</p></div>
     </article>)}</div>
+    <nav aria-label="Weitere Lernangebote" className="flex flex-wrap gap-3 text-sm">
+      <a href="/learning#learning-offer" className="inline-flex min-h-11 items-center rounded-lg border border-amber-400/40 px-4 py-2 font-semibold text-amber-200 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-amber-200">Bestehendes Lernangebot ansehen</a>
+      <a href="https://youtube.com/@capital-ai.online" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-lg border border-slate-500/40 px-4 py-2 text-slate-200 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-amber-200">CAPITAL AI auf YouTube (externer Dienst)</a>
+    </nav>
   </section>;
 }
