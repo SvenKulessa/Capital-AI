@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { useLocale } from '../../i18n/LocaleProvider';
+import { SocialContentEngineStatus } from './SocialContentEngineStatus';
 import {
   ArrowRight,
   BarChart3,
@@ -271,6 +272,8 @@ export const ContentEngineConcept: React.FC<ContentEngineConceptProps> = ({
               </div>
             </div>
           </div>
+
+          <SocialContentEngineStatus />
 
           <div className="mt-5 flex flex-col gap-3 sm:flex-row">
             <button
