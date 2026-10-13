@@ -58,13 +58,16 @@ const domExpression = String.raw`(() => {
       .filter(visible).filter(el => !el.labels?.length && !el.getAttribute('aria-label') && !el.getAttribute('aria-labelledby')).length,
     unnamedButtons: [...document.querySelectorAll('button')].filter(visible)
       .filter(el => !name(el) && !el.getAttribute('aria-labelledby')).length,
-    scrollNav: [...document.querySelectorAll('nav[data-hub-scroll-navigation]')].map(el => ({
-      hub: el.getAttribute('data-hub-scroll-navigation'),
+    scrollNav: [...document.querySelectorAll('.hub-navigation')].map(container => {
+      const el = container.querySelector('nav.hub-tab-strip');
+      return el ? ({
+      hub: container.getAttribute('data-hub'),
       wrap: getComputedStyle(el).flexWrap,
       scroll: getComputedStyle(el).overflowX,
       width: el.clientWidth, contentWidth: el.scrollWidth,
       linkNames: [...el.querySelectorAll('a[href]')].map(name),
-    })),
+    }) : null;
+    }).filter(Boolean),
   };
 })()`;
 async function checkPage(path, viewport) {
@@ -76,13 +79,30 @@ async function checkPage(path, viewport) {
   const ax = await send('Accessibility.getFullAXTree');
   const nodes = ax.nodes || [];
   const nav = nodes.filter(node => node.role?.value === 'navigation');
-  const record = { path, viewport, dom, AX: { nodes:nodes.length, navigations:nav.map(n => n.name?.value || '') } };
+  const simulator = path === '/learning/simulator' ? await evaluate(String.raw`(() => ({
+    visible: !!document.querySelector('#sim-title'),
+    title: document.querySelector('#sim-title')?.textContent?.trim() || '',
+    baseline: document.body.textContent?.includes('9.53 %') || false,
+    tasks: [...document.querySelectorAll('button')].filter(el => el.textContent?.includes('Aufgabe ')).length,
+    rangeFields: document.querySelectorAll('input[type="range"]').length,
+    tabularRows: document.querySelectorAll('table tbody tr').length,
+    horizontalOverflow: Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
+    privateEditorVisible: !!document.querySelector('#sim-name'),
+  }))()` ) : null;
+  const record = { path, viewport, dom, simulator, AX: { nodes:nodes.length, navigations:nav.map(n => n.name?.value || '') } };
   pages.push(record);
   if (!dom.documentLanguage) failures.push(path + ': document lang missing (WCAG 3.1.1)');
   if (dom.imagesWithoutAlt) failures.push(path + ': ' + dom.imagesWithoutAlt + ' images without alt (WCAG 1.1.1 partial)');
   if (dom.unlabeledFields) failures.push(path + ': ' + dom.unlabeledFields + ' unnamed form controls (WCAG 3.3.2 partial)');
   if (dom.unnamedButtons) failures.push(path + ': ' + dom.unnamedButtons + ' unnamed buttons (WCAG 4.1.2 partial)');
   if (!nodes.length || !nav.length) failures.push(path + ': accessible navigation tree missing');
+  if (path === '/learning/simulator') {
+    if (!simulator?.visible || !simulator?.title.includes('Financial Learning Simulator')) failures.push(path + ': route did not render simulator');
+    if (!simulator?.baseline) failures.push(path + ': synthetic baseline 9.53 % not rendered');
+    if (simulator?.tasks !== 3 || simulator?.rangeFields < 3 || simulator?.tabularRows < 3) failures.push(path + ': learning controls or accessible data table missing');
+    if (simulator?.horizontalOverflow > 2) failures.push(path + ': page horizontal overflow (' + simulator.horizontalOverflow + 'px)');
+    if (simulator?.privateEditorVisible) failures.push(path + ': private Pro controls visible without verified session');
+  }
   if (path === '/learning' && !dom.scrollNav.some(item =>
     item.hub === 'learning' && item.wrap === 'nowrap' && item.scroll === 'auto' && item.linkNames.length >= 4
   )) failures.push(path + ': Learning Hub mobile scroll navigation missing');
@@ -117,8 +137,8 @@ try {
   await send('Page.enable');
   await send('Runtime.enable');
   await send('Accessibility.enable');
-  for (const viewport of [{width:390,height:844,mobile:true},{width:1280,height:800,mobile:false}]) {
-    for (const path of ['/', '/learning', '/login']) await checkPage(path,viewport);
+  for (const viewport of [{width:320,height:800,mobile:true},{width:390,height:844,mobile:true},{width:768,height:1024,mobile:true},{width:1280,height:800,mobile:false}]) {
+    for (const path of ['/', '/learning', '/learning/simulator', '/login']) await checkPage(path,viewport);
   }
   console.log(JSON.stringify({schemaVersion:'CAPITAL_AI_PRODUCT_BROWSER_A11Y@1',target:base.origin,startedAt,
     pages,failures,status:failures.length?'FAILED':'TARGETED_PASS',
