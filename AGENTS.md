@@ -108,6 +108,12 @@ Neue interne Schutzregeln werden nur ergänzt, wenn:
 
 Normale Bugfixes, UI-/Produktänderungen, Refactorings, Dokumentation, Tests, bestehende Dependency-Updates, Scoring-Entwicklung und Analysewerkzeuge benötigen keine separate Admission.
 
+## Autorisiertes Render-Workspace für bestehende Aufgaben
+
+Das bestehende Render-Workspace **AICapital** (`tea-d90o4rj7uimc739i86ug`) ist die vom Human Repository Owner bestätigte Control-Plane-Zuordnung für `SvenKulessa/Capital-AI`. Innerhalb des erteilten Arbeitsauftrags können alle fünf bestehenden Domains dieses Workspace und dessen bereits verbundene Render-Tools für zulässige Readbacks, Diagnosen und delegierte Routinearbeiten **ohne erneute persönliche Workspace-Auswahl oder pauschale Owner-Einzelfreigabe** verwenden. Den exakten Workspace-Identifier bei Connector-Aufrufen immer übergeben und tatsächliche Tool-Berechtigungen live respektieren. Verlangt die Plattform selbst eine Auswahl oder erneute Verbindung, ist diese technisch verbindlich; diese Repository-Richtlinie schaltet externe Provider-/Connector-Sicherheitsmechanismen nicht ab.
+
+Workspace-Zuordnung ist **keine** Berechtigung zu neuen kostenpflichtigen Ressourcen, Tarifen, Secret-Exporten, Dienstaktivierungen oder Änderungen außerhalb des bestehenden Scopes. Regeln für Providerrechte, Least Privilege, Tenant-Isolation, Kosten, laufende Bereitstellung und nachweisgebundene PR-Merges gelten unverändert. Primäres öffentliches Webservice-Ziel: `Capital-AI` (`srv-dau1rp893c1s73cdhm1g`). Private Broker-/Cache-/Worker-Ressourcen sind **Infrastruktur**, nicht zusätzliche Website-Identitäten: `capital-ai-market-events` (NATS), `capital-ai-market-cache` (Valkey 8) und `capital-ai-provider-bridge` (Rust). Website-Projektionen und öffentliche Navigation dürfen diese Ressourcen nicht als eigenständige Webangebote darstellen; private technische Inventare und Betriebsnachweise bleiben möglich. Keine Änderung des Render-Service-Typs, der Suspendierung oder der DNS-Zuordnung allein aufgrund dieser Darstellungsregel.
+
 ## Kostentransparenz für Tools und Integrationen
 
 Diese Transparenzregel gilt einheitlich für **PRODUCT, MARKET, PLATFORM, TRUST und GROWTH** sowie für domainübergreifende Arbeiten im Chat. Sie betrifft neue Integrationen und absehbar kostenwirksame Nutzung bereits vorhandener Tools, ChatGPT-Plugins, APIs, KI-Modelle, Provider, CI- und Cloud-Ressourcen.
