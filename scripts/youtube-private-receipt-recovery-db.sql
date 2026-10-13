@@ -116,7 +116,7 @@ begin
       and user_id = 'a1bf7f2f-c4d2-4cda-b0a8-0f7bb2723101'
       and video_id = 'OtherVid001' and status = 'VERIFIED_PRIVATE'
   ) then
-    raise exception 'FAIL: other owner's receipt changed';
+    raise exception 'FAIL: another owner receipt changed';
   end if;
 end $$;
 
