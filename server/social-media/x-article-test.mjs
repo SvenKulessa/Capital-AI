@@ -7,6 +7,7 @@ import { refreshOwnerXForWorkload, unsealOwnerXAccess } from './owner-token-refr
 const PAGE = '/api/social-media/x/article-test';
 const POST = PAGE + '/publish';
 const STATUS = PAGE + '/status';
+const SCRIPT = '/x-article-test.js';
 const EXPECTED_HANDLE = 'CapitalAIOnline';
 const XID = /^[0-9]{1,25}$/;
 const blocks = [
@@ -118,10 +119,29 @@ nicht über diese Oberfläche verifiziert. Ein X-Console-Ausgabenlimit ist erfor
 <button id="status" type="button">Beleg prüfen (ohne X-API-Aufruf)</button>
 <pre id="result" role="status" aria-live="polite">Noch kein Auftrag ausgelöst.</pre>
 <script src="/x-article-test.js" defer></script></main></html>`;
+const SCRIPT_SOURCE = `'use strict';
+const out=document.getElementById('result');
+for(const [id,path,method] of [
+  ['publish','/api/social-media/x/article-test/publish','POST'],
+  ['status','/api/social-media/x/article-test/status','GET'],
+]){
+  document.getElementById(id).addEventListener('click',async()=>{
+    out.textContent='Anfrage läuft. Bei unklarem Ergebnis keinen zweiten Upload auslösen.';
+    try {
+      const response=await fetch(path,{method,credentials:'same-origin',
+        ...(method==='POST'?{headers:{'Content-Type':'application/json'}}:{})});
+      const result=await response.json();
+      out.textContent=JSON.stringify({httpStatus:response.status,...result},null,2);
+    } catch {
+      out.textContent='Netzwerkfehler. Beleg prüfen, nicht erneut veröffentlichen.';
+    }
+  });
+}
+`;
 export function createXArticleTest({ env = process.env, auth, fetchImpl = fetch,
   edgeFactory = createSocialXEdgeClient } = {}) {
   async function handle(req, res, url, json) {
-    if (![PAGE, POST, STATUS].includes(url.pathname)) return false;
+    if (![PAGE, POST, STATUS, SCRIPT].includes(url.pathname)) return false;
     res.setHeader('Cache-Control', 'private, no-store');
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
@@ -137,6 +157,10 @@ export function createXArticleTest({ env = process.env, auth, fetchImpl = fetch,
     if (!identity?.userId || identity.emailVerified !== true
       || await auth?.authorizeIamRole?.(req, res, 'owner') !== true) {
       json(res, 403, { error: 'owner_authorization_required' }); return true;
+    }
+    if (url.pathname === SCRIPT) {
+      res.writeHead(200, { 'Content-Type': 'text/javascript; charset=utf-8' });
+      res.end(SCRIPT_SOURCE); return true;
     }
     if (url.pathname === PAGE) {
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
