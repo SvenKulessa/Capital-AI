@@ -14,11 +14,9 @@ Der Uploadtest verifiziert nur verschlüsselte Bytes; für DATABASE_RESTORE_VERI
 
 Google Service Accounts können keine Dateien in einem persönlichen `My Drive` besitzen; die vorhandene GA4-/GSC-OIDC-Service-Identität ist kein Backup-Uploader. Der bestehende ChatGPT-Drive-Connector stellt GitHub keine OAuth-Credentials zur Verfügung.
 
-**Empfohlen:** Ein dediziertes Backup-Google-Konto erhält *Editor* nur auf dem Zielordner; ein separater Google-Cloud-OAuth-Desktop-Client im dafür verwalteten Projekt wird mit Google Drive API autorisiert. Für einen bereits vorhandenen Ordner benötigt rclone in dieser Variante den OAuth-Scope `drive`; die Berechtigungsbegrenzung erfolgt daher über das separate Google-Konto. `root_folder_id` ist eine technische Zielvorgabe, **keine** Sicherheitsgrenze. Vor einer produktiven Ausführung den Zugriff durch `rclone lsf` und den gezielten Upload einer verschlüsselten synthetischen Datei prüfen.
+**Empfohlen:** Ein dediziertes Backup-Google-Konto erhält *Editor* nur auf dem Zielordner. Über `rclone config` kann dieses Konto mit dem standardmäßig mitgelieferten rclone-OAuth-Client autorisiert werden; ein eigenes Google-Cloud-Projekt ist für den ersten Test nicht erforderlich. Für einen bereits vorhandenen Ordner benötigt rclone in dieser Variante den OAuth-Scope `drive`; die Berechtigungsbegrenzung erfolgt daher über das separate Google-Konto. `root_folder_id` ist eine technische Zielvorgabe, **keine** Sicherheitsgrenze. Vor einer produktiven Ausführung den Zugriff durch `rclone lsf` und den gezielten Upload einer verschlüsselten synthetischen Datei prüfen.
 
-Google Cloud Console: https://console.cloud.google.com/apis/credentials
-
-Auf Android in Acode Alpine: `apk add rclone`; danach `rclone config` und den Desktop-OAuth-Client mit dem separaten Backup-Konto autorisieren. Wenn die Browserweiterleitung im Android-/Alpine-Terminal nicht funktioniert, zunächst den lokalen OAuth-Autorisierungsablauf reparieren; **keinen** Token in Chat, Issue, Git-Datei oder Screenshots posten. Google OAuth-Projekte im externen Status `Testing` vergeben üblicherweise nur sieben Tage gültige Refresh-Tokens. Eine dauerhafte Autorisierung benötigt passende Veröffentlichungs-/Verifizierungsbedingungen von Google.
+Auf Android in Acode Alpine: `apk add rclone`; danach `rclone config` (neue Remote `backupdrive`, Typ `drive`, `client_id` und `client_secret` leer lassen für rclone-Standard-App, Scope `drive`, anschließend das dedizierte Google-Backup-Konto im Browser autorisieren). Wenn die Browserweiterleitung im Android-/Alpine-Terminal nicht funktioniert, zunächst den lokalen OAuth-Autorisierungsablauf reparieren; **keinen** Token in Chat, Issue, Git-Datei oder Screenshots posten. Bei dauerhaftem Betrieb ggf. einen eigenen OAuth-Client mit passender Google-Publishing-Konfiguration nachrüsten.
 
 ## 👋⚙️ Geschützte GitHub-Einstellungen
 
@@ -29,8 +27,8 @@ URL: https://github.com/SvenKulessa/Capital-AI/settings/secrets/actions
 | Repository variable | `CAPITAL_BACKUP_AGE_RECIPIENT` | Bereits hinterlegter und getesteter öffentlicher `age1...`-Empfänger |
 | Repository variable | `CAPITAL_BACKUP_DRIVE_FOLDER_ID` | Die private ID des bereits bestehenden Backup-Zielordners (nur in GitHub Variables hinterlegen) |
 | Repository secret | `CAPITAL_BACKUP_SUPABASE_DB_URL` | Ausschließlich gültige PostgreSQL-Session-Pooler- oder Direktverbindungsadresse mit sicher hinterlegtem Passwort |
-| Repository secret | `CAPITAL_BACKUP_GOOGLE_CLIENT_ID` | ID des separaten Google-Desktop-OAuth-Clients |
-| Repository secret | `CAPITAL_BACKUP_GOOGLE_CLIENT_SECRET` | Secret dieses Google-OAuth-Clients |
+| Repository secret (optional) | `CAPITAL_BACKUP_GOOGLE_CLIENT_ID` | Nur bei selbst verwaltetem Google-OAuth-Client erforderlich |
+| Repository secret (optional) | `CAPITAL_BACKUP_GOOGLE_CLIENT_SECRET` | Nur bei selbst verwaltetem Google-OAuth-Client erforderlich |
 | Repository secret | `CAPITAL_BACKUP_GOOGLE_OAUTH_TOKEN` | Das von `rclone config` generierte OAuth-Token-JSON, inklusive Refresh-Token |
 
 **NIEMALS** ein privates `age`-Recovery-Identity-File, Supabase-Service-Role-Key oder OAuth-Refresh-Token in `vars`, ein Repository-File, ein PR oder die Chat-Unterhaltung übertragen.
