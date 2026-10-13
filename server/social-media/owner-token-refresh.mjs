@@ -162,6 +162,12 @@ export function createSocialOwnerTokenRefresh({ env = process.env, auth,
         : socialYouTubeOAuthConfigured(env))) {
       json(res, 503, { error: 'social_refresh_unavailable' }); return true;
     }
+    // X user-identity readback is priced per user/resource in X API's
+    // pay-per-use model. Never start a rotating grant without explicit
+    // operator budget permission for the mandatory account-identity check.
+    if (channel === 'X' && env.SOCIAL_X_PAID_READ_APPROVED !== 'true') {
+      json(res, 403, { error: 'social_x_paid_read_not_approved' }); return true;
+    }
     let edge, claim = null;
     const leaseId = randomUUID();
     try {
