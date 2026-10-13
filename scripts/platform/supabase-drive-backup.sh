@@ -11,8 +11,9 @@ fail() { printf 'BACKUP_BLOCKED: %s\n' "$1" >&2; exit 1; }
 [[ "$SUPABASE_DB_URL" == postgresql://* || "$SUPABASE_DB_URL" == postgres://* ]] || fail 'invalid database URL protocol'
 [[ -n "${CAPITAL_BACKUP_AGE_RECIPIENT:-}" ]] || fail 'public age recipient missing'
 [[ -n "${RCLONE_CONFIG_BACKUPDRIVE_TOKEN:-}" ]] || fail 'Google Drive OAuth token missing'
-[[ -n "${RCLONE_CONFIG_BACKUPDRIVE_CLIENT_ID:-}" ]] || fail 'Google OAuth client ID missing'
-[[ -n "${RCLONE_CONFIG_BACKUPDRIVE_CLIENT_SECRET:-}" ]] || fail 'Google OAuth client secret missing'
+if [[ -n "${RCLONE_CONFIG_BACKUPDRIVE_CLIENT_ID:-}" || -n "${RCLONE_CONFIG_BACKUPDRIVE_CLIENT_SECRET:-}" ]]; then
+  [[ -n "${RCLONE_CONFIG_BACKUPDRIVE_CLIENT_ID:-}" && -n "${RCLONE_CONFIG_BACKUPDRIVE_CLIENT_SECRET:-}" ]] || fail 'Google OAuth client ID and secret must be supplied together'
+fi
 [[ -n "${RCLONE_CONFIG_BACKUPDRIVE_ROOT_FOLDER_ID:-}" ]] || fail 'target Drive folder ID missing'
 [[ "${RCLONE_CONFIG_BACKUPDRIVE_TYPE:-}" == drive ]] || fail 'rclone remote is not Google Drive'
 [[ "${RCLONE_CONFIG_BACKUPDRIVE_SCOPE:-}" == drive ]] || fail 'Drive OAuth scope must be explicitly configured'
