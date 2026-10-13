@@ -4,23 +4,19 @@
 import { createDecipheriv, createCipheriv, randomBytes, randomUUID } from 'node:crypto';
 import { createSocialXEdgeClient, socialXEdgeMode } from './x-edge-client.mjs';
 import { socialXOAuthConfigured } from './x-oauth-exchange.mjs';
-import { socialYouTubeOAuthConfigured } from './youtube-oauth-exchange.mjs';
 
 const USER_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const CIPHER = /^v1\.([A-Za-z0-9_-]{16})\.([A-Za-z0-9_-]{22})\.([A-Za-z0-9_-]{14,11000})$/;
-const SCOPES = Object.freeze({
-  X: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'],
-  YOUTUBE: ['https://www.googleapis.com/auth/youtube.readonly', 'https://www.googleapis.com/auth/youtube.upload'],
-});
+const X_SCOPES = Object.freeze(['tweet.read', 'tweet.write', 'users.read', 'offline.access']);
 // YouTube already refreshes on demand through the existing token resolver.
 // Do not introduce a competing rotation path for the same Google grant.
 const ENDPOINTS = Object.freeze({
   X: '/api/social-media/x/account/refresh',
 });
-const AAD = Object.freeze({ X: 'capital-social-x-v1', YOUTUBE: 'capital-social-youtube-v1' });
+const AAD = 'capital-social-x-v1';
 function must(ok, code) { if (!ok) throw Error(code); }
 function keyFromEnv(env, channel) {
-  const value = env['SOCIAL_' + channel + '_TOKEN_ENCRYPTION_KEY'];
+  const value = env.SOCIAL_X_TOKEN_ENCRYPTION_KEY;
   if (typeof value === 'string' && /^[a-fA-F0-9]{64}$/.test(value)) {
     return Buffer.from(value, 'hex');
   }
@@ -35,7 +31,7 @@ function unseal(ciphertext, key, userId, channel) {
     'SOCIAL_REFRESH_CIPHER_INVALID');
   const [, iv, tag, data] = CIPHER.exec(ciphertext);
   const decrypt = createDecipheriv('aes-256-gcm', key, Buffer.from(iv, 'base64url'));
-  decrypt.setAAD(Buffer.from(JSON.stringify([AAD[channel], userId, 'refresh'])));
+  decrypt.setAAD(Buffer.from(JSON.stringify([AAD, userId, 'refresh'])));
   decrypt.setAuthTag(Buffer.from(tag, 'base64url'));
   const value = Buffer.concat([
     decrypt.update(Buffer.from(data, 'base64url')), decrypt.final(),
@@ -48,7 +44,7 @@ function seal(value, key, userId, channel, kind) {
     'SOCIAL_REFRESH_NEW_TOKEN_INVALID');
   const iv = randomBytes(12);
   const cipher = createCipheriv('aes-256-gcm', key, iv);
-  cipher.setAAD(Buffer.from(JSON.stringify([AAD[channel], userId, kind])));
+  cipher.setAAD(Buffer.from(JSON.stringify([AAD, userId, kind])));
   const bytes = Buffer.concat([cipher.update(value, 'utf8'), cipher.final()]);
   return 'v1.' + [iv, cipher.getAuthTag(), bytes].map(x => x.toString('base64url')).join('.');
 }
@@ -63,29 +59,20 @@ async function safeFetch(fetchImpl, uri, options) {
       signal: AbortSignal.timeout(8000) });
   } catch { throw Error('SOCIAL_REFRESH_PROVIDER_AMBIGUOUS'); }
 }
-function oauthClient(env, channel) {
-  const clientId = channel === 'X' ? env.SOCIAL_X_OAUTH_CLIENT_ID
-    : env.SOCIAL_YOUTUBE_OAUTH_CLIENT_ID || env.YOUTUBE_CLIENT_ID;
-  const clientSecret = channel === 'X' ? env.SOCIAL_X_OAUTH_CLIENT_SECRET
-    : env.SOCIAL_YOUTUBE_OAUTH_CLIENT_SECRET || env.YOUTUBE_CLIENT_SECRET;
+function oauthClient(env) {
+  const clientId = env.SOCIAL_X_OAUTH_CLIENT_ID;
+  const clientSecret = env.SOCIAL_X_OAUTH_CLIENT_SECRET;
   must(typeof clientId === 'string' && clientId.length >= 5
     && typeof clientSecret === 'string' && clientSecret.length >= 8,
     'SOCIAL_REFRESH_CLIENT_UNCONFIGURED');
   return { clientId, clientSecret };
 }
 async function providerRefresh(fetchImpl, env, channel, oldToken, accountId) {
-  const { clientId, clientSecret } = oauthClient(env, channel);
+  const { clientId, clientSecret } = oauthClient(env);
   const form = new URLSearchParams({ grant_type: 'refresh_token', refresh_token: oldToken });
-  let url, headers;
-  if (channel === 'X') {
-    url = 'https://api.x.com/2/oauth2/token';
-    headers = { Authorization: 'Basic ' + Buffer.from(clientId + ':' + clientSecret).toString('base64'),
-      'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' };
-  } else {
-    url = 'https://oauth2.googleapis.com/token';
-    form.set('client_id', clientId); form.set('client_secret', clientSecret);
-    headers = { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' };
-  }
+  const url = 'https://api.x.com/2/oauth2/token';
+  const headers = { Authorization: 'Basic ' + Buffer.from(clientId + ':' + clientSecret).toString('base64'),
+    'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' };
   const response = await safeFetch(fetchImpl, url, {
     method: 'POST', headers, body: form.toString(),
   });
@@ -100,29 +87,22 @@ async function providerRefresh(fetchImpl, env, channel, oldToken, accountId) {
     && typeof result.token_type === 'string' && result.token_type.toLowerCase() === 'bearer'
     && Number.isSafeInteger(result.expires_in) && result.expires_in >= 60
     && result.expires_in <= 86400, 'SOCIAL_REFRESH_TOKEN_RESPONSE_INVALID');
-  if (channel === 'X') {
-    must(typeof result.refresh_token === 'string' && result.refresh_token.length >= 10,
-      'SOCIAL_REFRESH_ROTATING_TOKEN_MISSING');
-  }
+  must(typeof result.refresh_token === 'string' && result.refresh_token.length >= 10,
+    'SOCIAL_REFRESH_ROTATING_TOKEN_MISSING');
   if (result.refresh_token != null) {
     must(typeof result.refresh_token === 'string' && result.refresh_token.length >= 10,
       'SOCIAL_REFRESH_NEW_TOKEN_INVALID');
   }
   const scopes = typeof result.scope === 'string' ? result.scope.split(' ').filter(Boolean) : null;
-  must(!scopes || SCOPES[channel].every(x => scopes.includes(x)),
+  must(!scopes || X_SCOPES.every(x => scopes.includes(x)),
     'SOCIAL_REFRESH_SCOPE_DOWNGRADE');
   // Account binding must be checked after refresh, before rotating stored tokens.
-  const accountRes = await safeFetch(fetchImpl,
-    channel === 'X' ? 'https://api.x.com/2/users/me'
-      : 'https://www.googleapis.com/youtube/v3/channels?part=id&mine=true',
+  const accountRes = await safeFetch(fetchImpl, 'https://api.x.com/2/users/me',
     { method: 'GET', headers: { Authorization: 'Bearer ' + result.access_token,
       Accept: 'application/json' } });
   must(accountRes.ok, 'SOCIAL_REFRESH_ACCOUNT_READBACK_FAILED');
   const verified = await boundedJson(accountRes);
-  must(channel === 'X'
-    ? verified?.data?.id === accountId
-    : Array.isArray(verified?.items) && verified.items.length === 1
-      && verified.items[0]?.id === accountId,
+  must(verified?.data?.id === accountId,
   'SOCIAL_REFRESH_ACCOUNT_MISMATCH');
   return { outcome: 'success', accessToken: result.access_token,
     refreshToken: result.refresh_token || oldToken, expiresIn: result.expires_in };
@@ -159,14 +139,13 @@ export function createSocialOwnerTokenRefresh({ env = process.env, auth,
       json(res, 403, { error: 'owner_authorization_required' }); return true;
     }
     if (!USER_ID.test(identity.userId) || !socialXEdgeMode(env)
-      || !(channel === 'X' ? socialXOAuthConfigured(env)
-        : socialYouTubeOAuthConfigured(env))) {
+      || !socialXOAuthConfigured(env)) {
       json(res, 503, { error: 'social_refresh_unavailable' }); return true;
     }
     // X user-identity readback is priced per user/resource in X API's
     // pay-per-use model. Never start a rotating grant without explicit
     // operator budget permission for the mandatory account-identity check.
-    if (channel === 'X' && env.SOCIAL_X_PAID_READ_APPROVED !== 'true') {
+    if (env.SOCIAL_X_PAID_READ_APPROVED !== 'true') {
       json(res, 403, { error: 'social_x_paid_read_not_approved' }); return true;
     }
     let edge, claim = null;
@@ -175,7 +154,7 @@ export function createSocialOwnerTokenRefresh({ env = process.env, auth,
       const jwt = await auth?.internalAccessToken?.(req, res);
       edge = edgeFactory({ env, fetchImpl, channel, userAccessToken: jwt });
       claim = await edge.refreshClaim(identity.userId, leaseId);
-      must(claim?.leaseId === leaseId && SCOPES[channel].every(s => claim.scopes?.includes(s)),
+      must(claim?.leaseId === leaseId && X_SCOPES.every(s => claim.scopes?.includes(s)),
         'SOCIAL_REFRESH_SCOPE_DOWNGRADE');
       const key = keyFromEnv(env, channel);
       const oldToken = unseal(claim.refreshCipher, key, identity.userId, channel);
