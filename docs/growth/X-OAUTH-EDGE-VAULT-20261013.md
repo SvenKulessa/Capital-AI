@@ -34,3 +34,19 @@ Der Browser bekommt ausschließlich einen Redirect zur offiziellen X-Autorisieru
 Supabase Edge-Aufrufe verursachen möglicherweise abrechenbare Invocations, CPU/Netzwerk und Speichernutzung; aktueller Tarif und Grenzwerte `NOT_PROVEN`. Der X-Nutzer-Readback kann kostenpflichtig sein; keine X-Schreiboperation ohne eigene Publish-Freigabe. `SOCIAL_PROVIDER_PUBLISH_ENABLED`, `SOCIAL_X_PUBLISH_ENABLED` und `SOCIAL_X_PAID_WRITE_APPROVED` bleiben unabhängig davon aus.
 
 Quellen: https://supabase.com/docs/guides/functions/auth , https://supabase.com/docs/guides/functions/secrets , https://docs.x.com/x-api/users/get-my-user .
+
+
+ 
+## Owner-only Diagnose bei `social_x_oauth_unavailable`
+
+Erreicht der OAuth-Start nach erfolgreicher lokaler Konfigurations- und IAM-Owner-Prüfung keinen X-Redirect, meldet `/api/social-media/x/auth/start` für **dieses bestätigte Owner-Konto** ein zusätzliches `diagnostic`-Feld. Es stammt ausschließlich aus einer festgelegten Zuordnung von bekannten internen Fehlercodes; rohe Exception-Meldungen, JWTs, API-Schlüssel, OAuth-State, PKCE-Verifier, Request-URLs und Provider-Payloads werden nie ausgegeben.
+
+- `edge_workload_key_invalid`: Der Render-seitige `SOCIAL_X_EDGE_WORKLOAD_SECRET` fehlt oder erfüllt nicht exakt die 32-Byte-Hex-/kanonische Base64-Anforderung. Den Wert ausschließlich in Render bzw. Supabase Edge Secrets prüfen und niemals im Chat veröffentlichen.
+- `edge_owner_session_token_unavailable`: Kein geeignetes Supabase-Access-JWT für die eingeloggte Owner-Sitzung; erneut im CAPITAL-AI-Portal anmelden, anschließend Auth-IAM intern prüfen.
+- `edge_request_rejected`: Ein Request wurde vom Edge-Gateway, von JWT/HMAC-/Owner-Prüfung oder von der Supabase-Datenbank abgewiesen. Mit Supabase Edge Request-/Function-Logs korrelieren; weder Schlüssel austauschen noch Sicherheitsprüfungen deaktivieren.
+- `edge_network_unavailable`, `edge_response_invalid`, `edge_state_not_confirmed`: Netzwerk, Antwort oder persistierter State konnte nicht bestätigt werden.
+- `internal_unclassified`: Nicht freigegebene Fehlermeldung; keine Details an Browser ausgeben. Die tatsächliche Ursache muss serverseitig isoliert untersucht werden.
+
+`diagnostic` wird erst **nach** bestätigter IAM-Owner-Rolle und verifizierter E-Mail im X-Startpfad erzeugt. Nicht-Owner sehen die unveränderte 403-Antwort, fehlende Sitzungen 401. Vor erfolgreichem 303-Redirect wurde **kein** X-API-Veröffentlichungsaufruf ausgelöst. Der Diagnostic-Response ist `no-store`, `no-referrer` und `noindex`.
+
+Diese Diagnose wird mit `node --test server/social-media/x-oauth-start.test.mjs` und den normalen Security-Gates regressionsgeprüft. Der tatsächliche Produktionsfehler bleibt bis zum Owner-Readback `NOT_PROVEN`.
