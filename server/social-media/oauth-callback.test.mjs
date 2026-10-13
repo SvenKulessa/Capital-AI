@@ -157,3 +157,22 @@ test('non-owner never receives an OAuth callback diagnostic or consumes state', 
   assert.deepEqual(r.body, { error: 'owner_authorization_required' });
   assert.equal(consumed, 0);
 });
+
+test('non-owner social channels never receive owner-only callback diagnostics', async () => {
+  let checkedOwner = 0;
+  const handler = createSocialOAuthCallback({ env,
+    auth: { verify: async () => ({ userId: USER, emailVerified: false }),
+      authorizeIamRole: async () => { checkedOwner++; return false; } },
+    store: { consumeOAuthCallback: async () => {
+      throw Error('SOCIAL_X_EDGE_REJECTED');
+    } },
+    exchangeCode: async () => {},
+  });
+  const r = res();
+  await handler.handle(req(), r,
+    url('?channel=INSTAGRAM&state=' + STATE + '&code=SENSITIVE_CODE'), json);
+  assert.equal(r.status, 503);
+  assert.deepEqual(r.body, { error: 'social_oauth_callback_unavailable' });
+  assert.equal(checkedOwner, 0);
+  assert.ok(!JSON.stringify(r.body).includes('SENSITIVE_CODE'));
+});
