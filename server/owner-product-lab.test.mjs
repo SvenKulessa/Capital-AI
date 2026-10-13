@@ -15,9 +15,14 @@ const env = {
   STRIPE_TEST_SECRET_KEY: 'sk_test_' + 't'.repeat(40),
 };
 const price = (sku, id, livemode) => ({
-  id, product: livemode ? sku.liveProductId : 'prod_testexample01',
+  id, product: livemode ? sku.liveProductId : ({
+    'starter-monthly': 'prod_UmofWjAjaskxbJ',
+    'pro-monthly': 'prod_Ukbac4O4QNsuYe',
+    'enterprise-monthly': 'prod_UkbcCQZQLMoRDr',
+  }[sku.id] || 'prod_testexample01'),
   livemode, active: true, currency: 'eur', unit_amount: sku.id.startsWith('starter') ? 700 : 2900,
-  billing_scheme: 'per_unit',
+  billing_scheme: 'per_unit', tax_behavior: sku.kind === 'subscription' ? 'unspecified' : sku.id === 'vocabulary' ? 'inclusive' : 'exclusive',
+  metadata: livemode ? {} : { capital_ai_original_price_id: sku.livePriceId, capital_ai_testlab: 'true' },
   type: sku.kind === 'subscription' ? 'recurring' : 'one_time',
   ...(sku.kind === 'subscription' ? { recurring: { interval: sku.interval } } : {}),
 });
@@ -166,7 +171,7 @@ test('missing annual test replica is provisioned only after selected owner actio
 });
 
 test('schema denies client roles and grants only service role; all catalog items bounded', () => {
-  assert.equal(SKUS.length, 7);
+  assert.equal(SKUS.length, 9);
   const sql = readFileSync(new URL('../supabase/migrations/20261013110100_owner_product_lab_isolation.sql', import.meta.url), 'utf8');
   assert.match(sql, /enable row level security/i);
   assert.match(sql, /revoke all on public.capital_ai_owner_product_lab from public, anon, authenticated/i);

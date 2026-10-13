@@ -11,11 +11,18 @@ const SKUS = Object.freeze([
   { id: 'enterprise-monthly', label: 'Enterprise · Monat', kind: 'subscription', livePriceId: BILLING_CATALOG.tiers.enterprise.monthlyPriceId, liveProductId: BILLING_CATALOG.tiers.enterprise.productId, interval: 'month' },
   { id: 'enterprise-annual', label: 'Enterprise · Jahr', kind: 'subscription', livePriceId: BILLING_CATALOG.tiers.enterprise.annualPriceId, liveProductId: BILLING_CATALOG.tiers.enterprise.productId, interval: 'year' },
   { id: 'vocabulary', label: 'Vocabulary · Einmalkauf', kind: 'payment', livePriceId: BILLING_CATALOG.addons.vocabulary.priceId, liveProductId: BILLING_CATALOG.addons.vocabulary.productId },
+  { id: 'blueprint-001', label: 'Blueprint · Market Integrity Gate', kind: 'payment', livePriceId: 'price_1UPoyMPKr4joNbEcbHllSBQ5', liveProductId: 'prod_VQPRXoyoJLA17V' },
+  { id: 'blueprint-002', label: 'Blueprint · Data Quality Scorer', kind: 'payment', livePriceId: 'price_1UPoyOPKr4joNbEcnxUWvnFK', liveProductId: 'prod_VQPR1vMN76D6pf' },
 ]);
 const IDS = new Set(SKUS.map(item => item.id));
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const PRICE_ID = /^price_[A-Za-z0-9]{12,100}$/;
 const SESSION_ID = /^cs_test_[A-Za-z0-9_]{8,180}$/;
+const INITIAL_TEST_PRODUCTS = Object.freeze({
+  'starter-monthly': 'prod_UmofWjAjaskxbJ',
+  'pro-monthly': 'prod_Ukbac4O4QNsuYe',
+  'enterprise-monthly': 'prod_UkbcCQZQLMoRDr',
+});
 const INITIAL_REPLICAS = Object.freeze({
   'starter-monthly': 'price_1TnF2FPKr4joNbEczpUiGcAQ',
   'pro-monthly': 'price_1TnF4dPKr4joNbEcxVW7h7q9',
@@ -97,12 +104,17 @@ async function stripe(fetchImpl, key, path, form = null, idempotencyKey = null) 
 function priceMatches(price, sku, mode, livePrice = null) {
   return price?.active === true && price?.livemode === mode &&
     price?.id && typeof price.id === 'string' && PRICE_ID.test(price.id) &&
-    price.product === (mode ? sku.liveProductId : price.product) &&
+    (mode ? price.product === sku.liveProductId :
+      (price.id === INITIAL_REPLICAS[sku.id]
+        ? price.product === INITIAL_TEST_PRODUCTS[sku.id]
+        : price.metadata?.capital_ai_original_price_id === sku.livePriceId &&
+          price.metadata?.capital_ai_testlab === 'true')) &&
     price.currency === 'eur' && Number.isInteger(price.unit_amount) &&
     price.unit_amount > 0 && price.billing_scheme === 'per_unit' &&
     (sku.kind === 'subscription' ? price.type === 'recurring' &&
       price.recurring?.interval === sku.interval : price.type === 'one_time') &&
-    (!livePrice || price.unit_amount === livePrice.unit_amount);
+    (!livePrice || (price.unit_amount === livePrice.unit_amount &&
+      price.tax_behavior === livePrice.tax_behavior));
 }
 function out(row, config) {
   const state = normalize(row);
@@ -195,6 +207,9 @@ export function createOwnerProductLab({ auth, env = process.env, fetchImpl = fet
           'metadata[capital_ai_testlab]': 'true',
         });
         if (sku.kind === 'subscription') priceForm.set('recurring[interval]', sku.interval);
+        if (['inclusive', 'exclusive'].includes(originalPrice.tax_behavior)) {
+          priceForm.set('tax_behavior', originalPrice.tax_behavior);
+        }
         const clone = await stripe(fetchImpl, config.testKey, 'prices', priceForm,
           'capital-ai-ownerlab-price-v1-' + sku.id);
         if (!priceMatches(clone, sku, false, originalPrice)) {
