@@ -411,3 +411,54 @@ test('Edge refuses token-refresh reconnect mutation without matching signed owne
   assert.equal(bad.status,503);
   assert.equal(changes,1);
 });
+
+test('signed owner X article credentials are ciphertext-only and receipts are owner-scoped',async()=>{
+  const userId='d0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101';
+  const accountId='123456789012345678';
+  const contentKey='a'.repeat(64);
+  const accessCipher='v1.'+'a'.repeat(16)+'.'+'b'.repeat(22)+'.'+'c'.repeat(24);
+  const config={get:name=>name==='SUPABASE_SERVICE_ROLE_KEY'
+    ?'sb_secret_synthetic_only_for_tests':env.get(name)};
+  const calls=[];
+  const handler=createHandler({env:config,fetchImpl:async(url,options)=>{
+    const target=String(url);calls.push(target);
+    let result;
+    if(target.includes('/auth/v1/user')) result={id:userId,email_confirmed_at:'2026-10-01'};
+    else if(target.includes('/profiles')) result=[{id:userId,iam_role:'owner'}];
+    else if(target.includes('/social_media_accounts')) result=[{
+      user_id:userId,status:'connected',external_account_id:accountId,
+      handle:'CapitalAIOnline',
+      scopes:['tweet.read','tweet.write','users.read','offline.access'],
+      access_token_encrypted:accessCipher,
+      token_expires_at:new Date(Date.now()+3600000).toISOString(),
+      refresh_reconnect_required:false,refresh_lease_id:null,
+    }];
+    else if(target.includes('/capital_x_article_tests')){
+      if(options?.method==='POST')result=[{user_id:userId,content_key:contentKey}];
+      else result=[];
+    } else throw Error('unexpected REST URL');
+    return {ok:true,text:async()=>JSON.stringify(result)};
+  }});
+  const creds=await handler(signedRequest({operation:'x_credentials',channel:'X',userId}));
+  assert.equal(creds.status,200);
+  const secret=await creds.json();
+  assert.equal(secret.accessCipher,accessCipher);
+  assert.equal(secret.accountId,accountId);
+  assert.equal(secret.refreshCipher,undefined);
+  const claimed=await handler(signedRequest({operation:'article_claim',channel:'X',userId,
+    contentKey,accountId}));
+  assert.equal(claimed.status,200);
+  assert.equal((await claimed.json()).claimed,true);
+  const status=await handler(signedRequest({operation:'article_status',channel:'X',userId,
+    contentKey,accountId}));
+  assert.equal(status.status,200);
+  assert.equal((await status.json()).status,'NOT_SUBMITTED');
+  const count=calls.length;
+  const invalid=await handler(signedRequest({operation:'x_credentials',channel:'X',
+    userId},{omitSignature:true}));
+  assert.equal(invalid.status,503);
+  assert.equal(calls.length,count);
+  const impersonation=await handler(signedRequest({operation:'article_claim',channel:'X',
+    userId:'d0bf7f2f-c4d2-4cda-b0a8-0f7bb2723102',contentKey,accountId}));
+  assert.equal(impersonation.status,503);
+});

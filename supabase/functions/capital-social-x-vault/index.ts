@@ -170,6 +170,86 @@ async function execute(fetchImpl, keys, userId, input) {
     abortUnless(!row || (row.channel_id === input.channelId && row.asset_sha256 === input.assetSha256));
     return { claimed: false, job: row };
   }
+  // X Articles: sealed access token and durable one-shot receipts remain
+  // confined to the verified owner + signed Render workload. No public API.
+  if (operation === 'x_credentials') {
+    abortUnless(channel === 'X');
+    const target = new URL('/rest/v1/social_media_accounts', keys.origin);
+    target.searchParams.set('user_id', 'eq.' + userId);
+    target.searchParams.set('platform', 'eq.x');
+    target.searchParams.set('select', 'user_id,status,external_account_id,handle,scopes,access_token_encrypted,token_expires_at,refresh_reconnect_required,refresh_retry_after,refresh_lease_id');
+    target.searchParams.set('limit', '1');
+    const rows = await jsonFetch(fetchImpl, target,
+      { method: 'GET', headers: adminHeaders(keys.admin) }, 12000);
+    abortUnless(Array.isArray(rows) && rows.length === 1);
+    const row = rows[0];
+    abortUnless(row?.user_id === userId && row.status === 'connected'
+      && validId(row.external_account_id) && validHandle(row.handle)
+      && scopes.every(s => Array.isArray(row.scopes) && row.scopes.includes(s))
+      && CIPHER.test(row.access_token_encrypted || '')
+      && Number.isFinite(Date.parse(row.token_expires_at || ''))
+      && row.refresh_reconnect_required !== true);
+    // Never forward the ciphertext response to the browser.
+    return { accountId: row.external_account_id, handle: row.handle,
+      accessCipher: row.access_token_encrypted, expiresAt: row.token_expires_at,
+      leaseActive: row.refresh_lease_id !== null,
+      retryAfter: row.refresh_retry_after };
+  }
+  if (['article_status', 'article_claim', 'article_record'].includes(operation)) {
+    abortUnless(channel === 'X' && /^[a-f0-9]{64}$/.test(input.contentKey || '')
+      && XID.test(input.accountId || ''));
+    const target = new URL('/rest/v1/capital_x_article_tests', keys.origin);
+    if (operation === 'article_claim') {
+      const row = { user_id: userId, content_key: input.contentKey,
+        external_account_id: input.accountId, status: 'CLAIMED' };
+      const response = await fetchImpl(target, { method: 'POST',
+        redirect: 'error', signal: AbortSignal.timeout(7000),
+        headers: adminHeaders(keys.admin, { Prefer: 'resolution=ignore-duplicates,return=representation' }),
+        body: JSON.stringify(row) });
+      abortUnless(response.ok);
+      const data = await response.text();
+      abortUnless(data.length < 8192);
+      const rows = JSON.parse(data);
+      abortUnless(Array.isArray(rows) && rows.length <= 1);
+      return { claimed: rows.length === 1 };
+    }
+    target.searchParams.set('user_id', 'eq.' + userId);
+    target.searchParams.set('content_key', 'eq.' + input.contentKey);
+    target.searchParams.set('external_account_id', 'eq.' + input.accountId);
+    if (operation === 'article_status') {
+      target.searchParams.set('select', 'status,article_id,post_id,verified_at');
+      const rows = await jsonFetch(fetchImpl, target,
+        { method: 'GET', headers: adminHeaders(keys.admin) }, 4096);
+      abortUnless(Array.isArray(rows) && rows.length <= 1);
+      const row = rows[0] || null;
+      return { found: Boolean(row), status: row?.status || 'NOT_SUBMITTED',
+        articleId: row?.article_id || null, postId: row?.post_id || null,
+        verifiedAt: row?.verified_at || null };
+    }
+    const transitions = {
+      draft: { from: 'CLAIMED', to: 'DRAFTED' },
+      post: { from: 'DRAFTED', to: 'POSTED' },
+      verify: { from: 'POSTED', to: 'VERIFIED_PUBLISHED' },
+    };
+    const transition = transitions[input.stage];
+    abortUnless(transition
+      && XID.test(input.articleId || '')
+      && (input.stage === 'draft' || XID.test(input.postId || '')));
+    target.searchParams.set('status', 'eq.' + transition.from);
+    if (input.stage !== 'draft') target.searchParams.set('article_id', 'eq.' + input.articleId);
+    if (input.stage === 'verify') target.searchParams.set('post_id', 'eq.' + input.postId);
+    const patch = { status: transition.to, updated_at: new Date().toISOString(),
+      ...(input.stage === 'draft' ? { article_id: input.articleId } : {}),
+      ...(input.stage === 'post' ? { post_id: input.postId } : {}),
+      ...(input.stage === 'verify' ? { verified_at: new Date().toISOString() } : {}) };
+    const rows = await jsonFetch(fetchImpl, target, { method: 'PATCH',
+      headers: adminHeaders(keys.admin, { Prefer: 'return=representation' }),
+      body: JSON.stringify(patch) }, 8192);
+    abortUnless(Array.isArray(rows) && rows.length === 1
+      && rows[0]?.user_id === userId && rows[0]?.external_account_id === input.accountId
+      && rows[0]?.status === transition.to);
+    return { recorded: true, status: transition.to };
+  }
   if (operation === 'begin') {
     abortUnless(SHA256.test(input.stateHash || '')
       && VERIFIER.test(input.codeVerifier || '') && input.redirectUri === CALLBACK);

@@ -108,6 +108,66 @@ async function providerRefresh(fetchImpl, env, channel, oldToken, accountId) {
     refreshToken: result.refresh_token || oldToken, expiresIn: result.expires_in };
 }
 
+// Shared by the owner-only refresh route and owner-initiated Article publishing.
+// The caller must have already verified the current owner IAM session and JWT.
+export async function refreshOwnerXForWorkload({ env = process.env, userId,
+  userAccessToken, fetchImpl = fetch, edgeFactory = createSocialXEdgeClient } = {}) {
+  must(USER_ID.test(userId || '') && typeof userAccessToken === 'string'
+    && userAccessToken.length > 50 && socialXEdgeMode(env)
+    && socialXOAuthConfigured(env), 'SOCIAL_REFRESH_CONTEXT_INVALID');
+  must(env.SOCIAL_X_PAID_READ_APPROVED === 'true', 'SOCIAL_X_PAID_READ_NOT_APPROVED');
+  const channel = 'X';
+  let edge, claim = null;
+  const leaseId = randomUUID();
+  try {
+    edge = edgeFactory({ env, fetchImpl, channel, userAccessToken });
+    claim = await edge.refreshClaim(userId, leaseId);
+    must(claim?.leaseId === leaseId && X_SCOPES.every(s => claim.scopes?.includes(s)),
+      'SOCIAL_REFRESH_SCOPE_DOWNGRADE');
+    const key = keyFromEnv(env, channel);
+    const oldToken = unseal(claim.refreshCipher, key, userId, channel);
+    const tokens = await providerRefresh(fetchImpl, env, channel, oldToken, claim.accountId);
+    if (tokens.outcome !== 'success') {
+      const disposition = tokens.outcome === 'rate_limited' ? 'rate_limited' : 'reconnect';
+      await edge.refreshEnd(userId, leaseId, disposition);
+      return { httpStatus: tokens.outcome === 'rate_limited' ? 429 : 409,
+        body: { channel, status: disposition === 'rate_limited'
+          ? 'retry_later' : 'reconnect_required' } };
+    }
+    const expiresAt = new Date(Date.now() + tokens.expiresIn * 1000).toISOString();
+    const rotated = await edge.refreshFinish(userId, leaseId, claim.refreshCipher,
+      seal(tokens.accessToken, key, userId, channel, 'access'),
+      seal(tokens.refreshToken, key, userId, channel, 'refresh'),
+      expiresAt);
+    return { httpStatus: 200, body: { channel, status: 'connected',
+      refreshed: rotated.refreshed === true, expiresAt: rotated.expiresAt } };
+  } catch {
+    if (claim && edge) {
+      // No replay of a rotating grant after ambiguous provider or DB outcome.
+      try { await edge.refreshEnd(userId, leaseId, 'reconnect'); } catch {}
+    }
+    return { httpStatus: 503, body: { error: 'social_refresh_unavailable',
+      status: claim ? 'reconnect_required' : 'not_refreshed' } };
+  }
+}
+
+// The plaintext token is only constructed within the authenticated Render
+// workload. It is never sent to a browser, Edge response or persistent log.
+export function unsealOwnerXAccess(ciphertext, userId, env = process.env) {
+  must(USER_ID.test(userId || ''), 'SOCIAL_X_ACCESS_OWNER_INVALID');
+  must(typeof ciphertext === 'string' && CIPHER.test(ciphertext),
+    'SOCIAL_X_ACCESS_CIPHER_INVALID');
+  const [, iv, tag, data] = CIPHER.exec(ciphertext);
+  const decipher = createDecipheriv('aes-256-gcm', keyFromEnv(env, 'X'),
+    Buffer.from(iv, 'base64url'));
+  decipher.setAAD(Buffer.from(JSON.stringify([AAD, userId, 'access'])));
+  decipher.setAuthTag(Buffer.from(tag, 'base64url'));
+  const access = Buffer.concat([decipher.update(Buffer.from(data, 'base64url')),
+    decipher.final()]).toString('utf8');
+  must(access.length >= 10 && access.length <= 8192, 'SOCIAL_X_ACCESS_INVALID');
+  return access;
+}
+
 export function createSocialOwnerTokenRefresh({ env = process.env, auth,
   fetchImpl = fetch, edgeFactory = createSocialXEdgeClient } = {}) {
   async function handle(req, res, url, json) {
@@ -148,42 +208,13 @@ export function createSocialOwnerTokenRefresh({ env = process.env, auth,
     if (env.SOCIAL_X_PAID_READ_APPROVED !== 'true') {
       json(res, 403, { error: 'social_x_paid_read_not_approved' }); return true;
     }
-    let edge, claim = null;
-    const leaseId = randomUUID();
-    try {
-      const jwt = await auth?.internalAccessToken?.(req, res);
-      edge = edgeFactory({ env, fetchImpl, channel, userAccessToken: jwt });
-      claim = await edge.refreshClaim(identity.userId, leaseId);
-      must(claim?.leaseId === leaseId && X_SCOPES.every(s => claim.scopes?.includes(s)),
-        'SOCIAL_REFRESH_SCOPE_DOWNGRADE');
-      const key = keyFromEnv(env, channel);
-      const oldToken = unseal(claim.refreshCipher, key, identity.userId, channel);
-      const tokens = await providerRefresh(fetchImpl, env, channel, oldToken, claim.accountId);
-      if (tokens.outcome !== 'success') {
-        const disposition = tokens.outcome === 'rate_limited' ? 'rate_limited' : 'reconnect';
-        await edge.refreshEnd(identity.userId, leaseId, disposition);
-        json(res, tokens.outcome === 'rate_limited' ? 429 : 409, {
-          channel, status: disposition === 'rate_limited'
-            ? 'retry_later' : 'reconnect_required',
-        });
-        return true;
-      }
-      const expiresAt = new Date(Date.now() + tokens.expiresIn * 1000).toISOString();
-      const rotated = await edge.refreshFinish(identity.userId, leaseId, claim.refreshCipher,
-        seal(tokens.accessToken, key, identity.userId, channel, 'access'),
-        seal(tokens.refreshToken, key, identity.userId, channel, 'refresh'),
-        expiresAt);
-      json(res, 200, { channel, status: 'connected', refreshed: rotated.refreshed === true,
-        expiresAt: rotated.expiresAt });
-    } catch {
-      if (claim && edge) {
-        // A token could have rotated before an ambiguous network/write error;
-        // never automatically replay the previous refresh grant.
-        try { await edge.refreshEnd(identity.userId, leaseId, 'reconnect'); } catch {}
-      }
-      json(res, 503, { error: 'social_refresh_unavailable',
-        status: claim ? 'reconnect_required' : 'not_refreshed' });
-    }
+    const result = await refreshOwnerXForWorkload({
+      env, userId: identity.userId,
+      userAccessToken: await auth?.internalAccessToken?.(req, res),
+      fetchImpl, edgeFactory,
+    }).catch(() => ({ httpStatus: 503,
+      body: { error: 'social_refresh_unavailable', status: 'not_refreshed' } }));
+    json(res, result.httpStatus, result.body);
     return true;
   }
   return Object.freeze({ handle });
