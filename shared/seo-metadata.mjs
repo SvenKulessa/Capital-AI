@@ -1,5 +1,6 @@
 import { hubRouteForPath, DOCUMENT_ROUTES } from './hub-routes.mjs';
 import { blogArticleForPath } from './blog-articles.mjs';
+import { publicLearningVideoSchemas } from './seo-video.mjs';
 import { seoContentForPath } from './seo-content-manifest.mjs';
 import {
   VOCABULARY_PUBLIC_COUNT,
@@ -103,6 +104,7 @@ export function seoJsonLdForPath(pathname) {
       websiteSchema(),
       projectSchema(),
       primarySchema(entry),
+      ...(entry.path === '/learning' ? publicLearningVideoSchemas() : []),
     ],
   };
 }

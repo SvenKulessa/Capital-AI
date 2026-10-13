@@ -2,6 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { SEO_CONTENT_MANIFEST } from '../shared/seo-content-manifest.mjs';
+import { BLOG_ARTICLES } from '../shared/blog-articles.mjs';
+import { auditPublicEditorialArticle } from '../shared/editorial-quality.mjs';
+import { publicVideoSchema, publicLearningVideoSchemas } from '../shared/seo-video.mjs';
 import {
   SEO_SITE_ORIGIN,
   SEO_SOCIAL_IMAGE,
@@ -28,7 +31,7 @@ test('SEO-02 emits one claimsafe schema graph without FinancialService or synthe
   for (const entry of SEO_CONTENT_MANIFEST) {
     const schema = seoJsonLdForPath(entry.path);
     assert.equal(schema['@context'], 'https://schema.org');
-    assert.equal(schema['@graph'].length, 3);
+    assert.equal(schema['@graph'].length, 3 + (entry.path === '/learning' ? publicLearningVideoSchemas().length : 0));
     const serialized = JSON.stringify(schema);
     assert.doesNotMatch(serialized, /FinancialService/);
     assert.doesNotMatch(serialized, /"offers"/);
@@ -71,4 +74,36 @@ test('public license deep links agree with the canonical license metadata', asyn
     assert.equal(seo.canonical, `https://capital-ai.online${path}`, path);
     assert.doesNotMatch(JSON.stringify(seo.jsonLd), /FinTech-Forschung|Forschungsprojekt/);
   }
+});
+
+test('public editorial source requires structural provenance, references and accessible illustration', () => {
+  for (const article of BLOG_ARTICLES) assert.deepEqual(auditPublicEditorialArticle(article), [], article.path);
+  const original = BLOG_ARTICLES[0];
+  assert.ok(auditPublicEditorialArticle({ ...original, sources: [{ label: 'Private', url: 'http://example.com' }] }).includes('SOURCE_LINKS'));
+  assert.ok(auditPublicEditorialArticle({ ...original, publishReady: false }).includes('NOT_PUBLICLY_APPROVED'));
+  assert.ok(auditPublicEditorialArticle({ ...original, imageAlt: ' ' }).includes('ILLUSTRATION_AND_ALTERNATIVE_TEXT'));
+  assert.ok(auditPublicEditorialArticle({ ...original, date: '2026-02-30' }).includes('PUBLICATION_DATE'));
+});
+
+test('unapproved learning videos never gain public VideoObject or imply paid video entitlement', () => {
+  assert.deepEqual(publicLearningVideoSchemas(), []);
+  assert.equal(seoJsonLdForPath('/learning')['@graph'].length, 3);
+  const approved = {
+    publicationState: 'PUBLISHED', visibility: 'PUBLIC', licenseState: 'VERIFIED',
+    editorialApproval: 'APPROVED', searchEligible: true, isFreePreview: true,
+    youtubeId: 'abcdefghijk', title: 'CAPITAL AI Architektur erklaert',
+    description: 'Ein öffentlich freigegebener Lernfilm über die Grundlagen von Systemarchitektur.',
+    thumbnailUrl: 'https://capital-ai.online/learning/editorial/thumbnail.jpg',
+    uploadDate: '2026-10-11T10:00:00+02:00', rightsEvidenceRef: 'evidence://learning-video-20261011',
+  };
+  const schema = publicVideoSchema(approved);
+  assert.equal(schema['@type'], 'VideoObject');
+  assert.equal(schema.embedUrl, 'https://www.youtube-nocookie.com/embed/abcdefghijk');
+  assert.equal(schema.isAccessibleForFree, true);
+  assert.equal(schema.interactionStatistic, undefined);
+  assert.equal(publicVideoSchema({ ...approved, licenseState: 'NOT_PROVEN' }), null);
+  assert.equal(publicVideoSchema({ ...approved, visibility: 'ENTITLED_ONLY' }), null);
+  assert.equal(publicVideoSchema({ ...approved, publicationState: 'DRAFT' }), null);
+  assert.equal(publicVideoSchema({ ...approved, thumbnailUrl: 'http://example.com/preview.png' }), null);
+  assert.equal(publicLearningVideoSchemas([approved, approved]).length, 1);
 });
