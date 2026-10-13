@@ -101,6 +101,7 @@ COPY scripts/activate-learning-measurement.mjs scripts/activate-learning-measure
 COPY scripts/social-provider-db-smoke.sh ./scripts/social-provider-db-smoke.sh
 COPY supabase/migrations/20261008113000_social_provider_store.sql ./supabase/migrations/20261008113000_social_provider_store.sql
 COPY supabase/migrations/20261013105500_youtube_private_deleted_receipt_recovery.sql ./supabase/migrations/20261013105500_youtube_private_deleted_receipt_recovery.sql
+COPY supabase/migrations/20261013110247_youtube_private_deleted_receipt_recovery.sql ./supabase/migrations/20261013110247_youtube_private_deleted_receipt_recovery.sql
 COPY scripts/youtube-private-receipt-recovery-db.sql ./scripts/youtube-private-receipt-recovery-db.sql
 COPY supabase/migrations/20261013035202_capital_social_owner_token_refresh.sql ./supabase/migrations/20261013035202_capital_social_owner_token_refresh.sql
 COPY supabase/functions/capital-social-x-vault/index.ts ./supabase/functions/capital-social-x-vault/index.ts
