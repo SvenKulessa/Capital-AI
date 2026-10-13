@@ -31,7 +31,7 @@ test('SEO-02 emits one claimsafe schema graph without FinancialService or synthe
   for (const entry of SEO_CONTENT_MANIFEST) {
     const schema = seoJsonLdForPath(entry.path);
     assert.equal(schema['@context'], 'https://schema.org');
-    assert.equal(schema['@graph'].length, 3);
+    assert.equal(schema['@graph'].length, 3 + (entry.path === '/learning' ? publicLearningVideoSchemas().length : 0));
     const serialized = JSON.stringify(schema);
     assert.doesNotMatch(serialized, /FinancialService/);
     assert.doesNotMatch(serialized, /"offers"/);
