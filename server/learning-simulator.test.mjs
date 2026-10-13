@@ -104,13 +104,23 @@ test('RPC always receives server-verified user ID; scenario ID is server generat
   assert.equal(output.status, 200);
   assert.equal(calls.length, 1);
   assert.equal(calls[0].body._user_id, 'trusted-user');
-  assert.match(calls[0].body._payload.id, /^[0-9a-f]{8}-/);
-  assert.equal(calls[0].body._action, 'POST');
+  assert.match(calls[0].body._id, /^[0-9a-f]{8}-/);
+  assert.equal(calls[0].body._action, 'create');
   assert.equal(calls[0].body._payload.name, 'Referenzfall');
 });
 
+test('live RPC list rows flatten for the UI without exposing other fields', async () => {
+  const saved = [{ id: '7d251ba5-0e92-447b-aa98-54a639de899d', createdAt: '2026-10-13T00:00:00Z', scenario: scenario() }];
+  const { run, calls } = setup({ tier: 'pro', rpcBody: { scenarios: saved, limit: 10 } });
+  const result = await run('GET', '/api/learning/simulator/scenarios');
+  assert.equal(result.status, 200);
+  assert.equal(result.payload.scenarios[0].name, 'Referenzfall');
+  assert.equal(result.payload.scenarios[0].id, saved[0].id);
+  assert.equal(calls[0].body._action, 'list');
+});
+
 test('scenario limit is mapped to HTTP 409', async () => {
-  const { run } = setup({ tier: 'pro', rpcBody: { error: 'LIMIT_REACHED' } });
+  const { run } = setup({ tier: 'pro', rpcBody: { error: 'limit_reached' } });
   const result = await run('POST', '/api/learning/simulator/scenarios', scenario());
   assert.equal(result.status, 409);
 });
