@@ -1,3 +1,4 @@
+import { createYouTubeTokenResolver } from './youtube-token-resolver.mjs';
 import { createSocialXEdgeClient, socialXEdgeMode } from './x-edge-client.mjs';
 // CAPITAL_AI_SOCIAL_YOUTUBE_ACCOUNT_STATUS@1 — read-only owner-bound connection status.
 // Never select or return encrypted access/refresh tokens.
@@ -109,6 +110,8 @@ export function createSocialYouTubeAccountStatus({ env = process.env, auth, fetc
       return true;
     }
     try {
+      await createYouTubeTokenResolver({ env, fetchImpl })({ userId: identity.userId,
+        userAccessToken: await auth?.internalAccessToken?.(req, res) });
       if (socialXEdgeMode(env)) {
         const edge = createSocialXEdgeClient({ env, fetchImpl, channel: 'YOUTUBE',
           userAccessToken: await auth?.internalAccessToken?.(req, res) });

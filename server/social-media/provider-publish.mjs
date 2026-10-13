@@ -98,7 +98,8 @@ export function createSocialProviderPublishTransport({ env = process.env, fetchI
       ? input.metadata.hashtags.map(String).filter(Boolean).slice(0, 50) : [];
     const payload = youtubeMultipart({
       snippet: { title, description, ...(tags.length ? { tags } : {}) },
-      status: { privacyStatus: requestedVisibility },
+      status: { privacyStatus: requestedVisibility,
+        ...(input?.metadata?.syntheticMedia === true ? { containsSyntheticMedia: true } : {}) },
     }, bytes);
     const response = await fetchAttempt(fetchImpl,
       'https://www.googleapis.com/upload/youtube/v3/videos?uploadType=multipart&part=snippet,status', {

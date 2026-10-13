@@ -63,7 +63,8 @@ export function createSocialXEdgeClient({ env = process.env, fetchImpl = fetch,
     } catch { throw Error('SOCIAL_X_EDGE_UNAVAILABLE'); }
     must(response.ok, 'SOCIAL_X_EDGE_REJECTED');
     const text = await response.text();
-    must(text.length > 0 && text.length < 16384, 'SOCIAL_X_EDGE_RESPONSE_INVALID');
+    const responseLimit = channel === 'YOUTUBE' && operation === 'credentials' ? 32768 : 16384;
+    must(text.length > 0 && text.length < responseLimit, 'SOCIAL_X_EDGE_RESPONSE_INVALID');
     try { return JSON.parse(text); }
     catch { throw Error('SOCIAL_X_EDGE_RESPONSE_INVALID'); }
   }
