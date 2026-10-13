@@ -6,7 +6,7 @@
  * Override browser path with CAPITAL_AI_CHROME_BIN.
  */
 import { spawn } from 'node:child_process';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -91,6 +91,20 @@ async function checkPage(path, viewport) {
   }))()` ) : null;
   const record = { path, viewport, dom, simulator, AX: { nodes:nodes.length, navigations:nav.map(n => n.name?.value || '') } };
   pages.push(record);
+  if (path === '/learning/simulator' && process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR) {
+    await mkdir(process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR, { recursive: true });
+    const shot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
+    await writeFile(join(process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR,
+      'simulator-' + viewport.width + 'x' + viewport.height + '.png'), Buffer.from(shot.data, 'base64'));
+    const buttonPressed = await evaluate(`(() => {
+      const button = [...document.querySelectorAll('button')].find(el => el.textContent?.includes('Aufgabe 1: Diversifikation'));
+      if (!button || button.disabled) return false;
+      button.click(); return true;
+    })()`);
+    await pause(150);
+    const feedbackVisible = await evaluate("document.body.textContent.includes('Gleichgewichtetes Portfolio:')");
+    if (!buttonPressed || !feedbackVisible) failures.push(path + ': keyboard-accessible learning task not responding');
+  }
   if (!dom.documentLanguage) failures.push(path + ': document lang missing (WCAG 3.1.1)');
   if (dom.imagesWithoutAlt) failures.push(path + ': ' + dom.imagesWithoutAlt + ' images without alt (WCAG 1.1.1 partial)');
   if (dom.unlabeledFields) failures.push(path + ': ' + dom.unlabeledFields + ' unnamed form controls (WCAG 3.3.2 partial)');
