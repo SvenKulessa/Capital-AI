@@ -304,7 +304,7 @@ export function createApp(root = defaultRoot, options = {}) {
   let inflight = 0;
   const auth = createAuth(options);
   const learningInquiry = createLearningInquiry({ ...options, auth });
-  const learningSimulator = createLearningSimulator({ auth });
+  const learningSimulator = createLearningSimulator({ ...options, auth });
   const socialXOAuthStart = createSocialXOAuthStart({
     env: options.env || process.env, auth,
     fetchImpl: options.fetchImpl || fetch,
