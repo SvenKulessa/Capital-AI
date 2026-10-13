@@ -144,3 +144,21 @@ test('application and NATS images enforce the patched Alpine zlib security floor
   assert.doesNotMatch(dockerfile, /zlib=1\.3\.2-r0/);
   assert.doesNotMatch(natsDockerfile, /zlib=1\.3\.2-r0/);
 });
+
+
+test('private YouTube page scripts are copied into the frontend build and shipped in runtime dist', () => {
+  const page = readFileSync(resolve(root, 'server/social-media/youtube-private-upload.mjs'), 'utf8');
+  const dockerfile = readFileSync(resolve(root, 'Dockerfile'), 'utf8');
+  const runtime = dockerfile.slice(dockerfile.lastIndexOf('\nFROM '));
+  const build = dockerfile.slice(dockerfile.indexOf(' AS build\n'), dockerfile.lastIndexOf('\nFROM '));
+  const scripts = [...page.matchAll(/<script src="(\/[^"?#]+\.js)"/g)].map(x => x[1]);
+  assert.ok(scripts.length > 0, 'Inspect the actual server-rendered page asset references');
+  for (const path of scripts) {
+    const source = 'public' + path;
+    assert.ok(existsSync(resolve(root, source)));
+    assert.equal(reachable(source), true);
+    assert.ok(build.split(/\r?\n/).some(line => line.startsWith('COPY ') && line.split(/\s+/).slice(1,-1).includes(source) && line.trim().endsWith('./' + source)),
+      'The page script must be copied into Vite publicDir, not merely allowed in Docker context: ' + source);
+  }
+  assert.match(runtime, /COPY --from=build \/app\/dist \.\/dist/);
+});
