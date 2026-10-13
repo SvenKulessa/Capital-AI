@@ -22,12 +22,10 @@ jobs:
           BACKUP_DB_SECRET: ${{ secrets.CAPITAL_BACKUP_SUPABASE_DB_URL }}
           BACKUP_AGE_PUBLIC: ${{ vars.CAPITAL_BACKUP_AGE_RECIPIENT }}
           BACKUP_DRIVE_FOLDER: ${{ vars.CAPITAL_BACKUP_DRIVE_FOLDER_ID }}
-          BACKUP_GOOGLE_ID: ${{ secrets.CAPITAL_BACKUP_GOOGLE_CLIENT_ID }}
-          BACKUP_GOOGLE_SECRET: ${{ secrets.CAPITAL_BACKUP_GOOGLE_CLIENT_SECRET }}
           BACKUP_GOOGLE_TOKEN: ${{ secrets.CAPITAL_BACKUP_GOOGLE_OAUTH_TOKEN }}
         run: |
           set -Eeuo pipefail
-          for name in BACKUP_DB_SECRET BACKUP_AGE_PUBLIC BACKUP_DRIVE_FOLDER BACKUP_GOOGLE_ID BACKUP_GOOGLE_SECRET BACKUP_GOOGLE_TOKEN; do
+          for name in BACKUP_DB_SECRET BACKUP_AGE_PUBLIC BACKUP_DRIVE_FOLDER BACKUP_GOOGLE_TOKEN; do
             if [[ -z "${!name:-}" ]]; then
               echo "BACKUP_BLOCKED: required GitHub secret or variable not configured ($name)"
               exit 1
