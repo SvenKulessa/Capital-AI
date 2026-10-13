@@ -129,7 +129,9 @@ export function createBlueprintCommerce({ env = process.env, fetchImpl = fetch, 
     const email = session.metadata?.account_email;
     const tax = session.total_details?.amount_tax;
     if (!validBuyerEmail(email) || !Number.isInteger(tax) || tax < 0 ||
-        !Number.isInteger(session.amount_total) || tax > session.amount_total) {
+        !Number.isSafeInteger(session.amount_total) ||
+        !Number.isSafeInteger(session.amount_subtotal) ||
+        session.amount_total !== session.amount_subtotal + tax) {
       throw new Error('contract_confirmation_invalid');
     }
     const license = await readFile(LICENSE_PATH, 'utf8');
@@ -195,7 +197,11 @@ export function createBlueprintCommerce({ env = process.env, fetchImpl = fetch, 
       !validBuyerEmail(session.metadata?.account_email) ||
       session.status !== 'complete' || session.mode !== 'payment' || session.payment_status !== 'paid' ||
       session.currency !== 'eur' || session.amount_subtotal !== 5000 ||
-      !Number.isInteger(session.amount_total) || session.amount_total < 5000 ||
+      !Number.isSafeInteger(session.total_details?.amount_tax) || session.total_details.amount_tax < 0 ||
+      (session.total_details?.amount_discount ?? 0) !== 0 ||
+      (session.total_details?.amount_shipping ?? 0) !== 0 ||
+      !Number.isSafeInteger(session.amount_total) ||
+      session.amount_total !== session.amount_subtotal + session.total_details.amount_tax ||
       session.livemode !== (stripeKey.startsWith('rk_live_') || stripeKey.startsWith('sk_live_')) ||
       !stripeId(session.payment_intent, 'pi_') ||
       session.automatic_tax?.enabled !== true || session.automatic_tax?.status !== 'complete') return false;
