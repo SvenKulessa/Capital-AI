@@ -44,6 +44,15 @@ services:
         sync: false
       - key: SOCIAL_X_EDGE_STORE_ENABLED
         sync: false
+      # YouTube OAuth uses the owner-attested Social Edge vault when enabled.
+      - key: SOCIAL_YOUTUBE_OAUTH_CLIENT_ID
+        sync: false
+      - key: SOCIAL_YOUTUBE_OAUTH_CLIENT_SECRET
+        sync: false
+      - key: SOCIAL_YOUTUBE_TOKEN_ENCRYPTION_KEY
+        sync: false
+      - key: SOCIAL_YOUTUBE_OAUTH_CONNECT_ENABLED
+        sync: false
       - key: AUTH_COOKIE_SIGNING_SECRET
         sync: false
       # Owner-only GA4 provider readback. Values stay server-side on this web service.

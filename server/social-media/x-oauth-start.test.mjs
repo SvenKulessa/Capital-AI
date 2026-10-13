@@ -132,3 +132,85 @@ test('no route interception outside the explicit X OAuth start path', async () =
   assert.equal(await handler.handle(req(), res(),
     new URL('/api/social-media/auth/callback', 'https://capital-ai.online'), json), false);
 });
+
+
+ 
+test('verified owner sees only a sanitized diagnostic if Render Edge workload key is absent', async () => {
+  let fetched = 0;
+  const env = { ...ENV, SOCIAL_X_EDGE_STORE_ENABLED: 'true',
+    SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_synthetic_only_for_tests',
+    SUPABASE_SECRET_KEY: undefined };
+  const handler = createSocialXOAuthStart({
+    env,
+    auth: { verify: async () => ({ userId: USER, emailVerified: true }),
+      authorizeIamRole: async () => true,
+      internalAccessToken: async () => 'synthetic-token-' + 'j'.repeat(90) },
+    fetchImpl: async () => { fetched++; throw Error('internal-only-provider-secret'); },
+  });
+  const r = res();
+  await handler.handle(req(), r, url(), json);
+  assert.equal(r.status, 503);
+  assert.deepEqual(r.body, { error: 'social_x_oauth_unavailable',
+    diagnostic: 'edge_workload_key_invalid' });
+  assert.equal(fetched, 0);
+  assert.equal(r.headers.Location, undefined);
+});
+
+test('verified owner distinguishes unavailable session token from Edge request rejection', async () => {
+  const env = { ...ENV, SOCIAL_X_EDGE_STORE_ENABLED: 'true',
+    SOCIAL_X_EDGE_WORKLOAD_SECRET: 'ab'.repeat(32),
+    SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_synthetic_only_for_tests',
+    SUPABASE_SECRET_KEY: undefined };
+  for (const scenario of [
+    { token: null, diagnostic: 'edge_owner_session_token_unavailable', expectedFetches: 0 },
+    { token: 'synthetic-token-' + 'j'.repeat(90),
+      diagnostic: 'edge_request_rejected', expectedFetches: 1 },
+  ]) {
+    let fetched = 0;
+    const handler = createSocialXOAuthStart({
+      env,
+      auth: { verify: async () => ({ userId: USER, emailVerified: true }),
+        authorizeIamRole: async () => true,
+        internalAccessToken: async () => scenario.token },
+      fetchImpl: async () => { fetched++; return { ok: false, status: 403,
+        text: async () => 'Sensitive provider response must never be exposed' }; },
+    });
+    const r = res();
+    await handler.handle(req(), r, url(), json);
+    assert.equal(r.status, 503);
+    assert.deepEqual(r.body, { error: 'social_x_oauth_unavailable',
+      diagnostic: scenario.diagnostic });
+    assert.equal(fetched, scenario.expectedFetches);
+    assert.ok(!JSON.stringify(r.body).includes('Sensitive'));
+    assert.ok(!JSON.stringify(r.body).includes('synthetic-token'));
+  }
+});
+
+test('owner start hides arbitrary exception contents and blocks non-owner diagnostics', async () => {
+  const secret = 'internal-only-provider-secret';
+  const elevated = createSocialXOAuthStart({
+    env: ENV,
+    auth: { verify: async () => ({ userId: USER, emailVerified: true }),
+      authorizeIamRole: async () => true },
+    store: { beginOAuth: async () => { throw new Error(secret); } },
+  });
+  const a = res();
+  await elevated.handle(req(), a, url(), json);
+  assert.deepEqual(a.body, { error: 'social_x_oauth_unavailable',
+    diagnostic: 'internal_unclassified' });
+  assert.ok(!JSON.stringify(a.body).includes(secret));
+
+  let called = 0;
+  const nonowner = createSocialXOAuthStart({
+    env: ENV,
+    auth: { verify: async () => ({ userId: USER, emailVerified: true }),
+      authorizeIamRole: async () => false,
+      internalAccessToken: async () => { called++; return secret; } },
+    store: { beginOAuth: async () => { called++; } },
+  });
+  const b = res();
+  await nonowner.handle(req(), b, url(), json);
+  assert.equal(b.status, 403);
+  assert.equal(b.body.diagnostic, undefined);
+  assert.equal(called, 0);
+});

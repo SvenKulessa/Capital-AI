@@ -8,6 +8,32 @@ import { socialXOAuthConfigured } from './x-oauth-exchange.mjs';
 const START_PATH = '/api/social-media/x/auth/start';
 const CALLBACK_PATH = '/api/social-media/auth/callback';
 const SCOPES = 'tweet.read tweet.write users.read offline.access';
+ 
+// Only ever show an allowlisted error category to a verified IAM owner.
+// Never forward provider responses, errors, URLs, credentials, JWTs or verifier
+// material into the browser, diagnostics or logs.
+const OWNER_SAFE_START_DIAGNOSTICS = Object.freeze({
+  SOCIAL_X_EDGE_WORKLOAD_UNCONFIGURED: 'edge_workload_key_invalid',
+  SOCIAL_X_EDGE_AUTH_UNAVAILABLE: 'edge_owner_session_token_unavailable',
+  SOCIAL_X_EDGE_URL_INVALID: 'edge_project_url_invalid',
+  SOCIAL_X_EDGE_ORIGIN_INVALID: 'edge_app_origin_invalid',
+  SOCIAL_X_EDGE_DISABLED: 'edge_mode_disabled',
+  SOCIAL_X_EDGE_UNAVAILABLE: 'edge_network_unavailable',
+  SOCIAL_X_EDGE_REJECTED: 'edge_request_rejected',
+  SOCIAL_X_EDGE_RESPONSE_INVALID: 'edge_response_invalid',
+  SOCIAL_X_EDGE_BEGIN_INVALID: 'edge_state_not_confirmed',
+  SOCIAL_X_EDGE_USER_INVALID: 'edge_owner_id_invalid',
+  SOCIAL_X_EDGE_REDIRECT_DENIED: 'edge_callback_denied',
+  SOCIAL_PROVIDER_OAUTH_USER_REQUIRED: 'oauth_owner_id_invalid',
+  SOCIAL_PROVIDER_OAUTH_REDIRECT_DENIED: 'oauth_callback_denied',
+  SOCIAL_PROVIDER_OAUTH_PKCE_REQUIRED: 'oauth_pkce_invalid',
+  SOCIAL_X_OAUTH_STATE_INVALID: 'oauth_state_invalid',
+});
+function safeOwnerFailure(error) {
+  return Object.hasOwn(OWNER_SAFE_START_DIAGNOSTICS, error?.message)
+    ? OWNER_SAFE_START_DIAGNOSTICS[error.message] : 'internal_unclassified';
+}
+
 
 function originFromEnv(env) {
   const parsed = new URL(env.PUBLIC_APP_ORIGIN);
@@ -84,9 +110,11 @@ export function createSocialXOAuthStart({ env = process.env, auth,
       res.writeHead(303, { Location: authorize.toString(),
         'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' });
       res.end();
-    } catch {
-      // Errors must not disclose the PKCE verifier, OAuth state or provider data.
-      json(res, 503, { error: 'social_x_oauth_unavailable' });
+    } catch (error) {
+      // Only the verified, email-confirmed IAM owner reaches this block.
+      // Map internal errors to a fixed, token-free diagnostic category.
+      json(res, 503, { error: 'social_x_oauth_unavailable',
+        diagnostic: safeOwnerFailure(error) });
     }
     return true;
   }

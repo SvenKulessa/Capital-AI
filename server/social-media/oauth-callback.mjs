@@ -35,8 +35,11 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
       return true;
     }
     // X supplies only state and code; channel is verified against the DB-bound state.
-    const channel = url.searchParams.get('channel') ?? 'X';
     const state = url.searchParams.get('state');
+    const youtubeState = /(?:^|;\s*)capital_youtube_oauth_state=([A-Za-z0-9_-]{43})(?:;|$)/
+      .exec(req.headers?.cookie || '')?.[1];
+    const channel = url.searchParams.get('channel')
+      ?? (youtubeState && youtubeState === state ? 'YOUTUBE' : 'X');
     const code = url.searchParams.get('code');
     if (!allowed.includes(channel) || url.searchParams.has('error')
       || !/^[A-Za-z0-9_-]{43}$/.test(state || '')
@@ -49,7 +52,7 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
       json(res, 401, { error: 'authentication_required' });
       return true;
     }
-    if (channel === 'X' && (identity.emailVerified !== true
+    if (['X', 'YOUTUBE'].includes(channel) && (identity.emailVerified !== true
       || await auth?.authorizeIamRole?.(req, res, 'owner') !== true)) {
       json(res, 403, { error: 'owner_authorization_required' });
       return true;
@@ -58,8 +61,8 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
     // accepted as a redirect destination or token endpoint.
     const redirectUri = new URL(path, origin).toString();
     try {
-      const activeStore = store ?? (channel === 'X' && socialXEdgeMode(env)
-        ? createSocialXEdgeClient({ env, fetchImpl,
+      const activeStore = store ?? (['X', 'YOUTUBE'].includes(channel) && socialXEdgeMode(env)
+        ? createSocialXEdgeClient({ env, fetchImpl, channel,
           userAccessToken: await auth?.internalAccessToken?.(req, res) })
         : createSocialProviderStore({ env, fetchImpl }));
       const result = await activeStore.consumeOAuthCallback({
@@ -76,6 +79,18 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
       });
       if (result?.consumed !== true || result.platform !== channel.toLowerCase()) {
         throw new Error('SOCIAL_OAUTH_CALLBACK_READBACK_MISMATCH');
+      }
+      if (channel === 'YOUTUBE') {
+        const existingCookies = res.getHeader?.('Set-Cookie');
+        res.setHeader('Set-Cookie', [
+          ...(Array.isArray(existingCookies) ? existingCookies : existingCookies ? [existingCookies] : []),
+          'capital_youtube_oauth_state=; Path=/api/social-media/auth/callback; HttpOnly; Secure; SameSite=Lax; Max-Age=0',
+        ]);
+      }
+      if (channel === 'YOUTUBE') {
+        res.writeHead(303, { Location: '/api/social-media/youtube/account/status', 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' });
+        res.end();
+        return true;
       }
       // 204 deliberately does not assert that a provider account is linked.
       res.writeHead(204, { 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' });
