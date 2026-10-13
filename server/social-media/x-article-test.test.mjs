@@ -8,6 +8,9 @@ const KEY='ab'.repeat(32), ACCOUNT='123456789012345678', HANDLE='CapitalAIOnline
 const ENV={
   PUBLIC_APP_ORIGIN:'https://capital-ai.online/',
   SOCIAL_X_EDGE_STORE_ENABLED:'true',
+  SOCIAL_X_EDGE_WORKLOAD_SECRET:KEY,
+  SUPABASE_URL:'https://fixture.supabase.co/',
+  SUPABASE_PUBLISHABLE_KEY:'synthetic-publishable-key',
   SOCIAL_X_ARTICLE_TEST_ENABLED:'true',
   SOCIAL_X_PAID_WRITE_APPROVED:'true',
   SOCIAL_X_PAID_READ_APPROVED:'true',
@@ -21,7 +24,8 @@ function cipher(secret,kind='access') {
   const iv=randomBytes(12);
   const c=createCipheriv('aes-256-gcm', Buffer.from(KEY,'hex'), iv);
   c.setAAD(Buffer.from(JSON.stringify(['capital-social-x-v1',USER,kind])));
-  return 'v1.'+[iv,c.getAuthTag(),Buffer.concat([c.update(secret,'utf8'),c.final()])]
+  const ciphertext = Buffer.concat([c.update(secret,'utf8'),c.final()]);
+  return 'v1.'+[iv,c.getAuthTag(),ciphertext]
     .map(x=>x.toString('base64url')).join('.');
 }
 function response() {
@@ -102,7 +106,9 @@ test('single Article creates draft, publishes, verifies author and never repeats
   assert.equal(f.store.get(CONTENT_KEY).status,'VERIFIED_PUBLISHED');
   const again=response();
   await f.handler.handle(request(),again,new URL(url('/publish')),json);
-  assert.equal(again.code,409);
+  assert.equal(again.code,200);
+  assert.equal(again.body.status,'VERIFIED_PUBLISHED');
+  assert.equal(again.body.note,'existing_receipt_no_automatic_replay');
   assert.equal(again.body.retryPublish,false);
   assert.deepEqual(f.stats(),{draftCount:1,publishCount:1,readCount:1});
 });

@@ -54,7 +54,7 @@ Social-Publishing-Flag `SOCIAL_PROVIDER_PUBLISH_ENABLED` ist hierfür
 **nicht erforderlich**; andere Kanäle bleiben unabhängig gesperrt.
 
 Rollout nach erfolgreichem Required Check und Merge auf main:
-1. Migration `20261013171200_x_article_test_once.sql` auf demselben aktiven Supabase-Projekt anwenden.
+1. Migration `20261013153200_x_article_test_once.sql` auf demselben aktiven Supabase-Projekt anwenden.
 2. Edge `capital-social-x-vault` mit `verify_jwt=true` aus gemergtem HEAD aktualisieren.
 3. Render Auto-Deploy/Head-SHA prüfen und Server-Runtime nachweisen.
 4. X Console Credits/Spend-Cap durch Owner prüfen; Flags gezielt aktivieren.
