@@ -22,6 +22,7 @@ pg -f /work/supabase/migrations/20261008113000_social_provider_store.sql
 pg -f /work/supabase/migrations/20261013035202_capital_social_owner_token_refresh.sql
 pg -f /work/supabase/migrations/20261013030655_youtube_private_upload_jobs.sql
 pg -f /work/supabase/migrations/20261013105500_youtube_private_deleted_receipt_recovery.sql
+pg -f /work/supabase/migrations/20261013110247_youtube_private_deleted_receipt_recovery.sql
 pg -f /work/scripts/social-provider-db-data.sql
 pg -f /work/scripts/social-provider-db-before.sql
 
