@@ -396,3 +396,9 @@
 !server/social-media/youtube-oauth-exchange.mjs
 !server/social-media/youtube-account-status.mjs
 !server/social-media/youtube-oauth.test.mjs
+
+!server/social-media/youtube-token-resolver.mjs
+!server/social-media/youtube-private-upload.mjs
+!server/social-media/youtube-runtime.test.mjs
+!public/youtube-private-upload.js
+!supabase/migrations/20261013030655_youtube_private_upload_jobs.sql
