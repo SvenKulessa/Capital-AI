@@ -1,0 +1,66 @@
+name: Supabase encrypted Drive backup
+on:
+  schedule:
+    - cron: '17 5 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: capital-ai-supabase-drive-backup
+  cancel-in-progress: false
+jobs:
+  encrypted-backup:
+    if: github.repository == 'SvenKulessa/Capital-AI' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      LANGSMITH_TRACING: 'false'
+    steps:
+      - name: Fail closed on missing credentials before installing tools
+        shell: bash
+        env:
+          BACKUP_DB_SECRET: ${{ secrets.CAPITAL_BACKUP_SUPABASE_DB_URL }}
+          BACKUP_AGE_PUBLIC: ${{ vars.CAPITAL_BACKUP_AGE_RECIPIENT }}
+          BACKUP_DRIVE_FOLDER: ${{ vars.CAPITAL_BACKUP_DRIVE_FOLDER_ID }}
+          BACKUP_GOOGLE_ID: ${{ secrets.CAPITAL_BACKUP_GOOGLE_CLIENT_ID }}
+          BACKUP_GOOGLE_SECRET: ${{ secrets.CAPITAL_BACKUP_GOOGLE_CLIENT_SECRET }}
+          BACKUP_GOOGLE_TOKEN: ${{ secrets.CAPITAL_BACKUP_GOOGLE_OAUTH_TOKEN }}
+        run: |
+          set -Eeuo pipefail
+          for name in BACKUP_DB_SECRET BACKUP_AGE_PUBLIC BACKUP_DRIVE_FOLDER BACKUP_GOOGLE_ID BACKUP_GOOGLE_SECRET BACKUP_GOOGLE_TOKEN; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "BACKUP_BLOCKED: required GitHub secret or variable not configured ($name)"
+              exit 1
+            fi
+          done
+          echo "BACKUP_CREDENTIALS_PRESENT: values redacted; access not yet verified"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24.19.0'
+      - name: Install pinned Supabase CLI
+        uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
+        with:
+          version: 2.120.0
+      - name: Install age and rclone from runner distribution
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends age rclone
+          age --version
+          rclone version | head -n 1
+      - name: Export, encrypt, upload and readback ciphertext
+        shell: bash
+        env:
+          SUPABASE_DB_URL: ${{ secrets.CAPITAL_BACKUP_SUPABASE_DB_URL }}
+          CAPITAL_BACKUP_AGE_RECIPIENT: ${{ vars.CAPITAL_BACKUP_AGE_RECIPIENT }}
+          RCLONE_CONFIG_BACKUPDRIVE_TYPE: drive
+          RCLONE_CONFIG_BACKUPDRIVE_SCOPE: drive
+          RCLONE_CONFIG_BACKUPDRIVE_ROOT_FOLDER_ID: ${{ vars.CAPITAL_BACKUP_DRIVE_FOLDER_ID }}
+          RCLONE_CONFIG_BACKUPDRIVE_CLIENT_ID: ${{ secrets.CAPITAL_BACKUP_GOOGLE_CLIENT_ID }}
+          RCLONE_CONFIG_BACKUPDRIVE_CLIENT_SECRET: ${{ secrets.CAPITAL_BACKUP_GOOGLE_CLIENT_SECRET }}
+          RCLONE_CONFIG_BACKUPDRIVE_TOKEN: ${{ secrets.CAPITAL_BACKUP_GOOGLE_OAUTH_TOKEN }}
+        run: bash scripts/platform/supabase-drive-backup.sh
