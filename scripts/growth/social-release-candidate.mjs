@@ -26,6 +26,7 @@ export function buildCandidate(event,filenames,registry){
   if(/^(CAPITAL-AI-GROWTH\/|docs\/growth\/|server\/social-media\/|src\/contracts\/content|src\/platform\/SocialMediaEngine\/)/.test(x))domains.add('GROWTH');
   if(/^(CAPITAL-AI-PRODUCT\/|src\/features\/|src\/components\/|apps\/)/.test(x))domains.add('PRODUCT');
  }
+ domains.add('GROWTH'); // Editorial pipeline is always GROWTH even for non-domain file changes.
  const route=[...domains].sort();
  if(registry?.authority!=='AGENTS.md'||registry?.contract!=='SOLO_MAINTAINER_FLOW@1'||
  route.some(d=>!registry.domains?.[d]?.engineering||!registry.domains?.[d]?.advisory))throw Error('MERGE_SKILL_REGISTRY_INVALID');
