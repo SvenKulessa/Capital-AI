@@ -127,8 +127,12 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
       res.end();
     } catch (error) {
       // Identity and IAM owner role have already been checked above.
-      json(res, 503, { error: 'social_oauth_callback_unavailable',
-        diagnostic: safeOwnerCallbackFailure(error) });
+      // Other social channels have not passed the owner-only authorization
+      // boundary; preserve their generic response without diagnostic metadata.
+      json(res, 503, ['X', 'YOUTUBE'].includes(channel)
+        ? { error: 'social_oauth_callback_unavailable',
+          diagnostic: safeOwnerCallbackFailure(error) }
+        : { error: 'social_oauth_callback_unavailable' });
     }
     return true;
   }
