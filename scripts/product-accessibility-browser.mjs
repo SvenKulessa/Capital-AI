@@ -41,7 +41,9 @@ async function navigate(path) {
   await send('Page.navigate', { url: url.href });
   for (let attempt = 0; attempt < 120; attempt++) {
     try {
-      const ready = await evaluate("document.readyState === 'complete' && !!document.querySelector('main,nav,header')");
+      const target = path === '/learning/simulator' ? '#sim-title'
+        : path === '/learning' ? '.hub-navigation nav.hub-tab-strip' : 'main,nav,header';
+      const ready = await evaluate("document.readyState === 'complete' && !!document.querySelector(" + JSON.stringify(target) + ")");
       if (ready) { await pause(800); return; }
     } catch { /* navigation in progress */ }
     await pause(100);
