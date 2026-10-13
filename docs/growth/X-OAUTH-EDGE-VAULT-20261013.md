@@ -79,3 +79,60 @@ Verbindung, nicht zwingend das Verhalten jedes späteren OAuth-Versuchs.
 
 Tests: `node --test server/social-media/oauth-callback.test.mjs`;
 CI: normale PR-Security- und Domain-Governance-Checks.
+
+## X-Refresh: Owner-Lease und atomare Rotation (13.10.2026)
+
+**Stand vor produktiver DB-/Edge-/Render-Abnahme: NOT_PROVEN.**
+Ein bestätigter IAM-Owner kann den X-Refresh nur per gleich-originigem
+`POST /api/social-media/x/account/refresh` auslösen. Bereits bestehend auf
+`main` ist der separate YouTube-Refresh über
+`server/social-media/youtube-token-resolver.mjs` bei Status-/Private-Upload-
+Anfragen. Diese Änderung ersetzt den YouTube-Resolver **nicht** und erzeugt
+keinen konkurrierenden Google-Refresh-Endpunkt.
+
+X-Ablauf:
+
+1. Render prüft aktuelle Owner-Sitzung, bestätigte E-Mail, Same-Origin,
+   `SOCIAL_X_EDGE_STORE_ENABLED`, die OAuth-Konfiguration und **vor jeglichem
+   Provider-/Vault-I/O** das budgetgebundene
+   `SOCIAL_X_PAID_READ_APPROVED=true`. Ohne tatsächliche Berechtigung:
+   HTTP 403; keine X-Abfrage.
+2. Der JWT- und HMAC-gesicherte Supabase Edge Vault beansprucht per
+   `capital_social_claim_token_refresh` eine exklusive Zwei-Minuten-Lease,
+   nur für das eigene X-Konto und höchstens zehn Minuten vor Ablauf.
+   Die service-role-only RPC ist `SECURITY INVOKER`, atomic
+   `UPDATE ... RETURNING`; andere Owner, doppelte Calls und Replays
+   bleiben gesperrt.
+3. Die AES-256-GCM-Verschlüsselung bindet den Refresh-Token an
+   `['capital-social-x-v1', ownerId, 'refresh']`. Nur die
+   verifizierte Render-Workload erhält den verschlüsselten Token.
+   X erneuert den Grant per OAuth-Refresh mit `offline.access`; ein
+   neuer rotierender Refresh-Token ist erforderlich. Die zugeordnete
+   X-User-ID wird **vor** einer Persistierung read-only verifiziert.
+4. `capital_social_finish_token_refresh` rotiert Access- und
+   Refresh-Ciphertext atomar anhand der Lease-ID, des bisherigen
+   Refresh-Ciphertexts (CAS) und des gebundenen User-Accounts.
+   `invalid_grant`, unklare Providerantworten, divergierende Identität
+   und ambige Netzwerkfälle lösen **keine** blinde Wiederholung aus.
+   Bei 429 gilt ein 15-Minuten-Cooldown; beim Widerruf ist
+   eine erneute Owner-OAuth-Verbindung erforderlich.
+5. Der Browser erhält ausschließlich Status und Ablaufzeitpunkt;
+   niemals OAuth-Codes, Provider-Secrets, Ciphertexts, User-JWTs oder
+   X-Provider-Payloads.
+
+**Kosten:** X bietet laut https://developer.x.com/ eine
+verbrauchsbasierte API-Abrechnung. User-Reads sind potenziell
+abrechenbar; der tatsächliche Owner-Kontostand ist `NOT_PROVEN`.
+YouTube-Identitäts-Readback kostet laut
+https://developers.google.com/youtube/v3/docs/channels/list
+eine API-Quota-Einheit. Keine Posting-Freigabe, kein neuer bezahlter Tarif
+und kein unbeaufsichtigter Scheduler werden durch diese Implementierung
+aktiviert.
+
+Migration: `20261013035202_capital_social_owner_token_refresh.sql`.
+Deploy-Reihenfolge: vollständige PR-Checks → Merge → Migration
+(aktuelles Supabase-Projekt) → Edge Function mit `verify_jwt=true` →
+Render-Main-Readback → datierter Owner-Live-Readback. Vor dem
+Backend-Rollout bleibt der X-Refresh-Endpunkt fail-closed.
+Tests: `npm run test:x-oauth`, `npm run test:social-provider`
+und das vorhandene isolierte `social-provider-postgres`-CI.

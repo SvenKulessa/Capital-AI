@@ -25,5 +25,26 @@ jobs:
           age --version
       - name: Real cryptographic encryption/decryption smoke
         run: bash scripts/platform/drive-encryption-test.sh
+      - name: Verify configured public recovery recipient (synthetic data only)
+        shell: bash
+        env:
+          CAPITAL_BACKUP_AGE_RECIPIENT: ${{ vars.CAPITAL_BACKUP_AGE_RECIPIENT }}
+        run: |
+          set -Eeuo pipefail
+          umask 077
+          if [[ -z "${CAPITAL_BACKUP_AGE_RECIPIENT:-}" ]]; then
+            echo "BACKUP_AGE_RECIPIENT_NOT_CONFIGURED"
+            exit 1
+          fi
+          testdir="$(mktemp -d "${RUNNER_TEMP}/age-recipient-XXXXXX")"
+          trap 'rm -rf -- "$testdir"' EXIT
+          printf 'CAPITAL-AI-SYNTHETIC-TEST-ONLY\n' > "$testdir/synthetic.txt"
+          bash scripts/platform/drive-encrypt.sh "$testdir/synthetic.txt" "$testdir/synthetic.txt.age" >/dev/null
+          test -s "$testdir/synthetic.txt.age"
+          if cmp -s "$testdir/synthetic.txt" "$testdir/synthetic.txt.age"; then
+            echo "BACKUP_AGE_PLAINTEXT_DETECTED"
+            exit 1
+          fi
+          echo "BACKUP_AGE_PUBLIC_RECIPIENT_VALIDATED"
       - name: Verify encrypted Blueprint manifest and failure handling (synthetic fixtures)
         run: node --test scripts/trust/verify-blueprint-backup.test.mjs

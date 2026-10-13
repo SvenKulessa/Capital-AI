@@ -106,6 +106,70 @@ async function execute(fetchImpl, keys, userId, input) {
   const validId = value => channel === 'X' ? XID.test(value || '') : /^UC[A-Za-z0-9_-]{22}$/.test(value || '');
   const validHandle = value => channel === 'X' ? HANDLE.test(value || '')
     : typeof value === 'string' && value.length > 0 && value.length <= 140;
+  if (['credentials', 'refresh', 'private_claim', 'private_receipt', 'private_status'].includes(operation)) {
+    abortUnless(channel === 'YOUTUBE');
+    const accountUrl = new URL('/rest/v1/social_media_accounts', keys.origin);
+    accountUrl.searchParams.set('user_id', 'eq.' + userId);
+    accountUrl.searchParams.set('platform', 'eq.youtube');
+    accountUrl.searchParams.set('select', 'id,user_id,platform,status,external_account_id,handle,scopes,access_token_encrypted,refresh_token_encrypted,token_expires_at');
+    accountUrl.searchParams.set('limit', '1');
+    const accounts = await jsonFetch(fetchImpl, accountUrl, { method: 'GET', headers: adminHeaders(keys.admin) });
+    const account = Array.isArray(accounts) && accounts.length === 1 ? accounts[0] : null;
+    abortUnless(account?.user_id === userId && account.platform === 'youtube' && account.status === 'connected'
+      && UUID.test(account.id || '') && validId(account.external_account_id)
+      && scopes.every(x => account.scopes?.includes(x)));
+    if (operation === 'credentials') return account; // Ciphertext only, authenticated Render workload.
+    if (operation === 'refresh') {
+      abortUnless(input.accountId === account.id && input.channelId === account.external_account_id && input.previousExpiresAt === account.token_expires_at
+        && CIPHER.test(input.tokens?.access_token_encrypted || '')
+        && CIPHER.test(input.tokens?.refresh_token_encrypted || '')
+        && Date.parse(input.tokens?.token_expires_at || '') > Date.now() + 300000
+        && Date.parse(input.tokens.token_expires_at) < Date.now() + 86400000);
+      accountUrl.searchParams.delete('select'); accountUrl.searchParams.delete('limit');
+      accountUrl.searchParams.set('id', 'eq.' + account.id);
+      accountUrl.searchParams.set('status', 'eq.connected');
+      accountUrl.searchParams.set('external_account_id', 'eq.' + account.external_account_id);
+      accountUrl.searchParams.set('token_expires_at', 'eq.' + input.previousExpiresAt);
+      const rows = await jsonFetch(fetchImpl, accountUrl, { method: 'PATCH',
+        headers: adminHeaders(keys.admin, { Prefer: 'return=representation' }),
+        body: JSON.stringify({ access_token_encrypted: input.tokens.access_token_encrypted,
+          refresh_token_encrypted: input.tokens.refresh_token_encrypted, token_expires_at: input.tokens.token_expires_at }) });
+      abortUnless(Array.isArray(rows) && rows.length <= 1);
+      return { updated: rows.length === 1 };
+    }
+    abortUnless(UUID.test(input.jobId || '') && SHA256.test(input.assetSha256 || '')
+      && input.accountId === account.id && input.channelId === account.external_account_id);
+    const jobs = new URL('/rest/v1/youtube_private_upload_jobs', keys.origin);
+    if (operation === 'private_claim') {
+      const row = { id: input.jobId, user_id: userId, account_id: account.id,
+        channel_id: input.channelId, asset_sha256: input.assetSha256, status: 'UNKNOWN' };
+      const inserted = await fetchImpl(jobs, { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(7000),
+        headers: adminHeaders(keys.admin, { Prefer: 'return=representation' }), body: JSON.stringify(row) });
+      if (inserted.ok) {
+        const text = await inserted.text(); abortUnless(text.length < 8192);
+        const rows = JSON.parse(text); abortUnless(Array.isArray(rows) && rows.length === 1
+          && rows[0]?.id === input.jobId && rows[0]?.user_id === userId && rows[0]?.asset_sha256 === input.assetSha256);
+        return { claimed: true, jobId: input.jobId };
+      }
+      abortUnless(inserted.status === 409);
+    }
+    jobs.searchParams.set('id', 'eq.' + input.jobId); jobs.searchParams.set('user_id', 'eq.' + userId);
+    jobs.searchParams.set('account_id', 'eq.' + account.id);
+    if (operation === 'private_receipt') {
+      abortUnless(/^[A-Za-z0-9_-]{11}$/.test(input.videoId || '') && input.privacyStatus === 'private');
+      const rows = await jsonFetch(fetchImpl, jobs, { method: 'PATCH',
+        headers: adminHeaders(keys.admin, { Prefer: 'return=representation' }),
+        body: JSON.stringify({ video_id: input.videoId, status: input.verified === true ? 'VERIFIED_PRIVATE' : 'UNKNOWN',
+          ...(input.verified === true ? { verified_at: new Date().toISOString() } : {}) }) });
+      abortUnless(Array.isArray(rows) && rows.length === 1); return { saved: true };
+    }
+    jobs.searchParams.set('select', 'id,channel_id,asset_sha256,status,video_id,verified_at');
+    const rows = await jsonFetch(fetchImpl, jobs, { method: 'GET', headers: adminHeaders(keys.admin) });
+    abortUnless(Array.isArray(rows) && rows.length <= 1);
+    const row = rows[0] || null;
+    abortUnless(!row || (row.channel_id === input.channelId && row.asset_sha256 === input.assetSha256));
+    return { claimed: false, job: row };
+  }
   if (operation === 'begin') {
     abortUnless(SHA256.test(input.stateHash || '')
       && VERIFIER.test(input.codeVerifier || '') && input.redirectUri === CALLBACK);
@@ -153,6 +217,8 @@ async function execute(fetchImpl, keys, userId, input) {
       access_token_encrypted: account.access_token_encrypted,
       refresh_token_encrypted: account.refresh_token_encrypted,
       token_expires_at: account.token_expires_at, connected_at: new Date().toISOString(),
+      refresh_lease_id: null, refresh_lease_until: null,
+      refresh_retry_after: null, refresh_reconnect_required: false,
     };
     const target = keys.origin
       + '/rest/v1/social_media_accounts?on_conflict=user_id%2Cplatform';
@@ -170,12 +236,67 @@ async function execute(fetchImpl, keys, userId, input) {
       && rows[0]?.refresh_token_encrypted === row.refresh_token_encrypted);
     return { connected: true, accountId: row.external_account_id, handle: row.handle };
   }
+  if (operation === 'refresh_claim') {
+    abortUnless(channel === 'X' && UUID.test(input.leaseId || ''));
+    const row = await jsonFetch(fetchImpl,
+      keys.origin + '/rest/v1/rpc/capital_social_claim_token_refresh',
+      { method: 'POST', headers: adminHeaders(keys.admin),
+        body: JSON.stringify({ p_user_id: userId, p_platform: platform,
+          p_lease_id: input.leaseId }) });
+    abortUnless(row?.user_id === userId && row?.platform === platform
+      && row?.refresh_lease_id === input.leaseId
+      && validId(row?.external_account_id) && validHandle(row?.handle)
+      && CIPHER.test(row?.refresh_token_encrypted || '')
+      && scopes.every(x => Array.isArray(row?.scopes) && row.scopes.includes(x)));
+    // Only signed owner workload can receive this sealed refresh credential.
+    // This response must never be forwarded by Render to a browser.
+    return { claimed: true, leaseId: input.leaseId,
+      refreshCipher: row.refresh_token_encrypted,
+      accountId: row.external_account_id, handle: row.handle, scopes };
+  }
+  if (operation === 'refresh_finish') {
+    abortUnless(channel === 'X' && UUID.test(input.leaseId || '')
+      && CIPHER.test(input.previousCipher || '')
+      && CIPHER.test(input.accessCipher || '')
+      && CIPHER.test(input.refreshCipher || '')
+      && typeof input.expiresAt === 'string'
+      && Date.parse(input.expiresAt) > Date.now() + 60000
+      && Date.parse(input.expiresAt) < Date.now() + 86400000);
+    const row = await jsonFetch(fetchImpl,
+      keys.origin + '/rest/v1/rpc/capital_social_finish_token_refresh',
+      { method: 'POST', headers: adminHeaders(keys.admin),
+        body: JSON.stringify({ p_user_id: userId, p_platform: platform,
+          p_lease_id: input.leaseId, p_previous_cipher: input.previousCipher,
+          p_access_cipher: input.accessCipher, p_refresh_cipher: input.refreshCipher,
+          p_expires_at: input.expiresAt }) });
+    abortUnless(row?.user_id === userId && row?.platform === platform
+      && row?.status === 'connected' && row?.refresh_lease_id === null
+      && row?.access_token_encrypted === input.accessCipher
+      && row?.refresh_token_encrypted === input.refreshCipher);
+    return { refreshed: true, channel, expiresAt: row.token_expires_at };
+  }
+  if (operation === 'refresh_end') {
+    abortUnless(channel === 'X' && UUID.test(input.leaseId || '')
+      && ['reconnect','rate_limited'].includes(input.outcome));
+    const row = await jsonFetch(fetchImpl,
+      keys.origin + '/rest/v1/rpc/capital_social_end_token_refresh',
+      { method: 'POST', headers: adminHeaders(keys.admin),
+        body: JSON.stringify({ p_user_id: userId, p_platform: platform,
+          p_lease_id: input.leaseId, p_outcome: input.outcome }) });
+    abortUnless(row?.user_id === userId && row?.platform === platform
+      && row?.refresh_lease_id === null
+      && (input.outcome === 'reconnect'
+        ? row.refresh_reconnect_required === true && row.status === 'token_expired'
+        : row.refresh_retry_after != null));
+    return { channel, status: input.outcome === 'reconnect'
+      ? 'reconnect_required' : 'retry_later' };
+  }
   if (operation === 'status') {
     const target = new URL('/rest/v1/social_media_accounts', keys.origin);
     target.searchParams.set('user_id', 'eq.' + userId);
     target.searchParams.set('platform', 'eq.' + platform);
     target.searchParams.set('select',
-      'status,platform,external_account_id,handle,scopes,token_expires_at,connected_at');
+      'status,platform,external_account_id,handle,scopes,token_expires_at,connected_at,refresh_reconnect_required,refresh_retry_after');
     target.searchParams.set('limit', '1');
     const rows = await jsonFetch(fetchImpl, target,
       { method: 'GET', headers: adminHeaders(keys.admin) }, 4096);
@@ -186,11 +307,14 @@ async function execute(fetchImpl, keys, userId, input) {
     const scopesOk = scopes.every(x => Array.isArray(row?.scopes) && row.scopes.includes(x));
     const valid = Number.isFinite(Date.parse(row?.token_expires_at || ''))
       && Date.parse(row?.token_expires_at || '') > Date.now() + 60000;
-    const connected = Boolean(row?.status === 'connected' && scopesOk && valid);
+    const reconnect = row?.refresh_reconnect_required === true;
+    const throttled = Date.parse(row?.refresh_retry_after || '') > Date.now();
+    const connected = Boolean(row?.status === 'connected' && scopesOk && valid && !reconnect);
     return { channel, connected,
-      status: connected ? 'connected' : row?.status === 'connected'
-        ? (scopesOk ? 'token_expired' : 'permissions_missing')
-        : (row?.status || 'not_connected'),
+      status: reconnect ? 'reconnect_required' : connected ? 'connected'
+        : throttled ? 'retry_later' : row?.status === 'connected'
+          ? (scopesOk ? 'token_expired' : 'permissions_missing')
+          : (row?.status || 'not_connected'),
       handle: row ? (channel === 'X' ? '@' + row.handle : row.handle) : null,
       accountId: row?.external_account_id || null,
       scopes: connected ? scopes : [],

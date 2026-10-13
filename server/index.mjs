@@ -10,11 +10,13 @@ import { assetCatalog, assetValues, quote, health, startStreams } from './market
 import { createAuth } from './auth.mjs';
 import { createSocialOAuthCallback } from './social-media/oauth-callback.mjs';
 import { createSocialXOAuthStart } from './social-media/x-oauth-start.mjs';
+import { createYouTubePrivateUpload } from './social-media/youtube-private-upload.mjs';
 import { createSocialYouTubeOAuthStart } from './social-media/youtube-oauth-start.mjs';
 import { createSocialYouTubeOAuthExchange } from './social-media/youtube-oauth-exchange.mjs';
 import { createSocialYouTubeAccountStatus } from './social-media/youtube-account-status.mjs';
 import { createSocialXOAuthExchange } from './social-media/x-oauth-exchange.mjs';
 import { createSocialXAccountStatus } from './social-media/x-account-status.mjs';
+import { createSocialOwnerTokenRefresh } from './social-media/owner-token-refresh.mjs';
 import { createPrivateMarketCache } from './private-market-cache.mjs';
 import { createUserProviderVault } from './user-provider-vault.mjs';
 import { createUserAnalysisBindings } from './user-analysis-bindings.mjs';
@@ -306,6 +308,7 @@ export function createApp(root = defaultRoot, options = {}) {
     fetchImpl: options.fetchImpl || fetch,
     store: options.socialOAuthStore || null,
   });
+  const youtubePrivateUpload = createYouTubePrivateUpload({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const socialYouTubeOAuthStart = createSocialYouTubeOAuthStart({
     env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
     store: options.socialOAuthStore || null,
@@ -316,6 +319,9 @@ export function createApp(root = defaultRoot, options = {}) {
     env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
   });
   const socialXAccountStatus = createSocialXAccountStatus({
+    env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
+  });
+  const socialOwnerTokenRefresh = createSocialOwnerTokenRefresh({
     env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
   });
   const socialOAuthCallback = createSocialOAuthCallback({
@@ -404,9 +410,11 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await learningInquiry.handle(req, res, url, json)) return;
   if (await auth.handle(req, res, url, json)) return;
   if (await socialXOAuthStart.handle(req, res, url, json)) return;
+  if (await youtubePrivateUpload.handle(req, res, url, json)) return;
   if (await socialYouTubeOAuthStart.handle(req, res, url, json)) return;
   if (await socialYouTubeAccountStatus.handle(req, res, url, json)) return;
   if (await socialXAccountStatus.handle(req, res, url, json)) return;
+  if (await socialOwnerTokenRefresh.handle(req, res, url, json)) return;
   if (await socialOAuthCallback.handle(req, res, url, json)) return;
   if (await userProviderVault.handle(req, res, url, json)) return;
   if (await userAnalysisBindings.handle(req, res, url, json)) return;
