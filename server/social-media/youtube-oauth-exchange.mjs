@@ -8,7 +8,7 @@ const CALLBACK = '/api/social-media/auth/callback';
 const TEXT_MAX = 16 * 1024;
 
 function assert(condition, reason) { if (!condition) throw new Error(reason); }
-function providerConfig(env) {
+export function youtubeOAuthConfig(env) {
   assert(env?.SOCIAL_YOUTUBE_OAUTH_CONNECT_ENABLED === 'true'
     && env?.SOCIAL_OAUTH_CALLBACK_ENABLED === 'true', 'SOCIAL_YOUTUBE_OAUTH_DISABLED');
   const origin = new URL(env.PUBLIC_APP_ORIGIN);
@@ -56,9 +56,9 @@ function isServiceRoleJwt(key) {
   } catch { return false; }
 }
 export function socialYouTubeOAuthConfigured(env = process.env) {
-  try { providerConfig(env); return true; } catch { return false; }
+  try { youtubeOAuthConfig(env); return true; } catch { return false; }
 }
-function seal(value, key, { userId, kind }) {
+export function sealYouTubeToken(value, key, { userId, kind }) {
   assert(typeof value === 'string' && value.length >= 10 && value.length <= 8192,
     'SOCIAL_YOUTUBE_TOKEN_INVALID');
   const iv = randomBytes(12);
@@ -95,7 +95,7 @@ export function createSocialYouTubeOAuthExchange({ env = process.env, fetchImpl 
       && typeof trusted.code === 'string' && trusted.code.length > 0 && trusted.code.length <= 2048
       && /^[A-Za-z0-9_~-]{43,128}$/.test(trusted.codeVerifier || ''),
       'SOCIAL_YOUTUBE_OAUTH_CONTEXT_INVALID');
-    const cfg = providerConfig(env);
+    const cfg = youtubeOAuthConfig(env);
     assert(trusted.redirectUri === cfg.redirectUri, 'SOCIAL_YOUTUBE_OAUTH_REDIRECT_DENIED');
     const body = new URLSearchParams({
       grant_type: 'authorization_code', client_id: cfg.clientId,
@@ -141,8 +141,8 @@ export function createSocialYouTubeOAuthExchange({ env = process.env, fetchImpl 
       account_name: account.snippet.title.slice(0, 140),
       handle: handle, external_account_id: account.id,
       scopes: REQUIRED_SCOPES,
-      access_token_encrypted: seal(tokens.access_token, cfg.key, { userId: trusted.userId, kind: 'access' }),
-      refresh_token_encrypted: seal(tokens.refresh_token, cfg.key, { userId: trusted.userId, kind: 'refresh' }),
+      access_token_encrypted: sealYouTubeToken(tokens.access_token, cfg.key, { userId: trusted.userId, kind: 'access' }),
+      refresh_token_encrypted: sealYouTubeToken(tokens.refresh_token, cfg.key, { userId: trusted.userId, kind: 'refresh' }),
       token_expires_at: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
       connected_at: new Date().toISOString(),
     };
