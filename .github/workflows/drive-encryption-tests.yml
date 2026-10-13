@@ -1,0 +1,25 @@
+name: Drive Backup Encryption Test
+on:
+  pull_request:
+    paths:
+      - 'scripts/platform/drive-encrypt.sh'
+      - 'scripts/platform/drive-encryption-test.sh'
+      - '.github/workflows/drive-encryption-tests.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  encryption-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Install distribution-provided age (no third-party install scripts)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends age
+          age --version
+      - name: Real cryptographic encryption/decryption smoke
+        run: bash scripts/platform/drive-encryption-test.sh
