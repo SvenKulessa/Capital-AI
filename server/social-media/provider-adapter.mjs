@@ -293,7 +293,7 @@ export function createSocialOAuthState(input) {
   assert(validUserId(userId), 'SOCIAL_PROVIDER_OAUTH_USER_REQUIRED');
   assert(validHttpsUrl(redirectUri) && Array.isArray(allowedRedirectUris)
     && allowedRedirectUris.includes(redirectUri), 'SOCIAL_PROVIDER_OAUTH_REDIRECT_DENIED');
-  if (channel === 'X') {
+  if (['X', 'YOUTUBE'].includes(channel)) {
     assert(typeof codeVerifier === 'string' && codeVerifier.length >= 43
       && codeVerifier.length <= 128, 'SOCIAL_PROVIDER_OAUTH_PKCE_REQUIRED');
   }

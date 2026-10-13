@@ -43,10 +43,11 @@ function setup(env, userAccessToken) {
   };
 }
 export function createSocialXEdgeClient({ env = process.env, fetchImpl = fetch,
-  userAccessToken } = {}) {
+  userAccessToken, channel = 'X' } = {}) {
+  must(['X', 'YOUTUBE'].includes(channel), 'SOCIAL_EDGE_CHANNEL_INVALID');
   const cfg = setup(env, userAccessToken);
   async function invoke(operation, body) {
-    const payload = JSON.stringify({ operation, ...body });
+    const payload = JSON.stringify({ operation, ...body, channel });
     const timestamp = String(Date.now());
     const signature = createHmac('sha256', cfg.workloadKey)
       .update(timestamp + '\n' + cfg.userAccessToken + '\n' + payload).digest('hex');
@@ -67,23 +68,23 @@ export function createSocialXEdgeClient({ env = process.env, fetchImpl = fetch,
     catch { throw Error('SOCIAL_X_EDGE_RESPONSE_INVALID'); }
   }
   function assertOwner(userId) { must(UUID.test(userId || ''), 'SOCIAL_X_EDGE_USER_INVALID'); }
-  async function beginOAuth({ userId, channel, redirectUri, allowedRedirectUris,
+  async function beginOAuth({ userId, channel: requestedChannel, redirectUri, allowedRedirectUris,
     codeVerifier, now = Date.now() }) {
     assertOwner(userId);
-    must(channel === 'X' && redirectUri === cfg.redirectUri
+    must(requestedChannel === channel && redirectUri === cfg.redirectUri
       && allowedRedirectUris?.includes(cfg.redirectUri), 'SOCIAL_X_EDGE_REDIRECT_DENIED');
     const { state, row } = createSocialOAuthState({
-      userId, channel, redirectUri, allowedRedirectUris, codeVerifier, now,
+      userId, channel: requestedChannel, redirectUri, allowedRedirectUris, codeVerifier, now,
     });
     const result = await invoke('begin', { userId, stateHash: row.state_token,
       codeVerifier, redirectUri });
     must(result?.prepared === true, 'SOCIAL_X_EDGE_BEGIN_INVALID');
     return Object.freeze({ state, expiresAt: row.expires_at });
   }
-  async function consumeOAuthCallback({ userId, channel, redirectUri,
+  async function consumeOAuthCallback({ userId, channel: requestedChannel, redirectUri,
     allowedRedirectUris, state, code, exchangeCode }) {
     assertOwner(userId);
-    must(channel === 'X' && redirectUri === cfg.redirectUri
+    must(requestedChannel === channel && redirectUri === cfg.redirectUri
       && allowedRedirectUris?.includes(cfg.redirectUri)
       && typeof code === 'string' && code.length >= 1 && code.length <= 2048
       && typeof exchangeCode === 'function', 'SOCIAL_X_EDGE_CALLBACK_INVALID');
@@ -92,9 +93,9 @@ export function createSocialXEdgeClient({ env = process.env, fetchImpl = fetch,
     must(row?.consumed === true && typeof row.codeVerifier === 'string'
       && /^[A-Za-z0-9._~-]{43,128}$/.test(row.codeVerifier),
       'SOCIAL_X_EDGE_CONSUMPTION_INVALID');
-    await exchangeCode({ channel: 'X', code, redirectUri, userId,
+    await exchangeCode({ channel, code, redirectUri, userId,
       codeVerifier: row.codeVerifier, userAccessToken: cfg.userAccessToken });
-    return Object.freeze({ consumed: true, platform: 'x' });
+    return Object.freeze({ consumed: true, platform: channel.toLowerCase() });
   }
   async function persistAccount(userId, account) {
     assertOwner(userId);
@@ -106,9 +107,11 @@ export function createSocialXEdgeClient({ env = process.env, fetchImpl = fetch,
   async function status(userId) {
     assertOwner(userId);
     const data = await invoke('status', { userId });
-    must(data?.channel === 'X' && typeof data.connected === 'boolean'
+    must(data?.channel === channel && typeof data.connected === 'boolean'
       && typeof data.status === 'string'
-      && (data.handle === null || /^@[A-Za-z0-9_]{1,15}$/.test(data.handle)),
+      && (data.handle === null || (channel === 'X'
+        ? /^@[A-Za-z0-9_]{1,15}$/.test(data.handle)
+        : typeof data.handle === 'string' && data.handle.length <= 140)),
       'SOCIAL_X_EDGE_STATUS_INVALID');
     return data;
   }

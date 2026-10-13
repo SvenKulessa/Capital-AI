@@ -88,7 +88,7 @@ export function createSocialProviderStore({ env = process.env, fetchImpl = fetch
       && consumed?.redirect_uri === redirectUri
       && consumed?.state_token === stateHash && consumed?.used_at,
       'SOCIAL_OAUTH_CONSUME_NOT_CONFIRMED');
-    if (channel === 'X') {
+    if (['X', 'YOUTUBE'].includes(channel)) {
       assert(typeof consumed.code_verifier === 'string'
         && consumed.code_verifier.length >= 43, 'SOCIAL_OAUTH_PKCE_MISSING');
     }

@@ -26,6 +26,30 @@ const env = { get(name) { return ({
   SUPABASE_SERVICE_ROLE_KEY: 'synthetic-service-key-for-testing',
   SOCIAL_X_EDGE_WORKLOAD_SECRET: WORKLOAD,
 })[name] || null; } };
+
+test('YouTube uses the same workload boundary but binds state to youtube, never x', async () => {
+  const userId = 'd0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101';
+  const writes = [];
+  const config = { get(name) { return name === 'SUPABASE_SERVICE_ROLE_KEY'
+    ? 'sb_secret_synthetic_only_for_tests' : env.get(name); } };
+  const handler = createHandler({ env: config, fetchImpl: async (url, options) => {
+    const output = String(url).includes('/auth/v1/user')
+      ? { id: userId, email_confirmed_at: '2026-10-01' }
+      : String(url).includes('/profiles') ? [{ id: userId, iam_role: 'owner' }]
+        : (writes.push(JSON.parse(options.body)), null);
+    return { ok: true, text: async () => JSON.stringify(output) };
+  } });
+  const body = { operation: 'begin', channel: 'YOUTUBE', userId,
+    stateHash: 'a'.repeat(64), codeVerifier: 'v'.repeat(43),
+    redirectUri: 'https://capital-ai.online/api/social-media/auth/callback' };
+  assert.equal((await handler(signedRequest(body))).status, 200);
+  assert.equal(writes[0].platform, 'youtube');
+  assert.equal(writes[0].user_id, userId);
+  assert.equal((await handler(signedRequest(body, {
+    tamperBody: JSON.stringify({ ...body, channel: 'X' }),
+  }))).status, 503);
+  assert.equal(writes.length, 1);
+});
 test('X Edge rejects anonymous traffic before any network calls', async () => {
   let calls = 0;
   const handler = createHandler({ env, fetchImpl: async () => { calls++; throw Error(); } });
