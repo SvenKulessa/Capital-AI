@@ -98,10 +98,18 @@ function bodyValidation(operation, value, uid) {
 async function execute(fetchImpl, keys, userId, input) {
   const operation = input?.operation;
   bodyValidation(operation, input, userId);
+  const channel = input.channel ?? 'X';
+  abortUnless(['X', 'YOUTUBE'].includes(channel));
+  const platform = channel.toLowerCase();
+  const scopes = channel === 'X' ? SCOPES
+    : ['https://www.googleapis.com/auth/youtube.readonly', 'https://www.googleapis.com/auth/youtube.upload'];
+  const validId = value => channel === 'X' ? XID.test(value || '') : /^UC[A-Za-z0-9_-]{22}$/.test(value || '');
+  const validHandle = value => channel === 'X' ? HANDLE.test(value || '')
+    : typeof value === 'string' && value.length > 0 && value.length <= 140;
   if (operation === 'begin') {
     abortUnless(SHA256.test(input.stateHash || '')
       && VERIFIER.test(input.codeVerifier || '') && input.redirectUri === CALLBACK);
-    const row = { state_token: input.stateHash, user_id: userId, platform: 'x',
+    const row = { state_token: input.stateHash, user_id: userId, platform,
       redirect_uri: CALLBACK, code_verifier: input.codeVerifier,
       expires_at: new Date(Date.now() + 600000).toISOString() };
     await jsonFetch(fetchImpl, keys.origin + '/rest/v1/social_media_oauth_states',
@@ -115,8 +123,8 @@ async function execute(fetchImpl, keys, userId, input) {
       keys.origin + '/rest/v1/rpc/capital_social_consume_oauth_state',
       { method: 'POST', headers: adminHeaders(keys.admin),
         body: JSON.stringify({ p_state_hash: input.stateHash, p_user_id: userId,
-          p_platform: 'x', p_redirect_uri: CALLBACK }) });
-    abortUnless(result?.user_id === userId && result?.platform === 'x'
+          p_platform: platform, p_redirect_uri: CALLBACK }) });
+    abortUnless(result?.user_id === userId && result?.platform === platform
       && result?.state_token === input.stateHash && result?.redirect_uri === CALLBACK
       && result?.used_at && VERIFIER.test(result?.code_verifier || ''));
     // Verifier is returned only to a freshly reauthenticated owner over TLS,
@@ -126,8 +134,8 @@ async function execute(fetchImpl, keys, userId, input) {
   if (operation === 'persist') {
     const account = input.account;
     abortUnless(account && typeof account === 'object' && !Array.isArray(account)
-      && XID.test(account.external_account_id || '')
-      && HANDLE.test(account.handle || '')
+      && validId(account.external_account_id)
+      && validHandle(account.handle)
       && CIPHER.test(account.access_token_encrypted || '')
       && CIPHER.test(account.refresh_token_encrypted || '')
       && typeof account.account_name === 'string'
@@ -136,12 +144,12 @@ async function execute(fetchImpl, keys, userId, input) {
       && Date.parse(account.token_expires_at) > Date.now() + 60000
       && Date.parse(account.token_expires_at) < Date.now() + 86400000
       && Array.isArray(account.scopes)
-      && account.scopes.length === SCOPES.length
-      && SCOPES.every(x => account.scopes.includes(x)));
+      && account.scopes.length === scopes.length
+      && scopes.every(x => account.scopes.includes(x)));
     const row = {
-      user_id: userId, platform: 'x', status: 'connected',
+      user_id: userId, platform, status: 'connected',
       external_account_id: account.external_account_id, handle: account.handle,
-      account_name: account.account_name, scopes: SCOPES,
+      account_name: account.account_name, scopes,
       access_token_encrypted: account.access_token_encrypted,
       refresh_token_encrypted: account.refresh_token_encrypted,
       token_expires_at: account.token_expires_at, connected_at: new Date().toISOString(),
@@ -155,7 +163,7 @@ async function execute(fetchImpl, keys, userId, input) {
       body: JSON.stringify(row),
     });
     abortUnless(Array.isArray(rows) && rows.length === 1
-      && rows[0]?.user_id === userId && rows[0]?.platform === 'x'
+      && rows[0]?.user_id === userId && rows[0]?.platform === platform
       && rows[0]?.external_account_id === row.external_account_id
       && rows[0]?.handle === row.handle && rows[0]?.status === 'connected'
       && rows[0]?.access_token_encrypted === row.access_token_encrypted
@@ -165,7 +173,7 @@ async function execute(fetchImpl, keys, userId, input) {
   if (operation === 'status') {
     const target = new URL('/rest/v1/social_media_accounts', keys.origin);
     target.searchParams.set('user_id', 'eq.' + userId);
-    target.searchParams.set('platform', 'eq.x');
+    target.searchParams.set('platform', 'eq.' + platform);
     target.searchParams.set('select',
       'status,platform,external_account_id,handle,scopes,token_expires_at,connected_at');
     target.searchParams.set('limit', '1');
@@ -173,19 +181,19 @@ async function execute(fetchImpl, keys, userId, input) {
       { method: 'GET', headers: adminHeaders(keys.admin) }, 4096);
     abortUnless(Array.isArray(rows) && rows.length <= 1);
     const row = rows[0] || null;
-    abortUnless(!row || (row.platform === 'x'
-      && XID.test(row.external_account_id || '') && HANDLE.test(row.handle || '')));
-    const scopesOk = SCOPES.every(x => Array.isArray(row?.scopes) && row.scopes.includes(x));
+    abortUnless(!row || (row.platform === platform
+      && validId(row.external_account_id) && validHandle(row.handle)));
+    const scopesOk = scopes.every(x => Array.isArray(row?.scopes) && row.scopes.includes(x));
     const valid = Number.isFinite(Date.parse(row?.token_expires_at || ''))
       && Date.parse(row?.token_expires_at || '') > Date.now() + 60000;
     const connected = Boolean(row?.status === 'connected' && scopesOk && valid);
-    return { channel: 'X', connected,
+    return { channel, connected,
       status: connected ? 'connected' : row?.status === 'connected'
         ? (scopesOk ? 'token_expired' : 'permissions_missing')
         : (row?.status || 'not_connected'),
-      handle: row ? '@' + row.handle : null,
+      handle: row ? (channel === 'X' ? '@' + row.handle : row.handle) : null,
       accountId: row?.external_account_id || null,
-      scopes: connected ? SCOPES : [],
+      scopes: connected ? scopes : [],
       expiresAt: connected ? row.token_expires_at : null };
   }
   throw Error('SOCIAL_X_EDGE_UNSUPPORTED_OPERATION');

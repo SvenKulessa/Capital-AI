@@ -216,7 +216,7 @@ test('OAuth state entropy cannot be substituted by caller-provided random functi
   const callback = 'https://capital-ai.online/api/social-media/auth/callback';
   let callerRngInvoked = false;
   const overrides = {
-    userId: USER, channel: 'YOUTUBE', redirectUri: callback,
+    userId: USER, channel: 'YOUTUBE', redirectUri: callback, codeVerifier: 'v'.repeat(43),
     allowedRedirectUris: [callback], now: NOW,
     random: () => { callerRngInvoked = true; return Buffer.alloc(32); },
   };
@@ -235,10 +235,10 @@ test('OAuth state entropy cannot be substituted by caller-provided random functi
 
 test('OAuth derivation rejects forged context and malformed digest', () => {
   const redirectUri = 'https://capital-ai.online/api/social-media/auth/callback';
-  const oauth = createSocialOAuthState({ userId: USER, channel: 'YOUTUBE', redirectUri,
+  const oauth = createSocialOAuthState({ userId: USER, channel: 'YOUTUBE', redirectUri, codeVerifier: 'v'.repeat(43),
     allowedRedirectUris: [redirectUri], now: NOW });
   const snapshot = { state: oauth.state, row: oauth.row, userId: USER,
-    channel: 'YOUTUBE', redirectUri, now: NOW };
+    channel: 'YOUTUBE', redirectUri, codeVerifier: 'v'.repeat(43), now: NOW };
   assert.throws(() => assertSocialOAuthStateSnapshot({ ...snapshot, userId: OTHER,
     row: { ...oauth.row, user_id: OTHER } }), /STATE_INVALID/);
   assert.throws(() => assertSocialOAuthStateSnapshot({ ...snapshot, channel: 'FACEBOOK',
