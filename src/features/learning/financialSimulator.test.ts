@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   portfolioVariance, portfolioVolatility, validateWeights, validateVolatilities,
   validateCorrelationMatrix, BASE_ASSETS, BASE_CORRELATIONS,
+  type CorrelationMatrix,
 } from './portfolioMath';
 
 const ids = BASE_ASSETS.map(asset => asset.id);
@@ -36,30 +37,32 @@ test('perfect positive and negative pair correlations', () => {
 
 test('weight sum, negative, missing and nonfinite inputs fail closed', () => {
   assert.ok(validateWeights({ equity:0.4,bonds:0.3,cash:0.2 },ids));
-  for (const bad of [
+  const invalidWeights: Record<string, number>[] = [
     { equity:NaN,bonds:0.5,cash:0.5 },
     { equity:-0.1,bonds:0.6,cash:0.5 },
     { equity:Infinity,bonds:0,cash:0 },
     { equity:1,bonds:0 },
-  ]) {
+  ];
+  for (const bad of invalidWeights) {
     assert.ok(validateWeights(bad,ids));
     assert.throws(() => portfolioVolatility(bad,vols,BASE_CORRELATIONS,ids),RangeError);
   }
 });
 
 test('missing and nonfinite volatilities are rejected', () => {
-  for (const bad of [
+  const invalidVols: Record<string, number>[] = [
     { equity:NaN,bonds:0.06,cash:0.005 },
     { equity:3,bonds:0.06,cash:0.005 },
     { equity:0.18,bonds:0.06 },
-  ]) {
+  ];
+  for (const bad of invalidVols) {
     assert.ok(validateVolatilities(bad, ids));
     assert.throws(() => portfolioVolatility({ equity:1,bonds:0,cash:0 },bad,BASE_CORRELATIONS,ids),RangeError);
   }
 });
 
 test('correlations reject asymmetry, non-PSD, NaN and missing keys', () => {
-  const invalid = [
+  const invalid: CorrelationMatrix[] = [
     { equity:{equity:1,bonds:0.2,cash:0},bonds:{equity:0.5,bonds:1,cash:0},cash:{equity:0,bonds:0,cash:1} },
     { equity:{equity:1,bonds:0.9,cash:0.9},bonds:{equity:0.9,bonds:1,cash:-0.9},cash:{equity:0.9,bonds:-0.9,cash:1} },
     { equity:{equity:1,bonds:NaN,cash:0},bonds:{equity:NaN,bonds:1,cash:0},cash:{equity:0,bonds:0,cash:1} },
