@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocale } from '../../i18n/LocaleProvider';
 
-const evidenceRoot = 'https://github.com/SvenKulessa/Capital-AI/blob/4d1ae5e48de000804b826635954f4f496a365d23/';
+const evidenceRoot = 'https://github.com/SvenKulessa/Capital-AI/blob/main/';
 
 /** Dated public code/evidence snapshot. Never represented as live provider telemetry. */
 export const SocialContentEngineStatus: React.FC = () => {
