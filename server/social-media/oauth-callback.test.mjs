@@ -66,7 +66,8 @@ test('verified callback enforces exact identity and endpoint; no token in reply'
     exchangeCode: async args => { records.push({ exchanged: args.channel }); } });
   const r = res();
   await handler.handle(req(), r, url('?channel=X&state=' + STATE + '&code=confidential'), json);
-  assert.equal(r.status, 204);
+  assert.equal(r.status, 303);
+  assert.equal(r.headers.Location, '/api/social-media/x/account/status');
   assert.equal(r.body, '');
   assert.equal(records[0].userId, USER);
   assert.equal(records[0].redirectUri, 'https://capital-ai.online/api/social-media/auth/callback');
@@ -89,7 +90,8 @@ test('X callback without channel parameter is bound to X via persisted state', a
   });
   const r = res();
   await handler.handle(req(), r, url('?state=' + STATE + '&code=synthetic'), json);
-  assert.equal(r.status, 204);
+  assert.equal(r.status, 303);
+  assert.equal(r.headers.Location, '/api/social-media/x/account/status');
   assert.deepEqual(calls, [{ userId: USER, channel: 'X' }, { channel: 'X' }]);
 });
 
@@ -117,4 +119,41 @@ test('callback fail-closed on exchange/storage failures without reflecting code'
   await handler.handle(req(), r, url('?channel=YOUTUBE&state=' + STATE + '&code=SECRET_CODE'), json);
   assert.equal(r.status, 503);
   assert.ok(!JSON.stringify(r.body).includes('SECRET'));
+});
+
+test('owner-only callback diagnostics classify X provider and Edge errors without leaking credentials', async () => {
+  for (const [reason, expected] of [
+    ['SOCIAL_X_TOKEN_EXCHANGE_REJECTED', 'provider_token_exchange_rejected'],
+    ['SOCIAL_X_EDGE_REJECTED', 'edge_request_rejected'],
+    ['SOCIAL_X_EDGE_UNAVAILABLE', 'edge_network_unavailable'],
+    ['SOCIAL_X_ACCOUNT_PERSIST_READBACK_FAILED', 'vault_persistence_not_confirmed'],
+    ['private confidential oauth token in provider exception', 'internal_unclassified'],
+  ]) {
+    const handler = createSocialOAuthCallback({ env,
+      auth: { verify: async () => ({ userId: USER, emailVerified: true }),
+        authorizeIamRole: async () => true },
+      store: { consumeOAuthCallback: async () => { throw Error(reason); } },
+      exchangeCode: async () => {} });
+    const r = res();
+    await handler.handle(req(), r, url('?state=' + STATE + '&code=SENSITIVE_CODE'), json);
+    assert.equal(r.status, 503);
+    assert.deepEqual(r.body, {
+      error: 'social_oauth_callback_unavailable', diagnostic: expected,
+    });
+    assert.ok(!JSON.stringify(r.body).includes('SENSITIVE_CODE'));
+    assert.ok(!JSON.stringify(r.body).includes('confidential'));
+  }
+});
+
+test('non-owner never receives an OAuth callback diagnostic or consumes state', async () => {
+  let consumed = 0;
+  const handler = createSocialOAuthCallback({ env,
+    auth: { verify: async () => ({ userId: USER, emailVerified: true }),
+      authorizeIamRole: async () => false },
+    store: { consumeOAuthCallback: async () => { consumed++; throw Error('SOCIAL_X_EDGE_REJECTED'); } },
+    exchangeCode: async () => {} });
+  const r = res();
+  await handler.handle(req(), r, url('?state=' + STATE + '&code=SENSITIVE_CODE'), json);
+  assert.deepEqual(r.body, { error: 'owner_authorization_required' });
+  assert.equal(consumed, 0);
 });

@@ -50,3 +50,32 @@ Erreicht der OAuth-Start nach erfolgreicher lokaler Konfigurations- und IAM-Owne
 `diagnostic` wird erst **nach** bestätigter IAM-Owner-Rolle und verifizierter E-Mail im X-Startpfad erzeugt. Nicht-Owner sehen die unveränderte 403-Antwort, fehlende Sitzungen 401. Vor erfolgreichem 303-Redirect wurde **kein** X-API-Veröffentlichungsaufruf ausgelöst. Der Diagnostic-Response ist `no-store`, `no-referrer` und `noindex`.
 
 Diese Diagnose wird mit `node --test server/social-media/x-oauth-start.test.mjs` und den normalen Security-Gates regressionsgeprüft. Der tatsächliche Produktionsfehler bleibt bis zum Owner-Readback `NOT_PROVEN`.
+
+## Callback-Abschluss und sichere Operator-Diagnose (13.10.2026)
+
+Nach erfolgreichem X-Token-Exchange, Identitäts- und verschlüsseltem Persistenz-Readback
+antwortet `/api/social-media/auth/callback` mit HTTP 303 auf
+`/api/social-media/x/account/status`. Der read-only Status ist weiterhin nur
+für die bestätigte IAM-Owner-Sitzung zugänglich. Ein erfolgreicher Redirect
+bewirkt **keine** Social-Media-Veröffentlichung.
+
+Bei einem bestätigten IAM-Owner, aber einem fehlgeschlagenen Callback, antwortet
+der Server mit `social_oauth_callback_unavailable` und einer festen
+`diagnostic`-Kategorie. Derzeit unterscheidbar sind:
+`edge_request_rejected`, `edge_network_unavailable`,
+`edge_owner_session_token_unavailable`, `edge_state_not_confirmed`,
+`oauth_state_not_confirmed`, `oauth_pkce_invalid`,
+`provider_token_exchange_rejected`, `provider_scopes_missing`,
+`provider_identity_readback_rejected`, `vault_persistence_not_confirmed`
+und `internal_unclassified`. Nicht-Owner erhalten weder die Diagnose noch
+einen Zugriff auf OAuth-State oder Tokenwerte. Die Antwort enthält niemals
+den eingehenden OAuth-Code, JWTs, Providerfehler, Secrets oder Ciphertext.
+
+Ein einmalig konsumierter State lässt sich nach einem späteren Provider- oder
+Persistenzfehler **nicht** erneut verwenden. Gegebenenfalls ist nach gezielter
+Behebung ein neuer Owner-OAuth-Start erforderlich. Ein vorhandener
+`connected`-Datensatz mit gültigen Scopes belegt eine frühere erfolgreiche
+Verbindung, nicht zwingend das Verhalten jedes späteren OAuth-Versuchs.
+
+Tests: `node --test server/social-media/oauth-callback.test.mjs`;
+CI: normale PR-Security- und Domain-Governance-Checks.
