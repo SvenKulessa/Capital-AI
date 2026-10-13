@@ -233,16 +233,15 @@ export function createOwnerProductLab({ auth, env = process.env, fetchImpl = fet
           json(res, 502, { error: 'test_replica_price_mismatch' }); return true;
         }
         const form = new URLSearchParams({
-          mode: sku.kind, client_reference_id: user.userId,
+          mode: sku.kind, client_reference_id: 'ownerlab-' + user.userId,
           'line_items[0][price]': testPriceId, 'line_items[0][quantity]': '1',
           success_url: config.origin + '/profile?testlab=success&session_id={CHECKOUT_SESSION_ID}',
           cancel_url: config.origin + '/profile?testlab=cancelled',
           'metadata[capital_ai_owner_testlab]': 'true',
-          'metadata[user_id]': user.userId, 'metadata[sku]': sku.id,
+          'metadata[owner_test_user_id]': user.userId, 'metadata[sku]': sku.id,
         });
         if (sku.kind === 'subscription') {
           form.set('subscription_data[metadata][capital_ai_owner_testlab]', 'true');
-          form.set('subscription_data[metadata][user_id]', user.userId);
           form.set('subscription_data[metadata][sku]', sku.id);
         }
         const session = await stripe(fetchImpl, config.testKey, 'checkout/sessions', form);
@@ -265,8 +264,8 @@ export function createOwnerProductLab({ auth, env = process.env, fetchImpl = fet
         const session = await stripe(fetchImpl, config.testKey,
           'checkout/sessions/' + encodeURIComponent(sid));
         if (session.id !== sid || session.livemode !== false ||
-            session.client_reference_id !== user.userId ||
-            session.metadata?.user_id !== user.userId ||
+            session.client_reference_id !== 'ownerlab-' + user.userId ||
+            session.metadata?.owner_test_user_id !== user.userId ||
             session.metadata?.capital_ai_owner_testlab !== 'true' ||
             !IDS.has(session.metadata?.sku)) {
           json(res, 403, { error: 'not_your_test_session' }); return true;

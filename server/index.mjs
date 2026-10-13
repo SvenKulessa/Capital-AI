@@ -28,6 +28,7 @@ import { createKrakenOrderDryRun } from './kraken-order-dry-run.mjs';
 import { createTelegram } from './telegram.mjs';
 import { createLearningInquiry } from './learning-inquiry.mjs';
 import { createLearningSimulator } from './learning-simulator.mjs';
+import { createOwnerProductLab } from './owner-product-lab.mjs';
 import { createPrivacy } from './privacy.mjs';
 import { createLimiter } from './http-security.mjs';
 import { infrastructure } from './infrastructure.mjs';
@@ -305,6 +306,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const auth = createAuth(options);
   const learningInquiry = createLearningInquiry({ ...options, auth });
   const learningSimulator = createLearningSimulator({ ...options, auth });
+  const ownerProductLab = createOwnerProductLab({ ...options, auth });
   const socialXOAuthStart = createSocialXOAuthStart({
     env: options.env || process.env, auth,
     fetchImpl: options.fetchImpl || fetch,
@@ -411,6 +413,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (serveWellKnown(req, res, url)) return;
   if (await learningInquiry.handle(req, res, url, json)) return;
   if (await learningSimulator.handle(req, res, url, json)) return;
+  if (await ownerProductLab.handle(req, res, url, json)) return;
   if (await auth.handle(req, res, url, json)) return;
   if (await socialXOAuthStart.handle(req, res, url, json)) return;
   if (await youtubePrivateUpload.handle(req, res, url, json)) return;

@@ -405,3 +405,7 @@
 !server/social-media/youtube-runtime.test.mjs
 !public/youtube-private-upload.js
 !supabase/migrations/20261013030655_youtube_private_upload_jobs.sql
+
+!server/owner-product-lab.mjs
+!server/owner-product-lab.test.mjs
+!supabase/migrations/20261013110100_owner_product_lab_isolation.sql

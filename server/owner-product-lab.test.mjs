@@ -67,15 +67,17 @@ function fixture({ userId = A, owner = true, sameOrigin = true, config = env } =
       const form = new URLSearchParams(options.body);
       assert.equal(livemode, false);
       assert.equal(form.get('metadata[capital_ai_owner_testlab]'), 'true');
-      assert.equal(form.get('client_reference_id'), A);
+      assert.equal(form.get('client_reference_id'), 'ownerlab-' + A);
+      assert.equal(form.has('metadata[user_id]'), false);
+      assert.equal(form.has('subscription_data[metadata][user_id]'), false);
       assert.equal(form.get('mode'), 'subscription');
       return Response.json({ id: SESSION, livemode: false, url: 'https://checkout.stripe.com/c/pay/owner-test' });
     }
     if (target.pathname === '/v1/checkout/sessions/' + SESSION) {
       return Response.json({
-        id: SESSION, livemode: false, client_reference_id: A,
+        id: SESSION, livemode: false, client_reference_id: 'ownerlab-' + A,
         status: 'complete', payment_status: 'paid',
-        metadata: { user_id: A, sku: 'pro-monthly', capital_ai_owner_testlab: 'true' },
+        metadata: { owner_test_user_id: A, sku: 'pro-monthly', capital_ai_owner_testlab: 'true' },
       });
     }
     throw Error('unexpected upstream ' + target);

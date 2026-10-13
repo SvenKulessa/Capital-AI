@@ -3,6 +3,7 @@ import { LearningEntitlementBadge } from '../features/learning/LearningEntitleme
 import { ShieldCheck, User } from 'lucide-react';
 import { AccountPageShell } from '../features/account/AccountPageShell';
 import { openHeroBuddy } from './HeroBuddy';
+import { OwnerProductLab } from '../features/account/OwnerProductLab';
 
 export function ProfilePage({ onNavigate }: { onNavigate: (path: string) => void }) {
   return (
@@ -81,6 +82,7 @@ export function ProfilePage({ onNavigate }: { onNavigate: (path: string) => void
               <p className="mt-3 text-sm text-slate-400">Abo- und Rollenstatus konnte nicht sicher geladen werden.</p>
             )}
           </div>
+          {session.account?.available && session.account.iamRole === 'owner' && <OwnerProductLab />}
         </section>
       )}
     </AccountPageShell>
