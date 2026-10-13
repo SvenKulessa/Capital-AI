@@ -386,3 +386,8 @@
 !scripts/skill-routing-evaluation.mjs
 !scripts/skill-routing-cases.json
 !scripts/skill-routing-challenges.json
+
+!server/social-media/youtube-oauth-start.mjs
+!server/social-media/youtube-oauth-exchange.mjs
+!server/social-media/youtube-account-status.mjs
+!server/social-media/youtube-oauth.test.mjs
