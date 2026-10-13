@@ -139,6 +139,8 @@ test('checkout strictly requires selected test mode, verified owner and both ser
   assert.equal(result.payload.mode, 'test');
   const stripeCheckout = calls.find(x => x.url.endsWith('/v1/checkout/sessions'));
   assert.match(stripeCheckout.headers.Authorization, /^Bearer sk_test_/);
+  assert.equal(calls.some(x => x.method === 'POST' && x.url.startsWith('https://api.stripe.com') &&
+    String(x.headers.Authorization).startsWith('Bearer sk_live_')), false);
   assert.equal(new URLSearchParams(stripeCheckout.body).get('line_items[0][price]'), 'price_1TnF4dPKr4joNbEcxVW7h7q9');
   const missing = fixture({ config: { ...env, STRIPE_TEST_SECRET_KEY: '' } });
   await missing.run('POST', '/configuration', { mode: 'test', selected: ['pro-monthly'] });
