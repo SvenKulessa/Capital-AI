@@ -116,6 +116,41 @@ export function createSocialXEdgeClient({ env = process.env, fetchImpl = fetch,
       'SOCIAL_X_EDGE_STATUS_INVALID');
     return data;
   }
+  async function refreshClaim(userId, leaseId) {
+    assertOwner(userId);
+    must(UUID.test(leaseId || ''), 'SOCIAL_REFRESH_LEASE_INVALID');
+    const result = await invoke('refresh_claim', { userId, leaseId });
+    must(result?.claimed === true && result.leaseId === leaseId
+      && typeof result.refreshCipher === 'string'
+      && /^v1\.[A-Za-z0-9_-]{16}\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{14,11000}$/.test(result.refreshCipher)
+      && typeof result.accountId === 'string'
+      && (channel === 'X' ? /^[0-9]{1,25}$/.test(result.accountId)
+        : /^UC[A-Za-z0-9_-]{22}$/.test(result.accountId)),
+      'SOCIAL_REFRESH_CLAIM_NOT_CONFIRMED');
+    return Object.freeze(result);
+  }
+  async function refreshFinish(userId, leaseId, previousCipher,
+    accessCipher, refreshCipher, expiresAt) {
+    assertOwner(userId);
+    must(UUID.test(leaseId || ''), 'SOCIAL_REFRESH_LEASE_INVALID');
+    const result = await invoke('refresh_finish', {
+      userId, leaseId, previousCipher, accessCipher, refreshCipher, expiresAt,
+    });
+    must(result?.refreshed === true && result?.channel === channel
+      && Date.parse(result.expiresAt || '') > Date.now() + 60000,
+      'SOCIAL_REFRESH_ROTATION_NOT_CONFIRMED');
+    return Object.freeze(result);
+  }
+  async function refreshEnd(userId, leaseId, outcome) {
+    assertOwner(userId);
+    must(UUID.test(leaseId || '') && ['reconnect','rate_limited'].includes(outcome),
+      'SOCIAL_REFRESH_OUTCOME_INVALID');
+    const result = await invoke('refresh_end', { userId, leaseId, outcome });
+    must(result?.channel === channel
+      && result?.status === (outcome === 'reconnect' ? 'reconnect_required' : 'retry_later'),
+      'SOCIAL_REFRESH_OUTCOME_NOT_CONFIRMED');
+    return Object.freeze(result);
+  }
   return Object.freeze({ beginOAuth, consumeOAuthCallback, persistAccount,
-    status, invoke });
+    status, invoke, refreshClaim, refreshFinish, refreshEnd });
 }

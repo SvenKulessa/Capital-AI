@@ -5,6 +5,8 @@ on:
     paths:
       - '.github/workflows/social-provider-postgres.yml'
       - 'supabase/migrations/20261008113000_social_provider_store.sql'
+      - 'supabase/migrations/20261013033000_capital_social_owner_token_refresh.sql'
+      - 'scripts/social-token-refresh-db.sql'
       - 'scripts/social-provider-db-*.sql'
       - 'scripts/social-provider-db-smoke.sh'
       - 'server/social-media/**'
