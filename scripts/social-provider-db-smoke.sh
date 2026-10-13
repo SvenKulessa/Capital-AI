@@ -19,6 +19,7 @@ pg -f /work/scripts/social-provider-db-fixture.sql
 pg -f /work/supabase/migrations/20260801150000_social_media_publishing.sql
 pg -f /work/supabase/migrations/20260815140000_social_media_content_approvals.sql
 pg -f /work/supabase/migrations/20261008113000_social_provider_store.sql
+pg -f /work/supabase/migrations/20261013035202_capital_social_owner_token_refresh.sql
 pg -f /work/scripts/social-provider-db-data.sql
 pg -f /work/scripts/social-provider-db-before.sql
 
@@ -46,4 +47,5 @@ if ! grep -q 'SOCIAL_DELIVERY_ALREADY_RESERVED' "$one" "$two"; then
   exit 1
 fi
 pg -f /work/scripts/social-provider-db-after.sql
+pg -f /work/scripts/social-token-refresh-db.sql
 echo "PASS: Disposable PG17 migration, legacy preservation, OAuth CAS, RLS, owner isolation, parallel unique claim, single terminal log."
