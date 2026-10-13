@@ -69,7 +69,7 @@ export function BlueprintCommercePanel({ onNavigateLogin }: { onNavigateLogin?: 
         <div>
           <h3 id="capital-blueprint-shop-heading" className="text-xl font-bold">Screener Component Blueprints kaufen</h3>
           <p className="mt-2 text-sm leading-6 text-slate-200">Technische Architekturkonzepte, jeweils als versioniertes Markdown-Dokument. Kein ausführbarer Produktionscode, keine Provider-/Marktdatenrechte, keine Anlageratschläge.</p>
-          <p className="mt-2 text-sm font-medium text-amber-200">50,00 € je Dokument zuzüglich gegebenenfalls anfallender Steuer. Der endgültige Gesamtpreis wird vor Zahlung im Stripe-Checkout angezeigt.</p>
+          <p className="mt-2 text-sm font-medium text-amber-200">{offers?.checkoutEnabled ? "50,00 € je Dokument zuzüglich gegebenenfalls anfallender Steuer. Der endgültige Gesamtpreis wird vor Zahlung im Stripe-Checkout angezeigt." : "Der Verkauf ist noch nicht freigeschaltet. Endpreise und Steuerbehandlung werden vor dem Verkaufsstart geprüft."}</p>
         </div>
       </div>
       {notice && <p role="alert" className="mt-3 rounded-lg border border-amber-400/40 p-3 text-sm text-amber-100">{notice}</p>}
