@@ -6,7 +6,7 @@ import { createSocialXEdgeClient, socialXEdgeMode } from './x-edge-client.mjs';
 import { socialXOAuthConfigured } from './x-oauth-exchange.mjs';
 import { socialYouTubeOAuthConfigured } from './youtube-oauth-exchange.mjs';
 
-const USER_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const USER_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const CIPHER = /^v1\.([A-Za-z0-9_-]{16})\.([A-Za-z0-9_-]{22})\.([A-Za-z0-9_-]{14,11000})$/;
 const SCOPES = Object.freeze({
   X: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'],
