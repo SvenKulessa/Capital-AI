@@ -9,6 +9,7 @@ on:
       - 'scripts/social-token-refresh-db.sql'
       - 'scripts/youtube-private-receipt-recovery-db.sql'
       - 'supabase/migrations/20261013105500_youtube_private_deleted_receipt_recovery.sql'
+      - 'supabase/migrations/20261013110247_youtube_private_deleted_receipt_recovery.sql'
       - 'scripts/social-provider-db-*.sql'
       - 'scripts/social-provider-db-smoke.sh'
       - 'server/social-media/**'
