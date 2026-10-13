@@ -80,77 +80,59 @@ Verbindung, nicht zwingend das Verhalten jedes späteren OAuth-Versuchs.
 Tests: `node --test server/social-media/oauth-callback.test.mjs`;
 CI: normale PR-Security- und Domain-Governance-Checks.
 
+## X-Refresh: Owner-Lease und atomare Rotation (13.10.2026)
 
-## Owner Token-Lifecycle (Refresh, Rotation, Reconnect)
+**Stand vor produktiver DB-/Edge-/Render-Abnahme: NOT_PROVEN.**
+Ein bestätigter IAM-Owner kann den X-Refresh nur per gleich-originigem
+`POST /api/social-media/x/account/refresh` auslösen. Bereits bestehend auf
+`main` ist der separate YouTube-Refresh über
+`server/social-media/youtube-token-resolver.mjs` bei Status-/Private-Upload-
+Anfragen. Diese Änderung ersetzt den YouTube-Resolver **nicht** und erzeugt
+keinen konkurrierenden Google-Refresh-Endpunkt.
 
-**Implementierung auf dem GROWTH-Branch, bis Merge + Edge-/DB-/Render-Readback: NOT_PROVEN.**
-Der bisherige Vault-Bridge-Vertrag wurde um einen vom verifizierten Owner
-ausgelösten Refresh erweitert. Zugriff ausschließlich als \`POST\` unter
-\`/api/social-media/x/account/refresh\` oder
-\`/api/social-media/youtube/account/refresh\`. Eine eingeloggte, bestätigte
-IAM-Owner-Sitzung, exakter Same-Origin-POST, aktiver Edge-Store, gültige
-Provider-Konfiguration, signierter Render→Supabase-Workload und die
-Supabase-JWT-Prüfung sind zwingend. Der Browser sieht nur
-\`{ channel, status, refreshed, expiresAt }\`, niemals Tokens,
-Vault-Ciphertext, Provider-Payloads oder Lease-IDs.
+X-Ablauf:
 
-Ablauf:
-1. Der Edge Vault erwirbt per service_role-only \`SECURITY INVOKER\` RPC
-   \`capital_social_claim_token_refresh\` eine einmalige 2-Minuten-Lease je
-   \`user_id + platform\`, nur 10 Minuten vor Ablauf. Die RPC arbeitet als
-   atomarer \`UPDATE ... RETURNING\` und verweigert weitere parallele Claims.
-2. Nach signierter Owner-/Workload-Prüfung wird **nur an den Render-Server**
-   der verschlüsselte Refresh-Token übertragen; Render entschlüsselt ihn mit
-   dem bestehenden kanal- und Owner-gebundenen AES-256-GCM-AAD. Kein
-   Supabase-Admin-Key verlässt die Edge Function.
-3. X nutzt \`grant_type=refresh_token\` mit Basic-Client-Authentifizierung
-   und **muss** einen neuen Refresh-Token liefern. YouTube nutzt Google OAuth
-   und bewahrt das bisherige Refresh-Token, wenn Google keines rotiert.
-   Vor Persistenz muss ein providerseitiger Account-Readback die gespeicherte
-   X-User-ID bzw. YouTube-Channel-ID bestätigen; Scopes dürfen nicht schrumpfen.
-4. \`capital_social_finish_token_refresh\` rotiert beide verschlüsselten
-   Tokenwerte **atomar** nur bei passendem Lease-ID, noch gültiger Lease und
-   identischem bisherigen Ciphertext (CAS). Der ursprüngliche OAuth-Connect
-   setzt Lease/Retry/Reconnect zurück, um stale Refresh zu verhindern.
-5. \`invalid_grant\`, andere unklare Providerantworten, Token-/Identitätsfehler
-   und ambige Transport-/Persistenzfälle verhindern blindes Retry.
-   \`reconnect_required\` wird gespeichert; ein neu autorisiertes OAuth-Connect
-   ist danach der sichere Rückweg. Bei explizitem HTTP 429 gilt eine
-   15-Minuten-Cooldown-Sperre; erneuter Owner-Aufruf danach ist möglich.
-   Es gibt **keinen** automatischen Scheduler und keinen Provider-Publish.
+1. Render prüft aktuelle Owner-Sitzung, bestätigte E-Mail, Same-Origin,
+   `SOCIAL_X_EDGE_STORE_ENABLED`, die OAuth-Konfiguration und **vor jeglichem
+   Provider-/Vault-I/O** das budgetgebundene
+   `SOCIAL_X_PAID_READ_APPROVED=true`. Ohne tatsächliche Berechtigung:
+   HTTP 403; keine X-Abfrage.
+2. Der JWT- und HMAC-gesicherte Supabase Edge Vault beansprucht per
+   `capital_social_claim_token_refresh` eine exklusive Zwei-Minuten-Lease,
+   nur für das eigene X-Konto und höchstens zehn Minuten vor Ablauf.
+   Die service-role-only RPC ist `SECURITY INVOKER`, atomic
+   `UPDATE ... RETURNING`; andere Owner, doppelte Calls und Replays
+   bleiben gesperrt.
+3. Die AES-256-GCM-Verschlüsselung bindet den Refresh-Token an
+   `['capital-social-x-v1', ownerId, 'refresh']`. Nur die
+   verifizierte Render-Workload erhält den verschlüsselten Token.
+   X erneuert den Grant per OAuth-Refresh mit `offline.access`; ein
+   neuer rotierender Refresh-Token ist erforderlich. Die zugeordnete
+   X-User-ID wird **vor** einer Persistierung read-only verifiziert.
+4. `capital_social_finish_token_refresh` rotiert Access- und
+   Refresh-Ciphertext atomar anhand der Lease-ID, des bisherigen
+   Refresh-Ciphertexts (CAS) und des gebundenen User-Accounts.
+   `invalid_grant`, unklare Providerantworten, divergierende Identität
+   und ambige Netzwerkfälle lösen **keine** blinde Wiederholung aus.
+   Bei 429 gilt ein 15-Minuten-Cooldown; beim Widerruf ist
+   eine erneute Owner-OAuth-Verbindung erforderlich.
+5. Der Browser erhält ausschließlich Status und Ablaufzeitpunkt;
+   niemals OAuth-Codes, Provider-Secrets, Ciphertexts, User-JWTs oder
+   X-Provider-Payloads.
 
-Die Implementierung verursacht ggf. Provider-API-Read-Kosten, zusätzliche
-Supabase Edge Invocations und Datenbank-RPCs. Aktuelle X-Tarife, Google-Quotas,
-Supabase-Kontingente und Kostenobergrenzen **NOT_PROVEN**. Keine
-kostenpflichtige Providerfreigabe oder neue Server-Ressource impliziert.
-Insbesondere X-/YouTube-Readback wird nicht ungefragt produktiv ausgelöst.
-**X-Budgetgrenze:** Der Refresh-Endpunkt prüft vor Claim oder Provider-I/O
-`SOCIAL_X_PAID_READ_APPROVED=true`. Ohne ausdrücklich bewilligte
-X-Read-Kosten antwortet er mit 403 `social_x_paid_read_not_approved`.
-Dieser Schalter ist unabhängig von `SOCIAL_X_PAID_WRITE_APPROVED` und aktiviert
-niemals X-Publishing. Die aktuelle X-Developer-Plattform nennt für User-Reads
-einen kostenpflichtigen Pay-per-use-Preis; die tatsächliche Konto- und
-Kreditfreigabe ist `NOT_PROVEN`.
-Quellenstand 13.10.2026: https://developer.x.com/ (Preisliste).
+**Kosten:** X bietet laut https://developer.x.com/ eine
+verbrauchsbasierte API-Abrechnung. User-Reads sind potenziell
+abrechenbar; der tatsächliche Owner-Kontostand ist `NOT_PROVEN`.
+YouTube-Identitäts-Readback kostet laut
+https://developers.google.com/youtube/v3/docs/channels/list
+eine API-Quota-Einheit. Keine Posting-Freigabe, kein neuer bezahlter Tarif
+und kein unbeaufsichtigter Scheduler werden durch diese Implementierung
+aktiviert.
 
-Technische Prüfung:
-\`\`\`bash
-npm run test:x-oauth
-npm run test:social-provider
-bash scripts/social-provider-db-smoke.sh  # ausschließlich Disposable CI mit erlaubten Variablen
-\`\`\`
-
-Migration: \`20261013033000_capital_social_owner_token_refresh.sql\`.
-Voraussetzungen in der Rollout-Reihenfolge: Docker Security Gate und Domain
-Governance PASS → Migration auf korrektem Supabase Projekt → Edge Function
-\`capital-social-x-vault\` mit \`verify_jwt=true\` bereitstellen → Render-Main
-Deployment mit dem Merge-Commit → Owner-Readback ohne Secrets. Die Abfolge
-wird gesondert nachgewiesen; bevor Migration/Edge bereit sind, bleibt der
-Refresh-Endpunkt **fail-closed**. Rücknahme: Endpoint deaktivieren/revertieren,
-Edge auf letzte geprüfte Version zurücksetzen; additive Lease-Felder bei
-vorhandenen Token-Daten niemals ungeprüft löschen.
-
-Externe technische Referenz:
-- https://developers.google.com/identity/protocols/oauth2/web-server
-- https://docs.x.com/
-- https://supabase.com/docs/guides/functions/auth
+Migration: `20261013033000_capital_social_owner_token_refresh.sql`.
+Deploy-Reihenfolge: vollständige PR-Checks → Merge → Migration
+(aktuelles Supabase-Projekt) → Edge Function mit `verify_jwt=true` →
+Render-Main-Readback → datierter Owner-Live-Readback. Vor dem
+Backend-Rollout bleibt der X-Refresh-Endpunkt fail-closed.
+Tests: `npm run test:x-oauth`, `npm run test:social-provider`
+und das vorhandene isolierte `social-provider-postgres`-CI.
