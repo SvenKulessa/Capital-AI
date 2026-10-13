@@ -149,6 +149,8 @@
 !scripts/growth/
 !scripts/growth/screener-learning-loop.test.mjs
 !scripts/growth/learning-content-draft.mjs
+!scripts/growth/social-release-candidate.mjs
+!scripts/growth/social-release-candidate.test.mjs
 !scripts/generate-chart-learning.tsx
 
 !public/learning/
