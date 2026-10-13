@@ -59,6 +59,8 @@ try {
     await send('Emulation.setDeviceMetricsOverride', {...viewport,deviceScaleFactor:1});
     await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
     await navigate('/marketscreener/scorer','.scorer-methodology');
+    await evaluate("document.querySelector('[aria-labelledby=\"cookie-consent-v3-title\"] button')?.click()");
+    await until(()=>evaluate("!document.querySelector('#cookie-consent-v3-title')"),'NECESSARY_COOKIES');
     await evaluate("document.querySelector('.scorer-methodology').scrollIntoView()");
     await until(()=>evaluate("document.querySelector('.scorer-methodology [role=status]').textContent.includes('74,08')"),'BASELINE');
     if (viewport.width === 390) {recording=true;await send('Page.startScreencast',{format:'png',everyNthFrame:1});}
