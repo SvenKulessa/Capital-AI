@@ -398,4 +398,4 @@
 !server/social-media/youtube-private-upload.mjs
 !server/social-media/youtube-runtime.test.mjs
 !public/youtube-private-upload.js
-!supabase/migrations/20261013022936_youtube_private_upload_jobs.sql
+!supabase/migrations/20261013030655_youtube_private_upload_jobs.sql
