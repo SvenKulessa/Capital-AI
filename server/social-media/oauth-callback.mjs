@@ -80,8 +80,13 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
       if (result?.consumed !== true || result.platform !== channel.toLowerCase()) {
         throw new Error('SOCIAL_OAUTH_CALLBACK_READBACK_MISMATCH');
       }
-      if (channel === 'YOUTUBE') res.setHeader('Set-Cookie',
-        'capital_youtube_oauth_state=; Path=/api/social-media/auth/callback; HttpOnly; Secure; SameSite=Lax; Max-Age=0');
+      if (channel === 'YOUTUBE') {
+        const existingCookies = res.getHeader?.('Set-Cookie');
+        res.setHeader('Set-Cookie', [
+          ...(Array.isArray(existingCookies) ? existingCookies : existingCookies ? [existingCookies] : []),
+          'capital_youtube_oauth_state=; Path=/api/social-media/auth/callback; HttpOnly; Secure; SameSite=Lax; Max-Age=0',
+        ]);
+      }
       if (channel === 'YOUTUBE') {
         res.writeHead(303, { Location: '/api/social-media/youtube/account/status', 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' });
         res.end();

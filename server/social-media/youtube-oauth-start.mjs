@@ -83,8 +83,12 @@ export function createSocialYouTubeOAuthStart({ env = process.env, auth,
       authorize.searchParams.set('state', issued.state);
       authorize.searchParams.set('code_challenge', challenge);
       authorize.searchParams.set('code_challenge_method', 'S256');
-      res.setHeader('Set-Cookie', 'capital_youtube_oauth_state=' + issued.state
-        + '; Path=/api/social-media/auth/callback; HttpOnly; Secure; SameSite=Lax; Max-Age=600');
+      const existingCookies = res.getHeader?.('Set-Cookie');
+      res.setHeader('Set-Cookie', [
+        ...(Array.isArray(existingCookies) ? existingCookies : existingCookies ? [existingCookies] : []),
+        'capital_youtube_oauth_state=' + issued.state
+          + '; Path=/api/social-media/auth/callback; HttpOnly; Secure; SameSite=Lax; Max-Age=600',
+      ]);
       res.writeHead(303, { Location: authorize.toString(),
         'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' });
       res.end();
