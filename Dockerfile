@@ -63,6 +63,7 @@ COPY public/learning/editorial/chart-accessibility-20261010.svg ./public/learnin
 COPY public/learning/charts ./public/learning/charts
 COPY public/learning/videos ./public/learning/videos
 COPY public/bootstrap-failure.js ./public/bootstrap-failure.js
+COPY public/youtube-private-upload.js ./public/youtube-private-upload.js
 COPY public/datenschutz ./public/datenschutz
 COPY public/agb ./public/agb
 COPY public/impressum ./public/impressum
