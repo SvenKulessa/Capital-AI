@@ -258,7 +258,7 @@ export function FinancialLearningSimulator() {
             <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
             <XAxis dataKey="name" stroke="#cbd5e1" />
             <YAxis unit="%" domain={[0, 100]} stroke="#cbd5e1" />
-            <Tooltip formatter={(value: number | string | undefined) => `${Number(value ?? 0).toFixed(1)} %`} />
+            <Tooltip formatter={(value) => `${Number(value ?? 0).toFixed(1)} %`} />
             <Bar dataKey="gewicht" name="Gewicht" fill="#F9BF21" />
           </BarChart>
         </ResponsiveContainer>
