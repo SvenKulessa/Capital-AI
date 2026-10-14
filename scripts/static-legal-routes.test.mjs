@@ -52,3 +52,14 @@ test('Google OAuth privacy disclosure has distinct purpose, data, transfer and r
   ]) assert.ok(html.includes(value), `Missing Google OAuth disclosure: ${value}`);
   assert.doesNotMatch(html, /Google-Konto-Passwort wird gespeichert|<script\b/i);
 });
+
+test('YouTube OAuth scopes and recipient disclosures are publicly verifiable', async () => {
+  const html = await readFile(new URL('../public/datenschutz/index.html', import.meta.url), 'utf8');
+  const activity = PROCESSING_ACTIVITIES.find(item => item.id === 'youtube-social-connect');
+  assert.ok(activity, 'Dedicated YouTube processing record must exist');
+  assert.equal(activity.lifecycle, 'conditional');
+  assert.match(html, /data-processing-id="youtube-social-connect"/);
+  for (const value of ['youtube.readonly', 'youtube.upload', 'Google LLC', 'YouTube', 'Render', 'Supabase', 'Widerruf']) {
+    assert.ok(html.includes(value), `Missing YouTube disclosure: ${value}`);
+  }
+});
