@@ -5,6 +5,7 @@ import {
   FIRST_X_PILOT_STATE,
   FIRST_X_PILOT_TEXT,
   GROWTH_SOCIAL_PROCESS_STAGES,
+  GROWTH_CONTENT_ADAPTERS,
   GROWTH_X_TEST_BUDGET,
 } from '../../data/growthMarketingPilot';
 
@@ -57,6 +58,40 @@ export const SocialContentEngineStatus: React.FC = () => {
           </a>
         </div>
       </div>
+
+      <section aria-labelledby="growth-content-source-adapters" className="rounded-xl border border-violet-400/20 bg-[#0a1224] p-4">
+        <h4 id="growth-content-source-adapters" className="text-sm font-bold text-white">
+          {de ? 'Eine Engine, mehrere Quellen und Ausgabekanäle' : 'One engine, multiple sources and destinations'}
+        </h4>
+        <p className="mt-1 text-xs leading-relaxed text-slate-300">
+          {de
+            ? 'X ist URL Context für einen konkret angegebenen Beitrag und separat Ausgabekanal. PR-Blogs, Social Studio, YouTube und Gemini-TTS nutzen vorhandene Contracts und behalten ihre jeweiligen Freigabegrenzen.'
+            : 'X is URL context for one explicit post and, separately, a distribution channel. PR blogs, social studio, YouTube and Gemini TTS reuse existing contracts with separate approval boundaries.'}
+        </p>
+        <ol className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {GROWTH_CONTENT_ADAPTERS.map(adapter => (
+            <li key={adapter.id} className="rounded-xl border border-white/10 bg-white/[0.025] p-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h5 className="text-xs font-semibold text-white">{de ? adapter.titleDe : adapter.titleEn}</h5>
+                <span className={`rounded border px-2 py-0.5 text-[9px] font-semibold ${STATUS_STYLES[adapter.status]}`}>
+                  {adapter.status}
+                </span>
+              </div>
+              <p className="mt-2 text-xs leading-relaxed text-slate-300">
+                {de ? adapter.detailDe : adapter.detailEn}
+              </p>
+              <a className="mt-2 inline-flex min-h-11 items-center text-xs text-amber-300 underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-300"
+                href={evidenceRoot + adapter.evidencePath} target="_blank" rel="noopener noreferrer">
+                {de ? 'Implementierung prüfen' : 'Inspect implementation'} <span className="ml-1" aria-hidden="true">↗</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+        <a href="/api/social-media/x/url-context"
+          className="mt-3 inline-flex min-h-11 items-center rounded-lg border border-amber-400/40 px-4 py-2 text-xs font-bold text-amber-200 hover:bg-amber-400/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-300">
+          {de ? 'X-URL-Context testen · Owner-Login erforderlich' : 'Try X URL context · Owner login required'}
+        </a>
+      </section>
 
       <div aria-label={de ? 'Technische Prozesskette der Social Content Engine' : 'Social Content Engine processing steps'}>
         <h4 className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-300">
