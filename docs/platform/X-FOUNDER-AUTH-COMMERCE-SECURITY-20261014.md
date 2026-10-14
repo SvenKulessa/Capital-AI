@@ -1,4 +1,4 @@
-# CAPITAL-AI PLATFORM — X-Login, Founder-Vertrieb und Demo-Evidence
+# CAPITAL-AI PLATFORM — X-Login, Founder-Sponsoring und Investor Relations und Demo-Evidence
 
 **Stand:** 2026-10-14 · Scope: PLATFORM/Product/Trust, Repository `SvenKulessa/Capital-AI` · Branch `capital-ai-platform/x-login-founder-demo-security-20261014`. Baseline `main@2946a136`; vor PR/Merge erneut mit dann aktuellem `main` abgleichen. **AGENTS.md ist allein autorisierend** (inklusive SOLO_MAINTAINER_FLOW@1 und aktueller P0-PR-Reihenfolge); diese Datei schafft keine neue Admission/Domain/Required Checks.
 
@@ -11,7 +11,7 @@
 | X Social API | `server/social-media/x-oauth-*.mjs` und Edge Vault | **SEPARAT**: user-gebundene Social-Providerrechte, kein BFF-Session-Login und keine Lizenz für öffentliche Market-Feeds |
 | Browserstatus | `src/hooks/useVerifiedSession.ts`; `src/components/Header.tsx` | Nur API-bewiesene anonyme Sitzung zeigt Terminal Login im Learning/Studio; bei Fehler keinen Logout behaupten |
 | Demo-Scoring | `MARKET_BLUEPRINTS`, `computeBlueprintDemoIndex` (`src/features/home/marketBlueprintDemo.ts`) | Vier deterministische synthetische 0–100-Beispiele; Scores sind keine Markt-, Investment-, Benchmark- oder Produktionswerte; NATS pausiert |
-| Founder-Anfrageprodukt | `src/data/founderOffer.ts`, `src/features/pricing/MonetizationModal.tsx` | **Bruttopreis auf Anfrage** — kein Stripe Price/SKU/Checkout/Entitlement, bestehendes freigegebenes `BrandLogo` mit `/branding/capital-ai-logo.jpg` |
+| Founder-Relations-Kontakt | `src/data/founderOffer.ts`, `src/features/studio/StudioPage.tsx` (Tab `kontakt`) | Sponsoring und Investor Relations, unabhängig von Preisen/Entitlements. Keine öffentliche Investitionsofferte, keine automatische Gründer-/Investorberechtigung. Bestehendes `BrandLogo`. |
 | Kundendaten | `FounderInquiryForm.tsx`; `server/learning-inquiry.mjs`; `shared/legal-identity.mjs` | Minimale Formfelder, explizite Datenschutz-Kenntnisnahme, POST `/api/public/founder-inquiry`; nur private Controller-Adresse `sven.kulessa@capital-ai.online`, keine Public Streams/GA4/Valkey/NATS |
 | Rechtliches | `public/datenschutz/index.html`; `public/agb/index.html` | Anbieter/Verantwortlicher Privatperson. Individuelle Angebote keine Vorab-Lizenz, keine automatische Bestellung. Datenschutz/AVV/Retention und echte X-Scopes live gesondert nachweisen |
 
@@ -44,11 +44,11 @@ Keine neue Zahlung, kein neuer Vertrag mit Dienstleistern, keine neue Datenbankt
 
 ## Founder-Kontakt, Lizenzen und Monetarisierung
 
-- **Angebotsstatus:** `INQUIRY_ONLY`; individuelle Leistungsbeschreibung, SLA, Daten-/Blueprint-Umfang, steuerlich zutreffender Bruttopreis und Vertragskonditionen werden **erst nach** Owner-Angebot vereinbart. Keine Automatisierung der Bestellung und kein stiller Verweis auf alte Stripe-Preis-IDs. `/pricing` enthält die Anfrage auf dem Zusatzprodukte-Tab.
-- Formular sendet Name, E-Mail, freiwillige Organisation, privates Zeit-/Rückrufinteresse, Klassifizierung (Partner/Kunde/Integration) und freie Anfrage ausschließlich an `/api/public/founder-inquiry`. Server validiert Länge, Same-Origin, Honeypot, limitiert Traffic und bestätigt nur vom SMTP-Server tatsächlich angenommene Zustellung. UUID-Receipt ohne Kundendaten, In-Memory-Expiry 15 Min, keine persistente CRM-/Analytics-Kopie. **Mail-Postfach-Retention und Providerverträge müssen real geprüft werden.**
+- **Kontaktstatus:** `CONFIDENTIAL_CONTACT_ONLY`; vertraulicher Erstkontakt zu Sponsoring, strategischen Partnerschaften und Investor Relations im öffentlichen Studio-Tab `kontakt`. Kein kostenpflichtiges Produkt, keine Kapitalanlagekonditionen, keine öffentliche Investitionsofferte und kein Kunden-/Founder-Entitlement. `/pricing` bleibt beim verifizierten Lernproduktkatalog. `/founder` ist derzeit nur StudioPage-Alias. Der bestehende `FounderPrivateBlueprintCloud` bleibt eine getrennte Owner-only-Funktion. Ein künftiger geschützter Investor-Bereich erfordert serverseitige Rollen- und Tenant-Autorisierung.
+- Formular sendet Name, E-Mail, freiwillige Organisation, privates Zeit-/Rückrufinteresse, Klassifizierung (Sponsoring/Investor Relations/strategische Partnerschaft) und freie Anfrage ausschließlich an `/api/public/founder-inquiry`. Server validiert Länge, Same-Origin, Honeypot, limitiert Traffic und bestätigt nur vom SMTP-Server tatsächlich angenommene Zustellung. UUID-Receipt ohne Kundendaten, In-Memory-Expiry 15 Min, keine persistente CRM-/Analytics-Kopie. **Mail-Postfach-Retention und Providerverträge müssen real geprüft werden.**
 - Externer Terminbuchungsservice ist **nicht** integriert (kein bestätigter kosten-/DSGVO-geprüfter Dienst); stattdessen optionales Telefonfenster und E-Mail. Für spätere Integration erst Verfügbarkeits-/OAuth-/PII-/Löschkonzept, Auftragsverarbeitung, Free-Tier-/Kostenprüfung und Ownerfreigabe dokumentieren.
 - Commercial Licenses: technische Blueprints und die 50 Komponenten werden **nicht** mit Marktdaten/Providerrechten, Markenlizenzen, offenen Repos oder reproduzierbaren Kundendaten gleichgesetzt. Vor individuellen Leistungszusagen Eigentums-/Lizenzrechte, Third-Party-OSS-Notices, kommerzielle Lieferbefugnisse, Exportfähigkeit, geschützte Download-Entitlements und Vertragsinhalt getrennt attestieren. **Keine pauschale kommerzielle Rechtefreigabe.**
-- `public/datenschutz/index.html` führt Founder/Partner-Datenkategorien, Rechtsgrundlage Art. 6 Abs. 1 lit. b/f DSGVO, Empfänger, Retention-Grenzen, Auskunft/Löschung. Mailanbieter/Transfers sind kein pauschal verifizierter Vertrag.
+- `public/datenschutz/index.html` führt Founder/Partner-Datenkategorien, Rechtsgrundlage Art. 6 Abs. 1 lit. f bzw. gegebenenfalls lit. b DSGVO, Empfänger, Retention-Grenzen, Auskunft/Löschung. Mailanbieter/Transfers sind kein pauschal verifizierter Vertrag.
 
 ## Frontend / Backend / DevSecOps — Befundmatrix
 
@@ -90,3 +90,12 @@ node --run build
 👋⚙️ **Owner-Schritte:** X OAuth2 in Supabase/X-Konsole freigeben, Auth-Credentials privat hinterlegen, SMTP Empfang im privaten Postfach und DSGVO-Aufbewahrung prüfen, Bruttoangebot und Leistungsumfang nur individuell vereinbaren. Keine kommerzielle Provider-Lizenz oder Stripe-Neuanlage ohne dokumentierte Eigentümerentscheidung.
 
 **Statusprinzip:** `CODE_PRESENT` ≠ `TEST_PASS` ≠ `RUNTIME_VERIFIED` ≠ `PRODUCTION_READY`. CI/PR und Deploy-Evidence separat erfassen. Zahlen sind synthetische Testannahmen, keine gemessene Leistung. Keine zusätzlichen Required Checks über `AGENTS.md`.
+
+## Owner-HOLD und CI-Reconciliation — 2026-10-14
+
+- PR #486 trägt expliziten Owner-HOLD bis zur fachlichen Korrektur und grünen CI. Der Governance-konforme Titel verwendet `[CAPITAL-AI-PLATFORM] [HOLD]` und hebt die Sperre nicht auf.
+- Owner-Korrektur: X als normaler Website-Identity-Provider; Sponsoring/Investor Relations sind kein Blueprint- oder Beratungsabo und keine öffentliche Investitionsofferte. Weder X OAuth noch Kontaktformular dürfen Founder-Rollen vergeben.
+- `server/auth.mjs` wurde im Finance-Authority-Manifest erneut auf seinen tatsächlichen Git-Blob korreliert; unabhängig von Social-X-OAuth. Chromium DOM Readback erhält künftig den konkreten Fehler statt generischer `DOM evaluation failed`, und wartet vor DOM-Assertions auf `document.body`.
+- Main-Sync: die vorliegenden neuen Main-Änderungen betreffen `AGENTS.md` und Drive-Backup-Tests/Retention, nicht die hier geänderten Auth-, UI- oder Datenschutzdateien. Trotzdem nach Sync alle anwendbaren CI-Ergebnisse am neuen Merge-Head prüfen. NATS/Rust bleiben deaktiviert.
+
+**HOLD-Status bis zur erneuten CI-Auswertung:** `CODE_PRESENT`; `TEST_PASS=NOT_PROVEN`; `RUNTIME_VERIFIED=NO`; `PRODUCTION_READY=NO`. Keine Provider-Aktivierung, kein Founder-/Investorenzugriff, kein automatischer Merge aufgrund einer bloßen Codeänderung.
