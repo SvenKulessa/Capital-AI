@@ -12,6 +12,16 @@ Diese Datei ist die **einzige repositoryweite autorisierende Engineering-/Govern
 
 Bei einem Widerspruch gilt ausschließlich diese Datei. Zusätzliche Regeln dürfen erst wieder eingeführt werden, wenn ein konkretes Problem oder Risiko nachgewiesen wurde und der Human Repository Owner die minimale zusätzliche Regel ausdrücklich freigibt.
 
+## Chat-Start: Domain-Roadmap gegen aktuellen main abgleichen (Owner-Beschluss 2026-10-14)
+
+Beim **ersten Abruf der Chat-/Agentenanweisungen je Domain-Auftrag** beginnt der Agent mit einer kompakten, tatsächlichen Bestandsprüfung, bevor er neue Aufgaben plant oder Änderungen vornimmt:
+
+1. Aktuellen `main`, diese `AGENTS.md`, die relevanten Domain-Skills und die bestehende Roadmap einschließlich ihrer Quell- und Reconciliation-Dateien lesen. Offene, gehaltene und als erledigt bezeichnete Punkte **gegen Code, Tests, bestehende Evidence und – soweit entscheidungsrelevant und zugänglich – Runtime** abgleichen. Ein Roadmap-Label oder veralteter Digest allein ist kein Abschlussnachweis.
+2. Nur die **für die angesprochene Domain relevanten** offenen oder nicht nachgewiesenen Punkte extrahieren; bestehende Scope-PRs, technische Abhängigkeiten und bereits erledigte Änderungen berücksichtigen. Nach tatsächlichem Risiko und Nutzerwirkung in **P0/P1/P2** priorisieren; akute Auth-/Tenant-/Secret-/Rechteprobleme vor kosmetischen Arbeiten. Die vom Owner ausdrücklich gesetzten Prioritäten gelten, soweit keine konkrete Sicherheits- oder Rechtsblockade entgegensteht.
+3. Den höchsten **autonom und rechtmäßig umsetzbaren** Punkt im beauftragten Scope unmittelbar bearbeiten, vorhandene PRs bevorzugt fortführen, Code und passende Tests ausführen und den regulären PR-/Merge-Fluss verwenden. Nicht nur eine neue To-do-Liste erzeugen. Bei Blockern unabhängig ausführbare Punkte weiterbearbeiten; fehlende persönliche Owner-Handlungen gezielt benennen.
+4. Roadmap und Abschluss-Evidence **nur entsprechend tatsächlich nachgewiesener Änderungen** aktualisieren: `VERIFIED`, `IN_PROGRESS`, `BLOCKED`, `NOT_PROVEN` oder `REVIEW_REQUIRED` klar trennen. Keine Behauptung einer Live-Wirkung allein aufgrund grüner Tests; keine privaten Daten, Secrets oder lizenzpflichtigen Inhalte in Roadmap/Evidence übernehmen.
+5. Diese Prüfung ist ein **Arbeitsablauf innerhalb des bestehenden Auftrags**, kein neuer Required Check, keine zusätzliche Genehmigung, keine globale PR-Sperre und keine Pflicht zur vollständigen Bearbeitung der gesamten Roadmap in jedem Chat. Bei späteren Folgeaufträgen gezielt nur geänderten `main`-/Roadmap-Stand erneut abgleichen; vor jedem Merge bleibt die gesonderte bestehende PR-Reihenfolgeprüfung maßgeblich.
+
 ## Entwicklungsfluss
 
 1. Einen bestehenden Scope-PR fortführen oder auf einem Feature-Branch vom aktuellen `main` entwickeln.
