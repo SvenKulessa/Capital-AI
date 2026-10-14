@@ -104,3 +104,7 @@ export function updatePageSEO({
   document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', title);
   document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', description);
 }
+
+export function trackVerifiedLearningPurchase(purchase: Parameters<AnalyticsModule['trackVerifiedLearningPurchase']>[0]) {
+  if (typeof window !== 'undefined') void analyticsModule().then(module => module.trackVerifiedLearningPurchase(purchase));
+}
