@@ -86,6 +86,7 @@ test('Studio exhibits fixture-only demo indices and both hubs use authoritative 
 });
 
 test('Google and X sign-in buttons use equally sized icon-only accessible controls', () => {
+  const root = new URL('../src/', import.meta.url);
   const login = readFileSync(new URL('features/auth/LoginPage.tsx', root), 'utf8');
   const social = login.split('role="group" aria-label="Social Login"')[1]?.split('onClick={() => void loginWithPasskey()}')[0] || '';
   assert.equal((social.match(/className="h-7 w-7 shrink-0"/g) || []).length, 4);
@@ -103,7 +104,8 @@ test('Founder sponsorship and investor relations remain outside pricing and owne
   const form = readFileSync(new URL('features/pricing/FounderInquiryForm.tsx', root), 'utf8');
   const pricing = readFileSync(new URL('features/pricing/MonetizationModal.tsx', root), 'utf8');
   const studio = readFileSync(new URL('features/studio/StudioPage.tsx', root), 'utf8');
-  assert.match(founder, /Sponsoring & Investor Relations/);
+  assert.match(founder, /Founder-Partner gesucht/);
+  assert.match(founder, /Noch keine Founder-Partnerschaft vergeben/);
   assert.match(founder, /confidential_contact_only/);
   assert.match(founder, /grantsAccess: false/);
   assert.match(founder, /checkoutEnabled: false/);
