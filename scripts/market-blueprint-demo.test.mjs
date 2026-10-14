@@ -67,3 +67,43 @@ test('public blueprint UI remains in documentation while home focuses on the tou
     assert.doesNotMatch(source, /\b(?:ScoringEngineService|PriceAlertsProvider|usePriceAlerts|dispatchTelegramPush)\b/);
   }
 });
+
+
+test('Studio exhibits fixture-only demo indices and both hubs use authoritative session for sign-in CTA', () => {
+  const root = new URL('../src/', import.meta.url);
+  const studio = readFileSync(new URL('features/studio/StudioPage.tsx', root), 'utf8');
+  const learning = readFileSync(new URL('features/learning/LearningPortalPage.tsx', root), 'utf8');
+  const session = readFileSync(new URL('hooks/useVerifiedSession.ts', root), 'utf8');
+  assert.match(studio, /MARKET_BLUEPRINTS\.map/);
+  assert.match(studio, /computeBlueprintDemoIndex\(example\.factors\)/);
+  assert.match(studio, /DEMO \/ SYNTHETISCH/);
+  assert.match(studio, /verifiedSession === 'anonymous'/);
+  assert.match(learning, /verifiedSession === 'anonymous'/);
+  assert.match(session, /fetch\('\/api\/auth\/session'/);
+  assert.match(session, /cache: 'no-store'/);
+  assert.match(session, /state, setState/);
+  assert.doesNotMatch(session, /localStorage/);
+});
+
+test('Founder sponsorship and investor relations remain outside pricing and owner-only access', () => {
+  const root = new URL('../src/', import.meta.url);
+  const founder = readFileSync(new URL('data/founderOffer.ts', root), 'utf8');
+  const form = readFileSync(new URL('features/pricing/FounderInquiryForm.tsx', root), 'utf8');
+  const pricing = readFileSync(new URL('features/pricing/MonetizationModal.tsx', root), 'utf8');
+  const studio = readFileSync(new URL('features/studio/StudioPage.tsx', root), 'utf8');
+  assert.match(founder, /Sponsoring & Investor Relations/);
+  assert.match(founder, /confidential_contact_only/);
+  assert.match(founder, /grantsAccess: false/);
+  assert.match(founder, /checkoutEnabled: false/);
+  assert.doesNotMatch(founder, /Bruttopreis|subscription|stripe/i);
+  assert.doesNotMatch(pricing, /FOUNDER_OFFER|FounderInquiryForm|capital-founder-offer/);
+  assert.match(studio, /activeTab === 'kontakt'/);
+  assert.match(studio, /capital-founder-relations/);
+  assert.match(studio, /<FounderInquiryForm \/>/);
+  assert.match(studio, /<FounderPrivateBlueprintCloud \/>/);
+  assert.match(form, /Sponsoring/);
+  assert.match(form, /Investor Relations/);
+  assert.match(form, /\/api\/public\/founder-inquiry/);
+  assert.match(form, /privacyAcknowledged/);
+  assert.doesNotMatch(form, /(?:ga4|gtag|trackEvent|localStorage|sessionStorage|stripe\.com)/i);
+});

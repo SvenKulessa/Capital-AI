@@ -12,6 +12,16 @@ Diese Datei ist die **einzige repositoryweite autorisierende Engineering-/Govern
 
 Bei einem Widerspruch gilt ausschließlich diese Datei. Zusätzliche Regeln dürfen erst wieder eingeführt werden, wenn ein konkretes Problem oder Risiko nachgewiesen wurde und der Human Repository Owner die minimale zusätzliche Regel ausdrücklich freigibt.
 
+## Chat-Start: Domain-Roadmap gegen aktuellen main abgleichen (Owner-Beschluss 2026-10-14)
+
+Beim **ersten Abruf der Chat-/Agentenanweisungen je Domain-Auftrag** beginnt der Agent mit einer kompakten, tatsächlichen Bestandsprüfung, bevor er neue Aufgaben plant oder Änderungen vornimmt:
+
+1. Aktuellen `main`, diese `AGENTS.md`, die relevanten Domain-Skills und die bestehende Roadmap einschließlich ihrer Quell- und Reconciliation-Dateien lesen. Offene, gehaltene und als erledigt bezeichnete Punkte **gegen Code, Tests, bestehende Evidence und – soweit entscheidungsrelevant und zugänglich – Runtime** abgleichen. Ein Roadmap-Label oder veralteter Digest allein ist kein Abschlussnachweis.
+2. Nur die **für die angesprochene Domain relevanten** offenen oder nicht nachgewiesenen Punkte extrahieren; bestehende Scope-PRs, technische Abhängigkeiten und bereits erledigte Änderungen berücksichtigen. Nach tatsächlichem Risiko und Nutzerwirkung in **P0/P1/P2** priorisieren; akute Auth-/Tenant-/Secret-/Rechteprobleme vor kosmetischen Arbeiten. Die vom Owner ausdrücklich gesetzten Prioritäten gelten, soweit keine konkrete Sicherheits- oder Rechtsblockade entgegensteht.
+3. Den höchsten **autonom und rechtmäßig umsetzbaren** Punkt im beauftragten Scope unmittelbar bearbeiten, vorhandene PRs bevorzugt fortführen, Code und passende Tests ausführen und den regulären PR-/Merge-Fluss verwenden. Nicht nur eine neue To-do-Liste erzeugen. Bei Blockern unabhängig ausführbare Punkte weiterbearbeiten; fehlende persönliche Owner-Handlungen gezielt benennen.
+4. Roadmap und Abschluss-Evidence **nur entsprechend tatsächlich nachgewiesener Änderungen** aktualisieren: `VERIFIED`, `IN_PROGRESS`, `BLOCKED`, `NOT_PROVEN` oder `REVIEW_REQUIRED` klar trennen. Keine Behauptung einer Live-Wirkung allein aufgrund grüner Tests; keine privaten Daten, Secrets oder lizenzpflichtigen Inhalte in Roadmap/Evidence übernehmen.
+5. Diese Prüfung ist ein **Arbeitsablauf innerhalb des bestehenden Auftrags**, kein neuer Required Check, keine zusätzliche Genehmigung, keine globale PR-Sperre und keine Pflicht zur vollständigen Bearbeitung der gesamten Roadmap in jedem Chat. Bei späteren Folgeaufträgen gezielt nur geänderten `main`-/Roadmap-Stand erneut abgleichen; vor jedem Merge bleibt die gesonderte bestehende PR-Reihenfolgeprüfung maßgeblich.
+
 ## Entwicklungsfluss
 
 1. Einen bestehenden Scope-PR fortführen oder auf einem Feature-Branch vom aktuellen `main` entwickeln.
@@ -21,6 +31,17 @@ Bei einem Widerspruch gilt ausschließlich diese Datei. Zusätzliche Regeln dür
 5. Ausstehende, fehlgeschlagene oder nicht nachgewiesene anwendbare Tests, nicht reproduzierbare Ergebnisse, Konflikte und konkrete Security-/Rechte-Blocker verhindern den Merge; im selben Scope eigenständig korrigieren und erneut prüfen.
 6. GitHub-Rulesets, Branch Protection, Tool-Rechte und Least Privilege niemals umgehen.
 7. Nur der normale Merge nach `main` löst den vorhandenen Production-Pfad aus; Production darf bei erfolgreichen Main-Checks automatisiert deployen. Die Live-Wirkung anschließend separat überprüfen.
+
+## P0: PR-Reihenfolge vor jedem Merge (Owner-Beschluss 2026-10-14)
+
+Vor **jedem** Merge muss der ausführende Agent zunächst die **aktuell offenen Pull Requests** gegen den aktuellen `main` prüfen und eine nachvollziehbare **Merge-Reihenfolge** festlegen. Ziel ist, vermeidbare Überschneidungen und nachgelagerte Post-Merge-Korrelations-Commits zu minimieren; dies ist ein Schritt der bestehenden Merge-Prüfung, **kein zusätzlicher Required Check, keine neue Freigabestufe und keine globale PR-Sperre**.
+
+- Alle offenen PRs erfassen, insbesondere betroffene Dateien, fachliche Abhängigkeiten, gleiche Contracts und Branch-Divergenz. Bei Überschneidungen den kleinsten fachlich unabhängigen PR zuerst vorsehen; abhängige PRs danach auf den neuen `main` synchronisieren, Konflikte konservativ beheben und Checks am aktualisierten Head erneut prüfen.
+- Bei unabhängigen PRs darf die Reihenfolge frei gewählt werden. Bestehende `[HOLD]`-Kennzeichnungen und reale Security-/Rechte-Blocker respektieren; blockierte PRs dürfen unabhängige, vollständig geprüfte PRs nicht aufhalten.
+- Vor jedem tatsächlichen Merge die offene PR-Menge und den aktuellen `main` erneut abgleichen, die Reihenfolge bei Änderungen aktualisieren und die normale delegierte Merge-Regel einschließlich beider Required Checks erfüllen. Den Grund der gewählten Reihenfolge und die betroffenen PR-Nummern in der bestehenden PR-/Abschluss-Evidence festhalten; keine neue Pflichtdatei erzeugen.
+- Die bestehende lineare Post-Merge-Korrelation bleibt als begrenzter read-only/Evidence-Mechanismus bestehen. Sie ersetzt weder diese vorgezogene Reihenfolgeprüfung noch die fachliche Branch-Synchronisierung.
+
+**Aktuelle Produktprioritäten:** (1) Rechtegebundene Blueprints für die Anbindung der 50 Analysekomponenten und sichere Kundenauslieferung; (2) Learning Portal einschließlich Benutzerisolation; (3) YouTube/X-Marketing und die vorhandene Social Media Content Engine einschließlich Status und Migration der Social Media Engine aus Finance; (4) Agent-Skill-Routing und SEO-Management. Überschneidungen sind nach technischen Abhängigkeiten zu ordnen, nicht allein nach PR-Nummer. **NATS und Rust Provider Bridge bleiben deaktiviert**, solange die notwendigen Lizenzen für echte Marktdaten fehlen. Kein Aktivieren, Deployen oder Vermarkten dieser Dienste aufgrund der Merge-Reihenfolge. Vorhandene Infrastruktur-Evidence darf read-only geprüft werden.
 
 ## Delegierte Agenten-Merge-Regel
 

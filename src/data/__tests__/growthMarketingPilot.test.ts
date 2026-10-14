@@ -9,7 +9,7 @@ import {
   FIRST_X_PILOT_PACKAGE, FIRST_X_PILOT_PLAN,
   FIRST_X_PILOT_TEXT, FIRST_X_PILOT_TEXT_SHA256,
   FIRST_X_PILOT_STATE, GROWTH_SOCIAL_PROCESS_STAGES,
-  GROWTH_X_TEST_BUDGET,
+  GROWTH_X_TEST_BUDGET, GROWTH_CONTENT_ADAPTERS,
 } from '../growthMarketingPilot.ts';
 
 test('first educational X prototype passes existing Content Engine + Social Package contracts', () => {
@@ -86,4 +86,18 @@ test('public home visualizes the real pilot workflow without making provider suc
   assert.match(ui, /GROWTH_X_TEST_BUDGET\.ownerReportedCreditUsd/);
   assert.doesNotMatch(ui, /\/api\/social-media\/x\/article-test\/publish/);
   assert.doesNotMatch(ui, /fetch\(/);
+});
+
+test('public process graph includes PR-blog, single X URL context, Social, YouTube and Gemini TTS without claims of publishing', () => {
+  assert.deepEqual(GROWTH_CONTENT_ADAPTERS.map(value => value.id),
+    ['pr_blog','x_context','social_engine','youtube','gemini_tts']);
+  for (const item of GROWTH_CONTENT_ADAPTERS) {
+    assert.ok(item.titleDe && item.titleEn && item.detailDe && item.detailEn);
+    assert.ok(item.evidencePath && !item.evidencePath.includes('..'));
+    assert.ok(['REPO_IMPLEMENTED','REVIEW_REQUIRED'].includes(item.status));
+  }
+  const ui = readFileSync(new URL('../../features/home/SocialContentEngineStatus.tsx', import.meta.url), 'utf8');
+  assert.match(ui, /GROWTH_CONTENT_ADAPTERS\.map/);
+  assert.match(ui, /api\/social-media\/x\/url-context/);
+  assert.doesNotMatch(ui, /api\/social-media\/x\/url-context[^\n]*publish/);
 });

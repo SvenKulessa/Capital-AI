@@ -46,7 +46,7 @@ async function providerJson(fetchImpl, uri, init) {
   must(response.ok, 'x_provider_rejected');
   return data;
 }
-async function credentials({ edge, identity, jwt, env, fetchImpl, edgeFactory }) {
+export async function resolveOwnerXCredentials({ edge, identity, jwt, env, fetchImpl, edgeFactory }) {
   let row = await edge.invoke('x_credentials', { userId: identity.userId });
   must(row?.handle === EXPECTED_HANDLE && XID.test(row?.accountId || '')
     && typeof row?.accessCipher === 'string', 'x_wrong_connected_account');
@@ -68,7 +68,7 @@ async function credentials({ edge, identity, jwt, env, fetchImpl, edgeFactory })
     accountId: row.accountId, refreshed };
 }
 async function publish({ edge, identity, jwt, env, fetchImpl, edgeFactory }) {
-  const secret = await credentials({ edge, identity, jwt, env, fetchImpl, edgeFactory });
+  const secret = await resolveOwnerXCredentials({ edge, identity, jwt, env, fetchImpl, edgeFactory });
   const context = { userId: identity.userId, accountId: secret.accountId,
     contentKey: CONTENT_KEY };
   const previous = await edge.invoke('article_status', context);

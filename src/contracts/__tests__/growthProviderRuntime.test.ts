@@ -156,6 +156,19 @@ test('URL Context is limited to public CAPITAL-AI sources and immutable GitHub r
     'github.com',
   );
 
+  assert.equal(
+    assertGrowthUrlContextSourceAllowed('https://twitter.com/CapitalAIOnline/status/1234567890123456789').toString(),
+    'https://x.com/CapitalAIOnline/status/1234567890123456789',
+  );
+  for (const disallowed of [
+    'https://x.com/CapitalAIOnline',
+    'https://x.com/CapitalAIOnline/status/123?tracking=1',
+    'https://x.com/search?q=fintech',
+    'https://x.com/CapitalAIOnline/status/123/photo/1',
+  ]) {
+    assert.throws(() => assertGrowthUrlContextSourceAllowed(disallowed), /GROWTH_X_CONTEXT_/);
+  }
+
   assert.throws(
     () => assertGrowthUrlContextSourceAllowed('https://example.com/'),
     /SOURCE_NOT_ALLOWED/,
