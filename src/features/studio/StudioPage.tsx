@@ -294,7 +294,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
             <FounderInquiryForm />
           </section>
         </div>
-      )
+      )}
 
       {/* ========================================================================= */}
       {/* TAB CONTENT 1: PIPELINE ARCHITEKTUR (All 16 Data Concepts)                */}
