@@ -4,6 +4,7 @@ on:
     paths:
       - 'scripts/platform/drive-encrypt.sh'
       - 'scripts/platform/drive-encryption-test.sh'
+      - 'scripts/platform/backup-synthetic-restore-test.sh'
       - 'scripts/trust/verify-blueprint-backup.mjs'
       - 'scripts/trust/verify-blueprint-backup.test.mjs'
       - '.github/workflows/drive-encryption-tests.yml'
@@ -13,7 +14,7 @@ permissions:
 jobs:
   encryption-test:
     runs-on: ubuntu-24.04
-    timeout-minutes: 8
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -21,10 +22,14 @@ jobs:
       - name: Install distribution-provided age (no third-party install scripts)
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends age
+          sudo apt-get install -y --no-install-recommends age postgresql postgresql-client
           age --version
+          sudo systemctl start postgresql
+          sudo -u postgres pg_isready
       - name: Real cryptographic encryption/decryption smoke
         run: bash scripts/platform/drive-encryption-test.sh
+      - name: Synthetic encrypted PostgreSQL dump and isolated restore
+        run: bash scripts/platform/backup-synthetic-restore-test.sh
       - name: Verify configured public recovery recipient (synthetic data only)
         shell: bash
         env:
