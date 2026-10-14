@@ -1,13 +1,11 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "f42da6e7b0f561474ef80bc257880ddf1b7ae3d2",
-  "mergedPr": 423,
-  "targetPr": 446,
-  "targetBranch": "capital-ai-growth/x-oauth-supabase-edge-20261013",
-  "targetHeadSha": "6d79d4f0e962fec2f79d90d5cc8243f2a8d010d6",
+  "mainSha": "53b52bb33296bd90243b7a0311d8d6c779ffaaa6",
+  "mergedPr": 490,
+  "targetPr": 483,
+  "targetBranch": "dependabot/npm_and_yarn/routine-minor-patch-340d77a1e0",
+  "targetHeadSha": "eff36f0b895b64dbf05bb606fde4edcab4ba5253",
   "exactOverlap": [
-    ".dockerignore",
-    "Dockerfile",
     "package.json"
   ],
   "authority": "EVIDENCE_ONLY",
