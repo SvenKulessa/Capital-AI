@@ -151,7 +151,7 @@ export function createPrivateKnowledgeVault({root=ROOT,keyHex=process.env.BLUEPR
       valid(id,version);await ready();
       const ciphertext=await safeRead(join(directory,pathName(id,version)));
       const item=decrypt(key,id,version,ciphertext);
-      return {bytes:ciphertext,ciphertextSha256:sha(ciphertext),...item.meta,
+      return {...item.meta,bytes:ciphertext,ciphertextSha256:sha(ciphertext),
         filename:pathName(id,version)};
     },
     async list(){
