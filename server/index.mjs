@@ -50,6 +50,8 @@ import { BILLING_CATALOG } from './billing-catalog.mjs';
 import { createVocabularyCheckout } from './vocabulary-checkout.mjs';
 import { createBlueprintCommerce } from './blueprint-commerce.mjs';
 import { createBlueprintDiskVault } from './blueprint-private-cloud.mjs';
+import { createPrivateKnowledgeVault } from './private-knowledge-vault.mjs';
+import { createPrivateKnowledgeApi } from './private-knowledge-api.mjs';
 import { createSubscriptionCheckout } from './subscription-checkout.mjs';
 import { createBenchmarkRuns } from './benchmark-runs.mjs';
 import { createCadsCommerce } from './cads-commerce.mjs';
@@ -398,6 +400,8 @@ export function createApp(root = defaultRoot, options = {}) {
   const vocabularyCheckout = createVocabularyCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
   const privateBlueprintCloud = options.privateBlueprintCloud || createBlueprintDiskVault({ keyHex: runtimeEnv.BLUEPRINT_DISK_ENCRYPTION_KEY });
   const blueprintCommerce = createBlueprintCommerce({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth, privateCloud: privateBlueprintCloud });
+  const knowledgeVault = options.knowledgeVault || createPrivateKnowledgeVault({keyHex:runtimeEnv.BLUEPRINT_DISK_ENCRYPTION_KEY});
+  const privateKnowledgeApi = createPrivateKnowledgeApi({auth,vault:knowledgeVault});
   const subscriptionCheckout = createSubscriptionCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
   const benchmarkStore = options.benchmarkStore ?? createBenchmarkStore({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch });
   const cadsMarketplace = createCadsMarketplace({
@@ -448,6 +452,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await telegram(req, res, url, json)) return;
   if (await vocabularyCheckout.handle(req, res, url, json)) return;
   if (await blueprintCommerce.handle(req, res, url, json)) return;
+  if (await privateKnowledgeApi.handle(req, res, url, json)) return;
   if (await subscriptionCheckout.handle(req, res, url, json)) return;
   if (await benchmarkRuns.handle(req, res, url, json)) return;
   if (await cadsMarketplace.handle(req, res, url, json)) return;
