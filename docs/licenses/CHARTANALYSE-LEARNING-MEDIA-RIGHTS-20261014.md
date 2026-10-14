@@ -43,6 +43,9 @@ Die bestehenden GROWTH-Quellmedien verbleiben unter **derselben Datei-ID**; es w
 
 Four neue Artwork-Dateien wurden in `30_Artwork` gespeichert. Die neu gerenderten MP4s liegen als lokale Download-Artefakte vor; ein Drive-Upload der neuen MP4s ist bis zum erfolgreichen Tool-Readback **NOT_PROVEN**. Vermeintlich inhaltlich ähnliche ältere Videofassungen bleiben bis zu einer nachgewiesenen inhaltlichen/Hash-Prüfung erhalten. Kein automatisches Löschen aufgrund identischer Dateinamen, Themen oder ähnlicher Vorschaubilder.
 
+
+**Ähnlichkeitsbefund aus dem bisherigen GROWTH-Baum:** `Schluss mit Daten-Illusion (1).mp4` und `Schluss mit Daten-Illusion – CAPITAL-AI FINAL.mp4` haben beide 130,83 s bei 1280×720, aber unterschiedliche SHA-256-Dateihashes. Die Korrelation von fünf bei gleichen relativen Zeitpunkten gezogenen Graustufen-Frames liegt zwischen 0,946 und 1,000. Sie sind damit **inhaltlich sehr ähnlich, nicht byte-identisch**. Die als `FINAL` bezeichnete Version ist die einzige aktive Version in `10_Media/20_Exports`; die ältere Fassung bleibt in der historischen Learning-Produktionsablage. Keine Löschung allein aufgrund dieser Stichprobe.
+
 **Namenskonvention für neue Exporte:** `CAPITAL-AI_F<NN>_Short_<NN>_<standard|phone>_9x16.mp4` und `CAPITAL-AI_F<NN>_Chartanalyse_Branded_16x9.mp4`. Historische Namen wurden nicht umbenannt, da diese in vorhandener Provenienz/Evidence referenziert sein können.
 
 ## Abnahme, Monetarisierung und Rollback
