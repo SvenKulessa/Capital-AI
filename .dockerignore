@@ -208,6 +208,7 @@
 !scripts/export-mail-templates.mjs
 !scripts/seo-content-manifest.test.mjs
 !scripts/merge-milestone.mjs
+!scripts/merge-milestone-pr-plan.mjs
 !scripts/merge-milestone.test.mjs
 !scripts/seo-source-provenance-drift.test.mjs
 !scripts/refresh-seo-source-provenance.mjs

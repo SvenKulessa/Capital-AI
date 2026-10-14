@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { buildCorrelation, classifyOpenPr, ACTIONS } from "./post-merge-correlation.mjs";
+import { planMilestoneDrafts } from "./merge-milestone-pr-plan.mjs";
 import './documentation-drift-remediation.test.mjs'; // DOC-SH-02 regression in Docker Security preflight
 
 test("workflow passes the unescaped merged SHA and token to checkout and correlation", () => {
@@ -179,16 +180,19 @@ test('merge milestone PR creation requires dedicated repo-scoped GitHub App', ()
   assert.doesNotMatch(workflow, /GH_TOKEN: \$\{\{ github\.token \}\}\n          REPOSITORY/);
   assert.match(workflow, /Report missing app authority without creating a PR/);
   assert.match(workflow, /milestone-drafts-/);
-  assert.match(workflow, /Milestone branch \$branch already exists without a PR/);
-  // The dedicated App is the only authority that opens ONE combined draft.
+  assert.match(workflow, /Milestone branch \$branch exists without a matching PR; refusing overwrite/);
+  assert.match(workflow, /remote_status != 2/);
+  // The dedicated App opens only provenance-scoped drafts; each scope remains fail-closed.
+  assert.match(workflow, /while IFS='\|' read -r scope number date_suffix/);
+  assert.match(workflow, /node scripts\/merge-milestone-pr-plan\.mjs/);
   assert.ok(workflow.includes('branch="capital-ai-trust/milestone-merge-pr-$number-$date_suffix"'));
   assert.equal((workflow.match(/gh pr create --repo/g) ?? []).length, 1,
-    'Milestone roadmap and news output must share a single PR');
+    'One bounded draft PR creation callsite handles each independently validated source');
   assert.ok(workflow.includes('targets+=("src/data/roadmapMergeReconciliation.json"'));
   assert.ok(workflow.includes('targets+=("src/data/controlCenterNews.json"'));
   assert.ok(workflow.includes('ROADMAP_DATE: ${{ steps.milestones.outputs.roadmap_date }}'));
   assert.ok(workflow.includes('NEWS_DATE: ${{ steps.milestones.outputs.news_date }}'));
-  assert.ok(workflow.includes('! "$date_suffix" =~ ^[0-9]{8}$'));
+  assert.ok(workflow.includes('"$date_suffix" =~ ^[0-9]{8}$'));
   assert.doesNotMatch(workflow, /gh pr merge|--auto|enable-auto-merge/);
 });
 
@@ -209,4 +213,31 @@ test('manual milestone App validation mints a scoped token but never writes to G
   assert.doesNotMatch(validateSection, /^\s*(?:gh\s+pr\s+(?:create|merge)|git\s+push|gh\s+api\s+-X\s+(?:POST|PATCH|DELETE))\b/m);
   assert.match(workflow, /APP_CONFIG_BLOCKED/);
   assert.match(workflow, /APP_TOKEN_VERIFIED/);
+});
+
+// Run the exact planner behavior in the existing Docker Security Gate BEFORE merge.
+test("post-merge planner keeps split, combined, and single-source milestones distinct", () => {
+  assert.deepEqual(planMilestoneDrafts({
+    roadmapNumber: "482", roadmapDate: "20261014", newsNumber: "470", newsDate: "20261013",
+  }), [
+    {scope:"roadmap", number:"482", date:"20261014"},
+    {scope:"news", number:"470", date:"20261013"},
+  ]);
+  assert.deepEqual(planMilestoneDrafts({
+    roadmapNumber: "470", roadmapDate: "20261013", newsNumber: "470", newsDate: "20261013",
+  }), [{scope:"combined", number:"470", date:"20261013"}]);
+  assert.deepEqual(planMilestoneDrafts({roadmapNumber:"482", roadmapDate:"20261014"}),
+    [{scope:"roadmap", number:"482", date:"20261014"}]);
+  assert.deepEqual(planMilestoneDrafts(), []);
+  assert.throws(() => planMilestoneDrafts({roadmapNumber:"482", roadmapDate:"20260230"}),
+    /INVALID_MILESTONE_DATE/);
+  assert.throws(() => planMilestoneDrafts({roadmapNumber:"482", newsNumber:"470", newsDate:"20261013"}),
+    /INVALID_MILESTONE_IDENTITY/);
+});
+
+test("isolated Docker build includes the planner used by milestone regressions", () => {
+  const docker = readFileSync(new URL("../Dockerfile", import.meta.url), "utf8");
+  const ignore = readFileSync(new URL("../.dockerignore", import.meta.url), "utf8");
+  assert.match(docker, /COPY [^\n]*scripts\/merge-milestone-pr-plan\.mjs/);
+  assert.ok(ignore.includes("!scripts/merge-milestone-pr-plan.mjs"));
 });
