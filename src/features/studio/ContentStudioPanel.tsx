@@ -95,6 +95,10 @@ export const ContentStudioPanel: React.FC = () => {
           className="mt-3 inline-flex min-h-11 items-center rounded-xl border border-amber-400/40 px-4 py-2 text-xs font-bold text-amber-200 hover:bg-amber-400/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-300">
           Owner-only Artikeltest öffnen (kein automatischer Post)
         </a>
+        <a href="/api/social-media/x/milestone"
+          className="ml-0 mt-3 inline-flex min-h-11 items-center rounded-xl border border-amber-400/40 px-4 py-2 text-xs font-bold text-amber-200 hover:bg-amber-400/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-300">
+          X-OAuth2-Meilenstein einmalig veröffentlichen (Owner)
+        </a>
         <a href="/api/social-media/x/url-context"
           className="ml-0 mt-3 inline-flex min-h-11 items-center rounded-xl border border-violet-400/40 px-4 py-2 text-xs font-bold text-violet-200 hover:bg-violet-400/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-300 sm:ml-3">
           X-Post als URL Context prüfen · Owner-only, kein Publish

@@ -357,6 +357,8 @@
 !server/social-media/owner-token-refresh.test.mjs
 !server/social-media/x-article-test.mjs
 !server/social-media/x-article-test.test.mjs
+!server/social-media/x-milestone-post.mjs
+!server/social-media/x-milestone-post.test.mjs
 !server/social-media/x-url-context.mjs
 !server/social-media/x-url-context.test.mjs
 !server/social-media/asset-readback.mjs
