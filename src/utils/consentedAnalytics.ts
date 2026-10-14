@@ -104,3 +104,15 @@ export function trackReceivedLearningInquiry(receipt: string) {
   (window as TagWindow).gtag?.('event', 'generate_lead', { send_to: EXPECTED_ID,
     lead_type: 'learning_course_inquiry', page_location: 'https://capital-ai.online/learning', page_referrer: '' });
 }
+
+const purchases = new Set<string>();
+export function trackVerifiedLearningPurchase(purchase: { transactionId?: unknown; value?: unknown; currency?: unknown }) {
+  if (!active || !permitted() || !cleanPath(window.location.pathname)) return;
+  const { transactionId, value, currency } = purchase;
+  if (typeof transactionId !== 'string' || !/^[a-f0-9]{64}$/.test(transactionId) || purchases.has(transactionId) ||
+      typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 25 || currency !== 'EUR') return;
+  purchases.add(transactionId);
+  (window as TagWindow).gtag?.('event', 'purchase', { send_to: EXPECTED_ID, transaction_id: transactionId,
+    value, currency, page_location: 'https://capital-ai.online/learning', page_referrer: '',
+    items: [{ item_id: 'learning-portal', item_name: 'Learning Portal', quantity: 1, price: value }] });
+}

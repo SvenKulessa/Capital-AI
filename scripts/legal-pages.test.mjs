@@ -10,13 +10,14 @@ import { resolveNavigationTarget } from '../src/utils/appNavigation.ts';
 // Load through the application bundler so BrandLogo's image imports use the
 // same asset handling as production instead of failing in Node's TS loader.
 const server = await createServer({ server: { middlewareMode: true }, appType: 'custom' });
-let LegalAndFaqPages;
+let LegalAndFaqPages, LocaleProvider;
 try {
+  ({ LocaleProvider } = await server.ssrLoadModule('/src/i18n/LocaleProvider.tsx'));
   ({ LegalAndFaqPages } = await server.ssrLoadModule('/src/components/LegalAndFaqPages.tsx'));
 } finally {
   await server.close();
 }
-const render = route => renderToStaticMarkup(React.createElement(LegalAndFaqPages, { route, onNavigate() {} }));
+const render = route => renderToStaticMarkup(React.createElement(LocaleProvider, null, React.createElement(LegalAndFaqPages, { route, onNavigate() {} })));
 
 test('legal routes render real provider details without corporate sample data', () => {
   for (const route of ['/impressum', '/datenschutz', '/agb']) {
@@ -31,15 +32,19 @@ test('legal routes render real provider details without corporate sample data', 
 test('privacy page renders every processing activity and a truthful email handoff', () => {
   const html = render('/datenschutz');
   assert.ok(html.includes(PRIVACY_NOTICE_VERSION));
-  assert.deepEqual(PROCESSING_ACTIVITIES.map(item => item.id), ['hosting', 'zitadel-account', 'privacy-requests', 'telegram']);
+  assert.ok(PROCESSING_ACTIVITIES.some(item => item.id === 'consented-ga4'));
+  assert.ok(PROCESSING_ACTIVITIES.some(item => item.id === 'google-oauth'));
+  assert.equal(PROCESSING_ACTIVITIES.some(item => item.id === 'zitadel-account'), false);
   for (const activity of PROCESSING_ACTIVITIES) assert.ok(html.includes(activity.title));
   assert.ok(html.includes('per E-Mail vorbereiten'));
   assert.ok(html.includes('erst durch Ihren Versand'));
-  assert.ok(html.includes('ZITADEL-Anmeldung'));
+  assert.doesNotMatch(html, /ZITADEL-Anmeldung/);
   assert.ok(html.includes('Eigenen Datenauszug herunterladen'));
   assert.ok(html.includes('kein vollständiger Auskunftsbescheid'));
-  assert.ok(html.includes('Optionales Analytics und Werbung sind in diesem Dienst deaktiviert'));
-  assert.doesNotMatch(html, /Supabase als|Finance-Dokumentstand|Stripe, Supabase/);
+  assert.ok(html.includes('serverseitig bestätigte Learning-Käufe'));
+  assert.ok(html.includes('keine Stripe- oder Benutzerkennung'));
+  assert.ok(html.includes('gültiger Analytics-Einwilligung'));
+  assert.doesNotMatch(html, /Supabase als (?:Verantwortlicher|Anbieter von CAPITAL-AI)|Finance-Dokumentstand|Stripe, Supabase/);
   assert.doesNotMatch(html, /Self-Service-Datenauszug|Cookie- &amp; Analytics-Einstellungen/);
 });
 

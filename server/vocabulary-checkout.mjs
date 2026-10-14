@@ -123,7 +123,10 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
       _stripe_customer_id: stripeId(session.customer, 'cus_') || null,
       _stripe_payment_intent_id: stripeId(session.payment_intent, 'pi_') || null,
     });
-    return session.id;
+    return { sessionId: session.id, purchase: learningPaid && session.livemode === true ? {
+      transactionId: createHmac('sha256', secret).update('learning-analytics:' + session.id).digest('hex'),
+      value: total / 100, currency: 'EUR',
+    } : null };
   }
 
   return {
@@ -381,7 +384,8 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
           json(res, 200, {
             entitled: Boolean(state?.quantProEntitled),
             quizUsed: Boolean(state?.quizUsed),
-            sessionId: grantedSessionId,
+            sessionId: grantedSessionId?.sessionId ?? null,
+            purchase: grantedSessionId?.purchase ?? null,
             entitlementSource: state?.entitlementSource || null,
           });
         } catch {

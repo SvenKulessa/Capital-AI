@@ -36,14 +36,14 @@ export const PROCESSING_ACTIVITIES: ProcessingActivity[] = [
     technicalControls: ['fester privater Empfänger', 'Same-Origin POST', 'SMTP mit TLS', 'Honeypot und Rate-Limits', 'keine Kundendaten in Analytics oder öffentlichen Caches'],
   },
   {
-    id: 'consented-ga4', title: 'Optionale Reichweiten- und Kursanfragemessung mit GA4', lifecycle: 'conditional',
-    purpose: 'Öffentliche Seitenaufrufe und vom Mailserver angenommene Kursanfragen nach gültiger Analytics-Einwilligung messen.',
-    dataCategories: ['pseudonyme GA4-Cookie-Kennung', 'öffentlicher Seitenpfad ohne Query und Fragment', 'Ereignistyp', 'beim Google-Abruf übermittelte Verbindungsdaten'],
+    id: 'consented-ga4', title: 'Optionale Reichweiten-, Kursanfrage- und Kaufmessung mit GA4', lifecycle: 'conditional',
+    purpose: 'Öffentliche Seitenaufrufe und vom Mailserver angenommene Kursanfragen sowie serverseitig bestätigte Learning-Käufe nach gültiger Analytics-Einwilligung messen.',
+    dataCategories: ['pseudonyme GA4-Cookie-Kennung', 'öffentlicher Seitenpfad ohne Query und Fragment', 'Ereignistyp', 'bestätigter Kaufbetrag und Währung', 'pseudonyme Transaktionskennung (HMAC, keine Stripe- oder Benutzerkennung)', 'beim Google-Abruf übermittelte Verbindungsdaten'],
     legalBasis: 'Art. 6 Abs. 1 lit. a DSGVO sowie Einwilligung für optionalen Gerätezugriff nach § 25 Abs. 1 TDDDG.',
     recipients: ['Google als GA4-Anbieter'],
     transfer: 'Google-Verarbeitung kann außerhalb des EWR stattfinden; Verträge und Transfermechanismen richten sich nach der verwendeten Google-Konfiguration.',
     retention: 'GA4-Cookies höchstens bis zum Ablauf der 180-Tage-Einwilligung; Entfernung beim Widerruf oder nächsten Zugriff nach Ablauf. Datenaufbewahrung der GA4-Property ist separat von Cookie-Fristen gemäß tatsächlicher Google-Admin-Konfiguration zu prüfen.',
-    technicalControls: ['Basic Consent Mode: kein Tag vor Zustimmung', 'Werbeeinwilligungen verweigert', 'keine privaten Kontoseiten', 'keine E-Mail-/Nachrichtendaten in Events', 'manuelle deduplizierte Seitenaufrufe und bestätigte Anfragen', 'Widerruf entfernt Cookies und lädt das Dokument ohne Tag neu'],
+    technicalControls: ['Basic Consent Mode: kein Tag vor Zustimmung', 'Werbeeinwilligungen verweigert', 'keine privaten Kontoseiten', 'keine E-Mail-/Nachrichtendaten in Events', 'manuelle deduplizierte Seitenaufrufe und bestätigte Anfragen; Kaufmessung nur nach serverseitiger Live-Zahlungsprüfung, keine Testkäufe', 'Widerruf entfernt Cookies und lädt das Dokument ohne Tag neu'],
   },
   {
     id: 'billing', title: 'Bestellungen, Zahlungen und Abonnementverwaltung mit Stripe', lifecycle: 'conditional',
@@ -53,7 +53,7 @@ export const PROCESSING_ACTIVITIES: ProcessingActivity[] = [
     recipients: ['Stripe als Zahlungsdienstleister und Anbieter von Checkout und Kundenportal', 'Supabase für kontogebundene Zahlungsreferenzen und Zugangsberechtigungen', 'Render als Anwendungsserver', 'Verantwortlicher für Vertragsabwicklung'],
     transfer: 'Stripe und seine Zahlungs- und Unterauftragspartner können abhängig von Zahlungsart und Vertragskonfiguration Daten außerhalb des EWR verarbeiten. Maßgeblich sind die tatsächlichen Verträge und Transfermechanismen. Stripe-Datenschutzhinweise: https://stripe.com/privacy.',
     retention: 'Vertrags- und Zahlungsreferenzen werden zur Vertragsabwicklung, Berechtigungsprüfung und für einschlägige gesetzliche Nachweispflichten aufbewahrt. Der Umfang und die dokumentbezogenen Fristen sind von einer Kontolöschung getrennt zu prüfen. Vollständige Kartendaten werden direkt bei Stripe eingegeben und durch diesen Checkout nicht in der CAPITAL-AI-Anwendungsdatenbank gespeichert.',
-    technicalControls: ['serverseitig gebundene Benutzerkennung', 'Preisprüfung vor Checkout', 'Stripe-Webhook-Signatur und serverseitige Zahlungsprüfung', 'Kundenportal nur nach verifizierter Kontozuordnung', 'keine Checkout-Secrets oder Zahlungsangaben an GA4', 'optionale Analytics-Einwilligung ist keine Kaufvoraussetzung'],
+    technicalControls: ['serverseitig gebundene Benutzerkennung', 'Preisprüfung vor Checkout', 'Stripe-Webhook-Signatur und serverseitige Zahlungsprüfung', 'Kundenportal nur nach verifizierter Kontozuordnung', 'keine Kartendaten, Rechnungsadressen oder Checkout-Secrets an GA4; Kaufbetrag, Währung und pseudonyme Transaktionskennung nur nach Analytics-Einwilligung', 'optionale Analytics-Einwilligung ist keine Kaufvoraussetzung'],
   },
   {
     id: 'hosting', title: 'Bereitstellung der Website und technischer Betrieb', lifecycle: 'active',

@@ -48,6 +48,8 @@ const EXPECTED_INDEX_PATHS = [
   '/',
   '/blog',
   '/blog/barrierefreie-finanzcharts',
+  '/blog/datenkonzept-blueprint',
+  '/blog/screener-scoring-lernen',
   '/learning',
   '/vocabulary',
   '/faq',
@@ -153,6 +155,27 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
   const origin = `http://127.0.0.1:${server.address().port}`;
 
   try {
+    for (const mirror of ['/index.md', '/.md', '/llms-full.txt']) {
+      const response = await fetch(origin + mirror);
+      assert.equal(response.status, 200, mirror);
+      assert.match(response.headers.get('content-type'), mirror.endsWith('.txt') ? /^text\/plain/ : /^text\/markdown/);
+      assert.equal(response.headers.get('link'), '<https://capital-ai.online/>; rel="canonical"');
+      const text = await response.text();
+      assert.match(text, /Learning Hub, Blueprints & Screener-Scoring/);
+      assert.match(text, /## Sitemap/);
+      assert.doesNotMatch(text, /private-provider|Owner-Beschluss|SOLO_MAINTAINER_FLOW/);
+    }
+    const negotiated = await fetch(origin + '/', { headers: { Accept: 'text/markdown' } });
+    assert.match(negotiated.headers.get('content-type'), /^text\/markdown/);
+    assert.match(negotiated.headers.get('vary'), /Accept/);
+    const agentGuide = await fetch(origin + '/AGENTS.md');
+    assert.equal(agentGuide.status, 200);
+    assert.match(await agentGuide.text(), /public agent guide/);
+    for (const alias of ['/LEARNING/', '/learning/']) {
+      const response = await fetch(origin + alias, { redirect: 'manual' });
+      assert.equal(response.status, 301);
+      assert.equal(response.headers.get('location'), '/learning');
+    }
     const home = await fetch(origin + '/');
     assert.equal(home.status, 200);
     assert.equal(home.headers.get('x-robots-tag'), null);
@@ -202,7 +225,8 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
     assert.match(sitemapResponse.headers.get('content-type') || '', /^application\/xml/i);
     const sitemap = await sitemapResponse.text();
     assert.match(sitemap, /^<\?xml version="1\.0" encoding="UTF-8"\?>/);
-    assert.doesNotMatch(sitemap, /<lastmod>/, 'No invented timestamp: introduce lastmod only from evidence-backed per-route dates');
+    assert.match(sitemap, /<loc>https:\/\/capital-ai.online\/<\/loc><lastmod>2026-10-14<\/lastmod>/);
+    assert.equal((sitemap.match(/<lastmod>/g) || []).length, 4, 'Only reviewed homepage, article listing and two new articles have lastmod');
     for (const route of EXPECTED_INDEX_PATHS) {
       const url = route === '/' ? 'https://capital-ai.online/' : `https://capital-ai.online${route}`;
       assert.ok(sitemap.includes(`<loc>${url}</loc>`), route);

@@ -1,0 +1,6 @@
+// Public, claimsafe copy shared by the rendered homepage and crawler mirrors.
+export const PUBLIC_SEARCH_FOCUS = Object.freeze([
+  { title: 'Learning Hub: Finanzwissen und Methoden lernen', body: 'Lerne Finanzbegriffe, Datenqualität und quantitative Analysemethoden Schritt für Schritt. Glossar, Lernbeispiele und Methodik helfen dir, Kennzahlen einzuordnen. Kostenlose Inhalte und kostenpflichtige Lernangebote sind separat gekennzeichnet.', path: '/learning', label: 'Learning Hub öffnen' },
+  { title: 'Blueprints für nachvollziehbare Datenkonzepte', body: 'Erkunde, wie Datenquellen, Verarbeitung und Analysekomponenten zusammenwirken. Die Blueprint-Dokumentation erklärt Datenkonzepte und Pipeline-Architekturen mit synthetischen Beispielen. Kommerzielle Auslieferung und Providerdaten setzen die jeweiligen Nutzungsrechte voraus.', path: '/studio/blueprints', label: 'Blueprints erkunden' },
+  { title: 'Screener-Scoring verstehen', body: 'Vergleiche Faktoren, Gewichtungen und Datenabdeckung im Analytics Hub. Erkunde die Methodik des Enterprise Scorers und die 50 Analysekomponenten. Öffentliche Beispiele sind Demos; sie versprechen weder Live-Marktdaten noch Anlageergebnisse.', path: '/marketscreener/scorer', label: 'Scoring-Methodik ansehen' },
+]);
