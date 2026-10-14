@@ -93,6 +93,15 @@ async function checkPage(path, viewport) {
   }))()` ) : null;
   const record = { path, viewport, dom, simulator, AX: { nodes:nodes.length, navigations:nav.map(n => n.name?.value || '') } };
   pages.push(record);
+  if (path.startsWith('/blog/') && process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR) {
+    await mkdir(process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR, { recursive: true });
+    const shot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
+    await writeFile(join(process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR, path.slice(6) + '-' + viewport.width + '.png'), Buffer.from(shot.data, 'base64'));
+    const overflow = await evaluate('Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth)');
+    if (overflow > 2) failures.push(path + ': page horizontal overflow (' + overflow + 'px)');
+    const text = await evaluate('document.body.textContent');
+    if (!text.includes('Learning-Angebot')) failures.push(path + ': Learning offer link missing');
+  }
   if (path === '/learning/simulator' && process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR) {
     await mkdir(process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR, { recursive: true });
     const shot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
@@ -154,7 +163,7 @@ try {
   await send('Runtime.enable');
   await send('Accessibility.enable');
   for (const viewport of [{width:320,height:800,mobile:true},{width:390,height:844,mobile:true},{width:768,height:1024,mobile:true},{width:1280,height:800,mobile:false}]) {
-    for (const path of ['/', '/learning', '/learning/simulator', '/login']) await checkPage(path,viewport);
+    for (const path of ['/', '/learning', '/learning/simulator', '/login', '/blog/datenkonzept-blueprint', '/blog/screener-scoring-lernen']) await checkPage(path,viewport);
   }
   console.log(JSON.stringify({schemaVersion:'CAPITAL_AI_PRODUCT_BROWSER_A11Y@1',target:base.origin,startedAt,
     pages,failures,status:failures.length?'FAILED':'TARGETED_PASS',
