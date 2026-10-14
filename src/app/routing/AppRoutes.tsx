@@ -80,6 +80,7 @@ const PipelineBuilder = lazy(() =>
     default: module.PipelineBuilder,
   })),
 );
+const FounderRelationsPage = lazy(() => import('../../features/studio/FounderRelationsPage').then(module => ({ default: module.FounderRelationsPage })));
 const StudioPage = lazy(() =>
   import('../../features/studio/StudioPage').then((module) => ({
     default: module.StudioPage,
@@ -188,7 +189,8 @@ export function AppRoutes({
     );
   }
 
-  if (currentRoute === '/studio' || currentRoute === '/founder') {
+  if (currentRoute === '/founder') return <FounderRelationsPage />;
+  if (currentRoute === '/studio') {
     return (
       <StudioPage
         onBackToHome={() => navigateTo('/')}
