@@ -6,7 +6,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
   pull-requests: read
   checks: read
 
@@ -70,39 +70,6 @@ jobs:
             echo "head_sha=" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Korrelations-Commit auf bestehendem PR-Branch erzeugen
-        if: steps.target.outputs.pr != ''
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPOSITORY: ${{ github.repository }}
-          TARGET_PR: ${{ steps.target.outputs.pr }}
-          TARGET_BRANCH: ${{ steps.target.outputs.branch }}
-          EXPECTED_HEAD: ${{ steps.target.outputs.head_sha }}
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          current_head=$(gh api "repos/$REPOSITORY/pulls/$TARGET_PR" --jq '.head.sha')
-          test "$current_head" = "$EXPECTED_HEAD"
-
-          git fetch --no-tags origin "$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH"
-          git checkout --detach "$EXPECTED_HEAD"
-
-          mkdir -p docs/evidence
-          cp correlation/selected.json docs/evidence/linear-post-merge-correlation.json
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/evidence/linear-post-merge-correlation.json
-
-          if git diff --cached --quiet; then
-            echo "Korrelations-Evidence ist bereits identisch; kein Commit nötig."
-            exit 0
-          fi
-
-          git commit -m "[CAPITAL-AI-TRUST] Post-Merge-Korrelation für PR #$TARGET_PR"
-          git push "https://x-access-token:$GH_TOKEN@github.com/$REPOSITORY.git" "HEAD:refs/heads/$TARGET_BRANCH"
-
       - name: Postmerge-Follow-up – aktueller Main, CI, Security und Lizenz (read-only)
         if: always()
         env:
@@ -115,8 +82,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Correlation may leave HEAD on the selected PR branch. Read the
-          # immutable merge code instead; preserve untracked audit files.
+          # Always audit the immutable merge commit; no branch mutation occurs.
           git checkout --detach "$MERGE_SHA"
           node --test scripts/post-merge-followup.test.mjs
           node scripts/post-merge-followup.mjs
@@ -136,7 +102,7 @@ jobs:
         shell: bash
         run: |
           if [ -n "${{ steps.target.outputs.pr }}" ]; then
-            echo "Korrelations-Evidence wurde auf PR #${{ steps.target.outputs.pr }} aktualisiert." >> "$GITHUB_STEP_SUMMARY"
+            echo "Dateiüberschneidung mit PR #${{ steps.target.outputs.pr }} festgestellt; Evidence ausschließlich im Run-Artefakt, PR-Branch unverändert." >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "Keine exakte Dateikollision mit einem aktiven linearen PR; kein Commit erzeugt." >> "$GITHUB_STEP_SUMMARY"
+            echo "Keine exakte Dateikollision mit einem aktiven linearen PR; Read-only-Evidence abgeschlossen." >> "$GITHUB_STEP_SUMMARY"
           fi

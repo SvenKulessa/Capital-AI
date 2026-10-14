@@ -140,18 +140,21 @@ test("summary classifies all open PR actions deterministically", () => {
 });
 
 
-test("post-merge correlation stays within the single evidence commit boundary", () => {
+test("post-merge correlation is read-only and cannot invalidate other PR head checks", () => {
   const workflow = readFileSync(new URL('../.github/workflows/post-merge-correlation.yml', import.meta.url), 'utf8');
-  assert.match(workflow, /permissions:\n  contents: write\n  pull-requests: read\n  checks: read/);
-  assert.match(workflow, /git add docs\/evidence\/linear-post-merge-correlation\.json/);
-  assert.match(workflow, /git commit -m/);
-  assert.match(workflow, /refs\/heads\/\$TARGET_BRANCH/);
-  assert.doesNotMatch(workflow, /\bgh\s+pr\s+create\b|\bgh\s+pr\s+merge\b|enable-auto-merge/);
-  assert.doesNotMatch(workflow, /git add -A|git add \./);
-  assert.doesNotMatch(workflow, /select\(\.draft == true\)/);
+  assert.match(workflow, /permissions:\n  contents: read\n  pull-requests: read\n  checks: read/);
+  assert.doesNotMatch(workflow, /contents: write|pull-requests: write/);
+  assert.match(workflow, /gh api --paginate "repos\/\$REPOSITORY\/pulls\/\$MERGED_PR\/files/);
+  assert.match(workflow, /correlation\/selected\.json/);
+  assert.match(workflow, /AUTHORITY.*EVIDENCE_ONLY|authority:.*EVIDENCE_ONLY|authority:"EVIDENCE_ONLY"/);
   assert.match(workflow, /node scripts\/post-merge-followup\.mjs/);
   assert.match(workflow, /node --test scripts\/post-merge-followup\.test\.mjs/);
   assert.match(workflow, /actions\/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9/);
+  assert.match(workflow, /post-merge-followup-\$\{\{ github\.event\.pull_request\.number \}\}/);
+  assert.doesNotMatch(workflow, /\bgit\s+(?:push|commit|add)\b|\bgh\s+pr\s+(?:create|merge)\b|enable-auto-merge/);
+  assert.doesNotMatch(workflow, /\bgh\s+api\s+(?:-X|--method)\s+(?:POST|PATCH|PUT|DELETE)\b/);
+  assert.doesNotMatch(workflow, /x-access-token|refs\/heads\/\$TARGET_BRANCH|git config user\./);
+  assert.match(workflow, /PR-Branch unverändert/);
 });
 
 test('merge milestone workflow keeps GitHub expressions unescaped', () => {
