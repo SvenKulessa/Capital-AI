@@ -13,7 +13,7 @@ const SCRIPT = '/x-milestone-post.js';
 const EXPECTED_HANDLE = 'CapitalAIOnline';
 const XID = /^[0-9]{1,25}$/;
 
-export const MILESTONE_TEXT = '🚀 CAPITAL-AI Meilenstein: X-URL-Context ist in der Content Engine implementiert. Öffentliche Posts liefern Recherchekontext; OAuth2-Publishing bleibt separat. Unsere Vision: transparente Datenpipelines, nachvollziehbare Scores und Finanzbildung. https://capital-ai.online/';
+export const MILESTONE_TEXT = '🚀 CAPITAL-AI Meilenstein: X-URL-Context ist in der Content Engine implementiert. Öffentliche Posts liefern Recherchekontext; OAuth2-Publishing bleibt separat.\n\nUnsere Vision: transparente Datenpipelines, nachvollziehbare Scores und Finanzbildung.\n\nhttps://capital-ai.online/';
 export const MILESTONE_CONTENT_KEY = createHash('sha256').update(MILESTONE_TEXT, 'utf8').digest('hex');
 if (MILESTONE_TEXT.length > 280) throw Error('X_MILESTONE_POST_TOO_LONG');
 function must(ok, code) { if (!ok) throw Error(code); }
