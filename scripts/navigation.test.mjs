@@ -320,7 +320,9 @@ test('legal overview, contact, mobile hub tabs and global footer use one contact
   assert.match(legal, /route === '\/kontakt' && <ContactForm \/>/);
   for (const target of ['/datenschutz/', '/agb/', '/impressum/']) assert.ok(legal.includes(`href="${target}"`), target);
   assert.match(learning, /activeTab === 'kontakt' && <ContactForm \/>/);
-  assert.match(studio, /activeTab === 'kontakt' && <ContactForm \/>/);
+  assert.match(studio, /activeTab === 'kontakt' && \(/);
+  assert.equal((studio.match(/<ContactForm \/>/g) || []).length, 1, 'Studio must retain one general contact form');
+  assert.match(studio, /<FounderInquiryForm \/>/, 'Founder relations has a distinct private inquiry path');
   assert.match(market, /active === 'kontakt' && <ContactForm \/>/);
   assert.doesNotMatch(learning, /<LearningInquiry \/>/);
   assert.match(form, /\/api\/public\/contact/);
