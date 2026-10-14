@@ -59,7 +59,7 @@ import {
   vocabularySkillLevel,
 } from '../../data/vocabularyData';
 import { useHubTab } from '../../hooks/useHubTab';
-import { updatePageSEO } from '../../utils/analytics';
+import { updatePageSEO, trackVerifiedLearningPurchase } from '../../utils/analytics';
 import { VOCABULARY_GRANT_KEY, formatVocabularyPrice } from '../../data/vocabularyOffer';
 
 const VocabularyFlashcards = React.lazy(() =>
@@ -166,6 +166,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
           );
           if (entitlementResponse.ok) {
             const entitlement = await entitlementResponse.json();
+            if (!cancelled && entitlement?.entitled && entitlement.purchase) trackVerifiedLearningPurchase(entitlement.purchase);
             if (entitlement?.entitled) {
               window.localStorage.setItem(VOCABULARY_GRANT_KEY, sessionId);
             }

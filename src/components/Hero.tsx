@@ -21,7 +21,6 @@ import { ArrowRight, Play } from 'lucide-react';
 import { openHeroBuddy } from './HeroBuddy';
 import { motion, useReducedMotion } from 'motion/react';
 import { useLocale } from '../i18n/LocaleProvider';
-import heroEarthImage from '../assets/images/glowing_earth_nodes_1789997454893.jpg';
 
 
 
@@ -81,7 +80,7 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
       {/* Decorative Earth: anchored to the right, behind the translucent heading panel. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-8 right-0 z-0 aspect-square w-[min(88vw,340px)] select-none sm:-top-12 sm:w-[min(52vw,520px)]"
+        className="pointer-events-none absolute -top-8 right-0 z-0 aspect-[16/10] w-[min(95vw,530px)] select-none sm:-top-12 sm:w-[min(60vw,760px)]"
       >
         <motion.div
           initial={reduceMotion ? false : { opacity: 0, scale: 0.92 }}
@@ -90,23 +89,31 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
           className="relative h-full w-full"
         >
 
-          {/* Original static hero artwork. */}
+          {/* Responsive Universe motif; CTA copy stays on its own accessible layer. */}
           <div className="relative h-full w-full">
+            <picture>
+              <source media="(max-width: 639px)" srcSet="/branding/universe/hero-universe-mobile.webp" />
+              <source media="(max-width: 1023px)" srcSet="/branding/universe/hero-universe-tablet.webp" />
+              <img
+                src="/branding/universe/hero-universe-desktop.webp"
+                alt=""
+                aria-hidden="true"
+                width={1672}
+                height={941}
+                fetchPriority="high"
+                decoding="async"
+                className="absolute inset-0 h-full w-full object-contain object-right opacity-95"
+              />
+            </picture>
             <img
-              src={heroEarthImage}
+              src="/branding/universe/hero-universe-orbit.svg"
               alt=""
-              referrerPolicy="no-referrer"
-              className="absolute inset-0 h-full w-full rounded-full object-cover opacity-95 mix-blend-screen"
+              aria-hidden="true"
+              width={512}
+              height={512}
+              decoding="async"
+              className="hero-universe-vector absolute right-[1%] top-[2%] w-[18%] opacity-75"
             />
-            {(
-              <div className="absolute inset-0">
-                <span className="hero-earth-beacon absolute left-[31%] top-[27%] h-2 w-2 rounded-full bg-amber-100" />
-                <span className="hero-earth-beacon absolute left-[58%] top-[40%] h-1.5 w-1.5 rounded-full bg-amber-100 [animation-delay:-1.1s]" />
-                <span className="hero-earth-beacon hero-earth-beacon--cyan absolute left-[69%] top-[62%] h-2 w-2 rounded-full bg-cyan-200 [animation-delay:-2.2s]" />
-                <span className="hero-earth-beacon absolute left-[38%] top-[71%] h-1.5 w-1.5 rounded-full bg-amber-100 [animation-delay:-.6s]" />
-              </div>
-            )}
-
           </div>
           {/* Atmospheric falloff around the static artwork. */}
           <div className="absolute inset-0 rounded-full bg-radial from-transparent via-transparent to-[#02050e] opacity-40" />

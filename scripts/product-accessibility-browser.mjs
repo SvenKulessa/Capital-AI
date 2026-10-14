@@ -77,6 +77,16 @@ async function checkPage(path, viewport) {
     width:viewport.width, height:viewport.height, deviceScaleFactor:2, mobile:viewport.mobile,
   });
   await navigate(path);
+  if (path.startsWith('/blog/')) {
+    await evaluate(`(() => {
+      const panel = document.querySelector('[aria-labelledby="cookie-consent-v3-title"]');
+      const reject = [...(panel?.querySelectorAll('button') || [])].find(el => el.textContent.trim() === 'Nur notwendige');
+      reject?.click();
+    })()`);
+    await pause(200);
+    const consent = await evaluate(`({ panelOpen: !!document.querySelector('[aria-labelledby="cookie-consent-v3-title"]'), analyticsLoaded: !!document.querySelector('#capital-ai-ga4') })`);
+    if (consent.panelOpen || consent.analyticsLoaded) failures.push(path + ': necessary-only choice must close banner without GA4');
+  }
   const dom = await evaluate(domExpression);
   const ax = await send('Accessibility.getFullAXTree');
   const nodes = ax.nodes || [];
@@ -93,6 +103,15 @@ async function checkPage(path, viewport) {
   }))()` ) : null;
   const record = { path, viewport, dom, simulator, AX: { nodes:nodes.length, navigations:nav.map(n => n.name?.value || '') } };
   pages.push(record);
+  if (path.startsWith('/blog/') && process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR) {
+    await mkdir(process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR, { recursive: true });
+    const shot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
+    await writeFile(join(process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR, path.slice(6) + '-' + viewport.width + '.png'), Buffer.from(shot.data, 'base64'));
+    const overflow = await evaluate('Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth)');
+    if (overflow > 2) failures.push(path + ': page horizontal overflow (' + overflow + 'px)');
+    const text = await evaluate('document.body.textContent');
+    if (!text.includes('Learning-Angebot')) failures.push(path + ': Learning offer link missing');
+  }
   if (path === '/learning/simulator' && process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR) {
     await mkdir(process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR, { recursive: true });
     const shot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
@@ -154,7 +173,7 @@ try {
   await send('Runtime.enable');
   await send('Accessibility.enable');
   for (const viewport of [{width:320,height:800,mobile:true},{width:390,height:844,mobile:true},{width:768,height:1024,mobile:true},{width:1280,height:800,mobile:false}]) {
-    for (const path of ['/', '/learning', '/learning/simulator', '/login']) await checkPage(path,viewport);
+    for (const path of ['/', '/learning', '/learning/simulator', '/login', '/blog/datenkonzept-blueprint', '/blog/screener-scoring-lernen']) await checkPage(path,viewport);
   }
   console.log(JSON.stringify({schemaVersion:'CAPITAL_AI_PRODUCT_BROWSER_A11Y@1',target:base.origin,startedAt,
     pages,failures,status:failures.length?'FAILED':'TARGETED_PASS',

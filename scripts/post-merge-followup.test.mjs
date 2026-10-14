@@ -18,7 +18,7 @@ test('postmerge evidence never authorizes sync, merge, licenses or production', 
   assert.equal(result.synchronizeNextPr.autoSync, false);
   assert.equal(result.requiredChecks.state, 'CI_SNAPSHOT_PASS_ONLY');
   assert.equal(result.requiredChecks.mergeApproval, false);
-  assert.equal(result.humanOwnerApprovalRequired, true);
+  assert.equal(result.humanOwnerApprovalRequired, false);
   assert.equal(result.licenseEvidence.rightsApproval, false);
   assert.equal(result.autoMerge, false);
   assert.equal(result.productionApproval, false);

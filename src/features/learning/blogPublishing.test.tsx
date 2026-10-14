@@ -11,14 +11,14 @@ import { resolveNavigationTarget } from '../../utils/appNavigation';
 import { seoMetadataForPath } from '../../../shared/seo-metadata.mjs';
 import { createApp } from '../../../server/index.mjs';
 
+for (const article of BLOG_ARTICLES) {
 test('public blog renders complete article and accessible navigation without entitlement', () => {
-  const article = BLOG_ARTICLES[0];
   const html = renderToStaticMarkup(<BlogPage path={article.path} />);
   assert.equal(resolveNavigationTarget(article.path + '?ref=learning'), article.path + '?ref=learning');
   for (const section of article.sections) assert.ok(html.includes(section.body));
   assert.match(html, /<div lang="de"/);
   assert.match(html, /<h1 id="blog-title"/);
-  assert.match(html, /alt="Vier Informationswege/);
+  assert.ok(html.includes(article.imageAlt));
   assert.match(html, /href="\/blog"/);
   assert.doesNotMatch(html, /DRAFT|LEGAL_ENGINE|publishReady|Anmelden/);
   assert.match(renderToStaticMarkup(<BlogPage path="/blog" />), /href="\/blog\/barrierefreie-finanzcharts"/);
@@ -27,7 +27,6 @@ test('public blog renders complete article and accessible navigation without ent
 
 test('public HTTP response contains full article, reachable image, SEO and 404 for unknown posts', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'capital-blog-'));
-  const article = BLOG_ARTICLES[0];
   let template;
   try { template = await readFile(new URL('../../../index.html', import.meta.url)); }
   catch { template = await readFile(new URL('../../../dist/index.html', import.meta.url)); }
@@ -66,3 +65,5 @@ test('public HTTP response contains full article, reachable image, SEO and 404 f
     await rm(root, { recursive: true, force: true });
   }
 });
+
+}

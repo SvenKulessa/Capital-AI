@@ -26,7 +26,7 @@ function projectSchema() {
     '@type': 'Project',
     '@id': `${SEO_SITE_ORIGIN}/#project`,
     name: 'Capital-AI',
-    description: 'Software-Plattform für Market Intelligence, BYOK-Providerzugänge und dokumentierte Daten- und Nutzungsrechte.',
+    description: 'Finanzwissen im Learning Hub lernen, Blueprints für Datenkonzepte erkunden und Screener-Scoring verstehen: mit nachvollziehbaren Methoden und Demo-Beispielen.',
     url: `${SEO_SITE_ORIGIN}/`,
     logo: `${SEO_SITE_ORIGIN}/branding/asset-pack/avatars/capital-ai-avatar-512x512.png`,
   };

@@ -23,7 +23,7 @@ export function BlogPage({ path }: { path: string }) {
       </header>
       <figure className="my-8">
         <img src={article.image} alt={article.imageAlt} width="1200" height="630" className="h-auto w-full rounded-xl border border-brand-gold/20" />
-        <figcaption className="mt-3 text-base leading-6 text-slate-300">Die vier Informationswege werden im folgenden Text erläutert. Eigene Illustration; keine realen Kursdaten.</figcaption>
+        <figcaption className="mt-3 text-base leading-6 text-slate-300">Eigene schematische Illustration; keine realen Kursdaten.</figcaption>
       </figure>
       <div className="space-y-8">{article.sections.map(section => <section key={section.title}>
         <h2 className="mb-3 text-2xl font-semibold text-amber-200"><span aria-hidden="true">{article.presentation.sectionMark} </span>{section.title}</h2>
@@ -32,7 +32,7 @@ export function BlogPage({ path }: { path: string }) {
       <aside aria-label="Einordnung" className="my-8 border-l-4 border-brand-gold pl-4 text-base leading-7 text-slate-300">Dieser Artikel dient der technischen und didaktischen Information und ist keine Anlageberatung.</aside>
       <section aria-labelledby="blog-sources"><h2 id="blog-sources" className="text-2xl font-semibold">Quellen</h2>
         <ul className="mt-3 space-y-2">{article.sources.map(source => <li key={source.url}><a href={source.url} className={linkStyle}>{source.label}</a></li>)}</ul>
-        <p className="mt-4 text-base leading-7 text-slate-300">Text und Illustration sind eigene redaktionelle Inhalte. Die verlinkten W3C-Dokumente werden als Quellen genannt; externe Bilder, eingebettete Fonts und Marktdaten werden nicht übernommen.</p>
+        <p className="mt-4 text-base leading-7 text-slate-300">Text und Illustration sind eigene redaktionelle Inhalte. Verlinkte Lerninhalte erläutern die Methodik und ihre Grenzen.</p>
       </section>
       <div className="mt-10 border-t border-brand-gold/20 pt-6"><a href="/learning/lernimpulse" className={linkStyle}>Weitere Lernimpulse entdecken</a></div>
     </article> : path === '/blog' ? <section aria-labelledby="blog-title">

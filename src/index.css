@@ -260,3 +260,11 @@
 .scorer-methodology meter { accent-color:var(--hub-accent); }
 .scorer-methodology meter::-webkit-meter-optimum-value { background:var(--hub-accent); }
 .scorer-methodology meter::-moz-meter-bar { background:var(--hub-accent); }
+
+/* Universe badge accent; motion is decorative, not a signal of live activity. */
+@keyframes capitalAiUniverseFloat {
+  0%, 100% {transform:translateY(0);}
+  50% {transform:translateY(-9px);}
+}
+.capital-ai-hero .hero-universe-vector {animation:capitalAiUniverseFloat 9s ease-in-out infinite;}
+@media (prefers-reduced-motion: reduce) {.capital-ai-hero .hero-universe-vector {animation:none;}}
