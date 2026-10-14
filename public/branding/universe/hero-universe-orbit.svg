@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
   <title id="title">CAPITAL-AI Universe – Vektor-Globus</title>
   <desc id="desc">Eigenständig gezeichneter Globus mit goldener CAPITAL-AI-Finanzkurve und sechs farbigen Atom-Umlaufbahnen.</desc>
-  <defs>
+  <style>@keyframes universeOrbit {to {transform:rotate(360deg)}} .orbit-rings {transform-origin:256px 252px;animation:universeOrbit 55s linear infinite} @media (prefers-reduced-motion: reduce) {.orbit-rings{animation:none}}</style><defs>
     <radialGradient id="earth" cx="35%" cy="30%" r="75%"><stop stop-color="#1a527f"/><stop offset=".5" stop-color="#071126"/><stop offset="1" stop-color="#020815"/></radialGradient>
     <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff5be"/><stop offset=".25" stop-color="#f5c453"/><stop offset=".53" stop-color="#ad6d16"/><stop offset=".75" stop-color="#ffe49b"/><stop offset="1" stop-color="#f9bf21"/></linearGradient>
     <filter id="halo" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3"/></filter>
@@ -24,7 +24,7 @@
     <path d="M320 297v-32m18 32v-52m18 52v-74" stroke-width="10"/>
     <path d="M143 235Q158 347 219 370" stroke-width="14" opacity=".93"/>
   </g>
-  <g fill="none" stroke-width="3.3" opacity=".94">
+  <g class="orbit-rings" fill="none" stroke-width="3.3" opacity=".94">
     <ellipse cx="256" cy="252" rx="239" ry="82" transform="rotate(-23 256 252)" stroke="#F5C453"/>
     <ellipse cx="256" cy="252" rx="239" ry="82" transform="rotate(25 256 252)" stroke="#0DDDDD"/>
     <ellipse cx="256" cy="252" rx="234" ry="79" transform="rotate(63 256 252)" stroke="#8D26FF"/>
