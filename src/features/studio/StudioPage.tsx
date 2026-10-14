@@ -1,4 +1,7 @@
 import { useVerifiedSession } from '../../hooks/useVerifiedSession';
+import { BrandLogo } from '../../components/BrandLogo';
+import { FounderInquiryForm } from '../pricing/FounderInquiryForm';
+import { FOUNDER_OFFER } from '../../data/founderOffer';
 import { MARKET_BLUEPRINTS, computeBlueprintDemoIndex } from '../home/marketBlueprintDemo';
 import { HubNavigationPanel } from '../../components/HubNavigationPanel';
 import { DataUnavailable } from '../../shared/ui/DataUnavailable';
@@ -276,7 +279,22 @@ export const StudioPage: React.FC<StudioPageProps> = ({
       <HubNavigationPanel hubId="studio" onNavigate={path => { if (onNavigate) onNavigate(path); else window.location.assign(path); }} />
 
       {activeTab === 'content' && <ContentStudioPanel />}
-      {activeTab === 'kontakt' && <ContactForm />}
+      {activeTab === 'kontakt' && (
+        <div className="space-y-6">
+          <ContactForm />
+          <section aria-labelledby="capital-founder-relations" className="rounded-2xl border border-amber-400/40 bg-slate-950 p-4 sm:p-6">
+            <div className="flex items-center gap-3">
+              <BrandLogo variant="emblem" size="md" showSubtitle={false} />
+              <div>
+                <h2 id="capital-founder-relations" className="text-lg font-bold text-amber-100">{FOUNDER_OFFER.label}</h2>
+                <p className="mt-1 text-xs text-slate-300">{FOUNDER_OFFER.description}</p>
+              </div>
+            </div>
+            <p className="mt-3 text-xs text-slate-400">Öffentlicher Kontakt – unabhängig vom geschützten Owner-only Blueprint Cloud Bereich. Weder Anmeldung noch Anfrage erteilen Founder-, Partner- oder Investorenrechte.</p>
+            <FounderInquiryForm />
+          </section>
+        </div>
+      )
 
       {/* ========================================================================= */}
       {/* TAB CONTENT 1: PIPELINE ARCHITEKTUR (All 16 Data Concepts)                */}

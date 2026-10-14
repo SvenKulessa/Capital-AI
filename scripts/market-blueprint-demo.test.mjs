@@ -85,15 +85,24 @@ test('Studio exhibits fixture-only demo indices and both hubs use authoritative 
   assert.doesNotMatch(session, /localStorage/);
 });
 
-test('Founder stays inquiry-only with gross request pricing and separate private PII endpoint', () => {
+test('Founder sponsorship and investor relations remain outside pricing and owner-only access', () => {
   const root = new URL('../src/', import.meta.url);
-  const product = readFileSync(new URL('data/founderOffer.ts', root), 'utf8');
+  const founder = readFileSync(new URL('data/founderOffer.ts', root), 'utf8');
   const form = readFileSync(new URL('features/pricing/FounderInquiryForm.tsx', root), 'utf8');
-  const modal = readFileSync(new URL('features/pricing/MonetizationModal.tsx', root), 'utf8');
-  assert.match(product, /Bruttopreis auf Anfrage/);
-  assert.match(product, /inquiry_only/);
-  assert.match(product, /sven\.kulessa@capital-ai\.online/);
-  assert.match(modal, /<FounderInquiryForm \/>/);
+  const pricing = readFileSync(new URL('features/pricing/MonetizationModal.tsx', root), 'utf8');
+  const studio = readFileSync(new URL('features/studio/StudioPage.tsx', root), 'utf8');
+  assert.match(founder, /Sponsoring & Investor Relations/);
+  assert.match(founder, /confidential_contact_only/);
+  assert.match(founder, /grantsAccess: false/);
+  assert.match(founder, /checkoutEnabled: false/);
+  assert.doesNotMatch(founder, /Bruttopreis|subscription|stripe/i);
+  assert.doesNotMatch(pricing, /FOUNDER_OFFER|FounderInquiryForm|capital-founder-offer/);
+  assert.match(studio, /activeTab === 'kontakt'/);
+  assert.match(studio, /capital-founder-relations/);
+  assert.match(studio, /<FounderInquiryForm \/>/);
+  assert.match(studio, /<FounderPrivateBlueprintCloud \/>/);
+  assert.match(form, /Sponsoring/);
+  assert.match(form, /Investor Relations/);
   assert.match(form, /\/api\/public\/founder-inquiry/);
   assert.match(form, /privacyAcknowledged/);
   assert.doesNotMatch(form, /(?:ga4|gtag|trackEvent|localStorage|sessionStorage|stripe\.com)/i);

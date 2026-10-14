@@ -14,7 +14,7 @@ export function FounderInquiryForm() {
     const read = (field: string) => String(values.get(field) || '').trim();
     const email = read('email');
     const message = [
-      'Founder / individuelle B2B-Anfrage',
+      'Founder / Sponsoring und Investor Relations – Erstkontakt',
       `Name: ${read('name')}`,
       `Organisation: ${read('organization') || 'Nicht angegeben'}`,
       `Anfragetyp: ${read('interest')}`,
@@ -51,7 +51,7 @@ export function FounderInquiryForm() {
   return (
     <div className="mt-4 border-t border-amber-300/20 pt-4">
       <h4 className="text-sm font-bold text-amber-100">Vertrauliche Founder-Anfrage</h4>
-      <p className="mt-1 text-xs text-slate-300">Privates Angebot und unverbindliches Telefonat anfragen. Keine Online-Zahlung und keine automatische Freischaltung.</p>
+      <p className="mt-1 text-xs text-slate-300">Vertraulicher Erstkontakt zu Sponsoring, strategischer Partnerschaft und Investor Relations. Keine öffentliche Investitionsofferte, kein Wertpapierverkauf oder automatisches Founder-Recht.</p>
       <form onSubmit={submit} className="mt-3 grid gap-3 sm:grid-cols-2">
         <label className="text-xs text-slate-200">Name *
           <input name="name" required maxLength={120} autoComplete="name" disabled={unavailable} className="mt-1 min-h-11 w-full rounded-lg border border-slate-600 bg-slate-950 p-2 text-white" />
@@ -64,15 +64,15 @@ export function FounderInquiryForm() {
         </label>
         <label className="text-xs text-slate-200">Interesse *
           <select name="interest" required disabled={unavailable} className="mt-1 min-h-11 w-full rounded-lg border border-slate-600 bg-slate-950 p-2 text-white">
-            <option value="Individuelle Kundenlösung">Individuelle Kundenlösung</option>
-            <option value="Private Partnerschaft">Private Partnerschaft</option>
-            <option value="Architektur und Integration">Architektur und Integration</option>
+            <option value="Sponsoring">Sponsoring</option>
+            <option value="Investor Relations">Investor Relations</option>
+            <option value="Strategische Partnerschaft">Strategische Partnerschaft</option>
           </select>
         </label>
         <label className="sm:col-span-2 text-xs text-slate-200">Rückrufwunsch / bevorzugter Termin (optional, keine automatische Buchung)
           <input name="callback" maxLength={130} disabled={unavailable} placeholder="z. B. Mittwoch vormittags; Rufnummer nur falls gewünscht" className="mt-1 min-h-11 w-full rounded-lg border border-slate-600 bg-slate-950 p-2 text-white" />
         </label>
-        <label className="sm:col-span-2 text-xs text-slate-200">Projektbeschreibung *
+        <label className="sm:col-span-2 text-xs text-slate-200">Nachricht / Anliegen *
           <textarea name="details" required minLength={10} maxLength={1250} rows={3} disabled={unavailable} className="mt-1 w-full rounded-lg border border-slate-600 bg-slate-950 p-2 text-white" />
         </label>
         <div hidden aria-hidden="true"><label>Website<input name="website" tabIndex={-1} autoComplete="off" defaultValue="" /></label></div>

@@ -24,8 +24,6 @@ import {
   displayPriceEur,
 } from '../../data/pricingCatalog';
 import { ADDITIONAL_PRODUCTS_CATALOG } from '../../data/additionalProductsCatalog';
-import { FOUNDER_OFFER } from '../../data/founderOffer';
-import { FounderInquiryForm } from './FounderInquiryForm';
 import { INITIAL_COMMERCE_STATE, readCommerceState } from './commerceState';
 
 
@@ -389,26 +387,12 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
         {activeTab === 'products' && (
           <div className="mt-5 space-y-4">
             <div className="rounded-2xl border border-slate-800 bg-[#030716] p-4">
-              <h3 className="text-sm font-bold text-white">Zusatzprodukte und Founder-Angebot</h3>
+              <h3 className="text-sm font-bold text-white">Zusatzprodukte</h3>
               <p className="mt-1 text-xs leading-relaxed text-slate-400">
-                Vergleiche bestehende Lernpakete und frage ein individuell kalkuliertes Founder-Angebot direkt vertraulich an.
+                Hier sind ausschließlich bestehende Lernprodukte aufgeführt. Sponsoring und Investor Relations werden unabhängig vom Preiskatalog über den Studio-Kontakt behandelt.
               </p>
             </div>
 
-            <section aria-labelledby="capital-founder-offer" className="rounded-2xl border border-amber-400/50 bg-gradient-to-br from-[#2b1b06] via-[#0b1730] to-[#100b25] p-4 sm:p-5">
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="shrink-0 rounded-2xl border border-amber-400/30 bg-slate-950 p-2">
-                  <BrandLogo variant="emblem" size="md" showSubtitle={false} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h3 id="capital-founder-offer" className="text-base font-black text-amber-100">{FOUNDER_OFFER.label} · Privates Individualpaket</h3>
-                  <p className="mt-1 text-sm font-bold text-white">{FOUNDER_OFFER.priceLabel}</p>
-                  <p className="mt-1 text-xs text-slate-300">{FOUNDER_OFFER.description}</p>
-                  <p className="mt-1 text-[11px] text-amber-200">Individuell vereinbarter Bruttopreis einschließlich anfallender Steuern. Kein automatischer Checkout und keine unverifizierten Lizenz- oder Leistungsversprechen.</p>
-                </div>
-              </div>
-              <FounderInquiryForm />
-            </section>
             {ADDITIONAL_PRODUCTS_CATALOG.map((product) => (
               <section
                 key={product.id}
