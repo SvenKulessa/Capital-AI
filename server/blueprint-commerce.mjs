@@ -74,7 +74,7 @@ function safeCheckoutUrl(value) {
   } catch { return false; }
 }
 
-export function createBlueprintCommerce({ env = process.env, fetchImpl = fetch, auth, sendMailImpl } = {}) {
+export function createBlueprintCommerce({ env = process.env, fetchImpl = fetch, auth, sendMailImpl, privateCloud = null } = {}) {
   const stripeKey = String(env.STRIPE_SECRET_KEY || '');
   const webhookSecret = String(env.STRIPE_BLUEPRINT_WEBHOOK_SECRET || '');
   const db = adminConfig(env);
@@ -227,6 +227,69 @@ export function createBlueprintCommerce({ env = process.env, fetchImpl = fetch, 
       if (!url.pathname.startsWith('/api/billing/blueprints/')) return false;
       res.setHeader('Cache-Control', 'private, no-store');
 
+      // This is not another login: existing verified IAM owner and product release authority.
+      if (url.pathname.startsWith('/api/billing/blueprints/private-cloud/')) {
+        const owner = await auth?.verify?.(req, res);
+        const allowed = owner?.userId && owner.emailVerified === true &&
+          await auth?.authorizeIamRole?.(req, res, 'owner');
+        if (!allowed) { json(res, 403, { error: 'owner_required' }); return true; }
+        const suffix = url.pathname.slice('/api/billing/blueprints/private-cloud/'.length);
+        if (suffix === 'verify' && req.method === 'GET') {
+          const evidence = privateCloud ? await privateCloud.verify() :
+            { available: false, reason: 'PRIVATE_CLOUD_NOT_CONFIGURED', persistence: 'NOT_PROVEN' };
+          json(res, evidence.available ? 200 : 503, {
+            schema: 'CAPITAL_AI_PRIVATE_BLUEPRINT_CLOUD@1', ...evidence,
+            backup: 'ENCRYPTED_EXPORT_AVAILABLE_ON_RELEASED_ARTIFACTS',
+            restoreTest: 'NOT_PROVEN',
+          });
+          return true;
+        }
+        const match = /^(import|restore|backup)\/(CAP-BP-00[12])$/.exec(suffix);
+        if (!match) { json(res, 404, { error: 'not_found' }); return true; }
+        const [, action, sku] = match;
+        if (!privateCloud?.configured()) { json(res, 503, { error: 'private_cloud_unavailable' }); return true; }
+        if (action !== 'backup' && (!auth?.sameOrigin?.(req) || req.method !== 'POST')) {
+          json(res, 403, { error: 'origin_or_method_invalid' }); return true;
+        }
+        if (action === 'backup' && req.method !== 'GET') {
+          json(res, 405, { error: 'method_not_allowed' }); return true;
+        }
+        try {
+          const readiness = await rpc('readiness', { _sku: sku });
+          if (readiness?.ready !== true || !/^[a-f0-9]{64}$/.test(readiness.sha256 || '')) {
+            json(res, 409, { error: 'blueprint_release_not_ready' }); return true;
+          }
+          if (action === 'backup') {
+            const output = await privateCloud.backup(sku, readiness.sha256);
+            res.writeHead(200, {
+              'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="' + output.name + '"',
+              'Content-Length': output.bytes.length, 'X-Content-Type-Options': 'nosniff',
+              'Cache-Control': 'private, no-store', 'Content-Security-Policy': 'sandbox',
+              'X-Backup-SHA256': output.sha256,
+            });
+            res.end(output.bytes);
+            return true;
+          }
+          if (req.headers['content-type'] !== (action === 'import' ? 'text/markdown' : 'application/octet-stream')) {
+            json(res, 415, { error: 'unsupported_media_type' }); return true;
+          }
+          const raw = await readRaw(req, action === 'import' ? 1048576 : 1500000);
+          const digest = action === 'import' ? createHash('sha256').update(raw).digest('hex') : readiness.sha256;
+          if (digest !== readiness.sha256 || req.headers['x-blueprint-release-sha256'] !== readiness.sha256) {
+            json(res, 409, { error: 'source_digest_mismatch' }); return true;
+          }
+          const stored = action === 'import' ? await privateCloud.put(sku, raw, digest)
+            : await privateCloud.restore(sku, raw, digest);
+          json(res, 201, { stored: true, sku: stored.sku, version: stored.version,
+            sha256: stored.sha256, ciphertextSha256: stored.ciphertextSha256, bytes: stored.bytes });
+        } catch(error) {
+          json(res, error?.code === 'EEXIST' ? 409 : 503, {
+            error: error?.code === 'EEXIST' ? 'immutable_artifact_already_exists' : 'private_cloud_storage_unavailable'
+          });
+        }
+        return true;
+      }
+
       if (url.pathname === '/api/billing/blueprints/license' && req.method === 'GET') {
         try {
           const data = await readFile(LICENSE_PATH);
@@ -318,13 +381,17 @@ export function createBlueprintCommerce({ env = process.env, fetchImpl = fetch, 
               !/^CAP-BP-00[12]-[A-Za-z0-9.-]+\.md$/.test(result.fileName || '') ||
               !Number.isInteger(result.bytes) || result.bytes !== content.length || content.length > 1048576 ||
               createHash('sha256').update(content).digest('hex') !== result.sha256) throw new Error('artifact_mismatch');
+          // Supabase is authoritative for paid entitlements and release SHA.
+          // Disk is an immutable encrypted copy; tampering fails closed.
+          const privateContent = privateCloud?.configured() ? await privateCloud.read(sku, result.sha256) : null;
+          const delivered = privateContent ?? content;
           res.writeHead(200, {
             'Content-Type': 'text/markdown; charset=utf-8',
             'Content-Disposition': `attachment; filename="${result.fileName}"`,
-            'Content-Length': content.length, 'Cache-Control': 'private, no-store',
+            'Content-Length': delivered.length, 'Cache-Control': 'private, no-store',
             'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': 'sandbox',
           });
-          res.end(content);
+          res.end(delivered);
         } catch { json(res, 503, { error: 'blueprint_download_unavailable' }); }
         return true;
       }
