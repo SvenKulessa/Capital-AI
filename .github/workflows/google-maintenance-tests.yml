@@ -7,6 +7,9 @@ on:
       - 'server/google-learning-setup.test.mjs'
       - 'scripts/google-learning-setup.mjs'
       - '.github/workflows/google-learning-setup.yml'
+      - '.github/workflows/google-cloud-admin.yml'
+      - 'scripts/platform/google-cloud-admin-readback.mjs'
+      - 'scripts/platform/google-cloud-admin-readback.test.mjs'
       - 'scripts/google-maintenance-mcp.mjs'
       - 'scripts/growth-agent/**'
       - 'scripts/privacy-analytics.test.mjs'
@@ -30,7 +33,7 @@ jobs:
         with:
           node-version: '24.19.0'
       - name: Test Google REST and MCP boundaries without provider credentials
-        run: node --test server/google-maintenance-api.test.mjs server/google-learning-setup.test.mjs
+        run: node --test server/google-maintenance-api.test.mjs server/google-learning-setup.test.mjs scripts/platform/google-cloud-admin-readback.test.mjs
       - name: Test disabled analytics and local SEO contracts
         run: node --test scripts/privacy-analytics.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-metadata.test.mjs
       - name: Install pinned local graph dependencies

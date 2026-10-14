@@ -57,7 +57,9 @@ function contentEntry({
     domain,
     language: DEFAULT_LANGUAGE,
     author: DEFAULT_AUTHOR,
-    updatedAt: SEO_CONTENT_MANIFEST_VERSION,
+    updatedAt: path === '/' ? '2026-10-14' : SEO_CONTENT_MANIFEST_VERSION,
+    // Explicit reviewed content change, never deployment/crawl time.
+    sitemapLastmod: ['/', '/blog', '/blog/datenkonzept-blueprint', '/blog/screener-scoring-lernen'].includes(path) ? '2026-10-14' : null,
     sourceSha: SEO_CONTENT_SOURCE_SHA,
     license: DEFAULT_LICENSE,
     robots: DEFAULT_ROBOTS,
@@ -70,13 +72,15 @@ function contentEntry({
 }
 
 const staticEntries = [
+  contentEntry({"path": "/blog/datenkonzept-blueprint", "slug": "datenkonzept-blueprint", "title": "Datenkonzept-Blueprint: Von der Quelle zum nachvollziehbaren Score | Capital-AI", "description": "Datenquellen, Zeitbezug, Qualitätsregeln und Scoring als verständliches Datenkonzept planen. Mit synthetischem Beispiel und Blueprint-Dokumentation.", "contentType": "article", "domain": "GROWTH", "structuredDataType": "BlogPosting", "socialEligible": false, "aiSearchEligible": true, "sourceRefs": ["shared/blog-articles.mjs"]}),
+  contentEntry({"path": "/blog/screener-scoring-lernen", "slug": "screener-scoring-lernen", "title": "Screener-Scoring lernen: Faktoren, Gewichtung und Datenabdeckung | Capital-AI", "description": "Wie ein gewichteter Screener-Score entsteht und welche Grenzen er hat. Synthetisches Rechenbeispiel, Datenabdeckung und kostenlose Lernschritte.", "contentType": "article", "domain": "GROWTH", "structuredDataType": "BlogPosting", "socialEligible": false, "aiSearchEligible": true, "sourceRefs": ["shared/blog-articles.mjs"]}),
   contentEntry({ path: '/blog', slug: 'blog', title: 'Wissen & Lernen | CAPITAL AI', description: 'Öffentliche redaktionelle Beiträge zu Finanzwissen, Datenqualität und zugänglicher Marktanalyse.', contentType: 'blog', domain: 'GROWTH', structuredDataType: 'WebPage', socialEligible: false, aiSearchEligible: true, sourceRefs: ['shared/blog-articles.mjs'] }),
   contentEntry({ path: '/blog/barrierefreie-finanzcharts', slug: 'barrierefreie-finanzcharts', title: 'Barrierefreie Finanzcharts: Vier Informationswege | CAPITAL AI', description: 'Wie Textalternativen, nachvollziehbare Datenherkunft und Tastaturbedienung Finanzcharts verständlicher machen.', contentType: 'article', domain: 'GROWTH', structuredDataType: 'BlogPosting', socialEligible: false, aiSearchEligible: true, sourceRefs: ['shared/blog-articles.mjs'] }),
   contentEntry({
     path: '/',
     slug: 'home',
-    title: 'Capital-AI | Market Intelligence & BYOK',
-    description: 'Capital-AI verbindet eigene Providerzugänge mit nachvollziehbarer Marktanalyse, BYOK und überprüfbaren Datenrechten.',
+    title: 'Capital-AI | Learning Hub, Blueprints & Screener-Scoring',
+    description: 'Finanzwissen im Learning Hub lernen, Blueprints für Datenkonzepte erkunden und Screener-Scoring verstehen: mit nachvollziehbaren Methoden und Demo-Beispielen.',
     contentType: 'landing',
     domain: 'PRODUCT',
     structuredDataType: 'WebApplication',
