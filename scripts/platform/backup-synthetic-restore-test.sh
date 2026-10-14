@@ -13,20 +13,20 @@ scratch="$(mktemp -d "${RUNNER_TEMP:-/tmp}/capital-ai-restore-XXXXXXXX")"
 source_db="capital_ai_fixture_src_$$"
 restore_db="capital_ai_fixture_dst_$$"
 cleanup() {
-  sudo -u postgres dropdb --if-exists "$restore_db" >/dev/null 2>&1 || true
-  sudo -u postgres dropdb --if-exists "$source_db" >/dev/null 2>&1 || true
+  sudo -u postgres dropdb --host=/var/run/postgresql --port=5432 --if-exists "$restore_db" >/dev/null 2>&1 || true
+  sudo -u postgres dropdb --host=/var/run/postgresql --port=5432 --if-exists "$source_db" >/dev/null 2>&1 || true
   rm -rf -- "$scratch"
 }
 trap cleanup EXIT
 
 # This local test must not accept production connection strings or reuse user databases.
-if [[ -n "${PGHOST:-}${PGPORT:-}${PGDATABASE:-}${PGSERVICE:-}" ]]; then
+if [[ -n "${PGHOST:-}${PGHOSTADDR:-}${PGPORT:-}${PGDATABASE:-}${PGSERVICE:-}${PGUSER:-}${PGPASSFILE:-}${PGSERVICEFILE:-}${PGOPTIONS:-}" ]]; then
   echo 'SYNTHETIC_RESTORE_BLOCKED: inherited PostgreSQL connection overrides' >&2
   exit 2
 fi
-sudo -u postgres createdb "$source_db"
-sudo -u postgres createdb "$restore_db"
-sudo -u postgres psql --dbname "$source_db" --set ON_ERROR_STOP=1 <<'SQL' >/dev/null
+sudo -u postgres createdb --host=/var/run/postgresql --port=5432 "$source_db"
+sudo -u postgres createdb --host=/var/run/postgresql --port=5432 "$restore_db"
+sudo -u postgres psql --host=/var/run/postgresql --port=5432 --dbname "$source_db" --set ON_ERROR_STOP=1 <<'SQL' >/dev/null
 CREATE TABLE synthetic_restore_probe (
   tenant text NOT NULL,
   seq integer NOT NULL,
@@ -40,7 +40,7 @@ INSERT INTO synthetic_restore_probe (tenant,seq,payload) VALUES
 SQL
 
 # pg_dump exits non-zero on an incomplete dump. The source is synthetic, never customer data.
-sudo -u postgres pg_dump --no-owner --no-privileges --format=plain --dbname "$source_db" > "$scratch/fixture.sql"
+sudo -u postgres pg_dump --host=/var/run/postgresql --port=5432 --no-owner --no-privileges --format=plain --dbname "$source_db" > "$scratch/fixture.sql"
 test -s "$scratch/fixture.sql"
 age-keygen -o "$scratch/identity.txt" 2>/dev/null
 export CAPITAL_BACKUP_AGE_RECIPIENT="$(age-keygen -y "$scratch/identity.txt")"
@@ -52,10 +52,10 @@ age --decrypt -i "$scratch/identity.txt" -o "$scratch/restore.sql" "$scratch/fix
 [[ "$expected_sha" == "$(sha256sum "$scratch/restore.sql" | cut -d ' ' -f1)" ]] || {
   echo 'SYNTHETIC_RESTORE_FAIL: decrypted SQL checksum mismatch' >&2; exit 1;
 }
-sudo -u postgres psql --dbname "$restore_db" --set ON_ERROR_STOP=1 < "$scratch/restore.sql" >/dev/null
+sudo -u postgres psql --host=/var/run/postgresql --port=5432 --dbname "$restore_db" --set ON_ERROR_STOP=1 < "$scratch/restore.sql" >/dev/null
 query="SELECT tenant || ':' || count(*) || ':' || min(payload) FROM synthetic_restore_probe GROUP BY tenant ORDER BY tenant;"
-source_rows="$(sudo -u postgres psql -At --dbname "$source_db" --command "$query")"
-restore_rows="$(sudo -u postgres psql -At --dbname "$restore_db" --command "$query")"
+source_rows="$(sudo -u postgres psql --host=/var/run/postgresql --port=5432 -At --dbname "$source_db" --command "$query")"
+restore_rows="$(sudo -u postgres psql --host=/var/run/postgresql --port=5432 -At --dbname "$restore_db" --command "$query")"
 [[ "$source_rows" == "$restore_rows" ]] || { echo 'SYNTHETIC_RESTORE_FAIL: row mismatch' >&2; exit 1; }
 [[ "$restore_rows" == $'tenant_a:1:CAPITAL_AI_TEST_ONLY_A\ntenant_b:2:CAPITAL_AI_TEST_ONLY_B' ]] || {
   echo 'SYNTHETIC_RESTORE_FAIL: unexpected fixture' >&2; exit 1;
