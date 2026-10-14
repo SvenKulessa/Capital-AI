@@ -1,5 +1,5 @@
 // Public document identity shared by the browser and the privacy API.
-export const PRIVACY_NOTICE_VERSION = '2026-10-11';
+export const PRIVACY_NOTICE_VERSION = '2026-10-14';
 export const CONTROLLER = Object.freeze({
   name: 'Sven Michael Kulessa', legalStatus: 'Privatperson', projectName: 'CAPITAL-AI',
   street: 'von Lepel Straße 3a', postalCode: '27259', city: 'Freistatt', country: 'Deutschland',
