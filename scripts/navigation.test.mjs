@@ -304,6 +304,10 @@ test('legal overview, contact, mobile hub tabs and global footer use one contact
   assert.equal(resolveAppRoute('/contact'), '/kontakt');
   assert.equal(resolveAppRoute('/rechtliches'), '/legal');
   assert.equal(resolveNavigationTarget('/legal?ref=footer'), '/legal?ref=footer');
+  assert.equal(resolveAppRoute('/founder'), '/founder');
+  const founderRouteSource = readFileSync(new URL('../src/app/routing/AppRoutes.tsx', import.meta.url), 'utf8');
+  assert.match(founderRouteSource, /currentRoute === '\/founder'/);
+  assert.match(founderRouteSource, /<FounderRelationsPage \/>/);
   const viewport = readFileSync(new URL('../src/app/layout/ApplicationViewport.tsx', import.meta.url), 'utf8');
   const home = readFileSync(new URL('../src/features/home/HomePage.tsx', import.meta.url), 'utf8');
   const footer = readFileSync(new URL('../src/components/Footer.tsx', import.meta.url), 'utf8');
