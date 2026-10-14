@@ -1,3 +1,4 @@
+import { PRIVACY_NOTICE_VERSION } from '../shared/legal-identity.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
@@ -514,7 +515,7 @@ test('Google signup rejects unconsented or cross-origin requests and records sig
       ['marketing', false, 'consent'],
     ]);
     assert.equal(h.state.consentWrites[0].every(row => row.user_id === h.state.subject), true);
-    assert.equal(h.state.consentWrites[0].find(row => row.consent_type === 'privacy').document_version, '2026-10-14');
+    assert.equal(h.state.consentWrites[0].find(row => row.consent_type === 'privacy').document_version, PRIVACY_NOTICE_VERSION);
   } finally {
     await h.stop();
   }

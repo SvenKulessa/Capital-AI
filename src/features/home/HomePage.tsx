@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react';
+import { HomeSearchFocus } from './HomeSearchFocus';
 import { Hero } from '../../components/Hero';
 
 
@@ -85,6 +86,7 @@ export function HomePage({
           <span className="text-sm">Finanzwissen lernen. Analysemethoden verstehen.</span>
         </button>
       </section>
+      <HomeSearchFocus />
       <CommerceEntrySection onNavigate={onNavigate} />
       <HomeLatestLearning onNavigate={onNavigate} />
 
