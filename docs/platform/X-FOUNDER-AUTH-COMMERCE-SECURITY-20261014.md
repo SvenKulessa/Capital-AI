@@ -1,6 +1,6 @@
 # CAPITAL-AI PLATFORM — X-Login, Founder-Vertrieb und Demo-Evidence
 
-**Stand:** 2026-10-14 · Scope: PLATFORM/Product/Trust, Repository `SvenKulessa/Capital-AI` · Branch `capital-ai-platform/x-login-founder-demo-security`. Baseline `main@2946a136`; vor PR/Merge erneut mit dann aktuellem `main` abgleichen. **AGENTS.md ist allein autorisierend** (inklusive SOLO_MAINTAINER_FLOW@1 und aktueller P0-PR-Reihenfolge); diese Datei schafft keine neue Admission/Domain/Required Checks.
+**Stand:** 2026-10-14 · Scope: PLATFORM/Product/Trust, Repository `SvenKulessa/Capital-AI` · Branch `capital-ai-platform/x-login-founder-demo-security-20261014`. Baseline `main@2946a136`; vor PR/Merge erneut mit dann aktuellem `main` abgleichen. **AGENTS.md ist allein autorisierend** (inklusive SOLO_MAINTAINER_FLOW@1 und aktueller P0-PR-Reihenfolge); diese Datei schafft keine neue Admission/Domain/Required Checks.
 
 ## Agentenkontext in 60 Sekunden
 
