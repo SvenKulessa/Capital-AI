@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 export type VerifiedSessionState = 'loading' | 'authenticated' | 'anonymous' | 'error';
 
-/** Session identity is verified by the existing same-origin backend, not by entitlements or localStorage. */
+/** Session identity is verified by the same-origin backend, never inferred from client persistence or entitlements. */
 export function useVerifiedSession(): VerifiedSessionState {
   const [state, setState] = useState<VerifiedSessionState>('loading');
   useEffect(() => {
