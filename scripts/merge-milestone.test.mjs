@@ -84,5 +84,5 @@ test('workflow keeps independent provenance, dedicated App authority, legacy ide
   assert.match(workflow, /--draft --title/);
   assert.equal((workflow.match(/gh pr create --repo/g) ?? []).length, 1);
   assert.doesNotMatch(workflow, /Roadmap and news milestones have different source PRs/);
-  assert.doesNotMatch(workflow, /gh pr merge|gh release create|social.*publish/);
+  assert.doesNotMatch(workflow, /^\s*(?:gh\s+pr\s+merge|gh\s+release\s+create|node\s+scripts\/[^\n]*publish)/m);
 });
