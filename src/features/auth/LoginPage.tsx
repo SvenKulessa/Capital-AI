@@ -80,6 +80,7 @@ function safePostAuthPath(): string {
   try {
     const parsed = new URL(candidate, window.location.origin);
     if (parsed.origin !== window.location.origin) return '/';
+    if (parsed.pathname === '/founder' && !parsed.search && !parsed.hash) return '/founder';
     if (parsed.pathname !== '/api/cads/marketplace/setup') return '/';
     const installationId = Number(parsed.searchParams.get('installation_id'));
     if (!Number.isSafeInteger(installationId) || installationId <= 0) return '/';
