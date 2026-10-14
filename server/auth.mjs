@@ -2,6 +2,7 @@ import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypt
 import { secureUrl, boundedJson, createLimiter } from './http-security.mjs';
 import { createAuthSecurity, hasVerifiedTotpFactor } from './auth-security.mjs';
 import { normalizeStoredPaidTier } from './subscription-entitlements.mjs';
+import { PRIVACY_NOTICE_VERSION } from '../shared/legal-identity.mjs';
 
 const SESSION_COUNT_COOKIE = '__Host-capital_session_count';
 const SESSION_COOKIE_PREFIX = '__Host-capital_session_';
@@ -57,6 +58,7 @@ function normalizeMarketplaceAuthNext(value) {
   try {
     const parsed = new URL(path, 'https://capital-ai.invalid');
     if (parsed.origin !== 'https://capital-ai.invalid') return '/';
+    if (parsed.pathname === '/founder' && !parsed.search && !parsed.hash) return '/founder';
     if (parsed.pathname !== '/api/cads/marketplace/setup') return '/';
     const installationId = Number(parsed.searchParams.get('installation_id'));
     if (!Number.isSafeInteger(installationId) || installationId <= 0) return '/';
@@ -305,7 +307,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     const version = '2026-10-05';
     const entries = [
       { user_id: userId, consent_type: 'terms', document_version: version, granted: true, evidence_kind: 'contract_acceptance' },
-      { user_id: userId, consent_type: 'privacy', document_version: version, granted: true, evidence_kind: 'acknowledgement' },
+      { user_id: userId, consent_type: 'privacy', document_version: PRIVACY_NOTICE_VERSION, granted: true, evidence_kind: 'acknowledgement' },
       { user_id: userId, consent_type: 'marketing', document_version: version, granted: consent.marketingConsent === true, evidence_kind: 'consent' },
     ];
     const target = new URL('/rest/v1/user_consents', config.url);
@@ -463,6 +465,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       'login',
       'login/email',
       'login/google',
+      'login/x',
       'mobile-login',
       'mobile-exchange',
       'register',
@@ -629,13 +632,14 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       return true;
     }
 
-    if (action === 'login/google') {
+    if (action === 'login/google' || action === 'login/x') {
+      const provider = action === 'login/x' ? 'x' : 'google';
       if (!['GET', 'POST'].includes(req.method)) {
         res.setHeader('Allow', 'GET, POST');
         json(res, 405, { error: 'method_not_allowed' });
         return true;
       }
-      let googleRegistrationConsent = null;
+      let socialRegistrationConsent = null;
       if (req.method === 'POST') {
         if (!sameOrigin(req)) {
           json(res, 403, { error: 'forbidden_origin' });
@@ -658,7 +662,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
           json(res, 503, { error: 'registration_consent_store_unavailable' });
           return true;
         }
-        googleRegistrationConsent = {
+        socialRegistrationConsent = {
           termsAccepted: true,
           privacyAcknowledged: true,
           marketingConsent: form.get('marketingConsent') === 'true',
@@ -673,10 +677,10 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       const callback = new URL('/api/auth/callback', config.origin);
       appendCookie(
         res,
-        cookie(PKCE_COOKIE, signEnvelope(config, { version: 1, flow, verifier, next, googleRegistrationConsent, expires: now() + PKCE_MAX_AGE_SECONDS * 1000 }), PKCE_MAX_AGE_SECONDS),
+        cookie(PKCE_COOKIE, signEnvelope(config, { version: 1, flow, verifier, next, provider, socialRegistrationConsent, expires: now() + PKCE_MAX_AGE_SECONDS * 1000 }), PKCE_MAX_AGE_SECONDS),
       );
       const target = new URL('/auth/v1/authorize', config.url);
-      target.searchParams.set('provider', 'google');
+      target.searchParams.set('provider', provider);
       target.searchParams.set('redirect_to', callback.toString());
       target.searchParams.set('code_challenge', challenge);
       target.searchParams.set('code_challenge_method', 's256');
@@ -714,6 +718,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       if (
         flowCookie?.version !== 1 ||
         flowCookie.expires <= now() ||
+        (flowCookie.provider !== undefined && !['google', 'x'].includes(flowCookie.provider)) ||
         !/^[A-Za-z0-9_-]{43}$/.test(String(flowCookie.flow || '')) ||
         (flow !== null && flowCookie.flow !== flow) ||
         !/^[A-Za-z0-9._~-]{43,128}$/.test(flowCookie.verifier || '') ||
@@ -767,26 +772,27 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
         res.end();
         return true;
       }
-      const googleUser = await authRequest(config, '/user', { accessToken: exchanged.data.access_token });
-      if (!googleUser.response.ok || googleUser.data?.id !== exchanged.data.user?.id) {
+      const socialUser = await authRequest(config, '/user', { accessToken: exchanged.data.access_token });
+      if (!socialUser.response.ok || socialUser.data?.id !== exchanged.data.user?.id) {
         json(res, 503, { error: 'authentication_security_state_unavailable' });
         return true;
       }
-      exchanged.data.user = googleUser.data;
-      if (flowCookie.googleRegistrationConsent) {
-        const recorded = await storeGoogleSignupConsent(config, googleUser.data.id, flowCookie.googleRegistrationConsent);
+      exchanged.data.user = socialUser.data;
+      const signupConsent = flowCookie.socialRegistrationConsent || flowCookie.googleRegistrationConsent;
+      if (signupConsent) {
+        const recorded = await storeGoogleSignupConsent(config, socialUser.data.id, signupConsent);
         if (!recorded) {
           json(res, 503, { error: 'registration_consent_persistence_failed' });
           return true;
         }
       }
       writeSessionCookies(req, res, config, exchanged.data);
-      const googleNext = normalizeMarketplaceAuthNext(flowCookie.next);
-      const googleMfaRequired = tokenAal(exchanged.data.access_token) !== 'aal2' && hasVerifiedTotpFactor(googleUser.data);
+      const safeNext = normalizeMarketplaceAuthNext(flowCookie.next);
+      const mfaRequired = tokenAal(exchanged.data.access_token) !== 'aal2' && hasVerifiedTotpFactor(socialUser.data);
       res.writeHead(303, {
-        Location: googleMfaRequired
-          ? `/login?mfa=1&next=${encodeURIComponent(googleNext)}`
-          : googleNext,
+        Location: mfaRequired
+          ? `/login?mfa=1&next=${encodeURIComponent(safeNext)}`
+          : safeNext,
         'Cache-Control': 'no-store',
         'Referrer-Policy': 'no-referrer',
       });

@@ -290,3 +290,29 @@ test('learning mutations reject other origins and anonymous access before storag
  }
  assert.equal(io,0);
 });
+
+test('purchase evidence requires a verified live learning payment belonging to the signed-in user', async () => {
+  const userId = '11111111-1111-4111-8111-111111111111';
+  const base = { id: 'cs_live_learning_123', livemode: true, mode: 'payment', status: 'complete',
+    payment_status: 'paid', metadata: { sku: 'learning-portal', user_id: userId }, client_reference_id: userId,
+    currency: 'eur', amount_subtotal: 2500, amount_total: 2000, total_details: { amount_discount: 500 } };
+  for (const [patch, expected] of [[{}, true], [{livemode:false}, false], [{status:'open'}, false],
+    [{payment_status:'unpaid'}, false], [{client_reference_id:'another-user'}, false], [{amount_total:2400}, false]]) {
+    let grants = 0;
+    const checkout = createVocabularyCheckout({ env, auth: auth(userId), fetchImpl: async url => {
+      if (new URL(url).origin === 'https://api.stripe.com') return Response.json({...base, ...patch});
+      if (String(url).includes('capital_ai_grant_vocabulary_entitlement')) { grants++; return Response.json({}); }
+      return Response.json({quantProEntitled: true});
+    }});
+    const res = response();
+    await checkout.handle(request(), res, new URL('https://capital-ai.online/api/billing/vocabulary/entitlement?session_id=cs_live_learning_123'), json);
+    assert.equal(res.status, 200);
+    assert.equal(Boolean(res.payload.purchase), expected);
+    if (expected) {
+      assert.equal(grants, 1);assert.equal(res.payload.purchase.value, 20);
+      assert.equal(res.payload.purchase.currency, 'EUR');
+      assert.match(res.payload.purchase.transactionId, /^[a-f0-9]{64}$/);
+      assert.doesNotMatch(JSON.stringify(res.payload.purchase), /cs_live|11111111/);
+    }
+  }
+});

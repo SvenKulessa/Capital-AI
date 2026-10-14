@@ -1,3 +1,4 @@
+import { BrandLogo } from '../../components/BrandLogo';
 const AccountRightsPage = lazy(() => import('../../features/account/AccountRightsPage').then(module => ({default:module.AccountRightsPage})));
 import { lazy } from 'react';
 import type { LegalRoute } from '../../components/LegalAndFaqPages';
@@ -80,6 +81,7 @@ const PipelineBuilder = lazy(() =>
     default: module.PipelineBuilder,
   })),
 );
+const FounderRelationsPage = lazy(() => import('../../features/studio/FounderRelationsPage').then(module => ({ default: module.FounderRelationsPage })));
 const StudioPage = lazy(() =>
   import('../../features/studio/StudioPage').then((module) => ({
     default: module.StudioPage,
@@ -188,7 +190,8 @@ export function AppRoutes({
     );
   }
 
-  if (currentRoute === '/studio' || currentRoute === '/founder') {
+  if (currentRoute === '/founder') return <FounderRelationsPage />;
+  if (currentRoute === '/studio') {
     return (
       <StudioPage
         onBackToHome={() => navigateTo('/')}
@@ -251,7 +254,7 @@ export function AppRoutes({
       <div className="hub-universe hub-universe--marketscreener w-full text-slate-100 min-h-screen py-6 px-3 sm:px-6 space-y-6">
         <div className="flex flex-col gap-3 border-b border-slate-800 pb-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2 text-xs text-slate-400 font-mono">
-            <span>Capital-AI</span>
+            <BrandLogo variant="vendor" size="sm" onClick={() => navigateTo('/')} />
             <span>/</span>
             <span className="hub-heading font-bold">
               Analytics Hub

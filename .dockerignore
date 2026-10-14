@@ -60,6 +60,11 @@
 !server/blueprint-commerce.test.mjs
 !server/blueprint-private-cloud.mjs
 !server/blueprint-private-cloud.test.mjs
+!server/private-knowledge-vault.mjs
+!server/private-knowledge-vault.test.mjs
+!server/private-knowledge-api.mjs
+!server/founder-access.mjs
+!server/founder-access.test.mjs
 !server/vocabulary-quant-pro-index.mjs
 !server/public-artifact-policy.test.mjs
 !server/public-artifact-policy.mjs
@@ -203,6 +208,7 @@
 !scripts/export-mail-templates.mjs
 !scripts/seo-content-manifest.test.mjs
 !scripts/merge-milestone.mjs
+!scripts/merge-milestone-pr-plan.mjs
 !scripts/merge-milestone.test.mjs
 !scripts/seo-source-provenance-drift.test.mjs
 !scripts/refresh-seo-source-provenance.mjs
@@ -420,3 +426,5 @@
 !server/social-media/youtube-runtime.test.mjs
 !public/youtube-private-upload.js
 !supabase/migrations/20261013030655_youtube_private_upload_jobs.sql
+
+!shared/public-search-focus.mjs

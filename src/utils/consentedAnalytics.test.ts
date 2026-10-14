@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { saveCookieConsent } from '../privacy/cookieConsentV3';
 import { PRIVACY_NOTICE_VERSION } from '../../shared/legal-identity.mjs';
-import { startConsentedAnalytics, sendPageView, trackReceivedLearningInquiry, CONSENT_CHANGED_EVENT } from './consentedAnalytics';
+import { startConsentedAnalytics, sendPageView, trackReceivedLearningInquiry, trackVerifiedLearningPurchase, CONSENT_CHANGED_EVENT } from './consentedAnalytics';
 
 test('basic consent mode loads only after opt-in, sanitizes public events and revokes without further events', async () => {
   const oldWindow = globalThis.window, oldDocument = globalThis.document, oldFetch = globalThis.fetch;
@@ -18,6 +18,7 @@ test('basic consent mode loads only after opt-in, sanitizes public events and re
   const settle = () => new Promise(resolve => setTimeout(resolve, 0));
   try {
     startConsentedAnalytics();sendPageView('/learning');trackReceivedLearningInquiry('5cf37f93-3eaf-4d6d-9c4c-4247d05a7d72');
+    trackVerifiedLearningPurchase({transactionId:'a'.repeat(64), value:25, currency:'EUR'});
     await settle();assert.equal(fetches, 0);assert.equal(scripts, 0);
     stored = JSON.stringify({ version: 'COOKIE_CONSENT_V3', privacyNoticeVersion: PRIVACY_NOTICE_VERSION, savedAt: Date.now(), analytics: true, marketing: false });
     listeners.get(CONSENT_CHANGED_EVENT)!();await settle();
@@ -32,8 +33,15 @@ test('basic consent mode loads only after opt-in, sanitizes public events and re
     assert.equal(events.filter((c: any[]) => c[1] === 'page_view').length, 2);
     assert.equal(events.find((c: any[]) => c[1] === 'page_view')[2].page_referrer, 'https://www.google.de/');
     assert.doesNotMatch(JSON.stringify(events), /private@example|private-token|private-search|5cf37f93|value|currency/);
+    const purchase = {transactionId:'b'.repeat(64), value:20, currency:'EUR'};
+    trackVerifiedLearningPurchase(purchase);trackVerifiedLearningPurchase(purchase);
+    trackVerifiedLearningPurchase({...purchase, transactionId:'cs_private'});
+    trackVerifiedLearningPurchase({...purchase, transactionId:'c'.repeat(64), value:-1});
+    assert.equal(commands().filter((c: any[]) => c[1] === 'purchase').length, 1);
+    assert.equal(commands().find((c: any[]) => c[1] === 'purchase')[2].value, 20);
     stored = JSON.stringify({ version: 'COOKIE_CONSENT_V3', privacyNoticeVersion: PRIVACY_NOTICE_VERSION, savedAt: Date.now(), analytics: false, marketing: false });
     listeners.get(CONSENT_CHANGED_EVENT)!();await settle();const count = commands().length;
+    trackVerifiedLearningPurchase({transactionId:'d'.repeat(64), value:25, currency:'EUR'});
     sendPageView('/learning');trackReceivedLearningInquiry('b4f044bc-1103-467d-9810-ea98f93fdca3');
     assert.equal(commands().length, count);assert.equal(reloads, 1);assert.equal(removed, 1);
     assert.ok(writes.some(value => value.includes('Max-Age=0')));assert.equal(w['ga-disable-G-0542DT2HCE'], true);

@@ -291,7 +291,10 @@ test('paused price alerts cannot render navigation or run background price check
 
 test('hero uses restored static artwork and shared product disclaimer', () => {
   const hero = readFileSync(new URL('../src/components/Hero.tsx', import.meta.url), 'utf8');
-  assert.match(hero, /glowing_earth_nodes_1789997454893.jpg/);
+  for (const asset of ['hero-universe-desktop.webp', 'hero-universe-tablet.webp', 'hero-universe-mobile.webp', 'hero-universe-orbit.svg']) {
+    assert.ok(hero.includes(asset), asset);
+  }
+  assert.match(hero, /<picture>/);
   assert.doesNotMatch(hero, /HeroEarth3D|enableWebGL|WebGLRenderer/);
   assert.match(hero, /opacity-95/);
   assert.match(hero, /ProductDisclaimer/);
@@ -304,6 +307,10 @@ test('legal overview, contact, mobile hub tabs and global footer use one contact
   assert.equal(resolveAppRoute('/contact'), '/kontakt');
   assert.equal(resolveAppRoute('/rechtliches'), '/legal');
   assert.equal(resolveNavigationTarget('/legal?ref=footer'), '/legal?ref=footer');
+  assert.equal(resolveAppRoute('/founder'), '/founder');
+  const founderRouteSource = readFileSync(new URL('../src/app/routing/AppRoutes.tsx', import.meta.url), 'utf8');
+  assert.match(founderRouteSource, /currentRoute === '\/founder'/);
+  assert.match(founderRouteSource, /<FounderRelationsPage \/>/);
   const viewport = readFileSync(new URL('../src/app/layout/ApplicationViewport.tsx', import.meta.url), 'utf8');
   const home = readFileSync(new URL('../src/features/home/HomePage.tsx', import.meta.url), 'utf8');
   const footer = readFileSync(new URL('../src/components/Footer.tsx', import.meta.url), 'utf8');
@@ -320,7 +327,9 @@ test('legal overview, contact, mobile hub tabs and global footer use one contact
   assert.match(legal, /route === '\/kontakt' && <ContactForm \/>/);
   for (const target of ['/datenschutz/', '/agb/', '/impressum/']) assert.ok(legal.includes(`href="${target}"`), target);
   assert.match(learning, /activeTab === 'kontakt' && <ContactForm \/>/);
-  assert.match(studio, /activeTab === 'kontakt' && <ContactForm \/>/);
+  assert.match(studio, /activeTab === 'kontakt' && \(/);
+  assert.equal((studio.match(/<ContactForm \/>/g) || []).length, 1, 'Studio must retain one general contact form');
+  assert.match(studio, /<FounderInquiryForm \/>/, 'Founder relations has a distinct private inquiry path');
   assert.match(market, /active === 'kontakt' && <ContactForm \/>/);
   assert.doesNotMatch(learning, /<LearningInquiry \/>/);
   assert.match(form, /\/api\/public\/contact/);

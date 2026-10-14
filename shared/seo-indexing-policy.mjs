@@ -13,6 +13,8 @@ const routes = [
   { path: '/', classification: 'INDEX', contentType: 'landing', reason: 'Öffentliche Startseite und kanonischer Marken-/Produkteinstieg.' },
   { path: '/blog', classification: 'INDEX', contentType: 'blog', reason: 'Öffentliche redaktionelle Lernbeiträge mit vollständigem HTTP-Fallback.' },
   { path: '/blog/barrierefreie-finanzcharts', classification: 'INDEX', contentType: 'article', reason: 'Originaler Bildungsartikel mit eigener Illustration und Primärquellen.' },
+  { path: '/blog/datenkonzept-blueprint', classification: 'INDEX', contentType: 'article', reason: 'Originaler Lernartikel mit eigenständigem HTTP-Inhalt und Angebotspfad.' },
+  { path: '/blog/screener-scoring-lernen', classification: 'INDEX', contentType: 'article', reason: 'Originaler Lernartikel mit eigenständigem HTTP-Inhalt und Angebotspfad.' },
   { path: '/learning', classification: 'INDEX', contentType: 'learning', reason: 'Öffentliches Learning Portal mit crawlbarer Fallback-Ausgabe.' },
   { path: '/vocabulary', classification: 'INDEX', contentType: 'vocabulary', reason: 'Kanonische Vocabulary-Landingpage mit serverseitiger SEO-Ausgabe.' },
   { path: '/vocabulary/:term', classification: 'INDEX', contentType: 'vocabulary-term', dynamic: true, reason: 'Nur tatsächlich vorhandene öffentliche Vocabulary-Terme; unbekannte Terme bleiben 404.' },
@@ -56,6 +58,7 @@ const routes = [
   { path: '/profile/security', classification: 'PRIVATE', contentType: 'account-security', reason: 'Personenbezogene Sicherheits-, MFA- und Recovery-Einstellungen.' },
   { path: '/profile/key-vault', classification: 'PRIVATE', contentType: 'credential-vault', reason: 'Personenbezogener Provider-Credential-Vault; niemals Search-Inhalt.' },
   { path: '/profile/workspace', classification: 'PRIVATE', contentType: 'analysis-workspace', reason: 'Nutzereigene API-/Modellzuordnungen und Analyse-Einstellungen.' },
+  { path: '/founder', classification: 'PRIVATE', contentType:'invited-founder-relations', reason:'Private Partner- und Investor-Relations-Zugriffsprüfung.' },
   { path: '/profile/render-dashboard', classification: 'PRIVATE', contentType: 'owner-private-dashboard', reason: 'Render-Provider-Verbindungen nur für serverseitig verifizierten Owner.' },
   { path: '/control-center', classification: 'PRIVATE', contentType: 'management', reason: 'Management-, Evidence- und Control-Center-Inhalte sind nicht für Search bestimmt.' },
 

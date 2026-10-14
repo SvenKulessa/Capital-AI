@@ -661,6 +661,7 @@ const BACKLOG_TARGETS: WorkPackage[] = [
       'scripts/seo-metadata.test.mjs',
       'docs/growth/SEO-02-METADATA-AS-CODE-20261005.md',
       'docs/growth/SEO-LEADGEN-FOLLOWUP-20261014.md',
+      'docs/growth/LEARNING-BLUEPRINT-SEARCH-20261014.md',
       'src/data/growthMarketingPilot.ts',
       'docs/security/BUILD-DOMEXCEPTION-REVIEW-20261005.md',
     ],

@@ -39,6 +39,8 @@ import { serveMtaSts } from './mta-sts.mjs';
 import { serveWellKnown } from './well-known.mjs';
 import { licenseMetadata } from '../shared/license-metadata.mjs';
 import { seoMetadataForPath } from '../shared/seo-metadata.mjs';
+import { PUBLIC_SEARCH_FOCUS } from '../shared/public-search-focus.mjs';
+import { seoContentForPath } from '../shared/seo-content-manifest.mjs';
 import { agentDiscoveryDocument } from './seo-agent-discovery.mjs';
 import { resolveLocale, localeFromLandingPath } from '../shared/locale-policy.mjs';
 import {
@@ -50,6 +52,9 @@ import { BILLING_CATALOG } from './billing-catalog.mjs';
 import { createVocabularyCheckout } from './vocabulary-checkout.mjs';
 import { createBlueprintCommerce } from './blueprint-commerce.mjs';
 import { createBlueprintDiskVault } from './blueprint-private-cloud.mjs';
+import { createPrivateKnowledgeVault } from './private-knowledge-vault.mjs';
+import { createPrivateKnowledgeApi } from './private-knowledge-api.mjs';
+import { createFounderAccess } from './founder-access.mjs';
 import { createSubscriptionCheckout } from './subscription-checkout.mjs';
 import { createBenchmarkRuns } from './benchmark-runs.mjs';
 import { createCadsCommerce } from './cads-commerce.mjs';
@@ -221,13 +226,14 @@ function injectPublicSeoSnapshot(html, pathname) {
     ? '<p><a href="/pricing">Tarife und Leistungen ansehen</a> · <a href="/login">Anmelden</a></p>'
     : '';
   const article = blogArticleForPath(pathname);
+  const focus = pathname === '/' ? PUBLIC_SEARCH_FOCUS.map(item => `<section><h2>${escapeHtml(item.title)}</h2><p>${escapeHtml(item.body)}</p><a href="${item.path}">${escapeHtml(item.label)}</a></section>`).join('') : '';
   const editorial = article
     ? `<p>${escapeHtml(article.intro)}</p><figure><img src="${escapeHtml(article.image)}" alt="${escapeHtml(article.imageAlt)}" width="1200" height="630" style="max-width:100%;height:auto"><figcaption>Eigene Illustration; keine realen Kursdaten.</figcaption></figure>` + article.sections.map(section => `<section><h2>${escapeHtml(section.title)}</h2><p>${escapeHtml(section.body)}</p></section>`).join('') + `<p>Technische und didaktische Information; keine Anlageberatung.</p><h2>Quellen</h2><ul>` + article.sources.map(source => `<li><a href="${escapeHtml(source.url)}">${escapeHtml(source.label)}</a></li>`).join('') + '</ul>'
     : pathname === '/blog' ? BLOG_ARTICLES.map(item => `<section><h2><a href="${escapeHtml(item.path)}">${escapeHtml(item.title)}</a></h2><p>${escapeHtml(item.description)}</p></section>`).join('') : '';
   const snapshot =
     `<main id="capital-ai-public-snapshot" lang="de"><article>` +
     `<h1>${escapeHtml(metadata.title)}</h1><p>${escapeHtml(metadata.description)}</p>` +
-    `${editorial}${conversionLinks}<nav aria-label="Öffentliche Seiten"><ul>${links}</ul></nav>` +
+    `${focus}${editorial}${conversionLinks}<nav aria-label="Öffentliche Seiten"><ul>${links}</ul></nav>` +
     '</article></main>';
   return html.replace('<div id="root"></div>', `<div id="root">${snapshot}</div>`);
 }
@@ -398,6 +404,9 @@ export function createApp(root = defaultRoot, options = {}) {
   const vocabularyCheckout = createVocabularyCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
   const privateBlueprintCloud = options.privateBlueprintCloud || createBlueprintDiskVault({ keyHex: runtimeEnv.BLUEPRINT_DISK_ENCRYPTION_KEY });
   const blueprintCommerce = createBlueprintCommerce({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth, privateCloud: privateBlueprintCloud });
+  const knowledgeVault = options.knowledgeVault || createPrivateKnowledgeVault({keyHex:runtimeEnv.BLUEPRINT_DISK_ENCRYPTION_KEY});
+  const privateKnowledgeApi = createPrivateKnowledgeApi({auth,vault:knowledgeVault});
+  const founderAccess = createFounderAccess({auth,env:runtimeEnv});
   const subscriptionCheckout = createSubscriptionCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
   const benchmarkStore = options.benchmarkStore ?? createBenchmarkStore({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch });
   const cadsMarketplace = createCadsMarketplace({
@@ -448,6 +457,8 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await telegram(req, res, url, json)) return;
   if (await vocabularyCheckout.handle(req, res, url, json)) return;
   if (await blueprintCommerce.handle(req, res, url, json)) return;
+  if (await privateKnowledgeApi.handle(req, res, url, json)) return;
+  if (await founderAccess.handle(req, res, url, json)) return;
   if (await subscriptionCheckout.handle(req, res, url, json)) return;
   if (await benchmarkRuns.handle(req, res, url, json)) return;
   if (await cadsMarketplace.handle(req, res, url, json)) return;
@@ -597,13 +608,20 @@ export function createApp(root = defaultRoot, options = {}) {
       return;
     }
   }
-  const discovery = agentDiscoveryDocument(publicPath);
+  if (isSeoIndexable(publicPath) && url.pathname !== publicPath) {
+    res.writeHead(301, { ...headers, Location: publicPath + url.search, 'Cache-Control': 'no-store' });
+    return res.end();
+  }
+  const markdownPath = publicPath === '/' && (req.headers.accept || '').split(',').some(type => type.trim().split(';')[0] === 'text/markdown') ? '/index.md' : publicPath;
+  const discovery = agentDiscoveryDocument(markdownPath);
   if (discovery) {
     res.writeHead(200, {
       ...headers,
       'Content-Type': discovery.contentType,
       'Cache-Control': 'public, max-age=3600',
       'X-Robots-Tag': 'noindex, nofollow',
+      ...(discovery.canonical ? { Link: `<${discovery.canonical}>; rel="canonical"` } : {}),
+      Vary: 'Accept',
     });
     return res.end(discovery.body);
   }
@@ -615,7 +633,10 @@ export function createApp(root = defaultRoot, options = {}) {
     const paths = [...new Set([...seoIndexableStaticPaths(), ...publicVocabularyEntries.map(entry => entry.path)])];
     const xml = '<?xml version="1.0" encoding="UTF-8"?>' +
       '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' +
-      paths.map(route => `<url><loc>https://capital-ai.online${escapeXml(route)}</loc></url>`).join('') +
+      paths.map(route => {
+        const lastmod = seoContentForPath(route)?.sitemapLastmod;
+        return `<url><loc>https://capital-ai.online${escapeXml(route)}</loc>${lastmod ? `<lastmod>${escapeXml(lastmod)}</lastmod>` : ''}</url>`;
+      }).join('') +
       '</urlset>';
     res.writeHead(200, { ...headers, 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
     return res.end(xml);
@@ -693,7 +714,7 @@ export function createApp(root = defaultRoot, options = {}) {
       body = Buffer.from(body.toString('utf8').replace(/<html lang="[^"]*"/, `<html lang="${locale}" data-locale-source="${source}"`));
       documentLocale = locale;
     }
-    res.writeHead(200, { ...headers, ...(documentLocale ? { 'Content-Language': documentLocale, 'Vary': 'CF-IPCountry, Accept-Language, Cookie' } : {}), ...(localeFromLandingPath(publicPath) ? { 'X-Robots-Tag': 'noindex, nofollow' } : {}), 'Cache-Control': path.extname(file) === '.html' ? 'no-store' : 'public, max-age=3600', 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(body);
+    res.writeHead(200, { ...headers, ...(documentLocale ? { 'Content-Language': documentLocale, 'Vary': 'Accept, CF-IPCountry, Accept-Language, Cookie' } : {}), ...(localeFromLandingPath(publicPath) ? { 'X-Robots-Tag': 'noindex, nofollow' } : {}), 'Cache-Control': path.extname(file) === '.html' ? 'no-store' : 'public, max-age=3600', 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(body);
   } catch { res.writeHead(404, headers); res.end(); }
 });
   server.maxConnections = 256;
