@@ -517,5 +517,5 @@ test('X milestone Edge receipts require owner proof and enforce atomic state tra
   const last=await send('milestone_status');
   assert.equal((await last.json()).status,'VERIFIED_PUBLISHED');
   assert.equal(row.post_id,'222222222222222');
-  assert.equal(writes,4);
+  assert.equal(writes,5); // includes the deliberately rejected premature PATCH attempt
 });
