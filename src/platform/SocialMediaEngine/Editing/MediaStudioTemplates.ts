@@ -167,6 +167,18 @@ export function createCapitalAiProTrialCouponProject(
  * An audio layer may only be added after a real authenticated synthesis readback,
  * verified asset digest, quota evidence and the existing approval workflow.
  */
+/** Versioned image and vector identity for owner-reviewed MediaProject drafts. */
+export const CAPITAL_AI_UNIVERSE_BRAND_ASSETS = Object.freeze({
+  desktop: 'public/branding/universe/hero-universe-desktop.webp',
+  tablet: 'public/branding/universe/hero-universe-tablet.webp',
+  mobile: 'public/branding/universe/hero-universe-mobile.webp',
+  globe: 'public/branding/universe/hero-universe-globe.webp',
+  vector: 'public/branding/universe/hero-universe-orbit.svg',
+  website: 'https://capital-ai.online',
+  accentGold: '#F5C453',
+  license: 'docs/licenses/CAPITAL-AI-UNIVERSE-HERO-20261015.md',
+});
+
 export const CAPITAL_AI_LANDING_VOICEOVER_DE = [
   'CAPITAL-AI. Analysen verstehen, statt fremden Signalen blind zu folgen.',
   'Eine vernetzte Welt der Daten, mit transparenten Methoden und nachvollziehbaren Modellen.',
@@ -263,8 +275,8 @@ export function createCapitalAiLandingBlueprintVideoProject(): MediaProjectV2 {
       id: 'landing-earth-reference',
       kind: 'image',
       sourceType: 'local-file',
-      reference: 'src/assets/images/glowing_earth_nodes_1789997454893.jpg',
-      mimeType: 'image/jpeg',
+      reference: 'public/branding/universe/hero-universe-desktop.webp',
+      mimeType: 'image/webp',
     }],
     transitions: [],
     renderRecipe: {
