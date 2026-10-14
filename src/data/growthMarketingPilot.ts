@@ -12,13 +12,13 @@ export const FIRST_X_PILOT_CAMPAIGN = {
   campaignId: 'capital-ai-evidence-learning-x-pilot-20261014',
   productId: 'capital-ai-learning-portal',
   sourceSha: FIRST_X_PILOT_SOURCE_SHA,
-  canonicalUrl: 'https://capital-ai.online/learning-platform',
+  canonicalUrl: 'https://capital-ai.online/learning',
   locale: 'de-DE' as const,
   objective: 'Verständliche Chartanalyse, Datenprovenienz und Lernmethoden kommunizieren; keine Anlage- oder Score-Erfolgsversprechen.',
   audience: ['Erwachsene Finanzlernende', 'FinTech-Entwickler', 'Research-Teams'],
   channels: ['WEBSITE', 'X'] as ('WEBSITE' | 'X')[],
   outputs: ['TEXT', 'ANALYTICS'] as ('TEXT' | 'ANALYTICS')[],
-  sourceUrls: [articleSource, 'https://capital-ai.online/learning-platform'],
+  sourceUrls: [articleSource, 'https://capital-ai.online/learning'],
 };
 export const FIRST_X_PILOT_CONTENT_ID = 'capital-ai-x-chartanalyse-20261014' as const;
 export const FIRST_X_PILOT_PLAN = planContentCampaign(FIRST_X_PILOT_CAMPAIGN);
