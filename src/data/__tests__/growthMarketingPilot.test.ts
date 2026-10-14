@@ -17,6 +17,8 @@ test('first educational X prototype passes existing Content Engine + Social Pack
   const campaign = ContentCampaignBriefSchema.parse(FIRST_X_PILOT_CAMPAIGN);
   assert.ok(campaign.channels.includes('X'));
   assert.deepEqual(campaign.channels, ['WEBSITE', 'X']);
+  assert.equal(campaign.canonicalUrl, 'https://capital-ai.online/learning');
+  assert.ok(!JSON.stringify(FIRST_X_PILOT_PACKAGE).includes('learning-platform'));
   const plan = planContentCampaign(campaign);
   assert.equal(plan.cadsQuality.technicalStatus, 'PASS');
   assert.equal(plan.publication.publicPublishAllowed, false);
