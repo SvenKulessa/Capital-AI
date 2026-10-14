@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {createFounderAccess} from './founder-access.mjs';
 const OWNER='00000000-0000-4000-8000-000000000001';
 const SPONSOR='00000000-0000-4000-8000-000000000002';
@@ -46,4 +47,13 @@ test('invalid allowlists, duplicate UUIDs and non-GET methods fail closed',async
 });
 test('unrelated API is not intercepted',async()=>{
  const x=fixture();assert.equal(await x.run('/api/auth/session'),false);assert.equal(x.answers.length,0);
+});
+
+test('production Docker runtime includes the founder API module imported by the server',()=>{
+ const docker=readFileSync(new URL('../Dockerfile',import.meta.url),'utf8');
+ const runtime=docker.split(/^FROM crypto-base AS runtime$/m)[1];
+ assert.ok(runtime,'production runtime stage is required');
+ assert.match(runtime,/^COPY server\/founder-access\.mjs server\/private-knowledge-vault\.mjs/m);
+ const entry=readFileSync(new URL('./index.mjs',import.meta.url),'utf8');
+ assert.match(entry,/import \{ createFounderAccess \} from '\.\/founder-access\.mjs'/);
 });
