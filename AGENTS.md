@@ -22,6 +22,17 @@ Bei einem Widerspruch gilt ausschließlich diese Datei. Zusätzliche Regeln dür
 6. GitHub-Rulesets, Branch Protection, Tool-Rechte und Least Privilege niemals umgehen.
 7. Nur der normale Merge nach `main` löst den vorhandenen Production-Pfad aus; Production darf bei erfolgreichen Main-Checks automatisiert deployen. Die Live-Wirkung anschließend separat überprüfen.
 
+## P0: PR-Reihenfolge vor jedem Merge (Owner-Beschluss 2026-10-14)
+
+Vor **jedem** Merge muss der ausführende Agent zunächst die **aktuell offenen Pull Requests** gegen den aktuellen `main` prüfen und eine nachvollziehbare **Merge-Reihenfolge** festlegen. Ziel ist, vermeidbare Überschneidungen und nachgelagerte Post-Merge-Korrelations-Commits zu minimieren; dies ist ein Schritt der bestehenden Merge-Prüfung, **kein zusätzlicher Required Check, keine neue Freigabestufe und keine globale PR-Sperre**.
+
+- Alle offenen PRs erfassen, insbesondere betroffene Dateien, fachliche Abhängigkeiten, gleiche Contracts und Branch-Divergenz. Bei Überschneidungen den kleinsten fachlich unabhängigen PR zuerst vorsehen; abhängige PRs danach auf den neuen `main` synchronisieren, Konflikte konservativ beheben und Checks am aktualisierten Head erneut prüfen.
+- Bei unabhängigen PRs darf die Reihenfolge frei gewählt werden. Bestehende `[HOLD]`-Kennzeichnungen und reale Security-/Rechte-Blocker respektieren; blockierte PRs dürfen unabhängige, vollständig geprüfte PRs nicht aufhalten.
+- Vor jedem tatsächlichen Merge die offene PR-Menge und den aktuellen `main` erneut abgleichen, die Reihenfolge bei Änderungen aktualisieren und die normale delegierte Merge-Regel einschließlich beider Required Checks erfüllen. Den Grund der gewählten Reihenfolge und die betroffenen PR-Nummern in der bestehenden PR-/Abschluss-Evidence festhalten; keine neue Pflichtdatei erzeugen.
+- Die bestehende lineare Post-Merge-Korrelation bleibt als begrenzter read-only/Evidence-Mechanismus bestehen. Sie ersetzt weder diese vorgezogene Reihenfolgeprüfung noch die fachliche Branch-Synchronisierung.
+
+**Aktuelle Produktprioritäten:** (1) Rechtegebundene Blueprints für die Anbindung der 50 Analysekomponenten und sichere Kundenauslieferung; (2) Learning Portal einschließlich Benutzerisolation; (3) YouTube/X-Marketing und die vorhandene Social Media Content Engine einschließlich Status und Migration der Social Media Engine aus Finance; (4) Agent-Skill-Routing und SEO-Management. Überschneidungen sind nach technischen Abhängigkeiten zu ordnen, nicht allein nach PR-Nummer. **NATS und Rust Provider Bridge bleiben deaktiviert**, solange die notwendigen Lizenzen für echte Marktdaten fehlen. Kein Aktivieren, Deployen oder Vermarkten dieser Dienste aufgrund der Merge-Reihenfolge. Vorhandene Infrastruktur-Evidence darf read-only geprüft werden.
+
 ## Delegierte Agenten-Merge-Regel
 
 Die frühere Pflicht zur persönlichen bzw. PR-spezifischen Owner-Merge-Freigabe entfällt. **Freigabe bedeutet nicht Blind-Merge:** Vor jeder Merge-Aktion müssen zum **aktuellen** Head-SHA und Main-Stand folgende Tatsachen dokumentiert und geprüft werden:
