@@ -59,6 +59,7 @@ import { PipelineConfiguratorService } from '../../services/pipelineConfigurator
 import { useHubTab } from '../../hooks/useHubTab';
 import { ContentStudioPanel } from './ContentStudioPanel';
 import { BlueprintCommercePanel } from './BlueprintCommercePanel';
+import { FounderPrivateBlueprintCloud } from './FounderPrivateBlueprintCloud';
 import { ContactForm } from '../../components/ContactForm';
 import { AnalysisComponentExplorer } from '../analysis/AnalysisComponentExplorer';
 import { PipelineConfiguratorConsole } from '../analysis/PipelineConfiguratorConsole';
@@ -598,6 +599,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
       {activeTab === 'blueprints' && (
         <div className="space-y-6">
           <BlueprintCommercePanel onNavigateLogin={onNavigateLogin} />
+          <FounderPrivateBlueprintCloud />
           <section aria-label="Screener Component Blueprint Library" className="rounded-2xl border border-amber-400/30 bg-[#0d1530] p-5 space-y-3">
             <div className="text-xs font-mono uppercase tracking-wider text-amber-300">Screener Component Blueprints · Konzeptbibliothek</div>
             <h2 className="text-xl font-bold text-white">50 technische Analysekomponenten</h2>
