@@ -58,6 +58,7 @@ function normalizeMarketplaceAuthNext(value) {
   try {
     const parsed = new URL(path, 'https://capital-ai.invalid');
     if (parsed.origin !== 'https://capital-ai.invalid') return '/';
+    if (parsed.pathname === '/founder' && !parsed.search && !parsed.hash) return '/founder';
     if (parsed.pathname !== '/api/cads/marketplace/setup') return '/';
     const installationId = Number(parsed.searchParams.get('installation_id'));
     if (!Number.isSafeInteger(installationId) || installationId <= 0) return '/';
