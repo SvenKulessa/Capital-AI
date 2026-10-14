@@ -12,7 +12,7 @@ test('PR source identity, stable fingerprint, routing and zero publishing rights
  assert.equal(a.delivery.providerCalls,0);assert.equal(a.delivery.publishAttempts,0);
  assert.equal(a.executedSkills.length,0);assert.equal(a.platformDrafts.length,4);
  assert(!JSON.stringify(a).includes('<script>'));
- for(const v of a.platformDrafts)assert(v.targetUrl.startsWith('https://capital-ai.online/learning-platform'));
+ for(const v of a.platformDrafts)assert(v.targetUrl.startsWith('https://capital-ai.online/learning'));
 });
 test('wrong account, branch, event, digest, source path or registry must fail closed',()=>{
  const edits=[e=>e.action='opened',e=>e.pull_request.merged=false,e=>e.pull_request.base.ref='dev',e=>e.repository.id=1,e=>e.repository.owner.id=1,e=>e.pull_request.base.repo.id=1,e=>e.pull_request.merge_commit_sha='abc'];

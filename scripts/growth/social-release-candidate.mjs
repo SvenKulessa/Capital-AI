@@ -33,7 +33,7 @@ export function buildCandidate(event,filenames,registry){
  const fingerprint=digest(JSON.stringify({repoId:REPO_ID,pr:p.number,sha:p.merge_commit_sha,paths}));
  const campaignId='pr-merge-'+p.number+'-'+p.merge_commit_sha.slice(0,12);
  const contentId='release-'+p.number+'-'+fingerprint.slice(0,12);
- const canonicalUrl='https://capital-ai.online/learning-platform';
+ const canonicalUrl='https://capital-ai.online/learning';
  const utm=ch=>canonicalUrl+'?utm_source='+ch+'&utm_medium=organic_social&utm_campaign='+campaignId+'&utm_content='+contentId;
  const title=clean(p.title)||'Repository-Änderung';
  return {schema:'CAPITAL_AI_SOCIAL_RELEASE_CANDIDATE@1',state:'DRAFT_ONLY',publicPublishAllowed:false,
