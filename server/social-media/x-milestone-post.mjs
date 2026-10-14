@@ -111,9 +111,9 @@ Externe Marktdaten-/Providerrechte und Live-Performance werden nicht behauptet.<
 <strong>@CapitalAIOnline</strong> bitte auf <a href="/login">capital-ai.online anmelden</a>,
 die bestätigte Owner-Rolle verwenden und danach diese Seite erneut öffnen.</p>
 <p>👋⚙️ X API-Schreib- und Lesevorgänge können <strong>Free Credits</strong> verbrauchen.
-Die bisher gemeldeten 20 USD Free Credits sind kein von der Anwendung prüfbarer Kontostand.
-Keine Zahlungsmethode oder zusätzliche 50-USD-Autopay-Aktion aktivieren,
-ohne dies bewusst im X-Portal zu entscheiden. Kein automatischer Zweitversuch.</p>
+Guthaben und Autopay-Status sind über diese Seite nicht verifiziert.
+Die Anwendung aktiviert weder Zahlungsmethoden noch eine automatische Guthabenaufladung.
+Kein automatischer Zweitversuch.</p>
 <button id="publish" type="button" disabled>Einmalig auf X veröffentlichen</button>
 <button id="status" type="button">Owner-Status prüfen (ohne X-API-Aufruf)</button>
 <pre id="result" role="status" aria-live="polite">Owner-Status wird geprüft.</pre>
