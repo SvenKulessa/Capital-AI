@@ -169,12 +169,12 @@ jobs:
               number="$ROADMAP_NUMBER"
               date_suffix="$ROADMAP_DATE"
               targets=("src/data/roadmapMergeReconciliation.json")
-              [[ -n "$number" ]] && targets+=("docs/product/roadmap-merge-reconciliation-$number.json")
+              if [[ -n "$number" ]]; then targets+=("docs/product/roadmap-merge-reconciliation-$number.json"); fi
             else
               number="$NEWS_NUMBER"
               date_suffix="$NEWS_DATE"
               targets=("src/data/controlCenterNews.json")
-              [[ -n "$number" ]] && targets+=("docs/growth/news-release-pr-$number.md")
+              if [[ -n "$number" ]]; then targets+=("docs/growth/news-release-pr-$number.md"); fi
             fi
             [[ -z "$number" ]] && continue
             if [[ ! "$number" =~ ^[1-9][0-9]*$ || ! "$date_suffix" =~ ^[0-9]{8}$ ]]; then
