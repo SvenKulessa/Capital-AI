@@ -15,7 +15,7 @@
 
 ## Content-Strategie und feste Obergrenze
 
-Zielgruppe A: erwachsene Finanzlernende, Lehrkräfte, private Research-Nutzer. CTA: `/learning-platform`, bestehende Lernmodule und Kosten-/Datenbegrenzungen.  
+Zielgruppe A: erwachsene Finanzlernende, Lehrkräfte, private Research-Nutzer. CTA: `/learning`, bestehende Lernmodule und Kosten-/Datenbegrenzungen.  
 Zielgruppe B: FinTech-/Quant-/Research-Teams. CTA: öffentliche Architektur/Blueprint-Dokumentation, konkrete Frage oder qualifizierter Dialog, **kein** erfundener Demo-, Ranking- oder Blueprint-Checkout.  
 Zielgruppe C: Engineering-/Open-Source-Community. CTA: nachvollziehbare Diagramme, GitHub-Quellen und Architekturkritik.
 
