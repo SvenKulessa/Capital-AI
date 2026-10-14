@@ -26,6 +26,16 @@ export const PROCESSING_ACTIVITIES: ProcessingActivity[] = [
     technicalControls: ['fester Empfänger', 'SMTP über TLS', 'Same-Origin-Prüfung', 'begrenzte Eingaben und Versandraten', 'keine Kontaktangaben oder Nachrichten an GA4'],
   },
   {
+    id: 'founder-inquiry', title: 'Private Founder-, Partner- und Kundenanfragen', lifecycle: 'active',
+    purpose: 'Erstellung eines unverbindlichen individuellen Bruttopreisangebots und optionaler privater telefonischer Terminabstimmung auf ausdrückliche Anfrage, ohne automatisierte Buchung oder Zahlung.',
+    dataCategories: ['Name', 'Antwort-E-Mail-Adresse', 'Projektanfrage', 'freiwillige Organisation', 'freiwillige Rückrufnummer oder Terminpräferenz'],
+    legalBasis: 'Art. 6 Abs. 1 lit. b DSGVO für vorvertragliche Maßnahmen und lit. f für erbetene geschäftliche Auskünfte. Die Kenntnisnahme der Datenschutzhinweise ist keine Werbeeinwilligung.',
+    recipients: ['Verantwortlicher unter sven.kulessa@capital-ai.online', 'Render als Anwendungsserver', 'konfigurierter SMTP-/Postfachanbieter'],
+    transfer: 'Regions- und mögliche Drittlandverarbeitung nach den tatsächlich eingesetzten Mail-/Hosting-Verträgen; individuell zu prüfen.',
+    retention: 'Keine dauerhafte Anwendungsspeicherung; zufälliger Retry-Schlüssel und Status 15 Minuten im Serverspeicher. Anfrage im privaten Mailpostfach bis zum Zweckfortfall, vorbehaltlich gesetzlicher Aufbewahrung.',
+    technicalControls: ['fester privater Empfänger', 'Same-Origin POST', 'SMTP mit TLS', 'Honeypot und Rate-Limits', 'keine Kundendaten in Analytics oder öffentlichen Caches'],
+  },
+  {
     id: 'consented-ga4', title: 'Optionale Reichweiten- und Kursanfragemessung mit GA4', lifecycle: 'conditional',
     purpose: 'Öffentliche Seitenaufrufe und vom Mailserver angenommene Kursanfragen nach gültiger Analytics-Einwilligung messen.',
     dataCategories: ['pseudonyme GA4-Cookie-Kennung', 'öffentlicher Seitenpfad ohne Query und Fragment', 'Ereignistyp', 'beim Google-Abruf übermittelte Verbindungsdaten'],
@@ -56,6 +66,16 @@ export const PROCESSING_ACTIVITIES: ProcessingActivity[] = [
     technicalControls: ['Google OAuth via Supabase Auth und PKCE S256', 'serverseitige Identitätsprüfung', 'HttpOnly-/Secure-/SameSite-Sitzungscookies', 'keine Ausgabe von Google- oder Supabase-Provider-Tokens im Browser'],
   },
   {
+    id: 'x-oauth-login', title: 'Optionale X-Anmeldung über Supabase Auth', lifecycle: 'conditional',
+    purpose: 'Vom Nutzer ausgewählte Website-Anmeldung über X OAuth2; strikt getrennt von X-Content-Publishing und Social-API-Verbindungen.',
+    dataCategories: ['X Provideridentität', 'E-Mail und Profilname soweit vom Anbieter freigegeben', 'kurzlebige OAuth-Codes und Session-Informationen'],
+    legalBasis: 'Art. 6 Abs. 1 lit. b DSGVO für die gewählte Anmeldung, lit. f für Account-Sicherheit und Missbrauchsabwehr.',
+    recipients: ['X als Identitätsanbieter', 'Supabase Auth für verifizierte Kontozuordnung', 'Render für die Anwendungssitzung'],
+    transfer: 'Anbieter-Subprozessoren und mögliche Drittlandverarbeitung hängen von tatsächlichen X-/Supabase-/Render-Verträgen ab.',
+    retention: 'Website-Sitzung maximal sieben Tage; Profil- und Providerzuordnung grundsätzlich bis zur Kontolöschung, soweit keine Aufbewahrungspflichten bestehen. Anbieterprotokolle getrennt prüfen.',
+    technicalControls: ['OAuth2 X-Provider via Supabase Auth', 'PKCE S256', 'signierter HttpOnly-/Secure-Sitzungszustand', 'serverseitiger User- und MFA-Readback', 'keine Verwendung von X Social Publishing Tokens'],
+  },
+  {
     id: 'supabase-account', title: 'Supabase-Anmeldung und Anwendungssitzung', lifecycle: 'active',
     purpose: 'Verifikation der Identität und Zugriff auf authentifizierte Funktionen.',
     dataCategories: ['Supabase-Benutzerkennung (auth.users.id)', 'E-Mail-Adresse und Profilname', 'Ausstellerkennung (issuer)', 'Sitzungsablauf und technisch notwendige Sitzungscookies', 'Anmeldeidentitäten bei Supabase Auth'],
@@ -63,7 +83,7 @@ export const PROCESSING_ACTIVITIES: ProcessingActivity[] = [
     recipients: ['Supabase für Authentifizierung und Kontodaten', 'Render für die Anwendungssitzung'],
     transfer: 'Hosting, Betreiber und Subprozessoren von Supabase und Render müssen anhand der tatsächlich verwendeten Regionen, Verträge und Transfermechanismen geprüft werden.',
     retention: 'Die Anwendungssitzung wird in signierten HttpOnly-Cookies mit einer maximalen Laufzeit von sieben Tagen geführt und bei Abmeldung lokal entfernt; Supabase-Zugriffs- und Refresh-Tokens werden serverseitig erneuert. Auth-Kontodaten und Providerprotokolle unterliegen zusätzlich der Supabase-Konfiguration.',
-    technicalControls: ['Supabase Auth mit E-Mail/Passwort und Google OAuth', 'PKCE S256 für den Google- und Mobile-Flow', 'serverseitige User-/Session-Verifikation', 'signierte HttpOnly-/Secure-/SameSite-Cookies', 'keine Browserausgabe von Access- oder Refresh-Tokens'],
+    technicalControls: ['Supabase Auth mit E-Mail/Passwort, Google OAuth und optionalem X OAuth2', 'PKCE S256 für den Google- und Mobile-Flow', 'serverseitige User-/Session-Verifikation', 'signierte HttpOnly-/Secure-/SameSite-Cookies', 'keine Browserausgabe von Access- oder Refresh-Tokens'],
   },
   {
     id: 'user-provider-vault', title: 'Persönlicher API-Vault und private Providerdaten', lifecycle: 'active',
