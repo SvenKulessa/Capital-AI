@@ -1,2 +1,1 @@
-export const TERMS_VERSION = '2026-10-14';
-export const TERMS_EFFECTIVE_DATE = '14.10.2026';
+export { TERMS_VERSION, TERMS_EFFECTIVE_DATE } from '../../shared/legal-identity.mjs';

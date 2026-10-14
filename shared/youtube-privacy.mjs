@@ -1,6 +1,7 @@
+import { PRIVACY_NOTICE_VERSION } from './legal-identity.mjs';
 // Canonical disclosures shared by standalone HTML, application and owner connection UI.
 export const YOUTUBE_POLICY = Object.freeze({
-  version: '2026-10-14',
+  version: PRIVACY_NOTICE_VERSION,
   terms: 'https://www.youtube.com/t/terms',
   privacy: 'https://policies.google.com/privacy',
   revoke: 'https://security.google.com/settings/security/permissions',

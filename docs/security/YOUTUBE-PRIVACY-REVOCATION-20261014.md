@@ -4,7 +4,7 @@ Scope: private YouTube API test workflow; no new scopes, public publishing, Ads 
 
 ## Behavior and trust boundary
 
-The canonical disclosure in `shared/youtube-privacy.mjs` is rendered in standalone privacy/terms pages, React legal pages and the authenticated owner connection page. All canonical processing activities are regenerated from `src/privacy/privacyPolicy.ts`. OAuth start redirects to the connection page until the current privacy/YouTube terms acknowledgement is submitted. No provider tokens enter HTML or a browser bundle.
+The canonical disclosure in `shared/youtube-privacy.mjs` is rendered in standalone privacy/terms pages, React legal pages and the authenticated owner connection page. All canonical processing activities are regenerated from `src/privacy/privacyPolicy.ts`. OAuth start redirects to the connection page until the current privacy/YouTube terms acknowledgement is submitted. No provider tokens enter HTML or a browser bundle. Application, static documents and registration consent receipts use the same canonical terms/privacy versions from `shared/legal-identity.mjs`; no new signup is recorded against the obsolete 2026-10-05 documents.
 
 `POST /api/social-media/youtube/account/disconnect` requires a fresh verified email/session, current IAM owner, same origin, browser Same-Origin fetch metadata and exact explicit form confirmation. Identity never comes from the request body. It remains available when new OAuth connections are disabled. The Edge route additionally requires the existing JWT-bound workload HMAC and a fresh owner check. Other platforms cannot invoke the YouTube privacy operations.
 
