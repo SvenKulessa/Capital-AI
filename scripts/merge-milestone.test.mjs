@@ -40,14 +40,18 @@ test('milestone date is stable across retries and rejects invalid merge timestam
   assert.throws(() => milestoneDay('2026-13-08T05:48:16Z'), /INVALID_MILESTONE_MERGED_AT/);
 });
 
-test('merged roadmap and news milestones produce exactly one scoped PR', () => {
+test('roadmap and news milestone PRs keep independent source identities', () => {
   const workflow = readFileSync('.github/workflows/merge-milestones.yml', 'utf8');
-  assert.match(workflow, /Open one consolidated milestone PR/);
-  assert.match(workflow, /capital-ai-trust\/milestone-merge-pr-/);
-  assert.match(workflow, /Roadmap and news milestones have different source PRs/);
-  assert.match(workflow, /Roadmap and news milestones have different merge dates/);
-  assert.match(workflow, /targets\+=\("src\/data\/roadmapMergeReconciliation\.json"/);
-  assert.match(workflow, /targets\+=\("src\/data\/controlCenterNews\.json"/);
-  assert.equal((workflow.match(/gh pr create --repo/g) ?? []).length, 1);
-  assert.doesNotMatch(workflow, /for category in roadmap news/);
+  assert.match(workflow, /Open independently sourced milestone draft PRs/);
+  assert.match(workflow, /for category in roadmap news/);
+  assert.match(workflow, /milestone-\$category-pr-\$number-\$date_suffix/);
+  assert.match(workflow, /number="\$ROADMAP_NUMBER"/);
+  assert.match(workflow, /number="\$NEWS_NUMBER"/);
+  assert.match(workflow, /date_suffix="\$ROADMAP_DATE"/);
+  assert.match(workflow, /date_suffix="\$NEWS_DATE"/);
+  assert.match(workflow, /targets=\("src\/data\/roadmapMergeReconciliation\.json"\)/);
+  assert.match(workflow, /targets=\("src\/data\/controlCenterNews\.json"\)/);
+  assert.match(workflow, /--draft --title/);
+  assert.doesNotMatch(workflow, /Roadmap and news milestones have different source PRs/);
+  assert.doesNotMatch(workflow, /Roadmap and news milestones have different merge dates/);
 });
