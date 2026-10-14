@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test:domain-skills": "node --test scripts/domain-skills.test.mjs scripts/skill-routing.test.mjs",
-    "test:blueprint-commerce": "node --test server/blueprint-commerce.test.mjs",
+    "test:blueprint-commerce": "node --test server/blueprint-commerce.test.mjs server/blueprint-private-cloud.test.mjs",
     "test:screener-blueprint": "node --import tsx --test scripts/screener-blueprint-preview.test.mjs",
     "test:screener-branding-learning": "node --test scripts/media/screener-blueprint-badges.test.mjs scripts/growth/screener-learning-loop.test.mjs",
     "test:cads-growth": "node --import tsx --test scripts/cads-growth-quality.test.mjs",
