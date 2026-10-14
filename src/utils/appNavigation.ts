@@ -165,10 +165,10 @@ export function resolveAppRoute(rawPath: string): string {
   ) {
     return '/tokenomics';
   }
+  if (clean === '/founder') return '/founder';
   if (
     clean === '/studio' ||
     clean === '/studio-hub' ||
-    clean === '/founder' ||
     clean === '/founder-hub' ||
     clean === '/founder-suite' ||
     clean === '/founders' ||
