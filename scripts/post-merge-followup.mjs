@@ -61,7 +61,9 @@ export function summarizePostMerge({
       affectedPaths: licensePaths,
       rightsApproval: false,
     },
-    humanOwnerApprovalRequired: true,
+    // AGENTS.md SOLO_MAINTAINER_FLOW@1 delegates merge on proven checks.
+    // This read-only audit neither grants nor demands additional owner approval.
+    humanOwnerApprovalRequired: false,
     autoMerge: false,
     productionApproval: false,
     error: error ?? null,
