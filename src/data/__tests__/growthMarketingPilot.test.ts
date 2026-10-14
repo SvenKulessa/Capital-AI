@@ -71,7 +71,12 @@ test('budget proportions sum to 100 with zero unattended activity and no spam au
 test('public home visualizes the real pilot workflow without making provider success claims', () => {
   const ui = readFileSync(new URL('../../features/home/SocialContentEngineStatus.tsx', import.meta.url), 'utf8');
   const home = readFileSync(new URL('../../features/home/ContentEngineConcept.tsx', import.meta.url), 'utf8');
+  const studio = readFileSync(new URL('../../features/studio/ContentStudioPanel.tsx', import.meta.url), 'utf8');
   assert.match(home, /<SocialContentEngineStatus\s*\/>/);
+  assert.match(studio, /FIRST_X_PILOT_PACKAGE/);
+  assert.match(studio, /FIRST_X_PILOT_TEXT/);
+  assert.match(studio, /readOnly rows=\{5\}/);
+  assert.doesNotMatch(studio, /article-test\/publish/);
   assert.match(ui, /GROWTH_SOCIAL_PROCESS_STAGES\.map/);
   assert.match(ui, /aria-labelledby="social-content-engine-status"/);
   assert.match(ui, /sm:grid-cols-2 lg:grid-cols-4/);
