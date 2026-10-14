@@ -1,11 +1,16 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "d531a6ddfce9e94b5e1996017c784d0d224ea182",
-  "mergedPr": 486,
+  "mainSha": "988d53bcb6b368dadfd041dc480b29b5f1a270d9",
+  "mergedPr": 496,
   "targetPr": 492,
   "targetBranch": "capital-ai-trust/youtube-oauth-privacy-recipients-20261014",
-  "targetHeadSha": "cfe6cf822661963cc84f20ae4967bf6ff4500462",
+  "targetHeadSha": "c89fa4ae3fffc3a33f46eade9678440dfeb0ceab",
   "exactOverlap": [
+    ".dockerignore",
+    "public/datenschutz/index.html",
+    "server/auth.test.mjs",
+    "shared/legal-identity.mjs",
+    "src/data/roadmapData.ts",
     "src/privacy/privacyPolicy.ts"
   ],
   "authority": "EVIDENCE_ONLY",
