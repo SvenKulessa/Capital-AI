@@ -77,6 +77,16 @@ async function checkPage(path, viewport) {
     width:viewport.width, height:viewport.height, deviceScaleFactor:2, mobile:viewport.mobile,
   });
   await navigate(path);
+  if (path.startsWith('/blog/')) {
+    await evaluate(`(() => {
+      const panel = document.querySelector('[aria-labelledby="cookie-consent-v3-title"]');
+      const reject = [...(panel?.querySelectorAll('button') || [])].find(el => el.textContent.trim() === 'Nur notwendige');
+      reject?.click();
+    })()`);
+    await pause(200);
+    const consent = await evaluate(`({ panelOpen: !!document.querySelector('[aria-labelledby="cookie-consent-v3-title"]'), analyticsLoaded: !!document.querySelector('#capital-ai-ga4') })`);
+    if (consent.panelOpen || consent.analyticsLoaded) failures.push(path + ': necessary-only choice must close banner without GA4');
+  }
   const dom = await evaluate(domExpression);
   const ax = await send('Accessibility.getFullAXTree');
   const nodes = ax.nodes || [];
