@@ -1,0 +1,48 @@
+# CAPITAL_AI_GCP_OPERATOR_KEYLESS_READBACK@1
+# Manual main-only audit; read-only Google scope and IAM role; never enables a service.
+name: Google Cloud Operator (keyless read-only)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: capital-ai-cloud-operator-audit
+  cancel-in-progress: false
+jobs:
+  service-usage-readback:
+    if: github.repository == 'SvenKulessa/Capital-AI' && github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24.19.0'
+      - name: Verify source-only API client and negative cases
+        run: node --test scripts/platform/google-cloud-admin-readback.test.mjs
+      - name: Verify exact repository and operator identity
+        env:
+          REPO_ID: ${{ github.repository_id }}
+        run: |
+          set -Eeuo pipefail
+          [[ "$REPO_ID" == '1293009324' ]] || { echo 'CLOUD_OPERATOR_REPOSITORY_MISMATCH'; exit 1; }
+          echo 'CLOUD_OPERATOR_LOCAL_IDENTITY_BOUND'
+      - id: google_auth
+        name: Federate GitHub OIDC to isolated GCP Cloud Operator
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093
+        with:
+          project_id: aifinancial-500208
+          workload_identity_provider: projects/542877602707/locations/global/workloadIdentityPools/capital-ai-github-admin/providers/capital-ai-github-admin
+          service_account: capital-ai-cloud-operator@aifinancial-500208.iam.gserviceaccount.com
+          token_format: access_token
+          access_token_lifetime: 900s
+          access_token_scopes: https://www.googleapis.com/auth/cloud-platform.read-only
+          create_credentials_file: false
+          export_environment_variables: false
+      - name: Verify active Cloud APIs (names redacted)
+        env:
+          GOOGLE_CLOUD_ADMIN_ACCESS_TOKEN: ${{ steps.google_auth.outputs.access_token }}
+        run: node scripts/platform/google-cloud-admin-readback.mjs
