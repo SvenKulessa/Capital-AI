@@ -109,9 +109,35 @@ function fixture({owner=true,flags={},ambiguous=false,wrongAuthor=false,expires=
 test('campaign text is short, source-bound and does not assert live X success',()=>{
   assert.ok(MILESTONE_TEXT.length<=280);
   assert.equal(createHash('sha256').update(MILESTONE_TEXT).digest('hex'),MILESTONE_CONTENT_KEY);
-  assert.match(MILESTONE_TEXT,/Content Engine/);
-  assert.match(MILESTONE_TEXT,/implementiert/);
-  assert.doesNotMatch(MILESTONE_TEXT,/live verifiziert|bereits ver.ffentlicht/i);
+  assert.match(MILESTONE_TEXT,/Content Adapter/);
+  assert.match(MILESTONE_TEXT,/Social Media Engine/);
+  assert.match(MILESTONE_TEXT,/Daten- und Screener-Blueprints/);
+  assert.match(MILESTONE_TEXT,/Pilot; keine Anlageberatung/);
+  assert.doesNotMatch(MILESTONE_TEXT,/vollautomatisch|live verifiziert|bereits ver.ffentlicht/i);
+});
+
+test('guest can open the milestone preview without a paid X call or session', async()=>{
+  const f=fixture({owner:false}), page=response();
+  assert.equal(await f.handler.handle(request('GET'),page,new URL(uri('')),json),true);
+  assert.equal(page.code,200);
+  assert.match(page.data,/Content Adapter/);
+  assert.match(page.data,/Screener-Blueprints/);
+  assert.match(page.data,/href="\/login"/);
+  assert.match(page.data,/Keine individuelle Anlageberatung|keine individuelle Anlageberatung/);
+  assert.match(page.data,/MILESTONE|X-Meilenstein/);
+  const script=response();
+  assert.equal(await f.handler.handle(request('GET'),script,
+    new URL('https://capital-ai.online/x-milestone-post.js'),json),true);
+  assert.equal(script.code,200);
+  assert.match(script.data,/statusUrl/);
+  assert.match(script.data,/publish.disabled=true/);
+  // Only the public HTML and JS are accessible to guests. No X/Edge readback.
+  assert.deepEqual(f.calls,[]);
+  const denied=response();
+  await f.handler.handle(request('GET'),denied,new URL(uri('/status')),json);
+  assert.equal(denied.code,403);
+  assert.deepEqual(f.calls,[]);
+  assert.deepEqual(f.stats(),{writeCount:0,readCount:0});
 });
 
 test('one owner post is verified via existing X transport and never repeated',async()=>{

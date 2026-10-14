@@ -13,7 +13,7 @@ const SCRIPT = '/x-milestone-post.js';
 const EXPECTED_HANDLE = 'CapitalAIOnline';
 const XID = /^[0-9]{1,25}$/;
 
-export const MILESTONE_TEXT = '🚀 CAPITAL-AI Meilenstein: X-URL-Context ist in der Content Engine implementiert. Öffentliche Posts liefern Recherchekontext; OAuth2-Publishing bleibt separat.\n\nUnsere Vision: transparente Datenpipelines, nachvollziehbare Scores und Finanzbildung.\n\nhttps://capital-ai.online/';
+export const MILESTONE_TEXT = "🚀 Weniger Content-Rauschen, mehr Kontext: CAPITAL-AI verbindet Content Adapter + Social Media Engine. Quellen & Rechte prüfen → Posts/Shorts entwerfen → Freigabe → Nachweis. Start: Daten- und Screener-Blueprints. 🧪 Pilot; keine Anlageberatung. https://capital-ai.online/";
 export const MILESTONE_CONTENT_KEY = createHash('sha256').update(MILESTONE_TEXT, 'utf8').digest('hex');
 if (MILESTONE_TEXT.length > 280) throw Error('X_MILESTONE_POST_TOO_LONG');
 function must(ok, code) { if (!ok) throw Error(code); }
@@ -74,45 +74,96 @@ export async function publishXMilestone({ edge, identity, jwt, env, fetchImpl, e
 
 const PAGE_HTML = `<!doctype html><html lang="de"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>OAuth2-Meilenstein · CAPITAL-AI</title>
-<style>body{background:#081025;color:#f5f6ff;font:16px/1.6 system-ui;margin:0;padding:24px}
-main{max-width:720px;margin:auto}h1{color:#f9bf21}button{padding:14px;min-height:48px;
-background:#f9bf21;color:#081025;border:0;border-radius:8px;cursor:pointer;font:inherit}
-button:disabled{opacity:.5}pre{padding:14px;border:1px solid #94a3b8;white-space:pre-wrap;
-overflow-wrap:anywhere}article{border:1px solid #465166;border-radius:12px;padding:18px;margin:16px 0}
-a{color:#f9bf21}p{line-height:1.7}</style></head><body><main>
-<h1>CAPITAL-AI · erster X-OAuth2-Meilenstein</h1>
-<p>Zielkonto: <strong>@CapitalAIOnline</strong>. Einmalige, ausdrücklich ausgelöste
-Veröffentlichung über den bestehenden X-Publisher der Social Media Engine.
-Die Verbindung wird bei Bedarf per OAuth2 erneuert.</p>
-<article><h2>Exakter Kurzpost</h2><p>${MILESTONE_TEXT}</p></article>
-<p>Die X API kann Kosten für den Post, den Readback und gegebenenfalls die
-Token-Erneuerung verursachen. Guthaben und 20-USD-X-Console-Limit sind hier
-nicht verifiziert. Vor dem Klick im X Developer Portal prüfen. Kein automatischer
-Zweitversuch bei unklarem Ergebnis.</p>
-<button id="publish" type="button">Meilenstein einmalig auf X posten</button>
-<button id="status" type="button">Beleg prüfen (ohne X-Kosten)</button>
-<pre id="result" role="status" aria-live="polite">Noch nicht veröffentlicht.</pre>
-<p><a href="/api/social-media/x/article-test">Separater X-Artikeltest</a></p>
-<script src="/x-milestone-post.js" defer></script></main></body></html>`;
+<title>Content + Social Engine: Meilenstein · CAPITAL-AI</title>
+<style>
+body{margin:0;padding:24px;background:#081025;color:#f5f6ff;font:16px/1.6 system-ui}
+main{max-width:760px;margin:auto}h1{color:#f9bf21;line-height:1.22}
+a{color:#f9bf21}h2{font-size:1.2rem}
+button{font:inherit;padding:12px 18px;min-height:48px;border:0;border-radius:8px;
+background:#f9bf21;color:#091027;cursor:pointer;margin:8px 8px 8px 0}
+button:disabled{opacity:.48;cursor:not-allowed}
+article{border:1px solid #52617b;border-radius:12px;padding:18px;margin:16px 0;
+background:#122038}
+blockquote{white-space:pre-wrap;margin:1em 0;padding:14px;border-left:4px solid #f9bf21;
+background:#0b162c;overflow-wrap:anywhere}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #687a97;
+padding:14px;border-radius:8px;min-height:50px}
+small{color:#cbd5e1}a:focus-visible,button:focus-visible{outline:3px solid #63e4db;outline-offset:4px}
+</style></head><body><main>
+<p><a href="/studio?tab=content">← Content Studio</a></p>
+<h1>CAPITAL-AI · Content &amp; Social Engine</h1>
+<p>Ein Meilenstein für unsere modulare Content-Pipeline: Der <strong>Content Adapter</strong>
+führt zulässige Quellen und Kontext in redaktionelle Entwürfe über. Die bestehende
+<strong>Social Media Engine</strong> liefert die Medien- und Publisher-Bausteine.
+An beiden Seiten bleiben Quellen-, Rechte-, Freigabe- und Veröffentlichungsnachweise sichtbar.</p>
+<p><strong>Aktueller Stand:</strong> Architektur und erster Owner-only X-Pilot sind implementiert.
+Die vollständige kanalübergreifende Automation ist noch nicht als Produktionsbetrieb
+nachgewiesen. Die Daten- und Screener-Blueprints dienen als Lern- und Konzeptthema.</p>
+<article aria-labelledby="preview-title">
+<h2 id="preview-title">X-Meilenstein · Beitragsvorschau</h2>
+<blockquote id="post-text">${MILESTONE_TEXT}</blockquote>
+<p><small>Vor Veröffentlichung redaktionell zu prüfen. Finanzbildung und technische
+Konzepte, keine individuelle Anlageberatung, kein Handelssignal, kein Renditeversprechen.
+Externe Marktdaten-/Providerrechte und Live-Performance werden nicht behauptet.</small></p>
+</article>
+<h2>Einmalige Owner-Veröffentlichung</h2>
+<p>Diese Vorschau ist ohne Anmeldung lesbar. Für die Veröffentlichung als
+<strong>@CapitalAIOnline</strong> bitte auf <a href="/login">capital-ai.online anmelden</a>,
+die bestätigte Owner-Rolle verwenden und danach diese Seite erneut öffnen.</p>
+<p>👋⚙️ X API-Schreib- und Lesevorgänge können <strong>Free Credits</strong> verbrauchen.
+Guthaben und Autopay-Status sind über diese Seite nicht verifiziert.
+Die Anwendung aktiviert weder Zahlungsmethoden noch eine automatische Guthabenaufladung.
+Kein automatischer Zweitversuch.</p>
+<button id="publish" type="button" disabled>Einmalig auf X veröffentlichen</button>
+<button id="status" type="button">Owner-Status prüfen (ohne X-API-Aufruf)</button>
+<pre id="result" role="status" aria-live="polite">Owner-Status wird geprüft.</pre>
+<p><small>Nur der Owner kann veröffentlichen. Der Status prüft die Quittung in der
+eigenen Datenbank; kein öffentliches X-API-Lesen, keine automatische Freigabe.</small></p>
+</main><script src="/x-milestone-post.js" defer></script></body></html>`;
 const SCRIPT_SOURCE = `'use strict';
 const out=document.getElementById('result');
-for(const [id,path,method] of [
-  ['publish','/api/social-media/x/milestone/publish','POST'],
-  ['status','/api/social-media/x/milestone/status','GET'],
-]) {
-  document.getElementById(id).addEventListener('click',async()=>{
-    if(method==='POST') document.getElementById('publish').disabled=true;
-    out.textContent='Prüfe den Beleg bei unklarem Ergebnis; keinen zweiten Post auslösen.';
-    try {
-      const res=await fetch(path,{method,credentials:'same-origin',
-        ...(method==='POST'?{headers:{'Content-Type':'application/json'}}:{})});
-      const data=await res.json();
-      out.textContent=JSON.stringify({httpStatus:res.status,...data},null,2);
-    } catch { out.textContent='Verbindungsfehler. Status prüfen, nicht erneut posten.'; }
-  });
-}`;
-
+const publish=document.getElementById('publish');
+const status=document.getElementById('status');
+const statusUrl='/api/social-media/x/milestone/status';
+async function probe() {
+  publish.disabled=true;
+  out.textContent='Prüfe die Owner-Quittung; kein X-API-Aufruf.';
+  try {
+    const res=await fetch(statusUrl,{credentials:'same-origin',headers:{Accept:'application/json'}});
+    const data=await res.json();
+    if(res.status===403 || res.status===401) {
+      out.textContent='Vorschau verfügbar. Für die Veröffentlichung zuerst unter /login als Owner anmelden.';
+      return;
+    }
+    if(!res.ok) {
+      out.textContent='Owner-Status aktuell nicht verfügbar ('+res.status+'). Keine Veröffentlichung möglich.';
+      return;
+    }
+    if(data.found) {
+      out.textContent='Bereits beanspruchter Einmalauftrag. Kein erneuter Post. Beleg: '+JSON.stringify(data);
+      return;
+    }
+    out.textContent='Owner bestätigt. Einmaliger Veröffentlichungsauftrag bereit – erst Budget prüfen.';
+    publish.disabled=false;
+  } catch {
+    out.textContent='Status nicht erreichbar. Keine Veröffentlichung möglich; nicht blind wiederholen.';
+  }
+}
+publish.addEventListener('click',async()=>{
+  if(publish.disabled)return;
+  if(!confirm('Diesen Beitrag genau einmal auf X veröffentlichen? Die X API kann Free Credits verbrauchen. Bei unklarer Antwort keinen zweiten Versuch starten.'))return;
+  publish.disabled=true;
+  out.textContent='Auftrag eingereicht. Bei unklarem Ergebnis ausschließlich Status prüfen.';
+  try {
+    const res=await fetch('/api/social-media/x/milestone/publish',
+      {method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'}});
+    const data=await res.json();
+    out.textContent=JSON.stringify({httpStatus:res.status,...data},null,2);
+  } catch { out.textContent='Verbindungsfehler. Status prüfen, nicht erneut veröffentlichen.'; }
+});
+status.addEventListener('click',probe);
+probe();
+`;
 export function createXMilestonePost({ env = process.env, auth, fetchImpl = fetch,
   edgeFactory = createSocialXEdgeClient } = {}) {
   async function handle(req, res, url, json) {
@@ -128,11 +179,8 @@ export function createXMilestonePost({ env = process.env, auth, fetchImpl = fetc
       || req.headers?.['sec-fetch-site'] !== 'same-origin')) {
       json(res, 403, { error: 'same_origin_required' }); return true;
     }
-    const identity = await auth?.verify?.(req, res);
-    if (!identity?.userId || identity.emailVerified !== true
-      || await auth?.authorizeIamRole?.(req, res, 'owner') !== true) {
-      json(res, 403, { error: 'owner_authorization_required' }); return true;
-    }
+    // Public read-only preview fixes direct links without an Owner session.
+    // The paid POST and the DB receipt/status remain owner-authenticated.
     if (url.pathname === SCRIPT) {
       res.writeHead(200, { 'Content-Type': 'text/javascript; charset=utf-8' });
       res.end(SCRIPT_SOURCE); return true;
@@ -140,6 +188,11 @@ export function createXMilestonePost({ env = process.env, auth, fetchImpl = fetc
     if (url.pathname === BASE) {
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       res.end(PAGE_HTML); return true;
+    }
+    const identity = await auth?.verify?.(req, res);
+    if (!identity?.userId || identity.emailVerified !== true
+      || await auth?.authorizeIamRole?.(req, res, 'owner') !== true) {
+      json(res, 403, { error: 'owner_authorization_required' }); return true;
     }
     if (env.SOCIAL_X_EDGE_STORE_ENABLED !== 'true'
       || env.SOCIAL_X_MILESTONE_POST_ENABLED !== 'true') {
