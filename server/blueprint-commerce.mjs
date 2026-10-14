@@ -237,8 +237,20 @@ export function createBlueprintCommerce({ env = process.env, fetchImpl = fetch, 
         if (suffix === 'verify' && req.method === 'GET') {
           const evidence = privateCloud ? await privateCloud.verify() :
             { available: false, reason: 'PRIVATE_CLOUD_NOT_CONFIGURED', persistence: 'NOT_PROVEN' };
+          const releases = await Promise.all(SKU_VALUES.map(async sku => {
+            try {
+              const r = await rpc('readiness', { _sku: sku });
+              const ready = r?.ready === true && /^[a-f0-9]{64}$/.test(r.sha256 || '');
+              let disk = 'RELEASE_NOT_READY';
+              if (ready && privateCloud?.configured()) {
+                try { disk = await privateCloud.read(sku, r.sha256) ? 'VERIFIED' : 'MISSING'; }
+                catch { disk = 'BLOCKED'; }
+              }
+              return { sku, ready, sha256: ready ? r.sha256 : null, disk };
+            } catch { return { sku, ready: false, sha256: null, disk: 'READINESS_NOT_PROVEN' }; }
+          }));
           json(res, evidence.available ? 200 : 503, {
-            schema: 'CAPITAL_AI_PRIVATE_BLUEPRINT_CLOUD@1', ...evidence,
+            schema: 'CAPITAL_AI_PRIVATE_BLUEPRINT_CLOUD@1', ...evidence, releases,
             backup: 'ENCRYPTED_EXPORT_AVAILABLE_ON_RELEASED_ARTIFACTS',
             restoreTest: 'NOT_PROVEN',
           });
