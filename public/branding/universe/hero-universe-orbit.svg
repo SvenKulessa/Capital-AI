@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">CAPITAL-AI Universe – Vektor-Globus</title>
+  <desc id="desc">Eigenständig gezeichneter Globus mit goldener CAPITAL-AI-Finanzkurve und sechs farbigen Atom-Umlaufbahnen.</desc>
+  <defs>
+    <radialGradient id="earth" cx="35%" cy="30%" r="75%"><stop stop-color="#1a527f"/><stop offset=".5" stop-color="#071126"/><stop offset="1" stop-color="#020815"/></radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff5be"/><stop offset=".25" stop-color="#f5c453"/><stop offset=".53" stop-color="#ad6d16"/><stop offset=".75" stop-color="#ffe49b"/><stop offset="1" stop-color="#f9bf21"/></linearGradient>
+    <filter id="halo" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3"/></filter>
+    <clipPath id="planet"><circle cx="256" cy="252" r="141"/></clipPath>
+  </defs>
+  <circle cx="256" cy="252" r="146" fill="#F5C453" opacity=".18" filter="url(#halo)"/>
+  <circle cx="256" cy="252" r="141" fill="url(#earth)" stroke="#F5C453" stroke-width="3"/>
+  <g clip-path="url(#planet)" fill="#236886" stroke="#F5C453" stroke-width="1.5" opacity=".88">
+    <path d="M180 136 209 117 239 133 251 151 229 167 207 177 211 198 189 213 180 241 156 228 155 191 171 176Z"/>
+    <path d="M227 221 249 208 267 230 263 260 282 286 277 332 256 365 239 343 236 314 219 279Z"/>
+    <path d="M263 139 300 126 345 142 362 173 344 188 337 211 304 223 290 251 271 236 283 202 264 180Z"/>
+    <path d="M303 263 340 270 353 307 327 332 293 319Z"/>
+  </g>
+  <g fill="none" stroke="#F5C453" stroke-width="1" opacity=".22">
+    <ellipse cx="256" cy="252" rx="84" ry="141"/><ellipse cx="256" cy="252" rx="36" ry="141"/>
+    <path d="M121 205q135 45 270 0M115 252h282M120 302q136-52 272 0"/>
+  </g>
+  <g fill="none" stroke="url(#gold)" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M155 302Q190 200 240 190L276 250 310 193 358 313" stroke-width="22"/>
+    <path d="M320 297v-32m18 32v-52m18 52v-74" stroke-width="10"/>
+    <path d="M143 235Q158 347 219 370" stroke-width="14" opacity=".93"/>
+  </g>
+  <g fill="none" stroke-width="3.3" opacity=".94">
+    <ellipse cx="256" cy="252" rx="239" ry="82" transform="rotate(-23 256 252)" stroke="#F5C453"/>
+    <ellipse cx="256" cy="252" rx="239" ry="82" transform="rotate(25 256 252)" stroke="#0DDDDD"/>
+    <ellipse cx="256" cy="252" rx="234" ry="79" transform="rotate(63 256 252)" stroke="#8D26FF"/>
+    <ellipse cx="256" cy="252" rx="210" ry="57" transform="rotate(-58 256 252)" stroke="#FF2E93"/>
+  </g>
+  <g stroke="#fdf5c0" stroke-width="1.8">
+    <circle cx="70" cy="310" r="12" fill="#4ADE80"/><circle cx="445" cy="194" r="11" fill="#0DDDDD"/>
+    <circle cx="120" cy="115" r="14" fill="#F5C453"/><circle cx="427" cy="359" r="13" fill="#F87171"/>
+    <circle cx="172" cy="428" r="12" fill="#2563eb"/><circle cx="366" cy="85" r="12" fill="#8D26FF"/>
+  </g>
+  <path d="m372 113 0-16m-8 8h16m-8 0 5-5m-5 5-5 5" stroke="#fff6ba" stroke-width="2.7" stroke-linecap="round"/>
+</svg>
