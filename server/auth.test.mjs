@@ -514,6 +514,7 @@ test('Google signup rejects unconsented or cross-origin requests and records sig
       ['marketing', false, 'consent'],
     ]);
     assert.equal(h.state.consentWrites[0].every(row => row.user_id === h.state.subject), true);
+    assert.equal(h.state.consentWrites[0].find(row => row.consent_type === 'privacy').document_version, '2026-10-14');
   } finally {
     await h.stop();
   }
