@@ -88,6 +88,8 @@ test('Owner IAM controls read/write/backup; customers and forged writes never ac
   assert.deepEqual(plain.body,data);
   const backup=await run(vault,auth(true),'backup/'+id+'/'+version);
   assert.equal(backup.statusCode,200);
+  assert(Buffer.isBuffer(backup.body));
+  assert.equal(backup.headers['Content-Length'],backup.body.length);
   assert(!backup.body.includes(data));
   await unlink(join(dir,id+'-v'+version+'.caikb'));
   assert.equal((await run(vault,auth(true),'restore/'+id+'/'+version,'POST',backup.body,{
