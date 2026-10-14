@@ -57,8 +57,8 @@ export const GROWTH_SOCIAL_PROCESS_STAGES: readonly {
   status: GrowthSocialStageStatus; evidencePath: string;
 }[] = Object.freeze([
   { id: 'source', titleDe: 'Quelle & Datenvertrag', titleEn: 'Source & data contract',
-    detailDe: 'Lern- und Architekturquellen mit Commit-Bezug, ohne Live-Scoring-Claims.',
-    detailEn: 'Learning and architecture references pinned to a commit; no live-scoring claims.',
+    detailDe: 'PR-Merge-Quellen, Website und explizite X-Post-URLs; externe Aussagen bleiben ungeprüft.',
+    detailEn: 'PR merge, website and explicitly provided X post URLs; third-party claims remain unverified.',
     status: 'REPO_IMPLEMENTED', evidencePath: 'src/data/growthMarketingPilot.ts' },
   { id: 'draft', titleDe: 'Content-Entwurf', titleEn: 'Editorial draft',
     detailDe: 'Copy und SHA-256-Asset im vorhandenen Content-/Social-Package; niemals automatisch gepostet.',
@@ -98,3 +98,41 @@ export const GROWTH_X_TEST_BUDGET = Object.freeze({
   unsolicitedMarketingEmailAllowed: false,
   liveBalanceVerified: false,
 });
+
+/**
+ * Existing pathways shown side by side. Static code-status projection only:
+ * provider success, production status, audio rights and URL cost readbacks
+ * are separately verified. No autonomous provider calls.
+ */
+export const GROWTH_CONTENT_ADAPTERS = Object.freeze([
+  {
+    id: 'pr_blog', titleDe: 'GitHub-App → PR-Blog', titleEn: 'GitHub app → PR blog',
+    detailDe: 'Gemergte PRs erzeugen quellgebundene Entwurfs-Kandidaten. Eine Veröffentlichung im Website-Blog benötigt redaktionelle Freigabe.',
+    detailEn: 'Merged PRs produce source-bound draft candidates; the website blog requires editorial approval.',
+    status: 'REPO_IMPLEMENTED', evidencePath: 'scripts/growth/social-release-candidate.mjs',
+  },
+  {
+    id: 'x_context', titleDe: 'X → URL Context', titleEn: 'X → URL context',
+    detailDe: 'Manueller Owner-Lookup genau einer öffentlichen X-Post-URL via OAuth2; Kontext ist UNTRUSTED und nur für Entwürfe zugelassen.',
+    detailEn: 'Owner-only OAuth2 lookup of one public X Post URL; untrusted context, draft-only.',
+    status: 'REPO_IMPLEMENTED', evidencePath: 'server/social-media/x-url-context.mjs',
+  },
+  {
+    id: 'social_engine', titleDe: 'Migrierte Social Media Engine', titleEn: 'Migrated Social Media Engine',
+    detailDe: 'MediaProjectV2, Asset-Hash, Review und Provider-Handoff sind im Repository. Allgemeines autonomes Publishing bleibt gesperrt.',
+    detailEn: 'MediaProjectV2, asset hashes, review and provider handoff exist; autonomous public publishing stays blocked.',
+    status: 'REPO_IMPLEMENTED', evidencePath: 'src/platform/SocialMediaEngine/Publishing/MediaProjectPublisherBridge.ts',
+  },
+  {
+    id: 'youtube', titleDe: 'YouTube OAuth2 / Shorts', titleEn: 'YouTube OAuth2 / Shorts',
+    detailDe: 'Private Upload-Route und Token-Resolver sind separat vorhanden. Keine allgemeine automatische öffentliche Videoveröffentlichung.',
+    detailEn: 'Separate private upload route and token resolver exist; no autonomous public video publication.',
+    status: 'REVIEW_REQUIRED', evidencePath: 'server/social-media/youtube-private-upload.mjs',
+  },
+  {
+    id: 'gemini_tts', titleDe: 'Gemini TTS / Video-Podcast', titleEn: 'Gemini TTS / video podcast',
+    detailDe: 'Budgetgebundene, serverseitige TTS-Draft-Funktion und Video-Storyboard vorhanden; erzeugtes Audio und Publikationsrechte nicht belegt.',
+    detailEn: 'Budget-gated server-side TTS draft and video storyboard exist; produced audio and publication rights are unproven.',
+    status: 'REVIEW_REQUIRED', evidencePath: 'server/growth-ai-gateway.ts',
+  },
+] as const);
