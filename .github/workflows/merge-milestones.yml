@@ -148,7 +148,7 @@ jobs:
         run: |
           echo 'Milestone proposals generated, but no usable dedicated GitHub App token is available (missing credentials or token-minting failure). Drafts are available as an artifact; PR creation NOT_PROVEN / OWNER_SETUP_REQUIRED.' >> "$GITHUB_STEP_SUMMARY"
           echo 'No branch was pushed and no PR was created by the default GITHUB_TOKEN.' >> "$GITHUB_STEP_SUMMARY"
-      - name: Open one consolidated milestone PR (never merge or publish)
+      - name: Open independently sourced milestone draft PRs (never merge or publish)
         if: ${{ steps.milestone_app.outputs.token != '' }}
         env:
           GH_TOKEN: ${{ steps.milestone_app.outputs.token }}
@@ -162,54 +162,56 @@ jobs:
         run: |
           set -euo pipefail
           gh auth setup-git
-          if [[ -n "$ROADMAP_NUMBER" && -n "$NEWS_NUMBER" && "$ROADMAP_NUMBER" != "$NEWS_NUMBER" ]]; then
-            echo "::error::Roadmap and news milestones have different source PRs; refuse mixed evidence."
-            exit 1
-          fi
-          if [[ -n "$ROADMAP_NUMBER" && -n "$NEWS_NUMBER" && "$ROADMAP_DATE" != "$NEWS_DATE" ]]; then
-            echo "::error::Roadmap and news milestones have different merge dates; refuse mixed evidence."
-            exit 1
-          fi
-          number="${ROADMAP_NUMBER:-$NEWS_NUMBER}"
-          date_suffix="${ROADMAP_DATE:-$NEWS_DATE}"
-          if [[ ! "$number" =~ ^[1-9][0-9]*$ || ! "$date_suffix" =~ ^[0-9]{8}$ ]]; then
-            echo "::error::Missing or invalid milestone number/date; refusing branch creation."
-            exit 1
-          fi
-          branch="capital-ai-trust/milestone-merge-pr-$number-$date_suffix"
-          title="[CAPITAL-AI-TRUST] Milestone-Roadmap und News bis PR #$number konsolidieren"
-          description="Quellgebundene Roadmap-Evidence und/oder nicht veröffentlichter News-Entwurf; keine automatischen VERIFIED-Beförderungen oder Veröffentlichung."
-          if gh pr list --repo "$REPOSITORY" --state all --head "$branch" --json number --jq 'length' | grep -qx '[1-9][0-9]*'; then
-            echo "A milestone PR already exists for $branch."
-            exit 0
-          fi
-          if gh api "repos/$REPOSITORY/git/ref/heads/$branch" >/dev/null 2>&1; then
-            echo "::error::Milestone branch $branch already exists without a PR. Refuse to overwrite it."
-            exit 1
-          fi
-          worktree="/tmp/capital-milestone-worktree"
-          git worktree add -b "$branch" "$worktree" "$SOURCE_SHA"
-          targets=()
-          if [[ -n "$ROADMAP_NUMBER" ]]; then
-            targets+=("src/data/roadmapMergeReconciliation.json" "docs/product/roadmap-merge-reconciliation-$ROADMAP_NUMBER.json")
-          fi
-          if [[ -n "$NEWS_NUMBER" ]]; then
-            targets+=("src/data/controlCenterNews.json" "docs/growth/news-release-pr-$NEWS_NUMBER.md")
-          fi
-          for file in "${targets[@]}"; do
-            test -f "$file"
-            mkdir -p "$worktree/$(dirname "$file")"
-            cp -- "$file" "$worktree/$file"
+          # Roadmap and News have independent cadences (10 vs 20 merges).
+          # Never attribute a news draft to the roadmap source or vice versa.
+          for category in roadmap news; do
+            if [[ "$category" == roadmap ]]; then
+              number="$ROADMAP_NUMBER"
+              date_suffix="$ROADMAP_DATE"
+              targets=("src/data/roadmapMergeReconciliation.json")
+              [[ -n "$number" ]] && targets+=("docs/product/roadmap-merge-reconciliation-$number.json")
+            else
+              number="$NEWS_NUMBER"
+              date_suffix="$NEWS_DATE"
+              targets=("src/data/controlCenterNews.json")
+              [[ -n "$number" ]] && targets+=("docs/growth/news-release-pr-$number.md")
+            fi
+            [[ -z "$number" ]] && continue
+            if [[ ! "$number" =~ ^[1-9][0-9]*$ || ! "$date_suffix" =~ ^[0-9]{8}$ ]]; then
+              echo "::error::Missing or invalid $category milestone number/date; refusing branch creation."
+              exit 1
+            fi
+            branch="capital-ai-trust/milestone-$category-pr-$number-$date_suffix"
+            title="[CAPITAL-AI-TRUST] $category milestone through PR #$number"
+            if gh pr list --repo "$REPOSITORY" --state all --head "$branch" --json number --jq 'length' | grep -qx '[1-9][0-9]*'; then
+              echo "Existing $category milestone PR for $branch; no duplicate created." >> "$GITHUB_STEP_SUMMARY"
+              continue
+            fi
+            if gh api "repos/$REPOSITORY/git/ref/heads/$branch" >/dev/null 2>&1; then
+              echo "::error::Milestone branch $branch exists without a PR. Refuse to overwrite."
+              exit 1
+            fi
+            worktree="/tmp/capital-milestone-$category"
+            git worktree add -b "$branch" "$worktree" "$SOURCE_SHA"
+            for file in "${targets[@]}"; do
+              test -f "$file"
+              mkdir -p "$worktree/$(dirname "$file")"
+              cp -- "$file" "$worktree/$file"
+            done
+            pushd "$worktree"
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -- "${targets[@]}"
+            if git diff --cached --quiet; then
+              echo "No changed $category milestone files; no empty PR." >> "$GITHUB_STEP_SUMMARY"
+              popd
+              continue
+            fi
+            git commit -m "$title"
+            git push --set-upstream origin "$branch"
+            gh pr create --repo "$REPOSITORY" --base main --head "$branch" \
+              --draft --title "$title" \
+              --body "Independent $category milestone source PR #$number, date $date_suffix. Source main: $SOURCE_SHA. Draft only; no automatic merge or publication."
+            popd
+            echo "$category milestone draft: source PR #$number ($date_suffix)" >> "$GITHUB_STEP_SUMMARY"
           done
-          pushd "$worktree"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- "${targets[@]}"
-          git diff --cached --quiet && { echo "::error::No milestone data changed."; exit 1; }
-          git commit -m "$title"
-          git push --set-upstream origin "$branch"
-          gh pr create --repo "$REPOSITORY" --base main --head "$branch" \
-            --draft --title "$title" \
-            --body "$description"$'\n\n'"Source main: $SOURCE_SHA | Last merged PR: #$number | Automatic merge: disabled."
-          popd
-          echo "Consolidated milestone proposal: PR #$number" >> "$GITHUB_STEP_SUMMARY"
