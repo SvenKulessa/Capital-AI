@@ -17,6 +17,7 @@ import { createSocialYouTubeAccountStatus } from './social-media/youtube-account
 import { createSocialXOAuthExchange } from './social-media/x-oauth-exchange.mjs';
 import { createSocialXAccountStatus } from './social-media/x-account-status.mjs';
 import { createSocialOwnerTokenRefresh } from './social-media/owner-token-refresh.mjs';
+import { createXArticleTest } from './social-media/x-article-test.mjs';
 import { createPrivateMarketCache } from './private-market-cache.mjs';
 import { createUserProviderVault } from './user-provider-vault.mjs';
 import { createUserAnalysisBindings } from './user-analysis-bindings.mjs';
@@ -46,6 +47,7 @@ import {
 import { BILLING_CATALOG } from './billing-catalog.mjs';
 import { createVocabularyCheckout } from './vocabulary-checkout.mjs';
 import { createBlueprintCommerce } from './blueprint-commerce.mjs';
+import { createBlueprintDiskVault } from './blueprint-private-cloud.mjs';
 import { createSubscriptionCheckout } from './subscription-checkout.mjs';
 import { createBenchmarkRuns } from './benchmark-runs.mjs';
 import { createCadsCommerce } from './cads-commerce.mjs';
@@ -326,6 +328,9 @@ export function createApp(root = defaultRoot, options = {}) {
   const socialOwnerTokenRefresh = createSocialOwnerTokenRefresh({
     env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
   });
+  const xArticleTest = createXArticleTest({
+    env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
+  });
   const socialOAuthCallback = createSocialOAuthCallback({
     env: options.env || process.env,
     auth,
@@ -383,7 +388,8 @@ export function createApp(root = defaultRoot, options = {}) {
   const repositoryToolCatalog = createRepositoryToolCatalog({ fetchImpl: options.fetchImpl || fetch, env: runtimeEnv });
   const scorerProxy = createScorerProxy({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, sourcePolicy: options.sourcePolicy });
   const vocabularyCheckout = createVocabularyCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
-  const blueprintCommerce = createBlueprintCommerce({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
+  const privateBlueprintCloud = options.privateBlueprintCloud || createBlueprintDiskVault({ keyHex: runtimeEnv.BLUEPRINT_DISK_ENCRYPTION_KEY });
+  const blueprintCommerce = createBlueprintCommerce({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth, privateCloud: privateBlueprintCloud });
   const subscriptionCheckout = createSubscriptionCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
   const benchmarkStore = options.benchmarkStore ?? createBenchmarkStore({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch });
   const cadsMarketplace = createCadsMarketplace({
@@ -418,6 +424,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await socialYouTubeAccountStatus.handle(req, res, url, json)) return;
   if (await socialXAccountStatus.handle(req, res, url, json)) return;
   if (await socialOwnerTokenRefresh.handle(req, res, url, json)) return;
+  if (await xArticleTest.handle(req, res, url, json)) return;
   if (await socialOAuthCallback.handle(req, res, url, json)) return;
   if (await userProviderVault.handle(req, res, url, json)) return;
   if (await userAnalysisBindings.handle(req, res, url, json)) return;

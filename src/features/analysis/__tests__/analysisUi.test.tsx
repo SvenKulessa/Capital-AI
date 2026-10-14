@@ -364,3 +364,11 @@ test('shadow edits produce immutable versioned fingerprints and never approve pr
     session.history.append({ ...after.config, productionApproved: true }),
   );
 });
+
+test('absent source stays unavailable after freshness timeout', () => {
+  const result = safeScorePresentation(createUnavailableResult(asset, '1.0.0', now), now + 60000);
+  assert.equal(result.data, 'unavailable');
+  assert.equal(result.score, null);
+  assert.equal(result.ranked, false);
+  assert.equal(result.reason, 'Pflichtdaten und Quellen fehlen.');
+});

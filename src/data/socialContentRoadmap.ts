@@ -17,9 +17,13 @@ export const SOCIAL_CONTENT_WORK_PACKAGES: WorkPackage[] = [
       "docs/growth/CAPITAL-AI-CONTENT-ENGINE-20261007.md",
       "server/growth-ai-gateway.ts",
       "src/contracts/growthAttribution.ts",
-      "src/features/home/ContentEngineConcept.tsx"
+      "src/features/home/ContentEngineConcept.tsx",
+      "src/data/growthMarketingPilot.ts",
+      "src/data/__tests__/growthMarketingPilot.test.ts",
+      "src/features/home/SocialContentEngineStatus.tsx",
+      "docs/growth/SEO-LEADGEN-FOLLOWUP-20261014.md"
     ],
-    "nextStep": "Learning-First-Kampagne für Learn Portal, Scoring-Mathematik und Datenkonzept-Blueprints mit zielgerichteten Landingpage-CTAs planen; Drafts, SEO-Suchintention und Attribution mit nachgewiesenen Kaufpfaden verbinden. Runtime- und Kanalveröffentlichung gesondert prüfen.",
+    "nextStep": "Quellgebundenen ersten X-Lernentwurf auf der Website nachweisen, Claims/Consent prüfen, Owner-only X-Artikel per autorisiertem Browser-POST einmalig veröffentlichen, Provider-ID und Guthaben verifizieren; erst danach SEO-03/SEO-07/SEO-04 und erneute Distribution priorisieren.",
     "priority": "Kritisch",
     "leadName": "Owner + GROWTH/PRODUCT/PLATFORM",
     "targetSprint": "Vor Social-Media-Engine-Cutover",
@@ -29,7 +33,7 @@ export const SOCIAL_CONTENT_WORK_PACKAGES: WorkPackage[] = [
       "Scoring-First-Kampagne mit kanalbezogenen DRAFT-Assets",
       "Campaign-/Content-ID-basierte Attribution",
       "Publisher-Adaptergrenze für die spätere Social Media Engine",
-      "spätere grafische Content-Studio-Aufbereitung ohne Änderung der Tool-Contracts"
+      "erste zugängliche grafische Prozess- und Statusansicht als Website-Prototyp (REPO_IMPLEMENTED, kein Live-Readback)"
     ],
     "dependencies": []
   },
@@ -54,9 +58,11 @@ export const SOCIAL_CONTENT_WORK_PACKAGES: WorkPackage[] = [
       "src/contracts/contentSocialAttribution.ts",
       "src/features/studio/ContentStudioPanel.tsx",
       "CAPITAL-AI-GROWTH/SOCIAL-ENGINE-MIGRATION.md",
-      "src/data/socialContentRoadmap.ts"
+      "src/data/socialContentRoadmap.ts",
+      "src/data/growthMarketingPilot.ts",
+      "docs/growth/SEO-LEADGEN-FOLLOWUP-20261014.md"
     ],
-    "nextStep": "Learn-Portal- und Analyse-Methodik-Inhalte durch die bestehende Draft → Review → Render → Schedule → Publish → Measure-Pipeline mit SEO-Metadaten, Search-Discovery und Kampagnen-Attribution verbinden; Provider-Publisher nur bei geklärten OAuth-, Kanal- und Inhaltsrechten aktivieren.",
+    "nextStep": "Ersten X-Content-Prototyp gegen bestehende Content-/Social-Package-Contracts und Website-Prozessdiagramm validieren. Danach Owner-only Artikel-Provider-Readback und OAuth-Kosten abnehmen; wiederverwendbaren Scheduler und X/SEO-Attribution getrennt implementieren. Fremde X-Accounts niemals ungefragt automatisiert ansprechen.",
     "priority": "Kritisch",
     "leadName": "Owner + GROWTH/PRODUCT/PLATFORM",
     "targetSprint": "Nach Social-Media-Engine-Cutover; vor dauerhaftem Social-Pilot",
@@ -406,7 +412,7 @@ export const SOCIAL_CONTENT_WORK_PACKAGES: WorkPackage[] = [
     "evidenceRefs": [
       "https://github.com/SvenKulessa/Capital-AI/blob/867406f3aa9a478c14913ac731749fb33daeb9ac/CAPITAL-AI-GROWTH/SOCIAL-ENGINE-MIGRATION.md"
     ],
-    "nextStep": "Freigegebenen Kanalpilot samt Provider-Endzustand, Wiederanlauf und Rückweg abnehmen; drei positive Validierungszyklen vor dauerhafter Self-Healing-Invariante.",
+    "nextStep": "Ersten X-Artikel erst nach echter Owner-Aktion und providerseitigem Post-Readback als veröffentlicht kennzeichnen; bis dahin Draft und manuellen X-One-Shot als Teilumsetzung dokumentieren. Danach Scheduler mit idempotenten Receipts, Timezone, zulässiger Discovery und echten Kostenprüfungen abnehmen.",
     "priority": "Hoch",
     "leadName": "Owner + zuständige Domain",
     "targetSprint": "Nach erfüllten Abhängigkeiten; nicht terminiert",
