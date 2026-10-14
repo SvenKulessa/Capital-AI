@@ -59,7 +59,7 @@ export async function readEnabledCloudApis({ token, fetcher = fetch } = {}) {
       if (enabled.size > MAX_SERVICES) throw new Error('CLOUD_OPERATOR_RESPONSE_LIMIT_EXCEEDED');
     }
     const next = result.nextPageToken ?? '';
-    if (typeof next !== 'string' || next.length > 2048 || next === pageToken || (next && seenTokens.has(next)))
+    if (typeof next !== 'string' || next.length > 2048 || (next && (next === pageToken || seenTokens.has(next))))
       throw new Error('CLOUD_OPERATOR_PAGINATION_INVALID');
     if (!next) {
       return Object.freeze({
