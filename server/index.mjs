@@ -18,6 +18,7 @@ import { createSocialXOAuthExchange } from './social-media/x-oauth-exchange.mjs'
 import { createSocialXAccountStatus } from './social-media/x-account-status.mjs';
 import { createSocialOwnerTokenRefresh } from './social-media/owner-token-refresh.mjs';
 import { createXArticleTest } from './social-media/x-article-test.mjs';
+import { createXUrlContext } from './social-media/x-url-context.mjs';
 import { createPrivateMarketCache } from './private-market-cache.mjs';
 import { createUserProviderVault } from './user-provider-vault.mjs';
 import { createUserAnalysisBindings } from './user-analysis-bindings.mjs';
@@ -330,6 +331,9 @@ export function createApp(root = defaultRoot, options = {}) {
   const xArticleTest = createXArticleTest({
     env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
   });
+  const xUrlContext = createXUrlContext({
+    env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
+  });
   const socialOAuthCallback = createSocialOAuthCallback({
     env: options.env || process.env,
     auth,
@@ -423,6 +427,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await socialXAccountStatus.handle(req, res, url, json)) return;
   if (await socialOwnerTokenRefresh.handle(req, res, url, json)) return;
   if (await xArticleTest.handle(req, res, url, json)) return;
+  if (await xUrlContext.handle(req, res, url, json)) return;
   if (await socialOAuthCallback.handle(req, res, url, json)) return;
   if (await userProviderVault.handle(req, res, url, json)) return;
   if (await userAnalysisBindings.handle(req, res, url, json)) return;
