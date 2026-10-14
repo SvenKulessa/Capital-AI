@@ -234,3 +234,10 @@ test("post-merge planner keeps split, combined, and single-source milestones dis
   assert.throws(() => planMilestoneDrafts({roadmapNumber:"482", newsNumber:"470", newsDate:"20261013"}),
     /INVALID_MILESTONE_IDENTITY/);
 });
+
+test("isolated Docker build includes the planner used by milestone regressions", () => {
+  const docker = readFileSync(new URL("../Dockerfile", import.meta.url), "utf8");
+  const ignore = readFileSync(new URL("../.dockerignore", import.meta.url), "utf8");
+  assert.match(docker, /COPY [^\n]*scripts\/merge-milestone-pr-plan\.mjs/);
+  assert.ok(ignore.includes("!scripts/merge-milestone-pr-plan.mjs"));
+});
