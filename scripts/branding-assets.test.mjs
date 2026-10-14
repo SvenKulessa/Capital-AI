@@ -17,7 +17,7 @@ function sha256(path) {
 test('website metadata references only materialized CAPITAL-AI branding assets', () => {
   const required = [
     '/branding/asset-pack/favicon/favicon.svg',
-    '/branding/asset-pack/favicon/favicon-32x32.png',
+    '/branding/asset-pack/favicon/favicon-96x96.png',
     '/branding/asset-pack/favicon/favicon.ico',
     '/branding/asset-pack/favicon/apple-touch-icon-180x180.png',
     '/branding/asset-pack/favicon/site.webmanifest',
@@ -29,6 +29,10 @@ test('website metadata references only materialized CAPITAL-AI branding assets',
     const repositoryPath = resolve(root, 'public', webPath.replace(/^\//, ''));
     assert.ok(existsSync(repositoryPath), 'referenced branding asset is missing: ' + webPath);
   }
+  assert.match(index, /rel="icon" type="image\/png" sizes="96x96"/);
+  const favicon = readFileSync(resolve(assetRoot, 'favicon/favicon-96x96.png'));
+  assert.equal(favicon.readUInt32BE(16), 96);
+  assert.equal(favicon.readUInt32BE(20), 96);
   assert.match(index, /og:image:width" content="1200"/);
   assert.match(index, /og:image:height" content="630"/);
   assert.doesNotMatch(index, /og:image" content="https:\/\/capital-ai\.online\/branding\/capital-ai-logo\.jpg"/);
