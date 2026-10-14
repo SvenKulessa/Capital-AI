@@ -17,7 +17,7 @@ vielen Dank für Ihr Interesse an den technischen Lern- und Architekturkonzepten
 
 Im Mittelpunkt stehen Datenherkunft, Zeitstempel, nachvollziehbare Gewichtungsmodelle und Grenzen von Screener-Analysen. Die vorhandene öffentliche Dokumentation trennt konzeptionelle Blueprints von implementierten und produktiv geprüften Komponenten.
 
-Passender Einstieg: https://capital-ai.online/learning-platform
+Passender Einstieg: https://capital-ai.online/learning
 
 Wenn Ihr Interesse eher einer technischen Forschungs-/FinTech-Kooperation gilt, können wir gerne Ihre konkrete Fragestellung besprechen. Ohne Freigabe werden keine personenbezogenen Analyse- oder Handelsdaten benötigt.
 
@@ -34,7 +34,7 @@ Guten Tag,
 
 für Ihren bereits bestehenden CAPITAL-AI-Lernkontakt haben wir zusätzliche Erklärungen zur Datenqualität und zur Mathematik gewichteter Analysefaktoren vorbereitet. Der Inhalt verwendet gekennzeichnete synthetische Lernbeispiele statt individueller Handels- oder Renditeversprechen.
 
-Sie finden den Einstieg hier: https://capital-ai.online/learning-platform
+Sie finden den Einstieg hier: https://capital-ai.online/learning
 
 Falls Sie solche Hinweise künftig nicht erhalten möchten, nutzen Sie bitte den in Ihrer Nachricht verfügbaren Abmeldeweg. Wir respektieren einen Widerspruch unmittelbar.
 
