@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { buildCorrelation, classifyOpenPr, ACTIONS } from "./post-merge-correlation.mjs";
+import { planMilestoneDrafts } from "./merge-milestone-pr-plan.mjs";
 import './documentation-drift-remediation.test.mjs'; // DOC-SH-02 regression in Docker Security preflight
 
 test("workflow passes the unescaped merged SHA and token to checkout and correlation", () => {
@@ -212,4 +213,24 @@ test('manual milestone App validation mints a scoped token but never writes to G
   assert.doesNotMatch(validateSection, /^\s*(?:gh\s+pr\s+(?:create|merge)|git\s+push|gh\s+api\s+-X\s+(?:POST|PATCH|DELETE))\b/m);
   assert.match(workflow, /APP_CONFIG_BLOCKED/);
   assert.match(workflow, /APP_TOKEN_VERIFIED/);
+});
+
+// Run the exact planner behavior in the existing Docker Security Gate BEFORE merge.
+test("post-merge planner keeps split, combined, and single-source milestones distinct", () => {
+  assert.deepEqual(planMilestoneDrafts({
+    roadmapNumber: "482", roadmapDate: "20261014", newsNumber: "470", newsDate: "20261013",
+  }), [
+    {scope:"roadmap", number:"482", date:"20261014"},
+    {scope:"news", number:"470", date:"20261013"},
+  ]);
+  assert.deepEqual(planMilestoneDrafts({
+    roadmapNumber: "470", roadmapDate: "20261013", newsNumber: "470", newsDate: "20261013",
+  }), [{scope:"combined", number:"470", date:"20261013"}]);
+  assert.deepEqual(planMilestoneDrafts({roadmapNumber:"482", roadmapDate:"20261014"}),
+    [{scope:"roadmap", number:"482", date:"20261014"}]);
+  assert.deepEqual(planMilestoneDrafts(), []);
+  assert.throws(() => planMilestoneDrafts({roadmapNumber:"482", roadmapDate:"20260230"}),
+    /INVALID_MILESTONE_DATE/);
+  assert.throws(() => planMilestoneDrafts({roadmapNumber:"482", newsNumber:"470", newsDate:"20261013"}),
+    /INVALID_MILESTONE_IDENTITY/);
 });
