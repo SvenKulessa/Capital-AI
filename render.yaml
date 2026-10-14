@@ -55,6 +55,9 @@ services:
         sync: false
       - key: AUTH_COOKIE_SIGNING_SECRET
         sync: false
+      # Independent server-only AES-256-GCM key. Never commit, paste into logs, or place on the disk.
+      - key: BLUEPRINT_DISK_ENCRYPTION_KEY
+        sync: false
       # Owner-only GA4 provider readback. Values stay server-side on this web service.
       - key: GOOGLE_ANALYTICS_SERVICE_ACCOUNT_JSON
         sync: false
