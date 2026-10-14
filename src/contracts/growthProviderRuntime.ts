@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { parseXPostUrl } from '../../shared/x-url-context.mjs';
 
 import type { GrowthCapability } from './growthAiPromotion.ts';
 
@@ -310,6 +311,12 @@ export function assertGrowthUrlContextSourceAllowed(rawUrl: string): URL {
     );
     if (!match) throw new Error('GROWTH_URL_CONTEXT_GITHUB_SHA_REQUIRED');
     return url;
+  }
+
+  // Explicit single-post URL only. The Source policy never admits X profiles,
+  // search, feeds, private paths or automated prospect discovery.
+  if (['x.com','www.x.com','twitter.com','www.twitter.com'].includes(host)) {
+    return new URL(parseXPostUrl(rawUrl).canonicalUrl);
   }
 
   if (host === 'raw.githubusercontent.com') {

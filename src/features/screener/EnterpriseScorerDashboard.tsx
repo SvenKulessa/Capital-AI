@@ -4,6 +4,7 @@
  * with verifiable confidence, eligibility hard gates, and 1-click explainability.
  */
 
+import { ScorerMethodologyDemo } from '../analysis/ScorerMethodologyDemo';
 import React, { useState, useEffect } from 'react';
 import {
   ShieldCheck,
@@ -150,7 +151,8 @@ export const EnterpriseScorerDashboard: React.FC<EnterpriseScorerDashboardProps>
   }) ?? null;
 
   return (
-    <div className="space-y-6">
+    <div data-hub="marketscreener" className="space-y-6">
+      <ScorerMethodologyDemo />
       {/* Top Banner & Asset Quick Selector */}
       <div className="p-6 rounded-2xl bg-gradient-to-r from-[#0d1633] via-[#090e21] to-[#070b19] border border-amber-500/30">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">

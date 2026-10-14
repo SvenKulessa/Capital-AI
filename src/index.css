@@ -254,3 +254,9 @@
   .hub-tab-strip { border-radius: .625rem; }
   [data-legal-route] > nav.hub-tab-strip { margin-top: .5rem; }
 }
+
+/* Methodology controls inherit the Analytics identity and remain zoomable. */
+.scorer-methodology select:focus-visible, .scorer-methodology summary:focus-visible, .scorer-methodology-link:focus-visible { outline:2px solid var(--hub-accent); outline-offset:3px; }
+.scorer-methodology meter { accent-color:var(--hub-accent); }
+.scorer-methodology meter::-webkit-meter-optimum-value { background:var(--hub-accent); }
+.scorer-methodology meter::-moz-meter-bar { background:var(--hub-accent); }

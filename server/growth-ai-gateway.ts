@@ -42,6 +42,7 @@ export const GrowthAiDraftRequestSchema = z.object({
     'REDDIT',
     'PODCAST',
     'EMAIL',
+    'X',
   ])).min(1).max(7),
   brief: z.string().min(1).max(6000),
   sourceUrls: z.array(z.string().url()).max(5).default([]),

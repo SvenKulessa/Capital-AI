@@ -462,3 +462,60 @@ test('signed owner X article credentials are ciphertext-only and receipts are ow
     userId:'d0bf7f2f-c4d2-4cda-b0a8-0f7bb2723102',contentKey,accountId}));
   assert.equal(impersonation.status,503);
 });
+
+test('X milestone Edge receipts require owner proof and enforce atomic state transitions', async () => {
+  const userId='d0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101';
+  const input={channel:'X',userId,accountId:'123456789012345678',contentKey:'a'.repeat(64)};
+  const config={get:name=>name==='SUPABASE_SERVICE_ROLE_KEY'
+    ? 'sb_secret_synthetic_only_for_tests' : env.get(name)};
+  let row=null, writes=0;
+  const handler=createHandler({env:config,fetchImpl:async(uri,options={})=>{
+    const path=String(uri);
+    if(path.includes('/auth/v1/user'))return {ok:true,text:async()=>JSON.stringify({
+      id:userId,email_confirmed_at:'2026-10-01'})};
+    if(path.includes('/profiles'))return {ok:true,text:async()=>JSON.stringify([{
+      id:userId,iam_role:'owner'}])};
+    if(!path.includes('/capital_x_milestone_posts'))throw Error('unexpected URI');
+    let result;
+    const requestUrl=new URL(uri);
+    const query=requestUrl.searchParams;
+    if(options.method==='POST'){
+      writes++;
+      const candidate=JSON.parse(options.body);
+      assert.equal(candidate.user_id,userId);
+      assert.equal(candidate.content_key,input.contentKey);
+      assert.equal(candidate.external_account_id,input.accountId);
+      result=row?[]:[(row={...candidate,post_id:null,verified_at:null})];
+    } else if(options.method==='GET'){
+      result=row?[{status:row.status,post_id:row.post_id,verified_at:row.verified_at}]:[];
+    } else if(options.method==='PATCH'){
+      writes++;
+      const patch=JSON.parse(options.body);
+      assert.equal(query.get('status'),'eq.'+row.status);
+      if(query.has('post_id'))assert.equal(query.get('post_id'),'eq.'+row.post_id);
+      row={...row,...patch};
+      result=[row];
+    } else throw Error('unexpected method');
+    return {ok:true,text:async()=>JSON.stringify(result)};
+  }});
+  const send=async(operation,extras={})=>handler(signedRequest({operation,...input,...extras}));
+  const missing=await send('milestone_status');
+  assert.deepEqual(await missing.json(),{found:false,status:'NOT_SUBMITTED',postId:null,verifiedAt:null});
+  const denied=await handler(signedRequest({...input,operation:'milestone_claim'}, {omitSignature:true}));
+  assert.equal(denied.status,503);
+  assert.equal(writes,0);
+  const first=await send('milestone_claim');
+  assert.equal((await first.json()).claimed,true);
+  const duplicate=await send('milestone_claim');
+  assert.equal((await duplicate.json()).claimed,false);
+  const premature=await send('milestone_record',{stage:'verify',postId:'222222222222222'});
+  assert.equal(premature.status,503);
+  const posted=await send('milestone_record',{stage:'post',postId:'222222222222222'});
+  assert.deepEqual(await posted.json(),{recorded:true,status:'POSTED'});
+  const verified=await send('milestone_record',{stage:'verify',postId:'222222222222222'});
+  assert.deepEqual(await verified.json(),{recorded:true,status:'VERIFIED_PUBLISHED'});
+  const last=await send('milestone_status');
+  assert.equal((await last.json()).status,'VERIFIED_PUBLISHED');
+  assert.equal(row.post_id,'222222222222222');
+  assert.equal(writes,5); // includes the deliberately rejected premature PATCH attempt
+});

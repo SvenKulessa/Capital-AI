@@ -195,6 +195,54 @@ async function execute(fetchImpl, keys, userId, input) {
       leaseActive: row.refresh_lease_id !== null,
       retryAfter: row.refresh_retry_after };
   }
+  // One-shot owner-authenticated X milestone receipts; never exposed to browsers.
+  if (['milestone_status', 'milestone_claim', 'milestone_record'].includes(operation)) {
+    abortUnless(channel === 'X' && SHA256.test(input.contentKey || '')
+      && XID.test(input.accountId || ''));
+    const target = new URL('/rest/v1/capital_x_milestone_posts', keys.origin);
+    if (operation === 'milestone_claim') {
+      const response = await fetchImpl(target, {
+        method: 'POST', redirect: 'error', signal: AbortSignal.timeout(7000),
+        headers: adminHeaders(keys.admin, { Prefer: 'resolution=ignore-duplicates,return=representation' }),
+        body: JSON.stringify({ user_id: userId, content_key: input.contentKey,
+          external_account_id: input.accountId, status: 'CLAIMED' }),
+      });
+      abortUnless(response.ok);
+      const raw = await response.text();
+      abortUnless(raw.length < 8192);
+      const rows = JSON.parse(raw);
+      abortUnless(Array.isArray(rows) && rows.length <= 1);
+      return { claimed: rows.length === 1 };
+    }
+    target.searchParams.set('user_id', 'eq.' + userId);
+    target.searchParams.set('content_key', 'eq.' + input.contentKey);
+    target.searchParams.set('external_account_id', 'eq.' + input.accountId);
+    if (operation === 'milestone_status') {
+      target.searchParams.set('select', 'status,post_id,verified_at');
+      const rows = await jsonFetch(fetchImpl, target,
+        { method: 'GET', headers: adminHeaders(keys.admin) }, 4096);
+      abortUnless(Array.isArray(rows) && rows.length <= 1);
+      const row = rows[0] || null;
+      return { found: Boolean(row), status: row?.status || 'NOT_SUBMITTED',
+        postId: row?.post_id || null, verifiedAt: row?.verified_at || null };
+    }
+    abortUnless(XID.test(input.postId || '')
+      && ['post', 'verify'].includes(input.stage));
+    const from = input.stage === 'post' ? 'CLAIMED' : 'POSTED';
+    const to = input.stage === 'post' ? 'POSTED' : 'VERIFIED_PUBLISHED';
+    target.searchParams.set('status', 'eq.' + from);
+    if (input.stage === 'verify') target.searchParams.set('post_id', 'eq.' + input.postId);
+    const patch = { status: to, updated_at: new Date().toISOString(),
+      ...(input.stage === 'post' ? { post_id: input.postId } : {}),
+      ...(input.stage === 'verify' ? { verified_at: new Date().toISOString() } : {}) };
+    const rows = await jsonFetch(fetchImpl, target, { method: 'PATCH',
+      headers: adminHeaders(keys.admin, { Prefer: 'return=representation' }),
+      body: JSON.stringify(patch) }, 8192);
+    abortUnless(Array.isArray(rows) && rows.length === 1
+      && rows[0]?.user_id === userId && rows[0]?.external_account_id === input.accountId
+      && rows[0]?.status === to && rows[0]?.post_id === input.postId);
+    return { recorded: true, status: to };
+  }
   if (['article_status', 'article_claim', 'article_record'].includes(operation)) {
     abortUnless(channel === 'X' && /^[a-f0-9]{64}$/.test(input.contentKey || '')
       && XID.test(input.accountId || ''));

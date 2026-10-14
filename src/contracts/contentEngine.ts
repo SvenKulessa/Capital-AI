@@ -52,6 +52,7 @@ export const ContentCampaignBriefSchema = z.object({
   audience: z.array(z.string().min(1).max(200)).min(1).max(10),
   channels: z.array(z.enum([
     'WEBSITE', 'LINKEDIN', 'YOUTUBE', 'MASTODON', 'REDDIT', 'PODCAST', 'EMAIL',
+  'X',
   ])).min(1).max(7),
   outputs: z.array(ContentEngineOutputSchema).min(1),
   sourceUrls: z.array(z.string().url()).max(12).default([]),

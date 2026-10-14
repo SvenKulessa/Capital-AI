@@ -323,3 +323,22 @@ test('optional real Chromium accessibility tree probe has valid Node syntax and 
   assert.match(script,/actualScreenReader:'NOT_PROVEN'/);
   assert.match(script,/liveTenantIsolation:'NOT_PROVEN'/);
 });
+
+test('AICapital workspace is selected by policy, while private Render infrastructure has no website identity', async () => {
+  const policy = await readFile(new URL('../AGENTS.md', import.meta.url), 'utf8');
+  const inventory = await readFile(new URL('../src/data/externalComponentInventory.ts', import.meta.url), 'utf8');
+  const ui = await readFile(new URL('../src/components/ComponentInventoryDashboard.tsx', import.meta.url), 'utf8');
+  assert.match(policy, /AICapital.*tea-d90o4rj7uimc739i86ug/);
+  assert.match(policy, /ohne erneute persönliche Workspace-Auswahl/);
+  for (const service of ['capital-ai-market-events','capital-ai-market-cache','capital-ai-provider-bridge']) {
+    assert.match(policy, new RegExp(service));
+  }
+  assert.match(policy, /technisch verbindlich/);
+  assert.match(inventory, /id: 'nats-jetstream'/);
+  assert.match(inventory, /id: 'valkey'/);
+  assert.match(ui, /internalRenderInfrastructure = new Set\(\['nats-jetstream', 'valkey'\]\)/);
+  assert.match(ui, /Interne Infrastruktur · keine Website/);
+  assert.match(ui, /Website-Identität: Capital-AI · interne Services getrennt/);
+  assert.doesNotMatch(ui, /<dt className="text-slate-500">Web-App<\/dt>/);
+  assert.match(ui, /Technische Anbindung/);
+});
