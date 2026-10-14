@@ -24,7 +24,7 @@ const blocks = [
   '5. Was würde meine Annahme widerlegen?',
   'Notiere vor einer Interpretation ein Gegenargument: Fällt der Kurs unter einen wichtigen Bereich? Fehlt eine Bestätigung? Ist das Handelsvolumen zuverlässig? Unsicherheit ist ein Ergebnis der Analyse, kein Fehler, den mehr Indikatoren beseitigen.',
   'Lern-Workflow: 1. übergeordnetes Zeitfenster wählen; 2. Candlesticks und Preisstruktur prüfen; 3. einen EMA und einen RSI ergänzen; 4. ATR als Volatilitätskontext betrachten; 5. eine alternative Erklärung dokumentieren.',
-  'Mehr Finanzbildung und Lerninhalte: https://capital-ai.online/learning-platform',
+  'Mehr Finanzbildung und Lerninhalte: https://capital-ai.online/learning',
   'Dieser Beitrag dient ausschließlich der allgemeinen Finanzbildung. Keine individuelle Anlageberatung, keine Handelsaufforderung, keine Rendite- oder Erfolgsgarantie. Anlagen können zu Verlusten führen.',
 ];
 export const ARTICLE = Object.freeze({
