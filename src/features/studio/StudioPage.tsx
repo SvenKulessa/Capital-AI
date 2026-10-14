@@ -65,6 +65,7 @@ import { useHubTab } from '../../hooks/useHubTab';
 import { ContentStudioPanel } from './ContentStudioPanel';
 import { BlueprintCommercePanel } from './BlueprintCommercePanel';
 import { FounderPrivateBlueprintCloud } from './FounderPrivateBlueprintCloud';
+import { FounderKnowledgeLibrary } from './FounderKnowledgeLibrary';
 import { ContactForm } from '../../components/ContactForm';
 import { AnalysisComponentExplorer } from '../analysis/AnalysisComponentExplorer';
 import { PipelineConfiguratorConsole } from '../analysis/PipelineConfiguratorConsole';
@@ -621,6 +622,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
         <div className="space-y-6">
           <BlueprintCommercePanel onNavigateLogin={onNavigateLogin} />
           <FounderPrivateBlueprintCloud />
+          <FounderKnowledgeLibrary />
           <section aria-label="Synthetische Blueprint Demo-Scorings" className="rounded-2xl border border-cyan-400/35 bg-[#071427] p-4 sm:p-5">
             <h2 className="text-lg font-bold text-white">Beispielkomponenten mit Demo-Bewertung</h2>
             <p className="mt-1 text-xs leading-5 text-slate-300">DEMO / SYNTHETISCH: Deterministische 0–100-Indizes aus Beispiel-Faktoren und transparenten Gewichten. Keine Marktwerte, Validierung, Investmentempfehlungen, Produktions-Scores oder live geschaltete NATS-Daten.</p>
