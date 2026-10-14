@@ -1568,14 +1568,14 @@ const RAW_WORK_PACKAGES: WorkPackage[] = [
   "priority": "Hoch",
   "leadName": "Projektowner",
   "targetSprint": "Nicht terminiert",
-  "description": "Impressum, AGB und Datenschutz sind auf dem gelesenen Main integriert. Die Dokumentversion ist 2026-09-30; die Übernahme ist keine rechtliche Gesamtfreigabe.",
+  "description": "Impressum, AGB und Datenschutz sind auf dem gelesenen Main integriert. Die Dokumentversion ist 2026-10-14; die Übernahme ist keine rechtliche Gesamtfreigabe.",
   "deliverables": [
     "Rechtstexte nach der Domainumschaltung auf allen Zielhosts prüfen."
   ]
 },
 {
   "id": "AP-CMP-PRIVACY",
-  "title": "Verifizierte Sitzung für Datenauszug und E-Mail-Entwurf",
+  "title": "Verifizierter Datenauszug und registrierte Datenschutzanfragen",
   "owner": "TRUST",
   "status": "aktiv",
   "phase": 2,
@@ -1590,14 +1590,14 @@ const RAW_WORK_PACKAGES: WorkPackage[] = [
   "priority": "Hoch",
   "leadName": "Projektowner",
   "targetSprint": "Nicht terminiert",
-  "description": "Export und Anfrageweg akzeptieren die serverseitig verifizierte Supabase-Sitzung. Der Export ist begrenzt; der Anfrageweg speichert und versendet nichts.",
+  "description": "Export und Anfrageweg akzeptieren die serverseitig verifizierte Supabase-Sitzung. Der Export ist begrenzt; angemeldete Datenschutzanfragen werden mit Vorgangsnummer im Register gespeichert. Ohne Anmeldung bleibt der E-Mail-Entwurf. Der YouTube-Owner-Löschpfad wird separat technisch geprüft; eine vollständige automatische Bereinigung wird daraus nicht abgeleitet.",
   "deliverables": [
     "Eigenen Export nach echtem Login und Logout auf dem Zielhost abnehmen."
   ]
 },
 {
   "id": "AP-CMP-ANALYTICS",
-  "title": "Optionales Analytics und Werbung deaktiviert",
+  "title": "GA4 nur nach Einwilligung; Marketing deaktiviert",
   "owner": "TRUST",
   "status": "aktiv",
   "phase": 2,
@@ -1605,14 +1605,15 @@ const RAW_WORK_PACKAGES: WorkPackage[] = [
   "progressPercent": 100,
   "evidenceState": "VERIFIED",
   "evidenceRefs": [
-    "src/utils/analytics.ts",
-    "scripts/privacy-analytics.test.mjs"
+    "src/utils/consentedAnalytics.ts",
+    "src/utils/consentedAnalytics.test.ts",
+    "src/privacy/cookieConsentV3.test.ts"
   ],
   "nextStep": "Bei jeder neuen Tracking-Integration Verarbeitung und Einwilligung erneut prüfen.",
   "priority": "Hoch",
   "leadName": "Projektowner",
   "targetSprint": "Nicht terminiert",
-  "description": "Die Analytics-Funktionen sind im Quellcode deaktiviert. Ein neuer Consent-Dialog wird daraus nicht als umgesetzt abgeleitet.",
+  "description": "GA4 wird nur nach gültiger Analytics-Einwilligung geladen. Der Consent-Dialog ermöglicht Ablehnen und Widerruf; Marketing bleibt deaktiviert. Konfigurations- und Live-Nachweise sind vom Quellcode getrennt zu prüfen.",
   "deliverables": [
     "Bei jeder neuen Tracking-Integration Verarbeitung und Einwilligung erneut prüfen."
   ]

@@ -71,3 +71,22 @@ test('generic contact route retains server-side SMTP, reply-to, validation and b
   assert.equal(forged.status, 403);
   assert.equal(f.mails.length, 1);
 });
+
+
+test('Founder inquiries reach only the private controller address and leak no contact data in HTTP receipt', async () => {
+  const owner = 'sven.kulessa@capital-ai.online';
+  const f = fixture(async () => ({ accepted: [owner], rejected: [] }));
+  const request = { ...payload(), message: 'Founder inquiry for a private institutional collaboration.' };
+  const answer = await f.run(request, {}, 'POST', '/api/public/founder-inquiry');
+  assert.equal(answer.status, 200);
+  assert.equal(answer.data.status, 'MAIL_SERVER_ACCEPTED');
+  assert.equal(f.mails.length, 1);
+  assert.equal(f.mails[0].to, owner);
+  assert.equal(f.mails[0].replyTo, request.email);
+  assert.match(f.mails[0].subject, /Kontaktanfrage/);
+  assert.doesNotMatch(JSON.stringify(answer.data), /sven|institutional|learner@example/);
+  const spoofed = await f.run({ ...payload(), to: 'attacker.example' }, {}, 'POST', '/api/public/founder-inquiry');
+  assert.equal(spoofed.status, 400);
+  assert.equal((await f.run(payload(), { origin: 'https://attacker.example' }, 'POST', '/api/public/founder-inquiry')).status, 403);
+  assert.equal(f.mails.length, 1);
+});

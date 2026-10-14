@@ -8,6 +8,8 @@ on:
       - 'supabase/migrations/20261013035202_capital_social_owner_token_refresh.sql'
       - 'scripts/social-token-refresh-db.sql'
       - 'scripts/youtube-private-receipt-recovery-db.sql'
+      - 'scripts/youtube-privacy-revocation-db.sql'
+      - 'supabase/migrations/20261014205919_youtube_owner_revocation_cleanup.sql'
       - 'supabase/migrations/20261013105500_youtube_private_deleted_receipt_recovery.sql'
       - 'supabase/migrations/20261013110247_youtube_private_deleted_receipt_recovery.sql'
       - 'scripts/social-provider-db-*.sql'

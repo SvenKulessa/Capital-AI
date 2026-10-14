@@ -52,3 +52,16 @@ test('Google OAuth privacy disclosure has distinct purpose, data, transfer and r
   ]) assert.ok(html.includes(value), `Missing Google OAuth disclosure: ${value}`);
   assert.doesNotMatch(html, /Google-Konto-Passwort wird gespeichert|<script\b/i);
 });
+
+test('YouTube mandatory links and current commerce disclosures stay identical in both public documents', async () => {
+  const { YOUTUBE_POLICY, youtubePolicyHtml, commerceNoticeHtml } = await import('../shared/youtube-privacy.mjs');
+  for (const route of ['datenschutz','agb']) {
+    const html = await readFile(new URL(`../public/${route}/index.html`, import.meta.url), 'utf8');
+    assert.ok(html.includes(youtubePolicyHtml()));
+    for (const link of [YOUTUBE_POLICY.terms, YOUTUBE_POLICY.privacy, YOUTUBE_POLICY.revoke]) assert.ok(html.includes(`href="${link}"`));
+    assert.doesNotMatch(html, /Browser lädt gegenwärtig kein optionales|Kundenportal wird im neuen Dienst nicht als angebunden/);
+    if (route === 'agb') assert.ok(html.includes(commerceNoticeHtml()));
+  }
+  const app = await readFile(new URL('../src/components/LegalAndFaqPages.tsx', import.meta.url), 'utf8');
+  assert.ok(app.includes('YOUTUBE_POLICY.terms') && app.includes('COMMERCE_NOTICE.paragraphs'));
+});

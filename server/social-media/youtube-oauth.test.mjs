@@ -36,7 +36,7 @@ function flow({ token = tokens, channels = [channel], mutate = x => x } = {}) {
 test('YouTube start uses owner session, PKCE, offline consent and routing cookie', async () => {
   const starts=[]; const r=response();
   const start=createSocialYouTubeOAuthStart({ env, auth, store: { beginOAuth: async x => { starts.push(x); return { state }; } } });
-  await start.handle(req,r,new URL('/api/social-media/youtube/auth/start', env.PUBLIC_APP_ORIGIN),json);
+  await start.handle(req,r,new URL('/api/social-media/youtube/auth/start?privacy=2026-10-14', env.PUBLIC_APP_ORIGIN),json);
   assert.equal(r.status,303);
   const url=new URL(r.headers.Location);
   assert.equal(url.origin,'https://accounts.google.com');
@@ -53,7 +53,7 @@ test('YouTube denies non-owner and cross-site start before issuing state', async
   const start=createSocialYouTubeOAuthStart({ env, auth: { ...auth, authorizeIamRole: async () => false },
     store: { beginOAuth: async () => { calls++; } } });
   for (const headers of [req.headers, { 'sec-fetch-site': 'cross-site' }]) {
-    const r=response(); await start.handle({ ...req, headers },r,new URL('/api/social-media/youtube/auth/start',env.PUBLIC_APP_ORIGIN),json);
+    const r=response(); await start.handle({ ...req, headers },r,new URL('/api/social-media/youtube/auth/start?privacy=2026-10-14',env.PUBLIC_APP_ORIGIN),json);
     assert.equal(r.status,403);
   }
   assert.equal(calls,0);
@@ -115,7 +115,7 @@ test('YouTube OAuth start and callback preserve session refresh cookies', async 
     } };
     const started=response();
     await createSocialYouTubeOAuthStart({ env,auth:refreshedAuth,store:{ beginOAuth:async()=>({ state }) } })
-      .handle(req,started,new URL('/api/social-media/youtube/auth/start',env.PUBLIC_APP_ORIGIN),json);
+      .handle(req,started,new URL('/api/social-media/youtube/auth/start?privacy=2026-10-14',env.PUBLIC_APP_ORIGIN),json);
     assert.equal(started.status,303);
     const expected=Array.isArray(cookie)?cookie:[cookie];
     assert.deepEqual(started.headers['Set-Cookie'].slice(0,-1),expected);
@@ -126,4 +126,15 @@ test('YouTube OAuth start and callback preserve session refresh cookies', async 
     assert.deepEqual(completed.headers['Set-Cookie'].slice(0,-1),expected);
     assert.match(completed.headers['Set-Cookie'].at(-1),/Max-Age=0/);
   }
+});
+
+test('owner must explicitly accept current YouTube policy before OAuth state or Google redirect', async () => {
+  let starts = 0;
+  const start = createSocialYouTubeOAuthStart({ env, auth, store: { beginOAuth: async () => { starts++; return { state }; } } });
+  for (const query of ['', '?privacy=old', '?privacy=2026-10-14&privacy=2026-10-14']) {
+    const r = response();
+    await start.handle(req,r,new URL('/api/social-media/youtube/auth/start'+query,env.PUBLIC_APP_ORIGIN),json);
+    assert.equal(r.status,303); assert.equal(r.headers.Location,'/api/social-media/youtube/account/connect');
+  }
+  assert.equal(starts,0);
 });
