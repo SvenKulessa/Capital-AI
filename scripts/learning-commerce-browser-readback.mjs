@@ -168,7 +168,10 @@ try {
       assert.ok(drawer.left >= -1 && drawer.right <= viewport.width + 1 &&
         drawer.scroll <= drawer.client + 1, 'Mobile navigation overflow: ' + JSON.stringify(drawer));
       await capture(viewport.name + '-menu');
-      await evaluate(`document.querySelector('[aria-label="Navigation schließen"]').click()`);
+      // The visible close button has a stable id; its accessible label is localized.
+      assert.equal(await evaluate(`!!document.querySelector('#capital-ai-mobile-navigation #close-menu-btn[aria-label]')`),
+        true, 'Accessible mobile navigation close button missing');
+      await evaluate(`document.querySelector('#capital-ai-mobile-navigation #close-menu-btn[aria-label]').click()`);
       await until(() => evaluate(`!document.querySelector('#capital-ai-mobile-navigation')`), 'Mobile navigation closes');
     }
 
