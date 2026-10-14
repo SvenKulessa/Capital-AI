@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { ContentCampaignBriefSchema, planContentCampaign } from '../../contracts/contentEngine.ts';
 import { GrowthMarketingChannelSchema } from '../../contracts/growthAiPromotion.ts';
@@ -65,4 +66,17 @@ test('budget proportions sum to 100 with zero unattended activity and no spam au
   assert.equal(GROWTH_X_TEST_BUDGET.unsolicitedRepliesAllowed,false);
   assert.equal(GROWTH_X_TEST_BUDGET.unsolicitedMarketingEmailAllowed,false);
   assert.equal(GROWTH_X_TEST_BUDGET.liveBalanceVerified,false);
+});
+
+test('public home visualizes the real pilot workflow without making provider success claims', () => {
+  const ui = readFileSync(new URL('../../features/home/SocialContentEngineStatus.tsx', import.meta.url), 'utf8');
+  const home = readFileSync(new URL('../../features/home/ContentEngineConcept.tsx', import.meta.url), 'utf8');
+  assert.match(home, /<SocialContentEngineStatus\s*\/>/);
+  assert.match(ui, /GROWTH_SOCIAL_PROCESS_STAGES\.map/);
+  assert.match(ui, /aria-labelledby="social-content-engine-status"/);
+  assert.match(ui, /sm:grid-cols-2 lg:grid-cols-4/);
+  assert.match(ui, /FIRST_X_PILOT_STATE\.published/);
+  assert.match(ui, /GROWTH_X_TEST_BUDGET\.ownerReportedCreditUsd/);
+  assert.doesNotMatch(ui, /\/api\/social-media\/x\/article-test\/publish/);
+  assert.doesNotMatch(ui, /fetch\(/);
 });
