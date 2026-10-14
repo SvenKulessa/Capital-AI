@@ -22,6 +22,12 @@ import {
   CURRENT_SOCIAL_PUBLISHER_ADAPTERS,
 } from '../../contracts/socialPublisherAdapter.ts';
 import { CAPITAL_AI_SCORE_BUILDER_CAMPAIGN_20261007 } from '../../data/contentCampaigns.ts';
+import {
+  FIRST_X_PILOT_PACKAGE,
+  FIRST_X_PILOT_PLAN,
+  FIRST_X_PILOT_STATE,
+  FIRST_X_PILOT_TEXT,
+} from '../../data/growthMarketingPilot.ts';
 
 const campaign = CAPITAL_AI_SCORE_BUILDER_CAMPAIGN_20261007;
 const plan = planContentCampaign(campaign.brief);
@@ -43,6 +49,54 @@ export const ContentStudioPanel: React.FC = () => {
         <label htmlFor="youtube-description" className="mt-3 block text-sm">Beschreibung zum Kopieren</label>
         <textarea id="youtube-description" readOnly rows={12} value={youtubeDescription({title:'Capital-AI Tour',summary:'Learning Portal und 50 Komponenten der Finanzanalyse entdecken. Blueprint-Bundles in Vorbereitung. Demo-Werte sind synthetisch.',chapters:'00:00 Learning Portal\n00:05 Analysekomponenten\n00:10 Analyse-Demo\n00:15 Hero Buddy'})} className="mt-2 w-full rounded-xl border border-slate-500 bg-slate-950 p-3 text-sm text-white" />
       </section>
+      <section aria-labelledby="studio-x-first-pilot" className="rounded-2xl border border-amber-400/30 bg-[#11101b] p-4 sm:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 id="studio-x-first-pilot" className="text-base font-bold text-amber-200">
+            X · erster Lernartikel als Content-/Social-Package
+          </h2>
+          <span className="rounded border border-amber-400/30 px-2 py-1 text-[10px] font-semibold text-amber-200">
+            {FIRST_X_PILOT_STATE.status} · {FIRST_X_PILOT_STATE.review}
+          </span>
+        </div>
+        <p className="mt-2 text-sm text-slate-300">
+          Quellgebundener Text-Prototyp über die vorhandenen
+          {' '}<code className="text-amber-200">Content Engine</code> und
+          {' '}<code className="text-amber-200">Social Package</code>-Verträge.
+          Er besitzt keine Publikationsfreigabe und keinen Provider-Readback.
+        </p>
+        <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
+          <div className="rounded-lg border border-white/10 p-3">
+            <dt className="text-slate-400">Zielkonto</dt>
+            <dd className="mt-1 font-semibold text-white">{FIRST_X_PILOT_STATE.targetHandle}</dd>
+          </div>
+          <div className="rounded-lg border border-white/10 p-3">
+            <dt className="text-slate-400">Content-Module</dt>
+            <dd className="mt-1 font-semibold text-white">{FIRST_X_PILOT_PLAN.modules.length} · TECHNICAL DRAFT</dd>
+          </div>
+          <div className="rounded-lg border border-white/10 p-3">
+            <dt className="text-slate-400">Provider-Status</dt>
+            <dd className="mt-1 font-semibold text-white">{FIRST_X_PILOT_STATE.published}</dd>
+          </div>
+        </dl>
+        <label htmlFor="capital-ai-first-x-draft" className="mt-4 block text-sm font-semibold text-white">
+          Beitragstext · prüfbarer Entwurf, nicht automatisch veröffentlicht
+        </label>
+        <textarea id="capital-ai-first-x-draft" readOnly rows={5} value={FIRST_X_PILOT_TEXT}
+          className="mt-2 w-full resize-y rounded-lg border border-white/20 bg-slate-950 p-3 text-sm leading-relaxed text-white" />
+        <p className="mt-2 break-all font-mono text-[10px] text-slate-400">
+          Asset SHA-256: {FIRST_X_PILOT_PACKAGE.assets[0]?.sha256}
+        </p>
+        <p className="mt-2 text-xs leading-relaxed text-slate-300">
+          Vor einem ersten öffentlichen Artikel: Claims, Rechte und X-Console-Guthaben prüfen.
+          Der separierte Owner-only Browser-Pfad verwendet OAuth-Refresh bei Bedarf; keine
+          autonome Terminierung, kein massenhaftes Folgen oder Antworten.
+        </p>
+        <a href={FIRST_X_PILOT_STATE.manualOwnerArticleRoute}
+          className="mt-3 inline-flex min-h-11 items-center rounded-xl border border-amber-400/40 px-4 py-2 text-xs font-bold text-amber-200 hover:bg-amber-400/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-300">
+          Owner-only Artikeltest öffnen (kein automatischer Post)
+        </a>
+      </section>
+
       <section className="rounded-2xl border border-violet-400/20 bg-gradient-to-br from-violet-500/10 via-[#0b1020] to-amber-500/5 p-5 sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl">
