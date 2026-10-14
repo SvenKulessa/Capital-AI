@@ -22,6 +22,8 @@ export function FounderKnowledgeLibrary(){
  const [slot,setSlot]=useState('architecture-glossary');
  const [version,setVersion]=useState('1.0.0');
  const [file,setFile]=useState<File|null>(null);
+ const [restoreFile,setRestoreFile]=useState<File|null>(null);
+ const [restoreDigest,setRestoreDigest]=useState('');
  const [busy,setBusy]=useState(false);
  const [notice,setNotice]=useState('');
  const refresh=useCallback(async()=>{
@@ -42,6 +44,19 @@ export function FounderKnowledgeLibrary(){
    finally{setLoading(false)}
  },[]);
  useEffect(()=>{void refresh()},[refresh]);
+ async function restore(){
+  if(!restoreFile||busy||!verify?.available||!/^(\d{1,3}\.){2}\d{1,3}$/.test(version)||!/^[a-f0-9]{64}$/.test(restoreDigest))return;
+  setBusy(true);setNotice('');
+  try{
+    const r=await fetch(API+'restore/'+slot+'/'+version,{method:'POST',credentials:'same-origin',cache:'no-store',
+      headers:{'Content-Type':'application/octet-stream','X-Knowledge-SHA256':restoreDigest},body:await restoreFile.arrayBuffer()});
+    if(!r.ok)throw new Error(r.status===409?'Diese Version ist bereits vorhanden.':'Wiederherstellung nicht möglich: Key, Tag, Identität und Hash müssen übereinstimmen.');
+    setNotice('Verschlüsselte Version mit GCM-Tag und Originalhash restauriert.');
+    setRestoreFile(null);
+    await refresh();
+  }catch(e){setNotice(e instanceof Error?e.message:'Restore fehlgeschlagen.')}
+  finally{setBusy(false)}
+ }
  async function upload(){
   if(!file||!verify?.available||busy||!/^(\d{1,3}\.){2}\d{1,3}$/.test(version))return;
   if(file.size<64||file.size>524288){setNotice('Markdown-Datei muss zwischen 64 Bytes und 512 KiB groß sein.');return}
@@ -88,6 +103,19 @@ export function FounderKnowledgeLibrary(){
     </div>
     <button type="button" onClick={()=>void upload()} disabled={!file||!verify?.available||busy||!/^(\d{1,3}\.){2}\d{1,3}$/.test(version)}
       className={'mt-3 flex min-h-11 items-center gap-2 rounded-lg border border-cyan-500 px-4 text-sm disabled:opacity-50 '+focus}><Upload size={17} aria-hidden="true"/> Version verschlüsselt speichern</button>
+    <details className="mt-4 rounded-lg border border-slate-700 p-3">
+      <summary className="cursor-pointer text-sm font-medium">Verschlüsseltes Backup wiederherstellen (nur wenn Version fehlt)</summary>
+      <p className="mt-2 text-xs text-slate-300">Dokumentklasse und Version oben auswählen. SHA-256 der Originaldatei aus dem Backup-Manifest angeben; nicht den Hash der verschlüsselten Datei. Bestehende Versionen werden nie ersetzt.</p>
+      <label className="mt-3 block text-sm">Original-SHA-256
+        <input value={restoreDigest} onChange={e=>setRestoreDigest(e.target.value.toLowerCase().trim())} maxLength={64} autoComplete="off"
+          className={'mt-1 w-full rounded-lg border border-slate-500 bg-slate-900 p-2 font-mono text-xs '+focus}/>
+      </label>
+      <label className="mt-3 block text-sm">Verschlüsselte .caikb-Datei
+        <input type="file" accept=".caikb,application/octet-stream" onChange={e=>setRestoreFile(e.target.files?.[0]??null)} className="mt-1 w-full text-xs"/>
+      </label>
+      <button type="button" disabled={!restoreFile||busy||!verify?.available||!/^[a-f0-9]{64}$/.test(restoreDigest)}
+        onClick={()=>void restore()} className={'mt-3 min-h-11 rounded-lg border border-slate-500 px-4 text-sm disabled:opacity-50 '+focus}>Verschlüsseltes Backup validieren und wiederherstellen</button>
+    </details>
     <div className="mt-4 grid gap-3 md:grid-cols-2">
       {items.map(x=><article key={x.id+'-'+x.version} className="rounded-lg border border-slate-700 p-3">
         <h4 className="font-semibold">{NAMES[x.id]??x.id}</h4>
