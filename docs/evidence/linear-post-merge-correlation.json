@@ -1,14 +1,12 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "f42da6e7b0f561474ef80bc257880ddf1b7ae3d2",
-  "mergedPr": 423,
-  "targetPr": 446,
-  "targetBranch": "capital-ai-growth/x-oauth-supabase-edge-20261013",
-  "targetHeadSha": "6d79d4f0e962fec2f79d90d5cc8243f2a8d010d6",
+  "mainSha": "bca67f4081a2304eed2b6b6cef4183e757a9977b",
+  "mergedPr": 460,
+  "targetPr": 471,
+  "targetBranch": "capital-ai-trust/milestone-merge-pr-470-20261013",
+  "targetHeadSha": "0e0c6c3b3eeb1894468272441834a646562570d0",
   "exactOverlap": [
-    ".dockerignore",
-    "Dockerfile",
-    "package.json"
+    "src/data/roadmapMergeReconciliation.json"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,
