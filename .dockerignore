@@ -58,6 +58,8 @@
 !server/vocabulary-checkout.test.mjs
 !server/blueprint-commerce.mjs
 !server/blueprint-commerce.test.mjs
+!server/blueprint-private-cloud.mjs
+!server/blueprint-private-cloud.test.mjs
 !server/vocabulary-quant-pro-index.mjs
 !server/public-artifact-policy.test.mjs
 !server/public-artifact-policy.mjs
