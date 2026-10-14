@@ -2,6 +2,7 @@ import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypt
 import { secureUrl, boundedJson, createLimiter } from './http-security.mjs';
 import { createAuthSecurity, hasVerifiedTotpFactor } from './auth-security.mjs';
 import { normalizeStoredPaidTier } from './subscription-entitlements.mjs';
+import { PRIVACY_NOTICE_VERSION } from '../shared/legal-identity.mjs';
 
 const SESSION_COUNT_COOKIE = '__Host-capital_session_count';
 const SESSION_COOKIE_PREFIX = '__Host-capital_session_';
@@ -305,7 +306,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
     const version = '2026-10-05';
     const entries = [
       { user_id: userId, consent_type: 'terms', document_version: version, granted: true, evidence_kind: 'contract_acceptance' },
-      { user_id: userId, consent_type: 'privacy', document_version: version, granted: true, evidence_kind: 'acknowledgement' },
+      { user_id: userId, consent_type: 'privacy', document_version: PRIVACY_NOTICE_VERSION, granted: true, evidence_kind: 'acknowledgement' },
       { user_id: userId, consent_type: 'marketing', document_version: version, granted: consent.marketingConsent === true, evidence_kind: 'consent' },
     ];
     const target = new URL('/rest/v1/user_consents', config.url);
