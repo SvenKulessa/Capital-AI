@@ -121,9 +121,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
     const recoveryError = new URLSearchParams(window.location.search).get('recovery_error');
     const oauthError = new URLSearchParams(window.location.search).get('oauth_error');
     if (oauthError === 'provider_rejected') {
-      setError('Google hat die Anmeldung nicht abgeschlossen. Bitte erneut versuchen und die Google-Kontofreigabe prüfen.');
+      setError('Der Anbieter hat die Anmeldung nicht abgeschlossen. Bitte versuche es erneut und prüfe die Kontofreigabe.');
     } else if (oauthError === 'token_exchange_failed') {
-      setError('Die Google-Anmeldung konnte nicht in eine CAPITAL-AI-Sitzung umgewandelt werden. Bitte erneut versuchen.');
+      setError('Die Anbieter-Anmeldung konnte nicht in eine CAPITAL-AI-Sitzung umgewandelt werden. Bitte erneut versuchen.');
     } else if (recoveryError === 'invalid_link') {
       setError('Der Passwort-Reset-Link ist ungültig oder unvollständig. Fordere bitte eine neue Reset-Mail an.');
     } else if (recoveryError === 'verification_failed') {
@@ -660,6 +660,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                 <span className="h-px flex-1 bg-white/10" /> oder <span className="h-px flex-1 bg-white/10" />
               </div>
 
+              <div className="grid grid-cols-2 gap-2" role="group" aria-label="Social Login">
               {mode === 'register' ? (
                 <form method="POST" action={`/api/auth/login/google?next=${encodeURIComponent(postAuthPath)}`}>
                   <input type="hidden" name="registration" value="true" />
@@ -696,6 +697,28 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                 {tr.googleLogin}
               </a>
               )}
+
+
+                {mode === 'register' ? (
+                  <form method="POST" action={`/api/auth/login/x?next=${encodeURIComponent(postAuthPath)}`}>
+                    <input type="hidden" name="registration" value="true" />
+                    <input type="hidden" name="termsAccepted" value={String(termsAccepted)} />
+                    <input type="hidden" name="privacyAcknowledged" value={String(privacyAcknowledged)} />
+                    <input type="hidden" name="marketingConsent" value={String(marketingConsent)} />
+                    <button type="submit" disabled={!session?.configured || !termsAccepted || !privacyAcknowledged || busy}
+                      aria-label={tr.xRegister}
+                      className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-slate-400/40 bg-black px-2 text-xs font-bold text-white transition hover:bg-slate-800 disabled:opacity-40">
+                      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 shrink-0" fill="currentColor"><path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.63 7.58H.47l8.6-9.83L0 1.15h7.59l5.25 6.93 6.06-6.93Zm-1.29 19.49h2.04L6.49 3.24H4.3l13.31 17.4Z"/></svg><span>{tr.xRegister}</span>
+                    </button>
+                  </form>
+                ) : (
+                  <a href={`/api/auth/login/x?next=${encodeURIComponent(postAuthPath)}`}
+                    aria-label={tr.xLogin}
+                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-slate-400/40 bg-black px-2 text-xs font-bold text-white transition hover:bg-slate-800">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 shrink-0" fill="currentColor"><path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.63 7.58H.47l8.6-9.83L0 1.15h7.59l5.25 6.93 6.06-6.93Zm-1.29 19.49h2.04L6.49 3.24H4.3l13.31 17.4Z"/></svg><span>{tr.xLogin}</span>
+                  </a>
+                )}
+              </div>
 
               <button
                 type="button"

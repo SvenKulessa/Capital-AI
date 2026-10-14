@@ -67,3 +67,34 @@ test('public blueprint UI remains in documentation while home focuses on the tou
     assert.doesNotMatch(source, /\b(?:ScoringEngineService|PriceAlertsProvider|usePriceAlerts|dispatchTelegramPush)\b/);
   }
 });
+
+
+test('Studio exhibits fixture-only demo indices and both hubs use authoritative session for sign-in CTA', () => {
+  const root = new URL('../src/', import.meta.url);
+  const studio = readFileSync(new URL('features/studio/StudioPage.tsx', root), 'utf8');
+  const learning = readFileSync(new URL('features/learning/LearningPortalPage.tsx', root), 'utf8');
+  const session = readFileSync(new URL('hooks/useVerifiedSession.ts', root), 'utf8');
+  assert.match(studio, /MARKET_BLUEPRINTS\.map/);
+  assert.match(studio, /computeBlueprintDemoIndex\(example\.factors\)/);
+  assert.match(studio, /DEMO \/ SYNTHETISCH/);
+  assert.match(studio, /verifiedSession === 'anonymous'/);
+  assert.match(learning, /verifiedSession === 'anonymous'/);
+  assert.match(session, /fetch\('\/api\/auth\/session'/);
+  assert.match(session, /cache: 'no-store'/);
+  assert.match(session, /state, setState/);
+  assert.doesNotMatch(session, /localStorage/);
+});
+
+test('Founder stays inquiry-only with gross request pricing and separate private PII endpoint', () => {
+  const root = new URL('../src/', import.meta.url);
+  const product = readFileSync(new URL('data/founderOffer.ts', root), 'utf8');
+  const form = readFileSync(new URL('features/pricing/FounderInquiryForm.tsx', root), 'utf8');
+  const modal = readFileSync(new URL('features/pricing/MonetizationModal.tsx', root), 'utf8');
+  assert.match(product, /Bruttopreis auf Anfrage/);
+  assert.match(product, /inquiry_only/);
+  assert.match(product, /sven\.kulessa@capital-ai\.online/);
+  assert.match(modal, /<FounderInquiryForm \/>/);
+  assert.match(form, /\/api\/public\/founder-inquiry/);
+  assert.match(form, /privacyAcknowledged/);
+  assert.doesNotMatch(form, /(?:ga4|gtag|trackEvent|localStorage|sessionStorage|stripe\.com)/i);
+});

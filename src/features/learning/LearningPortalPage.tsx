@@ -1,3 +1,4 @@
+import { useVerifiedSession } from '../../hooks/useVerifiedSession';
 import { VOCABULARY_PUBLIC_COUNT, VOCABULARY_SOURCE_PRS } from '../../../shared/vocabulary-metadata.mjs';
 import { HubNavigationPanel } from '../../components/HubNavigationPanel';
 /**
@@ -116,6 +117,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
   const [quizStarted, setQuizStarted] = useState<boolean>(false);
   const [authenticated, setAuthenticated] = useState<boolean>(false);
   const [accessLoaded, setAccessLoaded] = useState<boolean>(false);
+  const verifiedSession = useVerifiedSession();
   const [quizAccessError, setQuizAccessError] = useState<string>('');
   const allVocabularyTerms = fullVocabularyTerms;
 
@@ -346,7 +348,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
             </button>
           )}
 
-          {onNavigateLogin && (
+          {onNavigateLogin && verifiedSession === 'anonymous' && (
             <button
               type="button"
               onClick={onNavigateLogin}

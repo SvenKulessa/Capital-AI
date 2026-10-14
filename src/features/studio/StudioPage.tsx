@@ -1,3 +1,5 @@
+import { useVerifiedSession } from '../../hooks/useVerifiedSession';
+import { MARKET_BLUEPRINTS, computeBlueprintDemoIndex } from '../home/marketBlueprintDemo';
 import { HubNavigationPanel } from '../../components/HubNavigationPanel';
 import { DataUnavailable } from '../../shared/ui/DataUnavailable';
 /**
@@ -95,6 +97,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
   initialTab = 'architecture',
 }) => {
   const [activeTab, setActiveTab] = useHubTab(STUDIO_TABS, initialTab);
+  const verifiedSession = useVerifiedSession();
 
   // Architecture tab state
   const [searchQuery, setSearchQuery] = useState('');
@@ -255,7 +258,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
             </button>
           )}
 
-          {onNavigateLogin && (
+          {onNavigateLogin && verifiedSession === 'anonymous' && (
             <button
               type="button"
               onClick={onNavigateLogin}
@@ -600,6 +603,30 @@ export const StudioPage: React.FC<StudioPageProps> = ({
         <div className="space-y-6">
           <BlueprintCommercePanel onNavigateLogin={onNavigateLogin} />
           <FounderPrivateBlueprintCloud />
+          <section aria-label="Synthetische Blueprint Demo-Scorings" className="rounded-2xl border border-cyan-400/35 bg-[#071427] p-4 sm:p-5">
+            <h2 className="text-lg font-bold text-white">Beispielkomponenten mit Demo-Bewertung</h2>
+            <p className="mt-1 text-xs leading-5 text-slate-300">DEMO / SYNTHETISCH: Deterministische 0–100-Indizes aus Beispiel-Faktoren und transparenten Gewichten. Keine Marktwerte, Validierung, Investmentempfehlungen, Produktions-Scores oder live geschaltete NATS-Daten.</p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {MARKET_BLUEPRINTS.map(example => (
+                <article key={example.id} className="rounded-xl border border-cyan-400/20 bg-slate-950/80 p-4" aria-label={`${example.name}, synthetischer Demo-Index`}>
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="text-sm font-bold text-slate-100">{example.name}</h3>
+                    <span className="shrink-0 text-lg font-black tabular-nums text-cyan-200">{computeBlueprintDemoIndex(example.factors).toFixed(1)} <span className="text-[10px] font-normal">/ 100</span></span>
+                  </div>
+                  <p className="mt-1 text-[11px] text-amber-200">{example.runtime} · synthetischer Demo-Index</p>
+                  <dl className="mt-3 space-y-1.5">
+                    {example.factors.map(factor => (
+                      <div key={factor.id} className="flex justify-between gap-3 text-xs text-slate-300">
+                        <dt>{factor.label} ({Math.round(factor.weight * 100)} %)</dt>
+                        <dd className="tabular-nums text-slate-100">{factor.value} / 100</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  <p className="mt-3 text-[11px] leading-5 text-slate-400">{example.formula}</p>
+                </article>
+              ))}
+            </div>
+          </section>
           <section aria-label="Screener Component Blueprint Library" className="rounded-2xl border border-amber-400/30 bg-[#0d1530] p-5 space-y-3">
             <div className="text-xs font-mono uppercase tracking-wider text-amber-300">Screener Component Blueprints · Konzeptbibliothek</div>
             <h2 className="text-xl font-bold text-white">50 technische Analysekomponenten</h2>

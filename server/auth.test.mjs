@@ -949,3 +949,49 @@ test('real HTTP BFF simulator enforces cookie identity, entitlement, CSRF and cr
     await a.stop(); await b.stop();
   }
 });
+
+
+test('X website OAuth2 uses separate Supabase PKCE, signed cookie and verified session (not Social API tokens)', async () => {
+  const h = await harness();
+  try {
+    const start = await h.request('/api/auth/login/x?next=' + encodeURIComponent('https://attacker.example/steal'));
+    assert.equal(start.status, 303);
+    const target = new URL(start.headers.get('location'));
+    assert.equal(target.origin, 'https://project.supabase.co');
+    assert.equal(target.pathname, '/auth/v1/authorize');
+    assert.equal(target.searchParams.get('provider'), 'x');
+    assert.equal(target.searchParams.get('code_challenge_method'), 's256');
+    h.state.challenge = target.searchParams.get('code_challenge');
+    const callback = new URL(target.searchParams.get('redirect_to'));
+    assert.equal(callback.href, 'https://capital.example/api/auth/callback');
+    const pkce = start.headers.getSetCookie().find(item => item.startsWith('__Host-capital_pkce='));
+    assert.match(pkce, /HttpOnly; Secure; SameSite=Lax/);
+    const route = callbackRequestPath(callback);
+    assert.equal((await h.request(route)).status, 400, 'callback without signed state must fail closed');
+    const done = await h.request(route, { headers: {cookie: pkce.split(';')[0]} });
+    assert.equal(done.status, 303);
+    assert.equal(done.headers.get('location'), '/');
+    const session = await h.request('/api/auth/session', {headers:{cookie:sessionCookieHeader(done)}});
+    assert.equal((await session.json()).authenticated, true);
+    assert.deepEqual(h.state.consentWrites, [], 'sign-in must not infer registration consent');
+  } finally { await h.stop(); }
+});
+
+test('X registration rejects unconsented cross-origin requests and records explicit legal consent', async () => {
+  const h = await harness();
+  const form = new URLSearchParams({registration:'true',termsAccepted:'true',privacyAcknowledged:'true',marketingConsent:'false'});
+  try {
+    const route = '/api/auth/login/x';
+    assert.equal((await h.request(route,{method:'POST',body:form.toString(),headers:{Origin:'https://other.example','Content-Type':'application/x-www-form-urlencoded'}})).status,403);
+    assert.equal((await h.request(route,{method:'POST',body:new URLSearchParams({registration:'true'}).toString(),headers:{Origin:'https://capital.example','Content-Type':'application/x-www-form-urlencoded'}})).status,400);
+    const start=await h.request(route,{method:'POST',body:form.toString(),headers:{Origin:'https://capital.example','Content-Type':'application/x-www-form-urlencoded'}});
+    assert.equal(start.status,303);
+    const target=new URL(start.headers.get('location'));
+    assert.equal(target.searchParams.get('provider'),'x');
+    h.state.challenge=target.searchParams.get('code_challenge');
+    const pkce=start.headers.getSetCookie().find(item=>item.startsWith('__Host-capital_pkce=')).split(';')[0];
+    const completed=await h.request(callbackRequestPath(new URL(target.searchParams.get('redirect_to'))),{headers:{cookie:pkce}});
+    assert.equal(completed.status,303);
+    assert.ok(h.state.consentWrites.length>=1);
+  } finally { await h.stop(); }
+});
