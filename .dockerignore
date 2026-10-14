@@ -63,6 +63,8 @@
 !server/private-knowledge-vault.mjs
 !server/private-knowledge-vault.test.mjs
 !server/private-knowledge-api.mjs
+!server/founder-access.mjs
+!server/founder-access.test.mjs
 !server/vocabulary-quant-pro-index.mjs
 !server/public-artifact-policy.test.mjs
 !server/public-artifact-policy.mjs

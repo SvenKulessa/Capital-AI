@@ -387,9 +387,9 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
         {activeTab === 'products' && (
           <div className="mt-5 space-y-4">
             <div className="rounded-2xl border border-slate-800 bg-[#030716] p-4">
-              <h3 className="text-sm font-bold text-white">Katalog bestehender Zusatzprodukte</h3>
+              <h3 className="text-sm font-bold text-white">Zusatzprodukte</h3>
               <p className="mt-1 text-xs leading-relaxed text-slate-400">
-                Vertiefe dein Marktwissen mit einem separaten Lernpaket. Sieh dir die Inhalte und Kaufbedingungen auf der Produktseite an.
+                Hier sind ausschließlich bestehende Lernprodukte aufgeführt. Sponsoring und Investor Relations werden unabhängig vom Preiskatalog über den Studio-Kontakt behandelt.
               </p>
             </div>
 
