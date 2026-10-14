@@ -5,6 +5,8 @@ on:
       - 'scripts/platform/drive-encrypt.sh'
       - 'scripts/platform/drive-encryption-test.sh'
       - 'scripts/platform/backup-synthetic-restore-test.sh'
+      - 'scripts/platform/backup-retention.mjs'
+      - 'scripts/platform/backup-retention.test.mjs'
       - 'scripts/trust/verify-blueprint-backup.mjs'
       - 'scripts/trust/verify-blueprint-backup.test.mjs'
       - '.github/workflows/drive-encryption-tests.yml'
@@ -30,6 +32,8 @@ jobs:
         run: bash scripts/platform/drive-encryption-test.sh
       - name: Synthetic encrypted PostgreSQL dump and isolated restore
         run: bash scripts/platform/backup-synthetic-restore-test.sh
+      - name: Encrypted archive retention dry-run (synthetic metadata only)
+        run: node --test scripts/platform/backup-retention.test.mjs
       - name: Verify configured public recovery recipient (synthetic data only)
         shell: bash
         env:
