@@ -426,3 +426,5 @@
 !server/social-media/youtube-runtime.test.mjs
 !public/youtube-private-upload.js
 !supabase/migrations/20261013030655_youtube_private_upload_jobs.sql
+
+!shared/public-search-focus.mjs

@@ -6,6 +6,7 @@ import { sectionMessages, type SectionKey } from './landingSectionCopy';
 type LocaleValue = { locale: Locale; setLocale: (locale: Locale) => void; t: (key: MessageKey) => string; tSection: (key: SectionKey) => string };
 const Context = createContext<LocaleValue | null>(null);
 function initialLocale(): Locale {
+  if (typeof window === 'undefined') return 'de';
   // URL wins over a previously stored preference for a shareable language link.
   const route = /^\/(de|en|it|fr|pt|es)\/?$/.exec(window.location.pathname.toLowerCase());
   if (route && isLocale(route[1])) return route[1];
