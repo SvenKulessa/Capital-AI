@@ -46,6 +46,16 @@ export const PROCESSING_ACTIVITIES: ProcessingActivity[] = [
     technicalControls: ['Basic Consent Mode: kein Tag vor Zustimmung', 'Werbeeinwilligungen verweigert', 'keine privaten Kontoseiten', 'keine E-Mail-/Nachrichtendaten in Events', 'manuelle deduplizierte Seitenaufrufe und bestätigte Anfragen', 'Widerruf entfernt Cookies und lädt das Dokument ohne Tag neu'],
   },
   {
+    id: 'billing', title: 'Bestellungen, Zahlungen und Abonnementverwaltung mit Stripe', lifecycle: 'conditional',
+    purpose: 'Vom angemeldeten Nutzer angeforderte Learning-Käufe oder verfügbare Abonnements abwickeln, den Zahlungsstatus verifizieren, erworbene Zugänge freischalten und berechtigte Abonnements im Kundenportal verwalten.',
+    dataCategories: ['Benutzerkennung zur Zuordnung der Bestellung', 'E-Mail-Adresse, soweit für Checkout und Kundenkonto erforderlich', 'ausgewähltes Angebot, Preis, Währung und Vertragsstatus', 'Stripe-Kunden-, Checkout-, Zahlungs- und Abonnementreferenzen', 'Rechnungs- und Zahlungsangaben, die Nutzer direkt bei Stripe eingeben'],
+    legalBasis: 'Art. 6 Abs. 1 lit. b DSGVO für Bestellung, Zahlung und Vertragsverwaltung; Art. 6 Abs. 1 lit. c DSGVO für gesetzliche Nachweis- und Aufbewahrungspflichten.',
+    recipients: ['Stripe als Zahlungsdienstleister und Anbieter von Checkout und Kundenportal', 'Supabase für kontogebundene Zahlungsreferenzen und Zugangsberechtigungen', 'Render als Anwendungsserver', 'Verantwortlicher für Vertragsabwicklung'],
+    transfer: 'Stripe und seine Zahlungs- und Unterauftragspartner können abhängig von Zahlungsart und Vertragskonfiguration Daten außerhalb des EWR verarbeiten. Maßgeblich sind die tatsächlichen Verträge und Transfermechanismen. Stripe-Datenschutzhinweise: https://stripe.com/privacy.',
+    retention: 'Vertrags- und Zahlungsreferenzen werden zur Vertragsabwicklung, Berechtigungsprüfung und für einschlägige gesetzliche Nachweispflichten aufbewahrt. Der Umfang und die dokumentbezogenen Fristen sind von einer Kontolöschung getrennt zu prüfen. Vollständige Kartendaten werden direkt bei Stripe eingegeben und durch diesen Checkout nicht in der CAPITAL-AI-Anwendungsdatenbank gespeichert.',
+    technicalControls: ['serverseitig gebundene Benutzerkennung', 'Preisprüfung vor Checkout', 'Stripe-Webhook-Signatur und serverseitige Zahlungsprüfung', 'Kundenportal nur nach verifizierter Kontozuordnung', 'keine Checkout-Secrets oder Zahlungsangaben an GA4', 'optionale Analytics-Einwilligung ist keine Kaufvoraussetzung'],
+  },
+  {
     id: 'hosting', title: 'Bereitstellung der Website und technischer Betrieb', lifecycle: 'active',
     purpose: 'Bereitstellung der Website, Übertragung von Inhalten und Absicherung des Betriebs.',
     dataCategories: ['IP-Adresse und Verbindungsdaten beim Hostinganbieter', 'angeforderte URLs', 'Browser-/Geräteinformationen'],
