@@ -142,18 +142,18 @@ test("summary classifies all open PR actions deterministically", () => {
 
 test("post-merge correlation is read-only and cannot invalidate other PR head checks", () => {
   const workflow = readFileSync(new URL('../.github/workflows/post-merge-correlation.yml', import.meta.url), 'utf8');
-  assert.match(workflow, /permissions:\\n  contents: read\\n  pull-requests: read\\n  checks: read/);
+  assert.match(workflow, /permissions:\n  contents: read\n  pull-requests: read\n  checks: read/);
   assert.doesNotMatch(workflow, /contents: write|pull-requests: write/);
-  assert.match(workflow, /gh api --paginate "repos\\/\\$REPOSITORY\\/pulls\\/\\$MERGED_PR\\/files/);
-  assert.match(workflow, /correlation\\/selected\\.json/);
+  assert.match(workflow, /gh api --paginate "repos\/\$REPOSITORY\/pulls\/\$MERGED_PR\/files/);
+  assert.match(workflow, /correlation\/selected\.json/);
   assert.match(workflow, /AUTHORITY.*EVIDENCE_ONLY|authority:.*EVIDENCE_ONLY|authority:"EVIDENCE_ONLY"/);
-  assert.match(workflow, /node scripts\\/post-merge-followup\\.mjs/);
-  assert.match(workflow, /node --test scripts\\/post-merge-followup\\.test\\.mjs/);
-  assert.match(workflow, /actions\\/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9/);
-  assert.match(workflow, /post-merge-followup-\\$\\{\\{ github\\.event\\.pull_request\\.number \\}\\}/);
-  assert.doesNotMatch(workflow, /\\bgit\\s+(?:push|commit|add)\\b|\\bgh\\s+pr\\s+(?:create|merge)\\b|enable-auto-merge/);
-  assert.doesNotMatch(workflow, /\\bgh\\s+api\\s+(?:-X|--method)\\s+(?:POST|PATCH|PUT|DELETE)\\b/);
-  assert.doesNotMatch(workflow, /x-access-token|refs\\/heads\\/\\$TARGET_BRANCH|git config user\\./);
+  assert.match(workflow, /node scripts\/post-merge-followup\.mjs/);
+  assert.match(workflow, /node --test scripts\/post-merge-followup\.test\.mjs/);
+  assert.match(workflow, /actions\/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9/);
+  assert.match(workflow, /post-merge-followup-\$\{\{ github\.event\.pull_request\.number \}\}/);
+  assert.doesNotMatch(workflow, /\bgit\s+(?:push|commit|add)\b|\bgh\s+pr\s+(?:create|merge)\b|enable-auto-merge/);
+  assert.doesNotMatch(workflow, /\bgh\s+api\s+(?:-X|--method)\s+(?:POST|PATCH|PUT|DELETE)\b/);
+  assert.doesNotMatch(workflow, /x-access-token|refs\/heads\/\$TARGET_BRANCH|git config user\./);
   assert.match(workflow, /PR-Branch unverändert/);
 });
 
