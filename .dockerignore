@@ -110,6 +110,7 @@
 !server/scorer-proxy.mjs
 !shared/
 !shared/hub-routes.mjs
+!shared/x-url-context.mjs
 !shared/blog-articles.mjs
 !shared/learning-journey.mjs
 !shared/market-contracts.mjs
@@ -354,6 +355,8 @@
 !server/social-media/owner-token-refresh.test.mjs
 !server/social-media/x-article-test.mjs
 !server/social-media/x-article-test.test.mjs
+!server/social-media/x-url-context.mjs
+!server/social-media/x-url-context.test.mjs
 !server/social-media/asset-readback.mjs
 !server/social-media/asset-readback.test.mjs
 !server/social-media/provider-external-readback.mjs
