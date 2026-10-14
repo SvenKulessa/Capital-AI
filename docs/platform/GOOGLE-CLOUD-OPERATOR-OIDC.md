@@ -26,6 +26,13 @@ The provider is dedicated to this identity and should NOT be reused by arbitrary
 5. No raw token, individual API inventory, response body, user data or privileged IAM binding is logged. A bounded summary reports project, enabled-service count, and whether Service Usage, IAM, IAM Credentials and Google Drive APIs are enabled. Pagination and project/state mismatches fail closed.
 6. Run acceptance: 'CLOUD_OPERATOR_SERVICE_USAGE_READ_PASS' plus all workflow steps green. Verify the workflow run URL and exact main SHA separately. A passing mock test means CODE/TEST PASS, not live WIF access.
 
+## Live verification: first dispatch and follow-up
+
+- GitHub Actions manual dispatch run [38651871102](https://github.com/SvenKulessa/Capital-AI/actions/runs/38651871102) at `main@2a79f77509edd2229501cf3d2544270cb9096d1b` confirmed the real **GitHub OIDC -> isolated WIF provider -> Cloud Operator service account token exchange**: `Federate GitHub OIDC to isolated GCP Cloud Operator` completed successfully. This is not yet a successful API readback.
+- The final readback failed with `CLOUD_OPERATOR_PAGINATION_INVALID` even though the HTTP response was accepted. Root cause: the local parser rejected `nextPageToken == ''` when the current `pageToken` was also empty. This is the normal one-page terminal response; the check unintentionally classified it as a repeated page token.
+- Remediation: permit the empty terminal token; continue to reject non-empty tokens repeated in the current or any previous page. New unit regressions cover a one-page explicit empty token and an omitted terminal token. No changes to IAM permissions, OIDC trust conditions, Google API scopes, or write operations.
+- **Acceptance still pending:** after the code fix is merged, manually dispatch this read-only workflow again from `main`; only `CLOUD_OPERATOR_SERVICE_USAGE_READ_PASS` and a green complete run prove authenticated Service Usage API readback.
+
 ## Failures and remediation
 
 - Auth action fails: check dedicated provider's issuer, mapped OIDC claims, exact condition and the WIF "Workload Identity User" binding on the **operator service account**, without broadening to the entire pool. Never turn off the condition as a workaround.
