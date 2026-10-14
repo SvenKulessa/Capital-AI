@@ -56,6 +56,16 @@ export const PROCESSING_ACTIVITIES: ProcessingActivity[] = [
     technicalControls: ['Google OAuth via Supabase Auth und PKCE S256', 'serverseitige Identitätsprüfung', 'HttpOnly-/Secure-/SameSite-Sitzungscookies', 'keine Ausgabe von Google- oder Supabase-Provider-Tokens im Browser'],
   },
   {
+    id: 'youtube-social-connect', title: 'Optionale YouTube-Kontoverknüpfung und privater Videoupload', lifecycle: 'conditional',
+    purpose: 'Nach separater ausdrücklicher Autorisierung des YouTube-Kontos: eigene YouTube-Kanal- und Videometadaten zur Verbindungs- und Uploadprüfung lesen (youtube.readonly) und vom berechtigten Nutzer ausdrücklich freigegebene Videos über die YouTube Data API in das gewählte eigene Konto hochladen (youtube.upload). Nicht Bestandteil der bloßen Google-Anmeldung.',
+    dataCategories: ['YouTube-Kanal-ID', 'Video-ID, Videotitel und Veröffentlichungsstatus', 'vom Nutzer für den Upload bereitgestellte Videodatei und Metadaten', 'OAuth-Berechtigungsumfang und technische Upload-Statusbelege'],
+    legalBasis: 'Art. 6 Abs. 1 lit. b DSGVO für vom Nutzer ausdrücklich angeforderte YouTube-Funktionen; Google-Zugriffsrechte werden zusätzlich getrennt im OAuth-Dialog autorisiert.',
+    recipients: ['Google LLC beziehungsweise YouTube als API-Anbieter und Ziel des ausdrücklich ausgelösten Uploads', 'Render als Anwendungsserver und Transport der autorisierten API-Anfrage', 'Supabase für nutzergebundene Verbindungs-, Berechtigungs- und Upload-Statusmetadaten, soweit die Funktion aktiviert ist', 'keine Weitergabe an Werbekunden, Datenbroker oder fremde CAPITAL-AI-Nutzer für deren Zwecke'],
+    transfer: 'Für Google/YouTube, Render und Supabase sind je nach tatsächlicher Region, Vertragslage und Unterauftragsverarbeitern Drittlandübermittlungen möglich; die konkreten Transfermechanismen müssen mit der aktiven Anbieter-Konfiguration abgeglichen werden.',
+    retention: 'YouTube-Verbindungsdaten und Upload-Statusbelege werden bis zur Trennung oder berechtigten Löschanfrage aufbewahrt, soweit technische beziehungsweise gesetzliche Nachweispflichten nicht entgegenstehen. Bereits an YouTube hochgeladene Videos verbleiben im YouTube-Konto und werden durch die Trennung nicht automatisch entfernt. Die endgültigen Aufbewahrungsfristen und der operative Löschpfad sind vor Produktivaktivierung zu verifizieren.',
+    technicalControls: ['separate nutzerinitiierte OAuth-Einwilligung für youtube.readonly und youtube.upload', 'kein YouTube-API-Zugriff allein durch Google-Login', 'keine Veröffentlichung ohne expliziten nutzer- beziehungsweise ownerautorisierten Uploadauftrag', 'keine Vermarktung oder KI-Modelltrainingsnutzung der über Google APIs bezogenen personenbezogenen YouTube-Daten', 'Widerruf über Google-Kontoeinstellungen und Trennen der Verbindung in CAPITAL-AI, soweit verfügbar'],
+  },
+  {
     id: 'supabase-account', title: 'Supabase-Anmeldung und Anwendungssitzung', lifecycle: 'active',
     purpose: 'Verifikation der Identität und Zugriff auf authentifizierte Funktionen.',
     dataCategories: ['Supabase-Benutzerkennung (auth.users.id)', 'E-Mail-Adresse und Profilname', 'Ausstellerkennung (issuer)', 'Sitzungsablauf und technisch notwendige Sitzungscookies', 'Anmeldeidentitäten bei Supabase Auth'],
