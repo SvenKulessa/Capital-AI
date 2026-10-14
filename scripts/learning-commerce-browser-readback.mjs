@@ -35,12 +35,17 @@ function command(method, params = {}) {
 }
 async function evaluate(expression) {
   const response = await command('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true });
-  assert.ok(!response.exceptionDetails, 'DOM evaluation failed');
+  if (response.exceptionDetails) {
+    // Fail closed with the actual script exception and the bounded static assertion,
+    // rather than hiding the origin behind an unhelpful generic message.
+    const detail = response.exceptionDetails.exception?.description || response.exceptionDetails.text || 'Unknown browser exception';
+    throw new Error('DOM evaluation failed: ' + detail.slice(0, 400) + '; assertion=' + expression.slice(0, 140));
+  }
   return response.result.value;
 }
 async function navigate(path, ready) {
   await command('Page.navigate', { url: origin + path });
-  await until(() => evaluate(ready), path);
+  await until(() => evaluate('Boolean(document.body) && (' + ready + ')'), path);
   assert.equal(await evaluate('location.origin'), origin, 'Unexpected navigation');
 }
 async function capture(name) {
