@@ -3,23 +3,42 @@
 Stand: 2026-10-14. Domain: GROWTH. Autorität: `AGENTS.md` (`SOLO_MAINTAINER_FLOW@1`).
 Ausdrücklich beauftragter erster Post auf `@CapitalAIOnline`; der Merge allein veröffentlicht nichts.
 
-## Gebrandeter Beitrag (einmalig, 277 Zeichen)
+## Neuer Meilensteinbeitrag: Content Adapter + Social Media Engine
 
-> 🚀 CAPITAL-AI Meilenstein: X-URL-Context ist in der Content Engine implementiert. Öffentliche Posts liefern Recherchekontext; OAuth2-Publishing bleibt separat.
->
-> Unsere Vision: transparente Datenpipelines, nachvollziehbare Scores und Finanzbildung.
->
-> https://capital-ai.online/
+**Status:** DRAFT · REVIEW_REQUIRED; ein X-Provider-Readback für diesen Beitrag liegt noch nicht vor.
+Der bisherige OAuth2-Text war zu technikzentriert, ohne die Content-/Social-Pipeline
+und die Analyse-Blueprints zu erklären. Neuer X-Post (272 JavaScript-Zeichen,
+keine automatische Veröffentlichung):
 
-Quellnachweise: `2946a1368504faa51d93dfd444d815939d7ff121` / PR #479
-(X-URL-Context-Implementierung); `src/contracts/contentEngine.ts`,
-`server/social-media/x-url-context.mjs`. Implementierter Source-Kontext ist **nicht** gleich
-verifizierte Live-Lesung oder erreichte Reichweite. Keine Trading-/B2B-Performance-Aussage.
+> 🚀 Weniger Content-Rauschen, mehr Kontext: CAPITAL-AI verbindet Content Adapter + Social Media Engine. Quellen & Rechte prüfen → Posts/Shorts entwerfen → Freigabe → Nachweis. Start: Daten- und Screener-Blueprints. 🧪 Pilot; keine Anlageberatung. https://capital-ai.online/
+
+**Claim-Grenzen:** Der Content Adapter normalisiert ausdrücklich ausgewählte
+X-URL-Contexts und GitHub-PR-Kontexte; die Social Media Engine stellt
+Format-/Publisher-Bausteine und den kontrollierten einmaligen X-OAuth2-Transport.
+Nicht nachgewiesen sind eine vollständig automatisierte Cross-Channel-Pipeline,
+globale Content-Lizenzrechte, KPI-/Reach-/ROI-Steigerungen oder produktive
+Marktdaten- und Screener-Modelle. Die Daten-/Screener-Blueprints sind als
+Konzept/Lernvorschau kommuniziert. Keine Anlageberatung, keine Signale,
+keine Rendite- oder Leistungsgarantien. Der neue Text hat einen neuen SHA-256-
+Content-Key; der vorherige Entwurf war nicht publiziert.
+
+**20-Sekunden-Short als eigenständiges Pilotasset:** lokal erstelltes vertikales
+9:16-MP4, exakt 20 s, deutsche synthetische Sprecherstimme, animierte
+Originalgrafik und selbst erzeugte Musik. Dieser Chat liefert die Datei
+separat; sie wurde weder ins Repo noch auf X/YouTube hochgeladen.
+Storyboard: 0–4 s Kontext statt Rauschen · 4–8 s Quellen-/Rechte-/Claims-Adapter ·
+8–12 s Social Media Engine mit Post-/Short-/Lernentwürfen ·
+12–16 s Freigabe/Publisher/Evidence · 16–20 s CAPITAL-AI CTA + Disclaimer.
+Status vor externer Distribution: DRAFT / REVIEW_REQUIRED, Audioqualität
+und Zugänglichkeitsuntertitel redaktionell prüfen.
 
 ## Umsetzung
 
-- Besitzer öffnet nach erfolgreichem Render-Deployment die geschützte Seite
-  `https://capital-ai.online/api/social-media/x/milestone`.
+- Die öffentliche **read-only Vorschau** `https://capital-ai.online/api/social-media/x/milestone`
+  erklärt Quelle, Content Adapter und Social Media Engine und verweist bei
+  fehlender Owner-Sitzung auf `/login`. Die ursprüngliche GET-Sperre vor
+  dem HTML-Render war die Ursache des nicht nutzbaren Direktlinks.
+  Status und Veröffentlichung bleiben owner-authentifiziert.
 - Der Server erfordert authentifizierten, E-Mail-verifizierten Owner IAM
   und auf einem same-origin Browser-POST den expliziten einmaligen Auftrag.
 - Bestehender `resolveOwnerXCredentials` bestätigt den X-Account
@@ -50,12 +69,14 @@ verifizierte Live-Lesung oder erreichte Reichweite. Keine Trading-/B2B-Performan
    `SOCIAL_X_MILESTONE_POST_ENABLED=true` setzen; bestehende
    `SOCIAL_X_EDGE_STORE_ENABLED`, `SOCIAL_X_PAID_WRITE_APPROVED`
    und `SOCIAL_X_PAID_READ_APPROVED` müssen ebenfalls explizit aktiv sein.
-6. 👋⚙️ Vor dem Button das X Developer Console Guthaben und
-   eine maximale **20-USD-Spend-Cap** plus deaktiviertes Auto-Recharge prüfen.
-   Die X Developer Console ist über die vorhandenen Connectoren
-   **nicht** auszulesen. Ein SHA-Claim ist kein Geld-Cap.
-7. 👋⚙️ Als Owner im gleichen Browser exakt einmal
-   „Meilenstein einmalig auf X posten“ wählen. Rückgabe-Post-ID und
+6. 👋⚙️ Laut Owner: 20 USD X Free Credits, **noch keine Zahlungsmethode**
+   hinterlegt; optionale zusätzliche 50 USD bei aktiviertem Autopay werden
+   **nicht** verwendet. Aktuelles Guthaben und Ausgabenlimit im X Developer
+   Portal prüfen; keine Zahlungsmethode oder Autopay-Funktion automatisch
+   aktivieren. Die X Developer Console ist über die vorhandenen Connectoren
+   nicht auszulesen. Ein SHA-Claim ist kein monetäres Ausgabenlimit.
+7. 👋⚙️ Im CAPITAL-AI-Browser als Owner anmelden und nach kostenfreiem
+   DB-Status-Readback genau einmal „Einmalig auf X veröffentlichen“ wählen. Rückgabe-Post-ID und
    `VERIFIED_PUBLISHED` gegen `.../status` nachprüfen.
 8. `SOCIAL_X_MILESTONE_POST_ENABLED=false` nach bestätigtem Test,
    ohne die bestehenden X URL Context-/Artikeladapter abzuschalten.
