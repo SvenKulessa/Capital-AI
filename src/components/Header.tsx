@@ -38,6 +38,8 @@ import {
   LineChart,
   LibraryBig,
   User,
+  LayoutDashboard,
+  Scale,
   LogOut,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -429,6 +431,9 @@ export const Header: React.FC<HeaderProps> = ({
                       {[
                         { path: '/profile' as const, label: nav.profile, icon: User },
                         { path: '/profile/security' as const, label: nav.security, icon: ShieldCheck },
+                        { path: '/profile/rights' as const, label: nav.rights, icon: Scale },
+                        { path: '/profile/subscription' as const, label: nav.subscription, icon: CreditCard },
+                        { path: '/profile/dashboard' as const, label: nav.dashboard, icon: LayoutDashboard },
                       ].map(item => {
                         const Icon = item.icon;
                         return (
