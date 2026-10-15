@@ -96,7 +96,7 @@ test('OpenAI news worker refuses unset or malformed model without calling provid
 
 test('provider failure is fail-closed and never grants publication',async()=>{
   const {outcome}=await runBatch(source,{...opts,
-    env:{SOCIAL_BATCH_EXTERNAL_WORKERS:'enabled',OPENAI_API_KEY:'x',FIRECRAWL_API_KEY:'x'},
+    env:{SOCIAL_BATCH_EXTERNAL_WORKERS:'enabled',OPENAI_API_KEY:'x',SOCIAL_CONTENT_OPENAI_MODEL:'test-social-model',FIRECRAWL_API_KEY:'x'},
     fetchImpl:async()=>({ok:false,status:403,text:async()=>''})});
   assert.equal(outcome.workerIntegration.openai.status,'FAILED_CLOSED');
   assert.equal(outcome.workerIntegration.firecrawl.status,'FAILED_CLOSED');
