@@ -7,7 +7,7 @@
   "licenseTextSha256": "4f814dcacd2da618d62829ea1f6238701cf421f18a6b36c91c5d8212245e2c78",
   "registry": "https://registry.npmjs.org",
   "tarball": "https://registry.npmjs.org/nodemailer/-/nodemailer-10.1.0.tgz",
-  "integrity": "sha512-fXW8AulB25aOTuwfRYV6lqHyfz2VM4rr4SGXH03mE7x5znEUpZN7744Ziwkmr4AxSLPJsBQspg==",
+  "integrity": "sha512-fXW8AulB25aOTuwfRYV6lqHyfz2VM4rr4SGXH03mE7x5znEUpzL5mu6anARUpZN7744Ziwkmr4AxSLPJsBQspg==",
   "upstream": "https://github.com/nodemailer/nodemailer",
   "licenseDocumentation": "https://nodemailer.com/license",
   "status": "UPSTREAM_LICENSE_AND_NPM_LOCK_INTEGRITY_VERIFIED_INSTALLED_ARTIFACT_CI_REQUIRED",
