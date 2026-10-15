@@ -1,0 +1,28 @@
+# Google-Föderation, Learning-Commerce und SEO – 15.10.2026
+
+Basis: Main `50255bcc20d4661021e010efb19224982430ce80`, einschließlich PR #396 und Learning-Wiederherstellung #522. Relevante Roadmap-Quellen: `src/data/roadmapData.ts`, `roadmapCurrentMainState.ts`, `roadmapMergeReconciliation.json`, `docs/growth/SEO-LEADGEN-FOLLOWUP-20261014.md`. Die vollständigen SEO-00–11-/Social-Pakete bleiben offen; ein erfolgreicher Google-Readback schließt sie nicht pauschal.
+
+## Nachgewiesener Zugriff
+
+- **VERIFIED**: GitHub-Main → Workload Identity Federation → isolierter Cloud-Operator. Run [38697527401](https://github.com/SvenKulessa/Capital-AI/actions/runs/38697527401) bestätigt Tokenaustausch und echten Service-Usage-Readback für `aifinancial-500208`: 61 aktivierte APIs, IAM und IAM Credentials vorhanden. Scope ausschließlich read-only; keine Cloud-Dienste aktiviert. Drive API nicht aktiviert.
+- **VERIFIED**: Getrennte Google-Audit-Identität, GA4 `548187678`, zugehöriger Webstream `G-0542DT2HCE` und Search Console. Audit [38697464744](https://github.com/SvenKulessa/Capital-AI/actions/runs/38697464744) erfolgreich. `generate_lead` als Key Event vorhanden; E-Mail-/Query-Redaktion aktiv, automatische Form-/Enhanced-Measurement-Erfassung deaktiviert. Keine Property-Änderung durchgeführt.
+- **NOT_PROVEN**: Direkte Google-Identität in dieser Codex-Laufzeit, Live-Render-MCP-Identität, Google-Ads-/Workspace-Adminzugriff und uneingeschränkte Cloud-Schreibrechte. Aktuelle Cloud-Runtime-Beobachtung: keine outbound identities. Der bewiesene Weg führt über die bestehenden Main-only Workflows, nicht über hier exportierte Tokens oder Service-Account-Schlüssel.
+
+## Verfügbare Baseline und Grenzen
+
+17.09.–14.10.2026, Deutschland/Italien/Spanien/Portugal/Großbritannien: keine zurückgegebenen GA4-Zeilen für organische Learning-/Vocabulary-Landingpages und entsprechende generate_lead-Ereignisse. Der begrenzte GSC-Bericht meldet eine Impression aus Spanien, null Klicks; übrige vier Länder ohne zurückgegebene Zeilen. Maximal 100 GA4-Zeilen, GSC maximal 20 Seiten je Land. Keine vollständigen Website-Totals, kein Ranking-/Uplift-/Umsatzbeweis. Consent, Datenschutzeinschränkungen, Zeitversatz und Kanalfilter begrenzen die Aussage. Die vom Owner bestätigte zugestellte Support-Mail ist kein automatischer Nachweis einer organischen Kursanfrage.
+
+## P0/P1/P2 und konkrete Gegenmaßnahme
+
+- **P0 Zugriff/Trust**: Beide Föderationswege live geprüft; keine fehlenden Rechte aus historischen Fehlversuchen ableiten. Keine Rechteausweitung notwendig, um die beauftragte Baseline zu lesen.
+- **P1 Learning-Conversion**: Shared CTA führte zu `/learning#learning-inquiry`, der neue allgemeine Kontakt-Tab hatte diesen Anker nicht. Der allgemeine Kontaktpfad zählte keine Kurs-Leads. Korrektur: expliziter Kurs-CTA `/learning/kontakt#learning-inquiry`, als Kursanfrage beschriftetes Formular, ursprünglicher Kurs-Endpunkt und vorhandene consent-/receipt-gebundene GA4-Funktion. Allgemeiner Kontakt ohne Kursanker bleibt Support und erzeugt keinen Kurs-Lead. Alte veröffentlichte Anker werden weiter aufgelöst; Hashwechsel und Zurück/Vorwärts aktualisieren den Formularkontext. Context-Wechsel erhält eine eigene Request-ID, ohne den bestehenden Dublettenschutz zu ändern.
+- **P1 SEO/Commerce erhalten**: Öffentlicher HTTP-Readback: Runtime-SHA entspricht Main, `/learning` 200/INDEX/Canonical `/learning`, Sitemap und robots 200, Sitemap 319 URLs. `/pricing` und `/marketscreener/dokumentation` bleiben NOINDEX. Reale Angebots-API: 2500 EUR-Cent inklusive Steuern; kein Kaufnachweis. Health HTTP 200, NATS unavailable und Score-Display disabled: nicht als verfügbare Live-Marktdatenfunktion bewerben.
+- **P2 Distribution**: Sechs bestehende source-bound Offline-Lernentwürfe für Finanzbegriffe/Datenqualität/Normalisierung/Gewichtung/Volatilität/Validierung erzeugt. Fachliche Review und Publish-Autorisierung bleiben getrennt; kein externer Post, kein Werbebudget, kein aktivierter Scheduler. Priorität: nachprüfbare Lernbeispiele → Kursanfrage/realer Einmalkauf, keine Renditeversprechen.
+
+## Prüfung, Alternative und Rücknahme
+
+Bestehende Learning-, Navigation-, Consent-, Source-Provenienz-, HTTP-/NOINDEX- und Content/Social-Tests; TypeScript, Lockfile-konformer Produktionsbuild und gezielter Chromium-Readback für Kurs-/Support-/Fehlerfälle. Browser nutzt synthetische Mailantworten und sendet keine echte Anfrage oder Google-Ereignisse. Google-Audits dagegen verwenden echte APIs.
+
+Gewählt: vorhandenes Formular mit explizitem Zweck wiederverwenden. Alternative: zweites Kursformular mit eigener UI; erzeugt doppelte Validierungs-/Übersetzungs-/Accessibility-Pflege. Support-Kontakte pauschal als Leads zu zählen würde die Geschäftsmetrik verfälschen. Keine neuen Abhängigkeiten, Services oder Required Checks. Rücknahme durch Revert der Formular-/CTA-Änderung und zugehöriger Source-Fingerprints. Neue Live-Kurs-Conversion und Wirkung nach Deployment bleiben **NOT_PROVEN** bis zum gesonderten Nachweis.
+
+Tatsächliche lokale Ergebnisse: 15 Learning-Tests, 40 Navigationstests, sieben HTTP-/Provenienztests, sechs Content/Social-Tests, ein ausführlicher Consent-Test und 16 Privacy-/Metadata-/Manifest-Tests erfolgreich; TypeScript und Produktionsbuild erfolgreich. Chromium: neuer Kurslink bei 320px, alter Kurslink bei 390px, allgemeiner Kontakt und Hashwechsel zum Kurs-Fehlerfall bei 390px; richtige Endpunkte, sichtbarer Erfolg nur bei bestätigter Annahme, kein horizontaler Überlauf, kein Google-Tag ohne Einwilligung. Reproduktionsartefakte: `docs/growth/evidence/course-inquiry-browser-20261015.json` und tatsächlicher Screenshot `course-inquiry-320-20261015.png`.

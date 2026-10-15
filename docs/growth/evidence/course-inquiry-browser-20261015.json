@@ -1,0 +1,97 @@
+{
+  "scope": "LOCAL_MOCK_MAIL_NO_EMAIL_OR_GOOGLE_SEND",
+  "cases": [
+    {
+      "path": "/learning/kontakt#learning-inquiry",
+      "course": true,
+      "width": 320,
+      "ok": true,
+      "before": {
+        "course": true,
+        "title": "Kursanfrage senden",
+        "google": false
+      },
+      "after": {
+        "calls": [
+          "/api/public/learning-inquiry"
+        ],
+        "success": true,
+        "error": false,
+        "feedback": [
+          "✓\nE-Mail gesendet\n\nDeine Anfrage wurde vom Mailserver angenommen."
+        ],
+        "width": 320,
+        "scroll": 320
+      }
+    },
+    {
+      "path": "/learning#learning-inquiry",
+      "course": true,
+      "width": 390,
+      "ok": true,
+      "before": {
+        "course": true,
+        "title": "Kursanfrage senden",
+        "google": false
+      },
+      "after": {
+        "calls": [
+          "/api/public/learning-inquiry"
+        ],
+        "success": true,
+        "error": false,
+        "feedback": [
+          "✓\nE-Mail gesendet\n\nDeine Anfrage wurde vom Mailserver angenommen."
+        ],
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    {
+      "path": "/learning/kontakt",
+      "course": false,
+      "width": 390,
+      "ok": true,
+      "before": {
+        "course": false,
+        "title": "Kontakt Formular",
+        "google": false
+      },
+      "after": {
+        "calls": [
+          "/api/public/contact"
+        ],
+        "success": true,
+        "error": false,
+        "feedback": [
+          "✓\nE-Mail gesendet\n\nDeine Anfrage wurde vom Mailserver angenommen."
+        ],
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    {
+      "path": "/learning/kontakt#learning-inquiry",
+      "course": true,
+      "width": 390,
+      "ok": false,
+      "before": {
+        "course": true,
+        "title": "Kursanfrage senden",
+        "google": false
+      },
+      "after": {
+        "calls": [
+          "/api/public/learning-inquiry"
+        ],
+        "success": false,
+        "error": true,
+        "feedback": [
+          "Senden fehlgeschlagen. Bitte erneut versuchen oder den E-Mail-Link nutzen."
+        ],
+        "width": 390,
+        "scroll": 390
+      }
+    }
+  ]
+}
