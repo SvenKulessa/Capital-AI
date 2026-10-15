@@ -1,10 +1,26 @@
 /** Public editorial learning content. No repository news or private owner drafts. */
 export type PublicLearningHub = 'learning' | 'marketscreener' | 'studio';
-export type PublicLearningArticle = { id:string; title:string; body:string; hub:PublicLearningHub; publishedAt:string; status:'PUBLISHED' };
+export type PublicLearningArticle = { 
+  id:string; 
+  title:string; 
+  body:string; 
+  hub:PublicLearningHub; 
+  publishedAt:string; 
+  status:'PUBLISHED';
+  coverImage?: string;
+};
 
 /** Hub, publication state and date are required before editorial material is admitted. */
 export const LEARNING_ARTICLES = [
-  {hub:'learning',publishedAt:'2026-10-15',status:'PUBLISHED',id:'portfolio-risiko-korrelation',title:'Portfolio-Risiko verstehen: Diversifikation, Volatilität und Korrelation',body:'Die modellierte Portfoliovolatilität σₚ hängt von den Gewichten, den Einzelvolatilitäten und den Korrelationen ab. Niedrige oder negative Korrelationen können Diversifikationseffekte verstärken und das Gesamtrisiko senken, auch wenn Einzelrisiken unverändert bleiben. In Stressphasen steigen Korrelationen oft an und schwächen diese Effekte. Alle Beispiele im Learning Hub basieren auf synthetischen Daten und dienen ausschließlich der Veranschaulichung. Keine Prognose oder Anlageberatung. Teste die Zusammenhänge interaktiv im Financial Learning Simulator (Korrelations-Labor): /learning?tab=simulator .'},
+  {
+    hub:'learning',
+    publishedAt:'2026-10-15',
+    status:'PUBLISHED',
+    id:'portfolio-risiko-korrelation',
+    title:'Portfolio-Risiko verstehen: Diversifikation, Volatilität und Korrelation',
+    body:'Die modellierte Portfoliovolatilität σₚ hängt von den Gewichten, den Einzelvolatilitäten und den Korrelationen ab. Niedrige oder negative Korrelationen können Diversifikationseffekte verstärken und das Gesamtrisiko senken, auch wenn Einzelrisiken unverändert bleiben. In Stressphasen steigen Korrelationen oft an und schwächen diese Effekte. Alle Beispiele im Learning Hub basieren auf synthetischen Daten und dienen ausschließlich der Veranschaulichung. Keine Prognose oder Anlageberatung. Teste die Zusammenhänge interaktiv im Financial Learning Simulator (Korrelations-Labor): /learning?tab=simulator .',
+    coverImage:'/learning/editorial/portfolio-risiko-cover-20261015.jpg'
+  },
   {hub:'learning',publishedAt:'2026-10-09',status:'PUBLISHED',id:'liquiditaet-spread',title:'Liquidität verstehen: Warum der angezeigte Preis nicht genügt',body:'Ein Bid-Ask-Spread ist die Differenz zwischen bestem Kauf- und Verkaufspreis. Wenig Markttiefe kann den Ausführungspreis zusätzlich verändern. Vergleiche deshalb Spread, Ordergröße, Gebühren und den tatsächlich verfügbaren Handelspartner. Eine Bildschirmnotierung garantiert keinen Ausführungspreis.'},
   {hub:'learning',publishedAt:'2026-10-09',status:'PUBLISHED',id:'quellenzeit',title:'News richtig lesen: Ereigniszeit und Veröffentlichungszeit trennen',body:'Eine Meldung kann heute erscheinen und ein älteres Ereignis beschreiben. Prüfe beide Zeitangaben, die Originalquelle und eventuelle Korrekturen. Trenne bestätigte Tatsachen, Zitate und Einschätzungen. Ein aktuelles Veröffentlichungsdatum allein macht eine Meldung noch nicht zu neuer Information.'},
   {hub:'learning',publishedAt:'2026-10-09',status:'PUBLISHED',id:'news-kontext',title:'Von der Schlagzeile zur belastbaren Einordnung',body:'Eine Schlagzeile verdichtet einen Sachverhalt und lässt häufig Bedingungen weg. Lies den Zusammenhang, identifiziere die Primärquelle und prüfe das betroffene Instrument. Ein Ereignis kann bereits erwartet oder eingepreist sein. Aus einer positiven Nachricht folgt keine garantierte positive Kursreaktion.'},
