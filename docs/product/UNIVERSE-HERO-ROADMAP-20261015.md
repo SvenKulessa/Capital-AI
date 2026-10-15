@@ -5,7 +5,7 @@ Date: 2026-10-15 · Scope: PRODUCT homepage + existing Social Media Studio.
 | Priority | Work | State | Evidence |
 |---|---|---|---|
 | P1 | 3 responsive landing hero assets | CODE_PRESENT | `src/components/Hero.tsx`, `public/branding/universe/` |
-| P1 | genuinely vector-based, reduced-motion-aware orbit accent | CODE_PRESENT | `hero-universe-orbit.svg`, `src/index.css` |
+| P1 | genuinely vector-based reduced-motion-aware orbit asset for offline video/brand templates; **not on homepage** per owner request | CODE_PRESENT | `hero-universe-orbit.svg`, `src/platform/SocialMediaEngine/Editing/MediaStudioTemplates.ts` |
 | P1 | lawful provenance and hash evidence | CODE_PRESENT, RIGHTS_REVIEW_REQUIRED | `docs/licenses/CAPITAL-AI-UNIVERSE-HERO-20261015.md` |
 | P1 | Media Studio template source update | CODE_PRESENT | `src/platform/SocialMediaEngine/Editing/MediaStudioTemplates.ts` |
 | P1 | navigation and media asset tests | NOT_PROVEN until CI | `scripts/navigation.test.mjs`, `scripts/universe-hero.test.mjs` |
@@ -23,3 +23,7 @@ The live image placement is the already present homepage `Hero` component. An in
 Technical verification: file SHA-256 checks and existing navigation regression tests are present in the PR. CI and manual viewport QA are separate and may not be inferred from source inspection. The generated 12s clip is a **silent draft**, without speaking JaJa or YouTube upload.
 
 Required project checks remain **Docker Security Gate** and **Domain Governance**; no additional gating. Only merge when required existing conditions are met, then verify production runtime separately.
+
+## Owner preference, 2026-10-15
+
+The owner explicitly requested that the small vector overlay (`hero-universe-orbit.svg`) **must not render on the homepage**. Homepage still uses the responsive raster `picture`; keep the vector as a licensed offline branding / video-template asset. Preserve CTA handlers, no authentication changes. After merge verify browser behavior and reduced-motion baseline. Video timeline edits have a separate rights/readback scope.
