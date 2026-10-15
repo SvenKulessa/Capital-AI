@@ -475,3 +475,37 @@ test('brand catalog exposes agreed hub names and leaves native responsive keyboa
   assert.match(nav,/prefers-reduced-motion/);
   assert.match(nav,/aria-current/);
 });
+
+
+test('signed-in drawer contains all non-duplicated account routes with localized labels', () => {
+  const drawer = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  const shell = readFileSync(new URL('../src/features/account/AccountPageShell.tsx', import.meta.url), 'utf8');
+  const navigation = readFileSync(new URL('../src/i18n/navigationCopy.ts', import.meta.url), 'utf8');
+  for (const [route, label] of [
+    ['/profile', 'profile'], ['/profile/security', 'security'],
+    ['/profile/rights', 'rights'], ['/profile/subscription', 'subscription'],
+    ['/profile/dashboard', 'dashboard'],
+  ]) {
+    assert.ok(drawer.includes("path: '" + route + "' as const, label: nav." + label), route);
+    assert.equal(resolveAppRoute(route), route);
+  }
+  assert.doesNotMatch(shell, /<nav aria-label=\{tr\.accountSections\}/);
+  assert.doesNotMatch(shell, /const items = \[/);
+  for (const key of ['rights', 'subscription', 'dashboard']) {
+    assert.match(navigation, new RegExp(key + ": string"));
+    assert.equal((navigation.match(new RegExp(key + ":'", 'g')) || []).length, 6);
+  }
+});
+
+test('private dashboard separates unsaved editor text from last acknowledged notes', () => {
+  const dashboard = readFileSync(new URL('../src/features/account/PrivateDashboardPage.tsx', import.meta.url), 'utf8');
+  for (const tab of ['learning', 'notes', 'saved']) {
+    assert.ok(dashboard.includes("id: '" + tab + "'"), tab);
+    assert.ok(dashboard.includes('id="dashboard-' + tab + '"'), tab);
+  }
+  assert.match(dashboard, /Gespeicherte Notizen/);
+  assert.match(dashboard, /setSavedText\(body\.notes\)/);
+  assert.match(dashboard, /savedText\.trim\(\)/);
+  assert.match(dashboard, /key=\{session\.user!\.id\}/);
+  assert.match(dashboard, /isNotesResponse\(body, userId\)/);
+});
