@@ -31,3 +31,12 @@ Statuses:
 - PROD_CSP_BROWSER_QA: NOT_PROVEN.
 
 Rollback: revert the security code PR, then redeploy through ordinary protected main flow; do not disable required checks or change provider credentials during rollback.
+
+## Additional production Supabase read-only checks (2026-10-15)
+
+A read-only `pg_class` + `pg_policies` + `has_table_privilege` inventory against connected production project (ID withheld from document) confirmed:
+- `private`: 14 tables, **all 14 RLS-enabled**, seven intentionally without policy, **zero** anon/authenticated table grants.
+- `public`: 64 tables, **all 64 RLS-enabled**, seven without policy. Four tables have an anon table privilege and seven have authenticated table privileges, but effective visibility depends on row policies.
+- Public tables with grants were `profiles`, `subscriptions`, `usage_log`, `site_metrics`, `security_events`, `privacy_requests`, `user_consents`. RLS readback confirms own-`auth.uid()` or verified-owner SELECT for applicable read paths, or `service_role`-only policies for `usage_log`/`site_metrics`. No blanket data exposure was observed from this policy inspection. Authenticated two-user adversarial access tests remain NOT_PROVEN; do not conflate policy inspection with BOLA-proof.
+- Render workspace read-only inventory: current production Capital-AI web service deploys from main after checks, in Frankfurt with one configured instance; dormant NATS and provider bridge resources remain suspended. Shared global multi-instance rate limiting remains NOT_PROVEN, and existing single instance does not guarantee future horizontal scaling.
+- No secret values or database contents were retrieved, and no DDL, Render environment updates, login tokens, costful service activations, or secrets rotations were performed.
