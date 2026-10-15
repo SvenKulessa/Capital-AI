@@ -1,8 +1,12 @@
-import { createYouTubeTokenResolver } from './youtube-token-resolver.mjs';
+import { createLimiter } from '../http-security.mjs';
+import { youtubeOAuthConfig } from './youtube-oauth-exchange.mjs';
+import { YOUTUBE_POLICY, youtubePolicyHtml } from '../../shared/youtube-privacy.mjs';
+import { createYouTubeVaultAccess, unsealYouTubeToken, createYouTubeTokenResolver } from './youtube-token-resolver.mjs';
 import { createSocialXEdgeClient, socialXEdgeMode } from './x-edge-client.mjs';
 // CAPITAL_AI_SOCIAL_YOUTUBE_ACCOUNT_STATUS@1 — read-only owner-bound connection status.
 // Never select or return encrypted access/refresh tokens.
 import { socialYouTubeOAuthConfigured } from './youtube-oauth-exchange.mjs';
+const DISCONNECT = '/api/social-media/youtube/account/disconnect';
 const PATH = '/api/social-media/youtube/account/status';
 const CONNECT = '/api/social-media/youtube/account/connect';
 const DIAGNOSTICS = '/api/social-media/youtube/account/diagnostics';
@@ -75,19 +79,21 @@ function ownerOnlyDiagnostics(env) {
   });
 }
 
-export function createSocialYouTubeAccountStatus({ env = process.env, auth, fetchImpl = fetch } = {}) {
+export function createSocialYouTubeAccountStatus({ env = process.env, auth, fetchImpl = fetch, vaultFactory = createYouTubeVaultAccess } = {}) {
+  const revokeLimit = createLimiter(10, 3600000);
   async function handle(req, res, url, json) {
-    if (![PATH, DIAGNOSTICS, CONNECT].includes(url.pathname)) return false;
+    if (![PATH, DIAGNOSTICS, CONNECT, DISCONNECT].includes(url.pathname)) return false;
     const diagnostics = url.pathname === DIAGNOSTICS;
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-    if (req.method !== 'GET') {
-      res.setHeader('Allow', 'GET');
+    const disconnect = url.pathname === DISCONNECT;
+    if (url.search || req.method !== (disconnect ? 'POST' : 'GET')) {
+      res.setHeader('Allow', disconnect ? 'POST' : 'GET');
       jsonError(json, res, 405, 'method_not_allowed');
       return true;
     }
-    if (!diagnostics && env.SOCIAL_YOUTUBE_OAUTH_CONNECT_ENABLED !== 'true') {
+    if (!diagnostics && !disconnect && env.SOCIAL_YOUTUBE_OAUTH_CONNECT_ENABLED !== 'true') {
       jsonError(json, res, 503, 'social_youtube_account_unavailable');
       return true;
     }
@@ -98,9 +104,51 @@ export function createSocialYouTubeAccountStatus({ env = process.env, auth, fetc
         diagnostics ? 'not_found' : 'owner_authorization_required');
       return true;
     }
+    if (disconnect) {
+      if (auth?.sameOrigin?.(req) !== true || req.headers?.['sec-fetch-site'] !== 'same-origin'
+        || req.headers?.['content-type']?.split(';')[0] !== 'application/x-www-form-urlencoded') {
+        jsonError(json, res, 403, 'same_origin_required'); return true;
+      }
+      if (!revokeLimit(identity.userId)) { jsonError(json, res, 429, 'rate_limited'); return true; }
+      let input = '';
+      try {
+        for await (const chunk of req) { input += chunk; if (input.length > 256) throw Error(); }
+        if (input !== 'confirm=delete-youtube-data') throw Error();
+      } catch { jsonError(json, res, 400, 'explicit_confirmation_required'); return true; }
+      try {
+        // Revocation stays available when new connections/callbacks are disabled.
+        const cleanupEnv = { ...env, SOCIAL_YOUTUBE_OAUTH_CONNECT_ENABLED: 'true', SOCIAL_OAUTH_CALLBACK_ENABLED: 'true' };
+        const cfg = youtubeOAuthConfig(cleanupEnv);
+        const vault = vaultFactory({ env: cleanupEnv, fetchImpl,
+          userAccessToken: await auth?.internalAccessToken?.(req, res) });
+        const grant = await vault.invoke('privacy_begin', { userId: identity.userId });
+        if (grant?.userId !== identity.userId) throw Error();
+        if (grant.refreshCipher || grant.accessCipher) {
+          const kind = grant.refreshCipher ? 'refresh' : 'access';
+          const token = unsealYouTubeToken(grant.refreshCipher || grant.accessCipher, cfg.key, identity.userId, kind);
+          const revoked = await fetchImpl('https://oauth2.googleapis.com/revoke', {
+            method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ token }).toString(), redirect: 'error', signal: AbortSignal.timeout(15000),
+          });
+          // Google reports an already invalid/revoked token as invalid_token (400).
+          if (!revoked.ok) {
+            const text = await revoked.text();
+            if (text.length > 4096 || revoked.status !== 400 || JSON.parse(text)?.error !== 'invalid_token') throw Error();
+          }
+        }
+        const done = await vault.invoke('privacy_finish', { userId: identity.userId });
+        if (done?.deleted !== true || done.userId !== identity.userId) throw Error();
+        json(res, 200, { status: 'DISCONNECTED_AND_DELETED', googleAccessRevoked: Boolean(grant.refreshCipher || grant.accessCipher),
+          applicationYouTubeDataDeleted: true, youtubeVideosDeleted: false });
+      } catch {
+        json(res, 503, { error: 'youtube_revocation_or_cleanup_pending', completed: false,
+          message: 'Widerruf oder Löschung noch nicht bestätigt. Vorgang erneut ausführen oder Datenschutzkontakt nutzen.' });
+      }
+      return true;
+    }
     if (url.pathname === CONNECT) {
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'private, no-store', 'Vary': 'Cookie' });
-      res.end('<!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>YouTube verbinden | CAPITAL AI</title><body><main><h1>YouTube mit CAPITAL AI verbinden</h1><p>Wähle bei Google das Konto und den Kanal, die du für CAPITAL AI verwenden möchtest. Diese Verbindung veröffentlicht noch kein Video.</p><p><a href="/api/social-media/youtube/auth/start">Mit Google verbinden</a></p><p><a href="/api/social-media/youtube/account/status">Verbindung prüfen</a></p></main></body></html>');
+      res.end(`<!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>YouTube verbinden | CAPITAL AI</title><body><main><h1>YouTube mit CAPITAL AI verbinden</h1><p>Wähle bei Google das Konto und den Kanal, die du für CAPITAL AI verwenden möchtest. Diese Verbindung veröffentlicht noch kein Video.</p>${youtubePolicyHtml()}<form action="/api/social-media/youtube/auth/start" method="get"><label><input type="checkbox" name="privacy" value="${YOUTUBE_POLICY.version}" required> Ich akzeptiere die Datenschutzhinweise und die YouTube-Nutzungsbedingungen für diese Funktion.</label><button type="submit">Mit Google verbinden</button></form><p><a href="/api/social-media/youtube/account/status">Verbindung prüfen</a></p><p><a href="/datenschutz/">Datenschutz</a> · <a href="/agb/">AGB</a></p><form action="/api/social-media/youtube/account/disconnect" method="post"><p>Widerruft die Google-Berechtigung und löscht gespeicherte YouTube-Daten bei CAPITAL-AI. Deine Videos bleiben auf YouTube erhalten.</p><label><input type="checkbox" name="confirm" value="delete-youtube-data" required> Verbindung und gespeicherte YouTube-Daten löschen</label><button type="submit">Löschung ausführen</button></form></main></body></html>`);
       return true;
     }
     if (diagnostics) {

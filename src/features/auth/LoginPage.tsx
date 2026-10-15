@@ -672,30 +672,28 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                     type="submit"
                     disabled={!session?.configured || !termsAccepted || !privacyAcknowledged || busy}
                     aria-label={tr.googleRegister}
-                    className="flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border border-white/15 bg-white text-sm font-bold text-slate-900 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex min-h-12 w-full items-center justify-center rounded-xl border border-white/15 bg-white text-sm font-bold text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                  <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 shrink-0">
+                  <svg aria-hidden="true" viewBox="0 0 24 24" className="h-7 w-7 shrink-0">
                                     <path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.54h3.24c1.9-1.75 2.98-4.32 2.98-7.41Z" />
                                     <path fill="#34A853" d="M12 22c2.7 0 4.97-.9 6.62-2.36l-3.24-2.54c-.9.6-2.05.96-3.38.96-2.61 0-4.82-1.76-5.61-4.13H3.04v2.62A10 10 0 0 0 12 22Z" />
                                     <path fill="#FBBC05" d="M6.39 13.93A6.02 6.02 0 0 1 6.08 12c0-.67.11-1.32.31-1.93V7.45H3.04A10 10 0 0 0 2 12c0 1.61.39 3.14 1.04 4.55l3.35-2.62Z" />
                                     <path fill="#EA4335" d="M12 5.94c1.47 0 2.79.5 3.82 1.5l2.87-2.87A9.64 9.64 0 0 0 12 2a10 10 0 0 0-8.96 5.45l3.35 2.62C7.18 7.7 9.39 5.94 12 5.94Z" />
                                   </svg>
-                    {tr.googleRegister}
                   </button>
                 </form>
               ) : (
                 <a
                 href={`/api/auth/login/google?next=${encodeURIComponent(postAuthPath)}`}
-                className="flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border border-white/15 bg-white text-sm font-bold text-slate-900 transition hover:bg-slate-100"
+                className="flex min-h-12 w-full items-center justify-center rounded-xl border border-white/15 bg-white text-sm font-bold text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 transition hover:bg-slate-100"
                 aria-label={tr.googleLogin}
               >
-                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 shrink-0">
+                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-7 w-7 shrink-0">
                   <path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.54h3.24c1.9-1.75 2.98-4.32 2.98-7.41Z" />
                   <path fill="#34A853" d="M12 22c2.7 0 4.97-.9 6.62-2.36l-3.24-2.54c-.9.6-2.05.96-3.38.96-2.61 0-4.82-1.76-5.61-4.13H3.04v2.62A10 10 0 0 0 12 22Z" />
                   <path fill="#FBBC05" d="M6.39 13.93A6.02 6.02 0 0 1 6.08 12c0-.67.11-1.32.31-1.93V7.45H3.04A10 10 0 0 0 2 12c0 1.61.39 3.14 1.04 4.55l3.35-2.62Z" />
                   <path fill="#EA4335" d="M12 5.94c1.47 0 2.79.5 3.82 1.5l2.87-2.87A9.64 9.64 0 0 0 12 2a10 10 0 0 0-8.96 5.45l3.35 2.62C7.18 7.7 9.39 5.94 12 5.94Z" />
                 </svg>
-                {tr.googleLogin}
               </a>
               )}
 
@@ -708,15 +706,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                     <input type="hidden" name="marketingConsent" value={String(marketingConsent)} />
                     <button type="submit" disabled={!session?.configured || !termsAccepted || !privacyAcknowledged || busy}
                       aria-label={tr.xRegister}
-                      className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-slate-400/40 bg-black px-2 text-xs font-bold text-white transition hover:bg-slate-800 disabled:opacity-40">
-                      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 shrink-0" fill="currentColor"><path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.63 7.58H.47l8.6-9.83L0 1.15h7.59l5.25 6.93 6.06-6.93Zm-1.29 19.49h2.04L6.49 3.24H4.3l13.31 17.4Z"/></svg><span>{tr.xRegister}</span>
+                      className="flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-400/40 bg-black text-xs font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 transition hover:bg-slate-800 disabled:opacity-40">
+                      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-7 w-7 shrink-0" fill="currentColor"><path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.63 7.58H.47l8.6-9.83L0 1.15h7.59l5.25 6.93 6.06-6.93Zm-1.29 19.49h2.04L6.49 3.24H4.3l13.31 17.4Z"/></svg>
                     </button>
                   </form>
                 ) : (
                   <a href={`/api/auth/login/x?next=${encodeURIComponent(postAuthPath)}`}
                     aria-label={tr.xLogin}
-                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-slate-400/40 bg-black px-2 text-xs font-bold text-white transition hover:bg-slate-800">
-                    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 shrink-0" fill="currentColor"><path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.63 7.58H.47l8.6-9.83L0 1.15h7.59l5.25 6.93 6.06-6.93Zm-1.29 19.49h2.04L6.49 3.24H4.3l13.31 17.4Z"/></svg><span>{tr.xLogin}</span>
+                    className="flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-400/40 bg-black text-xs font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 transition hover:bg-slate-800">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-7 w-7 shrink-0" fill="currentColor"><path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.63 7.58H.47l8.6-9.83L0 1.15h7.59l5.25 6.93 6.06-6.93Zm-1.29 19.49h2.04L6.49 3.24H4.3l13.31 17.4Z"/></svg>
                   </a>
                 )}
               </div>

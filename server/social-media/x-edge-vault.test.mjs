@@ -519,3 +519,28 @@ test('X milestone Edge receipts require owner proof and enforce atomic state tra
   assert.equal(row.post_id,'222222222222222');
   assert.equal(writes,5); // includes the deliberately rejected premature PATCH attempt
 });
+
+test('YouTube privacy RPCs require workload signature, fresh owner JWT and matching subject', async () => {
+  const userId = 'd0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101', writes = [];
+  const config = { get: name => name === 'SUPABASE_SERVICE_ROLE_KEY' ? 'sb_secret_synthetic_fixture' : env.get(name) };
+  const handler = createHandler({ env: config, fetchImpl: async (url, options) => {
+    const target = String(url);
+    const value = target.includes('/auth/v1/user') ? { id: userId, email_confirmed_at: '2026-10-01' }
+      : target.includes('/profiles') ? [{ id: userId, iam_role: 'owner' }]
+      : (writes.push({ target, body: JSON.parse(options.body) }), { userId, deleted: true });
+    return { ok: true, text: async () => JSON.stringify(value) };
+  } });
+  for (const operation of ['privacy_begin','privacy_finish','privacy_reconnect']) {
+    const ok = await handler(signedRequest({ operation, channel: 'YOUTUBE', userId }));
+    assert.equal(ok.status,200);
+    assert.equal(writes.at(-1).target, `https://example.supabase.co/rest/v1/rpc/capital_youtube_${operation}`);
+    assert.deepEqual(writes.at(-1).body,{ p_user_id: userId });
+    const n = writes.length;
+    for (const request of [signedRequest({ operation, channel: 'X', userId }),
+      signedRequest({ operation, channel: 'YOUTUBE', userId: 'a1bf7f2f-c4d2-4cda-b0a8-0f7bb2723101' }),
+      signedRequest({ operation, channel: 'YOUTUBE', userId },{ omitSignature: true })]) {
+      assert.equal((await handler(request)).status,503);
+    }
+    assert.equal(writes.length,n);
+  }
+});

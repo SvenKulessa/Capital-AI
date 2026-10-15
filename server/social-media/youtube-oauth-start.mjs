@@ -1,3 +1,5 @@
+import { YOUTUBE_POLICY } from '../../shared/youtube-privacy.mjs';
+import { createYouTubeVaultAccess } from './youtube-token-resolver.mjs';
 import { createSocialXEdgeClient, socialXEdgeMode } from './x-edge-client.mjs';
 // CAPITAL_AI_SOCIAL_YOUTUBE_OAUTH_START@1 — isolated, disabled by default.
 // Feature flag and verified IAM-owner access prevent account linkage by default.
@@ -56,10 +58,17 @@ export function createSocialYouTubeOAuthStart({ env = process.env, auth,
       json(res, 403, { error: 'owner_authorization_required' });
       return true;
     }
+    if (url.searchParams.get('privacy') !== YOUTUBE_POLICY.version || [...url.searchParams.keys()].some(key => key !== 'privacy') || url.searchParams.getAll('privacy').length !== 1) {
+      res.writeHead(303, { Location: '/api/social-media/youtube/account/connect', 'Cache-Control': 'no-store' }); res.end(); return true;
+    }
     const redirectUri = new URL(CALLBACK_PATH, origin).toString();
     // The verifier and state are generated server-side and must be stored for
     // exactly this authenticated user and redirect before sending the 303.
     try {
+      if (!store) {
+        const ready = await createYouTubeVaultAccess({ env, fetchImpl, userAccessToken: await auth?.internalAccessToken?.(req, res) }).invoke('privacy_reconnect', { userId: identity.userId });
+        if (ready?.ready !== true) throw Error();
+      }
       const verifier = randomBytes(32).toString('base64url');
       const challenge = createHash('sha256').update(verifier).digest('base64url');
       const activeStore = store ?? (socialXEdgeMode(env)

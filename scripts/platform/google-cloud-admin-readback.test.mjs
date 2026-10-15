@@ -13,6 +13,30 @@ test('requires a token with no control characters', async () => {
   await assert.rejects(() => readEnabledCloudApis({token:''}), /TOKEN_INVALID/);
   await assert.rejects(() => readEnabledCloudApis({token:'bad\ninjected'}), /TOKEN_INVALID/);
 });
+test('real Service Usage single-page final response allows empty nextPageToken', async () => {
+  let calls = 0;
+  const result = await readEnabledCloudApis({ token: TOKEN, fetcher: async (_, options) => {
+    calls++;
+    assert.equal(options.method, 'GET');
+    return reply([service('serviceusage.googleapis.com'), service('iam.googleapis.com')], '');
+  } });
+  assert.equal(calls, 1);
+  assert.equal(result.enabledServiceCount, 2);
+  assert.equal(result.serviceUsageEnabled, true);
+  assert.equal(result.iamEnabled, true);
+  assert.equal(result.readonly, true);
+});
+
+test('real Service Usage terminal page may omit nextPageToken entirely', async () => {
+  let calls = 0;
+  const result = await readEnabledCloudApis({ token: TOKEN, fetcher: async () => {
+    calls++;
+    return { status: 200, json: async () => ({services:[service('serviceusage.googleapis.com')]}) };
+  } });
+  assert.equal(calls, 1);
+  assert.equal(result.enabledServiceCount, 1);
+});
+
 test('only GETs exact project, with readonly shaped output and paginates', async () => {
   let calls = 0;
   const fetcher = async (value, options) => {
