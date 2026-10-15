@@ -54,7 +54,7 @@ test('real parallel network adapters use fixed endpoints, limited public GitHub 
   const urls=[];
   const fetchImpl=async (url,request)=>{
     urls.push(url);
-    if(url.includes('openai.com')) {
+    if(url === 'https://api.openai.com/v1/responses') {
       assert.equal(request.method,'POST');
       assert.equal(JSON.parse(request.body).store,false);
       return new Response(JSON.stringify({output_text:'Transparenter Entwicklungsbericht: PR-Merges nachlesen.'}));
@@ -85,7 +85,7 @@ test('provider failure is fail-closed and never grants publication',async()=>{
 test('watermark modifications, missing skills and preview XSS are blocked',async()=>{
   await assert.rejects(()=>runBatch(source,{...opts,loadFile:async file=>file===BRAND_ASSET?Buffer.from('evil'):readFileSync(file)}),/SOCIAL_BATCH_WATERMARK_DIGEST_MISMATCH/);
   const html=renderDraftHtml({headline:'<img src=x onerror=evil()>',article:'</pre><script>attack()</script>'});
-  assert.doesNotMatch(html,/<script>/);
+  assert.doesNotMatch(html,/<\s*script\b/i);
   assert.match(html,/&lt;script&gt;/);
   assert.equal(toolSuitability().length,3);
   assert.equal(toolSuitability()[2].decision,'NOT_ENABLED');
