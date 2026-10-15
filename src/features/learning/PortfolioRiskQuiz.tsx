@@ -30,7 +30,7 @@ export function PortfolioRiskQuiz() {
   return (
     <section className="space-y-5 rounded-xl border border-slate-700 p-4" aria-labelledby="portfolio-quiz-title">
       <h3 id="portfolio-quiz-title" className="text-xl font-bold text-amber-200">Portfolio-Risiko · Lernquiz</h3>
-      <p className="text-sm text-slate-300">15 Fragen mit synthetischen Lernsituationen. Antworten werden nur während dieses Quiz im Browserzustand gehalten, nicht an einen Anbieter gesendet.</p>
+      <p className="text-sm text-slate-300">15 Fragen mit synthetischen Lernsituationen. Antworten werden nur während dieses Quiz im Browserzustand gehalten, nicht an einen Anbieter gesendet. Das Lernabzeichen ist kein offiziell anerkanntes Zertifikat.</p>
       <p role="status" className="text-sm text-slate-300">{count} von {PORTFOLIO_RISK_QUESTIONS.length} Fragen beantwortet.</p>
       <form onSubmit={event => { event.preventDefault(); if (count === PORTFOLIO_RISK_QUESTIONS.length) setSubmitted(true); }} className="space-y-5">
         {PORTFOLIO_RISK_QUESTIONS.map((item, index) => (
