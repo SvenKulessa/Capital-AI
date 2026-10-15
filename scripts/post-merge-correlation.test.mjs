@@ -169,7 +169,7 @@ test('merge milestone workflow keeps GitHub expressions unescaped', () => {
 test('merge milestone PR creation requires dedicated repo-scoped GitHub App', () => {
   const workflow = readFileSync(new URL('../.github/workflows/merge-milestones.yml', import.meta.url), 'utf8');
   assert.match(workflow, /permissions:\n  contents: read\n  pull-requests: read/);
-  assert.match(workflow, /actions\/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1/);
+  assert.match(workflow, /actions\/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510/);
   // Missing either App credential must skip minting and retain the draft artifact.
   assert.match(workflow, /id: app_credentials/);
   assert.ok(workflow.includes('APP_CLIENT_ID: ${{ vars.CAPITAL_AI_MILESTONE_APP_CLIENT_ID }}'));
@@ -205,7 +205,7 @@ test('manual milestone App validation mints a scoped token but never writes to G
   assert.match(workflow, /validate_app:\n    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs\/heads\/main'/);
   assert.match(workflow, /audit:\n    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true/);
   const [validateSection] = workflow.split(/\n  audit:\n/);
-  assert.match(validateSection, /uses: actions\/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1/);
+  assert.match(validateSection, /uses: actions\/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510/);
   assert.match(validateSection, /permission-contents: write/);
   assert.match(validateSection, /permission-pull-requests: write/);
   assert.match(validateSection, /owner: \$\{\{ github.repository_owner \}\}/);
