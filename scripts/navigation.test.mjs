@@ -260,6 +260,34 @@ test('language switcher has a keyboard-accessible native select and shareable ho
   assert.match(switcher, /window\.history\.replaceState/);
 });
 
+test('Notion login is accessible, three provider marks share sizing, and signup requires consent', () => {
+  const page = readFileSync(new URL('../src/features/auth/LoginPage.tsx', import.meta.url), 'utf8');
+  const dictionary = readFileSync(new URL('../src/i18n/authCopy.ts', import.meta.url), 'utf8');
+  const auth = readFileSync(new URL('../server/auth.mjs', import.meta.url), 'utf8');
+  assert.match(page, /grid-cols-3 gap-2/);
+  assert.match(page, /<NotionBrandMark \/>/);
+  assert.match(page, /aria-label=\{tr\.notionLogin\}/);
+  assert.match(page, /aria-label=\{tr\.notionRegister\}/);
+  assert.match(page, /api\/auth\/login\/notion/);
+  assert.match(page, /!termsAccepted \|\| !privacyAcknowledged \|\| busy/);
+  assert.match(auth, /'login\/notion'/);
+  assert.match(auth, /'google', 'x', 'notion'/);
+  for (const key of ['notionLogin', 'notionRegister']) {
+    assert.match(dictionary, new RegExp('"' + key + '"'));
+    assert.equal([...dictionary.matchAll(new RegExp('"' + key + '":', 'g'))].length, 6);
+  }
+});
+
+test('JaJa Notion Marketplace work package is roadmap-only and preserves proprietary rights', () => {
+  const roadmap = readFileSync(new URL('../src/data/socialContentRoadmap.ts', import.meta.url), 'utf8');
+  const work = readFileSync(new URL('../docs/product/JAJA-NOTION-MARKETPLACE-WORKPACKAGE-20261015.md', import.meta.url), 'utf8');
+  assert.match(roadmap, /CA-PRODUCT-JAJA-NOTION-MARKETPLACE/);
+  assert.match(roadmap, /status: 'planning'/);
+  assert.match(work, /MARKETPLACE_NOT_LISTED/);
+  assert.match(work, /Chat Buddy\/PROPRIETARY\.md/);
+  assert.match(work, /user-selected Notion page/);
+});
+
 test('sign-in password guidance matches current client-side strength policy', () => {
   const source = readFileSync(new URL('../src/features/auth/LoginPage.tsx', import.meta.url), 'utf8');
   const dictionary = readFileSync(new URL('../src/i18n/authCopy.ts', import.meta.url), 'utf8');
