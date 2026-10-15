@@ -78,6 +78,16 @@ export function FinancialLearningSimulator() {
     catch { return null; }
   }, [weights, vols, corrs, modelError]);
 
+  const baseVol = useMemo(() => {
+    try { return portfolioVolatility(weights, originalVols(), originalCorrs(), IDS); }
+    catch { return null; }
+  }, [weights]);
+
+  const risingVol = useMemo(() => {
+    try { return portfolioVolatility(weights, originalVols(), LEARNING_CASES.risingCorrelations, IDS); }
+    catch { return null; }
+  }, [weights]);
+
   function reset() {
     setWeights(originalWeights());
     setVols(originalVols());
@@ -284,6 +294,53 @@ export function FinancialLearningSimulator() {
         ))}
       </div>
       {taskFeedback && <p role="status" className="rounded border border-amber-400/30 p-3 text-amber-100">{taskFeedback}</p>}
+
+      {/* Korrelations-Labor */}
+      <section className="space-y-4 border-t border-amber-400/30 pt-4" aria-labelledby="corr-lab-title">
+        <h3 id="corr-lab-title" className="text-lg font-semibold text-amber-200">Korrelations-Labor</h3>
+        <p className="text-slate-300">Vergleich der modellierten Portfoliovolatilität bei deinen aktuellen Gewichten mit den Basis-Korrelationen und einem Szenario erhöhter Korrelationen. Alle Werte sind synthetisch und dienen ausschließlich der didaktischen Veranschaulichung. Keine Prognose oder Anlageberatung.</p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="rounded-lg border border-slate-600 p-3">
+            <h4 className="font-medium text-amber-100">Basis-Korrelationen</h4>
+            <p className="text-2xl font-bold text-amber-200">{baseVol !== null ? `${(baseVol * 100).toFixed(2)} %` : '–'}</p>
+            <p className="text-xs text-slate-400">σₚ mit BASE_CORRELATIONS</p>
+          </div>
+          <div className="rounded-lg border border-amber-500/40 p-3">
+            <h4 className="font-medium text-amber-100">Erhöhte Korrelationen</h4>
+            <p className="text-2xl font-bold text-amber-200">{risingVol !== null ? `${(risingVol * 100).toFixed(2)} %` : '–'}</p>
+            <p className="text-xs text-slate-400">σₚ mit LEARNING_CASES.risingCorrelations</p>
+          </div>
+        </div>
+        {baseVol !== null && risingVol !== null && (
+          <p className="text-sm text-slate-300">
+            Differenz: <strong>{((risingVol - baseVol) * 100).toFixed(2)} Prozentpunkte</strong>. Höhere Korrelationen erhöhen in diesem Modell die Portfoliovolatilität, weil Diversifikationseffekte abnehmen.
+          </p>
+        )}
+        <details className="rounded border border-slate-700 p-3">
+          <summary className="cursor-pointer font-medium text-amber-200">Korrelationsmatrix (Basis)</summary>
+          <div className="mt-2 overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr>
+                  <th scope="col" className="p-1">Assetklasse</th>
+                  {BASE_ASSETS.map(a => <th scope="col" key={a.id} className="p-1">{a.name}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {BASE_ASSETS.map(row => (
+                  <tr key={row.id} className="border-t border-slate-700">
+                    <th scope="row" className="p-1 font-normal">{row.name}</th>
+                    {BASE_ASSETS.map(col => (
+                      <td key={col.id} className="p-1 text-center">{BASE_CORRELATIONS[row.id][col.id].toFixed(2)}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </section>
+
       {access !== 'pro' && <p className="text-slate-300">Eigene Volatilitäts- und Korrelationsannahmen, privates Speichern, Szenarienvergleich und CSV-Export benötigen Pro oder Enterprise. Owner-Zugriff wird serverseitig geprüft.</p>}
       {access === 'pro' && (
         <section className="space-y-3 border-t border-amber-400/30 pt-4" aria-labelledby="sim-pro-title">
