@@ -15,6 +15,7 @@ for(let attempt=0;attempt<50;attempt++){try{if((await fetch('http://127.0.0.1:41
 const browser=await chromium.launch({executablePath:process.env.CHROMIUM_EXECUTABLE_PATH || await Chromium.executablePath(),headless:true,args:Chromium.args.filter(arg=>arg!=='--single-process')});
 const result={browser:browser.version(),scope:'Local built frontend, synthetic API fixtures; server authorization covered separately',viewports:[],cases:[]};
 const stores=new Map([['alice',new Set()],['bob',new Set()]]);
+const noteStores=new Map([['alice','QA fixture'],['bob','Private note for Bob']]);
 async function fixture(page,user='alice',options={}) {
  page.setDefaultTimeout(8000);page.on('pageerror',e=>console.log('PAGE_ERROR',e.message));
  await page.route('**/api/**',async route=>{
@@ -27,7 +28,14 @@ async function fixture(page,user='alice',options={}) {
    if(req.method()==='DELETE')ids.delete(id);
    return route.fulfill({json:{favorites:[...ids]}});
   }
-  if(url.pathname==='/api/profile/notes')return route.fulfill({json:{notes:'QA fixture'}});
+  if(url.pathname==='/api/profile/notes') {
+   if(req.method()==='PUT') {
+    const submitted=req.postDataJSON();
+    if(submitted.expectedUserId!==user)return route.fulfill({status:409,json:{error:'session_changed'}});
+    noteStores.set(user,submitted.notes);
+   }
+   return route.fulfill({json:{notes:noteStores.get(user)||'',userId:user}});
+  }
   if(url.pathname.includes('/access'))return route.fulfill({json:{entitled:false,quantProEntitled:false,atlasEntitled:false,quizUsed:false}});
   if(url.pathname.endsWith('/preview')||url.pathname.endsWith('/quant-pro'))return route.fulfill({json:{terms:[]}});
   return route.fulfill({json:{configured:true,authenticated:!options.anonymous,user:options.anonymous?null:{id:user,name:'QA fixture',email:'qa@example.invalid'},account:{available:true,iamRole:'user',subscription:{tier:'Free',status:null},badges:[]}}});
@@ -67,7 +75,21 @@ for(const width of [320,390,768,1440]){
  await page.reload({waitUntil:'networkidle'});await page.getByRole('button',{name:`${first}: aus dem Lernfeld entfernen`,exact:true}).click();
  await page.getByRole('status').filter({hasText:'Dein Lernfeld ist leer'}).waitFor();assert.equal(stores.get('alice').size,0);
  await page.getByRole('tab',{name:'Lernfeld',exact:true}).focus();await page.keyboard.press('ArrowRight');assert.equal(await page.getByRole('tab',{name:'Notizen',exact:true}).getAttribute('aria-selected'),'true');
- result.viewports.push({width,mouseLeft:'PASS',mouseRight:'PASS',dashboardReloadAndRemove:'PASS',horizontalTabs:'PASS',overflow:'PASS',keyboard:'PASS'});
+ await page.getByRole('tab',{name:'Gespeicherte Notizen',exact:true}).click();
+ await page.getByRole('tabpanel',{name:'Gespeicherte Notizen'}).getByText('QA fixture',{exact:true}).waitFor();
+ await page.getByRole('tab',{name:'Notizen',exact:true}).click();
+ await page.locator('#private-notes').fill('Changed by Alice');
+ await page.getByRole('tab',{name:'Gespeicherte Notizen',exact:true}).click();
+ await page.getByRole('tabpanel',{name:'Gespeicherte Notizen'}).getByText('QA fixture',{exact:true}).waitFor();
+ await page.getByRole('tab',{name:'Notizen',exact:true}).click();
+ await page.getByRole('button',{name:'Notizen speichern',exact:true}).click();
+ await page.getByRole('status').filter({hasText:'Notizen gespeichert.'}).waitFor();
+ await page.getByRole('tab',{name:'Gespeicherte Notizen',exact:true}).click();
+ await page.getByRole('tabpanel',{name:'Gespeicherte Notizen'}).getByText('Changed by Alice',{exact:true}).waitFor();
+ await page.getByRole('tab',{name:'Gespeicherte Notizen',exact:true}).focus();
+ await page.keyboard.press('Home');
+ assert.equal(await page.getByRole('tab',{name:'Lernfeld',exact:true}).getAttribute('aria-selected'),'true');
+ result.viewports.push({width,mouseLeft:'PASS',mouseRight:'PASS',dashboardReloadAndRemove:'PASS',horizontalTabs:'PASS',savedNotesReadback:'PASS',draftNotLeaked:'PASS',notesKeyboard:'PASS',overflow:'PASS',keyboard:'PASS'});
  await page.close();
 }
 const touchPage=await browser.newPage({viewport:{width:390,height:900},isMobile:true,hasTouch:true,reducedMotion:'reduce'});await fixture(touchPage);
