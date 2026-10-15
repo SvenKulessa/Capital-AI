@@ -98,7 +98,7 @@ const staticEntries = [
     structuredDataType: 'CollectionPage',
     socialEligible: true,
     aiSearchEligible: true,
-    sourceRefs: ['shared/quant-learning-demo.json', 'shared/researched-vocabulary.json', 'shared/vocabulary-metadata.mjs', 'shared/learning-journey.mjs', 'src/features/learning/LearningJourney.tsx', 'src/features/learning/LearningPortalPage.tsx', 'src/features/learning/LearningPurchase.tsx', 'src/data/vocabularyOffer.ts'],
+    sourceRefs: ['shared/quant-learning-demo.json', 'shared/researched-vocabulary.json', 'shared/vocabulary-metadata.mjs', 'shared/learning-journey.mjs', 'src/components/ContactForm.tsx', 'src/features/learning/LearningJourney.tsx', 'src/features/learning/LearningPortalPage.tsx', 'src/features/learning/LearningPurchase.tsx', 'src/data/vocabularyOffer.ts'],
   }),
   contentEntry({
     path: '/vocabulary',
