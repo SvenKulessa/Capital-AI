@@ -34,7 +34,7 @@ test('homepage uses responsive Universe motif and preserves both CTA handlers', 
     if (name.includes('globe')) continue;
     assert.ok(hero.includes(name), name);
   }
-  assert.match(hero, /hero-universe-orbit.svg/);
+  assert.doesNotMatch(hero, /hero-universe-orbit.svg/);
   assert.match(hero, /<picture>/);
   assert.match(hero, /onStartAnalysis/);
   assert.match(hero, /onExploreProduct/);
