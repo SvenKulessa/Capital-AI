@@ -14,7 +14,7 @@ export function SubscriptionPage({onNavigate}: {onNavigate:(path:string)=>void})
    window.location.assign(url.href);
   } catch(e) { setError(e instanceof Error ? e.message : 'Abo-Verwaltung nicht verfügbar.'); setBusy(false); }
  }
- return <AccountPageShell active="/profile/subscription" title="Abo verwalten" description="Laufzeit, Verlängerung, Kündigung und Tarifwechsel." onNavigate={onNavigate}>{session=><section className="rounded-2xl border border-white/10 bg-slate-950 p-5">
+ return <AccountPageShell active="/profile/subscription" title="Abos verwalten" description="Laufzeit, Verlängerung, Kündigung und Tarifwechsel." onNavigate={onNavigate}>{session=><section className="rounded-2xl border border-white/10 bg-slate-950 p-5">
  <h2 className="text-xl font-bold">{session.account?.iamRole === 'owner' ? 'Owner' : session.account?.subscription?.tier || 'Kein Tarif'}</h2>
  <p className="mt-3 text-sm text-slate-300">Im Kundenportal kannst du dein Abo kündigen, eine geplante Kündigung zurücknehmen und verfügbare Tarifwechsel verwalten. Eine Verlängerung folgt der vereinbarten Laufzeit.</p>
  <div className="mt-4 flex flex-wrap gap-3"><button onClick={()=>void portal()} disabled={busy} className="flex min-h-11 items-center gap-2 rounded-xl bg-amber-400 px-4 text-black disabled:opacity-50"><ExternalLink className="h-4 w-4"/>{busy ? 'Wird geöffnet …' : 'Abo im Kundenportal verwalten'}</button><a href="/pricing" className="rounded-xl border border-slate-500 px-4 py-3">Tarife ansehen</a></div>
