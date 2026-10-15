@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-  assertBatch,runBatch,renderDraftHtml,toolSuitability,
+  assertBatch,runBatch,renderDraftHtml,toolSuitability,readWorkerJson,
   BRAND_ASSET,BRAND_SHA256,
 } from './pr-merge-social-batch.mjs';
 
@@ -57,12 +57,12 @@ test('real parallel network adapters use fixed endpoints, limited public GitHub 
     if(url.includes('openai.com')) {
       assert.equal(request.method,'POST');
       assert.equal(JSON.parse(request.body).store,false);
-      return {ok:true,text:async()=>JSON.stringify({output_text:'Transparenter Entwicklungsbericht: PR-Merges nachlesen.'})};
+      return new Response(JSON.stringify({output_text:'Transparenter Entwicklungsbericht: PR-Merges nachlesen.'}));
     }
     assert.equal(url,'https://api.firecrawl.dev/v2/scrape');
     const body=JSON.parse(request.body);
     assert.match(body.url,/^https:\/\/github\.com\/SvenKulessa\/Capital-AI\/pull\/\d+$/);
-    return {ok:true,text:async()=>JSON.stringify({data:{markdown:'# Official PR page'}})};
+    return new Response(JSON.stringify({data:{markdown:'# Official PR page'}}));
   };
   const {outcome}=await runBatch(source,{...opts,
     env:{SOCIAL_BATCH_EXTERNAL_WORKERS:'enabled',OPENAI_API_KEY:'not-real',FIRECRAWL_API_KEY:'not-real'},fetchImpl});
@@ -98,4 +98,16 @@ test('workflow is count-scoped to the existing milestone and never invokes a pub
   assert.match(workflow,/node --import tsx scripts\/growth\/pr-merge-social-batch\.mjs/);
   assert.match(workflow,/social-merge-batch-\$\{\{ steps\.milestones\.outputs\.news \}\}/);
   assert.doesNotMatch(workflow,/node scripts\/growth\/pr-merge-social-batch\.mjs.*publish/);
+});
+
+test('worker byte budget rejects a multibyte oversized stream before buffering the remainder', async () => {
+  let cancelled = false;
+  const response = new Response(new ReadableStream({
+    start(controller) { controller.enqueue(new TextEncoder().encode('ä'.repeat(12001))); },
+    cancel() { cancelled = true; },
+  }));
+  await assert.rejects(readWorkerJson(response, 24000), /WORKER_RESPONSE_OVERSIZE/);
+  assert.equal(cancelled, true);
+  assert.deepEqual(await readWorkerJson(new Response('{"ok":true}'), 64), {ok:true});
+  await assert.rejects(readWorkerJson(new Response('invalid'), 64), SyntaxError);
 });

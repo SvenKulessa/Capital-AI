@@ -66,6 +66,26 @@ function boundedWorker(name, call) {
   return Promise.resolve().then(call).then(result => ({name, ...result}),
     () => ({name, status:'FAILED_CLOSED', data:null}));
 }
+// Enforce the byte budget while consuming the stream, before buffering/JSON parsing.
+export async function readWorkerJson(response, maxBytes) {
+  if (!response.body?.getReader) throw Error('WORKER_RESPONSE_BODY_MISSING');
+  const reader = response.body.getReader();
+  let size = 0;
+  const chunks = [];
+  try {
+    for (;;) {
+      const {done, value} = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > maxBytes) throw Error('WORKER_RESPONSE_OVERSIZE');
+      chunks.push(value);
+    }
+    return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+  } finally {
+    await reader.cancel();
+  }
+}
+
 export async function openAiWorker(news, {env=process.env, fetchImpl=fetch}={}) {
   if (env.SOCIAL_BATCH_EXTERNAL_WORKERS !== 'enabled' || !env.OPENAI_API_KEY) {
     return {status:'SKIPPED_NOT_AUTHORIZED',data:null};
@@ -79,9 +99,7 @@ export async function openAiWorker(news, {env=process.env, fetchImpl=fetch}={}) 
       input:input}),
   });
   if (!response.ok) throw Error('OPENAI_HTTP_FAILURE');
-  const body = await response.text();
-  if (body.length > 24000) throw Error('OPENAI_RESPONSE_OVERSIZE');
-  const data = JSON.parse(body);
+  const data = await readWorkerJson(response, 24000);
   const text = (data.output_text || data.output?.flatMap(x => x.content || []).filter(x => x.type==='output_text').map(x => x.text).join('\n') || '').trim();
   if (!text || text.length > 2200) throw Error('OPENAI_RESPONSE_INVALID');
   return {status:'DRAFT_ONLY',data:plain(text).slice(0,2200)};
@@ -100,9 +118,7 @@ export async function firecrawlWorker(news, {env=process.env,fetchImpl=fetch}={}
       body:JSON.stringify({url,formats:['markdown'],onlyMainContent:true}),
     });
     if (!response.ok) throw Error('FIRECRAWL_HTTP_FAILURE');
-    const body = await response.text();
-    if (body.length > 50000) throw Error('FIRECRAWL_RESPONSE_OVERSIZE');
-    const data = JSON.parse(body);
+    const data = await readWorkerJson(response, 50000);
     const markdown = data.data?.markdown ?? data.markdown;
     if (typeof markdown !== 'string' || !markdown.trim()) throw Error('FIRECRAWL_RESPONSE_INVALID');
     return {url, preview:plain(markdown).slice(0,1200),authority:'UNTRUSTED_ADVISORY_ONLY'};
