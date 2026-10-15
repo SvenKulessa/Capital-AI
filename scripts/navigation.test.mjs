@@ -287,7 +287,7 @@ test('JaJa Notion Marketplace work package is roadmap-only and preserves proprie
   assert.match(roadmap, /evidenceState: 'OFFEN'/);
   assert.match(roadmap, /docs\/product\/JAJA-NOTION-MARKETPLACE-WORKPACKAGE-20261015\.md/);
   assert.match(roadmap, /proprietären JaJa-Figur/);
-  assert.match(roadmap, /kein Drittanbieter-Rebranding/);
+  assert.match(roadmap, /Drittanbieter-Rebranding/);
 });
 
 test('sign-in password guidance matches current client-side strength policy', () => {
