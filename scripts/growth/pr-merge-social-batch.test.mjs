@@ -61,7 +61,7 @@ test('real parallel network adapters use fixed endpoints, limited public GitHub 
       assert.equal(request.method,'POST');
       const payload=JSON.parse(request.body);
       assert.equal(payload.store,false);
-      assert.equal(payload.model,'gpt-6-luna');
+      assert.equal(payload.model,'test-social-model');
       assert.equal(payload.reasoning.effort,'none');
       assert.equal(payload.max_output_tokens,550);
       return new Response(JSON.stringify({output_text:'Transparenter Entwicklungsbericht: PR-Merges nachlesen.'}));
@@ -72,7 +72,7 @@ test('real parallel network adapters use fixed endpoints, limited public GitHub 
     return new Response(JSON.stringify({data:{markdown:'# Official PR page'}}));
   };
   const {outcome}=await runBatch(source,{...opts,
-    env:{SOCIAL_BATCH_EXTERNAL_WORKERS:'enabled',OPENAI_API_KEY:'not-real',FIRECRAWL_API_KEY:'not-real'},fetchImpl});
+    env:{SOCIAL_BATCH_EXTERNAL_WORKERS:'enabled',OPENAI_API_KEY:'not-real',SOCIAL_CONTENT_OPENAI_MODEL:'test-social-model',FIRECRAWL_API_KEY:'not-real'},fetchImpl});
   assert.equal(urls.length,3);
   assert.equal(outcome.workerIntegration.openai.status,'DRAFT_ONLY');
   assert.equal(outcome.workerIntegration.firecrawl.status,'ADVISORY_READBACK');
@@ -81,6 +81,19 @@ test('real parallel network adapters use fixed endpoints, limited public GitHub 
   assert.equal(outcome.socialEngine.publicPublishAllowed,false);
   assert.equal(outcome.cads.editorialReview,'REVIEW_REQUIRED');
 });
+test('OpenAI news worker refuses unset or malformed model without calling provider',async()=>{
+  const calls=[];
+  for(const model of ['', 'model with space', '../unsafe']) {
+    const {outcome}=await runBatch(source,{...opts,env:{
+      SOCIAL_BATCH_EXTERNAL_WORKERS:'enabled',OPENAI_API_KEY:'test-only',
+      SOCIAL_CONTENT_OPENAI_MODEL:model,
+    },fetchImpl:async url=>{calls.push(url);throw Error('unexpected network');}});
+    assert.equal(outcome.workerIntegration.openai.status,'SKIPPED_MODEL_NOT_CONFIGURED');
+    assert.equal(outcome.cads.publicationApproval,false);
+  }
+  assert.equal(calls.length,0);
+});
+
 test('provider failure is fail-closed and never grants publication',async()=>{
   const {outcome}=await runBatch(source,{...opts,
     env:{SOCIAL_BATCH_EXTERNAL_WORKERS:'enabled',OPENAI_API_KEY:'x',FIRECRAWL_API_KEY:'x'},
