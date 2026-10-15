@@ -36,3 +36,10 @@ test('each route family rejects requests beyond its budget, renews on window exp
     time += API_RATE_GROUPS[group].windowMs + 1;
   }
 });
+
+test('one transport client cannot consume another client route-family quota', () => {
+  const gate = createApiRateGate(() => 0);
+  for (let i = 0; i < API_RATE_GROUPS.password_login.limit; i++) assert.equal(gate('/api/auth/login/email', '192.0.2.1').allowed, true);
+  assert.equal(gate('/api/auth/login/email', '192.0.2.1').allowed, false);
+  assert.equal(gate('/api/auth/login/email', '192.0.2.2').allowed, true);
+});

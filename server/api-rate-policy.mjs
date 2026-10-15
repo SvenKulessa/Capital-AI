@@ -26,15 +26,15 @@ export function apiRateGroup(pathname) {
 export function createApiRateGate(now = Date.now) {
   const limits = Object.fromEntries(
     Object.entries(API_RATE_GROUPS).map(([name, policy]) =>
-      [name, createLimiter(policy.limit, policy.windowMs, 1, now)]),
+      [name, createLimiter(policy.limit, policy.windowMs, 1024, now)]),
   );
-  // Independent shared ceiling prevents a caller alternating all route groups.
-  const aggregate = createLimiter(2500, 60_000, 1, now);
-  return pathname => {
+  // Independent per-transport-client ceiling prevents a caller alternating all route groups.
+  const aggregate = createLimiter(2500, 60_000, 1024, now);
+  return (pathname, clientKey = 'unknown') => {
     const group = apiRateGroup(pathname);
     if (!group) return { allowed: true, group: null, retryAfterSeconds: 0 };
     const policy = API_RATE_GROUPS[group];
-    const allowed = aggregate() && limits[group]();
+    const allowed = aggregate(clientKey) && limits[group](clientKey);
     return { allowed, group, retryAfterSeconds: policy.retryAfterSeconds };
   };
 }

@@ -40,3 +40,9 @@ A read-only `pg_class` + `pg_policies` + `has_table_privilege` inventory against
 - Public tables with grants were `profiles`, `subscriptions`, `usage_log`, `site_metrics`, `security_events`, `privacy_requests`, `user_consents`. RLS readback confirms own-`auth.uid()` or verified-owner SELECT for applicable read paths, or `service_role`-only policies for `usage_log`/`site_metrics`. No blanket data exposure was observed from this policy inspection. Authenticated two-user adversarial access tests remain NOT_PROVEN; do not conflate policy inspection with BOLA-proof.
 - Render workspace read-only inventory: current production Capital-AI web service deploys from main after checks, in Frankfurt with one configured instance; dormant NATS and provider bridge resources remain suspended. Shared global multi-instance rate limiting remains NOT_PROVEN, and existing single instance does not guarantee future horizontal scaling.
 - No secret values or database contents were retrieved, and no DDL, Render environment updates, login tokens, costful service activations, or secrets rotations were performed.
+
+## Autonomous compatibility remediation · 2026-10-15
+- HSTS stays host-only until a complete subdomain TLS inventory exists. COOP uses same-origin-allow-popups to preserve OAuth popup relationships.
+- Strict style CSP runs as Report-Only; enforced CSP preserves existing React/Motion runtime styling. Inline executable scripts remain forbidden; JSON-LD is content-hashed. Full strict-style enforcement is deliberately deferred pending browser evidence.
+- API family and aggregate budgets are bounded per socket remote address (1024 keys), never an untrusted forwarding header. Proxies may share transport addresses; distributed/ingress identity and quotas remain NOT_PROVEN. Existing auth/tenant and endpoint controls remain authoritative.
+- No provider activation, secret readback, payment or external MCP calls.

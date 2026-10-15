@@ -33,7 +33,7 @@ import { createLearningInquiry } from './learning-inquiry.mjs';
 import { createLearningSimulator } from './learning-simulator.mjs';
 import { createPrivacy } from './privacy.mjs';
 import { createLimiter } from './http-security.mjs';
-import { SECURITY_HEADERS, contentSecurityPolicyForHtml } from './security-headers.mjs';
+import { SECURITY_HEADERS, contentSecurityPolicyForHtml, strictContentSecurityPolicyForHtml } from './security-headers.mjs';
 import { createApiRateGate } from './api-rate-policy.mjs';
 import { infrastructure } from './infrastructure.mjs';
 import { createScorerProxy } from './scorer-proxy.mjs';
@@ -434,7 +434,7 @@ export function createApp(root = defaultRoot, options = {}) {
   // Apply headers to API responses and OIDC redirects alike.
   for (const [key, value] of Object.entries(headers)) res.setHeader(key, value);
   if (url.pathname.startsWith('/api/')) {
-    const rate = apiRateGate(url.pathname);
+    const rate = apiRateGate(url.pathname, req.socket.remoteAddress || 'unknown');
     if (!rate.allowed) {
       res.setHeader('Retry-After', String(rate.retryAfterSeconds));
       return json(res, 429, { error: 'rate_limited' });
@@ -725,7 +725,7 @@ export function createApp(root = defaultRoot, options = {}) {
       documentLocale = locale;
     }
     const documentHeaders = path.extname(file) === '.html'
-      ? { ...headers, 'Content-Security-Policy': contentSecurityPolicyForHtml(body.toString('utf8')) }
+      ? { ...headers, 'Content-Security-Policy': contentSecurityPolicyForHtml(body.toString('utf8')), 'Content-Security-Policy-Report-Only': strictContentSecurityPolicyForHtml(body.toString('utf8')) }
       : headers;
     res.writeHead(200, { ...documentHeaders, ...(documentLocale ? { 'Content-Language': documentLocale, 'Vary': 'Accept, CF-IPCountry, Accept-Language, Cookie' } : {}), ...(localeFromLandingPath(publicPath) ? { 'X-Robots-Tag': 'noindex, nofollow' } : {}), 'Cache-Control': path.extname(file) === '.html' ? 'no-store' : 'public, max-age=3600', 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(body);
   } catch { res.writeHead(404, headers); res.end(); }

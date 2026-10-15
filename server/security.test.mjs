@@ -29,10 +29,10 @@ test('HTTP security boundaries and static-file isolation', async () => {
     assert.equal(health.status, 200);
     assert.equal(health.headers.get('x-content-type-options'), 'nosniff');
     assert.equal(health.headers.get('x-frame-options'), 'DENY');
-    assert.equal(health.headers.get('cross-origin-opener-policy'), 'same-origin');
+    assert.equal(health.headers.get('cross-origin-opener-policy'), 'same-origin-allow-popups');
     assert.equal(health.headers.get('cross-origin-resource-policy'), 'same-origin');
-    assert.equal(health.headers.get('strict-transport-security'), 'max-age=31536000; includeSubDomains');
-    assert.doesNotMatch(health.headers.get('content-security-policy'), /unsafe-inline|img-src[^;]*https:/);
+    assert.equal(health.headers.get('strict-transport-security'), 'max-age=31536000');
+    assert.doesNotMatch(health.headers.get('content-security-policy'), /script-src[^;]*unsafe-inline|img-src[^;]*https:/);
     assert.equal(health.headers.get('cache-control'), 'no-store');
     const healthBody = await health.json();
     assert.equal(typeof healthBody.buildIdentity?.bound, 'boolean');
@@ -105,7 +105,7 @@ test('shared API dispatcher limits unauthenticated calls before module handlers'
     assert.equal(health.status, 200);
     const html = await fetch(base + '/profile');
     assert.equal(html.status, 200);
-    const csp = html.headers.get('content-security-policy');
+    const csp = html.headers.get('content-security-policy-report-only');
     assert.match(csp, /style-src 'self' 'sha256-/);
     assert.match(csp, /style-src-attr 'unsafe-hashes' 'sha256-/);
   } finally {

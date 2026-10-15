@@ -24,7 +24,7 @@ function sha256Source(value) {
 // inline CSS and a few style attributes. Hash only the exact HTML sent in this
 // response. This does not permit arbitrary inline styles or script execution.
 // Browser-side dynamic style attributes require CSS-class migration separately.
-export function contentSecurityPolicyForHtml(html) {
+export function strictContentSecurityPolicyForHtml(html) {
   const elementStyles = [...html.matchAll(/<style(?:\s[^>]*)?>([\s\S]*?)<\/style\s*>/gi)]
     .map(match => match[1]);
   const attributeStyles = [...html.matchAll(/\sstyle\s*=\s*(["'])(.*?)\1/gi)]
@@ -44,13 +44,23 @@ export function contentSecurityPolicyForHtml(html) {
   ].join('; ');
 }
 
+// Preserve runtime-injected React/Motion styles while measuring the strict policy.
+// Script execution never receives unsafe-inline. Tighten style enforcement only
+// after actual browser flows can run without policy violations.
+export function contentSecurityPolicyForHtml(html) {
+  return strictContentSecurityPolicyForHtml(html).split('; ')
+    .map(value => value.startsWith('style-src ') ? "style-src 'self' 'unsafe-inline'"
+      : value.startsWith('style-src-attr ') ? "style-src-attr 'unsafe-inline'" : value).join('; ');
+}
+
 export const SECURITY_HEADERS = Object.freeze({
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'X-Frame-Options': 'DENY',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
-  'Cross-Origin-Opener-Policy': 'same-origin',
+  'Strict-Transport-Security': 'max-age=31536000',
+  'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
   'Cross-Origin-Resource-Policy': 'same-origin',
-  'Content-Security-Policy': [...CSP_BASE, "style-src 'self'", "style-src-attr 'none'"].join('; '),
+  'Content-Security-Policy-Report-Only': strictContentSecurityPolicyForHtml(''),
+  'Content-Security-Policy': [...CSP_BASE, "style-src 'self' 'unsafe-inline'", "style-src-attr 'unsafe-inline'"].join('; '),
 });
