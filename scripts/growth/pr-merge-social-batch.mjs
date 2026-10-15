@@ -8,7 +8,7 @@ import { createHash } from 'node:crypto';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assessCadsContentCampaign, assessCadsAssetIdentity } from '../../packages/benchmark-core/growth-quality.mjs';
-import { ContentSocialPackageManifestSchema } from '../../src/contracts/contentSocialPackage.ts';
+import { buildDraftContentSocialPackage } from '../../src/contracts/contentSocialPackage.ts';
 import { NEWS_INTERVAL } from '../merge-milestone.mjs';
 
 export const BRAND_ASSET = 'public/branding/universe/hero-universe-globe.webp';
@@ -161,13 +161,7 @@ export async function runBatch(news, {expectedLast,mergedSha,env=process.env,fet
   const campaign=news.contentEnginePlan.campaign,contentId='merge-batch-'+news.lastBatchPr+'-'+news.sourceSha.slice(0,12);
   const asset={assetId:'capital-ai-watermark-'+contentId,contentId,kind:'IMAGE',
     sha256:verifiedBrandSha,mimeType:'image/webp',evidenceRef:BRAND_RIGHTS_REF,sourceSha:mergedSha};
-  const manifest=ContentSocialPackageManifestSchema.parse({
-    contractVersion:'CAPITAL_AI_CONTENT_SOCIAL_PACKAGE@1',
-    campaignId:campaign.campaignId,contentId,sourceSha:mergedSha,
-    canonicalUrl:campaign.canonicalUrl,locale:campaign.locale,
-    publicationAuthority:'SOCIAL_MEDIA_ENGINE_ONLY',
-    campaign,assets:[asset],approvals:[],deliveries:[],
-  });
+  const manifest=buildDraftContentSocialPackage({campaign,contentId,assets:[asset]});
   const cadsCampaign=assessCadsContentCampaign(campaign);
   const cadsAsset=assessCadsAssetIdentity(asset,{sourceSha:mergedSha,contentId});
   if(cadsCampaign.technicalStatus!=='PASS'||cadsAsset.technicalStatus!=='PASS')throw Error('SOCIAL_BATCH_CADS_REJECTED');
