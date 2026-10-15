@@ -9,14 +9,6 @@
         "GSC_PROPERTY": "sc-domain:capital-ai.online"
       }
     },
-    "metricool": {
-      "type": "http",
-      "url": "https://ai.metricool.com/mcp"
-    },
-    "metricduck": {
-      "type": "http",
-      "url": "https://mcp.metricduck.com/mcp"
-    },
     "capital-ai-google-maintenance": {
       "command": "node",
       "args": [
