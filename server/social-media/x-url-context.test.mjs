@@ -13,7 +13,7 @@ const POST = {
 };
 function req(url=URL, method='POST', headers={}) {
   const value = JSON.stringify({url});
-  return Object.assign(Readable.from([value]), { method, headers: {
+  return Object.assign(Readable.from([Buffer.from(value)]), { method, headers: {
     origin:'https://capital-ai.online', 'sec-fetch-site':'same-origin',
     'content-type':'application/json', ...headers,
   }});

@@ -50,8 +50,8 @@ export function FounderInquiryForm() {
   const unavailable = state === 'sending' || state === 'accepted';
   return (
     <div className="mt-4 border-t border-amber-300/20 pt-4">
-      <h4 className="text-sm font-bold text-amber-100">Vertrauliche Founder-Anfrage</h4>
-      <p className="mt-1 text-xs text-slate-300">Vertraulicher Erstkontakt zu Sponsoring, strategischer Partnerschaft und Investor Relations. Keine öffentliche Investitionsofferte, kein Wertpapierverkauf oder automatisches Founder-Recht.</p>
+      <h4 className="text-sm font-bold text-amber-100">Founder-Partner werden – Interesse bekunden</h4>
+      <p className="mt-1 text-xs text-slate-300">Wir suchen unsere ersten Partner für Sponsoring und eine strategische Zusammenarbeit. Ein unverbindlicher Austausch ist möglich; ein bestehender Founder, eine Vertragszusage oder eine Investitionsmöglichkeit werden nicht behauptet.</p>
       <form onSubmit={submit} className="mt-3 grid gap-3 sm:grid-cols-2">
         <label className="text-xs text-slate-200">Name *
           <input name="name" required maxLength={120} autoComplete="name" disabled={unavailable} className="mt-1 min-h-11 w-full rounded-lg border border-slate-600 bg-slate-950 p-2 text-white" />

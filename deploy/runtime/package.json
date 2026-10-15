@@ -9,6 +9,6 @@
     "@nats-io/transport-node": "3.4.0",
     "redis": "6.3.0",
     "zod": "4.6.5",
-    "nodemailer": "10.0.16"
+    "nodemailer": "10.1.0"
   }
 }
