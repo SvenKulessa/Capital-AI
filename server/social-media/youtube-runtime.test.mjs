@@ -106,3 +106,69 @@ test('real media reader rejects mismatched file before any token or upload reque
   const request={...req,async *[Symbol.asyncIterator](){yield Buffer.from('not the approved short');}};
   const r=res();await handler.handle(request,r,url,json);assert.equal(r.body.error,'wrong_short_file');assert.equal(resolved,0);
 });
+
+// Real route orchestration with synthetic ciphertext and no live Google account.
+const { createSocialYouTubeAccountStatus } = await import('./youtube-account-status.mjs');
+function disconnectRequest({ body = 'confirm=delete-youtube-data', site = 'same-origin' } = {}) {
+  return { method: 'POST', headers: { 'sec-fetch-site': site, 'content-type': 'application/x-www-form-urlencoded' },
+    async *[Symbol.asyncIterator]() { yield Buffer.from(body); } };
+}
+const disconnectUrl = new URL('/api/social-media/youtube/account/disconnect', env.PUBLIC_APP_ORIGIN);
+function revokeFixture({ google = 'ok', finish = true, owner = auth, grantOwner = userId, noToken = false } = {}) {
+  const calls = [], row = account();
+  const handler = createSocialYouTubeAccountStatus({ env, auth: owner,
+    vaultFactory: () => ({ invoke: async (op, body) => {
+      calls.push(op); assert.deepEqual(body, { userId });
+      if (op === 'privacy_begin') return { userId: grantOwner, refreshCipher: noToken ? null : row.refresh_token_encrypted };
+      if (!finish) throw Error('fixture_delete_failure');
+      return { deleted: true, userId };
+    } }), fetchImpl: async (target, options) => {
+      calls.push('google_revoke'); assert.equal(target, 'https://oauth2.googleapis.com/revoke');
+      assert.equal(new URLSearchParams(options.body).get('token'), 'synthetic_refresh_token');
+      assert.equal(options.redirect, 'error');
+      if (google === 'network') throw Error('fixture_network_failure');
+      return { ok: google === 'ok', status: google === 'invalid_token' ? 400 : 500,
+        text: async () => JSON.stringify({ error: google }) };
+    } });
+  return { handler, calls };
+}
+test('explicit owner revocation disables first, revokes at Google and confirms database deletion last', async () => {
+  for (const google of ['ok', 'invalid_token']) {
+    const f = revokeFixture({ google }), r = res();
+    await f.handler.handle(disconnectRequest(), r, disconnectUrl, json);
+    assert.equal(r.status, 200); assert.equal(r.body.status, 'DISCONNECTED_AND_DELETED');
+    assert.equal(r.body.googleAccessRevoked, true); assert.equal(r.body.youtubeVideosDeleted, false);
+    assert.deepEqual(f.calls, ['privacy_begin', 'google_revoke', 'privacy_finish']);
+    assert.ok(!JSON.stringify(r).includes('synthetic_refresh_token'));
+  }
+});
+test('revocation failures never erase retry credentials or report completed deletion', async () => {
+  for (const google of ['network', 'invalid_request']) {
+    const f = revokeFixture({ google }), r = res();
+    await f.handler.handle(disconnectRequest(), r, disconnectUrl, json);
+    assert.equal(r.status, 503); assert.equal(r.body.completed, false);
+    assert.ok(!f.calls.includes('privacy_finish'));
+  }
+  const f = revokeFixture({ finish: false }), r = res();
+  await f.handler.handle(disconnectRequest(), r, disconnectUrl, json);
+  assert.equal(r.status, 503); assert.equal(r.body.completed, false);
+});
+test('no token does not claim a remote Google revocation; provider ownership mismatch stops cleanup', async () => {
+  const f = revokeFixture({ noToken: true }), r = res();
+  await f.handler.handle(disconnectRequest(), r, disconnectUrl, json);
+  assert.equal(r.body.googleAccessRevoked, false);
+  assert.deepEqual(f.calls, ['privacy_begin', 'privacy_finish']);
+  const bad = revokeFixture({ grantOwner: 'other-owner' }), deny = res();
+  await bad.handler.handle(disconnectRequest(), deny, disconnectUrl, json);
+  assert.equal(deny.status, 503); assert.deepEqual(bad.calls, ['privacy_begin']);
+});
+test('cross-site, unconfirmed and non-owner deletion requests never reach vault or Google', async () => {
+  for (const options of [{ site: 'cross-site' }, { body: 'confirm=no' }, { body: 'confirm=delete-youtube-data&userId=forged' }]) {
+    const f = revokeFixture(), r = res();
+    await f.handler.handle(disconnectRequest(options), r, disconnectUrl, json);
+    assert.ok([400, 403].includes(r.status)); assert.deepEqual(f.calls, []);
+  }
+  const f = revokeFixture({ owner: { ...auth, authorizeIamRole: async () => false } }), r = res();
+  await f.handler.handle(disconnectRequest(), r, disconnectUrl, json);
+  assert.equal(r.status, 403); assert.deepEqual(f.calls, []);
+});

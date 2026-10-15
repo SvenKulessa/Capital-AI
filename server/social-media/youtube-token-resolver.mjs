@@ -38,6 +38,10 @@ export function createYouTubeVaultAccess({ env = process.env, fetchImpl = fetch,
   return { async invoke(operation, body) {
     must(uuid.test(body.userId), 'YOUTUBE_OWNER_REQUIRED');
     const accountPath = '/rest/v1/social_media_accounts?user_id=eq.' + body.userId + '&platform=eq.youtube';
+    if (['privacy_begin','privacy_finish','privacy_reconnect'].includes(operation)) {
+      const { res, data } = await request('/rest/v1/rpc/capital_youtube_' + operation, 'POST', { p_user_id: body.userId });
+      must(res.ok, 'YOUTUBE_PRIVACY_STORE_UNAVAILABLE'); return data;
+    }
     if (operation === 'credentials') {
       const { res, data } = await request(accountPath + '&select=id,user_id,platform,status,external_account_id,handle,scopes,access_token_encrypted,refresh_token_encrypted,token_expires_at&limit=1', 'GET');
       must(res.ok && Array.isArray(data) && data.length === 1, 'YOUTUBE_ACCOUNT_UNAVAILABLE'); return data[0];

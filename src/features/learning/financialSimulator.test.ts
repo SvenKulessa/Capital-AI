@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   portfolioVariance, portfolioVolatility, validateWeights, validateVolatilities,
-  validateCorrelationMatrix, BASE_ASSETS, BASE_CORRELATIONS,
+  validateCorrelationMatrix, BASE_ASSETS, BASE_CORRELATIONS, LEARNING_CASES,
   type CorrelationMatrix,
 } from './portfolioMath';
 
@@ -78,4 +78,25 @@ test('rounding tolerance applies only to tiny negative variance', () => {
   assert.equal(portfolioVariance([1], [[-1e-11]]), 0);
   assert.throws(() => portfolioVariance([1], [[-0.5]]), RangeError);
   assert.throws(() => portfolioVariance([1], [[NaN]]), RangeError);
+});
+
+
+test('correlation lab: higher synthetic correlations raise volatility at diversified weights', () => {
+  const weights = { equity: 0.5, bonds: 0.3, cash: 0.2 };
+  const baseline = portfolioVolatility(weights, vols, BASE_CORRELATIONS, ids);
+  const rising = portfolioVolatility(weights, vols, LEARNING_CASES.risingCorrelations, ids);
+  assert.ok(rising > baseline, 'synthetic increased-correlation scenario should show less diversification');
+  assert.ok(rising - baseline > 0.001, 'demonstrable effect should survive display rounding');
+});
+
+test('correlation lab: concentrated single-asset portfolio has identical scenario risk', () => {
+  const weights = { equity: 1, bonds: 0, cash: 0 };
+  close(portfolioVolatility(weights, vols, LEARNING_CASES.risingCorrelations, ids),
+    portfolioVolatility(weights, vols, BASE_CORRELATIONS, ids));
+});
+
+test('correlation lab: invalid weights never manufacture model results', () => {
+  const invalid = { equity: 0.6, bonds: 0.3, cash: 0.2 };
+  assert.throws(() => portfolioVolatility(invalid, vols, BASE_CORRELATIONS, ids), RangeError);
+  assert.throws(() => portfolioVolatility(invalid, vols, LEARNING_CASES.risingCorrelations, ids), RangeError);
 });

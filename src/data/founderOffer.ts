@@ -1,8 +1,8 @@
 /** Public sponsoring and investor-relations contact: no offer of securities or access entitlement. */
 export const FOUNDER_OFFER = Object.freeze({
   id: 'founder-relations-contact',
-  label: 'CAPITAL-AI Founder · Sponsoring & Investor Relations',
-  description: 'Vertrauliche Kontaktaufnahme zu Sponsoring, strategischen Partnerschaften und Investor Relations. Keine öffentliche Investitionsofferte oder wirtschaftliche Konditionszusage.',
+  label: 'Founder-Partner gesucht · CAPITAL-AI unterstützen',
+  description: 'CAPITAL-AI sucht erste Founder-Partner, Sponsoren und strategische Unterstützer. Noch keine Founder-Partnerschaft vergeben. Vertraulicher, unverbindlicher Erstkontakt zu einer möglichen Zusammenarbeit; keine öffentliche Investitionsofferte oder Konditionszusage.',
   offerState: 'confidential_contact_only',
   grantsAccess: false,
   checkoutEnabled: false,
