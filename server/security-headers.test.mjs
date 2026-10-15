@@ -20,3 +20,10 @@ test('HTML receives exact hashes for inline CSS and known attribute styles', () 
   assert.notEqual(contentSecurityPolicyForHtml('<style>body { color: blue; }</style>'), policy);
   assert.match(contentSecurityPolicyForHtml('<main>safe</main>'), /style-src-attr 'none'/);
 });
+
+test('SEO JSON-LD is allowed only by content-specific script hash', () => {
+  const html = '<script id="capital-ai-seo-jsonld" type="application/ld+json">{"@context":"https://schema.org"}</script>';
+  const csp = contentSecurityPolicyForHtml(html);
+  assert.match(csp, /script-src 'self' https:\/\/www\.googletagmanager\.com\/gtag\/js 'sha256-/);
+  assert.notEqual(csp, contentSecurityPolicyForHtml(html.replace('schema.org', 'example.org')));
+});

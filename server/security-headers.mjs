@@ -29,10 +29,15 @@ export function contentSecurityPolicyForHtml(html) {
     .map(match => match[1]);
   const attributeStyles = [...html.matchAll(/\sstyle\s*=\s*(["'])(.*?)\1/gi)]
     .map(match => match[2]);
+  // First-party SEO JSON-LD blocks are inert but may still be evaluated by CSP.
+  // Allow only the exact server-rendered JSON-LD bytes, not arbitrary inline JS.
+  const jsonLdHashes = [...html.matchAll(/<script\b[^>]*\btype=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script\s*>/gi)]
+    .map(match => sha256Source(match[1]));
   const styleHashes = [...new Set(elementStyles.map(sha256Source))];
   const attrHashes = [...new Set(attributeStyles.map(sha256Source))];
   return [
-    ...CSP_BASE,
+    ...CSP_BASE.filter(directive => !directive.startsWith('script-src ')),
+    ["script-src 'self' https://www.googletagmanager.com/gtag/js", ...new Set(jsonLdHashes)].join(' '),
     ["style-src 'self'", ...styleHashes].join(' '),
     ["style-src-attr 'none'", ...(attrHashes.length ? ["'unsafe-hashes'", ...attrHashes] : [])].join(' ')
       .replace("style-src-attr 'none' 'unsafe-hashes'", "style-src-attr 'unsafe-hashes'"),
