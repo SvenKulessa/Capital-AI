@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
-import { EyeOff, Move, Settings, X } from 'lucide-react';
+import { EyeOff, Move, Settings, StickyNote, X } from 'lucide-react';
+import { BuddyStickyNotes } from './BuddyStickyNotes';
 import { clampHeroBuddyPoint } from './heroBuddyPosition';
 import { PRICE_ALERTS_ENABLED } from '../features/alerts/featureFlags';
 
@@ -66,6 +67,8 @@ function lineFor(reason: AssistReason) {
 
 export function HeroBuddy(props: HeroBuddyProps) {
   const [open, setOpen] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
+  const [noteSource, setNoteSource] = useState('');
   const [avatarLoaded, setAvatarLoaded] = useState(false);
   const [avatarFailed, setAvatarFailed] = useState(false);
   const chatPanelId = 'capital-ai-hero-buddy-panel';
@@ -207,6 +210,7 @@ export function HeroBuddy(props: HeroBuddyProps) {
     { label: 'Whale Radar', run: () => props.onOpenWhaleRadar?.() },
     ...(PRICE_ALERTS_ENABLED ? [{ label: 'Alerts', run: () => props.onOpenAlerts?.() }] : []),
     { label: 'Login', run: () => props.onNavigate?.('/login') },
+    { label: 'Notizen', run: () => setNotesOpen(value => !value) },
   ], [props]);
 
   const send = (text: string) => {
@@ -324,6 +328,15 @@ export function HeroBuddy(props: HeroBuddyProps) {
                   </button>
                 </div>
               </div>
+              {notesOpen && (
+                <section aria-label="Private JaJa-Notizen" className="mb-3 rounded-xl border border-amber-400/30 bg-slate-950 p-2">
+                  <div className="mb-2 flex items-center justify-between">
+                    <p className="font-semibold text-amber-200">Notizen im privaten Dashboard</p>
+                    <button type="button" onClick={() => setNotesOpen(false)} aria-label="Notizen schließen" className="rounded p-2 text-slate-200"><X className="h-4 w-4" /></button>
+                  </div>
+                  <BuddyStickyNotes initialText={noteSource} />
+                </section>
+              )}
               {settingsOn ? (
                 <div className="mb-2 rounded-xl border border-slate-700 bg-[#030716] px-2 py-2">
                   <p className="text-[11px] text-slate-300">Schlüssel aus Render. Kostenpflichtige Schlüssel werden nicht genutzt. Die Antwort bleibt lokal.</p>
@@ -354,7 +367,12 @@ export function HeroBuddy(props: HeroBuddyProps) {
               ) : null}
               <div role="log" aria-label="Chatverlauf" aria-live="polite" aria-relevant="additions text" className="max-h-52 space-y-2 overflow-y-auto">
                 {messages.map((message) => (
-                  <p key={message.id} className={`rounded-xl px-2 py-1.5 ${message.role === 'user' ? 'ml-6 bg-amber-400 text-black' : 'mr-4 bg-slate-900'}`}>{message.text}</p>
+                  <div key={message.id}>
+                    <p className={'rounded-xl px-2 py-1.5 ' + (message.role === 'user' ? 'ml-6 bg-amber-400 text-black' : 'mr-4 bg-slate-900')}>{message.text}</p>
+                    <button type="button" className="min-h-9 px-2 text-[11px] text-amber-200 underline" onClick={() => { setNoteSource(message.text); setNotesOpen(true); }} aria-label="Chat-Nachricht als Notiz übernehmen">
+                      <StickyNote className="mr-1 inline h-3 w-3" />Als Notiz übernehmen
+                    </button>
+                  </div>
                 ))}
               </div>
               <div className="mt-2 flex flex-wrap gap-1">

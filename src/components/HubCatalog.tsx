@@ -229,6 +229,7 @@ export const MAIN_HUBS_CONFIG: Record<MainHubId, MainHubDefinition> = {
         tags: ['Skill-Test', 'Zertifikat'],
         path: '/learning?tab=quiz',
       },
+      { id: 'quizzes', name: 'Quizzes & Portfolio-Risiko', icon: <GraduationCap className="h-4 w-4 text-amber-300" />, shortDesc: 'Quant Tagesquiz mit Login sowie Portfolio-Risiko-Lernquiz mit Lernabzeichen', path: '/learning?tab=quizzes' },
       { id: 'intelligence-catalogs', name: 'Financial Intelligence Kataloge',
         icon: <Layers className="h-4 w-4 text-cyan-300" />,
         shortDesc: 'Datenquellen, Formeln, Scoring, Blueprints und Evidence nachlesen',
