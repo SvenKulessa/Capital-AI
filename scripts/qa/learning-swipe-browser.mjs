@@ -52,6 +52,7 @@ const mediaPage=await browser.newPage();await fixture(mediaPage);await mediaPage
 const playback=await mediaPage.evaluate(async()=>{const video=document.createElement('video');video.muted=true;video.src='/learning/videos/capital-ai-tour-short-1080x1920.mp4';document.body.append(video);await video.play();await new Promise(resolve=>setTimeout(resolve,400));return {duration:video.duration,time:video.currentTime,frames:video.getVideoPlaybackQuality().totalVideoFrames,error:video.error?.code??null};});
 assert.equal(playback.duration,20);assert.ok(playback.time>0);assert.ok(playback.frames>0);assert.equal(playback.error,null);result.cases.push({h264VideoPlayback:'PASS',decodedFrames:playback.frames,duration:playback.duration});await mediaPage.close();
 for(const width of [320,390,768,1440]){
+ noteStores.set('alice','QA fixture');
  const page=await browser.newPage({viewport:{width,height:900},reducedMotion:'reduce'});await fixture(page);
  await page.goto('http://127.0.0.1:4173/learning?tab=flashcards',{waitUntil:'networkidle'});
 
