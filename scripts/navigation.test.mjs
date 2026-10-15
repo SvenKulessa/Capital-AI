@@ -539,3 +539,41 @@ test('private dashboard separates unsaved editor text from last acknowledged not
   assert.match(dashboard, /key=\{session\.user!\.id\}/);
   assert.match(dashboard, /isNotesResponse\(body, userId\)/);
 });
+
+
+test('roadmap OSS tooling navigator connects existing skills, live catalog paths and commercially declared candidates without execution', async () => {
+  const { ROADMAP_TOOL_WORKSTREAMS, ROADMAP_ORCHESTRATORS, routeRoadmapTools, repoPathsPresent } =
+    await import('../src/data/roadmapToolOrchestration.ts');
+  const { RoadmapSkillOrchestrationPanel } = await import('../src/components/RoadmapSkillOrchestrationPanel.tsx');
+  const { renderToStaticMarkup } = await import('react-dom/server');
+  const React = await import('react');
+  assert.equal(ROADMAP_TOOL_WORKSTREAMS.length, 5);
+  assert.equal(new Set(ROADMAP_TOOL_WORKSTREAMS.map(item => item.id)).size, 5);
+  const owners = ['PRODUCT', 'MARKET', 'PLATFORM', 'TRUST', 'GROWTH'];
+  for (const stream of ROADMAP_TOOL_WORKSTREAMS) {
+    assert.ok(owners.includes(stream.domain));
+    assert.ok(stream.skills.length > 0);
+    assert.ok(stream.sourcePaths.length >= 2);
+    for (const skill of stream.skills) {
+      assert.match(skill, /^[a-z0-9-]+$/);
+    }
+    assert.ok(stream.destination.startsWith('/'));
+    assert.ok(routeRoadmapTools(stream.id).candidates.length > 0);
+  }
+  assert.ok(ROADMAP_ORCHESTRATORS.some(x => x.name.includes('Node.js') && x.mode === 'EXISTING_REPO'));
+  for (const candidate of ROADMAP_ORCHESTRATORS) {
+    if (candidate.mode === 'CANDIDATE_NOT_INSTALLED') {
+      assert.match(candidate.license, /MIT|Apache-2\.0/);
+      assert.match(candidate.licenseUrl, /^https:\/\/github.com\//);
+    }
+  }
+  assert.equal(repoPathsPresent(['a','b'], ['a','c']), 1);
+  const markup = renderToStaticMarkup(
+    React.createElement(RoadmapSkillOrchestrationPanel, { sourceSha: 'a'.repeat(40), entryPaths: ['scripts/growth/pr-merge-social-batch.mjs'], freshness: 'LIVE' }));
+  assert.match(markup, /Roadmap.*Skills.*Orchestrierung/);
+  assert.match(markup, /LangGraph JS/);
+  assert.match(markup, /Temporal TypeScript SDK/);
+  assert.match(markup, /Kandidat, nicht installiert/);
+  assert.match(markup, /\/studio\?tab=content/);
+  assert.doesNotMatch(markup, /type="submit"/);
+});
