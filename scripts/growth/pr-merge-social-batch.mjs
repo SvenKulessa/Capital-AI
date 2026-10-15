@@ -137,14 +137,19 @@ export async function accessibilityWorker(news, {fileStat=stat}={}) {
   }};
 }
 
-export function renderDraftHtml(bundle) {
+export function renderDraftHtml(bundle, watermarkBytes) {
+  if (!watermarkBytes || digest(watermarkBytes) !== BRAND_SHA256) {
+    throw Error('SOCIAL_BATCH_WATERMARK_DIGEST_MISMATCH');
+  }
+  // Standalone previews must not depend on remote same-origin-only resources.
+  const watermarkSrc = 'data:image/webp;base64,' + Buffer.from(watermarkBytes).toString('base64');
   const headline = escapeHtml(bundle.headline);
   const body = escapeHtml(bundle.article);
   const sources=(bundle.sourcePrs || []).filter(p=>Number.isSafeInteger(p.number)&&p.number>0)
     .map(p=>'<li><a href="https://github.com/'+REPO+'/pull/'+p.number+'">GitHub Pull Request #'+p.number+'</a></li>').join('');
   return '<!doctype html><html lang="de"><head><meta charset="utf-8">'+
     '<meta name="viewport" content="width=device-width,initial-scale=1">'+
-    '<meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; img-src https://capital-ai.online; style-src &#39;unsafe-inline&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;">'+
+    '<meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; img-src data:; style-src &#39;unsafe-inline&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;">'+
     '<title>'+headline+' · CAPITAL-AI</title><style>'+
     '*{box-sizing:border-box}body{margin:0;background:#02050e;color:#f8fafc;font:1rem/1.65 system-ui,sans-serif}'+
     'main{position:relative;isolation:isolate;max-width:58rem;margin:3rem auto;padding:clamp(1rem,4vw,3rem);border:1px solid #53607b;background:#090e21;border-radius:1.5rem}'+
@@ -153,7 +158,7 @@ export function renderDraftHtml(bundle) {
     '.status{font-weight:bold;color:#f5c453}pre{font:inherit;white-space:pre-wrap;overflow-wrap:anywhere}'+
     'a{color:#77d9ff}a:focus-visible{outline:3px solid #f5c453;outline-offset:4px}'+
     '@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}'+
-    '</style></head><body><main><img class="watermark" src="'+BRAND_URL+'" alt="" aria-hidden="true">'+
+    '</style></head><body><main><img class="watermark" src="'+watermarkSrc+'" alt="" aria-hidden="true">'+
     '<p class="status">ENTWURF · NICHT VERÖFFENTLICHT</p><h1>'+headline+'</h1>'+
     '<p>Quellengebundener Entwicklungsbericht. Keine Bestätigung eines Live-Deployments und keine Anlageberatung.</p>'+
     '<pre>'+body+'</pre><section aria-labelledby="sources-heading"><h2 id="sources-heading">Quellen</h2><ol>'+sources+'</ol></section>'+
@@ -207,7 +212,7 @@ export async function runBatch(news, {expectedLast,mergedSha,env=process.env,fet
     socialEngine:{adapter:'CONTENT_SOCIAL_PACKAGE',publicationAuthority:'SOCIAL_MEDIA_ENGINE_ONLY',
       approvalRefs:[],deliveryReceipts:[],publicPublishAllowed:false},
   };
-  return {outcome,html:renderDraftHtml({headline,article:news.article,sourcePrs:news.sourcePrs})};
+  return {outcome,html:renderDraftHtml({headline,article:news.article,sourcePrs:news.sourcePrs},watermarkBytes)};
 }
 
 async function cli(){
