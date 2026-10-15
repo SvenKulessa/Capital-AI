@@ -1,22 +1,12 @@
-# Landingpage & X Eintrag: Quizzes Tab + Buddy Notes
+# Landingpage & X – Entwurf, nicht veröffentlicht
 
-## Landingpage Snippet
+**Freigabe erst bei bestandener CI und separat verifizierter Production-Runtime.**
 
-**Neuer Quizzes-Tab im Learning Hub**
-Zwei Kategorien: Quant & Trader Skill-Check und Portfolio-Risiko Quiz mit Zertifikat-Badge. Barrierefrei, interaktiv, synthetische Daten.
+Learning-Hub-Quizzes: Der vorhandene Quant-/Trader-Skill-Check verwendet weiterhin die serverseitige Tageslimit- und Entitlement-Logik. Daneben steht ein Portfolio-Risiko-Lernquiz mit 15 didaktischen, synthetischen Fragen, einer lokalen Auswertung und einem **nicht offiziell anerkannten Lernabzeichen** zur Verfügung.
 
-**JaJa Buddy Notizen**
-Speichere Chat-Inhalte als private Sticky Notes oder Vokabelkarten direkt im Dashboard. Mit Checkbox, Farbauswahl und lokaler Zusammenfassung.
+JaJa Buddy: Chat-Inhalte können als private Notizen im bestehenden benutzergebundenen Dashboard gespeichert werden. Checkmark, Farbe, Löschen und lokale extraktive Kurzfassung sind vorgesehen.
 
-## X Post Vorlage
+X-Textentwurf:
+> Finanzbildung im Capital-AI Learning Hub: Quant-Tagesquiz und 15 Portfolio-Risiko-Lernfragen, ohne Anlageberatung. JaJa Buddy ermöglicht persönliche Notizen im privaten Dashboard. https://capital-ai.online/learning
 
-Neuer Quizzes-Tab im Capital-AI Learning Hub:
-
-→ Quant Skill-Check
-→ Portfolio-Risiko Quiz (15 Fragen + Zertifikat)
-
-Plus: JaJa Buddy Notizen – Chat-Inhalte als private Sticky Notes mit lokaler Zusammenfassung.
-
-https://capital-ai.online/learning
-
-#CapitalAI #LearningHub #Finanzbildung
+**Kein automatisches X-Publishing allein durch einen Commit.**

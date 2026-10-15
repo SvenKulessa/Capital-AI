@@ -1,23 +1,26 @@
-# Implementation Evidence – Quizzes Tab + JaJa Buddy Notes
+# PR #522 – Reparatur und technische Evidence
 
-**Branch:** capital-ai-product/learning-quizzes-tab-notes-20261015
-**Status:** CODE_PRESENT (partial integration due to large portal file)
+**Basis:** `main` = `68467751155d4a0ee0a9a2d8a971babdfaf19287`  
+**Voriger Head:** `fb6f84d2cb1e63c3c1427f9f6d99fad3e2c482d4`  
+**Domain:** PRODUCT / **CODE_PRESENT:** vorbereitet / **TEST_PASS:** NOT_PROVEN / **PRODUCTION_READY:** NO
 
-## Umgesetzt
+## Änderungen
 
-- `src/features/learning/QuizzesTab.tsx` – barrierefreier Tab mit zwei Kategorien (ARIA, keyboard, labels)
-- `src/components/BuddyStickyNotes.tsx` – lokale Sticky Notes mit Checkbox, Farbe, extractiver Zusammenfassung
-- `src/components/HeroBuddy.tsx` – Notiz-Button und Notes-Panel vorbereitet
-- `src/features/learning/LearningPortalPage.tsx` – quizzes Tab-Typ und Render-Hook vorbereitet
-- Evidence-Dateien für Datenschutz, Landing und X
+1. Vollständiges `LearningPortalPage.tsx` aus `main` wiederhergestellt. Bestehende serverseitige Quant-Quiz-Consume-Logik, Entitlements, Glossar, Simulator und SEO erhalten. Neuer Tab `quizzes` referenziert den vorhandenen Quant-Skill-Check und ein zusätzliches didaktisches Portfolio-Quiz.
+2. `HeroBuddy.tsx` vollständig auf Basis von `main` wiederhergestellt, darunter `openHeroBuddy`, Avatar-, Drag-, Chat- und Einstellfunktionen. Zusätzlicher Notizdialog und Übernahme einzelner Chatnachrichten.
+3. `BuddyStickyNotes.tsx` auf bestehende authentifizierte `/api/profile/notes`-API mit serverseitiger Identitätsbindung und `expectedUserId` umgestellt; keine globale Browserablage.
+4. Neues `PortfolioRiskQuiz.tsx` mit 15 synthetischen Fragen, barrierearmen Radio-Gruppen, Auswertung und nicht-offiziellem Lernabzeichen. Navigation in `HubCatalog.tsx` und `shared/hub-routes.mjs`.
+5. `shared/seo-source-provenance.mjs` mit geändertem Portal-Fingerprint und zwei betroffenen Quell-Digests.
+6. Regressionstests in `learningPolicy.test.tsx`.
 
-## Datenschutz
-Notizen bleiben ausschließlich lokal (localStorage). Keine Übertragung an Server. Zusammenfassung rein clientseitig und extraktiv.
+## Prüfbefehle
 
-## Nächste Schritte
-1. Vollständige Wiederherstellung und Integration der LearningPortalPage (bestehende Logik + QuizzesTab-Render).
-2. HeroBuddy-Notiz-Button final einbinden.
-3. Datenschutzseite aktualisieren.
-4. Landingpage und X-Post veröffentlichen.
+```bash
+node --import tsx --test src/features/learning/learningPolicy.test.tsx
+node --import tsx --test scripts/navigation.test.mjs
+node --test scripts/seo-source-provenance-drift.test.mjs
+npm run build
+gh pr checks 522 --repo SvenKulessa/Capital-AI
+```
 
-Alle Änderungen gemäß AGENTS.md. Keine neuen Dependencies.
+Erst bei vollständig bestandenen erforderlichen Tests und erforderlichen GitHub-Rulesets ist der Merge zulässig. Nach einem Merge ist das Deployment separat zu prüfen. Es werden keine kostenpflichtigen Provider, NATS/Rust-Bridges oder externen Marketing-Publishingdienste aktiviert.

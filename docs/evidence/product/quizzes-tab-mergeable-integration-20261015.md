@@ -1,33 +1,12 @@
-# Mergeable Integration – Quizzes Tab
+# PR #522 – Integration anstelle früherer Platzhalter
 
-**Status:** COMPONENTS_READY – Portal integration requires precise patch on full file
+Die vorherige Dokumentation behauptete fälschlich, dass Quizzes und Buddy bereits vollständig integriert seien. Der reparierte Code stellt zuerst Portal und Buddy aus `main` wieder her und integriert dann die Ergänzungen.
 
-## Exact changes for LearningPortalPage.tsx (from main)
+- `LearningPortalPage.tsx`: vollständige Originalstruktur erhalten, zusätzlicher Quizzes-Tab mit Deep-Link.
+- `HeroBuddy.tsx`: `openHeroBuddy` und vollständige Interaktionslogik erhalten, Notizen ergänzt.
+- `PortfolioRiskQuiz.tsx`: 15 synthetische Lernfragen mit eigener Auswertung.
+- Quant-Skill-Check: keine Umgehung der vorhandenen serverseitigen Tagesfrage und Learning-Entitlements.
+- JaJa-Notizen: Nutzung des bestehenden privaten, serverseitig gebundenen Dashboard-Notizvertrags.
+- `shared/seo-source-provenance.mjs`: Quellnachweise im selben Commit angepasst.
 
-1. Add after HubNavigationPanel import:
-```ts
-import { QuizzesTab } from './QuizzesTab';
-```
-
-2. Update type and array:
-```ts
-export type LearningPortalTab = 'glossar' | 'flashcards' | 'guides' | 'patterns' | 'videos' | 'quiz' | 'quizzes' | 'news' | 'kontakt' | 'simulator';
-const LEARNING_TABS: readonly LearningPortalTab[] = ['glossar', 'flashcards', 'guides', 'patterns', 'videos', 'quiz', 'quizzes', 'news', 'kontakt', 'simulator'];
-```
-
-3. In breadcrumb:
-```tsx
-{activeTab === 'quizzes' && 'Quizzes · Skill-Checks'}
-```
-
-4. After simulator render:
-```tsx
-{activeTab === 'quizzes' && <QuizzesTab entitled={entitled} />}
-```
-
-## HeroBuddy.tsx
-Add import and Notiz action that opens BuddyStickyNotes panel (local only).
-
-**QuizzesTab.tsx and BuddyStickyNotes.tsx are complete and mergeable.**
-
-These changes keep the existing logic intact and are the minimal path to a mergeable PR under AGENTS.md.
+**Status:** technische CI und Production-Readbacks müssen für den reparierten PR-Head gesondert geprüft werden. Kein ungeprüfter Merge oder Marketing-Publish.
