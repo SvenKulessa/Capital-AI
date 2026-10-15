@@ -1,13 +1,14 @@
 {
   "schema": "CAPITAL_AI_LINEAR_POST_MERGE_CORRELATION@1",
-  "mainSha": "8ec8ce9c768115eabe7d3a5d745abac35fd8f415",
-  "mergedPr": 493,
-  "targetPr": 492,
-  "targetBranch": "capital-ai-trust/youtube-oauth-privacy-recipients-20261014",
-  "targetHeadSha": "bc5e73c631ff8c357805d8acfe4875b4e977ef35",
+  "mainSha": "f42da6e7b0f561474ef80bc257880ddf1b7ae3d2",
+  "mergedPr": 423,
+  "targetPr": 446,
+  "targetBranch": "capital-ai-growth/x-oauth-supabase-edge-20261013",
+  "targetHeadSha": "6d79d4f0e962fec2f79d90d5cc8243f2a8d010d6",
   "exactOverlap": [
     ".dockerignore",
-    "Dockerfile"
+    "Dockerfile",
+    "package.json"
   ],
   "authority": "EVIDENCE_ONLY",
   "mergeAuthority": false,

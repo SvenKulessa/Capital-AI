@@ -208,6 +208,7 @@
 !scripts/export-mail-templates.mjs
 !scripts/seo-content-manifest.test.mjs
 !scripts/merge-milestone.mjs
+!scripts/merge-milestone-pr-plan.mjs
 !scripts/merge-milestone.test.mjs
 !scripts/seo-source-provenance-drift.test.mjs
 !scripts/refresh-seo-source-provenance.mjs
@@ -426,8 +427,4 @@
 !public/youtube-private-upload.js
 !supabase/migrations/20261013030655_youtube_private_upload_jobs.sql
 
-!shared/youtube-privacy.mjs
-!supabase/migrations/20261014205919_youtube_owner_revocation_cleanup.sql
-
-!scripts/youtube-privacy-revocation-db.sql
 !shared/public-search-focus.mjs
