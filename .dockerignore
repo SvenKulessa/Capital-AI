@@ -104,6 +104,8 @@
 !server/telegram.mjs
 !server/privacy.mjs
 !server/http-security.mjs
+!server/security-headers.mjs
+!server/api-rate-policy.mjs
 !server/mta-sts.mjs
 !server/mta-sts.test.mjs
 !server/well-known.mjs

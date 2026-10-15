@@ -61,6 +61,9 @@ jobs:
             scripts/npm-security-patch-policy.test.mjs \
             scripts/percentage-parser.test.mjs \
             scripts/growth-google-authority.test.mjs \
+            server/security-headers.test.mjs \
+            server/api-rate-policy.test.mjs \
+            scripts/mcp-isolation.test.mjs \
             scripts/gsc-service-account-readback.test.mjs \
             server/observability.test.mjs \
             server/prompt-injection-guard.test.mjs \
