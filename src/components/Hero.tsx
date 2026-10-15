@@ -105,15 +105,6 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
                 className="absolute inset-0 h-full w-full object-contain object-right opacity-95"
               />
             </picture>
-            <img
-              src="/branding/universe/hero-universe-orbit.svg"
-              alt=""
-              aria-hidden="true"
-              width={512}
-              height={512}
-              decoding="async"
-              className="hero-universe-vector absolute right-[1%] top-[2%] w-[18%] opacity-75"
-            />
           </div>
           {/* Atmospheric falloff around the static artwork. */}
           <div className="absolute inset-0 rounded-full bg-radial from-transparent via-transparent to-[#02050e] opacity-40" />
