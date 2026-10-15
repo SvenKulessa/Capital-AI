@@ -176,7 +176,7 @@ export const Header: React.FC<HeaderProps> = ({
   const isOwner = verifiedOwner(authSession);
   const activeHub = hubBrandForRoute(currentRoute);
 
-  const navigateAccount = (path: '/profile' | '/profile/security' | '/profile/workspace') => {
+  const navigateAccount = (path: '/profile' | '/profile/security' | '/profile/workspace' | '/profile/rights' | '/profile/subscription' | '/profile/dashboard') => {
     setIsAccountOpen(false);
     setIsMenuOpen(false);
     if (onNavigate) onNavigate(path);
