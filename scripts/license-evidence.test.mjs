@@ -81,12 +81,12 @@ test('README fallback is version bounded and includes the actual license text', 
 });
 
 test('Nodemailer review requires the exact registry artifact and unchanged license text', t => {
-  const f = fixture(t, 'MIT-0', '10.0.16', 'nodemailer');
+  const f = fixture(t, 'MIT-0', '10.1.0', 'nodemailer');
   const currentLock = JSON.parse(readFileSync(new URL('../package-lock.json', import.meta.url)));
   const reviewed = currentLock.packages['node_modules/nodemailer'];
-  const license = readFileSync(new URL('../docs/licenses/nodemailer-10.0.16-MIT-0.txt', import.meta.url));
+  const license = readFileSync(new URL('../docs/licenses/nodemailer-10.1.0-MIT-0.txt', import.meta.url));
   mkdirSync(join(f.root, 'docs/licenses'), { recursive: true });
-  writeFileSync(join(f.root, 'docs/licenses/nodemailer-10.0.16-MIT-0.txt'), license);
+  writeFileSync(join(f.root, 'docs/licenses/nodemailer-10.1.0-MIT-0.txt'), license);
   const writeLock = entry => writeFileSync(join(f.root, 'package-lock.json'), JSON.stringify({
     lockfileVersion: 3, packages: { '': {}, 'node_modules/nodemailer': entry },
   }));
@@ -101,7 +101,7 @@ test('Nodemailer review requires the exact registry artifact and unchanged licen
     assert.equal(lockInventory(f.root).packages[0].metadataStatus, 'UNREVIEWED');
   }
   writeLock(reviewed);
-  writeFileSync(join(f.root, 'docs/licenses/nodemailer-10.0.16-MIT-0.txt'), 'altered license');
+  writeFileSync(join(f.root, 'docs/licenses/nodemailer-10.1.0-MIT-0.txt'), 'altered license');
   assert.equal(lockInventory(f.root).packages[0].metadataStatus, 'UNREVIEWED');
 });
 
