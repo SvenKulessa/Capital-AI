@@ -44,6 +44,8 @@ test('real canonical watermark is digest-pinned and public-domain-facing but dra
     ['accessibility-engineering','accessibility-advisory']);
   assert.match(html, /class="watermark"/);
   assert.match(html, /opacity:.09/);
+  assert.match(html, /sources-heading/);
+  assert.match(html, /GitHub Pull Request #/);
   assert.match(html,/alt="" aria-hidden="true"/);
   assert.match(html,/ENTWURF/);
   assert.doesNotMatch(html,/<script/);
@@ -87,4 +89,13 @@ test('watermark modifications, missing skills and preview XSS are blocked',async
   assert.match(html,/&lt;script&gt;/);
   assert.equal(toolSuitability().length,3);
   assert.equal(toolSuitability()[2].decision,'NOT_ENABLED');
+});
+
+test('workflow is count-scoped to the existing milestone and never invokes a publisher',()=>{
+  const workflow=readFileSync('.github/workflows/merge-milestones.yml','utf8');
+  assert.match(workflow,/if: \$\{\{ steps\.milestones\.outputs\.news != '' \}\}/);
+  assert.match(workflow,/NEWS_MILESTONE_PR: \$\{\{ steps\.milestones\.outputs\.news \}\}/);
+  assert.match(workflow,/node --import tsx scripts\/growth\/pr-merge-social-batch\.mjs/);
+  assert.match(workflow,/social-merge-batch-\$\{\{ steps\.milestones\.outputs\.news \}\}/);
+  assert.doesNotMatch(workflow,/node scripts\/growth\/pr-merge-social-batch\.mjs.*publish/);
 });
