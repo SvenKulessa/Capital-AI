@@ -257,8 +257,9 @@
       "owner": "TRUST",
       "recordedState": "VERIFIED",
       "evidencePathsPresent": [
-        "src/utils/analytics.ts",
-        "scripts/privacy-analytics.test.mjs"
+        "src/utils/consentedAnalytics.ts",
+        "src/utils/consentedAnalytics.test.ts",
+        "src/privacy/cookieConsentV3.test.ts"
       ],
       "evidencePathsMissing": [],
       "externalEvidenceNotVerified": [],

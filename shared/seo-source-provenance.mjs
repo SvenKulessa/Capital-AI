@@ -26,8 +26,8 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
     contentSha256: '3f00e394989f780f39db8fbb2a02bd5a6f376ce1b20feaafe9d7901868946673',
   }),
   'src/components/LegalAndFaqPages.tsx': Object.freeze({
-    sourceBlobSha: '23565193267e6644e129a0a5246007c32f5600c0',
-    contentSha256: '6599f4031b90700732cc782ddeaeb5308715cac95dded83c6bbbf01f34c0c5d0',
+    sourceBlobSha: '0d79c688901b5539f2eb8339876efa6e8051f11e',
+    contentSha256: '800886d2e6b41b81448bae89e148d7f16d06ae1d538f9e29de6034694f14e675',
   }),
   'src/content/publicLegalContent.ts': Object.freeze({
     sourceBlobSha: '1eb9987953f78f66d1f6035a98157ac8deca39f7',
@@ -50,14 +50,14 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
     contentSha256: '3ed6075251e3921e33512014d4d3e5665d1bdf3f8ff6788bd1e6d23b30d4f443',
   }),
   'shared/legal-identity.mjs': Object.freeze({
-    sourceBlobSha: '5868a96454e8552fb9a7aa75a68823eb139d6330', contentSha256: '8fba4328a78256d3cd81077729e6db81aa7c4642e81ef2e8063034a97da5f9a9',
+    sourceBlobSha: '2e4f32a60f9c08acd5acfdb80debc4b5d205679e', contentSha256: '1b941717e64c93b0ba96687e86e3cdbd1cd345e360bb2fccbfb39c67efcabc0c',
   }),
   'src/privacy/privacyPolicy.ts': Object.freeze({
-    sourceBlobSha: '48787ed1025a4e9797e9be3c55feedab65a78f70', contentSha256: '2ba87c9f2f6fb95def7eafb2877a47dbf8c26696def13ccf2934268b14bd4fcf',
+    sourceBlobSha: '624f22699fe86ebdef127a74c72f9e47d10c33a0', contentSha256: '870b61789dcc13aabeba3f1dac037b61f274bb45811ba9f98c86d7a28e124bc5',
   }),
   'src/content/legalDocumentVersions.ts': Object.freeze({
-    sourceBlobSha: '1712f9487283d0c0305691f65ec74da55eb59c2d',
-    contentSha256: '41748c53b9014a191387fff5491248d396bc8dc6918cb1e3dd59a98e9abbf2a0',
+    sourceBlobSha: '669160803b36811afaeb625b083de38738de3787',
+    contentSha256: '61bc61965bade1fdbf3e8d37aa025a835f28c40eab6770ded10272e2708ab90a',
   }),
 });
 
@@ -66,13 +66,13 @@ const SEO_SOURCE_SET_DIGESTS = Object.freeze({
   'shared/blog-articles.mjs': '5220e5c7397020d001d765b7e6d8e023533d058561d7e9df885d83c79057f83c',
   'index.html|src/features/home/HomePage.tsx': '5f521d2e1ff939caf1449bf80d7d3e0698f0c4780d14f613c621f688097c6466',
   'shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': '0bea16ec57afd9fb71ebbca39f5db76a47f183beaca5ccf5ba7d707654e18ace',
-  'src/components/LegalAndFaqPages.tsx|src/content/publicLegalContent.ts': 'db49d8153e28fa1fbdd3c379159d7157adf3bc92414accd1d7941beff91a8cfc',
+  'src/components/LegalAndFaqPages.tsx|src/content/publicLegalContent.ts': 'cddb2c5e05bef221848ce191cd8462df755266243f79b9beb692e0e41bbc46b9',
   'shared/license-metadata.mjs|src/components/LicenseInformationPages.tsx': 'b3d4044f7173bf04767a6a56b7b0b22774aacb93bee08ef9b71ae1c4769a3b05',
   'shared/license-metadata.mjs|src/data/providerLicenseReview.ts': '98d2b1c966c071230d8b5554f132c198bf95c7df07e5b559fa82e2aa53f1c768',
   'OPEN_SOURCE_LICENSES.md|shared/license-metadata.mjs': 'db2cb5f53bcfb48b0fdd17adbeeefc2e69c38da81c11e4eac5ce736aa7654031',
-  'shared/legal-identity.mjs|src/components/LegalAndFaqPages.tsx': 'caa1eb260448d79d4622e887ce6ea150c2b0bbdc3bcf2010862edb77f4794ad7',
-  'src/components/LegalAndFaqPages.tsx|src/privacy/privacyPolicy.ts': '71af0110a3ffe4420cc8cfcadf816809e065028d9ae097983ae405f6e9d672c0',
-  'src/components/LegalAndFaqPages.tsx|src/content/legalDocumentVersions.ts': '72140471ab0ba8fb9aa870f311107682ebd1ab38d9eea6d01135ab35ff53dd77',
+  'shared/legal-identity.mjs|src/components/LegalAndFaqPages.tsx': '9fa78ac745e8f84cf70c3e6b5f816683a404dc6340576befa04bf6df47dccc5a',
+  'src/components/LegalAndFaqPages.tsx|src/privacy/privacyPolicy.ts': '70b9080e7c926b71e6645f043fc244e0515a97c5daea94cc1858221af53af657',
+  'src/components/LegalAndFaqPages.tsx|src/content/legalDocumentVersions.ts': '8fd7210d1bc9135ae5336b6ad2d937476397ef7b02496a4a5fdd3e597247c118',
   'shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs': 'ffa9f17789d3b3b758c3c5d0a3b8f1ab360fafadc8320d171a22e48610491dcf',
 });
 

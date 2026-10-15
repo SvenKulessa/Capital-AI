@@ -1,3 +1,4 @@
+import { YOUTUBE_POLICY, COMMERCE_NOTICE } from '../../shared/youtube-privacy.mjs';
 import { ProductDisclaimer } from './ProductDisclaimer';
 import { legalPageAccent } from '../../shared/hub-branding.mjs';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -463,6 +464,12 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
                   Diese Hinweise beschreiben den Dienst mit sicherer Anmeldung. Eine automatische Übernahme alter Finance-Konten oder ihrer Daten erfolgt nicht. GA4 wird nur mit gültiger Einwilligung zur Reichweitenmessung geladen; Werbung bleibt deaktiviert.
                 </p>
               </div>
+              <section className="space-y-2 text-sm" aria-label={YOUTUBE_POLICY.title}>
+                <h2 className="font-bold">{YOUTUBE_POLICY.title}</h2>
+                <p>{YOUTUBE_POLICY.acceptance}</p><p>{YOUTUBE_POLICY.use}</p>
+                <p><a className="underline" href={YOUTUBE_POLICY.terms}>YouTube-Nutzungsbedingungen</a>{' · '}<a className="underline" href={YOUTUBE_POLICY.privacy}>Google-Datenschutzerklärung</a>{' · '}<a className="underline" href={YOUTUBE_POLICY.revoke}>Google-Sicherheitseinstellungen: Zugriff widerrufen</a></p>
+                <p>{YOUTUBE_POLICY.withdrawal}</p><p><a className="underline" href="/api/social-media/youtube/account/connect">YouTube-Verbindung als angemeldeter Owner verwalten</a></p>
+              </section>
               <CookieStorageInventory />
               {PROCESSING_ACTIVITIES.map((activity) => (
                 <details key={activity.id} className="rounded-2xl bg-black/40 border border-slate-800/80 overflow-hidden">
@@ -701,6 +708,13 @@ export function LegalAndFaqPages({ route, onNavigate: navigate }: LegalAndFaqPag
                 </p>
               </section>
             </div>
+              <section className="space-y-2 text-sm" aria-label={YOUTUBE_POLICY.title}>
+                <h2 className="font-bold">{YOUTUBE_POLICY.title}</h2>
+                <p>{YOUTUBE_POLICY.acceptance}</p><p>{YOUTUBE_POLICY.use}</p>
+                <p><a className="underline" href={YOUTUBE_POLICY.terms}>YouTube-Nutzungsbedingungen</a>{' · '}<a className="underline" href={YOUTUBE_POLICY.privacy}>Google-Datenschutzerklärung</a>{' · '}<a className="underline" href={YOUTUBE_POLICY.revoke}>Google-Sicherheitseinstellungen: Zugriff widerrufen</a></p>
+                <p>{YOUTUBE_POLICY.withdrawal}</p><p><a className="underline" href="/api/social-media/youtube/account/connect">YouTube-Verbindung als angemeldeter Owner verwalten</a></p>
+              </section>
+            <section className="space-y-2 text-sm" aria-label={COMMERCE_NOTICE.title}><h2 className="font-bold">{COMMERCE_NOTICE.title}</h2>{COMMERCE_NOTICE.paragraphs.map(p => <p key={p}>{p}</p>)}</section>
             <a href="/agb/" className="inline-flex min-h-11 items-center rounded-xl border border-[#F5C453]/35 bg-[#F5C453]/10 px-4 py-2 text-sm font-semibold text-[#F5C453] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-[#F5C453]">Mehr lesen ↗</a>
           </motion.div>
         )}
