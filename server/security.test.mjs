@@ -29,6 +29,10 @@ test('HTTP security boundaries and static-file isolation', async () => {
     assert.equal(health.status, 200);
     assert.equal(health.headers.get('x-content-type-options'), 'nosniff');
     assert.equal(health.headers.get('x-frame-options'), 'DENY');
+    assert.equal(health.headers.get('cross-origin-opener-policy'), 'same-origin');
+    assert.equal(health.headers.get('cross-origin-resource-policy'), 'same-origin');
+    assert.equal(health.headers.get('strict-transport-security'), 'max-age=31536000; includeSubDomains');
+    assert.doesNotMatch(health.headers.get('content-security-policy'), /unsafe-inline|img-src[^;]*https:/);
     assert.equal(health.headers.get('cache-control'), 'no-store');
     const healthBody = await health.json();
     assert.equal(typeof healthBody.buildIdentity?.bound, 'boolean');
@@ -77,5 +81,36 @@ test('health exposes only validated deployment revision, separately from build a
       server.closeAllConnections();
       await new Promise(resolve => server.close(resolve));
     }
+  }
+});
+
+test('shared API dispatcher limits unauthenticated calls before module handlers', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'capital-api-rate-'));
+  await writeFile(path.join(root, 'index.html'), '<html><style>body{color:red}</style><div style="display:flex">test</div></html>');
+  const server = createApp(root, {
+    apiRateGate(pathname) {
+      return { allowed: false, group: pathname.includes('/auth/') ? 'password_login' : 'ai_compute', retryAfterSeconds: 60 };
+    },
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const base = 'http://127.0.0.1:' + server.address().port;
+  try {
+    for (const pathname of ['/api/auth/login/email', '/api/crypto/score', '/api/market/quote']) {
+      const response = await fetch(base + pathname);
+      assert.equal(response.status, 429, pathname);
+      assert.equal(response.headers.get('retry-after'), '60');
+      assert.deepEqual(await response.json(), { error: 'rate_limited' });
+    }
+    const health = await fetch(base + '/healthz');
+    assert.equal(health.status, 200);
+    const html = await fetch(base + '/profile');
+    assert.equal(html.status, 200);
+    const csp = html.headers.get('content-security-policy');
+    assert.match(csp, /style-src 'self' 'sha256-/);
+    assert.match(csp, /style-src-attr 'unsafe-hashes' 'sha256-/);
+  } finally {
+    server.closeAllConnections();
+    await new Promise(resolve => server.close(resolve));
+    await rm(root, { recursive: true, force: true });
   }
 });

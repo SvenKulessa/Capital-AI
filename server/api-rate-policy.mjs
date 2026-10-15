@@ -8,7 +8,7 @@ export const API_RATE_GROUPS = Object.freeze({
   password_login: { limit: 60, windowMs: 60_000, retryAfterSeconds: 60 },
   authentication: { limit: 180, windowMs: 60_000, retryAfterSeconds: 60 },
   ai_compute: { limit: 120, windowMs: 60_000, retryAfterSeconds: 60 },
-  api_other: { limit: 3600, windowMs: 60_000, retryAfterSeconds: 60 },
+  api_other: { limit: 2400, windowMs: 60_000, retryAfterSeconds: 60 },
 });
 
 // Match exact authentication/recovery boundaries before generic API routing.
@@ -29,7 +29,7 @@ export function createApiRateGate(now = Date.now) {
       [name, createLimiter(policy.limit, policy.windowMs, 1, now)]),
   );
   // Independent shared ceiling prevents a caller alternating all route groups.
-  const aggregate = createLimiter(5000, 60_000, 1, now);
+  const aggregate = createLimiter(2500, 60_000, 1, now);
   return pathname => {
     const group = apiRateGroup(pathname);
     if (!group) return { allowed: true, group: null, retryAfterSeconds: 0 };
