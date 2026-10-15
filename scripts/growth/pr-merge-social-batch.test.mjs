@@ -56,7 +56,11 @@ test('real parallel network adapters use fixed endpoints, limited public GitHub 
     urls.push(url);
     if(url === 'https://api.openai.com/v1/responses') {
       assert.equal(request.method,'POST');
-      assert.equal(JSON.parse(request.body).store,false);
+      const payload=JSON.parse(request.body);
+      assert.equal(payload.store,false);
+      assert.equal(payload.model,'gpt-6-luna');
+      assert.equal(payload.reasoning.effort,'none');
+      assert.equal(payload.max_output_tokens,550);
       return new Response(JSON.stringify({output_text:'Transparenter Entwicklungsbericht: PR-Merges nachlesen.'}));
     }
     assert.equal(url,'https://api.firecrawl.dev/v2/scrape');

@@ -68,3 +68,7 @@ Rollback: revert the single feature merge commit. The workflow then stops creati
 ### Business / monetization fit
 
 Draft summaries can promote the existing Learning Hub and rights-verified Blueprint explainers without inventing scores, live availability or conversion performance. Measure exposure and attributable purchases only behind the existing consent boundaries. Neither a technical CADS PASS nor a social post grants rights to market data, third-party music or AI voices.
+
+### Verified OpenAI request contract (2026-10-15)
+
+The bounded text worker uses `gpt-6-luna` via Responses with `reasoning.effort=none`, `store=false` and the existing 550-token cap. This follows the [current model documentation](https://developers.openai.com/api/docs/models/gpt-6-luna). The original GPT-4.1 mini selection is [deprecated for removal on 2027-01-14](https://developers.openai.com/api/docs/deprecations); the new integration does not introduce that scheduled shutdown dependency. Account access, actual provider execution and commercial approval remain separately unverified. No external API call was made by this contract review.
