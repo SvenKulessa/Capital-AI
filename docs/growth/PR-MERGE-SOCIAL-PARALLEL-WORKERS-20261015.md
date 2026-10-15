@@ -72,3 +72,7 @@ Draft summaries can promote the existing Learning Hub and rights-verified Bluepr
 ### Verified OpenAI request contract (2026-10-15)
 
 The bounded text worker uses `gpt-6-luna` via Responses with `reasoning.effort=none`, `store=false` and the existing 550-token cap. This follows the [current model documentation](https://developers.openai.com/api/docs/models/gpt-6-luna). The original GPT-4.1 mini selection is [deprecated for removal on 2027-01-14](https://developers.openai.com/api/docs/deprecations); the new integration does not introduce that scheduled shutdown dependency. Account access, actual provider execution and commercial approval remain separately unverified. No external API call was made by this contract review.
+
+### Standalone preview resource boundary
+
+The canonical site deliberately serves assets with `Cross-Origin-Resource-Policy: same-origin`. A standalone or downloaded HTML preview therefore embeds the exact SHA-256-verified WebP bytes as a `data:image/webp;base64` URL and permits only `img-src data:`. It makes no remote image request and renders under an opaque/file origin. The canonical asset URL remains provenance metadata; bytes, rights reference and CADS asset identity are unchanged. The renderer rejects missing or mismatched image bytes before producing HTML. This fixes an actual Chromium `ERR_BLOCKED_BY_RESPONSE.NotSameOrigin` reproduction without changing the site's resource isolation or any publication/cost gate.
