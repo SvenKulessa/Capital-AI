@@ -466,6 +466,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       'login/email',
       'login/google',
       'login/x',
+      'login/notion',
       'mobile-login',
       'mobile-exchange',
       'register',
@@ -632,8 +633,8 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       return true;
     }
 
-    if (action === 'login/google' || action === 'login/x') {
-      const provider = action === 'login/x' ? 'x' : 'google';
+    if (action === 'login/google' || action === 'login/x' || action === 'login/notion') {
+      const provider = action === 'login/x' ? 'x' : action === 'login/notion' ? 'notion' : 'google';
       if (!['GET', 'POST'].includes(req.method)) {
         res.setHeader('Allow', 'GET, POST');
         json(res, 405, { error: 'method_not_allowed' });
@@ -718,7 +719,7 @@ export function createAuth({ env = process.env, fetchImpl = fetch, now = Date.no
       if (
         flowCookie?.version !== 1 ||
         flowCookie.expires <= now() ||
-        (flowCookie.provider !== undefined && !['google', 'x'].includes(flowCookie.provider)) ||
+        (flowCookie.provider !== undefined && !['google', 'x', 'notion'].includes(flowCookie.provider)) ||
         !/^[A-Za-z0-9_-]{43}$/.test(String(flowCookie.flow || '')) ||
         (flow !== null && flowCookie.flow !== flow) ||
         !/^[A-Za-z0-9._~-]{43,128}$/.test(flowCookie.verifier || '') ||
