@@ -33,6 +33,8 @@ import { createLearningInquiry } from './learning-inquiry.mjs';
 import { createLearningSimulator } from './learning-simulator.mjs';
 import { createPrivacy } from './privacy.mjs';
 import { createLimiter } from './http-security.mjs';
+import { SECURITY_HEADERS, contentSecurityPolicyForHtml } from './security-headers.mjs';
+import { createApiRateGate } from './api-rate-policy.mjs';
 import { infrastructure } from './infrastructure.mjs';
 import { createScorerProxy } from './scorer-proxy.mjs';
 import { serveMtaSts } from './mta-sts.mjs';
@@ -84,7 +86,7 @@ const buildIdentity =
     ? { bound: true, sourceSha: embeddedSourceSha, builder: embeddedBuilder }
     : { bound: false, sourceSha: null };
 const mime = { '.mp4': 'video/mp4', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.txt': 'text/plain; charset=utf-8', '.json': 'application/json; charset=utf-8' };
-const headers = { 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'strict-origin-when-cross-origin', 'X-Frame-Options': 'DENY', 'Permissions-Policy': 'camera=(), microphone=(), geolocation=()', 'Strict-Transport-Security': 'max-age=31536000', 'Content-Security-Policy': "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self' https://www.googletagmanager.com; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com; frame-src 'self' https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" };
+const headers = SECURITY_HEADERS;
 const publicVocabularyEntries = vocabularyMetadata;
 const publicVocabularyCount = publicVocabularyEntries.length;
 const publicVocabularyMetadata = {
@@ -399,6 +401,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const marketQuoteLimit = createLimiter(120);
   const marketEvidenceLimit = createLimiter(60);
   const runtimeEnv = options.env || process.env;
+  const apiRateGate = options.apiRateGate || createApiRateGate();
   const repositoryToolCatalog = createRepositoryToolCatalog({ fetchImpl: options.fetchImpl || fetch, env: runtimeEnv });
   const scorerProxy = createScorerProxy({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, sourcePolicy: options.sourcePolicy });
   const vocabularyCheckout = createVocabularyCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
@@ -430,6 +433,13 @@ export function createApp(root = defaultRoot, options = {}) {
   }
   // Apply headers to API responses and OIDC redirects alike.
   for (const [key, value] of Object.entries(headers)) res.setHeader(key, value);
+  if (url.pathname.startsWith('/api/')) {
+    const rate = apiRateGate(url.pathname);
+    if (!rate.allowed) {
+      res.setHeader('Retry-After', String(rate.retryAfterSeconds));
+      return json(res, 429, { error: 'rate_limited' });
+    }
+  }
   if (serveMtaSts(req, res, url)) return;
   if (serveWellKnown(req, res, url)) return;
   if (await learningInquiry.handle(req, res, url, json)) return;
@@ -714,7 +724,10 @@ export function createApp(root = defaultRoot, options = {}) {
       body = Buffer.from(body.toString('utf8').replace(/<html lang="[^"]*"/, `<html lang="${locale}" data-locale-source="${source}"`));
       documentLocale = locale;
     }
-    res.writeHead(200, { ...headers, ...(documentLocale ? { 'Content-Language': documentLocale, 'Vary': 'Accept, CF-IPCountry, Accept-Language, Cookie' } : {}), ...(localeFromLandingPath(publicPath) ? { 'X-Robots-Tag': 'noindex, nofollow' } : {}), 'Cache-Control': path.extname(file) === '.html' ? 'no-store' : 'public, max-age=3600', 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(body);
+    const documentHeaders = path.extname(file) === '.html'
+      ? { ...headers, 'Content-Security-Policy': contentSecurityPolicyForHtml(body.toString('utf8')) }
+      : headers;
+    res.writeHead(200, { ...documentHeaders, ...(documentLocale ? { 'Content-Language': documentLocale, 'Vary': 'Accept, CF-IPCountry, Accept-Language, Cookie' } : {}), ...(localeFromLandingPath(publicPath) ? { 'X-Robots-Tag': 'noindex, nofollow' } : {}), 'Cache-Control': path.extname(file) === '.html' ? 'no-store' : 'public, max-age=3600', 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' }); res.end(body);
   } catch { res.writeHead(404, headers); res.end(); }
 });
   server.maxConnections = 256;
