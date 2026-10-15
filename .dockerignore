@@ -161,6 +161,8 @@
 !scripts/growth/learning-content-draft.mjs
 !scripts/growth/social-release-candidate.mjs
 !scripts/growth/social-release-candidate.test.mjs
+!scripts/growth/pr-merge-social-batch.mjs
+!scripts/growth/pr-merge-social-batch.test.mjs
 !scripts/generate-chart-learning.tsx
 
 !public/learning/
@@ -286,6 +288,8 @@
 !public/branding/badges/**
 !public/branding/social/
 !public/branding/social/**
+!public/branding/universe/
+!public/branding/universe/hero-universe-globe.webp
 !public/assets/
 !public/assets/jaja-avatar-transparent.webp
 !CAPITAL-AI-PRODUCT/

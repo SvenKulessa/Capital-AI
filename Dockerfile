@@ -56,6 +56,7 @@ COPY public/branding/capital-ai-logo.jpg ./public/branding/capital-ai-logo.jpg
 COPY public/branding/asset-pack ./public/branding/asset-pack
 COPY public/branding/badges ./public/branding/badges
 COPY public/branding/social ./public/branding/social
+COPY public/branding/universe/hero-universe-globe.webp ./public/branding/universe/hero-universe-globe.webp
 # Ship the approved JaJa avatar used by src/components/HeroBuddy.tsx.
 COPY public/assets/jaja-avatar-transparent.webp ./public/assets/jaja-avatar-transparent.webp
 COPY public/fonts ./public/fonts
@@ -96,7 +97,7 @@ COPY scripts/generate-jaja-3d.mjs ./scripts/generate-jaja-3d.mjs
 COPY scripts/export-mail-templates.mjs scripts/mail-templates.test.mjs ./scripts/
 COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/social-tool-license-evidence.test.mjs scripts/validate-social-tool-license-evidence.mjs scripts/frontend-security.test.mjs scripts/product-accessibility-browser.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
 COPY scripts/media ./scripts/media
-COPY scripts/growth/screener-learning-loop.test.mjs scripts/growth/learning-content-draft.mjs scripts/growth/social-release-candidate.mjs scripts/growth/social-release-candidate.test.mjs ./scripts/growth/
+COPY scripts/growth/screener-learning-loop.test.mjs scripts/growth/learning-content-draft.mjs scripts/growth/social-release-candidate.mjs scripts/growth/social-release-candidate.test.mjs scripts/growth/pr-merge-social-batch.mjs scripts/growth/pr-merge-social-batch.test.mjs ./scripts/growth/
 COPY scripts/generate-chart-learning.tsx ./scripts/generate-chart-learning.tsx
 COPY server/learning-inquiry.test.mjs ./server/learning-inquiry.test.mjs
 COPY scripts/activate-learning-measurement.mjs scripts/activate-learning-measurement.test.mjs scripts/generate-cookie-storage-notice.mjs ./scripts/
@@ -142,7 +143,7 @@ RUN --network=none node --test scripts/daily-dependency-watch.test.mjs scripts/s
     && node --test server/founder-access.test.mjs server/private-knowledge-vault.test.mjs server/blueprint-private-cloud.test.mjs server/blueprint-commerce.test.mjs server/historical-analytics-demo.test.mjs server/prompt-injection-guard.test.mjs server/vocabulary-checkout.test.mjs server/subscription-checkout.test.mjs server/cads-marketplace.test.mjs server/cads-commerce.test.mjs server/benchmark-runs.test.mjs server/benchmark-store.test.mjs server/public-artifact-policy.test.mjs scripts/cads-marketplace-migration.test.mjs scripts/cads-marketplace-production-manifest.test.mjs scripts/provider-query-guard-migration.test.mjs scripts/billing-catalog.test.mjs \
     && node --test server/user-provider-vault.test.mjs server/user-analysis-bindings.test.mjs server/private-provider-query.test.mjs server/provider-query-state.test.mjs server/kraken-order-dry-run.test.mjs server/uniswap-trading.test.mjs scripts/stripe-catalog-readback.test.mjs scripts/stripe-three-purchase-e2e.test.mjs scripts/benchmark-ledger-migration.test.mjs scripts/benchmark-cost-calibration.test.mjs \
     && node --import tsx --test server/advisor-security.test.mjs scripts/blueprint-evidence-contract.test.mjs \
-    && node --import tsx --test scripts/merge-milestone.test.mjs \
+    && node --import tsx --test scripts/merge-milestone.test.mjs scripts/growth/pr-merge-social-batch.test.mjs \
     && node --test scripts/branding-assets.test.mjs \
     && CAPITAL_AI_REQUIRE_INSTALLED_LICENSE_EVIDENCE=true node --test scripts/license-evidence.test.mjs \
     && node scripts/license-evidence.mjs \

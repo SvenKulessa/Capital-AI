@@ -102,6 +102,32 @@ jobs:
           echo "news=$news_number" >> "$GITHUB_OUTPUT"
           echo "roadmap_date=$roadmap_date" >> "$GITHUB_OUTPUT"
           echo "news_date=$news_date" >> "$GITHUB_OUTPUT"
+      # A 20-merge news milestone alone authorizes a DRAFT Social Engine handoff.
+      # Worker egress stays disabled unless explicitly configured by the Owner.
+      - name: Social Content Engine parallel worker handoff and CADS (draft only)
+        if: ${{ steps.milestones.outputs.news != '' }}
+        env:
+          NEWS_MILESTONE_PR: ${{ steps.milestones.outputs.news }}
+          GITHUB_MERGED_MAIN_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+          SOCIAL_BATCH_EXTERNAL_WORKERS: ${{ vars.SOCIAL_BATCH_EXTERNAL_WORKERS }}
+          OPENAI_API_KEY: ${{ secrets.SOCIAL_CONTENT_OPENAI_API_KEY }}
+          FIRECRAWL_API_KEY: ${{ secrets.SOCIAL_CONTENT_FIRECRAWL_API_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --import tsx --test scripts/growth/pr-merge-social-batch.test.mjs
+          node --import tsx scripts/growth/pr-merge-social-batch.mjs
+          echo '20-merge content handoff: draft Social Engine manifest + watermark preview + CADS evidence; no publishing.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Preserve CADS-reviewed Social Engine batch preview (no publish)
+        if: ${{ steps.milestones.outputs.news != '' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2 pinned
+        with:
+          name: social-merge-batch-${{ steps.milestones.outputs.news }}
+          path: |
+            artifacts/social-content-candidates/merge-batch-*.json
+            artifacts/social-content-candidates/merge-batch-*.html
+          if-no-files-found: error
+          retention-days: 14
       # Check both credentials before token minting; never print or persist private-key material.
       # An incomplete Owner setup must not turn a draft-only milestone into an authentication failure.
       - name: Check dedicated GitHub App configuration
