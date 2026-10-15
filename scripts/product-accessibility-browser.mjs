@@ -149,10 +149,12 @@ try {
   ], { stdio:'ignore' });
   chrome.on('error', () => {});
   let port;
-  for (let attempt = 0; attempt < 100; attempt++) {
+  // Cold Chromium startup on shared CI runners can exceed ten seconds.
+  // Keep page/assertion deadlines unchanged and still fail if the browser exits.
+  for (let attempt = 0; attempt < 300; attempt++) {
     try { port = Number((await readFile(join(profile,'DevToolsActivePort'),'utf8')).split('\n')[0]); if (port) break; }
     catch { /* still starting */ }
-    if (chrome.exitCode !== null) throw Error('CHROMIUM_EXITED');
+    if (chrome.exitCode !== null || chrome.signalCode !== null) throw Error('CHROMIUM_EXITED');
     await pause(100);
   }
   if (!port) throw Error('CHROMIUM_NOT_READY');

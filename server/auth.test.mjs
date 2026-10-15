@@ -1,4 +1,4 @@
-import { PRIVACY_NOTICE_VERSION } from '../shared/legal-identity.mjs';
+import { TERMS_VERSION, PRIVACY_NOTICE_VERSION } from '../shared/legal-identity.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
@@ -92,6 +92,8 @@ async function harness(envOverrides = {}, simulatorStore = new Map()) {
       assert.match(target.searchParams.get('redirect_to') || '', /^https:\/\/capital\.example\/$/);
       assert.equal(body.email, `${state.subject}@example.test`);
       assert.equal(body.data?.full_name, 'Test Owner');
+      assert.equal(body.data?.terms_version, TERMS_VERSION);
+      assert.equal(body.data?.privacy_version, PRIVACY_NOTICE_VERSION);
       if (body.password === 'rejected-password') {
         return Response.json({ error: 'signup_rejected' }, { status: 422 });
       }
@@ -516,6 +518,7 @@ test('Google signup rejects unconsented or cross-origin requests and records sig
     ]);
     assert.equal(h.state.consentWrites[0].every(row => row.user_id === h.state.subject), true);
     assert.equal(h.state.consentWrites[0].find(row => row.consent_type === 'privacy').document_version, PRIVACY_NOTICE_VERSION);
+    assert.equal(h.state.consentWrites[0].find(row => row.consent_type === 'terms').document_version, TERMS_VERSION);
   } finally {
     await h.stop();
   }

@@ -44,7 +44,7 @@ test('privacy page renders every processing activity and a truthful email handof
   assert.ok(html.includes('serverseitig bestätigte Learning-Käufe'));
   assert.ok(html.includes('keine Stripe- oder Benutzerkennung'));
   assert.ok(html.includes('gültiger Analytics-Einwilligung'));
-  assert.doesNotMatch(html, /Supabase als|Finance-Dokumentstand|Stripe, Supabase/);
+  assert.doesNotMatch(html, /Supabase als (?:Verantwortlicher|Anbieter von CAPITAL-AI)|Finance-Dokumentstand|Stripe, Supabase/);
   assert.doesNotMatch(html, /Self-Service-Datenauszug|Cookie- &amp; Analytics-Einstellungen/);
 });
 

@@ -106,6 +106,12 @@ async function execute(fetchImpl, keys, userId, input) {
   const validId = value => channel === 'X' ? XID.test(value || '') : /^UC[A-Za-z0-9_-]{22}$/.test(value || '');
   const validHandle = value => channel === 'X' ? HANDLE.test(value || '')
     : typeof value === 'string' && value.length > 0 && value.length <= 140;
+  if (['privacy_begin','privacy_finish','privacy_reconnect'].includes(operation)) {
+    abortUnless(channel === 'YOUTUBE');
+    return await jsonFetch(fetchImpl, keys.origin + '/rest/v1/rpc/capital_youtube_' + operation, {
+      method: 'POST', headers: adminHeaders(keys.admin), body: JSON.stringify({ p_user_id: userId }),
+    }, 32768);
+  }
   if (['credentials', 'refresh', 'private_claim', 'private_receipt', 'private_status'].includes(operation)) {
     abortUnless(channel === 'YOUTUBE');
     const accountUrl = new URL('/rest/v1/social_media_accounts', keys.origin);

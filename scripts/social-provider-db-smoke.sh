@@ -52,4 +52,6 @@ fi
 pg -f /work/scripts/social-provider-db-after.sql
 pg -f /work/scripts/social-token-refresh-db.sql
 pg -f /work/scripts/youtube-private-receipt-recovery-db.sql
+pg -f /work/supabase/migrations/20261014205919_youtube_owner_revocation_cleanup.sql
+pg -f /work/scripts/youtube-privacy-revocation-db.sql
 echo "PASS: Disposable PG17 migration, legacy preservation, OAuth CAS, RLS, owner isolation, parallel unique claim, single terminal log."
