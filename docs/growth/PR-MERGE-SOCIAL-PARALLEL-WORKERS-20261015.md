@@ -40,7 +40,7 @@ In the GitHub repository settings, configure:
 | `SOCIAL_BATCH_EXTERNAL_WORKERS` | Actions variable | unset | Must equal `enabled` to permit any provider call |
 | `SOCIAL_CONTENT_OPENAI_API_KEY` | Actions secret | unset | Backend-only OpenAI Responses API |
 | `SOCIAL_CONTENT_FIRECRAWL_API_KEY` | Actions secret | unset | Backend-only Firecrawl `/v2/scrape` |
- 
+
 The workflow runs with no secrets in deterministic **draft-only** mode. Enabling paid workers requires Owner approval of commercial terms, quota and costs; no automatic usage is enabled merely by merging this code. OpenAI requests use `store:false` and 550 output-token cap; Firecrawl is restricted to **two** exact public PR URLs from the source list per milestone, 10-second timeout each and 1,200-character snippets. Prompt injection, public PR bodies and scraped content are always **untrusted**; no arbitrary URL, private information, GitHub token or raw provider response is forwarded to the model or public content. Provider logs show status only and never expose secrets.
 
 ### Tool shortlist through the bounded CADS integration review

@@ -291,10 +291,11 @@ test('paused price alerts cannot render navigation or run background price check
 
 test('hero uses restored static artwork and shared product disclaimer', () => {
   const hero = readFileSync(new URL('../src/components/Hero.tsx', import.meta.url), 'utf8');
-  for (const asset of ['hero-universe-desktop.webp', 'hero-universe-tablet.webp', 'hero-universe-mobile.webp', 'hero-universe-orbit.svg']) {
+  for (const asset of ['hero-universe-desktop.webp', 'hero-universe-tablet.webp', 'hero-universe-mobile.webp']) {
     assert.ok(hero.includes(asset), asset);
   }
   assert.match(hero, /<picture>/);
+  assert.doesNotMatch(hero, /hero-universe-orbit\.svg/);
   assert.doesNotMatch(hero, /HeroEarth3D|enableWebGL|WebGLRenderer/);
   assert.match(hero, /opacity-95/);
   assert.match(hero, /ProductDisclaimer/);

@@ -156,7 +156,7 @@ export function renderDraftHtml(bundle) {
     '</style></head><body><main><img class="watermark" src="'+BRAND_URL+'" alt="" aria-hidden="true">'+
     '<p class="status">ENTWURF · NICHT VERÖFFENTLICHT</p><h1>'+headline+'</h1>'+
     '<p>Quellengebundener Entwicklungsbericht. Keine Bestätigung eines Live-Deployments und keine Anlageberatung.</p>'+
-    '<pre>'+body+'</pre><section aria-labelledby="sources-heading"><h2 id="sources-heading">Quellen</h2><ol>'+sources+'</ol></section>'+ 
+    '<pre>'+body+'</pre><section aria-labelledby="sources-heading"><h2 id="sources-heading">Quellen</h2><ol>'+sources+'</ol></section>'+
     '<p>CADS: technische Prüfung; redaktionelle und rechtliche Freigabe weiterhin erforderlich.</p></main></body></html>';
 }
 

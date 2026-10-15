@@ -24,8 +24,21 @@ export function LearningArticles() {
       </article>
       {LEARNING_ARTICLES.map(article => (
         <article id={article.id} key={article.id} className="rounded-xl border border-amber-400/20 bg-[#090e21] p-5">
+          {article.coverImage && (
+            <img 
+              src={article.coverImage} 
+              alt={article.title} 
+              className="mb-4 w-full rounded-lg object-cover"
+              loading="lazy"
+            />
+          )}
           <h3 className="text-lg font-bold text-white">{article.title}</h3>
-          <p className="mt-3 text-sm leading-relaxed text-slate-300">{article.body}</p>
+          <p className="mt-3 text-base leading-7 text-slate-300">{article.body}</p>
+          {article.exerciseHref && (
+            <a href={article.exerciseHref} className="mt-3 inline-flex min-h-11 items-center text-amber-200 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-brand-gold">
+              Korrelation im Financial Learning Simulator ausprobieren
+            </a>
+          )}
         </article>
       ))}
       <aside className="rounded-xl border border-amber-400/30 bg-amber-400/5 p-4">
