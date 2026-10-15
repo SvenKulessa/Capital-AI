@@ -1,6 +1,6 @@
 import { accountDisplay } from '../../../shared/account-display.mjs';
 import React, { useEffect, useState, type ReactNode } from 'react';
-import { CreditCard, ArrowLeft, LayoutDashboard, Loader2, LogOut, ShieldCheck, User } from 'lucide-react';
+import { ArrowLeft, Loader2, LogOut } from 'lucide-react';
 import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 import { useLocale } from '../../i18n/LocaleProvider';
 import { accountCopy } from '../../i18n/accountWorkspaceCopy';
@@ -57,7 +57,6 @@ async function readSession(signal?: AbortSignal): Promise<AccountSession> {
 }
 
 export function AccountPageShell({
-  active,
   title,
   description,
   onNavigate,
@@ -127,13 +126,6 @@ export function AccountPageShell({
     );
   }
 
-  const items = [
-    { path: '/profile' as const, label: tr.accountProfile, icon: User },
-    { path: '/profile/security' as const, label: tr.accountSecurity, icon: ShieldCheck },
-    { path: '/profile/rights' as const, label: 'Konto & Rechte', icon: ShieldCheck },
-    { path: '/profile/subscription' as const, label: 'Abo verwalten', icon: CreditCard },
-    { path: '/profile/dashboard' as const, label: 'Privates Dashboard', icon: LayoutDashboard },
-  ];
 
   return (
     <div className="min-h-screen bg-[#02050e] px-4 py-6 text-white sm:px-6">
@@ -175,27 +167,6 @@ export function AccountPageShell({
             </div>
           </div>
 
-          <nav aria-label={tr.accountSections} className="hub-tab-strip mt-5" data-hub="learning">
-            {items.map(item => {
-              const Icon = item.icon;
-              const selected = active === item.path;
-              return (
-                <button
-                  key={item.path}
-                  type="button"
-                  onClick={() => onNavigate(item.path)}
-                  aria-current={selected ? 'page' : undefined}
-                  className={`hub-tab !text-sm ${
-                    selected
-                      ? ''
-                      : 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10'
-                  }`}
-                >
-                  <Icon className="h-4 w-4" /> {item.label}
-                </button>
-              );
-            })}
-          </nav>
         </header>
 
         {error && (
