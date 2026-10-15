@@ -43,6 +43,9 @@ test('real canonical watermark is digest-pinned and public-domain-facing but dra
   assert.deepEqual(outcome.workerIntegration.accessibility.skillRefs,
     ['accessibility-engineering','accessibility-advisory']);
   assert.match(html, /class="watermark"/);
+  assert.match(html, /src="data:image\/webp;base64,/);
+  assert.match(html, /img-src data:/);
+  assert.ok(!html.includes('src="https://capital-ai.online/branding/'));
   assert.match(html, /opacity:.09/);
   assert.match(html, /sources-heading/);
   assert.match(html, /GitHub Pull Request #/);
@@ -88,7 +91,8 @@ test('provider failure is fail-closed and never grants publication',async()=>{
 });
 test('watermark modifications, missing skills and preview XSS are blocked',async()=>{
   await assert.rejects(()=>runBatch(source,{...opts,loadFile:async file=>file===BRAND_ASSET?Buffer.from('evil'):readFileSync(file)}),/SOCIAL_BATCH_WATERMARK_DIGEST_MISMATCH/);
-  const html=renderDraftHtml({headline:'<img src=x onerror=evil()>',article:'</pre><script>attack()</script>'});
+  const html=renderDraftHtml({headline:'<img src=x onerror=evil()>',article:'</pre><script>attack()</script>'},readFileSync(BRAND_ASSET));
+  assert.throws(()=>renderDraftHtml({headline:'test',article:'test'},Buffer.from('tampered')),/SOCIAL_BATCH_WATERMARK_DIGEST_MISMATCH/);
   assert.doesNotMatch(html,/<\s*script\b/i);
   assert.match(html,/&lt;script&gt;/);
   assert.equal(toolSuitability().length,3);
