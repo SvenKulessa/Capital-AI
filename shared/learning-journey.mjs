@@ -31,7 +31,7 @@ export const LEARNING_JOURNEY = Object.freeze([
 export const LEARNING_NEXT_STEPS = Object.freeze([
   { href: '/marketscreener/dokumentation', label: 'Blueprint-Demos ansehen', note: 'Synthetische Beispiele; kein einzelnes Blueprint-Kaufangebot und keine Anlageberatung.' },
   { href: '/learning?tab=glossar#learning-offer', label: 'Learning-Angebot und Voraussetzungen prüfen', note: 'Einmalkauf für Vocabulary und tägliche Quizzes. Chart-Module benötigen zusätzlich mindestens Starter; Chart-Training Pro. Videos sind noch nicht verfügbar.' },
-  { href: '/learning/kontakt#learning-inquiry', label: 'Kursanfrage stellen', note: 'Eine Anfrage ist kein Kauf. Ohne Analytics-Einwilligung nutzbar.' },
+  { href: '/learning#learning-inquiry', label: 'Kursanfrage stellen', note: 'Eine Anfrage ist kein Kauf. Ohne Analytics-Einwilligung nutzbar.' },
 ]);
 
 // The HTML projection lives with immutable public content, not the CI-bound server entrypoint.

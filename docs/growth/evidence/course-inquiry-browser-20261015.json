@@ -93,5 +93,17 @@
         "scroll": 390
       }
     }
-  ]
+  ],
+  "localConsentQueue": {
+    "leads": 1,
+    "payload": [
+      {
+        "send_to": "G-0542DT2HCE",
+        "lead_type": "learning_course_inquiry",
+        "page_location": "https://capital-ai.online/learning",
+        "page_referrer": ""
+      }
+    ],
+    "externalGoogleRequests": "BLOCKED_BY_CDP_NO_LIVE_MEASUREMENT"
+  }
 }

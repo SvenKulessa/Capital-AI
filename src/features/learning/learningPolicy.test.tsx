@@ -11,6 +11,7 @@ import { LocaleProvider } from '../../i18n/LocaleProvider';
 import { LearningPortalPage } from './LearningPortalPage';
 import { MarketVocabularyModal } from './MarketVocabularyModal';
 import { LEARNING_JOURNEY, LEARNING_NEXT_STEPS } from '../../../shared/learning-journey.mjs';
+import { isSeoIndexable } from '../../../shared/seo-indexing-policy.mjs';
 import {berlinDay,dailyLearningQuestions} from './learningPolicy';
 import {VocabularyFlashcards, advanceVocabularyDeck, rescheduleMissedVocabulary, vocabularySwipeDirection} from '../../components/VocabularyFlashcards';
 import {VocabularyCard,VOCABULARY_CATEGORY_COLORS} from './VocabularyCard';
@@ -20,7 +21,9 @@ import {LearningVideos, visibleLearningVideos, type LearningVideo} from './Learn
 
 test('course CTA opens a dedicated inquiry without relabelling generic support', () => {
   assert.equal(LEARNING_NEXT_STEPS.find(step => step.label === 'Kursanfrage stellen')?.href,
-    '/learning/kontakt#learning-inquiry');
+    '/learning#learning-inquiry');
+  assert.equal(isSeoIndexable(new URL(LEARNING_NEXT_STEPS.find(step => step.label === 'Kursanfrage stellen')!.href, 'https://capital-ai.online').pathname), true,
+    'The course CTA must remain on a public route where consented measurement is permitted.');
   const course = renderToStaticMarkup(<LocaleProvider><ContactForm purpose="learning" /></LocaleProvider>);
   const contact = renderToStaticMarkup(<LocaleProvider><ContactForm /></LocaleProvider>);
   assert.match(course, /id="learning-inquiry"/);

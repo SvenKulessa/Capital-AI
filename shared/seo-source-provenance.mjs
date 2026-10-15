@@ -7,7 +7,7 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
   'src/features/learning/LearningPurchase.tsx': Object.freeze({ sourceBlobSha: '859af1bc1564a21cbebe17a334222de8a958dcb3', contentSha256: '4bbc81135ade2fc7a2481e713b5ec3f85e7e5422b4b73abb62177672546792e2' }),
   'src/data/vocabularyOffer.ts': Object.freeze({ sourceBlobSha: 'ef2ef444280b56dcf9fa5182e09f3ac8d03fbf25', contentSha256: 'adc8faec932b2dcc29ff2fb4c836a1044c474d83dd405a025efae386d894b274' }),
 
-  'shared/learning-journey.mjs': Object.freeze({ sourceBlobSha: '2d59fc5fe092841e2d36554df1e66a3f86c41aab', contentSha256: '33cc1e9fc9cfe6f6abdfefec13b2ba4236d0a8da37d3276096995c15692f643c' }),
+  'shared/learning-journey.mjs': Object.freeze({ sourceBlobSha: '571f55e1bedebd631d0d74015c9aef7e665b5661', contentSha256: 'bbfc951ce10f2d22eb3aec8d0bda6a5d65a61948c4f13ea467be2775196e7f33' }),
   'src/features/learning/LearningJourney.tsx': Object.freeze({ sourceBlobSha: 'fd85f3de2efecafa34c07f9cf5e132b565e03dd9', contentSha256: '2d501a6635fa025d96806a81235ae92368d86faff8b4a01083e91f528d713690' }),
 
   'shared/blog-articles.mjs': Object.freeze({ sourceBlobSha: 'ffe06ff6e4e8b410fcff3ae1670a610f22d8b03f', contentSha256: '373675574dd91bd1925ab599e89714bc9e160e4855cbd91873183d02bc7e54c0' }),
@@ -63,7 +63,7 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
 });
 
 const SEO_SOURCE_SET_DIGESTS = Object.freeze({
-  'shared/learning-journey.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/components/ContactForm.tsx|src/data/vocabularyOffer.ts|src/features/learning/LearningJourney.tsx|src/features/learning/LearningPortalPage.tsx|src/features/learning/LearningPurchase.tsx': '81f7013fac36166d2dbbf170e41e8c045056e24f80df83d188f807abab02b886',
+  'shared/learning-journey.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/components/ContactForm.tsx|src/data/vocabularyOffer.ts|src/features/learning/LearningJourney.tsx|src/features/learning/LearningPortalPage.tsx|src/features/learning/LearningPurchase.tsx': '740e5db96f471318e9ee2f9fb491b109836ac7ba34d91459de1de93ae531b9d5',
   'shared/blog-articles.mjs': '5220e5c7397020d001d765b7e6d8e023533d058561d7e9df885d83c79057f83c',
   'index.html|src/features/home/HomePage.tsx': '5f521d2e1ff939caf1449bf80d7d3e0698f0c4780d14f613c621f688097c6466',
   'shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': 'b6102e602180784b21d2eeeba5be41b955918aaa32aa489ab5bc3185db45e7e8',
