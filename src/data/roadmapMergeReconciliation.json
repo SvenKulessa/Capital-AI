@@ -1,16 +1,16 @@
 {
   "schema": "CAPITAL_AI_ROADMAP_MERGE_AUDIT@1",
   "state": "RECONCILED_CODE_AND_DOCUMENTS",
-  "lastReconciledPr": 459,
-  "mergeCount": 410,
-  "fromPr": 449,
-  "toPr": 459,
-  "sourceSha": "b08bce29290737f9a04bff85adf0504d55527963",
-  "reconciledAt": "2026-10-13T02:56:58.025Z",
+  "lastReconciledPr": 500,
+  "mergeCount": 450,
+  "fromPr": 503,
+  "toPr": 500,
+  "sourceSha": "bdf4db1bf94a56c818939cd13265033df5d101ba",
+  "reconciledAt": "2026-10-15T03:08:43.857Z",
   "sourceDigests": [
     {
       "path": "src/data/roadmapData.ts",
-      "sha256": "a363bbbe61b4830b742206622c10846e8950c2e4a3821eef788f45e45d8c5fdf"
+      "sha256": "aa9d071b4f081dfe4ebef4f40468bf5daf66c6648196e6c4e7c6ac395543461b"
     },
     {
       "path": "src/data/roadmapCurrentMainState.ts",
@@ -22,7 +22,7 @@
     },
     {
       "path": "src/data/socialContentRoadmap.ts",
-      "sha256": "bfa6856218715b1a3444629b20fc9f8e59c5cae2ce02cf29746e5a343361627d"
+      "sha256": "545341bbcb42917156670124a48d461e8b57e6ad7a05e2dcb0d9dfe944471c7b"
     },
     {
       "path": "src/data/trustArchitectureAWorkPackages.ts",
@@ -714,7 +714,16 @@
         "docs/growth/CAPITAL-AI-CONTENT-ENGINE-20261007.md",
         "server/growth-ai-gateway.ts",
         "src/contracts/growthAttribution.ts",
-        "src/features/home/ContentEngineConcept.tsx"
+        "src/features/home/ContentEngineConcept.tsx",
+        "src/data/growthMarketingPilot.ts",
+        "src/data/__tests__/growthMarketingPilot.test.ts",
+        "src/features/home/SocialContentEngineStatus.tsx",
+        "server/social-media/x-url-context.mjs",
+        "shared/x-url-context.mjs",
+        "src/contracts/growthProviderRuntime.ts",
+        "scripts/growth/social-release-candidate.mjs",
+        "src/platform/SocialMediaEngine/Editing/MediaStudioTemplates.ts",
+        "docs/growth/SEO-LEADGEN-FOLLOWUP-20261014.md"
       ],
       "evidencePathsMissing": [],
       "externalEvidenceNotVerified": [],
@@ -735,7 +744,14 @@
         "src/contracts/contentSocialAttribution.ts",
         "src/features/studio/ContentStudioPanel.tsx",
         "CAPITAL-AI-GROWTH/SOCIAL-ENGINE-MIGRATION.md",
-        "src/data/socialContentRoadmap.ts"
+        "src/data/socialContentRoadmap.ts",
+        "src/data/growthMarketingPilot.ts",
+        "server/social-media/x-url-context.mjs",
+        "src/contracts/growthProviderRuntime.ts",
+        "server/social-media/youtube-private-upload.mjs",
+        "server/growth-ai-gateway.ts",
+        "docs/growth/X-URL-CONTEXT-20261014.md",
+        "docs/growth/SEO-LEADGEN-FOLLOWUP-20261014.md"
       ],
       "evidencePathsMissing": [],
       "externalEvidenceNotVerified": [],
@@ -1184,6 +1200,9 @@
         "shared/seo-metadata.mjs",
         "scripts/seo-metadata.test.mjs",
         "docs/growth/SEO-02-METADATA-AS-CODE-20261005.md",
+        "docs/growth/SEO-LEADGEN-FOLLOWUP-20261014.md",
+        "docs/growth/LEARNING-BLUEPRINT-SEARCH-20261014.md",
+        "src/data/growthMarketingPilot.ts",
         "docs/security/BUILD-DOMEXCEPTION-REVIEW-20261005.md"
       ],
       "evidencePathsMissing": [],
