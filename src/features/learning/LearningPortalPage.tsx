@@ -1,6 +1,7 @@
 import { useVerifiedSession } from '../../hooks/useVerifiedSession';
 import { VOCABULARY_PUBLIC_COUNT, VOCABULARY_SOURCE_PRS } from '../../../shared/vocabulary-metadata.mjs';
 import { HubNavigationPanel } from '../../components/HubNavigationPanel';
+import { QuizzesTab } from './QuizzesTab';
 /**
  * CAPITAL AI — LEARNING PORTAL & FINANZ-VOKABULAR TERMINAL
  * 
@@ -68,8 +69,8 @@ const VocabularyFlashcards = React.lazy(() =>
   })),
 );
 
-export type LearningPortalTab = 'glossar' | 'flashcards' | 'guides' | 'patterns' | 'videos' | 'quiz' | 'news' | 'kontakt' | 'simulator';
-const LEARNING_TABS: readonly LearningPortalTab[] = ['glossar', 'flashcards', 'guides', 'patterns', 'videos', 'quiz', 'news', 'kontakt', 'simulator'];
+export type LearningPortalTab = 'glossar' | 'flashcards' | 'guides' | 'patterns' | 'videos' | 'quiz' | 'quizzes' | 'news' | 'kontakt' | 'simulator';
+const LEARNING_TABS: readonly LearningPortalTab[] = ['glossar', 'flashcards', 'guides', 'patterns', 'videos', 'quiz', 'quizzes', 'news', 'kontakt', 'simulator'];
 
 interface LearningPortalPageProps {
   onBackToHome?: () => void;
@@ -317,6 +318,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
               {activeTab === 'patterns' && 'Chart-Lernatlas'}
               {activeTab === 'videos' && 'Lernvideos'}
               {activeTab === 'quiz' && 'Quant & Trader Skill-Check'}
+              {activeTab === 'quizzes' && 'Quizzes & Portfolio-Risiko'}
               {activeTab === 'kontakt' && 'Kontakt'}
               {activeTab === 'simulator' && 'Portfolio-Simulator'}
             </span>
@@ -605,6 +607,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       {/* TAB CONTENT 4: INTERACTIVE QUIZ & SKILL-CHECK                             */}
       {/* ========================================================================= */}
       {activeTab === 'simulator' && <FinancialLearningSimulator />}
+       {activeTab === 'quizzes' && <QuizzesTab onOpenQuant={() => setActiveTab('quiz')} />}
       {activeTab === 'quiz' && (
         <div className="space-y-6">
           <div className="p-6 rounded-2xl bg-gradient-to-r from-purple-500/15 via-[#0d1530] to-emerald-500/15 border border-amber-400/30">

@@ -19,7 +19,7 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
     contentSha256: '9b788afa2eb675ab330cb114b9f05084dea88bbf0b8c97c3c3c0bc74462d23b8',
   }),
   'src/features/learning/LearningPortalPage.tsx': Object.freeze({
-    sourceBlobSha: 'e6a59ec0b284b3beda177bc41aa8cbd01f217ef2', contentSha256: 'a6daae8b0600176b2d39af1d02479debc514c3c69a4815ac21a0dc2a572d074e',
+    sourceBlobSha: '60d6e21f6921e512e63d4f94286bf98d4194dc8a', contentSha256: '9bbafc15b1461329ac2163207f0169276de0b1b58f9ef6b2b2853f23abd94e23',
   }),
   'shared/vocabulary-metadata.mjs': Object.freeze({
     sourceBlobSha: 'b972f4df5e66daf8bccd62535014c79ea73b943a',
@@ -62,10 +62,10 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
 });
 
 const SEO_SOURCE_SET_DIGESTS = Object.freeze({
-  'shared/learning-journey.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/data/vocabularyOffer.ts|src/features/learning/LearningJourney.tsx|src/features/learning/LearningPortalPage.tsx|src/features/learning/LearningPurchase.tsx': 'b6d8d471174508a9af1384ee8bcd907472266587cec47916acbc7c292cd19bac',
+  'shared/learning-journey.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/data/vocabularyOffer.ts|src/features/learning/LearningJourney.tsx|src/features/learning/LearningPortalPage.tsx|src/features/learning/LearningPurchase.tsx': '5566bd323f8d36776dcf21d4bcab602d7ea25a570775a5145d55f47307ba2707',
   'shared/blog-articles.mjs': '5220e5c7397020d001d765b7e6d8e023533d058561d7e9df885d83c79057f83c',
   'index.html|src/features/home/HomePage.tsx': '5f521d2e1ff939caf1449bf80d7d3e0698f0c4780d14f613c621f688097c6466',
-  'shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': '0bea16ec57afd9fb71ebbca39f5db76a47f183beaca5ccf5ba7d707654e18ace',
+  'shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': '9900ec117bea520012b4ef32ea5aa2e4ee39503ff1091cd29ae1a6400c634f8a',
   'src/components/LegalAndFaqPages.tsx|src/content/publicLegalContent.ts': 'cddb2c5e05bef221848ce191cd8462df755266243f79b9beb692e0e41bbc46b9',
   'shared/license-metadata.mjs|src/components/LicenseInformationPages.tsx': 'b3d4044f7173bf04767a6a56b7b0b22774aacb93bee08ef9b71ae1c4769a3b05',
   'shared/license-metadata.mjs|src/data/providerLicenseReview.ts': '98d2b1c966c071230d8b5554f132c198bf95c7df07e5b559fa82e2aa53f1c768',

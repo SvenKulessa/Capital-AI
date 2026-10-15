@@ -117,3 +117,47 @@ test('horizontal swipes have an intentional threshold and ignore vertical page s
  assert.equal(vocabularySwipeDirection(-80,4),'left');assert.equal(vocabularySwipeDirection(80,-4),'right');
  assert.equal(vocabularySwipeDirection(30,0),null);assert.equal(vocabularySwipeDirection(60,80),null);
 });
+
+
+test('PR 522: Quizzes route retains the server-authorized Quant quiz and renders 15 synthetic portfolio risk questions', async () => {
+  const { QuizzesTab } = await import('./QuizzesTab');
+  const { PORTFOLIO_RISK_QUESTIONS, portfolioRiskScore, PortfolioRiskQuiz } = await import('./PortfolioRiskQuiz');
+  const { HUB_ROUTES } = await import('../../../shared/hub-routes.mjs');
+  const { renderToStaticMarkup } = await import('react-dom/server');
+  assert.equal(PORTFOLIO_RISK_QUESTIONS.length, 15);
+  assert.equal(new Set(PORTFOLIO_RISK_QUESTIONS.map(item => item.question)).size, 15);
+  const perfect = Object.fromEntries(PORTFOLIO_RISK_QUESTIONS.map((item, index) => [index, item.correct]));
+  assert.equal(portfolioRiskScore(perfect), 15);
+  assert.equal(portfolioRiskScore({}), 0);
+  assert.ok(HUB_ROUTES.some(route => route.path === '/learning/quizzes' && route.tab === 'quizzes'));
+  const html = renderToStaticMarkup(<QuizzesTab onOpenQuant={() => {}} />);
+  assert.match(html, /Quizzes &amp; Skill-Checks/);
+  assert.match(html, /serverseitig|Server/);
+  assert.match(html, /Portfolio-Risiko/);
+  const quiz = renderToStaticMarkup(<PortfolioRiskQuiz />);
+  assert.equal((quiz.match(/<fieldset/g) ?? []).length, 15);
+  assert.match(quiz, /kein offiziell anerkanntes Zertifikat/);
+  const portal = renderToStaticMarkup(<LearningPortalPage initialTab="quizzes" />);
+  assert.match(portal, /Quizzes &amp; Skill-Checks/);
+});
+
+test('PR 522: Buddy note text is human-readable, account-scoped via existing API, and main exports survive', async () => {
+  const { readFileSync } = await import('node:fs');
+  const { formatBuddyNote, parseBuddyNotes } = await import('../../components/BuddyStickyNotes');
+  const text = formatBuddyNote('🟨', false, 'Spread   und Liquidität');
+  assert.equal(text, 'JaJa Buddy · 🟨 ☐ Spread und Liquidität');
+  assert.deepEqual(parseBuddyNotes('Andere private Notizen\n' + text).map(item => [item.line, item.text, item.checked]),
+    [[1, 'Spread und Liquidität', false]]);
+  assert.equal(parseBuddyNotes(formatBuddyNote('🟦', true, 'Risiko'))[0].checked, true);
+  assert.throws(() => formatBuddyNote('invalid', false, 'Test'), /INVALID_COLOR/);
+  assert.throws(() => formatBuddyNote('🟦', false, ''), /INVALID_TEXT/);
+  const buddy = readFileSync(new URL('../../components/HeroBuddy.tsx', import.meta.url), 'utf8');
+  const notes = readFileSync(new URL('../../components/BuddyStickyNotes.tsx', import.meta.url), 'utf8');
+  const learning = readFileSync(new URL('./LearningPortalPage.tsx', import.meta.url), 'utf8');
+  assert.match(buddy, /export function openHeroBuddy\(\)/);
+  assert.match(buddy, /Als Notiz übernehmen/);
+  assert.match(notes, /expectedUserId: userId/);
+  assert.match(notes, /readAuthorizedNotes/);
+  assert.doesNotMatch(notes, /localStorage/);
+  assert.match(learning, /api\/learning\/vocabulary\/quiz\/consume/);
+});
