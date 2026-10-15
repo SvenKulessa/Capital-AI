@@ -15,6 +15,7 @@ for(let attempt=0;attempt<50;attempt++){try{if((await fetch('http://127.0.0.1:41
 const browser=await chromium.launch({executablePath:process.env.CHROMIUM_EXECUTABLE_PATH || await Chromium.executablePath(),headless:true,args:Chromium.args.filter(arg=>arg!=='--single-process')});
 const result={browser:browser.version(),scope:'Local built frontend, synthetic API fixtures; server authorization covered separately',viewports:[],cases:[]};
 const stores=new Map([['alice',new Set()],['bob',new Set()]]);
+const noteStores=new Map([['alice','QA fixture'],['bob','Private note for Bob']]);
 async function fixture(page,user='alice',options={}) {
  page.setDefaultTimeout(8000);page.on('pageerror',e=>console.log('PAGE_ERROR',e.message));
  await page.route('**/api/**',async route=>{
@@ -27,7 +28,14 @@ async function fixture(page,user='alice',options={}) {
    if(req.method()==='DELETE')ids.delete(id);
    return route.fulfill({json:{favorites:[...ids]}});
   }
-  if(url.pathname==='/api/profile/notes')return route.fulfill({json:{notes:'QA fixture'}});
+  if(url.pathname==='/api/profile/notes') {
+   if(req.method()==='PUT') {
+    const submitted=req.postDataJSON();
+    if(submitted.expectedUserId!==user)return route.fulfill({status:409,json:{error:'session_changed'}});
+    noteStores.set(user,submitted.notes);
+   }
+   return route.fulfill({json:{notes:noteStores.get(user)||'',userId:user}});
+  }
   if(url.pathname.includes('/access'))return route.fulfill({json:{entitled:false,quantProEntitled:false,atlasEntitled:false,quizUsed:false}});
   if(url.pathname.endsWith('/preview')||url.pathname.endsWith('/quant-pro'))return route.fulfill({json:{terms:[]}});
   return route.fulfill({json:{configured:true,authenticated:!options.anonymous,user:options.anonymous?null:{id:user,name:'QA fixture',email:'qa@example.invalid'},account:{available:true,iamRole:'user',subscription:{tier:'Free',status:null},badges:[]}}});
@@ -44,6 +52,7 @@ const mediaPage=await browser.newPage();await fixture(mediaPage);await mediaPage
 const playback=await mediaPage.evaluate(async()=>{const video=document.createElement('video');video.muted=true;video.src='/learning/videos/capital-ai-tour-short-1080x1920.mp4';document.body.append(video);await video.play();await new Promise(resolve=>setTimeout(resolve,400));return {duration:video.duration,time:video.currentTime,frames:video.getVideoPlaybackQuality().totalVideoFrames,error:video.error?.code??null};});
 assert.equal(playback.duration,20);assert.ok(playback.time>0);assert.ok(playback.frames>0);assert.equal(playback.error,null);result.cases.push({h264VideoPlayback:'PASS',decodedFrames:playback.frames,duration:playback.duration});await mediaPage.close();
 for(const width of [320,390,768,1440]){
+ noteStores.set('alice','QA fixture');
  const page=await browser.newPage({viewport:{width,height:900},reducedMotion:'reduce'});await fixture(page);
  await page.goto('http://127.0.0.1:4173/learning?tab=flashcards',{waitUntil:'networkidle'});
 
@@ -67,7 +76,21 @@ for(const width of [320,390,768,1440]){
  await page.reload({waitUntil:'networkidle'});await page.getByRole('button',{name:`${first}: aus dem Lernfeld entfernen`,exact:true}).click();
  await page.getByRole('status').filter({hasText:'Dein Lernfeld ist leer'}).waitFor();assert.equal(stores.get('alice').size,0);
  await page.getByRole('tab',{name:'Lernfeld',exact:true}).focus();await page.keyboard.press('ArrowRight');assert.equal(await page.getByRole('tab',{name:'Notizen',exact:true}).getAttribute('aria-selected'),'true');
- result.viewports.push({width,mouseLeft:'PASS',mouseRight:'PASS',dashboardReloadAndRemove:'PASS',horizontalTabs:'PASS',overflow:'PASS',keyboard:'PASS'});
+ await page.getByRole('tab',{name:'Gespeicherte Notizen',exact:true}).click();
+ await page.getByRole('tabpanel',{name:'Gespeicherte Notizen'}).getByText('QA fixture',{exact:true}).waitFor();
+ await page.getByRole('tab',{name:'Notizen',exact:true}).click();
+ await page.locator('#private-notes').fill('Changed by Alice');
+ await page.getByRole('tab',{name:'Gespeicherte Notizen',exact:true}).click();
+ await page.getByRole('tabpanel',{name:'Gespeicherte Notizen'}).getByText('QA fixture',{exact:true}).waitFor();
+ await page.getByRole('tab',{name:'Notizen',exact:true}).click();
+ await page.getByRole('button',{name:'Notizen speichern',exact:true}).click();
+ await page.getByRole('status').filter({hasText:'Notizen gespeichert.'}).waitFor();
+ await page.getByRole('tab',{name:'Gespeicherte Notizen',exact:true}).click();
+ await page.getByRole('tabpanel',{name:'Gespeicherte Notizen'}).getByText('Changed by Alice',{exact:true}).waitFor();
+ await page.getByRole('tab',{name:'Gespeicherte Notizen',exact:true}).focus();
+ await page.keyboard.press('Home');
+ assert.equal(await page.getByRole('tab',{name:'Lernfeld',exact:true}).getAttribute('aria-selected'),'true');
+ result.viewports.push({width,mouseLeft:'PASS',mouseRight:'PASS',dashboardReloadAndRemove:'PASS',horizontalTabs:'PASS',savedNotesReadback:'PASS',draftNotLeaked:'PASS',notesKeyboard:'PASS',overflow:'PASS',keyboard:'PASS'});
  await page.close();
 }
 const touchPage=await browser.newPage({viewport:{width:390,height:900},isMobile:true,hasTouch:true,reducedMotion:'reduce'});await fixture(touchPage);
@@ -94,6 +117,6 @@ for(const [options,label] of [[{anonymous:true},'anonymous'],[{failed:true},'sto
  if(await page.getByRole('button',{name:'Nur notwendige',exact:true}).isVisible())await page.getByRole('button',{name:'Nur notwendige',exact:true}).click();
  const deck=page.locator('[data-design-profile="CAPITAL_AI_VOCABULARY_FLASHCARD@3"]');const before=await deck.locator('h3').innerText();await deck.getByRole('button',{name:'← Weiß ich nicht',exact:true}).click();await deck.getByRole('alert').waitFor();assert.equal(await deck.locator('h3').innerText(),before);result.cases.push({label,errorAndRetainedCard:'PASS'});await page.close();
 }
-const page=await browser.newPage({viewport:{width:390,height:900}});await fixture(page,'bob');await page.goto('http://127.0.0.1:4173/profile/dashboard',{waitUntil:'networkidle'});await page.getByRole('status').filter({hasText:'Dein Lernfeld ist leer'}).waitFor();result.cases.push({userIsolationFixture:'PASS'});await page.close();
+const page=await browser.newPage({viewport:{width:390,height:900}});await fixture(page,'bob');await page.goto('http://127.0.0.1:4173/profile/dashboard',{waitUntil:'networkidle'});await page.getByRole('status').filter({hasText:'Dein Lernfeld ist leer'}).waitFor();await page.getByRole('tab',{name:'Gespeicherte Notizen',exact:true}).click();await page.getByRole('tabpanel',{name:'Gespeicherte Notizen'}).getByText('Private note for Bob',{exact:true}).waitFor();assert.equal(await page.getByText('Changed by Alice',{exact:true}).count(),0);result.cases.push({userIsolationFixture:'PASS',notesTenantIsolationFixture:'PASS'});await page.close();
 } finally {await browser.close();server.kill();}
 await writeFile(join(output,'learning-browser-evidence.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2));
