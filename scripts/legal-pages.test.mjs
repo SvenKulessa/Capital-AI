@@ -14,10 +14,19 @@ import { resolveNavigationTarget } from '../src/utils/appNavigation.ts';
 const server = await createServer({
   server: { middlewareMode: true },
   appType: 'custom',
-  optimizeDeps: { noDiscovery: true, include: [] },
+  plugins: [{
+    name: 'legal-ssr-without-client-optimizer',
+    enforce: 'post',
+    config(config) {
+      // React's pre hook injects explicit includes, even with noDiscovery.
+      // Mutate after plugin merging so this SSR-only test starts no optimizer.
+      config.optimizeDeps = { ...config.optimizeDeps, noDiscovery: true, include: [] };
+    },
+  }],
 });
 let LegalAndFaqPages, LocaleProvider;
 try {
+  assert.equal(server.environments.client.depsOptimizer, undefined, 'SSR rendering must not start browser prebundling');
   ({ LocaleProvider } = await server.ssrLoadModule('/src/i18n/LocaleProvider.tsx'));
   ({ LegalAndFaqPages } = await server.ssrLoadModule('/src/components/LegalAndFaqPages.tsx'));
 } finally {
