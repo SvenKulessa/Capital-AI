@@ -7,6 +7,7 @@ import { runInNewContext } from 'node:vm';
 
 import { createApp } from './index.mjs';
 import { QUANT_PRO_IDS } from '../shared/vocabulary-access-policy.mjs';
+import { vocabularyMetadata } from '../shared/vocabulary-metadata.mjs';
 import {
   SEO_INDEXING_STATES,
   SEO_ROUTE_POLICY,
@@ -327,6 +328,16 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
     const richVocabulary = await (await fetch(origin + '/vocabulary')).text();
     assert.match(richVocabulary, /<main><article><h1>Capital-AI Vocabulary<\/h1>/);
     assert.doesNotMatch(richVocabulary, /capital-ai-public-snapshot/);
+    for (const entry of vocabularyMetadata.filter(entry => entry.id.startsWith('capital-'))) {
+      const response = await fetch(origin + entry.path);
+      const body = await response.text();
+      assert.equal(response.status, 200, entry.path);
+      assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow', entry.path);
+      assert.match(body, /<meta name="robots" content="noindex, nofollow"/);
+      assert.doesNotMatch(body, /rel="canonical"|property="og:url"|application\/ld\+json/);
+      assert.ok(body.includes(entry.term), entry.path);
+      assert.ok(!sitemap.includes(`<loc>https://capital-ai.online${entry.path}</loc>`));
+    }
   } finally {
     server.closeAllConnections();
     await new Promise(resolve => server.close(resolve));

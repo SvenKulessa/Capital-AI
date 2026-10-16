@@ -17,6 +17,7 @@ const routes = [
   { path: '/blog/screener-scoring-lernen', classification: 'INDEX', contentType: 'article', reason: 'Originaler Lernartikel mit eigenständigem HTTP-Inhalt und Angebotspfad.' },
   { path: '/learning', classification: 'INDEX', contentType: 'learning', reason: 'Öffentliches Learning Portal mit crawlbarer Fallback-Ausgabe.' },
   { path: '/vocabulary', classification: 'INDEX', contentType: 'vocabulary', reason: 'Kanonische Vocabulary-Landingpage mit serverseitiger SEO-Ausgabe.' },
+  { path: '/vocabulary/capital-:term', classification: 'NOINDEX', contentType: 'internal-vocabulary-term', dynamic: true, reason: 'Interne CAPITAL-AI-Architekturbegriffe bleiben lesbar, sind aber keine eigenständigen Search-Landingpages.' },
   { path: '/vocabulary/:term', classification: 'INDEX', contentType: 'vocabulary-term', dynamic: true, reason: 'Nur tatsächlich vorhandene öffentliche Vocabulary-Terme; unbekannte Terme bleiben 404.' },
   { path: '/faq', classification: 'INDEX', contentType: 'trust', reason: 'Öffentliche FAQ-/Hilfeseite.' },
   { path: '/lizenz', classification: 'INDEX', contentType: 'trust', reason: 'Öffentliche Asset-/Design-Lizenzinformation.' },
@@ -108,6 +109,9 @@ export function resolveSeoIndexingPolicy(pathname) {
     return OPERATIONAL_NOINDEX_POLICY;
   }
   if (/^\/vocabulary\/[a-z0-9][a-z0-9_-]*$/.test(normalized)) {
+    if (normalized.startsWith('/vocabulary/capital-')) {
+      return SEO_ROUTE_POLICY.find((route) => route.path === '/vocabulary/capital-:term');
+    }
     return SEO_ROUTE_POLICY.find((route) => route.path === '/vocabulary/:term');
   }
   return exactRoutes.get(normalized) || DEFAULT_BLOCKED_POLICY;
