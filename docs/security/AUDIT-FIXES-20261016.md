@@ -19,6 +19,8 @@ The audit's 25 wiring candidates comprise 23 Node test files plus two export-onl
 
 The existing **Docker Security Gate** runs the additional command in its already-built, pinned dev image. Read-only source/fixture mounts preserve the minimized image context; network access is disabled, capabilities are dropped, and no second installer/toolchain is introduced. Existing broker integration cases retain their prerequisites and skip without test infrastructure. NATS/Rust services are not activated or deployed by this change.
 
+The legal SSR test disables browser-only dependency discovery. Otherwise Vite starts an unnecessary asynchronous Three.js prebundle, filling the bounded CI cache after the SSR assertions have finished. The actual legal rendering assertions remain unchanged; only Vite's config loader has a bounded writable temporary cache.
+
 `verify-test-wiring.mjs` discovers own Node tests under scripts, server, src, apps, packages and .agents, and resolves workflow/Docker commands, package-script chains, explicit/glob file selection and relative TypeScript imports. It rejects unreferenced files and imported legacy `run*Suite`/`run*Tests` exports without calls. Fixtures distinguish COPY/comments/file reads, erased type imports, unused functions and unused manual aliases from execution references.
 
 This is a reference guard, not a general shell interpreter, whole-program execution proof or record of conditional CI completion. Python and Rust retain their existing language-specific workflows. No new Required Check, ruleset, approval or domain handoff is introduced. The live ruleset still needs to be respected independently.
@@ -39,6 +41,8 @@ All 29 current `/vocabulary/capital-*` definitions remain readable with HTTP 200
 The glossary remains at 305 public terms; 276 terms remain eligible for the indexable inventory. General finance lessons and former Quant/Pro definitions remain public and indexable. `/pricing` and `/marketscreener/dokumentation` retain their existing NOINDEX rationale. No product/checkout eligibility is inferred from this cleanup. NOINDEX is search-engine guidance, not an access-control mechanism.
 
 HTTP regressions check every capital term plus the unchanged glossary/commerce boundaries. Source-provenance check remains deterministic; no leaf-content hash changed and no unrelated provenance rewrite was needed. Rankings, de-indexing and real GA4 leads require later live observations.
+
+Local Chromium navigation also exposed missing JSON-LD after returning from NOINDEX to Learning. Browser SEO now lazily reuses the server's schema generator, removes stale route schema, and cancels superseded updates. Regressions cover ordinary terms, capital NOINDEX, return to Learning and rapid consecutive navigation; the full manifest remains outside the initial UI import graph.
 
 ## Reproduction and roadmap scope
 

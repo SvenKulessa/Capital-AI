@@ -9,7 +9,13 @@ import { resolveNavigationTarget } from '../src/utils/appNavigation.ts';
 
 // Load through the application bundler so BrandLogo's image imports use the
 // same asset handling as production instead of failing in Node's TS loader.
-const server = await createServer({ server: { middlewareMode: true }, appType: 'custom' });
+// This test renders SSR modules only. Browser dependency discovery would start
+// an unrelated Three.js prebundle and can outlive the SSR server/test teardown.
+const server = await createServer({
+  server: { middlewareMode: true },
+  appType: 'custom',
+  optimizeDeps: { noDiscovery: true, include: [] },
+});
 let LegalAndFaqPages, LocaleProvider;
 try {
   ({ LocaleProvider } = await server.ssrLoadModule('/src/i18n/LocaleProvider.tsx'));
