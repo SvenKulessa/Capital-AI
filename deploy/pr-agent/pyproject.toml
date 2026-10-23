@@ -77,7 +77,7 @@ dependencies = [
   "giteapy==1.0.8",
   # pr_agent/telemetry imports these directly; already resolved transitively via
   # langfuse and litellm, pinned here to lock the version the code is tested against.
-  "opentelemetry-api==1.43.0",
+  "opentelemetry-api==1.45.1",
   "opentelemetry-sdk==1.43.0",
   "opentelemetry-exporter-otlp-proto-http==1.43.0",
   # Prometheus scrape endpoint for [otel] command telemetry (native /metrics on
