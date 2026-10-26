@@ -1,4 +1,4 @@
-FROM node:26.11.1-alpine@sha256:143494b1da2945f061539253adc65e4f1569ddf07da2d384c022c791a9d90a4a AS crypto-base
+FROM node:26.12.1-alpine@sha256:40cd011b55415bc894e45b02fdd5a5dfde056921b7d23a64c74f80497af48797 AS crypto-base
 # Keep a security floor while allowing newer patches from the base image's Alpine branch.
 # Build and runtime reuse this one resolved layer instead of fetching two package indexes.
 RUN apk add --no-cache 'libcrypto3>=3.5.8-r0' 'libssl3>=3.5.8-r0' 'zlib>=1.3.2-r1'
