@@ -56,7 +56,7 @@ jobs:
               actual = hashlib.sha256((root / name).read_bytes()).hexdigest()
               assert actual == expected, (name, actual, expected)
           upstream = hashlib.sha256(pathlib.Path('reviewer-source/pyproject.toml').read_bytes()).hexdigest()
-          assert upstream == evidence['sha256']['pyproject.toml'], upstream
+          assert upstream == evidence['upstreamPyprojectSha256'], upstream
           pathlib.Path('reviewer-evidence/input-identity.json').write_text(json.dumps({
               'reviewerSourceSha': '8e5a9295973b24af4b70cafd0b660a230811ef9e',
               'uvLockSha256': evidence['sha256']['uv.lock'],
