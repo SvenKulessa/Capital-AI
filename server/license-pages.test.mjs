@@ -57,7 +57,7 @@ test('license deep links expose crawlable metadata without changing API boundari
 });
 
 
-test('all Vocabulary definitions are public and crawlable, including former Quant/Pro entries', async () => {
+test('Vocabulary remains public while only search-eligible terms enter the sitemap', async () => {
   assert.equal(VOCABULARY_CANONICAL_COUNT, vocabularyMetadata.length);
   assert.equal(VOCABULARY_PUBLIC_COUNT, vocabularyMetadata.length);
   assert.equal(vocabularyMetadata.length, VOCABULARY_CANONICAL_COUNT);
@@ -96,10 +96,11 @@ test('all Vocabulary definitions are public and crawlable, including former Quan
     assert.equal(sitemapResponse.status, 200);
     assert.match(sitemapResponse.headers.get('content-type') || '', /application\/xml/);
     const sitemap = await sitemapResponse.text();
-    assert.equal((sitemap.match(/<loc>https:\/\/capital-ai\.online\/vocabulary\//g) || []).length, VOCABULARY_PUBLIC_COUNT);
+    const indexable = publicEntries.filter(entry => !entry.id.startsWith('capital-'));
+    assert.equal((sitemap.match(/<loc>https:\/\/capital-ai\.online\/vocabulary\//g) || []).length, indexable.length);
     assert.match(sitemap, /<loc>https:\/\/capital-ai\.online\/vocabulary<\/loc>/);
     for (const entry of publicEntries) {
-      assert.ok(sitemap.includes(`<loc>https://capital-ai.online${entry.path}</loc>`), entry.path);
+      assert.equal(sitemap.includes(`<loc>https://capital-ai.online${entry.path}</loc>`), !entry.id.startsWith('capital-'), entry.path);
     }
     const ownerGatedEntry = vocabularyMetadata.find((entry) => QUANT_PRO_IDS.has(entry.id));
     assert.ok(ownerGatedEntry);
@@ -113,6 +114,11 @@ test('all Vocabulary definitions are public and crawlable, including former Quan
     for (const entry of publicEntries) {
       const response = await fetch(origin+entry.path);
       assert.equal(response.status,200,entry.path);
+      if (entry.id.startsWith('capital-')) {
+        assert.match(response.headers.get('x-robots-tag') ?? '',/noindex/,entry.path);
+        assert.doesNotMatch(await response.text(),/rel="canonical"|application\/ld\+json/);
+        continue;
+      }
       assert.doesNotMatch(response.headers.get('x-robots-tag') ?? '',/noindex/,entry.path);
       const html = await response.text();
       assert.ok(html.includes(`href="https://capital-ai.online${entry.path}"`),entry.path);
