@@ -1,4 +1,4 @@
-# Rust 1.99.0 alpine3.23 linux/amd64 manifest pinned from Docker Hub.
+# Rust 1.99.1 alpine3.23 linux/amd64 manifest pinned from Docker Hub.
 FROM rust:1.99.1-alpine3.23@sha256:96e773beb97c24572dcc462458cf84776fddc347302b9ab732a6b98b7822ad38 AS build
 
 WORKDIR /workspace
