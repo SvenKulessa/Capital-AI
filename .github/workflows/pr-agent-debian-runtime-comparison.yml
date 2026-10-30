@@ -41,7 +41,7 @@ jobs:
           evidence = json.loads((root / 'provenance.json').read_text())
           for name, expected in evidence['sha256'].items():
               assert hashlib.sha256((root / name).read_bytes()).hexdigest() == expected, name
-          assert hashlib.sha256(pathlib.Path('reviewer-source/pyproject.toml').read_bytes()).hexdigest() == evidence['sha256']['pyproject.toml']
+          assert hashlib.sha256(pathlib.Path('reviewer-source/pyproject.toml').read_bytes()).hexdigest() == evidence['upstreamPyprojectSha256']
           PY
           mkdir -p reviewer-debian-context reviewer-debian-evidence
           cp deploy/pr-agent/Dockerfile reviewer-debian-context/Dockerfile

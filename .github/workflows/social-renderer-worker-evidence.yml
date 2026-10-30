@@ -124,7 +124,10 @@ jobs:
         run: |
           set -euo pipefail
           image="capital-ai-social-renderer:$GITHUB_SHA"
+          pillow_version="$(sed -n 's/^Pillow==\([^ ]*\).*/\1/p' deploy/social-media/renderer-requirements.txt)"
+          test -n "$pillow_version"
           docker run --rm \
+            --env EXPECTED_PILLOW_VERSION="$pillow_version" \
             --read-only \
             --tmpfs /tmp:rw,noexec,nosuid,size=32m \
             --cap-drop ALL \
@@ -132,7 +135,7 @@ jobs:
             --entrypoint sh \
             "$image" -euc '
               test "$(id -u)" = "10001"
-              python -c "from PIL import Image; import capital_ai_media; assert Image.__version__ == \"12.3.0\"; palette=capital_ai_media.load_brand_palette(); assert palette.gold == \"#F9BF21\""
+              python -c "from PIL import Image; import os, capital_ai_media; assert Image.__version__ == os.environ[\"EXPECTED_PILLOW_VERSION\"]; palette=capital_ai_media.load_brand_palette(); assert palette.gold == \"#F9BF21\""
               python /opt/capital-ai-media/scripts/media/render_content_assets.py --help >/dev/null
               cat > /tmp/social-render-smoke.json <<'"'"'JSON'"'"'
               {
