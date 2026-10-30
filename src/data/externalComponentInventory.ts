@@ -356,7 +356,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'trivy', name: 'Trivy', domain: 'TRUST', kind: 'Vulnerability / Secret / License Scanner',
-    installedAt: null, activeVersion: '0.75.0', pipelineVersion: 'aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa', lifecycle: 'ACTIVE',
+    installedAt: null, activeVersion: '0.76.1', pipelineVersion: 'aquasec/trivy:0.76.1@sha256:790fd66d1697395d8693d1acaa1ea702406a20f109b6fc7bac8db623eca6c06c', lifecycle: 'ACTIVE',
     functionSummary: 'Container-, Filesystem-, Secret-, Misconfiguration-, SBOM- und Lizenzscan in Docker Security Gate.',
     webAppBinding: 'Dockerfile.security + .github/workflows/build-security.yml', license: 'Apache-2.0', cadsScore: 91.0, scoreState: 'VERIFIED',
     domainAssignments: ['CI security scanner only'],
