@@ -268,6 +268,28 @@ jobs:
             -v "$PWD/render.yaml:/app/render.yaml:ro" \
             -v "$PWD/deploy/render-image-profile.json:/app/deploy/render-image-profile.json:ro" \
             --entrypoint node capital-ai-build:${{ github.sha }} --run test:market
+      - name: Audit-Regressionen und Testverdrahtung im bestehenden Build-Image
+        run: |
+          # Reuse the pinned dev toolchain. Read-only source mounts supply the
+          # tests/fixtures intentionally omitted from the minimized image context.
+          # Vite's SSR config loader needs only its bounded temporary cache.
+          docker run --rm --network none --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m \
+            --tmpfs /app/node_modules/.vite-temp:rw,noexec,nosuid,size=16m \
+            --cap-drop ALL --security-opt no-new-privileges \
+            -v "$PWD/.agents:/app/.agents:ro" \
+            -v "$PWD/.github:/app/.github:ro" \
+            -v "$PWD/scripts:/app/scripts:ro" \
+            -v "$PWD/server:/app/server:ro" \
+            -v "$PWD/src:/app/src:ro" \
+            -v "$PWD/shared:/app/shared:ro" \
+            -v "$PWD/apps:/app/apps:ro" \
+            -v "$PWD/packages:/app/packages:ro" \
+            -v "$PWD/docs:/app/docs:ro" \
+            -v "$PWD/public:/app/public:ro" \
+            -v "$PWD/deploy:/app/deploy:ro" \
+            -v "$PWD/supabase:/app/supabase:ro" \
+            -v "$PWD/render.yaml:/app/render.yaml:ro" \
+            --entrypoint node capital-ai-build:${{ github.sha }} --run test:audit-regressions
       - name: 600-Asset-Scoring-Kapazitätsevidence übernehmen
         run: |
           mkdir -p security-reports
