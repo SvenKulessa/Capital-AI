@@ -49,7 +49,7 @@ jobs:
         run: |
           set -euo pipefail
           docker build --file Dockerfile.security --tag capital-ai-security .
-          test "$(docker run --rm capital-ai-security --version | sed -n 's/^Version: //p' | head -n1)" = "0.75.0"
+          test "$(docker run --rm capital-ai-security --version | sed -n 's/^Version: //p' | head -n1)" = "0.76.1"
           mkdir -p provider-bridge-evidence "$RUNNER_TEMP/trivy-cache"
           chmod a+rwx "$RUNNER_TEMP/trivy-cache"
 
