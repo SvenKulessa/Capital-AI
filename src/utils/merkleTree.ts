@@ -4,18 +4,25 @@
  */
 
 // Pure TypeScript SHA-256 implementation for universal Browser & Node execution
-export function sha256Sync(ascii: string): string {
+export function sha256Sync(input: string): string {
   function rightRotate(value: number, amount: number) {
     return (value >>> amount) | (value << (32 - amount));
   }
 
-  const mathPow = Math.pow;
-  const maxWord = mathPow(2, 32);
   let i = 0, j = 0;
   let result = '';
 
-  const words: number[] = [];
-  const asciiBitLength = ascii.length * 8;
+  // SHA-256 hashes bytes. Zero-initialize the complete padded message: sparse
+  // arrays previously fed undefined into the schedule, silently producing NaN.
+  // TextEncoder also matches Web Crypto/Node UTF-8 semantics, including Unicode.
+  const bytes = new TextEncoder().encode(input);
+  const padded = new Uint8Array(Math.ceil((bytes.length + 9) / 64) * 64);
+  padded.set(bytes);
+  padded[bytes.length] = 0x80;
+  const view = new DataView(padded.buffer);
+  const bitLength = bytes.length * 8;
+  view.setUint32(padded.length - 8, Math.floor(bitLength / 0x100000000));
+  view.setUint32(padded.length - 4, bitLength >>> 0);
 
   let hash = [
     0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
@@ -33,17 +40,9 @@ export function sha256Sync(ascii: string): string {
     0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
   ];
 
-  let compositeClearHex = '';
-  for (i = 0; i < ascii.length; i++) {
-    const code = ascii.charCodeAt(i);
-    words[i >> 2] |= code << ((3 - (i % 4)) * 8);
-  }
-
-  words[asciiBitLength >> 5] |= 0x80 << (24 - (asciiBitLength % 32));
-  words[(((asciiBitLength + 64) >> 9) << 4) + 15] = asciiBitLength;
-
-  for (i = 0; i < words.length; i += 16) {
-    const w = words.slice(i, i + 16);
+  for (i = 0; i < padded.length; i += 64) {
+    const w = new Int32Array(64);
+    for (j = 0; j < 16; j++) w[j] = view.getInt32(i + j * 4);
     const oldHash = hash.slice(0);
 
     for (j = 16; j < 64; j++) {

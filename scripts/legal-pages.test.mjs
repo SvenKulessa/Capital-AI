@@ -9,9 +9,24 @@ import { resolveNavigationTarget } from '../src/utils/appNavigation.ts';
 
 // Load through the application bundler so BrandLogo's image imports use the
 // same asset handling as production instead of failing in Node's TS loader.
-const server = await createServer({ server: { middlewareMode: true }, appType: 'custom' });
+// This test renders SSR modules only. Browser dependency discovery would start
+// an unrelated Three.js prebundle and can outlive the SSR server/test teardown.
+const server = await createServer({
+  server: { middlewareMode: true },
+  appType: 'custom',
+  plugins: [{
+    name: 'legal-ssr-without-client-optimizer',
+    enforce: 'post',
+    config(config) {
+      // React's pre hook injects explicit includes, even with noDiscovery.
+      // Mutate after plugin merging so this SSR-only test starts no optimizer.
+      config.optimizeDeps = { ...config.optimizeDeps, noDiscovery: true, include: [] };
+    },
+  }],
+});
 let LegalAndFaqPages, LocaleProvider;
 try {
+  assert.equal(server.environments.client.depsOptimizer, undefined, 'SSR rendering must not start browser prebundling');
   ({ LocaleProvider } = await server.ssrLoadModule('/src/i18n/LocaleProvider.tsx'));
   ({ LegalAndFaqPages } = await server.ssrLoadModule('/src/components/LegalAndFaqPages.tsx'));
 } finally {
