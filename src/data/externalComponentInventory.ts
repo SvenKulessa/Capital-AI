@@ -396,7 +396,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'github-actions-pinned-toolchain', name: 'Pinned GitHub Actions Toolchain', domain: 'TRUST', kind: 'CI/CD Supply Chain',
-    installedAt: null, activeVersion: 'checkout 7.0.1; setup-node 7.0.0; setup-java 6.0.1; setup-gradle 6.4.0; upload 7.0.1; download 8.0.1; login 4.6.0; attest 4.2.2', pipelineVersion: 'all actions pinned to full commit SHAs', lifecycle: 'ACTIVE',
+    installedAt: null, activeVersion: 'checkout 7.0.1; setup-node 7.0.0; setup-java 6.0.1; setup-gradle 6.4.0; upload 7.0.1; download 8.0.1; login 4.7.0; attest 4.2.2', pipelineVersion: 'all actions pinned to full commit SHAs', lifecycle: 'ACTIVE',
     functionSummary: 'Repository-eigene Actions sind auf vollständige, gegen offizielle Release-Tags korrelierte Commit-SHAs gepinnt.',
     webAppBinding: '.github/workflows/*.yml', license: 'per upstream action repository', cadsScore: 93.0, scoreState: 'VERIFIED',
     domainAssignments: ['CI/CD only'],
