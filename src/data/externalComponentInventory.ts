@@ -67,7 +67,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'nats-jetstream', name: 'NATS + JetStream', domain: 'PLATFORM', kind: 'Event Bus',
-    installedAt: '2026-09-30T14:02:11Z', activeVersion: null, pipelineVersion: 'nats-server 2.15.1 release binary in deploy/Dockerfile.nats; nats:2.15.0-alpine image base; deployed runtime NOT_PROVEN', lifecycle: 'ACTIVE',
+    installedAt: '2026-09-30T14:02:11Z', activeVersion: null, pipelineVersion: 'nats-server 2.15.2 release binary in deploy/Dockerfile.nats; nats:2.15.1-alpine image base; deployed runtime NOT_PROVEN', lifecycle: 'ACTIVE',
     functionSummary: 'Durable Market-Event-Transport, Replay und Fan-out-Authority.',
     webAppBinding: 'server/infrastructure.mjs / capital-ai-market-events', license: 'Apache-2.0', cadsScore: 90.4, scoreState: 'PROVISIONAL',
     domainAssignments: ["capital-ai-market-events private Render network"],
