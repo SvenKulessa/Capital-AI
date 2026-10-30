@@ -3,6 +3,8 @@ import { runContractValidationSuite } from '../src/contracts/__tests__/contracts
 import { runEnterpriseScoringSuite } from '../src/contracts/__tests__/enterpriseScoring.test.ts';
 import { runGrowthContractValidationSuite } from './validate-growth-contracts.mjs';
 import { runEvidenceHardeningValidationSuite } from './validate-evidence-hardening.mjs';
+import { runStorageValidationSuite } from '../src/contracts/__tests__/storage.test.ts';
+import { runMerkleAndPaperTestSuite } from '../src/contracts/__tests__/merkle.test.ts';
 
 // Keep executable code out of npm's command echo so log parsers do not
 // classify a successful run as an error merely because it contains console.error.
@@ -13,6 +15,8 @@ try {
     ['Enterprise Scoring', await runEnterpriseScoringSuite()],
     ['GROWTH Handoff Contracts', await runGrowthContractValidationSuite()],
     ['P1 Evidence Hardening', runEvidenceHardeningValidationSuite()],
+    ['Storage', runStorageValidationSuite()],
+    ['Merkle and Paper Trading', runMerkleAndPaperTestSuite()],
   ];
   for (const [name, result] of suites) {
     if (!result.passed) {
@@ -21,7 +25,7 @@ try {
     }
   }
   if (!process.exitCode) {
-    console.log('✓ All Provider Registry, Contracts, Enterprise Scoring, GROWTH Handoff & P1 Evidence Hardening Suites validated successfully.');
+    console.log('✓ All Provider Registry, Contracts, Enterprise Scoring, GROWTH Handoff, P1 Evidence Hardening, Storage & Merkle Suites validated successfully.');
   }
 } catch (error) {
   console.error(error);

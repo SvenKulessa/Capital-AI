@@ -21,6 +21,8 @@ export function trackReceivedLearningInquiry(receipt: string) {
 }
 export function trackLoginClick(_source: string = 'header') {}
 
+let seoUpdateVersion = 0;
+
 /**
  * Updates dynamic SEO tags (title, description, canonical link, OpenGraph)
  */
@@ -34,6 +36,7 @@ export function updatePageSEO({
   canonicalPath?: string;
 }) {
   if (typeof document === 'undefined') return;
+  const updateVersion = ++seoUpdateVersion;
 
   // Title
   document.title = title;
@@ -103,6 +106,23 @@ export function updatePageSEO({
   // Social previews must describe the current page after SPA navigation.
   document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', title);
   document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', description);
+
+  // Remove the previous route's schema immediately. Reuse the server generator
+  // lazily, so the full glossary/manifest does not enter the initial UI bundle.
+  document.getElementById('capital-ai-seo-jsonld')?.remove();
+  return import('../../shared/seo-metadata.mjs').then(({ seoJsonLdForPath }) => {
+    // A later navigation (including NOINDEX) supersedes an in-flight import.
+    if (updateVersion !== seoUpdateVersion || typeof document === 'undefined') return;
+    const schema = seoJsonLdForPath(pathname);
+    if (!schema) return;
+    const script = document.createElement('script');
+    script.setAttribute('id', 'capital-ai-seo-jsonld');
+    script.setAttribute('type', 'application/ld+json');
+    script.textContent = JSON.stringify(schema).replace(/</g, '\\u003c');
+    document.head.appendChild(script);
+  }).catch(() => {
+    // A failed chunk load must not restore stale schema or interrupt navigation.
+  });
 }
 
 export function trackVerifiedLearningPurchase(purchase: Parameters<AnalyticsModule['trackVerifiedLearningPurchase']>[0]) {
