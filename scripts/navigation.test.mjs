@@ -289,15 +289,14 @@ test('paused price alerts cannot render navigation or run background price check
   assert.match(context, /if \(!PRICE_ALERTS_ENABLED\) return;\s*try \{\s*localStorage\.setItem\(STORAGE_ALERTS_KEY/);
 });
 
-test('hero uses restored static artwork and shared product disclaimer', () => {
+test('hero uses shared 3D brand scene and shared product disclaimer', () => {
   const hero = readFileSync(new URL('../src/components/Hero.tsx', import.meta.url), 'utf8');
-  for (const asset of ['hero-universe-desktop.webp', 'hero-universe-tablet.webp', 'hero-universe-mobile.webp']) {
-    assert.ok(hero.includes(asset), asset);
-  }
-  assert.match(hero, /<picture>/);
+  const globe = readFileSync(new URL('../src/components/BrandGlobe.tsx', import.meta.url), 'utf8');
+  assert.match(hero, /<BrandGlobe paused=\{globePaused\}/);
+  assert.match(globe, /src=\{BRAND_GLOBE.asset\}/);
+  assert.match(hero, /aria-pressed=\{globePaused\}/);
   assert.doesNotMatch(hero, /hero-universe-orbit\.svg/);
   assert.doesNotMatch(hero, /HeroEarth3D|enableWebGL|WebGLRenderer/);
-  assert.match(hero, /opacity-95/);
   assert.match(hero, /ProductDisclaimer/);
 });
 

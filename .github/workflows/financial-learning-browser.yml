@@ -6,6 +6,10 @@ on:
       - 'src/features/analysis/**'
       - 'src/features/screener/EnterpriseScorerDashboard.tsx'
       - 'src/index.css'
+      - 'src/components/BrandGlobe.tsx'
+      - 'src/components/Hero.tsx'
+      - 'src/platform/SocialMediaEngine/Visualization/BrandGlobe*'
+      - 'scripts/brand-globe-browser.mjs'
       - 'scripts/scorer-methodology-browser.mjs'
       - 'src/components/HubCatalog.tsx'
       - 'server/learning-simulator.mjs'
@@ -70,6 +74,12 @@ jobs:
             sudo apt-get install -y --no-install-recommends ffmpeg
           fi
           CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/scorer-methodology-browser.mjs
+      - name: Homepage globe responsive, rotation, pause and failure QA
+        run: |
+          set -euo pipefail
+          CHROME_BIN=$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)
+          test -n "$CHROME_BIN"
+          CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/brand-globe-browser.mjs
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v4
         if: always()
         with:
@@ -80,6 +90,8 @@ jobs:
             artifacts/scorer-browser/*.mp4
             artifacts/scorer-browser/result.json
             artifacts-browser-result.json
+            artifacts/globe-browser/*.png
+            artifacts/globe-browser/result.json
             simulator-server.log
           if-no-files-found: warn
           retention-days: 7
