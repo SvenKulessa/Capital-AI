@@ -8,6 +8,7 @@ import {
   SEO_INDEXING_STATES,
   resolveSeoIndexingPolicy,
   seoIndexableStaticPaths,
+  isSeoIndexable,
 } from './seo-indexing-policy.mjs';
 import {
   SEO_PROVENANCE_GENERATED_AT_MAIN_SHA,
@@ -199,7 +200,7 @@ const staticEntries = [
 ];
 
 export const SEO_PUBLIC_VOCABULARY_ENTRIES = Object.freeze(
-  [...vocabularyMetadata],
+  vocabularyMetadata.filter(entry => isSeoIndexable(entry.path)),
 );
 
 const vocabularyEntries = SEO_PUBLIC_VOCABULARY_ENTRIES.map((entry) => contentEntry({
