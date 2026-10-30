@@ -640,7 +640,7 @@ export function createApp(root = defaultRoot, options = {}) {
     return res.end('User-agent: *\nAllow: /\nSitemap: https://capital-ai.online/sitemap.xml\n');
   }
   if (publicPath === '/sitemap.xml') {
-    const paths = [...new Set([...seoIndexableStaticPaths(), ...publicVocabularyEntries.map(entry => entry.path)])];
+    const paths = [...new Set([...seoIndexableStaticPaths(), ...publicVocabularyEntries.filter(entry => isSeoIndexable(entry.path)).map(entry => entry.path)])];
     const xml = '<?xml version="1.0" encoding="UTF-8"?>' +
       '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' +
       paths.map(route => {

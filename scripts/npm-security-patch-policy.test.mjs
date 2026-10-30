@@ -48,12 +48,12 @@ test('IP parser remediation is an integrity-locked compatible bundle replacement
 
 test('undici remediation stays on the npm-compatible 6.x donor line with locked integrity', () => {
   const entry = lock.packages['node_modules/undici'];
-  assert.equal(packageJson.dependencies.undici, '6.29.0');
-  assert.equal(entry.version, '6.29.0');
-  assert.equal(entry.resolved, 'https://registry.npmjs.org/undici/-/undici-6.29.0.tgz');
-  assert.equal(entry.integrity, 'sha512-R+RODBqp6i2pPflGdq+xIOUkl+RNfGgHwoinecKu/JCuf2uO06cOKoDbI2P7Dn6KcswdKwrczbU6IYJ6K8X+wg==');
+  assert.equal(packageJson.dependencies.undici, '6.29.1');
+  assert.equal(entry.version, '6.29.1');
+  assert.equal(entry.resolved, 'https://registry.npmjs.org/undici/-/undici-6.29.1.tgz');
+  assert.equal(entry.integrity, 'sha512-EvRlUt/QqAEvXdQeRMYUfwOQsfzpDztykrG2owGEE/rBOBoYv9uF39ZzsNDh4lTFHhTr2XOZjKkYgueD12ZmGA==');
   assert.equal(entry.license, 'MIT');
-  assert.match(hardener, /\['undici', '6\.28\.0', '6\.29\.0'\]/);
+  assert.match(hardener, /\['undici', '6\.28\.0', '6\.29\.1'\]/);
 });
 
 test('offline build validation cannot retain or invoke the vulnerable npm cache transport', () => {
