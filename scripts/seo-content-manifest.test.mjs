@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { vocabularyMetadata } from '../shared/vocabulary-metadata.mjs';
-import { seoIndexableStaticPaths } from '../shared/seo-indexing-policy.mjs';
+import { isSeoIndexable, seoIndexableStaticPaths } from '../shared/seo-indexing-policy.mjs';
 import {
   SEO_CONTENT_MANIFEST,
   SEO_CONTENT_SOURCE_SHA,
@@ -15,7 +15,7 @@ import {
 } from '../shared/seo-source-provenance.mjs';
 
 test('SEO-01 manifest covers every INDEX route exactly once', () => {
-  const publicVocabulary = vocabularyMetadata;
+  const publicVocabulary = vocabularyMetadata.filter(entry => isSeoIndexable(entry.path));
   const expected = [...seoIndexableStaticPaths(), ...publicVocabulary.map((entry) => entry.path)].sort();
   const actual = SEO_CONTENT_MANIFEST.map((entry) => entry.path).sort();
 
@@ -55,9 +55,25 @@ test('SEO-01 has unique slugs, canonicals and titles', () => {
 test('SEO-01 returns only admitted content paths', () => {
   assert.equal(seoContentForPath('/').slug, 'home');
   assert.equal(seoContentForPath('/vocabulary/orderbuch').structuredDataType, 'DefinedTerm');
-  for (const entry of vocabularyMetadata) assert.equal(seoContentForPath(entry.path).structuredDataType, 'DefinedTerm');
+  for (const entry of vocabularyMetadata) {
+    if (entry.id.startsWith('capital-')) assert.equal(seoContentForPath(entry.path), null);
+    else assert.equal(seoContentForPath(entry.path).structuredDataType, 'DefinedTerm');
+  }
   assert.equal(seoContentForPath('/vocabulary/not-a-real-term'),null);
   assert.equal(seoContentForPath('/profile'), null);
   assert.equal(seoContentForPath('/tokenomics'), null);
   assert.equal(seoContentForPath('/not-inventory'), null);
+});
+
+test('internal capital vocabulary is readable but excluded from Search and AI promotion', () => {
+  const internal = vocabularyMetadata.filter(entry => entry.id.startsWith('capital-'));
+  assert.equal(internal.length, 29);
+  for (const entry of internal) {
+    assert.equal(isSeoIndexable(entry.path), false);
+    assert.equal(isSeoIndexable(entry.path.toUpperCase() + '/'), false);
+    assert.equal(seoContentForPath(entry.path), null);
+    assert.ok(!SEO_CONTENT_MANIFEST.some(item => item.path === entry.path));
+  }
+  for (const route of ['/learning','/vocabulary/orderbuch','/vocabulary/bid-ask-spread']) assert.equal(isSeoIndexable(route),true);
+  for (const route of ['/pricing','/marketscreener/dokumentation']) assert.equal(isSeoIndexable(route),false);
 });
