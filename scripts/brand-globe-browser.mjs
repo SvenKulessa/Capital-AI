@@ -90,7 +90,10 @@ try {
     assert.notEqual(first, second, '3D output is not changing');
     // Exercise the real focusable button using keyboard input.
     await evaluate("document.querySelector('.hero-globe-pause').focus({preventScroll:true})");
-    await send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
+    assert.equal(await evaluate("document.activeElement === document.querySelector('.hero-globe-pause')"), true, 'Pause button did not receive keyboard focus');
+    // Enter also needs its character event; keyDown without text does not
+    // reproduce Chromium's native button activation (unlike ArrowDown).
+    await send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', text: '\r', unmodifiedText: '\r', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 });
     await send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
     await until(() => evaluate("document.querySelector('.hero-globe-pause').getAttribute('aria-pressed')==='true'"), 'KEYBOARD_PAUSE');
     await pause(100);
