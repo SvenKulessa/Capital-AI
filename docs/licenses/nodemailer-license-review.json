@@ -1,26 +1,24 @@
 {
   "schemaVersion": 1,
   "package": "nodemailer",
-  "version": "10.1.0",
+  "version": "10.1.4",
   "declaredLicense": "MIT-0",
   "licenseFile": "docs/licenses/nodemailer-10.1.0-MIT-0.txt",
   "licenseTextSha256": "4f814dcacd2da618d62829ea1f6238701cf421f18a6b36c91c5d8212245e2c78",
   "registry": "https://registry.npmjs.org",
-  "tarball": "https://registry.npmjs.org/nodemailer/-/nodemailer-10.1.0.tgz",
-  "integrity": "sha512-fXW8AulB25aOTuwfRYV6lqHyfz2VM4rr4SGXH03mE7x5znEUpzL5mu6anARUpZN7744Ziwkmr4AxSLPJsBQspg==",
+  "tarball": "https://registry.npmjs.org/nodemailer/-/nodemailer-10.1.4.tgz",
+  "integrity": "sha512-EsMnOR2oRv4LGnWvHgcVYkkQ4O2j8KO4WTw6l+PHR4sOXo8SAgIraxtEnGDmotjbhv0hDsu3IuDIFZm8iXwO4A==",
   "upstream": "https://github.com/nodemailer/nodemailer",
   "licenseDocumentation": "https://nodemailer.com/license",
   "status": "UPSTREAM_LICENSE_AND_NPM_LOCK_INTEGRITY_VERIFIED_INSTALLED_ARTIFACT_CI_REQUIRED",
   "scope": "Exact npm dependency only; no provider data rights or whole-image approval",
   "deployEligible": false,
   "notes": [
-    "Official Nodemailer v10.1.0 tag LICENSE and already retained v10.0.16 LICENSE have identical Git blob SHA fdfc9676bf9f4363b1292847d61f94a17a47618e and retained SHA-256. Version-specific license copy retained.",
-    "Dependency is pinned to npm registry v10.1.0 URL and SHA-512 integrity from Dependabot lock. Installed artifact/LICENSE bytes must pass Docker CI; no independent tarball SHA-256 captured.",
-    "Upstream October 10, 2026 release changes idle pooled SMTP connections, connection timeouts, stream handling and opportunistic TLS. Functional mail regression evidence remains required.",
-    "MIT-0 license applies to this exact package; no blanket commercial/provider or whole-image authorization."
+    "Npm registry tarball SHA-512 matched both root and runtime locks. LICENSE bytes equal the retained MIT-0 text.",
+    "Installed artifact and functional mail regressions remain required; no SMTP/provider activation."
   ],
-  "upstreamLicense": "https://github.com/nodemailer/nodemailer/blob/v10.1.0/LICENSE",
-  "upstreamLicenseGitBlobSha": "fdfc9676bf9f4363b1292847d61f94a17a47618e",
-  "observedAt": "2026-10-15",
-  "tarballSha256": null
+  "upstreamLicense": "https://github.com/nodemailer/nodemailer/blob/v10.1.4/LICENSE",
+  "upstreamLicenseGitBlobSha": null,
+  "observedAt": "2026-10-30",
+  "tarballSha256": "05e89be54d52e646ef93f1842c5fa9c45345485e786d3b32db6afcaac61ecc04"
 }

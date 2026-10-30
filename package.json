@@ -108,34 +108,34 @@
     "@nats-io/transport-node": "3.4.0",
     "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-react": "^6.1.2",
+    "d3-scale": "4.0.2",
     "dotenv": "^18.0.7",
     "express": "^5.3.0",
     "jspdf": "^4.2.1",
     "lucide-react": "1.55.0",
     "motion": "^14.1.0",
-    "nodemailer": "10.1.0",
+    "nodemailer": "10.1.4",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "recharts": "^3.10.1",
     "redis": "6.3.0",
     "spdx-expression-parse": "5.0.0",
     "spdx-license-ids": "3.0.24",
+    "three": "0.186.1",
     "vite": "^8.3.4",
-    "zod": "^4.6.6",
-    "d3-scale": "4.0.2",
-    "three": "0.186.1"
+    "zod": "^4.6.6"
   },
   "devDependencies": {
+    "@types/d3-scale": "4.0.9",
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.5",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "@types/three": "0.186.0",
     "autoprefixer": "^10.4.21",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.21.0",
-    "typescript": "6.0.3",
-    "@types/d3-scale": "4.0.9",
-    "@types/three": "0.186.0"
+    "typescript": "6.0.3"
   },
   "overrides": {
     "source-map-js": "1.2.2"

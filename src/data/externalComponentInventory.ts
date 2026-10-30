@@ -67,7 +67,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'nats-jetstream', name: 'NATS + JetStream', domain: 'PLATFORM', kind: 'Event Bus',
-    installedAt: '2026-09-30T14:02:11Z', activeVersion: null, pipelineVersion: 'nats-server 2.15.1 release binary in deploy/Dockerfile.nats; nats:2.15.0-alpine image base; deployed runtime NOT_PROVEN', lifecycle: 'ACTIVE',
+    installedAt: '2026-09-30T14:02:11Z', activeVersion: null, pipelineVersion: 'nats-server 2.15.2 release binary in deploy/Dockerfile.nats; nats:2.15.1-alpine image base; deployed runtime NOT_PROVEN', lifecycle: 'ACTIVE',
     functionSummary: 'Durable Market-Event-Transport, Replay und Fan-out-Authority.',
     webAppBinding: 'server/infrastructure.mjs / capital-ai-market-events', license: 'Apache-2.0', cadsScore: 90.4, scoreState: 'PROVISIONAL',
     domainAssignments: ["capital-ai-market-events private Render network"],
@@ -336,7 +336,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'node-runtime', name: 'Node.js', domain: 'PLATFORM', kind: 'Runtime',
-    installedAt: null, activeVersion: '26.11.1', pipelineVersion: 'node:26.11.1-alpine@sha256:143494b1da2945f061539253adc65e4f1569ddf07da2d384c022c791a9d90a4a', lifecycle: 'ACTIVE',
+    installedAt: null, activeVersion: '26.12.1', pipelineVersion: 'node:26.12.1-alpine@sha256:40cd011b55415bc894e45b02fdd5a5dfde056921b7d23a64c74f80497af48797', lifecycle: 'ACTIVE',
     functionSummary: 'Build- und Production-JavaScript-Runtime; Container-Base ist version- und digest-gepinnt.',
     webAppBinding: 'Dockerfile', license: 'MIT', cadsScore: 91.0, scoreState: 'VERIFIED',
     domainAssignments: ['build image', 'production runtime'],
@@ -356,7 +356,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'trivy', name: 'Trivy', domain: 'TRUST', kind: 'Vulnerability / Secret / License Scanner',
-    installedAt: null, activeVersion: '0.75.0', pipelineVersion: 'aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa', lifecycle: 'ACTIVE',
+    installedAt: null, activeVersion: '0.76.1', pipelineVersion: 'aquasec/trivy:0.76.1@sha256:790fd66d1697395d8693d1acaa1ea702406a20f109b6fc7bac8db623eca6c06c', lifecycle: 'ACTIVE',
     functionSummary: 'Container-, Filesystem-, Secret-, Misconfiguration-, SBOM- und Lizenzscan in Docker Security Gate.',
     webAppBinding: 'Dockerfile.security + .github/workflows/build-security.yml', license: 'Apache-2.0', cadsScore: 91.0, scoreState: 'VERIFIED',
     domainAssignments: ['CI security scanner only'],
@@ -416,7 +416,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'web-runtime-dependencies', name: 'Web Runtime Dependency Closure', domain: 'PLATFORM', kind: 'Node Runtime Dependencies',
-    installedAt: null, activeVersion: 'NATS JS 3.4.0 / redis 6.3.0 / zod 4.6.6 / nodemailer 10.1.0', pipelineVersion: 'deploy/runtime/package-lock.json resolved; live deployment NOT_PROVEN', lifecycle: 'ACTIVE',
+    installedAt: null, activeVersion: 'NATS JS 3.4.0 / redis 6.3.0 / zod 4.6.6 / nodemailer 10.1.4', pipelineVersion: 'deploy/runtime/package-lock.json resolved; live deployment NOT_PROVEN', lifecycle: 'ACTIVE',
     functionSummary: 'Minimale Production-Dependency-Closure für NATS, Valkey/Redis und Runtime-Validierung.',
     webAppBinding: 'deploy/runtime/package.json + deploy/runtime/package-lock.json', license: 'Apache-2.0 / MIT', cadsScore: 90.0, scoreState: 'VERIFIED',
     domainAssignments: ['production runtime'],
