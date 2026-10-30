@@ -13,7 +13,7 @@ const profile = await mkdtemp(join(tmpdir(), 'capital-course-qa-'));
 const chrome = spawn(process.env.CAPITAL_AI_CHROME_BIN, ['--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check', '--remote-debugging-port=0', `--user-data-dir=${profile}`, 'about:blank'], { stdio: 'ignore' });
 let socket, id = 0, responseMode = 'accepted', intercepted = [], interceptionError;
 const pending = new Map();
-const result = { scope: 'ISOLATED_LOOPBACK_MOCK_MAIL_NO_GOOGLE_SEND', status: 'FAIL', checks: [] };
+const result = { scope: 'ISOLATED_LOOPBACK_MOCK_MAIL_NO_GOOGLE_SEND', sourceSha: process.env.GITHUB_SHA ?? null, status: 'FAIL', checks: [] };
 const pause = () => new Promise(resolve => setTimeout(resolve, 100));
 async function until(check, label) {
   const end = Date.now() + 30000;
@@ -54,8 +54,9 @@ async function intercept(event) {
 }
 const form = 'section[aria-labelledby="contact-form"] form';
 async function submit() {
-  await evaluate(`(() => { const f=document.querySelector(${JSON.stringify(form)}); f.querySelector('[name=email]').value='qa@example.invalid'; f.querySelector('[name=message]').value='Synthetic browser course inquiry, no delivery.'; f.querySelector('button[type=submit]').focus(); })()`);
-  await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
+  const ready = await evaluate(`(() => { const f=document.querySelector(${JSON.stringify(form)}); f.querySelector('[name=email]').value='qa@example.invalid'; f.querySelector('[name=message]').value='Synthetic browser course inquiry, no delivery.'; const b=f.querySelector('button[type=submit]'); b.focus(); return {valid:f.checkValidity(),focused:document.activeElement===b,disabled:b.disabled}; })()`);
+  assert.deepEqual(ready, { valid: true, focused: true, disabled: false });
+  await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13, text: '\r', unmodifiedText: '\r' });
   await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
 }
 try {
@@ -70,6 +71,7 @@ try {
     else if (r.method === 'Fetch.requestPaused') intercept(r.params).catch(error => { interceptionError = error; });
   });
   await command('Page.enable'); await command('Runtime.enable');
+  result.browser = (await command('Browser.getVersion')).product;
   await command('Network.enable'); await command('Fetch.enable', { patterns: [{ urlPattern: '*' }] });
   for (const scenario of [
     { path: '/learning/kontakt#learning-inquiry', width: 320, course: true, mode: 'accepted', switchToSupport: true },
@@ -78,6 +80,7 @@ try {
     { path: '/learning/kontakt#learning-inquiry', width: 768, course: true, mode: 'rejected' },
     { path: '/learning/kontakt#learning-inquiry', width: 320, course: true, mode: 'wrong-receipt' },
   ]) {
+    result.activeCase = scenario;
     intercepted = []; responseMode = scenario.mode;
     await command('Storage.clearDataForOrigin', { origin, storageTypes: 'local_storage' });
     await command('Network.clearBrowserCookies');
@@ -104,12 +107,20 @@ try {
     result.checks.push({ ...scenario, status: 'PASS', submittedPaths: intercepted.map(x => x.path), keyboardSubmit: true, overflow: false });
   }
   result.status = 'PASS';
+  delete result.activeCase;
+} catch (error) {
+  result.error = error.message;
+  result.interceptedPaths = intercepted.map(x => x.path);
+  if (socket?.readyState === WebSocket.OPEN) {
+    result.dom = await evaluate(`(() => { const f=document.querySelector(${JSON.stringify(form)}); return {form:!!f,valid:f?.checkValidity(),focused:document.activeElement?.tagName,disabled:f?.querySelector('button[type=submit]')?.disabled,status:f?.querySelector('[role=status]')?.textContent,alert:f?.querySelector('[role=alert]')?.textContent}; })()`).catch(() => null);
+  }
+  throw error;
 } finally {
   await writeFile(join(directory, 'result.json'), JSON.stringify(result, null, 2)+'\n');
+  console.log(JSON.stringify(result));
   socket?.close();
   const exited = chrome.exitCode !== null || chrome.signalCode !== null ? Promise.resolve() : new Promise(resolve => chrome.once('exit', resolve));
   chrome.kill('SIGTERM'); await exited;
   for (const task of pending.values()) clearTimeout(task.timer);
   await rm(profile, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
 }
-console.log(JSON.stringify(result));
