@@ -120,7 +120,7 @@ jobs:
           fi
           gh api --paginate "repos/$GH_REPOSITORY/pulls/$PR_NUMBER/files?per_page=100" --jq '.[].filename' > "$RUNNER_TEMP/pr-files.txt"
           test -s "$RUNNER_TEMP/pr-files.txt"
-          if grep -Eq '^(deploy/(Dockerfile\.nats|nats-[^/]*|fetch-nats-release\.sh)|scripts/(verify-nats-runtime\.sh|verify-go-vuln-reachability(\.test)?\.mjs|summarize-trivy(\.test)?\.mjs|publish-security-summary(\.test)?\.mjs)|Dockerfile\.security|\.dockerignore|scripts/docker-context\.test\.mjs|scripts/container-evidence-identity(\.test)?\.mjs|\.github/workflows/build-security\.yml)$' "$RUNNER_TEMP/pr-files.txt"; then
+          if grep -Eq '^(deploy/(Dockerfile\.nats|nats-[^/]*|fetch-nats-release\.sh|trivy-bootstrap-exception\.yaml)|scripts/(verify-nats-runtime\.sh|verify-go-vuln-reachability(\.test)?\.mjs|summarize-trivy(\.test)?\.mjs|publish-security-summary(\.test)?\.mjs)|Dockerfile\.security|\.dockerignore|scripts/docker-context\.test\.mjs|scripts/container-evidence-identity(\.test)?\.mjs|\.github/workflows/build-security\.yml)$' "$RUNNER_TEMP/pr-files.txt"; then
             echo 'run=true' >> "$GITHUB_OUTPUT"
             echo 'NATS: relevant image or security logic changed; full scan required' >> "$GITHUB_STEP_SUMMARY"
           else
