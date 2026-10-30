@@ -49,7 +49,7 @@ test('SEO-02 preserves vocabulary semantics from the canonical vocabulary source
 });
 
 test('SEO-02 returns no metadata for routes that are not admitted by SEO-01', () => {
-  for (const route of ['/login', '/profile', '/control-center', '/tokenomics', '/not-inventory']) {
+  for (const route of ['/login', '/profile', '/control-center', '/tokenomics', '/not-inventory', '/vocabulary/capital-eventmesh']) {
     assert.equal(seoMetadataForPath(route), null, route);
     assert.equal(seoJsonLdForPath(route), null, route);
   }

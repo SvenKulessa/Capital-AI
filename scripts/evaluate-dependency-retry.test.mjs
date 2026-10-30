@@ -14,6 +14,7 @@ const baseline = {
   fingerprint: {
     packageIntegrity: evidence.fingerprint.package.integrity,
     nativeArtifactIntegrity: evidence.fingerprint.nativeArtifact.integrity,
+    binarySha256: evidence.fingerprint.nativeArtifact.binarySha256,
     embeddedRuntime: evidence.fingerprint.nativeArtifact.embeddedRuntime,
     securityEvidenceRevision: evidence.fingerprint.securityEvidence.evidenceRevision,
   },
@@ -47,11 +48,21 @@ test('changed embedded Go runtime requires retry', () => {
 });
 
 test('new persisted binary SHA is new evidence and requires retry', () => {
+  const historical = structuredClone(evidence);
+  historical.fingerprint.nativeArtifact.binarySha256 = null;
   const candidate = structuredClone(baseline);
   candidate.fingerprint.binarySha256 = 'sha256:' + 'a'.repeat(64);
-  const result = evaluateDependencyRetry({ evidence, candidate });
+  const result = evaluateDependencyRetry({ evidence:historical, candidate });
   assert.equal(result.decision, 'RETRY_REQUIRED');
   assert.ok(result.reasons.includes('BINARY_SHA256_NEW_EVIDENCE'));
+});
+
+test('a different captured binary digest requires retry', () => {
+  const candidate=structuredClone(baseline);
+  candidate.fingerprint.binarySha256='sha256:'+'a'.repeat(64);
+  const result=evaluateDependencyRetry({evidence,candidate});
+  assert.equal(result.decision,'RETRY_REQUIRED');
+  assert.ok(result.reasons.includes('BINARY_SHA256_CHANGED'));
 });
 
 test('missing fingerprint fails closed to manual review', () => {
