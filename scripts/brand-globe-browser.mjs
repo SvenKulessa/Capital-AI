@@ -143,6 +143,9 @@ try {
     // Full-page reduced-motion screenshots above retain it. Isolate only the
     // subsequent globe pixel comparisons; do not change the product design.
     await evaluate("document.querySelectorAll('[data-hero-buddy=\"agent\"]').forEach(e=>e.style.visibility='hidden')");
+    // Test complete UI above, then isolate playback from independent Framer
+    // Motion/hero-copy animation. Hiding test-only copy does not modify runtime.
+    await evaluate("document.querySelector('.hero-copy').style.visibility='hidden'");
     const clip = await evaluate(`(() => { const r=document.querySelector('.hero-globe-background').getBoundingClientRect(); const x=Math.max(0,r.x),y=Math.max(0,r.y); return {x,y,width:Math.min(innerWidth,r.right)-x,height:Math.min(innerHeight,r.bottom)-y,scale:1}; })()`);
     assert.ok(clip.width > 0 && clip.height > 0);
     const first = await shot('hero-3d-' + viewport.width, clip);
