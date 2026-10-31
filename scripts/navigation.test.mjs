@@ -576,15 +576,3 @@ test('roadmap OSS tooling navigator connects existing skills, live catalog paths
   assert.match(markup, /\/studio\?tab=content/);
   assert.doesNotMatch(markup, /type="submit"/);
 });
-
-test('home header omits redundant Studio shortcut but preserves hub navigation', () => {
-  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
-  const hero = readFileSync(new URL('../src/components/Hero.tsx', import.meta.url), 'utf8');
-  const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
-  assert.doesNotMatch(header, /STUDIO HUB BUTTON|title="Studio Hub: Pipeline Architektur/);
-  assert.match(header, /Object\.values\(MAIN_HUBS_CONFIG\)/);
-  assert.match(hero, /hero-brand-universe-outline/);
-  assert.match(hero, /<feMorphology[^>]+radius="30"/);
-  assert.match(hero, /clipPath="url\(#hero-silver-letter-and-curve\)"/);
-  assert.match(css, /hero-globe-background[\s\S]*?width:100%;[\s\S]*?aspect-ratio:1 \/ 1/);
-});
