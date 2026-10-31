@@ -103,10 +103,11 @@ try {
     assert.equal(decoration.outlineVisible, true, 'Silver Universe outline is absent');
     assert.equal(decoration.outlinePassive, true, 'Brand decoration intercepts pointer events');
     assert.equal(decoration.outlineRadius, '30', 'Silver outline thickness has changed');
-    if (viewport.width<=390) {
-      assert.ok(decoration.globeWidth<=decoration.heroWidth+2, 'Mobile globe overshoots content width');
-      assert.ok(Math.abs(decoration.globeHeight-decoration.globeWidth)<3, 'Mobile globe is not proportional');
-      assert.ok(decoration.right<=decoration.heroRight+2, 'Mobile globe is clipped on the right');
+    if (viewport.width<=768) {
+      assert.ok(decoration.globeWidth<=decoration.heroWidth+2, 'Mobile/tablet globe overshoots content width');
+      assert.ok(Math.abs(decoration.globeHeight-decoration.globeWidth)<3, 'Mobile/tablet globe is not proportional');
+      assert.ok(decoration.right<=decoration.heroRight+2, 'Mobile/tablet globe is clipped on the right');
+      assert.ok(decoration.left>=decoration.heroLeft-2, 'Mobile/tablet globe starts outside the hero');
     }
     report.checks.push({viewport, layout, decoration});
     await shot('hero-reduced-' + viewport.width);
