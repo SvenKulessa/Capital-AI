@@ -213,47 +213,98 @@ test('badge download is denied without Vocabulary entitlement', async () => {
   assert.equal(res.payload.error,'vocabulary_entitlement_required');
 });
 
-test('private notes persist per verified identity and ignore client-selected user IDs', async () => {
+test('private notes OCC v2: initial revision, stale CAS and explicit merge', async () => {
   const saved = new Map();
+  const calls = [];
   const fetchImpl = async (url, options) => {
-    assert.ok(String(url).endsWith('/rpc/capital_ai_private_notes'));
+    assert.ok(String(url).endsWith('/rpc/capital_ai_private_notes_v2'));
     const args = JSON.parse(options.body);
-    if (args._action === 'PUT') saved.set(args._user_id,args._notes);
-    return new Response(JSON.stringify(saved.get(args._user_id) ?? ''), {status:200});
+    calls.push(args);
+    const current = saved.get(args._user_id) ?? { notes: '', revision: '0' };
+    if (args._action === 'GET') return Response.json({ status:'ok', ...current });
+    if (current.revision !== args._expected_revision) {
+      return Response.json({ status:'conflict', ...current });
+    }
+    const next = { notes:args._notes, revision:(BigInt(current.revision)+1n).toString() };
+    saved.set(args._user_id,next);
+    return Response.json({ status:'saved', ...next });
   };
   async function call(userId,method='GET',body) {
     const checkout=createVocabularyCheckout({env,fetchImpl,auth:auth(userId)});
     const res=response();
-    await checkout.handle(request({method,body:body&&JSON.stringify(body)}),res,new URL('https://capital-ai.online/api/profile/notes'),json);
+    await checkout.handle(request({method,body:body&&JSON.stringify(body)}),res,
+      new URL('https://capital-ai.online/api/profile/notes'),json);
     return res;
   }
-  const first='11111111-1111-4111-8111-111111111111';
-  const second='22222222-2222-4222-8222-222222222222';
-  assert.equal((await call(first,'PUT',{notes:'Meine Notiz',user_id:second,expectedUserId:first})).status,200);
-  assert.equal((await call(first)).payload.notes,'Meine Notiz');
-  assert.equal((await call(first)).payload.userId, first);
-  assert.equal((await call(second)).payload.notes,'');
-  assert.equal((await call(second,'PUT',{notes:'stale draft',expectedUserId:first})).status,409);
-  assert.equal((await call(second)).payload.notes,'');
-  assert.equal((await call(first,'PUT',{notes:'',expectedUserId:first})).payload.notes,'');
+  const a='11111111-1111-4111-8111-111111111111';
+  const b='22222222-2222-4222-8222-222222222222';
+  const initial=await call(a);
+  assert.equal(initial.status,200);
+  assert.deepEqual(initial.payload,{notes:'',userId:a,revision:'0'});
+  assert.equal(initial.headers.get('cache-control'),'private, no-store');
+  const first=await call(a,'PUT',{expectedUserId:a,expectedRevision:'0',notes:'Alice'});
+  assert.equal(first.status,200);
+  assert.equal(first.payload.revision,'1');
+  const stale=await call(a,'PUT',{expectedUserId:a,expectedRevision:'0',notes:'Lost update'});
+  assert.equal(stale.status,409);
+  assert.deepEqual(stale.payload,{error:'notes_revision_conflict',userId:a,
+    currentNotes:'Alice',currentRevision:'1'});
+  assert.equal(saved.get(a).notes,'Alice');
+  const merged=await call(a,'PUT',{expectedUserId:a,expectedRevision:'1',notes:'Merged'});
+  assert.equal(merged.status,200);
+  assert.equal(merged.payload.revision,'2');
+  assert.equal((await call(b)).payload.notes,'');
+  assert.equal((await call(b,'PUT',{expectedUserId:a,expectedRevision:'0',notes:'Forbidden'})).status,409);
+  assert.equal(saved.has(b),false);
+  assert.equal(calls.every(call=>call._user_id===a||call._user_id===b),true);
 });
 
-test('private notes reject missing sessions, cross-origin writes, invalid input and backend failure', async () => {
+test('private notes OCC v2: missing and invalid revision fail before RPC', async () => {
   let calls=0;
-  const fetchImpl=async()=>{calls++;return new Response('{}',{status:503});};
-  async function call(overrides,method='PUT',notes='test') {
+  const fetchImpl=async()=>{calls++;return Response.json({ status:'ok',notes:'',revision:'0' });};
+  async function call(overrides={},method='PUT',body={}) {
     const checkout=createVocabularyCheckout({env,fetchImpl,auth:{...auth(),...overrides}});
     const res=response();
-    await checkout.handle(request({method,body:JSON.stringify({notes,expectedUserId:'11111111-1111-4111-8111-111111111111'})}),res,new URL('https://capital-ai.online/api/profile/notes'),json);
-    return res.status;
+    await checkout.handle(request({method,body:JSON.stringify({
+      notes:'test',expectedUserId:'11111111-1111-4111-8111-111111111111',...body,
+    })}),res,new URL('https://capital-ai.online/api/profile/notes'),json);
+    return res;
   }
-  assert.equal(await call({verify:async()=>null},'GET'),401);
-  assert.equal(await call({sameOrigin:()=>false}),403);
-  assert.equal(await call({},'POST'),405);
-  assert.equal(await call({},'PUT',123),400);
-  assert.equal(await call({},'PUT','x'.repeat(10001)),400);
+  assert.equal((await call({verify:async()=>null},'GET')).status,401);
+  assert.equal((await call({sameOrigin:()=>false})).status,403);
+  assert.equal((await call({},'POST')).status,405);
+  const missing=await call();
+  assert.equal(missing.status,428);
+  assert.equal(missing.payload.error,'revision_required');
+  for(const invalid of [null,-1,0,1,'01','-1','abc','9223372036854775807','9223372036854775808']) {
+    const bad=await call({},'PUT',{expectedRevision:invalid});
+    assert.equal(bad.status,400);
+    assert.equal(bad.payload.error,'invalid_revision');
+  }
+  assert.equal((await call({},'PUT',{notes:123,expectedRevision:'0'})).status,400);
+  assert.equal((await call({},'PUT',{notes:'x'.repeat(10001),expectedRevision:'0'})).status,400);
   assert.equal(calls,0);
-  assert.equal(await call({}),503);
+  const unavailable=await call({},'GET');
+  assert.equal(unavailable.status,200);
+  assert.equal(calls,1);
+});
+
+test('private notes OCC v2: malformed/unconfirmed RPC fails closed', async () => {
+  const userId='11111111-1111-4111-8111-111111111111';
+  for(const result of [
+    'legacy',null,{status:'saved',notes:'Text',revision:'0'},
+    {status:'saved',notes:'wrong',revision:'1'},
+    {status:'unexpected',notes:'Text',revision:'1'},
+  ]) {
+    const checkout=createVocabularyCheckout({env,
+      fetchImpl:async()=>Response.json(result),auth:auth(userId)});
+    const res=response();
+    await checkout.handle(request({method:'PUT',
+      body:JSON.stringify({expectedUserId:userId,expectedRevision:'0',notes:'Text'})}),
+      res,new URL('https://capital-ai.online/api/profile/notes'),json);
+    assert.equal(res.status,503);
+    assert.equal(res.payload.error,'notes_unavailable');
+  }
 });
 
 test('learning word storage is idempotent, removable and scoped to verified users',async()=>{

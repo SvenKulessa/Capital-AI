@@ -536,7 +536,12 @@ test('private dashboard separates unsaved editor text from last acknowledged not
   assert.match(dashboard, /setSavedText\(body\.notes\)/);
   assert.match(dashboard, /savedText\.trim\(\)/);
   assert.match(dashboard, /key=\{session\.user!\.id\}/);
-  assert.match(dashboard, /isNotesResponse\(body, userId\)/);
+  // OCC v2 validates both the server revision and the acknowledged snapshot.
+  assert.match(dashboard, /readNotes\(userId, controller\.signal\)/);
+  assert.match(dashboard, /setRevision\(body\.revision\)/);
+  assert.match(dashboard, /saveNotes\(base, submitted\)/);
+  assert.match(dashboard, /result\.kind === 'conflict'/);
+  assert.match(dashboard, /NotesConflictPanel/);
 });
 
 

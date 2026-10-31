@@ -50,6 +50,22 @@ async function rpc(fetchImpl, config, name, body) {
   return payload;
 }
 
+
+const MAX_NOTES_REVISION = 9223372036854775807n;
+function validNotesRevision(value, forWrite = false) {
+  if (typeof value !== 'string' || !/^(0|[1-9][0-9]{0,18})$/.test(value)) return false;
+  const revision = BigInt(value);
+  return revision >= 0n && (forWrite ? revision < MAX_NOTES_REVISION : revision <= MAX_NOTES_REVISION);
+}
+function notesRpcPayload(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value) ||
+      !['ok','saved','conflict'].includes(value.status) ||
+      typeof value.notes !== 'string' || !validNotesRevision(value.revision)) {
+    throw new Error('INVALID_NOTES_RPC_RESPONSE');
+  }
+  return value;
+}
+
 function stripeId(value, prefix) {
   return typeof value === 'string' && value.startsWith(prefix) && value.length <= 255 ? value : '';
 }
@@ -263,22 +279,51 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
       }
 
       if (url.pathname === '/api/profile/notes') {
-        if (!['GET','PUT'].includes(req.method)) return json(res, 405, { error:'method_not_allowed' }), true;
+        res.setHeader('Cache-Control', 'private, no-store');
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        if (!['GET','PUT'].includes(req.method)) return json(res,405,{error:'method_not_allowed'}),true;
         if (req.method === 'PUT' && !auth?.sameOrigin?.(req)) return json(res,403,{error:'forbidden_origin'}),true;
         const user = await requireUser(req,res,json);
         if (!user) return true;
         if (!supabase) return json(res,503,{error:'notes_unavailable'}),true;
+
         let notes = null;
+        let expectedRevision = null;
         if (req.method === 'PUT') {
           let body;
-          try { body=JSON.parse(await readBody(req,65536)); notes=body?.notes; }
+          try { body = JSON.parse(await readBody(req,65536)); }
           catch { return json(res,400,{error:'invalid_notes'}),true; }
-          if (typeof notes !== 'string' || notes.length>10000) return json(res,400,{error:'invalid_notes'}),true;
-          // A draft from an old tab/session can never be written under a different user.
+          if (!body || typeof body !== 'object' || Array.isArray(body) ||
+              typeof body.notes !== 'string' || body.notes.length > 10000) {
+            return json(res,400,{error:'invalid_notes'}),true;
+          }
           if (body.expectedUserId !== user.userId) return json(res,409,{error:'session_changed'}),true;
+          if (!Object.hasOwn(body,'expectedRevision')) return json(res,428,{error:'revision_required'}),true;
+          if (!validNotesRevision(body.expectedRevision,true)) return json(res,400,{error:'invalid_revision'}),true;
+          notes = body.notes;
+          expectedRevision = body.expectedRevision;
         }
-        try { const result=await rpc(fetchImpl,supabase,'capital_ai_private_notes',{_user_id:user.userId,_notes:notes,_action:req.method}); if (typeof result !== 'string') throw new Error('invalid_notes_response'); json(res,200,{notes:result,userId:user.userId}); }
-        catch { json(res,503,{error:'notes_unavailable'}); }
+        try {
+          const result = notesRpcPayload(await rpc(fetchImpl,supabase,'capital_ai_private_notes_v2',{
+            _user_id:user.userId, _action:req.method, _notes:notes, _expected_revision:expectedRevision,
+          }));
+          if (req.method === 'PUT' && result.status === 'conflict') {
+            json(res,409,{error:'notes_revision_conflict',userId:user.userId,
+              currentNotes:result.notes,currentRevision:result.revision});
+            return true;
+          }
+          if (result.status !== (req.method === 'PUT' ? 'saved' : 'ok')) {
+            throw new Error('UNEXPECTED_NOTES_RPC_STATUS');
+          }
+          if (req.method === 'PUT' &&
+              (result.notes !== notes ||
+               result.revision !== (BigInt(expectedRevision)+1n).toString())) {
+            throw new Error('UNCONFIRMED_NOTES_WRITE');
+          }
+          json(res,200,{notes:result.notes,userId:user.userId,revision:result.revision});
+        } catch {
+          json(res,503,{error:'notes_unavailable'});
+        }
         return true;
       }
 

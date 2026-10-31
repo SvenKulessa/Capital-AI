@@ -298,15 +298,27 @@ test('profile keeps owner role distinct from product access and gives legal acce
   assert.match(profile, /href="\/agb"/);
   assert.doesNotMatch(profile, /Supabase Auth/);
 });
-test('private draft identity is checked both client- and server-side', async () => {
+test('private draft identity and OCC revision are checked through the shared client and server', async () => {
   const ui = await readFile(new URL('../src/features/account/PrivateDashboardPage.tsx', import.meta.url),'utf8');
+  const client = await readFile(new URL('../src/features/account/privateNotesOcc.ts', import.meta.url),'utf8');
   const backend = await readFile(new URL('../server/vocabulary-checkout.mjs', import.meta.url),'utf8');
-  assert.match(ui,/expectedUserId: userId/);
-  assert.match(ui,/visibilitychange/);
-  assert.match(ui,/role="tablist"/);
-  assert.match(backend,/body.expectedUserId !== user.userId/);
-  assert.match(backend,/error:'session_changed'/);
-  assert.match(backend,/userId:user.userId/);
+  // The dashboard now uses the shared client rather than inlining its write payload.
+  assert.match(ui, /saveNotes\(base, submitted\)/);
+  assert.match(ui, /const base: NotesSnapshot = \{ userId, notes: savedText, revision \}/);
+  assert.match(ui, /visibilitychange/);
+  assert.match(ui, /role="tablist"/);
+  // The browser confirms session identity and binds both user and exact revision to PUT.
+  assert.match(client, /verifyNotesSession\(snapshot.userId, signal\)/);
+  assert.match(client, /session\?\.user\?\.id !== expectedUserId/);
+  assert.match(client, /expectedUserId: snapshot.userId, expectedRevision: snapshot.revision/);
+  assert.match(client, /isNotesSnapshot\(body,snapshot.userId\)/);
+  // The BFF is the authority: mismatched principals and missing revisions fail closed.
+  assert.match(backend, /body.expectedUserId !== user.userId/);
+  assert.match(backend, /Object.hasOwn\(body,'expectedRevision'\)/);
+  assert.match(backend, /validNotesRevision\(body.expectedRevision,true\)/);
+  assert.match(backend, /error:'session_changed'/);
+  assert.match(backend, /error:'notes_revision_conflict'/);
+  assert.match(backend, /userId:user.userId/);
 });
 test('customer login keeps provider errors and internal codes out of UI', async () => {
   const page = await readFile(new URL('../src/features/auth/LoginPage.tsx', import.meta.url),'utf8');
