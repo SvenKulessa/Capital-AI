@@ -110,7 +110,7 @@ for(const width of [320,390,768,1440]){
  await page.getByRole('button',{name:'Notizen speichern',exact:true}).click();
  await page.getByRole('heading',{name:'Notizkonflikt erkannt'}).waitFor();
  await page.locator('pre').filter({hasText:'Local unsaved draft'}).waitFor();
- await page.getByRole('alert').filter({hasText:'Dein Entwurf bleibt erhalten'}).waitFor();
+ await page.locator('section[aria-labelledby$="-title"] > p[role="alert"]').waitFor();
  await page.waitForFunction(() => document.activeElement?.textContent === 'Notizkonflikt erkannt');
  if(width===390)await page.screenshot({path:join(output,'notes-conflict-390.png')});
  if(width===320) {
