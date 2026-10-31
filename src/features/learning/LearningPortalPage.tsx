@@ -415,6 +415,21 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
             </div>
           </div>
 
+          <nav aria-label="Neue Architektur- und Governance-Skills" className="rounded-xl border border-amber-400/20 bg-[#090e21] p-4">
+            <h3 className="mb-3 text-sm font-bold text-amber-200">Neu: Architektur, Governance &amp; Agenten-Skills</h3>
+            <div className="flex flex-wrap gap-2">
+              {[
+                ['learning-governance-as-code', 'Governance as Code'],
+                ['learning-kappa-architecture', 'Kappa-Architektur'],
+                ['learning-langgraph-architecture', 'LangGraph-Architektur'],
+                ['learning-occ-v2', 'OCC v2'],
+              ].map(([id, label]) => (
+                <a key={id} href={`/vocabulary/${id}`} className="inline-flex min-h-11 items-center rounded-lg border border-white/20 px-3 py-2 text-xs font-semibold text-cyan-200 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-amber-300">
+                  {label}
+                </a>
+              ))}
+            </div>
+          </nav>
           <details className="rounded-xl border border-slate-700 p-4 text-sm text-slate-300"><summary className="cursor-pointer min-h-11">Katalogstand und PR-Quellen</summary><p>Die Anzahl wird direkt aus dem aktuellen Katalog berechnet.</p><ul>{VOCABULARY_SOURCE_PRS.map(pr=><li key={pr.number}><a className="inline-flex min-h-11 items-center text-cyan-200 underline" href={`https://github.com/SvenKulessa/Capital-AI/pull/${pr.number}`} target="_blank" rel="noreferrer">PR #{pr.number} · {pr.title}</a></li>)}</ul></details>
           {focusedTermId && (
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-cyan-400/20 bg-cyan-400/5 px-4 py-3">
