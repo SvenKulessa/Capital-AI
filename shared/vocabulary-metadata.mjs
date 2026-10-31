@@ -1,6 +1,7 @@
 /** Public canonical glossary metadata; learning-product entitlements are separate. */
 import quantLearningDemo from './quant-learning-demo.json' with { type: 'json' };
 import researchedVocabulary from './researched-vocabulary.json' with { type: 'json' };
+import { ARCHITECTURE_GOVERNANCE_VOCABULARY } from './architecture-governance-vocabulary.mjs';
 
 export const vocabularyMetadata = [
   {
@@ -3535,6 +3536,20 @@ export const vocabularyMetadata = [
 
 vocabularyMetadata.push({id:quantLearningDemo.id,path:`/vocabulary/${quantLearningDemo.id}`,term:quantLearningDemo.term,category:quantLearningDemo.categoryLabel,description:quantLearningDemo.shortDefinition,thesaurus:quantLearningDemo.thesaurus});
 vocabularyMetadata.push(...researchedVocabulary.map(term=>({id:term.id,path:`/vocabulary/${term.id}`,term:term.term,category:term.categoryLabel,description:term.shortDefinition,thesaurus:term.thesaurus,sources:term.sources,detailedExplanation:term.detailedExplanation,formulaOrRule:term.formulaOrRule,practicalExample:term.practicalExample,keyTakeaway:term.keyTakeaway})));
+// One shared source for the public glossary and its indexed SEO projection.
+vocabularyMetadata.push(...ARCHITECTURE_GOVERNANCE_VOCABULARY.map(term => ({
+  id: term.id,
+  path: `/vocabulary/${term.id}`,
+  term: term.term,
+  category: term.categoryLabel,
+  description: term.shortDefinition,
+  thesaurus: term.thesaurus,
+  sources: term.sources,
+  detailedExplanation: term.detailedExplanation,
+  formulaOrRule: term.formulaOrRule,
+  practicalExample: term.practicalExample,
+  keyTakeaway: term.keyTakeaway,
+})));
 export const VOCABULARY_CANONICAL_COUNT = vocabularyMetadata.length;
 export const VOCABULARY_PUBLIC_COUNT = vocabularyMetadata.length;
 
