@@ -3,6 +3,37 @@ import type { WorkPackage } from './roadmapData';
 
 export const SOCIAL_CONTENT_WORK_PACKAGES: WorkPackage[] = [
   {
+    id: 'CA-PRODUCT-JAJA-NOTION-MARKETPLACE',
+    title: 'JaJa Buddy × Notion: privates Learning-Workspace-Paket und mögliche Marketplace-Distribution',
+    owner: 'PRODUCT',
+    status: 'planning',
+    phase: 4,
+    phaseName: 'Phase 4: DevSecOps, Supply Chain & Release Candidate',
+    progressPercent: null,
+    evidenceState: 'OFFEN',
+    evidenceRefs: [
+      'docs/product/JAJA-NOTION-MARKETPLACE-WORKPACKAGE-20261015.md',
+      'docs/product/JAJA-AVATAR-ASSET-LICENSE.md',
+      'Chat Buddy/PROPRIETARY.md',
+      'src/features/account/PrivateDashboardPage.tsx',
+      'scripts/growth/pr-merge-social-batch.mjs'
+    ],
+    nextStep: 'Nutzergebundene Notion-OAuth-Verbindung separat vom Supabase-Notion-Login implementieren; Rechte, Export/Disconnect, Consent und Kosten überprüfen. Danach JaJa-Learning-Templates als Marketplace-Kandidaten testen. Kein Drittanbieter-Rebranding oder Verkauf der proprietären JaJa-Figur.',
+    priority: 'Hoch',
+    leadName: 'PRODUCT + GROWTH/TRUST/PLATFORM',
+    targetSprint: 'Nach echter OAuth-Verifikation, Rechte-/Kostenprüfung und bestehenden Learning-Tests',
+    description: 'Optionale, monetarisierbare Hosted-Service-Variante: JaJa unterstützt verständliche Lernnotizen, Notion erhält nur explizit ausgewählte Inhalte und Workspaces. Ein Listing kann Reichweite bringen, ist aber keine technische oder rechtliche Veröffentlichungsgenehmigung; Persona, Stimme, Code und Assets bleiben CAPITAL-AI-proprietär.',
+    deliverables: [
+      'Nutzerspezifischer Notion OAuth2-Connection- und Vault-Contract mit State, CSRF, Revocation und Tenant-Isolation',
+      'Opt-in-Export statt stiller bidirektionaler Synchronisierung; ausgewählte Seiten, Löschung und Audit ohne Notizinhalte',
+      'JaJa-Learning-Workspace-Template und barrierearme Hilfestellungen als first-party Hosted-Feature',
+      'Marketplace-Optionen: Notion-Integrationslisting als Acquisition-Kanal versus externe SaaS-SKU; keine JaJa-Asset-Sublizenz',
+      'SKU/Entitlement, Vertrags-/Markenrechte, Datenschutz und nachvollziehbarer Zahlungs-/Supportpfad vor jeder kommerziellen Freigabe'
+    ],
+    dependencies: ['CA-GROWTH-CONTENT-SOCIAL-PACKAGE', 'CA-TRUST-SOC-RIGHTS']
+  },
+
+  {
     "id": "CA-GROWTH-CONTENT-ENGINE",
     "title": "CAPITAL-AI Content Engine modularisieren und Scoring-First-Kampagne ausrollen",
     "owner": "GROWTH",

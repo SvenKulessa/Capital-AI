@@ -1,4 +1,5 @@
 import React from 'react';
+import { RoadmapSkillOrchestrationPanel } from './RoadmapSkillOrchestrationPanel';
 
 type Domain = 'PRODUCT' | 'MARKET' | 'PLATFORM' | 'TRUST' | 'GROWTH';
 type Freshness = 'LIVE' | 'CACHED' | 'STALE';
@@ -256,6 +257,7 @@ export function RepositoryToolCatalogDashboard() {
       </p>
     </header>
 
+    {snapshot && <RoadmapSkillOrchestrationPanel sourceSha={snapshot.sourceSha} freshness={snapshot.freshness} entryPaths={snapshot.entries.map(item => item.path)} />}
     {error && <div role="alert" className="rounded-xl border border-amber-500/30 p-4 text-sm text-amber-200">
       GitHub-Katalog momentan nicht abrufbar. Es werden keine unbestätigten Live-Daten erzeugt.
       {snapshot && ' Der letzte erfolgreich geladene Stand bleibt sichtbar.'}

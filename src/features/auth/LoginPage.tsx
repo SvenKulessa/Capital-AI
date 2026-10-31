@@ -98,6 +98,14 @@ function newPasswordMeetsObservedPolicy(value: string) {
     /[!@#$%^&*()_+\-=\[\]{};'\\:"|<>?,./`~]/.test(value);
 }
 
+function NotionBrandMark() {
+  // Simple Icons Notion glyph; source: https://github.com/simple-icons/simple-icons/blob/develop/icons/notion.svg
+  // Visible provider identity, decorative only: the enclosing control has a localized accessible name.
+  return <svg aria-hidden="true" viewBox="0 0 24 24" className="h-7 w-7 shrink-0" fill="currentColor">
+    <path d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.968c-.42-.326-.981-.7-2.055-.607L3.01 2.295c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.887l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42 0 .84-.42.888l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748 0-.935-.234-1.495-.933l-4.577-7.186v6.952L12.21 19s0 .84-1.168.84l-3.222.186c-.093-.186 0-.653.327-.746l.84-.233V9.854L7.822 9.76c-.094-.42.14-1.026.793-1.073l3.456-.233 4.764 7.279v-6.44l-1.215-.139c-.093-.514.28-.887.747-.933zM1.936 1.035l13.31-.98c1.634-.14 2.055-.047 3.082.7l4.249 2.986c.7.513.934.653.934 1.213v16.378c0 1.026-.373 1.634-1.68 1.726l-15.458.934c-.98.047-1.448-.093-1.962-.747l-3.129-4.06c-.56-.747-.793-1.306-.793-1.96V2.667c0-.839.374-1.54 1.447-1.632z" />
+  </svg>;
+}
+
 export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFaq, onNavigateLegal }) => {
   const {locale} = useLocale();
   const tr = authCopy[locale];
@@ -661,7 +669,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                 <span className="h-px flex-1 bg-white/10" /> oder <span className="h-px flex-1 bg-white/10" />
               </div>
 
-              <div className="grid grid-cols-2 gap-2" role="group" aria-label="Social Login">
+              <div className="grid grid-cols-3 gap-2" role="group" aria-label="Social Login">
               {mode === 'register' ? (
                 <form method="POST" action={`/api/auth/login/google?next=${encodeURIComponent(postAuthPath)}`}>
                   <input type="hidden" name="registration" value="true" />
@@ -715,6 +723,27 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToHome, onNavigateFa
                     aria-label={tr.xLogin}
                     className="flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-400/40 bg-black text-xs font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 transition hover:bg-slate-800">
                     <svg aria-hidden="true" viewBox="0 0 24 24" className="h-7 w-7 shrink-0" fill="currentColor"><path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.63 7.58H.47l8.6-9.83L0 1.15h7.59l5.25 6.93 6.06-6.93Zm-1.29 19.49h2.04L6.49 3.24H4.3l13.31 17.4Z"/></svg>
+                  </a>
+                )}
+
+                {mode === 'register' ? (
+                  <form method="POST" action={`/api/auth/login/notion?next=${encodeURIComponent(postAuthPath)}`}>
+                    <input type="hidden" name="registration" value="true" />
+                    <input type="hidden" name="termsAccepted" value={String(termsAccepted)} />
+                    <input type="hidden" name="privacyAcknowledged" value={String(privacyAcknowledged)} />
+                    <input type="hidden" name="marketingConsent" value={String(marketingConsent)} />
+                    <button type="submit"
+                      disabled={!session?.configured || !termsAccepted || !privacyAcknowledged || busy}
+                      aria-label={tr.notionRegister}
+                      className="flex min-h-12 w-full items-center justify-center rounded-xl border border-white/15 bg-white text-slate-900 transition hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 disabled:opacity-40">
+                      <NotionBrandMark />
+                    </button>
+                  </form>
+                ) : (
+                  <a href={`/api/auth/login/notion?next=${encodeURIComponent(postAuthPath)}`}
+                    aria-label={tr.notionLogin}
+                    className="flex min-h-12 w-full items-center justify-center rounded-xl border border-white/15 bg-white text-slate-900 transition hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">
+                    <NotionBrandMark />
                   </a>
                 )}
               </div>
