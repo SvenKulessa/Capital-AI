@@ -37,12 +37,57 @@ export function createIndependentReviewManifest({ git = execGit } = {}) {
   const tree = String(git(['rev-parse', '--verify', 'HEAD^{tree}'], { encoding: 'utf8' })).trim();
   if (!/^[a-f0-9]{40}$/.test(commit) || !/^[a-f0-9]{40}$/.test(tree)) throw new Error('REVIEW_GIT_IDENTITY_INVALID');
   const tracked = new Set(String(git(['ls-tree', '-r', '--name-only', 'HEAD'], { encoding: 'utf8' })).trimEnd().split('\n'));
-  const files = REVIEW_PATHS.map(path => {
+  // Reuse immutable Git blob reads so the extended static inventory never trusts
+  // the working directory or reads an untracked local file.
+  const cache = new Map();
+  function source(path) {
     if (!tracked.has(path)) throw new Error(`REVIEW_REQUIRED_SOURCE_MISSING:${path}`);
-    const bytes = git(['show', `HEAD:${path}`]);
-    if (!Buffer.isBuffer(bytes)) throw new Error(`REVIEW_SOURCE_BYTES_INVALID:${path}`);
+    if (!cache.has(path)) {
+      const bytes = git(['show', `HEAD:${path}`]);
+      if (!Buffer.isBuffer(bytes) || bytes.length > 5 * 1024 * 1024) throw new Error(`REVIEW_SOURCE_BYTES_INVALID:${path}`);
+      cache.set(path, bytes);
+    }
+    return cache.get(path);
+  }
+  const files = REVIEW_PATHS.map(path => {
+    const bytes = source(path);
     return { path, bytes: bytes.length, sha256: digest(bytes) };
   });
+  const workflowPaths = [...tracked].filter(path => /^\\.github\\/workflows\\/[a-zA-Z0-9._-]+\\.ya?ml$/.test(path)).sort();
+  const processPaths = [...tracked].filter(path => /^(server|scripts)\\/[a-zA-Z0-9/_-]+\\.(?:mjs|cjs|js|ts|tsx)$/.test(path)).sort();
+  if (workflowPaths.length > 250 || processPaths.length > 1500) throw new Error('REVIEW_SOURCE_INVENTORY_BOUND_EXCEEDED');
+  const permissionInventory = workflowPaths.map(path => {
+    const bytes = source(path);
+    const body = bytes.toString('utf8');
+    const scopes = [...new Set([...body.matchAll(/^\\s*(contents|id-token|issues|pull-requests|actions|checks|security-events|packages|deployments|statuses|workflows|pages|discussions):\\s*(read|write|none)\\s*$/gm)]
+      .map(([, key, level]) => `${key}:${level}`))].sort();
+    return {
+      path, sha256: digest(bytes),
+      explicitPermissionsMarker: /^\\s*permissions\\s*:/m.test(body),
+      observedScopes: scopes,
+      writeScopes: scopes.filter(value => value.endsWith(':write')),
+      reviewRequired: true,
+    };
+  });
+  const childProcessInventory = [];
+  for (const path of processPaths) {
+    const bytes = source(path);
+    const body = bytes.toString('utf8');
+    const lines = body.split('\\n');
+    const matches = lines.flatMap((line, index) => /(?:from\\s*|require\\s*\\(|import\\s*\\()\\s*['"](?:node:)?child_process['"]/.test(line) ? [index + 1] : []);
+    if (matches.length) childProcessInventory.push({
+      path, sha256: digest(bytes), importLines: matches,
+      processContext: path.startsWith('server/') ? 'SERVER_SOURCE' : 'SCRIPT_SOURCE',
+      reviewRequired: true,
+    });
+  }
+  const staticCapabilityInventory = {
+    evidenceScope: 'IMMUTABLE_STATIC_LEXICAL_OBSERVATION_NOT_EFFECTIVE_PRIVILEGE',
+    workflowCount: workflowPaths.length,
+    processCandidateCount: processPaths.length,
+    permissionInventory,
+    childProcessInventory,
+  };
   return {
     schema: 'CAPITAL_AI_INDEPENDENT_SOURCE_REVIEW@1',
     provenanceContract: 'SOURCE_PROVENANCE@1',
@@ -54,6 +99,8 @@ export function createIndependentReviewManifest({ git = execGit } = {}) {
     evidenceScope: 'STATIC_REPOSITORY_SOURCE_ONLY',
     generatedBy: 'scripts/independent-review-manifest.mjs',
     inventorySha256: digest(Buffer.from(JSON.stringify(files), 'utf8')),
+    staticCapabilityInventorySha256: digest(Buffer.from(JSON.stringify(staticCapabilityInventory), 'utf8')),
+    staticCapabilityInventory,
     files,
     externalClaims: {
       dependencyRegistryLatest: 'NOT_VERIFIED',
@@ -67,6 +114,7 @@ export function createIndependentReviewManifest({ git = execGit } = {}) {
       'Reproducible from this exact Git commit; a ZIP file without immutable commit identity is insufficient.',
       'Never infer live security, legal rights, pricing, marketing consent or publishing authority from this report.',
       'NATS and private provider bridge remain subject to AGENTS.md and their separate runtime gates.',
+      'Workflow scopes and child-process entries are only lexical static candidates; effective GitHub permissions, command argument origin and runtime invocation require separate manual review.',
     ],
   };
 }
