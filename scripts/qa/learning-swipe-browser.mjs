@@ -133,6 +133,33 @@ for(const width of [320,390,768,1440]){
  result.viewports.push({width,mouseLeft:'PASS',mouseRight:'PASS',dashboardReloadAndRemove:'PASS',horizontalTabs:'PASS',savedNotesReadback:'PASS',draftNotLeaked:'PASS',notesKeyboard:'PASS',overflow:'PASS',keyboard:'PASS'});
  await page.close();
 }
+// Verify the JaJa Buddy surface uses the same revision-based conflict flow.
+noteStores.set('alice',{notes:'Buddy baseline',revision:'1'});
+const buddyPage=await browser.newPage({viewport:{width:390,height:900},reducedMotion:'reduce'});
+await fixture(buddyPage);
+await buddyPage.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});
+const buddyOpen=buddyPage.getByRole('button',{name:'JaJa Chat öffnen'});
+await buddyOpen.click();
+const buddyDialog=buddyPage.getByRole('dialog',{name:'JaJa Chat Buddy'});
+await buddyDialog.getByRole('button',{name:'Notizen',exact:true}).click();
+const buddyRegion=buddyDialog.getByRole('region',{name:'Private JaJa-Notizen'});
+await buddyRegion.locator('#buddy-note-draft').waitFor();
+await buddyPage.waitForFunction(()=>{
+ const editor=document.getElementById('buddy-note-draft');
+ return editor && !editor.hasAttribute('disabled');
+});
+await buddyRegion.getByRole('textbox',{name:'Notiz oder Chat-Vokabel'}).fill('Buddy draft');
+noteStores.set('alice',{notes:'Buddy remote update',revision:'2'});
+await buddyRegion.getByRole('button',{name:'Notiz speichern',exact:true}).click();
+await buddyRegion.getByRole('heading',{name:'Notizkonflikt erkannt'}).waitFor();
+await buddyRegion.locator('pre').filter({hasText:'Buddy draft'}).waitFor();
+await buddyRegion.getByRole('textbox',{name:/Manuell zusammengeführte Notizen/})
+ .fill('Buddy remote update\\nJaJa Buddy · 🟨 ☐ Buddy draft');
+await buddyRegion.getByRole('button',{name:'Zusammenführung speichern'}).click();
+await buddyRegion.getByRole('status').filter({hasText:'Zusammengeführte Notizen gespeichert.'}).waitFor();
+assert.ok(noteStores.get('alice').notes.includes('Buddy draft'));
+result.cases.push({buddyOCCConflictAndMerge:'PASS'});
+await buddyPage.close();
 const touchPage=await browser.newPage({viewport:{width:390,height:900},isMobile:true,hasTouch:true,reducedMotion:'reduce'});await fixture(touchPage);
 await touchPage.goto('http://127.0.0.1:4173/learning?tab=flashcards',{waitUntil:'networkidle'});
 if(await touchPage.getByRole('button',{name:'Nur notwendige',exact:true}).isVisible())await touchPage.getByRole('button',{name:'Nur notwendige',exact:true}).click();
