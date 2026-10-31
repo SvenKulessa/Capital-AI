@@ -154,10 +154,11 @@ await buddyRegion.getByRole('button',{name:'Notiz speichern',exact:true}).click(
 await buddyRegion.getByRole('heading',{name:'Notizkonflikt erkannt'}).waitFor();
 await buddyRegion.locator('pre').filter({hasText:'Buddy draft'}).waitFor();
 await buddyRegion.getByRole('textbox',{name:/Manuell zusammengeführte Notizen/})
- .fill('Buddy remote update\\nJaJa Buddy · 🟨 ☐ Buddy draft');
+ .fill('Buddy remote update\nJaJa Buddy · 🟨 ☐ Buddy draft');
 await buddyRegion.getByRole('button',{name:'Zusammenführung speichern'}).click();
 await buddyRegion.getByRole('status').filter({hasText:'Zusammengeführte Notizen gespeichert.'}).waitFor();
 assert.ok(noteStores.get('alice').notes.includes('Buddy draft'));
+await buddyRegion.getByText('Buddy draft',{exact:true}).waitFor();
 result.cases.push({buddyOCCConflictAndMerge:'PASS'});
 await buddyPage.close();
 const touchPage=await browser.newPage({viewport:{width:390,height:900},isMobile:true,hasTouch:true,reducedMotion:'reduce'});await fixture(touchPage);
