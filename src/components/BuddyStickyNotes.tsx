@@ -27,14 +27,22 @@ export function formatBuddyNote(color: string, checked: boolean, text: string): 
   return 'JaJa Buddy · ' + color + ' ' + (checked ? '☑' : '☐') + ' ' + clean;
 }
 
-async function readAuthorizedNotes(signal?: AbortSignal): Promise<NotesSnapshot> {
-  const sessionResponse = await fetch('/api/auth/session', {
-    credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json' }, signal,
-  });
-  const session: SessionResponse | null = sessionResponse.ok ? await sessionResponse.json() : null;
-  const userId = session?.authenticated === true && session.mfaRequired !== true ? session.user?.id : undefined;
-  if (!sessionResponse.ok || typeof userId !== 'string' || !userId) throw new NotesClientError('SESSION_CHANGED');
-  return readNotes(userId, signal);
+async function verifiedNotesUser(signal?: AbortSignal): Promise<string> {
+  try {
+    const response = await fetch('/api/auth/session', {
+      credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json' }, signal,
+    });
+    if (!response.ok) {
+      throw new NotesClientError(response.status === 401 ? 'SESSION_CHANGED' : 'NOTES_UNAVAILABLE');
+    }
+    const session: SessionResponse = await response.json();
+    const userId = session.authenticated === true && session.mfaRequired !== true ? session.user?.id : undefined;
+    if (typeof userId !== 'string' || !userId) throw new NotesClientError('SESSION_CHANGED');
+    return userId;
+  } catch (reason) {
+    if (reason instanceof NotesClientError) throw reason;
+    throw new NotesClientError('NOTES_UNAVAILABLE');
+  }
 }
 
 function localSummary(text: string): string {
@@ -54,6 +62,7 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
   const busyRef = useRef(false);
   const conflictRef = useRef(false);
   const pendingAddRef = useRef(false);
+  const currentUserRef = useRef<string | null>(null);
   const [notes, setNotes] = useState<BuddyNote[]>([]);
   const [draft, setDraft] = useState(initialText);
   const [color, setColor] = useState<string>(COLORS[0].color);
@@ -65,23 +74,48 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
   useEffect(() => { setDraft(initialText); }, [initialText]);
   useEffect(() => {
     const controller = new AbortController();
+    const revoke = () => {
+      currentUserRef.current = null;
+      setUserId(null);
+      setSnapshot(null);
+      setNotes([]);
+      setDraft('');
+      pendingAddRef.current = false;
+      setConflict(null);
+      conflictRef.current = false;
+      setStatus('');
+      setError('Anmeldung geändert. Bitte JaJa Buddy erneut öffnen.');
+    };
     const refresh = async () => {
-      if (busyRef.current || conflictRef.current) return;
       try {
-        const data = await readAuthorizedNotes(controller.signal);
-        if (!controller.signal.aborted) {
-          setUserId(data.userId);
-          setSnapshot(data);
-          setNotes(parseBuddyNotes(data.notes));
-          setError('');
+        // Always verify identity, even while a conflict is open.
+        const verifiedUserId = await verifiedNotesUser(controller.signal);
+        if (controller.signal.aborted) return;
+        if (currentUserRef.current && currentUserRef.current !== verifiedUserId) {
+          revoke();
+          return;
         }
-      } catch {
-        if (!controller.signal.aborted) {
-          setUserId(null);
-          setSnapshot(null);
-          setNotes([]);
-          setDraft('');
-          setError('Private Notizen benötigen eine verifizierte Anmeldung und eine erreichbare Notizablage.');
+        if (busyRef.current || conflictRef.current) return;
+        const data = await readNotes(verifiedUserId, controller.signal);
+        if (controller.signal.aborted) return;
+        // Prevent a delayed fetch from restoring data after an account switch.
+        if (currentUserRef.current && currentUserRef.current !== data.userId) {
+          revoke();
+          return;
+        }
+        currentUserRef.current = data.userId;
+        setUserId(data.userId);
+        setSnapshot(data);
+        setNotes(parseBuddyNotes(data.notes));
+        setError('');
+      } catch (reason) {
+        if (controller.signal.aborted) return;
+        if (reason instanceof NotesClientError && reason.code === 'SESSION_CHANGED') {
+          revoke();
+        } else {
+          // An unavailable backend is not proof of a changed identity.
+          // Preserve the draft and any unresolved conflict on network failures.
+          setError('Notizablage vorübergehend nicht erreichbar. Deine Eingabe bleibt erhalten.');
         }
       }
     };
@@ -104,12 +138,12 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
     setError('');
     setStatus('');
     try {
-      // Fresh snapshot for this operation; SQL still atomically checks its revision.
-      const current = await readAuthorizedNotes();
-      if (current.userId !== userId) throw new NotesClientError('SESSION_CHANGED');
-      const updated = transform(current.notes);
+      // Transform only the revision last shown to this user.
+      // A concurrent server change is reported by SQL as HTTP 409.
+      const updated = transform(snapshot.notes);
       if (updated.length > 10000) throw new NotesClientError('INVALID_NOTES');
-      const result = await saveNotes(current, updated);
+      const result = await saveNotes(snapshot, updated);
+      if (currentUserRef.current !== userId) throw new NotesClientError('SESSION_CHANGED');
       if (result.kind === 'conflict') {
         conflictRef.current = true;
         setConflict(result.conflict);
@@ -122,6 +156,7 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
       return true;
     } catch (reason) {
       if (reason instanceof NotesClientError && reason.code === 'SESSION_CHANGED') {
+        currentUserRef.current = null;
         setUserId(null);
         setSnapshot(null);
         setNotes([]);
@@ -151,6 +186,7 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
         userId, notes: conflict.serverNotes, revision: conflict.serverRevision,
       };
       const result = await saveNotes(base, text);
+      if (currentUserRef.current !== userId) throw new NotesClientError('SESSION_CHANGED');
       if (result.kind === 'conflict') {
         setConflict(result.conflict);
         setError('Weitere Änderung erkannt. Bitte die neue Serverfassung prüfen.');
@@ -165,6 +201,7 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
       }
     } catch (reason) {
       if (reason instanceof NotesClientError && reason.code === 'SESSION_CHANGED') {
+        currentUserRef.current = null;
         setUserId(null);
         setSnapshot(null);
         setNotes([]);
@@ -182,7 +219,7 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
     }
   };
   const acceptServer = () => {
-    if (!conflict || !userId || busyRef.current) return;
+    if (!conflict || !userId || currentUserRef.current !== userId || busyRef.current) return;
     setSnapshot({ userId, notes: conflict.serverNotes, revision: conflict.serverRevision });
     setNotes(parseBuddyNotes(conflict.serverNotes));
     setConflict(null);
