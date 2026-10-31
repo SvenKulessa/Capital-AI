@@ -66,7 +66,7 @@ def bootstrap(dsn):
             raise RuntimeError("NONEMPTY_TEST_DATABASE")
         for role in ("service_role", "anon", "authenticated"):
             if not db.execute("SELECT 1 FROM pg_roles WHERE rolname=%s", (role,)).fetchone():
-                db.execute("CREATE ROLE " + role + " NOLOGIN")
+                db.execute("CREATE ROLE " + role + (" NOLOGIN BYPASSRLS" if role == "service_role" else " NOLOGIN"))
         db.execute("CREATE SCHEMA auth")
         db.execute("CREATE SCHEMA private")
         db.execute("CREATE TABLE auth.users (id uuid PRIMARY KEY)")
