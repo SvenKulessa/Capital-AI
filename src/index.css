@@ -297,18 +297,21 @@
   opacity:.92;
 }
 @media (max-width:1023px) {
-  .hero-globe-background { right:-6%; width:92%; }
+  /* Phone and tablet: keep the globe square and inside the hero content. */
+  .hero-globe-background {
+    top:clamp(2rem, 6vw, 4rem);
+    right:0;
+    width:92%;
+    height:auto;
+    aspect-ratio:1 / 1;
+  }
   .capital-ai-hero .hero-copy { max-width:100%; }
 }
 @media (max-width:767px) {
-  /* A 1:1 globe fits the content width instead of using the former 145%
-   * overscan. Keep the graphic in the rear layer behind real content. */
+  /* Full content-width globe on phones; copy stays layered above it. */
   .hero-globe-background {
     top:clamp(3rem, 12vw, 5rem);
-    right:0;
     width:100%;
-    height:auto;
-    aspect-ratio:1 / 1;
     opacity:.9;
   }
 }
