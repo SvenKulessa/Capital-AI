@@ -111,6 +111,7 @@ jobs:
           GITHUB_MERGED_MAIN_SHA: ${{ github.event.pull_request.merge_commit_sha }}
           SOCIAL_BATCH_EXTERNAL_WORKERS: ${{ vars.SOCIAL_BATCH_EXTERNAL_WORKERS }}
           OPENAI_API_KEY: ${{ secrets.SOCIAL_CONTENT_OPENAI_API_KEY }}
+          SOCIAL_CONTENT_OPENAI_MODEL: ${{ vars.SOCIAL_CONTENT_OPENAI_MODEL }}
           FIRECRAWL_API_KEY: ${{ secrets.SOCIAL_CONTENT_FIRECRAWL_API_KEY }}
         shell: bash
         run: |
