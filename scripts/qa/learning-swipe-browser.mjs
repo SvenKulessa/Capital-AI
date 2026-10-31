@@ -94,6 +94,23 @@ for(const width of [320,390,768,1440]){
  await page.getByRole('status').filter({hasText:'Notizen gespeichert.'}).waitFor();
  await page.getByRole('tab',{name:'Gespeicherte Notizen',exact:true}).click();
  await page.getByRole('tabpanel',{name:'Gespeicherte Notizen'}).getByText('Changed by Alice',{exact:true}).waitFor();
+ // OCC regression: an independent tab edits the server after this page loaded.
+ const remote=noteStores.get('alice');
+ noteStores.set('alice',{notes:'Remote concurrent update',revision:(BigInt(remote.revision)+1n).toString()});
+ await page.getByRole('tab',{name:'Notizen',exact:true}).click();
+ await page.locator('#private-notes').fill('Local unsaved draft');
+ await page.getByRole('button',{name:'Notizen speichern',exact:true}).click();
+ await page.getByRole('heading',{name:'Notizkonflikt erkannt'}).waitFor();
+ await page.getByText('Local unsaved draft',{exact:true}).waitFor();
+ await page.getByText('Remote concurrent update',{exact:true}).waitFor();
+ await page.getByRole('textbox',{name:/Manuell zusammengeführte Notizen/}).fill('Resolved merged notes');
+ await page.getByRole('button',{name:'Zusammenführung speichern'}).click();
+ await page.getByRole('status').filter({hasText:'Zusammenführung gespeichert.'}).waitFor();
+ assert.equal(noteStores.get('alice').notes,'Resolved merged notes');
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ if(width===390)await page.screenshot({path:join(output,'notes-conflict-resolved-390.png')});
+ await page.getByRole('tab',{name:'Gespeicherte Notizen',exact:true}).click();
+ await page.getByRole('tabpanel',{name:'Gespeicherte Notizen'}).getByText('Resolved merged notes',{exact:true}).waitFor();
  await page.getByRole('tab',{name:'Gespeicherte Notizen',exact:true}).focus();
  await page.keyboard.press('Home');
  assert.equal(await page.getByRole('tab',{name:'Lernfeld',exact:true}).getAttribute('aria-selected'),'true');
