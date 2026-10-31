@@ -9,6 +9,7 @@ import {
   vocabularyMetadata,
 } from '../../../shared/vocabulary-metadata.mjs';
 import researchedVocabulary from '../../../shared/researched-vocabulary.json';
+import { ARCHITECTURE_GOVERNANCE_VOCABULARY } from '../../../shared/architecture-governance-vocabulary.mjs';
 
 function normalize(value: string): string {
   return value.normalize('NFKC').toLocaleLowerCase('de-DE').replace(/[^a-z0-9äöüß]+/g, '');
@@ -80,4 +81,35 @@ test('simple video lesson uses an actual Elite glossary term and no repository i
  assert.ok(term);assert.equal(vocabularySkillLevel(term),videoLesson.skillLevel);
  assert.equal(videoLesson.skillLevel,'Elite');
  assert.doesNotMatch(JSON.stringify(videoLesson),/PR #|github|supabase|repo|npm |git |api[_ -]?key|secret/i);
+});
+
+test('architecture, governance and OCC-v2 skills reach glossary and SEO from the same source', () => {
+  assert.equal(ARCHITECTURE_GOVERNANCE_VOCABULARY.length, 20);
+  const glossary = new Map(VOCABULARY_TERMS.map(term => [term.id, term]));
+  const metadata = new Map(vocabularyMetadata.map(entry => [entry.id, entry]));
+  for (const item of ARCHITECTURE_GOVERNANCE_VOCABULARY) {
+    const term = glossary.get(item.id);
+    const seo = metadata.get(item.id);
+    assert.ok(term, `Learning Hub glossary is missing ${item.id}`);
+    assert.ok(seo, `SEO projection is missing ${item.id}`);
+    assert.equal(term?.shortDefinition, item.shortDefinition);
+    assert.equal(seo?.description, item.shortDefinition);
+    assert.equal(seo?.path, `/vocabulary/${item.id}`);
+    assert.equal(term?.categoryLabel, item.categoryLabel);
+    assert.equal(term?.thesaurus.length, 3);
+    assert.ok(term?.searchTags.length);
+    assert.ok(term?.practicalExample);
+    assert.ok(term?.sources?.length);
+    assert.ok(['Elite','Enterprise'].includes(vocabularySkillLevel(term!)));
+  }
+  const expected = new Map([
+    ['learning-governance-as-code', 'Enterprise'],
+    ['learning-kappa-architecture', 'Enterprise'],
+    ['learning-langgraph-architecture', 'Elite'],
+    ['learning-occ-v2', 'Enterprise'],
+  ]);
+  for (const [id, level] of expected) {
+    assert.equal(vocabularySkillLevel(glossary.get(id)!), level);
+  }
+  assert.ok(!ARCHITECTURE_GOVERNANCE_VOCABULARY.some(term => /https?:\\/\\/.*(private|secret)/i.test(term.practicalExample)));
 });
