@@ -53,6 +53,7 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
   const [conflict, setConflict] = useState<NotesConflict | null>(null);
   const busyRef = useRef(false);
   const conflictRef = useRef(false);
+  const pendingAddRef = useRef(false);
   const [notes, setNotes] = useState<BuddyNote[]>([]);
   const [draft, setDraft] = useState(initialText);
   const [color, setColor] = useState<string>(COLORS[0].color);
@@ -125,6 +126,7 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
         setSnapshot(null);
         setNotes([]);
         setDraft('');
+        pendingAddRef.current = false;
         setConflict(null);
         conflictRef.current = false;
         setError('Anmeldung geändert. Bitte erneut anmelden.');
@@ -157,6 +159,8 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
         setNotes(parseBuddyNotes(result.snapshot.notes));
         setConflict(null);
         conflictRef.current = false;
+        if (pendingAddRef.current) setDraft('');
+        pendingAddRef.current = false;
         setStatus('Zusammengeführte Notizen gespeichert.');
       }
     } catch (reason) {
@@ -165,6 +169,7 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
         setSnapshot(null);
         setNotes([]);
         setDraft('');
+        pendingAddRef.current = false;
         setConflict(null);
         conflictRef.current = false;
         setError('Anmeldung geändert. Bitte erneut anmelden.');
@@ -191,12 +196,14 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
     let line: string;
     try { line = formatBuddyNote(color, false, draft); }
     catch { setError('Bitte höchstens 500 Zeichen eingeben.'); return; }
+    pendingAddRef.current = true;
     void mutate(raw => (raw ? raw.replace(/\s*$/, '') + '\n' : '') + line, 'Notiz im privaten Dashboard gespeichert.').then(saved => {
       // Keep unsaved text on failure so it can be recovered.
-      if (saved) setDraft(current => current === draft ? '' : current);
+      if (saved) { pendingAddRef.current = false; setDraft(current => current === draft ? '' : current); }
     });
   };
   const updateOne = (note: BuddyNote, action: 'check' | 'remove') => {
+    pendingAddRef.current = false;
     void mutate(raw => {
       const lines = raw.split('\n');
       if (lines[note.line] !== note.raw) throw new Error('CONCURRENT_NOTE_CHANGE');
