@@ -15,7 +15,7 @@ for(let attempt=0;attempt<50;attempt++){try{if((await fetch('http://127.0.0.1:41
 const browser=await chromium.launch({executablePath:process.env.CHROMIUM_EXECUTABLE_PATH || await Chromium.executablePath(),headless:true,args:Chromium.args.filter(arg=>arg!=='--single-process')});
 const result={browser:browser.version(),scope:'Local built frontend, synthetic API fixtures; server authorization covered separately',viewports:[],cases:[]};
 const stores=new Map([['alice',new Set()],['bob',new Set()]]);
-const noteStores=new Map([['alice','QA fixture'],['bob','Private note for Bob']]);
+const noteStores=new Map([['alice',{notes:'QA fixture',revision:'1'}],['bob',{notes:'Private note for Bob',revision:'1'}]]);
 async function fixture(page,user='alice',options={}) {
  page.setDefaultTimeout(8000);page.on('pageerror',e=>console.log('PAGE_ERROR',e.message));
  await page.route('**/api/**',async route=>{
@@ -29,14 +29,21 @@ async function fixture(page,user='alice',options={}) {
    return route.fulfill({json:{favorites:[...ids]}});
   }
   if(url.pathname==='/api/profile/notes') {
-   if(req.method()==='PUT') {
-    const submitted=req.postDataJSON();
-    if(submitted.expectedUserId!==user)return route.fulfill({status:409,json:{error:'session_changed'}});
-    noteStores.set(user,submitted.notes);
+    const current=noteStores.get(user)||{notes:'',revision:'0'};
+    if(req.method()==='PUT') {
+     const submitted=req.postDataJSON();
+     if(submitted.expectedUserId!==user)return route.fulfill({status:409,json:{error:'session_changed'}});
+     if(submitted.expectedRevision===undefined)return route.fulfill({status:428,json:{error:'revision_required'}});
+     if(submitted.expectedRevision!==current.revision)return route.fulfill({status:409,json:{
+      error:'notes_revision_conflict',userId:user,currentNotes:current.notes,currentRevision:current.revision,
+     }});
+     const next={notes:submitted.notes,revision:(BigInt(current.revision)+1n).toString()};
+     noteStores.set(user,next);
+     return route.fulfill({json:{...next,userId:user}});
+    }
+    return route.fulfill({json:{...current,userId:user}});
    }
-   return route.fulfill({json:{notes:noteStores.get(user)||'',userId:user}});
-  }
-  if(url.pathname.includes('/access'))return route.fulfill({json:{entitled:false,quantProEntitled:false,atlasEntitled:false,quizUsed:false}});
+   if(url.pathname.includes('/access'))return route.fulfill({json:{entitled:false,quantProEntitled:false,atlasEntitled:false,quizUsed:false}});
   if(url.pathname.endsWith('/preview')||url.pathname.endsWith('/quant-pro'))return route.fulfill({json:{terms:[]}});
   return route.fulfill({json:{configured:true,authenticated:!options.anonymous,user:options.anonymous?null:{id:user,name:'QA fixture',email:'qa@example.invalid'},account:{available:true,iamRole:'user',subscription:{tier:'Free',status:null},badges:[]}}});
  });
@@ -52,7 +59,7 @@ const mediaPage=await browser.newPage();await fixture(mediaPage);await mediaPage
 const playback=await mediaPage.evaluate(async()=>{const video=document.createElement('video');video.muted=true;video.src='/learning/videos/capital-ai-tour-short-1080x1920.mp4';document.body.append(video);await video.play();await new Promise(resolve=>setTimeout(resolve,400));return {duration:video.duration,time:video.currentTime,frames:video.getVideoPlaybackQuality().totalVideoFrames,error:video.error?.code??null};});
 assert.equal(playback.duration,20);assert.ok(playback.time>0);assert.ok(playback.frames>0);assert.equal(playback.error,null);result.cases.push({h264VideoPlayback:'PASS',decodedFrames:playback.frames,duration:playback.duration});await mediaPage.close();
 for(const width of [320,390,768,1440]){
- noteStores.set('alice','QA fixture');
+ noteStores.set('alice',{notes:'QA fixture',revision:'1'});
  const page=await browser.newPage({viewport:{width,height:900},reducedMotion:'reduce'});await fixture(page);
  await page.goto('http://127.0.0.1:4173/learning?tab=flashcards',{waitUntil:'networkidle'});
 
