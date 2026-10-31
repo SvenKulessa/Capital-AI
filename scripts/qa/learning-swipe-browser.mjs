@@ -138,6 +138,7 @@ noteStores.set('alice',{notes:'Buddy baseline',revision:'1'});
 const buddyPage=await browser.newPage({viewport:{width:390,height:900},reducedMotion:'reduce'});
 await fixture(buddyPage);
 await buddyPage.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});
+if(await buddyPage.getByRole('button',{name:'Nur notwendige',exact:true}).isVisible()) await buddyPage.getByRole('button',{name:'Nur notwendige',exact:true}).click();
 const buddyOpen=buddyPage.getByRole('button',{name:'JaJa Chat öffnen'});
 await buddyOpen.click();
 const buddyDialog=buddyPage.getByRole('dialog',{name:'JaJa Chat Buddy'});
