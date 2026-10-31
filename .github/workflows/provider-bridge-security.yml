@@ -24,12 +24,12 @@ jobs:
       - name: Deployment Contract prüfen
         run: node --test scripts/provider-bridge-deployment-contract.test.mjs
 
-      - name: Rust 1.99.0 und Supply-Chain-Tools
+      - name: Rust 1.99.1 und Supply-Chain-Tools
         run: |
           set -euo pipefail
-          rustup toolchain install 1.99.0 --profile minimal --component clippy
-          rustup override set 1.99.0
-          test "$(rustc --version | awk '{print $2}')" = "1.99.0"
+          rustup toolchain install 1.99.1 --profile minimal --component clippy
+          rustup override set 1.99.1
+          test "$(rustc --version | awk '{print $2}')" = "1.99.1"
           cargo install cargo-audit --version 0.22.2 --locked
           cargo install cargo-deny --version 0.20.2 --locked
 
@@ -49,7 +49,7 @@ jobs:
         run: |
           set -euo pipefail
           docker build --file Dockerfile.security --tag capital-ai-security .
-          test "$(docker run --rm capital-ai-security --version | sed -n 's/^Version: //p' | head -n1)" = "0.75.0"
+          test "$(docker run --rm capital-ai-security --version | sed -n 's/^Version: //p' | head -n1)" = "0.76.1"
           mkdir -p provider-bridge-evidence "$RUNNER_TEMP/trivy-cache"
           chmod a+rwx "$RUNNER_TEMP/trivy-cache"
 
