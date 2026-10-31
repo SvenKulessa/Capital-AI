@@ -10,7 +10,7 @@ const lock = readFileSync(new URL('../services/provider-bridge-rs/Cargo.lock', i
 
 test('provider bridge build is lockfile-bound and base image digest-pinned', () => {
   assert.match(lock, /^version = 4$/m);
-  assert.match(dockerfile, /^FROM rust:1\.99\.0-alpine3\.23@sha256:[a-f0-9]{64} AS build$/m);
+  assert.match(dockerfile, /^FROM rust:1\.99\.1-alpine3\.23@sha256:[a-f0-9]{64} AS build$/m);
   assert.match(dockerfile, /cargo test --locked/);
   assert.match(dockerfile, /cargo build --release --locked/);
   assert.match(dockerfile, /^FROM scratch$/m);

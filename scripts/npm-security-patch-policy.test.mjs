@@ -36,24 +36,24 @@ test('major upgrade preserves the vendor patch and removes npm from runtime', ()
 
 test('IP parser remediation is an integrity-locked compatible bundle replacement', () => {
   const entry = lock.packages['node_modules/ip-address'];
-  assert.equal(packageJson.dependencies['ip-address'], '10.7.4');
-  assert.equal(entry.version, '10.7.4');
-  assert.equal(entry.resolved, 'https://registry.npmjs.org/ip-address/-/ip-address-10.7.4.tgz');
-  assert.equal(entry.integrity, 'sha512-DWBMKyeM25D70nrIiTkgQth59/G+naKOTep6huF9j+GmeK3DMD60Zvxg5d5qQnz+38AHgou6ean2LECX+lrKDg==');
+  assert.equal(packageJson.dependencies['ip-address'], '10.7.5');
+  assert.equal(entry.version, '10.7.5');
+  assert.equal(entry.resolved, 'https://registry.npmjs.org/ip-address/-/ip-address-10.7.5.tgz');
+  assert.equal(entry.integrity, 'sha512-t2v0rkILYv9WXmSL7TpAaU3HXgaFYOPUcH3QHgwQ++gpJuH3bqyMy4Fvt/DJCTKwzH3Cf+bAp5W/mFL39KPLzA==');
   assert.equal(entry.license, 'MIT');
-  assert.match(hardener, /\['ip-address', '10\.5\.0', '10\.7\.4'\]/);
+  assert.match(hardener, /\['ip-address', '10\.5\.0', '10\.7\.5'\]/);
   assert.match(hardener, /Address4\.fromArpa\('42\.2\.0\.192\.IN-ADDR\.ARPA'\)/);
   assert.match(hardener, /Address6\.fromArpa\('8\.B\.D\.0\.1\.0\.0\.2\.IP6\.ARPA'\)/);
 });
 
 test('undici remediation stays on the npm-compatible 6.x donor line with locked integrity', () => {
   const entry = lock.packages['node_modules/undici'];
-  assert.equal(packageJson.dependencies.undici, '6.29.0');
-  assert.equal(entry.version, '6.29.0');
-  assert.equal(entry.resolved, 'https://registry.npmjs.org/undici/-/undici-6.29.0.tgz');
-  assert.equal(entry.integrity, 'sha512-R+RODBqp6i2pPflGdq+xIOUkl+RNfGgHwoinecKu/JCuf2uO06cOKoDbI2P7Dn6KcswdKwrczbU6IYJ6K8X+wg==');
+  assert.equal(packageJson.dependencies.undici, '6.29.1');
+  assert.equal(entry.version, '6.29.1');
+  assert.equal(entry.resolved, 'https://registry.npmjs.org/undici/-/undici-6.29.1.tgz');
+  assert.equal(entry.integrity, 'sha512-EvRlUt/QqAEvXdQeRMYUfwOQsfzpDztykrG2owGEE/rBOBoYv9uF39ZzsNDh4lTFHhTr2XOZjKkYgueD12ZmGA==');
   assert.equal(entry.license, 'MIT');
-  assert.match(hardener, /\['undici', '6\.28\.0', '6\.29\.0'\]/);
+  assert.match(hardener, /\['undici', '6\.28\.0', '6\.29\.1'\]/);
 });
 
 test('offline build validation cannot retain or invoke the vulnerable npm cache transport', () => {
