@@ -11,6 +11,10 @@ const auth={verify:async()=>({userId}),sameOrigin:req=>req.headers.origin==='htt
 function request(body={},headers={}) {const stream=new EventEmitter();stream.method='POST';stream.headers={origin:'https://capital-ai.online',...headers};stream.destroy=()=>{};setImmediate(()=>{stream.emit('data',Buffer.from(typeof body==='string'?body:JSON.stringify(body)));stream.emit('end');});return stream;}
 const res=()=>({setHeader(){}});const json=(response,status,payload)=>{response.status=status;response.payload=payload;};
 const endpoint=path=>new URL(path,'https://capital-ai.online');
+const learningPurchasedItem = () => ({
+ has_more:false,
+ data:[{quantity:1,amount_subtotal:2500,price:{id:'price_test_learning_fixture',product:'prod_test_learning_fixture',currency:'eur',unit_amount:2500,recurring:null}}],
+});
 test('Learning Portal checkout binds 25 EUR once, not the legacy 19 EUR price',async()=>{
  let form;const handler=createVocabularyCheckout({env,auth,fetchImpl:async(url,options)=>{
   if(new URL(url).pathname.endsWith('capital_ai_get_vocabulary_access')) return Response.json({quantProEntitled:false});
@@ -71,7 +75,7 @@ test('webhook signatures enforce freshness and accept rotated matching signature
 test('signed paid webhook fulfills Learning Portal without a return-page visit; forged webhook never grants',async()=>{
  let grants=0;const session={id:'cs_learning_fixture',mode:'payment',status:'complete',client_reference_id:userId,metadata:{sku:'learning-portal',user_id:userId},payment_status:'paid',currency:'eur',amount_subtotal:2500,amount_total:2500,customer:'cus_fixture',payment_intent:'pi_fixture'};
  const body=JSON.stringify({type:'checkout.session.completed',data:{object:session}});const timestamp=Math.floor(Date.now()/1000);const signature=createHmac('sha256',env.STRIPE_LEARNING_WEBHOOK_SECRET).update(`${timestamp}.${body}`).digest('hex');
- const handler=createVocabularyCheckout({env,auth,fetchImpl:async(url)=>{const path=new URL(url).pathname;if(path.includes('/checkout/sessions/'))return Response.json(session);assert.ok(path.endsWith('capital_ai_grant_vocabulary_entitlement'));grants++;return Response.json({quantProEntitled:true});}});
+ const handler=createVocabularyCheckout({env,auth,fetchImpl:async(url)=>{const path=new URL(url).pathname;if(path.endsWith('/line_items'))return Response.json(learningPurchasedItem());if(path.includes('/checkout/sessions/'))return Response.json(session);assert.ok(path.endsWith('capital_ai_grant_vocabulary_entitlement'));grants++;return Response.json({quantProEntitled:true});}});
  const valid=res();await handler.handle(request(body,{'stripe-signature':`t=${timestamp},v1=${signature}`}),valid,endpoint('/api/billing/learning/webhook'),json);assert.equal(valid.status,200);assert.equal(grants,1);
  const invalid=res();await handler.handle(request(body,{'stripe-signature':'t=0,v1=0000'}),invalid,endpoint('/api/billing/learning/webhook'),json);assert.equal(invalid.status,400);assert.equal(grants,1);
 });
@@ -106,7 +110,7 @@ test('discounted Learning Portal fulfillment verifies original price, discount a
    metadata:{sku:'learning-portal',user_id:userId},currency:'eur',payment_status:fixture.payment,
    amount_subtotal:fixture.subtotal,amount_total:fixture.total,total_details:{amount_discount:fixture.discount}};
   const handler=createVocabularyCheckout({env,auth,fetchImpl:async(url)=>{
-   const path=new URL(url).pathname;if(path.includes('/checkout/sessions/'))return Response.json(session);
+   const path=new URL(url).pathname;if(path.endsWith('/line_items'))return Response.json(learningPurchasedItem());if(path.includes('/checkout/sessions/'))return Response.json(session);
    if(path.endsWith('capital_ai_grant_vocabulary_entitlement')){grants++;return Response.json({});}
    return Response.json({quantProEntitled:grants>0});
   }});
