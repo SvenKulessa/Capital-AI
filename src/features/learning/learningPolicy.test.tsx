@@ -156,8 +156,12 @@ test('PR 522: Buddy note text is human-readable, account-scoped via existing API
   const learning = readFileSync(new URL('./LearningPortalPage.tsx', import.meta.url), 'utf8');
   assert.match(buddy, /export function openHeroBuddy\(\)/);
   assert.match(buddy, /Als Notiz übernehmen/);
-  assert.match(notes, /expectedUserId: userId/);
-  assert.match(notes, /readAuthorizedNotes/);
+  const occClient = readFileSync(new URL('../account/privateNotesOcc.ts', import.meta.url), 'utf8');
+  assert.match(notes, /saveNotes\(snapshot, updated\)/);
+  assert.match(notes, /verifiedNotesUser/);
+  assert.match(occClient, /expectedUserId: snapshot\.userId/);
+  assert.match(occClient, /expectedRevision: snapshot\.revision/);
+  assert.match(occClient, /verifyNotesSession/);
   assert.doesNotMatch(notes, /localStorage/);
   assert.match(learning, /api\/learning\/vocabulary\/quiz\/consume/);
 });
