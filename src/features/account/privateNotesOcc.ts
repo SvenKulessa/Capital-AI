@@ -47,7 +47,11 @@ export async function readNotes(userId: string, signal?: AbortSignal): Promise<N
     if (response.status === 401) throw new NotesClientError('SESSION_CHANGED');
     if (!response.ok) throw new NotesClientError('NOTES_UNAVAILABLE');
     const body: unknown = await response.json();
-    if (!isNotesSnapshot(body,userId)) throw new NotesClientError('SESSION_CHANGED');
+    if (body && typeof body === 'object' && 'userId' in body &&
+        (body as { userId?: unknown }).userId !== userId) {
+      throw new NotesClientError('SESSION_CHANGED');
+    }
+    if (!isNotesSnapshot(body,userId)) throw new NotesClientError('NOTES_UNAVAILABLE');
     return body;
   } catch (error) {
     if (error instanceof NotesClientError) throw error;
