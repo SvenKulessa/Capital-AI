@@ -111,5 +111,5 @@ test('architecture, governance and OCC-v2 skills reach glossary and SEO from the
   for (const [id, level] of expected) {
     assert.equal(vocabularySkillLevel(glossary.get(id)!), level);
   }
-  assert.ok(!ARCHITECTURE_GOVERNANCE_VOCABULARY.some(term => /https?:\\/\\/.*(private|secret)/i.test(term.practicalExample)));
+  assert.ok(ARCHITECTURE_GOVERNANCE_VOCABULARY.every(term => term.sources.every(source => source.url.startsWith('https://'))));
 });
