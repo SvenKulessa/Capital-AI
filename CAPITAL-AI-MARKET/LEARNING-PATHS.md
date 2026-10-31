@@ -41,6 +41,33 @@ Textalternative: Lernende beginnen mit Ausführungskosten, prüfen Quellenrechte
 | B — Analysis-to-Evidence | Stufe 3–6, synthetische FeatureValue-Vektoren | sechs Subscores, Risk-Veto und Evidence-Reason-Codes | `SHADOW_SCORE_CONFIG_V1` ohne Produktfreigabe | Gewichte summieren zu 1, Null-/Veto-/Confidentiality-Fälle |
 | C — Blueprint-to-Product | A+B, Public Blueprint Catalog | Architekturdiagramm, Source-/License-/Delivery-Check | Kein eigenes neues Live-Modell | Veröffentlichung getrennt von Lieferung; User-/Rechtegrenzen erhalten |
 
+## Architektur- und Governance-Fachbegriffe — im Glossar verfügbar
+
+Die folgenden Begriffe werden über die **bestehende Vocabulary-Projektion** für den Learning Hub, seine Skill-Level-Filter, den Karteikasten und öffentliche Einzelbegriffsseiten bereitgestellt. Das ist **keine zusätzliche kostenpflichtige Freischaltung**. Die vier Einstiegspunkte werden direkt im Glossar hervorgehoben.
+
+| Themenpfad | Skill-Kategorie | Niveau | Begriffe und Lernziel |
+|---|---|---|---|
+| Governance als Code | Delivery & Governance; Security & Compliance | Enterprise | [Governance as Code](/vocabulary/learning-governance-as-code), [Policy as Code](/vocabulary/learning-policy-as-code), Rego, ABAC: Regeltext, automatisierte Entscheidung und tatsächliche Durchsetzung unterscheiden |
+| Stream-/Big-Data-Architektur | Plattform & Architektur; Daten & Evidence | Enterprise / Elite | [Kappa-Architektur](/vocabulary/learning-kappa-architecture), Lambda-Architektur, Event Sourcing, CDC, materialisierte Sicht, Backpressure, Datenvertrag, Data Lineage: Datenfluss und Replay-Grenzen nachvollziehen |
+| Agenten-Workflow | KI & Scoring-Modelle; Plattform & Architektur | Elite / Enterprise | [LangGraph-Architektur](/vocabulary/learning-langgraph-architecture), StateGraph, Checkpointing, Human-in-the-Loop: Zustand, Knoten, Kanten und Unterbrechung unterscheiden |
+| Nebenläufige private Notizen | Plattform & Architektur; Daten & Evidence | Enterprise / Elite | [OCC v2](/vocabulary/learning-occ-v2), Compare-and-Swap, Revisions-Token, Lost Update: atomare Revision, Konflikterkennung und nutzerfreundliche Auflösung verstehen |
+
+```mermaid
+flowchart LR
+  G["Governance as Code"] --> P["Policy as Code"]
+  P --> A["Autorisierte Entscheidung"]
+  K["Kappa: Event-Log"] --> S["Stream-Verarbeitung"]
+  S --> V["Materialisierte Sicht"]
+  L["LangGraph: State"] --> N["Nodes + Edges"]
+  N --> H["Checkpoint + HITL"]
+  O["OCC v2: Revision"] --> C["Atomarer CAS"]
+  C --> E["Erfolg oder Konflikt"]
+```
+
+**Lernaufgabe (synthetisch):** Zwei Geräte laden dieselbe Notiz mit Revision 5. Nach Speichern auf Gerät A steht die Revision bei 6. Gerät B versucht mit Revision 5 zu schreiben. Erwartet wird eine **Konfliktantwort statt stilles Überschreiben**; weder die LangGraph-Agentensteuerung noch der Kappa-Datenstrom sind dafür eine Alternative zum atomaren Update. Die in PR #548 entwickelte OCC-v2-Runtime bleibt unabhängig von der Glossar-Veröffentlichung zu verifizieren.
+
+**Scope und Betrieb:** Alle 20 Einträge sind öffentliche Fachdefinitionen, keine Freigabe für Live-Providerdaten, externes Publishing, neue Governance-Gates oder die Aktivierung von NATS/Rust-Bridge. Ein Skill-Level-Label ist keine Berechtigungs- oder Abrechnungsentscheidung. SEO-Metadaten und React-Glossar beziehen die Texte aus derselben Datei `shared/architecture-governance-vocabulary.mjs`.
+
 ## Praktische Übungen mit erwarteten Ergebnissen (synthetisch)
 
 ### Übung 1 — Spread und Datenqualität

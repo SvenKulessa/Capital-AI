@@ -34,7 +34,6 @@ import {
   Flame,
   LogIn,
   CreditCard,
-  Building2,
   LineChart,
   LibraryBig,
   User,
@@ -259,17 +258,6 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* RIGHT SIDE: Live Status Chip & Login Button */}
       <div className="flex items-center space-x-2">
-        {/* STUDIO HUB BUTTON */}
-        <button
-          type="button"
-          onClick={() => onNavigate?.('/studio')}
-          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/15 hover:bg-green-500/25 border border-green-400/40 text-green-300 text-xs font-semibold transition-all cursor-pointer shadow-[0_0_10px_rgba(74,222,128,0.15)] shrink-0"
-          title="Studio Hub: Pipeline Architektur, Blueprints, Pipeline Builder, AI Kauf-Berater, Data & Providers, Analytics & Scoring, Benchmark Lab, Configurator Console (/studio)"
-        >
-          <Building2 className="w-3.5 h-3.5 text-green-400" />
-          <span>Studio Hub</span>
-        </button>
-
         {/* Language selector stays next to Login and Account. */}
         <LanguageSwitcher />
         {/* Session errors are not evidence of a logout. */}

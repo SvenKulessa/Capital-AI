@@ -1,4 +1,4 @@
-FROM node:26.11.1-alpine@sha256:143494b1da2945f061539253adc65e4f1569ddf07da2d384c022c791a9d90a4a AS crypto-base
+FROM node:26.12.1-alpine@sha256:40cd011b55415bc894e45b02fdd5a5dfde056921b7d23a64c74f80497af48797 AS crypto-base
 # Keep a security floor while allowing newer patches from the base image's Alpine branch.
 # Build and runtime reuse this one resolved layer instead of fetching two package indexes.
 RUN apk add --no-cache 'libcrypto3>=3.5.8-r0' 'libssl3>=3.5.8-r0' 'zlib>=1.3.2-r1'
@@ -20,13 +20,13 @@ RUN npm ci --ignore-scripts --no-audit --no-fund \
 # Transitive pins keep known remediated versions inside the scanned image.
 RUN apk add --no-cache 'python3>=3.14.8-r0' 'py3-pip>=26.1.2-r0' \
     && python3 -m venv /opt/ga4-mcp \
-    && /opt/ga4-mcp/bin/pip install --no-cache-dir analytics-mcp==0.7.0 msgpack==1.2.1 urllib3==2.8.0 \
+    && /opt/ga4-mcp/bin/pip install --no-cache-dir analytics-mcp==0.7.0 msgpack==1.2.3 urllib3==2.8.0 \
     && test -x /opt/ga4-mcp/bin/analytics-mcp \
     && /opt/ga4-mcp/bin/python -c "import pathlib,shutil,site; patterns=('pip','pip-*.dist-info','setuptools','setuptools-*.dist-info','_distutils_hack','pkg_resources','wheel','wheel-*.dist-info'); [shutil.rmtree(target, ignore_errors=True) for root in map(pathlib.Path, site.getsitepackages()) for pattern in patterns for target in root.glob(pattern)]" \
     && rm -rf /root/.cache \
     && rm -f /opt/ga4-mcp/bin/pip /opt/ga4-mcp/bin/pip3 /opt/ga4-mcp/bin/pip3.* \
     && apk del py3-pip \
-    && /opt/ga4-mcp/bin/python -c "import analytics_mcp,msgpack,urllib3; import google.analytics.admin_v1beta; import google.analytics.data_v1beta; assert msgpack.version == (1, 2, 1); assert urllib3.__version__ == '2.8.0'" \
+    && /opt/ga4-mcp/bin/python -c "import analytics_mcp,msgpack,urllib3; import google.analytics.admin_v1beta; import google.analytics.data_v1beta; assert msgpack.version == (1, 2, 3); assert urllib3.__version__ == '2.8.0'" \
     && test -x /opt/ga4-mcp/bin/analytics-mcp
 
 # All subsequent validation is offline. Node's script runner needs no npm/cache transport.
@@ -56,7 +56,7 @@ COPY public/branding/capital-ai-logo.jpg ./public/branding/capital-ai-logo.jpg
 COPY public/branding/asset-pack ./public/branding/asset-pack
 COPY public/branding/badges ./public/branding/badges
 COPY public/branding/social ./public/branding/social
-COPY public/branding/universe/hero-universe-globe.webp ./public/branding/universe/hero-universe-globe.webp
+COPY public/branding/universe ./public/branding/universe
 # Ship the approved JaJa avatar used by src/components/HeroBuddy.tsx.
 COPY public/assets/jaja-avatar-transparent.webp ./public/assets/jaja-avatar-transparent.webp
 COPY public/fonts ./public/fonts
@@ -85,6 +85,7 @@ COPY supabase/migrations/20261013042915_learning_simulator_private_scenarios.sql
 COPY supabase/proposals/provider_query_guard.sql ./supabase/proposals/provider_query_guard.sql
 COPY scripts/documentation-drift.mjs scripts/documentation-drift.test.mjs ./scripts/
 COPY scripts/domain-skills.test.mjs ./scripts/domain-skills.test.mjs
+COPY scripts/universe-hero.test.mjs ./scripts/universe-hero.test.mjs
 COPY scripts/navigation.test.mjs scripts/skill-routing.test.mjs scripts/skill-routing.mjs scripts/skill-routing-evaluation.mjs scripts/skill-routing-cases.json scripts/skill-routing-challenges.json ./scripts/
 # Required by npm test in this offline build stage; contains synthetic-only fixtures.
 COPY scripts/market-blueprint-demo.test.mjs ./scripts/market-blueprint-demo.test.mjs

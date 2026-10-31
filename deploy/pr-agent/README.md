@@ -29,8 +29,8 @@ uv lock --check
 | langgraph-sdk | 0.4.2 | 0.4.6 |
 
 The full regenerated lock, including resolver changes, is retained with upstream's
-wheel/sdist hashes. `provenance.json` binds the lock, unchanged project manifest
-and upstream MIT license by SHA-256. A fresh `pip-audit==2.10.1` scan queried all
+wheel/sdist hashes. `provenance.json` binds the local lock, patched project manifest and upstream MIT license by SHA-256.
+The original upstream manifest has its own hash; local security patches do not impersonate upstream bytes. A fresh `pip-audit==2.10.1` scan queried all
 184 registry package/version entries, including optional/dev packages and the
 Python-specific google-cloud-storage alternative: zero known findings, zero skips.
 This is a dated dependency-inventory result, not proof of runtime compatibility,

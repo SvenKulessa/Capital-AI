@@ -16,7 +16,8 @@
  */
 
 import { ProductDisclaimer } from './ProductDisclaimer';
-import React from 'react';
+import React, { useState } from 'react';
+import { BrandGlobe } from './BrandGlobe';
 import { ArrowRight, Play } from 'lucide-react';
 import { openHeroBuddy } from './HeroBuddy';
 import { motion, useReducedMotion } from 'motion/react';
@@ -32,95 +33,58 @@ interface HeroProps {
 export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct }) => {
   const { t, locale } = useLocale();
   const reduceMotion = useReducedMotion();
+  const [globePaused, setGlobePaused] = useState(false);
+  const [globeReady, setGlobeReady] = useState(false);
   return (
     <section className="capital-ai-hero relative isolate overflow-hidden px-[20px] pt-4 pb-7">
-      {/* Golden neural light trails mirroring the logo's lateral filaments */}
-      <div aria-hidden="true" className="absolute top-0 left-0 right-0 h-44 pointer-events-none -z-0 opacity-40 overflow-hidden">
-        <svg className="w-full h-full" viewBox="0 0 400 160" fill="none" preserveAspectRatio="none">
-          <path
-            d="M-20,20 C100,50 200,10 320,70 C370,95 410,60 450,40"
-            stroke="url(#goldenWaveGrad1)"
-            strokeWidth="1.5"
-            strokeDasharray="4 3"
-          />
-          <path
-            d="M-40,60 C80,20 180,80 290,40 C350,20 400,80 440,100"
-            stroke="url(#goldenWaveGrad2)"
-            strokeWidth="1.2"
-            opacity="0.75"
-          />
-          <path
-            d="M-10,95 C120,40 220,110 340,30 C380,10 420,50 460,70"
-            stroke="url(#magentaWaveGrad)"
-            strokeWidth="1.2"
-            opacity="0.65"
-          />
-          <defs>
-            <linearGradient id="goldenWaveGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#F5B014" stopOpacity="0" />
-              <stop offset="30%" stopColor="#F5B014" stopOpacity="0.8" />
-              <stop offset="70%" stopColor="#FDE68A" stopOpacity="0.9" />
-              <stop offset="100%" stopColor="#F5B014" stopOpacity="0" />
-            </linearGradient>
-            <linearGradient id="goldenWaveGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#D97706" stopOpacity="0" />
-              <stop offset="50%" stopColor="#FBBF24" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="#F59E0B" stopOpacity="0" />
-            </linearGradient>
-            <linearGradient id="magentaWaveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="var(--color-brand-ai)" stopOpacity="0" />
-              <stop offset="40%" stopColor="var(--color-brand-marketing)" stopOpacity="0.7" />
-              <stop offset="70%" stopColor="var(--color-brand-ai)" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="var(--color-brand-ai)" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-        </svg>
+      <div className="hero-globe-background">
+        <BrandGlobe paused={globePaused} onReadyChange={setGlobeReady} />
       </div>
-
-      {/* Decorative Earth: anchored to the right, behind the translucent heading panel. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-8 right-0 z-0 aspect-[16/10] w-[min(95vw,530px)] select-none sm:-top-12 sm:w-[min(60vw,760px)]"
-      >
-        <motion.div
-          initial={reduceMotion ? false : { opacity: 0, scale: 0.92 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.2, ease: 'easeOut' }}
-          className="relative h-full w-full"
-        >
-
-          {/* Responsive Universe motif; CTA copy stays on its own accessible layer. */}
-          <div className="relative h-full w-full">
-            <picture>
-              <source media="(max-width: 639px)" srcSet="/branding/universe/hero-universe-mobile.webp" />
-              <source media="(max-width: 1023px)" srcSet="/branding/universe/hero-universe-tablet.webp" />
-              <img
-                src="/branding/universe/hero-universe-desktop.webp"
-                alt=""
-                aria-hidden="true"
-                width={1672}
-                height={941}
-                fetchPriority="high"
-                decoding="async"
-                className="absolute inset-0 h-full w-full object-contain object-right opacity-95"
-              />
-            </picture>
-          </div>
-          {/* Atmospheric falloff around the static artwork. */}
-          <div className="absolute inset-0 rounded-full bg-radial from-transparent via-transparent to-[#02050e] opacity-40" />
-          <div className="absolute -inset-4 bg-gradient-to-l from-transparent via-transparent to-[#02050e] opacity-40" />
-          <div className="absolute -inset-4 bg-gradient-to-t from-[#02050e] via-transparent to-transparent opacity-45" />
-          <div className="absolute top-1/4 right-1/4 h-32 w-32 rounded-full bg-amber-500/20 blur-2xl animate-pulse-slow" />
-          <div className="absolute top-1/2 right-1/3 h-28 w-28 rounded-full bg-brand-ai/15 blur-xl" />
-        </motion.div>
-      </div>
+      {globeReady && reduceMotion === false && <button type="button" className="hero-globe-pause"
+        aria-pressed={globePaused} onClick={() => setGlobePaused(value => !value)}>
+        {locale === 'de' ? (globePaused ? 'Globus fortsetzen' : 'Globus pausieren')
+          : (globePaused ? 'Resume globe' : 'Pause globe')}
+      </button>}
 
       {/* Hero Content */}
-      <div className="hero-copy relative z-10 max-w-lg rounded-2xl bg-gradient-to-r from-brand-canvas/80 via-brand-canvas/40 to-brand-canvas/15 p-[16px] sm:p-[20px]">
+      <div className="hero-copy relative z-10 max-w-lg rounded-2xl p-[16px] sm:p-[20px]">
         {/* An accessible brand anchor above the headline, without obscuring the primary CTA. */}
-        <img src="/branding/capital-ai-logo.jpg" alt="CAPITAL-AI – Market Intelligence"
-          width={320} height={180} loading="eager" decoding="async"
-          className="mb-3 block max-h-28 w-full max-w-[230px] rounded-xl border border-amber-300/20 object-contain object-left shadow-[0_0_32px_rgba(245,176,20,0.20)] sm:max-w-[270px]" />
+        <div className="hero-brand-artwork relative mb-3 inline-flex max-w-full">
+          <img src="/branding/capital-ai-logo.jpg" alt="CAPITAL-AI – Market Intelligence"
+            width={320} height={180} loading="eager" decoding="async"
+            className="hero-brand-logo block h-auto max-h-28 w-auto max-w-full rounded-xl border border-amber-300/20 shadow-[0_0_32px_rgba(245,176,20,0.20)]" />
+          {/* Decorative metallic outline sampled from the owner's artwork. The
+              SVG never replaces accessible DOM text or alters the original JPEG.
+              The dilation radius is 30 source pixels ≈ 4 CSS px at 112px logo height. */}
+          <svg className="hero-brand-universe-outline" viewBox="0 0 1536 864"
+            preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+            <defs>
+              <clipPath id="hero-silver-letter-and-curve">
+                <rect x="62" y="565" width="1410" height="168" />
+                <rect x="0" y="300" width="1536" height="248" />
+              </clipPath>
+              <filter id="hero-silver-edge-filter" x="-5%" y="-8%" width="110%" height="116%" colorInterpolationFilters="sRGB">
+                <feColorMatrix in="SourceGraphic" type="matrix"
+                  values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  .25 .65 .10 0 0"
+                  result="luminance" />
+                <feComponentTransfer in="luminance" result="brightContours">
+                  <feFuncA type="discrete" tableValues="0 0 0 0 0 1 1 1" />
+                </feComponentTransfer>
+                <feMorphology in="brightContours" operator="dilate" radius="30" result="expandedContours" />
+                <feComposite in="expandedContours" in2="brightContours" operator="out" result="outerStroke" />
+                <feFlood floodColor="#d9e4ef" floodOpacity=".95" result="metallicSilver" />
+                <feComposite in="metallicSilver" in2="outerStroke" operator="in" result="silverStroke" />
+                <feGaussianBlur in="silverStroke" stdDeviation="8" result="cosmicHalo" />
+                <feMerge>
+                  <feMergeNode in="cosmicHalo" />
+                  <feMergeNode in="silverStroke" />
+                </feMerge>
+              </filter>
+            </defs>
+            <image href="/branding/capital-ai-logo.jpg" x="0" y="0" width="1536" height="864"
+              clipPath="url(#hero-silver-letter-and-curve)" filter="url(#hero-silver-edge-filter)" />
+          </svg>
+        </div>
         {/* Eyebrow */}
         <motion.div
           initial={reduceMotion ? false : { opacity: 0, y: 10 }}

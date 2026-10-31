@@ -95,7 +95,7 @@ jobs:
           docker build --file Dockerfile.security --tag capital-ai-security .
           mkdir -p security-reports
           docker run --rm capital-ai-security --version | tee security-reports/trivy-version.txt
-          test "$(sed -n 's/^Version: //p' security-reports/trivy-version.txt | head -n1)" = "0.75.0"
+          test "$(sed -n 's/^Version: //p' security-reports/trivy-version.txt | head -n1)" = "0.76.1"
           mkdir -p "$RUNNER_TEMP/trivy-cache"
           chmod a+rwx "$RUNNER_TEMP/trivy-cache"
       - name: Dockerfile linten
@@ -120,7 +120,7 @@ jobs:
           fi
           gh api --paginate "repos/$GH_REPOSITORY/pulls/$PR_NUMBER/files?per_page=100" --jq '.[].filename' > "$RUNNER_TEMP/pr-files.txt"
           test -s "$RUNNER_TEMP/pr-files.txt"
-          if grep -Eq '^(deploy/(Dockerfile\.nats|nats-[^/]*|fetch-nats-release\.sh)|scripts/(verify-nats-runtime\.sh|verify-go-vuln-reachability(\.test)?\.mjs|summarize-trivy(\.test)?\.mjs|publish-security-summary(\.test)?\.mjs)|Dockerfile\.security|\.dockerignore|scripts/docker-context\.test\.mjs|scripts/container-evidence-identity(\.test)?\.mjs|\.github/workflows/build-security\.yml)$' "$RUNNER_TEMP/pr-files.txt"; then
+          if grep -Eq '^(deploy/(Dockerfile\.nats|nats-[^/]*|fetch-nats-release\.sh|trivy-bootstrap-exception\.yaml)|scripts/(verify-nats-runtime\.sh|verify-go-vuln-reachability(\.test)?\.mjs|summarize-trivy(\.test)?\.mjs|publish-security-summary(\.test)?\.mjs)|Dockerfile\.security|\.dockerignore|scripts/docker-context\.test\.mjs|scripts/container-evidence-identity(\.test)?\.mjs|\.github/workflows/build-security\.yml)$' "$RUNNER_TEMP/pr-files.txt"; then
             echo 'run=true' >> "$GITHUB_OUTPUT"
             echo 'NATS: relevant image or security logic changed; full scan required' >> "$GITHUB_STEP_SUMMARY"
           else
@@ -432,7 +432,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/trivy-cache"
           chmod a+rwx "$RUNNER_TEMP/trivy-cache"
           rm candidate/image.tar
-      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+      - uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}

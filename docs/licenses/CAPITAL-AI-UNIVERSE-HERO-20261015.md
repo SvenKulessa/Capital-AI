@@ -35,3 +35,11 @@ The OWNER/ENTERPRISE badge license is separate. No badge, Founder status, partne
 | silent preview MP4 (Drive) | `417d26137812e418dc61748b6c07a1c5060c471365e5624c31f52c6b23006625` |
 
 State: ASSETS_IN_REPO; responsive browser QA NOT_PROVEN; Production NOT_PROVEN; external commercial distribution REVIEW_REQUIRED. Rollback via normal PR revert; originals remain unchanged.
+
+## Owner-upload reconciliation · 2026-10-31
+
+The owner supplied `1000000026.png` (1254×1254 RGBA), SHA-256 `e80996a5eb537504c7352c7668e1580bca8823b1a2c5acfd78bff056aebf2b70`, and explicitly requested homepage/engine use. Visual inspection matches the already tracked globe WebP. Pixel analysis reports identical dimensions and alpha channel; mean absolute RGB differences are 5.29, 3.98 and 5.99 on the 0–255 scale, consistent with the existing lossy export. The existing canonical WebP is reused; no new input has been uploaded to another graphics provider and no new artwork is generated.
+
+The shared engine renderer projects the branded globe center onto a genuine sphere. The same illustration is projected onto its rear hemisphere; this is an artistic reconstruction, not a recovered 3D source model or an accurate unseen geographic map. Orbital geometry and satellites are procedural Three.js meshes. A complete rotation takes 90 seconds. Installed Three.js is reused under its existing license inventory; no new package is added. The original complete WebP remains the static poster for reduced motion, loading and renderer failure.
+
+This local implementation updates homepage and Content Studio integration. It does not assert exclusive copyright or trademark registration and does not grant a new Social publishing approval. Browser/production readback remains `NOT_PROVEN`.

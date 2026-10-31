@@ -28,14 +28,13 @@ test('vector identity uses authored orbits without external image dependencies',
   assert.doesNotMatch(svg, /<script|<image|xlink:href|<foreignObject/i);
 });
 
-test('homepage uses responsive Universe motif and preserves both CTA handlers', () => {
+test('homepage uses shared 3D brand artwork with a static fallback and preserves CTA handlers', () => {
   const hero = read('src/components/Hero.tsx').toString();
-  for (const name of Object.keys(checks)) {
-    if (name.includes('globe')) continue;
-    assert.ok(hero.includes(name), name);
-  }
+  const globe = read('src/components/BrandGlobe.tsx').toString();
   assert.doesNotMatch(hero, /hero-universe-orbit.svg/);
-  assert.match(hero, /<picture>/);
+  assert.match(hero, /<BrandGlobe paused=\{globePaused\}/);
+  assert.match(globe, /src=\{BRAND_GLOBE.asset\}/);
+  assert.match(globe, /reducedMotion !== false/);
   assert.match(hero, /onStartAnalysis/);
   assert.match(hero, /onExploreProduct/);
   assert.doesNotMatch(hero, /glowing_earth_nodes_1789997454893.jpg/);
@@ -44,7 +43,8 @@ test('homepage uses responsive Universe motif and preserves both CTA handlers', 
 test('Media Studio respects existing draft publishing boundary and points to new brand image', () => {
   const media = read('src/platform/SocialMediaEngine/Editing/MediaStudioTemplates.ts').toString();
   assert.match(media, /CAPITAL_AI_UNIVERSE_BRAND_ASSETS/);
-  assert.match(media, /reference: 'public\/branding\/universe\/hero-universe-desktop.webp'/);
+  assert.match(media, /reference: `public\$\{BRAND_GLOBE.asset\}`/);
+  assert.match(media, /sha256: BRAND_GLOBE.assetSha256/);
   assert.match(media, /mimeType: 'image\/webp'/);
   assert.match(media, /publishReady: false/);
 });

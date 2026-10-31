@@ -67,7 +67,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'nats-jetstream', name: 'NATS + JetStream', domain: 'PLATFORM', kind: 'Event Bus',
-    installedAt: '2026-09-30T14:02:11Z', activeVersion: null, pipelineVersion: 'nats-server 2.15.1 release binary in deploy/Dockerfile.nats; nats:2.15.0-alpine image base; deployed runtime NOT_PROVEN', lifecycle: 'ACTIVE',
+    installedAt: '2026-09-30T14:02:11Z', activeVersion: null, pipelineVersion: 'nats-server 2.15.2 release binary in deploy/Dockerfile.nats; nats:2.15.1-alpine image base; deployed runtime NOT_PROVEN', lifecycle: 'ACTIVE',
     functionSummary: 'Durable Market-Event-Transport, Replay und Fan-out-Authority.',
     webAppBinding: 'server/infrastructure.mjs / capital-ai-market-events', license: 'Apache-2.0', cadsScore: 90.4, scoreState: 'PROVISIONAL',
     domainAssignments: ["capital-ai-market-events private Render network"],
@@ -193,7 +193,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'google-genai', name: 'Google Gemini / GenAI SDK', domain: 'PRODUCT', kind: 'AI Provider',
-    installedAt: null, activeVersion: '2.28.0 (package-lock.json)', pipelineVersion: 'server SDK lockfile-managed; provider runtime NOT_PROVEN', lifecycle: 'ACTIVE',
+    installedAt: null, activeVersion: '2.31.0 (package-lock.json)', pipelineVersion: 'server SDK lockfile-managed; provider runtime NOT_PROVEN', lifecycle: 'ACTIVE',
     functionSummary: 'Server-side AI advisor plus governed GROWTH draft capability with request/month budget, provider/model kill-switch, model routing and public-source URL Context gate; Search Grounding remains excluded from autonomous lead discovery.',
     webAppBinding: 'server/advisor.ts + server/growth-ai-gateway.ts', license: 'Google service terms + Apache-2.0 SDK metadata', cadsScore: 77.0, scoreState: 'PROVISIONAL',
     domainAssignments: ["server-side provider endpoint; PRODUCT advisor + GROWTH draft generation; no browser domain binding"],
@@ -336,7 +336,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'node-runtime', name: 'Node.js', domain: 'PLATFORM', kind: 'Runtime',
-    installedAt: null, activeVersion: '26.11.1', pipelineVersion: 'node:26.11.1-alpine@sha256:143494b1da2945f061539253adc65e4f1569ddf07da2d384c022c791a9d90a4a', lifecycle: 'ACTIVE',
+    installedAt: null, activeVersion: '26.12.1', pipelineVersion: 'node:26.12.1-alpine@sha256:40cd011b55415bc894e45b02fdd5a5dfde056921b7d23a64c74f80497af48797', lifecycle: 'ACTIVE',
     functionSummary: 'Build- und Production-JavaScript-Runtime; Container-Base ist version- und digest-gepinnt.',
     webAppBinding: 'Dockerfile', license: 'MIT', cadsScore: 91.0, scoreState: 'VERIFIED',
     domainAssignments: ['build image', 'production runtime'],
@@ -356,7 +356,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'trivy', name: 'Trivy', domain: 'TRUST', kind: 'Vulnerability / Secret / License Scanner',
-    installedAt: null, activeVersion: '0.75.0', pipelineVersion: 'aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa', lifecycle: 'ACTIVE',
+    installedAt: null, activeVersion: '0.76.1', pipelineVersion: 'aquasec/trivy:0.76.1@sha256:790fd66d1697395d8693d1acaa1ea702406a20f109b6fc7bac8db623eca6c06c', lifecycle: 'ACTIVE',
     functionSummary: 'Container-, Filesystem-, Secret-, Misconfiguration-, SBOM- und Lizenzscan in Docker Security Gate.',
     webAppBinding: 'Dockerfile.security + .github/workflows/build-security.yml', license: 'Apache-2.0', cadsScore: 91.0, scoreState: 'VERIFIED',
     domainAssignments: ['CI security scanner only'],
@@ -396,7 +396,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'github-actions-pinned-toolchain', name: 'Pinned GitHub Actions Toolchain', domain: 'TRUST', kind: 'CI/CD Supply Chain',
-    installedAt: null, activeVersion: 'checkout 7.0.1; setup-node 7.0.0; setup-java 6.0.1; setup-gradle 6.4.0; upload 7.0.1; download 8.0.1; login 4.6.0; attest 4.2.2', pipelineVersion: 'all actions pinned to full commit SHAs', lifecycle: 'ACTIVE',
+    installedAt: null, activeVersion: 'checkout 7.0.1; setup-node 7.0.0; setup-java 6.0.1; setup-gradle 6.4.0; upload 7.0.1; download 8.0.1; login 4.7.0; attest 4.2.2', pipelineVersion: 'all actions pinned to full commit SHAs', lifecycle: 'ACTIVE',
     functionSummary: 'Repository-eigene Actions sind auf vollständige, gegen offizielle Release-Tags korrelierte Commit-SHAs gepinnt.',
     webAppBinding: '.github/workflows/*.yml', license: 'per upstream action repository', cadsScore: 93.0, scoreState: 'VERIFIED',
     domainAssignments: ['CI/CD only'],
@@ -406,7 +406,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'web-build-stack', name: 'Web Build Stack', domain: 'PRODUCT', kind: 'Frontend Build Toolchain',
-    installedAt: null, activeVersion: 'Vite 8.3.4 / TypeScript 6.0.3 / Tailwind 4.3.3 / React 19.3.0 / Lucide 1.55.0 / Motion 14.1.0 / Three.js 0.186.1', pipelineVersion: 'resolved in package-lock.json; TypeScript 7.0.2 BLOCKED; production runtime NOT_PROVEN', lifecycle: 'ACTIVE',
+    installedAt: null, activeVersion: 'Vite 8.3.5 / TypeScript 6.0.3 / Tailwind 4.3.3 / React 19.3.1 / Lucide 1.62.0 / Motion 14.7.1 / Three.js 0.186.1', pipelineVersion: 'resolved in package-lock.json; TypeScript 7.0.2 BLOCKED; production runtime NOT_PROVEN', lifecycle: 'ACTIVE',
     functionSummary: 'Frontend-Kompilierung, Typprüfung, React-Runtime und CSS-Toolchain.',
     webAppBinding: 'package.json + package-lock.json + vite.config.ts + tsconfig.json', license: 'MIT / Apache-2.0', cadsScore: 88.0, scoreState: 'PROVISIONAL',
     domainAssignments: ['web build', 'browser runtime'],
@@ -416,7 +416,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'web-runtime-dependencies', name: 'Web Runtime Dependency Closure', domain: 'PLATFORM', kind: 'Node Runtime Dependencies',
-    installedAt: null, activeVersion: 'NATS JS 3.4.0 / redis 6.3.0 / zod 4.6.6 / nodemailer 10.1.0', pipelineVersion: 'deploy/runtime/package-lock.json resolved; live deployment NOT_PROVEN', lifecycle: 'ACTIVE',
+    installedAt: null, activeVersion: 'NATS JS 3.4.0 / redis 6.3.0 / zod 4.6.7 / nodemailer 10.2.1', pipelineVersion: 'deploy/runtime/package-lock.json resolved; live deployment NOT_PROVEN', lifecycle: 'ACTIVE',
     functionSummary: 'Minimale Production-Dependency-Closure für NATS, Valkey/Redis und Runtime-Validierung.',
     webAppBinding: 'deploy/runtime/package.json + deploy/runtime/package-lock.json', license: 'Apache-2.0 / MIT', cadsScore: 90.0, scoreState: 'VERIFIED',
     domainAssignments: ['production runtime'],
