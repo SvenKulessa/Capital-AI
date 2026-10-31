@@ -1,4 +1,5 @@
 import { useVerifiedSession } from '../../hooks/useVerifiedSession';
+import { APP_NAVIGATION_EVENT } from '../../utils/appNavigation';
 import { VOCABULARY_PUBLIC_COUNT, VOCABULARY_SOURCE_PRS } from '../../../shared/vocabulary-metadata.mjs';
 import { HubNavigationPanel } from '../../components/HubNavigationPanel';
 import { QuizzesTab } from './QuizzesTab';
@@ -91,7 +92,15 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
   const favorites = useLearningFavorites();
   const [atlasEntitled, setAtlasEntitled] = useState(false);
   const [chartQuizEntitled, setChartQuizEntitled] = useState(false);
-  const [activeTab, setActiveTab] = useHubTab(LEARNING_TABS, initialTab);
+  // Preserve previously distributed course links while keeping generic support distinct.
+  const [courseInquiry, setCourseInquiry] = useState(() => typeof window !== 'undefined' && window.location.hash === '#learning-inquiry');
+  useEffect(() => {
+    const sync = () => setCourseInquiry(window.location.hash === '#learning-inquiry');
+    for (const event of ['hashchange', 'popstate', APP_NAVIGATION_EVENT]) window.addEventListener(event, sync);
+    return () => { for (const event of ['hashchange', 'popstate', APP_NAVIGATION_EVENT]) window.removeEventListener(event, sync); };
+  }, []);
+  const legacyCourseLink = courseInquiry && window.location.pathname === '/learning';
+  const [activeTab, setActiveTab] = useHubTab(LEARNING_TABS, legacyCourseLink ? 'kontakt' : initialTab);
 
 
   // Vocabulary Filter States
@@ -366,7 +375,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
 
       <HubNavigationPanel hubId="learning" onNavigate={path => { if (onNavigateTab) onNavigateTab(path); else window.location.assign(path); }} />
 
-      {activeTab === 'kontakt' && <ContactForm />}
+      {activeTab === 'kontakt' && <ContactForm key={courseInquiry ? 'learning' : 'contact'} purpose={courseInquiry ? 'learning' : 'contact'} />}
 
       {/* ========================================================================= */}
       {/* TAB CONTENT 1: MARKET VOCABULARY & GLOSSAR                                */}
