@@ -2,6 +2,9 @@ name: Financial Learning Simulator Browser QA
 on:
   pull_request:
     paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.ts'
       - 'src/features/learning/**'
       - 'src/features/analysis/**'
       - 'src/features/screener/EnterpriseScorerDashboard.tsx'
