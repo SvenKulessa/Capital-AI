@@ -103,7 +103,7 @@ test('accessible conflict UI exposes both versions and explicit resolution contr
   assert.match(html,/Aktuelle Serverfassung/);
   assert.match(html,/Local Draft/);
   assert.match(html,/Server Draft/);
-  assert.match(html,/htmlFor|for="notes-occ-merge"/);
+  assert.match(html,/for="[^\"]+-merge"/);
   assert.match(html,/Zusammenführung speichern/);
   assert.match(html,/Serverfassung übernehmen/);
   assert.match(html,/min-h-11/);
