@@ -54,6 +54,29 @@ test('GSC MCP sub-process forwards only the read-only token path and permits exa
   assert.doesNotMatch(guard, /'STRIPE_SECRET_KEY'|'SUPABASE_SECRET_KEY'|'GITHUB_TOKEN'|'GOOGLE_APPLICATION_CREDENTIALS'/);
 });
 
+
+test('malformed upstream GSC MCP output is never relayed to the parent', async (t) => {
+  const { mkdtemp, writeFile, chmod, rm } = await import('node:fs/promises');
+  const { spawnSync } = await import('node:child_process');
+  const { tmpdir } = await import('node:os');
+  const { join, delimiter } = await import('node:path');
+  const { fileURLToPath } = await import('node:url');
+  const dir = await mkdtemp(join(tmpdir(), 'capital-ai-gsc-mcp-'));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  const fakeNpx = join(dir, 'npx');
+  await writeFile(fakeNpx, '#!/usr/bin/env node\\nprocess.stdout.write("UPSTREAM_SECRET_SHOULD_NOT_LEAK\\\\n");\\n');
+  await chmod(fakeNpx, 0o700);
+  const guardPath = fileURLToPath(new URL('./gsc-mcp-guard.mjs', import.meta.url));
+  const child = spawnSync(process.execPath, [guardPath], {
+    env: { ...process.env, PATH: dir + delimiter + process.env.PATH },
+    input: '',
+    encoding: 'utf8',
+    timeout: 5000,
+  });
+  assert.equal(child.status, 0, child.stderr || child.error?.message);
+  assert.doesNotMatch(child.stdout, /UPSTREAM_SECRET_SHOULD_NOT_LEAK/);
+});
+
 test('GA4 is a separately pinned read-only Render authority and not a LukeRenton capability', async () => {
   const config = JSON.parse(await read('config/growth-google-authority.json'));
   const evidence = JSON.parse(await read('docs/security/evidence/growth-gsc-oss-admission-20261004.json'));
