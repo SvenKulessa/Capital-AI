@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-08T01:26:32.639384+00:00",
+  "observedAt": "2026-10-30",
   "sourceRepository": "The-PR-Agent/pr-agent",
   "release": "v0.47.0",
   "sourceSha": "8e5a9295973b24af4b70cafd0b660a230811ef9e",
-  "correlatedMainSha": "19673cf50bf6948ef563126f23bd1d64d9ae6398",
+  "correlatedMainSha": "6abf9c6c43eb80bca2941deccf602d5dbfc116df",
   "lockGenerator": "uv==0.12.10",
   "patchedVersions": {
     "fsspec": [
@@ -18,20 +18,39 @@
     ],
     "langgraph-sdk": [
       "0.4.6"
+    ],
+    "aiohttp": [
+      "3.14.5"
+    ],
+    "certifi": [
+      "2026.10.23"
+    ],
+    "filelock": [
+      "4.2.5"
+    ],
+    "gitpython": [
+      "3.2.1"
+    ],
+    "litellm": [
+      "1.103.1"
+    ],
+    "langgraph": [
+      "1.2.19"
+    ],
+    "opentelemetry-api": [
+      "1.45.1"
+    ],
+    "opentelemetry-sdk": [
+      "1.45.1"
+    ],
+    "opentelemetry-exporter-otlp-proto-http": [
+      "1.45.1"
     ]
   },
   "sha256": {
-    "uv.lock": "81bb5c69a4d39221fdf3010898a840624956244d58c125197e18aa37ccfc47c9",
-    "pyproject.toml": "4b07218079d2893b735e913ec3b4271466a949204bd6142681584dc5cc2d8f22",
+    "uv.lock": "8e685a5909a8fddad5f274f8a3bc7adc89e46740d1a5119f37d824fcd0c73da8",
+    "pyproject.toml": "b16cabb0da3cc57e23d90903935113a54a4acfa3d7f7c9709a77320fc53e5831",
     "UPSTREAM-LICENSE.txt": "ea19f3b6bfd70ce0bf8d60fc5b15cdb789fcf86a63c0d6542977f888519f5788"
-  },
-  "audit": {
-    "tool": "pip-audit==2.10.1",
-    "service": "PyPI",
-    "registryNameVersionsAudited": 184,
-    "knownVulnerabilities": 0,
-    "skipped": [],
-    "scope": "All registry entries in patched uv.lock, including optional/dev and Python alternatives; no project execution"
   },
   "pythonImage": "python:3.14.7-slim@sha256:51dafde81dbdb6ebde285137a295cf18a47ca95234fe388a343719cb97305b3d",
   "uvImage": "ghcr.io/astral-sh/uv:0.12.10@sha256:2bb3ebca0a796a155094a27773d290c4b074572e6107f171d88d086682fd2500",
@@ -51,5 +70,22 @@
     "rationale": "Current same-source/same-lock evidence passed the Alpine Trivy gate with zero vulnerabilities and zero secrets while the Debian 13.7 comparison retained 44 HIGH OS findings.",
     "mergeAuthority": false,
     "deployAuthority": false
-  }
+  },
+  "upstreamPyprojectSha256": "4b07218079d2893b735e913ec3b4271466a949204bd6142681584dc5cc2d8f22",
+  "historicalAudit": {
+    "tool": "pip-audit==2.10.1",
+    "service": "PyPI",
+    "registryNameVersionsAudited": 184,
+    "knownVulnerabilities": 0,
+    "skipped": [],
+    "scope": "All registry entries in patched uv.lock, including optional/dev and Python alternatives; no project execution"
+  },
+  "audit": {
+    "status": "NOT_PROVEN",
+    "scope": "Regenerated patched lock requires fresh CI dependency and image scans"
+  },
+  "localPatches": [
+    "Security dependency floors and coherent OpenTelemetry 1.45.1 family.",
+    "Unused pre-commit development hook removed from runtime candidate: no repository workflow uses it; its virtualenv>=21.14.9 needs packaging>=26.3, incompatible with runtime langfuse packaging<26. No resolver override or vulnerability suppression."
+  ]
 }
