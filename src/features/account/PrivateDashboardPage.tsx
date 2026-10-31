@@ -23,6 +23,7 @@ function PrivateDashboardContent({ userId }: { userId: string }) {
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
   const revoked = useRef(false);
+  const savingRef = useRef(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -93,7 +94,8 @@ function PrivateDashboardContent({ userId }: { userId: string }) {
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!loaded || busy || revoked.current || revision === null || conflict) return;
+    if (!loaded || savingRef.current || revoked.current || revision === null || conflict) return;
+    savingRef.current = true;
     setBusy(true);
     setError('');
     setStatus('');
@@ -120,6 +122,7 @@ function PrivateDashboardContent({ userId }: { userId: string }) {
         setError('Speichern nicht bestätigt. Deine Eingabe bleibt erhalten. Bitte Serverstand prüfen.');
       }
     } finally {
+      savingRef.current = false;
       setBusy(false);
     }
   }
@@ -136,7 +139,8 @@ function PrivateDashboardContent({ userId }: { userId: string }) {
   }
 
   async function mergeConflict(merged: string) {
-    if (!conflict || busy || revoked.current) return;
+    if (!conflict || savingRef.current || revoked.current) return;
+    savingRef.current = true;
     setBusy(true);
     setError('');
     const base: NotesSnapshot = { userId, notes: conflict.serverNotes, revision: conflict.serverRevision };
@@ -160,12 +164,13 @@ function PrivateDashboardContent({ userId }: { userId: string }) {
         setError('Zusammenführung nicht bestätigt. Dein Entwurf bleibt erhalten.');
       }
     } finally {
+      savingRef.current = false;
       setBusy(false);
     }
   }
 
   function acceptServer() {
-    if (!conflict || revoked.current) return;
+    if (!conflict || revoked.current || savingRef.current) return;
     setText(conflict.serverNotes);
     setSavedText(conflict.serverNotes);
     setRevision(conflict.serverRevision);
@@ -216,7 +221,7 @@ function PrivateDashboardContent({ userId }: { userId: string }) {
             {!loaded && !error && <p role="status" className="text-slate-300">Notizen werden geladen …</p>}
             {status && <p role="status" className="text-emerald-200">{status}</p>}
             {error && <p role="alert" className="text-rose-200">{error}</p>}
-            {conflict && <NotesConflictPanel conflict={conflict}
+            {conflict && <NotesConflictPanel conflict={conflict} busy={busy}
               onUseServer={acceptServer} onMerge={text => void mergeConflict(text)} />}
           </form>
         </section>
