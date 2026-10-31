@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createVocabularyCheckout } from './vocabulary-checkout.mjs';
+import { createVocabularyCheckout, verifyLearningPurchasedLineItems } from './vocabulary-checkout.mjs';
 
 function request({ method='GET', headers={}, body=null }={}) {
   return {
@@ -40,6 +40,22 @@ const env={
   STRIPE_VOCABULARY_PRODUCT_ID:'prod_VNTsrtlf2ZL8ja',
   PUBLIC_BASE_URL:'https://capital-ai.online',
 };
+
+function checkoutLineItems({ sku = 'learning-portal', id, product } = {}) {
+  const legacy = sku === 'market-vocabulary';
+  const value = legacy ? 1900 : 2500;
+  return {
+    has_more: false,
+    data: [{
+      quantity: 1, amount_subtotal: value,
+      price: {
+        id: id || (legacy ? 'price_1UMiuIPKr4joNbEclpn8AwFW' : 'price_test_learning_fixture'),
+        product: product || (legacy ? 'prod_VNTsrtlf2ZL8ja' : 'prod_test_learning_fixture'),
+        currency: 'eur', unit_amount: value, recurring: null,
+      },
+    }],
+  };
+}
 
 function auth(userId='11111111-1111-4111-8111-111111111111') {
   return {
@@ -140,8 +156,10 @@ test('validated paid Stripe session is persisted as entitlement', async () => {
   const fetchImpl=async(url,options={})=>{
     const parsed=new URL(url);
     if(parsed.origin==='https://api.stripe.com'){
+      if (parsed.pathname.endsWith('/line_items')) return Response.json(checkoutLineItems({sku:'market-vocabulary'}));
       return new Response(JSON.stringify({
         id:'cs_test_paid_123',
+        mode:'payment', status:'complete', amount_subtotal:1900,
         payment_status:'paid',
         metadata:{sku:'market-vocabulary',user_id:userId},
         client_reference_id:userId,
@@ -300,7 +318,7 @@ test('purchase evidence requires a verified live learning payment belonging to t
     [{payment_status:'unpaid'}, false], [{client_reference_id:'another-user'}, false], [{amount_total:2400}, false]]) {
     let grants = 0;
     const checkout = createVocabularyCheckout({ env, auth: auth(userId), fetchImpl: async url => {
-      if (new URL(url).origin === 'https://api.stripe.com') return Response.json({...base, ...patch});
+      if (new URL(url).origin === 'https://api.stripe.com') return Response.json(new URL(url).pathname.endsWith('/line_items') ? checkoutLineItems() : {...base, ...patch});
       if (String(url).includes('capital_ai_grant_vocabulary_entitlement')) { grants++; return Response.json({}); }
       return Response.json({quantProEntitled: true});
     }});
@@ -314,5 +332,77 @@ test('purchase evidence requires a verified live learning payment belonging to t
       assert.match(res.payload.purchase.transactionId, /^[a-f0-9]{64}$/);
       assert.doesNotMatch(JSON.stringify(res.payload.purchase), /cs_live|11111111/);
     }
+  }
+});
+
+test('verified Stripe line-item price and product identity is required before granting', async () => {
+  const valid = checkoutLineItems({ id: 'price_test_learning_q1', product: 'prod_test_learning_q1' });
+  const options = {
+    sku: 'learning-portal', learningPriceId: 'price_test_learning_q1',
+    learningProductId: 'prod_test_learning_q1',
+  };
+  assert.equal(verifyLearningPurchasedLineItems(valid, options), true);
+  for (const invalid of [
+    { ...valid, has_more: true },
+    { ...valid, data: [] },
+    { ...valid, data: [valid.data[0], valid.data[0]] },
+    { ...valid, data: [{ ...valid.data[0], quantity: 2 }] },
+    { ...valid, data: [{ ...valid.data[0], amount_subtotal: 1900 }] },
+    { ...valid, data: [{ ...valid.data[0], price: { ...valid.data[0].price, id: 'price_wrong' } }] },
+    { ...valid, data: [{ ...valid.data[0], price: { ...valid.data[0].price, product: 'prod_wrong' } }] },
+    { ...valid, data: [{ ...valid.data[0], price: { ...valid.data[0].price, currency: 'usd' } }] },
+    { ...valid, data: [{ ...valid.data[0], price: { ...valid.data[0].price, recurring: {interval:'month'} } }] },
+  ]) assert.equal(verifyLearningPurchasedLineItems(invalid, options), false);
+  assert.equal(verifyLearningPurchasedLineItems(valid, { ...options, sku: 'market-vocabulary' }), false);
+  assert.equal(verifyLearningPurchasedLineItems(checkoutLineItems({sku:'market-vocabulary'}), {sku:'market-vocabulary'}), true);
+});
+
+test('live and test fixture receipts grant only their configured 25 EUR or legacy 19 EUR Stripe price', async () => {
+  const userId = '11111111-1111-4111-8111-111111111111';
+  const cases = [
+    { sku:'learning-portal', live:true, approved:true },
+    { sku:'learning-portal', live:false, approved:true },
+    { sku:'learning-portal', live:true, approved:false, wrong:'price' },
+    { sku:'learning-portal', live:true, approved:false, wrong:'product' },
+    { sku:'market-vocabulary', live:true, approved:true },
+    { sku:'market-vocabulary', live:false, approved:false, wrong:'price' },
+  ];
+  for (const fixture of cases) {
+    const legacy = fixture.sku === 'market-vocabulary';
+    const amount = legacy ? 1900 : 2500;
+    const price = legacy ? 'price_1UMiuIPKr4joNbEclpn8AwFW' : 'price_test_learning_q1';
+    const product = legacy ? 'prod_VNTsrtlf2ZL8ja' : 'prod_test_learning_q1';
+    const items = checkoutLineItems({
+      sku: fixture.sku, id: fixture.wrong === 'price' ? 'price_wrong' : price,
+      product: fixture.wrong === 'product' ? 'prod_wrong' : product,
+    });
+    let grants = 0;
+    const handler = createVocabularyCheckout({
+      env: { ...env, STRIPE_LEARNING_PORTAL_PRICE_ID:'price_test_learning_q1', STRIPE_LEARNING_PORTAL_PRODUCT_ID:'prod_test_learning_q1' },
+      auth: auth(userId),
+      fetchImpl: async url => {
+        const path = new URL(url).pathname;
+        if (path.endsWith('/line_items')) return Response.json(items);
+        if (path.includes('/checkout/sessions/')) return Response.json({
+          id:'cs_test_q1', status:'complete', mode:'payment', livemode:fixture.live,
+          metadata:{sku:fixture.sku,user_id:userId}, client_reference_id:userId,
+          payment_status:'paid', amount_subtotal:amount, amount_total:amount,
+          currency:'eur',
+        });
+        if (path.endsWith('/capital_ai_grant_vocabulary_entitlement')) {
+          grants++; return Response.json({quantProEntitled:true});
+        }
+        if (path.endsWith('/capital_ai_get_vocabulary_access')) {
+          return Response.json({quantProEntitled:grants > 0, entitlementSource:grants ? 'stripe_checkout' : null});
+        }
+        throw Error('unexpected provider route');
+      },
+    });
+    const res = response();
+    await handler.handle(request(), res, new URL('https://capital-ai.online/api/billing/vocabulary/entitlement?session_id=cs_test_q1'), json);
+    assert.equal(res.status, 200);
+    assert.equal(grants, Number(fixture.approved));
+    assert.equal(res.payload.entitled, fixture.approved);
+    assert.equal(Boolean(res.payload.purchase), fixture.approved && fixture.live && !legacy);
   }
 });
