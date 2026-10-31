@@ -170,10 +170,15 @@ test('PR 522: Buddy note text is human-readable, account-scoped via existing API
   assert.throws(() => formatBuddyNote('🟦', false, ''), /INVALID_TEXT/);
   const buddy = readFileSync(new URL('../../components/HeroBuddy.tsx', import.meta.url), 'utf8');
   const notes = readFileSync(new URL('../../components/BuddyStickyNotes.tsx', import.meta.url), 'utf8');
+  const heroSource = readFileSync(new URL('../../components/HeroBuddy.tsx', import.meta.url), 'utf8');
   const learning = readFileSync(new URL('./LearningPortalPage.tsx', import.meta.url), 'utf8');
   assert.match(buddy, /export function openHeroBuddy\(\)/);
   assert.match(buddy, /Als Notiz übernehmen/);
   const occClient = readFileSync(new URL('../account/privateNotesOcc.ts', import.meta.url), 'utf8');
+  // The OCC editor must be absent from the initial home bundle, yet remain accessible on demand.
+  assert.match(heroSource, /lazy\(\(\) => import\('\.\/BuddyStickyNotes'\)/);
+  assert.match(heroSource, /<Suspense fallback=\{<p role="status"/);
+  assert.doesNotMatch(heroSource, /^import \{ BuddyStickyNotes \} from/m);
   assert.match(notes, /saveNotes\(snapshot, updated\)/);
   assert.match(notes, /verifiedNotesUser/);
   assert.match(occClient, /expectedUserId: snapshot\.userId/);
