@@ -27,6 +27,35 @@ test('configured wrong learning price is rejected before checkout creation',asyn
   const path=new URL(url).pathname;if(path.endsWith('capital_ai_get_vocabulary_access'))return Response.json({quantProEntitled:false});if(path.startsWith('/v1/prices/'))return Response.json({active:true,unit_amount:1900,currency:'eur',product:'prod_learning'});created=true;throw new Error('unexpected');
  }});const response=res();await handler.handle(request({withdrawalWaived:true}),response,endpoint('/api/billing/vocabulary/checkout'),json);assert.equal(response.status,503);assert.equal(created,false);
 });
+test('production refuses missing or partial persistent EUR 25 Price/Product settings before Stripe writes',async()=>{
+ for(const config of [{},{STRIPE_LEARNING_PORTAL_PRICE_ID:'price_partial'},{STRIPE_LEARNING_PORTAL_PRODUCT_ID:'prod_partial'}]) {
+  let calledStripe=false;
+  const handler=createVocabularyCheckout({env:{...env,NODE_ENV:'production',...config},auth,fetchImpl:async(url)=>{
+   if(new URL(url).pathname.endsWith('capital_ai_get_vocabulary_access'))return Response.json({quantProEntitled:false});
+   calledStripe=true;throw new Error('production must reject unconfigured persistent identity');
+  }});
+  const response=res();
+  await handler.handle(request({withdrawalWaived:true}),response,endpoint('/api/billing/vocabulary/checkout'),json);
+  assert.equal(response.status,503);
+  assert.equal(response.payload.error,'learning_price_not_configured');
+  assert.equal(calledStripe,false);
+ }
+});
+test('production Checkout with verified current Stripe price uses persistent ID, not an inline price',async()=>{
+ let form;
+ const handler=createVocabularyCheckout({env:{...env,NODE_ENV:'production',STRIPE_LEARNING_PORTAL_PRICE_ID:'price_test_learning',STRIPE_LEARNING_PORTAL_PRODUCT_ID:'prod_test_learning'},auth,fetchImpl:async(url,options)=>{
+  const path=new URL(url).pathname;
+  if(path.endsWith('capital_ai_get_vocabulary_access'))return Response.json({quantProEntitled:false});
+  if(path==='/v1/prices/price_test_learning')return Response.json({active:true,currency:'eur',unit_amount:2500,recurring:null,product:'prod_test_learning'});
+  if(path==='/v1/checkout/sessions'){form=new URLSearchParams(options.body);return Response.json({id:'cs_test_learning',url:'https://checkout.stripe.com/c/pay/fixture'});}
+  throw new Error('unexpected Stripe route '+path);
+ }});
+ const response=res();
+ await handler.handle(request({withdrawalWaived:true}),response,endpoint('/api/billing/vocabulary/checkout'),json);
+ assert.equal(response.status,200);
+ assert.equal(form.get('line_items[0][price]'),'price_test_learning');
+ assert.equal(form.has('line_items[0][price_data][unit_amount]'),false);
+});
 test('Enterprise promotion is exactly three days, account bound, includes no invoice discount',async()=>{
  let form;const handler=createSubscriptionCheckout({env,auth,fetchImpl:async(url,options)=>{
   if(new URL(url).pathname.endsWith('capital_ai_enterprise_trial'))return Response.json(JSON.parse(options.body)._action==='reserve'?{reserved:true}:{attached:true});
