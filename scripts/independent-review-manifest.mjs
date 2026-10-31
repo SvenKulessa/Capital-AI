@@ -53,17 +53,17 @@ export function createIndependentReviewManifest({ git = execGit } = {}) {
     const bytes = source(path);
     return { path, bytes: bytes.length, sha256: digest(bytes) };
   });
-  const workflowPaths = [...tracked].filter(path => /^\\.github\\/workflows\\/[a-zA-Z0-9._-]+\\.ya?ml$/.test(path)).sort();
-  const processPaths = [...tracked].filter(path => /^(server|scripts)\\/[a-zA-Z0-9/_-]+\\.(?:mjs|cjs|js|ts|tsx)$/.test(path)).sort();
+  const workflowPaths = [...tracked].filter(path => /^\.github\/workflows\/[a-zA-Z0-9._-]+\.ya?ml$/.test(path)).sort();
+  const processPaths = [...tracked].filter(path => /^(server|scripts)\/[a-zA-Z0-9/_-]+\.(?:mjs|cjs|js|ts|tsx)$/.test(path)).sort();
   if (workflowPaths.length > 250 || processPaths.length > 1500) throw new Error('REVIEW_SOURCE_INVENTORY_BOUND_EXCEEDED');
   const permissionInventory = workflowPaths.map(path => {
     const bytes = source(path);
     const body = bytes.toString('utf8');
-    const scopes = [...new Set([...body.matchAll(/^\\s*(contents|id-token|issues|pull-requests|actions|checks|security-events|packages|deployments|statuses|workflows|pages|discussions):\\s*(read|write|none)\\s*$/gm)]
+    const scopes = [...new Set([...body.matchAll(/^\s*(contents|id-token|issues|pull-requests|actions|checks|security-events|packages|deployments|statuses|workflows|pages|discussions):\s*(read|write|none)\s*$/gm)]
       .map(([, key, level]) => `${key}:${level}`))].sort();
     return {
       path, sha256: digest(bytes),
-      explicitPermissionsMarker: /^\\s*permissions\\s*:/m.test(body),
+      explicitPermissionsMarker: /^\s*permissions\s*:/m.test(body),
       observedScopes: scopes,
       writeScopes: scopes.filter(value => value.endsWith(':write')),
       reviewRequired: true,
@@ -73,8 +73,8 @@ export function createIndependentReviewManifest({ git = execGit } = {}) {
   for (const path of processPaths) {
     const bytes = source(path);
     const body = bytes.toString('utf8');
-    const lines = body.split('\\n');
-    const matches = lines.flatMap((line, index) => /(?:from\\s*|require\\s*\\(|import\\s*\\()\\s*['"](?:node:)?child_process['"]/.test(line) ? [index + 1] : []);
+    const lines = body.split('\n');
+    const matches = lines.flatMap((line, index) => /(?:from\s*|require\s*\(|import\s*\()\s*['"](?:node:)?child_process['"]/.test(line) ? [index + 1] : []);
     if (matches.length) childProcessInventory.push({
       path, sha256: digest(bytes), importLines: matches,
       processContext: path.startsWith('server/') ? 'SERVER_SOURCE' : 'SCRIPT_SOURCE',
