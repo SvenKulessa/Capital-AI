@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { NotesConflict } from './privateNotesOcc';
 
 /** Inline WCAG-friendly conflict review. An explicit merge is the only resubmit path. */
@@ -10,12 +10,13 @@ export function NotesConflictPanel({
   onMerge: (text: string) => void;
 }) {
   const [merged, setMerged] = useState(conflict.localDraft);
+  const id = useId();
   const heading = useRef<HTMLHeadingElement>(null);
-  useEffect(() => { heading.current?.focus(); }, [conflict]);
+  useEffect(() => { setMerged(conflict.localDraft); heading.current?.focus(); }, [conflict]);
   return (
-    <section aria-labelledby="notes-occ-conflict-title"
+    <section aria-labelledby={id + "-title"}
       className="mt-3 space-y-3 rounded-xl border border-amber-400/70 bg-slate-900 p-3 text-white">
-      <h3 id="notes-occ-conflict-title" ref={heading} tabIndex={-1}
+      <h3 id={id + "-title"} ref={heading} tabIndex={-1}
         className="text-base font-bold text-amber-200">Notizkonflikt erkannt</h3>
       <p role="alert" className="text-sm">
         Diese Notizen wurden in einem anderen Tab geändert. Dein Entwurf bleibt erhalten.
@@ -31,10 +32,10 @@ export function NotesConflictPanel({
           <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words rounded border border-slate-600 p-2 text-sm">{conflict.serverNotes}</pre>
         </div>
       </div>
-      <label htmlFor="notes-occ-merge" className="block font-semibold">
+      <label htmlFor={id + "-merge"} className="block font-semibold">
         Manuell zusammengeführte Notizen (maximal 10.000 Zeichen)
       </label>
-      <textarea id="notes-occ-merge" rows={5} maxLength={10000}
+      <textarea id={id + "-merge"} rows={5} maxLength={10000}
         value={merged} onChange={event => setMerged(event.target.value)}
         className="w-full rounded border border-slate-500 bg-slate-950 p-3 text-base text-white focus-visible:outline-2 focus-visible:outline-amber-300" />
       <div className="flex flex-wrap gap-3">
