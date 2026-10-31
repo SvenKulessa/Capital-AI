@@ -42,6 +42,18 @@ test('submit_sitemap is excluded from the default MCP surface', async () => {
   assert.match(guard, /GSC access is read-only/);
 });
 
+test('GSC MCP sub-process forwards only the read-only token path and permits exactly read-only tools', async () => {
+  const guard = await read('scripts/gsc-mcp-guard.mjs');
+  assert.match(guard, /ALLOWED_TOOLS = new Set\(\['list_properties', 'query_search_analytics', 'inspect_url', 'list_sitemaps'\]\)/);
+  assert.match(guard, /env: scopedChildEnv\(process\.env\)/);
+  assert.doesNotMatch(guard, /\.\.\.process\.env/);
+  assert.match(guard, /result\.GSC_PROPERTY = DEFAULT_PROPERTY/);
+  assert.match(guard, /ALLOWED_TOOLS\.has\(message\?\.params\?\.name\)/);
+  assert.match(guard, /message\.result\.tools\.filter\(\(tool\) => ALLOWED_TOOLS\.has\(tool\?\.name\)\)/);
+  assert.match(guard, /child\.stderr\.on\('data', \(\) => undefined\)/);
+  assert.doesNotMatch(guard, /'STRIPE_SECRET_KEY'|'SUPABASE_SECRET_KEY'|'GITHUB_TOKEN'|'GOOGLE_APPLICATION_CREDENTIALS'/);
+});
+
 test('GA4 is a separately pinned read-only Render authority and not a LukeRenton capability', async () => {
   const config = JSON.parse(await read('config/growth-google-authority.json'));
   const evidence = JSON.parse(await read('docs/security/evidence/growth-gsc-oss-admission-20261004.json'));
