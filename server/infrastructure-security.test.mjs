@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { MarketInfrastructure, natsConnectionAuth, validateStreamConfig } from './infrastructure.mjs';
+import { EnterpriseScorerBus } from './scorer-bus.mjs';
 
 const safe = { storage: 'file', discard: 'new', deny_delete: true, deny_purge: true,
   max_age: 0, num_replicas: 1, max_bytes: 1073741824, max_msg_size: 262144,
@@ -89,6 +90,21 @@ test('provider request rate and cost gates use atomic Valkey scripts and fail cl
       return true;
     },
   );
+});
+
+test('missing or ambiguous broker pause never attempts Redis/NATS (including scorer bus)', async () => {
+  for (const value of [undefined, '', 'true', 'TRUE', 'False', '0', ' false ', 'unexpected']) {
+    const env = {
+      REDIS_URL: 'redis://127.0.0.1:1', NATS_URL: 'nats://127.0.0.1:1',
+      NATS_APP_USER: 'fixture', NATS_APP_PASSWORD: 'fixture-password',
+      ...(value === undefined ? {} : { MARKET_BROKER_PAUSED: value }),
+    };
+    for (const service of [new MarketInfrastructure(env), new EnterpriseScorerBus(env)]) {
+      assert.equal(await service.start(), false, 'unexpected broker activation for ' + String(value));
+      assert.equal(service.redis, null, 'unexpected Redis client for ' + String(value));
+      assert.equal(service.nc, null, 'unexpected NATS client for ' + String(value));
+    }
+  }
 });
 
 test('broker pause makes startup a no-op despite configured transport endpoints', async () => {
