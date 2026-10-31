@@ -70,6 +70,7 @@ export async function readEnabledCloudApis({ token, fetcher = fetch } = {}) {
         iamEnabled: enabled.has('iam.googleapis.com'),
         iamCredentialsEnabled: enabled.has('iamcredentials.googleapis.com'),
         driveApiEnabled: enabled.has('drive.googleapis.com'),
+        youtubeDataApiEnabled: enabled.has('youtube.googleapis.com'),
         readonly: true,
       });
     }
