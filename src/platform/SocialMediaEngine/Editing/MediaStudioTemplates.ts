@@ -4,6 +4,7 @@ import {
   type MediaProjectV2,
 } from '../Contracts/MediaProject';
 import { validateMediaProjectV2 } from '../Contracts/MediaProjectValidation';
+import { BRAND_GLOBE } from '../Visualization/BrandGlobeSpec';
 import {
   MEDIA_STUDIO_CANVAS_PRESETS,
   type MediaStudioCanvasPreset,
@@ -275,7 +276,8 @@ export function createCapitalAiLandingBlueprintVideoProject(): MediaProjectV2 {
       id: 'landing-earth-reference',
       kind: 'image',
       sourceType: 'local-file',
-      reference: 'public/branding/universe/hero-universe-desktop.webp',
+      reference: `public${BRAND_GLOBE.asset}`,
+      sha256: BRAND_GLOBE.assetSha256,
       mimeType: 'image/webp',
     }],
     transitions: [],
