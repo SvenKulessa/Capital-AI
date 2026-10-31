@@ -5,14 +5,24 @@ import { createInterface } from 'node:readline';
 const UPSTREAM_PACKAGE = '@lukerent/google-search-console-mcp@0.1.0';
 const DEFAULT_PROPERTY = 'sc-domain:capital-ai.online';
 const BLOCKED_TOOL = 'submit_sitemap';
+const ALLOWED_TOOLS = new Set(['list_properties', 'query_search_analytics', 'inspect_url', 'list_sitemaps']);
+// Pass only values needed for npm execution and the owner-authorized read-only GSC
+// token file. Unrelated Render/Stripe/GitHub/OAuth secrets must not reach the child.
+const FORWARDED_ENV = Object.freeze(['PATH', 'HOME', 'TMPDIR', 'XDG_CONFIG_HOME', 'XDG_CACHE_HOME', 'LANG', 'GSC_TOKEN_FILE']);
+function scopedChildEnv(env) {
+  const result = Object.fromEntries(FORWARDED_ENV
+    .filter(key => typeof env[key] === 'string' && env[key].length > 0)
+    .map(key => [key, env[key]]));
+  result.GSC_PROPERTY = DEFAULT_PROPERTY; // do not accept an untrusted property override
+  return result;
+}
 
 const child = spawn('npx', ['-y', UPSTREAM_PACKAGE], {
-  stdio: ['pipe', 'pipe', 'inherit'],
-  env: {
-    ...process.env,
-    GSC_PROPERTY: process.env.GSC_PROPERTY ?? DEFAULT_PROPERTY,
-  },
+  stdio: ['pipe', 'pipe', 'pipe'],
+  env: scopedChildEnv(process.env),
 });
+child.stderr.on('data', () => undefined); // upstream stderr may contain credentials; never forward it
+
 
 const pendingMethods = new Map();
 const parentInput = createInterface({ input: process.stdin, crlfDelay: Infinity });
@@ -27,17 +37,17 @@ parentInput.on('line', (line) => {
   try {
     message = JSON.parse(line);
   } catch {
-    child.stdin.write(`${line}\n`);
+    emit({ jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Invalid JSON-RPC request.' } });
     return;
   }
 
-  if (message?.method === 'tools/call' && message?.params?.name === BLOCKED_TOOL) {
+  if (message?.method === 'tools/call' && !ALLOWED_TOOLS.has(message?.params?.name)) {
     emit({
       jsonrpc: '2.0',
       id: message.id ?? null,
       error: {
         code: -32601,
-        message: 'submit_sitemap is disabled by CAPITAL-AI TRUST policy; GSC access is read-only.',
+        message: 'Tool not admitted by CAPITAL-AI TRUST policy; GSC access is read-only.',
       },
     });
     return;
@@ -61,7 +71,7 @@ childOutput.on('line', (line) => {
   if (key !== null && message?.id !== undefined) pendingMethods.delete(key);
 
   if (method === 'tools/list' && Array.isArray(message?.result?.tools)) {
-    message.result.tools = message.result.tools.filter((tool) => tool?.name !== BLOCKED_TOOL);
+    message.result.tools = message.result.tools.filter((tool) => ALLOWED_TOOLS.has(tool?.name));
   }
   emit(message);
 });
