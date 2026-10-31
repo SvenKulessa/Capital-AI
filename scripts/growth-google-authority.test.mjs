@@ -64,7 +64,7 @@ test('malformed upstream GSC MCP output is never relayed to the parent', async (
   const dir = await mkdtemp(join(tmpdir(), 'capital-ai-gsc-mcp-'));
   t.after(() => rm(dir, { recursive: true, force: true }));
   const fakeNpx = join(dir, 'npx');
-  await writeFile(fakeNpx, '#!/usr/bin/env node\\nprocess.stdout.write("UPSTREAM_SECRET_SHOULD_NOT_LEAK\\\\n");\\n');
+  await writeFile(fakeNpx, '#!/usr/bin/env node\nprocess.stdout.write("UPSTREAM_SECRET_SHOULD_NOT_LEAK\\\n");\n');
   await chmod(fakeNpx, 0o700);
   const guardPath = fileURLToPath(new URL('./gsc-mcp-guard.mjs', import.meta.url));
   const child = spawnSync(process.execPath, [guardPath], {
