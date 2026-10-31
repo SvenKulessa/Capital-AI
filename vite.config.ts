@@ -135,6 +135,7 @@ export default defineConfig(() => {
             groups: [
               { name: 'vocabulary-metadata', test: /[/\\]shared[/\\]vocabulary-metadata\.mjs$/ },
               { name: 'i18n-landing-copy', test: /[/\\]src[/\\]i18n[/\\]landingSectionCopy\.ts$/ },
+              { name: 'i18n-messages', test: /[/\\]src[/\\]i18n[/\\]messages\.ts$/ },
               // Three.js is a large but self-contained, lazy 3D dependency.
               // Keep it apart from the JaJa UI/GLB parser; the 500 kB budget
               // and emitted import-cycle guard still apply to every chunk.
