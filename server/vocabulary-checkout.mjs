@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { boundedJson, secureUrl } from './http-security.mjs';
 
 const DEFAULT_VOCABULARY_PRODUCT_ID = 'prod_VNTsrtlf2ZL8ja';
+const DEFAULT_LEGACY_PRICE_ID = 'price_1UMiuIPKr4joNbEclpn8AwFW';
 const SKU = 'learning-portal';
 const LEGACY_SKU = 'market-vocabulary';
 const VOCABULARY_BADGE_PATH = new URL('../CAPITAL-AI-PRODUCT/badge.svg', import.meta.url);
@@ -54,6 +55,31 @@ function stripeId(value, prefix) {
   return typeof value === 'string' && value.startsWith(prefix) && value.length <= 255 ? value : '';
 }
 
+/** Validate Stripe's server-read line items, not caller/session metadata alone.
+ * One purchased one-time SKU must have exactly one matching quantity-one price.
+ * Live and test identities are supplied by separate server environments.
+ */
+export function verifyLearningPurchasedLineItems(items, {
+  sku, learningPriceId = '', learningProductId = '',
+  legacyPriceId = DEFAULT_LEGACY_PRICE_ID,
+  legacyProductId = DEFAULT_VOCABULARY_PRODUCT_ID,
+} = {}) {
+  const expected = sku === SKU ? 2500 : sku === LEGACY_SKU ? 1900 : null;
+  if (expected === null || items?.has_more !== false || !Array.isArray(items.data) || items.data.length !== 1) return false;
+  const line = items.data[0];
+  const price = line?.price;
+  if (line?.quantity !== 1 || line?.amount_subtotal !== expected || !price
+    || typeof price.id !== 'string' || !price.id.startsWith('price_')
+    || price.currency !== 'eur' || price.unit_amount !== expected || price.recurring != null) return false;
+  const expectedPriceId = sku === SKU ? learningPriceId : legacyPriceId;
+  if (expectedPriceId && price.id !== expectedPriceId) return false;
+  // Legacy entitlement must always match its historical, explicit price identity.
+  if (sku === LEGACY_SKU && !expectedPriceId) return false;
+  const expectedProductId = sku === SKU ? learningProductId : legacyProductId;
+  if (expectedProductId && price.product !== expectedProductId) return false;
+  return true;
+}
+
 export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch, auth } = {}) {
   const trialCampaign=createEnterpriseTrial({env,fetchImpl});
   const secret = env.STRIPE_SECRET_KEY || '';
@@ -61,6 +87,7 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
   const priceId = env.STRIPE_LEARNING_PORTAL_PRICE_ID || '';
   const learningProductId = env.STRIPE_LEARNING_PORTAL_PRODUCT_ID || '';
   const productId = env.STRIPE_VOCABULARY_PRODUCT_ID || DEFAULT_VOCABULARY_PRODUCT_ID;
+  const legacyPriceId = env.STRIPE_VOCABULARY_PRICE_ID || DEFAULT_LEGACY_PRICE_ID;
   const webhookSecret=env.STRIPE_LEARNING_WEBHOOK_SECRET || '';
   const baseUrl = (env.PUBLIC_BASE_URL || 'https://capital-ai.online').replace(/\/$/, '');
 
@@ -107,8 +134,9 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
       session.amount_subtotal === 2500 && Number.isInteger(total) && Number.isInteger(discount) &&
       discount >= 0 && discount <= 2500 && total === 2500 - discount &&
       (session.payment_status === 'paid' || (total === 0 && session.payment_status === 'no_payment_required'));
-    const legacyPaid = session.metadata?.sku === LEGACY_SKU && session.payment_status === 'paid' &&
-      Number(session.amount_total) === 1900 && session.mode !== 'subscription';
+    const legacyPaid = session.metadata?.sku === LEGACY_SKU && session.mode === 'payment' &&
+      session.status === 'complete' && session.payment_status === 'paid' &&
+      session.amount_subtotal === 1900 && session.amount_total === 1900;
     const valid =
       (learningPaid || legacyPaid) &&
       session.client_reference_id === userId &&
@@ -116,6 +144,14 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
       session.currency === 'eur' && session.mode !== 'subscription';
 
     if (!valid) return null;
+
+    // Checkout session metadata and totals do not prove the purchased Stripe Price.
+    // The provider's own line-item readback also rejects duplicates and extra SKUs.
+    const lineItems = await stripe(`/checkout/sessions/${encodeURIComponent(sessionId)}/line_items?limit=2`);
+    if (!verifyLearningPurchasedLineItems(lineItems, {
+      sku: session.metadata?.sku, learningPriceId: priceId, learningProductId,
+      legacyPriceId, legacyProductId: productId,
+    })) return null;
 
     await rpc(fetchImpl, supabase, 'capital_ai_grant_vocabulary_entitlement', {
       _user_id: userId,
@@ -352,6 +388,11 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
           'metadata[withdrawal_waived]': 'true',
           'payment_intent_data[statement_descriptor]': 'CAPITAL-AI LEARN',
         });
+        // Production must use the verified persistent Live Stripe Price/Product pair;
+        // never mint an untracked inline price if either server setting is missing.
+        if (env.NODE_ENV === 'production' && (!priceId || !learningProductId)) {
+          return json(res, 503, { error: 'learning_price_not_configured' }), true;
+        }
         if (priceId) {
           try {
             const price = await stripe(`/prices/${encodeURIComponent(priceId)}`);
