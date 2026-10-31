@@ -388,6 +388,11 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
           'metadata[withdrawal_waived]': 'true',
           'payment_intent_data[statement_descriptor]': 'CAPITAL-AI LEARN',
         });
+        // Production must use the verified persistent Live Stripe Price/Product pair;
+        // never mint an untracked inline price if either server setting is missing.
+        if (env.NODE_ENV === 'production' && (!priceId || !learningProductId)) {
+          return json(res, 503, { error: 'learning_price_not_configured' }), true;
+        }
         if (priceId) {
           try {
             const price = await stripe(`/prices/${encodeURIComponent(priceId)}`);
