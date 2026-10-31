@@ -89,7 +89,9 @@ try {
     await shot('hero-reduced-' + viewport.width);
     // Simulate doubled text while retaining the same viewport.
     await evaluate("document.querySelectorAll('.hero-copy h1,.hero-copy p,.hero-copy button').forEach(e=>e.style.fontSize=(parseFloat(getComputedStyle(e).fontSize)*2)+'px')");
-    assert.ok(await evaluate("document.querySelector('.hero-copy').scrollWidth <= document.querySelector('.hero-copy').clientWidth + 2"), '200% text overflows copy panel');
+    const zoomLayout = await evaluate("(() => { const c=document.querySelector('.hero-copy'); return {scroll:c.scrollWidth,client:c.clientWidth,overflowing:[...c.querySelectorAll('*')].filter(e=>e.scrollWidth>e.clientWidth+2).map(e=>({tag:e.tagName,className:typeof e.className==='string'?e.className:'svg',scroll:e.scrollWidth,client:e.clientWidth})).slice(0,10)}; })()");
+    report.checks.push({viewport, zoomLayout});
+    assert.ok(zoomLayout.scroll <= zoomLayout.client + 2, '200% text overflows copy panel');
     report.checks.push({ viewport, reducedMotion: 'PASS', staticArtwork: 'PASS', touchTargets: 'PASS', doubledText: 'PASS' });
     await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] });
     await navigate();

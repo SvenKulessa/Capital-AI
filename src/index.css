@@ -279,7 +279,7 @@
 .capital-ai-hero .hero-copy button > div,
 .capital-ai-hero .hero-copy button > span { min-width:0; }
 .capital-ai-hero .hero-copy button svg { flex-shrink:0; }
-.capital-ai-hero .hero-copy::before { content:""; position:absolute; inset:0 -8rem 0 0; z-index:-1; pointer-events:none; border-radius:inherit; background:linear-gradient(90deg, color-mix(in srgb, var(--color-brand-canvas) 96%, transparent), color-mix(in srgb, var(--color-brand-canvas) 92%, transparent) 72%, transparent); }
+.capital-ai-hero .hero-copy::before { content:""; position:absolute; inset:0; z-index:-1; pointer-events:none; border-radius:inherit; background:linear-gradient(90deg, color-mix(in srgb, var(--color-brand-canvas) 96%, transparent), color-mix(in srgb, var(--color-brand-canvas) 92%, transparent) 72%, transparent); }
 .hero-globe-pause { position:absolute; z-index:20; bottom:1rem; right:1.25rem; min-height:44px; padding:.5rem 1rem; border:1px solid var(--color-brand-gold); border-radius:999px; color:var(--color-brand-gold); background:var(--color-brand-canvas); font-size:.875rem; }
 .hero-globe-pause:focus-visible { outline:2px solid var(--color-brand-gold); outline-offset:4px; }
 @media (prefers-reduced-motion:reduce) {
