@@ -78,14 +78,38 @@ try {
       const r=logo.getBoundingClientRect(), style=getComputedStyle(logo);
       const borderX=parseFloat(style.borderLeftWidth)+parseFloat(style.borderRightWidth);
       const borderY=parseFloat(style.borderTopWidth)+parseFloat(style.borderBottomWidth);
+      const copyRect=copy.getBoundingClientRect(), globeRect=globe.getBoundingClientRect();
       return {logoRatio:(r.width-borderX)/(r.height-borderY), naturalRatio:logo.naturalWidth/logo.naturalHeight,
         foregroundLayer:Number(getComputedStyle(copy).zIndex), backgroundLayer:Number(getComputedStyle(globe).zIndex),
-        copyOffset:copy.getBoundingClientRect().top-globe.getBoundingClientRect().top};
+        copyOverlapY:Math.min(copyRect.bottom,globeRect.bottom)-Math.max(copyRect.top,globeRect.top),
+        copyOverlapX:Math.min(copyRect.right,globeRect.right)-Math.max(copyRect.left,globeRect.left)};
     })()`);
     assert.ok(Math.abs(layout.logoRatio-layout.naturalRatio)<.02, 'Logo frame leaves empty space or distorts artwork');
     assert.ok(layout.backgroundLayer<layout.foregroundLayer, 'Globe is not behind the copy');
-    assert.ok(layout.copyOffset>=0 && layout.copyOffset<48, 'Copy has been moved into a separate row below the globe');
-    report.checks.push({viewport, layout});
+    assert.ok(layout.copyOverlapY>0 && layout.copyOverlapX>0, 'Hero copy is detached into a separate globe row');
+    const decoration = await evaluate(`(() => {
+      const section=document.querySelector('.capital-ai-hero'), globe=document.querySelector('.hero-globe-background');
+      const outline=document.querySelector('.hero-brand-universe-outline');
+      const outer=outline?.querySelector('feMorphology');
+      const area=globe.getBoundingClientRect(), sectionArea=section.getBoundingClientRect();
+      return { globeWidth:area.width, globeHeight:area.height, heroWidth:sectionArea.width,
+        left:area.left, heroLeft:sectionArea.left, right:area.right, heroRight:sectionArea.right,
+        outlineVisible:!!outline && getComputedStyle(outline).display!=='none',
+        outlinePassive:getComputedStyle(outline).pointerEvents==='none',
+        outlineRadius:outer?.getAttribute('radius'),
+        studioShortcut:!!document.querySelector('header button[title^="Studio Hub:"]') };
+    })()`);
+    assert.equal(decoration.studioShortcut, false, 'Redundant Studio Hub header action remains');
+    assert.equal(decoration.outlineVisible, true, 'Silver Universe outline is absent');
+    assert.equal(decoration.outlinePassive, true, 'Brand decoration intercepts pointer events');
+    assert.equal(decoration.outlineRadius, '30', 'Silver outline thickness has changed');
+    if (viewport.width<=768) {
+      assert.ok(decoration.globeWidth<=decoration.heroWidth+2, 'Mobile/tablet globe overshoots content width');
+      assert.ok(Math.abs(decoration.globeHeight-decoration.globeWidth)<3, 'Mobile/tablet globe is not proportional');
+      assert.ok(decoration.right<=decoration.heroRight+2, 'Mobile/tablet globe is clipped on the right');
+      assert.ok(decoration.left>=decoration.heroLeft-2, 'Mobile/tablet globe starts outside the hero');
+    }
+    report.checks.push({viewport, layout, decoration});
     await shot('hero-reduced-' + viewport.width);
     // Simulate doubled text while retaining the same viewport.
     await evaluate("document.querySelectorAll('.hero-copy h1,.hero-copy p,.hero-copy button').forEach(e=>e.style.fontSize=(parseFloat(getComputedStyle(e).fontSize)*2)+'px')");
@@ -120,6 +144,9 @@ try {
     // Full-page reduced-motion screenshots above retain it. Isolate only the
     // subsequent globe pixel comparisons; do not change the product design.
     await evaluate("document.querySelectorAll('[data-hero-buddy=\"agent\"]').forEach(e=>e.style.visibility='hidden')");
+    // Test complete UI above, then isolate playback from independent Framer
+    // Motion/hero-copy animation. Hiding test-only copy does not modify runtime.
+    await evaluate("document.querySelector('.hero-copy').style.visibility='hidden'");
     const clip = await evaluate(`(() => { const r=document.querySelector('.hero-globe-background').getBoundingClientRect(); const x=Math.max(0,r.x),y=Math.max(0,r.y); return {x,y,width:Math.min(innerWidth,r.right)-x,height:Math.min(innerHeight,r.bottom)-y,scale:1}; })()`);
     assert.ok(clip.width > 0 && clip.height > 0);
     const first = await shot('hero-3d-' + viewport.width, clip);
