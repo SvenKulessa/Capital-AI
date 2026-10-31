@@ -18,7 +18,7 @@ No added dependency, remote media service, provider call, new OAuth scope, paid 
 - Reduced-motion users get the complete static artwork without loading Three.js.
 - A native, keyboard-focusable pause control stops animation scheduling. Hidden tabs and offscreen canvases also stop scheduling. GPU resources and observers are disposed on unmount; asynchronous setup is discarded safely after unmount.
 - Rendering pixel ratio is capped at 1.5, with low-power GPU preference.
-- Narrow viewports reserve artwork space above the readable copy; desktop keeps the decorative canvas to its right. Copy uses the central opaque canvas token; text and primary actions remain actual DOM content.
+- At every width the globe occupies the rear layer and the left-aligned copy stays above it. A token-based translucent shade fades beyond the copy panel without a hard vertical edge. Narrow layouts no longer reserve a separate artwork row. Text and primary actions remain actual DOM content.
 - Visual/browser validation of those behaviors is still required; these are implementation descriptions, not measured runtime findings.
 
 ## Local verification
@@ -38,6 +38,8 @@ Mobile 320/390, tablet 768, desktop 1280/1440, keyboard, 200% zoom, real reduced
 ## Delivery boundary
 
 Preview follow-up: the managed preview now opens successfully after adding the exact dev host `terminal.local` to Vite's allowedHosts. Desktop (1363 CSS px) and narrow (500 CSS px) source-rendered views were inspected in the cloud browser. Its WebGL capability is disabled, so these captures show the complete artwork fallback, not animated GPU output. The homepage now hides playback controls until a 3D render is ready, including after context loss. This is not a native Android test or a signed-in production readback.
+
+Owner layout refinement: the hero logo now uses intrinsic aspect ratio (`w-auto h-auto`) bounded by its existing maximum height, so the border follows the actual image instead of a wider object-contain box. At 1363 CSS px the inspected border measures 197.55×112 px, matching the 1536×864 source after borders. The decorative background is explicitly at z-index -1, copy at 10; observed copy/background top offset is 16 px. Mobile uses the same overlay relationship. Browser CI now asserts intrinsic logo ratio, foreground/background order and absence of the former separate mobile globe row at all four viewports; these new assertions need current-head CI evidence.
 
 Browser run `41147249830` on PR head `a6bfb94f148b03282c9000680cd822f7c811b16b` succeeded, including all four globe viewports, rotation, native Enter pause/resume and context-loss fallback. Docker run `41147249811` failed because the minimal build context omitted `scripts/universe-hero.test.mjs`, newly invoked by test:social-core. The fix copies that test and explicitly allows its existing Universe assets. No test, scan or security condition is removed. Docker-context plus asset tests (11) and the 54 Social/navigation tests pass locally; all checks must be re-evaluated on the new head.
 

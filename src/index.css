@@ -269,20 +269,20 @@
 .capital-ai-hero .hero-universe-vector {animation:capitalAiUniverseFloat 9s ease-in-out infinite;}
 @media (prefers-reduced-motion: reduce) {.capital-ai-hero .hero-universe-vector {animation:none;}}
 
-/* Shared Social Engine scene: copy and conversion controls have their own
- * opaque canvas; small screens reserve room for the artwork above the copy. */
+/* Shared Social Engine scene stays behind the left-aligned copy at all widths.
+ * A translucent canvas protects text contrast without creating a separate row. */
 .brand-globe-art { position:relative; width:100%; height:100%; pointer-events:none; }
 .brand-globe-poster, .brand-globe-canvas { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; transition:opacity .6s ease; }
 .capital-ai-hero { min-height:640px; padding-bottom:4.5rem; }
-.hero-globe-background { position:absolute; right:-3%; top:0; width:70%; height:100%; pointer-events:none; }
-.capital-ai-hero .hero-copy { background:var(--color-brand-canvas); }
+.hero-globe-background { position:absolute; z-index:-1; right:-8%; top:0; width:90%; height:100%; pointer-events:none; }
+.capital-ai-hero .hero-copy { background:none; }
+.capital-ai-hero .hero-copy::before { content:""; position:absolute; inset:0 -8rem 0 0; z-index:-1; pointer-events:none; border-radius:inherit; background:linear-gradient(90deg, color-mix(in srgb, var(--color-brand-canvas) 96%, transparent), color-mix(in srgb, var(--color-brand-canvas) 92%, transparent) 72%, transparent); }
 .hero-globe-pause { position:absolute; z-index:20; bottom:1rem; right:1.25rem; min-height:44px; padding:.5rem 1rem; border:1px solid var(--color-brand-gold); border-radius:999px; color:var(--color-brand-gold); background:var(--color-brand-canvas); font-size:.875rem; }
 .hero-globe-pause:focus-visible { outline:2px solid var(--color-brand-gold); outline-offset:4px; }
 @media (prefers-reduced-motion:reduce) {
   .brand-globe-poster, .brand-globe-canvas { transition:none; }
 }
 @media (max-width:1023px) {
-  .capital-ai-hero { padding-top:clamp(260px, 52vw, 460px); }
-  .hero-globe-background { top:0; right:0; width:100%; height:clamp(280px, 58vw, 480px); }
+  .hero-globe-background { right:-45%; width:145%; }
   .capital-ai-hero .hero-copy { max-width:100%; }
 }

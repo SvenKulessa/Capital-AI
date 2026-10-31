@@ -73,6 +73,19 @@ try {
     assert.equal(await evaluate("!!document.querySelector('.hero-globe-pause')"), false);
     assert.ok(await evaluate("document.documentElement.scrollWidth <= innerWidth + 2"), 'Page horizontal overflow');
     assert.ok(await evaluate("[...document.querySelectorAll('.hero-copy button')].every(b=>b.getBoundingClientRect().height>=44)"), 'Small hero touch target');
+    const layout = await evaluate(`(() => {
+      const logo=document.querySelector('.hero-brand-logo'), copy=document.querySelector('.hero-copy'), globe=document.querySelector('.hero-globe-background');
+      const r=logo.getBoundingClientRect(), style=getComputedStyle(logo);
+      const borderX=parseFloat(style.borderLeftWidth)+parseFloat(style.borderRightWidth);
+      const borderY=parseFloat(style.borderTopWidth)+parseFloat(style.borderBottomWidth);
+      return {logoRatio:(r.width-borderX)/(r.height-borderY), naturalRatio:logo.naturalWidth/logo.naturalHeight,
+        foregroundLayer:Number(getComputedStyle(copy).zIndex), backgroundLayer:Number(getComputedStyle(globe).zIndex),
+        copyOffset:copy.getBoundingClientRect().top-globe.getBoundingClientRect().top};
+    })()`);
+    assert.ok(Math.abs(layout.logoRatio-layout.naturalRatio)<.02, 'Logo frame leaves empty space or distorts artwork');
+    assert.ok(layout.backgroundLayer<layout.foregroundLayer, 'Globe is not behind the copy');
+    assert.ok(layout.copyOffset>=0 && layout.copyOffset<48, 'Copy has been moved into a separate row below the globe');
+    report.checks.push({viewport, layout});
     await shot('hero-reduced-' + viewport.width);
     // Simulate doubled text while retaining the same viewport.
     await evaluate("document.querySelectorAll('.hero-copy h1,.hero-copy p,.hero-copy button').forEach(e=>e.style.fontSize=(parseFloat(getComputedStyle(e).fontSize)*2)+'px')");
