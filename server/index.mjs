@@ -365,8 +365,9 @@ export function createApp(root = defaultRoot, options = {}) {
   const historicalAnalyticsDemo = createHistoricalAnalyticsDemo({ env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch });
   const googleAnalyticsReadback = createGoogleAnalyticsReadback({ env: options.env || process.env, auth });
   if (
-    (options.env || process.env).PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true' ||
-    (options.env || process.env).PRIVATE_PROVIDER_BRIDGE_PROBE_ENABLED === 'true'
+    (options.env || process.env).MARKET_BROKER_PAUSED === 'false' &&
+    ((options.env || process.env).PRIVATE_PROVIDER_BRIDGE_ENABLED === 'true' ||
+      (options.env || process.env).PRIVATE_PROVIDER_BRIDGE_PROBE_ENABLED === 'true')
   ) {
     const probeRequestId = 'startup:' + String((options.env || process.env).RENDER_GIT_COMMIT || 'runtime').slice(0, 40);
     void privateProviderQuery.start()
@@ -740,7 +741,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   let unsubscribePubsubProbe = null;
   try { unsubscribePubsubProbe = await infrastructure.subscribeQuotes(() => {}); } catch { /* health remains fail-closed */ }
   const stop = startStreams();
-  const reconnect = process.env.MARKET_BROKER_PAUSED === 'true' ? null
+  const reconnect = process.env.MARKET_BROKER_PAUSED !== 'false' ? null
     : setInterval(() => { if (infrastructure.status().status !== 'connected') void infrastructure.start(); }, 15000);
   reconnect?.unref();
   server.listen(Number(process.env.PORT || 10000), '0.0.0.0');
