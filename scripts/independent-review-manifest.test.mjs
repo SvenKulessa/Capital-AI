@@ -24,7 +24,7 @@ test('report uses immutable HEAD blobs and deterministic byte digests', () => {
   assert.equal(a.inventorySha256, createHash('sha256').update(JSON.stringify(a.files)).digest('hex'));
   assert.equal(a.externalClaims.liveStripePriceOrCheckout, 'NOT_VERIFIED');
   assert.equal(a.externalClaims.productionOAuthAndWif, 'NOT_VERIFIED');
-  assert.equal(a.boundaries.length, 4);
+  assert.equal(a.boundaries.length, 5);
 });
 
 test('source paths are fixed and only read-only Git commands execute', () => {
@@ -46,4 +46,36 @@ test('never disclose source contents or credential-like fixture data', () => {
   const git = args => args[0] === 'show' ? Buffer.from(secret) : mockGit(args);
   const json = JSON.stringify(createIndependentReviewManifest({ git }));
   assert.ok(!json.includes(secret));
+});
+
+test('immutable permission inventory identifies only explicit candidate scopes, not effective rights', () => {
+  const sources = new Map(fixtures);
+  sources.set('.github/workflows/fixture-audit.yml', Buffer.from('name: Test\npermissions:\n  contents: read\n  id-token: write\n'));
+  sources.set('server/test-process-inventory.mjs', Buffer.from("import { spawn } from 'node:child_process';\nconst secret='sb_secret_PRIVATE_NOT_PUBLIC';\n"));
+  const git = args => {
+    if (args[0] === 'ls-tree') return [...sources.keys()].join('\n') + '\n';
+    if (args[0] === 'show') return sources.get(args[1].slice(5));
+    return mockGit(args);
+  };
+  const report = createIndependentReviewManifest({git});
+  const permissions = report.staticCapabilityInventory.permissionInventory.find(x => x.path === '.github/workflows/fixture-audit.yml');
+  assert.ok(permissions);
+  assert.equal(permissions.explicitPermissionsMarker, true);
+  assert.deepEqual(permissions.writeScopes, ['id-token:write']);
+  const process = report.staticCapabilityInventory.childProcessInventory.find(x => x.path === 'server/test-process-inventory.mjs');
+  assert.ok(process);
+  assert.deepEqual(process.importLines, [1]);
+  assert.equal(process.processContext, 'SERVER_SOURCE');
+  assert.equal(report.staticCapabilityInventorySha256,
+    createHash('sha256').update(JSON.stringify(report.staticCapabilityInventory)).digest('hex'));
+  assert.doesNotMatch(JSON.stringify(report), /sb_secret_PRIVATE_NOT_PUBLIC/);
+  assert.equal(report.staticCapabilityInventory.evidenceScope, 'IMMUTABLE_STATIC_LEXICAL_OBSERVATION_NOT_EFFECTIVE_PRIVILEGE');
+});
+
+test('permission and process inventory is bounded and missing required sources fail closed', () => {
+  const git = args => {
+    if (args[0] === 'ls-tree') return [...fixtures.keys(), ...Array.from({length:251}, (_,i)=>'.github/workflows/fixture-' + i + '.yml')].join('\n') + '\n';
+    return mockGit(args);
+  };
+  assert.throws(() => createIndependentReviewManifest({git}), /REVIEW_SOURCE_INVENTORY_BOUND_EXCEEDED/);
 });
