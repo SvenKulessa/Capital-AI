@@ -17,6 +17,9 @@ test('learning HTTP content remains provenance-bound independently of CI runtime
   assert.ok(entry.sourceRefs.includes('src/features/learning/LearningPurchase.tsx'));
   assert.ok(entry.sourceRefs.includes('src/data/vocabularyOffer.ts'));
   assert.equal(Object.hasOwn(SEO_SOURCE_ARTIFACTS, 'server/index.mjs'), false);
+  for (const page of SEO_CONTENT_MANIFEST.filter(item => item.sourceRefs.includes('shared/vocabulary-metadata.mjs'))) {
+    assert.ok(page.sourceRefs.includes('shared/architecture-governance-vocabulary.mjs'), `${page.path}: glossary definitions must contribute to content identity`);
+  }
   const html = renderLearningLandingFallback('<ScRiPt>alert("untrusted")</ScRiPt>');
   assert.doesNotMatch(html, /<script\b/i);
   assert.match(html, /&lt;script&gt;/i);

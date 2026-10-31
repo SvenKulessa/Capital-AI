@@ -99,7 +99,7 @@ const staticEntries = [
     structuredDataType: 'CollectionPage',
     socialEligible: true,
     aiSearchEligible: true,
-    sourceRefs: ['shared/quant-learning-demo.json', 'shared/researched-vocabulary.json', 'shared/vocabulary-metadata.mjs', 'shared/learning-journey.mjs', 'src/components/ContactForm.tsx', 'src/features/learning/LearningJourney.tsx', 'src/features/learning/LearningPortalPage.tsx', 'src/features/learning/LearningPurchase.tsx', 'src/data/vocabularyOffer.ts'],
+    sourceRefs: ['shared/quant-learning-demo.json', 'shared/researched-vocabulary.json', 'shared/vocabulary-metadata.mjs', 'shared/architecture-governance-vocabulary.mjs', 'shared/learning-journey.mjs', 'src/components/ContactForm.tsx', 'src/features/learning/LearningJourney.tsx', 'src/features/learning/LearningPortalPage.tsx', 'src/features/learning/LearningPurchase.tsx', 'src/data/vocabularyOffer.ts'],
   }),
   contentEntry({
     path: '/vocabulary',
@@ -111,7 +111,7 @@ const staticEntries = [
     structuredDataType: 'DefinedTermSet',
     socialEligible: true,
     aiSearchEligible: true,
-    sourceRefs: ['shared/quant-learning-demo.json', 'shared/researched-vocabulary.json', 'shared/vocabulary-metadata.mjs', 'src/features/learning/LearningPortalPage.tsx'],
+    sourceRefs: ['shared/quant-learning-demo.json', 'shared/researched-vocabulary.json', 'shared/vocabulary-metadata.mjs', 'shared/architecture-governance-vocabulary.mjs', 'src/features/learning/LearningPortalPage.tsx'],
   }),
   contentEntry({
     path: '/faq',
@@ -213,7 +213,7 @@ const vocabularyEntries = SEO_PUBLIC_VOCABULARY_ENTRIES.map((entry) => contentEn
   structuredDataType: 'DefinedTerm',
   socialEligible: false,
   aiSearchEligible: true,
-  sourceRefs: ['shared/quant-learning-demo.json', 'shared/researched-vocabulary.json', 'shared/vocabulary-metadata.mjs'],
+  sourceRefs: ['shared/quant-learning-demo.json', 'shared/researched-vocabulary.json', 'shared/vocabulary-metadata.mjs', 'shared/architecture-governance-vocabulary.mjs'],
 }));
 
 export const SEO_CONTENT_MANIFEST = Object.freeze([
