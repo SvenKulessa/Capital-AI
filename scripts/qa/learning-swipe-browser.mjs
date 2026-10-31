@@ -109,7 +109,15 @@ for(const width of [320,390,768,1440]){
  await page.locator('#private-notes').fill('Local unsaved draft');
  await page.getByRole('button',{name:'Notizen speichern',exact:true}).click();
  await page.getByRole('heading',{name:'Notizkonflikt erkannt'}).waitFor();
- await page.getByText('Local unsaved draft',{exact:true}).waitFor();
+ await page.locator('pre').filter({hasText:'Local unsaved draft'}).waitFor();
+ await page.getByRole('alert').filter({hasText:'Dein Entwurf bleibt erhalten'}).waitFor();
+ await page.waitForFunction(() => document.activeElement?.textContent === 'Notizkonflikt erkannt');
+ if(width===390)await page.screenshot({path:join(output,'notes-conflict-390.png')});
+ if(width===320) {
+  await page.evaluate(()=>{document.documentElement.style.fontSize='200%';});
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  await page.evaluate(()=>{document.documentElement.style.fontSize='';});
+ }
  await page.getByText('Remote concurrent update',{exact:true}).waitFor();
  await page.getByRole('textbox',{name:/Manuell zusammengeführte Notizen/}).fill('Resolved merged notes');
  await page.getByRole('button',{name:'Zusammenführung speichern'}).click();
