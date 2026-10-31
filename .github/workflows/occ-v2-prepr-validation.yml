@@ -1,0 +1,63 @@
+name: OCC v2 branch validation (temporary)
+on:
+  push:
+    branches:
+      - product/private-notes-occ-v2
+permissions:
+  contents: read
+jobs:
+  types-api:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '26.10.0'
+          cache: npm
+      - name: Install verified lockfile
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: TypeScript and frontend architecture checks
+        run: npm run lint
+      - name: Notes API regression
+        run: node --test server/vocabulary-checkout.test.mjs
+      - name: Notes client and accessibility markup
+        run: node --import tsx --test src/features/account/privateNotesOcc.test.tsx
+      - name: Production build
+        run: npm run build
+  postgres-occ:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: test_only_no_secrets
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd 'pg_isready -U postgres'
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      PGPASSWORD: test_only_no_secrets
+      OCC_ISOLATED_TEST: 'YES'
+      OCC_MAIN_DSN: postgresql://postgres:test_only_no_secrets@127.0.0.1:5432/capital_ai_occ_main
+      OCC_ROLLBACK_DSN: postgresql://postgres:test_only_no_secrets@127.0.0.1:5432/capital_ai_occ_rollback
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a309694fa0bc8c692e5ce4fbc5c19d5fe93a6f6b # v6.0.0
+        with:
+          python-version: '3.12'
+      - name: Install isolated PostgreSQL test dependencies
+        run: |
+          python -m pip install 'psycopg[binary]==3.2.12'
+          command -v psql || (sudo apt-get update -qq && sudo apt-get install -y postgresql-client)
+          createdb -h 127.0.0.1 -U postgres capital_ai_occ_main
+          createdb -h 127.0.0.1 -U postgres capital_ai_occ_rollback
+      - name: True two-session OCC and legacy deny regression
+        run: |
+          python -m unittest discover -s scripts/tests -p 'private_notes_occ_postgres_test.py' -v
