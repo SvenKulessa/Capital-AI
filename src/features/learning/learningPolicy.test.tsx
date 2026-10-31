@@ -6,15 +6,32 @@ import {VOCABULARY_TERMS} from '../../data/vocabularyData';
 import {LEARNING_ARTICLES} from '../../data/learningArticles';
 import { LearningJourney } from './LearningJourney';
 import { LearningPurchase } from './LearningPurchase';
+import { ContactForm } from '../../components/ContactForm';
+import { LocaleProvider } from '../../i18n/LocaleProvider';
 import { LearningPortalPage } from './LearningPortalPage';
 import { MarketVocabularyModal } from './MarketVocabularyModal';
 import { LEARNING_JOURNEY, LEARNING_NEXT_STEPS } from '../../../shared/learning-journey.mjs';
+import { isSeoIndexable } from '../../../shared/seo-indexing-policy.mjs';
 import {berlinDay,dailyLearningQuestions} from './learningPolicy';
 import {VocabularyFlashcards, advanceVocabularyDeck, rescheduleMissedVocabulary, vocabularySwipeDirection} from '../../components/VocabularyFlashcards';
 import {VocabularyCard,VOCABULARY_CATEGORY_COLORS} from './VocabularyCard';
 import {chartQuestion} from './ChartRecognitionQuiz';
 import {ChartLessonGraphic} from './ChartLessonGraphic';
 import {LearningVideos, visibleLearningVideos, type LearningVideo} from './LearningVideos';
+
+test('course CTA opens a dedicated inquiry without relabelling generic support', () => {
+  assert.equal(LEARNING_NEXT_STEPS.find(step => step.label === 'Kursanfrage stellen')?.href,
+    '/learning#learning-inquiry');
+  assert.equal(isSeoIndexable(new URL(LEARNING_NEXT_STEPS.find(step => step.label === 'Kursanfrage stellen')!.href, 'https://capital-ai.online').pathname), true,
+    'The course CTA must remain on a public route where consented measurement is permitted.');
+  const course = renderToStaticMarkup(<LocaleProvider><ContactForm purpose="learning" /></LocaleProvider>);
+  const contact = renderToStaticMarkup(<LocaleProvider><ContactForm /></LocaleProvider>);
+  assert.match(course, /id="learning-inquiry"/);
+  assert.match(course, /Kursanfrage senden/);
+  assert.match(course, /Learning-%2FKursanfrage/);
+  assert.doesNotMatch(contact, /id="learning-inquiry"|Kursanfrage senden/);
+  assert.match(contact, /Kontaktanfrage/);
+});
 
 test('offer explains login and entitlements without preselecting purchase consent', () => {
   const html = renderToStaticMarkup(<LearningPurchase />);

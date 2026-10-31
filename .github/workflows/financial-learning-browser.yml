@@ -2,16 +2,25 @@ name: Financial Learning Simulator Browser QA
 on:
   pull_request:
     paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.ts'
       - 'src/features/learning/**'
       - 'src/features/analysis/**'
       - 'src/features/screener/EnterpriseScorerDashboard.tsx'
       - 'src/index.css'
+      - 'src/components/BrandGlobe.tsx'
+      - 'src/components/Hero.tsx'
+      - 'src/platform/SocialMediaEngine/Visualization/BrandGlobe*'
+      - 'scripts/brand-globe-browser.mjs'
       - 'scripts/scorer-methodology-browser.mjs'
       - 'src/components/HubCatalog.tsx'
       - 'server/learning-simulator.mjs'
       - 'server/auth.test.mjs'
       - 'shared/hub-routes.mjs'
       - 'scripts/product-accessibility-browser.mjs'
+      - 'scripts/qa/course-inquiry-browser.mjs'
+      - 'src/components/ContactForm.tsx'
       - '.github/workflows/financial-learning-browser.yml'
   workflow_dispatch:
 permissions:
@@ -60,6 +69,12 @@ jobs:
           "$CHROME_BIN" --version
           CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/product-accessibility-browser.mjs http://127.0.0.1:17871 \
             | tee artifacts-browser-result.json
+      - name: Course inquiry purpose, receipt and keyboard QA without mail delivery
+        run: |
+          set -euo pipefail
+          CHROME_BIN=$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)
+          test -n "$CHROME_BIN"
+          CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/qa/course-inquiry-browser.mjs
       - name: Scorer methodology responsive, keyboard and recording QA
         run: |
           set -euo pipefail
@@ -70,6 +85,12 @@ jobs:
             sudo apt-get install -y --no-install-recommends ffmpeg
           fi
           CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/scorer-methodology-browser.mjs
+      - name: Homepage globe responsive, rotation, pause and failure QA
+        run: |
+          set -euo pipefail
+          CHROME_BIN=$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)
+          test -n "$CHROME_BIN"
+          CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/brand-globe-browser.mjs
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v4
         if: always()
         with:
@@ -80,6 +101,9 @@ jobs:
             artifacts/scorer-browser/*.mp4
             artifacts/scorer-browser/result.json
             artifacts-browser-result.json
+            artifacts/globe-browser/*.png
+            artifacts/globe-browser/result.json
+            artifacts/course-inquiry-browser/result.json
             simulator-server.log
           if-no-files-found: warn
           retention-days: 7

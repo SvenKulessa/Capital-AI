@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   npm-update-capsule:
@@ -21,8 +21,8 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
-          persist-credentials: true
+          fetch-depth: 2
+          persist-credentials: false
 
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -36,39 +36,26 @@ jobs:
           npm install --global npm@12.2.0 --ignore-scripts --no-audit --no-fund
           test "$(npm --version)" = "12.2.0"
 
-      - name: Registry- und Dist-Tag-Evidence lesen
+      - name: Unveränderte PR-Lockfiles und Basis erfassen
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p security-reports/npm-update
-          node --version | tee security-reports/npm-update/node-version.txt
-          npm --version | tee security-reports/npm-update/npm-version.txt
-          npm view redis@6.3.0 version dist.integrity dist.tarball license --json > security-reports/npm-update/redis-6.3.0.json
-          npm view lucide-react@1.52.0 version dist.integrity dist.tarball license --json > security-reports/npm-update/lucide-react-1.52.0.json
-          npm view motion dist-tags version dist.integrity dist.tarball license --json > security-reports/npm-update/motion-dist-tag.json
-
-      - name: Root Lockfile deterministisch neu auflösen
-        shell: bash
-        run: |
-          set -euo pipefail
-          cp package.json security-reports/npm-update/package.before.json
-          cp package-lock.json security-reports/npm-update/package-lock.before.json
-          npm install --package-lock-only --ignore-scripts --no-audit --no-fund --save-exact \
-            redis@6.3.0 lucide-react@1.52.0
+          node --version > security-reports/npm-update/node-version.txt
+          npm --version > security-reports/npm-update/npm-version.txt
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          printf '%s\n' "$GITHUB_SHA" > security-reports/npm-update/tested-sha.txt
+          git show "$BASE_SHA:package.json" > security-reports/npm-update/package.before.json
+          git show "$BASE_SHA:package-lock.json" > security-reports/npm-update/package-lock.before.json
+          git show "$BASE_SHA:deploy/runtime/package.json" > security-reports/npm-update/runtime-package.before.json
+          git show "$BASE_SHA:deploy/runtime/package-lock.json" > security-reports/npm-update/runtime-package-lock.before.json
           cp package.json security-reports/npm-update/package.after.json
           cp package-lock.json security-reports/npm-update/package-lock.after.json
-          git diff -- package.json package-lock.json > security-reports/npm-update/root-lockfile.diff
-
-      - name: Runtime Lockfile deterministisch neu auflösen
-        shell: bash
-        run: |
-          set -euo pipefail
-          cp deploy/runtime/package.json security-reports/npm-update/runtime-package.before.json
-          cp deploy/runtime/package-lock.json security-reports/npm-update/runtime-package-lock.before.json
-          npm install --prefix deploy/runtime --package-lock-only --ignore-scripts --no-audit --no-fund --save-exact redis@6.3.0
           cp deploy/runtime/package.json security-reports/npm-update/runtime-package.after.json
           cp deploy/runtime/package-lock.json security-reports/npm-update/runtime-package-lock.after.json
-          git diff -- deploy/runtime/package.json deploy/runtime/package-lock.json > security-reports/npm-update/runtime-lockfile.diff
+          git diff "$BASE_SHA" HEAD -- package.json package-lock.json deploy/runtime/package.json deploy/runtime/package-lock.json > security-reports/npm-update/root-lockfile.diff
 
       - name: Integrity- und Transitive-Diff erzeugen
         shell: bash
@@ -94,7 +81,7 @@ jobs:
           node --input-type=module <<'NODE'
           import { readFileSync, writeFileSync } from 'node:fs';
           const lock=JSON.parse(readFileSync('package-lock.json','utf8'));
-          const direct=['redis','lucide-react','motion'];
+          const direct=Object.keys(lock.packages?.['']?.dependencies ?? {});
           const evidence=Object.fromEntries(direct.map(name=>[name,lock.packages?.['node_modules/'+name]??null]));
           writeFileSync('security-reports/npm-update/direct-integrity-readback.json',JSON.stringify(evidence,null,2)+'\n');
           NODE
@@ -107,6 +94,8 @@ jobs:
           npm ci --prefix deploy/runtime --ignore-scripts --no-audit --no-fund
           npm run lint
           npm test
+          npm run build
+          git diff --exit-code -- package.json package-lock.json deploy/runtime/package.json deploy/runtime/package-lock.json
 
       - name: Lizenz- und CVE-Evidence
         if: always()
@@ -136,29 +125,3 @@ jobs:
             deploy/runtime/package-lock.json
             security-reports/npm-update/**
 
-      - name: Verifizierten Routine-Candidate in PR-Branch übernehmen
-        if: success() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'capital-ai-trust/toolchain-update-20261004'
-        env:
-          TARGET_BRANCH: ${{ github.event.pull_request.head.ref }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          jq -e '.auditProductionExit == 0 and .auditAllExit == 0 and .licenseExit == 0' security-reports/npm-update/tool-exit-status.json >/dev/null
-          node --input-type=module <<'NODE'
-          import { readFileSync } from 'node:fs';
-          const root=JSON.parse(readFileSync('package.json','utf8'));
-          const runtime=JSON.parse(readFileSync('deploy/runtime/package.json','utf8'));
-          if (root.dependencies.redis !== '6.3.0') throw new Error('unexpected redis root version');
-          if (root.dependencies['lucide-react'] !== '1.52.0') throw new Error('unexpected lucide-react version');
-          if (root.dependencies.motion !== '^13.4.5') throw new Error('Motion major changed unexpectedly');
-          if (runtime.dependencies.redis !== '6.3.0') throw new Error('unexpected runtime redis version');
-          NODE
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add package.json package-lock.json deploy/runtime/package.json deploy/runtime/package-lock.json
-          if git diff --cached --quiet; then
-            echo 'Candidate bereits im Branch enthalten.'
-            exit 0
-          fi
-          git commit -m '[CAPITAL-AI-TRUST] Redis und Lucide mit verifizierten Lockfiles aktualisieren'
-          git push origin "HEAD:$TARGET_BRANCH"

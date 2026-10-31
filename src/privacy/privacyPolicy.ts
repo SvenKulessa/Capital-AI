@@ -66,6 +66,16 @@ export const PROCESSING_ACTIVITIES: ProcessingActivity[] = [
     technicalControls: ['HTTPS', 'Content Security Policy', 'kein Browserzugriff auf Server-Secrets', 'begrenzte HTTP-Anfragen'],
   },
   {
+    id: 'notion-login', title: 'Optionale Anmeldung über Notion und Supabase Auth', lifecycle: 'conditional',
+    purpose: 'Wenn ein Nutzer die Notion-Anmeldung auswählt: Notion-Identität und E-Mail-Zuordnung über Supabase Auth prüfen und eine CAPITAL-AI-Sitzung erstellen. Keine Notion-Seiten oder Kommentare für die Anmeldung abrufen.',
+    dataCategories: ['Notion-Nutzerkennung und verbundene Workspace-Identität, soweit vom Anbieter übermittelt', 'E-Mail-Adresse und gegebenenfalls Profilname', 'temporärer OAuth-Code und serverseitige Sitzungstoken'],
+    legalBasis: 'Art. 6 Abs. 1 lit. b DSGVO für die vom Nutzer gewählte Anmeldung; Art. 6 Abs. 1 lit. f DSGVO für Missbrauchsprävention und Session-Sicherheit.',
+    recipients: ['Notion als OAuth-Identitätsanbieter', 'Supabase Auth zur Kontozuordnung', 'Render als Anwendungsserver'],
+    transfer: 'Regionen, weitere Empfänger und mögliche Drittlandübermittlungen bei Notion, Supabase und Render sind anhand der jeweiligen Verträge und Transfergarantien gesondert zu verifizieren.',
+    retention: 'Die Anwendungssitzung wird maximal sieben Tage im signierten Cookie gehalten; die Identitätsverknüpfung bleibt grundsätzlich bis zur Kontolöschung bestehen. Providerlogs und Notion-interne Fristen sind gesondert zu prüfen.',
+    technicalControls: ['Notion OAuth2 über Supabase Auth mit serverseitigem PKCE-S256-Codeaustausch', 'signierter HttpOnly-/Secure-/SameSite-Sitzungszustand', 'kein direkter Zugriff der Login-Verbindung auf Notion-Seiten oder Kommentare', 'Notion Learning Hub Export verwendet eine separate OAuth-Client-ID und eigene Freigaben'],
+  },
+  {
     id: 'google-oauth', title: 'Optionale Google-Anmeldung über Supabase Auth', lifecycle: 'conditional',
     purpose: 'Wenn ein Nutzer Google-Anmeldung auswählt: Identität prüfen, ein CAPITAL-AI-Konto zuordnen und eine Anwendungssitzung bereitstellen. Die Anmeldung verlangt im dokumentierten Flow keinen Zugriff auf Gmail- oder Google-Drive-Inhalte.',
     dataCategories: ['Google-Konto-Kennung (Provider-Identität)', 'E-Mail-Adresse', 'Profilname und gegebenenfalls Profilbild, soweit von Google für die Anmeldung übermittelt', 'Anmelde- und Sitzungstoken während des Authentifizierungsvorgangs'],
@@ -103,7 +113,7 @@ export const PROCESSING_ACTIVITIES: ProcessingActivity[] = [
     recipients: ['Supabase für Authentifizierung und Kontodaten', 'Render für die Anwendungssitzung'],
     transfer: 'Hosting, Betreiber und Subprozessoren von Supabase und Render müssen anhand der tatsächlich verwendeten Regionen, Verträge und Transfermechanismen geprüft werden.',
     retention: 'Die Anwendungssitzung wird in signierten HttpOnly-Cookies mit einer maximalen Laufzeit von sieben Tagen geführt und bei Abmeldung lokal entfernt; Supabase-Zugriffs- und Refresh-Tokens werden serverseitig erneuert. Auth-Kontodaten und Providerprotokolle unterliegen zusätzlich der Supabase-Konfiguration.',
-    technicalControls: ['Supabase Auth mit E-Mail/Passwort, Google OAuth und optionalem X OAuth2', 'PKCE S256 für den Google- und Mobile-Flow', 'serverseitige User-/Session-Verifikation', 'signierte HttpOnly-/Secure-/SameSite-Cookies', 'keine Browserausgabe von Access- oder Refresh-Tokens'],
+    technicalControls: ['Supabase Auth mit E-Mail/Passwort, Google OAuth, X OAuth2 und optionaler Notion-Anmeldung', 'PKCE S256 für Google-, X-, Notion- und Mobile-Flows', 'serverseitige User-/Session-Verifikation', 'signierte HttpOnly-/Secure-/SameSite-Cookies', 'keine Browserausgabe von Access- oder Refresh-Tokens'],
   },
   {
     id: 'user-provider-vault', title: 'Persönlicher API-Vault und private Providerdaten', lifecycle: 'active',

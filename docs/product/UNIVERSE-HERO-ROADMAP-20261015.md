@@ -1,5 +1,16 @@
 # PRODUCT · Universe Hero + Video Branding
 
+## Current reconciliation · 2026-10-31
+
+Owner scope: replace the empty homepage hero area with the uploaded globe as a rotating 3D brand graphic and integrate reusable graphics tooling into the existing Social Media Engine.
+
+- `IN_PROGRESS`: the local PRODUCT branch implements a real textured sphere, six 3D orbital trajectories and satellites. `BrandGlobeRenderer.ts` is shared by homepage and Content Studio; it reuses installed Three.js 0.186.1. No new dependency, external service, paid activation or provider change.
+- `VERIFIED` (local automated scope): sphere depth, bounded texture coordinates, 90-second rotation, invalid-time rejection, SSR poster fallback, artwork hash identity, Social project boundary, navigation regression and TypeScript/frontend boundaries. See `HERO-GLOBE-INTEGRATION-20261031.md` for commands and limitations.
+- `NOT_PROVEN`: browser/mobile/tablet/desktop/200% zoom, WebGL context loss, animation lifecycle, PNG download, production rendering and deployment. Browser access was blocked by this chat's policy; source/SSR tests do not replace these readbacks.
+- `IN_PROGRESS`: after the original push rejection, the owner explicitly authorized push and PR on 2026-10-31. The branch is rebased onto main `b0a0028` (PR #527). Targeted hero browser tests were added to the existing Financial Learning Simulator Browser QA workflow. CI, merge and deployment outcomes remain unproven until observed.
+
+The older table below records the previous static-image implementation. The newer owner request supersedes the static-only preference for this slice; the old SVG overlay remains unused. The broad `CA-PRODUCT-SOC-STUDIO` and `PRODUCTION-WEB-01-PRODUCT` packages remain open; no global completion or Social publishing approval is inferred.
+
 Date: 2026-10-15 · Scope: PRODUCT homepage + existing Social Media Studio.
 
 | Priority | Work | State | Evidence |

@@ -1,5 +1,6 @@
 import { createYouTubeDescription as youtubeDescription } from '../../platform/SocialMediaEngine/Editing/MediaStudioTemplates';
 import React from 'react';
+import { BrandGlobeStudio } from './BrandGlobeStudio';
 import { ChartLearningAtlas } from '../learning/ChartLearningAtlas';
 import {
   BarChart3,
@@ -42,6 +43,7 @@ const stateLabel = {
 export const ContentStudioPanel: React.FC = () => {
   return (
     <div className="space-y-5">
+      <BrandGlobeStudio />
       <ChartLearningAtlas studio />
       <section className="rounded-2xl border border-cyan-400/30 p-5">
         <h2 className="text-lg font-bold">YouTube-Beschreibung · Capital-AI Tour</h2>

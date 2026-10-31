@@ -53,6 +53,18 @@ test('Google OAuth privacy disclosure has distinct purpose, data, transfer and r
   assert.doesNotMatch(html, /Google-Konto-Passwort wird gespeichert|<script\b/i);
 });
 
+test('Notion social login disclosure is distinct from user-authorized content export', async () => {
+  const html = await readFile(new URL('../public/datenschutz/index.html', import.meta.url), 'utf8');
+  const notion = PROCESSING_ACTIVITIES.find(activity => activity.id === 'notion-login');
+  assert.ok(notion);
+  assert.equal(notion.lifecycle, 'conditional');
+  assert.match(html, /<section data-processing-id="notion-login">/);
+  for (const text of ['Notion als OAuth-Identitätsanbieter', 'Supabase Auth', 'keine', 'PKCE-S256', 'separate OAuth-Client-ID']) {
+    assert.ok(html.toLowerCase().includes(text.toLowerCase()), text);
+  }
+  assert.ok(notion.technicalControls.some(control => control.includes('kein direkter Zugriff')));
+});
+
 test('YouTube mandatory links and current commerce disclosures stay identical in both public documents', async () => {
   const { YOUTUBE_POLICY, youtubePolicyHtml, commerceNoticeHtml } = await import('../shared/youtube-privacy.mjs');
   for (const route of ['datenschutz','agb']) {
