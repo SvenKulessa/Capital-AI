@@ -33,7 +33,7 @@ async function readAuthorizedNotes(signal?: AbortSignal): Promise<NotesSnapshot>
   });
   const session: SessionResponse | null = sessionResponse.ok ? await sessionResponse.json() : null;
   const userId = session?.authenticated === true && session.mfaRequired !== true ? session.user?.id : undefined;
-  if (!sessionResponse.ok || typeof userId !== 'string' || !userId) throw new Error('AUTH_REQUIRED');
+  if (!sessionResponse.ok || typeof userId !== 'string' || !userId) throw new NotesClientError('SESSION_CHANGED');
   return readNotes(userId, signal);
 }
 
@@ -79,6 +79,7 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
           setUserId(null);
           setSnapshot(null);
           setNotes([]);
+          setDraft('');
           setError('Private Notizen benötigen eine verifizierte Anmeldung und eine erreichbare Notizablage.');
         }
       }
@@ -123,6 +124,7 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
         setUserId(null);
         setSnapshot(null);
         setNotes([]);
+        setDraft('');
         setConflict(null);
         conflictRef.current = false;
         setError('Anmeldung geändert. Bitte erneut anmelden.');
@@ -162,6 +164,7 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
         setUserId(null);
         setSnapshot(null);
         setNotes([]);
+        setDraft('');
         setConflict(null);
         conflictRef.current = false;
         setError('Anmeldung geändert. Bitte erneut anmelden.');
