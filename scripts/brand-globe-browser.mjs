@@ -91,7 +91,26 @@ try {
     await evaluate("document.querySelectorAll('.hero-copy h1,.hero-copy p,.hero-copy button').forEach(e=>e.style.fontSize=(parseFloat(getComputedStyle(e).fontSize)*2)+'px')");
     const zoomLayout = await evaluate("(() => { const c=document.querySelector('.hero-copy'); return {scroll:c.scrollWidth,client:c.clientWidth,overflowing:[...c.querySelectorAll('*')].filter(e=>e.scrollWidth>e.clientWidth+2).map(e=>({tag:e.tagName,className:typeof e.className==='string'?e.className:'svg',scroll:e.scrollWidth,client:e.clientWidth})).slice(0,10)}; })()");
     report.checks.push({viewport, zoomLayout});
-    assert.ok(zoomLayout.scroll <= zoomLayout.client + 2, '200% text overflows copy panel');
+    // The shade intentionally extends beyond the copy using ::before. Measure
+    // actual text fragments, not scrollWidth (which includes that decoration).
+    const doubledText = await evaluate(`(() => {
+      const copy=document.querySelector('.hero-copy'), bounds=copy.getBoundingClientRect();
+      const walker=document.createTreeWalker(copy, NodeFilter.SHOW_TEXT);
+      let node, maxOverflow=0, fragments=0;
+      while ((node=walker.nextNode())) {
+        if (!node.textContent.trim()) continue;
+        const range=document.createRange(); range.selectNodeContents(node);
+        for (const r of range.getClientRects()) {
+          if (!r.width || !r.height) continue;
+          fragments++;
+          maxOverflow=Math.max(maxOverflow,bounds.left-r.left,r.right-bounds.right);
+        }
+      }
+      return {fragments,maxOverflow};
+    })()`);
+    assert.ok(doubledText.fragments>0, 'No visible text measured');
+    assert.ok(doubledText.maxOverflow<=2, '200% text overflows copy panel: ' + doubledText.maxOverflow);
+    report.checks.push({viewport,doubledText});
     report.checks.push({ viewport, reducedMotion: 'PASS', staticArtwork: 'PASS', touchTargets: 'PASS', doubledText: 'PASS' });
     await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] });
     await navigate();
