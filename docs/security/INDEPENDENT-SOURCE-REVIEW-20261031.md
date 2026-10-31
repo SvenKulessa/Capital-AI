@@ -22,6 +22,12 @@ Scope: external AI review of **public, immutable Git source**, not production at
 | Google Cloud Operator / YouTube OAuth | `.github/workflows/google-cloud-admin.yml` is manual `main`-only federated **read-only Service Usage**. Its success cannot replace Google OAuth consent-screen verification or demonstrate `youtube.readonly` / `youtube.upload` user behavior. | Run the exact operator workflow via `workflow_dispatch`, correlate run SHA and `CLOUD_OPERATOR_SERVICE_USAGE_READ_PASS`, then complete separate YouTube app-verification evidence, scopes, policy and demo video. |
 | Marketing pipeline | PR-merge drafts flow through `scripts/growth/pr-merge-social-batch.mjs`. `src/contracts/marketingOutreachPolicy.ts` denies mailing absent recorded permission, valid GDPR basis, suppression/unsubscribe checks and explicit runtime enablement. | Build newsletter sending only atop auditable consent/suppression records, origin-scoped source evidence, anti-duplication and opt-out; X and YouTube remain separate publish authorities. |
 
+## Child-process hardening in this audit slice
+
+`scripts/gsc-mcp-guard.mjs` previously used `env: {...process.env}` when launching pinned upstream Search Console MCP through `npx`. This passed all parent-environment variables into an independent process. The bounded correction forwards only local PATH/HOME/temporary/config/language/token-file settings, pins `GSC_PROPERTY` to the CAPITAL-AI domain, restricts `tools/call` and `tools/list` to four read-only GSC tools, and discards upstream stderr rather than exposing possibly sensitive diagnostic text. The scope is the **operator CLI**, not a new production web runtime or provider grant.
+
+`scripts/growth-google-authority.test.mjs` covers the textual guard contract. Actual GSC OAuth usability and all edge cases of third-party behavior remain `NOT_PROVEN` until a permissioned isolated process test. This does not replace `AGENTS.md`, the OAuth `webmasters.readonly` scope, or the capability-specific audit of `server/google-analytics-mcp.mjs` and `server/google-maintenance-api.mjs`.
+
 ## Provenance model for future commercial content
 
 ```text
