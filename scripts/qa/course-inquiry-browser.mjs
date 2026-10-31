@@ -53,8 +53,10 @@ async function intercept(event) {
   return command('Fetch.continueRequest', { requestId });
 }
 const form = 'section[aria-labelledby="contact-form"] form';
+// Browser expressions below use a constant selector, never data from a page or request.
+const safeFormExpression = `document.querySelector('section[aria-labelledby="contact-form"] form')`;
 async function submit() {
-  const ready = await evaluate(`(() => { const f=document.querySelector(${JSON.stringify(form)}); f.querySelector('[name=email]').value='qa@example.invalid'; f.querySelector('[name=message]').value='Synthetic browser course inquiry, no delivery.'; const b=f.querySelector('button[type=submit]'); b.focus(); return {valid:f.checkValidity(),focused:document.activeElement===b,disabled:b.disabled}; })()`);
+  const ready = await evaluate(`(() => { const f=${safeFormExpression}; f.querySelector('[name=email]').value='qa@example.invalid'; f.querySelector('[name=message]').value='Synthetic browser course inquiry, no delivery.'; const b=f.querySelector('button[type=submit]'); b.focus(); return {valid:f.checkValidity(),focused:document.activeElement===b,disabled:b.disabled}; })()`);
   assert.deepEqual(ready, { valid: true, focused: true, disabled: false });
   await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13, text: '\r', unmodifiedText: '\r' });
   await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
@@ -112,7 +114,7 @@ try {
   result.error = error.message;
   result.interceptedPaths = intercepted.map(x => x.path);
   if (socket?.readyState === WebSocket.OPEN) {
-    result.dom = await evaluate(`(() => { const f=document.querySelector(${JSON.stringify(form)}); return {form:!!f,valid:f?.checkValidity(),focused:document.activeElement?.tagName,disabled:f?.querySelector('button[type=submit]')?.disabled,status:f?.querySelector('[role=status]')?.textContent,alert:f?.querySelector('[role=alert]')?.textContent}; })()`).catch(() => null);
+    result.dom = await evaluate(`(() => { const f=${safeFormExpression}; return {form:!!f,valid:f?.checkValidity(),focused:document.activeElement?.tagName,disabled:f?.querySelector('button[type=submit]')?.disabled,status:f?.querySelector('[role=status]')?.textContent,alert:f?.querySelector('[role=alert]')?.textContent}; })()`).catch(() => null);
   }
   throw error;
 } finally {
