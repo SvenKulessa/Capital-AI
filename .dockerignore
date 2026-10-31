@@ -175,6 +175,7 @@
 !scripts/generate-learning-coming-soon.tsx
 !scripts/daily-dependency-watch.test.mjs
 !scripts/domain-skills.test.mjs
+!scripts/universe-hero.test.mjs
 !scripts/market-blueprint-demo.test.mjs
 !scripts/screener-blueprint-preview.test.mjs
 !scripts/cads-growth-quality.test.mjs
@@ -290,6 +291,10 @@
 !public/branding/social/**
 !public/branding/universe/
 !public/branding/universe/hero-universe-globe.webp
+!public/branding/universe/hero-universe-desktop.webp
+!public/branding/universe/hero-universe-tablet.webp
+!public/branding/universe/hero-universe-mobile.webp
+!public/branding/universe/hero-universe-orbit.svg
 !public/assets/
 !public/assets/jaja-avatar-transparent.webp
 !CAPITAL-AI-PRODUCT/

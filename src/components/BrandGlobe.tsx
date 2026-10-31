@@ -7,13 +7,14 @@ type Renderer = Awaited<ReturnType<typeof import('../platform/SocialMediaEngine/
 
 /** The poster is always available, including blocked imports, no WebGL, context
  * loss and reduced motion. Heavy Three.js loads only for a visible animation. */
-export const BrandGlobe = forwardRef<BrandGlobeHandle, { paused: boolean }>(function BrandGlobe({ paused }, ref) {
+export const BrandGlobe = forwardRef<BrandGlobeHandle, { paused: boolean; onReadyChange?: (ready: boolean) => void }>(function BrandGlobe({ paused, onReadyChange }, ref) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const apiRef = useRef<Renderer | null>(null);
   const pausedRef = useRef(paused);
   const playbackRef = useRef<() => void>(() => {});
   const [ready, setReady] = useState(false);
   const reducedMotion = useReducedMotion();
+  useEffect(() => { onReadyChange?.(ready); }, [ready, onReadyChange]);
   useImperativeHandle(ref, () => ({ capturePNG: async () => {
     if (!apiRef.current) throw new Error('3D-Vorschau ist noch nicht bereit.');
     return apiRef.current.capturePNG();

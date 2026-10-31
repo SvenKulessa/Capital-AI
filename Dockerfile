@@ -56,7 +56,7 @@ COPY public/branding/capital-ai-logo.jpg ./public/branding/capital-ai-logo.jpg
 COPY public/branding/asset-pack ./public/branding/asset-pack
 COPY public/branding/badges ./public/branding/badges
 COPY public/branding/social ./public/branding/social
-COPY public/branding/universe/hero-universe-globe.webp ./public/branding/universe/hero-universe-globe.webp
+COPY public/branding/universe ./public/branding/universe
 # Ship the approved JaJa avatar used by src/components/HeroBuddy.tsx.
 COPY public/assets/jaja-avatar-transparent.webp ./public/assets/jaja-avatar-transparent.webp
 COPY public/fonts ./public/fonts
@@ -85,6 +85,7 @@ COPY supabase/migrations/20261013042915_learning_simulator_private_scenarios.sql
 COPY supabase/proposals/provider_query_guard.sql ./supabase/proposals/provider_query_guard.sql
 COPY scripts/documentation-drift.mjs scripts/documentation-drift.test.mjs ./scripts/
 COPY scripts/domain-skills.test.mjs ./scripts/domain-skills.test.mjs
+COPY scripts/universe-hero.test.mjs ./scripts/universe-hero.test.mjs
 COPY scripts/navigation.test.mjs scripts/skill-routing.test.mjs scripts/skill-routing.mjs scripts/skill-routing-evaluation.mjs scripts/skill-routing-cases.json scripts/skill-routing-challenges.json ./scripts/
 # Required by npm test in this offline build stage; contains synthetic-only fixtures.
 COPY scripts/market-blueprint-demo.test.mjs ./scripts/market-blueprint-demo.test.mjs

@@ -34,12 +34,13 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
   const { t, locale } = useLocale();
   const reduceMotion = useReducedMotion();
   const [globePaused, setGlobePaused] = useState(false);
+  const [globeReady, setGlobeReady] = useState(false);
   return (
     <section className="capital-ai-hero relative isolate overflow-hidden px-[20px] pt-4 pb-7">
       <div className="hero-globe-background">
-        <BrandGlobe paused={globePaused} />
+        <BrandGlobe paused={globePaused} onReadyChange={setGlobeReady} />
       </div>
-      {reduceMotion === false && <button type="button" className="hero-globe-pause"
+      {globeReady && reduceMotion === false && <button type="button" className="hero-globe-pause"
         aria-pressed={globePaused} onClick={() => setGlobePaused(value => !value)}>
         {locale === 'de' ? (globePaused ? 'Globus fortsetzen' : 'Globus pausieren')
           : (globePaused ? 'Resume globe' : 'Pause globe')}
