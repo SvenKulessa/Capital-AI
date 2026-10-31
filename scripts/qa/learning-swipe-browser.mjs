@@ -12,7 +12,15 @@ const output=process.env.QA_OUTPUT_DIR || await mkdtemp(join(tmpdir(),'capital-a
 await mkdir(output,{recursive:true});
 const server=spawn(process.execPath,[join(root,'node_modules/vite/bin/vite.js'),'preview','--host','127.0.0.1','--port','4173'],{cwd:root,stdio:'ignore'});
 for(let attempt=0;attempt<50;attempt++){try{if((await fetch('http://127.0.0.1:4173/')).ok)break;}catch{}await new Promise(resolve=>setTimeout(resolve,100));}
-const browser=await chromium.launch({executablePath:process.env.CHROMIUM_EXECUTABLE_PATH || await Chromium.executablePath(),headless:true,args:Chromium.args.filter(arg=>arg!=='--single-process')});
+// Native Chrome requires Playwright's own compatible headless switches.
+// Sparticuz-only flags such as --headless='shell' can crash system Chrome.
+const browser=await chromium.launch({
+ executablePath:process.env.CHROMIUM_EXECUTABLE_PATH || await Chromium.executablePath(),
+ headless:true,
+ args:process.env.CHROMIUM_EXECUTABLE_PATH
+  ? ['--no-sandbox','--disable-dev-shm-usage','--disable-gpu']
+  : Chromium.args.filter(arg=>arg!=='--single-process'),
+});
 const result={browser:browser.version(),scope:'Local built frontend, synthetic API fixtures; server authorization covered separately',viewports:[],cases:[]};
 const stores=new Map([['alice',new Set()],['bob',new Set()]]);
 const noteStores=new Map([['alice',{notes:'QA fixture',revision:'1'}],['bob',{notes:'Private note for Bob',revision:'1'}]]);
