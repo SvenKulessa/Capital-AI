@@ -92,6 +92,22 @@ test('uncertain network result never retries a PUT automatically', async () => {
   assert.equal(writes,1);
 });
 
+test('legacy GET response without revision is backend unavailable, not session changed', async () => {
+  await withMockFetch(async () => Response.json({userId:alice,notes:'old text'}), async () => {
+    await assert.rejects(readNotes(alice),
+      (error:unknown) => error instanceof NotesClientError && error.code==='NOTES_UNAVAILABLE');
+  });
+});
+
+test('GET returned for another identity invalidates the session', async () => {
+  await withMockFetch(async () => Response.json({
+    userId:'22222222-2222-4222-8222-222222222222',notes:'other user',revision:'4',
+  }), async () => {
+    await assert.rejects(readNotes(alice),
+      (error:unknown) => error instanceof NotesClientError && error.code==='SESSION_CHANGED');
+  });
+});
+
 test('accessible conflict UI exposes both versions and explicit resolution controls', () => {
   const html=renderToStaticMarkup(<NotesConflictPanel
     conflict={{localDraft:'Local Draft',baseRevision:'3',
