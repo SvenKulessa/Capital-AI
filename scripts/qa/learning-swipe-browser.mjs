@@ -146,12 +146,12 @@ const glossaryPage=await browser.newPage({viewport:{width:390,height:900},reduce
 await glossaryPage.goto('http://127.0.0.1:4173/vocabulary/vwap',{waitUntil:'networkidle'});
 await glossaryPage.getByRole('heading',{name:'VWAP',exact:true}).waitFor();
 if(await glossaryPage.getByRole('button',{name:'Nur notwendige',exact:true}).isVisible())await glossaryPage.getByRole('button',{name:'Nur notwendige',exact:true}).click();
-await glossaryPage.goto('http://127.0.0.1:4173/vocabulary/brier-score',{waitUntil:'networkidle'});await glossaryPage.getByRole('heading',{name:'Brier Score',exact:true}).waitFor();await glossaryPage.getByRole('link',{name:'scikit-learn: brier_score_loss',exact:true}).waitFor();assert.equal(await glossaryPage.locator('#quant-demo-title').count(),1);
+await glossaryPage.goto('http://127.0.0.1:4173/vocabulary/brier-score',{waitUntil:'networkidle'});await glossaryPage.getByRole('heading',{name:'Brier Score',exact:true}).waitFor();await glossaryPage.getByRole('link',{name:'scikit-learn: brier_score_loss',exact:true}).waitFor();assert.equal(await glossaryPage.locator('#quant-demo-title').count(),0);
 await glossaryPage.getByRole('heading',{name:'Brier Score',exact:true}).scrollIntoViewIfNeeded();await glossaryPage.evaluate(()=>window.scrollBy(0,-100));
 await glossaryPage.screenshot({path:join(output,'public-brier-score-390.png')});
 await glossaryPage.goto('http://127.0.0.1:4173/vocabulary',{waitUntil:'networkidle'});
 assert.ok((await glossaryPage.locator('meta[name=\"description\"]').getAttribute('content')).includes(String(VOCABULARY_PUBLIC_COUNT)));result.cases.push({currentCanonicalCountInBrowserMetadata:'PASS',count:VOCABULARY_PUBLIC_COUNT});
-await glossaryPage.getByPlaceholder(/Begriff, Abkürzung oder Thesaurus/).fill('Realzins');await glossaryPage.getByRole('heading',{name:'Realzins',exact:true}).waitFor();result.cases.push({anonymousFormerQuantDeepLink:'PASS',anonymousResearchedDeepLink:'PASS',primarySourceLink:'PASS',publicGlossarySearch:'PASS',singleQuantDemo:'PASS'});await glossaryPage.close();
+await glossaryPage.getByPlaceholder(/Begriff, Abkürzung oder Thesaurus/).fill('Realzins');await glossaryPage.getByRole('heading',{name:'Realzins',exact:true}).waitFor();result.cases.push({anonymousFormerQuantDeepLink:'PASS',anonymousResearchedDeepLink:'PASS',primarySourceLink:'PASS',publicGlossarySearch:'PASS',noUnadmittedQuantDemo:'PASS'});await glossaryPage.close();
 for(const [options,label] of [[{anonymous:true},'anonymous'],[{failed:true},'storage unavailable']]){
  const page=await browser.newPage({viewport:{width:390,height:900}});await fixture(page,'alice',options);await page.goto('http://127.0.0.1:4173/learning?tab=flashcards',{waitUntil:'networkidle'});
  if(await page.getByRole('button',{name:'Nur notwendige',exact:true}).isVisible())await page.getByRole('button',{name:'Nur notwendige',exact:true}).click();
