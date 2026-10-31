@@ -5,6 +5,9 @@ on:
       - product/private-notes-occ-v2
 permissions:
   contents: read
+concurrency:
+  group: occ-v2-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   types-api:
     runs-on: ubuntu-26.04
