@@ -116,6 +116,10 @@ try {
     await navigate();
     await until(() => evaluate("document.querySelector('.brand-globe-art').dataset.globeState === '3d'"), 'WEBGL_READY');
     await pause(900); // Allow poster/copy entrance transitions to finish.
+    // JaJa is an independent animated overlay, not part of globe playback.
+    // Full-page reduced-motion screenshots above retain it. Isolate only the
+    // subsequent globe pixel comparisons; do not change the product design.
+    await evaluate("document.querySelectorAll('[data-hero-buddy=\"agent\"]').forEach(e=>e.style.visibility='hidden')");
     const clip = await evaluate(`(() => { const r=document.querySelector('.hero-globe-background').getBoundingClientRect(); const x=Math.max(0,r.x),y=Math.max(0,r.y); return {x,y,width:Math.min(innerWidth,r.right)-x,height:Math.min(innerHeight,r.bottom)-y,scale:1}; })()`);
     assert.ok(clip.width > 0 && clip.height > 0);
     const first = await shot('hero-3d-' + viewport.width, clip);
