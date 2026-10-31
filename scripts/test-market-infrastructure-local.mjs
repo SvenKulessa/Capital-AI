@@ -15,7 +15,7 @@ function launch(binary, args) { return spawn(binary, args, { stdio: ['ignore', '
 async function stop(child) { if (!child || child.exitCode !== null) return; const exited = once(child, 'exit'); child.kill('SIGTERM'); await exited; }
 const root = await mkdtemp(join(tmpdir(), 'capital-market-'));
 const redisPort = await port(), natsPort = await port();
-const env = { REDIS_URL: `redis://127.0.0.1:${redisPort}`, NATS_URL: `nats://127.0.0.1:${natsPort}`, NATS_TOKEN: 'local-test-only', NATS_REPLICAS: '1' };
+const env = { REDIS_URL: `redis://127.0.0.1:${redisPort}`, NATS_URL: `nats://127.0.0.1:${natsPort}`, NATS_TOKEN: 'local-test-only', NATS_REPLICAS: '1', MARKET_BROKER_PAUSED: 'false' };
 const natsArgs = ['-a', '127.0.0.1', '-p', String(natsPort), '-js', '-sd', join(root, 'jetstream'), '--auth', env.NATS_TOKEN];
 let valkey = launch(process.env.VALKEY_SERVER_BIN, ['--bind', '127.0.0.1', '--port', String(redisPort), '--save', '', '--appendonly', 'no']);
 let nats = launch(process.env.NATS_SERVER_BIN, natsArgs);
@@ -74,7 +74,7 @@ try {
  assert.equal(service.subscriber, null);
  console.log('PASS 3: empty Valkey restart, durable replay, bounded recovery and unsubscribe');
 
- const cacheOnly = new MarketInfrastructure({ REDIS_URL: env.REDIS_URL });
+ const cacheOnly = new MarketInfrastructure({ REDIS_URL: env.REDIS_URL, MARKET_BROKER_PAUSED: 'false' });
  try { assert.equal(await cacheOnly.start(), false); assert.equal(cacheOnly.status().redis, 'connected'); await assert.rejects(cacheOnly.persist(fact, raw), /INFRASTRUCTURE_UNAVAILABLE/); assert.equal(await cacheOnly.read('BTCUSD'), null); }
  finally { await cacheOnly.close(); }
  console.log('PASS 4: cache-only operation never substitutes for JetStream evidence');
