@@ -45,10 +45,13 @@
     ],
     "opentelemetry-exporter-otlp-proto-http": [
       "1.45.1"
+    ],
+    "pyasn1": [
+      "0.6.5"
     ]
   },
   "sha256": {
-    "uv.lock": "8e685a5909a8fddad5f274f8a3bc7adc89e46740d1a5119f37d824fcd0c73da8",
+    "uv.lock": "8d83ff7a3637b899f187f0013b3052d003dd2bacf2f0857eb5bcbb15740543d2",
     "pyproject.toml": "b16cabb0da3cc57e23d90903935113a54a4acfa3d7f7c9709a77320fc53e5831",
     "UPSTREAM-LICENSE.txt": "ea19f3b6bfd70ce0bf8d60fc5b15cdb789fcf86a63c0d6542977f888519f5788"
   },
@@ -82,10 +85,11 @@
   },
   "audit": {
     "status": "NOT_PROVEN",
-    "scope": "Regenerated patched lock requires fresh CI dependency and image scans"
+    "scope": "pyasn1 0.6.5 patched lock requires fresh CI uv sync and image scan; historic audit remains dated evidence"
   },
   "localPatches": [
     "Security dependency floors and coherent OpenTelemetry 1.45.1 family.",
-    "Unused pre-commit development hook removed from runtime candidate: no repository workflow uses it; its virtualenv>=21.14.9 needs packaging>=26.3, incompatible with runtime langfuse packaging<26. No resolver override or vulnerability suppression."
+    "Unused pre-commit development hook removed from runtime candidate: no repository workflow uses it; its virtualenv>=21.14.9 needs packaging>=26.3, incompatible with runtime langfuse packaging<26. No resolver override or vulnerability suppression.",
+    "2026-10-31: pyasn1 locked 0.6.4 → 0.6.5 (four HIGH security advisories); PyPI 0.6.5 wheel and sdist SHA-256 pinned. Offline integrity is checked by the primary and comparison reviewer build workflows."
   ]
 }
