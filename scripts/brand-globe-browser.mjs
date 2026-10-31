@@ -85,7 +85,28 @@ try {
     assert.ok(Math.abs(layout.logoRatio-layout.naturalRatio)<.02, 'Logo frame leaves empty space or distorts artwork');
     assert.ok(layout.backgroundLayer<layout.foregroundLayer, 'Globe is not behind the copy');
     assert.ok(layout.copyOffset>=0 && layout.copyOffset<48, 'Copy has been moved into a separate row below the globe');
-    report.checks.push({viewport, layout});
+    const decoration = await evaluate(`(() => {
+      const section=document.querySelector('.capital-ai-hero'), globe=document.querySelector('.hero-globe-background');
+      const outline=document.querySelector('.hero-brand-universe-outline');
+      const outer=outline?.querySelector('feMorphology');
+      const area=globe.getBoundingClientRect(), sectionArea=section.getBoundingClientRect();
+      return { globeWidth:area.width, globeHeight:area.height, heroWidth:sectionArea.width,
+        left:area.left, heroLeft:sectionArea.left, right:area.right, heroRight:sectionArea.right,
+        outlineVisible:!!outline && getComputedStyle(outline).display!=='none',
+        outlinePassive:getComputedStyle(outline).pointerEvents==='none',
+        outlineRadius:outer?.getAttribute('radius'),
+        studioShortcut:!!document.querySelector('header button[title^="Studio Hub:"]') };
+    })()`);
+    assert.equal(decoration.studioShortcut, false, 'Redundant Studio Hub header action remains');
+    assert.equal(decoration.outlineVisible, true, 'Silver Universe outline is absent');
+    assert.equal(decoration.outlinePassive, true, 'Brand decoration intercepts pointer events');
+    assert.equal(decoration.outlineRadius, '30', 'Silver outline thickness has changed');
+    if (viewport.width<=390) {
+      assert.ok(decoration.globeWidth<=decoration.heroWidth+2, 'Mobile globe overshoots content width');
+      assert.ok(Math.abs(decoration.globeHeight-decoration.globeWidth)<3, 'Mobile globe is not proportional');
+      assert.ok(decoration.right<=decoration.heroRight+2, 'Mobile globe is clipped on the right');
+    }
+    report.checks.push({viewport, layout, decoration});
     await shot('hero-reduced-' + viewport.width);
     // Simulate doubled text while retaining the same viewport.
     await evaluate("document.querySelectorAll('.hero-copy h1,.hero-copy p,.hero-copy button').forEach(e=>e.style.fontSize=(parseFloat(getComputedStyle(e).fontSize)*2)+'px')");

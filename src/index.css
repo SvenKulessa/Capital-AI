@@ -285,7 +285,30 @@
 @media (prefers-reduced-motion:reduce) {
   .brand-globe-poster, .brand-globe-canvas { transition:none; }
 }
+/* The 4px silver Universe edge is a transparent overlay, never a new logo
+ * frame. It follows the bright wordmark/chart accents inside the artwork. */
+.hero-brand-artwork { isolation:isolate; }
+.hero-brand-universe-outline {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+  opacity:.92;
+}
 @media (max-width:1023px) {
-  .hero-globe-background { right:-45%; width:145%; }
+  .hero-globe-background { right:-6%; width:92%; }
   .capital-ai-hero .hero-copy { max-width:100%; }
+}
+@media (max-width:767px) {
+  /* A 1:1 globe fits the content width instead of using the former 145%
+   * overscan. Keep the graphic in the rear layer behind real content. */
+  .hero-globe-background {
+    top:clamp(3rem, 12vw, 5rem);
+    right:0;
+    width:100%;
+    height:auto;
+    aspect-ratio:1 / 1;
+    opacity:.9;
+  }
 }

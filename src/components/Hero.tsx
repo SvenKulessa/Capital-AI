@@ -49,9 +49,42 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
       {/* Hero Content */}
       <div className="hero-copy relative z-10 max-w-lg rounded-2xl p-[16px] sm:p-[20px]">
         {/* An accessible brand anchor above the headline, without obscuring the primary CTA. */}
-        <img src="/branding/capital-ai-logo.jpg" alt="CAPITAL-AI – Market Intelligence"
-          width={320} height={180} loading="eager" decoding="async"
-          className="hero-brand-logo mb-3 block h-auto max-h-28 w-auto max-w-full rounded-xl border border-amber-300/20 shadow-[0_0_32px_rgba(245,176,20,0.20)]" />
+        <div className="hero-brand-artwork relative mb-3 inline-flex max-w-full">
+          <img src="/branding/capital-ai-logo.jpg" alt="CAPITAL-AI – Market Intelligence"
+            width={320} height={180} loading="eager" decoding="async"
+            className="hero-brand-logo block h-auto max-h-28 w-auto max-w-full rounded-xl border border-amber-300/20 shadow-[0_0_32px_rgba(245,176,20,0.20)]" />
+          {/* Decorative metallic outline sampled from the owner's artwork. The
+              SVG never replaces accessible DOM text or alters the original JPEG.
+              The dilation radius is 30 source pixels ≈ 4 CSS px at 112px logo height. */}
+          <svg className="hero-brand-universe-outline" viewBox="0 0 1536 864"
+            preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+            <defs>
+              <clipPath id="hero-silver-letter-and-curve">
+                <rect x="62" y="565" width="1410" height="168" />
+                <rect x="0" y="300" width="1536" height="248" />
+              </clipPath>
+              <filter id="hero-silver-edge-filter" x="-5%" y="-8%" width="110%" height="116%" colorInterpolationFilters="sRGB">
+                <feColorMatrix in="SourceGraphic" type="matrix"
+                  values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  .25 .65 .10 0 0"
+                  result="luminance" />
+                <feComponentTransfer in="luminance" result="brightContours">
+                  <feFuncA type="discrete" tableValues="0 0 0 0 0 1 1 1" />
+                </feComponentTransfer>
+                <feMorphology in="brightContours" operator="dilate" radius="30" result="expandedContours" />
+                <feComposite in="expandedContours" in2="brightContours" operator="out" result="outerStroke" />
+                <feFlood floodColor="#d9e4ef" floodOpacity=".95" result="metallicSilver" />
+                <feComposite in="metallicSilver" in2="outerStroke" operator="in" result="silverStroke" />
+                <feGaussianBlur in="silverStroke" stdDeviation="8" result="cosmicHalo" />
+                <feMerge>
+                  <feMergeNode in="cosmicHalo" />
+                  <feMergeNode in="silverStroke" />
+                </feMerge>
+              </filter>
+            </defs>
+            <image href="/branding/capital-ai-logo.jpg" x="0" y="0" width="1536" height="864"
+              clipPath="url(#hero-silver-letter-and-curve)" filter="url(#hero-silver-edge-filter)" />
+          </svg>
+        </div>
         {/* Eyebrow */}
         <motion.div
           initial={reduceMotion ? false : { opacity: 0, y: 10 }}
