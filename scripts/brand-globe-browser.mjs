@@ -78,13 +78,15 @@ try {
       const r=logo.getBoundingClientRect(), style=getComputedStyle(logo);
       const borderX=parseFloat(style.borderLeftWidth)+parseFloat(style.borderRightWidth);
       const borderY=parseFloat(style.borderTopWidth)+parseFloat(style.borderBottomWidth);
+      const copyRect=copy.getBoundingClientRect(), globeRect=globe.getBoundingClientRect();
       return {logoRatio:(r.width-borderX)/(r.height-borderY), naturalRatio:logo.naturalWidth/logo.naturalHeight,
         foregroundLayer:Number(getComputedStyle(copy).zIndex), backgroundLayer:Number(getComputedStyle(globe).zIndex),
-        copyOffset:copy.getBoundingClientRect().top-globe.getBoundingClientRect().top};
+        copyOverlapY:Math.min(copyRect.bottom,globeRect.bottom)-Math.max(copyRect.top,globeRect.top),
+        copyOverlapX:Math.min(copyRect.right,globeRect.right)-Math.max(copyRect.left,globeRect.left)};
     })()`);
     assert.ok(Math.abs(layout.logoRatio-layout.naturalRatio)<.02, 'Logo frame leaves empty space or distorts artwork');
     assert.ok(layout.backgroundLayer<layout.foregroundLayer, 'Globe is not behind the copy');
-    assert.ok(layout.copyOffset>=0 && layout.copyOffset<48, 'Copy has been moved into a separate row below the globe');
+    assert.ok(layout.copyOverlapY>0 && layout.copyOverlapX>0, 'Hero copy is detached into a separate globe row');
     const decoration = await evaluate(`(() => {
       const section=document.querySelector('.capital-ai-hero'), globe=document.querySelector('.hero-globe-background');
       const outline=document.querySelector('.hero-brand-universe-outline');
