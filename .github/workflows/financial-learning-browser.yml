@@ -16,6 +16,8 @@ on:
       - 'server/auth.test.mjs'
       - 'shared/hub-routes.mjs'
       - 'scripts/product-accessibility-browser.mjs'
+      - 'scripts/qa/course-inquiry-browser.mjs'
+      - 'src/components/ContactForm.tsx'
       - '.github/workflows/financial-learning-browser.yml'
   workflow_dispatch:
 permissions:
@@ -64,6 +66,12 @@ jobs:
           "$CHROME_BIN" --version
           CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/product-accessibility-browser.mjs http://127.0.0.1:17871 \
             | tee artifacts-browser-result.json
+      - name: Course inquiry purpose, receipt and keyboard QA without mail delivery
+        run: |
+          set -euo pipefail
+          CHROME_BIN=$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)
+          test -n "$CHROME_BIN"
+          CAPITAL_AI_CHROME_BIN="$CHROME_BIN" node scripts/qa/course-inquiry-browser.mjs
       - name: Scorer methodology responsive, keyboard and recording QA
         run: |
           set -euo pipefail
@@ -92,6 +100,7 @@ jobs:
             artifacts-browser-result.json
             artifacts/globe-browser/*.png
             artifacts/globe-browser/result.json
+            artifacts/course-inquiry-browser/result.json
             simulator-server.log
           if-no-files-found: warn
           retention-days: 7
