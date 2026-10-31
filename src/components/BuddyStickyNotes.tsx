@@ -1,7 +1,8 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 
+import { readNotes, saveNotes, NotesClientError, type NotesConflict, type NotesSnapshot } from '../features/account/privateNotesOcc';
+import { NotesConflictPanel } from '../features/account/NotesConflictPanel';
 type SessionResponse = { authenticated?: boolean; mfaRequired?: boolean; user?: { id?: string } };
-type NotesResponse = { notes: string; userId: string };
 type BuddyNote = { line: number; raw: string; color: string; checked: boolean; text: string };
 const COLORS = [
   { color: '🟨', label: 'Gelb', background: '#fef3c7' },
@@ -26,19 +27,14 @@ export function formatBuddyNote(color: string, checked: boolean, text: string): 
   return 'JaJa Buddy · ' + color + ' ' + (checked ? '☑' : '☐') + ' ' + clean;
 }
 
-async function readAuthorizedNotes(signal?: AbortSignal): Promise<{ userId: string; raw: string }> {
+async function readAuthorizedNotes(signal?: AbortSignal): Promise<NotesSnapshot> {
   const sessionResponse = await fetch('/api/auth/session', {
     credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json' }, signal,
   });
   const session: SessionResponse | null = sessionResponse.ok ? await sessionResponse.json() : null;
   const userId = session?.authenticated === true && session.mfaRequired !== true ? session.user?.id : undefined;
   if (!sessionResponse.ok || typeof userId !== 'string' || !userId) throw new Error('AUTH_REQUIRED');
-  const response = await fetch('/api/profile/notes', {
-    credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json' }, signal,
-  });
-  const body: NotesResponse | null = response.ok ? await response.json() : null;
-  if (!response.ok || typeof body?.notes !== 'string' || body.userId !== userId) throw new Error('NOTES_UNAVAILABLE');
-  return { userId, raw: body.notes };
+  return readNotes(userId, signal);
 }
 
 function localSummary(text: string): string {
@@ -53,6 +49,10 @@ function localSummary(text: string): string {
  */
 export function BuddyStickyNotes({ initialText = '' }: { initialText?: string }) {
   const [userId, setUserId] = useState<string | null>(null);
+  const [snapshot, setSnapshot] = useState<NotesSnapshot | null>(null);
+  const [conflict, setConflict] = useState<NotesConflict | null>(null);
+  const busyRef = useRef(false);
+  const conflictRef = useRef(false);
   const [notes, setNotes] = useState<BuddyNote[]>([]);
   const [draft, setDraft] = useState(initialText);
   const [color, setColor] = useState<string>(COLORS[0].color);
@@ -65,16 +65,19 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
   useEffect(() => {
     const controller = new AbortController();
     const refresh = async () => {
+      if (busyRef.current || conflictRef.current) return;
       try {
         const data = await readAuthorizedNotes(controller.signal);
         if (!controller.signal.aborted) {
           setUserId(data.userId);
-          setNotes(parseBuddyNotes(data.raw));
+          setSnapshot(data);
+          setNotes(parseBuddyNotes(data.notes));
           setError('');
         }
       } catch {
         if (!controller.signal.aborted) {
           setUserId(null);
+          setSnapshot(null);
           setNotes([]);
           setError('Private Notizen benötigen eine verifizierte Anmeldung und eine erreichbare Notizablage.');
         }
@@ -93,35 +96,91 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
   }, []);
 
   const mutate = async (transform: (raw: string) => string, successMessage: string): Promise<boolean> => {
-    if (!userId || busy) return false;
+    if (!userId || !snapshot || busyRef.current || conflictRef.current) return false;
+    busyRef.current = true;
     setBusy(true);
     setError('');
     setStatus('');
     try {
-      // Re-check session and load fresh source before every write.
+      // Fresh snapshot for this operation; SQL still atomically checks its revision.
       const current = await readAuthorizedNotes();
-      if (current.userId !== userId) throw new Error('SESSION_CHANGED');
-      const updated = transform(current.raw);
-      if (updated.length > 10000) throw new Error('NOTES_LIMIT');
-      const response = await fetch('/api/profile/notes', {
-        method: 'PUT', credentials: 'same-origin', cache: 'no-store',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ notes: updated, expectedUserId: userId }),
-      });
-      const body: NotesResponse | null = response.ok ? await response.json() : null;
-      if (!response.ok || body?.userId !== userId || body.notes !== updated) throw new Error('SAVE_NOT_CONFIRMED');
-      setNotes(parseBuddyNotes(body.notes));
+      if (current.userId !== userId) throw new NotesClientError('SESSION_CHANGED');
+      const updated = transform(current.notes);
+      if (updated.length > 10000) throw new NotesClientError('INVALID_NOTES');
+      const result = await saveNotes(current, updated);
+      if (result.kind === 'conflict') {
+        conflictRef.current = true;
+        setConflict(result.conflict);
+        setError('Ein anderes Fenster hat die Notizen geändert. Bitte Zusammenführung prüfen.');
+        return false;
+      }
+      setSnapshot(result.snapshot);
+      setNotes(parseBuddyNotes(result.snapshot.notes));
       setStatus(successMessage);
       return true;
-    } catch {
-      // Fail closed instead of displaying notes from an unverified account.
-      setUserId(null);
-      setNotes([]);
-      setError('Notiz nicht gespeichert. Sitzung oder Speicher bitte erneut prüfen und den Buddy neu öffnen.');
+    } catch (reason) {
+      if (reason instanceof NotesClientError && reason.code === 'SESSION_CHANGED') {
+        setUserId(null);
+        setSnapshot(null);
+        setNotes([]);
+        setConflict(null);
+        conflictRef.current = false;
+        setError('Anmeldung geändert. Bitte erneut anmelden.');
+      } else {
+        // Keep local input and last confirmed notes on uncertain backend results.
+        setError('Notiz nicht bestätigt. Deine Eingabe bleibt erhalten. Bitte Serverstand erneut prüfen.');
+      }
       return false;
     } finally {
+      busyRef.current = false;
       setBusy(false);
     }
+  };
+
+  const resolveMerge = async (text: string) => {
+    if (!conflict || !userId || busyRef.current) return;
+    busyRef.current = true;
+    setBusy(true);
+    setError('');
+    try {
+      const base: NotesSnapshot = {
+        userId, notes: conflict.serverNotes, revision: conflict.serverRevision,
+      };
+      const result = await saveNotes(base, text);
+      if (result.kind === 'conflict') {
+        setConflict(result.conflict);
+        setError('Weitere Änderung erkannt. Bitte die neue Serverfassung prüfen.');
+      } else {
+        setSnapshot(result.snapshot);
+        setNotes(parseBuddyNotes(result.snapshot.notes));
+        setConflict(null);
+        conflictRef.current = false;
+        setStatus('Zusammengeführte Notizen gespeichert.');
+      }
+    } catch (reason) {
+      if (reason instanceof NotesClientError && reason.code === 'SESSION_CHANGED') {
+        setUserId(null);
+        setSnapshot(null);
+        setNotes([]);
+        setConflict(null);
+        conflictRef.current = false;
+        setError('Anmeldung geändert. Bitte erneut anmelden.');
+      } else {
+        setError('Speicherung nicht bestätigt. Dein Entwurf bleibt im Konfliktfenster erhalten.');
+      }
+    } finally {
+      busyRef.current = false;
+      setBusy(false);
+    }
+  };
+  const acceptServer = () => {
+    if (!conflict || !userId) return;
+    setSnapshot({ userId, notes: conflict.serverNotes, revision: conflict.serverRevision });
+    setNotes(parseBuddyNotes(conflict.serverNotes));
+    setConflict(null);
+    conflictRef.current = false;
+    setError('');
+    setStatus('Serverfassung übernommen.');
   };
 
   const add = (event: FormEvent<HTMLFormElement>) => {
@@ -149,7 +208,7 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
       <p className="text-slate-300">Nur für dein angemeldetes Konto. Speicherung über das private Dashboard, keine Drittanbieter-KI.</p>
       <form onSubmit={add} className="space-y-2">
         <label htmlFor="buddy-note-draft" className="block text-slate-200">Notiz oder Chat-Vokabel</label>
-        <textarea id="buddy-note-draft" rows={2} maxLength={500} disabled={!userId || busy}
+        <textarea id="buddy-note-draft" rows={2} maxLength={500} disabled={!userId || busy || !!conflict}
           value={draft} onChange={event => setDraft(event.target.value)}
           className="w-full rounded border border-slate-500 bg-slate-900 p-2 text-sm text-white" />
         <div className="flex flex-wrap items-center gap-2">
@@ -158,7 +217,7 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
             disabled={!userId || busy} className="min-h-10 rounded border border-slate-500 bg-slate-900 px-2 text-white">
             {COLORS.map(item => <option key={item.color} value={item.color}>{item.label}</option>)}
           </select>
-          <button type="submit" disabled={!userId || busy || !draft.trim()}
+          <button type="submit" disabled={!userId || busy || !!conflict || !draft.trim()}
             className="min-h-10 rounded bg-amber-400 px-3 font-bold text-black disabled:opacity-40">
             {busy ? 'Speichere …' : 'Notiz speichern'}
           </button>
@@ -166,6 +225,7 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
       </form>
       {error && <p role="alert" className="text-rose-200">{error} <a href="/login" className="underline">Anmelden</a></p>}
       {status && <p role="status" className="text-emerald-200">{status}</p>}
+      {conflict && <NotesConflictPanel conflict={conflict} onUseServer={acceptServer} onMerge={text => void resolveMerge(text)} />}
       {userId && notes.length === 0 && <p role="status" className="text-slate-300">Noch keine JaJa-Notizen.</p>}
       <ul className="grid gap-2">
         {notes.map(note => {
@@ -174,7 +234,7 @@ export function BuddyStickyNotes({ initialText = '' }: { initialText?: string })
             <li key={note.line} className="rounded border border-slate-300/30 p-2" style={{ backgroundColor: selection.background, color: '#111827' }}>
               <div className="flex items-start gap-2">
                 <input type="checkbox" checked={note.checked} onChange={() => updateOne(note, 'check')}
-                  disabled={busy} aria-label="Notiz erledigt" className="mt-1 h-4 w-4" />
+                  disabled={busy || !!conflict} aria-label="Notiz erledigt" className="mt-1 h-4 w-4" />
                 <p className={'min-w-0 flex-1 whitespace-pre-wrap break-words text-sm ' + (note.checked ? 'line-through' : '')}>{note.text}</p>
               </div>
               {summaryLine === note.line && <p className="mt-2 text-xs italic">Kurzfassung: {localSummary(note.text)}</p>}
