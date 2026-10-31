@@ -62,7 +62,8 @@ childOutput.on('line', (line) => {
   try {
     message = JSON.parse(line);
   } catch {
-    process.stdout.write(`${line}\n`);
+    // Upstream stdout is untrusted. Never relay malformed lines: they may
+    // contain diagnostics, token material or other non-protocol output.
     return;
   }
 
