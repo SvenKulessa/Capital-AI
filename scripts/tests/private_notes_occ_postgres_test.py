@@ -1,8 +1,10 @@
 """Isolated PostgreSQL OCC v2 integration regression suite. NEVER use production DSNs.
-Run only after creating two EMPTY local test databases in a temporary PostgreSQL instance.
-Requires psycopg 3 and psql, OCC_ISOLATED_TEST=YES, OCC_MAIN_DSN and
-OCC_ROLLBACK_DSN; run: python -m unittest discover -s scripts/tests
--p 'private_notes_occ_postgres_test.py' -v
+Run against four EMPTY local test databases in a temporary PostgreSQL instance.
+Requires psycopg 3, psql/pg_dump/pg_restore and age. The existing CI workflow
+provisions disposable databases via scripts/platform/private-notes-occ-recovery-test.sh.
+For manual isolated execution, set OCC_ISOLATED_TEST=YES, OCC_MAIN_DSN,
+OCC_ROLLBACK_DSN, OCC_RESTORE_PRE_DSN and OCC_RESTORE_POST_DSN, then run:
+python -m unittest discover -s scripts/tests -p 'private_notes_occ_postgres_test.py' -v
 """
 import os
 import hashlib
