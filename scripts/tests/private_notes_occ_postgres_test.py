@@ -5,8 +5,10 @@ OCC_ROLLBACK_DSN; run: python -m unittest discover -s scripts/tests
 -p 'private_notes_occ_postgres_test.py' -v
 """
 import os
+import hashlib
 import re
 import subprocess
+import tempfile
 import time
 import unittest
 from concurrent.futures import ThreadPoolExecutor
@@ -246,6 +248,57 @@ class PrivateNotesOccSql(unittest.TestCase):
         self.test_legacy_get_but_never_put()
         with connect(self.main) as db:
             self.assertEqual(rpc(db,self.original_user)["revision"],"1")
+
+    def test_encrypted_backup_restore_before_and_after_cutover(self):
+        """Real pg_dump/age/pg_restore; synthetic rows only, no production DSNs."""
+        targets = [test_dsn("OCC_RESTORE_PRE_DSN"), test_dsn("OCC_RESTORE_POST_DSN")]
+        self.assertEqual(len({self.main, self.rollback, *targets}), 4)
+        for dsn in targets:
+            with connect(dsn) as db:
+                self.assertIsNone(db.execute("SELECT to_regclass('private.dashboard_notes')").fetchone()[0])
+        with tempfile.TemporaryDirectory(prefix="capital-ai-occ-recovery-") as tmp:
+            os.chmod(tmp, 0o700)
+            folder = Path(tmp)
+            key = folder / "identity.txt"
+            subprocess.run(["age-keygen", "-o", str(key)], check=True, capture_output=True)
+            recipient = subprocess.check_output(["age-keygen", "-y", str(key)], text=True).strip()
+            for index, (source, target) in enumerate(zip([self.rollback, self.main], targets)):
+                def pg_env(dsn):
+                    u = urlsplit(dsn)
+                    return {**os.environ, "PGHOST": u.hostname, "PGPORT": str(u.port or 5432),
+                            "PGUSER": unquote(u.username), "PGPASSWORD": unquote(u.password),
+                            "PGDATABASE": unquote(u.path.lstrip('/')), "PGCONNECT_TIMEOUT": "5"}
+                def snapshot(dsn):
+                    with connect(dsn) as db:
+                        # Includes exact notes/revisions/timestamps and schema/RPC/ACL/RLS identity.
+                        rows = db.execute("SELECT to_jsonb(n)::text FROM private.dashboard_notes n ORDER BY user_id").fetchall()
+                        acl = db.execute("SELECT relrowsecurity,relacl::text FROM pg_class WHERE oid='private.dashboard_notes'::regclass").fetchone()
+                        functions = db.execute("SELECT proname,pg_get_functiondef(oid),proacl::text FROM pg_proc WHERE pronamespace='public'::regnamespace AND proname LIKE 'capital_ai_private_notes%' ORDER BY proname").fetchall()
+                        return rows, acl, functions
+                expected = snapshot(source)
+                archive = folder / f"notes-{index}.dump"
+                encrypted = folder / f"notes-{index}.dump.age"
+                restored = folder / f"notes-{index}.restored.dump"
+                with archive.open('wb') as output:
+                    subprocess.run(["pg_dump", "--format=custom", "--no-owner"], env=pg_env(source), stdout=output, stderr=subprocess.PIPE, check=True, timeout=30)
+                digest = hashlib.sha256(archive.read_bytes()).digest()
+                subprocess.run(["bash", "scripts/platform/drive-encrypt.sh", str(archive), str(encrypted)],
+                               env={**os.environ, "CAPITAL_BACKUP_AGE_RECIPIENT": recipient}, check=True, capture_output=True, timeout=30)
+                archive.unlink()
+                subprocess.run(["age", "--decrypt", "-i", str(key), "-o", str(restored), str(encrypted)], check=True, capture_output=True, timeout=30)
+                self.assertEqual(hashlib.sha256(restored.read_bytes()).digest(), digest)
+                subprocess.run(["pg_restore", "--no-owner", "--exit-on-error", "--dbname", unquote(urlsplit(target).path.lstrip('/')), str(restored)],
+                               env=pg_env(target), check=True, capture_output=True, timeout=30)
+                self.assertEqual(snapshot(target), expected)
+                with connect(target) as db:
+                    if index == 0:
+                        # A pre-cutover backup must migrate successfully after recovery.
+                        run_script(MIGRATION.read_text(encoding='utf-8'), target)
+                    self.assertEqual(rpc(db, self.original_user)["revision"], "1")
+                    with self.assertRaises(psycopg.Error):
+                        db.execute("SELECT public.capital_ai_private_notes(%s::uuid,'forbidden','PUT')", (self.original_user,))
+                    self.assertEqual(rpc(db, self.original_user, 'PUT', 'restored-v2', '1')["status"], 'saved')
+                    self.assertEqual(rpc(db, self.original_user, 'PUT', 'stale', '1')["status"], 'conflict')
 
 
 if __name__ == "__main__":

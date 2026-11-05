@@ -5,6 +5,9 @@ on:
       - 'scripts/platform/drive-encrypt.sh'
       - 'scripts/platform/drive-encryption-test.sh'
       - 'scripts/platform/backup-synthetic-restore-test.sh'
+      - 'scripts/platform/private-notes-occ-recovery-test.sh'
+      - 'scripts/tests/private_notes_occ_postgres_test.py'
+      - 'supabase/migrations/20261031030000_private_notes_occ_v2.sql'
       - 'scripts/platform/backup-retention.mjs'
       - 'scripts/platform/backup-retention.test.mjs'
       - 'scripts/trust/verify-blueprint-backup.mjs'
@@ -24,7 +27,7 @@ jobs:
       - name: Install distribution-provided age (no third-party install scripts)
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends age postgresql postgresql-client
+          sudo apt-get install -y --no-install-recommends age postgresql postgresql-client python3-psycopg
           age --version
           sudo systemctl start postgresql
           sudo -u postgres pg_isready
@@ -32,6 +35,9 @@ jobs:
         run: bash scripts/platform/drive-encryption-test.sh
       - name: Synthetic encrypted PostgreSQL dump and isolated restore
         run: bash scripts/platform/backup-synthetic-restore-test.sh
+      - name: OCC v2 parallel SQL and encrypted pre/post-cutover recovery
+        if: hashFiles('supabase/migrations/20261031030000_private_notes_occ_v2.sql') != ''
+        run: bash scripts/platform/private-notes-occ-recovery-test.sh
       - name: Encrypted archive retention dry-run (synthetic metadata only)
         run: node --test scripts/platform/backup-retention.test.mjs
       - name: Verify configured public recovery recipient (synthetic data only)
