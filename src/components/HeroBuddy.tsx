@@ -1,6 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { EyeOff, Move, Settings, StickyNote, X } from 'lucide-react';
-import { BuddyStickyNotes } from './BuddyStickyNotes';
 import { clampHeroBuddyPoint } from './heroBuddyPosition';
 import { PRICE_ALERTS_ENABLED } from '../features/alerts/featureFlags';
 
@@ -17,6 +16,8 @@ type BuddyMessage = { id: string; role: 'buddy' | 'user'; text: string };
 type AssistReason = 'hesitation' | 'repeat' | 'oscillation' | 'dwell';
 
 const JaJa3DAvatar = lazy(() => import('./JaJa3DAvatar'));
+// Private note editor is not part of the initial home bundle. Open it only on demand.
+const BuddyStickyNotes = lazy(() => import('./BuddyStickyNotes').then(module => ({ default: module.BuddyStickyNotes })));
 const DISCLAIMER = 'JaJa erklärt Zusammenhänge. Keine Anlageberatung.';
 export const HERO_BUDDY_EVENT = 'capital-ai:open-hero-buddy';
 export const HERO_BUDDY_HIDDEN_KEY = 'capital_ai_hero_buddy_hidden_v1';
@@ -334,7 +335,9 @@ export function HeroBuddy(props: HeroBuddyProps) {
                     <p className="font-semibold text-amber-200">Notizen im privaten Dashboard</p>
                     <button type="button" onClick={() => setNotesOpen(false)} aria-label="Notizen schließen" className="rounded p-2 text-slate-200"><X className="h-4 w-4" /></button>
                   </div>
-                  <BuddyStickyNotes initialText={noteSource} />
+                  <Suspense fallback={<p role="status" className="py-3 text-sm text-slate-300">Private Notizen werden geladen …</p>}>
+                    <BuddyStickyNotes initialText={noteSource} />
+                  </Suspense>
                 </section>
               )}
               {settingsOn ? (

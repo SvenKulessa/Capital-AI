@@ -1,0 +1,248 @@
+{
+  "schema": "CAPITAL_AI_DEPENDENCY_REVIEW@1",
+  "dependency": "typescript",
+  "candidateVersion": "7.0.2",
+  "evaluatedAt": "2026-11-05T20:49:50.790299113Z",
+  "reviewOnOrAfter": "2026-11-19",
+  "state": "BLOCKED",
+  "conclusion": "Exact wrapper/native archive integrities and compiler SHA-256 match the previously blocked artifact. Fresh gobinary SCA reports 15 HIGH findings. Keep 7.0.2 BLOCKED and installed 6.0.3; no compiler execution or vulnerability suppression.",
+  "fingerprint": {
+    "packageIntegrity": "sha512-8FYau96o3NKOhbjKi/qNvG/W5jhzxkbdm5sj9AbZ/5T5sWqn3hJgLfGx27sRKZWTvyzCP8dLRBTf5tBTSRVUNA==",
+    "nativeArtifactIntegrity": "sha512-EYdf2cNg7rgCWJnxCdJ+F3V39O8ihb37eHAu1LK8oAFizgTQbPOK7zHHXbPt8rX24COqODXeI3sIf0fCXG7H/A==",
+    "binarySha256": "sha256:4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4",
+    "embeddedRuntime": {
+      "goVersion": "go1.26.4",
+      "modules": {
+        "golang.org/x/text": "v0.38.0"
+      }
+    }
+  },
+  "scan": {
+    "name": "Trivy",
+    "version": "0.75.0",
+    "createdAt": "2026-11-05T20:49:50.790299113Z",
+    "mode": "rootfs; explicit gobinary:.*lib/tsc$ file pattern",
+    "target": "package/lib/tsc",
+    "packageCount": 10,
+    "highFindings": 15,
+    "severityCounts": {
+      "HIGH": 15,
+      "MEDIUM": 10,
+      "LOW": 1
+    },
+    "findings": [
+      {
+        "id": "CVE-2026-56851",
+        "package": "golang.org/x/text",
+        "installedVersion": "v0.38.0",
+        "fixedVersion": "0.41.0",
+        "severity": "HIGH"
+      },
+      {
+        "id": "CVE-2026-56852",
+        "package": "golang.org/x/text",
+        "installedVersion": "v0.38.0",
+        "fixedVersion": "0.39.0",
+        "severity": "HIGH"
+      },
+      {
+        "id": "CVE-2026-111943",
+        "package": "stdlib",
+        "installedVersion": "v1.26.4",
+        "fixedVersion": "1.26.10, 1.27.3",
+        "severity": "HIGH"
+      },
+      {
+        "id": "CVE-2026-33818",
+        "package": "stdlib",
+        "installedVersion": "v1.26.4",
+        "fixedVersion": "1.25.13, 1.26.6, 1.27.0-rc.3",
+        "severity": "HIGH"
+      },
+      {
+        "id": "CVE-2026-39821",
+        "package": "stdlib",
+        "installedVersion": "v1.26.4",
+        "fixedVersion": "1.25.13, 1.26.6, 1.27.0-rc.3",
+        "severity": "HIGH"
+      },
+      {
+        "id": "CVE-2026-39822",
+        "package": "stdlib",
+        "installedVersion": "v1.26.4",
+        "fixedVersion": "1.25.12, 1.26.5, 1.27.0-rc.2",
+        "severity": "HIGH"
+      },
+      {
+        "id": "CVE-2026-46600",
+        "package": "stdlib",
+        "installedVersion": "v1.26.4",
+        "fixedVersion": "1.26.6, 1.27.0-rc.3",
+        "severity": "HIGH"
+      },
+      {
+        "id": "CVE-2026-56853",
+        "package": "stdlib",
+        "installedVersion": "v1.26.4",
+        "fixedVersion": "1.25.13, 1.26.6, 1.27.0-rc.3",
+        "severity": "HIGH"
+      },
+      {
+        "id": "CVE-2026-56858",
+        "package": "stdlib",
+        "installedVersion": "v1.26.4",
+        "fixedVersion": "1.25.13, 1.26.6, 1.27.0-rc.3",
+        "severity": "HIGH"
+      },
+      {
+        "id": "CVE-2026-56859",
+        "package": "stdlib",
+        "installedVersion": "v1.26.4",
+        "fixedVersion": "1.25.13, 1.26.6, 1.27.0-rc.3",
+        "severity": "HIGH"
+      },
+      {
+        "id": "CVE-2026-56860",
+        "package": "stdlib",
+        "installedVersion": "v1.26.4",
+        "fixedVersion": "1.25.13, 1.26.6, 1.27.0-rc.3",
+        "severity": "HIGH"
+      },
+      {
+        "id": "CVE-2026-56862",
+        "package": "stdlib",
+        "installedVersion": "v1.26.4",
+        "fixedVersion": "1.25.13, 1.26.6, 1.27.0-rc.3",
+        "severity": "HIGH"
+      },
+      {
+        "id": "CVE-2026-78667",
+        "package": "stdlib",
+        "installedVersion": "v1.26.4",
+        "fixedVersion": "1.26.9, 1.27.2",
+        "severity": "HIGH"
+      },
+      {
+        "id": "CVE-2026-78669",
+        "package": "stdlib",
+        "installedVersion": "v1.26.4",
+        "fixedVersion": "1.26.9, 1.27.2",
+        "severity": "HIGH"
+      },
+      {
+        "id": "CVE-2026-97031",
+        "package": "stdlib",
+        "installedVersion": "v1.26.4",
+        "fixedVersion": "1.26.9, 1.27.2",
+        "severity": "HIGH"
+      },
+      {
+        "id": "CVE-2026-42505",
+        "package": "stdlib",
+        "installedVersion": "v1.26.4",
+        "fixedVersion": "1.25.12, 1.26.5, 1.27.0-rc.2",
+        "severity": "MEDIUM"
+      },
+      {
+        "id": "CVE-2026-56866",
+        "package": "stdlib",
+        "installedVersion": "v1.26.4",
+        "fixedVersion": "1.26.9, 1.27.2",
+        "severity": "MEDIUM"
+      },
+      {
+        "id": "CVE-2026-78659",
+        "package": "stdlib",
+        "installedVersion": "v1.26.4",
+        "fixedVersion": "1.26.9, 1.27.2",
+        "severity": "MEDIUM"
+      },
+      {
+        "id": "CVE-2026-78660",
+        "package": "stdlib",
+        "installedVersion": "v1.26.4",
+        "fixedVersion": "1.26.9, 1.27.2",
+        "severity": "MEDIUM"
+      },
+      {
+        "id": "CVE-2026-78663",
+        "package": "stdlib",
+        "installedVersion": "v1.26.4",
+        "fixedVersion": "1.26.9, 1.27.2",
+        "severity": "MEDIUM"
+      },
+      {
+        "id": "CVE-2026-94439",
+        "package": "stdlib",
+        "installedVersion": "v1.26.4",
+        "fixedVersion": "1.26.9, 1.27.2",
+        "severity": "MEDIUM"
+      },
+      {
+        "id": "CVE-2026-94440",
+        "package": "stdlib",
+        "installedVersion": "v1.26.4",
+        "fixedVersion": "1.26.9, 1.27.2",
+        "severity": "MEDIUM"
+      },
+      {
+        "id": "CVE-2026-94448",
+        "package": "stdlib",
+        "installedVersion": "v1.26.4",
+        "fixedVersion": "1.26.9, 1.27.2",
+        "severity": "MEDIUM"
+      },
+      {
+        "id": "CVE-2026-97030",
+        "package": "stdlib",
+        "installedVersion": "v1.26.4",
+        "fixedVersion": "1.26.9, 1.27.2",
+        "severity": "MEDIUM"
+      },
+      {
+        "id": "CVE-2026-97032",
+        "package": "stdlib",
+        "installedVersion": "v1.26.4",
+        "fixedVersion": "1.26.9, 1.27.2",
+        "severity": "MEDIUM"
+      },
+      {
+        "id": "CVE-2026-56857",
+        "package": "stdlib",
+        "installedVersion": "v1.26.4",
+        "fixedVersion": "1.26.9, 1.27.2",
+        "severity": "LOW"
+      }
+    ],
+    "rawReportSha256": "sha256:a806626c63301b8468118b5f140dbe358e87233b7ba10fd02fa259fae8a16d87",
+    "scannerArchiveSha256": "sha256:c6e65abddb348e25f10549df887045629cf28cc72453cd1c63acb717316b3f3f",
+    "scannerArchiveChecksumVerified": true
+  },
+  "reachability": {
+    "currentSymbolScan": "NOT_PROVEN_NOT_RERUN",
+    "retainedHistoricalEvidence": "PR65-TS7-BINARY-AFFECTED-20261002; workflow 36953786773",
+    "basis": "All archive integrities and compiler digest exactly match the previously affected artifact. Current binary SCA covers 10 packages and retains HIGH findings. No not_affected claim."
+  },
+  "limits": [
+    "Initial filesystem scan reported zero language targets and was not treated as clean; explicit rootfs/gobinary scan supplied actual coverage.",
+    "No downloaded compiler executable was run.",
+    "Registry signatures are recorded by npm metadata; no separate signature-verification attestation is claimed.",
+    "Trivy 0.76.1 exited with signal 11 in this container; independently downloaded official 0.75.0 archive checksum verified and completed a fresh DB-backed scan. This is a local isolated artifact review, not a production or new symbol-reachability scan."
+  ],
+  "sources": [
+    {
+      "url": "https://registry.npmjs.org/typescript/-/typescript-7.0.2.tgz",
+      "integrity": "sha512-8FYau96o3NKOhbjKi/qNvG/W5jhzxkbdm5sj9AbZ/5T5sWqn3hJgLfGx27sRKZWTvyzCP8dLRBTf5tBTSRVUNA=="
+    },
+    {
+      "url": "https://registry.npmjs.org/@typescript/typescript-linux-x64/-/typescript-linux-x64-7.0.2.tgz",
+      "integrity": "sha512-EYdf2cNg7rgCWJnxCdJ+F3V39O8ihb37eHAu1LK8oAFizgTQbPOK7zHHXbPt8rX24COqODXeI3sIf0fCXG7H/A=="
+    }
+  ],
+  "reproduction": [
+    "npm view typescript@7.0.2 dist --json",
+    "npm pack @typescript/typescript-linux-x64@7.0.2 --ignore-scripts --json",
+    "Verify tarball SHA-512 integrity, extract safely, hash package/lib/tsc with SHA-256.",
+    "trivy rootfs --scanners vuln --list-all-pkgs --file-patterns gobinary:.*lib/tsc$ --format json <extracted-package>"
+  ]
+}
