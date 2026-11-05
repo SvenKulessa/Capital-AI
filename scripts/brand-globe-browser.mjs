@@ -89,20 +89,16 @@ try {
     assert.ok(layout.copyOverlapY>0 && layout.copyOverlapX>0, 'Hero copy is detached into a separate globe row');
     const decoration = await evaluate(`(() => {
       const section=document.querySelector('.capital-ai-hero'), globe=document.querySelector('.hero-globe-background');
-      const outline=document.querySelector('.hero-brand-universe-outline');
-      const outer=outline?.querySelector('feMorphology');
       const area=globe.getBoundingClientRect(), sectionArea=section.getBoundingClientRect();
       return { globeWidth:area.width, globeHeight:area.height, heroWidth:sectionArea.width,
         left:area.left, heroLeft:sectionArea.left, right:area.right, heroRight:sectionArea.right,
-        outlineVisible:!!outline && getComputedStyle(outline).display!=='none',
-        outlinePassive:getComputedStyle(outline).pointerEvents==='none',
-        outlineRadius:outer?.getAttribute('radius'),
+        outlinePresent:!!document.querySelector('.hero-brand-universe-outline'),
+        copyVeil:getComputedStyle(document.querySelector('.hero-copy'),'::before').content,
         studioShortcut:!!document.querySelector('header button[title^="Studio Hub:"]') };
     })()`);
     assert.equal(decoration.studioShortcut, false, 'Redundant Studio Hub header action remains');
-    assert.equal(decoration.outlineVisible, true, 'Silver Universe outline is absent');
-    assert.equal(decoration.outlinePassive, true, 'Brand decoration intercepts pointer events');
-    assert.equal(decoration.outlineRadius, '30', 'Silver outline thickness has changed');
+    assert.equal(decoration.outlinePresent, false, 'Removed silver outline remains in hero');
+    assert.equal(decoration.copyVeil, 'none', 'Opaque hero-copy veil remains');
     if (viewport.width<=768) {
       assert.ok(decoration.globeWidth<=decoration.heroWidth+2, 'Mobile/tablet globe overshoots content width');
       assert.ok(Math.abs(decoration.globeHeight-decoration.globeWidth)<3, 'Mobile/tablet globe is not proportional');
