@@ -31,7 +31,7 @@ export class EnterpriseScorerBus {
   }
 
   async open() {
-    if (this.env.MARKET_BROKER_PAUSED === 'true') return false;
+    if (this.env.MARKET_BROKER_PAUSED !== 'false') return false;
     if (!this.env.REDIS_URL || !this.env.NATS_URL) return false;
     let natsAuth;
     try { natsAuth = natsConnectionAuth(this.env); } catch { return false; }

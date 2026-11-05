@@ -49,9 +49,12 @@ export const Hero: React.FC<HeroProps> = ({ onStartAnalysis, onExploreProduct })
       {/* Hero Content */}
       <div className="hero-copy relative z-10 max-w-lg rounded-2xl p-[16px] sm:p-[20px]">
         {/* An accessible brand anchor above the headline, without obscuring the primary CTA. */}
-        <img src="/branding/capital-ai-logo.jpg" alt="CAPITAL-AI – Market Intelligence"
-          width={320} height={180} loading="eager" decoding="async"
-          className="hero-brand-logo mb-3 block h-auto max-h-28 w-auto max-w-full rounded-xl border border-amber-300/20 shadow-[0_0_32px_rgba(245,176,20,0.20)]" />
+        <div className="hero-brand-artwork relative mb-3 inline-flex max-w-full">
+          <img src="/branding/capital-ai-logo.jpg" alt="CAPITAL-AI – Market Intelligence"
+            width={320} height={180} loading="eager" decoding="async"
+            className="hero-brand-logo block h-auto max-h-28 w-auto max-w-full rounded-xl" />
+
+        </div>
         {/* Eyebrow */}
         <motion.div
           initial={reduceMotion ? false : { opacity: 0, y: 10 }}

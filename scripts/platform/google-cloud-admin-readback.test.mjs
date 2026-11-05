@@ -58,9 +58,23 @@ test('only GETs exact project, with readonly shaped output and paginates', async
   assert.deepEqual(summary, {
     projectId:'aifinancial-500208',projectNumber:'542877602707',
     enabledServiceCount:3, serviceUsageEnabled:true, iamEnabled:true,
-    iamCredentialsEnabled:false, driveApiEnabled:true, readonly:true,
+    iamCredentialsEnabled:false, driveApiEnabled:true, youtubeDataApiEnabled:false, readonly:true,
   });
   assert.ok(!JSON.stringify(summary).includes(TOKEN));
+});
+test('reports YouTube Data API enablement without claiming channel or OAuth authorization', async () => {
+  let calls = 0;
+  const summary = await readEnabledCloudApis({ token: TOKEN, fetcher: async (_, options) => {
+    calls++;
+    assert.equal(options.method, 'GET');
+    return reply([service('youtube.googleapis.com')]);
+  } });
+  assert.equal(calls, 1);
+  assert.equal(summary.youtubeDataApiEnabled, true);
+  assert.equal(summary.driveApiEnabled, false);
+  assert.equal(summary.readonly, true);
+  assert.equal(Object.hasOwn(summary, 'oauthVerified'), false);
+  assert.equal(Object.hasOwn(summary, 'channelAuthorized'), false);
 });
 test('denies responses from any other project', async () => {
   await assert.rejects(() => readEnabledCloudApis({ token:TOKEN, fetcher:async()=>reply([service('iam.googleapis.com','ENABLED','999')]) }), /RESPONSE_PROJECT_OR_STATE_INVALID/);

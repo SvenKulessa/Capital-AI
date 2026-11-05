@@ -8,7 +8,7 @@ import { createPrivateMarketCache } from '../server/private-market-cache.mjs';
 import { createPrivateProviderQuery } from '../server/private-provider-query.mjs';
 import { createUserProviderVault } from '../server/user-provider-vault.mjs';
 if (process.env.PRIVATE_MARKET_SMOKE_MODE !== 'DISPOSABLE_ONLY') throw new Error('Disposable broker acknowledgment required');
-const env = { ...process.env, PRIVATE_PROVIDER_BRIDGE_ENABLED: 'true',
+const env = { ...process.env, MARKET_BROKER_PAUSED: 'false', PRIVATE_PROVIDER_BRIDGE_ENABLED: 'true',
   SUPABASE_URL: 'https://fixture.supabase.co', SUPABASE_SECRET_KEY: 'sb_secret_fixture_only_01234567890123456789',
   AUTH_COOKIE_SIGNING_SECRET: 'fixture-cookie-signing-secret-0123456789',
   PRIVATE_PROVIDER_QUERY_SIGNING_SECRET: 'fixture-private-query-signing-secret-0123456789' };

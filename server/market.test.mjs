@@ -221,6 +221,35 @@ test('asset catalog exposes only admitted market-quote instruments without inven
   assert.equal(catalog.assets.some(asset => asset.symbol === 'AAPL'), false);
 });
 
+test('missing or ambiguous pause blocks quote ingestion despite quote/ECB opt-ins', async () => {
+  const keys = ['MARKET_BROKER_PAUSED', 'MARKET_QUOTES_ENABLED', 'MARKET_ECB_REFERENCE_RATES_ENABLED'];
+  const previous = Object.fromEntries(keys.map(key => [key, process.env[key]]));
+  const originalFetch = globalThis.fetch;
+  let fetchCalls = 0;
+  try {
+    process.env.MARKET_QUOTES_ENABLED = 'true';
+    process.env.MARKET_ECB_REFERENCE_RATES_ENABLED = 'true';
+    globalThis.fetch = async () => { fetchCalls++; throw new Error('unexpected network I/O'); };
+    for (const value of [undefined, '', 'TRUE', '0', ' false ']) {
+      if (value === undefined) delete process.env.MARKET_BROKER_PAUSED;
+      else process.env.MARKET_BROKER_PAUSED = value;
+      const { assetValues, ingestEcbReferenceRates, health } = await isolated();
+      assert.equal(health().quotesEnabled, false);
+      const [status, body] = await assetValues();
+      assert.equal(status, 503);
+      assert.equal(body.reason, 'MARKET_QUOTES_DISABLED');
+      assert.equal((await ingestEcbReferenceRates()).status, 'BLOCKED');
+    }
+    assert.equal(fetchCalls, 0);
+  } finally {
+    globalThis.fetch = originalFetch;
+    for (const key of keys) {
+      if (previous[key] === undefined) delete process.env[key];
+      else process.env[key] = previous[key];
+    }
+  }
+});
+
 test('broker pause blocks admitted quote flags without making provider requests', async () => {
   const keys = ['MARKET_BROKER_PAUSED', 'MARKET_QUOTES_ENABLED', 'MARKET_ECB_REFERENCE_RATES_ENABLED'];
   const previous = Object.fromEntries(keys.map(key => [key, process.env[key]]));

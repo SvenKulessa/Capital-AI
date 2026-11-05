@@ -136,6 +136,8 @@ COPY server/market-spot-ingestion.test.mjs ./server/
 COPY server/spot-provider-wire.test.mjs server/spot-feed-lifecycle.test.mjs server/private-market-batch.test.mjs server/private-market-cache.test.mjs ./server/
 COPY .github/workflows/daily-dependency-security-watch.yml .github/workflows/merge-milestones.yml ./.github/workflows/
 COPY scripts/daily-dependency-watch.test.mjs ./scripts/
+# Source-only independent review test must exist in the offline build stage.
+COPY scripts/independent-review-manifest.mjs scripts/independent-review-manifest.test.mjs ./scripts/
 RUN --network=none node --test scripts/daily-dependency-watch.test.mjs scripts/static-legal-routes.test.mjs server/google-analytics-readback.test.mjs server/repository-tool-catalog.test.mjs server/tool-update-discovery.test.mjs server/tool-catalog-assessment.test.mjs \
     && node --test scripts/mail-templates.test.mjs server/mta-sts.test.mjs server/well-known.test.mjs server/auth-security.test.mjs scripts/supabase-auth-config.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-source-provenance-drift.test.mjs \
     && node --test scripts/seo-production-readback.test.mjs \

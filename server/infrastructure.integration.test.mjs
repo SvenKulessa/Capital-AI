@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import { MarketInfrastructure, payloadHash } from './infrastructure.mjs';
 import { QuoteDeliverySchema } from '../shared/market-contracts.mjs';
 
-const configured = Boolean(process.env.REDIS_URL && process.env.NATS_URL);
+const configured = Boolean(process.env.REDIS_URL && process.env.NATS_URL && process.env.MARKET_BROKER_PAUSED === 'false');
 test('cache-only connection remains usable while evidence and delivery fail closed', { skip: !process.env.REDIS_URL }, async () => {
- const service = new MarketInfrastructure({ REDIS_URL: process.env.REDIS_URL });
+ const service = new MarketInfrastructure({ REDIS_URL: process.env.REDIS_URL, MARKET_BROKER_PAUSED: 'false' });
  const raw = { testHarness: true, cacheOnly: true };
  const fact = { schemaVersion: '1.0.0', symbol: 'BTCUSD', venue: 'KRAKEN', provider: 'kraken', price: 100,
   quote: 'USD', bid: null, ask: null, volume24h: null, observedAt: Date.now(), receivedAt: Date.now(),

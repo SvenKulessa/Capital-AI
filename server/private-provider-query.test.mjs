@@ -76,6 +76,7 @@ test('probe-only mode never enables the customer provider-query surface', () => 
   const providerQuery = createPrivateProviderQuery({
     env: {
       ...env,
+      MARKET_BROKER_PAUSED: 'false', // explicit disposable probe-only opt-in
       PRIVATE_PROVIDER_BRIDGE_ENABLED: 'false',
       PRIVATE_PROVIDER_BRIDGE_PROBE_ENABLED: 'true',
     },
@@ -308,6 +309,28 @@ test('five private class batches use the existing signed broker contract without
   }
   assert.throws(() => validateProviderQueryRequest({ provider: 'kraken', operation: 'market.asset_class_snapshot',
     params: { category: 'AKTIEN' } }), /INVALID_PARAM_VALUE/);
+});
+
+test('missing/ambiguous pause disables both customer and diagnostic broker paths', async () => {
+  for (const value of [undefined, '', 'true', 'TRUE', '0', 'FALSE', ' false ']) {
+    const bridge = createPrivateProviderQuery({
+      env: { ...env, ...(value === undefined ? {} : { MARKET_BROKER_PAUSED: value }),
+        PRIVATE_PROVIDER_BRIDGE_ENABLED: 'true', PRIVATE_PROVIDER_BRIDGE_PROBE_ENABLED: 'true',
+        NATS_URL: 'nats://127.0.0.1:1' },
+      auth: {}, vault: {}, state: {},
+    });
+    assert.equal(bridge.status().enabled, false);
+    assert.equal(bridge.status().probeEnabled, false);
+    assert.equal(await bridge.start(), false);
+    assert.equal((await bridge.probe('disabled-probe')).status, 'DISABLED');
+    assert.equal(bridge.status().requestConnection, 'DISCONNECTED');
+  }
+  const explicitlyAdmitted = createPrivateProviderQuery({
+    env: { ...env, MARKET_BROKER_PAUSED: 'false', PRIVATE_PROVIDER_BRIDGE_ENABLED: 'true' },
+    auth: {}, vault: {}, state: {},
+  });
+  assert.equal(explicitlyAdmitted.status().enabled, true);
+  assert.equal(explicitlyAdmitted.status().probeEnabled, true);
 });
 
 test('broker pause overrides both customer and diagnostic bridge enablement', async () => {
