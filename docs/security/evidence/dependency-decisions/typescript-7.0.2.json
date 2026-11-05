@@ -11,9 +11,9 @@
     "state": "BLOCKED",
     "classification": "BINARY_AFFECTED",
     "reasonCode": "NATIVE_BUILD_TOOL_BINARY_VULNERABILITY",
-    "reason": "Exact npm wrapper/native integrities rechecked on 2026-10-16; native binary SHA-256 captured and current binary scan confirms retained HIGH findings. The known-affected candidate remains BLOCKED; TypeScript 6.0.3 stays installed.",
-    "evaluatedAt": "2026-10-16T04:44:32.812788+00:00",
-    "reviewOnOrAfter": "2026-10-30",
+    "reason": "Exact wrapper/native archive integrities and compiler SHA-256 match the previously blocked artifact. Fresh gobinary SCA reports 15 HIGH findings. Keep 7.0.2 BLOCKED and installed 6.0.3; no compiler execution or vulnerability suppression.",
+    "evaluatedAt": "2026-11-05T20:49:50.790299113Z",
+    "reviewOnOrAfter": "2026-11-19",
     "supersessionScope": "BACKEND",
     "reviewHistory": [
       {
@@ -22,9 +22,16 @@
         "state": "BLOCKED",
         "classification": "BINARY_AFFECTED",
         "evidenceRevision": "PR65-TS7-BINARY-AFFECTED-20261002"
+      },
+      {
+        "evaluatedAt": "2026-10-16T04:44:32.812788+00:00",
+        "reviewOnOrAfter": "2026-10-30",
+        "state": "BLOCKED",
+        "classification": "BINARY_AFFECTED",
+        "reviewEvidenceRef": "docs/security/evidence/dependency-decisions/typescript-7.0.2-review-20261016.json"
       }
     ],
-    "reviewEvidenceRef": "docs/security/evidence/dependency-decisions/typescript-7.0.2-review-20261016.json"
+    "reviewEvidenceRef": "docs/security/evidence/dependency-decisions/typescript-7.0.2-review-20261105.json"
   },
   "fingerprint": {
     "package": {
@@ -39,12 +46,13 @@
       "binaryPath": "lib/tsc",
       "binarySha256": "sha256:4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4",
       "binarySha256Evidence": {
-        "capturedByWorkflow": true,
-        "workflowRun": 36953786773,
+        "capturedByWorkflow": false,
+        "workflowRun": null,
         "repositoryProjectionAvailable": true,
         "policy": "A future retry MUST capture and persist the exact binary SHA-256 before classification.",
-        "capturedAt": "2026-10-16T04:44:32.812788+00:00",
-        "reviewEvidenceRef": "docs/security/evidence/dependency-decisions/typescript-7.0.2-review-20261016.json"
+        "capturedAt": "2026-11-05T20:49:50.790299113Z",
+        "reviewEvidenceRef": "docs/security/evidence/dependency-decisions/typescript-7.0.2-review-20261105.json",
+        "captureMethod": "Isolated local verified tarball extraction; compiler not executed"
       },
       "embeddedRuntime": {
         "goVersion": "go1.26.4",
@@ -58,7 +66,7 @@
       "govulncheckVersion": "v1.8.0",
       "reachability": "AFFECTED",
       "trivyHighFindingsBlocking": true,
-      "evidenceRevision": "PR65-TS7-BINARY-AFFECTED-20261002"
+      "evidenceRevision": "TS7-REVIEW-20261105"
     }
   },
   "retryPolicy": {
@@ -80,7 +88,8 @@
     "GitHub Actions run 36953786773",
     "PR #65",
     "PR #109",
-    "docs/security/evidence/dependency-decisions/typescript-7.0.2-review-20261016.json"
+    "docs/security/evidence/dependency-decisions/typescript-7.0.2-review-20261016.json",
+    "docs/security/evidence/dependency-decisions/typescript-7.0.2-review-20261105.json"
   ],
   "safety": {
     "doesNotMarkNotAffected": true,
