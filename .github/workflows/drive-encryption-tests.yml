@@ -58,7 +58,8 @@ jobs:
             sleep 0.2
           done
           "$ready"
-          docker exec -u postgres "$fixture" psql -X -At -c 'SHOW server_version' | grep -Fx '17.11'
+          docker exec -u postgres "$fixture" psql -X -At -c 'SHOW server_version'
+          docker exec -u postgres "$fixture" psql -X -At -c 'SHOW server_version_num' | grep -Fx '170011'
           docker exec -e GITHUB_ACTIONS=true -e PYTHONDONTWRITEBYTECODE=1 "$fixture" \
             bash scripts/platform/private-notes-occ-recovery-test.sh
       - name: Encrypted archive retention dry-run (synthetic metadata only)
