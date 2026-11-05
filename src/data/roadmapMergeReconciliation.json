@@ -1,12 +1,12 @@
 {
   "schema": "CAPITAL_AI_ROADMAP_MERGE_AUDIT@1",
   "state": "RECONCILED_CODE_AND_DOCUMENTS",
-  "lastReconciledPr": 528,
-  "mergeCount": 460,
-  "fromPr": 516,
-  "toPr": 528,
-  "sourceSha": "6abf9c6c43eb80bca2941deccf602d5dbfc116df",
-  "reconciledAt": "2026-10-30T22:26:22.632Z",
+  "lastReconciledPr": 545,
+  "mergeCount": 470,
+  "fromPr": 527,
+  "toPr": 545,
+  "sourceSha": "a799d7416eaca8c399098ec5eff2f3bee6e6e0dc",
+  "reconciledAt": "2026-10-31T06:02:12.071Z",
   "sourceDigests": [
     {
       "path": "src/data/roadmapData.ts",
@@ -14,7 +14,7 @@
     },
     {
       "path": "src/data/roadmapCurrentMainState.ts",
-      "sha256": "7f5f081d8b62bb35937c0f87a66ae40ee58875b948adef99a81feec72ffe83c7"
+      "sha256": "b03e3193ae3d55d306217acecb05a1a2ecd7721c29e0e6cf94b61c56e37d1029"
     },
     {
       "path": "src/data/productionWebsiteWorkPackage.ts",
@@ -22,7 +22,7 @@
     },
     {
       "path": "src/data/socialContentRoadmap.ts",
-      "sha256": "545341bbcb42917156670124a48d461e8b57e6ad7a05e2dcb0d9dfe944471c7b"
+      "sha256": "7f00f6453a906ed428fc124a2d8158820982ea730e5053e309826fe2fcdbbe00"
     },
     {
       "path": "src/data/trustArchitectureAWorkPackages.ts",
@@ -699,6 +699,21 @@
         "server/user-provider-vault.mjs",
         "services/provider-bridge-rs/src/main.rs",
         "supabase/migrations/20261006131500_enable_binance_user_provider_vault.sql"
+      ],
+      "evidencePathsMissing": [],
+      "externalEvidenceNotVerified": [],
+      "effectiveState": "OFFEN"
+    },
+    {
+      "id": "CA-PRODUCT-JAJA-NOTION-MARKETPLACE",
+      "owner": "PRODUCT",
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "docs/product/JAJA-NOTION-MARKETPLACE-WORKPACKAGE-20261015.md",
+        "docs/product/JAJA-AVATAR-ASSET-LICENSE.md",
+        "Chat Buddy/PROPRIETARY.md",
+        "src/features/account/PrivateDashboardPage.tsx",
+        "scripts/growth/pr-merge-social-batch.mjs"
       ],
       "evidencePathsMissing": [],
       "externalEvidenceNotVerified": [],
@@ -1405,7 +1420,7 @@
       "effectiveState": "UNGEKLÄRT"
     }
   ],
-  "examined": 105,
+  "examined": 106,
   "unproven": 25,
   "authority": "SOURCE_AND_DOCUMENT_PRESENCE_ONLY",
   "noAutomaticCompletionPromotion": true
