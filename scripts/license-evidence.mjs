@@ -17,7 +17,7 @@ function reviewedSpdxData(p) {
 
 // Package-bounded review: do not treat arbitrary MIT-0 metadata as reviewed.
 function reviewedNodemailer(root, path, p) {
-  const reviewedArtifacts = {"10.1.0": "sha512-fXW8AulB25aOTuwfRYV6lqHyfz2VM4rr4SGXH03mE7x5znEUpzL5mu6anARUpZN7744Ziwkmr4AxSLPJsBQspg==", "10.1.4": "sha512-EsMnOR2oRv4LGnWvHgcVYkkQ4O2j8KO4WTw6l+PHR4sOXo8SAgIraxtEnGDmotjbhv0hDsu3IuDIFZm8iXwO4A==", "10.2.1": "sha512-ZrDNsPFoDMwefNs7sJwrYiEJ/CG4ClJWDZv05iNJsEBWa8GRDry1QJHTJxsuTAY9eDDKjX4k+q3SxslXJOao7w=="};
+  const reviewedArtifacts = {"10.1.0": "sha512-fXW8AulB25aOTuwfRYV6lqHyfz2VM4rr4SGXH03mE7x5znEUpzL5mu6anARUpZN7744Ziwkmr4AxSLPJsBQspg==", "10.1.4": "sha512-EsMnOR2oRv4LGnWvHgcVYkkQ4O2j8KO4WTw6l+PHR4sOXo8SAgIraxtEnGDmotjbhv0hDsu3IuDIFZm8iXwO4A==", "10.2.1": "sha512-ZrDNsPFoDMwefNs7sJwrYiEJ/CG4ClJWDZv05iNJsEBWa8GRDry1QJHTJxsuTAY9eDDKjX4k+q3SxslXJOao7w==", "10.3.1": "sha512-uF0AFsJC07Y1vdW7p580DKAnh7rAO+4UPSSB3mDCPNDufoiaOebV6JmrzpxB14OjEEEiBsNdYoM2Y+fN8M7BBA=="};
   const licensePath = join(root, 'docs/licenses/nodemailer-10.1.0-MIT-0.txt');
   return path === 'node_modules/nodemailer' && Object.hasOwn(reviewedArtifacts, p.version) && p.license === 'MIT-0'
     && p.resolved === `https://registry.npmjs.org/nodemailer/-/nodemailer-${p.version}.tgz`

@@ -94,7 +94,7 @@ test('Nodemailer review requires the exact registry artifact and unchanged licen
   assert.equal(lockInventory(f.root).packages[0].metadataStatus, 'DEPENDENCY_DISTRIBUTION_REVIEW');
   assert.equal(lockInventory(f.root).deployEligible, false);
   for (const change of [
-    { version: '10.0.15' }, { integrity: 'changed' },
+    { version: '10.0.15' }, { version: '10.3.2' }, { integrity: 'changed' },
     { resolved: 'https://untrusted.example/nodemailer.tgz' }, { license: 'AGPL-3.0-only' },
   ]) {
     writeLock({ ...reviewed, ...change });
