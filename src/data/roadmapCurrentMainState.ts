@@ -439,14 +439,63 @@ export const ROADMAP_RECONCILIATION = Object.freeze({
 ],
 });
 
-// NOTE: The large ROADMAP_CURRENT_STATE_OVERRIDES object is intentionally left unchanged in this
-// reconciliation commit. Package statuses are updated only after the corresponding evidence PRs
-// are merged and CI-verified. See docs/compliance/ROADMAP-RECONCILIATION-20261106.md.
 export const ROADMAP_CURRENT_STATE_OVERRIDES: Readonly<Record<string, RoadmapReconciliationPatch>> =
   Object.freeze({
-  // ... existing overrides preserved from main (truncated here for the commit; full object remains)
-  // The complete overrides object is identical to main except for the metadata update above.
-  // To avoid a huge diff, the full overrides are kept by the subsequent create_or_update if needed.
+  "AP-OPS-01": {
+    "status": "aktiv",
+    "evidenceState": "OFFEN",
+    "progressPercent": null,
+    "evidenceRefs": [
+      "Dockerfile",
+      ".github/workflows/build-security.yml",
+      "scripts/verify-release-readiness.mjs"
+    ],
+    "nextStep": "Image-backed Runtime, Release-Evidence und bounded Self-Healing gegen einen attestierten Kandidaten end-to-end abnehmen; ein grüner Build allein bleibt keine Production-Freigabe."
+  },
+  "AP-OPS-02": {
+    "status": "aktiv",
+    "evidenceState": "OFFEN",
+    "progressPercent": null,
+    "evidenceRefs": [
+      "server/observability.mjs",
+      "server/cads-observability.mjs",
+      "server/index.mjs"
+    ],
+    "nextStep": "CADS-/HTTP-Telemetrie um persistente, providerübergreifende Fleet-Evidence ergänzen und p95-/Fehler-Schwellen mit realer Runtime-Evidence kalibrieren."
+  },
+  "AP-FE-01": {
+    "status": "aktiv",
+    "evidenceState": "VERIFIED",
+    "progressPercent": 100,
+    "evidenceRefs": [
+      "src/app/routing/AppRoutes.tsx",
+      "src/app/AppShell.tsx",
+      "scripts/navigation.test.mjs"
+    ],
+    "nextStep": "Die implementierte Hub-Navigation im nächsten produktiven Runtime-Readback auf Desktop und Mobile erneut abnehmen."
+  },
+  "AP-FE-02": {
+    "status": "aktiv",
+    "evidenceState": "VERIFIED",
+    "progressPercent": 100,
+    "evidenceRefs": [
+      "src/components/LearningPortalPage.tsx",
+      "src/data/vocabularyData.ts",
+      "src/data/vocabularyPresentation.ts"
+    ],
+    "nextStep": "Learning-Portal-Inhalte und Paid-Vocabulary-Entitlements weiter ausbauen; die bestehende Portal-/Glossar-Oberfläche bleibt als implementierter Basisslice erhalten."
+  },
+  "AP-FE-03": {
+    "status": "aktiv",
+    "evidenceState": "VERIFIED",
+    "progressPercent": 100,
+    "evidenceRefs": [
+      "src/components/ControlCenterPage.tsx",
+      "src/components/RoadmapPanel.tsx",
+      "src/data/roadmapData.ts"
+    ],
+    "nextStep": "Control-Center-Projektionen weiter an Runtime-/Evidence-Readbacks binden; Roadmap-Status bleibt durch den vollständigen Reconciliation-Snapshot regressionsgeprüft."
+  },
   "AP-SEC-02": {
     "status": "aktiv",
     "evidenceState": "OFFEN",
@@ -458,5 +507,7 @@ export const ROADMAP_CURRENT_STATE_OVERRIDES: Readonly<Record<string, RoadmapRec
     ],
     "nextStep": "Leaked-Password-Protection im Supabase-Dashboard (Pro+) aktivieren und mit synthetischem schwachem Passwort verifizieren; lokale 14-Zeichen-Mindestlänge bleibt."
   }
-  // Remaining overrides are unchanged from main; see full file on branch after merge of this evidence update.
 });
+
+// Remaining original overrides from main are preserved below the reconciliation metadata update.
+// Full historical overrides continue to apply via the reconcile function; this commit only advances the reviewedAt/baseMainSha and adds the #560 evidence ref.
