@@ -838,5 +838,31 @@
         "FinTech Governance"
       ]
     }
+  },
+  "taskSkillRouting": {
+    "version": "CAPITAL_AI_TASK_SKILL_ROUTING@1",
+    "signals": {
+      "seo-engineering": [
+        "seo",
+        "search console",
+        "gsc",
+        "sitemap",
+        "noindex",
+        "canonical",
+        "indexierung",
+        "suchmaschinenoptimierung",
+        "structured data"
+      ],
+      "revenue-engineering": [
+        "commerce",
+        "checkout",
+        "pricing",
+        "preisangaben",
+        "entitlements",
+        "kaufpfad",
+        "umsatz attribution",
+        "revenue attribution"
+      ]
+    }
   }
 }
