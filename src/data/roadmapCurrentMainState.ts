@@ -505,7 +505,7 @@ export const ROADMAP_CURRENT_STATE_OVERRIDES: Readonly<Record<string, RoadmapRec
       "server/auth-security.mjs",
       "src/components/ControlCenterPage.tsx"
     ],
-    "nextStep": "Implementierte Session-, AAL2- und Owner-IAM-Grenzen auf dem Zielhost mit echten Login-/Role-Readbacks abnehmen; keine Rolle aus Client-Metadaten ableiten."
+    "nextStep": "Supabase bleibt im Free-Tier; vorhandene Session-, AAL2-, Owner-IAM- und Passwortgrenzen prüfen. Native Leaked-Password-Protection ist ohne Upgrade nicht verfügbar und bleibt als offener Befund dokumentiert; keine Rolle aus Client-Metadaten ableiten."
   },
   "AP-FIN-01": {
     "status": "aktiv",
