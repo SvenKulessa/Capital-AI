@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "CAPITAL_AI_MASTERCLASS_STYLE@2",
-  "status": "ORIGINAL_AUDIO_RESTORED_HUMAN_AUDIO_REVIEW_REQUIRED",
+  "schemaVersion": "CAPITAL_AI_MASTERCLASS_STYLE@3",
+  "status": "UNPUBLISHED_MASTER_V4_RENDER_IN_PROGRESS_AUDIO_COMPLETENESS_QA",
   "templateAuthority": "src/platform/SocialMediaEngine/Editing/MediaStudioTemplates.ts:createCapitalAiMasterclassChapterIntroProject",
   "paletteAuthority": "public/branding/asset-pack/meta/social-render-tokens.json",
   "referenceChapter": "Kapitel 01 · Chartanalyse Grundlagen",
@@ -11,8 +11,8 @@
     "fps": 24,
     "videoCodec": "h264",
     "audioCodec": "aac",
-    "introSeconds": 9,
-    "outroSeconds": 6
+    "introSeconds": 2.5,
+    "outroSeconds": 8
   },
   "color": {
     "background": "#02050E",
@@ -23,12 +23,13 @@
   },
   "structure": {
     "header": "CAPITAL-AI  /  CHART ANALYSIS MASTERCLASS",
-    "sidePanel": "JaJa Buddy illustration from chapter 01, owner supplied",
+    "sidePanel": "NONE: JaJa Buddy visual removed; full-width slides in first-party navy/gold frame",
     "websiteUrl": "https://capital-ai.online",
     "disclaimer": "Bildungsinhalt, keine Anlageberatung",
     "titleMaxWidthPx": 770,
     "titleWrapAtPixelBounds": true,
-    "globeAsset": "public/branding/universe/hero-universe-globe.webp"
+    "globeAsset": "public/branding/universe/hero-universe-globe.webp",
+    "buddyIncluded": false
   },
   "chapters": [
     {
@@ -54,12 +55,14 @@
   ],
   "voice": {
     "language": "de-DE",
-    "mode": "original-source-audio-only",
+    "mode": "original-uncut-source-audio",
     "engine": "source soundtracks; no new TTS",
     "speechSecondsMax": 0,
     "reviewRequired": true,
     "embeddedOriginalNarration": true,
-    "providerBilling": false
+    "providerBilling": false,
+    "sourceBoundaries": "Original source from 0 seconds through >0.5 seconds after last significant speech activity; no generated sentence completions",
+    "audioVerification": "RMS and tail-silence only; semantic sentence completeness requires human listening"
   },
   "publication": {
     "publishReady": false,
@@ -70,12 +73,25 @@
   "noLiveMarketData": true,
   "sourceRightsNote": "Requires rights review of the original video, audio, Grok avatar and any Notebook-generated elements; crop does not establish copyright.",
   "deliveredMedia": {
-    "version": "v3-originalstimme",
+    "version": "v4-buddy-free-uncut-source",
     "date": "2026-11-06",
     "syntheticIntroRemovedSeconds": 9,
-    "visualIntroInDeliveredFiles": false,
+    "visualIntroInDeliveredFiles": true,
+    "visualIntroSeconds": 2.5,
     "originalTeachingAudioPreserved": true,
-    "driveByteHashReadback": "VERIFIED",
+    "sourceStartSeconds": 0,
+    "outroStillHoldSeconds": 8,
+    "driveByteHashReadback": "PENDING",
     "publicationAllowed": false
+  },
+  "postProduction": {
+    "chapter01Crop": "x20..1330 removes original embedded Buddy sidebar",
+    "chapter02_03FullSource": true,
+    "chapter04NotebookCleanFreeze": true,
+    "allSourceAudioNoSyntheticVoices": true,
+    "badgeNoBuddy": true,
+    "sourceOriginalHashVerification": "PENDING",
+    "commercialRights": "REVIEW_REQUIRED",
+    "semanticSentenceQA": "NOT_PROVEN"
   }
 }
