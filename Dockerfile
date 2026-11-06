@@ -61,6 +61,7 @@ COPY public/branding/universe ./public/branding/universe
 COPY public/assets/jaja-avatar-transparent.webp ./public/assets/jaja-avatar-transparent.webp
 COPY public/fonts ./public/fonts
 COPY public/learning/editorial/chart-accessibility-20261010.svg ./public/learning/editorial/chart-accessibility-20261010.svg
+COPY public/learning/editorial/x-api-kostenbewusst-20261106.svg ./public/learning/editorial/x-api-kostenbewusst-20261106.svg
 COPY public/learning/charts ./public/learning/charts
 COPY public/learning/videos ./public/learning/videos
 COPY public/bootstrap-failure.js ./public/bootstrap-failure.js
