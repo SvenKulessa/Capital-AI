@@ -26,3 +26,9 @@ Das Renderer-Runtime-Image ist kein dauerhaft bereitgestellter Service. Es läuf
 - Rollback über geschützten Revert-PR. Für den Bereich NATS gilt ausschließlich die separate Pausierung aus PR #591.
 
 Referenzen: https://avd.aquasec.com/misconfig/dockerfile/general/ds-0013/ und https://avd.aquasec.com/misconfig/dockerfile/general/ds-0026/.
+
+## Security-Gate-Follow-up 2026-11-06
+
+Echter `Social Renderer Worker Evidence`-PR-CI-Run 42291228594 (Job 128144866489) hat FFmpeg 9.0.2 kompiliert, Source-Integrität, LGPL-Profil, Binary-Identität und non-root Offline-Runtime-Smoke erfolgreich geprüft. Anschließend meldete Trivy auf dem tatsächlichen Runtime-Image **zwei HIGH-Findings** `CVE-2026-107891`: Alpine `musl 1.2.5-r12` und `musl-utils 1.2.5-r12`, jeweils `fixed=1.2.5-r13`; `blocking=2` führte korrekt zu **FAIL**. Der erste CI-Lauf ist deshalb ausdrücklich kein Security-PASS.
+
+Der Scope-PR ergänzt im **aktiven Renderer-Runtime-Stage** `apk add --no-cache 'musl>=1.2.5-r13' 'musl-utils>=1.2.5-r13'` und Regression-Assertions. Die neue Untergrenze ist fail-closed, falls Alpine noch keine gepatchten Pakete bereitstellt. Es wurden keine Ignore-/Severity-Ausnahmen hinzugefügt. Der aktualisierte exakte Kandidat muss im bestehenden CI noch gebaut und mit Trivy/SBOM, Lizenzprofil und Runtime erneut erfolgreich geprüft werden; bis dahin `REVIEW_REQUIRED`. Die weiterhin pausierte NATS-Komponente wurde nicht geprüft oder aktiviert.
