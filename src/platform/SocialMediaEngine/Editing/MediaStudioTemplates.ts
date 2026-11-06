@@ -312,6 +312,110 @@ export function createCapitalAiLandingBlueprintVideoProject(): MediaProjectV2 {
   }, 'Homepage Blueprint Video');
 }
 
+/**
+ * Four owner-authored Chartanalyse Masterclass chapter openings.
+ * Preview-only, zero-provider, and intentionally distinct from long-form masters.
+ * Uses the exact same native MediaProjectV2 SocialMediaEngine contract and
+ * single source of branding tokens as every other Media Studio candidate.
+ */
+export const CAPITAL_AI_MASTERCLASS_EPISODES = Object.freeze([
+  {
+    chapter: 1,
+    slug: 'chartanalyse-grundlagen',
+    title: 'CHARTANALYSE: GRUNDLAGEN',
+    description: 'OHLC, Kerzen und erste Kursanalyse',
+    spokenIntroduction: 'Kapitel eins: Chartanalyse Grundlagen. Wir lernen Kerzen, OHLC und die erste systematische Kursanalyse.',
+  },
+  {
+    chapter: 2,
+    slug: 'realitaetscheck-chartanalyse',
+    title: 'REALITÄTSCHECK CHARTANALYSE',
+    description: 'Trendlinien, Zonen und Fehlmuster',
+    spokenIntroduction: 'Kapitel zwei: Realitätscheck Chartanalyse. Wir betrachten Trendlinien, Unterstützungen und typische Fehlsignale.',
+  },
+  {
+    chapter: 3,
+    slug: 'trend-volumen-ausbrueche',
+    title: 'TREND, VOLUMEN UND AUSBRÜCHE',
+    description: 'Aktivität, Signale und Kontext',
+    spokenIntroduction: 'Kapitel drei: Trend, Volumen und Ausbrüche. Wir prüfen Aktivität und Zusammenhänge statt vorschneller Signale.',
+  },
+  {
+    chapter: 4,
+    slug: 'zeitrahmen-und-zoom',
+    title: 'ZEITRAHMEN UND ZOOM',
+    description: 'Zeitebenen, Kontext und Replay',
+    spokenIntroduction: 'Kapitel vier: Zeitrahmen und Zoom. Wir vergleichen Kursbewegungen in mehreren Zeitebenen und achten auf den Kontext.',
+  },
+] as const);
+
+/**
+ * Native nine-second visual intro project for any published chapter.
+ * Audio is metadata/script only: a separate provenance- and listening-reviewed
+ * voiceover asset is required before publication. No TTS or provider calls.
+ */
+export function createCapitalAiMasterclassChapterIntroProject(chapter: 1 | 2 | 3 | 4): MediaProjectV2 {
+  const episode = CAPITAL_AI_MASTERCLASS_EPISODES[chapter - 1];
+  const fps = 30;
+  const seconds = 9;
+  const disclaimer = 'Bildungsinhalt von CAPITAL-AI. Keine Anlageberatung.';
+  const base = createCapitalAiMediaStudioProject({
+    title: `CAPITAL-AI Masterclass ${chapter}: ${episode.title}`,
+    slug: `capital-ai-masterclass-k${String(chapter).padStart(2, '0')}`,
+    aspectRatio: '16:9',
+    durationSeconds: seconds,
+  });
+  return assertValid({
+    ...base,
+    projectId: `capital-ai-masterclass-intro-k${String(chapter).padStart(2, '0')}-v2`,
+    description: `Kapitel ${chapter} – Entwurf. K1 Style-Referenz: Gold, Navy, JaJa-Sidebar, URL.`,
+    durationFrames: seconds * fps,
+    tracks: [{
+      id: 'masterclass-graphics',
+      kind: 'graphics',
+      name: 'CAPITAL-AI Masterclass Opening',
+      enabled: true,
+      layers: [{
+        id: `masterclass-k${String(chapter).padStart(2, '0')}-scene`,
+        kind: 'scene',
+        name: 'Kapitel Einleitung',
+        enabled: true,
+        range: { startFrame: 0, durationFrames: seconds * fps },
+        kicker: `CAPITAL-AI · MASTERCLASS · KAPITEL ${String(chapter).padStart(2, '0')}`,
+        title: episode.title,
+        body: `${episode.description} · https://capital-ai.online`,
+        disclaimer,
+      }],
+    }],
+    renderRecipe: {
+      templateId: 'capital-ai-masterclass-chapter-intro',
+      templateVersion: '2.0.0',
+      rendererProfile: 'media-project-v2-preview',
+      brandTokenSource: MEDIA_PROJECT_BRAND_TOKEN_SOURCE,
+      brandTextMode: 'deterministic',
+      networkPolicy: 'offline',
+      publishReady: false,
+    },
+    source: { type: 'manual', reference: 'GROWTH/Chartanalyse/Masterclass chapter 01 approved look' },
+    disclosure: {
+      defaultDisclaimer: disclaimer,
+      requireAtProjectEdges: true,
+    },
+    metadata: {
+      editor: 'capital-ai-media-studio-mvp',
+      campaign: 'chartanalyse-masterclass-v2',
+      chapter,
+      designAuthority: MEDIA_PROJECT_BRAND_TOKEN_SOURCE,
+      chapterOneStyleReference: true,
+      website: 'https://capital-ai.online',
+      narrationText: episode.spokenIntroduction,
+      audioStatus: 'REVIEW_REQUIRED',
+      publishReady: false,
+      draftOnly: true,
+    },
+  }, 'Masterclass Intro');
+}
+
 export { youtubeDescription as createYouTubeDescription } from '../../../../shared/product-disclaimers.mjs';
 
 /** Offline, silent tour. No publishing or provider authority is added. */
