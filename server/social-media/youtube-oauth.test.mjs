@@ -44,6 +44,8 @@ test('YouTube start uses owner session, PKCE, offline consent and routing cookie
   assert.equal(url.searchParams.get('redirect_uri'),redirectUri);
   assert.equal(url.searchParams.get('scope'),scopes.join(' '));
   assert.equal(url.searchParams.get('access_type'),'offline');
+  assert.equal(url.searchParams.get('hl'),null, 'default connection keeps the user language');
+  assert.equal(url.searchParams.get('prompt'),'consent');
   assert.equal(url.searchParams.get('code_challenge_method'),'S256');
   assert.equal(starts[0].channel,'YOUTUBE');
   assert.match(r.headers['Set-Cookie'].at(-1),/HttpOnly; Secure; SameSite=Lax/);
