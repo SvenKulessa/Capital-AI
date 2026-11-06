@@ -22,7 +22,7 @@
 - **VERIFIED (Code):** `x-url-context.mjs` verwendet ausschließlich `expansions=author_id`, benötigt `username` und `protected` zur verlässlichen Autoren- und Schutzprüfung. Der feste Parametervertrag ist mit einem Negativtest gegen zusätzliche Media-/Poll-/Place-/Post-Expansions abgesichert.
 - **REVIEW_REQUIRED:** Ab 22.11.2026 können expandierte User-Objekte zusätzliche PPU-Kosten erzeugen. Ein Entfernen der einzig nötigen Expansion ohne gleichwertige Prüfung ist keine sichere Lösung.
 - **NOT_PROVEN:** Kosten, reale API-Nutzung, Guthaben, Console-Spend-Cap und Auto-Recharge. Keine Zahl aus einem Forecast als tatsächlichen Kontostand verwenden; keine API-Calls oder Freischaltungen während des Audits.
-- **Public Content:** kostenbewusster Daten-/Content-Workflow und Eigentums-/Rechteprüfung werden ohne Server-, Vault-, Deployment- oder Architektur-Interna im eigenen Website-Blog erklärt. Keine Behauptung, ein autonomer Scheduler oder messbarer Marketing-ROI sei bereits produktiv.
+- **Public Content:** kostenbewusster Daten-/Content-Workflow und Eigentums-/Rechteprüfung werden ohne Server-, Vault-, Deployment- oder Architektur-Interna im eigenen Website-Blog als `/blog/x-api-expansions-kosten` erklärt. Indexierung und Live-Status erst nach PR-CI-/Render-Readback belegen. Keine Behauptung, ein autonomer Scheduler oder messbarer Marketing-ROI sei bereits produktiv.
 - **Evidence:** [X-PPU-EXPANSIONS-20261106.md](X-PPU-EXPANSIONS-20261106.md); P0 erst nach X Console-Readback schließen.
 
 ## Phase 1 – First Controlled Pilot (Week 1)
@@ -40,7 +40,7 @@ Single owner-gated X article via existing integrated path (`x-article-test` or m
 
 ## Phase 2 – Four-Week Content Series (Weeks 2–5)
 
-16 posts as sketched in the 2026-10-14 marketing concept. One owner approval per item. No unattended scheduler yet.
+16 posts as sketched in the 2026-10-14 marketing concept. One owner approval per item. No unattended scheduler yet. Der neue öffentliche X-API-Kostenartikel ist ein WEBSITE-Content-Asset mit Lern-CTA; ein X-Post dazu bleibt ein separater kostenfreigabepflichtiger DRAFT, kein automatischer Crosspost.
 
 | Week | Focus | Example |
 |------|-------|---------|
