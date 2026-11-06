@@ -1460,7 +1460,7 @@ const RAW_WORK_PACKAGES: WorkPackage[] = [
   "priority": "Kritisch",
   "leadName": "Owner + AI Apps",
   "targetSprint": "täglich",
-  "description": "npm, GitHub Actions und Docker-Pins werden täglich auf Updates geprüft; HIGH/CRITICAL npm Advisories blockieren den Watch-Lauf. Der bestehende Docker Security Gate läuft zusätzlich täglich mit frischen Trivy-Daten über Source, Build-Image, Runtime-Image und NATS-Image.",
+  "description": "npm, GitHub Actions und Docker-Pins werden täglich auf Updates geprüft; HIGH/CRITICAL npm Advisories blockieren den Watch-Lauf. Der bestehende Docker Security Gate prüft Source, Build-Image und Runtime-Image mit frischen Trivy-Daten. Das deaktivierte NATS-Image bleibt bis zur ausdrücklich autorisierten Reaktivierung ohne eigenen Scan (SKIPPED_PAUSED_NOT_VERIFIED); danach gelten wieder die NATS-Prüfungen.",
   "deliverables": [
     "Daily Dependabot",
     "npm audit high/critical",
