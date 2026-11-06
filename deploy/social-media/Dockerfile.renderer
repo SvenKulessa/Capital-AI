@@ -43,7 +43,10 @@ RUN test -n "${FFMPEG_VERSION}" \
 ARG PYTHON_BASE
 FROM ${PYTHON_BASE} AS runtime
 
+# Pin the current Alpine 3.22 musl security floor (CVE-2026-107891).
 RUN apk add --no-cache \
+      'musl>=1.2.5-r13' \
+      'musl-utils>=1.2.5-r13' \
       'libcrypto3>=3.5.8-r0' \
       'libssl3>=3.5.8-r0' \
       'libuuid>=2.41.6-r1' \
