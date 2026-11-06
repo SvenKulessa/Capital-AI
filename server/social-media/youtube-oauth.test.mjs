@@ -139,3 +139,38 @@ test('owner must explicitly accept current YouTube policy before OAuth state or 
   }
   assert.equal(starts,0);
 });
+
+test('English consent is explicit and keeps exact scopes, state, cookie and PKCE', async () => {
+  const r=response(); const starts=[];
+  const start=createSocialYouTubeOAuthStart({ env, auth, store:{beginOAuth:async x=>{starts.push(x);return {state};}}});
+  await start.handle(req,r,new URL(`/api/social-media/youtube/auth/start?privacy=${YOUTUBE_POLICY.version}&hl=en`,env.PUBLIC_APP_ORIGIN),json);
+  const target=new URL(r.headers.Location);
+  assert.equal(target.searchParams.get('hl'),'en'); assert.equal(target.searchParams.get('prompt'),'consent');
+  assert.equal(target.searchParams.get('scope'),scopes.join(' ')); assert.equal(target.searchParams.get('state'),state);
+  assert.equal(starts.length,1); assert.match(r.headers['Set-Cookie'].at(-1),/HttpOnly; Secure; SameSite=Lax/);
+});
+test('unsupported, duplicate or injected language parameters do not issue state',async()=>{
+  let calls=0;
+  const start=createSocialYouTubeOAuthStart({env,auth,store:{beginOAuth:async()=>{calls++;return {state};}}});
+  for(const extra of ['hl=de','hl=en&hl=en','hl=en&redirect_uri=https://evil.example','hl=']){
+    const r=response();await start.handle(req,r,new URL(`/api/social-media/youtube/auth/start?privacy=${YOUTUBE_POLICY.version}&${extra}`,env.PUBLIC_APP_ORIGIN),json);
+    assert.equal(r.status,303);assert.equal(r.headers.Location,'/api/social-media/youtube/account/connect');
+  }
+  assert.equal(calls,0);
+});
+test('connection page links English consent and preserves explicit policy acceptance',async()=>{
+  for(const suffix of ['', '?hl=en']){
+    const r=response();let html='';r.end=x=>{html=x;};
+    await createSocialYouTubeAccountStatus({env,auth}).handle(req,r,new URL('/api/social-media/youtube/account/connect'+suffix,env.PUBLIC_APP_ORIGIN),json);
+    assert.equal(r.status,200);assert.match(html,/Record Google consent in English/);
+    assert.match(html,/name="privacy"[^>]*required/);
+    assert.equal(html.includes('type="hidden" name="hl" value="en"'),suffix==='?hl=en');
+  }
+});
+
+test('English connect allows no arbitrary query parameters or non-owner access',async()=>{
+ for(const query of ['?hl=de','?hl=en&hl=en','?hl=en&next=https://evil.example']){
+  const r=response();await createSocialYouTubeAccountStatus({env,auth}).handle(req,r,new URL('/api/social-media/youtube/account/connect'+query,env.PUBLIC_APP_ORIGIN),json);assert.equal(r.status,405);
+ }
+ const r=response();await createSocialYouTubeAccountStatus({env,auth:{...auth,authorizeIamRole:async()=>false}}).handle(req,r,new URL('/api/social-media/youtube/account/connect?hl=en',env.PUBLIC_APP_ORIGIN),json);assert.equal(r.status,403);
+});
