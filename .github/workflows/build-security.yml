@@ -85,7 +85,6 @@ jobs:
             scripts/validate-oss-multi-asset-plan.test.mjs \
             scripts/verify-release-readiness.test.mjs \
             scripts/ci-efficiency-report.test.mjs \
-            scripts/verify-go-vuln-reachability.test.mjs \
             scripts/docker-archive-config.test.mjs
           npm run validate:all
           git diff --exit-code -- generated/SKILL-INVENTORY.md generated/SKILL-READINESS.md generated/CAPITAL-AI-SKILL-EXPANSION-REPORT.md generated/ARCHITECTURE-GAP-ANALYSIS.md
@@ -101,8 +100,6 @@ jobs:
       - name: Dockerfile linten
         run: |
           docker run --rm --entrypoint hadolint -v "$PWD:/work:ro" capital-ai-security /work/Dockerfile
-          # Disk bootstrap drops to UID 1000; its bounded exception remains source-scanned.
-          docker run --rm --entrypoint hadolint -v "$PWD:/work:ro" capital-ai-security --ignore DL3002 /work/deploy/Dockerfile.nats
       - name: NATS-Pruefumfang aus PR-Diff bestimmen
         id: nats_scope
         shell: bash
@@ -113,6 +110,15 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number || '' }}
         run: |
           set -euo pipefail
+          # Repository-declared pause is authoritative for dormant NATS CI scope.
+          # Unknown/malformed settings are fail-closed: continue full NATS checks.
+          if node -e 'const s=require("node:fs").readFileSync("render.yaml","utf8");const m=[...s.matchAll(/^[ \\t]*- key: MARKET_BROKER_PAUSED\\r?\\n[ \\t]*value: ["]?(true|false)["]?[ \\t]*$/gm)];process.exit(m.length===1&&m[0][1]==="true"?0:1)'; then
+            echo 'run=false' >> "$GITHUB_OUTPUT"
+            echo 'paused=true' >> "$GITHUB_OUTPUT"
+            echo 'NATS: MARKET_BROKER_PAUSED=true; Docker image, runtime and vulnerability reachability NOT_RUN until reactivation' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          echo 'paused=false' >> "$GITHUB_OUTPUT"
           if [ "$EVENT_NAME" != "pull_request" ]; then
             echo 'run=true' >> "$GITHUB_OUTPUT"
             echo "NATS: full scan required on $EVENT_NAME" >> "$GITHUB_STEP_SUMMARY"
@@ -127,6 +133,12 @@ jobs:
             echo 'run=false' >> "$GITHUB_OUTPUT"
             echo 'NATS: independent image unchanged; image and binary checks not applicable to this PR; full scan required on main, schedule and dispatch' >> "$GITHUB_STEP_SUMMARY"
           fi
+      - name: NATS-Dockerfile und Binary-Reachability-Tests nur bei aktivem Scope
+        if: steps.nats_scope.outputs.run == 'true'
+        run: |
+          # Disk bootstrap drops to UID 1000; its bounded exception remains source-scanned.
+          docker run --rm --entrypoint hadolint -v "$PWD:/work:ro" capital-ai-security --ignore DL3002 /work/deploy/Dockerfile.nats
+          node --test scripts/verify-go-vuln-reachability.test.mjs
       - name: NATS-Disk-Bootstrap und nicht-root Server verifizieren
         if: steps.nats_scope.outputs.run == 'true'
         run: |
@@ -335,6 +347,7 @@ jobs:
         if: always()
         env:
           CAPITAL_NATS_SCOPE: ${{ steps.nats_scope.outputs.run }}
+          CAPITAL_NATS_PAUSED: ${{ steps.nats_scope.outputs.paused }}
         run: |
           mkdir -p security-reports
           node scripts/publish-security-summary.mjs security-reports
