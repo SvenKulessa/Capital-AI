@@ -1,6 +1,6 @@
 {
   "schemaVersion": "CAPITAL_AI_MASTERCLASS_STYLE@2",
-  "status": "LOCAL_RENDER_READY_WITH_AUDIO_REVIEW_REQUIRED",
+  "status": "ORIGINAL_AUDIO_RESTORED_HUMAN_AUDIO_REVIEW_REQUIRED",
   "templateAuthority": "src/platform/SocialMediaEngine/Editing/MediaStudioTemplates.ts:createCapitalAiMasterclassChapterIntroProject",
   "paletteAuthority": "public/branding/asset-pack/meta/social-render-tokens.json",
   "referenceChapter": "Kapitel 01 · Chartanalyse Grundlagen",
@@ -54,9 +54,9 @@
   ],
   "voice": {
     "language": "de-DE",
-    "mode": "local-preview",
-    "engine": "eSpeak local library for offline draft; not neural2",
-    "speechSecondsMax": 9,
+    "mode": "original-source-audio-only",
+    "engine": "source soundtracks; no new TTS",
+    "speechSecondsMax": 0,
     "reviewRequired": true,
     "embeddedOriginalNarration": true,
     "providerBilling": false
@@ -68,5 +68,14 @@
     "googleNeural2NotActivated": true
   },
   "noLiveMarketData": true,
-  "sourceRightsNote": "Requires rights review of the original video, audio, Grok avatar and any Notebook-generated elements; crop does not establish copyright."
+  "sourceRightsNote": "Requires rights review of the original video, audio, Grok avatar and any Notebook-generated elements; crop does not establish copyright.",
+  "deliveredMedia": {
+    "version": "v3-originalstimme",
+    "date": "2026-11-06",
+    "syntheticIntroRemovedSeconds": 9,
+    "visualIntroInDeliveredFiles": false,
+    "originalTeachingAudioPreserved": true,
+    "driveByteHashReadback": "VERIFIED",
+    "publicationAllowed": false
+  }
 }
