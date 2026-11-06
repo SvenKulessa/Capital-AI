@@ -29,6 +29,9 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: FFmpeg-Dockerfile-Konfigurationsregression
+        run: node --test scripts/social-renderer-dockerfile.test.mjs
+
       - name: Gepinnte Sicherheitswerkzeuge bauen
         run: |
           set -euo pipefail
