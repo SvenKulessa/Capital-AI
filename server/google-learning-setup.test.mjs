@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { handleGoogleMaintenanceMessage } from '../scripts/google-maintenance-mcp.mjs';
 import { createGoogleMaintenance } from './google-maintenance-api.mjs';
 import { runLearningSetup, summarizeLearningReports } from '../scripts/google-learning-setup.mjs';
 
@@ -16,6 +17,7 @@ function fixture({ writes = true, gscWrites = true, streamCount = 1, readbackFai
     fetchImpl: async (url, options) => {
       calls.push({ path: url.pathname, query: url.search, method: options.method, body: options.body ? JSON.parse(options.body) : null });
       const path = url.pathname;
+      if (url.hostname === 'searchconsole.googleapis.com') return Response.json({inspectionResult:{indexStatusResult:{verdict:'PASS',indexingState:'INDEXING_ALLOWED',lastCrawlTime:'2026-11-06T00:00:00Z'}}});
       if (path === '/v1beta/' + property) return Response.json({ name: property, displayName: 'Capital-AI' });
       if (path.endsWith('/dataStreams')) return Response.json({ dataStreams: Array.from({ length: streamCount }, (_, i) => ({ name: property + '/dataStreams/' + (12345 + i), type: 'WEB_DATA_STREAM', webStreamData: { defaultUri: 'https://capital-ai.online/', measurementId: 'G-0542DT2HCE' } })) });
       if (path.endsWith('/keyEvents')) {
@@ -73,7 +75,7 @@ test('audit never changes settings and prints no private reports', async () => {
   const f = fixture({ writes: false, gscWrites: false });
   const result = await runLearningSetup('audit', f.api);
   assert.equal(result.writes, null);
-  assert.ok(f.calls.every(c => c.method === 'GET' || c.path.endsWith(':runReport') || c.path.endsWith('/searchAnalytics/query')));
+  assert.ok(f.calls.every(c => c.method === 'GET' || c.path.endsWith(':runReport') || c.path.endsWith('/searchAnalytics/query') || c.path.endsWith('/urlInspection/index:inspect')));
   assert.doesNotMatch(JSON.stringify(result), /sentinel-private/);
   await assert.rejects(runLearningSetup('arbitrary', f.api), /INVALID_MODE/);
 });
@@ -130,4 +132,64 @@ test('country analysis separates clicks, sessions, lead events and unproven purc
   assert.equal(unavailable.countries[0].organicLearning.currentSessions, null);
   assert.equal(unavailable.countries[0].searchTopPages.clicks, null);
   assert.doesNotMatch(JSON.stringify(unavailable), /private|email=/);
+});
+
+
+test('URL inspection is fixed to three public routes, readonly and sanitized', async () => {
+  const calls = [];
+  const api = createGoogleMaintenance({env:{}, tokenProvider:async ()=>'sentinel-token', fetchImpl:async(url,options)=>{
+    calls.push({url:String(url),options,body:JSON.parse(options.body)});
+    return Response.json({inspectionResult:{inspectionResultLink:'sentinel-private',indexStatusResult:{
+      verdict:'PASS', robotsTxtState:'ALLOWED', indexingState:'INDEXING_ALLOWED', pageFetchState:'SUCCESSFUL',
+      lastCrawlTime:'2026-11-06T12:00:00Z', googleCanonical:'https://capital-ai.online/learning',
+      referringUrls:['sentinel-private'],coverageState:'sentinel-private'}}});
+  }});
+  await assert.rejects(api.call('gsc_inspect_public_urls',{urls:['https://evil.example/private']}),/UNSUPPORTED_ARGUMENT/);
+  assert.equal(calls.length,0);
+  const result=await api.call('gsc_inspect_public_urls');
+  assert.equal(calls.length,3);
+  assert.deepEqual(result.urls.map(x=>x.expectedIndexing),['INDEX','INDEX','NOINDEX']);
+  assert.deepEqual(result.urls.map(x=>x.path),['/learning','/vocabulary/orderbuch','/vocabulary/capital-eventmesh']);
+  for(const c of calls) {
+    assert.equal(c.url,'https://searchconsole.googleapis.com/v1/urlInspection/index:inspect');
+    assert.equal(c.options.method,'POST');
+    assert.equal(c.body.siteUrl,'sc-domain:capital-ai.online');
+    assert.equal(c.options.redirect,'error');
+  }
+  assert.equal(result.crawlRequested,false);
+  assert.equal(result.urls[0].googleCanonicalMatches,true);
+  assert.equal(result.urls[1].googleCanonicalMatches,false);
+  assert.doesNotMatch(JSON.stringify(result),/sentinel|referringUrls|coverageState|inspectionResultLink/);
+});
+
+test('inspection rejects unavailable responses and never interprets unknown fields as PASS', async()=>{
+  for(const payload of [{},{inspectionResult:{indexStatusResult:[]}}]) {
+    const api=createGoogleMaintenance({env:{},tokenProvider:async()=>'token',fetchImpl:async()=>Response.json(payload)});
+    await assert.rejects(api.call('gsc_inspect_public_urls'),/GSC_INSPECTION_INVALID_RESPONSE/);
+  }
+  const api=createGoogleMaintenance({env:{},tokenProvider:async()=>'token',fetchImpl:async()=>Response.json({inspectionResult:{indexStatusResult:{verdict:'sentinel-private',lastCrawlTime:'private',googleCanonical:'https://evil.example/private'}}})});
+  const result=await api.call('gsc_inspect_public_urls');
+  assert.equal(result.urls[0].verdict,null);
+  assert.equal(result.urls[0].lastCrawlTime,null);
+  assert.equal(result.urls[0].googleCanonicalMatches,false);
+  assert.doesNotMatch(JSON.stringify(result),/sentinel-private|evil.example/);
+});
+
+
+test('MCP exposes bounded inspection and audit preserves independent reads on inspection failure', async()=>{
+  const f=fixture({writes:false,gscWrites:false});
+  const listed=await handleGoogleMaintenanceMessage({jsonrpc:'2.0',id:1,method:'tools/list'},f.api);
+  assert.equal(listed.result.tools.find(t=>t.name==='gsc_inspect_public_urls').inputSchema.additionalProperties,false);
+  const inspected=await handleGoogleMaintenanceMessage({jsonrpc:'2.0',id:2,method:'tools/call',params:{name:'gsc_inspect_public_urls',arguments:{}}},f.api);
+  assert.equal(inspected.result.isError,false);
+  assert.equal(inspected.result.structuredContent.urls.length,3);
+  for(const message of ['GOOGLE_HTTP_403','sentinel-private-token']) {
+    const maintenance={call:async(name,input)=>{if(name==='gsc_inspect_public_urls') throw new Error(message); return f.api.call(name,input);}};
+    const result=await runLearningSetup('audit',maintenance);
+    assert.equal(result.indexInspection.status,'NOT_PROVEN');
+    assert.equal(result.reporting.ga4ReadVerified,true);
+    assert.equal(result.reporting.gscReadVerified,true);
+    assert.equal(result.writes,null);
+    assert.doesNotMatch(JSON.stringify(result),/sentinel-private/);
+  }
 });

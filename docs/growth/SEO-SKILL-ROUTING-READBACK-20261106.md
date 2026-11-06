@@ -35,3 +35,16 @@ Subscription checkout reports configured; real purchases NOT_PROVEN. CADS Market
 TypeScript suppression validation already passes on current main, review deadline 2026-11-19. No date-only renewal or unrelated compiler upgrade included.
 
 Next: validate actual consented browser collection and successful enquiry receipt before attributing GA4 leads; inspect Google's indexed/canonical state; continue #559 only when exact rights/channel evidence is available. Router changes do not activate providers, commerce or publishing.
+
+
+## Follow-up: Google URL Inspection (source implementation)
+
+Integration re-correlated with main `2162da68167346311a8dfdc2cbd12745681bdf49` after #589 (English YouTube page) and #591 (paused NATS checks). Current open work also includes #592 renderer WORKDIR and #594 GA4 MCP propagator isolation; the latter is a partial mitigation for #593, not a fixed upstream package. These independent PRs and draft #548/#587 are not merged by this patch.
+
+The existing Google-maintenance REST client and stdio MCP now expose `gsc_inspect_public_urls`. The existing main-only `Google Learning SEO Setup` audit calls it automatically. It inspects exactly `/learning`, `/vocabulary/orderbuch` and `/vocabulary/capital-eventmesh`, fixed to `sc-domain:capital-ai.online`. No caller URLs, private account routes, query strings, credentials, live crawl tests or recrawl requests are accepted. Expected INDEX/NOINDEX comes from the existing central policy.
+
+Output is restricted to known enum values, validated crawl timestamp and canonical-match booleans. Raw referring URLs, Google result links, free-text coverage descriptions, arbitrary canonicals and provider errors are omitted. Provider 403 or missing inspection evidence remains NOT_PROVEN for this boundary while independent GA4/country reports can still succeed. `PROVIDER_READ_VERIFIED` means index-state data was read, not that every target is indexed or has already adopted today's policy.
+
+Live URL-inspection results remain NOT_PROVEN until this implementation is on main and the existing audit is dispatched again (`google-learning-setup.yml`, `mode=audit`). Existing readonly OAuth scopes are sufficient in design; actual API enablement/authorization must be proven by that readback. Main-only federation restrictions are retained. No service-account keys, new IAM grants, new required checks, provider mutations or separate orchestration service introduced.
+
+Validation: focused routing/SEO/privacy/Google/MCP tests include fixed targets, denied arbitrary input, sanitized provider fields, unknown/missing results and inspection-unavailable separation. The earlier live Google audit remains evidence for its original source version and does not verify this new inspection feature.

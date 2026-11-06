@@ -58,6 +58,13 @@ export async function runLearningSetup(mode, maintenance) {
     formInteractionsEnabled: after.formInteractionsEnabled,
     enhancedMeasurementDisabled: after.enhancedMeasurementDisabled };
   // Reports stay inside the trusted runner and are never written to artifacts.
+  try {
+    result.indexInspection = await maintenance.call('gsc_inspect_public_urls');
+  } catch (error) {
+    // URL-Inspection authorization/availability is a separate evidence boundary.
+    // Never replace missing evidence with PASS or block independent GA4 reports.
+    result.indexInspection = { status: 'NOT_PROVEN', error: /^GOOGLE_HTTP_[45][0-9]{2}$/.test(error?.message || '') ? error.message : 'GSC_INSPECTION_UNAVAILABLE' };
+  }
   const ga4 = await maintenance.call('ga4_learning_report');
   const leads = await maintenance.call('ga4_learning_lead_report');
   const gsc = await maintenance.call('gsc_country_report', { days: 28 });
