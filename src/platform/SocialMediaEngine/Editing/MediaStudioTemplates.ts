@@ -355,7 +355,8 @@ export const CAPITAL_AI_MASTERCLASS_EPISODES = Object.freeze([
  * voiceover asset is required before publication. No TTS or provider calls.
  */
 export function createCapitalAiMasterclassChapterIntroProject(chapter: 1 | 2 | 3 | 4): MediaProjectV2 {
-  const episode = CAPITAL_AI_MASTERCLASS_EPISODES[chapter - 1];
+  const episode = CAPITAL_AI_MASTERCLASS_EPISODES.find((candidate) => candidate.chapter === chapter);
+  if (!episode) throw new Error('Invalid masterclass chapter');
   const fps = 30;
   const seconds = 9;
   const disclaimer = 'Bildungsinhalt von CAPITAL-AI. Keine Anlageberatung.';
