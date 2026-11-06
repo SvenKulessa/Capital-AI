@@ -1,6 +1,6 @@
 {
   "schemaVersion": "CAPITAL_AI_MASTERCLASS_STYLE@3",
-  "status": "UNPUBLISHED_MASTER_V4_RENDER_IN_PROGRESS_AUDIO_COMPLETENESS_QA",
+  "status": "V4_FOUR_DRIVE_MASTERS_SHA256_VERIFIED_AUDIO_HUMAN_QA_PENDING",
   "templateAuthority": "src/platform/SocialMediaEngine/Editing/MediaStudioTemplates.ts:createCapitalAiMasterclassChapterIntroProject",
   "paletteAuthority": "public/branding/asset-pack/meta/social-render-tokens.json",
   "referenceChapter": "Kapitel 01 · Chartanalyse Grundlagen",
@@ -81,8 +81,11 @@
     "originalTeachingAudioPreserved": true,
     "sourceStartSeconds": 0,
     "outroStillHoldSeconds": 8,
-    "driveByteHashReadback": "PENDING",
-    "publicationAllowed": false
+    "driveByteHashReadback": "VERIFIED_IN_PLACE_SHA256_MATCH_4",
+    "publicationAllowed": false,
+    "humanListeningVerified": false,
+    "buddyVisible": false,
+    "outroLast7sSilent": true
   },
   "postProduction": {
     "chapter01Crop": "x20..1330 removes original embedded Buddy sidebar",
@@ -90,8 +93,10 @@
     "chapter04NotebookCleanFreeze": true,
     "allSourceAudioNoSyntheticVoices": true,
     "badgeNoBuddy": true,
-    "sourceOriginalHashVerification": "PENDING",
+    "sourceOriginalHashVerification": "VERIFIED_4_SOURCES",
     "commercialRights": "REVIEW_REQUIRED",
-    "semanticSentenceQA": "NOT_PROVEN"
+    "semanticSentenceQA": "NOT_PROVEN_REQUIRES_OWNER_HUMAN_LISTENING",
+    "outputDriveHashVerification": "VERIFIED_4_OUTPUTS",
+    "visualQA": "SAMPLED_PASS_FINAL_TITLE_REWRAP_K01_K03"
   }
 }
