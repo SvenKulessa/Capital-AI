@@ -27,17 +27,17 @@ New focused tests in `server/password-auth-isolation.test.mjs` assert:
 4. Session isolation: two distinct subjects receive independent session cookies; one subject’s cookie does not authenticate as the other.
 5. Explicit note that the test harness never simulates a leaked-password rejection from Supabase (feature not enabled / not under test).
 
-## Activation status (REVIEW_REQUIRED)
+## Free-Tier decision (owner, 2026-11-06)
 
-Leaked Password Protection remains a Supabase Auth setting (Dashboard → Authentication → Policies).  
-Current tools cannot read or mutate the production Auth setting. No tariff upgrade or setting change was performed.
+Supabase remains on Free. No Pro upgrade, paid add-on or paid activation is authorized. The native leaked-password feature requires Pro or higher per the current official password-security documentation; it remains disabled and the advisor warning stays open. No owner action to enable a paid toggle is requested.
 
-**Owner next step (smallest):**  
-Open the Supabase Auth dashboard for the production project, confirm current plan includes the feature, and enable “Leaked password protection” if available. Verify with a synthetic weak/leaked password on a test account only. Rollback = disable the toggle.
+Existing application controls include 14–256 characters for new passwords, verified server sessions, Origin checks, signed HttpOnly/Secure cookies, TOTP/passkey code paths and bounded process-local rate limiting on general auth routes. This is not a distributed limiter or a blanket guarantee for every separately routed security endpoint. Current provider configuration and real enrollment are separate evidence.
+
+The corrected isolation harness binds upstream user lookup to immutable token identities and sends complete cookie jars, including all session chunks. The count cookie alone is not a session. Malformed password, cross-origin, registration and two-session tests are executed through the existing npm/Docker paths.
 
 ## Residual risk
 
-Until the Supabase setting is enabled, users can set passwords that appear in public breach lists, subject only to the local 14-character minimum and any other GoTrue policies already active. OAuth and passkey paths are unaffected.
+Leaked passwords are not checked locally. Length, MFA and session controls do not replace a breach-list check. No new external password/hash service is called; the native finding remains open under the Free-Tier constraint.
 
 ## Evidence refs
 
