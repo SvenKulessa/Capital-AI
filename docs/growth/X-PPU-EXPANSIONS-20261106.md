@@ -25,6 +25,10 @@ Laut der vom Owner weitergegebenen X Developer Accounts-Mitteilung werden ab **2
 
 Keine expliziten `media.fields`, `poll.fields` oder `place.fields` in der geprüften Default-Branch-Code-Suche gefunden. Negativbefund umfasst keine externen Apps, andere Branches oder X-Console-Konfigurationen.
 
+## Zusätzlicher Marketing-Kostentreiber (nicht Expansion)
+
+Die offizielle X-Tabelle nennt `Post: Create (with URL)` mit **USD 0,200 pro Schreibaufruf** gegenüber `Post: Create` mit USD 0,015 (Stand 06.11.2026). `provider-publish.mjs` überträgt reinen `text`; die bestehenden Pilot- und möglichen Marketingentwürfe können einen Website-Link enthalten und daher als `with URL` gelten. Den tatsächlich angewandten Endpoint-/Tarifpreis im X Developer Console-Readback prüfen, bevor der Owner eine Veröffentlichung genehmigt. Dieser Posttarif ist separat von neuen Expansion-Kosten und kein Anlass, eine Veröffentlichung auszulösen.
+
 ## P0-Befund und Entscheidung
 
 `expansions=author_id` ist **nicht unnötig**: `normalizeXPostContext` gleicht User-ID, URL-Username und den Schutzstatus ab. Ein Entfernen ohne gleichwertige und datenschutzrechtlich vertretbare Identitätsprüfung wäre ein Sicherheits- und Integritätsregress. Die unveränderte Minimalabfrage wird im Code nun als konkreter Parametervertrag geführt und im Test auf exakt eine User-Expansion geprüft. **Das ist Regression-Protection, keine behauptete Kostensenkung.**
