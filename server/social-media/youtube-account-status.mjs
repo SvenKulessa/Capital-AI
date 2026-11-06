@@ -88,7 +88,9 @@ export function createSocialYouTubeAccountStatus({ env = process.env, auth, fetc
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
     const disconnect = url.pathname === DISCONNECT;
-    if (url.search || req.method !== (disconnect ? 'POST' : 'GET')) {
+    const englishConnect = url.pathname === CONNECT && url.searchParams.get('hl') === 'en'
+      && url.searchParams.getAll('hl').length === 1 && [...url.searchParams.keys()].every(key => key === 'hl');
+    if ((url.search && !englishConnect) || req.method !== (disconnect ? 'POST' : 'GET')) {
       res.setHeader('Allow', disconnect ? 'POST' : 'GET');
       jsonError(json, res, 405, 'method_not_allowed');
       return true;
@@ -147,8 +149,9 @@ export function createSocialYouTubeAccountStatus({ env = process.env, auth, fetc
       return true;
     }
     if (url.pathname === CONNECT) {
+      const englishConsent = url.searchParams.get('hl') === 'en';
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'private, no-store', 'Vary': 'Cookie' });
-      res.end(`<!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>YouTube verbinden | CAPITAL AI</title><body><main><h1>YouTube mit CAPITAL AI verbinden</h1><p>Wähle bei Google das Konto und den Kanal, die du für CAPITAL AI verwenden möchtest. Diese Verbindung veröffentlicht noch kein Video.</p>${youtubePolicyHtml()}<form action="/api/social-media/youtube/auth/start" method="get"><label><input type="checkbox" name="privacy" value="${YOUTUBE_POLICY.version}" required> Ich akzeptiere die Datenschutzhinweise und die YouTube-Nutzungsbedingungen für diese Funktion.</label><button type="submit">Mit Google verbinden</button></form><p><a href="/api/social-media/youtube/account/status">Verbindung prüfen</a></p><p><a href="/datenschutz/">Datenschutz</a> · <a href="/agb/">AGB</a></p><form action="/api/social-media/youtube/account/disconnect" method="post"><p>Widerruft die Google-Berechtigung und löscht gespeicherte YouTube-Daten bei CAPITAL-AI. Deine Videos bleiben auf YouTube erhalten.</p><label><input type="checkbox" name="confirm" value="delete-youtube-data" required> Verbindung und gespeicherte YouTube-Daten löschen</label><button type="submit">Löschung ausführen</button></form></main></body></html>`);
+      res.end(`<!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>YouTube verbinden | CAPITAL AI</title><body><main><h1>YouTube mit CAPITAL AI verbinden</h1><p>Wähle bei Google das Konto und den Kanal, die du für CAPITAL AI verwenden möchtest. Diese Verbindung veröffentlicht noch kein Video.</p>${youtubePolicyHtml()}<p>Für die ergänzende Google-Prüfaufnahme: <a href="/api/social-media/youtube/account/connect?hl=en" lang="en">Record Google consent in English</a>. Es wird kein Video hochgeladen.</p><form action="/api/social-media/youtube/auth/start" method="get">${englishConsent ? '<input type="hidden" name="hl" value="en">' : ''}<label><input type="checkbox" name="privacy" value="${YOUTUBE_POLICY.version}" required> Ich akzeptiere die Datenschutzhinweise und die YouTube-Nutzungsbedingungen für diese Funktion.</label><button type="submit">${englishConsent ? 'Google-Zustimmung auf Englisch öffnen' : 'Mit Google verbinden'}</button></form><p><a href="/api/social-media/youtube/account/status">Verbindung prüfen</a></p><p><a href="/datenschutz/">Datenschutz</a> · <a href="/agb/">AGB</a></p><form action="/api/social-media/youtube/account/disconnect" method="post"><p>Widerruft die Google-Berechtigung und löscht gespeicherte YouTube-Daten bei CAPITAL-AI. Deine Videos bleiben auf YouTube erhalten.</p><label><input type="checkbox" name="confirm" value="delete-youtube-data" required> Verbindung und gespeicherte YouTube-Daten löschen</label><button type="submit">Löschung ausführen</button></form></main></body></html>`);
       return true;
     }
     if (diagnostics) {
