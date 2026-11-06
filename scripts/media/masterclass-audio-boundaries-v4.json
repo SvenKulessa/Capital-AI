@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "CAPITAL_AI_MASTERCLASS_AUDIO_BOUNDARY@1",
+  "status": "SOURCE_AUDIO_PRESERVED_SEMANTIC_REVIEW_REQUIRED",
+  "brandTokens": "CAPITAL_AI_SOCIAL_RENDER_TOKENS@1",
+  "sourceStartSeconds": 0,
+  "addedSilentIntroductionSeconds": 2.5,
+  "endImageHoldSeconds": 8,
+  "rightBuddyPanel": false,
+  "generatedSpeech": false,
+  "automatedPublishingAllowed": false,
+  "audioMethod": "Keep the owner-provided source soundtrack from t=0 through at least 0.4s after last detectable RMS speech activity; never reconstruct missing source phonemes or fabricate sentences.",
+  "sources": [
+    {
+      "chapter": 1,
+      "sha256": "a81853ae0e0c942704dac892b968902d8502893edbcf0b01647edf62eb0f03c7",
+      "lastMeasuredSpeechActivitySeconds": 393.9,
+      "sourceAudioSelectedSeconds": 394.6,
+      "videoBeforeFreezeSeconds": 392.8,
+      "freezeTailSeconds": 1.8,
+      "rightPanelRemoval": "crop first-party source frame to x=20..1330"
+    },
+    {
+      "chapter": 2,
+      "sha256": "c8d78976bf9d4a6ac2b49f3b2cfb834035e0486c89bdcc07cadf22a4c245780a",
+      "lastMeasuredSpeechActivitySeconds": 439.1,
+      "sourceAudioSelectedSeconds": 440.6,
+      "videoBeforeFreezeSeconds": 440.6,
+      "freezeTailSeconds": 0
+    },
+    {
+      "chapter": 3,
+      "sha256": "f8f632dff3f4e2413c0061a6f6d6123f5996fb01eccddf60a544c802ca50e672",
+      "lastMeasuredSpeechActivitySeconds": 385.4,
+      "sourceAudioSelectedSeconds": 386.8,
+      "videoBeforeFreezeSeconds": 386.8,
+      "freezeTailSeconds": 0
+    },
+    {
+      "chapter": 4,
+      "sha256": "336c07aa59ecd33aa8107dbfd6fa7062a56e1bc733ab15f17aa0b877eef89700",
+      "lastMeasuredSpeechActivitySeconds": 372.2,
+      "sourceAudioSelectedSeconds": 373.5,
+      "videoBeforeFreezeSeconds": 371.5,
+      "freezeTailSeconds": 2,
+      "rightPanelRemoval": "none; remove Notebook footer by safe y=0..700 crop and freeze before animated Notebook endcard"
+    }
+  ],
+  "verification": {
+    "method": "mono-16kHz PCM RMS in 100ms bins, threshold 0.012; audio frame decoding and SHA readback required",
+    "limitations": "RMS cannot prove whole words or semantic sentence completeness, especially where source starts during speech (chapter 4). Human listener must confirm before publishing.",
+    "voice": "original source recording only; no eSpeak, Neural2 or new TTS"
+  },
+  "rights": "REVIEW_REQUIRED",
+  "publishReady": false
+}
