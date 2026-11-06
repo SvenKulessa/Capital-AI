@@ -1,4 +1,5 @@
 import { createLimiter } from '../http-security.mjs';
+import { SECURITY_HEADERS } from '../security-headers.mjs';
 import { youtubeOAuthConfig } from './youtube-oauth-exchange.mjs';
 import { YOUTUBE_POLICY, youtubePolicyHtml } from '../../shared/youtube-privacy.mjs';
 import { createYouTubeVaultAccess, unsealYouTubeToken, createYouTubeTokenResolver } from './youtube-token-resolver.mjs';
@@ -149,6 +150,14 @@ export function createSocialYouTubeAccountStatus({ env = process.env, auth, fetc
       return true;
     }
     if (url.pathname === CONNECT) {
+      // Chromium applies form-action to the Google redirect after the same-origin
+      // consent form submission. Permit only the fixed Google OAuth origin here;
+      // the default policy for every other page remains self-only.
+      const consentSecurityHeaders = Object.fromEntries(
+        ['Content-Security-Policy', 'Content-Security-Policy-Report-Only'].map(name => [
+          name, SECURITY_HEADERS[name].replace("form-action 'self'", "form-action 'self' https://accounts.google.com"),
+        ]),
+      );
       const englishConsent = url.searchParams.get('hl') === 'en';
       const copy = englishConsent ? {
         title: 'Connect YouTube to CAPITAL AI',
@@ -167,7 +176,7 @@ export function createSocialYouTubeAccountStatus({ env = process.env, auth, fetc
         deletion: 'Widerruft die Google-Berechtigung und löscht gespeicherte YouTube-Daten bei CAPITAL-AI. Deine Videos bleiben auf YouTube erhalten.',
         confirmDelete: 'Verbindung und gespeicherte YouTube-Daten löschen', delete: 'Löschung ausführen',
       };
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'private, no-store', 'Vary': 'Cookie', 'Content-Language': englishConsent ? 'en' : 'de' });
+      res.writeHead(200, { ...consentSecurityHeaders, 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'private, no-store', 'Vary': 'Cookie', 'Content-Language': englishConsent ? 'en' : 'de' });
       res.end(`<!doctype html><html lang="${englishConsent ? 'en' : 'de'}"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${copy.title} | CAPITAL AI</title><style>body{margin:0;background:#080e20;color:#f3f4f8;font:1rem/1.6 system-ui,sans-serif}main{max-width:52rem;margin:auto;padding:1.25rem;overflow-wrap:anywhere}a{color:#ffdc73}a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid #ffdc73;outline-offset:4px}button{min-height:44px;max-width:100%;font:inherit;padding:.65rem 1rem;margin:.8rem 0;white-space:normal;cursor:pointer}label{display:block;padding:.6rem 0}input[type=checkbox]{width:1.25rem;height:1.25rem;vertical-align:middle}form{border-top:1px solid #7d879a;padding-top:1rem;margin-top:1.5rem}h1{line-height:1.2}</style><body><main><h1>${copy.title}</h1><p>${copy.intro}</p>${youtubePolicyHtml(englishConsent ? 'en' : 'de')}<p>${copy.recording}<a href="/api/social-media/youtube/account/connect?hl=en" lang="en">Record Google consent in English</a>.${copy.noUpload}</p><form action="/api/social-media/youtube/auth/start" method="get">${englishConsent ? '<input type="hidden" name="hl" value="en">' : ''}<label><input type="checkbox" name="privacy" value="${YOUTUBE_POLICY.version}" required> ${copy.acceptance}</label><button type="submit">${copy.connect}</button></form><p><a href="/api/social-media/youtube/account/status">${copy.status}</a></p><p><a href="/datenschutz/">${copy.privacy}</a> · <a href="/agb/">${copy.terms}</a></p><form action="/api/social-media/youtube/account/disconnect" method="post"><p>${copy.deletion}</p><label><input type="checkbox" name="confirm" value="delete-youtube-data" required> ${copy.confirmDelete}</label><button type="submit">${copy.delete}</button></form></main></body></html>`);
       return true;
     }
