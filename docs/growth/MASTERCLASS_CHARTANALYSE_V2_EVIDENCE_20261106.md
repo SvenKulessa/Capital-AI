@@ -60,3 +60,28 @@ Der zugehörige GROWTH-PR ist erst nach angepassten Tests, TypeScript-/Media-Pro
 The previous four Drive file IDs are retained; full re-materialization of all four Drive MP4s followed by local SHA-256 confirmed the updated bytes. Audio comparison between each restored intro boundary and the previous v2 teaching audio, with codec-delay compensation, had normalized one-second correlation above 0.9999. Exact original-source voice is *preserved within the teaching body*, not re-synthesized. The four temporary video upload files were deleted after verified replacement. Drive manifest `MASTERCLASS_DELIVERY_MANIFEST.json` was updated **in place** at its previous file ID with v3 bytes, hash, version history and the audio provenance. The manifest's temporary upload copy was also deleted.
 
 **Publication stays blocked** until full human listening and copyright/third-party source rights review. Original visual 9-second intro is omitted from v3; a voice-free branded intro could be reintroduced only after separate owner design review and sync QA. This audio correction is not a grant to publish or alter OAuth status.
+
+
+## Owner-requested final Masterclass v4 – no JaJa, uncut available source speech, eight-second outro
+
+**CURRENT DELIVERABLES (2026-11-06): DRIVE_BYTES_SHA256_VERIFIED / VISUAL_QA_SAMPLES_PASS / HUMAN_SENTENCE_QA_NOT_PROVEN / COMMERCIAL_RIGHTS_REVIEW_REQUIRED / NOT_PUBLISHED.**
+Historical v2/v3 references above are superseded only for delivered media. The four Google Drive file IDs and existing links have not changed.
+
+The owner specifically required: remove the embedded JaJa Buddy on the right of every chapter, keep the video style consistent, hold the final brand image at least five seconds, and do not break speech at beginning or end. The final local rendering used the original four owner-associated Drive source recordings from t=0, **not** the previously shortened v3 masters; the original source audio is preserved through a measured voice tail with no newly synthesized narration. The new **2.5-second visual intro is silent**, and the CAPITAL-AI gold Universe endcard is an **8-second separate silent segment** (last 7 seconds measured RMS=0 for all four outputs). The video has a consistent 1600x900, 24fps H.264 / AAC layout, full URL in AIF-Gold and no visible JaJa sidebar. Long title lines were re-wrapped in K01 and K03 after visual QA detected globe overlap.
+
+| Chapter | Current Drive media title | Output size bytes | Output SHA-256 | Duration |
+| --- | --- | ---: | --- | ---: |
+| K01 | `CAPITAL-AI_Masterclass_K01_Grundlagen_Ohne_JaJa_Originalstimme_v4.mp4` | 21,278,559 | `9824afd29439deb661c0bc502e5d10eaf7d8b6d075a7b768f115ab9dcdb3cff4` | 405.123 s |
+| K02 | `CAPITAL-AI_Masterclass_K02_Realitaetscheck_Ohne_JaJa_Originalstimme_v4.mp4` | 22,957,542 | `27cdda7b128e80bdb6af02d8e6d1fc9f9b0b906405ae1d22914c031888642c37` | 451.123 s |
+| K03 | `CAPITAL-AI_Masterclass_K03_Trend_Volumen_Ausbrueche_Ohne_JaJa_Originalstimme_v4.mp4` | 20,447,770 | `4310e391c6acdd2600f49fb19760cef8c10482847da163c18098aaa8e9535fab` | 397.323 s |
+| K04 | `CAPITAL-AI_Masterclass_K04_Zeitrahmen_Zoom_Ohne_JaJa_Originalstimme_v4.mp4` | 18,843,439 | `7d89607d6f229255826deeacb9c6aa0c57826a8e6c8455015dd9fa91768a3d95` | 384.023 s |
+
+**Readback proof:** all four replacement raw files were uploaded to the *original Google Drive file IDs*, then the entire bytes were re-materialized from Drive and SHA-256 matched the new local masters. The six temporary video-transfer objects (including two superseded preview stages) and three temporary manifest/review/QA assets were deleted **after** verifying current canonical media and metadata. No other Drive sources were deleted. The existing manifest and QA assets were also updated in place, not duplicated.
+
+**Audio-boundary evidence:** Original source speech RMS last detected around K01 393.9s, K02 439.1s, K03 385.4s, K04 372.2s. Full available soundtracks were retained from t=0 through, respectively, 394.6s / 440.6s / 386.8s / 373.5s. For K01 and K04 the final slide frame was held while the last source-audio samples continued. Two-point source-v4 waveform correlations after codec timing correction were K01 **0.979/0.992**, K02 **0.992/0.980**, K03 **0.993/0.971**, K04 **0.991/0.994** (beginning/end segment comparisons).
+
+**Hard limit:** automated amplitude correlation proves the retained audio samples, not *linguistically complete sentences*. The K04 source already contains audible speech at its very first sample; missing initial phonemes, if any, cannot be reconstructed from this source. **HUMAN_LISTENING_REQUIRED** before any YouTube or paid Learning-Hub release. No licensed Neural2/voice-conversion or hypothetical word generation was used.
+
+**Reusable template:** `src/platform/SocialMediaEngine/Editing/MediaStudioTemplates.ts` v3 defines a 2.5s silent opening plus separate 8s branded endcard, `sidePanelVisible:false`, `syntheticIntroAllowed:false`, `audioSource:original-source-track-only`. `scripts/media/masterclass-design-system-v2.json` schema @3 and `scripts/media/masterclass-audio-boundaries-v4.json` record the layout and trim/evidence policy; `scripts/masterclass-templates.test.mjs` rejects Buddy sidebars, invalid metadata and end holds under eight seconds. The actual MP4s were rendered by a local FFmpeg/Pillow adapter, not a proven production publisher/worker execution.
+
+**Security/CI:** `Dockerfile` plus ordered `.dockerignore` allowlist explicitly include the new template test in the isolated build. All release/commerce/legal/owner approval gates stay closed until proof. Source recording/Notebook/Grok/voice/music rights remain `REVIEW_REQUIRED`; crop or new outro does not create new licenses.
