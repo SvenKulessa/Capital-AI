@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-30",
+  "observedAt": "2026-11-06",
   "sourceRepository": "The-PR-Agent/pr-agent",
   "release": "v0.47.0",
   "sourceSha": "8e5a9295973b24af4b70cafd0b660a230811ef9e",
-  "correlatedMainSha": "6abf9c6c43eb80bca2941deccf602d5dbfc116df",
+  "correlatedMainSha": "bea9223d1d661259d147d2cd22dc09004e62351f",
   "lockGenerator": "uv==0.12.10",
   "patchedVersions": {
     "fsspec": [
@@ -14,7 +14,7 @@
       "6.9.1"
     ],
     "oauthlib": [
-      "4.0.0"
+      "4.0.1"
     ],
     "langgraph-sdk": [
       "0.4.6"
@@ -51,9 +51,10 @@
     ]
   },
   "sha256": {
-    "uv.lock": "8d83ff7a3637b899f187f0013b3052d003dd2bacf2f0857eb5bcbb15740543d2",
+    "uv.lock": "eca113b5ff44695eb256c8508a76bddf594bc300a932a5fb7e98e3058f9214e5",
     "pyproject.toml": "b16cabb0da3cc57e23d90903935113a54a4acfa3d7f7c9709a77320fc53e5831",
-    "UPSTREAM-LICENSE.txt": "ea19f3b6bfd70ce0bf8d60fc5b15cdb789fcf86a63c0d6542977f888519f5788"
+    "UPSTREAM-LICENSE.txt": "ea19f3b6bfd70ce0bf8d60fc5b15cdb789fcf86a63c0d6542977f888519f5788",
+    "smoke.py": "aaa1a05e24da495f584a3137975cae11be73a1023f528bb0fd4621bb72a002ed"
   },
   "pythonImage": "python:3.14.7-slim@sha256:51dafde81dbdb6ebde285137a295cf18a47ca95234fe388a343719cb97305b3d",
   "uvImage": "ghcr.io/astral-sh/uv:0.12.10@sha256:2bb3ebca0a796a155094a27773d290c4b074572e6107f171d88d086682fd2500",
@@ -84,12 +85,21 @@
     "scope": "All registry entries in patched uv.lock, including optional/dev and Python alternatives; no project execution"
   },
   "audit": {
-    "status": "NOT_PROVEN",
-    "scope": "pyasn1 0.6.5 patched lock requires fresh CI uv sync and image scan; historic audit remains dated evidence"
+    "status": "PENDING_FRESH_CI",
+    "scope": "oauthlib 4.0.1 security patch requires fresh current-head source/image scan and offline reviewer runtime regression; historical audit does not clear this revision"
   },
   "localPatches": [
     "Security dependency floors and coherent OpenTelemetry 1.45.1 family.",
     "Unused pre-commit development hook removed from runtime candidate: no repository workflow uses it; its virtualenv>=21.14.9 needs packaging>=26.3, incompatible with runtime langfuse packaging<26. No resolver override or vulnerability suppression.",
-    "2026-10-31: pyasn1 locked 0.6.4 → 0.6.5 (four HIGH security advisories); PyPI 0.6.5 wheel and sdist SHA-256 pinned. Offline integrity is checked by the primary and comparison reviewer build workflows."
-  ]
+    "2026-10-31: pyasn1 locked 0.6.4 \u2192 0.6.5 (four HIGH security advisories); PyPI 0.6.5 wheel and sdist SHA-256 pinned. Offline integrity is checked by the primary and comparison reviewer build workflows.",
+    "2026-11-06: oauthlib 4.0.0 -> 4.0.1 for CVE-2026-49272 / GHSA-3jp2-3mrg-2vxc. uv 0.12.10 target-only resolver update; wheel and sdist bytes verified against PyPI SHA-256. Offline smoke rejects missing/unknown device codes. No vulnerability suppression or model/provider activation."
+  ],
+  "oauthlibSecurityReview": {
+    "advisory": "https://github.com/oauthlib/oauthlib/security/advisories/GHSA-3jp2-3mrg-2vxc",
+    "release": "https://github.com/oauthlib/oauthlib/releases/tag/v4.0.1",
+    "wheelSha256": "498a298876e996301950a5b053d12c31628bb7b895db03666430c69ce182eb61",
+    "sdistSha256": "3d73febdb6faa00f277c81fb04be7b7586fb96fc3b7f0b9c772dada69a25ede7",
+    "localLockCheck": "PASS_UV_0_12_10",
+    "localDeviceCodeNegativeRegression": "PASS_FROM_VERIFIED_WHEEL"
+  }
 }
