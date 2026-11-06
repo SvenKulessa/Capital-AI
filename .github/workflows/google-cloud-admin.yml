@@ -1,8 +1,22 @@
 # CAPITAL_AI_GCP_OPERATOR_KEYLESS_READBACK@1
 # Manual main-only audit; read-only Google scope and IAM role; never enables a service.
-name: Google Cloud Operator (keyless read-only)
+name: Google Cloud Operator (readback or YouTube demo)
 on:
   workflow_dispatch:
+    inputs:
+      operation:
+        description: Read Cloud APIs or upload an approved OAuth demo
+        type: choice
+        options: [readback, upload-youtube-demo]
+        default: readback
+      media_artifact_id:
+        description: Same-repository youtube-verification-media artifact containing demo.mp4
+        type: string
+        default: ''
+      media_sha256:
+        description: SHA-256 of the exact approved demo.mp4 bytes
+        type: string
+        default: ''
 permissions:
   contents: read
   id-token: write
@@ -11,7 +25,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   service-usage-readback:
-    if: github.repository == 'SvenKulessa/Capital-AI' && github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
+    if: github.repository == 'SvenKulessa/Capital-AI' && github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.operation == 'readback'
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
@@ -46,3 +60,69 @@ jobs:
         env:
           GOOGLE_CLOUD_ADMIN_ACCESS_TOKEN: ${{ steps.google_auth.outputs.access_token }}
         run: node scripts/platform/google-cloud-admin-readback.mjs
+  youtube-verification-demo:
+    if: github.repository == 'SvenKulessa/Capital-AI' && github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.operation == 'upload-youtube-demo'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    environment: youtube-verification
+    permissions:
+      contents: read
+      actions: read
+    env:
+      DEMO_ARTIFACT_ID: ${{ inputs.media_artifact_id }}
+      DEMO_SHA256: ${{ inputs.media_sha256 }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24.19.0'
+      - name: Verify uploader negative cases without credentials
+        run: node --test scripts/platform/youtube-verification-*.test.mjs
+      - name: Require first attempt and expected repository
+        env:
+          REPO_ID: ${{ github.repository_id }}
+        run: |
+          test "$REPO_ID" = 1293009324
+          test "$GITHUB_RUN_ATTEMPT" = 1
+      - id: preflight
+        name: Verify media provenance and absence of prior upload claims
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/platform/youtube-verification-preflight.mjs
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          artifact-ids: ${{ inputs.media_artifact_id }}
+          run-id: ${{ steps.preflight.outputs.source_run_id }}
+          github-token: ${{ github.token }}
+          path: verification-media
+          merge-multiple: true
+      - name: Require configured channel-owner OAuth before reserving upload
+        env:
+          YOUTUBE_OAUTH_CLIENT_ID: ${{ secrets.YOUTUBE_OAUTH_CLIENT_ID }}
+          YOUTUBE_OAUTH_CLIENT_SECRET: ${{ secrets.YOUTUBE_OAUTH_CLIENT_SECRET }}
+          YOUTUBE_OAUTH_REFRESH_TOKEN: ${{ secrets.YOUTUBE_OAUTH_REFRESH_TOKEN }}
+        run: |
+          node --input-type=module -e 'for (const k of ["YOUTUBE_OAUTH_CLIENT_ID","YOUTUBE_OAUTH_CLIENT_SECRET","YOUTUBE_OAUTH_REFRESH_TOKEN"]) { if (!process.env[k]) { console.error("YOUTUBE_OAUTH_NOT_CONFIGURED"); process.exit(1); } }'
+      - name: Persist claim before any YouTube insert
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: ${{ steps.preflight.outputs.claim_name }}
+          path: youtube-upload-claim.json
+          if-no-files-found: error
+          retention-days: 90
+      - name: Upload once with channel-owner OAuth, then read back
+        env:
+          YOUTUBE_OAUTH_CLIENT_ID: ${{ secrets.YOUTUBE_OAUTH_CLIENT_ID }}
+          YOUTUBE_OAUTH_CLIENT_SECRET: ${{ secrets.YOUTUBE_OAUTH_CLIENT_SECRET }}
+          YOUTUBE_OAUTH_REFRESH_TOKEN: ${{ secrets.YOUTUBE_OAUTH_REFRESH_TOKEN }}
+        run: node scripts/platform/youtube-verification-upload.mjs
+      - name: Preserve receipt even after uncertain provider result
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: youtube-demo-receipt-${{ github.run_id }}
+          path: youtube-upload-receipt.json
+          if-no-files-found: ignore
+          retention-days: 90
