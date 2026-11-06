@@ -106,7 +106,7 @@
     "@google/genai": "^2.32.0",
     "@nats-io/jetstream": "3.4.0",
     "@nats-io/transport-node": "3.4.0",
-    "@tailwindcss/vite": "^4.3.3",
+    "@tailwindcss/vite": "^4.3.4",
     "@vitejs/plugin-react": "^6.2.1",
     "d3-scale": "4.0.2",
     "dotenv": "^18.0.9",
