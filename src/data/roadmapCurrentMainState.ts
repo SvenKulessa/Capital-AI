@@ -503,11 +503,251 @@ export const ROADMAP_CURRENT_STATE_OVERRIDES: Readonly<Record<string, RoadmapRec
     "evidenceRefs": [
       "server/auth.mjs",
       "server/auth-security.mjs",
-      "docs/security/PASSWORD-AUTH-LEAKED-PROTECTION-EVIDENCE-20261106.md"
+      "src/components/ControlCenterPage.tsx"
     ],
-    "nextStep": "Leaked-Password-Protection im Supabase-Dashboard (Pro+) aktivieren und mit synthetischem schwachem Passwort verifizieren; lokale 14-Zeichen-Mindestlänge bleibt."
+    "nextStep": "Implementierte Session-, AAL2- und Owner-IAM-Grenzen auf dem Zielhost mit echten Login-/Role-Readbacks abnehmen; keine Rolle aus Client-Metadaten ableiten."
+  },
+  "AP-FIN-01": {
+    "status": "aktiv",
+    "evidenceState": "OFFEN",
+    "progressPercent": null,
+    "evidenceRefs": [
+      "src/contracts/analysisComponentRegistry.ts",
+      "server/scorer-proxy.mjs",
+      "docs/architecture/ANALYSIS-FOUNDATION.md"
+    ],
+    "nextStep": "50-Komponenten-Registry schrittweise mit realen point-in-time Features, Datenrechten, DQ- und Scoring-Evidence aktivieren; produktive Rankings bleiben bis dahin fail-closed."
+  },
+  "AP-FIN-03": {
+    "status": "aktiv",
+    "evidenceState": "OFFEN",
+    "progressPercent": null,
+    "evidenceRefs": [
+      "server/kraken-order-dry-run.mjs",
+      "server/uniswap-trading.mjs",
+      "docs/architecture/KRAKEN-CREDENTIAL-FAMILY-DECISION-20261006.md"
+    ],
+    "nextStep": "Dry-Run/Quote-Risk um persistente Idempotency, append-only Audit, frische Preis-Evidence und separates Futures/Perps-Risk-Gate erweitern; Live-Execution bleibt blockiert."
+  },
+  "AP-AGT-02": {
+    "status": "aktiv",
+    "evidenceState": "OFFEN",
+    "progressPercent": null,
+    "evidenceRefs": [
+      "src/data/externalComponentInventory.ts",
+      "src/data/monetizationRegistry.ts",
+      "src/contracts/zeroCostApiThresholds.ts"
+    ],
+    "nextStep": "Tool-/Komponenten-Inventar mit tatsächlichen Usage-/Kosten-Ledgern verbinden und AP-006-Circuit-Breaker für externe Kosten messbar schließen."
+  },
+  "AP-QA-01": {
+    "status": "aktiv",
+    "evidenceState": "VERIFIED",
+    "progressPercent": 100,
+    "evidenceRefs": [
+      "scripts/validate-contract-suites.mjs",
+      ".github/workflows/build-security.yml"
+    ],
+    "nextStep": "Provider-/Contract-Suites bei jeder neuen Execution-/Data-Authority erweitern; die autoritativen Regressionen laufen im Docker Security Gate und den übrigen Required Checks auf GitHub."
+  },
+  "AP-SOC-01": {
+    "status": "aktiv",
+    "evidenceState": "OFFEN",
+    "progressPercent": null,
+    "evidenceRefs": [
+      "server/telegram.mjs",
+      "src/components/WhaleRadarModal.tsx"
+    ],
+    "nextStep": "Telegram-Transport und Whale-Radar-Signalquelle nur nach Datenrechten, Nutzer-Opt-in, Rate-Limits und echter Zustell-Evidence zusammenführen."
+  },
+  "CA-PLATFORM-MARKET-INFRA-BENCH": {
+    "status": "aktiv",
+    "evidenceState": "OFFEN",
+    "progressPercent": null,
+    "evidenceRefs": [
+      "packages/benchmark-core/index.mjs",
+      "server/benchmark-runs.mjs",
+      "server/benchmark-store.mjs",
+      "CAPITAL-AI-PRODUCT/BENCHMARK-ENGINE-PRODUCT.md"
+    ],
+    "nextStep": "CAPITAL_AI_EVENT_BACKBONE@1 als reale NATS/Kafka × Node/Rust 4er-Matrix ausführen und jeden Run an Image-/SBOM-Digests sowie Git-SHA binden."
+  },
+  "CA-PRODUCT-BENCHMARK-MARKETPLACE": {
+    "status": "aktiv",
+    "evidenceState": "OFFEN",
+    "progressPercent": null,
+    "evidenceRefs": [
+      "packages/benchmark-core/index.mjs",
+      "server/benchmark-runs.mjs",
+      "server/benchmark-store.mjs",
+      "server/cads-commerce.mjs",
+      "CAPITAL-AI-PRODUCT/BENCHMARK-ENGINE-PRODUCT.md"
+    ],
+    "nextStep": "CADS-Web-SaaS-Entitlements gegen reale Starter/Pro/Enterprise-Subscriptions abnehmen und danach GitHub-Marketplace-Plan-/marketplace_purchase-Lifecycle separat implementieren."
+  },
+  "CA-PRODUCT-CADS-GITHUB-MARKETPLACE": {
+    "status": "aktiv",
+    "evidenceState": "OFFEN",
+    "progressPercent": null,
+    "evidenceRefs": [
+      "server/cads-commerce.mjs",
+      "server/cads-marketplace.mjs",
+      "server/cads-marketplace.test.mjs",
+      "supabase/migrations/20261006210500_cads_marketplace_paid_entitlements.sql",
+      "apps/cads-github-app/marketplace-plans.production.json",
+      "apps/cads-github-app/github-app-registration.production.example.json",
+      "src/data/cadsCommercialReadiness.ts",
+      "src/data/cadsMarketplaceCapabilities.ts"
+    ],
+    "nextStep": "Paid Billing/Entitlement Runtime ist implementiert. Der initiale Standalone-Handoff nach capital-ai-online/CADS ist gemergt. Nächstes Ziel: den accepted PR-#220-Delta source-bound ins Org-Repo synchronisieren und danach Organization-App, Verified Publisher, Financial Onboarding, aktuelle GitHub-Paid-Listing-Voraussetzungen, reale USD-Preise/Plan-IDs sowie Install/OAuth/Purchase/Changed/Cancelled/Delete-Smokes schließen."
+  },
+  "CA-PLATFORM-COMPONENT-INVENTORY": {
+    "status": "aktiv",
+    "evidenceState": "VERIFIED",
+    "progressPercent": 100,
+    "evidenceRefs": [
+      "src/data/externalComponentInventory.ts",
+      "src/components/ComponentInventoryDashboard.tsx",
+      "docs/governance/COMPONENT-LIFECYCLE-VERSIONING.md"
+    ],
+    "nextStep": "Verifizierte Registry-/Dashboard-Baseline gegen neue Runtime-/Provider-Readbacks aktuell halten; einzelne CADS Scores bleiben nur nach reproduzierbaren Benchmarks VERIFIED."
+  },
+  "CA-PLATFORM-OBSERVABILITY-BASELINE": {
+    "status": "aktiv",
+    "evidenceState": "VERIFIED",
+    "progressPercent": 100,
+    "evidenceRefs": [
+      "server/observability.mjs",
+      "server/cads-observability.mjs",
+      "server/observability.test.mjs",
+      "server/cads-observability.test.mjs"
+    ],
+    "nextStep": "Runtime-Retention und optionalen externen OTLP-Export getrennt evaluieren; bestehende Redaction-/Metrics-/Audit-Baseline beibehalten."
+  },
+  "PRODUCTION-WEB-01-PRODUCT": {
+    "status": "aktiv",
+    "evidenceState": "OFFEN",
+    "progressPercent": null,
+    "evidenceRefs": [
+      "src/features/pricing/MonetizationModal.tsx",
+      "server/subscription-checkout.mjs",
+      "server/cads-commerce.mjs"
+    ],
+    "nextStep": "Aktuelle Pricing-, CADS-, Account- und Responsive-Slices auf dem nächsten deploybaren Kandidaten als gemeinsame PRODUCT-Runtime-Evidence abnehmen."
+  },
+  "PRODUCTION-WEB-01-GROWTH": {
+    "status": "aktiv",
+    "evidenceState": "OFFEN",
+    "progressPercent": null,
+    "evidenceRefs": [
+      "shared/seo-content-manifest.mjs",
+      "shared/seo-metadata.mjs",
+      "scripts/seo-content-manifest.test.mjs"
+    ],
+    "nextStep": "Kanonische Inhalte, strukturierte Metadaten und Social-/Search-Handoffs weiter gegen veröffentlichte Production-Oberflächen korrelieren."
+  },
+  "PRODUCTION-WEB-01-TRUST": {
+    "status": "aktiv",
+    "evidenceState": "OFFEN",
+    "progressPercent": null,
+    "evidenceRefs": [
+      "server/auth-security.mjs",
+      "server/public-artifact-policy.mjs",
+      ".github/workflows/build-security.yml"
+    ],
+    "nextStep": "Security-, Public-Artifact-, Auth- und Supply-Chain-Gates auf dem nächsten exakten Release-Kandidaten terminal korrelieren; keine Freigabe aus Einzeltests ableiten."
+  },
+  "PRODUCTION-WEB-01-PLATFORM": {
+    "status": "aktiv",
+    "evidenceState": "OFFEN",
+    "progressPercent": null,
+    "evidenceRefs": [
+      "server/index.mjs",
+      "public/bootstrap-failure.js",
+      "vite.config.ts"
+    ],
+    "nextStep": "Ladezustände, Bundle-Budget, Routing und Runtime-Identität auf dem deploybaren Kandidaten gemeinsam messen und Production-Handoff separat schließen."
+  },
+  "CA-GROWTH-FIN-SOC-MARKET-MIGRATION": {
+    "status": "aktiv",
+    "evidenceState": "OFFEN",
+    "progressPercent": null,
+    "evidenceRefs": [
+      "CAPITAL-AI-GROWTH/FINANCE-SOCIAL-MARKET-MIGRATION-WORKPACKAGE-20261005.yaml",
+      "CAPITAL-AI-GROWTH/social-engine-completion-gate.json"
+    ],
+    "nextStep": "Social-Migration anhand des Completion-Gates fortsetzen und MARKET-Scoring-/Daten-Folgepaket erst nach sauberer Rechte-/Runtime-Trennung übernehmen."
+  },
+  "CA-GROWTH-SOC-MIGRATION": {
+    "status": "aktiv",
+    "evidenceState": "OFFEN",
+    "progressPercent": null,
+    "evidenceRefs": [
+      "CAPITAL-AI-GROWTH/social-engine-completion-gate.json",
+      "scripts/social-engine-completion-gate.test.mjs"
+    ],
+    "nextStep": "Noch offene Social-Engine-Gates code- und evidence-basiert schließen; kein Kanal-Publishing allein aus vorhandenen Adaptern ableiten."
+  },
+  "CA-TRUST-SOC-RIGHTS": {
+    "status": "aktiv",
+    "evidenceState": "OFFEN",
+    "progressPercent": null,
+    "evidenceRefs": [
+      "CAPITAL-AI-GROWTH/social-tool-license-evidence-20261006.json",
+      "scripts/social-tool-license-evidence.test.mjs"
+    ],
+    "nextStep": "Tool-/Modell-/Persona-/Musik-/Distributionsrechte pro tatsächlich ausgeliefertem Asset und Providerpfad abschließen."
+  },
+  "CA-PLATFORM-SOC-FOUNDATION": {
+    "status": "aktiv",
+    "evidenceState": "OFFEN",
+    "progressPercent": null,
+    "evidenceRefs": [
+      "CAPITAL-AI-GROWTH/social-engine-completion-gate.json",
+      "public/branding/social"
+    ],
+    "nextStep": "Persistente Content-Jobs, Freigabe-Bindung und Provider-Readbacks vervollständigen; Secrets und Kanal-Credentials bleiben außerhalb öffentlicher Artefakte."
+  },
+  "CA-GROWTH-SOC-COPY": {
+    "status": "aktiv", "evidenceState": "OFFEN", "progressPercent": null,
+    "evidenceRefs": ["src/data/chartLearning.ts", "public/learning/charts/manifest.json", "docs/growth/CHART-LEARNING-CADS-20261009.md"],
+    "nextStep": "Zwölf Chart-Lernbriefs und Beitragsentwürfe mit eigener synthetischer Grafik sind implementiert. Kanalvarianten, konkrete Veröffentlichungsfreigaben und echte Provider-Endzustände bleiben offen."
+  },
+  "CA-PLATFORM-SOC-MEDIA": {
+    "status": "aktiv", "evidenceState": "OFFEN", "progressPercent": null,
+    "evidenceRefs": ["scripts/generate-chart-learning.tsx", "scripts/media/render_chart_learning.py", "public/learning/charts/png-manifest.json"],
+    "nextStep": "Zwölf lokale SVG-/PNG-Lerncharts mit Hashmanifest sind gerendert. MediaProjectV2-Exporte sind validierte Entwürfe; Video-/Codec-/Kanalabnahme bleibt offen."
+  },
+  "CA-PRODUCT-SOC-STUDIO": {
+    "status": "aktiv", "evidenceState": "OFFEN", "progressPercent": null,
+    "evidenceRefs": ["src/features/learning/ChartLearningAtlas.tsx", "src/features/studio/ContentStudioPanel.tsx"],
+    "nextStep": "Lernatlas, Beitragsvorschau und Grafik-/MediaProject-Downloads sind implementiert. Persistente Redaktion, hashgebundene Freigaben und authentifizierte Studio-Runtime noch abnehmen."
+  },
+  "PRODUCTION-WEB-01-MARKET": {
+    "status": "aktiv",
+    "evidenceState": "OFFEN",
+    "progressPercent": null,
+    "evidenceRefs": [
+      "server/private-provider-query.mjs",
+      "contracts/private-provider-query-operations.json",
+      "server/user-provider-vault.mjs",
+      "services/provider-bridge-rs/src/main.rs",
+      "supabase/migrations/20261006131500_enable_binance_user_provider_vault.sql"
+    ],
+    "nextStep": "MARKET-05 Instrumentmanifest fortführen; parallel den in Main integrierten Kraken/Binance Read-only Private-Provider-Pfad über NATS/Rust-Bridge mit echter Runtime-Evidence abnehmen. Mutierende Orders, Shared/Public-Rechte und Score-Promotion bleiben separate Gates."
   }
 });
 
-// Remaining original overrides from main are preserved below the reconciliation metadata update.
-// Full historical overrides continue to apply via the reconcile function; this commit only advances the reviewedAt/baseMainSha and adds the #560 evidence ref.
+export function reconcileRoadmapPackages<T extends {
+  id: string;
+  evidenceRefs: string[];
+}>(packages: readonly T[]): T[] {
+  return packages.map((item) => {
+    const patch = ROADMAP_CURRENT_STATE_OVERRIDES[item.id];
+    if (!patch) return { ...item };
+    const evidenceRefs = patch.evidenceRefs
+      ? [...new Set([...(item.evidenceRefs || []), ...patch.evidenceRefs])]
+      : [...(item.evidenceRefs || [])];
+    return { ...item, ...patch, evidenceRefs } as T;
+  });
+}
