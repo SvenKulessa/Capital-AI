@@ -75,6 +75,30 @@ test('NATS can be marked not applicable only for a fully identified PR with unaf
   assert.equal(spawnSync(process.execPath, args, { env }).status, 1);
 }));
 
+test('paused NATS remains NOT_VERIFIED on main while mandatory app reports remain enforced', () => run(directory => {
+  for (const name of ['source', 'build-image', 'image']) {
+    writeFileSync(path.join(directory, name + '.json'), '{"Results":[]}');
+  }
+  writeContainerIdentity(path.join(directory, 'container-identity.json'), createContainerIdentity({
+    GITHUB_EVENT_NAME: 'push', GITHUB_SHA: 'd'.repeat(40),
+  }));
+  const args = ['scripts/publish-security-summary.mjs', directory];
+  const env = { ...process.env, CAPITAL_NATS_SCOPE: 'false', CAPITAL_NATS_PAUSED: 'true' };
+  const result = spawnSync(process.execPath, args, { env, encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  const nats = JSON.parse(readFileSync(path.join(directory, 'nats-image.public.json'), 'utf8'));
+  assert.equal(nats.status, 'SKIPPED_PAUSED_NOT_VERIFIED');
+  assert.equal(nats.reason, 'RECHECK_ONLY_AFTER_NATS_REACTIVATION');
+  assert.equal(JSON.parse(readFileSync(path.join(directory, 'image.public.json'), 'utf8')).status, 'PASS');
+  // The pause never waives mandatory application images.
+  rmSync(path.join(directory, 'image.json'));
+  assert.equal(spawnSync(process.execPath, args, { env }).status, 1);
+  // A provided invalid NATS report is never reclassified as a skip.
+  writeFileSync(path.join(directory, 'image.json'), '{"Results":[]}');
+  writeFileSync(path.join(directory, 'nats-image.json'), '{invalid');
+  assert.equal(spawnSync(process.execPath, args, { env }).status, 1);
+}));
+
 test('non-PR runs, unverified scope and missing core image fail closed', () => run(directory => {
   for (const name of ['source', 'build-image', 'image']) {
     writeFileSync(path.join(directory, name + '.json'), '{"Results":[]}');
