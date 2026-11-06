@@ -176,3 +176,21 @@ test('English connect allows no arbitrary query parameters or non-owner access',
  }
  const r=response();await createSocialYouTubeAccountStatus({env,auth:{...auth,authorizeIamRole:async()=>false}}).handle(req,r,new URL('/api/social-media/youtube/account/connect?hl=en',env.PUBLIC_APP_ORIGIN),json);assert.equal(r.status,403);
 });
+
+test('English owner page translates all app consent copy and preserves language in policy links', async()=>{
+ const r=response();let html='';r.end=x=>{html=x;};
+ await createSocialYouTubeAccountStatus({env,auth}).handle(req,r,new URL('/api/social-media/youtube/account/connect?hl=en',env.PUBLIC_APP_ORIGIN),json);
+ assert.equal(r.headers['Content-Language'],'en');assert.match(html,/<html lang="en">/);
+ for(const text of ['Connect YouTube to CAPITAL AI','I accept the privacy information','Open Google consent in English','Delete connection and stored YouTube data'])assert.ok(html.includes(text));
+ for(const text of ['Wähle bei Google','Ich akzeptiere','Löschung ausführen','YouTube mit CAPITAL AI verbinden'])assert.ok(!html.includes(text));
+ assert.match(html,/Manage YouTube connection as signed-in owner/);assert.match(html,/required/);
+});
+test('rendered English form issues a Google redirect with hl=en and fresh session-bound state',async()=>{
+ const r=response();let html='';r.end=x=>{html=x;};
+ await createSocialYouTubeAccountStatus({env,auth}).handle(req,r,new URL('/api/social-media/youtube/account/connect?hl=en',env.PUBLIC_APP_ORIGIN),json);
+ const fields=[...html.matchAll(/<input[^>]+name="(hl|privacy)"[^>]+value="([^"]+)"/g)];
+ const query=new URLSearchParams(fields.map(m=>[m[1],m[2]]));assert.equal(query.get('hl'),'en');
+ const started=response();await createSocialYouTubeOAuthStart({env,auth,store:{beginOAuth:async()=>({state})}}).handle(req,started,new URL('/api/social-media/youtube/auth/start?'+query,env.PUBLIC_APP_ORIGIN),json);
+ assert.equal(started.status,303);const target=new URL(started.headers.Location);
+ assert.equal(target.hostname,'accounts.google.com');assert.equal(target.searchParams.get('hl'),'en');assert.equal(target.searchParams.get('scope'),scopes.join(' '));
+});

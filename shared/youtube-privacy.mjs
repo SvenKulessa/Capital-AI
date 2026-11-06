@@ -19,7 +19,11 @@ export const COMMERCE_NOTICE = Object.freeze({
   ],
 });
 const escape = value => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
-export function youtubePolicyHtml() {
+export function youtubePolicyHtml(locale = 'de') {
+  if (locale === 'en') {
+    const p = YOUTUBE_POLICY;
+    return `<section id="youtube-policy" lang="en"><h2>YouTube API Services: use, privacy and revocation</h2><p>CAPITAL-AI uses YouTube API Services. By using the YouTube features, you agree to the YouTube Terms of Service and accept the privacy information for this feature.</p><p>Connecting your channel is separate from signing in with Google. Channel, video and token data are used only for the YouTube features you explicitly request. CAPITAL-AI does not sell this data, use it for advertising or use it to train general-purpose AI models. Recipients, data categories and retention are described in the YouTube channel connection section of our privacy policy.</p><p><a href="${p.terms}?hl=en">YouTube Terms of Service</a> · <a href="${p.privacy}?hl=en">Google Privacy Policy</a> · <a href="${p.revoke}?hl=en">Google account settings: revoke access</a></p><p>You can also revoke access in your Google account settings. To delete data stored by CAPITAL-AI, or for questions or complaints, contact sven.kulessa@capital-ai.online or, as the signed-in owner, use “Delete connection and stored YouTube data”. A deletion request is complete only after successful confirmation. This does not delete videos from YouTube; manage those separately in YouTube Studio.</p><p><a href="/datenschutz/">Full CAPITAL-AI privacy policy (German)</a></p><p><a href="/api/social-media/youtube/account/connect?hl=en">Manage YouTube connection as signed-in owner</a></p></section>`;
+  }
   const p = YOUTUBE_POLICY;
   return `<section id="youtube-policy"><h2>${p.title}</h2><p>${p.acceptance}</p><p>${p.use}</p><p><a href="${p.terms}">YouTube-Nutzungsbedingungen</a> · <a href="${p.privacy}">Google-Datenschutzerklärung</a> · <a href="${p.revoke}">Google-Sicherheitseinstellungen: Zugriff widerrufen</a></p><p>${p.withdrawal}</p><p><a href="/api/social-media/youtube/account/connect">YouTube-Verbindung als angemeldeter Owner verwalten</a></p></section>`;
 }
