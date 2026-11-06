@@ -313,7 +313,7 @@ export function createCapitalAiLandingBlueprintVideoProject(): MediaProjectV2 {
 }
 
 /**
- * Four owner-authored Chartanalyse Masterclass chapter openings.
+ * Four owner-authored Chartanalyse Masterclass chapter openings without Buddy sidebars.
  * Preview-only, zero-provider, and intentionally distinct from long-form masters.
  * Uses the exact same native MediaProjectV2 SocialMediaEngine contract and
  * single source of branding tokens as every other Media Studio candidate.
@@ -350,7 +350,7 @@ export const CAPITAL_AI_MASTERCLASS_EPISODES = Object.freeze([
 ] as const);
 
 /**
- * Native nine-second visual intro project for any published chapter.
+ * Native 2.5-second silent visual intro project for any reviewed chapter.
  * Audio is metadata/script only: a separate provenance- and listening-reviewed
  * voiceover asset is required before publication. No TTS or provider calls.
  */
@@ -358,7 +358,7 @@ export function createCapitalAiMasterclassChapterIntroProject(chapter: 1 | 2 | 3
   const episode = CAPITAL_AI_MASTERCLASS_EPISODES.find((candidate) => candidate.chapter === chapter);
   if (!episode) throw new Error('Invalid masterclass chapter');
   const fps = 30;
-  const seconds = 9;
+  const seconds = 2.5;
   const disclaimer = 'Bildungsinhalt von CAPITAL-AI. Keine Anlageberatung.';
   const base = createCapitalAiMediaStudioProject({
     title: `CAPITAL-AI Masterclass ${chapter}: ${episode.title}`,
@@ -368,8 +368,8 @@ export function createCapitalAiMasterclassChapterIntroProject(chapter: 1 | 2 | 3
   });
   return assertValid({
     ...base,
-    projectId: `capital-ai-masterclass-intro-k${String(chapter).padStart(2, '0')}-v2`,
-    description: `Kapitel ${chapter} – Entwurf. K1 Style-Referenz: Gold, Navy, JaJa-Sidebar, URL.`,
+    projectId: `capital-ai-masterclass-intro-k${String(chapter).padStart(2, '0')}-v3`, 
+    description: `Kapitel ${chapter} – Entwurf. K1 Style-Referenz: Gold, Navy, ohne Buddy-Sidebar, URL.`, 
     durationFrames: seconds * fps,
     tracks: [{
       id: 'masterclass-graphics',
@@ -390,7 +390,7 @@ export function createCapitalAiMasterclassChapterIntroProject(chapter: 1 | 2 | 3
     }],
     renderRecipe: {
       templateId: 'capital-ai-masterclass-chapter-intro',
-      templateVersion: '2.0.0',
+      templateVersion: '3.0.0',
       rendererProfile: 'media-project-v2-preview',
       brandTokenSource: MEDIA_PROJECT_BRAND_TOKEN_SOURCE,
       brandTextMode: 'deterministic',
@@ -409,12 +409,42 @@ export function createCapitalAiMasterclassChapterIntroProject(chapter: 1 | 2 | 3
       designAuthority: MEDIA_PROJECT_BRAND_TOKEN_SOURCE,
       chapterOneStyleReference: true,
       website: 'https://capital-ai.online',
-      narrationText: episode.spokenIntroduction,
+      audioSource: 'original-source-track-only',
+      syntheticIntroAllowed: false,
+      sidePanelVisible: false,
+      endCardHoldSeconds: 8,
+      audioEditPolicy: 'keep-complete-available-source-phrases',
       audioStatus: 'REVIEW_REQUIRED',
       publishReady: false,
       draftOnly: true,
     },
   }, 'Masterclass Intro');
+}
+
+/** Eight-second silent end-card contract: no JaJa, no third-party footer. */
+export function createCapitalAiMasterclassChapterOutroProject(chapter: 1 | 2 | 3 | 4): MediaProjectV2 {
+  const intro = createCapitalAiMasterclassChapterIntroProject(chapter);
+  const durationFrames = 8 * 30;
+  return assertValid({
+    ...intro,
+    projectId: `capital-ai-masterclass-outro-k${String(chapter).padStart(2, '0')}-v3`,
+    description: `8-second Capital-AI masterclass end-card for chapter ${chapter}; no Buddy side panel`,
+    durationFrames,
+    tracks: intro.tracks.map(track => ({
+      ...track,
+      layers: track.layers.map(layer => ({
+        ...layer,
+        id: `${layer.id}-outro`,
+        range: { startFrame: 0, durationFrames },
+        kicker: 'CAPITAL-AI · LEARNING HUB',
+        title: 'CHARTANALYSE MASTERCLASS',
+        body: 'https://capital-ai.online',
+        disclaimer: 'Bildungsinhalt. Keine Anlageberatung.',
+      })),
+    })),
+    renderRecipe: { ...intro.renderRecipe, templateId: 'capital-ai-masterclass-endcard', templateVersion: '3.0.0', publishReady: false },
+    metadata: { ...intro.metadata, endCardHoldSeconds: 8, synthesizeOutroNarration: false, sidePanelVisible: false, publicationStatus: 'REVIEW_REQUIRED' },
+  }, 'Masterclass Outro');
 }
 
 export { youtubeDescription as createYouTubeDescription } from '../../../../shared/product-disclaimers.mjs';
