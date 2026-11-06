@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "CAPITAL_AI_MASTERCLASS_STYLE@2",
+  "status": "LOCAL_RENDER_READY_WITH_AUDIO_REVIEW_REQUIRED",
+  "templateAuthority": "src/platform/SocialMediaEngine/Editing/MediaStudioTemplates.ts:createCapitalAiMasterclassChapterIntroProject",
+  "paletteAuthority": "public/branding/asset-pack/meta/social-render-tokens.json",
+  "referenceChapter": "Kapitel 01 · Chartanalyse Grundlagen",
+  "export": {
+    "width": 1600,
+    "height": 900,
+    "aspectRatio": "16:9",
+    "fps": 24,
+    "videoCodec": "h264",
+    "audioCodec": "aac",
+    "introSeconds": 9,
+    "outroSeconds": 6
+  },
+  "color": {
+    "background": "#02050E",
+    "foreground": "#F8FAFC",
+    "aifGold": "#F9BF21",
+    "cyan": "#22D3EE",
+    "violet": "#A855F7"
+  },
+  "structure": {
+    "header": "CAPITAL-AI  /  CHART ANALYSIS MASTERCLASS",
+    "sidePanel": "JaJa Buddy illustration from chapter 01, owner supplied",
+    "websiteUrl": "https://capital-ai.online",
+    "disclaimer": "Bildungsinhalt, keine Anlageberatung",
+    "titleMaxWidthPx": 770,
+    "titleWrapAtPixelBounds": true,
+    "globeAsset": "public/branding/universe/hero-universe-globe.webp"
+  },
+  "chapters": [
+    {
+      "number": 1,
+      "slug": "Grundlagen",
+      "name": "Chartanalyse: Grundlagen"
+    },
+    {
+      "number": 2,
+      "slug": "Realitaetscheck",
+      "name": "Realitätscheck Chartanalyse"
+    },
+    {
+      "number": 3,
+      "slug": "Trend_Volumen_Ausbrueche",
+      "name": "Trend, Volumen und Ausbrüche"
+    },
+    {
+      "number": 4,
+      "slug": "Zeitrahmen_Zoom",
+      "name": "Zeitrahmen und Zoom"
+    }
+  ],
+  "voice": {
+    "language": "de-DE",
+    "mode": "local-preview",
+    "engine": "eSpeak local library for offline draft; not neural2",
+    "speechSecondsMax": 9,
+    "reviewRequired": true,
+    "embeddedOriginalNarration": true,
+    "providerBilling": false
+  },
+  "publication": {
+    "publishReady": false,
+    "humanReviewRequired": true,
+    "rightsReviewRequired": true,
+    "googleNeural2NotActivated": true
+  },
+  "noLiveMarketData": true,
+  "sourceRightsNote": "Requires rights review of the original video, audio, Grok avatar and any Notebook-generated elements; crop does not establish copyright."
+}
