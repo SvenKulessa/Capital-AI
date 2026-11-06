@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { AccountPageShell } from './AccountPageShell';
+import { WalletDiscoveryPanel } from './WalletDiscoveryPanel';
 import { LearningFavoritesPanel } from '../learning/LearningFavorites';
 
 type NotesResponse = { notes: string; userId: string };
@@ -201,7 +202,10 @@ export function PrivateDashboardPage({ onNavigate }: { onNavigate: (path: string
   return (
     <AccountPageShell active="/profile/dashboard" title="Privates Dashboard"
       description="Dein persönliches Lernfeld sowie bearbeitete und gespeicherte Notizen." onNavigate={onNavigate}>
-      {session => <PrivateDashboardContent key={session.user!.id} userId={session.user!.id} />}
+      {session => <>
+        <WalletDiscoveryPanel userId={session.user!.id} />
+        <PrivateDashboardContent key={session.user!.id} userId={session.user!.id} />
+      </>}
     </AccountPageShell>
   );
 }
