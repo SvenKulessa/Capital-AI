@@ -20,7 +20,9 @@ RUN apk add --no-cache \
 WORKDIR /tmp/ffmpeg-${FFMPEG_VERSION}
 RUN test -n "${FFMPEG_VERSION}" \
     && test -n "${FFMPEG_SHA256}" \
+    # Download retries are bounded; the immutable release SHA-256 remains mandatory.
     && curl --proto '=https' --tlsv1.2 --fail --show-error --location \
+      --retry 4 --retry-all-errors --retry-delay 2 --retry-max-time 90 --connect-timeout 15 \
       "https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz" \
       --output ffmpeg.tar.xz \
     && printf '%s  %s\n' "${FFMPEG_SHA256}" ffmpeg.tar.xz | sha256sum -c - \
