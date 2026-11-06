@@ -25,7 +25,7 @@ uv lock --check
 | --- | --- | --- |
 | fsspec | 2025.12.0 | 2026.9.0 |
 | multidict | 6.7.1 | 6.9.1 |
-| oauthlib | 3.3.1 | 4.0.0 |
+| oauthlib | 3.3.1 / 4.0.0 | 4.0.1 |
 | langgraph-sdk | 0.4.2 | 0.4.6 |
 
 The full regenerated lock, including resolver changes, is retained with upstream's
@@ -128,3 +128,9 @@ operation. The GitHub pilot run itself remains NOT_RUN.
 
 In GitHub Actions, select **Optional reviewdog Pilot**, branch **main**, and enter
 `37711908410` as `source_run_id`. This is an advisory run with read-only permissions.
+
+## Security correction — 2026-11-06
+
+The current source scanner reports CVE-2026-49272 on oauthlib 4.0.0. The maintainer's advisory and 4.0.1 release identify 4.0.1 as the fix; older cached advisory summaries naming 4.0.0 are stale. The lock was updated with the required uv 0.12.10, upgrading only oauthlib. uv also filled missing size/upload metadata for the unchanged pyasn1 0.6.5 artifacts; their versions, URLs and hashes are unchanged.
+
+The 4.0.1 wheel and source archive were fetched from PyPI and SHA-256 checked. `smoke.py` now rejects missing and unknown device codes using the installed OAuthLib; it executes offline in both existing reviewer Dockerfiles. `uv lock --check` and the negative regression from the verified wheel pass locally. Full runtime imports, scans and compatibility remain subject to fresh current-head CI. This patch does not claim an exposed OAuth server, activate models, or authorize a reviewer deployment.
