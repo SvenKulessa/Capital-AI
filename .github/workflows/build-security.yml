@@ -112,7 +112,7 @@ jobs:
           set -euo pipefail
           # Repository-declared pause is authoritative for dormant NATS CI scope.
           # Unknown/malformed settings are fail-closed: continue full NATS checks.
-          if node -e 'const s=require("node:fs").readFileSync("render.yaml","utf8");const m=[...s.matchAll(/^[ \\t]*- key: MARKET_BROKER_PAUSED\\r?\\n[ \\t]*value: ["]?(true|false)["]?[ \\t]*$/gm)];process.exit(m.length===1&&m[0][1]==="true"?0:1)'; then
+          if node -e 'const s=require("node:fs").readFileSync("render.yaml","utf8");const m=[...s.matchAll(/^[ \t]*- key: MARKET_BROKER_PAUSED\r?\n[ \t]*value: ["]?(true|false)["]?[ \t]*$/gm)];process.exit(m.length===1&&m[0][1]==="true"?0:1)'; then
             echo 'run=false' >> "$GITHUB_OUTPUT"
             echo 'paused=true' >> "$GITHUB_OUTPUT"
             echo 'NATS: MARKET_BROKER_PAUSED=true; Docker image, runtime and vulnerability reachability NOT_RUN until reactivation' >> "$GITHUB_STEP_SUMMARY"
