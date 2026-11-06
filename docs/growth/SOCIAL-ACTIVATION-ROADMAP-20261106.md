@@ -11,11 +11,19 @@
 |---------|---------|------------|--------|
 | 0.1 Pipeline alignment | PR-Merge workflow vs. current code | Residuals documented | PARTIAL |
 | 0.2 Rights evidence | Commercial rights for text/assets | REVIEW_REQUIRED or APPROVED | REVIEW_REQUIRED |
-| 0.3 X-API budget | Credit, spending limit, per-call cost | Proposed cap only (≤ 3 USD); no budget authorized | NOT_PROVEN |
+| 0.3 X-API budget | Credit, spending limit, per-call cost; 22.11. Expansion-Abrechnung | Query-Inventar belegt, X Console Readback durch Owner offen; ≤ 3 USD nur Vorschlag, nicht freigegeben | REVIEW_REQUIRED / NOT_PROVEN |
 | 0.4 Owner gating | SOCIAL_X_* flags + PAID_WRITE/READ + IAM owner | Only owner can publish | VERIFIED (code) |
 | 0.5 Content Studio | Draft preview, sources, disclaimer | Preview without publish | PARTIAL |
 
 **Deliverable:** this document + residual notes.
+
+## P0-Ergänzung: X-API Expansion Billing (06.11.2026)
+
+- **VERIFIED (Code):** `x-url-context.mjs` verwendet ausschließlich `expansions=author_id`, benötigt `username` und `protected` zur verlässlichen Autoren- und Schutzprüfung. Der feste Parametervertrag ist mit einem Negativtest gegen zusätzliche Media-/Poll-/Place-/Post-Expansions abgesichert.
+- **REVIEW_REQUIRED:** Ab 22.11.2026 können expandierte User-Objekte zusätzliche PPU-Kosten erzeugen. Ein Entfernen der einzig nötigen Expansion ohne gleichwertige Prüfung ist keine sichere Lösung.
+- **NOT_PROVEN:** Kosten, reale API-Nutzung, Guthaben, Console-Spend-Cap und Auto-Recharge. Keine Zahl aus einem Forecast als tatsächlichen Kontostand verwenden; keine API-Calls oder Freischaltungen während des Audits.
+- **Public Content:** kostenbewusster Daten-/Content-Workflow und Eigentums-/Rechteprüfung werden ohne Server-, Vault-, Deployment- oder Architektur-Interna im eigenen Website-Blog erklärt. Keine Behauptung, ein autonomer Scheduler oder messbarer Marketing-ROI sei bereits produktiv.
+- **Evidence:** [X-PPU-EXPANSIONS-20261106.md](X-PPU-EXPANSIONS-20261106.md); P0 erst nach X Console-Readback schließen.
 
 ## Phase 1 – First Controlled Pilot (Week 1)
 
