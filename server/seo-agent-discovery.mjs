@@ -8,6 +8,7 @@ const PUBLIC_PAGE_LABELS = Object.freeze({
   '/blog': ['Learning articles', 'Public learning and blueprint guides'],
   '/blog/datenkonzept-blueprint': ['Data-concept blueprints', 'Sources, contracts and processing examples'],
   '/blog/screener-scoring-lernen': ['Learn screener scoring', 'Synthetic factors, weighting and coverage'],
+  '/blog/x-api-expansions-kosten': ['Understanding X API data costs', 'Public educational guide to expansion costs and verified sources'], 
   '/learning': ['Learning', 'Public education resources'],
   '/vocabulary': ['Market vocabulary', 'Public financial-market terminology'],
   '/faq': ['FAQ', 'Public answers and platform limitations'],
