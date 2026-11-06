@@ -21,6 +21,8 @@ test('runtime remains a non-root short-lived renderer without an invented probe'
   assert.ok(runtime, 'The renderer has a separate runtime stage');
   assert.match(runtime, /WORKDIR \/work/);
   assert.match(runtime, /USER 10001:10001/);
+  assert.match(runtime, /['"]musl>=1\.2\.5-r13['"]/);
+  assert.match(runtime, /['"]musl-utils>=1\.2\.5-r13['"]/);
   assert.match(runtime, /CMD \[/);
   assert.doesNotMatch(runtime, /^HEALTHCHECK/m);
 });
