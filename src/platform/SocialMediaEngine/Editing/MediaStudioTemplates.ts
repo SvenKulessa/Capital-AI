@@ -369,7 +369,7 @@ export function createCapitalAiMasterclassChapterIntroProject(chapter: 1 | 2 | 3
   return assertValid({
     ...base,
     projectId: `capital-ai-masterclass-intro-k${String(chapter).padStart(2, '0')}-v3`, 
-    description: `Kapitel ${chapter} – Entwurf. K1 Style-Referenz: Gold, Navy, ohne Buddy-Sidebar, URL.`, 
+    description: `Kapitel ${chapter} – Entwurf. K1 Style-Referenz: Gold, Navy, breite Folienfläche, URL.`, 
     durationFrames: seconds * fps,
     tracks: [{
       id: 'masterclass-graphics',
