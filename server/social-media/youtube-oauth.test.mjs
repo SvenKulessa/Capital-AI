@@ -6,6 +6,7 @@ import { createSocialYouTubeOAuthStart } from './youtube-oauth-start.mjs';
 import { createSocialYouTubeOAuthExchange, socialYouTubeOAuthConfigured } from './youtube-oauth-exchange.mjs';
 import { createSocialYouTubeAccountStatus } from './youtube-account-status.mjs';
 import { createSocialOAuthCallback } from './oauth-callback.mjs';
+import { SECURITY_HEADERS } from '../security-headers.mjs';
 
 const userId = 'd0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101';
 const key = 'ab'.repeat(32);
@@ -193,4 +194,33 @@ test('rendered English form issues a Google redirect with hl=en and fresh sessio
  const started=response();await createSocialYouTubeOAuthStart({env,auth,store:{beginOAuth:async()=>({state})}}).handle(req,started,new URL('/api/social-media/youtube/auth/start?'+query,env.PUBLIC_APP_ORIGIN),json);
  assert.equal(started.status,303);const target=new URL(started.headers.Location);
  assert.equal(target.hostname,'accounts.google.com');assert.equal(target.searchParams.get('hl'),'en');assert.equal(target.searchParams.get('scope'),scopes.join(' '));
+ // A valid server redirect alone is insufficient: Chromium also checks the
+ // initiating document's form-action policy against the redirect destination.
+ for (const name of ['Content-Security-Policy','Content-Security-Policy-Report-Only']) {
+  const directive=r.headers[name].split('; ').find(x=>x.startsWith('form-action '));
+  assert.equal(directive, "form-action 'self' " + target.origin);
+ }
+});
+
+test('YouTube form allows only the fixed Google origin and keeps other policies unchanged',async()=>{
+ for(const suffix of ['', '?hl=en']){
+  const r=response();Object.assign(r.headers,SECURITY_HEADERS);
+  await createSocialYouTubeAccountStatus({env,auth}).handle(req,r,new URL('/api/social-media/youtube/account/connect'+suffix,env.PUBLIC_APP_ORIGIN),json);
+  assert.equal(r.status,200);
+  for(const name of ['Content-Security-Policy','Content-Security-Policy-Report-Only']){
+   const before=SECURITY_HEADERS[name].split('; '),after=r.headers[name].split('; ');
+   assert.deepEqual(after.filter(x=>!x.startsWith('form-action ')),before.filter(x=>!x.startsWith('form-action ')));
+   assert.deepEqual(after.filter(x=>x.startsWith('form-action ')),["form-action 'self' https://accounts.google.com"]);
+   assert.ok(before.includes("form-action 'self'"));
+  }
+  assert.equal(r.headers['X-Frame-Options'],'DENY');
+ }
+ for(const path of ['/api/social-media/youtube/account/connect?hl=en&next=https://evil.example','/api/social-media/youtube/account/status']){
+  const r=response();Object.assign(r.headers,SECURITY_HEADERS);
+  await createSocialYouTubeAccountStatus({env,auth,fetchImpl:async()=>({ok:true,text:async()=>'[]'})}).handle(req,r,new URL(path,env.PUBLIC_APP_ORIGIN),json);
+  assert.equal(r.headers['Content-Security-Policy'],SECURITY_HEADERS['Content-Security-Policy']);
+ }
+ const denied=response();Object.assign(denied.headers,SECURITY_HEADERS);
+ await createSocialYouTubeAccountStatus({env,auth:{...auth,authorizeIamRole:async()=>false}}).handle(req,denied,new URL('/api/social-media/youtube/account/connect?hl=en',env.PUBLIC_APP_ORIGIN),json);
+ assert.equal(denied.status,403);assert.equal(denied.headers['Content-Security-Policy'],SECURITY_HEADERS['Content-Security-Policy']);
 });
