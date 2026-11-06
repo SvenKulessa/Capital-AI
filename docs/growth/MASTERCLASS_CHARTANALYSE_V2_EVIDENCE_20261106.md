@@ -45,3 +45,18 @@ Ein Commit-Rollback betrifft nur die zusätzlichen Template-/Test-/Dokudefinitio
 ## PR/CI Evidence
 
 Der zugehörige GROWTH-PR ist erst nach angepassten Tests, TypeScript-/Media-Projekt-Validierung, Docker Security Gate und Domain Governance mergebar. GitHub-Checks und Production-Deployment sind unabhängig vom erfolgreichen Drive-Readback zu behandeln.
+
+## Owner-requested audio restoration (2026-11-06; current Drive deliverables)
+
+**CURRENT: ORIGINAL_AUDIO_RESTORED / ESPEAK_INTRO_REMOVED / HUMAN_AUDIO_LISTENING_NOT_PROVEN.** The preceding v2 table and local eSpeak introduction describe **historical masters only**. On owner request, the exact nine-second eSpeak-generated introductory video/audio segment was removed from each master. The original audio embedded in the teaching body was preserved by stream copy; the branded teaching-frame and closing outro remain. This restoration is not a claim that the source speaker is human rather than originally generated.
+
+| Chapter | Current Drive filename | Duration | Verified SHA-256 |
+| --- | --- | --- | --- |
+| 01 | `CAPITAL-AI_Masterclass_K01_Grundlagen_Originalstimme_v3.mp4` | 397.519 s | `cdb8269584161f562a8464beef56705fb116e99b3b9cb62409cf5526ebce1351` |
+| 02 | `CAPITAL-AI_Masterclass_K02_Realitaetscheck_Originalstimme_v3.mp4` | 441.105 s | `500180f59459863cb1cd0d1f0129a363e907d2117fe644aadedfad98dd313f42` |
+| 03 | `CAPITAL-AI_Masterclass_K03_Trend_Volumen_Ausbrueche_Originalstimme_v3.mp4` | 387.105 s | `7ace0f8ede13959ef1e42499c6656facfdde614211866c154cad48cd537fe33c` |
+| 04 | `CAPITAL-AI_Masterclass_K04_Zeitrahmen_Zoom_Originalstimme_v3.mp4` | 373.563 s | `1c5ab39ff7190411eb51ea527460d2337a5ba7bf53053f922c556e17d544213d` |
+
+The previous four Drive file IDs are retained; full re-materialization of all four Drive MP4s followed by local SHA-256 confirmed the updated bytes. Audio comparison between each restored intro boundary and the previous v2 teaching audio, with codec-delay compensation, had normalized one-second correlation above 0.9999. Exact original-source voice is *preserved within the teaching body*, not re-synthesized. The four temporary video upload files were deleted after verified replacement. Drive manifest `MASTERCLASS_DELIVERY_MANIFEST.json` was updated **in place** at its previous file ID with v3 bytes, hash, version history and the audio provenance. The manifest's temporary upload copy was also deleted.
+
+**Publication stays blocked** until full human listening and copyright/third-party source rights review. Original visual 9-second intro is omitted from v3; a voice-free branded intro could be reintroduced only after separate owner design review and sync QA. This audio correction is not a grant to publish or alter OAuth status.
