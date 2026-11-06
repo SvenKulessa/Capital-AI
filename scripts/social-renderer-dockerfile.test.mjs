@@ -9,6 +9,7 @@ test('FFmpeg source builds with WORKDIR and checksum-preserving archive extracti
   assert.match(build, /ARG FFMPEG_VERSION\b/);
   assert.match(build, /WORKDIR \/tmp\/ffmpeg-\$\{FFMPEG_VERSION\}/);
   assert.match(build, /curl --proto '=https' --tlsv1\.2/);
+  assert.match(build, /--retry 4 --retry-all-errors --retry-delay 2 --retry-max-time 90 --connect-timeout 15/);
   assert.match(build, /ffmpeg-\$\{FFMPEG_VERSION\}\.tar\.xz/);
   assert.match(build, /sha256sum -c -/);
   assert.match(build, /tar -xJf ffmpeg\.tar\.xz --strip-components=1/);
