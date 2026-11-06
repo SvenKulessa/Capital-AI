@@ -3,6 +3,7 @@ import test from 'node:test';
 import {
   CAPITAL_AI_MASTERCLASS_EPISODES,
   createCapitalAiMasterclassChapterIntroProject,
+  createCapitalAiMasterclassChapterOutroProject,
 } from '../src/platform/SocialMediaEngine/Editing/MediaStudioTemplates.ts';
 import { validateMediaProjectV2 } from '../src/platform/SocialMediaEngine/Contracts/MediaProjectValidation.ts';
 
@@ -15,13 +16,25 @@ test('all four Chartanalyse Masterclass intros use the same first-party Media St
     assert.equal(check.ok, true, JSON.stringify(check.errors));
     assert.equal(template.canvas.width, 1920);
     assert.equal(template.canvas.height, 1080);
-    assert.equal(template.durationFrames, 270);
+    assert.equal(template.durationFrames, 75);
     assert.equal(template.renderRecipe.templateId, 'capital-ai-masterclass-chapter-intro');
-    assert.equal(template.renderRecipe.templateVersion, '2.0.0');
+    assert.equal(template.renderRecipe.templateVersion, '3.0.0');
     assert.equal(template.renderRecipe.publishReady, false);
     assert.equal(template.renderRecipe.networkPolicy, 'offline');
     assert.equal(template.metadata.draftOnly, true);
     assert.equal(template.metadata.audioStatus, 'REVIEW_REQUIRED');
+    assert.equal(template.metadata.sidePanelVisible, false);
+    assert.equal(template.metadata.syntheticIntroAllowed, false);
+    assert.equal(template.metadata.audioSource, 'original-source-track-only');
+    assert.equal(template.metadata.endCardHoldSeconds, 8);
+    assert.doesNotMatch(template.description, /JaJa|Buddy-/);
+    const outro = createCapitalAiMasterclassChapterOutroProject(chapter);
+    assert.equal(validateMediaProjectV2(outro).ok, true);
+    assert.equal(outro.durationFrames, 240);
+    assert.equal(outro.renderRecipe.templateId, 'capital-ai-masterclass-endcard');
+    assert.equal(outro.renderRecipe.publishReady, false);
+    assert.equal(outro.metadata.sidePanelVisible, false);
+    assert.equal(outro.metadata.endCardHoldSeconds, 8);
     assert.equal(template.metadata.website, 'https://capital-ai.online');
     assert.match(template.tracks[0].layers[0].body, /https:\/\/capital-ai\.online/);
     assert.match(template.tracks[0].layers[0].disclaimer, /Keine Anlageberatung/);
