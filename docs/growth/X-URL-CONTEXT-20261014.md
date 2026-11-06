@@ -77,6 +77,12 @@ X-Dokumentation:
 - https://docs.x.com/x-api/posts/get-post-by-id
 - https://docs.x.com/x-api/getting-started/pricing
 
+## P0-Update 06.11.2026 – X PPU Expansions
+
+Die für den URL-Context technisch nötige `author_id`-Expansion liefert genau den User zur Prüfung von URL-Handle und `protected`-Status. Nach der vom Owner bereitgestellten X-Mitteilung können die dadurch gelieferten User-Objekte ab **22.11.2026** zusätzlich abgerechnet werden. Die Codebasis fordert keine Media-/Poll-/Place-/Post-Expansions in diesem Pfad an. Der Query-Vertrag ist nun in `X_URL_CONTEXT_QUERY` explizit und als Test auf minimale Felder abgesichert. Ein bloßes Löschen der User-Expansion würde den Authentizitäts- und Schutzvertrag brechen. Dies ist **keine** technische Ausgabenobergrenze; wiederholte freigegebene Owner-Aufrufe bleiben möglich.
+
+Abschließender tatsächlicher Kosten- und Guthabennachweis bleibt **NOT_PROVEN**, da kein X Developer Console-Readback vorliegt. Aktuellen Verbrauch, Spend Cap, Recharge-Status und andere mit derselben App verbundene X-Integrationen ausschließlich read-only prüfen; Providerrechte und Freigabe-Flags nicht ändern. Evidenz: [X-PPU-EXPANSIONS-20261106.md](X-PPU-EXPANSIONS-20261106.md). Öffentliche Information beschränkt sich auf Nutzerprinzipien, Kostenbewusstsein, Quellenprüfung und kontrollierte Freigabe; keine Offenlegung von Edge-/Vault-/Account-/Token-Architektur.
+
 ## Betrieb und Rücknahme
 
 1. Nach erfolgreichem Docker Security Gate und Domain Governance auf main mergen.
