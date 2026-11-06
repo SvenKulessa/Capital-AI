@@ -14,6 +14,7 @@ const LABELS: Record<string, string> = {
   learning: 'Learning Hub',
   blog: 'Wissen & Lernen',
   'barrierefreie-finanzcharts': 'Barrierefreie Finanzcharts',
+  'x-api-expansions-kosten': 'X-API-Kosten verstehen',
   vocabulary: 'Vocabulary',
   dokumentation: 'Dokumentation Hub',
   pricing: 'Preiskatalog',
