@@ -47,6 +47,7 @@ Illustration ohne Deduplizierung: Einzelner Post Read + ein unterschiedlicher Us
 - Regression: `node --test server/social-media/x-url-context.test.mjs`.
 - SEO / Artikel: `node --test scripts/seo-metadata.test.mjs scripts/seo-content-manifest.test.mjs scripts/seo-source-provenance-drift.test.mjs server/seo-indexing-policy.test.mjs`.
 - Freigegebene CI: `Docker Security Gate` und `Domain Governance` am **PR-Head-SHA**; Ergebnis erst nach Run als VERIFIED kennzeichnen.
+- Redaktioneller Artikel: `/blog/x-api-expansions-kosten` mit eigener SVG-Illustration, amtlichen X-Dokumentationslinks und Learning-CTA; kein Abdruck interner X-Konfiguration, Token-/Vault-Pfade oder vertraulicher Business-/Implementierungsdetails.
 - Veröffentlichung der redaktionellen Website-Seite erfolgt nur über regulären Merge und nachgewiesenen Live-Readback. Kein X-Posting, keine kostenpflichtige API-Abfrage in diesem Arbeitsauftrag.
 - Rücknahme: regulärer Revert; keine Umschaltung der OAuth-/Read-/Publish-Freigaben.
 
