@@ -48,13 +48,50 @@ function selectSpecialists(task, { domain, registry } = {}) {
   };
 }
 
-export { normalizeSkillText, selectSpecialists };
+// Advisory plan only: no agent spawning, tool calls or permission changes.
+function selectSkillPlan(task, { domain, registry = defaultRegistry } = {}) {
+  const specialists = selectSpecialists(task, { domain, registry });
+  if (!domain) throw new RangeError('primary domain required for a skill plan');
+  const routing = registry.taskSkillRouting;
+  if (routing?.version !== 'CAPITAL_AI_TASK_SKILL_ROUTING@1' || !routing.signals ||
+      typeof routing.signals !== 'object' || Array.isArray(routing.signals)) {
+    throw new TypeError('invalid task skill routing registry');
+  }
+  const padded = ` ${normalizeSkillText(task)} `;
+  const extra = [];
+  for (const [skill, signals] of Object.entries(routing.signals)) {
+    const owner = registry.skillGovernance?.[skill]?.domainOwner;
+    if (!registry.domains[owner]?.ownedSkills?.includes(skill) ||
+        !Array.isArray(signals) || !signals.length || signals.some(s => typeof s !== 'string' || !normalizeSkillText(s))) {
+      throw new TypeError(`invalid task skill: ${skill}`);
+    }
+    const matched = signals.filter(s => padded.includes(` ${normalizeSkillText(s)} `));
+    if (matched.length) extra.push({ skill, signals: matched });
+  }
+  const primary = registry.domains[domain];
+  const skills = [...new Set([primary.engineering, primary.advisory,
+    ...extra.map(x => x.skill), ...specialists.skills, primary.presentation])];
+  return {
+    ...specialists,
+    status: extra.length || specialists.skills.length ? 'MATCHED' : 'REVIEW_REQUIRED',
+    agent: primary.chatAgent,
+    skills,
+    skillFiles: skills.map(skill => `.agents/skills/${skill}/SKILL.md`),
+    matchedSignals: [...extra, ...specialists.matchedSignals],
+    scope: 'ADVISORY_SKILL_PLAN_NO_EXECUTION_OR_AUTHORIZATION',
+  };
+}
+
+export { normalizeSkillText, selectSpecialists, selectSkillPlan };
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
   if (args.includes('--help')) {
-    process.stdout.write('Usage: node scripts/skill-routing.mjs [--domain PRODUCT|MARKET|PLATFORM|TRUST|GROWTH] <Aufgabentext>\n');
+    process.stdout.write('Usage: node scripts/skill-routing.mjs [--plan] [--domain PRODUCT|MARKET|PLATFORM|TRUST|GROWTH] <Aufgabentext>\n');
   } else {
+    const planIndex = args.indexOf('--plan');
+    const plan = planIndex !== -1;
+    if (plan) args.splice(planIndex, 1);
     const domainIndex = args.indexOf('--domain');
     let domain;
     if (domainIndex !== -1) {
@@ -64,7 +101,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     try {
       const task = args.join(' ').trim();
       if (!task) throw new TypeError('Aufgabentext fehlt');
-      process.stdout.write(JSON.stringify(selectSpecialists(task, { domain, registry: defaultRegistry }), null, 2) + '\n');
+      process.stdout.write(JSON.stringify((plan ? selectSkillPlan : selectSpecialists)(task, { domain, registry: defaultRegistry }), null, 2) + '\n');
     } catch (error) {
       process.stderr.write(error.message + '\n');
       process.exitCode = 2;

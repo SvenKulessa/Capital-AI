@@ -53,9 +53,15 @@ export async function productionReadback({ origin = CANONICAL_ORIGIN, full = fal
     await get(entry.path, (response, html) => {
       add(entry.path, 'HTML_CONTENT_TYPE', /text\/html/i.test(response.headers.get('content-type') || ''));
       add(entry.path, 'CANONICAL', html.includes(`<link rel="canonical" href="${entry.canonical}"`));
-      add(entry.path, 'INDEXABLE', !/noindex/i.test(response.headers.get('x-robots-tag') || '') &&
-        /<meta name="robots" content="index, follow/i.test(html));
-      add(entry.path, 'CRAWLABLE_CONTENT', /<div id="root"><main\b[^>]*>[\s\S]*?<h1>[^<]+<\/h1>/i.test(html));
+      // Standalone legal documents use Google's default INDEX semantics and
+      // intentionally have no React root. Still reject explicit indexing bans.
+      const legal = ['/impressum', '/datenschutz', '/agb'].includes(entry.path);
+      const robots = [...html.matchAll(/<meta\b[^>]*>/gi)].map(m => m[0])
+        .filter(tag => /name\s*=\s*["'](?:robots|googlebot)["']/i.test(tag));
+      const blocked = /noindex|\bnone\b/i.test(response.headers.get('x-robots-tag') || '') ||
+        robots.some(tag => /content\s*=\s*["'][^"']*\b(?:noindex|none)\b/i.test(tag));
+      add(entry.path, 'INDEXABLE', !blocked && (legal || /<meta name="robots" content="index, follow/i.test(html)));
+      add(entry.path, 'CRAWLABLE_CONTENT', /<main\b[^>]*>[\s\S]*?<h1\b[^>]*>[^<]+<\/h1>[\s\S]*?<\/main>/i.test(html));
       const scripts = [...html.matchAll(/<script\b[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi)];
       let schemaValid = scripts.length > 0;
       for (const [, body] of scripts) {
