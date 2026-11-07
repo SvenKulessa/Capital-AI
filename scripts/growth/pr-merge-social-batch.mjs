@@ -1,3 +1,6 @@
+import { firecrawlConfiguration, scrapePublicSource, readWorkerJson } from './firecrawl-client.mjs';
+export { readWorkerJson } from './firecrawl-client.mjs';
+import { contentVocabularyContext } from '../../shared/vocabulary-lookup.mjs';
 /**
  * NEWS_INTERVAL handoff: source-bound public-content drafts, never publication.
  * Worker egress requires SOCIAL_BATCH_EXTERNAL_WORKERS=enabled and server-only keys.
@@ -66,26 +69,6 @@ function boundedWorker(name, call) {
   return Promise.resolve().then(call).then(result => ({name, ...result}),
     () => ({name, status:'FAILED_CLOSED', data:null}));
 }
-// Enforce the byte budget while consuming the stream, before buffering/JSON parsing.
-export async function readWorkerJson(response, maxBytes) {
-  if (!response.body?.getReader) throw Error('WORKER_RESPONSE_BODY_MISSING');
-  const reader = response.body.getReader();
-  let size = 0;
-  const chunks = [];
-  try {
-    for (;;) {
-      const {done, value} = await reader.read();
-      if (done) break;
-      size += value.byteLength;
-      if (size > maxBytes) throw Error('WORKER_RESPONSE_OVERSIZE');
-      chunks.push(value);
-    }
-    return JSON.parse(Buffer.concat(chunks).toString('utf8'));
-  } finally {
-    await reader.cancel();
-  }
-}
-
 export async function openAiWorker(news, {env=process.env, fetchImpl=fetch}={}) {
   if (env.SOCIAL_BATCH_EXTERNAL_WORKERS !== 'enabled' || !env.OPENAI_API_KEY) {
     return {status:'SKIPPED_NOT_AUTHORIZED',data:null};
@@ -96,7 +79,9 @@ export async function openAiWorker(news, {env=process.env, fetchImpl=fetch}={}) 
   if (!/^[A-Za-z0-9._-]{3,80}$/.test(model)) {
     return {status:'SKIPPED_MODEL_NOT_CONFIGURED',data:null};
   }
-  const input = news.article.slice(0,9500);
+  const glossary=contentVocabularyContext(news.article).terms
+    .map(term => `${term.term}: ${term.definition}`).join('\n');
+  const input = news.article.slice(0,9500) + '\nGeprüfte Begriffserklärungen:\n' + glossary.slice(0,3000);
   const response = await fetchImpl('https://api.openai.com/v1/responses', {
     method:'POST', redirect:'error', signal:AbortSignal.timeout(15000),
     headers:{Authorization:'Bearer '+env.OPENAI_API_KEY,'Content-Type':'application/json'},
@@ -111,22 +96,14 @@ export async function openAiWorker(news, {env=process.env, fetchImpl=fetch}={}) 
   return {status:'DRAFT_ONLY',data:plain(text).slice(0,2200)};
 }
 export async function firecrawlWorker(news, {env=process.env,fetchImpl=fetch}={}) {
-  if (env.SOCIAL_BATCH_EXTERNAL_WORKERS !== 'enabled' || !env.FIRECRAWL_API_KEY) {
+  if (!firecrawlConfiguration(env).authorized) {
     return {status:'SKIPPED_NOT_AUTHORIZED',data:null};
   }
   // Bounded two-page sample: *never* crawl arbitrary PR-supplied URLs.
   const entries = news.sourcePrs.slice(0,2);
   const snippets = await Promise.all(entries.map(async entry => {
     const url = 'https://github.com/' + REPO + '/pull/' + entry.number;
-    const response = await fetchImpl('https://api.firecrawl.dev/v2/scrape', {
-      method:'POST',redirect:'error',signal:AbortSignal.timeout(10000),
-      headers:{Authorization:'Bearer '+env.FIRECRAWL_API_KEY,'Content-Type':'application/json'},
-      body:JSON.stringify({url,formats:['markdown'],onlyMainContent:true}),
-    });
-    if (!response.ok) throw Error('FIRECRAWL_HTTP_FAILURE');
-    const data = await readWorkerJson(response, 50000);
-    const markdown = data.data?.markdown ?? data.markdown;
-    if (typeof markdown !== 'string' || !markdown.trim()) throw Error('FIRECRAWL_RESPONSE_INVALID');
+    const markdown=await scrapePublicSource(url,{allowedUrls:new Set(entries.map(item=>'https://github.com/'+REPO+'/pull/'+item.number)),env,fetchImpl});
     return {url, preview:plain(markdown).slice(0,1200),authority:'UNTRUSTED_ADVISORY_ONLY'};
   }));
   return {status:'ADVISORY_READBACK',data:snippets};
@@ -205,6 +182,7 @@ export async function runBatch(news, {expectedLast,mergedSha,env=process.env,fet
     sourceSha:mergedSha,sourceBatchLastPr:expectedLast,mergeCount:news.mergeCount,
     contentId,campaignId:campaign.campaignId,sourcePrs:news.sourcePrs,
     title:headline,channelDrafts,manifest,
+    vocabularyContext:contentVocabularyContext(news.article),
     watermark:{asset:BRAND_ASSET,url:BRAND_URL,opacity:0.09,
       sha256:verifiedBrandSha,licenseEvidence:BRAND_RIGHTS_REF,decorative:true},
     workerIntegration:{contract:WORKER_CONTRACT,mode:'PROMISE_ALL_PARALLEL',

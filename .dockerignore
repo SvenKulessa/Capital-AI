@@ -449,3 +449,8 @@
 # Auth/Learning isolation regression sources executed by npm test in the existing build.
 !server/password-auth-isolation.test.mjs
 !server/learning-isolation.test.mjs
+
+!shared/vocabulary-lookup.mjs
+!scripts/growth/firecrawl-client.mjs
+!scripts/growth/firecrawl-client.test.mjs
+!server/chat-buddy-learn.test.mjs
