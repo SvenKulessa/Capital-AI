@@ -44,10 +44,12 @@ export const RoadmapDeltaPanel: React.FC<RoadmapDeltaPanelProps> = ({ readback }
           target="_blank" rel="noopener noreferrer">{delta.baseline.previousBaselineMainSha.slice(0, 12)}</a>
         {' · '}nicht als aktueller LIVE-Nachweis verwendbar.
       </p>
-      <p role="status" aria-live="polite" className={delta.mainMatched ? 'mt-2 text-sm text-emerald-300' : 'mt-2 text-sm text-amber-300'}>
+      <p role="status" aria-live="polite" className={delta.sourceMatched ? 'mt-2 text-sm text-emerald-300' : 'mt-2 text-sm text-amber-300'}>
         {delta.mainMatched
           ? 'LIVE main entspricht der geprüften Baseline. Code-Nachweise gelten nur für diesen Snapshot.'
-          : 'Main-Baseline nicht LIVE identisch belegt: Codebewertungen werden als NOT_PROVEN ausgewiesen.'}
+          : delta.lineageMatched
+            ? 'LIVE main ist ein belegter Nachfolge-Commit mit unveränderten geprüften Quell-Blobs. Nur Source-Evidence bleibt gültig; CI, Runtime und Rechte sind separat.'
+            : 'Keine valide LIVE-Baseline oder geprüfte Quell-Abstammung: Codebewertungen werden als NOT_PROVEN ausgewiesen.'}
       </p>
       <div className="mt-3 grid gap-3 lg:grid-cols-2">
         {delta.items.map(item => (
