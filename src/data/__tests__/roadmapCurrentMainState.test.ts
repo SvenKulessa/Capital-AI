@@ -94,7 +94,7 @@ test('chat-to-main delta contract is scoped, versioned and references existing r
   assert.equal(ROADMAP_DELTA_ITEMS.length, 4);
   assert.equal(new Set(ROADMAP_DELTA_ITEMS.map(item => item.scopeId)).size, 4);
   const ids = new Set(WORK_PACKAGES.map(item => item.id));
-  assert.equal(WORK_PACKAGES.length, 105);
+  assert.equal(WORK_PACKAGES.length, ROADMAP_RECONCILIATION.packageSources.length);
   for (const item of ROADMAP_DELTA_ITEMS) {
     if (item.roadmapId) assert.ok(ids.has(item.roadmapId), item.scopeId);
     assert.match(item.sourceUrl, /^https:\/\/github\.com\/SvenKulessa\/Capital-AI\//);
