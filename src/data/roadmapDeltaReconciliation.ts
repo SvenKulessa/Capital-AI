@@ -114,6 +114,8 @@ export type RoadmapDeltaRepositoryReadback = Readonly<{
   repository: string;
   sourceSha: string;
   freshness: 'LIVE' | 'CACHED' | 'STALE';
+  deployedSha?: string | null;
+  observedAt?: string;
   roadmapLineage?: RoadmapDeltaLineageProof | null;
 }>;
 
@@ -168,4 +170,50 @@ export function projectRoadmapDelta(
       // inherit a code/source success.
     })),
   };
+}
+
+
+/**
+ * Manual owner-only evidence export from the *already fetched* repository
+ * catalog. Only allowlisted source-lineage fields are copied; no API payload,
+ * credentials, tenant data, CI/runtime/rights approvals or new requests.
+ * This is an owner-provided readback, NOT a signed server attestation.
+ */
+export function serializeRoadmapOwnerLineageEvidence(
+  readback: RoadmapDeltaRepositoryReadback | null,
+  nowMs: number = Date.now(),
+): string | null {
+  if (!readback || !projectRoadmapDelta(readback).lineageMatched ||
+      typeof readback.observedAt !== 'string' || !Number.isFinite(nowMs)) return null;
+  const observedMs = Date.parse(readback.observedAt);
+  const ageMs = nowMs - observedMs;
+  // Prevent a previously LIVE (but now outdated) UI snapshot from being copied.
+  if (!Number.isFinite(observedMs) || ageMs < -120_000 || ageMs > 600_000) return null;
+  const lineage = readback.roadmapLineage;
+  if (!lineage) return null;
+  const deployedSha = typeof readback.deployedSha === 'string' &&
+    /^[0-9a-f]{40}$/.test(readback.deployedSha) ? readback.deployedSha : null;
+
+  return JSON.stringify({
+    schema: 'CAPITAL_AI_ROADMAP_OWNER_READBACK@1',
+    capture: 'owner_control_center_manual_copy',
+    scope: 'SOURCE_LINEAGE_ONLY',
+    repository: ROADMAP_LINEAGE_SOURCE.repository,
+    sourceSha: readback.sourceSha,
+    deployedSha,
+    observedAt: new Date(observedMs).toISOString(),
+    freshness: 'LIVE',
+    roadmapLineage: {
+      schema: ROADMAP_LINEAGE_SOURCE.schema,
+      status: 'SOURCE_UNCHANGED',
+      baselineMainSha: ROADMAP_LINEAGE_SOURCE.baselineMainSha,
+      observedMainSha: lineage.observedMainSha,
+      aheadCommits: lineage.aheadCommits,
+      protectedBlobs: ROADMAP_LINEAGE_SOURCE.protectedBlobs.map(source => ({
+        path: source.path,
+        sha: lineage.protectedBlobs.find(blob => blob.path === source.path)!.sha,
+      })),
+    },
+    ciRuntimeRights: 'NOT_INFERRED',
+  }, null, 2);
 }
