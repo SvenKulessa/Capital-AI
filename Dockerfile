@@ -93,6 +93,7 @@ COPY scripts/navigation.test.mjs scripts/skill-routing.test.mjs scripts/skill-ro
 COPY scripts/market-blueprint-demo.test.mjs ./scripts/market-blueprint-demo.test.mjs
 COPY scripts/screener-blueprint-preview.test.mjs ./scripts/screener-blueprint-preview.test.mjs
 COPY scripts/cads-growth-quality.test.mjs ./scripts/cads-growth-quality.test.mjs
+COPY scripts/masterclass-templates.test.mjs ./scripts/masterclass-templates.test.mjs
 COPY supabase/migrations/20261014205919_youtube_owner_revocation_cleanup.sql ./supabase/migrations/
 COPY scripts/youtube-privacy-revocation-db.sql ./scripts/
 COPY scripts/static-legal-routes.test.mjs ./scripts/static-legal-routes.test.mjs

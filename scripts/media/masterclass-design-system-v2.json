@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "CAPITAL_AI_MASTERCLASS_STYLE@3",
+  "status": "V4_FOUR_DRIVE_MASTERS_SHA256_VERIFIED_AUDIO_HUMAN_QA_PENDING",
+  "templateAuthority": "src/platform/SocialMediaEngine/Editing/MediaStudioTemplates.ts:createCapitalAiMasterclassChapterIntroProject",
+  "paletteAuthority": "public/branding/asset-pack/meta/social-render-tokens.json",
+  "referenceChapter": "Kapitel 01 · Chartanalyse Grundlagen",
+  "export": {
+    "width": 1600,
+    "height": 900,
+    "aspectRatio": "16:9",
+    "fps": 24,
+    "videoCodec": "h264",
+    "audioCodec": "aac",
+    "introSeconds": 2.5,
+    "outroSeconds": 8
+  },
+  "color": {
+    "background": "#02050E",
+    "foreground": "#F8FAFC",
+    "aifGold": "#F9BF21",
+    "cyan": "#22D3EE",
+    "violet": "#A855F7"
+  },
+  "structure": {
+    "header": "CAPITAL-AI  /  CHART ANALYSIS MASTERCLASS",
+    "sidePanel": "NONE: JaJa Buddy visual removed; full-width slides in first-party navy/gold frame",
+    "websiteUrl": "https://capital-ai.online",
+    "disclaimer": "Bildungsinhalt, keine Anlageberatung",
+    "titleMaxWidthPx": 770,
+    "titleWrapAtPixelBounds": true,
+    "globeAsset": "public/branding/universe/hero-universe-globe.webp",
+    "buddyIncluded": false
+  },
+  "chapters": [
+    {
+      "number": 1,
+      "slug": "Grundlagen",
+      "name": "Chartanalyse: Grundlagen"
+    },
+    {
+      "number": 2,
+      "slug": "Realitaetscheck",
+      "name": "Realitätscheck Chartanalyse"
+    },
+    {
+      "number": 3,
+      "slug": "Trend_Volumen_Ausbrueche",
+      "name": "Trend, Volumen und Ausbrüche"
+    },
+    {
+      "number": 4,
+      "slug": "Zeitrahmen_Zoom",
+      "name": "Zeitrahmen und Zoom"
+    }
+  ],
+  "voice": {
+    "language": "de-DE",
+    "mode": "original-uncut-source-audio",
+    "engine": "source soundtracks; no new TTS",
+    "speechSecondsMax": 0,
+    "reviewRequired": true,
+    "embeddedOriginalNarration": true,
+    "providerBilling": false,
+    "sourceBoundaries": "Original source from 0 seconds through >0.5 seconds after last significant speech activity; no generated sentence completions",
+    "audioVerification": "RMS and tail-silence only; semantic sentence completeness requires human listening"
+  },
+  "publication": {
+    "publishReady": false,
+    "humanReviewRequired": true,
+    "rightsReviewRequired": true,
+    "googleNeural2NotActivated": true
+  },
+  "noLiveMarketData": true,
+  "sourceRightsNote": "Requires rights review of the original video, audio, Grok avatar and any Notebook-generated elements; crop does not establish copyright.",
+  "deliveredMedia": {
+    "version": "v4-buddy-free-uncut-source",
+    "date": "2026-11-06",
+    "syntheticIntroRemovedSeconds": 9,
+    "visualIntroInDeliveredFiles": true,
+    "visualIntroSeconds": 2.5,
+    "originalTeachingAudioPreserved": true,
+    "sourceStartSeconds": 0,
+    "outroStillHoldSeconds": 8,
+    "driveByteHashReadback": "VERIFIED_IN_PLACE_SHA256_MATCH_4",
+    "publicationAllowed": false,
+    "humanListeningVerified": false,
+    "buddyVisible": false,
+    "outroLast7sSilent": true
+  },
+  "postProduction": {
+    "chapter01Crop": "x20..1330 removes original embedded Buddy sidebar",
+    "chapter02_03FullSource": true,
+    "chapter04NotebookCleanFreeze": true,
+    "allSourceAudioNoSyntheticVoices": true,
+    "badgeNoBuddy": true,
+    "sourceOriginalHashVerification": "VERIFIED_4_SOURCES",
+    "commercialRights": "REVIEW_REQUIRED",
+    "semanticSentenceQA": "NOT_PROVEN_REQUIRES_OWNER_HUMAN_LISTENING",
+    "outputDriveHashVerification": "VERIFIED_4_OUTPUTS",
+    "visualQA": "SAMPLED_PASS_FINAL_TITLE_REWRAP_K01_K03"
+  }
+}
