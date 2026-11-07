@@ -1,3 +1,5 @@
+import { ROADMAP_LINEAGE_SOURCE } from '../../shared/roadmap-source-lineage.mjs';
+
 /**
  * Chat-to-main evidence is a pinned, scoped audit slice, not a live PR tracker.
  * Never promote historical source, CI or rights evidence to production VERIFIED.
@@ -40,7 +42,7 @@ export const ROADMAP_DELTA_BASELINE = Object.freeze({
   supportingMergePr: 601,
   schema: 'CAPITAL_AI_CHAT_MAIN_DELTA@1',
   repository: 'SvenKulessa/Capital-AI',
-  baselineMainSha: '6c2f695a79a739de4e0770140396b36b72ab26f7',
+  baselineMainSha: ROADMAP_LINEAGE_SOURCE.baselineMainSha,
   reviewedDate: '2026-11-07',
   issue: 598,
   // Deliberately scoped; not a claim to have re-reviewed the full roadmap inventory.
@@ -98,10 +100,21 @@ export const ROADMAP_DELTA_ITEMS: readonly RoadmapDeltaItem[] = Object.freeze([
   },
 ]);
 
+export type RoadmapDeltaLineageProof = Readonly<{
+  schema: string;
+  status: string;
+  repository: string;
+  baselineMainSha: string;
+  observedMainSha: string;
+  aheadCommits: number;
+  protectedBlobs: readonly Readonly<{ path: string; sha: string }>[];
+}>;
+
 export type RoadmapDeltaRepositoryReadback = Readonly<{
   repository: string;
   sourceSha: string;
   freshness: 'LIVE' | 'CACHED' | 'STALE';
+  roadmapLineage?: RoadmapDeltaLineageProof | null;
 }>;
 
 /**
@@ -113,6 +126,8 @@ export function projectRoadmapDelta(
 ): Readonly<{
   baseline: typeof ROADMAP_DELTA_BASELINE;
   mainMatched: boolean;
+  lineageMatched: boolean;
+  sourceMatched: boolean;
   observedMainSha: string | null;
   items: readonly RoadmapDeltaItem[];
 }> {
@@ -122,13 +137,33 @@ export function projectRoadmapDelta(
     readback?.repository === ROADMAP_DELTA_BASELINE.repository &&
     readback.freshness === 'LIVE' &&
     readback.sourceSha === ROADMAP_DELTA_BASELINE.baselineMainSha;
+  // Server-authenticated GitHub compare + pinned blob evidence may preserve
+  // *source* status across a fast-forward merge, never runtime or legal rights.
+  const lineage = readback?.roadmapLineage;
+  const lineageMatched = Boolean(validSha &&
+    readback?.repository === ROADMAP_LINEAGE_SOURCE.repository &&
+    readback.freshness === 'LIVE' &&
+    lineage?.schema === ROADMAP_LINEAGE_SOURCE.schema &&
+    lineage.status === 'SOURCE_UNCHANGED' &&
+    lineage.repository === readback.repository &&
+    lineage.baselineMainSha === ROADMAP_DELTA_BASELINE.baselineMainSha &&
+    lineage.observedMainSha === readback.sourceSha &&
+    Number.isInteger(lineage.aheadCommits) &&
+    lineage.aheadCommits >= 1 && lineage.aheadCommits <= ROADMAP_LINEAGE_SOURCE.maxAheadCommits &&
+    Array.isArray(lineage.protectedBlobs) &&
+    lineage.protectedBlobs.length === ROADMAP_LINEAGE_SOURCE.protectedBlobs.length &&
+    ROADMAP_LINEAGE_SOURCE.protectedBlobs.every(source =>
+      lineage.protectedBlobs.some(blob => blob.path === source.path && blob.sha === source.sha)));
+  const sourceMatched = mainMatched || lineageMatched;
   return {
     baseline: ROADMAP_DELTA_BASELINE,
     mainMatched,
+    lineageMatched,
+    sourceMatched,
     observedMainSha: validSha ? readback!.sourceSha : null,
     items: ROADMAP_DELTA_ITEMS.map(item => ({
       ...item,
-      code: mainMatched ? item.code : 'NOT_PROVEN',
+      code: sourceMatched ? item.code : 'NOT_PROVEN',
       // CI, runtime and rights represent different authorities and never
       // inherit a code/source success.
     })),

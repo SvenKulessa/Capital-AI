@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 
 import { readFileSync } from 'node:fs';
+import { assessRoadmapSourceLineage, ROADMAP_LINEAGE_SOURCE } from '../../../shared/roadmap-source-lineage.mjs';
+import { createRepositoryToolCatalog } from '../../../server/repository-tool-catalog.mjs';
 import {
   projectRoadmapDelta,
   ROADMAP_DELTA_BASELINE,
@@ -199,4 +201,138 @@ test('revision 2 source evidence remains distinct from runtime, CI and publishin
   assert.equal(current.items.find(item => item.scopeId === 'BLUEPRINT-COMMERCE')?.rights, 'BLOCKED');
   assert.ok(current.items.filter(item => item.sourceUrl.includes('/blob/'))
     .every(item => item.sourceUrl.includes(ROADMAP_DELTA_BASELINE.baselineMainSha)));
+});
+
+
+const LINEAGE_HEAD = '1b95b92f2738b99ca2d06cd7bcd6219ae01e54d8';
+const LINEAGE_TREE = ROADMAP_LINEAGE_SOURCE.protectedBlobs.map(source => ({
+  type: 'blob',
+  path: source.path,
+  sha: source.sha,
+}));
+const LINEAGE_COMPARE = {
+  status: 'ahead',
+  ahead_by: 1,
+  behind_by: 0,
+  total_commits: 1,
+  base_commit: { sha: ROADMAP_LINEAGE_SOURCE.baselineMainSha },
+  merge_base_commit: { sha: ROADMAP_LINEAGE_SOURCE.baselineMainSha },
+  commits: [{ sha: LINEAGE_HEAD }],
+};
+
+test('GitHub ancestry and exact pinned blobs preserve code source across an unchanged fast-forward commit', () => {
+  assert.equal(ROADMAP_DELTA_BASELINE.baselineMainSha, ROADMAP_LINEAGE_SOURCE.baselineMainSha);
+  const proof = assessRoadmapSourceLineage({
+    headSha: LINEAGE_HEAD, compare: LINEAGE_COMPARE, tree: LINEAGE_TREE,
+  });
+  assert.ok(proof);
+  assert.equal(proof.schema, 'CAPITAL_AI_ROADMAP_SOURCE_LINEAGE@1');
+  assert.equal(proof.status, 'SOURCE_UNCHANGED');
+  assert.equal(proof.observedMainSha, LINEAGE_HEAD);
+  assert.equal(proof.aheadCommits, 1);
+
+  const projected = projectRoadmapDelta({
+    repository: ROADMAP_LINEAGE_SOURCE.repository,
+    sourceSha: LINEAGE_HEAD, freshness: 'LIVE', roadmapLineage: proof,
+  });
+  assert.equal(projected.mainMatched, false);
+  assert.equal(projected.lineageMatched, true);
+  assert.equal(projected.sourceMatched, true);
+  assert.equal(projected.items.find(item => item.scopeId === 'VOCAB-ARCHITECTURE')?.code, 'VERIFIED');
+  assert.ok(projected.items.every(item => item.ci === 'NOT_PROVEN' && item.runtime === 'NOT_PROVEN'));
+  assert.equal(projected.items.find(item => item.scopeId === 'BLUEPRINT-COMMERCE')?.rights, 'BLOCKED');
+  assert.equal(projected.items.find(item => item.scopeId === 'SOCIAL-X-PILOT')?.code, 'IN_PROGRESS');
+});
+
+test('changed blobs, forks, wrong head, incomplete commit ancestry and oversized histories fail closed', () => {
+  const valid = { headSha: LINEAGE_HEAD, compare: LINEAGE_COMPARE, tree: LINEAGE_TREE };
+  const negatives = [
+    { ...valid, headSha: 'f'.repeat(40) },
+    { ...valid, compare: { ...LINEAGE_COMPARE, status: 'diverged', behind_by: 1 } },
+    { ...valid, compare: { ...LINEAGE_COMPARE, merge_base_commit: { sha: 'f'.repeat(40) } } },
+    { ...valid, compare: { ...LINEAGE_COMPARE, total_commits: 31, ahead_by: 31 } },
+    { ...valid, compare: { ...LINEAGE_COMPARE, commits: [] } },
+    { ...valid, compare: { ...LINEAGE_COMPARE, commits: [{ sha: 'f'.repeat(40) }] } },
+    { ...valid, tree: LINEAGE_TREE.map(row => row.path === LINEAGE_TREE[0].path
+      ? { ...row, sha: 'f'.repeat(40) } : row) },
+    { ...valid, tree: LINEAGE_TREE.slice(0, 1) },
+    { ...valid, tree: [...LINEAGE_TREE, LINEAGE_TREE[0]] },
+  ];
+  for (const [index, caseInput] of negatives.entries()) {
+    assert.equal(assessRoadmapSourceLineage(caseInput), null, 'negative-case ' + index);
+  }
+});
+
+test('untrusted, cached and stale client lineage cannot authorize source VERIFIED', () => {
+  const proof = assessRoadmapSourceLineage({
+    headSha: LINEAGE_HEAD, compare: LINEAGE_COMPARE, tree: LINEAGE_TREE,
+  });
+  assert.ok(proof);
+  const candidates = [
+    { ...proof, observedMainSha: 'f'.repeat(40) },
+    { ...proof, baselineMainSha: 'f'.repeat(40) },
+    { ...proof, status: 'VERIFIED' },
+    { ...proof, protectedBlobs: [{ ...proof.protectedBlobs[0], sha: 'f'.repeat(40) }, proof.protectedBlobs[1]] },
+  ];
+  for (const forged of candidates) {
+    const state = projectRoadmapDelta({
+      repository: ROADMAP_LINEAGE_SOURCE.repository,
+      sourceSha: LINEAGE_HEAD, freshness: 'LIVE', roadmapLineage: forged,
+    });
+    assert.equal(state.sourceMatched, false);
+    assert.ok(state.items.every(item => item.code === 'NOT_PROVEN'));
+  }
+  for (const freshness of ['CACHED', 'STALE'] as const) {
+    const state = projectRoadmapDelta({
+      repository: ROADMAP_LINEAGE_SOURCE.repository,
+      sourceSha: LINEAGE_HEAD, freshness, roadmapLineage: proof,
+    });
+    assert.equal(state.sourceMatched, false);
+  }
+});
+
+test('existing owner catalog adds bounded lineage evidence and fails closed without GitHub proof', async () => {
+  const pathTree = [
+    { type: 'blob', path: 'package.json', sha: 'c'.repeat(40) },
+    { type: 'blob', path: 'package-lock.json', sha: 'd'.repeat(40) },
+    ...LINEAGE_TREE,
+  ];
+  const calls: string[] = [];
+  const compareFetch = async (input: RequestInfo | URL) => {
+    const url = String(input);
+    calls.push(url);
+    if (url.endsWith('/branches/main')) {
+      return new Response(JSON.stringify({ commit: { sha: LINEAGE_HEAD } }));
+    }
+    if (url.includes('/git/trees/')) {
+      return new Response(JSON.stringify({ tree: pathTree, truncated: false }));
+    }
+    if (url.includes('/compare/')) {
+      return new Response(JSON.stringify(LINEAGE_COMPARE));
+    }
+    if (url.endsWith('/package.json')) {
+      return new Response(JSON.stringify({ name: 'capital-ai', version: '0.8.0-alpha.1' }));
+    }
+    if (url.endsWith('/package-lock.json')) {
+      return new Response(JSON.stringify({ packages: {} }));
+    }
+    return new Response('', { status: 404 });
+  };
+  const catalog = createRepositoryToolCatalog({ fetchImpl: compareFetch, now: () => 123_456 });
+  const state = await catalog.snapshot();
+  assert.equal(state.freshness, 'LIVE');
+  assert.equal(state.sourceSha, LINEAGE_HEAD);
+  assert.equal(state.roadmapLineage?.observedMainSha, LINEAGE_HEAD);
+  assert.equal(calls.filter(url => url.includes('/compare/')).length, 1);
+  assert.equal((await catalog.snapshot()).freshness, 'CACHED');
+  assert.equal(calls.filter(url => url.includes('/compare/')).length, 1);
+
+  const broken = createRepositoryToolCatalog({
+    fetchImpl: async (input: RequestInfo | URL) => String(input).includes('/compare/')
+      ? new Response('', { status: 503 })
+      : compareFetch(input),
+  });
+  const fallback = await broken.snapshot();
+  assert.equal(fallback.freshness, 'LIVE');
+  assert.equal(fallback.roadmapLineage, null);
 });

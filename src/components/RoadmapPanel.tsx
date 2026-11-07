@@ -1,5 +1,6 @@
 import React from 'react';
 import { RoadmapDeltaPanel } from './RoadmapDeltaPanel';
+import type { RoadmapDeltaLineageProof } from '../data/roadmapDeltaReconciliation';
 import { PROJECT_OWNERS, ROADMAP_SNAPSHOT, ROADMAP_STAGES, ROADMAP_STRATEGIC_PRIORITIES, WORK_PACKAGES } from '../data/roadmapData';
 import type { ProjectOwner, RoadmapEvidenceState } from '../data/roadmapData';
 import mergeAuditData from '../data/roadmapMergeReconciliation.json';
@@ -32,6 +33,7 @@ type RepositoryStatus = {
   deployedSha: string | null;
   observedAt: string;
   freshness: 'LIVE' | 'CACHED' | 'STALE';
+  roadmapLineage: RoadmapDeltaLineageProof | null;
 };
 const REPOSITORY_SYNC_INTERVAL_MS = 90 * 60 * 1000;
 const SOURCE_SHA = /^[a-f0-9]{40}$/;
@@ -72,6 +74,9 @@ export const RoadmapPanel: React.FC = () => {
             ? payload.deployedSha : null,
           observedAt: payload.observedAt,
           freshness: payload.freshness as RepositoryStatus['freshness'],
+          roadmapLineage: payload.roadmapLineage && typeof payload.roadmapLineage === 'object' &&
+            !Array.isArray(payload.roadmapLineage)
+            ? payload.roadmapLineage as RoadmapDeltaLineageProof : null,
         });
         setSyncError(payload.freshness === 'STALE');
       }
