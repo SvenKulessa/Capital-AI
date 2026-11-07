@@ -263,6 +263,38 @@ test('changed blobs, forks, wrong head, incomplete commit ancestry and oversized
   }
 });
 
+test('fast-forward limit admits exactly 30 complete commits and rejects 31 complete commits', () => {
+  const makeCompare = (count: number) => ({
+    ...LINEAGE_COMPARE,
+    ahead_by: count,
+    total_commits: count,
+    // Full and syntactically valid ordered history; the last commit is the requested head.
+    commits: Array.from({ length: count }, (_, i) => ({
+      sha: i === count - 1 ? LINEAGE_HEAD : (i + 1).toString(16).padStart(40, '0'),
+    })),
+  });
+  assert.equal(ROADMAP_LINEAGE_SOURCE.maxAheadCommits, 30);
+  const atLimit = assessRoadmapSourceLineage({
+    headSha: LINEAGE_HEAD,
+    compare: makeCompare(30),
+    tree: LINEAGE_TREE,
+  });
+  assert.ok(atLimit, 'exactly 30 complete commits with unchanged protected blobs are admissible');
+  assert.equal(atLimit.aheadCommits, 30);
+
+  const overLimit = assessRoadmapSourceLineage({
+    headSha: LINEAGE_HEAD,
+    compare: makeCompare(31),
+    tree: LINEAGE_TREE,
+  });
+  assert.equal(overLimit, null, '31 complete commits exceed the explicit source-provenance limit');
+  assert.equal(assessRoadmapSourceLineage({
+    headSha: LINEAGE_HEAD,
+    compare: makeCompare(0),
+    tree: LINEAGE_TREE,
+  }), null, 'zero commits do not prove a forward lineage');
+});
+
 test('untrusted, cached and stale client lineage cannot authorize source VERIFIED', () => {
   const proof = assessRoadmapSourceLineage({
     headSha: LINEAGE_HEAD, compare: LINEAGE_COMPARE, tree: LINEAGE_TREE,
