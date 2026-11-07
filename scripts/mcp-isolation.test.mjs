@@ -82,3 +82,12 @@ test('GA4 stdio child disables W3C trace-context propagation even if parent requ
     await rm(tmp, { recursive: true, force: true });
   }
 });
+
+test('GA4 MCP Docker image contract requires a resolver-consistent patched OTel family', async () => {
+  const dockerfile = await readFile(new URL('../Dockerfile', import.meta.url), 'utf8');
+  assert.match(dockerfile, /analytics-mcp==0\.7\.0 google-adk==2\.14\.0/);
+  assert.match(dockerfile, /opentelemetry-api==1\.45\.2 opentelemetry-sdk==1\.45\.2/);
+  assert.match(dockerfile, /\/opt\/ga4-mcp\/bin\/pip check/);
+  assert.match(dockerfile, /version\('opentelemetry-api'\) == version\('opentelemetry-sdk'\) == '1\.45\.2'/);
+  assert.doesNotMatch(dockerfile, /--no-deps/);
+});
