@@ -1,3 +1,4 @@
+import { contentVocabularyContext } from '../../shared/vocabulary-lookup.mjs';
 import { z } from 'zod';
 import { assessCadsContentCampaign } from '../../packages/benchmark-core/growth-quality.mjs';
 import {
@@ -68,9 +69,16 @@ export const ContentEngineModulePlanSchema = z.object({
 }).strict();
 export type ContentEngineModulePlan = z.infer<typeof ContentEngineModulePlanSchema>;
 
+export const ContentVocabularyContextSchema = z.object({
+  catalogCount:z.number().int().positive(),
+  terms:z.array(z.object({id:z.string(),term:z.string(),definition:z.string(),category:z.string(),
+    level:z.string().nullable(),thesaurus:z.array(z.string()),path:z.string()}).strict()).max(12),
+}).strict();
+
 export const ContentEnginePlanSchema = z.object({
   contractVersion: z.literal(CONTENT_ENGINE_CONTRACT_VERSION),
   campaign: ContentCampaignBriefSchema,
+  vocabularyContext: ContentVocabularyContextSchema.optional(),
   modules: z.array(ContentEngineModulePlanSchema),
   cadsQuality: z.object({
     schemaVersion: z.literal('CAPITAL_AI_CADS_GROWTH_QUALITY@1'),
@@ -162,6 +170,7 @@ export function planContentCampaign(rawBrief: unknown): ContentEnginePlan {
   return ContentEnginePlanSchema.parse({
     contractVersion: CONTENT_ENGINE_CONTRACT_VERSION,
     campaign,
+    vocabularyContext:contentVocabularyContext([campaign.objective,...campaign.audience].join(" ")),
     modules: [...modules].map(moduleState),
     cadsQuality,
     publication: {

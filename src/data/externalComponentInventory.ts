@@ -38,6 +38,28 @@ export const CADS_PROFILE_V2 = {
 
 export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryItem[] = [
   {
+    id: 'firecrawl', name: 'Firecrawl', domain: 'GROWTH', kind: 'Research / isolated pilot',
+    installedAt: null, activeVersion: null, pipelineVersion: null, lifecycle: 'DISCOVERED',
+    functionSummary: 'Cloud-/Loopback-Transport geprüft; kein lokaler Dienst gestartet. Upstream-Images und Betrieb gesondert prüfen.', webAppBinding: 'scripts/growth/firecrawl-client.mjs', license: 'AGPL-3.0',
+    cadsScore: 0, scoreState: 'PROVISIONAL', domainAssignments: ['Learning / Content / BI'],
+    dependencies: [], alternatives: [], evidence: ['docs/product/VOCABULARY-COMMON-LOOKUP-20261106.md'],
+  },
+  {
+    id: 'duckdb', name: 'DuckDB', domain: 'MARKET', kind: 'Research / isolated pilot',
+    installedAt: null, activeVersion: null, pipelineVersion: null, lifecycle: 'DISCOVERED',
+    functionSummary: 'Version 2.0.0 im isolierten synthetischen Pilot ausgeführt; nicht in Web-Runtime installiert.', webAppBinding: 'scripts/analytics/duckdb-pilot.py', license: 'MIT',
+    cadsScore: 0, scoreState: 'PROVISIONAL', domainAssignments: ['Learning / Content / BI'],
+    dependencies: [], alternatives: [], evidence: ['docs/product/VOCABULARY-COMMON-LOOKUP-20261106.md'],
+  },
+  {
+    id: 'power-bi', name: 'Power BI', domain: 'PRODUCT', kind: 'Research / isolated pilot',
+    installedAt: null, activeVersion: null, pipelineVersion: null, lifecycle: 'DISCOVERED',
+    functionSummary: 'CSV-Importvorlage vorhanden; Power BI Desktop und Embedded nicht ausgeführt.', webAppBinding: 'deploy/analytics-pilot/powerbi-import.pq', license: 'Proprietary',
+    cadsScore: 0, scoreState: 'PROVISIONAL', domainAssignments: ['Learning / Content / BI'],
+    dependencies: [], alternatives: [], evidence: ['docs/product/VOCABULARY-COMMON-LOOKUP-20261106.md'],
+  },
+
+  {
     id: 'zitadel', name: 'ZITADEL', domain: 'TRUST', kind: 'Identity',
     installedAt: null, activeVersion: 'managed-cloud', pipelineVersion: 'managed-cloud', lifecycle: 'ACTIVE',
     functionSummary: 'OIDC/OAuth2 identity, Passkeys, MFA und append-only Audit-Trail.',

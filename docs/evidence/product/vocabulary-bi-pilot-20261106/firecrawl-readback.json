@@ -1,0 +1,26 @@
+{
+  "schema": "CAPITAL_AI_FIRECRAWL_SELFHOST_READBACK@1",
+  "baseMainSha": "dcd41e22b2b6df5e1429dbe35c0d3710842f331a",
+  "containerRuntimes": {
+    "docker": false,
+    "podman": false,
+    "nerdctl": false
+  },
+  "loopbackProbe": {
+    "reachable": false,
+    "errorType": "URLError"
+  },
+  "serviceStarted": false,
+  "realScrapeExecuted": false,
+  "runtimeStatus": "BLOCKED_NO_CONTAINER_RUNTIME",
+  "adapterTests": "MOCK_HTTP_ONLY",
+  "upstreamTag": "v2.11.0",
+  "licenseBlobSha": "c3670aecd9a8bce47d9be8daa62811a99b809113",
+  "composeBlobSha": "abf6980e72dac48c65c68ae4864c6d44190af0d0",
+  "selfHostDocBlobSha": "ed165363e2c5114b0902de50489974c3f484a67c",
+  "upstreamUnpinnedImages": [
+    "redis:alpine",
+    "rabbitmq:3-management"
+  ],
+  "upstreamCommit": "ef12eb36b2f3382838dfe0a0c1a5add3d5df7fe5"
+}
