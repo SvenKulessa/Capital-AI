@@ -5,6 +5,7 @@ import { assessRoadmapSourceLineage, ROADMAP_LINEAGE_SOURCE } from '../../../sha
 import { createRepositoryToolCatalog } from '../../../server/repository-tool-catalog.mjs';
 import {
   projectRoadmapDelta,
+  serializeRoadmapOwnerLineageEvidence,
   ROADMAP_DELTA_BASELINE,
   ROADMAP_DELTA_HISTORY,
   ROADMAP_DELTA_ITEMS,
@@ -157,6 +158,8 @@ test('chat-to-main delta display remains in owner-only Control Center without ne
   assert.match(roadmap, /<RoadmapDeltaPanel readback=\{repositoryStatus\} \/>/);
   assert.match(deltaPanel, /projectRoadmapDelta\(readback\)/);
   assert.match(deltaPanel, /delta\.items\.map/);
+  assert.match(deltaPanel, /Bereinigten Lineage-Nachweis kopieren/);
+  assert.match(deltaPanel, /manualEvidence/);
   assert.doesNotMatch(deltaPanel, /fetch\s*\(/);
   assert.doesNotMatch(deltaPanel, /publish\(/i);
 });
@@ -367,4 +370,79 @@ test('existing owner catalog adds bounded lineage evidence and fails closed with
   const fallback = await broken.snapshot();
   assert.equal(fallback.freshness, 'LIVE');
   assert.equal(fallback.roadmapLineage, null);
+});
+
+
+test('owner lineage export contains only fresh, explicitly allowed source fields', () => {
+  const proof = assessRoadmapSourceLineage({
+    headSha: LINEAGE_HEAD, compare: LINEAGE_COMPARE, tree: LINEAGE_TREE,
+  });
+  assert.ok(proof);
+  const observedAt = '2026-11-07T07:30:00.000Z';
+  const currentMs = Date.parse(observedAt) + 20_000;
+  const untrustedRawPayload = {
+    repository: ROADMAP_LINEAGE_SOURCE.repository,
+    sourceSha: LINEAGE_HEAD,
+    deployedSha: LINEAGE_HEAD,
+    observedAt,
+    freshness: 'LIVE' as const,
+    roadmapLineage: proof,
+    authorization: 'DO_NOT_EXPORT',
+    privateTenantId: 'DO_NOT_EXPORT',
+    sessionCookie: 'DO_NOT_EXPORT',
+    accessToken: 'DO_NOT_EXPORT',
+  };
+  const text = serializeRoadmapOwnerLineageEvidence(untrustedRawPayload, currentMs);
+  assert.ok(text);
+  assert.doesNotMatch(text, /DO_NOT_EXPORT|authorization|sessionCookie|accessToken|privateTenantId/);
+  const evidence = JSON.parse(text);
+  assert.deepEqual(Object.keys(evidence), [
+    'schema', 'capture', 'scope', 'repository', 'sourceSha',
+    'deployedSha', 'observedAt', 'freshness', 'roadmapLineage', 'ciRuntimeRights',
+  ]);
+  assert.equal(evidence.schema, 'CAPITAL_AI_ROADMAP_OWNER_READBACK@1');
+  assert.equal(evidence.capture, 'owner_control_center_manual_copy');
+  assert.equal(evidence.scope, 'SOURCE_LINEAGE_ONLY');
+  assert.equal(evidence.sourceSha, LINEAGE_HEAD);
+  assert.equal(evidence.roadmapLineage.status, 'SOURCE_UNCHANGED');
+  assert.equal(evidence.roadmapLineage.observedMainSha, LINEAGE_HEAD);
+  assert.deepEqual(evidence.roadmapLineage.protectedBlobs, LINEAGE_TREE.map(row => ({
+    path: row.path, sha: row.sha,
+  })));
+  assert.equal(evidence.ciRuntimeRights, 'NOT_INFERRED');
+});
+
+test('owner lineage export is unavailable for stale, tampered, missing or oversized proofs', () => {
+  const proof = assessRoadmapSourceLineage({
+    headSha: LINEAGE_HEAD, compare: LINEAGE_COMPARE, tree: LINEAGE_TREE,
+  });
+  assert.ok(proof);
+  const observedAt = '2026-11-07T07:30:00.000Z';
+  const currentMs = Date.parse(observedAt);
+  const valid = {
+    repository: ROADMAP_LINEAGE_SOURCE.repository,
+    sourceSha: LINEAGE_HEAD,
+    deployedSha: LINEAGE_HEAD,
+    observedAt,
+    freshness: 'LIVE' as const,
+    roadmapLineage: proof,
+  };
+  const badSnapshots = [
+    null,
+    { ...valid, freshness: 'CACHED' as const },
+    { ...valid, freshness: 'STALE' as const },
+    { ...valid, repository: 'unknown/repository' },
+    { ...valid, roadmapLineage: null },
+    { ...valid, roadmapLineage: { ...proof, observedMainSha: 'f'.repeat(40) } },
+    { ...valid, roadmapLineage: { ...proof, protectedBlobs: [{ ...proof.protectedBlobs[0], sha: 'f'.repeat(40) }, proof.protectedBlobs[1]] } },
+    { ...valid, observedAt: 'not-a-time' },
+  ];
+  for (const snapshot of badSnapshots) {
+    assert.equal(serializeRoadmapOwnerLineageEvidence(snapshot, currentMs), null);
+  }
+  assert.equal(serializeRoadmapOwnerLineageEvidence(valid, currentMs + 600_001), null,
+    'old LIVE snapshot is not fresh evidence');
+  assert.equal(serializeRoadmapOwnerLineageEvidence(valid, currentMs - 120_001), null,
+    'future timestamp is not accepted beyond clock skew');
+  assert.equal(serializeRoadmapOwnerLineageEvidence(valid, Number.NaN), null);
 });
