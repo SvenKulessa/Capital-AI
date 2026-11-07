@@ -41,6 +41,22 @@ The provider is dedicated to this identity and should NOT be reused by arbitrary
 - Google Cloud APIs may be readable using Service Usage Viewer even though **enabling/disabling APIs remains forbidden** by IAM and this workflow.
 - Google Drive uploads, OAuth consent-screen management, billing, IAM changes and project creation are NOT activated by this workflow. They require separate reviewed endpoints, narrow roles, explicit Owner decisions, and evidence. GitHub OIDC cannot automatically act as a human administrator in Google OAuth.
 
+## Roadmap: administrative Cloud, Admin Console and Workspace operators
+
+Status: planned under `CA-PLATFORM-SELF-HEAL`. The existing read-only audit is the baseline. Define an operation and resource allowlist before assigning privileges.
+
+| Operator | Planned authorization | First acceptance check |
+| --- | --- | --- |
+| Google Cloud Admin | Dedicated service account with project- or resource-scoped IAM for the selected Cloud API operations | Apply one approved reversible change to a test resource, read it back, and roll it back |
+| Admin Console | Dedicated identity for approved Admin SDK operations and a delegated administrator with the necessary Workspace privileges | Exercise one allowed operation on a test user or group and prove a denial outside its scope |
+| Workspace | Dedicated identity for approved Drive or other Workspace API operations on specified resources | Verify permitted access to a test resource and denied access outside the resource boundary |
+
+1. Verify the existing federation pool, then bind each service account to its own approved workflow and environment. Restrict the GitHub claims to the intended repository ID, branch and workflow. Test rejection of other repositories and workflows before granting API privileges.
+2. Use short-lived credentials. Where a Workspace API operation requires a delegated user, record the service-account client ID, the allowed delegated subject and the narrow OAuth scopes. A Workspace Super Admin authorizes domain-wide delegation separately. Workspace user privileges and resource access still apply.
+3. Require explicit operation and target inputs for administrative writes. Record the selected identity, action, result and rollback without credentials or user data. Verify that removing the corresponding IAM binding or Workspace delegation blocks future access for that operator.
+
+References: [GitHub Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation-with-deployment-pipelines) and [Workspace domain-wide delegation](https://support.google.com/a/answer/162106?hl=en).
+
 ## Reproduce and roll back
 
 Local non-network test:
