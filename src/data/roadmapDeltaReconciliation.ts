@@ -18,10 +18,29 @@ export type RoadmapDeltaItem = Readonly<{
   nextStep: string;
 }>;
 
+/**
+ * Immutable source-level audit snapshot from the first #598 review.
+ * Historical evidence is retained, but never projected as current main.
+ */
+export const ROADMAP_DELTA_HISTORY = Object.freeze([
+  Object.freeze({
+    schema: 'CAPITAL_AI_CHAT_MAIN_DELTA@1',
+    revision: 1,
+    repository: 'SvenKulessa/Capital-AI',
+    baselineMainSha: '2736bf98acff8ff19d789f70d44a04f3046f690f',
+    reviewedDate: '2026-11-07',
+    issue: 598,
+    scope: 'FOUR_EVIDENCE_SLICES',
+  }),
+]);
+
 export const ROADMAP_DELTA_BASELINE = Object.freeze({
+  revision: 2,
+  previousBaselineMainSha: ROADMAP_DELTA_HISTORY[0].baselineMainSha,
+  supportingMergePr: 601,
   schema: 'CAPITAL_AI_CHAT_MAIN_DELTA@1',
   repository: 'SvenKulessa/Capital-AI',
-  baselineMainSha: '2736bf98acff8ff19d789f70d44a04f3046f690f',
+  baselineMainSha: '6c2f695a79a739de4e0770140396b36b72ab26f7',
   reviewedDate: '2026-11-07',
   issue: 598,
   // Deliberately scoped; not a claim to have re-reviewed the full roadmap inventory.
@@ -33,7 +52,7 @@ export const ROADMAP_DELTA_ITEMS: readonly RoadmapDeltaItem[] = Object.freeze([
     scopeId: 'VOCAB-ARCHITECTURE',
     roadmapId: null,
     title: 'Architektur-Vokabular im Learning Hub',
-    sourceUrl: 'https://github.com/SvenKulessa/Capital-AI/blob/2736bf98acff8ff19d789f70d44a04f3046f690f/shared/architecture-governance-vocabulary.mjs',
+    sourceUrl: 'https://github.com/SvenKulessa/Capital-AI/blob/6c2f695a79a739de4e0770140396b36b72ab26f7/shared/architecture-governance-vocabulary.mjs',
     trackingUrl: 'https://github.com/SvenKulessa/Capital-AI/issues/598',
     code: 'VERIFIED',
     ci: 'NOT_PROVEN',
@@ -57,7 +76,7 @@ export const ROADMAP_DELTA_ITEMS: readonly RoadmapDeltaItem[] = Object.freeze([
     scopeId: 'BLUEPRINT-COMMERCE',
     roadmapId: 'CA-PRODUCT-BLUEPRINT-COMMERCE-EVIDENCE',
     title: 'Blueprint-Verkauf und Entitlements',
-    sourceUrl: 'https://github.com/SvenKulessa/Capital-AI/blob/2736bf98acff8ff19d789f70d44a04f3046f690f/src/data/roadmapData.ts',
+    sourceUrl: 'https://github.com/SvenKulessa/Capital-AI/blob/6c2f695a79a739de4e0770140396b36b72ab26f7/src/data/roadmapData.ts',
     trackingUrl: 'https://github.com/SvenKulessa/Capital-AI/issues/388',
     code: 'IN_PROGRESS',
     ci: 'NOT_PROVEN',
