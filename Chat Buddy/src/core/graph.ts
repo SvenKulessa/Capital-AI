@@ -467,25 +467,14 @@ function hit(node: Node, lang: Lang, score: number, hop: number, relation?: stri
   };
 }
 
-const BIAS: Partial<Record<Intent, string[]>> = {
-  risk: ["drawdown", "vol", "capacity", "diversify"],
-  scenario: ["ezb", "equity", "inflation", "curve"],
-  market: ["ezb", "equity", "btc", "gold", "bund"],
-  explain: ["dcf", "wacc", "pe"],
-};
-
 export function retrieve(query: string, hops: number, lang: Lang, intent?: Intent): GraphHit[] {
   const depth = Math.min(3, Math.max(1, hops));
   const scored = NODES.map((node) => ({ node, score: scoreNode(query, node) })).sort(
     (a, b) => b.score - a.score,
   );
-  let seeds = scored.filter((item) => item.score > 0).slice(0, 3);
-  if (seeds.length === 0 && intent && BIAS[intent]) {
-    seeds = (BIAS[intent] ?? [])
-      .map((id) => byId.get(id))
-      .filter((node): node is Node => Boolean(node))
-      .map((node) => ({ node, score: 0.4 }));
-  }
+  const seeds = scored.filter((item) => item.score > 0).slice(0, 3);
+  // No lexical evidence means no financial topic may be invented from the intent.
+  void intent;
   const found = new Map<string, GraphHit>();
   for (const seed of seeds) {
     found.set(seed.node.id, hit(seed.node, lang, seed.score, 0));

@@ -72,7 +72,7 @@ test('researched glossary additions include primary sources, complete lessons an
     assert.ok(term.shortDefinition && term.detailedExplanation && term.formulaOrRule && term.keyTakeaway);
     assert.equal(term.thesaurus.length,3);
     assert.ok(term.sources.length>0);
-    for(const source of term.sources) assert.ok(['scikit-learn.org','www.ecb.europa.eu','data.ecb.europa.eu'].includes(new URL(source.url).hostname));
+    for(const source of term.sources) assert.ok(['arrow.apache.org', 'arxiv.org', 'cheatsheetseries.owasp.org', 'data.ecb.europa.eu', 'developer.mozilla.org', 'digital-strategy.ec.europa.eu', 'docs.github.com', 'docs.nestjs.com', 'duckdb.org', 'eur-lex.europa.eu', 'fastapi.tiangolo.com', 'github.com', 'learn.microsoft.com', 'nextjs.org', 'parquet.apache.org', 'react.dev', 'rpc.cfainstitute.org', 'scikit-learn.org', 'spark.apache.org', 'superset.apache.org', 'svelte.dev', 'vite.dev', 'vuejs.org', 'www.bafin.de', 'www.bis.org', 'www.cfainstitute.org', 'www.ecb.europa.eu', 'www.esma.europa.eu', 'www.fca.org.uk', 'www.finra.org', 'www.gesetze-im-internet.de', 'www.gnu.org', 'www.postgresql.org', 'www.rabbitmq.com', 'www.rfc-editor.org', 'www.typescriptlang.org'].includes(new URL(source.url).hostname));
   }
 });
 

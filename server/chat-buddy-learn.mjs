@@ -1,3 +1,4 @@
+import { lookupVocabulary } from '../shared/vocabulary-lookup.mjs';
 import { readdir, readFile, lstat } from "node:fs/promises";
 import path from "node:path";
 
@@ -53,8 +54,9 @@ export function chunkDocument(filePath, source) {
   });
 }
 
+const QUESTION_WORDS = new Set(['was','ist','sind','wie','wer','der','die','das','ein','eine','und','oder','bitte','erkläre','erklare','erklärt','bedeutet','definition','the','what','is','explain']);
 export function retrieveLearned(question, chunks, limit = 3) {
-  const tokens = [...new Set(String(question).toLowerCase().split(/[^a-z0-9äöüßàáâãèéêìíòóùúñç_-]+/).filter((token) => token.length > 2))];
+  const tokens = [...new Set(String(question).toLowerCase().split(/[^a-z0-9äöüßàáâãèéêìíòóùúñç_-]+/).filter((token) => token.length > 2 && !QUESTION_WORDS.has(token)))];
   if (tokens.length === 0) return [];
   return chunks
     .map((chunk) => {
@@ -81,7 +83,9 @@ export async function learnStatus(root = process.cwd(), question = "") {
     active: "local",
     files: new Set(chunks.map((chunk) => chunk.path)).size,
     chunks: chunks.length,
-    hits: q ? retrieveLearned(q, chunks, 3) : [],
+    hits: q ? [...lookupVocabulary(q,{limit:3}).map(term=>({path:term.path,title:term.term,
+      snippet:`${term.definition} Thesaurus: ${term.thesaurus.join(', ')}`,score:1000})),
+      ...retrieveLearned(q, chunks, 3)].slice(0,3) : [],
     tools: TOOLS.map((tool) => ({
       ...tool,
       connected: tool.id === "corpus" ? chunks.length > 0 : tool.id === "ollama" ? ollama.connected : false,

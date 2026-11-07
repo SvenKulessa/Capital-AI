@@ -481,9 +481,11 @@ export const ROADMAP_CURRENT_STATE_OVERRIDES: Readonly<Record<string, RoadmapRec
     "evidenceRefs": [
       "src/components/LearningPortalPage.tsx",
       "src/data/vocabularyData.ts",
-      "src/data/vocabularyPresentation.ts"
+      "src/data/vocabularyPresentation.ts",
+      "shared/vocabulary-lookup.mjs",
+      "src/data/__tests__/vocabularyLookup.test.ts"
     ],
-    "nextStep": "Learning-Portal-Inhalte und Paid-Vocabulary-Entitlements weiter ausbauen; die bestehende Portal-/Glossar-Oberfläche bleibt als implementierter Basisslice erhalten."
+    "nextStep": "Gemeinsamen Glossar-Lookup und 61 deduplizierte Ergänzungen im Deploy-/Mobile-Readback prüfen; lokale Regressionstests vorhanden. Firecrawl-Selfhosting und Power-BI-Laufzeit bleiben NOT_PROVEN; DuckDB-Pilot nur synthetische Daten, keine produktive Tenant-Freigabe."
   },
   "AP-FE-03": {
     "status": "aktiv",
