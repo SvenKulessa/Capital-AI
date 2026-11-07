@@ -1,20 +1,20 @@
 {
   "schema": "CAPITAL_AI_ROADMAP_MERGE_AUDIT@1",
   "state": "RECONCILED_CODE_AND_DOCUMENTS",
-  "lastReconciledPr": 545,
-  "mergeCount": 470,
-  "fromPr": 527,
-  "toPr": 545,
-  "sourceSha": "a799d7416eaca8c399098ec5eff2f3bee6e6e0dc",
-  "reconciledAt": "2026-10-31T06:02:12.071Z",
+  "lastReconciledPr": 602,
+  "mergeCount": 490,
+  "fromPr": 589,
+  "toPr": 602,
+  "sourceSha": "1b95b92f2738b99ca2d06cd7bcd6219ae01e54d8",
+  "reconciledAt": "2026-11-07T03:20:53.184Z",
   "sourceDigests": [
     {
       "path": "src/data/roadmapData.ts",
-      "sha256": "aa9d071b4f081dfe4ebef4f40468bf5daf66c6648196e6c4e7c6ac395543461b"
+      "sha256": "7004b81f7c33d7002a167864196fb4999eca3b4f4c056d435f5ea6f390dbf793"
     },
     {
       "path": "src/data/roadmapCurrentMainState.ts",
-      "sha256": "b03e3193ae3d55d306217acecb05a1a2ecd7721c29e0e6cf94b61c56e37d1029"
+      "sha256": "043a274ffe3bba350d5d41535156cd8831142d8eff450343d93aa501335f8f54"
     },
     {
       "path": "src/data/productionWebsiteWorkPackage.ts",
@@ -30,7 +30,7 @@
     },
     {
       "path": "src/components/RoadmapPanel.tsx",
-      "sha256": "55fbe04906bbbdfa43442e7b32a323cfa6ed4302614ba8d58c509cf17bd2bb46"
+      "sha256": "0dc25c95a81c266a8dea8f55d420ba16ac46df471bfb04aa6748df2ecabc2fe5"
     }
   ],
   "packages": [
@@ -1138,7 +1138,9 @@
       "recordedState": "VERIFIED",
       "evidencePathsPresent": [
         "src/components/LearningPortalPage.tsx",
-        "src/data/vocabularyData.ts"
+        "src/data/vocabularyData.ts",
+        "shared/vocabulary-lookup.mjs",
+        "src/data/__tests__/vocabularyLookup.test.ts"
       ],
       "evidencePathsMissing": [
         "src/data/vocabularyPresentation.ts"
