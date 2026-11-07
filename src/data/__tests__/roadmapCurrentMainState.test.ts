@@ -6,79 +6,6 @@ import {
   ROADMAP_DELTA_BASELINE,
   ROADMAP_DELTA_ITEMS,
 } from '../roadmapDeltaReconciliation';
-
-test('chat-to-main delta contract is scoped, versioned and references existing roadmap packages', () => {
-  assert.equal(ROADMAP_DELTA_BASELINE.schema, 'CAPITAL_AI_CHAT_MAIN_DELTA@1');
-  assert.equal(ROADMAP_DELTA_BASELINE.issue, 598);
-  assert.match(ROADMAP_DELTA_BASELINE.baselineMainSha, /^[0-9a-f]{40}$/);
-  assert.equal(ROADMAP_DELTA_BASELINE.scope, 'FOUR_EVIDENCE_SLICES');
-  assert.equal(ROADMAP_DELTA_ITEMS.length, 4);
-  assert.equal(new Set(ROADMAP_DELTA_ITEMS.map(item => item.scopeId)).size, 4);
-  const ids = new Set(WORK_PACKAGES.map(item => item.id));
-  assert.equal(WORK_PACKAGES.length, 105);
-  for (const item of ROADMAP_DELTA_ITEMS) {
-    if (item.roadmapId) assert.ok(ids.has(item.roadmapId), item.scopeId);
-    assert.match(item.sourceUrl, /^https:\/\/github\.com\/SvenKulessa\/Capital-AI\//);
-    assert.match(item.trackingUrl, /^https:\/\/github\.com\/SvenKulessa\/Capital-AI\//);
-    assert.ok(item.nextStep.length > 20);
-  }
-});
-
-test('matching LIVE main preserves only source-level code evidence, never runtime or rights approval', () => {
-  const delta = projectRoadmapDelta({
-    repository: ROADMAP_DELTA_BASELINE.repository,
-    sourceSha: ROADMAP_DELTA_BASELINE.baselineMainSha,
-    freshness: 'LIVE',
-  });
-  assert.equal(delta.mainMatched, true);
-  assert.equal(delta.items.find(item => item.scopeId === 'VOCAB-ARCHITECTURE')?.code, 'VERIFIED');
-  assert.equal(delta.items.find(item => item.scopeId === 'PRIVATE-NOTES-OCC-V2')?.code, 'IN_PROGRESS');
-  assert.equal(delta.items.find(item => item.scopeId === 'BLUEPRINT-COMMERCE')?.rights, 'BLOCKED');
-  assert.ok(delta.items.every(item => item.ci === 'NOT_PROVEN' && item.runtime === 'NOT_PROVEN'));
-  assert.ok(delta.items.every(item => item.scopeId !== 'SOCIAL-X-PILOT' || item.rights === 'REVIEW_REQUIRED'));
-});
-
-test('a different main SHA invalidates all pinned code claims instead of promoting PR-only work', () => {
-  const changedMain = 'f'.repeat(40);
-  const delta = projectRoadmapDelta({
-    repository: ROADMAP_DELTA_BASELINE.repository,
-    sourceSha: changedMain,
-    freshness: 'LIVE',
-  });
-  assert.equal(delta.mainMatched, false);
-  assert.equal(delta.observedMainSha, changedMain);
-  assert.ok(delta.items.every(item => item.code === 'NOT_PROVEN'));
-  assert.equal(delta.items.find(item => item.scopeId === 'BLUEPRINT-COMMERCE')?.rights, 'BLOCKED');
-});
-
-test('missing, cached, stale, malformed or wrong-repository readbacks fail closed', () => {
-  const input = [
-    null,
-    { repository: ROADMAP_DELTA_BASELINE.repository, sourceSha: ROADMAP_DELTA_BASELINE.baselineMainSha, freshness: 'CACHED' as const },
-    { repository: ROADMAP_DELTA_BASELINE.repository, sourceSha: ROADMAP_DELTA_BASELINE.baselineMainSha, freshness: 'STALE' as const },
-    { repository: 'other/repository', sourceSha: ROADMAP_DELTA_BASELINE.baselineMainSha, freshness: 'LIVE' as const },
-    { repository: ROADMAP_DELTA_BASELINE.repository, sourceSha: 'not-a-sha', freshness: 'LIVE' as const },
-  ];
-  for (const readback of input) {
-    const delta = projectRoadmapDelta(readback);
-    assert.equal(delta.mainMatched, false);
-    assert.ok(delta.items.every(item => item.code === 'NOT_PROVEN'));
-  }
-});
-
-test('chat-to-main delta display remains in owner-only Control Center without new network calls', () => {
-  const shell = readFileSync(new URL('../../components/ControlCenterPage.tsx', import.meta.url), 'utf8');
-  const roadmap = readFileSync(new URL('../../components/RoadmapPanel.tsx', import.meta.url), 'utf8');
-  const deltaPanel = readFileSync(new URL('../../components/RoadmapDeltaPanel.tsx', import.meta.url), 'utf8');
-  assert.match(shell, /if \(ownerAccess !== 'allowed'\) return null/);
-  assert.match(shell, /activeTab === 'roadmap' && <RoadmapPanel \/>/);
-  assert.match(roadmap, /<RoadmapDeltaPanel readback=\{repositoryStatus\} \/>/);
-  assert.match(deltaPanel, /projectRoadmapDelta\(readback\)/);
-  assert.match(deltaPanel, /delta\.items\.map/);
-  assert.doesNotMatch(deltaPanel, /fetch\s*\(/);
-  assert.doesNotMatch(deltaPanel, /publish\(/i);
-});
-
 import test from 'node:test';
 
 import { WORK_PACKAGES } from '../roadmapData';
@@ -157,4 +84,76 @@ test('MARKET production package reflects the merged private-provider read-only b
   assert.ok(market.evidenceRefs.includes('server/private-provider-query.mjs'));
   assert.ok(market.evidenceRefs.includes('services/provider-bridge-rs/src/main.rs'));
   assert.match(market.nextStep, /Kraken\/Binance Read-only Private-Provider-Pfad/);
+});
+
+test('chat-to-main delta contract is scoped, versioned and references existing roadmap packages', () => {
+  assert.equal(ROADMAP_DELTA_BASELINE.schema, 'CAPITAL_AI_CHAT_MAIN_DELTA@1');
+  assert.equal(ROADMAP_DELTA_BASELINE.issue, 598);
+  assert.match(ROADMAP_DELTA_BASELINE.baselineMainSha, /^[0-9a-f]{40}$/);
+  assert.equal(ROADMAP_DELTA_BASELINE.scope, 'FOUR_EVIDENCE_SLICES');
+  assert.equal(ROADMAP_DELTA_ITEMS.length, 4);
+  assert.equal(new Set(ROADMAP_DELTA_ITEMS.map(item => item.scopeId)).size, 4);
+  const ids = new Set(WORK_PACKAGES.map(item => item.id));
+  assert.equal(WORK_PACKAGES.length, 105);
+  for (const item of ROADMAP_DELTA_ITEMS) {
+    if (item.roadmapId) assert.ok(ids.has(item.roadmapId), item.scopeId);
+    assert.match(item.sourceUrl, /^https:\/\/github\.com\/SvenKulessa\/Capital-AI\//);
+    assert.match(item.trackingUrl, /^https:\/\/github\.com\/SvenKulessa\/Capital-AI\//);
+    assert.ok(item.nextStep.length > 20);
+  }
+});
+
+test('matching LIVE main preserves only source-level code evidence, never runtime or rights approval', () => {
+  const delta = projectRoadmapDelta({
+    repository: ROADMAP_DELTA_BASELINE.repository,
+    sourceSha: ROADMAP_DELTA_BASELINE.baselineMainSha,
+    freshness: 'LIVE',
+  });
+  assert.equal(delta.mainMatched, true);
+  assert.equal(delta.items.find(item => item.scopeId === 'VOCAB-ARCHITECTURE')?.code, 'VERIFIED');
+  assert.equal(delta.items.find(item => item.scopeId === 'PRIVATE-NOTES-OCC-V2')?.code, 'IN_PROGRESS');
+  assert.equal(delta.items.find(item => item.scopeId === 'BLUEPRINT-COMMERCE')?.rights, 'BLOCKED');
+  assert.ok(delta.items.every(item => item.ci === 'NOT_PROVEN' && item.runtime === 'NOT_PROVEN'));
+  assert.ok(delta.items.every(item => item.scopeId !== 'SOCIAL-X-PILOT' || item.rights === 'REVIEW_REQUIRED'));
+});
+
+test('a different main SHA invalidates all pinned code claims instead of promoting PR-only work', () => {
+  const changedMain = 'f'.repeat(40);
+  const delta = projectRoadmapDelta({
+    repository: ROADMAP_DELTA_BASELINE.repository,
+    sourceSha: changedMain,
+    freshness: 'LIVE',
+  });
+  assert.equal(delta.mainMatched, false);
+  assert.equal(delta.observedMainSha, changedMain);
+  assert.ok(delta.items.every(item => item.code === 'NOT_PROVEN'));
+  assert.equal(delta.items.find(item => item.scopeId === 'BLUEPRINT-COMMERCE')?.rights, 'BLOCKED');
+});
+
+test('missing, cached, stale, malformed or wrong-repository readbacks fail closed', () => {
+  const input = [
+    null,
+    { repository: ROADMAP_DELTA_BASELINE.repository, sourceSha: ROADMAP_DELTA_BASELINE.baselineMainSha, freshness: 'CACHED' as const },
+    { repository: ROADMAP_DELTA_BASELINE.repository, sourceSha: ROADMAP_DELTA_BASELINE.baselineMainSha, freshness: 'STALE' as const },
+    { repository: 'other/repository', sourceSha: ROADMAP_DELTA_BASELINE.baselineMainSha, freshness: 'LIVE' as const },
+    { repository: ROADMAP_DELTA_BASELINE.repository, sourceSha: 'not-a-sha', freshness: 'LIVE' as const },
+  ];
+  for (const readback of input) {
+    const delta = projectRoadmapDelta(readback);
+    assert.equal(delta.mainMatched, false);
+    assert.ok(delta.items.every(item => item.code === 'NOT_PROVEN'));
+  }
+});
+
+test('chat-to-main delta display remains in owner-only Control Center without new network calls', () => {
+  const shell = readFileSync(new URL('../../components/ControlCenterPage.tsx', import.meta.url), 'utf8');
+  const roadmap = readFileSync(new URL('../../components/RoadmapPanel.tsx', import.meta.url), 'utf8');
+  const deltaPanel = readFileSync(new URL('../../components/RoadmapDeltaPanel.tsx', import.meta.url), 'utf8');
+  assert.match(shell, /if \(ownerAccess !== 'allowed'\) return null/);
+  assert.match(shell, /activeTab === 'roadmap' && <RoadmapPanel \/>/);
+  assert.match(roadmap, /<RoadmapDeltaPanel readback=\{repositoryStatus\} \/>/);
+  assert.match(deltaPanel, /projectRoadmapDelta\(readback\)/);
+  assert.match(deltaPanel, /delta\.items\.map/);
+  assert.doesNotMatch(deltaPanel, /fetch\s*\(/);
+  assert.doesNotMatch(deltaPanel, /publish\(/i);
 });
