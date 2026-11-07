@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { handleGoogleMaintenanceMessage } from '../scripts/google-maintenance-mcp.mjs';
 import { createGoogleMaintenance } from './google-maintenance-api.mjs';
-import { runLearningSetup, summarizeLearningReports } from '../scripts/google-learning-setup.mjs';
+import { runLearningSetup, summarizeLearningReports, summarizeCanonicalSitemap } from '../scripts/google-learning-setup.mjs';
 
 function fixture({ writes = true, gscWrites = true, streamCount = 1, readbackFailure = false, omitFalse = false } = {}) {
   const calls = [];
@@ -192,4 +192,38 @@ test('MCP exposes bounded inspection and audit preserves independent reads on in
     assert.equal(result.writes,null);
     assert.doesNotMatch(JSON.stringify(result),/sentinel-private/);
   }
+});
+
+
+test('canonical sitemap evidence excludes other URLs and distinguishes unregistered and unknown values',()=>{
+  const canonical='https://capital-ai.online/sitemap.xml';
+  const report={property:'sc-domain:capital-ai.online',sitemaps:[{path:canonical,isPending:false,lastDownloaded:'2026-11-06T12:00:00Z',errors:'0',warnings:'2'},{path:'https://private.example/sentinel-private',errors:'sentinel-private'}]};
+  const actual=summarizeCanonicalSitemap(report);
+  assert.equal(actual.registered,true);
+  assert.equal(actual.otherSitemaps,1);
+  assert.equal(actual.errors,0);
+  assert.equal(actual.warnings,2);
+  assert.equal(actual.indexingConfirmed,false);
+  assert.equal(actual.writes,false);
+  assert.doesNotMatch(JSON.stringify(actual),/sentinel-private|private.example/);
+  const missing=summarizeCanonicalSitemap({property:report.property,sitemaps:[]});
+  assert.equal(missing.registered,false);
+  assert.equal(missing.errors,null);
+  assert.equal(missing.lastDownloaded,null);
+  const unknown=summarizeCanonicalSitemap({property:report.property,sitemaps:[{path:canonical,errors:'99999999999999999999',warnings:-1,lastDownloaded:'private'}]});
+  assert.equal(unknown.errors,null);assert.equal(unknown.warnings,null);assert.equal(unknown.lastDownloaded,null);
+  for(const invalid of [{}, {...report,property:'sc-domain:evil.example'}, {...report,sitemaps:[report.sitemaps[0],report.sitemaps[0]]}]) assert.throws(()=>summarizeCanonicalSitemap(invalid),/GSC_SITEMAP_RESPONSE_INVALID/);
+});
+
+test('audit reports sitemap evidence separately without submitting or blocking independent reports',async()=>{
+  const f=fixture({writes:false,gscWrites:false});
+  const result=await runLearningSetup('audit',f.api);
+  assert.equal(result.sitemapRegistration.registered,false);
+  assert.equal(result.sitemapRegistration.writes,false);
+  assert.ok(!f.calls.some(c=>c.method==='PUT'));
+  const api={call:async(name,input)=>{if(name==='gsc_list_sitemaps') throw new Error('sentinel-private'); return f.api.call(name,input);}};
+  const denied=await runLearningSetup('audit',api);
+  assert.equal(denied.sitemapRegistration.status,'NOT_PROVEN');
+  assert.equal(denied.reporting.ga4ReadVerified,true);
+  assert.doesNotMatch(JSON.stringify(denied),/sentinel-private/);
 });
