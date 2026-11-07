@@ -24,7 +24,7 @@ export const ROADMAP_DELTA_BASELINE = Object.freeze({
   baselineMainSha: '2736bf98acff8ff19d789f70d44a04f3046f690f',
   reviewedDate: '2026-11-07',
   issue: 598,
-  // Deliberately scoped; not a claim to have re-reviewed all 105 roadmap packages.
+  // Deliberately scoped; not a claim to have re-reviewed the full roadmap inventory.
   scope: 'FOUR_EVIDENCE_SLICES',
 } as const);
 
