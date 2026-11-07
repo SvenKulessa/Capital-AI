@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import {
   projectRoadmapDelta,
   ROADMAP_DELTA_BASELINE,
+  ROADMAP_DELTA_HISTORY,
   ROADMAP_DELTA_ITEMS,
 } from '../roadmapDeltaReconciliation';
 import test from 'node:test';
@@ -156,4 +157,46 @@ test('chat-to-main delta display remains in owner-only Control Center without ne
   assert.match(deltaPanel, /delta\.items\.map/);
   assert.doesNotMatch(deltaPanel, /fetch\s*\(/);
   assert.doesNotMatch(deltaPanel, /publish\(/i);
+});
+
+test('revision 2 preserves the original main evidence snapshot without mutating the 105-package historical review', () => {
+  assert.equal(ROADMAP_DELTA_BASELINE.revision, 2);
+  assert.equal(ROADMAP_DELTA_BASELINE.supportingMergePr, 601);
+  assert.equal(ROADMAP_DELTA_HISTORY.length, 1);
+  const historical = ROADMAP_DELTA_HISTORY[0];
+  assert.equal(historical.revision, 1);
+  assert.equal(historical.baselineMainSha, '2736bf98acff8ff19d789f70d44a04f3046f690f');
+  assert.equal(ROADMAP_DELTA_BASELINE.previousBaselineMainSha, historical.baselineMainSha);
+  assert.equal(ROADMAP_DELTA_BASELINE.baselineMainSha, '6c2f695a79a739de4e0770140396b36b72ab26f7');
+  assert.notEqual(ROADMAP_DELTA_BASELINE.baselineMainSha, historical.baselineMainSha);
+  assert.equal(ROADMAP_RECONCILIATION.packageCount, 105);
+  assert.equal(WORK_PACKAGES.length, ROADMAP_RECONCILIATION.packageSources.length);
+});
+
+test('old LIVE main snapshot cannot authorize a new code verification after revision bump', () => {
+  const historical = ROADMAP_DELTA_HISTORY[0];
+  const priorReadback = projectRoadmapDelta({
+    repository: historical.repository,
+    sourceSha: historical.baselineMainSha,
+    freshness: 'LIVE',
+  });
+  assert.equal(priorReadback.mainMatched, false);
+  assert.ok(priorReadback.items.every(item => item.code === 'NOT_PROVEN'));
+  assert.equal(priorReadback.items.find(item => item.scopeId === 'BLUEPRINT-COMMERCE')?.rights, 'BLOCKED');
+});
+
+test('revision 2 source evidence remains distinct from runtime, CI and publishing rights', () => {
+  const current = projectRoadmapDelta({
+    repository: ROADMAP_DELTA_BASELINE.repository,
+    sourceSha: ROADMAP_DELTA_BASELINE.baselineMainSha,
+    freshness: 'LIVE',
+  });
+  assert.equal(current.mainMatched, true);
+  assert.equal(current.items.find(item => item.scopeId === 'VOCAB-ARCHITECTURE')?.code, 'VERIFIED');
+  assert.ok(current.items.every(item => item.ci === 'NOT_PROVEN' && item.runtime === 'NOT_PROVEN'));
+  assert.equal(current.items.find(item => item.scopeId === 'PRIVATE-NOTES-OCC-V2')?.code, 'IN_PROGRESS');
+  assert.equal(current.items.find(item => item.scopeId === 'SOCIAL-X-PILOT')?.code, 'IN_PROGRESS');
+  assert.equal(current.items.find(item => item.scopeId === 'BLUEPRINT-COMMERCE')?.rights, 'BLOCKED');
+  assert.ok(current.items.filter(item => item.sourceUrl.includes('/blob/'))
+    .every(item => item.sourceUrl.includes(ROADMAP_DELTA_BASELINE.baselineMainSha)));
 });
