@@ -1,5 +1,5 @@
 import React from 'react';
-import { projectRoadmapDelta } from '../data/roadmapDeltaReconciliation';
+import { projectRoadmapDelta, serializeRoadmapOwnerLineageEvidence } from '../data/roadmapDeltaReconciliation';
 import type { RoadmapDeltaRepositoryReadback, DeltaEvidenceState } from '../data/roadmapDeltaReconciliation';
 
 const EVIDENCE_LABELS: Record<DeltaEvidenceState, string> = {
@@ -20,6 +20,29 @@ interface RoadmapDeltaPanelProps {
  */
 export const RoadmapDeltaPanel: React.FC<RoadmapDeltaPanelProps> = ({ readback }) => {
   const delta = projectRoadmapDelta(readback);
+  const evidenceText = serializeRoadmapOwnerLineageEvidence(readback);
+  const [copyState, setCopyState] = React.useState<'idle' | 'copied' | 'manual'>('idle');
+  const [manualEvidence, setManualEvidence] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    setCopyState('idle');
+    setManualEvidence(null);
+  }, [evidenceText]);
+
+  const copyEvidence = async () => {
+    if (!evidenceText) return;
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error('clipboard_unavailable');
+      await navigator.clipboard.writeText(evidenceText);
+      setCopyState('copied');
+      setManualEvidence(null);
+    } catch {
+      // Clipboard permissions differ on Android: offer a read-only manual copy.
+      setCopyState('manual');
+      setManualEvidence(evidenceText);
+    }
+  };
+
   return (
     <section aria-labelledby="roadmap-delta-heading" className="my-4 rounded-xl border border-slate-700 bg-slate-950/70 p-4">
       <h3 id="roadmap-delta-heading" className="text-base font-bold text-white">Chat → Main · Evidenz-Deltas</h3>
@@ -51,6 +74,29 @@ export const RoadmapDeltaPanel: React.FC<RoadmapDeltaPanelProps> = ({ readback }
             ? 'LIVE main ist ein belegter Nachfolge-Commit mit unveränderten geprüften Quell-Blobs. Nur Source-Evidence bleibt gültig; CI, Runtime und Rechte sind separat.'
             : 'Keine valide LIVE-Baseline oder geprüfte Quell-Abstammung: Codebewertungen werden als NOT_PROVEN ausgewiesen.'}
       </p>
+      <div className="mt-3 space-y-2 rounded-lg border border-slate-700 p-3">
+        <button type="button" disabled={!evidenceText}
+          onClick={() => void copyEvidence()}
+          className="min-h-11 rounded-lg border border-cyan-500/50 px-3 py-2 text-sm text-cyan-200 disabled:cursor-not-allowed disabled:opacity-50">
+          Bereinigten Lineage-Nachweis kopieren
+        </button>
+        <p className="text-xs text-slate-400">
+          Nur bei frischer LIVE-Abstammung verfügbar. Enthält ausschließlich
+          Commit-/Blob-Nachweise aus dem bereits autorisiert geladenen Katalog;
+          keine Cookies, Tokens, Nutzerdaten oder Freigabe-Claims.
+          Bei fehlender Evidence zuerst „Jetzt abgleichen“ auswählen.
+        </p>
+        {copyState !== 'idle' && <p role="status" aria-live="polite" className="text-xs text-slate-200">
+          {copyState === 'copied'
+            ? 'Bereinigter Nachweis kopiert. Vor Weitergabe prüfen.'
+            : 'Zwischenablage nicht verfügbar: Nachweis im Feld auswählen und manuell kopieren.'}
+        </p>}
+        {manualEvidence && <textarea readOnly rows={11}
+          aria-label="Bereinigte Lineage-Evidence zur manuellen Auswahl"
+          onFocus={event => event.currentTarget.select()}
+          value={manualEvidence}
+          className="w-full rounded-lg border border-slate-600 bg-slate-900 p-2 font-mono text-xs text-slate-100" />}
+      </div>
       <div className="mt-3 grid gap-3 lg:grid-cols-2">
         {delta.items.map(item => (
           <article key={item.scopeId} className="min-w-0 rounded-lg border border-slate-700 bg-slate-900/80 p-3">
