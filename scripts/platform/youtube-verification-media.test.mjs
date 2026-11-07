@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { openVerificationMedia, sealVerificationMedia } from './youtube-verification-media.mjs';
+import { openVerificationMedia, openVerificationReceipt, sealVerificationMedia, sealVerificationReceipt } from './youtube-verification-media.mjs';
 
 const media = Buffer.from('0000ftypprivate test footage');
 const hash = createHash('sha256').update(media).digest('hex');
@@ -21,4 +21,12 @@ test('plaintext, a wrong key, altered ciphertext and a wrong digest fail closed'
   assert.throws(() => openVerificationMedia(envelope, key, '0'.repeat(64)), /HASH_MISMATCH/);
   envelope[envelope.length - 1] ^= 1;
   assert.throws(() => openVerificationMedia(envelope, key, hash));
+});
+
+test('the unlisted URL is encrypted in receipts and receipt envelopes are type bound', () => {
+  const receipt = { status: 'VERIFIED_UNLISTED', url: 'https://www.youtube.com/watch?v=synthetic01' };
+  const envelope = sealVerificationReceipt(receipt, key);
+  assert.equal(envelope.includes(receipt.url), false);
+  assert.deepEqual(openVerificationReceipt(envelope, key), receipt);
+  assert.throws(() => openVerificationMedia(envelope, key, hash), /MEDIA_ENVELOPE_INVALID/);
 });
