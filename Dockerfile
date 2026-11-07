@@ -20,7 +20,9 @@ RUN npm ci --ignore-scripts --no-audit --no-fund \
 # Transitive pins keep known remediated versions inside the scanned image.
 RUN apk add --no-cache 'python3>=3.14.8-r0' 'py3-pip>=26.1.2-r0' \
     && python3 -m venv /opt/ga4-mcp \
-    && /opt/ga4-mcp/bin/pip install --no-cache-dir analytics-mcp==0.7.0 msgpack==1.2.3 urllib3==2.8.0 \
+    && /opt/ga4-mcp/bin/pip install --no-cache-dir analytics-mcp==0.7.0 google-adk==2.14.0 opentelemetry-api==1.45.2 opentelemetry-sdk==1.45.2 msgpack==1.2.3 urllib3==2.8.0 \
+    && /opt/ga4-mcp/bin/pip check \
+    && /opt/ga4-mcp/bin/python -c "from importlib.metadata import version; assert version('google-adk') == '2.14.0'; assert version('opentelemetry-api') == version('opentelemetry-sdk') == '1.45.2'" \
     && test -x /opt/ga4-mcp/bin/analytics-mcp \
     && /opt/ga4-mcp/bin/python -c "import pathlib,shutil,site; patterns=('pip','pip-*.dist-info','setuptools','setuptools-*.dist-info','_distutils_hack','pkg_resources','wheel','wheel-*.dist-info'); [shutil.rmtree(target, ignore_errors=True) for root in map(pathlib.Path, site.getsitepackages()) for pattern in patterns for target in root.glob(pattern)]" \
     && rm -rf /root/.cache \
