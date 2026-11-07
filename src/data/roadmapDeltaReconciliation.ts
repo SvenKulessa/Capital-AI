@@ -1,0 +1,117 @@
+/**
+ * Chat-to-main evidence is a pinned, scoped audit slice, not a live PR tracker.
+ * Never promote historical source, CI or rights evidence to production VERIFIED.
+ * Authority: AGENTS.md / SOLO_MAINTAINER_FLOW@1; tracking issue #598.
+ */
+export type DeltaEvidenceState = 'VERIFIED' | 'IN_PROGRESS' | 'BLOCKED' | 'NOT_PROVEN' | 'REVIEW_REQUIRED';
+
+export type RoadmapDeltaItem = Readonly<{
+  scopeId: string;
+  roadmapId: string | null;
+  title: string;
+  sourceUrl: string;
+  trackingUrl: string;
+  code: DeltaEvidenceState;
+  ci: DeltaEvidenceState;
+  runtime: DeltaEvidenceState;
+  rights: DeltaEvidenceState;
+  nextStep: string;
+}>;
+
+export const ROADMAP_DELTA_BASELINE = Object.freeze({
+  schema: 'CAPITAL_AI_CHAT_MAIN_DELTA@1',
+  repository: 'SvenKulessa/Capital-AI',
+  baselineMainSha: '2736bf98acff8ff19d789f70d44a04f3046f690f',
+  reviewedDate: '2026-11-07',
+  issue: 598,
+  // Deliberately scoped; not a claim to have re-reviewed all 105 roadmap packages.
+  scope: 'FOUR_EVIDENCE_SLICES',
+} as const);
+
+export const ROADMAP_DELTA_ITEMS: readonly RoadmapDeltaItem[] = Object.freeze([
+  {
+    scopeId: 'VOCAB-ARCHITECTURE',
+    roadmapId: null,
+    title: 'Architektur-Vokabular im Learning Hub',
+    sourceUrl: 'https://github.com/SvenKulessa/Capital-AI/blob/2736bf98acff8ff19d789f70d44a04f3046f690f/shared/architecture-governance-vocabulary.mjs',
+    trackingUrl: 'https://github.com/SvenKulessa/Capital-AI/issues/598',
+    code: 'VERIFIED',
+    ci: 'NOT_PROVEN',
+    runtime: 'NOT_PROVEN',
+    rights: 'NOT_PROVEN',
+    nextStep: 'Buddy-Suche und Learning-Hub-Liveverhalten getrennt reproduzieren.',
+  },
+  {
+    scopeId: 'PRIVATE-NOTES-OCC-V2',
+    roadmapId: 'PRODUCTION-WEB-01-PRODUCT',
+    title: 'JaJa / Private Notes OCC v2',
+    sourceUrl: 'https://github.com/SvenKulessa/Capital-AI/pull/548',
+    trackingUrl: 'https://github.com/SvenKulessa/Capital-AI/pull/548',
+    code: 'IN_PROGRESS',
+    ci: 'NOT_PROVEN',
+    runtime: 'NOT_PROVEN',
+    rights: 'REVIEW_REQUIRED',
+    nextStep: 'PR #548 mit main synchronisieren; Restore, SQL-Cutover und Nutzerisolation belegen.',
+  },
+  {
+    scopeId: 'BLUEPRINT-COMMERCE',
+    roadmapId: 'CA-PRODUCT-BLUEPRINT-COMMERCE-EVIDENCE',
+    title: 'Blueprint-Verkauf und Entitlements',
+    sourceUrl: 'https://github.com/SvenKulessa/Capital-AI/blob/2736bf98acff8ff19d789f70d44a04f3046f690f/src/data/roadmapData.ts',
+    trackingUrl: 'https://github.com/SvenKulessa/Capital-AI/issues/388',
+    code: 'IN_PROGRESS',
+    ci: 'NOT_PROVEN',
+    runtime: 'NOT_PROVEN',
+    rights: 'BLOCKED',
+    nextStep: 'Lieferrechte, SKUs und Käufer-Entitlements vor einer Commerce-Freigabe nachweisen.',
+  },
+  {
+    scopeId: 'SOCIAL-X-PILOT',
+    roadmapId: 'CA-GROWTH-CONTENT-ENGINE',
+    title: 'X-Kosten- und Veröffentlichungsgrenzen',
+    sourceUrl: 'https://github.com/SvenKulessa/Capital-AI/pull/585',
+    trackingUrl: 'https://github.com/SvenKulessa/Capital-AI/issues/388',
+    code: 'IN_PROGRESS',
+    ci: 'NOT_PROVEN',
+    runtime: 'NOT_PROVEN',
+    rights: 'REVIEW_REQUIRED',
+    nextStep: 'PR #585 gegen main prüfen; API-Budget, Publishing-Consent und Receipt separat belegen.',
+  },
+]);
+
+export type RoadmapDeltaRepositoryReadback = Readonly<{
+  repository: string;
+  sourceSha: string;
+  freshness: 'LIVE' | 'CACHED' | 'STALE';
+}>;
+
+/**
+ * Only an exact, fresh and correctly scoped main readback allows a pinned
+ * source-level VERIFIED claim. A green PR or old digest is never a live pass.
+ */
+export function projectRoadmapDelta(
+  readback: RoadmapDeltaRepositoryReadback | null,
+): Readonly<{
+  baseline: typeof ROADMAP_DELTA_BASELINE;
+  mainMatched: boolean;
+  observedMainSha: string | null;
+  items: readonly RoadmapDeltaItem[];
+}> {
+  const validSha = typeof readback?.sourceSha === 'string' &&
+    /^[0-9a-f]{40}$/.test(readback.sourceSha);
+  const mainMatched = validSha &&
+    readback?.repository === ROADMAP_DELTA_BASELINE.repository &&
+    readback.freshness === 'LIVE' &&
+    readback.sourceSha === ROADMAP_DELTA_BASELINE.baselineMainSha;
+  return {
+    baseline: ROADMAP_DELTA_BASELINE,
+    mainMatched,
+    observedMainSha: validSha ? readback!.sourceSha : null,
+    items: ROADMAP_DELTA_ITEMS.map(item => ({
+      ...item,
+      code: mainMatched ? item.code : 'NOT_PROVEN',
+      // CI, runtime and rights represent different authorities and never
+      // inherit a code/source success.
+    })),
+  };
+}
