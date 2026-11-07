@@ -102,7 +102,7 @@ test('explicit one-post lookup returns sanitized context, never tokens, provider
   assert.equal(f.seen.credentials,1);
   assert.equal(f.seen.calls.length,1);
   assert.equal(f.seen.calls[0].method,'GET');
-  const params = new URL(f.seen.calls[0].url).searchParams;
+  const params = new globalThis.URL(f.seen.calls[0].url).searchParams;
   assert.deepEqual(Object.fromEntries(params), {
     'tweet.fields':'author_id,created_at,possibly_sensitive,note_tweet',
     expansions:'author_id',
