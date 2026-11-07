@@ -24,7 +24,7 @@ export const RoadmapDeltaPanel: React.FC<RoadmapDeltaPanelProps> = ({ readback }
     <section aria-labelledby="roadmap-delta-heading" className="my-4 rounded-xl border border-slate-700 bg-slate-950/70 p-4">
       <h3 id="roadmap-delta-heading" className="text-base font-bold text-white">Chat → Main · Evidenz-Deltas</h3>
       <p className="mt-2 text-xs leading-relaxed text-slate-300">
-        Versionierter Teilabgleich aus Issue #598, nicht die Gesamtfreigabe der 105 Roadmap-Pakete.
+        Versionierter Teilabgleich aus Issue #598, nicht die Gesamtfreigabe aller Roadmap-Pakete.
         Code, CI, Runtime und Rechte werden getrennt bewertet; keine Veröffentlichung oder Provider-Aktivierung.
       </p>
       <p className="mt-2 break-all text-xs text-slate-400">
