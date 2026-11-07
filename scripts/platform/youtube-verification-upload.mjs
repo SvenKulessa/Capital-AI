@@ -1,6 +1,6 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, rename, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
-import { openVerificationMedia, verifyVerificationMedia } from './youtube-verification-media.mjs';
+import { openVerificationMedia, sealVerificationReceipt, verifyVerificationMedia } from './youtube-verification-media.mjs';
 export const CHANNEL = 'UCqaBNJwcfu2cZL3GgG9TLgA';
 const must = (ok, code) => { if (!ok) throw Error(code); };
 async function json(response, code) {
@@ -51,8 +51,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     }
     const result=await uploadVerification({media,sha256:process.env.DEMO_SHA256,
       clientId:process.env.YOUTUBE_OAUTH_CLIENT_ID,clientSecret:process.env.YOUTUBE_OAUTH_CLIENT_SECRET,refreshToken:process.env.YOUTUBE_OAUTH_REFRESH_TOKEN,
-      checkpoint:r=>writeFile('youtube-upload-receipt.json',JSON.stringify(r,null,2),{mode:0o600})});
-    console.log(JSON.stringify(result));
+      checkpoint:async receipt=>{
+        await writeFile('youtube-upload-receipt.enc.tmp',sealVerificationReceipt(receipt,process.env.YOUTUBE_DEMO_MEDIA_KEY),{mode:0o600});
+        await rename('youtube-upload-receipt.enc.tmp','youtube-upload-receipt.enc');
+      }});
+    console.log(JSON.stringify({ status:result.status, privacyStatus:result.privacyStatus, uploadStatus:result.uploadStatus, reviewSubmitted:false }));
     if(result.status!=='VERIFIED_UNLISTED') process.exitCode=1;
   } catch(error) {
     // Provider bodies, tokens and resumable URLs must never reach logs.

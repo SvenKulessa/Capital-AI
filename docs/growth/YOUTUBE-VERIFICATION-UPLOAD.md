@@ -1,70 +1,82 @@
-# YouTube verification demo upload
+# YouTube verification demo upload through Workload Identity Federation
 
-Owner request: 2026-11-06. Base main: 3e42cdedc9de16a37b749535a5a60e9fbd3edf4f.
+The Google Cloud Operator retains `readback` as its default manual operation.
+The separate `upload-youtube-demo` job reads one approved demo object generation
+with GitHub OIDC and uploads the verified MP4 to the owner channel as unlisted.
+The YouTube call uses channel-owner OAuth rather than the Cloud access token.
 
-## What changes
+## Bootstrap the dispatch
 
-The existing Google Cloud Operator keeps `readback` as its default operation. An explicit
-`upload-youtube-demo` operation uses channel-owner OAuth to upload approved MP4 bytes
-as **unlisted**, verifies the exact owner channel, and records actual provider visibility.
-It does not expand the Cloud service account's IAM permissions or submit OAuth review.
-A YouTube service-account token cannot replace channel-owner OAuth.
+1. In project `aifinancial-500208`, provision the dedicated service account
+   `capital-ai-youtube-demo@aifinancial-500208.iam.gserviceaccount.com`. Reuse the
+   existing pool and provider `capital-ai-github-admin`. Verify that the provider
+   requires repository ID `1293009324`, branch `main`, event `workflow_dispatch`
+   and the exact `.github/workflows/google-cloud-admin.yml` workflow ref.
+2. Bind `roles/iam.workloadIdentityUser` on the dedicated service account to the
+   exact GitHub OIDC subject for environment `youtube-verification`. With the
+   default GitHub subject format and the current `google.subject=assertion.sub`
+   mapping, the member is:
+   `principal://iam.googleapis.com/projects/542877602707/locations/global/workloadIdentityPools/capital-ai-github-admin/subject/repo:SvenKulessa/Capital-AI:environment:youtube-verification`.
+   Verify the actual subject configuration before applying the binding. Restrict
+   the environment to `main`. A negative test must deny the non-environment
+   readback job and unrelated repository or workflow identities.
+3. Use a private Cloud Storage bucket with uniform bucket-level access and public
+   access prevention. Grant the dedicated account only `storage.objects.get`
+   through a conditional bucket binding limited to
+   `projects/_/buckets/<bucket>/objects/youtube-verification/demo.mp4.enc`.
+   The trusted staging principal writes this object separately. The operator's
+   Cloud token has the short-lived `devstorage.read_only` scope.
+4. Set environment variables `YOUTUBE_DEMO_BUCKET` and `YOUTUBE_DEMO_SHA256` in
+   the GitHub environment `youtube-verification`. Store environment secrets
+   `YOUTUBE_OAUTH_CLIENT_ID`, `YOUTUBE_OAUTH_CLIENT_SECRET`,
+   `YOUTUBE_OAUTH_REFRESH_TOKEN` and `YOUTUBE_DEMO_MEDIA_KEY` there. The OAuth
+   grant must be for the intended channel with `youtube.readonly` and
+   `youtube.upload`. The media key is independent random 256-bit key material
+   encoded as 64 lowercase hex characters. Use the same key only in the trusted
+   local sealing process and this protected environment. Keep a private copy for
+   opening the encrypted receipt.
+5. Seal the approved MP4 locally, then stage the ciphertext at the fixed private
+   object path and record its Cloud Storage generation. The sealing command
+   reads `DEMO_SHA256` and `YOUTUBE_DEMO_MEDIA_KEY` from its environment.
 
-## Prerequisites — not provisioned or verified in this change
+       node scripts/platform/youtube-verification-media.mjs /private/path/demo.mp4 /private/path/demo.mp4.enc
 
-- Environment `youtube-verification` with environment secrets `YOUTUBE_OAUTH_CLIENT_ID`,
-  `YOUTUBE_OAUTH_CLIENT_SECRET`, `YOUTUBE_OAUTH_REFRESH_TOKEN`, from the verified channel
-  owner's explicit OAuth grant for this app and youtube.readonly + youtube.upload.
-  Do not paste secrets in chat, commits, workflow inputs, logs or artifacts. Do not export
-  Supabase service-role credentials or the production vault encryption key to Actions.
-- An approved same-repository Actions artifact named `youtube-verification-media`, containing
-  only `demo.mp4.enc` at its root. Source must be a successful manual main workflow in the same
-  repository. Staging is not wired yet. The local sealing command below prepares the ciphertext.
-  Provision `YOUTUBE_DEMO_MEDIA_KEY` as an independent 256-bit random key (64 lowercase hex
-  characters) in the protected environment and the authorized local sealing process. A repository
-  reader can download Actions artifacts, so plaintext media must stay outside artifacts and git.
-- The exact MP4 SHA-256 is supplied with its artifact ID at dispatch. The uploader checks bytes
-  after authenticated decryption and before persisting an upload claim or making an OAuth request.
-  The upload decrypts in memory. No arbitrary remote download URL is accepted.
+6. After the workflow is on `main`, choose **Run workflow** and
+   `operation=upload-youtube-demo`. Supply `media_object_generation` and
+   `media_sha256`. The approved digest must match the dispatch input. The job
+   requests exactly that generation, authenticates and decrypts the envelope,
+   checks the plaintext SHA-256, and verifies the expected owner channel before
+   any insert.
 
-    node scripts/platform/youtube-verification-media.mjs /private/path/demo.mp4 /private/path/demo.mp4.enc
+The prepared code requires the actual IAM bindings, private bucket and object,
+and GitHub environment values. Verify those separately. No media bytes or
+plaintext receipt should be staged in GitHub artifacts or committed to Git.
 
-The command takes `DEMO_SHA256` and `YOUTUBE_DEMO_MEDIA_KEY` from the environment.
+## Receipt, duplicate handling and review
 
-These prerequisites block production upload and opening an implementation PR under AGENTS.md.
-No production upload, OAuth secret export, IAM write or review submission has occurred.
+One repository-wide operator concurrency group serializes runs. A prior claim
+for the same digest stops the job and reruns are rejected. The claim is persisted
+before the YouTube insert. An ambiguous insert requires reconciliation in
+YouTube Studio before any deliberate retry. Claim and receipt retention is 90
+days. The job records actual provider visibility and processing status.
 
-## Duplicate protection and recovery
+The receipt is encrypted. Download and open it locally using the retained key
+in `YOUTUBE_DEMO_MEDIA_KEY`. The encrypted receipt contains the video URL and
+channel readback; public workflow logs report only status.
 
-One repository-wide operator concurrency group serializes runs. Prior claims for the same digest
-are checked before creating a claim artifact; rerun attempts are rejected. A claim artifact is
-persisted before YouTube insert. An uncertain insert is never retried automatically. The receipt
-is checkpointed immediately after the video ID is returned, before readback. Preserve claim and
-receipt artifacts (90 days); after expiry/deletion this is **not indefinite duplicate protection**.
-An owner must reconcile an uncertain outcome in YouTube Studio before any deliberate new dispatch.
-No workflow deletes claims or removes a duplicate protection block automatically.
+    node scripts/platform/youtube-verification-media.mjs --open-receipt /private/path/youtube-upload-receipt.enc
 
-The current private-test endpoint intentionally requires `private`. An owner's later switch to
-`unlisted` produces `private_readback_mismatch`; do not weaken or silently relabel that endpoint.
+Once YouTube finishes processing, check playback of the returned unlisted URL
+and enter it with the privacy URL in the Google OAuth verification process.
 
-## Demo and verification limits
+## Prototype input and evidence
 
-The approved Drive demo begins with the 2026-11-07 English Google consent screen and the
-authenticated app return showing both YouTube scopes. Earlier upload and Studio recordings are
-labelled as separate sessions. The owner confirmed this file as the prototype input.
-SHA-256: `c9cef2b66e7a80ed37b124fd3d21b29c4ae3a2bfd9b627b0acc6c910e6a2831f`.
+The owner-confirmed Drive demo shows the English consent and the connected
+channel with both scopes on 2026-11-07. Earlier upload and Studio footage is
+labelled as separate sessions. Approved plaintext SHA-256:
+`c9cef2b66e7a80ed37b124fd3d21b29c4ae3a2bfd9b627b0acc6c910e6a2831f`.
 
-Submission remains distinct from upload: enter the accessible new demo URL and current privacy
-URL into Google's verification process / reply to the existing verification request as directed.
-A successful upload does not restart review by itself.
-
-Sources checked 2026-11-06:
-- https://support.google.com/cloud/answer/13804565?hl=en
-- https://support.google.com/cloud/answer/13461325?hl=en
-- https://developers.google.com/youtube/data/guides/authentication
-
-## Validation
-
-39 source-only Google maintenance, existing operator, uploader and preflight tests PASS.
-YAML parsing and git diff whitespace checks PASS. No live credentialed upload test.
-New tests are wired into the existing Google Maintenance PR workflow, not a new required gate.
+References: [GitHub OIDC claims](https://docs.github.com/en/actions/reference/security/oidc),
+[Google WIF](https://cloud.google.com/iam/docs/workload-identity-federation-with-deployment-pipelines),
+[Cloud Storage object read](https://cloud.google.com/storage/docs/json_api/v1/objects/get),
+[YouTube upload](https://developers.google.com/youtube/v3/docs/videos/insert).
