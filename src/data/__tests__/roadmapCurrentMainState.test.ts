@@ -298,7 +298,8 @@ test('existing owner catalog adds bounded lineage evidence and fails closed with
     ...LINEAGE_TREE,
   ];
   const calls: string[] = [];
-  const compareFetch = async (url: string) => {
+  const compareFetch = async (input: RequestInfo | URL) => {
+    const url = String(input);
     calls.push(url);
     if (url.endsWith('/branches/main')) {
       return new Response(JSON.stringify({ commit: { sha: LINEAGE_HEAD } }));
@@ -327,9 +328,9 @@ test('existing owner catalog adds bounded lineage evidence and fails closed with
   assert.equal(calls.filter(url => url.includes('/compare/')).length, 1);
 
   const broken = createRepositoryToolCatalog({
-    fetchImpl: async (url: string) => url.includes('/compare/')
+    fetchImpl: async (input: RequestInfo | URL) => String(input).includes('/compare/')
       ? new Response('', { status: 503 })
-      : compareFetch(url),
+      : compareFetch(input),
   });
   const fallback = await broken.snapshot();
   assert.equal(fallback.freshness, 'LIVE');
