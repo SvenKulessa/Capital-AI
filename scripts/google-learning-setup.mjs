@@ -38,6 +38,23 @@ export function summarizeLearningReports(traffic, leads, search) {
     }), note: 'GSC clicks, GA4 sessions and generate_lead events are separate measures. Consent, attribution, thresholds and reporting lag prevent a one-to-one comparison. No uplift or purchase attribution is inferred.' };
 }
 
+// Only disclose the exact public canonical sitemap, never other sitemap URLs.
+export function summarizeCanonicalSitemap(report) {
+  const canonical = 'https://capital-ai.online/sitemap.xml';
+  if (report?.property !== 'sc-domain:capital-ai.online' || !Array.isArray(report.sitemaps)) throw new Error('GSC_SITEMAP_RESPONSE_INVALID');
+  const matches = report.sitemaps.filter(item => item?.path === canonical);
+  if (matches.length > 1) throw new Error('GSC_SITEMAP_RESPONSE_INVALID');
+  const item = matches[0];
+  const count = value => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value :
+    typeof value === 'string' && /^\d+$/.test(value) && Number.isSafeInteger(Number(value)) ? Number(value) : null;
+  const timestamp = value => typeof value === 'string' && value.length <= 40 && /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?Z$/.test(value) && Number.isFinite(Date.parse(value)) ? value : null;
+  return { status: 'PROVIDER_READ_VERIFIED', property: report.property, canonicalSitemap: canonical,
+    registered: matches.length === 1, otherSitemaps: report.sitemaps.length - matches.length,
+    isPending: typeof item?.isPending === 'boolean' ? item.isPending : null,
+    lastDownloaded: timestamp(item?.lastDownloaded), errors: count(item?.errors), warnings: count(item?.warnings),
+    indexingConfirmed: false, writes: false };
+}
+
 export async function runLearningSetup(mode, maintenance) {
   if (!['audit', 'apply'].includes(mode)) throw new Error('INVALID_MODE');
   const before = await maintenance.call('ga4_learning_configuration');
@@ -64,6 +81,11 @@ export async function runLearningSetup(mode, maintenance) {
     // URL-Inspection authorization/availability is a separate evidence boundary.
     // Never replace missing evidence with PASS or block independent GA4 reports.
     result.indexInspection = { status: 'NOT_PROVEN', error: /^GOOGLE_HTTP_[45][0-9]{2}$/.test(error?.message || '') ? error.message : 'GSC_INSPECTION_UNAVAILABLE' };
+  }
+  try {
+    result.sitemapRegistration = summarizeCanonicalSitemap(await maintenance.call('gsc_list_sitemaps'));
+  } catch (error) {
+    result.sitemapRegistration = { status: 'NOT_PROVEN', error: /^GOOGLE_HTTP_[45][0-9]{2}$/.test(error?.message || '') ? error.message : 'GSC_SITEMAP_READBACK_UNAVAILABLE' };
   }
   const ga4 = await maintenance.call('ga4_learning_report');
   const leads = await maintenance.call('ga4_learning_lead_report');
