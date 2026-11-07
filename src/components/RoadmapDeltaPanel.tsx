@@ -32,7 +32,17 @@ export const RoadmapDeltaPanel: React.FC<RoadmapDeltaPanelProps> = ({ readback }
           href={'https://github.com/' + delta.baseline.repository + '/commit/' + delta.baseline.baselineMainSha}
           className="text-cyan-300 underline underline-offset-2"
           target="_blank" rel="noopener noreferrer">{delta.baseline.baselineMainSha.slice(0, 12)}</a>
-        {' · '}Schema: {delta.baseline.schema}
+        {' · '}Schema: {delta.baseline.schema} · Revision {delta.baseline.revision}
+        {' · '}Quell-PR <a href={'https://github.com/' + delta.baseline.repository + '/pull/' + delta.baseline.supportingMergePr}
+          className="text-cyan-300 underline underline-offset-2"
+          target="_blank" rel="noopener noreferrer">#{delta.baseline.supportingMergePr}</a>
+      </p>
+      <p className="mt-1 text-xs text-slate-400">
+        Historischer Baseline-Snapshot: <a
+          href={'https://github.com/' + delta.baseline.repository + '/commit/' + delta.baseline.previousBaselineMainSha}
+          className="text-cyan-300 underline underline-offset-2"
+          target="_blank" rel="noopener noreferrer">{delta.baseline.previousBaselineMainSha.slice(0, 12)}</a>
+        {' · '}nicht als aktueller LIVE-Nachweis verwendbar.
       </p>
       <p role="status" aria-live="polite" className={delta.mainMatched ? 'mt-2 text-sm text-emerald-300' : 'mt-2 text-sm text-amber-300'}>
         {delta.mainMatched
