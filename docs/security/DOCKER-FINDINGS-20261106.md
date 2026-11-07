@@ -1,4 +1,6 @@
 # Docker-Findings: Trivy-Hinweise, OpenTelemetry und pausierter NATS-Scope
+
+> **Fortschreibung vom 2026-11-07 (verifizierte Nachweise, keine Umschreibung des Befund-Snapshots):** Der hier als P1 / REVIEW_REQUIRED dokumentierte historische GA4-OpenTelemetry-Befund `CVE-2026-114603` ist seit dem gemergten [PR #596](https://github.com/SvenKulessa/Capital-AI/pull/596) im getesteten GA4-Paketstand behoben. Auf `main` `098178b529cadd1635d8cd5ab00f52081e4d9f79` sind der [Docker Security Gate #42337462681](https://github.com/SvenKulessa/Capital-AI/actions/runs/42337462681) und das Render-Live-Deployment auf exakt diesem Commit verifiziert. **Nicht nachgewiesen** ist ein authentifizierter echter GA4-Provider-`tools/list`-/Lese-Roundtrip; [Issue #593](https://github.com/SvenKulessa/Capital-AI/issues/593) bleibt deshalb offen. Aktuell verbleibt unabhängig davon die zlib-MEDIUM `CVE-2026-4738` als [P2 #597](https://github.com/SvenKulessa/Capital-AI/issues/597). Die nachfolgenden Aussagen sind die historische Triage **vom 2026-11-06** und dürfen nicht als heutiger Paket-/Deployment-Status gelesen werden. Siehe [aktualisierte GA4-Evidence](GA4-OTEL-RESOLVER-CANDIDATE-20261107.md).
 Stand: 2026-11-06 · Primary Domain: TRUST · Cross-Domain: PLATFORM
 
 ## Evidenzbasis / Grenzen
