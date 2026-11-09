@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { verifyMainRuleset } from './verify-main-ruleset.mjs';
 import { validateContainerIdentity } from './container-evidence-identity.mjs';
+import { classifyRegistryManifest } from './registry-manifest.mjs';
 
 const SOURCE_SHA = /^[0-9a-f]{40}$/;
 const IMAGE_REF = /^ghcr\.io\/svenkulessa\/capital-ai@sha256:[0-9a-f]{64}$/;
@@ -52,9 +53,14 @@ export function evaluateProductionHandoff({
   const protectionPass = protectionReports.some(r => r.pass) &&
     activeMainRulesets.every(r => (r.bypass_actors || []).length === 0);
   const requestedDigest = candidate.imageRef.split('@')[1];
-  const manifests = registryManifest?.manifests?.filter(m =>
-    m.platform?.os === 'linux' && m.platform?.architecture === 'amd64') || [];
-  const platformDigest = manifests.length === 1 ? normalizeDigest(manifests[0].digest) : null;
+  let registryIdentity = null;
+  try {
+    registryIdentity = classifyRegistryManifest(registryManifest);
+  } catch {
+    // Missing, ambiguous or unsupported manifest evidence must fail closed.
+  }
+  const platformDigest = registryIdentity?.platformDigest || null;
+  const indexDigest = registryIdentity?.indexDigest || null;
   const configDigest = normalizeDigest(registryScan?.Metadata?.ImageID);
   let typedIdentity = null;
   let typedIdentityError = null;
@@ -72,10 +78,10 @@ export function evaluateProductionHandoff({
     typedSource.testedMergeSha === null &&
     typedDigests.artifactArchiveDigest !== null &&
     typedDigests.localImageId === configDigest &&
-    typedDigests.ociIndexDigest === requestedDigest &&
+    typedDigests.ociIndexDigest === indexDigest &&
     typedDigests.platformManifestDigest === platformDigest &&
     typedDigests.configDigest === configDigest;
-  const registryPass = registryManifest?.digest === requestedDigest &&
+  const registryPass = registryIdentity?.referenceDigest === requestedDigest &&
     platformDigest !== null && configDigest !== null &&
     registryPlatformManifest?.digest === platformDigest &&
     registryPlatformManifest?.manifest?.config?.digest === configDigest &&
