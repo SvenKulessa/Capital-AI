@@ -51,6 +51,11 @@ jobs:
             scripts/docker-context.test.mjs \
             scripts/reviewdog-public-report.test.mjs \
             scripts/container-evidence-identity.test.mjs \
+            scripts/registry-manifest-evidence.test.mjs \
+            scripts/github-analysis-policy.test.mjs \
+            scripts/verify-main-ruleset-origin.test.mjs \
+            scripts/registry-cve-gate.test.mjs \
+            scripts/production-handoff.test.mjs \
             scripts/post-merge-followup.test.mjs \
             scripts/post-merge-correlation.test.mjs \
             scripts/license-evidence.test.mjs \
@@ -470,16 +475,24 @@ jobs:
           registry_digest=$(jq -er '.digest | select(type == "string" and test("^sha256:[a-f0-9]{64}$"))' security-reports/registry-manifest.json)
           image_ref="$IMAGE_REPOSITORY@$registry_digest"
           [[ "$image_ref" =~ ^ghcr\.io/svenkulessa/capital-ai@sha256:[a-f0-9]{64}$ ]]
-          platform_digest=$(jq -er '[.manifests[] | select(.platform.os == "linux" and .platform.architecture == "amd64")] | if length == 1 then .[0].digest else error("Expected one linux/amd64 manifest") end' security-reports/registry-manifest.json)
+          node scripts/registry-manifest-evidence.mjs security-reports/registry-manifest.json > security-reports/registry-selection.json
+          test "$(jq -er '.referenceDigest' security-reports/registry-selection.json)" = "$registry_digest"
+          platform_digest=$(jq -er '.platformManifestDigest' security-reports/registry-selection.json)
           docker buildx imagetools inspect "$IMAGE_REPOSITORY@$platform_digest" --raw > security-reports/registry-platform-manifest.json
           test "sha256:$(sha256sum security-reports/registry-platform-manifest.json | cut -d ' ' -f 1)" = "$platform_digest"
           docker pull "$image_ref"
           config_digest=$(jq -er '.config.digest | select(type == "string" and test("^sha256:[a-f0-9]{64}$"))' security-reports/registry-platform-manifest.json)
           test "$config_digest" = "$EXPECTED_IMAGE_ID"
-          node scripts/container-evidence-identity.mjs set security-reports/container-identity.json \
-            ociIndexDigest "$registry_digest" \
-            platformManifestDigest "$platform_digest" \
-            configDigest "$config_digest"
+          if jq -e '.ociIndexDigest != null' security-reports/registry-selection.json >/dev/null; then
+            node scripts/container-evidence-identity.mjs set security-reports/container-identity.json \
+              ociIndexDigest "$registry_digest" \
+              platformManifestDigest "$platform_digest" \
+              configDigest "$config_digest"
+          else
+            node scripts/container-evidence-identity.mjs set security-reports/container-identity.json \
+              platformManifestDigest "$platform_digest" \
+              configDigest "$config_digest"
+          fi
           echo "image_ref=$image_ref" >> "$GITHUB_OUTPUT"
           echo "digest=${image_ref##*@}" >> "$GITHUB_OUTPUT"
       - name: Registry-Image per Digest erneut scannen und SBOM erzeugen
@@ -492,7 +505,9 @@ jobs:
           test "$(node scripts/docker-archive-config.mjs security-reports/registry-image.tar)" = "$EXPECTED_IMAGE_ID"
           chmod a+r security-reports/registry-image.tar
           chmod a+rwx security-reports
-          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/registry-image.tar --ignorefile /dev/null --scanners vuln,secret --severity HIGH,CRITICAL --exit-code 1 --format json --output /reports/registry-image.json
+          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/registry-image.tar --ignorefile /dev/null --scanners vuln,secret --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --exit-code 0 --format json --output /reports/registry-image.json
+          node scripts/summarize-trivy.mjs security-reports/registry-image.json --gate
+          node scripts/registry-cve-gate.mjs security-reports/registry-image.json CVE-2026-4738
           docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/registry-image.tar --ignorefile /dev/null --scanners vuln --format cyclonedx --output /reports/capital-ai.sbom.cdx.json
           docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/registry-image.tar --ignorefile /dev/null --scanners license --license-full --format json --output /reports/registry-image-licenses.json --exit-code 0
           docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint cat "$IMAGE_REF" /app/dist/THIRD_PARTY_NOTICES.txt > security-reports/THIRD_PARTY_NOTICES.txt
@@ -541,6 +556,8 @@ jobs:
     permissions:
       contents: read
       actions: read
+      checks: read
+      security-events: read
     env:
       GH_TOKEN: ${{ github.token }}
       SOURCE_SHA: ${{ github.sha }}
@@ -577,6 +594,12 @@ jobs:
           else
             printf '[]\n' > security-reports/main-rulesets.json
           fi
+      - name: Exakte Main-Check-Run-Provenienz lesen
+        run: |
+          set -euo pipefail
+          gh api --paginate --slurp "repos/SvenKulessa/Capital-AI/commits/$SOURCE_SHA/check-runs?per_page=100" > security-reports/main-check-run-pages.json
+          jq -e '[.[] | .check_runs[]] | if length <= 500 then . else error("Check run pagination bound exceeded") end' \
+            security-reports/main-check-run-pages.json > security-reports/main-check-runs.json
       - name: Render Image-Quelle, Live-Deploy und Health lesen
         run: |
           set -euo pipefail
@@ -592,8 +615,12 @@ jobs:
           node scripts/container-evidence-identity.mjs set security-reports/container-identity.json runtimeProviderDigest "$runtime_provider_digest"
           service_url=$(jq -er '.serviceDetails.url | select(type == "string" and startswith("https://"))' security-reports/render-service.json)
           curl --fail --silent --show-error --retry 8 --retry-all-errors --retry-delay 2 --connect-timeout 3 --max-time 8 "$service_url/healthz" > security-reports/render-health.json
-      - name: Fehlende zusätzliche Analyse-Evidence fail-closed kennzeichnen
-        run: printf '[]\n' > security-reports/analysis-results.json
+      - name: SHA-gebundene CodeQL- und Code-Quality-Policy-Evidence lesen
+        run: |
+          node scripts/github-analysis-policy.mjs \
+            security-reports/main-rulesets.json \
+            security-reports/analysis-results.json
+          test -s security-reports/analysis-results.json
       - name: Production-Handoff-Gates korrelieren
         run: |
           set -euo pipefail
@@ -610,7 +637,8 @@ jobs:
             candidate/registry-manifest.json \
             candidate/registry-image.json \
             security-reports/analysis-results.json \
-            candidate/registry-platform-manifest.json
+            candidate/registry-platform-manifest.json \
+            security-reports/main-check-runs.json
       - name: Production-Handoff-Nachweise sichern
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
