@@ -66,6 +66,8 @@ COPY public/fonts ./public/fonts
 COPY public/learning/editorial/chart-accessibility-20261010.svg ./public/learning/editorial/chart-accessibility-20261010.svg
 COPY public/learning/editorial/x-api-kostenbewusst-20261106.svg ./public/learning/editorial/x-api-kostenbewusst-20261106.svg
 COPY public/learning/charts ./public/learning/charts
+# Original first-party Instagram draft SVGs, required by offline integrity tests and Vite build.
+COPY public/learning/social ./public/learning/social
 COPY public/learning/videos ./public/learning/videos
 COPY public/bootstrap-failure.js ./public/bootstrap-failure.js
 COPY public/youtube-private-upload.js ./public/youtube-private-upload.js
