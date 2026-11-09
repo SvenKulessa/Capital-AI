@@ -36,7 +36,10 @@ export function verifyMainRuleset(ruleset) {
   if (status && status.parameters?.strict_required_status_checks_policy !== true) findings.push('strict_checks_disabled');
   if (status && status.parameters?.do_not_enforce_on_create !== false) findings.push('checks_not_enforced_on_create');
   if (!contexts.includes(REQUIRED_CONTEXT)) findings.push('docker_security_gate_not_required');
-  if ((status?.parameters?.required_status_checks || []).some(c => c.integration_id !== 15368)) findings.push('required_check_identity_unbound');
+  const requiredChecks = status?.parameters?.required_status_checks || [];
+  const missingBindings = requiredChecks.filter(c => c.integration_id == null).map(c => c.context);
+  const foreignBindings = requiredChecks.filter(c => c.integration_id != null && c.integration_id !== 15368).map(c => c.context);
+  if (missingBindings.length || foreignBindings.length) findings.push('required_check_identity_unbound');
 
   return {
     schemaVersion: 1,
@@ -49,6 +52,7 @@ export function verifyMainRuleset(ruleset) {
       enforcement: ruleset?.enforcement ?? null,
       bypassActors: ruleset?.bypass_actors || [],
       requiredContexts: contexts,
+      checkIdentity: { expectedAppId: 15368, missingBindings, foreignBindings },
       ruleTypes: [...types].sort(),
     },
   };
