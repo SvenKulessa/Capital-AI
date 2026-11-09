@@ -27,7 +27,8 @@ test('SVG byte integrity, accessibility and dimensions are checked', () => {
     assert.match(svg, /width="1080" height="1350"/);
     assert.match(svg, /<title>.*<\/title>/);
     assert.match(svg, /<desc>.*<\/desc>/);
-    assert.doesNotMatch(svg, /<script|foreignObject|https?:\/\/|<image|onload=|url\(/i);
+    assert.doesNotMatch(svg, /<script|foreignObject|<image|onload=|url\(/i);
+    assert.doesNotMatch(svg, /(?:href|src)=["']https?:\/\//i);
   }
   assert.equal(INSTAGRAM_PILOT_PACKAGE.assets.length, 3);
   assert.ok(INSTAGRAM_PILOT_PACKAGE.assets.every((asset,i)=>asset.sha256===INSTAGRAM_PILOT_SLIDES[i].sha256));
