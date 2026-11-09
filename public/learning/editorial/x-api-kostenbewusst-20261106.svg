@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">X-API: Vom Post zur geprüften Quelle</title>
+  <desc id="desc">Drei verbundene Stationen zeigen Datenabruf, Quellenprüfung und Kostenkontrolle. Schematische redaktionelle Darstellung ohne echte Nutzungsdaten.</desc>
+  <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#091526"/><stop offset="1" stop-color="#132643"/></linearGradient></defs>
+  <rect width="1200" height="630" rx="32" fill="url(#bg)"/>
+  <text x="64" y="100" fill="#f8d46d" font-family="system-ui,sans-serif" font-size="37" font-weight="700">Daten bewusst auswählen</text>
+  <text x="64" y="150" fill="#c8d9ea" font-family="system-ui,sans-serif" font-size="23">Eine Quelle · notwendige Prüfung · transparente Kosten</text>
+  <g font-family="system-ui,sans-serif" font-weight="700" text-anchor="middle" font-size="26">
+    <rect x="60" y="230" width="310" height="185" rx="22" fill="#203a56" stroke="#74d9ee" stroke-width="3"/>
+    <text x="215" y="308" fill="#eaf9ff">Post lesen</text>
+    <text x="215" y="347" fill="#b6e7f0" font-size="18" font-weight="400">nur benötigte Daten</text>
+    <rect x="445" y="230" width="310" height="185" rx="22" fill="#203a56" stroke="#f8d46d" stroke-width="3"/>
+    <text x="600" y="308" fill="#fff4c7">Quelle prüfen</text>
+    <text x="600" y="347" fill="#f5ddb0" font-size="18" font-weight="400">Autor und Kontext</text>
+    <rect x="830" y="230" width="310" height="185" rx="22" fill="#203a56" stroke="#74d9ee" stroke-width="3"/>
+    <text x="985" y="308" fill="#eaf9ff">Kosten prüfen</text>
+    <text x="985" y="347" fill="#b6e7f0" font-size="18" font-weight="400">Verbrauch belegen</text>
+  </g>
+  <path d="M382 322h49m-11-11 11 11-11 11M767 322h49m-11-11 11 11-11 11" fill="none" stroke="#f8d46d" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="64" y="523" fill="#c8d9ea" font-family="system-ui,sans-serif" font-size="22">Schematische Darstellung · keine Live-API-Messung · keine Anlageberatung</text>
+  <text x="64" y="565" fill="#f8d46d" font-family="system-ui,sans-serif" font-weight="700" font-size="24">CAPITAL-AI · Wissen &amp; Lernen</text>
+</svg>

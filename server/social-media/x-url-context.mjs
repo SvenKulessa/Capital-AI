@@ -72,10 +72,20 @@ async function bodyJson(req) {
   return parseXPostUrl(body.url);
 }
 
+// Cost-sensitive request contract (22 November 2026 X PPU expansion change).
+// Keep a single author expansion: username and protected are required for
+// exact source-URL verification. Do not add media/poll/place/post expansions.
+// Each successful on-demand lookup may consume a Post Read and a User Read;
+// this is NOT a spending limit or proof of current X Console consumption.
+export const X_URL_CONTEXT_QUERY = Object.freeze({
+  'tweet.fields': 'author_id,created_at,possibly_sensitive,note_tweet',
+  expansions: 'author_id',
+  'user.fields': 'username,protected',
+});
+
 async function getXPostContext(fetchImpl, source, accessToken) {
   const uri = 'https://api.x.com/2/tweets/' + source.postId
-    + '?tweet.fields=author_id,created_at,possibly_sensitive,note_tweet'
-    + '&expansions=author_id&user.fields=username,protected';
+    + '?' + new URLSearchParams(X_URL_CONTEXT_QUERY).toString();
   let response;
   try {
     response = await fetchImpl(uri, { method: 'GET', redirect: 'error',
