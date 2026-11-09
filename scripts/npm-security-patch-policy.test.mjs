@@ -36,12 +36,12 @@ test('major upgrade preserves the vendor patch and removes npm from runtime', ()
 
 test('IP parser remediation is an integrity-locked compatible bundle replacement', () => {
   const entry = lock.packages['node_modules/ip-address'];
-  assert.equal(packageJson.dependencies['ip-address'], '10.7.5');
-  assert.equal(entry.version, '10.7.5');
-  assert.equal(entry.resolved, 'https://registry.npmjs.org/ip-address/-/ip-address-10.7.5.tgz');
-  assert.equal(entry.integrity, 'sha512-t2v0rkILYv9WXmSL7TpAaU3HXgaFYOPUcH3QHgwQ++gpJuH3bqyMy4Fvt/DJCTKwzH3Cf+bAp5W/mFL39KPLzA==');
+  assert.equal(packageJson.dependencies['ip-address'], '10.7.6');
+  assert.equal(entry.version, '10.7.6');
+  assert.equal(entry.resolved, 'https://registry.npmjs.org/ip-address/-/ip-address-10.7.6.tgz');
+  assert.equal(entry.integrity, 'sha512-00LYkM6byILa9eQIx6qoaXCM40xTLd56AZ4vyaPW3YTyb49VZYPo5xsiAq4tuQ54GH4R7gVdYScJ1B7B77PuTg==');
   assert.equal(entry.license, 'MIT');
-  assert.match(hardener, /\['ip-address', '10\.5\.0', '10\.7\.5'\]/);
+  assert.match(hardener, /\['ip-address', '10\.5\.0', '10\.7\.6'\]/);
   assert.match(hardener, /Address4\.fromArpa\('42\.2\.0\.192\.IN-ADDR\.ARPA'\)/);
   assert.match(hardener, /Address6\.fromArpa\('8\.B\.D\.0\.1\.0\.0\.2\.IP6\.ARPA'\)/);
 });
