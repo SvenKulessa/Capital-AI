@@ -11,11 +11,19 @@
 |---------|---------|------------|--------|
 | 0.1 Pipeline alignment | PR-Merge workflow vs. current code | Residuals documented | PARTIAL |
 | 0.2 Rights evidence | Commercial rights for text/assets | REVIEW_REQUIRED or APPROVED | REVIEW_REQUIRED |
-| 0.3 X-API budget | Credit, spending limit, per-call cost | Proposed cap only (≤ 3 USD); no budget authorized | NOT_PROVEN |
+| 0.3 X-API budget | Credit, spending limit, per-call cost; 22.11. Expansion-Abrechnung | Query-Inventar belegt, X Console Readback durch Owner offen; ≤ 3 USD nur Vorschlag, nicht freigegeben | REVIEW_REQUIRED / NOT_PROVEN |
 | 0.4 Owner gating | SOCIAL_X_* flags + PAID_WRITE/READ + IAM owner | Only owner can publish | VERIFIED (code) |
 | 0.5 Content Studio | Draft preview, sources, disclaimer | Preview without publish | PARTIAL |
 
 **Deliverable:** this document + residual notes.
+
+## P0-Ergänzung: X-API Expansion Billing (06.11.2026)
+
+- **VERIFIED (Code):** `x-url-context.mjs` verwendet ausschließlich `expansions=author_id`, benötigt `username` und `protected` zur verlässlichen Autoren- und Schutzprüfung. Der feste Parametervertrag ist mit einem Negativtest gegen zusätzliche Media-/Poll-/Place-/Post-Expansions abgesichert.
+- **REVIEW_REQUIRED:** Ab 22.11.2026 können expandierte User-Objekte zusätzliche PPU-Kosten erzeugen. Ein Entfernen der einzig nötigen Expansion ohne gleichwertige Prüfung ist keine sichere Lösung.
+- **NOT_PROVEN:** Kosten, reale API-Nutzung, Guthaben, Console-Spend-Cap und Auto-Recharge. Keine Zahl aus einem Forecast als tatsächlichen Kontostand verwenden; keine API-Calls oder Freischaltungen während des Audits.
+- **Public Content:** kostenbewusster Daten-/Content-Workflow und Eigentums-/Rechteprüfung werden ohne Server-, Vault-, Deployment- oder Architektur-Interna im eigenen Website-Blog als `/blog/x-api-expansions-kosten` erklärt. Indexierung und Live-Status erst nach PR-CI-/Render-Readback belegen. Keine Behauptung, ein autonomer Scheduler oder messbarer Marketing-ROI sei bereits produktiv.
+- **Evidence:** [X-PPU-EXPANSIONS-20261106.md](X-PPU-EXPANSIONS-20261106.md); P0 erst nach X Console-Readback schließen.
 
 ## Phase 1 – First Controlled Pilot (Week 1)
 
@@ -32,7 +40,7 @@ Single owner-gated X article via existing integrated path (`x-article-test` or m
 
 ## Phase 2 – Four-Week Content Series (Weeks 2–5)
 
-16 posts as sketched in the 2026-10-14 marketing concept. One owner approval per item. No unattended scheduler yet.
+16 posts as sketched in the 2026-10-14 marketing concept. One owner approval per item. No unattended scheduler yet. Der neue öffentliche X-API-Kostenartikel ist ein WEBSITE-Content-Asset mit Lern-CTA; ein X-Post dazu bleibt ein separater kostenfreigabepflichtiger DRAFT, kein automatischer Crosspost.
 
 | Week | Focus | Example |
 |------|-------|---------|
@@ -42,6 +50,18 @@ Single owner-gated X article via existing integrated path (`x-article-test` or m
 | 5 | B2B / Learning | Implemented vs. Planned, Docs/Contact |
 
 **Residuals:** Persistent scheduler, live metrics, auto-variants for LinkedIn/Blog = NOT_PROVEN.
+
+## Source-bound X-Distribution: Entwurf zum Kosten-Artikel (noch nicht veröffentlicht)
+
+**Campaign:** `GROWTH_X_PPU_EDUCATION_20261106` · **Status:** DRAFT / REVIEW_REQUIRED · **Kanal:** X (organisch) · **Zielseite:** https://capital-ai.online/blog/x-api-expansions-kosten · **Conversion-Ziel:** qualifizierte Besuche im kostenlosen Learning-Portal, keine fiktiven Leads, Umsatz- oder Reichweitenzahlen.
+
+> Was kostet eine Datenabfrage wirklich? Ab 22.11. können X-API-Expansions zusätzliche Objektkosten auslösen. Wir zeigen, warum Quellenprüfung und Kostenkontrolle zusammengehören – ohne Finanzversprechen. https://capital-ai.online/blog/x-api-expansions-kosten
+
+- Vor jeder Distribution den tatsächlichen öffentlichen Artikel-HTTP-Readback sowie Quellen, korrekten Kanonical, Nutzungsrechte, Aussagegrenzen und aktuellen X-Kostencap prüfen.
+- **Achtung Kosten:** `Post: Create (with URL)` wird in der aktuellen offiziellen X-Preisliste mit **USD 0,200 je Request** geführt (Stand 06.11.2026), ein regulärer Post ohne URL mit USD 0,015. X-Konsolenpreis ist maßgeblich. Der X-Pilot mit Website-Link und dieser Entwurf dürfen nicht als kostenloser Write angenommen werden.
+- Kein X-POST und kein Auto-Scheduling aus diesem WEBSITE-Artikel. Die bestehende Social Media Engine bleibt alleinige Publishing-Authority; vor einem X-Auftrag benötigt sie vorhandenen Owner-IAM-, Rechte-, Cost- und Receipt-Pfad.
+- UTM-Tracking oder Pixel nicht automatisch einschalten. Erst nach tatsächlicher Consent-/Analytics-Abnahme aggregierte kanalspezifische Wirkung dokumentieren; öffentliche Landing-URL ohne personenbezogene Identifikatoren.
+- Website-Learning-CTA erläutert Datenqualität, nicht eine abgeschlossene X-Automation oder eine Renditeaussicht.
 
 ## Phase 3 – Measurement & Optimization (from Week 6)
 
