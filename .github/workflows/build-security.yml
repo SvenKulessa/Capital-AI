@@ -52,6 +52,7 @@ jobs:
             scripts/reviewdog-public-report.test.mjs \
             scripts/container-evidence-identity.test.mjs \
             scripts/registry-candidate.test.mjs \
+            scripts/read-analysis-policy.test.mjs \
             scripts/production-handoff.test.mjs \
             scripts/post-merge-followup.test.mjs \
             scripts/post-merge-correlation.test.mjs \
@@ -606,8 +607,10 @@ jobs:
           node scripts/container-evidence-identity.mjs set security-reports/container-identity.json runtimeProviderDigest "$runtime_provider_digest"
           service_url=$(jq -er '.serviceDetails.url | select(type == "string" and startswith("https://"))' security-reports/render-service.json)
           curl --fail --silent --show-error --retry 8 --retry-all-errors --retry-delay 2 --connect-timeout 3 --max-time 8 "$service_url/healthz" > security-reports/render-health.json
-      - name: Fehlende zusätzliche Analyse-Evidence fail-closed kennzeichnen
-        run: printf '[]\n' > security-reports/analysis-results.json
+      - name: GitHub-Analyse- und Ruleset-Evidence read-only ermitteln
+        run: |
+          set -euo pipefail
+          node scripts/read-analysis-policy.mjs "$SOURCE_SHA" security-reports/analysis-results.json
       - name: Production-Handoff-Gates korrelieren
         run: |
           set -euo pipefail
