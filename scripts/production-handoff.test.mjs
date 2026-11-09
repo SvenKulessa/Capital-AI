@@ -72,7 +72,7 @@ function fixtures() {
     expectedServiceId,
     expectedOwnerId,
     expectedMainSha: sourceSha,
-    registryManifest: { digest, manifests: [{ digest, platform: { os: 'linux', architecture: 'amd64' } }] },
+    registryManifest: { digest, mediaType: 'application/vnd.oci.image.index.v1+json', manifests: [{ digest, mediaType: 'application/vnd.oci.image.manifest.v1+json', platform: { os: 'linux', architecture: 'amd64' } }] },
     registryPlatformManifest: { digest, manifest: { config: { digest: configDigest } } },
     registryScan: { Metadata: { ImageID: configDigest, ImageConfig: { os: 'linux', architecture: 'amd64' } } },
   };
@@ -199,4 +199,13 @@ test('final handoff report records provider digest in the typed runtime slot', (
   const report = evaluateProductionHandoff(fixtures());
   assert.equal(report.containerIdentity.digests.runtimeProviderDigest, digest);
   assert.equal(report.containerIdentity.digestTypes.runtimeProviderDigest, 'RUNTIME_PROVIDER_PLATFORM_MANIFEST_SHA256');
+});
+
+test('single OCI manifest can bind to the same platform digest without an index', () => {
+  const input = fixtures();
+  input.registryManifest = { digest, mediaType: 'application/vnd.oci.image.manifest.v1+json', config: { digest: configDigest } };
+  input.candidate.containerIdentity.digests.ociIndexDigest = null;
+  const report = evaluateProductionHandoff(input);
+  assert.equal(report.remainingGates.includes('CONTAINER_IDENTITY_CHAIN'), false);
+  assert.equal(report.remainingGates.includes('RUNTIME_DIGEST'), false);
 });
