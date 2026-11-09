@@ -127,14 +127,14 @@ test('runtime entrypoint local server imports are copied and reachable', () => {
 });
 
 
-test('application and NATS images enforce the patched Alpine zlib security floor', () => {
+test('application and paused NATS Dockerfile sources retain their respective zlib security floors', () => {
   const dockerfile = readFileSync(resolve(root, 'Dockerfile'), 'utf8');
   const natsDockerfile = readFileSync(resolve(root, 'deploy/Dockerfile.nats'), 'utf8');
 
   assert.match(
     dockerfile,
-    /apk add --no-cache[^\n]*['"]zlib>=1\.3\.2-r1['"]/,
-    'Application image must install zlib >= 1.3.2-r1 for CVE-2026-85091',
+    /apk add --no-cache[^\n]*['"]zlib>=1\.4-r0['"]/,
+    'Application image must install zlib >= 1.4-r0 for CVE-2026-4738 and preserve CVE-2026-85091 mitigation',
   );
   assert.match(
     natsDockerfile,
