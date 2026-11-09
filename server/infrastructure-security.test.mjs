@@ -117,3 +117,45 @@ test('broker pause makes startup a no-op despite configured transport endpoints'
   assert.equal(service.nc, null);
   assert.equal(service.status().status, 'unavailable');
 });
+
+test('Valkey health opt-in requires explicit pause and cannot expose broker or provider access', async () => {
+  for (const env of [
+    { MARKET_VALKEY_HEALTH_ENABLED: 'true' },
+    { MARKET_BROKER_PAUSED: 'true', MARKET_VALKEY_HEALTH_ENABLED: 'TRUE' },
+  ]) {
+    const service = new MarketInfrastructure(env);
+    assert.equal(service.cacheOnlyEnabled(), false);
+    assert.equal(service.shouldRetry(), false);
+    assert.equal(await service.start(), false);
+    assert.equal(service.cacheProbe, null);
+  }
+
+  const service = new MarketInfrastructure({
+    MARKET_BROKER_PAUSED: 'true', MARKET_VALKEY_HEALTH_ENABLED: 'true',
+    REDIS_URL: 'redis://127.0.0.1:6379', NATS_URL: 'nats://127.0.0.1:4222',
+    MARKET_PUBSUB_ENABLED: 'true',
+  });
+  let probeCalls = 0;
+  service.openCacheProbe = async () => {
+    probeCalls += 1;
+    service.cacheProbe = { isReady: true };
+    return false;
+  };
+  assert.equal(service.shouldRetry(), true);
+  assert.deepEqual(await Promise.all([service.start(), service.start()]), [false, false]);
+  assert.equal(probeCalls, 1);
+  assert.equal(service.shouldRetry(), false);
+  assert.equal(service.status().status, 'cache_only');
+  assert.equal(service.status().redis, 'connected');
+  assert.equal(service.status().nats, 'unavailable');
+  assert.equal(service.status().pubsub, 'disabled');
+  assert.equal(service.redis, null);
+  assert.equal(service.nc, null);
+  assert.equal(service.manager, null);
+  assert.throws(() => service.requireProviderState(), /PROVIDER_STATE_UNAVAILABLE/);
+  await assert.rejects(service.subscribeQuotes(() => {}), /PUBSUB_UNAVAILABLE/);
+  assert.equal(await service.read('BTCUSD'), null);
+  await service.close();
+  assert.equal(service.status().status, 'unavailable');
+  assert.equal(service.shouldRetry(), true);
+});
