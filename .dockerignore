@@ -132,6 +132,7 @@
 !server/license-pages.test.mjs
 !shared/vocabulary-metadata.mjs
 !shared/architecture-governance-vocabulary.mjs
+!shared/roadmap-source-lineage.mjs
 !shared/vocabulary-access-policy.mjs
 !shared/seo-indexing-policy.mjs
 !shared/seo-content-manifest.mjs
