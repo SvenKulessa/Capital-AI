@@ -1,20 +1,20 @@
 {
   "schema": "CAPITAL_AI_ROADMAP_MERGE_AUDIT@1",
   "state": "RECONCILED_CODE_AND_DOCUMENTS",
-  "lastReconciledPr": 545,
-  "mergeCount": 470,
-  "fromPr": 527,
-  "toPr": 545,
-  "sourceSha": "a799d7416eaca8c399098ec5eff2f3bee6e6e0dc",
-  "reconciledAt": "2026-10-31T06:02:12.071Z",
+  "lastReconciledPr": 585,
+  "mergeCount": 500,
+  "fromPr": 606,
+  "toPr": 585,
+  "sourceSha": "5b6dd0e5ce0515a34f132f7f3f10a686804bdf9f",
+  "reconciledAt": "2026-11-09T14:35:05.963Z",
   "sourceDigests": [
     {
       "path": "src/data/roadmapData.ts",
-      "sha256": "aa9d071b4f081dfe4ebef4f40468bf5daf66c6648196e6c4e7c6ac395543461b"
+      "sha256": "7004b81f7c33d7002a167864196fb4999eca3b4f4c056d435f5ea6f390dbf793"
     },
     {
       "path": "src/data/roadmapCurrentMainState.ts",
-      "sha256": "b03e3193ae3d55d306217acecb05a1a2ecd7721c29e0e6cf94b61c56e37d1029"
+      "sha256": "d85171396828b6ef026284f5f78cc32fe881b46847c4ba07dd132c0afbb7b25a"
     },
     {
       "path": "src/data/productionWebsiteWorkPackage.ts",
@@ -30,7 +30,7 @@
     },
     {
       "path": "src/components/RoadmapPanel.tsx",
-      "sha256": "55fbe04906bbbdfa43442e7b32a323cfa6ed4302614ba8d58c509cf17bd2bb46"
+      "sha256": "bfbcc56391ca8eb1d5a268e9472e4c07737f3469ae32bf0d3c9ccfe4cb6177c4"
     }
   ],
   "packages": [
@@ -201,7 +201,9 @@
       "owner": "PLATFORM",
       "recordedState": "OFFEN",
       "evidencePathsPresent": [
-        "docs/governance/DOMAIN-RELEASE-GOVERNANCE.md"
+        "docs/governance/DOMAIN-RELEASE-GOVERNANCE.md",
+        "docs/platform/GOOGLE-CLOUD-OPERATOR-OIDC.md",
+        ".github/workflows/google-cloud-admin.yml"
       ],
       "evidencePathsMissing": [],
       "externalEvidenceNotVerified": [],
@@ -1138,7 +1140,9 @@
       "recordedState": "VERIFIED",
       "evidencePathsPresent": [
         "src/components/LearningPortalPage.tsx",
-        "src/data/vocabularyData.ts"
+        "src/data/vocabularyData.ts",
+        "shared/vocabulary-lookup.mjs",
+        "src/data/__tests__/vocabularyLookup.test.ts"
       ],
       "evidencePathsMissing": [
         "src/data/vocabularyPresentation.ts"
