@@ -132,6 +132,7 @@
 !server/license-pages.test.mjs
 !shared/vocabulary-metadata.mjs
 !shared/architecture-governance-vocabulary.mjs
+!shared/roadmap-source-lineage.mjs
 !shared/vocabulary-access-policy.mjs
 !shared/seo-indexing-policy.mjs
 !shared/seo-content-manifest.mjs
@@ -450,3 +451,8 @@
 # Auth/Learning isolation regression sources executed by npm test in the existing build.
 !server/password-auth-isolation.test.mjs
 !server/learning-isolation.test.mjs
+
+!shared/vocabulary-lookup.mjs
+!scripts/growth/firecrawl-client.mjs
+!scripts/growth/firecrawl-client.test.mjs
+!server/chat-buddy-learn.test.mjs

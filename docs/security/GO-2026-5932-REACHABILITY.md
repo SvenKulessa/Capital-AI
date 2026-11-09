@@ -44,3 +44,13 @@ Die erzeugten Dateien werden als Security-Artefakte gesichert:
 - `nats-reachability-reproducible.txt`
 
 Korrelation: Issue #120; PR #116 bleibt Verbraucher der Evidence und darf seinen bisherigen UNKNOWN-Status erst nach belastbarer Evidence ändern.
+
+## Pause-Entscheidung 2026-11-06 (aktueller Owner-Auftrag)
+
+**Status: DEFERRED / NOT_VERIFIED**, solange das versionierte `render.yaml` den Broker als `MARKET_BROKER_PAUSED=true` deklariert und NATS/Rust gemäß `AGENTS.md` nicht für produktive Marktdaten aktiviert sind.
+
+Der `Docker Security Gate` führt während dieser Pause **keinen NATS-Image-Build, Runtime-/Disk-Smoke, eigenen Dockerfile-Lint, NATS-Binary-Scan, govulncheck oder Reachability-/VEX-Neunachweis** durch. Das öffentliche Artefakt `nats-image.public.json` muss `SKIPPED_PAUSED_NOT_VERIFIED` statt `PASS` melden. Source-, Build- und App-Runtime-Scans bleiben verpflichtend und werden nicht abgeschwächt. Auch ein historisches `NOT_AFFECTED` wäre nur an ein exakt geprüftes Binary gebunden.
+
+**Reaktivierung:** Vor jeder erneuten produktiven Broker-Nutzung muss der Owner die erforderlichen Marktdatenrechte herstellen und die Pause in `render.yaml` bewusst beenden. Bei aktiver Repository-Konfiguration gilt wieder der bestehende NATS-Security-Pfad (PR-Diff-Scope; vollständiger Main-/Schedule-/Dispatch-Scan). Die Änderung eines Versionsstempels oder ein neuer App-Commit allein autorisiert keine NATS-Aktivierung. Eine externe manuelle Render-Aktivierung ohne korrespondierenden Repository-Readback ist damit **nicht automatisch ausgeschlossen oder verifiziert**; diese CI-Evidence ist kein Live-Attest.
+
+Der frühere Befund `GO-2026-5932` mit ungeklärter Production-Erreichbarkeit bleibt als historische Evidence sichtbar und wird weder durch Ignore-Listen unterdrückt noch als behoben ausgegeben.

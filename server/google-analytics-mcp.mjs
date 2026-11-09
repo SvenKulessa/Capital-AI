@@ -193,6 +193,10 @@ export function createGoogleAnalyticsMcpClient({
       GOOGLE_APPLICATION_CREDENTIALS: credentialsPath,
       GOOGLE_CLOUD_PROJECT: project,
       PYTHONUNBUFFERED: '1',
+      // Isolated read-only stdio GA4 MCP has no inbound W3C trace-context contract.
+      // Avoid auto-loading the vulnerable tracestate extractor while ADK pins OTel <=1.44.
+      // This is a reachability mitigation, NOT a fix for CVE-2026-114603 in the image.
+      OTEL_PROPAGATORS: 'none',
     };
 
     const processHandle = spawnImpl(MCP_COMMAND, [], {

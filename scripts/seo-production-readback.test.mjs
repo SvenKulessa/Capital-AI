@@ -56,3 +56,20 @@ test('origin must not include credentials, HTTP or path', async () => {
     await assert.rejects(productionReadback({ origin, fetchImpl: fixture }));
   }
 });
+
+
+test('standalone legal HTML is crawlable with default index semantics, but explicit bans and empty shells fail', async () => {
+  for (const variant of ['valid','noindex','none','empty']) {
+    const report = await productionReadback({fetchImpl: async (url, options) => {
+      const response = fixture(url, options);
+      if (!['/impressum','/datenschutz','/agb'].includes(new URL(url).pathname)) return response;
+      let body = (await response.text()).replace('<meta name="robots" content="index, follow">','')
+        .replace('<div id="root">','').replace('</div>','');
+      if (variant === 'noindex') body += "<meta content='noindex' name='googlebot'>";
+      if (variant === 'none') body += '<meta name="robots" content="none">';
+      if (variant === 'empty') body = body.replace('<main><h1>Content</h1></main>','<div id="root"></div>');
+      return new Response(body,{headers:{'content-type':'text/html'}});
+    }});
+    assert.equal(report.seoStatus, variant === 'valid' ? 'PASS' : 'FAIL', variant);
+  }
+});

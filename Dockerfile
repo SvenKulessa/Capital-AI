@@ -20,7 +20,9 @@ RUN npm ci --ignore-scripts --no-audit --no-fund \
 # Transitive pins keep known remediated versions inside the scanned image.
 RUN apk add --no-cache 'python3>=3.14.8-r0' 'py3-pip>=26.1.2-r0' \
     && python3 -m venv /opt/ga4-mcp \
-    && /opt/ga4-mcp/bin/pip install --no-cache-dir analytics-mcp==0.7.0 msgpack==1.2.3 urllib3==2.8.0 \
+    && /opt/ga4-mcp/bin/pip install --no-cache-dir analytics-mcp==0.7.0 google-adk==2.14.0 opentelemetry-api==1.45.2 opentelemetry-sdk==1.45.2 msgpack==1.2.3 urllib3==2.8.0 \
+    && /opt/ga4-mcp/bin/pip check \
+    && /opt/ga4-mcp/bin/python -c "from importlib.metadata import version; assert version('google-adk') == '2.14.0'; assert version('opentelemetry-api') == version('opentelemetry-sdk') == '1.45.2'" \
     && test -x /opt/ga4-mcp/bin/analytics-mcp \
     && /opt/ga4-mcp/bin/python -c "import pathlib,shutil,site; patterns=('pip','pip-*.dist-info','setuptools','setuptools-*.dist-info','_distutils_hack','pkg_resources','wheel','wheel-*.dist-info'); [shutil.rmtree(target, ignore_errors=True) for root in map(pathlib.Path, site.getsitepackages()) for pattern in patterns for target in root.glob(pattern)]" \
     && rm -rf /root/.cache \
@@ -73,7 +75,7 @@ COPY public/documentation/pipeline-architectures.html public/documentation/prici
 COPY public/downloads/market-screener-hub-open-source.html ./public/downloads/market-screener-hub-open-source.html
 COPY server/historical-analytics-demo.mjs server/learning-inquiry.mjs server/learning-simulator.mjs server/learning-simulator.test.mjs server/index.mjs server/seo-agent-discovery.mjs server/advisor.ts server/http-security.mjs server/security-headers.mjs server/api-rate-policy.mjs server/mta-sts.mjs server/mta-sts.test.mjs server/well-known.mjs server/well-known.test.mjs server/locale-html.test.mjs server/shadow-evidence-store.mjs server/auth-security.mjs server/auth-security.test.mjs ./server/
 COPY server/founder-access.mjs server/founder-access.test.mjs server/private-knowledge-vault.mjs server/private-knowledge-api.mjs server/private-knowledge-vault.test.mjs server/blueprint-private-cloud.mjs server/blueprint-private-cloud.test.mjs server/blueprint-commerce.mjs server/blueprint-commerce.test.mjs server/prompt-injection-guard.mjs server/prompt-injection-guard.test.mjs server/billing-catalog.mjs server/vocabulary-checkout.mjs server/vocabulary-quant-pro-index.mjs server/vocabulary-checkout.test.mjs server/enterprise-trial.test.mjs server/enterprise-trial.mjs server/subscription-checkout.mjs server/subscription-checkout.test.mjs server/cads-marketplace.mjs server/cads-marketplace.test.mjs server/cads-commerce.mjs server/cads-commerce.test.mjs server/benchmark-runs.mjs server/benchmark-runs.test.mjs server/benchmark-store.mjs server/benchmark-store.test.mjs server/public-artifact-policy.mjs server/public-artifact-policy.test.mjs ./server/
-COPY server/repository-tool-catalog.mjs server/repository-tool-catalog.test.mjs server/tool-update-discovery.mjs server/tool-update-discovery.test.mjs server/tool-catalog-assessment.mjs server/tool-catalog-assessment.test.mjs server/chat-buddy-keys.mjs server/chat-buddy-learn.mjs ./server/
+COPY server/repository-tool-catalog.mjs server/repository-tool-catalog.test.mjs server/tool-update-discovery.mjs server/tool-update-discovery.test.mjs server/tool-catalog-assessment.mjs server/tool-catalog-assessment.test.mjs server/chat-buddy-keys.mjs server/chat-buddy-learn.mjs server/chat-buddy-learn.test.mjs ./server/
 COPY server/password-auth-isolation.test.mjs server/learning-isolation.test.mjs server/advisor-security.test.mjs server/auth.test.mjs server/historical-analytics-demo.test.mjs ./server/
 COPY server/nats-auth.mjs server/provider-query-state.mjs server/private-provider-query.mjs server/private-provider-query.test.mjs server/provider-query-state.test.mjs ./server/
 COPY server/render-owner-dashboard.mjs server/render-owner-dashboard.test.mjs ./server/
@@ -99,7 +101,7 @@ COPY scripts/generate-jaja-3d.mjs ./scripts/generate-jaja-3d.mjs
 COPY scripts/export-mail-templates.mjs scripts/mail-templates.test.mjs ./scripts/
 COPY scripts/branding-assets.test.mjs scripts/license-evidence.mjs scripts/license-evidence.test.mjs scripts/social-tool-license-evidence.test.mjs scripts/validate-social-tool-license-evidence.mjs scripts/frontend-security.test.mjs scripts/product-accessibility-browser.mjs scripts/verify-browser-boundary.mjs scripts/validate-frontend-boundaries.mjs scripts/validate-contract-suites.mjs scripts/validate-growth-contracts.mjs scripts/validate-evidence-hardening.mjs scripts/generate-documentary.mjs scripts/benchmark-scoring-capacity.mjs ./scripts/
 COPY scripts/media ./scripts/media
-COPY scripts/growth/screener-learning-loop.test.mjs scripts/growth/learning-content-draft.mjs scripts/growth/social-release-candidate.mjs scripts/growth/social-release-candidate.test.mjs scripts/growth/pr-merge-social-batch.mjs scripts/growth/pr-merge-social-batch.test.mjs ./scripts/growth/
+COPY scripts/growth/screener-learning-loop.test.mjs scripts/growth/learning-content-draft.mjs scripts/growth/social-release-candidate.mjs scripts/growth/social-release-candidate.test.mjs scripts/growth/pr-merge-social-batch.mjs scripts/growth/pr-merge-social-batch.test.mjs scripts/growth/firecrawl-client.mjs scripts/growth/firecrawl-client.test.mjs ./scripts/growth/
 COPY scripts/generate-chart-learning.tsx ./scripts/generate-chart-learning.tsx
 COPY server/learning-inquiry.test.mjs ./server/learning-inquiry.test.mjs
 COPY scripts/activate-learning-measurement.mjs scripts/activate-learning-measurement.test.mjs scripts/generate-cookie-storage-notice.mjs ./scripts/
@@ -147,7 +149,7 @@ RUN --network=none node --test scripts/daily-dependency-watch.test.mjs scripts/s
     && node --test server/founder-access.test.mjs server/private-knowledge-vault.test.mjs server/blueprint-private-cloud.test.mjs server/blueprint-commerce.test.mjs server/historical-analytics-demo.test.mjs server/prompt-injection-guard.test.mjs server/vocabulary-checkout.test.mjs server/subscription-checkout.test.mjs server/cads-marketplace.test.mjs server/cads-commerce.test.mjs server/benchmark-runs.test.mjs server/benchmark-store.test.mjs server/public-artifact-policy.test.mjs scripts/cads-marketplace-migration.test.mjs scripts/cads-marketplace-production-manifest.test.mjs scripts/provider-query-guard-migration.test.mjs scripts/billing-catalog.test.mjs \
     && node --test server/user-provider-vault.test.mjs server/user-analysis-bindings.test.mjs server/private-provider-query.test.mjs server/provider-query-state.test.mjs server/kraken-order-dry-run.test.mjs server/uniswap-trading.test.mjs scripts/stripe-catalog-readback.test.mjs scripts/stripe-three-purchase-e2e.test.mjs scripts/benchmark-ledger-migration.test.mjs scripts/benchmark-cost-calibration.test.mjs \
     && node --import tsx --test server/advisor-security.test.mjs scripts/blueprint-evidence-contract.test.mjs \
-    && node --import tsx --test scripts/merge-milestone.test.mjs scripts/growth/pr-merge-social-batch.test.mjs \
+    && node --import tsx --test scripts/merge-milestone.test.mjs scripts/growth/pr-merge-social-batch.test.mjs scripts/growth/firecrawl-client.test.mjs \
     && node --test scripts/branding-assets.test.mjs \
     && CAPITAL_AI_REQUIRE_INSTALLED_LICENSE_EVIDENCE=true node --test scripts/license-evidence.test.mjs \
     && node scripts/license-evidence.mjs \

@@ -11,6 +11,7 @@ export type VocabularyCategory =
   | 'AI_MODELS'
   | 'CRYPTO_WEB3'
   | 'FUNDAMENTAL'
+  | 'FINTECH'
   | 'MACRO_FOREX'
   | 'DATA_EVIDENCE'
   | 'PLATFORM_ARCHITECTURE'
@@ -54,6 +55,7 @@ export const VOCABULARY_CATEGORIES: { id: VocabularyCategory; label: string; cou
   { id: 'AI_MODELS', label: 'KI & Scoring-Modelle' },
   { id: 'CRYPTO_WEB3', label: 'Krypto & Web3' },
   { id: 'FUNDAMENTAL', label: 'Fundamentalanalyse' },
+  { id: 'FINTECH', label: 'FinTech & Finanzinfrastruktur' },
   { id: 'MACRO_FOREX', label: 'Makro & Devisen' },
   { id: 'DATA_EVIDENCE', label: 'Daten & Evidence' },
   { id: 'PLATFORM_ARCHITECTURE', label: 'Plattform & Architektur' },

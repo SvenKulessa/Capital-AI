@@ -58,7 +58,8 @@ export function createSocialYouTubeOAuthStart({ env = process.env, auth,
       json(res, 403, { error: 'owner_authorization_required' });
       return true;
     }
-    if (url.searchParams.get('privacy') !== YOUTUBE_POLICY.version || [...url.searchParams.keys()].some(key => key !== 'privacy') || url.searchParams.getAll('privacy').length !== 1) {
+    if (url.searchParams.get('privacy') !== YOUTUBE_POLICY.version || [...url.searchParams.keys()].some(key => !['privacy', 'hl'].includes(key)) || url.searchParams.getAll('privacy').length !== 1
+      || url.searchParams.getAll('hl').length > 1 || (url.searchParams.has('hl') && url.searchParams.get('hl') !== 'en')) {
       res.writeHead(303, { Location: '/api/social-media/youtube/account/connect', 'Cache-Control': 'no-store' }); res.end(); return true;
     }
     const redirectUri = new URL(CALLBACK_PATH, origin).toString();
@@ -86,6 +87,7 @@ export function createSocialYouTubeOAuthStart({ env = process.env, auth,
       authorize.searchParams.set('response_type', 'code');
       authorize.searchParams.set('access_type', 'offline');
       authorize.searchParams.set('prompt', 'consent');
+      if (url.searchParams.get('hl') === 'en') authorize.searchParams.set('hl', 'en');
       authorize.searchParams.set('client_id', clientId);
       authorize.searchParams.set('redirect_uri', redirectUri);
       authorize.searchParams.set('scope', SCOPES);

@@ -250,5 +250,23 @@
     "domain": "PLATFORM",
     "path": "src/data/externalComponentInventory.ts",
     "application": "Node Runtime Dependencies · im kuratierten Komponentenregister dokumentiert (kein Runtime-Nachweis)"
+  },
+  {
+    "name": "Firecrawl",
+    "domain": "GROWTH",
+    "path": "scripts/growth/firecrawl-client.mjs",
+    "application": "Cloud-/Loopback-Adapter getestet; Selfhosting BLOCKED: Container-Runtime fehlt; AGPL-3.0"
+  },
+  {
+    "name": "DuckDB",
+    "domain": "MARKET",
+    "path": "scripts/analytics/duckdb-pilot.py",
+    "application": "Isolierter synthetischer SQL-/Parquet-Pilot verifiziert; kein produktiver Dienst; MIT"
+  },
+  {
+    "name": "Power BI",
+    "domain": "PRODUCT",
+    "path": "deploy/analytics-pilot/powerbi-import.pq",
+    "application": "CSV-Importvorlage; Desktop/Embedded nicht ausgeführt; Produktion benötigt Lizenz-/Kapazitätsprüfung"
   }
 ]

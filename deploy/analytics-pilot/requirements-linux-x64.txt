@@ -1,0 +1,2 @@
+# Isolated Linux x86_64 CPython >=3.12 pilot only; not a production dependency.
+duckdb==2.0.0 --hash=sha256:ab51ec57d329d6f3df37c0287b55d71c3fc07bb54b61d1afed09104f953b1431

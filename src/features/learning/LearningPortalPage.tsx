@@ -1,3 +1,4 @@
+import { matchesVocabularySearch } from '../../../shared/vocabulary-lookup.mjs';
 import { useVerifiedSession } from '../../hooks/useVerifiedSession';
 import { APP_NAVIGATION_EVENT } from '../../utils/appNavigation';
 import { VOCABULARY_PUBLIC_COUNT, VOCABULARY_SOURCE_PRS } from '../../../shared/vocabulary-metadata.mjs';
@@ -239,20 +240,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       if (selectedLevel !== 'ALL' && vocabularySkillLevel(term) !== selectedLevel) {
         return false;
       }
-      // Search query
-      if (searchQuery.trim() !== '') {
-        const query = searchQuery.toLowerCase();
-        const matchesTerm = term.term.toLowerCase().includes(query);
-        const matchesAbbr = term.abbreviation?.toLowerCase().includes(query);
-        const matchesShort = term.shortDefinition.toLowerCase().includes(query);
-        const matchesDetail = term.detailedExplanation.toLowerCase().includes(query);
-        const matchesFormula = term.formulaOrRule?.toLowerCase().includes(query);
-        const matchesCat = term.categoryLabel.toLowerCase().includes(query);
-        const matchesThesaurus = term.thesaurus.some((entry) => entry.toLowerCase().includes(query));
-        if (!matchesTerm && !matchesAbbr && !matchesShort && !matchesDetail && !matchesFormula && !matchesCat && !matchesThesaurus) {
-          return false;
-        }
-      }
+      if (!matchesVocabularySearch(term, searchQuery)) return false;
       return true;
     });
   }, [allVocabularyTerms, focusedTermId, selectedCategory, selectedLevel, searchQuery]);

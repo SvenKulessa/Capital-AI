@@ -138,6 +138,33 @@ async function checkPage(path, viewport) {
     if (simulator?.horizontalOverflow > 2) failures.push(path + ': page horizontal overflow (' + simulator.horizontalOverflow + 'px)');
     if (simulator?.privateEditorVisible) failures.push(path + ': private Pro controls visible without verified session');
   }
+  if (path === '/learning') {
+    record.glossary = [];
+    for (const [query, expected] of [['land graph', 'LangGraph'], ['supression', 'Suppression'], ['midi', 'MiFID'], ['zznonexistenttermzz', null]]) {
+      const focused = await evaluate(`(() => {
+        const input = document.querySelector('input[aria-label="Vocabulary durchsuchen"]');
+        if (!input) return false;
+        input.focus(); input.select(); return document.activeElement === input;
+      })()`);
+      if (!focused) throw Error('GLOSSARY_SEARCH_NOT_FOCUSABLE');
+      await send('Input.insertText', { text: query });
+      await pause(200);
+      const state = await evaluate(`({
+        titles: [...document.querySelectorAll('article[data-vocabulary-category] h3')].map(el => el.textContent),
+        empty: document.body.textContent.includes('Keine passenden Begriffe gefunden.'),
+        overflow: Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth)
+      })`);
+      record.glossary.push({ query, expected, ...state });
+      if (expected ? !state.titles.some(title => title.includes(expected)) : state.titles.length || !state.empty)
+        failures.push('/learning: glossary search failed for ' + query);
+      if (state.overflow > 2) failures.push('/learning: glossary overflow at ' + viewport.width);
+      if (process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR && query === 'supression') {
+        await mkdir(process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR, { recursive: true });
+        const shot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
+        await writeFile(join(process.env.CAPITAL_AI_BROWSER_EVIDENCE_DIR, 'glossary-' + viewport.width + '.png'), Buffer.from(shot.data, 'base64'));
+      }
+    }
+  }
   if (path === '/learning' && !dom.scrollNav.some(item =>
     item.hub === 'learning' && item.wrap === 'nowrap' && item.scroll === 'auto' && item.linkNames.length >= 4
   )) failures.push(path + ': Learning Hub mobile scroll navigation missing');
