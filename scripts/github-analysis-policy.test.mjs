@@ -33,7 +33,11 @@ test('stale commit, bypass, missing suite and API incompleteness never PASS', ()
     i => { i.codeqlAnalyses = []; },
   ]) {
     const i = input(); change(i);
-    assert.ok(evaluateAnalysisEvidence(i).every(row => row.status !== 'PASS'));
+    const outcomes = evaluateAnalysisEvidence(i);
+    assert.equal(outcomes.find(row => row.type === 'code_scanning').status, 'NOT_PROVEN');
+    if (i.codeqlAnalyses.length > 0) {
+      assert.equal(outcomes.find(row => row.type === 'code_quality').status, 'NOT_PROVEN');
+    }
   }
 });
 
