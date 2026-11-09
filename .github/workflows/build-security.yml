@@ -51,6 +51,8 @@ jobs:
             scripts/docker-context.test.mjs \
             scripts/reviewdog-public-report.test.mjs \
             scripts/container-evidence-identity.test.mjs \
+            scripts/registry-candidate.test.mjs \
+            scripts/production-handoff.test.mjs \
             scripts/post-merge-followup.test.mjs \
             scripts/post-merge-correlation.test.mjs \
             scripts/license-evidence.test.mjs \
@@ -466,20 +468,30 @@ jobs:
           docker tag "capital-ai:$SOURCE_SHA" "$candidate_tag"
           docker push "$candidate_tag"
           mkdir -p security-reports
-          docker buildx imagetools inspect "$candidate_tag" --format '{{json .Manifest}}' > security-reports/registry-manifest.json
-          registry_digest=$(jq -er '.digest | select(type == "string" and test("^sha256:[a-f0-9]{64}$"))' security-reports/registry-manifest.json)
+          docker buildx imagetools inspect "$candidate_tag" --format '{{json .Manifest}}' > security-reports/registry-descriptor.json
+          registry_digest=$(jq -er '.digest | select(type == "string" and test("^sha256:[a-f0-9]{64}$"))' security-reports/registry-descriptor.json)
           image_ref="$IMAGE_REPOSITORY@$registry_digest"
-          [[ "$image_ref" =~ ^ghcr\.io/svenkulessa/capital-ai@sha256:[a-f0-9]{64}$ ]]
-          platform_digest=$(jq -er '[.manifests[] | select(.platform.os == "linux" and .platform.architecture == "amd64")] | if length == 1 then .[0].digest else error("Expected one linux/amd64 manifest") end' security-reports/registry-manifest.json)
-          docker buildx imagetools inspect "$IMAGE_REPOSITORY@$platform_digest" --raw > security-reports/registry-platform-manifest.json
-          test "sha256:$(sha256sum security-reports/registry-platform-manifest.json | cut -d ' ' -f 1)" = "$platform_digest"
+          [[ "$image_ref" =~ ^ghcr\\.io/svenkulessa/capital-ai@sha256:[a-f0-9]{64}$ ]]
+          docker buildx imagetools inspect "$image_ref" --raw > security-reports/registry-raw.json
+          test "sha256:$(sha256sum security-reports/registry-raw.json | cut -d ' ' -f 1)" = "$registry_digest"
+          jq -s --arg digest "$registry_digest" '.[0] + {digest:$digest}' security-reports/registry-raw.json > security-reports/registry-manifest.json
+          node scripts/registry-manifest.mjs security-reports/registry-manifest.json > security-reports/registry-digests.json
+          platform_digest=$(jq -er .platformDigest security-reports/registry-digests.json)
+          index_digest=$(jq -r '.indexDigest // empty' security-reports/registry-digests.json)
+          if test -n "$index_digest"; then
+            docker buildx imagetools inspect "$IMAGE_REPOSITORY@$platform_digest" --raw > security-reports/registry-platform-manifest.json
+            test "sha256:$(sha256sum security-reports/registry-platform-manifest.json | cut -d ' ' -f 1)" = "$platform_digest"
+          else
+            cp security-reports/registry-raw.json security-reports/registry-platform-manifest.json
+          fi
           docker pull "$image_ref"
           config_digest=$(jq -er '.config.digest | select(type == "string" and test("^sha256:[a-f0-9]{64}$"))' security-reports/registry-platform-manifest.json)
           test "$config_digest" = "$EXPECTED_IMAGE_ID"
-          node scripts/container-evidence-identity.mjs set security-reports/container-identity.json \
-            ociIndexDigest "$registry_digest" \
-            platformManifestDigest "$platform_digest" \
-            configDigest "$config_digest"
+          if test -n "$index_digest"; then
+            node scripts/container-evidence-identity.mjs set security-reports/container-identity.json ociIndexDigest "$index_digest" platformManifestDigest "$platform_digest" configDigest "$config_digest"
+          else
+            node scripts/container-evidence-identity.mjs set security-reports/container-identity.json platformManifestDigest "$platform_digest" configDigest "$config_digest"
+          fi
           echo "image_ref=$image_ref" >> "$GITHUB_OUTPUT"
           echo "digest=${image_ref##*@}" >> "$GITHUB_OUTPUT"
       - name: Registry-Image per Digest erneut scannen und SBOM erzeugen
@@ -492,7 +504,9 @@ jobs:
           test "$(node scripts/docker-archive-config.mjs security-reports/registry-image.tar)" = "$EXPECTED_IMAGE_ID"
           chmod a+r security-reports/registry-image.tar
           chmod a+rwx security-reports
-          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/registry-image.tar --ignorefile /dev/null --scanners vuln,secret --severity HIGH,CRITICAL --exit-code 1 --format json --output /reports/registry-image.json
+          docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/registry-image.tar --ignorefile /dev/null --scanners vuln,secret --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --exit-code 0 --format json --output /reports/registry-image.json
+          node scripts/summarize-trivy.mjs security-reports/registry-image.json --gate
+          node scripts/registry-cve-gate.mjs security-reports/registry-image.json
           docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/registry-image.tar --ignorefile /dev/null --scanners vuln --format cyclonedx --output /reports/capital-ai.sbom.cdx.json
           docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/registry-image.tar --ignorefile /dev/null --scanners license --license-full --format json --output /reports/registry-image-licenses.json --exit-code 0
           docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint cat "$IMAGE_REF" /app/dist/THIRD_PARTY_NOTICES.txt > security-reports/THIRD_PARTY_NOTICES.txt
