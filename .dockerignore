@@ -173,6 +173,8 @@
 !public/learning/editorial/x-api-kostenbewusst-20261106.svg
 !public/learning/charts/
 !public/learning/charts/**
+!public/learning/social/
+!public/learning/social/**
 !public/learning/videos/
 !public/learning/videos/**
 !scripts/generate-learning-coming-soon.tsx
