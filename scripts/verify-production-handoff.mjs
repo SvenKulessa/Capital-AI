@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { verifyMainRuleset } from './verify-main-ruleset.mjs';
 import { validateContainerIdentity } from './container-evidence-identity.mjs';
+import { selectRegistryManifest } from './registry-manifest-evidence.mjs';
 
 const SOURCE_SHA = /^[0-9a-f]{40}$/;
 const IMAGE_REF = /^ghcr\.io\/svenkulessa\/capital-ai@sha256:[0-9a-f]{64}$/;
@@ -35,6 +36,7 @@ export function evaluateProductionHandoff({
   registryScan,
   registryPlatformManifest,
   analysisResults = [],
+  checkRuns = [],
 }) {
   if (!candidate || candidate.status !== 'ATTESTED_CANDIDATE' || candidate.deployEligible !== false) {
     throw new Error('Expected an attested, non-deployable candidate');
@@ -48,13 +50,20 @@ export function evaluateProductionHandoff({
   const rules = activeMainRulesets.flatMap(r => Array.isArray(r.rules) ? r.rules : []);
   const statusRule = rules.find(r => r.type === 'required_status_checks');
   const requiredContexts = statusRule?.parameters?.required_status_checks?.map(c => c.context) || [];
-  const protectionReports = activeMainRulesets.map(verifyMainRuleset);
+  const protectionReports = activeMainRulesets.map(r =>
+    verifyMainRuleset(r, { sourceSha: candidate.sourceSha, checkRuns }));
   const protectionPass = protectionReports.some(r => r.pass) &&
     activeMainRulesets.every(r => (r.bypass_actors || []).length === 0);
   const requestedDigest = candidate.imageRef.split('@')[1];
-  const manifests = registryManifest?.manifests?.filter(m =>
-    m.platform?.os === 'linux' && m.platform?.architecture === 'amd64') || [];
-  const platformDigest = manifests.length === 1 ? normalizeDigest(manifests[0].digest) : null;
+  let registrySelection = null;
+  let registrySelectionError = null;
+  try {
+    registrySelection = selectRegistryManifest(registryManifest);
+  } catch (error) {
+    registrySelectionError = error instanceof Error ? error.message : String(error);
+  }
+  const platformDigest = registrySelection?.platformManifestDigest || null;
+  const indexDigest = registrySelection?.ociIndexDigest || null;
   const configDigest = normalizeDigest(registryScan?.Metadata?.ImageID);
   let typedIdentity = null;
   let typedIdentityError = null;
@@ -72,10 +81,11 @@ export function evaluateProductionHandoff({
     typedSource.testedMergeSha === null &&
     typedDigests.artifactArchiveDigest !== null &&
     typedDigests.localImageId === configDigest &&
-    typedDigests.ociIndexDigest === requestedDigest &&
+    typedDigests.ociIndexDigest === indexDigest &&
     typedDigests.platformManifestDigest === platformDigest &&
     typedDigests.configDigest === configDigest;
-  const registryPass = registryManifest?.digest === requestedDigest &&
+  const registryPass = registrySelectionError === null &&
+    registrySelection?.referenceDigest === requestedDigest &&
     platformDigest !== null && configDigest !== null &&
     registryPlatformManifest?.digest === platformDigest &&
     registryPlatformManifest?.manifest?.config?.digest === configDigest &&
@@ -129,8 +139,10 @@ export function evaluateProductionHandoff({
       evidence: {
         deployId: deploy?.id || null,
         imageRef: deploy?.image?.ref || null,
-        requestedIndexDigest: requestedDigest,
+        requestedImageDigest: requestedDigest,
+        indexDigest,
         platformManifestDigest: platformDigest,
+        registrySelectionError,
         configDigest,
         registryEvidenceMatches: registryPass,
         providerImageSha: normalizeDigest(deploy?.image?.sha),
@@ -152,8 +164,18 @@ export function evaluateProductionHandoff({
       const result = analysisResults.find(r => r.type === type && r.sourceSha === candidate.sourceSha);
       gates.push({
         name: type === 'code_scanning' ? 'REQUIRED_CODE_SCANNING_RESULTS' : 'REQUIRED_CODE_QUALITY_RESULTS',
-        pass: result?.status === 'PASS' && typeof result?.evidenceUrl === 'string' &&
-          result.evidenceUrl.startsWith('https://api.github.com/repos/SvenKulessa/Capital-AI/'),
+        pass: result?.status === 'PASS' &&
+          result?.providerEvidence?.sourceBound === true &&
+          result?.providerEvidence?.afterSha === candidate.sourceSha &&
+          result?.providerEvidence?.ref === 'refs/heads/main' &&
+          result?.providerEvidence?.suiteResult === 'pass' &&
+          result?.providerEvidence?.ruleType === type &&
+          result?.providerEvidence?.ruleResult === 'pass' &&
+          Number.isSafeInteger(result?.providerEvidence?.ruleSuiteId) &&
+          result.providerEvidence.ruleSuiteId > 0 &&
+          result?.evidenceUrl ===
+            'https://api.github.com/repos/SvenKulessa/Capital-AI/rulesets/rule-suites/' +
+            result.providerEvidence?.ruleSuiteId,
         evidence: { result: result || null, policy: rules.filter(r => r.type === type) },
       });
     }
@@ -186,7 +208,7 @@ function readJson(path) {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const [candidatePath, licensePath, rulesetsPath, servicePath, deployPath, healthPath, outputPath, registryManifestPath, registryScanPath, analysisResultsPath, platformManifestPath] = process.argv.slice(2);
+  const [candidatePath, licensePath, rulesetsPath, servicePath, deployPath, healthPath, outputPath, registryManifestPath, registryScanPath, analysisResultsPath, platformManifestPath, checkRunsPath] = process.argv.slice(2);
   if (!outputPath) throw new Error('Expected candidate, license, rulesets, service, deploy, health and output paths');
   const report = evaluateProductionHandoff({
     candidate: readJson(candidatePath),
@@ -205,6 +227,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     registryManifest: registryManifestPath ? readJson(registryManifestPath) : null,
     registryScan: registryScanPath ? readJson(registryScanPath) : null,
     analysisResults: analysisResultsPath ? readJson(analysisResultsPath) : [],
+    checkRuns: checkRunsPath ? readJson(checkRunsPath) : [],
   });
   mkdirSync(dirname(outputPath), { recursive: true });
   writeFileSync(outputPath, JSON.stringify(report, null, 2) + '\n');
