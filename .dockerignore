@@ -170,6 +170,7 @@
 !public/learning/
 !public/learning/editorial/
 !public/learning/editorial/chart-accessibility-20261010.svg
+!public/learning/editorial/x-api-kostenbewusst-20261106.svg
 !public/learning/charts/
 !public/learning/charts/**
 !public/learning/videos/
@@ -183,6 +184,7 @@
 !scripts/market-blueprint-demo.test.mjs
 !scripts/screener-blueprint-preview.test.mjs
 !scripts/cads-growth-quality.test.mjs
+!scripts/masterclass-templates.test.mjs
 !scripts/static-legal-routes.test.mjs
 !scripts/harden-npm-toolchain.mjs
 !scripts/benchmark-scoring-capacity.mjs

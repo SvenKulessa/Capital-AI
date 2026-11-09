@@ -11,7 +11,7 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
   'shared/learning-journey.mjs': Object.freeze({ sourceBlobSha: '571f55e1bedebd631d0d74015c9aef7e665b5661', contentSha256: 'bbfc951ce10f2d22eb3aec8d0bda6a5d65a61948c4f13ea467be2775196e7f33' }),
   'src/features/learning/LearningJourney.tsx': Object.freeze({ sourceBlobSha: 'fd85f3de2efecafa34c07f9cf5e132b565e03dd9', contentSha256: '2d501a6635fa025d96806a81235ae92368d86faff8b4a01083e91f528d713690' }),
 
-  'shared/blog-articles.mjs': Object.freeze({ sourceBlobSha: 'ffe06ff6e4e8b410fcff3ae1670a610f22d8b03f', contentSha256: '373675574dd91bd1925ab599e89714bc9e160e4855cbd91873183d02bc7e54c0' }),
+  'shared/blog-articles.mjs': Object.freeze({ sourceBlobSha: 'f5d0b669403b45157538b48a4eca432ce3f13a26', contentSha256: '13a1c4cc8a3aa3b699bf0f7bb7044e2e1081881c9a038855ed5753341fa0fad2' }),
   'index.html': Object.freeze({
     sourceBlobSha: 'a9ac24cc0891320e82b75983cbcdc826b1c08450',
     contentSha256: 'f01fc617617e19ab2929f8735166fa2ed7c5d220560ab598f071f08b03d0b1ce',
@@ -65,7 +65,7 @@ export const SEO_SOURCE_ARTIFACTS = Object.freeze({
 
 const SEO_SOURCE_SET_DIGESTS = Object.freeze({
   'shared/architecture-governance-vocabulary.mjs|shared/learning-journey.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/components/ContactForm.tsx|src/data/vocabularyOffer.ts|src/features/learning/LearningJourney.tsx|src/features/learning/LearningPortalPage.tsx|src/features/learning/LearningPurchase.tsx': '9783cbb4de6a66255b05f32a8895bd0fdf5196229b1cee9a63590f58932c953b',
-  'shared/blog-articles.mjs': '5220e5c7397020d001d765b7e6d8e023533d058561d7e9df885d83c79057f83c',
+  'shared/blog-articles.mjs': '38bb352e357569488d490dbd97d0206dac75e9492e82f9e1e437e4c1eee6e331',
   'index.html|src/features/home/HomePage.tsx': '5f521d2e1ff939caf1449bf80d7d3e0698f0c4780d14f613c621f688097c6466',
   'shared/architecture-governance-vocabulary.mjs|shared/quant-learning-demo.json|shared/researched-vocabulary.json|shared/vocabulary-metadata.mjs|src/features/learning/LearningPortalPage.tsx': '6b5d5a478b570fe57aa9dcbfd64e70a86d1d034db4214d7192dce9af012378e6',
   'src/components/LegalAndFaqPages.tsx|src/content/publicLegalContent.ts': 'cddb2c5e05bef221848ce191cd8462df755266243f79b9beb692e0e41bbc46b9',
