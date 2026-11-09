@@ -3,12 +3,14 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { ContentCampaignBriefSchema } from '../../contracts/contentEngine.ts';
+import { GrowthMarketingChannelSchema } from '../../contracts/growthAiPromotion.ts';
 import { ContentSocialPackageManifestSchema } from '../../contracts/contentSocialPackage.ts';
 import { INSTAGRAM_PILOT_CAMPAIGN, INSTAGRAM_PILOT_PACKAGE,
   INSTAGRAM_PILOT_PLAN, INSTAGRAM_PILOT_SLIDES, INSTAGRAM_PILOT_STATUS,
   INSTAGRAM_PILOT_CAPTION, INSTAGRAM_PILOT_SOURCE_SHA } from '../instagramLearningPilot.ts';
 
 test('Instagram uses existing campaign, CADS and Social Package contracts', () => {
+  assert.equal(GrowthMarketingChannelSchema.parse('INSTAGRAM'), 'INSTAGRAM');
   assert.ok(ContentCampaignBriefSchema.parse(INSTAGRAM_PILOT_CAMPAIGN).channels.includes('INSTAGRAM'));
   assert.equal(INSTAGRAM_PILOT_PLAN.cadsQuality.technicalStatus, 'PASS');
   assert.equal(INSTAGRAM_PILOT_PLAN.publication.publicPublishAllowed, false);
