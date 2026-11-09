@@ -321,6 +321,14 @@ jobs:
           chmod a+rwx security-reports
           docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/image.tar --ignorefile /dev/null --scanners vuln,secret --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format json --output /reports/image.json --exit-code 0
           node scripts/summarize-trivy.mjs security-reports/image.json --gate
+      - name: CVE-2026-4738 in Build- und Runtime-Scans ausschließen
+        run: |
+          # Existing severity gate blocks HIGH/CRITICAL; this repaired MEDIUM CVE must not regress.
+          # Operate only on the exact locally exported, unsuppressed image scan reports.
+          for report in security-reports/build-image.json security-reports/image.json; do
+            test -s "$report"
+            jq -e '(.Results | type == "array") and ([.Results[] | (.Vulnerabilities // [])[] | select(.VulnerabilityID == "CVE-2026-4738")] | length == 0)' "$report" >/dev/null
+          done
       - name: SBOM des exportierten Images
         if: always() && hashFiles('security-reports/image.tar') != ''
         run: |
