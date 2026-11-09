@@ -85,7 +85,6 @@ jobs:
             scripts/validate-oss-multi-asset-plan.test.mjs \
             scripts/verify-release-readiness.test.mjs \
             scripts/ci-efficiency-report.test.mjs \
-            scripts/verify-go-vuln-reachability.test.mjs \
             scripts/docker-archive-config.test.mjs
           npm run validate:all
           git diff --exit-code -- generated/SKILL-INVENTORY.md generated/SKILL-READINESS.md generated/CAPITAL-AI-SKILL-EXPANSION-REPORT.md generated/ARCHITECTURE-GAP-ANALYSIS.md
@@ -95,14 +94,12 @@ jobs:
           docker build --file Dockerfile.security --tag capital-ai-security .
           mkdir -p security-reports
           docker run --rm capital-ai-security --version | tee security-reports/trivy-version.txt
-          test "$(sed -n 's/^Version: //p' security-reports/trivy-version.txt | head -n1)" = "0.76.1"
+          test "$(sed -n 's/^Version: //p' security-reports/trivy-version.txt | head -n1)" = "0.76.2"
           mkdir -p "$RUNNER_TEMP/trivy-cache"
           chmod a+rwx "$RUNNER_TEMP/trivy-cache"
       - name: Dockerfile linten
         run: |
           docker run --rm --entrypoint hadolint -v "$PWD:/work:ro" capital-ai-security /work/Dockerfile
-          # Disk bootstrap drops to UID 1000; its bounded exception remains source-scanned.
-          docker run --rm --entrypoint hadolint -v "$PWD:/work:ro" capital-ai-security --ignore DL3002 /work/deploy/Dockerfile.nats
       - name: NATS-Pruefumfang aus PR-Diff bestimmen
         id: nats_scope
         shell: bash
@@ -113,6 +110,15 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number || '' }}
         run: |
           set -euo pipefail
+          # The versioned pause governs NATS checks while the broker is dormant.
+          # Missing or ambiguous configuration defaults to full checks.
+          if node -e 'const s=require("node:fs").readFileSync("render.yaml","utf8");const m=[...s.matchAll(/^[ \t]*- key: MARKET_BROKER_PAUSED\r?\n[ \t]*value: ["\x27]?(true|false)["\x27]?[ \t]*$/gm)];process.exit(m.length===1&&m[0][1]==="true"?0:1)'; then
+            echo 'run=false' >> "$GITHUB_OUTPUT"
+            echo 'paused=true' >> "$GITHUB_OUTPUT"
+            echo 'NATS: SKIPPED_PAUSED_NOT_VERIFIED; no binary, smoke or image scan' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          echo 'paused=false' >> "$GITHUB_OUTPUT"
           if [ "$EVENT_NAME" != "pull_request" ]; then
             echo 'run=true' >> "$GITHUB_OUTPUT"
             echo "NATS: full scan required on $EVENT_NAME" >> "$GITHUB_STEP_SUMMARY"
@@ -120,13 +126,19 @@ jobs:
           fi
           gh api --paginate "repos/$GH_REPOSITORY/pulls/$PR_NUMBER/files?per_page=100" --jq '.[].filename' > "$RUNNER_TEMP/pr-files.txt"
           test -s "$RUNNER_TEMP/pr-files.txt"
-          if grep -Eq '^(deploy/(Dockerfile\.nats|nats-[^/]*|fetch-nats-release\.sh|trivy-bootstrap-exception\.yaml)|scripts/(verify-nats-runtime\.sh|verify-go-vuln-reachability(\.test)?\.mjs|summarize-trivy(\.test)?\.mjs|publish-security-summary(\.test)?\.mjs)|Dockerfile\.security|\.dockerignore|scripts/docker-context\.test\.mjs|scripts/container-evidence-identity(\.test)?\.mjs|\.github/workflows/build-security\.yml)$' "$RUNNER_TEMP/pr-files.txt"; then
+          if grep -Eq '^(deploy/(Dockerfile\.nats|nats-[^/]*|fetch-nats-release\.sh|trivy-bootstrap-exception\.yaml)|scripts/(verify-nats-runtime\.sh|verify-go-vuln-reachability(\.test)?\.mjs|summarize-trivy(\.test)?\.mjs|publish-security-summary(\.test)?\.mjs)|Dockerfile\.security|\.dockerignore|scripts/docker-context\.test\.mjs|scripts/container-evidence-identity(\.test)?\.mjs|\.github/workflows/build-security\.yml|render\.yaml)$' "$RUNNER_TEMP/pr-files.txt"; then
             echo 'run=true' >> "$GITHUB_OUTPUT"
             echo 'NATS: relevant image or security logic changed; full scan required' >> "$GITHUB_STEP_SUMMARY"
           else
             echo 'run=false' >> "$GITHUB_OUTPUT"
             echo 'NATS: independent image unchanged; image and binary checks not applicable to this PR; full scan required on main, schedule and dispatch' >> "$GITHUB_STEP_SUMMARY"
           fi
+      - name: NATS-Dockerfile-Lint und Reachability-Unit nur im aktiven Scope
+        if: steps.nats_scope.outputs.run == 'true'
+        run: |
+          # No NATS tests or scans run while MARKET_BROKER_PAUSED=true.
+          docker run --rm --entrypoint hadolint -v "$PWD:/work:ro" capital-ai-security --ignore DL3002 /work/deploy/Dockerfile.nats
+          node --test scripts/verify-go-vuln-reachability.test.mjs
       - name: NATS-Disk-Bootstrap und nicht-root Server verifizieren
         if: steps.nats_scope.outputs.run == 'true'
         run: |
@@ -335,6 +347,7 @@ jobs:
         if: always()
         env:
           CAPITAL_NATS_SCOPE: ${{ steps.nats_scope.outputs.run }}
+          CAPITAL_NATS_PAUSED: ${{ steps.nats_scope.outputs.paused }}
         run: |
           mkdir -p security-reports
           node scripts/publish-security-summary.mjs security-reports
@@ -432,7 +445,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/trivy-cache"
           chmod a+rwx "$RUNNER_TEMP/trivy-cache"
           rm candidate/image.tar
-      - uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}

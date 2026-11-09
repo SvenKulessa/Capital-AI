@@ -47,3 +47,8 @@ test("status reads the Chat Buddy folder and never echoes env secrets", async ()
     else process.env.GEMINI_API_KEY = previous;
   }
 });
+
+test('question boilerplate alone cannot return unrelated documentary evidence', () => {
+  const chunks = chunkDocument('docs/example.md', '# Hilfe\n\nBitte erkläre was die Definition ist und wie die Dokumentation funktioniert.');
+  assert.deepEqual(retrieveLearned('Bitte erkläre ZZZunbekannt', chunks), []);
+});

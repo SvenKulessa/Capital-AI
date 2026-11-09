@@ -1,6 +1,7 @@
 // CAPITAL_AI_GOOGLE_MAINTENANCE@1
 // Trusted-worker REST client. No public web route or arbitrary URL execution.
 import { randomUUID } from 'node:crypto';
+import { isSeoIndexable } from '../shared/seo-indexing-policy.mjs';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
@@ -12,6 +13,8 @@ const DATA_ORIGIN = 'https://analyticsdata.googleapis.com';
 const CLOUD_ORIGIN = 'https://cloudresourcemanager.googleapis.com';
 const SERVICE_ORIGIN = 'https://serviceusage.googleapis.com';
 const GSC_ORIGIN = 'https://www.googleapis.com';
+const INSPECTION_ORIGIN = 'https://searchconsole.googleapis.com';
+export const GSC_INSPECTION_PATHS = Object.freeze(['/learning', '/vocabulary/orderbuch', '/vocabulary/capital-eventmesh']);
 const GSC_PROPERTY = 'sc-domain:capital-ai.online';
 const SITEMAP_URL = 'https://capital-ai.online/sitemap.xml';
 const MAX_RESPONSE_BYTES = 1024 * 1024;
@@ -54,7 +57,7 @@ export function createGoogleMaintenance({ env = process.env, fetchImpl = fetch, 
     throw new Error('GOOGLE_IDENTITY_NOT_CONFIGURED');
   }
   async function request(origin, pathname, { method = 'GET', body, query } = {}) {
-    if (![ADMIN_ORIGIN, DATA_ORIGIN, CLOUD_ORIGIN, SERVICE_ORIGIN, GSC_ORIGIN].includes(origin)) throw new Error('ORIGIN_NOT_ALLOWED');
+    if (![ADMIN_ORIGIN, DATA_ORIGIN, CLOUD_ORIGIN, SERVICE_ORIGIN, GSC_ORIGIN, INSPECTION_ORIGIN].includes(origin)) throw new Error('ORIGIN_NOT_ALLOWED');
     const accessToken = await token();
     if (typeof accessToken !== 'string' || !accessToken || /[\r\n]/.test(accessToken)) throw new Error('INVALID_TOKEN');
     const url = new URL(pathname, origin);
@@ -247,6 +250,30 @@ export function createGoogleMaintenance({ env = process.env, fetchImpl = fetch, 
           ...(name === 'ga4_learning_lead_report' ? [{ filter: { fieldName: 'eventName', stringFilter: { matchType: 'EXACT', value: 'generate_lead' } } }] : []),
         ] } }, limit: '100', returnPropertyQuota: true,
       } });
+    }
+    if (name === 'gsc_inspect_public_urls') {
+      exact(input, []);
+      const urls = [];
+      const pick = (value, allowed) => allowed.includes(value) ? value : null;
+      for (const path of GSC_INSPECTION_PATHS) {
+        const inspectionUrl = 'https://capital-ai.online' + path;
+        const result = await request(INSPECTION_ORIGIN, '/v1/urlInspection/index:inspect', {
+          method: 'POST', body: { inspectionUrl, siteUrl: GSC_PROPERTY, languageCode: 'en-US' },
+        });
+        const index = result.inspectionResult?.indexStatusResult;
+        if (!index || typeof index !== 'object' || Array.isArray(index)) throw new Error('GSC_INSPECTION_INVALID_RESPONSE');
+        urls.push({ path, expectedIndexing: isSeoIndexable(path) ? 'INDEX' : 'NOINDEX',
+          verdict: pick(index.verdict, ['PASS', 'PARTIAL', 'FAIL', 'NEUTRAL', 'VERDICT_UNSPECIFIED']),
+          robotsTxtState: pick(index.robotsTxtState, ['ALLOWED', 'DISALLOWED', 'ROBOTS_TXT_STATE_UNSPECIFIED']),
+          indexingState: pick(index.indexingState, ['INDEXING_ALLOWED', 'BLOCKED_BY_META_TAG', 'BLOCKED_BY_HTTP_HEADER', 'BLOCKED_BY_ROBOTS_TXT', 'INDEXING_STATE_UNSPECIFIED']),
+          pageFetchState: pick(index.pageFetchState, ['SUCCESSFUL', 'SOFT_404', 'BLOCKED_ROBOTS_TXT', 'NOT_FOUND', 'ACCESS_DENIED', 'SERVER_ERROR', 'REDIRECT_ERROR', 'ACCESS_FORBIDDEN', 'BLOCKED_4XX', 'INTERNAL_CRAWL_ERROR', 'INVALID_URL', 'PAGE_FETCH_STATE_UNSPECIFIED']),
+          lastCrawlTime: typeof index.lastCrawlTime === 'string' && /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?Z$/.test(index.lastCrawlTime) && index.lastCrawlTime.length <= 40 && Number.isFinite(Date.parse(index.lastCrawlTime)) ? index.lastCrawlTime : null,
+          googleCanonicalMatches: typeof index.googleCanonical === 'string' ? index.googleCanonical === inspectionUrl : null,
+          userCanonicalMatches: typeof index.userCanonical === 'string' ? index.userCanonical === inspectionUrl : null,
+        });
+      }
+      return { status: 'PROVIDER_READ_VERIFIED', property: GSC_PROPERTY, source: 'GOOGLE_INDEX_SNAPSHOT_NOT_LIVE_TEST',
+        observedAt: new Date(now()).toISOString(), readOnly: true, crawlRequested: false, urls };
     }
     if (name === 'gsc_list_sitemaps') {
       exact(input, []);

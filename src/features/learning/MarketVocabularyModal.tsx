@@ -1,3 +1,4 @@
+import { matchesVocabularySearch } from '../../../shared/vocabulary-lookup.mjs';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { VOCABULARY_TERMS, VOCABULARY_CATEGORIES, type VocabularyCategory, type VocabularyTerm } from '../../data/vocabularyData';
@@ -39,7 +40,7 @@ function VocabularyDialog({onClose,onOpenAnalysis,onSelectAssetSymbol}:MarketVoc
   return ()=>{controller.abort();document.removeEventListener('keydown',key);if(previous instanceof HTMLElement&&previous.isConnected)previous.focus();};
  },[onClose]);
  const terms=useMemo(()=>{const extended=new Map(protectedTerms.map(term=>[term.id,term]));return VOCABULARY_TERMS.map(term=>extended.get(term.id)??term);},[protectedTerms]);
- const visible=terms.filter(term=>(category==='ALL'||term.category===category)&&(level==='ALL'||term.level===level)&&[term.term,term.abbreviation,term.shortDefinition,...term.thesaurus].some(value=>value?.toLocaleLowerCase('de-DE').includes(query.toLocaleLowerCase('de-DE'))));
+ const visible=terms.filter(term=>(category==='ALL'||term.category===category)&&(level==='ALL'||term.level===level)&&matchesVocabularySearch(term,query));
  return <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 p-2 sm:items-center sm:p-6">
   <div ref={dialog} role="dialog" aria-modal="true" aria-labelledby="vocabulary-dialog-title" className="max-h-[92dvh] w-full max-w-5xl overflow-y-auto rounded-2xl border border-amber-400/30 bg-[#090e21] p-4 sm:p-6">
    <header className="flex items-center justify-between gap-3"><h2 id="vocabulary-dialog-title" className="text-2xl font-bold text-amber-200">Learning Portal · Vocabulary</h2><button ref={close} type="button" aria-label="Vocabulary schließen" onClick={onClose} className="flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-white/20 text-white"><X className="h-5 w-5"/></button></header>
