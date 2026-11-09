@@ -127,21 +127,56 @@ test('runtime entrypoint local server imports are copied and reachable', () => {
 });
 
 
-test('application and NATS images enforce the patched Alpine zlib security floor', () => {
+test('application stages inherit stable Alpine zlib >= 1.4-r0 for CVE-2026-4738', () => {
   const dockerfile = readFileSync(resolve(root, 'Dockerfile'), 'utf8');
-  const natsDockerfile = readFileSync(resolve(root, 'deploy/Dockerfile.nats'), 'utf8');
-
+  const cryptoBase = dockerfile.slice(0, dockerfile.indexOf('\nFROM crypto-base AS build'));
   assert.match(
-    dockerfile,
-    /apk add --no-cache[^\n]*['"]zlib>=1\.3\.2-r1['"]/,
-    'Application image must install zlib >= 1.3.2-r1 for CVE-2026-85091',
+    cryptoBase,
+    /^FROM node:26\.13\.0-alpine@sha256:[0-9a-f]{64} AS crypto-base$/m,
+    'Retain the digest-pinned Alpine base image',
   );
+  assert.match(
+    cryptoBase,
+    /RUN apk add --no-cache[^\n]*['"]zlib>=1\.4-r0['"]/,
+    'Shared base must require the vendor-fixed zlib from the stable Alpine 3.24 branch',
+  );
+  assert.equal((dockerfile.match(/['"]zlib>=1\.4-r0['"]/g) || []).length, 1,
+    'Apply the same zlib floor exactly once in crypto-base, not separate stage overrides');
+  for (const stage of ['build', 'production-deps', 'runtime']) {
+    assert.match(dockerfile, new RegExp('^FROM crypto-base AS ' + stage + '
+
+
+test('private YouTube page scripts are copied into the frontend build and shipped in runtime dist', () => {
+  const page = readFileSync(resolve(root, 'server/social-media/youtube-private-upload.mjs'), 'utf8');
+  const dockerfile = readFileSync(resolve(root, 'Dockerfile'), 'utf8');
+  const runtime = dockerfile.slice(dockerfile.lastIndexOf('\nFROM '));
+  const build = dockerfile.slice(dockerfile.indexOf(' AS build\n'), dockerfile.lastIndexOf('\nFROM '));
+  const scripts = [...page.matchAll(/<script src="(\/[^"?#]+\.js)"/g)].map(x => x[1]);
+  assert.ok(scripts.length > 0, 'Inspect the actual server-rendered page asset references');
+  for (const path of scripts) {
+    const source = 'public' + path;
+    assert.ok(existsSync(resolve(root, source)));
+    assert.equal(reachable(source), true);
+    assert.ok(build.split(/\r?\n/).some(line => line.startsWith('COPY ') && line.split(/\s+/).slice(1,-1).includes(source) && line.trim().endsWith('./' + source)),
+      'The page script must be copied into Vite publicDir, not merely allowed in Docker context: ' + source);
+  }
+  assert.match(runtime, /COPY --from=build \/app\/dist \.\/dist/);
+});
+, 'm'),
+      'Stage must inherit the patched shared base: ' + stage);
+  }
+  assert.doesNotMatch(dockerfile, /(?:^|\\s)(?:https?:\\/\\/[^\\s]*\\/edge|@edge)(?:\\s|$)/m,
+    'Never mix Alpine Edge into the stable application image');
+  assert.doesNotMatch(dockerfile, /zlib=1\.3\.2-r0/);
+});
+
+test('paused NATS image retains its independent, historical zlib floor', () => {
+  const natsDockerfile = readFileSync(resolve(root, 'deploy/Dockerfile.nats'), 'utf8');
   assert.match(
     natsDockerfile,
     /apk add --no-cache[^\n]*['"]zlib>=1\.3\.2-r1['"]/,
-    'NATS image must install zlib >= 1.3.2-r1 for CVE-2026-85091',
+    'No NATS dependency update or reactivation is part of this application CVE fix',
   );
-  assert.doesNotMatch(dockerfile, /zlib=1\.3\.2-r0/);
   assert.doesNotMatch(natsDockerfile, /zlib=1\.3\.2-r0/);
 });
 
