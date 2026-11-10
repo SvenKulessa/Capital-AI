@@ -20,6 +20,14 @@ test('Instagram uses existing campaign, CADS and Social Package contracts', () =
   assert.deepEqual(INSTAGRAM_PILOT_PACKAGE.approvals, []);
   assert.deepEqual(INSTAGRAM_PILOT_PACKAGE.deliveries, []);
 });
+test('SVG sourceSha points to artwork introduced by PR #625, not the old baseline', () => {
+  assert.equal(INSTAGRAM_PILOT_SOURCE_SHA, '3c26d10db4675ac95d036943e9c25f3f100d442e');
+  assert.equal(INSTAGRAM_PILOT_CAMPAIGN.sourceSha, INSTAGRAM_PILOT_SOURCE_SHA);
+  assert.ok(INSTAGRAM_PILOT_CAMPAIGN.sourceUrls.some(url => url.includes('/blob/'+INSTAGRAM_PILOT_SOURCE_SHA+'/')));
+  assert.ok(INSTAGRAM_PILOT_PACKAGE.assets.every(asset => asset.sourceSha === INSTAGRAM_PILOT_SOURCE_SHA));
+  assert.deepEqual(INSTAGRAM_PILOT_PACKAGE.approvals, []);
+});
+
 test('SVG byte integrity, accessibility and dimensions are checked', () => {
   assert.equal(INSTAGRAM_PILOT_SLIDES.length, 3);
   for (const slide of INSTAGRAM_PILOT_SLIDES) {
