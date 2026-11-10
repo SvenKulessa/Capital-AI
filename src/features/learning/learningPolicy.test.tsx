@@ -17,7 +17,8 @@ import {VocabularyFlashcards, advanceVocabularyDeck, rescheduleMissedVocabulary,
 import {VocabularyCard,VOCABULARY_CATEGORY_COLORS} from './VocabularyCard';
 import {chartQuestion} from './ChartRecognitionQuiz';
 import {ChartLessonGraphic} from './ChartLessonGraphic';
-import {LearningVideos, visibleLearningVideos, type LearningVideo} from './LearningVideos';
+import {LearningVideos, LEARNING_VIDEOS, visibleLearningVideos, type LearningVideo} from './LearningVideos';
+import { EXPECTED_YOUTUBE_CHANNEL_ID } from '../../../shared/seo-video.mjs';
 
 test('course CTA opens a dedicated inquiry without relabelling generic support', () => {
   assert.equal(LEARNING_NEXT_STEPS.find(step => step.label === 'Kursanfrage stellen')?.href,
@@ -63,14 +64,43 @@ test('public lesson content is rendered with exact server-source text and real c
   assert.equal(0.5 * 0.8 + 0.3 * 0.4 + 0.2 * 0.6, 0.64);
   assert.equal(Math.sqrt((1 + 0 + 1) / (3 - 1)), 1);
 });
-test('free video previews remain fixed per category before category filtering',()=>{
- const videos: LearningVideo[] = ['Architektur','Fintech Deepdive','Social'].flatMap(category => [1,2].map(n => ({id:`${category}-${n}`,category:category as LearningVideo['category'],title:`Video ${n}`,youtubeId:'abcdefghijk'})));
- assert.deepEqual(visibleLearningVideos(videos,false).map(video=>video.id),['Architektur-1','Fintech Deepdive-1','Social-1']);
- assert.equal(visibleLearningVideos(videos,true).length,6);
- assert.equal(visibleLearningVideos([{...videos[0],youtubeId:'invalid'}],true).length,0);
+const publicVideoFixture: LearningVideo = {
+  id: 'fixture-video', category: 'Fintech Deepdive', title: 'Synthetic public preview fixture',
+  youtubeId: 'abcdefghijk', externalYouTubeId: 'abcdefghijk',
+  providerChannelId: EXPECTED_YOUTUBE_CHANNEL_ID,
+  providerReadbackVerified: true, processingStatus: 'SUCCEEDED', embeddable: true,
+  assetSha256: 'a'.repeat(64), providerEvidenceRef: 'evidence://mock-provider-readback',
+  publicationState: 'PUBLISHED', visibility: 'PUBLIC', licenseState: 'VERIFIED',
+  editorialApproval: 'APPROVED', searchEligible: true, isFreePreview: true,
+  description: 'Synthetic learning-video fixture solely for regression testing.',
+  thumbnailUrl: 'https://capital-ai.online/mock-preview.jpg',
+  uploadDate: '2026-10-11T10:00:00+02:00', rightsEvidenceRef: 'evidence://mock-rights',
+};
+test('only public, verified, free video previews appear once per category',()=>{
+  const videos: LearningVideo[] = ['Architektur','Fintech Deepdive','Social'].flatMap((category,index) =>
+    [1,2].map(n => {
+      const youtubeId = `abcdefghi${index + 1}${n}`;
+      return {...publicVideoFixture, id:`${category}-${n}`, category:category as LearningVideo['category'],
+        youtubeId, externalYouTubeId: youtubeId};
+    }));
+  assert.deepEqual(visibleLearningVideos(videos).map(video=>video.id),
+    ['Architektur-1','Fintech Deepdive-1','Social-1']);
+  assert.deepEqual(visibleLearningVideos([...videos, videos[0]]).map(video=>video.id),
+    ['Architektur-1','Fintech Deepdive-1','Social-1']);
+});
+test('release manifest approval, Quant-Pro entitlement and a syntactic ID never authorize a video', () => {
+  const draft = {...publicVideoFixture, publicationState:'NOT_PUBLISHED', licenseState:'REVIEW_REQUIRED',
+    providerReadbackVerified:false, processingStatus:'NOT_UPLOADED'};
+  assert.deepEqual(visibleLearningVideos([draft]), []);
+  for (const invalid of [
+    {youtubeId:'invalid'}, {externalYouTubeId:'mismatched1'}, {providerReadbackVerified:false},
+    {licenseState:'REVIEW_REQUIRED'}, {visibility:'UNLISTED'}, {isFreePreview:false},
+    {processingStatus:'PROCESSING'}, {embeddable:false}, {assetSha256:'invalid'}
+  ]) assert.deepEqual(visibleLearningVideos([{...publicVideoFixture,...invalid}]), [], JSON.stringify(invalid));
+  assert.deepEqual(LEARNING_VIDEOS, []);
 });
 test('no unlicensed videos are marketed as available and public learning CTA stays reachable', () => {
-  const html = renderToStaticMarkup(<LearningVideos entitled={false} />);
+  const html = renderToStaticMarkup(<LearningVideos />);
   assert.match(html, /Noch keine veröffentlichten Lernvideos/);
   assert.match(html, /href="\/learning#learning-offer"/);
   assert.match(html, /href="https:\/\/youtube.com\/@capital-ai.online"/);
