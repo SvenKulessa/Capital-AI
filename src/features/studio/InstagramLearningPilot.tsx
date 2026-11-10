@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { INSTAGRAM_PILOT_CAPTION, INSTAGRAM_PILOT_SLIDES,
-  INSTAGRAM_PILOT_PACKAGE, INSTAGRAM_PILOT_STATUS } from '../../data/instagramLearningPilot.ts';
+  INSTAGRAM_PILOT_PACKAGE, INSTAGRAM_PILOT_STATUS, INSTAGRAM_PILOT_TRACKING_URL } from '../../data/instagramLearningPilot.ts';
 
 async function downloadPng(path: string, filename: string): Promise<void> {
   if (!INSTAGRAM_PILOT_SLIDES.some(slide => slide.path === path)) throw Error('UNKNOWN_DRAFT_ASSET');
@@ -28,6 +28,17 @@ async function downloadPng(path: string, filename: string): Promise<void> {
 export function InstagramLearningPilot(): React.ReactElement {
   const [active, setActive] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [linkCopied, setLinkCopied] = useState(false);
+  async function copyProfileLink() {
+    try {
+      if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) throw Error('CLIPBOARD_UNAVAILABLE');
+      await navigator.clipboard.writeText(INSTAGRAM_PILOT_TRACKING_URL);
+      setLinkCopied(true); setError('');
+    } catch {
+      setLinkCopied(false);
+      setError('Automatisches Kopieren nicht verfuegbar. Link im Eingabefeld markieren und manuell kopieren.');
+    }
+  }
   async function download(path: string, filename: string) {
     setActive(path); setError('');
     try { await downloadPng(path, filename); }
@@ -58,6 +69,17 @@ export function InstagramLearningPilot(): React.ReactElement {
       </figure>)}
     </div>
     {error && <p role="alert" className="mt-3 text-sm text-rose-200">{error}</p>}
+    <div className="mt-5 rounded-xl border border-cyan-400/20 p-3">
+      <label htmlFor="studio-instagram-campaign-link" className="block text-sm font-semibold">Kampagnenlink fuer das Instagram-Profil (nur Entwurf)</label>
+      <input id="studio-instagram-campaign-link" readOnly type="text" value={INSTAGRAM_PILOT_TRACKING_URL}
+        onFocus={event => event.currentTarget.select()}
+        className="mt-2 min-h-11 w-full rounded border border-white/20 bg-slate-950 p-3 text-xs text-white"/>
+      <button type="button" onClick={() => { void copyProfileLink(); }}
+        className="mt-2 min-h-11 rounded border border-cyan-400/40 px-4 py-2 text-sm text-cyan-100">Profil-Link kopieren</button>
+      <p role="status" aria-live="polite" className="mt-2 text-xs text-slate-300">
+        {linkCopied ? 'Kampagnenlink kopiert.' : 'Keine automatische Profil-Aenderung; anonymisierte Kampagnenmessung nur nach Analytics-Einwilligung.'}
+      </p>
+    </div>
     <label htmlFor="studio-instagram-caption" className="mt-5 block text-sm font-semibold">Caption-Entwurf</label>
     <textarea id="studio-instagram-caption" readOnly rows={10} value={INSTAGRAM_PILOT_CAPTION}
       className="mt-2 w-full rounded border border-white/20 bg-slate-950 p-3 text-sm text-white"/>

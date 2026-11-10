@@ -2,13 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { saveCookieConsent } from '../privacy/cookieConsentV3';
 import { PRIVACY_NOTICE_VERSION } from '../../shared/legal-identity.mjs';
+import { buildInstagramLearningTrackingUrl } from '../contracts/instagramCampaignTracking.ts';
 import { startConsentedAnalytics, sendPageView, trackReceivedLearningInquiry, trackVerifiedLearningPurchase, CONSENT_CHANGED_EVENT } from './consentedAnalytics';
 
 test('basic consent mode loads only after opt-in, sanitizes public events and revokes without further events', async () => {
   const oldWindow = globalThis.window, oldDocument = globalThis.document, oldFetch = globalThis.fetch;
   const listeners = new Map<string, Function>();let stored: string | null = null, fetches = 0, scripts = 0, removed = 0, reloads = 0;
   const writes: string[] = [];
-  const w: any = { location: { pathname: '/learning', reload() { reloads++; } },
+  const w: any = { location: { origin: 'https://capital-ai.online', pathname: '/learning', search: new URL(buildInstagramLearningTrackingUrl()).search, reload() { reloads++; } },
     addEventListener(name: string, callback: Function) { listeners.set(name, callback); },
     localStorage: { getItem: () => stored, removeItem() { stored = null; } } };
   globalThis.window = w;
@@ -29,6 +30,16 @@ test('basic consent mode loads only after opt-in, sanitizes public events and re
     sendPageView('/learning?email=private@example.test#private');sendPageView('/blog?token=private-token');
     const receipt = '5cf37f93-3eaf-4d6d-9c4c-4247d05a7d72';trackReceivedLearningInquiry(receipt);trackReceivedLearningInquiry(receipt);
     const events = commands().filter((c: any[]) => c[0] === 'event');
+    const campaignEvents = events.filter((c: any[]) => c[1] === 'campaign_landing');
+    assert.equal(campaignEvents.length, 1, 'only consented, allowlisted landing should be measured');
+    assert.equal(campaignEvents[0][2].campaign_source, 'instagram');
+    assert.equal(campaignEvents[0][2].campaign_medium, 'organic_social');
+    assert.equal(campaignEvents[0][2].page_location, 'https://capital-ai.online/learning');
+    assert.equal(campaignEvents[0][2].page_referrer, '');
+    w.location.search += '&fbclid=opaque&email=private@example.test';
+    sendPageView('/learning');
+    assert.equal(commands().filter((c: any[]) => c[1] === 'campaign_landing').length, 1);
+    assert.doesNotMatch(JSON.stringify(campaignEvents), /fbclid|private@example|opaque/);
     assert.equal(events.filter((c: any[]) => c[1] === 'generate_lead').length, 1);
     assert.equal(events.filter((c: any[]) => c[1] === 'page_view').length, 2);
     assert.equal(events.find((c: any[]) => c[1] === 'page_view')[2].page_referrer, 'https://www.google.de/');
