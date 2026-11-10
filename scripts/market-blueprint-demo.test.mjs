@@ -6,6 +6,8 @@ import {
   computeBlueprintDemoIndex,
 } from '../src/features/home/marketBlueprintDemo.ts';
 import { didSyntheticThresholdCross } from '../src/features/home/marketBlueprintRules.ts';
+import { DATA_CONCEPTS, STUDIO_BLUEPRINTS } from '../src/data/studioData.ts';
+import { buildPublicBlueprintShareUrl, buildPublicBlueprintSocialDraft, readPublicBlueprintShareId } from '../src/contracts/publicBlueprintShare.ts';
 
 test('public blueprint portfolio retains four distinct, explicitly non-live products', () => {
   assert.deepEqual(MARKET_BLUEPRINTS.map(item => item.id), ['ingestion', 'evidence', 'scoring', 'alerts']);
@@ -120,4 +122,110 @@ test('Founder sponsorship and investor relations remain outside pricing and owne
   assert.match(form, /\/api\/public\/founder-inquiry/);
   assert.match(form, /privacyAcknowledged/);
   assert.doesNotMatch(form, /(?:ga4|gtag|trackEvent|localStorage|sessionStorage|stripe\.com)/i);
+});
+
+test('public blueprint links are allowlisted and preserve the selected catalog concept', () => {
+  assert.equal(STUDIO_BLUEPRINTS.length, 7);
+  for (const item of STUDIO_BLUEPRINTS) {
+    const url = buildPublicBlueprintShareUrl(item.id);
+    assert.ok(url);
+    const parsed = new URL(url);
+    assert.equal(parsed.origin, 'https://capital-ai.online');
+    assert.equal(parsed.pathname, '/marketscreener/dokumentation');
+    assert.equal(parsed.search, '');
+    assert.equal(parsed.hash, '#share=' + item.id);
+    assert.equal(readPublicBlueprintShareId(parsed.hash), item.id);
+  }
+});
+
+test('untrusted blueprint fragment, private context, credentials and extra query values fail closed', () => {
+  for (const invalid of [
+    null, undefined, '', 'PRIVATE_KEY', 'AUTHORITY_PLANE&token=secret',
+    '../profile', 'AUTHORITY_PLANE?apiKey=secret', 'authority_plane',
+  ]) assert.equal(buildPublicBlueprintShareUrl(invalid), null);
+
+  for (const invalid of [
+    null, undefined, '', '#share=', '#share=UNKNOWN', '#share=../profile',
+    '#share=AUTHORITY_PLANE&token=secret', '#share=AUTHORITY_PLANE%2Fprofile',
+    '#share=AUTHORITY_PLANE?utm_source=x', '#share=authority_plane',
+    '#share=AUTHORITY_PLANE#share=HYBRID',
+  ]) assert.equal(readPublicBlueprintShareId(invalid), null);
+
+  const documentation = readFileSync(new URL('../src/features/documentation/BlueprintDocumentationPage.tsx', import.meta.url), 'utf8');
+  assert.match(documentation, /readPublicBlueprintShareId\(/);
+  assert.match(documentation, /sharePublicBlueprint\(/);
+  assert.match(documentation, /Konzeptionellen Blueprint teilen/);
+  assert.match(documentation, /aria-live="polite"/);
+  assert.match(documentation, /clipboard\.writeText\(url\)/);
+  assert.doesNotMatch(documentation, /\/api\/social-media\/[^"']*publish/);
+});
+
+test('public architecture catalog distinguishes design assumptions from licensed performance and regulatory evidence', () => {
+  assert.equal(DATA_CONCEPTS.length, 16);
+  assert.equal(STUDIO_BLUEPRINTS.length, 7);
+  const publicClaims = [
+    ...DATA_CONCEPTS.flatMap(item => [item.details, item.bafinCompliance, item.costImpact]),
+    ...STUDIO_BLUEPRINTS.flatMap(item => [item.description, item.primaryUseCase, item.badge, item.costNote]),
+  ];
+  const disallowed = /BaFin-\s*und\s*MiCA-konforme|BaFin-konforme|garantiert\s+unter|Zero\s+zusätzliche\s+API-Kosten|Vollständige\s+Revisionssicherheit|Eliminiert\s+fatale\s+Fehl-Trades|Fehlerfreie\s+Rekonstruktion|Lückenlose\s+.*Archivierung|Spart\s+(?:bis\s+zu\s+)?\d+%|\b100\s*%\s*reproduzierbare|SLA-Garantien|audit-sicher|Verhindert\s+(?:UI-Stottern|Look-Ahead-Bias)/i;
+  for (const claim of publicClaims) {
+    assert.doesNotMatch(claim, disallowed, 'unverified product/regulatory claim: ' + claim);
+  }
+  assert.ok(STUDIO_BLUEPRINTS.every(item => item.badge !== 'ZERO-DOWNTIME' && item.badge !== 'ZERO-WASTE'));
+  assert.ok(STUDIO_BLUEPRINTS.every(item => !/Free WebSocket Tiers|freien Börsen-Sockets|FRED API Free Tier/i.test(item.costNote)),
+    'external provider free-tier availability does not imply commercial or redistribution rights');
+  const authority = STUDIO_BLUEPRINTS.find(item => item.id === 'AUTHORITY_PLANE');
+  assert.match(authority.description, /regulatorische Konformität nicht nachgewiesen/);
+  assert.match(authority.primaryUseCase, /Compliance-Prüfung offen/);
+  const studioData = readFileSync(new URL('../src/data/studioData.ts', import.meta.url), 'utf8');
+  assert.match(studioData, /keine verifizierten Ist-Kosten/);
+  assert.match(studioData, /kein nachgewiesener Handelsschutz/);
+  assert.match(studioData, /keine testierte Revisionssicherheit/);
+  const studioUi = readFileSync(new URL('../src/features/studio/StudioPage.tsx', import.meta.url), 'utf8');
+  assert.match(studioUi, /ARCHITEKTUR-ENTWÜRFE/);
+  assert.match(studioUi, /Keine BaFin-Zertifizierung/);
+  assert.match(studioUi, /Latenz · nicht gemessenes Entwurfsziel/);
+  assert.doesNotMatch(studioUi, /BaFin-konforme|BaFin Compliance:|Latenz-SLA|VOLLSTÄNDIGE ARCHITEKTUR-SPEZIFIKATION/i);
+  // Cover hardcoded Studio copy as well as catalog data, not just schema fields.
+  assert.match(studioUi, /SYNTHETISCHES BENCHMARK-LAB/);
+  assert.match(studioUi, /Stresstest nicht verfügbar \(Demo\)/);
+  assert.match(studioUi, /NATS bleibt deaktiviert/);
+  assert.match(studioUi, /keine echten Benchmarks/);
+  assert.match(studioUi, /Modell-TCO|TCO-Planwert/);
+  assert.doesNotMatch(studioUi, /Spart\s+\d+%|Low-Budget Garantie|100% Reproduzierbarkeit|AP-002 Compliant|WORM Compliant|Zero-Risk Regression Verification|Zero dropped frames|28 ms \(Prod\)|\bBaFin Audit\b|Budget-konform \(&lt;35€\)/i);
+  assert.doesNotMatch(studioUi, /onClick=\{runStressTest\}/, 'inert stress test must not be clickable');
+});
+
+
+test('X and LinkedIn Blueprint drafts are finite allowlisted public-copy text, never a publish action', () => {
+  const allowed = new Set(STUDIO_BLUEPRINTS.map(item => item.id));
+  for (const blueprint of STUDIO_BLUEPRINTS) {
+    for (const channel of ['X', 'LINKEDIN']) {
+      const draft = buildPublicBlueprintSocialDraft(blueprint.id, channel);
+      assert.equal(typeof draft, 'string');
+      assert.ok(draft.includes(blueprint.name), 'title preserved');
+      assert.ok(draft.includes(buildPublicBlueprintShareUrl(blueprint.id)), 'canonical URL preserved');
+      assert.ok(draft.length <= (channel === 'X' ? 280 : 1200), 'full disclaimer must fit');
+      assert.doesNotMatch(draft, /https:\/\/(?!capital-ai\.online)/);
+      assert.doesNotMatch(draft, /(?:secret|token|apiKey|entitlement|private=)/i);
+      assert.match(draft, /Keine/);
+    }
+    assert.equal(allowed.has(blueprint.id), true);
+  }
+  for (const id of [null, undefined, '', 'UNKNOWN', '../profile', 'TIER_1_4_LIVE?token=secret']) {
+    assert.equal(buildPublicBlueprintSocialDraft(id, 'X'), null);
+    assert.equal(buildPublicBlueprintSocialDraft(id, 'LINKEDIN'), null);
+  }
+  for (const channel of [null, undefined, '', 'INSTAGRAM', 'X&post=true', 'x']) {
+    assert.equal(buildPublicBlueprintSocialDraft(STUDIO_BLUEPRINTS[0].id, channel), null);
+  }
+
+  const ui = readFileSync(new URL('../src/features/documentation/BlueprintDocumentationPage.tsx', import.meta.url), 'utf8');
+  assert.match(ui, /copyPublicSocialDraft\('X'\)/);
+  assert.match(ui, /copyPublicSocialDraft\('LINKEDIN'\)/);
+  assert.match(ui, /clipboard\.writeText\(draft\)/);
+  assert.match(ui, /socialDraftFallback/);
+  assert.match(ui, /aria-live="polite"/);
+  assert.match(ui, /Keine Freigabe oder Veröffentlichung/);
+  assert.doesNotMatch(ui, /\/api\/social-media\/[^"'\\s]*publish/);
 });

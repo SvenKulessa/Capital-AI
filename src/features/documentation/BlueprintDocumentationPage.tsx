@@ -9,6 +9,7 @@ import {
   Layers3,
   Presentation,
   Search,
+  Share2,
   ShieldCheck,
   ShoppingBag,
 } from 'lucide-react';
@@ -16,6 +17,7 @@ import { STUDIO_BLUEPRINTS } from '../../data/studioData';
 import { BLUEPRINT_EVIDENCE_CONTRACTS } from '../../data/blueprintEvidenceContracts';
 
 import { BLUEPRINT_DETAILS, VERIFIED_COMMERCE_STATE } from './blueprintDocumentationData';
+import { buildPublicBlueprintShareUrl, buildPublicBlueprintSocialDraft, readPublicBlueprintShareId, type PublicBlueprintDraftChannel } from '../../contracts/publicBlueprintShare';
 import { ByokArchitectureDiagram, SocialMediaArchitectureDiagram } from './ArchitectureGraphics';
 import { ScreenerBlueprintYamlPreview } from './ScreenerBlueprintYamlPreview';
 import { ScreenerBlueprintAudienceSection } from './ScreenerBlueprintAudienceSection';
@@ -43,7 +45,11 @@ function SectionList({ title, items }: { title: string; items: string[] }) {
 
 export const BlueprintDocumentationPage: React.FC<BlueprintDocumentationPageProps> = ({ onNavigate }) => {
   const [query, setQuery] = useState('');
-  const [selectedId, setSelectedId] = useState(STUDIO_BLUEPRINTS[0]?.id ?? 'TIER_1_4_LIVE');
+  const [selectedId, setSelectedId] = useState(() =>
+    readPublicBlueprintShareId(typeof window === 'undefined' ? '' : window.location.hash)
+    ?? STUDIO_BLUEPRINTS[0]?.id ?? 'TIER_1_4_LIVE');
+  const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'dialog' | 'unavailable' | 'draft-copied' | 'draft-unavailable'>('idle');
+  const [socialDraftFallback, setSocialDraftFallback] = useState<string | null>(null);
   const [privateEvidenceState, setPrivateEvidenceState] = useState<'idle' | 'checking' | 'verified-context' | 'unavailable'>('idle');
 
   const filteredBlueprints = useMemo(() => {
@@ -80,6 +86,58 @@ export const BlueprintDocumentationPage: React.FC<BlueprintDocumentationPageProp
     } catch {
       setPrivateEvidenceState('unavailable');
     }
+  };
+
+  const sharePublicBlueprint = async () => {
+    const url = buildPublicBlueprintShareUrl(selected?.id);
+    if (!url || typeof navigator === 'undefined') {
+      setShareStatus('unavailable');
+      return;
+    }
+    // Browser-native sharing is user-initiated only. No provider/API post is sent.
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({
+          title: 'CAPITAL-AI Blueprint-Dokumentation',
+          text: 'Öffentliches Architekturkonzept, keine Live-Daten oder Produktfreigabe.',
+          url,
+        });
+        setShareStatus('dialog');
+        return;
+      } catch (error) {
+        if ((error as Error)?.name === 'AbortError') {
+          setShareStatus('idle');
+          return;
+        }
+      }
+    }
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error('clipboard_unavailable');
+      await navigator.clipboard.writeText(url);
+      setShareStatus('copied');
+    } catch {
+      setShareStatus('unavailable');
+    }
+  };
+
+  const copyPublicSocialDraft = async (channel: PublicBlueprintDraftChannel) => {
+    const draft = buildPublicBlueprintSocialDraft(selected?.id, channel);
+    if (!draft) {
+      setShareStatus('unavailable');
+      setSocialDraftFallback(null);
+      return;
+    }
+    // Explicit user interaction. The clipboard is the only write; no API/provider post.
+    if (typeof navigator !== 'undefined' && typeof navigator.clipboard?.writeText === 'function') {
+      try {
+        await navigator.clipboard.writeText(draft);
+        setSocialDraftFallback(null);
+        setShareStatus('draft-copied');
+        return;
+      } catch { /* Insecure contexts or denied permissions use selectable fallback. */ }
+    }
+    setSocialDraftFallback(draft);
+    setShareStatus('draft-unavailable');
   };
 
   return (
@@ -136,7 +194,7 @@ export const BlueprintDocumentationPage: React.FC<BlueprintDocumentationPageProp
             </label>
             <div className="space-y-2">
               {filteredBlueprints.map((blueprint) => (
-                <button key={blueprint.id} type="button" onClick={() => setSelectedId(blueprint.id)} className={`w-full rounded-2xl border p-3 text-left transition ${selected?.id === blueprint.id ? 'border-amber-400/50 bg-amber-400/10' : 'border-slate-800 bg-[#071127]/80 hover:border-slate-700'}`}>
+                <button key={blueprint.id} type="button" onClick={() => { setSelectedId(blueprint.id); setShareStatus('idle'); setSocialDraftFallback(null); }} className={`w-full rounded-2xl border p-3 text-left transition ${selected?.id === blueprint.id ? 'border-amber-400/50 bg-amber-400/10' : 'border-slate-800 bg-[#071127]/80 hover:border-slate-700'}`}>
                   <div className="text-[10px] font-mono text-amber-300">{blueprint.badge}</div>
                   <div className="mt-1 text-sm font-bold text-white">{blueprint.name}</div>
                   <div className="mt-1 text-xs text-slate-500">{blueprint.category}</div>
@@ -225,7 +283,61 @@ export const BlueprintDocumentationPage: React.FC<BlueprintDocumentationPageProp
                     >
                       <FileText className="h-4 w-4" /> Blueprint-Datei gesperrt
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => void sharePublicBlueprint()}
+                      className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-amber-400/40 bg-amber-400/10 px-4 text-sm font-bold text-amber-100 hover:bg-amber-400/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
+                      aria-label="Öffentlichen Blueprint teilen"
+                    >
+                      <Share2 className="h-4 w-4" /> Konzeptionellen Blueprint teilen
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void copyPublicSocialDraft('X')}
+                      className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-cyan-400/40 bg-cyan-400/10 px-4 text-sm font-bold text-cyan-100 hover:bg-cyan-400/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                      aria-label="X-Textentwurf für öffentliches Blueprint-Konzept kopieren"
+                    >
+                      <FileText className="h-4 w-4" /> X-Entwurf kopieren
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void copyPublicSocialDraft('LINKEDIN')}
+                      className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-cyan-400/40 bg-cyan-400/10 px-4 text-sm font-bold text-cyan-100 hover:bg-cyan-400/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                      aria-label="LinkedIn-Textentwurf für öffentliches Blueprint-Konzept kopieren"
+                    >
+                      <FileText className="h-4 w-4" /> LinkedIn-Entwurf kopieren
+                    </button>
                     <a href="/studio?tab=blueprints" onClick={(event) => { event.preventDefault(); onNavigate?.('/studio?tab=blueprints'); }} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-4 text-sm font-bold text-cyan-200 hover:bg-cyan-400/15"><Layers3 className="h-4 w-4" /> Blueprint im Studio</a>
+                  </div>
+                  <div className="mt-2 text-xs text-slate-400" role="status" aria-live="polite">
+                    {shareStatus === 'dialog' && 'Teilen-Dialog abgeschlossen; keine Veröffentlichung durch CAPITAL-AI bestätigt.'}
+                    {shareStatus === 'copied' && 'Öffentlicher Konzept-Link kopiert; kein Beitrag veröffentlicht.'}
+                    {shareStatus === 'draft-copied' && 'Öffentlicher Social-Textentwurf kopiert. Keine Freigabe oder Veröffentlichung durch CAPITAL-AI.'}
+                    {shareStatus === 'draft-unavailable' && socialDraftFallback && (
+                      <label className="block max-w-xl">
+                        Öffentlichen Entwurf manuell auswählen:
+                        <textarea
+                          readOnly
+                          aria-label="Öffentlicher Social-Textentwurf"
+                          value={socialDraftFallback}
+                          onFocus={(event) => event.currentTarget.select()}
+                          rows={5}
+                          className="mt-1 block w-full rounded-lg border border-slate-600 bg-slate-900 p-2 text-sm text-white"
+                        />
+                      </label>
+                    )}
+                    {shareStatus === 'unavailable' && (
+                      <label className="block max-w-lg">
+                        Link manuell kopieren:
+                        <input
+                          readOnly
+                          aria-label="Öffentlicher Blueprint-Link"
+                          value={buildPublicBlueprintShareUrl(selected.id) ?? ''}
+                          onFocus={(event) => event.currentTarget.select()}
+                          className="mt-1 block w-full rounded-lg border border-slate-600 bg-slate-900 p-2 text-sm text-white"
+                        />
+                      </label>
+                    )}
                   </div>
                 </div>
               </section>

@@ -192,6 +192,7 @@ export const GrowthMarketingChannelSchema = z.enum([
   'PODCAST',
   'EMAIL',
   'X',
+  'INSTAGRAM',
 ]);
 export type GrowthMarketingChannel = z.infer<typeof GrowthMarketingChannelSchema>;
 

@@ -164,33 +164,42 @@ test('chat-to-main delta display remains in owner-only Control Center without ne
   assert.doesNotMatch(deltaPanel, /publish\(/i);
 });
 
-test('revision 2 preserves the original main evidence snapshot without mutating the 105-package historical review', () => {
-  assert.equal(ROADMAP_DELTA_BASELINE.revision, 2);
-  assert.equal(ROADMAP_DELTA_BASELINE.supportingMergePr, 601);
-  assert.equal(ROADMAP_DELTA_HISTORY.length, 1);
-  const historical = ROADMAP_DELTA_HISTORY[0];
-  assert.equal(historical.revision, 1);
-  assert.equal(historical.baselineMainSha, '2736bf98acff8ff19d789f70d44a04f3046f690f');
-  assert.equal(ROADMAP_DELTA_BASELINE.previousBaselineMainSha, historical.baselineMainSha);
-  assert.equal(ROADMAP_DELTA_BASELINE.baselineMainSha, '6c2f695a79a739de4e0770140396b36b72ab26f7');
-  assert.notEqual(ROADMAP_DELTA_BASELINE.baselineMainSha, historical.baselineMainSha);
+test('revision 3 archives original and revision 2 baselines without rewriting historical evidence', () => {
+  assert.equal(ROADMAP_DELTA_BASELINE.revision, 3);
+  assert.equal(ROADMAP_DELTA_BASELINE.supportingMergePr, 629);
+  assert.equal(ROADMAP_DELTA_BASELINE.reviewedDate, '2026-11-10');
+  assert.equal(ROADMAP_DELTA_HISTORY.length, 2);
+  const original = ROADMAP_DELTA_HISTORY[0];
+  const previous = ROADMAP_DELTA_HISTORY[1];
+  assert.equal(original.revision, 1);
+  assert.equal(original.baselineMainSha, '2736bf98acff8ff19d789f70d44a04f3046f690f');
+  assert.equal(previous.revision, 2);
+  assert.equal(previous.baselineMainSha, '6c2f695a79a739de4e0770140396b36b72ab26f7');
+  assert.equal(previous.supportingMergePr, 601);
+  assert.equal(ROADMAP_DELTA_BASELINE.previousBaselineMainSha, previous.baselineMainSha);
+  assert.equal(ROADMAP_DELTA_BASELINE.baselineMainSha, 'a34b4468da7568dc0f33537a4c0f9ef8ff3432e0');
+  assert.equal(ROADMAP_LINEAGE_SOURCE.baselineMainSha, ROADMAP_DELTA_BASELINE.baselineMainSha);
+  assert.equal(ROADMAP_LINEAGE_SOURCE.protectedBlobs[0].sha, '086dce314dc661a0e169667e7ebc1bd8ec3a1631');
+  assert.equal(ROADMAP_LINEAGE_SOURCE.protectedBlobs[1].sha, '1c508ef6e23fc2c189189a9c733894450d88ef00');
   assert.equal(ROADMAP_RECONCILIATION.packageCount, 105);
   assert.equal(WORK_PACKAGES.length, ROADMAP_RECONCILIATION.packageSources.length);
 });
 
 test('old LIVE main snapshot cannot authorize a new code verification after revision bump', () => {
-  const historical = ROADMAP_DELTA_HISTORY[0];
-  const priorReadback = projectRoadmapDelta({
-    repository: historical.repository,
-    sourceSha: historical.baselineMainSha,
-    freshness: 'LIVE',
-  });
-  assert.equal(priorReadback.mainMatched, false);
-  assert.ok(priorReadback.items.every(item => item.code === 'NOT_PROVEN'));
-  assert.equal(priorReadback.items.find(item => item.scopeId === 'BLUEPRINT-COMMERCE')?.rights, 'BLOCKED');
+  for (const historical of ROADMAP_DELTA_HISTORY) {
+    const priorReadback = projectRoadmapDelta({
+      repository: historical.repository,
+      sourceSha: historical.baselineMainSha,
+      freshness: 'LIVE',
+    });
+    assert.equal(priorReadback.mainMatched, false);
+    assert.equal(priorReadback.lineageMatched, false);
+    assert.ok(priorReadback.items.every(item => item.code === 'NOT_PROVEN'));
+    assert.equal(priorReadback.items.find(item => item.scopeId === 'BLUEPRINT-COMMERCE')?.rights, 'BLOCKED');
+  }
 });
 
-test('revision 2 source evidence remains distinct from runtime, CI and publishing rights', () => {
+test('revision 3 source evidence remains distinct from runtime, CI and publishing rights', () => {
   const current = projectRoadmapDelta({
     repository: ROADMAP_DELTA_BASELINE.repository,
     sourceSha: ROADMAP_DELTA_BASELINE.baselineMainSha,
@@ -207,7 +216,8 @@ test('revision 2 source evidence remains distinct from runtime, CI and publishin
 });
 
 
-const LINEAGE_HEAD = '1b95b92f2738b99ca2d06cd7bcd6219ae01e54d8';
+// Mock-only synthetic successor to revision 3; GitHub ancestry is checked independently.
+const LINEAGE_HEAD = 'e'.repeat(40);
 const LINEAGE_TREE = ROADMAP_LINEAGE_SOURCE.protectedBlobs.map(source => ({
   type: 'blob',
   path: source.path,
@@ -222,6 +232,44 @@ const LINEAGE_COMPARE = {
   merge_base_commit: { sha: ROADMAP_LINEAGE_SOURCE.baselineMainSha },
   commits: [{ sha: LINEAGE_HEAD }],
 };
+
+test('revision 2 ancestry or old protected roadmap blob cannot authorize revision 3', () => {
+  const previous = ROADMAP_DELTA_HISTORY[1];
+  const oldBaseProof = assessRoadmapSourceLineage({
+    headSha: LINEAGE_HEAD,
+    compare: {
+      ...LINEAGE_COMPARE,
+      base_commit: { sha: previous.baselineMainSha },
+      merge_base_commit: { sha: previous.baselineMainSha },
+    },
+    tree: LINEAGE_TREE,
+  });
+  assert.equal(oldBaseProof, null, 'historical base is not allowed to renew current proof');
+
+  const oldRoadmapBlob = LINEAGE_TREE.map(item => item.path === 'src/data/roadmapData.ts'
+    ? { ...item, sha: '14e35f1f12175d066e4b07073ce5446d55317081' }
+    : item);
+  assert.equal(assessRoadmapSourceLineage({
+    headSha: LINEAGE_HEAD, compare: LINEAGE_COMPARE, tree: oldRoadmapBlob,
+  }), null, 'historical blob cannot be laundered into new source evidence');
+
+  const malformed = projectRoadmapDelta({
+    repository: ROADMAP_LINEAGE_SOURCE.repository,
+    sourceSha: LINEAGE_HEAD,
+    freshness: 'LIVE',
+    roadmapLineage: {
+      schema: ROADMAP_LINEAGE_SOURCE.schema,
+      status: 'SOURCE_UNCHANGED',
+      repository: ROADMAP_LINEAGE_SOURCE.repository,
+      baselineMainSha: previous.baselineMainSha,
+      observedMainSha: LINEAGE_HEAD,
+      aheadCommits: 1,
+      protectedBlobs: LINEAGE_TREE.map(item => ({ path: item.path, sha: item.sha })),
+    },
+  });
+  assert.equal(malformed.sourceMatched, false);
+  assert.ok(malformed.items.every(item => item.code === 'NOT_PROVEN'));
+});
 
 test('GitHub ancestry and exact pinned blobs preserve code source across an unchanged fast-forward commit', () => {
   assert.equal(ROADMAP_DELTA_BASELINE.baselineMainSha, ROADMAP_LINEAGE_SOURCE.baselineMainSha);
