@@ -12,7 +12,8 @@ Test contract: existing `npm run test:blueprint-demo` now rejects absolute regul
 
 ## Boundaries and remaining work
 
-- Public marketing may describe educational models, not verified live regulator certification, capital protection or promised operating cost.
+- Public marketing may describe educational models, not verified live regulator certification, capital protection or promised operating cost. Studio header and concept details must likewise avoid BaFin-conformity labels, absolute bandwidth savings, audit-safety, replay completeness and implied contractual SLAs.
+- Numeric latency, uptime and budget fields are **unverified design/model targets**, not measured runtime results, actual offers or service-level commitments. The existing Studio labels make that distinction visible.
 - Product and chargeable features remain gated by actual buyer journey, Stripe live receipt, entitlement and rights evidence.
 - Full claim matrix across public HTML/Docs, checkout/pricing and Learning Hub is not complete.
 - Mobile browser, public production readback and deployed commit remain NOT_PROVEN until separately checked.
