@@ -16,11 +16,11 @@
 
 ## Blockers requiring owner action
 
-- Supabase leaked-password protection activation (#560)
+- Native Supabase leaked-password check remains unavailable under the binding Free-Tier constraint (#560); no paid activation is requested.
 - YouTube OAuth / rights / Cloud Operator run (#559)
 - Live dual-user and dual-channel isolation proof (#388)
 - #548 HOLD condition (SQL-before-API cutover)
 
 ## Recommended next step
 
-Submit the PR forms, let Required Checks run, then merge in the order recommended in `MERGE-ORDER-RECOMMENDATION-20261106.md`. No further autonomous code advance is possible on the currently blocked external boundaries.
+Review consolidation: #572–#577 are incorporated into corrected #578; #548 remains a separate SQL-before-API HOLD. Evaluate current-head checks before merge. Missing publication/backup evidence blocks the affected release, while independent code/test fixes remain authorized under AGENTS.md.

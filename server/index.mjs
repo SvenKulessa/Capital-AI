@@ -741,8 +741,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   let unsubscribePubsubProbe = null;
   try { unsubscribePubsubProbe = await infrastructure.subscribeQuotes(() => {}); } catch { /* health remains fail-closed */ }
   const stop = startStreams();
-  const reconnect = process.env.MARKET_BROKER_PAUSED !== 'false' ? null
-    : setInterval(() => { if (infrastructure.status().status !== 'connected') void infrastructure.start(); }, 15000);
+  const reconnect = process.env.MARKET_BROKER_PAUSED === 'false' || infrastructure.cacheOnlyEnabled()
+    ? setInterval(() => { if (infrastructure.shouldRetry()) void infrastructure.start(); }, 15000) : null;
   reconnect?.unref();
   server.listen(Number(process.env.PORT || 10000), '0.0.0.0');
   const shutdown = () => {

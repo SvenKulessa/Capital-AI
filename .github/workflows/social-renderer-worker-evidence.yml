@@ -29,11 +29,14 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: FFmpeg-Dockerfile-Konfigurationsregression
+        run: node --test scripts/social-renderer-dockerfile.test.mjs
+
       - name: Gepinnte Sicherheitswerkzeuge bauen
         run: |
           set -euo pipefail
           docker build --file Dockerfile.security --tag capital-ai-security .
-          test "$(docker run --rm capital-ai-security --version | sed -n 's/^Version: //p' | head -n1)" = "0.76.1"
+          test "$(docker run --rm capital-ai-security --version | sed -n 's/^Version: //p' | head -n1)" = "0.76.2"
           mkdir -p "$RUNNER_TEMP/trivy-cache" social-renderer-evidence
           chmod a+rwx "$RUNNER_TEMP/trivy-cache" social-renderer-evidence
 

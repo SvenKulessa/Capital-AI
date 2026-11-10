@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Copy, Star, Check, BookOpen, X } from 'lucide-react';
 import { vocabularySkillLevel, type VocabularyCategory, type VocabularyTerm } from '../../data/vocabularyData';
 
+const DATA_VOCABULARY_COLORS = {accent:'#5eead4',background:'#0a2525'};
+
 // Category remains a written label; color reinforces rather than replaces it.
 export const VOCABULARY_CATEGORY_COLORS: Record<VocabularyCategory, { accent: string; background: string }> = {
   ALL: {accent:'#fcd34d',background:'#18170f'},
@@ -10,7 +12,8 @@ export const VOCABULARY_CATEGORY_COLORS: Record<VocabularyCategory, { accent: st
   CRYPTO_WEB3: {accent:'#86efac',background:'#0c251d'},
   FUNDAMENTAL: {accent:'#fcd34d',background:'#25200d'},
   MACRO_FOREX: {accent:'#93c5fd',background:'#10213a'},
-  DATA_EVIDENCE: {accent:'#5eead4',background:'#0a2525'},
+  DATA_EVIDENCE: DATA_VOCABULARY_COLORS,
+  FINTECH: DATA_VOCABULARY_COLORS,
   PLATFORM_ARCHITECTURE: {accent:'#a5b4fc',background:'#191b33'},
   SECURITY_COMPLIANCE: {accent:'#fda4af',background:'#30151e'},
   PRODUCT_UX: {accent:'#f9a8d4',background:'#2d1529'},

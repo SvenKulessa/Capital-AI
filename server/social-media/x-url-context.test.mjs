@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Readable } from 'node:stream';
 import { parseXPostUrl } from '../../shared/x-url-context.mjs';
-import { createXUrlContext, normalizeXPostContext } from './x-url-context.mjs';
+import { createXUrlContext, normalizeXPostContext, X_URL_CONTEXT_QUERY } from './x-url-context.mjs';
 
 const URL = 'https://x.com/CapitalAIOnline/status/1234567890123456789';
 const PAGE = 'https://capital-ai.online/api/social-media/x/url-context';
@@ -102,6 +102,13 @@ test('explicit one-post lookup returns sanitized context, never tokens, provider
   assert.equal(f.seen.credentials,1);
   assert.equal(f.seen.calls.length,1);
   assert.equal(f.seen.calls[0].method,'GET');
+  const params = new globalThis.URL(f.seen.calls[0].url).searchParams;
+  assert.deepEqual(Object.fromEntries(params), {
+    'tweet.fields':'author_id,created_at,possibly_sensitive,note_tweet',
+    expansions:'author_id',
+    'user.fields':'username,protected',
+  }, 'no billable media, poll, place or referenced-post expansions');
+  assert.deepEqual(Object.keys(X_URL_CONTEXT_QUERY), ['tweet.fields','expansions','user.fields']);
   assert.doesNotMatch(JSON.stringify(res.value),/PRIVATE_ACCESS_TOKEN|signed-private-jwt/);
 });
 test('invalid sources and spoofed provider responses fail without external mutations',async()=>{

@@ -92,7 +92,7 @@ The GA4 read plane is implemented separately from GSC:
 
 Only `get_account_summaries`, `get_property_details`, `run_realtime_report` and `run_report` are admitted. Account inventories and credentials are not projected. Realtime and seven-day reports are bounded to aggregated `eventName/eventCount` rows.
 
-The server-side read plane is independent of browser measurement. `src/utils/analytics.ts` remains fail-closed, so this change does not load `gtag.js`, set a Measurement ID or emit browser events. Browser GA4 activation requires its own accepted consent implementation and production verification.
+The server-side read plane is independent of browser measurement. Browser collection is implemented in `src/utils/consentedAnalytics.ts`: it loads `gtag.js` only after explicit analytics opt-in and a matching `/api/public/learning-config` measurement ID. Advertising storage/personalization remain denied, URLs are restricted to admitted public routes, and `generate_lead` requires a successfully received Learning enquiry. The public measurement configuration and keyless GA4/GSC audit were verified on 2026-11-06; actual browser ingestion and real enquiries remain NOT_PROVEN. See [the bounded current-main readback](SEO-SKILL-ROUTING-READBACK-20261106.md). Configuration and unit tests do not establish a real conversion.
 
 Render-only configuration:
 

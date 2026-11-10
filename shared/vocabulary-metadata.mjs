@@ -1463,9 +1463,9 @@ export const vocabularyMetadata = [
     "category": "Plattform & Architektur",
     "description": "Vendor-neutrale Betriebs-Telemetrie für Laufzeit-, Request-, Trace-, Outcome- und Dauerinformationen; revisionsrelevante Audit-Evidence bleibt davon getrennt.",
     "thesaurus": [
-      "Operational telemetry",
-      "OperationalTelemetry",
-      "Operational Telemetry"
+      "Telemetrie",
+      "Telemetry",
+      "Betriebs-Telemetrie"
     ]
   },
   {
@@ -3535,7 +3535,7 @@ export const vocabularyMetadata = [
 ];
 
 vocabularyMetadata.push({id:quantLearningDemo.id,path:`/vocabulary/${quantLearningDemo.id}`,term:quantLearningDemo.term,category:quantLearningDemo.categoryLabel,description:quantLearningDemo.shortDefinition,thesaurus:quantLearningDemo.thesaurus});
-vocabularyMetadata.push(...researchedVocabulary.map(term=>({id:term.id,path:`/vocabulary/${term.id}`,term:term.term,category:term.categoryLabel,description:term.shortDefinition,thesaurus:term.thesaurus,sources:term.sources,detailedExplanation:term.detailedExplanation,formulaOrRule:term.formulaOrRule,practicalExample:term.practicalExample,keyTakeaway:term.keyTakeaway})));
+vocabularyMetadata.push(...researchedVocabulary.map(term=>({id:term.id,path:`/vocabulary/${term.id}`,term:term.term,category:term.categoryLabel,description:term.shortDefinition,thesaurus:term.thesaurus,sources:term.sources,searchTags:term.searchTags,level:term.level,detailedExplanation:term.detailedExplanation,formulaOrRule:term.formulaOrRule,practicalExample:term.practicalExample,keyTakeaway:term.keyTakeaway})));
 // One shared source for the public glossary and its indexed SEO projection.
 vocabularyMetadata.push(...ARCHITECTURE_GOVERNANCE_VOCABULARY.map(term => ({
   id: term.id,
@@ -3545,6 +3545,8 @@ vocabularyMetadata.push(...ARCHITECTURE_GOVERNANCE_VOCABULARY.map(term => ({
   description: term.shortDefinition,
   thesaurus: term.thesaurus,
   sources: term.sources,
+  searchTags: term.searchTags,
+  level: term.level,
   detailedExplanation: term.detailedExplanation,
   formulaOrRule: term.formulaOrRule,
   practicalExample: term.practicalExample,

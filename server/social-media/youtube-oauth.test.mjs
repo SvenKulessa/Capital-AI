@@ -6,6 +6,7 @@ import { createSocialYouTubeOAuthStart } from './youtube-oauth-start.mjs';
 import { createSocialYouTubeOAuthExchange, socialYouTubeOAuthConfigured } from './youtube-oauth-exchange.mjs';
 import { createSocialYouTubeAccountStatus } from './youtube-account-status.mjs';
 import { createSocialOAuthCallback } from './oauth-callback.mjs';
+import { SECURITY_HEADERS } from '../security-headers.mjs';
 
 const userId = 'd0bf7f2f-c4d2-4cda-b0a8-0f7bb2723101';
 const key = 'ab'.repeat(32);
@@ -44,6 +45,8 @@ test('YouTube start uses owner session, PKCE, offline consent and routing cookie
   assert.equal(url.searchParams.get('redirect_uri'),redirectUri);
   assert.equal(url.searchParams.get('scope'),scopes.join(' '));
   assert.equal(url.searchParams.get('access_type'),'offline');
+  assert.equal(url.searchParams.get('hl'),null, 'default connection keeps the user language');
+  assert.equal(url.searchParams.get('prompt'),'consent');
   assert.equal(url.searchParams.get('code_challenge_method'),'S256');
   assert.equal(starts[0].channel,'YOUTUBE');
   assert.match(r.headers['Set-Cookie'].at(-1),/HttpOnly; Secure; SameSite=Lax/);
@@ -138,4 +141,86 @@ test('owner must explicitly accept current YouTube policy before OAuth state or 
     assert.equal(r.status,303); assert.equal(r.headers.Location,'/api/social-media/youtube/account/connect');
   }
   assert.equal(starts,0);
+});
+
+test('English consent is explicit and keeps exact scopes, state, cookie and PKCE', async () => {
+  const r=response(); const starts=[];
+  const start=createSocialYouTubeOAuthStart({ env, auth, store:{beginOAuth:async x=>{starts.push(x);return {state};}}});
+  await start.handle(req,r,new URL(`/api/social-media/youtube/auth/start?privacy=${YOUTUBE_POLICY.version}&hl=en`,env.PUBLIC_APP_ORIGIN),json);
+  const target=new URL(r.headers.Location);
+  assert.equal(target.searchParams.get('hl'),'en'); assert.equal(target.searchParams.get('prompt'),'consent');
+  assert.equal(target.searchParams.get('scope'),scopes.join(' ')); assert.equal(target.searchParams.get('state'),state);
+  assert.equal(starts.length,1); assert.match(r.headers['Set-Cookie'].at(-1),/HttpOnly; Secure; SameSite=Lax/);
+});
+test('unsupported, duplicate or injected language parameters do not issue state',async()=>{
+  let calls=0;
+  const start=createSocialYouTubeOAuthStart({env,auth,store:{beginOAuth:async()=>{calls++;return {state};}}});
+  for(const extra of ['hl=de','hl=en&hl=en','hl=en&redirect_uri=https://evil.example','hl=']){
+    const r=response();await start.handle(req,r,new URL(`/api/social-media/youtube/auth/start?privacy=${YOUTUBE_POLICY.version}&${extra}`,env.PUBLIC_APP_ORIGIN),json);
+    assert.equal(r.status,303);assert.equal(r.headers.Location,'/api/social-media/youtube/account/connect');
+  }
+  assert.equal(calls,0);
+});
+test('connection page links English consent and preserves explicit policy acceptance',async()=>{
+  for(const suffix of ['', '?hl=en']){
+    const r=response();let html='';r.end=x=>{html=x;};
+    await createSocialYouTubeAccountStatus({env,auth}).handle(req,r,new URL('/api/social-media/youtube/account/connect'+suffix,env.PUBLIC_APP_ORIGIN),json);
+    assert.equal(r.status,200);assert.match(html,/Record Google consent in English/);
+    assert.match(html,/name="privacy"[^>]*required/);
+    assert.equal(html.includes('type="hidden" name="hl" value="en"'),suffix==='?hl=en');
+  }
+});
+
+test('English connect allows no arbitrary query parameters or non-owner access',async()=>{
+ for(const query of ['?hl=de','?hl=en&hl=en','?hl=en&next=https://evil.example']){
+  const r=response();await createSocialYouTubeAccountStatus({env,auth}).handle(req,r,new URL('/api/social-media/youtube/account/connect'+query,env.PUBLIC_APP_ORIGIN),json);assert.equal(r.status,405);
+ }
+ const r=response();await createSocialYouTubeAccountStatus({env,auth:{...auth,authorizeIamRole:async()=>false}}).handle(req,r,new URL('/api/social-media/youtube/account/connect?hl=en',env.PUBLIC_APP_ORIGIN),json);assert.equal(r.status,403);
+});
+
+test('English owner page translates all app consent copy and preserves language in policy links', async()=>{
+ const r=response();let html='';r.end=x=>{html=x;};
+ await createSocialYouTubeAccountStatus({env,auth}).handle(req,r,new URL('/api/social-media/youtube/account/connect?hl=en',env.PUBLIC_APP_ORIGIN),json);
+ assert.equal(r.headers['Content-Language'],'en');assert.match(html,/<html lang="en">/);
+ for(const text of ['Connect YouTube to CAPITAL AI','I accept the privacy information','Open Google consent in English','Delete connection and stored YouTube data'])assert.ok(html.includes(text));
+ for(const text of ['Wähle bei Google','Ich akzeptiere','Löschung ausführen','YouTube mit CAPITAL AI verbinden'])assert.ok(!html.includes(text));
+ assert.match(html,/Manage YouTube connection as signed-in owner/);assert.match(html,/required/);
+});
+test('rendered English form issues a Google redirect with hl=en and fresh session-bound state',async()=>{
+ const r=response();let html='';r.end=x=>{html=x;};
+ await createSocialYouTubeAccountStatus({env,auth}).handle(req,r,new URL('/api/social-media/youtube/account/connect?hl=en',env.PUBLIC_APP_ORIGIN),json);
+ const fields=[...html.matchAll(/<input[^>]+name="(hl|privacy)"[^>]+value="([^"]+)"/g)];
+ const query=new URLSearchParams(fields.map(m=>[m[1],m[2]]));assert.equal(query.get('hl'),'en');
+ const started=response();await createSocialYouTubeOAuthStart({env,auth,store:{beginOAuth:async()=>({state})}}).handle(req,started,new URL('/api/social-media/youtube/auth/start?'+query,env.PUBLIC_APP_ORIGIN),json);
+ assert.equal(started.status,303);const target=new URL(started.headers.Location);
+ assert.equal(target.hostname,'accounts.google.com');assert.equal(target.searchParams.get('hl'),'en');assert.equal(target.searchParams.get('scope'),scopes.join(' '));
+ // A valid server redirect alone is insufficient: Chromium also checks the
+ // initiating document's form-action policy against the redirect destination.
+ for (const name of ['Content-Security-Policy','Content-Security-Policy-Report-Only']) {
+  const directive=r.headers[name].split('; ').find(x=>x.startsWith('form-action '));
+  assert.equal(directive, "form-action 'self' " + target.origin);
+ }
+});
+
+test('YouTube form allows only the fixed Google origin and keeps other policies unchanged',async()=>{
+ for(const suffix of ['', '?hl=en']){
+  const r=response();Object.assign(r.headers,SECURITY_HEADERS);
+  await createSocialYouTubeAccountStatus({env,auth}).handle(req,r,new URL('/api/social-media/youtube/account/connect'+suffix,env.PUBLIC_APP_ORIGIN),json);
+  assert.equal(r.status,200);
+  for(const name of ['Content-Security-Policy','Content-Security-Policy-Report-Only']){
+   const before=SECURITY_HEADERS[name].split('; '),after=r.headers[name].split('; ');
+   assert.deepEqual(after.filter(x=>!x.startsWith('form-action ')),before.filter(x=>!x.startsWith('form-action ')));
+   assert.deepEqual(after.filter(x=>x.startsWith('form-action ')),["form-action 'self' https://accounts.google.com"]);
+   assert.ok(before.includes("form-action 'self'"));
+  }
+  assert.equal(r.headers['X-Frame-Options'],'DENY');
+ }
+ for(const path of ['/api/social-media/youtube/account/connect?hl=en&next=https://evil.example','/api/social-media/youtube/account/status']){
+  const r=response();Object.assign(r.headers,SECURITY_HEADERS);
+  await createSocialYouTubeAccountStatus({env,auth,fetchImpl:async()=>({ok:true,text:async()=>'[]'})}).handle(req,r,new URL(path,env.PUBLIC_APP_ORIGIN),json);
+  assert.equal(r.headers['Content-Security-Policy'],SECURITY_HEADERS['Content-Security-Policy']);
+ }
+ const denied=response();Object.assign(denied.headers,SECURITY_HEADERS);
+ await createSocialYouTubeAccountStatus({env,auth:{...auth,authorizeIamRole:async()=>false}}).handle(req,denied,new URL('/api/social-media/youtube/account/connect?hl=en',env.PUBLIC_APP_ORIGIN),json);
+ assert.equal(denied.status,403);assert.equal(denied.headers['Content-Security-Policy'],SECURITY_HEADERS['Content-Security-Policy']);
 });

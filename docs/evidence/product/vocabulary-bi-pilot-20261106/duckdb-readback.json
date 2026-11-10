@@ -1,0 +1,37 @@
+{
+  "schema": "CAPITAL_AI_DUCKDB_PILOT@1",
+  "baseMainSha": "dcd41e22b2b6df5e1429dbe35c0d3710842f331a",
+  "scriptSha256": "bae48ca4afedd42b33c1daed9e0bb79ad39e455855c619c25b17a0777ed10769",
+  "engineVersion": "2.0.0",
+  "pythonVersion": "3.12.14",
+  "dataKind": "SYNTHETIC_ONLY",
+  "externalCalls": 0,
+  "constraints": {
+    "threads": 1,
+    "memoryLimit": "128MB",
+    "extensionAutoload": false
+  },
+  "checks": {
+    "parquetRoundTrip": true,
+    "tenantAExpectedRows": true,
+    "tenantBExcludedFromExport": true,
+    "unknownTenantEmpty": true,
+    "sqlInjectionTenantEmpty": true,
+    "missingTenantRejected": true,
+    "csvRoundTrip": true
+  },
+  "inputRows": 6,
+  "exportedTenantEvents": 3,
+  "bulkSample": {
+    "rows": 1000000,
+    "tenantARows": 500000,
+    "parquetBytes": 4189799,
+    "elapsedMs": 76.616,
+    "mode": "SYNTHETIC_LOCAL_SAMPLE_NOT_PRODUCTION_SLA"
+  },
+  "csvSha256": "c6d9952d1c5c09f972c968ee37ac35d3fc4365b4bc1f6c2a98af8b9463977dc7",
+  "elapsedMs": 121.91,
+  "productionAuthIsolation": "NOT_PROVEN",
+  "powerBiDesktopImport": "NOT_PROVEN",
+  "powerBiEmbedded": "NOT_PROVEN"
+}

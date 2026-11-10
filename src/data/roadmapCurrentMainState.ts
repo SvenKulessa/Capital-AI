@@ -481,9 +481,11 @@ export const ROADMAP_CURRENT_STATE_OVERRIDES: Readonly<Record<string, RoadmapRec
     "evidenceRefs": [
       "src/components/LearningPortalPage.tsx",
       "src/data/vocabularyData.ts",
-      "src/data/vocabularyPresentation.ts"
+      "src/data/vocabularyPresentation.ts",
+      "shared/vocabulary-lookup.mjs",
+      "src/data/__tests__/vocabularyLookup.test.ts"
     ],
-    "nextStep": "Learning-Portal-Inhalte und Paid-Vocabulary-Entitlements weiter ausbauen; die bestehende Portal-/Glossar-Oberfläche bleibt als implementierter Basisslice erhalten."
+    "nextStep": "Gemeinsamen Glossar-Lookup und 61 deduplizierte Ergänzungen im Deploy-/Mobile-Readback prüfen; lokale Regressionstests vorhanden. Firecrawl-Selfhosting und Power-BI-Laufzeit bleiben NOT_PROVEN; DuckDB-Pilot nur synthetische Daten, keine produktive Tenant-Freigabe."
   },
   "AP-FE-03": {
     "status": "aktiv",
@@ -505,7 +507,7 @@ export const ROADMAP_CURRENT_STATE_OVERRIDES: Readonly<Record<string, RoadmapRec
       "server/auth-security.mjs",
       "src/components/ControlCenterPage.tsx"
     ],
-    "nextStep": "Implementierte Session-, AAL2- und Owner-IAM-Grenzen auf dem Zielhost mit echten Login-/Role-Readbacks abnehmen; keine Rolle aus Client-Metadaten ableiten."
+    "nextStep": "Supabase bleibt im Free-Tier; vorhandene Session-, AAL2-, Owner-IAM- und Passwortgrenzen prüfen. Native Leaked-Password-Protection ist ohne Upgrade nicht verfügbar und bleibt als offener Befund dokumentiert; keine Rolle aus Client-Metadaten ableiten."
   },
   "AP-FIN-01": {
     "status": "aktiv",
@@ -600,6 +602,14 @@ export const ROADMAP_CURRENT_STATE_OVERRIDES: Readonly<Record<string, RoadmapRec
       "src/data/cadsMarketplaceCapabilities.ts"
     ],
     "nextStep": "Paid Billing/Entitlement Runtime ist implementiert. Der initiale Standalone-Handoff nach capital-ai-online/CADS ist gemergt. Nächstes Ziel: den accepted PR-#220-Delta source-bound ins Org-Repo synchronisieren und danach Organization-App, Verified Publisher, Financial Onboarding, aktuelle GitHub-Paid-Listing-Voraussetzungen, reale USD-Preise/Plan-IDs sowie Install/OAuth/Purchase/Changed/Cancelled/Delete-Smokes schließen."
+  },
+  "CA-PLATFORM-SELF-HEAL": {
+    "evidenceRefs": [
+      "docs/governance/DOMAIN-RELEASE-GOVERNANCE.md",
+      "docs/platform/GOOGLE-CLOUD-OPERATOR-OIDC.md",
+      ".github/workflows/google-cloud-admin.yml"
+    ],
+    "nextStep": "DETECT → CORRELATE → CLASSIFY → REMEDIATE → VERIFY als fail-closed Controller mit Retry-Budget und Escalation implementieren. Arbeitsschritt Google-Administration: Cloud-, Admin-Console- und Workspace-Operator mit eigenen Identitäten über den Federation Pool planen. Je Operator erlaubte API-Operationen, Zielressourcen, Rollen und Scopes festlegen, im Testbereich abnehmen und Rücknahme prüfen. Workspace-Delegation gesondert durch den Super-Admin freigeben lassen."
   },
   "CA-PLATFORM-COMPONENT-INVENTORY": {
     "status": "aktiv",

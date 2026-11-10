@@ -1,6 +1,52 @@
 /** Original public editorial content; shared by the website and its HTTP fallback. */
 export const BLOG_ARTICLES = [
   {
+    "id": "x-api-expansions-kosten",
+    "path": "/blog/x-api-expansions-kosten",
+    "title": "X-API-Expansions: Datenkosten verstehen und Quellen sicher prüfen",
+    "description": "Warum zusätzlich geladene X-API-Objekte ab November 2026 kostenrelevant sind und wie sichere, sparsame Abfragen geplant werden.",
+    "date": "2026-11-06",
+    "image": "/learning/editorial/x-api-kostenbewusst-20261106.svg",
+    "imageAlt": "Schematische Übersicht: ein Post, eine geprüfte Quelle und eine Kostenkontrolle als getrennte Schritte.",
+    "intro": "Eine Datenabfrage ist nicht immer nur eine Datenabfrage. Über sogenannte Expansions können zu einem X-Post weitere Objekte geliefert werden – etwa das Autorenprofil. Ab dem 22. November 2026 sollen auch diese zusätzlich gelieferten Objekte nach dem Pay-Per-Use-Modell berechnet werden. Für verantwortungsvolle Analyse zählt deshalb nicht nur, welche Information verfügbar ist, sondern auch, wofür sie benötigt wird.",
+    "sections": [
+      {
+        "title": "1. Was sind Expansions?",
+        "body": "Eine Post-Abfrage kann beispielsweise eine Autorenkennung enthalten. Eine Expansion ergänzt das zugehörige Benutzerobjekt in derselben API-Antwort. Das ist bequem, weil die Daten zusammen ankommen. Es kann aber zusätzliche nutzungsabhängige Kosten auslösen. Die Preise unterscheiden sich je Ressourcentyp; maßgeblich sind die aktuellen Angaben im X Developer Portal."
+      },
+      {
+        "title": "2. Warum weniger Daten nicht immer sicherer sind",
+        "body": "Manche Felder sind für die Qualität einer Quelle entscheidend. Bei einer manuell angegebenen Post-Adresse kann ein Abgleich von Post-Kennung, Autorenkennung und Benutzername helfen, die Quelle korrekt zuzuordnen. Auch öffentlich oder geschützt ist eine relevante Unterscheidung. Zusätzliche Informationen nur aus Spargründen zu entfernen, ohne die Prüfung anderweitig abzusichern, wäre kein belastbares Qualitätskonzept."
+      },
+      {
+        "title": "3. Kostenbewusst und nachprüfbar planen",
+        "body": "Eine gute Datenstrategie benennt vor dem Abruf genau die benötigten Objekte, begrenzt den Umfang und berücksichtigt mögliche Wiederholungen. Für ein einfaches Rechenbeispiel nennt die veröffentlichte X-Preisliste 0,005 US-Dollar je Post Read und 0,010 US-Dollar je User Read. Ein Post plus ein zusätzlich berechneter Autor könnte damit 0,015 US-Dollar kosten; Deduplizierung, Kontotyp und aktuelle Konditionen können die Rechnung verändern. Das ist ein Beispiel, keine Aussage über den Verbrauch von CAPITAL-AI."
+      },
+      {
+        "title": "4. Vom externen Hinweis zum redaktionellen Inhalt",
+        "body": "Öffentliche Inhalte aus sozialen Netzwerken sind zunächst externe Quellen, keine geprüften Finanzfakten. Ein verantwortlicher Ablauf trennt Auswahl, Quellenprüfung, eigene Einordnung und redaktionelle Freigabe. Automatische Veröffentlichung oder die Übernahme fremder Texte lässt sich aus dem Vorliegen einer URL nicht ableiten. Insbesondere Finanzthemen brauchen verständliche Grenzen, einen Zeitbezug und Angaben zu Datenrechten."
+      },
+      {
+        "title": "5. Lernen statt undurchsichtiger Leistungsversprechen",
+        "body": "CAPITAL-AI erläutert Grundlagen von Datenqualität, Indikatoren und nachvollziehbaren Analysen im Lernbereich. Technische Erweiterungen, Providerrechte, operative Nutzung und echte Reichweitenzahlen dürfen nicht allein aus einem Konzept abgeleitet werden. Wer eine Analyse besser verstehen möchte, beginnt mit Quelle, Datenzeitpunkt, Unsicherheit und der Frage, welche Informationen wirklich erforderlich sind."
+      }
+    ],
+    "sources": [
+      {
+        "label": "X Developer: Pay-per-use-Preise und Credit-Verbrauch",
+        "url": "https://docs.x.com/x-api/getting-started/pricing"
+      },
+      {
+        "label": "X Developer: Post per ID abrufen",
+        "url": "https://docs.x.com/x-api/posts/get-post-by-id"
+      },
+      {
+        "label": "CAPITAL-AI: Kostenlose Lerninhalte und Datenqualität",
+        "url": "https://capital-ai.online/learning"
+      }
+    ]
+  },
+  {
     "id": "barrierefreie-finanzcharts",
     "path": "/blog/barrierefreie-finanzcharts",
     "title": "Barrierefreie Finanzcharts: Vier Informationswege statt nur einer Kurve",
