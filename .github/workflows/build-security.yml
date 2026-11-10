@@ -54,6 +54,7 @@ jobs:
             scripts/reviewdog-public-report.test.mjs \
             scripts/container-evidence-identity.test.mjs \
             scripts/os-source-inventory.test.mjs \
+            scripts/verify-os-source-mirror.test.mjs \
             scripts/registry-manifest-evidence.test.mjs \
             scripts/github-analysis-policy.test.mjs \
             scripts/verify-main-ruleset-origin.test.mjs \
