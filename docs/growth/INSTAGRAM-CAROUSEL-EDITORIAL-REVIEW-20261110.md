@@ -32,3 +32,9 @@ Autorität ausschließlich AGENTS.md / SOLO_MAINTAINER_FLOW@1. Issue-/Review-Sta
 - Rollback: Revert des PRs; kein veröffentlichtes Social-Medium und keine öffentliche Datei müssen entfernt werden, da keine Provider-Anbindung oder Veröffentlichung aktiviert ist.
 
 API-Referenz für den technischen Ablauf: [Meta Instagram Postman Collection](https://www.postman.com/meta/instagram/collection/6yqw8pt/instagram-api).
+
+## Nachtrag – exakte Editorial-Bindung, kein Freigabe-Ersatz
+
+Die technische Vorbereitung verlangt außerdem ein **vertrauenswürdiges, dauerhaftes `loadEditorialReview`-Ergebnis** mit `status=APPROVED`, passender Tenant-/Source-/Content-Identität und einem SHA256-Fingerprint of caption and individually ordered alt text hashes and JPEG hashes. Diese Prüfung autorisiert nichts selbst: Die oben redaktionell geprüften Textentwürfe erzeugen keinen solchen Datensatz. Geänderte Caption, Alt-Texte oder Bildreihenfolge invalidieren den Fingerprint und erzwingen eine neue atomare Gruppenreservierung. Ohne trusted Editor-Review, Rechteverifikation, Account-/Scope-Evidence und bestehenden Approvals bleibt der Adapter fail-closed.
+
+**Build-Evidence:** `instagram-carousel.mjs` und `instagram-carousel.test.mjs` gehören explizit in die bestehende `.dockerignore`-Allowlist und die Build-Stage-COPY-Anweisung. Der Runtime-Stage werden nur die tatsächlich benötigten Servermodule hinzugefügt. Die Negativtests bleiben Teil der bestehenden `provider-publish.test.mjs`-Testverdrahtung, keine neue externe CI-Schicht.
