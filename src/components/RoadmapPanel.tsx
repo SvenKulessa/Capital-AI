@@ -1,5 +1,6 @@
 import React from 'react';
 import { RoadmapDeltaPanel } from './RoadmapDeltaPanel';
+import { EcosystemRoadmapPanel } from './EcosystemRoadmapPanel';
 import type { RoadmapDeltaLineageProof } from '../data/roadmapDeltaReconciliation';
 import { PROJECT_OWNERS, ROADMAP_SNAPSHOT, ROADMAP_STAGES, ROADMAP_STRATEGIC_PRIORITIES, WORK_PACKAGES } from '../data/roadmapData';
 import type { ProjectOwner, RoadmapEvidenceState } from '../data/roadmapData';
@@ -187,6 +188,7 @@ export const RoadmapPanel: React.FC = () => {
         VERIFIED wird nicht aus einem GitHub-HEAD oder einer bloßen Datei-Existenz abgeleitet.</p>
     </div>
     <RoadmapDeltaPanel readback={repositoryStatus} />
+    <EcosystemRoadmapPanel />
     <details className="my-4 rounded-xl border border-slate-700 bg-slate-950/70 p-3" aria-label="Roadmap Statusfilter">
       <summary className="cursor-pointer text-sm font-semibold text-white">
         Status auswählen · {selectedStates.length} von {Object.keys(STATES).length} <span className="text-slate-400">(Mehrfachauswahl)</span>
