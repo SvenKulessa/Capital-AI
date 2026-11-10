@@ -48,11 +48,11 @@ jobs:
         if: github.event_name == 'merge_group'
         shell: bash
         env:
-          MERGE_GROUP_ACTION: \${{ github.event.action }}
-          MERGE_GROUP_HEAD_SHA: \${{ github.event.merge_group.head_sha }}
-          MERGE_GROUP_BASE_SHA: \${{ github.event.merge_group.base_sha }}
-          MERGE_GROUP_HEAD_REF: \${{ github.event.merge_group.head_ref }}
-          MERGE_GROUP_BASE_REF: \${{ github.event.merge_group.base_ref }}
+          MERGE_GROUP_ACTION: ${{ github.event.action }}
+          MERGE_GROUP_HEAD_SHA: ${{ github.event.merge_group.head_sha }}
+          MERGE_GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}
+          MERGE_GROUP_HEAD_REF: ${{ github.event.merge_group.head_ref }}
+          MERGE_GROUP_BASE_REF: ${{ github.event.merge_group.base_ref }}
         run: |
           set -euo pipefail
           # Queued PRs must already pass the unchanged pull_request Domain Governance check.
