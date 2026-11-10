@@ -8,6 +8,8 @@ export const SEO_INDEXING_STATES = Object.freeze({
 });
 
 const routes = [
+  { path: '/blueprints', classification: 'NOINDEX', contentType: 'offer', reason: 'Öffentliches Blueprint-Angebot; Suchindexierung separat prüfen.' },
+  { path: '/checkout/confirmation', classification: 'NOINDEX', contentType: 'confirmation', reason: 'Öffentliche Zahlungsbestätigung ohne Search-Promotion.' },
   ...HUB_ROUTES.map(route => ({path:route.path,classification:'NOINDEX',contentType:'hub-subpage',reason:'Eigenständiger Hub-Abschnitt ohne Search-Promotion.'})),
   ...Object.keys(DOCUMENT_ROUTES).map(path => ({path,classification:'NOINDEX',contentType:'documentation-static',reason:'Technische Dokumentation ohne Search-Promotion.'})),
   { path: '/', classification: 'INDEX', contentType: 'landing', reason: 'Öffentliche Startseite und kanonischer Marken-/Produkteinstieg.' },

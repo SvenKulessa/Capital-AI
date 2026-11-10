@@ -37,8 +37,8 @@ export const PROCESSING_ACTIVITIES: ProcessingActivity[] = [
   },
   {
     id: 'consented-ga4', title: 'Optionale Reichweiten-, Kursanfrage- und Kaufmessung mit GA4', lifecycle: 'conditional',
-    purpose: 'Öffentliche Seitenaufrufe und vom Mailserver angenommene Kursanfragen sowie serverseitig bestätigte Learning-Käufe nach gültiger Analytics-Einwilligung messen.',
-    dataCategories: ['pseudonyme GA4-Cookie-Kennung', 'öffentlicher Seitenpfad ohne Query und Fragment', 'Ereignistyp', 'bestätigter Kaufbetrag und Währung', 'pseudonyme Transaktionskennung (HMAC, keine Stripe- oder Benutzerkennung)', 'beim Google-Abruf übermittelte Verbindungsdaten'],
+    purpose: 'Öffentliche Seitenaufrufe und vom Mailserver angenommene Kursanfragen sowie Produktansichten, gültige Checkout-Starts und serverseitig bestätigte Erstkäufe von Learning, Blueprints und SaaS-Abos nach gültiger Analytics-Einwilligung messen.',
+    dataCategories: ['pseudonyme GA4-Cookie-Kennung', 'öffentlicher Seitenpfad ohne Query und Fragment', 'Ereignistyp und kataloggebundene Produktposition', 'bestätigter Kaufbetrag und Währung', 'pseudonyme Transaktionskennung (HMAC, keine Stripe- oder Benutzerkennung)', 'beim Google-Abruf übermittelte Verbindungsdaten'],
     legalBasis: 'Art. 6 Abs. 1 lit. a DSGVO sowie Einwilligung für optionalen Gerätezugriff nach § 25 Abs. 1 TDDDG.',
     recipients: ['Google als GA4-Anbieter'],
     transfer: 'Google-Verarbeitung kann außerhalb des EWR stattfinden; Verträge und Transfermechanismen richten sich nach der verwendeten Google-Konfiguration.',
@@ -47,7 +47,7 @@ export const PROCESSING_ACTIVITIES: ProcessingActivity[] = [
   },
   {
     id: 'billing', title: 'Bestellungen, Zahlungen und Abonnementverwaltung mit Stripe', lifecycle: 'conditional',
-    purpose: 'Vom angemeldeten Nutzer angeforderte Learning-Käufe oder verfügbare Abonnements abwickeln, den Zahlungsstatus verifizieren, erworbene Zugänge freischalten und berechtigte Abonnements im Kundenportal verwalten.',
+    purpose: 'Vom angemeldeten Nutzer angeforderte Learning- und Blueprint-Käufe oder verfügbare Abonnements abwickeln, den Zahlungsstatus verifizieren, erworbene Zugänge freischalten und berechtigte Abonnements im Kundenportal verwalten.',
     dataCategories: ['Benutzerkennung zur Zuordnung der Bestellung', 'E-Mail-Adresse, soweit für Checkout und Kundenkonto erforderlich', 'ausgewähltes Angebot, Preis, Währung und Vertragsstatus', 'Stripe-Kunden-, Checkout-, Zahlungs- und Abonnementreferenzen', 'Rechnungs- und Zahlungsangaben, die Nutzer direkt bei Stripe eingeben'],
     legalBasis: 'Art. 6 Abs. 1 lit. b DSGVO für Bestellung, Zahlung und Vertragsverwaltung; Art. 6 Abs. 1 lit. c DSGVO für gesetzliche Nachweis- und Aufbewahrungspflichten.',
     recipients: ['Stripe als Zahlungsdienstleister und Anbieter von Checkout und Kundenportal', 'Supabase für kontogebundene Zahlungsreferenzen und Zugangsberechtigungen', 'Render als Anwendungsserver', 'Verantwortlicher für Vertragsabwicklung'],

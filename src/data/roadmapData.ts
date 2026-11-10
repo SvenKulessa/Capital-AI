@@ -110,7 +110,7 @@ export const ROADMAP_STRATEGIC_PRIORITIES: readonly RoadmapStrategicPriority[] =
     level: 'TOP',
     title: 'Search Engine, Auffindbarkeit & SEO-Management',
     objective: 'Suche, Content Discovery, thematische Verlinkung, Metadaten, technische Indexierbarkeit und AI-Search-Readiness als überprüfbaren organischen Akquisitionspfad entwickeln.',
-    nextAction: 'SEO-00–SEO-11 vollständig nachweisen; nach dem ersten X-Artikel zuerst SEO-03 HTTP-Readback, SEO-07 GSC-/GA4-Verifikation und SEO-04 Search-Intent-Cluster, danach Developer SEO und AI-Search. Website/Commerce-Conversions nur mit echter Consent- und Provider-Evidence messen.',
+    nextAction: 'SEO-00–SEO-11 vollständig nachweisen; nach dem ersten X-Artikel zuerst SEO-03 HTTP-Readback, SEO-07 GSC-/GA4-Verifikation und SEO-04 Search-Intent-Cluster, danach Developer SEO und AI-Search. Website/Commerce-Conversions nur mit echter Consent- und Provider-Evidence messen. Föderierter Sitemap-Readback vom 10.11.2026 verifiziert; Consent-Commerce-Scope IN_PROGRESS, Live-Abschlüsse NOT_PROVEN (docs/growth/CONSENTED-COMMERCE-20261110.md).',
     evidenceState: 'OFFEN',
     domains: ['GROWTH', 'PRODUCT', 'PLATFORM'],
     workPackageIds: ['CA-GROWTH-SEO-ARCHITECTURE'],

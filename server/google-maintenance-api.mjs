@@ -101,7 +101,7 @@ export function createGoogleMaintenance({ env = process.env, fetchImpl = fetch, 
     const { streams, truncated } = await call('ga4_list_data_streams');
     const matching = streams.filter(item => item.associatedDomainVerified);
     if (truncated || matching.length !== 1) throw new Error('GA4_WEB_STREAM_AMBIGUOUS_OR_MISSING');
-    if (!/^properties\/548187678\/dataStreams\/[0-9]+$/.test(matching[0].name)) throw new Error('GA4_STREAM_MISMATCH');
+    if (matching[0].measurementId !== 'G-0542DT2HCE' || !/^properties\/548187678\/dataStreams\/[0-9]+$/.test(matching[0].name)) throw new Error('GA4_STREAM_MISMATCH');
     return matching[0];
   }
   async function keyEvents() {
@@ -134,6 +134,16 @@ export function createGoogleMaintenance({ env = process.env, fetchImpl = fetch, 
     if (!matches(after)) throw new Error('GA4_UPDATE_NOT_VERIFIED');
     return 'UPDATE_VERIFIED';
   }
+  async function optionalPropertySetting(version, suffix, fields) {
+    try {
+      const expected = PROPERTY + '/' + suffix;
+      const value = await request(ADMIN_ORIGIN, '/' + version + '/' + expected);
+      if (value.name !== expected) throw new Error('GA4_SETTINGS_MISMATCH');
+      return { status: 'PROVIDER_READ_VERIFIED', ...Object.fromEntries(fields.map(key => [key, value[key] ?? null])) };
+    } catch (error) {
+      return { status: 'NOT_PROVEN', error: /^GOOGLE_HTTP_[45][0-9]{2}$/.test(error.message) ? error.message : 'GA4_SETTINGS_UNAVAILABLE' };
+    }
+  }
   async function call(name, input = {}) {
     if (name === 'ga4_learning_configuration') {
       exact(input, []);
@@ -144,6 +154,11 @@ export function createGoogleMaintenance({ env = process.env, fetchImpl = fetch, 
       const enhanced = await settings(stream, 'enhancedMeasurementSettings');
       return { property: boundProperty, stream,
         leadEventConfigured: events.some(item => item.eventName === 'generate_lead'),
+        purchaseEventConfigured: events.some(item => item.eventName === 'purchase'),
+        checkoutStartsAreKeyEvents: events.some(item => item.eventName === 'begin_checkout'),
+        retention: await optionalPropertySetting('v1beta', 'dataRetentionSettings', ['eventDataRetention', 'resetUserDataOnNewActivity']),
+        attribution: await optionalPropertySetting('v1alpha', 'attributionSettings', ['reportingAttributionModel', 'acquisitionConversionEventLookbackWindow', 'otherConversionEventLookbackWindow']),
+        googleSignals: await optionalPropertySetting('v1alpha', 'googleSignalsSettings', ['state', 'consent']),
         leadDefinition: 'Only a successfully received learning/course enquiry; never a link click, scroll or form start.',
         emailRedactionEnabled: redaction.emailRedactionEnabled === true,
         queryParameterRedactionEnabled: redaction.queryParameterRedactionEnabled === true,
@@ -164,11 +179,18 @@ export function createGoogleMaintenance({ env = process.env, fetchImpl = fetch, 
         if (!(await keyEvents()).some(item => item.eventName === 'generate_lead')) throw new Error('GA4_UPDATE_NOT_VERIFIED');
         leadEvent = 'UPDATE_VERIFIED';
       }
+      let purchaseEvent = 'ALREADY_CONFIGURED';
+      if (!events.some(item => item.eventName === 'purchase')) {
+        const created = await request(ADMIN_ORIGIN, '/v1beta/' + PROPERTY + '/keyEvents', { method: 'POST', body: { eventName: 'purchase', countingMethod: 'ONCE_PER_EVENT' } });
+        if (!String(created.name || '').startsWith(PROPERTY + '/keyEvents/') || created.eventName !== 'purchase' ||
+            !(await keyEvents()).some(item => item.eventName === 'purchase')) throw new Error('GA4_UPDATE_NOT_VERIFIED');
+        purchaseEvent = 'UPDATE_VERIFIED';
+      }
       const beforeRedaction = await settings(stream, 'dataRedactionSettings');
       const queryParameterKeys = [...new Set([...(beforeRedaction.queryParameterKeys || []), 'email', 'name', 'phone', 'user_id', 'token', 'access_token', 'refresh_token', 'code', 'session_id', 'vocabulary_session', 'enterprise_trial_session'])].sort();
       const redaction = await patchSettings(stream, 'dataRedactionSettings', { emailRedactionEnabled: true, queryParameterRedactionEnabled: true, queryParameterKeys }, 'email_redaction_enabled,query_parameter_redaction_enabled,query_parameter_keys');
       const formAutocapture = await patchSettings(stream, 'enhancedMeasurementSettings', { streamEnabled: false, formInteractionsEnabled: false, pageChangesEnabled: false }, 'stream_enabled,form_interactions_enabled,page_changes_enabled');
-      return { property: PROPERTY, leadEvent, redaction, formAutocapture,
+      return { property: PROPERTY, leadEvent, purchaseEvent, redaction, formAutocapture,
         browserTrackingActivated: false, actualLeadsVerified: false,
         note: 'Configuration only. Real enquiries require a confirmed receipt and consented measurement; this tool never invents events.' };
     }
@@ -236,6 +258,15 @@ export function createGoogleMaintenance({ env = process.env, fetchImpl = fetch, 
           limit: '5', returnPropertyQuota: true,
         },
       });
+    }
+    if (name === 'ga4_commerce_report') {
+      exact(input, []);
+      return request(DATA_ORIGIN, '/v1beta/' + PROPERTY + ':runReport', { method: 'POST', body: {
+        dateRanges: [{ startDate: '28daysAgo', endDate: 'yesterday' }],
+        dimensions: [{ name: 'eventName' }], metrics: [{ name: 'eventCount' }],
+        dimensionFilter: { filter: { fieldName: 'eventName', inListFilter: { values: ['view_item', 'begin_checkout', 'generate_lead', 'purchase'] } } },
+        limit: '4', returnPropertyQuota: true,
+      } });
     }
     if (name === 'ga4_learning_report' || name === 'ga4_learning_lead_report') {
       exact(input, []);
