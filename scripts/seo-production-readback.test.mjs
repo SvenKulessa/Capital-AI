@@ -119,14 +119,18 @@ test('X-API live-readback rejects absent article data, metadata drift, leaked in
     ['internal-leak', body => body + ' SOCIAL_X_TOKEN_ENCRYPTION_KEY'],
   ];
   for (const [name, mutate] of variants) {
+    let mutationApplied = false;
     const report = await productionReadback({ fetchImpl: async (url, options) => {
       const response = fixture(url, options);
       if (new URL(url).pathname !== X_ARTICLE.path) return response;
       const original = await response.text();
       const changed = mutate(original);
-      assert.notEqual(changed, original, `fixture mutation must change HTML: ${name}`);
+      mutationApplied = changed !== original;
       return new Response(changed, { headers: { 'content-type': 'text/html' } });
     } });
+    // Inspect outside productionReadback: its bounded GET intentionally catches
+    // fetch errors and would otherwise turn a broken fixture into a false PASS.
+    assert.ok(mutationApplied, `fixture mutation must change HTML: ${name}`);
     assert.equal(report.seoStatus, 'FAIL', name);
     assert.ok(report.checks.some(item => item.path === X_ARTICLE.path && item.status === 'FAIL'), name);
   }
