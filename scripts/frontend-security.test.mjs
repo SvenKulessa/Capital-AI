@@ -193,8 +193,10 @@ test('learning portal delegates video previews and never claims unrendered video
   const graphic = await readFile(new URL('../src/features/learning/LearningComingSoonGraphic.tsx', import.meta.url), 'utf8');
 
   assert.match(learning, /'glossar' \| 'flashcards' \| 'guides' \| 'patterns' \| 'videos' \| 'quiz'/);
-  assert.match(learning, /activeTab === 'videos' && <LearningVideos entitled=\{entitled\}/);
-  assert.match(videos, /LEARNING_VIDEOS: readonly LearningVideo\[\] = \[\]/);
+  assert.match(learning, /activeTab === 'videos' && <LearningVideos \/>/);
+  assert.doesNotMatch(learning, /<LearningVideos entitled=/);
+  assert.match(videos, /LEARNING_VIDEOS: readonly LearningVideo\[\] = PUBLIC_LEARNING_VIDEO_INVENTORY/);
+  assert.match(videos, /admittedPublicLearningVideos\(videos\)/);
   assert.match(videos, /Noch kein Video veröffentlicht/);
   assert.match(videos, /<LearningComingSoonGraphic category=\{value\}/);
   assert.match(graphic, /COMING SOON/);
