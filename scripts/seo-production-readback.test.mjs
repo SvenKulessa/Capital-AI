@@ -2,6 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { productionReadback } from './seo-production-readback.mjs';
 import { SEO_CONTENT_MANIFEST } from '../shared/seo-content-manifest.mjs';
+import { blogArticleForPath } from '../shared/blog-articles.mjs';
+
+const X_ARTICLE = blogArticleForPath('/blog/x-api-expansions-kosten');
 
 function fixture(url, options) {
   assert.equal(options.method, 'GET');
@@ -10,7 +13,23 @@ function fixture(url, options) {
   const path = new URL(url).pathname;
   const entry = SEO_CONTENT_MANIFEST.find(item => item.path === path);
   let body;
-  if (entry) body = `<link rel="canonical" href="${entry.canonical}"><meta name="robots" content="index, follow"><div id="root"><main><h1>Content</h1></main></div><script type="application/ld+json">{"@type":"WebPage"}</script>`;
+  if (entry) {
+    body = `<link rel="canonical" href="${entry.canonical}"><meta name="robots" content="index, follow"><div id="root"><main><h1>Content</h1></main></div><script type="application/ld+json">{"@type":"WebPage"}</script>`;
+    if (path === X_ARTICLE.path) {
+      const article = X_ARTICLE;
+      const snapshot = `<main id="capital-ai-public-snapshot" lang="de"><h1>${article.title}</h1><p>${article.intro}</p><figure><img src="${article.image}" alt="${article.imageAlt}"></figure>`
+        + article.sections.map(section => `<section><h2>${section.title}</h2><p>${section.body}</p></section>`).join('')
+        + article.sources.map(source => `<a href="${source.url}">${source.label}</a>`).join('')
+        + '<a href="/learning">Learning</a></main>';
+      body = body.replace('<main><h1>Content</h1></main>', snapshot)
+        .replace('{"@type":"WebPage"}', JSON.stringify({ '@graph': [{ '@type': 'BlogPosting',
+          headline: article.title, datePublished: article.date, url: entry.canonical }] }));
+      body += `<meta name="description" content="${entry.description}">`;
+    }
+  }
+  else if (path === X_ARTICLE.image) return new Response(
+    '<svg xmlns="http://www.w3.org/2000/svg"><title>Originalillustration</title></svg>',
+    { headers: { 'content-type': 'image/svg+xml' } });
   else if (path === '/robots.txt') body = 'Sitemap: https://capital-ai.online/sitemap.xml';
   else if (path === '/sitemap.xml') body = '<urlset>' + SEO_CONTENT_MANIFEST.map(item => `<url><loc>${item.canonical}</loc></url>`).join('') + '</urlset>';
   else if (path === '/login') return new Response('<meta name="robots" content="noindex, nofollow">', { headers: { 'x-robots-tag': 'noindex, nofollow' } });
@@ -72,4 +91,41 @@ test('standalone legal HTML is crawlable with default index semantics, but expli
     }});
     assert.equal(report.seoStatus, variant === 'valid' ? 'PASS' : 'FAIL', variant);
   }
+});
+
+test('X-API article live-readback binds complete fallback, SEO, source links and SVG', async () => {
+  const report = await productionReadback({ fetchImpl: fixture });
+  const checks = report.checks.filter(item => item.path === X_ARTICLE.path || item.path === X_ARTICLE.image);
+  for (const name of [
+    'X_ARTICLE_DESCRIPTION', 'X_ARTICLE_BLOGPOSTING', 'X_ARTICLE_FALLBACK',
+    'X_ARTICLE_IMAGE_ALT', 'X_ARTICLE_SOURCES_AND_CTA', 'X_ARTICLE_NO_INTERNAL_LEAK',
+    'X_ARTICLE_SVG',
+  ]) assert.ok(checks.some(item => item.check === name && item.status === 'PASS'), name);
+});
+
+test('X-API live-readback rejects absent article data, metadata drift, leaked internals and missing SVG', async () => {
+  const variants = [
+    ['missing-intro', body => body.replace(X_ARTICLE.intro, '')],
+    ['missing-alt', body => body.replace(X_ARTICLE.imageAlt, '')],
+    ['stale-date', body => body.replace(X_ARTICLE.date, '2025-01-01')],
+    ['bad-description', body => body.replace(X_ARTICLE.description, 'not-the-description')],
+    ['missing-source', body => body.replace(X_ARTICLE.sources[0].url, 'https://example.com/not-source')],
+    ['missing-cta', body => body.replace('<a href="/learning">Learning</a>', '')],
+    ['internal-leak', body => body + ' SOCIAL_X_TOKEN_ENCRYPTION_KEY'],
+  ];
+  for (const [name, mutate] of variants) {
+    const report = await productionReadback({ fetchImpl: async (url, options) => {
+      const response = fixture(url, options);
+      if (new URL(url).pathname !== X_ARTICLE.path) return response;
+      return new Response(mutate(await response.text()), { headers: { 'content-type': 'text/html' } });
+    } });
+    assert.equal(report.seoStatus, 'FAIL', name);
+    assert.ok(report.checks.some(item => item.path === X_ARTICLE.path && item.status === 'FAIL'), name);
+  }
+  const missingImage = await productionReadback({ fetchImpl: (url, options) =>
+    new URL(url).pathname === X_ARTICLE.image
+      ? new Response('not found', { status: 404 }) : fixture(url, options) });
+  assert.equal(missingImage.seoStatus, 'FAIL');
+  assert.ok(missingImage.checks.some(item => item.path === X_ARTICLE.image
+    && item.check === 'HTTP_200_NO_REDIRECT' && item.status === 'FAIL'));
 });
