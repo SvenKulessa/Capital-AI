@@ -7,7 +7,7 @@ import { CONTROLLER } from '../shared/legal-identity.mjs';
 const LICENSE_PATH = new URL('../docs/licenses/CAPITAL-AI-BLUEPRINT-COMPANY-LICENSE-1.0.md', import.meta.url);
 const LICENSE_VERSION = '1.0.0';
 const RELEASE_VERSION = '1.0.0';
-const PRODUCTS = Object.freeze({
+export const BLUEPRINT_PRODUCTS = Object.freeze({
   'CAP-BP-001': Object.freeze({
     name: 'Market Integrity Gate', productId: 'prod_VQPRXoyoJLA17V',
     priceId: 'price_1UPoyMPKr4joNbEcbHllSBQ5',
@@ -17,6 +17,7 @@ const PRODUCTS = Object.freeze({
     priceId: 'price_1UPoyOPKr4joNbEcnxUWvnFK',
   }),
 });
+const PRODUCTS = BLUEPRINT_PRODUCTS;
 const SKU_VALUES = Object.keys(PRODUCTS);
 const uuid = (value) => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 const stripeId = (value, prefix) => typeof value === 'string' && new RegExp(`^${prefix}[A-Za-z0-9_]{4,240}$`).test(value);
@@ -438,7 +439,7 @@ export function createBlueprintCommerce({ env = process.env, fetchImpl = fetch, 
           'automatic_tax[enabled]': 'true',
           'billing_address_collection': 'required',
           'tax_id_collection[enabled]': 'true',
-          success_url: `${base}/studio?tab=blueprints&blueprint_payment=success`,
+          success_url: `${base}/checkout/confirmation?session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: `${base}/studio?tab=blueprints&blueprint_payment=cancel`,
           client_reference_id: user.userId,
           customer_email: user.email,

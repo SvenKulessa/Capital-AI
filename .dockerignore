@@ -69,6 +69,8 @@
 !server/public-artifact-policy.test.mjs
 !server/public-artifact-policy.mjs
 !server/subscription-checkout.test.mjs
+!server/purchase-receipt.mjs
+!server/purchase-receipt.test.mjs
 !server/subscription-checkout.mjs
 !server/enterprise-trial.mjs
 !server/enterprise-trial.test.mjs
@@ -134,6 +136,7 @@
 !shared/architecture-governance-vocabulary.mjs
 !shared/roadmap-source-lineage.mjs
 !shared/vocabulary-access-policy.mjs
+!shared/analytics-measurement-policy.mjs
 !shared/seo-indexing-policy.mjs
 !shared/seo-content-manifest.mjs
 !shared/seo-source-provenance.mjs

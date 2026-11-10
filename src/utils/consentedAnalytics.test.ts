@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { saveCookieConsent } from '../privacy/cookieConsentV3';
 import { PRIVACY_NOTICE_VERSION } from '../../shared/legal-identity.mjs';
 import { buildInstagramLearningTrackingUrl } from '../contracts/instagramCampaignTracking.ts';
-import { startConsentedAnalytics, sendPageView, trackReceivedLearningInquiry, trackVerifiedLearningPurchase, CONSENT_CHANGED_EVENT } from './consentedAnalytics';
+import { startConsentedAnalytics, sendPageView, trackReceivedLearningInquiry, trackVerifiedLearningPurchase, trackCommerceEvent, CONSENT_CHANGED_EVENT } from './consentedAnalytics';
 
 test('basic consent mode loads only after opt-in, sanitizes public events and revokes without further events', async () => {
   const oldWindow = globalThis.window, oldDocument = globalThis.document, oldFetch = globalThis.fetch;
@@ -50,6 +50,23 @@ test('basic consent mode loads only after opt-in, sanitizes public events and re
     trackVerifiedLearningPurchase({...purchase, transactionId:'c'.repeat(64), value:-1});
     assert.equal(commands().filter((c: any[]) => c[1] === 'purchase').length, 1);
     assert.equal(commands().find((c: any[]) => c[1] === 'purchase')[2].value, 20);
+    w.location.pathname = '/pricing';
+    sendPageView('/pricing?session_id=cs_private');
+    const item = {currency:'EUR',value:7,items:[{item_id:'saas-starter-monthly',item_name:'private@example.org',price:7,quantity:1}],email:'private@example.org'};
+    trackCommerceEvent('view_item', item);trackCommerceEvent('view_item', item);
+    trackCommerceEvent('begin_checkout', item);
+    trackCommerceEvent('purchase', {...item,transactionId:'e'.repeat(64)});
+    trackCommerceEvent('purchase', {...item,transactionId:'e'.repeat(64)});
+    assert.equal(commands().filter((c: any[]) => c[1] === 'view_item').length, 1);
+    assert.equal(commands().filter((c: any[]) => c[1] === 'begin_checkout').length, 1);
+    assert.equal(commands().filter((c: any[]) => c[1] === 'purchase').length, 2);
+    assert.doesNotMatch(JSON.stringify(commands()), /private@example|cs_private/);
+    w.location.pathname = '/profile';
+    const privateCount = commands().length;
+    trackCommerceEvent('begin_checkout', item);
+    trackReceivedLearningInquiry('e4f044bc-1103-467d-9810-ea98f93fdca3');
+    assert.equal(commands().length, privateCount);
+    w.location.pathname = '/learning';
     stored = JSON.stringify({ version: 'COOKIE_CONSENT_V3', privacyNoticeVersion: PRIVACY_NOTICE_VERSION, savedAt: Date.now(), analytics: false, marketing: false });
     listeners.get(CONSENT_CHANGED_EVENT)!();await settle();const count = commands().length;
     trackVerifiedLearningPurchase({transactionId:'d'.repeat(64), value:25, currency:'EUR'});

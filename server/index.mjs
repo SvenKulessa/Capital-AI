@@ -57,6 +57,7 @@ import { createBlueprintDiskVault } from './blueprint-private-cloud.mjs';
 import { createPrivateKnowledgeVault } from './private-knowledge-vault.mjs';
 import { createPrivateKnowledgeApi } from './private-knowledge-api.mjs';
 import { createFounderAccess } from './founder-access.mjs';
+import { createPurchaseReceipt } from './purchase-receipt.mjs';
 import { createSubscriptionCheckout } from './subscription-checkout.mjs';
 import { createBenchmarkRuns } from './benchmark-runs.mjs';
 import { createCadsCommerce } from './cads-commerce.mjs';
@@ -412,6 +413,7 @@ export function createApp(root = defaultRoot, options = {}) {
   const knowledgeVault = options.knowledgeVault || createPrivateKnowledgeVault({keyHex:runtimeEnv.BLUEPRINT_DISK_ENCRYPTION_KEY});
   const privateKnowledgeApi = createPrivateKnowledgeApi({auth,vault:knowledgeVault});
   const founderAccess = createFounderAccess({auth,env:runtimeEnv});
+  const purchaseReceipt = createPurchaseReceipt({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
   const subscriptionCheckout = createSubscriptionCheckout({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch, auth });
   const benchmarkStore = options.benchmarkStore ?? createBenchmarkStore({ env: runtimeEnv, fetchImpl: options.fetchImpl || fetch });
   const cadsMarketplace = createCadsMarketplace({
@@ -471,6 +473,7 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await blueprintCommerce.handle(req, res, url, json)) return;
   if (await privateKnowledgeApi.handle(req, res, url, json)) return;
   if (await founderAccess.handle(req, res, url, json)) return;
+  if (await purchaseReceipt.handle(req, res, url, json)) return;
   if (await subscriptionCheckout.handle(req, res, url, json)) return;
   if (await benchmarkRuns.handle(req, res, url, json)) return;
   if (await cadsMarketplace.handle(req, res, url, json)) return;

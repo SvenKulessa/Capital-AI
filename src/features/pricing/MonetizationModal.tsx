@@ -1,3 +1,5 @@
+import { trackCommerceEvent } from '../../utils/analytics';
+import { subscriptionMeasurement, useCommerceViews } from '../../utils/commerceOffer';
 /**
  * ============================================================================
  * [ARCHITEKTUR-MAPPING: PRODUCTION PRICING]
@@ -165,6 +167,7 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
         setPurchaseMessage('Der Checkout wurde aus Sicherheitsgründen blockiert.');
         return;
       }
+      if (!trial) await trackCommerceEvent('begin_checkout', subscriptionMeasurement(tier, billingCycle));
       window.location.assign(target.toString());
     } catch {
       if (!controller.signal.aborted) setPurchaseMessage('Der Checkout ist momentan nicht erreichbar. Bitte versuche es erneut.');
@@ -175,6 +178,8 @@ export const MonetizationModal: React.FC<MonetizationModalProps> = ({
       }
     }
   };
+
+  useCommerceViews(isOpen && activeTab === 'plans' ? (['starter', 'pro', 'enterprise'] as const).map(tier => subscriptionMeasurement(tier, billingCycle)) : []);
 
   if (!isOpen) return null;
 

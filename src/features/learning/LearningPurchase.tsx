@@ -1,3 +1,5 @@
+import { trackCommerceEvent } from '../../utils/analytics';
+import { learningMeasurement, useCommerceViews } from '../../utils/commerceOffer';
 import React, { useState } from 'react';
 import { formatVocabularyPrice } from '../../data/vocabularyOffer';
 import { CheckoutPaymentHelp } from '../pricing/CheckoutPaymentHelp';
@@ -6,6 +8,7 @@ export function LearningPurchase({ onLogin }: { onLogin?: () => void }) {
   const [consent, setConsent] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
+  useCommerceViews([learningMeasurement()]);
   async function checkout() {
     if (!consent || pending) return;
     setPending(true); setError('');
@@ -20,6 +23,7 @@ export function LearningPurchase({ onLogin }: { onLogin?: () => void }) {
       if (!response.ok) throw new Error('checkout');
       const target = new URL(body.url);
       if (target.protocol !== 'https:' || target.hostname !== 'checkout.stripe.com') throw new Error('url');
+      await trackCommerceEvent('begin_checkout', learningMeasurement());
       window.location.assign(target.href);
     } catch { setError('Stripe-Checkout konnte nicht geöffnet werden. Bitte erneut versuchen.'); }
     finally { setPending(false); }
