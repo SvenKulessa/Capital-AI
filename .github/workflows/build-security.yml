@@ -355,7 +355,8 @@ jobs:
         run: |
           set -euo pipefail
           image="capital-ai:${{ github.sha }}"
-          test "$(docker image inspect --format '{{.Id}}' "$image")" = "$(cat security-reports/image-id.txt)"
+          # Docker inspect .Id may be an index ID in containerd; use the exported scanned config digest.
+          test "$(node scripts/docker-archive-config.mjs security-reports/image.tar)" = "$(cat security-reports/image-id.txt)"
           docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint cat "$image" /lib/apk/db/installed > security-reports/os-apk-installed.txt
           docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint cat "$image" /etc/alpine-release > security-reports/os-alpine-release.txt
           docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint cat "$image" /app/licenses/Node-LICENSE.txt > security-reports/runtime-node-license.txt
