@@ -49,6 +49,7 @@ jobs:
             scripts/domain-skills.test.mjs \
             scripts/skill-routing.test.mjs \
             scripts/docker-context.test.mjs \
+            scripts/docker-build-cache-policy.test.mjs \
             scripts/reviewdog-public-report.test.mjs \
             scripts/container-evidence-identity.test.mjs \
             scripts/post-merge-followup.test.mjs \
@@ -220,8 +221,20 @@ jobs:
           chmod a+rwx security-reports
           docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -w /work -v "$PWD:/work:ro" -v "$PWD/security-reports:/reports" capital-ai-security fs --skip-dirs /work/security-reports --include-dev-deps --ignorefile /work/deploy/trivy-bootstrap-exception.yaml --scanners vuln,secret,misconfig --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format json --output /reports/source.json --exit-code 0 /work
           node scripts/summarize-trivy.mjs security-reports/source.json --gate
+      - name: GitHub-gehosteten BuildKit-Layer-Cache vorbereiten
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
+        with:
+          driver: docker-container
       - name: Build-Stufe ohne Installationswerkzeug bauen
-        run: docker build --pull --target build --tag capital-ai-build:${{ github.sha }} .
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          target: build
+          pull: true
+          load: true
+          push: false
+          tags: capital-ai-build:${{ github.sha }}
+          cache-from: type=gha,scope=capital-ai-verified-build
       - name: Build-Stufe als Scan-Artefakt exportieren
         run: |
           mkdir -p security-reports
@@ -255,7 +268,16 @@ jobs:
           docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/build.tar --ignorefile /dev/null --scanners license --license-full --format json --output /reports/build-image-licenses.json --exit-code 0
           rm security-reports/build.tar
       - name: Image mit Tests und isoliertem Frontend-Build bauen
-        run: docker build --pull --tag capital-ai:${{ github.sha }} .
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          pull: true
+          load: true
+          push: false
+          tags: capital-ai:${{ github.sha }}
+          cache-from: type=gha,scope=capital-ai-verified-build
+          # Export only from trusted main pushes; PRs cannot populate the shared cache.
+          cache-to: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'type=gha,scope=capital-ai-verified-build,mode=max' || '' }}
       - name: SEO-Contract real ausführen
         run: |
           docker run --rm --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m --cap-drop ALL --security-opt no-new-privileges \
