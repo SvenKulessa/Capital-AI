@@ -192,3 +192,14 @@ test('URL Context rejects non-CAPITAL-AI sources before any provider call', asyn
     /GROWTH_URL_CONTEXT_SOURCE_NOT_ALLOWED/,
   );
 });
+
+// @google/genai 3.0 defaults to v1 for the Developer API, unlike the 2.x v1beta default.
+// Both server entrypoints must retain their explicit API semantics until model/version
+// compatibility is proven by an authorized provider readback (never by synthetic CI).
+test('Gemini SDK 3 preserves v1beta in both server clients', async () => {
+  const { readFileSync } = await import('node:fs');
+  const advisorSource = readFileSync(new URL('./advisor.ts', import.meta.url), 'utf8');
+  const growthSource = readFileSync(new URL('./growth-ai-gateway.ts', import.meta.url), 'utf8');
+  assert.ok(advisorSource.includes("httpOptions: {\n          apiVersion: 'v1beta'"));
+  assert.ok(growthSource.includes("new GoogleGenAI({ apiKey, httpOptions: { apiVersion: 'v1beta' } })"));
+});

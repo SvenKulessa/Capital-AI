@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { assertGhcrPublicationRights } from './assert-ghcr-publication-rights.mjs';
+import { assertGhcrPublicationRights, assessGhcrPublicationRights } from './assert-ghcr-publication-rights.mjs';
 
 const sha = 'a'.repeat(40);
 const pinned = 'node:26.13.0-alpine@sha256:' + 'b'.repeat(64);
@@ -75,4 +75,35 @@ test('current Dockerfile retains the OCI source label for GitHub package linking
   const actual = readFileSync(new URL('../Dockerfile', import.meta.url), 'utf8');
   assert.match(actual, /^LABEL org\.opencontainers\.image\.source=https:\/\/github\.com\/SvenKulessa\/Capital-AI$/m);
   assert.ok(actual.indexOf('LABEL org.opencontainers.image.source=') > actual.indexOf(' AS crypto-base'));
+});
+
+test('read-only rights precheck identifies exact missing historical evidence without granting rights', () => {
+  const historical = JSON.parse(readFileSync(new URL('../docs/security/evidence/license-rights-review.json', import.meta.url), 'utf8'));
+  const assessed = assessGhcrPublicationRights({ license: historical, sourceSha: sha, dockerfile });
+  assert.equal(assessed.schema, 'CAPITAL_AI_GHCR_RIGHTS_PRECHECK@1');
+  assert.equal(assessed.status, 'BLOCKED');
+  for (const code of [
+    'REDISTRIBUTION_REVIEW_OPEN', 'DEPLOY_ELIGIBILITY_NOT_GRANTED',
+    'SOURCE_EVIDENCE_SHA_MISMATCH', 'BASE_IMAGE_EVIDENCE_MISMATCH',
+    'REMAINING_GATES_OPEN', 'LEGAL_APPROVAL_REFERENCE_MISSING',
+  ]) assert.ok(assessed.blockers.includes(code), 'Missing blocker: ' + code);
+  assert.throws(() => assertGhcrPublicationRights({ license: historical, sourceSha: sha, dockerfile }));
+});
+
+test('nonempty placeholder approvals cannot authorize public GHCR redistribution', () => {
+  for (const legalApproval of [{ approved: true }, { reference: '' }, { reference: '  ' },
+    { reference: 'short' }, { reference: 'x'.repeat(513) }, ['owner-reviewed-file']]) {
+    const license = { ...approved(), legalApproval };
+    const assessed = assessGhcrPublicationRights({ license, sourceSha: sha, dockerfile });
+    assert.equal(assessed.status, 'BLOCKED');
+    assert.ok(assessed.blockers.includes('LEGAL_APPROVAL_REFERENCE_MISSING'));
+    assert.throws(() => assertGhcrPublicationRights({ license, sourceSha: sha, dockerfile }));
+  }
+});
+
+test('fully documented synthetic fixture matches only the input contract, never runtime publication', () => {
+  const assessed = assessGhcrPublicationRights({ license: approved(), sourceSha: sha, dockerfile });
+  assert.equal(assessed.status, 'EVIDENCE_CONTRACT_MATCHED');
+  assert.deepEqual(assessed.blockers, []);
+  assert.equal(assessed.pinnedBaseImage, pinned);
 });

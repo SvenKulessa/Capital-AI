@@ -37,6 +37,8 @@ export async function productionReadback({ origin = CANONICAL_ORIGIN, full = fal
     entry.contentType !== 'vocabulary-term' || index === SEO_CONTENT_MANIFEST.length - 1 ||
     entry === SEO_CONTENT_MANIFEST.find(item => item.contentType === 'vocabulary-term'));
   const checks = [];
+  // Public HTTP status and deployment runtime provenance are independent of build attestation.
+  const healthReadback = { httpStatus: null, status: 'NOT_PROVEN', buildIdentityBound: false };
   const add = (path, check, pass) => checks.push({ path, check, status: pass ? 'PASS' : 'FAIL' });
   async function get(path, inspect) {
     try {
@@ -44,6 +46,7 @@ export async function productionReadback({ origin = CANONICAL_ORIGIN, full = fal
         method: 'GET', redirect: 'manual', signal: AbortSignal.timeout(15000),
         headers: { 'User-Agent': 'CAPITAL-AI-Public-Readback/1.0', 'Accept-Language': 'de' },
       });
+      if (path === '/healthz') healthReadback.httpStatus = response.status;
       add(path, 'HTTP_200_NO_REDIRECT', response.status === 200);
       if (response.status !== 200) { await response.body?.cancel(); return; }
       await inspect(response, await boundedText(response));
@@ -118,13 +121,19 @@ export async function productionReadback({ origin = CANONICAL_ORIGIN, full = fal
   }
   await get('/login', (response, html) => add('/login', 'NOINDEX', /noindex/i.test(response.headers.get('x-robots-tag') || '') &&
     /<meta name="robots" content="noindex/i.test(html)));
-  let runtimeIdentity = { status: 'NOT_PROVEN', sourceSha: null };
+  let runtimeIdentity = { status: 'NOT_PROVEN', sourceSha: null, evidence: 'NOT_PROVEN' };
   await get('/healthz', (_response, body) => {
     const health = JSON.parse(body);
+    healthReadback.status = health.status === 'ok' ? 'ok' : 'NOT_OK';
+    healthReadback.buildIdentityBound = health.buildIdentity?.bound === true;
     add('/healthz', 'HEALTH_OK', health.status === 'ok');
-    const identity = health.buildIdentity;
-    if (identity?.bound === true && /^[0-9a-f]{40}$/.test(identity.sourceSha || '')) {
-      runtimeIdentity = { status: 'RUNTIME_VERIFIED', sourceSha: identity.sourceSha };
+    // Render's RENDER_GIT_COMMIT identifies the deployed source; this is
+    // distinct from buildIdentity.bound (OCI/build attestation).
+    const identity = health.runtimeIdentity;
+    if (health.status === 'ok' && identity?.evidence === 'RENDER_DEPLOYMENT_ENVIRONMENT' &&
+        /^[0-9a-f]{40}$/.test(identity.sourceSha || '')) {
+      runtimeIdentity = { status: 'RUNTIME_VERIFIED', sourceSha: identity.sourceSha,
+        evidence: 'RENDER_DEPLOYMENT_ENVIRONMENT' };
     }
   });
   let commerce = { checkoutConfigured: false, purchaseEvidence: 'NOT_PROVEN', marketplaceReady: false };
@@ -142,7 +151,7 @@ export async function productionReadback({ origin = CANONICAL_ORIGIN, full = fal
     schema: 'CAPITAL_AI_PUBLIC_PRODUCTION_READBACK@1', observedAt: new Date().toISOString(),
     origin: target.origin, scope: full ? 'ALL_INDEX_ROUTES' : 'STATIC_AND_TWO_VOCABULARY_SAMPLES',
     fetchedIndexRoutes: entries.length, seoStatus: checks.every(check => check.status === 'PASS') ? 'PASS' : 'FAIL',
-    runtimeIdentity, commerce, productionReady: false, checks,
+    healthReadback, runtimeIdentity, commerce, productionReady: false, checks,
   };
 }
 
