@@ -9,11 +9,14 @@ const workflow = readFileSync(resolve(root, '.github/workflows/build-security.ym
 const scanner = readFileSync(resolve(root, 'Dockerfile.security'), 'utf8');
 
 function namedStep(name) {
-  const escaped = name.replace(/[.*+?^$\{\}()|[\]\\]/g, '\\$&');
-  const pattern = new RegExp('^      - name: ' + escaped + '\\n([\\s\\S]*?)(?=^      - name: |^  publish_candidate:|$)', 'm');
-  const match = workflow.match(pattern);
-  assert.ok(match, 'Missing step: ' + name);
-  return match[0];
+  const marker = '      - name: ' + name + '\n';
+  const start = workflow.indexOf(marker);
+  assert.notEqual(start, -1, 'Missing step: ' + name);
+  const tail = workflow.slice(start);
+  const boundaries = ['\n      - name: ', '\n  publish_candidate:']
+    .map(boundary => tail.indexOf(boundary, marker.length))
+    .filter(position => position >= 0);
+  return tail.slice(0, boundaries.length ? Math.min(...boundaries) : undefined);
 }
 
 test('BuildKit cache comes from immutable, pinned Docker actions with local-scanned images', () => {
@@ -38,7 +41,7 @@ test('only trusted main push can export the shared BuildKit cache', () => {
   const build = namedStep('Build-Stufe ohne Installationswerkzeug bauen');
   const runtime = namedStep('Image mit Tests und isoliertem Frontend-Build bauen');
   assert.doesNotMatch(build, /cache-to:/);
-  assert.match(runtime, /cache-to: \\$\{\{ github\.event_name == 'push' && github\.ref == 'refs\/heads\/main'/);
+  assert.match(runtime, /cache-to: \$\{\{ github\.event_name == 'push' && github\.ref == 'refs\/heads\/main'/);
   assert.doesNotMatch(runtime, /ignore-error=true|cache-mode:\s*write/);
 });
 
