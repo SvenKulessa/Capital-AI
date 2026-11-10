@@ -55,6 +55,7 @@ jobs:
             scripts/github-analysis-policy.test.mjs \
             scripts/verify-main-ruleset-origin.test.mjs \
             scripts/registry-cve-gate.test.mjs \
+            scripts/assert-ghcr-publication-rights.test.mjs \
             scripts/production-handoff.test.mjs \
             scripts/post-merge-followup.test.mjs \
             scripts/post-merge-correlation.test.mjs \
@@ -437,6 +438,10 @@ jobs:
         run: |
           set -euo pipefail
           test "$(gh api repos/SvenKulessa/Capital-AI/branches/main --jq .commit.sha)" = "$SOURCE_SHA"
+      - name: Redistributionsrechte vor GHCR-Veröffentlichung prüfen
+        run: |
+          set -euo pipefail
+          node scripts/assert-ghcr-publication-rights.mjs docs/security/evidence/license-rights-review.json Dockerfile "$SOURCE_SHA"
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: candidate-image-${{ github.run_id }}-${{ github.run_attempt }}
