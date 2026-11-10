@@ -89,12 +89,13 @@ export async function productionReadback({ origin = CANONICAL_ORIGIN, full = fal
         add(entry.path, 'X_ARTICLE_FALLBACK',
           /<main id="capital-ai-public-snapshot" lang="de">/.test(html)
           && html.includes(X_ARTICLE.intro)
-          && X_ARTICLE.sections.every(section => html.includes(section.body)));
+          && X_ARTICLE.sections.every(section => html.includes(section.body))
+          && html.includes(`<time datetime="${X_ARTICLE.date}">${X_ARTICLE.date}</time>`));
         add(entry.path, 'X_ARTICLE_IMAGE_ALT',
           html.includes(`src="${X_ARTICLE.image}" alt="${X_ARTICLE.imageAlt}"`));
         add(entry.path, 'X_ARTICLE_SOURCES_AND_CTA',
           X_ARTICLE.sources.every(source => html.includes(`href="${source.url}"`))
-          && html.includes('href="/learning"'));
+          && html.includes('href="/learning/lernimpulse"'));
         add(entry.path, 'X_ARTICLE_NO_INTERNAL_LEAK',
           !/SOCIAL_X_TOKEN_ENCRYPTION_KEY|SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SECRET_KEY|SOLO_MAINTAINER_FLOW|\/api\/social-media\/x\/url-context|\/server\/social-media\//i.test(html));
       }
