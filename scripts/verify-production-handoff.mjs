@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { verifyMainRuleset } from './verify-main-ruleset.mjs';
 import { validateContainerIdentity } from './container-evidence-identity.mjs';
-import { selectRegistryManifest } from './registry-manifest-evidence.mjs';
+import { selectRegistryManifest, verifyRegistryManifest } from './registry-manifest-evidence.mjs';
 
 const SOURCE_SHA = /^[0-9a-f]{40}$/;
 const IMAGE_REF = /^ghcr\.io\/svenkulessa\/capital-ai@sha256:[0-9a-f]{64}$/;
@@ -210,8 +210,9 @@ function readJson(path) {
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const [candidatePath, licensePath, rulesetsPath, servicePath, deployPath, healthPath, outputPath, registryManifestPath, registryScanPath, analysisResultsPath, platformManifestPath, checkRunsPath] = process.argv.slice(2);
   if (!outputPath) throw new Error('Expected candidate, license, rulesets, service, deploy, health and output paths');
+  const candidate = readJson(candidatePath);
   const report = evaluateProductionHandoff({
-    candidate: readJson(candidatePath),
+    candidate,
     license: readJson(licensePath),
     rulesets: readJson(rulesetsPath),
     service: readJson(servicePath),
@@ -224,7 +225,9 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       digest: 'sha256:' + createHash('sha256').update(readFileSync(platformManifestPath)).digest('hex'),
       manifest: readJson(platformManifestPath),
     } : null,
-    registryManifest: registryManifestPath ? readJson(registryManifestPath) : null,
+    registryManifest: registryManifestPath
+      ? verifyRegistryManifest(readFileSync(registryManifestPath), candidate.imageRef?.split('@')[1])
+      : null,
     registryScan: registryScanPath ? readJson(registryScanPath) : null,
     analysisResults: analysisResultsPath ? readJson(analysisResultsPath) : [],
     checkRuns: checkRunsPath ? readJson(checkRunsPath) : [],

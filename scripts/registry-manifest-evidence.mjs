@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -11,6 +12,17 @@ const INDEX_TYPES = new Set([
   'application/vnd.oci.image.index.v1+json',
   'application/vnd.docker.distribution.manifest.list.v2+json',
 ]);
+
+export function verifyRegistryManifest(rawManifest, expectedDigest) {
+  if (!SHA.test(expectedDigest || '')) {
+    throw new Error('Invalid expected registry manifest digest');
+  }
+  const digest = 'sha256:' + createHash('sha256').update(rawManifest).digest('hex');
+  if (digest !== expectedDigest) {
+    throw new Error('Registry manifest bytes do not match the expected digest');
+  }
+  return { ...JSON.parse(rawManifest.toString('utf8')), digest };
+}
 
 export function selectRegistryManifest(manifest) {
   if (!manifest || manifest.schemaVersion !== 2 || !SHA.test(manifest.digest || '')) {
@@ -37,8 +49,9 @@ export function selectRegistryManifest(manifest) {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
-    if (!process.argv[2]) throw new Error('Manifest JSON path required');
-    const selected = selectRegistryManifest(JSON.parse(readFileSync(process.argv[2], 'utf8')));
+    const [manifestPath, expectedDigest] = process.argv.slice(2);
+    if (!manifestPath || !expectedDigest) throw new Error('Raw manifest path and expected digest required');
+    const selected = selectRegistryManifest(verifyRegistryManifest(readFileSync(manifestPath), expectedDigest));
     console.log(JSON.stringify(selected));
   } catch (error) {
     console.error('REGISTRY_MANIFEST_NOT_PROVEN: ' + error.message);

@@ -1,6 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { selectRegistryManifest } from './registry-manifest-evidence.mjs';
+import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { selectRegistryManifest, verifyRegistryManifest } from './registry-manifest-evidence.mjs';
 
 const hash = char => 'sha256:' + char.repeat(64);
 const config = hash('c');
@@ -21,27 +27,51 @@ const index = {
   ],
 };
 
-test('single OCI manifest keeps index digest null and platform digest equal to reference', () => {
-  assert.deepEqual(selectRegistryManifest(single), {
-    referenceDigest: single.digest,
-    ociIndexDigest: null,
-    platformManifestDigest: single.digest,
-    mediaType: single.mediaType,
-  });
-});
+const manifestScript = fileURLToPath(new URL('./registry-manifest-evidence.mjs', import.meta.url));
+const rawDigest = bytes => 'sha256:' + createHash('sha256').update(bytes).digest('hex');
 
-test('single Docker schema2 manifest is supported', () => {
-  const docker = { ...single, mediaType: 'application/vnd.docker.distribution.manifest.v2+json' };
-  assert.equal(selectRegistryManifest(docker).ociIndexDigest, null);
-});
+for (const [mediaType, configMediaType] of [
+  [single.mediaType, single.config.mediaType],
+  ['application/vnd.docker.distribution.manifest.v2+json', 'application/vnd.docker.container.image.v1+json'],
+]) {
+  test(`raw single manifest CLI verifies bytes and selects ${mediaType}`, t => {
+    const directory = mkdtempSync(join(tmpdir(), 'registry-manifest-'));
+    t.after(() => rmSync(directory, { recursive: true, force: true }));
+    const path = join(directory, 'manifest.json');
+    const raw = Buffer.from(JSON.stringify({
+      schemaVersion: 2, mediaType, config: { mediaType: configMediaType, digest: config }, layers: [],
+    }, null, 2));
+    const digest = rawDigest(raw);
+    writeFileSync(path, raw);
+    const run = () => spawnSync(process.execPath, [manifestScript, path, digest], { encoding: 'utf8' });
+    const result = run();
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(JSON.parse(result.stdout), {
+      referenceDigest: digest, ociIndexDigest: null, platformManifestDigest: digest, mediaType,
+    });
+
+    writeFileSync(path, Buffer.concat([raw, Buffer.from('\n')]));
+    const tampered = run();
+    assert.equal(tampered.status, 1);
+    assert.match(tampered.stderr, /bytes do not match/);
+  });
+}
 
 test('OCI index selects unique linux/amd64 digest and retains index digest separately', () => {
-  assert.deepEqual(selectRegistryManifest(index), {
-    referenceDigest: index.digest,
-    ociIndexDigest: index.digest,
+  const raw = Buffer.from(JSON.stringify({
+    schemaVersion: index.schemaVersion, mediaType: index.mediaType, manifests: index.manifests,
+  }));
+  const digest = rawDigest(raw);
+  assert.deepEqual(selectRegistryManifest(verifyRegistryManifest(raw, digest)), {
+    referenceDigest: digest,
+    ociIndexDigest: digest,
     platformManifestDigest: single.digest,
     mediaType: index.mediaType,
   });
+});
+
+test('digest mismatch fails before parsing the raw manifest', () => {
+  assert.throws(() => verifyRegistryManifest(Buffer.from('invalid JSON'), hash('a')), /bytes do not match/);
 });
 
 test('Docker manifest list is supported', () => {
