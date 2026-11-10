@@ -203,7 +203,7 @@ export const DATA_CONCEPTS: DataConcept[] = [
     category: 'Governance & Modularität',
     purpose: 'Datenverantwortung nach Domänen strukturieren',
     example: 'Crypto, Equity, FX, Fundamentals jeweils mit Contract',
-    details: 'Dezentrale Datenarchitektur nach Domänen (Krypto, Aktien, Devisen, Fundamentaldaten). Jede Domäne soll ein standardisiertes Datenprodukt mit SLA-Entwurfszielen, Zod-Schema und definierter Fehlerbehandlung bereitstellen; vertragliche SLA-Garantien sind nicht belegt.',
+    details: 'Dezentrale Datenarchitektur nach Domänen (Krypto, Aktien, Devisen, Fundamentaldaten). Jede Domäne soll ein standardisiertes Datenprodukt mit SLA-Entwurfszielen, Zod-Schema und definierter Fehlerbehandlung bereitstellen; vertraglich verbindliche Verfügbarkeiten sind nicht belegt.',
     bafinCompliance: 'Klare Zuständigkeiten und Daten-Owner nach MaRisk AT 4.3',
     latencyTarget: 'Domänenspezifisch optimiert',
     costImpact: 'Domänenunabhängige Skalierung als Designziel; kein Zero-Downtime-Versprechen',
