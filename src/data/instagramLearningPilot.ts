@@ -1,7 +1,9 @@
 import { buildDraftContentSocialPackage } from '../contracts/contentSocialPackage.ts';
 import { planContentCampaign } from '../contracts/contentEngine.ts';
 import { buildInstagramLearningTrackingUrl, INSTAGRAM_LEARNING_TRACKING } from '../contracts/instagramCampaignTracking.ts';
-export const INSTAGRAM_PILOT_SOURCE_SHA = 'fea4dbc49721ef50131063791db7fac2f4c399ab' as const;
+// The SVG artwork entered main in PR #625 (not in its pre-merge source baseline).
+// Use the first commit that actually contains all three immutable SVG originals.
+export const INSTAGRAM_PILOT_SOURCE_SHA = '3c26d10db4675ac95d036943e9c25f3f100d442e' as const;
 export const INSTAGRAM_PILOT_CONTENT_ID = INSTAGRAM_LEARNING_TRACKING.contentId;
 export const INSTAGRAM_PILOT_TRACKING_URL = buildInstagramLearningTrackingUrl();
 export const INSTAGRAM_PILOT_SLIDES = [
