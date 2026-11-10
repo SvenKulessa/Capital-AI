@@ -164,10 +164,10 @@ test('public architecture catalog distinguishes design assumptions from licensed
   assert.equal(DATA_CONCEPTS.length, 16);
   assert.equal(STUDIO_BLUEPRINTS.length, 7);
   const publicClaims = [
-    ...DATA_CONCEPTS.flatMap(item => [item.bafinCompliance, item.costImpact]),
-    ...STUDIO_BLUEPRINTS.flatMap(item => [item.description, item.primaryUseCase, item.badge]),
+    ...DATA_CONCEPTS.flatMap(item => [item.details, item.bafinCompliance, item.costImpact]),
+    ...STUDIO_BLUEPRINTS.flatMap(item => [item.description, item.primaryUseCase, item.badge, item.costNote]),
   ];
-  const disallowed = /BaFin-\s*und\s*MiCA-konforme|BaFin-konforme|garantiert\s+unter|Zero\s+zusätzliche\s+API-Kosten|Vollständige\s+Revisionssicherheit|Eliminiert\s+fatale\s+Fehl-Trades|Fehlerfreie\s+Rekonstruktion|Lückenlose\s+.*Archivierung|Spart\s+(?:bis\s+zu\s+)?\d+%/i;
+  const disallowed = /BaFin-\s*und\s*MiCA-konforme|BaFin-konforme|garantiert\s+unter|Zero\s+zusätzliche\s+API-Kosten|Vollständige\s+Revisionssicherheit|Eliminiert\s+fatale\s+Fehl-Trades|Fehlerfreie\s+Rekonstruktion|Lückenlose\s+.*Archivierung|Spart\s+(?:bis\s+zu\s+)?\d+%|\b100\s*%\s*reproduzierbare|SLA-Garantien|audit-sicher|Verhindert\s+(?:UI-Stottern|Look-Ahead-Bias)/i;
   for (const claim of publicClaims) {
     assert.doesNotMatch(claim, disallowed, 'unverified product/regulatory claim: ' + claim);
   }
@@ -179,4 +179,9 @@ test('public architecture catalog distinguishes design assumptions from licensed
   assert.match(studioData, /keine verifizierten Ist-Kosten/);
   assert.match(studioData, /kein nachgewiesener Handelsschutz/);
   assert.match(studioData, /keine testierte Revisionssicherheit/);
+  const studioUi = readFileSync(new URL('../src/features/studio/StudioPage.tsx', import.meta.url), 'utf8');
+  assert.match(studioUi, /ARCHITEKTUR-ENTWÜRFE/);
+  assert.match(studioUi, /Keine BaFin-Zertifizierung/);
+  assert.match(studioUi, /Latenz · nicht gemessenes Entwurfsziel/);
+  assert.doesNotMatch(studioUi, /BaFin-konforme|BaFin Compliance:|Latenz-SLA|VOLLSTÄNDIGE ARCHITEKTUR-SPEZIFIKATION/i);
 });
