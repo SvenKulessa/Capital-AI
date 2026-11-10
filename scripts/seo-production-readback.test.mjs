@@ -17,7 +17,7 @@ function fixture(url, options) {
     body = `<link rel="canonical" href="${entry.canonical}"><meta name="robots" content="index, follow"><div id="root"><main><h1>Content</h1></main></div><script type="application/ld+json">{"@type":"WebPage"}</script>`;
     if (path === X_ARTICLE.path) {
       const article = X_ARTICLE;
-      const snapshot = `<main id="capital-ai-public-snapshot" lang="de"><h1>${article.title}</h1><time datetime="${article.date}">${article.date}</time><p>${article.intro}</p><figure><img src="${article.image}" alt="${article.imageAlt}"></figure>`
+      const snapshot = '<a href="#capital-ai-public-snapshot" class="sr-only focus:not-sr-only">Zum Hauptinhalt springen</a>' + `<main id="capital-ai-public-snapshot" lang="de"><h1>${article.title}</h1><time datetime="${article.date}">${article.date}</time><p>${article.intro}</p><figure><img src="${article.image}" alt="${article.imageAlt}"></figure>`
         + article.sections.map(section => `<section><h2>${section.title}</h2><p>${section.body}</p></section>`).join('')
         + article.sources.map(source => `<a href="${source.url}">${source.label}</a>`).join('')
         + '<a href="/learning/lernimpulse">Weitere Lernimpulse entdecken</a></main>';
@@ -97,7 +97,7 @@ test('X-API article live-readback binds complete fallback, SEO, source links and
   const report = await productionReadback({ fetchImpl: fixture });
   const checks = report.checks.filter(item => item.path === X_ARTICLE.path || item.path === X_ARTICLE.image);
   for (const name of [
-    'X_ARTICLE_DESCRIPTION', 'X_ARTICLE_BLOGPOSTING', 'X_ARTICLE_FALLBACK',
+    'X_ARTICLE_DESCRIPTION', 'X_ARTICLE_BLOGPOSTING', 'X_ARTICLE_FALLBACK', 'X_ARTICLE_SKIP_LINK',
     'X_ARTICLE_IMAGE_ALT', 'X_ARTICLE_SOURCES_AND_CTA', 'X_ARTICLE_NO_INTERNAL_LEAK',
     'X_ARTICLE_SVG',
   ]) assert.ok(checks.some(item => item.check === name && item.status === 'PASS'), name);
@@ -106,6 +106,7 @@ test('X-API article live-readback binds complete fallback, SEO, source links and
 test('X-API live-readback rejects absent article data, metadata drift, leaked internals and missing SVG', async () => {
   const variants = [
     ['missing-intro', body => body.replace(X_ARTICLE.intro, '')],
+    ['missing-skip-link', body => body.replace('href="#capital-ai-public-snapshot"', 'href="#missing-target"')],
     ['missing-alt', body => body.replace(X_ARTICLE.imageAlt, '')],
     ['stale-date', body => body.replace(X_ARTICLE.date, '2025-01-01')],
     ['bad-description', body => {
