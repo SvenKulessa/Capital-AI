@@ -1,3 +1,4 @@
+import './instagram-carousel.test.mjs';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createSocialProviderPublishTransport } from './provider-publish.mjs';
