@@ -24,6 +24,24 @@ jobs:
           fetch-depth: 2
           persist-credentials: false
 
+      # PR bases can move beyond the shallow checkout's two commits.
+      # Fetch the exact declared base so before/after evidence never compares
+      # against a missing or silently substituted source tree.
+      - name: PR-Basiscommit vollständig für Evidence abrufen
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${#BASE_SHA}" -eq 40
+          [[ "$BASE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          git fetch --no-tags --depth=1 origin "$BASE_SHA"
+          test "$(git rev-parse --verify "$BASE_SHA^{commit}")" = "$BASE_SHA"
+          git cat-file -e "$BASE_SHA:package.json"
+          git cat-file -e "$BASE_SHA:package-lock.json"
+          git cat-file -e "$BASE_SHA:deploy/runtime/package.json"
+          git cat-file -e "$BASE_SHA:deploy/runtime/package-lock.json"
+
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '26'

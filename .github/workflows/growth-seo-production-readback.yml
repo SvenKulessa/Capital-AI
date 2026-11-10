@@ -1,0 +1,36 @@
+name: GROWTH Public SEO Production Readback (read-only)
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/growth-seo-production-readback.yml
+      - scripts/seo-production-readback.mjs
+      - scripts/seo-production-readback.test.mjs
+      - shared/seo-content-manifest.mjs
+      - shared/blog-articles.mjs
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  seo-http-readback:
+    name: Anonymous HTTP and SEO evidence
+    runs-on: ubuntu-26.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Offline regression, including negative cases
+        run: node --test scripts/seo-production-readback.test.mjs
+      - name: Anonymous production HTTP readback
+        run: node scripts/seo-production-readback.mjs --origin https://capital-ai.online --output public-seo-readback.json
+      - name: Preserve sanitized checks without response bodies
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: growth-public-seo-${{ github.sha }}
+          path: public-seo-readback.json
+          if-no-files-found: warn
+          retention-days: 7
