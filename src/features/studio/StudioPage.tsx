@@ -128,7 +128,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
   const [benchmarkTicksCount, setBenchmarkTicksCount] = useState(128450);
   const [simulatedLatency, setSimulatedLatency] = useState(28);
   const [conflationSavedPct, setConflationSavedPct] = useState(88.4);
-  const [isStressTesting, setIsStressTesting] = useState(false);
+  // Real stress-test execution is not available; keep the lab explicitly non-operational.
 
   // Interactive Scoring Engine Sandbox State (Part 2)
   const [sandboxAssetClass, setSandboxAssetClass] = useState<string>('equity_us');
@@ -197,7 +197,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
     );
   }, [selectedBlueprintId]);
 
-  const runStressTest = () => {}; // Requires real benchmark worker before activation.
+  // No synthetic values are sent to a worker or presented as production telemetry.
 
   return (
     <div className="hub-universe hub-universe--studio w-full text-slate-100 min-h-screen py-4 sm:py-6 px-2 sm:px-6 relative">
@@ -878,7 +878,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
                 Buffett Value Check Setup
               </h3>
               <p className="text-xs text-slate-400 mt-1">
-                Fokus auf fundamentale Bilanzen, 10-Jahres ROE &amp; Moat-Ratings. Spart 92% API-Quota.
+                Fokus auf fundamentale Bilanzen, ROE und Moat-Kriterien. Ziel: gezielte Abfragen; 92 % Quota-Ersparnis nicht belegt.
               </p>
               <div className="mt-3 text-xs font-mono text-amber-400 flex items-center gap-1">
                 <span>Setup konfigurieren</span>
@@ -902,10 +902,10 @@ export const StudioPage: React.FC<StudioPageProps> = ({
                 <Zap className="w-4 h-4" />
               </div>
               <h3 className="text-sm font-bold text-white group-hover:text-cyan-300 transition-colors">
-                Sub-20ms High-Frequency Setup
+                Konzept für niedrige Latenz (ungetestet)
               </h3>
               <p className="text-xs text-slate-400 mt-1">
-                OSS-Adapter mit frei wählbaren Datenprovidern, NATS JetStream für Events/Replay und Valkey 8 für Hot-State.
+                Planung mit OSS-Adaptern und optionalem Replay-/Cache-Layer. NATS und Provider-Runtime sind nicht aktiviert; keine Latenzzusage.
               </p>
               <div className="mt-3 text-xs font-mono text-cyan-400 flex items-center gap-1">
                 <span>Setup konfigurieren</span>
@@ -929,10 +929,10 @@ export const StudioPage: React.FC<StudioPageProps> = ({
                 <Shield className="w-4 h-4" />
               </div>
               <h3 className="text-sm font-bold text-white group-hover:text-purple-300 transition-colors">
-                BaFin MaRisk &amp; MiCA Audit Setup
+                Regulatorik-Prüfkonzept (MaRisk / MiCA)
               </h3>
               <p className="text-xs text-slate-400 mt-1">
-                3-Provider Konsensprüfung mit kryptographischem SHA-256 Audit-Trail für jeden generierten Score.
+                Konzept für Quellenkonsens und SHA-256-Evidence. Keine attestierte BaFin-/MiCA-Compliance oder vollständig geprüfte Score-Kette.
               </p>
               <div className="mt-3 text-xs font-mono text-purple-400 flex items-center gap-1">
                 <span>Setup konfigurieren</span>
@@ -987,12 +987,12 @@ export const StudioPage: React.FC<StudioPageProps> = ({
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
                   Mathematische Modelle hinter dem Buffett Value Check, dem Enterprise Multi-Faktor Scorer
-                  und der kryptographischen BaFin Evidence Engine nach AP-002.
+                  und einer vorgesehenen Evidence-Pipeline nach AP-002; kein bestätigtes aufsichtsrechtliches Audit.
                 </p>
               </div>
 
               <div className="p-3 rounded-xl bg-black/40 border border-amber-500/30 text-xs font-mono text-right shrink-0">
-                <div className="text-amber-400 font-bold">100% Zod Type-Safe</div>
+                <div className="text-amber-400 font-bold">Schema-Validierung als Ziel</div>
                 <div className="text-slate-300">Deterministic Scoring Pipeline</div>
               </div>
             </div>
@@ -1070,14 +1070,14 @@ export const StudioPage: React.FC<StudioPageProps> = ({
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
                   <Shield className="w-4 h-4 text-emerald-400" />
-                  <span>Evidence &amp; BaFin Audit</span>
+                  <span>Evidence-Konzept und Prüfbedarf</span>
                 </h3>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
-                  AP-002 Compliant
+                  AP-002 Entwurf
                 </span>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Jeder vergebene Score wird untrennbar mit den zu Grunde liegenden Daten verknüpft:
+                Im geplanten Evidence-Vertrag sollen Scores mit geprüfter Datenherkunft verknüpft werden:
               </p>
               <ul className="text-xs space-y-1.5 text-slate-400">
                 <li className="flex items-center gap-2">
@@ -1090,11 +1090,11 @@ export const StudioPage: React.FC<StudioPageProps> = ({
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-emerald-400 font-mono">3.</span>
-                  <span>Revisionssicheres Append-Only Event-Log</span>
+                  <span>Geplantes Append-Only Event-Log (noch nicht auditiert)</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-emerald-400 font-mono">4.</span>
-                  <span>100% Reproduzierbarkeit im Replay-Modus</span>
+                  <span>Replay-Reproduzierbarkeit als ungetestetes Abnahmeziel</span>
                 </li>
               </ul>
             </div>
@@ -1351,25 +1351,25 @@ export const StudioPage: React.FC<StudioPageProps> = ({
               <div>
                 <div className="flex items-center gap-2 text-xs font-mono text-cyan-400 mb-1">
                   <Gauge className="w-4 h-4" />
-                  <span>LIVE BENCHMARK &amp; STRESS-TEST LAB</span>
+                  <span>SYNTHETISCHES BENCHMARK-LAB</span>
                 </div>
                 <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  Benchmark Lab &amp; Performance-Audits
+                  Benchmark-Modell &amp; geplante Performance-Prüfung
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-                  Echtzeit-Messung von Throughput, Latenz-Jitter, Conflation-Ersparnis und
-                  automatische Validierung der Low-Budget Garantie (&lt; 35,00 € / Monat).
+                  Illustrative Modellwerte für Durchsatz, Latenz und Conflation; keine echten Benchmarks oder
+                  verifizierte Kostenobergrenze. Eine Abnahme benötigt Live-Messungen und Providerrechnungen.
                 </p>
               </div>
 
               <button
                 type="button"
-                onClick={runStressTest}
-                disabled={isStressTesting}
+                disabled
+                aria-label="Stresstest derzeit nicht ausführbar; nur synthetische Modellwerte"
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-xs transition-all cursor-pointer shrink-0 disabled:opacity-50"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${isStressTesting ? 'animate-spin' : ''}`} />
-                <span>{isStressTesting ? 'Stresstest läuft...' : 'Stresstest starten'}</span>
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Stresstest nicht verfügbar (Demo)</span>
               </button>
             </div>
           </div>
@@ -1378,42 +1378,42 @@ export const StudioPage: React.FC<StudioPageProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="p-5 rounded-xl bg-[#090e21] border border-slate-800">
               <div className="text-[10px] font-mono uppercase text-slate-400 mb-1">
-                E2E Pipeline-Latenz
+                E2E Demo-Latenz (Modell)
               </div>
               <div className="text-2xl font-extrabold font-mono text-emerald-400">
                 {simulatedLatency} ms
               </div>
-              <div className="text-[11px] text-slate-400 mt-1">SLA Ziel: &lt; 45 ms</div>
+              <div className="text-[11px] text-slate-400 mt-1">Ungeprüftes Latenzziel: &lt; 45 ms</div>
             </div>
 
             <div className="p-5 rounded-xl bg-[#090e21] border border-slate-800">
               <div className="text-[10px] font-mono uppercase text-slate-400 mb-1">
-                Throughput (Ticks / Sec)
+                Illustrative Ticks / Sekunde
               </div>
               <div className="text-2xl font-extrabold font-mono text-cyan-400">
                 {benchmarkTicksCount.toLocaleString()}
               </div>
-              <div className="text-[11px] text-slate-400 mt-1">Zero dropped frames</div>
+              <div className="text-[11px] text-slate-400 mt-1">Frameverluste nicht gemessen</div>
             </div>
 
             <div className="p-5 rounded-xl bg-[#090e21] border border-slate-800">
               <div className="text-[10px] font-mono uppercase text-slate-400 mb-1">
-                Bandbreiten-Kompression
+                Modellierte Bandbreitenreduktion
               </div>
               <div className="text-2xl font-extrabold font-mono text-amber-400">
                 {conflationSavedPct}%
               </div>
-              <div className="text-[11px] text-slate-400 mt-1">T2 Conflation Filter</div>
+              <div className="text-[11px] text-slate-400 mt-1">T2 Conflation als Konzept</div>
             </div>
 
             <div className="p-5 rounded-xl bg-[#090e21] border border-slate-800">
               <div className="text-[10px] font-mono uppercase text-slate-400 mb-1">
-                Monatliche TCO
+                Monatlicher TCO-Planwert
               </div>
               <div className="text-2xl font-extrabold font-mono text-white">
                 24,50 €
               </div>
-              <div className="text-[11px] text-emerald-400 mt-1">Budget-konform (&lt;35€)</div>
+              <div className="text-[11px] text-emerald-400 mt-1">Unverifizierte Kostenannahme; keine Rechnung</div>
             </div>
           </div>
 
@@ -1421,11 +1421,11 @@ export const StudioPage: React.FC<StudioPageProps> = ({
           <div className="p-6 rounded-2xl bg-[#090e21] border border-slate-800 space-y-4">
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>Verifizierte Low-Budget Produktions-Architektur (AP-006)</span>
+              <span>Low-Budget-Architekturentwurf (AP-006; Betriebsnachweis offen)</span>
             </h3>
             <p className="text-xs text-slate-300 leading-relaxed">
-              Die Produktarchitektur nutzt ausschließlich Open-Source-Softwarekomponenten. CCXT/OpenBB dienen als Adapterebene,
-              NATS JetStream als Event-/Replay-Backbone und Valkey 8 als Hot-State Cache. Externe Provider wie Binance,
+              Der Entwurf sieht Open-Source-Bausteine vor. CCXT/OpenBB sind als Adapteroptionen vorgesehen,
+              NATS JetStream als möglicher Event-Layer und Valkey 8 als Cache. NATS bleibt deaktiviert. Externe Provider wie Binance,
               Kraken, TwelveData oder FRED bleiben für Konfiguration und Blueprint-Erstellung auswählbar; erst Production
               benötigt den nachweisbaren Nutzungs-, Display-, Retention- und Redistribution-Rechte-Status.
             </p>
@@ -1443,16 +1443,16 @@ export const StudioPage: React.FC<StudioPageProps> = ({
                   8-Stufige Ausführungs-Pipeline &amp; Shadow-Mode Inspector
                 </h3>
                 <p className="text-xs text-slate-300 mt-0.5">
-                  Vollständige Überwachung aller Stufen von der Rohdaten-Erfassung bis zur kryptographischen Evidence-Stempelung.
+                  Konzeptuelle Darstellung der Stufen; keine Live-Messung oder lückenlose Produktionsüberwachung.
                 </p>
               </div>
 
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                  Active: v2.5.0
+                  Modellversion v2.5.0
                 </span>
                 <span className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/30">
-                  Shadow Canary: v2.6.0 (10% Sample)
+                  Shadow-Szenario v2.6.0 (illustrativ)
                 </span>
               </div>
             </div>
@@ -1466,8 +1466,8 @@ export const StudioPage: React.FC<StudioPageProps> = ({
                 { step: '04', name: 'Feature Engineering', tech: '7 Feature-Familien', timeout: '2500ms', status: 'Active' },
                 { step: '05', name: 'Scoring & Hard Gates', tech: '50 Canonical Components', timeout: '1800ms', status: 'Deterministic' },
                 { step: '06', name: 'Cross-Sectional Ranking', tech: 'Peer & Sector Diffusion', timeout: '1200ms', status: 'Active' },
-                { step: '07', name: 'SHA-256 Evidence Stamping', tech: 'BaFin MaRisk Audit', timeout: '800ms', status: 'WORM Compliant' },
-                { step: '08', name: 'Delivery & Alert Dispatch', tech: 'React UI & Telegram Webhooks', timeout: '600ms', status: 'Sub-45ms' },
+                { step: '07', name: 'SHA-256 Evidence Stamping', tech: 'Evidence- und Auditkonzept', timeout: '800ms', status: 'Nicht auditiert' },
+                { step: '08', name: 'Delivery & Alert Dispatch', tech: 'React UI & Telegram Webhooks', timeout: '600ms', status: 'Nicht gemessen' },
               ].map((st) => (
                 <div key={st.step} className="p-3.5 rounded-xl bg-black/40 border border-slate-800 hover:border-cyan-400/40 transition-colors">
                   <div className="flex items-center justify-between mb-1.5">
@@ -1478,7 +1478,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
                   </div>
                   <div className="text-xs font-bold text-white mb-0.5">{st.name}</div>
                   <div className="text-[10px] text-slate-400 font-mono">{st.tech}</div>
-                  <div className="text-[9px] text-slate-500 font-mono mt-2">Timeout: {st.timeout}</div>
+                  <div className="text-[9px] text-slate-500 font-mono mt-2">Timeout-Ziel: {st.timeout}</div>
                 </div>
               ))}
             </div>
@@ -1486,24 +1486,24 @@ export const StudioPage: React.FC<StudioPageProps> = ({
             {/* Shadow vs Active Benchmark Comparison */}
             <div className="p-4 rounded-xl bg-black/50 border border-slate-800 space-y-3">
               <div className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center justify-between">
-                <span>Shadow Canary vs. Active Production Vergleich</span>
-                <span className="text-[10px] font-mono text-cyan-400">Zero-Risk Regression Verification</span>
+                <span>Shadow-vs.-Aktiv-Szenario (synthetisch)</span>
+                <span className="text-[10px] font-mono text-cyan-400">Regression als Testziel; kein Nullrisiko</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                 <div className="p-3 rounded-lg bg-black/40 border border-slate-800/80">
                   <div className="text-[10px] font-mono text-slate-400 mb-1">Durchschnittliche E2E Latenz</div>
                   <div className="flex items-baseline gap-2">
-                    <span className="font-mono font-bold text-emerald-400">28 ms (Prod)</span>
+                    <span className="font-mono font-bold text-emerald-400">28 ms (Demo)</span>
                     <span className="text-[10px] text-slate-400 font-mono">vs.</span>
-                    <span className="font-mono font-bold text-purple-300">24 ms (Shadow)</span>
+                    <span className="font-mono font-bold text-purple-300">24 ms (Demo)</span>
                   </div>
-                  <div className="text-[10px] text-emerald-400 mt-1">14% Latenzverbesserung</div>
+                  <div className="text-[10px] text-emerald-400 mt-1">Illustrativer Unterschied; nicht gemessen</div>
                 </div>
 
                 <div className="p-3 rounded-lg bg-black/40 border border-slate-800/80">
                   <div className="text-[10px] font-mono text-slate-400 mb-1">Score-Divergenz Delta</div>
-                  <div className="font-mono font-bold text-white">&lt; 0.4% Abweichung</div>
-                  <div className="text-[10px] text-slate-400 mt-1">Deterministischer Gleichlauf</div>
+                  <div className="font-mono font-bold text-white">&lt; 0,4 % (Modellannahme)</div>
+                  <div className="text-[10px] text-slate-400 mt-1">Kein realer Abgleich</div>
                 </div>
 
                 <div className="p-3 rounded-lg bg-black/40 border border-slate-800/80">
@@ -1513,7 +1513,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
                     <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300">DELAYED</span>
                     <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-purple-500/20 text-purple-300">DEMO</span>
                   </div>
-                  <div className="text-[10px] text-slate-400 mt-1">Vollständige Transparenz</div>
+                  <div className="text-[10px] text-slate-400 mt-1">Zustandsmodell; keine Runtime-Attestation</div>
                 </div>
               </div>
             </div>
