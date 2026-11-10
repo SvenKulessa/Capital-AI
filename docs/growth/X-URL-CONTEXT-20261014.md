@@ -99,3 +99,9 @@ Regelwerk: `AGENTS.md` / `SOLO_MAINTAINER_FLOW@1`.
 
 **Nicht aus diesem PR ableitbar:** ein live veröffentlichter X-Artikel,
 neuer Gmail-/Nodemailer-Versand, autonomes Folgen/Antworten, TTS-Audio oder YouTube-Short.
+
+## Kosten- und Growth-Reconciliation – 10.11.2026
+
+Der aktuelle Code- und Deployment-Abgleich bestätigt die technisch begründete einzelne `author_id`-Expansion. Eine Entfernung ohne Prüfung der Autoren-ID, des Handles und von `protected` ist nicht zulässig. Die offizielle X-Tabelle nennt am 10.11.2026 0,005 USD/Post Read, 0,010 USD/User Read und für URL-tragende Schreibaufrufe 0,200 USD je Post-Create-Request; der tatsächliche Tarif und Verbrauch sind in der Developer Console zu prüfen. Es wurden bei dieser Reconciliation keine gebührenpflichtigen X-Requests ausgeführt. Die X-Console-Evidence bleibt `NOT_PROVEN`.
+
+#585 ist gemergt; #618 wurde ohne Merge geschlossen; Instagram #626 ist auf Main. Das Render-Deployment `dep-dbp6nvjbc2fs73b7b7dg` von `67bb5e95...` war `live`. Die öffentliche X-Kostenartikel-Route ließ sich aus der Prüfumgebung nicht erfolgreich per HTTP 200 bestätigen: **NOT_PROVEN**. Die zusätzliche Regression im bestehenden SEO-Produktions-Readback prüft nach ihrem Merge die öffentliche Seiten- und Grafik-Evidence getrennt. Ein X-Marketing-Entwurf bleibt `DRAFT/REVIEW_REQUIRED`, nie `VERIFIED_PUBLISHED` ohne Provider-Receipt.
