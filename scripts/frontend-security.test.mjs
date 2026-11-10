@@ -196,7 +196,7 @@ test('learning portal delegates video previews and never claims unrendered video
   assert.match(learning, /activeTab === 'videos' && <LearningVideos \/>/);
   assert.doesNotMatch(learning, /<LearningVideos entitled=/);
   assert.match(videos, /LEARNING_VIDEOS: readonly LearningVideo\[\] = PUBLIC_LEARNING_VIDEO_INVENTORY/);
-  assert.match(videos, /admittedPublicLearningVideos\(videos\)/);
+  assert.match(videos, /return admittedPublicLearningVideos\(/);
   assert.match(videos, /Noch kein Video veröffentlicht/);
   assert.match(videos, /<LearningComingSoonGraphic category=\{value\}/);
   assert.match(graphic, /COMING SOON/);
