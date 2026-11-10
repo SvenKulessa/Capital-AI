@@ -17,10 +17,10 @@ function fixture(url, options) {
     body = `<link rel="canonical" href="${entry.canonical}"><meta name="robots" content="index, follow"><div id="root"><main><h1>Content</h1></main></div><script type="application/ld+json">{"@type":"WebPage"}</script>`;
     if (path === X_ARTICLE.path) {
       const article = X_ARTICLE;
-      const snapshot = `<main id="capital-ai-public-snapshot" lang="de"><h1>${article.title}</h1><p>${article.intro}</p><figure><img src="${article.image}" alt="${article.imageAlt}"></figure>`
+      const snapshot = `<main id="capital-ai-public-snapshot" lang="de"><h1>${article.title}</h1><time datetime="${article.date}">${article.date}</time><p>${article.intro}</p><figure><img src="${article.image}" alt="${article.imageAlt}"></figure>`
         + article.sections.map(section => `<section><h2>${section.title}</h2><p>${section.body}</p></section>`).join('')
         + article.sources.map(source => `<a href="${source.url}">${source.label}</a>`).join('')
-        + '<a href="/learning">Learning</a></main>';
+        + '<a href="/learning/lernimpulse">Weitere Lernimpulse entdecken</a></main>';
       body = body.replace('<main><h1>Content</h1></main>', snapshot)
         .replace('{"@type":"WebPage"}', JSON.stringify({ '@graph': [{ '@type': 'BlogPosting',
           headline: article.title, datePublished: article.date, url: entry.canonical }] }));
@@ -110,7 +110,7 @@ test('X-API live-readback rejects absent article data, metadata drift, leaked in
     ['stale-date', body => body.replace(X_ARTICLE.date, '2025-01-01')],
     ['bad-description', body => body.replace(SEO_CONTENT_MANIFEST.find(entry => entry.path === X_ARTICLE.path).description, 'not-the-description')],
     ['missing-source', body => body.replace(X_ARTICLE.sources[0].url, 'https://example.com/not-source')],
-    ['missing-cta', body => body.replace('<a href="/learning">Learning</a>', '')],
+    ['missing-cta', body => body.replace('<a href="/learning/lernimpulse">Weitere Lernimpulse entdecken</a>', '')],
     ['internal-leak', body => body + ' SOCIAL_X_TOKEN_ENCRYPTION_KEY'],
   ];
   for (const [name, mutate] of variants) {
