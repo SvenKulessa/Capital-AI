@@ -4,10 +4,11 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { ContentCampaignBriefSchema } from '../../contracts/contentEngine.ts';
 import { GrowthMarketingChannelSchema } from '../../contracts/growthAiPromotion.ts';
+import { buildInstagramLearningTrackingUrl, readInstagramLearningTracking, INSTAGRAM_LEARNING_TRACKING } from '../../contracts/instagramCampaignTracking.ts';
 import { ContentSocialPackageManifestSchema } from '../../contracts/contentSocialPackage.ts';
 import { INSTAGRAM_PILOT_CAMPAIGN, INSTAGRAM_PILOT_PACKAGE,
   INSTAGRAM_PILOT_PLAN, INSTAGRAM_PILOT_SLIDES, INSTAGRAM_PILOT_STATUS,
-  INSTAGRAM_PILOT_CAPTION, INSTAGRAM_PILOT_SOURCE_SHA } from '../instagramLearningPilot.ts';
+  INSTAGRAM_PILOT_CAPTION, INSTAGRAM_PILOT_SOURCE_SHA, INSTAGRAM_PILOT_TRACKING_URL, INSTAGRAM_PILOT_CONTENT_ID } from '../instagramLearningPilot.ts';
 
 test('Instagram uses existing campaign, CADS and Social Package contracts', () => {
   assert.equal(GrowthMarketingChannelSchema.parse('INSTAGRAM'), 'INSTAGRAM');
@@ -49,4 +50,27 @@ test('synthetic spread, review and no auto-publish are explicit', () => {
   assert.match(panel,/readOnly rows=\{10\}/);
   assert.match(panel,/PNG herunterladen/);
   assert.doesNotMatch(panel,/provider-publish|publishPost|fetch\(/);
+});
+
+test('source-bound Instagram UTM link is non-identifying and rejects modified or duplicate campaign fields', () => {
+  assert.equal(INSTAGRAM_PILOT_TRACKING_URL, buildInstagramLearningTrackingUrl());
+  const url = new URL(INSTAGRAM_PILOT_TRACKING_URL);
+  assert.equal(url.origin, 'https://capital-ai.online');
+  assert.equal(url.pathname, '/learning');
+  assert.equal(url.searchParams.get('utm_source'), 'instagram');
+  assert.equal(url.searchParams.get('utm_medium'), 'organic_social');
+  assert.equal(url.searchParams.get('utm_campaign'), INSTAGRAM_PILOT_CAMPAIGN.campaignId);
+  assert.equal(url.searchParams.get('utm_content'), INSTAGRAM_PILOT_CONTENT_ID);
+  assert.equal(INSTAGRAM_PILOT_CAMPAIGN.campaignId, INSTAGRAM_LEARNING_TRACKING.campaignId);
+  assert.equal(INSTAGRAM_PILOT_CONTENT_ID, INSTAGRAM_LEARNING_TRACKING.contentId);
+  assert.deepEqual(readInstagramLearningTracking(url.search), INSTAGRAM_LEARNING_TRACKING);
+  assert.deepEqual(readInstagramLearningTracking(url.search + '&fbclid=untrusted&email=private%40example.test'), INSTAGRAM_LEARNING_TRACKING);
+  assert.equal(readInstagramLearningTracking(url.search + '&utm_source=instagram'), null);
+  assert.equal(readInstagramLearningTracking(url.search.replace('utm_source=instagram', 'utm_source=attacker')), null);
+  assert.equal(readInstagramLearningTracking('?utm_source=instagram'), null);
+  assert.equal(readInstagramLearningTracking(null), null);
+  assert.ok(!url.searchParams.has('user') && !url.searchParams.has('email'));
+  const studio = readFileSync(new URL('../../features/studio/InstagramLearningPilot.tsx', import.meta.url), 'utf8');
+  assert.match(studio, /Profil-Link kopieren/);
+  assert.match(studio, /readOnly type="text" value=\{INSTAGRAM_PILOT_TRACKING_URL\}/);
 });
