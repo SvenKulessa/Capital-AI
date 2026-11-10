@@ -77,7 +77,7 @@ export function InstagramLearningPilot(): React.ReactElement {
       <button type="button" onClick={() => { void copyProfileLink(); }}
         className="mt-2 min-h-11 rounded border border-cyan-400/40 px-4 py-2 text-sm text-cyan-100">Profil-Link kopieren</button>
       <p role="status" aria-live="polite" className="mt-2 text-xs text-slate-300">
-        {linkCopied ? 'Kampagnenlink kopiert.' : 'Keine automatische Profil-Aenderung oder Weitergabe von Besucherdaten.'}
+        {linkCopied ? 'Kampagnenlink kopiert.' : 'Keine automatische Profil-Aenderung; anonymisierte Kampagnenmessung nur nach Analytics-Einwilligung.'}
       </p>
     </div>
     <label htmlFor="studio-instagram-caption" className="mt-5 block text-sm font-semibold">Caption-Entwurf</label>
