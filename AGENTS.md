@@ -41,7 +41,7 @@ Der bestehende Check `Domain Governance` prüft beide Formate im PR. Für `depen
 
 ## P0: PR-Reihenfolge vor jedem Merge (Owner-Beschluss 2026-10-14)
 
-Vor **jedem** Merge muss der ausführende Agent zunächst die **aktuell offenen Pull Requests** gegen den aktuellen `main` prüfen und eine nachvollziehbare **Merge-Reihenfolge** festlegen. Ziel ist, vermeidbare Überschneidungen und nachgelagerte Post-Merge-Korrelations-Commits zu minimieren; dies ist ein Schritt der bestehenden Merge-Prüfung, **kein zusätzlicher Required Check, keine neue Freigabestufe und keine globale PR-Sperre**.
+Vor **jedem** Merge muss der ausführende Agent zunächst die **aktuell offenen Pull Requests** gegen den aktuellen `main` prüfen und eine nachvollziehbare **Merge-Reihenfolge** festlegen. Ziel ist, vermeidbare Überschneidungen und nachgelagerte, redundant wiederholte Korrelations- und Synchronisierungsläufe zu minimieren; dies ist ein Schritt der bestehenden Merge-Prüfung, **kein zusätzlicher Required Check, keine neue Freigabestufe und keine globale PR-Sperre**.
 
 - Alle offenen PRs erfassen, insbesondere betroffene Dateien, fachliche Abhängigkeiten, gleiche Contracts und Branch-Divergenz. Bei Überschneidungen den kleinsten fachlich unabhängigen PR zuerst vorsehen; abhängige PRs danach auf den neuen `main` synchronisieren, Konflikte konservativ beheben und Checks am aktualisierten Head erneut prüfen.
 - Bei unabhängigen PRs darf die Reihenfolge frei gewählt werden. Bestehende `[HOLD]`-Kennzeichnungen und reale Security-/Rechte-Blocker respektieren; blockierte PRs dürfen unabhängige, vollständig geprüfte PRs nicht aufhalten.
@@ -58,7 +58,7 @@ Die frühere Pflicht zur persönlichen bzw. PR-spezifischen Owner-Merge-Freigabe
 2. **Pipeline grün:** Alle anwendbaren CI-/Pipeline-Tests und Security-Jobs müssen erfolgreich abgeschlossen sein, insbesondere die Required Checks `Docker Security Gate` und `Domain Governance`. `PENDING`, `FAILED`, `CANCELLED`, fehlende oder ungeklärt `SKIPPED`-Checks sind **nicht** grün; nur nachweislich nicht anwendbare optionale Jobs ausnehmen.
 3. **Konfliktfrei und aktuell:** GitHub meldet Mergefähigkeit, keine Merge-Konflikte oder ungeklärten verbindlichen Review-Threads, Branch auf der für die Ruleset erforderlichen aktuellen Main-Basis. Nach einem Branch-Sync die dadurch erforderlichen Checks neu auswerten. Race Conditions durch `expected_head_sha` oder gleichwertige Prüfung vermeiden.
 4. **Trust Boundaries:** Keine konkret bekannten, im betroffenen Scope ungeklärten kritischen Auth-/Tenant-/Vault-/Secret-, Supply-Chain-, Lizenz-, Providerrechte-, Datenschutz- oder Kostenrisiken. Tests ersetzen keine fehlende rechtliche, vertragliche oder kostenbezogene Berechtigung; kein globales Rechts-Attest verlangen.
-5. **Evidence:** Im PR oder Abschlussbericht die verifizierten Checks/Run-IDs, genaue Tests, Reproduktionsschritte, relevante Restrisiken, Rücknahmeoption und bei Production-Änderungen den erforderlichen Runtime-Readback dokumentieren.
+5. **Evidence:** Im PR oder Abschlussbericht die verifizierten Checks/Run-IDs, genaue Tests, Reproduktionsschritte, relevante Restrisiken und Rücknahmeoption dokumentieren. Für Änderungen mit Production-Wirkung vor dem Merge den vorgesehenen Runtime-Readback (u. a. Live-SHA, `/healthz`, betroffene Funktion) festhalten; vorhandene Live-Baselines nur ihrem tatsächlich geprüften Commit zuordnen. **Der Readback des erst nach dem Merge deploybaren Commits ist Post-Deployment-Abnahme und keine unerfüllbare Pre-Merge-Bedingung.** Bis dahin bleibt die neue Live-Wirkung `NOT_PROVEN`; CI-, Ruleset-, Security-, Lizenz-, Rechte- und Merge-Bedingungen bleiben verbindlich.
 
 Wenn etwas nicht nachweisbar ist, **nicht mergen**, sondern autonom Ursachen beheben; nur echte persönliche Owner-Handlungen (z. B. Vertrag, Zahlung, Eingabe von Zugangsdaten oder Erteilung fehlender Rechte) eskalieren. Die Delegation erlaubt proaktive, risikoorientierte Best-Practice-, Architektur- und Supply-Chain-Verbesserungen im autorisierten Wirkpfad, keine beliebige Scope-Ausweitung, Schutzumgehung oder kostenpflichtige Aktivierung.
 
@@ -103,6 +103,8 @@ Der Required-Check-Satz bleibt bewusst klein.
 Aktuell autoritativ:
 - `Docker Security Gate`
 - `Domain Governance`
+
+Der aktive GitHub-Main-Ruleset-Vertrag umfasst über diese zwei Required-Status-Checks hinaus GitHub-native PR-/Review-Thread-, Main-Aktualitäts-, Code-Scanning- und Code-Quality-Regeln. Diese tatsächlich wirksamen Regeln bleiben bindend; sie sind **keine zusätzlichen namentlichen Required-CI-Checks**. Bei einem unklaren Blocker die aktuelle Ruleset-Konfiguration gezielt lesen, statt eine pauschale zusätzliche Owner-Freigabe zu verlangen.
 
 Weitere Required Checks werden nur bei einem real nachgewiesenen, nicht bereits abgedeckten Risiko eingeführt.
 
@@ -175,24 +177,16 @@ Diese konkrete Trust Boundary erzeugt **keine** zusätzlichen GitHub Required Ch
 
 ## Lineare Post-Merge-Korrelation
 
-Nach einem Merge nach `main` läuft die Post-Merge-Korrelation weiterhin automatisch.
-
-Sie darf ausschließlich:
+Nach einem Merge nach `main` läuft die Post-Merge-Korrelation automatisch als **read-only Evidence-Mechanismus**. Sie darf ausschließlich:
 
 - den Merge-Diff gegen offene PRs auswerten,
 - den **ersten tatsächlich betroffenen offenen PR in linearer Reihenfolge** bestimmen,
-- `[HOLD]`-PRs überspringen,
-- nur PRs berücksichtigen, deren Head-Branch im selben Repository liegt,
-- genau **einen Korrelations-Commit** auf diesem bereits existierenden PR-Branch erzeugen,
-- darin ausschließlich maschinenlesbare Korrelations-Evidence zum letzten Main-Merge aktualisieren.
+- `[HOLD]`-PRs überspringen und nur PRs mit Head-Branch im selben Repository berücksichtigen,
+- den Main-/Head-SHA, die exakte Dateischnittmenge und die maschinenlesbare Korrelations-Evidence im **GitHub-Actions-Artefakt** dokumentieren, ohne den PR-Branch zu verändern.
 
-Ergänzend darf derselbe Post-Merge-Lauf **read-only** den live beobachteten `main`-SHA, den Synchronisationsbedarf des ausgewählten PR, den Status der bestehenden Required Checks sowie Security- und Lizenz-Evidence-Hinweise aus Dateipfaden dokumentieren. Ergebnisse sind nur Status-Snapshots (`VERIFIED`, `BLOCKED`, `PENDING`, `NOT_PROVEN` oder `REVIEW_REQUIRED`, jeweils bezogen auf den geprüften Scope); sie sind weder ein CI-Neustart noch ein License-/Security-Approval oder eine Merge-Ermächtigung. Ein fachlicher Branch-Sync oder CI-Rerun wird nicht durch diesen reinen Korrelationsbericht ausgeführt; berechtigte Agenten können solche Schritte im normalen Entwicklungsauftrag durchführen. Es entstehen keine neuen Required Checks oder Freigabeschichten.
+Derselbe Post-Merge-Lauf darf read-only den beobachteten `main`-SHA, einen möglichen fachlichen Synchronisierungsbedarf, bestehende Required Checks und Security-/Lizenz-Evidence-Hinweise aus Dateipfaden dokumentieren. Das Ergebnis ist ein begrenzter Status-Snapshot (`VERIFIED`, `BLOCKED`, `PENDING`, `NOT_PROVEN` oder `REVIEW_REQUIRED`, jeweils nur für den geprüften Scope); es ist kein CI-Neustart, License-/Security-Approval oder Merge-Entscheid.
 
-Sie darf **keine neuen Branches, keine neuen PRs, keine Repair-Commits außerhalb dieser Evidence-Datei, keinen Merge und keinen Deploy** erzeugen.
-
-Ein Korrelations-Commit ist keine Admission, keine Merge-Freigabe und keine Anweisung, fachlichen Code automatisch umzuschreiben. Er dokumentiert nur, welche Überschneidung mit dem neuen `main` besteht.
-
-Wenn kein offener PR tatsächlich betroffen ist, wird kein Commit erzeugt.
+**Der Korrelationsjob erstellt weder Commits noch Branches, PRs, Code-Reparaturen, Merges oder Deployments.** Eine erkannte Überschneidung löst insbesondere keine automatische Mutation am PR-Head aus. Nur ein im regulären Auftrag berechtigter Entwicklungsagent synchronisiert betroffene Branches bei tatsächlichem Bedarf und wertet anschließend die erforderlichen Checks aus. Historische Beschreibungen automatischer Korrelations-Commits sind nicht autorisierend. Ist kein PR betroffen, bleibt die Negativ-Evidence im Run-Artefakt, ohne Folgeaktion.
 
 ## Reviews und Wartung
 
