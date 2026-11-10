@@ -236,7 +236,7 @@ export const STUDIO_BLUEPRINTS: StudioBlueprint[] = [
     targetLatency: '< 35 ms',
     sla: '99.95%',
     monthlyCostEur: 14.50,
-    costNote: 'Free WebSocket Tiers von Binance/Kraken + Minimal Redis Cache',
+    costNote: 'Mögliche WebSocket-Tarife und Cache-Betrieb als ungeprüfte Kosten- und Lizenzannahme',
     primaryUseCase: 'Live Preisticker, Orderflow Scalping, Arbitrage Scanner',
     dataConceptsUsed: ['Tiered Live Data', 'Snapshot + Delta', 'Parallel Homogeneous'],
     topologyNodes: [
@@ -293,7 +293,7 @@ export const STUDIO_BLUEPRINTS: StudioBlueprint[] = [
     targetLatency: 'Asynchron (25ms - 1s)',
     sla: '99.95%',
     monthlyCostEur: 34.00,
-    costNote: 'Twelve Data / Finnhub Starter + FRED API Free Tier',
+    costNote: 'Illustrativer Provider-Mix; aktuelle Tarife, Display- und Redistributonsrechte nicht geprüft',
     primaryUseCase: 'Multi-Asset Portfolio Risk, Makro-Hedging, Krypto/Aktien-Korrelationen',
     dataConceptsUsed: ['Parallel Mixed', 'Data Mesh / Domain Contracts', 'Reference / Master Data'],
     topologyNodes: [
@@ -312,7 +312,7 @@ export const STUDIO_BLUEPRINTS: StudioBlueprint[] = [
     targetLatency: '18 ms (Fastest-Wins)',
     sla: '99.999%',
     monthlyCostEur: 19.00,
-    costNote: 'Verbindung zu 3 freien Börsen-Sockets über redundanten VPS',
+    costNote: 'Drei hypothetische Börsen-Feeds; Gebühren und kommerzielle Nutzungsrechte offen',
     primaryUseCase: 'Whale Radar, High-Stakes Trading, Instant Order Execution',
     dataConceptsUsed: ['Parallel Homogeneous', 'Authority & Evidence', 'Snapshot + Delta'],
     topologyNodes: [
