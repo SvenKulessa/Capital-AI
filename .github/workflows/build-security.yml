@@ -50,6 +50,7 @@ jobs:
             scripts/skill-routing.test.mjs \
             scripts/docker-context.test.mjs \
             scripts/docker-build-cache-policy.test.mjs \
+            scripts/domain-merge-group.test.mjs \
             scripts/reviewdog-public-report.test.mjs \
             scripts/container-evidence-identity.test.mjs \
             scripts/post-merge-followup.test.mjs \
