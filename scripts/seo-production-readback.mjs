@@ -96,13 +96,13 @@ export async function productionReadback({ origin = CANONICAL_ORIGIN, full = fal
           X_ARTICLE.sources.every(source => html.includes(`href="${source.url}"`))
           && html.includes('href="/learning"'));
         add(entry.path, 'X_ARTICLE_NO_INTERNAL_LEAK',
-          !/SOCIAL_X_TOKEN_ENCRYPTION_KEY|SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SECRET_KEY|SOLO_MAINTAINER_FLOW|\\/api\\/social-media\\/x\\/url-context|\\/server\\/social-media\\//i.test(html));
+          !/SOCIAL_X_TOKEN_ENCRYPTION_KEY|SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SECRET_KEY|SOLO_MAINTAINER_FLOW|\/api\/social-media\/x\/url-context|\/server\/social-media\//i.test(html));
       }
     });
   }
   await get(X_ARTICLE.image, (response, svg) => add(X_ARTICLE.image, 'X_ARTICLE_SVG',
-    /image\\/svg\\+xml/i.test(response.headers.get('content-type') || '')
-    && /<svg\\b/i.test(svg) && /<title(?:\\s|>)/i.test(svg)));
+    /image\/svg\+xml/i.test(response.headers.get('content-type') || '')
+    && /<svg\b/i.test(svg) && /<title(?:\s|>)/i.test(svg)));
   await get('/robots.txt', (_response, body) => add('/robots.txt', 'CANONICAL_SITEMAP', body.includes(`Sitemap: ${CANONICAL_ORIGIN}/sitemap.xml`)));
   await get('/sitemap.xml', (_response, body) => {
     const locations = [...body.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
