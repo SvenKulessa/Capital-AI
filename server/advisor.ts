@@ -39,6 +39,7 @@ export async function handleAdvisorRequest(payload: AdvisorRequestPayload): Prom
       const ai = new GoogleGenAI({
         apiKey,
         httpOptions: {
+          apiVersion: 'v1beta', // Keep SDK v2 Developer API semantics after @google/genai 3.0
           headers: {
             'User-Agent': 'aistudio-build',
           },
