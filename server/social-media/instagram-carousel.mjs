@@ -68,7 +68,7 @@ function assertJpegImage(bytes) {
 export async function prepareInstagramCarousel({
   manifest, handoffs, media, caption, userId, accountRow,
   approvalRows, reservations, groupReservation, capability,
-  loadImmutableBytes, loadRightsEvidence, loadHostedBytes,
+  loadImmutableBytes, loadRightsEvidence, loadHostedBytes, loadEditorialReview,
   env = {}, now = Date.now(),
 } = {}) {
   requireThat(Array.isArray(handoffs) && handoffs.length >= 2 && handoffs.length <= 10
@@ -80,7 +80,8 @@ export async function prepareInstagramCarousel({
     'SOCIAL_CAROUSEL_CAPTION_INVALID');
   requireThat(typeof loadImmutableBytes === 'function'
     && typeof loadRightsEvidence === 'function'
-    && typeof loadHostedBytes === 'function', 'SOCIAL_CAROUSEL_PRIVATE_READBACK_REQUIRED');
+    && typeof loadHostedBytes === 'function'
+    && typeof loadEditorialReview === 'function', 'SOCIAL_CAROUSEL_PRIVATE_READBACK_REQUIRED');
   requireThat(accountRow?.platform === 'instagram'
     && accountRow?.scopes?.some(x => ['instagram_content_publish', 'instagram_business_content_publish'].includes(x)),
   'SOCIAL_CAROUSEL_INSTAGRAM_SCOPE_REQUIRED');
@@ -134,10 +135,27 @@ export async function prepareInstagramCarousel({
       reservationId: delivery.reservationId,
     }));
   }
-  const groupDigest = createHash('sha256')
-    .update(JSON.stringify([manifest.campaignId, manifest.contentId, items.map(x => x.sha256)]))
-    .digest('hex');
-  const deliveryKey = [manifest.campaignId, manifest.contentId, 'INSTAGRAM', 'CAROUSEL', groupDigest].join(':');
+  // A changed caption or individual alt text invalidates the carousel approval and CAS key.
+  // The reviewer must be a trusted durable server-side source, not the browser/manifest.
+  const digest = value => createHash('sha256').update(value).digest('hex');
+  const editorialFingerprint = digest(JSON.stringify([
+    manifest.campaignId, manifest.contentId, manifest.sourceSha,
+    digest(caption.trim()), items.map(x => [x.sha256, digest(x.altText)]),
+  ]));
+  let editorial;
+  try {
+    editorial = await loadEditorialReview({
+      userId, campaignId: manifest.campaignId, contentId: manifest.contentId,
+      sourceSha: manifest.sourceSha, editorialFingerprint,
+    });
+  } catch { throw new Error('SOCIAL_CAROUSEL_EDITORIAL_READBACK_UNAVAILABLE'); }
+  requireThat(editorial?.status === 'APPROVED' && editorial.userId === userId
+    && editorial.contentId === manifest.contentId && editorial.sourceSha === manifest.sourceSha
+    && editorial.editorialFingerprint === editorialFingerprint
+    && typeof editorial.evidenceRef === 'string' && editorial.evidenceRef.length > 0,
+  'SOCIAL_CAROUSEL_EDITORIAL_APPROVAL_REQUIRED');
+  const deliveryKey = [manifest.campaignId, manifest.contentId, 'INSTAGRAM',
+    'CAROUSEL', editorialFingerprint].join(':');
   requireThat(groupReservation?.user_id === userId
     && groupReservation?.account_id === accountId
     && groupReservation?.delivery_key === deliveryKey
@@ -153,6 +171,7 @@ export async function prepareInstagramCarousel({
     userId, accountId, externalAccountId, deliveryKey, reservationId: groupReservation.id,
     contentId: manifest.contentId, campaignId: manifest.campaignId,
     sourceSha: manifest.sourceSha, caption: caption.trim(),
+    editorialFingerprint, editorialEvidenceRef: editorial.evidenceRef,
     items: Object.freeze(items),
   });
   preparedPlans.add(plan);
