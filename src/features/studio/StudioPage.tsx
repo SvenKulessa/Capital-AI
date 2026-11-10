@@ -13,7 +13,7 @@ import { DataUnavailable } from '../../shared/ui/DataUnavailable';
  * 3. Pipeline Builder (Modular PC-style Data Pipeline Configurator)
  * 4. AI Kauf-Berater (Intelligent Architecture & Budget Advisor)
  * 5. Data & Providers (Fleet Health, Multi-Provider Latency & Failover)
- * 6. Analytics & Scoring (Buffett Value Check, Enterprise Scoring, BaFin Audit-Trail)
+ * 6. Analytics & Scoring (Buffett Value Check, Enterprise Scoring, Evidence-Konzept)
  * 7. Benchmark Lab (Live Throughput, Latency Profiler, Conflation & TCO Testbench)
  */
 
