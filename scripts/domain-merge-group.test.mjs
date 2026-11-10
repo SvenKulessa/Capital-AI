@@ -62,3 +62,12 @@ test('non-queue, missing and cross-repository contexts fail closed', () => {
     assert.notEqual(result.status, 0, 'Should reject ' + JSON.stringify(change));
   }
 });
+
+test('GitHub Actions expressions use five exact unescaped bindings', () => {
+  const start = '$' + '{{';
+  const invalid = String.fromCharCode(92) + start;
+  assert.equal(workflow.includes(invalid), false, 'Escaped expressions cannot bind GitHub context');
+  for (const field of ['action', 'merge_group.head_sha', 'merge_group.base_sha', 'merge_group.head_ref', 'merge_group.base_ref']) {
+    assert.ok(workflow.includes(start + ' github.event.' + field + ' }}'), 'Missing required GitHub expression: ' + field);
+  }
+});
