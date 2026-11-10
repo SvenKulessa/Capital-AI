@@ -108,7 +108,7 @@ test('X-API live-readback rejects absent article data, metadata drift, leaked in
     ['missing-intro', body => body.replace(X_ARTICLE.intro, '')],
     ['missing-alt', body => body.replace(X_ARTICLE.imageAlt, '')],
     ['stale-date', body => body.replace(X_ARTICLE.date, '2025-01-01')],
-    ['bad-description', body => body.replace(X_ARTICLE.description, 'not-the-description')],
+    ['bad-description', body => body.replace(SEO_CONTENT_MANIFEST.find(entry => entry.path === X_ARTICLE.path).description, 'not-the-description')],
     ['missing-source', body => body.replace(X_ARTICLE.sources[0].url, 'https://example.com/not-source')],
     ['missing-cta', body => body.replace('<a href="/learning">Learning</a>', '')],
     ['internal-leak', body => body + ' SOCIAL_X_TOKEN_ENCRYPTION_KEY'],
