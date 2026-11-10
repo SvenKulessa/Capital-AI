@@ -91,6 +91,8 @@ export async function productionReadback({ origin = CANONICAL_ORIGIN, full = fal
           && html.includes(X_ARTICLE.intro)
           && X_ARTICLE.sections.every(section => html.includes(section.body))
           && html.includes(`<time datetime="${X_ARTICLE.date}">${X_ARTICLE.date}</time>`));
+        add(entry.path, 'X_ARTICLE_SKIP_LINK',
+          /<a href="#capital-ai-public-snapshot" class="[^"]*focus:not-sr-only[^"]*">Zum Hauptinhalt springen<\/a>\s*<main id="capital-ai-public-snapshot" lang="de">/.test(html));
         add(entry.path, 'X_ARTICLE_IMAGE_ALT',
           html.includes(`src="${X_ARTICLE.image}" alt="${X_ARTICLE.imageAlt}"`));
         add(entry.path, 'X_ARTICLE_SOURCES_AND_CTA',
