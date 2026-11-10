@@ -5,7 +5,7 @@ import { assertGhcrPublicationRights } from './assert-ghcr-publication-rights.mj
 
 const sha = 'a'.repeat(40);
 const pinned = 'node:26.13.0-alpine@sha256:' + 'b'.repeat(64);
-const dockerfile = 'FROM ' + pinned + ' AS crypto-base\nFROM crypto-base AS runtime\n';
+const dockerfile = 'FROM ' + pinned + ' AS crypto-base\nLABEL org.opencontainers.image.source=https://github.com/SvenKulessa/Capital-AI\nFROM crypto-base AS runtime\n';
 const approved = () => ({
   status: 'APPROVED', deployEligible: true, applicationSourceSha: sha,
   baseImage: pinned, remainingGates: [], legalApproval: { reference: 'owner-reviewed-file' },
@@ -45,6 +45,9 @@ test('an unknown or unpinned base, invalid source SHA or missing legal evidence 
     { sourceSha: 'main' },
     { sourceSha: '' },
     { dockerfile: 'FROM node:26.13.0-alpine AS crypto-base\n' },
+    { dockerfile: dockerfile.replace('LABEL org.opencontainers.image.source=https://github.com/SvenKulessa/Capital-AI\n', '') },
+    { dockerfile: dockerfile.replace('github.com/SvenKulessa/Capital-AI', 'github.com/other/missing') },
+    { dockerfile: dockerfile + 'LABEL org.opencontainers.image.source=https://github.com/SvenKulessa/Capital-AI\n' },
     { dockerfile: dockerfile + 'FROM ' + pinned + ' AS crypto-base\n' },
     { dockerfile: '' },
     { license: null },
@@ -67,4 +70,9 @@ test('publication guard precedes GHCR login and push only in main dispatch job',
   assert.ok(guard > 0 && login > guard && push > login);
   assert.ok(publish.includes("github.event_name == 'workflow_dispatch' && inputs.publish_candidate && github.ref == 'refs/heads/main'"));
   assert.ok(publish.includes('test "$(gh api repos/SvenKulessa/Capital-AI/branches/main --jq .commit.sha)" = "$SOURCE_SHA"'));
+});
+test('current Dockerfile retains the OCI source label for GitHub package linking', () => {
+  const actual = readFileSync(new URL('../Dockerfile', import.meta.url), 'utf8');
+  assert.match(actual, /^LABEL org\.opencontainers\.image\.source=https:\/\/github\.com\/SvenKulessa\/Capital-AI$/m);
+  assert.ok(actual.indexOf('LABEL org.opencontainers.image.source=') > actual.indexOf(' AS crypto-base'));
 });
