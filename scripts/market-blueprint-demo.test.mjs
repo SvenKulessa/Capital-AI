@@ -172,6 +172,8 @@ test('public architecture catalog distinguishes design assumptions from licensed
     assert.doesNotMatch(claim, disallowed, 'unverified product/regulatory claim: ' + claim);
   }
   assert.ok(STUDIO_BLUEPRINTS.every(item => item.badge !== 'ZERO-DOWNTIME' && item.badge !== 'ZERO-WASTE'));
+  assert.ok(STUDIO_BLUEPRINTS.every(item => !/Free WebSocket Tiers|freien Börsen-Sockets|FRED API Free Tier/i.test(item.costNote)),
+    'external provider free-tier availability does not imply commercial or redistribution rights');
   const authority = STUDIO_BLUEPRINTS.find(item => item.id === 'AUTHORITY_PLANE');
   assert.match(authority.description, /regulatorische Konformität nicht nachgewiesen/);
   assert.match(authority.primaryUseCase, /Compliance-Prüfung offen/);
