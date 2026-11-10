@@ -1,12 +1,15 @@
 /**
  * Immutable, bounded Source provenance for the four-slice #598 roadmap.
+ * Revision 3 source baseline: main@a34b4468 (PR #629); reviewed AP-SOC-02
+ * status-only update changes the protected roadmapData.ts blob. Historical
+ * revisions are preserved in src/data/roadmapDeltaReconciliation.ts.
  * Code evidence only: NOT a CI, deployment, runtime, tenancy or rights gate.
  * The owner catalog already reads GitHub main and its tree; no new polling.
  */
 export const ROADMAP_LINEAGE_SOURCE = Object.freeze({
   schema: 'CAPITAL_AI_ROADMAP_SOURCE_LINEAGE@1',
   repository: 'SvenKulessa/Capital-AI',
-  baselineMainSha: '6c2f695a79a739de4e0770140396b36b72ab26f7',
+  baselineMainSha: 'a34b4468da7568dc0f33537a4c0f9ef8ff3432e0',
   maxAheadCommits: 30,
   protectedBlobs: Object.freeze([
     Object.freeze({
@@ -15,7 +18,7 @@ export const ROADMAP_LINEAGE_SOURCE = Object.freeze({
     }),
     Object.freeze({
       path: 'src/data/roadmapData.ts',
-      sha: '14e35f1f12175d066e4b07073ce5446d55317081',
+      sha: '1c508ef6e23fc2c189189a9c733894450d88ef00',
     }),
   ]),
 });
