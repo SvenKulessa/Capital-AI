@@ -3,6 +3,9 @@ name: Domain Governance
 on:
   pull_request:
     types: [opened, edited, synchronize, reopened]
+  merge_group:
+    types: [checks_requested]
+    branches: [main]
 
 permissions:
   contents: read
@@ -14,6 +17,7 @@ jobs:
     timeout-minutes: 3
     steps:
       - name: Validate branch and PR title
+        if: github.event_name == 'pull_request'
         env:
           HEAD_REF: ${{ github.head_ref }}
           PR_TITLE: ${{ github.event.pull_request.title }}
@@ -40,3 +44,27 @@ jobs:
             echo "PR title must start with [CAPITAL-AI-PRODUCT|MARKET|PLATFORM|TRUST|GROWTH]"
             exit 1
           }
+      - name: Validate merge-group identity (queue only)
+        if: github.event_name == 'merge_group'
+        shell: bash
+        env:
+          MERGE_GROUP_ACTION: \${{ github.event.action }}
+          MERGE_GROUP_HEAD_SHA: \${{ github.event.merge_group.head_sha }}
+          MERGE_GROUP_BASE_SHA: \${{ github.event.merge_group.base_sha }}
+          MERGE_GROUP_HEAD_REF: \${{ github.event.merge_group.head_ref }}
+          MERGE_GROUP_BASE_REF: \${{ github.event.merge_group.base_ref }}
+        run: |
+          set -euo pipefail
+          # Queued PRs must already pass the unchanged pull_request Domain Governance check.
+          # This check validates only the GitHub-generated merge-group identity; no approval.
+          [[ "$GITHUB_EVENT_NAME" == 'merge_group' ]]
+          [[ "$GITHUB_REPOSITORY" == 'SvenKulessa/Capital-AI' ]]
+          [[ "$MERGE_GROUP_ACTION" == 'checks_requested' ]]
+          [[ "$MERGE_GROUP_BASE_REF" == 'refs/heads/main' ]]
+          [[ "$MERGE_GROUP_HEAD_REF" =~ ^refs/heads/gh-readonly-queue/main/[^[:space:]]+$ ]]
+          [[ "$MERGE_GROUP_BASE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          [[ "$MERGE_GROUP_HEAD_SHA" =~ ^[a-f0-9]{40}$ ]]
+          [[ "$MERGE_GROUP_BASE_SHA" != "$MERGE_GROUP_HEAD_SHA" ]]
+          [[ "$GITHUB_REF" == "$MERGE_GROUP_HEAD_REF" ]]
+          [[ "$GITHUB_SHA" == "$MERGE_GROUP_HEAD_SHA" ]]
+          echo 'Domain Governance: merge-group identity verified; PR policy remains required.'
