@@ -474,13 +474,14 @@ jobs:
           registry_digest=$(docker buildx imagetools inspect "$candidate_tag" --format '{{.Manifest.Digest}}')
           image_ref="$IMAGE_REPOSITORY@$registry_digest"
           [[ "$image_ref" =~ ^ghcr\.io/svenkulessa/capital-ai@sha256:[a-f0-9]{64}$ ]]
-          docker buildx imagetools inspect "$image_ref" --raw > security-reports/registry-manifest.json
+          # buildx --raw adds a CLI newline; remove only that byte before exact SHA-256 verification.
+          docker buildx imagetools inspect "$image_ref" --raw | perl -pe 'chomp if eof' > security-reports/registry-manifest.json
           node scripts/registry-manifest-evidence.mjs security-reports/registry-manifest.json "$registry_digest" > security-reports/registry-selection.json
           platform_digest=$(jq -er '.platformManifestDigest' security-reports/registry-selection.json)
           if [[ "$platform_digest" == "$registry_digest" ]]; then
             cp security-reports/registry-manifest.json security-reports/registry-platform-manifest.json
           else
-            docker buildx imagetools inspect "$IMAGE_REPOSITORY@$platform_digest" --raw > security-reports/registry-platform-manifest.json
+            docker buildx imagetools inspect "$IMAGE_REPOSITORY@$platform_digest" --raw | perl -pe 'chomp if eof' > security-reports/registry-platform-manifest.json
             test "sha256:$(sha256sum security-reports/registry-platform-manifest.json | cut -d ' ' -f 1)" = "$platform_digest"
           fi
           docker pull "$image_ref"
