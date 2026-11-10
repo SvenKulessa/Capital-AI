@@ -6,7 +6,7 @@ import {
   computeBlueprintDemoIndex,
 } from '../src/features/home/marketBlueprintDemo.ts';
 import { didSyntheticThresholdCross } from '../src/features/home/marketBlueprintRules.ts';
-import { STUDIO_BLUEPRINTS } from '../src/data/studioData.ts';
+import { DATA_CONCEPTS, STUDIO_BLUEPRINTS } from '../src/data/studioData.ts';
 import { buildPublicBlueprintShareUrl, readPublicBlueprintShareId } from '../src/contracts/publicBlueprintShare.ts';
 
 test('public blueprint portfolio retains four distinct, explicitly non-live products', () => {
@@ -158,4 +158,40 @@ test('untrusted blueprint fragment, private context, credentials and extra query
   assert.match(documentation, /aria-live="polite"/);
   assert.match(documentation, /clipboard\.writeText\(url\)/);
   assert.doesNotMatch(documentation, /\/api\/social-media\/[^"']*publish/);
+});
+
+test('public architecture catalog distinguishes design assumptions from licensed performance and regulatory evidence', () => {
+  assert.equal(DATA_CONCEPTS.length, 16);
+  assert.equal(STUDIO_BLUEPRINTS.length, 7);
+  const publicClaims = [
+    ...DATA_CONCEPTS.flatMap(item => [item.details, item.bafinCompliance, item.costImpact]),
+    ...STUDIO_BLUEPRINTS.flatMap(item => [item.description, item.primaryUseCase, item.badge, item.costNote]),
+  ];
+  const disallowed = /BaFin-\s*und\s*MiCA-konforme|BaFin-konforme|garantiert\s+unter|Zero\s+zusätzliche\s+API-Kosten|Vollständige\s+Revisionssicherheit|Eliminiert\s+fatale\s+Fehl-Trades|Fehlerfreie\s+Rekonstruktion|Lückenlose\s+.*Archivierung|Spart\s+(?:bis\s+zu\s+)?\d+%|\b100\s*%\s*reproduzierbare|SLA-Garantien|audit-sicher|Verhindert\s+(?:UI-Stottern|Look-Ahead-Bias)/i;
+  for (const claim of publicClaims) {
+    assert.doesNotMatch(claim, disallowed, 'unverified product/regulatory claim: ' + claim);
+  }
+  assert.ok(STUDIO_BLUEPRINTS.every(item => item.badge !== 'ZERO-DOWNTIME' && item.badge !== 'ZERO-WASTE'));
+  assert.ok(STUDIO_BLUEPRINTS.every(item => !/Free WebSocket Tiers|freien Börsen-Sockets|FRED API Free Tier/i.test(item.costNote)),
+    'external provider free-tier availability does not imply commercial or redistribution rights');
+  const authority = STUDIO_BLUEPRINTS.find(item => item.id === 'AUTHORITY_PLANE');
+  assert.match(authority.description, /regulatorische Konformität nicht nachgewiesen/);
+  assert.match(authority.primaryUseCase, /Compliance-Prüfung offen/);
+  const studioData = readFileSync(new URL('../src/data/studioData.ts', import.meta.url), 'utf8');
+  assert.match(studioData, /keine verifizierten Ist-Kosten/);
+  assert.match(studioData, /kein nachgewiesener Handelsschutz/);
+  assert.match(studioData, /keine testierte Revisionssicherheit/);
+  const studioUi = readFileSync(new URL('../src/features/studio/StudioPage.tsx', import.meta.url), 'utf8');
+  assert.match(studioUi, /ARCHITEKTUR-ENTWÜRFE/);
+  assert.match(studioUi, /Keine BaFin-Zertifizierung/);
+  assert.match(studioUi, /Latenz · nicht gemessenes Entwurfsziel/);
+  assert.doesNotMatch(studioUi, /BaFin-konforme|BaFin Compliance:|Latenz-SLA|VOLLSTÄNDIGE ARCHITEKTUR-SPEZIFIKATION/i);
+  // Cover hardcoded Studio copy as well as catalog data, not just schema fields.
+  assert.match(studioUi, /SYNTHETISCHES BENCHMARK-LAB/);
+  assert.match(studioUi, /Stresstest nicht verfügbar \(Demo\)/);
+  assert.match(studioUi, /NATS bleibt deaktiviert/);
+  assert.match(studioUi, /keine echten Benchmarks/);
+  assert.match(studioUi, /Modell-TCO|TCO-Planwert/);
+  assert.doesNotMatch(studioUi, /Spart\s+\d+%|Low-Budget Garantie|100% Reproduzierbarkeit|AP-002 Compliant|WORM Compliant|Zero-Risk Regression Verification|Zero dropped frames|28 ms \(Prod\)|\bBaFin Audit\b|Budget-konform \(&lt;35€\)/i);
+  assert.doesNotMatch(studioUi, /onClick=\{runStressTest\}/, 'inert stress test must not be clickable');
 });
