@@ -184,4 +184,12 @@ test('public architecture catalog distinguishes design assumptions from licensed
   assert.match(studioUi, /Keine BaFin-Zertifizierung/);
   assert.match(studioUi, /Latenz · nicht gemessenes Entwurfsziel/);
   assert.doesNotMatch(studioUi, /BaFin-konforme|BaFin Compliance:|Latenz-SLA|VOLLSTÄNDIGE ARCHITEKTUR-SPEZIFIKATION/i);
+  // Cover hardcoded Studio copy as well as catalog data, not just schema fields.
+  assert.match(studioUi, /SYNTHETISCHES BENCHMARK-LAB/);
+  assert.match(studioUi, /Stresstest nicht verfügbar \(Demo\)/);
+  assert.match(studioUi, /NATS bleibt deaktiviert/);
+  assert.match(studioUi, /keine echten Benchmarks/);
+  assert.match(studioUi, /Modell-TCO|TCO-Planwert/);
+  assert.doesNotMatch(studioUi, /Spart\s+\d+%|Low-Budget Garantie|100% Reproduzierbarkeit|AP-002 Compliant|WORM Compliant|Zero-Risk Regression Verification|Zero dropped frames|28 ms \(Prod\)|\bBaFin Audit\b|Budget-konform \(&lt;35€\)/i);
+  assert.doesNotMatch(studioUi, /onClick=\{runStressTest\}/, 'inert stress test must not be clickable');
 });
