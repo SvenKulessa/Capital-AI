@@ -6,6 +6,8 @@ import {
   computeBlueprintDemoIndex,
 } from '../src/features/home/marketBlueprintDemo.ts';
 import { didSyntheticThresholdCross } from '../src/features/home/marketBlueprintRules.ts';
+import { STUDIO_BLUEPRINTS } from '../src/data/studioData.ts';
+import { buildPublicBlueprintShareUrl, readPublicBlueprintShareId } from '../src/contracts/publicBlueprintShare.ts';
 
 test('public blueprint portfolio retains four distinct, explicitly non-live products', () => {
   assert.deepEqual(MARKET_BLUEPRINTS.map(item => item.id), ['ingestion', 'evidence', 'scoring', 'alerts']);
@@ -120,4 +122,40 @@ test('Founder sponsorship and investor relations remain outside pricing and owne
   assert.match(form, /\/api\/public\/founder-inquiry/);
   assert.match(form, /privacyAcknowledged/);
   assert.doesNotMatch(form, /(?:ga4|gtag|trackEvent|localStorage|sessionStorage|stripe\.com)/i);
+});
+
+test('public blueprint links are allowlisted and preserve the selected catalog concept', () => {
+  assert.equal(STUDIO_BLUEPRINTS.length, 7);
+  for (const item of STUDIO_BLUEPRINTS) {
+    const url = buildPublicBlueprintShareUrl(item.id);
+    assert.ok(url);
+    const parsed = new URL(url);
+    assert.equal(parsed.origin, 'https://capital-ai.online');
+    assert.equal(parsed.pathname, '/marketscreener/dokumentation');
+    assert.equal(parsed.search, '');
+    assert.equal(parsed.hash, '#share=' + item.id);
+    assert.equal(readPublicBlueprintShareId(parsed.hash), item.id);
+  }
+});
+
+test('untrusted blueprint fragment, private context, credentials and extra query values fail closed', () => {
+  for (const invalid of [
+    null, undefined, '', 'PRIVATE_KEY', 'AUTHORITY_PLANE&token=secret',
+    '../profile', 'AUTHORITY_PLANE?apiKey=secret', 'authority_plane',
+  ]) assert.equal(buildPublicBlueprintShareUrl(invalid), null);
+
+  for (const invalid of [
+    null, undefined, '', '#share=', '#share=UNKNOWN', '#share=../profile',
+    '#share=AUTHORITY_PLANE&token=secret', '#share=AUTHORITY_PLANE%2Fprofile',
+    '#share=AUTHORITY_PLANE?utm_source=x', '#share=authority_plane',
+    '#share=AUTHORITY_PLANE#share=HYBRID',
+  ]) assert.equal(readPublicBlueprintShareId(invalid), null);
+
+  const documentation = readFileSync(new URL('../src/features/documentation/BlueprintDocumentationPage.tsx', import.meta.url), 'utf8');
+  assert.match(documentation, /readPublicBlueprintShareId\(/);
+  assert.match(documentation, /sharePublicBlueprint\(/);
+  assert.match(documentation, /Konzeptionellen Blueprint teilen/);
+  assert.match(documentation, /aria-live="polite"/);
+  assert.match(documentation, /clipboard\.writeText\(url\)/);
+  assert.doesNotMatch(documentation, /\/api\/social-media\/[^"']*publish/);
 });
