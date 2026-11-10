@@ -1,7 +1,10 @@
 // Video SEO uses only approved public/free videos. Empty until a real licensed
 // video is present; it must never make private or draft lessons indexable.
 export const PUBLIC_LEARNING_VIDEO_INVENTORY = Object.freeze([]);
+export const PUBLIC_LEARNING_VIDEO_CATEGORIES = Object.freeze(['Architektur', 'Fintech Deepdive', 'Social']);
+export const EXPECTED_YOUTUBE_CHANNEL_ID = 'UCqaBNJwcfu2cZL3GgG9TLgA';
 const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
+const SHA256 = /^[a-f0-9]{64}$/;
 function safeHttps(value) {
   try {
     const url = new URL(value);
@@ -13,7 +16,11 @@ export function publicVideoSchema(video) {
   if (!video || video.publicationState !== 'PUBLISHED' || video.visibility !== 'PUBLIC' ||
     video.licenseState !== 'VERIFIED' || video.editorialApproval !== 'APPROVED' ||
     video.searchEligible !== true || video.isFreePreview !== true ||
-    !VIDEO_ID.test(video.youtubeId ?? '') ||
+    !VIDEO_ID.test(video.youtubeId ?? '') || video.externalYouTubeId !== video.youtubeId ||
+    video.providerChannelId !== EXPECTED_YOUTUBE_CHANNEL_ID ||
+    video.providerReadbackVerified !== true || video.processingStatus !== 'SUCCEEDED' ||
+    video.embeddable !== true || !SHA256.test(video.assetSha256 ?? '') ||
+    typeof video.providerEvidenceRef !== 'string' || !video.providerEvidenceRef.trim() ||
     typeof video.title !== 'string' || video.title.trim().length < 8 ||
     typeof video.description !== 'string' || video.description.trim().length < 30 ||
     !safeHttps(video.thumbnailUrl) ||
@@ -34,13 +41,22 @@ export function publicVideoSchema(video) {
     publisher: { '@id': 'https://capital-ai.online/#project' },
   });
 }
-export function publicLearningVideoSchemas(videos = PUBLIC_LEARNING_VIDEO_INVENTORY) {
+// Use one fail-closed admission set for browser embeds and SEO VideoObject.
+// Only one free PUBLIC preview per category; public YouTube cannot paywall lessons.
+export function admittedPublicLearningVideos(videos = PUBLIC_LEARNING_VIDEO_INVENTORY) {
   if (!Array.isArray(videos)) return [];
-  const seen = new Set();
-  return videos.flatMap(video => {
-    const schema = publicVideoSchema(video);
-    if (!schema || seen.has(schema['@id'])) return [];
-    seen.add(schema['@id']);
-    return [schema];
+  const seenIds = new Set();
+  const seenCategories = new Set();
+  return videos.filter(video => {
+    if (!video || typeof video.id !== 'string' || !video.id.trim() ||
+      !PUBLIC_LEARNING_VIDEO_CATEGORIES.includes(video.category) ||
+      !publicVideoSchema(video) || seenIds.has(video.youtubeId) ||
+      seenCategories.has(video.category)) return false;
+    seenIds.add(video.youtubeId);
+    seenCategories.add(video.category);
+    return true;
   });
+}
+export function publicLearningVideoSchemas(videos = PUBLIC_LEARNING_VIDEO_INVENTORY) {
+  return admittedPublicLearningVideos(videos).map(video => publicVideoSchema(video));
 }
