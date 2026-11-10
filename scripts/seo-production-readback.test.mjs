@@ -108,7 +108,12 @@ test('X-API live-readback rejects absent article data, metadata drift, leaked in
     ['missing-intro', body => body.replace(X_ARTICLE.intro, '')],
     ['missing-alt', body => body.replace(X_ARTICLE.imageAlt, '')],
     ['stale-date', body => body.replace(X_ARTICLE.date, '2025-01-01')],
-    ['bad-description', body => body.replace(SEO_CONTENT_MANIFEST.find(entry => entry.path === X_ARTICLE.path).description, 'not-the-description')],
+    ['bad-description', body => {
+      const description = SEO_CONTENT_MANIFEST.find(entry => entry.path === X_ARTICLE.path).description;
+      const expectedTag = `<meta name="description" content="${description}">`;
+      assert.ok(body.includes(expectedTag), 'fixture must contain exact description meta tag');
+      return body.replace(expectedTag, '<meta name="description" content="not-the-description">');
+    }],
     ['missing-source', body => body.replace(X_ARTICLE.sources[0].url, 'https://example.com/not-source')],
     ['missing-cta', body => body.replace('<a href="/learning/lernimpulse">Weitere Lernimpulse entdecken</a>', '')],
     ['internal-leak', body => body + ' SOCIAL_X_TOKEN_ENCRYPTION_KEY'],
@@ -117,7 +122,10 @@ test('X-API live-readback rejects absent article data, metadata drift, leaked in
     const report = await productionReadback({ fetchImpl: async (url, options) => {
       const response = fixture(url, options);
       if (new URL(url).pathname !== X_ARTICLE.path) return response;
-      return new Response(mutate(await response.text()), { headers: { 'content-type': 'text/html' } });
+      const original = await response.text();
+      const changed = mutate(original);
+      assert.notEqual(changed, original, `fixture mutation must change HTML: ${name}`);
+      return new Response(changed, { headers: { 'content-type': 'text/html' } });
     } });
     assert.equal(report.seoStatus, 'FAIL', name);
     assert.ok(report.checks.some(item => item.path === X_ARTICLE.path && item.status === 'FAIL'), name);
