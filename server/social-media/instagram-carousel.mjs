@@ -84,6 +84,8 @@ export async function prepareInstagramCarousel({
   requireThat(accountRow?.platform === 'instagram'
     && accountRow?.scopes?.some(x => ['instagram_content_publish', 'instagram_business_content_publish'].includes(x)),
   'SOCIAL_CAROUSEL_INSTAGRAM_SCOPE_REQUIRED');
+  const externalAccountId = String(accountRow.external_account_id ?? '');
+  requireThat(ID.test(externalAccountId), 'SOCIAL_CAROUSEL_PROVIDER_ACCOUNT_MISMATCH');
   requireThat(manifest?.publicationAuthority === 'SOCIAL_MEDIA_ENGINE_ONLY',
     'SOCIAL_CAROUSEL_MANIFEST_AUTHORITY_REQUIRED');
 
@@ -148,7 +150,7 @@ export async function prepareInstagramCarousel({
 
   const plan = Object.freeze({
     contractVersion: INSTAGRAM_CAROUSEL_ADAPTER_VERSION,
-    userId, accountId, deliveryKey, reservationId: groupReservation.id,
+    userId, accountId, externalAccountId, deliveryKey, reservationId: groupReservation.id,
     contentId: manifest.contentId, campaignId: manifest.campaignId,
     sourceSha: manifest.sourceSha, caption: caption.trim(),
     items: Object.freeze(items),
@@ -186,8 +188,11 @@ export function createInstagramCarouselAdapter({
       && credentials?.accountId === plan.accountId
       && credentials?.channel === 'INSTAGRAM'
       && credentials?.platform === 'instagram'
+      && credentials.externalAccountId === plan.externalAccountId
       && typeof credentials.accessToken === 'string' && credentials.accessToken.length >= 8,
     'SOCIAL_CAROUSEL_TOKEN_TENANT_MISMATCH');
+    requireThat(String(env.SOCIAL_INSTAGRAM_ACCOUNT_ID ?? '') === plan.externalAccountId,
+      'SOCIAL_CAROUSEL_PROVIDER_ACCOUNT_MISMATCH');
     const claimed = await beginAttempt({
       userId: plan.userId, accountId: plan.accountId,
       reservationId: plan.reservationId, deliveryKey: plan.deliveryKey,
@@ -200,13 +205,11 @@ export function createInstagramCarouselAdapter({
 
     const token = credentials.accessToken;
     const endpoint = 'https://graph.facebook.com/' + version + '/'
-      + encodeURIComponent(String(env.SOCIAL_INSTAGRAM_ACCOUNT_ID ?? ''));
-    requireThat(/\/[0-9]{1,40}$/.test(endpoint)
-      && String(env.SOCIAL_INSTAGRAM_ACCOUNT_ID) === String(credentials.externalAccountId),
-    'SOCIAL_CAROUSEL_PROVIDER_ACCOUNT_MISMATCH');
+      + encodeURIComponent(plan.externalAccountId);
     let providerAttempted = false;
     let containerId = null;
     let stage = 'child';
+    let unknownPersistenceAttempted = false;
     async function request(path, method = 'GET', body = null) {
       providerAttempted = true;
       let response;
@@ -225,6 +228,7 @@ export function createInstagramCarouselAdapter({
       return payload;
     }
     async function note(stageName, lastId) {
+      unknownPersistenceAttempted = true;
       await noteUnknown({
         userId: plan.userId, accountId: plan.accountId,
         reservationId: plan.reservationId, deliveryKey: plan.deliveryKey,
@@ -260,6 +264,7 @@ export function createInstagramCarouselAdapter({
       requireThat(ID.test(String(result?.id ?? '')), 'SOCIAL_CAROUSEL_PROVIDER_RECEIPT_INVALID');
       return await note('SUBMITTED_AWAITING_READBACK', String(result.id));
     } catch {
+      if (unknownPersistenceAttempted) throw new Error('SOCIAL_CAROUSEL_UNKNOWN_PERSIST_FAILED');
       if (providerAttempted) return await note('AMBIGUOUS_' + stage.toUpperCase(), containerId);
       throw new Error('SOCIAL_CAROUSEL_SUBMISSION_ABORTED');
     }
