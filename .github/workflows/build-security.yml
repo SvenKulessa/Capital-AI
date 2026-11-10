@@ -53,6 +53,7 @@ jobs:
             scripts/domain-merge-group.test.mjs \
             scripts/reviewdog-public-report.test.mjs \
             scripts/container-evidence-identity.test.mjs \
+            scripts/os-source-inventory.test.mjs \
             scripts/registry-manifest-evidence.test.mjs \
             scripts/github-analysis-policy.test.mjs \
             scripts/verify-main-ruleset-origin.test.mjs \
@@ -350,6 +351,21 @@ jobs:
           chmod a+rwx security-reports
           docker run --rm -v "$RUNNER_TEMP/trivy-cache:/tmp/trivy" -v "$PWD/security-reports:/reports" capital-ai-security image --input /reports/image.tar --ignorefile /dev/null --scanners vuln,secret --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format json --output /reports/image.json --exit-code 0
           node scripts/summarize-trivy.mjs security-reports/image.json --gate
+      - name: OS-Quellen-/Notice-Inventar mit Image-ID binden
+        run: |
+          set -euo pipefail
+          image="capital-ai:${{ github.sha }}"
+          test "$(docker image inspect --format '{{.Id}}' "$image")" = "$(cat security-reports/image-id.txt)"
+          docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint cat "$image" /lib/apk/db/installed > security-reports/os-apk-installed.txt
+          docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint cat "$image" /etc/alpine-release > security-reports/os-alpine-release.txt
+          docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint cat "$image" /app/licenses/Node-LICENSE.txt > security-reports/runtime-node-license.txt
+          docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint cat "$image" /app/dist/fonts/OFL.txt > security-reports/runtime-font-ofl.txt
+          node scripts/os-source-inventory.mjs \
+            security-reports/os-apk-installed.txt \
+            security-reports/os-alpine-release.txt \
+            security-reports/container-identity.json Dockerfile \
+            security-reports/runtime-node-license.txt security-reports/runtime-font-ofl.txt \
+            security-reports/os-source-inventory.json security-reports/OS-PACKAGE-NOTICES.txt
       - name: CVE-2026-4738 in Build- und Runtime-Scans ausschließen
         run: |
           # Existing severity gate blocks HIGH/CRITICAL; this repaired MEDIUM CVE must not regress.
@@ -399,6 +415,12 @@ jobs:
             security-reports/*-licenses.json
             security-reports/*-identity.json
             security-reports/frontend-license-inventory.json
+            security-reports/os-source-inventory.json
+            security-reports/OS-PACKAGE-NOTICES.txt
+            security-reports/os-apk-installed.txt
+            security-reports/os-alpine-release.txt
+            security-reports/runtime-node-license.txt
+            security-reports/runtime-font-ofl.txt
             security-reports/smoke-health.json
             security-reports/smoke-state.json
             security-reports/image-id.txt
