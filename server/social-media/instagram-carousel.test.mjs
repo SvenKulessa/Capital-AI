@@ -64,8 +64,13 @@ function fixture() {
     approval_ref:handoff.approvalRef,status:'CLAIMED',
     expires_at:'2026-11-10T11:00:00Z',
   }));
-  const groupDigest=createHash('sha256')
-    .update(JSON.stringify([campaignId,contentId,shaList])).digest('hex');
+  const digest=value=>createHash('sha256').update(value).digest('hex');
+  const caption='Alle Zahlen synthetisch. Keine Anlageberatung.';
+  const editorialFingerprint=digest(JSON.stringify([
+    campaignId,contentId,SOURCE,digest(caption),
+    media.map(x=>[HASH,digest(x.altText)]),
+  ]));
+  const groupDigest=editorialFingerprint;
   const deliveryKey=[campaignId,contentId,'INSTAGRAM','CAROUSEL',groupDigest].join(':');
   const groupReservation={
     id:'group-claim',user_id:USER,account_id:ACCOUNT,delivery_key:deliveryKey,
@@ -74,8 +79,12 @@ function fixture() {
   };
   return {
     manifest,handoffs,media,approvalRows,reservations,groupReservation,
-    caption:'Alle Zahlen synthetisch. Keine Anlageberatung.',
+    caption,
     userId:USER,now:NOW,env,
+    loadEditorialReview:async()=>({
+      status:'APPROVED',userId:USER,contentId,sourceSha:SOURCE,
+      editorialFingerprint,evidenceRef:'test://review-exact-caption-alt-text',
+    }),
     accountRow:{id:ACCOUNT,user_id:USER,platform:'instagram',
       status:'connected',external_account_id:env.SOCIAL_INSTAGRAM_ACCOUNT_ID,
       token_expires_at:'2026-11-11T11:00:00Z',
@@ -240,4 +249,24 @@ test('unready child stops before parent and persists UNKNOWN; timeout never blin
   assert.equal(ambiguous.stage,'AMBIGUOUS_CHILD');
   assert.equal(calls,1);
   assert.doesNotMatch(JSON.stringify(ambiguous),/private network details/);
+});
+
+test('caption or alt-text tampering invalidates exact editorial SHA approval',async()=>{
+  for(const mutation of [
+    x=>{x.caption='Unauthorisierte Umsatzgarantie';},
+    x=>{x.media[0].altText='Manipulierter Alternativtext fuer den falschen Inhalt';},
+    x=>{x.loadEditorialReview=async()=>null;},
+  ]){
+    const x=fixture(); mutation(x);
+    await assert.rejects(prepareInstagramCarousel(x),
+      /SOCIAL_CAROUSEL_EDITORIAL_APPROVAL_REQUIRED/);
+  }
+});
+test('editorial readback is compulsory and fails closed on private store errors',async()=>{
+  const x=fixture();delete x.loadEditorialReview;
+  await assert.rejects(prepareInstagramCarousel(x),
+    /SOCIAL_CAROUSEL_PRIVATE_READBACK_REQUIRED/);
+  const y=fixture();y.loadEditorialReview=async()=>{throw Error('private reviewer details')};
+  await assert.rejects(prepareInstagramCarousel(y),
+    /SOCIAL_CAROUSEL_EDITORIAL_READBACK_UNAVAILABLE/);
 });
