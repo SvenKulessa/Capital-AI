@@ -43,6 +43,7 @@ export function publicVideoSchema(video) {
 }
 // Use one fail-closed admission set for browser embeds and SEO VideoObject.
 // Only one free PUBLIC preview per category; public YouTube cannot paywall lessons.
+/** @param {readonly any[]} [videos] */
 export function admittedPublicLearningVideos(videos = PUBLIC_LEARNING_VIDEO_INVENTORY) {
   if (!Array.isArray(videos)) return [];
   const seenIds = new Set();
