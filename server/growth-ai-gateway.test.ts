@@ -200,6 +200,6 @@ test('Gemini SDK 3 preserves v1beta in both server clients', async () => {
   const { readFileSync } = await import('node:fs');
   const advisorSource = readFileSync(new URL('./advisor.ts', import.meta.url), 'utf8');
   const growthSource = readFileSync(new URL('./growth-ai-gateway.ts', import.meta.url), 'utf8');
-  assert.match(advisorSource, /new GoogleGenAI\\(\\{[\\s\\S]*?httpOptions: \\{\\s*apiVersion: 'v1beta'/);
-  assert.match(growthSource, /new GoogleGenAI\\(\\{ apiKey, httpOptions: \\{ apiVersion: 'v1beta' \\} \\}\\)/);
+  assert.ok(advisorSource.includes("httpOptions: {\n          apiVersion: 'v1beta'"));
+  assert.ok(growthSource.includes("new GoogleGenAI({ apiKey, httpOptions: { apiVersion: 'v1beta' } })"));
 });
