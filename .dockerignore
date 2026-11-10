@@ -392,6 +392,8 @@
 !server/social-media/provider-external-readback.test.mjs
 !server/social-media/provider-publish.mjs
 !server/social-media/provider-publish.test.mjs
+!server/social-media/instagram-carousel.mjs
+!server/social-media/instagram-carousel.test.mjs
 !server/social-media/provider-execution.mjs
 !server/social-media/google-neural2-tts.mjs
 !server/social-media/google-neural2-tts.test.mjs

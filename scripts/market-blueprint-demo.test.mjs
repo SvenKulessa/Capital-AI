@@ -7,7 +7,7 @@ import {
 } from '../src/features/home/marketBlueprintDemo.ts';
 import { didSyntheticThresholdCross } from '../src/features/home/marketBlueprintRules.ts';
 import { DATA_CONCEPTS, STUDIO_BLUEPRINTS } from '../src/data/studioData.ts';
-import { buildPublicBlueprintShareUrl, readPublicBlueprintShareId } from '../src/contracts/publicBlueprintShare.ts';
+import { buildPublicBlueprintShareUrl, buildPublicBlueprintSocialDraft, readPublicBlueprintShareId } from '../src/contracts/publicBlueprintShare.ts';
 
 test('public blueprint portfolio retains four distinct, explicitly non-live products', () => {
   assert.deepEqual(MARKET_BLUEPRINTS.map(item => item.id), ['ingestion', 'evidence', 'scoring', 'alerts']);
@@ -194,4 +194,38 @@ test('public architecture catalog distinguishes design assumptions from licensed
   assert.match(studioUi, /Modell-TCO|TCO-Planwert/);
   assert.doesNotMatch(studioUi, /Spart\s+\d+%|Low-Budget Garantie|100% Reproduzierbarkeit|AP-002 Compliant|WORM Compliant|Zero-Risk Regression Verification|Zero dropped frames|28 ms \(Prod\)|\bBaFin Audit\b|Budget-konform \(&lt;35€\)/i);
   assert.doesNotMatch(studioUi, /onClick=\{runStressTest\}/, 'inert stress test must not be clickable');
+});
+
+
+test('X and LinkedIn Blueprint drafts are finite allowlisted public-copy text, never a publish action', () => {
+  const allowed = new Set(STUDIO_BLUEPRINTS.map(item => item.id));
+  for (const blueprint of STUDIO_BLUEPRINTS) {
+    for (const channel of ['X', 'LINKEDIN']) {
+      const draft = buildPublicBlueprintSocialDraft(blueprint.id, channel);
+      assert.equal(typeof draft, 'string');
+      assert.ok(draft.includes(blueprint.name), 'title preserved');
+      assert.ok(draft.includes(buildPublicBlueprintShareUrl(blueprint.id)), 'canonical URL preserved');
+      assert.ok(draft.length <= (channel === 'X' ? 280 : 1200), 'full disclaimer must fit');
+      assert.doesNotMatch(draft, /https:\/\/(?!capital-ai\.online)/);
+      assert.doesNotMatch(draft, /(?:secret|token|apiKey|entitlement|private=)/i);
+      assert.match(draft, /Keine/);
+    }
+    assert.equal(allowed.has(blueprint.id), true);
+  }
+  for (const id of [null, undefined, '', 'UNKNOWN', '../profile', 'TIER_1_4_LIVE?token=secret']) {
+    assert.equal(buildPublicBlueprintSocialDraft(id, 'X'), null);
+    assert.equal(buildPublicBlueprintSocialDraft(id, 'LINKEDIN'), null);
+  }
+  for (const channel of [null, undefined, '', 'INSTAGRAM', 'X&post=true', 'x']) {
+    assert.equal(buildPublicBlueprintSocialDraft(STUDIO_BLUEPRINTS[0].id, channel), null);
+  }
+
+  const ui = readFileSync(new URL('../src/features/documentation/BlueprintDocumentationPage.tsx', import.meta.url), 'utf8');
+  assert.match(ui, /copyPublicSocialDraft\('X'\)/);
+  assert.match(ui, /copyPublicSocialDraft\('LINKEDIN'\)/);
+  assert.match(ui, /clipboard\.writeText\(draft\)/);
+  assert.match(ui, /socialDraftFallback/);
+  assert.match(ui, /aria-live="polite"/);
+  assert.match(ui, /Keine Freigabe oder Veröffentlichung/);
+  assert.doesNotMatch(ui, /\/api\/social-media\/[^"'\\s]*publish/);
 });
