@@ -613,7 +613,7 @@ export const LearningPortalPage: React.FC<LearningPortalPageProps> = ({
       {/* ========================================================================= */}
       {/* TAB CONTENT 3: ARCHITEKTUR-VIDEO-VORSCHAU                                */}
       {/* ========================================================================= */}
-      {activeTab === 'videos' && <LearningVideos entitled={entitled} />}
+      {activeTab === 'videos' && <LearningVideos />}
 
       {/* ========================================================================= */}
       {/* TAB CONTENT 4: INTERACTIVE QUIZ & SKILL-CHECK                             */}
