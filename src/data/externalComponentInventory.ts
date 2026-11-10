@@ -215,7 +215,7 @@ export const EXTERNAL_COMPONENT_INVENTORY: readonly ExternalComponentInventoryIt
   },
   {
     id: 'google-genai', name: 'Google Gemini / GenAI SDK', domain: 'PRODUCT', kind: 'AI Provider',
-    installedAt: null, activeVersion: '2.32.0 (package-lock.json)', pipelineVersion: 'server SDK lockfile-managed; provider runtime NOT_PROVEN', lifecycle: 'ACTIVE',
+    installedAt: null, activeVersion: '3.0.0 (package-lock.json)', pipelineVersion: 'server SDK lockfile-managed; provider runtime NOT_PROVEN', lifecycle: 'ACTIVE',
     functionSummary: 'Server-side AI advisor plus governed GROWTH draft capability with request/month budget, provider/model kill-switch, model routing and public-source URL Context gate; Search Grounding remains excluded from autonomous lead discovery.',
     webAppBinding: 'server/advisor.ts + server/growth-ai-gateway.ts', license: 'Google service terms + Apache-2.0 SDK metadata', cadsScore: 77.0, scoreState: 'PROVISIONAL',
     domainAssignments: ["server-side provider endpoint; PRODUCT advisor + GROWTH draft generation; no browser domain binding"],
