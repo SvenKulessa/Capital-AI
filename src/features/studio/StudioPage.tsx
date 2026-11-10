@@ -308,14 +308,14 @@ export const StudioPage: React.FC<StudioPageProps> = ({
               <div>
                 <div className="flex items-center gap-2 text-xs font-mono text-amber-400 mb-1">
                   <Shield className="w-3.5 h-3.5" />
-                  <span>VOLLSTÄNDIGE ARCHITEKTUR-SPEZIFIKATION • 16 DATENKONZEPTE</span>
+                  <span>ARCHITEKTUR-ENTWÜRFE • 16 DATENKONZEPTE</span>
                 </div>
                 <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
                   Pipeline Architektur &amp; Marktdaten-Konzepte
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-3xl leading-relaxed">
                   Über die klassischen Tiers 1 bis 4 hinausgehend: Die 16 kanonischen Datenarchitektur-Muster
-                  für hochperformante, ausfallsichere und BaFin-konforme Finanzmarkt-Intelligence im Capital-AI System.
+                  als prüfbare Entwurfsmodelle für Finanzdatenverarbeitung. Keine BaFin-Zertifizierung, garantierte Latenz oder produktive Ausfallsicherheit nachgewiesen.
                 </p>
               </div>
 
@@ -462,7 +462,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                   <div className="p-3 rounded-lg bg-black/40 border border-slate-800">
                                     <div className="text-[11px] font-mono text-slate-400 mb-1">
-                                      BaFin / Compliance
+                                      Regulatorik · Entwurfsstatus
                                     </div>
                                     <div className="text-xs text-emerald-300 font-medium">
                                       {item.bafinCompliance}
@@ -478,7 +478,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
                                   </div>
                                   <div className="p-3 rounded-lg bg-black/40 border border-slate-800">
                                     <div className="text-[11px] font-mono text-slate-400 mb-1">
-                                      Latenz-SLA
+                                      Latenz · nicht gemessenes Entwurfsziel
                                     </div>
                                     <div className="text-xs text-amber-300 font-mono font-bold">
                                       {item.latencyTarget}
@@ -591,7 +591,7 @@ export const StudioPage: React.FC<StudioPageProps> = ({
 
                       <div className="p-2.5 rounded-lg bg-black/40 border border-slate-800 text-[11px] space-y-1">
                         <div>
-                          <strong className="text-slate-400">BaFin Compliance: </strong>
+                          <strong className="text-slate-400">Regulatorik / Evidenz: </strong>
                           <span className="text-emerald-300">{item.bafinCompliance}</span>
                         </div>
                         <div>
