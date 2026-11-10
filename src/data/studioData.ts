@@ -293,7 +293,7 @@ export const STUDIO_BLUEPRINTS: StudioBlueprint[] = [
     targetLatency: 'Asynchron (25ms - 1s)',
     sla: '99.95%',
     monthlyCostEur: 34.00,
-    costNote: 'Illustrativer Provider-Mix; aktuelle Tarife, Display- und Redistributonsrechte nicht geprüft',
+    costNote: 'Illustrativer Provider-Mix; aktuelle Tarife, Display- und Redistributionsrechte nicht geprüft',
     primaryUseCase: 'Multi-Asset Portfolio Risk, Makro-Hedging, Krypto/Aktien-Korrelationen',
     dataConceptsUsed: ['Parallel Mixed', 'Data Mesh / Domain Contracts', 'Reference / Master Data'],
     topologyNodes: [
