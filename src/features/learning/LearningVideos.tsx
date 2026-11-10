@@ -28,7 +28,8 @@ export type LearningVideo = {
 // One reviewed source for SEO and the UI. Unpublished manifest chapters stay absent.
 export const LEARNING_VIDEOS: readonly LearningVideo[] = PUBLIC_LEARNING_VIDEO_INVENTORY;
 export function visibleLearningVideos(videos: readonly LearningVideo[]): LearningVideo[] {
-  return admittedPublicLearningVideos(videos) as LearningVideo[];
+  // Preserve the read-only inventory contract while calling the shared JS admission API.
+  return admittedPublicLearningVideos([...videos]) as LearningVideo[];
 }
 function VideoPlayer({ video }: { video: LearningVideo }) {
   const [consent, setConsent] = useState(false);
