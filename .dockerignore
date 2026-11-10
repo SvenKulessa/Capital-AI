@@ -132,6 +132,7 @@
 !server/license-pages.test.mjs
 !shared/vocabulary-metadata.mjs
 !shared/architecture-governance-vocabulary.mjs
+!shared/roadmap-source-lineage.mjs
 !shared/vocabulary-access-policy.mjs
 !shared/seo-indexing-policy.mjs
 !shared/seo-content-manifest.mjs
@@ -169,8 +170,11 @@
 !public/learning/
 !public/learning/editorial/
 !public/learning/editorial/chart-accessibility-20261010.svg
+!public/learning/editorial/x-api-kostenbewusst-20261106.svg
 !public/learning/charts/
 !public/learning/charts/**
+!public/learning/social/
+!public/learning/social/**
 !public/learning/videos/
 !public/learning/videos/**
 !scripts/generate-learning-coming-soon.tsx
@@ -182,6 +186,7 @@
 !scripts/market-blueprint-demo.test.mjs
 !scripts/screener-blueprint-preview.test.mjs
 !scripts/cads-growth-quality.test.mjs
+!scripts/masterclass-templates.test.mjs
 !scripts/static-legal-routes.test.mjs
 !scripts/harden-npm-toolchain.mjs
 !scripts/benchmark-scoring-capacity.mjs
@@ -449,3 +454,8 @@
 # Auth/Learning isolation regression sources executed by npm test in the existing build.
 !server/password-auth-isolation.test.mjs
 !server/learning-isolation.test.mjs
+
+!shared/vocabulary-lookup.mjs
+!scripts/growth/firecrawl-client.mjs
+!scripts/growth/firecrawl-client.test.mjs
+!server/chat-buddy-learn.test.mjs

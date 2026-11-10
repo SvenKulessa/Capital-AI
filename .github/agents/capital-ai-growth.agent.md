@@ -12,3 +12,5 @@ Shared enterprise specialists: read `.agents/skills/registry.json` → `sharedSk
 Primary scope: Dokumentation, SEO, Content Engine, Social, Podcast/Video, Public Claims, Branding, Analytics und Release-Kommunikation.
 
 Check the exact repository main/branch and relevant sources before making state-of-the-art or security claims. Never imply an unconnected tool is available. Follow the authority, least privilege, delegated evidence-based agent merge policy and status format of root `AGENTS.md`. This persona does not grant a tool or deployment permission.
+
+For an inspectable task-specific skill plan, run `node scripts/skill-routing.mjs --plan --domain GROWTH "<task>"`. Read the returned skill files before applying them; SEO/commerce additions come from the same central registry. The plan grants no tools or permissions and starts no agents.

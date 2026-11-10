@@ -2,6 +2,9 @@
 import { writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { SEO_CONTENT_MANIFEST } from '../shared/seo-content-manifest.mjs';
+import { blogArticleForPath } from '../shared/blog-articles.mjs';
+
+const X_ARTICLE = blogArticleForPath('/blog/x-api-expansions-kosten');
 
 const CANONICAL_ORIGIN = 'https://capital-ai.online';
 const MAX_BYTES = 2 * 1024 * 1024;
@@ -53,17 +56,54 @@ export async function productionReadback({ origin = CANONICAL_ORIGIN, full = fal
     await get(entry.path, (response, html) => {
       add(entry.path, 'HTML_CONTENT_TYPE', /text\/html/i.test(response.headers.get('content-type') || ''));
       add(entry.path, 'CANONICAL', html.includes(`<link rel="canonical" href="${entry.canonical}"`));
-      add(entry.path, 'INDEXABLE', !/noindex/i.test(response.headers.get('x-robots-tag') || '') &&
-        /<meta name="robots" content="index, follow/i.test(html));
-      add(entry.path, 'CRAWLABLE_CONTENT', /<div id="root"><main\b[^>]*>[\s\S]*?<h1>[^<]+<\/h1>/i.test(html));
+      // Standalone legal documents use Google's default INDEX semantics and
+      // intentionally have no React root. Still reject explicit indexing bans.
+      const legal = ['/impressum', '/datenschutz', '/agb'].includes(entry.path);
+      const robots = [...html.matchAll(/<meta\b[^>]*>/gi)].map(m => m[0])
+        .filter(tag => /name\s*=\s*["'](?:robots|googlebot)["']/i.test(tag));
+      const blocked = /noindex|\bnone\b/i.test(response.headers.get('x-robots-tag') || '') ||
+        robots.some(tag => /content\s*=\s*["'][^"']*\b(?:noindex|none)\b/i.test(tag));
+      add(entry.path, 'INDEXABLE', !blocked && (legal || /<meta name="robots" content="index, follow/i.test(html)));
+      add(entry.path, 'CRAWLABLE_CONTENT', /<main\b[^>]*>[\s\S]*?<h1\b[^>]*>[^<]+<\/h1>[\s\S]*?<\/main>/i.test(html));
       const scripts = [...html.matchAll(/<script\b[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi)];
       let schemaValid = scripts.length > 0;
       for (const [, body] of scripts) {
         try { JSON.parse(body); } catch { schemaValid = false; }
       }
       add(entry.path, 'JSON_LD_VALID', schemaValid);
+      if (entry.path === X_ARTICLE.path) {
+        add(entry.path, 'X_ARTICLE_DESCRIPTION',
+          html.includes(`<meta name="description" content="${entry.description}"`));
+        let blogPosting = null;
+        for (const [, body] of scripts) {
+          try {
+            const parsed = JSON.parse(body);
+            const nodes = Array.isArray(parsed?.['@graph']) ? parsed['@graph'] : [parsed];
+            blogPosting ||= nodes.find(node => node?.['@type'] === 'BlogPosting'
+              && node?.url === entry.canonical);
+          } catch { /* malformed JSON-LD already fails the generic check */ }
+        }
+        add(entry.path, 'X_ARTICLE_BLOGPOSTING',
+          blogPosting?.headline === X_ARTICLE.title
+          && blogPosting?.datePublished === X_ARTICLE.date);
+        add(entry.path, 'X_ARTICLE_FALLBACK',
+          /<main id="capital-ai-public-snapshot" lang="de">/.test(html)
+          && html.includes(X_ARTICLE.intro)
+          && X_ARTICLE.sections.every(section => html.includes(section.body))
+          && html.includes(`<time datetime="${X_ARTICLE.date}">${X_ARTICLE.date}</time>`));
+        add(entry.path, 'X_ARTICLE_IMAGE_ALT',
+          html.includes(`src="${X_ARTICLE.image}" alt="${X_ARTICLE.imageAlt}"`));
+        add(entry.path, 'X_ARTICLE_SOURCES_AND_CTA',
+          X_ARTICLE.sources.every(source => html.includes(`href="${source.url}"`))
+          && html.includes('href="/learning/lernimpulse"'));
+        add(entry.path, 'X_ARTICLE_NO_INTERNAL_LEAK',
+          !/SOCIAL_X_TOKEN_ENCRYPTION_KEY|SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SECRET_KEY|SOLO_MAINTAINER_FLOW|\/api\/social-media\/x\/url-context|\/server\/social-media\//i.test(html));
+      }
     });
   }
+  await get(X_ARTICLE.image, (response, svg) => add(X_ARTICLE.image, 'X_ARTICLE_SVG',
+    /image\/svg\+xml/i.test(response.headers.get('content-type') || '')
+    && /<svg\b/i.test(svg) && /<title(?:\s|>)/i.test(svg)));
   await get('/robots.txt', (_response, body) => add('/robots.txt', 'CANONICAL_SITEMAP', body.includes(`Sitemap: ${CANONICAL_ORIGIN}/sitemap.xml`)));
   await get('/sitemap.xml', (_response, body) => {
     const locations = [...body.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);

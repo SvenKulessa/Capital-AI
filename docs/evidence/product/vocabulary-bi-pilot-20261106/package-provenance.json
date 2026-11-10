@@ -1,0 +1,8 @@
+{
+  "version": "2.0.0",
+  "wheel": "duckdb-2.0.0-cp312-abi3-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+  "sha256": "ab51ec57d329d6f3df37c0287b55d71c3fc07bb54b61d1afed09104f953b1431",
+  "pypiDigestMatches": true,
+  "licenseFile": "duckdb-2.0.0.dist-info/licenses/LICENSE",
+  "license": "MIT"
+}

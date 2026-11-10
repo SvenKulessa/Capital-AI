@@ -1,3 +1,4 @@
+import { lookupVocabulary } from '../../shared/vocabulary-lookup.mjs';
 import { copy } from "./i18n";
 import { graphContext, retrieve, scenarioLines } from "./core/graph";
 import { classify } from "./core/nlu";
@@ -32,10 +33,17 @@ export type LocalAnswer = {
 export function answerLocally(question: string, lang: Lang, research: boolean, hops = 2): LocalAnswer {
   const text = question.trim();
   const judged = classify(text);
-  const hits = retrieve(text, hops, lang, judged.intent);
+  const definitions = lang === 'de' ? lookupVocabulary(text, {limit:3}) : [];
+  const hits: GraphHit[] = definitions.length
+    ? definitions.map(term => ({id:term.id,label:term.term,snippet:term.definition,score:1,hop:0,relation:term.path}))
+    : retrieve(text, hops, lang, judged.intent);
   // Legacy boolean argument retained until the Chat Buddy host drops it.
   void research;
-  const answer = compose(lang, judged.intent, hits);
+  const asksDefinition = lang === 'de' && /^(?:was (?:ist|bedeutet)|erkläre|erklare|definiere|definition)\b/i.test(text);
+  const intent = definitions.length || asksDefinition ? 'explain' : judged.intent;
+  const answer = definitions.length
+    ? definitions.map(term => `${term.term}: ${term.definition} Thesaurus: ${term.thesaurus.join(', ')}. ${term.path}`).join('\n')
+    : compose(lang, intent, hits);
   const labels = STEP[lang];
   const steps: TraceStep[] = [
     { id: "hear", kind: "hear", title: labels.hear, detail: text },
@@ -43,7 +51,7 @@ export function answerLocally(question: string, lang: Lang, research: boolean, h
       id: "classify",
       kind: "classify",
       title: labels.classify,
-      detail: `${judged.intent} · ${Math.round(judged.confidence * 100)}%`,
+      detail: definitions.length ? "Kanonischer Glossar-Lookup" : `${judged.intent} · ${Math.round(judged.confidence * 100)}%`,
     },
     {
       id: "retrieve",
@@ -55,7 +63,7 @@ export function answerLocally(question: string, lang: Lang, research: boolean, h
       id: "reason",
       kind: "reason",
       title: labels.reason,
-      detail: reasonLine(lang, judged.intent),
+      detail: definitions.length ? "Definition aus dem gemeinsamen Glossar; keine freie Ableitung." : reasonLine(lang, intent),
     },
     { id: "speak", kind: "speak", title: labels.speak, detail: answer },
   ];
@@ -63,8 +71,8 @@ export function answerLocally(question: string, lang: Lang, research: boolean, h
     answer,
     trace: createTrace(text, steps, answer),
     hits,
-    intent: judged.intent,
-    confidence: judged.confidence,
+    intent,
+    confidence: definitions.length ? 1 : judged.confidence,
     context: graphContext(hits),
   };
 }
@@ -143,7 +151,7 @@ function compare(lang: Lang, left: GraphHit, right: GraphHit): string {
 }
 
 function missing(lang: Lang): string {
-  if (lang === "de") return "Ja ja, dazu habe ich keinen Knoten. Frag nach EZB-Zins, DCF, Drawdown oder Gold.";
+  if (lang === "de") return "Dazu habe ich noch keine passende Definition. Du kannst einen Begriff im Glossar suchen.";
   if (lang === "en") return "Ja ja, I have no node for that. Ask about the ECB rate, DCF, drawdown or gold.";
   if (lang === "fr") return "Ja ja, pas de nœud pour ça. Demande le taux BCE, le DCF, le drawdown ou l'or.";
   if (lang === "es") return "Ja ja, no tengo nodo para eso. Pregunta por el tipo BCE, el DCF, el drawdown o el oro.";

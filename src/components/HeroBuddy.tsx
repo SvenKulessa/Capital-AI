@@ -49,8 +49,9 @@ type LearnStatus = { files: number; chunks: number; hits: LearnHit[]; tools: Lea
 function weaveLearned(answer: string, hits: LearnHit[]) {
   if (!hits.length) return answer;
   const lead = hits[0];
+  if (lead.path.startsWith("/vocabulary/") && answer.includes(lead.path)) return answer;
   const line = `Aus dem lokalen Bestand ${lead.path}: ${lead.snippet}`;
-  if (/keinen Knoten|no node|pas de nœud|no tengo nodo|non ho un nodo/i.test(answer)) return `Ja ja! ${line}`;
+  if (/keine passende Definition|keinen Knoten|no node|pas de nœud|no tengo nodo|non ho un nodo/i.test(answer)) return `Ja ja! ${line}`;
   return `${answer}\n${line}`;
 }
 

@@ -1,5 +1,6 @@
 import { discoverRepositoryUpdates } from './tool-update-discovery.mjs';
 import { assessCatalogEntries, summarizeCatalog } from './tool-catalog-assessment.mjs';
+import { assessRoadmapSourceLineage, ROADMAP_LINEAGE_SOURCE } from '../shared/roadmap-source-lineage.mjs';
 
 // Read-only owner catalog. GitHub is the source of truth for repository state, not runtime deployment state.
 const REPO = 'SvenKulessa/Capital-AI';
@@ -356,12 +357,30 @@ export function createRepositoryToolCatalog({ fetchImpl = fetch, now = Date.now,
       lock: parseJson(sources[1]), supplementary,
       inventorySource: supplementary['src/data/externalComponentInventory.ts'],
     });
+    // Optional, pinned provenance of source blobs, not a live/CI/rights attestation.
+    // GitHub compare is read once alongside the existing owner catalog snapshot.
+    // Failure, rewrite, large history, missing blob or mismatched head => null.
+    let roadmapLineage = null;
+    const eligibleTree = ROADMAP_LINEAGE_SOURCE.protectedBlobs.every(source =>
+      treeResult.tree.some(item => item?.type === 'blob' &&
+        item.path === source.path && item.sha === source.sha));
+    if (sha !== ROADMAP_LINEAGE_SOURCE.baselineMainSha && eligibleTree) {
+      try {
+        const compare = parseJson(await readText(fetchImpl,
+          API + '/compare/' + ROADMAP_LINEAGE_SOURCE.baselineMainSha + '...' + sha + '?per_page=30',
+          1_600_000));
+        roadmapLineage = assessRoadmapSourceLineage({ compare, headSha: sha, tree: treeResult.tree });
+      } catch {
+        // An unavailable lineage service never promotes source status.
+      }
+    }
     return {
       schema: 'CAPITAL_AI_REPOSITORY_TOOL_CATALOG@1',
       repository: REPO, branch: 'main', sourceSha: sha,
       deployedSha: SHA.test(env.RENDER_GIT_COMMIT || '') ? env.RENDER_GIT_COMMIT : null,
       observedAt: new Date(now()).toISOString(),
       freshness: 'LIVE', entries, total: entries.length,
+      roadmapLineage,
       counts: summarizeCatalog(entries), blockedUpdates,
     };
   }

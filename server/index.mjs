@@ -230,7 +230,7 @@ function injectPublicSeoSnapshot(html, pathname) {
   const article = blogArticleForPath(pathname);
   const focus = pathname === '/' ? PUBLIC_SEARCH_FOCUS.map(item => `<section><h2>${escapeHtml(item.title)}</h2><p>${escapeHtml(item.body)}</p><a href="${item.path}">${escapeHtml(item.label)}</a></section>`).join('') : '';
   const editorial = article
-    ? `<p>${escapeHtml(article.intro)}</p><figure><img src="${escapeHtml(article.image)}" alt="${escapeHtml(article.imageAlt)}" width="1200" height="630" style="max-width:100%;height:auto"><figcaption>Eigene Illustration; keine realen Kursdaten.</figcaption></figure>` + article.sections.map(section => `<section><h2>${escapeHtml(section.title)}</h2><p>${escapeHtml(section.body)}</p></section>`).join('') + `<p>Technische und didaktische Information; keine Anlageberatung.</p><h2>Quellen</h2><ul>` + article.sources.map(source => `<li><a href="${escapeHtml(source.url)}">${escapeHtml(source.label)}</a></li>`).join('') + '</ul>'
+    ? `<p>Eigene Redaktion · <time datetime="${escapeHtml(article.date)}">${escapeHtml(article.date)}</time></p><p>${escapeHtml(article.intro)}</p><figure><img src="${escapeHtml(article.image)}" alt="${escapeHtml(article.imageAlt)}" width="1200" height="630" style="max-width:100%;height:auto"><figcaption>Eigene Illustration; keine realen Kursdaten.</figcaption></figure>` + article.sections.map(section => `<section><h2>${escapeHtml(section.title)}</h2><p>${escapeHtml(section.body)}</p></section>`).join('') + `<p>Technische und didaktische Information; keine Anlageberatung.</p><h2>Quellen</h2><ul>` + article.sources.map(source => `<li><a href="${escapeHtml(source.url)}">${escapeHtml(source.label)}</a></li>`).join('') + '</ul><p><a href="/learning/lernimpulse">Weitere Lernimpulse entdecken</a></p>'
     : pathname === '/blog' ? BLOG_ARTICLES.map(item => `<section><h2><a href="${escapeHtml(item.path)}">${escapeHtml(item.title)}</a></h2><p>${escapeHtml(item.description)}</p></section>`).join('') : '';
   const snapshot =
     `<main id="capital-ai-public-snapshot" lang="de"><article>` +
@@ -741,8 +741,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   let unsubscribePubsubProbe = null;
   try { unsubscribePubsubProbe = await infrastructure.subscribeQuotes(() => {}); } catch { /* health remains fail-closed */ }
   const stop = startStreams();
-  const reconnect = process.env.MARKET_BROKER_PAUSED !== 'false' ? null
-    : setInterval(() => { if (infrastructure.status().status !== 'connected') void infrastructure.start(); }, 15000);
+  const reconnect = process.env.MARKET_BROKER_PAUSED === 'false' || infrastructure.cacheOnlyEnabled()
+    ? setInterval(() => { if (infrastructure.shouldRetry()) void infrastructure.start(); }, 15000) : null;
   reconnect?.unref();
   server.listen(Number(process.env.PORT || 10000), '0.0.0.0');
   const shutdown = () => {

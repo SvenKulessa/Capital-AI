@@ -328,5 +328,1842 @@
       }
     ],
     "reviewedAt": "2026-10-11"
+  },
+  {
+    "id": "suppression-marketing",
+    "term": "Suppression (Marketing)",
+    "category": "SECURITY_COMPLIANCE",
+    "categoryLabel": "Security & Compliance",
+    "level": "Einsteiger",
+    "shortDefinition": "Ausschluss eines Kontakts von Werbung aufgrund einer Abmeldung, eines Widerspruchs oder eines anderen Sperrgrunds.",
+    "detailedExplanation": "Ausschluss eines Kontakts von Werbung aufgrund einer Abmeldung, eines Widerspruchs oder eines anderen Sperrgrunds. Eine Sperrliste erteilt keine Versandfreigabe für andere Kontakte.",
+    "formulaOrRule": "Eine Sperrliste erteilt keine Versandfreigabe für andere Kontakte.",
+    "practicalExample": "Synthetische Demo: Ein abgemeldeter Demo-Kontakt wird vor jedem Versand ausgeschlossen.",
+    "keyTakeaway": "Eine Sperrliste erteilt keine Versandfreigabe für andere Kontakte.",
+    "searchTags": [
+      "Suppression (Marketing)",
+      "Werbesperre",
+      "Marketing-Sperrvermerk",
+      "Versandausschluss",
+      "supression",
+      "suppression"
+    ],
+    "thesaurus": [
+      "Werbesperre",
+      "Marketing-Sperrvermerk",
+      "Versandausschluss"
+    ],
+    "sources": [
+      {
+        "title": "mail — Primärquelle",
+        "url": "https://www.rfc-editor.org/rfc/rfc8058"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "suppression-security",
+    "term": "Suppression (Security)",
+    "category": "SECURITY_COMPLIANCE",
+    "categoryLabel": "Security & Compliance",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Gezieltes Ausblenden einer Sicherheitsmeldung mit dokumentierter Begründung und begrenztem Geltungsbereich.",
+    "detailedExplanation": "Gezieltes Ausblenden einer Sicherheitsmeldung mit dokumentierter Begründung und begrenztem Geltungsbereich. Unterdrücken behebt die Schwachstelle nicht; Ausnahmen benötigen eine erneute Prüfung.",
+    "formulaOrRule": "Unterdrücken behebt die Schwachstelle nicht; Ausnahmen benötigen eine erneute Prüfung.",
+    "practicalExample": "Synthetische Demo: Eine Demo-Ausnahme betrifft nur eine geprüfte Paketversion.",
+    "keyTakeaway": "Unterdrücken behebt die Schwachstelle nicht; Ausnahmen benötigen eine erneute Prüfung.",
+    "searchTags": [
+      "Suppression (Security)",
+      "Befundunterdrückung",
+      "Sicherheitsbefund-Ausblendung",
+      "Unterdrückung einer Sicherheitsmeldung",
+      "supression",
+      "suppression"
+    ],
+    "thesaurus": [
+      "Befundunterdrückung",
+      "Sicherheitsbefund-Ausblendung",
+      "Unterdrückung einer Sicherheitsmeldung"
+    ],
+    "sources": [
+      {
+        "title": "security — Primärquelle",
+        "url": "https://docs.github.com/en/code-security/how-tos/manage-security-alerts/manage-dependabot-alerts/view-dependabot-alerts"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "consent",
+    "term": "Consent",
+    "category": "SECURITY_COMPLIANCE",
+    "categoryLabel": "Security & Compliance",
+    "level": "Einsteiger",
+    "shortDefinition": "Freiwillige, bestimmte, informierte und unmissverständliche Zustimmung zu einer Datenverarbeitung.",
+    "detailedExplanation": "Freiwillige, bestimmte, informierte und unmissverständliche Zustimmung zu einer Datenverarbeitung. Rechtsgrundlage je Zweck bestimmen und einen Widerruf ermöglichen.",
+    "formulaOrRule": "Rechtsgrundlage je Zweck bestimmen und einen Widerruf ermöglichen.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Nutzer entscheidet separat über optionale Analytics-Cookies.",
+    "keyTakeaway": "Rechtsgrundlage je Zweck bestimmen und einen Widerruf ermöglichen.",
+    "searchTags": [
+      "Consent",
+      "Einwilligung",
+      "Datenschutzrechtliche Einwilligung",
+      "Zustimmung zur Datenverarbeitung"
+    ],
+    "thesaurus": [
+      "Einwilligung",
+      "Datenschutzrechtliche Einwilligung",
+      "Zustimmung zur Datenverarbeitung"
+    ],
+    "sources": [
+      {
+        "title": "gdpr — Primärquelle",
+        "url": "https://eur-lex.europa.eu/eli/reg/2016/679/oj"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "oauth2",
+    "term": "OAuth 2.0",
+    "category": "SECURITY_COMPLIANCE",
+    "categoryLabel": "Security & Compliance",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Rahmenwerk für delegierten, begrenzten Zugriff auf geschützte Ressourcen.",
+    "detailedExplanation": "Rahmenwerk für delegierten, begrenzten Zugriff auf geschützte Ressourcen. OAuth ist von der darauf aufbauenden Identitätsprüfung mit OpenID Connect zu unterscheiden.",
+    "formulaOrRule": "OAuth ist von der darauf aufbauenden Identitätsprüfung mit OpenID Connect zu unterscheiden.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Dienst erhält Zugriff auf eine freigegebene Upload-Funktion.",
+    "keyTakeaway": "OAuth ist von der darauf aufbauenden Identitätsprüfung mit OpenID Connect zu unterscheiden.",
+    "searchTags": [
+      "OAuth 2.0",
+      "OAuth2",
+      "OAuth-2.0-Autorisierungsrahmen",
+      "OAuth Version 2.0"
+    ],
+    "thesaurus": [
+      "OAuth2",
+      "OAuth-2.0-Autorisierungsrahmen",
+      "OAuth Version 2.0"
+    ],
+    "sources": [
+      {
+        "title": "oauth — Primärquelle",
+        "url": "https://www.rfc-editor.org/rfc/rfc6749"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "scope",
+    "term": "Scope (OAuth)",
+    "category": "SECURITY_COMPLIANCE",
+    "categoryLabel": "Security & Compliance",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Benannter Umfang eines delegierten API-Zugriffs.",
+    "detailedExplanation": "Benannter Umfang eines delegierten API-Zugriffs. Angeforderte und tatsächlich erteilte Rechte unterscheiden.",
+    "formulaOrRule": "Angeforderte und tatsächlich erteilte Rechte unterscheiden.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Token darf lesen, aber nicht hochladen.",
+    "keyTakeaway": "Angeforderte und tatsächlich erteilte Rechte unterscheiden.",
+    "searchTags": [
+      "Scope (OAuth)",
+      "Berechtigungsumfang",
+      "OAuth-Berechtigungsbereich",
+      "Zugriffsbereich"
+    ],
+    "thesaurus": [
+      "Berechtigungsumfang",
+      "OAuth-Berechtigungsbereich",
+      "Zugriffsbereich"
+    ],
+    "sources": [
+      {
+        "title": "oauth — Primärquelle",
+        "url": "https://www.rfc-editor.org/rfc/rfc6749"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "access-token",
+    "term": "Access Token",
+    "category": "SECURITY_COMPLIANCE",
+    "categoryLabel": "Security & Compliance",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Berechtigungsnachweis für den Zugriff auf eine geschützte Ressource.",
+    "detailedExplanation": "Berechtigungsnachweis für den Zugriff auf eine geschützte Ressource. Token als Geheimnisse behandeln und nicht in Logs oder Prompts übernehmen.",
+    "formulaOrRule": "Token als Geheimnisse behandeln und nicht in Logs oder Prompts übernehmen.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Zugriff endet beim Ablauf des Tokens.",
+    "keyTakeaway": "Token als Geheimnisse behandeln und nicht in Logs oder Prompts übernehmen.",
+    "searchTags": [
+      "Access Token",
+      "Zugriffstoken",
+      "API-Zugriffstoken",
+      "OAuth-Zugriffstoken"
+    ],
+    "thesaurus": [
+      "Zugriffstoken",
+      "API-Zugriffstoken",
+      "OAuth-Zugriffstoken"
+    ],
+    "sources": [
+      {
+        "title": "oauth — Primärquelle",
+        "url": "https://www.rfc-editor.org/rfc/rfc6749"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "refresh-token",
+    "term": "Refresh Token",
+    "category": "SECURITY_COMPLIANCE",
+    "categoryLabel": "Security & Compliance",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Nachweis, mit dem beim Autorisierungsserver neue Zugriffstoken angefordert werden können.",
+    "detailedExplanation": "Nachweis, mit dem beim Autorisierungsserver neue Zugriffstoken angefordert werden können. Erneuerungstoken sicher speichern; Rotation und Widerruf berücksichtigen.",
+    "formulaOrRule": "Erneuerungstoken sicher speichern; Rotation und Widerruf berücksichtigen.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Server erneuert den API-Zugang serverseitig.",
+    "keyTakeaway": "Erneuerungstoken sicher speichern; Rotation und Widerruf berücksichtigen.",
+    "searchTags": [
+      "Refresh Token",
+      "Erneuerungstoken",
+      "OAuth-Refresh-Token",
+      "Token zur Zugriffserneuerung"
+    ],
+    "thesaurus": [
+      "Erneuerungstoken",
+      "OAuth-Refresh-Token",
+      "Token zur Zugriffserneuerung"
+    ],
+    "sources": [
+      {
+        "title": "oauth — Primärquelle",
+        "url": "https://www.rfc-editor.org/rfc/rfc6749"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "dead-letter-queue",
+    "term": "Dead Letter Queue",
+    "category": "PLATFORM_ARCHITECTURE",
+    "categoryLabel": "Plattform & Architektur",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Separater Bereich für Nachrichten, deren reguläre Verarbeitung gescheitert ist.",
+    "detailedExplanation": "Separater Bereich für Nachrichten, deren reguläre Verarbeitung gescheitert ist. Wiederholung benötigt eine geklärte Ursache und idempotente Verarbeitung.",
+    "formulaOrRule": "Wiederholung benötigt eine geklärte Ursache und idempotente Verarbeitung.",
+    "practicalExample": "Synthetische Demo: Ein fehlerhafter Demo-Job wird nach begrenzten Versuchen zur Untersuchung abgelegt.",
+    "keyTakeaway": "Wiederholung benötigt eine geklärte Ursache und idempotente Verarbeitung.",
+    "searchTags": [
+      "Dead Letter Queue",
+      "DLQ",
+      "Fehlerwarteschlange",
+      "Warteschlange unzustellbarer Nachrichten"
+    ],
+    "thesaurus": [
+      "DLQ",
+      "Fehlerwarteschlange",
+      "Warteschlange unzustellbarer Nachrichten"
+    ],
+    "sources": [
+      {
+        "title": "queue — Primärquelle",
+        "url": "https://www.rabbitmq.com/docs/dlx"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "circuit-breaker",
+    "term": "Circuit Breaker",
+    "category": "PLATFORM_ARCHITECTURE",
+    "categoryLabel": "Plattform & Architektur",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Muster, das Aufrufe an einen wiederholt fehlschlagenden Dienst vorübergehend unterbricht.",
+    "detailedExplanation": "Muster, das Aufrufe an einen wiederholt fehlschlagenden Dienst vorübergehend unterbricht. Erholung kontrolliert prüfen und Fehler nicht als Erfolg darstellen.",
+    "formulaOrRule": "Erholung kontrolliert prüfen und Fehler nicht als Erfolg darstellen.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Client pausiert nach mehreren Ausfällen weitere Aufrufe.",
+    "keyTakeaway": "Erholung kontrolliert prüfen und Fehler nicht als Erfolg darstellen.",
+    "searchTags": [
+      "Circuit Breaker",
+      "Schutzschalter",
+      "Fehlerschutzschaltung",
+      "Circuit-Breaker-Muster"
+    ],
+    "thesaurus": [
+      "Schutzschalter",
+      "Fehlerschutzschaltung",
+      "Circuit-Breaker-Muster"
+    ],
+    "sources": [
+      {
+        "title": "circuit — Primärquelle",
+        "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "rag",
+    "term": "Retrieval-Augmented Generation",
+    "category": "AI_MODELS",
+    "categoryLabel": "KI & Scoring-Modelle",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Verknüpfung von Informationssuche und modellgestützter Textgenerierung.",
+    "detailedExplanation": "Verknüpfung von Informationssuche und modellgestützter Textgenerierung. Gefundener Kontext garantiert weder Richtigkeit noch zulässige Nutzung.",
+    "formulaOrRule": "Gefundener Kontext garantiert weder Richtigkeit noch zulässige Nutzung.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Assistent erhält passende Glossardefinitionen als Kontext.",
+    "keyTakeaway": "Gefundener Kontext garantiert weder Richtigkeit noch zulässige Nutzung.",
+    "searchTags": [
+      "Retrieval-Augmented Generation",
+      "RAG",
+      "Abrufgestützte Textgenerierung",
+      "Retrieval-gestützte Generierung"
+    ],
+    "thesaurus": [
+      "RAG",
+      "Abrufgestützte Textgenerierung",
+      "Retrieval-gestützte Generierung"
+    ],
+    "sources": [
+      {
+        "title": "rag — Primärquelle",
+        "url": "https://arxiv.org/abs/2005.11401"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "prompt-injection",
+    "term": "Prompt Injection",
+    "category": "AI_MODELS",
+    "categoryLabel": "KI & Scoring-Modelle",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Angriff, bei dem Eingaben oder fremde Inhalte das Verhalten eines Sprachmodells unerwünscht steuern sollen.",
+    "detailedExplanation": "Angriff, bei dem Eingaben oder fremde Inhalte das Verhalten eines Sprachmodells unerwünscht steuern sollen. Fremde Texte als Daten behandeln und Werkzeugrechte unabhängig begrenzen.",
+    "formulaOrRule": "Fremde Texte als Daten behandeln und Werkzeugrechte unabhängig begrenzen.",
+    "practicalExample": "Synthetische Demo: Eine Demo-Webseite versucht, eine Quellenprüfung abzuschalten.",
+    "keyTakeaway": "Fremde Texte als Daten behandeln und Werkzeugrechte unabhängig begrenzen.",
+    "searchTags": [
+      "Prompt Injection",
+      "Prompt-Injektion",
+      "Anweisungsinjektion",
+      "Eingeschleuste Modellanweisung"
+    ],
+    "thesaurus": [
+      "Prompt-Injektion",
+      "Anweisungsinjektion",
+      "Eingeschleuste Modellanweisung"
+    ],
+    "sources": [
+      {
+        "title": "injection — Primärquelle",
+        "url": "https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "embedding",
+    "term": "Embedding",
+    "category": "AI_MODELS",
+    "categoryLabel": "KI & Scoring-Modelle",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Numerische Darstellung eines Inhalts für Ähnlichkeitsvergleiche und weitere Verarbeitung.",
+    "detailedExplanation": "Numerische Darstellung eines Inhalts für Ähnlichkeitsvergleiche und weitere Verarbeitung. Ähnlichkeit beweist weder Identität noch sachliche Richtigkeit.",
+    "formulaOrRule": "Ähnlichkeit beweist weder Identität noch sachliche Richtigkeit.",
+    "practicalExample": "Synthetische Demo: Ähnliche Demo-Fragen liegen im Vektorraum näher beieinander.",
+    "keyTakeaway": "Ähnlichkeit beweist weder Identität noch sachliche Richtigkeit.",
+    "searchTags": [
+      "Embedding",
+      "Vektoreinbettung",
+      "Einbettungsvektor",
+      "Vektorrepräsentation"
+    ],
+    "thesaurus": [
+      "Vektoreinbettung",
+      "Einbettungsvektor",
+      "Vektorrepräsentation"
+    ],
+    "sources": [
+      {
+        "title": "rag — Primärquelle",
+        "url": "https://arxiv.org/abs/2005.11401"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "inference",
+    "term": "Inferenz",
+    "category": "AI_MODELS",
+    "categoryLabel": "KI & Scoring-Modelle",
+    "level": "Einsteiger",
+    "shortDefinition": "Anwendung eines trainierten Modells zur Berechnung einer Ausgabe aus Eingaben.",
+    "detailedExplanation": "Anwendung eines trainierten Modells zur Berechnung einer Ausgabe aus Eingaben. Inferenz, Training und Evaluation erfüllen unterschiedliche Aufgaben.",
+    "formulaOrRule": "Inferenz, Training und Evaluation erfüllen unterschiedliche Aufgaben.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Modell klassifiziert eine neue Nachricht.",
+    "keyTakeaway": "Inferenz, Training und Evaluation erfüllen unterschiedliche Aufgaben.",
+    "searchTags": [
+      "Inferenz",
+      "Inference",
+      "Modellanwendung",
+      "Anwendung eines trainierten Modells"
+    ],
+    "thesaurus": [
+      "Inference",
+      "Modellanwendung",
+      "Anwendung eines trainierten Modells"
+    ],
+    "sources": [
+      {
+        "title": "ml — Primärquelle",
+        "url": "https://scikit-learn.org/stable/glossary.html"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "overfitting",
+    "term": "Overfitting",
+    "category": "AI_MODELS",
+    "categoryLabel": "KI & Scoring-Modelle",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Ein Modell passt sich zu stark an Besonderheiten der Trainingsdaten an und generalisiert schlechter.",
+    "detailedExplanation": "Ein Modell passt sich zu stark an Besonderheiten der Trainingsdaten an und generalisiert schlechter. Unabhängige Tests und geeignete Komplexitätsbegrenzung einsetzen.",
+    "formulaOrRule": "Unabhängige Tests und geeignete Komplexitätsbegrenzung einsetzen.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Modell ist im Training gut und im späteren Test schwach.",
+    "keyTakeaway": "Unabhängige Tests und geeignete Komplexitätsbegrenzung einsetzen.",
+    "searchTags": [
+      "Overfitting",
+      "Überanpassung",
+      "Modellüberanpassung",
+      "Überanpassung an Trainingsdaten"
+    ],
+    "thesaurus": [
+      "Überanpassung",
+      "Modellüberanpassung",
+      "Überanpassung an Trainingsdaten"
+    ],
+    "sources": [
+      {
+        "title": "ml — Primärquelle",
+        "url": "https://scikit-learn.org/stable/glossary.html"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "regularization",
+    "term": "Regularisierung",
+    "category": "AI_MODELS",
+    "categoryLabel": "KI & Scoring-Modelle",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Methoden zur Begrenzung der Modellkomplexität und Stabilisierung der Anpassung.",
+    "detailedExplanation": "Methoden zur Begrenzung der Modellkomplexität und Stabilisierung der Anpassung. Die Stärke auf Trainings- und Validierungsdaten wählen, nicht auf den endgültigen Testdaten.",
+    "formulaOrRule": "Die Stärke auf Trainings- und Validierungsdaten wählen, nicht auf den endgültigen Testdaten.",
+    "practicalExample": "Synthetische Demo: Eine Demo-L2-Strafe begrenzt große Koeffizienten.",
+    "keyTakeaway": "Die Stärke auf Trainings- und Validierungsdaten wählen, nicht auf den endgültigen Testdaten.",
+    "searchTags": [
+      "Regularisierung",
+      "Regularization",
+      "Modellregularisierung",
+      "Komplexitätsregularisierung"
+    ],
+    "thesaurus": [
+      "Regularization",
+      "Modellregularisierung",
+      "Komplexitätsregularisierung"
+    ],
+    "sources": [
+      {
+        "title": "ml — Primärquelle",
+        "url": "https://scikit-learn.org/stable/glossary.html"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "f1-score",
+    "term": "F1-Score",
+    "category": "AI_MODELS",
+    "categoryLabel": "KI & Scoring-Modelle",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Harmonisches Mittel von Precision und Recall für eine festgelegte Klassifikation.",
+    "detailedExplanation": "Harmonisches Mittel von Precision und Recall für eine festgelegte Klassifikation. Schwellenwert, positive Klasse und Mittelungsverfahren angeben.",
+    "formulaOrRule": "Schwellenwert, positive Klasse und Mittelungsverfahren angeben.",
+    "practicalExample": "Synthetische Demo: Precision und Recall von jeweils 0,8 ergeben im Demo-Fall F1 gleich 0,8.",
+    "keyTakeaway": "Schwellenwert, positive Klasse und Mittelungsverfahren angeben.",
+    "searchTags": [
+      "F1-Score",
+      "F1-Maß",
+      "F1-Wert",
+      "Harmonisches Mittel aus Precision und Recall"
+    ],
+    "thesaurus": [
+      "F1-Maß",
+      "F1-Wert",
+      "Harmonisches Mittel aus Precision und Recall"
+    ],
+    "sources": [
+      {
+        "title": "metrics — Primärquelle",
+        "url": "https://scikit-learn.org/stable/modules/model_evaluation.html"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "react",
+    "term": "React",
+    "category": "PLATFORM_ARCHITECTURE",
+    "categoryLabel": "Plattform & Architektur",
+    "level": "Einsteiger",
+    "shortDefinition": "JavaScript-Bibliothek für Benutzeroberflächen aus wiederverwendbaren Komponenten.",
+    "detailedExplanation": "JavaScript-Bibliothek für Benutzeroberflächen aus wiederverwendbaren Komponenten. React allein bestimmt weder Backend noch Berechtigungsmodell.",
+    "formulaOrRule": "React allein bestimmt weder Backend noch Berechtigungsmodell.",
+    "practicalExample": "Synthetische Demo: Eine Demo-Begriffskarte wird als Komponente dargestellt.",
+    "keyTakeaway": "React allein bestimmt weder Backend noch Berechtigungsmodell.",
+    "searchTags": [
+      "React",
+      "React.js",
+      "ReactJS",
+      "React-Bibliothek"
+    ],
+    "thesaurus": [
+      "React.js",
+      "ReactJS",
+      "React-Bibliothek"
+    ],
+    "sources": [
+      {
+        "title": "react — Primärquelle",
+        "url": "https://react.dev/learn"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "typescript",
+    "term": "TypeScript",
+    "category": "PLATFORM_ARCHITECTURE",
+    "categoryLabel": "Plattform & Architektur",
+    "level": "Einsteiger",
+    "shortDefinition": "Programmiersprache, die JavaScript um statische Typprüfung erweitert.",
+    "detailedExplanation": "Programmiersprache, die JavaScript um statische Typprüfung erweitert. Typprüfung ersetzt keine Laufzeitvalidierung externer Eingaben.",
+    "formulaOrRule": "Typprüfung ersetzt keine Laufzeitvalidierung externer Eingaben.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Typ erlaubt nur definierte Lernniveaus.",
+    "keyTakeaway": "Typprüfung ersetzt keine Laufzeitvalidierung externer Eingaben.",
+    "searchTags": [
+      "TypeScript",
+      "TS",
+      "TypeScript-Sprache",
+      "TypeScript-Programmiersprache"
+    ],
+    "thesaurus": [
+      "TS",
+      "TypeScript-Sprache",
+      "TypeScript-Programmiersprache"
+    ],
+    "sources": [
+      {
+        "title": "ts — Primärquelle",
+        "url": "https://www.typescriptlang.org/docs/"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "vite",
+    "term": "Vite",
+    "category": "PLATFORM_ARCHITECTURE",
+    "categoryLabel": "Plattform & Architektur",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Werkzeug für Webentwicklung und die Erzeugung auslieferbarer Web-Builds.",
+    "detailedExplanation": "Werkzeug für Webentwicklung und die Erzeugung auslieferbarer Web-Builds. Ein erfolgreicher Build belegt keinen erfolgreichen Produktionsbetrieb.",
+    "formulaOrRule": "Ein erfolgreicher Build belegt keinen erfolgreichen Produktionsbetrieb.",
+    "practicalExample": "Synthetische Demo: Eine Demo-Anwendung wird für die Auslieferung gebündelt.",
+    "keyTakeaway": "Ein erfolgreicher Build belegt keinen erfolgreichen Produktionsbetrieb.",
+    "searchTags": [
+      "Vite",
+      "Vite-Buildtool",
+      "Vite-Buildsystem",
+      "Vite-Entwicklungswerkzeug"
+    ],
+    "thesaurus": [
+      "Vite-Buildtool",
+      "Vite-Buildsystem",
+      "Vite-Entwicklungswerkzeug"
+    ],
+    "sources": [
+      {
+        "title": "vite — Primärquelle",
+        "url": "https://vite.dev/guide/"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "nextjs",
+    "term": "Next.js",
+    "category": "PLATFORM_ARCHITECTURE",
+    "categoryLabel": "Plattform & Architektur",
+    "level": "Fortgeschritten",
+    "shortDefinition": "React-Framework mit Routing sowie serverseitigen und clientseitigen Renderoptionen.",
+    "detailedExplanation": "React-Framework mit Routing sowie serverseitigen und clientseitigen Renderoptionen. Ein Glossareintrag ist keine Empfehlung zum Wechsel des vorhandenen Frameworks.",
+    "formulaOrRule": "Ein Glossareintrag ist keine Empfehlung zum Wechsel des vorhandenen Frameworks.",
+    "practicalExample": "Synthetische Demo: Eine Demo-Seite wird auf dem Server vorbereitet.",
+    "keyTakeaway": "Ein Glossareintrag ist keine Empfehlung zum Wechsel des vorhandenen Frameworks.",
+    "searchTags": [
+      "Next.js",
+      "NextJS",
+      "Next.js-Framework",
+      "Next-React-Framework"
+    ],
+    "thesaurus": [
+      "NextJS",
+      "Next.js-Framework",
+      "Next-React-Framework"
+    ],
+    "sources": [
+      {
+        "title": "next — Primärquelle",
+        "url": "https://nextjs.org/docs"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "fastapi",
+    "term": "FastAPI",
+    "category": "PLATFORM_ARCHITECTURE",
+    "categoryLabel": "Plattform & Architektur",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Python-Framework für APIs mit typgestützter Eingabevalidierung und Dokumentation.",
+    "detailedExplanation": "Python-Framework für APIs mit typgestützter Eingabevalidierung und Dokumentation. Validierung ersetzt keine Authentifizierung oder Mandantentrennung.",
+    "formulaOrRule": "Validierung ersetzt keine Authentifizierung oder Mandantentrennung.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Endpunkt validiert ein Analysegesuch.",
+    "keyTakeaway": "Validierung ersetzt keine Authentifizierung oder Mandantentrennung.",
+    "searchTags": [
+      "FastAPI",
+      "FastAPI-Framework",
+      "FastAPI-Webframework",
+      "FastAPI-Python-Framework"
+    ],
+    "thesaurus": [
+      "FastAPI-Framework",
+      "FastAPI-Webframework",
+      "FastAPI-Python-Framework"
+    ],
+    "sources": [
+      {
+        "title": "fastapi — Primärquelle",
+        "url": "https://fastapi.tiangolo.com/"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "vue",
+    "term": "Vue.js",
+    "category": "PLATFORM_ARCHITECTURE",
+    "categoryLabel": "Plattform & Architektur",
+    "level": "Einsteiger",
+    "shortDefinition": "JavaScript-Framework für deklarative, komponentenbasierte Benutzeroberflächen.",
+    "detailedExplanation": "JavaScript-Framework für deklarative, komponentenbasierte Benutzeroberflächen. Die Definition bedeutet nicht, dass Vue in CAPITAL-AI installiert ist.",
+    "formulaOrRule": "Die Definition bedeutet nicht, dass Vue in CAPITAL-AI installiert ist.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Filter aktualisiert seine Liste reaktiv.",
+    "keyTakeaway": "Die Definition bedeutet nicht, dass Vue in CAPITAL-AI installiert ist.",
+    "searchTags": [
+      "Vue.js",
+      "Vue",
+      "VueJS",
+      "Vue-Framework"
+    ],
+    "thesaurus": [
+      "Vue",
+      "VueJS",
+      "Vue-Framework"
+    ],
+    "sources": [
+      {
+        "title": "vue — Primärquelle",
+        "url": "https://vuejs.org/guide/introduction.html"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "svelte",
+    "term": "Svelte",
+    "category": "PLATFORM_ARCHITECTURE",
+    "categoryLabel": "Plattform & Architektur",
+    "level": "Fortgeschritten",
+    "shortDefinition": "UI-Framework, das deklarative Komponenten mit einem Compiler verarbeitet.",
+    "detailedExplanation": "UI-Framework, das deklarative Komponenten mit einem Compiler verarbeitet. Svelte und das ergänzende Anwendungsframework SvelteKit unterscheiden.",
+    "formulaOrRule": "Svelte und das ergänzende Anwendungsframework SvelteKit unterscheiden.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Zähler wird aus einer Svelte-Komponente erzeugt.",
+    "keyTakeaway": "Svelte und das ergänzende Anwendungsframework SvelteKit unterscheiden.",
+    "searchTags": [
+      "Svelte",
+      "Svelte-Framework",
+      "Svelte-UI-Framework",
+      "Svelte-Komponentenframework"
+    ],
+    "thesaurus": [
+      "Svelte-Framework",
+      "Svelte-UI-Framework",
+      "Svelte-Komponentenframework"
+    ],
+    "sources": [
+      {
+        "title": "svelte — Primärquelle",
+        "url": "https://svelte.dev/docs/svelte/overview"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "nestjs",
+    "term": "NestJS",
+    "category": "PLATFORM_ARCHITECTURE",
+    "categoryLabel": "Plattform & Architektur",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Node.js-Framework für modular strukturierte Serveranwendungen.",
+    "detailedExplanation": "Node.js-Framework für modular strukturierte Serveranwendungen. Frameworkstruktur garantiert keine sicheren Zugriffsrechte.",
+    "formulaOrRule": "Frameworkstruktur garantiert keine sicheren Zugriffsrechte.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Dienst trennt Controller und fachliche Verarbeitung.",
+    "keyTakeaway": "Frameworkstruktur garantiert keine sicheren Zugriffsrechte.",
+    "searchTags": [
+      "NestJS",
+      "Nest",
+      "Nest.js",
+      "NestJS-Framework"
+    ],
+    "thesaurus": [
+      "Nest",
+      "Nest.js",
+      "NestJS-Framework"
+    ],
+    "sources": [
+      {
+        "title": "nest — Primärquelle",
+        "url": "https://docs.nestjs.com/"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "firecrawl",
+    "term": "Firecrawl",
+    "category": "DATA_EVIDENCE",
+    "categoryLabel": "Daten & Evidence",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Werkzeug zum Abrufen und Aufbereiten von Webinhalten für nachgelagerte Verarbeitung.",
+    "detailedExplanation": "Werkzeug zum Abrufen und Aufbereiten von Webinhalten für nachgelagerte Verarbeitung. Backend-Lizenz, Cloud-Vertrag und Inhaltsrechte getrennt prüfen.",
+    "formulaOrRule": "Backend-Lizenz, Cloud-Vertrag und Inhaltsrechte getrennt prüfen.",
+    "practicalExample": "Synthetische Demo: Eine erlaubte Demo-Dokumentation wird als Markdown abgerufen.",
+    "keyTakeaway": "Backend-Lizenz, Cloud-Vertrag und Inhaltsrechte getrennt prüfen.",
+    "searchTags": [
+      "Firecrawl",
+      "Firecrawl-Crawler",
+      "Firecrawl-Webextraktion",
+      "Firecrawl-Scrapingdienst"
+    ],
+    "thesaurus": [
+      "Firecrawl-Crawler",
+      "Firecrawl-Webextraktion",
+      "Firecrawl-Scrapingdienst"
+    ],
+    "sources": [
+      {
+        "title": "firecrawl — Primärquelle",
+        "url": "https://github.com/firecrawl/firecrawl"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "duckdb",
+    "term": "DuckDB",
+    "category": "DATA_EVIDENCE",
+    "categoryLabel": "Daten & Evidence",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Eingebettete analytische SQL-Datenbank für lokale und dateibasierte Auswertungen.",
+    "detailedExplanation": "Eingebettete analytische SQL-Datenbank für lokale und dateibasierte Auswertungen. Keine Lizenzgebühr bedeutet nicht, dass Betrieb und Infrastruktur kostenfrei sind.",
+    "formulaOrRule": "Keine Lizenzgebühr bedeutet nicht, dass Betrieb und Infrastruktur kostenfrei sind.",
+    "practicalExample": "Synthetische Demo: Eine Demo zählt Ereignisse aus einer lokalen Parquet-Datei.",
+    "keyTakeaway": "Keine Lizenzgebühr bedeutet nicht, dass Betrieb und Infrastruktur kostenfrei sind.",
+    "searchTags": [
+      "DuckDB",
+      "DuckDB-Datenbank",
+      "DuckDB-SQL-Engine",
+      "DuckDB-Analysedatenbank"
+    ],
+    "thesaurus": [
+      "DuckDB-Datenbank",
+      "DuckDB-SQL-Engine",
+      "DuckDB-Analysedatenbank"
+    ],
+    "sources": [
+      {
+        "title": "duckdb — Primärquelle",
+        "url": "https://duckdb.org/docs/stable/"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "apache-spark",
+    "term": "Apache Spark",
+    "category": "DATA_EVIDENCE",
+    "categoryLabel": "Daten & Evidence",
+    "level": "Quant / Pro",
+    "shortDefinition": "Verarbeitungssystem für verteilte Datenanalysen und Datenpipelines.",
+    "detailedExplanation": "Verarbeitungssystem für verteilte Datenanalysen und Datenpipelines. Ein Cluster benötigt einen belegten Datenumfang und passende Betriebsfähigkeit.",
+    "formulaOrRule": "Ein Cluster benötigt einen belegten Datenumfang und passende Betriebsfähigkeit.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Cluster aggregiert aufgeteilte Ereignisdateien.",
+    "keyTakeaway": "Ein Cluster benötigt einen belegten Datenumfang und passende Betriebsfähigkeit.",
+    "searchTags": [
+      "Apache Spark",
+      "Spark",
+      "Spark-Engine",
+      "Apache-Spark-Verarbeitungssystem"
+    ],
+    "thesaurus": [
+      "Spark",
+      "Spark-Engine",
+      "Apache-Spark-Verarbeitungssystem"
+    ],
+    "sources": [
+      {
+        "title": "spark — Primärquelle",
+        "url": "https://spark.apache.org/docs/latest/"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "apache-arrow",
+    "term": "Apache Arrow",
+    "category": "DATA_EVIDENCE",
+    "categoryLabel": "Daten & Evidence",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Spaltenorientiertes Speicherformat und Ökosystem zum Austausch analytischer Daten.",
+    "detailedExplanation": "Spaltenorientiertes Speicherformat und Ökosystem zum Austausch analytischer Daten. Das Format ist kein vollständiges Datenbank- oder Berechtigungssystem.",
+    "formulaOrRule": "Das Format ist kein vollständiges Datenbank- oder Berechtigungssystem.",
+    "practicalExample": "Synthetische Demo: Demo-Werkzeuge tauschen einen spaltenorientierten Datenblock aus.",
+    "keyTakeaway": "Das Format ist kein vollständiges Datenbank- oder Berechtigungssystem.",
+    "searchTags": [
+      "Apache Arrow",
+      "Arrow",
+      "Arrow-Spaltenformat",
+      "Apache-Arrow-Speicherformat"
+    ],
+    "thesaurus": [
+      "Arrow",
+      "Arrow-Spaltenformat",
+      "Apache-Arrow-Speicherformat"
+    ],
+    "sources": [
+      {
+        "title": "arrow — Primärquelle",
+        "url": "https://arrow.apache.org/overview/"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "apache-parquet",
+    "term": "Apache Parquet",
+    "category": "DATA_EVIDENCE",
+    "categoryLabel": "Daten & Evidence",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Spaltenorientiertes Dateiformat für komprimierte analytische Daten.",
+    "detailedExplanation": "Spaltenorientiertes Dateiformat für komprimierte analytische Daten. Dateiformat und Datenzugriffsrechte sind getrennte Fragen.",
+    "formulaOrRule": "Dateiformat und Datenzugriffsrechte sind getrennte Fragen.",
+    "practicalExample": "Synthetische Demo: Eine Demo liest nur benötigte Spalten einer Datei.",
+    "keyTakeaway": "Dateiformat und Datenzugriffsrechte sind getrennte Fragen.",
+    "searchTags": [
+      "Apache Parquet",
+      "Parquet",
+      "Parquet-Dateiformat",
+      "Parquet-Spaltenformat"
+    ],
+    "thesaurus": [
+      "Parquet",
+      "Parquet-Dateiformat",
+      "Parquet-Spaltenformat"
+    ],
+    "sources": [
+      {
+        "title": "parquet — Primärquelle",
+        "url": "https://parquet.apache.org/docs/overview/"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "apache-superset",
+    "term": "Apache Superset",
+    "category": "DATA_EVIDENCE",
+    "categoryLabel": "Daten & Evidence",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Quelloffene Anwendung für Datenexploration und Dashboards über angebundene Datenquellen.",
+    "detailedExplanation": "Quelloffene Anwendung für Datenexploration und Dashboards über angebundene Datenquellen. Einbettung benötigt sichere Authentifizierung und serverseitige Datenfilter.",
+    "formulaOrRule": "Einbettung benötigt sichere Authentifizierung und serverseitige Datenfilter.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Dashboard zeigt aggregierte Betriebsdaten.",
+    "keyTakeaway": "Einbettung benötigt sichere Authentifizierung und serverseitige Datenfilter.",
+    "searchTags": [
+      "Apache Superset",
+      "Superset",
+      "Superset-BI",
+      "Apache-Superset-Visualisierung"
+    ],
+    "thesaurus": [
+      "Superset",
+      "Superset-BI",
+      "Apache-Superset-Visualisierung"
+    ],
+    "sources": [
+      {
+        "title": "superset — Primärquelle",
+        "url": "https://superset.apache.org/"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "power-bi",
+    "term": "Power BI",
+    "category": "DATA_EVIDENCE",
+    "categoryLabel": "Daten & Evidence",
+    "level": "Einsteiger",
+    "shortDefinition": "Microsoft-Plattform für Datenmodelle, Berichte und Business Intelligence.",
+    "detailedExplanation": "Microsoft-Plattform für Datenmodelle, Berichte und Business Intelligence. Lokale Berichtserstellung und lizenzierte Produktionseinbettung unterscheiden.",
+    "formulaOrRule": "Lokale Berichtserstellung und lizenzierte Produktionseinbettung unterscheiden.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Bericht visualisiert freigegebene CSV-Aggregate.",
+    "keyTakeaway": "Lokale Berichtserstellung und lizenzierte Produktionseinbettung unterscheiden.",
+    "searchTags": [
+      "Power BI",
+      "Microsoft Power BI",
+      "PowerBI",
+      "Microsoft-Power-BI-Plattform"
+    ],
+    "thesaurus": [
+      "Microsoft Power BI",
+      "PowerBI",
+      "Microsoft-Power-BI-Plattform"
+    ],
+    "sources": [
+      {
+        "title": "powerbi — Primärquelle",
+        "url": "https://learn.microsoft.com/en-us/power-bi/developer/embedded/embedded-capacity"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "dax",
+    "term": "DAX",
+    "category": "DATA_EVIDENCE",
+    "categoryLabel": "Daten & Evidence",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Formelsprache für Berechnungen und Kennzahlen in tabellarischen Datenmodellen.",
+    "detailedExplanation": "Formelsprache für Berechnungen und Kennzahlen in tabellarischen Datenmodellen. Filterkontext und Zeilenkontext unterscheiden.",
+    "formulaOrRule": "Filterkontext und Zeilenkontext unterscheiden.",
+    "practicalExample": "Synthetische Demo: Eine Demo-Kennzahl summiert Werte im aktuellen Filterkontext.",
+    "keyTakeaway": "Filterkontext und Zeilenkontext unterscheiden.",
+    "searchTags": [
+      "DAX",
+      "Data Analysis Expressions",
+      "DAX-Formelsprache",
+      "Data-Analysis-Expressions-Sprache"
+    ],
+    "thesaurus": [
+      "Data Analysis Expressions",
+      "DAX-Formelsprache",
+      "Data-Analysis-Expressions-Sprache"
+    ],
+    "sources": [
+      {
+        "title": "dax — Primärquelle",
+        "url": "https://learn.microsoft.com/en-us/dax/dax-overview"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "row-level-security",
+    "term": "Row-Level Security",
+    "category": "SECURITY_COMPLIANCE",
+    "categoryLabel": "Security & Compliance",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Beschränkung des Zugriffs auf Datenzeilen durch serverseitig angewandte Regeln.",
+    "detailedExplanation": "Beschränkung des Zugriffs auf Datenzeilen durch serverseitig angewandte Regeln. Privilegierte Rollen und Cross-Tenant-Zugriffe gesondert testen.",
+    "formulaOrRule": "Privilegierte Rollen und Cross-Tenant-Zugriffe gesondert testen.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Nutzer sieht nur Daten seines Mandanten.",
+    "keyTakeaway": "Privilegierte Rollen und Cross-Tenant-Zugriffe gesondert testen.",
+    "searchTags": [
+      "Row-Level Security",
+      "RLS",
+      "Zeilenbasierte Zugriffskontrolle",
+      "Zeilensicherheit"
+    ],
+    "thesaurus": [
+      "RLS",
+      "Zeilenbasierte Zugriffskontrolle",
+      "Zeilensicherheit"
+    ],
+    "sources": [
+      {
+        "title": "rls — Primärquelle",
+        "url": "https://www.postgresql.org/docs/current/ddl-rowsecurity.html"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "mifid-ii",
+    "term": "MiFID II",
+    "category": "SECURITY_COMPLIANCE",
+    "categoryLabel": "Security & Compliance",
+    "level": "Fortgeschritten",
+    "shortDefinition": "EU-Richtlinie über Märkte für Finanzinstrumente und einschlägige Wertpapierdienstleistungen.",
+    "detailedExplanation": "EU-Richtlinie über Märkte für Finanzinstrumente und einschlägige Wertpapierdienstleistungen. Nationale Umsetzung und konkrete Tätigkeit prüfen; Midi ist nur eine Suchhilfe.",
+    "formulaOrRule": "Nationale Umsetzung und konkrete Tätigkeit prüfen; Midi ist nur eine Suchhilfe.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Team prüft die aufsichtsrechtliche Einordnung seiner Tätigkeit.",
+    "keyTakeaway": "Nationale Umsetzung und konkrete Tätigkeit prüfen; Midi ist nur eine Suchhilfe.",
+    "searchTags": [
+      "MiFID II",
+      "Markets in Financial Instruments Directive II",
+      "Richtlinie 2014/65/EU",
+      "Zweite Finanzmarktrichtlinie",
+      "midi",
+      "mifid",
+      "MiFID 2"
+    ],
+    "thesaurus": [
+      "Markets in Financial Instruments Directive II",
+      "Richtlinie 2014/65/EU",
+      "Zweite Finanzmarktrichtlinie"
+    ],
+    "sources": [
+      {
+        "title": "mifid — Primärquelle",
+        "url": "https://www.esma.europa.eu/publications-and-data/interactive-single-rulebook/mifid-ii"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "mifir",
+    "term": "MiFIR",
+    "category": "SECURITY_COMPLIANCE",
+    "categoryLabel": "Security & Compliance",
+    "level": "Fortgeschritten",
+    "shortDefinition": "EU-Verordnung mit unter anderem Transparenz- und Meldeanforderungen für Finanzmärkte.",
+    "detailedExplanation": "EU-Verordnung mit unter anderem Transparenz- und Meldeanforderungen für Finanzmärkte. MiFIR und MiFID II sind unterschiedliche Rechtsakte.",
+    "formulaOrRule": "MiFIR und MiFID II sind unterschiedliche Rechtsakte.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Institut ordnet relevante Transaktionsmeldungen ein.",
+    "keyTakeaway": "MiFIR und MiFID II sind unterschiedliche Rechtsakte.",
+    "searchTags": [
+      "MiFIR",
+      "Markets in Financial Instruments Regulation",
+      "Verordnung (EU) Nr. 600/2014",
+      "Finanzmarktverordnung"
+    ],
+    "thesaurus": [
+      "Markets in Financial Instruments Regulation",
+      "Verordnung (EU) Nr. 600/2014",
+      "Finanzmarktverordnung"
+    ],
+    "sources": [
+      {
+        "title": "mifir — Primärquelle",
+        "url": "https://www.esma.europa.eu/publications-and-data/interactive-single-rulebook/mifir"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "bafin",
+    "term": "BaFin",
+    "category": "SECURITY_COMPLIANCE",
+    "categoryLabel": "Security & Compliance",
+    "level": "Einsteiger",
+    "shortDefinition": "Deutsche Bundesbehörde für die Finanzdienstleistungsaufsicht.",
+    "detailedExplanation": "Deutsche Bundesbehörde für die Finanzdienstleistungsaufsicht. BaFin ist eine Behörde, keine Rechtsvorschrift oder Produktzertifizierung.",
+    "formulaOrRule": "BaFin ist eine Behörde, keine Rechtsvorschrift oder Produktzertifizierung.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Team prüft die zuständige Aufsicht für sein Geschäftsmodell.",
+    "keyTakeaway": "BaFin ist eine Behörde, keine Rechtsvorschrift oder Produktzertifizierung.",
+    "searchTags": [
+      "BaFin",
+      "Bundesanstalt für Finanzdienstleistungsaufsicht",
+      "German Federal Financial Supervisory Authority",
+      "Deutsche Finanzdienstleistungsaufsicht BaFin"
+    ],
+    "thesaurus": [
+      "Bundesanstalt für Finanzdienstleistungsaufsicht",
+      "German Federal Financial Supervisory Authority",
+      "Deutsche Finanzdienstleistungsaufsicht BaFin"
+    ],
+    "sources": [
+      {
+        "title": "bafin — Primärquelle",
+        "url": "https://www.bafin.de/DE/DieBaFin/GrundlagenOrganisation/grundlagenorganisation_node.html"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "dora",
+    "term": "DORA",
+    "category": "SECURITY_COMPLIANCE",
+    "categoryLabel": "Security & Compliance",
+    "level": "Fortgeschritten",
+    "shortDefinition": "EU-Verordnung zur digitalen operationalen Resilienz im Finanzsektor.",
+    "detailedExplanation": "EU-Verordnung zur digitalen operationalen Resilienz im Finanzsektor. Anwendungsbereich und eigene Rolle prüfen; nicht jede Finanz-Webseite ist direkt betroffen.",
+    "formulaOrRule": "Anwendungsbereich und eigene Rolle prüfen; nicht jede Finanz-Webseite ist direkt betroffen.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Institut dokumentiert die Risiken eines IKT-Drittanbieters.",
+    "keyTakeaway": "Anwendungsbereich und eigene Rolle prüfen; nicht jede Finanz-Webseite ist direkt betroffen.",
+    "searchTags": [
+      "DORA",
+      "Digital Operational Resilience Act",
+      "Verordnung (EU) 2022/2554",
+      "EU-Verordnung zur digitalen operationalen Resilienz"
+    ],
+    "thesaurus": [
+      "Digital Operational Resilience Act",
+      "Verordnung (EU) 2022/2554",
+      "EU-Verordnung zur digitalen operationalen Resilienz"
+    ],
+    "sources": [
+      {
+        "title": "dora — Primärquelle",
+        "url": "https://www.bafin.de/DE/Aufsicht/DORA/DORA_node.html"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "mica",
+    "term": "MiCA",
+    "category": "SECURITY_COMPLIANCE",
+    "categoryLabel": "Security & Compliance",
+    "level": "Fortgeschritten",
+    "shortDefinition": "EU-Verordnung für bestimmte Kryptowerte und Kryptowerte-Dienstleistungen.",
+    "detailedExplanation": "EU-Verordnung für bestimmte Kryptowerte und Kryptowerte-Dienstleistungen. Ausnahmen und konkrete Tätigkeit anhand aktueller Quellen prüfen.",
+    "formulaOrRule": "Ausnahmen und konkrete Tätigkeit anhand aktueller Quellen prüfen.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Team trennt Lerninhalte von einer Kryptowerte-Dienstleistung.",
+    "keyTakeaway": "Ausnahmen und konkrete Tätigkeit anhand aktueller Quellen prüfen.",
+    "searchTags": [
+      "MiCA",
+      "Markets in Crypto-Assets Regulation",
+      "Verordnung (EU) 2023/1114",
+      "EU-Verordnung über Märkte für Kryptowerte"
+    ],
+    "thesaurus": [
+      "Markets in Crypto-Assets Regulation",
+      "Verordnung (EU) 2023/1114",
+      "EU-Verordnung über Märkte für Kryptowerte"
+    ],
+    "sources": [
+      {
+        "title": "mica — Primärquelle",
+        "url": "https://www.esma.europa.eu/publications-and-data/interactive-single-rulebook/mica"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "gdpr",
+    "term": "DSGVO",
+    "category": "SECURITY_COMPLIANCE",
+    "categoryLabel": "Security & Compliance",
+    "level": "Einsteiger",
+    "shortDefinition": "EU-Verordnung zum Schutz personenbezogener Daten und zur Regelung ihrer Verarbeitung.",
+    "detailedExplanation": "EU-Verordnung zum Schutz personenbezogener Daten und zur Regelung ihrer Verarbeitung. Zweck, Rechtsgrundlage, Rollen und Betroffenenrechte je Verarbeitung bestimmen.",
+    "formulaOrRule": "Zweck, Rechtsgrundlage, Rollen und Betroffenenrechte je Verarbeitung bestimmen.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Nutzer verlangt Auskunft über seine Kontodaten.",
+    "keyTakeaway": "Zweck, Rechtsgrundlage, Rollen und Betroffenenrechte je Verarbeitung bestimmen.",
+    "searchTags": [
+      "DSGVO",
+      "Datenschutz-Grundverordnung",
+      "GDPR",
+      "Verordnung (EU) 2016/679"
+    ],
+    "thesaurus": [
+      "Datenschutz-Grundverordnung",
+      "GDPR",
+      "Verordnung (EU) 2016/679"
+    ],
+    "sources": [
+      {
+        "title": "gdpr — Primärquelle",
+        "url": "https://eur-lex.europa.eu/eli/reg/2016/679/oj"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "eu-ai-act",
+    "term": "EU AI Act",
+    "category": "SECURITY_COMPLIANCE",
+    "categoryLabel": "Security & Compliance",
+    "level": "Fortgeschritten",
+    "shortDefinition": "EU-Verordnung mit risikobasierten Anforderungen an KI-Systeme und bestimmte KI-Modelle.",
+    "detailedExplanation": "EU-Verordnung mit risikobasierten Anforderungen an KI-Systeme und bestimmte KI-Modelle. Anwendbarkeit und gestaffelte Fristen anhand aktueller Rechtsquellen prüfen.",
+    "formulaOrRule": "Anwendbarkeit und gestaffelte Fristen anhand aktueller Rechtsquellen prüfen.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Team ordnet seinen KI-Anwendungsfall und seine Rolle ein.",
+    "keyTakeaway": "Anwendbarkeit und gestaffelte Fristen anhand aktueller Rechtsquellen prüfen.",
+    "searchTags": [
+      "EU AI Act",
+      "KI-Verordnung",
+      "Artificial Intelligence Act",
+      "Verordnung (EU) 2024/1689"
+    ],
+    "thesaurus": [
+      "KI-Verordnung",
+      "Artificial Intelligence Act",
+      "Verordnung (EU) 2024/1689"
+    ],
+    "sources": [
+      {
+        "title": "ai — Primärquelle",
+        "url": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "kwg",
+    "term": "KWG",
+    "category": "SECURITY_COMPLIANCE",
+    "categoryLabel": "Security & Compliance",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Deutsches Gesetz zur Regulierung unter anderem von Bankgeschäften und bestimmten Finanzdienstleistungen.",
+    "detailedExplanation": "Deutsches Gesetz zur Regulierung unter anderem von Bankgeschäften und bestimmten Finanzdienstleistungen. Ein Disclaimer ersetzt keine Prüfung der tatsächlich ausgeübten Tätigkeit.",
+    "formulaOrRule": "Ein Disclaimer ersetzt keine Prüfung der tatsächlich ausgeübten Tätigkeit.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Anbieter prüft eine mögliche Erlaubnispflicht vor Dienststart.",
+    "keyTakeaway": "Ein Disclaimer ersetzt keine Prüfung der tatsächlich ausgeübten Tätigkeit.",
+    "searchTags": [
+      "KWG",
+      "Kreditwesengesetz",
+      "Gesetz über das Kreditwesen",
+      "German Banking Act"
+    ],
+    "thesaurus": [
+      "Kreditwesengesetz",
+      "Gesetz über das Kreditwesen",
+      "German Banking Act"
+    ],
+    "sources": [
+      {
+        "title": "kwg — Primärquelle",
+        "url": "https://www.gesetze-im-internet.de/kredwg/"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "wpig",
+    "term": "WpIG",
+    "category": "SECURITY_COMPLIANCE",
+    "categoryLabel": "Security & Compliance",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Deutsches Gesetz zur Beaufsichtigung von Wertpapierinstituten.",
+    "detailedExplanation": "Deutsches Gesetz zur Beaufsichtigung von Wertpapierinstituten. Erlaubnispflichten und Ausnahmen konkret prüfen.",
+    "formulaOrRule": "Erlaubnispflichten und Ausnahmen konkret prüfen.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Team prüft die Einordnung seines Dienstes.",
+    "keyTakeaway": "Erlaubnispflichten und Ausnahmen konkret prüfen.",
+    "searchTags": [
+      "WpIG",
+      "Wertpapierinstitutsgesetz",
+      "Gesetz zur Beaufsichtigung von Wertpapierinstituten",
+      "German Investment Firm Act"
+    ],
+    "thesaurus": [
+      "Wertpapierinstitutsgesetz",
+      "Gesetz zur Beaufsichtigung von Wertpapierinstituten",
+      "German Investment Firm Act"
+    ],
+    "sources": [
+      {
+        "title": "wpig — Primärquelle",
+        "url": "https://www.gesetze-im-internet.de/wpig/"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "wphg",
+    "term": "WpHG",
+    "category": "SECURITY_COMPLIANCE",
+    "categoryLabel": "Security & Compliance",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Deutsches Gesetz mit Anforderungen an Wertpapierhandel und einschlägige Dienstleistungen.",
+    "detailedExplanation": "Deutsches Gesetz mit Anforderungen an Wertpapierhandel und einschlägige Dienstleistungen. Nicht jede Analysefunktion ist automatisch eine Wertpapierdienstleistung.",
+    "formulaOrRule": "Nicht jede Analysefunktion ist automatisch eine Wertpapierdienstleistung.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Institut ordnet Verhaltens- und Organisationspflichten ein.",
+    "keyTakeaway": "Nicht jede Analysefunktion ist automatisch eine Wertpapierdienstleistung.",
+    "searchTags": [
+      "WpHG",
+      "Wertpapierhandelsgesetz",
+      "Gesetz über den Wertpapierhandel",
+      "German Securities Trading Act"
+    ],
+    "thesaurus": [
+      "Wertpapierhandelsgesetz",
+      "Gesetz über den Wertpapierhandel",
+      "German Securities Trading Act"
+    ],
+    "sources": [
+      {
+        "title": "wphg — Primärquelle",
+        "url": "https://www.gesetze-im-internet.de/wphg/"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "gwg",
+    "term": "GwG",
+    "category": "SECURITY_COMPLIANCE",
+    "categoryLabel": "Security & Compliance",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Deutsches Gesetz mit Pflichten zur Geldwäscheprävention für erfasste Verpflichtete.",
+    "detailedExplanation": "Deutsches Gesetz mit Pflichten zur Geldwäscheprävention für erfasste Verpflichtete. Eine allgemeine Benutzerregistrierung ist nicht automatisch eine GwG-Identifizierung.",
+    "formulaOrRule": "Eine allgemeine Benutzerregistrierung ist nicht automatisch eine GwG-Identifizierung.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Verpflichteter führt die notwendige Kundenprüfung durch.",
+    "keyTakeaway": "Eine allgemeine Benutzerregistrierung ist nicht automatisch eine GwG-Identifizierung.",
+    "searchTags": [
+      "GwG",
+      "Geldwäschegesetz",
+      "Gesetz über das Aufspüren von Gewinnen aus schweren Straftaten",
+      "German Money Laundering Act"
+    ],
+    "thesaurus": [
+      "Geldwäschegesetz",
+      "Gesetz über das Aufspüren von Gewinnen aus schweren Straftaten",
+      "German Money Laundering Act"
+    ],
+    "sources": [
+      {
+        "title": "gwg — Primärquelle",
+        "url": "https://www.gesetze-im-internet.de/gwg_2017/"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "bfsg",
+    "term": "BFSG",
+    "category": "SECURITY_COMPLIANCE",
+    "categoryLabel": "Security & Compliance",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Deutsches Gesetz mit Barrierefreiheitsanforderungen für bestimmte Produkte und Dienstleistungen.",
+    "detailedExplanation": "Deutsches Gesetz mit Barrierefreiheitsanforderungen für bestimmte Produkte und Dienstleistungen. Anwendungsbereich und Ausnahmen prüfen; Tests allein zertifizieren keine Konformität.",
+    "formulaOrRule": "Anwendungsbereich und Ausnahmen prüfen; Tests allein zertifizieren keine Konformität.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Shop prüft seine Anforderungen im elektronischen Geschäftsverkehr.",
+    "keyTakeaway": "Anwendungsbereich und Ausnahmen prüfen; Tests allein zertifizieren keine Konformität.",
+    "searchTags": [
+      "BFSG",
+      "Barrierefreiheitsstärkungsgesetz",
+      "German Accessibility Strengthening Act",
+      "Bundesgesetz zur Stärkung der Barrierefreiheit BFSG"
+    ],
+    "thesaurus": [
+      "Barrierefreiheitsstärkungsgesetz",
+      "German Accessibility Strengthening Act",
+      "Bundesgesetz zur Stärkung der Barrierefreiheit BFSG"
+    ],
+    "sources": [
+      {
+        "title": "bfsg — Primärquelle",
+        "url": "https://www.gesetze-im-internet.de/bfsg/"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "agpl",
+    "term": "AGPL-3.0",
+    "category": "SECURITY_COMPLIANCE",
+    "categoryLabel": "Security & Compliance",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Copyleft-Lizenz mit besonderen Quellcodepflichten für bestimmte modifizierte Netzwerksoftware.",
+    "detailedExplanation": "Copyleft-Lizenz mit besonderen Quellcodepflichten für bestimmte modifizierte Netzwerksoftware. Kommerzielle Nutzung ist möglich; die konkreten Lizenz- und Kombinationspflichten beachten.",
+    "formulaOrRule": "Kommerzielle Nutzung ist möglich; die konkreten Lizenz- und Kombinationspflichten beachten.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Betreiber bietet den zugehörigen modifizierten Quellcode an.",
+    "keyTakeaway": "Kommerzielle Nutzung ist möglich; die konkreten Lizenz- und Kombinationspflichten beachten.",
+    "searchTags": [
+      "AGPL-3.0",
+      "GNU Affero General Public License v3",
+      "GNU AGPL Version 3",
+      "Affero GPL v3"
+    ],
+    "thesaurus": [
+      "GNU Affero General Public License v3",
+      "GNU AGPL Version 3",
+      "Affero GPL v3"
+    ],
+    "sources": [
+      {
+        "title": "agpl — Primärquelle",
+        "url": "https://www.gnu.org/licenses/agpl-3.0.en.html"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "expected-shortfall",
+    "term": "Expected Shortfall",
+    "category": "TRADING_QUANT",
+    "categoryLabel": "Trading & Quant",
+    "level": "Quant / Pro",
+    "shortDefinition": "Risikomaß für den durchschnittlichen Verlust im festgelegten schlechtesten Verteilungsbereich.",
+    "detailedExplanation": "Risikomaß für den durchschnittlichen Verlust im festgelegten schlechtesten Verteilungsbereich. Konfidenzniveau, Horizont und Modellannahmen angeben.",
+    "formulaOrRule": "Konfidenzniveau, Horizont und Modellannahmen angeben.",
+    "practicalExample": "Synthetische Demo: Eine Demo betrachtet den mittleren Verlust jenseits eines gewählten Quantils.",
+    "keyTakeaway": "Konfidenzniveau, Horizont und Modellannahmen angeben.",
+    "searchTags": [
+      "Expected Shortfall",
+      "ES",
+      "Conditional Value at Risk",
+      "CVaR"
+    ],
+    "thesaurus": [
+      "ES",
+      "Conditional Value at Risk",
+      "CVaR"
+    ],
+    "sources": [
+      {
+        "title": "risk — Primärquelle",
+        "url": "https://www.bis.org/basel_framework/chapter/MAR/33.htm"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "value-at-risk",
+    "term": "Value at Risk",
+    "category": "TRADING_QUANT",
+    "categoryLabel": "Trading & Quant",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Verlustschwelle eines Modells für einen definierten Zeitraum und ein Konfidenzniveau.",
+    "detailedExplanation": "Verlustschwelle eines Modells für einen definierten Zeitraum und ein Konfidenzniveau. VaR ist keine Obergrenze möglicher Verluste.",
+    "formulaOrRule": "VaR ist keine Obergrenze möglicher Verluste.",
+    "practicalExample": "Synthetische Demo: Ein Demo-VaR bezieht sich auf einen Tag und 99 Prozent.",
+    "keyTakeaway": "VaR ist keine Obergrenze möglicher Verluste.",
+    "searchTags": [
+      "Value at Risk",
+      "VaR",
+      "Verlustquantil",
+      "Wert-im-Risiko"
+    ],
+    "thesaurus": [
+      "VaR",
+      "Verlustquantil",
+      "Wert-im-Risiko"
+    ],
+    "sources": [
+      {
+        "title": "risk — Primärquelle",
+        "url": "https://www.bis.org/basel_framework/chapter/MAR/33.htm"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "sharpe-ratio",
+    "term": "Sharpe Ratio",
+    "category": "TRADING_QUANT",
+    "categoryLabel": "Trading & Quant",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Verhältnis von mittlerer Überschussrendite zur Standardabweichung der Renditen.",
+    "detailedExplanation": "Verhältnis von mittlerer Überschussrendite zur Standardabweichung der Renditen. Zeitraum, Annualisierung und Referenzzins angeben.",
+    "formulaOrRule": "Zeitraum, Annualisierung und Referenzzins angeben.",
+    "practicalExample": "Synthetische Demo: Eine Demo vergleicht Überschussrendite und Schwankung im gleichen Zeitraum.",
+    "keyTakeaway": "Zeitraum, Annualisierung und Referenzzins angeben.",
+    "searchTags": [
+      "Sharpe Ratio",
+      "Sharpe-Quotient",
+      "Sharpe-Kennzahl",
+      "Sharpe-Verhältnis"
+    ],
+    "thesaurus": [
+      "Sharpe-Quotient",
+      "Sharpe-Kennzahl",
+      "Sharpe-Verhältnis"
+    ],
+    "sources": [
+      {
+        "title": "sharpe — Primärquelle",
+        "url": "https://rpc.cfainstitute.org/research/cfa-digest/2014/07/the-sharpe-ratio-efficient-frontier-and-the-performance-of-multifactor-models-digest-summary"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "open-banking",
+    "term": "Open Banking",
+    "category": "FINTECH",
+    "categoryLabel": "FinTech & Finanzinfrastruktur",
+    "level": "Einsteiger",
+    "shortDefinition": "Bereitstellung bestimmter Bankdaten oder Dienste über geregelte Schnittstellen.",
+    "detailedExplanation": "Bereitstellung bestimmter Bankdaten oder Dienste über geregelte Schnittstellen. Technische Erreichbarkeit bedeutet keine freie Datenlizenz.",
+    "formulaOrRule": "Technische Erreichbarkeit bedeutet keine freie Datenlizenz.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Kunde erlaubt einem Dienst begrenzten Kontozugriff.",
+    "keyTakeaway": "Technische Erreichbarkeit bedeutet keine freie Datenlizenz.",
+    "searchTags": [
+      "Open Banking",
+      "Offenes Bankwesen",
+      "Open-Banking-Modell",
+      "Offene Bankdatenschnittstellen"
+    ],
+    "thesaurus": [
+      "Offenes Bankwesen",
+      "Open-Banking-Modell",
+      "Offene Bankdatenschnittstellen"
+    ],
+    "sources": [
+      {
+        "title": "banking — Primärquelle",
+        "url": "https://www.ecb.europa.eu/paym/intro/mip-online/2018/html/1803_revisedpsd.en.html"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "server-side-rendering",
+    "term": "Server-Side Rendering",
+    "category": "PLATFORM_ARCHITECTURE",
+    "categoryLabel": "Plattform & Architektur",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Erzeugung von HTML auf dem Server zur Auslieferung an den Browser.",
+    "detailedExplanation": "Erzeugung von HTML auf dem Server zur Auslieferung an den Browser. Client-Interaktion und Cache-Grenzen gesondert prüfen.",
+    "formulaOrRule": "Client-Interaktion und Cache-Grenzen gesondert prüfen.",
+    "practicalExample": "Synthetische Demo: Eine Demo-Glossarseite enthält die Definition im ersten HTML.",
+    "keyTakeaway": "Client-Interaktion und Cache-Grenzen gesondert prüfen.",
+    "searchTags": [
+      "Server-Side Rendering",
+      "SSR",
+      "Serverseitiges Rendern",
+      "Serverseitige HTML-Erzeugung"
+    ],
+    "thesaurus": [
+      "SSR",
+      "Serverseitiges Rendern",
+      "Serverseitige HTML-Erzeugung"
+    ],
+    "sources": [
+      {
+        "title": "ssr — Primärquelle",
+        "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Server-side"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "look-ahead-bias",
+    "term": "Look-ahead-Bias",
+    "category": "TRADING_QUANT",
+    "categoryLabel": "Trading & Quant",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Verzerrung eines Tests durch Informationen, die am simulierten Entscheidungszeitpunkt noch nicht verfügbar waren.",
+    "detailedExplanation": "Verzerrung eines Tests durch Informationen, die am simulierten Entscheidungszeitpunkt noch nicht verfügbar waren. Verfügbarkeitszeit und Beobachtungszeit getrennt speichern.",
+    "formulaOrRule": "Verfügbarkeitszeit und Beobachtungszeit getrennt speichern.",
+    "practicalExample": "Synthetische Demo: Ein Freitagsbericht darf im Demo-Test nicht schon am Montag verwendet werden.",
+    "keyTakeaway": "Verfügbarkeitszeit und Beobachtungszeit getrennt speichern.",
+    "searchTags": [
+      "Look-ahead-Bias",
+      "Zukunftswissensverzerrung",
+      "Vorausschaufehler",
+      "Lookahead Bias"
+    ],
+    "thesaurus": [
+      "Zukunftswissensverzerrung",
+      "Vorausschaufehler",
+      "Lookahead Bias"
+    ],
+    "sources": [
+      {
+        "title": "backtest — Primärquelle",
+        "url": "https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2026/backtesting-and-simulation"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "survivorship-bias",
+    "term": "Survivorship Bias",
+    "category": "TRADING_QUANT",
+    "categoryLabel": "Trading & Quant",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Verzerrung durch die Auswahl nur der bis heute verbliebenen Unternehmen oder Produkte.",
+    "detailedExplanation": "Verzerrung durch die Auswahl nur der bis heute verbliebenen Unternehmen oder Produkte. Historische Universumszugehörigkeit und Delistings berücksichtigen.",
+    "formulaOrRule": "Historische Universumszugehörigkeit und Delistings berücksichtigen.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Universum enthält auch später insolvente Unternehmen.",
+    "keyTakeaway": "Historische Universumszugehörigkeit und Delistings berücksichtigen.",
+    "searchTags": [
+      "Survivorship Bias",
+      "Überlebendenverzerrung",
+      "Überlebensverzerrung",
+      "Überlebensbias"
+    ],
+    "thesaurus": [
+      "Überlebendenverzerrung",
+      "Überlebensverzerrung",
+      "Überlebensbias"
+    ],
+    "sources": [
+      {
+        "title": "backtest — Primärquelle",
+        "url": "https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2026/backtesting-and-simulation"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "out-of-sample",
+    "term": "Out-of-Sample-Test",
+    "category": "TRADING_QUANT",
+    "categoryLabel": "Trading & Quant",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Modellprüfung auf Daten, die nicht zur Parameteranpassung verwendet wurden.",
+    "detailedExplanation": "Modellprüfung auf Daten, die nicht zur Parameteranpassung verwendet wurden. Wiederholte Optimierung am selben Testdatensatz zerstört dessen Unabhängigkeit.",
+    "formulaOrRule": "Wiederholte Optimierung am selben Testdatensatz zerstört dessen Unabhängigkeit.",
+    "practicalExample": "Synthetische Demo: Eine Demo prüft ein Modell auf einem zurückgehaltenen Folgezeitraum.",
+    "keyTakeaway": "Wiederholte Optimierung am selben Testdatensatz zerstört dessen Unabhängigkeit.",
+    "searchTags": [
+      "Out-of-Sample-Test",
+      "OOS-Test",
+      "Test außerhalb der Anpassungsstichprobe",
+      "Unabhängiger Stichprobentest"
+    ],
+    "thesaurus": [
+      "OOS-Test",
+      "Test außerhalb der Anpassungsstichprobe",
+      "Unabhängiger Stichprobentest"
+    ],
+    "sources": [
+      {
+        "title": "validation — Primärquelle",
+        "url": "https://scikit-learn.org/stable/modules/cross_validation.html"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "maximum-drawdown",
+    "term": "Maximum Drawdown",
+    "category": "TRADING_QUANT",
+    "categoryLabel": "Trading & Quant",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Größter Rückgang einer Wertreihe von einem bisherigen Höchststand zum folgenden Tiefstand im Prüfzeitraum.",
+    "detailedExplanation": "Größter Rückgang einer Wertreihe von einem bisherigen Höchststand zum folgenden Tiefstand im Prüfzeitraum. Die historische Beobachtung begrenzt keine künftigen Verluste.",
+    "formulaOrRule": "Die historische Beobachtung begrenzt keine künftigen Verluste.",
+    "practicalExample": "Synthetische Demo: Eine Demo fällt von 100 auf 80; der Rückgang beträgt 20 Prozent.",
+    "keyTakeaway": "Die historische Beobachtung begrenzt keine künftigen Verluste.",
+    "searchTags": [
+      "Maximum Drawdown",
+      "Maximaler Drawdown",
+      "Größter zwischenzeitlicher Verlust",
+      "MDD"
+    ],
+    "thesaurus": [
+      "Maximaler Drawdown",
+      "Größter zwischenzeitlicher Verlust",
+      "MDD"
+    ],
+    "sources": [
+      {
+        "title": "backtest — Primärquelle",
+        "url": "https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2026/backtesting-and-simulation"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "alpha",
+    "term": "Alpha",
+    "category": "TRADING_QUANT",
+    "categoryLabel": "Trading & Quant",
+    "level": "Quant / Pro",
+    "shortDefinition": "Renditeanteil, den das gewählte Vergleichs- oder Faktormodell nicht erklärt.",
+    "detailedExplanation": "Renditeanteil, den das gewählte Vergleichs- oder Faktormodell nicht erklärt. Alpha hängt vom gewählten Modell, Kosten und Stichprobenzeitraum ab.",
+    "formulaOrRule": "Alpha hängt vom gewählten Modell, Kosten und Stichprobenzeitraum ab.",
+    "practicalExample": "Synthetische Demo: Eine Demo schätzt den Achsenabschnitt einer Renditeregression.",
+    "keyTakeaway": "Alpha hängt vom gewählten Modell, Kosten und Stichprobenzeitraum ab.",
+    "searchTags": [
+      "Alpha",
+      "Modellbereinigte Überrendite",
+      "Faktormodell-Alpha",
+      "Jensen-Alpha im CAPM"
+    ],
+    "thesaurus": [
+      "Modellbereinigte Überrendite",
+      "Faktormodell-Alpha",
+      "Jensen-Alpha im CAPM"
+    ],
+    "sources": [
+      {
+        "title": "factors — Primärquelle",
+        "url": "https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2026/active-equity-investing-strategies"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "beta",
+    "term": "Beta",
+    "category": "TRADING_QUANT",
+    "categoryLabel": "Trading & Quant",
+    "level": "Fortgeschritten",
+    "shortDefinition": "Empfindlichkeit einer Renditereihe gegenüber einem gewählten Marktfaktor im betrachteten Modell.",
+    "detailedExplanation": "Empfindlichkeit einer Renditereihe gegenüber einem gewählten Marktfaktor im betrachteten Modell. Eine historische Schätzung ist keine feste künftige Eigenschaft.",
+    "formulaOrRule": "Eine historische Schätzung ist keine feste künftige Eigenschaft.",
+    "practicalExample": "Synthetische Demo: Eine Demo schätzt die Reaktion relativ zur Marktrendite.",
+    "keyTakeaway": "Eine historische Schätzung ist keine feste künftige Eigenschaft.",
+    "searchTags": [
+      "Beta",
+      "Beta-Koeffizient",
+      "Marktfaktor-Sensitivität",
+      "Marktbeta"
+    ],
+    "thesaurus": [
+      "Beta-Koeffizient",
+      "Marktfaktor-Sensitivität",
+      "Marktbeta"
+    ],
+    "sources": [
+      {
+        "title": "factors — Primärquelle",
+        "url": "https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2026/active-equity-investing-strategies"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "kyc",
+    "term": "Know Your Customer",
+    "category": "SECURITY_COMPLIANCE",
+    "categoryLabel": "Security & Compliance",
+    "level": "Einsteiger",
+    "shortDefinition": "Prinzip zur Ermittlung wesentlicher Informationen über Kunden und ihre handelnden Vertreter.",
+    "detailedExplanation": "Prinzip zur Ermittlung wesentlicher Informationen über Kunden und ihre handelnden Vertreter. US-Regeln, deutsches GwG und allgemeine Registrierung unterscheiden.",
+    "formulaOrRule": "US-Regeln, deutsches GwG und allgemeine Registrierung unterscheiden.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Verpflichteter prüft die Kundenidentität.",
+    "keyTakeaway": "US-Regeln, deutsches GwG und allgemeine Registrierung unterscheiden.",
+    "searchTags": [
+      "Know Your Customer",
+      "KYC",
+      "Kenne-deinen-Kunden-Prinzip",
+      "Kundenkenntnisprinzip"
+    ],
+    "thesaurus": [
+      "KYC",
+      "Kenne-deinen-Kunden-Prinzip",
+      "Kundenkenntnisprinzip"
+    ],
+    "sources": [
+      {
+        "title": "kyc — Primärquelle",
+        "url": "https://www.finra.org/rules-guidance/rulebooks/finra-rules/2090"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "aml",
+    "term": "Anti-Money Laundering",
+    "category": "SECURITY_COMPLIANCE",
+    "categoryLabel": "Security & Compliance",
+    "level": "Einsteiger",
+    "shortDefinition": "Maßnahmen gegen Geldwäsche im jeweils anwendbaren Rechtsrahmen.",
+    "detailedExplanation": "Maßnahmen gegen Geldwäsche im jeweils anwendbaren Rechtsrahmen. Verpflichteteneigenschaft und konkrete Pflichten prüfen.",
+    "formulaOrRule": "Verpflichteteneigenschaft und konkrete Pflichten prüfen.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Verpflichteter untersucht eine auffällige Transaktion.",
+    "keyTakeaway": "Verpflichteteneigenschaft und konkrete Pflichten prüfen.",
+    "searchTags": [
+      "Anti-Money Laundering",
+      "AML",
+      "Geldwäschebekämpfung",
+      "Geldwäscheprävention"
+    ],
+    "thesaurus": [
+      "AML",
+      "Geldwäschebekämpfung",
+      "Geldwäscheprävention"
+    ],
+    "sources": [
+      {
+        "title": "gwg — Primärquelle",
+        "url": "https://www.gesetze-im-internet.de/gwg_2017/"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "fintech",
+    "term": "FinTech",
+    "category": "FINTECH",
+    "categoryLabel": "FinTech & Finanzinfrastruktur",
+    "level": "Einsteiger",
+    "shortDefinition": "Einsatz technologischer Lösungen für Finanzprodukte, Finanzdienste oder deren Infrastruktur.",
+    "detailedExplanation": "Einsatz technologischer Lösungen für Finanzprodukte, Finanzdienste oder deren Infrastruktur. Der Branchenbegriff enthält keine Aussage über Erlaubnisse oder Zulassungen.",
+    "formulaOrRule": "Der Branchenbegriff enthält keine Aussage über Erlaubnisse oder Zulassungen.",
+    "practicalExample": "Synthetische Demo: Ein Demo-Team entwickelt eine digitale Finanzlernplattform.",
+    "keyTakeaway": "Der Branchenbegriff enthält keine Aussage über Erlaubnisse oder Zulassungen.",
+    "searchTags": [
+      "FinTech",
+      "Financial Technology",
+      "Finanztechnologie",
+      "Finanztechnologiebranche"
+    ],
+    "thesaurus": [
+      "Financial Technology",
+      "Finanztechnologie",
+      "Finanztechnologiebranche"
+    ],
+    "sources": [
+      {
+        "title": "fintech — Primärquelle",
+        "url": "https://www.fca.org.uk/firms/innovation"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
+  },
+  {
+    "id": "regtech",
+    "term": "RegTech",
+    "category": "SECURITY_COMPLIANCE",
+    "categoryLabel": "Security & Compliance",
+    "level": "Einsteiger",
+    "shortDefinition": "Technologische Unterstützung regulatorischer Abläufe wie Überwachung, Prüfung und Berichterstattung.",
+    "detailedExplanation": "Technologische Unterstützung regulatorischer Abläufe wie Überwachung, Prüfung und Berichterstattung. Automatisierung ersetzt keine fachliche Bewertung geltender Pflichten.",
+    "formulaOrRule": "Automatisierung ersetzt keine fachliche Bewertung geltender Pflichten.",
+    "practicalExample": "Synthetische Demo: Eine Demo ordnet Nachweise einer regulatorischen Anforderung zu.",
+    "keyTakeaway": "Automatisierung ersetzt keine fachliche Bewertung geltender Pflichten.",
+    "searchTags": [
+      "RegTech",
+      "Regulatory Technology",
+      "Regulierungstechnologie",
+      "Technologie für regulatorische Prozesse"
+    ],
+    "thesaurus": [
+      "Regulatory Technology",
+      "Regulierungstechnologie",
+      "Technologie für regulatorische Prozesse"
+    ],
+    "sources": [
+      {
+        "title": "regtech — Primärquelle",
+        "url": "https://www.fca.org.uk/firms/innovation/regtech"
+      }
+    ],
+    "reviewedAt": "2026-11-06"
   }
 ]

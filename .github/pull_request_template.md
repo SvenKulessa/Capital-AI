@@ -1,3 +1,9 @@
+<!--
+Branch: capital-ai-<domain>/<kurzer-zweck>-YYYYMMDD (z. B. capital-ai-trust/document-naming-convention-20261110)
+PR-Titel: [CAPITAL-AI-<DOMAIN>] <präziser Titel> (z. B. [CAPITAL-AI-TRUST] Branch- und PR-Namenskonvention dokumentieren)
+Verwende dieselbe Primary Domain in Branch und Titel. Behalte das Präfix bei Titeländerungen bei.
+-->
+
 ## Primary Domain
 <!-- PRODUCT | MARKET | PLATFORM | TRUST | GROWTH -->
 Domain:

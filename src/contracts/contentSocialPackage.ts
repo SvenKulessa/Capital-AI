@@ -1,5 +1,6 @@
+import { contentVocabularyContext } from '../../shared/vocabulary-lookup.mjs';
 import { z } from 'zod';
-import { ContentCampaignBriefSchema, type ContentCampaignBrief } from './contentEngine.ts';
+import { ContentVocabularyContextSchema, ContentCampaignBriefSchema, type ContentCampaignBrief } from './contentEngine.ts';
 
 export const CONTENT_SOCIAL_PACKAGE_VERSION = 'CAPITAL_AI_CONTENT_SOCIAL_PACKAGE@1' as const;
 
@@ -69,6 +70,7 @@ export const ContentSocialPackageManifestSchema = z.object({
   locale: z.enum(['de-DE', 'en-US', 'en-GB']),
   publicationAuthority: z.literal('SOCIAL_MEDIA_ENGINE_ONLY'),
   campaign: ContentCampaignBriefSchema,
+  vocabularyContext:ContentVocabularyContextSchema.optional(),
   assets: z.array(ContentSocialAssetSchema).min(1).max(50),
   approvals: z.array(ContentSocialApprovalSchema).max(50),
   deliveries: z.array(ContentSocialDeliverySchema).max(100),
@@ -101,6 +103,7 @@ export function buildDraftContentSocialPackage(input: {
     locale: campaign.locale,
     publicationAuthority: 'SOCIAL_MEDIA_ENGINE_ONLY',
     campaign,
+    vocabularyContext:contentVocabularyContext([campaign.objective,...campaign.audience].join(" ")),
     assets,
     approvals: [],
     deliveries: [],
