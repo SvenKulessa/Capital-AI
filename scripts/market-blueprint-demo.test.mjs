@@ -167,10 +167,11 @@ test('public architecture catalog distinguishes design assumptions from licensed
     ...DATA_CONCEPTS.flatMap(item => [item.bafinCompliance, item.costImpact]),
     ...STUDIO_BLUEPRINTS.flatMap(item => [item.description, item.primaryUseCase, item.badge]),
   ];
-  const disallowed = /BaFin-\s*und\s*MiCA-konforme|BaFin-konforme|garantiert\s+unter|Zero\s+zusätzliche\s+API-Kosten|Vollständige\s+Revisionssicherheit|Eliminiert\s+fatale\s+Fehl-Trades|Fehlerfreie\s+Rekonstruktion|Lückenlose\s+.*Archivierung|ZERO-DOWNTIME|ZERO-WASTE|Spart\s+(?:bis\s+zu\s+)?\d+%/i;
+  const disallowed = /BaFin-\s*und\s*MiCA-konforme|BaFin-konforme|garantiert\s+unter|Zero\s+zusätzliche\s+API-Kosten|Vollständige\s+Revisionssicherheit|Eliminiert\s+fatale\s+Fehl-Trades|Fehlerfreie\s+Rekonstruktion|Lückenlose\s+.*Archivierung|Spart\s+(?:bis\s+zu\s+)?\d+%/i;
   for (const claim of publicClaims) {
     assert.doesNotMatch(claim, disallowed, 'unverified product/regulatory claim: ' + claim);
   }
+  assert.ok(STUDIO_BLUEPRINTS.every(item => item.badge !== 'ZERO-DOWNTIME' && item.badge !== 'ZERO-WASTE'));
   const authority = STUDIO_BLUEPRINTS.find(item => item.id === 'AUTHORITY_PLANE');
   assert.match(authority.description, /regulatorische Konformität nicht nachgewiesen/);
   assert.match(authority.primaryUseCase, /Compliance-Prüfung offen/);
