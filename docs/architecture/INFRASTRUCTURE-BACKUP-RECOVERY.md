@@ -37,3 +37,7 @@ Quarterly tabletop + isolated restore test:
 - verify Render/health/source SHA correlation;
 - run login/session/logout against a non-production callback;
 - record RTO/RPO observations in Documentary.
+
+## PostgreSQL backup operation
+
+See the [encrypted PostgreSQL backup and isolated recovery runbook](../platform/POSTGRES-BACKUP-RUNBOOK.md) for the scheduler, trust boundaries, production prerequisites and verification steps. The [evidence manifest](../platform/POSTGRES-BACKUP-EVIDENCE.json) records the tested synthetic scope separately from open production evidence.

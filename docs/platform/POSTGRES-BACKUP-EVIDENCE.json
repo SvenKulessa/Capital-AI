@@ -1,0 +1,67 @@
+{
+  "contract": "CAPITAL_AI_POSTGRES_BACKUP_RESTORE_EVIDENCE@1",
+  "main_base_sha": "4ef4e1a2cb20f29cbce897740dc03576a3094a07",
+  "tested_file_sha256": {
+    "scripts/platform/postgres-backup.py": "adae113ed9ac39c111126ee0209fcbea7140daf3d7cdbddafdf831b54b886f71",
+    "scripts/platform/postgres-backup-test.py": "a980d0ad62c764ae92d44bb537da43c3e93890f98353eef170cf2b2b4b94e6ba",
+    ".github/workflows/drive-encryption-tests.yml": "7629cb22f0c77035041e011364a9671aaf94cb270fc4b469b2d006f33674c4c9",
+    "deploy/systemd/capital-ai-postgres-backup.service": "2edfe88703438f0927070e1ef7e0b16f962950e76e8509309e01d9588051a277",
+    "deploy/systemd/capital-ai-postgres-backup.timer": "ff81b017d9d077b5af1aa026f7a1bdac8c80365d5a0bab2abc9e464619f8f4c0"
+  },
+  "synthetic": {
+    "status": "VERIFIED",
+    "backup_manifest": {
+      "backup_and_restore_seconds": 0.941,
+      "backup_id": "a89e35c6eb464a7f8b92b58e1b99aa1b",
+      "ciphertext_bytes": 3070,
+      "contract": "CAPITAL_AI_POSTGRES_BACKUP@1",
+      "dump_encrypt_seconds": 0.082,
+      "encrypted_at_utc": "2026-11-10T09:43:34Z",
+      "encryption": "age-v1-x25519",
+      "environment": "synthetic-local-loopback",
+      "postgres_version_num": 170011,
+      "recipient_sha256": "06985497321acf596c062c42ec49602258bbf27d5c5cee80fcee7bc01a0a72fe",
+      "restore_validation_seconds": 0.75,
+      "sha256": "7aea90c92d8ebbf05d42a1a6d7cb2f0e07dc836d5c4532e54402cf5b9627e098",
+      "snapshot_lower_bound_utc": "2026-11-10T09:43:34Z"
+    },
+    "age_version": "1.2.1",
+    "postgres_distribution_version": "17.11-0+deb13u1",
+    "pipeline_tests_passed": 4,
+    "existing_retention_and_blueprint_tests_passed": 11,
+    "existing_drive_encryption_test": "PASS",
+    "scheduler_unit_and_calendar_validation": "PASS",
+    "remote_upload": "MOCKED_CLI_CONTRACT",
+    "checks": [
+      "consistent PostgreSQL custom format export and age-authenticated roundtrip",
+      "SHA-256 mismatch, corrupted ciphertext, wrong key and truncated archives denied",
+      "malformed and incomplete authenticated PostgreSQL archive denied",
+      "database credentials, RLS-blocked exporter and permissive recovery identity file denied",
+      "schema, row consistency, role, ACL and RLS validated after restore",
+      "cross-tenant and stale CAS denied, expected CAS succeeds on a synthetic fixture",
+      "production backup disabled by default and connection config uses TLS verify-full",
+      "conditional checksum-bound Object Lock PUT and versioned receipt simulated"
+    ]
+  },
+  "occ_v2_held_head": {
+    "pr": 548,
+    "commit_sha": "646fc16a81ae0a28f8c51bc62c04d571b7f92ff2",
+    "isolated_postgresql_version_num": 170011,
+    "tests_passed": 14,
+    "scope": "Synthetic OCC SQL suite, encrypted pre/post-cutover recovery, parallel CAS and Legacy PUT denial"
+  },
+  "production": {
+    "storage_and_key_enrollment": "BLOCKED",
+    "scheduled_job_activation": "BLOCKED",
+    "backup": "NOT_PROVEN",
+    "isolated_restore": "NOT_PROVEN",
+    "observed_rpo_seconds": null,
+    "observed_rto_seconds": null,
+    "occ_v2_cutover": "BLOCKED"
+  },
+  "ci": {
+    "pull_request": null,
+    "run_ids": [],
+    "status": "NOT_PROVEN"
+  }
+}

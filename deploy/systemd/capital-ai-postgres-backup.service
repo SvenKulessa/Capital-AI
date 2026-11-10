@@ -1,0 +1,21 @@
+[Unit]
+Description=CAPITAL-AI encrypted PostgreSQL backup
+
+[Service]
+Type=oneshot
+User=capital-ai-backup
+Group=capital-ai-backup
+EnvironmentFile=/etc/capital-ai/backup/runner.env
+ExecStart=/usr/bin/python3 -B /opt/capital-ai/scripts/platform/postgres-backup.py backup
+TimeoutStartSec=28min
+Nice=10
+UMask=0077
+LimitCORE=0
+MemorySwapMax=0
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+NoNewPrivileges=true
+CapabilityBoundingSet=
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
