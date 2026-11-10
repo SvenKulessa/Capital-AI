@@ -9,6 +9,10 @@ export const INSTAGRAM_CAROUSEL_ADAPTER_VERSION = 'CAPITAL_AI_INSTAGRAM_CAROUSEL
 const SHA256 = /^[a-f0-9]{64}$/;
 const ID = /^[0-9]{1,40}$/;
 const MAX_JPEG_BYTES = 8 * 1024 * 1024;
+// This transport uses graph.facebook.com; it must not accept Instagram-Login tokens.
+const FACEBOOK_LOGIN_PUBLISH_SCOPES = Object.freeze([
+  'pages_show_list', 'instagram_basic', 'instagram_content_publish', 'pages_read_engagement',
+]);
 const preparedPlans = new WeakSet();
 
 function requireThat(condition, error) { if (!condition) throw new Error(error); }
@@ -83,8 +87,11 @@ export async function prepareInstagramCarousel({
     && typeof loadHostedBytes === 'function'
     && typeof loadEditorialReview === 'function', 'SOCIAL_CAROUSEL_PRIVATE_READBACK_REQUIRED');
   requireThat(accountRow?.platform === 'instagram'
-    && accountRow?.scopes?.some(x => ['instagram_content_publish', 'instagram_business_content_publish'].includes(x)),
-  'SOCIAL_CAROUSEL_INSTAGRAM_SCOPE_REQUIRED');
+    && Array.isArray(accountRow.scopes)
+    && FACEBOOK_LOGIN_PUBLISH_SCOPES.every(scope => accountRow.scopes.includes(scope))
+    && capability?.loginMethod === 'FACEBOOK_LOGIN'
+    && capability?.apiHost === 'graph.facebook.com',
+  'SOCIAL_CAROUSEL_FACEBOOK_LOGIN_SCOPE_REQUIRED');
   const externalAccountId = String(accountRow.external_account_id ?? '');
   requireThat(ID.test(externalAccountId), 'SOCIAL_CAROUSEL_PROVIDER_ACCOUNT_MISMATCH');
   requireThat(manifest?.publicationAuthority === 'SOCIAL_MEDIA_ENGINE_ONLY',
@@ -124,7 +131,8 @@ export async function prepareInstagramCarousel({
         contentId: manifest.contentId, sourceSha: manifest.sourceSha,
       });
     } catch { throw new Error('SOCIAL_CAROUSEL_HOSTED_READBACK_UNAVAILABLE'); }
-    requireThat(hosted?.mediaUrl === mediaUrl && hosted.bytes instanceof Uint8Array,
+    requireThat(hosted?.mediaUrl === mediaUrl && hosted.bytes instanceof Uint8Array
+      && hosted.bytes.byteLength > 20 && hosted.bytes.byteLength <= MAX_JPEG_BYTES,
       'SOCIAL_CAROUSEL_HOSTED_READBACK_MISMATCH');
     requireThat(createHash('sha256').update(hosted.bytes).digest('hex') === asset.sha256,
       'SOCIAL_CAROUSEL_HOSTED_JPEG_HASH_MISMATCH');
@@ -207,6 +215,7 @@ export function createInstagramCarouselAdapter({
       && credentials?.accountId === plan.accountId
       && credentials?.channel === 'INSTAGRAM'
       && credentials?.platform === 'instagram'
+      && credentials.loginMethod === 'FACEBOOK_LOGIN'
       && credentials.externalAccountId === plan.externalAccountId
       && typeof credentials.accessToken === 'string' && credentials.accessToken.length >= 8,
     'SOCIAL_CAROUSEL_TOKEN_TENANT_MISMATCH');

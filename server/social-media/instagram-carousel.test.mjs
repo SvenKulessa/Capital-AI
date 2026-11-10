@@ -88,9 +88,11 @@ function fixture() {
     accountRow:{id:ACCOUNT,user_id:USER,platform:'instagram',
       status:'connected',external_account_id:env.SOCIAL_INSTAGRAM_ACCOUNT_ID,
       token_expires_at:'2026-11-11T11:00:00Z',
-      scopes:['instagram_content_publish'],access_token_encrypted:'ENCRYPTED'},
+      scopes:['pages_show_list','instagram_basic','instagram_content_publish','pages_read_engagement'],
+      access_token_encrypted:'ENCRYPTED'},
     capability:{channel:'INSTAGRAM',status:'VERIFIED',
-      evidenceRef:'trusted://meta-scopes',scopesVerified:true,publishRightsVerified:true},
+      evidenceRef:'trusted://meta-scopes',scopesVerified:true,publishRightsVerified:true,
+      loginMethod:'FACEBOOK_LOGIN',apiHost:'graph.facebook.com'},
     loadImmutableBytes:async ({assetId,contentId,sourceSha})=>({
       assetId,contentId,sourceSha,bytes,
     }),
@@ -107,6 +109,7 @@ function runtime(plan,{fetchImpl, tokenResolver, beginAttempt, noteUnknown,envOv
     tokenResolver:tokenResolver|| (async ()=>({
       userId:USER,accountId:ACCOUNT,channel:'INSTAGRAM',platform:'instagram',
       accessToken:'secret-token-12345',externalAccountId:env.SOCIAL_INSTAGRAM_ACCOUNT_ID,
+      loginMethod:'FACEBOOK_LOGIN',
     })),
     beginAttempt:beginAttempt|| (async()=>({
       id:plan.reservationId,user_id:USER,account_id:ACCOUNT,
@@ -137,7 +140,10 @@ test('all missing rights, forged approval, cross-user, stale claim and wrong cha
     [x=>{x.groupReservation.expires_at='2026-11-09T11:00:00Z';}, /SOCIAL_CAROUSEL_ATOMIC_GROUP_RESERVATION_REQUIRED/],
     [x=>{x.groupReservation.status='DRAFT';}, /SOCIAL_CAROUSEL_ATOMIC_GROUP_RESERVATION_REQUIRED/],
     [x=>{x.handoffs[0].channel='YOUTUBE';}, /SOCIAL_CAROUSEL_ASSET_ORDER_INVALID/],
-    [x=>{x.accountRow.scopes=['pages_read_engagement'];}, /SOCIAL_CAROUSEL_INSTAGRAM_SCOPE_REQUIRED/],
+    [x=>{x.accountRow.scopes=['pages_read_engagement'];}, /SOCIAL_CAROUSEL_FACEBOOK_LOGIN_SCOPE_REQUIRED/],
+    [x=>{x.accountRow.scopes=['instagram_business_basic','instagram_business_content_publish'];}, /SOCIAL_CAROUSEL_FACEBOOK_LOGIN_SCOPE_REQUIRED/],
+    [x=>{x.capability.loginMethod='INSTAGRAM_LOGIN';}, /SOCIAL_CAROUSEL_FACEBOOK_LOGIN_SCOPE_REQUIRED/],
+    [x=>{x.capability.apiHost='graph.instagram.com';}, /SOCIAL_CAROUSEL_FACEBOOK_LOGIN_SCOPE_REQUIRED/],
     [x=>{x.manifest.assets[1].mimeType='image/png';}, /SOCIAL_CAROUSEL_JPEG_MANIFEST_REQUIRED/],
     [x=>{x.media[0].altText='';}, /SOCIAL_CAROUSEL_ALT_TEXT_REQUIRED/],
     [x=>{x.media[0].mediaUrl='https://evil.example/'+HASH+'.jpg';}, /SOCIAL_CAROUSEL_MEDIA_URL_DENIED/],
@@ -185,6 +191,12 @@ test('no provider call on forged plan, cross-tenant token or missing CAS; no bli
     /SOCIAL_CAROUSEL_PREPARED_PLAN_REQUIRED/);
   await assert.rejects(runtime(p,{
     tokenResolver:async()=>({userId:OTHER,accountId:ACCOUNT,channel:'INSTAGRAM',platform:'instagram',accessToken:'secret-token-12345'}),
+    fetchImpl:async()=>{calls++;},
+  }).submit(p),/SOCIAL_CAROUSEL_TOKEN_TENANT_MISMATCH/);
+  await assert.rejects(runtime(p,{
+    tokenResolver:async()=>({userId:USER,accountId:ACCOUNT,channel:'INSTAGRAM',platform:'instagram',
+      loginMethod:'INSTAGRAM_LOGIN',externalAccountId:env.SOCIAL_INSTAGRAM_ACCOUNT_ID,
+      accessToken:'secret-token-12345'}),
     fetchImpl:async()=>{calls++;},
   }).submit(p),/SOCIAL_CAROUSEL_TOKEN_TENANT_MISMATCH/);
   await assert.rejects(runtime(p,{
