@@ -1,7 +1,9 @@
 import { buildDraftContentSocialPackage } from '../contracts/contentSocialPackage.ts';
 import { planContentCampaign } from '../contracts/contentEngine.ts';
+import { buildInstagramLearningTrackingUrl, INSTAGRAM_LEARNING_TRACKING } from '../contracts/instagramCampaignTracking.ts';
 export const INSTAGRAM_PILOT_SOURCE_SHA = 'fea4dbc49721ef50131063791db7fac2f4c399ab' as const;
-export const INSTAGRAM_PILOT_CONTENT_ID = 'capital-ai-instagram-etf-kosten-20261110' as const;
+export const INSTAGRAM_PILOT_CONTENT_ID = INSTAGRAM_LEARNING_TRACKING.contentId;
+export const INSTAGRAM_PILOT_TRACKING_URL = buildInstagramLearningTrackingUrl();
 export const INSTAGRAM_PILOT_SLIDES = [
   {
     "id": "etf-kosten-01",
@@ -27,17 +29,17 @@ export const INSTAGRAM_PILOT_SLIDES = [
 ] as const;
 export const INSTAGRAM_PILOT_CAPTION = "ETF kaufen: Wo entstehen Kosten?\n\nOrdergebuehren, Bid-Ask-Spread und laufende Fondskosten sind unterschiedliche Kostenarten. Unser fiktives Beispiel zeigt einen Kaufkurs von 100,10 EUR und einen Verkaufskurs von 99,90 EUR. Die Differenz, der Spread, betraegt 0,20 EUR pro Anteil im betrachteten Moment.\n\nAlle Zahlen sind synthetisch, keine Live-Kurse. Risiken und Zeithorizont sind ebenfalls wichtig.\n\nMehr kostenloses Finanzwissen: capital-ai.online/learning (Link im Profil).\n\nAllgemeine Finanzbildung. Keine individuelle Anlageberatung oder Handelsempfehlung.\n\n#Finanzbildung #ETFGrundlagen #Spread #CapitalAI" as const;
 export const INSTAGRAM_PILOT_CAMPAIGN = {
-  campaignId: 'capital-ai-instagram-etf-learning-v1',
+  campaignId: INSTAGRAM_LEARNING_TRACKING.campaignId,
   productId: 'capital-ai-learning-portal',
   sourceSha: INSTAGRAM_PILOT_SOURCE_SHA,
-  canonicalUrl: 'https://capital-ai.online/learning',
+  canonicalUrl: INSTAGRAM_LEARNING_TRACKING.canonicalUrl,
   locale: 'de-DE' as const,
   objective: 'ETF-Kosten und Spread mit rein synthetischen Beispielen erklaeren, ohne Anlageempfehlung.',
   audience: ['Erwachsene deutschsprachige Finanzlernende'],
   channels: ['WEBSITE', 'INSTAGRAM'] as ('WEBSITE' | 'INSTAGRAM')[],
   outputs: ['TEXT', 'IMAGE'] as ('TEXT' | 'IMAGE')[],
   sourceUrls: ['https://github.com/SvenKulessa/Capital-AI/blob/'+INSTAGRAM_PILOT_SOURCE_SHA+'/shared/learning-journey.mjs',
-    'https://capital-ai.online/learning'],
+    INSTAGRAM_LEARNING_TRACKING.canonicalUrl],
 };
 export const INSTAGRAM_PILOT_PLAN = planContentCampaign(INSTAGRAM_PILOT_CAMPAIGN);
 export const INSTAGRAM_PILOT_PACKAGE = buildDraftContentSocialPackage({

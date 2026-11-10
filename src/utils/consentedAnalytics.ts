@@ -1,5 +1,6 @@
 import { readCookieConsent, COOKIE_CONSENT_STORAGE_KEY, browserConsentPersistenceFailed } from '../privacy/cookieConsentV3.ts';
 import { isSeoIndexable } from '../../shared/seo-indexing-policy.mjs';
+import { readInstagramLearningTracking } from '../contracts/instagramCampaignTracking.ts';
 
 export const CONSENT_CHANGED_EVENT = 'capital-ai:consent-changed';
 const EXPECTED_ID = 'G-0542DT2HCE';
@@ -8,6 +9,23 @@ let initialized = false, active = false, script: HTMLScriptElement | null = null
 let loading: Promise<void> | null = null;
 let lastPath = '', pendingPath = '';
 const leads = new Set<string>();
+let instagramCampaignLandingSent = false;
+
+function sendConsentedInstagramCampaignLanding(path: string) {
+  if (!active || !permitted() || instagramCampaignLandingSent || path !== '/learning') return;
+  // No campaign measurement on preview hosts, private routes or unknown UTM payloads.
+  if (window.location.origin !== 'https://capital-ai.online' || window.location.pathname !== '/learning') return;
+  const campaign = readInstagramLearningTracking(window.location.search);
+  if (!campaign) return;
+  instagramCampaignLandingSent = true;
+  // One bounded, consented event per document lifetime. No raw query, referrer, user ID or transaction ID.
+  (window as TagWindow).gtag?.('event', 'campaign_landing', {
+    send_to: EXPECTED_ID,
+    campaign_id: campaign.campaignId, content_id: campaign.contentId,
+    campaign_source: campaign.source, campaign_medium: campaign.medium,
+    page_location: campaign.canonicalUrl, page_referrer: '',
+  });
+}
 let expiryTimer: ReturnType<typeof setTimeout> | undefined;
 
 function permitted() { return readCookieConsent()?.analytics === true; }
@@ -91,6 +109,7 @@ export function sendPageView(path: string) {
   if (!permitted()) { if (initialized) disable(); return; }
   if (!safe) { if (active) disable(); return; }
   if (!active) { if (initialized) void synchronize(); return; }
+  sendConsentedInstagramCampaignLanding(safe);
   if (safe === lastPath) return;
   const referrer = lastPath ? 'https://capital-ai.online' + lastPath : safeReferrer();
   lastPath = safe;
