@@ -160,7 +160,7 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
       _stripe_payment_intent_id: stripeId(session.payment_intent, 'pi_') || null,
     });
     return { sessionId: session.id, purchase: learningPaid && session.livemode === true ? {
-      transactionId: createHmac('sha256', secret).update('commerce-analytics:' + session.id).digest('hex'),
+      transactionId: createHmac('sha256', secret).update('learning-analytics:' + session.id).digest('hex'),
       value: total / 100, currency: 'EUR',
     } : null };
   }

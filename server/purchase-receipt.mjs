@@ -85,7 +85,7 @@ export function createPurchaseReceipt({ env = process.env, fetchImpl = fetch, au
             charge.refunded !== false || charge.amount_refunded !== 0 || charge.disputed !== false) throw Error('unverified_charge');
       }
       const value = (session.amount_subtotal - discount) / 100;
-      json(res,200,{ transactionId: createHmac('sha256',secret).update('commerce-analytics:' + session.id).digest('hex'),
+      json(res,200,{ transactionId: createHmac('sha256',secret).update((id === 'learning-portal' ? 'learning-analytics:' : 'commerce-analytics:') + session.id).digest('hex'),
         value, currency:'EUR', items:[{item_id:id,item_name:name,price:value,quantity:1}] });
     } catch { json(res,409,{error:'purchase_not_verified'}); }
     return true;

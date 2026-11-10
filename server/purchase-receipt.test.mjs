@@ -1,3 +1,4 @@
+import { createHmac } from 'node:crypto';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Readable } from 'node:stream';
@@ -55,4 +56,9 @@ test('a fully discounted completed Learning purchase preserves the existing zero
   const f=fixture();Object.assign(f.session,{amount_total:0,payment_status:'no_payment_required',payment_intent:null,total_details:{amount_discount:2500}});
   const result=await invoke(f);assert.equal(result.status,200);assert.equal(result.payload.value,0);
   f.session.total_details.amount_discount=2499;assert.equal((await invoke(f)).status,409);
+});
+
+test('Learning keeps the existing transaction identity across the confirmation migration',async()=>{
+  const result=await invoke(fixture());
+  assert.equal(result.payload.transactionId,createHmac('sha256',env.STRIPE_SECRET_KEY).update('learning-analytics:'+sessionId).digest('hex'));
 });
