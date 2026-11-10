@@ -193,7 +193,7 @@ COPY server/billing-catalog.mjs ./server/
 COPY scripts/verify-private-brokers.mjs ./scripts/
 COPY --from=build /app/supabase/email-templates/capital-ai-auth-email-shell.html ./supabase/email-templates/capital-ai-auth-email-shell.html
 COPY shared ./shared
-COPY docs/licenses/node-v26.10.0-LICENSE.txt ./licenses/Node-LICENSE.txt
+COPY docs/licenses/node-v26.13.0-LICENSE.txt ./licenses/Node-LICENSE.txt
 COPY server/ecb-reference-rates.LICENSE.txt ./licenses/ECB-Reference-Rate-Adapter-MIT.txt
 RUN rm -rf /usr/local/lib/node_modules/corepack /usr/local/bin/corepack /usr/local/bin/pnpm* /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx /opt/yarn* /usr/local/bin/yarn* \
     && chmod -R a-w /app /opt/ga4-mcp

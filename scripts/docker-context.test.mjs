@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { matchesGlob, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -173,4 +174,19 @@ test('shared stable Alpine crypto-base enforces the fixed CVE-2026-4738 zlib flo
   for (const stage of ['build', 'production-deps', 'runtime']) {
     assert.match(dockerfile, new RegExp('^FROM crypto-base AS ' + stage + '$', 'm'));
   }
+});
+
+test('runtime Node license is exact to the digest-pinned base version and upstream Git blob', () => {
+  const dockerfile = readFileSync(resolve(root, 'Dockerfile'), 'utf8');
+  const match = dockerfile.match(/^FROM node:(\d+\.\d+\.\d+)-alpine@sha256:[a-f0-9]{64} AS crypto-base$/m);
+  assert.ok(match, 'Runtime base image must have a digest-pinned Node version');
+  const licensePath = 'docs/licenses/node-v' + match[1] + '-LICENSE.txt';
+  assert.ok(dockerfile.split(/\r?\n/).includes('COPY ' + licensePath + ' ./licenses/Node-LICENSE.txt'),
+    'Node LICENSE copied into runtime must match the base-image Node version');
+  assert.equal(reachable(licensePath), true, 'Exact Node LICENSE must be inside the Docker allowlist');
+  const bytes = readFileSync(resolve(root, licensePath));
+  assert.match(bytes.toString('utf8'), /^Node\.js is licensed for use as follows:/);
+  // Upstream: https://github.com/nodejs/node/blob/v26.13.0/LICENSE (immutable Git blob).
+  assert.equal(createHash('sha1').update('blob ' + bytes.length + '\0').update(bytes).digest('hex'),
+    'fc7b8c7d2111e12c10dca5b54e8ded99f6bf1d56');
 });
