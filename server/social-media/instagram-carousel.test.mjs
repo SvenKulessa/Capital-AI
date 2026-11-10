@@ -162,8 +162,13 @@ test('modified private JPEG, modified hosted JPEG, missing rights and wrong dime
     assetId,contentId,sourceSha,bytes:Buffer.from('tamper'),
   });
   await assert.rejects(prepareInstagramCarousel(x),/SOCIAL_ASSET_BYTES_HASH_MISMATCH/);
-  x=fixture();x.loadHostedBytes=async ({mediaUrl})=>({mediaUrl,bytes:Buffer.from('tamper')});
+  // Same-size modified hosted bytes must hit SHA mismatch, not the new length guard.
+  const changedHostedBytes=Buffer.from(bytes);changedHostedBytes[12]^=1;
+  x=fixture();x.loadHostedBytes=async ({mediaUrl})=>({mediaUrl,bytes:changedHostedBytes});
   await assert.rejects(prepareInstagramCarousel(x),/SOCIAL_CAROUSEL_HOSTED_JPEG_HASH_MISMATCH/);
+  // Truncated/unbounded bodies are rejected before hashing.
+  x=fixture();x.loadHostedBytes=async ({mediaUrl})=>({mediaUrl,bytes:Buffer.from('tamper')});
+  await assert.rejects(prepareInstagramCarousel(x),/SOCIAL_CAROUSEL_HOSTED_READBACK_MISMATCH/);
   x=fixture();x.loadRightsEvidence=async ({assetId,contentId,sourceSha,assetSha256})=>({
     assetId,contentId,sourceSha,assetSha256,rightsVerified:false,evidenceRef:'none',
   });
