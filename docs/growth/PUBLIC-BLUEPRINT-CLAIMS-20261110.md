@@ -10,6 +10,12 @@ This change replaces the unsupported guarantees with explicit conceptual goals, 
 
 Test contract: existing `npm run test:blueprint-demo` now rejects absolute regulatory/cost claims in public copy and checks the relevant caveats. Main `npm test` and Docker Security Gate still govern publication. The test is not a substitute for comprehensive legal or commercial review.
 
+## Applicable regulatory sources (scope, not certification)
+
+- [Deutsche Bundesbank: MaRisk, circular 06/2026 (BA), 30 June 2026](https://www.bundesbank.de/de/aufgaben/finanzaufsicht/einzelaspekte/risikomanagement/marisk/marisk-799522). MaRisk addresses risk-management obligations in the regulated financial-institution context; using a data architecture pattern does **not** itself establish applicability, supervisory approval, or an audit.
+- [EUR-Lex: Regulation (EU) 2023/1114 (MiCA)](https://eur-lex.europa.eu/eli/reg/2023/1114/oj/eng). MiCA addresses specified crypto-asset issuance/offering and crypto-asset services; a generic educational Blueprint or hash alone is **not** proof of authorisation or compliance.
+- Each future regulated feature requires an activity/entity-specific applicability assessment and concrete operational evidence. These public concepts provide neither a legal opinion nor compliance certification.
+
 ## Boundaries and remaining work
 
 - Public marketing may describe educational models, not verified live regulator certification, capital protection or promised operating cost. Studio header and concept details must likewise avoid BaFin-conformity labels, absolute bandwidth savings, audit-safety, replay completeness and implied contractual SLAs.
