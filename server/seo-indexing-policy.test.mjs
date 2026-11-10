@@ -51,6 +51,7 @@ const EXPECTED_INDEX_PATHS = [
   '/blog/barrierefreie-finanzcharts',
   '/blog/datenkonzept-blueprint',
   '/blog/screener-scoring-lernen',
+  '/blog/x-api-expansions-kosten',
   '/learning',
   '/vocabulary',
   '/faq',
@@ -213,6 +214,12 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
     assert.equal(api.status, 404);
     assert.equal(api.headers.get('x-robots-tag'), 'noindex, nofollow');
 
+    const ppuArticleResponse = await fetch(origin + '/blog/x-api-expansions-kosten');
+    assert.equal(ppuArticleResponse.status, 200);
+    const ppuArticleHtml = await ppuArticleResponse.text();
+    assert.match(ppuArticleHtml, /X-API-Expansions/);
+    assert.match(ppuArticleHtml, /Kosten/);
+    assert.doesNotMatch(ppuArticleHtml, /SOCIAL_X_|capital-social-x-vault|srv-dau1rp893c1s73cdhm1g/);
     // SEO discovery contract: compare raw HTTP semantics, not crawler markdown rendering.
     const robotsResponse = await fetch(origin + '/robots.txt');
     assert.equal(robotsResponse.status, 200);
@@ -227,7 +234,7 @@ test('server enforces INDEX versus noindex and derives sitemap from SEO-00 polic
     const sitemap = await sitemapResponse.text();
     assert.match(sitemap, /^<\?xml version="1\.0" encoding="UTF-8"\?>/);
     assert.match(sitemap, /<loc>https:\/\/capital-ai.online\/<\/loc><lastmod>2026-10-14<\/lastmod>/);
-    assert.equal((sitemap.match(/<lastmod>/g) || []).length, 4, 'Only reviewed homepage, article listing and two new articles have lastmod');
+    assert.equal((sitemap.match(/<lastmod>/g) || []).length, 5, 'Only reviewed homepage, article listing and three dated articles have lastmod');
     for (const route of EXPECTED_INDEX_PATHS) {
       const url = route === '/' ? 'https://capital-ai.online/' : `https://capital-ai.online${route}`;
       assert.ok(sitemap.includes(`<loc>${url}</loc>`), route);

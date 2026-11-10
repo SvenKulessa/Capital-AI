@@ -1,3 +1,4 @@
+import './masterclass-templates.test.mjs';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';

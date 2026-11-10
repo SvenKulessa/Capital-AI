@@ -24,6 +24,13 @@ Beim **ersten Abruf der Chat-/Agentenanweisungen je Domain-Auftrag** beginnt der
 
 ## Entwicklungsfluss
 
+Die Primary Domain (`PRODUCT`, `MARKET`, `PLATFORM`, `TRUST` oder `GROWTH`) bestimmt beide Namen. Verwende das Format auch beim späteren Bearbeiten eines PR-Titels.
+
+- Branch: `capital-ai-<domain>/<kurzer-zweck>-YYYYMMDD`, z. B. `capital-ai-trust/document-naming-convention-20261110`.
+- PR-Titel: `[CAPITAL-AI-<DOMAIN>] <präziser Titel>`, z. B. `[CAPITAL-AI-TRUST] Branch- und PR-Namenskonvention dokumentieren`.
+
+Der bestehende Check `Domain Governance` prüft beide Formate im PR. Für `dependabot[bot]` prüft er nur das Titelpräfix.
+
 1. Einen bestehenden Scope-PR fortführen oder auf einem Feature-Branch vom aktuellen `main` entwickeln.
 2. Einen neuen PR erst eröffnen, wenn die beauftragte Wirkung vollständig implementiert und angemessen überprüft ist; lösbare technische Blocker, relevante bestehende Konzeptfehler und Architekturursachen **vorher** im betroffenen Wirkpfad beheben.
 3. Die vorhandenen GitHub-Pipeline-Checks laufen wie bisher **nach** PR-Erstellung; keine neuen manuellen Preflight-Gates einführen.

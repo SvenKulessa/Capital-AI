@@ -17,15 +17,42 @@ export function validateStreamConfig(config, replicas) {
 export const QUOTE_CHANNEL = 'capital:quote:events:v1';
 export const payloadHash = payload => createHash('sha256').update(JSON.stringify(payload)).digest('hex');
 export { natsConnectionAuth };
+function createValkeyClient(url) {
+  return createClient({ url, disableOfflineQueue: true,
+    socket: { connectTimeout: 3000, reconnectStrategy: false } });
+}
 export class MarketInfrastructure {
-  constructor(env = process.env) { this.env = env; this.redis = null; this.nc = null; this.js = null; this.manager = null; this.natsConnected = false; this.state = 'unavailable'; this.opening = null; this.subscriber = null; this.listeners = new Set(); this.pendingSymbols = new Set(); this.subscribing = null; this.pubsubEnabled = env.MARKET_PUBSUB_ENABLED !== 'false'; this.deliveryMetrics = { verified: 0, lastVerifiedDeliveryAt: null, lastVerifiedSymbol: null }; }
+  constructor(env = process.env) { this.env = env; this.redis = null; this.cacheProbe = null; this.nc = null; this.js = null; this.manager = null; this.natsConnected = false; this.state = 'unavailable'; this.opening = null; this.subscriber = null; this.listeners = new Set(); this.pendingSymbols = new Set(); this.subscribing = null; this.pubsubEnabled = env.MARKET_PUBSUB_ENABLED !== 'false'; this.deliveryMetrics = { verified: 0, lastVerifiedDeliveryAt: null, lastVerifiedSymbol: null }; }
+  cacheOnlyEnabled() {
+    return this.env.MARKET_BROKER_PAUSED === 'true' && this.env.MARKET_VALKEY_HEALTH_ENABLED === 'true';
+  }
+  shouldRetry() {
+    if (this.cacheOnlyEnabled()) return Boolean(this.env.REDIS_URL) && !this.cacheProbe?.isReady;
+    return this.env.MARKET_BROKER_PAUSED === 'false' && this.status().status !== 'connected';
+  }
   async start() {
+    if (this.cacheOnlyEnabled() && this.cacheProbe?.isReady) return false;
     if (this.status().status === 'connected') return true;
     if (this.opening) return this.opening;
     this.opening = this.open().finally(() => { this.opening = null; });
     return this.opening;
   }
+  async openCacheProbe() {
+    if (!this.env.REDIS_URL) return false;
+    await this.close();
+    try {
+      this.cacheProbe = createValkeyClient(this.env.REDIS_URL);
+      this.cacheProbe.on('error', () => {}); // The bounded retry replaces disconnected clients.
+      await observeCadsOperation({ layer: 'network', service: 'valkey', operation: 'health_connect' },
+        () => this.cacheProbe.connect());
+    } catch {
+      await this.close();
+    }
+    // A health connection grants neither market readiness nor provider-state access.
+    return false;
+  }
   async open() {
+    if (this.cacheOnlyEnabled()) return this.openCacheProbe();
     // Missing or ambiguous pause state must not activate old Render broker credentials.
     // Only a deliberate, exact 'false' permits a connection attempt.
     if (this.env.MARKET_BROKER_PAUSED !== 'false') return false;
@@ -40,8 +67,7 @@ export class MarketInfrastructure {
     if (this.redis?.isReady && !this.env.NATS_URL) { this.state = 'degraded'; return false; }
     try {
       await this.close();
-      this.redis = createClient({ url: this.env.REDIS_URL, disableOfflineQueue: true,
-        socket: { connectTimeout: 3000, reconnectStrategy: false } });
+      this.redis = createValkeyClient(this.env.REDIS_URL);
       this.redis.on('error', () => { this.state = 'degraded'; });
       await observeCadsOperation({ layer:'network', service:'valkey', operation:'connect' }, () => this.redis.connect());
       if (this.listeners.size) await this.ensureSubscriber();
@@ -79,10 +105,13 @@ export class MarketInfrastructure {
       return false;
     }
   }
-  status() { return { status: this.state === 'connected' && (!this.redis?.isReady || !this.natsConnected || this.nc?.isClosed() || (this.listeners.size && !this.subscriber?.isReady)) ? 'degraded' : this.state, redis: this.redis?.isReady ? 'connected' : 'unavailable',
+  status() {
+    const cacheOnly = this.cacheOnlyEnabled();
+    const cacheReady = cacheOnly && this.cacheProbe?.isReady;
+    return { status: cacheReady ? 'cache_only' : this.state === 'connected' && (!this.redis?.isReady || !this.natsConnected || this.nc?.isClosed() || (this.listeners.size && !this.subscriber?.isReady)) ? 'degraded' : this.state, redis: (this.redis?.isReady || cacheReady) ? 'connected' : 'unavailable',
     nats: this.natsConnected && this.nc && !this.nc.isClosed() && !this.nc.isDraining() ? 'connected' : 'unavailable',
-    pubsub: !this.pubsubEnabled ? 'disabled' : this.redis?.isReady ? 'connected' : 'unavailable',
-    subscriber: !this.pubsubEnabled ? 'disabled' : !this.listeners.size ? 'idle' : this.subscriber?.isReady ? 'connected' : 'unavailable',
+    pubsub: (cacheOnly || !this.pubsubEnabled) ? 'disabled' : this.redis?.isReady ? 'connected' : 'unavailable',
+    subscriber: (cacheOnly || !this.pubsubEnabled) ? 'disabled' : !this.listeners.size ? 'idle' : this.subscriber?.isReady ? 'connected' : 'unavailable',
     subscriberListeners: this.listeners.size,
     verifiedDeliveries: this.deliveryMetrics.verified,
     lastVerifiedDeliveryAt: this.deliveryMetrics.lastVerifiedDeliveryAt,
@@ -269,6 +298,8 @@ export class MarketInfrastructure {
     if (this.subscriber?.isOpen) this.subscriber.destroy();
     this.subscriber = null;
     if (this.redis?.isOpen) this.redis.destroy();
+    if (this.cacheProbe?.isOpen) this.cacheProbe.destroy();
+    this.cacheProbe = null;
     await this.nc?.close();
     this.redis = null; this.nc = null; this.js = null; this.manager = null; this.natsConnected = false; this.natsAuthMode = null; this.state = 'unavailable';
   }

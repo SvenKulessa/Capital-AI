@@ -1,6 +1,7 @@
 import { createYouTubeDescription as youtubeDescription } from '../../platform/SocialMediaEngine/Editing/MediaStudioTemplates';
 import React from 'react';
 import { BrandGlobeStudio } from './BrandGlobeStudio';
+import { InstagramLearningPilot } from './InstagramLearningPilot';
 import { ChartLearningAtlas } from '../learning/ChartLearningAtlas';
 import {
   BarChart3,
@@ -45,6 +46,7 @@ export const ContentStudioPanel: React.FC = () => {
     <div className="space-y-5">
       <BrandGlobeStudio />
       <ChartLearningAtlas studio />
+      <InstagramLearningPilot />
       <section className="rounded-2xl border border-cyan-400/30 p-5">
         <h2 className="text-lg font-bold">YouTube-Beschreibung · Capital-AI Tour</h2>
         <p className="mt-2 text-sm text-slate-300">Wiederverwendbares Template mit Referral-Kennzeichnung und rechtlichen Hinweisen.</p>

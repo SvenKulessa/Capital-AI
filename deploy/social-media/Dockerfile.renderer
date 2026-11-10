@@ -15,15 +15,18 @@ RUN apk add --no-cache \
       xz \
       yasm
 
-WORKDIR /tmp
+# Extract directly into a declared build working directory. The original
+# archive's single ffmpeg-VERSION/ prefix is removed by --strip-components=1.
+WORKDIR /tmp/ffmpeg-${FFMPEG_VERSION}
+# Bounded network retry only; the official source checksum remains mandatory.
 RUN test -n "${FFMPEG_VERSION}" \
     && test -n "${FFMPEG_SHA256}" \
     && curl --proto '=https' --tlsv1.2 --fail --show-error --location \
+      --retry 4 --retry-all-errors --retry-delay 2 --retry-max-time 90 --connect-timeout 15 \
       "https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz" \
       --output ffmpeg.tar.xz \
     && printf '%s  %s\n' "${FFMPEG_SHA256}" ffmpeg.tar.xz | sha256sum -c - \
-    && tar -xJf ffmpeg.tar.xz \
-    && cd "ffmpeg-${FFMPEG_VERSION}" \
+    && tar -xJf ffmpeg.tar.xz --strip-components=1 \
     && ./configure \
       --prefix=/opt/ffmpeg \
       --disable-autodetect \
@@ -42,7 +45,10 @@ RUN test -n "${FFMPEG_VERSION}" \
 ARG PYTHON_BASE
 FROM ${PYTHON_BASE} AS runtime
 
+# Pin the current Alpine 3.22 musl security floor (CVE-2026-107891).
 RUN apk add --no-cache \
+      'musl>=1.2.5-r13' \
+      'musl-utils>=1.2.5-r13' \
       'libcrypto3>=3.5.8-r0' \
       'libssl3>=3.5.8-r0' \
       'libuuid>=2.41.6-r1' \

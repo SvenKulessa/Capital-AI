@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { normalizeSkillText, selectSpecialists } from './skill-routing.mjs';
+import { normalizeSkillText, selectSpecialists, selectSkillPlan } from './skill-routing.mjs';
 import { evaluateSpecialistRouting } from './skill-routing-evaluation.mjs';
 
 const readJson = path => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
@@ -127,4 +127,38 @@ test('evaluator surfaces false positives, false negatives and malformed samples'
   assert.deepEqual(report.failures.map(x=>x.id),['probe-fp','probe-fn']);
   assert.ok(report.micro.f1<1);
   assert.throws(()=>evaluateSpecialistRouting([...probe,probe[0]],registry),/invalid or duplicate/);
+});
+
+
+test('task plan combines SEO, commerce and GA4 skills without changing the primary agent', () => {
+  for (const domain of domains) {
+    const plan = selectSkillPlan('SEO Search Console checkout GA4', {domain, registry});
+    assert.equal(plan.agent, registry.domains[domain].chatAgent);
+    assert.deepEqual(plan.skills.slice(0, 2), [registry.domains[domain].engineering, registry.domains[domain].advisory]);
+    for (const id of ['seo-engineering','revenue-engineering','analytics-intelligence']) assert.ok(plan.skills.includes(id));
+    assert.equal(new Set(plan.skills).size, plan.skills.length);
+    assert.equal(plan.scope, 'ADVISORY_SKILL_PLAN_NO_EXECUTION_OR_AUTHORIZATION');
+    for (const file of plan.skillFiles) assert.ok(readFileSync(new URL('../'+file, import.meta.url),'utf8').includes('AGENTS.md'));
+  }
+});
+
+test('task plan abstains on unrelated text and rejects unregistered skills', () => {
+  const plan = selectSkillPlan('Unbekannte neutrale Aufgabe', {domain:'GROWTH', registry});
+  assert.equal(plan.status,'REVIEW_REQUIRED');
+  assert.ok(!plan.skills.includes('seo-engineering'));
+  assert.ok(!plan.skills.includes('revenue-engineering'));
+  assert.throws(()=>selectSkillPlan('SEO',{registry}),/primary domain required/);
+  const bad = structuredClone(registry);
+  bad.taskSkillRouting.signals['unknown-skill']=['seo'];
+  assert.throws(()=>selectSkillPlan('SEO',{domain:'GROWTH',registry:bad}),/invalid task skill/);
+  assert.ok(!selectSkillPlan('pseudoseology checkoutless',{domain:'GROWTH',registry}).skills.includes('seo-engineering'));
+});
+
+test('CLI plan exposes the bounded skill plan while legacy output stays unchanged', () => {
+  const file = fileURLToPath(new URL('./skill-routing.mjs', import.meta.url));
+  const plan = JSON.parse(execFileSync(process.execPath,[file,'--plan','--domain','GROWTH','SEO checkout GA4'],{encoding:'utf8'}));
+  assert.ok(plan.skills.includes('seo-engineering'));
+  assert.ok(plan.skills.includes('revenue-engineering'));
+  const legacy = selectSpecialists('SEO checkout GA4',{domain:'GROWTH',registry});
+  assert.deepEqual(legacy.skills,['analytics-intelligence']);
 });
