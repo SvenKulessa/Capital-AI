@@ -45,6 +45,8 @@ test('public HTTP response contains full article, reachable image, SEO and 404 f
     assert.equal(response.headers.get('content-language'), 'de');
     const html = await response.text();
     for (const section of article.sections) assert.ok(html.includes(section.body), section.title);
+    assert.ok(html.includes(`<time datetime="${article.date}">${article.date}</time>`), 'server fallback date');
+    assert.match(html, /href="\/learning\/lernimpulse"/, 'server fallback explicit learning CTA');
     assert.ok(html.includes(`href="https://capital-ai.online${article.path}"`));
     assert.match(html, /"@type":"BlogPosting"/);
     assert.match(html, /<meta name="robots" content="index, follow/);
