@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { SEO_CONTENT_MANIFEST } from '../shared/seo-content-manifest.mjs';
 import { BLOG_ARTICLES } from '../shared/blog-articles.mjs';
 import { auditPublicEditorialArticle } from '../shared/editorial-quality.mjs';
-import { publicVideoSchema, publicLearningVideoSchemas } from '../shared/seo-video.mjs';
+import { publicVideoSchema, publicLearningVideoSchemas, admittedPublicLearningVideos, EXPECTED_YOUTUBE_CHANNEL_ID } from '../shared/seo-video.mjs';
 import {
   SEO_SITE_ORIGIN,
   SEO_SOCIAL_IMAGE,
@@ -89,12 +89,17 @@ test('unapproved learning videos never gain public VideoObject or imply paid vid
   assert.deepEqual(publicLearningVideoSchemas(), []);
   assert.equal(seoJsonLdForPath('/learning')['@graph'].length, 3);
   const approved = {
+    id: 'fixture-preview', category: 'Architektur',
     publicationState: 'PUBLISHED', visibility: 'PUBLIC', licenseState: 'VERIFIED',
     editorialApproval: 'APPROVED', searchEligible: true, isFreePreview: true,
-    youtubeId: 'abcdefghijk', title: 'CAPITAL AI Architektur erklaert',
+    youtubeId: 'abcdefghijk', externalYouTubeId: 'abcdefghijk',
+    providerChannelId: EXPECTED_YOUTUBE_CHANNEL_ID,
+    providerReadbackVerified: true, processingStatus: 'SUCCEEDED', embeddable: true,
+    assetSha256: 'a'.repeat(64), providerEvidenceRef: 'evidence://mock-provider-readback',
+    title: 'CAPITAL AI Architektur erklaert',
     description: 'Ein öffentlich freigegebener Lernfilm über die Grundlagen von Systemarchitektur.',
     thumbnailUrl: 'https://capital-ai.online/learning/editorial/thumbnail.jpg',
-    uploadDate: '2026-10-11T10:00:00+02:00', rightsEvidenceRef: 'evidence://learning-video-20261011',
+    uploadDate: '2026-10-11T10:00:00+02:00', rightsEvidenceRef: 'evidence://mock-licensed-asset',
   };
   const schema = publicVideoSchema(approved);
   assert.equal(schema['@type'], 'VideoObject');
@@ -106,4 +111,26 @@ test('unapproved learning videos never gain public VideoObject or imply paid vid
   assert.equal(publicVideoSchema({ ...approved, publicationState: 'DRAFT' }), null);
   assert.equal(publicVideoSchema({ ...approved, thumbnailUrl: 'http://example.com/preview.png' }), null);
   assert.equal(publicLearningVideoSchemas([approved, approved]).length, 1);
+  assert.equal(admittedPublicLearningVideos([approved, approved]).length, 1);
+  for (const invalid of [
+    { publicationState: 'NOT_PUBLISHED' },
+    { licenseState: 'REVIEW_REQUIRED' },
+    { editorialApproval: 'REVIEW_REQUIRED' },
+    { externalYouTubeId: null }, { providerChannelId: 'UCwrong' },
+    { providerReadbackVerified: false }, { processingStatus: 'PROCESSING' },
+    { embeddable: false }, { assetSha256: '' }, { providerEvidenceRef: '' },
+    { isFreePreview: false }, { searchEligible: false },
+  ]) {
+    assert.equal(publicVideoSchema({ ...approved, ...invalid }), null, JSON.stringify(invalid));
+    assert.deepEqual(publicLearningVideoSchemas([{ ...approved, ...invalid }]), [], JSON.stringify(invalid));
+  }
+  assert.equal(publicLearningVideoSchemas([
+    approved, { ...approved, id: 'another-preview', youtubeId:'abcdefghijz',
+      externalYouTubeId:'abcdefghijz' },
+  ]).length, 1, 'one public/free preview per category');
+  assert.equal(publicLearningVideoSchemas([
+    approved, { ...approved, id: 'second-category', category:'Fintech Deepdive',
+      youtubeId:'abcdefghijz', externalYouTubeId:'abcdefghijz' },
+  ]).length, 2);
+
 });

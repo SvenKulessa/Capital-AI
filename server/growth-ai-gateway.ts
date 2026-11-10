@@ -141,7 +141,7 @@ function assertProductionPolicy(
 function getGeminiClient(env: GrowthRuntimeEnv): GoogleGenAI {
   const apiKey = env.GEMINI_API_KEY?.trim();
   if (!apiKey) throw new Error('GROWTH_AI_PROVIDER_NOT_CONFIGURED');
-  return new GoogleGenAI({ apiKey });
+  return new GoogleGenAI({ apiKey, httpOptions: { apiVersion: 'v1beta' } });
 }
 
 function buildDraftPrompt(input: GrowthAiDraftRequest, model: string): string {
