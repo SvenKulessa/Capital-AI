@@ -32,4 +32,4 @@ Diese Bibliothek enthält versionierte Aufgabenbeschreibungen für wiederkehrend
 
 ## Bestehender erster Layer
 
-Die beim Abgleich vorhandenen IDs [001–009](../.ai/prompts/) bleiben an ihren bestehenden Pfaden. Für ID 010 lag auf dem abgeglichenen `main` keine zuordenbare Prompt-Datei vor. Die ID bleibt für die belegte Originalfassung reserviert. Weitere Prompts in anderen Verzeichnissen behalten ihre bisherigen Pfade.
+Die beim Abgleich vorhandenen IDs [001–009](../.ai/prompts/) bleiben an ihren bestehenden Pfaden. [010 · Governance Evidence Review](010-governance-evidence-review.md) ist ein neu formulierter und vom Owner freigegebener Prompt der Domain TRUST. Weitere Prompts in anderen Verzeichnissen behalten ihre bisherigen Pfade.
