@@ -70,6 +70,10 @@ export async function runLearningSetup(mode, maintenance) {
   }
   const after = mode === 'apply' ? await maintenance.call('ga4_learning_configuration') : before;
   result.configuration = { leadEventConfigured: after.leadEventConfigured,
+    purchaseEventConfigured: after.purchaseEventConfigured,
+    propertySettings: after.property, retention: after.retention, attribution: after.attribution, googleSignals: after.googleSignals,
+    permissions: 'READ_ACCESS_VERIFIED; IAM_ROLE_AND_WRITE_ACCESS_NOT_INFERRED',
+    checkoutStartsAreKeyEvents: after.checkoutStartsAreKeyEvents,
     emailRedactionEnabled: after.emailRedactionEnabled,
     queryParameterRedactionEnabled: after.queryParameterRedactionEnabled,
     formInteractionsEnabled: after.formInteractionsEnabled,
@@ -87,6 +91,18 @@ export async function runLearningSetup(mode, maintenance) {
   } catch (error) {
     result.sitemapRegistration = { status: 'NOT_PROVEN', error: /^GOOGLE_HTTP_[45][0-9]{2}$/.test(error?.message || '') ? error.message : 'GSC_SITEMAP_READBACK_UNAVAILABLE' };
   }
+  try {
+    const report = await maintenance.call('ga4_commerce_report');
+    const allowed = new Set(['view_item', 'begin_checkout', 'generate_lead', 'purchase']);
+    result.commerceFunnel = { status: 'PROVIDER_READ_VERIFIED', period: '28daysAgo..yesterday',
+      events: (report.rows || []).flatMap(row => {
+        const eventName = row.dimensionValues?.[0]?.value;
+        const raw = row.metricValues?.[0]?.value;
+        return allowed.has(eventName) && /^\d+$/.test(raw || '') && Number.isSafeInteger(Number(raw))
+          ? [{ eventName, eventCount: Number(raw) }] : [];
+      }),
+      note: 'Separate event counts; missing rows are not proof of zero sales. Stripe remains payment truth.' };
+  } catch { result.commerceFunnel = { status: 'NOT_PROVEN', error: 'GA4_COMMERCE_REPORT_UNAVAILABLE' }; }
   const ga4 = await maintenance.call('ga4_learning_report');
   const leads = await maintenance.call('ga4_learning_lead_report');
   const gsc = await maintenance.call('gsc_country_report', { days: 28 });

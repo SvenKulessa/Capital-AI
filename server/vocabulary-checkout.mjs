@@ -425,7 +425,7 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
           mode: 'payment',
           allow_promotion_codes: 'true',
           'line_items[0][quantity]': '1',
-          success_url: `${baseUrl}/learning?vocabulary_session={CHECKOUT_SESSION_ID}`,
+          success_url: `${baseUrl}/checkout/confirmation?session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: `${baseUrl}/learning?vocabulary=cancelled`,
           client_reference_id: user.userId,
           'metadata[sku]': SKU,
@@ -452,6 +452,8 @@ export function createVocabularyCheckout({ env = process.env, fetchImpl = fetch,
         }
         try {
           const session = await stripe('/checkout/sessions', form);
+          const target = new URL(session.url);
+          if (!/^cs_[A-Za-z0-9_]{4,240}$/.test(session.id || '') || target.protocol !== 'https:' || target.hostname !== 'checkout.stripe.com' || target.username || target.password || target.port) throw new Error('invalid_checkout_session');
           json(res, 200, { url: session.url, sessionId: session.id });
         } catch {
           json(res, 502, { error: 'checkout_rejected' });

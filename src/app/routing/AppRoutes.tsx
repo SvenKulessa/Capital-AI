@@ -1,3 +1,5 @@
+const BlueprintOfferPage = lazy(() => import('../../features/pricing/BlueprintOfferPage').then(module => ({ default: module.BlueprintOfferPage })));
+const CheckoutConfirmationPage = lazy(() => import('../../features/pricing/CheckoutConfirmationPage').then(module => ({ default: module.CheckoutConfirmationPage })));
 import { BrandLogo } from '../../components/BrandLogo';
 const AccountRightsPage = lazy(() => import('../../features/account/AccountRightsPage').then(module => ({default:module.AccountRightsPage})));
 import { lazy } from 'react';
@@ -287,6 +289,9 @@ export function AppRoutes({
       </div>
     );
   }
+
+  if (currentRoute === '/blueprints') return <BlueprintOfferPage />;
+  if (currentRoute === '/checkout/confirmation') return <CheckoutConfirmationPage />;
 
   if (
     currentRoute === '/learning' ||

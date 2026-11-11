@@ -142,3 +142,52 @@ test('X-API live-readback rejects absent article data, metadata drift, leaked in
   assert.ok(missingImage.checks.some(item => item.path === X_ARTICLE.image
     && item.check === 'HTTP_200_NO_REDIRECT' && item.status === 'FAIL'));
 });
+
+
+test('public health readback verifies Render runtime SHA independently of unbound build identity', async () => {
+  const liveSha = '60ac07207a0d0cb40695ec065ed2cc4a89c81ae0';
+  const fetchImpl = (url, options) => new URL(url).pathname === '/healthz'
+    ? new Response(JSON.stringify({ status: 'ok',
+        buildIdentity: { bound: false, sourceSha: null },
+        runtimeIdentity: { sourceSha: liveSha, evidence: 'RENDER_DEPLOYMENT_ENVIRONMENT' },
+      }), { headers: { 'content-type': 'application/json' } })
+    : fixture(url, options);
+  const report = await productionReadback({ fetchImpl });
+  assert.equal(report.healthReadback.httpStatus, 200);
+  assert.equal(report.healthReadback.status, 'ok');
+  assert.equal(report.healthReadback.buildIdentityBound, false);
+  assert.deepEqual(report.runtimeIdentity, { status: 'RUNTIME_VERIFIED',
+    sourceSha: liveSha, evidence: 'RENDER_DEPLOYMENT_ENVIRONMENT' });
+  assert.equal(report.seoStatus, 'PASS');
+});
+
+test('untrusted runtime provenance, invalid SHA and build-only evidence fail closed', async () => {
+  const liveSha = 'a'.repeat(40);
+  const scenarios = [
+    { status: 'ok', runtimeIdentity: { sourceSha: liveSha, evidence: 'UNTRUSTED' } },
+    { status: 'ok', runtimeIdentity: { sourceSha: 'short', evidence: 'RENDER_DEPLOYMENT_ENVIRONMENT' } },
+    { status: 'down', runtimeIdentity: { sourceSha: liveSha, evidence: 'RENDER_DEPLOYMENT_ENVIRONMENT' } },
+    { status: 'ok', buildIdentity: { bound: true, sourceSha: liveSha } },
+  ];
+  for (const health of scenarios) {
+    const report = await productionReadback({ fetchImpl: (url, options) =>
+      new URL(url).pathname === '/healthz'
+        ? new Response(JSON.stringify(health))
+        : fixture(url, options) });
+    assert.equal(report.runtimeIdentity.status, 'NOT_PROVEN');
+    assert.equal(report.runtimeIdentity.sourceSha, null);
+    assert.equal(report.healthReadback.httpStatus, 200);
+    if (health.status !== 'ok') assert.equal(report.seoStatus, 'FAIL');
+  }
+});
+
+test('health HTTP redirects do not masquerade as a verified runtime', async () => {
+  const report = await productionReadback({ fetchImpl: (url, options) =>
+    new URL(url).pathname === '/healthz'
+      ? new Response(null, { status: 302, headers: { location: 'https://example.invalid' } })
+      : fixture(url, options) });
+  assert.equal(report.healthReadback.httpStatus, 302);
+  assert.equal(report.healthReadback.status, 'NOT_PROVEN');
+  assert.equal(report.runtimeIdentity.status, 'NOT_PROVEN');
+  assert.equal(report.seoStatus, 'FAIL');
+});

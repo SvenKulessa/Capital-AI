@@ -1,5 +1,6 @@
+import { captureCheckoutConfirmation } from './checkoutConfirmation';
 import { readCookieConsent, COOKIE_CONSENT_STORAGE_KEY, browserConsentPersistenceFailed } from '../privacy/cookieConsentV3.ts';
-import { isSeoIndexable } from '../../shared/seo-indexing-policy.mjs';
+import { isAnalyticsMeasurable } from '../../shared/analytics-measurement-policy.mjs';
 import { readInstagramLearningTracking } from '../contracts/instagramCampaignTracking.ts';
 
 export const CONSENT_CHANGED_EVENT = 'capital-ai:consent-changed';
@@ -31,7 +32,7 @@ let expiryTimer: ReturnType<typeof setTimeout> | undefined;
 function permitted() { return readCookieConsent()?.analytics === true; }
 function cleanPath(path: string) {
   try { const u = new URL(path, 'https://capital-ai.online');
-    return u.origin === 'https://capital-ai.online' && isSeoIndexable(u.pathname) ? u.pathname : null;
+    return u.origin === 'https://capital-ai.online' && isAnalyticsMeasurable(u.pathname) ? u.pathname : null;
   } catch { return null; }
 }
 function safeReferrer() {
@@ -60,6 +61,7 @@ function disable() {
   if (reload) window.location.reload();
 }
 async function synchronize() {
+  captureCheckoutConfirmation();
   if (!permitted()) { disable(); return; }
   if (!cleanPath(window.location.pathname)) { if (active) disable(); return; }
   if (active || loading) return;
@@ -85,6 +87,7 @@ async function synchronize() {
       script = document.createElement('script');script.id = 'capital-ai-ga4';script.async = true;
       script.src = 'https://www.googletagmanager.com/gtag/js?id=' + EXPECTED_ID;
       document.head.appendChild(script);active = true;
+      window.dispatchEvent?.(new Event('capital-ai:analytics-ready'));
       // Recheck expiry while the tab stays open; each event checks independently too.
       const expire = () => { if (!permitted()) disable(); else expiryTimer = setTimeout(expire, 60_000); };
       expiryTimer = setTimeout(expire, Math.min(remaining * 1000, 60_000));
@@ -117,7 +120,7 @@ export function sendPageView(path: string) {
     page_location: 'https://capital-ai.online' + safe, page_referrer: referrer, page_title: safe });
 }
 export function trackReceivedLearningInquiry(receipt: string) {
-  if (!/^[0-9a-f-]{36}$/i.test(receipt) || leads.has(receipt) || !active || !permitted()) return;
+  if (typeof window === 'undefined' || !cleanPath(window.location.pathname) || !/^[0-9a-f-]{36}$/i.test(receipt) || leads.has(receipt) || !active || !permitted()) return;
   leads.add(receipt);
   // No email, message, request/receipt ID, user ID or fabricated monetary value leaves the browser.
   (window as TagWindow).gtag?.('event', 'generate_lead', { send_to: EXPECTED_ID,
@@ -134,4 +137,37 @@ export function trackVerifiedLearningPurchase(purchase: { transactionId?: unknow
   (window as TagWindow).gtag?.('event', 'purchase', { send_to: EXPECTED_ID, transaction_id: transactionId,
     value, currency, page_location: 'https://capital-ai.online/learning', page_referrer: '',
     items: [{ item_id: 'learning-portal', item_name: 'Learning Portal', quantity: 1, price: value }] });
+}
+
+const commerceViews = new Set<string>();
+export type CommerceItem = { item_id: string; item_name: string; price: number; quantity: number };
+export type CommerceReceipt = { transactionId: string; value: number; currency: string; items: CommerceItem[] };
+function commercePayload(value: unknown): { value: number; currency: string; items: CommerceItem[] } | null {
+  const payload = value as CommerceReceipt;
+  if (!payload || payload.currency !== 'EUR' || !Number.isFinite(payload.value) || payload.value < 0 || payload.value > 100000 ||
+      !Array.isArray(payload.items) || payload.items.length !== 1) return null;
+  const item = payload.items[0];
+  if (!item || typeof item !== 'object' || !/^(learning-portal|CAP-BP-00[12]|saas-(starter|pro|enterprise)-(monthly|annual))$/.test(item.item_id) ||
+      typeof item.item_name !== 'string' || item.item_name.length > 80 || item.quantity !== 1 || !Number.isFinite(item.price) || item.price < 0 || item.price > 100000) return null;
+  const labels: Record<string,string> = { 'learning-portal': 'Learning Portal', 'CAP-BP-001': 'Market Integrity Gate', 'CAP-BP-002': 'Data Quality Scorer' };
+  const name = labels[item.item_id] || item.item_id;
+  return { value: payload.value, currency: 'EUR', items: [{ item_id: item.item_id, item_name: name, price: item.price, quantity: 1 }] };
+}
+export function trackCommerceEvent(event: 'view_item' | 'begin_checkout' | 'purchase', payload: unknown) {
+  if (typeof window === 'undefined' || !['view_item', 'begin_checkout', 'purchase'].includes(event) || !active || !permitted() || !cleanPath(window.location.pathname)) return;
+  const safe = commercePayload(payload);
+  if (!safe) return;
+  if (event === 'view_item') {
+    const key = window.location.pathname + ':' + safe.items[0].item_id + ':' + safe.value;
+    if (commerceViews.has(key)) return;
+    commerceViews.add(key);
+  }
+  const transactionId = (payload as CommerceReceipt).transactionId;
+  if (event === 'purchase') {
+    if (!/^[a-f0-9]{64}$/.test(transactionId || '') || purchases.has(transactionId)) return;
+    purchases.add(transactionId);
+  }
+  (window as TagWindow).gtag?.('event', event, { send_to: EXPECTED_ID, transport_type: 'beacon', ...safe,
+    ...(event === 'purchase' ? { transaction_id: transactionId } : {}),
+    page_location: 'https://capital-ai.online' + cleanPath(window.location.pathname), page_referrer: '' });
 }

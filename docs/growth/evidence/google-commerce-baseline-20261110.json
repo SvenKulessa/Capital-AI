@@ -1,0 +1,179 @@
+{
+  "mode": "audit",
+  "property": "properties/548187678",
+  "websiteStreamVerified": true,
+  "measurementId": "G-0542DT2HCE",
+  "leadDefinition": "Only a successfully received learning/course enquiry; never a link click, scroll or form start.",
+  "browserCollectionVerified": false,
+  "actualLeadsVerified": false,
+  "writes": null,
+  "configuration": {
+    "leadEventConfigured": true,
+    "emailRedactionEnabled": true,
+    "queryParameterRedactionEnabled": true,
+    "formInteractionsEnabled": false,
+    "enhancedMeasurementDisabled": true
+  },
+  "indexInspection": {
+    "status": "PROVIDER_READ_VERIFIED",
+    "property": "sc-domain:capital-ai.online",
+    "source": "GOOGLE_INDEX_SNAPSHOT_NOT_LIVE_TEST",
+    "observedAt": "2026-11-10T06:38:23.750Z",
+    "readOnly": true,
+    "crawlRequested": false,
+    "urls": [
+      {
+        "path": "/learning",
+        "expectedIndexing": "INDEX",
+        "verdict": "NEUTRAL",
+        "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
+        "indexingState": "INDEXING_STATE_UNSPECIFIED",
+        "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
+        "lastCrawlTime": null,
+        "googleCanonicalMatches": null,
+        "userCanonicalMatches": null
+      },
+      {
+        "path": "/vocabulary/orderbuch",
+        "expectedIndexing": "INDEX",
+        "verdict": "NEUTRAL",
+        "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
+        "indexingState": "INDEXING_STATE_UNSPECIFIED",
+        "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
+        "lastCrawlTime": null,
+        "googleCanonicalMatches": null,
+        "userCanonicalMatches": null
+      },
+      {
+        "path": "/vocabulary/capital-eventmesh",
+        "expectedIndexing": "NOINDEX",
+        "verdict": "NEUTRAL",
+        "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
+        "indexingState": "INDEXING_STATE_UNSPECIFIED",
+        "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
+        "lastCrawlTime": null,
+        "googleCanonicalMatches": null,
+        "userCanonicalMatches": null
+      }
+    ]
+  },
+  "sitemapRegistration": {
+    "status": "PROVIDER_READ_VERIFIED",
+    "property": "sc-domain:capital-ai.online",
+    "canonicalSitemap": "https://capital-ai.online/sitemap.xml",
+    "registered": true,
+    "otherSitemaps": 0,
+    "isPending": false,
+    "lastDownloaded": "2026-11-08T06:59:39.090Z",
+    "errors": 0,
+    "warnings": 0,
+    "indexingConfirmed": false,
+    "writes": false
+  },
+  "countryAnalysis": {
+    "scope": "BOUNDED_AGGREGATES_NOT_SITEWIDE_TOTALS",
+    "coverage": {
+      "ga4MaximumRows": 100,
+      "ga4Truncated": false,
+      "gscMaximumPagesPerCountry": 20,
+      "searchWindow": {
+        "start": "2026-10-13",
+        "end": "2026-11-09"
+      },
+      "periods": {
+        "current": "28daysAgo through yesterday",
+        "previous": "56daysAgo through 29daysAgo"
+      }
+    },
+    "countries": [
+      {
+        "country": "Germany",
+        "organicLearning": {
+          "currentSessions": 0,
+          "previousSessions": 0,
+          "currentGenerateLeadEvents": 0,
+          "previousGenerateLeadEvents": 0,
+          "actualEnquiries": "NOT_PROVEN",
+          "paidPurchases": "NOT_PROVEN"
+        },
+        "searchTopPages": {
+          "clicks": 0,
+          "impressions": 1,
+          "completeSiteTotals": false
+        }
+      },
+      {
+        "country": "Italy",
+        "organicLearning": {
+          "currentSessions": 0,
+          "previousSessions": 0,
+          "currentGenerateLeadEvents": 0,
+          "previousGenerateLeadEvents": 0,
+          "actualEnquiries": "NOT_PROVEN",
+          "paidPurchases": "NOT_PROVEN"
+        },
+        "searchTopPages": {
+          "clicks": 0,
+          "impressions": 0,
+          "completeSiteTotals": false
+        }
+      },
+      {
+        "country": "Spain",
+        "organicLearning": {
+          "currentSessions": 0,
+          "previousSessions": 0,
+          "currentGenerateLeadEvents": 0,
+          "previousGenerateLeadEvents": 0,
+          "actualEnquiries": "NOT_PROVEN",
+          "paidPurchases": "NOT_PROVEN"
+        },
+        "searchTopPages": {
+          "clicks": 0,
+          "impressions": 0,
+          "completeSiteTotals": false
+        }
+      },
+      {
+        "country": "Portugal",
+        "organicLearning": {
+          "currentSessions": 0,
+          "previousSessions": 0,
+          "currentGenerateLeadEvents": 0,
+          "previousGenerateLeadEvents": 0,
+          "actualEnquiries": "NOT_PROVEN",
+          "paidPurchases": "NOT_PROVEN"
+        },
+        "searchTopPages": {
+          "clicks": 0,
+          "impressions": 0,
+          "completeSiteTotals": false
+        }
+      },
+      {
+        "country": "United Kingdom",
+        "organicLearning": {
+          "currentSessions": 0,
+          "previousSessions": 0,
+          "currentGenerateLeadEvents": 0,
+          "previousGenerateLeadEvents": 0,
+          "actualEnquiries": "NOT_PROVEN",
+          "paidPurchases": "NOT_PROVEN"
+        },
+        "searchTopPages": {
+          "clicks": 0,
+          "impressions": 0,
+          "completeSiteTotals": false
+        }
+      }
+    ],
+    "note": "GSC clicks, GA4 sessions and generate_lead events are separate measures. Consent, attribution, thresholds and reporting lag prevent a one-to-one comparison. No uplift or purchase attribution is inferred."
+  },
+  "reporting": {
+    "ga4ReadVerified": true,
+    "ga4LearningRowsAvailable": false,
+    "gscReadVerified": true,
+    "gscCountryRowsAvailable": true,
+    "note": "Availability only; no ranking/lead increase claimed. GA4 browser collection and true enquiry receipt need independent verification."
+  }
+}
