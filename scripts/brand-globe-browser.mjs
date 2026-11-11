@@ -168,8 +168,7 @@ try {
     assert.equal(lost, true, 'Context-loss test unavailable');
     await until(() => evaluate("document.querySelector('.brand-globe-art').dataset.globeState==='poster'"), 'CONTEXT_LOSS_FALLBACK');
     await until(() => evaluate("!document.querySelector('.hero-globe-pause')"), 'FALLBACK_HAS_NO_PLAYBACK_CONTROL');
-    await pause(700);
-    assert.equal(await evaluate("getComputedStyle(document.querySelector('.brand-globe-poster')).opacity"), '1');
+    await until(() => evaluate("getComputedStyle(document.querySelector('.brand-globe-poster')).opacity === '1'"), 'FALLBACK_POSTER_FULLY_VISIBLE');
     report.checks.push({ viewport, webgl: 'SOFTWARE_WEBGL_PASS', animatedFrames: 'PASS', keyboardPauseResume: 'PASS', contextLossFallback: 'PASS' });
   }
   assert.deepEqual(errors, [], 'Uncaught exceptions');
