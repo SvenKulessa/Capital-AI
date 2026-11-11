@@ -39,10 +39,13 @@ SQL
 age-keygen -o "$scratch/identity.txt" 2>/dev/null
 recipient="$(age-keygen -y "$scratch/identity.txt")"
 cipher_dir="$(sudo -u postgres mktemp -d '/tmp/capital-ai-stream-XXXXXXXX')"
+# The postgres Unix-socket identity cannot traverse the runner's checked-out
+# workspace. Copy only this public, pinned test script into a private fixture dir.
+sudo install -o postgres -g postgres -m 0500 "$root/scripts/platform/backup-stream-encrypt.sh" "$cipher_dir/exporter.sh"
 result="$(sudo -u postgres env -i PATH="$PATH" HOME=/var/lib/postgresql \
   CAPITAL_BACKUP_MODE=synthetic CAPITAL_BACKUP_AGE_RECIPIENT="$recipient" \
   PGHOST=/var/run/postgresql PGPORT=5432 PGUSER=postgres \
-  bash "$root/scripts/platform/backup-stream-encrypt.sh" "$source_db" "$cipher_dir")"
+  bash "$cipher_dir/exporter.sh" "$source_db" "$cipher_dir")"
 [[ "$result" == BACKUP_STREAM_ENCRYPTED* ]] || { echo 'NO_ENCRYPTED_RESULT' >&2; exit 1; }
 mapfile -t archives < <(sudo find "$cipher_dir" -maxdepth 1 -type f -name '*.sql.age')
 mapfile -t manifests < <(sudo find "$cipher_dir" -maxdepth 1 -type f -name 'backup-manifest-*.json')
@@ -94,7 +97,7 @@ fi
 if sudo -u postgres env -i PATH="$PATH" HOME=/var/lib/postgresql \
   CAPITAL_BACKUP_MODE=synthetic CAPITAL_BACKUP_AGE_RECIPIENT="$recipient" \
   PGHOST=/var/run/postgresql PGPORT=5432 PGUSER=postgres \
-  bash "$root/scripts/platform/backup-stream-encrypt.sh" "capital_ai_fixture_src_999999999" "$cipher_dir" >/dev/null 2>&1; then
+  bash "$cipher_dir/exporter.sh" "capital_ai_fixture_src_999999999" "$cipher_dir" >/dev/null 2>&1; then
   echo 'NONEXISTENT_DATABASE_ACCEPTED' >&2; exit 1
 fi
 [[ "$(sudo find "$cipher_dir" -maxdepth 1 -type f -name '*.sql.age' | wc -l)" == 1 ]] || { echo 'FAILED_EXPORT_PUBLISHED_ARCHIVE' >&2; exit 1; }
