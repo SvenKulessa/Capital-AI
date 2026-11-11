@@ -1,24 +1,24 @@
 {
   "schema": "CAPITAL_AI_ROADMAP_MERGE_AUDIT@1",
   "state": "RECONCILED_CODE_AND_DOCUMENTS",
-  "lastReconciledPr": 545,
-  "mergeCount": 470,
-  "fromPr": 527,
-  "toPr": 545,
-  "sourceSha": "a799d7416eaca8c399098ec5eff2f3bee6e6e0dc",
-  "reconciledAt": "2026-10-31T06:02:12.071Z",
+  "lastReconciledPr": 650,
+  "mergeCount": 530,
+  "fromPr": 642,
+  "toPr": 650,
+  "sourceSha": "02224052803a400521de717914214d89ecb8fead",
+  "reconciledAt": "2026-11-11T21:58:17.935Z",
   "sourceDigests": [
     {
       "path": "src/data/roadmapData.ts",
-      "sha256": "aa9d071b4f081dfe4ebef4f40468bf5daf66c6648196e6c4e7c6ac395543461b"
+      "sha256": "075e55a4eda978c4479cfe44e767de26090ce5834bef1e9c29c72c0b6dbb3f4e"
     },
     {
       "path": "src/data/roadmapCurrentMainState.ts",
-      "sha256": "b03e3193ae3d55d306217acecb05a1a2ecd7721c29e0e6cf94b61c56e37d1029"
+      "sha256": "d85171396828b6ef026284f5f78cc32fe881b46847c4ba07dd132c0afbb7b25a"
     },
     {
       "path": "src/data/productionWebsiteWorkPackage.ts",
-      "sha256": "ea063badf8b20d739344425fb9576858e9ad2c11e4603582aa6c8b23460022bc"
+      "sha256": "6e4bc67a9bd78d3b40d93c8401cb3827d6945b5ac8a3835d5ea37a127428bbc1"
     },
     {
       "path": "src/data/socialContentRoadmap.ts",
@@ -30,7 +30,7 @@
     },
     {
       "path": "src/components/RoadmapPanel.tsx",
-      "sha256": "55fbe04906bbbdfa43442e7b32a323cfa6ed4302614ba8d58c509cf17bd2bb46"
+      "sha256": "bfbcc56391ca8eb1d5a268e9472e4c07737f3469ae32bf0d3c9ccfe4cb6177c4"
     }
   ],
   "packages": [
@@ -201,7 +201,9 @@
       "owner": "PLATFORM",
       "recordedState": "OFFEN",
       "evidencePathsPresent": [
-        "docs/governance/DOMAIN-RELEASE-GOVERNANCE.md"
+        "docs/governance/DOMAIN-RELEASE-GOVERNANCE.md",
+        "docs/platform/GOOGLE-CLOUD-OPERATOR-OIDC.md",
+        ".github/workflows/google-cloud-admin.yml"
       ],
       "evidencePathsMissing": [],
       "externalEvidenceNotVerified": [],
@@ -634,6 +636,8 @@
       "recordedState": "OFFEN",
       "evidencePathsPresent": [
         "src/data/pricingCatalog.ts",
+        "src/data/studioData.ts",
+        "scripts/market-blueprint-demo.test.mjs",
         "shared/seo-content-manifest.mjs",
         "shared/seo-metadata.mjs",
         "scripts/seo-content-manifest.test.mjs"
@@ -1138,7 +1142,9 @@
       "recordedState": "VERIFIED",
       "evidencePathsPresent": [
         "src/components/LearningPortalPage.tsx",
-        "src/data/vocabularyData.ts"
+        "src/data/vocabularyData.ts",
+        "shared/vocabulary-lookup.mjs",
+        "src/data/__tests__/vocabularyLookup.test.ts"
       ],
       "evidencePathsMissing": [
         "src/data/vocabularyPresentation.ts"
@@ -1241,11 +1247,15 @@
     {
       "id": "AP-SOC-02",
       "owner": "GROWTH",
-      "recordedState": "UNGEKLÄRT",
-      "evidencePathsPresent": [],
+      "recordedState": "OFFEN",
+      "evidencePathsPresent": [
+        "src/contracts/publicBlueprintShare.ts",
+        "src/features/documentation/BlueprintDocumentationPage.tsx",
+        "scripts/market-blueprint-demo.test.mjs"
+      ],
       "evidencePathsMissing": [],
       "externalEvidenceNotVerified": [],
-      "effectiveState": "UNGEKLÄRT"
+      "effectiveState": "OFFEN"
     },
     {
       "id": "AP-SOC-03",
