@@ -87,7 +87,7 @@ test('same-origin owner-only start binds DB state, callback, scopes and browser 
   assert.equal(redirect.searchParams.get('state'),STATE);
   assert.equal(redirect.searchParams.get('redirect_uri'),CALLBACK);
   assert.deepEqual(redirect.searchParams.get('scope').split(','),INSTAGRAM_FACEBOOK_SCOPES);
-  assert.match(r.headers['Set-Cookie'],/HttpOnly; Secure; SameSite=Lax; Max-Age=600/);
+  assert.match(String(r.headers['Set-Cookie']),/HttpOnly; Secure; SameSite=Lax; Max-Age=600/);
   assert.doesNotMatch(JSON.stringify(r),/synthetic-application-secret|sb_secret_/);
   for(const [request,target,code] of [
     [req('','POST'),url(start),405],
