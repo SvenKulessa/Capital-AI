@@ -58,7 +58,9 @@ async function harness(envOverrides = {}, simulatorStore = new Map()) {
   });
 
   const tokenPayload = () => ({
-    access_token: `access-${state.subject}-${state.tokenCalls}`,
+    access_token: state.aal2
+      ? `access-${state.subject}-${state.tokenCalls}.${Buffer.from(JSON.stringify({ aal: 'aal2' })).toString('base64url')}.offline-test`
+      : `access-${state.subject}-${state.tokenCalls}`,
     refresh_token: `refresh-${state.subject}-${state.tokenCalls}`,
     expires_in: 3600,
     expires_at: Math.floor(Date.now() / 1000) + 3600,
@@ -1068,5 +1070,10 @@ test('owner observability denies enrolled TOTP AAL1 while preserving unverified 
     assert.equal(session.mfaRequired, true, 'real TOTP challenge remains available');
     h.state.subject = 'second-user';
     assert.equal((await read()).status, 404, 'cross-user identities stay denied');
+    h.state.subject = 'owner-subject';
+    h.state.aal2 = true;
+    const steppedCookie = await h.completeEmail();
+    const stepped = await h.request(endpoint, { headers: { cookie: steppedCookie } });
+    assert.equal(stepped.status, 200, 'verified owner AAL2 restores access');
   } finally { await h.stop(); }
 });
