@@ -218,6 +218,8 @@ test('browser cookie plus persisted one-shot state protect owner callback and su
     [req('capital_instagram_oauth_state='+'a'.repeat(43)),query,503],
     [req('capital_instagram_oauth_state='+STATE),query+'&channel=X',400],
     [req(),query+'&channel=INSTAGRAM',400],
+    [req('capital_instagram_oauth_state='+STATE),query+'&state='+STATE,400],
+    [req('capital_instagram_oauth_state='+STATE),query+'&code=duplicate',400],
   ]) {const r=res();await handler.handle(request,r,url(cb,querySuffix),json);
     assert.equal(r.status,expected);}
   assert.equal(exchanges,0);assert.equal(used,false);
