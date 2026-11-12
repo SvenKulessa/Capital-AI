@@ -138,6 +138,9 @@ export function createInstagramFacebookExchange({env=process.env,fetchImpl=fetch
     const pageDebug=dataValid(await request(fetchImpl,root+'/debug_token',{method:'POST',
       headers:{...appBearer,'Content-Type':'application/x-www-form-urlencoded'},
       body:debugBody(page.access_token)}),cfg.appId,'PAGE');
+    // When Meta returns the PAGE token's subject, it must be this exact Page.
+    check(pageDebug.profile_id == null || String(pageDebug.profile_id)===String(page.id),
+      'SOCIAL_IG_PAGE_TOKEN_IDENTITY_INVALID');
     // A PAGE token must independently read back the same Page and its IG link.
     // Avoid relying on a debug_token profile_id that some Meta versions omit.
     const bound=await request(fetchImpl,root+'/'+page.id
