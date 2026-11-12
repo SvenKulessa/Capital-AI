@@ -69,7 +69,7 @@ export function createSocialOAuthCallback({ env = process.env, auth, store = nul
     const state = url.searchParams.get('state');
     const youtubeState = /(?:^|;\s*)capital_youtube_oauth_state=([A-Za-z0-9_-]{43})(?:;|$)/
       .exec(req.headers?.cookie || '')?.[1];
-    const instagramState = /(?:^|;\\s*)capital_instagram_oauth_state=([A-Za-z0-9_-]{43})(?:;|$)/
+    const instagramState = /(?:^|;\s*)capital_instagram_oauth_state=([A-Za-z0-9_-]{43})(?:;|$)/
       .exec(req.headers?.cookie || '')?.[1];
     const channel = url.searchParams.get('channel')
       ?? (instagramState && instagramState === state ? 'INSTAGRAM'
