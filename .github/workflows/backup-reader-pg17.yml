@@ -25,7 +25,7 @@ jobs:
           persist-credentials: false
       - name: Validate Bash syntax
         run: bash -n scripts/platform/backup-reader-contract-test.sh
-      - name: Build PostgreSQL 17.11 fixture with pinned extension sources
+      - name: Build PostgreSQL 17 fixture with pinned extension sources
         shell: bash
         run: |
           set -Eeuo pipefail
