@@ -149,7 +149,9 @@ export function createInstagramFacebookExchange({env=process.env,fetchImpl=fetch
     check(String(bound?.id||'')===String(page.id)
       && String(bound?.instagram_business_account?.id||'')===String(ig.id),
       'SOCIAL_IG_PAGE_TOKEN_IDENTITY_INVALID');
-    const expiries=[userDebug.expires_at,pageDebug.expires_at]
+    // Bound the persisted 'connected' lifetime by both token and data-access grants.
+    const expiries=[userDebug.expires_at,pageDebug.expires_at,
+      userDebug.data_access_expires_at,pageDebug.data_access_expires_at]
       .filter(n=>Number.isSafeInteger(n)&&n>0).map(n=>n*1000);
     check(expiries.length>0,'SOCIAL_IG_TOKEN_EXPIRY_UNKNOWN');
     const expiry=Math.min(...expiries,Date.now()+7*86400*1000);
