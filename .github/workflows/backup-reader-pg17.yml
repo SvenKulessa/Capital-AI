@@ -34,12 +34,14 @@ jobs:
           USER root
           ENV DEBIAN_FRONTEND=noninteractive
           RUN set -eux; \
+              printf '%s\n' 'deb [signed-by=/usr/local/share/keyrings/postgres.gpg.asc] https://apt-archive.postgresql.org/pub/repos/apt bookworm-pgdg-archive main' > /etc/apt/sources.list.d/pgdg-archive.list; \
               apt-get update -qq; \
               apt-mark hold postgresql-17 postgresql-client-17; \
               apt-get install -y --no-install-recommends \
-                ca-certificates git build-essential postgresql-server-dev-17 \
+                ca-certificates git build-essential postgresql-server-dev-17=17.11-1.pgdg12+2 \
                 libcurl4-openssl-dev python3 ripgrep; \
-              test "$(/usr/lib/postgresql/17/bin/postgres --version)" = 'postgres (PostgreSQL) 17.11 (Debian 17.11-1.pgdg12+2)' || { /usr/lib/postgresql/17/bin/postgres --version; exit 1; }; \
+              test "$(/usr/lib/postgresql/17/bin/postgres --version)" = 'postgres (PostgreSQL) 17.11 (Debian 17.11-1.pgdg12+2)'; \
+              test "$(dpkg-query -W -f='${Version}' postgresql-server-dev-17)" = '17.11-1.pgdg12+2'; \
               git clone https://github.com/supabase/pg_net.git /tmp/pg_net; \
               git -C /tmp/pg_net checkout 698fb055f666366a78c112b0578b0a5652ddbcfa; \
               make -C /tmp/pg_net PG_CONFIG=/usr/lib/postgresql/17/bin/pg_config; \
