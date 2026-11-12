@@ -1,0 +1,77 @@
+{
+  "schema": "CAPITAL_AI_INSTAGRAM_JPEG_OWNER_RIGHTS_ATTESTATION@1",
+  "attestationId": "capital-ai-instagram-etf-learning-v1-owner-rights-20261112",
+  "attestedOn": "2026-11-12",
+  "attestationStatus": "OWNER_SELF_ATTESTED",
+  "evidenceClass": "OWNER_DECLARATION_NOT_INDEPENDENT_LEGAL_VERIFICATION",
+  "sourceType": "chat_owner_declaration",
+  "sourceAuthentication": "CHAT_USER_STATEMENT_NOT_DIGITALLY_SIGNED",
+  "rightsHolder": "CAPITAL-AI project owner (self-declared; no legal-name or cryptographic identity assertion)",
+  "ownerStatement": "Ich bestätige als Eigentümer, dass die drei im CAPITAL-AI-Editorial-Review-Manifest dokumentierten JPEG-Motive im eigenen Projekt erstellt wurden und nach meiner Prüfung alle enthaltenen Komponenten kommerziell genutzt werden dürfen.",
+  "sourceSha": "3c26d10db4675ac95d036943e9c25f3f100d442e",
+  "campaignId": "capital-ai-instagram-etf-learning-v1",
+  "contentId": "capital-ai-instagram-etf-kosten-20261110",
+  "canonicalUrl": "https://capital-ai.online/learning",
+  "referenceManifest": "docs/growth/INSTAGRAM-CAROUSEL-EDITORIAL-REVIEW-20261110.json",
+  "rightsAssertion": {
+    "basis": "OWNER_SELF_ATTESTATION",
+    "originalsCreatedInOwnProject": true,
+    "allIncludedComponentsCommerciallyUsableAccordingToOwner": true,
+    "commercialUseScope": "CAPITAL-AI-owned product communication and marketing for the listed fixed JPEG assets, subject to separate publication approvals",
+    "independentLegalAudit": false,
+    "thirdPartyContractsAssessedByAgent": false
+  },
+  "assets": [
+    {
+      "sequence": 1,
+      "assetId": "etf-kosten-01-jpeg",
+      "filename": "CAPITAL-AI-Instagram-ETF-01-Kosten-20261110.jpg",
+      "mimeType": "image/jpeg",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "3fbfb6eafd563d2f301f138222dfc34f3ab917ae7d3524aae2ff7c932342891b",
+      "ownerRightsStatus": "OWNER_ATTESTED",
+      "sha256ByteRecheckInThisRecord": false
+    },
+    {
+      "sequence": 2,
+      "assetId": "etf-kosten-02-jpeg",
+      "filename": "CAPITAL-AI-Instagram-ETF-02-Spread-20261110.jpg",
+      "mimeType": "image/jpeg",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "9df49fedeb3982dfd70be6dacf0e064ee0ad408caf48e46aaba9f6f556076aae",
+      "ownerRightsStatus": "OWNER_ATTESTED",
+      "sha256ByteRecheckInThisRecord": false
+    },
+    {
+      "sequence": 3,
+      "assetId": "etf-kosten-03-jpeg",
+      "filename": "CAPITAL-AI-Instagram-ETF-03-Checkliste-20261110.jpg",
+      "mimeType": "image/jpeg",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "2ef5b75783c7c704fa1a596a8910d3d74aebcc5f55728729f36ba80326372fc5",
+      "ownerRightsStatus": "OWNER_ATTESTED",
+      "sha256ByteRecheckInThisRecord": false
+    }
+  ],
+  "publicationBoundary": {
+    "contentApprovalGranted": false,
+    "editorialCaptionApproved": false,
+    "instagramPlatformApprovalGranted": false,
+    "publicPublishAllowed": false,
+    "publicationAuthority": "SOCIAL_MEDIA_ENGINE_ONLY",
+    "providerPublishingFlagsChanged": false,
+    "instagramAdapterState": "IMPLEMENTED_DISABLED",
+    "noAutomatedUpload": true,
+    "noScheduledPosts": true,
+    "noDatabaseOrProviderWrites": true
+  },
+  "verificationLimitations": [
+    "Owner statement provided in this chat; not a separately signed document",
+    "JPEG SHA-256 values are bound to the existing repository manifest; asset bytes were not independently rehashed during this write",
+    "This is rights attestation only and must not be converted to a publish ApprovalRef or trusted runtime rightsVerified record without the designated private-storage rights verification process"
+  ],
+  "reviewStatus": "ATTESTATION_COMPLETE_PUBLISH_BLOCKED"
+}
