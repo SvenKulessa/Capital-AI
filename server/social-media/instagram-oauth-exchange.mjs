@@ -125,7 +125,13 @@ export function createInstagramFacebookExchange({env=process.env,fetchImpl=fetch
     const pageDebug=dataValid(await request(fetchImpl,root+'/debug_token',{method:'POST',
       headers:{...appBearer,'Content-Type':'application/x-www-form-urlencoded'},
       body:debugBody(page.access_token)}),cfg.appId,'PAGE');
-    check(String(pageDebug.profile_id||pageDebug.user_id||'')===String(page.id),
+    // A PAGE token must independently read back the same Page and its IG link.
+    // Avoid relying on a debug_token profile_id that some Meta versions omit.
+    const bound=await request(fetchImpl,root+'/'+page.id
+      +'?fields=id,instagram_business_account%7Bid%2Cusername%7D',
+      {headers:bearer(page.access_token)});
+    check(String(bound?.id||'')===String(page.id)
+      && String(bound?.instagram_business_account?.id||'')===String(ig.id),
       'SOCIAL_IG_PAGE_TOKEN_IDENTITY_INVALID');
     const expiries=[userDebug.expires_at,pageDebug.expires_at]
       .filter(n=>Number.isSafeInteger(n)&&n>0).map(n=>n*1000);
