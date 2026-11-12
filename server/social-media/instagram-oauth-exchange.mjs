@@ -47,7 +47,7 @@ export function sealInstagramPageToken(token,key,{userId,igId,pageId}) {
     && UUID.test(userId||'') && NUM.test(igId||'') && NUM.test(pageId||''),
     'SOCIAL_IG_TOKEN_INVALID');
   const iv=randomBytes(12), c=createCipheriv('aes-256-gcm',key,iv);
-  c.setAAD(Buffer.from(JSON.stringify(['capital-social-instagram-page-v1',userId,igId,pageId])));
+  c.setAAD(Buffer.from(JSON.stringify(['capital-social-instagram-page-v1',userId,igId])));
   const ciphertext=Buffer.concat([c.update(token,'utf8'),c.final()]);
   return 'v1.'+[iv,c.getAuthTag(),ciphertext].map(x=>x.toString('base64url')).join('.');
 }
