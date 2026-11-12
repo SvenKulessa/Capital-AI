@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createDecipheriv, createHmac } from 'node:crypto';
+import { createDecipheriv } from 'node:crypto';
 import { createInstagramFacebookStart } from './instagram-oauth-start.mjs';
 import { createInstagramFacebookExchange,instagramFacebookConfigured,
   INSTAGRAM_FACEBOOK_SCOPES } from './instagram-oauth-exchange.mjs';
@@ -119,17 +119,15 @@ test('Meta flow verifies USER and PAGE token types, exact Page tasks, scopes, IG
   assert.equal(m.records[1].init.method,'POST');
   assert.ok(m.records[2].url.endsWith('/debug_token'));
   assert.match(m.records[4].url,/\/me\/accounts\?/);
-  // Meta's Require App Secret proof must cover every authenticated Graph readback.
-  const proof=token=>createHmac('sha256',env.SOCIAL_INSTAGRAM_OAUTH_APP_SECRET)
-    .update(token).digest('hex');
-  assert.equal(new URLSearchParams(m.records[2].init.body).get('appsecret_proof'),
-    proof(env.SOCIAL_INSTAGRAM_OAUTH_APP_ID+'|'+env.SOCIAL_INSTAGRAM_OAUTH_APP_SECRET));
-  assert.equal(new URLSearchParams(m.records[5].init.body).get('appsecret_proof'),
-    proof(env.SOCIAL_INSTAGRAM_OAUTH_APP_ID+'|'+env.SOCIAL_INSTAGRAM_OAUTH_APP_SECRET));
-  for(const i of [3,4]) assert.equal(new URL(m.records[i].url).searchParams.get('appsecret_proof'),
-    proof('long-lived-user-token'));
-  assert.equal(new URL(m.records[6].url).searchParams.get('appsecret_proof'),
-    proof('synthetic-page-token-1234'));
+  // Fixed synthetic RFC-style HMAC-SHA256 regression vectors, independently
+  // calculated; never derive a password hash from an app credential in tests.
+  const appProof='a1aca5d4d6c5425932030533f66e7ec74bb158bb9ad8f28ac5b08492a9239d57';
+  const userProof='e4198578f840357a90177b3c74b3e3dd04eb1e597cedfa771bd36d5cac9a1a1c';
+  const pageProof='7c905840c0d3c9b492f97609876cda5d84fa0b212126b417d462e985a3596ea5';
+  assert.equal(new URLSearchParams(m.records[2].init.body).get('appsecret_proof'),appProof);
+  assert.equal(new URLSearchParams(m.records[5].init.body).get('appsecret_proof'),appProof);
+  for(const i of [3,4]) assert.equal(new URL(m.records[i].url).searchParams.get('appsecret_proof'),userProof);
+  assert.equal(new URL(m.records[6].url).searchParams.get('appsecret_proof'),pageProof);
   assert.ok(m.records[7].url.includes('on_conflict=user_id%2Cplatform'));
   assert.match(m.records[6].url, /fields=id,instagram_business_account/);
   const row=JSON.parse(m.records[7].init.body);
