@@ -113,8 +113,10 @@ export function createInstagramFacebookExchange({env=process.env,fetchImpl=fetch
       && NUM.test(String(p?.instagram_business_account?.id||''))
       && Array.isArray(p.tasks) && p.tasks.some(t=>['CREATE_CONTENT','MANAGE',
         'PROFILE_PLUS_CREATE_CONTENT','PROFILE_PLUS_FULL_CONTROL'].includes(t)));
-    check(eligible.length===1,'SOCIAL_IG_PAGE_SELECTION_REQUIRED');
-    const page=eligible[0],ig=page.instagram_business_account;
+    const matched=eligible.filter(p=>(!cfg.expectedPageId || String(p.id)===cfg.expectedPageId)
+      && (!cfg.expectedIgId || String(p.instagram_business_account.id)===cfg.expectedIgId));
+    check(matched.length===1,'SOCIAL_IG_PAGE_SELECTION_REQUIRED');
+    const page=matched[0],ig=page.instagram_business_account;
     check((!cfg.expectedIgId || String(ig.id)===cfg.expectedIgId)
       && (!cfg.expectedPageId || String(page.id)===cfg.expectedPageId),
       'SOCIAL_IG_EXPECTED_PAGE_ACCOUNT_MISMATCH');
