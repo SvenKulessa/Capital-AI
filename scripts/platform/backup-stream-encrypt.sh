@@ -30,11 +30,23 @@ case "$mode" in
     [[ "${CAPITAL_BACKUP_PRODUCTION_APPROVED:-}" == 'OWNER_APPROVED_READONLY_EXPORT' ]] || fail 'production requires explicit owner authorization'
     [[ "$database" == 'postgres' ]] || fail 'unexpected production database name'
     [[ "${CAPITAL_BACKUP_PROJECT_REF:-}" == 'ryzywoktpmyhwzxmstyu' ]] || fail 'unexpected Supabase project identity'
-    [[ "${PGHOST:-}" == "db.${CAPITAL_BACKUP_PROJECT_REF}.supabase.co" && "${PGUSER:-}" == 'postgres' ||
-       "${PGHOST:-}" == *.pooler.supabase.com && "${PGUSER:-}" == "postgres.${CAPITAL_BACKUP_PROJECT_REF}" ]] || fail 'database host/user does not bind expected project'
-    [[ -z "${PGPASSWORD:-}${PGHOSTADDR:-}${PGSERVICE:-}${PGSERVICEFILE:-}" ]] || fail 'production credentials must use a protected PGPASSFILE, no inline password/service overrides'
+    # Use only project-bound direct or shared session-pooler identities.
+    # Transaction pooling (6543) is not suitable for a pg_dump session.
+    [[ "${PGPORT:-5432}" == '5432' ]] || fail 'production requires direct or session pooler port 5432'
+    direct_host="db.${CAPITAL_BACKUP_PROJECT_REF}.supabase.co"
+    if [[ "${PGHOST:-}" == "$direct_host" ]]; then
+      [[ "${PGUSER:-}" == 'postgres' || "${PGUSER:-}" == 'capital_ai_backup_reader' ]] || fail 'unexpected direct database user'
+    elif [[ "${PGHOST:-}" =~ ^[a-z0-9]([a-z0-9-]*[a-z0-9])?\.pooler\.supabase\.com$ ]]; then
+      [[ "${PGUSER:-}" == "postgres.${CAPITAL_BACKUP_PROJECT_REF}" ||
+         "${PGUSER:-}" == "capital_ai_backup_reader.${CAPITAL_BACKUP_PROJECT_REF}" ]] || fail 'unexpected session pooler database user'
+    else
+      fail 'database host is not bound to expected Supabase project'
+    fi
+    [[ -z "${PGPASSWORD:-}${PGHOSTADDR:-}${PGSERVICE:-}${PGSERVICEFILE:-}${PGOPTIONS:-}${PGDATABASE:-}" ]] || fail 'production forbids inline passwords, service, host-address, option, and database overrides'
     [[ "${PGSSLMODE:-}" == 'verify-full' && -f "${PGSSLROOTCERT:-}" && ! -L "${PGSSLROOTCERT:-}" ]] || fail 'production requires verified TLS and trusted CA bundle'
     [[ -f "${PGPASSFILE:-}" && ! -L "${PGPASSFILE:-}" && "$(stat -c %a -- "${PGPASSFILE:-/dev/null}")" == '600' ]] || fail 'production requires mode-0600 password file'
+    # libpq otherwise prefers GSS encryption to certificate-verified TLS.
+    export PGGSSENCMODE=disable
     ;;
   *) fail 'CAPITAL_BACKUP_MODE must be synthetic or production (no implicit production mode)' ;;
 esac
