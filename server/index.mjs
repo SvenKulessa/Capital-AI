@@ -262,6 +262,21 @@ function injectPricingFallback(html, pathname) {
       '$1Tarifinformationen und Learning-Zugang: Verfügbarkeit, Preise und Checkout-Voraussetzungen prüfen.$2');
 }
 
+function injectBlueprintPreview(html, pathname) {
+  if (pathname !== '/marketscreener/dokumentation' || !html.includes('<div id="root"></div>')) return html;
+  const preview = `<main id="capital-ai-blueprint-preview" lang="de" class="mx-auto max-w-2xl space-y-4 px-4 py-8">
+    <h1 class="text-2xl font-bold">Screener-Blueprint · Vorschau</h1>
+    <p>Der Blueprint zeigt, wie eine Analyse Datenquellen prüft, Faktoren gewichtet und einen Score nachvollziehbar berechnet.</p>
+    <h2 class="text-xl font-semibold">Synthetisches Beispiel</h2>
+    <p>Ein Faktor mit 80 von 100 Punkten und einem Gewicht von 50 % trägt 40 Punkte zum Gesamtscore bei.</p>
+    <p>Die Vorschau verwendet synthetische Daten. Sie enthält keine Live-Marktdaten und bietet keinen Kauf des Blueprint-Bundles an.</p>
+    <a class="inline-flex min-h-11 items-center underline" href="/pricing">Bestehende Angebote vergleichen</a>
+  </main>`;
+  return html
+    .replace('<div id="root"></div>', `<div id="root">${preview}</div>`)
+    .replace(/<title>[^<]*<\/title>/, '<title>Screener-Blueprint · Vorschau | Capital-AI</title>');
+}
+
 function vocabularyFallback(entry) {
   const thesaurus = entry.thesaurus.map(item => `<li>${escapeHtml(item)}</li>`).join('');
   const lesson = [['Erklärung',entry.detailedExplanation],['Regel / Formel',entry.formulaOrRule],['Synthetisches Praxisbeispiel',entry.practicalExample],['Merksatz',entry.keyTakeaway]].filter(([,text])=>text).map(([title,text])=>`<section><h2>${escapeHtml(title)}</h2><p>${escapeHtml(text)}</p></section>`).join('');
@@ -712,7 +727,8 @@ export function createApp(root = defaultRoot, options = {}) {
       body = Buffer.from(injectSeoMetadata(body.toString('utf8'), publicPath));
       body = Buffer.from(applySeoIndexingPolicy(body.toString('utf8'), publicPath));
       body = Buffer.from(injectPublicSeoSnapshot(body.toString('utf8'), publicPath));
-       body = Buffer.from(injectPricingFallback(body.toString('utf8'), publicPath));
+      body = Buffer.from(injectPricingFallback(body.toString('utf8'), publicPath));
+      body = Buffer.from(injectBlueprintPreview(body.toString('utf8'), publicPath));
       const pathLocale = localeFromLandingPath(publicPath);
       if (pathLocale && publicPath !== '/') {
         body = Buffer.from(localizeNonIndexableLandingHtml(body.toString('utf8'), pathLocale));
