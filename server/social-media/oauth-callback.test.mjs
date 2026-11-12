@@ -171,8 +171,8 @@ test('non-owner social channels never receive owner-only callback diagnostics', 
   const r = res();
   await handler.handle(req(), r,
     url('?channel=INSTAGRAM&state=' + STATE + '&code=SENSITIVE_CODE'), json);
-  assert.equal(r.status, 503);
-  assert.deepEqual(r.body, { error: 'social_oauth_callback_unavailable' });
+  assert.equal(r.status, 400);
+  assert.deepEqual(r.body, { error: 'invalid_social_oauth_callback' });
   assert.equal(checkedOwner, 0);
   assert.ok(!JSON.stringify(r.body).includes('SENSITIVE_CODE'));
 });

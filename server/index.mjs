@@ -12,6 +12,9 @@ import { createSocialOAuthCallback } from './social-media/oauth-callback.mjs';
 import { createSocialXOAuthStart } from './social-media/x-oauth-start.mjs';
 import { createYouTubePrivateUpload } from './social-media/youtube-private-upload.mjs';
 import { createSocialYouTubeOAuthStart } from './social-media/youtube-oauth-start.mjs';
+import { createInstagramFacebookStart } from './social-media/instagram-oauth-start.mjs';
+import { createInstagramFacebookExchange } from './social-media/instagram-oauth-exchange.mjs';
+import { createInstagramFacebookStatus } from './social-media/instagram-account-status.mjs';
 import { createSocialYouTubeOAuthExchange } from './social-media/youtube-oauth-exchange.mjs';
 import { createSocialYouTubeAccountStatus } from './social-media/youtube-account-status.mjs';
 import { createSocialXOAuthExchange } from './social-media/x-oauth-exchange.mjs';
@@ -344,6 +347,16 @@ export function createApp(root = defaultRoot, options = {}) {
     env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
     store: options.socialOAuthStore || null,
   });
+  const socialInstagramOAuthStart = createInstagramFacebookStart({
+    env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
+    store: options.socialOAuthStore || null,
+  });
+  const socialInstagramAccountStatus = createInstagramFacebookStatus({
+    env: options.env || process.env, auth, fetchImpl: options.fetchImpl || fetch,
+  });
+  const instagramExchange = createInstagramFacebookExchange({
+    env: options.env || process.env, fetchImpl: options.fetchImpl || fetch,
+  });
   const xExchange = createSocialXOAuthExchange({ env: options.env || process.env, fetchImpl: options.fetchImpl || fetch });
   const youtubeExchange = createSocialYouTubeOAuthExchange({ env: options.env || process.env, fetchImpl: options.fetchImpl || fetch });
   const socialYouTubeAccountStatus = createSocialYouTubeAccountStatus({
@@ -370,7 +383,10 @@ export function createApp(root = defaultRoot, options = {}) {
     fetchImpl: options.fetchImpl || fetch,
     store: options.socialOAuthStore || null,
     exchangeCode: options.socialOAuthCodeExchange
-      || (trusted => trusted.channel === 'YOUTUBE' ? youtubeExchange(trusted) : xExchange(trusted)),
+      || (trusted => trusted.channel === 'YOUTUBE' ? youtubeExchange(trusted)
+          : trusted.channel === 'INSTAGRAM' ? instagramExchange(trusted)
+          : trusted.channel === 'X' ? xExchange(trusted)
+          : Promise.reject(new Error('SOCIAL_OAUTH_CHANNEL_NOT_IMPLEMENTED'))),
   });
   const privateMarketCache = options.privateMarketCache || createPrivateMarketCache({
     env: options.env || process.env, getRedis: () => infrastructure.requireProviderState(),
@@ -465,6 +481,8 @@ export function createApp(root = defaultRoot, options = {}) {
   if (await learningSimulator.handle(req, res, url, json)) return;
   if (await auth.handle(req, res, url, json)) return;
   if (await socialXOAuthStart.handle(req, res, url, json)) return;
+    if (await socialInstagramOAuthStart.handle(req, res, url, json)) return;
+    if (await socialInstagramAccountStatus.handle(req, res, url, json)) return;
   if (await youtubePrivateUpload.handle(req, res, url, json)) return;
   if (await socialYouTubeOAuthStart.handle(req, res, url, json)) return;
   if (await socialYouTubeAccountStatus.handle(req, res, url, json)) return;
